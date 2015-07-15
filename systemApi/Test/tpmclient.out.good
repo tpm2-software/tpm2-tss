@@ -1,0 +1,3013 @@
+Initializing Resource Manager Interface
+socket created:  0x88
+socket created:  0x90
+Client connected to server on port:  2324
+Client connected to server on port:  2323
+
+ABI NEGOTIATION TESTS:
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+
+GET/SET DECRYPT PARAM TESTS:
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+cpBuffer = 
+00 04 de ad be ef 55 aa 
+
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+cpBuffer = 
+00 04 de ad be ef 55 aa 
+
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+STARTUP TESTS:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+DICTIONARY ATTACK LOCK RESET TEST  :
+	passing case:  	PASSED!
+
+SELFTEST TESTS:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+GET TEST RESULT TESTS:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+
+DICTIONARY ATTACK LOCK RESET TEST  :
+	passing case:  	PASSED!
+
+CREATE, CREATE PRIMARY, and LOAD TESTS:
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+New key successfully created in platform hierarchy (RSA 2048).  Handle: 0x80000000
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+Name of loaded key: 00 04 a7 24 6d c9 b1 f5 10 25 fa 39 f1 c5 d6 a2 
+b5 84 4d 6f df cb 
+	passing case:  	PASSED!
+
+Loaded key handle:  80000001
+
+HIERARCHY CONTROL TESTS:
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+NV INDEX PROTOTYPE TESTS:
+
+PROVISION NV AUX:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+af fb cd 20 42 4c c2 c7 02 78 b7 51 b5 10 ce ed 
+4b 98 de bf 
+
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+PROVISION OTHER NV INDICES:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 
+
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+TPM AUX READ/WRITE TEST
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+TPM OTHER READ/WRITE TEST
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+GET/SET ENCRYPT PARAM TESTS:
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+
+
+DECRYPT/ENCRYPT SESSION TESTS:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+KDFA, hashAlg = 000b
+
+
+KDFA, key = 
+
+
+
+KDFA, tpm2bLabel = 
+43 46 42 00 
+
+
+KDFA, contextU = 
+
+
+
+KDFA, contextV = 
+33 4c 43 6b d6 f8 5a 56 80 cc 27 48 0e f0 8e 12 
+7c 2f 36 7f 
+
+
+bufferlist[0]:
+00 00 00 01 
+
+
+bufferlist[1]:
+43 46 42 00 
+
+
+bufferlist[2]:
+
+
+
+bufferlist[3]:
+33 4c 43 6b d6 f8 5a 56 80 cc 27 48 0e f0 8e 12 
+7c 2f 36 7f 
+
+
+bufferlist[4]:
+00 00 01 00 
+
+
+KDFA, resultKey = 
+09 ed 6e 9f fa 7b 47 f9 9f 3a 3d 17 52 fe e5 91 
+24 be 1c 7a b4 5c 8b a2 fe 26 2b 08 fc 78 17 c6 
+
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+KDFA, hashAlg = 000b
+
+
+KDFA, key = 
+
+
+
+KDFA, tpm2bLabel = 
+43 46 42 00 
+
+
+KDFA, contextU = 
+89 1e 44 79 dd 37 1f 82 40 05 a0 2d b4 0f 48 f9 
+30 36 4a b3 
+
+
+KDFA, contextV = 
+
+
+
+bufferlist[0]:
+00 00 00 01 
+
+
+bufferlist[1]:
+43 46 42 00 
+
+
+bufferlist[2]:
+89 1e 44 79 dd 37 1f 82 40 05 a0 2d b4 0f 48 f9 
+30 36 4a b3 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+00 00 01 00 
+
+
+KDFA, resultKey = 
+95 ac c3 f3 ee 4d f5 3c 8f 40 13 35 6c 31 7e 2a 
+9c 38 74 db 65 c9 5b cf 71 38 bf 0f c9 b7 c9 92 
+
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+Decrypted read data = 
+ef be ad de 
+
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+KDFA, hashAlg = 000b
+
+
+KDFA, key = 
+
+
+
+KDFA, tpm2bLabel = 
+58 4f 52 00 
+
+
+KDFA, contextU = 
+
+
+
+KDFA, contextV = 
+da ad 07 0f 6d 14 b3 ba 7f 9b a4 1f d6 2d 59 47 
+77 1b bb 9a 
+
+
+bufferlist[0]:
+00 00 00 01 
+
+
+bufferlist[1]:
+58 4f 52 00 
+
+
+bufferlist[2]:
+
+
+
+bufferlist[3]:
+da ad 07 0f 6d 14 b3 ba 7f 9b a4 1f d6 2d 59 47 
+77 1b bb 9a 
+
+
+bufferlist[4]:
+00 00 00 20 
+
+
+KDFA, resultKey = 
+ef d4 3c 30 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+KDFA, hashAlg = 000b
+
+
+KDFA, key = 
+
+
+
+KDFA, tpm2bLabel = 
+58 4f 52 00 
+
+
+KDFA, contextU = 
+d3 c2 82 be 8b 6a c1 71 34 42 a2 26 40 fd 2b 9f 
+2b c3 94 7e 
+
+
+KDFA, contextV = 
+
+
+
+bufferlist[0]:
+00 00 00 01 
+
+
+bufferlist[1]:
+58 4f 52 00 
+
+
+bufferlist[2]:
+d3 c2 82 be 8b 6a c1 71 34 42 a2 26 40 fd 2b 9f 
+2b c3 94 7e 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+00 00 00 20 
+
+
+KDFA, resultKey = 
+88 32 2a db 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+Decrypted read data = 
+ef be ad de 
+
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+SIMPLE HMAC SESSION TEST:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 0b 70 b4 7a 5d 12 11 92 f3 57 3b 11 b3 15 df 
+11 81 87 73 6d 20 ff da 0b b4 85 7a 84 a7 9f 09 
+75 bb 
+
+
+NAME2 = 
+00 0b 70 b4 7a 5d 12 11 92 f3 57 3b 11 b3 15 df 
+11 81 87 73 6d 20 ff da 0b b4 85 7a 84 a7 9f 09 
+75 bb 
+
+
+PHASH input bytes= 
+00 00 01 37 00 0b 70 b4 7a 5d 12 11 92 f3 57 3b 
+11 b3 15 df 11 81 87 73 6d 20 ff da 0b b4 85 7a 
+84 a7 9f 09 75 bb 00 0b 70 b4 7a 5d 12 11 92 f3 
+57 3b 11 b3 15 df 11 81 87 73 6d 20 ff da 0b b4 
+85 7a 84 a7 9f 09 75 bb 00 04 00 ff 55 aa 00 00 
+
+
+
+PHASH = 2c 25 89 31 23 44 a2 fd df dc e2 6d bd 05 52 45 
+4a fc 38 4e 86 82 cd 75 30 7a 17 b5 1c 14 60 72 
+
+
+
+hmacKey = 73 68 61 72 65 64 20 73 65 63 72 65 74 
+
+
+bufferlist[0]:
+2c 25 89 31 23 44 a2 fd df dc e2 6d bd 05 52 45 
+4a fc 38 4e 86 82 cd 75 30 7a 17 b5 1c 14 60 72 
+
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+ba f3 16 ef 19 d5 d3 ac f1 14 01 4e ee c1 d0 17 
+af 5d 44 e0 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+01 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+
+
+
+NAME2 = 
+
+
+
+PHASH input bytes= 
+00 00 00 00 00 00 01 37 
+
+
+PHASH = 13 ac 34 a7 ac 8e dc ed 97 33 dc dc d3 30 f6 85 
+62 35 8f 1c bf d4 92 66 ff cc e0 b1 ad c1 8b f5 
+
+
+
+hmacKey = 73 68 61 72 65 64 20 73 65 63 72 65 74 
+
+
+bufferlist[0]:
+13 ac 34 a7 ac 8e dc ed 97 33 dc dc d3 30 f6 85 
+62 35 8f 1c bf d4 92 66 ff cc e0 b1 ad c1 8b f5 
+
+
+
+bufferlist[1]:
+ce fc cd d7 27 1b 29 44 ad 5c 95 d7 c3 a4 32 1c 
+10 c5 c8 a9 
+
+
+bufferlist[2]:
+a5 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+01 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 0b 57 94 af fb 67 27 d4 21 f9 1e 9f 67 e7 68 
+74 1b bb 5a 1c c2 93 8b d6 bb 16 47 90 b2 32 b7 
+be a7 
+
+
+NAME2 = 
+00 0b 57 94 af fb 67 27 d4 21 f9 1e 9f 67 e7 68 
+74 1b bb 5a 1c c2 93 8b d6 bb 16 47 90 b2 32 b7 
+be a7 
+
+
+PHASH input bytes= 
+00 00 01 4e 00 0b 57 94 af fb 67 27 d4 21 f9 1e 
+9f 67 e7 68 74 1b bb 5a 1c c2 93 8b d6 bb 16 47 
+90 b2 32 b7 be a7 00 0b 57 94 af fb 67 27 d4 21 
+f9 1e 9f 67 e7 68 74 1b bb 5a 1c c2 93 8b d6 bb 
+16 47 90 b2 32 b7 be a7 00 04 00 00 
+
+
+PHASH = 40 82 9f 3b 95 bf fe 72 e9 6c 97 1e 63 58 52 ad 
+8d 15 b9 1a 5f 40 2d 98 95 8e aa 30 59 bc 0c 90 
+
+
+
+hmacKey = 73 68 61 72 65 64 20 73 65 63 72 65 74 
+
+
+bufferlist[0]:
+40 82 9f 3b 95 bf fe 72 e9 6c 97 1e 63 58 52 ad 
+8d 15 b9 1a 5f 40 2d 98 95 8e aa 30 59 bc 0c 90 
+
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+ce fc cd d7 27 1b 29 44 ad 5c 95 d7 c3 a4 32 1c 
+10 c5 c8 a9 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+00 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+
+
+
+NAME2 = 
+
+
+
+PHASH input bytes= 
+00 00 00 00 00 00 01 4e 00 04 00 ff 55 aa 
+
+
+PHASH = 34 31 32 78 a6 64 c3 ba 43 77 55 ea a8 10 ee bb 
+ca 7f 7c 42 3c c1 37 66 c9 97 6c e1 23 ab de 2b 
+
+
+
+hmacKey = 73 68 61 72 65 64 20 73 65 63 72 65 74 
+
+
+bufferlist[0]:
+34 31 32 78 a6 64 c3 ba 43 77 55 ea a8 10 ee bb 
+ca 7f 7c 42 3c c1 37 66 c9 97 6c e1 23 ab de 2b 
+
+
+
+bufferlist[1]:
+f5 67 9e cc a6 25 bf 3c 39 d4 8c 60 24 62 c7 9b 
+f3 45 31 62 
+
+
+bufferlist[2]:
+a5 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+00 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+SIMPLE POLICY SESSION TEST:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 0b c9 8f a4 e4 70 6f 86 57 b9 16 be 20 66 f8 
+db da 62 78 a0 e6 8d b5 f5 77 ee b8 72 ab 03 b2 
+63 3b 
+
+
+NAME2 = 
+00 0b c9 8f a4 e4 70 6f 86 57 b9 16 be 20 66 f8 
+db da 62 78 a0 e6 8d b5 f5 77 ee b8 72 ab 03 b2 
+63 3b 
+
+
+PHASH input bytes= 
+00 00 01 37 00 0b c9 8f a4 e4 70 6f 86 57 b9 16 
+be 20 66 f8 db da 62 78 a0 e6 8d b5 f5 77 ee b8 
+72 ab 03 b2 63 3b 00 0b c9 8f a4 e4 70 6f 86 57 
+b9 16 be 20 66 f8 db da 62 78 a0 e6 8d b5 f5 77 
+ee b8 72 ab 03 b2 63 3b 00 04 00 ff 55 aa 00 00 
+
+
+
+PHASH = 48 45 83 2b f9 ea 53 d2 4e 12 26 a2 2d 25 2f 5c 
+45 69 40 20 db 7d e1 76 ab 2a ea d4 83 69 8d 2f 
+
+
+
+hmacKey = 73 68 61 72 65 64 20 73 65 63 72 65 74 
+
+
+bufferlist[0]:
+48 45 83 2b f9 ea 53 d2 4e 12 26 a2 2d 25 2f 5c 
+45 69 40 20 db 7d e1 76 ab 2a ea d4 83 69 8d 2f 
+
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+96 c6 2d 16 3c 85 19 e0 8e b1 82 58 66 a1 dc c9 
+e6 2e 54 ac 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+01 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 0b ec 26 eb dd 51 73 d5 02 e5 ae da 65 20 74 
+87 93 ef 0c 0f 47 27 b4 55 6e 0a 22 fe ef 26 e0 
+d6 a1 
+
+
+NAME2 = 
+00 0b ec 26 eb dd 51 73 d5 02 e5 ae da 65 20 74 
+87 93 ef 0c 0f 47 27 b4 55 6e 0a 22 fe ef 26 e0 
+d6 a1 
+
+
+PHASH input bytes= 
+00 00 01 4e 00 0b ec 26 eb dd 51 73 d5 02 e5 ae 
+da 65 20 74 87 93 ef 0c 0f 47 27 b4 55 6e 0a 22 
+fe ef 26 e0 d6 a1 00 0b ec 26 eb dd 51 73 d5 02 
+e5 ae da 65 20 74 87 93 ef 0c 0f 47 27 b4 55 6e 
+0a 22 fe ef 26 e0 d6 a1 00 04 00 00 
+
+
+PHASH = f3 10 f2 ad 64 a6 cf 79 3c 94 29 b3 c5 10 71 39 
+5a 45 e7 41 0f b0 4c eb 3c 36 7f 57 f8 02 31 ce 
+
+
+
+hmacKey = 73 68 61 72 65 64 20 73 65 63 72 65 74 
+
+
+bufferlist[0]:
+f3 10 f2 ad 64 a6 cf 79 3c 94 29 b3 c5 10 71 39 
+5a 45 e7 41 0f b0 4c eb 3c 36 7f 57 f8 02 31 ce 
+
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+66 e9 f1 f6 cd 66 9e 22 94 61 f6 11 86 49 a0 08 
+70 85 50 ec 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+00 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+****** PASS #: 1 ******
+
+
+GET_CAPABILITY TESTS:
+	passing case:  	PASSED!
+		count: 1, property: 105, manuId: MSFT
+	passing case:  	PASSED!
+		count: 1, property: 11e, max cmd size: 4096
+	passing case:  	PASSED!
+		count: 35, property: 11e, max cmd size: 4096
+	passing case:  	PASSED!
+	 count: 1, property: 11f, max response size: 4096
+	failing case: 	PASSED!
+
+PCR_EXTEND, PCR_EVENT, PCR_ALLOCATE, and PCR_READ TESTS:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+
+HASH TESTS:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+POLICY TESTS:
+Policy Test: LOCALITY
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+Policy Test: PASSWORD
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+
+DICTIONARY ATTACK LOCK RESET TEST  :
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+Policy Test: PASSWORD/PCR
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+
+DICTIONARY ATTACK LOCK RESET TEST  :
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+Policy Test: AUTHVALUE
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+
+DICTIONARY ATTACK LOCK RESET TEST  :
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 0b 34 cb 29 2f fb de 18 3d c7 c6 07 82 3b 87 
+b3 2d b9 8a 8a 20 c6 ca ad 3b c5 d9 14 c2 c1 c2 
+cb b5 
+
+
+NAME2 = 
+
+
+
+PHASH input bytes= 
+00 00 01 5e 00 0b 34 cb 29 2f fb de 18 3d c7 c6 
+07 82 3b 87 b3 2d b9 8a 8a 20 c6 ca ad 3b c5 d9 
+14 c2 c1 c2 cb b5 
+
+
+PHASH = 0c 15 c9 12 e4 64 b7 72 f0 ba 33 a2 00 d3 64 de 
+8c d4 2c 34 c2 e4 44 fc 02 de 5d 0e cd 8b 3c ed 
+
+
+
+hmacKey = 70 61 73 73 77 6f 72 64 20 50 43 52 00 
+
+
+bufferlist[0]:
+0c 15 c9 12 e4 64 b7 72 f0 ba 33 a2 00 d3 64 de 
+8c d4 2c 34 c2 e4 44 fc 02 de 5d 0e cd 8b 3c ed 
+
+
+
+bufferlist[1]:
+
+
+
+bufferlist[2]:
+9e d2 5f 4c 12 fd 6e c4 89 3d 32 38 ff d5 6e 90 
+c5 7e 37 82 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+01 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+CLEAR and CLEAR CONTROL TESTS:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+
+CHANGE_EPS TESTS:
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+
+CHANGE_PPS TESTS:
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+
+HIERARCHY_CHANGE_AUTH TESTS:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+
+GET_RANDOM TESTS:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+SHUTDOWN TESTS:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+
+NV INDEX TESTS:
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+CREATE, CREATE PRIMARY, and LOAD TESTS:
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+New key successfully created in platform hierarchy (RSA 2048).  Handle: 0x80000002
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+Name of loaded key: 00 04 37 cf 71 5a f9 34 ab 25 0d 77 a2 e1 33 c8 
+4a e3 20 2f 95 60 
+	passing case:  	PASSED!
+
+Loaded key handle:  80000007
+
+EVICT CONTROL TESTS:
+	passing case:  	PASSED!
+Initializing Resource Manager Interface
+socket created:  0x8c
+socket created:  0x94
+Client connected to server on port:  2324
+Client connected to server on port:  2323
+	passing case:  	PASSED!
+Tearing down Other Resource Manager Interface
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+NV INDEX PROTOTYPE TESTS:
+
+PROVISION NV AUX:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+af fb cd 20 42 4c c2 c7 02 78 b7 51 b5 10 ce ed 
+4b 98 de bf 
+
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+PROVISION OTHER NV INDICES:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 
+
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+TPM AUX READ/WRITE TEST
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+TPM OTHER READ/WRITE TEST
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+PASSWORD TESTS:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+
+HMAC SESSION TESTS:
+
+
+UNBOUND/UNSALTED SESSION TEST:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+Name of authSession: 02 00 00 00 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 04 0d 07 18 44 fd 97 81 2e 3a 06 e9 6c 76 9c 
+c0 7a 69 a0 61 b8 
+
+
+NAME2 = 
+00 04 0d 07 18 44 fd 97 81 2e 3a 06 e9 6c 76 9c 
+c0 7a 69 a0 61 b8 
+
+
+PHASH input bytes= 
+00 00 01 37 00 04 0d 07 18 44 fd 97 81 2e 3a 06 
+e9 6c 76 9c c0 7a 69 a0 61 b8 00 04 0d 07 18 44 
+fd 97 81 2e 3a 06 e9 6c 76 9c c0 7a 69 a0 61 b8 
+00 04 00 ff 55 aa 00 00 
+
+
+PHASH = 9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93 
+99 9a e1 ac 
+
+
+hmacKey = 73 68 61 72 65 64 20 73 65 63 72 65 74 
+
+
+bufferlist[0]:
+9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93 
+99 9a e1 ac 
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+c0 0f 28 61 d3 3d 97 59 11 1a ce 33 f6 08 c7 d0 
+bc 02 4a 11 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+00 
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+
+DICTIONARY ATTACK LOCK RESET TEST  :
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 04 0d 07 18 44 fd 97 81 2e 3a 06 e9 6c 76 9c 
+c0 7a 69 a0 61 b8 
+
+
+NAME2 = 
+00 04 0d 07 18 44 fd 97 81 2e 3a 06 e9 6c 76 9c 
+c0 7a 69 a0 61 b8 
+
+
+PHASH input bytes= 
+00 00 01 37 00 04 0d 07 18 44 fd 97 81 2e 3a 06 
+e9 6c 76 9c c0 7a 69 a0 61 b8 00 04 0d 07 18 44 
+fd 97 81 2e 3a 06 e9 6c 76 9c c0 7a 69 a0 61 b8 
+00 04 00 ff 55 aa 00 00 
+
+
+PHASH = 9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93 
+99 9a e1 ac 
+
+
+hmacKey = 73 68 61 72 65 64 20 73 65 63 72 65 74 
+
+
+bufferlist[0]:
+9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93 
+99 9a e1 ac 
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+c0 0f 28 61 d3 3d 97 59 11 1a ce 33 f6 08 c7 d0 
+bc 02 4a 11 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+01 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+
+
+
+NAME2 = 
+
+
+
+PHASH input bytes= 
+00 00 00 00 00 00 01 37 
+
+
+PHASH = cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad 
+04 a4 e3 f5 
+
+
+hmacKey = 73 68 61 72 65 64 20 73 65 63 72 65 74 
+
+
+bufferlist[0]:
+cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad 
+04 a4 e3 f5 
+
+
+bufferlist[1]:
+b5 15 99 8c d6 2b 67 e2 9e c4 f5 cc ff 67 a7 5c 
+c2 f6 42 c4 
+
+
+bufferlist[2]:
+a5 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+01 
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 04 3b 96 0d 48 42 d1 71 a9 1e 34 94 ef be fe 
+db 0d 69 93 47 dc 
+
+
+NAME2 = 
+00 04 3b 96 0d 48 42 d1 71 a9 1e 34 94 ef be fe 
+db 0d 69 93 47 dc 
+
+
+PHASH input bytes= 
+00 00 01 4e 00 04 3b 96 0d 48 42 d1 71 a9 1e 34 
+94 ef be fe db 0d 69 93 47 dc 00 04 3b 96 0d 48 
+42 d1 71 a9 1e 34 94 ef be fe db 0d 69 93 47 dc 
+00 04 00 00 
+
+
+PHASH = a8 3f d1 df 40 3f f3 c3 68 ba 9c 50 61 ae 96 84 
+26 82 0d 4f 
+
+
+hmacKey = 73 68 61 72 65 64 20 73 65 63 72 65 74 
+
+
+bufferlist[0]:
+a8 3f d1 df 40 3f f3 c3 68 ba 9c 50 61 ae 96 84 
+26 82 0d 4f 
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+b5 15 99 8c d6 2b 67 e2 9e c4 f5 cc ff 67 a7 5c 
+c2 f6 42 c4 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+00 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+
+
+
+NAME2 = 
+
+
+
+PHASH input bytes= 
+00 00 00 00 00 00 01 4e 00 04 00 ff 55 aa 
+
+
+PHASH = 4f 3b 90 19 8c ae a2 a0 73 da 01 a1 71 7d 33 7b 
+49 28 57 4f 
+
+
+hmacKey = 73 68 61 72 65 64 20 73 65 63 72 65 74 
+
+
+bufferlist[0]:
+4f 3b 90 19 8c ae a2 a0 73 da 01 a1 71 7d 33 7b 
+49 28 57 4f 
+
+
+bufferlist[1]:
+a6 61 2c 6c 4f 7b d1 2c 90 1a 82 b2 e5 5f eb 75 
+14 ca 8d 73 
+
+
+bufferlist[2]:
+a5 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+00 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+
+BOUND SESSION TEST:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+KDFA, hashAlg = 0004
+
+
+KDFA, key = 
+73 68 61 72 65 64 20 73 65 63 72 65 74 
+
+
+KDFA, tpm2bLabel = 
+41 54 48 00 
+
+
+KDFA, contextU = 
+9a 19 3d db 23 84 6b 4b d9 54 ad 48 11 94 f7 12 
+4f ed f8 f5 
+
+
+KDFA, contextV = 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 
+
+
+bufferlist[0]:
+00 00 00 01 
+
+
+bufferlist[1]:
+41 54 48 00 
+
+
+bufferlist[2]:
+9a 19 3d db 23 84 6b 4b d9 54 ad 48 11 94 f7 12 
+4f ed f8 f5 
+
+
+bufferlist[3]:
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 
+
+
+bufferlist[4]:
+00 00 00 a0 
+
+
+KDFA, resultKey = 
+89 b4 de 63 8c de 45 78 5b fa 7f 37 b3 f3 b4 a7 
+dc dc 06 c7 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+Name of authSession: 02 00 00 00 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 04 0d 07 18 44 fd 97 81 2e 3a 06 e9 6c 76 9c 
+c0 7a 69 a0 61 b8 
+
+
+NAME2 = 
+00 04 0d 07 18 44 fd 97 81 2e 3a 06 e9 6c 76 9c 
+c0 7a 69 a0 61 b8 
+
+
+PHASH input bytes= 
+00 00 01 37 00 04 0d 07 18 44 fd 97 81 2e 3a 06 
+e9 6c 76 9c c0 7a 69 a0 61 b8 00 04 0d 07 18 44 
+fd 97 81 2e 3a 06 e9 6c 76 9c c0 7a 69 a0 61 b8 
+00 04 00 ff 55 aa 00 00 
+
+
+PHASH = 9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93 
+99 9a e1 ac 
+
+
+hmacKey = 89 b4 de 63 8c de 45 78 5b fa 7f 37 b3 f3 b4 a7 
+dc dc 06 c7 
+
+
+bufferlist[0]:
+9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93 
+99 9a e1 ac 
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+9a 19 3d db 23 84 6b 4b d9 54 ad 48 11 94 f7 12 
+4f ed f8 f5 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+00 
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+
+DICTIONARY ATTACK LOCK RESET TEST  :
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 04 0d 07 18 44 fd 97 81 2e 3a 06 e9 6c 76 9c 
+c0 7a 69 a0 61 b8 
+
+
+NAME2 = 
+00 04 0d 07 18 44 fd 97 81 2e 3a 06 e9 6c 76 9c 
+c0 7a 69 a0 61 b8 
+
+
+PHASH input bytes= 
+00 00 01 37 00 04 0d 07 18 44 fd 97 81 2e 3a 06 
+e9 6c 76 9c c0 7a 69 a0 61 b8 00 04 0d 07 18 44 
+fd 97 81 2e 3a 06 e9 6c 76 9c c0 7a 69 a0 61 b8 
+00 04 00 ff 55 aa 00 00 
+
+
+PHASH = 9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93 
+99 9a e1 ac 
+
+
+hmacKey = 89 b4 de 63 8c de 45 78 5b fa 7f 37 b3 f3 b4 a7 
+dc dc 06 c7 
+
+
+bufferlist[0]:
+9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93 
+99 9a e1 ac 
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+9a 19 3d db 23 84 6b 4b d9 54 ad 48 11 94 f7 12 
+4f ed f8 f5 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+01 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+
+
+
+NAME2 = 
+
+
+
+PHASH input bytes= 
+00 00 00 00 00 00 01 37 
+
+
+PHASH = cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad 
+04 a4 e3 f5 
+
+
+hmacKey = 89 b4 de 63 8c de 45 78 5b fa 7f 37 b3 f3 b4 a7 
+dc dc 06 c7 
+
+
+bufferlist[0]:
+cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad 
+04 a4 e3 f5 
+
+
+bufferlist[1]:
+b4 09 07 53 4c 74 73 b8 41 4f c3 0e ef 0e 69 86 
+8c 98 34 97 
+
+
+bufferlist[2]:
+a5 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+01 
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 04 3b 96 0d 48 42 d1 71 a9 1e 34 94 ef be fe 
+db 0d 69 93 47 dc 
+
+
+NAME2 = 
+00 04 3b 96 0d 48 42 d1 71 a9 1e 34 94 ef be fe 
+db 0d 69 93 47 dc 
+
+
+PHASH input bytes= 
+00 00 01 4e 00 04 3b 96 0d 48 42 d1 71 a9 1e 34 
+94 ef be fe db 0d 69 93 47 dc 00 04 3b 96 0d 48 
+42 d1 71 a9 1e 34 94 ef be fe db 0d 69 93 47 dc 
+00 04 00 00 
+
+
+PHASH = a8 3f d1 df 40 3f f3 c3 68 ba 9c 50 61 ae 96 84 
+26 82 0d 4f 
+
+
+hmacKey = 89 b4 de 63 8c de 45 78 5b fa 7f 37 b3 f3 b4 a7 
+dc dc 06 c7 73 68 61 72 65 64 20 73 65 63 72 65 
+74 
+
+
+bufferlist[0]:
+a8 3f d1 df 40 3f f3 c3 68 ba 9c 50 61 ae 96 84 
+26 82 0d 4f 
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+b4 09 07 53 4c 74 73 b8 41 4f c3 0e ef 0e 69 86 
+8c 98 34 97 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+00 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+
+
+
+NAME2 = 
+
+
+
+PHASH input bytes= 
+00 00 00 00 00 00 01 4e 00 04 00 ff 55 aa 
+
+
+PHASH = 4f 3b 90 19 8c ae a2 a0 73 da 01 a1 71 7d 33 7b 
+49 28 57 4f 
+
+
+hmacKey = 89 b4 de 63 8c de 45 78 5b fa 7f 37 b3 f3 b4 a7 
+dc dc 06 c7 73 68 61 72 65 64 20 73 65 63 72 65 
+74 
+
+
+bufferlist[0]:
+4f 3b 90 19 8c ae a2 a0 73 da 01 a1 71 7d 33 7b 
+49 28 57 4f 
+
+
+bufferlist[1]:
+ba f7 88 ee fa cf e9 ba bf 72 06 0c 50 1f d3 3a 
+5f e2 8a 6a 
+
+
+bufferlist[2]:
+a5 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+00 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+KDFA, hashAlg = 0004
+
+
+KDFA, key = 
+73 68 61 72 65 64 20 73 65 63 72 65 74 
+
+
+KDFA, tpm2bLabel = 
+41 54 48 00 
+
+
+KDFA, contextU = 
+c9 18 86 78 28 37 b1 1e 10 fb 4a 15 fa cd 22 7a 
+a1 3a 7b ea 
+
+
+KDFA, contextV = 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 
+
+
+bufferlist[0]:
+00 00 00 01 
+
+
+bufferlist[1]:
+41 54 48 00 
+
+
+bufferlist[2]:
+c9 18 86 78 28 37 b1 1e 10 fb 4a 15 fa cd 22 7a 
+a1 3a 7b ea 
+
+
+bufferlist[3]:
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 
+
+
+bufferlist[4]:
+00 00 00 a0 
+
+
+KDFA, resultKey = 
+8a f6 dc b9 72 c7 b2 9a 7b 90 9a f3 09 34 5b 5c 
+7f 83 93 4b 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 04 3b 96 0d 48 42 d1 71 a9 1e 34 94 ef be fe 
+db 0d 69 93 47 dc 
+
+
+NAME2 = 
+00 04 3b 96 0d 48 42 d1 71 a9 1e 34 94 ef be fe 
+db 0d 69 93 47 dc 
+
+
+PHASH input bytes= 
+00 00 01 37 00 04 3b 96 0d 48 42 d1 71 a9 1e 34 
+94 ef be fe db 0d 69 93 47 dc 00 04 3b 96 0d 48 
+42 d1 71 a9 1e 34 94 ef be fe db 0d 69 93 47 dc 
+00 04 00 ff 55 aa 00 00 
+
+
+PHASH = 65 9f d3 7c 80 c5 30 ee 99 4f 3c 81 76 f2 da f3 
+db 14 f9 6b 
+
+
+hmacKey = 8a f6 dc b9 72 c7 b2 9a 7b 90 9a f3 09 34 5b 5c 
+7f 83 93 4b 
+
+
+bufferlist[0]:
+65 9f d3 7c 80 c5 30 ee 99 4f 3c 81 76 f2 da f3 
+db 14 f9 6b 
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+c9 18 86 78 28 37 b1 1e 10 fb 4a 15 fa cd 22 7a 
+a1 3a 7b ea 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+21 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+
+
+
+NAME2 = 
+
+
+
+PHASH input bytes= 
+00 00 00 00 00 00 01 37 
+
+
+PHASH = cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad 
+04 a4 e3 f5 
+
+
+hmacKey = 8a f6 dc b9 72 c7 b2 9a 7b 90 9a f3 09 34 5b 5c 
+7f 83 93 4b 
+
+
+bufferlist[0]:
+cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad 
+04 a4 e3 f5 
+
+
+bufferlist[1]:
+02 da 88 a2 1c 77 b2 99 c3 da 39 89 ac c6 34 5d 
+68 0f 62 c6 
+
+
+bufferlist[2]:
+a5 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+21 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 04 3b 96 0d 48 42 d1 71 a9 1e 34 94 ef be fe 
+db 0d 69 93 47 dc 
+
+
+NAME2 = 
+00 04 3b 96 0d 48 42 d1 71 a9 1e 34 94 ef be fe 
+db 0d 69 93 47 dc 
+
+
+PHASH input bytes= 
+00 00 01 4e 00 04 3b 96 0d 48 42 d1 71 a9 1e 34 
+94 ef be fe db 0d 69 93 47 dc 00 04 3b 96 0d 48 
+42 d1 71 a9 1e 34 94 ef be fe db 0d 69 93 47 dc 
+00 04 00 00 
+
+
+PHASH = a8 3f d1 df 40 3f f3 c3 68 ba 9c 50 61 ae 96 84 
+26 82 0d 4f 
+
+
+hmacKey = 8a f6 dc b9 72 c7 b2 9a 7b 90 9a f3 09 34 5b 5c 
+7f 83 93 4b 
+
+
+bufferlist[0]:
+a8 3f d1 df 40 3f f3 c3 68 ba 9c 50 61 ae 96 84 
+26 82 0d 4f 
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+02 da 88 a2 1c 77 b2 99 c3 da 39 89 ac c6 34 5d 
+68 0f 62 c6 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+c0 
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+
+
+
+NAME2 = 
+
+
+
+PHASH input bytes= 
+00 00 00 00 00 00 01 4e 00 04 14 85 65 a0 
+
+
+PHASH = 31 bf 5d 18 79 6b 77 6f bc 57 b3 c5 0e 94 f3 96 
+3a eb 90 46 
+
+
+hmacKey = 8a f6 dc b9 72 c7 b2 9a 7b 90 9a f3 09 34 5b 5c 
+7f 83 93 4b 
+
+
+bufferlist[0]:
+31 bf 5d 18 79 6b 77 6f bc 57 b3 c5 0e 94 f3 96 
+3a eb 90 46 
+
+
+bufferlist[1]:
+4c 6d d8 78 a0 56 66 2e 4b 0c 0c 37 46 d6 53 a1 
+12 28 33 63 
+
+
+bufferlist[2]:
+a5 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+c2 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+
+SALTED SESSION TEST:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+KDFA, hashAlg = 0004
+
+
+KDFA, key = 
+a5 00 
+
+
+KDFA, tpm2bLabel = 
+41 54 48 00 
+
+
+KDFA, contextU = 
+94 5c 84 00 d0 c4 c1 8d 10 02 af 72 25 bf 96 0e 
+5f fe 0b 79 
+
+
+KDFA, contextV = 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 
+
+
+bufferlist[0]:
+00 00 00 01 
+
+
+bufferlist[1]:
+41 54 48 00 
+
+
+bufferlist[2]:
+94 5c 84 00 d0 c4 c1 8d 10 02 af 72 25 bf 96 0e 
+5f fe 0b 79 
+
+
+bufferlist[3]:
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 
+
+
+bufferlist[4]:
+00 00 00 a0 
+
+
+KDFA, resultKey = 
+f3 a4 a7 ef fc dc c5 03 df 1a f1 61 39 db b3 4d 
+3e f4 29 cc 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+Name of authSession: 02 00 00 00 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 04 0d 07 18 44 fd 97 81 2e 3a 06 e9 6c 76 9c 
+c0 7a 69 a0 61 b8 
+
+
+NAME2 = 
+00 04 0d 07 18 44 fd 97 81 2e 3a 06 e9 6c 76 9c 
+c0 7a 69 a0 61 b8 
+
+
+PHASH input bytes= 
+00 00 01 37 00 04 0d 07 18 44 fd 97 81 2e 3a 06 
+e9 6c 76 9c c0 7a 69 a0 61 b8 00 04 0d 07 18 44 
+fd 97 81 2e 3a 06 e9 6c 76 9c c0 7a 69 a0 61 b8 
+00 04 00 ff 55 aa 00 00 
+
+
+PHASH = 9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93 
+99 9a e1 ac 
+
+
+hmacKey = f3 a4 a7 ef fc dc c5 03 df 1a f1 61 39 db b3 4d 
+3e f4 29 cc 73 68 61 72 65 64 20 73 65 63 72 65 
+74 
+
+
+bufferlist[0]:
+9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93 
+99 9a e1 ac 
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+94 5c 84 00 d0 c4 c1 8d 10 02 af 72 25 bf 96 0e 
+5f fe 0b 79 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+00 
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+
+DICTIONARY ATTACK LOCK RESET TEST  :
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 04 0d 07 18 44 fd 97 81 2e 3a 06 e9 6c 76 9c 
+c0 7a 69 a0 61 b8 
+
+
+NAME2 = 
+00 04 0d 07 18 44 fd 97 81 2e 3a 06 e9 6c 76 9c 
+c0 7a 69 a0 61 b8 
+
+
+PHASH input bytes= 
+00 00 01 37 00 04 0d 07 18 44 fd 97 81 2e 3a 06 
+e9 6c 76 9c c0 7a 69 a0 61 b8 00 04 0d 07 18 44 
+fd 97 81 2e 3a 06 e9 6c 76 9c c0 7a 69 a0 61 b8 
+00 04 00 ff 55 aa 00 00 
+
+
+PHASH = 9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93 
+99 9a e1 ac 
+
+
+hmacKey = f3 a4 a7 ef fc dc c5 03 df 1a f1 61 39 db b3 4d 
+3e f4 29 cc 73 68 61 72 65 64 20 73 65 63 72 65 
+74 
+
+
+bufferlist[0]:
+9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93 
+99 9a e1 ac 
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+94 5c 84 00 d0 c4 c1 8d 10 02 af 72 25 bf 96 0e 
+5f fe 0b 79 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+01 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+
+
+
+NAME2 = 
+
+
+
+PHASH input bytes= 
+00 00 00 00 00 00 01 37 
+
+
+PHASH = cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad 
+04 a4 e3 f5 
+
+
+hmacKey = f3 a4 a7 ef fc dc c5 03 df 1a f1 61 39 db b3 4d 
+3e f4 29 cc 73 68 61 72 65 64 20 73 65 63 72 65 
+74 
+
+
+bufferlist[0]:
+cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad 
+04 a4 e3 f5 
+
+
+bufferlist[1]:
+98 df 0f 16 da a0 dd f0 d9 f0 4e ae f0 68 25 79 
+61 2e ec 11 
+
+
+bufferlist[2]:
+a5 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+01 
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 04 3b 96 0d 48 42 d1 71 a9 1e 34 94 ef be fe 
+db 0d 69 93 47 dc 
+
+
+NAME2 = 
+00 04 3b 96 0d 48 42 d1 71 a9 1e 34 94 ef be fe 
+db 0d 69 93 47 dc 
+
+
+PHASH input bytes= 
+00 00 01 4e 00 04 3b 96 0d 48 42 d1 71 a9 1e 34 
+94 ef be fe db 0d 69 93 47 dc 00 04 3b 96 0d 48 
+42 d1 71 a9 1e 34 94 ef be fe db 0d 69 93 47 dc 
+00 04 00 00 
+
+
+PHASH = a8 3f d1 df 40 3f f3 c3 68 ba 9c 50 61 ae 96 84 
+26 82 0d 4f 
+
+
+hmacKey = f3 a4 a7 ef fc dc c5 03 df 1a f1 61 39 db b3 4d 
+3e f4 29 cc 73 68 61 72 65 64 20 73 65 63 72 65 
+74 
+
+
+bufferlist[0]:
+a8 3f d1 df 40 3f f3 c3 68 ba 9c 50 61 ae 96 84 
+26 82 0d 4f 
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+98 df 0f 16 da a0 dd f0 d9 f0 4e ae f0 68 25 79 
+61 2e ec 11 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+00 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+
+
+
+NAME2 = 
+
+
+
+PHASH input bytes= 
+00 00 00 00 00 00 01 4e 00 04 00 ff 55 aa 
+
+
+PHASH = 4f 3b 90 19 8c ae a2 a0 73 da 01 a1 71 7d 33 7b 
+49 28 57 4f 
+
+
+hmacKey = f3 a4 a7 ef fc dc c5 03 df 1a f1 61 39 db b3 4d 
+3e f4 29 cc 73 68 61 72 65 64 20 73 65 63 72 65 
+74 
+
+
+bufferlist[0]:
+4f 3b 90 19 8c ae a2 a0 73 da 01 a1 71 7d 33 7b 
+49 28 57 4f 
+
+
+bufferlist[1]:
+3d b4 5d 6d b0 4a 0f be 56 52 ff be 55 80 be e6 
+3a 2e 38 a2 
+
+
+bufferlist[2]:
+a5 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+00 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+
+BOUND/SALTED SESSION TEST:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+KDFA, hashAlg = 0004
+
+
+KDFA, key = 
+73 68 61 72 65 64 20 73 65 63 72 65 74 a5 00 
+
+
+KDFA, tpm2bLabel = 
+41 54 48 00 
+
+
+KDFA, contextU = 
+1b 9d 8b 4d 05 33 be ca f2 f4 07 8d 9d 49 45 7a 
+16 62 66 e0 
+
+
+KDFA, contextV = 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 
+
+
+bufferlist[0]:
+00 00 00 01 
+
+
+bufferlist[1]:
+41 54 48 00 
+
+
+bufferlist[2]:
+1b 9d 8b 4d 05 33 be ca f2 f4 07 8d 9d 49 45 7a 
+16 62 66 e0 
+
+
+bufferlist[3]:
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 
+
+
+bufferlist[4]:
+00 00 00 a0 
+
+
+KDFA, resultKey = 
+68 1e 2a 81 69 83 42 6b e1 c0 9d 16 0d 4e 25 97 
+d7 0e 61 d6 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+Name of authSession: 02 00 00 00 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 04 0d 07 18 44 fd 97 81 2e 3a 06 e9 6c 76 9c 
+c0 7a 69 a0 61 b8 
+
+
+NAME2 = 
+00 04 0d 07 18 44 fd 97 81 2e 3a 06 e9 6c 76 9c 
+c0 7a 69 a0 61 b8 
+
+
+PHASH input bytes= 
+00 00 01 37 00 04 0d 07 18 44 fd 97 81 2e 3a 06 
+e9 6c 76 9c c0 7a 69 a0 61 b8 00 04 0d 07 18 44 
+fd 97 81 2e 3a 06 e9 6c 76 9c c0 7a 69 a0 61 b8 
+00 04 00 ff 55 aa 00 00 
+
+
+PHASH = 9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93 
+99 9a e1 ac 
+
+
+hmacKey = 68 1e 2a 81 69 83 42 6b e1 c0 9d 16 0d 4e 25 97 
+d7 0e 61 d6 
+
+
+bufferlist[0]:
+9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93 
+99 9a e1 ac 
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+1b 9d 8b 4d 05 33 be ca f2 f4 07 8d 9d 49 45 7a 
+16 62 66 e0 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+00 
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+
+DICTIONARY ATTACK LOCK RESET TEST  :
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 04 0d 07 18 44 fd 97 81 2e 3a 06 e9 6c 76 9c 
+c0 7a 69 a0 61 b8 
+
+
+NAME2 = 
+00 04 0d 07 18 44 fd 97 81 2e 3a 06 e9 6c 76 9c 
+c0 7a 69 a0 61 b8 
+
+
+PHASH input bytes= 
+00 00 01 37 00 04 0d 07 18 44 fd 97 81 2e 3a 06 
+e9 6c 76 9c c0 7a 69 a0 61 b8 00 04 0d 07 18 44 
+fd 97 81 2e 3a 06 e9 6c 76 9c c0 7a 69 a0 61 b8 
+00 04 00 ff 55 aa 00 00 
+
+
+PHASH = 9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93 
+99 9a e1 ac 
+
+
+hmacKey = 68 1e 2a 81 69 83 42 6b e1 c0 9d 16 0d 4e 25 97 
+d7 0e 61 d6 
+
+
+bufferlist[0]:
+9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93 
+99 9a e1 ac 
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+1b 9d 8b 4d 05 33 be ca f2 f4 07 8d 9d 49 45 7a 
+16 62 66 e0 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+01 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+
+
+
+NAME2 = 
+
+
+
+PHASH input bytes= 
+00 00 00 00 00 00 01 37 
+
+
+PHASH = cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad 
+04 a4 e3 f5 
+
+
+hmacKey = 68 1e 2a 81 69 83 42 6b e1 c0 9d 16 0d 4e 25 97 
+d7 0e 61 d6 
+
+
+bufferlist[0]:
+cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad 
+04 a4 e3 f5 
+
+
+bufferlist[1]:
+fa 9f df b3 39 f0 3d 60 72 15 25 e4 30 7c 20 3a 
+c5 98 d6 8f 
+
+
+bufferlist[2]:
+a5 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+01 
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 04 3b 96 0d 48 42 d1 71 a9 1e 34 94 ef be fe 
+db 0d 69 93 47 dc 
+
+
+NAME2 = 
+00 04 3b 96 0d 48 42 d1 71 a9 1e 34 94 ef be fe 
+db 0d 69 93 47 dc 
+
+
+PHASH input bytes= 
+00 00 01 4e 00 04 3b 96 0d 48 42 d1 71 a9 1e 34 
+94 ef be fe db 0d 69 93 47 dc 00 04 3b 96 0d 48 
+42 d1 71 a9 1e 34 94 ef be fe db 0d 69 93 47 dc 
+00 04 00 00 
+
+
+PHASH = a8 3f d1 df 40 3f f3 c3 68 ba 9c 50 61 ae 96 84 
+26 82 0d 4f 
+
+
+hmacKey = 68 1e 2a 81 69 83 42 6b e1 c0 9d 16 0d 4e 25 97 
+d7 0e 61 d6 73 68 61 72 65 64 20 73 65 63 72 65 
+74 
+
+
+bufferlist[0]:
+a8 3f d1 df 40 3f f3 c3 68 ba 9c 50 61 ae 96 84 
+26 82 0d 4f 
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+fa 9f df b3 39 f0 3d 60 72 15 25 e4 30 7c 20 3a 
+c5 98 d6 8f 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+00 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+
+
+
+NAME2 = 
+
+
+
+PHASH input bytes= 
+00 00 00 00 00 00 01 4e 00 04 00 ff 55 aa 
+
+
+PHASH = 4f 3b 90 19 8c ae a2 a0 73 da 01 a1 71 7d 33 7b 
+49 28 57 4f 
+
+
+hmacKey = 68 1e 2a 81 69 83 42 6b e1 c0 9d 16 0d 4e 25 97 
+d7 0e 61 d6 73 68 61 72 65 64 20 73 65 63 72 65 
+74 
+
+
+bufferlist[0]:
+4f 3b 90 19 8c ae a2 a0 73 da 01 a1 71 7d 33 7b 
+49 28 57 4f 
+
+
+bufferlist[1]:
+e4 13 32 92 e9 2d b9 b4 c4 99 ca 1c b1 00 c7 11 
+bd 46 d5 97 
+
+
+bufferlist[2]:
+a5 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+00 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+KDFA, hashAlg = 0004
+
+
+KDFA, key = 
+73 68 61 72 65 64 20 73 65 63 72 65 74 a5 00 
+
+
+KDFA, tpm2bLabel = 
+41 54 48 00 
+
+
+KDFA, contextU = 
+1c 80 a5 db a5 92 75 1f df 3b 9a be 57 6d 7c 53 
+db 4a 6e 6b 
+
+
+KDFA, contextV = 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 
+
+
+bufferlist[0]:
+00 00 00 01 
+
+
+bufferlist[1]:
+41 54 48 00 
+
+
+bufferlist[2]:
+1c 80 a5 db a5 92 75 1f df 3b 9a be 57 6d 7c 53 
+db 4a 6e 6b 
+
+
+bufferlist[3]:
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 
+
+
+bufferlist[4]:
+00 00 00 a0 
+
+
+KDFA, resultKey = 
+d3 12 60 1c e1 2e 54 d5 fa 56 e2 4d e8 da e7 fd 
+f3 88 8a 90 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 04 3b 96 0d 48 42 d1 71 a9 1e 34 94 ef be fe 
+db 0d 69 93 47 dc 
+
+
+NAME2 = 
+00 04 3b 96 0d 48 42 d1 71 a9 1e 34 94 ef be fe 
+db 0d 69 93 47 dc 
+
+
+PHASH input bytes= 
+00 00 01 37 00 04 3b 96 0d 48 42 d1 71 a9 1e 34 
+94 ef be fe db 0d 69 93 47 dc 00 04 3b 96 0d 48 
+42 d1 71 a9 1e 34 94 ef be fe db 0d 69 93 47 dc 
+00 04 00 ff 55 aa 00 00 
+
+
+PHASH = 65 9f d3 7c 80 c5 30 ee 99 4f 3c 81 76 f2 da f3 
+db 14 f9 6b 
+
+
+hmacKey = d3 12 60 1c e1 2e 54 d5 fa 56 e2 4d e8 da e7 fd 
+f3 88 8a 90 
+
+
+bufferlist[0]:
+65 9f d3 7c 80 c5 30 ee 99 4f 3c 81 76 f2 da f3 
+db 14 f9 6b 
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+1c 80 a5 db a5 92 75 1f df 3b 9a be 57 6d 7c 53 
+db 4a 6e 6b 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+21 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+
+
+
+NAME2 = 
+
+
+
+PHASH input bytes= 
+00 00 00 00 00 00 01 37 
+
+
+PHASH = cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad 
+04 a4 e3 f5 
+
+
+hmacKey = d3 12 60 1c e1 2e 54 d5 fa 56 e2 4d e8 da e7 fd 
+f3 88 8a 90 
+
+
+bufferlist[0]:
+cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad 
+04 a4 e3 f5 
+
+
+bufferlist[1]:
+53 21 04 88 b5 59 b6 92 6a f6 e8 a6 d9 62 5c 27 
+88 6b 70 22 
+
+
+bufferlist[2]:
+a5 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+21 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+00 04 3b 96 0d 48 42 d1 71 a9 1e 34 94 ef be fe 
+db 0d 69 93 47 dc 
+
+
+NAME2 = 
+00 04 3b 96 0d 48 42 d1 71 a9 1e 34 94 ef be fe 
+db 0d 69 93 47 dc 
+
+
+PHASH input bytes= 
+00 00 01 4e 00 04 3b 96 0d 48 42 d1 71 a9 1e 34 
+94 ef be fe db 0d 69 93 47 dc 00 04 3b 96 0d 48 
+42 d1 71 a9 1e 34 94 ef be fe db 0d 69 93 47 dc 
+00 04 00 00 
+
+
+PHASH = a8 3f d1 df 40 3f f3 c3 68 ba 9c 50 61 ae 96 84 
+26 82 0d 4f 
+
+
+hmacKey = d3 12 60 1c e1 2e 54 d5 fa 56 e2 4d e8 da e7 fd 
+f3 88 8a 90 
+
+
+bufferlist[0]:
+a8 3f d1 df 40 3f f3 c3 68 ba 9c 50 61 ae 96 84 
+26 82 0d 4f 
+
+
+bufferlist[1]:
+a5 
+
+
+bufferlist[2]:
+53 21 04 88 b5 59 b6 92 6a f6 e8 a6 d9 62 5c 27 
+88 6b 70 22 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+c0 
+	passing case:  	PASSED!
+In GetSessionStruct
+
+
+NAME1 = 
+
+
+
+NAME2 = 
+
+
+
+PHASH input bytes= 
+00 00 00 00 00 00 01 4e 00 04 ca 9a df b4 
+
+
+PHASH = a8 4c c7 68 c7 77 26 b3 ab fc 1c 03 3c b0 f0 df 
+a6 63 2f 6c 
+
+
+hmacKey = d3 12 60 1c e1 2e 54 d5 fa 56 e2 4d e8 da e7 fd 
+f3 88 8a 90 
+
+
+bufferlist[0]:
+a8 4c c7 68 c7 77 26 b3 ab fc 1c 03 3c b0 f0 df 
+a6 63 2f 6c 
+
+
+bufferlist[1]:
+39 a2 ea 08 3f ba 82 cc 18 88 30 fb a8 ed 9b c3 
+f4 f2 06 c7 
+
+
+bufferlist[2]:
+a5 
+
+
+bufferlist[3]:
+
+
+
+bufferlist[4]:
+
+
+
+bufferlist[5]:
+c2 
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+QUOTE CONTROL TESTS:
+	passing case:  	PASSED!
+
+DICTIONARY ATTACK LOCK RESET TEST  :
+	passing case:  	PASSED!
+
+PCR ALLOCATE TEST  :
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+UNSEAL TEST  :
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+RM TESTS:
+Initializing Resource Manager Interface
+socket created:  0x94
+socket created:  0x8c
+Client connected to server on port:  2324
+Client connected to server on port:  2323
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+select failed due to timeout, socket #: 0x90
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+Tearing down Test RM Resource Manager Interface
+	passing case:  	PASSED!
+
+EC Ephemeral TESTS:
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+Tearing down Resource Manager Interface
+	passing case:  	PASSED!

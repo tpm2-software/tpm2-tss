@@ -1,0 +1,85 @@
+#;**********************************************************************;
+#
+# Copyright (c) 2015, Intel Corporation
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without 
+# modification, are permitted provided that the following conditions are met:
+# 
+# 1. Redistributions of source code must retain the above copyright notice, 
+# this list of conditions and the following disclaimer.
+# 
+# 2. Redistributions in binary form must reproduce the above copyright notice, 
+# this list of conditions and the following disclaimer in the documentation 
+# and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+# THE POSSIBILITY OF SUCH DAMAGE.
+#;**********************************************************************;
+ 
+CC = gcc
+CFLAGS_DEBUG = -O0 -Wall -Werror -ggdb3
+CFLAGS_RELEASE = -Os -Wall -Werror
+ML = as
+LINK = ld
+
+INCLUDE = -I./include 
+
+LIB_DIR = ./lib
+BASE_DIR = ./
+
+.DEFAULT_GOAL := All
+
+SYS_API_DEBUG_OBJECTS := $(shell ls sysapi/*.c | sed 's/sysapi/lib\/debug/' | sed 's/\.c$$/\.o /' )
+SYS_API_UTIL_DEBUG_OBJECTS := $(shell ls sysapi_util/*c | sed 's/sysapi_util/lib\/debug/' | sed 's/\.c$$/\.o /' )
+SYS_API_RELEASE_OBJECTS := $(shell ls sysapi/*.c | sed 's/sysapi/lib\/release/' | sed 's/\.c$$/\.o /' )
+SYS_API_UTIL_RELEASE_OBJECTS := $(shell ls sysapi_util/*c | sed 's/sysapi_util/lib\/release/' | sed 's/\.c$$/\.o /' )
+SYS_API_INCLUDES := $(shell ls include/*.h )
+    
+All:  debug release
+
+debug: DIRS $(LIB_DIR)/debug/libtpm.a	
+
+release: DIRS $(LIB_DIR)/release/libtpm.a	
+
+DIRS:
+	-@mkdir lib 2> /dev/null
+	-@mkdir lib/debug 2> /dev/null
+	-@mkdir lib/release 2> /dev/null
+
+$(LIB_DIR)/debug/libtpm.a: $(SYS_API_DEBUG_OBJECTS) $(SYS_API_UTIL_DEBUG_OBJECTS) makefile.linux
+	echo *** sysapi_objs: $(SYS_API_DEBUG_OBJECTS)
+	echo *** sysapi_util_objs: $(SYS_API_UTIL_DEBUG_OBJECTS)
+	echo *** sysapi_includes: $(SYS_API_INCLUDES)
+	ar -qvc $@ $(SYS_API_DEBUG_OBJECTS) $(SYS_API_UTIL_DEBUG_OBJECTS)
+
+$(LIB_DIR)/release/libtpm.a: $(SYS_API_RELEASE_OBJECTS) $(SYS_API_UTIL_RELEASE_OBJECTS) makefile.linux
+	echo *** sysapi_objs: $(SYS_API_RELEASE_OBJECTS)
+	echo *** sysapi_util_objs: $(SYS_API_UTIL_RELEASE_OBJECTS)
+	echo *** sysapi_includes: $(SYS_API_INCLUDES)
+	ar -qvc $@ $(SYS_API_RELEASE_OBJECTS) $(SYS_API_UTIL_RELEASE_OBJECTS)
+
+lib/debug/%.o: sysapi/%.c makefile.linux $(SYS_API_INCLUDES) 
+	$(CC) $(CFLAGS_DEBUG) $(INCLUDE) -c $< -o $@
+
+lib/debug/%.o: sysapi_util/%.c makefile.linux $(SYS_API_INCLUDES) 
+	$(CC) $(CFLAGS_DEBUG) $(INCLUDE) -c $< -o $@
+
+lib/release/%.o: sysapi/%.c makefile.linux $(SYS_API_INCLUDES) 
+	$(CC) $(CFLAGS_RELEASE) $(INCLUDE) -c $< -o $@
+
+lib/release/%.o: sysapi_util/%.c makefile.linux $(SYS_API_INCLUDES) 
+	$(CC) $(CFLAGS_RELEASE) $(INCLUDE) -c $< -o $@
+
+.PHONY : clean
+clean:
+	@rm -rf $(LIB_DIR)
