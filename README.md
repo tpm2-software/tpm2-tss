@@ -3,9 +3,9 @@
 This stack consists of the following layers from top to bottom:
 * _Feature API (FAPI):  specification in progress and unimplemented_
 * _Enhanced System API (ESAPI):  specification in progress and unimplemented_
-* System API (SAPI) 1.0 specification public, 0.97 implementation complete
+* System API (SAPI) 1.0 [specification public] (http://www.trustedcomputinggroup.org/resources/tss_system_level_api_and_tpm_command_transmission_interface_specification), 0.97 implementation complete
 * TPM Command Transmission Interface (TCTI):  Used by SAPI to communicate with next lower layer (either the TAB/RM or TPM 2.0 device driver)
-* Trusted Access Broker/Resource Manager (TAB/RM):  
+* Trusted Access Broker/Resource Manager (TAB/RM):  [0.91 specification](http://www.trustedcomputinggroup.org/resources/tss_tab_and_resource_manager) public, implementation complete
 * TCTI:  this send TCTI layer is used to communicate with the TPM 2.0 driver.
 
 Since the FAPI and ESAPI haven't been implemented yet, this repository only contains the SAPI and layers below it, plus a test application for excercising the SAPI.
@@ -14,4 +14,4 @@ Since the FAPI and ESAPI haven't been implemented yet, this repository only cont
 
 **For release details, review the TPM 2.0 library release notes.pdf document.**
 
-**TPM 2.0 specifications can be found at [Trusted Computing Group](http://www.trustedcomputinggroup.org/)**
+**TPM 2.0 specifications can be found at [Trusted Computing Group](http://www.trustedcomputinggroup.org/).**
