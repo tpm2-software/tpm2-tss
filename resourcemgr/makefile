@@ -1,0 +1,95 @@
+#;**********************************************************************;
+#
+# Copyright (c) 2015, Intel Corporation
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without 
+# modification, are permitted provided that the following conditions are met:
+# 
+# 1. Redistributions of source code must retain the above copyright notice, 
+# this list of conditions and the following disclaimer.
+# 
+# 2. Redistributions in binary form must reproduce the above copyright notice, 
+# this list of conditions and the following disclaimer in the documentation 
+# and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+# THE POSSIBILITY OF SUCH DAMAGE.
+#;**********************************************************************;
+
+RESOURCE_MGR_OBJS := $(shell ls ./*.c | sed 's/\./$(TARGET_TYPE)/' | sed 's/\.c$$/\.o /' )
+RESOURCE_MGR_HEADERS := $(shell ls ./*.h )
+TPMSOCKETS_OBJS := $(shell ls ../tcti/tpmsockets/*.cpp | sed 's/\.\.\/tcti\/tpmsockets/$(TARGET_TYPE)/' | sed 's/\.cpp$$/\.o /' )
+TPMSOCKETS_HEADERS := $(shell ls ../tcti/tpmsockets/*.h )
+LOCALTPM_OBJS := $(shell ls ../tcti/localtpm/*.c | sed 's/\.\.\/tcti\/localtpm/$(TARGET_TYPE)/' | sed 's/\.c$$/\.o /' )
+LOCALTPM_HEADERS := $(shell ls ../tcti/localtpm/*.h )
+COMMON_OBJS := $(shell ls ../common/*.c | sed 's/\.\.\/common/$(TARGET_TYPE)/' | sed 's/\.c/\.o /' )
+COMMON_HEADERS := $(shell ls ../common/*.h )
+SYSAPI_HEADERS := $(shell ls ../sysapi/include/*.h )
+
+TPMCLIENT_HEADERS = tpmclient.h 
+
+OBJS = $(RESOURCE_MGR_OBJS) $(TPMSOCKETS_OBJS) $(LOCALTPM_OBJS) $(COMMON_OBJS) 
+
+CC = gcc
+CPLUS = g++
+
+debug_CFLAGS = -O0 -ggdb3 -Wall -Werror
+release_CFLAGS = -Os -Wall -Werror
+debug_CPLUSFLAGS = -O0 -ggdb3 -fno-operator-names -fpermissive -Wall -Werror
+release_CPLUSFLAGS = -Os -fno-operator-names -fpermissive -Wall -Werror
+
+INCLUDE_DIRS = -I../sysapi/include -I../common -I../tcti/tpmsockets -I../tcti/localtpm -I. -I../test/tpmclient
+LIBS = ../sysapi/lib/$(TARGET_TYPE)/libtpm.a
+
+CFLAGS = $($(TARGET_TYPE)_CFLAGS) $(INCLUDE_DIRS)
+CPLUSFLAGS = $($(TARGET_TYPE)_CPLUSFLAGS) $(INCLUDE_DIRS)
+
+.PHONY: DIRS tpmlib_debug tpmlib_release all debug release 
+
+all:  debug release 
+
+debug: tpmlib_debug
+	$(MAKE) -f makefile debug/resourcemgr TARGET_TYPE=debug
+
+release: tpmlib_release
+	$(MAKE) -f makefile release/resourcemgr TARGET_TYPE=release
+
+DIRS:
+	-@mkdir $(TARGET_TYPE) 2> /dev/null
+
+tpmlib_debug: 
+	@$(MAKE) -C ../sysapi -f makefile debug
+
+tpmlib_release: 
+	@$(MAKE) -C ../sysapi -f makefile release
+
+$(TARGET_TYPE)/resourcemgr: DIRS $(OBJS) $(LIBS) makefile 
+	$(CC) $(CFLAGS) $(RESMGR_INCLUDES) -pthread -o $(TARGET_TYPE)/resourcemgr $(OBJS) $(LIBS)
+
+$(TARGET_TYPE)/%.o: ../resourcemgr/%.c $(RESOURCE_MGR_HEADERS) $(COMMON_HEADERS) $(TPMSOCKETS_HEADERS) $(LOCALTPM_HEADERS) makefile $(SYSAPI_HEADERS)
+	$(CC) $(CFLAGS) $(INCLUDE_DIRS) -c $< -o $@
+
+$(TARGET_TYPE)/%.o: ../common/%.c $(COMMON_HEADERS) makefile $(SYSAPI_HEADERS)
+	$(CC) $(CFLAGS) $(INCLUDE_DIRS) -c $< -o $@
+
+$(TARGET_TYPE)/%.o: ../tcti/tpmsockets/%.cpp $(TPMSOCKETS_HEADERS) makefile $(SYSAPI_HEADERS)
+	$(CPLUS) $(CPLUSFLAGS) $(INCLUDE_DIRS) -c $< -o $@
+
+$(TARGET_TYPE)/%.o: ../tcti/localtpm/%.c $(LOCALTPM_HEADERS) makefile $(SYSAPI_HEADERS)
+	$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -c $< -o $@
+
+clean:
+	@rm debug -rf
+	@rm release -rf
+	@$(MAKE) -C ../sysapi -f makefile clean
+

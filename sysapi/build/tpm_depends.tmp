@@ -1,0 +1,882 @@
+ALL_DEPS= \
+ include\basetypes.h \
+ include\endianConv.h \
+ include\implementation.h \
+ include\tpm20.h \
+ include\tpmb.h \
+ include\tss2_common.h \
+ include\tss2_sys.h \
+ include\tss2_sysapi_util.h \
+ include\tss2_sys_api_marshalUnmarshal.h \
+ include\tss2_sys_api_part3.h \
+ include\tss2_tcti.h \
+ include\tss2_tcti_util.h \
+ include\tss2_tpm2_types.h \
+ 
+.\lib\debug\authorizations.obj: .\sysapi\authorizations.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\authorizations.c  
+ 
+.\lib\debug\ContextManagement.obj: .\sysapi\ContextManagement.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\ContextManagement.c  
+ 
+.\lib\debug\DecryptParam.obj: .\sysapi\DecryptParam.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\DecryptParam.c  
+ 
+.\lib\debug\EncryptParam.obj: .\sysapi\EncryptParam.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\EncryptParam.c  
+ 
+.\lib\debug\execute.obj: .\sysapi\execute.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\execute.c  
+ 
+.\lib\debug\Finalize.obj: .\sysapi\Finalize.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Finalize.c  
+ 
+.\lib\debug\GetCommandCode.obj: .\sysapi\GetCommandCode.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\GetCommandCode.c  
+ 
+.\lib\debug\GetCpBuffer.obj: .\sysapi\GetCpBuffer.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\GetCpBuffer.c  
+ 
+.\lib\debug\GetRpBuffer.obj: .\sysapi\GetRpBuffer.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\GetRpBuffer.c  
+ 
+.\lib\debug\GetTctiContext.obj: .\sysapi\GetTctiContext.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\GetTctiContext.c  
+ 
+.\lib\debug\Tss2_Sys_ActivateCredential.obj: .\sysapi\Tss2_Sys_ActivateCredential.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_ActivateCredential.c  
+ 
+.\lib\debug\Tss2_Sys_Certify.obj: .\sysapi\Tss2_Sys_Certify.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_Certify.c  
+ 
+.\lib\debug\Tss2_Sys_CertifyCreation.obj: .\sysapi\Tss2_Sys_CertifyCreation.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_CertifyCreation.c  
+ 
+.\lib\debug\Tss2_Sys_ChangeEPS.obj: .\sysapi\Tss2_Sys_ChangeEPS.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_ChangeEPS.c  
+ 
+.\lib\debug\Tss2_Sys_ChangePPS.obj: .\sysapi\Tss2_Sys_ChangePPS.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_ChangePPS.c  
+ 
+.\lib\debug\Tss2_Sys_Clear.obj: .\sysapi\Tss2_Sys_Clear.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_Clear.c  
+ 
+.\lib\debug\Tss2_Sys_ClearControl.obj: .\sysapi\Tss2_Sys_ClearControl.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_ClearControl.c  
+ 
+.\lib\debug\Tss2_Sys_ClockRateAdjust.obj: .\sysapi\Tss2_Sys_ClockRateAdjust.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_ClockRateAdjust.c  
+ 
+.\lib\debug\Tss2_Sys_ClockSet.obj: .\sysapi\Tss2_Sys_ClockSet.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_ClockSet.c  
+ 
+.\lib\debug\Tss2_Sys_Commit.obj: .\sysapi\Tss2_Sys_Commit.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_Commit.c  
+ 
+.\lib\debug\Tss2_Sys_ContextLoad.obj: .\sysapi\Tss2_Sys_ContextLoad.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_ContextLoad.c  
+ 
+.\lib\debug\Tss2_Sys_ContextSave.obj: .\sysapi\Tss2_Sys_ContextSave.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_ContextSave.c  
+ 
+.\lib\debug\Tss2_Sys_Create.obj: .\sysapi\Tss2_Sys_Create.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_Create.c  
+ 
+.\lib\debug\Tss2_Sys_CreatePrimary.obj: .\sysapi\Tss2_Sys_CreatePrimary.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_CreatePrimary.c  
+ 
+.\lib\debug\Tss2_Sys_DictionaryAttackLockReset.obj: .\sysapi\Tss2_Sys_DictionaryAttackLockReset.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_DictionaryAttackLockReset.c  
+ 
+.\lib\debug\Tss2_Sys_DictionaryAttackParameters.obj: .\sysapi\Tss2_Sys_DictionaryAttackParameters.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_DictionaryAttackParameters.c  
+ 
+.\lib\debug\Tss2_Sys_Duplicate.obj: .\sysapi\Tss2_Sys_Duplicate.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_Duplicate.c  
+ 
+.\lib\debug\Tss2_Sys_ECC_Parameters.obj: .\sysapi\Tss2_Sys_ECC_Parameters.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_ECC_Parameters.c  
+ 
+.\lib\debug\Tss2_Sys_ECDH_KeyGen.obj: .\sysapi\Tss2_Sys_ECDH_KeyGen.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_ECDH_KeyGen.c  
+ 
+.\lib\debug\Tss2_Sys_ECDH_ZGen.obj: .\sysapi\Tss2_Sys_ECDH_ZGen.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_ECDH_ZGen.c  
+ 
+.\lib\debug\Tss2_Sys_EC_Ephemeral.obj: .\sysapi\Tss2_Sys_EC_Ephemeral.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_EC_Ephemeral.c  
+ 
+.\lib\debug\Tss2_Sys_EncryptDecrypt.obj: .\sysapi\Tss2_Sys_EncryptDecrypt.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_EncryptDecrypt.c  
+ 
+.\lib\debug\Tss2_Sys_EventSequenceComplete.obj: .\sysapi\Tss2_Sys_EventSequenceComplete.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_EventSequenceComplete.c  
+ 
+.\lib\debug\Tss2_Sys_EvictControl.obj: .\sysapi\Tss2_Sys_EvictControl.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_EvictControl.c  
+ 
+.\lib\debug\Tss2_Sys_FieldUpgradeData.obj: .\sysapi\Tss2_Sys_FieldUpgradeData.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_FieldUpgradeData.c  
+ 
+.\lib\debug\Tss2_Sys_FieldUpgradeStart.obj: .\sysapi\Tss2_Sys_FieldUpgradeStart.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_FieldUpgradeStart.c  
+ 
+.\lib\debug\Tss2_Sys_FirmwareRead.obj: .\sysapi\Tss2_Sys_FirmwareRead.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_FirmwareRead.c  
+ 
+.\lib\debug\Tss2_Sys_FlushContext.obj: .\sysapi\Tss2_Sys_FlushContext.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_FlushContext.c  
+ 
+.\lib\debug\Tss2_Sys_GetCapability.obj: .\sysapi\Tss2_Sys_GetCapability.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_GetCapability.c  
+ 
+.\lib\debug\Tss2_Sys_GetCommandAuditDigest.obj: .\sysapi\Tss2_Sys_GetCommandAuditDigest.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_GetCommandAuditDigest.c  
+ 
+.\lib\debug\Tss2_Sys_GetRandom.obj: .\sysapi\Tss2_Sys_GetRandom.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_GetRandom.c  
+ 
+.\lib\debug\Tss2_Sys_GetSessionAuditDigest.obj: .\sysapi\Tss2_Sys_GetSessionAuditDigest.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_GetSessionAuditDigest.c  
+ 
+.\lib\debug\Tss2_Sys_GetTestResult.obj: .\sysapi\Tss2_Sys_GetTestResult.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_GetTestResult.c  
+ 
+.\lib\debug\Tss2_Sys_GetTime.obj: .\sysapi\Tss2_Sys_GetTime.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_GetTime.c  
+ 
+.\lib\debug\Tss2_Sys_Hash.obj: .\sysapi\Tss2_Sys_Hash.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_Hash.c  
+ 
+.\lib\debug\Tss2_Sys_HashSequenceStart.obj: .\sysapi\Tss2_Sys_HashSequenceStart.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_HashSequenceStart.c  
+ 
+.\lib\debug\Tss2_Sys_HierarchyChangeAuth.obj: .\sysapi\Tss2_Sys_HierarchyChangeAuth.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_HierarchyChangeAuth.c  
+ 
+.\lib\debug\Tss2_Sys_HierarchyControl.obj: .\sysapi\Tss2_Sys_HierarchyControl.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_HierarchyControl.c  
+ 
+.\lib\debug\Tss2_Sys_HMAC.obj: .\sysapi\Tss2_Sys_HMAC.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_HMAC.c  
+ 
+.\lib\debug\Tss2_Sys_HMAC_Start.obj: .\sysapi\Tss2_Sys_HMAC_Start.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_HMAC_Start.c  
+ 
+.\lib\debug\Tss2_Sys_Import.obj: .\sysapi\Tss2_Sys_Import.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_Import.c  
+ 
+.\lib\debug\Tss2_Sys_IncrementalSelfTest.obj: .\sysapi\Tss2_Sys_IncrementalSelfTest.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_IncrementalSelfTest.c  
+ 
+.\lib\debug\Tss2_Sys_Load.obj: .\sysapi\Tss2_Sys_Load.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_Load.c  
+ 
+.\lib\debug\Tss2_Sys_LoadExternal.obj: .\sysapi\Tss2_Sys_LoadExternal.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_LoadExternal.c  
+ 
+.\lib\debug\Tss2_Sys_MakeCredential.obj: .\sysapi\Tss2_Sys_MakeCredential.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_MakeCredential.c  
+ 
+.\lib\debug\Tss2_Sys_NV_Certify.obj: .\sysapi\Tss2_Sys_NV_Certify.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_NV_Certify.c  
+ 
+.\lib\debug\Tss2_Sys_NV_ChangeAuth.obj: .\sysapi\Tss2_Sys_NV_ChangeAuth.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_NV_ChangeAuth.c  
+ 
+.\lib\debug\Tss2_Sys_NV_DefineSpace.obj: .\sysapi\Tss2_Sys_NV_DefineSpace.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_NV_DefineSpace.c  
+ 
+.\lib\debug\Tss2_Sys_NV_Extend.obj: .\sysapi\Tss2_Sys_NV_Extend.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_NV_Extend.c  
+ 
+.\lib\debug\Tss2_Sys_NV_GlobalWriteLock.obj: .\sysapi\Tss2_Sys_NV_GlobalWriteLock.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_NV_GlobalWriteLock.c  
+ 
+.\lib\debug\Tss2_Sys_NV_Increment.obj: .\sysapi\Tss2_Sys_NV_Increment.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_NV_Increment.c  
+ 
+.\lib\debug\Tss2_Sys_NV_Read.obj: .\sysapi\Tss2_Sys_NV_Read.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_NV_Read.c  
+ 
+.\lib\debug\Tss2_Sys_NV_ReadLock.obj: .\sysapi\Tss2_Sys_NV_ReadLock.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_NV_ReadLock.c  
+ 
+.\lib\debug\Tss2_Sys_NV_ReadPublic.obj: .\sysapi\Tss2_Sys_NV_ReadPublic.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_NV_ReadPublic.c  
+ 
+.\lib\debug\Tss2_Sys_NV_SetBits.obj: .\sysapi\Tss2_Sys_NV_SetBits.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_NV_SetBits.c  
+ 
+.\lib\debug\Tss2_Sys_NV_UndefineSpace.obj: .\sysapi\Tss2_Sys_NV_UndefineSpace.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_NV_UndefineSpace.c  
+ 
+.\lib\debug\Tss2_Sys_NV_UndefineSpaceSpecial.obj: .\sysapi\Tss2_Sys_NV_UndefineSpaceSpecial.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_NV_UndefineSpaceSpecial.c  
+ 
+.\lib\debug\Tss2_Sys_NV_Write.obj: .\sysapi\Tss2_Sys_NV_Write.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_NV_Write.c  
+ 
+.\lib\debug\Tss2_Sys_NV_WriteLock.obj: .\sysapi\Tss2_Sys_NV_WriteLock.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_NV_WriteLock.c  
+ 
+.\lib\debug\Tss2_Sys_ObjectChangeAuth.obj: .\sysapi\Tss2_Sys_ObjectChangeAuth.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_ObjectChangeAuth.c  
+ 
+.\lib\debug\Tss2_Sys_PCR_Allocate.obj: .\sysapi\Tss2_Sys_PCR_Allocate.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PCR_Allocate.c  
+ 
+.\lib\debug\Tss2_Sys_PCR_Event.obj: .\sysapi\Tss2_Sys_PCR_Event.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PCR_Event.c  
+ 
+.\lib\debug\Tss2_Sys_PCR_Extend.obj: .\sysapi\Tss2_Sys_PCR_Extend.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PCR_Extend.c  
+ 
+.\lib\debug\Tss2_Sys_PCR_Read.obj: .\sysapi\Tss2_Sys_PCR_Read.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PCR_Read.c  
+ 
+.\lib\debug\Tss2_Sys_PCR_Reset.obj: .\sysapi\Tss2_Sys_PCR_Reset.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PCR_Reset.c  
+ 
+.\lib\debug\Tss2_Sys_PCR_SetAuthPolicy.obj: .\sysapi\Tss2_Sys_PCR_SetAuthPolicy.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PCR_SetAuthPolicy.c  
+ 
+.\lib\debug\Tss2_Sys_PCR_SetAuthValue.obj: .\sysapi\Tss2_Sys_PCR_SetAuthValue.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PCR_SetAuthValue.c  
+ 
+.\lib\debug\Tss2_Sys_PolicyAuthorize.obj: .\sysapi\Tss2_Sys_PolicyAuthorize.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PolicyAuthorize.c  
+ 
+.\lib\debug\Tss2_Sys_PolicyAuthValue.obj: .\sysapi\Tss2_Sys_PolicyAuthValue.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PolicyAuthValue.c  
+ 
+.\lib\debug\Tss2_Sys_PolicyCommandCode.obj: .\sysapi\Tss2_Sys_PolicyCommandCode.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PolicyCommandCode.c  
+ 
+.\lib\debug\Tss2_Sys_PolicyCounterTimer.obj: .\sysapi\Tss2_Sys_PolicyCounterTimer.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PolicyCounterTimer.c  
+ 
+.\lib\debug\Tss2_Sys_PolicyCpHash.obj: .\sysapi\Tss2_Sys_PolicyCpHash.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PolicyCpHash.c  
+ 
+.\lib\debug\Tss2_Sys_PolicyDuplicationSelect.obj: .\sysapi\Tss2_Sys_PolicyDuplicationSelect.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PolicyDuplicationSelect.c  
+ 
+.\lib\debug\Tss2_Sys_PolicyGetDigest.obj: .\sysapi\Tss2_Sys_PolicyGetDigest.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PolicyGetDigest.c  
+ 
+.\lib\debug\Tss2_Sys_PolicyLocality.obj: .\sysapi\Tss2_Sys_PolicyLocality.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PolicyLocality.c  
+ 
+.\lib\debug\Tss2_Sys_PolicyNameHash.obj: .\sysapi\Tss2_Sys_PolicyNameHash.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PolicyNameHash.c  
+ 
+.\lib\debug\Tss2_Sys_PolicyNV.obj: .\sysapi\Tss2_Sys_PolicyNV.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PolicyNV.c  
+ 
+.\lib\debug\Tss2_Sys_PolicyNVWritten.obj: .\sysapi\Tss2_Sys_PolicyNVWritten.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PolicyNVWritten.c  
+ 
+.\lib\debug\Tss2_Sys_PolicyOR.obj: .\sysapi\Tss2_Sys_PolicyOR.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PolicyOR.c  
+ 
+.\lib\debug\Tss2_Sys_PolicyPassword.obj: .\sysapi\Tss2_Sys_PolicyPassword.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PolicyPassword.c  
+ 
+.\lib\debug\Tss2_Sys_PolicyPCR.obj: .\sysapi\Tss2_Sys_PolicyPCR.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PolicyPCR.c  
+ 
+.\lib\debug\Tss2_Sys_PolicyPhysicalPresence.obj: .\sysapi\Tss2_Sys_PolicyPhysicalPresence.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PolicyPhysicalPresence.c  
+ 
+.\lib\debug\Tss2_Sys_PolicyRestart.obj: .\sysapi\Tss2_Sys_PolicyRestart.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PolicyRestart.c  
+ 
+.\lib\debug\Tss2_Sys_PolicySecret.obj: .\sysapi\Tss2_Sys_PolicySecret.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PolicySecret.c  
+ 
+.\lib\debug\Tss2_Sys_PolicySigned.obj: .\sysapi\Tss2_Sys_PolicySigned.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PolicySigned.c  
+ 
+.\lib\debug\Tss2_Sys_PolicyTicket.obj: .\sysapi\Tss2_Sys_PolicyTicket.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PolicyTicket.c  
+ 
+.\lib\debug\Tss2_Sys_PP_Commands.obj: .\sysapi\Tss2_Sys_PP_Commands.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_PP_Commands.c  
+ 
+.\lib\debug\Tss2_Sys_Quote.obj: .\sysapi\Tss2_Sys_Quote.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_Quote.c  
+ 
+.\lib\debug\Tss2_Sys_ReadClock.obj: .\sysapi\Tss2_Sys_ReadClock.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_ReadClock.c  
+ 
+.\lib\debug\Tss2_Sys_ReadPublic.obj: .\sysapi\Tss2_Sys_ReadPublic.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_ReadPublic.c  
+ 
+.\lib\debug\Tss2_Sys_Rewrap.obj: .\sysapi\Tss2_Sys_Rewrap.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_Rewrap.c  
+ 
+.\lib\debug\Tss2_Sys_RSA_Decrypt.obj: .\sysapi\Tss2_Sys_RSA_Decrypt.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_RSA_Decrypt.c  
+ 
+.\lib\debug\Tss2_Sys_RSA_Encrypt.obj: .\sysapi\Tss2_Sys_RSA_Encrypt.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_RSA_Encrypt.c  
+ 
+.\lib\debug\Tss2_Sys_SelfTest.obj: .\sysapi\Tss2_Sys_SelfTest.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_SelfTest.c  
+ 
+.\lib\debug\Tss2_Sys_SequenceComplete.obj: .\sysapi\Tss2_Sys_SequenceComplete.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_SequenceComplete.c  
+ 
+.\lib\debug\Tss2_Sys_SequenceUpdate.obj: .\sysapi\Tss2_Sys_SequenceUpdate.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_SequenceUpdate.c  
+ 
+.\lib\debug\Tss2_Sys_SetAlgorithmSet.obj: .\sysapi\Tss2_Sys_SetAlgorithmSet.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_SetAlgorithmSet.c  
+ 
+.\lib\debug\Tss2_Sys_SetCommandCodeAuditStatus.obj: .\sysapi\Tss2_Sys_SetCommandCodeAuditStatus.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_SetCommandCodeAuditStatus.c  
+ 
+.\lib\debug\Tss2_Sys_SetPrimaryPolicy.obj: .\sysapi\Tss2_Sys_SetPrimaryPolicy.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_SetPrimaryPolicy.c  
+ 
+.\lib\debug\Tss2_Sys_Shutdown.obj: .\sysapi\Tss2_Sys_Shutdown.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_Shutdown.c  
+ 
+.\lib\debug\Tss2_Sys_Sign.obj: .\sysapi\Tss2_Sys_Sign.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_Sign.c  
+ 
+.\lib\debug\Tss2_Sys_StartAuthSession.obj: .\sysapi\Tss2_Sys_StartAuthSession.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_StartAuthSession.c  
+ 
+.\lib\debug\Tss2_Sys_Startup.obj: .\sysapi\Tss2_Sys_Startup.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_Startup.c  
+ 
+.\lib\debug\Tss2_Sys_StirRandom.obj: .\sysapi\Tss2_Sys_StirRandom.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_StirRandom.c  
+ 
+.\lib\debug\Tss2_Sys_TestParms.obj: .\sysapi\Tss2_Sys_TestParms.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_TestParms.c  
+ 
+.\lib\debug\Tss2_Sys_Unseal.obj: .\sysapi\Tss2_Sys_Unseal.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_Unseal.c  
+ 
+.\lib\debug\Tss2_Sys_Vendor_TCG_Test.obj: .\sysapi\Tss2_Sys_Vendor_TCG_Test.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_Vendor_TCG_Test.c  
+ 
+.\lib\debug\Tss2_Sys_VerifySignature.obj: .\sysapi\Tss2_Sys_VerifySignature.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_VerifySignature.c  
+ 
+.\lib\debug\Tss2_Sys_ZGen_2Phase.obj: .\sysapi\Tss2_Sys_ZGen_2Phase.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi\Tss2_Sys_ZGen_2Phase.c  
+ 
+.\lib\debug\changeEndian.obj: .\sysapi_util\changeEndian.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\changeEndian.c  
+ 
+.\lib\debug\checkoverflow.obj: .\sysapi_util\checkoverflow.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\checkoverflow.c  
+ 
+.\lib\debug\CommandUtil.obj: .\sysapi_util\CommandUtil.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\CommandUtil.c  
+ 
+.\lib\debug\CompareSizedByteBuffer.obj: .\sysapi_util\CompareSizedByteBuffer.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\CompareSizedByteBuffer.c  
+ 
+.\lib\debug\ConcatSizedByteBuffer.obj: .\sysapi_util\ConcatSizedByteBuffer.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\ConcatSizedByteBuffer.c  
+ 
+.\lib\debug\copymem.obj: .\sysapi_util\copymem.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\copymem.c  
+ 
+.\lib\debug\CopySessionData.obj: .\sysapi_util\CopySessionData.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\CopySessionData.c  
+ 
+.\lib\debug\debug.obj: .\sysapi_util\debug.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\debug.c  
+ 
+.\lib\debug\GetDigestSize.obj: .\sysapi_util\GetDigestSize.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\GetDigestSize.c  
+ 
+.\lib\debug\GetNumHandles.obj: .\sysapi_util\GetNumHandles.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\GetNumHandles.c  
+ 
+.\lib\debug\marshal_simple_tpm2b.obj: .\sysapi_util\marshal_simple_tpm2b.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\marshal_simple_tpm2b.c  
+ 
+.\lib\debug\Marshal_TPM2B_ECC_POINT.obj: .\sysapi_util\Marshal_TPM2B_ECC_POINT.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPM2B_ECC_POINT.c  
+ 
+.\lib\debug\Marshal_TPM2B_NV_PUBLIC.obj: .\sysapi_util\Marshal_TPM2B_NV_PUBLIC.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPM2B_NV_PUBLIC.c  
+ 
+.\lib\debug\Marshal_TPM2B_PUBLIC.obj: .\sysapi_util\Marshal_TPM2B_PUBLIC.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPM2B_PUBLIC.c  
+ 
+.\lib\debug\Marshal_TPM2B_SENSITIVE.obj: .\sysapi_util\Marshal_TPM2B_SENSITIVE.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPM2B_SENSITIVE.c  
+ 
+.\lib\debug\Marshal_TPM2B_SENSITIVE_CREATE.obj: .\sysapi_util\Marshal_TPM2B_SENSITIVE_CREATE.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPM2B_SENSITIVE_CREATE.c  
+ 
+.\lib\debug\Marshal_TPMA_ALGORITHM.obj: .\sysapi_util\Marshal_TPMA_ALGORITHM.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMA_ALGORITHM.c  
+ 
+.\lib\debug\Marshal_TPMA_LOCALITY.obj: .\sysapi_util\Marshal_TPMA_LOCALITY.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMA_LOCALITY.c  
+ 
+.\lib\debug\Marshal_TPMA_NV.obj: .\sysapi_util\Marshal_TPMA_NV.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMA_NV.c  
+ 
+.\lib\debug\Marshal_TPMA_OBJECT.obj: .\sysapi_util\Marshal_TPMA_OBJECT.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMA_OBJECT.c  
+ 
+.\lib\debug\Marshal_TPMA_SESSION.obj: .\sysapi_util\Marshal_TPMA_SESSION.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMA_SESSION.c  
+ 
+.\lib\debug\Marshal_TPML_ALG.obj: .\sysapi_util\Marshal_TPML_ALG.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPML_ALG.c  
+ 
+.\lib\debug\Marshal_TPML_CC.obj: .\sysapi_util\Marshal_TPML_CC.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPML_CC.c  
+ 
+.\lib\debug\Marshal_TPML_DIGEST.obj: .\sysapi_util\Marshal_TPML_DIGEST.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPML_DIGEST.c  
+ 
+.\lib\debug\Marshal_TPML_DIGEST_VALUES.obj: .\sysapi_util\Marshal_TPML_DIGEST_VALUES.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPML_DIGEST_VALUES.c  
+ 
+.\lib\debug\Marshal_TPML_PCR_SELECTION.obj: .\sysapi_util\Marshal_TPML_PCR_SELECTION.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPML_PCR_SELECTION.c  
+ 
+.\lib\debug\Marshal_TPMS_AUTH_COMMAND.obj: .\sysapi_util\Marshal_TPMS_AUTH_COMMAND.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_AUTH_COMMAND.c  
+ 
+.\lib\debug\Marshal_TPMS_CLOCK_INFO.obj: .\sysapi_util\Marshal_TPMS_CLOCK_INFO.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_CLOCK_INFO.c  
+ 
+.\lib\debug\Marshal_TPMS_CONTEXT.obj: .\sysapi_util\Marshal_TPMS_CONTEXT.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_CONTEXT.c  
+ 
+.\lib\debug\Marshal_TPMS_CONTEXT_DATA.obj: .\sysapi_util\Marshal_TPMS_CONTEXT_DATA.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_CONTEXT_DATA.c  
+ 
+.\lib\debug\Marshal_TPMS_ECC_PARMS.obj: .\sysapi_util\Marshal_TPMS_ECC_PARMS.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_ECC_PARMS.c  
+ 
+.\lib\debug\Marshal_TPMS_ECC_POINT.obj: .\sysapi_util\Marshal_TPMS_ECC_POINT.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_ECC_POINT.c  
+ 
+.\lib\debug\Marshal_TPMS_EMPTY.obj: .\sysapi_util\Marshal_TPMS_EMPTY.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_EMPTY.c  
+ 
+.\lib\debug\Marshal_TPMS_KEYEDHASH_PARMS.obj: .\sysapi_util\Marshal_TPMS_KEYEDHASH_PARMS.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_KEYEDHASH_PARMS.c  
+ 
+.\lib\debug\Marshal_TPMS_NV_PUBLIC.obj: .\sysapi_util\Marshal_TPMS_NV_PUBLIC.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_NV_PUBLIC.c  
+ 
+.\lib\debug\Marshal_TPMS_PCR_SELECT.obj: .\sysapi_util\Marshal_TPMS_PCR_SELECT.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_PCR_SELECT.c  
+ 
+.\lib\debug\Marshal_TPMS_PCR_SELECTION.obj: .\sysapi_util\Marshal_TPMS_PCR_SELECTION.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_PCR_SELECTION.c  
+ 
+.\lib\debug\Marshal_TPMS_RSA_PARMS.obj: .\sysapi_util\Marshal_TPMS_RSA_PARMS.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_RSA_PARMS.c  
+ 
+.\lib\debug\Marshal_TPMS_SCHEME_ECDAA.obj: .\sysapi_util\Marshal_TPMS_SCHEME_ECDAA.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_SCHEME_ECDAA.c  
+ 
+.\lib\debug\Marshal_TPMS_SCHEME_HASH.obj: .\sysapi_util\Marshal_TPMS_SCHEME_HASH.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_SCHEME_HASH.c  
+ 
+.\lib\debug\Marshal_TPMS_SCHEME_XOR.obj: .\sysapi_util\Marshal_TPMS_SCHEME_XOR.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_SCHEME_XOR.c  
+ 
+.\lib\debug\Marshal_TPMS_SENSITIVE_CREATE.obj: .\sysapi_util\Marshal_TPMS_SENSITIVE_CREATE.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_SENSITIVE_CREATE.c  
+ 
+.\lib\debug\Marshal_TPMS_SIGNATURE_ECC.obj: .\sysapi_util\Marshal_TPMS_SIGNATURE_ECC.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_SIGNATURE_ECC.c  
+ 
+.\lib\debug\Marshal_TPMS_SIGNATURE_RSA.obj: .\sysapi_util\Marshal_TPMS_SIGNATURE_RSA.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_SIGNATURE_RSA.c  
+ 
+.\lib\debug\Marshal_TPMS_SYMCIPHER_PARMS.obj: .\sysapi_util\Marshal_TPMS_SYMCIPHER_PARMS.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_SYMCIPHER_PARMS.c  
+ 
+.\lib\debug\Marshal_TPMS_TIME_INFO.obj: .\sysapi_util\Marshal_TPMS_TIME_INFO.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMS_TIME_INFO.c  
+ 
+.\lib\debug\Marshal_TPMT_ECC_SCHEME.obj: .\sysapi_util\Marshal_TPMT_ECC_SCHEME.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMT_ECC_SCHEME.c  
+ 
+.\lib\debug\Marshal_TPMT_HA.obj: .\sysapi_util\Marshal_TPMT_HA.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMT_HA.c  
+ 
+.\lib\debug\Marshal_TPMT_KDF_SCHEME.obj: .\sysapi_util\Marshal_TPMT_KDF_SCHEME.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMT_KDF_SCHEME.c  
+ 
+.\lib\debug\Marshal_TPMT_KEYEDHASH_SCHEME.obj: .\sysapi_util\Marshal_TPMT_KEYEDHASH_SCHEME.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMT_KEYEDHASH_SCHEME.c  
+ 
+.\lib\debug\Marshal_TPMT_PUBLIC.obj: .\sysapi_util\Marshal_TPMT_PUBLIC.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMT_PUBLIC.c  
+ 
+.\lib\debug\Marshal_TPMT_PUBLIC_PARMS.obj: .\sysapi_util\Marshal_TPMT_PUBLIC_PARMS.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMT_PUBLIC_PARMS.c  
+ 
+.\lib\debug\Marshal_TPMT_RSA_DECRYPT.obj: .\sysapi_util\Marshal_TPMT_RSA_DECRYPT.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMT_RSA_DECRYPT.c  
+ 
+.\lib\debug\Marshal_TPMT_RSA_SCHEME.obj: .\sysapi_util\Marshal_TPMT_RSA_SCHEME.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMT_RSA_SCHEME.c  
+ 
+.\lib\debug\Marshal_TPMT_SENSITIVE.obj: .\sysapi_util\Marshal_TPMT_SENSITIVE.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMT_SENSITIVE.c  
+ 
+.\lib\debug\Marshal_TPMT_SIGNATURE.obj: .\sysapi_util\Marshal_TPMT_SIGNATURE.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMT_SIGNATURE.c  
+ 
+.\lib\debug\Marshal_TPMT_SIG_SCHEME.obj: .\sysapi_util\Marshal_TPMT_SIG_SCHEME.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMT_SIG_SCHEME.c  
+ 
+.\lib\debug\Marshal_TPMT_SYM_DEF.obj: .\sysapi_util\Marshal_TPMT_SYM_DEF.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMT_SYM_DEF.c  
+ 
+.\lib\debug\Marshal_TPMT_SYM_DEF_OBJECT.obj: .\sysapi_util\Marshal_TPMT_SYM_DEF_OBJECT.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMT_SYM_DEF_OBJECT.c  
+ 
+.\lib\debug\Marshal_TPMT_TK_AUTH.obj: .\sysapi_util\Marshal_TPMT_TK_AUTH.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMT_TK_AUTH.c  
+ 
+.\lib\debug\Marshal_TPMT_TK_CREATION.obj: .\sysapi_util\Marshal_TPMT_TK_CREATION.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMT_TK_CREATION.c  
+ 
+.\lib\debug\Marshal_TPMT_TK_HASHCHECK.obj: .\sysapi_util\Marshal_TPMT_TK_HASHCHECK.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMT_TK_HASHCHECK.c  
+ 
+.\lib\debug\Marshal_TPMT_TK_VERIFIED.obj: .\sysapi_util\Marshal_TPMT_TK_VERIFIED.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMT_TK_VERIFIED.c  
+ 
+.\lib\debug\Marshal_TPMU_ASYM_SCHEME.obj: .\sysapi_util\Marshal_TPMU_ASYM_SCHEME.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMU_ASYM_SCHEME.c  
+ 
+.\lib\debug\Marshal_TPMU_HA.obj: .\sysapi_util\Marshal_TPMU_HA.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMU_HA.c  
+ 
+.\lib\debug\Marshal_TPMU_KDF_SCHEME.obj: .\sysapi_util\Marshal_TPMU_KDF_SCHEME.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMU_KDF_SCHEME.c  
+ 
+.\lib\debug\Marshal_TPMU_PUBLIC_ID.obj: .\sysapi_util\Marshal_TPMU_PUBLIC_ID.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMU_PUBLIC_ID.c  
+ 
+.\lib\debug\Marshal_TPMU_PUBLIC_PARMS.obj: .\sysapi_util\Marshal_TPMU_PUBLIC_PARMS.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMU_PUBLIC_PARMS.c  
+ 
+.\lib\debug\Marshal_TPMU_SCHEME_KEYEDHASH.obj: .\sysapi_util\Marshal_TPMU_SCHEME_KEYEDHASH.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMU_SCHEME_KEYEDHASH.c  
+ 
+.\lib\debug\Marshal_TPMU_SENSITIVE_COMPOSITE.obj: .\sysapi_util\Marshal_TPMU_SENSITIVE_COMPOSITE.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMU_SENSITIVE_COMPOSITE.c  
+ 
+.\lib\debug\Marshal_TPMU_SIGNATURE.obj: .\sysapi_util\Marshal_TPMU_SIGNATURE.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMU_SIGNATURE.c  
+ 
+.\lib\debug\Marshal_TPMU_SIG_SCHEME.obj: .\sysapi_util\Marshal_TPMU_SIG_SCHEME.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMU_SIG_SCHEME.c  
+ 
+.\lib\debug\Marshal_TPMU_SYM_KEY_BITS.obj: .\sysapi_util\Marshal_TPMU_SYM_KEY_BITS.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMU_SYM_KEY_BITS.c  
+ 
+.\lib\debug\Marshal_TPMU_SYM_MODE.obj: .\sysapi_util\Marshal_TPMU_SYM_MODE.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Marshal_TPMU_SYM_MODE.c  
+ 
+.\lib\debug\marshal_uint16.obj: .\sysapi_util\marshal_uint16.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\marshal_uint16.c  
+ 
+.\lib\debug\marshal_uint32.obj: .\sysapi_util\marshal_uint32.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\marshal_uint32.c  
+ 
+.\lib\debug\marshal_uint64.obj: .\sysapi_util\marshal_uint64.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\marshal_uint64.c  
+ 
+.\lib\debug\marshal_uint8.obj: .\sysapi_util\marshal_uint8.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\marshal_uint8.c  
+ 
+.\lib\debug\unmarshal_simple_tpm2b.obj: .\sysapi_util\unmarshal_simple_tpm2b.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\unmarshal_simple_tpm2b.c  
+ 
+.\lib\debug\Unmarshal_TPM2B_ECC_POINT.obj: .\sysapi_util\Unmarshal_TPM2B_ECC_POINT.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPM2B_ECC_POINT.c  
+ 
+.\lib\debug\Unmarshal_TPM2B_NV_PUBLIC.obj: .\sysapi_util\Unmarshal_TPM2B_NV_PUBLIC.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPM2B_NV_PUBLIC.c  
+ 
+.\lib\debug\Unmarshal_TPM2B_PUBLIC.obj: .\sysapi_util\Unmarshal_TPM2B_PUBLIC.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPM2B_PUBLIC.c  
+ 
+.\lib\debug\Unmarshal_TPM2B_SENSITIVE.obj: .\sysapi_util\Unmarshal_TPM2B_SENSITIVE.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPM2B_SENSITIVE.c  
+ 
+.\lib\debug\Unmarshal_TPMA_ALGORITHM.obj: .\sysapi_util\Unmarshal_TPMA_ALGORITHM.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMA_ALGORITHM.c  
+ 
+.\lib\debug\Unmarshal_TPMA_CC.obj: .\sysapi_util\Unmarshal_TPMA_CC.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMA_CC.c  
+ 
+.\lib\debug\Unmarshal_TPMA_LOCALITY.obj: .\sysapi_util\Unmarshal_TPMA_LOCALITY.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMA_LOCALITY.c  
+ 
+.\lib\debug\Unmarshal_TPMA_NV.obj: .\sysapi_util\Unmarshal_TPMA_NV.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMA_NV.c  
+ 
+.\lib\debug\Unmarshal_TPMA_OBJECT.obj: .\sysapi_util\Unmarshal_TPMA_OBJECT.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMA_OBJECT.c  
+ 
+.\lib\debug\Unmarshal_TPMA_PERMANENT.obj: .\sysapi_util\Unmarshal_TPMA_PERMANENT.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMA_PERMANENT.c  
+ 
+.\lib\debug\Unmarshal_TPMA_SESSION.obj: .\sysapi_util\Unmarshal_TPMA_SESSION.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMA_SESSION.c  
+ 
+.\lib\debug\Unmarshal_TPMA_STARTUP_CLEAR.obj: .\sysapi_util\Unmarshal_TPMA_STARTUP_CLEAR.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMA_STARTUP_CLEAR.c  
+ 
+.\lib\debug\Unmarshal_TPML_ALG.obj: .\sysapi_util\Unmarshal_TPML_ALG.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPML_ALG.c  
+ 
+.\lib\debug\Unmarshal_TPML_ALG_PROPERTY.obj: .\sysapi_util\Unmarshal_TPML_ALG_PROPERTY.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPML_ALG_PROPERTY.c  
+ 
+.\lib\debug\Unmarshal_TPML_CC.obj: .\sysapi_util\Unmarshal_TPML_CC.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPML_CC.c  
+ 
+.\lib\debug\Unmarshal_TPML_CCA.obj: .\sysapi_util\Unmarshal_TPML_CCA.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPML_CCA.c  
+ 
+.\lib\debug\Unmarshal_TPML_DIGEST.obj: .\sysapi_util\Unmarshal_TPML_DIGEST.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPML_DIGEST.c  
+ 
+.\lib\debug\Unmarshal_TPML_DIGEST_VALUES.obj: .\sysapi_util\Unmarshal_TPML_DIGEST_VALUES.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPML_DIGEST_VALUES.c  
+ 
+.\lib\debug\Unmarshal_TPML_ECC_CURVE.obj: .\sysapi_util\Unmarshal_TPML_ECC_CURVE.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPML_ECC_CURVE.c  
+ 
+.\lib\debug\Unmarshal_TPML_HANDLE.obj: .\sysapi_util\Unmarshal_TPML_HANDLE.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPML_HANDLE.c  
+ 
+.\lib\debug\Unmarshal_TPML_PCR_SELECTION.obj: .\sysapi_util\Unmarshal_TPML_PCR_SELECTION.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPML_PCR_SELECTION.c  
+ 
+.\lib\debug\Unmarshal_TPML_TAGGED_PCR_PROPERTY.obj: .\sysapi_util\Unmarshal_TPML_TAGGED_PCR_PROPERTY.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPML_TAGGED_PCR_PROPERTY.c  
+ 
+.\lib\debug\Unmarshal_TPML_TAGGED_TPM_PROPERTY.obj: .\sysapi_util\Unmarshal_TPML_TAGGED_TPM_PROPERTY.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPML_TAGGED_TPM_PROPERTY.c  
+ 
+.\lib\debug\Unmarshal_TPMS_ALGORITHM_DESCRIPTION.obj: .\sysapi_util\Unmarshal_TPMS_ALGORITHM_DESCRIPTION.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_ALGORITHM_DESCRIPTION.c  
+ 
+.\lib\debug\Unmarshal_TPMS_ALGORITHM_DETAIL_ECC.obj: .\sysapi_util\Unmarshal_TPMS_ALGORITHM_DETAIL_ECC.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_ALGORITHM_DETAIL_ECC.c  
+ 
+.\lib\debug\Unmarshal_TPMS_ALG_PROPERTY.obj: .\sysapi_util\Unmarshal_TPMS_ALG_PROPERTY.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_ALG_PROPERTY.c  
+ 
+.\lib\debug\Unmarshal_TPMS_ATTEST.obj: .\sysapi_util\Unmarshal_TPMS_ATTEST.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_ATTEST.c  
+ 
+.\lib\debug\Unmarshal_TPMS_AUTH_RESPONSE.obj: .\sysapi_util\Unmarshal_TPMS_AUTH_RESPONSE.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_AUTH_RESPONSE.c  
+ 
+.\lib\debug\Unmarshal_TPMS_CAPABILITY_DATA.obj: .\sysapi_util\Unmarshal_TPMS_CAPABILITY_DATA.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_CAPABILITY_DATA.c  
+ 
+.\lib\debug\Unmarshal_TPMS_CERTIFY_INFO.obj: .\sysapi_util\Unmarshal_TPMS_CERTIFY_INFO.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_CERTIFY_INFO.c  
+ 
+.\lib\debug\Unmarshal_TPMS_CLOCK_INFO.obj: .\sysapi_util\Unmarshal_TPMS_CLOCK_INFO.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_CLOCK_INFO.c  
+ 
+.\lib\debug\Unmarshal_TPMS_COMMAND_AUDIT_INFO.obj: .\sysapi_util\Unmarshal_TPMS_COMMAND_AUDIT_INFO.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_COMMAND_AUDIT_INFO.c  
+ 
+.\lib\debug\Unmarshal_TPMS_CONTEXT.obj: .\sysapi_util\Unmarshal_TPMS_CONTEXT.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_CONTEXT.c  
+ 
+.\lib\debug\Unmarshal_TPMS_CONTEXT_DATA.obj: .\sysapi_util\Unmarshal_TPMS_CONTEXT_DATA.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_CONTEXT_DATA.c  
+ 
+.\lib\debug\Unmarshal_TPMS_CREATION_DATA.obj: .\sysapi_util\Unmarshal_TPMS_CREATION_DATA.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_CREATION_DATA.c  
+ 
+.\lib\debug\Unmarshal_TPMS_CREATION_INFO.obj: .\sysapi_util\Unmarshal_TPMS_CREATION_INFO.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_CREATION_INFO.c  
+ 
+.\lib\debug\Unmarshal_TPMS_ECC_PARMS.obj: .\sysapi_util\Unmarshal_TPMS_ECC_PARMS.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_ECC_PARMS.c  
+ 
+.\lib\debug\Unmarshal_TPMS_ECC_POINT.obj: .\sysapi_util\Unmarshal_TPMS_ECC_POINT.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_ECC_POINT.c  
+ 
+.\lib\debug\Unmarshal_TPMS_EMPTY.obj: .\sysapi_util\Unmarshal_TPMS_EMPTY.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_EMPTY.c  
+ 
+.\lib\debug\Unmarshal_TPMS_KEYEDHASH_PARMS.obj: .\sysapi_util\Unmarshal_TPMS_KEYEDHASH_PARMS.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_KEYEDHASH_PARMS.c  
+ 
+.\lib\debug\Unmarshal_TPMS_NV_CERTIFY_INFO.obj: .\sysapi_util\Unmarshal_TPMS_NV_CERTIFY_INFO.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_NV_CERTIFY_INFO.c  
+ 
+.\lib\debug\Unmarshal_TPMS_NV_PUBLIC.obj: .\sysapi_util\Unmarshal_TPMS_NV_PUBLIC.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_NV_PUBLIC.c  
+ 
+.\lib\debug\Unmarshal_TPMS_PCR_SELECT.obj: .\sysapi_util\Unmarshal_TPMS_PCR_SELECT.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_PCR_SELECT.c  
+ 
+.\lib\debug\Unmarshal_TPMS_PCR_SELECTION.obj: .\sysapi_util\Unmarshal_TPMS_PCR_SELECTION.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_PCR_SELECTION.c  
+ 
+.\lib\debug\Unmarshal_TPMS_QUOTE_INFO.obj: .\sysapi_util\Unmarshal_TPMS_QUOTE_INFO.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_QUOTE_INFO.c  
+ 
+.\lib\debug\Unmarshal_TPMS_RSA_PARMS.obj: .\sysapi_util\Unmarshal_TPMS_RSA_PARMS.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_RSA_PARMS.c  
+ 
+.\lib\debug\Unmarshal_TPMS_SCHEME_ECDAA.obj: .\sysapi_util\Unmarshal_TPMS_SCHEME_ECDAA.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_SCHEME_ECDAA.c  
+ 
+.\lib\debug\Unmarshal_TPMS_SCHEME_HASH.obj: .\sysapi_util\Unmarshal_TPMS_SCHEME_HASH.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_SCHEME_HASH.c  
+ 
+.\lib\debug\Unmarshal_TPMS_SCHEME_XOR.obj: .\sysapi_util\Unmarshal_TPMS_SCHEME_XOR.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_SCHEME_XOR.c  
+ 
+.\lib\debug\Unmarshal_TPMS_SESSION_AUDIT_INFO.obj: .\sysapi_util\Unmarshal_TPMS_SESSION_AUDIT_INFO.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_SESSION_AUDIT_INFO.c  
+ 
+.\lib\debug\Unmarshal_TPMS_SIGNATURE_ECC.obj: .\sysapi_util\Unmarshal_TPMS_SIGNATURE_ECC.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_SIGNATURE_ECC.c  
+ 
+.\lib\debug\Unmarshal_TPMS_SIGNATURE_RSA.obj: .\sysapi_util\Unmarshal_TPMS_SIGNATURE_RSA.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_SIGNATURE_RSA.c  
+ 
+.\lib\debug\Unmarshal_TPMS_SYMCIPHER_PARMS.obj: .\sysapi_util\Unmarshal_TPMS_SYMCIPHER_PARMS.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_SYMCIPHER_PARMS.c  
+ 
+.\lib\debug\Unmarshal_TPMS_TAGGED_PCR_SELECT.obj: .\sysapi_util\Unmarshal_TPMS_TAGGED_PCR_SELECT.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_TAGGED_PCR_SELECT.c  
+ 
+.\lib\debug\Unmarshal_TPMS_TAGGED_PROPERTY.obj: .\sysapi_util\Unmarshal_TPMS_TAGGED_PROPERTY.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_TAGGED_PROPERTY.c  
+ 
+.\lib\debug\Unmarshal_TPMS_TIME_ATTEST_INFO.obj: .\sysapi_util\Unmarshal_TPMS_TIME_ATTEST_INFO.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_TIME_ATTEST_INFO.c  
+ 
+.\lib\debug\Unmarshal_TPMS_TIME_INFO.obj: .\sysapi_util\Unmarshal_TPMS_TIME_INFO.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMS_TIME_INFO.c  
+ 
+.\lib\debug\Unmarshal_TPMT_ECC_SCHEME.obj: .\sysapi_util\Unmarshal_TPMT_ECC_SCHEME.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMT_ECC_SCHEME.c  
+ 
+.\lib\debug\Unmarshal_TPMT_HA.obj: .\sysapi_util\Unmarshal_TPMT_HA.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMT_HA.c  
+ 
+.\lib\debug\Unmarshal_TPMT_KDF_SCHEME.obj: .\sysapi_util\Unmarshal_TPMT_KDF_SCHEME.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMT_KDF_SCHEME.c  
+ 
+.\lib\debug\Unmarshal_TPMT_KEYEDHASH_SCHEME.obj: .\sysapi_util\Unmarshal_TPMT_KEYEDHASH_SCHEME.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMT_KEYEDHASH_SCHEME.c  
+ 
+.\lib\debug\Unmarshal_TPMT_PUBLIC.obj: .\sysapi_util\Unmarshal_TPMT_PUBLIC.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMT_PUBLIC.c  
+ 
+.\lib\debug\Unmarshal_TPMT_PUBLIC_PARMS.obj: .\sysapi_util\Unmarshal_TPMT_PUBLIC_PARMS.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMT_PUBLIC_PARMS.c  
+ 
+.\lib\debug\Unmarshal_TPMT_RSA_DECRYPT.obj: .\sysapi_util\Unmarshal_TPMT_RSA_DECRYPT.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMT_RSA_DECRYPT.c  
+ 
+.\lib\debug\Unmarshal_TPMT_RSA_SCHEME.obj: .\sysapi_util\Unmarshal_TPMT_RSA_SCHEME.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMT_RSA_SCHEME.c  
+ 
+.\lib\debug\Unmarshal_TPMT_SENSITIVE.obj: .\sysapi_util\Unmarshal_TPMT_SENSITIVE.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMT_SENSITIVE.c  
+ 
+.\lib\debug\Unmarshal_TPMT_SIGNATURE.obj: .\sysapi_util\Unmarshal_TPMT_SIGNATURE.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMT_SIGNATURE.c  
+ 
+.\lib\debug\Unmarshal_TPMT_SIG_SCHEME.obj: .\sysapi_util\Unmarshal_TPMT_SIG_SCHEME.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMT_SIG_SCHEME.c  
+ 
+.\lib\debug\Unmarshal_TPMT_SYM_DEF.obj: .\sysapi_util\Unmarshal_TPMT_SYM_DEF.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMT_SYM_DEF.c  
+ 
+.\lib\debug\Unmarshal_TPMT_SYM_DEF_OBJECT.obj: .\sysapi_util\Unmarshal_TPMT_SYM_DEF_OBJECT.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMT_SYM_DEF_OBJECT.c  
+ 
+.\lib\debug\Unmarshal_TPMT_TK_AUTH.obj: .\sysapi_util\Unmarshal_TPMT_TK_AUTH.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMT_TK_AUTH.c  
+ 
+.\lib\debug\Unmarshal_TPMT_TK_CREATION.obj: .\sysapi_util\Unmarshal_TPMT_TK_CREATION.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMT_TK_CREATION.c  
+ 
+.\lib\debug\Unmarshal_TPMT_TK_HASHCHECK.obj: .\sysapi_util\Unmarshal_TPMT_TK_HASHCHECK.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMT_TK_HASHCHECK.c  
+ 
+.\lib\debug\Unmarshal_TPMT_TK_VERIFIED.obj: .\sysapi_util\Unmarshal_TPMT_TK_VERIFIED.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMT_TK_VERIFIED.c  
+ 
+.\lib\debug\Unmarshal_TPMU_ASYM_SCHEME.obj: .\sysapi_util\Unmarshal_TPMU_ASYM_SCHEME.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMU_ASYM_SCHEME.c  
+ 
+.\lib\debug\Unmarshal_TPMU_ATTEST.obj: .\sysapi_util\Unmarshal_TPMU_ATTEST.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMU_ATTEST.c  
+ 
+.\lib\debug\Unmarshal_TPMU_CAPABILITIES.obj: .\sysapi_util\Unmarshal_TPMU_CAPABILITIES.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMU_CAPABILITIES.c  
+ 
+.\lib\debug\Unmarshal_TPMU_HA.obj: .\sysapi_util\Unmarshal_TPMU_HA.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMU_HA.c  
+ 
+.\lib\debug\Unmarshal_TPMU_KDF_SCHEME.obj: .\sysapi_util\Unmarshal_TPMU_KDF_SCHEME.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMU_KDF_SCHEME.c  
+ 
+.\lib\debug\Unmarshal_TPMU_PUBLIC_ID.obj: .\sysapi_util\Unmarshal_TPMU_PUBLIC_ID.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMU_PUBLIC_ID.c  
+ 
+.\lib\debug\Unmarshal_TPMU_PUBLIC_PARMS.obj: .\sysapi_util\Unmarshal_TPMU_PUBLIC_PARMS.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMU_PUBLIC_PARMS.c  
+ 
+.\lib\debug\Unmarshal_TPMU_SCHEME_KEYEDHASH.obj: .\sysapi_util\Unmarshal_TPMU_SCHEME_KEYEDHASH.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMU_SCHEME_KEYEDHASH.c  
+ 
+.\lib\debug\Unmarshal_TPMU_SENSITIVE_COMPOSITE.obj: .\sysapi_util\Unmarshal_TPMU_SENSITIVE_COMPOSITE.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMU_SENSITIVE_COMPOSITE.c  
+ 
+.\lib\debug\Unmarshal_TPMU_SIGNATURE.obj: .\sysapi_util\Unmarshal_TPMU_SIGNATURE.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMU_SIGNATURE.c  
+ 
+.\lib\debug\Unmarshal_TPMU_SIG_SCHEME.obj: .\sysapi_util\Unmarshal_TPMU_SIG_SCHEME.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMU_SIG_SCHEME.c  
+ 
+.\lib\debug\Unmarshal_TPMU_SYM_KEY_BITS.obj: .\sysapi_util\Unmarshal_TPMU_SYM_KEY_BITS.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMU_SYM_KEY_BITS.c  
+ 
+.\lib\debug\Unmarshal_TPMU_SYM_MODE.obj: .\sysapi_util\Unmarshal_TPMU_SYM_MODE.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\Unmarshal_TPMU_SYM_MODE.c  
+ 
+.\lib\debug\unmarshal_uint16.obj: .\sysapi_util\unmarshal_uint16.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\unmarshal_uint16.c  
+ 
+.\lib\debug\unmarshal_uint32.obj: .\sysapi_util\unmarshal_uint32.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\unmarshal_uint32.c  
+ 
+.\lib\debug\unmarshal_uint64.obj: .\sysapi_util\unmarshal_uint64.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\unmarshal_uint64.c  
+ 
+.\lib\debug\unmarshal_uint8.obj: .\sysapi_util\unmarshal_uint8.c $(ALL_DEPS)  
+ $(CL) /c /GS- /WX /W3 /Zp1 /Zi /Od /Fdinit_build.pdb /Iinclude /Iinclude\tcg_headers /Ik:\VC\include /Fo$@ .\sysapi_util\unmarshal_uint8.c  
+ 

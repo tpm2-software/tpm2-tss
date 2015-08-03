@@ -1,0 +1,862 @@
+﻿Build started 8/3/2015 3:23:47 PM.
+Environment at start of build:
+ALLUSERSPROFILE = C:\ProgramData
+APPDATA = C:\Users\wcarthur\AppData\Roaming
+asl.log = Destination=file
+CommonProgramFiles = C:\Program Files (x86)\Common Files
+CommonProgramFiles(x86) = C:\Program Files (x86)\Common Files
+CommonProgramW6432 = C:\Program Files\Common Files
+COMPUTERNAME = WCARTHUR-MOBL3
+ComSpec = C:\windows\system32\cmd.exe
+DEFLOGDIR = C:\ProgramData\McAfee\DesktopProtection
+FP_NO_HOST_CHECK = NO
+HOMEDRIVE = C:
+HOMEPATH = \Users\wcarthur
+IntelLogs = C:\Intel\Logs
+LOCALAPPDATA = C:\Users\wcarthur\AppData\Local
+LOGONSERVER = \\SOSAMR401
+MOZ_PLUGIN_PATH = C:\Program Files (x86)\Foxit Software\Foxit Reader\plugins\
+NUMBER_OF_PROCESSORS = 4
+OS = Windows_NT
+Path = C:\Klocwork\Insight 10.1 Command Line\bin;C:\Klocwork\Server 10.1\bin;C:\ProgramData\Oracle\Java\javapath;C:\Program Files (x86)\Intel\iCLS Client\;C:\Program Files\Intel\iCLS Client\;C:\windows\system32;C:\windows;C:\windows\System32\Wbem;C:\windows\System32\WindowsPowerShell\v1.0\;C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;c:\users\wcarthur\bin;C:\Program Files\Microsoft\Web Platform Installer\;C:\Program Files (x86)\Windows Kits\8.0\Windows Performance Toolkit\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Program Files (x86)\Git\cmd;C:\Program Files (x86)\Git\bin;C:\Program Files\SafeNet\Authentication\SAC\x32;C:\Program Files\SafeNet\Authentication\SAC\x64;c:\Program Files (x86)\Microsoft SQL Server\100\Tools\Binn\;c:\Program Files\Microsoft SQL Server\100\Tools\Binn\;c:\Program Files\Microsoft SQL Server\100\DTS\Binn\;C:\Program Files (x86)\Skype\Phone\;C:\Program Files\TortoiseSVN\bin
+PATHEXT = .COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
+PROCDIRLOG = "C:\MININT\SMSOSD\OSDLOGS"
+PROCESSOR_ARCHITECTURE = x86
+PROCESSOR_ARCHITEW6432 = AMD64
+PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 69 Stepping 1, GenuineIntel
+PROCESSOR_LEVEL = 6
+PROCESSOR_REVISION = 4501
+ProgramData = C:\ProgramData
+ProgramFiles = C:\Program Files (x86)
+ProgramFiles(x86) = C:\Program Files (x86)
+ProgramW6432 = C:\Program Files
+PSModulePath = C:\windows\system32\WindowsPowerShell\v1.0\Modules\
+PUBLIC = C:\Users\Public
+SESSIONNAME = Console
+SystemDrive = C:
+SystemRoot = C:\windows
+TEMP = C:\Users\wcarthur\AppData\Local\Temp
+TMP = C:\Users\wcarthur\AppData\Local\Temp
+TSSTOOLS_PATH = k:
+UATDATA = C:\windows\SysWOW64\CCM\UATData\D9F8C395-CAB8-491d-B8AC-179A1FE1BE77
+USERDNSDOMAIN = AMR.CORP.INTEL.COM
+USERDOMAIN = AMR
+USERDOMAIN_ROAMINGPROFILE = AMR
+USERNAME = wcarthur
+USERPROFILE = C:\Users\wcarthur
+VisualStudioDir = C:\Users\wcarthur\Documents\Visual Studio 2010
+VS100COMNTOOLS = c:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\Tools\
+VS110COMNTOOLS = C:\Program Files (x86)\Microsoft Visual Studio 11.0\Common7\Tools\
+VSEDEFLOGDIR = C:\ProgramData\McAfee\DesktopProtection
+windir = C:\windows
+_JAVA_OPTIONS = -Djava.net.preferIPv4Stack=true
+
+15:23:47.989     1>Project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" on node 2 (rebuild target(s)).
+15:23:47.989     1>Building with tools version "4.0".
+15:23:47.990     1>Target "_CheckForInvalidConfigurationAndPlatform: (TargetId:31)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (entry point):
+                   Task "Error" skipped, due to false condition; ( '$(_InvalidConfigurationError)' == 'true' ) was evaluated as ( '' == 'true' ).
+                   Task "Warning" skipped, due to false condition; ( '$(_InvalidConfigurationWarning)' == 'true' ) was evaluated as ( '' == 'true' ).
+                   Task "Message" (TaskId:19)
+                     Configuration=Debug (TaskId:19)
+                   Done executing task "Message". (TaskId:19)
+                   Task "Message" (TaskId:20)
+                     Platform=Win32 (TaskId:20)
+                   Done executing task "Message". (TaskId:20)
+                   Task "Error" skipped, due to false condition; ('$(OutDir)' != '' and !HasTrailingSlash('$(OutDir)')) was evaluated as ('Debug\' != '' and !HasTrailingSlash('Debug\')).
+                   Task "Error" skipped, due to false condition; ('$(BaseIntermediateOutputPath)' != '' and !HasTrailingSlash('$(BaseIntermediateOutputPath)')) was evaluated as ('obj\' != '' and !HasTrailingSlash('obj\')).
+                   Task "Error" skipped, due to false condition; ('$(IntermediateOutputPath)' != '' and !HasTrailingSlash('$(IntermediateOutputPath)')) was evaluated as ('Debug\' != '' and !HasTrailingSlash('Debug\')).
+15:23:47.990     1>Done building target "_CheckForInvalidConfigurationAndPlatform" in project "resourceMgr.vcxproj".: (TargetId:31)
+15:23:47.990     1>Target "_DetermineManagedStateFromCL: (TargetId:32)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Rebuild" depends on it):
+15:23:47.991     1>Done building target "_DetermineManagedStateFromCL" in project "resourceMgr.vcxproj".: (TargetId:32)
+15:23:47.991     1>Target "_PrepareForRebuild: (TargetId:33)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.BuildSteps.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Rebuild" depends on it):
+15:23:47.992     1>Done building target "_PrepareForRebuild" in project "resourceMgr.vcxproj".: (TargetId:33)
+15:23:47.992     1>Target "BeforeRebuild: (TargetId:34)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Rebuild" depends on it):
+15:23:47.992     1>Done building target "BeforeRebuild" in project "resourceMgr.vcxproj".: (TargetId:34)
+15:23:47.992     1>Target "_PrepareForClean: (TargetId:35)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.BuildSteps.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Clean" depends on it):
+                   Task "Delete" skipped, due to false condition; (Exists($(LastBuildState))) was evaluated as (Exists(Debug\resourceMgr.lastbuildstate)).
+15:23:47.992     1>Done building target "_PrepareForClean" in project "resourceMgr.vcxproj".: (TargetId:35)
+15:23:47.992     1>Target "BeforeClean: (TargetId:36)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Clean" depends on it):
+15:23:47.992     1>Done building target "BeforeClean" in project "resourceMgr.vcxproj".: (TargetId:36)
+                   Target "UnmanagedUnregistration" skipped, due to false condition; ((('$(_AssemblyTimestampBeforeCompile)' != '$(_AssemblyTimestampAfterCompile)' or '$(RegisterForComInterop)' != 'true' or '$(OutputType)' != 'library') or
+                                       ('$(_AssemblyTimestampBeforeCompile)' == '')) and
+                                      Exists('@(_UnmanagedRegistrationCache)')) was evaluated as ((('' != '' or '' != 'true' or 'exe' != 'library') or
+                                       ('' == '')) and
+                                      Exists('obj\resourceMgr.vcxproj.UnmanagedRegistration.cache')).
+15:23:47.993     1>Target "CoreClean: (TargetId:37)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Clean" depends on it):
+                   Task "Delete" (TaskId:21)
+                   Done executing task "Delete". (TaskId:21)
+                   Using "ReadLinesFromFile" task from assembly "Microsoft.Build.Tasks.v4.0, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a".
+                   Task "ReadLinesFromFile" (TaskId:22)
+                   Done executing task "ReadLinesFromFile". (TaskId:22)
+                   Using "FindUnderPath" task from assembly "Microsoft.Build.Tasks.v4.0, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a".
+                   Task "FindUnderPath" (TaskId:23)
+                     Comparison path is "Debug\". (TaskId:23)
+                   Done executing task "FindUnderPath". (TaskId:23)
+                   Task "FindUnderPath" (TaskId:24)
+                     Comparison path is "Debug\". (TaskId:24)
+                   Done executing task "FindUnderPath". (TaskId:24)
+                   Task "Delete" (TaskId:25)
+                   Done executing task "Delete". (TaskId:25)
+                   Using "RemoveDuplicates" task from assembly "Microsoft.Build.Tasks.v4.0, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a".
+                   Task "RemoveDuplicates" (TaskId:26)
+                   Done executing task "RemoveDuplicates". (TaskId:26)
+                   Task "MakeDir" (TaskId:27)
+                   Done executing task "MakeDir". (TaskId:27)
+                   Task "WriteLinesToFile" (TaskId:28)
+                   Done executing task "WriteLinesToFile". (TaskId:28)
+15:23:47.995     1>Done building target "CoreClean" in project "resourceMgr.vcxproj".: (TargetId:37)
+15:23:47.995     1>Target "AssignProjectConfiguration: (TargetId:38)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "CleanReferencedProjects" depends on it):
+                   Task "AssignProjectConfiguration" (TaskId:29)
+                   Done executing task "AssignProjectConfiguration". (TaskId:29)
+15:23:47.995     1>Done building target "AssignProjectConfiguration" in project "resourceMgr.vcxproj".: (TargetId:38)
+15:23:47.995     1>Target "_SplitProjectReferencesByFileExistence: (TargetId:39)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "CleanReferencedProjects" depends on it):
+                   Task "ResolveNonMSBuildProjectOutput" skipped, due to false condition; ('$(BuildingInsideVisualStudio)'=='true' and '@(ProjectReferenceWithConfiguration)'!='') was evaluated as ('true'=='true' and ''!='').
+15:23:47.995     1>Done building target "_SplitProjectReferencesByFileExistence" in project "resourceMgr.vcxproj".: (TargetId:39)
+15:23:47.995     1>Target "CleanReferencedProjects: (TargetId:40)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Clean" depends on it):
+                   Task "MSBuild" skipped, due to false condition; ('$(BuildingInsideVisualStudio)' != 'true' and '$(BuildProjectReferences)' == 'true' and '@(_MSBuildProjectReferenceExistent)' != '') was evaluated as ('true' != 'true' and 'true' == 'true' and '' != '').
+15:23:47.996     1>Done building target "CleanReferencedProjects" in project "resourceMgr.vcxproj".: (TargetId:40)
+15:23:47.996     1>Target "CleanPublishFolder: (TargetId:41)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Clean" depends on it):
+                   Task "RemoveDir" skipped, due to false condition; ('$(PublishDir)'=='$(OutputPath)app.publish\' and Exists('$(PublishDir)')) was evaluated as ('Z:\TPM2.0-TSS\Debug\app.publish\'=='Z:\TPM2.0-TSS\Debug\app.publish\' and Exists('Z:\TPM2.0-TSS\Debug\app.publish\')).
+15:23:47.996     1>Done building target "CleanPublishFolder" in project "resourceMgr.vcxproj".: (TargetId:41)
+15:23:47.996     1>Target "AfterClean: (TargetId:42)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Clean" depends on it):
+15:23:47.996     1>Done building target "AfterClean" in project "resourceMgr.vcxproj".: (TargetId:42)
+                   Target "EntityClean" skipped, due to false condition; ('@(EntityDeploy)' != '') was evaluated as ('' != '').
+15:23:47.996     1>Target "BeforeCppClean: (TargetId:43)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppClean.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "CppClean" depends on it):
+15:23:47.996     1>Done building target "BeforeCppClean" in project "resourceMgr.vcxproj".: (TargetId:43)
+15:23:47.996     1>Target "CoreCppClean: (TargetId:44)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppClean.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "CppClean" depends on it):
+                   Task "MakeDir" (TaskId:30)
+                   Done executing task "MakeDir". (TaskId:30)
+                   Using "CppClean" task from assembly "Microsoft.Build.CppTasks.Common, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a".
+                   Task "CppClean" (TaskId:31)
+                   Done executing task "CppClean". (TaskId:31)
+                   Task "WriteLinesToFile" (TaskId:32)
+                   Done executing task "WriteLinesToFile". (TaskId:32)
+15:23:48.006     1>Done building target "CoreCppClean" in project "resourceMgr.vcxproj".: (TargetId:44)
+15:23:48.006     1>Target "AfterCppClean: (TargetId:45)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppClean.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "CppClean" depends on it):
+15:23:48.006     1>Done building target "AfterCppClean" in project "resourceMgr.vcxproj".: (TargetId:45)
+15:23:48.006     1>Target "PGInstrumentedClean: (TargetId:46)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppClean.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "CppClean" depends on it):
+                   Task "Delete" (TaskId:33)
+                   Done executing task "Delete". (TaskId:33)
+15:23:48.011     1>Done building target "PGInstrumentedClean" in project "resourceMgr.vcxproj".: (TargetId:46)
+15:23:48.011     1>Target "CppClean: (TargetId:47)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppClean.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Clean" depends on it):
+15:23:48.011     1>Done building target "CppClean" in project "resourceMgr.vcxproj".: (TargetId:47)
+15:23:48.011     1>Target "Clean: (TargetId:48)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Rebuild" depends on it):
+15:23:48.011     1>Done building target "Clean" in project "resourceMgr.vcxproj".: (TargetId:48)
+                   Target "_DetermineManagedStateFromCL" skipped. Previously built successfully.
+15:23:48.011     1>Target "_PrepareForBuild: (TargetId:49)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.BuildSteps.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Build" depends on it):
+15:23:48.011     1>Done building target "_PrepareForBuild" in project "resourceMgr.vcxproj".: (TargetId:49)
+15:23:48.011     1>Target "SetBuildDefaultEnvironmentVariables: (TargetId:50)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.Cpp.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Build" depends on it):
+                   Using "SetEnv" task from assembly "Microsoft.Build.CppTasks.Common, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a".
+                   Task "SetEnv" (TaskId:34)
+                     PATH=c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin;c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\NETFX 4.0 Tools;c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin;c:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\Tools\bin;c:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\tools;c:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\ide;C:\Program Files (x86)\HTML Help Workshop;c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\\bin;C:\Windows\Microsoft.NET\Framework\v4.0.30319\;c:\Program Files (x86)\Microsoft Visual Studio 10.0\;C:\windows\SysWow64;;C:\Klocwork\Insight 10.1 Command Line\bin;C:\Klocwork\Server 10.1\bin;C:\ProgramData\Oracle\Java\javapath;C:\Program Files (x86)\Intel\iCLS Client\;C:\Program Files\Intel\iCLS Client\;C:\windows\system32;C:\windows;C:\windows\System32\Wbem;C:\windows\System32\WindowsPowerShell\v1.0\;C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;c:\users\wcarthur\bin;C:\Program Files\Microsoft\Web Platform Installer\;C:\Program Files (x86)\Windows Kits\8.0\Windows Performance Toolkit\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Program Files (x86)\Git\cmd;C:\Program Files (x86)\Git\bin;C:\Program Files\SafeNet\Authentication\SAC\x32;C:\Program Files\SafeNet\Authentication\SAC\x64;c:\Program Files (x86)\Microsoft SQL Server\100\Tools\Binn\;c:\Program Files\Microsoft SQL Server\100\Tools\Binn\;c:\Program Files\Microsoft SQL Server\100\DTS\Binn\;C:\Program Files (x86)\Skype\Phone\;C:\Program Files\TortoiseSVN\bin; (TaskId:34)
+                   Done executing task "SetEnv". (TaskId:34)
+                   Task "SetEnv" skipped, due to false condition; ('$(_IsNativeEnvironment)' == 'true') was evaluated as ('' == 'true').
+                   Task "SetEnv" (TaskId:35)
+                     LIB=c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\lib;c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\atlmfc\lib;c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\lib;c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\\lib (TaskId:35)
+                   Done executing task "SetEnv". (TaskId:35)
+                   Task "SetEnv" (TaskId:36)
+                     LIBPATH=c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\atlmfc\lib;c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\lib (TaskId:36)
+                   Done executing task "SetEnv". (TaskId:36)
+                   Task "SetEnv" (TaskId:37)
+                     INCLUDE=c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include;c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\atlmfc\include;c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include;c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\\include;;..\sysapi\include;..\test\tpmclient;..\tcti\tpmsockets;..\common;..\tcti\localtpm (TaskId:37)
+                   Done executing task "SetEnv". (TaskId:37)
+15:23:48.012     1>Done building target "SetBuildDefaultEnvironmentVariables" in project "resourceMgr.vcxproj".: (TargetId:50)
+                   Target "SetUserMacroEnvironmentVariables" skipped, due to false condition; ('@(BuildMacro)' != '') was evaluated as ('' != '').
+15:23:48.012     1>Target "BeforeResolveReferences: (TargetId:51)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "ResolveReferences" depends on it):
+15:23:48.012     1>Done building target "BeforeResolveReferences" in project "resourceMgr.vcxproj".: (TargetId:51)
+                   Target "AssignProjectConfiguration" skipped. Previously built successfully.
+                   Target "AssignProjectConfiguration" skipped. Previously built successfully.
+                   Target "_SplitProjectReferencesByFileExistence" skipped. Previously built successfully.
+                   Target "_RemoveNameMetadataFromProjectReferenceItems" skipped, due to false condition; ('@(ProjectReference)'!='') was evaluated as (''!='').
+15:23:48.012     1>Target "ResolveProjectReferences: (TargetId:52)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "ResolveReferences" depends on it):
+                   Task "MSBuild" skipped, due to false condition; ('%(_MSBuildProjectReferenceExistent.BuildReference)' == 'true' and '@(ProjectReferenceWithConfiguration)' != '' and ('$(BuildingInsideVisualStudio)' == 'true' or '$(BuildProjectReferences)' != 'true') and '$(VisualStudioVersion)' != '10.0' and '@(_MSBuildProjectReferenceExistent)' != '') was evaluated as ('' == 'true' and '' != '' and ('true' == 'true' or 'true' != 'true') and '10.0' != '10.0' and '' != '').
+                   Task "MSBuild" skipped, due to false condition; ('%(_MSBuildProjectReferenceExistent.BuildReference)' == 'true' and '@(ProjectReferenceWithConfiguration)' != '' and ('$(BuildingInsideVisualStudio)' == 'true' or '$(BuildProjectReferences)' != 'true') and '$(VisualStudioVersion)' == '10.0' and '@(_MSBuildProjectReferenceExistent)' != '') was evaluated as ('' == 'true' and '' != '' and ('true' == 'true' or 'true' != 'true') and '10.0' == '10.0' and '' != '').
+                   Task "MSBuild" skipped, due to false condition; ('%(_MSBuildProjectReferenceExistent.BuildReference)' == 'true' and '@(ProjectReferenceWithConfiguration)' != '' and '$(BuildingInsideVisualStudio)' != 'true' and '$(BuildProjectReferences)' == 'true' and '@(_MSBuildProjectReferenceExistent)' != '') was evaluated as ('' == 'true' and '' != '' and 'true' != 'true' and 'true' == 'true' and '' != '').
+                   Task "MSBuild" skipped, due to false condition; ('%(_MSBuildProjectReferenceExistent.BuildReference)' == 'true' and '@(ProjectReferenceWithConfiguration)' != '' and '$(BuildingProject)' == 'true' and '@(_MSBuildProjectReferenceExistent)' != '') was evaluated as ('' == 'true' and '' != '' and 'true' == 'true' and '' != '').
+                   Task "Warning" skipped, due to false condition; ('@(ProjectReferenceWithConfiguration)' != '' and '@(_MSBuildProjectReferenceNonexistent)' != '') was evaluated as ('' != '' and '' != '').
+15:23:48.013     1>Done building target "ResolveProjectReferences" in project "resourceMgr.vcxproj".: (TargetId:52)
+                   Target "ResolveNativeReferences" skipped, due to false condition; ('@(NativeReference)'!='') was evaluated as (''!='').
+15:23:48.013     1>Target "GetFrameworkPaths: (TargetId:53)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.NETFramework.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "ResolveAssemblyReferences" depends on it):
+15:23:48.013     1>Done building target "GetFrameworkPaths" in project "resourceMgr.vcxproj".: (TargetId:53)
+                   Target "GetWinFXPath" skipped, due to false condition; (('@(Page)' != '' or '@(ApplicationDefinition)' != '' or '@(Resource)' != '') and ('$(GetWinFXNativePath)' != '' or '$(GetWinFXWoWPath)' != '' )) was evaluated as (('' != '' or '' != '' or '' != '') and ('' != '' or '' != '' )).
+15:23:48.013     1>Target "GetReferenceAssemblyPaths: (TargetId:54)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "ResolveAssemblyReferences" depends on it):
+                   Task "GetReferenceAssemblyPaths" skipped, due to false condition; ('$(TargetFrameworkMoniker)' != '' and ('$(_TargetFrameworkDirectories)' == '' or '$(_FullFrameworkReferenceAssemblyPaths)' == '')) was evaluated as ('.NETFramework,Version=v4.0' != '' and ('C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0' == '' or 'C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0' == '')).
+15:23:48.013     1>Done building target "GetReferenceAssemblyPaths" in project "resourceMgr.vcxproj".: (TargetId:54)
+15:23:48.013     1>Target "PlatformPrepareForBuild: (TargetId:55)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Platforms\Win32\Microsoft.Cpp.Win32.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "PrepareForBuild" depends on it):
+                   Task "VCMessage" skipped, due to false condition; (!(exists('$(VCTargetsPath)\Platforms\Win32\PlatformToolsets\$(PlatformToolset)\Microsoft.Cpp.Win32.$(PlatformToolset).targets'))) was evaluated as (!(exists('C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\\Platforms\Win32\PlatformToolsets\v100\Microsoft.Cpp.Win32.v100.targets'))).
+15:23:48.014     1>Done building target "PlatformPrepareForBuild" in project "resourceMgr.vcxproj".: (TargetId:55)
+                   Target "GetFrameworkPaths" skipped. Previously built successfully.
+                   Target "GetReferenceAssemblyPaths" skipped. Previously built successfully.
+15:23:48.014     1>Target "PrepareForBuild: (TargetId:56)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "ResolveAssemblyReferences" depends on it):
+                   Task "VCMessage" skipped, due to false condition; ('$(DesignTimeBuild)'!='true' and '$(ConfigurationPlatformExists)' != 'true') was evaluated as (''!='true' and 'true' != 'true').
+                   Task "MakeDir" (TaskId:38)
+                   Done executing task "MakeDir". (TaskId:38)
+                   Task "VCMessage" skipped, due to false condition; ('$(DesignTimeBuild)'!='true' and '$(VCInstallDir)'=='' and '$(UseEnv)' != 'true' and ($(TargetFrameworkVersion)=='v3.5' or $(TargetFrameworkVersion)=='v3.0' or $(TargetFrameworkVersion)=='v2.0' )) was evaluated as (''!='true' and 'c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\'=='' and '' != 'true' and (v4.0=='v3.5' or v4.0=='v3.0' or v4.0=='v2.0' )).
+                   Task "VCMessage" skipped, due to false condition; ('$(DesignTimeBuild)'!='true' and '$(VCInstallDir)'=='' and '$(UseEnv)' != 'true' and '$(PlatformToolset)'=='v90') was evaluated as (''!='true' and 'c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\'=='' and '' != 'true' and 'v100'=='v90').
+                   Task "VCMessage" skipped, due to false condition; ('$(VCInstallDir)'=='' and '$(UseEnv)' != 'true') was evaluated as ('c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\'=='' and '' != 'true').
+                   Task "VCMessage" skipped, due to false condition; ('$(WindowsSDKDir)'=='' and '$(UseEnv)' != 'true') was evaluated as ('c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\'=='' and '' != 'true').
+                   Task "VCMessage" skipped, due to false condition; ('$(IntDirTrailingSlashWarning)'=='true') was evaluated as (''=='true').
+                   Task "VCMessage" skipped, due to false condition; ('$(OutDirTrailingSlashWarning)'=='true') was evaluated as (''=='true').
+                   Task "MakeDir" (TaskId:39)
+                   Done executing task "MakeDir". (TaskId:39)
+15:23:48.014     1>Done building target "PrepareForBuild" in project "resourceMgr.vcxproj".: (TargetId:56)
+15:23:48.014     1>Target "GetInstalledSDKLocations: (TargetId:57)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "ResolveSDKReferences" depends on it):
+                   Task "GetInstalledSDKLocations" skipped, due to false condition; ('@(SDKReference)' != '') was evaluated as ('' != '').
+15:23:48.015     1>Done building target "GetInstalledSDKLocations" in project "resourceMgr.vcxproj".: (TargetId:57)
+15:23:48.015     1>Target "ResolveSDKReferences: (TargetId:58)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "ResolveAssemblyReferences" depends on it):
+                   Task "ResolveSDKReference" skipped, due to false condition; ('@(SDKReference)'!='') was evaluated as (''!='').
+15:23:48.015     1>Done building target "ResolveSDKReferences" in project "resourceMgr.vcxproj".: (TargetId:58)
+                   Target "ResolveSDKReferences" skipped. Previously built successfully.
+15:23:48.015     1>Target "ExpandSDKReferences: (TargetId:59)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "ResolveAssemblyReferences" depends on it):
+                   Task "GetSDKReferenceFiles" skipped, due to false condition; ('@(ResolvedSDKReference)'!='') was evaluated as (''!='').
+15:23:48.015     1>Done building target "ExpandSDKReferences" in project "resourceMgr.vcxproj".: (TargetId:59)
+15:23:48.015     1>Target "ResolveAssemblyReferences: (TargetId:60)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "ResolveReferences" depends on it):
+                   Task "ResolveAssemblyReference" (TaskId:40)
+                     TargetFrameworkMoniker: (TaskId:40)
+                         .NETFramework,Version=v4.0 (TaskId:40)
+                     TargetFrameworkMonikerDisplayName: (TaskId:40)
+                         .NET Framework 4 (TaskId:40)
+                     TargetedRuntimeVersion: (TaskId:40)
+                         v4.0.30319 (TaskId:40)
+                     Assemblies: (TaskId:40)
+                         System.Core (TaskId:40)
+                     AssemblyFiles: (TaskId:40)
+                     CandidateAssemblyFiles: (TaskId:40)
+                     TargetFrameworkDirectories: (TaskId:40)
+                         C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0 (TaskId:40)
+                     InstalledAssemblyTables: (TaskId:40)
+                     IgnoreInstalledAssemblyTable: (TaskId:40)
+                         False (TaskId:40)
+                     SearchPaths: (TaskId:40)
+                         {CandidateAssemblyFiles} (TaskId:40)
+                         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\atlmfc\lib (TaskId:40)
+                         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\lib (TaskId:40)
+                         {HintPathFromItem} (TaskId:40)
+                         {TargetFrameworkDirectory} (TaskId:40)
+                         {Registry:Software\Microsoft\.NETFramework,v4.0,AssemblyFoldersEx} (TaskId:40)
+                         {AssemblyFolders} (TaskId:40)
+                         {GAC} (TaskId:40)
+                         {RawFileName} (TaskId:40)
+                         Debug\ (TaskId:40)
+                     AllowedAssemblyExtensions: (TaskId:40)
+                         .winmd (TaskId:40)
+                         .dll (TaskId:40)
+                         .exe (TaskId:40)
+                     AllowedRelatedFileExtensions: (TaskId:40)
+                         .pdb (TaskId:40)
+                         .xml (TaskId:40)
+                         .pri (TaskId:40)
+                     AppConfigFile: (TaskId:40)
+                          (TaskId:40)
+                     AutoUnify: (TaskId:40)
+                         False (TaskId:40)
+                     CopyLocalDependenciesWhenParentReferenceInGac: (TaskId:40)
+                         True (TaskId:40)
+                     FindDependencies: (TaskId:40)
+                         True (TaskId:40)
+                     TargetProcessorArchitecture: (TaskId:40)
+                         x86 (TaskId:40)
+                     StateFile: (TaskId:40)
+                         Debug\resourceMgr.vcxprojResolveAssemblyReference.cache (TaskId:40)
+                     InstalledAssemblySubsetTables: (TaskId:40)
+                     IgnoreInstalledAssemblySubsetTable: (TaskId:40)
+                         False (TaskId:40)
+                     TargetFrameworkSubsets: (TaskId:40)
+                     FullTargetFrameworkSubsetNames: (TaskId:40)
+                         Full (TaskId:40)
+                     ProfileName: (TaskId:40)
+                          (TaskId:40)
+                     FullFrameworkFolders: (TaskId:40)
+                         C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0 (TaskId:40)
+                     LatestTargetFrameworkDirectories: (TaskId:40)
+                     ProfileTablesLocation: (TaskId:40)
+                     Primary reference "System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089". (TaskId:40)
+                         Resolved file path is "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.Core.dll". (TaskId:40)
+                         Reference found at search path location "{TargetFrameworkDirectory}". (TaskId:40)
+                             For SearchPath "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\atlmfc\lib". (TaskId:40)
+                             Considered "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\atlmfc\lib\System.Core.winmd", but it didn't exist. (TaskId:40)
+                             Considered "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\atlmfc\lib\System.Core.dll", but it didn't exist. (TaskId:40)
+                             Considered "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\atlmfc\lib\System.Core.exe", but it didn't exist. (TaskId:40)
+                             For SearchPath "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\lib". (TaskId:40)
+                             Considered "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\lib\System.Core.winmd", but it didn't exist. (TaskId:40)
+                             Considered "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\lib\System.Core.dll", but it didn't exist. (TaskId:40)
+                             Considered "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\lib\System.Core.exe", but it didn't exist. (TaskId:40)
+                             For SearchPath "{TargetFrameworkDirectory}". (TaskId:40)
+                             Considered "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.Core.winmd", but it didn't exist. (TaskId:40)
+                         This reference is not "CopyLocal" because it's a prerequisite file. (TaskId:40)
+                         The ImageRuntimeVersion for this reference is "v4.0.30319". (TaskId:40)
+                   Done executing task "ResolveAssemblyReference". (TaskId:40)
+15:23:48.022     1>Done building target "ResolveAssemblyReferences" in project "resourceMgr.vcxproj".: (TargetId:60)
+                   Target "ResolveComReferences" skipped, due to false condition; ('@(COMReference)'!='' or '@(COMFileReference)'!='') was evaluated as (''!='' or ''!='').
+15:23:48.022     1>Target "AfterResolveReferences: (TargetId:61)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "ResolveReferences" depends on it):
+15:23:48.022     1>Done building target "AfterResolveReferences" in project "resourceMgr.vcxproj".: (TargetId:61)
+                   Target "ImplicitlyExpandDesignTimeFacades" skipped, due to false condition; ('$(ImplicitlyExpandDesignTimeFacades)' == 'true') was evaluated as ('' == 'true').
+                   Target "ResolveTestReferences" skipped, due to false condition; ('@(Shadow)'!='') was evaluated as (''!='').
+15:23:48.022     1>Target "ResolveReferences: (TargetId:62)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Build" depends on it):
+15:23:48.022     1>Done building target "ResolveReferences" in project "resourceMgr.vcxproj".: (TargetId:62)
+                   Target "PrepareForBuild" skipped. Previously built successfully.
+                   Target "PrepareForBuild" skipped. Previously built successfully.
+15:23:48.022     1>Target "InitializeBuildStatus: (TargetId:63)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Build" depends on it):
+                   Task "ReadLinesFromFile" (TaskId:41)
+                   Done executing task "ReadLinesFromFile". (TaskId:41)
+                   Task "WriteLinesToFile" (TaskId:42)
+                   Done executing task "WriteLinesToFile". (TaskId:42)
+                   Using "Touch" task from assembly "Microsoft.Build.Tasks.v4.0, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a".
+                   Task "Touch" (TaskId:43)
+                     Creating "Debug\resourceMgr.unsuccessfulbuild" because "AlwaysCreate" was specified. (TaskId:43)
+                   Done executing task "Touch". (TaskId:43)
+15:23:48.058     1>Done building target "InitializeBuildStatus" in project "resourceMgr.vcxproj".: (TargetId:63)
+                   Target "AssignProjectConfiguration" skipped. Previously built successfully.
+                   Target "_SplitProjectReferencesByFileExistence" skipped. Previously built successfully.
+15:23:48.058     1>Target "BuildGenerateSourcesTraverse: (TargetId:64)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildGenerateSources" depends on it):
+                   Task "MSBuild" skipped, due to false condition; ('$(BuildPassReferences)' == 'true' and '@(ProjectReferenceWithConfiguration)' != '' and '@(_MSBuildProjectReferenceExistent)' != '' and '%(_MSBuildProjectReferenceExistent.BuildReference)' == 'true') was evaluated as ('' == 'true' and '' != '' and '' != '' and '' == 'true').
+15:23:48.058     1>Done building target "BuildGenerateSourcesTraverse" in project "resourceMgr.vcxproj".: (TargetId:64)
+                   Target "SetBuildDefaultEnvironmentVariables" skipped. Previously built successfully.
+                   Target "SetUserMacroEnvironmentVariables" skipped, due to false condition; ('@(BuildMacro)' != '') was evaluated as ('' != '').
+                   Target "PrepareForBuild" skipped. Previously built successfully.
+                   Target "ResolveReferences" skipped. Previously built successfully.
+15:23:48.058     1>Target "BeforeBuildGenerateSources: (TargetId:65)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.BuildSteps.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildGenerateSources" depends on it):
+15:23:48.058     1>Done building target "BeforeBuildGenerateSources" in project "resourceMgr.vcxproj".: (TargetId:65)
+15:23:48.060     1>Target "PreBuildEvent: (TargetId:66)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppCommon.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildGenerateSources" depends on it):
+                   Task "Message" skipped, due to false condition; ('%(PreBuildEvent.Message)' != '' and '%(PreBuildEvent.Command)' != '') was evaluated as ('' != '' and '' != '').
+                   Task "Exec" skipped, due to false condition; ('%(PreBuildEvent.Command)' != '') was evaluated as ('' != '').
+15:23:48.060     1>Done building target "PreBuildEvent" in project "resourceMgr.vcxproj".: (TargetId:66)
+                   Target "CustomBuild" skipped, due to false condition; ('@(CustomBuild)' != '') was evaluated as ('' != '').
+15:23:48.060     1>Target "_GenerateXMLData: (TargetId:67)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildGenerateSources" depends on it):
+15:23:48.060     1>Done building target "_GenerateXMLData" in project "resourceMgr.vcxproj".: (TargetId:67)
+15:23:48.060     1>Target "_GenerateWebServiceProxy: (TargetId:68)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildGenerateSources" depends on it):
+15:23:48.060     1>Done building target "_GenerateWebServiceProxy" in project "resourceMgr.vcxproj".: (TargetId:68)
+                   Target "Xsd" skipped, due to false condition; ('@(Xsd)' != '') was evaluated as ('' != '').
+15:23:48.060     1>Target "_Xsd: (TargetId:69)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildGenerateSources" depends on it):
+15:23:48.060     1>Done building target "_Xsd" in project "resourceMgr.vcxproj".: (TargetId:69)
+15:23:48.060     1>Target "MakeDirsForMidl: (TargetId:70)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Midl" depends on it):
+                   Task "Makedir" (TaskId:44)
+                   Done executing task "Makedir". (TaskId:44)
+15:23:48.063     1>Done building target "MakeDirsForMidl" in project "resourceMgr.vcxproj".: (TargetId:70)
+                   Target "Midl" skipped, due to false condition; ('@(Midl)' != '') was evaluated as ('' != '').
+                   Target "CustomBuild" skipped, due to false condition; ('@(CustomBuild)' != '') was evaluated as ('' != '').
+15:23:48.063     1>Target "ComputeMIDLGeneratedCompileInputs: (TargetId:71)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Midl" depends on it):
+15:23:48.063     1>Done building target "ComputeMIDLGeneratedCompileInputs" in project "resourceMgr.vcxproj".: (TargetId:71)
+15:23:48.063     1>Target "AfterMidl: (TargetId:72)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Midl" depends on it):
+15:23:48.063     1>Done building target "AfterMidl" in project "resourceMgr.vcxproj".: (TargetId:72)
+15:23:48.063     1>Target "_Midl: (TargetId:73)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildGenerateSources" depends on it):
+15:23:48.063     1>Done building target "_Midl" in project "resourceMgr.vcxproj".: (TargetId:73)
+15:23:48.063     1>Target "AfterBuildGenerateSources: (TargetId:74)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.BuildSteps.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildGenerateSources" depends on it):
+15:23:48.063     1>Done building target "AfterBuildGenerateSources" in project "resourceMgr.vcxproj".: (TargetId:74)
+15:23:48.063     1>Target "AfterBuildGenerateSourcesEvent: (TargetId:75)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildGenerateSources" depends on it):
+15:23:48.063     1>Done building target "AfterBuildGenerateSourcesEvent" in project "resourceMgr.vcxproj".: (TargetId:75)
+15:23:48.063     1>Target "BuildGenerateSources: (TargetId:76)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Build" depends on it):
+15:23:48.063     1>Done building target "BuildGenerateSources" in project "resourceMgr.vcxproj".: (TargetId:76)
+                   Target "AssignProjectConfiguration" skipped. Previously built successfully.
+                   Target "_SplitProjectReferencesByFileExistence" skipped. Previously built successfully.
+15:23:48.063     1>Target "BuildCompileTraverse: (TargetId:77)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildCompile" depends on it):
+                   Task "MSBuild" skipped, due to false condition; ('$(BuildPassReferences)' == 'true' and '@(ProjectReferenceWithConfiguration)' != '' and '@(_MSBuildProjectReferenceExistent)' != ''  and '%(_MSBuildProjectReferenceExistent.BuildReference)' == 'true') was evaluated as ('' == 'true' and '' != '' and '' != ''  and '' == 'true').
+15:23:48.064     1>Done building target "BuildCompileTraverse" in project "resourceMgr.vcxproj".: (TargetId:77)
+                   Target "SetBuildDefaultEnvironmentVariables" skipped. Previously built successfully.
+                   Target "SetUserMacroEnvironmentVariables" skipped, due to false condition; ('@(BuildMacro)' != '') was evaluated as ('' != '').
+                   Target "PrepareForBuild" skipped. Previously built successfully.
+                   Target "ResolveReferences" skipped. Previously built successfully.
+15:23:48.064     1>Target "BeforeClCompile: (TargetId:78)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_ClCompile" depends on it):
+15:23:48.064     1>Done building target "BeforeClCompile" in project "resourceMgr.vcxproj".: (TargetId:78)
+                   Target "ComputeMIDLGeneratedCompileInputs" skipped. Previously built successfully.
+15:23:48.064     1>Target "ComputeCLInputPDBName: (TargetId:79)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_ClCompile" depends on it):
+15:23:48.064     1>Done building target "ComputeCLInputPDBName" in project "resourceMgr.vcxproj".: (TargetId:79)
+                   Target "ResolveReferences" skipped. Previously built successfully.
+15:23:48.064     1>Target "ComputeReferenceCLInput: (TargetId:80)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_ClCompile" depends on it):
+                   Task "WriteLinesToFile" (TaskId:45)
+                   Done executing task "WriteLinesToFile". (TaskId:45)
+                   Task "Message" skipped, due to false condition; ('$(_REFERENCE_DEBUG)'=='true' and '%(ClCompile.CompileAsManaged)' != 'false' and '%(ClCompile.CompileAsManaged)' != '') was evaluated as (''=='true' and '' != 'false' and '' != '').
+15:23:48.065     1>Done building target "ComputeReferenceCLInput" in project "resourceMgr.vcxproj".: (TargetId:80)
+15:23:48.065     1>Target "MakeDirsForCl: (TargetId:81)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_ClCompile" depends on it):
+                   Task "MakeDir" (TaskId:46)
+                   Done executing task "MakeDir". (TaskId:46)
+15:23:48.074     1>Done building target "MakeDirsForCl" in project "resourceMgr.vcxproj".: (TargetId:81)
+                   Target "PrepareForBuild" skipped. Previously built successfully.
+                   Target "SetBuildDefaultEnvironmentVariables" skipped. Previously built successfully.
+                   Target "SetUserMacroEnvironmentVariables" skipped, due to false condition; ('@(BuildMacro)' != '') was evaluated as ('' != '').
+15:23:48.074     1>Target "_SelectedFiles: (TargetId:82)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "SelectClCompile" depends on it):
+15:23:48.074     1>Done building target "_SelectedFiles" in project "resourceMgr.vcxproj".: (TargetId:82)
+                   Target "ComputeMIDLGeneratedCompileInputs" skipped. Previously built successfully.
+                   Target "ComputeCLInputPDBName" skipped. Previously built successfully.
+                   Target "ComputeReferenceCLInput" skipped. Previously built successfully.
+                   Target "_SelectedFiles" skipped. Previously built successfully.
+15:23:48.074     1>Target "SelectCustomBuild: (TargetId:83)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "SelectClCompile" depends on it):
+15:23:48.074     1>Done building target "SelectCustomBuild" in project "resourceMgr.vcxproj".: (TargetId:83)
+15:23:48.074     1>Target "SelectClCompile: (TargetId:84)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "ClCompile" depends on it):
+15:23:48.074     1>Done building target "SelectClCompile" in project "resourceMgr.vcxproj".: (TargetId:84)
+                   Target "GenerateTargetFrameworkMonikerAttribute" skipped, due to false condition; ('$(GenerateTargetFrameworkAttribute)' == 'true') was evaluated as ('false' == 'true').
+15:23:48.074     1>Target "ClCompile: (TargetId:85)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Platforms\Win32\Microsoft.Cpp.Win32.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_ClCompile" depends on it):
+                   Task "Delete" (TaskId:47)
+                   Done executing task "Delete". (TaskId:47)
+                   Task "CL" skipped, due to false condition; ('%(ClCompile.PrecompiledHeader)' == 'Create' and '%(ClCompile.ExcludedFromBuild)'!='true') was evaluated as ('NotUsing' == 'Create' and ''!='true').
+                   Task "CL" skipped, due to false condition; ('%(ClCompile.PrecompiledHeader)' == 'Create' and '%(ClCompile.ExcludedFromBuild)'!='true') was evaluated as ('NotUsing' == 'Create' and ''!='true').
+                   Using "CL" task from assembly "Microsoft.Build.CppTasks.Win32, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a".
+                   Task "CL" (TaskId:48)
+                     Environment Variables passed to tool: (TaskId:48)
+                       VS_UNICODE_OUTPUT=1668 (TaskId:48)
+                     c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TC /analyze- /errorReport:prompt ..\common\debug.c ..\common\platformcommand.c ..\common\syscontext.c resourcemgr.c (TaskId:48)
+                     Tracking command: (TaskId:48)
+                     c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\NETFX 4.0 Tools\Tracker.exe /d C:\Windows\Microsoft.NET\Framework\v4.0.30319\FileTracker.dll /i Z:\TPM2.0-TSS\resourceMgr\Debug /r "Z:\TPM2.0-TSS\COMMON\DEBUG.C|Z:\TPM2.0-TSS\COMMON\PLATFORMCOMMAND.C|Z:\TPM2.0-TSS\COMMON\SYSCONTEXT.C|Z:\TPM2.0-TSS\RESOURCEMGR\RESOURCEMGR.C" /b MSBuildConsole_CancelEvent13d5674f609c481780d83d5a8ab80d89  /c "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe"  /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TC /analyze- /errorReport:prompt ..\common\debug.c ..\common\platformcommand.c ..\common\syscontext.c resourcemgr.c (TaskId:48)
+                     resourcemgr.c (TaskId:48)
+                     syscontext.c (TaskId:48)
+                     platformcommand.c (TaskId:48)
+                     debug.c (TaskId:48)
+                     Generating Code... (TaskId:48)
+                   Done executing task "CL". (TaskId:48)
+                   Task "CL" (TaskId:49)
+                     Environment Variables passed to tool: (TaskId:49)
+                       VS_UNICODE_OUTPUT=1692 (TaskId:49)
+                     c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt ..\tcti\tpmsockets\tpmsockets.cpp (TaskId:49)
+                     Tracking command: (TaskId:49)
+                     c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\NETFX 4.0 Tools\Tracker.exe /d C:\Windows\Microsoft.NET\Framework\v4.0.30319\FileTracker.dll /i Z:\TPM2.0-TSS\resourceMgr\Debug /r Z:\TPM2.0-TSS\TCTI\TPMSOCKETS\TPMSOCKETS.CPP /b MSBuildConsole_CancelEventae355145c964483ba57f28c770db303c  /c "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe"  /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt ..\tcti\tpmsockets\tpmsockets.cpp (TaskId:49)
+                     tpmsockets.cpp (TaskId:49)
+15:23:50.761     1>z:\tpm2.0-tss\sysapi\include\tss2_tpm2_types.h(1296): warning C4200: nonstandard extension used : zero-sized array in struct/union
+                             Cannot generate copy-ctor or copy-assignment operator when UDT contains a zero-sized array (TaskId:49)
+15:23:51.474     1>z:\tpm2.0-tss\tcti\tpmsockets\tpmsockets.cpp(601): warning C4996: 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                             c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(325) : see declaration of 'sscanf' (TaskId:49)
+15:23:51.474     1>z:\tpm2.0-tss\tcti\tpmsockets\tpmsockets.cpp(605): warning C4996: 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                             c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(325) : see declaration of 'sscanf' (TaskId:49)
+                   Done executing task "CL". (TaskId:49)
+15:23:51.621     1>Done building target "ClCompile" in project "resourceMgr.vcxproj".: (TargetId:85)
+15:23:51.621     1>Target "AfterClCompile: (TargetId:86)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_ClCompile" depends on it):
+15:23:51.621     1>Done building target "AfterClCompile" in project "resourceMgr.vcxproj".: (TargetId:86)
+15:23:51.621     1>Target "_ClCompile: (TargetId:87)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildCompile" depends on it):
+15:23:51.621     1>Done building target "_ClCompile" in project "resourceMgr.vcxproj".: (TargetId:87)
+                   Target "_ResGen" skipped, due to false condition; ('@(EmbeddedResource)'!='') was evaluated as (''!='').
+15:23:51.621     1>Target "BeforeResourceCompile: (TargetId:88)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_ResourceCompile" depends on it):
+15:23:51.622     1>Done building target "BeforeResourceCompile" in project "resourceMgr.vcxproj".: (TargetId:88)
+15:23:51.622     1>Target "MakeDirsForResourceCompile: (TargetId:89)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_ResourceCompile" depends on it):
+                   Task "MakeDir" (TaskId:50)
+                   Done executing task "MakeDir". (TaskId:50)
+15:23:51.623     1>Done building target "MakeDirsForResourceCompile" in project "resourceMgr.vcxproj".: (TargetId:89)
+                   Target "ResourceCompile" skipped, due to false condition; ('@(ResourceCompile)' != '') was evaluated as ('' != '').
+15:23:51.623     1>Target "AfterResourceCompile: (TargetId:90)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_ResourceCompile" depends on it):
+15:23:51.623     1>Done building target "AfterResourceCompile" in project "resourceMgr.vcxproj".: (TargetId:90)
+15:23:51.623     1>Target "_ResourceCompile: (TargetId:91)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildCompile" depends on it):
+15:23:51.623     1>Done building target "_ResourceCompile" in project "resourceMgr.vcxproj".: (TargetId:91)
+                   Target "_ImpLib" skipped, due to false condition; ('$(ImpLibCompiled)' == 'true') was evaluated as ('' == 'true').
+                   Target "_Lib" skipped, due to false condition; ('$(LibCompiled)' == 'true') was evaluated as ('' == 'true').
+15:23:51.623     1>Target "AfterBuildCompileEvent: (TargetId:92)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildCompile" depends on it):
+15:23:51.623     1>Done building target "AfterBuildCompileEvent" in project "resourceMgr.vcxproj".: (TargetId:92)
+15:23:51.623     1>Target "BuildCompile: (TargetId:93)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Build" depends on it):
+15:23:51.623     1>Done building target "BuildCompile" in project "resourceMgr.vcxproj".: (TargetId:93)
+                   Target "AssignProjectConfiguration" skipped. Previously built successfully.
+                   Target "_SplitProjectReferencesByFileExistence" skipped. Previously built successfully.
+15:23:51.624     1>Target "BuildLinkTraverse: (TargetId:94)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildLink" depends on it):
+                   Task "MSBuild" skipped, due to false condition; ('$(BuildPassReferences)' == 'true' and '@(ProjectReferenceWithConfiguration)' != '' and '@(_MSBuildProjectReferenceExistent)' != ''  and '%(_MSBuildProjectReferenceExistent.BuildReference)' == 'true') was evaluated as ('' == 'true' and '' != '' and '' != ''  and '' == 'true').
+15:23:51.624     1>Done building target "BuildLinkTraverse" in project "resourceMgr.vcxproj".: (TargetId:94)
+                   Target "SetBuildDefaultEnvironmentVariables" skipped. Previously built successfully.
+                   Target "SetUserMacroEnvironmentVariables" skipped, due to false condition; ('@(BuildMacro)' != '') was evaluated as ('' != '').
+                   Target "PrepareForBuild" skipped. Previously built successfully.
+                   Target "ResolveReferences" skipped. Previously built successfully.
+15:23:51.624     1>Target "BeforeLink: (TargetId:95)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Link" depends on it):
+15:23:51.624     1>Done building target "BeforeLink" in project "resourceMgr.vcxproj".: (TargetId:95)
+15:23:51.624     1>Target "ComputeRCOutputs: (TargetId:96)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "ComputeRCGeneratedLinkInputs" depends on it):
+15:23:51.624     1>Done building target "ComputeRCOutputs" in project "resourceMgr.vcxproj".: (TargetId:96)
+15:23:51.624     1>Target "ComputeRCGeneratedLinkInputs: (TargetId:97)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Link" depends on it):
+15:23:51.625     1>Done building target "ComputeRCGeneratedLinkInputs" in project "resourceMgr.vcxproj".: (TargetId:97)
+15:23:51.625     1>Target "ComputeManifestGeneratedLinkerInputs: (TargetId:98)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Link" depends on it):
+15:23:51.625     1>Done building target "ComputeManifestGeneratedLinkerInputs" in project "resourceMgr.vcxproj".: (TargetId:98)
+15:23:51.625     1>Target "ComputeCustomBuildOutput: (TargetId:99)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Link" depends on it):
+                   Task "MakeDir" (TaskId:51)
+                   Done executing task "MakeDir". (TaskId:51)
+15:23:51.625     1>Done building target "ComputeCustomBuildOutput" in project "resourceMgr.vcxproj".: (TargetId:99)
+                   Target "ComputeMIDLGeneratedCompileInputs" skipped. Previously built successfully.
+                   Target "ComputeCLInputPDBName" skipped. Previously built successfully.
+                   Target "ComputeReferenceCLInput" skipped. Previously built successfully.
+15:23:51.625     1>Target "ComputeCLOutputs: (TargetId:100)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "ComputeCLGeneratedLinkInputs" depends on it):
+15:23:51.627     1>Done building target "ComputeCLOutputs" in project "resourceMgr.vcxproj".: (TargetId:100)
+15:23:51.627     1>Target "ComputeCLGeneratedLinkInputs: (TargetId:101)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Link" depends on it):
+15:23:51.627     1>Done building target "ComputeCLGeneratedLinkInputs" in project "resourceMgr.vcxproj".: (TargetId:101)
+15:23:51.627     1>Target "ComputeLinkInputsFromProject: (TargetId:102)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Link" depends on it):
+15:23:51.627     1>Done building target "ComputeLinkInputsFromProject" in project "resourceMgr.vcxproj".: (TargetId:102)
+                   Target "ComputeReferenceLinkInputs" skipped, due to false condition; (@(ProjectReference) != '') was evaluated as ( != '').
+15:23:51.627     1>Target "ComputeManifestInputsTargets: (TargetId:103)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Link" depends on it):
+15:23:51.627     1>Done building target "ComputeManifestInputsTargets" in project "resourceMgr.vcxproj".: (TargetId:103)
+15:23:51.627     1>Target "ManifestResourceCompile: (TargetId:104)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppCommon.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Link" depends on it):
+                   Task "WriteLinesToFile" (TaskId:52)
+                   Done executing task "WriteLinesToFile". (TaskId:52)
+                   Task "WriteLinesToFile" (TaskId:53)
+                   Done executing task "WriteLinesToFile". (TaskId:53)
+                   Task "WriteLinesToFile" skipped, due to false condition; ('$(ConfigurationType)'=='DynamicLibrary' AND !EXISTS('@(ManifestResourceCompile)')) was evaluated as ('Application'=='DynamicLibrary' AND !EXISTS('Debug\resourceMgr_manifest.rc')).
+                   Using "RC" task from assembly "Microsoft.Build.CppTasks.Common, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a".
+                   Task "RC" (TaskId:54)
+                     c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo"Debug\resourceMgr.exe.embed.manifest.res" Debug\resourceMgr_manifest.rc  (TaskId:54)
+                     Tracking command: (TaskId:54)
+                     c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\NETFX 4.0 Tools\Tracker.exe /d C:\Windows\Microsoft.NET\Framework\v4.0.30319\FileTracker.dll /i Z:\TPM2.0-TSS\resourceMgr\Debug /r Z:\TPM2.0-TSS\RESOURCEMGR\DEBUG\RESOURCEMGR_MANIFEST.RC /b MSBuildConsole_CancelEvent51826a9d3e5940a7a3764606d6c3fb5b  /c "c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe"  /nologo /fo"Debug\resourceMgr.exe.embed.manifest.res" Debug\resourceMgr_manifest.rc  (TaskId:54)
+                   Done executing task "RC". (TaskId:54)
+15:23:51.869     1>Done building target "ManifestResourceCompile" in project "resourceMgr.vcxproj".: (TargetId:104)
+                   Target "AssignWinFXEmbeddedResource" skipped, due to false condition; ('@(WinFXEmbeddedResource)' != '') was evaluated as ('' != '').
+15:23:51.869     1>Target "AssignTargetPaths: (TargetId:105)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "PrepareResourceNames" depends on it):
+                   Using "AssignTargetPath" task from assembly "Microsoft.Build.Tasks.v4.0, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a".
+                   Task "AssignTargetPath" (TaskId:55)
+                   Done executing task "AssignTargetPath". (TaskId:55)
+                   Task "AssignTargetPath" (TaskId:56)
+                   Done executing task "AssignTargetPath". (TaskId:56)
+                   Task "AssignTargetPath" (TaskId:57)
+                   Done executing task "AssignTargetPath". (TaskId:57)
+                   Task "AssignTargetPath" (TaskId:58)
+                   Done executing task "AssignTargetPath". (TaskId:58)
+                   Task "AssignTargetPath" skipped, due to false condition; ('@(_DeploymentBaseManifestWithTargetPath)'=='' and '%(None.Extension)'=='.manifest') was evaluated as (''=='' and '.vcxproj'=='.manifest').
+15:23:51.871     1>Done building target "AssignTargetPaths" in project "resourceMgr.vcxproj".: (TargetId:105)
+                   Target "AssignTargetPaths" skipped. Previously built successfully.
+15:23:51.871     1>Target "SplitResourcesByCulture: (TargetId:106)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "PrepareResourceNames" depends on it):
+                   Task "Warning" skipped, due to false condition; ('@(ResxWithNoCulture)'!='') was evaluated as (''!='').
+                   Task "Warning" skipped, due to false condition; ('@(ResxWithCulture)'!='') was evaluated as (''!='').
+                   Task "Warning" skipped, due to false condition; ('@(NonResxWithCulture)'!='') was evaluated as (''!='').
+                   Task "Warning" skipped, due to false condition; ('@(NonResxWithNoCulture)'!='') was evaluated as (''!='').
+                   Using "AssignCulture" task from assembly "Microsoft.Build.Tasks.v4.0, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a".
+                   Task "AssignCulture" (TaskId:59)
+                   Done executing task "AssignCulture". (TaskId:59)
+15:23:51.873     1>Done building target "SplitResourcesByCulture" in project "resourceMgr.vcxproj".: (TargetId:106)
+                   Target "CreateManifestResourceNames" skipped, due to false condition; ('@(EmbeddedResource)' != '') was evaluated as ('' != '').
+15:23:51.874     1>Target "CreateCustomManifestResourceNames: (TargetId:107)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "PrepareResourceNames" depends on it):
+15:23:51.874     1>Done building target "CreateCustomManifestResourceNames" in project "resourceMgr.vcxproj".: (TargetId:107)
+15:23:51.874     1>Target "PrepareResourceNames: (TargetId:108)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Link" depends on it):
+15:23:51.874     1>Done building target "PrepareResourceNames" in project "resourceMgr.vcxproj".: (TargetId:108)
+15:23:51.874     1>Target "MakeDirsForLink: (TargetId:109)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Link" depends on it):
+                   Task "MakeDir" (TaskId:60)
+                   Done executing task "MakeDir". (TaskId:60)
+15:23:51.875     1>Done building target "MakeDirsForLink" in project "resourceMgr.vcxproj".: (TargetId:109)
+15:23:51.875     1>Target "DoLinkOutputFilesMatch: (TargetId:110)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Link" depends on it):
+                   Task "VCMessage" skipped, due to false condition; ('%(_OutputFileFromLink.FullPath)' != '$([System.IO.Path]::GetFullPath($(TargetPath)))') was evaluated as ('Z:\TPM2.0-TSS\resourceMgr\Debug\resourceMgr.exe' != 'Z:\TPM2.0-TSS\resourceMgr\Debug\resourceMgr.exe').
+                   Task "VCMessage" skipped, due to false condition; ('%(_OutputFileFromLink.Extension)' != '$(TargetExt)') was evaluated as ('.exe' != '.exe').
+                   Task "VCMessage" skipped, due to false condition; ('%(_OutputFileFromLink.Filename)' != '$(TargetName)') was evaluated as ('resourceMgr' != 'resourceMgr').
+15:23:51.880     1>Done building target "DoLinkOutputFilesMatch" in project "resourceMgr.vcxproj".: (TargetId:110)
+15:23:51.880     1>Target "PreLinkEvent: (TargetId:111)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppCommon.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Link" depends on it):
+                   Task "Message" skipped, due to false condition; ('%(PreLinkEvent.Message)' != '' and '%(PreLinkEvent.Command)' != '') was evaluated as ('' != '' and '' != '').
+                   Task "Exec" skipped, due to false condition; ('%(PreLinkEvent.Command)' != '') was evaluated as ('' != '').
+15:23:51.880     1>Done building target "PreLinkEvent" in project "resourceMgr.vcxproj".: (TargetId:111)
+15:23:51.880     1>Target "Link: (TargetId:112)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Platforms\Win32\Microsoft.Cpp.Win32.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Link" depends on it):
+                   Using "Link" task from assembly "Microsoft.Build.CppTasks.Win32, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a".
+                   Task "Link" (TaskId:61)
+                     Environment Variables passed to tool: (TaskId:61)
+                       VS_UNICODE_OUTPUT=1372 (TaskId:61)
+                     c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"Debug\resourceMgr.exe" /INCREMENTAL /NOLOGO /LIBPATH:..\sysapi\lib\Debug kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib tpm.lib /MANIFEST /ManifestFile:"Debug\resourceMgr.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"Z:\TPM2.0-TSS\resourceMgr\Debug\resourceMgr.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"Debug\resourceMgr.lib" /MACHINE:X86 Debug\resourceMgr.exe.embed.manifest.res
+                     Debug\debug.obj
+                     Debug\platformcommand.obj
+                     Debug\syscontext.obj
+                     Debug\tpmsockets.obj
+                     Debug\resourcemgr.obj (TaskId:61)
+                     Tracking command: (TaskId:61)
+                     c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\NETFX 4.0 Tools\Tracker.exe /a /d C:\Windows\Microsoft.NET\Framework\v4.0.30319\FileTracker.dll /i Z:\TPM2.0-TSS\resourceMgr\Debug /r "Z:\TPM2.0-TSS\RESOURCEMGR\DEBUG\DEBUG.OBJ|Z:\TPM2.0-TSS\RESOURCEMGR\DEBUG\PLATFORMCOMMAND.OBJ|Z:\TPM2.0-TSS\RESOURCEMGR\DEBUG\RESOURCEMGR.EXE.EMBED.MANIFEST.RES|Z:\TPM2.0-TSS\RESOURCEMGR\DEBUG\RESOURCEMGR.OBJ|Z:\TPM2.0-TSS\RESOURCEMGR\DEBUG\SYSCONTEXT.OBJ|Z:\TPM2.0-TSS\RESOURCEMGR\DEBUG\TPMSOCKETS.OBJ" /b MSBuildConsole_CancelEventa3e4638c8b4347fb8cf06f242f0620f6  /c "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe"  /ERRORREPORT:PROMPT /OUT:"Debug\resourceMgr.exe" /INCREMENTAL /NOLOGO /LIBPATH:..\sysapi\lib\Debug kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib tpm.lib /MANIFEST /ManifestFile:"Debug\resourceMgr.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"Z:\TPM2.0-TSS\resourceMgr\Debug\resourceMgr.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"Debug\resourceMgr.lib" /MACHINE:X86 Debug\resourceMgr.exe.embed.manifest.res
+                     Debug\debug.obj
+                     Debug\platformcommand.obj
+                     Debug\syscontext.obj
+                     Debug\tpmsockets.obj
+                     Debug\resourcemgr.obj (TaskId:61)
+15:23:52.131     1>LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+                   Done executing task "Link". (TaskId:61)
+                   Task "Message" skipped, due to false condition; ('$(EmbedManifestBy)' != 'LINK') was evaluated as ('LINK' != 'LINK').
+15:23:52.488     1>Done building target "Link" in project "resourceMgr.vcxproj".: (TargetId:112)
+15:23:52.488     1>Target "_DetermineManagedStateForLink: (TargetId:113)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Link" depends on it):
+15:23:52.488     1>Done building target "_DetermineManagedStateForLink" in project "resourceMgr.vcxproj".: (TargetId:113)
+15:23:52.488     1>Target "ComputeLinkImportLibraryOutputsForClean: (TargetId:114)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Link" depends on it):
+                   Task "WriteLinesToFile" skipped, due to false condition; ('@(_LinkImportLibrary)' != '') was evaluated as ('' != '').
+15:23:52.489     1>Done building target "ComputeLinkImportLibraryOutputsForClean" in project "resourceMgr.vcxproj".: (TargetId:114)
+15:23:52.489     1>Target "AfterLink: (TargetId:115)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Link" depends on it):
+15:23:52.489     1>Done building target "AfterLink" in project "resourceMgr.vcxproj".: (TargetId:115)
+15:23:52.489     1>Target "_Link: (TargetId:116)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildLink" depends on it):
+15:23:52.489     1>Done building target "_Link" in project "resourceMgr.vcxproj".: (TargetId:116)
+15:23:52.489     1>Target "_ALink: (TargetId:117)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildLink" depends on it):
+15:23:52.489     1>Done building target "_ALink" in project "resourceMgr.vcxproj".: (TargetId:117)
+                   Target "ComputeManifestInputsTargets" skipped. Previously built successfully.
+15:23:52.489     1>Target "MakeDirsForManifest: (TargetId:118)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppCommon.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Manifest" depends on it):
+                   Task "MakeDir" (TaskId:62)
+                   Done executing task "MakeDir". (TaskId:62)
+15:23:52.489     1>Done building target "MakeDirsForManifest" in project "resourceMgr.vcxproj".: (TargetId:118)
+15:23:52.489     1>Target "Manifest: (TargetId:119)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppCommon.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Manifest" depends on it):
+                   Task "Delete" (TaskId:63)
+                     Deleting file "Debug\resourceMgr.exe.embed.manifest". (TaskId:63)
+                   Done executing task "Delete". (TaskId:63)
+                   Using "Mt" task from assembly "Microsoft.Build.CppTasks.Common, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a".
+                   Task "Mt" (TaskId:64)
+                     c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /out:"Debug\resourceMgr.exe.embed.manifest" /manifest Debug\resourceMgr.exe.intermediate.manifest (TaskId:64)
+                     Tracking command: (TaskId:64)
+                     c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\NETFX 4.0 Tools\Tracker.exe /d C:\Windows\Microsoft.NET\Framework\v4.0.30319\FileTracker.dll /i Z:\TPM2.0-TSS\resourceMgr\Debug /r Z:\TPM2.0-TSS\RESOURCEMGR\DEBUG\RESOURCEMGR.EXE.INTERMEDIATE.MANIFEST /b MSBuildConsole_CancelEvent6f32c673e91441299768438abaed3e67  /c "c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe"  /nologo /verbose /out:"Debug\resourceMgr.exe.embed.manifest" /manifest Debug\resourceMgr.exe.intermediate.manifest (TaskId:64)
+                   Done executing task "Mt". (TaskId:64)
+                   Task "RC" (TaskId:65)
+                     c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo"Debug\resourceMgr.exe.embed.manifest.res" Debug\resourceMgr_manifest.rc  (TaskId:65)
+                     Tracking command: (TaskId:65)
+                     c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\NETFX 4.0 Tools\Tracker.exe /d C:\Windows\Microsoft.NET\Framework\v4.0.30319\FileTracker.dll /i Z:\TPM2.0-TSS\resourceMgr\Debug /r Z:\TPM2.0-TSS\RESOURCEMGR\DEBUG\RESOURCEMGR_MANIFEST.RC /b MSBuildConsole_CancelEvent31576c200faf4f5f8569baf488768c68  /c "c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe"  /nologo /fo"Debug\resourceMgr.exe.embed.manifest.res" Debug\resourceMgr_manifest.rc  (TaskId:65)
+                   Done executing task "RC". (TaskId:65)
+15:23:52.876     1>Done building target "Manifest" in project "resourceMgr.vcxproj".: (TargetId:119)
+                   Target "ComputeManifestGeneratedLinkerInputs" skipped. Previously built successfully.
+15:23:52.876     1>Target "LinkEmbedManifest: (TargetId:120)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Platforms\Win32\Microsoft.Cpp.Win32.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_Manifest" depends on it):
+                   Task "Link" (TaskId:66)
+                     Environment Variables passed to tool: (TaskId:66)
+                       VS_UNICODE_OUTPUT=1556 (TaskId:66)
+                     c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"Debug\resourceMgr.exe" /INCREMENTAL /NOLOGO /LIBPATH:..\sysapi\lib\Debug kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib tpm.lib /MANIFEST /ManifestFile:"Debug\resourceMgr.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"Z:\TPM2.0-TSS\resourceMgr\Debug\resourceMgr.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"Debug\resourceMgr.lib" /MACHINE:X86 Debug\resourceMgr.exe.embed.manifest.res
+                     Debug\debug.obj
+                     Debug\platformcommand.obj
+                     Debug\syscontext.obj
+                     Debug\tpmsockets.obj
+                     Debug\resourcemgr.obj (TaskId:66)
+                     Tracking command: (TaskId:66)
+                     c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\NETFX 4.0 Tools\Tracker.exe /a /d C:\Windows\Microsoft.NET\Framework\v4.0.30319\FileTracker.dll /i Z:\TPM2.0-TSS\resourceMgr\Debug /r "Z:\TPM2.0-TSS\RESOURCEMGR\DEBUG\DEBUG.OBJ|Z:\TPM2.0-TSS\RESOURCEMGR\DEBUG\PLATFORMCOMMAND.OBJ|Z:\TPM2.0-TSS\RESOURCEMGR\DEBUG\RESOURCEMGR.EXE.EMBED.MANIFEST.RES|Z:\TPM2.0-TSS\RESOURCEMGR\DEBUG\RESOURCEMGR.OBJ|Z:\TPM2.0-TSS\RESOURCEMGR\DEBUG\SYSCONTEXT.OBJ|Z:\TPM2.0-TSS\RESOURCEMGR\DEBUG\TPMSOCKETS.OBJ" /b MSBuildConsole_CancelEventc9fffc1308674b6ebe812d8a1ac0333e  /c "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe"  /ERRORREPORT:PROMPT /OUT:"Debug\resourceMgr.exe" /INCREMENTAL /NOLOGO /LIBPATH:..\sysapi\lib\Debug kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib tpm.lib /MANIFEST /ManifestFile:"Debug\resourceMgr.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"Z:\TPM2.0-TSS\resourceMgr\Debug\resourceMgr.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"Debug\resourceMgr.lib" /MACHINE:X86 Debug\resourceMgr.exe.embed.manifest.res
+                     Debug\debug.obj
+                     Debug\platformcommand.obj
+                     Debug\syscontext.obj
+                     Debug\tpmsockets.obj
+                     Debug\resourcemgr.obj (TaskId:66)
+15:23:53.087     1>LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+                   Done executing task "Link". (TaskId:66)
+                   Task "Message" (TaskId:67)
+                     resourceMgr.vcxproj -> Z:\TPM2.0-TSS\resourceMgr\Debug\resourceMgr.exe (TaskId:67)
+                   Done executing task "Message". (TaskId:67)
+15:23:53.553     1>Done building target "LinkEmbedManifest" in project "resourceMgr.vcxproj".: (TargetId:120)
+15:23:53.553     1>Target "_Manifest: (TargetId:121)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildLink" depends on it):
+15:23:53.553     1>Done building target "_Manifest" in project "resourceMgr.vcxproj".: (TargetId:121)
+15:23:53.554     1>Target "RegisterOutput: (TargetId:122)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppCommon.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildLink" depends on it):
+                   Task "Exec" skipped, due to false condition; ('$(ConfigurationType)'=='DynamicLibrary' and '%(Link.RegisterOutput)'=='true' and '%(Link.PerUserRedirection)'!='true') was evaluated as ('Application'=='DynamicLibrary' and 'false'=='true' and 'false'!='true').
+                   Task "Exec" skipped, due to false condition; ('$(ConfigurationType)'=='DynamicLibrary' and '%(Link.RegisterOutput)'=='true' and '%(Link.PerUserRedirection)'=='true') was evaluated as ('Application'=='DynamicLibrary' and 'false'=='true' and 'false'=='true').
+                   Task "Exec" skipped, due to false condition; ('$(ConfigurationType)'=='Application' and '%(Link.RegisterOutput)'=='true' and '%(Link.PerUserRedirection)'!='true') was evaluated as ('Application'=='Application' and 'false'=='true' and 'false'!='true').
+                   Task "Exec" skipped, due to false condition; ('$(ConfigurationType)'=='Application' and '%(Link.RegisterOutput)'=='true' and '%(Link.PerUserRedirection)'=='true') was evaluated as ('Application'=='Application' and 'false'=='true' and 'false'=='true').
+                   Task "VCMessage" skipped, due to false condition; ('$(_RegisterOutputExitCode)' != '' and '$(_RegisterOutputExitCode)' != '0') was evaluated as ('' != '' and '' != '0').
+15:23:53.554     1>Done building target "RegisterOutput" in project "resourceMgr.vcxproj".: (TargetId:122)
+15:23:53.554     1>Target "ComputeCLCompileGeneratedXDCFiles: (TargetId:123)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_XdcMake" depends on it):
+15:23:53.554     1>Done building target "ComputeCLCompileGeneratedXDCFiles" in project "resourceMgr.vcxproj".: (TargetId:123)
+                   Target "SetBuildDefaultEnvironmentVariables" skipped. Previously built successfully.
+                   Target "SetUserMacroEnvironmentVariables" skipped, due to false condition; ('@(BuildMacro)' != '') was evaluated as ('' != '').
+                   Target "PrepareForBuild" skipped. Previously built successfully.
+                   Target "ResolveReferences" skipped. Previously built successfully.
+15:23:53.554     1>Target "ResolvedXDCMake: (TargetId:124)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_XdcMake" depends on it):
+                   Task "MSBuild" skipped, due to false condition; ('%(_MSBuildProjectReferenceExistent.Extension)' == '.vcxproj' and '@(ProjectReferenceWithConfiguration)' != '' and '@(_MSBuildProjectReferenceExistent)' != '' and '$(_ClCompileGenerateXMLDocumentationFiles)' == 'true') was evaluated as ('' == '.vcxproj' and '' != '' and '' != '' and '' == 'true').
+15:23:53.555     1>Done building target "ResolvedXDCMake" in project "resourceMgr.vcxproj".: (TargetId:124)
+15:23:53.555     1>Target "MakeDirsForXdcMake: (TargetId:125)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_XdcMake" depends on it):
+                   Task "MakeDir" (TaskId:68)
+                   Done executing task "MakeDir". (TaskId:68)
+15:23:53.555     1>Done building target "MakeDirsForXdcMake" in project "resourceMgr.vcxproj".: (TargetId:125)
+                   Target "XdcMake" skipped, due to false condition; ('@(XdcMake)' != '') was evaluated as ('' != '').
+15:23:53.555     1>Target "_XdcMake: (TargetId:126)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildLink" depends on it):
+15:23:53.555     1>Done building target "_XdcMake" in project "resourceMgr.vcxproj".: (TargetId:126)
+15:23:53.555     1>Target "ComputeCLCompileGeneratedSbrFiles: (TargetId:127)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_BscMake" depends on it):
+15:23:53.555     1>Done building target "ComputeCLCompileGeneratedSbrFiles" in project "resourceMgr.vcxproj".: (TargetId:127)
+15:23:53.555     1>Target "MakeDirsForBscMake: (TargetId:128)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_BscMake" depends on it):
+                   Task "MakeDir" (TaskId:69)
+                   Done executing task "MakeDir". (TaskId:69)
+15:23:53.555     1>Done building target "MakeDirsForBscMake" in project "resourceMgr.vcxproj".: (TargetId:128)
+                   Target "BscMake" skipped, due to false condition; ('@(BscMake)' != '') was evaluated as ('' != '').
+                   Target "CustomBuildStep" skipped, due to false condition; ('@(CustomBuildStep)' != '' and '$(SelectedFiles)'=='') was evaluated as ('' != '' and ''=='').
+15:23:53.555     1>Target "_BscMake: (TargetId:129)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildLink" depends on it):
+15:23:53.555     1>Done building target "_BscMake" in project "resourceMgr.vcxproj".: (TargetId:129)
+                   Target "RunCodeAnalysis" skipped, due to false condition; ('$(RunCodeAnalysis)'=='true' or '$(RunCodeAnalysisOnce)'=='true') was evaluated as (''=='true' or ''=='true').
+15:23:53.555     1>Target "_GenerateSatelliteAssemblyInputs: (TargetId:130)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "CreateSatelliteAssemblies" depends on it):
+                   Task "Warning" skipped, due to false condition; ('@(ManifestResourceWithCulture)'!='' and '%(ManifestResourceWithCulture.EmittedForCompatibilityOnly)'=='') was evaluated as (''!='' and ''=='').
+                   Task "Warning" skipped, due to false condition; ('@(ManifestNonResxWithCultureOnDisk)'!='' and '%(ManifestNonResxWithCultureOnDisk.EmittedForCompatibilityOnly)'=='') was evaluated as (''!='' and ''=='').
+15:23:53.555     1>Done building target "_GenerateSatelliteAssemblyInputs" in project "resourceMgr.vcxproj".: (TargetId:130)
+                   Target "ComputeIntermediateSatelliteAssemblies" skipped, due to false condition; (@(ReferenceSatellitePaths->'%(DestinationSubDirectory)') != '') was evaluated as ( != '').
+                   Target "GenerateSatelliteAssemblies" skipped, due to false condition; ('@(_SatelliteAssemblyResourceInputs)' != '') was evaluated as ('' != '').
+15:23:53.555     1>Target "CreateSatelliteAssemblies: (TargetId:131)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildLink" depends on it):
+15:23:53.555     1>Done building target "CreateSatelliteAssemblies" in project "resourceMgr.vcxproj".: (TargetId:131)
+15:23:53.555     1>Target "_Appverifier: (TargetId:132)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildLink" depends on it):
+15:23:53.555     1>Done building target "_Appverifier" in project "resourceMgr.vcxproj".: (TargetId:132)
+15:23:53.555     1>Target "_Deploy: (TargetId:133)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildLink" depends on it):
+15:23:53.555     1>Done building target "_Deploy" in project "resourceMgr.vcxproj".: (TargetId:133)
+                   Target "ComputeIntermediateSatelliteAssemblies" skipped, due to false condition; (@(ReferenceSatellitePaths->'%(DestinationSubDirectory)') != '') was evaluated as ( != '').
+                   Target "_CopyFilesMarkedCopyLocal" skipped, due to false condition; ('@(ReferenceCopyLocalPaths)' != '') was evaluated as ('' != '').
+                   Target "AssignTargetPaths" skipped. Previously built successfully.
+                   Target "_SplitProjectReferencesByFileExistence" skipped. Previously built successfully.
+15:23:53.556     1>Target "GetCopyToOutputDirectoryXamlAppDefs: (TargetId:134)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Xaml.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "GetCopyToOutputDirectoryItems" depends on it):
+                   Task "AssignTargetPath" (TaskId:70)
+                   Done executing task "AssignTargetPath". (TaskId:70)
+15:23:53.556     1>Done building target "GetCopyToOutputDirectoryXamlAppDefs" in project "resourceMgr.vcxproj".: (TargetId:134)
+15:23:53.556     1>Target "GetCopyToOutputDirectoryItems: (TargetId:135)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "_CopySourceItemsToOutputDirectory" depends on it):
+                   Task "MSBuild" skipped, due to false condition; ('@(_MSBuildProjectReferenceExistent)' != '' and '$(_GetChildProjectCopyToOutputDirectoryItems)' == 'true' and '%(_MSBuildProjectReferenceExistent.Private)' != 'false' and '$(UseCommonOutputDirectory)' != 'true') was evaluated as ('' != '' and 'true' == 'true' and '' != 'false' and 'false' != 'true').
+                   Task "AssignTargetPath" (TaskId:71)
+                   Done executing task "AssignTargetPath". (TaskId:71)
+15:23:53.556     1>Done building target "GetCopyToOutputDirectoryItems" in project "resourceMgr.vcxproj".: (TargetId:135)
+                   Target "_CopyOutOfDateSourceItemsToOutputDirectory" skipped, due to false condition; ( '@(_SourceItemsToCopyToOutputDirectory)' != '' ) was evaluated as ( '' != '' ).
+                   Target "_CopyOutOfDateSourceItemsToOutputDirectoryAlways" skipped, due to false condition; ( '@(_SourceItemsToCopyToOutputDirectoryAlways)' != '' ) was evaluated as ( '' != '' ).
+15:23:53.556     1>Target "_CopySourceItemsToOutputDirectory: (TargetId:136)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "CopyFilesToOutputDirectory" depends on it):
+15:23:53.556     1>Done building target "_CopySourceItemsToOutputDirectory" in project "resourceMgr.vcxproj".: (TargetId:136)
+                   Target "_CopyAppConfigFile" skipped, due to false condition; ( '@(AppConfigWithTargetPath)' != '' ) was evaluated as ( '' != '' ).
+                   Target "_CopyManifestFiles" skipped, due to false condition; ( '$(_DeploymentCopyApplicationManifest)'=='true' or '$(GenerateClickOnceManifests)'=='true' ) was evaluated as ( ''=='true' or ''=='true' ).
+15:23:53.556     1>Target "_CheckForCompileOutputs: (TargetId:137)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "CopyFilesToOutputDirectory" depends on it):
+15:23:53.557     1>Done building target "_CheckForCompileOutputs" in project "resourceMgr.vcxproj".: (TargetId:137)
+                   Target "_SGenCheckForOutputs" skipped, due to false condition; ('$(_SGenGenerateSerializationAssembliesConfig)' == 'On' or ('@(WebReferenceUrl)'!='' and '$(_SGenGenerateSerializationAssembliesConfig)' == 'Auto')) was evaluated as ('Off' == 'On' or (''!='' and 'Off' == 'Auto')).
+15:23:53.557     1>Target "CopyFilesToOutputDirectory: (TargetId:138)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildLink" depends on it):
+                   Task "Copy" skipped, due to false condition; ('$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)' != 'true') was evaluated as ('true' == 'true' and 'true' != 'true').
+                   Task "Message" skipped, due to false condition; ('$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)'!='true') was evaluated as ('true' == 'true' and 'true'!='true').
+                   Task "Copy" skipped, due to false condition; ('@(AddModules)' != '') was evaluated as ('' != '').
+                   Task "Copy" skipped, due to false condition; ('$(_SGenDllCreated)'=='true') was evaluated as ('false'=='true').
+                   Using "Copy" task from assembly "Microsoft.Build.Tasks.v4.0, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a".
+                   Task "Copy" (TaskId:72)
+                     Did not copy from file "Debug\resourceMgr.pdb" to file "Debug\resourceMgr.pdb" because the "SkipUnchangedFiles" parameter was set to "true" in the project and the files' sizes and timestamps match. (TaskId:72)
+                   Done executing task "Copy". (TaskId:72)
+                   Task "Copy" skipped, due to false condition; ('$(_DocumentationFileProduced)'=='true') was evaluated as ('false'=='true').
+                   Task "Copy" skipped, due to false condition; ('@(IntermediateSatelliteAssembliesWithTargetPath)' != '') was evaluated as ('' != '').
+                   Task "Copy" skipped, due to false condition; ('@(ReferenceComWrappersToCopyLocal)' != '' or '@(ResolvedIsolatedComModules)' != '' or '@(_DeploymentLooseManifestFile)' != '' or '@(NativeReferenceFile)' != '' ) was evaluated as ('' != '' or '' != '' or '' != '' or '' != '' ).
+                   Task "Copy" skipped, due to false condition; ('$(SkipCopyWinMDArtifact)' != 'true' and '@(WinMDExpArtifacts)' != '') was evaluated as ('' != 'true' and '' != '').
+                   Task "Message" skipped, due to false condition; ('$(SkipCopyWinMDArtifact)' != 'true' and '$(_WindowsMetadataOutputPath)' != '') was evaluated as ('' != 'true' and '' != '').
+15:23:53.561     1>Done building target "CopyFilesToOutputDirectory" in project "resourceMgr.vcxproj".: (TargetId:138)
+                   Target "CustomBuildStep" skipped, due to false condition; ('@(CustomBuildStep)' != '' and '$(SelectedFiles)'=='') was evaluated as ('' != '' and ''=='').
+15:23:53.561     1>Target "PostBuildEvent: (TargetId:139)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppCommon.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "BuildLink" depends on it):
+                   Task "Message" skipped, due to false condition; ('%(PostBuildEvent.Message)' != '' and '%(PostBuildEvent.Command)' != '') was evaluated as ('' != '' and '' != '').
+                   Task "Exec" skipped, due to false condition; ('%(PostBuildEvent.Command)' != '') was evaluated as ('' != '').
+15:23:53.561     1>Done building target "PostBuildEvent" in project "resourceMgr.vcxproj".: (TargetId:139)
+15:23:53.561     1>Target "BuildLink: (TargetId:140)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Build" depends on it):
+15:23:53.561     1>Done building target "BuildLink" in project "resourceMgr.vcxproj".: (TargetId:140)
+15:23:53.561     1>Target "AfterBuild: (TargetId:141)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.BuildSteps.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Build" depends on it):
+15:23:53.561     1>Done building target "AfterBuild" in project "resourceMgr.vcxproj".: (TargetId:141)
+15:23:53.561     1>Target "FinalizeBuildStatus: (TargetId:142)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Build" depends on it):
+                   Task "Delete" (TaskId:73)
+                     Deleting file "Debug\resourceMgr.unsuccessfulbuild". (TaskId:73)
+                   Done executing task "Delete". (TaskId:73)
+                   Task "Touch" (TaskId:74)
+                     Touching "Debug\resourceMgr.lastbuildstate". (TaskId:74)
+                   Done executing task "Touch". (TaskId:74)
+15:23:53.564     1>Done building target "FinalizeBuildStatus" in project "resourceMgr.vcxproj".: (TargetId:142)
+15:23:53.564     1>Target "Build: (TargetId:143)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.BuildSteps.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Rebuild" depends on it):
+15:23:53.564     1>Done building target "Build" in project "resourceMgr.vcxproj".: (TargetId:143)
+15:23:53.564     1>Target "AfterRebuild: (TargetId:144)" in file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Common.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (target "Rebuild" depends on it):
+15:23:53.564     1>Done building target "AfterRebuild" in project "resourceMgr.vcxproj".: (TargetId:144)
+15:23:53.564     1>Target "Rebuild: (TargetId:145)" in file "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.BuildSteps.Targets" from project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (entry point):
+15:23:53.564     1>Done building target "Rebuild" in project "resourceMgr.vcxproj".: (TargetId:145)
+15:23:53.564     1>Done Building Project "Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj" (rebuild target(s)).
+
+Project Performance Summary:
+     5575 ms  Z:\TPM2.0-TSS\resourceMgr\resourceMgr.vcxproj   1 calls
+               5575 ms  rebuild                                    1 calls
+
+Target Performance Summary:
+        0 ms  ComputeManifestGeneratedLinkerInputs       1 calls
+        0 ms  SelectCustomBuild                          1 calls
+        0 ms  ComputeCLCompileGeneratedXDCFiles          1 calls
+        0 ms  _Manifest                                  1 calls
+        0 ms  SelectClCompile                            1 calls
+        0 ms  ResolveReferences                          1 calls
+        0 ms  MakeDirsForManifest                        1 calls
+        0 ms  ComputeCLCompileGeneratedSbrFiles          1 calls
+        0 ms  AfterClean                                 1 calls
+        0 ms  AfterClCompile                             1 calls
+        0 ms  ExpandSDKReferences                        1 calls
+        0 ms  Clean                                      1 calls
+        0 ms  BeforeLink                                 1 calls
+        0 ms  AfterCppClean                              1 calls
+        0 ms  ComputeMIDLGeneratedCompileInputs          1 calls
+        0 ms  ComputeManifestInputsTargets               1 calls
+        0 ms  AfterBuildCompileEvent                     1 calls
+        0 ms  AfterBuild                                 1 calls
+        0 ms  _Midl                                      1 calls
+        0 ms  _PrepareForBuild                           1 calls
+        0 ms  CleanPublishFolder                         1 calls
+        0 ms  GetReferenceAssemblyPaths                  1 calls
+        0 ms  _ClCompile                                 1 calls
+        0 ms  BeforeClean                                1 calls
+        0 ms  AfterBuildGenerateSources                  1 calls
+        0 ms  _DetermineManagedStateForLink              1 calls
+        0 ms  _Xsd                                       1 calls
+        0 ms  Rebuild                                    1 calls
+        0 ms  RegisterOutput                             1 calls
+        0 ms  GetCopyToOutputDirectoryXamlAppDefs        1 calls
+        0 ms  GetFrameworkPaths                          1 calls
+        0 ms  BuildGenerateSources                       1 calls
+        0 ms  ComputeCLInputPDBName                      1 calls
+        0 ms  ComputeCustomBuildOutput                   1 calls
+        0 ms  _PrepareForClean                           1 calls
+        0 ms  AfterResourceCompile                       1 calls
+        0 ms  _GenerateXMLData                           1 calls
+        0 ms  BuildLinkTraverse                          1 calls
+        0 ms  _Link                                      1 calls
+        0 ms  CreateSatelliteAssemblies                  1 calls
+        0 ms  _XdcMake                                   1 calls
+        0 ms  ComputeRCOutputs                           1 calls
+        0 ms  BeforeRebuild                              1 calls
+        0 ms  PostBuildEvent                             1 calls
+        0 ms  MakeDirsForBscMake                         1 calls
+        0 ms  BeforeCppClean                             1 calls
+        0 ms  ComputeLinkInputsFromProject               1 calls
+        0 ms  _ResourceCompile                           1 calls
+        0 ms  GetCopyToOutputDirectoryItems              1 calls
+        0 ms  PrepareResourceNames                       1 calls
+        0 ms  AfterLink                                  1 calls
+        0 ms  BeforeClCompile                            1 calls
+        0 ms  ComputeCLGeneratedLinkInputs               1 calls
+        0 ms  _SplitProjectReferencesByFileExistence     1 calls
+        0 ms  _GenerateWebServiceProxy                   1 calls
+        0 ms  AssignProjectConfiguration                 1 calls
+        0 ms  BuildCompile                               1 calls
+        0 ms  BuildGenerateSourcesTraverse               1 calls
+        0 ms  _ALink                                     1 calls
+        0 ms  AfterRebuild                               1 calls
+        0 ms  BuildLink                                  1 calls
+        0 ms  _Appverifier                               1 calls
+        0 ms  _BscMake                                   1 calls
+        0 ms  PreBuildEvent                              1 calls
+        0 ms  AfterResolveReferences                     1 calls
+        0 ms  _SelectedFiles                             1 calls
+        0 ms  ResolveSDKReferences                       1 calls
+        0 ms  BeforeResolveReferences                    1 calls
+        0 ms  CppClean                                   1 calls
+        0 ms  _Deploy                                    1 calls
+        0 ms  AfterBuildGenerateSourcesEvent             1 calls
+        0 ms  BeforeBuildGenerateSources                 1 calls
+        0 ms  Build                                      1 calls
+        0 ms  _CheckForInvalidConfigurationAndPlatform   1 calls
+        0 ms  AfterMidl                                  1 calls
+        0 ms  _CopySourceItemsToOutputDirectory          1 calls
+        0 ms  PreLinkEvent                               1 calls
+        0 ms  _GenerateSatelliteAssemblyInputs           1 calls
+        0 ms  CreateCustomManifestResourceNames          1 calls
+        0 ms  PrepareForBuild                            1 calls
+        0 ms  MakeDirsForXdcMake                         1 calls
+        1 ms  BeforeResourceCompile                      1 calls
+        1 ms  ResolveProjectReferences                   1 calls
+        1 ms  GetInstalledSDKLocations                   1 calls
+        1 ms  ComputeRCGeneratedLinkInputs               1 calls
+        1 ms  _CheckForCompileOutputs                    1 calls
+        1 ms  BuildCompileTraverse                       1 calls
+        1 ms  ResolvedXDCMake                            1 calls
+        1 ms  _DetermineManagedStateFromCL               1 calls
+        1 ms  MakeDirsForLink                            1 calls
+        1 ms  CleanReferencedProjects                    1 calls
+        1 ms  ComputeReferenceCLInput                    1 calls
+        1 ms  MakeDirsForResourceCompile                 1 calls
+        1 ms  PlatformPrepareForBuild                    1 calls
+        1 ms  _PrepareForRebuild                         1 calls
+        1 ms  ComputeLinkImportLibraryOutputsForClean    1 calls
+        1 ms  SetBuildDefaultEnvironmentVariables        1 calls
+        2 ms  SplitResourcesByCulture                    1 calls
+        2 ms  ComputeCLOutputs                           1 calls
+        2 ms  CoreClean                                  1 calls
+        2 ms  AssignTargetPaths                          1 calls
+        3 ms  FinalizeBuildStatus                        1 calls
+        3 ms  MakeDirsForMidl                            1 calls
+        4 ms  CopyFilesToOutputDirectory                 1 calls
+        5 ms  PGInstrumentedClean                        1 calls
+        5 ms  DoLinkOutputFilesMatch                     1 calls
+        7 ms  ResolveAssemblyReferences                  1 calls
+        9 ms  MakeDirsForCl                              1 calls
+       10 ms  CoreCppClean                               1 calls
+       36 ms  InitializeBuildStatus                      1 calls
+      241 ms  ManifestResourceCompile                    1 calls
+      387 ms  Manifest                                   1 calls
+      608 ms  Link                                       1 calls
+      677 ms  LinkEmbedManifest                          1 calls
+     3547 ms  ClCompile                                  1 calls
+
+Task Performance Summary:
+        0 ms  SetEnv                                     4 calls
+        0 ms  AssignProjectConfiguration                 1 calls
+        0 ms  Message                                    3 calls
+        0 ms  FindUnderPath                              2 calls
+        0 ms  RemoveDuplicates                           1 calls
+        1 ms  AssignCulture                              1 calls
+        2 ms  ReadLinesFromFile                          2 calls
+        2 ms  AssignTargetPath                           6 calls
+        2 ms  Delete                                     6 calls
+        4 ms  Copy                                       1 calls
+        4 ms  MakeDir                                   12 calls
+        7 ms  ResolveAssemblyReference                   1 calls
+       10 ms  CppClean                                   1 calls
+       10 ms  Touch                                      2 calls
+       28 ms  WriteLinesToFile                           6 calls
+      211 ms  Mt                                         1 calls
+      405 ms  RC                                         2 calls
+     1283 ms  Link                                       2 calls
+     3494 ms  CL                                         2 calls
+
+Build succeeded.
+
+Time Elapsed 00:00:05.59
