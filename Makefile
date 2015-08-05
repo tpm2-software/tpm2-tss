@@ -29,17 +29,17 @@
 all:  debug release 
 
 debug: 
-	$(MAKE) -C test/tpmclient -f makefile TARGET_TYPE=debug
-	$(MAKE) -C resourcemgr -f makefile TARGET_TYPE=debug
+	$(MAKE) -C test/tpmclient TARGET_TYPE=debug
+	$(MAKE) -C resourcemgr TARGET_TYPE=debug
 
 release: 
-	$(MAKE) -C test/tpmclient -f makefile TARGET_TYPE=release
-	$(MAKE) -C resourcemgr -f makefile TARGET_TYPE=release
+	$(MAKE) -C test/tpmclient TARGET_TYPE=release
+	$(MAKE) -C resourcemgr TARGET_TYPE=release
 
 clean: 
-	$(MAKE) -C test/tpmclient -f makefile TARGET_TYPE=release clean
-	$(MAKE) -C resourcemgr -f makefile TARGET_TYPE=release clean
-	$(MAKE) -C test/tpmclient -f makefile TARGET_TYPE=debug clean
-	$(MAKE) -C resourcemgr -f makefile TARGET_TYPE=debug clean
+	$(MAKE) -C test/tpmclient TARGET_TYPE=release clean
+	$(MAKE) -C resourcemgr TARGET_TYPE=release clean
+	$(MAKE) -C test/tpmclient TARGET_TYPE=debug clean
+	$(MAKE) -C resourcemgr TARGET_TYPE=debug clean
 
 

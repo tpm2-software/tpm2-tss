@@ -59,37 +59,37 @@ CPLUSFLAGS = $($(TARGET_TYPE)_CPLUSFLAGS) $(INCLUDE_DIRS)
 all:  debug release 
 
 debug: tpmlib_debug
-	$(MAKE) -f makefile debug/resourcemgr TARGET_TYPE=debug
+	$(MAKE) -f Makefile debug/resourcemgr TARGET_TYPE=debug
 
 release: tpmlib_release
-	$(MAKE) -f makefile release/resourcemgr TARGET_TYPE=release
+	$(MAKE) -f Makefile release/resourcemgr TARGET_TYPE=release
 
 DIRS:
 	-@mkdir $(TARGET_TYPE) 2> /dev/null
 
 tpmlib_debug: 
-	@$(MAKE) -C ../sysapi -f makefile debug
+	@$(MAKE) -C ../sysapi -f Makefile debug
 
 tpmlib_release: 
-	@$(MAKE) -C ../sysapi -f makefile release
+	@$(MAKE) -C ../sysapi -f Makefile release
 
-$(TARGET_TYPE)/resourcemgr: DIRS $(OBJS) $(LIBS) makefile 
+$(TARGET_TYPE)/resourcemgr: DIRS $(OBJS) $(LIBS) Makefile 
 	$(CC) $(CFLAGS) $(RESMGR_INCLUDES) -pthread -o $(TARGET_TYPE)/resourcemgr $(OBJS) $(LIBS)
 
-$(TARGET_TYPE)/%.o: ../resourcemgr/%.c $(RESOURCE_MGR_HEADERS) $(COMMON_HEADERS) $(TPMSOCKETS_HEADERS) $(LOCALTPM_HEADERS) makefile $(SYSAPI_HEADERS)
+$(TARGET_TYPE)/%.o: ../resourcemgr/%.c $(RESOURCE_MGR_HEADERS) $(COMMON_HEADERS) $(TPMSOCKETS_HEADERS) $(LOCALTPM_HEADERS) Makefile $(SYSAPI_HEADERS)
 	$(CC) $(CFLAGS) $(INCLUDE_DIRS) -c $< -o $@
 
-$(TARGET_TYPE)/%.o: ../common/%.c $(COMMON_HEADERS) makefile $(SYSAPI_HEADERS)
+$(TARGET_TYPE)/%.o: ../common/%.c $(COMMON_HEADERS) Makefile $(SYSAPI_HEADERS)
 	$(CC) $(CFLAGS) $(INCLUDE_DIRS) -c $< -o $@
 
-$(TARGET_TYPE)/%.o: ../tcti/tpmsockets/%.cpp $(TPMSOCKETS_HEADERS) makefile $(SYSAPI_HEADERS)
+$(TARGET_TYPE)/%.o: ../tcti/tpmsockets/%.cpp $(TPMSOCKETS_HEADERS) Makefile $(SYSAPI_HEADERS)
 	$(CPLUS) $(CPLUSFLAGS) $(INCLUDE_DIRS) -c $< -o $@
 
-$(TARGET_TYPE)/%.o: ../tcti/localtpm/%.c $(LOCALTPM_HEADERS) makefile $(SYSAPI_HEADERS)
+$(TARGET_TYPE)/%.o: ../tcti/localtpm/%.c $(LOCALTPM_HEADERS) Makefile $(SYSAPI_HEADERS)
 	$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -c $< -o $@
 
 clean:
 	@rm debug -rf
 	@rm release -rf
-	@$(MAKE) -C ../sysapi -f makefile clean
+	@$(MAKE) -C ../sysapi -f Makefile clean
 

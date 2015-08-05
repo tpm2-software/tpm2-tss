@@ -56,28 +56,28 @@ DIRS:
 	-@mkdir lib/debug 2> /dev/null
 	-@mkdir lib/release 2> /dev/null
 
-$(LIB_DIR)/debug/libtpm.a: $(SYS_API_DEBUG_OBJECTS) $(SYS_API_UTIL_DEBUG_OBJECTS) makefile
+$(LIB_DIR)/debug/libtpm.a: $(SYS_API_DEBUG_OBJECTS) $(SYS_API_UTIL_DEBUG_OBJECTS) Makefile
 	echo *** sysapi_objs: $(SYS_API_DEBUG_OBJECTS)
 	echo *** sysapi_util_objs: $(SYS_API_UTIL_DEBUG_OBJECTS)
 	echo *** sysapi_includes: $(SYS_API_INCLUDES)
 	ar -qvc $@ $(SYS_API_DEBUG_OBJECTS) $(SYS_API_UTIL_DEBUG_OBJECTS)
 
-$(LIB_DIR)/release/libtpm.a: $(SYS_API_RELEASE_OBJECTS) $(SYS_API_UTIL_RELEASE_OBJECTS) makefile
+$(LIB_DIR)/release/libtpm.a: $(SYS_API_RELEASE_OBJECTS) $(SYS_API_UTIL_RELEASE_OBJECTS) Makefile
 	echo *** sysapi_objs: $(SYS_API_RELEASE_OBJECTS)
 	echo *** sysapi_util_objs: $(SYS_API_UTIL_RELEASE_OBJECTS)
 	echo *** sysapi_includes: $(SYS_API_INCLUDES)
 	ar -qvc $@ $(SYS_API_RELEASE_OBJECTS) $(SYS_API_UTIL_RELEASE_OBJECTS)
 
-lib/debug/%.o: sysapi/%.c makefile $(SYS_API_INCLUDES) 
+lib/debug/%.o: sysapi/%.c Makefile $(SYS_API_INCLUDES) 
 	$(CC) $(CFLAGS_DEBUG) $(INCLUDE) -c $< -o $@
 
-lib/debug/%.o: sysapi_util/%.c makefile $(SYS_API_INCLUDES) 
+lib/debug/%.o: sysapi_util/%.c Makefile $(SYS_API_INCLUDES) 
 	$(CC) $(CFLAGS_DEBUG) $(INCLUDE) -c $< -o $@
 
-lib/release/%.o: sysapi/%.c makefile $(SYS_API_INCLUDES) 
+lib/release/%.o: sysapi/%.c Makefile $(SYS_API_INCLUDES) 
 	$(CC) $(CFLAGS_RELEASE) $(INCLUDE) -c $< -o $@
 
-lib/release/%.o: sysapi_util/%.c makefile $(SYS_API_INCLUDES) 
+lib/release/%.o: sysapi_util/%.c Makefile $(SYS_API_INCLUDES) 
 	$(CC) $(CFLAGS_RELEASE) $(INCLUDE) -c $< -o $@
 
 .PHONY : clean

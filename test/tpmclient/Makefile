@@ -59,38 +59,38 @@ OBJS = $(SYSCONTEXT_OBJS) $(SAMPLE_OBJS) $(TARGET_TYPE)/sapiclient_tpmsockets.o 
 all:  debug release 
 
 debug: tpmlib_debug
-	$(MAKE) -f makefile debug/tpmclient TARGET_TYPE=debug
+	$(MAKE) -f Makefile debug/tpmclient TARGET_TYPE=debug
 
 release: tpmlib_release
-	$(MAKE) -f makefile release/tpmclient TARGET_TYPE=release
+	$(MAKE) -f Makefile release/tpmclient TARGET_TYPE=release
 
 DIRS:
 	-@mkdir $(TARGET_TYPE) 2> /dev/null
 
 tpmlib_debug: 
-	@$(MAKE) -C ../../sysapi -f makefile debug
+	@$(MAKE) -C ../../sysapi -f Makefile debug
 
 tpmlib_release: 
-	@$(MAKE) -C ../../sysapi -f makefile release
+	@$(MAKE) -C ../../sysapi -f Makefile release
 
-$(TARGET_TYPE)/tpmclient: DIRS $(TARGET_TYPE)/tpmclient.o $(OBJS) $(LIBS) makefile 
+$(TARGET_TYPE)/tpmclient: DIRS $(TARGET_TYPE)/tpmclient.o $(OBJS) $(LIBS) Makefile 
 	$(CPLUS) $(CPLUSFLAGS) $(INCLUDE_DIRS) -o $(@D)/tpmclient $(@D)/tpmclient.o $(OBJS) $(LIBS)
 
-$(TARGET_TYPE)/%.o: %.cpp $(TPMCLIENT_HEADERS) makefile
+$(TARGET_TYPE)/%.o: %.cpp $(TPMCLIENT_HEADERS) Makefile
 	$(CPLUS) $(CFLAGS) $(INCLUDE_DIRS) -c $< -o $@
 
-$(TARGET_TYPE)/%.o: ../common/sample/%.c $(COMMON_HEADERS) makefile $(SYSAPI_HEADERS) $(SAMPLE_HEADERS) 
+$(TARGET_TYPE)/%.o: ../common/sample/%.c $(COMMON_HEADERS) Makefile $(SYSAPI_HEADERS) $(SAMPLE_HEADERS) 
 	$(CC) $(CFLAGS) $(INCLUDE_DIRS) -c $< -o $@
 
 # Build special version of tpmsockets code for test application.
-$(TARGET_TYPE)/sapiclient_tpmsockets.o: ../../tcti/tpmsockets/*.cpp # $(TPMSOCKETS_HEADERS) makefile $(SYSAPI_HEADERS) $(COMMON_HEADERS) 
+$(TARGET_TYPE)/sapiclient_tpmsockets.o: ../../tcti/tpmsockets/*.cpp # $(TPMSOCKETS_HEADERS) Makefile $(SYSAPI_HEADERS) $(COMMON_HEADERS) 
 	$(CPLUS) -DSAPI_CLIENT $(CPLUSFLAGS) $(INCLUDE_DIRS) -c $< -o $@
 
-$(TARGET_TYPE)/%.o: ../../common/%.c $(COMMON_HEADERS) makefile $(SYSAPI_HEADERS) $(COMMON_HEADERS) 
+$(TARGET_TYPE)/%.o: ../../common/%.c $(COMMON_HEADERS) Makefile $(SYSAPI_HEADERS) $(COMMON_HEADERS) 
 	$(CC) $(CFLAGS) $(INCLUDE_DIRS) -c $< -o $@
 
 clean:
 	@rm -f tpmclient resourcemgr 
 	@rm debug -rf
 	@rm release -rf
-	@$(MAKE) -C ../../sysapi -f makefile clean
+	@$(MAKE) -C ../../sysapi -f Makefile clean
