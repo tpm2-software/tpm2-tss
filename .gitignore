@@ -1,0 +1,5 @@
+resourcemgr/debug/
+resourcemgr/release/
+sysapi/lib/
+test/tpmclient/debug/
+test/tpmclient/release
