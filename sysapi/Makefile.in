@@ -29,8 +29,6 @@
 CC = @CC@
 CFLAGS_DEBUG = -O0 -Wall -Werror -ggdb3
 CFLAGS_RELEASE = -Os -Wall -Werror
-ML = as
-LINK = ld
 
 INCLUDE = -I./include 
 
