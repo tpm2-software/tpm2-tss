@@ -27,10 +27,8 @@
 #;**********************************************************************;
  
 CC = @CC@
-CFLAGS_DEBUG = -O0 -Wall -Werror -ggdb3
-CFLAGS_RELEASE = -Os -Wall -Werror
-
-INCLUDE = -I./include 
+CFLAGS_DEBUG = @CFLAGS@ -I./include -O0 -Wall -Werror -ggdb3
+CFLAGS_RELEASE = @CFLAGS@ -I./include -Os -Wall -Werror
 
 LIB_DIR = ./lib
 BASE_DIR = ./
@@ -67,16 +65,16 @@ $(LIB_DIR)/release/libtpm.a: $(SYS_API_RELEASE_OBJECTS) $(SYS_API_UTIL_RELEASE_O
 	ar -qvc $@ $(SYS_API_RELEASE_OBJECTS) $(SYS_API_UTIL_RELEASE_OBJECTS)
 
 lib/debug/%.o: sysapi/%.c Makefile $(SYS_API_INCLUDES) 
-	$(CC) $(CFLAGS_DEBUG) $(INCLUDE) -c $< -o $@
+	$(CC) $(CFLAGS_DEBUG) -c $< -o $@
 
 lib/debug/%.o: sysapi_util/%.c Makefile $(SYS_API_INCLUDES) 
-	$(CC) $(CFLAGS_DEBUG) $(INCLUDE) -c $< -o $@
+	$(CC) $(CFLAGS_DEBUG) -c $< -o $@
 
 lib/release/%.o: sysapi/%.c Makefile $(SYS_API_INCLUDES) 
-	$(CC) $(CFLAGS_RELEASE) $(INCLUDE) -c $< -o $@
+	$(CC) $(CFLAGS_RELEASE) -c $< -o $@
 
 lib/release/%.o: sysapi_util/%.c Makefile $(SYS_API_INCLUDES) 
-	$(CC) $(CFLAGS_RELEASE) $(INCLUDE) -c $< -o $@
+	$(CC) $(CFLAGS_RELEASE) -c $< -o $@
 
 .PHONY : clean
 clean:

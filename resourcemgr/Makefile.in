@@ -41,18 +41,18 @@ TPMCLIENT_HEADERS = tpmclient.h
 OBJS = $(RESOURCE_MGR_OBJS) $(TPMSOCKETS_OBJS) $(LOCALTPM_OBJS) $(COMMON_OBJS) 
 
 CC = @CC@
-CPLUS = @CXX@
+CXX = @CXX@
 
-debug_CFLAGS = -O0 -ggdb3 -Wall -Werror
-release_CFLAGS = -Os -Wall -Werror
-debug_CPLUSFLAGS = -O0 -ggdb3 -fno-operator-names -fpermissive -Wall -Werror
-release_CPLUSFLAGS = -Os -fno-operator-names -fpermissive -Wall -Werror
+debug_CFLAGS = @CFLAGS@ -O0 -ggdb3 -Wall -Werror
+release_CFLAGS = @CFLAGS@ -Os -Wall -Werror
+debug_CXXFLAGS = @CXXFLAGS@ -O0 -ggdb3 -fno-operator-names -fpermissive -Wall -Werror
+release_CXXFLAGS = @CXXFLAGS@ -Os -fno-operator-names -fpermissive -Wall -Werror
 
 INCLUDE_DIRS = -I../sysapi/include -I../common -I../tcti/tpmsockets -I../tcti/localtpm -I. -I../test/tpmclient
 LIBS = ../sysapi/lib/$(TARGET_TYPE)/libtpm.a
 
 CFLAGS = $($(TARGET_TYPE)_CFLAGS) $(INCLUDE_DIRS)
-CPLUSFLAGS = $($(TARGET_TYPE)_CPLUSFLAGS) $(INCLUDE_DIRS)
+CXXFLAGS = $($(TARGET_TYPE)_CPLUSFLAGS) $(INCLUDE_DIRS)
 
 .PHONY: DIRS tpmlib_debug tpmlib_release all debug release 
 
@@ -74,19 +74,19 @@ tpmlib_release:
 	@$(MAKE) -C ../sysapi -f Makefile release
 
 $(TARGET_TYPE)/resourcemgr: DIRS $(OBJS) $(LIBS) Makefile 
-	$(CC) $(CFLAGS) $(RESMGR_INCLUDES) -pthread -o $(TARGET_TYPE)/resourcemgr $(OBJS) $(LIBS)
+	$(CC) $(CFLAGS) -pthread -o $(TARGET_TYPE)/resourcemgr $(OBJS) $(LIBS)
 
 $(TARGET_TYPE)/%.o: ../resourcemgr/%.c $(RESOURCE_MGR_HEADERS) $(COMMON_HEADERS) $(TPMSOCKETS_HEADERS) $(LOCALTPM_HEADERS) Makefile $(SYSAPI_HEADERS)
-	$(CC) $(CFLAGS) $(INCLUDE_DIRS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET_TYPE)/%.o: ../common/%.c $(COMMON_HEADERS) Makefile $(SYSAPI_HEADERS)
-	$(CC) $(CFLAGS) $(INCLUDE_DIRS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET_TYPE)/%.o: ../tcti/tpmsockets/%.cpp $(TPMSOCKETS_HEADERS) Makefile $(SYSAPI_HEADERS)
-	$(CPLUS) $(CPLUSFLAGS) $(INCLUDE_DIRS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(TARGET_TYPE)/%.o: ../tcti/localtpm/%.c $(LOCALTPM_HEADERS) Makefile $(SYSAPI_HEADERS)
-	$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	@rm debug -rf
