@@ -40,8 +40,8 @@ TPMCLIENT_HEADERS = tpmclient.h
 
 OBJS = $(RESOURCE_MGR_OBJS) $(TPMSOCKETS_OBJS) $(LOCALTPM_OBJS) $(COMMON_OBJS) 
 
-CC = gcc
-CPLUS = g++
+CC = @CC@
+CPLUS = @CXX@
 
 debug_CFLAGS = -O0 -ggdb3 -Wall -Werror
 release_CFLAGS = -Os -Wall -Werror

@@ -38,8 +38,8 @@ SYSAPI_HEADERS := $(shell ls ../../sysapi/include/*.h )
 TPMCLIENT_HEADERS = tpmclient.h $(SAMPLE_HEADERS) $(TPMSOCKETS_HEADERS) $(COMMON_HEADERS) $(SYSAPI_HEADERS)
 
 
-CC = gcc
-CPLUS = g++
+CC = @CC@
+CPLUS = @CXX@
 
 debug_CFLAGS = -O0 -ggdb3 -Wall -Werror
 release_CFLAGS = -Os -Wall -Werror
