@@ -1,0 +1,20 @@
+To build and install the tpm2.0-tss software the following software is required:
+GNU Autoconf
+GNU Automake
+C compiler
+C++ compiler
+C Library Development Libraries and Header Files (for pthreads headers)
+
+Currently the tpm2.0-tss is only distributed via GitHub as we have not yet
+produced an official source release. To obtain the tpm2.0-tss sources you
+must clone them from the 01.org GitHub organization TPM2.0-TSS git repository:
+git clone https://github.com/01org/TPM2.0-TSS
+
+To compile tpm2.0-tss execute the following commands from the root of the
+source directory:
+$ ./bootstrap
+$ ./configure
+$ make
+
+The tpm2.0-tss software currently does not have an install target. This
+section will be updated with installation instructions when they are relevant.
