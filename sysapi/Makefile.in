@@ -30,6 +30,8 @@ CC = @CC@
 CFLAGS_DEBUG = @CFLAGS@ -I./include -O0 -Wall -Werror -ggdb3
 CFLAGS_RELEASE = @CFLAGS@ -I./include -Os -Wall -Werror
 
+include ../common.mk
+
 LIB_DIR = ./lib
 BASE_DIR = ./
 
@@ -43,37 +45,38 @@ SYS_API_INCLUDES := $(shell ls include/*.h )
     
 All:  debug release
 
-debug: DIRS $(LIB_DIR)/debug/libtpm.a	
+debug: $(LIB_DIR)/debug/libtpm.a
 
-release: DIRS $(LIB_DIR)/release/libtpm.a	
-
-DIRS:
-	-@mkdir lib 2> /dev/null
-	-@mkdir lib/debug 2> /dev/null
-	-@mkdir lib/release 2> /dev/null
+release: $(LIB_DIR)/release/libtpm.a
 
 $(LIB_DIR)/debug/libtpm.a: $(SYS_API_DEBUG_OBJECTS) $(SYS_API_UTIL_DEBUG_OBJECTS) Makefile
 	echo *** sysapi_objs: $(SYS_API_DEBUG_OBJECTS)
 	echo *** sysapi_util_objs: $(SYS_API_UTIL_DEBUG_OBJECTS)
 	echo *** sysapi_includes: $(SYS_API_INCLUDES)
+	$(dir_guard)
 	ar -qvc $@ $(SYS_API_DEBUG_OBJECTS) $(SYS_API_UTIL_DEBUG_OBJECTS)
 
 $(LIB_DIR)/release/libtpm.a: $(SYS_API_RELEASE_OBJECTS) $(SYS_API_UTIL_RELEASE_OBJECTS) Makefile
 	echo *** sysapi_objs: $(SYS_API_RELEASE_OBJECTS)
 	echo *** sysapi_util_objs: $(SYS_API_UTIL_RELEASE_OBJECTS)
 	echo *** sysapi_includes: $(SYS_API_INCLUDES)
+	$(dir_guard)
 	ar -qvc $@ $(SYS_API_RELEASE_OBJECTS) $(SYS_API_UTIL_RELEASE_OBJECTS)
 
 lib/debug/%.o: sysapi/%.c Makefile $(SYS_API_INCLUDES) 
+	$(dir_guard)
 	$(CC) $(CFLAGS_DEBUG) -c $< -o $@
 
 lib/debug/%.o: sysapi_util/%.c Makefile $(SYS_API_INCLUDES) 
+	$(dir_guard)
 	$(CC) $(CFLAGS_DEBUG) -c $< -o $@
 
 lib/release/%.o: sysapi/%.c Makefile $(SYS_API_INCLUDES) 
+	$(dir_guard)
 	$(CC) $(CFLAGS_RELEASE) -c $< -o $@
 
 lib/release/%.o: sysapi_util/%.c Makefile $(SYS_API_INCLUDES) 
+	$(dir_guard)
 	$(CC) $(CFLAGS_RELEASE) -c $< -o $@
 
 .PHONY : clean
