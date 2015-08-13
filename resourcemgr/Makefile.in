@@ -26,17 +26,20 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 #;**********************************************************************;
 
-RESOURCE_MGR_OBJS := $(shell ls ./*.c | sed 's/\./$(TARGET_TYPE)/' | sed 's/\.c$$/\.o /' )
-RESOURCE_MGR_HEADERS := $(shell ls ./*.h )
-TPMSOCKETS_OBJS := $(shell ls ../tcti/tpmsockets/*.cpp | sed 's/\.\.\/tcti\/tpmsockets/$(TARGET_TYPE)/' | sed 's/\.cpp$$/\.o /' )
-TPMSOCKETS_HEADERS := $(shell ls ../tcti/tpmsockets/*.h )
-LOCALTPM_OBJS := $(shell ls ../tcti/localtpm/*.c | sed 's/\.\.\/tcti\/localtpm/$(TARGET_TYPE)/' | sed 's/\.c$$/\.o /' )
-LOCALTPM_HEADERS := $(shell ls ../tcti/localtpm/*.h )
-COMMON_OBJS := $(shell ls ../common/*.c | sed 's/\.\.\/common/$(TARGET_TYPE)/' | sed 's/\.c/\.o /' )
-COMMON_HEADERS := $(shell ls ../common/*.h )
-SYSAPI_HEADERS := $(shell ls ../sysapi/include/*.h )
+srcdir = @srcdir@
+VPATH  = @srcdir@
 
-TPMCLIENT_HEADERS = tpmclient.h 
+RESOURCE_MGR_OBJS := $(shell ls $(srcdir)/*.c | sed 's&$(srcdir)&$(TARGET_TYPE)&' | sed 's/\.c$$/\.o /' )
+RESOURCE_MGR_HEADERS := $(shell ls $(srcdir)/*.h )
+TPMSOCKETS_OBJS := $(shell ls $(srcdir)/../tcti/tpmsockets/*.cpp | sed 's&$(srcdir)/\.\./tcti/tpmsockets&$(TARGET_TYPE)&' | sed 's/\.cpp$$/\.o /' )
+TPMSOCKETS_HEADERS := $(shell ls $(srcdir)/../tcti/tpmsockets/*.h )
+LOCALTPM_OBJS := $(shell ls $(srcdir)/../tcti/localtpm/*.c | sed 's&$(srcdir)/\.\./tcti/localtpm&$(TARGET_TYPE)&' | sed 's/\.c$$/\.o /' )
+LOCALTPM_HEADERS := $(shell ls $(srcdir)/../tcti/localtpm/*.h )
+COMMON_OBJS := $(shell ls $(srcdir)/../common/*.c | sed 's&$(srcdir)/\.\./common&$(TARGET_TYPE)&' | sed 's/\.c/\.o /' )
+COMMON_HEADERS := $(shell ls $(srcdir)/../common/*.h )
+SYSAPI_HEADERS := $(shell ls $(srcdir)/../sysapi/include/*.h )
+
+TPMCLIENT_HEADERS = $(srcdir)/tpmclient.h
 
 OBJS = $(RESOURCE_MGR_OBJS) $(TPMSOCKETS_OBJS) $(LOCALTPM_OBJS) $(COMMON_OBJS)
 
@@ -48,7 +51,7 @@ release_CFLAGS = @CFLAGS@ -Os -Wall -Werror
 debug_CXXFLAGS = @CXXFLAGS@ -O0 -ggdb3 -fno-operator-names -fpermissive -Wall -Werror
 release_CXXFLAGS = @CXXFLAGS@ -Os -fno-operator-names -fpermissive -Wall -Werror
 
-INCLUDE_DIRS = -I../sysapi/include -I../common -I../tcti/tpmsockets -I../tcti/localtpm -I. -I../test/tpmclient
+INCLUDE_DIRS = -I$(srcdir)/../sysapi/include -I$(srcdir)/../common -I$(srcdir)/../tcti/tpmsockets -I$(srcdir)/../tcti/localtpm -I$(srcdir) -I$(srcdir)/../test/tpmclient
 LIBS = ../sysapi/lib/$(TARGET_TYPE)/libtpm.a
 
 CFLAGS = $($(TARGET_TYPE)_CFLAGS) $(INCLUDE_DIRS)
