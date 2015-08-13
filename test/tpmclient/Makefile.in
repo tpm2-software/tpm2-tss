@@ -26,16 +26,19 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 #;**********************************************************************;
 
-RESOURCE_MGR_HEADERS := $(shell ls ../../resourcemgr/*.h )
-SAMPLE_OBJS := $(shell ls ../common/sample/*.c | sed 's/\.\.\/common\/sample/$(TARGET_TYPE)/' | sed 's/\.c$$/\.o /' )
-SAMPLE_HEADERS := $(shell ls ../common/sample/*.h )
-#TPMSOCKETS_OBJS := $(shell ls ../../tcti/tpmsockets/*.cpp | sed 's/\.\.\/\.\.\/tpmsockets/$(TARGET_TYPE)/' | sed 's/\.cpp$$/\.o /' )
-TPMSOCKETS_HEADERS := $(shell ls ../../tcti/tpmsockets/*.h )
-COMMON_OBJS := $(shell ls ../../common/*.c | sed 's/\.\.\/\.\.\/common/$(TARGET_TYPE)/' | sed 's/\.c$$/\.o /' )
-COMMON_HEADERS := $(shell ls ../../common/*.h )
-SYSAPI_HEADERS := $(shell ls ../../sysapi/include/*.h )
+srcdir = @srcdir@
+VPATH  = @srcdir@
 
-TPMCLIENT_HEADERS = tpmclient.h $(SAMPLE_HEADERS) $(TPMSOCKETS_HEADERS) $(COMMON_HEADERS) $(SYSAPI_HEADERS)
+RESOURCE_MGR_HEADERS := $(shell ls $(srcdir)/../resourcemgr/*.h )
+SAMPLE_OBJS := $(shell ls $(srcdir)/../common/sample/*.c | sed 's&$(srcdir)/\.\./common/sample&$(TARGET_TYPE)&' | sed 's/\.c$$/\.o /' )
+SAMPLE_HEADERS := $(shell ls $(srcdir)/../common/sample/*.h )
+TPMSOCKETS_SRC := $(shell ls $(srcdir)/../../tcti/tpmsockets/*.cpp | sed 's&$(srcdir)/\.\.\/\.\.\/tpmsockets&$(TARGET_TYPE)&' )
+TPMSOCKETS_HEADERS := $(shell ls $(srcdir)/../../tcti/tpmsockets/*.h )
+COMMON_OBJS := $(shell ls $(srcdir)/../../common/*.c | sed 's&$(srcdir)/\.\./\.\./common&$(TARGET_TYPE)&' | sed 's/\.c$$/\.o /' )
+COMMON_HEADERS := $(shell ls $(srcdir)/../../common/*.h )
+SYSAPI_HEADERS := $(shell ls $(srcdir)/../../sysapi/include/*.h )
+
+TPMCLIENT_HEADERS = $(srcdir)/tpmclient.h $(SAMPLE_HEADERS) $(TPMSOCKETS_HEADERS) $(COMMON_HEADERS) $(SYSAPI_HEADERS)
 
 
 CC = @CC@
@@ -46,7 +49,7 @@ release_CFLAGS = -Os -Wall -Werror
 debug_CXXFLAGS = -O0 -ggdb3 -fno-operator-names -fpermissive -Wall -Werror
 release_CXXFLAGS = -Os -fno-operator-names -fpermissive -Wall -Werror
 
-INCLUDE_DIRS = -I../../sysapi/include -I. -I../../tcti/tpmsockets -I../../common -I../common/sample -I../../resourcemgr
+INCLUDE_DIRS = -I$(srcdir)/../../sysapi/include -I$(srcdir) -I$(srcdir)/../../tcti/tpmsockets -I$(srcdir)/../../common -I$(srcdir)/../common/sample -I$(srcdir)/../../resourcemgr
 
 CFLAGS = @CFLAGS@ $($(TARGET_TYPE)_CFLAGS) $(INCLUDE_DIRS)
 CXXFLAGS = @CXXFLAGS@ $($(TARGET_TYPE)_CXXFLAGS) $(INCLUDE_DIRS)
@@ -84,7 +87,7 @@ $(TARGET_TYPE)/%.o: ../common/sample/%.c $(COMMON_HEADERS) Makefile $(SYSAPI_HEA
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Build special version of tpmsockets code for test application.
-$(TARGET_TYPE)/sapiclient_tpmsockets.o: ../../tcti/tpmsockets/*.cpp # $(TPMSOCKETS_HEADERS) Makefile $(SYSAPI_HEADERS) $(COMMON_HEADERS)
+$(TARGET_TYPE)/sapiclient_tpmsockets.o: $(TPMSOCKETS_SRC) # $(TPMSOCKETS_HEADERS) Makefile $(SYSAPI_HEADERS) $(COMMON_HEADERS)
 	$(CXX) -DSAPI_CLIENT $(CXXFLAGS) -c $< -o $@
 
 $(TARGET_TYPE)/%.o: ../../common/%.c $(COMMON_HEADERS) Makefile $(SYSAPI_HEADERS) $(COMMON_HEADERS)
