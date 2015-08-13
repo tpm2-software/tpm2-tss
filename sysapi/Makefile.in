@@ -40,12 +40,12 @@ SYS_API_UTIL_DEBUG_OBJECTS := $(shell ls sysapi_util/*c | sed 's/sysapi_util/lib
 SYS_API_RELEASE_OBJECTS := $(shell ls sysapi/*.c | sed 's/sysapi/lib\/release/' | sed 's/\.c$$/\.o /' )
 SYS_API_UTIL_RELEASE_OBJECTS := $(shell ls sysapi_util/*c | sed 's/sysapi_util/lib\/release/' | sed 's/\.c$$/\.o /' )
 SYS_API_INCLUDES := $(shell ls include/*.h )
-    
+
 All:  debug release
 
-debug: DIRS $(LIB_DIR)/debug/libtpm.a	
+debug: DIRS $(LIB_DIR)/debug/libtpm.a
 
-release: DIRS $(LIB_DIR)/release/libtpm.a	
+release: DIRS $(LIB_DIR)/release/libtpm.a
 
 DIRS:
 	-@mkdir lib 2> /dev/null
@@ -64,16 +64,16 @@ $(LIB_DIR)/release/libtpm.a: $(SYS_API_RELEASE_OBJECTS) $(SYS_API_UTIL_RELEASE_O
 	echo *** sysapi_includes: $(SYS_API_INCLUDES)
 	ar -qvc $@ $(SYS_API_RELEASE_OBJECTS) $(SYS_API_UTIL_RELEASE_OBJECTS)
 
-lib/debug/%.o: sysapi/%.c Makefile $(SYS_API_INCLUDES) 
+lib/debug/%.o: sysapi/%.c Makefile $(SYS_API_INCLUDES)
 	$(CC) $(CFLAGS_DEBUG) -c $< -o $@
 
-lib/debug/%.o: sysapi_util/%.c Makefile $(SYS_API_INCLUDES) 
+lib/debug/%.o: sysapi_util/%.c Makefile $(SYS_API_INCLUDES)
 	$(CC) $(CFLAGS_DEBUG) -c $< -o $@
 
-lib/release/%.o: sysapi/%.c Makefile $(SYS_API_INCLUDES) 
+lib/release/%.o: sysapi/%.c Makefile $(SYS_API_INCLUDES)
 	$(CC) $(CFLAGS_RELEASE) -c $< -o $@
 
-lib/release/%.o: sysapi_util/%.c Makefile $(SYS_API_INCLUDES) 
+lib/release/%.o: sysapi_util/%.c Makefile $(SYS_API_INCLUDES)
 	$(CC) $(CFLAGS_RELEASE) -c $< -o $@
 
 .PHONY : clean
