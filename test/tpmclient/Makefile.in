@@ -50,35 +50,37 @@ CFLAGS = @CFLAGS@ $(INCLUDE_DIRS)
 CXXFLAGS = @CXXFLAGS@ $(INCLUDE_DIRS)
 
 LIBS = ../../sysapi/lib/libtpm.a
+LIB_DIR = lib
 
-OBJS = $(SYSCONTEXT_OBJS) $(SAMPLE_OBJS) lib/sapiclient_tpmsockets.o $(COMMON_OBJS)
+OBJS = $(SYSCONTEXT_OBJS) $(SAMPLE_OBJS) $(COMMON_OBJS) lib/sapiclient_tpmsockets.o lib/tpmclient.o
 
-.PHONY: all DIRS
-
-all: tpmclient DIRS
-
-DIRS:
-	-@mkdir -p lib
+.PHONY: all clean
+all: tpmclient
 
 $(LIBS):
 	$(MAKE) -C ../../sysapi
 
-tpmclient: DIRS lib/tpmclient.o $(OBJS) $(LIBS) Makefile
-	$(CXX) $(CXXFLAGS) -o tpmclient lib/tpmclient.o $(OBJS) $(LIBS)
+$(OBJS): | $(LIB_DIR)
 
-lib/%.o: %.cpp $(TPMCLIENT_HEADERS) Makefile
+tpmclient: $(OBJS) $(LIBS) Makefile
+	$(CXX) $(CXXFLAGS) $(OBJS) $(LIBS) -o $@
+
+$(LIB_DIR)/%.o: %.cpp $(TPMCLIENT_HEADERS) Makefile
 	$(CXX) $(CFLAGS) -c $< -o $@
 
-lib/%.o: ../common/sample/%.c $(COMMON_HEADERS) Makefile $(SYSAPI_HEADERS) $(SAMPLE_HEADERS)
+$(LIB_DIR)/%.o: ../common/sample/%.c $(COMMON_HEADERS) Makefile $(SYSAPI_HEADERS) $(SAMPLE_HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Build special version of tpmsockets code for test application.
-lib/sapiclient_tpmsockets.o: $(TPMSOCKETS_SRC) # $(TPMSOCKETS_HEADERS) Makefile $(SYSAPI_HEADERS) $(COMMON_HEADERS)
+$(LIB_DIR)/sapiclient_tpmsockets.o: $(TPMSOCKETS_SRC) # $(TPMSOCKETS_HEADERS) Makefile $(SYSAPI_HEADERS) $(COMMON_HEADERS)
 	$(CXX) -DSAPI_CLIENT $(CXXFLAGS) -c $< -o $@
 
-lib/%.o: ../../common/%.c $(COMMON_HEADERS) Makefile $(SYSAPI_HEADERS) $(COMMON_HEADERS)
+$(LIB_DIR)/%.o: ../../common/%.c $(COMMON_HEADERS) Makefile $(SYSAPI_HEADERS) $(COMMON_HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(LIB_DIR):
+	-@mkdir -p $@
+
 clean:
-	@rm -rf tpmclient resourcemgr lib
+	@rm -rf tpmclient $(LIB_DIR)
 	@$(MAKE) -C ../../sysapi -f Makefile clean

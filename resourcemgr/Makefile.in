@@ -48,36 +48,38 @@ CXX = @CXX@
 
 INCLUDE_DIRS = -I$(srcdir)/../sysapi/include -I$(srcdir)/../common -I$(srcdir)/../tcti/tpmsockets -I$(srcdir)/../tcti/localtpm -I$(srcdir) -I$(srcdir)/../test/tpmclient
 LIBS = ../sysapi/lib/libtpm.a
+LIB_DIR = lib
 
 CFLAGS = @CFLAGS@ $(INCLUDE_DIRS)
 CXXFLAGS = @CXXFLAGS@ $(INCLUDE_DIRS)
 
-.PHONY: all DIRS
-
+.PHONY: all clean
 all: resourcemgr
 
-DIRS:
-	-@mkdir -p lib
+resourcemgr: $(OBJS) $(LIBS) Makefile
+	$(CC) $(CFLAGS) -pthread -o $@ $(OBJS) $(LIBS)
 
-../sysapi/lib/libtpm.a:
+$(LIBS):
 	$(MAKE) -C ../sysapi
 
-resourcemgr: DIRS $(OBJS) $(LIBS) Makefile
-	$(CC) $(CFLAGS) -pthread -o resourcemgr $(OBJS) $(LIBS)
+$(OBJS): | $(LIB_DIR)
 
-lib/%.o: %.c $(RESOURCE_MGR_HEADERS) $(COMMON_HEADERS) $(TPMSOCKETS_HEADERS) $(LOCALTPM_HEADERS) Makefile $(SYSAPI_HEADERS)
+$(LIB_DIR)/%.o: %.c $(RESOURCE_MGR_HEADERS) $(COMMON_HEADERS) $(TPMSOCKETS_HEADERS) $(LOCALTPM_HEADERS) Makefile $(SYSAPI_HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-lib/%.o: ../common/%.c $(COMMON_HEADERS) Makefile $(SYSAPI_HEADERS)
+$(LIB_DIR)/%.o: ../common/%.c $(COMMON_HEADERS) Makefile $(SYSAPI_HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-lib/%.o: ../tcti/tpmsockets/%.cpp $(TPMSOCKETS_HEADERS) Makefile $(SYSAPI_HEADERS)
+$(LIB_DIR)/%.o: ../tcti/tpmsockets/%.cpp $(TPMSOCKETS_HEADERS) Makefile $(SYSAPI_HEADERS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-lib/%.o: ../tcti/localtpm/%.c $(LOCALTPM_HEADERS) Makefile $(SYSAPI_HEADERS)
+$(LIB_DIR)/%.o: ../tcti/localtpm/%.c $(LOCALTPM_HEADERS) Makefile $(SYSAPI_HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(LIB_DIR):
+	-@mkdir -p $@
+
 clean:
-	@rm -rf resourcemgr lib
+	@rm -rf resourcemgr $(LIB_DIR)
 	@$(MAKE) -C ../sysapi -f Makefile clean
 
