@@ -3,8 +3,8 @@ configure
 config.log
 config.status
 Makefile
-resourcemgr/debug/
-resourcemgr/release/
+resourcemgr/lib/
+resourcemgr/resourcemgr
 sysapi/lib/
-test/tpmclient/debug/
-test/tpmclient/release
+test/tpmclient/lib/
+test/tpmclient/tpmclient

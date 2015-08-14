@@ -30,11 +30,11 @@ srcdir = @srcdir@
 VPATH  = @srcdir@
 
 RESOURCE_MGR_HEADERS := $(shell ls $(srcdir)/../resourcemgr/*.h )
-SAMPLE_OBJS := $(shell ls $(srcdir)/../common/sample/*.c | sed 's&$(srcdir)/\.\./common/sample&$(TARGET_TYPE)&' | sed 's/\.c$$/\.o /' )
+SAMPLE_OBJS := $(shell ls $(srcdir)/../common/sample/*.c | sed 's&$(srcdir)/\.\./common/sample&lib&' | sed 's/\.c$$/\.o /' )
 SAMPLE_HEADERS := $(shell ls $(srcdir)/../common/sample/*.h )
-TPMSOCKETS_SRC := $(shell ls $(srcdir)/../../tcti/tpmsockets/*.cpp | sed 's&$(srcdir)/\.\.\/\.\.\/tpmsockets&$(TARGET_TYPE)&' )
+TPMSOCKETS_SRC := $(shell ls $(srcdir)/../../tcti/tpmsockets/*.cpp | sed 's&$(srcdir)/\.\.\/\.\.\/tpmsockets&lib&' )
 TPMSOCKETS_HEADERS := $(shell ls $(srcdir)/../../tcti/tpmsockets/*.h )
-COMMON_OBJS := $(shell ls $(srcdir)/../../common/*.c | sed 's&$(srcdir)/\.\./\.\./common&$(TARGET_TYPE)&' | sed 's/\.c$$/\.o /' )
+COMMON_OBJS := $(shell ls $(srcdir)/../../common/*.c | sed 's&$(srcdir)/\.\./\.\./common&lib&' | sed 's/\.c$$/\.o /' )
 COMMON_HEADERS := $(shell ls $(srcdir)/../../common/*.h )
 SYSAPI_HEADERS := $(shell ls $(srcdir)/../../sysapi/include/*.h )
 
@@ -44,57 +44,41 @@ TPMCLIENT_HEADERS = $(srcdir)/tpmclient.h $(SAMPLE_HEADERS) $(TPMSOCKETS_HEADERS
 CC = @CC@
 CXX = @CXX@
 
-debug_CFLAGS = -O0 -ggdb3 -Wall -Werror
-release_CFLAGS = -Os -Wall -Werror
-debug_CXXFLAGS = -O0 -ggdb3 -fno-operator-names -fpermissive -Wall -Werror
-release_CXXFLAGS = -Os -fno-operator-names -fpermissive -Wall -Werror
-
 INCLUDE_DIRS = -I$(srcdir)/../../sysapi/include -I$(srcdir) -I$(srcdir)/../../tcti/tpmsockets -I$(srcdir)/../../common -I$(srcdir)/../common/sample -I$(srcdir)/../../resourcemgr
 
-CFLAGS = @CFLAGS@ $($(TARGET_TYPE)_CFLAGS) $(INCLUDE_DIRS)
-CXXFLAGS = @CXXFLAGS@ $($(TARGET_TYPE)_CXXFLAGS) $(INCLUDE_DIRS)
+CFLAGS = @CFLAGS@ $(INCLUDE_DIRS)
+CXXFLAGS = @CXXFLAGS@ $(INCLUDE_DIRS)
 
-LIBS = ../../sysapi/lib/$(TARGET_TYPE)/libtpm.a
+LIBS = ../../sysapi/lib/libtpm.a
 
-OBJS = $(SYSCONTEXT_OBJS) $(SAMPLE_OBJS) $(TARGET_TYPE)/sapiclient_tpmsockets.o $(COMMON_OBJS)
+OBJS = $(SYSCONTEXT_OBJS) $(SAMPLE_OBJS) lib/sapiclient_tpmsockets.o $(COMMON_OBJS)
 
-.PHONY: tpmlib_debug tpmlib_release DIRS all debug release
+.PHONY: all DIRS
 
-all:  debug release
-
-debug: tpmlib_debug
-	$(MAKE) -f Makefile debug/tpmclient TARGET_TYPE=debug
-
-release: tpmlib_release
-	$(MAKE) -f Makefile release/tpmclient TARGET_TYPE=release
+all: tpmclient DIRS
 
 DIRS:
-	-@mkdir $(TARGET_TYPE) 2> /dev/null
+	-@mkdir -p lib
 
-tpmlib_debug:
-	@$(MAKE) -C ../../sysapi -f Makefile debug
+$(LIBS):
+	$(MAKE) -C ../../sysapi
 
-tpmlib_release:
-	@$(MAKE) -C ../../sysapi -f Makefile release
+tpmclient: DIRS lib/tpmclient.o $(OBJS) $(LIBS) Makefile
+	$(CXX) $(CXXFLAGS) -o tpmclient lib/tpmclient.o $(OBJS) $(LIBS)
 
-$(TARGET_TYPE)/tpmclient: DIRS $(TARGET_TYPE)/tpmclient.o $(OBJS) $(LIBS) Makefile
-	$(CXX) $(CXXFLAGS) -o $(@D)/tpmclient $(@D)/tpmclient.o $(OBJS) $(LIBS)
-
-$(TARGET_TYPE)/%.o: %.cpp $(TPMCLIENT_HEADERS) Makefile
+lib/%.o: %.cpp $(TPMCLIENT_HEADERS) Makefile
 	$(CXX) $(CFLAGS) -c $< -o $@
 
-$(TARGET_TYPE)/%.o: ../common/sample/%.c $(COMMON_HEADERS) Makefile $(SYSAPI_HEADERS) $(SAMPLE_HEADERS)
+lib/%.o: ../common/sample/%.c $(COMMON_HEADERS) Makefile $(SYSAPI_HEADERS) $(SAMPLE_HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Build special version of tpmsockets code for test application.
-$(TARGET_TYPE)/sapiclient_tpmsockets.o: $(TPMSOCKETS_SRC) # $(TPMSOCKETS_HEADERS) Makefile $(SYSAPI_HEADERS) $(COMMON_HEADERS)
+lib/sapiclient_tpmsockets.o: $(TPMSOCKETS_SRC) # $(TPMSOCKETS_HEADERS) Makefile $(SYSAPI_HEADERS) $(COMMON_HEADERS)
 	$(CXX) -DSAPI_CLIENT $(CXXFLAGS) -c $< -o $@
 
-$(TARGET_TYPE)/%.o: ../../common/%.c $(COMMON_HEADERS) Makefile $(SYSAPI_HEADERS) $(COMMON_HEADERS)
+lib/%.o: ../../common/%.c $(COMMON_HEADERS) Makefile $(SYSAPI_HEADERS) $(COMMON_HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	@rm -f tpmclient resourcemgr
-	@rm debug -rf
-	@rm release -rf
+	@rm -rf tpmclient resourcemgr lib
 	@$(MAKE) -C ../../sysapi -f Makefile clean
