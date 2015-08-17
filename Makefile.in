@@ -26,20 +26,11 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 #;**********************************************************************;
 
-all:  debug release 
+all:
+	$(MAKE) -C test/tpmclient
+	$(MAKE) -C resourcemgr
 
-debug: 
-	$(MAKE) -C test/tpmclient TARGET_TYPE=debug
-	$(MAKE) -C resourcemgr TARGET_TYPE=debug
-
-release: 
-	$(MAKE) -C test/tpmclient TARGET_TYPE=release
-	$(MAKE) -C resourcemgr TARGET_TYPE=release
-
-clean: 
-	$(MAKE) -C test/tpmclient TARGET_TYPE=release clean
-	$(MAKE) -C resourcemgr TARGET_TYPE=release clean
-	$(MAKE) -C test/tpmclient TARGET_TYPE=debug clean
-	$(MAKE) -C resourcemgr TARGET_TYPE=debug clean
-
+clean:
+	$(MAKE) -C test/tpmclient clean
+	$(MAKE) -C resourcemgr clean
 

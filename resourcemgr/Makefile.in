@@ -26,70 +26,58 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 #;**********************************************************************;
 
-RESOURCE_MGR_OBJS := $(shell ls ./*.c | sed 's/\./$(TARGET_TYPE)/' | sed 's/\.c$$/\.o /' )
-RESOURCE_MGR_HEADERS := $(shell ls ./*.h )
-TPMSOCKETS_OBJS := $(shell ls ../tcti/tpmsockets/*.cpp | sed 's/\.\.\/tcti\/tpmsockets/$(TARGET_TYPE)/' | sed 's/\.cpp$$/\.o /' )
-TPMSOCKETS_HEADERS := $(shell ls ../tcti/tpmsockets/*.h )
-LOCALTPM_OBJS := $(shell ls ../tcti/localtpm/*.c | sed 's/\.\.\/tcti\/localtpm/$(TARGET_TYPE)/' | sed 's/\.c$$/\.o /' )
-LOCALTPM_HEADERS := $(shell ls ../tcti/localtpm/*.h )
-COMMON_OBJS := $(shell ls ../common/*.c | sed 's/\.\.\/common/$(TARGET_TYPE)/' | sed 's/\.c/\.o /' )
-COMMON_HEADERS := $(shell ls ../common/*.h )
-SYSAPI_HEADERS := $(shell ls ../sysapi/include/*.h )
+srcdir = @srcdir@
+VPATH  = @srcdir@
 
-TPMCLIENT_HEADERS = tpmclient.h 
+RESOURCE_MGR_OBJS := $(shell ls $(srcdir)/*.c | sed 's&$(srcdir)&lib&' | sed 's/\.c$$/\.o /' )
+RESOURCE_MGR_HEADERS := $(shell ls $(srcdir)/*.h )
+TPMSOCKETS_OBJS := $(shell ls $(srcdir)/../tcti/tpmsockets/*.cpp | sed 's&$(srcdir)/\.\./tcti/tpmsockets&lib&' | sed 's/\.cpp$$/\.o /' )
+TPMSOCKETS_HEADERS := $(shell ls $(srcdir)/../tcti/tpmsockets/*.h )
+LOCALTPM_OBJS := $(shell ls $(srcdir)/../tcti/localtpm/*.c | sed 's&$(srcdir)/\.\./tcti/localtpm&lib&' | sed 's/\.c$$/\.o /' )
+LOCALTPM_HEADERS := $(shell ls $(srcdir)/../tcti/localtpm/*.h )
+COMMON_OBJS := $(shell ls $(srcdir)/../common/*.c | sed 's&$(srcdir)/\.\./common&lib&' | sed 's/\.c/\.o /' )
+COMMON_HEADERS := $(shell ls $(srcdir)/../common/*.h )
+SYSAPI_HEADERS := $(shell ls $(srcdir)/../sysapi/include/*.h )
 
-OBJS = $(RESOURCE_MGR_OBJS) $(TPMSOCKETS_OBJS) $(LOCALTPM_OBJS) $(COMMON_OBJS) 
+TPMCLIENT_HEADERS = $(srcdir)/tpmclient.h
+
+OBJS = $(RESOURCE_MGR_OBJS) $(TPMSOCKETS_OBJS) $(LOCALTPM_OBJS) $(COMMON_OBJS)
 
 CC = @CC@
 CXX = @CXX@
 
-debug_CFLAGS = @CFLAGS@ -O0 -ggdb3 -Wall -Werror
-release_CFLAGS = @CFLAGS@ -Os -Wall -Werror
-debug_CXXFLAGS = @CXXFLAGS@ -O0 -ggdb3 -fno-operator-names -fpermissive -Wall -Werror
-release_CXXFLAGS = @CXXFLAGS@ -Os -fno-operator-names -fpermissive -Wall -Werror
+INCLUDE_DIRS = -I$(srcdir)/../sysapi/include -I$(srcdir)/../common -I$(srcdir)/../tcti/tpmsockets -I$(srcdir)/../tcti/localtpm -I$(srcdir) -I$(srcdir)/../test/tpmclient
+LIBS = ../sysapi/lib/libtpm.a
 
-INCLUDE_DIRS = -I../sysapi/include -I../common -I../tcti/tpmsockets -I../tcti/localtpm -I. -I../test/tpmclient
-LIBS = ../sysapi/lib/$(TARGET_TYPE)/libtpm.a
+CFLAGS = @CFLAGS@ $(INCLUDE_DIRS)
+CXXFLAGS = @CXXFLAGS@ $(INCLUDE_DIRS)
 
-CFLAGS = $($(TARGET_TYPE)_CFLAGS) $(INCLUDE_DIRS)
-CXXFLAGS = $($(TARGET_TYPE)_CPLUSFLAGS) $(INCLUDE_DIRS)
+.PHONY: all DIRS
 
-.PHONY: DIRS tpmlib_debug tpmlib_release all debug release 
-
-all:  debug release 
-
-debug: tpmlib_debug
-	$(MAKE) -f Makefile debug/resourcemgr TARGET_TYPE=debug
-
-release: tpmlib_release
-	$(MAKE) -f Makefile release/resourcemgr TARGET_TYPE=release
+all: resourcemgr
 
 DIRS:
-	-@mkdir $(TARGET_TYPE) 2> /dev/null
+	-@mkdir -p lib
 
-tpmlib_debug: 
-	@$(MAKE) -C ../sysapi -f Makefile debug
+../sysapi/lib/libtpm.a:
+	$(MAKE) -C ../sysapi
 
-tpmlib_release: 
-	@$(MAKE) -C ../sysapi -f Makefile release
+resourcemgr: DIRS $(OBJS) $(LIBS) Makefile
+	$(CC) $(CFLAGS) -pthread -o resourcemgr $(OBJS) $(LIBS)
 
-$(TARGET_TYPE)/resourcemgr: DIRS $(OBJS) $(LIBS) Makefile 
-	$(CC) $(CFLAGS) -pthread -o $(TARGET_TYPE)/resourcemgr $(OBJS) $(LIBS)
-
-$(TARGET_TYPE)/%.o: ../resourcemgr/%.c $(RESOURCE_MGR_HEADERS) $(COMMON_HEADERS) $(TPMSOCKETS_HEADERS) $(LOCALTPM_HEADERS) Makefile $(SYSAPI_HEADERS)
+lib/%.o: %.c $(RESOURCE_MGR_HEADERS) $(COMMON_HEADERS) $(TPMSOCKETS_HEADERS) $(LOCALTPM_HEADERS) Makefile $(SYSAPI_HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(TARGET_TYPE)/%.o: ../common/%.c $(COMMON_HEADERS) Makefile $(SYSAPI_HEADERS)
+lib/%.o: ../common/%.c $(COMMON_HEADERS) Makefile $(SYSAPI_HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(TARGET_TYPE)/%.o: ../tcti/tpmsockets/%.cpp $(TPMSOCKETS_HEADERS) Makefile $(SYSAPI_HEADERS)
+lib/%.o: ../tcti/tpmsockets/%.cpp $(TPMSOCKETS_HEADERS) Makefile $(SYSAPI_HEADERS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(TARGET_TYPE)/%.o: ../tcti/localtpm/%.c $(LOCALTPM_HEADERS) Makefile $(SYSAPI_HEADERS)
+lib/%.o: ../tcti/localtpm/%.c $(LOCALTPM_HEADERS) Makefile $(SYSAPI_HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	@rm debug -rf
-	@rm release -rf
+	@rm -rf resourcemgr lib
 	@$(MAKE) -C ../sysapi -f Makefile clean
 
