@@ -16,5 +16,31 @@ $ ./bootstrap
 $ ./configure
 $ make
 
+We now have basic VPATH support which allows us to separate the source
+directory from the build directory. This allows for a developer to do a debug
+build and a regular build from the same sources. Any changes to the source
+will be buildable from both build directories. Before you attempt this be sure
+that the source directory is clean.
+
+Our example requires 3 directories:
+TPM2.0-TSS where the sources reside,
+tpm2tss-build to hold the build with default configuration
+tpm2tss-debug to hold a build with debug configuration
+
+In the TPM2.0-TSS directory bootstrap the build:
+$ ./bootsrap
+
+From the tpm2tss-debug directory build the TPM2.0-TSS source code with the
+default configuration specified by your platform:
+$ ../TPM2.0-TSS/configure
+$ make
+
+From the tpm2tss-debug directory build the TPM2.0-TSS source code with
+optimization disabled and debug symbols:
+$ ../TPM2.0-TSS/configure \
+  CFLAGS="-O0 -Wall -Werror -ggdb3" \
+  CXXFLAGS="-O0 -Wall -Werror -fno-operator-names -fpermissive -ggdb3"
+$ make
+
 The tpm2.0-tss software currently does not have an install target. This
 section will be updated with installation instructions when they are relevant.
