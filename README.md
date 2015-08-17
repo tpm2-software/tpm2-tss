@@ -10,8 +10,10 @@ This stack consists of the following layers from top to bottom:
 
 Since the FAPI and ESAPI haven't been implemented yet, this repository only contains the SAPI and layers below it, plus a test application for excercising the SAPI.
 
-**For more details on this code and how to install and use it, the [Readme.pdf](https://github.com/01org/TPM2.0-TSS/blob/master/systemApi/Readme.pdf) file is a good place to start.**
+**For more details on this code and how to install and use it, the [Readme.pdf](https://github.com/01org/TPM2.0-TSS/blob/master/Readme.pdf) file is a good place to start.**
 
-**For release details, review the [TPM 2.0 library release notes.pdf](https://github.com/01org/TPM2.0-TSS/blob/master/systemApi/TPM%202.0%20library%20release%20notes.pdf) document.**
+## Build and Installation instructions:
+Instructions for building and installing the TPM2.0-TSS are provided in the [INSTALL](https://github.com/01org/TPM2.0-TSS/blob/master/INSTALL) file.
 
-**TPM 2.0 specifications can be found at [Trusted Computing Group](http://www.trustedcomputinggroup.org/).**
+## Resources
+TPM 2.0 specifications can be found at [Trusted Computing Group](http://www.trustedcomputinggroup.org/).
