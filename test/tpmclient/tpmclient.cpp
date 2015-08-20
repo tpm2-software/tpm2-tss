@@ -5955,7 +5955,7 @@ int main(int argc, char* argv[])
             if( 0 == strcmp( argv[count], "-host" ) )
             {
                 count++;
-                if( strlen( argv[count] ) + 1 <= HOSTNAME_LENGTH )
+                if( count >= argc || ( strlen( argv[count] ) + 1 <= HOSTNAME_LENGTH ) )
                 {
                     if( 1 != sscanf( argv[count], "%199s", &hostName[0] ) )
                     {
@@ -5972,7 +5972,7 @@ int main(int argc, char* argv[])
             else if( 0 == strcmp( argv[count], "-port" ) )
             {
                 count++;
-                if( 1 != sscanf_s( argv[count], "%d", &port ) )
+                if( count >= argc || 1 != sscanf_s( argv[count], "%d", &port ) )
                 {
                     PrintHelp();
                     return 1;
@@ -5981,7 +5981,7 @@ int main(int argc, char* argv[])
             else if( 0 == strcmp( argv[count], "-passes" ) )
             {
                 count++;
-                if( 1 != sscanf_s( argv[count], "%x", &passCount ) )
+                if( count >= argc || 1 != sscanf_s( argv[count], "%x", &passCount ) )
                 {
                     PrintHelp();
                     return 1;
@@ -5990,7 +5990,7 @@ int main(int argc, char* argv[])
             else if( 0 == strcmp( argv[count], "-demoDelay" ) )
             {
                 count++;
-                if( 1 != sscanf_s( argv[count], "%x", &demoDelay ) )
+                if( count >= argc || 1 != sscanf_s( argv[count], "%x", &demoDelay ) )
                 {
                     PrintHelp();
                     return 1;
@@ -5999,7 +5999,7 @@ int main(int argc, char* argv[])
             else if( 0 == strcmp( argv[count], "-dbg" ) )
             {
                 count++;
-                if( 1 != sscanf_s( argv[count], "%d", &debugLevel ) )
+                if( count >= argc || 1 != sscanf_s( argv[count], "%d", &debugLevel ) )
                 {
                     PrintHelp();
                     return 1;
@@ -6013,7 +6013,7 @@ int main(int argc, char* argv[])
             else if( 0 == strcmp( argv[count], "-out" ) )
             {
                 count++;
-                if( 1 != sscanf_s( argv[count], "%199s", &outFileName, sizeof( outFileName ) ) )
+                if( count >= argc || 1 != sscanf_s( argv[count], "%199s", &outFileName, sizeof( outFileName ) ) )
                 {
                     PrintHelp();
                     return 1;

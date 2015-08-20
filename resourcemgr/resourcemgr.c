@@ -41,7 +41,7 @@
 #ifdef  _WIN32
 typedef HANDLE THREAD_TYPE; 
 
-#define MAX_COMMAND_LINE_ARGS 5
+#define MAX_COMMAND_LINE_ARGS 7
 #elif __linux
 #include "localtpm.h"
 #include <stdarg.h>
@@ -52,7 +52,7 @@ typedef pthread_t THREAD_TYPE ;
 #define ExitThread pthread_exit
 #define CloseHandle( handle ) 
 
-#define MAX_COMMAND_LINE_ARGS 6
+#define MAX_COMMAND_LINE_ARGS 8
 #else    
 #error Unsupported OS--need to add OS-specific support for threading here.        
 #endif                
@@ -2824,7 +2824,7 @@ int main(int argc, char* argv[])
             else if( 0 == strcmp( argv[count], "-tpmport" ) )
             {
                 count++;
-                if( 1 != sscanf_s( argv[count], "%d", &tpmPort ) )
+                if( count >= argc || 1 != sscanf_s( argv[count], "%d", &tpmPort ) )
                 {
                     PrintHelp();
                     return 1;
@@ -2834,7 +2834,7 @@ int main(int argc, char* argv[])
             else if( 0 == strcmp( argv[count], "-apport" ) )
             {
                 count++;
-                if( 1 != sscanf_s( argv[count], "%d", &appPort ) )
+                if( count >= argc || 1 != sscanf_s( argv[count], "%d", &appPort ) )
                 {
                     PrintHelp();
                     return 1;
@@ -2844,7 +2844,7 @@ int main(int argc, char* argv[])
             else if( 0 == strcmp( argv[count], "-out" ) )
             {
                 count++;
-                if( 1 != sscanf_s( argv[count], "%s", &outFileName, sizeof( outFileName ) ) ||
+                if( count >= argc || 1 != sscanf_s( argv[count], "%s", &outFileName, sizeof( outFileName ) ) ||
                     ( 0 == ( outFp = fopen( &outFileName[0], "w" ) ) ) )
                 {
                     PrintHelp();
