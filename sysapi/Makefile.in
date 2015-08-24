@@ -32,19 +32,17 @@ VPATH  = @srcdir@
 CC = @CC@
 CFLAGS = @CFLAGS@ -I$(srcdir)/include
 
-LIB_DIR = ./lib
-BASE_DIR = ./
-
-.DEFAULT_GOAL := All
+LIB_DIR = lib
 
 SYS_API_OBJECTS := $(shell ls $(srcdir)/sysapi/*.c | sed 's&$(srcdir)/sysapi&lib&' | sed 's/\.c$$/\.o /' )
 SYS_API_UTIL_OBJECTS := $(shell ls $(srcdir)/sysapi_util/*c | sed 's&$(srcdir)/sysapi_util&lib&' | sed 's/\.c$$/\.o /' )
 SYS_API_INCLUDES := $(shell ls $(srcdir)/include/*.h )
+OBJS = $(SYS_API_OBJECTS) $(SYS_API_UTIL_OBJECTS)
 
-All: DIRS $(LIB_DIR)/libtpm.a
+.PHONY : all clean
+all: $(LIB_DIR)/libtpm.a
 
-DIRS:
-	-@mkdir lib 2> /dev/null
+$(OBJS) : | $(LIB_DIR)
 
 $(LIB_DIR)/libtpm.a: $(SYS_API_OBJECTS) $(SYS_API_UTIL_OBJECTS) Makefile
 	echo *** sysapi_objs: $(SYS_API_OBJECTS)
@@ -52,12 +50,14 @@ $(LIB_DIR)/libtpm.a: $(SYS_API_OBJECTS) $(SYS_API_UTIL_OBJECTS) Makefile
 	echo *** sysapi_includes: $(SYS_API_INCLUDES)
 	ar -qvc $@ $(SYS_API_OBJECTS) $(SYS_API_UTIL_OBJECTS)
 
-lib/%.o: sysapi/%.c Makefile $(SYS_API_INCLUDES)
+$(LIB_DIR)/%.o: sysapi/%.c Makefile $(SYS_API_INCLUDES)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-lib/%.o: sysapi_util/%.c Makefile $(SYS_API_INCLUDES)
+$(LIB_DIR)/%.o: sysapi_util/%.c Makefile $(SYS_API_INCLUDES)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-.PHONY : clean
+$(LIB_DIR):
+	-@mkdir -p $@
+
 clean:
 	@rm -rf $(LIB_DIR)
