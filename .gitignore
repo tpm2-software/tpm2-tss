@@ -3,6 +3,7 @@
 .dirstamp
 aclocal.m4
 autom4te.cache/
+common/*.o
 compile
 configure
 config.log
@@ -12,7 +13,7 @@ install-sh
 Makefile
 Makefile.in
 missing
-resourcemgr/lib/
+resourcemgr/Makefile.in
 resourcemgr/resourcemgr
 sysapi/libtpm.a
 sysapi/Makefile.in
