@@ -17,5 +17,5 @@ resourcemgr/Makefile.in
 resourcemgr/resourcemgr
 sysapi/libtpm.a
 sysapi/Makefile.in
-test/tpmclient/lib/
 test/tpmclient/tpmclient
+test/tpmclient/Makefile.in
