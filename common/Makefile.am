@@ -26,42 +26,10 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 #;**********************************************************************;
 
-RESOURCEMGR_SRC = resourcemgr.c resourcemgr.h
-TPMSOCKETS_SRC = ../tcti/tpmsockets/tpmsockets.cpp \
-    ../tcti/tpmsockets/tpmsockets.h
-LOCALTPM_SRC = ../tcti/localtpm/localtpm.c ../tcti/localtpm/localtpm.h
-SYSAPI_INC = \
-    ../sysapi/include/tss2_tpm2_types.h \
-    ../sysapi/include/tss2_sys_api_part3.h \
-    ../sysapi/include/tss2_tcti.h \
-    ../sysapi/include/basetypes.h \
-    ../sysapi/include/tss2_tcti_util.h \
-    ../sysapi/include/tpm20.h \
-    ../sysapi/include/tss2_sysapi_util.h \
-    ../sysapi/include/implementation.h \
-    ../sysapi/include/tss2_common.h \
-    ../sysapi/include/endianConv.h \
-    ../sysapi/include/tss2_sys_api_marshalUnmarshal.h \
-    ../sysapi/include/tss2_sys.h \
-    ../syspai/include/tpmb.h
+noinst_LIBRARIES = libcommon.a
+libcommon_a_SOURCES = $(COMMON_SRC)
+libcommon_a_CFLAGS = -I$(srcdir)/../sysapi/include/ \
+    -I$(srcdir)/../tcti/tpmsockets/ -I$(srcdir)/../test/tpmclient/
 
-INCLUDE_DIRS = -I$(srcdir)/../sysapi/include -I$(srcdir)/../common \
-    -I$(srcdir)/../tcti/tpmsockets -I$(srcdir)/../tcti/localtpm -I$(srcdir) \
-    -I$(srcdir)/../test/tpmclient
-
-AM_CFLAGS = $(INCLUDE_DIRS)
-AM_CXXFLAGS = $(INCLUDE_DIRS)
-
-LIBTPM = ../sysapi/libtpm.a
-LIBCMN = ../common/libcommon.a
-LIBS = -lpthread
-
-$(LIBCMN):
-	$(MAKE) -C ../common
-$(LIBTPM):
-	$(MAKE) -C ../sysapi
-
-bin_PROGRAMS = resourcemgr
-resourcemgr_LDADD = $(LIBCMN) $(LIBTPM)
-resourcemgr_SOURCES = $(RESOURCEMGR_SRC) $(TPMSOCKETS_SRC) $(LOCALTPM_SRC) \
-     $(COMMON_SRC) $(SYSAPI_INC)
+COMMON_SRC = debug.c debug.h platformcommand.c platform.h syscontext.c \
+    syscontext.h

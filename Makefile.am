@@ -26,4 +26,4 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 #;**********************************************************************;
 
-SUBDIRS = sysapi resourcemgr test/tpmclient
+SUBDIRS = sysapi common resourcemgr test/tpmclient

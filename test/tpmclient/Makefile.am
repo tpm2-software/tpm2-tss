@@ -46,13 +46,6 @@ SAMPLE_SRC = \
 TPMSOCKETS_SRC = \
     ../../tcti/tpmsockets/tpmsockets.cpp \
     ../../tcti/tpmsockets/tpmsockets.h
-COMMON_SRC = \
-    ../../common/debug.c \
-    ../../common/debug.h \
-    ../../common/platformcommand.c \
-    ../../common/platformcommand.h \
-    ../../common/syscontext.c \
-    ../../common/syscontext.h
 SYSAPI_SRC = \
     ../../sysapi/include/basetypes.h \
     ../../sysapi/include/endianConv.h \
@@ -72,7 +65,6 @@ TPMCLIENT_SRC = \
     tpmclient.cpp \
     tpmclient.h \
     $(SAMPLE_SRC) \
-    $(COMMON_SRC) \
     $(SYSAPI_SRC)
 
 INCLUDE_DIRS = -I$(srcdir)/../../sysapi/include -I$(srcdir) \
@@ -83,12 +75,15 @@ AM_CFLAGS = $(INCLUDE_DIRS)
 AM_CXXFLAGS = $(INCLUDE_DIRS)
 
 LIBTPM = ../../sysapi/libtpm.a
+LIBCMN = ../../common/libcommon.a
 
+$(LIBCMN):
+	$(MAKE) -C ../../common
 $(LIBTPM):
 	$(MAKE) -C ../../sysapi
 
 noinst_PROGRAMS = tpmclient
-LDADD = sapiclient_tpmsockets.o $(LIBTPM)
+LDADD = sapiclient_tpmsockets.o $(LIBCMN) $(LIBTPM)
 tpmclient_SOURCES = $(TPMCLIENT_SRC)
 
 # Build special version of tpmsockets code for test application.

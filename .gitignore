@@ -13,6 +13,8 @@ install-sh
 Makefile
 Makefile.in
 missing
+common/libcommon.a
+common/Makefile.in
 resourcemgr/Makefile.in
 resourcemgr/resourcemgr
 sysapi/libtpm.a
