@@ -49,7 +49,7 @@ INCLUDE_DIRS = -I$(srcdir)/../../sysapi/include -I$(srcdir) -I$(srcdir)/../../tc
 CFLAGS = @CFLAGS@ $(INCLUDE_DIRS)
 CXXFLAGS = @CXXFLAGS@ $(INCLUDE_DIRS)
 
-LIBS = ../../sysapi/lib/libtpm.a
+LIBS = ../../sysapi/libtpm.a
 LIB_DIR = lib
 
 OBJS = $(SYSCONTEXT_OBJS) $(SAMPLE_OBJS) $(COMMON_OBJS) lib/sapiclient_tpmsockets.o lib/tpmclient.o

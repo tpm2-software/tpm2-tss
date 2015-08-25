@@ -47,7 +47,7 @@ CC = @CC@
 CXX = @CXX@
 
 INCLUDE_DIRS = -I$(srcdir)/../sysapi/include -I$(srcdir)/../common -I$(srcdir)/../tcti/tpmsockets -I$(srcdir)/../tcti/localtpm -I$(srcdir) -I$(srcdir)/../test/tpmclient
-LIBS = ../sysapi/lib/libtpm.a
+LIBS = ../sysapi/libtpm.a
 LIB_DIR = lib
 
 CFLAGS = @CFLAGS@ $(INCLUDE_DIRS)
