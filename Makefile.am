@@ -26,11 +26,4 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 #;**********************************************************************;
 
-all:
-	$(MAKE) -C test/tpmclient
-	$(MAKE) -C resourcemgr
-
-clean:
-	$(MAKE) -C test/tpmclient clean
-	$(MAKE) -C resourcemgr clean
-
+SUBDIRS = sysapi resourcemgr test/tpmclient

@@ -1,8 +1,14 @@
+aclocal.m4
 autom4te.cache/
+compile
 configure
 config.log
 config.status
+depcomp
+install-sh
 Makefile
+Makefile.in
+missing
 resourcemgr/lib/
 resourcemgr/resourcemgr
 sysapi/lib/
