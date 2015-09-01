@@ -26,38 +26,42 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 #;**********************************************************************;
 
-srcdir = @srcdir@
-VPATH  = @srcdir@
- 
-CC = @CC@
-CFLAGS = @CFLAGS@ -I$(srcdir)/include
+RESOURCEMGR_SRC = resourcemgr.c resourcemgr.h
+TPMSOCKETS_SRC = ../tcti/tpmsockets/tpmsockets.cpp \
+    ../tcti/tpmsockets/tpmsockets.h
+LOCALTPM_SRC = ../tcti/localtpm/localtpm.c ../tcti/localtpm/localtpm.h
+SYSAPI_INC = \
+    ../sysapi/include/tss2_tpm2_types.h \
+    ../sysapi/include/tss2_sys_api_part3.h \
+    ../sysapi/include/tss2_tcti.h \
+    ../sysapi/include/basetypes.h \
+    ../sysapi/include/tss2_tcti_util.h \
+    ../sysapi/include/tpm20.h \
+    ../sysapi/include/tss2_sysapi_util.h \
+    ../sysapi/include/implementation.h \
+    ../sysapi/include/tss2_common.h \
+    ../sysapi/include/endianConv.h \
+    ../sysapi/include/tss2_sys_api_marshalUnmarshal.h \
+    ../sysapi/include/tss2_sys.h \
+    ../syspai/include/tpmb.h
 
-LIB_DIR = lib
+INCLUDE_DIRS = -I$(srcdir)/../sysapi/include -I$(srcdir)/../common \
+    -I$(srcdir)/../tcti/tpmsockets -I$(srcdir)/../tcti/localtpm -I$(srcdir) \
+    -I$(srcdir)/../test/tpmclient
 
-SYS_API_OBJECTS := $(shell ls $(srcdir)/sysapi/*.c | sed 's&$(srcdir)/sysapi&lib&' | sed 's/\.c$$/\.o /' )
-SYS_API_UTIL_OBJECTS := $(shell ls $(srcdir)/sysapi_util/*c | sed 's&$(srcdir)/sysapi_util&lib&' | sed 's/\.c$$/\.o /' )
-SYS_API_INCLUDES := $(shell ls $(srcdir)/include/*.h )
-OBJS = $(SYS_API_OBJECTS) $(SYS_API_UTIL_OBJECTS)
+AM_CFLAGS = $(INCLUDE_DIRS)
+AM_CXXFLAGS = $(INCLUDE_DIRS)
 
-.PHONY : all clean
-all: $(LIB_DIR)/libtpm.a
+LIBTPM = ../sysapi/libtpm.a
+LIBCMN = ../common/libcommon.a
+LIBS = -lpthread
 
-$(OBJS) : | $(LIB_DIR)
+$(LIBCMN):
+	$(MAKE) -C ../common
+$(LIBTPM):
+	$(MAKE) -C ../sysapi
 
-$(LIB_DIR)/libtpm.a: $(SYS_API_OBJECTS) $(SYS_API_UTIL_OBJECTS) Makefile
-	echo *** sysapi_objs: $(SYS_API_OBJECTS)
-	echo *** sysapi_util_objs: $(SYS_API_UTIL_OBJECTS)
-	echo *** sysapi_includes: $(SYS_API_INCLUDES)
-	ar -qvc $@ $(SYS_API_OBJECTS) $(SYS_API_UTIL_OBJECTS)
-
-$(LIB_DIR)/%.o: sysapi/%.c Makefile $(SYS_API_INCLUDES)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(LIB_DIR)/%.o: sysapi_util/%.c Makefile $(SYS_API_INCLUDES)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(LIB_DIR):
-	-@mkdir -p $@
-
-clean:
-	@rm -rf $(LIB_DIR)
+bin_PROGRAMS = resourcemgr
+resourcemgr_LDADD = $(LIBCMN) $(LIBTPM)
+resourcemgr_SOURCES = $(RESOURCEMGR_SRC) $(TPMSOCKETS_SRC) $(LOCALTPM_SRC) \
+     $(COMMON_SRC) $(SYSAPI_INC)
