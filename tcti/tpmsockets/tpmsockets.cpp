@@ -48,7 +48,6 @@
 #include "tpm20.h"
 #include "tpmsockets.h"
 #include "tss2_sysapi_util.h"
-#include "tpmclient.h"
 #include "debug.h"
 
 #ifdef __cplusplus

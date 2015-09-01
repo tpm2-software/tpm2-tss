@@ -34,14 +34,6 @@ extern void InitSysContextFailure();
 
 #define GLOBAL_SYS_CONTEXT_SIZE 4096
 
-#define  DEBUG
-
-#ifdef DEBUG
-#define DEBUG_PRINT_BUFFER( buffer, length )  DebugPrintBufferOpen( buffer, length )
-#else
-#define DEBUG_PRINT_BUFFER( buffer, length )
-#endif
-
 UINT32 TpmHash( TPMI_ALG_HASH hashAlg, UINT16 size, BYTE *data, TPM2B_DIGEST *result );
 UINT32 TpmHandleToName( TPM_HANDLE handle, TPM2B_NAME *name );
 TPM_RC CompareSizedByteBuffer( TPM2B *buffer1, TPM2B *buffer2 );
