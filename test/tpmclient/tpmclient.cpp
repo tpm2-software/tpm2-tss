@@ -5911,15 +5911,15 @@ char version[] = "0.90";
 
 void PrintHelp()
 {
-    printf( "TPM client test app, Version %s\nUsage:  tpmclient [-host hostname|ip_addr] [-port port] [-passes passNum] [-demoDelay delay] [-dbg dbgLevel] [-startAuthSessionTest]\n"
+    printf( "TPM client test app, Version %s\nUsage:  tpmclient [-rmhost hostname|ip_addr] [-rmport port] [-passes passNum] [-demoDelay delay] [-dbg dbgLevel] [-startAuthSessionTest]\n"
             "\n"
             "where:\n"
             "\n"
-            "-host specifies the host IP address (default: %s)\n"
-            "-port specifies the port number (default: %d)\n"
+            "-rmhost specifies the host IP address for the system running the resource manager (default: %s)\n"
+            "-rmport specifies the port number for the system running the resource manager (default: %d)\n"
             "-passes specifies the number of test passes (default: 1)\n"
             "-demoDelay specifies a delay in units of loops, not time (default:  0)\n"
-            "-dbgLevel specifies level of debug messages:\n"
+            "-dbg specifies level of debug messages:\n"
             "   0 (high level test results)\n"
             "   1 (test app send/receive byte streams)\n"
             "   2 (resource manager send/receive byte streams)\n"
@@ -5952,10 +5952,10 @@ int main(int argc, char* argv[])
     {
         for( count = 1; count < argc; count++ )
         {
-            if( 0 == strcmp( argv[count], "-host" ) )
+            if( 0 == strcmp( argv[count], "-rmhost" ) )
             {
                 count++;
-                if( strlen( argv[count] ) + 1 <= HOSTNAME_LENGTH )
+                if( count >= argc || ( strlen( argv[count] ) + 1 <= HOSTNAME_LENGTH ) )
                 {
                     if( 1 != sscanf( argv[count], "%199s", &hostName[0] ) )
                     {
@@ -5969,10 +5969,10 @@ int main(int argc, char* argv[])
                     return 1;
                 }
             }
-            else if( 0 == strcmp( argv[count], "-port" ) )
+            else if( 0 == strcmp( argv[count], "-rmport" ) )
             {
                 count++;
-                if( 1 != sscanf_s( argv[count], "%d", &port ) )
+                if( count >= argc || 1 != sscanf_s( argv[count], "%d", &port ) )
                 {
                     PrintHelp();
                     return 1;
@@ -5981,7 +5981,7 @@ int main(int argc, char* argv[])
             else if( 0 == strcmp( argv[count], "-passes" ) )
             {
                 count++;
-                if( 1 != sscanf_s( argv[count], "%x", &passCount ) )
+                if( count >= argc || 1 != sscanf_s( argv[count], "%x", &passCount ) )
                 {
                     PrintHelp();
                     return 1;
@@ -5990,7 +5990,7 @@ int main(int argc, char* argv[])
             else if( 0 == strcmp( argv[count], "-demoDelay" ) )
             {
                 count++;
-                if( 1 != sscanf_s( argv[count], "%x", &demoDelay ) )
+                if( count >= argc || 1 != sscanf_s( argv[count], "%x", &demoDelay ) )
                 {
                     PrintHelp();
                     return 1;
@@ -5999,7 +5999,7 @@ int main(int argc, char* argv[])
             else if( 0 == strcmp( argv[count], "-dbg" ) )
             {
                 count++;
-                if( 1 != sscanf_s( argv[count], "%d", &debugLevel ) )
+                if( count >= argc || 1 != sscanf_s( argv[count], "%d", &debugLevel ) )
                 {
                     PrintHelp();
                     return 1;
@@ -6013,7 +6013,7 @@ int main(int argc, char* argv[])
             else if( 0 == strcmp( argv[count], "-out" ) )
             {
                 count++;
-                if( 1 != sscanf_s( argv[count], "%199s", &outFileName, sizeof( outFileName ) ) )
+                if( count >= argc || 1 != sscanf_s( argv[count], "%199s", &outFileName, sizeof( outFileName ) ) )
                 {
                     PrintHelp();
                     return 1;
@@ -6055,7 +6055,12 @@ int main(int argc, char* argv[])
     if( rval != TSS2_RC_SUCCESS )
     {
         TpmClientPrintf( 0, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceInfo.shortName, rval );
-        Cleanup();
+#ifdef _WIN32        
+        WSACleanup();
+#endif
+        if( resMgrTctiContext != 0 )
+            free( resMgrTctiContext );
+        
         return( 1 );
     }
     else
