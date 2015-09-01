@@ -58,6 +58,7 @@ typedef pthread_t THREAD_TYPE ;
 #endif                
 
 extern TSS2_RC GetCommands( TSS2_SYS_CONTEXT *resMgrSysContext, TPML_CCA **supportedCommands );
+extern UINT8 GetCommandAttributes( TPM_CC commandCode, TPML_CCA *supportedCommands, TPMA_CC *cmdAttributes );
 
 char outFileName[200] = "";
 FILE *outFp;
