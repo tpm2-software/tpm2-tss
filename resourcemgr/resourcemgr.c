@@ -57,6 +57,8 @@ typedef pthread_t THREAD_TYPE ;
 #error Unsupported OS--need to add OS-specific support for threading here.        
 #endif                
 
+extern TSS2_RC GetCommands( TSS2_SYS_CONTEXT *resMgrSysContext, TPML_CCA **supportedCommands );
+
 char outFileName[200] = "";
 FILE *outFp;
 
@@ -64,6 +66,42 @@ char otherCmdStr[] = "Other CMD";
 
 void *(*rmMalloc)(size_t size) = malloc;
 void (*rmFree)(void *entry) = free;
+
+TPML_CCA *supportedCommands;
+
+int GetNumCmdHandles( TPM_CC commandCode, TPML_CCA *supportedCommands )
+{
+    int rval = 0;
+    TPMA_CC cmdAttributes;
+    
+    if( GetCommandAttributes( commandCode, supportedCommands, &cmdAttributes ) )
+    {
+        if( commandCode == TPM_CC_FlushContext )
+        {
+            rval = 1;
+        }
+        else
+        {                
+            rval = cmdAttributes.cHandles;
+        }
+    }
+
+    return rval;
+}
+
+int GetNumRspHandles( TPM_CC commandCode, TPML_CCA *supportedCommands )
+{
+    int rval = 0;
+    TPMA_CC cmdAttributes;
+    
+    if( GetCommandAttributes( commandCode, supportedCommands, &cmdAttributes ) )
+    {
+		if( cmdAttributes.rHandle == 1 )
+	        rval = 1;
+    }
+
+    return rval;
+}
 
 int ResMgrPrintf( UINT8 type, const char *format, ...)
 {
@@ -1161,7 +1199,7 @@ TSS2_RC ResourceMgrSendTpmCommand(
         ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_DISABLED;
     }
 
-    numHandles = GetNumCommandHandles( currentCommandCode );
+    numHandles = GetNumCmdHandles( currentCommandCode, supportedCommands );
     
     for( i = 0; i < numHandles; i++ )
     {
@@ -1594,7 +1632,7 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
             if( responseCode == TSS2_RC_SUCCESS )
             {
                 commandPassed = 1;
-                numResponseHandles = GetNumResponseHandles( currentCommandCode );
+                numResponseHandles = GetNumRspHandles( currentCommandCode, supportedCommands );
 
                 if( numResponseHandles )
                 {
@@ -2724,6 +2762,14 @@ TSS2_RC InitResourceMgr( int debugLevel)
         goto returnFromInitResourceMgr;
     }
 
+    // Get the TPM 2.0 commands supported by the TPM.
+    rval = GetCommands( resMgrSysContext, &supportedCommands );
+    if( rval != TPM_RC_SUCCESS )
+    {
+        SetRmErrorLevel( &rval, TSS2_RESMGR_ERROR_LEVEL );
+        goto returnFromInitResourceMgr;
+    }
+    
     // Allocate memory for command/response buffers.
     cmdBuffer = (*rmMalloc)( maxCmdSize );
     if( cmdBuffer == 0 )
