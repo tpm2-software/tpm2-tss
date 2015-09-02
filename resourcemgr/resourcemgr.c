@@ -33,7 +33,6 @@
 #include "resourcemgr.h"
 //#include <sample.h>
 #include <tss2_sysapi_util.h>
-#include "tpmclient.h"
 #include "syscontext.h"
 #include "localtpm.h"
 #include "debug.h"

@@ -28,7 +28,7 @@
 #ifndef RESOURCEMGR_H
 #define RESOURCEMGR_H
 
-#include "tpmclient.h"
+//#include "tpmclient.h"
 #include "tss2_tcti.h"
 #include "tss2_sysapi_util.h"
 #include <stdlib.h>

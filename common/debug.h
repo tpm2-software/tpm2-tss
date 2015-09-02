@@ -50,6 +50,14 @@ extern FILE *outFp;
 
 extern UINT8 rmDebugPrefix;
 
+#define  DEBUG
+
+#ifdef DEBUG
+#define DEBUG_PRINT_BUFFER( buffer, length )  DebugPrintBufferOpen( buffer, length )
+#else
+#define DEBUG_PRINT_BUFFER( buffer, length )
+#endif
+
 #ifdef __cplusplus
 }
 #endif
