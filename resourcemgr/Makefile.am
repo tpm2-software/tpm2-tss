@@ -62,6 +62,11 @@ $(LIBTPM):
 	$(MAKE) -C ../sysapi
 
 bin_PROGRAMS = resourcemgr
-resourcemgr_LDADD = $(LIBCMN) $(LIBTPM)
+resourcemgr_LDADD = getcommands.o $(LIBCMN) $(LIBTPM) 
 resourcemgr_SOURCES = $(RESOURCEMGR_SRC) $(TPMSOCKETS_SRC) $(LOCALTPM_SRC) \
      $(COMMON_SRC) $(SYSAPI_INC)
+
+# Build special version of getcommands code for test application.
+getcommands.o: ../common/getcommands.c
+	$(CC) $(AM_CFLAGS) -c $< -o $@
+

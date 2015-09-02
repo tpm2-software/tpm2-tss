@@ -83,10 +83,17 @@ $(LIBTPM):
 	$(MAKE) -C ../../sysapi
 
 noinst_PROGRAMS = tpmclient
-LDADD = sapiclient_tpmsockets.o $(LIBCMN) $(LIBTPM)
+LDADD = sapiclient_tpmsockets.o sapiclient_getcommands.o $(LIBCMN) $(LIBTPM)
 tpmclient_SOURCES = $(TPMCLIENT_SRC)
 
 # Build special version of tpmsockets code for test application.
+sapiclient_getcommands.o: AM_CFLAGS+=-DSAPI_CLIENT
+sapiclient_getcommands.o: ../../common/getcommands.c
+	$(CC) $(AM_CFLAGS) -c $< -o $@
+
+# Build special version of getcommands code for test application.
 sapiclient_tpmsockets.o: AM_CXXFLAGS+=-DSAPI_CLIENT
 sapiclient_tpmsockets.o: ../../tcti/tpmsockets/tpmsockets.cpp
 	$(CXX) $(AM_CXXFLAGS) -c $< -o $@
+
+
