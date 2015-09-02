@@ -32,4 +32,4 @@ libcommon_a_CFLAGS = -I$(srcdir)/../sysapi/include/ \
     -I$(srcdir)/../tcti/tpmsockets/ -I$(srcdir)/../test/tpmclient/
 
 COMMON_SRC = debug.c debug.h platformcommand.c platform.h syscontext.c \
-    syscontext.h
+    syscontext.h getcommands.c
