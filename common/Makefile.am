@@ -26,11 +26,10 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 #;**********************************************************************;
 
-all:
-	$(MAKE) -C test/tpmclient
-	$(MAKE) -C resourcemgr
+noinst_LIBRARIES = libcommon.a
+libcommon_a_SOURCES = $(COMMON_SRC)
+libcommon_a_CFLAGS = -I$(srcdir)/../sysapi/include/ \
+    -I$(srcdir)/../tcti/tpmsockets/ -I$(srcdir)/../test/tpmclient/
 
-clean:
-	$(MAKE) -C test/tpmclient clean
-	$(MAKE) -C resourcemgr clean
-
+COMMON_SRC = debug.c debug.h platformcommand.c platform.h syscontext.c \
+    syscontext.h
