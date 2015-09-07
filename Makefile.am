@@ -26,13 +26,21 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 #;**********************************************************************;
 
-SUBDIRS = resourcemgr test/tpmclient
+SUBDIRS = test/tpmclient
 
+bin_PROGRAMS = resourcemgr/resourcemgr
 noinst_LIBRARIES = common/libcommon.a sysapi/libtpm.a
 
 common_libcommon_a_CFLAGS  = -I$(srcdir)/sysapi/include/ \
     -I$(srcdir)/tcti/tpmsockets/ -I$(srcdir)/test/tpmclient/
 common_libcommon_a_SOURCES = $(COMMON_SRC)
+
+resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC)
+resourcemgr_resourcemgr_CXXFLAGS = $(RESOURCEMGR_INC)
+resourcemgr_resourcemgr_LDADD    = $(noinst_LIBRARIES)
+resourcemgr_resourcemgr_LDFLAGS  = -lpthread
+resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_SRC) $(TPMSOCKETS_SRC) \
+     $(LOCALTPM_SRC) $(COMMON_SRC) $(SYSAPI_INC) common/getcommands.c
 
 sysapi_libtpm_a_CFLAGS  = -I$(srcdir)/sysapi/include/
 sysapi_libtpm_a_SOURCES = $(SYSAPI_SRC) $(SYSAPIUTIL_SRC) $(SYSAPI_INC)
@@ -41,6 +49,14 @@ COMMON_SRC = \
     common/debug.c common/debug.h \
     common/platformcommand.c common/platform.h \
     common/syscontext.c common/syscontext.h
+
+LOCALTPM_SRC = tcti/localtpm/localtpm.c tcti/localtpm/localtpm.h
+RESOURCEMGR_INC = -I$(srcdir)/sysapi/include -I$(srcdir)/common \
+    -I$(srcdir)/tcti/tpmsockets -I$(srcdir)/tcti/localtpm \
+    -I$(srcdir)/resourcemgr -I$(srcdir)/test/tpmclient
+RESOURCEMGR_SRC = resourcemgr/resourcemgr.c resourcemgr/resourcemgr.h
+TPMSOCKETS_SRC = tcti/tpmsockets/tpmsockets.cpp \
+    tcti/tpmsockets/tpmsockets.h
 
 SYSAPI_SRC = \
     sysapi/sysapi/Tss2_Sys_ECC_Parameters.c \
