@@ -26,12 +26,21 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 #;**********************************************************************;
 
-SUBDIRS = common resourcemgr test/tpmclient
+SUBDIRS = resourcemgr test/tpmclient
 
-noinst_LIBRARIES = sysapi/libtpm.a
+noinst_LIBRARIES = common/libcommon.a sysapi/libtpm.a
+
+common_libcommon_a_CFLAGS  = -I$(srcdir)/sysapi/include/ \
+    -I$(srcdir)/tcti/tpmsockets/ -I$(srcdir)/test/tpmclient/
+common_libcommon_a_SOURCES = $(COMMON_SRC)
 
 sysapi_libtpm_a_CFLAGS  = -I$(srcdir)/sysapi/include/
 sysapi_libtpm_a_SOURCES = $(SYSAPI_SRC) $(SYSAPIUTIL_SRC) $(SYSAPI_INC)
+
+COMMON_SRC = \
+    common/debug.c common/debug.h \
+    common/platformcommand.c common/platform.h \
+    common/syscontext.c common/syscontext.h
 
 SYSAPI_SRC = \
     sysapi/sysapi/Tss2_Sys_ECC_Parameters.c \

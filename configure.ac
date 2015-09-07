@@ -5,7 +5,6 @@ AC_PROG_RANLIB
 AM_INIT_AUTOMAKE([foreign
                   subdir-objects])
 AC_CONFIG_FILES([Makefile
-                 common/Makefile
                  test/tpmclient/Makefile
                  resourcemgr/Makefile])
 AC_OUTPUT

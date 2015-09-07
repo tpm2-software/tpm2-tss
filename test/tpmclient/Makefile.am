@@ -78,7 +78,7 @@ LIBTPM = ../../sysapi/libtpm.a
 LIBCMN = ../../common/libcommon.a
 
 $(LIBCMN):
-	$(MAKE) -C ../../common
+	$(MAKE) -C ../../ common/libcommon.a
 $(LIBTPM):
 	$(MAKE) -C ../../ sysapi/libtpm.a
 

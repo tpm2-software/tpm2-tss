@@ -57,7 +57,7 @@ LIBCMN = ../common/libcommon.a
 LIBS = -lpthread
 
 $(LIBCMN):
-	$(MAKE) -C ../common
+	$(MAKE) -C ../ common/libcommon.a
 $(LIBTPM):
 	$(MAKE) -C ../ sysapi/libtpm.a
 
