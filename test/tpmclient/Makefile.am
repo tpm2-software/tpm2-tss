@@ -80,7 +80,7 @@ LIBCMN = ../../common/libcommon.a
 $(LIBCMN):
 	$(MAKE) -C ../../common
 $(LIBTPM):
-	$(MAKE) -C ../../sysapi
+	$(MAKE) -C ../../ sysapi/libtpm.a
 
 noinst_PROGRAMS = tpmclient
 LDADD = sapiclient_tpmsockets.o sapiclient_getcommands.o $(LIBCMN) $(LIBTPM)

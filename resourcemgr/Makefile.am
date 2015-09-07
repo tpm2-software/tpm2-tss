@@ -59,7 +59,7 @@ LIBS = -lpthread
 $(LIBCMN):
 	$(MAKE) -C ../common
 $(LIBTPM):
-	$(MAKE) -C ../sysapi
+	$(MAKE) -C ../ sysapi/libtpm.a
 
 bin_PROGRAMS = resourcemgr
 resourcemgr_LDADD = getcommands.o $(LIBCMN) $(LIBTPM) 
