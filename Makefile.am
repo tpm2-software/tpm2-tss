@@ -26,9 +26,7 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 #;**********************************************************************;
 
-SUBDIRS = test/tpmclient
-
-bin_PROGRAMS = resourcemgr/resourcemgr
+bin_PROGRAMS = resourcemgr/resourcemgr test/tpmclient/tpmclient
 noinst_LIBRARIES = common/libcommon.a sysapi/libtpm.a
 
 common_libcommon_a_CFLAGS  = -I$(srcdir)/sysapi/include/ \
@@ -45,6 +43,12 @@ resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_SRC) $(TPMSOCKETS_SRC) \
 sysapi_libtpm_a_CFLAGS  = -I$(srcdir)/sysapi/include/
 sysapi_libtpm_a_SOURCES = $(SYSAPI_SRC) $(SYSAPIUTIL_SRC) $(SYSAPI_INC)
 
+test_tpmclient_tpmclient_CFLAGS   = -DSAPI_CLIENT $(TPMCLIENT_INC)
+test_tpmclient_tpmclient_CXXFLAGS = -DSAPI_CLIENT $(TPMCLIENT_INC)
+test_tpmclient_tpmclient_LDADD    = $(noinst_LIBRARIES)
+test_tpmclient_tpmclient_SOURCES  = $(SAMPLE_SRC) $(SYSAPI_INC) \
+    $(TPMCLIENT_SRC) $(TPMSOCKETS_SRC) common/getcommands.c
+
 COMMON_SRC = \
     common/debug.c common/debug.h \
     common/platformcommand.c common/platform.h \
@@ -57,6 +61,28 @@ RESOURCEMGR_INC = -I$(srcdir)/sysapi/include -I$(srcdir)/common \
 RESOURCEMGR_SRC = resourcemgr/resourcemgr.c resourcemgr/resourcemgr.h
 TPMSOCKETS_SRC = tcti/tpmsockets/tpmsockets.cpp \
     tcti/tpmsockets/tpmsockets.h
+
+TPMCLIENT_INC = -I$(srcdir)/sysapi/include -I$(srcdir)/test/tpmclient \
+    -I$(srcdir)/tcti/tpmsockets -I$(srcdir)/common \
+    -I$(srcdir)/test/common/sample -I$(srcdir)/resourcemgr
+TPMCLIENT_SRC = test/tpmclient/tpmclient.cpp test/tpmclient/tpmclient.h
+SAMPLE_SRC = \
+    test/common/sample/CatSizedByteBuffer.c \
+    test/common/sample/CopySizedBuffer.c \
+    test/common/sample/CreateNullSession.c \
+    test/common/sample/DecryptEncrypt.c \
+    test/common/sample/Entity.c \
+    test/common/sample/kdfa.c \
+    test/common/sample/LoadExternalHMACKey.c \
+    test/common/sample/sample.h \
+    test/common/sample/SessionHmac.c \
+    test/common/sample/SetLocality.c \
+    test/common/sample/StartAuthSession.c \
+    test/common/sample/TpmCalcPHash.c \
+    test/common/sample/TpmHandleToName.c \
+    test/common/sample/TpmHash.c \
+    test/common/sample/TpmHmac.c \
+    test/common/sample/sample.h
 
 SYSAPI_SRC = \
     sysapi/sysapi/Tss2_Sys_ECC_Parameters.c \
