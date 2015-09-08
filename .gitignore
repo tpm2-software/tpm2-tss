@@ -20,5 +20,6 @@ install-sh
 Makefile
 Makefile.in
 missing
+src_vars.mk
 resourcemgr/resourcemgr
 test/tpmclient/tpmclient
