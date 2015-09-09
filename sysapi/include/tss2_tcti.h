@@ -57,7 +57,7 @@ extern "C" {
 #include <winsock2.h>
 #include <windows.h>
 typedef HANDLE TSS2_TCTI_POLL_HANDLE;
-#elif defined linux
+#elif defined linux || defined unix
 #include <poll.h>
 typedef struct pollfd TSS2_TCTI_POLL_HANDLE;
 #else

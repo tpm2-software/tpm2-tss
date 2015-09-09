@@ -43,7 +43,7 @@
 #error Version mismatch among TSS2 header files !
 #endif  /* TSS2_API_VERSION_1_1_1_1 */
 
-#if defined linux
+#if defined linux || defined unix
 #include <sys/socket.h>
 #define SOCKET int
 #endif
