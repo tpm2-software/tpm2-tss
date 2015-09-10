@@ -27,18 +27,14 @@
 #;**********************************************************************;
 
 bin_PROGRAMS = resourcemgr/resourcemgr test/tpmclient/tpmclient
-noinst_LIBRARIES = common/libcommon.a sysapi/libtpm.a
-
-common_libcommon_a_CFLAGS  = -I$(srcdir)/sysapi/include/ \
-    -I$(srcdir)/tcti/tpmsockets/ -I$(srcdir)/test/tpmclient/
-common_libcommon_a_SOURCES = $(COMMON_SRC)
+noinst_LIBRARIES = sysapi/libtpm.a
 
 resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC)
 resourcemgr_resourcemgr_CXXFLAGS = $(RESOURCEMGR_INC)
 resourcemgr_resourcemgr_LDADD    = $(noinst_LIBRARIES)
 resourcemgr_resourcemgr_LDFLAGS  = -lpthread
 resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_SRC) $(TPMSOCKETS_SRC) \
-     $(LOCALTPM_SRC) $(COMMON_SRC) $(SYSAPI_INC) common/getcommands.c
+     $(LOCALTPM_SRC) $(COMMON_SRC)
 
 sysapi_libtpm_a_CFLAGS  = -I$(srcdir)/sysapi/include/
 sysapi_libtpm_a_SOURCES = $(SYSAPI_SRC) $(SYSAPIUTIL_SRC) $(SYSAPI_INC)
@@ -46,11 +42,12 @@ sysapi_libtpm_a_SOURCES = $(SYSAPI_SRC) $(SYSAPIUTIL_SRC) $(SYSAPI_INC)
 test_tpmclient_tpmclient_CFLAGS   = -DSAPI_CLIENT $(TPMCLIENT_INC)
 test_tpmclient_tpmclient_CXXFLAGS = -DSAPI_CLIENT $(TPMCLIENT_INC)
 test_tpmclient_tpmclient_LDADD    = $(noinst_LIBRARIES)
-test_tpmclient_tpmclient_SOURCES  = $(SAMPLE_SRC) $(SYSAPI_INC) \
-    $(TPMCLIENT_SRC) $(TPMSOCKETS_SRC) common/getcommands.c
+test_tpmclient_tpmclient_SOURCES  = $(COMMON_SRC) $(SAMPLE_SRC) \
+    $(TPMCLIENT_SRC) $(TPMSOCKETS_SRC)
 
 COMMON_SRC = \
     common/debug.c common/debug.h \
+    common/getcommands.c \
     common/platformcommand.c common/platform.h \
     common/syscontext.c common/syscontext.h
 
