@@ -41,7 +41,7 @@
 typedef HANDLE THREAD_TYPE; 
 
 #define MAX_COMMAND_LINE_ARGS 7
-#elif __linux
+#elif __linux || __unix
 #include "localtpm.h"
 #include <stdarg.h>
 #define sprintf_s   snprintf
@@ -2444,7 +2444,7 @@ UINT32 WINAPI SockServer( LPVOID servStruct )
     SERVER_STRUCT *cmdServerStruct;
 #ifdef  _WIN32
     // do nothing.
-#elif __linux
+#elif __linux || __unix
     
     int rval = 0;
 #endif    
@@ -2484,7 +2484,7 @@ UINT32 WINAPI SockServer( LPVOID servStruct )
             printf( "Resource Mgr failed to create OTHER command server thread.  Exiting...\n" );
             continue;
         }
-#elif __linux
+#elif __linux || __unix
         rval = pthread_create( &cmdServerStruct->threadHandle, 0, (void *)serverStruct->serverFn, cmdServerStruct );
         if( rval != 0 )
         {
@@ -2544,7 +2544,7 @@ TSS2_RC TeardownSimulatorTctiContext( const char *driverConfig )
     return rval;
 }
 
-#if __linux
+#if __linux || __unix
 char localTpmInterfaceConfig[interfaceConfigSize];
     
 TSS2_TCTI_DRIVER_INFO localTpmInterfaceInfo = { "local TPM", "", InitLocalTpmTcti, TeardownLocalTpmTcti };
@@ -2584,7 +2584,7 @@ TSS2_RC TeardownResMgr(
 {
     ResMgrPrintf( NO_PREFIX, "Tearing down Resource Manager\n" );
 
-#if __linux
+#if __linux || __unix
     if( !simulator )
         TeardownSocketsTcti( tctiContext, config, localTpmInterfaceInfo.shortName );
     else
@@ -2793,14 +2793,14 @@ char version[] = "0.85";
 void PrintHelp()
 {
     printf( "Resource manager daemon, Version %s\nUsage:  resourcemgr "
-#if __linux
+#if __linux || __unix
             "[-sim] "
 #endif            
             "[-tpmhost hostname|ip_addr] [-tpmport port] [-apport port]\n"
             "\n"
             "where:\n"
             "\n"
-#if __linux
+#if __linux || __unix
             "-sim tells resource manager to communicate with TPM 2.0 simulator (default: communicates with local TPM; must be specified for running on Windows)\n"
 #endif            
             "-tpmhost specifies the host IP address for communicating with the TPM (default: %s; only valid if -sim used)\n"
@@ -2846,7 +2846,7 @@ int main(int argc, char* argv[])
     {
         for( count = 1; count < argc; count++ )
         {
-#if __linux
+#if __linux || __unix
             if( 0 == strcmp( argv[count], "-sim" ) )
             {
                 simulator = 1;
@@ -2909,7 +2909,7 @@ int main(int argc, char* argv[])
             }
         }
 
-#if __linux
+#if __linux || __unix
         if( !simulator && ( tpmHostNameSpecified == 1 || tpmPortSpecified == 1 ) )
         {
             PrintHelp();
@@ -2927,7 +2927,7 @@ int main(int argc, char* argv[])
 		outFp = 0;
 	}
 
-#if __linux
+#if __linux || __unix
     if( !simulator )
     {
         // Use device driver for local TPM.
@@ -3003,7 +3003,7 @@ int main(int argc, char* argv[])
     {
         printf( "Resource Mgr failed to create OTHER command server thread.  Exiting...\n" );
     }
-#elif __linux
+#elif __linux || __unix
     rval = pthread_create( &sockServerThread, 0, (void *)SockServer, &otherCmdServerStruct );
     if( rval != 0 )
     {
