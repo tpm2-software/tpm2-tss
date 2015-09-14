@@ -28,6 +28,8 @@
 
 include src_vars.mk
 
+ACLOCAL_AMFLAGS = -I m4
+
 bin_PROGRAMS = resourcemgr/resourcemgr test/tpmclient/tpmclient test/tpmtest/tpmtest
 noinst_LIBRARIES = sysapi/libtpm.a
 

@@ -13,10 +13,15 @@ autom4te.cache/
 [Rr]elease/
 compile
 configure
+config.guess
 config.log
 config.status
+config.sub
 depcomp
 install-sh
+libtool
+ltmain.sh
+m4/
 Makefile
 Makefile.in
 missing
