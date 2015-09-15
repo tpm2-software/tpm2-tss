@@ -1,27 +1,27 @@
 //**********************************************************************;
 // Copyright (c) 2015, Intel Corporation
 // All rights reserved.
-// 
-// Redistribution and use in source and binary forms, with or without 
+//
+// Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
-// 1. Redistributions of source code must retain the above copyright notice, 
+//
+// 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
-// 2. Redistributions in binary form must reproduce the above copyright notice, 
-// this list of conditions and the following disclaimer in the documentation 
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+// this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
@@ -38,9 +38,9 @@
 #include "debug.h"
 
 #ifdef  _WIN32
-typedef HANDLE THREAD_TYPE; 
+typedef HANDLE THREAD_TYPE;
 
-#define MAX_COMMAND_LINE_ARGS 7
+#define MAX_COMMAND_LINE_ARGS 8
 #elif __linux || __unix
 #include "localtpm.h"
 #include <stdarg.h>
@@ -49,12 +49,12 @@ typedef HANDLE THREAD_TYPE;
 #include <pthread.h>
 typedef pthread_t THREAD_TYPE ;
 #define ExitThread pthread_exit
-#define CloseHandle( handle ) 
+#define CloseHandle( handle )
 
-#define MAX_COMMAND_LINE_ARGS 8
-#else    
-#error Unsupported OS--need to add OS-specific support for threading here.        
-#endif                
+#define MAX_COMMAND_LINE_ARGS 9
+#else
+#error Unsupported OS--need to add OS-specific support for threading here.
+#endif
 
 extern TSS2_RC GetCommands( TSS2_SYS_CONTEXT *resMgrSysContext, TPML_CCA **supportedCommands );
 extern UINT8 GetCommandAttributes( TPM_CC commandCode, TPML_CCA *supportedCommands, TPMA_CC *cmdAttributes );
@@ -73,7 +73,7 @@ int GetNumCmdHandles( TPM_CC commandCode, TPML_CCA *supportedCommands )
 {
     int rval = 0;
     TPMA_CC cmdAttributes;
-    
+
     if( GetCommandAttributes( commandCode, supportedCommands, &cmdAttributes ) )
     {
         if( commandCode == TPM_CC_FlushContext )
@@ -81,7 +81,7 @@ int GetNumCmdHandles( TPM_CC commandCode, TPML_CCA *supportedCommands )
             rval = 1;
         }
         else
-        {                
+        {
             rval = cmdAttributes.cHandles;
         }
     }
@@ -93,7 +93,7 @@ int GetNumRspHandles( TPM_CC commandCode, TPML_CCA *supportedCommands )
 {
     int rval = 0;
     TPMA_CC cmdAttributes;
-    
+
     if( GetCommandAttributes( commandCode, supportedCommands, &cmdAttributes ) )
     {
 		if( cmdAttributes.rHandle == 1 )
@@ -141,6 +141,8 @@ UINT8 simulator = 1;
 UINT8 simulator = 0;
 #endif
 
+int sharedHandle = 0;
+
 enum shutdownStartupSequenceType { TPM_RESET, TPM_RESTART, TPM_RESUME };
 
 TSS2_TCTI_CONTEXT *downstreamTctiContext = 0;
@@ -162,27 +164,27 @@ TSS2_RC ResmgrFixupErrorlevel( TSS2_RC errCode )
 #define RESMGR_UNMARSHAL_UINT8( buffer, size, currentPtr, value, rval, exitLoc ) \
     Unmarshal_UINT8( buffer, size, currentPtr, value, rval ); \
     responseRval = ResmgrFixupErrorlevel( *rval ); \
-    if( responseRval != TSS2_RC_SUCCESS ) goto exitLoc; 
+    if( responseRval != TSS2_RC_SUCCESS ) goto exitLoc;
 
 #define RESMGR_UNMARSHAL_UINT16( buffer, size, currentPtr, value, rval, exitLoc ) \
     Unmarshal_UINT16( buffer, size, currentPtr, value, rval ); \
     responseRval = ResmgrFixupErrorlevel( *rval ); \
-    if( responseRval != TSS2_RC_SUCCESS ) goto exitLoc; 
+    if( responseRval != TSS2_RC_SUCCESS ) goto exitLoc;
 
 #define RESMGR_UNMARSHAL_UINT32( buffer, size, currentPtr, value, rval, exitLoc ) \
     Unmarshal_UINT32( buffer, size, currentPtr, value, rval ); \
     responseRval = ResmgrFixupErrorlevel( *rval ); \
-    if( responseRval != TSS2_RC_SUCCESS ) goto exitLoc; 
+    if( responseRval != TSS2_RC_SUCCESS ) goto exitLoc;
 
 #define RESMGR_UNMARSHAL_UINT64( buffer, size, currentPtr, value, rval, exitLoc ) \
     Unmarshal_UINT64( buffer, size, currentPtr, value, rval ); \
     responseRval = ResmgrFixupErrorlevel( *rval ); \
-    if( responseRval != TSS2_RC_SUCCESS ) goto exitLoc; 
+    if( responseRval != TSS2_RC_SUCCESS ) goto exitLoc;
 
 #define RESMGR_UNMARSHAL_SIMPLE_TPM2B( buffer, size, currentPtr, value, rval, exitLoc ) \
     Unmarshal_Simple_TPM2B( buffer, size, currentPtr, value, rval ); \
     responseRval = ResmgrFixupErrorlevel( *rval ); \
-    if( responseRval != TSS2_RC_SUCCESS ) goto exitLoc; 
+    if( responseRval != TSS2_RC_SUCCESS ) goto exitLoc;
 
 #define RESMGR_UNMARSHAL_TPMS_CONTEXT( buffer, size, currentPtr, value, rval, exitLoc ) \
     Unmarshal_UINT64( (buffer), (size), (currentPtr), &( (value)->sequence ), (rval) ); \
@@ -196,7 +198,7 @@ TSS2_RC ResmgrFixupErrorlevel( TSS2_RC errCode )
     if( responseRval != TSS2_RC_SUCCESS ) goto exitLoc; \
     Unmarshal_Simple_TPM2B( (buffer), (size), (currentPtr), (TPM2B *)&( (value)->contextBlob ), (rval) ); \
     responseRval = ResmgrFixupErrorlevel( *rval ); \
-    if( responseRval != TSS2_RC_SUCCESS ) goto exitLoc; 
+    if( responseRval != TSS2_RC_SUCCESS ) goto exitLoc;
 
 //
 // NOTE: these structures are ONLY used for transient objects, sequences, and
@@ -264,8 +266,8 @@ typedef struct {
     // determined by walking up the chain of parents.
     // We chose to add a hierarchy field separate from parentHandle to make the
     // reosurce manager's job easier when change auth commands are done for hiearchies.
-    TPM_HANDLE parentHandle;        // For objects, this is the parent handle. 
-    TPMI_RH_HIERARCHY hierarchy;    // This is the hierarchy for the object. For sessions and 
+    TPM_HANDLE parentHandle;        // For objects, this is the parent handle.
+    TPMI_RH_HIERARCHY hierarchy;    // This is the hierarchy for the object. For sessions and
                                     //  sequences this is set to TPM_RH_NULL.
     TPMS_CONTEXT context;           // For transient objects, this is saved after the object's
                                     //  context is saved.
@@ -273,7 +275,7 @@ typedef struct {
                                     //  flushed.
     UINT64 connectionId;            // Used to identify which connection owns the object,
                                     // sequence, or session.
-    void *nextEntry; // Next entry in the list; 0 to terminate list.                                
+    void *nextEntry; // Next entry in the list; 0 to terminate list.
 } RESOURCE_MANAGER_ENTRY;
 
 RESOURCE_MANAGER_ENTRY *entryList = 0;
@@ -318,8 +320,8 @@ static TPMS_CONTEXT cmdObjectContext;
 // shutdownType is saved when Shutdown command is sent.
 // shutdown_state is updated when the Shutdown response is
 //   received if the Shutdown was successful.
-static TPM_SU startupType = 0;  
-static TPM_SU shutdownType = 0;  
+static TPM_SU startupType = 0;
+static TPM_SU shutdownType = 0;
 static BOOL shutdown_state = 0;
 
 static UINT32 maxCmdSize;
@@ -388,7 +390,7 @@ UINT8 IsObjectHandle( TPM_HANDLE handle )
 
     handleType = handle >> 24;
 
-    if( handleType == TPM_HT_TRANSIENT ) 
+    if( handleType == TPM_HT_TRANSIENT )
     {
         return 1;
     }
@@ -428,7 +430,7 @@ void UpdateFreedVirtualHandleCache( TPM_HANDLE virtualHandle )
 {
     TPM_HANDLE *freedHandleArray;
     int i;
-    
+
     if( IsSessionHandle( virtualHandle ) )
     {
         freedHandleArray = freedSessionHandles;
@@ -449,7 +451,7 @@ void UpdateFreedVirtualHandleCache( TPM_HANDLE virtualHandle )
             freedHandleArray[i] = virtualHandle;
             break;
         }
-    } 
+    }
 }
 
 TSS2_RC	GetNewVirtualHandle( TPM_HANDLE realHandle, TPM_HANDLE *newVirtualHandle)
@@ -459,14 +461,14 @@ TSS2_RC	GetNewVirtualHandle( TPM_HANDLE realHandle, TPM_HANDLE *newVirtualHandle
     // This could eventually overrun.  Return an error when that occurs.
     TSS2_RC rval = TSS2_RC_SUCCESS;
     int i;
-    
+
     static UINT32 lastSessionVirtualHandle = 0xffffffff;
     static UINT32 lastObjectVirtualHandle = 0xffffffff;
     UINT8 foundReclaimedHandle = 0;
 
     UINT32 *lastVirtualHandle;
     TPM_HANDLE *freedHandleArray;
-    
+
     if( IsSessionHandle( realHandle ) )
     {
         lastVirtualHandle = &lastSessionVirtualHandle;
@@ -497,7 +499,7 @@ TSS2_RC	GetNewVirtualHandle( TPM_HANDLE realHandle, TPM_HANDLE *newVirtualHandle
     //
     // Didn't choose to do this at this time due to possible performance penalty, but keep in mind for future.
     //
-    
+
     if( !foundReclaimedHandle )
     {
         (*lastVirtualHandle)++;
@@ -563,13 +565,13 @@ TSS2_RC TestForLoadedHandles()
     TSS2_RC rval = TSS2_RC_SUCCESS;
     TPMI_YES_NO moreData;
 	UINT32 i;
-    
+
     rval = Tss2_Sys_GetCapability( resMgrSysContext, 0,
             TPM_CAP_HANDLES, TRANSIENT_FIRST,
             20, &moreData, &capabilityData, 0 );
     if( rval != TSS2_RC_SUCCESS )
         goto endTestForLoadedHandles;
-    
+
     if( capabilityData.data.handles.count != 0 )
     {
         ResMgrPrintf( RM_PREFIX, "Loaded transient object handles: \n" );
@@ -585,7 +587,7 @@ TSS2_RC TestForLoadedHandles()
     if( rval != TSS2_RC_SUCCESS )
         goto endTestForLoadedHandles;
 
-#if 0    
+#if 0
     rval = Tss2_Sys_GetCapability( resMgrSysContext, 0,
             TPM_CAP_HANDLES, TPM_HT_LOADED_SESSION,
             20, &moreData, &capabilityData, 0 );
@@ -604,11 +606,11 @@ TSS2_RC TestForLoadedHandles()
         rval = TSS2_RESMGR_UNLOADED_OBJECTS;
     }
 #endif
-    
+
 endTestForLoadedHandles:
-    
+
     return rval;
-}    
+}
 
 
 
@@ -616,7 +618,7 @@ TSS2_RC AddEntry( TPM_HANDLE virtualHandle, TPM_HANDLE realHandle, TPM_HANDLE pa
     TPMI_RH_HIERARCHY hierarchy, UINT64 connectionId )
 {
     RESOURCE_MANAGER_ENTRY **entryPtr, *newEntry;
-            
+
     // Find end of list
     for( entryPtr = &entryList; *entryPtr != 0; entryPtr = (RESOURCE_MANAGER_ENTRY **)&( (*entryPtr)->nextEntry ) )
         ;
@@ -637,7 +639,7 @@ TSS2_RC AddEntry( TPM_HANDLE virtualHandle, TPM_HANDLE realHandle, TPM_HANDLE pa
     newEntry->status.stClear = 0;
     newEntry->status.persistent = 0;
     newEntry->nextEntry = 0;
-    
+
     return TSS2_RC_SUCCESS;
 }
 
@@ -649,7 +651,7 @@ TSS2_RC RemoveEntry(RESOURCE_MANAGER_ENTRY *entry)
 	{
 	    UpdateFreedVirtualHandleCache( entry->virtualHandle );
 	}
-    
+
     if( entry == entryList )
         entryList = (RESOURCE_MANAGER_ENTRY *)entryList->nextEntry;
     else
@@ -661,7 +663,7 @@ TSS2_RC RemoveEntry(RESOURCE_MANAGER_ENTRY *entry)
 
         (*predEntryPtr)->nextEntry = entry->nextEntry;
     }
-    
+
     (*rmFree)(entry);
 
     return TSS2_RC_SUCCESS;
@@ -681,7 +683,7 @@ TSS2_RC FindEntry(RESOURCE_MANAGER_ENTRY *firstEntry,
     enum findType type, UINT64 matchSpec, RESOURCE_MANAGER_ENTRY **foundEntryPtr)
 {
     UINT8 foundEntry = 0;
-    
+
     for( *foundEntryPtr = entryList; *foundEntryPtr != 0; *foundEntryPtr = (*foundEntryPtr)->nextEntry )
     {
         if( type == RMFIND_VIRTUAL_HANDLE )
@@ -753,7 +755,7 @@ TSS2_RC EvictContext(TPM_HANDLE virtualHandle)
         if( rval == TSS2_RC_SUCCESS )
         {
             lastSessionSequenceNum = foundEntryPtr->context.sequence;
-        
+
             if( !IsSessionHandle( virtualHandle ) )
             {
                 rval = Tss2_Sys_FlushContext( resMgrSysContext, foundEntryPtr->realHandle );
@@ -788,7 +790,7 @@ TSS2_RC EvictContext(TPM_HANDLE virtualHandle)
 TSS2_RC FindOldestSession(RESOURCE_MANAGER_ENTRY **oldestSessionEntry)
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    
+
     RESOURCE_MANAGER_ENTRY *currEntry;
 
     *oldestSessionEntry = 0;
@@ -801,7 +803,7 @@ TSS2_RC FindOldestSession(RESOURCE_MANAGER_ENTRY **oldestSessionEntry)
     {
         if( IsSessionHandle( currEntry->virtualHandle ) )
         {
-            if( ( currEntry->context.sequence & gapMsbBitMask ) == ( lastSessionSequenceNum & gapMsbBitMask ) ) 
+            if( ( currEntry->context.sequence & gapMsbBitMask ) == ( lastSessionSequenceNum & gapMsbBitMask ) )
             {
                 if( currEntry->context.sequence > lastSessionSequenceNum )
                 {
@@ -821,7 +823,7 @@ TSS2_RC FindOldestSession(RESOURCE_MANAGER_ENTRY **oldestSessionEntry)
         {
             if( IsSessionHandle( currEntry->virtualHandle ) )
             {
-                if( ( currEntry->context.sequence & gapMsbBitMask ) != ( lastSessionSequenceNum & gapMsbBitMask ) ) 
+                if( ( currEntry->context.sequence & gapMsbBitMask ) != ( lastSessionSequenceNum & gapMsbBitMask ) )
                 {
                     if( (*oldestSessionEntry) == 0 || ( currEntry->context.sequence < (*oldestSessionEntry)->context.sequence ) )
                     {
@@ -839,7 +841,7 @@ TSS2_RC FindOldestSession(RESOURCE_MANAGER_ENTRY **oldestSessionEntry)
         {
             if( IsSessionHandle( currEntry->virtualHandle ) )
             {
-                if( ( currEntry->context.sequence & gapMsbBitMask ) == ( lastSessionSequenceNum & gapMsbBitMask ) ) 
+                if( ( currEntry->context.sequence & gapMsbBitMask ) == ( lastSessionSequenceNum & gapMsbBitMask ) )
                 {
                     if( currEntry->context.sequence < lastSessionSequenceNum )
                     {
@@ -902,7 +904,7 @@ TSS2_RC HandleGap()
     // or other logic error.
     if( otherIntervalSessionsCount > gapMaxValue / 2 )
         return TSS2_RESMGR_GAP_HANDLING_FAILED;
-   
+
     // Test to see if gapping actions are needed.
     if( ( otherIntervalSessionsCount != 0 ) &&
             otherIntervalSessionsCount >= currIntervalSequenceNumsLeft )
@@ -923,8 +925,8 @@ TSS2_RC HandleGap()
                     OpenOutFile( &outFp );
                     ResMgrPrintf( RM_PREFIX, "gap event occurred\n" );
                     CloseOutFile( &outFp );
-#endif                
-                    // Perform gapping actions 
+#endif
+                    // Perform gapping actions
                     rval = Tss2_Sys_ContextLoad( resMgrSysContext, &( oldestSessionEntryPtr->context ), &( oldestSessionEntryPtr->realHandle ) );
                     if( rval == TSS2_RC_SUCCESS )
                     {
@@ -956,7 +958,7 @@ TSS2_RC LoadContext( TPM_HANDLE virtualHandle, UINT64 connectionId, TPM_HANDLE *
 {
     TSS2_RC rval = 0;
     RESOURCE_MANAGER_ENTRY *foundEntryPtr;
-    
+
     // Find entry corresponding to this virtual handle.
     rval = FindEntry( entryList, RMFIND_VIRTUAL_HANDLE, virtualHandle, &foundEntryPtr );
     if( rval != TSS2_RC_SUCCESS )
@@ -980,7 +982,7 @@ TSS2_RC LoadContext( TPM_HANDLE virtualHandle, UINT64 connectionId, TPM_HANDLE *
         goto exitLoadContext;
     }
 
-    if( connectionId != foundEntryPtr->connectionId )
+    if( !sharedHandle && connectionId != foundEntryPtr->connectionId )
     {
         rval = TSS2_RESMGR_UNOWNED_HANDLE;
         goto exitLoadContext;
@@ -1015,7 +1017,7 @@ TSS2_RC LoadContext( TPM_HANDLE virtualHandle, UINT64 connectionId, TPM_HANDLE *
     }
 
 exitLoadContext:
-    
+
     return rval;
 }
 
@@ -1044,7 +1046,7 @@ void ClearHierarchy( TPMI_RH_HIERARCHY hierarchy )
 {
     RESOURCE_MANAGER_ENTRY *foundEntryPtr, *nextEntry;
     TSS2_RC rval;
-    
+
     nextEntry = entryList;
 
     while( nextEntry )
@@ -1079,13 +1081,13 @@ void SendErrorResponse( SOCKET sock )
 
     sendBytes( sock, (char *)&numBytes, 4 );
     sendBytes( sock, (char *)&errorResponse, sizeof( TPM20_ErrorResponse ) );
-    sendBytes( sock, (char *)&trash, 4 );        
+    sendBytes( sock, (char *)&trash, 4 );
 }
 
 void CopyErrorResponse( UINT32 *response_size, uint8_t *response_buffer )
 {
     int i;
-    
+
     for( i = 0; i < sizeof(TPM20_ErrorResponse); i++ )
     {
         response_buffer[i] = ( (UINT8 *)&errorResponse )[i];
@@ -1122,7 +1124,7 @@ TSS2_RC EvictOldestSession()
             }
         }
     }
-    
+
     return rval;
 }
 
@@ -1178,7 +1180,7 @@ TSS2_RC ResourceMgrSendTpmCommand(
     TPM_ST tag;
 	UINT32 authAreaSize;
 	TPM2B_PUBLIC inPublic = { { CHANGE_ENDIAN_DWORD( sizeof( TPM2B_PUBLIC ) - 2), } };
-            
+
     RESMGR_UNMARSHAL_UINT16( command_buffer, command_size, &currentPtr, &tag, &responseRval, SendCommand );
     RESMGR_UNMARSHAL_UINT32( command_buffer, command_size, &currentPtr, 0, &responseRval, SendCommand );
     RESMGR_UNMARSHAL_UINT32( command_buffer, command_size, &currentPtr, &currentCommandCode, &responseRval, SendCommand );
@@ -1189,7 +1191,7 @@ TSS2_RC ResourceMgrSendTpmCommand(
     //
     // DO RESOURCE MGR THINGS.
     //
-    
+
     if( rmCommandDebug == 1 )
     {
         ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_ENABLED;
@@ -1200,20 +1202,20 @@ TSS2_RC ResourceMgrSendTpmCommand(
     }
 
     numHandles = GetNumCmdHandles( currentCommandCode, supportedCommands );
-    
+
     for( i = 0; i < numHandles; i++ )
     {
         RESMGR_UNMARSHAL_UINT32( command_buffer, command_size, &currentPtr, &( cmdHandles[i].handle), &responseRval, SendCommand );
         cmdHandles[i].handleNum = i + 1;
     }
-    
+
     // Get list of session handles
     // If sessions are present, record the session handles.
 	i = 0;
     if( tag == TPM_ST_SESSIONS )
     {
         RESMGR_UNMARSHAL_UINT32( command_buffer, command_size, &currentPtr, &authAreaSize, &responseRval, SendCommand );
-        
+
         // Get end of auth area.
         endAuth = (UINT8 *)currentPtr + authAreaSize;
 
@@ -1229,15 +1231,15 @@ TSS2_RC ResourceMgrSendTpmCommand(
 
             RESMGR_UNMARSHAL_UINT8( command_buffer, command_size, &currentPtr, (UINT8 *)&( sessionHandles[i].sessionAttributes ), &responseRval, SendCommand );
             sessionHandles[i].sessionNum = i + 1;
-            
+
             // Skip past auth.
             inPublic.b.size = CHANGE_ENDIAN_WORD( *(UINT16 *)currentPtr );
             RESMGR_UNMARSHAL_SIMPLE_TPM2B( command_buffer, command_size, &currentPtr, 0, &responseRval, SendCommand );
         }
     }
-    
+
     numSessionHandles = i;
-        
+
     switch( currentCommandCode )
     {
         case TPM_CC_StartAuthSession:
@@ -1253,7 +1255,7 @@ TSS2_RC ResourceMgrSendTpmCommand(
             responseRval = HandleGap();
             if( responseRval != TSS2_RC_SUCCESS )
                 goto SendCommand;
-            
+
             break;
         case TPM_CC_Create:
             cmdParentHandle = cmdHandles[0].handle;
@@ -1306,7 +1308,7 @@ TSS2_RC ResourceMgrSendTpmCommand(
 
             // Skip past inSensitive param.
             RESMGR_UNMARSHAL_SIMPLE_TPM2B( command_buffer, command_size, &currentPtr, 0, &responseRval, SendCommand );
-            
+
             // Unmarshal inPublic and get stClear bit.
             inPublic.b.size = CHANGE_ENDIAN_WORD( *(UINT16 *)currentPtr );
             RESMGR_UNMARSHAL_SIMPLE_TPM2B( command_buffer, command_size, &currentPtr, &( inPublic.b ), &responseRval, SendCommand );
@@ -1346,7 +1348,7 @@ TSS2_RC ResourceMgrSendTpmCommand(
 
     if( responseRval != TSS2_RC_SUCCESS )
         goto SendCommand;
-    
+
     responseRval = GetConnectionId( &cmdConnectionId, tctiContext );
     if( responseRval != TSS2_RC_SUCCESS )
         goto SendCommand;
@@ -1370,7 +1372,7 @@ TSS2_RC ResourceMgrSendTpmCommand(
     if( numHandles )
     {
         handlePtr = &( ( (TPM20_Header_In *)command_buffer )->commandCode ) + 1;
-        
+
         for( i = 0; i < numHandles; i ++ )
         {
             if( HandleWeCareAbout( cmdHandles[i].handle ) )
@@ -1403,9 +1405,9 @@ TSS2_RC ResourceMgrSendTpmCommand(
             }
         }
     }
-    
+
 SendCommand:
-  
+
     rmDebugPrefix = 0;
 
     ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_ENABLED;
@@ -1461,7 +1463,7 @@ TSS2_RC EvictEntities( int numHandles, TPM_HANDLE *handles )
 {
     int i;
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    
+
     for( i = 0; i < numHandles; i++ )
     {
         RESOURCE_MANAGER_ENTRY *foundEntryPtr;
@@ -1495,7 +1497,7 @@ TSS2_RC EvictEntities( int numHandles, TPM_HANDLE *handles )
     }
 
 returnFromEvictEntities:
-    
+
     return rval;
 }
 
@@ -1525,8 +1527,8 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
     // exiting if no previous error.
     TPM_RC returnResponseRval = TSS2_RC_SUCCESS;
 
-    TPM_RC testForLoadedSessionsOrObjectsRval = TSS2_RC_SUCCESS; 
-    
+    TPM_RC testForLoadedSessionsOrObjectsRval = TSS2_RC_SUCCESS;
+
     int i;
     TPM_ST tag;
     int numResponseHandles = 0;
@@ -1539,13 +1541,13 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
     TPMA_SESSION sessionAttributes;
 
     currentPtr = response_buffer;
-    
+
     // Evict all objects, sessions, and sequences.  This leaves the TPM
     // in a fresh state, e.g. with none of these things taking up
     // internal RAM.  This means that we never have to react to
     // out of memory errors which makes the resource manager much
     // simpler.
-    
+
     if( *response_size < ( sizeof( TPM20_Header_Out ) - 1 ) )
     {
         responseRval = TSS2_RESMGR_INSUFFICIENT_RESPONSE;
@@ -1579,7 +1581,7 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
         {
             goto returnFromResourceMgrReceiveTpmResponse;
         }
-        
+
         //
         // Get response.
         //
@@ -1600,7 +1602,7 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                 goto returnFromResourceMgrReceiveTpmResponse;
             }
         }
-        
+
         if( rmCommandDebug == 1 )
         {
             ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_ENABLED;
@@ -1617,7 +1619,7 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
             TPM_HANDLE realHandle;
             UINT8 objectContextLoad = 0;
             UINT8 sessionContextLoad = 0;
-            
+
             //
             // Command passed, so do resource manager things.
             //
@@ -1695,7 +1697,7 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                     if( !sessionContextLoad )
                     {
                         UINT8 *responseHandlePtr = &( ( (TPM20_Header_Out *)response_buffer )->otherData );
-                        
+
                         responseRval = AddEntry( newVirtualHandle, realHandle, cmdParentHandle, cmdHierarchy, cmdConnectionId );
                         if( responseRval != TSS2_RC_SUCCESS )
                         {
@@ -1703,7 +1705,7 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                         }
 
                         // Replace real handle with virtual handle in response byte stream.
-                        *( (TPM_HANDLE *) responseHandlePtr ) = 
+                        *( (TPM_HANDLE *) responseHandlePtr ) =
                                 CHANGE_ENDIAN_DWORD( newVirtualHandle );
 
                         if( objectContextLoad )
@@ -1853,7 +1855,7 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                 else if( currentCommandCode == TPM_CC_EvictControl )
                 {
                     RESOURCE_MANAGER_ENTRY *foundEntryPtr;
-                    
+
                     if( 0 == PersistentHandle( objectHandle ) )
                     {
                         // Find entry for transient object.
@@ -1879,7 +1881,7 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                         rval = FindEntry( entryList, RMFIND_REAL_HANDLE, persistentHandle, &foundEntryPtr );
                         if( rval != TSS2_RC_SUCCESS )
                             goto returnFromResourceMgrReceiveTpmResponse;
-                            
+
                         // Need to remove RM entry for persistent copy.
                         rval = RemoveEntry( foundEntryPtr );
                         if( rval != TSS2_RC_SUCCESS )
@@ -1894,9 +1896,9 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                 if( tag == TPM_ST_SESSIONS )
                 {
                     UINT32 parametersSize;
-                    
+
                     currentPtr = savedCurrentPtr;
-                    
+
                     // Skip past parameters area
                     RESMGR_UNMARSHAL_UINT32( response_buffer, *response_size, &currentPtr, &parametersSize, &responseRval, returnFromResourceMgrReceiveTpmResponse );
                     currentPtr += parametersSize;
@@ -1907,7 +1909,7 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                     {
                         goto returnFromResourceMgrReceiveTpmResponse;
                     }
-                    
+
                     endAuth = response_buffer + *response_size;
 
                     // Check that we won't run off end of buffer when we get authorizations.
@@ -1916,7 +1918,7 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                     {
                         goto returnFromResourceMgrReceiveTpmResponse;
                     }
-                    
+
                     // Now walk through sessions and do actions.
                     for( i = 0; currentPtr < endAuth; i++ )
                     {
@@ -1924,14 +1926,14 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                         RESMGR_UNMARSHAL_SIMPLE_TPM2B( response_buffer, *response_size, &currentPtr, 0, &responseRval, returnFromResourceMgrReceiveTpmResponse );
 
                         RESMGR_UNMARSHAL_UINT8( response_buffer, *response_size, &currentPtr, (UINT8 *)&sessionAttributes, &responseRval, returnFromResourceMgrReceiveTpmResponse );
-                        
+
                         if( HandleWeCareAbout( sessionHandles[i].sessionHandle ) )
                         {
                             if( sessionAttributes.continueSession != sessionHandles[i].sessionAttributes.continueSession )
                                 responseRval = TSS2_RESMGR_CONTINUE_BIT_MISMATCH;
 
                             if( responseRval != TSS2_RC_SUCCESS )
-                                goto returnFromResourceMgrReceiveTpmResponse;   
+                                goto returnFromResourceMgrReceiveTpmResponse;
 
                             responseRval = FindEntry( entryList, RMFIND_VIRTUAL_HANDLE,
                                     sessionHandles[i].sessionHandle, &foundEntryPtr);
@@ -1993,7 +1995,7 @@ returnFromResourceMgrReceiveTpmResponse:
             }
         }
     }
-    
+
     // Now evict the objects, sequences, and sessions used in handles area by the command.
     // If command was FlushContext, the entry was already removed from the list.  No eviction
     // necsssary or possible (because no entry exists for this object or sequence anymore).
@@ -2003,12 +2005,12 @@ returnFromResourceMgrReceiveTpmResponse:
         // Create array of handles.
         TPM_HANDLE usedHandles[3];
         int i;
-        
+
         for( i = 0; i < numHandles; i++ )
         {
             usedHandles[i] = cmdHandles[i].handle;
         }
-        
+
         returnResponseRval = EvictEntities( numHandles, &usedHandles[0] );
 
         if( returnResponseRval != TSS2_RC_SUCCESS )
@@ -2025,7 +2027,7 @@ returnFromResourceMgrReceiveTpmResponse:
 
         // Create a list of virtual handles correpsponding to the real handles returned.
         rspHandles = (TPM_HANDLE *)&( ( (TPM20_Header_Out *)response_buffer )->otherData );
-        
+
         for( i = 0; i < numResponseHandles; i++ )
         {
             returnedHandles[i] = CHANGE_ENDIAN_DWORD( rspHandles[i] );
@@ -2042,14 +2044,14 @@ exitResourceMgrReceiveTpmResponse:
     if( responseRval == TSS2_RC_SUCCESS )
         responseRval = returnResponseRval;
 
-    
+
     PrintRMTables();
 
     testForLoadedSessionsOrObjectsRval = TestForLoadedHandles();
 
     if( responseRval == TSS2_RC_SUCCESS )
         responseRval = testForLoadedSessionsOrObjectsRval;
-    
+
     if( responseRval != TSS2_RC_SUCCESS )
     {
         // If RM internal error or error from layers below RM occurred,
@@ -2059,7 +2061,7 @@ exitResourceMgrReceiveTpmResponse:
     }
 
     ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_ENABLED;
-    
+
     rmDebugPrefix = 0;
 
 
@@ -2075,7 +2077,7 @@ typedef struct serverStruct
     char *serverName;
     THREAD_TYPE threadHandle;
 } SERVER_STRUCT;
-    
+
 UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
 {
     UINT32 numBytes, sendCmd, trash = 0;
@@ -2121,7 +2123,7 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
         {
 //            ResMgrPrintf( NO_PREFIX,  "select passed on socket #0x%x\n", serverStruct->connectSock );
         }
-        
+
         // Receive TPM Send or SESSION end command
         rval = recvBytes( serverStruct->connectSock, (unsigned char*) &sendCmd, 4 );
         if( rval != TSS2_RC_SUCCESS )
@@ -2130,7 +2132,7 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             CloseOutFile( &outFp );
             goto tpmCmdDone;
         }
-                 
+
         sendCmd = CHANGE_ENDIAN_DWORD( sendCmd );
 
         if( sendCmd == TPM_SESSION_END )
@@ -2149,7 +2151,7 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             if( rval != TSS2_RC_SUCCESS )
             {
                 CreateErrorResponse( TSS2_TCTI_RC_IO_ERROR );
-                SendErrorResponse( serverStruct->connectSock ); 
+                SendErrorResponse( serverStruct->connectSock );
                 CloseOutFile( &outFp );
                 continue;
             }
@@ -2160,7 +2162,7 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             if( rval != TSS2_RC_SUCCESS )
             {
                 CreateErrorResponse( TSS2_TCTI_RC_IO_ERROR );
-                SendErrorResponse( serverStruct->connectSock ); 
+                SendErrorResponse( serverStruct->connectSock );
                 CloseOutFile( &outFp );
                 continue;
             }
@@ -2171,7 +2173,7 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             if( rval != TSS2_RC_SUCCESS )
             {
                 CreateErrorResponse( TSS2_TCTI_RC_IO_ERROR );
-                SendErrorResponse( serverStruct->connectSock ); 
+                SendErrorResponse( serverStruct->connectSock );
                 CloseOutFile( &outFp );
                 continue;
             }
@@ -2183,7 +2185,7 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             if( rval != TSS2_RC_SUCCESS )
             {
                 CreateErrorResponse( TSS2_TCTI_RC_IO_ERROR );
-                SendErrorResponse( serverStruct->connectSock ); 
+                SendErrorResponse( serverStruct->connectSock );
                 CloseOutFile( &outFp );
                 continue;
             }
@@ -2195,7 +2197,7 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             if( rval != TSS2_RC_SUCCESS )
             {
                 CreateErrorResponse( TSS2_TCTI_RC_IO_ERROR );
-                SendErrorResponse( serverStruct->connectSock ); 
+                SendErrorResponse( serverStruct->connectSock );
                 CloseOutFile( &outFp );
                 continue;
             }
@@ -2206,7 +2208,7 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             if( rval != TSS2_RC_SUCCESS )
             {
                 CreateErrorResponse( TSS2_TCTI_RC_IO_ERROR );
-                SendErrorResponse( serverStruct->connectSock ); 
+                SendErrorResponse( serverStruct->connectSock );
                 CloseOutFile( &outFp );
                 continue;
             }
@@ -2217,14 +2219,14 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             if( rval != TSS2_RC_SUCCESS )
             {
                 CreateErrorResponse( TSS2_TCTI_RC_IO_ERROR );
-                SendErrorResponse( serverStruct->connectSock ); 
+                SendErrorResponse( serverStruct->connectSock );
                 CloseOutFile( &outFp );
                 continue;
             }
 
             numBytes = CHANGE_ENDIAN_DWORD( numBytes );
 
-            // Send size of TPM response to calling application.        
+            // Send size of TPM response to calling application.
             rval = sendBytes( serverStruct->connectSock, (char *)&numBytes, 4 );
             if( rval != TSS2_RC_SUCCESS )
             {
@@ -2235,7 +2237,7 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
 
             numBytes = CHANGE_ENDIAN_DWORD( numBytes );
 
-            // Send TPM or RM response to calling application.        
+            // Send TPM or RM response to calling application.
             rval = sendBytes( serverStruct->connectSock, (char *)rspBuffer, numBytes );
             if( rval != TSS2_RC_SUCCESS )
             {
@@ -2245,7 +2247,7 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             }
 
             // Send the appended four bytes of 0's
-            sendBytes( serverStruct->connectSock, (char *)&trash, 4 );        
+            sendBytes( serverStruct->connectSock, (char *)&trash, 4 );
             if( rval != TSS2_RC_SUCCESS )
             {
                 CloseOutFile( &outFp );
@@ -2255,7 +2257,7 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
         }
         if( returnValue == 1 )
             break;
-        
+
         CloseOutFile( &outFp );
     }
 
@@ -2318,7 +2320,7 @@ TSS2_RC ResourceMgrCancel(
         // them to return Cancel response.
         //
         // code for this TBD.
-        
+
         // If waiting for a response from a command sent on this connection,
         // then send cancel command.  Otherwise, the cancel is ignored, and
         // TSS2_RC_SUCCESS is returned.
@@ -2340,7 +2342,7 @@ UINT8 OtherCmdServer( SERVER_STRUCT *serverStruct )
     TSS2_RC rval = TSS2_RC_SUCCESS;
     fd_set readFds;
     int iResult;
-    
+
      for(;;)
     {
         FD_ZERO( &readFds );
@@ -2383,7 +2385,7 @@ UINT8 OtherCmdServer( SERVER_STRUCT *serverStruct )
             CloseOutFile( &outFp );
             goto retOtherCmdServer;
         }
-        
+
         command = CHANGE_ENDIAN_DWORD( command );
         switch( command )
         {
@@ -2425,14 +2427,14 @@ UINT8 OtherCmdServer( SERVER_STRUCT *serverStruct )
     }
 
 retOtherCmdServer:
-     
+
     printf( "OtherCmdServer died (%s), socket: 0x%x.\n", serverStruct->serverName, serverStruct->connectSock );
 
     closesocket( serverStruct->connectSock );
     CloseHandle( serverStruct->threadHandle );
    (*rmFree)( serverStruct );
     ExitThread( 0 );
-    
+
     return returnValue;
 }
 
@@ -2445,11 +2447,11 @@ UINT32 WINAPI SockServer( LPVOID servStruct )
 #ifdef  _WIN32
     // do nothing.
 #elif __linux || __unix
-    
+
     int rval = 0;
-#endif    
+#endif
     printf( "Starting SockServer (%s), socket: 0x%x.\n", serverStruct->serverName, serverStruct->connectSock );
-    
+
     do
     {
         cmdServerStruct = (*rmMalloc)( sizeof( SERVER_STRUCT ) );
@@ -2494,7 +2496,7 @@ UINT32 WINAPI SockServer( LPVOID servStruct )
             continue;
         }
 #else
-#error Unsupported OS--need to add OS-specific support for threading here.        
+#error Unsupported OS--need to add OS-specific support for threading here.
 #endif
     }
     while( continueServer );
@@ -2504,14 +2506,14 @@ UINT32 WINAPI SockServer( LPVOID servStruct )
         printf( "SockServer died (%s), socket: 0x%x.\n", serverStruct->serverName, serverStruct->connectSock );
         ExitThread( 0 );
     }
-    
+
     return continueServer;
 }
 
 #define interfaceConfigSize 250
 
 char simInterfaceConfig[interfaceConfigSize];
-    
+
 TSS2_TCTI_DRIVER_INFO simInterfaceInfo = { "simulator", "", InitSocketsTcti, TeardownSocketsTcti };
 
 SOCKET simOtherSock;
@@ -2520,13 +2522,13 @@ SOCKET simTpmSock;
 TSS2_RC InitSimulatorTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT **tctiContext )
 {
     size_t size;
-    
+
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
     rval = simInterfaceInfo.initialize(NULL, &size, driverConfig, 0, 0, simInterfaceInfo.shortName, 1 );
     if( rval != TSS2_RC_SUCCESS )
         return rval;
-    
+
     downstreamTctiContext = malloc(size);
 
     rval = simInterfaceInfo.initialize(*tctiContext, &size, driverConfig, 0, 0, simInterfaceInfo.shortName, 0 );
@@ -2546,19 +2548,19 @@ TSS2_RC TeardownSimulatorTctiContext( const char *driverConfig )
 
 #if __linux || __unix
 char localTpmInterfaceConfig[interfaceConfigSize];
-    
+
 TSS2_TCTI_DRIVER_INFO localTpmInterfaceInfo = { "local TPM", "", InitLocalTpmTcti, TeardownLocalTpmTcti };
 
 TSS2_RC InitLocalTpmTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT **tctiContext )
 {
     size_t size;
-    
+
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
     rval = localTpmInterfaceInfo.initialize(NULL, &size, driverConfig, 0, 0, localTpmInterfaceInfo.shortName, 1 );
     if( rval != TSS2_RC_SUCCESS )
         return rval;
-    
+
     downstreamTctiContext = malloc(size);
 
     rval = localTpmInterfaceInfo.initialize(*tctiContext, &size, driverConfig, 0, 0, localTpmInterfaceInfo.shortName, 0 );
@@ -2579,7 +2581,7 @@ TSS2_RC TeardownLocalTpmTctiContext( const char *driverConfig )
 
 TSS2_RC TeardownResMgr(
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
-    const char *config              // IN        
+    const char *config              // IN
     )
 {
     ResMgrPrintf( NO_PREFIX, "Tearing down Resource Manager\n" );
@@ -2588,7 +2590,7 @@ TSS2_RC TeardownResMgr(
     if( !simulator )
         TeardownSocketsTcti( tctiContext, config, localTpmInterfaceInfo.shortName );
     else
-#endif        
+#endif
         TeardownSocketsTcti( tctiContext, config, simInterfaceInfo.shortName );
 
     TeardownSysContext( &resMgrSysContext );
@@ -2601,7 +2603,7 @@ TSS2_RC InitResourceMgr( int debugLevel)
     TSS2_RC rval = TSS2_RC_SUCCESS;
     TPMS_CAPABILITY_DATA capabilityData;
     int i;
-    
+
     ResMgrPrintf( NO_PREFIX, "Initializing Resource Manager\n" );
 
     commandDebug = 0;
@@ -2609,7 +2611,7 @@ TSS2_RC InitResourceMgr( int debugLevel)
     printRMTables = 0;
 
     SetDebug( debugLevel );
-    
+
     // Now do some resource manager initialization.
     // Init entry list.
     entryList = 0;
@@ -2626,14 +2628,14 @@ TSS2_RC InitResourceMgr( int debugLevel)
         SetRmErrorLevel( &rval, TSS2_RESMGR_ERROR_LEVEL );
         goto returnFromInitResourceMgr;
     }
-    
+
     rval = PlatformCommand( downstreamTctiContext, MS_SIM_NV_ON );
     if( rval != TPM_RC_SUCCESS )
     {
         SetRmErrorLevel( &rval, TSS2_RESMGR_ERROR_LEVEL );
         goto returnFromInitResourceMgr;
     }
-    
+
     // This one should pass.
     rval = Tss2_Sys_Startup( resMgrSysContext, TPM_SU_CLEAR );
     if( rval != TPM_RC_SUCCESS && rval != TPM_RC_INITIALIZE )
@@ -2643,7 +2645,7 @@ TSS2_RC InitResourceMgr( int debugLevel)
     }
 
     // Need to get some capabilities.
-    
+
     // Get max command size.
     rval = Tss2_Sys_GetCapability( resMgrSysContext, 0,
             TPM_CAP_TPM_PROPERTIES, TPM_PT_MAX_COMMAND_SIZE,
@@ -2655,7 +2657,7 @@ TSS2_RC InitResourceMgr( int debugLevel)
         goto returnFromInitResourceMgr;
     }
 
-    if( capabilityData.data.tpmProperties.count == 1 && 
+    if( capabilityData.data.tpmProperties.count == 1 &&
             (capabilityData.data.tpmProperties.tpmProperty[0].property == TPM_PT_MAX_COMMAND_SIZE) )
     {
         maxCmdSize = capabilityData.data.tpmProperties.tpmProperty[0].value;
@@ -2677,7 +2679,7 @@ TSS2_RC InitResourceMgr( int debugLevel)
         goto returnFromInitResourceMgr;
     }
 
-    if( capabilityData.data.tpmProperties.count == 1 && 
+    if( capabilityData.data.tpmProperties.count == 1 &&
             (capabilityData.data.tpmProperties.tpmProperty[0].property == TPM_PT_MAX_RESPONSE_SIZE) )
     {
         maxRspSize = capabilityData.data.tpmProperties.tpmProperty[0].value;
@@ -2699,7 +2701,7 @@ TSS2_RC InitResourceMgr( int debugLevel)
         goto returnFromInitResourceMgr;
     }
 
-    if( capabilityData.data.tpmProperties.count == 1 && 
+    if( capabilityData.data.tpmProperties.count == 1 &&
             (capabilityData.data.tpmProperties.tpmProperty[0].property == TPM_PT_ACTIVE_SESSIONS_MAX) )
     {
         maxActiveSessions = capabilityData.data.tpmProperties.tpmProperty[0].value;
@@ -2720,10 +2722,10 @@ TSS2_RC InitResourceMgr( int debugLevel)
         goto returnFromInitResourceMgr;
     }
 
-    if( capabilityData.data.tpmProperties.count == 1 && 
+    if( capabilityData.data.tpmProperties.count == 1 &&
             (capabilityData.data.tpmProperties.tpmProperty[0].property == TPM_PT_HR_LOADED) )
     {
-#ifndef DEBUG_GAP_HANDLING        
+#ifndef DEBUG_GAP_HANDLING
         maxActiveSessions += capabilityData.data.tpmProperties.tpmProperty[0].value;
 #else
         maxActiveSessions = DEBUG_MAX_ACTIVE_SESSIONS;
@@ -2746,14 +2748,14 @@ TSS2_RC InitResourceMgr( int debugLevel)
         goto returnFromInitResourceMgr;
     }
 
-    if( capabilityData.data.tpmProperties.count == 1 && 
+    if( capabilityData.data.tpmProperties.count == 1 &&
             (capabilityData.data.tpmProperties.tpmProperty[0].property == TPM_PT_CONTEXT_GAP_MAX))
     {
-#ifndef DEBUG_GAP_HANDLING        
+#ifndef DEBUG_GAP_HANDLING
         gapMaxValue = capabilityData.data.tpmProperties.tpmProperty[0].value;
 #else
         gapMaxValue = DEBUG_GAP_MAX;
-#endif        
+#endif
         ResMgrPrintf( NO_PREFIX, "gapMaxValue = %d\n", gapMaxValue );
     }
     else
@@ -2769,7 +2771,7 @@ TSS2_RC InitResourceMgr( int debugLevel)
         SetRmErrorLevel( &rval, TSS2_RESMGR_ERROR_LEVEL );
         goto returnFromInitResourceMgr;
     }
-    
+
     // Allocate memory for command/response buffers.
     cmdBuffer = (*rmMalloc)( maxCmdSize );
     if( cmdBuffer == 0 )
@@ -2783,32 +2785,33 @@ TSS2_RC InitResourceMgr( int debugLevel)
     lastSessionSequenceNum = 0xffffffffffffffff;
     gapMsbBitMask = (gapMaxValue + 1) >> 1;
     activeSessionCount = 0;
-    
-returnFromInitResourceMgr:    
+
+returnFromInitResourceMgr:
     return rval;
 }
 
-char version[] = "0.85";
+char version[] = "0.86";
 
 void PrintHelp()
 {
     printf( "Resource manager daemon, Version %s\nUsage:  resourcemgr "
 #if __linux || __unix
             "[-sim] "
-#endif            
+#endif
             "[-tpmhost hostname|ip_addr] [-tpmport port] [-apport port]\n"
             "\n"
             "where:\n"
             "\n"
 #if __linux || __unix
             "-sim tells resource manager to communicate with TPM 2.0 simulator (default: communicates with local TPM; must be specified for running on Windows)\n"
-#endif            
+#endif
             "-tpmhost specifies the host IP address for communicating with the TPM (default: %s; only valid if -sim used)\n"
             "-tpmport specifies the port number for communicating with the TPM (default: %d; only valid if -sim used)\n"
             "-apport specifies the port number for communicating with the calling application (default: %d)\n"
 #ifdef SHARED_OUT_FILE
             "-out selects the output file (default is stdout)\n"
-#endif            
+#endif
+            "-sharedhandle shares transient handles across connections\n"
             , version, DEFAULT_HOSTNAME, DEFAULT_SIMULATOR_TPM_PORT, DEFAULT_RESMGR_TPM_PORT );
 }
 
@@ -2829,15 +2832,15 @@ int main(int argc, char* argv[])
     SERVER_STRUCT tpmCmdServerStruct = { 0, (SERVER_FN)&TpmCmdServer, "TPM CMD" };
     THREAD_TYPE sockServerThread;
     UINT8 tpmHostNameSpecified = 0, tpmPortSpecified = 0;
-    
+
     OpenOutFile( &outFp );
-    
+
     setvbuf (stdout, NULL, _IONBF, BUFSIZ);
 #ifdef SHARED_OUT_FILE
-    if( argc > 8 )
+    if( argc > 9 )
 #else
     if( argc > MAX_COMMAND_LINE_ARGS )
-#endif        
+#endif
     {
         PrintHelp();
         return 1;
@@ -2852,15 +2855,15 @@ int main(int argc, char* argv[])
                 simulator = 1;
             }
             else
-#endif                
+#endif
                 if( 0 == strcmp( argv[count], "-tpmhost" ) )
             {
                 count++;
 #ifdef  _WIN32
                 if( 1 != sscanf_s( argv[count], "%s", &tpmHostName[0], sizeof( tpmHostName ) ) )
-#else                    
+#else
                 if( 1 != sscanf_s( argv[count], "%200s", &tpmHostName[0] ) )
-#endif                    
+#endif
                 {
                     PrintHelp();
                     return 1;
@@ -2898,10 +2901,14 @@ int main(int argc, char* argv[])
                 }
 				else
 				{
-					fclose( outFp );						
+					fclose( outFp );
 				}
             }
-#endif            
+#endif
+            else if( 0 == strcmp( argv[count], "-sharedhandle" ) )
+            {
+                sharedHandle = 1;
+            }
             else
             {
                 PrintHelp();
@@ -2915,7 +2922,7 @@ int main(int argc, char* argv[])
             PrintHelp();
             return 1;
         }
-#endif        
+#endif
     }
 
     if( 0 == strcmp( outFileName, "" ) )
@@ -2945,7 +2952,7 @@ int main(int argc, char* argv[])
         }
     }
     else
-#endif        
+#endif
     {
         //
         // Init downstream interface to tpm (in this case the simulator).
@@ -2958,12 +2965,12 @@ int main(int argc, char* argv[])
             ResMgrPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", simInterfaceInfo.shortName, rval );
             return( 1 );
         }
-#ifdef DEBUG_RESMGR_INIT        
+#ifdef DEBUG_RESMGR_INIT
         else
         {
             ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_ENABLED;
         }
-#endif        
+#endif
     }
     // Init sysContext for use by RM.  Used to send RM specific TPM commands to the TPM.
     resMgrSysContext = InitSysContext( 0, downstreamTctiContext, &abiVersion );
@@ -2972,7 +2979,7 @@ int main(int argc, char* argv[])
         InitSysContextFailure();
         goto initDone;
     }
-    
+
     rval = InitResourceMgr( DBG_COMMAND_RM_TABLES );
     CloseOutFile( &outFp );
     if( rval != TSS2_RC_SUCCESS )
@@ -2990,10 +2997,10 @@ int main(int argc, char* argv[])
         return( 1 );
     }
     CloseOutFile( &outFp );
-	    
+
     otherCmdServerStruct.connectSock = appOtherSock;
     tpmCmdServerStruct.connectSock = appTpmSock;
-    
+
     // Start socket servers for upstream interface.
 
 #ifdef  _WIN32
@@ -3010,8 +3017,8 @@ int main(int argc, char* argv[])
         printf( "Resource Mgr failed to create OTHER command server thread, error #%d.  Exiting...\n", rval );
     }
 #else
-#error Unsupported OS--need to add OS-specific support for threading here.        
-#endif        
+#error Unsupported OS--need to add OS-specific support for threading here.
+#endif
     else
     {
         SockServer( (LPVOID)&tpmCmdServerStruct );
@@ -3020,9 +3027,9 @@ int main(int argc, char* argv[])
     CloseHandle( sockServerThread );
 
     CloseSockets( appOtherSock, appTpmSock );
-    
+
     TeardownSysContext( &resMgrSysContext );
-    
+
 initDone:
 
     return 0;
