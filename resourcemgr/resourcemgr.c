@@ -40,7 +40,7 @@
 #ifdef  _WIN32
 typedef HANDLE THREAD_TYPE;
 
-#define MAX_COMMAND_LINE_ARGS 7
+#define MAX_COMMAND_LINE_ARGS 8
 #elif __linux || __unix
 #include "localtpm.h"
 #include <stdarg.h>
@@ -51,7 +51,7 @@ typedef pthread_t THREAD_TYPE ;
 #define ExitThread pthread_exit
 #define CloseHandle( handle )
 
-#define MAX_COMMAND_LINE_ARGS 8
+#define MAX_COMMAND_LINE_ARGS 9
 #else
 #error Unsupported OS--need to add OS-specific support for threading here.
 #endif
@@ -140,6 +140,8 @@ UINT8 simulator = 1;
 #else
 UINT8 simulator = 0;
 #endif
+
+int sharedHandle = 0;
 
 enum shutdownStartupSequenceType { TPM_RESET, TPM_RESTART, TPM_RESUME };
 
@@ -980,7 +982,7 @@ TSS2_RC LoadContext( TPM_HANDLE virtualHandle, UINT64 connectionId, TPM_HANDLE *
         goto exitLoadContext;
     }
 
-    if( connectionId != foundEntryPtr->connectionId )
+    if( !sharedHandle && connectionId != foundEntryPtr->connectionId )
     {
         rval = TSS2_RESMGR_UNOWNED_HANDLE;
         goto exitLoadContext;
@@ -2788,7 +2790,7 @@ returnFromInitResourceMgr:
     return rval;
 }
 
-char version[] = "0.85";
+char version[] = "0.86";
 
 void PrintHelp()
 {
@@ -2809,6 +2811,7 @@ void PrintHelp()
 #ifdef SHARED_OUT_FILE
             "-out selects the output file (default is stdout)\n"
 #endif
+            "-sharedhandle shares transient handles across connections\n"
             , version, DEFAULT_HOSTNAME, DEFAULT_SIMULATOR_TPM_PORT, DEFAULT_RESMGR_TPM_PORT );
 }
 
@@ -2834,7 +2837,7 @@ int main(int argc, char* argv[])
 
     setvbuf (stdout, NULL, _IONBF, BUFSIZ);
 #ifdef SHARED_OUT_FILE
-    if( argc > 8 )
+    if( argc > 9 )
 #else
     if( argc > MAX_COMMAND_LINE_ARGS )
 #endif
@@ -2902,6 +2905,10 @@ int main(int argc, char* argv[])
 				}
             }
 #endif
+            else if( 0 == strcmp( argv[count], "-sharedhandle" ) )
+            {
+                sharedHandle = 1;
+            }
             else
             {
                 PrintHelp();
