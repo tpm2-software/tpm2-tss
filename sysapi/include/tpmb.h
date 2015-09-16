@@ -70,6 +70,25 @@ Any marks and brands contained herein are the property of their respective owner
 	TPM2B   b;					    \
     } TPM2B_##name
 
+#define TPM2B_TYPE1(name, bytes, bufferName)			    \
+    typedef union {				    \
+	struct  {					    \
+	    UINT16  size;				    \
+	    BYTE    bufferName[(bytes)];			    \
+	} t;						    \
+	TPM2B   b;					    \
+    } TPM2B_##name
+
+#define TPM2B_TYPE2(name, type, bufferName )			    \
+    typedef union {				    \
+	struct  {					    \
+	    UINT16  size;				    \
+	    type bufferName;			    \
+	} t;						    \
+	TPM2B   b;					    \
+    } TPM2B_##name
+
+
 // Macro to instance and initialize a TPM2B value
 
 #define TPM2B_INIT(TYPE, name)					\
