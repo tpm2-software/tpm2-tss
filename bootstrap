@@ -1,8 +1,9 @@
-#! /bin/sh
+#!/bin/sh
+set -e
 
 # generate list of source files for use in Makefile.am
 # if you add new source files, you must run ./bootstrap again
-function src_listvar () {
+src_listvar () {
     basedir=$1
     suffix=$2
     var=$3
@@ -14,30 +15,34 @@ function src_listvar () {
 VARS_FILE=src_vars.mk
 
 echo "Generating file lists: ${VARS_FILE}"
-if [ -e ${VARS_FILE} ]; then rm ${VARS_FILE}; fi
+(
+  src_listvar "sysapi/include" "*.h" "SYSAPI_H"
+  src_listvar "sysapi/sysapi" "*.c" "SYSAPI_C"
+  src_listvar "sysapi/sysapi_util" "*.c" "SYSAPIUTIL_C"
+  printf "SYSAPI_SRC = \$(SYSAPI_H) \$(SYSAPI_C) \$(SYSAPIUTIL_C)\n"
 
-src_listvar "sysapi/include" "*.h" "SYSAPI_H" >> ${VARS_FILE}
-src_listvar "sysapi/sysapi" "*.c" "SYSAPI_C" >> ${VARS_FILE}
-src_listvar "sysapi/sysapi_util" "*.c" "SYSAPIUTIL_C" >> ${VARS_FILE}
-echo -e "SYSAPI_SRC = \$(SYSAPI_H) \$(SYSAPI_C) \$(SYSAPIUTIL_C)\n" >> ${VARS_FILE}
+  src_listvar "common" "*.c" "COMMON_C"
+  src_listvar "common" "*.h" "COMMON_H"
+  printf "COMMON_SRC = \$(COMMON_C) \$(COMMON_H)\n"
 
-src_listvar "common" "*.c" "COMMON_C" >> ${VARS_FILE}
-src_listvar "common" "*.h" "COMMON_H" >> ${VARS_FILE}
-echo -e "COMMON_SRC = \$(COMMON_C) \$(COMMON_H)\n" >> ${VARS_FILE}
+  src_listvar "tcti/localtpm" "*.c" "LOCALTPM_C"
+  src_listvar "tcti/localtpm" "*.h" "LOCALTPM_H"
+  printf "LOCALTPM_SRC = \$(LOCALTPM_C) \$(LOCALTPM_H)\n"
 
-src_listvar "tcti/localtpm" "*.c" "LOCALTPM_C" >> ${VARS_FILE}
-src_listvar "tcti/localtpm" "*.h" "LOCALTPM_H" >> ${VARS_FILE}
-echo -e "LOCALTPM_SRC = \$(LOCALTPM_C) \$(LOCALTPM_H)\n" >> ${VARS_FILE}
+  src_listvar "test/common/sample" "*.c" "SAMPLE_C"
+  src_listvar "test/common/sample" "*.h" "SAMPLE_H"
+  printf "SAMPLE_SRC = \$(SAMPLE_C) \$(SAMPLE_H)\n"
 
-src_listvar "test/common/sample" "*.c" "SAMPLE_C" >> ${VARS_FILE}
-src_listvar "test/common/sample" "*.h" "SAMPLE_H" >> ${VARS_FILE}
-echo -e "SAMPLE_SRC = \$(SAMPLE_C) \$(SAMPLE_H)\n" >> ${VARS_FILE}
+  src_listvar "tcti/tpmsockets" "*.cpp" "TPMSOCKETS_C"
+  src_listvar "tcti/tpmsockets" "*.h" "TPMSOCKETS_H"
+  printf "TPMSOCKETS_SRC = \$(TPMSOCKETS_C) \$(TPMSOCKETS_H)\n"
+) > ${VARS_FILE}
 
-src_listvar "tcti/tpmsockets" "*.cpp" "TPMSOCKETS_C" >> ${VARS_FILE}
-src_listvar "tcti/tpmsockets" "*.h" "TPMSOCKETS_H" >> ${VARS_FILE}
-echo -e "TPMSOCKETS_SRC = \$(TPMSOCKETS_C) \$(TPMSOCKETS_H)\n" >> ${VARS_FILE}
-
-libtoolize --install \
-&& aclocal \
-&& autoconf \
-&& automake --add-missing
+printf "Running libtoolize ...\n"
+libtoolize --install
+printf "Running aclocal ...\n"
+aclocal
+printf "Running autoconf ...\n"
+autoconf
+printf "Running automake ...\n"
+automake --add-missing
