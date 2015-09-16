@@ -1,5 +1,6 @@
 To build and install the tpm2.0-tss software the following software is required:
 GNU Autoconf
+GNU Autoconf archive
 GNU Automake
 GNU Libtool
 C compiler
