@@ -28,13 +28,15 @@
 
 include src_vars.mk
 
+ACLOCAL_AMFLAGS = -I m4
+
 bin_PROGRAMS = resourcemgr/resourcemgr test/tpmclient/tpmclient test/tpmtest/tpmtest
 noinst_LIBRARIES = sysapi/libtpm.a
 
-resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC)
-resourcemgr_resourcemgr_CXXFLAGS = $(RESOURCEMGR_INC)
+resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS)
+resourcemgr_resourcemgr_CXXFLAGS = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS)
 resourcemgr_resourcemgr_LDADD    = $(noinst_LIBRARIES)
-resourcemgr_resourcemgr_LDFLAGS  = -lpthread
+resourcemgr_resourcemgr_LDFLAGS  = $(PTHREAD_LDFLAGS)
 resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_SRC) $(TPMSOCKETS_SRC) \
      $(LOCALTPM_SRC) $(COMMON_SRC)
 

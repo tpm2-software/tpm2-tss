@@ -37,6 +37,7 @@ src_listvar "tcti/tpmsockets" "*.cpp" "TPMSOCKETS_C" >> ${VARS_FILE}
 src_listvar "tcti/tpmsockets" "*.h" "TPMSOCKETS_H" >> ${VARS_FILE}
 echo -e "TPMSOCKETS_SRC = \$(TPMSOCKETS_C) \$(TPMSOCKETS_H)\n" >> ${VARS_FILE}
 
-aclocal \
+libtoolize --install \
+&& aclocal \
 && autoconf \
 && automake --add-missing
