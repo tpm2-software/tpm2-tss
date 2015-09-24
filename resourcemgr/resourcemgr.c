@@ -40,7 +40,14 @@
 #ifdef  _WIN32
 typedef HANDLE THREAD_TYPE; 
 
+#define FUZZ_CMD_LINE_TEST
+
+#ifdef FUZZ_CMD_LINE_TEST
+#define MAX_COMMAND_LINE_ARGS 8
+#else
 #define MAX_COMMAND_LINE_ARGS 7
+#endif
+
 #elif __linux
 #include "localtpm.h"
 #include <stdarg.h>
@@ -68,6 +75,10 @@ void *(*rmMalloc)(size_t size) = malloc;
 void (*rmFree)(void *entry) = free;
 
 TPML_CCA *supportedCommands;
+
+#ifdef FUZZ_CMD_LINE_TEST            
+UINT8 exitAfterInit = 1;
+#endif
 
 int GetNumCmdHandles( TPM_CC commandCode, TPML_CCA *supportedCommands )
 {
@@ -2458,6 +2469,14 @@ UINT32 WINAPI SockServer( LPVOID servStruct )
             continue;
         }
 
+#ifdef FUZZ_CMD_LINE_TEST            
+        if( 0 == strcmp( ( (SERVER_STRUCT *)servStruct )->serverName, "TPM CMD" ) && exitAfterInit )
+        {   
+            free( cmdServerStruct );
+            return( 0 );
+        }
+#endif        
+        
         cmdServerStruct->connectSock = accept( serverStruct->connectSock, 0, 0 );
 
         if( cmdServerStruct->connectSock == INVALID_SOCKET )
@@ -2900,6 +2919,13 @@ int main(int argc, char* argv[])
 				{
 					fclose( outFp );						
 				}
+            }
+#endif
+
+#ifdef FUZZ_CMD_LINE_TEST            
+            else if( 0 == strcmp( argv[count], "-exit" ) )
+            {
+                exitAfterInit = 1;
             }
 #endif            
             else
