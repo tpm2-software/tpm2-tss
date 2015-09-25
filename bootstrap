@@ -33,9 +33,9 @@ echo "Generating file lists: ${VARS_FILE}"
   src_listvar "test/common/sample" "*.h" "SAMPLE_H"
   printf "SAMPLE_SRC = \$(SAMPLE_C) \$(SAMPLE_H)\n"
 
-  src_listvar "tcti/tpmsockets" "*.cpp" "TPMSOCKETS_C"
+  src_listvar "tcti/tpmsockets" "*.cpp" "TPMSOCKETS_CXX"
   src_listvar "tcti/tpmsockets" "*.h" "TPMSOCKETS_H"
-  printf "TPMSOCKETS_SRC = \$(TPMSOCKETS_C) \$(TPMSOCKETS_H)\n"
+  printf "TPMSOCKETS_SRC = \$(TPMSOCKETS_CXX) \$(TPMSOCKETS_H)\n"
 ) > ${VARS_FILE}
 
 printf "Running libtoolize ...\n"
