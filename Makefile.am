@@ -41,7 +41,7 @@ resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_SRC) $(TPMSOCKETS_SRC) \
      $(LOCALTPM_SRC) $(COMMON_SRC)
 
 sysapi_libtpm_a_CFLAGS  = -I$(srcdir)/sysapi/include/
-sysapi_libtpm_a_SOURCES = $(SYSAPI_SRC) $(SYSAPIUTIL_SRC) $(SYSAPI_INC)
+sysapi_libtpm_a_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
 
 test_tpmclient_tpmclient_CFLAGS   = -DSAPI_CLIENT $(TPMCLIENT_INC)
 test_tpmclient_tpmclient_CXXFLAGS = -DSAPI_CLIENT $(TPMCLIENT_INC)
