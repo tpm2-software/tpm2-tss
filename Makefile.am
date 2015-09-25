@@ -31,27 +31,27 @@ include src_vars.mk
 ACLOCAL_AMFLAGS = -I m4
 
 bin_PROGRAMS = resourcemgr/resourcemgr test/tpmclient/tpmclient test/tpmtest/tpmtest
-noinst_LIBRARIES = sysapi/libtpm.a
+noinst_LTLIBRARIES = sysapi/libtpm.la
 
 resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS)
 resourcemgr_resourcemgr_CXXFLAGS = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS)
-resourcemgr_resourcemgr_LDADD    = $(noinst_LIBRARIES)
+resourcemgr_resourcemgr_LDADD    = $(noinst_LTLIBRARIES)
 resourcemgr_resourcemgr_LDFLAGS  = $(PTHREAD_LDFLAGS)
 resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_SRC) $(TPMSOCKETS_SRC) \
      $(LOCALTPM_SRC) $(COMMON_SRC)
 
-sysapi_libtpm_a_CFLAGS  = -I$(srcdir)/sysapi/include/
-sysapi_libtpm_a_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
+sysapi_libtpm_la_CFLAGS  = -I$(srcdir)/sysapi/include/
+sysapi_libtpm_la_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
 
 test_tpmclient_tpmclient_CFLAGS   = -DSAPI_CLIENT $(TPMCLIENT_INC)
 test_tpmclient_tpmclient_CXXFLAGS = -DSAPI_CLIENT $(TPMCLIENT_INC)
-test_tpmclient_tpmclient_LDADD    = $(noinst_LIBRARIES)
+test_tpmclient_tpmclient_LDADD    = $(noinst_LTLIBRARIES)
 test_tpmclient_tpmclient_SOURCES  = $(COMMON_SRC) $(SAMPLE_SRC) \
     $(TPMCLIENT_SRC) $(TPMSOCKETS_SRC)
 
 test_tpmtest_tpmtest_CFLAGS   = -DSAPI_CLIENT $(TPMTEST_INC)
 test_tpmtest_tpmtest_CXXFLAGS = -DSAPI_CLIENT $(TPMTEST_INC)
-test_tpmtest_tpmtest_LDADD    = $(noinst_LIBRARIES)
+test_tpmtest_tpmtest_LDADD    = $(noinst_LTLIBRARIES)
 test_tpmtest_tpmtest_SOURCES  = $(COMMON_SRC) $(SAMPLE_SRC) \
     $(TPMTEST_SRC) $(TPMSOCKETS_SRC)
 
