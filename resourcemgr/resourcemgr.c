@@ -2853,13 +2853,13 @@ int main(int argc, char* argv[])
             }
             else
 #endif                
-                if( 0 == strcmp( argv[count], "-tpmhost" ) )
+            if( 0 == strcmp( argv[count], "-tpmhost" ) )
             {
                 count++;
 #ifdef  _WIN32
-                if( 1 != sscanf_s( argv[count], "%s", &tpmHostName[0], sizeof( tpmHostName ) ) )
+                if( count >= argc || 1 != sscanf_s( argv[count], "%s", &tpmHostName[0], sizeof( tpmHostName ) ) )
 #else                    
-                if( 1 != sscanf_s( argv[count], "%200s", &tpmHostName[0] ) )
+                if( count >= argc || 1 != sscanf_s( argv[count], "%200s", &tpmHostName[0] ) )
 #endif                    
                 {
                     PrintHelp();
