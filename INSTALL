@@ -44,5 +44,11 @@ $ ../TPM2.0-TSS/configure \
   CXXFLAGS="-O0 -Wall -Werror -fno-operator-names -fpermissive -ggdb3"
 $ make
 
-The tpm2.0-tss software currently does not have an install target. This
-section will be updated with installation instructions when they are relevant.
+Once you've built the tpm2.0-tss software it can be installed with the usual:
+$ sudo make install
+
+This will install libtpm and the resource manager to locations determined at
+configure time. See the output of ./configure --help for the available
+options. Typically you won't need to do much more than provide an alternative
+--prefix option at configure time, and DESTDIR at install time if you're
+looking to create a binary packag.
