@@ -2265,9 +2265,9 @@ tpmCmdDone:
     printf( "TpmCmdServer died (%s), rval: 0x%8.8x, socket: 0x%x.\n", serverStruct->serverName, rval, serverStruct->connectSock );
 
     closesocket( serverStruct->connectSock );
+	CloseHandle( serverStruct->threadHandle );
     (*rmFree)( serverStruct );
-    CloseHandle( serverStruct->threadHandle );
-    ExitThread( 0 );
+	ExitThread( 0 );
 
 	return returnValue;
 }
