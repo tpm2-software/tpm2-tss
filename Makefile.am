@@ -26,4 +26,46 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 #;**********************************************************************;
 
-SUBDIRS = sysapi common resourcemgr test/tpmclient
+include src_vars.mk
+
+ACLOCAL_AMFLAGS = -I m4
+
+bin_PROGRAMS = resourcemgr/resourcemgr test/tpmclient/tpmclient test/tpmtest/tpmtest
+noinst_LIBRARIES = sysapi/libtpm.a
+
+resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS)
+resourcemgr_resourcemgr_CXXFLAGS = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS)
+resourcemgr_resourcemgr_LDADD    = $(noinst_LIBRARIES)
+resourcemgr_resourcemgr_LDFLAGS  = $(PTHREAD_LDFLAGS)
+resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_SRC) $(TPMSOCKETS_SRC) \
+     $(LOCALTPM_SRC) $(COMMON_SRC)
+
+sysapi_libtpm_a_CFLAGS  = -I$(srcdir)/sysapi/include/
+sysapi_libtpm_a_SOURCES = $(SYSAPI_SRC) $(SYSAPIUTIL_SRC) $(SYSAPI_INC)
+
+test_tpmclient_tpmclient_CFLAGS   = -DSAPI_CLIENT $(TPMCLIENT_INC)
+test_tpmclient_tpmclient_CXXFLAGS = -DSAPI_CLIENT $(TPMCLIENT_INC)
+test_tpmclient_tpmclient_LDADD    = $(noinst_LIBRARIES)
+test_tpmclient_tpmclient_SOURCES  = $(COMMON_SRC) $(SAMPLE_SRC) \
+    $(TPMCLIENT_SRC) $(TPMSOCKETS_SRC)
+
+test_tpmtest_tpmtest_CFLAGS   = -DSAPI_CLIENT $(TPMTEST_INC)
+test_tpmtest_tpmtest_CXXFLAGS = -DSAPI_CLIENT $(TPMTEST_INC)
+test_tpmtest_tpmtest_LDADD    = $(noinst_LIBRARIES)
+test_tpmtest_tpmtest_SOURCES  = $(COMMON_SRC) $(SAMPLE_SRC) \
+    $(TPMTEST_SRC) $(TPMSOCKETS_SRC)
+
+RESOURCEMGR_INC = -I$(srcdir)/sysapi/include -I$(srcdir)/common \
+    -I$(srcdir)/tcti/tpmsockets -I$(srcdir)/tcti/localtpm \
+    -I$(srcdir)/resourcemgr -I$(srcdir)/test/tpmclient
+RESOURCEMGR_SRC = resourcemgr/resourcemgr.c resourcemgr/resourcemgr.h
+
+TPMCLIENT_INC = -I$(srcdir)/sysapi/include -I$(srcdir)/test/tpmclient \
+    -I$(srcdir)/tcti/tpmsockets -I$(srcdir)/common \
+    -I$(srcdir)/test/common/sample -I$(srcdir)/resourcemgr
+TPMCLIENT_SRC = test/tpmclient/tpmclient.cpp test/tpmclient/tpmclient.h
+
+TPMTEST_INC = -I$(srcdir)/sysapi/include -I$(srcdir)/test/tpmclient \
+    -I$(srcdir)/tcti/tpmsockets -I$(srcdir)/common \
+    -I$(srcdir)/test/common/sample -I$(srcdir)/resourcemgr
+TPMTEST_SRC = test/tpmtest/tpmtest.cpp
