@@ -1,12 +1,10 @@
 AC_INIT([tpm2.0-tss], [0.98])
+AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CC
 AC_PROG_CXX
-AC_PROG_RANLIB
+LT_INIT([disable-shared])
+AX_PTHREAD([], [AC_MSG_ERROR([requires pthread])])
 AM_INIT_AUTOMAKE([foreign
                   subdir-objects])
-AC_CONFIG_FILES([Makefile
-                 common/Makefile
-                 sysapi/Makefile
-                 test/tpmclient/Makefile
-                 resourcemgr/Makefile])
+AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
