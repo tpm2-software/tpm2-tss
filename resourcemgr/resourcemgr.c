@@ -85,6 +85,10 @@ int GetNumCmdHandles( TPM_CC commandCode, TPML_CCA *supportedCommands )
             rval = cmdAttributes.cHandles;
         }
     }
+    else
+    {
+        rval = -1;
+    }
 
     return rval;
 }
@@ -1200,7 +1204,12 @@ TSS2_RC ResourceMgrSendTpmCommand(
     }
 
     numHandles = GetNumCmdHandles( currentCommandCode, supportedCommands );
-    
+    if( numHandles < 0 )
+    {
+        responseRval = TPM_RC_COMMAND_CODE;
+        goto SendCommand;
+    }
+
     for( i = 0; i < numHandles; i++ )
     {
         RESMGR_UNMARSHAL_UINT32( command_buffer, command_size, &currentPtr, &( cmdHandles[i].handle), &responseRval, SendCommand );
