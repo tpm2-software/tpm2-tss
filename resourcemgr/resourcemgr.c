@@ -39,9 +39,10 @@
 
 #ifdef  _WIN32
 typedef HANDLE THREAD_TYPE; 
+#define MAX_COMMAND_LINE_ARGS 6
 
-#define MAX_COMMAND_LINE_ARGS 7
 #elif __linux || __unix
+
 #include "localtpm.h"
 #include <stdarg.h>
 #define sprintf_s   snprintf
@@ -51,7 +52,7 @@ typedef pthread_t THREAD_TYPE ;
 #define ExitThread pthread_exit
 #define CloseHandle( handle ) 
 
-#define MAX_COMMAND_LINE_ARGS 8
+#define MAX_COMMAND_LINE_ARGS 7
 #else    
 #error Unsupported OS--need to add OS-specific support for threading here.        
 #endif                
@@ -2901,7 +2902,7 @@ int main(int argc, char* argv[])
 					fclose( outFp );						
 				}
             }
-#endif            
+#endif
             else
             {
                 PrintHelp();

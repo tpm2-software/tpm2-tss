@@ -36,6 +36,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include "debug.h"
 
 #ifdef  _WIN32
 #define ssize_t int
@@ -48,8 +49,6 @@
 extern void OpenOutFile( FILE **outFp );
 
 extern void CloseOutFile( FILE **outFp );
-
-enum printf_types { NO_PREFIX = 0, RM_PREFIX = 1 };
 
 extern FILE *outFp;
 
@@ -64,6 +63,19 @@ TSS2_RC LocalTpmSendTpmCommand(
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
     ssize_t size;
+
+#ifdef DEBUG
+    UINT32 commandCode = CHANGE_ENDIAN_DWORD( ( (TPM20_Header_In *)command_buffer )->commandCode );
+    UINT32 cnt = CHANGE_ENDIAN_DWORD(((TPM20_Header_In *) command_buffer)->commandSize);
+
+    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
+    {
+        (*tpmLocalTpmPrintf)(NO_PREFIX, "\n" );
+        (*tpmLocalTpmPrintf)(rmDebugPrefix, "Cmd sent: %s\n", commandCodeStrings[ commandCode - TPM_CC_FIRST ]  );
+        (*printfFunction)(rmDebugPrefix, "Locality = %d", ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.locality );
+        DEBUG_PRINT_BUFFER( command_buffer, cnt );
+    }
+#endif
 
     size = write( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, command_buffer, command_size );
 
@@ -89,6 +101,15 @@ TSS2_RC LocalTpmReceiveTpmResponse(
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
     ssize_t  size;
+
+#ifdef DEBUG
+    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
+    {
+        (*tpmLocalTpmPrintf)( rmDebugPrefix, "Response Received: " );
+        DEBUG_PRINT_BUFFER( response_buffer, *response_size );
+    }
+#endif
+    
     size = read( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, response_buffer, *response_size );
 
     if( size < 0 )

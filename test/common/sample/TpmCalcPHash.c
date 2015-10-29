@@ -31,9 +31,6 @@
 #include <stdlib.h>
 #include <tss2_sysapi_util.h>
 
-// Uncomment below if you want to see debug messages.
-#define  DEBUG
-
 //
 // This function is a helper function used to calculate cpHash and rpHash.
 //

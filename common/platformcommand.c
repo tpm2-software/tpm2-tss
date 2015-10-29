@@ -38,8 +38,6 @@
 //
 //#define DEBUG_SOCKETS
 
-#define DEBUG
-
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
 

@@ -58,7 +58,15 @@
 #include "sample.h"
 #include "resourcemgr.h"
 #include "tpmclient.h"
+
+// This is done to allow the tests to access fields
+// in the sysContext structure that are needed for
+// special test cases.
+//
+// ATTENTION:  Normal applications should NEVER do this!!
+//
 #include "tss2_sysapi_util.h"
+
 #include "tpmsockets.h"
 #include "syscontext.h"
 #include "debug.h"
@@ -4392,6 +4400,14 @@ void HmacSessionTest()
                 nvAttributes.TPMA_NV_AUTHWRITE = 1;
                 nvAttributes.TPMA_NV_PLATFORMCREATE = 1;
 
+                sessionsData.cmdAuths[0]->sessionHandle = TPM_RS_PW;
+                sessionsData.cmdAuths[0]->nonce.t.size = 0;
+                sessionsData.cmdAuths[0]->nonce.t.buffer[0] = 0xa5;
+                sessionData.hmac.t.size = 0;
+
+                // Undefine the index in case a previous test failure left it defined.
+                rval = Tss2_Sys_NV_UndefineSpace( wrSysContext, TPM_RH_PLATFORM, TPM20_INDEX_PASSWORD_TEST, &sessionsData, 0 );
+
                 rval = DefineNvIndex( TPM_RH_PLATFORM, TPM_RS_PW, &nvAuth, &authPolicy,
                         TPM20_INDEX_PASSWORD_TEST, TPM_ALG_SHA1, nvAttributes, 32  );
                 CheckPassed( rval );
@@ -5486,6 +5502,21 @@ void TestRM()
     {
         InitSysContextFailure();
     }
+
+    // TEST WITH AN INVALID COMMAND CODE.
+    
+    rval = Tss2_Sys_Startup_Prepare( sysContext, TPM_SU_CLEAR );
+    CheckPassed(rval);
+
+    //
+    // Alter the CC by altering the CC field in sysContext.
+    //
+    // WARNING:  This is something only a test application should do. Do
+    // not use this as sample code.
+    //
+    ((TPM20_Header_In *)( ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->tpmInBuffPtr) )->commandCode = TPM_CC_FIRST - 1;
+    rval = Tss2_Sys_Execute( sysContext );
+    CheckFailed( rval, TPM_RC_COMMAND_CODE );
 
     // TEST OWNERSHIP
     
