@@ -5841,7 +5841,7 @@ void TestCreate1()
 
     sessionsDataOut.rspAuthsCount = 1;
         
-    printf( "\CREATE PRIMARY, encrypt and decrypt TESTS:\n" );
+    printf( "\nCREATE PRIMARY, encrypt and decrypt TESTS:\n" );
 
     inSensitive.t.sensitive.userAuth = loadedSha1KeyAuth;
     inSensitive.t.sensitive.userAuth = loadedSha1KeyAuth;
