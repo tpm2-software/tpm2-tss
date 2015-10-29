@@ -40,8 +40,6 @@
 //
 //#define DEBUG_SOCKETS
 
-#define DEBUG
-
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
 
@@ -138,6 +136,10 @@ TSS2_RC SocketSendTpmCommand(
 #ifdef SAPI_CLIENT    
     UINT8 debugMsgLevel, statusBits;
 #endif
+    UINT32 commandCode = CHANGE_ENDIAN_DWORD( ( (TPM20_Header_In *)command_buffer )->commandCode );
+
+    UINT32 commandCode = CHANGE_ENDIAN_DWORD( ( (TPM20_Header_In *)command_buffer )->commandCode );
+
     
     UINT32 commandCode = CHANGE_ENDIAN_DWORD( ( (TPM20_Header_In *)command_buffer )->commandCode );
 
@@ -158,7 +160,7 @@ TSS2_RC SocketSendTpmCommand(
     // Send TPM_SEND_COMMAND
     tpmSendCommand = CHANGE_ENDIAN_DWORD(tpmSendCommand);
     sendBytes( TCTI_CONTEXT_INTEL->tpmSock, (char *)&tpmSendCommand, 4 );
-    
+        
     // Send the locality
     locality = (UINT8)( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.locality;
     sendBytes( TCTI_CONTEXT_INTEL->tpmSock, (char *)&locality, 1 );

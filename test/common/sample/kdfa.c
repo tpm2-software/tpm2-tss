@@ -31,9 +31,6 @@
 #include <stdlib.h>
 #include <tss2_sysapi_util.h>
 
-// Uncomment below if you want to see debug messages.
-#define  DEBUG
-
 //
 //
 TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,

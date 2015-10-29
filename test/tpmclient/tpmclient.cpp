@@ -4392,6 +4392,14 @@ void HmacSessionTest()
                 nvAttributes.TPMA_NV_AUTHWRITE = 1;
                 nvAttributes.TPMA_NV_PLATFORMCREATE = 1;
 
+                sessionsData.cmdAuths[0]->sessionHandle = TPM_RS_PW;
+                sessionsData.cmdAuths[0]->nonce.t.size = 0;
+                sessionsData.cmdAuths[0]->nonce.t.buffer[0] = 0xa5;
+                sessionData.hmac.t.size = 0;
+
+                // Undefine the index in case a previous test failure left it defined.
+                rval = Tss2_Sys_NV_UndefineSpace( wrSysContext, TPM_RH_PLATFORM, TPM20_INDEX_PASSWORD_TEST, &sessionsData, 0 );
+
                 rval = DefineNvIndex( TPM_RH_PLATFORM, TPM_RS_PW, &nvAuth, &authPolicy,
                         TPM20_INDEX_PASSWORD_TEST, TPM_ALG_SHA1, nvAttributes, 32  );
                 CheckPassed( rval );
