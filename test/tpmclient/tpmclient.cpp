@@ -58,7 +58,15 @@
 #include "sample.h"
 #include "resourcemgr.h"
 #include "tpmclient.h"
+
+// This is done to allow the tests to access fields
+// in the sysContext structure that are needed for
+// special test cases.
+//
+// ATTENTION:  Normal applications should NEVER do this!!
+//
 #include "tss2_sysapi_util.h"
+
 #include "tpmsockets.h"
 #include "syscontext.h"
 #include "debug.h"
@@ -5495,6 +5503,21 @@ void TestRM()
         InitSysContextFailure();
     }
 
+    // TEST WITH AN INVALID COMMAND CODE.
+    
+    rval = Tss2_Sys_Startup_Prepare( sysContext, TPM_SU_CLEAR );
+    CheckPassed(rval);
+
+    //
+    // Alter the CC by altering the CC field in sysContext.
+    //
+    // WARNING:  This is something only a test application should do. Do
+    // not use this as sample code.
+    //
+    ((TPM20_Header_In *)( ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->tpmInBuffPtr) )->commandCode = TPM_CC_FIRST - 1;
+    rval = Tss2_Sys_Execute( sysContext );
+    CheckFailed( rval, TPM_RC_COMMAND_CODE );
+
     // TEST OWNERSHIP
     
     // Try to access a key created by the first TCTI context.
@@ -5789,6 +5812,145 @@ TSS2_RC SocketReceiveTpmResponse(
     int32_t         timeout
     );
 
+void TestCreate1()
+{
+    UINT32 rval;
+    TPM2B_SENSITIVE_CREATE  inSensitive = { { sizeof( TPM2B_SENSITIVE_CREATE ) - 2, } };
+    TPM2B_PUBLIC            inPublic = { { sizeof( TPM2B_PUBLIC ) - 2, } };
+    TPM2B_DATA              outsideInfo = { { sizeof( TPM2B_DATA ) - 2, } };
+    TPML_PCR_SELECTION      creationPCR;
+
+    TPMS_AUTH_COMMAND sessionData = { TPM_RS_PW, };
+    TPMS_AUTH_RESPONSE sessionDataOut;
+    TPMS_AUTH_COMMAND *sessionDataArray[1] = { &sessionData };
+    TPMS_AUTH_RESPONSE *sessionDataOutArray[1] = { &sessionDataOut };
+    TSS2_SYS_CMD_AUTHS sessionsData = { 1, &sessionDataArray[0] };
+    TSS2_SYS_RSP_AUTHS sessionsDataOut = { 1, &sessionDataOutArray[0] };
+
+    TPM2B_NAME name = { { sizeof( TPM2B_NAME ) - 2, } };
+    TPM2B_PUBLIC outPublic = { { sizeof( TPM2B_PUBLIC ) - 2, } };
+    TPM2B_CREATION_DATA creationData =  { { sizeof( TPM2B_CREATION_DATA ) - 2, } };
+    TPM2B_DIGEST creationHash = { { sizeof( TPM2B_DIGEST ) - 2, } };
+    TPMT_TK_CREATION creationTicket = { 0, 0, { { sizeof( TPM2B_DIGEST ) - 2, } } };
+
+    sessionDataArray[0] = &sessionData;
+    sessionDataOutArray[0] = &sessionDataOut;
+
+    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
+    sessionsData.cmdAuths = &sessionDataArray[0];
+
+    sessionsDataOut.rspAuthsCount = 1;
+        
+    printf( "\CREATE PRIMARY, encrypt and decrypt TESTS:\n" );
+
+    inSensitive.t.sensitive.userAuth = loadedSha1KeyAuth;
+    inSensitive.t.sensitive.userAuth = loadedSha1KeyAuth;
+    inSensitive.t.sensitive.data.t.size = 0;
+    inSensitive.t.size = loadedSha1KeyAuth.b.size + 2;
+    
+    inPublic.t.publicArea.type = TPM_ALG_RSA;
+    inPublic.t.publicArea.nameAlg = TPM_ALG_SHA1;
+
+    // First clear attributes bit field.
+    *(UINT32 *)&( inPublic.t.publicArea.objectAttributes) = 0;
+    inPublic.t.publicArea.objectAttributes.restricted = 1;
+    inPublic.t.publicArea.objectAttributes.userWithAuth = 1;
+    inPublic.t.publicArea.objectAttributes.decrypt = 1;
+    inPublic.t.publicArea.objectAttributes.fixedTPM = 1;
+    inPublic.t.publicArea.objectAttributes.fixedParent = 1;
+    inPublic.t.publicArea.objectAttributes.sensitiveDataOrigin = 1;
+
+    inPublic.t.publicArea.authPolicy.t.size = 0;
+    
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_ECB;
+    inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
+    inPublic.t.publicArea.parameters.rsaDetail.keyBits = 1024;
+    inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
+
+    inPublic.t.publicArea.unique.rsa.t.size = 0;
+
+    outsideInfo.t.size = 0;
+    creationPCR.count = 0;
+    
+    sessionData.sessionHandle = TPM_RS_PW;
+
+    // Init nonce.
+    sessionData.nonce.t.size = 0;
+
+    // init hmac
+    sessionData.hmac.t.size = 0;
+
+    // Init session attributes
+    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
+
+    sessionsData.cmdAuthsCount = 1;
+    sessionsData.cmdAuths[0] = &sessionData;
+
+    inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
+
+    // Do SAPI test for non-zero sized outPublic
+    outPublic.t.size = 0xff;
+    creationData.t.size = 0;
+    rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_OWNER, &sessionsData, &inSensitive, &inPublic,
+            &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
+            &creationTicket, &name, &sessionsDataOut );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_VALUE );
+
+#if 0
+    // Do SAPI test for non-zero sized creationData
+    outPublic.t.size = 0;
+    creationData.t.size = 0x10;
+    rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_PLATFORM, &sessionsData, &inSensitive, &inPublic,
+            &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
+            &creationTicket, &name, &sessionsDataOut );
+    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_BUFFER );
+#endif
+
+    outPublic.t.size = 0;
+    creationData.t.size = sizeof( TPM2B_CREATION_DATA ) - 2;
+    outPublic.t.publicArea.authPolicy.t.size = sizeof( TPM2B_DIGEST ) - 2;
+    outPublic.t.publicArea.unique.keyedHash.t.size = sizeof( TPM2B_DIGEST ) - 2;
+    rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_OWNER, &sessionsData, &inSensitive, &inPublic,
+            &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
+            &creationTicket, &name, &sessionsDataOut );
+    CheckPassed( rval );
+
+    printf( "\nNew key successfully created in owner hierarchy (RSA 2048).  Handle: 0x%8.8x\n",
+            handle2048rsa );
+    printf( "Name of created primary key: " );
+    PrintSizedBuffer( (TPM2B *)&name );
+  
+    char buffer1contents[] = "test";
+    //char buffer2contents[] = "string";
+
+    TPMI_DH_OBJECT keyHandle = handle2048rsa;
+    TPMT_RSA_DECRYPT inScheme;
+    TPM2B_PUBLIC_KEY_RSA message;
+    TPM2B_PUBLIC_KEY_RSA outData;
+    
+    message.t.size = strlen(buffer1contents);
+    memcpy(message.t.buffer, buffer1contents, message.t.size);
+
+    inScheme.scheme = TPM_ALG_NULL;
+    
+    //printf("keyHandle: %x\n", keyHandle); 
+    rval = Tss2_Sys_RSA_Encrypt(sysContext, keyHandle, &sessionsData, &message, &inScheme, &outsideInfo, &outData, &sessionsDataOut);
+    if( tpmSpecVersion >= 124 )
+        CheckFailed( rval, TPM_RC_S + TPM_RC_1 + TPM_RC_HANDLE );
+    else
+        CheckFailed( rval, TPM_RC_1 + TPM_RC_HANDLE );
+
+    rval = Tss2_Sys_RSA_Encrypt(sysContext, keyHandle, 0, &message, &inScheme, &outsideInfo, &outData, &sessionsDataOut);
+    CheckPassed( rval );
+    
+    for (int i=0; i<message.t.size; i++)
+    	printf("\nlabel size:%d, label buffer:%x, outData size:%d, outData buffer:%x, msg size:%d, msg buffer:%x", outsideInfo.t.size, outsideInfo.t.buffer[i], outData.t.size, outData.t.buffer[i], message.t.size, message.t.buffer[i]);
+    CheckPassed(rval);
+}
+
+
 void TpmTest()
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
@@ -5832,6 +5994,8 @@ void TpmTest()
     TestDictionaryAttackLockReset();
     
     TestCreate();
+
+    TestCreate1();
 
     if( startAuthSessionTestOnly == 1 )
     {

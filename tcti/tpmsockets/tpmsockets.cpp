@@ -147,7 +147,10 @@ TSS2_RC SocketSendTpmCommand(
     {
 #ifdef DEBUG
         (*printfFunction)(NO_PREFIX, "\n" );
-        (*printfFunction)(rmDebugPrefix, "Cmd sent: %s\n", commandCodeStrings[ commandCode - TPM_CC_FIRST ]  );
+        if( commandCode >= TPM_CC_NV_UndefineSpaceSpecial && commandCode <= TPM_CC_PolicyNvWritten )     
+            (*printfFunction)(rmDebugPrefix, "Cmd sent: %s\n", commandCodeStrings[ commandCode - TPM_CC_FIRST ] );            
+        else
+            (*printfFunction)(rmDebugPrefix, "Cmd sent: 0x%4.4x\n", CHANGE_ENDIAN_DWORD(commandCode ) );
 #endif
 #ifdef DEBUG_SOCKETS
         (*printfFunction)(rmDebugPrefix, "Command sent on socket #0x%x: %s\n", TCTI_CONTEXT_INTEL->tpmSock, commandCodeStrings[ commandCode - TPM_CC_FIRST ]  );
