@@ -5290,6 +5290,45 @@ void GetSetDecryptParamTests()
     TeardownSysContext( &decryptParamTestSysContext );
 }
 
+void SysInitializeTests()
+{
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+
+    // NOTE: this should never be done in real applications.
+    // It is only done here for test purposes.
+    TSS2_TCTI_CONTEXT_INTEL tctiContextIntel;
+
+    TSS2_TCTI_CONTEXT *tctiContext = (TSS2_TCTI_CONTEXT *)&tctiContextIntel; 
+
+    TpmClientPrintf( 0, "\nSYS INITIALIZES TESTS:\n" );
+
+    rval = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)0, 10, (TSS2_TCTI_CONTEXT *)1, (TSS2_ABI_VERSION *)1 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+    
+    rval = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, 10, (TSS2_TCTI_CONTEXT *)0, (TSS2_ABI_VERSION *)1 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+    
+    rval = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, 10, (TSS2_TCTI_CONTEXT *)1, (TSS2_ABI_VERSION *)0 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+    
+    rval = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, 10, (TSS2_TCTI_CONTEXT *)1, (TSS2_ABI_VERSION *)1 );
+    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT );
+
+    // NOTE: don't do this in real applications.
+    tctiContextIntel.transmit = (TCTI_TRANSMIT_PTR)0;
+    tctiContextIntel.receive = (TCTI_RECEIVE_PTR)1;
+
+    rval = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, sizeof( _TSS2_SYS_CONTEXT_BLOB ), (TSS2_TCTI_CONTEXT *)&tctiContextIntel, (TSS2_ABI_VERSION *)1 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_TCTI_STRUCTURE );
+
+    // NOTE: don't do this in real applications.
+    tctiContextIntel.transmit = (TCTI_TRANSMIT_PTR)1;
+    tctiContextIntel.receive = (TCTI_RECEIVE_PTR)0;
+
+    rval = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, sizeof( _TSS2_SYS_CONTEXT_BLOB ), (TSS2_TCTI_CONTEXT *)&tctiContextIntel, (TSS2_ABI_VERSION *)1 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_TCTI_STRUCTURE );
+}
+    
 void GetSetEncryptParamTests()
 {
     TPM2B_MAX_NV_BUFFER nvWriteData = { { 4, { 0xde, 0xad, 0xbe, 0xef, } } };
@@ -5972,6 +6011,8 @@ void TpmTest()
 
     AbiVersionTests();
 
+    SysInitializeTests();
+    
     GetSetDecryptParamTests();
    
     rval = PlatformCommand( resMgrTctiContext, MS_SIM_POWER_ON );

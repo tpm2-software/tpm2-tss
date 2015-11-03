@@ -48,14 +48,15 @@
 #define SOCKET int
 #endif
 
+typedef TSS2_RC (*TCTI_TRANSMIT_PTR)( TSS2_TCTI_CONTEXT *tctiContext, size_t size, uint8_t *command);
+typedef TSS2_RC (*TCTI_RECEIVE_PTR) (TSS2_TCTI_CONTEXT *tctiContext, size_t *size, uint8_t *response, int32_t timeout);
+
 /* current Intel version */
 typedef struct {
     uint64_t magic;
     uint32_t version;
-    TSS2_RC (*transmit)( TSS2_TCTI_CONTEXT *tctiContext, size_t size, 
-uint8_t *command);
-    TSS2_RC (*receive) (TSS2_TCTI_CONTEXT *tctiContext, size_t *size, 
-uint8_t *response, int32_t timeout);
+    TCTI_TRANSMIT_PTR transmit;
+    TCTI_RECEIVE_PTR receive;
     void (*finalize) (TSS2_TCTI_CONTEXT *tctiContext);
     TSS2_RC (*cancel) (TSS2_TCTI_CONTEXT *tctiContext);
     TSS2_RC (*getPollHandles) (TSS2_TCTI_CONTEXT *tctiContext, 
