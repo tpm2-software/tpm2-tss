@@ -1,4 +1,6 @@
 *.a
+*.la
+*.lo
 *.o
 *.opensdf
 *.pdb
@@ -6,6 +8,7 @@
 *.suo
 .deps/
 .dirstamp
+.libs
 aclocal.m4
 autom4te.cache/
 [Bb]uild/
@@ -28,3 +31,4 @@ missing
 src_vars.mk
 resourcemgr/resourcemgr
 test/tpmclient/tpmclient
+test/tpmtest/tpmtest
