@@ -33,22 +33,27 @@ ACLOCAL_AMFLAGS = -I m4
 # stuff to build, what that stuff is, and where/if to install said stuff
 sbin_PROGRAMS   = $(resourcemgr)
 noinst_PROGRAMS = $(tpmclient) $(tpmtest)
-lib_LTLIBRARIES = $(libtpm2sapi)
+lib_LTLIBRARIES = $(libtpm2sapi) $(libtpm2tctidev)
 
 # headers and where to install them
 libtpm2sapidir      = $(includedir)/tpm2sapi
 libtpm2sapi_HEADERS = $(SYSAPI_H)
+libtpm2tctidir      = $(includedir)/tpm2tcti
+libtpm2tcti_HEADERS = $(LOCALTPM_H)
 
 # how to build stuff
 resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS)
 resourcemgr_resourcemgr_CXXFLAGS = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS)
-resourcemgr_resourcemgr_LDADD    = $(libtpm2sapi)
+resourcemgr_resourcemgr_LDADD    = $(libtpm2sapi) $(libtpm2tctidev)
 resourcemgr_resourcemgr_LDFLAGS  = $(PTHREAD_LDFLAGS)
 resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(TPMSOCKETS_CXX) \
-    $(LOCALTPM_C) $(COMMON_C)
+    $(COMMON_C)
 
 sysapi_libtpm2sapi_la_CFLAGS  = -I$(srcdir)/sysapi/include/
 sysapi_libtpm2sapi_la_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
+
+tcti_libtpm2tctidev_la_CFLAGS   = $(TCTIDEV_INC)
+tcti_libtpm2tctidev_la_SOURCES  = common/debug.c $(LOCALTPM_C)
 
 test_tpmclient_tpmclient_CFLAGS   = -DSAPI_CLIENT $(TPMCLIENT_INC)
 test_tpmclient_tpmclient_CXXFLAGS = -DSAPI_CLIENT $(TPMCLIENT_INC)
@@ -68,6 +73,9 @@ RESOURCEMGR_INC = -I$(srcdir)/sysapi/include -I$(srcdir)/common \
     -I$(srcdir)/resourcemgr -I$(srcdir)/test/tpmclient
 RESOURCEMGR_C = resourcemgr/resourcemgr.c
 
+TCTIDEV_INC = -I$(srcdir)/sysapi/include -I$(srcdir)/common \
+    -I$(srcdir)/tcti/localtpm
+
 TPMCLIENT_INC = -I$(srcdir)/sysapi/include -I$(srcdir)/tcti/tpmsockets \
     -I$(srcdir)/test/tpmclient -I$(srcdir)/common \
     -I$(srcdir)/test/common/sample -I$(srcdir)/resourcemgr
@@ -79,6 +87,7 @@ TPMTEST_INC = -I$(srcdir)/sysapi/include -I$(srcdir)/tcti/tpmsockets \
 TPMTEST_CXX = test/tpmtest/tpmtest.cpp
 
 libtpm2sapi = sysapi/libtpm2sapi.la
+libtpm2tctidev = tcti/libtpm2tctidev.la
 resourcemgr = resourcemgr/resourcemgr
 tpmclient   = test/tpmclient/tpmclient
 tpmtest     = test/tpmtest/tpmtest
