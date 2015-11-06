@@ -72,7 +72,7 @@ TPML_CCA *supportedCommands;
 
 int GetNumCmdHandles( TPM_CC commandCode, TPML_CCA *supportedCommands )
 {
-    int rval = 0;
+    int rval = -1;
     TPMA_CC cmdAttributes;
     
     if( GetCommandAttributes( commandCode, supportedCommands, &cmdAttributes ) )
@@ -1201,6 +1201,12 @@ TSS2_RC ResourceMgrSendTpmCommand(
     }
 
     numHandles = GetNumCmdHandles( currentCommandCode, supportedCommands );
+    if( numHandles == -1 )
+    {
+        // Since we can't get any info about the command, just send it to TPM and
+        // let TPM deal with it.
+        goto SendCommand;
+    }
     
     for( i = 0; i < numHandles; i++ )
     {
