@@ -59,6 +59,11 @@ void InitSysContextFields(
     SYS_CONTEXT->nextData = SYS_CONTEXT->tpmInBuffPtr;
 }
 
+UINT32 GetCommandSize( TSS2_SYS_CONTEXT *sysContext )
+{
+    return( CHANGE_ENDIAN_DWORD( ((TPM20_Header_In *) SYS_CONTEXT->tpmInBuffPtr)->commandSize  ) );
+}
+
 void CopyCommandHeader( _TSS2_SYS_CONTEXT_BLOB *sysContext, TPM_CC commandCode )
 {
    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;

@@ -1607,6 +1607,12 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                 goto returnFromResourceMgrReceiveTpmResponse;
             }
         }
+
+        if( *response_size == 0 )
+        {
+            rval = TSS2_TCTI_RC_IO_ERROR;
+            goto returnFromResourceMgrReceiveTpmResponse;
+        }
         
         if( rmCommandDebug == 1 )
         {

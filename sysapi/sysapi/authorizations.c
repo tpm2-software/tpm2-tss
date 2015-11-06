@@ -170,39 +170,48 @@ TSS2_RC Tss2_Sys_GetRspAuths(
 
                 if( TPM_ST_SESSIONS == CHANGE_ENDIAN_WORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->tag ) )
                 {
-                    // Before copying, make sure that response auths are correct by
-                    // calculating size and making sure it's correct.
                     for( i = 0; i < rspAuthsArray->rspAuthsCount; i++ )
                     {
+                        // Before copying, make sure that we aren't going to go past the output buffer + the response size.
+                        if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->responseSize ) ) )
+                        {
+                            rval = TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+                            break;
+                        }
+
+                        otherData = (UINT8 *)otherData + sizeof( UINT16 ) + CHANGE_ENDIAN_WORD( *(UINT16 *)otherData ); // Nonce
+                        if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->responseSize ) ) )
+                        {
+                            rval = TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+                            break;
+                        }
+
+                        otherData = (UINT8 *)otherData + 1;  // session attributes.
+                        if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->responseSize ) ) )
+                        {
+                            rval = TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+                            break;
+                        }
+
+                        otherData = (UINT8 *)otherData + sizeof( UINT16 ) + CHANGE_ENDIAN_WORD( *(UINT16 *)otherData ); // hmac
+                        if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->responseSize ) ) )
+                        {
+                            rval = TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+                            break;
+                        }
+
                         // Make sure that we don't run past the valid authorizations.
                         if( ( i + 1 ) > rspAuthsArray->rspAuthsCount )
                         {
                             rval = TSS2_SYS_RC_INVALID_SESSIONS;
                             break;
                         }
-
-                        if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->responseSize ) ) )
-                        {
-                            rval = TSS2_SYS_RC_INVALID_SESSIONS;
-                            break;
-                        }
-                        otherData = (UINT8 *)otherData + sizeof( UINT16 ) + CHANGE_ENDIAN_WORD( *(UINT16 *)otherData ); // Nonce
-                        if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->responseSize ) ) )
-                        {
-                            rval = TSS2_SYS_RC_INVALID_SESSIONS;
-                            break;
-                        }
-                        otherData = (UINT8 *)otherData + 1;  // session attributes.
-                        if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->responseSize ) ) )
-                        {
-                            rval = TSS2_SYS_RC_INVALID_SESSIONS;
-                            break;
-                        }
-                        otherData = (UINT8 *)otherData + sizeof( UINT16 ) + CHANGE_ENDIAN_WORD( *(UINT16 *)otherData ); // hmac
                     }
                     if( rval == TSS2_RC_SUCCESS )
                     {
                         // Check that number of auths is equal to the number asked for.
+                        // Can't see how this would actually happen, but left it in as a failsafe against
+                        // future code modifications.
                         if( i != rspAuthsArray->rspAuthsCount )
                         {
                             rval = TSS2_SYS_RC_INVALID_SESSIONS;

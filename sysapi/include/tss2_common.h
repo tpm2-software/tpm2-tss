@@ -152,6 +152,9 @@ typedef struct {
 #define TSS2_BASE_RC_NOT_SUPPORTED         21 /* Functionality not supported. */
 #define TSS2_BASE_RC_BAD_TCTI_STRUCTURE    22 /* TCTI context is bad. */
 
+// Base error codes from 0xf800 - 0xffff are reserved for level- and implementation-specific
+// errors.
+#define TSS2_LEVEL_IMPLEMENTATION_SPECIFIC_OFFSET 0xf800
 
 #define TSS2_RC_SUCCESS                         ((TSS2_RC)0)
 
