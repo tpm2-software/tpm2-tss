@@ -134,25 +134,26 @@ TSS2_RC Tss2_Sys_GetRspAuths(
     TSS2_RC rval = TSS2_RC_SUCCESS;
     void *otherData, *otherDataSaved;
 
-    if( sysContext == NULL )
+    if( sysContext == NULL || rspAuthsArray == NULL )
     {
         rval = TSS2_SYS_RC_BAD_REFERENCE;
     }
     else if( SYS_CONTEXT->previousStage != CMD_STAGE_RECEIVE_RESPONSE ||
-            CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->responseCode ) != TPM_RC_SUCCESS )
+            CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->responseCode ) != TPM_RC_SUCCESS ||
+            SYS_CONTEXT->authAllowed == 0 )
     {
         rval = TSS2_SYS_RC_BAD_SEQUENCE;
     }
-    else if( rspAuthsArray != 0 )
+    else
     {
-        if( SYS_CONTEXT->authAllowed != 1 )
+        int i = 0;
+
+        if( rspAuthsArray->rspAuthsCount == 0 )
         {
-            rspAuthsArray->rspAuthsCount = 0;
+            rval = TSS2_SYS_RC_BAD_VALUE;
         }
         else
         {
-            int i = 0;
-
             if( rspAuthsArray->rspAuthsCount != SYS_CONTEXT->authsCount )
             {
                 rval = TSS2_SYS_RC_INVALID_SESSIONS;
@@ -175,28 +176,28 @@ TSS2_RC Tss2_Sys_GetRspAuths(
                         // Before copying, make sure that we aren't going to go past the output buffer + the response size.
                         if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->responseSize ) ) )
                         {
-                            rval = TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+                            rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
                             break;
                         }
 
                         otherData = (UINT8 *)otherData + sizeof( UINT16 ) + CHANGE_ENDIAN_WORD( *(UINT16 *)otherData ); // Nonce
                         if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->responseSize ) ) )
                         {
-                            rval = TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+                            rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
                             break;
                         }
 
                         otherData = (UINT8 *)otherData + 1;  // session attributes.
                         if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->responseSize ) ) )
                         {
-                            rval = TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+                            rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
                             break;
                         }
 
                         otherData = (UINT8 *)otherData + sizeof( UINT16 ) + CHANGE_ENDIAN_WORD( *(UINT16 *)otherData ); // hmac
                         if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->responseSize ) ) )
                         {
-                            rval = TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+                            rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
                             break;
                         }
 
