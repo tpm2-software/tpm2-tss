@@ -28,10 +28,19 @@
 #include <tpm20.h>   
 #include <tss2_sysapi_util.h>
 
-void Tss2_Sys_Finalize(
+TSS2_RC Tss2_Sys_Finalize(
     TSS2_SYS_CONTEXT *sysContext
     )
 {
-    // Nothing needs to be done currently.
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+
+    if( sysContext == NULL )
+    {
+        rval = TSS2_SYS_RC_BAD_REFERENCE;
+    }
+    
+    // Nothing else needs to be done currently.
+
+    return( rval );
 }
 

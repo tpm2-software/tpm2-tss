@@ -5330,6 +5330,40 @@ void SysInitializeTests()
     CheckFailed( rval, TSS2_SYS_RC_BAD_TCTI_STRUCTURE );
 }
 
+void SysFinalizeTests()
+{
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+
+    TpmClientPrintf( 0, "\nSYS FINALIZE TESTS:\n" );
+
+    rval = Tss2_Sys_Finalize( 0 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+
+    // Note:  other cases tested by other tests.
+}
+
+void GetContextSizeTests()
+{
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+    TSS2_SYS_CONTEXT *testSysContext;
+    
+    TpmClientPrintf( 0, "\nSYS GETCONTEXTSIZE TESTS:\n" );
+
+    testSysContext = InitSysContext( 9, resMgrTctiContext, &abiVersion );
+    if( testSysContext == 0 )
+    {
+        InitSysContextFailure();
+    }
+
+    rval = Tss2_Sys_Startup( testSysContext, TPM_SU_CLEAR );
+    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_BUFFER );
+
+       rval = Tss2_Sys_GetTestResult_Prepare( testSysContext );
+    CheckPassed( rval );
+
+    // Note:  other cases tested by other tests.
+}
+
 void  RmZeroSizedResponseTest()
 {
     SESSION *encryptSession;
@@ -6295,6 +6329,10 @@ void TpmTest()
 
     SysInitializeTests();
 
+    SysFinalizeTests();
+
+    GetContextSizeTests();
+    
     GetSetDecryptParamTests();
 
 #ifdef _WIN32
