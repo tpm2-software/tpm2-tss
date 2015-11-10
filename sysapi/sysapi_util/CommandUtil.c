@@ -173,6 +173,10 @@ TSS2_RC CommonComplete( TSS2_SYS_CONTEXT *sysContext )
 
         SYS_CONTEXT->rpBuffer = SYS_CONTEXT->nextData;
     }
+    else
+    {
+        SYS_CONTEXT->rval = TSS2_SYS_RC_BAD_SEQUENCE;
+    }
 
     return SYS_CONTEXT->rval;
 }

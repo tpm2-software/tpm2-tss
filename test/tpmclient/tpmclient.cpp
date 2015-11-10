@@ -588,66 +588,66 @@ void TestSapiApis()
     // First test the one-call interface.
     //
     rval = Tss2_Sys_GetTestResult( sysContext, 0, &outData, &testResult, 0 );
-    CheckPassed(rval);
+    CheckPassed(rval); // #1
     
     //
     // Now test the syncronous, non-one-call interface.
     //
     rval = Tss2_Sys_GetTestResult_Prepare( sysContext );
-    CheckPassed(rval);
+    CheckPassed(rval); // #2
 
     // Execute the command syncronously.
     rval = Tss2_Sys_Execute( sysContext );
-    CheckPassed(rval);
+    CheckPassed(rval);// #3
 
     // Get the command results
     rval = Tss2_Sys_GetTestResult_Complete( sysContext, &outData, &testResult );
-    CheckPassed(rval);
+    CheckPassed(rval); // #4
 
     //
     // Now test the asyncronous, non-one-call interface.
     //
     rval = Tss2_Sys_GetTestResult_Prepare( sysContext );
-    CheckPassed(rval);
+    CheckPassed(rval); // #5
 
     // Execute the command asyncronously.
     rval = Tss2_Sys_ExecuteAsync( sysContext );
-    CheckPassed(rval);
+    CheckPassed(rval); // #6
 
     // Get the command response. Wait a maximum of 20ms
     // for response.
     rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckPassed(rval);
+    CheckPassed(rval); // #7
 
     // Get the command results
     rval = Tss2_Sys_GetTestResult_Complete( sysContext, &outData, &testResult );
-    CheckPassed(rval);
+    CheckPassed(rval); // #8
 
     // Check case of ExecuteFinish receving TPM error code.
     // Subsequent _Complete call should fail with SEQUENCE error.
     rval = TpmReset();
-    CheckPassed(rval);
+    CheckPassed(rval); // #9
     
     rval = Tss2_Sys_GetCapability_Prepare( sysContext,
             TPM_CAP_TPM_PROPERTIES, TPM_PT_ACTIVE_SESSIONS_MAX,
             1 );
-    CheckPassed(rval);
+    CheckPassed(rval); // #10
 
     // Execute the command asyncronously.
     rval = Tss2_Sys_ExecuteAsync( sysContext );
-    CheckPassed(rval);
+    CheckPassed(rval); // #11
 
     // Get the command response. Wait a maximum of 20ms
     // for response.
     rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckFailed( rval, TPM_RC_INITIALIZE );
+    CheckFailed( rval, TPM_RC_INITIALIZE ); // #12
 
     // Get the command results
     rval = Tss2_Sys_GetCapability_Complete( sysContext, 0, 0 );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #13
 
     rval = Tss2_Sys_Startup( sysContext, TPM_SU_CLEAR );
-    CheckPassed(rval);
+    CheckPassed(rval); // #14
 }
 
 
@@ -5358,10 +5358,78 @@ void GetContextSizeTests()
     rval = Tss2_Sys_Startup( testSysContext, TPM_SU_CLEAR );
     CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_BUFFER );
 
-       rval = Tss2_Sys_GetTestResult_Prepare( testSysContext );
-    CheckPassed( rval );
+	rval = Tss2_Sys_GetTestResult_Prepare( testSysContext );
+	CheckPassed( rval );
 
     // Note:  other cases tested by other tests.
+
+    TeardownSysContext( &testSysContext );
+}
+
+void GetTctiContextTests()
+{
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+    TSS2_SYS_CONTEXT *testSysContext;
+    TSS2_TCTI_CONTEXT *tctiContext;
+            
+    TpmClientPrintf( 0, "\nSYS GETTCTICONTEXT TESTS:\n" );
+
+    testSysContext = InitSysContext( 9, resMgrTctiContext, &abiVersion );
+    if( testSysContext == 0 )
+    {
+        InitSysContextFailure();
+    }
+
+    rval = Tss2_Sys_GetTctiContext( testSysContext, 0 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+    
+    rval = Tss2_Sys_GetTctiContext( 0, &tctiContext );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+
+    TeardownSysContext( &testSysContext );
+}
+
+void PrepareTests()
+{
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+    TSS2_SYS_CONTEXT *testSysContext;
+
+    TpmClientPrintf( 0, "\nSYS PREPARE TESTS:\n" );
+
+    testSysContext = InitSysContext( 0, resMgrTctiContext, &abiVersion );
+    if( testSysContext == 0 )
+    {
+        InitSysContextFailure();
+    }
+
+    // Test for bad reference.
+    rval = Tss2_Sys_GetTestResult_Prepare( 0 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+
+    // Test for bad sequence:  after ExecuteAsync
+    rval = Tss2_Sys_GetTestResult_Prepare( testSysContext );
+    CheckPassed( rval );
+
+    rval = Tss2_Sys_ExecuteAsync( testSysContext );
+    CheckPassed( rval );
+
+    rval = Tss2_Sys_GetTestResult_Prepare( testSysContext );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE );
+
+    rval = Tss2_Sys_ExecuteFinish( testSysContext, -1 );
+    CheckPassed( rval );
+
+    // Test for bad sequence:  after Execute
+    rval = Tss2_Sys_GetTestResult_Prepare( testSysContext );
+    CheckPassed( rval );
+
+    rval = Tss2_Sys_Execute( testSysContext );
+    CheckPassed( rval );
+
+    rval = Tss2_Sys_GetTestResult_Prepare( testSysContext );
+    CheckPassed( rval );
+
+    TeardownSysContext( &testSysContext );
 }
 
 void  RmZeroSizedResponseTest()
@@ -6332,6 +6400,8 @@ void TpmTest()
     SysFinalizeTests();
 
     GetContextSizeTests();
+
+    GetTctiContextTests();
     
     GetSetDecryptParamTests();
 
@@ -6352,6 +6422,8 @@ void TpmTest()
 
     CmdRspAuthsTests();
 	    
+    PrepareTests();
+
     // Clear DA lockout.
     TestDictionaryAttackLockReset();
 

@@ -41,6 +41,8 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
     }
     else
     {
+        SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
+
         SYS_CONTEXT->authsCount = 0;
 
         if( cmdAuthsArray->cmdAuthsCount > MAX_SESSION_NUM )
@@ -147,6 +149,8 @@ TSS2_RC Tss2_Sys_GetRspAuths(
     else
     {
         int i = 0;
+    
+        SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
 
         if( rspAuthsArray->rspAuthsCount == 0 )
         {

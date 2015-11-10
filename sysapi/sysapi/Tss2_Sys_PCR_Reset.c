@@ -38,6 +38,8 @@ TPM_RC Tss2_Sys_PCR_Reset_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
+    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
+    
     CommonPreparePrologue( sysContext, TPM_CC_PCR_Reset );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), pcrHandle, &(SYS_CONTEXT->rval) );
