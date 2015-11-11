@@ -5144,19 +5144,23 @@ void GetSetDecryptParamTests()
         InitSysContextFailure();
     }
 
-    // Test for bad sequence
+    // Test for bad sequence:  Tss2_Sys_GetDecryptParam
     rval = Tss2_Sys_GetDecryptParam( decryptParamTestSysContext, &decryptParamSize, &decryptParamBuffer );
     CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE );
-    
+
+    // Test for bad sequence:  Tss2_Sys_SetDecryptParam
     rval = Tss2_Sys_SetDecryptParam( decryptParamTestSysContext, 4, &( nvWriteData.t.buffer[0] ) );
     CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE );
 
+    // NOTE:  Two tests for BAD_SEQUENCE for GetDecryptParam and SetDecryptParam after ExecuteAsync
+    // are in the GetSetEncryptParamTests function, just because it's easier to do this way.
+    
     // Do Prepare.
     rval = Tss2_Sys_NV_Write_Prepare( decryptParamTestSysContext, TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST, &nvWriteData1, 0x55aa ); 
     CheckPassed( rval );
 
-    // Test for bad reference
+    // Test for bad reference:  Tss2_Sys_GetDecryptParam
     rval = Tss2_Sys_GetDecryptParam( 0, &decryptParamSize, &decryptParamBuffer );
     CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
     
@@ -5165,12 +5169,15 @@ void GetSetDecryptParamTests()
     
     rval = Tss2_Sys_GetDecryptParam( decryptParamTestSysContext, &decryptParamSize, 0 );
     CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+
     
+    // Test for bad reference:  Tss2_Sys_SetDecryptParam
     rval = Tss2_Sys_SetDecryptParam( decryptParamTestSysContext, 4, 0 );
     CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
 
     rval = Tss2_Sys_SetDecryptParam( 0, 4, 0 );
     CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+    
 
     // Test for bad size.
     rval = Tss2_Sys_SetDecryptParam( decryptParamTestSysContext, 5, &( nvWriteData.t.buffer[0] ) );
@@ -5730,6 +5737,7 @@ void GetSetEncryptParamTests()
     TSS2_SYS_RSP_AUTHS sessionsDataOut = { 1, &sessionDataOutArray[0] };
 
     TPM2B_MAX_NV_BUFFER nvReadData;
+    const uint8_t 		*cpBuffer;
     
     TpmClientPrintf( 0, "\nGET/SET ENCRYPT PARAM TESTS:\n" );
 
@@ -5766,11 +5774,40 @@ void GetSetEncryptParamTests()
             TPM20_INDEX_PASSWORD_TEST, &nvWriteData, 0 ); 
     CheckPassed( rval );
 
-    rval = Tss2_Sys_NV_Write( sysContext, TPM20_INDEX_PASSWORD_TEST, TPM20_INDEX_PASSWORD_TEST, &sessionsData, &nvWriteData, 0, &sessionsDataOut ); 
+    // NOTE: add GetCpBuffer tests here, just because its easier.
+    rval = Tss2_Sys_GetCpBuffer( 0, (size_t *)4, (const uint8_t **)4 );
+	CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+
+    rval = Tss2_Sys_GetCpBuffer( sysContext, (size_t *)0, (const uint8_t **)4 );
+	CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+
+    rval = Tss2_Sys_GetCpBuffer( sysContext, (size_t *)4, (const uint8_t **)0 );
+	CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+
+
+    rval = Tss2_Sys_SetCmdAuths( sysContext, &sessionsData );
     CheckPassed( rval );
 
-    rval = Tss2_Sys_GetEncryptParam( sysContext, &encryptParamSize, &encryptParamBuffer );
-    CheckFailed( rval, TSS2_SYS_RC_NO_ENCRYPT_PARAM );
+    rval = Tss2_Sys_ExecuteAsync( sysContext );
+    CheckPassed( rval );
+
+    // NOTE: Stick two tests for BAD_SEQUENCE for GetDecryptParam and SetDecryptParam here, just
+    // because it's easier to do this way.
+    rval = Tss2_Sys_GetDecryptParam( sysContext, (size_t *)4, (const uint8_t **)4 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE );
+
+    rval = Tss2_Sys_SetDecryptParam( sysContext, 10, (uint8_t *)4 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE );
+
+    // NOTE: Stick test for BAD_SEQUENCE for GetCpBuffer here, just
+    // because it's easier to do this way.
+    rval = Tss2_Sys_GetCpBuffer( sysContext, (size_t *)4, &cpBuffer );
+	CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE );
+    
+    // Now finish the write command so that TPM isn't stuck trying
+    // to send a response.
+    rval = Tss2_Sys_ExecuteFinish( sysContext, -1 ); 
+    CheckPassed( rval );
 
     // Now read it and do tests on get/set encrypt functions
     rval = Tss2_Sys_NV_Read_Prepare( sysContext, TPM20_INDEX_PASSWORD_TEST, TPM20_INDEX_PASSWORD_TEST, 4, 0 ); 
