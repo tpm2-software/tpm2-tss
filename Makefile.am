@@ -33,13 +33,13 @@ ACLOCAL_AMFLAGS = -I m4
 # stuff to build, what that stuff is, and where/if to install said stuff
 sbin_PROGRAMS   = $(resourcemgr)
 noinst_PROGRAMS = $(tpmclient) $(tpmtest)
-lib_LTLIBRARIES = $(libtpm2sapi) $(libtpm2tctidev)
+lib_LTLIBRARIES = $(libtpm2sapi) $(libtpm2tctidev) $(libtpm2tctisock)
 
 # headers and where to install them
 libtpm2sapidir      = $(includedir)/tpm2sapi
 libtpm2sapi_HEADERS = $(SYSAPI_H)
 libtpm2tctidir      = $(includedir)/tpm2tcti
-libtpm2tcti_HEADERS = $(LOCALTPM_H)
+libtpm2tcti_HEADERS = $(LOCALTPM_H) $(TPMSOCKETS_H)
 
 # how to build stuff
 resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS)
@@ -55,17 +55,19 @@ sysapi_libtpm2sapi_la_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
 tcti_libtpm2tctidev_la_CFLAGS   = $(TCTIDEV_INC)
 tcti_libtpm2tctidev_la_SOURCES  = common/debug.c $(LOCALTPM_C)
 
+tcti_libtpm2tctisock_la_CFLAGS   = -DSAPI_CLIENT $(TCTISOCK_INC)
+tcti_libtpm2tctisock_la_CXXFLAGS = -DSAPI_CLIENT $(TCTISOCK_INC)
+tcti_libtpm2tctisock_la_SOURCES  = common/debug.c $(TPMSOCKETS_CXX)
+
 test_tpmclient_tpmclient_CFLAGS   = -DSAPI_CLIENT $(TPMCLIENT_INC)
 test_tpmclient_tpmclient_CXXFLAGS = -DSAPI_CLIENT $(TPMCLIENT_INC)
-test_tpmclient_tpmclient_LDADD    = $(libtpm2sapi)
-test_tpmclient_tpmclient_SOURCES  = $(TPMCLIENT_CXX) $(TPMSOCKETS_CXX) \
-    $(COMMON_C) $(SAMPLE_C)
+test_tpmclient_tpmclient_LDADD    = $(libtpm2sapi) $(libtpm2tctisock)
+test_tpmclient_tpmclient_SOURCES  = $(TPMCLIENT_CXX) $(COMMON_C) $(SAMPLE_C)
 
 test_tpmtest_tpmtest_CFLAGS   = -DSAPI_CLIENT $(TPMTEST_INC)
 test_tpmtest_tpmtest_CXXFLAGS = -DSAPI_CLIENT $(TPMTEST_INC)
-test_tpmtest_tpmtest_LDADD    = $(libtpm2sapi)
-test_tpmtest_tpmtest_SOURCES  = $(TPMTEST_CXX) $(TPMSOCKETS_CXX) \
-    $(COMMON_C) $(SAMPLE_C)
+test_tpmtest_tpmtest_LDADD    = $(libtpm2sapi) $(libtpm2tctisock)
+test_tpmtest_tpmtest_SOURCES  = $(TPMTEST_CXX) $(COMMON_C) $(SAMPLE_C)
 
 # simple variables
 RESOURCEMGR_INC = -I$(srcdir)/sysapi/include -I$(srcdir)/common \
@@ -75,6 +77,8 @@ RESOURCEMGR_C = resourcemgr/resourcemgr.c
 
 TCTIDEV_INC = -I$(srcdir)/sysapi/include -I$(srcdir)/common \
     -I$(srcdir)/tcti/localtpm
+TCTISOCK_INC = -I$(srcdir)/sysapi/include -I$(srcdir)/common \
+    -I$(srcdir)/tcti/tpmsockets
 
 TPMCLIENT_INC = -I$(srcdir)/sysapi/include -I$(srcdir)/tcti/tpmsockets \
     -I$(srcdir)/test/tpmclient -I$(srcdir)/common \
@@ -88,6 +92,7 @@ TPMTEST_CXX = test/tpmtest/tpmtest.cpp
 
 libtpm2sapi = sysapi/libtpm2sapi.la
 libtpm2tctidev = tcti/libtpm2tctidev.la
+libtpm2tctisock = tcti/libtpm2tctisock.la
 resourcemgr = resourcemgr/resourcemgr
 tpmclient   = test/tpmclient/tpmclient
 tpmtest     = test/tpmtest/tpmtest
