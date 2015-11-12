@@ -155,7 +155,7 @@ TPM_RC FinishCommand( _TSS2_SYS_CONTEXT_BLOB *sysContext,
     const TSS2_SYS_CMD_AUTHS *cmdAuthsArray, UINT32 *responseSize );
 
 UINT16 GetDigestSize( TPM_ALG_ID authHash );
-
+UINT32 GetCommandSize( TSS2_SYS_CONTEXT *sysContext );
 TSS2_RC CopySessionsDataIn( void **otherData, const TSS2_SYS_CMD_AUTHS *pSessionDataIn );
 TSS2_RC CopySessionDataIn( void **otherData, TPMS_AUTH_COMMAND const *sessionData, UINT32 *sessionSizePtr );
 TSS2_RC CopySessionDataOut( TPMS_AUTH_RESPONSE *sessionData, void **otherData, UINT8* outBuffPtr, UINT32 outBuffSize );

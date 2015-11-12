@@ -33,7 +33,7 @@
 #include "tss2_sysapi_util.h"
 #include <stdlib.h>
 
-#define TSS2_RESMGR_BASE_ERROR                      0x100
+#define TSS2_RESMGR_BASE_ERROR                      TSS2_LEVEL_IMPLEMENTATION_SPECIFIC_OFFSET
 #define TSS2_RESMGR_MEMALLOC_FAILED                 ((TSS2_RC)(1 + TSS2_RESMGR_BASE_ERROR + TSS2_RESMGR_ERROR_LEVEL))
 #define TSS2_RESMGR_FIND_FAILED                     ((TSS2_RC)(2 + TSS2_RESMGR_BASE_ERROR + TSS2_RESMGR_ERROR_LEVEL))
 #define TSS2_RESMGR_BAD_FINDFIELD                   ((TSS2_RC)(3 + TSS2_RESMGR_BASE_ERROR + TSS2_RESMGR_ERROR_LEVEL))

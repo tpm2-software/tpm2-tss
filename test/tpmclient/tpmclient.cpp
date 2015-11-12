@@ -551,7 +551,8 @@ void TestTpmStartup()
 
     // Execute the command syncronously.
     rval = Tss2_Sys_Execute( sysContext );
-
+    CheckPassed( rval );
+    
     // Cycle power using simulator interface.
     rval = PlatformCommand( resMgrTctiContext, MS_SIM_POWER_OFF );
     CheckPassed( rval );
@@ -5300,7 +5301,7 @@ void SysInitializeTests()
 
     TSS2_TCTI_CONTEXT *tctiContext = (TSS2_TCTI_CONTEXT *)&tctiContextIntel; 
 
-    TpmClientPrintf( 0, "\nSYS INITIALIZES TESTS:\n" );
+    TpmClientPrintf( 0, "\nSYS INITIALIZE TESTS:\n" );
 
     rval = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)0, 10, (TSS2_TCTI_CONTEXT *)1, (TSS2_ABI_VERSION *)1 );
     CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
@@ -5328,7 +5329,285 @@ void SysInitializeTests()
     rval = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, sizeof( _TSS2_SYS_CONTEXT_BLOB ), (TSS2_TCTI_CONTEXT *)&tctiContextIntel, (TSS2_ABI_VERSION *)1 );
     CheckFailed( rval, TSS2_SYS_RC_BAD_TCTI_STRUCTURE );
 }
+
+void  RmZeroSizedResponseTest()
+{
+    SESSION *encryptSession;
+    TPM2B_NONCE nonceCaller;
+    TPMT_SYM_DEF symmetric;
+	TSS2_RC rval = TSS2_RC_SUCCESS;
+
+    //
+    // Tests what happens in RM when receive comes back with 0 sized response.
+    // This happens when a command is sent to the simulator but the simulator
+    // isn't "powered on".
+    // Added this test because this took me a while to understand, and I
+    // never want to have to debug this again.
+    //
     
+    TpmClientPrintf( 0, "\nRM ZERO SIZED RESPONSE TEST:\n" );
+
+    rval = PlatformCommand( resMgrTctiContext, MS_SIM_POWER_OFF );
+
+    nonceCaller.t.size = 1;
+    nonceCaller.t.buffer[0] = 0xa5;
+    
+    // AES encryption/decryption and CFB mode.
+    symmetric.algorithm = TPM_ALG_AES;
+    symmetric.keyBits.aes = 128;
+    symmetric.mode.aes = TPM_ALG_CFB;
+
+    // Start policy session for encrypt session.
+    rval = StartAuthSessionWithParams( &encryptSession,
+            TPM_RH_NULL, 0, TPM_RH_NULL, 0, &nonceCaller, 0, TPM_SE_HMAC,
+            &symmetric, TPM_ALG_SHA256 );
+    CheckFailed( rval, TSS2_TCTI_RC_IO_ERROR );
+}
+
+
+void CmdRspAuthsTests()
+{
+    SESSION *encryptSession, *decryptSession, *auditSession;
+    TPM2B_NONCE nonceCaller, nonceTpm;
+    TPMT_SYM_DEF symmetric;
+	TSS2_RC rval = TSS2_RC_SUCCESS;
+    int i;
+    TPM2B_ENCRYPTED_SECRET	encryptedSalt; 
+	UINT32 savedMaxCommandSize, savedResponseSize;
+
+    TSS2_SYS_CONTEXT *otherSysContext;
+    TPM_HANDLE testSessionHandle;
+
+    TPMS_AUTH_COMMAND encryptCmdAuth, decryptCmdAuth, auditCmdAuth;
+    TPMS_AUTH_COMMAND *cmdAuthArray[3] = { &encryptCmdAuth, &decryptCmdAuth, &auditCmdAuth };
+    TSS2_SYS_CMD_AUTHS cmdAuths = { 3, &cmdAuthArray[0] };
+
+    TPMS_AUTH_RESPONSE encryptRspAuth, decryptRspAuth, auditRspAuth;
+    TPMS_AUTH_RESPONSE *rspAuthArray[3] =
+            { &encryptRspAuth, &decryptRspAuth, &auditRspAuth };
+    TSS2_SYS_RSP_AUTHS rspAuths = { 3, &rspAuthArray[0] };
+    
+    TpmClientPrintf( 0, "\nSETCMDAUTHS TESTS:\n" );
+
+    nonceCaller.t.size = SHA256_DIGEST_SIZE;
+
+    for( i = 0; i < nonceCaller.t.size; i++ )
+    {
+        nonceCaller.t.buffer[i] = 0xa5;
+    }
+    
+    // AES encryption/decryption and CFB mode.
+    symmetric.algorithm = TPM_ALG_AES;
+    symmetric.keyBits.aes = 128;
+    symmetric.mode.aes = TPM_ALG_CFB;
+
+    // Start encrypt session.
+    rval = StartAuthSessionWithParams( &encryptSession,
+            TPM_RH_NULL, 0, TPM_RH_NULL, 0, &nonceCaller, 0, TPM_SE_HMAC,
+            &symmetric, TPM_ALG_SHA256 );
+    CheckPassed( rval ); // #1
+
+    // Start decrypt session.
+    rval = StartAuthSessionWithParams( &decryptSession,
+            TPM_RH_NULL, 0, TPM_RH_NULL, 0, &nonceCaller, 0, TPM_SE_HMAC,
+            &symmetric, TPM_ALG_SHA256 );
+    CheckPassed( rval );  // #2
+
+    // Start audit session.
+    rval = StartAuthSessionWithParams( &auditSession,
+            TPM_RH_NULL, 0, TPM_RH_NULL, 0, &nonceCaller, 0, TPM_SE_HMAC,
+            &symmetric, TPM_ALG_SHA256 );
+    CheckPassed( rval ); // #3
+
+    encryptCmdAuth.sessionHandle = encryptSession->sessionHandle;
+    encryptCmdAuth.nonce.t.size = 0;
+    *( (UINT8 *)((void *)&encryptCmdAuth.sessionAttributes ) ) = 0;
+    encryptCmdAuth.sessionAttributes.encrypt = 1;
+    encryptCmdAuth.hmac.t.size = 0;
+
+    decryptCmdAuth.sessionHandle = decryptSession->sessionHandle;
+    decryptCmdAuth.nonce.t.size = 0;
+    *( (UINT8 *)((void *)&decryptCmdAuth.sessionAttributes ) ) = 0;
+    decryptCmdAuth.sessionAttributes.decrypt = 1;
+    decryptCmdAuth.hmac.t.size = 0;
+
+    auditCmdAuth.sessionHandle = auditSession->sessionHandle;
+    auditCmdAuth.nonce.t.size = 0;
+    *( (UINT8 *)((void *)&auditCmdAuth.sessionAttributes ) ) = 0;
+    auditCmdAuth.sessionAttributes.audit = 1;
+    auditCmdAuth.hmac.t.size = 0;
+
+    // Test for bad sequence.
+    rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #4
+
+    encryptedSalt.t.size = 0;
+    rval = Tss2_Sys_StartAuthSession_Prepare( sysContext,
+            TPM_RH_NULL, TPM_RH_NULL, &nonceCaller, &encryptedSalt, TPM_SE_HMAC,
+            &symmetric, TPM_ALG_SHA256 );
+    CheckPassed( rval ); // #5
+
+    // Test for bad reference.
+    rval = Tss2_Sys_SetCmdAuths( 0, &cmdAuths );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #6
+
+    rval = Tss2_Sys_SetCmdAuths( sysContext, 0 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #7
+
+    // Test for count == 0; this should pass.
+    cmdAuths.cmdAuthsCount= 0;
+    rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
+    CheckPassed( rval ); // #8
+
+    // Test for bad value.
+    cmdAuths.cmdAuthsCount= 3;
+    cmdAuthArray[0] = 0;
+    rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_VALUE ); // #9
+
+    cmdAuthArray[0] = &encryptCmdAuth;
+    cmdAuthArray[1] = 0;
+    rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_VALUE ); // #10
+
+    cmdAuthArray[1] = &decryptCmdAuth;
+    cmdAuthArray[2] = 0;
+    rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_VALUE ); // #11
+    cmdAuthArray[2] = &auditCmdAuth;
+    
+    // Test for insufficient context.
+    cmdAuths.cmdAuthsCount= 0;
+    savedMaxCommandSize = ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize;
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = sizeof( TPM20_Header_In ) + 3 * sizeof( TPM_HANDLE ) - 1;
+    rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
+    CheckPassed( rval ); // #12
+    
+    cmdAuths.cmdAuthsCount= 0;
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = sizeof( TPM20_Header_In ) + 3 * sizeof( TPM_HANDLE );
+    rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
+    CheckPassed( rval );// #13
+    
+    cmdAuths.cmdAuthsCount= 3;
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = sizeof( TPM20_Header_In ) + 3 * sizeof( TPM_HANDLE );
+    rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
+    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_BUFFER ); // #14
+
+    // Do successful one; use this to get size of command.
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = savedMaxCommandSize;
+    rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
+    CheckPassed( rval ); // #15
+
+    // Then set maxCommandSize to the the previously gotten commandSize - 1.  This should fail.
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = GetCommandSize( sysContext ) - 1;
+    rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
+    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_BUFFER ); // #16
+    
+    // Reset size of sysContext.
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = savedMaxCommandSize;
+
+    // Setup for response auths test.
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = CHANGE_ENDIAN_DWORD( savedMaxCommandSize );
+    rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
+    CheckPassed( rval ); // #15
+
+	TpmClientPrintf( 0, "\nGETRSPAUTHS TESTS:\n" );
+
+    // Test for bad sequence.
+    rval = Tss2_Sys_GetRspAuths( sysContext, &rspAuths );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #1
+
+    otherSysContext = InitSysContext( 0, resMgrTctiContext, &abiVersion );
+    if( otherSysContext == 0 )
+    {
+        InitSysContextFailure();
+    }
+
+    //
+    // Test for command that failed:  invalid handle.
+    //
+    rval = Tss2_Sys_StartAuthSession_Prepare( otherSysContext,
+            0xffffffff, TPM_RH_NULL, &nonceCaller, &encryptedSalt, TPM_SE_HMAC,
+            &symmetric, TPM_ALG_SHA256 );
+    CheckPassed( rval ); // #2
+
+    rval = Tss2_Sys_Execute( otherSysContext );
+    CheckFailed( rval, TPM_RC_VALUE | TPM_RC_1 | TPM_RC_H ); // #3
+
+    rval = Tss2_Sys_GetRspAuths( otherSysContext, &rspAuths );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #4
+
+    //
+    // Test for command that can never take sessions.
+    //
+    rval = Tss2_Sys_ReadClock_Prepare( otherSysContext );
+    CheckPassed( rval ); // #5
+
+    rval = Tss2_Sys_Execute( otherSysContext );
+    CheckPassed( rval ); // #6
+
+    rval = Tss2_Sys_GetRspAuths( otherSysContext, &rspAuths );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #7
+
+    // Setup for testing for bad references and other conditions.
+    rval = Tss2_Sys_StartAuthSession_Prepare( sysContext,
+            TPM_RH_NULL, TPM_RH_NULL, &nonceCaller, &encryptedSalt, TPM_SE_HMAC,
+            &symmetric, TPM_ALG_SHA256 );
+    CheckPassed( rval ); // #8
+
+    cmdAuths.cmdAuthsCount = 2;
+    rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
+    CheckPassed( rval ); // #9
+	
+	rval = Tss2_Sys_Execute( sysContext );
+    CheckPassed( rval ); // #10
+
+    // Test for bad reference.
+    rval = Tss2_Sys_GetRspAuths( 0, &rspAuths );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #11
+
+    rval = Tss2_Sys_GetRspAuths( sysContext, 0 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #12
+
+    // Test for bad count.
+    rspAuths.rspAuthsCount = 0;
+    rval = Tss2_Sys_GetRspAuths( sysContext, &rspAuths );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_VALUE ); // #13
+
+    // Test for non-matching count: specified count doesn't
+    // match returned count.
+    rspAuths.rspAuthsCount = 1;
+    rval = Tss2_Sys_GetRspAuths( sysContext, &rspAuths );
+    CheckFailed( rval, TSS2_SYS_RC_INVALID_SESSIONS ); // #14
+
+    // Test for non-matching count: cmd auth count doesn't
+    // match returned auth count.
+    rspAuths.rspAuthsCount = 3;
+    savedResponseSize = CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->tpmOutBuffPtr ) )->responseSize );
+    ( (TPM20_Header_Out *)( ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->tpmOutBuffPtr ) )->responseSize = CHANGE_ENDIAN_DWORD( savedResponseSize - 5 );
+    rval = Tss2_Sys_GetRspAuths( sysContext, &rspAuths );
+    CheckFailed( rval, TSS2_SYS_RC_INVALID_SESSIONS ); // #15
+
+    // Test for malformed response.
+    rspAuths.rspAuthsCount = 2;
+    ( (TPM20_Header_Out *)( ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->tpmOutBuffPtr ) )->responseSize = CHANGE_ENDIAN_DWORD( savedResponseSize - 7 );
+    rval = Tss2_Sys_GetRspAuths( sysContext, &rspAuths );
+    CheckFailed( rval, TSS2_SYS_RC_MALFORMED_RESPONSE ); // #16
+        
+    // Ths one should pass.
+    ( (TPM20_Header_Out *)( ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->tpmOutBuffPtr ) )->responseSize = CHANGE_ENDIAN_DWORD( savedResponseSize );
+    rval = Tss2_Sys_GetRspAuths( sysContext, &rspAuths );
+    CheckPassed( rval ); // #17
+
+    // Check for bad sequence.
+    rval = Tss2_Sys_StartAuthSession_Complete( sysContext,
+            &testSessionHandle, &nonceTpm );
+    CheckPassed( rval ); // #17
+
+    // Others?
+    
+}
+
 void GetSetEncryptParamTests()
 {
     TPM2B_MAX_NV_BUFFER nvWriteData = { { 4, { 0xde, 0xad, 0xbe, 0xef, } } };
@@ -6005,6 +6284,9 @@ void TpmTest()
     loadedSha1KeyAuth.t.buffer[0] = 0x00;
     loadedSha1KeyAuth.t.buffer[1] = 0xff;
 
+    rval = PlatformCommand( resMgrTctiContext, MS_SIM_POWER_OFF );
+    CheckPassed( rval );
+
     InitEntities();
     
     InitNullSession( &nullSessionData);
@@ -6012,9 +6294,14 @@ void TpmTest()
     AbiVersionTests();
 
     SysInitializeTests();
-    
+
     GetSetDecryptParamTests();
-   
+
+#ifdef _WIN32
+    // This test can only be run agains the simulator
+    RmZeroSizedResponseTest();    
+#endif
+    
     rval = PlatformCommand( resMgrTctiContext, MS_SIM_POWER_ON );
     CheckPassed( rval );
 
@@ -6025,6 +6312,8 @@ void TpmTest()
 
     GetTpmVersion();
 
+    CmdRspAuthsTests();
+	    
     // Clear DA lockout.
     TestDictionaryAttackLockReset();
 

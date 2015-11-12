@@ -75,6 +75,12 @@ TSS2_RC CopySessionDataIn( void **otherData, TPMS_AUTH_COMMAND const *sessionDat
     UINT8 *inBuffPtr = *otherData;
     TPMS_AUTH_COMMAND *sessionDataCopy = (TPMS_AUTH_COMMAND *)sessionData;
     
+	if( sessionData == 0 )
+	{
+		rval = TSS2_SYS_RC_BAD_VALUE;
+		goto exitCopySessionDataIn;
+	}
+
     // Size of session data
     *sessionSizePtr += CHANGE_ENDIAN_DWORD(  
             sizeof( TPMI_SH_AUTH_SESSION ) + sizeof( UINT16 ) +
@@ -120,7 +126,7 @@ TSS2_RC CopySessionDataOut( TPMS_AUTH_RESPONSE *sessionData, void **otherData, U
     TPMS_AUTH_RESPONSE *sessionDataCopy = (TPMS_AUTH_RESPONSE *)sessionData;
     
     if( sessionData == 0 )
-        return TSS2_SYS_RC_BAD_REFERENCE;
+        return rval;
 
     outBuffSize -= ((UINT8 *)*otherData - outBuffPtr + 1 );
     outBuffPtr = *otherData;
