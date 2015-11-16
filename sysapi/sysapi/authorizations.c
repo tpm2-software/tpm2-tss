@@ -92,34 +92,38 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
                     if( cmdAuthsArray->cmdAuths[i]->sessionAttributes.encrypt )
                         SYS_CONTEXT->encryptSession = 1;
                 }
-                authSize += sizeof( UINT32 ); // authorization size field
-                newCmdSize = (UINT64)authSize + (UINT64)CHANGE_ENDIAN_DWORD( ( (TPM20_Header_In *)( SYS_CONTEXT->tpmInBuffPtr ) )->commandSize );
 
-                if( newCmdSize > (UINT64)( SYS_CONTEXT->maxCommandSize ) )
+                if( rval == TSS2_RC_SUCCESS )
                 {
-                    rval = TSS2_SYS_RC_INSUFFICIENT_BUFFER;
-                }
-                else
-                {
-                    void *otherData;
+                    authSize += sizeof( UINT32 ); // authorization size field
+                    newCmdSize = (UINT64)authSize + (UINT64)CHANGE_ENDIAN_DWORD( ( (TPM20_Header_In *)( SYS_CONTEXT->tpmInBuffPtr ) )->commandSize );
 
-                    // We're going to have to move stuff around.
-                    // First move current cpBuffer down.
-                    rval = CopyMemReverse( SYS_CONTEXT->cpBuffer + authSize, SYS_CONTEXT->cpBuffer, SYS_CONTEXT->cpBufferUsedSize, SYS_CONTEXT->tpmInBuffPtr + SYS_CONTEXT->maxCommandSize );
-
-                    if( rval == TSS2_RC_SUCCESS )
+                    if( newCmdSize > (UINT64)( SYS_CONTEXT->maxCommandSize ) )
                     {
-                        // Now copy in the authorization area.
-                        otherData = SYS_CONTEXT->cpBuffer;
-                        rval = CopySessionsDataIn( &otherData, cmdAuthsArray );
+                        rval = TSS2_SYS_RC_INSUFFICIENT_BUFFER;
+                    }
+                    else
+                    {
+                        void *otherData;
 
-                        // Update cpBuffer        
-                        SYS_CONTEXT->cpBuffer += authSize;
+                        // We're going to have to move stuff around.
+                        // First move current cpBuffer down.
+                        rval = CopyMemReverse( SYS_CONTEXT->cpBuffer + authSize, SYS_CONTEXT->cpBuffer, SYS_CONTEXT->cpBufferUsedSize, SYS_CONTEXT->tpmInBuffPtr + SYS_CONTEXT->maxCommandSize );
 
-                        // Now update the command size.
-                        ( (TPM20_Header_In *)( SYS_CONTEXT->tpmInBuffPtr ) )->commandSize = CHANGE_ENDIAN_DWORD( (UINT32)newCmdSize );
+                        if( rval == TSS2_RC_SUCCESS )
+                        {
+                            // Now copy in the authorization area.
+                            otherData = SYS_CONTEXT->cpBuffer;
+                            rval = CopySessionsDataIn( &otherData, cmdAuthsArray );
 
-                        SYS_CONTEXT->authsCount = cmdAuthsArray->cmdAuthsCount;
+                            // Update cpBuffer        
+                            SYS_CONTEXT->cpBuffer += authSize;
+
+                            // Now update the command size.
+                            ( (TPM20_Header_In *)( SYS_CONTEXT->tpmInBuffPtr ) )->commandSize = CHANGE_ENDIAN_DWORD( (UINT32)newCmdSize );
+
+                            SYS_CONTEXT->authsCount = cmdAuthsArray->cmdAuthsCount;
+                        }
                     }
                 }
             }

@@ -1,4 +1,6 @@
 *.a
+*.la
+*.lo
 *.o
 *.opensdf
 *.pdb
@@ -9,6 +11,7 @@
 *vcxproj.user
 .deps/
 .dirstamp
+.libs
 aclocal.m4
 autom4te.cache/
 [Bb]uild/
@@ -33,3 +36,4 @@ resourcemgr/resourcemgr
 test/tpmclient/tpmclient
 .klocwork/
 ipch/
+test/tpmtest/tpmtest
