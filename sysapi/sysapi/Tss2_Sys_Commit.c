@@ -109,7 +109,7 @@ TPM_RC Tss2_Sys_Commit(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL )
+    if( sysContext == NULL || s2 == NULL || y2 == NULL  )
     {
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }

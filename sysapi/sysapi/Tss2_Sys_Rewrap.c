@@ -105,7 +105,7 @@ TPM_RC Tss2_Sys_Rewrap(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL )
+    if( sysContext == NULL || inDuplicate == NULL || name == NULL || inSymSeed == NULL  )
     {
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }

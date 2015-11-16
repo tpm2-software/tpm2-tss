@@ -88,7 +88,7 @@ TPM_RC Tss2_Sys_PolicyTicket(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL )
+    if( sysContext == NULL || timeout == NULL || cpHashA == NULL || policyRef == NULL || authName == NULL || ticket == NULL  )
     {
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }

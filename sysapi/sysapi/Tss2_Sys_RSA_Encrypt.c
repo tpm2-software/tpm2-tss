@@ -97,7 +97,7 @@ TPM_RC Tss2_Sys_RSA_Encrypt(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL )
+    if( sysContext == NULL || message == NULL || inScheme == NULL || label == NULL  )
     {
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }

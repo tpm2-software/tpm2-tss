@@ -136,17 +136,18 @@ TSS2_RC CommonPrepareEpilogue(
 )
 {
    if( SYS_CONTEXT->rval != TSS2_RC_SUCCESS )
-        return SYS_CONTEXT->rval;
-    
-    SYS_CONTEXT->cpBufferUsedSize = SYS_CONTEXT->nextData - SYS_CONTEXT->cpBuffer;
+   {
+       return SYS_CONTEXT->rval;
+   }
+   SYS_CONTEXT->cpBufferUsedSize = SYS_CONTEXT->nextData - SYS_CONTEXT->cpBuffer;
 
-    // Set current command size.
-    ((TPM20_Header_In *) SYS_CONTEXT->tpmInBuffPtr)->commandSize =
-            CHANGE_ENDIAN_DWORD( SYS_CONTEXT->nextData - SYS_CONTEXT->tpmInBuffPtr );
+   // Set current command size.
+   ((TPM20_Header_In *) SYS_CONTEXT->tpmInBuffPtr)->commandSize =
+           CHANGE_ENDIAN_DWORD( SYS_CONTEXT->nextData - SYS_CONTEXT->tpmInBuffPtr );
 
-    SYS_CONTEXT->previousStage = CMD_STAGE_PREPARE;
+   SYS_CONTEXT->previousStage = CMD_STAGE_PREPARE;
 
-    return SYS_CONTEXT->rval;
+   return SYS_CONTEXT->rval;
 }
 
 // Common to all _Complete

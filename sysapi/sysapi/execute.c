@@ -136,7 +136,13 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
             SYS_CONTEXT->responseCode = SYS_CONTEXT->rval;
         }
     }
-
+    else if( rval == TSS2_TCTI_RC_INSUFFICIENT_BUFFER )
+    {
+        // In this case we received all the bytes from the TCTI layer, so we need to
+        // change previous state to CMD_STAGE_RECEIVE_RESPONSE.
+        SYS_CONTEXT->previousStage = CMD_STAGE_RECEIVE_RESPONSE;
+    }
+        
     return rval;
 }
 
