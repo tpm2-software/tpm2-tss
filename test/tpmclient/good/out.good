@@ -1,12 +1,32 @@
 Initializing Resource Manager Interface
-socket created:  0x88
-socket created:  0x90
+socket created:  0x98
+socket created:  0xa0
 Client connected to server on port:  2324
 Client connected to server on port:  2323
+	passing case:  	PASSED!
 
 ABI NEGOTIATION TESTS:
 	failing case: 	PASSED!
 	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+
+SYS INITIALIZE TESTS:
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+
+SYS FINALIZE TESTS:
+	failing case: 	PASSED!
+
+SYS GETCONTEXTSIZE TESTS:
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+
+SYS GETTCTICONTEXT TESTS:
 	failing case: 	PASSED!
 	failing case: 	PASSED!
 
@@ -44,6 +64,9 @@ cpBuffer =
 
 	passing case:  	PASSED!
 	failing case: 	PASSED!
+
+RM ZERO SIZED RESPONSE TEST:
+	failing case: 	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 
@@ -60,6 +83,56 @@ STARTUP TESTS:
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+SETCMDAUTHS TESTS:
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+
+GETRSPAUTHS TESTS:
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+
+SYS PREPARE TESTS:
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
 
 DICTIONARY ATTACK LOCK RESET TEST  :
 	passing case:  	PASSED!
@@ -67,22 +140,6 @@ DICTIONARY ATTACK LOCK RESET TEST  :
 SELFTEST TESTS:
 	passing case:  	PASSED!
 	passing case:  	PASSED!
-	passing case:  	PASSED!
-
-GET TEST RESULT TESTS:
-	passing case:  	PASSED!
-	passing case:  	PASSED!
-	passing case:  	PASSED!
-	passing case:  	PASSED!
-	passing case:  	PASSED!
-	passing case:  	PASSED!
-	passing case:  	PASSED!
-	passing case:  	PASSED!
-	passing case:  	PASSED!
-	passing case:  	PASSED!
-	passing case:  	PASSED!
-	failing case: 	PASSED!
-	failing case: 	PASSED!
 	passing case:  	PASSED!
 
 DICTIONARY ATTACK LOCK RESET TEST  :
@@ -97,25 +154,89 @@ New key successfully created in platform hierarchy (RSA 2048).  Handle: 0x800000
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
-Name of loaded key: 00 04 ee fd ce 38 85 c7 de 3b f5 6c 7f cc fe ec 
-28 2c de e9 4e 43 
+Name of loaded key: 00 04 6b 8d 01 43 a4 72 98 a5 9d 2b ec 24 73 7f 
+cf 66 9e 00 be 5d 
 	passing case:  	PASSED!
 
 Loaded key handle:  80000001
+
 CREATE PRIMARY, encrypt and decrypt TESTS:
 	failing case: 	PASSED!
 	passing case:  	PASSED!
 
 New key successfully created in owner hierarchy (RSA 2048).  Handle: 0x80000003
-Name of created primary key: 00 04 66 58 3e a6 6c e4 62 f7 09 cd f1 f4 e5 e0 
-a2 f9 14 46 1e 09 
+Name of created primary key: 00 04 fa 8d 3d c0 14 2d 19 a9 cd 1f 16 3c 84 7b 
+1b ad d4 1d 71 b6 
 	failing case: 	PASSED!
 	passing case:  	PASSED!
 
-label size:0, label buffer:0, outData size:256, outData buffer:8f, msg size:4, msg buffer:74
-label size:0, label buffer:0, outData size:256, outData buffer:2e, msg size:4, msg buffer:65
-label size:0, label buffer:0, outData size:256, outData buffer:c8, msg size:4, msg buffer:73
-label size:0, label buffer:0, outData size:256, outData buffer:ef, msg size:4, msg buffer:74	passing case:  	PASSED!
+label size:0, label buffer:0, outData size:256, outData buffer:41, msg size:4, msg buffer:74
+label size:0, label buffer:0, outData size:256, outData buffer:89, msg size:4, msg buffer:65
+label size:0, label buffer:0, outData size:256, outData buffer:81, msg size:4, msg buffer:73
+label size:0, label buffer:0, outData size:256, outData buffer:93, msg size:4, msg buffer:74	passing case:  	PASSED!
+
+SAPI API TESTS:
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
 
 HIERARCHY CONTROL TESTS:
 	passing case:  	PASSED!
@@ -212,10 +333,21 @@ GET/SET ENCRYPT PARAM TESTS:
 	failing case: 	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
-	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
 	failing case: 	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	failing case: 	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
@@ -248,8 +380,8 @@ KDFA, contextU =
 
 
 KDFA, contextV = 
-3c 1b c1 29 84 6b 4f be d9 c0 fd 70 00 03 e5 f5 
-10 7a 1a ed 
+22 e1 27 9b 8a 12 95 54 a7 98 bf 67 85 e5 84 09 
+5c cc ee c4 
 
 
 bufferlist[0]:
@@ -265,8 +397,8 @@ bufferlist[2]:
 
 
 bufferlist[3]:
-3c 1b c1 29 84 6b 4f be d9 c0 fd 70 00 03 e5 f5 
-10 7a 1a ed 
+22 e1 27 9b 8a 12 95 54 a7 98 bf 67 85 e5 84 09 
+5c cc ee c4 
 
 
 bufferlist[4]:
@@ -274,8 +406,8 @@ bufferlist[4]:
 
 
 KDFA, resultKey = 
-38 dc 6d 5d c9 c8 12 67 b1 e4 b0 2d 24 9e 46 92 
-e7 cb 65 0b 1b fa 7b c5 aa 85 91 17 5a 06 2c 2c 
+42 5c 5b a4 09 62 ff 2e 84 1f 94 67 38 77 8f 7c 
+cf 12 d8 e1 76 d4 1e 41 86 ea 6b 2d 45 54 7a f2 
 
 	passing case:  	PASSED!
 	passing case:  	PASSED!
@@ -300,8 +432,8 @@ KDFA, tpm2bLabel =
 
 
 KDFA, contextU = 
-01 b4 61 dd 7c 61 b0 b6 4b 89 10 46 8d df 55 e3 
-82 fa 1d 90 
+f7 58 b0 39 a5 b6 86 72 6e 8c b9 3f 58 50 9a c8 
+8a 5b 8a 5e 
 
 
 KDFA, contextV = 
@@ -317,8 +449,8 @@ bufferlist[1]:
 
 
 bufferlist[2]:
-01 b4 61 dd 7c 61 b0 b6 4b 89 10 46 8d df 55 e3 
-82 fa 1d 90 
+f7 58 b0 39 a5 b6 86 72 6e 8c b9 3f 58 50 9a c8 
+8a 5b 8a 5e 
 
 
 bufferlist[3]:
@@ -330,8 +462,8 @@ bufferlist[4]:
 
 
 KDFA, resultKey = 
-af 51 69 96 68 62 0d 0f ef 79 a0 b3 52 a9 72 c0 
-da f3 ab 77 fe 4e c6 99 29 50 69 2c dc 4c e1 28 
+d0 4d 66 6b 12 ca ac 4e ae 05 9d c6 09 28 f6 72 
+40 a8 7e 91 a2 97 4a 0f c4 ea b0 d0 5c bd 15 5b 
 
 	passing case:  	PASSED!
 	passing case:  	PASSED!
@@ -361,8 +493,8 @@ KDFA, contextU =
 
 
 KDFA, contextV = 
-40 a6 9e 9b 4c b0 b9 a5 57 0e 77 39 12 62 5e 8a 
-c0 76 0f 1f 
+8b 58 be d2 df 35 12 a1 87 a9 4f 14 fb 6a 4b c9 
+b9 bc 0a 41 
 
 
 bufferlist[0]:
@@ -378,8 +510,8 @@ bufferlist[2]:
 
 
 bufferlist[3]:
-40 a6 9e 9b 4c b0 b9 a5 57 0e 77 39 12 62 5e 8a 
-c0 76 0f 1f 
+8b 58 be d2 df 35 12 a1 87 a9 4f 14 fb 6a 4b c9 
+b9 bc 0a 41 
 
 
 bufferlist[4]:
@@ -387,7 +519,7 @@ bufferlist[4]:
 
 
 KDFA, resultKey = 
-7e 31 33 66 
+ca b4 a3 ff 
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
@@ -411,8 +543,8 @@ KDFA, tpm2bLabel =
 
 
 KDFA, contextU = 
-aa 06 78 17 26 de 59 38 4f f6 96 00 75 b6 99 51 
-00 72 79 30 
+3c 02 75 15 c8 5c 89 df 2f 9a 2e e8 ac 1b eb 2d 
+86 b9 20 a0 
 
 
 KDFA, contextV = 
@@ -428,8 +560,8 @@ bufferlist[1]:
 
 
 bufferlist[2]:
-aa 06 78 17 26 de 59 38 4f f6 96 00 75 b6 99 51 
-00 72 79 30 
+3c 02 75 15 c8 5c 89 df 2f 9a 2e e8 ac 1b eb 2d 
+86 b9 20 a0 
 
 
 bufferlist[3]:
@@ -441,7 +573,7 @@ bufferlist[4]:
 
 
 KDFA, resultKey = 
-86 62 dd 2b 
+85 18 24 74 
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
@@ -502,8 +634,8 @@ a5
 
 
 bufferlist[2]:
-58 fb 25 2d f1 b8 08 04 91 22 df 80 d7 e5 60 37 
-a0 cb 69 69 
+32 fb 55 48 8e 70 01 a3 2f dc ef f1 9d 3c 5a a4 
+7d a7 a0 69 
 
 
 bufferlist[3]:
@@ -548,8 +680,8 @@ bufferlist[0]:
 
 
 bufferlist[1]:
-d0 e6 de e2 fb 88 04 e3 01 d8 e7 1f 9b c6 36 e6 
-9d 6a 74 9f 
+41 bd 57 0c f4 cf a4 f2 ff c0 08 d3 51 4e a7 bb 
+57 6b 06 fc 
 
 
 bufferlist[2]:
@@ -610,8 +742,8 @@ a5
 
 
 bufferlist[2]:
-d0 e6 de e2 fb 88 04 e3 01 d8 e7 1f 9b c6 36 e6 
-9d 6a 74 9f 
+41 bd 57 0c f4 cf a4 f2 ff c0 08 d3 51 4e a7 bb 
+57 6b 06 fc 
 
 
 bufferlist[3]:
@@ -656,8 +788,8 @@ ca 7f 7c 42 3c c1 37 66 c9 97 6c e1 23 ab de 2b
 
 
 bufferlist[1]:
-4c c0 40 f9 d5 7f 83 55 9f fd f5 09 95 20 ff 2f 
-c5 b3 10 5b 
+d0 58 a8 3f 80 13 68 e8 1d de 15 b9 ad 72 71 a1 
+78 ea ed f4 
 
 
 bufferlist[2]:
@@ -735,8 +867,8 @@ a5
 
 
 bufferlist[2]:
-68 66 eb f1 77 50 0f cd 5a e6 e4 83 88 d9 5f 81 
-b9 e1 5c 20 
+c4 ea 11 80 f4 ab a2 d8 26 79 10 d9 08 2b 8b d0 
+f1 73 d5 5b 
 
 
 bufferlist[3]:
@@ -796,8 +928,8 @@ a5
 
 
 bufferlist[2]:
-f8 fe fc 11 c0 9e 62 43 88 71 79 11 3a 93 a4 e2 
-a2 fc 8e 42 
+c9 68 e2 87 6e 97 95 ae 61 28 e5 73 c9 c0 44 9c 
+43 4e 9e 0e 
 
 
 bufferlist[3]:
@@ -967,9 +1099,9 @@ In GetSessionStruct
 
 
 NAME1 = 
-00 0b c2 42 96 91 37 05 8a 5b cd c8 02 5a f4 c7 
-c8 56 f4 7e 8e cc 14 08 cc 12 0d c1 a3 c6 5f 66 
-4b 56 
+00 0b 2e 7c 39 ba 8e 95 3b 8e 66 a6 40 5e fc 1b 
+de 1a 96 7e 3f 54 0e 34 a9 56 1e d0 58 4a 59 5e 
+e7 25 
 
 
 NAME2 = 
@@ -977,13 +1109,13 @@ NAME2 =
 
 
 PHASH input bytes= 
-00 00 01 5e 00 0b c2 42 96 91 37 05 8a 5b cd c8 
-02 5a f4 c7 c8 56 f4 7e 8e cc 14 08 cc 12 0d c1 
-a3 c6 5f 66 4b 56 
+00 00 01 5e 00 0b 2e 7c 39 ba 8e 95 3b 8e 66 a6 
+40 5e fc 1b de 1a 96 7e 3f 54 0e 34 a9 56 1e d0 
+58 4a 59 5e e7 25 
 
 
-PHASH = 5b 05 bc b5 79 74 5f 0e 17 5b bd 18 5d ee 08 33 
-64 f4 6b 42 01 60 a6 b8 ea 35 1a 61 2d d9 f1 74 
+PHASH = a5 57 0a e9 c2 41 82 8b 1c 57 b9 19 c2 c2 88 df 
+5c 28 4e 3d 50 19 1a 3f 8e 40 55 3b 47 00 3e 27 
 
 
 
@@ -991,8 +1123,8 @@ hmacKey = 70 61 73 73 77 6f 72 64 20 50 43 52 00
 
 
 bufferlist[0]:
-5b 05 bc b5 79 74 5f 0e 17 5b bd 18 5d ee 08 33 
-64 f4 6b 42 01 60 a6 b8 ea 35 1a 61 2d d9 f1 74 
+a5 57 0a e9 c2 41 82 8b 1c 57 b9 19 c2 c2 88 df 
+5c 28 4e 3d 50 19 1a 3f 8e 40 55 3b 47 00 3e 27 
 
 
 
@@ -1001,8 +1133,8 @@ bufferlist[1]:
 
 
 bufferlist[2]:
-98 20 e6 f2 02 c0 20 e5 75 8a 2b 23 d5 14 f8 a5 
-5b 4c 73 6f 
+2f 33 ae 10 ca 4f b2 54 18 9e 68 d1 b9 f1 6d cd 
+e5 a1 97 b4 
 
 
 bufferlist[3]:
@@ -1085,8 +1217,8 @@ New key successfully created in platform hierarchy (RSA 2048).  Handle: 0x800000
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
-Name of loaded key: 00 04 e5 29 3a 85 39 80 a3 72 41 e4 c9 96 ad a6 
-fa 37 02 69 8d 62 
+Name of loaded key: 00 04 b6 03 86 f2 e3 39 85 7c 73 10 2d 6a 0e c4 
+2d 12 0e cc 6b 58 
 	passing case:  	PASSED!
 
 Loaded key handle:  80000009
@@ -1094,8 +1226,8 @@ Loaded key handle:  80000009
 EVICT CONTROL TESTS:
 	passing case:  	PASSED!
 Initializing Resource Manager Interface
-socket created:  0x8c
-socket created:  0x94
+socket created:  0xa4
+socket created:  0xa8
 Client connected to server on port:  2324
 Client connected to server on port:  2323
 	passing case:  	PASSED!
@@ -1235,8 +1367,8 @@ a5
 
 
 bufferlist[2]:
-81 55 e0 94 63 94 52 56 ab 62 0c a1 f4 bd 0f 72 
-53 0b 5a 72 
+b3 ee e2 a0 8d a7 78 35 1d c1 36 a7 c0 e5 a6 11 
+5e 7f e3 de 
 
 
 bufferlist[3]:
@@ -1293,8 +1425,8 @@ a5
 
 
 bufferlist[2]:
-81 55 e0 94 63 94 52 56 ab 62 0c a1 f4 bd 0f 72 
-53 0b 5a 72 
+b3 ee e2 a0 8d a7 78 35 1d c1 36 a7 c0 e5 a6 11 
+5e 7f e3 de 
 
 
 bufferlist[3]:
@@ -1337,8 +1469,8 @@ cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad
 
 
 bufferlist[1]:
-3a 32 9b ee 73 8a 4c 8a 08 ed 86 a4 e5 c2 16 b1 
-d0 78 26 b9 
+e5 1b 5f 99 1d f8 da 41 d1 8f 1a 21 a9 9f 46 42 
+37 15 31 76 
 
 
 bufferlist[2]:
@@ -1393,8 +1525,8 @@ a5
 
 
 bufferlist[2]:
-3a 32 9b ee 73 8a 4c 8a 08 ed 86 a4 e5 c2 16 b1 
-d0 78 26 b9 
+e5 1b 5f 99 1d f8 da 41 d1 8f 1a 21 a9 9f 46 42 
+37 15 31 76 
 
 
 bufferlist[3]:
@@ -1437,8 +1569,8 @@ bufferlist[0]:
 
 
 bufferlist[1]:
-c5 bc b3 7a 01 3e b6 46 6d b6 78 68 03 bd 92 31 
-79 a1 a5 3d 
+fd 6a 45 41 6e 29 cd e3 bf 57 61 b8 6e b5 84 18 
+fe 13 21 c3 
 
 
 bufferlist[2]:
@@ -1478,8 +1610,8 @@ KDFA, tpm2bLabel =
 
 
 KDFA, contextU = 
-df 4b 9b f0 87 be f1 66 3e d1 fb 32 ef cd c9 d1 
-42 1a c0 18 
+92 77 05 36 c0 5e e8 46 89 bf b8 0d bb 28 c5 30 
+88 1b 7d d7 
 
 
 KDFA, contextV = 
@@ -1496,8 +1628,8 @@ bufferlist[1]:
 
 
 bufferlist[2]:
-df 4b 9b f0 87 be f1 66 3e d1 fb 32 ef cd c9 d1 
-42 1a c0 18 
+92 77 05 36 c0 5e e8 46 89 bf b8 0d bb 28 c5 30 
+88 1b 7d d7 
 
 
 bufferlist[3]:
@@ -1510,8 +1642,8 @@ bufferlist[4]:
 
 
 KDFA, resultKey = 
-4c 2c fe dd 66 0a ad c9 2a 88 ec f6 9c 01 e8 13 
-40 94 78 91 
+b2 7a 4b 1f 63 2e 93 1d 6b d6 9b 63 27 51 d3 82 
+c6 7f 78 d2 
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 Name of authSession: 02 00 00 00 
@@ -1541,8 +1673,8 @@ PHASH = 9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93
 99 9a e1 ac 
 
 
-hmacKey = 4c 2c fe dd 66 0a ad c9 2a 88 ec f6 9c 01 e8 13 
-40 94 78 91 
+hmacKey = b2 7a 4b 1f 63 2e 93 1d 6b d6 9b 63 27 51 d3 82 
+c6 7f 78 d2 
 
 
 bufferlist[0]:
@@ -1555,8 +1687,8 @@ a5
 
 
 bufferlist[2]:
-df 4b 9b f0 87 be f1 66 3e d1 fb 32 ef cd c9 d1 
-42 1a c0 18 
+92 77 05 36 c0 5e e8 46 89 bf b8 0d bb 28 c5 30 
+88 1b 7d d7 
 
 
 bufferlist[3]:
@@ -1600,8 +1732,8 @@ PHASH = 9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93
 99 9a e1 ac 
 
 
-hmacKey = 4c 2c fe dd 66 0a ad c9 2a 88 ec f6 9c 01 e8 13 
-40 94 78 91 
+hmacKey = b2 7a 4b 1f 63 2e 93 1d 6b d6 9b 63 27 51 d3 82 
+c6 7f 78 d2 
 
 
 bufferlist[0]:
@@ -1614,8 +1746,8 @@ a5
 
 
 bufferlist[2]:
-df 4b 9b f0 87 be f1 66 3e d1 fb 32 ef cd c9 d1 
-42 1a c0 18 
+92 77 05 36 c0 5e e8 46 89 bf b8 0d bb 28 c5 30 
+88 1b 7d d7 
 
 
 bufferlist[3]:
@@ -1649,8 +1781,8 @@ PHASH = cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad
 04 a4 e3 f5 
 
 
-hmacKey = 4c 2c fe dd 66 0a ad c9 2a 88 ec f6 9c 01 e8 13 
-40 94 78 91 
+hmacKey = b2 7a 4b 1f 63 2e 93 1d 6b d6 9b 63 27 51 d3 82 
+c6 7f 78 d2 
 
 
 bufferlist[0]:
@@ -1659,8 +1791,8 @@ cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad
 
 
 bufferlist[1]:
-73 c9 8e a5 49 88 fa a2 96 4f 8a 38 ea 0c ca a9 
-c8 dd 18 ce 
+eb e1 0b 65 49 7f dd 43 ff 9f ab 07 6d f3 0f 61 
+ca 17 49 08 
 
 
 bufferlist[2]:
@@ -1702,8 +1834,8 @@ PHASH = a8 3f d1 df 40 3f f3 c3 68 ba 9c 50 61 ae 96 84
 26 82 0d 4f 
 
 
-hmacKey = 4c 2c fe dd 66 0a ad c9 2a 88 ec f6 9c 01 e8 13 
-40 94 78 91 73 68 61 72 65 64 20 73 65 63 72 65 
+hmacKey = b2 7a 4b 1f 63 2e 93 1d 6b d6 9b 63 27 51 d3 82 
+c6 7f 78 d2 73 68 61 72 65 64 20 73 65 63 72 65 
 74 
 
 
@@ -1717,8 +1849,8 @@ a5
 
 
 bufferlist[2]:
-73 c9 8e a5 49 88 fa a2 96 4f 8a 38 ea 0c ca a9 
-c8 dd 18 ce 
+eb e1 0b 65 49 7f dd 43 ff 9f ab 07 6d f3 0f 61 
+ca 17 49 08 
 
 
 bufferlist[3]:
@@ -1752,8 +1884,8 @@ PHASH = 4f 3b 90 19 8c ae a2 a0 73 da 01 a1 71 7d 33 7b
 49 28 57 4f 
 
 
-hmacKey = 4c 2c fe dd 66 0a ad c9 2a 88 ec f6 9c 01 e8 13 
-40 94 78 91 73 68 61 72 65 64 20 73 65 63 72 65 
+hmacKey = b2 7a 4b 1f 63 2e 93 1d 6b d6 9b 63 27 51 d3 82 
+c6 7f 78 d2 73 68 61 72 65 64 20 73 65 63 72 65 
 74 
 
 
@@ -1763,8 +1895,8 @@ bufferlist[0]:
 
 
 bufferlist[1]:
-f1 11 5c ef 35 b9 ff 94 b6 7c 44 13 58 07 ef e0 
-f8 bd 12 8b 
+d8 22 be d3 0b 29 e0 4c 7b 40 b0 31 ef 63 ad b6 
+3a c6 e9 bb 
 
 
 bufferlist[2]:
@@ -1796,8 +1928,8 @@ KDFA, tpm2bLabel =
 
 
 KDFA, contextU = 
-76 29 ab f7 f7 fe 03 e7 f7 ea ed d2 a9 ca 3e 4a 
-fd 34 d5 76 
+44 01 83 4e ac 9f 46 b1 9e e9 dc 18 97 da 62 a8 
+60 df 28 9a 
 
 
 KDFA, contextV = 
@@ -1814,8 +1946,8 @@ bufferlist[1]:
 
 
 bufferlist[2]:
-76 29 ab f7 f7 fe 03 e7 f7 ea ed d2 a9 ca 3e 4a 
-fd 34 d5 76 
+44 01 83 4e ac 9f 46 b1 9e e9 dc 18 97 da 62 a8 
+60 df 28 9a 
 
 
 bufferlist[3]:
@@ -1828,8 +1960,8 @@ bufferlist[4]:
 
 
 KDFA, resultKey = 
-bb 17 08 81 9c 5c 8f 68 45 64 64 ed fa e0 51 30 
-dd bb 17 e6 
+d4 63 cc b8 d0 ba 3b b7 c9 4a e4 9c d0 01 ec 5e 
+d5 61 17 c2 
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 In GetSessionStruct
@@ -1856,8 +1988,8 @@ PHASH = 65 9f d3 7c 80 c5 30 ee 99 4f 3c 81 76 f2 da f3
 db 14 f9 6b 
 
 
-hmacKey = bb 17 08 81 9c 5c 8f 68 45 64 64 ed fa e0 51 30 
-dd bb 17 e6 
+hmacKey = d4 63 cc b8 d0 ba 3b b7 c9 4a e4 9c d0 01 ec 5e 
+d5 61 17 c2 
 
 
 bufferlist[0]:
@@ -1870,8 +2002,8 @@ a5
 
 
 bufferlist[2]:
-76 29 ab f7 f7 fe 03 e7 f7 ea ed d2 a9 ca 3e 4a 
-fd 34 d5 76 
+44 01 83 4e ac 9f 46 b1 9e e9 dc 18 97 da 62 a8 
+60 df 28 9a 
 
 
 bufferlist[3]:
@@ -1905,8 +2037,8 @@ PHASH = cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad
 04 a4 e3 f5 
 
 
-hmacKey = bb 17 08 81 9c 5c 8f 68 45 64 64 ed fa e0 51 30 
-dd bb 17 e6 
+hmacKey = d4 63 cc b8 d0 ba 3b b7 c9 4a e4 9c d0 01 ec 5e 
+d5 61 17 c2 
 
 
 bufferlist[0]:
@@ -1915,8 +2047,8 @@ cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad
 
 
 bufferlist[1]:
-b0 67 c3 b0 df 24 3e bd 50 06 c0 cf 8a 80 bb ef 
-00 69 e6 7a 
+4c 5f 2a 02 0f df 1c 69 21 94 fa aa e1 80 d6 a6 
+a3 1f 77 c9 
 
 
 bufferlist[2]:
@@ -1959,8 +2091,8 @@ PHASH = a8 3f d1 df 40 3f f3 c3 68 ba 9c 50 61 ae 96 84
 26 82 0d 4f 
 
 
-hmacKey = bb 17 08 81 9c 5c 8f 68 45 64 64 ed fa e0 51 30 
-dd bb 17 e6 
+hmacKey = d4 63 cc b8 d0 ba 3b b7 c9 4a e4 9c d0 01 ec 5e 
+d5 61 17 c2 
 
 
 bufferlist[0]:
@@ -1973,8 +2105,8 @@ a5
 
 
 bufferlist[2]:
-b0 67 c3 b0 df 24 3e bd 50 06 c0 cf 8a 80 bb ef 
-00 69 e6 7a 
+4c 5f 2a 02 0f df 1c 69 21 94 fa aa e1 80 d6 a6 
+a3 1f 77 c9 
 
 
 bufferlist[3]:
@@ -2000,25 +2132,25 @@ NAME2 =
 
 
 PHASH input bytes= 
-00 00 00 00 00 00 01 4e 00 04 57 37 e2 db 
+00 00 00 00 00 00 01 4e 00 04 61 c2 e6 9d 
 
 
-PHASH = de 99 1c 36 ff e9 1e 40 2d 62 b8 b9 fb ec 64 8d 
-a3 1e 18 15 
+PHASH = dc e7 fb 80 a2 de f7 9b 9e a3 37 d2 53 7a e9 b8 
+04 c8 5b 7d 
 
 
-hmacKey = bb 17 08 81 9c 5c 8f 68 45 64 64 ed fa e0 51 30 
-dd bb 17 e6 
+hmacKey = d4 63 cc b8 d0 ba 3b b7 c9 4a e4 9c d0 01 ec 5e 
+d5 61 17 c2 
 
 
 bufferlist[0]:
-de 99 1c 36 ff e9 1e 40 2d 62 b8 b9 fb ec 64 8d 
-a3 1e 18 15 
+dc e7 fb 80 a2 de f7 9b 9e a3 37 d2 53 7a e9 b8 
+04 c8 5b 7d 
 
 
 bufferlist[1]:
-1c bf 00 67 7a 4a 07 b2 1d 52 b8 19 3d dd 85 8c 
-3a 63 5b 1b 
+d0 26 32 04 b1 58 de c7 47 48 8f 1b ad cc 22 e7 
+a8 ed 14 62 
 
 
 bufferlist[2]:
@@ -2059,8 +2191,8 @@ KDFA, tpm2bLabel =
 
 
 KDFA, contextU = 
-d1 9a 65 84 33 97 3d 29 43 28 21 eb 0f f0 ee ef 
-59 a5 91 ad 
+6f da 50 53 55 08 64 44 f8 da 76 6b 48 21 4e 76 
+5c 6f 64 b2 
 
 
 KDFA, contextV = 
@@ -2077,8 +2209,8 @@ bufferlist[1]:
 
 
 bufferlist[2]:
-d1 9a 65 84 33 97 3d 29 43 28 21 eb 0f f0 ee ef 
-59 a5 91 ad 
+6f da 50 53 55 08 64 44 f8 da 76 6b 48 21 4e 76 
+5c 6f 64 b2 
 
 
 bufferlist[3]:
@@ -2091,8 +2223,8 @@ bufferlist[4]:
 
 
 KDFA, resultKey = 
-66 94 35 57 86 a5 96 4a 03 78 c3 c4 90 14 44 ed 
-18 90 b3 95 
+d3 c8 62 1d 2b 76 0f 6a 63 25 04 3b 04 20 60 98 
+cf 9f 10 c7 
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 Name of authSession: 02 00 00 00 
@@ -2122,8 +2254,8 @@ PHASH = 9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93
 99 9a e1 ac 
 
 
-hmacKey = 66 94 35 57 86 a5 96 4a 03 78 c3 c4 90 14 44 ed 
-18 90 b3 95 73 68 61 72 65 64 20 73 65 63 72 65 
+hmacKey = d3 c8 62 1d 2b 76 0f 6a 63 25 04 3b 04 20 60 98 
+cf 9f 10 c7 73 68 61 72 65 64 20 73 65 63 72 65 
 74 
 
 
@@ -2137,8 +2269,8 @@ a5
 
 
 bufferlist[2]:
-d1 9a 65 84 33 97 3d 29 43 28 21 eb 0f f0 ee ef 
-59 a5 91 ad 
+6f da 50 53 55 08 64 44 f8 da 76 6b 48 21 4e 76 
+5c 6f 64 b2 
 
 
 bufferlist[3]:
@@ -2182,8 +2314,8 @@ PHASH = 9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93
 99 9a e1 ac 
 
 
-hmacKey = 66 94 35 57 86 a5 96 4a 03 78 c3 c4 90 14 44 ed 
-18 90 b3 95 73 68 61 72 65 64 20 73 65 63 72 65 
+hmacKey = d3 c8 62 1d 2b 76 0f 6a 63 25 04 3b 04 20 60 98 
+cf 9f 10 c7 73 68 61 72 65 64 20 73 65 63 72 65 
 74 
 
 
@@ -2197,8 +2329,8 @@ a5
 
 
 bufferlist[2]:
-d1 9a 65 84 33 97 3d 29 43 28 21 eb 0f f0 ee ef 
-59 a5 91 ad 
+6f da 50 53 55 08 64 44 f8 da 76 6b 48 21 4e 76 
+5c 6f 64 b2 
 
 
 bufferlist[3]:
@@ -2232,8 +2364,8 @@ PHASH = cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad
 04 a4 e3 f5 
 
 
-hmacKey = 66 94 35 57 86 a5 96 4a 03 78 c3 c4 90 14 44 ed 
-18 90 b3 95 73 68 61 72 65 64 20 73 65 63 72 65 
+hmacKey = d3 c8 62 1d 2b 76 0f 6a 63 25 04 3b 04 20 60 98 
+cf 9f 10 c7 73 68 61 72 65 64 20 73 65 63 72 65 
 74 
 
 
@@ -2243,8 +2375,8 @@ cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad
 
 
 bufferlist[1]:
-d4 ae 74 c4 6e 6a 7f 0e 81 86 15 79 16 0a 58 45 
-a9 97 bf 23 
+a3 6e 4a b7 59 c8 01 42 98 8b b8 60 95 d2 07 24 
+f5 f9 3f c6 
 
 
 bufferlist[2]:
@@ -2286,8 +2418,8 @@ PHASH = a8 3f d1 df 40 3f f3 c3 68 ba 9c 50 61 ae 96 84
 26 82 0d 4f 
 
 
-hmacKey = 66 94 35 57 86 a5 96 4a 03 78 c3 c4 90 14 44 ed 
-18 90 b3 95 73 68 61 72 65 64 20 73 65 63 72 65 
+hmacKey = d3 c8 62 1d 2b 76 0f 6a 63 25 04 3b 04 20 60 98 
+cf 9f 10 c7 73 68 61 72 65 64 20 73 65 63 72 65 
 74 
 
 
@@ -2301,8 +2433,8 @@ a5
 
 
 bufferlist[2]:
-d4 ae 74 c4 6e 6a 7f 0e 81 86 15 79 16 0a 58 45 
-a9 97 bf 23 
+a3 6e 4a b7 59 c8 01 42 98 8b b8 60 95 d2 07 24 
+f5 f9 3f c6 
 
 
 bufferlist[3]:
@@ -2336,8 +2468,8 @@ PHASH = 4f 3b 90 19 8c ae a2 a0 73 da 01 a1 71 7d 33 7b
 49 28 57 4f 
 
 
-hmacKey = 66 94 35 57 86 a5 96 4a 03 78 c3 c4 90 14 44 ed 
-18 90 b3 95 73 68 61 72 65 64 20 73 65 63 72 65 
+hmacKey = d3 c8 62 1d 2b 76 0f 6a 63 25 04 3b 04 20 60 98 
+cf 9f 10 c7 73 68 61 72 65 64 20 73 65 63 72 65 
 74 
 
 
@@ -2347,8 +2479,8 @@ bufferlist[0]:
 
 
 bufferlist[1]:
-48 3c 88 8f 28 1c 16 00 1e 26 7f 58 b5 bb 98 1a 
-81 be 44 13 
+c6 44 f6 5b a3 63 25 b8 90 9e 44 ec f9 4f 5d 1e 
+df b5 b4 52 
 
 
 bufferlist[2]:
@@ -2389,8 +2521,8 @@ KDFA, tpm2bLabel =
 
 
 KDFA, contextU = 
-dc c4 d7 4d 7a 0f 1b 7b 1c c8 16 64 f8 50 ef 59 
-37 b7 03 61 
+31 a0 a2 97 53 65 c2 29 4b 0e a5 99 06 55 5e 08 
+de 0d 27 36 
 
 
 KDFA, contextV = 
@@ -2407,8 +2539,8 @@ bufferlist[1]:
 
 
 bufferlist[2]:
-dc c4 d7 4d 7a 0f 1b 7b 1c c8 16 64 f8 50 ef 59 
-37 b7 03 61 
+31 a0 a2 97 53 65 c2 29 4b 0e a5 99 06 55 5e 08 
+de 0d 27 36 
 
 
 bufferlist[3]:
@@ -2421,8 +2553,8 @@ bufferlist[4]:
 
 
 KDFA, resultKey = 
-1e 7d 15 cf 47 9b c3 5d 94 77 be 40 e0 3a a6 23 
-fe 48 9d 10 
+5d 88 ae ab 21 d5 17 b0 7d 07 41 9a d9 b4 84 05 
+29 3d 81 2f 
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 Name of authSession: 02 00 00 00 
@@ -2452,8 +2584,8 @@ PHASH = 9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93
 99 9a e1 ac 
 
 
-hmacKey = 1e 7d 15 cf 47 9b c3 5d 94 77 be 40 e0 3a a6 23 
-fe 48 9d 10 
+hmacKey = 5d 88 ae ab 21 d5 17 b0 7d 07 41 9a d9 b4 84 05 
+29 3d 81 2f 
 
 
 bufferlist[0]:
@@ -2466,8 +2598,8 @@ a5
 
 
 bufferlist[2]:
-dc c4 d7 4d 7a 0f 1b 7b 1c c8 16 64 f8 50 ef 59 
-37 b7 03 61 
+31 a0 a2 97 53 65 c2 29 4b 0e a5 99 06 55 5e 08 
+de 0d 27 36 
 
 
 bufferlist[3]:
@@ -2511,8 +2643,8 @@ PHASH = 9c 3d a2 58 31 6f 87 19 0c a2 27 0b 42 51 d6 93
 99 9a e1 ac 
 
 
-hmacKey = 1e 7d 15 cf 47 9b c3 5d 94 77 be 40 e0 3a a6 23 
-fe 48 9d 10 
+hmacKey = 5d 88 ae ab 21 d5 17 b0 7d 07 41 9a d9 b4 84 05 
+29 3d 81 2f 
 
 
 bufferlist[0]:
@@ -2525,8 +2657,8 @@ a5
 
 
 bufferlist[2]:
-dc c4 d7 4d 7a 0f 1b 7b 1c c8 16 64 f8 50 ef 59 
-37 b7 03 61 
+31 a0 a2 97 53 65 c2 29 4b 0e a5 99 06 55 5e 08 
+de 0d 27 36 
 
 
 bufferlist[3]:
@@ -2560,8 +2692,8 @@ PHASH = cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad
 04 a4 e3 f5 
 
 
-hmacKey = 1e 7d 15 cf 47 9b c3 5d 94 77 be 40 e0 3a a6 23 
-fe 48 9d 10 
+hmacKey = 5d 88 ae ab 21 d5 17 b0 7d 07 41 9a d9 b4 84 05 
+29 3d 81 2f 
 
 
 bufferlist[0]:
@@ -2570,8 +2702,8 @@ cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad
 
 
 bufferlist[1]:
-e8 d8 00 2c e5 0a 45 9b 58 85 e9 72 2c 96 04 9a 
-3f 7c cd f7 
+26 ab fd 68 98 6b dd d5 fe 67 ef 97 f8 4d b1 f9 
+e2 fb ad 06 
 
 
 bufferlist[2]:
@@ -2613,8 +2745,8 @@ PHASH = a8 3f d1 df 40 3f f3 c3 68 ba 9c 50 61 ae 96 84
 26 82 0d 4f 
 
 
-hmacKey = 1e 7d 15 cf 47 9b c3 5d 94 77 be 40 e0 3a a6 23 
-fe 48 9d 10 73 68 61 72 65 64 20 73 65 63 72 65 
+hmacKey = 5d 88 ae ab 21 d5 17 b0 7d 07 41 9a d9 b4 84 05 
+29 3d 81 2f 73 68 61 72 65 64 20 73 65 63 72 65 
 74 
 
 
@@ -2628,8 +2760,8 @@ a5
 
 
 bufferlist[2]:
-e8 d8 00 2c e5 0a 45 9b 58 85 e9 72 2c 96 04 9a 
-3f 7c cd f7 
+26 ab fd 68 98 6b dd d5 fe 67 ef 97 f8 4d b1 f9 
+e2 fb ad 06 
 
 
 bufferlist[3]:
@@ -2663,8 +2795,8 @@ PHASH = 4f 3b 90 19 8c ae a2 a0 73 da 01 a1 71 7d 33 7b
 49 28 57 4f 
 
 
-hmacKey = 1e 7d 15 cf 47 9b c3 5d 94 77 be 40 e0 3a a6 23 
-fe 48 9d 10 73 68 61 72 65 64 20 73 65 63 72 65 
+hmacKey = 5d 88 ae ab 21 d5 17 b0 7d 07 41 9a d9 b4 84 05 
+29 3d 81 2f 73 68 61 72 65 64 20 73 65 63 72 65 
 74 
 
 
@@ -2674,8 +2806,8 @@ bufferlist[0]:
 
 
 bufferlist[1]:
-40 21 15 08 02 f4 80 df 3b 57 76 97 97 76 7c 52 
-da 28 56 3f 
+45 ee 22 16 64 43 8e bd 17 78 18 86 1a cf 3a 12 
+70 0b 5a 95 
 
 
 bufferlist[2]:
@@ -2707,8 +2839,8 @@ KDFA, tpm2bLabel =
 
 
 KDFA, contextU = 
-01 a3 20 46 62 9a 5e 89 79 79 80 9e a9 a8 93 b6 
-80 a0 14 90 
+1d 4d 9d c9 59 65 fb 61 26 31 2f 20 7a e4 6c 64 
+c5 11 e6 19 
 
 
 KDFA, contextV = 
@@ -2725,8 +2857,8 @@ bufferlist[1]:
 
 
 bufferlist[2]:
-01 a3 20 46 62 9a 5e 89 79 79 80 9e a9 a8 93 b6 
-80 a0 14 90 
+1d 4d 9d c9 59 65 fb 61 26 31 2f 20 7a e4 6c 64 
+c5 11 e6 19 
 
 
 bufferlist[3]:
@@ -2739,8 +2871,8 @@ bufferlist[4]:
 
 
 KDFA, resultKey = 
-c7 db 25 10 24 59 32 93 5b b5 aa a9 c8 4d 0e 96 
-28 e6 41 e4 
+f6 f7 16 99 f8 7f 76 59 5f 4d 68 9d 46 2a 3e da 
+8a cc 67 0e 
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 In GetSessionStruct
@@ -2767,8 +2899,8 @@ PHASH = 65 9f d3 7c 80 c5 30 ee 99 4f 3c 81 76 f2 da f3
 db 14 f9 6b 
 
 
-hmacKey = c7 db 25 10 24 59 32 93 5b b5 aa a9 c8 4d 0e 96 
-28 e6 41 e4 
+hmacKey = f6 f7 16 99 f8 7f 76 59 5f 4d 68 9d 46 2a 3e da 
+8a cc 67 0e 
 
 
 bufferlist[0]:
@@ -2781,8 +2913,8 @@ a5
 
 
 bufferlist[2]:
-01 a3 20 46 62 9a 5e 89 79 79 80 9e a9 a8 93 b6 
-80 a0 14 90 
+1d 4d 9d c9 59 65 fb 61 26 31 2f 20 7a e4 6c 64 
+c5 11 e6 19 
 
 
 bufferlist[3]:
@@ -2816,8 +2948,8 @@ PHASH = cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad
 04 a4 e3 f5 
 
 
-hmacKey = c7 db 25 10 24 59 32 93 5b b5 aa a9 c8 4d 0e 96 
-28 e6 41 e4 
+hmacKey = f6 f7 16 99 f8 7f 76 59 5f 4d 68 9d 46 2a 3e da 
+8a cc 67 0e 
 
 
 bufferlist[0]:
@@ -2826,8 +2958,8 @@ cc 96 3a 41 3c 2d 68 29 4a 44 c2 dd 75 2b 4e ad
 
 
 bufferlist[1]:
-85 a7 0b 09 84 f6 66 a0 e6 26 db e5 b2 c8 24 c0 
-fa d2 f9 f0 
+10 3d da 3c 4f 37 a2 b0 91 ce 9a 75 04 8b e4 a1 
+d9 e5 7b 31 
 
 
 bufferlist[2]:
@@ -2870,8 +3002,8 @@ PHASH = a8 3f d1 df 40 3f f3 c3 68 ba 9c 50 61 ae 96 84
 26 82 0d 4f 
 
 
-hmacKey = c7 db 25 10 24 59 32 93 5b b5 aa a9 c8 4d 0e 96 
-28 e6 41 e4 
+hmacKey = f6 f7 16 99 f8 7f 76 59 5f 4d 68 9d 46 2a 3e da 
+8a cc 67 0e 
 
 
 bufferlist[0]:
@@ -2884,8 +3016,8 @@ a5
 
 
 bufferlist[2]:
-85 a7 0b 09 84 f6 66 a0 e6 26 db e5 b2 c8 24 c0 
-fa d2 f9 f0 
+10 3d da 3c 4f 37 a2 b0 91 ce 9a 75 04 8b e4 a1 
+d9 e5 7b 31 
 
 
 bufferlist[3]:
@@ -2911,25 +3043,25 @@ NAME2 =
 
 
 PHASH input bytes= 
-00 00 00 00 00 00 01 4e 00 04 b3 0f 96 13 
+00 00 00 00 00 00 01 4e 00 04 ba fc c2 89 
 
 
-PHASH = a1 57 04 6e 16 78 22 8c 94 20 1d da ab bc 58 43 
-e6 52 bd a6 
+PHASH = 5e 8b 85 24 92 dc fe 14 a5 76 65 9d 6c ad 7f d9 
+d8 76 3e 9e 
 
 
-hmacKey = c7 db 25 10 24 59 32 93 5b b5 aa a9 c8 4d 0e 96 
-28 e6 41 e4 
+hmacKey = f6 f7 16 99 f8 7f 76 59 5f 4d 68 9d 46 2a 3e da 
+8a cc 67 0e 
 
 
 bufferlist[0]:
-a1 57 04 6e 16 78 22 8c 94 20 1d da ab bc 58 43 
-e6 52 bd a6 
+5e 8b 85 24 92 dc fe 14 a5 76 65 9d 6c ad 7f d9 
+d8 76 3e 9e 
 
 
 bufferlist[1]:
-07 f9 0c b4 96 a7 a5 8d 84 3e fc 95 77 96 6a 9d 
-d2 86 c7 ca 
+b9 12 de 69 8e 2f 7a ec 4c cb 53 ae 55 84 ba 25 
+7c fe 32 16 
 
 
 bufferlist[2]:
@@ -2972,8 +3104,8 @@ UNSEAL TEST  :
 
 RM TESTS:
 Initializing Resource Manager Interface
-socket created:  0x98
-socket created:  0x9c
+socket created:  0xac
+socket created:  0xb0
 Client connected to server on port:  2324
 Client connected to server on port:  2323
 	passing case:  	PASSED!
@@ -3000,7 +3132,7 @@ Client connected to server on port:  2323
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
-select failed due to timeout, socket #: 0x90
+select failed due to timeout, socket #: 0xa0
 	failing case: 	PASSED!
 	passing case:  	PASSED!
 	failing case: 	PASSED!
