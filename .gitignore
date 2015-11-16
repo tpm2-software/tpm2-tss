@@ -4,6 +4,9 @@
 *.pdb
 *.sdf
 *.suo
+*.ses
+*.tag
+*vcxproj.user
 .deps/
 .dirstamp
 aclocal.m4
@@ -28,3 +31,5 @@ missing
 src_vars.mk
 resourcemgr/resourcemgr
 test/tpmclient/tpmclient
+.klocwork/
+ipch/
