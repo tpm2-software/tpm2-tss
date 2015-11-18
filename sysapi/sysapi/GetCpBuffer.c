@@ -37,7 +37,7 @@ TPM_RC Tss2_Sys_GetCpBuffer(
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
     if( sysContext == NULL || cpBufferUsedSize == NULL ||
-            cpBuffer == NULL || *cpBuffer == NULL )
+            cpBuffer == NULL )
     {
         rval = TSS2_SYS_RC_BAD_REFERENCE;
     }

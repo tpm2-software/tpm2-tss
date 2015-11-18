@@ -585,7 +585,6 @@ void TestSapiApis()
     TPM2B_PUBLIC        outPublic;
     TPM2B_NAME          name;
     TPM2B_NAME          qualifiedName;
-    TPM2B_PRIVATE       inPrivate;
     UINT8               commandCode[4];
     size_t				rpBufferUsedSize;
 	const uint8_t 		*rpBuffer;
@@ -4124,6 +4123,8 @@ void SimpleHmacTest()
     rval = EndAuthSession( nvSession );
 
     CheckPassed( rval );
+
+    PlatformCommand( resMgrTctiContext, MS_SIM_POWER_OFF );
 }
 
 
@@ -4459,6 +4460,7 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
     CheckPassed( rval );
 
     TeardownSysContext( &simpleTestContext );
+
 }
 
 
@@ -5510,8 +5512,6 @@ void SysInitializeTests()
     // NOTE: this should never be done in real applications.
     // It is only done here for test purposes.
     TSS2_TCTI_CONTEXT_INTEL tctiContextIntel;
-
-    TSS2_TCTI_CONTEXT *tctiContext = (TSS2_TCTI_CONTEXT *)&tctiContextIntel; 
 
     TpmClientPrintf( 0, "\nSYS INITIALIZE TESTS:\n" );
 
@@ -6713,7 +6713,7 @@ void TpmTest()
     TestEncryptDecryptSession();
 
     SimpleHmacOrPolicyTest( true );
-    
+
     SimpleHmacOrPolicyTest( false );
    
     for( i = 1; i <= (UINT32)passCount; i++ )
