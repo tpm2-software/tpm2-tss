@@ -55,6 +55,13 @@ TSS2_RC CommonSendChecks(
         rval = TSS2_TCTI_RC_BAD_SEQUENCE;
         goto returnFromCommonSendChecks;
     }
+
+    if( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->magic != TCTI_MAGIC ||
+        ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->version != TCTI_VERSION )
+    {
+        rval = TSS2_TCTI_RC_BAD_CONTEXT;
+        goto returnFromCommonSendChecks;
+    }
     
 returnFromCommonSendChecks:
 

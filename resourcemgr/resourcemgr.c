@@ -2542,7 +2542,7 @@ TSS2_RC InitSimulatorTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT **
     
     downstreamTctiContext = malloc(size);
 
-    rval = simInterfaceInfo.initialize(*tctiContext, &size, driverConfig, 0, 0, simInterfaceInfo.shortName, 0 );
+    rval = simInterfaceInfo.initialize(*tctiContext, &size, driverConfig, TCTI_MAGIC, TCTI_VERSION, simInterfaceInfo.shortName, 0 );
     return rval;
 }
 
@@ -2574,7 +2574,7 @@ TSS2_RC InitLocalTpmTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT **t
     
     downstreamTctiContext = malloc(size);
 
-    rval = localTpmInterfaceInfo.initialize(*tctiContext, &size, driverConfig, 0, 0, localTpmInterfaceInfo.shortName, 0 );
+    rval = localTpmInterfaceInfo.initialize(*tctiContext, &size, driverConfig, TCTI_MAGIC, TCTI_VERSION, localTpmInterfaceInfo.shortName, 0 );
     return rval;
 }
 
