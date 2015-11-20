@@ -11,16 +11,16 @@
     (other than the Source Code) the rights to reproduce, distribute,
     display, and perform the specification solely for the purpose of
     developing products based on such documents.
-    
+
 2.	Source Code Distribution Conditions:
 
     Redistributions of Source Code must retain the above copyright licenses,
     this list of conditions and the following disclaimers.
-    
+
 	Redistributions in binary form must reproduce the above copyright
     licenses, this list of conditions and the following disclaimers in
     the documentation and/or other materials provided with the distribution.
-    
+
 3.	Disclaimers:
 
     THE COPYRIGHT LICENSES SET FORTH ABOVE DO NOT REPRESENT ANY FORM OF LICENSE
@@ -29,7 +29,7 @@
     TO IMPLEMENT THIS SPECIFICATION OR OTHERWISE. Contact TCG Administration
     (admin@trustedcomputinggroup.org) for information on specification licensing
     rights available through TCG membership agreements.
-    
+
 	THIS SPECIFICATION IS PROVIDED "AS IS" WITH NO EXPRESS OR IMPLIED WARRANTIES
     WHATSOEVER, INCLUDING ANY WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR
     PURPOSE, ACCURACY, COMPLETENESS, OR NONINFRINGEMENT OF INTELLECTUAL PROPERTY
@@ -44,7 +44,7 @@
     incidental, consequential, direct, indirect, or special damages, whether
     under contract, tort, warranty or otherwise, arising in any way out of use
     or reliance upon this specification or any information herein.
-    
+
 Any marks and brands contained herein are the property of their respective owner.
 */
 
