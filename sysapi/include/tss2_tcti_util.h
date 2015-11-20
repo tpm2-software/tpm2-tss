@@ -51,6 +51,8 @@
 typedef TSS2_RC (*TCTI_TRANSMIT_PTR)( TSS2_TCTI_CONTEXT *tctiContext, size_t size, uint8_t *command);
 typedef TSS2_RC (*TCTI_RECEIVE_PTR) (TSS2_TCTI_CONTEXT *tctiContext, size_t *size, uint8_t *response, int32_t timeout);
 
+enum tctiStates { TCTI_STAGE_INITIALIZE, TCTI_STAGE_SEND_COMMAND, TCTI_STAGE_RECEIVE_RESPONSE };
+
 /* current Intel version */
 typedef struct {
     uint64_t magic;
@@ -77,6 +79,7 @@ TSS2_TCTI_POLL_HANDLE *handles, size_t *num_handles);
 
     // File descriptor for device file if real TPM is being used.
     int devFile;  
+    UINT8 previousStage;            // Used to check for sequencing errors.
 } TSS2_TCTI_CONTEXT_INTEL;
 
 #define TCTI_CONTEXT ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)(SYS_CONTEXT->tctiContext) )

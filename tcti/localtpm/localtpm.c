@@ -37,6 +37,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "debug.h"
+#include "commonchecks.h"
 
 #ifdef  _WIN32
 #define ssize_t int
@@ -65,29 +66,44 @@ TSS2_RC LocalTpmSendTpmCommand(
     ssize_t size;
 
 #ifdef DEBUG
-    UINT32 commandCode = CHANGE_ENDIAN_DWORD( ( (TPM20_Header_In *)command_buffer )->commandCode );
-    UINT32 cnt = CHANGE_ENDIAN_DWORD(((TPM20_Header_In *) command_buffer)->commandSize);
+    UINT32 commandCode;
+    UINT32 cnt;
+#endif
+    
+    rval = CommonSendChecks( tctiContext, command_buffer );
 
-    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
+    if( rval == TSS2_RC_SUCCESS )
     {
-        (*tpmLocalTpmPrintf)( rmDebugPrefix, "\n" );
-        (*tpmLocalTpmPrintf)(rmDebugPrefix, "Cmd sent: %s\n", commandCodeStrings[ commandCode - TPM_CC_FIRST ]  );
-        DEBUG_PRINT_BUFFER( command_buffer, cnt );
-    }
+#ifdef DEBUG
+        commandCode = CHANGE_ENDIAN_DWORD( ( (TPM20_Header_In *)command_buffer )->commandCode );
+        cnt = CHANGE_ENDIAN_DWORD(((TPM20_Header_In *) command_buffer)->commandSize);
+
+        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
+        {
+            (*tpmLocalTpmPrintf)( rmDebugPrefix, "\n" );
+            (*tpmLocalTpmPrintf)(rmDebugPrefix, "Cmd sent: %s\n", commandCodeStrings[ commandCode - TPM_CC_FIRST ]  );
+            DEBUG_PRINT_BUFFER( command_buffer, cnt );
+        }
 #endif
 
-    size = write( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, command_buffer, command_size );
+        size = write( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, command_buffer, command_size );
 
-    if( size < 0 )
-    {
-        (*tpmLocalTpmPrintf)(NO_PREFIX, "send failed with error: %d\n", errno );
-        rval = TSS2_TCTI_RC_IO_ERROR;
-    }
-    else if( (size_t)size != command_size )
-    {        
-        rval = TSS2_TCTI_RC_IO_ERROR;
-    }
+        if( size < 0 )
+        {
+            (*tpmLocalTpmPrintf)(NO_PREFIX, "send failed with error: %d\n", errno );
+            rval = TSS2_TCTI_RC_IO_ERROR;
+        }
+        else if( (size_t)size != command_size )
+        {        
+            rval = TSS2_TCTI_RC_IO_ERROR;
+        }
 
+        if( rval == TSS2_RC_SUCCESS )
+        {
+            ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage = TCTI_STAGE_SEND_COMMAND;
+        }
+    }
+    
     return rval;
 }
 
@@ -101,30 +117,42 @@ TSS2_RC LocalTpmReceiveTpmResponse(
     TSS2_RC rval = TSS2_RC_SUCCESS;
     ssize_t  size;
 
-    size = read( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, response_buffer, *response_size );
-
-    if( size < 0 )
+    if( tctiContext == NULL || response_buffer == NULL || response_size == NULL )
     {
-        (*tpmLocalTpmPrintf)(NO_PREFIX, "send failed with error: %d\n", errno );
-        rval = TSS2_TCTI_RC_IO_ERROR;
-        *response_size = 0;
-    }
+        rval = TSS2_TCTI_RC_BAD_REFERENCE;
+    }        
     else
     {
-#ifdef DEBUG
-        UINT32 cnt = CHANGE_ENDIAN_DWORD(((TPM20_Header_Out *) response_buffer)->responseSize);
+        size = read( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, response_buffer, *response_size );
 
-        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
+        if( size < 0 )
         {
-            (*tpmLocalTpmPrintf)( rmDebugPrefix, "\n" );
-            (*tpmLocalTpmPrintf)( rmDebugPrefix, "Response Received: " );
-            DEBUG_PRINT_BUFFER( response_buffer, cnt );
+            (*tpmLocalTpmPrintf)(NO_PREFIX, "send failed with error: %d\n", errno );
+            rval = TSS2_TCTI_RC_IO_ERROR;
+            *response_size = 0;
         }
+        else
+        {
+#ifdef DEBUG
+            UINT32 cnt = CHANGE_ENDIAN_DWORD(((TPM20_Header_Out *) response_buffer)->responseSize);
+
+            if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
+            {
+                (*tpmLocalTpmPrintf)( rmDebugPrefix, "\n" );
+                (*tpmLocalTpmPrintf)( rmDebugPrefix, "Response Received: " );
+                DEBUG_PRINT_BUFFER( response_buffer, cnt );
+            }
 #endif
-    
-        *response_size = size;
+
+            *response_size = size;
+        }
     }
 
+    if( rval == TSS2_RC_SUCCESS )
+    {
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage = TCTI_STAGE_RECEIVE_RESPONSE;
+    }
+    
     return rval;
 }
 
@@ -194,6 +222,7 @@ TSS2_RC InitLocalTpmTcti (
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent = 0;
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.rmDebugPrefix = 0;
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->currentTctiContext = 0;
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage = TCTI_STAGE_INITIALIZE;
 
         // Get hostname and port.
         if( ( strlen( config ) + 2 ) <= ( HOSTNAME_LENGTH  ) )
