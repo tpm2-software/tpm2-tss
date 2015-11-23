@@ -1,3 +1,19 @@
+All copyrights belong to the respective authors of the source code. The
+copyright holder of each source file is clearly indicated in the license
+header of each file.
+
+The source code for this project is provided under two separate licenses. The
+license for each source file is indicated in a comment block at the head of
+the file. For completeness we provide a summary of the relevant sources and
+their license text in full here.
+
+The following files are provided under license from the Trusted Computing
+Group:
+sysapi/include/implementation.h
+sysapi/include/tpmb.h
+sysapi/include/basetypes.h
+
+The text of Trusted Computing Group license is as follows:
 /* Licenses and Notices
 1.	Copyright Licenses:
 
@@ -11,16 +27,16 @@
     (other than the Source Code) the rights to reproduce, distribute,
     display, and perform the specification solely for the purpose of
     developing products based on such documents.
-
+    
 2.	Source Code Distribution Conditions:
 
     Redistributions of Source Code must retain the above copyright licenses,
     this list of conditions and the following disclaimers.
-
+    
 	Redistributions in binary form must reproduce the above copyright
     licenses, this list of conditions and the following disclaimers in
     the documentation and/or other materials provided with the distribution.
-
+    
 3.	Disclaimers:
 
     THE COPYRIGHT LICENSES SET FORTH ABOVE DO NOT REPRESENT ANY FORM OF LICENSE
@@ -29,7 +45,7 @@
     TO IMPLEMENT THIS SPECIFICATION OR OTHERWISE. Contact TCG Administration
     (admin@trustedcomputinggroup.org) for information on specification licensing
     rights available through TCG membership agreements.
-
+    
 	THIS SPECIFICATION IS PROVIDED "AS IS" WITH NO EXPRESS OR IMPLIED WARRANTIES
     WHATSOEVER, INCLUDING ANY WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR
     PURPOSE, ACCURACY, COMPLETENESS, OR NONINFRINGEMENT OF INTELLECTUAL PROPERTY
@@ -44,56 +60,32 @@
     incidental, consequential, direct, indirect, or special damages, whether
     under contract, tort, warranty or otherwise, arising in any way out of use
     or reliance upon this specification or any information herein.
-
+    
 Any marks and brands contained herein are the property of their respective owner.
 */
 
-// 5.6	TPMB.h
+All other sources are provided under a 2-Clause BSD license. The full text of
+this license is as follows:
+/*
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
 
-#ifndef TSS2_API_VERSION_1_1_1_1
-#error Version mismatch among TSS2 header files !
-#endif  /* TSS2_API_VERSION_1_1_1_1 */
+1. Redistributions of source code must retain the above copyright notice,
+this list of conditions and the following disclaimer.
 
-// This file contains extra TPM2B structures
-#ifndef _TPMB_H
-#define _TPMB_H
+2. Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation
+and/or other materials provided with the distribution.
 
-// This macro helps avoid having to type in the structure in order to create a new TPM2B type that
-// is used in a function.
-
-#define TPM2B_TYPE(name, bytes)			    \
-    typedef union {				    \
-	struct  {					    \
-	    UINT16  size;				    \
-	    BYTE    buffer[(bytes)];			    \
-	} t;						    \
-	TPM2B   b;					    \
-    } TPM2B_##name
-
-#define TPM2B_TYPE1(name, bytes, bufferName)			    \
-    typedef union {				    \
-	struct  {					    \
-	    UINT16  size;				    \
-	    BYTE    bufferName[(bytes)];			    \
-	} t;						    \
-	TPM2B   b;					    \
-    } TPM2B_##name
-
-#define TPM2B_TYPE2(name, type, bufferName )			    \
-    typedef union {				    \
-	struct  {					    \
-	    UINT16  size;				    \
-	    type bufferName;			    \
-	} t;						    \
-	TPM2B   b;					    \
-    } TPM2B_##name
-
-
-// Macro to instance and initialize a TPM2B value
-
-#define TPM2B_INIT(TYPE, name)					\
-    TPM2B_##TYPE    name = {sizeof(name.t.buffer), {0}}
-
-#define TPM2B_BYTE_VALUE(bytes) TPM2B_TYPE(bytes##_BYTE_VALUE, bytes)
-
-#endif
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE.
+*/
