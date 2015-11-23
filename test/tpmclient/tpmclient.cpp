@@ -839,14 +839,14 @@ void TestSapiApis()
     // Test one-call for NULL input parameter that should be a
     // pointer.
     rval = Tss2_Sys_Create( testSysContext, 0xffffffff, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #58
 
     // Test GetCommandCode for bad reference
     rval = Tss2_Sys_GetCommandCode( 0, &commandCode );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #60
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #59
     
     rval = Tss2_Sys_GetCommandCode( sysContext, 0 );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #61
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #60
 }
 
 
