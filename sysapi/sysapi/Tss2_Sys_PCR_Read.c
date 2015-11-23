@@ -38,8 +38,11 @@ TPM_RC Tss2_Sys_PCR_Read_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
-    
+    if( pcrSelectionIn == NULL  )
+	{
+		return TSS2_SYS_RC_BAD_REFERENCE;
+	} 
+
     CommonPreparePrologue( sysContext, TPM_CC_PCR_Read );
 
     
@@ -90,10 +93,10 @@ TPM_RC Tss2_Sys_PCR_Read(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL || pcrSelectionIn == NULL  )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    if( pcrSelectionIn == NULL  )
+	{
+		return TSS2_SYS_RC_BAD_REFERENCE;
+	} 
 
     rval = Tss2_Sys_PCR_Read_Prepare( sysContext, pcrSelectionIn );
     

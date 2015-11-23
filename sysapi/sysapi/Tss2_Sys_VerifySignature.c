@@ -40,8 +40,11 @@ TPM_RC Tss2_Sys_VerifySignature_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
-    
+    if( signature == NULL  )
+	{
+		return TSS2_SYS_RC_BAD_REFERENCE;
+	} 
+
     CommonPreparePrologue( sysContext, TPM_CC_VerifySignature );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), keyHandle, &(SYS_CONTEXT->rval) );
@@ -93,10 +96,10 @@ TPM_RC Tss2_Sys_VerifySignature(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL || digest == NULL || signature == NULL  )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    if( signature == NULL  )
+	{
+		return TSS2_SYS_RC_BAD_REFERENCE;
+	} 
 
     rval = Tss2_Sys_VerifySignature_Prepare( sysContext, keyHandle, digest, signature );
     

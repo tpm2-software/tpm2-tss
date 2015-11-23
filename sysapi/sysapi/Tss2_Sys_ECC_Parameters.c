@@ -38,8 +38,8 @@ TPM_RC Tss2_Sys_ECC_Parameters_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
-    
+     
+
     CommonPreparePrologue( sysContext, TPM_CC_ECC_Parameters );
 
     
@@ -82,10 +82,7 @@ TPM_RC Tss2_Sys_ECC_Parameters(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL  )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+     
 
     rval = Tss2_Sys_ECC_Parameters_Prepare( sysContext, curveID );
     

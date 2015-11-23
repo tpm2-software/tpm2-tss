@@ -43,8 +43,11 @@ TPM_RC Tss2_Sys_CertifyCreation_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
-    
+    if( inScheme == NULL  || creationTicket == NULL  )
+	{
+		return TSS2_SYS_RC_BAD_REFERENCE;
+	} 
+
     CommonPreparePrologue( sysContext, TPM_CC_CertifyCreation );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), signHandle, &(SYS_CONTEXT->rval) );
@@ -109,10 +112,10 @@ TPM_RC Tss2_Sys_CertifyCreation(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL || qualifyingData == NULL || creationHash == NULL || inScheme == NULL || creationTicket == NULL  )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    if( inScheme == NULL  || creationTicket == NULL  )
+	{
+		return TSS2_SYS_RC_BAD_REFERENCE;
+	} 
 
     rval = Tss2_Sys_CertifyCreation_Prepare( sysContext, signHandle, objectHandle, qualifyingData, creationHash, inScheme, creationTicket );
     

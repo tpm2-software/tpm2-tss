@@ -41,8 +41,8 @@ TPM_RC Tss2_Sys_PolicyDuplicationSelect_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
-    
+     
+
     CommonPreparePrologue( sysContext, TPM_CC_PolicyDuplicationSelect );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), policySession, &(SYS_CONTEXT->rval) );
@@ -80,10 +80,7 @@ TPM_RC Tss2_Sys_PolicyDuplicationSelect(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL || objectName == NULL || newParentName == NULL  )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+     
 
     rval = Tss2_Sys_PolicyDuplicationSelect_Prepare( sysContext, policySession, objectName, newParentName, includeObject );
     

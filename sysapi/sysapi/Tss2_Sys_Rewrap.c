@@ -42,8 +42,8 @@ TPM_RC Tss2_Sys_Rewrap_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
-    
+     
+
     CommonPreparePrologue( sysContext, TPM_CC_Rewrap );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), oldParent, &(SYS_CONTEXT->rval) );
@@ -105,10 +105,7 @@ TPM_RC Tss2_Sys_Rewrap(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL || inDuplicate == NULL || name == NULL || inSymSeed == NULL  )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+     
 
     rval = Tss2_Sys_Rewrap_Prepare( sysContext, oldParent, newParent, inDuplicate, name, inSymSeed );
     
