@@ -117,11 +117,9 @@ TSS2_RC LocalTpmReceiveTpmResponse(
     TSS2_RC rval = TSS2_RC_SUCCESS;
     ssize_t  size;
 
-    if( tctiContext == NULL || response_buffer == NULL || response_size == NULL )
-    {
-        rval = TSS2_TCTI_RC_BAD_REFERENCE;
-    }        
-    else
+    rval = CommonReceiveChecks( tctiContext, response_size, response_buffer );
+
+    if( rval == TSS2_RC_SUCCESS )
     {
         size = read( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, response_buffer, *response_size );
 
@@ -156,11 +154,22 @@ TSS2_RC LocalTpmReceiveTpmResponse(
     return rval;
 }
 
-void LocalTpmFinalize(
+TSS2_RC LocalTpmFinalize(
     TSS2_TCTI_CONTEXT *tctiContext       /* in */
     )
 {
-    close( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile );
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+    
+    if( tctiContext == NULL )
+    {
+        rval = TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+    else
+    {
+        close( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile );
+    }
+
+    return rval;
 }
 
 TSS2_RC LocalTpmCancel(

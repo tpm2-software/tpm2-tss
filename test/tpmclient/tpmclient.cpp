@@ -631,13 +631,13 @@ void ForceContextError( int magic, uint64_t *savedMagic, uint32_t *savedVersion 
 {
     if( magic )
     {
-        *savedMagic = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->magic;
-        ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->magic = ~*savedMagic;
+        *savedMagic = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->magic;
+        ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->magic = ~*savedMagic;
     }
     else
     {
-        *savedVersion = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->version;
-        ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->version = ~*savedVersion;
+        *savedVersion = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->version;
+        ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->version = ~*savedVersion;
     }
 }
 
@@ -645,11 +645,11 @@ void CleanupContextError( int magic, uint64_t savedMagic, uint32_t savedVersion 
 {
     if( magic )
     {
-        ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->magic = savedMagic;
+        ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->magic = savedMagic;
     }
     else
     {
-        ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->version = savedVersion;
+        ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->version = savedVersion;
     }
 }
 
@@ -671,17 +671,17 @@ void TestTctiApis()
     //
     // Test transmit for NULL pointers
     //
-    rval = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->transmit( 0, sizeof( commandBuffer ), &commandBuffer[0] );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( 0, sizeof( commandBuffer ), &commandBuffer[0] );
     CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE );
 
-    rval = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( commandBuffer ), 0 );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( commandBuffer ), 0 );
     CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE );
 
     //
     // Test transmit for BAD CONTEXT:  magic.
     //
     ForceContextError( 1, &savedMagic, &savedVersion );
-    rval = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->transmit( 0, sizeof( commandBuffer ), &commandBuffer[0] );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( 0, sizeof( commandBuffer ), &commandBuffer[0] );
     CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE );
     CleanupContextError( 1, savedMagic, savedVersion );
     
@@ -689,7 +689,7 @@ void TestTctiApis()
     // Test transmit for BAD CONTEXT:  version.
     //
     ForceContextError( 0, &savedMagic, &savedVersion );
-    rval = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->transmit( 0, sizeof( commandBuffer ), &commandBuffer[0] );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( 0, sizeof( commandBuffer ), &commandBuffer[0] );
     CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE );
     CleanupContextError( 0, savedMagic, savedVersion );
     
@@ -697,68 +697,70 @@ void TestTctiApis()
     // Test transmit for IO error.
     //
     ForceIOError( &savedTpmSock, &savedDevFile );
-    rval = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( commandBuffer ), &commandBuffer[0] );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( commandBuffer ), &commandBuffer[0] );
     CleanupIOError( savedTpmSock, savedDevFile );
     CheckFailed( rval, TSS2_TCTI_RC_IO_ERROR );
 
-    rval = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( commandBuffer ), &commandBuffer[0] );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( commandBuffer ), &commandBuffer[0] );
     CheckPassed( rval );
 
     //
     // Test transmit for SEQUENCE error;
     //
-    rval = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( commandBuffer ), &commandBuffer[0] );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( commandBuffer ), &commandBuffer[0] );
     CheckFailed( rval, TSS2_TCTI_RC_BAD_SEQUENCE );
 
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        responseSize = sizeof( responseBuffer );
+    responseSize = sizeof( responseBuffer );
 
-        //
-        // Test receive for NULL pointers.
-        //
-        rval = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->receive( 0, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
-        CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE );
+    //
+    // Test receive for NULL pointers.
+    //
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( 0, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE );
 
-        rval = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->receive( resMgrTctiContext, 0, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
-        CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, 0, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE );
 
-        rval = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, 0, TSS2_TCTI_TIMEOUT_BLOCK );
-        CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE );
-        
-        //
-        // Test receive for IO error.
-        //
-        ForceIOError( &savedTpmSock, &savedDevFile );
-        rval = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
-        CleanupIOError( savedTpmSock, savedDevFile );
-        CheckFailed( rval, TSS2_TCTI_RC_IO_ERROR );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, 0, TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE );
 
-        //
-        // Test receive for BAD CONTEXT:  magic.
-        //
-        ForceContextError( 1, &savedMagic, &savedVersion );
-        rval = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
-        CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE );
-        CleanupContextError( 1, savedMagic, savedVersion );
+    //
+    // Test receive for IO error.
+    //
+    ForceIOError( &savedTpmSock, &savedDevFile );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
+    CleanupIOError( savedTpmSock, savedDevFile );
+    CheckFailed( rval, TSS2_TCTI_RC_IO_ERROR );
 
-        //
-        // Test receive for BAD CONTEXT:  version.
-        //
-        ForceContextError( 0, &savedMagic, &savedVersion );
-        rval = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
-        CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE );
-        CleanupContextError( 0, savedMagic, savedVersion );
+    //
+    // Test receive for BAD CONTEXT:  magic.
+    //
+    ForceContextError( 1, &savedMagic, &savedVersion );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_CONTEXT );
+    CleanupContextError( 1, savedMagic, savedVersion );
 
-        rval = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
-        CheckPassed( rval );
+    //
+    // Test receive for BAD CONTEXT:  version.
+    //
+    ForceContextError( 0, &savedMagic, &savedVersion );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_CONTEXT );
+    CleanupContextError( 0, savedMagic, savedVersion );
 
-        //
-        // Test receive for SEQUENCE error;
-        //
-        rval = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
-        CheckFailed( rval, TSS2_TCTI_RC_BAD_SEQUENCE );
-    }
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckPassed( rval );
+
+    //
+    // Test receive for SEQUENCE error.
+    //
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_SEQUENCE );
+
+    //
+    // Test finalize for BAD REFERENCE error.
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->finalize( 0 );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE );
 }
     
 
