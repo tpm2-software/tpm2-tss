@@ -54,8 +54,6 @@ void InitSysContextFields(
     SYS_CONTEXT->encryptSession = 0;
     SYS_CONTEXT->prepareCalledFromOneCall = 0;
     SYS_CONTEXT->completeCalledFromOneCall = 0;
-
-    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
     SYS_CONTEXT->nextData = SYS_CONTEXT->tpmInBuffPtr;
     SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
 }
