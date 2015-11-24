@@ -41,8 +41,11 @@ TPM_RC Tss2_Sys_FieldUpgradeStart_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
-    
+    if( manifestSignature == NULL  )
+	{
+		return TSS2_SYS_RC_BAD_REFERENCE;
+	} 
+
     CommonPreparePrologue( sysContext, TPM_CC_FieldUpgradeStart );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), authorization, &(SYS_CONTEXT->rval) );
@@ -80,10 +83,10 @@ TPM_RC Tss2_Sys_FieldUpgradeStart(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL || fuDigest == NULL || manifestSignature == NULL  )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    if( manifestSignature == NULL  )
+	{
+		return TSS2_SYS_RC_BAD_REFERENCE;
+	} 
 
     rval = Tss2_Sys_FieldUpgradeStart_Prepare( sysContext, authorization, keyHandle, fuDigest, manifestSignature );
     

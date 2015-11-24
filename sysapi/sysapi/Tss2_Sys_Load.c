@@ -40,8 +40,8 @@ TPM_RC Tss2_Sys_Load_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
-    
+     
+
     CommonPreparePrologue( sysContext, TPM_CC_Load );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), parentHandle, &(SYS_CONTEXT->rval) );
@@ -97,10 +97,7 @@ TPM_RC Tss2_Sys_Load(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL || inPrivate == NULL  )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+     
 
     rval = Tss2_Sys_Load_Prepare( sysContext, parentHandle, inPrivate, inPublic );
     

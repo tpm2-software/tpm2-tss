@@ -1000,46 +1000,41 @@ void TestSapiApis()
     CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #51
 
     rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckFailed( rval, TPM_RC_INITIALIZE ); // #51
+    CheckFailed( rval, TPM_RC_INITIALIZE ); // #52
 
     // Now test case for ExecuteFinish where TPM returns
     // an error.  ExecuteFinish should return same error
     // as TPM.
     rval = Tss2_Sys_Startup_Prepare( sysContext, TPM_SU_CLEAR );
-    CheckPassed(rval); // #52
+    CheckPassed(rval); // #53
 
     rval = Tss2_Sys_GetRpBuffer( sysContext, &rpBufferUsedSize, &rpBuffer );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #53
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #54
     
     // Execute the command ayncronously.
     rval = Tss2_Sys_Execute( sysContext );
-    CheckFailed( rval, TPM_RC_INITIALIZE ); // #54
+    CheckFailed( rval, TPM_RC_INITIALIZE ); // #55
 
     rval = Tss2_Sys_GetRpBuffer( sysContext, &rpBufferUsedSize, &rpBuffer );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #55
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #56
     
     // Test one-call for null sysContext pointer.
     rval = Tss2_Sys_Startup( 0, TPM_SU_CLEAR );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #56
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #57
 
     
     
     // Test one-call for NULL input parameter that should be a
     // pointer.
-    rval = Tss2_Sys_Load( sysContext, 0, 0, (TPM2B_PRIVATE *)0,
-            (TPM2B_PUBLIC *)0, (TPM_HANDLE *)0, (TPM2B_NAME *)0, 0 );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #54
-    
-    rval = Tss2_Sys_Load( sysContext, 0, 0, 0,
-            (TPM2B_PUBLIC *)0, (TPM_HANDLE *)0, (TPM2B_NAME *)0, 0 );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #55
+    rval = Tss2_Sys_Create( testSysContext, 0xffffffff, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #58
 
     // Test GetCommandCode for bad reference
     rval = Tss2_Sys_GetCommandCode( 0, &commandCode );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #56
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #59
     
     rval = Tss2_Sys_GetCommandCode( sysContext, 0 );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #57
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #60
 }
 
 
@@ -5793,7 +5788,7 @@ void PrepareTests()
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
     TSS2_SYS_CONTEXT *testSysContext;
-
+    
     TpmClientPrintf( 0, "\nSYS PREPARE TESTS:\n" );
 
     testSysContext = InitSysContext( 0, resMgrTctiContext, &abiVersion );
@@ -5829,6 +5824,13 @@ void PrepareTests()
     rval = Tss2_Sys_GetTestResult_Prepare( testSysContext );
     CheckPassed( rval );
 
+    rval = Tss2_Sys_GetTestResult_Prepare( testSysContext );
+    CheckPassed( rval );
+
+    // Test for other NULL params
+    rval = Tss2_Sys_Create_Prepare( testSysContext, 0xffffffff, 0, 0, 0, 0 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+    
     TeardownSysContext( &testSysContext );
 }
 

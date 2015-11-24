@@ -38,8 +38,8 @@ TPM_RC Tss2_Sys_StirRandom_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
-    
+     
+
     CommonPreparePrologue( sysContext, TPM_CC_StirRandom );
 
     
@@ -65,10 +65,7 @@ TPM_RC Tss2_Sys_StirRandom(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL || inData == NULL  )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+     
 
     rval = Tss2_Sys_StirRandom_Prepare( sysContext, inData );
     

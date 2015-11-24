@@ -43,8 +43,11 @@ TPM_RC Tss2_Sys_PolicyTicket_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
-    
+    if( ticket == NULL  )
+	{
+		return TSS2_SYS_RC_BAD_REFERENCE;
+	} 
+
     CommonPreparePrologue( sysContext, TPM_CC_PolicyTicket );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), policySession, &(SYS_CONTEXT->rval) );
@@ -88,10 +91,10 @@ TPM_RC Tss2_Sys_PolicyTicket(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL || timeout == NULL || cpHashA == NULL || policyRef == NULL || authName == NULL || ticket == NULL  )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    if( ticket == NULL  )
+	{
+		return TSS2_SYS_RC_BAD_REFERENCE;
+	} 
 
     rval = Tss2_Sys_PolicyTicket_Prepare( sysContext, policySession, timeout, cpHashA, policyRef, authName, ticket );
     

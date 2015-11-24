@@ -38,8 +38,8 @@ TPM_RC Tss2_Sys_EC_Ephemeral_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
-    
+     
+
     CommonPreparePrologue( sysContext, TPM_CC_EC_Ephemeral );
 
     
@@ -86,10 +86,7 @@ TPM_RC Tss2_Sys_EC_Ephemeral(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL  )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+     
 
     rval = Tss2_Sys_EC_Ephemeral_Prepare( sysContext, curveID );
     

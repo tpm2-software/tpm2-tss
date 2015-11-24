@@ -57,6 +57,7 @@ void InitSysContextFields(
 
     SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
     SYS_CONTEXT->nextData = SYS_CONTEXT->tpmInBuffPtr;
+    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
 }
 
 UINT32 GetCommandSize( TSS2_SYS_CONTEXT *sysContext )
@@ -102,6 +103,11 @@ TSS2_RC CommonPreparePrologue(
 )
 {
 	int numCommandHandles;
+
+    if( sysContext == NULL )
+    {
+        return SYS_CONTEXT->rval = TSS2_SYS_RC_BAD_REFERENCE;
+    }
 
     InitSysContextFields( sysContext );
 
