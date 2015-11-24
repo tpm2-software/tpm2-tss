@@ -581,73 +581,272 @@ void TestSapiApis()
     UINT32 rval;
     TPM2B_MAX_BUFFER    outData = { { MAX_DIGEST_BUFFER, } };
     TPM_RC              testResult;
+    TSS2_SYS_CONTEXT    *testSysContext;
+    TPM2B_PUBLIC        outPublic;
+    TPM2B_NAME          name;
+    TPM2B_NAME          qualifiedName;
+    UINT8               commandCode[4];
+    size_t				rpBufferUsedSize;
+	const uint8_t 		*rpBuffer;
     
-    TpmClientPrintf( 0, "\nGET TEST RESULT TESTS:\n" );
+    TpmClientPrintf( 0, "\nSAPI API TESTS:\n" );
 
     //
     // First test the one-call interface.
     //
     rval = Tss2_Sys_GetTestResult( sysContext, 0, &outData, &testResult, 0 );
-    CheckPassed(rval);
+    CheckPassed(rval); // #1 
     
+    // Check for BAD_SEQUENCE error.
+    rval = Tss2_Sys_ExecuteAsync( sysContext );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #2
+
+    // Check for BAD_SEQUENCE error.
+    rval = Tss2_Sys_Execute( sysContext );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #3
+
     //
     // Now test the syncronous, non-one-call interface.
     //
     rval = Tss2_Sys_GetTestResult_Prepare( sysContext );
-    CheckPassed(rval);
+    CheckPassed(rval); // #4
+
+    // Check for BAD_REFERENCE error.
+    rval = Tss2_Sys_Execute( 0 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #5
 
     // Execute the command syncronously.
     rval = Tss2_Sys_Execute( sysContext );
-    CheckPassed(rval);
+    CheckPassed(rval); // #6
+
+    // Check for BAD_SEQUENCE error.
+    rval = Tss2_Sys_Execute( sysContext );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #7
+
+    // Check for BAD_SEQUENCE error.
+    rval = Tss2_Sys_ExecuteAsync( sysContext );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #8
 
     // Get the command results
     rval = Tss2_Sys_GetTestResult_Complete( sysContext, &outData, &testResult );
-    CheckPassed(rval);
+    CheckPassed(rval); // #9
 
     //
     // Now test the asyncronous, non-one-call interface.
     //
     rval = Tss2_Sys_GetTestResult_Prepare( sysContext );
-    CheckPassed(rval);
+    CheckPassed(rval); // #10
+
+    // Test XXXX_Complete for bad sequence:  after _Prepare
+    // and before ExecuteFinish
+    rval = Tss2_Sys_GetTestResult_Complete( sysContext, &outData, &testResult );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #11
+    
+    // Check for BAD_REFERENCE error.
+    rval = Tss2_Sys_ExecuteAsync( 0 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #12
+
+    // Test ExecuteFinish for BAD_SEQUENCE
+    rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #13
 
     // Execute the command asyncronously.
     rval = Tss2_Sys_ExecuteAsync( sysContext );
-    CheckPassed(rval);
+    CheckPassed(rval); // #14
 
+    // Check for BAD_SEQUENCE error.
+    rval = Tss2_Sys_ExecuteAsync( sysContext );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #15
+
+    // Check for BAD_SEQUENCE error.
+    rval = Tss2_Sys_Execute( sysContext );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #16
+
+    // Test ExecuteFinish for BAD_REFERENCE
+    rval = Tss2_Sys_ExecuteFinish( 0, TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #17
+
+    // Test XXXX_Complete for bad sequence:  after _Prepare
+    // and before ExecuteFinish
+    rval = Tss2_Sys_GetTestResult_Complete( sysContext, &outData, &testResult );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #18
+    
     // Get the command response. Wait a maximum of 20ms
     // for response.
     rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckPassed(rval);
+    CheckPassed(rval); // #19
+
+    rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #20
+
+    // Check for BAD_SEQUENCE error.
+    rval = Tss2_Sys_ExecuteAsync( sysContext );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #21
+
+    // Check for BAD_SEQUENCE error.
+    rval = Tss2_Sys_Execute( sysContext );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #22
+
+    // Test _Complete for bad reference cases.
+    rval = Tss2_Sys_GetTestResult_Complete( 0, &outData, &testResult );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #23
 
     // Get the command results
     rval = Tss2_Sys_GetTestResult_Complete( sysContext, &outData, &testResult );
-    CheckPassed(rval);
+    CheckPassed(rval); // #24
+    
+    // Now test case for ExecuteFinish and one-call where there's not enough room
+    // for the TPM response.
+    //
+    testSysContext = InitSysContext( sizeof( TPM20_Header_In ) + sizeof(TPM_HANDLE),
+            resMgrTctiContext, &abiVersion );
+    if( testSysContext == 0 )
+    {
+        InitSysContextFailure();
+    }
+
+    // Test GetCommandCode for bad sequence
+    rval = Tss2_Sys_GetCommandCode( testSysContext, &commandCode );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #25
+    
+    rval = Tss2_Sys_GetRpBuffer( testSysContext, &rpBufferUsedSize, &rpBuffer );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #26
+    
+    rval = Tss2_Sys_ReadPublic_Prepare( testSysContext, handle2048rsa );
+    CheckPassed(rval); // #27
+
+    // Execute the command syncronously.
+    rval = Tss2_Sys_ExecuteAsync( testSysContext );
+    CheckPassed( rval ); // #28
+
+    // Test _Complete for bad sequence case when ExecuteFinish has never
+    // been done on a context.
+    rval = Tss2_Sys_ReadPublic_Complete( testSysContext, &outPublic, &name, &qualifiedName );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #29
+
+    rval = Tss2_Sys_ExecuteFinish( testSysContext, TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_TCTI_RC_INSUFFICIENT_BUFFER ); // #30
+
+    rval = Tss2_Sys_ExecuteFinish( testSysContext, TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #31
+
+    rval = Tss2_Sys_ReadPublic_Prepare( testSysContext, handle2048rsa );
+    CheckPassed(rval); // #32
+
+    // Execute the command syncronously.
+    rval = Tss2_Sys_Execute( testSysContext );
+    CheckFailed( rval, TSS2_TCTI_RC_INSUFFICIENT_BUFFER ); // #33
+
+    rval = Tss2_Sys_ExecuteFinish( testSysContext, TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #34
+
+    // Make sure that comms with TPM still work.
+    rval = Tss2_Sys_ReadPublic_Prepare( sysContext, handle2048rsa );
+    CheckPassed(rval); // #35
+
+    // Execute the command syncronously.
+    rval = Tss2_Sys_Execute( sysContext );
+    CheckPassed( rval ); // #36
+
+    rval = Tss2_Sys_ReadPublic( testSysContext, handle2048rsa, 0,
+            &outPublic, &name, &qualifiedName, 0 );
+    CheckFailed( rval, TSS2_TCTI_RC_INSUFFICIENT_BUFFER ); // #37
+            
+    // Make sure that comms with TPM still work.
+	outPublic.t.size = name.t.size = qualifiedName.t.size = 0;
+	rval = Tss2_Sys_ReadPublic( sysContext, handle2048rsa, 0,
+            &outPublic, &name, &qualifiedName, 0 );
+    CheckPassed( rval ); // #38
+            
+    TeardownSysContext( &testSysContext );
 
     // Check case of ExecuteFinish receving TPM error code.
     // Subsequent _Complete call should fail with SEQUENCE error.
     rval = TpmReset();
-    CheckPassed(rval);
+    CheckPassed(rval); // #39
     
     rval = Tss2_Sys_GetCapability_Prepare( sysContext,
             TPM_CAP_TPM_PROPERTIES, TPM_PT_ACTIVE_SESSIONS_MAX,
             1 );
-    CheckPassed(rval);
+    CheckPassed(rval); // #40
 
     // Execute the command asyncronously.
     rval = Tss2_Sys_ExecuteAsync( sysContext );
-    CheckPassed(rval);
+    CheckPassed(rval); // #41
 
     // Get the command response. Wait a maximum of 20ms
     // for response.
     rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckFailed( rval, TPM_RC_INITIALIZE );
+    CheckFailed( rval, TPM_RC_INITIALIZE ); // #42
 
-    // Get the command results
+    // Test _Complete for case when ExecuteFinish had an error.
     rval = Tss2_Sys_GetCapability_Complete( sysContext, 0, 0 );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #43
 
     rval = Tss2_Sys_Startup( sysContext, TPM_SU_CLEAR );
-    CheckPassed(rval);
+    CheckPassed(rval); // #44
+
+    rval = Tss2_Sys_GetRpBuffer( 0, &rpBufferUsedSize, &rpBuffer );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #45
+    
+    rval = Tss2_Sys_GetRpBuffer( sysContext, 0, &rpBuffer );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #46
+    
+    rval = Tss2_Sys_GetRpBuffer( sysContext, &rpBufferUsedSize, 0 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #47
+
+    rval = Tss2_Sys_GetRpBuffer( sysContext, &rpBufferUsedSize, &rpBuffer );
+    CheckPassed( rval ); // #48
+    
+    // Now test case for ExecuteFinish where TPM returns
+    // an error.  ExecuteFinish should return same error
+    // as TPM.
+    rval = Tss2_Sys_Startup_Prepare( sysContext, TPM_SU_CLEAR );
+    CheckPassed(rval); // #49
+
+    // Execute the command ayncronously.
+    rval = Tss2_Sys_ExecuteAsync( sysContext );
+    CheckPassed( rval ); // #50
+
+    rval = Tss2_Sys_Startup( sysContext, TPM_SU_CLEAR );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #51
+
+    rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TPM_RC_INITIALIZE ); // #52
+
+    // Now test case for ExecuteFinish where TPM returns
+    // an error.  ExecuteFinish should return same error
+    // as TPM.
+    rval = Tss2_Sys_Startup_Prepare( sysContext, TPM_SU_CLEAR );
+    CheckPassed(rval); // #53
+
+    rval = Tss2_Sys_GetRpBuffer( sysContext, &rpBufferUsedSize, &rpBuffer );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #54
+    
+    // Execute the command ayncronously.
+    rval = Tss2_Sys_Execute( sysContext );
+    CheckFailed( rval, TPM_RC_INITIALIZE ); // #55
+
+    rval = Tss2_Sys_GetRpBuffer( sysContext, &rpBufferUsedSize, &rpBuffer );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #56
+    
+    // Test one-call for null sysContext pointer.
+    rval = Tss2_Sys_Startup( 0, TPM_SU_CLEAR );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #57
+
+    
+    
+    // Test one-call for NULL input parameter that should be a
+    // pointer.
+    rval = Tss2_Sys_Create( testSysContext, 0xffffffff, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #58
+
+    // Test GetCommandCode for bad reference
+    rval = Tss2_Sys_GetCommandCode( 0, &commandCode );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #59
+    
+    rval = Tss2_Sys_GetCommandCode( sysContext, 0 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #60
 }
 
 
@@ -3919,6 +4118,8 @@ void SimpleHmacTest()
     rval = EndAuthSession( nvSession );
 
     CheckPassed( rval );
+
+    PlatformCommand( resMgrTctiContext, MS_SIM_POWER_OFF );
 }
 
 
@@ -4254,6 +4455,7 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
     CheckPassed( rval );
 
     TeardownSysContext( &simpleTestContext );
+
 }
 
 
@@ -5144,19 +5346,23 @@ void GetSetDecryptParamTests()
         InitSysContextFailure();
     }
 
-    // Test for bad sequence
+    // Test for bad sequence:  Tss2_Sys_GetDecryptParam
     rval = Tss2_Sys_GetDecryptParam( decryptParamTestSysContext, &decryptParamSize, &decryptParamBuffer );
     CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE );
-    
+
+    // Test for bad sequence:  Tss2_Sys_SetDecryptParam
     rval = Tss2_Sys_SetDecryptParam( decryptParamTestSysContext, 4, &( nvWriteData.t.buffer[0] ) );
     CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE );
 
+    // NOTE:  Two tests for BAD_SEQUENCE for GetDecryptParam and SetDecryptParam after ExecuteAsync
+    // are in the GetSetEncryptParamTests function, just because it's easier to do this way.
+    
     // Do Prepare.
     rval = Tss2_Sys_NV_Write_Prepare( decryptParamTestSysContext, TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST, &nvWriteData1, 0x55aa ); 
     CheckPassed( rval );
 
-    // Test for bad reference
+    // Test for bad reference:  Tss2_Sys_GetDecryptParam
     rval = Tss2_Sys_GetDecryptParam( 0, &decryptParamSize, &decryptParamBuffer );
     CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
     
@@ -5165,12 +5371,15 @@ void GetSetDecryptParamTests()
     
     rval = Tss2_Sys_GetDecryptParam( decryptParamTestSysContext, &decryptParamSize, 0 );
     CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+
     
+    // Test for bad reference:  Tss2_Sys_SetDecryptParam
     rval = Tss2_Sys_SetDecryptParam( decryptParamTestSysContext, 4, 0 );
     CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
 
     rval = Tss2_Sys_SetDecryptParam( 0, 4, 0 );
     CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+    
 
     // Test for bad size.
     rval = Tss2_Sys_SetDecryptParam( decryptParamTestSysContext, 5, &( nvWriteData.t.buffer[0] ) );
@@ -5299,8 +5508,6 @@ void SysInitializeTests()
     // It is only done here for test purposes.
     TSS2_TCTI_CONTEXT_INTEL tctiContextIntel;
 
-    TSS2_TCTI_CONTEXT *tctiContext = (TSS2_TCTI_CONTEXT *)&tctiContextIntel; 
-
     TpmClientPrintf( 0, "\nSYS INITIALIZE TESTS:\n" );
 
     rval = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)0, 10, (TSS2_TCTI_CONTEXT *)1, (TSS2_ABI_VERSION *)1 );
@@ -5328,6 +5535,115 @@ void SysInitializeTests()
 
     rval = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, sizeof( _TSS2_SYS_CONTEXT_BLOB ), (TSS2_TCTI_CONTEXT *)&tctiContextIntel, (TSS2_ABI_VERSION *)1 );
     CheckFailed( rval, TSS2_SYS_RC_BAD_TCTI_STRUCTURE );
+}
+
+void SysFinalizeTests()
+{
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+
+    TpmClientPrintf( 0, "\nSYS FINALIZE TESTS:\n" );
+
+    rval = Tss2_Sys_Finalize( 0 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+
+    // Note:  other cases tested by other tests.
+}
+
+void GetContextSizeTests()
+{
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+    TSS2_SYS_CONTEXT *testSysContext;
+    
+    TpmClientPrintf( 0, "\nSYS GETCONTEXTSIZE TESTS:\n" );
+
+    testSysContext = InitSysContext( 9, resMgrTctiContext, &abiVersion );
+    if( testSysContext == 0 )
+    {
+        InitSysContextFailure();
+    }
+
+    rval = Tss2_Sys_Startup( testSysContext, TPM_SU_CLEAR );
+    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_BUFFER );
+
+	rval = Tss2_Sys_GetTestResult_Prepare( testSysContext );
+	CheckPassed( rval );
+
+    // Note:  other cases tested by other tests.
+
+    TeardownSysContext( &testSysContext );
+}
+
+void GetTctiContextTests()
+{
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+    TSS2_SYS_CONTEXT *testSysContext;
+    TSS2_TCTI_CONTEXT *tctiContext;
+            
+    TpmClientPrintf( 0, "\nSYS GETTCTICONTEXT TESTS:\n" );
+
+    testSysContext = InitSysContext( 9, resMgrTctiContext, &abiVersion );
+    if( testSysContext == 0 )
+    {
+        InitSysContextFailure();
+    }
+
+    rval = Tss2_Sys_GetTctiContext( testSysContext, 0 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+    
+    rval = Tss2_Sys_GetTctiContext( 0, &tctiContext );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+
+    TeardownSysContext( &testSysContext );
+}
+
+void PrepareTests()
+{
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+    TSS2_SYS_CONTEXT *testSysContext;
+    
+    TpmClientPrintf( 0, "\nSYS PREPARE TESTS:\n" );
+
+    testSysContext = InitSysContext( 0, resMgrTctiContext, &abiVersion );
+    if( testSysContext == 0 )
+    {
+        InitSysContextFailure();
+    }
+
+    // Test for bad reference.
+    rval = Tss2_Sys_GetTestResult_Prepare( 0 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+
+    // Test for bad sequence:  after ExecuteAsync
+    rval = Tss2_Sys_GetTestResult_Prepare( testSysContext );
+    CheckPassed( rval );
+
+    rval = Tss2_Sys_ExecuteAsync( testSysContext );
+    CheckPassed( rval );
+
+    rval = Tss2_Sys_GetTestResult_Prepare( testSysContext );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE );
+
+    rval = Tss2_Sys_ExecuteFinish( testSysContext, -1 );
+    CheckPassed( rval );
+
+    // Test for bad sequence:  after Execute
+    rval = Tss2_Sys_GetTestResult_Prepare( testSysContext );
+    CheckPassed( rval );
+
+    rval = Tss2_Sys_Execute( testSysContext );
+    CheckPassed( rval );
+
+    rval = Tss2_Sys_GetTestResult_Prepare( testSysContext );
+    CheckPassed( rval );
+
+    rval = Tss2_Sys_GetTestResult_Prepare( testSysContext );
+    CheckPassed( rval );
+
+    // Test for other NULL params
+    rval = Tss2_Sys_Create_Prepare( testSysContext, 0xffffffff, 0, 0, 0, 0 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+    
+    TeardownSysContext( &testSysContext );
 }
 
 void  RmZeroSizedResponseTest()
@@ -5628,20 +5944,21 @@ void GetSetEncryptParamTests()
     TSS2_SYS_RSP_AUTHS sessionsDataOut = { 1, &sessionDataOutArray[0] };
 
     TPM2B_MAX_NV_BUFFER nvReadData;
+    const uint8_t 		*cpBuffer;
     
     TpmClientPrintf( 0, "\nGET/SET ENCRYPT PARAM TESTS:\n" );
 
     // Do Prepare.
     rval = Tss2_Sys_NV_Write_Prepare( sysContext, TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST, &nvWriteData, 0 ); 
-    CheckPassed( rval );
+    CheckPassed( rval ); // #1
 
     // Test for bad sequence
     rval = Tss2_Sys_GetEncryptParam( sysContext, &encryptParamSize, &encryptParamBuffer );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #2
     
     rval = Tss2_Sys_SetEncryptParam( sysContext, 4, &( nvWriteData.t.buffer[0] ) );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #3
 
     // Create NV index
 
@@ -5657,35 +5974,83 @@ void GetSetEncryptParamTests()
 
     rval = DefineNvIndex( TPM_RH_PLATFORM, TPM_RS_PW, &nvAuth, &authPolicy,
             TPM20_INDEX_PASSWORD_TEST, TPM_ALG_SHA1, nvAttributes, 32  );
-    CheckPassed( rval );
+    CheckPassed( rval ); // #4
 
     // Write the index.
     rval = Tss2_Sys_NV_Write_Prepare( sysContext, TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST, &nvWriteData, 0 ); 
-    CheckPassed( rval );
+    CheckPassed( rval ); // #5
 
-    rval = Tss2_Sys_NV_Write( sysContext, TPM20_INDEX_PASSWORD_TEST, TPM20_INDEX_PASSWORD_TEST, &sessionsData, &nvWriteData, 0, &sessionsDataOut ); 
-    CheckPassed( rval );
+    // NOTE: add GetCpBuffer tests here, just because its easier.
+    rval = Tss2_Sys_GetCpBuffer( 0, (size_t *)4, (const uint8_t **)4 );
+	CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #6
 
+    rval = Tss2_Sys_GetCpBuffer( sysContext, (size_t *)0, (const uint8_t **)4 );
+	CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #7
+
+    rval = Tss2_Sys_GetCpBuffer( sysContext, (size_t *)4, (const uint8_t **)0 );
+	CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #8
+
+
+    rval = Tss2_Sys_SetCmdAuths( sysContext, &sessionsData );
+    CheckPassed( rval ); // #9
+
+    rval = Tss2_Sys_ExecuteAsync( sysContext );
+    CheckPassed( rval ); // #10
+
+    // NOTE: Stick two tests for BAD_SEQUENCE for GetDecryptParam and SetDecryptParam here, just
+    // because it's easier to do this way.
+    rval = Tss2_Sys_GetDecryptParam( sysContext, (size_t *)4, (const uint8_t **)4 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #11
+
+    rval = Tss2_Sys_SetDecryptParam( sysContext, 10, (uint8_t *)4 );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #12
+
+    // NOTE: Stick test for BAD_SEQUENCE for GetCpBuffer here, just
+    // because it's easier to do this way.
+    rval = Tss2_Sys_GetCpBuffer( sysContext, (size_t *)4, &cpBuffer );
+	CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #13
+    
+    // Now finish the write command so that TPM isn't stuck trying
+    // to send a response.
+    rval = Tss2_Sys_ExecuteFinish( sysContext, -1 ); 
+    CheckPassed( rval ); // #14
+
+    // Test GetEncryptParam for no encrypt param case.
     rval = Tss2_Sys_GetEncryptParam( sysContext, &encryptParamSize, &encryptParamBuffer );
-    CheckFailed( rval, TSS2_SYS_RC_NO_ENCRYPT_PARAM );
-
+    CheckFailed( rval, TSS2_SYS_RC_NO_ENCRYPT_PARAM ); // #15
+    
+    // Test SetEncryptParam for no encrypt param case.
+    rval = Tss2_Sys_SetEncryptParam( sysContext, encryptParamSize, encryptParamBuffer1 );
+    CheckFailed( rval, TSS2_SYS_RC_NO_ENCRYPT_PARAM ); // #16
+    
     // Now read it and do tests on get/set encrypt functions
     rval = Tss2_Sys_NV_Read_Prepare( sysContext, TPM20_INDEX_PASSWORD_TEST, TPM20_INDEX_PASSWORD_TEST, 4, 0 ); 
-    CheckPassed( rval );
+    CheckPassed( rval ); // #17
 
     rval = Tss2_Sys_NV_Read( sysContext, TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST, &sessionsData, 4, 0, &nvReadData, &sessionsDataOut ); 
-    CheckPassed( rval );
+    CheckPassed( rval ); // #18
 
     rval = Tss2_Sys_GetEncryptParam( sysContext, &encryptParamSize, &encryptParamBuffer );
-    CheckPassed( rval );
+    CheckPassed( rval ); // #19
 
+    // Test case of encryptParamSize being too small.
+    encryptParamSize--;
     rval = Tss2_Sys_SetEncryptParam( sysContext, encryptParamSize, encryptParamBuffer1 );
-    CheckPassed( rval );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SIZE ); // #20
+    encryptParamSize += 2;
+
+    // Size too large...should pass, but doesn't.
+    rval = Tss2_Sys_SetEncryptParam( sysContext, encryptParamSize, encryptParamBuffer1 );
+    CheckPassed( rval ); // #21
+
+    encryptParamSize--;
+    rval = Tss2_Sys_SetEncryptParam( sysContext, encryptParamSize, encryptParamBuffer1 );
+    CheckPassed( rval ); // #22
 
     rval = Tss2_Sys_GetEncryptParam( sysContext, &encryptParamSize, &encryptParamBuffer );
-    CheckPassed( rval );
+    CheckPassed( rval ); // #23
 
     // Test that encryptParamBuffer is the same as encryptParamBuffer1
     for( i = 0; i < 4; i++ )
@@ -5698,24 +6063,24 @@ void GetSetEncryptParamTests()
     }
     
     rval = Tss2_Sys_NV_UndefineSpace( sysContext, TPM_RH_PLATFORM, TPM20_INDEX_PASSWORD_TEST, &sessionsData, 0 );
-    CheckPassed( rval );
+    CheckPassed( rval ); // #24
 
 
     // Test for bad reference
     rval = Tss2_Sys_GetEncryptParam( 0, &encryptParamSize, &encryptParamBuffer );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #25
     
     rval = Tss2_Sys_GetEncryptParam( sysContext, 0, &encryptParamBuffer );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #26
     
     rval = Tss2_Sys_GetEncryptParam( sysContext, &encryptParamSize, 0 );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #27
     
     rval = Tss2_Sys_SetEncryptParam( sysContext, 4, 0 );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #28
 
     rval = Tss2_Sys_SetEncryptParam( 0, 4, encryptParamBuffer );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #29
 }
 
 void TestRM()
@@ -6295,6 +6660,12 @@ void TpmTest()
 
     SysInitializeTests();
 
+    SysFinalizeTests();
+
+    GetContextSizeTests();
+
+    GetTctiContextTests();
+    
     GetSetDecryptParamTests();
 
 #ifdef _WIN32
@@ -6314,18 +6685,20 @@ void TpmTest()
 
     CmdRspAuthsTests();
 	    
+    PrepareTests();
+
     // Clear DA lockout.
     TestDictionaryAttackLockReset();
 
     TestTpmSelftest();
-
-    TestSapiApis();
 
     TestDictionaryAttackLockReset();
     
     TestCreate();
 
     TestCreate1();
+
+    TestSapiApis();
 
     if( startAuthSessionTestOnly == 1 )
     {
@@ -6342,7 +6715,7 @@ void TpmTest()
     TestEncryptDecryptSession();
 
     SimpleHmacOrPolicyTest( true );
-    
+
     SimpleHmacOrPolicyTest( false );
    
     for( i = 1; i <= (UINT32)passCount; i++ )

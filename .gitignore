@@ -6,6 +6,9 @@
 *.pdb
 *.sdf
 *.suo
+*.ses
+*.tag
+*vcxproj.user
 .deps/
 .dirstamp
 .libs
@@ -31,4 +34,6 @@ missing
 src_vars.mk
 resourcemgr/resourcemgr
 test/tpmclient/tpmclient
+.klocwork/
+ipch/
 test/tpmtest/tpmtest

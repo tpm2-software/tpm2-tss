@@ -33,6 +33,20 @@ TSS2_RC Tss2_Sys_GetCommandCode(
     UINT8 (*commandCode)[4]  
     )
 {
-    *(UINT32 *)*commandCode = CHANGE_ENDIAN_DWORD( SYS_CONTEXT->commandCodeSwapped );
-    return( TSS2_RC_SUCCESS );
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+    
+    if( sysContext == NULL || commandCode == NULL )
+    {
+        rval = TSS2_SYS_RC_BAD_REFERENCE;
+    }
+    else if( SYS_CONTEXT->previousStage == CMD_STAGE_INITIALIZE )
+    {
+        rval = TSS2_SYS_RC_BAD_SEQUENCE;
+    }
+    else
+    {
+        *(UINT32 *)*commandCode = CHANGE_ENDIAN_DWORD( SYS_CONTEXT->commandCodeSwapped );
+    }
+    
+    return( rval );
 }

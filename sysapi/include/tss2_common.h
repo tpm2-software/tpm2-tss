@@ -151,6 +151,7 @@ typedef struct {
 
 // Base error codes from 0xf800 - 0xffff are reserved for level- and implementation-specific
 // errors.
+#define TSS2_LEVEL_IMPLEMENTATION_SPECIFIC_SHIFT 11
 #define TSS2_LEVEL_IMPLEMENTATION_SPECIFIC_OFFSET 0xf800
 
 #define TSS2_RC_SUCCESS                         ((TSS2_RC)0)

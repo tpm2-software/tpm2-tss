@@ -37,6 +37,8 @@ TPM_RC Tss2_Sys_GetTestResult_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
+     
+
     CommonPreparePrologue( sysContext, TPM_CC_GetTestResult );
 
     
@@ -80,10 +82,7 @@ TPM_RC Tss2_Sys_GetTestResult(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+     
 
     rval = Tss2_Sys_GetTestResult_Prepare( sysContext );
     

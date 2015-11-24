@@ -45,7 +45,7 @@ void Marshal_TPM2B_PUBLIC(
 	{
 		Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), publicVar->t.size, &( SYS_CONTEXT->rval ) );
 		Marshal_TPMT_PUBLIC( sysContext, &publicVar->t.publicArea );
-}
+	}
 
 	*(UINT16 *)sizePtr = CHANGE_ENDIAN_WORD( SYS_CONTEXT->nextData - (UINT8 *)sizePtr - 2 );
 

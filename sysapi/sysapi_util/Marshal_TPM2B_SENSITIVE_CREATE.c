@@ -45,7 +45,7 @@ void Marshal_TPM2B_SENSITIVE_CREATE(
 	{
 		Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), sensitiveCreate->t.size, &( SYS_CONTEXT->rval ) );
 		Marshal_TPMS_SENSITIVE_CREATE( sysContext, &sensitiveCreate->t.sensitive );
-}
+	}
 
 	*(UINT16 *)sizePtr = CHANGE_ENDIAN_WORD( SYS_CONTEXT->nextData - (UINT8 *)sizePtr - 2 );
 

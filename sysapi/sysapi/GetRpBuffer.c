@@ -36,14 +36,19 @@ TPM_RC Tss2_Sys_GetRpBuffer(
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
-    if( SYS_CONTEXT->previousStage == CMD_STAGE_RECEIVE_RESPONSE )
+    if( sysContext == 0 || rpBufferUsedSize == 0 || rpBuffer == 0 )
     {
-        *rpBuffer = SYS_CONTEXT->rpBuffer;
-        *rpBufferUsedSize = SYS_CONTEXT->rpBufferUsedSize;
+        rval = TSS2_SYS_RC_BAD_REFERENCE;
+    }
+    else if( SYS_CONTEXT->previousStage != CMD_STAGE_RECEIVE_RESPONSE ||
+             SYS_CONTEXT->rval != TSS2_RC_SUCCESS )
+    {
+        rval = TSS2_SYS_RC_BAD_SEQUENCE;
     }
     else
     {
-        rval = TSS2_SYS_RC_BAD_SEQUENCE;
+        *rpBuffer = SYS_CONTEXT->rpBuffer;
+        *rpBufferUsedSize = SYS_CONTEXT->rpBufferUsedSize;
     }
     return( rval );
 }

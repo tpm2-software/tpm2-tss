@@ -38,6 +38,11 @@ TPM_RC Tss2_Sys_TestParms_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
+    if( parameters == NULL  )
+	{
+		return TSS2_SYS_RC_BAD_REFERENCE;
+	} 
+
     CommonPreparePrologue( sysContext, TPM_CC_TestParms );
 
     
@@ -63,10 +68,10 @@ TPM_RC Tss2_Sys_TestParms(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    if( parameters == NULL  )
+	{
+		return TSS2_SYS_RC_BAD_REFERENCE;
+	} 
 
     rval = Tss2_Sys_TestParms_Prepare( sysContext, parameters );
     

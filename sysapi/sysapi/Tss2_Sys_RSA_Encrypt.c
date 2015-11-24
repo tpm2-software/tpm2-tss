@@ -41,6 +41,11 @@ TPM_RC Tss2_Sys_RSA_Encrypt_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
+    if( inScheme == NULL  )
+	{
+		return TSS2_SYS_RC_BAD_REFERENCE;
+	} 
+
     CommonPreparePrologue( sysContext, TPM_CC_RSA_Encrypt );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), keyHandle, &(SYS_CONTEXT->rval) );
@@ -95,10 +100,10 @@ TPM_RC Tss2_Sys_RSA_Encrypt(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    if( inScheme == NULL  )
+	{
+		return TSS2_SYS_RC_BAD_REFERENCE;
+	} 
 
     rval = Tss2_Sys_RSA_Encrypt_Prepare( sysContext, keyHandle, message, inScheme, label );
     

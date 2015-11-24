@@ -43,6 +43,11 @@ TPM_RC Tss2_Sys_Import_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
+    if( symmetricAlg == NULL  )
+	{
+		return TSS2_SYS_RC_BAD_REFERENCE;
+	} 
+
     CommonPreparePrologue( sysContext, TPM_CC_Import );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), parentHandle, &(SYS_CONTEXT->rval) );
@@ -103,10 +108,10 @@ TPM_RC Tss2_Sys_Import(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    if( symmetricAlg == NULL  )
+	{
+		return TSS2_SYS_RC_BAD_REFERENCE;
+	} 
 
     rval = Tss2_Sys_Import_Prepare( sysContext, parentHandle, encryptionKey, objectPublic, duplicate, inSymSeed, symmetricAlg );
     

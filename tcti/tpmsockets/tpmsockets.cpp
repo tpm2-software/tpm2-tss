@@ -321,6 +321,7 @@ TSS2_RC SocketReceiveTpmResponse(
     struct timeval tv, *tvPtr;
     int32_t timeoutMsecs = timeout % 1000;
     int iResult;
+    size_t receiveSize, i;
     
     if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
     {
@@ -372,17 +373,50 @@ TSS2_RC SocketReceiveTpmResponse(
         recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&responseSize, 4 );
         
 		responseSize = CHANGE_ENDIAN_DWORD( responseSize );
-                
-        // Receive the TPM response.
-        recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)response_buffer, responseSize );
+
+        if( *response_size < responseSize )
+        {
+            rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER; 
+
+            // Now we have to read all the bytes from the TPM interface, even if the buffer's too small.
+            // Otherwise, we won't be able to send any more commands to the interface without resetting it.
+            // So, we will loop around reading bytes into the response_buffer.  This, of course,
+            // means that the response buffer is gibberish when we're done, but at least the TPM
+            // is left usable.  The error code should notify the caller that the response buffer
+            // can't be used.
+            for( i = 0; i < responseSize; i += receiveSize )
+            {
+                if( responseSize - i > *response_size )
+                {
+                    receiveSize = *response_size;
+                }
+                else
+                {
+                    receiveSize = responseSize - i;
+                }
+                // Receive the TPM response.
+                recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)response_buffer, receiveSize );
 
 #ifdef DEBUG
-        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
-        {
-            DEBUG_PRINT_BUFFER( response_buffer, responseSize );
+                if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
+                {
+                    DEBUG_PRINT_BUFFER( response_buffer, receiveSize );
+                }
+#endif
+            }
         }
-#endif    
-
+        else
+        {
+            // Receive the TPM response.
+            recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)response_buffer, responseSize );
+#ifdef DEBUG
+            if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
+            {
+                DEBUG_PRINT_BUFFER( response_buffer, responseSize );
+            }
+#endif
+        }
+        
         // Receive the appended four bytes of 0's
         recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&trash, 4 );
     }
@@ -395,7 +429,15 @@ TSS2_RC SocketReceiveTpmResponse(
     ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent = 0;
 
     // Turn cancel off.
-    rval = (TSS2_RC)PlatformCommand( tctiContext, MS_SIM_CANCEL_OFF );
+    if( rval == TSS2_RC_SUCCESS )
+    {
+        rval = (TSS2_RC)PlatformCommand( tctiContext, MS_SIM_CANCEL_OFF );
+    }
+    else
+    {
+        // Ignore return value so earlier error code is preserved.
+        PlatformCommand( tctiContext, MS_SIM_CANCEL_OFF );
+    }
 
     if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
     {
