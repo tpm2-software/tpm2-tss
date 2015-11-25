@@ -29,7 +29,6 @@
 #include <stdlib.h>   // Needed for _wtoi
 
 #include "tpm20.h"
-#include "tpmsockets.h"
 #include "tss2_sysapi_util.h"
 #include "debug.h"
 
