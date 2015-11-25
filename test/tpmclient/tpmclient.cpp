@@ -603,7 +603,7 @@ void TestTpmStartup()
 
 void ForceIOError( SOCKET *savedTpmSock, SOCKET *savedOtherSock, int *savedDevFile, int tpmSock )
 {
-    if( tpmManufacturer = MSFT_MANUFACTURER_ID )
+    if( tpmManufacturer == MSFT_MANUFACTURER_ID )
     {
         if( tpmSock )
         {
@@ -625,7 +625,7 @@ void ForceIOError( SOCKET *savedTpmSock, SOCKET *savedOtherSock, int *savedDevFi
 
 void CleanupIOError( SOCKET savedTpmSock, SOCKET savedOtherSock, int savedDevFile, int tpmSock )
 {
-    if( tpmManufacturer = MSFT_MANUFACTURER_ID )
+    if( tpmManufacturer == MSFT_MANUFACTURER_ID )
     {
         if( tpmSock )
         {
