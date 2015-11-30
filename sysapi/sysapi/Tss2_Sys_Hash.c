@@ -40,6 +40,8 @@ TPM_RC Tss2_Sys_Hash_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
+     
+
     CommonPreparePrologue( sysContext, TPM_CC_Hash );
 
     if( data == 0 )
@@ -95,10 +97,7 @@ TPM_RC Tss2_Sys_Hash(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+     
 
     rval = Tss2_Sys_Hash_Prepare( sysContext, data, hashAlg, hierarchy );
     

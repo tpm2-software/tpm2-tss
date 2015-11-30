@@ -86,7 +86,7 @@ TSS2_RC Tss2_Sys_SetEncryptParam(
 
         if( rval == TSS2_RC_SUCCESS )
         {
-            if( encryptParamSize != currEncryptParamSize )
+            if( encryptParamSize < currEncryptParamSize )
             {
                 return TSS2_SYS_RC_BAD_SIZE;
             }

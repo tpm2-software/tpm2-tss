@@ -38,6 +38,8 @@ TPM_RC Tss2_Sys_GetRandom_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
+     
+
     CommonPreparePrologue( sysContext, TPM_CC_GetRandom );
 
     
@@ -80,10 +82,7 @@ TPM_RC Tss2_Sys_GetRandom(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+     
 
     rval = Tss2_Sys_GetRandom_Prepare( sysContext, bytesRequested );
     

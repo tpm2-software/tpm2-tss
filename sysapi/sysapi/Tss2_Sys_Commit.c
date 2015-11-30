@@ -41,6 +41,8 @@ TPM_RC Tss2_Sys_Commit_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
+     
+
     CommonPreparePrologue( sysContext, TPM_CC_Commit );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), signHandle, &(SYS_CONTEXT->rval) );
@@ -107,10 +109,7 @@ TPM_RC Tss2_Sys_Commit(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+     
 
     rval = Tss2_Sys_Commit_Prepare( sysContext, signHandle, P1, s2, y2 );
     

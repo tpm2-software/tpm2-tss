@@ -89,6 +89,8 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
         }
         else
         {
+            SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
+
             // Unmarshal the tag, response size, and response code here so that nextData pointer
             // is set up for getting response handles.  This avoids having to put special code
             // in each Part 3 command's Complete function for this.
@@ -103,7 +105,7 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
             }
             else
             {
-                Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), &(SYS_CONTEXT->rval), &rval );
+                Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), &rval, &(SYS_CONTEXT->rval) );
 
                 // Return TPM return code if no other errors have occured.
                 if( rval == TSS2_RC_SUCCESS )
@@ -113,6 +115,10 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
                         tpmError = 1;
                         SYS_CONTEXT->responseCode = rval = SYS_CONTEXT->rval;
                     }
+                }
+                else
+                {
+                    SYS_CONTEXT->rval = rval;
                 }
             }
         }
@@ -130,7 +136,13 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
             SYS_CONTEXT->responseCode = SYS_CONTEXT->rval;
         }
     }
-
+    else if( rval == TSS2_TCTI_RC_INSUFFICIENT_BUFFER )
+    {
+        // In this case we received all the bytes from the TCTI layer, so we need to
+        // change previous state to CMD_STAGE_RECEIVE_RESPONSE.
+        SYS_CONTEXT->previousStage = CMD_STAGE_RECEIVE_RESPONSE;
+    }
+        
     return rval;
 }
 
