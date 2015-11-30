@@ -39,13 +39,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(IncludePath);..\sysapi\include;..\test\tpmclient;..\tcti\tpmsockets;..\common;..\tcti\localtpm</IncludePath>
+    <IncludePath>$(SolutionDir)tcti\commontcti;$(IncludePath);..\sysapi\include;..\test\tpmclient;..\tcti\tpmsockets;..\common;..\tcti\localtpm</IncludePath>
     <OutDir>$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <ExecutablePath>$(ExecutablePath);..\syscontext</ExecutablePath>
-    <IncludePath>$(IncludePath);..\sysapi\include;..\test\tpmclient;..\tcti\tpmsockets;..\common;..\tcti\localtpm</IncludePath>
+    <IncludePath>$(SolutionDir)tcti\common;$(IncludePath);..\sysapi\include;..\test\tpmclient;..\tcti\tpmsockets;..\common;..\tcti\localtpm</IncludePath>
     <OutDir>$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -96,6 +96,7 @@
     <ClInclude Include="..\sysapi\include\tss2_tcti.h" />
     <ClInclude Include="..\sysapi\include\tss2_tcti_util.h" />
     <ClInclude Include="..\sysapi\include\tss2_tpm2_types.h" />
+    <ClInclude Include="..\tcti\commonTcti\commonchecks.h" />
     <ClInclude Include="..\tcti\tpmsockets\tpmsockets.h" />
     <ClInclude Include="resourcemgr.h" />
   </ItemGroup>
@@ -104,6 +105,7 @@
     <ClCompile Include="..\common\getcommands.c" />
     <ClCompile Include="..\common\platformcommand.c" />
     <ClCompile Include="..\common\syscontext.c" />
+    <ClCompile Include="..\tcti\commonTcti\commonchecks.c" />
     <ClCompile Include="..\tcti\tpmsockets\tpmsockets.cpp" />
     <ClCompile Include="resourcemgr.c" />
   </ItemGroup>

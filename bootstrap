@@ -29,6 +29,10 @@ echo "Generating file lists: ${VARS_FILE}"
   src_listvar "tcti/localtpm" "*.h" "LOCALTPM_H"
   printf "LOCALTPM_SRC = \$(LOCALTPM_C) \$(LOCALTPM_H)\n"
 
+  src_listvar "tcti/commonTcti" "*.c" "COMMONTCTI_C"
+  src_listvar "tcti/commonTcti" "*.h" "COMMONTCTI_H"
+  printf "COMMONTCTI_SRC = \$(COMMONTCTI_C) \$(COMMONTCTI_H)\n"
+
   src_listvar "test/common/sample" "*.c" "SAMPLE_C"
   src_listvar "test/common/sample" "*.h" "SAMPLE_H"
   printf "SAMPLE_SRC = \$(SAMPLE_C) \$(SAMPLE_H)\n"

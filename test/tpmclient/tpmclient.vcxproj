@@ -41,12 +41,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(SolutionDir)..\..\sysapi\include;$(SolutionDir)tpmclient;$(SolutionDir)tpmclient\simdriver;$(SolutionDir)resourceMgr;..\common\sample;..\..\tcti\tpmSockets;$(IncludePath);..\..\common;$(SolutionDir)sysapi\includ</IncludePath>
+    <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(SolutionDir)..\..\sysapi\include;$(SolutionDir)tpmclient;$(SolutionDir)tpmclient\simdriver;$(SolutionDir)resourceMgr;..\common\sample;..\..\tcti\tpmSockets;$(IncludePath);..\..\common;$(SolutionDir)sysapi\include;$(SolutionDir)tcti\commonTcti</IncludePath>
     <OutDir>$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(SolutionDir)..\..\sysapi\include;$(SolutionDir)tpmclient;$(SolutionDir)tpmclient\simdriver;$(SolutionDir)resourceMgr;..\common\sample;..\..\tcti\tpmSockets;$(IncludePath);..\..\common;$(SolutionDir)sysapi\includ</IncludePath>
+    <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(SolutionDir)..\..\sysapi\include;$(SolutionDir)tpmclient;$(SolutionDir)tpmclient\simdriver;$(SolutionDir)resourceMgr;..\common\sample;..\..\tcti\tpmSockets;$(IncludePath);..\..\common;$(SolutionDir)sysapi\include;$(SolutionDir)tcti\commonTcti</IncludePath>
     <OutDir>$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -111,6 +111,7 @@
     <ClInclude Include="..\..\sysapi\include\tss2_tcti.h" />
     <ClInclude Include="..\..\sysapi\include\tss2_tcti_util.h" />
     <ClInclude Include="..\..\sysapi\include\tss2_tpm2_types.h" />
+    <ClInclude Include="..\..\tcti\commonTcti\commonchecks.h" />
     <ClInclude Include="..\..\tcti\tpmsockets\tpmsockets.h" />
     <ClInclude Include="..\common\sample\sample.h" />
     <ClInclude Include="stdafx.h" />
@@ -121,6 +122,7 @@
     <ClCompile Include="..\..\common\debug.c" />
     <ClCompile Include="..\..\common\platformcommand.c" />
     <ClCompile Include="..\..\common\syscontext.c" />
+    <ClCompile Include="..\..\tcti\commonTcti\commonchecks.c" />
     <ClCompile Include="..\..\tcti\tpmsockets\tpmsockets.cpp" />
     <ClCompile Include="..\common\sample\CatSizedByteBuffer.c" />
     <ClCompile Include="..\common\sample\CopySizedBuffer.c" />
