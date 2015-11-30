@@ -861,6 +861,13 @@ void TestSapiApis()
     UINT8               commandCode[4];
     size_t				rpBufferUsedSize;
 	const uint8_t 		*rpBuffer;
+	const uint8_t 		goodRpBuffer[] = { 0x01, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00,
+                                           0x01, 0x00, 0x00, 0x01, 0x11, 0x00, 0x00, 0x00,
+										   0x40 };
+    TPMI_YES_NO         moreData;
+    TPMS_CAPABILITY_DATA	capabilityData;
+    int                 rpBufferError = 0;
+    unsigned int        i;
     
     TpmClientPrintf( 0, "\nSAPI API TESTS:\n" );
 
@@ -1118,6 +1125,59 @@ void TestSapiApis()
     
     rval = Tss2_Sys_GetCommandCode( sysContext, 0 );
     CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #60
+
+    //
+    // Test GetRpBuffer for case of no response params or handles.
+    //
+    rval = Tss2_Sys_Shutdown( sysContext, 0, TPM_SU_STATE, 0 );
+    CheckPassed( rval ); // #61
+
+    rval = Tss2_Sys_GetRpBuffer( sysContext, &rpBufferUsedSize, &rpBuffer );
+    CheckPassed( rval ); // #62
+
+    if( rpBufferUsedSize != 0 )
+    {
+        TpmClientPrintf( NO_PREFIX, "\nERROR!!  Tss2_Sys_GetRpBuffer returned non-zero size for command that returns no handles or parameters\n" );
+        Cleanup();
+    }
+
+    //
+    // Test GetRpBuffer for case of response params.
+    //
+    rval = Tss2_Sys_GetCapability( sysContext, 0, 
+            TPM_CAP_TPM_PROPERTIES, TPM_PT_ACTIVE_SESSIONS_MAX,
+            1, &moreData, &capabilityData, 0 );
+    CheckPassed(rval); // #63
+
+    rval = Tss2_Sys_GetRpBuffer( sysContext, &rpBufferUsedSize, &rpBuffer );
+    CheckPassed( rval ); // #64
+
+    if( rpBufferUsedSize != 17 )
+    {
+        TpmClientPrintf( NO_PREFIX, "\nERROR!!  Tss2_Sys_GetRpBuffer returned wrong size for command that returns handles and/or parameters\n" );
+        Cleanup();
+    }
+
+    // Now compare RP buffer to what it should be
+    for( i = 0; i < rpBufferUsedSize; i++ )
+    {
+        if( rpBuffer[i] != goodRpBuffer[i] )
+        {
+            rpBufferError = 1;
+            break;
+        }
+    }
+
+    if( rpBufferError )
+    {
+        TpmClientPrintf( NO_PREFIX, "\nERROR!!  Tss2_Sys_GetRpBuffer returned wrong rpBuffer contents:\nrpBuffer was: \n\t" );
+        DebugPrintBuffer( (UINT8 *)&rpBuffer, rpBufferUsedSize );
+        TpmClientPrintf( NO_PREFIX, "\nrpBuffer s/b:\n\t" );
+        DebugPrintBuffer( (UINT8 *)&(goodRpBuffer[0]), rpBufferUsedSize );
+        Cleanup();
+    }
+    
+    TeardownSysContext( &testSysContext );
 }
 
 

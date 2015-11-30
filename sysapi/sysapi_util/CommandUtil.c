@@ -55,6 +55,7 @@ void InitSysContextFields(
     SYS_CONTEXT->prepareCalledFromOneCall = 0;
     SYS_CONTEXT->completeCalledFromOneCall = 0;
     SYS_CONTEXT->nextData = SYS_CONTEXT->tpmInBuffPtr;
+    SYS_CONTEXT->rpBufferUsedSize = 0;
     SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
 }
 
@@ -124,7 +125,7 @@ TSS2_RC CommonPreparePrologue(
 
         SYS_CONTEXT->commandCodeSwapped = CHANGE_ENDIAN_DWORD( commandCode );
 
-        SYS_CONTEXT->paramsSize = (UINT32 *)&(((TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->otherData ) +
+        SYS_CONTEXT->rspParamsSize = (UINT32 *)&(((TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->otherData ) +
                 GetNumResponseHandles( commandCode );
 
         numCommandHandles = GetNumCommandHandles( commandCode );
@@ -157,6 +158,8 @@ TSS2_RC CommonPrepareEpilogue(
 // Common to all _Complete
 TSS2_RC CommonComplete( TSS2_SYS_CONTEXT *sysContext )
 {
+    UINT32 rspSize = CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr )  )->responseSize );
+            
     if( sysContext == NULL )
     {
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -167,16 +170,22 @@ TSS2_RC CommonComplete( TSS2_SYS_CONTEXT *sysContext )
     }
     else if( SYS_CONTEXT->rval == TSS2_RC_SUCCESS )
     {
-        SYS_CONTEXT->nextData = (UINT8 *)( SYS_CONTEXT->paramsSize );
+        SYS_CONTEXT->nextData = (UINT8 *)( SYS_CONTEXT->rspParamsSize );
 
+        // Save response params size if command has authorization area.
         if( CHANGE_ENDIAN_WORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr )  )->tag ) == TPM_ST_SESSIONS )
         {
-            // Save params size.
             Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &( SYS_CONTEXT->nextData ),
                     &( SYS_CONTEXT->rpBufferUsedSize ), &(SYS_CONTEXT->rval ) );
         }
 
         SYS_CONTEXT->rpBuffer = SYS_CONTEXT->nextData;
+
+        // Save response params size if command does not have an authorization area.
+        if( CHANGE_ENDIAN_WORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr )  )->tag ) != TPM_ST_SESSIONS )
+        {
+            SYS_CONTEXT->rpBufferUsedSize = rspSize - ( SYS_CONTEXT->rpBuffer - SYS_CONTEXT->tpmOutBuffPtr );
+        }
     }
     else
     {
