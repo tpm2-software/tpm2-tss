@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tpmclient", "test\tpmclient
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tpm20lib-tpm", "sysapi\tpm20lib-tpm.vcxproj", "{052B95AD-2C24-4EC6-969A-97DD9BDBE6FF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tpmtest", "test\tpmtest\tpmtest.vcxproj", "{9AA7866D-CA70-4E72-B448-108D8E8CA434}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -31,6 +33,10 @@ Global
 		{052B95AD-2C24-4EC6-969A-97DD9BDBE6FF}.Debug|Win32.Build.0 = Debug|Win32
 		{052B95AD-2C24-4EC6-969A-97DD9BDBE6FF}.Release|Win32.ActiveCfg = Release|Win32
 		{052B95AD-2C24-4EC6-969A-97DD9BDBE6FF}.Release|Win32.Build.0 = Release|Win32
+		{9AA7866D-CA70-4E72-B448-108D8E8CA434}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9AA7866D-CA70-4E72-B448-108D8E8CA434}.Debug|Win32.Build.0 = Debug|Win32
+		{9AA7866D-CA70-4E72-B448-108D8E8CA434}.Release|Win32.ActiveCfg = Release|Win32
+		{9AA7866D-CA70-4E72-B448-108D8E8CA434}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
