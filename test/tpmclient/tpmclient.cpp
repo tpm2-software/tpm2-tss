@@ -1005,7 +1005,7 @@ void TestSapiApis()
     CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #29
 
     rval = Tss2_Sys_ExecuteFinish( testSysContext, TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckFailed( rval, TSS2_TCTI_RC_INSUFFICIENT_BUFFER ); // #30
+    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT ); // #30
 
     rval = Tss2_Sys_ExecuteFinish( testSysContext, TSS2_TCTI_TIMEOUT_BLOCK );
     CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #31
@@ -1015,7 +1015,7 @@ void TestSapiApis()
 
     // Execute the command syncronously.
     rval = Tss2_Sys_Execute( testSysContext );
-    CheckFailed( rval, TSS2_TCTI_RC_INSUFFICIENT_BUFFER ); // #33
+    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT ); // #33
 
     rval = Tss2_Sys_ExecuteFinish( testSysContext, TSS2_TCTI_TIMEOUT_BLOCK );
     CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #34
@@ -1030,7 +1030,7 @@ void TestSapiApis()
 
     rval = Tss2_Sys_ReadPublic( testSysContext, handle2048rsa, 0,
             &outPublic, &name, &qualifiedName, 0 );
-    CheckFailed( rval, TSS2_TCTI_RC_INSUFFICIENT_BUFFER ); // #37
+    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT ); // #37
             
     // Make sure that comms with TPM still work.
 	outPublic.t.size = name.t.size = qualifiedName.t.size = 0;
@@ -2277,15 +2277,6 @@ void TestCreate(){
 
     rval = Tss2_Sys_FlushContext( sysContext, handle2048rsa );
     CheckPassed( rval );
-#if 0    
-    // Do SAPI test for non-zero sized creationData
-    outPublic.t.size = 0;
-    creationData.t.size = 0x10;
-    rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_PLATFORM, &sessionsData, &inSensitive, &inPublic,
-            &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
-            &creationTicket, &name, &sessionsDataOut );
-    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_BUFFER );
-#endif
     
     outPublic.t.size = 0;
     creationData.t.size = sizeof( TPM2B_CREATION_DATA ) - 2;
@@ -5777,7 +5768,7 @@ void GetSetDecryptParamTests()
             CHANGE_ENDIAN_DWORD( ( (TPM20_Header_In *)( ( (_TSS2_SYS_CONTEXT_BLOB *)decryptParamTestSysContext )->tpmInBuffPtr ) )->commandSize ) +
             1;
     rval = Tss2_Sys_SetDecryptParam( decryptParamTestSysContext, nvWriteData.t.size, &( nvWriteData.t.buffer[0] ) );
-    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_BUFFER );
+    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT );
 
     // Test that one less will work.  This tests that we're checking the correct corner case.
     nvWriteData.t.size -= 1;
@@ -5894,7 +5885,7 @@ void GetContextSizeTests()
     }
 
     rval = Tss2_Sys_Startup( testSysContext, TPM_SU_CLEAR );
-    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_BUFFER );
+    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT );
 
 	rval = Tss2_Sys_GetTestResult_Prepare( testSysContext );
 	CheckPassed( rval );
@@ -6138,7 +6129,7 @@ void CmdRspAuthsTests()
     cmdAuths.cmdAuthsCount= 3;
     ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = sizeof( TPM20_Header_In ) + 3 * sizeof( TPM_HANDLE );
     rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
-    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_BUFFER ); // #14
+    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT ); // #14
 
     // Do successful one; use this to get size of command.
     ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = savedMaxCommandSize;
@@ -6148,7 +6139,7 @@ void CmdRspAuthsTests()
     // Then set maxCommandSize to the the previously gotten commandSize - 1.  This should fail.
     ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = GetCommandSize( sysContext ) - 1;
     rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
-    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_BUFFER ); // #16
+    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT ); // #16
     
     // Reset size of sysContext.
     ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = savedMaxCommandSize;
@@ -6911,16 +6902,6 @@ void TestCreate1()
             &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
             &creationTicket, &name, &sessionsDataOut );
     CheckFailed( rval, TSS2_SYS_RC_BAD_VALUE );
-
-#if 0
-    // Do SAPI test for non-zero sized creationData
-    outPublic.t.size = 0;
-    creationData.t.size = 0x10;
-    rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_PLATFORM, &sessionsData, &inSensitive, &inPublic,
-            &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
-            &creationTicket, &name, &sessionsDataOut );
-    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_BUFFER );
-#endif
 
     outPublic.t.size = 0;
     creationData.t.size = sizeof( TPM2B_CREATION_DATA ) - 2;

@@ -141,6 +141,7 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
         // In this case we received all the bytes from the TCTI layer, so we need to
         // change previous state to CMD_STAGE_RECEIVE_RESPONSE.
         SYS_CONTEXT->previousStage = CMD_STAGE_RECEIVE_RESPONSE;
+        rval = TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
     }
         
     return rval;

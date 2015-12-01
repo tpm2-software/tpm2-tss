@@ -100,7 +100,7 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
 
                     if( newCmdSize > (UINT64)( SYS_CONTEXT->maxCommandSize ) )
                     {
-                        rval = TSS2_SYS_RC_INSUFFICIENT_BUFFER;
+                        rval = TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
                     }
                     else
                     {
