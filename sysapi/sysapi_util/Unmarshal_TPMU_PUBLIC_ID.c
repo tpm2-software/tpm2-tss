@@ -44,17 +44,17 @@ void Unmarshal_TPMU_PUBLIC_ID(
 	{
 #ifdef TPM_ALG_KEYEDHASH
 	case TPM_ALG_KEYEDHASH:
-			UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&publicVarId->keyedHash );
+			UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&publicVarId->keyedHash );
 			break;
 #endif
 #ifdef TPM_ALG_SYMCIPHER
 	case TPM_ALG_SYMCIPHER:
-			UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&publicVarId->sym );
+			UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&publicVarId->sym );
 			break;
 #endif
 #ifdef TPM_ALG_RSA
 	case TPM_ALG_RSA:
-			UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&publicVarId->rsa );
+			UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&publicVarId->rsa );
 			break;
 #endif
 #ifdef TPM_ALG_ECC

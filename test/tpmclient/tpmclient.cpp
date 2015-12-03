@@ -1035,7 +1035,7 @@ void TestSapiApis()
     // Make sure that comms with TPM still work.
 	outPublic.t.size = name.t.size = qualifiedName.t.size = 0;
 	rval = Tss2_Sys_ReadPublic( sysContext, handle2048rsa, 0,
-            &outPublic, &name, &qualifiedName, 0 );
+            &outPublic, 0, 0, 0 );
     CheckPassed( rval ); // #38
             
     TeardownSysContext( &testSysContext );
@@ -2280,8 +2280,16 @@ void TestCreate(){
     
     outPublic.t.size = 0;
     creationData.t.size = sizeof( TPM2B_CREATION_DATA ) - 2;
-    outPublic.t.publicArea.authPolicy.t.size = sizeof( TPM2B_DIGEST ) - 2;
-    outPublic.t.publicArea.unique.keyedHash.t.size = sizeof( TPM2B_DIGEST ) - 2;
+    rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_PLATFORM, &sessionsData, &inSensitive, &inPublic,
+            &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
+            &creationTicket, &name, &sessionsDataOut );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_VALUE );
+
+    rval = Tss2_Sys_FlushContext( sysContext, handle2048rsa );
+    CheckPassed( rval );
+    
+    outPublic.t.size = 0;
+    creationData.t.size = 0;
     rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_PLATFORM, &sessionsData, &inSensitive, &inPublic,
             &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
             &creationTicket, &name, &sessionsDataOut );
@@ -2531,6 +2539,7 @@ TPM_RC BuildPolicy( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession,
     CheckPassed( rval );
 
     // Get policy hash.
+    policyDigest->t.size = sizeof( *policyDigest ) - 2;
     rval = Tss2_Sys_PolicyGetDigest( sysContext, (*policySession)->sessionHandle,
             0, policyDigest, 0 );
     CheckPassed( rval );
@@ -2579,6 +2588,7 @@ TPM_RC CreateNVIndex( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TPM
     CheckPassed( rval );
 
     // Read policyHash
+    policyDigest->t.size = sizeof( *policyDigest ) - 2;
     rval = Tss2_Sys_PolicyGetDigest( sysContext,
             (*policySession)->sessionHandle, 0, policyDigest, 0 );
     CheckPassed( rval );
@@ -2726,8 +2736,11 @@ TPM_RC BuildPasswordPcrPolicy( TSS2_SYS_CONTEXT *sysContext, SESSION *policySess
     // Read PCRs
     rval = Tss2_Sys_PCR_Read( sysContext, 0, &pcrs, &pcrUpdateCounter, &pcrSelectionOut, &pcrValues, 0 );               
     CheckPassed( rval );
+
     // Hash them together
+    pcrDigest.t.size = sizeof( pcrDigest ) - 2;
     rval = TpmHashSequence( policySession->authHash, pcrValues.count, &pcrValues.digests[0], &pcrDigest );
+    CheckPassed( rval );
     
     rval = Tss2_Sys_PolicyPCR( sysContext, policySession->sessionHandle, 0, &pcrDigest, &pcrs, 0 );
     CheckPassed( rval );
@@ -2810,6 +2823,8 @@ TPM_RC CreateDataBlob( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TP
     
     outPublic.t.size = 0;
     creationData.t.size = 0;
+    outPrivate.t.size = sizeof( outPrivate ) - 2;
+    creationHash.t.size = sizeof( creationHash ) - 2;
     rval = Tss2_Sys_Create( sysContext, srkHandle, &cmdAuthArray,
             &inSensitive, &inPublic, &outsideInfo, &creationPcr,
             &outPrivate, &outPublic, &creationData, &creationHash,
@@ -2898,6 +2913,7 @@ TPM_RC PasswordUnseal( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession )
     
     // Now try to unseal the blob without setting the password.
     // This test should fail.
+    outData.t.size = sizeof( outData ) - 2;
     rval = Tss2_Sys_Unseal( sysContext, blobHandle, &cmdAuthArray, &outData, 0 );
     CheckFailed( rval, TPM_RC_S + TPM_RC_1 + TPM_RC_AUTH_FAIL );
 
@@ -2946,6 +2962,8 @@ void TestPolicy()
     {
         TPM2B_DIGEST policyDigest;
 
+        policyDigest.t.size = 0;
+
         rval = TPM_RC_SUCCESS;
 
         TpmClientPrintf( 0, "Policy Test: %s\n", policyTestSetups[i].name );
@@ -2955,11 +2973,20 @@ void TestPolicy()
         {
             rval = BuildPolicy( sysContext, &policySession, policyTestSetups[i].buildPolicyFn, &policyDigest, true );
             CheckPassed( rval );
+#ifdef DEBUG
+            TpmClientPrintf( 0, "Built policy digest:  \n" );
+            DebugPrintBuffer( &(policyDigest.t.buffer[0]), policyDigest.t.size );
+#endif
         }
 
         // Create entity that will use that policyDigest as authPolicy.
         if( policyTestSetups[i].createObjectFn != 0 )
         {
+#ifdef DEBUG
+            TpmClientPrintf( 0, "Policy digest used to create object:  \n" );
+            DebugPrintBuffer( &(policyDigest.t.buffer[0]), policyDigest.t.size );
+#endif
+            
             rval = ( *policyTestSetups[i].createObjectFn )( sysContext, &policySession, &policyDigest);
             CheckPassed( rval );
         }
@@ -2970,6 +2997,10 @@ void TestPolicy()
         {
             rval = BuildPolicy( sysContext, &policySession, policyTestSetups[i].buildPolicyFn, &policyDigest, false );
             CheckPassed( rval );
+#ifdef DEBUG
+            TpmClientPrintf( 0, "Command policy digest:  \n" );
+            DebugPrintBuffer( &(policyDigest.t.buffer[0]), policyDigest.t.size );
+#endif
         }
 
         if( policySession )
@@ -3544,6 +3575,7 @@ void TpmAuxReadWriteTest()
         rval = SetLocality( sysContext, testLocality );
         CheckPassed( rval );
 
+        nvData.t.size = sizeof( TPM2B_MAX_NV_BUFFER ) - 2;
         rval = Tss2_Sys_NV_Read( sysContext, INDEX_AUX, INDEX_AUX, &nullSessionsData, 4, 0, &nvData, &nullSessionsDataOut ); 
         CheckPassed( rval );
 
@@ -4903,6 +4935,7 @@ void HmacSessionTest()
                     label.t.size = strlen( "SECRET" ) + 1;
 
                     // Encrypt salt with tpmKey.
+                    encryptedSalt.t.size = sizeof( encryptedSalt ) - 2;
                     rval = Tss2_Sys_RSA_Encrypt( sysContext, handle2048rsa,
                             0, (TPM2B_PUBLIC_KEY_RSA *)( hmacTestSetups[j].salt ),
                             &inScheme, &label, (TPM2B_PUBLIC_KEY_RSA *)&encryptedSalt, 0 );
@@ -6904,7 +6937,7 @@ void TestCreate1()
     CheckFailed( rval, TSS2_SYS_RC_BAD_VALUE );
 
     outPublic.t.size = 0;
-    creationData.t.size = sizeof( TPM2B_CREATION_DATA ) - 2;
+    creationData.t.size = 0;
     outPublic.t.publicArea.authPolicy.t.size = sizeof( TPM2B_DIGEST ) - 2;
     outPublic.t.publicArea.unique.keyedHash.t.size = sizeof( TPM2B_DIGEST ) - 2;
     rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_OWNER, &sessionsData, &inSensitive, &inPublic,

@@ -39,9 +39,9 @@ void Unmarshal_TPMS_NV_CERTIFY_INFO(
 	if( nvCertifyInfo == 0 )
 		return;
 
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&nvCertifyInfo->indexName );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&nvCertifyInfo->indexName );
 	Unmarshal_UINT16( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &nvCertifyInfo->offset, &( SYS_CONTEXT->rval ) );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&nvCertifyInfo->nvContents );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&nvCertifyInfo->nvContents );
 
 	return;
 }

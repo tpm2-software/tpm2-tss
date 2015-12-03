@@ -42,7 +42,7 @@ void Unmarshal_TPMT_PUBLIC(
 	Unmarshal_UINT16( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &publicVar->type, &( SYS_CONTEXT->rval ) );
 	Unmarshal_UINT16( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &publicVar->nameAlg, &( SYS_CONTEXT->rval ) );
 	Unmarshal_TPMA_OBJECT( sysContext, &publicVar->objectAttributes );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&publicVar->authPolicy );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&publicVar->authPolicy );
 	Unmarshal_TPMU_PUBLIC_PARMS( sysContext, &publicVar->parameters, publicVar->type );
 	Unmarshal_TPMU_PUBLIC_ID( sysContext, &publicVar->unique, publicVar->type );
 

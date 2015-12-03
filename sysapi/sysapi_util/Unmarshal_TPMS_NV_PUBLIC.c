@@ -42,7 +42,7 @@ void Unmarshal_TPMS_NV_PUBLIC(
 	Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &nvPublic->nvIndex, &( SYS_CONTEXT->rval ) );
 	Unmarshal_UINT16( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &nvPublic->nameAlg, &( SYS_CONTEXT->rval ) );
 	Unmarshal_TPMA_NV( sysContext, &nvPublic->attributes );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&nvPublic->authPolicy );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&nvPublic->authPolicy );
 	Unmarshal_UINT16( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &nvPublic->dataSize, &( SYS_CONTEXT->rval ) );
 
 	return;

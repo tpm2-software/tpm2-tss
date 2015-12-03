@@ -39,8 +39,8 @@ void Unmarshal_TPMS_ECC_POINT(
 	if( eccPoint == 0 )
 		return;
 
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&eccPoint->x );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&eccPoint->y );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&eccPoint->x );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&eccPoint->y );
 
 	return;
 }

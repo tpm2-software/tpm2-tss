@@ -39,9 +39,9 @@ void Unmarshal_TPMS_AUTH_RESPONSE(
 	if( authResponse == 0 )
 		return;
 
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&authResponse->nonce );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&authResponse->nonce );
 	Unmarshal_TPMA_SESSION( sysContext, &authResponse->sessionAttributes );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&authResponse->hmac );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&authResponse->hmac );
 
 	return;
 }

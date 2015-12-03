@@ -34,6 +34,7 @@
 
 void Marshal_Simple_TPM2B( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **nextData, TPM2B *value, TSS2_RC *rval );
 void Unmarshal_Simple_TPM2B( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, TPM2B *value, TSS2_RC *rval );
+void Unmarshal_Simple_TPM2B_NoSizeCheck( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, TPM2B *value, TSS2_RC *rval );
 void Marshal_UINT64( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **nextData, UINT64 value, TSS2_RC *rval );
 void Marshal_UINT32( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **nextData, UINT32 value, TSS2_RC *rval );
 void Marshal_UINT16( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **nextData, UINT16 value, TSS2_RC *rval );
@@ -52,6 +53,9 @@ TSS2_RC CheckOverflow( UINT8 *buffer, UINT32 bufferSize, UINT8 *nextData, UINT32
 // other places
 #define UNMARSHAL_SIMPLE_TPM2B( sysContext, value ) \
     Unmarshal_Simple_TPM2B( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &( SYS_CONTEXT->nextData ), value, &(SYS_CONTEXT->rval ) )
+
+#define UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, value ) \
+    Unmarshal_Simple_TPM2B_NoSizeCheck( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &( SYS_CONTEXT->nextData ), value, &(SYS_CONTEXT->rval ) )
 
 #define UNMARSHAL_TPMS_CONTEXT( sysContext, value ) \
     Unmarshal_TPMS_CONTEXT( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &( SYS_CONTEXT->nextData ), value, &(SYS_CONTEXT->rval ) )
@@ -528,6 +532,11 @@ void Unmarshal_TPML_ALG(
 void Unmarshal_TPM2B_PUBLIC(
 	TSS2_SYS_CONTEXT *sysContext,
 	TPM2B_PUBLIC *publicVar
+	);
+
+void Unmarshal_TPM2B_CREATION_DATA(
+	TSS2_SYS_CONTEXT *sysContext,
+	TPM2B_CREATION_DATA *creationData
 	);
 
 void Unmarshal_TPMT_TK_CREATION(

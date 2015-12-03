@@ -40,7 +40,7 @@ void Unmarshal_TPMS_QUOTE_INFO(
 		return;
 
 	Unmarshal_TPML_PCR_SELECTION( sysContext, &quoteInfo->pcrSelect );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&quoteInfo->pcrDigest );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&quoteInfo->pcrDigest );
 
 	return;
 }

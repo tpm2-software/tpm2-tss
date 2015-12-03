@@ -42,7 +42,7 @@ void Unmarshal_TPMS_CONTEXT(
 	Unmarshal_UINT64( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &context->sequence, &( SYS_CONTEXT->rval ) );
 	Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &context->savedHandle, &( SYS_CONTEXT->rval ) );
 	Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &context->hierarchy, &( SYS_CONTEXT->rval ) );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&context->contextBlob );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&context->contextBlob );
 
 	return;
 }

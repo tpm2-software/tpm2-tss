@@ -39,8 +39,8 @@ void Unmarshal_TPMS_CERTIFY_INFO(
 	if( certifyInfo == 0 )
 		return;
 
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&certifyInfo->name );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&certifyInfo->qualifiedName );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&certifyInfo->name );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&certifyInfo->qualifiedName );
 
 	return;
 }

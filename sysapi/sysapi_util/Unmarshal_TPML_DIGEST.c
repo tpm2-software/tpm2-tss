@@ -45,7 +45,7 @@ void Unmarshal_TPML_DIGEST(
 
 	for( i = 0; i < digest->count; i++ )
 	{
-		UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&digest->digests[i] );
+		UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&digest->digests[i] );
 	}
 
 	return;

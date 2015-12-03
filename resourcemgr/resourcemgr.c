@@ -195,7 +195,7 @@ TSS2_RC ResmgrFixupErrorlevel( TSS2_RC errCode )
     Unmarshal_UINT32( (buffer), (size), (currentPtr), &( (value)->hierarchy ), (rval) ); \
     responseRval = ResmgrFixupErrorlevel( *rval ); \
     if( responseRval != TSS2_RC_SUCCESS ) goto exitLoc; \
-    Unmarshal_Simple_TPM2B( (buffer), (size), (currentPtr), (TPM2B *)&( (value)->contextBlob ), (rval) ); \
+    Unmarshal_Simple_TPM2B_NoSizeCheck( (buffer), (size), (currentPtr), (TPM2B *)&( (value)->contextBlob ), (rval) ); \
     responseRval = ResmgrFixupErrorlevel( *rval ); \
     if( responseRval != TSS2_RC_SUCCESS ) goto exitLoc; 
 

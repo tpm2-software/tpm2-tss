@@ -44,22 +44,22 @@ void Unmarshal_TPMU_SENSITIVE_COMPOSITE(
 	{
 #ifdef TPM_ALG_RSA
 	case TPM_ALG_RSA:
-			UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&sensitiveComposite->rsa );
+			UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&sensitiveComposite->rsa );
 			break;
 #endif
 #ifdef TPM_ALG_ECC
 	case TPM_ALG_ECC:
-			UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&sensitiveComposite->ecc );
+			UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&sensitiveComposite->ecc );
 			break;
 #endif
 #ifdef TPM_ALG_KEYEDHASH
 	case TPM_ALG_KEYEDHASH:
-			UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&sensitiveComposite->bits );
+			UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&sensitiveComposite->bits );
 			break;
 #endif
 #ifdef TPM_ALG_SYMCIPHER
 	case TPM_ALG_SYMCIPHER:
-			UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&sensitiveComposite->sym );
+			UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&sensitiveComposite->sym );
 			break;
 #endif
 	}

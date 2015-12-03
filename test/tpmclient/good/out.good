@@ -1,6 +1,6 @@
 Initializing Resource Manager Interface
-socket created:  0x8c
-socket created:  0x94
+socket created:  0x88
+socket created:  0x90
 Client connected to server on port:  2324
 Client connected to server on port:  2323
 	passing case:  	PASSED!
@@ -178,6 +178,8 @@ DICTIONARY ATTACK LOCK RESET TEST  :
 CREATE, CREATE PRIMARY, and LOAD TESTS:
 	failing case: 	PASSED!
 	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
 	passing case:  	PASSED!
 
 New key successfully created in platform hierarchy (RSA 2048).  Handle: 0x80000000
@@ -266,6 +268,10 @@ SAPI API TESTS:
 	failing case: 	PASSED!
 	failing case: 	PASSED!
 	failing case: 	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
 
 HIERARCHY CONTROL TESTS:
 	passing case:  	PASSED!
@@ -1035,6 +1041,9 @@ HASH TESTS:
 
 POLICY TESTS:
 Policy Test: LOCALITY
+Policy digest used to create object:  
+
+
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
@@ -1058,6 +1067,16 @@ Policy Test: PASSWORD
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
+Built policy digest:  
+
+8f cd 21 69 ab 92 69 4e 0c 63 3f 1a b7 72 84 2b 
+82 41 bb c2 02 88 98 1f c7 ac 1e dd c1 fd db 0e 
+
+Policy digest used to create object:  
+
+8f cd 21 69 ab 92 69 4e 0c 63 3f 1a b7 72 84 2b 
+82 41 bb c2 02 88 98 1f c7 ac 1e dd c1 fd db 0e 
+
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
@@ -1066,6 +1085,11 @@ Policy Test: PASSWORD
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
+Command policy digest:  
+
+8f cd 21 69 ab 92 69 4e 0c 63 3f 1a b7 72 84 2b 
+82 41 bb c2 02 88 98 1f c7 ac 1e dd c1 fd db 0e 
+
 	failing case: 	PASSED!
 
 DICTIONARY ATTACK LOCK RESET TEST  :
@@ -1085,6 +1109,16 @@ Policy Test: PASSWORD/PCR
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
+Built policy digest:  
+
+42 d9 4f 10 ac 6c a8 59 cd 49 6c 1e 49 ac c2 cf 
+f3 50 9d cb aa 7e ee 67 61 07 1c f6 c9 a6 28 da 
+
+Policy digest used to create object:  
+
+42 d9 4f 10 ac 6c a8 59 cd 49 6c 1e 49 ac c2 cf 
+f3 50 9d cb aa 7e ee 67 61 07 1c f6 c9 a6 28 da 
+
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
@@ -1094,6 +1128,13 @@ Policy Test: PASSWORD/PCR
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
+	passing case:  	PASSED!
+	passing case:  	PASSED!
+Command policy digest:  
+
+42 d9 4f 10 ac 6c a8 59 cd 49 6c 1e 49 ac c2 cf 
+f3 50 9d cb aa 7e ee 67 61 07 1c f6 c9 a6 28 da 
+
 	failing case: 	PASSED!
 
 DICTIONARY ATTACK LOCK RESET TEST  :
@@ -1110,6 +1151,16 @@ Policy Test: AUTHVALUE
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
+Built policy digest:  
+
+8f cd 21 69 ab 92 69 4e 0c 63 3f 1a b7 72 84 2b 
+82 41 bb c2 02 88 98 1f c7 ac 1e dd c1 fd db 0e 
+
+Policy digest used to create object:  
+
+8f cd 21 69 ab 92 69 4e 0c 63 3f 1a b7 72 84 2b 
+82 41 bb c2 02 88 98 1f c7 ac 1e dd c1 fd db 0e 
+
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
@@ -1118,6 +1169,11 @@ Policy Test: AUTHVALUE
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
+Command policy digest:  
+
+8f cd 21 69 ab 92 69 4e 0c 63 3f 1a b7 72 84 2b 
+82 41 bb c2 02 88 98 1f c7 ac 1e dd c1 fd db 0e 
+
 	failing case: 	PASSED!
 
 DICTIONARY ATTACK LOCK RESET TEST  :
@@ -1240,6 +1296,8 @@ NV INDEX TESTS:
 CREATE, CREATE PRIMARY, and LOAD TESTS:
 	failing case: 	PASSED!
 	passing case:  	PASSED!
+	failing case: 	PASSED!
+	passing case:  	PASSED!
 	passing case:  	PASSED!
 
 New key successfully created in platform hierarchy (RSA 2048).  Handle: 0x80000004
@@ -1255,7 +1313,7 @@ Loaded key handle:  80000009
 EVICT CONTROL TESTS:
 	passing case:  	PASSED!
 Initializing Resource Manager Interface
-socket created:  0x90
+socket created:  0x94
 socket created:  0x98
 Client connected to server on port:  2324
 Client connected to server on port:  2323
@@ -3134,7 +3192,7 @@ UNSEAL TEST  :
 RM TESTS:
 Initializing Resource Manager Interface
 socket created:  0x98
-socket created:  0x90
+socket created:  0x94
 Client connected to server on port:  2324
 Client connected to server on port:  2323
 	passing case:  	PASSED!
@@ -3161,7 +3219,7 @@ Client connected to server on port:  2323
 	passing case:  	PASSED!
 	passing case:  	PASSED!
 	passing case:  	PASSED!
-select failed due to timeout, socket #: 0x94
+select failed due to timeout, socket #: 0x90
 	failing case: 	PASSED!
 	passing case:  	PASSED!
 	failing case: 	PASSED!

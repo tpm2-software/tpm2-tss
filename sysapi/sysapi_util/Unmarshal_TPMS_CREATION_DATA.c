@@ -40,12 +40,12 @@ void Unmarshal_TPMS_CREATION_DATA(
 		return;
 
 	Unmarshal_TPML_PCR_SELECTION( sysContext, &creationData->pcrSelect );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&creationData->pcrDigest );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&creationData->pcrDigest );
 	Unmarshal_TPMA_LOCALITY( sysContext, &creationData->locality );
 	Unmarshal_UINT16( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &creationData->parentNameAlg, &( SYS_CONTEXT->rval ) );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&creationData->parentName );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&creationData->parentQualifiedName );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&creationData->outsideInfo );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&creationData->parentName );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&creationData->parentQualifiedName );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&creationData->outsideInfo );
 
 	return;
 }

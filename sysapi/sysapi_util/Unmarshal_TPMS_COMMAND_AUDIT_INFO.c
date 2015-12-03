@@ -41,8 +41,8 @@ void Unmarshal_TPMS_COMMAND_AUDIT_INFO(
 
 	Unmarshal_UINT64( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &commandAuditInfo->auditCounter, &( SYS_CONTEXT->rval ) );
 	Unmarshal_UINT16( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &commandAuditInfo->digestAlg, &( SYS_CONTEXT->rval ) );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&commandAuditInfo->auditDigest );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&commandAuditInfo->commandDigest );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&commandAuditInfo->auditDigest );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&commandAuditInfo->commandDigest );
 
 	return;
 }

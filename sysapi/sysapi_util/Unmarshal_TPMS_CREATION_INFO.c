@@ -39,8 +39,8 @@ void Unmarshal_TPMS_CREATION_INFO(
 	if( creationInfo == 0 )
 		return;
 
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&creationInfo->objectName );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&creationInfo->creationHash );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&creationInfo->objectName );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&creationInfo->creationHash );
 
 	return;
 }

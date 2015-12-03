@@ -43,13 +43,13 @@ void Unmarshal_TPMS_ALGORITHM_DETAIL_ECC(
 	Unmarshal_UINT16( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &algorithmDetailEcc->keySize, &( SYS_CONTEXT->rval ) );
 	Unmarshal_TPMT_KDF_SCHEME( sysContext, &algorithmDetailEcc->kdf );
 	Unmarshal_TPMT_ECC_SCHEME( sysContext, &algorithmDetailEcc->sign );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&algorithmDetailEcc->p );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&algorithmDetailEcc->a );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&algorithmDetailEcc->b );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&algorithmDetailEcc->gX );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&algorithmDetailEcc->gY );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&algorithmDetailEcc->n );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&algorithmDetailEcc->h );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&algorithmDetailEcc->p );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&algorithmDetailEcc->a );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&algorithmDetailEcc->b );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&algorithmDetailEcc->gX );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&algorithmDetailEcc->gY );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&algorithmDetailEcc->n );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&algorithmDetailEcc->h );
 
 	return;
 }

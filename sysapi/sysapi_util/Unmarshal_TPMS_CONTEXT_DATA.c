@@ -39,8 +39,8 @@ void Unmarshal_TPMS_CONTEXT_DATA(
 	if( contextData == 0 )
 		return;
 
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&contextData->integrity );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&contextData->encrypted );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&contextData->integrity );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&contextData->encrypted );
 
 	return;
 }

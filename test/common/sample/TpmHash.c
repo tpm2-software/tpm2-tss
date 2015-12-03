@@ -39,9 +39,6 @@ UINT32 TpmHash( TPMI_ALG_HASH hashAlg, UINT16 size, BYTE *data, TPM2B_DIGEST *re
     UINT16 i;
     TSS2_SYS_CONTEXT *sysContext;
     
-    // Set result size to 0, in case any errors occur
-    result->b.size = 0;
-    
     dataSizedBuffer.t.size = size;
     for( i = 0; i < size; i++ )
         dataSizedBuffer.t.buffer[i] = data[i];
@@ -104,6 +101,7 @@ UINT32 TpmHashSequence( TPMI_ALG_HASH hashAlg, UINT8 numBuffers, TPM2B_DIGEST *b
             return( rval );
     }
 
+    result->t.size = sizeof( *result ) - 2;
     rval = Tss2_Sys_SequenceComplete ( sysContext, sequenceHandle, &cmdAuthArray, ( TPM2B_MAX_BUFFER *)&emptyBuffer,
             TPM_RH_PLATFORM, result, &validation, 0 );
 

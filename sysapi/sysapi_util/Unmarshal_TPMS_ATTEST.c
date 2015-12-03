@@ -41,8 +41,8 @@ void Unmarshal_TPMS_ATTEST(
 
 	Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &attest->magic, &( SYS_CONTEXT->rval ) );
 	Unmarshal_UINT16( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &attest->type, &( SYS_CONTEXT->rval ) );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&attest->qualifiedSigner );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&attest->extraData );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&attest->qualifiedSigner );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&attest->extraData );
 	Unmarshal_TPMS_CLOCK_INFO( sysContext, &attest->clockInfo );
 	Unmarshal_UINT64( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &attest->firmwareVersion, &( SYS_CONTEXT->rval ) );
 	Unmarshal_TPMU_ATTEST( sysContext, &attest->attested, attest->type );

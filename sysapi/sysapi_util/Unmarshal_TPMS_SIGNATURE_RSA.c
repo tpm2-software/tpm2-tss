@@ -40,7 +40,7 @@ void Unmarshal_TPMS_SIGNATURE_RSA(
 		return;
 
 	Unmarshal_UINT16( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &signatureRsa->hash, &( SYS_CONTEXT->rval ) );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&signatureRsa->sig );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&signatureRsa->sig );
 
 	return;
 }

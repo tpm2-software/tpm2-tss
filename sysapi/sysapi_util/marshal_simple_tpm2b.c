@@ -46,7 +46,7 @@ void Marshal_Simple_TPM2B( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **next
             // Check for possible writing past end of command buffer.
             if( usedCommandBuffSize > (INT64)maxCommandSize )
             {
-                *rval = TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+                *rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
             }
             else if( value == 0 )
             {
