@@ -784,9 +784,6 @@ void TestTctiApis()
     rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, 0, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
     CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #14
 
-    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, 0, TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #15
-
     //
     // Test receive for IO error.
     //
@@ -868,6 +865,9 @@ void TestSapiApis()
     TPMS_CAPABILITY_DATA	capabilityData;
     int                 rpBufferError = 0;
     unsigned int        i;
+    UINT32              savedMaxResponseSize;
+    size_t              cleanupSize;
+    uint8_t             cleanupResponseBuffer[1000];
     
     TpmClientPrintf( 0, "\nSAPI API TESTS:\n" );
 
@@ -978,8 +978,7 @@ void TestSapiApis()
     // Now test case for ExecuteFinish and one-call where there's not enough room
     // for the TPM response.
     //
-    testSysContext = InitSysContext( sizeof( TPM20_Header_In ) + sizeof(TPM_HANDLE),
-            resMgrTctiContext, &abiVersion );
+    testSysContext = InitSysContext( 0, resMgrTctiContext, &abiVersion );
     if( testSysContext == 0 )
     {
         InitSysContextFailure();
@@ -1004,29 +1003,49 @@ void TestSapiApis()
     rval = Tss2_Sys_ReadPublic_Complete( testSysContext, &outPublic, &name, &qualifiedName );
     CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #29
 
+    // Alter receive buffer size here to be too small.
+    savedMaxResponseSize = ((_TSS2_SYS_CONTEXT_BLOB *)testSysContext)->maxResponseSize;
+    ((_TSS2_SYS_CONTEXT_BLOB *)testSysContext)->maxResponseSize = sizeof( TPM20_Header_In ) + sizeof(TPM_HANDLE);
     rval = Tss2_Sys_ExecuteFinish( testSysContext, TSS2_TCTI_TIMEOUT_BLOCK );
     CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT ); // #30
+    // Change maxResponseSize backto what it should be.
+    ((_TSS2_SYS_CONTEXT_BLOB *)testSysContext)->maxResponseSize = savedMaxResponseSize;
 
     rval = Tss2_Sys_ExecuteFinish( testSysContext, TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #31
+    CheckPassed( rval ); // #31
 
     rval = Tss2_Sys_ReadPublic_Prepare( testSysContext, handle2048rsa );
     CheckPassed(rval); // #32
 
     // Execute the command syncronously.
+    // Alter receive buffer size here to be too small.
+    savedMaxResponseSize = ((_TSS2_SYS_CONTEXT_BLOB *)testSysContext)->maxResponseSize;
+    ((_TSS2_SYS_CONTEXT_BLOB *)testSysContext)->maxResponseSize = sizeof( TPM20_Header_In ) + sizeof(TPM_HANDLE);
     rval = Tss2_Sys_Execute( testSysContext );
     CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT ); // #33
 
-    rval = Tss2_Sys_ExecuteFinish( testSysContext, TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #34
+    // Need to call receive with larger size in order to read all the data out. 
+    rval = ((TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext)->receive( resMgrTctiContext, &cleanupSize, 0, TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckPassed( rval ); // #34
 
+    // Test cleanup size here.
+    // ?? s/b 0x156
+
+    rval = ((TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext)->receive( resMgrTctiContext, &cleanupSize, &cleanupResponseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckPassed( rval ); // #35       
+    
     // Make sure that comms with TPM still work.
     rval = Tss2_Sys_ReadPublic_Prepare( sysContext, handle2048rsa );
-    CheckPassed(rval); // #35
+    CheckPassed(rval); // #36
 
+    // Change maxResponseSize backto what it should be.
+    ((_TSS2_SYS_CONTEXT_BLOB *)testSysContext)->maxResponseSize = savedMaxResponseSize;
     // Execute the command syncronously.
     rval = Tss2_Sys_Execute( sysContext );
-    CheckPassed( rval ); // #36
+    CheckPassed( rval ); // #37
+
+    rval = Tss2_Sys_ExecuteFinish( testSysContext, TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #38
 
     rval = Tss2_Sys_ReadPublic( testSysContext, handle2048rsa, 0,
             &outPublic, &name, &qualifiedName, 0 );
