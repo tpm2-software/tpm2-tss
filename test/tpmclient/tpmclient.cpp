@@ -865,9 +865,6 @@ void TestSapiApis()
     TPMS_CAPABILITY_DATA	capabilityData;
     int                 rpBufferError = 0;
     unsigned int        i;
-    UINT32              savedMaxResponseSize;
-    size_t              cleanupSize;
-    uint8_t             cleanupResponseBuffer[1000];
     
     TpmClientPrintf( 0, "\nSAPI API TESTS:\n" );
 
@@ -975,10 +972,7 @@ void TestSapiApis()
     rval = Tss2_Sys_GetTestResult_Complete( sysContext, &outData, &testResult );
     CheckPassed(rval); // #24
     
-    // Now test case for ExecuteFinish and one-call where there's not enough room
-    // for the TPM response.
-    //
-    testSysContext = InitSysContext( 0, resMgrTctiContext, &abiVersion );
+    testSysContext = InitSysContext( 0,  resMgrTctiContext, &abiVersion );
     if( testSysContext == 0 )
     {
         InitSysContextFailure();
@@ -987,172 +981,142 @@ void TestSapiApis()
     // Test GetCommandCode for bad sequence
     rval = Tss2_Sys_GetCommandCode( testSysContext, &commandCode );
     CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #25
-    
+
     rval = Tss2_Sys_GetRpBuffer( testSysContext, &rpBufferUsedSize, &rpBuffer );
     CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #26
+
+    TeardownSysContext( &testSysContext );
     
-    rval = Tss2_Sys_ReadPublic_Prepare( testSysContext, handle2048rsa );
+    rval = Tss2_Sys_ReadPublic_Prepare( sysContext, handle2048rsa );
     CheckPassed(rval); // #27
 
     // Execute the command syncronously.
-    rval = Tss2_Sys_ExecuteAsync( testSysContext );
+    rval = Tss2_Sys_ExecuteAsync( sysContext );
     CheckPassed( rval ); // #28
 
     // Test _Complete for bad sequence case when ExecuteFinish has never
     // been done on a context.
-    rval = Tss2_Sys_ReadPublic_Complete( testSysContext, &outPublic, &name, &qualifiedName );
+    rval = Tss2_Sys_ReadPublic_Complete( sysContext, &outPublic, &name, &qualifiedName );
     CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #29
 
-    // Alter receive buffer size here to be too small.
-    savedMaxResponseSize = ((_TSS2_SYS_CONTEXT_BLOB *)testSysContext)->maxResponseSize;
-    ((_TSS2_SYS_CONTEXT_BLOB *)testSysContext)->maxResponseSize = sizeof( TPM20_Header_In ) + sizeof(TPM_HANDLE);
-    rval = Tss2_Sys_ExecuteFinish( testSysContext, TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT ); // #30
-    // Change maxResponseSize backto what it should be.
-    ((_TSS2_SYS_CONTEXT_BLOB *)testSysContext)->maxResponseSize = savedMaxResponseSize;
+    rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckPassed( rval ); // #30
 
-    rval = Tss2_Sys_ExecuteFinish( testSysContext, TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckPassed( rval ); // #31
+    rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #31
 
-    rval = Tss2_Sys_ReadPublic_Prepare( testSysContext, handle2048rsa );
+    rval = Tss2_Sys_ReadPublic_Prepare( sysContext, handle2048rsa );
     CheckPassed(rval); // #32
 
-    // Execute the command syncronously.
-    // Alter receive buffer size here to be too small.
-    savedMaxResponseSize = ((_TSS2_SYS_CONTEXT_BLOB *)testSysContext)->maxResponseSize;
-    ((_TSS2_SYS_CONTEXT_BLOB *)testSysContext)->maxResponseSize = sizeof( TPM20_Header_In ) + sizeof(TPM_HANDLE);
-    rval = Tss2_Sys_Execute( testSysContext );
-    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT ); // #33
-
-    // Need to call receive with larger size in order to read all the data out. 
-    rval = ((TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext)->receive( resMgrTctiContext, &cleanupSize, 0, TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckPassed( rval ); // #34
-
-    // Test cleanup size here.
-    // ?? s/b 0x156
-
-    rval = ((TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext)->receive( resMgrTctiContext, &cleanupSize, &cleanupResponseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckPassed( rval ); // #35       
+    rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #33
     
-    // Make sure that comms with TPM still work.
     rval = Tss2_Sys_ReadPublic_Prepare( sysContext, handle2048rsa );
-    CheckPassed(rval); // #36
+    CheckPassed(rval); // #34
 
-    // Change maxResponseSize backto what it should be.
-    ((_TSS2_SYS_CONTEXT_BLOB *)testSysContext)->maxResponseSize = savedMaxResponseSize;
     // Execute the command syncronously.
     rval = Tss2_Sys_Execute( sysContext );
-    CheckPassed( rval ); // #37
+    CheckPassed( rval ); // #35
 
-    rval = Tss2_Sys_ExecuteFinish( testSysContext, TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #38
-
-    rval = Tss2_Sys_ReadPublic( testSysContext, handle2048rsa, 0,
-            &outPublic, &name, &qualifiedName, 0 );
-    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT ); // #37
-            
-    // Make sure that comms with TPM still work.
 	outPublic.t.size = name.t.size = qualifiedName.t.size = 0;
 	rval = Tss2_Sys_ReadPublic( sysContext, handle2048rsa, 0,
             &outPublic, 0, 0, 0 );
-    CheckPassed( rval ); // #38
+    CheckPassed( rval ); // #36
             
-    TeardownSysContext( &testSysContext );
-
     // Check case of ExecuteFinish receving TPM error code.
     // Subsequent _Complete call should fail with SEQUENCE error.
     rval = TpmReset();
-    CheckPassed(rval); // #39
+    CheckPassed(rval); // #37
     
     rval = Tss2_Sys_GetCapability_Prepare( sysContext,
             TPM_CAP_TPM_PROPERTIES, TPM_PT_ACTIVE_SESSIONS_MAX,
             1 );
-    CheckPassed(rval); // #40
+    CheckPassed(rval); // #38
 
     // Execute the command asyncronously.
     rval = Tss2_Sys_ExecuteAsync( sysContext );
-    CheckPassed(rval); // #41
+    CheckPassed(rval); // #39
 
     // Get the command response. Wait a maximum of 20ms
     // for response.
     rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckFailed( rval, TPM_RC_INITIALIZE ); // #42
+    CheckFailed( rval, TPM_RC_INITIALIZE ); // #40
 
     // Test _Complete for case when ExecuteFinish had an error.
     rval = Tss2_Sys_GetCapability_Complete( sysContext, 0, 0 );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #43
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #41
 
     rval = Tss2_Sys_Startup( sysContext, TPM_SU_CLEAR );
-    CheckPassed(rval); // #44
+    CheckPassed(rval); // #42
 
     rval = Tss2_Sys_GetRpBuffer( 0, &rpBufferUsedSize, &rpBuffer );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #45
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #43
     
     rval = Tss2_Sys_GetRpBuffer( sysContext, 0, &rpBuffer );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #46
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #44
     
     rval = Tss2_Sys_GetRpBuffer( sysContext, &rpBufferUsedSize, 0 );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #47
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #45
 
     rval = Tss2_Sys_GetRpBuffer( sysContext, &rpBufferUsedSize, &rpBuffer );
-    CheckPassed( rval ); // #48
+    CheckPassed( rval ); // #46
     
     // Now test case for ExecuteFinish where TPM returns
     // an error.  ExecuteFinish should return same error
     // as TPM.
     rval = Tss2_Sys_Startup_Prepare( sysContext, TPM_SU_CLEAR );
-    CheckPassed(rval); // #49
+    CheckPassed(rval); // #47
 
     // Execute the command ayncronously.
     rval = Tss2_Sys_ExecuteAsync( sysContext );
-    CheckPassed( rval ); // #50
+    CheckPassed( rval ); // #48
 
     rval = Tss2_Sys_Startup( sysContext, TPM_SU_CLEAR );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #51
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #49
 
     rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckFailed( rval, TPM_RC_INITIALIZE ); // #52
+    CheckFailed( rval, TPM_RC_INITIALIZE ); // #50
 
     // Now test case for ExecuteFinish where TPM returns
     // an error.  ExecuteFinish should return same error
     // as TPM.
     rval = Tss2_Sys_Startup_Prepare( sysContext, TPM_SU_CLEAR );
-    CheckPassed(rval); // #53
+    CheckPassed(rval); // #51
+
+    rval = Tss2_Sys_GetRpBuffer( sysContext, &rpBufferUsedSize, &rpBuffer );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #52
+    
+    // Execute the command ayncronously.
+    rval = Tss2_Sys_Execute( sysContext );
+    CheckFailed( rval, TPM_RC_INITIALIZE ); // #53
 
     rval = Tss2_Sys_GetRpBuffer( sysContext, &rpBufferUsedSize, &rpBuffer );
     CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #54
     
-    // Execute the command ayncronously.
-    rval = Tss2_Sys_Execute( sysContext );
-    CheckFailed( rval, TPM_RC_INITIALIZE ); // #55
-
-    rval = Tss2_Sys_GetRpBuffer( sysContext, &rpBufferUsedSize, &rpBuffer );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #56
-    
     // Test one-call for null sysContext pointer.
     rval = Tss2_Sys_Startup( 0, TPM_SU_CLEAR );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #57
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #55
 
     // Test one-call for NULL input parameter that should be a
     // pointer.
     rval = Tss2_Sys_Create( testSysContext, 0xffffffff, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #58
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #56
 
     // Test GetCommandCode for bad reference
     rval = Tss2_Sys_GetCommandCode( 0, &commandCode );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #59
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #57
     
     rval = Tss2_Sys_GetCommandCode( sysContext, 0 );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #60
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #58
 
     //
     // Test GetRpBuffer for case of no response params or handles.
     //
     rval = Tss2_Sys_Shutdown( sysContext, 0, TPM_SU_STATE, 0 );
-    CheckPassed( rval ); // #61
+    CheckPassed( rval ); // #59
 
     rval = Tss2_Sys_GetRpBuffer( sysContext, &rpBufferUsedSize, &rpBuffer );
-    CheckPassed( rval ); // #62
+    CheckPassed( rval ); // #60
 
     if( rpBufferUsedSize != 0 )
     {
@@ -1166,10 +1130,10 @@ void TestSapiApis()
     rval = Tss2_Sys_GetCapability( sysContext, 0, 
             TPM_CAP_TPM_PROPERTIES, TPM_PT_ACTIVE_SESSIONS_MAX,
             1, &moreData, &capabilityData, 0 );
-    CheckPassed(rval); // #63
+    CheckPassed(rval); // #61
 
     rval = Tss2_Sys_GetRpBuffer( sysContext, &rpBufferUsedSize, &rpBuffer );
-    CheckPassed( rval ); // #64
+    CheckPassed( rval ); // #62
 
     if( rpBufferUsedSize != 17 )
     {
