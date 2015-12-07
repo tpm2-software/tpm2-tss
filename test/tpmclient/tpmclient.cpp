@@ -848,6 +848,16 @@ void TestTctiApis()
         Cleanup();
     }
 
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, 0, TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckPassed( rval ); // #24
+
+    // Test returned responseSize here.
+    if( responseSize != 0x10 )
+    {
+        TpmClientPrintf( NO_PREFIX, "\nERROR!!  responseSize after receive with NULL responseBuffer is incorrect\n" );
+        Cleanup();
+    }
+
     responseSize = sizeof( TPM20_Header_Out ) - 1 + sizeof( UINT16 );
     rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
     CheckFailed( rval, TSS2_TCTI_RC_INSUFFICIENT_BUFFER ); // #25
