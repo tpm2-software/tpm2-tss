@@ -670,7 +670,8 @@ void CleanupContextError( int magic, uint64_t savedMagic, uint32_t savedVersion 
 
 void TestTctiApis()
 {
-    uint8_t commandBuffer[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00 };
+    uint8_t tpmStartCommandBuffer[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00 };
+    uint8_t getTestResultCommandBuffer[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x01, 0x7c };
     uint8_t responseBuffer[20];
     size_t responseSize;
     SOCKET savedTpmSock;
@@ -678,6 +679,9 @@ void TestTctiApis()
     int savedDevFile;
     uint64_t savedMagic;
     uint32_t savedVersion;
+    uint8_t goodResponseBuffer[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+    int responseBufferError = 0;
+    int i;
     
     TSS2_RC rval = TSS2_RC_SUCCESS;
     
@@ -686,17 +690,17 @@ void TestTctiApis()
     //
     // Test transmit for NULL pointers.
     //
-    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( 0, sizeof( commandBuffer ), &commandBuffer[0] );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( 0, sizeof( tpmStartCommandBuffer ), &tpmStartCommandBuffer[0] );
     CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #1
 
-    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( commandBuffer ), 0 );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( tpmStartCommandBuffer ), 0 );
     CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #2
 
     //
     // Test transmit for BAD CONTEXT:  magic.
     //
     ForceContextError( 1, &savedMagic, &savedVersion );
-    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( 0, sizeof( commandBuffer ), &commandBuffer[0] );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( 0, sizeof( tpmStartCommandBuffer ), &tpmStartCommandBuffer[0] );
     CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #3
     CleanupContextError( 1, savedMagic, savedVersion );
     
@@ -704,7 +708,7 @@ void TestTctiApis()
     // Test transmit for BAD CONTEXT:  version.
     //
     ForceContextError( 0, &savedMagic, &savedVersion );
-    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( 0, sizeof( commandBuffer ), &commandBuffer[0] );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( 0, sizeof( tpmStartCommandBuffer ), &tpmStartCommandBuffer[0] );
     CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #4
     CleanupContextError( 0, savedMagic, savedVersion );
     
@@ -712,7 +716,7 @@ void TestTctiApis()
     // Test transmit for IO error.
     //
     ForceIOError( &savedTpmSock, &savedOtherSock, &savedDevFile, 1 );
-    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( commandBuffer ), &commandBuffer[0] );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( tpmStartCommandBuffer ), &tpmStartCommandBuffer[0] );
     CleanupIOError( savedTpmSock, savedOtherSock, savedDevFile, 1 );
     CheckFailed( rval, TSS2_TCTI_RC_IO_ERROR ); // #5
 
@@ -744,7 +748,7 @@ void TestTctiApis()
     CheckFailed( rval, TSS2_TCTI_RC_IO_ERROR ); // #8
 #endif
     
-    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( commandBuffer ), &commandBuffer[0] );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( tpmStartCommandBuffer ), &tpmStartCommandBuffer[0] );
     CheckPassed( rval ); // #9
 
     //
@@ -764,7 +768,7 @@ void TestTctiApis()
     //
     // Test transmit for SEQUENCE error.
     //
-    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( commandBuffer ), &commandBuffer[0] );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( tpmStartCommandBuffer ), &tpmStartCommandBuffer[0] );
     CheckFailed( rval, TSS2_TCTI_RC_BAD_SEQUENCE ); // #11
 
     responseSize = sizeof( responseBuffer );
@@ -826,6 +830,70 @@ void TestTctiApis()
     rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->finalize( 0 );
     CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #22
 
+
+    //
+    // Test Receive for too small a response buffer
+    //
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( getTestResultCommandBuffer ), &getTestResultCommandBuffer[0] );
+    CheckPassed( rval ); // #23
+
+    responseSize = sizeof( TPM20_Header_Out ) - 1;
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_TCTI_RC_INSUFFICIENT_BUFFER ); // #24
+
+    // Test returned responseSize here.
+    if( responseSize != 0x10 )
+    {
+        TpmClientPrintf( NO_PREFIX, "\nERROR!!  responseSize after receive with too small a buffer is incorrect\n" );
+        Cleanup();
+    }
+
+    responseSize = sizeof( TPM20_Header_Out ) - 1 + sizeof( UINT16 );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_TCTI_RC_INSUFFICIENT_BUFFER ); // #25
+
+    // Test returned responseSize here.
+    if( responseSize != 0x10 )
+    {
+        TpmClientPrintf( NO_PREFIX, "\nERROR!!  responseSize after receive with too small a buffer is incorrect\n" );
+        Cleanup();
+    }
+
+    responseSize = sizeof( TPM20_Header_Out ) - 1 + sizeof( UINT16 ) + sizeof( UINT32 ) - 1;
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_TCTI_RC_INSUFFICIENT_BUFFER ); // #26
+
+    // Test returned responseSize here.
+    if( responseSize != 0x10 )
+    {
+        TpmClientPrintf( NO_PREFIX, "\nERROR!!  responseSize after receive with too small a buffer is incorrect\n" );
+        Cleanup();
+    }
+
+    responseSize = sizeof( TPM20_Header_Out ) - 1 + sizeof( UINT16 ) + sizeof( UINT32 );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckPassed( rval ); // #27
+
+    // Test responseBuffer here.
+    // Now compare RP buffer to what it should be
+    for( i = 0; i < responseSize; i++ )
+    {
+        if( responseBuffer[i] != goodResponseBuffer[i] )
+        {
+            responseBufferError = 1;
+            break;
+        }
+    }
+    if( responseBufferError )
+    {
+        TpmClientPrintf( NO_PREFIX, "\nERROR!!  responseBuffer after receive is incorrect\n" );
+        Cleanup();
+    }
+    
+
+    // Now test other corner cases for size:  1 bytes smaller than tag size and  1 bytes smaller smaller than tag size plus sizeof UINT32.
+    
+    
 #if 0
     //
     // No getPollHandles function so these are #ifdef'd out for now.

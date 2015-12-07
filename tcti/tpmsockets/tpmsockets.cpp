@@ -434,8 +434,8 @@ TSS2_RC SocketReceiveTpmResponse(
             rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER; 
 
 
-            // If possible, receive tag and response size from TPM.
-            if( *response_size >= sizeof( TPM_ST ) )
+            // If possible, receive tag from TPM.
+            if( *response_size >= sizeof( TPM_ST ) && ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived == 0 )
             {
                 if( TSS2_RC_SUCCESS != recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->tag ), 2 ) )
                 {
@@ -448,7 +448,7 @@ TSS2_RC SocketReceiveTpmResponse(
             }
 
             // If possible, receive response size from TPM
-            if( *response_size >= ( sizeof( TPM_ST ) + sizeof( TPM_RC ) ) )
+            if( *response_size >= ( sizeof( TPM_ST ) + sizeof( TPM_RC ) ) && ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived == 0 )
             {
                 if( TSS2_RC_SUCCESS != recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->responseSize ), 4 ) )
                 {
