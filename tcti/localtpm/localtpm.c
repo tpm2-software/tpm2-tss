@@ -101,6 +101,10 @@ TSS2_RC LocalTpmSendTpmCommand(
         if( rval == TSS2_RC_SUCCESS )
         {
             ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage = TCTI_STAGE_SEND_COMMAND;
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived = 0;
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived = 0;
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived = 0;
+
         }
     }
     
@@ -116,37 +120,111 @@ TSS2_RC LocalTpmReceiveTpmResponse(
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
     ssize_t  size;
+    unsigned char responseSizeDelta = 0;
 
     rval = CommonReceiveChecks( tctiContext, response_size, response_buffer );
-
-    if( rval == TSS2_RC_SUCCESS )
+    if( rval != TSS2_RC_SUCCESS )
     {
-        size = read( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, response_buffer, *response_size );
+        goto retLocalTpmReceive;
+    }        
 
+    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
+    {
+#ifdef DEBUG
+        (*printfFunction)( rmDebugPrefix, "Response Received: " );
+#endif
+    }
+
+
+    // If possible, receive tag from TPM.
+    if( *response_size >= sizeof( TPM_ST ) && ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived == 0 )
+    {
+        size = read( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->tag ), 2 );
         if( size < 0 )
         {
             (*tpmLocalTpmPrintf)(NO_PREFIX, "send failed with error: %d\n", errno );
             rval = TSS2_TCTI_RC_IO_ERROR;
-            *response_size = 0;
+            goto retLocalTpmReceive;
         }
         else
         {
-#ifdef DEBUG
-            UINT32 cnt = CHANGE_ENDIAN_DWORD(((TPM20_Header_Out *) response_buffer)->responseSize);
-
-            if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
-            {
-                (*tpmLocalTpmPrintf)( rmDebugPrefix, "\n" );
-                (*tpmLocalTpmPrintf)( rmDebugPrefix, "Response Received: " );
-                DEBUG_PRINT_BUFFER( response_buffer, cnt );
-            }
-#endif
-
-            *response_size = size;
+            ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived = 1;
         }
     }
 
-    if( rval == TSS2_RC_SUCCESS )
+    // If possible, receive response size from TPM
+    if( *response_size >= ( sizeof( TPM_ST ) + sizeof( TPM_RC ) ) && ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived == 0 )
+    {
+        size = read( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->responseSizeReceived ), 4 );
+        if( size < 0 )
+        {
+            (*tpmLocalTpmPrintf)(NO_PREFIX, "send failed with error: %d\n", errno );
+            rval = TSS2_TCTI_RC_IO_ERROR;
+            goto retLocalTpmReceive;
+        }
+        else
+        {
+            ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = CHANGE_ENDIAN_DWORD( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
+            ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived = 1;
+        }
+    }
+
+    if( response_buffer == NULL )
+    {
+        // In this case, just return the size
+        *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived = 1;
+        goto retLocalTpmReceive;
+    }
+
+    if( *response_size < ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize )
+    {
+        *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
+        rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER; 
+        goto retLocalTpmReceive;
+    }        
+
+    *(TPM_ST *)response_buffer = ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->tag;
+    responseSizeDelta += sizeof( TPM_ST );
+    response_buffer += sizeof( TPM_ST );
+
+    *(TPM_RC *)response_buffer = CHANGE_ENDIAN_DWORD( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->responseSize );
+    responseSizeDelta += sizeof( TPM_RC );
+    response_buffer += sizeof( TPM_RC );
+
+
+    size = read( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize - responseSizeDelta );
+    if( size < 0 )
+    {
+        (*tpmLocalTpmPrintf)(NO_PREFIX, "receive failed with error: %d\n", errno );
+        rval = TSS2_TCTI_RC_IO_ERROR;
+        *response_size = 0;
+    }
+    else
+    {
+#ifdef DEBUG
+        UINT32 cnt = CHANGE_ENDIAN_DWORD(((TPM20_Header_Out *) response_buffer)->responseSize);
+
+        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
+        {
+            (*tpmLocalTpmPrintf)( rmDebugPrefix, "\n" );
+            (*tpmLocalTpmPrintf)( rmDebugPrefix, "Response Received: " );
+            DEBUG_PRINT_BUFFER( response_buffer, cnt );
+        }
+#endif
+    }
+
+    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize < *response_size )
+    {
+        *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
+    }
+    
+    ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent = 0;
+    
+retLocalTpmReceive:
+
+    if( rval == TSS2_RC_SUCCESS && 
+		response_buffer != NULL )
     {
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage = TCTI_STAGE_RECEIVE_RESPONSE;
     }

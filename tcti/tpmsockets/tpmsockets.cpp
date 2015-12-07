@@ -373,128 +373,124 @@ TSS2_RC SocketReceiveTpmResponse(
 #endif
     }
 
-    if( *response_size > 0 )
+    if( timeout == TSS2_TCTI_TIMEOUT_BLOCK )
     {
-        if( timeout == TSS2_TCTI_TIMEOUT_BLOCK )
-        {
-            tvPtr = 0;
-        }
-        else
-        {
-            tv.tv_sec = timeout / 1000;
-            tv.tv_usec = timeoutMsecs * 1000;
-            tvPtr = &tv;
-        }
+        tvPtr = 0;
+    }
+    else
+    {
+        tv.tv_sec = timeout / 1000;
+        tv.tv_usec = timeoutMsecs * 1000;
+        tvPtr = &tv;
+    }
 
-        FD_ZERO( &readFds );
-        FD_SET( TCTI_CONTEXT_INTEL->tpmSock, &readFds );
+    FD_ZERO( &readFds );
+    FD_SET( TCTI_CONTEXT_INTEL->tpmSock, &readFds );
 
-        iResult = select( TCTI_CONTEXT_INTEL->tpmSock+1, &readFds, 0, 0, tvPtr );
-        if( iResult == 0 )
-        {
-            (*printfFunction)(NO_PREFIX, "select failed due to timeout, socket #: 0x%x\n", TCTI_CONTEXT_INTEL->tpmSock );
-            rval = TSS2_TCTI_RC_TRY_AGAIN;
+    iResult = select( TCTI_CONTEXT_INTEL->tpmSock+1, &readFds, 0, 0, tvPtr );
+    if( iResult == 0 )
+    {
+        (*printfFunction)(NO_PREFIX, "select failed due to timeout, socket #: 0x%x\n", TCTI_CONTEXT_INTEL->tpmSock );
+        rval = TSS2_TCTI_RC_TRY_AGAIN;
+        goto retSocketReceiveTpmResponse;
+    }
+    else if( iResult == SOCKET_ERROR )
+    {
+        (*printfFunction)(NO_PREFIX, "select failed with socket error: %d\n", WSAGetLastError() );
+        rval = TSS2_TCTI_RC_IO_ERROR;
+        goto retSocketReceiveTpmResponse;
+    }
+    else if ( iResult != 1 )
+    {
+        (*printfFunction)(NO_PREFIX, "select failed, read the wrong # of bytes: %d\n", iResult );
+        rval = TSS2_TCTI_RC_IO_ERROR;
+        goto retSocketReceiveTpmResponse;
+    }
+
+    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived != 1 )
+    {        
+        // Receive the size of the response.
+        rval = recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)& (((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize ), 4 );
+        if( rval != TSS2_RC_SUCCESS )
             goto retSocketReceiveTpmResponse;
-        }
-        else if( iResult == SOCKET_ERROR )
+
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = CHANGE_ENDIAN_DWORD( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived = 1;
+    }
+
+    if( response_buffer == NULL )
+    {
+        // In this case, just return the size
+        *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived = 1;
+        goto retSocketReceiveTpmResponse;
+    }
+
+    if( *response_size < ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize )
+    {
+        *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
+        rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER; 
+
+
+        // If possible, receive tag from TPM.
+        if( *response_size >= sizeof( TPM_ST ) && ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived == 0 )
         {
-            (*printfFunction)(NO_PREFIX, "select failed with socket error: %d\n", WSAGetLastError() );
-            rval = TSS2_TCTI_RC_IO_ERROR;
-            goto retSocketReceiveTpmResponse;
-        }
-        else if ( iResult != 1 )
-        {
-            (*printfFunction)(NO_PREFIX, "select failed, read the wrong # of bytes: %d\n", iResult );
-            rval = TSS2_TCTI_RC_IO_ERROR;
-            goto retSocketReceiveTpmResponse;
-        }
-                        
-        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived != 1 )
-        {        
-            // Receive the size of the response.
-            rval = recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)& (((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize ), 4 );
-            if( rval != TSS2_RC_SUCCESS )
+            if( TSS2_RC_SUCCESS != recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->tag ), 2 ) )
+            {
                 goto retSocketReceiveTpmResponse;
-
-            ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = CHANGE_ENDIAN_DWORD( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
-            ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived = 1;
-        }
-
-        if( response_buffer == NULL )
-        {
-            // In this case, just return the size
-            *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
-            ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived = 1;
-            goto retSocketReceiveTpmResponse;
-        }
-        
-        if( *response_size < ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize )
-        {
-            *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
-            rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER; 
-
-
-            // If possible, receive tag from TPM.
-            if( *response_size >= sizeof( TPM_ST ) && ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived == 0 )
-            {
-                if( TSS2_RC_SUCCESS != recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->tag ), 2 ) )
-                {
-                    goto retSocketReceiveTpmResponse;
-                }
-                else
-                {
-                    ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived = 1;
-                }
             }
-
-            // If possible, receive response size from TPM
-            if( *response_size >= ( sizeof( TPM_ST ) + sizeof( TPM_RC ) ) && ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived == 0 )
+            else
             {
-                if( TSS2_RC_SUCCESS != recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->responseSize ), 4 ) )
-                {
-                    goto retSocketReceiveTpmResponse;
-                }
-                else
-                {
-                    ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = CHANGE_ENDIAN_DWORD( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
-                    ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived = 1;
-                }
+                ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived = 1;
             }
         }
-        else
-        {
-            if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived == 1 )
-            {
-                *(TPM_ST *)response_buffer = ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->tag;
-                responseSizeDelta += sizeof( TPM_ST );
-                response_buffer += sizeof( TPM_ST );
-            }
 
-            if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived == 1 )
+        // If possible, receive response size from TPM
+        if( *response_size >= ( sizeof( TPM_ST ) + sizeof( TPM_RC ) ) && ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived == 0 )
+        {
+            if( TSS2_RC_SUCCESS != recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->responseSize ), 4 ) )
             {
-                *(TPM_RC *)response_buffer = CHANGE_ENDIAN_DWORD( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->responseSize );
-                responseSizeDelta += sizeof( TPM_RC );
-                response_buffer += sizeof( TPM_RC );
-            }
-                    
-            // Receive the TPM response.
-            rval = recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize - responseSizeDelta );
-            if( rval != TSS2_RC_SUCCESS )
                 goto retSocketReceiveTpmResponse;
+            }
+            else
+            {
+                ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = CHANGE_ENDIAN_DWORD( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
+                ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived = 1;
+            }
+        }
+    }
+    else
+    {
+        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived == 1 )
+        {
+            *(TPM_ST *)response_buffer = ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->tag;
+            responseSizeDelta += sizeof( TPM_ST );
+            response_buffer += sizeof( TPM_ST );
+        }
+
+        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived == 1 )
+        {
+            *(TPM_RC *)response_buffer = CHANGE_ENDIAN_DWORD( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->responseSize );
+            responseSizeDelta += sizeof( TPM_RC );
+            response_buffer += sizeof( TPM_RC );
+        }
+
+        // Receive the TPM response.
+        rval = recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize - responseSizeDelta );
+        if( rval != TSS2_RC_SUCCESS )
+            goto retSocketReceiveTpmResponse;
 
 #ifdef DEBUG
-            if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
-            {
-                DEBUG_PRINT_BUFFER( response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
-            }
-#endif
-        
-            // Receive the appended four bytes of 0's
-            rval = recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&trash, 4 );
-            if( rval != TSS2_RC_SUCCESS )
-                goto retSocketReceiveTpmResponse;
+        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
+        {
+            DEBUG_PRINT_BUFFER( response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
         }
+#endif
 
+        // Receive the appended four bytes of 0's
+        rval = recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&trash, 4 );
+        if( rval != TSS2_RC_SUCCESS )
+            goto retSocketReceiveTpmResponse;
     }
 
     if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize < *response_size )
