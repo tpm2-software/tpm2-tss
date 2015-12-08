@@ -532,6 +532,7 @@ TSS2_RC StartPolicySession( TPMI_SH_AUTH_SESSION *sessionHandle )
     symmetric.algorithm = TPM_ALG_NULL;
 
     // Create policy session
+    nonceTpm.t.size = sizeof( nonceTpm ) - 2;
     rval = Tss2_Sys_StartAuthSession ( sysContext, TPM_RH_NULL, TPM_RH_NULL, 0, &nonceCaller, &salt,
             TPM_SE_POLICY, &symmetric, TPM_ALG_SHA1, sessionHandle, &nonceTpm, 0 );
     return( rval );
@@ -681,7 +682,7 @@ void TestTctiApis()
     uint32_t savedVersion;
     uint8_t goodResponseBuffer[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
     int responseBufferError = 0;
-    int i;
+    unsigned int i;
     
     TSS2_RC rval = TSS2_RC_SUCCESS;
     
@@ -1881,9 +1882,11 @@ void TestGetRandom()
     
     TpmClientPrintf( 0, "\nGET_RANDOM TESTS:\n" );
 
+    randomBytes1.t.size = sizeof( randomBytes1 ) - 2;
     rval = Tss2_Sys_GetRandom( sysContext, 0, 20, &randomBytes1, 0 );
     CheckPassed( rval );
 
+    randomBytes2.t.size = sizeof( randomBytes2 ) - 2;
     rval = Tss2_Sys_GetRandom( sysContext, 0, 20, &randomBytes2, 0 );
     CheckPassed( rval );
 
@@ -2027,7 +2030,8 @@ void TestNV()
     //
     rval = Tss2_Sys_NV_Write( sysContext, TPM_RH_PLATFORM, TPM20_INDEX_TEST1, &sessionsData, &nvWriteData, 0, &sessionsDataOut ); 
     CheckPassed( rval );
-    
+
+    nvData.t.size = sizeof( nvData ) - 2;
     rval = Tss2_Sys_NV_Read( sysContext, TPM_RH_PLATFORM, TPM20_INDEX_TEST1, &sessionsData, 32, 0, &nvData, &sessionsDataOut ); 
     CheckPassed( rval );
 
@@ -2060,9 +2064,11 @@ void TestNV()
     CheckPassed( rval );
 
     nvPublic.t.size = 0;
+    nvName.t.size = sizeof( nvName ) - 2;
     rval = Tss2_Sys_NV_ReadPublic( sysContext, TPM20_INDEX_TEST2, 0, &nvPublic, &nvName, 0 );
     CheckPassed( rval );
 
+    nvData.t.size = sizeof( nvData ) - 2;
     rval = Tss2_Sys_NV_Read( sysContext, TPM_RH_PLATFORM, TPM20_INDEX_TEST2, &sessionsData, 32, 0, &nvData, 0 ); 
     CheckFailed( rval, TPM_RC_NV_AUTHORIZATION );
 
@@ -2218,6 +2224,7 @@ void TestHierarchyControl()
     CheckFailed( rval, TSS2_SYS_RC_BAD_VALUE );
 
     nvPublic.t.size = 0;
+    nvName.t.size = sizeof( nvName ) - 2;
     rval = Tss2_Sys_NV_ReadPublic( sysContext, TPM20_INDEX_TEST1, 0, &nvPublic, &nvName, 0 );
     CheckPassed( rval );
 
@@ -2893,6 +2900,7 @@ TPM_RC CreateDataBlob( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TP
     CheckPassed( rval );
 
     // Now we need to load the object.
+    blobName.t.size = sizeof( blobName ) - 2;
     rval = Tss2_Sys_Load( sysContext, srkHandle, &cmdAuthArray, &outPrivate, &outPublic, &blobHandle, &blobName, 0 );
     CheckPassed( rval );
     
@@ -3234,6 +3242,7 @@ void TestHash()
     dataToHash.t.size = 0;
     for( i = 1; i < 5; i++ )
     {
+        result.t.size = sizeof( result ) - 2;
         rval = Tss2_Sys_SequenceComplete ( sysContext, sequenceHandle[i], &sessionsData, &dataToHash,
                 TPM_RH_PLATFORM, &result, &validation, &sessionsDataOut );
         CheckPassed( rval );
@@ -3504,6 +3513,7 @@ void ProvisionNvAux()
     CheckPassed( rval );
 
     // 3.  GetPolicyDigest and save it
+    nvPolicyHash.t.size = sizeof( nvPolicyHash ) - 2;
     rval = Tss2_Sys_PolicyGetDigest( sysContext, nvAuxPolicyAuthHandle, 0, &nvPolicyHash, 0 );
     CheckPassed( rval );
 
@@ -3855,12 +3865,15 @@ void TestUnseal()
 
     outPublic.t.size = 0;
     creationData.t.size = 0;
+    creationHash.t.size = sizeof( creationHash ) - 2;
+    outPrivate.t.size = sizeof( outPrivate ) - 2;
     rval = Tss2_Sys_Create( sysContext, handle2048rsa, &sessionsData, &inSensitive, &inPublic,
             &outsideInfo, &creationPCR,
             &outPrivate, &outPublic, &creationData,
             &creationHash, &creationTicket, &sessionsDataOut );
     CheckPassed( rval );
 
+    name.t.size = sizeof( name ) - 2;
     rval = Tss2_Sys_LoadExternal ( sysContext, 0, 0, &outPublic,
             TPM_RH_PLATFORM, &loadedObjectHandle, &name, 0 );
     CheckPassed( rval );
@@ -3868,6 +3881,7 @@ void TestUnseal()
     rval = Tss2_Sys_FlushContext( sysContext, loadedObjectHandle ); 
     CheckPassed( rval );
 
+    name.t.size = sizeof( name ) - 2;
     rval = Tss2_Sys_Load ( sysContext, handle2048rsa, &sessionsData, &outPrivate, &outPublic,
             &loadedObjectHandle, &name, &sessionsDataOut);
     CheckPassed( rval );
@@ -3875,6 +3889,7 @@ void TestUnseal()
     sessionData.hmac.t.size = sizeof( authStr ) - 1;
     memcpy( &( sessionData.hmac.t.buffer[0] ), authStr, sizeof( authStr ) - 1 );
 
+    outData.t.size = sizeof( outData ) - 2;
     rval = Tss2_Sys_Unseal( sysContext, loadedObjectHandle, &sessionsData, &outData, &sessionsDataOut );
 
     rval = Tss2_Sys_FlushContext( sysContext, loadedObjectHandle ); 
@@ -4633,6 +4648,7 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
         CheckPassed( rval );
 
         // Get policy digest.
+        authPolicy.t.size = sizeof( authPolicy ) - 2;
         rval = Tss2_Sys_PolicyGetDigest( simpleTestContext,
                 trialPolicySession->sessionHandle,
                 0, &authPolicy, 0 );
@@ -7031,6 +7047,7 @@ void TestCreate1()
     else
         CheckFailed( rval, TPM_RC_1 + TPM_RC_HANDLE );
 
+    outData.t.size = sizeof( outData ) - 2;
     rval = Tss2_Sys_RSA_Encrypt(sysContext, keyHandle, 0, &message, &inScheme, &outsideInfo, &outData, &sessionsDataOut);
     CheckPassed( rval );
     

@@ -155,7 +155,7 @@ TSS2_RC LocalTpmReceiveTpmResponse(
     // If possible, receive response size from TPM
     if( *response_size >= ( sizeof( TPM_ST ) + sizeof( TPM_RC ) ) && ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived == 0 )
     {
-        size = read( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->responseSizeReceived ), 4 );
+        size = read( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->responseSize ), 4 );
         if( size < 0 )
         {
             (*tpmLocalTpmPrintf)(NO_PREFIX, "send failed with error: %d\n", errno );
