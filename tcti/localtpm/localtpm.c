@@ -120,8 +120,9 @@ TSS2_RC LocalTpmReceiveTpmResponse(
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
     ssize_t  size;
-    unsigned char responseSizeDelta = 0;
-
+    unsigned char responseBuffer[4096];
+    unsigned int i;
+    
     rval = CommonReceiveChecks( tctiContext, response_size, response_buffer );
     if( rval != TSS2_RC_SUCCESS )
     {
@@ -135,90 +136,51 @@ TSS2_RC LocalTpmReceiveTpmResponse(
 #endif
     }
 
-
-    // If possible, receive tag from TPM.
-    if( *response_size >= sizeof( TPM_ST ) && ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived == 0 )
+    size = read( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, &responseBuffer[0], 4096 );
+    if( size < 0 )
     {
-        size = read( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->tag ), 2 );
-        if( size < 0 )
-        {
-            (*tpmLocalTpmPrintf)(NO_PREFIX, "send failed with error: %d\n", errno );
-            rval = TSS2_TCTI_RC_IO_ERROR;
-            goto retLocalTpmReceive;
-        }
-        else
-        {
-            ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived = 1;
-        }
+        (*tpmLocalTpmPrintf)(NO_PREFIX, "read failed with error: %d\n", errno );
+        rval = TSS2_TCTI_RC_IO_ERROR;
+        goto retLocalTpmReceive;
+    }
+    else
+    {
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived = 1;
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = size;
     }
 
-    // If possible, receive response size from TPM
-    if( *response_size >= ( sizeof( TPM_ST ) + sizeof( TPM_RC ) ) && ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived == 0 )
-    {
-        size = read( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->responseSize ), 4 );
-        if( size < 0 )
-        {
-            (*tpmLocalTpmPrintf)(NO_PREFIX, "send failed with error: %d\n", errno );
-            rval = TSS2_TCTI_RC_IO_ERROR;
-            goto retLocalTpmReceive;
-        }
-        else
-        {
-            ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = CHANGE_ENDIAN_DWORD( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
-            ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived = 1;
-        }
-    }
+    ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = size;
 
     if( response_buffer == NULL )
     {
         // In this case, just return the size
-        *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived = 1;
+        *response_size = size;
         goto retLocalTpmReceive;
     }
 
     if( *response_size < ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize )
     {
-        *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
         rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER; 
+        *response_size = size;
         goto retLocalTpmReceive;
     }        
 
-    *(TPM_ST *)response_buffer = ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->tag;
-    responseSizeDelta += sizeof( TPM_ST );
-    response_buffer += sizeof( TPM_ST );
+    *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
 
-    *(TPM_RC *)response_buffer = CHANGE_ENDIAN_DWORD( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->responseSize );
-    responseSizeDelta += sizeof( TPM_RC );
-    response_buffer += sizeof( TPM_RC );
-
-
-    size = read( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize - responseSizeDelta );
-    if( size < 0 )
+    for( i = 0; i < *response_size; i++ )
     {
-        (*tpmLocalTpmPrintf)(NO_PREFIX, "receive failed with error: %d\n", errno );
-        rval = TSS2_TCTI_RC_IO_ERROR;
-        *response_size = 0;
+        response_buffer[i] = responseBuffer[i];
     }
-    else
-    {
+
 #ifdef DEBUG
-        UINT32 cnt = CHANGE_ENDIAN_DWORD(((TPM20_Header_Out *) response_buffer)->responseSize);
-
-        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
-        {
-            (*tpmLocalTpmPrintf)( rmDebugPrefix, "\n" );
-            (*tpmLocalTpmPrintf)( rmDebugPrefix, "Response Received: " );
-            DEBUG_PRINT_BUFFER( response_buffer, cnt );
-        }
-#endif
-    }
-
-    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize < *response_size )
+    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
     {
-        *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
+        (*tpmLocalTpmPrintf)( rmDebugPrefix, "\n" );
+        (*tpmLocalTpmPrintf)( rmDebugPrefix, "Response Received: " );
+        DEBUG_PRINT_BUFFER( response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
     }
-    
+#endif
+
     ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent = 0;
     
 retLocalTpmReceive:

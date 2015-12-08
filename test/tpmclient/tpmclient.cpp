@@ -604,42 +604,27 @@ void TestTpmStartup()
 
 void ForceIOError( SOCKET *savedTpmSock, SOCKET *savedOtherSock, int *savedDevFile, int tpmSock )
 {
-    if( tpmManufacturer == MSFT_MANUFACTURER_ID )
+    if( tpmSock )
     {
-        if( tpmSock )
-        {
-            *savedTpmSock = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->tpmSock;
-            ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->tpmSock = ~*savedTpmSock;
-        }
-        else
-        {
-            *savedOtherSock = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->otherSock;
-            ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->otherSock = ~*savedOtherSock;
-        }
+        *savedTpmSock = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->tpmSock;
+        ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->tpmSock = ~*savedTpmSock;
     }
     else
     {
-        *savedDevFile = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->devFile;
-        ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->devFile = ~*savedDevFile;
+        *savedOtherSock = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->otherSock;
+        ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->otherSock = ~*savedOtherSock;
     }
 }
 
 void CleanupIOError( SOCKET savedTpmSock, SOCKET savedOtherSock, int savedDevFile, int tpmSock )
 {
-    if( tpmManufacturer == MSFT_MANUFACTURER_ID )
+    if( tpmSock )
     {
-        if( tpmSock )
-        {
-            ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->tpmSock = savedTpmSock;
-        }
-        else
-        {
-            ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->otherSock = savedOtherSock;
-        }
+        ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->tpmSock = savedTpmSock;
     }
     else
     {
-        ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->devFile = savedDevFile;
+        ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->otherSock = savedOtherSock;
     }
 }
 
@@ -845,7 +830,7 @@ void TestTctiApis()
     // Test returned responseSize here.
     if( responseSize != 0x10 )
     {
-        TpmClientPrintf( NO_PREFIX, "\nERROR!!  responseSize after receive with too small a buffer is incorrect\n" );
+        TpmClientPrintf( NO_PREFIX, "\nERROR!!  responseSize after receive with too small a buffer is incorrect: 0x%x\n", responseSize );
         Cleanup();
     }
 
@@ -866,7 +851,7 @@ void TestTctiApis()
     // Test returned responseSize here.
     if( responseSize != 0x10 )
     {
-        TpmClientPrintf( NO_PREFIX, "\nERROR!!  responseSize after receive with too small a buffer is incorrect\n" );
+        TpmClientPrintf( NO_PREFIX, "\nERROR!!  responseSize after receive with too small a buffer is incorrect: 0x%x\n", responseSize );
         Cleanup();
     }
 
@@ -877,7 +862,7 @@ void TestTctiApis()
     // Test returned responseSize here.
     if( responseSize != 0x10 )
     {
-        TpmClientPrintf( NO_PREFIX, "\nERROR!!  responseSize after receive with too small a buffer is incorrect\n" );
+        TpmClientPrintf( NO_PREFIX, "\nERROR!!  responseSize after receive with too small a buffer is incorrect: 0x%x\n", responseSize );
         Cleanup();
     }
 
@@ -7101,6 +7086,9 @@ void TpmTest()
 
     rval = PlatformCommand( resMgrTctiContext, MS_SIM_NV_ON );
     CheckPassed( rval );
+
+    TestTctiApis();
+goto endTests;
 
     TestTpmStartup();
 
