@@ -90,6 +90,7 @@ typedef struct {
     // File descriptor for device file if real TPM is being used.
     int devFile;  
     UINT8 previousStage;            // Used to check for sequencing errors.
+    unsigned char responseBuffer[4096];
 } TSS2_TCTI_CONTEXT_INTEL;
 
 #define TCTI_CONTEXT ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)(SYS_CONTEXT->tctiContext) )

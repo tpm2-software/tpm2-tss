@@ -363,16 +363,6 @@ TSS2_RC SocketReceiveTpmResponse(
         goto retSocketReceiveTpmResponse;
     }        
     
-    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
-    {
-#ifdef DEBUG
-        (*printfFunction)( rmDebugPrefix, "Response Received: " );
-#endif
-#ifdef DEBUG_SOCKETS
-         (*printfFunction)( rmDebugPrefix, "from socket #0x%x:\n", TCTI_CONTEXT_INTEL->tpmSock );
-#endif
-    }
-
     if( timeout == TSS2_TCTI_TIMEOUT_BLOCK )
     {
         tvPtr = 0;
@@ -461,6 +451,17 @@ TSS2_RC SocketReceiveTpmResponse(
     }
     else
     {
+        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED &&
+                ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize > 0 )
+        {
+#ifdef DEBUG
+            (*printfFunction)( rmDebugPrefix, "Response Received: " );
+#endif
+#ifdef DEBUG_SOCKETS
+            (*printfFunction)( rmDebugPrefix, "from socket #0x%x:\n", TCTI_CONTEXT_INTEL->tpmSock );
+#endif
+        }
+        
         if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived == 1 )
         {
             *(TPM_ST *)response_buffer = ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->tag;

@@ -57,6 +57,8 @@ typedef pthread_t THREAD_TYPE ;
 #error Unsupported OS--need to add OS-specific support for threading here.        
 #endif                
 
+#define DEBUG_RESMGR_INIT        
+
 extern TSS2_RC GetCommands( TSS2_SYS_CONTEXT *resMgrSysContext, TPML_CCA **supportedCommands );
 extern UINT8 GetCommandAttributes( TPM_CC commandCode, TPML_CCA *supportedCommands, TPMA_CC *cmdAttributes );
 
@@ -1597,6 +1599,7 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                     (TSS2_TCTI_CONTEXT *)downstreamTctiContext,
                     (size_t *)response_size, response_buffer, timeout );
 
+            ResMgrPrintf( RM_PREFIX, "response_size = 0x%x:\n", *response_size );
             if( rval == TSS2_RC_SUCCESS )
             {
                 ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent = 0;
@@ -2615,6 +2618,8 @@ TSS2_RC InitResourceMgr( int debugLevel)
     TPMS_CAPABILITY_DATA capabilityData;
     int i;
     
+    SetDebug( DBG_COMMAND_RM_TABLES );
+
     ResMgrPrintf( NO_PREFIX, "Initializing Resource Manager\n" );
 
     commandDebug = 0;
@@ -2797,7 +2802,10 @@ TSS2_RC InitResourceMgr( int debugLevel)
     gapMsbBitMask = (gapMaxValue + 1) >> 1;
     activeSessionCount = 0;
     
-returnFromInitResourceMgr:    
+returnFromInitResourceMgr:
+
+    SetDebug( DBG_NO_COMMAND );
+    
     return rval;
 }
 
@@ -2956,6 +2964,12 @@ int main(int argc, char* argv[])
             ResMgrPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", localTpmInterfaceInfo.shortName, rval );
             return( 1 );
         }
+#ifdef DEBUG_RESMGR_INIT        
+        else
+        {
+            ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_ENABLED;
+        }
+#endif        
     }
     else
 #endif        
@@ -2993,6 +3007,10 @@ int main(int argc, char* argv[])
         printf( "Resource Mgr failed to initialize.  Exiting...\n" );
         return( 1 );
     }
+
+#ifdef DEBUG_RESMGR_INIT        
+    ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_DISABLED;
+#endif        
 
     OpenOutFile( &outFp );
     if( 0 != InitSockets( appHostName, appPort, 1, &appOtherSock, &appTpmSock ) )

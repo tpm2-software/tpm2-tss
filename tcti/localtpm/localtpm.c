@@ -120,7 +120,6 @@ TSS2_RC LocalTpmReceiveTpmResponse(
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
     ssize_t  size;
-    unsigned char responseBuffer[4096];
     unsigned int i;
     
     rval = CommonReceiveChecks( tctiContext, response_size, response_buffer );
@@ -129,14 +128,7 @@ TSS2_RC LocalTpmReceiveTpmResponse(
         goto retLocalTpmReceive;
     }        
 
-    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
-    {
-#ifdef DEBUG
-        (*printfFunction)( rmDebugPrefix, "Response Received: " );
-#endif
-    }
-
-    size = read( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, &responseBuffer[0], 4096 );
+    size = read( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, &((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseBuffer[0], 4096 );
     if( size < 0 )
     {
         (*tpmLocalTpmPrintf)(NO_PREFIX, "read failed with error: %d\n", errno );
@@ -169,11 +161,12 @@ TSS2_RC LocalTpmReceiveTpmResponse(
 
     for( i = 0; i < *response_size; i++ )
     {
-        response_buffer[i] = responseBuffer[i];
+        response_buffer[i] = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseBuffer[i];
     }
 
 #ifdef DEBUG
-    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
+    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED &&
+            ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize > 0 )
     {
         (*tpmLocalTpmPrintf)( rmDebugPrefix, "\n" );
         (*tpmLocalTpmPrintf)( rmDebugPrefix, "Response Received: " );

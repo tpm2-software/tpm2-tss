@@ -660,16 +660,32 @@ void TestTctiApis()
     uint8_t getTestResultCommandBuffer[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x01, 0x7c };
     uint8_t responseBuffer[20];
     size_t responseSize;
+    size_t expectedResponseSize;
     SOCKET savedTpmSock;
     SOCKET savedOtherSock;
     int savedDevFile;
     uint64_t savedMagic;
     uint32_t savedVersion;
     uint8_t goodResponseBuffer[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+    uint8_t goodResponseBuffer1[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00,
+                                      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+    uint8_t *goodRspBuffer;
+    
     int responseBufferError = 0;
     unsigned int i;
     
     TSS2_RC rval = TSS2_RC_SUCCESS;
+    
+    if( tpmManufacturer == MSFT_MANUFACTURER_ID )
+    {
+        expectedResponseSize = 0x10;
+        goodRspBuffer = &( goodResponseBuffer[0] );
+    }
+    else
+    {
+        expectedResponseSize = 0x18;
+        goodRspBuffer = &( goodResponseBuffer1[0] );
+    }
     
     TpmClientPrintf( 0, "\nTCTI API TESTS:\n" );
 
@@ -828,7 +844,7 @@ void TestTctiApis()
     CheckFailed( rval, TSS2_TCTI_RC_INSUFFICIENT_BUFFER ); // #24
 
     // Test returned responseSize here.
-    if( responseSize != 0x10 )
+    if( responseSize != expectedResponseSize )
     {
         TpmClientPrintf( NO_PREFIX, "\nERROR!!  responseSize after receive with too small a buffer is incorrect: 0x%x\n", responseSize );
         Cleanup();
@@ -838,7 +854,7 @@ void TestTctiApis()
     CheckPassed( rval ); // #24
 
     // Test returned responseSize here.
-    if( responseSize != 0x10 )
+    if( responseSize != expectedResponseSize )
     {
         TpmClientPrintf( NO_PREFIX, "\nERROR!!  responseSize after receive with NULL responseBuffer is incorrect\n" );
         Cleanup();
@@ -849,7 +865,7 @@ void TestTctiApis()
     CheckFailed( rval, TSS2_TCTI_RC_INSUFFICIENT_BUFFER ); // #25
 
     // Test returned responseSize here.
-    if( responseSize != 0x10 )
+    if( responseSize != expectedResponseSize )
     {
         TpmClientPrintf( NO_PREFIX, "\nERROR!!  responseSize after receive with too small a buffer is incorrect: 0x%x\n", responseSize );
         Cleanup();
@@ -860,13 +876,13 @@ void TestTctiApis()
     CheckFailed( rval, TSS2_TCTI_RC_INSUFFICIENT_BUFFER ); // #26
 
     // Test returned responseSize here.
-    if( responseSize != 0x10 )
+    if( responseSize != expectedResponseSize )
     {
         TpmClientPrintf( NO_PREFIX, "\nERROR!!  responseSize after receive with too small a buffer is incorrect: 0x%x\n", responseSize );
         Cleanup();
     }
 
-    responseSize = sizeof( TPM20_Header_Out ) - 1 + sizeof( UINT16 ) + sizeof( UINT32 );
+    responseSize = expectedResponseSize;
     rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
     CheckPassed( rval ); // #27
 
@@ -874,7 +890,7 @@ void TestTctiApis()
     // Now compare RP buffer to what it should be
     for( i = 0; i < responseSize; i++ )
     {
-        if( responseBuffer[i] != goodResponseBuffer[i] )
+        if( responseBuffer[i] != goodRspBuffer[i] )
         {
             responseBufferError = 1;
             break;
@@ -882,7 +898,10 @@ void TestTctiApis()
     }
     if( responseBufferError )
     {
-        TpmClientPrintf( NO_PREFIX, "\nERROR!!  responseBuffer after receive is incorrect\n" );
+        TpmClientPrintf( NO_PREFIX, "\nERROR!!  responseBuffer after receive is incorrect, s/b:\n" );
+        DebugPrintBuffer( (UINT8 *)&goodRspBuffer[0], responseSize );
+        TpmClientPrintf( NO_PREFIX, "\nwas:\n" );
+        DebugPrintBuffer( (UINT8 *)&responseBuffer, responseSize );
         Cleanup();
     }
     
@@ -7086,9 +7105,6 @@ void TpmTest()
 
     rval = PlatformCommand( resMgrTctiContext, MS_SIM_NV_ON );
     CheckPassed( rval );
-
-    TestTctiApis();
-goto endTests;
 
     TestTpmStartup();
 
