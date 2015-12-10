@@ -45,7 +45,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <ExecutablePath>$(ExecutablePath);..\syscontext</ExecutablePath>
-    <IncludePath>$(SolutionDir)tcti\common;$(IncludePath);..\sysapi\include;..\test\tpmclient;..\tcti\tpmsockets;..\common;..\tcti\localtpm</IncludePath>
+    <IncludePath>$(SolutionDir)tcti\commontcti;$(IncludePath);..\sysapi\include;..\test\tpmclient;..\tcti\tpmsockets;..\common;..\tcti\localtpm</IncludePath>
     <OutDir>$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
