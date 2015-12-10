@@ -32,6 +32,8 @@
 extern "C" {
 #endif
 
+enum debugLevel { DBG_NO_COMMAND = 0, DBG_COMMAND = 1, DBG_COMMAND_RM = 2, DBG_COMMAND_RM_TABLES = 3 };
+
 void PrintRMDebugPrefix();
 
 void DebugPrintBuffer( UINT8 *command_buffer, UINT32 cnt1 );

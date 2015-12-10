@@ -1599,7 +1599,6 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                     (TSS2_TCTI_CONTEXT *)downstreamTctiContext,
                     (size_t *)response_size, response_buffer, timeout );
 
-            ResMgrPrintf( RM_PREFIX, "response_size = 0x%x:\n", *response_size );
             if( rval == TSS2_RC_SUCCESS )
             {
                 ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent = 0;
@@ -2559,39 +2558,6 @@ TSS2_RC TeardownSimulatorTctiContext( const char *driverConfig )
 
     return rval;
 }
-
-#if __linux || __unix
-char localTpmInterfaceConfig[interfaceConfigSize];
-    
-TSS2_TCTI_DRIVER_INFO localTpmInterfaceInfo = { "local TPM", "", InitLocalTpmTcti, TeardownLocalTpmTcti };
-
-TSS2_RC InitLocalTpmTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT **tctiContext )
-{
-    size_t size;
-    
-    TSS2_RC rval = TSS2_RC_SUCCESS;
-
-    rval = localTpmInterfaceInfo.initialize(NULL, &size, driverConfig, 0, 0, localTpmInterfaceInfo.shortName, 1 );
-    if( rval != TSS2_RC_SUCCESS )
-        return rval;
-    
-    downstreamTctiContext = malloc(size);
-
-    rval = localTpmInterfaceInfo.initialize(*tctiContext, &size, driverConfig, TCTI_MAGIC, TCTI_VERSION, localTpmInterfaceInfo.shortName, 0 );
-    return rval;
-}
-
-TSS2_RC TeardownLocalTpmTctiContext( const char *driverConfig )
-{
-    TSS2_RC rval;
-
-    rval = localTpmInterfaceInfo.teardown(NULL, driverConfig, localTpmInterfaceInfo.shortName );
-    if( rval != TSS2_RC_SUCCESS )
-        return rval;
-
-    return rval;
-}
-#endif
 
 TSS2_RC TeardownResMgr(
     TSS2_TCTI_CONTEXT *tctiContext, // OUT

@@ -37,7 +37,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "debug.h"
-#include "commonchecks.h"
+#include <commonchecks.h>
+#include <localtpm.h>
 
 #ifdef  _WIN32
 #define ssize_t int
@@ -53,8 +54,13 @@ extern void CloseOutFile( FILE **outFp );
 
 extern FILE *outFp;
 
+#ifdef SAPI_CLIENT
+extern int TpmClientPrintf( UINT8 type, const char *format, ... );
+int (*tpmLocalTpmPrintf)( UINT8 type, const char *format, ...) = TpmClientPrintf;
+#else
 extern int ResMgrPrintf( UINT8 type, const char *format, ... );
 int (*tpmLocalTpmPrintf)( UINT8 type, const char *format, ...) = ResMgrPrintf;
+#endif
 
 TSS2_RC LocalTpmSendTpmCommand(
     TSS2_TCTI_CONTEXT *tctiContext,       /* in */
@@ -128,32 +134,36 @@ TSS2_RC LocalTpmReceiveTpmResponse(
         goto retLocalTpmReceive;
     }        
 
-    size = read( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, &((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseBuffer[0], 4096 );
-    if( size < 0 )
+    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived == 0 )
     {
-        (*tpmLocalTpmPrintf)(NO_PREFIX, "read failed with error: %d\n", errno );
-        rval = TSS2_TCTI_RC_IO_ERROR;
-        goto retLocalTpmReceive;
-    }
-    else
-    {
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived = 1;
+        size = read( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, &((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseBuffer[0], 4096 );
+
+        if( size < 0 )
+        {
+            (*tpmLocalTpmPrintf)(NO_PREFIX, "read failed with error: %d\n", errno );
+            rval = TSS2_TCTI_RC_IO_ERROR;
+            goto retLocalTpmReceive;
+        }
+        else
+        {
+            ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived = 1;
+            ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = size;
+        }
+
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = size;
     }
-
-    ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = size;
-
+    
     if( response_buffer == NULL )
     {
         // In this case, just return the size
-        *response_size = size;
+        *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
         goto retLocalTpmReceive;
     }
 
     if( *response_size < ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize )
     {
         rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER; 
-        *response_size = size;
+        *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
         goto retLocalTpmReceive;
     }        
 
@@ -307,3 +317,33 @@ TSS2_RC TeardownLocalTpmTcti (
     return TSS2_RC_SUCCESS;
 }
 
+char localTpmInterfaceConfig[LOCAL_INTERFACE_CONFIG_SIZE];
+    
+TSS2_TCTI_DRIVER_INFO localTpmInterfaceInfo = { "local TPM", "", InitLocalTpmTcti, TeardownLocalTpmTcti };
+
+TSS2_RC InitLocalTpmTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT **tctiContext )
+{
+    size_t size;
+    
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+
+    rval = localTpmInterfaceInfo.initialize(NULL, &size, driverConfig, 0, 0, localTpmInterfaceInfo.shortName, 1 );
+    if( rval != TSS2_RC_SUCCESS )
+        return rval;
+    
+    *tctiContext = malloc(size);
+
+    rval = localTpmInterfaceInfo.initialize(*tctiContext, &size, driverConfig, TCTI_MAGIC, TCTI_VERSION, localTpmInterfaceInfo.shortName, 0 );
+    return rval;
+}
+
+TSS2_RC TeardownLocalTpmTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT *tctiContext )
+{
+    TSS2_RC rval;
+
+    rval = localTpmInterfaceInfo.teardown( tctiContext, driverConfig, localTpmInterfaceInfo.shortName );
+    if( rval != TSS2_RC_SUCCESS )
+        return rval;
+
+    return rval;
+}
