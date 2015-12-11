@@ -611,7 +611,45 @@ endTestForLoadedHandles:
     return rval;
 }    
 
+TSS2_RC FlushAllLoadedHandles()
+{
+    TPMS_CAPABILITY_DATA capabilityData;
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+    TPMI_YES_NO moreData;
+    UINT32 i;
 
+    rval = Tss2_Sys_GetCapability( resMgrSysContext, 0,
+            TPM_CAP_HANDLES, TRANSIENT_FIRST,
+            20, &moreData, &capabilityData, 0 );
+    if( rval != TSS2_RC_SUCCESS )
+        goto endFlushAllLoadedHandles;
+
+    if( capabilityData.data.handles.count != 0 )
+    {
+        ResMgrPrintf( RM_PREFIX, "Flush loaded transient object handles: \n" );
+        ResMgrPrintf( RM_PREFIX, "" );
+        for( i = 0; i < capabilityData.data.handles.count; i++ )
+        {
+            ResMgrPrintf( NO_PREFIX, "Flush handle 0x%8x\n", capabilityData.data.handles.handle[i] );
+            rval = Tss2_Sys_FlushContext( resMgrSysContext, capabilityData.data.handles.handle[i] );
+            if( rval != TSS2_RC_SUCCESS )
+            {
+                SetRmErrorLevel( &rval, TSS2_RESMGR_ERROR_LEVEL );
+                goto endFlushAllLoadedHandles;
+            }
+        }
+
+        rval = TSS2_RC_SUCCESS;
+    }
+
+    if( rval != TSS2_RC_SUCCESS )
+        goto endFlushAllLoadedHandles;
+
+
+endFlushAllLoadedHandles:
+
+    return rval;
+}
 
 TSS2_RC AddEntry( TPM_HANDLE virtualHandle, TPM_HANDLE realHandle, TPM_HANDLE parentHandle,
     TPMI_RH_HIERARCHY hierarchy, UINT64 connectionId )
@@ -2991,6 +3029,14 @@ int main(int argc, char* argv[])
     if( rval != TSS2_RC_SUCCESS )
     {
         printf( "Resource Mgr failed to initialize.  Exiting...\n" );
+        return( 1 );
+    }
+
+    // Flush all loaded handles
+    rval = FlushAllLoadedHandles();
+    if( rval != TSS2_RC_SUCCESS )
+    {
+        printf( "Resource Mgr failed to flush all loaded handles.  Exiting...\n" );
         return( 1 );
     }
 
