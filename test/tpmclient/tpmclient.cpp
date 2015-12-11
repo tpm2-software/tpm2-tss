@@ -134,6 +134,9 @@ TSS2_TCTI_CONTEXT *resMgrTctiContext = 0;
 TSS2_ABI_VERSION abiVersion = { TSSWG_INTEROP, TSS_SAPI_FIRST_FAMILY, TSS_SAPI_FIRST_LEVEL, TSS_SAPI_FIRST_VERSION };
 
 UINT32 tpmSpecVersion = 0;
+UINT32 tpmManufacturer = 0;
+
+#define MSFT_MANUFACTURER_ID 0x4d534654
 
 //
 // These are helper functions that are called through function pointers so that
@@ -325,7 +328,7 @@ TSS2_RC InitTctiResMgrContext( char *rmInterfaceConfig, TSS2_TCTI_CONTEXT **tcti
 
     if( *tctiContext )
     {
-        rval = resMgrInterfaceInfo.initialize(*tctiContext, &size, rmInterfaceConfig, 0, 0, resMgrInterfaceName, 0 );
+        rval = resMgrInterfaceInfo.initialize(*tctiContext, &size, rmInterfaceConfig, TCTI_MAGIC, TCTI_VERSION, resMgrInterfaceName, 0 );
     }
     else
     {
@@ -449,6 +452,27 @@ void GetTpmVersion()
     }   
 }
 
+void GetTpmManufacturer()
+{
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+    TPMS_CAPABILITY_DATA capabilityData;
+    
+    rval = Tss2_Sys_GetCapability( sysContext, 0,
+            TPM_CAP_TPM_PROPERTIES, TPM_PT_MANUFACTURER,
+            1, 0, &capabilityData, 0 );
+    CheckPassed( rval );
+
+    if( capabilityData.data.tpmProperties.count == 1 && 
+            (capabilityData.data.tpmProperties.tpmProperty[0].property == TPM_PT_MANUFACTURER ) )
+    {
+        tpmManufacturer = capabilityData.data.tpmProperties.tpmProperty[0].value;
+    }
+    else
+    {
+        TpmClientPrintf( 0, "Failed to get TPM manufacturer!!\n" );
+        Cleanup();
+    }   
+}
 
 void TestDictionaryAttackLockReset()
 {
@@ -575,6 +599,255 @@ void TestTpmStartup()
     rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
     CheckPassed(rval);
 }
+
+
+void ForceIOError( SOCKET *savedTpmSock, SOCKET *savedOtherSock, int *savedDevFile, int tpmSock )
+{
+    if( tpmManufacturer == MSFT_MANUFACTURER_ID )
+    {
+        if( tpmSock )
+        {
+            *savedTpmSock = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->tpmSock;
+            ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->tpmSock = ~*savedTpmSock;
+        }
+        else
+        {
+            *savedOtherSock = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->otherSock;
+            ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->otherSock = ~*savedOtherSock;
+        }
+    }
+    else
+    {
+        *savedDevFile = ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->devFile;
+        ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->devFile = ~*savedDevFile;
+    }
+}
+
+void CleanupIOError( SOCKET savedTpmSock, SOCKET savedOtherSock, int savedDevFile, int tpmSock )
+{
+    if( tpmManufacturer == MSFT_MANUFACTURER_ID )
+    {
+        if( tpmSock )
+        {
+            ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->tpmSock = savedTpmSock;
+        }
+        else
+        {
+            ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->otherSock = savedOtherSock;
+        }
+    }
+    else
+    {
+        ( (TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->devFile = savedDevFile;
+    }
+}
+
+void ForceContextError( int magic, uint64_t *savedMagic, uint32_t *savedVersion )
+{
+    if( magic )
+    {
+        *savedMagic = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->magic;
+        ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->magic = ~*savedMagic;
+    }
+    else
+    {
+        *savedVersion = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->version;
+        ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->version = ~*savedVersion;
+    }
+}
+
+void CleanupContextError( int magic, uint64_t savedMagic, uint32_t savedVersion )
+{
+    if( magic )
+    {
+        ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->magic = savedMagic;
+    }
+    else
+    {
+        ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->version = savedVersion;
+    }
+}
+
+void TestTctiApis()
+{
+    uint8_t commandBuffer[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00 };
+    uint8_t responseBuffer[20];
+    size_t responseSize;
+    SOCKET savedTpmSock;
+    SOCKET savedOtherSock;
+    int savedDevFile;
+    uint64_t savedMagic;
+    uint32_t savedVersion;
+    
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+    
+    TpmClientPrintf( 0, "\nTCTI API TESTS:\n" );
+
+    //
+    // Test transmit for NULL pointers.
+    //
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( 0, sizeof( commandBuffer ), &commandBuffer[0] );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #1
+
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( commandBuffer ), 0 );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #2
+
+    //
+    // Test transmit for BAD CONTEXT:  magic.
+    //
+    ForceContextError( 1, &savedMagic, &savedVersion );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( 0, sizeof( commandBuffer ), &commandBuffer[0] );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #3
+    CleanupContextError( 1, savedMagic, savedVersion );
+    
+    //
+    // Test transmit for BAD CONTEXT:  version.
+    //
+    ForceContextError( 0, &savedMagic, &savedVersion );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( 0, sizeof( commandBuffer ), &commandBuffer[0] );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #4
+    CleanupContextError( 0, savedMagic, savedVersion );
+    
+    //
+    // Test transmit for IO error.
+    //
+    ForceIOError( &savedTpmSock, &savedOtherSock, &savedDevFile, 1 );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( commandBuffer ), &commandBuffer[0] );
+    CleanupIOError( savedTpmSock, savedOtherSock, savedDevFile, 1 );
+    CheckFailed( rval, TSS2_TCTI_RC_IO_ERROR ); // #5
+
+    //
+    // Test cancel for SEQUENCE error.
+    //
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->cancel( resMgrTctiContext );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_SEQUENCE ); // #6
+        
+    //
+    // Test setLocality for BAD_REFERENCE error.
+    //
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->setLocality( 0, 0 );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #7
+        
+#if 0
+    //
+    // setLocality in TCTI interface to resource manager doesn't actually do
+    // any IO, so this test case will never work.  Left it and this comment here
+    // in case anyone ever questions why we're not testing this case.
+    //
+    
+    //
+    // Test setLocality for IO error.
+    //
+    ForceIOError( &savedTpmSock, &savedOtherSock, &savedDevFile, 0 );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->setLocality( resMgrTctiContext, 0 );
+    CleanupIOError( savedTpmSock, savedOtherSock, savedDevFile, 0 );
+    CheckFailed( rval, TSS2_TCTI_RC_IO_ERROR ); // #8
+#endif
+    
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( commandBuffer ), &commandBuffer[0] );
+    CheckPassed( rval ); // #9
+
+    //
+    // Test cancel for IO error.
+    //
+    ForceIOError( &savedTpmSock, &savedOtherSock, &savedDevFile, 0 );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->cancel( resMgrTctiContext );
+    CleanupIOError( savedTpmSock, savedOtherSock, savedDevFile, 0 );
+    CheckFailed( rval, TSS2_TCTI_RC_IO_ERROR ); // #8
+
+    //
+    // Test setLocality for BAD_REFERENCE error.
+    //
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->setLocality( resMgrTctiContext, 0 );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_SEQUENCE ); // #10
+        
+    //
+    // Test transmit for SEQUENCE error.
+    //
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->transmit( resMgrTctiContext, sizeof( commandBuffer ), &commandBuffer[0] );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_SEQUENCE ); // #11
+
+    responseSize = sizeof( responseBuffer );
+
+    //
+    // Test cancel for BAD REFERENCE error.
+    //
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->cancel( 0 );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #12
+        
+    //
+    // Test receive for NULL pointers.
+    //
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( 0, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #13
+
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, 0, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #14
+
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, 0, TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #15
+
+    //
+    // Test receive for IO error.
+    //
+    ForceIOError( &savedTpmSock, &savedOtherSock, &savedDevFile, 1 );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
+    CleanupIOError( savedTpmSock, savedOtherSock, savedDevFile, 1 );
+    CheckFailed( rval, TSS2_TCTI_RC_IO_ERROR ); // #16
+
+    //
+    // Test receive for BAD CONTEXT:  magic.
+    //
+    ForceContextError( 1, &savedMagic, &savedVersion );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_CONTEXT ); // #17
+    CleanupContextError( 1, savedMagic, savedVersion );
+
+    //
+    // Test receive for BAD CONTEXT:  version.
+    //
+    ForceContextError( 0, &savedMagic, &savedVersion );
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_CONTEXT ); // #18
+    CleanupContextError( 0, savedMagic, savedVersion );
+
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckPassed( rval ); // #19
+
+    // Test cancel for SEQUENCE error.
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->cancel( resMgrTctiContext );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_SEQUENCE ); // #20
+    
+    //
+    // Test receive for SEQUENCE error.
+    //
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->receive( resMgrTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_SEQUENCE ); // #21
+
+    //
+    // Test finalize for BAD REFERENCE error.
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->finalize( 0 );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #22
+
+#if 0
+    //
+    // No getPollHandles function so these are #ifdef'd out for now.
+    //
+    
+    //
+    // Test getPollHandles for BAD REFERENCE errors.
+    //
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->getPollHandles( (TSS2_TCTI_CONTEXT *)0, (TSS2_TCTI_POLL_HANDLE *)1, (size_t *)1 );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #23
+    
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->getPollHandles( resMgrTctiContext, (TSS2_TCTI_POLL_HANDLE *)0, (size_t *)1 );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #24
+    
+    rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)resMgrTctiContext )->getPollHandles( resMgrTctiContext, (TSS2_TCTI_POLL_HANDLE *)1, (size_t *)0 );
+    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #25
+#endif
+}
+    
 
 void TestSapiApis()
 {
@@ -834,8 +1107,6 @@ void TestSapiApis()
     rval = Tss2_Sys_Startup( 0, TPM_SU_CLEAR );
     CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #57
 
-    
-    
     // Test one-call for NULL input parameter that should be a
     // pointer.
     rval = Tss2_Sys_Create( testSysContext, 0xffffffff, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
@@ -6682,6 +6953,10 @@ void TpmTest()
     TestTpmStartup();
 
     GetTpmVersion();
+
+    GetTpmManufacturer();
+
+    TestTctiApis();
 
     CmdRspAuthsTests();
 	    

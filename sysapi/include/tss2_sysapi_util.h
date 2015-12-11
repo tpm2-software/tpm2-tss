@@ -43,6 +43,8 @@ extern "C" {
 
 enum cmdStates { CMD_STAGE_INITIALIZE, CMD_STAGE_PREPARE, CMD_STAGE_SEND_COMMAND, CMD_STAGE_RECEIVE_RESPONSE, CMD_STAGE_ALL = 0xff };
 
+#define TCTI_MAGIC 0x7e18e9defa8bc9e2
+#define TCTI_VERSION 0x1
 
 typedef struct {
     //

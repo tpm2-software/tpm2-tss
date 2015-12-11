@@ -83,7 +83,7 @@ typedef struct {
 uint8_t *command);
     TSS2_RC (*receive) (TSS2_TCTI_CONTEXT *tctiContext, size_t *size, 
 uint8_t *response, int32_t timeout);
-    void (*finalize) (TSS2_TCTI_CONTEXT *tctiContext);
+    TSS2_RC (*finalize) (TSS2_TCTI_CONTEXT *tctiContext);
     TSS2_RC (*cancel) (TSS2_TCTI_CONTEXT *tctiContext);
     TSS2_RC (*getPollHandles) (TSS2_TCTI_CONTEXT *tctiContext, 
 TSS2_TCTI_POLL_HANDLE *handles, size_t *num_handles);

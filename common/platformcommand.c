@@ -68,8 +68,6 @@ TSS2_RC PlatformCommand(
 
         if (iResult == SOCKET_ERROR) {
             (*printfFunction)(NO_PREFIX, "send failed with error: %d\n", WSAGetLastError() );
-            closesocket(TCTI_CONTEXT_INTEL->otherSock);
-            WSACleanup();
             rval = TSS2_TCTI_RC_IO_ERROR;
         }
         else
@@ -84,15 +82,11 @@ TSS2_RC PlatformCommand(
             if (iResult == SOCKET_ERROR) {
                 (*printfFunction)(NO_PREFIX, "In PlatformCommand, recv failed (socket: 0x%x) with error: %d\n",
                         TCTI_CONTEXT_INTEL->otherSock, WSAGetLastError() );
-                closesocket(TCTI_CONTEXT_INTEL->otherSock);
-                WSACleanup();
                 rval = TSS2_TCTI_RC_IO_ERROR;
             }
             else if( recvbuf[0] != 0 || recvbuf[1] != 0 || recvbuf[2] != 0 || recvbuf[3] != 0 )
             {
                 (*printfFunction)(NO_PREFIX, "PlatformCommand failed with error: %d\n", recvbuf[3] );
-                closesocket(TCTI_CONTEXT_INTEL->otherSock);
-                WSACleanup();
                 rval = TSS2_TCTI_RC_IO_ERROR;
             }
             else
