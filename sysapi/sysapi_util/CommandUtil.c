@@ -164,11 +164,15 @@ TSS2_RC CommonComplete( TSS2_SYS_CONTEXT *sysContext )
     {
         return TSS2_SYS_RC_BAD_REFERENCE;
     }
-    else if( SYS_CONTEXT->previousStage != CMD_STAGE_RECEIVE_RESPONSE )
+    else if( SYS_CONTEXT->previousStage != CMD_STAGE_RECEIVE_RESPONSE || SYS_CONTEXT->rval != TSS2_RC_SUCCESS )
     {
         SYS_CONTEXT->rval = TSS2_SYS_RC_BAD_SEQUENCE;
     }
-    else if( SYS_CONTEXT->rval == TSS2_RC_SUCCESS )
+    else if( rspSize > MAX_COMMAND_SIZE )
+    {
+        SYS_CONTEXT->rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
+    }
+    else
     {
         SYS_CONTEXT->nextData = (UINT8 *)( SYS_CONTEXT->rspParamsSize );
 
@@ -186,10 +190,6 @@ TSS2_RC CommonComplete( TSS2_SYS_CONTEXT *sysContext )
         {
             SYS_CONTEXT->rpBufferUsedSize = rspSize - ( SYS_CONTEXT->rpBuffer - SYS_CONTEXT->tpmOutBuffPtr );
         }
-    }
-    else
-    {
-        SYS_CONTEXT->rval = TSS2_SYS_RC_BAD_SEQUENCE;
     }
 
     return SYS_CONTEXT->rval;
