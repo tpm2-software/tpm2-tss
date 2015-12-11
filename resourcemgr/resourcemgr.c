@@ -2058,10 +2058,11 @@ exitResourceMgrReceiveTpmResponse:
     
     PrintRMTables();
 
+    // Test and show warning
     testForLoadedSessionsOrObjectsRval = TestForLoadedHandles();
 
-    if( responseRval == TSS2_RC_SUCCESS )
-        responseRval = testForLoadedSessionsOrObjectsRval;
+    if( testForLoadedSessionsOrObjectsRval != TSS2_RC_SUCCESS)
+        ResMgrPrintf( RM_PREFIX, "Result of test for loaded handles : 0x%X\n", testForLoadedSessionsOrObjectsRval );
     
     if( responseRval != TSS2_RC_SUCCESS )
     {
