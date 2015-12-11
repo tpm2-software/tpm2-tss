@@ -37,8 +37,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "debug.h"
-#include <commonchecks.h>
-#include <localtpm.h>
+#include "commonchecks.h"
+#include "localtpm.h"
 
 #ifdef  _WIN32
 #define ssize_t int

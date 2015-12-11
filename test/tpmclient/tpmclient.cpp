@@ -107,7 +107,10 @@ TPM_CC *currentCommandCodePtr = &currentCommandCode;
 char errorString[errorStringSize];
 
 UINT8 simulator = 1;
+
+#if __linux || __unix
 UINT8 testLocalTcti = 0;
+#endif
 
 UINT32 tpmMaxResponseLen = TPMBUF_LEN;
 
@@ -7105,6 +7108,7 @@ void TestCreate1()
     CheckPassed(rval);
 }
 
+#if __linux || __unix
 //
 // NOTE:  these tests must be run when no RM is running in the system and when a local TPM is installe.
 //
@@ -7145,9 +7149,7 @@ void TestLocalTCTI()
     }
     
 }
-
-
-
+#endif
 
 void TpmTest()
 {
@@ -7305,8 +7307,11 @@ char version[] = "0.90";
 
 void PrintHelp()
 {
-    printf( "TPM client test app, Version %s\nUsage:  tpmclient [-rmhost hostname|ip_addr] [-rmport port] [-passes passNum] [-demoDelay delay] [-dbg dbgLevel] [-startAuthSessionTest] [-localTctiTest]\n"
-            "\n"
+    printf( "TPM client test app, Version %s\nUsage:  tpmclient [-rmhost hostname|ip_addr] [-rmport port] [-passes passNum] [-demoDelay delay] [-dbg dbgLevel] [-startAuthSessionTest] "
+#if __linux || __unix
+            "[-localTctiTest]"
+#endif            
+            "\n\n"
             "where:\n"
             "\n"
             "-rmhost specifies the host IP address for the system running the resource manager (default: %s)\n"
@@ -7319,7 +7324,9 @@ void PrintHelp()
             "   2 (resource manager send/receive byte streams)\n"
             "   3 (resource manager tables)\n"
             "-startAuthSessionTest enables some special tests of the resource manager for starting sessions\n"
+#if __linux || __unix
             "-localTctiTest enables a TCTI interface test against a local TPM.  WARNING:  This test requires no resource manager and a local TPM\n"
+#endif            
 #ifdef SHARED_OUT_FILE
             "-out selects the output file (default is stdout)\n"
 #endif            
@@ -7404,10 +7411,13 @@ int main(int argc, char* argv[])
             {
                 startAuthSessionTestOnly = 1;
             }            
+#if __linux || __unix
             else if( 0 == strcmp( argv[count], "-localTctiTest" ) )
             {
                 testLocalTcti = 1;
-            }            
+            }
+#endif
+            
 #ifdef SHARED_OUT_FILE
             else if( 0 == strcmp( argv[count], "-out" ) )
             {
@@ -7448,10 +7458,12 @@ int main(int argc, char* argv[])
 		outFp = 0;
 	}
 
+#if __linux || __unix
     if( testLocalTcti )
     {
         TestLocalTCTI();
     }
+#endif
     
     sprintf_s( rmInterfaceConfig, rmInterfaceConfigSize, "%s %d ", hostName, port );
 
