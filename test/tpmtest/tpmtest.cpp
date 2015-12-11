@@ -58,7 +58,10 @@
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
 #include <string.h>
+
+#ifndef _WIN32
 #include <unistd.h>   // Needed for isatty
+#endif
 
 #include "tpm20.h"
 //#include "simulator.h"
