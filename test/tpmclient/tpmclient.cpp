@@ -996,6 +996,7 @@ void TestSapiApis()
     TPMS_CAPABILITY_DATA	capabilityData;
     int                 rpBufferError = 0;
     unsigned int        i;
+    UINT32              savedRspSize;
     
     TpmClientPrintf( 0, "\nSAPI API TESTS:\n" );
 
@@ -1292,6 +1293,23 @@ void TestSapiApis()
     }
     
     TeardownSysContext( &testSysContext );
+
+    rval = Tss2_Sys_GetTestResult_Prepare( sysContext );
+    CheckPassed(rval); // #63
+
+    // Execute the command syncronously.
+    rval = Tss2_Sys_Execute( sysContext );
+    CheckPassed(rval); // #64
+
+    // Get the command results
+    savedRspSize = CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr )  )->responseSize );
+    ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr )  )->responseSize = 4097;
+    rval = Tss2_Sys_GetTestResult_Complete( sysContext, &outData, &testResult );
+    ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr )  )->responseSize = savedRspSize;
+    CheckFailed( rval, TSS2_SYS_RC_MALFORMED_RESPONSE ); // #65
+
+    rval = Tss2_Sys_GetTestResult_Complete( sysContext, &outData, &testResult );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #66
 }
 
 
