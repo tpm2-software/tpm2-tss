@@ -168,7 +168,7 @@ TSS2_RC CommonComplete( TSS2_SYS_CONTEXT *sysContext )
     {
         SYS_CONTEXT->rval = TSS2_SYS_RC_BAD_SEQUENCE;
     }
-    else if( rspSize > MAX_COMMAND_SIZE )
+    else if( rspSize > SYS_CONTEXT->maxResponseSize )
     {
         SYS_CONTEXT->rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
     }

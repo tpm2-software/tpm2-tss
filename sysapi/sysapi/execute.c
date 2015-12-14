@@ -87,7 +87,7 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
         {
             rval = TSS2_SYS_RC_INSUFFICIENT_RESPONSE;
         }
-        else if( responseSize > MAX_COMMAND_SIZE )
+        else if( responseSize > SYS_CONTEXT->maxResponseSize )
         {
             rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
         }
