@@ -1302,12 +1302,17 @@ void TestSapiApis()
     CheckPassed(rval); // #64
 
     // Get the command results
+    // NOTE: this test modifies internal fields of the sysContext structure.
+    // DON'T DO THIS IN REAL APPS!!
     savedRspSize = CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr )  )->responseSize );
     ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr )  )->responseSize = 4097;
     rval = Tss2_Sys_GetTestResult_Complete( sysContext, &outData, &testResult );
     ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr )  )->responseSize = savedRspSize;
     CheckFailed( rval, TSS2_SYS_RC_MALFORMED_RESPONSE ); // #65
 
+    // NOTE: this test case is kind of bogus--no application would ever do this
+    // since apps can't change the responseSize after TPM has returned the response.
+    // ONce the MALFOMED_RESPONSE occurs, there's no way to recover the response data.
     rval = Tss2_Sys_GetTestResult_Complete( sysContext, &outData, &testResult );
     CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #66
 }
