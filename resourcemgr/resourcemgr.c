@@ -2070,6 +2070,8 @@ returnFromResourceMgrReceiveTpmResponse:
     // If command was FlushContext, the entry was already removed from the list.  No eviction
     // necsssary or possible (because no entry exists for this object or sequence anymore).
     if( numHandles &&
+            !( currentCommandCode == TPM_CC_ContextSave &&
+                IsSessionHandle( cmdSavedHandle ) ) &&
             ( currentCommandCode != TPM_CC_FlushContext ) )
     {
         // Create array of handles.
