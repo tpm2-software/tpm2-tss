@@ -107,6 +107,7 @@ UINT32 TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2B **bufferList, TPM2B_DIG
             return( rval );
     }
 
+    result->t.size = sizeof( TPM2B_DIGEST ) - 2;
     rval = Tss2_Sys_SequenceComplete ( sysContext, sequenceHandle, &sessionsData, ( TPM2B_MAX_BUFFER *)&emptyBuffer,
             TPM_RH_PLATFORM, result, &validation, &sessionsDataOut );
 

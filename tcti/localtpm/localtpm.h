@@ -28,6 +28,9 @@
 #ifndef LOCALTPM_H
 #define LOCALTPM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 TSS2_RC InitLocalTpmTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
@@ -44,6 +47,20 @@ TSS2_RC TeardownLocalTpmTcti (
     const char *config,              // IN        
 	const char *interfaceName
     );
+
+#define LOCAL_INTERFACE_CONFIG_SIZE 250
+
+extern char localTpmInterfaceConfig[LOCAL_INTERFACE_CONFIG_SIZE];
+
+extern TSS2_TCTI_DRIVER_INFO localTpmInterfaceInfo;
+
+extern TSS2_RC InitLocalTpmTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT **tctiContext );
+
+extern TSS2_RC TeardownLocalTpmTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT *tctiContext );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

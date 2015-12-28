@@ -57,6 +57,8 @@ typedef pthread_t THREAD_TYPE ;
 #error Unsupported OS--need to add OS-specific support for threading here.        
 #endif                
 
+#define DEBUG_RESMGR_INIT        
+
 extern TSS2_RC GetCommands( TSS2_SYS_CONTEXT *resMgrSysContext, TPML_CCA **supportedCommands );
 extern UINT8 GetCommandAttributes( TPM_CC commandCode, TPML_CCA *supportedCommands, TPMA_CC *cmdAttributes );
 
@@ -195,7 +197,7 @@ TSS2_RC ResmgrFixupErrorlevel( TSS2_RC errCode )
     Unmarshal_UINT32( (buffer), (size), (currentPtr), &( (value)->hierarchy ), (rval) ); \
     responseRval = ResmgrFixupErrorlevel( *rval ); \
     if( responseRval != TSS2_RC_SUCCESS ) goto exitLoc; \
-    Unmarshal_Simple_TPM2B( (buffer), (size), (currentPtr), (TPM2B *)&( (value)->contextBlob ), (rval) ); \
+    Unmarshal_Simple_TPM2B_NoSizeCheck( (buffer), (size), (currentPtr), (TPM2B *)&( (value)->contextBlob ), (rval) ); \
     responseRval = ResmgrFixupErrorlevel( *rval ); \
     if( responseRval != TSS2_RC_SUCCESS ) goto exitLoc; 
 
@@ -2557,39 +2559,6 @@ TSS2_RC TeardownSimulatorTctiContext( const char *driverConfig )
     return rval;
 }
 
-#if __linux || __unix
-char localTpmInterfaceConfig[interfaceConfigSize];
-    
-TSS2_TCTI_DRIVER_INFO localTpmInterfaceInfo = { "local TPM", "", InitLocalTpmTcti, TeardownLocalTpmTcti };
-
-TSS2_RC InitLocalTpmTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT **tctiContext )
-{
-    size_t size;
-    
-    TSS2_RC rval = TSS2_RC_SUCCESS;
-
-    rval = localTpmInterfaceInfo.initialize(NULL, &size, driverConfig, 0, 0, localTpmInterfaceInfo.shortName, 1 );
-    if( rval != TSS2_RC_SUCCESS )
-        return rval;
-    
-    downstreamTctiContext = malloc(size);
-
-    rval = localTpmInterfaceInfo.initialize(*tctiContext, &size, driverConfig, TCTI_MAGIC, TCTI_VERSION, localTpmInterfaceInfo.shortName, 0 );
-    return rval;
-}
-
-TSS2_RC TeardownLocalTpmTctiContext( const char *driverConfig )
-{
-    TSS2_RC rval;
-
-    rval = localTpmInterfaceInfo.teardown(NULL, driverConfig, localTpmInterfaceInfo.shortName );
-    if( rval != TSS2_RC_SUCCESS )
-        return rval;
-
-    return rval;
-}
-#endif
-
 TSS2_RC TeardownResMgr(
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     const char *config              // IN        
@@ -2615,6 +2584,8 @@ TSS2_RC InitResourceMgr( int debugLevel)
     TPMS_CAPABILITY_DATA capabilityData;
     int i;
     
+    SetDebug( DBG_COMMAND_RM_TABLES );
+
     ResMgrPrintf( NO_PREFIX, "Initializing Resource Manager\n" );
 
     commandDebug = 0;
@@ -2797,7 +2768,10 @@ TSS2_RC InitResourceMgr( int debugLevel)
     gapMsbBitMask = (gapMaxValue + 1) >> 1;
     activeSessionCount = 0;
     
-returnFromInitResourceMgr:    
+returnFromInitResourceMgr:
+
+    SetDebug( DBG_NO_COMMAND );
+    
     return rval;
 }
 
@@ -2956,6 +2930,12 @@ int main(int argc, char* argv[])
             ResMgrPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", localTpmInterfaceInfo.shortName, rval );
             return( 1 );
         }
+#ifdef DEBUG_RESMGR_INIT        
+        else
+        {
+            ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_ENABLED;
+        }
+#endif        
     }
     else
 #endif        
@@ -2993,6 +2973,10 @@ int main(int argc, char* argv[])
         printf( "Resource Mgr failed to initialize.  Exiting...\n" );
         return( 1 );
     }
+
+#ifdef DEBUG_RESMGR_INIT        
+    ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_DISABLED;
+#endif        
 
     OpenOutFile( &outFp );
     if( 0 != InitSockets( appHostName, appPort, 1, &appOtherSock, &appTpmSock ) )

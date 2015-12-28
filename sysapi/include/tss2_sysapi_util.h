@@ -65,7 +65,7 @@ typedef struct {
     TPM_CC commandCodeSwapped;
     UINT32 cpBufferUsedSize;        
     UINT8 *cpBuffer;
-    UINT32 *paramsSize;  // Points to paramsSize.
+    UINT32 *rspParamsSize;  // Points to response paramsSize.
     UINT32 rpBufferUsedSize;        
     UINT8 *rpBuffer;  
     UINT8 previousStage;            // Used to check for sequencing errors.

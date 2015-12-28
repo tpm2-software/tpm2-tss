@@ -62,14 +62,24 @@ typedef struct {
     TSS2_RC (*finalize) (TSS2_TCTI_CONTEXT *tctiContext);
     TSS2_RC (*cancel) (TSS2_TCTI_CONTEXT *tctiContext);
     TSS2_RC (*getPollHandles) (TSS2_TCTI_CONTEXT *tctiContext, 
-TSS2_TCTI_POLL_HANDLE *handles, size_t *num_handles);
+              TSS2_TCTI_POLL_HANDLE *handles, size_t *num_handles);
     TSS2_RC (*setLocality) (TSS2_TCTI_CONTEXT *tctiContext, uint8_t locality);
     struct {
         UINT32 debugMsgLevel: 8;
         UINT32 locality: 8;
         UINT32 commandSent: 1;
         UINT32 rmDebugPrefix: 1;  // Used to add a prefix to RM debug messages.
+
+        // Following two fields used to save partial response status in case receive buffer's too small.
+        UINT32 tagReceived: 1;
+        UINT32 responseSizeReceived: 1;
+        UINT32 protocolResponseSizeReceived: 1;
     } status;
+
+    // Following two fields used to save partial response in case receive buffer's too small.
+    TPM_ST tag;         
+    TPM_RC responseSize;
+    
     TSS2_TCTI_CONTEXT *currentTctiContext;
 
     // Sockets if socket interface is being used.
@@ -80,6 +90,7 @@ TSS2_TCTI_POLL_HANDLE *handles, size_t *num_handles);
     // File descriptor for device file if real TPM is being used.
     int devFile;  
     UINT8 previousStage;            // Used to check for sequencing errors.
+    unsigned char responseBuffer[4096];
 } TSS2_TCTI_CONTEXT_INTEL;
 
 #define TCTI_CONTEXT ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)(SYS_CONTEXT->tctiContext) )

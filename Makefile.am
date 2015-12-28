@@ -44,15 +44,15 @@ libtpm2tcti_HEADERS = $(LOCALTPM_H) $(TPMSOCKETS_H)
 # how to build stuff
 resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS)
 resourcemgr_resourcemgr_CXXFLAGS = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS)
-resourcemgr_resourcemgr_LDADD    = $(libtpm2sapi) $(libtpm2tctidev)
+resourcemgr_resourcemgr_LDADD    = $(libtpm2sapi) 
 resourcemgr_resourcemgr_LDFLAGS  = $(PTHREAD_LDFLAGS)
 resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(TPMSOCKETS_CXX) \
-    $(COMMON_C) $(COMMONTCTI_C)
+    $(COMMON_C) $(COMMONTCTI_C) $(LOCALTPM_C)
 
 sysapi_libtpm2sapi_la_CFLAGS  = -I$(srcdir)/sysapi/include/
 sysapi_libtpm2sapi_la_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
 
-tcti_libtpm2tctidev_la_CFLAGS   = $(TCTIDEV_INC) $(COMMONTCTI_INC)
+tcti_libtpm2tctidev_la_CFLAGS   = -DSAPI_CLIENT $(TCTIDEV_INC) $(COMMONTCTI_INC)
 tcti_libtpm2tctidev_la_SOURCES  = common/debug.c $(LOCALTPM_C) $(COMMONTCTI_C)
 
 tcti_libtpm2tctisock_la_CFLAGS   = -DSAPI_CLIENT $(TCTISOCK_INC) $(COMMONTCTI_INC)
@@ -60,8 +60,8 @@ tcti_libtpm2tctisock_la_CXXFLAGS = -DSAPI_CLIENT $(TCTISOCK_INC)
 tcti_libtpm2tctisock_la_SOURCES  = common/debug.c $(TPMSOCKETS_CXX) $(COMMONTCTI_C)
 
 test_tpmclient_tpmclient_CFLAGS   = -DSAPI_CLIENT $(TPMCLIENT_INC)
-test_tpmclient_tpmclient_CXXFLAGS = -DSAPI_CLIENT $(TPMCLIENT_INC)
-test_tpmclient_tpmclient_LDADD    = $(libtpm2sapi) $(libtpm2tctisock)
+test_tpmclient_tpmclient_CXXFLAGS = -DSAPI_CLIENT $(TPMCLIENT_INC) $(COMMONTCTI_INC) $(TCTIDEV_INC)
+test_tpmclient_tpmclient_LDADD    = $(libtpm2sapi) $(libtpm2tctisock) $(libtpm2tctidev)
 test_tpmclient_tpmclient_SOURCES  = $(TPMCLIENT_CXX) $(COMMON_C) $(SAMPLE_C)
 
 test_tpmtest_tpmtest_CFLAGS   = -DSAPI_CLIENT $(TPMTEST_INC)
@@ -87,7 +87,8 @@ TCTISOCK_INC = -I$(srcdir)/sysapi/include -I$(srcdir)/common \
 
 TPMCLIENT_INC = -I$(srcdir)/sysapi/include -I$(srcdir)/tcti/tpmsockets \
     -I$(srcdir)/test/tpmclient -I$(srcdir)/common \
-    -I$(srcdir)/test/common/sample -I$(srcdir)/resourcemgr
+    -I$(srcdir)/test/common/sample -I$(srcdir)/resourcemgr \
+    -I$(srcdir)/tcti/localtpm
 TPMCLIENT_CXX = test/tpmclient/tpmclient.cpp
 
 TPMTEST_INC = -I$(srcdir)/sysapi/include -I$(srcdir)/tcti/tpmsockets \

@@ -87,6 +87,10 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
         {
             rval = TSS2_SYS_RC_INSUFFICIENT_RESPONSE;
         }
+        else if( responseSize > SYS_CONTEXT->maxResponseSize )
+        {
+            rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
+        }
         else
         {
             SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
@@ -138,9 +142,8 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
     }
     else if( rval == TSS2_TCTI_RC_INSUFFICIENT_BUFFER )
     {
-        // In this case we received all the bytes from the TCTI layer, so we need to
-        // change previous state to CMD_STAGE_RECEIVE_RESPONSE.
-        SYS_CONTEXT->previousStage = CMD_STAGE_RECEIVE_RESPONSE;
+        // Changed error code to what it should be.
+        rval = TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
     }
         
     return rval;

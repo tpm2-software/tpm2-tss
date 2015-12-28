@@ -175,7 +175,8 @@ TPM_RC StartAuthSession( SESSION *session )
         for( i = 0; i < session->nonceOlder.t.size; i++ )
             session->nonceOlder.t.buffer[i] = 0; 
     }
-    
+
+    session->nonceNewer.t.size = session->nonceOlder.t.size;
     rval = Tss2_Sys_StartAuthSession( tmpSysContext, session->tpmKey, session->bind, 0,
             &( session->nonceOlder ), &( session->encryptedSalt ), session->sessionType,
             &( session->symmetric ), session->authHash, &( session->sessionHandle ),

@@ -100,7 +100,7 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
 
                     if( newCmdSize > (UINT64)( SYS_CONTEXT->maxCommandSize ) )
                     {
-                        rval = TSS2_SYS_RC_INSUFFICIENT_BUFFER;
+                        rval = TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
                     }
                     else
                     {
@@ -172,7 +172,7 @@ TSS2_RC Tss2_Sys_GetRspAuths(
                 otherData = SYS_CONTEXT->tpmOutBuffPtr;
                 otherData = (UINT8 *)otherData + sizeof( TPM20_Header_Out ) - 1;
                 otherData = (UINT8 *)otherData + SYS_CONTEXT->numResponseHandles * sizeof( TPM_HANDLE );
-                otherData = (UINT8 *)otherData + CHANGE_ENDIAN_DWORD( *( SYS_CONTEXT->paramsSize ) ); 
+                otherData = (UINT8 *)otherData + CHANGE_ENDIAN_DWORD( *( SYS_CONTEXT->rspParamsSize ) ); 
                 otherData = (UINT8 *)otherData + sizeof( UINT32 );
 
                 otherDataSaved = otherData;
