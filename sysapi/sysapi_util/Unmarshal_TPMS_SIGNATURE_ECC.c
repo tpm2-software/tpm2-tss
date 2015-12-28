@@ -40,8 +40,8 @@ void Unmarshal_TPMS_SIGNATURE_ECC(
 		return;
 
 	Unmarshal_UINT16( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &signatureEcc->hash, &( SYS_CONTEXT->rval ) );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&signatureEcc->signatureR );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&signatureEcc->signatureS );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&signatureEcc->signatureR );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&signatureEcc->signatureS );
 
 	return;
 }

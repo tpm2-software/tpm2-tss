@@ -94,7 +94,7 @@ TPM_RC Tss2_Sys_CreatePrimary_Complete(
 
     Unmarshal_TPM2B_PUBLIC( sysContext, outPublic );
 
-    UNMARSHAL_SIMPLE_TPM2B( sysContext, &( creationData->b ) );
+    Unmarshal_TPM2B_CREATION_DATA( sysContext, creationData );
 
     UNMARSHAL_SIMPLE_TPM2B( sysContext, &( creationHash->b ) );
 

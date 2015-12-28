@@ -40,8 +40,8 @@ void Unmarshal_TPMT_SENSITIVE(
 		return;
 
 	Unmarshal_UINT16( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &sensitive->sensitiveType, &( SYS_CONTEXT->rval ) );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&sensitive->authValue );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&sensitive->seedValue );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&sensitive->authValue );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&sensitive->seedValue );
 	Unmarshal_TPMU_SENSITIVE_COMPOSITE( sysContext, &sensitive->sensitive, sensitive->sensitiveType );
 
 	return;

@@ -86,7 +86,7 @@ TSS2_RC Tss2_Sys_SetDecryptParam(
             sizeToBeUsed = CHANGE_ENDIAN_DWORD( ( (TPM20_Header_In *)( SYS_CONTEXT->tpmInBuffPtr ) )->commandSize ) + decryptParamSize;
             if( sizeToBeUsed > SYS_CONTEXT->maxCommandSize )
             {
-                rval = TSS2_SYS_RC_INSUFFICIENT_BUFFER;
+                rval = TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
             }
             else if( currDecryptParamSize == 0 && SYS_CONTEXT->decryptNull )
             {

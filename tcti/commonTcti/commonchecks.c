@@ -76,7 +76,7 @@ TSS2_RC CommonReceiveChecks(
 {
 	TSS2_RC rval = TSS2_RC_SUCCESS;
 
-    if( tctiContext == NULL || response_buffer == NULL || response_size == NULL )
+    if( tctiContext == NULL || response_size == NULL )
     {
         rval = TSS2_TCTI_RC_BAD_REFERENCE;
         goto retCommonReceiveChecks;

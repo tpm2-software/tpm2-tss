@@ -49,7 +49,7 @@
     if( *rval != TSS2_RC_SUCCESS ) goto exitLoc;
 
 #define SESSION_UNMARSHAL_SIMPLE_TPM2B( buffer, size, currentPtr, value, rval, exitLoc ) \
-    Unmarshal_Simple_TPM2B( buffer, size, currentPtr, value, rval ); \
+    Unmarshal_Simple_TPM2B_NoSizeCheck( buffer, size, currentPtr, value, rval ); \
     if( *rval != TSS2_RC_SUCCESS ) goto exitLoc;
 
 

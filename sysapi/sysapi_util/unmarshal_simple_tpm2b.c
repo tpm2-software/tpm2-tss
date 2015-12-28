@@ -28,7 +28,7 @@
 #include <tpm20.h>   
 #include <tss2_sysapi_util.h>
 
-void Unmarshal_Simple_TPM2B( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, TPM2B *value, TSS2_RC *rval )
+void Unmarshal_Simple_TPM2B( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, TPM2B *outTPM2B, TSS2_RC *rval )
 {
 //deleted for now--spec issues with nested TPM2B's
 #if 0
@@ -48,13 +48,21 @@ void Unmarshal_Simple_TPM2B( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **
             if( *rval == TSS2_RC_SUCCESS )
             {
                 length = CHANGE_ENDIAN_WORD( *(UINT16 *)*nextData );
-                
-                if( value != 0 )
+
+                if( outTPM2B != 0 )
                 {
-                    Unmarshal_UINT16( outBuffPtr, maxResponseSize, nextData, &( value->size ), rval );
+                    if( length > outTPM2B->size )
+                    {
+                        *rval = TSS2_SYS_RC_INSUFFICIENT_BUFFER;
+                    }
+                    else
+                    {
+                        Unmarshal_UINT16( outBuffPtr, maxResponseSize, nextData, &( outTPM2B->size ), rval );
+                    }
                 }
                 else
                 {
+                    // Let low level function deal with NULL output pointer.
                     Unmarshal_UINT16( outBuffPtr, maxResponseSize, nextData, 0, rval );
                 }
 
@@ -63,12 +71,13 @@ void Unmarshal_Simple_TPM2B( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **
                     // Copy to output TPM2B.
                     for( i = 0; i < length; i++ )
                     {
-                        if( value != 0 )
+                        if( outTPM2B != 0 )
                         {
-                            Unmarshal_UINT8( outBuffPtr, maxResponseSize, nextData,  &( value->buffer[i] ), rval );
+                            Unmarshal_UINT8( outBuffPtr, maxResponseSize, nextData,  &( outTPM2B->buffer[i] ), rval );
                         }
                         else
                         {
+                            // Let low level function deal with NULL output pointer.
                             Unmarshal_UINT8( outBuffPtr, maxResponseSize, nextData, 0, rval );
                         }
 

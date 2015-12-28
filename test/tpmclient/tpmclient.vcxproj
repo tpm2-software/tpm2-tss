@@ -57,7 +57,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);SAPI_CLIENT;DEBUG</PreprocessorDefinitions>
       <AdditionalOptions>/I..\..\include %(AdditionalOptions)</AdditionalOptions>
       <StructMemberAlignment>1Byte</StructMemberAlignment>
-      <AdditionalIncludeDirectories>..\..\sysapi\include;..\common\sample;..\..\resourcemgr\;..\..\syscontext;..\..\tpmsockets;..\..\common;.;..\..\tcti\tpmsockets</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\sysapi\include;..\common\sample;..\..\resourcemgr\;..\..\syscontext;..\..\tpmsockets;..\..\common;..\..\tcti\tpmsockets.;..\..\tcti\localtpm;.</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -81,7 +81,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);SAPI_CLIENT</PreprocessorDefinitions>
       <Optimization>MinSpace</Optimization>
       <StructMemberAlignment>1Byte</StructMemberAlignment>
-      <AdditionalIncludeDirectories>..\..\sysapi\include;..\common\sample;..\..\resourcemgr\;..\..\syscontext;..\..\tpmsockets;..\..\common;.;..\..\tcti\tpmsockets</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\sysapi\include;..\common\sample;..\..\resourcemgr\;..\..\syscontext;..\..\tpmsockets;..\..\common;..\..\tcti\tpmsockets.;..\..\tcti\localtpm;.</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

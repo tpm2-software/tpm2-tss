@@ -221,6 +221,9 @@ returnFromSocketSendTpmCommand:
     if( rval == TSS2_RC_SUCCESS )
     {
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage = TCTI_STAGE_SEND_COMMAND;
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived = 0;
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived = 0;
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived = 0;
     }
 
     return rval;
@@ -347,13 +350,12 @@ TSS2_RC SocketReceiveTpmResponse(
     )
 {
     UINT32 trash;
-    size_t responseSize = 0;
     TSS2_RC rval = TSS2_RC_SUCCESS;
     fd_set readFds;
     struct timeval tv, *tvPtr;
     int32_t timeoutMsecs = timeout % 1000;
     int iResult;
-    size_t receiveSize, i;
+    unsigned char responseSizeDelta = 0;
 
     rval = CommonReceiveChecks( tctiContext, response_size, response_buffer );
     if( rval != TSS2_RC_SUCCESS )
@@ -361,126 +363,140 @@ TSS2_RC SocketReceiveTpmResponse(
         goto retSocketReceiveTpmResponse;
     }        
     
-    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
+    if( timeout == TSS2_TCTI_TIMEOUT_BLOCK )
     {
-#ifdef DEBUG
-        (*printfFunction)( rmDebugPrefix, "Response Received: " );
-#endif
-#ifdef DEBUG_SOCKETS
-         (*printfFunction)( rmDebugPrefix, "from socket #0x%x:\n", TCTI_CONTEXT_INTEL->tpmSock );
-#endif
+        tvPtr = 0;
+    }
+    else
+    {
+        tv.tv_sec = timeout / 1000;
+        tv.tv_usec = timeoutMsecs * 1000;
+        tvPtr = &tv;
     }
 
-    if( *response_size > 0 )
+    FD_ZERO( &readFds );
+    FD_SET( TCTI_CONTEXT_INTEL->tpmSock, &readFds );
+
+    iResult = select( TCTI_CONTEXT_INTEL->tpmSock+1, &readFds, 0, 0, tvPtr );
+    if( iResult == 0 )
     {
-        if( timeout == TSS2_TCTI_TIMEOUT_BLOCK )
-        {
-            tvPtr = 0;
-        }
-        else
-        {
-            tv.tv_sec = timeout / 1000;
-            tv.tv_usec = timeoutMsecs * 1000;
-            tvPtr = &tv;
-        }
+        (*printfFunction)(NO_PREFIX, "select failed due to timeout, socket #: 0x%x\n", TCTI_CONTEXT_INTEL->tpmSock );
+        rval = TSS2_TCTI_RC_TRY_AGAIN;
+        goto retSocketReceiveTpmResponse;
+    }
+    else if( iResult == SOCKET_ERROR )
+    {
+        (*printfFunction)(NO_PREFIX, "select failed with socket error: %d\n", WSAGetLastError() );
+        rval = TSS2_TCTI_RC_IO_ERROR;
+        goto retSocketReceiveTpmResponse;
+    }
+    else if ( iResult != 1 )
+    {
+        (*printfFunction)(NO_PREFIX, "select failed, read the wrong # of bytes: %d\n", iResult );
+        rval = TSS2_TCTI_RC_IO_ERROR;
+        goto retSocketReceiveTpmResponse;
+    }
 
-        FD_ZERO( &readFds );
-        FD_SET( TCTI_CONTEXT_INTEL->tpmSock, &readFds );
-
-        iResult = select( TCTI_CONTEXT_INTEL->tpmSock+1, &readFds, 0, 0, tvPtr );
-        if( iResult == 0 )
-        {
-            (*printfFunction)(NO_PREFIX, "select failed due to timeout, socket #: 0x%x\n", TCTI_CONTEXT_INTEL->tpmSock );
-            rval = TSS2_TCTI_RC_TRY_AGAIN;
-            goto retSocketReceiveTpmResponse;
-        }
-        else if( iResult == SOCKET_ERROR )
-        {
-            (*printfFunction)(NO_PREFIX, "select failed with socket error: %d\n", WSAGetLastError() );
-            rval = TSS2_TCTI_RC_IO_ERROR;
-            goto retSocketReceiveTpmResponse;
-        }
-        else if ( iResult != 1 )
-        {
-            (*printfFunction)(NO_PREFIX, "select failed, read the wrong # of bytes: %d\n", iResult );
-            rval = TSS2_TCTI_RC_IO_ERROR;
-            goto retSocketReceiveTpmResponse;
-        }
-
+    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived != 1 )
+    {        
         // Receive the size of the response.
-        rval = recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&responseSize, 4 );
+        rval = recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)& (((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize ), 4 );
         if( rval != TSS2_RC_SUCCESS )
             goto retSocketReceiveTpmResponse;
 
-		responseSize = CHANGE_ENDIAN_DWORD( responseSize );
-
-        if( *response_size < responseSize )
-        {
-            rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER; 
-
-            // Now we have to read all the bytes from the TPM interface, even if the buffer's too small.
-            // Otherwise, we won't be able to send any more commands to the interface without resetting it.
-            // So, we will loop around reading bytes into the response_buffer.  This, of course,
-            // means that the response buffer is gibberish when we're done, but at least the TPM
-            // is left usable.  The error code should notify the caller that the response buffer
-            // can't be used.
-            for( i = 0; i < responseSize; i += receiveSize )
-            {
-                if( responseSize - i > *response_size )
-                {
-                    receiveSize = *response_size;
-                }
-                else
-                {
-                    receiveSize = responseSize - i;
-                }
-                // Receive the TPM response.
-                if( TSS2_RC_SUCCESS != recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)response_buffer, receiveSize ) )
-                {
-                    // Give up at this point.
-                    ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage = TCTI_STAGE_RECEIVE_RESPONSE;
-                    goto retSocketReceiveTpmResponse;
-                }
-
-#ifdef DEBUG
-                if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
-                {
-                    DEBUG_PRINT_BUFFER( response_buffer, receiveSize );
-                }
-#endif
-            }
-
-            // Don't check return value here, because it doesn't matter.  We already
-            // received an error and we're just trying to cleanup.
-            recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&trash, 4 );
-
-            ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage = TCTI_STAGE_RECEIVE_RESPONSE;
-        }
-        else
-        {
-            // Receive the TPM response.
-            rval = recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)response_buffer, responseSize );
-            if( rval != TSS2_RC_SUCCESS )
-                goto retSocketReceiveTpmResponse;
-
-#ifdef DEBUG
-            if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
-            {
-                DEBUG_PRINT_BUFFER( response_buffer, responseSize );
-            }
-#endif
-        
-            // Receive the appended four bytes of 0's
-            rval = recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&trash, 4 );
-            if( rval != TSS2_RC_SUCCESS )
-                goto retSocketReceiveTpmResponse;
-        }
-
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = CHANGE_ENDIAN_DWORD( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived = 1;
     }
 
-    if( responseSize < *response_size )
+    if( response_buffer == NULL )
     {
-        *response_size = responseSize;
+        // In this case, just return the size
+        *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived = 1;
+        goto retSocketReceiveTpmResponse;
+    }
+
+    if( *response_size < ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize )
+    {
+        *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
+        rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER; 
+
+
+        // If possible, receive tag from TPM.
+        if( *response_size >= sizeof( TPM_ST ) && ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived == 0 )
+        {
+            if( TSS2_RC_SUCCESS != recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->tag ), 2 ) )
+            {
+                goto retSocketReceiveTpmResponse;
+            }
+            else
+            {
+                ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived = 1;
+            }
+        }
+
+        // If possible, receive response size from TPM
+        if( *response_size >= ( sizeof( TPM_ST ) + sizeof( TPM_RC ) ) && ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived == 0 )
+        {
+            if( TSS2_RC_SUCCESS != recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->responseSize ), 4 ) )
+            {
+                goto retSocketReceiveTpmResponse;
+            }
+            else
+            {
+                ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = CHANGE_ENDIAN_DWORD( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
+                ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived = 1;
+            }
+        }
+    }
+    else
+    {
+        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED &&
+                ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize > 0 )
+        {
+#ifdef DEBUG
+            (*printfFunction)( rmDebugPrefix, "Response Received: " );
+#endif
+#ifdef DEBUG_SOCKETS
+            (*printfFunction)( rmDebugPrefix, "from socket #0x%x:\n", TCTI_CONTEXT_INTEL->tpmSock );
+#endif
+        }
+        
+        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived == 1 )
+        {
+            *(TPM_ST *)response_buffer = ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->tag;
+            responseSizeDelta += sizeof( TPM_ST );
+            response_buffer += sizeof( TPM_ST );
+        }
+
+        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived == 1 )
+        {
+            *(TPM_RC *)response_buffer = CHANGE_ENDIAN_DWORD( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->responseSize );
+            responseSizeDelta += sizeof( TPM_RC );
+            response_buffer += sizeof( TPM_RC );
+        }
+
+        // Receive the TPM response.
+        rval = recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize - responseSizeDelta );
+        if( rval != TSS2_RC_SUCCESS )
+            goto retSocketReceiveTpmResponse;
+
+#ifdef DEBUG
+        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
+        {
+            DEBUG_PRINT_BUFFER( response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
+        }
+#endif
+
+        // Receive the appended four bytes of 0's
+        rval = recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&trash, 4 );
+        if( rval != TSS2_RC_SUCCESS )
+            goto retSocketReceiveTpmResponse;
+    }
+
+    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize < *response_size )
+    {
+        *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
     }
     
     ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent = 0;
@@ -502,7 +518,8 @@ TSS2_RC SocketReceiveTpmResponse(
     }
 
 retSocketReceiveTpmResponse:
-    if( rval == TSS2_RC_SUCCESS )
+    if( rval == TSS2_RC_SUCCESS && 
+		response_buffer != NULL )
     {
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage = TCTI_STAGE_RECEIVE_RESPONSE;
     }
@@ -699,6 +716,9 @@ TSS2_RC InitSocketsTcti (
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.rmDebugPrefix = 0;
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->currentTctiContext = 0;
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage = TCTI_STAGE_INITIALIZE;
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived = 0;
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived = 0;
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived = 0;
 
         // Get hostname and port.
         if( ( strlen( config ) + 2 ) <= ( HOSTNAME_LENGTH  ) )

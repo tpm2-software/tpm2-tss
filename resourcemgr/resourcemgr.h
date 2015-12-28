@@ -68,8 +68,6 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
     int32_t             timeout
     );
 
-enum debugLevel { DBG_NO_COMMAND = 0, DBG_COMMAND = 1, DBG_COMMAND_RM = 2, DBG_COMMAND_RM_TABLES = 3 };
-
 void ResourceMgrInit( int debugLevel );
 
 // Uncommentting DEBUG_GAP_HANDLING instruments the max active sessions and gap

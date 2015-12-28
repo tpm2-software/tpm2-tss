@@ -40,7 +40,7 @@ void Unmarshal_TPMS_SESSION_AUDIT_INFO(
 		return;
 
 	Unmarshal_UINT8( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &sessionAuditInfo->exclusiveSession, &( SYS_CONTEXT->rval ) );
-	UNMARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&sessionAuditInfo->sessionDigest );
+	UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&sessionAuditInfo->sessionDigest );
 
 	return;
 }
