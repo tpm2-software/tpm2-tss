@@ -85,7 +85,8 @@ void ResourceMgrInit( int debugLevel );
 // #define  CONTEXT_SLOT                     UINT8
 // #endif
 //
-#define DEBUG_GAP_HANDLING
+// #define DEBUG_GAP_HANDLING
+
 //
 #ifdef DEBUG_GAP_HANDLING
 // NOTE: these values must match the ones

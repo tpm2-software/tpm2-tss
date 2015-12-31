@@ -1,5 +1,8 @@
 /***********************************************************************;
  * Copyright (c) 2015, Intel Corporation
+ *
+ * Copyright 2015, Andreas Fuchs @ Fraunhofer SIT
+ *
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
