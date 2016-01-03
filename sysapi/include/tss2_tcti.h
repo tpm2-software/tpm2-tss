@@ -50,7 +50,7 @@
 extern "C" {
 #endif
 
-#include <tss2_common.h>
+#include "tss2_common.h"
 #include <stddef.h>
 
 #if defined _WIN32
