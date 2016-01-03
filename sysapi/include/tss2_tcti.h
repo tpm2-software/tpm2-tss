@@ -50,8 +50,9 @@
 extern "C" {
 #endif
 
-#include <tss2_common.h>
 #include <stddef.h>
+
+#include "tss2_common.h"
 
 #if defined _WIN32
 #include <winsock2.h>
