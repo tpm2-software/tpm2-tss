@@ -327,7 +327,6 @@ TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len )
     {
         iResult = recv( tpmSock, (char *)&( data[bytesRead] ), length, 0);
         if (iResult == SOCKET_ERROR) {
-            PrintRMDebugPrefix();
             (*printfFunction)(NO_PREFIX, "In recvBytes, recv failed (socket: 0x%x) with error: %d\n",
                     tpmSock, WSAGetLastError() );
             return TSS2_TCTI_RC_IO_ERROR;
@@ -335,6 +334,7 @@ TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len )
     }
 
 #ifdef DEBUG_SOCKETS
+    PrintRMDebugPrefix();
     (*printfFunction)( rmDebugPrefix, "Receive Bytes from socket #0x%x: \n", tpmSock );
     DebugPrintBuffer( data, len );
 #endif
@@ -775,7 +775,6 @@ TSS2_RC TeardownSocketsTcti (
 
     ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->finalize( tctiContext );
 
-  
     return TSS2_RC_SUCCESS;
 }
 

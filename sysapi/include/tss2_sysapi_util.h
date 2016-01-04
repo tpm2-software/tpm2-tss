@@ -36,7 +36,7 @@
 extern "C" {
 #endif
 
-#include <tss2_tcti_util.h>
+#include "tss2_tcti_util.h"
 
 // TBD:  delete this after porting completed.
 #define CMD_STAGE_1     1
@@ -210,7 +210,7 @@ TSS2_SYS_CONTEXT *InitSysContext(
 
 void TeardownSysContext( TSS2_SYS_CONTEXT **sysContext );
 
-#include <tss2_sys_api_marshalUnmarshal.h>
+#include "tss2_sys_api_marshalUnmarshal.h"
 
 #ifdef __cplusplus
 }
