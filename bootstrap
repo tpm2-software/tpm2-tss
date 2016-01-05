@@ -16,7 +16,6 @@ VARS_FILE=src_vars.mk
 
 echo "Generating file lists: ${VARS_FILE}"
 (
-  src_listvar "sysapi/include" "*.h" "SYSAPI_H"
   src_listvar "sysapi/sysapi" "*.c" "SYSAPI_C"
   src_listvar "sysapi/sysapi_util" "*.c" "SYSAPIUTIL_C"
   printf "SYSAPI_SRC = \$(SYSAPI_H) \$(SYSAPI_C) \$(SYSAPIUTIL_C)\n"
@@ -26,7 +25,6 @@ echo "Generating file lists: ${VARS_FILE}"
   printf "COMMON_SRC = \$(COMMON_C) \$(COMMON_H)\n"
 
   src_listvar "tcti/localtpm" "*.c" "LOCALTPM_C"
-  src_listvar "tcti/localtpm" "*.h" "LOCALTPM_H"
   printf "LOCALTPM_SRC = \$(LOCALTPM_C) \$(LOCALTPM_H)\n"
 
   src_listvar "tcti/commonTcti" "*.c" "COMMONTCTI_C"
@@ -38,7 +36,6 @@ echo "Generating file lists: ${VARS_FILE}"
   printf "SAMPLE_SRC = \$(SAMPLE_C) \$(SAMPLE_H)\n"
 
   src_listvar "tcti/tpmsockets" "*.cpp" "TPMSOCKETS_CXX"
-  src_listvar "tcti/tpmsockets" "*.h" "TPMSOCKETS_H"
   printf "TPMSOCKETS_SRC = \$(TPMSOCKETS_CXX) \$(TPMSOCKETS_H)\n"
 ) > ${VARS_FILE}
 

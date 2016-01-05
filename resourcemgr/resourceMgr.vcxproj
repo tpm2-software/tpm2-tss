@@ -39,7 +39,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)tcti\commontcti;$(IncludePath);..\sysapi\include;..\test\tpmclient;..\tcti\tpmsockets;..\common;..\tcti\localtpm</IncludePath>
+    <IncludePath>$(SolutionDir)tcti\commontcti;$(IncludePath);..\include\tpm2sapi;..\test\tpmclient;..\common;..\include\tpm2tcti</IncludePath>
     <OutDir>$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
