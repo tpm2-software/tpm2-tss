@@ -509,6 +509,11 @@ void Marshal_TPMT_SENSITIVE(
 	TPMT_SENSITIVE *sensitive
 	);
 
+void Marshal_TPMS_NV_PIN_COUNTER_PARAMETERS(
+	TSS2_SYS_CONTEXT *sysContext,
+	TPMS_NV_PIN_COUNTER_PARAMETERS *nvPinCounterParameters
+	);
+
 void Marshal_TPMA_NV(
 	TSS2_SYS_CONTEXT *sysContext,
 	TPMA_NV nv
@@ -950,6 +955,11 @@ void Unmarshal_TPMT_SENSITIVE(
 void Unmarshal_TPM2B_SENSITIVE(
 	TSS2_SYS_CONTEXT *sysContext,
 	TPM2B_SENSITIVE *sensitive
+	);
+
+void Unmarshal_TPMS_NV_PIN_COUNTER_PARAMETERS(
+	TSS2_SYS_CONTEXT *sysContext,
+	TPMS_NV_PIN_COUNTER_PARAMETERS *nvPinCounterParameters
 	);
 
 void Unmarshal_TPMA_NV(

@@ -67,9 +67,9 @@ typedef	UINT16	TPM_KEY_BITS;	 /* a key size in bits  */
 typedef	UINT32 TPM_SPEC;
 #define	TPM_SPEC_FAMILY	(0x322E3000 )	 /* ASCII 2.0 with null terminator  */
 #define	TPM_SPEC_LEVEL	(00 )	 /* the level number for the specification  */
-#define	TPM_SPEC_VERSION	(1265 )	 /* the version number of the spec 001.256 * 100  */
+#define	TPM_SPEC_VERSION	(126 )	 /* the version number of the spec 001.26 * 100  */
 #define	TPM_SPEC_YEAR	(2015 )	 /* the year of the version  */
-#define	TPM_SPEC_DAY_OF_YEAR	(219233 )	 /* the day of the year August 1021 2015  */
+#define	TPM_SPEC_DAY_OF_YEAR	(233 )	 /* the day of the year August 21 2015  */
 
 /* Table 7  Definition of UINT32 TPM_GENERATED Constants <O> */
 typedef	UINT32 TPM_GENERATED;
@@ -1802,8 +1802,14 @@ typedef uint32_t	TPM_NV_INDEX;
 #define	TPM_NT_COUNTER	(0x1 )	 /* Counter  contains an 8octet value that is to be used as a counter and can only be modified with TPM2_NV_Increment  */
 #define	TPM_NT_BITS	(0x2 )	 /* Bit Field  contains an 8octet value to be used as a bit field and can only be modified with TPM2_NV_SetBits.  */
 #define	TPM_NT_EXTEND	(0x4 )	 /* Extend  contains a digestsized value used like a PCR. The Index can only be modified using TPM2_NV_Extend. The extend will use the nameAlg of the Index.  */
-#define	TPM_NT_PIN_FAIL	(0x8 )	 /* PIN Fail  contains a PIN limit and a pinCountPIN count that increments on a PIN authorization failure and a pinLimit  */
-#define	TPM_NT_PIN_PASS	(0x9 )	 /* PIN Pass  contains a PIN limit and a PIN countpinCount that increments on a PIN authorization success and a pinLimit  */
+#define	TPM_NT_PIN_FAIL	(0x8 )	 /* PIN Fail  contains a pinCount that increments on a PIN authorization failure and a pinLimit  */
+#define	TPM_NT_PIN_PASS	(0x9 )	 /* PIN Pass  contains a pinCount that increments on a PIN authorization success and a pinLimit  */
+
+/* Table 196  Definition of TPMS_NV_PIN_COUNTER_PARAMETERS Structure */
+typedef	struct {
+	UINT32	pinCount;	 /* This counter shows the current number of successful authValue authorization attempts to access a TPM_NT_PIN_PASS index or the current number of unsuccessful authValue authorization attempts to access a TPM_NT_PIN_FAIL index.  */
+	UINT32	pinLimit;	 /* This threshold is the value of pinCount at which the authValue authorization of the host TPM_NT_PIN_PASS or TPM_NT_PIN_FAIL index is locked out.  */
+} TPMS_NV_PIN_COUNTER_PARAMETERS;
 
 /* Table 197  Definition of UINT32 TPMA_NV Bits */
 #if defined TPM_BITFIELD_LE
