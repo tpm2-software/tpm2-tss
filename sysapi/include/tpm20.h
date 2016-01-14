@@ -43,15 +43,15 @@
 #include    <stdlib.h> 
 #include    <string.h> 
 
-#include    <basetypes.h>
-#include    <tpmb.h>
-#include    <implementation.h>
-#include    <tss2_tpm2_types.h>
+#include    "basetypes.h"
+#include    "tpmb.h"
+#include    "implementation.h"
+#include    "tss2_tpm2_types.h"
 
-#include    <tss2_tcti.h>
-#include    <tss2_tcti_util.h>
-#include    <tss2_sys.h>
-#include    <tss2_common.h>
-#include    <endianConv.h>
+#include    "tss2_tcti.h"
+#include    "tss2_tcti_util.h"
+#include    "tss2_sys.h"
+#include    "tss2_common.h"
+#include    "endianConv.h"
 
 #endif

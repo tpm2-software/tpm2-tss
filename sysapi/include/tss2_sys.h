@@ -173,7 +173,7 @@ TPM_RC Tss2_Sys_GetRpBuffer(
     const uint8_t **rpBuffer
     );
 
-#include <tss2_sys_api_part3.h>
+#include "tss2_sys_api_part3.h"
 
 #ifdef __cplusplus
 }
