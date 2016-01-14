@@ -1,0 +1,27 @@
+language: cpp
+compiler:
+  - gcc
+
+# This is a lie: we don't need sudo but this is required to get an
+# Ubuntu image with a libc that isn't ancient, and with cmocka libs.
+sudo: required
+dist: trusty
+
+addons:
+  apt:
+    packages:
+    - autoconf-archive
+    - libcmocka0
+    - libcmocka-dev
+
+install: true
+
+before_script:
+  - ./bootstrap
+
+script:
+  - mkdir ./build
+  - pushd ./build
+  - CONFIG_SITE=../lib/default_config.site ../configure --enable-unit
+  - make -j$(nproc)
+  - make -j$(nproc) check
