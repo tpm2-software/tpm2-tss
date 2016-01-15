@@ -98,9 +98,6 @@ LIB64_FLAGS          = $(LIB_FLAGS)
 # PROJECT_DIR  comes from build batch file located in the project tip
 # Others are defined here.
 #
-INCLUDE_DIR          = .\tpm\Include
-
-ALL_INCLUDES         = /I$(INCLUDE_DIR) /I$(INCLUDE_DIR)\tcg_headers /I$(TSSTOOLS_PATH)\VC\include
 
 #
 # Suffixes
@@ -113,8 +110,8 @@ ALL_INCLUDES         = /I$(INCLUDE_DIR) /I$(INCLUDE_DIR)\tcg_headers /I$(TSSTOOL
 BASE_DIR                        = .
 LIBRARY_DIR			= .\lib
 BLD_DIR                         = build
-INCLUDE_DIR                     = ..\include\tpm2sapi
-
+INCLUDE_DIR                     = ..\include
+ALL_INCLUDES         = /I$(INCLUDE_DIR) /I$(TSSTOOLS_PATH)\VC\include /I$(BASE_DIR)\include
 LIBRARY                         = tpm.lib
 
 

@@ -60,15 +60,15 @@
 #include <string.h>
 #include <unistd.h>   // Needed for isatty
 
-#include "tpm20.h"
+#include <tss2/tpm20.h>
 //#include "simulator.h"
 #include "sample.h"
 //#include "simdriver.h"
 #include "resourcemgr.h"
 #include "tpmclient.h"
-#include "tss2_sysapi_util.h"
+#include "sysapi_util.h"
 //+++++
-#include "tpmsockets.h"
+#include <tcti/tpmsockets.h>
 #include "syscontext.h"
 #include "debug.h"
 

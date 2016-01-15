@@ -29,8 +29,8 @@
 #define RESOURCEMGR_H
 
 //#include "tpmclient.h"
-#include "tss2_tcti.h"
-#include "tss2_sysapi_util.h"
+#include <tss2/tss2_tcti.h>
+#include "sysapi_util.h"
 #include <stdlib.h>
 
 #define TSS2_RESMGR_MEMALLOC_FAILED                 ((TSS2_RC)( (1<<TSS2_LEVEL_IMPLEMENTATION_SPECIFIC_SHIFT) + TSS2_RESMGR_ERROR_LEVEL))

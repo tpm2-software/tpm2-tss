@@ -25,11 +25,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include <tpm20.h>
+#include <tss2/tpm20.h>
 #include "sample.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <tss2_sysapi_util.h>
+#include "sysapi_util.h"
 
 //
 //

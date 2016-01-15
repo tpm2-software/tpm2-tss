@@ -54,7 +54,8 @@
 #include <stdlib.h>   // Needed for _wtoi
 #include <string.h>
 
-#include "tpm20.h"
+#include <tss2/tpm20.h>
+#include "sysapi_util.h"
 #include "sample.h"
 #include "resourcemgr.h"
 #include "tpmclient.h"
@@ -65,12 +66,12 @@
 //
 // ATTENTION:  Normal applications should NEVER do this!!
 //
-#include "tss2_sysapi_util.h"
+#include "sysapi_util.h"
 
-#include "tpmsockets.h"
+#include <tcti/tpmsockets.h>
 #include "syscontext.h"
 #include "debug.h"
-#include "localtpm.h"
+#include <tcti/localtpm.h>
 
 //
 // TPM indices and sizes

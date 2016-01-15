@@ -43,9 +43,9 @@
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
 
-#include "tpm20.h"
-#include "tpmsockets.h"
-#include "tss2_sysapi_util.h"
+#include <tss2/tpm20.h>
+#include <tcti/tpmsockets.h>
+#include "sysapi_util.h"
 #include "debug.h"
 #include "commonchecks.h"
 

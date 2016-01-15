@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
 
-#include "tpm20.h"
+#include <tss2/tpm20.h>
 #include "debug.h"
 
 UINT8 rmDebugPrefix = 0;

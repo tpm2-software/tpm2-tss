@@ -25,7 +25,7 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include <tpm20.h>   
+#include <tss2/tpm20.h>
 
 TSS2_RC CopyMem( UINT8 *dest, const UINT8 *src, const size_t len, const UINT8 *limit )
 {
