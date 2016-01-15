@@ -25,8 +25,8 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include <tpm20.h>   
-#include <tss2_sysapi_util.h>
+#include <tss2/tpm20.h>
+#include "sysapi_util.h"
 
 
 TPM_RC CompareSizedByteBuffer( TPM2B *buffer1, TPM2B *buffer2 )

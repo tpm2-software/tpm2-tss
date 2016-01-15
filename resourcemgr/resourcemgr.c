@@ -28,13 +28,13 @@
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
 
-#include <tpm20.h>
-#include "tpmsockets.h"
+#include <tss2/tpm20.h>
+#include <tcti/tpmsockets.h>
+#include <tcti/localtpm.h>
 #include "resourcemgr.h"
 //#include <sample.h>
-#include <tss2_sysapi_util.h>
+#include "sysapi_util.h"
 #include "syscontext.h"
-#include "localtpm.h"
 #include "debug.h"
 
 #ifdef  _WIN32
@@ -43,7 +43,6 @@ typedef HANDLE THREAD_TYPE;
 
 #elif __linux || __unix
 
-#include "localtpm.h"
 #include <stdarg.h>
 #define sprintf_s   snprintf
 #define sscanf_s    sscanf
@@ -2586,6 +2585,7 @@ UINT32 WINAPI SockServer( LPVOID servStruct )
 
 char simInterfaceConfig[interfaceConfigSize];
     
+extern TSS2_TCTI_DRIVER_INFO localTpmInterfaceInfo;
 TSS2_TCTI_DRIVER_INFO simInterfaceInfo = { "simulator", "", InitSocketsTcti, TeardownSocketsTcti };
 
 SOCKET simOtherSock;

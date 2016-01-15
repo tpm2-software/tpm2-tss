@@ -32,7 +32,7 @@
 extern "C" {
 #endif
 
-#include <tpm2tcti/magic.h>
+#include <tcti/magic.h>
 
 #ifndef _WIN32
 #include <sys/socket.h>
@@ -68,17 +68,6 @@ int WSAGetLastError();
 #define DEFAULT_HOSTNAME        "127.0.0.1"
 
 #define HOSTNAME_LENGTH 200
-
-/* Commands for Microsoft TPM2 simulator OTHER port. */
-#define MS_SIM_POWER_ON         1
-#define MS_SIM_POWER_OFF        2
-#define MS_SIM_TPM_SEND_COMMAND 8
-#define MS_SIM_CANCEL_ON        9
-#define MS_SIM_CANCEL_OFF       10
-#define MS_SIM_NV_ON            11
-#define TPM_SESSION_END         20
-
-extern TSS2_TCTI_DRIVER_INFO tpmSocketsTctiInfo;
 
 TSS2_RC PlatformCommand(
     TSS2_TCTI_CONTEXT *tctiContext,     /* in */
