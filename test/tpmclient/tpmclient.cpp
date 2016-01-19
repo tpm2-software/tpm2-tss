@@ -453,6 +453,7 @@ void GetTpmVersion()
             (capabilityData.data.tpmProperties.tpmProperty[0].property == TPM_PT_REVISION) )
     {
         tpmSpecVersion = capabilityData.data.tpmProperties.tpmProperty[0].value;
+        TpmClientPrintf( 0, "TPM spec version:  %d\n", tpmSpecVersion );
     }
     else
     {
@@ -7217,7 +7218,6 @@ void TpmTest()
 
     rval = PlatformCommand( resMgrTctiContext, MS_SIM_NV_ON );
     CheckPassed( rval );
-
     TestTpmStartup();
 
     // Run this directly after Startup tests to test for
