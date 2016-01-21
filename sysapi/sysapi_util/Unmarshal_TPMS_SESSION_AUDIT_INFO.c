@@ -25,8 +25,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  ***********************************************************************/
 
-#include <tpm20.h>   
-#include <tss2_sysapi_util.h>   
+#include <tss2/tpm20.h>
+#include "sysapi_util.h"
 
 void Unmarshal_TPMS_SESSION_AUDIT_INFO(
 	TSS2_SYS_CONTEXT *sysContext,

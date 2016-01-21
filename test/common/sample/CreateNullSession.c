@@ -25,7 +25,7 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include <tpm20.h>   
+#include <tss2/tpm20.h>
 #include <stdio.h>
 #include <stdlib.h>
 

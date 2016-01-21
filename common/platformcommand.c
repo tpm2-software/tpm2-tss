@@ -41,12 +41,12 @@
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
 
-#include "tpm20.h"
-#include "tpmsockets.h"
-#include "tss2_sysapi_util.h"
+#include <tss2/tpm20.h>
+#include <tcti/tpmsockets.h>
+#include "sysapi_util.h"
 #include "debug.h"
-#include "tss2_tcti.h"
-#include "tss2_tcti_util.h"
+#include <tss2/tss2_tcti.h>
+#include "tcti_util.h"
 
 TSS2_RC PlatformCommand(
     TSS2_TCTI_CONTEXT *tctiContext,     /* in */

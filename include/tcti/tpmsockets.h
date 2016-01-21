@@ -67,8 +67,6 @@ int WSAGetLastError();
 
 #define HOSTNAME_LENGTH 200
 
-extern TSS2_TCTI_DRIVER_INFO tpmSocketsTctiInfo;
-
 TSS2_RC PlatformCommand(
     TSS2_TCTI_CONTEXT *tctiContext,     /* in */
     char cmd );

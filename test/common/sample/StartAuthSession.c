@@ -25,9 +25,9 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include <tpm20.h>   
+#include <tss2/tpm20.h>
 #include "sample.h"
-#include <tss2_sysapi_util.h>
+#include "sysapi_util.h"
 #include <stdlib.h>
 
 #define SESSIONS_ARRAY_COUNT MAX_NUM_SESSIONS+1
