@@ -29,6 +29,8 @@
 include src_vars.mk
 
 ACLOCAL_AMFLAGS = -I m4
+AM_CFLAGS = -I$(srcdir)/include
+AM_CPPFLAGS = -I$(srcdir)/include
 
 # stuff to build, what that stuff is, and where/if to install said stuff
 sbin_PROGRAMS   = $(resourcemgr)

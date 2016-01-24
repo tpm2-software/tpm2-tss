@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
 
+#include <tpm2tcti/magic.h>
 #include "tpm20.h"
 #include "tss2_sysapi_util.h"
 #include "debug.h"
