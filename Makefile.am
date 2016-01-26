@@ -46,7 +46,7 @@ resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS)
 resourcemgr_resourcemgr_CXXFLAGS = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS)
 resourcemgr_resourcemgr_LDADD    = $(libtpm2sapi) 
 resourcemgr_resourcemgr_LDFLAGS  = $(PTHREAD_LDFLAGS)
-resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(TPMSOCKETS_CXX) \
+resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(TPMSOCKETS_C) $(TPMSOCKETS_CXX) \
     $(COMMON_C) $(COMMONTCTI_C) $(LOCALTPM_C)
 
 sysapi_libtpm2sapi_la_CFLAGS  = -I$(srcdir)/include/tpm2sapi
@@ -57,7 +57,7 @@ tcti_libtpm2tctidev_la_SOURCES  = common/debug.c $(LOCALTPM_C) $(COMMONTCTI_C)
 
 tcti_libtpm2tctisock_la_CFLAGS   = -DSAPI_CLIENT $(TCTISOCK_INC)
 tcti_libtpm2tctisock_la_CXXFLAGS = -DSAPI_CLIENT $(TCTISOCK_INC)
-tcti_libtpm2tctisock_la_SOURCES  = common/debug.c $(TPMSOCKETS_CXX) $(COMMONTCTI_C)
+tcti_libtpm2tctisock_la_SOURCES  = common/debug.c $(TPMSOCKETS_C) $(TPMSOCKETS_CXX) $(COMMONTCTI_C)
 
 test_tpmclient_tpmclient_CFLAGS   = -DSAPI_CLIENT $(TPMCLIENT_INC)
 test_tpmclient_tpmclient_CXXFLAGS = -DSAPI_CLIENT $(TPMCLIENT_INC) $(COMMONTCTI_INC) $(TCTIDEV_INC)
