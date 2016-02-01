@@ -120,9 +120,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\common\debug.c" />
-    <ClCompile Include="..\..\common\platformcommand.c" />
     <ClCompile Include="..\..\common\syscontext.c" />
     <ClCompile Include="..\..\tcti\commonTcti\commonchecks.c" />
+    <ClCompile Include="..\..\tcti\tpmsockets\platformcommand.c" />
     <ClCompile Include="..\..\tcti\tpmsockets\tpmsockets.cpp" />
     <ClCompile Include="..\common\sample\CatSizedByteBuffer.c" />
     <ClCompile Include="..\common\sample\CopySizedBuffer.c" />
