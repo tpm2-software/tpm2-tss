@@ -32,6 +32,8 @@
 extern "C" {
 #endif
 
+#include <tpm2tcti/magic.h>
+
 #ifndef _WIN32
 #include <sys/socket.h>
 #include <sys/un.h>

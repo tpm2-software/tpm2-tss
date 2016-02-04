@@ -32,6 +32,8 @@
 extern "C" {
 #endif
 
+#include <tpm2tcti/magic.h>
+
 TSS2_RC InitLocalTpmTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     size_t *contextSize,            // IN/OUT
