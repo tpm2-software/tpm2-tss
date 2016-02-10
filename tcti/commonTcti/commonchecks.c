@@ -100,3 +100,7 @@ retCommonReceiveChecks:
 
     return rval;
 }
+
+#ifdef __cplusplus
+}
+#endif
