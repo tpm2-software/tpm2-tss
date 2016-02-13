@@ -25,8 +25,8 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#ifndef LOCALTPM_H
-#define LOCALTPM_H
+#ifndef TCTI_DEVICE_H
+#define TCTI_DEVICE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -62,5 +62,4 @@ extern TSS2_RC TeardownLocalTpmTctiContext( const char *driverConfig, TSS2_TCTI_
 }
 #endif
 
-#endif
-
+#endif /* TCTI_DEVICE_H */

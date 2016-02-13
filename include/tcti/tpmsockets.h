@@ -25,8 +25,8 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#ifndef TPM_SOCKETS_H
-#define TPM_SOCKETS_H
+#ifndef TCTI_SOCKET_H
+#define TCTI_SOCKET_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -120,6 +120,4 @@ extern UINT8 simulator;
 }
 #endif
 
-#endif
-
-
+#endif /* TCTI_SOCKET_H */

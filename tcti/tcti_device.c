@@ -38,7 +38,7 @@
 #include <fcntl.h>
 #include "debug.h"
 #include "commonchecks.h"
-#include <tcti/localtpm.h>
+#include <tcti/tcti_device.h>
 
 #ifdef  _WIN32
 #define ssize_t int

@@ -35,7 +35,7 @@ AM_CPPFLAGS = -I$(srcdir)/include
 # stuff to build, what that stuff is, and where/if to install said stuff
 sbin_PROGRAMS   = $(resourcemgr)
 noinst_PROGRAMS = $(tpmclient) $(tpmtest)
-lib_LTLIBRARIES = $(libtss2) $(libtctidev) $(libtctisock)
+lib_LTLIBRARIES = $(libtss2) $(libtctidevice) $(libtctisocket)
 
 # headers and where to install them
 libtss2dir      = $(includedir)/tss2
@@ -48,44 +48,47 @@ resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS)
 resourcemgr_resourcemgr_CXXFLAGS = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS)
 resourcemgr_resourcemgr_LDADD    = $(libtss2)
 resourcemgr_resourcemgr_LDFLAGS  = $(PTHREAD_LDFLAGS)
-resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(TPMSOCKETS_C) $(TPMSOCKETS_CXX) \
-    $(COMMON_C) $(COMMONTCTI_C) $(LOCALTPM_C)
+resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(TCTISOCKET_C) \
+    $(TCTISOCKET_CXX) $(COMMON_C) $(TCTICOMMON_C) $(TCTIDEVICE_C)
 
 sysapi_libtss2_la_CFLAGS  = -I$(srcdir)/include -I$(srcdir)/sysapi/include
 sysapi_libtss2_la_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
 
-tcti_libtctidev_la_CFLAGS   = -DSAPI_CLIENT $(TCTIDEV_INC)
-tcti_libtctidev_la_SOURCES  = common/debug.c \
-    sysapi/sysapi_util/changeEndian.c $(LOCALTPM_C) $(COMMONTCTI_C)
+tcti_libtctidevice_la_CFLAGS   = -DSAPI_CLIENT $(TCTIDEVICE_INC)
+tcti_libtctidevice_la_SOURCES  = common/debug.c $(TCTIDEVICE_C) \
+    sysapi/sysapi_util/changeEndian.c $(TCTICOMMON_C)
 
-tcti_libtctisock_la_CFLAGS   = -DSAPI_CLIENT $(TCTISOCK_INC)
-tcti_libtctisock_la_CXXFLAGS = -DSAPI_CLIENT $(TCTISOCK_INC)
-tcti_libtctisock_la_SOURCES  = common/debug.c $(TPMSOCKETS_C) \
-    sysapi/sysapi_util/changeEndian.c $(TPMSOCKETS_CXX) $(COMMONTCTI_C)
+tcti_libtctisocket_la_CFLAGS   = -DSAPI_CLIENT $(TCTISOCKET_INC)
+tcti_libtctisocket_la_CXXFLAGS = -DSAPI_CLIENT $(TCTISOCKET_INC)
+tcti_libtctisocket_la_SOURCES  =  common/debug.c $(TCTISOCKET_C) \
+    sysapi/sysapi_util/changeEndian.c $(TCTISOCKET_CXX) $(TCTICOMMON_C)
 
 test_tpmclient_tpmclient_CFLAGS   = -DSAPI_CLIENT $(TPMCLIENT_INC)
-test_tpmclient_tpmclient_CXXFLAGS = -DSAPI_CLIENT $(TPMCLIENT_INC) $(COMMONTCTI_INC) $(TCTIDEV_INC)
-test_tpmclient_tpmclient_LDADD    = $(libtss2) $(libtctisock) $(libtctidev)
+test_tpmclient_tpmclient_CXXFLAGS = -DSAPI_CLIENT $(TPMCLIENT_INC) $(TCTICOMMON_INC) $(TCTIDEVICE_INC)
+test_tpmclient_tpmclient_LDADD    = $(libtss2) $(libtctisocket) $(libtctidevice)
 test_tpmclient_tpmclient_SOURCES  = $(TPMCLIENT_CXX) $(COMMON_C) $(SAMPLE_C)
 
 test_tpmtest_tpmtest_CFLAGS   = -DSAPI_CLIENT $(TPMTEST_INC)
 test_tpmtest_tpmtest_CXXFLAGS = -DSAPI_CLIENT $(TPMTEST_INC)
-test_tpmtest_tpmtest_LDADD    = $(libtss2) $(libtctisock)
+test_tpmtest_tpmtest_LDADD    = $(libtss2) $(libtctisocket)
 test_tpmtest_tpmtest_SOURCES  = $(TPMTEST_CXX) $(COMMON_C) $(SAMPLE_C)
 
 # simple variables
 RESOURCEMGR_INC = -I$(srcdir)/include -I$(srcdir)/common \
-    -I$(srcdir)/sysapi/include \
-    -I$(srcdir)/resourcemgr -I$(srcdir)/test/tpmclient \
-    -I$(srcdir)/tcti/commonTcti
+    -I$(srcdir)/sysapi/include -I$(srcdir)/resourcemgr \
+    -I$(srcdir)/test/tpmclient
 RESOURCEMGR_C = resourcemgr/resourcemgr.c
 
-COMMONTCTI_INC = -I$(srcdir)/include -I$(srcdir)/common \
-    -I$(srcdir)/tcti/commonTcti -I$(srcdir)/sysapi/include
+TCTICOMMON_INC = -I$(srcdir)/include -I$(srcdir)/common \
+    -I$(srcdir)/sysapi/include
+TCTICOMMON_C   = tcti/commonchecks.c
 
-TCTIDEV_INC = -I$(srcdir)/tcti/localtpm $(COMMONTCTI_INC)
+TCTIDEVICE_INC = $(TCTICOMMON_INC)
+TCTIDEVICE_C   = tcti/tcti_device.c
 
-TCTISOCK_INC = -I$(srcdir)/tcti/tpmsockets $(COMMONTCTI_INC)
+TCTISOCKET_INC = $(TCTICOMMON_INC)
+TCTISOCKET_C   = tcti/platformcommand.c
+TCTISOCKET_CXX = tcti/tcti_socket.cpp
 
 TPMCLIENT_INC = -I$(srcdir)/include -I$(srcdir)/sysapi/include \
     -I$(srcdir)/test/tpmclient -I$(srcdir)/common \
@@ -98,8 +101,8 @@ TPMTEST_INC = -I$(srcdir)/include -I$(srcdir)/sysapi/include \
 TPMTEST_CXX = test/tpmtest/tpmtest.cpp
 
 libtss2 = sysapi/libtss2.la
-libtctidev = tcti/libtctidev.la
-libtctisock = tcti/libtctisock.la
+libtctidevice = tcti/libtctidevice.la
+libtctisocket = tcti/libtctisocket.la
 resourcemgr = resourcemgr/resourcemgr
 tpmclient   = test/tpmclient/tpmclient
 tpmtest     = test/tpmtest/tpmtest
