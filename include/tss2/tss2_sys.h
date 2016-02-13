@@ -36,7 +36,7 @@
 extern "C" {
 #endif
 
-#include "tss2_tcti.h"
+#include <tss2/tss2_tcti.h>
 
 // Fields for ABI negotiation.
 #define TSSWG_INTEROP 1
@@ -173,7 +173,7 @@ TPM_RC Tss2_Sys_GetRpBuffer(
     const uint8_t **rpBuffer
     );
 
-#include "tss2_sys_api_part3.h"
+#include "sys_api_part3.h"
 
 #ifdef __cplusplus
 }

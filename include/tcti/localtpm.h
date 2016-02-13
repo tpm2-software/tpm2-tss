@@ -25,33 +25,42 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#ifndef     TPM20_H
-#define     TPM20_H
+#ifndef LOCALTPM_H
+#define LOCALTPM_H
 
-/* TSS2_VERSION_<CREATOR>_<FAMILY>_<LEVEL>_<REVISION> */
-#define TSS2_API_VERSION_1_1_1_1
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#ifndef TSS2_API_VERSION_1_1_1_1
-#error Version mismatch among TSS2 header files !
-#endif  /* TSS2_API_VERSION_1_1_1_1 */
+#include <tcti/magic.h>
 
+TSS2_RC InitLocalTpmTcti (
+    TSS2_TCTI_CONTEXT *tctiContext, // OUT
+    size_t *contextSize,            // IN/OUT
+    const char *config,              // IN
+    const uint64_t magic,
+    const uint32_t version,
+	const char *interfaceName,
+    const uint8_t serverSockets  // Unused for local TPM.
+    );
 
-#define TPM_BITFIELD_LE
+TSS2_RC TeardownLocalTpmTcti (
+    TSS2_TCTI_CONTEXT *tctiContext, // OUT
+    const char *config,              // IN        
+	const char *interfaceName
+    );
 
-#include    <stddef.h>
-#include    <stdint.h>
-#include    <stdlib.h> 
-#include    <string.h> 
+#define LOCAL_INTERFACE_CONFIG_SIZE 250
 
-#include    "basetypes.h"
-#include    "tpmb.h"
-#include    "implementation.h"
-#include    "tss2_tpm2_types.h"
+extern char localTpmInterfaceConfig[LOCAL_INTERFACE_CONFIG_SIZE];
 
-#include    "tss2_tcti.h"
-#include    "tss2_tcti_util.h"
-#include    "tss2_sys.h"
-#include    "tss2_common.h"
-#include    "endianConv.h"
+extern TSS2_RC InitLocalTpmTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT **tctiContext );
+
+extern TSS2_RC TeardownLocalTpmTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT *tctiContext );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
+

@@ -25,8 +25,8 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include <tpm20.h>   
-#include <tss2_sysapi_util.h>   
+#include <tss2/tpm20.h>
+#include "sysapi_util.h"
 
 TSS2_RC Tss2_Sys_GetEncryptParam(
 	TSS2_SYS_CONTEXT 	*sysContext,

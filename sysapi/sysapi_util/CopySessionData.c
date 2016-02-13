@@ -25,8 +25,8 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include <tpm20.h>   
-#include <tss2_sysapi_util.h>
+#include <tss2/tpm20.h>
+#include "sysapi_util.h"
 
 #define SESSION_MARSHAL_UINT32( buffer, size, currentPtr, value, rval, exitLoc ) \
     Marshal_UINT32( buffer, size, currentPtr, value, rval ); \

@@ -25,8 +25,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  ***********************************************************************/
 
-#include <tpm20.h>   
-#include <tss2_sysapi_util.h>   
+#include <tss2/tpm20.h>
+#include "sysapi_util.h"
 
 void Marshal_TPML_ALG(
 	TSS2_SYS_CONTEXT *sysContext,

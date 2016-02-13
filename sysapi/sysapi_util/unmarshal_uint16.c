@@ -25,8 +25,8 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include <tpm20.h>   
-#include <tss2_sysapi_util.h>
+#include <tss2/tpm20.h>
+#include "sysapi_util.h"
 
 void Unmarshal_UINT16( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, UINT16 *value, TSS2_RC *rval )
 {

@@ -28,17 +28,17 @@
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
 
-#include <tpm20.h>
+#include <tss2/tpm20.h>
 //#include "resourcemgr.h"
 //#include <sample.h>
-#include <tss2_sysapi_util.h>
+#include "sysapi_util.h"
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "debug.h"
 #include "commonchecks.h"
-#include "localtpm.h"
+#include <tcti/localtpm.h>
 
 #ifdef  _WIN32
 #define ssize_t int
