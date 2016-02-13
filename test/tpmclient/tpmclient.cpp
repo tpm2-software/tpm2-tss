@@ -68,10 +68,10 @@
 //
 #include "sysapi_util.h"
 
-#include <tcti/tpmsockets.h>
+#include <tcti/tcti_device.h>
+#include <tcti/tcti_socket.h>
 #include "syscontext.h"
 #include "debug.h"
-#include <tcti/localtpm.h>
 
 //
 // TPM indices and sizes

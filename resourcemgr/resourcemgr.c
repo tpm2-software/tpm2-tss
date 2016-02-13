@@ -29,8 +29,8 @@
 #include <stdlib.h>   // Needed for _wtoi
 
 #include <tss2/tpm20.h>
-#include <tcti/tpmsockets.h>
-#include <tcti/localtpm.h>
+#include <tcti/tcti_device.h>
+#include <tcti/tcti_socket.h>
 #include "resourcemgr.h"
 //#include <sample.h>
 #include "sysapi_util.h"
