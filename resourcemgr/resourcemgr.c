@@ -2586,7 +2586,7 @@ UINT32 WINAPI SockServer( LPVOID servStruct )
 char simInterfaceConfig[interfaceConfigSize];
     
 extern TSS2_TCTI_DRIVER_INFO deviceTctiInfo;
-TSS2_TCTI_DRIVER_INFO simInterfaceInfo = { "simulator", "", InitSocketsTcti, TeardownSocketsTcti };
+TSS2_TCTI_DRIVER_INFO simInterfaceInfo = { "simulator", "", InitSocketTcti, TeardownSocketTcti };
 
 SOCKET simOtherSock;
 SOCKET simTpmSock;
@@ -2627,10 +2627,10 @@ TSS2_RC TeardownResMgr(
 
 #if __linux || __unix
     if( !simulator )
-        TeardownSocketsTcti( tctiContext, config, deviceTctiInfo.shortName );
+        TeardownSocketTcti( tctiContext, config, deviceTctiInfo.shortName );
     else
 #endif        
-        TeardownSocketsTcti( tctiContext, config, simInterfaceInfo.shortName );
+        TeardownSocketTcti( tctiContext, config, simInterfaceInfo.shortName );
 
     TeardownSysContext( &resMgrSysContext );
 

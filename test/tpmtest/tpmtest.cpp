@@ -137,7 +137,7 @@ TSS2_SYS_CONTEXT *sysContext;
 #define rmInterfaceConfigSize 250
 char rmInterfaceConfig[rmInterfaceConfigSize];
 
-TSS2_TCTI_DRIVER_INFO resMgrInterfaceInfo = { "resMgr", "", InitSocketsTcti, TeardownSocketsTcti };
+TSS2_TCTI_DRIVER_INFO resMgrInterfaceInfo = { "resMgr", "", InitSocketTcti, TeardownSocketTcti };
 //++++
 
 TSS2_TCTI_CONTEXT *resMgrTctiContext = 0;
