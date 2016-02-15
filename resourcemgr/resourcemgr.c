@@ -2585,7 +2585,7 @@ UINT32 WINAPI SockServer( LPVOID servStruct )
 
 char simInterfaceConfig[interfaceConfigSize];
     
-extern TSS2_TCTI_DRIVER_INFO localTpmInterfaceInfo;
+extern TSS2_TCTI_DRIVER_INFO deviceTctiInfo;
 TSS2_TCTI_DRIVER_INFO simInterfaceInfo = { "simulator", "", InitSocketsTcti, TeardownSocketsTcti };
 
 SOCKET simOtherSock;
@@ -2627,7 +2627,7 @@ TSS2_RC TeardownResMgr(
 
 #if __linux || __unix
     if( !simulator )
-        TeardownSocketsTcti( tctiContext, config, localTpmInterfaceInfo.shortName );
+        TeardownSocketsTcti( tctiContext, config, deviceTctiInfo.shortName );
     else
 #endif        
         TeardownSocketsTcti( tctiContext, config, simInterfaceInfo.shortName );
@@ -2981,12 +2981,12 @@ int main(int argc, char* argv[])
         //
         // Init downstream interface to tpm (in this case the local TPM).
         //
-        sprintf_s( localTpmInterfaceConfig, interfaceConfigSize, "%s ", "/dev/tpm0" );
+        sprintf_s( deviceTctiConfig, interfaceConfigSize, "%s ", "/dev/tpm0" );
 
-        rval = InitLocalTpmTctiContext( localTpmInterfaceConfig, &downstreamTctiContext );
+        rval = InitDeviceTctiContext( deviceTctiConfig, &downstreamTctiContext );
         if( rval != TSS2_RC_SUCCESS )
         {
-            ResMgrPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", localTpmInterfaceInfo.shortName, rval );
+            ResMgrPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", deviceTctiInfo.shortName, rval );
             return( 1 );
         }
 #ifdef DEBUG_RESMGR_INIT        

@@ -7138,10 +7138,10 @@ void TestCreate1()
 //
 void TestLocalTCTI()
 {
-    char localTpmInterfaceConfig[LOCAL_INTERFACE_CONFIG_SIZE];
+    char deviceTctiConfig[DEVICE_TCTI_CONFIG_SIZE];
     TSS2_RC rval = TSS2_RC_SUCCESS;
     
-    TSS2_TCTI_DRIVER_INFO localTpmInterfaceInfo = { "local TPM", "", InitLocalTpmTcti, TeardownLocalTpmTcti };
+    TSS2_TCTI_DRIVER_INFO deviceTctiInfo = { "local TPM", "", InitDeviceTcti, TeardownDeviceTcti };
     TSS2_TCTI_CONTEXT *downstreamTctiContext;
 
     TpmClientPrintf( NO_PREFIX,  "WARNING!!  This test requires that a local TPM is present and that the resource manager has NOT been started.\n\n" );
@@ -7150,12 +7150,12 @@ void TestLocalTCTI()
     //
     // Init downstream interface to tpm (in this case the local TPM).
     //
-    sprintf_s( localTpmInterfaceConfig, LOCAL_INTERFACE_CONFIG_SIZE, "%s ", "/dev/tpm0" );
+    sprintf_s( deviceTctiConfig, DEVICE_TCTI_CONFIG_SIZE, "%s ", "/dev/tpm0" );
 
-    rval = InitLocalTpmTctiContext( localTpmInterfaceConfig, &downstreamTctiContext );
+    rval = InitDeviceTctiContext( deviceTctiConfig, &downstreamTctiContext );
     if( rval != TSS2_RC_SUCCESS )
     {
-        TpmClientPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", localTpmInterfaceInfo.shortName, rval );
+        TpmClientPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", deviceTctiInfo.shortName, rval );
         CheckPassed( rval );
     }
     else
@@ -7167,7 +7167,7 @@ void TestLocalTCTI()
         
         TestTctiApis( downstreamTctiContext, 0 );
 
-        TeardownLocalTpmTctiContext( localTpmInterfaceConfig, downstreamTctiContext );
+        TeardownDeviceTctiContext( deviceTctiConfig, downstreamTctiContext );
 
         exit( 0 );
     }

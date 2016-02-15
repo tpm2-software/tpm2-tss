@@ -34,7 +34,7 @@ extern "C" {
 
 #include <tcti/magic.h>
 
-TSS2_RC InitLocalTpmTcti (
+TSS2_RC InitDeviceTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     size_t *contextSize,            // IN/OUT
     const char *config,              // IN
@@ -44,19 +44,19 @@ TSS2_RC InitLocalTpmTcti (
     const uint8_t serverSockets  // Unused for local TPM.
     );
 
-TSS2_RC TeardownLocalTpmTcti (
+TSS2_RC TeardownDeviceTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     const char *config,              // IN        
 	const char *interfaceName
     );
 
-#define LOCAL_INTERFACE_CONFIG_SIZE 250
+#define DEVICE_TCTI_CONFIG_SIZE 250
 
-extern char localTpmInterfaceConfig[LOCAL_INTERFACE_CONFIG_SIZE];
+extern char deviceTctiConfig[DEVICE_TCTI_CONFIG_SIZE];
 
-extern TSS2_RC InitLocalTpmTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT **tctiContext );
+extern TSS2_RC InitDeviceTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT **tctiContext );
 
-extern TSS2_RC TeardownLocalTpmTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT *tctiContext );
+extern TSS2_RC TeardownDeviceTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT *tctiContext );
 
 #ifdef __cplusplus
 }
