@@ -38,7 +38,7 @@
 #include <fcntl.h>
 #include "debug.h"
 #include "commonchecks.h"
-#include <tcti/localtpm.h>
+#include <tcti/tcti_device.h>
 
 #ifdef  _WIN32
 #define ssize_t int
@@ -238,7 +238,7 @@ TSS2_RC LocalTpmSetLocality(
     return rval;
 }
 
-TSS2_RC InitLocalTpmTcti (
+TSS2_RC InitDeviceTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     size_t *contextSize,            // IN/OUT
     const char *config,              // IN
@@ -301,7 +301,7 @@ TSS2_RC InitLocalTpmTcti (
     return rval;
 }
 
-TSS2_RC TeardownLocalTpmTcti (
+TSS2_RC TeardownDeviceTcti(
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     const char *config,              // IN        
 	const char *interfaceName
@@ -317,31 +317,31 @@ TSS2_RC TeardownLocalTpmTcti (
     return TSS2_RC_SUCCESS;
 }
 
-char localTpmInterfaceConfig[LOCAL_INTERFACE_CONFIG_SIZE];
+char deviceTctiConfig[DEVICE_TCTI_CONFIG_SIZE];
     
-TSS2_TCTI_DRIVER_INFO localTpmInterfaceInfo = { "local TPM", "", InitLocalTpmTcti, TeardownLocalTpmTcti };
+TSS2_TCTI_DRIVER_INFO deviceTctiInfo = { "local TPM", "", InitDeviceTcti, TeardownDeviceTcti };
 
-TSS2_RC InitLocalTpmTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT **tctiContext )
+TSS2_RC InitDeviceTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT **tctiContext )
 {
     size_t size;
     
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
-    rval = localTpmInterfaceInfo.initialize(NULL, &size, driverConfig, 0, 0, localTpmInterfaceInfo.shortName, 1 );
+    rval = deviceTctiInfo.initialize(NULL, &size, driverConfig, 0, 0, deviceTctiInfo.shortName, 1 );
     if( rval != TSS2_RC_SUCCESS )
         return rval;
     
     *tctiContext = malloc(size);
 
-    rval = localTpmInterfaceInfo.initialize(*tctiContext, &size, driverConfig, TCTI_MAGIC, TCTI_VERSION, localTpmInterfaceInfo.shortName, 0 );
+    rval = deviceTctiInfo.initialize(*tctiContext, &size, driverConfig, TCTI_MAGIC, TCTI_VERSION, deviceTctiInfo.shortName, 0 );
     return rval;
 }
 
-TSS2_RC TeardownLocalTpmTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT *tctiContext )
+TSS2_RC TeardownDeviceTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT *tctiContext )
 {
     TSS2_RC rval;
 
-    rval = localTpmInterfaceInfo.teardown( tctiContext, driverConfig, localTpmInterfaceInfo.shortName );
+    rval = deviceTctiInfo.teardown( tctiContext, driverConfig, deviceTctiInfo.shortName );
     if( rval != TSS2_RC_SUCCESS )
         return rval;
 

@@ -25,8 +25,8 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#ifndef TPM_SOCKETS_H
-#define TPM_SOCKETS_H
+#ifndef TCTI_SOCKET_H
+#define TCTI_SOCKET_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -77,7 +77,7 @@ int InitSockets( char *hostName, int port, UINT8 serverSockets, SOCKET *otherSoc
 
 void CloseSockets( SOCKET serverSock, SOCKET tpmSock );
 
-TSS2_RC InitSocketsTcti (
+TSS2_RC InitSocketTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     size_t *contextSize,            // IN/OUT
     const char *config,             // IN        
@@ -87,7 +87,7 @@ TSS2_RC InitSocketsTcti (
     const uint8_t serverSockets
     );
 
-TSS2_RC TeardownSocketsTcti (
+TSS2_RC TeardownSocketTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     const char *config,             // IN        
 	const char *interfaceName
@@ -97,7 +97,7 @@ TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len );
 
 TSS2_RC sendBytes( SOCKET tpmSock, const char *data, int len );
 
-TSS2_RC SocketSendSessionEnd( 
+TSS2_RC SendSessionEndSocketTcti(
     TSS2_TCTI_CONTEXT *tctiContext,      
     UINT8 tpmCmdServer
     );
@@ -120,6 +120,4 @@ extern UINT8 simulator;
 }
 #endif
 
-#endif
-
-
+#endif /* TCTI_SOCKET_H */

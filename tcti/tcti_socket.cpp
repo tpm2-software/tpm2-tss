@@ -44,7 +44,7 @@
 #include <stdlib.h>   // Needed for _wtoi
 
 #include <tss2/tpm20.h>
-#include <tcti/tpmsockets.h>
+#include <tcti/tcti_socket.h>
 #include "sysapi_util.h"
 #include "debug.h"
 #include "commonchecks.h"
@@ -98,7 +98,7 @@ TSS2_RC sendBytes( SOCKET tpmSock, const char *data, int len )
     return TSS2_RC_SUCCESS;
 }
 
-TSS2_RC SocketSendSessionEnd(
+TSS2_RC SendSessionEndSocketTcti(
     TSS2_TCTI_CONTEXT *tctiContext,       /* in */
     UINT8 tpmCmdServer )
 {
@@ -306,8 +306,8 @@ TSS2_RC SocketFinalize(
     else
     {
         // Send session end messages to servers.
-        SocketSendSessionEnd( tctiContext, 1 );
-        SocketSendSessionEnd( tctiContext, 0 );
+        SendSessionEndSocketTcti( tctiContext, 1 );
+        SendSessionEndSocketTcti( tctiContext, 0 );
 
         CloseSockets( TCTI_CONTEXT_INTEL->otherSock, TCTI_CONTEXT_INTEL->tpmSock );
 
@@ -676,7 +676,7 @@ int InitSockets( char *hostName, int port, UINT8 serverSockets, SOCKET *otherSoc
 #define HOSTNAME_LENGTH 200
 #define PORT_LENGTH 4
 
-TSS2_RC InitSocketsTcti (
+TSS2_RC InitSocketTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     size_t *contextSize,            // IN/OUT
     const char *config,              // IN
@@ -763,7 +763,7 @@ TSS2_RC InitSocketsTcti (
     return rval;
 }
 
-TSS2_RC TeardownSocketsTcti (
+TSS2_RC TeardownSocketTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     const char *config,              // IN        
 	const char *interfaceName

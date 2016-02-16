@@ -42,7 +42,7 @@
 #include <stdlib.h>   // Needed for _wtoi
 
 #include <tss2/tpm20.h>
-#include <tcti/tpmsockets.h>
+#include <tcti/tcti_socket.h>
 #include "sysapi_util.h"
 #include "debug.h"
 #include <tss2/tss2_tcti.h>

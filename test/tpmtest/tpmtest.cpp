@@ -68,7 +68,7 @@
 #include "tpmclient.h"
 #include "sysapi_util.h"
 //+++++
-#include <tcti/tpmsockets.h>
+#include <tcti/tcti_socket.h>
 #include "syscontext.h"
 #include "debug.h"
 
@@ -137,7 +137,7 @@ TSS2_SYS_CONTEXT *sysContext;
 #define rmInterfaceConfigSize 250
 char rmInterfaceConfig[rmInterfaceConfigSize];
 
-TSS2_TCTI_DRIVER_INFO resMgrInterfaceInfo = { "resMgr", "", InitSocketsTcti, TeardownSocketsTcti };
+TSS2_TCTI_DRIVER_INFO resMgrInterfaceInfo = { "resMgr", "", InitSocketTcti, TeardownSocketTcti };
 //++++
 
 TSS2_TCTI_CONTEXT *resMgrTctiContext = 0;
