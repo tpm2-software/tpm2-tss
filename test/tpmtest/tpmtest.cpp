@@ -7709,10 +7709,10 @@ void CheckTpmType()
     printf( "\nCheck TPM type: " );
 
     *( (UINT32 *)manuIDPtr ) = CHANGE_ENDIAN_DWORD( capabilityData.data.tpmProperties.tpmProperty[0].value );
-    if( 0 == strcmp(manuID, "MSFT") )
+    if( 0 == strcmp(manuID, "MSFT") || 0 == strcmp(manuID, "IBM ") )
     {
         tpmType = TPM_TYPE_SIMULATOR;
-        printf( "simulator (MSFT)\n" );
+        printf( "simulator (%s)\n", manuID );
     }
     else if ( 0 == strcmp(manuID, "INTC") )
     {
