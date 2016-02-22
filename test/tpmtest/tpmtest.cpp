@@ -2831,7 +2831,7 @@ void TestPolicy()
     for( i = 0; i < num; i++ )
     {
         TPM2B_DIGEST policyDigest;
-
+        policyDigest.t.size = sizeof( policyDigest ) - 2;
         rval = TPM_RC_SUCCESS;
 
         printf( "Policy Test: %s\n", policyTestSetups[i].name );
