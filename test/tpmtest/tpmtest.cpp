@@ -137,9 +137,6 @@ TSS2_SYS_CONTEXT *sysContext;
 #define rmInterfaceConfigSize 250
 char rmInterfaceConfig[rmInterfaceConfigSize];
 
-TSS2_TCTI_DRIVER_INFO resMgrInterfaceInfo = { "resMgr", "", InitSocketTcti, TeardownSocketTcti };
-//++++
-
 TSS2_TCTI_CONTEXT *resMgrTctiContext = 0;
 //TSS2_ABI_VERSION abiVersion = { 1, 1, 1, 1 };
 TSS2_ABI_VERSION abiVersion = { TSSWG_INTEROP, TSS_SAPI_FIRST_FAMILY, TSS_SAPI_FIRST_LEVEL, TSS_SAPI_FIRST_VERSION };
@@ -359,7 +356,7 @@ TSS2_RC InitTctiResMgrContext( char *rmInterfaceConfig, TSS2_TCTI_CONTEXT **tcti
     TSS2_RC rval;
 
 //	rval = resMgrTctiDriverInfo.initialize(NULL, &size, driverConfig);
-	rval = resMgrInterfaceInfo.initialize(NULL, &size, rmInterfaceConfig, 0, 0, &resMgrInterfaceName[0], 0 );
+	rval = InitSocketTcti(NULL, &size, rmInterfaceConfig, 0, 0, &resMgrInterfaceName[0], 0 );
     if( rval != TSS2_RC_SUCCESS )
         return rval;
 
@@ -370,7 +367,7 @@ TSS2_RC InitTctiResMgrContext( char *rmInterfaceConfig, TSS2_TCTI_CONTEXT **tcti
 */
     if( *tctiContext )
     {
-        rval = resMgrInterfaceInfo.initialize(*tctiContext, &size, rmInterfaceConfig, TCTI_MAGIC, TCTI_VERSION, resMgrInterfaceName, 0 );
+        rval = InitSocketTcti(*tctiContext, &size, rmInterfaceConfig, TCTI_MAGIC, TCTI_VERSION, resMgrInterfaceName, 0 );
     }
     else
     {
@@ -390,7 +387,7 @@ TSS2_RC TeardownTctiResMgrContext( char *driverConfig )
 //+++++++++++
 TSS2_RC TeardownTctiResMgrContext( char *interfaceConfig, TSS2_TCTI_CONTEXT *tctiContext, char *name )
 {
-    return resMgrInterfaceInfo.teardown( tctiContext, interfaceConfig, name );
+    return TeardownSocketTcti( tctiContext, interfaceConfig, name );
 }
 //+++++++++++
 void Cleanup()
@@ -6267,7 +6264,7 @@ void TestRM()
     rval = InitTctiResMgrContext( rmInterfaceConfig, &otherResMgrTctiContext, &otherResMgrInterfaceName[0] );
     if( rval != TSS2_RC_SUCCESS )
     {
-        TpmClientPrintf( 0, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceInfo.shortName, rval );
+        TpmClientPrintf( 0, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceName, rval );
         Cleanup();
         return;
     }
@@ -7950,7 +7947,7 @@ int main(int argc, char* argv[])
     rval = InitTctiResMgrContext( rmInterfaceConfig, &resMgrTctiContext, &resMgrInterfaceName[0] );
     if( rval != TSS2_RC_SUCCESS )
     {
-        TpmClientPrintf( 0, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceInfo.shortName, rval );
+        TpmClientPrintf( 0, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceName, rval );
         Cleanup();
         return( 1 );
     }

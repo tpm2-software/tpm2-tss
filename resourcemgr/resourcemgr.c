@@ -2584,9 +2584,8 @@ UINT32 WINAPI SockServer( LPVOID servStruct )
 #define interfaceConfigSize 250
 
 char simInterfaceConfig[interfaceConfigSize];
-    
-extern TSS2_TCTI_DRIVER_INFO deviceTctiInfo;
-TSS2_TCTI_DRIVER_INFO simInterfaceInfo = { "simulator", "", InitSocketTcti, TeardownSocketTcti };
+const char *resDeviceTctiName = "device TCTI";
+const char *resSocketTctiName = "socket TCTI";
 
 SOCKET simOtherSock;
 SOCKET simTpmSock;
@@ -2597,13 +2596,13 @@ TSS2_RC InitSimulatorTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT **
     
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
-    rval = simInterfaceInfo.initialize(NULL, &size, driverConfig, 0, 0, simInterfaceInfo.shortName, 1 );
+    rval = InitSocketTcti(NULL, &size, driverConfig, 0, 0, resSocketTctiName, 1 );
     if( rval != TSS2_RC_SUCCESS )
         return rval;
     
     downstreamTctiContext = malloc(size);
 
-    rval = simInterfaceInfo.initialize(*tctiContext, &size, driverConfig, TCTI_MAGIC, TCTI_VERSION, simInterfaceInfo.shortName, 0 );
+    rval = InitSocketTcti(*tctiContext, &size, driverConfig, TCTI_MAGIC, TCTI_VERSION, resSocketTctiName, 0 );
     return rval;
 }
 
@@ -2611,7 +2610,7 @@ TSS2_RC TeardownSimulatorTctiContext( const char *driverConfig )
 {
     TSS2_RC rval;
 
-    rval = simInterfaceInfo.teardown(NULL, driverConfig, simInterfaceInfo.shortName );
+    rval = TeardownSocketTcti(NULL, driverConfig, resSocketTctiName );
     if( rval != TSS2_RC_SUCCESS )
         return rval;
 
@@ -2627,10 +2626,10 @@ TSS2_RC TeardownResMgr(
 
 #if __linux || __unix
     if( !simulator )
-        TeardownSocketTcti( tctiContext, config, deviceTctiInfo.shortName );
+        TeardownSocketTcti( tctiContext, config, resDeviceTctiName );
     else
 #endif        
-        TeardownSocketTcti( tctiContext, config, simInterfaceInfo.shortName );
+        TeardownSocketTcti( tctiContext, config, resSocketTctiName );
 
     TeardownSysContext( &resMgrSysContext );
 
@@ -2986,7 +2985,7 @@ int main(int argc, char* argv[])
         rval = InitDeviceTctiContext( deviceTctiConfig, &downstreamTctiContext );
         if( rval != TSS2_RC_SUCCESS )
         {
-            ResMgrPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", deviceTctiInfo.shortName, rval );
+            ResMgrPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resDeviceTctiName, rval );
             return( 1 );
         }
 #ifdef DEBUG_RESMGR_INIT        
@@ -3007,7 +3006,7 @@ int main(int argc, char* argv[])
         rval = InitSimulatorTctiContext( simInterfaceConfig, &downstreamTctiContext );
         if( rval != TSS2_RC_SUCCESS )
         {
-            ResMgrPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", simInterfaceInfo.shortName, rval );
+            ResMgrPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resSocketTctiName, rval );
             return( 1 );
         }
 #ifdef DEBUG_RESMGR_INIT        

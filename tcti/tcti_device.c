@@ -48,6 +48,8 @@
 
 #define HOSTNAME_LENGTH 200
 
+const char *deviceTctiName = "device TCTI";
+
 extern void OpenOutFile( FILE **outFp );
 
 extern void CloseOutFile( FILE **outFp );
@@ -319,21 +321,19 @@ TSS2_RC TeardownDeviceTcti(
 
 char deviceTctiConfig[DEVICE_TCTI_CONFIG_SIZE];
     
-TSS2_TCTI_DRIVER_INFO deviceTctiInfo = { "local TPM", "", InitDeviceTcti, TeardownDeviceTcti };
-
 TSS2_RC InitDeviceTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT **tctiContext )
 {
     size_t size;
     
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
-    rval = deviceTctiInfo.initialize(NULL, &size, driverConfig, 0, 0, deviceTctiInfo.shortName, 1 );
+    rval = InitDeviceTcti(NULL, &size, driverConfig, 0, 0, deviceTctiName, 1 );
     if( rval != TSS2_RC_SUCCESS )
         return rval;
     
     *tctiContext = malloc(size);
 
-    rval = deviceTctiInfo.initialize(*tctiContext, &size, driverConfig, TCTI_MAGIC, TCTI_VERSION, deviceTctiInfo.shortName, 0 );
+    rval = InitDeviceTcti(*tctiContext, &size, driverConfig, TCTI_MAGIC, TCTI_VERSION, deviceTctiName, 0 );
     return rval;
 }
 
@@ -341,7 +341,7 @@ TSS2_RC TeardownDeviceTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT *
 {
     TSS2_RC rval;
 
-    rval = deviceTctiInfo.teardown( tctiContext, driverConfig, deviceTctiInfo.shortName );
+    rval = TeardownDeviceTcti( tctiContext, driverConfig, deviceTctiName );
     if( rval != TSS2_RC_SUCCESS )
         return rval;
 
