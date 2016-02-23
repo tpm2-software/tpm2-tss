@@ -31,25 +31,14 @@
 #ifndef TSS2_COMMON_H
 #define TSS2_COMMON_H
 
-
-/**
- * API version negotiation
- */
-
-#define TSS2_CREATOR 0x1    /* TCG TSS-WG */
-#define TSS2_FAMILY 0x1                     //TBD
-#define TSS2_LEVEL 0x1                      //TBD
-#define TSS2_REVISION 0x1                   //TBD
-
-/* TSS2_VERSION_<CREATOR>_<FAMILY>_<LEVEL>_<REVISION> */
-#define TSS2_API_VERSION_1_1_1_1				//TBD
-
-
+#ifndef TSS2_API_VERSION_1_1_1_1
+#error Version mismatch among TSS2 header files. \
+       Do not include this file, #include <tss2/tpm20.h> instead.
+#endif  /* TSS2_API_VERSION_1_1_1_1 */
 
 /**
  * Type definitions
  */
-
 #include <stdint.h>
 
 typedef uint8_t     UINT8;      /* unsigned, 8-bit integer */

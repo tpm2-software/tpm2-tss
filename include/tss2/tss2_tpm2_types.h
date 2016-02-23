@@ -25,12 +25,13 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#ifndef TSS2_API_VERSION_1_1_1_1
-#error Version mismatch among TSS2 header files !
-#endif  /* TSS2_API_VERSION_1_1_1_1 */
-
 #ifndef TSS2_TPMS_TYPES_H
 #define TSS2_TPMS_TYPES_H
+
+#ifndef TSS2_API_VERSION_1_1_1_1
+#error Version mismatch among TSS2 header files. \
+       Do not include this file, #include <tss2/tpm20.h> instead.
+#endif  /* TSS2_API_VERSION_1_1_1_1 */
 
 #include <stdint.h>
 

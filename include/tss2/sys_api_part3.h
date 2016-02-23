@@ -29,7 +29,8 @@
 #define TSS2_SYS_API_PART3_H
 
 #ifndef TSS2_API_VERSION_1_1_1_1
-#error Version missmatch among TSS2 header files !
+#error Version mismatch among TSS2 header files. \
+       Do not include this file, #include <tss2/tpm20.h> instead.
 #endif  /* TSS2_API_VERSION_1_1_1_1 */
 
 typedef struct {

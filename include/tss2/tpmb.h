@@ -48,15 +48,14 @@
 Any marks and brands contained herein are the property of their respective owner.
 */
 
-// 5.6	TPMB.h
-
-#ifndef TSS2_API_VERSION_1_1_1_1
-#error Version mismatch among TSS2 header files !
-#endif  /* TSS2_API_VERSION_1_1_1_1 */
-
 // This file contains extra TPM2B structures
 #ifndef _TPMB_H
 #define _TPMB_H
+
+#ifndef TSS2_API_VERSION_1_1_1_1
+#error Version mismatch among TSS2 header files. \
+       Do not include this file, #include <tss2/tpm20.h> instead.
+#endif  /* TSS2_API_VERSION_1_1_1_1 */
 
 typedef struct {
     UINT16  size;

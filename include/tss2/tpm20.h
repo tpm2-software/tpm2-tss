@@ -31,11 +31,6 @@
 /* TSS2_VERSION_<CREATOR>_<FAMILY>_<LEVEL>_<REVISION> */
 #define TSS2_API_VERSION_1_1_1_1
 
-#ifndef TSS2_API_VERSION_1_1_1_1
-#error Version mismatch among TSS2 header files !
-#endif  /* TSS2_API_VERSION_1_1_1_1 */
-
-
 #define TPM_BITFIELD_LE
 
 #include    <stddef.h>
