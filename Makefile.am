@@ -28,6 +28,9 @@
 
 include src_vars.mk
 
+TPM20_MAJOR_VERSION  = @TPM20_MAJOR_VERSION@
+TPM20_MINOR_VERSION  = @TPM20_MINOR_VERSION@
+
 ACLOCAL_AMFLAGS = -I m4
 AM_CFLAGS = -I$(srcdir)/include
 AM_CPPFLAGS = -I$(srcdir)/include
@@ -36,10 +39,12 @@ AM_CPPFLAGS = -I$(srcdir)/include
 sbin_PROGRAMS   = $(resourcemgr)
 noinst_PROGRAMS = $(tpmclient) $(tpmtest)
 lib_LTLIBRARIES = $(libtss2) $(libtctidevice) $(libtctisocket)
+BUILT_SOURCES   = $(TSS2_H)
+CLEANFILES      = $(BUILT_SOURCES)
 
 # headers and where to install them
 libtss2dir      = $(includedir)/tss2
-libtss2_HEADERS = $(srcdir)/include/tss2/*.h
+libtss2_HEADERS = $(TSS2_H)
 libtctidir      = $(includedir)/tcti
 libtcti_HEADERS = $(srcdir)/include/tcti/*.h
 
@@ -100,9 +105,21 @@ TPMTEST_INC = -I$(srcdir)/include -I$(srcdir)/sysapi/include \
     -I$(srcdir)/test/common/sample -I$(srcdir)/resourcemgr
 TPMTEST_CXX = test/tpmtest/tpmtest.cpp
 
+TSS2_H = $(srcdir)/include/tss2/implementation.h \
+         $(srcdir)/include/tss2/sys_api_part3.h \
+         $(srcdir)/include/tss2/tpm20.h \
+         $(srcdir)/include/tss2/tpmb.h \
+         $(srcdir)/include/tss2/tss2_common.h \
+         $(srcdir)/include/tss2/tss2_sys.h \
+         $(srcdir)/include/tss2/tss2_tcti.h \
+         $(srcdir)/include/tss2/tss2_tpm2_types.h
+
 libtss2 = sysapi/libtss2.la
 libtctidevice = tcti/libtctidevice.la
 libtctisocket = tcti/libtctisocket.la
 resourcemgr = resourcemgr/resourcemgr
 tpmclient   = test/tpmclient/tpmclient
 tpmtest     = test/tpmtest/tpmtest
+
+%.h : %.h.in
+	sed -e 's&\@TPM20_MAJOR_VERSION\@&'$(TPM20_MAJOR_VERSION)'&g' -e 's&\@TPM20_MINOR_VERSION\@&'$(TPM20_MINOR_VERSION)'&g' $< > $@
