@@ -1,4 +1,8 @@
-AC_INIT([tpm2.0-tss], [0.98])
+m4_define([tpm20_major_version], [0])
+m4_define([tpm20_minor_version], [98])
+m4_define([tpm20_version_string], [tpm20_major_version.tpm20_minor_version])
+
+AC_INIT([tpm2.0-tss], [tpm20_version_string])
 AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CC
 AC_PROG_CXX
