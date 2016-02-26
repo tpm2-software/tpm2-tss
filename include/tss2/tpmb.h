@@ -58,6 +58,11 @@ Any marks and brands contained herein are the property of their respective owner
 #ifndef _TPMB_H
 #define _TPMB_H
 
+typedef struct {
+    UINT16  size;
+    BYTE    buffer[1];
+} TPM2B;
+
 // This macro helps avoid having to type in the structure in order to create a new TPM2B type that
 // is used in a function.
 
