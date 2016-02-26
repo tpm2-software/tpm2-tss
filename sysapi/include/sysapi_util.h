@@ -28,10 +28,6 @@
 #ifndef TSS2_SYSAPI_UTIL_H
 #define TSS2_SYSAPI_UTIL_H
 
-#ifndef TSS2_API_VERSION_1_1_1_1
-#error Version mismatch among TSS2 header files !
-#endif  /* TSS2_API_VERSION_1_1_1_1 */
-
 #ifdef __cplusplus
 extern "C" {
 #endif

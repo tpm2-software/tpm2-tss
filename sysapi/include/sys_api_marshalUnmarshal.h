@@ -28,10 +28,6 @@
 #ifndef TSS2_SYS_API_MARSHAL_UNMARSHAL_H
 #define TSS2_SYS_API_MARSHAL_UNMARSHAL_H
 
-#ifndef TSS2_API_VERSION_1_1_1_1
-#error Version missmatch among TSS2 header files !
-#endif  /* TSS2_API_VERSION_1_1_1_1 */
-
 void Marshal_Simple_TPM2B( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **nextData, TPM2B *value, TSS2_RC *rval );
 void Unmarshal_Simple_TPM2B( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, TPM2B *value, TSS2_RC *rval );
 void Unmarshal_Simple_TPM2B_NoSizeCheck( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, TPM2B *value, TSS2_RC *rval );
