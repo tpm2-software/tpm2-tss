@@ -7138,7 +7138,7 @@ void TestCreate1()
 //
 void TestLocalTCTI()
 {
-    char deviceTctiConfig[DEVICE_TCTI_CONFIG_SIZE];
+    TCTI_DEVICE_CONF deviceTctiConfig = { "/dev/tpm0" };
     TSS2_RC rval = TSS2_RC_SUCCESS;
     
     TSS2_TCTI_CONTEXT *downstreamTctiContext;
@@ -7149,9 +7149,7 @@ void TestLocalTCTI()
     //
     // Init downstream interface to tpm (in this case the local TPM).
     //
-    sprintf_s( deviceTctiConfig, DEVICE_TCTI_CONFIG_SIZE, "%s ", "/dev/tpm0" );
-
-    rval = InitDeviceTctiContext( deviceTctiConfig, &downstreamTctiContext );
+    rval = InitDeviceTctiContext( &deviceTctiConfig, &downstreamTctiContext );
     if( rval != TSS2_RC_SUCCESS )
     {
         TpmClientPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", "local TPM", rval );
@@ -7166,7 +7164,7 @@ void TestLocalTCTI()
         
         TestTctiApis( downstreamTctiContext, 0 );
 
-        TeardownDeviceTctiContext( deviceTctiConfig, downstreamTctiContext );
+        TeardownDeviceTctiContext( downstreamTctiContext );
 
         exit( 0 );
     }

@@ -2981,9 +2981,9 @@ int main(int argc, char* argv[])
         //
         // Init downstream interface to tpm (in this case the local TPM).
         //
-        sprintf_s( deviceTctiConfig, interfaceConfigSize, "%s ", "/dev/tpm0" );
+        TCTI_DEVICE_CONF deviceTctiConfig = { "/dev/tpm0" };
 
-        rval = InitDeviceTctiContext( deviceTctiConfig, &downstreamTctiContext );
+        rval = InitDeviceTctiContext( &deviceTctiConfig, &downstreamTctiContext );
         if( rval != TSS2_RC_SUCCESS )
         {
             ResMgrPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resDeviceTctiName, rval );

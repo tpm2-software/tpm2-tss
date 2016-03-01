@@ -243,11 +243,10 @@ TSS2_RC LocalTpmSetLocality(
 TSS2_RC InitDeviceTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     size_t *contextSize,            // IN/OUT
-    const char *config,              // IN
+    const TCTI_DEVICE_CONF *config,              // IN
     const uint64_t magic,
     const uint32_t version,
-	const char *interfaceName,
-    const uint8_t serverSockets  // Unused for local TPM.
+    const char *interfaceName
     )
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
@@ -257,6 +256,10 @@ TSS2_RC InitDeviceTcti (
     {
         *contextSize = sizeof( TSS2_TCTI_CONTEXT_INTEL );
         return TSS2_RC_SUCCESS;
+    }
+    else if( config == NULL )
+    {
+        return TSS2_TCTI_RC_BAD_VALUE;
     }
     else
     {
@@ -278,20 +281,7 @@ TSS2_RC InitDeviceTcti (
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->currentTctiContext = 0;
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage = TCTI_STAGE_INITIALIZE;
 
-        // Get hostname and port.
-        if( ( strlen( config ) + 2 ) <= ( HOSTNAME_LENGTH  ) )
-        {
-            if( 1 != sscanf( config, "%199s", fileName ) ) 
-            {
-                return( TSS2_TCTI_RC_BAD_VALUE );
-            }
-        }
-        else
-        {
-            return( TSS2_TCTI_RC_INSUFFICIENT_BUFFER );
-        }
-
-        ( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile ) = open( fileName, O_RDWR );
+        ( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile ) = open( config->device_path, O_RDWR );
         if( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile < 0 ) 
         {
             return( TSS2_TCTI_RC_IO_ERROR );
@@ -303,45 +293,34 @@ TSS2_RC InitDeviceTcti (
     return rval;
 }
 
-TSS2_RC TeardownDeviceTcti(
-    TSS2_TCTI_CONTEXT *tctiContext, // OUT
-    const char *config,              // IN        
-	const char *interfaceName
-    )
+TSS2_RC TeardownDeviceTcti(TSS2_TCTI_CONTEXT *tctiContext)
 {
-    OpenOutFile( &outFp );
-    (*tpmLocalTpmPrintf)(NO_PREFIX, "Tearing down %s Interface\n", interfaceName );
-    CloseOutFile( &outFp );
-
     ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->finalize( tctiContext );
 
-  
     return TSS2_RC_SUCCESS;
 }
 
-char deviceTctiConfig[DEVICE_TCTI_CONFIG_SIZE];
-    
-TSS2_RC InitDeviceTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT **tctiContext )
+TSS2_RC InitDeviceTctiContext( const TCTI_DEVICE_CONF *driverConfig, TSS2_TCTI_CONTEXT **tctiContext )
 {
     size_t size;
     
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
-    rval = InitDeviceTcti(NULL, &size, driverConfig, 0, 0, deviceTctiName, 1 );
+    rval = InitDeviceTcti(NULL, &size, driverConfig, 0, 0, deviceTctiName );
     if( rval != TSS2_RC_SUCCESS )
         return rval;
     
     *tctiContext = malloc(size);
 
-    rval = InitDeviceTcti(*tctiContext, &size, driverConfig, TCTI_MAGIC, TCTI_VERSION, deviceTctiName, 0 );
+    rval = InitDeviceTcti(*tctiContext, &size, driverConfig, TCTI_MAGIC, TCTI_VERSION, deviceTctiName );
     return rval;
 }
 
-TSS2_RC TeardownDeviceTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT *tctiContext )
+TSS2_RC TeardownDeviceTctiContext( TSS2_TCTI_CONTEXT *tctiContext )
 {
     TSS2_RC rval;
 
-    rval = TeardownDeviceTcti( tctiContext, driverConfig, deviceTctiName );
+    rval = TeardownDeviceTcti( tctiContext );
     if( rval != TSS2_RC_SUCCESS )
         return rval;
 
