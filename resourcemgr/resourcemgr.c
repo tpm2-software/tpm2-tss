@@ -2371,41 +2371,6 @@ TSS2_RC ResourceMgrSetLocality(
     return rval;
 }
 
-TSS2_RC ResourceMgrCancel(
-    TSS2_TCTI_CONTEXT *tctiContext
-    )
-{
-    TSS2_RC rval = TSS2_RC_SUCCESS;
-
-    if( tctiContext == 0 )
-    {
-        rval = TSS2_TCTI_RC_BAD_REFERENCE;
-    }
-    else if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent != 1 )
-    {
-        rval = TSS2_TCTI_RC_BAD_SEQUENCE;
-    }
-    else
-    {
-        // If queued up commands exist, then remove them from the queue, and mark
-        // them to return Cancel response.
-        //
-        // code for this TBD.
-        
-        // If waiting for a response from a command sent on this connection,
-        // then send cancel command.  Otherwise, the cancel is ignored, and
-        // TSS2_RC_SUCCESS is returned.
-        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent == 1 &&
-               ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->currentTctiContext == tctiContext )
-        {
-            ResMgrPrintf( NO_PREFIX, "RM sending cancel command:\n" );
-            rval = (((TSS2_TCTI_CONTEXT_COMMON_CURRENT *)downstreamTctiContext)->cancel)(
-                    (TSS2_TCTI_CONTEXT *)downstreamTctiContext );
-        }
-    }
-    return rval;
-}
-
 UINT8 OtherCmdServer( SERVER_STRUCT *serverStruct )
 {
     UINT32 command;
@@ -2607,36 +2572,6 @@ TSS2_RC InitSimulatorTctiContext( TCTI_SOCKET_CONF *tcti_conf, TSS2_TCTI_CONTEXT
 
     rval = InitSocketTcti(*tctiContext, &size, tcti_conf, TCTI_MAGIC, TCTI_VERSION, resSocketTctiName, 0 );
     return rval;
-}
-
-TSS2_RC TeardownSimulatorTctiContext( TSS2_TCTI_CONTEXT *tctiContext )
-{
-    TSS2_RC rval;
-
-    rval = TeardownSocketTcti( tctiContext );
-    if( rval != TSS2_RC_SUCCESS )
-        return rval;
-
-    return rval;
-}
-
-TSS2_RC TeardownResMgr(
-    TSS2_TCTI_CONTEXT *tctiContext, // OUT
-    const char *config              // IN        
-    )
-{
-    ResMgrPrintf( NO_PREFIX, "Tearing down Resource Manager\n" );
-
-#if __linux || __unix
-    if( !simulator )
-        TeardownSocketTcti( tctiContext );
-    else
-#endif        
-        TeardownSocketTcti( tctiContext );
-
-    TeardownSysContext( &resMgrSysContext );
-
-    return TSS2_RC_SUCCESS;
 }
 
 TSS2_RC InitResourceMgr( int debugLevel)
