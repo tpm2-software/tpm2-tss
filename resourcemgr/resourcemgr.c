@@ -2568,7 +2568,7 @@ TSS2_RC InitSimulatorTctiContext( TCTI_SOCKET_CONF *tcti_conf, TSS2_TCTI_CONTEXT
     if( rval != TSS2_RC_SUCCESS )
         return rval;
     
-    downstreamTctiContext = malloc(size);
+    *tctiContext = malloc(size);
 
     rval = InitSocketTcti(*tctiContext, &size, tcti_conf, TCTI_MAGIC, TCTI_VERSION, resSocketTctiName, 0 );
     return rval;
