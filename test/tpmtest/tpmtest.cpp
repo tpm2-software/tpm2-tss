@@ -133,12 +133,11 @@ int startAuthSessionTestOnly = 0;
 UINT8 indent = 0;
 
 TSS2_SYS_CONTEXT *sysContext;
-//+++++
-#define rmInterfaceConfigSize 250
-char rmInterfaceConfig[rmInterfaceConfigSize];
 
-TSS2_TCTI_DRIVER_INFO resMgrInterfaceInfo = { "resMgr", "", InitSocketTcti, TeardownSocketTcti };
-//++++
+TCTI_SOCKET_CONF rmInterfaceConfig = {
+    DEFAULT_HOSTNAME,
+    DEFAULT_RESMGR_TPM_PORT
+};
 
 TSS2_TCTI_CONTEXT *resMgrTctiContext = 0;
 //TSS2_ABI_VERSION abiVersion = { 1, 1, 1, 1 };
@@ -346,31 +345,21 @@ void ErrorHandler( UINT32 rval )
 }
 
 char resMgrInterfaceName[] = "Resource Manager";
-//++++++++++
-//---------
-//char driverConfig[250];
-//--------
 
-//TSS2_RC InitTctiResMgrContext( char *driverConfig, TSS2_TCTI_CONTEXT **tctiContext )
-TSS2_RC InitTctiResMgrContext( char *rmInterfaceConfig, TSS2_TCTI_CONTEXT **tctiContext, char *name )
+TSS2_RC InitTctiResMgrContext( TCTI_SOCKET_CONF *rmInterfaceConfig, TSS2_TCTI_CONTEXT **tctiContext, char *name )
 {
     size_t size;
 
     TSS2_RC rval;
 
-//	rval = resMgrTctiDriverInfo.initialize(NULL, &size, driverConfig);
-	rval = resMgrInterfaceInfo.initialize(NULL, &size, rmInterfaceConfig, 0, 0, &resMgrInterfaceName[0], 0 );
+	rval = InitSocketTcti(NULL, &size, rmInterfaceConfig, 0, 0, &resMgrInterfaceName[0], 0 );
     if( rval != TSS2_RC_SUCCESS )
         return rval;
 
     *tctiContext = (TSS2_TCTI_CONTEXT *)malloc(size);
-/*
-    rval = resMgrTctiDriverInfo.initialize(*tctiContext, &size, driverConfig );
-    return rval;
-*/
     if( *tctiContext )
     {
-        rval = resMgrInterfaceInfo.initialize(*tctiContext, &size, rmInterfaceConfig, TCTI_MAGIC, TCTI_VERSION, resMgrInterfaceName, 0 );
+        rval = InitSocketTcti(*tctiContext, &size, rmInterfaceConfig, TCTI_MAGIC, TCTI_VERSION, resMgrInterfaceName, 0 );
     }
     else
     {
@@ -388,9 +377,9 @@ TSS2_RC TeardownTctiResMgrContext( char *driverConfig )
 */
 //-----------
 //+++++++++++
-TSS2_RC TeardownTctiResMgrContext( char *interfaceConfig, TSS2_TCTI_CONTEXT *tctiContext, char *name )
+TSS2_RC TeardownTctiResMgrContext( TSS2_TCTI_CONTEXT *tctiContext )
 {
-    return resMgrInterfaceInfo.teardown( tctiContext, interfaceConfig, name );
+    return TeardownSocketTcti( tctiContext );
 }
 //+++++++++++
 void Cleanup()
@@ -409,7 +398,7 @@ void Cleanup()
 
 	PlatformCommand( resMgrTctiContext, MS_SIM_POWER_OFF );
 
-	TeardownTctiResMgrContext( rmInterfaceConfig, resMgrTctiContext, &resMgrInterfaceName[0] );
+	TeardownTctiResMgrContext( resMgrTctiContext );
 
 #ifdef _WIN32
     WSACleanup();
@@ -6264,10 +6253,10 @@ void TestRM()
     sessionsData.cmdAuthsCount = 1;
     sessionsData.cmdAuths[0] = &sessionData;
 
-    rval = InitTctiResMgrContext( rmInterfaceConfig, &otherResMgrTctiContext, &otherResMgrInterfaceName[0] );
+    rval = InitTctiResMgrContext( &rmInterfaceConfig, &otherResMgrTctiContext, &otherResMgrInterfaceName[0] );
     if( rval != TSS2_RC_SUCCESS )
     {
-        TpmClientPrintf( 0, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceInfo.shortName, rval );
+        TpmClientPrintf( 0, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceName, rval );
         Cleanup();
         return;
     }
@@ -6489,7 +6478,7 @@ void TestRM()
     rval = Tss2_Sys_FlushContext( sysContext, newHandleDummy );
     CheckPassed( rval );
 
-    rval = TeardownTctiResMgrContext( rmInterfaceConfig, otherResMgrTctiContext, &otherResMgrInterfaceName[0] );
+    rval = TeardownTctiResMgrContext( otherResMgrTctiContext );
     CheckPassed( rval );
 
     TeardownSysContext( &otherSysContext );
@@ -7864,8 +7853,6 @@ typedef TSS2_RC (*TSS2_TCTI_INITIALIZE_FUNC) (
 
 int main(int argc, char* argv[])
 {
-    char hostName[200] = DEFAULT_HOSTNAME;
-    int port = DEFAULT_RESMGR_TPM_PORT;
     int count;
     TSS2_RC rval;
 
@@ -7883,7 +7870,8 @@ int main(int argc, char* argv[])
             if( 0 == strcmp( argv[count], "-host" ) )
             {
                 count++;
-                if( 1 != sscanf( argv[count], "%s", &hostName[0] ) )
+                rmInterfaceConfig.hostname = argv[count];
+                if( count >= argc)
                 {
                     PrintHelp();
                     return 1;
@@ -7892,7 +7880,8 @@ int main(int argc, char* argv[])
             else if( 0 == strcmp( argv[count], "-port" ) )
             {
                 count++;
-                if( 1 != sscanf( argv[count], "%d", &port ) )
+                rmInterfaceConfig.port = strtoul(argv[count], NULL, 10);
+                if( count >= argc)
                 {
                     PrintHelp();
                     return 1;
@@ -7945,12 +7934,10 @@ int main(int argc, char* argv[])
 		outFp = 0;
 	}
 
-    sprintf_s( rmInterfaceConfig, rmInterfaceConfigSize, "%s %d ", hostName, port );
-
-    rval = InitTctiResMgrContext( rmInterfaceConfig, &resMgrTctiContext, &resMgrInterfaceName[0] );
+    rval = InitTctiResMgrContext( &rmInterfaceConfig, &resMgrTctiContext, &resMgrInterfaceName[0] );
     if( rval != TSS2_RC_SUCCESS )
     {
-        TpmClientPrintf( 0, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceInfo.shortName, rval );
+        TpmClientPrintf( 0, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceName, rval );
         Cleanup();
         return( 1 );
     }

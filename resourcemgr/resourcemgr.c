@@ -2583,35 +2583,37 @@ UINT32 WINAPI SockServer( LPVOID servStruct )
 
 #define interfaceConfigSize 250
 
-char simInterfaceConfig[interfaceConfigSize];
-    
-extern TSS2_TCTI_DRIVER_INFO deviceTctiInfo;
-TSS2_TCTI_DRIVER_INFO simInterfaceInfo = { "simulator", "", InitSocketTcti, TeardownSocketTcti };
+const char *resDeviceTctiName = "device TCTI";
+const char *resSocketTctiName = "socket TCTI";
+TCTI_SOCKET_CONF simInterfaceConfig = {
+    DEFAULT_HOSTNAME,
+    DEFAULT_RESMGR_TPM_PORT
+};
 
 SOCKET simOtherSock;
 SOCKET simTpmSock;
 
-TSS2_RC InitSimulatorTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT **tctiContext )
+TSS2_RC InitSimulatorTctiContext( TCTI_SOCKET_CONF *tcti_conf, TSS2_TCTI_CONTEXT **tctiContext )
 {
     size_t size;
     
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
-    rval = simInterfaceInfo.initialize(NULL, &size, driverConfig, 0, 0, simInterfaceInfo.shortName, 1 );
+    rval = InitSocketTcti(NULL, &size, tcti_conf, 0, 0, resSocketTctiName, 1 );
     if( rval != TSS2_RC_SUCCESS )
         return rval;
     
     downstreamTctiContext = malloc(size);
 
-    rval = simInterfaceInfo.initialize(*tctiContext, &size, driverConfig, TCTI_MAGIC, TCTI_VERSION, simInterfaceInfo.shortName, 0 );
+    rval = InitSocketTcti(*tctiContext, &size, tcti_conf, TCTI_MAGIC, TCTI_VERSION, resSocketTctiName, 0 );
     return rval;
 }
 
-TSS2_RC TeardownSimulatorTctiContext( const char *driverConfig )
+TSS2_RC TeardownSimulatorTctiContext( TSS2_TCTI_CONTEXT *tctiContext )
 {
     TSS2_RC rval;
 
-    rval = simInterfaceInfo.teardown(NULL, driverConfig, simInterfaceInfo.shortName );
+    rval = TeardownSocketTcti( tctiContext );
     if( rval != TSS2_RC_SUCCESS )
         return rval;
 
@@ -2627,10 +2629,10 @@ TSS2_RC TeardownResMgr(
 
 #if __linux || __unix
     if( !simulator )
-        TeardownSocketTcti( tctiContext, config, deviceTctiInfo.shortName );
+        TeardownSocketTcti( tctiContext );
     else
 #endif        
-        TeardownSocketTcti( tctiContext, config, simInterfaceInfo.shortName );
+        TeardownSocketTcti( tctiContext );
 
     TeardownSysContext( &resMgrSysContext );
 
@@ -2865,9 +2867,8 @@ void InitSysContextFailure()
 
 int main(int argc, char* argv[])
 {
-    char tpmHostName[200] = DEFAULT_HOSTNAME;
     char appHostName[200] = DEFAULT_HOSTNAME;
-    int tpmPort = DEFAULT_SIMULATOR_TPM_PORT, appPort = DEFAULT_RESMGR_TPM_PORT;
+    uint16_t appPort = DEFAULT_RESMGR_TPM_PORT;
     int count;
     TSS2_RC rval = 0;
     SOCKET appOtherSock = 0, appTpmSock = 0;
@@ -2902,11 +2903,8 @@ int main(int argc, char* argv[])
             if( 0 == strcmp( argv[count], "-tpmhost" ) )
             {
                 count++;
-#ifdef  _WIN32
-                if( count >= argc || 1 != sscanf_s( argv[count], "%s", &tpmHostName[0], sizeof( tpmHostName ) ) )
-#else                    
-                if( count >= argc || 1 != sscanf_s( argv[count], "%200s", &tpmHostName[0] ) )
-#endif                    
+                simInterfaceConfig.hostname = argv[count];
+                if( count >= argc)
                 {
                     PrintHelp();
                     return 1;
@@ -2916,7 +2914,8 @@ int main(int argc, char* argv[])
             else if( 0 == strcmp( argv[count], "-tpmport" ) )
             {
                 count++;
-                if( count >= argc || 1 != sscanf_s( argv[count], "%d", &tpmPort ) )
+                simInterfaceConfig.port = strtoul(argv[count], NULL, 10);
+                if( count >= argc )
                 {
                     PrintHelp();
                     return 1;
@@ -2926,7 +2925,8 @@ int main(int argc, char* argv[])
             else if( 0 == strcmp( argv[count], "-apport" ) )
             {
                 count++;
-                if( count >= argc || 1 != sscanf_s( argv[count], "%d", &appPort ) )
+                appPort = strtoul(argv[count], NULL, 10);
+                if( count >= argc )
                 {
                     PrintHelp();
                     return 1;
@@ -2981,12 +2981,12 @@ int main(int argc, char* argv[])
         //
         // Init downstream interface to tpm (in this case the local TPM).
         //
-        sprintf_s( deviceTctiConfig, interfaceConfigSize, "%s ", "/dev/tpm0" );
+        TCTI_DEVICE_CONF deviceTctiConfig = { "/dev/tpm0" };
 
-        rval = InitDeviceTctiContext( deviceTctiConfig, &downstreamTctiContext );
+        rval = InitDeviceTctiContext( &deviceTctiConfig, &downstreamTctiContext );
         if( rval != TSS2_RC_SUCCESS )
         {
-            ResMgrPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", deviceTctiInfo.shortName, rval );
+            ResMgrPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resDeviceTctiName, rval );
             return( 1 );
         }
 #ifdef DEBUG_RESMGR_INIT        
@@ -2999,15 +2999,10 @@ int main(int argc, char* argv[])
     else
 #endif        
     {
-        //
-        // Init downstream interface to tpm (in this case the simulator).
-        //
-        sprintf_s( simInterfaceConfig, interfaceConfigSize, "%s %d ", tpmHostName, tpmPort );
-
-        rval = InitSimulatorTctiContext( simInterfaceConfig, &downstreamTctiContext );
+        rval = InitSimulatorTctiContext( &simInterfaceConfig, &downstreamTctiContext );
         if( rval != TSS2_RC_SUCCESS )
         {
-            ResMgrPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", simInterfaceInfo.shortName, rval );
+            ResMgrPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resSocketTctiName, rval );
             return( 1 );
         }
 #ifdef DEBUG_RESMGR_INIT        

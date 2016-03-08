@@ -34,29 +34,20 @@ extern "C" {
 
 #include <tcti/magic.h>
 
+typedef struct {
+    const char *device_path;
+} TCTI_DEVICE_CONF;
+
 TSS2_RC InitDeviceTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     size_t *contextSize,            // IN/OUT
-    const char *config,              // IN
+    const TCTI_DEVICE_CONF *config,              // IN
     const uint64_t magic,
     const uint32_t version,
-	const char *interfaceName,
-    const uint8_t serverSockets  // Unused for local TPM.
+    const char *interfaceName
     );
-
-TSS2_RC TeardownDeviceTcti (
-    TSS2_TCTI_CONTEXT *tctiContext, // OUT
-    const char *config,              // IN        
-	const char *interfaceName
-    );
-
-#define DEVICE_TCTI_CONFIG_SIZE 250
-
-extern char deviceTctiConfig[DEVICE_TCTI_CONFIG_SIZE];
-
-extern TSS2_RC InitDeviceTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT **tctiContext );
-
-extern TSS2_RC TeardownDeviceTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT *tctiContext );
+TSS2_RC InitDeviceTctiContext( const TCTI_DEVICE_CONF *config, TSS2_TCTI_CONTEXT **tctiContext );
+TSS2_RC TeardownDeviceTcti( TSS2_TCTI_CONTEXT *tctiContext );
 
 #ifdef __cplusplus
 }

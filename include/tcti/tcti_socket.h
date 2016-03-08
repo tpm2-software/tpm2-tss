@@ -67,31 +67,30 @@ int WSAGetLastError();
 
 #define DEFAULT_HOSTNAME        "127.0.0.1"
 
-#define HOSTNAME_LENGTH 200
-
 TSS2_RC PlatformCommand(
     TSS2_TCTI_CONTEXT *tctiContext,     /* in */
     char cmd );
 
-int InitSockets( char *hostName, int port, UINT8 serverSockets, SOCKET *otherSock, SOCKET *tpmSock );
+int InitSockets( const char *hostName, UINT16 port, UINT8 serverSockets, SOCKET *otherSock, SOCKET *tpmSock );
 
 void CloseSockets( SOCKET serverSock, SOCKET tpmSock );
+
+typedef struct {
+    const char *hostname;
+    uint16_t port;
+} TCTI_SOCKET_CONF;
 
 TSS2_RC InitSocketTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     size_t *contextSize,            // IN/OUT
-    const char *config,             // IN        
+    const TCTI_SOCKET_CONF *config,             // IN
     const uint64_t magic,
     const uint32_t version,
 	const char *interfaceName,
     const uint8_t serverSockets
     );
 
-TSS2_RC TeardownSocketTcti (
-    TSS2_TCTI_CONTEXT *tctiContext, // OUT
-    const char *config,             // IN        
-	const char *interfaceName
-    );
+TSS2_RC TeardownSocketTcti (TSS2_TCTI_CONTEXT *tctiContext);
 
 TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len );
 

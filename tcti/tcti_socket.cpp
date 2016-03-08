@@ -531,7 +531,7 @@ retSocketReceiveTpmResponse:
 }
 #endif
 
-int InitSockets( char *hostName, int port, UINT8 serverSockets, SOCKET *otherSock, SOCKET *tpmSock )
+int InitSockets( const char *hostName, UINT16 port, UINT8 serverSockets, SOCKET *otherSock, SOCKET *tpmSock )
 {
     sockaddr_in otherService;
     sockaddr_in tpmService;
@@ -679,7 +679,7 @@ int InitSockets( char *hostName, int port, UINT8 serverSockets, SOCKET *otherSoc
 TSS2_RC InitSocketTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     size_t *contextSize,            // IN/OUT
-    const char *config,              // IN
+    const TCTI_SOCKET_CONF *conf,              // IN
     const uint64_t magic,
     const uint32_t version,
 	const char *interfaceName,
@@ -687,8 +687,6 @@ TSS2_RC InitSocketTcti (
     )
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    char hostName[200];
-    int port;
     SOCKET otherSock;
     SOCKET tpmSock;
 
@@ -720,34 +718,7 @@ TSS2_RC InitSocketTcti (
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived = 0;
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived = 0;
 
-        // Get hostname and port.
-        if( ( strlen( config ) + 2 ) <= ( HOSTNAME_LENGTH  ) )
-        {
-            if( 1 == sscanf( config, "%199s", hostName ) ) 
-            {
-                if( strlen( config) - ( strlen( hostName ) + 2 ) <= PORT_LENGTH )
-                {
-                    if( 1 != sscanf( &config[strlen( hostName )], "%d", &port ) )
-                    {
-                        return( TSS2_TCTI_RC_BAD_VALUE );
-                    }
-                }
-                else
-                {
-                    return( TSS2_TCTI_RC_BAD_VALUE );
-                }
-            }
-            else
-            {
-                return( TSS2_TCTI_RC_BAD_VALUE );
-            }
-        }
-        else
-        {
-            return( TSS2_TCTI_RC_INSUFFICIENT_BUFFER );
-        }
-
-        rval = (TSS2_RC) InitSockets( &hostName[0], port, serverSockets, &otherSock, &tpmSock );
+        rval = (TSS2_RC) InitSockets( conf->hostname, conf->port, serverSockets, &otherSock, &tpmSock );
         if( rval == TSS2_RC_SUCCESS )
         {
             ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->otherSock = otherSock;
@@ -763,18 +734,9 @@ TSS2_RC InitSocketTcti (
     return rval;
 }
 
-TSS2_RC TeardownSocketTcti (
-    TSS2_TCTI_CONTEXT *tctiContext, // OUT
-    const char *config,              // IN        
-	const char *interfaceName
-    )
+TSS2_RC TeardownSocketTcti (TSS2_TCTI_CONTEXT *tctiContext)
 {
-    OpenOutFile( &outFp );
-    (*printfFunction)(NO_PREFIX, "Tearing down %s Interface\n", interfaceName );
-    CloseOutFile( &outFp );
-
     ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->finalize( tctiContext );
-
   
     return TSS2_RC_SUCCESS;
 }

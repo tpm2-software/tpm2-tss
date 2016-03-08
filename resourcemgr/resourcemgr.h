@@ -99,8 +99,6 @@ void ResourceMgrInit( int debugLevel );
 #define DEBUG_GAP_MAX   255
 #endif
 
-extern TSS2_TCTI_DRIVER_INFO resMgrTctiDriverInfo;
-
 TSS2_RC InitResMgr( int debugLevel );
 
 #ifdef __cplusplus
