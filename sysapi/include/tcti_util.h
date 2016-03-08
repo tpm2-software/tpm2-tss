@@ -39,10 +39,6 @@
 #ifndef TSS2_TCTI_UTIL_H
 #define TSS2_TCTI_UTIL_H
 
-#ifndef TSS2_API_VERSION_1_1_1_1
-#error Version mismatch among TSS2 header files !
-#endif  /* TSS2_API_VERSION_1_1_1_1 */
-
 #if defined linux || defined unix
 #include <sys/socket.h>
 #define SOCKET int
