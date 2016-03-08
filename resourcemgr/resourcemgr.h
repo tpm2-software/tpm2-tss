@@ -110,7 +110,6 @@ TSS2_RC InitResMgr( int debugLevel );
 
 extern void *(*rmMalloc)(size_t size);
 extern void (*rmFree)(void *entry);
-extern int (*rmPrintf)( const char *format, ...);
 
 extern int printRMTables;
 
