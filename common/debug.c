@@ -39,9 +39,9 @@ int DebugPrintf( UINT8 type, const char *format, ...)
     va_list args;
     int rval = 0;
 
-    if( type == RM_PREFIX )
+    if( type == RM_PREFIX && rmDebugPrefix )
     {
-        PrintRMDebugPrefix();
+        DebugPrintf( NO_PREFIX, "||  " );
     }
 
     va_start( args, format );
@@ -60,18 +60,13 @@ void DebugPrintBuffer( UINT8 *buffer, UINT32 length )
         if( ( i % 16 ) == 0 )
         {
             (*printfFunction)(NO_PREFIX, "\n");
-            PrintRMDebugPrefix();
+            if( rmDebugPrefix )
+                (*printfFunction)(NO_PREFIX,  "||  " );
         }
         
         (*printfFunction)(NO_PREFIX,  "%2.2x ", buffer[i] );
     }
     (*printfFunction)(NO_PREFIX,  "\n\n" );
     fflush( stdout );
-}
-
-void PrintRMDebugPrefix()
-{
-    if( rmDebugPrefix )
-        (*printfFunction)(NO_PREFIX,  "||  " );
 }
 
