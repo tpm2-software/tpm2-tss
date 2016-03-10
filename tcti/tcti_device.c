@@ -50,13 +50,7 @@
 
 const char *deviceTctiName = "device TCTI";
 
-#ifdef SAPI_CLIENT
-extern int TpmClientPrintf( UINT8 type, const char *format, ... );
-int (*tpmLocalTpmPrintf)( UINT8 type, const char *format, ...) = TpmClientPrintf;
-#else
-extern int ResMgrPrintf( UINT8 type, const char *format, ... );
-int (*tpmLocalTpmPrintf)( UINT8 type, const char *format, ...) = ResMgrPrintf;
-#endif
+int (*tpmLocalTpmPrintf)( UINT8 type, const char *format, ...) = DebugPrintf;
 
 TSS2_RC LocalTpmSendTpmCommand(
     TSS2_TCTI_CONTEXT *tctiContext,       /* in */

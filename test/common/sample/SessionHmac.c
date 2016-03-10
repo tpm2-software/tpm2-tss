@@ -111,7 +111,7 @@ UINT32 TpmComputeSessionHmac(
     }
 
 #ifdef  DEBUG
-    TpmClientPrintf( 0, "\n\nhmacKey = " );
+    DebugPrintf( 0, "\n\nhmacKey = " );
     PrintSizedBuffer( &(hmacKey.b) );
 #endif
     
@@ -132,7 +132,7 @@ UINT32 TpmComputeSessionHmac(
 #ifdef  DEBUG
     for( i = 0; bufferList[i] != 0; i++ )
     {
-        TpmClientPrintf( 0, "\n\nbufferlist[%d]:\n", i );
+        DebugPrintf( 0, "\n\nbufferlist[%d]:\n", i );
         PrintSizedBuffer( bufferList[i] );
     }
 #endif

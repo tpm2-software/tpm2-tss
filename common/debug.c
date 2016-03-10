@@ -25,6 +25,7 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
 
@@ -32,6 +33,23 @@
 #include "debug.h"
 
 UINT8 rmDebugPrefix = 0;
+
+int DebugPrintf( UINT8 type, const char *format, ...)
+{
+    va_list args;
+    int rval = 0;
+
+    if( type == RM_PREFIX )
+    {
+        PrintRMDebugPrefix();
+    }
+
+    va_start( args, format );
+    rval = vprintf( format, args );
+    va_end (args);
+
+    return rval;
+}
 
 void DebugPrintBuffer( UINT8 *buffer, UINT32 length )
 {

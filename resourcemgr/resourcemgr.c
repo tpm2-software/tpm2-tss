@@ -103,23 +103,6 @@ int GetNumRspHandles( TPM_CC commandCode, TPML_CCA *supportedCommands )
     return rval;
 }
 
-int ResMgrPrintf( UINT8 type, const char *format, ...)
-{
-    va_list args;
-    int rval = 0;
-
-    if( type == RM_PREFIX )
-    {
-        PrintRMDebugPrefix();
-    }
-
-    va_start( args, format );
-    rval = vprintf( format, args );
-    va_end (args);
-
-    return rval;
-}
-
 int printRMTables = 0;
 int rmCommandDebug = 0;
 int commandDebug = 0;
@@ -533,15 +516,15 @@ void PrintRMTables()
     if( !printRMTables )
         return;
 
-    ResMgrPrintf( RM_PREFIX, "RM entryList:\n" );
+    DebugPrintf( RM_PREFIX, "RM entryList:\n" );
     for( i = 0, entryPtr = entryList; entryPtr != 0; entryPtr = entryPtr->nextEntry, i++ )
     {
-        ResMgrPrintf( RM_PREFIX, "Entry: #%d, loaded: %d, virtual/real/parent handle: %8.8x/%8.8x/%8.8x, hierarchy: %8.8x, sequence: %016llX, connectionId: 0x%x\n",
+        DebugPrintf( RM_PREFIX, "Entry: #%d, loaded: %d, virtual/real/parent handle: %8.8x/%8.8x/%8.8x, hierarchy: %8.8x, sequence: %016llX, connectionId: 0x%x\n",
                 i, entryPtr->status.loaded, entryPtr->virtualHandle, entryPtr->realHandle, entryPtr->parentHandle,
                 entryPtr->hierarchy, entryPtr->context.sequence, entryPtr->connectionId );
     }
 
-    ResMgrPrintf( RM_PREFIX, "lastSessionSequenceNum = %8.8llx\n", lastSessionSequenceNum );
+    DebugPrintf( RM_PREFIX, "lastSessionSequenceNum = %8.8llx\n", lastSessionSequenceNum );
 }
 
 TSS2_RC TestForLoadedHandles()
@@ -559,11 +542,11 @@ TSS2_RC TestForLoadedHandles()
     
     if( capabilityData.data.handles.count != 0 )
     {
-        ResMgrPrintf( RM_PREFIX, "Loaded transient object handles: \n" );
-        ResMgrPrintf( RM_PREFIX, "" );
+        DebugPrintf( RM_PREFIX, "Loaded transient object handles: \n" );
+        DebugPrintf( RM_PREFIX, "" );
         for( i = 0; i < capabilityData.data.handles.count; i++ )
         {
-            ResMgrPrintf( NO_PREFIX, "0x%8x, ", capabilityData.data.handles.handle[i] );
+            DebugPrintf( NO_PREFIX, "0x%8x, ", capabilityData.data.handles.handle[i] );
         }
 
         rval = TSS2_RESMGR_UNLOADED_OBJECTS;
@@ -581,12 +564,12 @@ TSS2_RC TestForLoadedHandles()
 
     if( capabilityData.data.handles.count != 0 )
     {
-        ResMgrPrintf( RM_PREFIX, "Loaded session handles: \n" );
+        DebugPrintf( RM_PREFIX, "Loaded session handles: \n" );
         for( i = 0; i < capabilityData.data.handles.count; i++ )
         {
-            ResMgrPrintf( NO_PREFIX, "0x%8x, ", capabilityData.data.handles.handle[i] );
+            DebugPrintf( NO_PREFIX, "0x%8x, ", capabilityData.data.handles.handle[i] );
         }
-        ResMgrPrintf( NO_PREFIX, "\n" );
+        DebugPrintf( NO_PREFIX, "\n" );
 
         rval = TSS2_RESMGR_UNLOADED_OBJECTS;
     }
@@ -612,11 +595,11 @@ TSS2_RC FlushAllLoadedHandles()
 
     if( capabilityData.data.handles.count != 0 )
     {
-        ResMgrPrintf( RM_PREFIX, "Flush loaded transient object handles: \n" );
-        ResMgrPrintf( RM_PREFIX, "" );
+        DebugPrintf( RM_PREFIX, "Flush loaded transient object handles: \n" );
+        DebugPrintf( RM_PREFIX, "" );
         for( i = 0; i < capabilityData.data.handles.count; i++ )
         {
-            ResMgrPrintf( NO_PREFIX, "0x%8x, ", capabilityData.data.handles.handle[i] );
+            DebugPrintf( NO_PREFIX, "0x%8x, ", capabilityData.data.handles.handle[i] );
             rval = Tss2_Sys_FlushContext( resMgrSysContext, capabilityData.data.handles.handle[i] );
             if( rval != TSS2_RC_SUCCESS )
             {
@@ -624,7 +607,7 @@ TSS2_RC FlushAllLoadedHandles()
                 goto endFlushAllLoadedHandles;
             }
         }
-        ResMgrPrintf( NO_PREFIX, "\n" );
+        DebugPrintf( NO_PREFIX, "\n" );
     }
 
     rval = Tss2_Sys_GetCapability( resMgrSysContext, 0,
@@ -635,10 +618,10 @@ TSS2_RC FlushAllLoadedHandles()
 
     if( capabilityData.data.handles.count != 0 )
     {
-        ResMgrPrintf( RM_PREFIX, "Flush loaded session handles: \n" );
+        DebugPrintf( RM_PREFIX, "Flush loaded session handles: \n" );
         for( i = 0; i < capabilityData.data.handles.count; i++ )
         {
-            ResMgrPrintf( NO_PREFIX, "0x%8x, ", capabilityData.data.handles.handle[i] );
+            DebugPrintf( NO_PREFIX, "0x%8x, ", capabilityData.data.handles.handle[i] );
             rval = Tss2_Sys_FlushContext( resMgrSysContext, capabilityData.data.handles.handle[i] );
             if( rval != TSS2_RC_SUCCESS )
             {
@@ -646,7 +629,7 @@ TSS2_RC FlushAllLoadedHandles()
                 goto endFlushAllLoadedHandles;
             }
         }
-        ResMgrPrintf( NO_PREFIX, "\n" );
+        DebugPrintf( NO_PREFIX, "\n" );
     }
 
 endFlushAllLoadedHandles:
@@ -964,7 +947,7 @@ TSS2_RC HandleGap()
                 if( oldestSessionEntryPtr )
                 {
 #ifdef DEBUG_GAP_HANDLING
-                    ResMgrPrintf( RM_PREFIX, "gap event occurred\n" );
+                    DebugPrintf( RM_PREFIX, "gap event occurred\n" );
 #endif                
                     // Perform gapping actions 
                     rval = Tss2_Sys_ContextLoad( resMgrSysContext, &( oldestSessionEntryPtr->context ), &( oldestSessionEntryPtr->realHandle ) );
@@ -2149,22 +2132,22 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
         iResult = select( serverStruct->connectSock+1, &readFds, 0, 0, 0 );
         if( iResult == 0 )
         {
-            ResMgrPrintf( NO_PREFIX, "select failed due to timeout, socket #: 0x%x\n", serverStruct->connectSock );
+            DebugPrintf( NO_PREFIX, "select failed due to timeout, socket #: 0x%x\n", serverStruct->connectSock );
             rval = TSS2_TCTI_RC_TRY_AGAIN;
         }
         else if( iResult == SOCKET_ERROR )
         {
-            ResMgrPrintf( NO_PREFIX, "select failed with socket error: %d\n", WSAGetLastError() );
+            DebugPrintf( NO_PREFIX, "select failed with socket error: %d\n", WSAGetLastError() );
             rval = TSS2_TCTI_RC_IO_ERROR;
         }
         else if ( iResult != 1 )
         {
-            ResMgrPrintf( NO_PREFIX, "select failed, read the wrong # of bytes: %d\n", iResult );
+            DebugPrintf( NO_PREFIX, "select failed, read the wrong # of bytes: %d\n", iResult );
             rval = TSS2_TCTI_RC_IO_ERROR;
         }
         else
         {
-//            ResMgrPrintf( NO_PREFIX,  "select passed on socket #0x%x\n", serverStruct->connectSock );
+//            DebugPrintf( NO_PREFIX,  "select passed on socket #0x%x\n", serverStruct->connectSock );
         }
         
         // Receive TPM Send or SESSION end command
@@ -2347,19 +2330,19 @@ UINT8 OtherCmdServer( SERVER_STRUCT *serverStruct )
         iResult = select( serverStruct->connectSock+1, &readFds, 0, 0, 0 );
         if( iResult == 0 )
         {
-            ResMgrPrintf( NO_PREFIX,  "select failed due to timeout, socket #: 0x%x\n", serverStruct->connectSock );
+            DebugPrintf( NO_PREFIX,  "select failed due to timeout, socket #: 0x%x\n", serverStruct->connectSock );
             rval = TSS2_TCTI_RC_TRY_AGAIN;
             goto retOtherCmdServer;
         }
         else if( iResult == SOCKET_ERROR )
         {
-            ResMgrPrintf( NO_PREFIX, "select failed with socket error: %d\n", WSAGetLastError() );
+            DebugPrintf( NO_PREFIX, "select failed with socket error: %d\n", WSAGetLastError() );
             rval = TSS2_TCTI_RC_IO_ERROR;
             goto retOtherCmdServer;
         }
         else if ( iResult != 1 )
         {
-            ResMgrPrintf( NO_PREFIX, "select failed, read the wrong # of bytes: %d\n", iResult );
+            DebugPrintf( NO_PREFIX, "select failed, read the wrong # of bytes: %d\n", iResult );
             rval = TSS2_TCTI_RC_IO_ERROR;
             goto retOtherCmdServer;
         }
@@ -2531,7 +2514,7 @@ TSS2_RC InitResourceMgr( int debugLevel)
     
     SetDebug( DBG_COMMAND_RM_TABLES );
 
-    ResMgrPrintf( NO_PREFIX, "Initializing Resource Manager\n" );
+    DebugPrintf( NO_PREFIX, "Initializing Resource Manager\n" );
 
     commandDebug = 0;
     rmCommandDebug = 0;
@@ -2657,7 +2640,7 @@ TSS2_RC InitResourceMgr( int debugLevel)
 #else
         maxActiveSessions = DEBUG_MAX_ACTIVE_SESSIONS;
 #endif
-        ResMgrPrintf( NO_PREFIX, "maxActiveSessions = %d\n", maxActiveSessions );
+        DebugPrintf( NO_PREFIX, "maxActiveSessions = %d\n", maxActiveSessions );
     }
     else
     {
@@ -2683,7 +2666,7 @@ TSS2_RC InitResourceMgr( int debugLevel)
 #else
         gapMaxValue = DEBUG_GAP_MAX;
 #endif        
-        ResMgrPrintf( NO_PREFIX, "gapMaxValue = %d\n", gapMaxValue );
+        DebugPrintf( NO_PREFIX, "gapMaxValue = %d\n", gapMaxValue );
     }
     else
     {
@@ -2743,7 +2726,7 @@ void PrintHelp()
 
 void InitSysContextFailure()
 {
-    ResMgrPrintf( NO_PREFIX,  "In Resource Manager;  InitSysContext failed, exiting...\n" );
+    DebugPrintf( NO_PREFIX,  "In Resource Manager;  InitSysContext failed, exiting...\n" );
 }
 
 int main(int argc, char* argv[])
@@ -2835,7 +2818,7 @@ int main(int argc, char* argv[])
         rval = InitDeviceTctiContext( &deviceTctiConfig, &downstreamTctiContext );
         if( rval != TSS2_RC_SUCCESS )
         {
-            ResMgrPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resDeviceTctiName, rval );
+            DebugPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resDeviceTctiName, rval );
             return( 1 );
         }
 #ifdef DEBUG_RESMGR_INIT        
@@ -2851,7 +2834,7 @@ int main(int argc, char* argv[])
         rval = InitSimulatorTctiContext( &simInterfaceConfig, &downstreamTctiContext );
         if( rval != TSS2_RC_SUCCESS )
         {
-            ResMgrPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resSocketTctiName, rval );
+            DebugPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resSocketTctiName, rval );
             return( 1 );
         }
 #ifdef DEBUG_RESMGR_INIT        

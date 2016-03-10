@@ -47,8 +47,8 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
     UINT16 bytes = bits / 8;
     
 #ifdef DEBUG
-    TpmClientPrintf( 0, "KDFA, hashAlg = %4.4x\n", hashAlg );
-    TpmClientPrintf( 0, "\n\nKDFA, key = \n" );
+    DebugPrintf( 0, "KDFA, hashAlg = %4.4x\n", hashAlg );
+    DebugPrintf( 0, "\n\nKDFA, key = \n" );
     PrintSizedBuffer( key );
 #endif
     
@@ -69,13 +69,13 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
     }
     
 #ifdef DEBUG
-    TpmClientPrintf( 0, "\n\nKDFA, tpm2bLabel = \n" );
+    DebugPrintf( 0, "\n\nKDFA, tpm2bLabel = \n" );
     PrintSizedBuffer( (TPM2B *)&tpm2bLabel );
 
-    TpmClientPrintf( 0, "\n\nKDFA, contextU = \n" );
+    DebugPrintf( 0, "\n\nKDFA, contextU = \n" );
     PrintSizedBuffer( contextU );
 
-    TpmClientPrintf( 0, "\n\nKDFA, contextV = \n" );
+    DebugPrintf( 0, "\n\nKDFA, contextV = \n" );
     PrintSizedBuffer( contextV );
 #endif
     
@@ -100,7 +100,7 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
 #ifdef DEBUG
         for( j = 0; bufferList[j] != 0; j++ )
         {
-            TpmClientPrintf( 0, "\n\nbufferlist[%d]:\n", j );
+            DebugPrintf( 0, "\n\nbufferlist[%d]:\n", j );
             PrintSizedBuffer( &( bufferList[j]->b ) );
         }
 #endif
@@ -117,7 +117,7 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
     resultKey->t.size = bytes;
 
 #ifdef DEBUG
-    TpmClientPrintf( 0, "\n\nKDFA, resultKey = \n" );
+    DebugPrintf( 0, "\n\nKDFA, resultKey = \n" );
     PrintSizedBuffer( &( resultKey->b ) );
 #endif
     

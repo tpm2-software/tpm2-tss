@@ -197,25 +197,6 @@ void copyData( UINT8 *to, UINT8 *from, UINT32 length )
 //+++++
 }
 
-int TpmClientPrintf( UINT8 type, const char *format, ...)
-{
-    va_list args;
-    int rval = 0;
-
-    if( type == RM_PREFIX )
-    {
-        PrintRMDebugPrefix();
-    }
-
-    va_start( args, format );
-    rval = vprintf( format, args );
-    va_end (args);
-
-    return rval;
-}
-
-
-
 TPM_RC CompareTPM2B( TPM2B *buffer1, TPM2B *buffer2 )
 {
     if( buffer1->size != buffer2->size )
@@ -228,37 +209,20 @@ TPM_RC CompareTPM2B( TPM2B *buffer1, TPM2B *buffer2 )
     return TPM_RC_SUCCESS;
 }
 
-void PrintSizedBufferOpen( TPM2B *sizedBuffer )
-{
-    int i;
-
-    for( i = 0; i < sizedBuffer->size; i++ )
-    {
-        TpmClientPrintf( 0, "%2.2x ", sizedBuffer->buffer[i] );
-
-        if( ( (i+1) % 16 ) == 0 )
-        {
-            TpmClientPrintf( 0, "\n" );
-        }
-    }
-    TpmClientPrintf( 0, "\n" );
-}
-
-
 void PrintSizedBuffer( TPM2B *sizedBuffer )
 {
     int i;
+
     for( i = 0; i < sizedBuffer->size; i++ )
     {
-//        printf( "%2.2x ", sizedBuffer->buffer[i] );
-		TpmClientPrintf( 0, "%2.2x ", sizedBuffer->buffer[i] );
+        DebugPrintf( 0, "%2.2x ", sizedBuffer->buffer[i] );
 
         if( ( (i+1) % 16 ) == 0 )
         {
-            printf( "\n" );
+            DebugPrintf( 0, "\n" );
         }
     }
-    printf( "\n" );
+    DebugPrintf( 0, "\n" );
 }
 //-------
 /*
@@ -376,7 +340,7 @@ void Cleanup()
 void InitSysContextFailure()
 {
 //    printf( "InitSysContext failed, exiting...\n" );
-	TpmClientPrintf( 0, "InitSysContext failed, exiting...\n" );
+	DebugPrintf( 0, "InitSysContext failed, exiting...\n" );
     Cleanup();
 }
 
@@ -393,11 +357,11 @@ void Delay( UINT32 delay)
 
 void CheckPassed( UINT32 rval )
 {
-    TpmClientPrintf( 0, "\tpassing case:  " );
+    DebugPrintf( 0, "\tpassing case:  " );
     if ( rval != TPM_RC_SUCCESS) {
         ErrorHandler( rval);
 //        printf( "\tFAILED!  %s\n", errorString );
-		TpmClientPrintf( 0, "\tFAILED!  %s\n", errorString );
+		DebugPrintf( 0, "\tFAILED!  %s\n", errorString );
         Cleanup();
     }
     else
@@ -419,15 +383,15 @@ TPM2B_AUTH nullSessionHmac;
 
 void CheckFailed( UINT32 rval, UINT32 expectedTpmErrorCode )
 {
-    TpmClientPrintf( 0, "\tfailing case: " );
+    DebugPrintf( 0, "\tfailing case: " );
     if ( rval != expectedTpmErrorCode) {
         ErrorHandler( rval);
-        TpmClientPrintf( 0, "\tFAILED!  Ret code s/b: %x, but was: %x\n", expectedTpmErrorCode, rval );
+        DebugPrintf( 0, "\tFAILED!  Ret code s/b: %x, but was: %x\n", expectedTpmErrorCode, rval );
         Cleanup();
     }
     else
     {
-        TpmClientPrintf( 0, "\tPASSED!\n" );
+        DebugPrintf( 0, "\tPASSED!\n" );
     }
     Delay(demoDelay);
 }
@@ -495,7 +459,7 @@ void GetTpmVersion()
     }
     else
     {
-        TpmClientPrintf( 0, "Failed to get TPM spec version!!\n" );
+        DebugPrintf( 0, "Failed to get TPM spec version!!\n" );
         Cleanup();
     }
 }
@@ -6145,7 +6109,7 @@ void TestRM()
     TPMS_CONTEXT    newContext;
     char otherResMgrInterfaceName[] = "Test RM Resource Manager";
 
-    TpmClientPrintf( 0, "\nRM TESTS:\n" );
+    DebugPrintf( 0, "\nRM TESTS:\n" );
 
     sessionDataArray[0] = &sessionData;
     sessionDataOutArray[0] = &sessionDataOut;
@@ -6202,7 +6166,7 @@ void TestRM()
     rval = InitTctiResMgrContext( &rmInterfaceConfig, &otherResMgrTctiContext, &otherResMgrInterfaceName[0] );
     if( rval != TSS2_RC_SUCCESS )
     {
-        TpmClientPrintf( 0, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceName, rval );
+        DebugPrintf( 0, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceName, rval );
         Cleanup();
         return;
     }
@@ -7874,7 +7838,7 @@ int main(int argc, char* argv[])
     rval = InitTctiResMgrContext( &rmInterfaceConfig, &resMgrTctiContext, &resMgrInterfaceName[0] );
     if( rval != TSS2_RC_SUCCESS )
     {
-        TpmClientPrintf( 0, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceName, rval );
+        DebugPrintf( 0, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceName, rval );
         Cleanup();
         return( 1 );
     }

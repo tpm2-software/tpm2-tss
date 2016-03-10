@@ -40,6 +40,7 @@ enum debugLevel { DBG_NO_COMMAND = 0, DBG_COMMAND = 1, DBG_COMMAND_RM = 2, DBG_C
 
 void PrintRMDebugPrefix();
 
+int DebugPrintf( UINT8 type, const char *format, ...);
 void DebugPrintBuffer( UINT8 *command_buffer, UINT32 cnt1 );
 
 void DebugPrintBufferOpen( UINT8 *buffer, UINT32 length );

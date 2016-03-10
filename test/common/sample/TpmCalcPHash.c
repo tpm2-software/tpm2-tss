@@ -66,7 +66,7 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
     }
 
 #ifdef DEBUG
-    TpmClientPrintf( 0, "\n\nNAME1 = \n" );
+    DebugPrintf( 0, "\n\nNAME1 = \n" );
     PrintSizedBuffer( &(name1.b) );
 #endif
     
@@ -89,7 +89,7 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
     }
     
 #ifdef DEBUG
-    TpmClientPrintf( 0, "\n\nNAME2 = \n" );
+    DebugPrintf( 0, "\n\nNAME2 = \n" );
     PrintSizedBuffer( &(name2.b) );
 #endif
     
@@ -134,7 +134,7 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
 
     }
 #ifdef DEBUG
-    TpmClientPrintf( 0, "\n\nPHASH input bytes= \n" );
+    DebugPrintf( 0, "\n\nPHASH input bytes= \n" );
     PrintSizedBuffer( &(hashInput.b) );
 #endif
     
@@ -149,7 +149,7 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
         if( rval != TPM_RC_SUCCESS )
             return rval;
 #ifdef DEBUG
-        TpmClientPrintf( 0, "\n\nPHASH = " );
+        DebugPrintf( 0, "\n\nPHASH = " );
         PrintSizedBuffer( &(pHash->b) );
 #endif
     }

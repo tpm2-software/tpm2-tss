@@ -53,13 +53,7 @@
 extern "C" {
 #endif
 
-#ifdef SAPI_CLIENT
-extern int TpmClientPrintf( UINT8 type, const char *format, ... );
-int (*printfFunction)( UINT8 type, const char *format, ...) = TpmClientPrintf;
-#else
-extern int ResMgrPrintf( UINT8 type, const char *format, ... );
-int (*printfFunction)( UINT8 type, const char *format, ...) = ResMgrPrintf;
-#endif
+int (*printfFunction)( UINT8 type, const char *format, ...) = DebugPrintf;
 
 extern UINT8 simulator;
 

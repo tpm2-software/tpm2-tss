@@ -55,7 +55,7 @@ resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(TCTISOCKET_C) \
 sysapi_libtss2_la_CFLAGS  = -I$(srcdir)/include -I$(srcdir)/sysapi/include
 sysapi_libtss2_la_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
 
-tcti_libtctidevice_la_CFLAGS   = -DSAPI_CLIENT $(TCTIDEVICE_INC)
+tcti_libtctidevice_la_CFLAGS   = $(TCTIDEVICE_INC)
 tcti_libtctidevice_la_SOURCES  = common/debug.c $(TCTIDEVICE_C) \
     sysapi/sysapi_util/changeEndian.c $(TCTICOMMON_C)
 
