@@ -98,10 +98,6 @@
 #define SET_PCR_SELECT_SIZE( pcrSelection, size ) \
 (pcrSelection).sizeofSelect = size;
 
-//++++
-char outFileName[200] = "";
-//++++
-
 TPM_CC currentCommandCode;
 TPM_CC *currentCommandCodePtr = &currentCommandCode;
 
@@ -188,11 +184,6 @@ TPMI_SH_AUTH_SESSION StartPolicySession();
 
 TPMI_SH_AUTH_SESSION InitNvAuxPolicySession();
 
-//+++++
-FILE *outFp;
-//+++++
-
-
 //
 // Used by some high level sample routines to copy the results.
 //
@@ -211,25 +202,14 @@ int TpmClientPrintf( UINT8 type, const char *format, ...)
     va_list args;
     int rval = 0;
 
-    OpenOutFile( &outFp );
-
-    if( outFp )
+    if( type == RM_PREFIX )
     {
-        if( type == RM_PREFIX )
-        {
-            PrintRMDebugPrefix();
-        }
-
-        va_start( args, format );
-        rval = vfprintf( outFp, format, args );
-        va_end (args);
-
-        CloseOutFile( &outFp );
+        PrintRMDebugPrefix();
     }
-    else
-    {
-        printf( "TpmClientPrintf failed\n" );
-    }
+
+    va_start( args, format );
+    rval = vprintf( format, args );
+    va_end (args);
 
     return rval;
 }
@@ -252,29 +232,16 @@ void PrintSizedBufferOpen( TPM2B *sizedBuffer )
 {
     int i;
 
-
-    OpenOutFile( &outFp );
-
-    if( outFp )
+    for( i = 0; i < sizedBuffer->size; i++ )
     {
-        for( i = 0; i < sizedBuffer->size; i++ )
+        TpmClientPrintf( 0, "%2.2x ", sizedBuffer->buffer[i] );
+
+        if( ( (i+1) % 16 ) == 0 )
         {
-            TpmClientPrintf( 0, "%2.2x ", sizedBuffer->buffer[i] );
-
-            if( ( (i+1) % 16 ) == 0 )
-            {
-                TpmClientPrintf( 0, "\n" );
-            }
+            TpmClientPrintf( 0, "\n" );
         }
-        TpmClientPrintf( 0, "\n" );
-
-        CloseOutFile( &outFp );
     }
-    else
-    {
-        printf( "PrintSizedBufferOpen failed\n" );
-    }
-
+    TpmClientPrintf( 0, "\n" );
 }
 
 
@@ -426,11 +393,7 @@ void Delay( UINT32 delay)
 
 void CheckPassed( UINT32 rval )
 {
-//+++++++
-	OpenOutFile( &outFp );
-	TpmClientPrintf( 0, "\tpassing case:  " );
-//+++++++
-//	printf( "\tpassing case:  " );
+    TpmClientPrintf( 0, "\tpassing case:  " );
     if ( rval != TPM_RC_SUCCESS) {
         ErrorHandler( rval);
 //        printf( "\tFAILED!  %s\n", errorString );
@@ -442,9 +405,6 @@ void CheckPassed( UINT32 rval )
         printf( "\tPASSED!\n" );
     }
 
-//+++++
-	CloseOutFile( &outFp );
-//++++
     Delay(demoDelay);
 }
 
@@ -459,29 +419,16 @@ TPM2B_AUTH nullSessionHmac;
 
 void CheckFailed( UINT32 rval, UINT32 expectedTpmErrorCode )
 {
-//    printf( "\tfailing case: " );
-//++++
-	OpenOutFile( &outFp );
-	TpmClientPrintf( 0, "\tfailing case: " );
-//++++
+    TpmClientPrintf( 0, "\tfailing case: " );
     if ( rval != expectedTpmErrorCode) {
         ErrorHandler( rval);
-//        printf( "\tFAILED!  Ret code s/b: %x, but was: %x\n", expectedTpmErrorCode, rval );
-
-//++++
-		TpmClientPrintf( 0, "\tFAILED!  Ret code s/b: %x, but was: %x\n", expectedTpmErrorCode, rval );
-//++++
+        TpmClientPrintf( 0, "\tFAILED!  Ret code s/b: %x, but was: %x\n", expectedTpmErrorCode, rval );
         Cleanup();
     }
     else
     {
-//        printf( "\tPASSED!\n" );
-		TpmClientPrintf( 0, "\tPASSED!\n" );
+        TpmClientPrintf( 0, "\tPASSED!\n" );
     }
-    fflush( stdout );
-//+++
-	CloseOutFile( &outFp );
-//+++
     Delay(demoDelay);
 }
 
@@ -548,8 +495,7 @@ void GetTpmVersion()
     }
     else
     {
-//        printf( "Failed to get TPM spec version!!\n" );
-		TpmClientPrintf( 0, "Failed to get TPM spec version!!\n" );
+        TpmClientPrintf( 0, "Failed to get TPM spec version!!\n" );
         Cleanup();
     }
 }
@@ -7925,15 +7871,6 @@ int main(int argc, char* argv[])
             }
         }
     }
-    if( 0 == strcmp( outFileName, "" ) )
-    {
-        outFp = stdout;
-    }
-	else
-	{
-		outFp = 0;
-	}
-
     rval = InitTctiResMgrContext( &rmInterfaceConfig, &resMgrTctiContext, &resMgrInterfaceName[0] );
     if( rval != TSS2_RC_SUCCESS )
     {

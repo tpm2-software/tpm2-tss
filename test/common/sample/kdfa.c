@@ -47,11 +47,9 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
     UINT16 bytes = bits / 8;
     
 #ifdef DEBUG
-    OpenOutFile( &outFp );
     TpmClientPrintf( 0, "KDFA, hashAlg = %4.4x\n", hashAlg );
     TpmClientPrintf( 0, "\n\nKDFA, key = \n" );
     PrintSizedBuffer( key );
-    CloseOutFile( &outFp );
 #endif
     
     resultKey->t .size = 0;
@@ -71,7 +69,6 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
     }
     
 #ifdef DEBUG
-    OpenOutFile( &outFp );
     TpmClientPrintf( 0, "\n\nKDFA, tpm2bLabel = \n" );
     PrintSizedBuffer( (TPM2B *)&tpm2bLabel );
 
@@ -80,7 +77,6 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
 
     TpmClientPrintf( 0, "\n\nKDFA, contextV = \n" );
     PrintSizedBuffer( contextV );
-    CloseOutFile( &outFp );
 #endif
     
     resultKey->t.size = 0;
@@ -102,13 +98,11 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
         bufferList[j++] = (TPM2B_DIGEST *)&(tpm2bBits.b);
         bufferList[j++] = (TPM2B_DIGEST *)0;
 #ifdef DEBUG
-        OpenOutFile( &outFp );
         for( j = 0; bufferList[j] != 0; j++ )
         {
             TpmClientPrintf( 0, "\n\nbufferlist[%d]:\n", j );
             PrintSizedBuffer( &( bufferList[j]->b ) );
         }
-        CloseOutFile( &outFp );
 #endif
         rval = (*HmacFunctionPtr )( hashAlg, key, (TPM2B **)&( bufferList[0] ), &tmpResult );
         if( rval != TPM_RC_SUCCESS )
@@ -123,10 +117,8 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
     resultKey->t.size = bytes;
 
 #ifdef DEBUG
-    OpenOutFile( &outFp );
     TpmClientPrintf( 0, "\n\nKDFA, resultKey = \n" );
     PrintSizedBuffer( &( resultKey->b ) );
-    CloseOutFile( &outFp );
 #endif
     
     return TPM_RC_SUCCESS;

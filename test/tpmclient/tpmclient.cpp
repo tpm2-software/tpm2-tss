@@ -99,8 +99,6 @@
 #define SET_PCR_SELECT_SIZE( pcrSelection, size ) \
                                                   (pcrSelection).sizeofSelect = size; 
 
-char outFileName[200] = "";
-
 TPM_CC currentCommandCode;
 TPM_CC *currentCommandCodePtr = &currentCommandCode;
 
@@ -182,8 +180,6 @@ TPMI_SH_AUTH_SESSION StartPolicySession();
 
 TPMI_SH_AUTH_SESSION InitNvAuxPolicySession();
 
-FILE *outFp;
-
 //
 // Used by some high level sample routines to copy the results.
 //
@@ -198,26 +194,15 @@ int TpmClientPrintf( UINT8 type, const char *format, ...)
     va_list args;
     int rval = 0;
 
-    OpenOutFile( &outFp );
-
-    if( outFp )
+    if( type == RM_PREFIX )
     {
-        if( type == RM_PREFIX )
-        {
-            PrintRMDebugPrefix();
-        }
-
-        va_start( args, format );
-        rval = vfprintf( outFp, format, args );
-        va_end (args);
-
-        CloseOutFile( &outFp );
+        PrintRMDebugPrefix();
     }
-    else
-    {
-        printf( "TpmClientPrintf failed\n" );
-    }
-    
+
+    va_start( args, format );
+    rval = vprintf( format, args );
+    va_end (args);
+
     return rval;
 }
 
@@ -237,29 +222,15 @@ void PrintSizedBufferOpen( TPM2B *sizedBuffer )
 {
     int i;
 
-
-    OpenOutFile( &outFp );
-
-    if( outFp )
+    for( i = 0; i < sizedBuffer->size; i++ )
     {
-        for( i = 0; i < sizedBuffer->size; i++ )
+        TpmClientPrintf( 0, "%2.2x ", sizedBuffer->buffer[i] );
+        if( ( (i+1) % 16 ) == 0 )
         {
-            TpmClientPrintf( 0, "%2.2x ", sizedBuffer->buffer[i] );
-
-            if( ( (i+1) % 16 ) == 0 )
-            {
-                TpmClientPrintf( 0, "\n" );
-            }
+            TpmClientPrintf( 0, "\n" );
         }
-        TpmClientPrintf( 0, "\n" );
-
-        CloseOutFile( &outFp );
     }
-    else
-    {
-        printf( "PrintSizedBufferOpen failed\n" );
-    }
-            
+    TpmClientPrintf( 0, "\n" );
 }
 
 void PrintSizedBuffer( TPM2B *sizedBuffer )
@@ -385,7 +356,6 @@ void Delay( UINT16 delay)
 
 void CheckPassed( UINT32 rval )
 {
-    OpenOutFile( &outFp );
     TpmClientPrintf( 0, "\tpassing case:  " );
     if ( rval != TPM_RC_SUCCESS) {
         ErrorHandler( rval);
@@ -397,7 +367,6 @@ void CheckPassed( UINT32 rval )
         TpmClientPrintf( 0, "\tPASSED!\n" );
     }
 
-    CloseOutFile( &outFp );
     Delay(demoDelay);
 }
 
@@ -412,7 +381,6 @@ TPM2B_AUTH nullSessionHmac;
 
 void CheckFailed( UINT32 rval, UINT32 expectedTpmErrorCode )
 {
-    OpenOutFile( &outFp );
     TpmClientPrintf( 0, "\tfailing case: " );
     if ( rval != expectedTpmErrorCode) {
         ErrorHandler( rval);
@@ -423,8 +391,6 @@ void CheckFailed( UINT32 rval, UINT32 expectedTpmErrorCode )
     {
         TpmClientPrintf( 0, "\tPASSED!\n" );
     }
-    fflush( stdout );
-    CloseOutFile( &outFp );
     Delay(demoDelay);
 }
 
@@ -2470,10 +2436,8 @@ void TestCreate(){
 
     rval = (*HandleToNameFunctionPtr)( loadedSha1KeyHandle, &name1 );
     CheckPassed( rval );
-    OpenOutFile( &outFp );
     TpmClientPrintf( 0, "Name of loaded key: " );
     PrintSizedBuffer( (TPM2B *)&name1 );
-    CloseOutFile( &outFp );
 
     rval = CompareTPM2B( &name.b, &name1.b );
     CheckPassed( rval );
@@ -5165,10 +5129,8 @@ void HmacSessionTest()
                 rval = (*HandleToNameFunctionPtr)( nvSession->sessionHandle, &nvSession->name );
                 CheckPassed( rval );
 
-                OpenOutFile( &outFp );
                 TpmClientPrintf( 0, "Name of authSession: " );
                 PrintSizedBuffer( (TPM2B *)&nvSession->name );
-                CloseOutFile( &outFp );
 
                 // Init write data.
                 nvWriteData.t.size = sizeof( dataToWrite );
@@ -5915,12 +5877,10 @@ void GetSetDecryptParamTests()
     rval = Tss2_Sys_GetCpBuffer( decryptParamTestSysContext, &cpBufferUsedSize1, &cpBuffer1 );
     CheckPassed( rval );
 
-    OpenOutFile( &outFp );
 #ifdef DEBUG
     TpmClientPrintf( 0, "cpBuffer = ");
 #endif    
     DEBUG_PRINT_BUFFER( (UINT8 *)cpBuffer1, cpBufferUsedSize1 );
-    CloseOutFile( &outFp );
     
     // Test for no decrypt param.
     rval = Tss2_Sys_NV_Read_Prepare( decryptParamTestSysContext, TPM20_INDEX_PASSWORD_TEST, TPM20_INDEX_PASSWORD_TEST, sizeof( nvWriteData ) - 2, 0 ); 
@@ -5975,12 +5935,10 @@ void GetSetDecryptParamTests()
     rval = Tss2_Sys_GetCpBuffer( decryptParamTestSysContext, &cpBufferUsedSize2, &cpBuffer2 );
     CheckPassed( rval );
 
-    OpenOutFile( &outFp );
 #ifdef DEBUG
     TpmClientPrintf( 0, "cpBuffer = ");
 #endif    
     DEBUG_PRINT_BUFFER( (UINT8 *)cpBuffer2, cpBufferUsedSize2 );
-    CloseOutFile( &outFp );
 
     if( cpBufferUsedSize1 != cpBufferUsedSize2 )
     {
@@ -7423,30 +7381,6 @@ int main(int argc, char* argv[])
                 testLocalTcti = 1;
             }
 #endif
-            
-#ifdef SHARED_OUT_FILE
-            else if( 0 == strcmp( argv[count], "-out" ) )
-            {
-                count++;
-                if( count >= argc || 1 != sscanf_s( argv[count], "%199s", &outFileName, sizeof( outFileName ) ) )
-                {
-                    PrintHelp();
-                    return 1;
-                }
-                else
-                {
-                    OpenOutFile( &outFp );
-
-                    if( outFp == 0 )
-                    {
-                        printf( "Unable to open file, %s\n", &outFileName[0] );
-                        PrintHelp();
-                        return 1;
-                    }
-                    CloseOutFile( &outFp );
-                }
-            }            
-#endif
             else
             {
                 PrintHelp();
@@ -7454,16 +7388,6 @@ int main(int argc, char* argv[])
             }
         }
     }
-
-    if( 0 == strcmp( outFileName, "" ) )
-    {
-        outFp = stdout;
-    }
-	else
-	{
-		outFp = 0;
-	}
-
 #if __linux || __unix
     if( testLocalTcti )
     {

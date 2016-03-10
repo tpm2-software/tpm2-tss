@@ -40,20 +40,14 @@ void DebugPrintBuffer( UINT8 *command_buffer, UINT32 cnt1 );
 
 void DebugPrintBufferOpen( UINT8 *buffer, UINT32 length );
 
-void OpenOutFile( FILE **outFp );
-
-void CloseOutFile( FILE **outFp );
-
 extern int (*printfFunction)( UINT8 type, const char *format, ...);
 
 enum printf_types { NO_PREFIX = 0, RM_PREFIX = 1 };
 
-extern FILE *outFp;
-
 extern UINT8 rmDebugPrefix;
 
 #ifdef DEBUG
-#define DEBUG_PRINT_BUFFER( buffer, length )  DebugPrintBufferOpen( buffer, length )
+#define DEBUG_PRINT_BUFFER( buffer, length )  DebugPrintBuffer( buffer, length )
 #else
 #define DEBUG_PRINT_BUFFER( buffer, length )
 #endif

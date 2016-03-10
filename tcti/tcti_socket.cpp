@@ -697,7 +697,6 @@ TSS2_RC InitSocketTcti (
     }
     else
     {
-        OpenOutFile( &outFp );
         (*printfFunction)(NO_PREFIX, "Initializing %s Interface\n", interfaceName );
 
         // Init TCTI context.
@@ -728,7 +727,6 @@ TSS2_RC InitSocketTcti (
         {
             CloseSockets( otherSock, tpmSock);
         }            
-        CloseOutFile( &outFp );
     }
 
     return rval;
