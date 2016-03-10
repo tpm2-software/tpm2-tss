@@ -52,14 +52,10 @@ Any marks and brands contained herein are the property of their respective owner
 
 /* rev 119 */
 
-#ifndef TPM20_H
-#error Do not include this file, #include <tss2/tpm20.h> instead.
-#endif
-
-#if ! ( TPM20_MAJOR_VERSION == @TPM20_MAJOR_VERSION@ && \
-        TPM20_MINOR_VERSION == @TPM20_MINOR_VERSION@ )
-#error Version mismatch among TSS2 header files.
-#endif
+#ifndef TSS2_API_VERSION_1_1_1_1
+#error Version mismatch among TSS2 header files. \
+       Do not include this file, #include <tss2/tpm20.h> instead.
+#endif  /* TSS2_API_VERSION_1_1_1_1 */
 
 #ifndef _IMPLEMENTATION_H_
 #define _IMPLEMENTATION_H_

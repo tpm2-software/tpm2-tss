@@ -28,14 +28,10 @@
 #ifndef TSS2_SYS_H
 #define TSS2_SYS_H
 
-#ifndef TPM20_H
-#error Do not include this file, #include <tss2/tpm20.h> instead.
-#endif
-
-#if ! ( TPM20_MAJOR_VERSION == @TPM20_MAJOR_VERSION@ && \
-        TPM20_MINOR_VERSION == @TPM20_MINOR_VERSION@ )
-#error Version mismatch among TSS2 header files.
-#endif
+#ifndef TSS2_API_VERSION_1_1_1_1
+#error Version mismatch among TSS2 header files. \
+       Do not include this file, #include <tss2/tpm20.h> instead.
+#endif  /* TSS2_API_VERSION_1_1_1_1 */
 
 #ifdef __cplusplus
 extern "C" {

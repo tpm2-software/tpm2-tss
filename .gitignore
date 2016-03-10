@@ -25,7 +25,6 @@ config.status
 config.sub
 depcomp
 install-sh
-include/tss2/*.h
 libtool
 ltmain.sh
 m4/
