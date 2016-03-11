@@ -1,3 +1,4 @@
+#include <tcti/tcti_socket.h>
 #include "debug.h"
 #include "sockets.h"
 

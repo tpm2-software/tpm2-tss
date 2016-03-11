@@ -42,6 +42,10 @@ extern "C" {
 
 #define DEFAULT_HOSTNAME        "127.0.0.1"
 
+typedef enum { NO_PREFIX = 0, RM_PREFIX = 1 } printf_type;
+/* global data defined in the socket TCTI */
+extern int (*printfFunction)( printf_type type, const char *format, ...);
+
 TSS2_RC PlatformCommand(
     TSS2_TCTI_CONTEXT *tctiContext,     /* in */
     char cmd );
