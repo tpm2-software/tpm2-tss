@@ -1,5 +1,5 @@
 //**********************************************************************;
-// Copyright (c) 2015, Intel Corporation
+// Copyright (c) 2016, Intel Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -25,33 +25,15 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#ifndef TCTI_DEVICE_H
-#define TCTI_DEVICE_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef TCTI_COMMON_H
+#define TCTI_COMMON_H
 
 #include <tss2/tpm20.h>
-#include <tcti/common.h>
 
-typedef struct {
-    const char *device_path;
-    TCTI_LOG_CALLBACK logCallback;
-    void *logData;
-} TCTI_DEVICE_CONF;
+#define TCTI_MAGIC 0x7e18e9defa8bc9e2
+#define TCTI_VERSION 0x1
 
-TSS2_RC InitDeviceTcti (
-    TSS2_TCTI_CONTEXT *tctiContext, // OUT
-    size_t *contextSize,            // IN/OUT
-    const TCTI_DEVICE_CONF *config,              // IN
-    const uint64_t magic,
-    const uint32_t version,
-    const char *interfaceName
-    );
+typedef enum { NO_PREFIX = 0, RM_PREFIX = 1 } printf_type;
+typedef int (*TCTI_LOG_CALLBACK)( void *data, printf_type type, const char *format, ...);
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* TCTI_DEVICE_H */
+#endif /* TCTI_COMMON_H */

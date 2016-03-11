@@ -2805,7 +2805,7 @@ int main(int argc, char* argv[])
         //
         // Init downstream interface to tpm (in this case the local TPM).
         //
-        TCTI_DEVICE_CONF deviceTctiConfig = { "/dev/tpm0" };
+        TCTI_DEVICE_CONF deviceTctiConfig = { "/dev/tpm0", DebugPrintfCallback, NULL };
 
         rval = InitDeviceTctiContext( &deviceTctiConfig, &downstreamTctiContext, resDeviceTctiName );
         if( rval != TSS2_RC_SUCCESS )

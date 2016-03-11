@@ -47,6 +47,25 @@ int DebugPrintf( printf_type type, const char *format, ...)
     return rval;
 }
 
+/* This callback function is intended for use with the TCTI log callback
+ * mechanism. It provides an additional parameter for receiving arbitrary
+ * user specified data.
+ */
+int DebugPrintfCallback( void *data, printf_type type, const char *format, ...)
+{
+    va_list args;
+    int rval = 0;
+
+    if( type == RM_PREFIX )
+        DebugPrintfCallback( data, NO_PREFIX,  "||  " );
+
+    va_start( args, format );
+    rval = vprintf( format, args );
+    va_end (args);
+
+    return rval;
+}
+
 void DebugPrintBuffer( printf_type type, UINT8 *buffer, UINT32 length )
 {
     UINT32  i;
