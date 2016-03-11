@@ -101,8 +101,6 @@ TSS2_RC SendSessionEndSocketTcti(
     UINT8 tpmCmdServer
     );
 
-extern char outFileName[200];
-
 extern UINT8 simulator;
 
 

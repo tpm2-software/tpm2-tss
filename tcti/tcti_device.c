@@ -50,12 +50,6 @@
 
 const char *deviceTctiName = "device TCTI";
 
-extern void OpenOutFile( FILE **outFp );
-
-extern void CloseOutFile( FILE **outFp );
-
-extern FILE *outFp;
-
 #ifdef SAPI_CLIENT
 extern int TpmClientPrintf( UINT8 type, const char *format, ... );
 int (*tpmLocalTpmPrintf)( UINT8 type, const char *format, ...) = TpmClientPrintf;
@@ -263,7 +257,6 @@ TSS2_RC InitDeviceTcti (
     }
     else
     {
-        OpenOutFile( &outFp );
         (*tpmLocalTpmPrintf)(NO_PREFIX, "Initializing %s Interface\n", interfaceName );
 
         // Init TCTI context.
@@ -286,8 +279,6 @@ TSS2_RC InitDeviceTcti (
         {
             return( TSS2_TCTI_RC_IO_ERROR );
         }
-
-        CloseOutFile( &outFp );
     }
 
     return rval;

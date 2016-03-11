@@ -61,8 +61,6 @@ TSS2_RC PlatformCommand(
     {
         sendbuf[3] = cmd;
 
-        OpenOutFile( &outFp );
-
         // Send the command
         iResult = send( TCTI_CONTEXT_INTEL->otherSock, sendbuf, 4, 0 );
 
@@ -97,8 +95,6 @@ TSS2_RC PlatformCommand(
 #endif
             }
         }
-
-        CloseOutFile( &outFp );
     }
     return rval;
 }

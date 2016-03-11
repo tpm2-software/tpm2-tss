@@ -39,7 +39,6 @@ extern "C" {
 #include <stdlib.h>
 #include "syscontext.h"
 
-extern FILE *outFp;
 extern TSS2_TCTI_CONTEXT *resMgrTctiContext;
 extern TSS2_ABI_VERSION abiVersion;
 
@@ -318,10 +317,6 @@ UINT32 TpmHash( TPMI_ALG_HASH hashAlg, UINT16 size, BYTE *data, TPM2B_DIGEST *re
 UINT32 TpmHandleToName( TPM_HANDLE handle, TPM2B_NAME *name );
 
 int TpmClientPrintf( UINT8 type, const char *format, ...);
-
-void OpenOutFile( FILE **outFp );
-
-void CloseOutFile( FILE **outFp );
 
 #ifdef __cplusplus
 }

@@ -61,9 +61,6 @@ typedef pthread_t THREAD_TYPE ;
 extern TSS2_RC GetCommands( TSS2_SYS_CONTEXT *resMgrSysContext, TPML_CCA **supportedCommands );
 extern UINT8 GetCommandAttributes( TPM_CC commandCode, TPML_CCA *supportedCommands, TPMA_CC *cmdAttributes );
 
-char outFileName[200] = "";
-FILE *outFp;
-
 char otherCmdStr[] = "Other CMD";
 
 void *(*rmMalloc)(size_t size) = malloc;
@@ -110,27 +107,16 @@ int ResMgrPrintf( UINT8 type, const char *format, ...)
     va_list args;
     int rval = 0;
 
-    OpenOutFile( &outFp );
-
-    if( outFp != 0 )
+    if( type == RM_PREFIX )
     {
-        if( type == RM_PREFIX )
-        {
-            PrintRMDebugPrefix();
-        }
-
-        va_start( args, format );
-        rval = vfprintf( outFp, format, args );
-        va_end (args);
-
-        CloseOutFile( &outFp );
-    }
-    else
-    {
-        printf( "ResMgrPrintf failed\n" );
+        PrintRMDebugPrefix();
     }
 
-	return rval;
+    va_start( args, format );
+    rval = vprintf( format, args );
+    va_end (args);
+
+    return rval;
 }
 
 int printRMTables = 0;
@@ -546,7 +532,6 @@ void PrintRMTables()
     if( !printRMTables )
         return;
 
-    OpenOutFile( &outFp );
     ResMgrPrintf( RM_PREFIX, "RM entryList:\n" );
     for( i = 0, entryPtr = entryList; entryPtr != 0; entryPtr = entryPtr->nextEntry, i++ )
     {
@@ -556,7 +541,6 @@ void PrintRMTables()
     }
 
     ResMgrPrintf( RM_PREFIX, "lastSessionSequenceNum = %8.8llx\n", lastSessionSequenceNum );
-    CloseOutFile( &outFp );
 }
 
 TSS2_RC TestForLoadedHandles()
@@ -979,9 +963,7 @@ TSS2_RC HandleGap()
                 if( oldestSessionEntryPtr )
                 {
 #ifdef DEBUG_GAP_HANDLING
-                    OpenOutFile( &outFp );
                     ResMgrPrintf( RM_PREFIX, "gap event occurred\n" );
-                    CloseOutFile( &outFp );
 #endif                
                     // Perform gapping actions 
                     rval = Tss2_Sys_ContextLoad( resMgrSysContext, &( oldestSessionEntryPtr->context ), &( oldestSessionEntryPtr->realHandle ) );
@@ -2164,31 +2146,20 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
         FD_SET( serverStruct->connectSock, &readFds );
 
         iResult = select( serverStruct->connectSock+1, &readFds, 0, 0, 0 );
-
-        OpenOutFile( &outFp );
-        if( outFp == 0 )
-        {
-            returnValue = 1;
-            goto tpmCmdDone;
-        }
-
         if( iResult == 0 )
         {
             ResMgrPrintf( NO_PREFIX, "select failed due to timeout, socket #: 0x%x\n", serverStruct->connectSock );
             rval = TSS2_TCTI_RC_TRY_AGAIN;
-            CloseOutFile( &outFp );
         }
         else if( iResult == SOCKET_ERROR )
         {
             ResMgrPrintf( NO_PREFIX, "select failed with socket error: %d\n", WSAGetLastError() );
             rval = TSS2_TCTI_RC_IO_ERROR;
-            CloseOutFile( &outFp );
         }
         else if ( iResult != 1 )
         {
             ResMgrPrintf( NO_PREFIX, "select failed, read the wrong # of bytes: %d\n", iResult );
             rval = TSS2_TCTI_RC_IO_ERROR;
-            CloseOutFile( &outFp );
         }
         else
         {
@@ -2200,7 +2171,6 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
         if( rval != TSS2_RC_SUCCESS )
         {
             returnValue = 1;
-            CloseOutFile( &outFp );
             goto tpmCmdDone;
         }
                  
@@ -2223,7 +2193,6 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             {
                 CreateErrorResponse( TSS2_TCTI_RC_IO_ERROR );
                 SendErrorResponse( serverStruct->connectSock ); 
-                CloseOutFile( &outFp );
                 continue;
             }
             (( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.locality = locality;
@@ -2234,7 +2203,6 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             {
                 CreateErrorResponse( TSS2_TCTI_RC_IO_ERROR );
                 SendErrorResponse( serverStruct->connectSock ); 
-                CloseOutFile( &outFp );
                 continue;
             }
             SetDebug( debugLevel );
@@ -2245,7 +2213,6 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             {
                 CreateErrorResponse( TSS2_TCTI_RC_IO_ERROR );
                 SendErrorResponse( serverStruct->connectSock ); 
-                CloseOutFile( &outFp );
                 continue;
             }
             (( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.commandSent = statusBits & 0x1;
@@ -2257,7 +2224,6 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             {
                 CreateErrorResponse( TSS2_TCTI_RC_IO_ERROR );
                 SendErrorResponse( serverStruct->connectSock ); 
-                CloseOutFile( &outFp );
                 continue;
             }
 
@@ -2269,7 +2235,6 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             {
                 CreateErrorResponse( TSS2_TCTI_RC_IO_ERROR );
                 SendErrorResponse( serverStruct->connectSock ); 
-                CloseOutFile( &outFp );
                 continue;
             }
 
@@ -2280,7 +2245,6 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             {
                 CreateErrorResponse( TSS2_TCTI_RC_IO_ERROR );
                 SendErrorResponse( serverStruct->connectSock ); 
-                CloseOutFile( &outFp );
                 continue;
             }
 
@@ -2291,7 +2255,6 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             {
                 CreateErrorResponse( TSS2_TCTI_RC_IO_ERROR );
                 SendErrorResponse( serverStruct->connectSock ); 
-                CloseOutFile( &outFp );
                 continue;
             }
 
@@ -2301,7 +2264,6 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             rval = sendBytes( serverStruct->connectSock, (char *)&numBytes, 4 );
             if( rval != TSS2_RC_SUCCESS )
             {
-                CloseOutFile( &outFp );
                 returnValue = 1;
                 goto tpmCmdDone;
             }
@@ -2312,7 +2274,6 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             rval = sendBytes( serverStruct->connectSock, (char *)rspBuffer, numBytes );
             if( rval != TSS2_RC_SUCCESS )
             {
-                CloseOutFile( &outFp );
                 returnValue = 1;
                 goto tpmCmdDone;
             }
@@ -2321,7 +2282,6 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             sendBytes( serverStruct->connectSock, (char *)&trash, 4 );        
             if( rval != TSS2_RC_SUCCESS )
             {
-                CloseOutFile( &outFp );
                 returnValue = 1;
                 goto tpmCmdDone;
             }
@@ -2329,7 +2289,6 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
         if( returnValue == 1 )
             break;
         
-        CloseOutFile( &outFp );
     }
 
 
@@ -2371,41 +2330,6 @@ TSS2_RC ResourceMgrSetLocality(
     return rval;
 }
 
-TSS2_RC ResourceMgrCancel(
-    TSS2_TCTI_CONTEXT *tctiContext
-    )
-{
-    TSS2_RC rval = TSS2_RC_SUCCESS;
-
-    if( tctiContext == 0 )
-    {
-        rval = TSS2_TCTI_RC_BAD_REFERENCE;
-    }
-    else if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent != 1 )
-    {
-        rval = TSS2_TCTI_RC_BAD_SEQUENCE;
-    }
-    else
-    {
-        // If queued up commands exist, then remove them from the queue, and mark
-        // them to return Cancel response.
-        //
-        // code for this TBD.
-        
-        // If waiting for a response from a command sent on this connection,
-        // then send cancel command.  Otherwise, the cancel is ignored, and
-        // TSS2_RC_SUCCESS is returned.
-        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent == 1 &&
-               ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->currentTctiContext == tctiContext )
-        {
-            ResMgrPrintf( NO_PREFIX, "RM sending cancel command:\n" );
-            rval = (((TSS2_TCTI_CONTEXT_COMMON_CURRENT *)downstreamTctiContext)->cancel)(
-                    (TSS2_TCTI_CONTEXT *)downstreamTctiContext );
-        }
-    }
-    return rval;
-}
-
 UINT8 OtherCmdServer( SERVER_STRUCT *serverStruct )
 {
     UINT32 command;
@@ -2420,32 +2344,22 @@ UINT8 OtherCmdServer( SERVER_STRUCT *serverStruct )
         FD_SET( serverStruct->connectSock, &readFds );
 
         iResult = select( serverStruct->connectSock+1, &readFds, 0, 0, 0 );
-
-        OpenOutFile( &outFp );
-        if( outFp == 0 )
-        {
-            goto retOtherCmdServer;
-        }
-
         if( iResult == 0 )
         {
             ResMgrPrintf( NO_PREFIX,  "select failed due to timeout, socket #: 0x%x\n", serverStruct->connectSock );
             rval = TSS2_TCTI_RC_TRY_AGAIN;
-            CloseOutFile( &outFp );
             goto retOtherCmdServer;
         }
         else if( iResult == SOCKET_ERROR )
         {
             ResMgrPrintf( NO_PREFIX, "select failed with socket error: %d\n", WSAGetLastError() );
             rval = TSS2_TCTI_RC_IO_ERROR;
-            CloseOutFile( &outFp );
             goto retOtherCmdServer;
         }
         else if ( iResult != 1 )
         {
             ResMgrPrintf( NO_PREFIX, "select failed, read the wrong # of bytes: %d\n", iResult );
             rval = TSS2_TCTI_RC_IO_ERROR;
-            CloseOutFile( &outFp );
             goto retOtherCmdServer;
         }
 
@@ -2453,7 +2367,6 @@ UINT8 OtherCmdServer( SERVER_STRUCT *serverStruct )
 
         if( rval != TSS2_RC_SUCCESS )
         {
-            CloseOutFile( &outFp );
             goto retOtherCmdServer;
         }
         
@@ -2482,8 +2395,6 @@ UINT8 OtherCmdServer( SERVER_STRUCT *serverStruct )
                 rval = TSS2_TCTI_RC_NOT_SUPPORTED;
                 returnValue = 1;
         }
-
-        CloseOutFile( &outFp );
 
         if( returnValue == 0 )
         {
@@ -2603,40 +2514,10 @@ TSS2_RC InitSimulatorTctiContext( TCTI_SOCKET_CONF *tcti_conf, TSS2_TCTI_CONTEXT
     if( rval != TSS2_RC_SUCCESS )
         return rval;
     
-    downstreamTctiContext = malloc(size);
+    *tctiContext = malloc(size);
 
     rval = InitSocketTcti(*tctiContext, &size, tcti_conf, TCTI_MAGIC, TCTI_VERSION, resSocketTctiName, 0 );
     return rval;
-}
-
-TSS2_RC TeardownSimulatorTctiContext( TSS2_TCTI_CONTEXT *tctiContext )
-{
-    TSS2_RC rval;
-
-    rval = TeardownSocketTcti( tctiContext );
-    if( rval != TSS2_RC_SUCCESS )
-        return rval;
-
-    return rval;
-}
-
-TSS2_RC TeardownResMgr(
-    TSS2_TCTI_CONTEXT *tctiContext, // OUT
-    const char *config              // IN        
-    )
-{
-    ResMgrPrintf( NO_PREFIX, "Tearing down Resource Manager\n" );
-
-#if __linux || __unix
-    if( !simulator )
-        TeardownSocketTcti( tctiContext );
-    else
-#endif        
-        TeardownSocketTcti( tctiContext );
-
-    TeardownSysContext( &resMgrSysContext );
-
-    return TSS2_RC_SUCCESS;
 }
 
 TSS2_RC InitResourceMgr( int debugLevel)
@@ -2854,9 +2735,6 @@ void PrintHelp()
             "-tpmhost specifies the host IP address for communicating with the TPM (default: %s; only valid if -sim used)\n"
             "-tpmport specifies the port number for communicating with the TPM (default: %d; only valid if -sim used)\n"
             "-apport specifies the port number for communicating with the calling application (default: %d)\n"
-#ifdef SHARED_OUT_FILE
-            "-out selects the output file (default is stdout)\n"
-#endif            
             , version, DEFAULT_HOSTNAME, DEFAULT_SIMULATOR_TPM_PORT, DEFAULT_RESMGR_TPM_PORT );
 }
 
@@ -2877,14 +2755,8 @@ int main(int argc, char* argv[])
     THREAD_TYPE sockServerThread;
     UINT8 tpmHostNameSpecified = 0, tpmPortSpecified = 0;
     
-    OpenOutFile( &outFp );
-    
     setvbuf (stdout, NULL, _IONBF, BUFSIZ);
-#ifdef SHARED_OUT_FILE
-    if( argc > 8 )
-#else
     if( argc > MAX_COMMAND_LINE_ARGS )
-#endif        
     {
         PrintHelp();
         return 1;
@@ -2932,22 +2804,6 @@ int main(int argc, char* argv[])
                     return 1;
                 }
             }
-#ifdef SHARED_OUT_FILE
-            else if( 0 == strcmp( argv[count], "-out" ) )
-            {
-                count++;
-                if( count >= argc || 1 != sscanf_s( argv[count], "%s", &outFileName, sizeof( outFileName ) ) ||
-                    ( 0 == ( outFp = fopen( &outFileName[0], "w" ) ) ) )
-                {
-                    PrintHelp();
-                    return 1;
-                }
-				else
-				{
-					fclose( outFp );						
-				}
-            }
-#endif
             else
             {
                 PrintHelp();
@@ -2963,16 +2819,6 @@ int main(int argc, char* argv[])
         }
 #endif        
     }
-
-    if( 0 == strcmp( outFileName, "" ) )
-    {
-        outFp = stdout;
-    }
-	else
-	{
-		outFp = 0;
-	}
-
 #if __linux || __unix
     if( !simulator )
     {
@@ -3021,7 +2867,6 @@ int main(int argc, char* argv[])
     }
     
     rval = InitResourceMgr( DBG_COMMAND_RM_TABLES );
-    CloseOutFile( &outFp );
     if( rval != TSS2_RC_SUCCESS )
     {
         printf( "Resource Mgr failed to initialize.  Exiting...\n" );
@@ -3040,16 +2885,13 @@ int main(int argc, char* argv[])
     ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_DISABLED;
 #endif        
 
-    OpenOutFile( &outFp );
     if( 0 != InitSockets( appHostName, appPort, 1, &appOtherSock, &appTpmSock ) )
     {
         printf( "Resource Mgr, upstream interface to applications, failed to init sockets.  Exiting...\n" );
-        CloseOutFile( &outFp );
         closesocket( appOtherSock );
         return( 1 );
     }
-    CloseOutFile( &outFp );
-	    
+
     otherCmdServerStruct.connectSock = appOtherSock;
     tpmCmdServerStruct.connectSock = appTpmSock;
     

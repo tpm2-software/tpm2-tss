@@ -66,10 +66,8 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
     }
 
 #ifdef DEBUG
-    OpenOutFile( &outFp );
     TpmClientPrintf( 0, "\n\nNAME1 = \n" );
     PrintSizedBuffer( &(name1.b) );
-    CloseOutFile( &outFp );
 #endif
     
     // Only get names for commands
@@ -91,10 +89,8 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
     }
     
 #ifdef DEBUG
-    OpenOutFile( &outFp );
     TpmClientPrintf( 0, "\n\nNAME2 = \n" );
     PrintSizedBuffer( &(name2.b) );
-    CloseOutFile( &outFp );
 #endif
     
     // Create pHash input byte stream:  first add response code, if any.
@@ -138,10 +134,8 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
 
     }
 #ifdef DEBUG
-    OpenOutFile( &outFp );
     TpmClientPrintf( 0, "\n\nPHASH input bytes= \n" );
     PrintSizedBuffer( &(hashInput.b) );
-    CloseOutFile( &outFp );
 #endif
     
     // Now hash the whole mess.
@@ -155,10 +149,8 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
         if( rval != TPM_RC_SUCCESS )
             return rval;
 #ifdef DEBUG
-        OpenOutFile( &outFp );
         TpmClientPrintf( 0, "\n\nPHASH = " );
         PrintSizedBuffer( &(pHash->b) );
-        CloseOutFile( &outFp );
 #endif
     }
     
