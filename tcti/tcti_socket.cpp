@@ -53,7 +53,7 @@
 extern "C" {
 #endif
 
-int (*printfFunction)( UINT8 type, const char *format, ...) = DebugPrintf;
+int (*printfFunction)( printf_type type, const char *format, ...) = DebugPrintf;
 
 extern UINT8 simulator;
 

@@ -37,17 +37,16 @@ extern "C" {
 #endif
 
 enum debugLevel { DBG_NO_COMMAND = 0, DBG_COMMAND = 1, DBG_COMMAND_RM = 2, DBG_COMMAND_RM_TABLES = 3 };
+typedef enum { NO_PREFIX = 0, RM_PREFIX = 1 } printf_type;
 
-int DebugPrintf( UINT8 type, const char *format, ...);
+int DebugPrintf( printf_type type, const char *format, ...);
 void DebugPrintBuffer( UINT8 *command_buffer, UINT32 cnt1 );
 
 void DebugPrintBufferOpen( UINT8 *buffer, UINT32 length );
 
-extern int (*printfFunction)( UINT8 type, const char *format, ...);
+extern int (*printfFunction)( printf_type type, const char *format, ...);
 
-enum printf_types { NO_PREFIX = 0, RM_PREFIX = 1 };
-
-extern UINT8 rmDebugPrefix;
+extern printf_type rmDebugPrefix;
 
 #ifdef DEBUG
 #define DEBUG_PRINT_BUFFER( buffer, length )  DebugPrintBuffer( buffer, length )

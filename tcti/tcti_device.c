@@ -50,7 +50,7 @@
 
 const char *deviceTctiName = "device TCTI";
 
-int (*tpmLocalTpmPrintf)( UINT8 type, const char *format, ...) = DebugPrintf;
+int (*tpmLocalTpmPrintf)( printf_type type, const char *format, ...) = DebugPrintf;
 
 TSS2_RC LocalTpmSendTpmCommand(
     TSS2_TCTI_CONTEXT *tctiContext,       /* in */

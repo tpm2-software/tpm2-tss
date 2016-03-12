@@ -32,14 +32,14 @@
 #include <tss2/tpm20.h>
 #include "debug.h"
 
-UINT8 rmDebugPrefix = 0;
+printf_type rmDebugPrefix = NO_PREFIX;
 
-int DebugPrintf( UINT8 type, const char *format, ...)
+int DebugPrintf( printf_type type, const char *format, ...)
 {
     va_list args;
     int rval = 0;
 
-    if( type == RM_PREFIX && rmDebugPrefix )
+    if( type == RM_PREFIX && rmDebugPrefix == RM_PREFIX )
     {
         DebugPrintf( NO_PREFIX, "||  " );
     }
@@ -60,7 +60,7 @@ void DebugPrintBuffer( UINT8 *buffer, UINT32 length )
         if( ( i % 16 ) == 0 )
         {
             (*printfFunction)(NO_PREFIX, "\n");
-            if( rmDebugPrefix )
+            if( rmDebugPrefix == RM_PREFIX )
                 (*printfFunction)(NO_PREFIX,  "||  " );
         }
         

@@ -215,14 +215,14 @@ void PrintSizedBuffer( TPM2B *sizedBuffer )
 
     for( i = 0; i < sizedBuffer->size; i++ )
     {
-        DebugPrintf( 0, "%2.2x ", sizedBuffer->buffer[i] );
+        DebugPrintf( NO_PREFIX, "%2.2x ", sizedBuffer->buffer[i] );
 
         if( ( (i+1) % 16 ) == 0 )
         {
-            DebugPrintf( 0, "\n" );
+            DebugPrintf( NO_PREFIX, "\n" );
         }
     }
-    DebugPrintf( 0, "\n" );
+    DebugPrintf( NO_PREFIX, "\n" );
 }
 //-------
 /*
@@ -340,7 +340,7 @@ void Cleanup()
 void InitSysContextFailure()
 {
 //    printf( "InitSysContext failed, exiting...\n" );
-	DebugPrintf( 0, "InitSysContext failed, exiting...\n" );
+	DebugPrintf( NO_PREFIX, "InitSysContext failed, exiting...\n" );
     Cleanup();
 }
 
@@ -357,11 +357,11 @@ void Delay( UINT32 delay)
 
 void CheckPassed( UINT32 rval )
 {
-    DebugPrintf( 0, "\tpassing case:  " );
+    DebugPrintf( NO_PREFIX, "\tpassing case:  " );
     if ( rval != TPM_RC_SUCCESS) {
         ErrorHandler( rval);
 //        printf( "\tFAILED!  %s\n", errorString );
-		DebugPrintf( 0, "\tFAILED!  %s\n", errorString );
+		DebugPrintf( NO_PREFIX, "\tFAILED!  %s\n", errorString );
         Cleanup();
     }
     else
@@ -383,15 +383,15 @@ TPM2B_AUTH nullSessionHmac;
 
 void CheckFailed( UINT32 rval, UINT32 expectedTpmErrorCode )
 {
-    DebugPrintf( 0, "\tfailing case: " );
+    DebugPrintf( NO_PREFIX, "\tfailing case: " );
     if ( rval != expectedTpmErrorCode) {
         ErrorHandler( rval);
-        DebugPrintf( 0, "\tFAILED!  Ret code s/b: %x, but was: %x\n", expectedTpmErrorCode, rval );
+        DebugPrintf( NO_PREFIX, "\tFAILED!  Ret code s/b: %x, but was: %x\n", expectedTpmErrorCode, rval );
         Cleanup();
     }
     else
     {
-        DebugPrintf( 0, "\tPASSED!\n" );
+        DebugPrintf( NO_PREFIX, "\tPASSED!\n" );
     }
     Delay(demoDelay);
 }
@@ -459,7 +459,7 @@ void GetTpmVersion()
     }
     else
     {
-        DebugPrintf( 0, "Failed to get TPM spec version!!\n" );
+        DebugPrintf( NO_PREFIX, "Failed to get TPM spec version!!\n" );
         Cleanup();
     }
 }
@@ -6109,7 +6109,7 @@ void TestRM()
     TPMS_CONTEXT    newContext;
     char otherResMgrInterfaceName[] = "Test RM Resource Manager";
 
-    DebugPrintf( 0, "\nRM TESTS:\n" );
+    DebugPrintf( NO_PREFIX, "\nRM TESTS:\n" );
 
     sessionDataArray[0] = &sessionData;
     sessionDataOutArray[0] = &sessionDataOut;
@@ -6166,7 +6166,7 @@ void TestRM()
     rval = InitTctiResMgrContext( &rmInterfaceConfig, &otherResMgrTctiContext, &otherResMgrInterfaceName[0] );
     if( rval != TSS2_RC_SUCCESS )
     {
-        DebugPrintf( 0, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceName, rval );
+        DebugPrintf( NO_PREFIX, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceName, rval );
         Cleanup();
         return;
     }
@@ -7838,7 +7838,7 @@ int main(int argc, char* argv[])
     rval = InitTctiResMgrContext( &rmInterfaceConfig, &resMgrTctiContext, &resMgrInterfaceName[0] );
     if( rval != TSS2_RC_SUCCESS )
     {
-        DebugPrintf( 0, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceName, rval );
+        DebugPrintf( NO_PREFIX, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceName, rval );
         Cleanup();
         return( 1 );
     }

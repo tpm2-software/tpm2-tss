@@ -53,8 +53,6 @@ extern "C" {
 
 extern UINT32 tpmMaxResponseLen;
 
-extern UINT8 rmDebugPrefix;
-
 TSS2_RC ResourceMgrSendTpmCommand(
     TSS2_TCTI_CONTEXT   *tctiContext,
     size_t              command_size,       /* in */
