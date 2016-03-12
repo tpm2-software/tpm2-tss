@@ -98,6 +98,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\common\debug.h" />
     <ClInclude Include="..\..\common\platform.h" />
+    <ClInclude Include="..\..\common\sockets.h" />
     <ClInclude Include="..\..\common\syscontext.h" />
     <ClInclude Include="..\..\include\tcti\tcti_socket.h" />
     <ClInclude Include="..\..\sysapi\include\endianConv.h" />
@@ -120,6 +121,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\common\debug.c" />
+    <ClCompile Include="..\..\common\sockets.cpp" />
     <ClCompile Include="..\..\common\syscontext.c" />
     <ClCompile Include="..\..\tcti\commonchecks.c" />
     <ClCompile Include="..\..\tcti\platformcommand.c" />

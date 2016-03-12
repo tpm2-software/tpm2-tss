@@ -33,6 +33,7 @@
 #include <tcti/tcti_socket.h>
 #include "resourcemgr.h"
 //#include <sample.h>
+#include "sockets.h"
 #include "sysapi_util.h"
 #include "syscontext.h"
 #include "debug.h"
