@@ -55,45 +55,40 @@ TSS2_RC PlatformCommand(
     int iResult = 0;            // used to return function results
     char sendbuf[] = { 0x0,0x0,0x0,0x0 };
     char recvbuf[] = { 0x0, 0x0, 0x0, 0x0 };
-	TSS2_RC rval = TSS2_RC_SUCCESS;
+    TSS2_RC rval = TSS2_RC_SUCCESS;
 
-    if( simulator )
+    sendbuf[3] = cmd;
+
+    // Send the command
+    iResult = send( TCTI_CONTEXT_INTEL->otherSock, sendbuf, 4, 0 );
+    if (iResult == SOCKET_ERROR) {
+        (*printfFunction)(NO_PREFIX, "send failed with error: %d\n", WSAGetLastError() );
+        rval = TSS2_TCTI_RC_IO_ERROR;
+    }
+    else
     {
-        sendbuf[3] = cmd;
-
-        // Send the command
-        iResult = send( TCTI_CONTEXT_INTEL->otherSock, sendbuf, 4, 0 );
-
+#ifdef DEBUG_SOCKETS
+        (*printfFunction)( rmDebugPrefix, "Send Bytes to socket #0x%x: \n", TCTI_CONTEXT_INTEL->otherSock );
+        DebugPrintBuffer( (UINT8 *)sendbuf, 4 );
+#endif
+        // Read result
+        iResult = recv( TCTI_CONTEXT_INTEL->otherSock, recvbuf, 4, 0);
         if (iResult == SOCKET_ERROR) {
-            (*printfFunction)(NO_PREFIX, "send failed with error: %d\n", WSAGetLastError() );
+            (*printfFunction)(NO_PREFIX, "In PlatformCommand, recv failed (socket: 0x%x) with error: %d\n",
+                    TCTI_CONTEXT_INTEL->otherSock, WSAGetLastError() );
+            rval = TSS2_TCTI_RC_IO_ERROR;
+        }
+        else if( recvbuf[0] != 0 || recvbuf[1] != 0 || recvbuf[2] != 0 || recvbuf[3] != 0 )
+        {
+            (*printfFunction)(NO_PREFIX, "PlatformCommand failed with error: %d\n", recvbuf[3] );
             rval = TSS2_TCTI_RC_IO_ERROR;
         }
         else
         {
 #ifdef DEBUG_SOCKETS
-            (*printfFunction)( rmDebugPrefix, "Send Bytes to socket #0x%x: \n", TCTI_CONTEXT_INTEL->otherSock );
-            DebugPrintBuffer( (UINT8 *)sendbuf, 4 );
+            (*printfFunction)(NO_PREFIX, "Receive bytes from socket #0x%x: \n", TCTI_CONTEXT_INTEL->otherSock );
+            DebugPrintBuffer( (UINT8 *)recvbuf, 4 );
 #endif
-
-            // Read result
-            iResult = recv( TCTI_CONTEXT_INTEL->otherSock, recvbuf, 4, 0);
-            if (iResult == SOCKET_ERROR) {
-                (*printfFunction)(NO_PREFIX, "In PlatformCommand, recv failed (socket: 0x%x) with error: %d\n",
-                        TCTI_CONTEXT_INTEL->otherSock, WSAGetLastError() );
-                rval = TSS2_TCTI_RC_IO_ERROR;
-            }
-            else if( recvbuf[0] != 0 || recvbuf[1] != 0 || recvbuf[2] != 0 || recvbuf[3] != 0 )
-            {
-                (*printfFunction)(NO_PREFIX, "PlatformCommand failed with error: %d\n", recvbuf[3] );
-                rval = TSS2_TCTI_RC_IO_ERROR;
-            }
-            else
-            {
-#ifdef DEBUG_SOCKETS
-                (*printfFunction)(NO_PREFIX, "Receive bytes from socket #0x%x: \n", TCTI_CONTEXT_INTEL->otherSock );
-                DebugPrintBuffer( (UINT8 *)recvbuf, 4 );
-#endif
-            }
         }
     }
     return rval;

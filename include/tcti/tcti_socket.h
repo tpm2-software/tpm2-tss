@@ -101,9 +101,6 @@ TSS2_RC SendSessionEndSocketTcti(
     UINT8 tpmCmdServer
     );
 
-extern UINT8 simulator;
-
-
 // Commands to send to OTHER port.
 #define MS_SIM_POWER_ON         1
 #define MS_SIM_POWER_OFF        2

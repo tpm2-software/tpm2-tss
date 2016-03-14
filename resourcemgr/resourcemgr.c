@@ -2371,6 +2371,8 @@ UINT8 OtherCmdServer( SERVER_STRUCT *serverStruct )
         }
         
         command = CHANGE_ENDIAN_DWORD( command );
+        if( !simulator )
+            continue;
         switch( command )
         {
             case MS_SIM_POWER_ON:
