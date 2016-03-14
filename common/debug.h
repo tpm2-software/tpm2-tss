@@ -29,6 +29,7 @@
 #define DEBUG_H
 
 #include <tss2/tpm20.h>
+#include <tcti/tcti_socket.h>
 #include <stdio.h>
 #include "sockets.h"
 
@@ -37,14 +38,9 @@ extern "C" {
 #endif
 
 enum debugLevel { DBG_NO_COMMAND = 0, DBG_COMMAND = 1, DBG_COMMAND_RM = 2, DBG_COMMAND_RM_TABLES = 3 };
-typedef enum { NO_PREFIX = 0, RM_PREFIX = 1 } printf_type;
 
 int DebugPrintf( printf_type type, const char *format, ...);
 void DebugPrintBuffer( UINT8 *command_buffer, UINT32 cnt1 );
-
-void DebugPrintBufferOpen( UINT8 *buffer, UINT32 length );
-
-extern int (*printfFunction)( printf_type type, const char *format, ...);
 
 extern printf_type rmDebugPrefix;
 

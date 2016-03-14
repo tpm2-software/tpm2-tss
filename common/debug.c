@@ -59,14 +59,14 @@ void DebugPrintBuffer( UINT8 *buffer, UINT32 length )
     {
         if( ( i % 16 ) == 0 )
         {
-            (*printfFunction)(NO_PREFIX, "\n");
+            DebugPrintf(NO_PREFIX, "\n");
             if( rmDebugPrefix == RM_PREFIX )
-                (*printfFunction)(NO_PREFIX,  "||  " );
+                DebugPrintf(NO_PREFIX,  "||  " );
         }
         
-        (*printfFunction)(NO_PREFIX,  "%2.2x ", buffer[i] );
+        DebugPrintf(NO_PREFIX,  "%2.2x ", buffer[i] );
     }
-    (*printfFunction)(NO_PREFIX,  "\n\n" );
+    DebugPrintf(NO_PREFIX,  "\n\n" );
     fflush( stdout );
 }
 
