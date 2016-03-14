@@ -28,6 +28,10 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
+#include <tss2/tpm20.h>
+#include <stdio.h>
+#include "sockets.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -34,31 +34,6 @@ extern "C" {
 
 #include <tcti/magic.h>
 
-#ifndef _WIN32
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <errno.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-void WSACleanup();
-#define closesocket(serverSock) close(serverSock)
-#define SOCKADDR struct sockaddr
-#define SOCKADDR struct sockaddr
-#define SOCKET int
-#define INVALID_SOCKET -1
-#define SOCKET_ERROR -1
-int WSAGetLastError();
-#define WINAPI
-#define LPVOID void *
-#else
-// link with Ws2_32.lib
-#pragma comment(lib,"Ws2_32.lib")
-
-#include <ws2tcpip.h>
-
-#endif
-
-
 #define DEFAULT_SIMULATOR_TPM_PORT        2321
 #define TSS2_SIMULATOR_INTERFACE_INIT_FAILED              ((TSS2_RC)(1 + TSS2_DRIVER_ERROR_LEVEL))
 
@@ -70,10 +45,6 @@ int WSAGetLastError();
 TSS2_RC PlatformCommand(
     TSS2_TCTI_CONTEXT *tctiContext,     /* in */
     char cmd );
-
-int InitSockets( const char *hostName, UINT16 port, UINT8 serverSockets, SOCKET *otherSock, SOCKET *tpmSock );
-
-void CloseSockets( SOCKET serverSock, SOCKET tpmSock );
 
 typedef struct {
     const char *hostname;
@@ -91,10 +62,6 @@ TSS2_RC InitSocketTcti (
     );
 
 TSS2_RC TeardownSocketTcti (TSS2_TCTI_CONTEXT *tctiContext);
-
-TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len );
-
-TSS2_RC sendBytes( SOCKET tpmSock, const char *data, int len );
 
 TSS2_RC SendSessionEndSocketTcti(
     TSS2_TCTI_CONTEXT *tctiContext,      
