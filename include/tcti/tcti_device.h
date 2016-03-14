@@ -47,8 +47,6 @@ TSS2_RC InitDeviceTcti (
     const uint32_t version,
     const char *interfaceName
     );
-TSS2_RC InitDeviceTctiContext( const TCTI_DEVICE_CONF *config, TSS2_TCTI_CONTEXT **tctiContext );
-TSS2_RC TeardownDeviceTcti( TSS2_TCTI_CONTEXT *tctiContext );
 
 #ifdef __cplusplus
 }

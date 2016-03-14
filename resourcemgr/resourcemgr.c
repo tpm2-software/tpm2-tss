@@ -31,6 +31,7 @@
 #include <tss2/tpm20.h>
 #include <tcti/tcti_device.h>
 #include <tcti/tcti_socket.h>
+#include "tcti_device_util.h"
 #include "resourcemgr.h"
 //#include <sample.h>
 #include "sockets.h"
@@ -2806,7 +2807,7 @@ int main(int argc, char* argv[])
         //
         TCTI_DEVICE_CONF deviceTctiConfig = { "/dev/tpm0" };
 
-        rval = InitDeviceTctiContext( &deviceTctiConfig, &downstreamTctiContext );
+        rval = InitDeviceTctiContext( &deviceTctiConfig, &downstreamTctiContext, resDeviceTctiName );
         if( rval != TSS2_RC_SUCCESS )
         {
             DebugPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resDeviceTctiName, rval );

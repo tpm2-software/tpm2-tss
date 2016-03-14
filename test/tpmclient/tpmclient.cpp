@@ -59,6 +59,7 @@
 #include "sample.h"
 #include "resourcemgr.h"
 #include "tpmclient.h"
+#include "tcti_device_util.h"
 
 // This is done to allow the tests to access fields
 // in the sysContext structure that are needed for
@@ -7066,6 +7067,7 @@ void TestLocalTCTI()
 {
     TCTI_DEVICE_CONF deviceTctiConfig = { "/dev/tpm0" };
     TSS2_RC rval = TSS2_RC_SUCCESS;
+    const char *deviceTctiName = "Local Device TCTI";
     
     TSS2_TCTI_CONTEXT *downstreamTctiContext;
 
@@ -7075,7 +7077,7 @@ void TestLocalTCTI()
     //
     // Init downstream interface to tpm (in this case the local TPM).
     //
-    rval = InitDeviceTctiContext( &deviceTctiConfig, &downstreamTctiContext );
+    rval = InitDeviceTctiContext( &deviceTctiConfig, &downstreamTctiContext, deviceTctiName );
     if( rval != TSS2_RC_SUCCESS )
     {
         DebugPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", "local TPM", rval );
