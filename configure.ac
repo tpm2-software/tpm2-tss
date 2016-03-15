@@ -11,4 +11,5 @@ AX_PTHREAD([], [AC_MSG_ERROR([requires pthread])])
 AM_INIT_AUTOMAKE([foreign
                   subdir-objects])
 AC_CONFIG_FILES([Makefile])
+PKG_CHECK_MODULES([CMOCKA],[cmocka])
 AC_OUTPUT

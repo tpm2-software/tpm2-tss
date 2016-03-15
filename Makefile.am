@@ -36,12 +36,19 @@ AM_CPPFLAGS = -I$(srcdir)/include
 sbin_PROGRAMS   = $(resourcemgr)
 noinst_PROGRAMS = $(tpmclient) $(tpmtest)
 lib_LTLIBRARIES = $(libtss2) $(libtctidevice) $(libtctisocket)
+# unit tests
+check_PROGRAMS  = test/tcti_device
+TESTS = $(check_PROGRAMS)
 
 # headers and where to install them
 libtss2dir      = $(includedir)/tss2
 libtss2_HEADERS = $(srcdir)/include/tss2/*.h
 libtctidir      = $(includedir)/tcti
 libtcti_HEADERS = $(srcdir)/include/tcti/*.h
+
+test_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)
+test_tcti_device_LDADD   = $(libtss2) $(libtctidevice) $(CMOCKA_LIBS)
+test_tcti_device_SOURCES = test/tcti_device.c test/tcti_device_test.c
 
 # how to build stuff
 resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS)
