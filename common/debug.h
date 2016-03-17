@@ -40,14 +40,12 @@ extern "C" {
 enum debugLevel { DBG_NO_COMMAND = 0, DBG_COMMAND = 1, DBG_COMMAND_RM = 2, DBG_COMMAND_RM_TABLES = 3 };
 
 int DebugPrintf( printf_type type, const char *format, ...);
-void DebugPrintBuffer( UINT8 *command_buffer, UINT32 cnt1 );
-
-extern printf_type rmDebugPrefix;
+void DebugPrintBuffer( printf_type type, UINT8 *command_buffer, UINT32 cnt1 );
 
 #ifdef DEBUG
-#define DEBUG_PRINT_BUFFER( buffer, length )  DebugPrintBuffer( buffer, length )
+#define DEBUG_PRINT_BUFFER( type, buffer, length )  DebugPrintBuffer( type, buffer, length )
 #else
-#define DEBUG_PRINT_BUFFER( buffer, length )
+#define DEBUG_PRINT_BUFFER( type, buffer, length )
 #endif
 
 #ifdef __cplusplus

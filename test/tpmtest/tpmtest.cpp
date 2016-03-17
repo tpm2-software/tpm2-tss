@@ -3078,7 +3078,7 @@ void ProvisionOtherIndices()
     CheckPassed( rval );
 
     // Now save the policy digest from the first OR branch.
-    DEBUG_PRINT_BUFFER( &( nvPolicyHash.t.buffer[0] ), nvPolicyHash.t.size );
+    DEBUG_PRINT_BUFFER( NO_PREFIX, &( nvPolicyHash.t.buffer[0] ), nvPolicyHash.t.size );
 
     // 4.  CreateNvIndex
     otherIndicesSessionData.sessionHandle = TPM_RS_PW;
@@ -3193,7 +3193,7 @@ void ProvisionNvAux()
     CheckPassed( rval );
 
     // Now save the policy digest.
-    DEBUG_PRINT_BUFFER( &( nvPolicyHash.t.buffer[0] ), nvPolicyHash.t.size );
+    DEBUG_PRINT_BUFFER( NO_PREFIX, &( nvPolicyHash.t.buffer[0] ), nvPolicyHash.t.size );
 
     // 4.  CreateNvIndex
     nvAuxSessionData.sessionHandle = TPM_RS_PW;
@@ -5425,7 +5425,7 @@ void TestEncryptDecryptSession()
         CheckPassed( rval );
 
         printf( "Decrypted read data = " );
-        DEBUG_PRINT_BUFFER( &readData.t.buffer[0], (UINT32 )readData.t.size );
+        DEBUG_PRINT_BUFFER( NO_PREFIX, &readData.t.buffer[0], (UINT32 )readData.t.size );
 
         // Check that write and read data are equal.
         if( memcmp( (void *)&readData.t.buffer[0],
@@ -5612,7 +5612,7 @@ void GetSetDecryptParamTests()
 #ifdef DEBUG
     printf( "cpBuffer = ");
 #endif
-    DEBUG_PRINT_BUFFER( (UINT8 *)cpBuffer1, cpBufferUsedSize1 );
+    DEBUG_PRINT_BUFFER( NO_PREFIX, (UINT8 *)cpBuffer1, cpBufferUsedSize1 );
 
     // Test for no decrypt param.
     rval = Tss2_Sys_NV_Read_Prepare( decryptParamTestSysContext, TPM20_INDEX_PASSWORD_TEST, TPM20_INDEX_PASSWORD_TEST, sizeof( nvWriteData ) - 2, 0 );
@@ -5669,7 +5669,7 @@ void GetSetDecryptParamTests()
 #ifdef DEBUG
     printf( "cpBuffer = ");
 #endif
-    DEBUG_PRINT_BUFFER( (UINT8 *)cpBuffer2, cpBufferUsedSize2 );
+    DEBUG_PRINT_BUFFER( NO_PREFIX, (UINT8 *)cpBuffer2, cpBufferUsedSize2 );
 
     if( cpBufferUsedSize1 != cpBufferUsedSize2 )
     {

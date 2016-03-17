@@ -1210,7 +1210,6 @@ TSS2_RC ResourceMgrSendTpmCommand(
 
     rmErrorDuringSend = 0;
 
-    rmDebugPrefix = RM_PREFIX;
     //
     // DO RESOURCE MGR THINGS.
     //
@@ -1437,8 +1436,6 @@ TSS2_RC ResourceMgrSendTpmCommand(
     
 SendCommand:
   
-    rmDebugPrefix = NO_PREFIX;
-
     ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_ENABLED;
 
     if( responseRval == TSS2_RC_SUCCESS )
@@ -1586,7 +1583,6 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
         // If an RM error occurred during the send, just return
         // the error response byte stream here.
         CopyErrorResponse( response_size, response_buffer );
-        rmDebugPrefix = RM_PREFIX;
         responseRval = CHANGE_ENDIAN_DWORD( ( (TPM20_ErrorResponse *)response_buffer )->responseCode );
         goto returnFromResourceMgrReceiveTpmResponse;
     }
@@ -1646,8 +1642,6 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
         {
             ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_DISABLED;
         }
-
-        rmDebugPrefix = RM_PREFIX;
 
         if( rval == TSS2_RC_SUCCESS )
         {
@@ -2099,9 +2093,6 @@ exitResourceMgrReceiveTpmResponse:
 
     ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_ENABLED;
     
-    rmDebugPrefix = NO_PREFIX;
-
-
     return rval;
 }
 
