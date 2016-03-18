@@ -882,9 +882,9 @@ void TestTctiApis( TSS2_TCTI_CONTEXT *tstTctiContext, int againstRM )
     if( responseBufferError )
     {
         DebugPrintf( NO_PREFIX, "\nERROR!!  responseBuffer after receive is incorrect, s/b:\n" );
-        DebugPrintBuffer( (UINT8 *)&goodRspBuffer[0], responseSize );
+        DebugPrintBuffer( NO_PREFIX, (UINT8 *)&goodRspBuffer[0], responseSize );
         DebugPrintf( NO_PREFIX, "\nwas:\n" );
-        DebugPrintBuffer( (UINT8 *)&responseBuffer, responseSize );
+        DebugPrintBuffer( NO_PREFIX, (UINT8 *)&responseBuffer, responseSize );
         Cleanup();
     }
     
@@ -1221,9 +1221,9 @@ void TestSapiApis()
     if( rpBufferError )
     {
         DebugPrintf( NO_PREFIX, "\nERROR!!  Tss2_Sys_GetRpBuffer returned wrong rpBuffer contents:\nrpBuffer was: \n\t" );
-        DebugPrintBuffer( (UINT8 *)&rpBuffer, rpBufferUsedSize );
+        DebugPrintBuffer( NO_PREFIX, (UINT8 *)&rpBuffer, rpBufferUsedSize );
         DebugPrintf( NO_PREFIX, "\nrpBuffer s/b:\n\t" );
-        DebugPrintBuffer( (UINT8 *)&(goodRpBuffer[0]), rpBufferUsedSize );
+        DebugPrintBuffer( NO_PREFIX, (UINT8 *)&(goodRpBuffer[0]), rpBufferUsedSize );
         Cleanup();
     }
     
@@ -3052,7 +3052,7 @@ void TestPolicy()
             CheckPassed( rval );
 #ifdef DEBUG
             DebugPrintf( NO_PREFIX, "Built policy digest:  \n" );
-            DebugPrintBuffer( &(policyDigest.t.buffer[0]), policyDigest.t.size );
+            DebugPrintBuffer( NO_PREFIX, &(policyDigest.t.buffer[0]), policyDigest.t.size );
 #endif
         }
 
@@ -3061,7 +3061,7 @@ void TestPolicy()
         {
 #ifdef DEBUG
             DebugPrintf( NO_PREFIX, "Policy digest used to create object:  \n" );
-            DebugPrintBuffer( &(policyDigest.t.buffer[0]), policyDigest.t.size );
+            DebugPrintBuffer( NO_PREFIX, &(policyDigest.t.buffer[0]), policyDigest.t.size );
 #endif
             
             rval = ( *policyTestSetups[i].createObjectFn )( sysContext, &policySession, &policyDigest);
@@ -3076,7 +3076,7 @@ void TestPolicy()
             CheckPassed( rval );
 #ifdef DEBUG
             DebugPrintf( NO_PREFIX, "Command policy digest:  \n" );
-            DebugPrintBuffer( &(policyDigest.t.buffer[0]), policyDigest.t.size );
+            DebugPrintBuffer( NO_PREFIX, &(policyDigest.t.buffer[0]), policyDigest.t.size );
 #endif
         }
 
@@ -3410,7 +3410,7 @@ void ProvisionOtherIndices()
     CheckPassed( rval );
 
     // Now save the policy digest from the first OR branch.
-    DEBUG_PRINT_BUFFER( &( nvPolicyHash.t.buffer[0] ), nvPolicyHash.t.size );
+    DEBUG_PRINT_BUFFER( NO_PREFIX, &( nvPolicyHash.t.buffer[0] ), nvPolicyHash.t.size );
 
     // 4.  CreateNvIndex
     otherIndicesSessionData.sessionHandle = TPM_RS_PW;
@@ -3526,7 +3526,7 @@ void ProvisionNvAux()
     CheckPassed( rval );
 
     // Now save the policy digest.
-    DEBUG_PRINT_BUFFER( &( nvPolicyHash.t.buffer[0] ), nvPolicyHash.t.size );
+    DEBUG_PRINT_BUFFER( NO_PREFIX, &( nvPolicyHash.t.buffer[0] ), nvPolicyHash.t.size );
 
     // 4.  CreateNvIndex
     nvAuxSessionData.sessionHandle = TPM_RS_PW;
@@ -5655,7 +5655,7 @@ void TestEncryptDecryptSession()
         CheckPassed( rval );
 
         DebugPrintf( NO_PREFIX, "Decrypted read data = " );
-        DEBUG_PRINT_BUFFER( &readData.t.buffer[0], (UINT32 )readData.t.size );
+        DEBUG_PRINT_BUFFER( NO_PREFIX, &readData.t.buffer[0], (UINT32 )readData.t.size );
 
         // Check that write and read data are equal.
         if( memcmp( (void *)&readData.t.buffer[0],
@@ -5848,7 +5848,7 @@ void GetSetDecryptParamTests()
 #ifdef DEBUG
     DebugPrintf( NO_PREFIX, "cpBuffer = ");
 #endif    
-    DEBUG_PRINT_BUFFER( (UINT8 *)cpBuffer1, cpBufferUsedSize1 );
+    DEBUG_PRINT_BUFFER( NO_PREFIX, (UINT8 *)cpBuffer1, cpBufferUsedSize1 );
     
     // Test for no decrypt param.
     rval = Tss2_Sys_NV_Read_Prepare( decryptParamTestSysContext, TPM20_INDEX_PASSWORD_TEST, TPM20_INDEX_PASSWORD_TEST, sizeof( nvWriteData ) - 2, 0 ); 
@@ -5906,7 +5906,7 @@ void GetSetDecryptParamTests()
 #ifdef DEBUG
     DebugPrintf( NO_PREFIX, "cpBuffer = ");
 #endif    
-    DEBUG_PRINT_BUFFER( (UINT8 *)cpBuffer2, cpBufferUsedSize2 );
+    DEBUG_PRINT_BUFFER( NO_PREFIX, (UINT8 *)cpBuffer2, cpBufferUsedSize2 );
 
     if( cpBufferUsedSize1 != cpBufferUsedSize2 )
     {

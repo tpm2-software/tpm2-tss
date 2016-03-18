@@ -68,7 +68,7 @@ TSS2_RC PlatformCommand(
     else
     {
 #ifdef DEBUG_SOCKETS
-        (*printfFunction)( rmDebugPrefix, "Send Bytes to socket #0x%x: \n", TCTI_CONTEXT_INTEL->otherSock );
+        (*printfFunction)( NO_PREFIX, "Send Bytes to socket #0x%x: \n", TCTI_CONTEXT_INTEL->otherSock );
         DebugPrintBuffer( (UINT8 *)sendbuf, 4 );
 #endif
         // Read result

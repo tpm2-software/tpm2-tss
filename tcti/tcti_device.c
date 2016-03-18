@@ -76,9 +76,9 @@ TSS2_RC LocalTpmSendTpmCommand(
 
         if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
         {
-            (*tpmLocalTpmPrintf)( rmDebugPrefix, "\n" );
-            (*tpmLocalTpmPrintf)(rmDebugPrefix, "Cmd sent: %s\n", commandCodeStrings[ commandCode - TPM_CC_FIRST ]  );
-            DEBUG_PRINT_BUFFER( command_buffer, cnt );
+            (*tpmLocalTpmPrintf)( NO_PREFIX, "\n" );
+            (*tpmLocalTpmPrintf)( NO_PREFIX, "Cmd sent: %s\n", commandCodeStrings[ commandCode - TPM_CC_FIRST ]  );
+            DEBUG_PRINT_BUFFER( NO_PREFIX, command_buffer, cnt );
         }
 #endif
 
@@ -168,9 +168,9 @@ TSS2_RC LocalTpmReceiveTpmResponse(
     if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED &&
             ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize > 0 )
     {
-        (*tpmLocalTpmPrintf)( rmDebugPrefix, "\n" );
-        (*tpmLocalTpmPrintf)( rmDebugPrefix, "Response Received: " );
-        DEBUG_PRINT_BUFFER( response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
+        (*tpmLocalTpmPrintf)( NO_PREFIX, "\n" );
+        (*tpmLocalTpmPrintf)( NO_PREFIX, "Response Received: " );
+        DEBUG_PRINT_BUFFER( NO_PREFIX, response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
     }
 #endif
 
