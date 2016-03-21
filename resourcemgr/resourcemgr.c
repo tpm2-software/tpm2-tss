@@ -2475,7 +2475,7 @@ const char *resDeviceTctiName = "device TCTI";
 const char *resSocketTctiName = "socket TCTI";
 TCTI_SOCKET_CONF simInterfaceConfig = {
     DEFAULT_HOSTNAME,
-    DEFAULT_RESMGR_TPM_PORT
+    DEFAULT_SIMULATOR_TPM_PORT
 };
 
 SOCKET simOtherSock;
