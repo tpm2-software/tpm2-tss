@@ -25,7 +25,7 @@ TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len )
 
 #ifdef DEBUG_SOCKETS
     (*printfFunction)( NO_PREFIX, "Receive Bytes from socket #0x%x: \n", tpmSock );
-    DebugPrintBuffer( data, len );
+    DebugPrintBuffer( NO_PREFIX, data, len );
 #endif
 
     return TSS2_RC_SUCCESS;
@@ -38,7 +38,7 @@ TSS2_RC sendBytes( SOCKET tpmSock, const char *data, int len )
 
 #ifdef DEBUG_SOCKETS
     (*printfFunction)(NO_PREFIX, "Send Bytes to socket #0x%x: \n", tpmSock );
-    DebugPrintBuffer( (UINT8 *)data, len );
+    DebugPrintBuffer( NO_PREFIX, (UINT8 *)data, len );
 #endif
 
     for( sentLength = 0; sentLength < len; len -= iResult, sentLength += iResult )
