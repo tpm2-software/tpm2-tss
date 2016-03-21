@@ -5971,7 +5971,7 @@ void SysInitializeTests()
 
 void SysFinalizeTests()
 {
-    TpmClientPrintf( 0, "\nSYS FINALIZE TESTS:\n" );
+    DebugPrintf( NO_PREFIX, "\nSYS FINALIZE TESTS:\n" );
 
     Tss2_Sys_Finalize( 0 );
 
