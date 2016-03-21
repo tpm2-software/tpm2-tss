@@ -6475,9 +6475,9 @@ void GetSetEncryptParamTests()
     CheckFailed( rval, TSS2_SYS_RC_BAD_SIZE ); // #20
     encryptParamSize += 2;
 
-    // Size too large...should pass, but doesn't.
+    // Size too large...
     rval = Tss2_Sys_SetEncryptParam( sysContext, encryptParamSize, encryptParamBuffer1 );
-    CheckPassed( rval ); // #21
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SIZE ); // #21
 
     encryptParamSize--;
     rval = Tss2_Sys_SetEncryptParam( sysContext, encryptParamSize, encryptParamBuffer1 );
