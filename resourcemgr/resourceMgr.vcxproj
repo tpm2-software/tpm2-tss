@@ -39,7 +39,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)tcti\commontcti;$(IncludePath);..\sysapi\include;..\test\tpmclient;..\tcti\tpmsockets;..\common;..\tcti\localtpm</IncludePath>
+    <IncludePath>$(SolutionDir)tcti\commontcti;$(IncludePath);..\include;..\test\tpmclient;..\common</IncludePath>
     <OutDir>$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -53,8 +53,8 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\sysapi\include;..\tcti\tpmsockets;..\common;..\tcti\localtpm</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\sysapi\include;..\include;..\common</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -88,7 +88,9 @@
     <ClInclude Include="..\..\include\Implementation.h" />
     <ClInclude Include="..\common\debug.h" />
     <ClInclude Include="..\common\platform.h" />
+    <ClInclude Include="..\common\sockets.h" />
     <ClInclude Include="..\common\syscontext.h" />
+    <ClInclude Include="..\include\tcti\tcti_socket.h" />
     <ClInclude Include="..\sysapi\include\tpm20.h" />
     <ClInclude Include="..\sysapi\include\tss2_common.h" />
     <ClInclude Include="..\sysapi\include\tss2_sys.h" />
@@ -96,17 +98,17 @@
     <ClInclude Include="..\sysapi\include\tss2_tcti.h" />
     <ClInclude Include="..\sysapi\include\tss2_tcti_util.h" />
     <ClInclude Include="..\sysapi\include\tss2_tpm2_types.h" />
-    <ClInclude Include="..\tcti\commonTcti\commonchecks.h" />
-    <ClInclude Include="..\tcti\tpmsockets\tpmsockets.h" />
+    <ClInclude Include="..\tcti\commonchecks.h" />
     <ClInclude Include="resourcemgr.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\common\debug.c" />
     <ClCompile Include="..\common\getcommands.c" />
-    <ClCompile Include="..\common\platformcommand.c" />
+    <ClCompile Include="..\common\sockets.cpp" />
     <ClCompile Include="..\common\syscontext.c" />
-    <ClCompile Include="..\tcti\commonTcti\commonchecks.c" />
-    <ClCompile Include="..\tcti\tpmsockets\tpmsockets.cpp" />
+    <ClCompile Include="..\tcti\commonchecks.c" />
+    <ClCompile Include="..\tcti\platformcommand.c" />
+    <ClCompile Include="..\tcti\tcti_socket.cpp" />
     <ClCompile Include="resourcemgr.c" />
   </ItemGroup>
   <ItemGroup>

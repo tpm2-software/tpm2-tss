@@ -37,3 +37,8 @@ test/tpmclient/tpmclient
 .klocwork/
 ipch/
 test/tpmtest/tpmtest
+test-driver
+test-suite.log
+test/tcti_device
+test/*.log
+test/*.trs

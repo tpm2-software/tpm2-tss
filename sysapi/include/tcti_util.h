@@ -1,27 +1,27 @@
 //**********************************************************************;
 // Copyright (c) 2015, Intel Corporation
 // All rights reserved.
-// 
-// Redistribution and use in source and binary forms, with or without 
+//
+// Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
-// 1. Redistributions of source code must retain the above copyright notice, 
+//
+// 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
-// 2. Redistributions in binary form must reproduce the above copyright notice, 
-// this list of conditions and the following disclaimer in the documentation 
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+// this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
@@ -38,10 +38,6 @@
 // (see below). 
 #ifndef TSS2_TCTI_UTIL_H
 #define TSS2_TCTI_UTIL_H
-
-#ifndef TSS2_API_VERSION_1_1_1_1
-#error Version mismatch among TSS2 header files !
-#endif  /* TSS2_API_VERSION_1_1_1_1 */
 
 #if defined linux || defined unix
 #include <sys/socket.h>
@@ -95,51 +91,6 @@ typedef struct {
 
 #define TCTI_CONTEXT ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)(SYS_CONTEXT->tctiContext) )
 #define TCTI_CONTEXT_INTEL ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )
-
-typedef TSS2_RC (*TSS2_TCTI_INITIALIZE_FUNC) (
-    // Buffer allocated by caller to contain
-    // common part of context information.
-    TSS2_TCTI_CONTEXT *tctiContext, // OUT
-    // If tctiContext==NULL writes required size
-    // to this variable. Otherwise expects the
-    // size allocated for context.
-    //
-    // Pass NULL to retrieve required size
-    // as return value.
-    size_t *contextSize,            // IN/OUT
-    // String that determines the configuration
-    // to operate in (e.g. device-path,
-    // remote-server-address, config-file-path).
-    const char *config,             // IN        
-    const uint64_t magic,
-    const uint32_t version,
-    const char *interfaceName,
-    const uint8_t serverSockets
-    );
-
-typedef TSS2_RC (*TSS2_TCTI_TEARDOWN_FUNC) (
-    // Buffer allocated by caller to contain
-    // common part of context information.
-    TSS2_TCTI_CONTEXT *tctiContext, // OUT
-    // String that determines the configuration
-    // to operate in (e.g. device-path,
-    // remote-server-address, config-file-path).
-    const char *config,              // IN
-    const char *interfaceName    
-    );
-
-typedef struct {
-    // Short-Name of the driver.
-    const char *shortName;
-    // Help-String for the driver, to be given
-    // to the users.
-    const char *helpString;
-    // Pointer to an initialize function
-    // for this mode.
-    TSS2_TCTI_INITIALIZE_FUNC initialize; 
-    TSS2_TCTI_TEARDOWN_FUNC teardown;
-} TSS2_TCTI_DRIVER_INFO;
-
 
 // TCTI debug message levels
 #define TSS2_TCTI_DEBUG_MSG_DISABLED 0

@@ -1,33 +1,33 @@
 //**********************************************************************;
 // Copyright (c) 2015, Intel Corporation
 // All rights reserved.
-// 
-// Redistribution and use in source and binary forms, with or without 
+//
+// Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
-// 1. Redistributions of source code must retain the above copyright notice, 
+//
+// 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
-// 2. Redistributions in binary form must reproduce the above copyright notice, 
-// this list of conditions and the following disclaimer in the documentation 
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+// this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include <tpm20.h>   
+#include <tss2/tpm20.h>
 #include "sample.h"
-#include <tss2_sysapi_util.h>
+#include "sysapi_util.h"
 #include <stdlib.h>
 
 #define SESSIONS_ARRAY_COUNT MAX_NUM_SESSIONS+1
@@ -45,7 +45,7 @@ TPM_RC AddSession( SESSION_LIST_ENTRY **sessionEntry )
 {
     SESSION_LIST_ENTRY **newEntry;
     
-//    TpmClientPrintf( 0, "In AddSession\n" );
+//    DebugPrintf( 0, "In AddSession\n" );
 
     // find end of list.
     for( newEntry = &sessionsList; *newEntry != 0; *newEntry = ( (SESSION_LIST_ENTRY *)*newEntry)->nextEntry )
@@ -72,7 +72,7 @@ void DeleteSession( SESSION *session )
     SESSION_LIST_ENTRY *predSession;
     void *newNextEntry;
 
-//    TpmClientPrintf( 0, "In DeleteSession\n" );
+//    DebugPrintf( 0, "In DeleteSession\n" );
     
     if( session == &sessionsList->session )
         sessionsList = 0;
@@ -103,7 +103,7 @@ TPM_RC GetSessionStruct( TPMI_SH_AUTH_SESSION sessionHandle, SESSION **session )
     TPM_RC rval = TSS2_APP_RC_GET_SESSION_STRUCT_FAILED;
     SESSION_LIST_ENTRY *sessionEntry;
 
-    TpmClientPrintf( 0, "In GetSessionStruct\n" );
+    DebugPrintf( 0, "In GetSessionStruct\n" );
 
     if( session != 0 )
     {
@@ -129,7 +129,7 @@ TPM_RC GetSessionAlgId( TPMI_SH_AUTH_SESSION sessionHandle, TPMI_ALG_HASH *sessi
     TPM_RC rval = TSS2_APP_RC_GET_SESSION_ALG_ID_FAILED;
     SESSION *session;
 
-    TpmClientPrintf( 0, "In GetSessionAlgId\n" );
+    DebugPrintf( 0, "In GetSessionAlgId\n" );
     
     rval = GetSessionStruct( sessionHandle, &session );
 

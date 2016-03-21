@@ -98,9 +98,6 @@ LIB64_FLAGS          = $(LIB_FLAGS)
 # PROJECT_DIR  comes from build batch file located in the project tip
 # Others are defined here.
 #
-INCLUDE_DIR          = .\tpm\Include
-
-ALL_INCLUDES         = /I$(INCLUDE_DIR) /I$(INCLUDE_DIR)\tcg_headers /I$(TSSTOOLS_PATH)\VC\include
 
 #
 # Suffixes
@@ -113,8 +110,8 @@ ALL_INCLUDES         = /I$(INCLUDE_DIR) /I$(INCLUDE_DIR)\tcg_headers /I$(TSSTOOL
 BASE_DIR                        = .
 LIBRARY_DIR			= .\lib
 BLD_DIR                         = build
-INCLUDE_DIR                     = include
-
+INCLUDE_DIR                     = ..\include
+ALL_INCLUDES         = /I$(INCLUDE_DIR) /I$(TSSTOOLS_PATH)\VC\include /I$(BASE_DIR)\include
 LIBRARY                         = tpm.lib
 
 
@@ -167,7 +164,7 @@ $(LOCAL_DIRS: = ^
         -for /F %i IN (tpm_dirs.tmp) DO for /F "usebackq" %j IN (`dir /B %i\*.asm`) DO @echo. $(LIB_DIR)\%~nj.obj \>> $(BLD_DIR)\tpm_objects.tmp
         @echo.>$(BLD_DIR)\tpm_depends.tmp
         @echo ALL_DEPS= \> $(BLD_DIR)\tpm_depends.tmp
-        @for /F "usebackq" %i IN (`dir /B $(BASE_DIR)\$(INCLUDE_DIR)`) DO @echo. $(INCLUDE_DIR)\%i \>> $(BLD_DIR)\tpm_depends.tmp
+        @for /F "usebackq" %i IN (`dir /B $(INCLUDE_DIR)`) DO @echo. $(INCLUDE_DIR)\%i \>> $(BLD_DIR)\tpm_depends.tmp
         @echo.  >> $(BLD_DIR)\tpm_depends.tmp
 
         -for /F %i IN (tpm_dirs.tmp) DO for /F "usebackq" %j IN (`dir /B %i\*.c*`) DO @echo.$(LIB_DIR)\%~nj.obj: $(BASE_DIR)\%i\%j $$(ALL_DEPS) >> $(BLD_DIR)\tpm_depends.tmp && @echo.  $$(CL) $(CL_FLAGS) /Fo$$^@ $(BASE_DIR)\%i\%j >> $(BLD_DIR)\tpm_depends.tmp && @echo. >> $(BLD_DIR)\tpm_depends.tmp
