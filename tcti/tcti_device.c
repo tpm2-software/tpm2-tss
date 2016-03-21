@@ -1,44 +1,44 @@
 //**********************************************************************;
 // Copyright (c) 2015, Intel Corporation
 // All rights reserved.
-// 
-// Redistribution and use in source and binary forms, with or without 
+//
+// Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
-// 1. Redistributions of source code must retain the above copyright notice, 
+//
+// 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
-// 2. Redistributions in binary form must reproduce the above copyright notice, 
-// this list of conditions and the following disclaimer in the documentation 
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+// this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
 
-#include <tpm20.h>
+#include <tss2/tpm20.h>
 //#include "resourcemgr.h"
 //#include <sample.h>
-#include <tss2_sysapi_util.h>
+#include "sysapi_util.h"
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "debug.h"
 #include "commonchecks.h"
-#include "localtpm.h"
+#include <tcti/tcti_device.h>
 
 #ifdef  _WIN32
 #define ssize_t int
@@ -48,19 +48,9 @@
 
 #define HOSTNAME_LENGTH 200
 
-extern void OpenOutFile( FILE **outFp );
+const char *deviceTctiName = "device TCTI";
 
-extern void CloseOutFile( FILE **outFp );
-
-extern FILE *outFp;
-
-#ifdef SAPI_CLIENT
-extern int TpmClientPrintf( UINT8 type, const char *format, ... );
-int (*tpmLocalTpmPrintf)( UINT8 type, const char *format, ...) = TpmClientPrintf;
-#else
-extern int ResMgrPrintf( UINT8 type, const char *format, ... );
-int (*tpmLocalTpmPrintf)( UINT8 type, const char *format, ...) = ResMgrPrintf;
-#endif
+int (*tpmLocalTpmPrintf)( printf_type type, const char *format, ...) = DebugPrintf;
 
 TSS2_RC LocalTpmSendTpmCommand(
     TSS2_TCTI_CONTEXT *tctiContext,       /* in */
@@ -86,9 +76,9 @@ TSS2_RC LocalTpmSendTpmCommand(
 
         if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
         {
-            (*tpmLocalTpmPrintf)( rmDebugPrefix, "\n" );
-            (*tpmLocalTpmPrintf)(rmDebugPrefix, "Cmd sent: %s\n", commandCodeStrings[ commandCode - TPM_CC_FIRST ]  );
-            DEBUG_PRINT_BUFFER( command_buffer, cnt );
+            (*tpmLocalTpmPrintf)( NO_PREFIX, "\n" );
+            (*tpmLocalTpmPrintf)( NO_PREFIX, "Cmd sent: %s\n", commandCodeStrings[ commandCode - TPM_CC_FIRST ]  );
+            DEBUG_PRINT_BUFFER( NO_PREFIX, command_buffer, cnt );
         }
 #endif
 
@@ -178,9 +168,9 @@ TSS2_RC LocalTpmReceiveTpmResponse(
     if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED &&
             ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize > 0 )
     {
-        (*tpmLocalTpmPrintf)( rmDebugPrefix, "\n" );
-        (*tpmLocalTpmPrintf)( rmDebugPrefix, "Response Received: " );
-        DEBUG_PRINT_BUFFER( response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
+        (*tpmLocalTpmPrintf)( NO_PREFIX, "\n" );
+        (*tpmLocalTpmPrintf)( NO_PREFIX, "Response Received: " );
+        DEBUG_PRINT_BUFFER( NO_PREFIX, response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
     }
 #endif
 
@@ -230,14 +220,13 @@ TSS2_RC LocalTpmSetLocality(
     return rval;
 }
 
-TSS2_RC InitLocalTpmTcti (
+TSS2_RC InitDeviceTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     size_t *contextSize,            // IN/OUT
-    const char *config,              // IN
+    const TCTI_DEVICE_CONF *config,              // IN
     const uint64_t magic,
     const uint32_t version,
-	const char *interfaceName,
-    const uint8_t serverSockets  // Unused for local TPM.
+    const char *interfaceName
     )
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
@@ -248,9 +237,12 @@ TSS2_RC InitLocalTpmTcti (
         *contextSize = sizeof( TSS2_TCTI_CONTEXT_INTEL );
         return TSS2_RC_SUCCESS;
     }
+    else if( config == NULL )
+    {
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
     else
     {
-        OpenOutFile( &outFp );
         (*tpmLocalTpmPrintf)(NO_PREFIX, "Initializing %s Interface\n", interfaceName );
 
         // Init TCTI context.
@@ -268,74 +260,35 @@ TSS2_RC InitLocalTpmTcti (
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->currentTctiContext = 0;
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage = TCTI_STAGE_INITIALIZE;
 
-        // Get hostname and port.
-        if( ( strlen( config ) + 2 ) <= ( HOSTNAME_LENGTH  ) )
-        {
-            if( 1 != sscanf( config, "%199s", fileName ) ) 
-            {
-                return( TSS2_TCTI_RC_BAD_VALUE );
-            }
-        }
-        else
-        {
-            return( TSS2_TCTI_RC_INSUFFICIENT_BUFFER );
-        }
-
-        ( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile ) = open( fileName, O_RDWR );
+        ( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile ) = open( config->device_path, O_RDWR );
         if( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile < 0 ) 
         {
             return( TSS2_TCTI_RC_IO_ERROR );
         }
-
-        CloseOutFile( &outFp );
     }
 
     return rval;
 }
 
-TSS2_RC TeardownLocalTpmTcti (
-    TSS2_TCTI_CONTEXT *tctiContext, // OUT
-    const char *config,              // IN        
-	const char *interfaceName
-    )
+TSS2_RC TeardownDeviceTcti(TSS2_TCTI_CONTEXT *tctiContext)
 {
-    OpenOutFile( &outFp );
-    (*tpmLocalTpmPrintf)(NO_PREFIX, "Tearing down %s Interface\n", interfaceName );
-    CloseOutFile( &outFp );
-
     ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->finalize( tctiContext );
 
-  
     return TSS2_RC_SUCCESS;
 }
 
-char localTpmInterfaceConfig[LOCAL_INTERFACE_CONFIG_SIZE];
-    
-TSS2_TCTI_DRIVER_INFO localTpmInterfaceInfo = { "local TPM", "", InitLocalTpmTcti, TeardownLocalTpmTcti };
-
-TSS2_RC InitLocalTpmTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT **tctiContext )
+TSS2_RC InitDeviceTctiContext( const TCTI_DEVICE_CONF *driverConfig, TSS2_TCTI_CONTEXT **tctiContext )
 {
     size_t size;
     
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
-    rval = localTpmInterfaceInfo.initialize(NULL, &size, driverConfig, 0, 0, localTpmInterfaceInfo.shortName, 1 );
+    rval = InitDeviceTcti(NULL, &size, driverConfig, 0, 0, deviceTctiName );
     if( rval != TSS2_RC_SUCCESS )
         return rval;
     
     *tctiContext = malloc(size);
 
-    rval = localTpmInterfaceInfo.initialize(*tctiContext, &size, driverConfig, TCTI_MAGIC, TCTI_VERSION, localTpmInterfaceInfo.shortName, 0 );
-    return rval;
-}
-
-TSS2_RC TeardownLocalTpmTctiContext( const char *driverConfig, TSS2_TCTI_CONTEXT *tctiContext )
-{
-    TSS2_RC rval;
-
-    rval = localTpmInterfaceInfo.teardown( tctiContext, driverConfig, localTpmInterfaceInfo.shortName );
-    if( rval != TSS2_RC_SUCCESS )
-        return rval;
-
+    rval = InitDeviceTcti(*tctiContext, &size, driverConfig, TCTI_MAGIC, TCTI_VERSION, deviceTctiName );
     return rval;
 }

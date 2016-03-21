@@ -1,27 +1,27 @@
 //**********************************************************************;
 // Copyright (c) 2015, Intel Corporation
 // All rights reserved.
-// 
-// Redistribution and use in source and binary forms, with or without 
+//
+// Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
-// 1. Redistributions of source code must retain the above copyright notice, 
+//
+// 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
-// 2. Redistributions in binary form must reproduce the above copyright notice, 
-// this list of conditions and the following disclaimer in the documentation 
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+// this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
@@ -29,8 +29,8 @@
 #define RESOURCEMGR_H
 
 //#include "tpmclient.h"
-#include "tss2_tcti.h"
-#include "tss2_sysapi_util.h"
+#include <tss2/tss2_tcti.h>
+#include "sysapi_util.h"
 #include <stdlib.h>
 
 #define TSS2_RESMGR_MEMALLOC_FAILED                 ((TSS2_RC)( (1<<TSS2_LEVEL_IMPLEMENTATION_SPECIFIC_SHIFT) + TSS2_RESMGR_ERROR_LEVEL))
@@ -52,8 +52,6 @@ extern "C" {
 #endif
 
 extern UINT32 tpmMaxResponseLen;
-
-extern UINT8 rmDebugPrefix;
 
 TSS2_RC ResourceMgrSendTpmCommand(
     TSS2_TCTI_CONTEXT   *tctiContext,
@@ -85,7 +83,8 @@ void ResourceMgrInit( int debugLevel );
 // #define  CONTEXT_SLOT                     UINT8
 // #endif
 //
-#define DEBUG_GAP_HANDLING
+// #define DEBUG_GAP_HANDLING
+
 //
 #ifdef DEBUG_GAP_HANDLING
 // NOTE: these values must match the ones
@@ -98,8 +97,6 @@ void ResourceMgrInit( int debugLevel );
 #define DEBUG_GAP_MAX   255
 #endif
 
-extern TSS2_TCTI_DRIVER_INFO resMgrTctiDriverInfo;
-
 TSS2_RC InitResMgr( int debugLevel );
 
 #ifdef __cplusplus
@@ -109,7 +106,6 @@ TSS2_RC InitResMgr( int debugLevel );
 
 extern void *(*rmMalloc)(size_t size);
 extern void (*rmFree)(void *entry);
-extern int (*rmPrintf)( const char *format, ...);
 
 extern int printRMTables;
 

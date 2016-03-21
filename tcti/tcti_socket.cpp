@@ -1,27 +1,27 @@
 //**********************************************************************;
 // Copyright (c) 2015, Intel Corporation
 // All rights reserved.
-// 
-// Redistribution and use in source and binary forms, with or without 
+//
+// Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
-// 1. Redistributions of source code must retain the above copyright notice, 
+//
+// 1. Redistributions of source code must retain the above copyright notice,
 // this list of conditions and the following disclaimer.
-// 
-// 2. Redistributions in binary form must reproduce the above copyright notice, 
-// this list of conditions and the following disclaimer in the documentation 
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+// this list of conditions and the following disclaimer in the documentation
 // and/or other materials provided with the distribution.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
@@ -43,9 +43,9 @@
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
 
-#include "tpm20.h"
-#include "tpmsockets.h"
-#include "tss2_sysapi_util.h"
+#include <tss2/tpm20.h>
+#include <tcti/tcti_socket.h>
+#include "sysapi_util.h"
 #include "debug.h"
 #include "commonchecks.h"
 
@@ -53,52 +53,11 @@
 extern "C" {
 #endif
 
-#ifdef SAPI_CLIENT
-extern int TpmClientPrintf( UINT8 type, const char *format, ... );
-int (*printfFunction)( UINT8 type, const char *format, ...) = TpmClientPrintf;
-#else
-extern int ResMgrPrintf( UINT8 type, const char *format, ... );
-int (*printfFunction)( UINT8 type, const char *format, ...) = ResMgrPrintf;
-#endif
+int (*printfFunction)( printf_type type, const char *format, ...) = DebugPrintf;
 
 extern UINT8 simulator;
 
-#ifndef _WIN32
-void WSACleanup()
-{
-}
-
-int WSAGetLastError()
-{
-    return errno;
-}
-
-#endif
-
-TSS2_RC sendBytes( SOCKET tpmSock, const char *data, int len )
-{
-    int iResult = 0;
-    int sentLength = 0;
-    
-#ifdef DEBUG_SOCKETS
-    PrintRMDebugPrefix();
-    (*printfFunction)(NO_PREFIX, "Send Bytes to socket #0x%x: \n", tpmSock );
-    DebugPrintBuffer( (UINT8 *)data, len );
-#endif    
-
-    for( sentLength = 0; sentLength < len; len -= iResult, sentLength += iResult )
-    {
-        iResult = send( tpmSock, data, len, 0  );
-        if (iResult == SOCKET_ERROR) {
-            (*printfFunction)(NO_PREFIX, "send failed with error: %d\n", WSAGetLastError() );
-            return TSS2_TCTI_RC_IO_ERROR;
-        }
-    }
-    
-    return TSS2_RC_SUCCESS;
-}
-
-TSS2_RC SocketSendSessionEnd(
+TSS2_RC SendSessionEndSocketTcti(
     TSS2_TCTI_CONTEXT *tctiContext,       /* in */
     UINT8 tpmCmdServer )
 {
@@ -150,12 +109,12 @@ TSS2_RC SocketSendTpmCommand(
 #ifdef DEBUG
         (*printfFunction)(NO_PREFIX, "\n" );
         if( commandCode >= TPM_CC_NV_UndefineSpaceSpecial && commandCode <= TPM_CC_PolicyNvWritten )     
-            (*printfFunction)(rmDebugPrefix, "Cmd sent: %s\n", commandCodeStrings[ commandCode - TPM_CC_FIRST ] );            
+            (*printfFunction)( NO_PREFIX, "Cmd sent: %s\n", commandCodeStrings[ commandCode - TPM_CC_FIRST ] );            
         else
-            (*printfFunction)(rmDebugPrefix, "Cmd sent: 0x%4.4x\n", CHANGE_ENDIAN_DWORD(commandCode ) );
+            (*printfFunction)( NO_PREFIX, "Cmd sent: 0x%4.4x\n", CHANGE_ENDIAN_DWORD(commandCode ) );
 #endif
 #ifdef DEBUG_SOCKETS
-        (*printfFunction)(rmDebugPrefix, "Command sent on socket #0x%x: %s\n", TCTI_CONTEXT_INTEL->tpmSock, commandCodeStrings[ commandCode - TPM_CC_FIRST ]  );
+        (*printfFunction)( NO_PREFIX, "Command sent on socket #0x%x: %s\n", TCTI_CONTEXT_INTEL->tpmSock, commandCodeStrings[ commandCode - TPM_CC_FIRST ]  );
 #endif        
     }
     // Size TPM 1.2 and TPM 2.0 headers overlap exactly, we can use
@@ -192,7 +151,7 @@ TSS2_RC SocketSendTpmCommand(
 #ifdef DEBUG
     if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
     {
-        (*printfFunction)(rmDebugPrefix, "Locality = %d", ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.locality );
+        (*printfFunction)( NO_PREFIX, "Locality = %d", ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.locality );
     }
 #endif
     
@@ -211,7 +170,7 @@ TSS2_RC SocketSendTpmCommand(
 #ifdef DEBUG
     if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
     {
-        DEBUG_PRINT_BUFFER( command_buffer, cnt1 );
+        DEBUG_PRINT_BUFFER( NO_PREFIX, command_buffer, cnt1 );
     }
 #endif
     ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent = 1;
@@ -300,38 +259,13 @@ void SocketFinalize(
     if( tctiContext != 0 )
     {
         // Send session end messages to servers.
-        SocketSendSessionEnd( tctiContext, 1 );
-        SocketSendSessionEnd( tctiContext, 0 );
+        SendSessionEndSocketTcti( tctiContext, 1 );
+        SendSessionEndSocketTcti( tctiContext, 0 );
 
         CloseSockets( TCTI_CONTEXT_INTEL->otherSock, TCTI_CONTEXT_INTEL->tpmSock );
 
         free( tctiContext );
     }
-}
-
-TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len )
-{
-    int iResult = 0;
-    int length;
-    int bytesRead;
-    
-    for( bytesRead = 0, length = len; bytesRead != len; length -= iResult, bytesRead += iResult )
-    {
-        iResult = recv( tpmSock, (char *)&( data[bytesRead] ), length, 0);
-        if (iResult == SOCKET_ERROR) {
-            PrintRMDebugPrefix();
-            (*printfFunction)(NO_PREFIX, "In recvBytes, recv failed (socket: 0x%x) with error: %d\n",
-                    tpmSock, WSAGetLastError() );
-            return TSS2_TCTI_RC_IO_ERROR;
-        }
-    }
-
-#ifdef DEBUG_SOCKETS
-    (*printfFunction)( rmDebugPrefix, "Receive Bytes from socket #0x%x: \n", tpmSock );
-    DebugPrintBuffer( data, len );
-#endif
-    
-    return TSS2_RC_SUCCESS;
 }
 
 TSS2_RC SocketReceiveTpmResponse(
@@ -447,10 +381,10 @@ TSS2_RC SocketReceiveTpmResponse(
                 ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize > 0 )
         {
 #ifdef DEBUG
-            (*printfFunction)( rmDebugPrefix, "Response Received: " );
+            (*printfFunction)( NO_PREFIX, "Response Received: " );
 #endif
 #ifdef DEBUG_SOCKETS
-            (*printfFunction)( rmDebugPrefix, "from socket #0x%x:\n", TCTI_CONTEXT_INTEL->tpmSock );
+            (*printfFunction)( NO_PREFIX, "from socket #0x%x:\n", TCTI_CONTEXT_INTEL->tpmSock );
 #endif
         }
         
@@ -476,7 +410,7 @@ TSS2_RC SocketReceiveTpmResponse(
 #ifdef DEBUG
         if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
         {
-            DEBUG_PRINT_BUFFER( response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
+            DEBUG_PRINT_BUFFER( NO_PREFIX, response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
         }
 #endif
 
@@ -523,155 +457,13 @@ retSocketReceiveTpmResponse:
 }
 #endif
 
-int InitSockets( char *hostName, int port, UINT8 serverSockets, SOCKET *otherSock, SOCKET *tpmSock )
-{
-    sockaddr_in otherService;
-    sockaddr_in tpmService;
-    
-    int iResult = 0;            // used to return function results
-
-#ifdef _WIN32
-    WSADATA wsaData = {0};
-    static UINT8 socketsEnabled = 0;
-
-    if( socketsEnabled == 0 )
-    {
-        // Initialize Winsock
-        iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-        if (iResult != 0) {
-            (*printfFunction)(NO_PREFIX, "WSAStartup failed: %d\n", iResult);
-            return 1;
-        }
-        socketsEnabled = 1;
-    }
-#endif
-    
-    *otherSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (*otherSock == INVALID_SOCKET)
-    {
-        (*printfFunction)(NO_PREFIX, "socket creation failed with error = %d\n", WSAGetLastError() );
-        return(1);
-    }
-    else {
-        (*printfFunction)(NO_PREFIX, "socket created:  0x%x\n", *otherSock );
-        otherService.sin_family = AF_INET;
-        otherService.sin_addr.s_addr = inet_addr( hostName );
-        otherService.sin_port = htons(port + 1);
-
-        if( serverSockets )
-        {
-            // Bind the socket.
-            iResult = bind(*otherSock, (SOCKADDR *) &otherService, sizeof (otherService));
-            if (iResult == SOCKET_ERROR) {
-                (*printfFunction)(NO_PREFIX, "bind failed with error %u\n", WSAGetLastError());
-                closesocket(*otherSock);
-                WSACleanup();
-                return 1;
-            }
-            else
-            {
-                (*printfFunction)(NO_PREFIX, "bind to IP address:port:  %s:%d\n", hostName, port + 1 );
-            }
-
-            iResult = listen( *otherSock, 4 );
-            if (iResult == SOCKET_ERROR) {
-                (*printfFunction)(NO_PREFIX, "listen failed with error %u\n", WSAGetLastError());
-                closesocket(*otherSock);
-                WSACleanup();
-                return 1;
-            }
-            else
-            {
-                (*printfFunction)(NO_PREFIX, "Other CMD server listening to socket:  0x%x\n", *otherSock );
-            }
-        }
-    }        
-        
-    *tpmSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (*tpmSock == INVALID_SOCKET)
-    {
-        (*printfFunction)(NO_PREFIX, "socket creation failed with error = %d\n", WSAGetLastError() );
-        closesocket( *otherSock );
-        return(1);
-    }
-    else {
-        (*printfFunction)(NO_PREFIX, "socket created:  0x%x\n", *tpmSock );
-        tpmService.sin_family = AF_INET;
-        tpmService.sin_addr.s_addr = inet_addr( hostName );
-        tpmService.sin_port = htons( port );
-
-        if( serverSockets )
-        {
-            // Bind the socket.
-            iResult = bind(*tpmSock, (SOCKADDR *) &tpmService, sizeof (tpmService));
-            if (iResult == SOCKET_ERROR) {
-                (*printfFunction)(NO_PREFIX, "bind failed with error %u\n", WSAGetLastError());
-                closesocket(*tpmSock);
-                WSACleanup();
-                return 1;
-            }
-            else
-            {
-                (*printfFunction)(NO_PREFIX, "bind to IP address:port:  %s:%d\n", hostName, port );
-            }
-
-            iResult = listen( *tpmSock, 4 );
-            if (iResult == SOCKET_ERROR) {
-                (*printfFunction)(NO_PREFIX, "listen failed with error %u\n", WSAGetLastError());
-                closesocket(*tpmSock);
-                WSACleanup();
-                return 1;
-            }
-            else
-            {
-                (*printfFunction)(NO_PREFIX, "TPM CMD server listening to socket:  0x%x\n", *tpmSock );
-            }
-        }
-    }
-
-    if( !serverSockets )
-    {
-        // Connect to server.
-        iResult = connect(*otherSock, (SOCKADDR *) &otherService, sizeof (otherService));
-        if (iResult == SOCKET_ERROR) {
-            (*printfFunction)(NO_PREFIX, "connect function failed with error: %d\n", WSAGetLastError() );
-            iResult = closesocket(*otherSock);
-            WSACleanup();
-            return 1;
-        }
-        else
-        {
-            (*printfFunction)(NO_PREFIX, "Client connected to server on port:  %d\n", port + 1 );
-        }
-
-        // Connect to server.
-        iResult = connect(*tpmSock, (SOCKADDR *) &tpmService, sizeof (tpmService));
-        if (iResult == SOCKET_ERROR) {
-            (*printfFunction)(NO_PREFIX, "connect function failed with error: %d\n", WSAGetLastError() );
-            iResult = closesocket(*otherSock);
-            if (iResult == SOCKET_ERROR)
-            {
-                (*printfFunction)(NO_PREFIX, "closesocket function failed with error: %d\n", WSAGetLastError() );
-            }
-            WSACleanup();
-            return 1;
-        }
-        else
-        {
-            (*printfFunction)(NO_PREFIX, "Client connected to server on port:  %d\n", port );
-        }
-    }
-    
-    return 0;
-}
-
 #define HOSTNAME_LENGTH 200
 #define PORT_LENGTH 4
 
-TSS2_RC InitSocketsTcti (
+TSS2_RC InitSocketTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     size_t *contextSize,            // IN/OUT
-    const char *config,              // IN
+    const TCTI_SOCKET_CONF *conf,              // IN
     const uint64_t magic,
     const uint32_t version,
 	const char *interfaceName,
@@ -679,8 +471,6 @@ TSS2_RC InitSocketsTcti (
     )
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    char hostName[200];
-    int port;
     SOCKET otherSock;
     SOCKET tpmSock;
 
@@ -691,7 +481,6 @@ TSS2_RC InitSocketsTcti (
     }
     else
     {
-        OpenOutFile( &outFp );
         (*printfFunction)(NO_PREFIX, "Initializing %s Interface\n", interfaceName );
 
         // Init TCTI context.
@@ -712,34 +501,7 @@ TSS2_RC InitSocketsTcti (
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived = 0;
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived = 0;
 
-        // Get hostname and port.
-        if( ( strlen( config ) + 2 ) <= ( HOSTNAME_LENGTH  ) )
-        {
-            if( 1 == sscanf( config, "%199s", hostName ) ) 
-            {
-                if( strlen( config) - ( strlen( hostName ) + 2 ) <= PORT_LENGTH )
-                {
-                    if( 1 != sscanf( &config[strlen( hostName )], "%d", &port ) )
-                    {
-                        return( TSS2_TCTI_RC_BAD_VALUE );
-                    }
-                }
-                else
-                {
-                    return( TSS2_TCTI_RC_BAD_VALUE );
-                }
-            }
-            else
-            {
-                return( TSS2_TCTI_RC_BAD_VALUE );
-            }
-        }
-        else
-        {
-            return( TSS2_TCTI_RC_INSUFFICIENT_BUFFER );
-        }
-
-        rval = (TSS2_RC) InitSockets( &hostName[0], port, serverSockets, &otherSock, &tpmSock );
+        rval = (TSS2_RC) InitSockets( conf->hostname, conf->port, serverSockets, &otherSock, &tpmSock );
         if( rval == TSS2_RC_SUCCESS )
         {
             ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->otherSock = otherSock;
@@ -749,24 +511,14 @@ TSS2_RC InitSocketsTcti (
         {
             CloseSockets( otherSock, tpmSock);
         }            
-        CloseOutFile( &outFp );
     }
 
     return rval;
 }
 
-TSS2_RC TeardownSocketsTcti (
-    TSS2_TCTI_CONTEXT *tctiContext, // OUT
-    const char *config,              // IN        
-	const char *interfaceName
-    )
+TSS2_RC TeardownSocketTcti (TSS2_TCTI_CONTEXT *tctiContext)
 {
-    OpenOutFile( &outFp );
-    (*printfFunction)(NO_PREFIX, "Tearing down %s Interface\n", interfaceName );
-    CloseOutFile( &outFp );
-
     ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->finalize( tctiContext );
-
   
     return TSS2_RC_SUCCESS;
 }

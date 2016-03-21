@@ -28,8 +28,9 @@
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
 
-#include "tpm20.h"
-#include "tss2_sysapi_util.h"
+#include <tcti/magic.h>
+#include <tss2/tpm20.h>
+#include "sysapi_util.h"
 #include "debug.h"
 
 #ifdef __cplusplus
@@ -99,3 +100,7 @@ retCommonReceiveChecks:
 
     return rval;
 }
+
+#ifdef __cplusplus
+}
+#endif

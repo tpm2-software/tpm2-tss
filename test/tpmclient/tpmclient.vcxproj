@@ -41,7 +41,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(SolutionDir)..\..\sysapi\include;$(SolutionDir)tpmclient;$(SolutionDir)tpmclient\simdriver;$(SolutionDir)resourceMgr;..\common\sample;..\..\tcti\tpmSockets;$(IncludePath);..\..\common;$(SolutionDir)sysapi\include;$(SolutionDir)tcti\commonTcti</IncludePath>
+    <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(SolutionDir)tpmclient;$(SolutionDir)tpmclient\simdriver;$(SolutionDir)resourceMgr;..\common\sample;$(IncludePath);..\..\common;$(SolutionDir)tcti\commonTcti</IncludePath>
     <OutDir>$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -98,7 +98,9 @@
   <ItemGroup>
     <ClInclude Include="..\..\common\debug.h" />
     <ClInclude Include="..\..\common\platform.h" />
+    <ClInclude Include="..\..\common\sockets.h" />
     <ClInclude Include="..\..\common\syscontext.h" />
+    <ClInclude Include="..\..\include\tcti\tcti_socket.h" />
     <ClInclude Include="..\..\sysapi\include\endianConv.h" />
     <ClInclude Include="..\..\sysapi\include\implementation.h" />
     <ClInclude Include="..\..\sysapi\include\tpm20.h" />
@@ -111,8 +113,7 @@
     <ClInclude Include="..\..\sysapi\include\tss2_tcti.h" />
     <ClInclude Include="..\..\sysapi\include\tss2_tcti_util.h" />
     <ClInclude Include="..\..\sysapi\include\tss2_tpm2_types.h" />
-    <ClInclude Include="..\..\tcti\commonTcti\commonchecks.h" />
-    <ClInclude Include="..\..\tcti\tpmsockets\tpmsockets.h" />
+    <ClInclude Include="..\..\tcti\commonchecks.h" />
     <ClInclude Include="..\common\sample\sample.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -120,10 +121,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\common\debug.c" />
-    <ClCompile Include="..\..\common\platformcommand.c" />
+    <ClCompile Include="..\..\common\sockets.cpp" />
     <ClCompile Include="..\..\common\syscontext.c" />
-    <ClCompile Include="..\..\tcti\commonTcti\commonchecks.c" />
-    <ClCompile Include="..\..\tcti\tpmsockets\tpmsockets.cpp" />
+    <ClCompile Include="..\..\tcti\commonchecks.c" />
+    <ClCompile Include="..\..\tcti\platformcommand.c" />
+    <ClCompile Include="..\..\tcti\tcti_socket.cpp" />
     <ClCompile Include="..\common\sample\CatSizedByteBuffer.c" />
     <ClCompile Include="..\common\sample\CopySizedBuffer.c" />
     <ClCompile Include="..\common\sample\CreateNullSession.c" />

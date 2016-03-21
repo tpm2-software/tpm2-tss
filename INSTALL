@@ -6,6 +6,7 @@ GNU Libtool
 C compiler
 C++ compiler
 C Library Development Libraries and Header Files (for pthreads headers)
+cmocka unit test framework
 
 Currently the tpm2.0-tss is only distributed via GitHub as we have not yet
 produced an official source release. To obtain the tpm2.0-tss sources you
