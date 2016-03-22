@@ -252,17 +252,11 @@ void CloseSockets( SOCKET otherSock, SOCKET tpmSock)
     closesocket(tpmSock);
 }    
 
-TSS2_RC SocketFinalize(
+void SocketFinalize(
     TSS2_TCTI_CONTEXT *tctiContext       /* in */
     )
 {
-    TSS2_RC rval = TSS2_RC_SUCCESS;
-    
-    if( tctiContext == NULL )
-    {
-        rval = TSS2_TCTI_RC_BAD_REFERENCE;
-    }
-    else
+    if( tctiContext != 0 )
     {
         // Send session end messages to servers.
         SendSessionEndSocketTcti( tctiContext, 1 );
@@ -272,8 +266,6 @@ TSS2_RC SocketFinalize(
 
         free( tctiContext );
     }
-
-    return rval;
 }
 
 TSS2_RC SocketReceiveTpmResponse(

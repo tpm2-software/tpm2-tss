@@ -92,7 +92,7 @@ TSS2_RC Tss2_Sys_Initialize(
     TSS2_ABI_VERSION *abiVersion
     );
 
-TSS2_RC Tss2_Sys_Finalize(
+void Tss2_Sys_Finalize(
     TSS2_SYS_CONTEXT *sysContext
     );
 

@@ -187,22 +187,14 @@ retLocalTpmReceive:
     return rval;
 }
 
-TSS2_RC LocalTpmFinalize(
+void LocalTpmFinalize(
     TSS2_TCTI_CONTEXT *tctiContext       /* in */
     )
 {
-    TSS2_RC rval = TSS2_RC_SUCCESS;
-    
-    if( tctiContext == NULL )
-    {
-        rval = TSS2_TCTI_RC_BAD_REFERENCE;
-    }
-    else
+    if( tctiContext != 0 )
     {
         close( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile );
     }
-
-    return rval;
 }
 
 TSS2_RC LocalTpmCancel(
