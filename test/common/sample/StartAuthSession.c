@@ -32,9 +32,11 @@
 
 #define SESSIONS_ARRAY_COUNT MAX_NUM_SESSIONS+1
 
-typedef struct {
+typedef struct _SESSION_LIST_ENTRY *SESSION_LIST_ENTRY_PTR;
+
+typedef struct _SESSION_LIST_ENTRY{
     SESSION session;
-    void *nextEntry;
+    SESSION_LIST_ENTRY_PTR nextEntry;
 } SESSION_LIST_ENTRY;
 
 SESSION_LIST_ENTRY *sessionsList = 0;
@@ -43,20 +45,20 @@ INT16 sessionEntriesUsed = 0;
 
 TPM_RC AddSession( SESSION_LIST_ENTRY **sessionEntry )
 {
-    SESSION_LIST_ENTRY **newEntry;
+    SESSION_LIST_ENTRY **lastEntry, *newEntry;
     
 //    DebugPrintf( 0, "In AddSession\n" );
 
     // find end of list.
-    for( newEntry = &sessionsList; *newEntry != 0; *newEntry = ( (SESSION_LIST_ENTRY *)*newEntry)->nextEntry )
+    for( lastEntry = &sessionsList; *lastEntry != 0; lastEntry = &( (SESSION_LIST_ENTRY *)*lastEntry)->nextEntry )
         ;
 
     // allocate space for session structure.
-    *newEntry = malloc( sizeof( SESSION_LIST_ENTRY ) );
-    if( *newEntry != 0 )
+    newEntry = (SESSION_LIST_ENTRY *)malloc( sizeof( SESSION_LIST_ENTRY ) );
+    if( newEntry != 0 )
     {
-        *sessionEntry = *newEntry;
-        (*sessionEntry)->nextEntry = 0;
+        *sessionEntry = *lastEntry = newEntry;
+        newEntry->nextEntry = 0;
         sessionEntriesUsed++;
         return TPM_RC_SUCCESS;
     }
@@ -70,7 +72,7 @@ TPM_RC AddSession( SESSION_LIST_ENTRY **sessionEntry )
 void DeleteSession( SESSION *session )
 {
     SESSION_LIST_ENTRY *predSession;
-    void *newNextEntry;
+    SESSION_LIST_ENTRY *newNextEntry;
 
 //    DebugPrintf( 0, "In DeleteSession\n" );
     
@@ -88,7 +90,7 @@ void DeleteSession( SESSION *session )
         {
             sessionEntriesUsed--;
 
-            newNextEntry = &( (SESSION_LIST_ENTRY *)predSession->nextEntry)->nextEntry;
+            newNextEntry = ( (SESSION_LIST_ENTRY *)predSession->nextEntry)->nextEntry;
 
             free( predSession->nextEntry );
 

@@ -6354,8 +6354,15 @@ void CmdRspAuthsTests()
             &testSessionHandle, &nonceTpm );
     CheckPassed( rval ); // #17
 
-    // Others?
-    
+    // Now delete sessions.
+    rval = EndAuthSession( encryptSession );
+    CheckPassed( rval );
+
+    rval = EndAuthSession( decryptSession );
+    CheckPassed( rval );
+
+    rval = EndAuthSession( auditSession );
+    CheckPassed( rval );
 }
 
 void GetSetEncryptParamTests()
