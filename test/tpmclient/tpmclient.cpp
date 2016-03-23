@@ -7069,6 +7069,7 @@ void TestLocalTCTI()
     
     TSS2_TCTI_CONTEXT *downstreamTctiContext;
 
+    TpmClientPrintf( NO_PREFIX,  "\nLOCAL TCTI TESTS:\n" );
     DebugPrintf( NO_PREFIX,  "WARNING!!  This test requires that a local TPM is present and that the resource manager has NOT been started.\n\n" );
        
     // Test TCTI interface against local TPM TCTI interface, if available.
