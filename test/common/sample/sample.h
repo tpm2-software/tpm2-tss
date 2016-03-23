@@ -57,7 +57,7 @@ enum TSS2_APP_RC_CODE
     APP_RC_BAD_LOCALITY
 };
 
-// Add this to application-specific error codes so they overlap
+// Add this to application-specific error codes so they don't overlap
 // with TSS ones which may be re-used for app level errors.
 #define APP_RC_OFFSET 0x100
 
