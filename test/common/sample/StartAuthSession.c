@@ -308,8 +308,11 @@ TPM_RC StartAuthSessionWithParams( SESSION **session,
         if( (*session)->bind == TPM_RH_NULL )
             (*session)->authValueBind.t.size = 0;
 
-
         rval = StartAuthSession( *session );
+        if( rval != TSS2_RC_SUCCESS )
+        {
+            DeleteSession( *session );
+        }
     }
     else
     {
