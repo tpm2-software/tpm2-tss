@@ -891,7 +891,7 @@ void TestStartAuthSession()
     encryptedSalt.t.size = 0;
 
      // Init session
-    rval = StartAuthSessionWithParams( &authSession, TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY, &symmetric, TPM_ALG_SHA256 );
+    rval = StartAuthSessionWithParams( &authSession, TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY, &symmetric, TPM_ALG_SHA256, resMgrTctiContext );
     CheckPassed( rval );
 
     rval = Tss2_Sys_FlushContext( sysContext, authSession->sessionHandle );
@@ -899,7 +899,7 @@ void TestStartAuthSession()
     EndAuthSession( authSession );
 
     // Init session
-    rval = StartAuthSessionWithParams( &authSession, TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, 0xff, &symmetric, TPM_ALG_SHA256 );
+    rval = StartAuthSessionWithParams( &authSession, TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, 0xff, &symmetric, TPM_ALG_SHA256, resMgrTctiContext );
     CheckFailed( rval, TPM_RC_VALUE + TPM_RC_P + TPM_RC_3 );
 
     // Try starting a bunch to see if resource manager handles this correctly.
@@ -913,7 +913,7 @@ void TestStartAuthSession()
 //        printf( "i = 0x%4.4x\n", i );
 
         // Init session struct
-        rval = StartAuthSessionWithParams( &sessions[i], TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY, &symmetric, TPM_ALG_SHA256 );
+        rval = StartAuthSessionWithParams( &sessions[i], TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY, &symmetric, TPM_ALG_SHA256, resMgrTctiContext );
         CheckPassed( rval );
         printf( "Number of sessions created: %d\n\n", i );
 
@@ -962,7 +962,7 @@ void TestStartAuthSession()
     }
 
     // Now do some gap tests.
-    rval = StartAuthSessionWithParams( &sessions[0], TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY, &symmetric, TPM_ALG_SHA256 );
+    rval = StartAuthSessionWithParams( &sessions[0], TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY, &symmetric, TPM_ALG_SHA256, resMgrTctiContext );
     CheckPassed( rval );
 
 #ifdef DEBUG_GAP_HANDLING
@@ -974,7 +974,7 @@ void TestStartAuthSession()
     {
 //        printf( "i(3) = 0x%4.4x\n", i );
 
-        rval = StartAuthSessionWithParams( &sessions[i], TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY, &symmetric, TPM_ALG_SHA256 );
+        rval = StartAuthSessionWithParams( &sessions[i], TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY, &symmetric, TPM_ALG_SHA256, resMgrTctiContext );
         CheckPassed( rval );
 
         rval = Tss2_Sys_FlushContext( sysContext, sessions[i]->sessionHandle );
@@ -986,7 +986,7 @@ void TestStartAuthSession()
 
 #ifdef DEBUG_GAP_HANDLING
     // Now do some gap tests.
-    rval = StartAuthSessionWithParams( &sessions[8], TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY, &symmetric, TPM_ALG_SHA256 );
+    rval = StartAuthSessionWithParams( &sessions[8], TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY, &symmetric, TPM_ALG_SHA256, resMgrTctiContext );
     CheckPassed( rval );
 #endif
 
@@ -997,7 +997,7 @@ void TestStartAuthSession()
 #endif
     {
 //        printf( "i(4) = 0x%4.4x\n", i );
-        rval = StartAuthSessionWithParams( &sessions[i], TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY, &symmetric, TPM_ALG_SHA256 );
+        rval = StartAuthSessionWithParams( &sessions[i], TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY, &symmetric, TPM_ALG_SHA256, resMgrTctiContext );
         CheckPassed( rval );
 
         rval = Tss2_Sys_FlushContext( sysContext, sessions[i]->sessionHandle );
@@ -1012,7 +1012,7 @@ void TestStartAuthSession()
     for( i = 0; i < 5; i++ )
     {
 //        printf( "i(5) = 0x%4.4x\n", i );
-        rval = StartAuthSessionWithParams( &sessions[i+16], TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY, &symmetric, TPM_ALG_SHA256 );
+        rval = StartAuthSessionWithParams( &sessions[i+16], TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY, &symmetric, TPM_ALG_SHA256, resMgrTctiContext );
         CheckPassed( rval );
     }
 
@@ -2294,7 +2294,7 @@ TPM_RC BuildPolicy( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession,
 
     // Start policy session.
     symmetric.algorithm = TPM_ALG_NULL;
-    rval = StartAuthSessionWithParams( policySession, TPM_RH_NULL, 0, TPM_RH_NULL, 0, &nonceCaller, &encryptedSalt, trialSession ? TPM_SE_TRIAL : TPM_SE_POLICY , &symmetric, TPM_ALG_SHA256 );
+    rval = StartAuthSessionWithParams( policySession, TPM_RH_NULL, 0, TPM_RH_NULL, 0, &nonceCaller, &encryptedSalt, trialSession ? TPM_SE_TRIAL : TPM_SE_POLICY , &symmetric, TPM_ALG_SHA256, resMgrTctiContext );
     if( rval != TPM_RC_SUCCESS )
         return rval;
 
@@ -2340,7 +2340,7 @@ TPM_RC CreateNVIndex( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TPM
     symmetric.algorithm = TPM_ALG_NULL;
     rval = StartAuthSessionWithParams( policySession, TPM_RH_NULL,
             0, TPM_RH_NULL, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY,
-            &symmetric, TPM_ALG_SHA256 );
+            &symmetric, TPM_ALG_SHA256, resMgrTctiContext );
     CheckPassed( rval );
 
     // Send PolicyLocality command
@@ -3894,7 +3894,7 @@ void SimplePolicyTest()
     //
     rval = StartAuthSessionWithParams( &trialPolicySession, TPM_RH_NULL,
             0, TPM_RH_NULL, 0, &nonceCaller, &encryptedSalt, TPM_SE_TRIAL,
-            &symmetric, sessionAlg );
+            &symmetric, sessionAlg, resMgrTctiContext );
     CheckPassed( rval );
 
     rval = Tss2_Sys_PolicyAuthValue( sysContext, trialPolicySession->sessionHandle, 0, 0 );
@@ -3956,7 +3956,7 @@ void SimplePolicyTest()
     // saved into nvSession structure for later use.
     rval = StartAuthSessionWithParams( &nvSession, TPM_RH_NULL,
             0, TPM_RH_NULL, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY,
-            &symmetric, sessionAlg );
+            &symmetric, sessionAlg, resMgrTctiContext );
     CheckPassed( rval );
 
     // Get the name of the session and save it in
@@ -4194,7 +4194,7 @@ void SimpleHmacTest()
     // saved into nvSession structure for later use.
     rval = StartAuthSessionWithParams( &nvSession, TPM_RH_NULL,
             0, TPM_RH_NULL, 0, &nonceCaller, &encryptedSalt, TPM_SE_HMAC,
-            &symmetric, TPM_ALG_SHA256 );
+            &symmetric, TPM_ALG_SHA256, resMgrTctiContext );
     CheckPassed( rval );
 
     // Get the name of the session and save it in
@@ -4425,7 +4425,7 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
         rval = StartAuthSessionWithParams( &trialPolicySession,
                 TPM_RH_NULL, 0, TPM_RH_NULL, 0, &nonceCaller, &encryptedSalt,
                 TPM_SE_TRIAL,
-                &symmetric, TPM_ALG_SHA256 );
+                &symmetric, TPM_ALG_SHA256, resMgrTctiContext );
         CheckPassed( rval );
 
         rval = Tss2_Sys_PolicyAuthValue( simpleTestContext,
@@ -4509,7 +4509,7 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
 
     rval = StartAuthSessionWithParams( &nvSession, TPM_RH_NULL,
             0, TPM_RH_NULL, 0, &nonceCaller, &encryptedSalt, tpmSe,
-            &symmetric, TPM_ALG_SHA256 );
+            &symmetric, TPM_ALG_SHA256, resMgrTctiContext );
     CheckPassed( rval );
 
     // Get the name of the session and save it in
@@ -4857,7 +4857,7 @@ void HmacSessionTest()
 
                 rval = StartAuthSessionWithParams( &nvSession, hmacTestSetups[j].tpmKey,
                         hmacTestSetups[j].salt, hmacTestSetups[j].bound, &nvAuth, &nonceOlder, &encryptedSalt,
-                        TPM_SE_HMAC, &symmetric, TPM_ALG_SHA1 );
+                        TPM_SE_HMAC, &symmetric, TPM_ALG_SHA1, resMgrTctiContext );
                 CheckPassed( rval );
 
                 // Get and print name of the session.
@@ -5025,7 +5025,7 @@ void HmacSessionTest()
                     symmetric.keyBits.aes = 128;
                     symmetric.mode.aes = TPM_ALG_CFB;
 
-                    rval = StartAuthSessionWithParams( &nvSession, hmacTestSetups[j].tpmKey,  hmacTestSetups[j].salt, hmacTestSetups[j].bound, &nvAuth, &nonceOlder, &encryptedSalt, TPM_SE_HMAC, &symmetric, TPM_ALG_SHA1 );
+                    rval = StartAuthSessionWithParams( &nvSession, hmacTestSetups[j].tpmKey,  hmacTestSetups[j].salt, hmacTestSetups[j].bound, &nvAuth, &nonceOlder, &encryptedSalt, TPM_SE_HMAC, &symmetric, TPM_ALG_SHA1, resMgrTctiContext );
                     CheckPassed( rval );
 
                     CopySizedByteBuffer( &( nvSession->authValueBind.b ), &( nvAuth.b ) );
@@ -5238,7 +5238,7 @@ void TestEncryptDecryptSession()
         // Start policy session for decrypt/encrypt session.
         rval = StartAuthSessionWithParams( &encryptDecryptSession,
                 TPM_RH_NULL, 0, TPM_RH_NULL, 0, &nonceCaller, 0, TPM_SE_POLICY,
-                &symmetric, TPM_ALG_SHA256 );
+                &symmetric, TPM_ALG_SHA256, resMgrTctiContext );
         CheckPassed( rval );
 
         //
@@ -6464,7 +6464,7 @@ void TestNVUndefineSpaceSpecial()
     // Create the index
     rval = StartAuthSessionWithParams( &trialSession, TPM_RH_NULL,
             0, TPM_RH_NULL, 0, &nonceCaller, &encryptedSalt, TPM_SE_TRIAL,
-            &symmetric, sessionAlg );
+            &symmetric, sessionAlg, resMgrTctiContext );
     CheckPassed( rval );
 
     // At this place, don't use the command Tss2_Sys_PolicyAuthValue after session create.
@@ -6499,7 +6499,7 @@ void TestNVUndefineSpaceSpecial()
     // Begin to undefine the NV Index space with policy session
     rval = StartAuthSessionWithParams( &nvSession, TPM_RH_NULL,
             0, TPM_RH_NULL, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY,
-            &symmetric, sessionAlg );
+            &symmetric, sessionAlg, resMgrTctiContext );
     CheckPassed( rval );
 
     rval = Tss2_Sys_PolicyCommandCode ( sysContext, nvSession->sessionHandle, 0, TPM_CC_NV_UndefineSpaceSpecial, 0 );
