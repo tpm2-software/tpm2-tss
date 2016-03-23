@@ -6799,6 +6799,8 @@ void TestRM()
 
     outPublic.t.size = 0;
     creationData.t.size = 0;
+    name.t.size = sizeof( name );
+    creationHash.t.size = sizeof( creationHash );
     rval = Tss2_Sys_CreatePrimary_Complete( sysContext, &newHandle, &outPublic, &creationData,
             &creationHash, &creationTicket, &name );
     CheckPassed( rval );
