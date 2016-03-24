@@ -46,7 +46,7 @@ libtss2_HEADERS = $(srcdir)/include/tss2/*.h
 libtctidir      = $(includedir)/tcti
 libtcti_HEADERS = $(srcdir)/include/tcti/*.h
 
-test_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)
+test_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir) -I$(srcdir)/sysapi/include
 test_tcti_device_LDADD   = $(libtss2) $(libtctidevice) $(CMOCKA_LIBS)
 test_tcti_device_SOURCES = test/tcti_device.c test/tcti_device_test.c
 

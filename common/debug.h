@@ -39,6 +39,7 @@ extern "C" {
 
 enum debugLevel { DBG_NO_COMMAND = 0, DBG_COMMAND = 1, DBG_COMMAND_RM = 2, DBG_COMMAND_RM_TABLES = 3 };
 
+int DebugPrintfCallback( void *data, printf_type type, const char *format, ...);
 int DebugPrintf( printf_type type, const char *format, ...);
 void DebugPrintBuffer( printf_type type, UINT8 *command_buffer, UINT32 cnt1 );
 

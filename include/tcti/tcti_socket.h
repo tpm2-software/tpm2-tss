@@ -33,7 +33,7 @@ extern "C" {
 #endif
 
 #include <tss2/tpm20.h>
-#include <tcti/magic.h>
+#include <tcti/common.h>
 
 #define DEFAULT_SIMULATOR_TPM_PORT        2321
 #define TSS2_SIMULATOR_INTERFACE_INIT_FAILED              ((TSS2_RC)(1 + TSS2_DRIVER_ERROR_LEVEL))
@@ -43,7 +43,6 @@ extern "C" {
 
 #define DEFAULT_HOSTNAME        "127.0.0.1"
 
-typedef enum { NO_PREFIX = 0, RM_PREFIX = 1 } printf_type;
 /* global data defined in the socket TCTI */
 extern int (*printfFunction)( printf_type type, const char *format, ...);
 

@@ -14,11 +14,25 @@ tcti_dev_init_size_test (void **state)
                      sizeof (TSS2_TCTI_CONTEXT_INTEL));
 }
 
+static void
+tcti_dev_init_log_test (void **state)
+{
+    tcti_dev_init_log (state);
+}
+
+static void
+tcti_dev_log_called_test (void **state)
+{
+    assert_true (tcti_dev_log_called (state));
+}
+
 int
 main(int argc, char* argv[])
 {
     const UnitTest tests[] = {
         unit_test(tcti_dev_init_size_test),
+        unit_test(tcti_dev_init_log_test),
+        unit_test(tcti_dev_log_called_test),
     };
     return run_tests(tests);
 }

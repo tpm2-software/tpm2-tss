@@ -39,6 +39,7 @@
 #include "debug.h"
 #include "commonchecks.h"
 #include <tcti/tcti_device.h>
+#include "logging.h"
 
 #ifdef  _WIN32
 #define ssize_t int
@@ -48,7 +49,7 @@
 
 #define HOSTNAME_LENGTH 200
 
-int (*tpmLocalTpmPrintf)( printf_type type, const char *format, ...) = DebugPrintf;
+const char *deviceTctiName = "device TCTI";
 
 TSS2_RC LocalTpmSendTpmCommand(
     TSS2_TCTI_CONTEXT *tctiContext,       /* in */
@@ -74,8 +75,8 @@ TSS2_RC LocalTpmSendTpmCommand(
 
         if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
         {
-            (*tpmLocalTpmPrintf)( NO_PREFIX, "\n" );
-            (*tpmLocalTpmPrintf)( NO_PREFIX, "Cmd sent: %s\n", commandCodeStrings[ commandCode - TPM_CC_FIRST ]  );
+            TCTI_LOG( tctiContext, NO_PREFIX, "\n" );
+            TCTI_LOG( tctiContext, NO_PREFIX, "Cmd sent: %s\n", commandCodeStrings[ commandCode - TPM_CC_FIRST ]  );
             DEBUG_PRINT_BUFFER( NO_PREFIX, command_buffer, cnt );
         }
 #endif
@@ -84,7 +85,7 @@ TSS2_RC LocalTpmSendTpmCommand(
 
         if( size < 0 )
         {
-            (*tpmLocalTpmPrintf)(NO_PREFIX, "send failed with error: %d\n", errno );
+            TCTI_LOG( tctiContext, NO_PREFIX, "send failed with error: %d\n", errno );
             rval = TSS2_TCTI_RC_IO_ERROR;
         }
         else if( (size_t)size != command_size )
@@ -128,7 +129,7 @@ TSS2_RC LocalTpmReceiveTpmResponse(
 
         if( size < 0 )
         {
-            (*tpmLocalTpmPrintf)(NO_PREFIX, "read failed with error: %d\n", errno );
+            TCTI_LOG( tctiContext, NO_PREFIX, "read failed with error: %d\n", errno );
             rval = TSS2_TCTI_RC_IO_ERROR;
             goto retLocalTpmReceive;
         }
@@ -166,8 +167,8 @@ TSS2_RC LocalTpmReceiveTpmResponse(
     if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED &&
             ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize > 0 )
     {
-        (*tpmLocalTpmPrintf)( NO_PREFIX, "\n" );
-        (*tpmLocalTpmPrintf)( NO_PREFIX, "Response Received: " );
+        TCTI_LOG( tctiContext, NO_PREFIX, "\n" );
+        TCTI_LOG( tctiContext, NO_PREFIX, "Response Received: " );
         DEBUG_PRINT_BUFFER( NO_PREFIX, response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
     }
 #endif
@@ -241,8 +242,6 @@ TSS2_RC InitDeviceTcti (
     }
     else
     {
-        (*tpmLocalTpmPrintf)(NO_PREFIX, "Initializing %s Interface\n", interfaceName );
-
         // Init TCTI context.
         ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->magic = magic;
         ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->version = version;
@@ -257,6 +256,10 @@ TSS2_RC InitDeviceTcti (
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.rmDebugPrefix = 0;
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->currentTctiContext = 0;
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage = TCTI_STAGE_INITIALIZE;
+        TCTI_LOG_CALLBACK( tctiContext ) = config->logCallback;
+        TCTI_LOG_DATA( tctiContext ) = config->logData;
+
+        TCTI_LOG( tctiContext, NO_PREFIX, "Initializing %s Interface\n", interfaceName );
 
         ( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile ) = open( config->device_path, O_RDWR );
         if( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile < 0 ) 
