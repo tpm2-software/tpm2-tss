@@ -54,7 +54,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\sysapi\include;..\include;..\common</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sysapi\include;..\include;..\common;.</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -99,6 +99,7 @@
     <ClInclude Include="..\sysapi\include\tss2_tcti_util.h" />
     <ClInclude Include="..\sysapi\include\tss2_tpm2_types.h" />
     <ClInclude Include="..\tcti\commonchecks.h" />
+    <ClInclude Include="criticalsection.h" />
     <ClInclude Include="resourcemgr.h" />
   </ItemGroup>
   <ItemGroup>
@@ -109,6 +110,7 @@
     <ClCompile Include="..\tcti\commonchecks.c" />
     <ClCompile Include="..\tcti\platformcommand.c" />
     <ClCompile Include="..\tcti\tcti_socket.cpp" />
+    <ClCompile Include="criticalsection_windows.c" />
     <ClCompile Include="resourcemgr.c" />
   </ItemGroup>
   <ItemGroup>
