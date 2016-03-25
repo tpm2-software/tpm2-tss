@@ -39,12 +39,14 @@
 #include "syscontext.h"
 #include "debug.h"
 
-#ifdef  _WIN32
+#ifdef _WIN32
+
 typedef HANDLE THREAD_TYPE; 
 #define MAX_COMMAND_LINE_ARGS 6
 
 #elif __linux || __unix
 
+#include <time.h>
 #include <stdarg.h>
 #define sprintf_s   snprintf
 #define sscanf_s    sscanf
@@ -52,13 +54,17 @@ typedef HANDLE THREAD_TYPE;
 typedef pthread_t THREAD_TYPE ;
 #define ExitThread pthread_exit
 #define CloseHandle( handle ) 
-
 #define MAX_COMMAND_LINE_ARGS 7
+
 #else    
 #error Unsupported OS--need to add OS-specific support for threading here.        
 #endif                
 
+#include "criticalsection.h"
+
 #define DEBUG_RESMGR_INIT        
+
+TPM_MUTEX tpmMutex;
 
 extern TSS2_RC GetCommands( TSS2_SYS_CONTEXT *resMgrSysContext, TPML_CCA **supportedCommands );
 extern UINT8 GetCommandAttributes( TPM_CC commandCode, TPML_CCA *supportedCommands, TPMA_CC *cmdAttributes );
@@ -117,7 +123,7 @@ UINT8 simulator = 0;
 enum shutdownStartupSequenceType { TPM_RESET, TPM_RESTART, TPM_RESUME };
 
 TSS2_TCTI_CONTEXT *downstreamTctiContext = 0;
-TSS2_SYS_CONTEXT *resMgrSysContext;
+TSS2_SYS_CONTEXT *resMgrSysContext, *tempSysContext;
 
 TSS2_ABI_VERSION abiVersion = { TSSWG_INTEROP, TSS_SAPI_FIRST_FAMILY, TSS_SAPI_FIRST_LEVEL, TSS_SAPI_FIRST_VERSION };
 
@@ -761,6 +767,64 @@ TSS2_RC FindEntry(RESOURCE_MANAGER_ENTRY_PTR firstEntry,
         return TSS2_RESMGR_FIND_FAILED;
     else
         return TSS2_RC_SUCCESS;
+}
+
+//
+// This function is used when a connection is terminated.
+// It flushes all the connection's sessions to remove
+// the state tracking info inside the TPM for each session.
+// And it removes all the RM table's entries for entities
+// (sessions, objects, and sequences) owned by the connection.
+//
+// NOTE:  one subtlety here:  the reason we don't have
+// to flush objects or sequences is because the RM
+// already flushes them after every command.  It also
+// context saves all sessions after every command, but this
+// doesn't remove the small bit of internal session tracking
+// info for each session inside the TPM.  Hence the need
+// to flush all the connection's sessions.  If the RM is
+// ever changed to where it doesn't flush all objects and
+// sequences after each command, this function will need
+// to be updated to flush objects and sequences in addition
+// to sessions.
+//
+TSS2_RC FlushSessionsAndClearTable( UINT64 connectionId )
+{
+    RESOURCE_MANAGER_ENTRY *entryPtr, *oldEntryPtr;
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+
+    for( entryPtr = entryList; entryPtr != 0 && rval == TSS2_RC_SUCCESS; )
+    {
+        if( connectionId == entryPtr->connectionId )
+        {
+            if( ( entryPtr->virtualHandle & HR_RANGE_MASK ) == HR_HMAC_SESSION ||
+                ( entryPtr->virtualHandle & HR_RANGE_MASK ) == HR_POLICY_SESSION )
+            {
+                // Flush the session.
+                rval = Tss2_Sys_FlushContext( resMgrSysContext, entryPtr->realHandle );
+                if( rval != TSS2_RC_SUCCESS )
+                {
+                    SetRmErrorLevel( &rval, TSS2_RESMGR_ERROR_LEVEL );
+                    break;
+                }
+            }
+
+            oldEntryPtr = entryPtr;
+            entryPtr = entryPtr->nextEntry;
+            rval = RemoveEntry( oldEntryPtr );
+            if( rval != TSS2_RC_SUCCESS )
+            {
+                SetRmErrorLevel( &rval, TSS2_RESMGR_ERROR_LEVEL );
+                break;
+            }
+        }
+        else
+        {
+            entryPtr = entryPtr->nextEntry;
+        }
+    }
+
+    return rval;
 }
 
 TSS2_RC EvictContext(TPM_HANDLE virtualHandle)
@@ -2135,17 +2199,36 @@ typedef struct serverStruct
     THREAD_TYPE threadHandle;
 } SERVER_STRUCT;
     
+#define MUTEX_DBG_FUNCTION_STR "TpmCmdServer"
+
 UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
 {
     UINT32 numBytes, sendCmd, trash = 0;
     UINT8 locality, statusBits, debugLevel;
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    UINT8 returnValue = 0;
+
+    // This tells us what caused the tpmCmdServer to die.
+    UINT8 tpmCmdServerBreakValue = 0;
+
     fd_set readFds;
     int iResult;
+    char functionString[sizeof( MUTEX_DBG_FUNCTION_STR ) + 1 ];
+    UINT8 criticalSectionEntered;
+
+#ifdef  _WIN32
+#elif __linux || __unix
+    int mutexWaitRetVal;
+    struct timespec semWait = { 0, 0 };
+#else
+#error Unsupported OS--need to add OS-specific support for threading here.
+#endif
+
+    strcpy( &functionString[0], MUTEX_DBG_FUNCTION_STR );
 
     for(;;)
     {
+        criticalSectionEntered = 0;
+
         FD_ZERO( &readFds );
         FD_SET( serverStruct->connectSock, &readFds );
 
@@ -2174,22 +2257,26 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
         rval = recvBytes( serverStruct->connectSock, (unsigned char*) &sendCmd, 4 );
         if( rval != TSS2_RC_SUCCESS )
         {
-            returnValue = 1;
-            goto tpmCmdDone;
+            tpmCmdServerBreakValue = 2;
+            goto tpmCmdServerDone;
         }
                  
         sendCmd = CHANGE_ENDIAN_DWORD( sendCmd );
 
         if( sendCmd == TPM_SESSION_END )
         {
-            returnValue = 1;
+            // Do nothing except kill the server.
+            tpmCmdServerBreakValue = 3;
         }
         else if( sendCmd != MS_SIM_TPM_SEND_COMMAND )
         {
-            returnValue = 1;
+            // We received some value other than TPM_SESSION_END or MS_SIM_TPM_SEND_COMMAND.
+            // Kill the server.
+            tpmCmdServerBreakValue = 4;
         }
         else
         {
+            // sendCmd == MS_SIM_TPM_SEND_COMMAND
 
             // Receive the locality.
             rval = recvBytes( serverStruct->connectSock, (unsigned char*) &locality, 1 );
@@ -2242,6 +2329,18 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
                 continue;
             }
 
+            // CRITICAL SECTION STARTS HERE.
+            rval = StartCriticalSection( &tpmMutex, &functionString[0] );
+
+            if( rval != TSS2_RC_SUCCESS )
+            {
+                continue;
+            }
+            else
+            {
+                criticalSectionEntered = 1;
+            }
+
             // Send TPM command to TPM.
             ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->currentConnectSock = serverStruct->connectSock;
             rval = ResourceMgrSendTpmCommand( downstreamTctiContext, numBytes, cmdBuffer );
@@ -2249,63 +2348,92 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             {
                 CreateErrorResponse( TSS2_TCTI_RC_IO_ERROR );
                 SendErrorResponse( serverStruct->connectSock ); 
-                continue;
             }
-
-            // Receive response from TPM.
-            numBytes = maxRspSize;
-            rval = ResourceMgrReceiveTpmResponse( downstreamTctiContext, &numBytes, rspBuffer, TSS2_TCTI_TIMEOUT_BLOCK );
-            if( rval != TSS2_RC_SUCCESS )
+            else
             {
-                CreateErrorResponse( TSS2_TCTI_RC_IO_ERROR );
-                SendErrorResponse( serverStruct->connectSock ); 
-                continue;
-            }
+                // Receive response from TPM.
+                numBytes = maxRspSize;
+                rval = ResourceMgrReceiveTpmResponse( downstreamTctiContext, &numBytes, rspBuffer, TSS2_TCTI_TIMEOUT_BLOCK );
+                if( rval != TSS2_RC_SUCCESS )
+                {
+                    CreateErrorResponse( TSS2_TCTI_RC_IO_ERROR );
+                    SendErrorResponse( serverStruct->connectSock );
+                }
+                else
+                {
+                    numBytes = CHANGE_ENDIAN_DWORD( numBytes );
 
-            numBytes = CHANGE_ENDIAN_DWORD( numBytes );
+                    // Send size of TPM response to calling application.
+                    rval = sendBytes( serverStruct->connectSock, (char *)&numBytes, 4 );
+                    if( rval != TSS2_RC_SUCCESS )
+                    {
+                        tpmCmdServerBreakValue = 5;
+                        goto tpmCmdServerDone;
+                    }
 
-            // Send size of TPM response to calling application.        
-            rval = sendBytes( serverStruct->connectSock, (char *)&numBytes, 4 );
-            if( rval != TSS2_RC_SUCCESS )
-            {
-                returnValue = 1;
-                goto tpmCmdDone;
-            }
+                    numBytes = CHANGE_ENDIAN_DWORD( numBytes );
 
-            numBytes = CHANGE_ENDIAN_DWORD( numBytes );
+                    // Send TPM or RM response to calling application.
+                    rval = sendBytes( serverStruct->connectSock, (char *)rspBuffer, numBytes );
+                    if( rval != TSS2_RC_SUCCESS )
+                    {
+                        tpmCmdServerBreakValue = 6;
+                        goto tpmCmdServerDone;
+                    }
 
-            // Send TPM or RM response to calling application.        
-            rval = sendBytes( serverStruct->connectSock, (char *)rspBuffer, numBytes );
-            if( rval != TSS2_RC_SUCCESS )
-            {
-                returnValue = 1;
-                goto tpmCmdDone;
-            }
-
-            // Send the appended four bytes of 0's
-            sendBytes( serverStruct->connectSock, (char *)&trash, 4 );        
-            if( rval != TSS2_RC_SUCCESS )
-            {
-                returnValue = 1;
-                goto tpmCmdDone;
+                    // Send the appended four bytes of 0's
+                    sendBytes( serverStruct->connectSock, (char *)&trash, 4 );
+                    if( rval != TSS2_RC_SUCCESS )
+                    {
+                        tpmCmdServerBreakValue = 7;
+                        goto tpmCmdServerDone;
+                    }
+                }
             }
         }
-        if( returnValue == 1 )
+        if( tpmCmdServerBreakValue != 0 )
             break;
-        
+
+        //
+        // CRITICAL SECTION ENDS HERE.
+        //
+        // This is the case when a TPM command completes normally, or if a non-fatal
+        // error occurs during the TPM send or receive calls.
+        // In both cases, the server stays up and running.
+        //
+        rval = EndCriticalSection( &tpmMutex, &functionString[0] );
+        if( rval == TSS2_RC_SUCCESS )
+        {
+            criticalSectionEntered = 0;
+        }
     }
 
-
-tpmCmdDone:
+tpmCmdServerDone:
 
     printf( "TpmCmdServer died (%s), rval: 0x%8.8x, socket: 0x%x.\n", serverStruct->serverName, rval, serverStruct->connectSock );
+
+    //
+    // If we aren't in a critical section, we need to enter it.
+    //
+    // The only way we'd already be in a critical section here is if
+    // an error occurred after the TPM send and receive calls
+    // above.
+    //
+
+    if( criticalSectionEntered )
+    {
+        (void)FlushSessionsAndClearTable( serverStruct->connectSock );
+
+        // CRITICAL SECTION ENDS HERE.
+        rval = EndCriticalSection( &tpmMutex, &functionString[0] );
+    }
 
     closesocket( serverStruct->connectSock );
 	CloseHandle( serverStruct->threadHandle );
     (*rmFree)( serverStruct );
 	ExitThread( 0 );
 
-	return returnValue;
+	return tpmCmdServerBreakValue;
 }
 
 TSS2_RC ResourceMgrSetLocality(
@@ -2341,8 +2469,10 @@ UINT8 OtherCmdServer( SERVER_STRUCT *serverStruct )
     TSS2_RC rval = TSS2_RC_SUCCESS;
     fd_set readFds;
     int iResult;
+    char *functionString = "OtherCmdServer";
+    UINT8 criticalSectionEntered;
     
-     for(;;)
+    for(;;)
     {
         FD_ZERO( &readFds );
         FD_SET( serverStruct->connectSock, &readFds );
@@ -2375,8 +2505,16 @@ UINT8 OtherCmdServer( SERVER_STRUCT *serverStruct )
         }
         
         command = CHANGE_ENDIAN_DWORD( command );
+
         if( !simulator )
             continue;
+
+        if( command != MS_SIM_CANCEL_ON && command != MS_SIM_CANCEL_OFF &&
+                command != MS_SIM_POWER_ON && command != MS_SIM_POWER_OFF )
+        {
+            StartCriticalSection( &tpmMutex, &functionString[0] );
+        }
+
         switch( command )
         {
             case MS_SIM_POWER_ON:
@@ -2410,13 +2548,47 @@ UINT8 OtherCmdServer( SERVER_STRUCT *serverStruct )
         }
         else
         {
+            if( command != MS_SIM_CANCEL_ON && command != MS_SIM_CANCEL_OFF &&
+                    command != MS_SIM_POWER_ON && command != MS_SIM_POWER_OFF )
+            {
+                // Critical section ends here
+                rval = EndCriticalSection( &tpmMutex, &functionString[0] );
+
+                if( rval != TSS2_RC_SUCCESS )
+                {
+                    continue;
+                }
+                else
+                {
+                    criticalSectionEntered = 1;
+                }
+            }
             break;
+        }
+
+        if( command != MS_SIM_CANCEL_ON && command != MS_SIM_CANCEL_OFF &&
+                command != MS_SIM_POWER_ON && command != MS_SIM_POWER_OFF )
+        {
+            // Critical section ends here
+            rval = EndCriticalSection( &tpmMutex, &functionString[0] );
+            if( rval == TSS2_RC_SUCCESS )
+            {
+                criticalSectionEntered = 0;
+            }
         }
     }
 
 retOtherCmdServer:
      
     printf( "OtherCmdServer died (%s), socket: 0x%x.\n", serverStruct->serverName, serverStruct->connectSock );
+
+    if( criticalSectionEntered )
+    {
+        (void)FlushSessionsAndClearTable( serverStruct->connectSock );
+
+        // CRITICAL SECTION ENDS HERE.
+        rval = EndCriticalSection( &tpmMutex, &functionString[0] );
+    }
 
     closesocket( serverStruct->connectSock );
     CloseHandle( serverStruct->threadHandle );
@@ -2761,6 +2933,10 @@ int main(int argc, char* argv[])
     SERVER_STRUCT tpmCmdServerStruct = { 0, (SERVER_FN)&TpmCmdServer, "TPM CMD" };
     THREAD_TYPE sockServerThread;
     UINT8 tpmHostNameSpecified = 0, tpmPortSpecified = 0;
+
+#ifdef  _WIN32
+	SECURITY_ATTRIBUTES mutexAttributes = { sizeof( SECURITY_ATTRIBUTES ), NULL, TRUE };
+#endif
     
     setvbuf (stdout, NULL, _IONBF, BUFSIZ);
     if( argc > MAX_COMMAND_LINE_ARGS )
@@ -2873,6 +3049,34 @@ int main(int argc, char* argv[])
         goto initDone;
     }
     
+    // Init sysContext for use by marshalling and unmarshalling functions in RM.
+    tempSysContext = InitSysContext( 0, downstreamTctiContext, &abiVersion );
+    if( tempSysContext == 0 )
+    {
+        InitSysContextFailure();
+        goto initDone;
+    }
+
+#ifdef  _WIN32
+    // Create mutex.
+    tpmMutex = CreateMutex( &mutexAttributes, FALSE, NULL );
+    if( tpmMutex == NULL )
+    {
+        DebugPrintf( NO_PREFIX, "Resource Mgr failed to create mutex.  Exiting...\n", rval );
+        return( 1 );
+    }
+#elif __linux || __unix
+    // Create semaphore
+    rval = sem_init( &tpmMutex, 0, 1 );
+    if( rval != 0 )
+    {
+        DebugPrintf( NO_PREFIX, "Resource Mgr failed to create mutex, error #%d.  Exiting...\n", rval );
+        return( 1 );
+    }
+#else
+    #error Unsupported OS--need to add OS-specific support for threading here.
+#endif
+
     rval = InitResourceMgr( DBG_COMMAND_RM_TABLES );
     if( rval != TSS2_RC_SUCCESS )
     {
@@ -2929,6 +3133,8 @@ int main(int argc, char* argv[])
 
     CloseSockets( appOtherSock, appTpmSock );
     
+    CloseHandle( tpmMutex );
+
     TeardownSysContext( &resMgrSysContext );
     
 initDone:

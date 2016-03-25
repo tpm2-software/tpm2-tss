@@ -93,7 +93,7 @@ LIBRARY_LDFLAGS = -fPIC
 RESOURCEMGR_INC = -I$(srcdir)/include -I$(srcdir)/common \
     -I$(srcdir)/sysapi/include -I$(srcdir)/resourcemgr \
     -I$(srcdir)/test/tpmclient
-RESOURCEMGR_C = resourcemgr/resourcemgr.c
+RESOURCEMGR_C = resourcemgr/resourcemgr.c resourcemgr/criticalsection_linux.c
 
 TCTICOMMON_INC = -I$(srcdir)/include -I$(srcdir)/common \
     -I$(srcdir)/sysapi/include
