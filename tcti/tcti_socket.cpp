@@ -464,8 +464,6 @@ TSS2_RC InitSocketTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     size_t *contextSize,            // IN/OUT
     const TCTI_SOCKET_CONF *conf,              // IN
-    const uint64_t magic,
-    const uint32_t version,
 	const char *interfaceName,
     const uint8_t serverSockets
     )
@@ -484,8 +482,8 @@ TSS2_RC InitSocketTcti (
         (*printfFunction)(NO_PREFIX, "Initializing %s Interface\n", interfaceName );
 
         // Init TCTI context.
-        ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->magic = magic;
-        ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->version = version;
+        ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->magic = TCTI_MAGIC;
+        ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->version = TCTI_VERSION;
         ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->transmit = SocketSendTpmCommand;
         ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->receive = SocketReceiveTpmResponse;
         ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->finalize = SocketFinalize;

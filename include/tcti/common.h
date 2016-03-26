@@ -30,9 +30,6 @@
 
 #include <tss2/tpm20.h>
 
-#define TCTI_MAGIC 0x7e18e9defa8bc9e2
-#define TCTI_VERSION 0x1
-
 typedef enum { NO_PREFIX = 0, RM_PREFIX = 1 } printf_type;
 typedef int (*TCTI_LOG_CALLBACK)( void *data, printf_type type, const char *format, ...);
 
