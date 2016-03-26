@@ -59,8 +59,6 @@ TSS2_RC InitSocketTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     size_t *contextSize,            // IN/OUT
     const TCTI_SOCKET_CONF *config,             // IN
-    const uint64_t magic,
-    const uint32_t version,
 	const char *interfaceName,
     const uint8_t serverSockets
     );

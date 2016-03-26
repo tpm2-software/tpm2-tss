@@ -283,14 +283,14 @@ TSS2_RC InitTctiResMgrContext( TCTI_SOCKET_CONF *rmInterfaceConfig, TSS2_TCTI_CO
 
     TSS2_RC rval;
 
-	rval = InitSocketTcti(NULL, &size, rmInterfaceConfig, 0, 0, &resMgrInterfaceName[0], 0 );
+	rval = InitSocketTcti(NULL, &size, rmInterfaceConfig, &resMgrInterfaceName[0], 0 );
     if( rval != TSS2_RC_SUCCESS )
         return rval;
 
     *tctiContext = (TSS2_TCTI_CONTEXT *)malloc(size);
     if( *tctiContext )
     {
-        rval = InitSocketTcti(*tctiContext, &size, rmInterfaceConfig, TCTI_MAGIC, TCTI_VERSION, resMgrInterfaceName, 0 );
+        rval = InitSocketTcti(*tctiContext, &size, rmInterfaceConfig, resMgrInterfaceName, 0 );
     }
     else
     {

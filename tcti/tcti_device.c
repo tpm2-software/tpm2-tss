@@ -223,8 +223,6 @@ TSS2_RC InitDeviceTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     size_t *contextSize,            // IN/OUT
     const TCTI_DEVICE_CONF *config,              // IN
-    const uint64_t magic,
-    const uint32_t version,
     const char *interfaceName
     )
 {
@@ -243,8 +241,8 @@ TSS2_RC InitDeviceTcti (
     else
     {
         // Init TCTI context.
-        ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->magic = magic;
-        ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->version = version;
+        ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->magic = TCTI_MAGIC;
+        ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->version = TCTI_VERSION;
         ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->transmit = LocalTpmSendTpmCommand;
         ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->receive = LocalTpmReceiveTpmResponse;
         ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->finalize = LocalTpmFinalize;

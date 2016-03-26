@@ -2488,13 +2488,13 @@ TSS2_RC InitSimulatorTctiContext( TCTI_SOCKET_CONF *tcti_conf, TSS2_TCTI_CONTEXT
     
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
-    rval = InitSocketTcti(NULL, &size, tcti_conf, 0, 0, resSocketTctiName, 1 );
+    rval = InitSocketTcti(NULL, &size, tcti_conf, resSocketTctiName, 1 );
     if( rval != TSS2_RC_SUCCESS )
         return rval;
     
     *tctiContext = malloc(size);
 
-    rval = InitSocketTcti(*tctiContext, &size, tcti_conf, TCTI_MAGIC, TCTI_VERSION, resSocketTctiName, 0 );
+    rval = InitSocketTcti(*tctiContext, &size, tcti_conf, resSocketTctiName, 0 );
     return rval;
 }
 
