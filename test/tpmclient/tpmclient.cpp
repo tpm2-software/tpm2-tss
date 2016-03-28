@@ -2007,6 +2007,7 @@ void TestNV()
     CheckPassed( rval );
 
     nvPublic.t.size = 0;
+    nvName.t.size = sizeof( nvName ) - 2;
     rval = Tss2_Sys_NV_ReadPublic( sysContext, TPM20_INDEX_TEST1, 0, &nvPublic, &nvName, 0 );
     CheckPassed( rval );
 
@@ -2871,6 +2872,7 @@ TPM_RC CreateDataBlob( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TP
 
     outPublic.t.size = 0;
     creationData.t.size = 0;
+    creationHash.t.size = sizeof( creationHash ) - 2;
     rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_PLATFORM, &cmdAuthArray,
             &inSensitive, &inPublic, &outsideInfo, &creationPcr,
             &srkHandle, &outPublic, &creationData, &creationHash,
@@ -2957,6 +2959,7 @@ TPM_RC AuthValueUnseal( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession )
             TPM_HT_NO_HANDLE, &cmdAuthArray, 1 );
     CheckPassed( rval );
 
+    outData.t.size = sizeof( outData ) - 2;
     rval = Tss2_Sys_Unseal( sysContext, blobHandle, &cmdAuthArray, &outData, 0 );
     CheckPassed( rval );
 
@@ -4838,6 +4841,7 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
     // And now read the data back.
     // If the command is successful, the command
     // HMAC was correct.
+    nvReadData.t.size = sizeof( nvReadData ) - 2;
     sessionCmdRval = Tss2_Sys_NV_Read( simpleTestContext,
             TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST,
@@ -5635,6 +5639,7 @@ void TestEncryptDecryptSession()
         encryptedReadData.t.size = encryptParamSize;
         memcpy( (void *)&encryptedReadData.t.buffer[0],
                 (void *)encryptParamBuffer, encryptParamSize );
+        decryptedReadData.t.size = sizeof( decryptedReadData ) - 2;
         rval = DecryptResponseParam( encryptDecryptSession,
                 (TPM2B_MAX_BUFFER *)&decryptedReadData,
                 (TPM2B_MAX_BUFFER *)&encryptedReadData, &nvAuth );
