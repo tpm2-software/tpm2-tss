@@ -213,8 +213,9 @@ TSS2_RC ResmgrFixupErrorlevel( TSS2_RC errCode )
 // 1.  Upper octet is 0xff
 // 2.  When debug is turned on, next nibble, bits 23 - 20 are set to 0xf.
 //
+typedef struct _RESOURCE_MANAGER_ENTRY *RESOURCE_MANAGER_ENTRY_PTR;
 
-typedef struct {
+typedef struct _RESOURCE_MANAGER_ENTRY{
     struct {
         UINT16 loaded : 1;          // Indicates whether this entry's context is loaded
                                     // into the TPM or not.
@@ -246,10 +247,10 @@ typedef struct {
                                     //  flushed.
     UINT64 connectionId;            // Used to identify which connection owns the object,
                                     // sequence, or session.
-    void *nextEntry; // Next entry in the list; 0 to terminate list.                                
+    RESOURCE_MANAGER_ENTRY_PTR nextEntry; // Next entry in the list; 0 to terminate list.
 } RESOURCE_MANAGER_ENTRY;
 
-RESOURCE_MANAGER_ENTRY *entryList = 0;
+RESOURCE_MANAGER_ENTRY_PTR entryList = 0;
 
 typedef struct
 {
@@ -512,7 +513,7 @@ TSS2_RC GetConnectionId( UINT64 *connectionId, TSS2_TCTI_CONTEXT *tctiContext )
 void PrintRMTables()
 {
     int i;
-    RESOURCE_MANAGER_ENTRY *entryPtr;
+    RESOURCE_MANAGER_ENTRY_PTR entryPtr;
 
     if( !printRMTables )
         return;
@@ -643,10 +644,10 @@ endFlushAllLoadedHandles:
 TSS2_RC AddEntry( TPM_HANDLE virtualHandle, TPM_HANDLE realHandle, TPM_HANDLE parentHandle,
     TPMI_RH_HIERARCHY hierarchy, UINT64 connectionId )
 {
-    RESOURCE_MANAGER_ENTRY **entryPtr, *newEntry;
+    RESOURCE_MANAGER_ENTRY_PTR *entryPtr, newEntry;
             
     // Find end of list
-    for( entryPtr = &entryList; *entryPtr != 0; entryPtr = (RESOURCE_MANAGER_ENTRY **)&( (*entryPtr)->nextEntry ) )
+    for( entryPtr = &entryList; *entryPtr != 0; entryPtr = &( (*entryPtr)->nextEntry ) )
         ;
 
     // Allocate space for new record
@@ -669,9 +670,9 @@ TSS2_RC AddEntry( TPM_HANDLE virtualHandle, TPM_HANDLE realHandle, TPM_HANDLE pa
     return TSS2_RC_SUCCESS;
 }
 
-TSS2_RC RemoveEntry(RESOURCE_MANAGER_ENTRY *entry)
+TSS2_RC RemoveEntry(RESOURCE_MANAGER_ENTRY_PTR entry)
 {
-    RESOURCE_MANAGER_ENTRY **predEntryPtr;
+    RESOURCE_MANAGER_ENTRY_PTR *predEntryPtr;
 
     if( IsSessionHandle( entry->virtualHandle ) || IsObjectHandle( entry->virtualHandle ) )
 	{
@@ -679,12 +680,12 @@ TSS2_RC RemoveEntry(RESOURCE_MANAGER_ENTRY *entry)
 	}
     
     if( entry == entryList )
-        entryList = (RESOURCE_MANAGER_ENTRY *)entryList->nextEntry;
+        entryList = entryList->nextEntry;
     else
     {
         // Find predecessor.
         for( predEntryPtr = &entryList; (*predEntryPtr)->nextEntry != entry;
-                predEntryPtr = (RESOURCE_MANAGER_ENTRY **)&( (*predEntryPtr)->nextEntry ) )
+                predEntryPtr = &( (*predEntryPtr)->nextEntry ) )
             ;
 
         (*predEntryPtr)->nextEntry = entry->nextEntry;
@@ -705,8 +706,8 @@ enum findType{ RMFIND_VIRTUAL_HANDLE, RMFIND_REAL_HANDLE, RMFIND_PARENT_HANDLE, 
 // 	matchSpec is the value that has to match the field.
 //    foundEntry is pointer to first found matching entry
 //
-TSS2_RC FindEntry(RESOURCE_MANAGER_ENTRY *firstEntry,
-    enum findType type, UINT64 matchSpec, RESOURCE_MANAGER_ENTRY **foundEntryPtr)
+TSS2_RC FindEntry(RESOURCE_MANAGER_ENTRY_PTR firstEntry,
+    enum findType type, UINT64 matchSpec, RESOURCE_MANAGER_ENTRY_PTR *foundEntryPtr)
 {
     UINT8 foundEntry = 0;
     
@@ -765,7 +766,7 @@ TSS2_RC FindEntry(RESOURCE_MANAGER_ENTRY *firstEntry,
 TSS2_RC EvictContext(TPM_HANDLE virtualHandle)
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    RESOURCE_MANAGER_ENTRY *foundEntryPtr;
+    RESOURCE_MANAGER_ENTRY_PTR foundEntryPtr;
 
     // Find entry corresponding to this virtual handle.
     rval = FindEntry( entryList, RMFIND_VIRTUAL_HANDLE, virtualHandle, &foundEntryPtr);
@@ -813,11 +814,11 @@ TSS2_RC EvictContext(TPM_HANDLE virtualHandle)
     return rval;
 }
 
-TSS2_RC FindOldestSession(RESOURCE_MANAGER_ENTRY **oldestSessionEntry)
+TSS2_RC FindOldestSession(RESOURCE_MANAGER_ENTRY_PTR *oldestSessionEntry)
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
     
-    RESOURCE_MANAGER_ENTRY *currEntry;
+    RESOURCE_MANAGER_ENTRY_PTR currEntry;
 
     *oldestSessionEntry = 0;
 
@@ -888,7 +889,7 @@ TSS2_RC HandleGap()
     TSS2_RC rval = TSS2_RC_SUCCESS;
     UINT32 otherIntervalSessionsCount = 0;
     UINT32 currIntervalSequenceNumsLeft = 0;
-    RESOURCE_MANAGER_ENTRY *entryPtr, *oldestSessionEntryPtr;
+    RESOURCE_MANAGER_ENTRY_PTR entryPtr, oldestSessionEntryPtr;
 
     // Find the number of sessions in the interval other than the current one.
     for( entryPtr = entryList; entryPtr != 0; entryPtr = entryPtr->nextEntry )
@@ -981,7 +982,7 @@ TSS2_RC HandleGap()
 TSS2_RC LoadContext( TPM_HANDLE virtualHandle, UINT64 connectionId, TPM_HANDLE *handlePtr, UINT8 authArea, UINT8 sessionNum )
 {
     TSS2_RC rval = 0;
-    RESOURCE_MANAGER_ENTRY *foundEntryPtr;
+    RESOURCE_MANAGER_ENTRY_PTR foundEntryPtr;
     
     // Find entry corresponding to this virtual handle.
     rval = FindEntry( entryList, RMFIND_VIRTUAL_HANDLE, virtualHandle, &foundEntryPtr );
@@ -1068,7 +1069,7 @@ UINT8 HandleWeCareAbout( TPM_HANDLE handle )
 
 void ClearHierarchy( TPMI_RH_HIERARCHY hierarchy )
 {
-    RESOURCE_MANAGER_ENTRY *foundEntryPtr, *nextEntry;
+    RESOURCE_MANAGER_ENTRY_PTR foundEntryPtr, nextEntry;
     TSS2_RC rval;
     
     nextEntry = entryList;
@@ -1125,7 +1126,7 @@ static UINT8 rmErrorDuringSend = 0;
 TSS2_RC EvictOldestSession()
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    RESOURCE_MANAGER_ENTRY *oldestSessionEntry;
+    RESOURCE_MANAGER_ENTRY_PTR oldestSessionEntry;
 
     // Find oldest session.
     rval = FindOldestSession( &oldestSessionEntry );
@@ -1156,7 +1157,7 @@ TSS2_RC EvictOldestSession()
 TSS2_RC ContextGapUpdateOldestSession()
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    RESOURCE_MANAGER_ENTRY *oldestSessionEntry;
+    RESOURCE_MANAGER_ENTRY_PTR oldestSessionEntry;
 
     // Find oldest session.
     rval = FindOldestSession( &oldestSessionEntry );
@@ -1199,7 +1200,7 @@ TSS2_RC ResourceMgrSendTpmCommand(
     TPM_RC rval = TSS2_RC_SUCCESS;
     TPM_RC responseRval = TSS2_RC_SUCCESS;
     UINT8 *endAuth;
-    RESOURCE_MANAGER_ENTRY *foundEntryPtr;
+    RESOURCE_MANAGER_ENTRY_PTR foundEntryPtr;
     UINT8 *currentPtr = command_buffer;
     TPM_ST tag;
 	UINT32 authAreaSize;
@@ -1525,7 +1526,7 @@ TSS2_RC EvictEntities( int numHandles, TPM_HANDLE *handles )
     
     for( i = 0; i < numHandles; i++ )
     {
-        RESOURCE_MANAGER_ENTRY *foundEntryPtr;
+        RESOURCE_MANAGER_ENTRY_PTR foundEntryPtr;
 
         if( HandleWeCareAbout( handles[i] ) )
         {
@@ -1593,7 +1594,7 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
     int numResponseHandles = 0;
     UINT8 *endAuth;
     int rval = TSS2_RC_SUCCESS;
-    RESOURCE_MANAGER_ENTRY *foundEntryPtr;
+    RESOURCE_MANAGER_ENTRY_PTR foundEntryPtr;
     UINT8 commandPassed = 0;
     UINT8 *currentPtr, *savedCurrentPtr;
     UINT32 responseHandles[3] = { 0, 0, 0 };
@@ -1881,7 +1882,7 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                     // TBD:  need to add tests for all of this code.
 
                     UINT8 shutdownStartupSequence = TPM_RESET;
-                    RESOURCE_MANAGER_ENTRY *entryPtr;
+                    RESOURCE_MANAGER_ENTRY_PTR entryPtr;
 
                     if( shutdown_state )
                     {
@@ -1916,7 +1917,7 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                 }
                 else if( currentCommandCode == TPM_CC_EvictControl )
                 {
-                    RESOURCE_MANAGER_ENTRY *foundEntryPtr;
+                    RESOURCE_MANAGER_ENTRY_PTR foundEntryPtr;
                     
                     if( 0 == PersistentHandle( objectHandle ) )
                     {
