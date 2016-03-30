@@ -50,26 +50,33 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
     const uint8_t *startParams;
     UINT8 cmdCode[4] = {0,0,0,0};
     UINT8 *cmdCodePtr = &cmdCode[0];
-    
+
     name1.b.size = name2.b.size = 0;
-    
+
     // Calculate pHash
     //
 
     // Only get names for commands
     if( responseCode == TPM_RC_NO_RESPONSE )
     {
-        // Get names for the handles
-        rval = TpmHandleToName( handle1, &name1 );
-        if( rval != TPM_RC_SUCCESS )
-            return rval;
+        if( handle1 == TPM_HT_NO_HANDLE )
+        {
+            name1.t.size = 0;
+        }
+        else
+        {
+            // Get names for the handles
+            rval = TpmHandleToName( handle1, &name1 );
+            if( rval != TPM_RC_SUCCESS )
+                return rval;
+        }
     }
 
 #ifdef DEBUG
     DebugPrintf( 0, "\n\nNAME1 = \n" );
     PrintSizedBuffer( &(name1.b) );
 #endif
-    
+
     // Only get names for commands
     if( responseCode == TPM_RC_NO_RESPONSE )
     {
@@ -77,9 +84,16 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
         if( rval != TPM_RC_SUCCESS )
             return rval;
 
-        rval = TpmHandleToName( handle2, &name2 );
-        if( rval != TPM_RC_SUCCESS )
-            return rval;
+        if( handle2 == TPM_HT_NO_HANDLE )
+        {
+            name2.t.size = 0;
+        }
+        else
+        {
+            rval = TpmHandleToName( handle2, &name2 );
+            if( rval != TPM_RC_SUCCESS )
+                return rval;
+        }
     }
     else
     {
@@ -87,12 +101,12 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
         if( rval != TPM_RC_SUCCESS )
             return rval;
     }
-    
+
 #ifdef DEBUG
     DebugPrintf( 0, "\n\nNAME2 = \n" );
     PrintSizedBuffer( &(name2.b) );
 #endif
-    
+
     // Create pHash input byte stream:  first add response code, if any.
     hashInput.b.size = 0;
     if( responseCode != TPM_RC_NO_RESPONSE )
@@ -116,7 +130,7 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
     rval = ConcatSizedByteBuffer( &hashInput, &( name1.b ) );
     if( rval != TPM_RC_SUCCESS )
         return rval;
-    
+
     rval = ConcatSizedByteBuffer( &hashInput, &( name2.b ) );
     if( rval != TPM_RC_SUCCESS )
         return rval;
@@ -137,7 +151,7 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
     DebugPrintf( 0, "\n\nPHASH input bytes= \n" );
     PrintSizedBuffer( &(hashInput.b) );
 #endif
-    
+
     // Now hash the whole mess.
     if( hashInput.t.size > sizeof( hashInput.t.buffer ) )
     {
@@ -153,6 +167,6 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
         PrintSizedBuffer( &(pHash->b) );
 #endif
     }
-    
+
     return rval;
- }
+}
