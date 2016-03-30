@@ -143,6 +143,7 @@ UINT32 tpmSpecVersion = 0;
 UINT32 tpmManufacturer = 0;
 
 #define MSFT_MANUFACTURER_ID 0x4d534654
+#define IBM_MANUFACTURER_ID 0x49424d20
 
 //
 // These are helper functions that are called through function pointers so that
@@ -640,7 +641,7 @@ void TestTctiApis( TSS2_TCTI_CONTEXT *tstTctiContext, int againstRM )
     
     TSS2_RC rval = TSS2_RC_SUCCESS;
     
-    if( tpmManufacturer == MSFT_MANUFACTURER_ID )
+    if( tpmManufacturer == MSFT_MANUFACTURER_ID || tpmManufacturer == IBM_MANUFACTURER_ID )
     {
         expectedResponseSize = 0x10;
         goodRspBuffer = &( goodResponseBuffer[0] );
