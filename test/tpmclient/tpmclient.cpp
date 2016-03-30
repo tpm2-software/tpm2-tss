@@ -268,7 +268,7 @@ TSS2_RC InitTctiResMgrContext( TCTI_SOCKET_CONF *rmInterfaceConfig, TSS2_TCTI_CO
     
     TSS2_RC rval;
 
-    rval = InitSocketTcti(NULL, &size, rmInterfaceConfig, &resMgrInterfaceName[0], 0 );
+    rval = InitSocketTcti(NULL, &size, rmInterfaceConfig, 0 );
     if( rval != TSS2_RC_SUCCESS )
         return rval;
     
@@ -276,7 +276,8 @@ TSS2_RC InitTctiResMgrContext( TCTI_SOCKET_CONF *rmInterfaceConfig, TSS2_TCTI_CO
 
     if( *tctiContext )
     {
-        rval = InitSocketTcti(*tctiContext, &size, rmInterfaceConfig, resMgrInterfaceName, 0 );
+        DebugPrintf( NO_PREFIX, "Initializing %s Interface\n", name);
+        rval = InitSocketTcti(*tctiContext, &size, rmInterfaceConfig, 0 );
     }
     else
     {

@@ -16,7 +16,7 @@ tcti_dev_init_size (void **state)
     size_t tcti_size = 0;
     TSS2_RC ret = TSS2_RC_SUCCESS;
 
-    ret = InitDeviceTcti (NULL, &tcti_size, NULL, NULL);
+    ret = InitDeviceTcti (NULL, &tcti_size, NULL);
     if (ret != TSS2_RC_SUCCESS)
         return 0;
     else
@@ -45,11 +45,11 @@ tcti_dev_init_log (void **state)
         "/dev/null", tcti_dev_init_log_callback, &my_data
     };
 
-    ret = InitDeviceTcti (NULL, &tcti_size, NULL, NULL);
+    ret = InitDeviceTcti (NULL, &tcti_size, NULL);
     assert_true (ret == TSS2_RC_SUCCESS);
     ctx = calloc (1, tcti_size);
     assert_non_null (ctx);
-    ret = InitDeviceTcti (ctx, 0, &conf, NULL);
+    ret = InitDeviceTcti (ctx, 0, &conf);
     assert_true (ret == TSS2_RC_SUCCESS);
     assert_true (TCTI_LOG_CALLBACK (ctx) == tcti_dev_init_log_callback);
     assert_true (*(uint8_t*)TCTI_LOG_DATA (ctx) == my_data);
@@ -85,11 +85,11 @@ tcti_dev_log_called (void **state)
         "/dev/null", tcti_dev_log_callback, &called
     };
 
-    ret = InitDeviceTcti (NULL, &tcti_size, NULL, NULL);
+    ret = InitDeviceTcti (NULL, &tcti_size, NULL);
     assert_true (ret == TSS2_RC_SUCCESS);
     ctx = calloc (1, tcti_size);
     assert_non_null (ctx);
-    ret = InitDeviceTcti (ctx, 0, &conf, NULL);
+    ret = InitDeviceTcti (ctx, 0, &conf);
     assert_true (ret == TSS2_RC_SUCCESS);
     if (ctx)
         free (ctx);
