@@ -1,5 +1,6 @@
 #include <tcti/tcti_device.h>
 #include "tcti_util.h"
+#include "debug.h"
 
 TSS2_RC InitDeviceTctiContext( const TCTI_DEVICE_CONF *driverConfig, TSS2_TCTI_CONTEXT **tctiContext, const char *deviceTctiName )
 {
@@ -7,13 +8,14 @@ TSS2_RC InitDeviceTctiContext( const TCTI_DEVICE_CONF *driverConfig, TSS2_TCTI_C
 
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
-    rval = InitDeviceTcti(NULL, &size, driverConfig, deviceTctiName );
+    rval = InitDeviceTcti(NULL, &size, driverConfig );
     if( rval != TSS2_RC_SUCCESS )
         return rval;
 
     *tctiContext = malloc(size);
 
-    rval = InitDeviceTcti(*tctiContext, &size, driverConfig, deviceTctiName );
+    DebugPrintf( NO_PREFIX, "Initializing %s Interface\n", deviceTctiName );
+    rval = InitDeviceTcti(*tctiContext, &size, driverConfig );
     return rval;
 }
 

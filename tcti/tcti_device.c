@@ -222,8 +222,7 @@ TSS2_RC LocalTpmSetLocality(
 TSS2_RC InitDeviceTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     size_t *contextSize,            // IN/OUT
-    const TCTI_DEVICE_CONF *config,              // IN
-    const char *interfaceName
+    const TCTI_DEVICE_CONF *config  // IN
     )
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
@@ -256,8 +255,6 @@ TSS2_RC InitDeviceTcti (
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage = TCTI_STAGE_INITIALIZE;
         TCTI_LOG_CALLBACK( tctiContext ) = config->logCallback;
         TCTI_LOG_DATA( tctiContext ) = config->logData;
-
-        TCTI_LOG( tctiContext, NO_PREFIX, "Initializing %s Interface\n", interfaceName );
 
         ( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile ) = open( config->device_path, O_RDWR );
         if( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile < 0 ) 
