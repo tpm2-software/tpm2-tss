@@ -156,7 +156,7 @@ void RollNonces( SESSION *session, TPM2B_NONCE *newNonce  )
 // It performs the command, calculates the session key, and updates a
 // SESSION structure.
 //
-TPM_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
+TPM_RC StartAuthSession( SESSION *session )
 {
     TPM_RC rval;
     TPM2B_ENCRYPTED_SECRET key;
@@ -167,7 +167,7 @@ TPM_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
     
     key.t.size = 0;
 
-    tmpSysContext = InitSysContext( 1000, tctiContext, &abiVersion );
+    tmpSysContext = InitSysContext( 1000, resMgrTctiContext, &abiVersion );
     if( tmpSysContext == 0 )
         return TSS2_APP_RC_INIT_SYS_CONTEXT_FAILED;
 
@@ -254,8 +254,7 @@ TPM_RC StartAuthSessionWithParams( SESSION **session,
     TPMI_DH_OBJECT tpmKey, TPM2B_MAX_BUFFER *salt, 
     TPMI_DH_ENTITY bind, TPM2B_AUTH *bindAuth, TPM2B_NONCE *nonceCaller,
     TPM2B_ENCRYPTED_SECRET *encryptedSalt,
-    TPM_SE sessionType, TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH algId,
-    TSS2_TCTI_CONTEXT *tctiContext )
+    TPM_SE sessionType, TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH algId )
 {
     TPM_RC rval;
     SESSION_LIST_ENTRY *sessionEntry;
@@ -309,7 +308,7 @@ TPM_RC StartAuthSessionWithParams( SESSION **session,
         if( (*session)->bind == TPM_RH_NULL )
             (*session)->authValueBind.t.size = 0;
 
-        rval = StartAuthSession( *session, tctiContext );
+        rval = StartAuthSession( *session );
         if( rval != TSS2_RC_SUCCESS )
         {
             DeleteSession( *session );
