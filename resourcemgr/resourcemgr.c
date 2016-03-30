@@ -3096,7 +3096,7 @@ int main(int argc, char* argv[])
     ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_DISABLED;
 #endif        
 
-    if( 0 != InitSockets( appHostName, appPort, 1, &appOtherSock, &appTpmSock ) )
+    if( 0 != InitSockets( appHostName, appPort, 1, &appOtherSock, &appTpmSock, DebugPrintfCallback, NULL ) )
     {
         printf( "Resource Mgr, upstream interface to applications, failed to init sockets.  Exiting...\n" );
         closesocket( appOtherSock );

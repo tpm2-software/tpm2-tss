@@ -27,7 +27,14 @@ int WSAGetLastError();
 
 #endif
 
-int InitSockets( const char *hostName, UINT16 port, UINT8 serverSockets, SOCKET *otherSock, SOCKET *tpmSock );
+int
+InitSockets( const char *hostName,
+             UINT16 port,
+             UINT8 serverSockets,
+             SOCKET *otherSock,
+             SOCKET *tpmSock,
+             TCTI_LOG_CALLBACK  logCallback,
+             void *logData );
 void CloseSockets( SOCKET serverSock, SOCKET tpmSock );
 TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len );
 TSS2_RC sendBytes( SOCKET tpmSock, const char *data, int len );
