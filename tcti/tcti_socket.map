@@ -1,0 +1,8 @@
+{
+    global:
+        InitSocketTcti;
+        PlatformCommand;
+        TeardownSocketTcti;
+    local:
+        *;
+};
