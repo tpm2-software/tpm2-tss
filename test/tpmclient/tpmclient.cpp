@@ -7077,7 +7077,11 @@ void TestCreate1()
 //
 void TestLocalTCTI()
 {
-    TCTI_DEVICE_CONF deviceTctiConfig = { "/dev/tpm0" };
+    TCTI_DEVICE_CONF deviceTctiConfig = {
+        "/dev/tpm0",
+        DebugPrintfCallback,
+        NULL
+    };
     TSS2_RC rval = TSS2_RC_SUCCESS;
     const char *deviceTctiName = "Local Device TCTI";
     
