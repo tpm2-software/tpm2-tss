@@ -66,7 +66,7 @@ static TSS2_RC tctiRecvBytes( TSS2_TCTI_CONTEXT *tctiContext, SOCKET sock, unsig
     }
 #ifdef DEBUG_SOCKETS
     TCTI_LOG( tctiContext, NO_PREFIX, "Receive Bytes from socket #0x%x: \n", sock );
-    DebugPrintBuffer( NO_PREFIX, data, len );
+    TCTI_LOG_BUFFER( tctiContext, NO_PREFIX, data, len );
 #endif
 
     return TSS2_RC_SUCCESS;
@@ -78,7 +78,7 @@ static TSS2_RC tctiSendBytes( TSS2_TCTI_CONTEXT *tctiContext, SOCKET sock, const
 
 #ifdef DEBUG_SOCKETS
     TCTI_LOG( tctiContext, NO_PREFIX, "Send Bytes to socket #0x%x: \n", sock );
-    DebugPrintBuffer( NO_PREFIX, (UINT8 *)data, len );
+    TCTI_LOG_BUFFER( tctiContext, NO_PREFIX, (UINT8 *)data, len );
 #endif
 
     ret = sendBytes( sock, data, len);
@@ -527,6 +527,7 @@ TSS2_RC InitSocketTcti (
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived = 0;
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived = 0;
         TCTI_LOG_CALLBACK( tctiContext ) = conf->logCallback;
+        TCTI_LOG_BUFFER_CALLBACK( tctiContext ) = conf->logBufferCallback;
         TCTI_LOG_DATA( tctiContext ) = conf->logData;
 
         rval = (TSS2_RC) InitSockets( conf->hostname, conf->port, serverSockets, &otherSock, &tpmSock, TCTI_LOG_CALLBACK( tctiContext ), TCTI_LOG_DATA( tctiContext) );

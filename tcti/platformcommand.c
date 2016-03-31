@@ -70,7 +70,7 @@ TSS2_RC PlatformCommand(
     {
 #ifdef DEBUG_SOCKETS
         TCTI_LOG( tctiContext, NO_PREFIX, "Send Bytes to socket #0x%x: \n", TCTI_CONTEXT_INTEL->otherSock );
-        DebugPrintBuffer( NO_PREFIX, (UINT8 *)sendbuf, 4 );
+        TCTI_LOG_BUFFER( tctiContext, NO_PREFIX, (UINT8 *)sendbuf, 4 );
 #endif
         // Read result
         iResult = recv( TCTI_CONTEXT_INTEL->otherSock, recvbuf, 4, 0);
@@ -88,7 +88,7 @@ TSS2_RC PlatformCommand(
         {
 #ifdef DEBUG_SOCKETS
             TCTI_LOG( tctiContext, NO_PREFIX, "Receive bytes from socket #0x%x: \n", TCTI_CONTEXT_INTEL->otherSock );
-            DebugPrintBuffer( NO_PREFIX, (UINT8 *)recvbuf, 4 );
+            TCTI_LOG_BUFFER( tctiContext, NO_PREFIX, (UINT8 *)recvbuf, 4 );
 #endif
         }
     }

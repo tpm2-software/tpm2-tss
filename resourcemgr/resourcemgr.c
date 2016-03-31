@@ -2708,6 +2708,7 @@ TCTI_SOCKET_CONF simInterfaceConfig = {
     DEFAULT_HOSTNAME,
     DEFAULT_SIMULATOR_TPM_PORT,
     DebugPrintfCallback,
+    DebugPrintBufferCallback,
     NULL
 };
 

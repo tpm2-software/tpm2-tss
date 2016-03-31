@@ -135,6 +135,7 @@ TCTI_SOCKET_CONF rmInterfaceConfig = {
     DEFAULT_HOSTNAME,
     DEFAULT_RESMGR_TPM_PORT,
     DebugPrintfCallback,
+    DebugPrintBufferCallback,
     NULL
 };
     
