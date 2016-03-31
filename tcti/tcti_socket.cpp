@@ -54,8 +54,6 @@
 extern "C" {
 #endif
 
-extern UINT8 simulator;
-
 static TSS2_RC tctiRecvBytes( TSS2_TCTI_CONTEXT *tctiContext, SOCKET sock, unsigned char *data, int len )
 {
     TSS2_RC result = 0;
