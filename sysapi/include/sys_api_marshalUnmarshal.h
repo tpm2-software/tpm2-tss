@@ -345,6 +345,62 @@ void Marshal_TPMS_PCR_SELECTION(
 	TPMS_PCR_SELECTION *pcrSelection
 	);
 
+void Marshal_TPMS_ALG_PROPERTY(
+	TSS2_SYS_CONTEXT *sysContext,
+	TPMS_ALG_PROPERTY *algProperty
+	);
+
+void Marshal_TPMS_TAGGED_PROPERTY(
+	TSS2_SYS_CONTEXT *sysContext,
+	TPMS_TAGGED_PROPERTY *taggedProperty
+	);
+
+void Marshal_TPMS_TAGGED_PCR_SELECT(
+	TSS2_SYS_CONTEXT *sysContext,
+	TPMS_TAGGED_PCR_SELECT *taggedPcrSelect
+	);
+
+void Marshal_TPML_CCA(
+	TSS2_SYS_CONTEXT *sysContext,
+	TPML_CCA *cca
+	);
+
+void Marshal_TPML_HANDLE(
+	TSS2_SYS_CONTEXT *sysContext,
+	TPML_HANDLE *handle
+	);
+
+void Marshal_TPML_ALG_PROPERTY(
+	TSS2_SYS_CONTEXT *sysContext,
+	TPML_ALG_PROPERTY *algProperty
+	);
+
+void Marshal_TPML_TAGGED_TPM_PROPERTY(
+	TSS2_SYS_CONTEXT *sysContext,
+	TPML_TAGGED_TPM_PROPERTY *taggedTpmProperty
+	);
+
+void Marshal_TPML_TAGGED_PCR_PROPERTY(
+	TSS2_SYS_CONTEXT *sysContext,
+	TPML_TAGGED_PCR_PROPERTY *taggedPcrProperty
+	);
+
+void Marshal_TPML_ECC_CURVE(
+	TSS2_SYS_CONTEXT *sysContext,
+	TPML_ECC_CURVE *eccCurve
+	);
+
+void Marshal_TPMU_CAPABILITIES(
+	TSS2_SYS_CONTEXT *sysContext,
+	TPMU_CAPABILITIES *capabilities,
+	UINT32 selector
+	);
+
+void Marshal_TPMS_CAPABILITY_DATA(
+	TSS2_SYS_CONTEXT *sysContext,
+	TPMS_CAPABILITY_DATA *capabilityData
+	);
+
 void Marshal_TPMS_CLOCK_INFO(
 	TSS2_SYS_CONTEXT *sysContext,
 	TPMS_CLOCK_INFO *clockInfo

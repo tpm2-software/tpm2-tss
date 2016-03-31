@@ -54,7 +54,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\sysapi\include;..\include;..\common</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sysapi\include;..\include;..\common;.</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -107,6 +107,7 @@
     <ClCompile Include="..\common\sockets.cpp" />
     <ClCompile Include="..\common\syscontext.c" />
     <ClCompile Include="..\tcti\commonchecks.c" />
+    <ClCompile Include="..\tcti\criticalsection.c" />
     <ClCompile Include="..\tcti\platformcommand.c" />
     <ClCompile Include="..\tcti\tcti_socket.cpp" />
     <ClCompile Include="resourcemgr.c" />

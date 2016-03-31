@@ -97,7 +97,7 @@ TCTIDEVICE_INC = $(TCTICOMMON_INC)
 TCTIDEVICE_C   = tcti/tcti_device.c
 
 TCTISOCKET_INC = $(TCTICOMMON_INC)
-TCTISOCKET_C   = tcti/platformcommand.c
+TCTISOCKET_C   = tcti/platformcommand.c tcti/criticalsection.c
 TCTISOCKET_CXX = tcti/tcti_socket.cpp
 
 TPMCLIENT_INC = -I$(srcdir)/include -I$(srcdir)/sysapi/include \
