@@ -1737,18 +1737,14 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                         objectContextLoad || sessionContextLoad )
                 {
                     TPM_HANDLE newVirtualHandle;
+                    UINT8 *responseHandlePtr = &( ( (TPM20_Header_Out *)response_buffer )->otherData );
 
                     realHandle = responseHandles[0];
 
-                    if( currentCommandCode == TPM_CC_StartAuthSession || sessionContextLoad )
+                    if( currentCommandCode == TPM_CC_StartAuthSession )
                     {
-                        newVirtualHandle = realHandle;
-
-                        if( currentCommandCode == TPM_CC_StartAuthSession )
-                        {
-                            // Adjust session count.
-                            activeSessionCount++;
-                        }
+                        // Adjust session count.
+                        activeSessionCount++;
                     }
 
                     responseRval = GetNewVirtualHandle( realHandle, &newVirtualHandle );
@@ -1757,11 +1753,17 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                         goto returnFromResourceMgrReceiveTpmResponse;
                     }
 
+                    // If object load, sequence start, create primary, or start of a new session,
+                    // add an entry to the table for the new object or session.
                     if( !sessionContextLoad )
                     {
-                        UINT8 *responseHandlePtr = &( ( (TPM20_Header_Out *)response_buffer )->otherData );
-                        
                         responseRval = AddEntry( newVirtualHandle, realHandle, cmdParentHandle, cmdHierarchy, cmdConnectionId );
+                        if( responseRval != TSS2_RC_SUCCESS )
+                        {
+                            goto returnFromResourceMgrReceiveTpmResponse;
+                        }
+                        
+                        responseRval = FindEntry( entryList, RMFIND_VIRTUAL_HANDLE, newVirtualHandle, &foundEntryPtr);
                         if( responseRval != TSS2_RC_SUCCESS )
                         {
                             goto returnFromResourceMgrReceiveTpmResponse;
@@ -1773,37 +1775,9 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
 
                         if( objectContextLoad )
                         {
-                            // Update context in RM entry.
-                            responseRval = FindEntry( entryList, RMFIND_VIRTUAL_HANDLE, newVirtualHandle, &foundEntryPtr);
-                            if( responseRval != TSS2_RC_SUCCESS )
-                            {
-                                goto returnFromResourceMgrReceiveTpmResponse;
-                            }
-
                             foundEntryPtr->context = cmdObjectContext;
                         }
-                    }
-
-                    responseRval = FindEntry( entryList, RMFIND_VIRTUAL_HANDLE, newVirtualHandle, &foundEntryPtr);
-                    if( responseRval != TSS2_RC_SUCCESS )
-                    {
-                        goto returnFromResourceMgrReceiveTpmResponse;
-                    }
-
-                    if( sessionContextLoad )
-                    {
-                        //
-                        // Update loaded bit so that EvictEntities function that is called at the
-                        // the end of ResourceMgrReceiveTpmResponse will work.
-                        //
-                        // For objects and sequences this happens during AddEntry, but
-                        // not for sessions.  So we have to do it here.
-                        //
-                        foundEntryPtr->status.loaded = 1;
-                    }
-                    else
-                    {
-
+                        
                         if( currentCommandCode == TPM_CC_CreatePrimary ||
                                 currentCommandCode == TPM_CC_Load ||
                                 currentCommandCode == TPM_CC_LoadExternal )
@@ -1813,6 +1787,27 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                                 foundEntryPtr->status.stClear = 1;
                             }
                         }
+                    }
+                    // If session load, update the session's entry and update it, and virtualize
+                    // the session's handle.
+                    else  if( sessionContextLoad )
+                    {
+                        responseRval = FindEntry( entryList, RMFIND_REAL_HANDLE, realHandle, &foundEntryPtr);
+                        if( responseRval != TSS2_RC_SUCCESS )
+                        {
+                            goto returnFromResourceMgrReceiveTpmResponse;
+                        }
+
+                        //
+                        // Update loaded bit so that EvictEntities function that is called at the
+                        // the end of ResourceMgrReceiveTpmResponse will work.
+                        //
+                        // For objects and sequences this happens during AddEntry, but
+                        // not for sessions.  So we have to do it here.
+                        //
+                        foundEntryPtr->virtualHandle = newVirtualHandle;
+                        foundEntryPtr->status.loaded = 1;
+                        *( (TPM_HANDLE *) responseHandlePtr ) = CHANGE_ENDIAN_DWORD( newVirtualHandle );
                     }
                 }
                 else if( currentCommandCode == TPM_CC_ContextSave && IsSessionHandle( cmdSavedHandle ) )
