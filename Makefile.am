@@ -60,7 +60,7 @@ resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(TCTISOCKET_C) \
     common/sockets.cpp
 
 sysapi_libtss2_la_CFLAGS  = -I$(srcdir)/include -I$(srcdir)/sysapi/include
-sysapi_libtss2_la_LDFLAGS = $(LIBRARY_LDFLAGS)
+sysapi_libtss2_la_LDFLAGS = $(LIBRARY_LDFLAGS) -Wl,--no-undefined
 sysapi_libtss2_la_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
 
 tcti_libtctidevice_la_CFLAGS   = $(TCTIDEVICE_INC)
