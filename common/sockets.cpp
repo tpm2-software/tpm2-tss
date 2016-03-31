@@ -23,23 +23,16 @@ TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len )
     return TSS2_RC_SUCCESS;
 }
 
-TSS2_RC sendBytes( SOCKET tpmSock, const char *data, int len )
+TSS2_RC sendBytes( SOCKET tpmSock, const unsigned char *data, int len )
 {
     int iResult = 0;
     int sentLength = 0;
 
-#ifdef DEBUG_SOCKETS
-    (*printfFunction)(NO_PREFIX, "Send Bytes to socket #0x%x: \n", tpmSock );
-    DebugPrintBuffer( NO_PREFIX, (UINT8 *)data, len );
-#endif
-
     for( sentLength = 0; sentLength < len; len -= iResult, sentLength += iResult )
     {
         iResult = send( tpmSock, data, len, 0  );
-        if (iResult == SOCKET_ERROR) {
-            (*printfFunction)(NO_PREFIX, "send failed with error: %d\n", WSAGetLastError() );
+        if (iResult == SOCKET_ERROR)
             return TSS2_TCTI_RC_IO_ERROR;
-        }
     }
 
     return TSS2_RC_SUCCESS;

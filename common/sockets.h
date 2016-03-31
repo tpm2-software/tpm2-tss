@@ -37,7 +37,7 @@ InitSockets( const char *hostName,
              void *logData );
 void CloseSockets( SOCKET serverSock, SOCKET tpmSock );
 TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len );
-TSS2_RC sendBytes( SOCKET tpmSock, const char *data, int len );
+TSS2_RC sendBytes( SOCKET tpmSock, const unsigned char *data, int len );
 
 #ifdef __cplusplus
 }

@@ -126,6 +126,21 @@ static TSS2_RC rmRecvBytes( SOCKET sock, unsigned char *data, int len )
     return TSS2_RC_SUCCESS;
 }
 
+static TSS2_RC rmSendBytes( SOCKET sock, const unsigned char *data, int len )
+{
+    TSS2_RC ret = TSS2_RC_SUCCESS;
+
+#ifdef DEBUG_SOCKETS
+    DebugPrintf( NO_PREFIX, "Send Bytes to socket #0x%x: \n", sock );
+    DebugPrintBuffer( NO_PREFIX, (UINT8 *)data, len );
+#endif
+
+    ret = sendBytes( sock, data, len);
+    if (ret != TSS2_RC_SUCCESS)
+        DebugPrintf( NO_PREFIX, "In recvBytes, recv failed (socket: 0x%x) with error: %d\n", sock, WSAGetLastError() );
+    return ret;
+}
+
 int printRMTables = 0;
 int rmCommandDebug = 0;
 int commandDebug = 0;
@@ -1184,9 +1199,9 @@ void SendErrorResponse( SOCKET sock )
     UINT32 numBytes = CHANGE_ENDIAN_DWORD( sizeof( TPM20_ErrorResponse ) );
     UINT32 trash = 0;
 
-    sendBytes( sock, (char *)&numBytes, 4 );
-    sendBytes( sock, (char *)&errorResponse, sizeof( TPM20_ErrorResponse ) );
-    sendBytes( sock, (char *)&trash, 4 );        
+    rmSendBytes( sock, (unsigned char *)&numBytes, 4 );
+    rmSendBytes( sock, (unsigned char *)&errorResponse, sizeof( TPM20_ErrorResponse ) );
+    rmSendBytes( sock, (unsigned char *)&trash, 4 );
 }
 
 void CopyErrorResponse( UINT32 *response_size, uint8_t *response_buffer )
@@ -2380,7 +2395,7 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
                     numBytes = CHANGE_ENDIAN_DWORD( numBytes );
 
                     // Send size of TPM response to calling application.
-                    rval = sendBytes( serverStruct->connectSock, (char *)&numBytes, 4 );
+                    rval = rmSendBytes( serverStruct->connectSock, (unsigned char *)&numBytes, 4 );
                     if( rval != TSS2_RC_SUCCESS )
                     {
                         tpmCmdServerBreakValue = 5;
@@ -2398,7 +2413,7 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
                     }
 
                     // Send the appended four bytes of 0's
-                    sendBytes( serverStruct->connectSock, (char *)&trash, 4 );
+                    rmSendBytes( serverStruct->connectSock, (unsigned char *)&trash, 4 );
                     if( rval != TSS2_RC_SUCCESS )
                     {
                         tpmCmdServerBreakValue = 7;
@@ -2559,7 +2574,7 @@ UINT8 OtherCmdServer( SERVER_STRUCT *serverStruct )
         {
             rval = CHANGE_ENDIAN_DWORD( rval );
 
-            sendBytes( serverStruct->connectSock, (char *)&rval, 4 );
+            rmSendBytes( serverStruct->connectSock, (unsigned char *)&rval, 4 );
         }
         else
         {

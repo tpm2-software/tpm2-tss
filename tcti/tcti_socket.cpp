@@ -73,6 +73,21 @@ static TSS2_RC tctiRecvBytes( SOCKET sock, unsigned char *data, int len )
     return TSS2_RC_SUCCESS;
 }
 
+static TSS2_RC tctiSendBytes( SOCKET sock, const unsigned char *data, int len )
+{
+    TSS2_RC ret = TSS2_RC_SUCCESS;
+
+#ifdef DEBUG_SOCKETS
+    (*printfFunction)(NO_PREFIX, "Send Bytes to socket #0x%x: \n", sock );
+    DebugPrintBuffer( NO_PREFIX, (UINT8 *)data, len );
+#endif
+
+    ret = sendBytes( sock, data, len);
+    if (ret != TSS2_RC_SUCCESS)
+        (*printfFunction)( NO_PREFIX, "In recvBytes, recv failed (socket: 0x%x) with error: %d\n", sock, WSAGetLastError() );
+    return ret;
+}
+
 TSS2_RC SendSessionEndSocketTcti(
     TSS2_TCTI_CONTEXT *tctiContext,       /* in */
     UINT8 tpmCmdServer )
@@ -91,7 +106,7 @@ TSS2_RC SendSessionEndSocketTcti(
     }
         
     tpmSendCommand = CHANGE_ENDIAN_DWORD(tpmSendCommand);
-    rval = sendBytes( sock, (char *)&tpmSendCommand, 4 );
+    rval = tctiSendBytes( sock, (unsigned char *)&tpmSendCommand, 4 );
 
     return( rval );
 }
@@ -143,27 +158,27 @@ TSS2_RC SocketSendTpmCommand(
 
     // Send TPM_SEND_COMMAND
     tpmSendCommand = CHANGE_ENDIAN_DWORD(tpmSendCommand);
-    rval = sendBytes( TCTI_CONTEXT_INTEL->tpmSock, (char *)&tpmSendCommand, 4 );
+    rval = tctiSendBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&tpmSendCommand, 4 );
     if( rval != TSS2_RC_SUCCESS )
         goto returnFromSocketSendTpmCommand;
                 
     // Send the locality
     locality = (UINT8)( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.locality;
-    rval = sendBytes( TCTI_CONTEXT_INTEL->tpmSock, (char *)&locality, 1 );
+    rval = tctiSendBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&locality, 1 );
     if( rval != TSS2_RC_SUCCESS )
         goto returnFromSocketSendTpmCommand;
 
 #ifdef SAPI_CLIENT    
     // Send the debug level
     debugMsgLevel = (UINT8)( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.debugMsgLevel;
-    rval = sendBytes( TCTI_CONTEXT_INTEL->tpmSock, (char *)&debugMsgLevel, 1 );
+    rval = tctiSendBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&debugMsgLevel, 1 );
     if( rval != TSS2_RC_SUCCESS )
         goto returnFromSocketSendTpmCommand;
 
     // Send status bits
     statusBits = (UINT8)( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent;
     statusBits |= ( (UINT8)( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.rmDebugPrefix ) << 1;
-    rval = sendBytes( TCTI_CONTEXT_INTEL->tpmSock, (char *)&statusBits, 1 );
+    rval = tctiSendBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&statusBits, 1 );
     if( rval != TSS2_RC_SUCCESS )
         goto returnFromSocketSendTpmCommand;
 #endif
@@ -178,12 +193,12 @@ TSS2_RC SocketSendTpmCommand(
     // Send number of bytes.
     cnt1 = cnt;
     cnt = CHANGE_ENDIAN_DWORD(cnt);
-    rval = sendBytes( TCTI_CONTEXT_INTEL->tpmSock, (char *)&cnt, 4 );
+    rval = tctiSendBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&cnt, 4 );
     if( rval != TSS2_RC_SUCCESS )
         goto returnFromSocketSendTpmCommand;
     
     // Send the TPM command buffer
-    rval = sendBytes( TCTI_CONTEXT_INTEL->tpmSock, (char *)command_buffer, cnt1 );
+    rval = tctiSendBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)command_buffer, cnt1 );
     if( rval != TSS2_RC_SUCCESS )
         goto returnFromSocketSendTpmCommand;
     
