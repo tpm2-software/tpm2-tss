@@ -57,6 +57,22 @@ int (*printfFunction)( printf_type type, const char *format, ...) = DebugPrintf;
 
 extern UINT8 simulator;
 
+static TSS2_RC tctiRecvBytes( SOCKET sock, unsigned char *data, int len )
+{
+    TSS2_RC result = 0;
+    result = recvBytes( sock, data, len);
+    if (result == SOCKET_ERROR) {
+        (*printfFunction)( NO_PREFIX, "In recvBytes, recv failed (socket: 0x%x) with error: %d\n", sock, WSAGetLastError() );
+        return TSS2_TCTI_RC_IO_ERROR;
+    }
+#ifdef DEBUG_SOCKETS
+    (*printfFunction)( NO_PREFIX, "Receive Bytes from socket #0x%x: \n", sock );
+    DebugPrintBuffer( NO_PREFIX, data, len );
+#endif
+
+    return TSS2_RC_SUCCESS;
+}
+
 TSS2_RC SendSessionEndSocketTcti(
     TSS2_TCTI_CONTEXT *tctiContext,       /* in */
     UINT8 tpmCmdServer )
@@ -330,7 +346,7 @@ TSS2_RC SocketReceiveTpmResponse(
     if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived != 1 )
     {        
         // Receive the size of the response.
-        rval = recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)& (((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize ), 4 );
+        rval = tctiRecvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)& (((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize ), 4 );
         if( rval != TSS2_RC_SUCCESS )
             goto retSocketReceiveTpmResponse;
 
@@ -355,7 +371,7 @@ TSS2_RC SocketReceiveTpmResponse(
         // If possible, receive tag from TPM.
         if( *response_size >= sizeof( TPM_ST ) && ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived == 0 )
         {
-            if( TSS2_RC_SUCCESS != recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->tag ), 2 ) )
+            if( TSS2_RC_SUCCESS != tctiRecvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->tag ), 2 ) )
             {
                 goto retSocketReceiveTpmResponse;
             }
@@ -368,7 +384,7 @@ TSS2_RC SocketReceiveTpmResponse(
         // If possible, receive response size from TPM
         if( *response_size >= ( sizeof( TPM_ST ) + sizeof( TPM_RC ) ) && ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived == 0 )
         {
-            if( TSS2_RC_SUCCESS != recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->responseSize ), 4 ) )
+            if( TSS2_RC_SUCCESS != tctiRecvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->responseSize ), 4 ) )
             {
                 goto retSocketReceiveTpmResponse;
             }
@@ -407,7 +423,7 @@ TSS2_RC SocketReceiveTpmResponse(
         }
 
         // Receive the TPM response.
-        rval = recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize - responseSizeDelta );
+        rval = tctiRecvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize - responseSizeDelta );
         if( rval != TSS2_RC_SUCCESS )
             goto retSocketReceiveTpmResponse;
 
@@ -419,7 +435,7 @@ TSS2_RC SocketReceiveTpmResponse(
 #endif
 
         // Receive the appended four bytes of 0's
-        rval = recvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&trash, 4 );
+        rval = tctiRecvBytes( TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&trash, 4 );
         if( rval != TSS2_RC_SUCCESS )
             goto retSocketReceiveTpmResponse;
     }
