@@ -60,14 +60,17 @@ resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(TCTISOCKET_C) \
     common/sockets.cpp
 
 sysapi_libtss2_la_CFLAGS  = -I$(srcdir)/include -I$(srcdir)/sysapi/include
+sysapi_libtss2_la_LDFLAGS = $(LIBRARY_LDFLAGS)
 sysapi_libtss2_la_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
 
 tcti_libtctidevice_la_CFLAGS   = $(TCTIDEVICE_INC)
+tcti_libtctidevice_la_LDFLAGS  = $(LIBRARY_LDFLAGS)
 tcti_libtctidevice_la_SOURCES  = common/debug.c $(TCTIDEVICE_C) \
     sysapi/sysapi_util/changeEndian.c $(TCTICOMMON_C)
 
 tcti_libtctisocket_la_CFLAGS   = -DSAPI_CLIENT $(TCTISOCKET_INC)
 tcti_libtctisocket_la_CXXFLAGS = -DSAPI_CLIENT $(TCTISOCKET_INC)
+tcti_libtctisocket_la_LDFLAGS  = $(LIBRARY_LDFLAGS)
 tcti_libtctisocket_la_SOURCES  =  common/debug.c $(TCTISOCKET_C) \
     sysapi/sysapi_util/changeEndian.c $(TCTISOCKET_CXX) $(TCTICOMMON_C) \
     common/sockets.cpp
@@ -81,6 +84,8 @@ test_tpmtest_tpmtest_CFLAGS   = -DSAPI_CLIENT $(TPMTEST_INC)
 test_tpmtest_tpmtest_CXXFLAGS = -DSAPI_CLIENT $(TPMTEST_INC)
 test_tpmtest_tpmtest_LDADD    = $(libtss2) $(libtctisocket) $(libtctidevice)
 test_tpmtest_tpmtest_SOURCES  = $(TPMTEST_CXX) $(COMMON_C) $(SAMPLE_C)
+
+LIBRARY_LDFLAGS = -fPIC
 
 # simple variables
 RESOURCEMGR_INC = -I$(srcdir)/include -I$(srcdir)/common \
