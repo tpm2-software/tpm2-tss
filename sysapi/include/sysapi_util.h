@@ -194,8 +194,6 @@ int GetNumCommandHandles( TPM_CC commandCode );
 
 int GetNumResponseHandles( TPM_CC commandCode );
 
-extern char *commandCodeStrings[];
-
 TSS2_SYS_CONTEXT *InitSysContext(
     UINT16 maxCommandSize,
     TSS2_TCTI_CONTEXT *tctiContext, 

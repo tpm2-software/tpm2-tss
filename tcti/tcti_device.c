@@ -76,7 +76,7 @@ TSS2_RC LocalTpmSendTpmCommand(
         if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
         {
             TCTI_LOG( tctiContext, NO_PREFIX, "\n" );
-            TCTI_LOG( tctiContext, NO_PREFIX, "Cmd sent: %s\n", commandCodeStrings[ commandCode - TPM_CC_FIRST ]  );
+            TCTI_LOG( tctiContext, NO_PREFIX, "Cmd sent: %s\n", strTpmCommandCode( commandCode ) );
             DEBUG_PRINT_BUFFER( NO_PREFIX, command_buffer, cnt );
         }
 #endif
