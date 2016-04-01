@@ -3492,6 +3492,8 @@ int main(int argc, char* argv[])
 
     CloseSockets( appOtherSock, appTpmSock );
     
+    CloseHandle( tpmMutex );
+
     TeardownSysContext( &resMgrSysContext );
     
     TeardownSysContext( &tempSysContext );

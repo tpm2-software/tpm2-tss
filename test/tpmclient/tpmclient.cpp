@@ -928,7 +928,7 @@ void TestSapiApis()
 	const uint8_t 		*rpBuffer;
 	const uint8_t 		goodRpBuffer[] = { 0x01, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00,
                                            0x01, 0x00, 0x00, 0x01, 0x11, 0x00, 0x00, 0x00,
-										   0x40 };
+										   RM_ACTIVE_SESSIONS_MAX };
     TPMI_YES_NO         moreData;
     TPMS_CAPABILITY_DATA	capabilityData;
     int                 rpBufferError = 0;
@@ -1223,7 +1223,7 @@ void TestSapiApis()
     if( rpBufferError )
     {
         DebugPrintf( NO_PREFIX, "\nERROR!!  Tss2_Sys_GetRpBuffer returned wrong rpBuffer contents:\nrpBuffer was: \n\t" );
-        DebugPrintBuffer( NO_PREFIX, (UINT8 *)&rpBuffer, rpBufferUsedSize );
+        DebugPrintBuffer( NO_PREFIX, (UINT8 *)rpBuffer, rpBufferUsedSize );
         DebugPrintf( NO_PREFIX, "\nrpBuffer s/b:\n\t" );
         DebugPrintBuffer( NO_PREFIX, (UINT8 *)&(goodRpBuffer[0]), rpBufferUsedSize );
         Cleanup();
