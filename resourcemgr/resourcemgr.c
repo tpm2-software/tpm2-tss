@@ -1299,6 +1299,38 @@ TSS2_RC ContextGapUpdateOldestSession()
     return rval;
 }
 
+void FindTransientObjectsPerConnection( UINT64 connectionId, UINT32 *newValue )
+{
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+    RESOURCE_MANAGER_ENTRY *foundEntryPtr, *nextEntry;
+    int j = 0;
+
+    j = 0;
+    nextEntry = entryList;
+
+    // Find all objects and sequences for this connection that have the aploaded bit set.
+    // First find all HMAC sessions.
+    while( nextEntry )
+    {
+        rval = FindEntryHandleType( nextEntry, RMFIND_VIRTUAL_HANDLE, TPM_HT_TRANSIENT << HR_SHIFT, &foundEntryPtr);
+        if( rval == TSS2_RC_SUCCESS )
+        {
+            if( foundEntryPtr->connectionId == connectionId )
+            {
+                if( foundEntryPtr->status.aploaded == 1)
+                {
+                    j++;
+                }
+            }
+        }
+        else
+            break;
+
+        nextEntry = foundEntryPtr->nextEntry;
+    }
+	*newValue = j;
+}
+
 void FindLoadedSessionsPerConnection( UINT64 connectionId, UINT32 *newValue, int checkAppLoaded )
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
@@ -1376,7 +1408,7 @@ TSS2_RC ResourceMgrSendTpmCommand(
     RESOURCE_MANAGER_ENTRY_PTR foundEntryPtr;
     UINT8 *currentPtr = command_buffer;
     TPM_ST tag;
-    UINT32 authAreaSize;
+    UINT32 authAreaSize, loadedSessionsNum, transientObjectsNum;
     TPM2B_PUBLIC inPublic = { { CHANGE_ENDIAN_DWORD( sizeof( TPM2B_PUBLIC ) - 2), } };
     UINT32 capability;
             
@@ -1451,6 +1483,14 @@ TSS2_RC ResourceMgrSendTpmCommand(
     switch( currentCommandCode )
     {
         case TPM_CC_StartAuthSession:
+            // Check that per connection limit hasn't been reached.
+            FindLoadedSessionsPerConnection( cmdConnectionId, &loadedSessionsNum, 1 );
+            if( loadedSessionsNum >= RM_LOADED_MIN )
+            {
+                responseRval = TPM_RC_SESSION_HANDLES | TSS2_RESMGRTPM_ERROR_LEVEL;
+                goto SendCommand;
+            }
+            
             // This command must always pass, so if we already have
             // maxActiveSessions, oldest one will need to be evicted.
             if( activeSessionCount >= maxActiveSessions )
@@ -1490,6 +1530,14 @@ TSS2_RC ResourceMgrSendTpmCommand(
 
             break;
         case TPM_CC_Load:
+            // Check that per connection limit hasn't been reached.
+            FindTransientObjectsPerConnection( cmdConnectionId, &transientObjectsNum );
+            if( transientObjectsNum >= RM_TRANSIENT_MIN )
+            {
+                responseRval = TPM_RC_OBJECT_MEMORY | TSS2_RESMGRTPM_ERROR_LEVEL;
+                goto SendCommand;
+            }
+
             cmdParentHandle = cmdHandles[0].handle;
             responseRval = FindEntry( entryList, RMFIND_VIRTUAL_HANDLE, cmdParentHandle, &foundEntryPtr );
             if( responseRval != TSS2_RC_SUCCESS )
@@ -1515,6 +1563,14 @@ TSS2_RC ResourceMgrSendTpmCommand(
 
             break;
         case TPM_CC_LoadExternal:
+            // Check that per connection limit hasn't been reached.
+            FindTransientObjectsPerConnection( cmdConnectionId, &transientObjectsNum );
+            if( transientObjectsNum >= RM_TRANSIENT_MIN )
+            {
+                responseRval = TPM_RC_OBJECT_MEMORY | TSS2_RESMGRTPM_ERROR_LEVEL;
+                goto SendCommand;
+            }
+
             cmdParentHandle = TPM_RH_NULL;
 
             // Skip past inPrivate.
@@ -1528,6 +1584,14 @@ TSS2_RC ResourceMgrSendTpmCommand(
             RESMGR_UNMARSHAL_UINT32( command_buffer, command_size, &currentPtr, &cmdHierarchy, &responseRval, SendCommand );
             break;
         case TPM_CC_CreatePrimary:
+            // Check that per connection limit hasn't been reached.
+            FindTransientObjectsPerConnection( cmdConnectionId, &transientObjectsNum );
+            if( transientObjectsNum >= RM_TRANSIENT_MIN )
+            {
+                responseRval = TPM_RC_OBJECT_MEMORY | TSS2_RESMGRTPM_ERROR_LEVEL;
+                goto SendCommand;
+            }
+
             // save dummy handle as parent
             cmdParentHandle = 0;
             cmdHierarchy = cmdHandles[0].handle;
@@ -1546,6 +1610,14 @@ TSS2_RC ResourceMgrSendTpmCommand(
             break;
         case TPM_CC_HMAC_Start:
         case TPM_CC_HashSequenceStart:
+            // Check that per connection limit hasn't been reached.
+            FindTransientObjectsPerConnection( cmdConnectionId, &transientObjectsNum );
+            if( transientObjectsNum >= RM_TRANSIENT_MIN )
+            {
+                responseRval = TPM_RC_OBJECT_MEMORY | TSS2_RESMGRTPM_ERROR_LEVEL;
+                goto SendCommand;
+            }
+
             // save dummy handle as parent
             cmdParentHandle = 0;
             cmdHierarchy = TPM_RH_NULL;
@@ -1567,6 +1639,17 @@ TSS2_RC ResourceMgrSendTpmCommand(
             break;
         case TPM_CC_ContextLoad:
             RESMGR_UNMARSHAL_TPMS_CONTEXT( command_buffer, command_size, &currentPtr, &cmdObjectContext, &responseRval, SendCommand );
+            // If context is for an object, then check to see if we've reached per-connection limit.
+            if( ( cmdObjectContext.savedHandle & HR_RANGE_MASK ) == HR_TRANSIENT )
+            {
+                // Check that per connection limit hasn't been reached.
+                FindTransientObjectsPerConnection( cmdConnectionId, &transientObjectsNum );
+                if( transientObjectsNum >= RM_TRANSIENT_MIN )
+                {
+                    responseRval = TPM_RC_OBJECT_MEMORY | TSS2_RESMGRTPM_ERROR_LEVEL;
+                    goto SendCommand;
+                }
+            }
             cmdHierarchy = cmdObjectContext.hierarchy;
             break;
         case TPM_CC_FlushContext:
