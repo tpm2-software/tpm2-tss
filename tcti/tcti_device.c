@@ -226,7 +226,6 @@ TSS2_RC InitDeviceTcti (
     )
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    char fileName[200];
 
     if( tctiContext == NULL )
     {

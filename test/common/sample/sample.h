@@ -38,6 +38,7 @@ extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 #include "syscontext.h"
+#include "debug.h"
 
 extern TSS2_TCTI_CONTEXT *resMgrTctiContext;
 extern TSS2_ABI_VERSION abiVersion;

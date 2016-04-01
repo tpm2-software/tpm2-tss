@@ -844,7 +844,12 @@ void TestStartAuthSession()
     TPMT_SYM_DEF symmetric;
     SESSION *authSession;
     TPM2B_NONCE nonceCaller;
-    UINT16 i, debugGapMax = DEBUG_GAP_MAX, debugMaxActiveSessions = DEBUG_MAX_ACTIVE_SESSIONS;
+    UINT16 i;
+#ifdef DEBUG_GAP_HANDLING    
+    UINT16 debugGapMax = DEBUG_GAP_MAX, debugMaxActiveSessions = DEBUG_MAX_ACTIVE_SESSIONS;    
+    TPMS_CONTEXT    evictedSessionContext;
+    TPM_HANDLE   evictedHandle;
+#endif
     TPMA_LOCALITY locality;
     TPM_HANDLE badSessionHandle = 0x03010000;
 
@@ -855,9 +860,6 @@ void TestStartAuthSession()
     TPMS_AUTH_COMMAND *sessionDataArray[1];
 
     TPM2B_AUTH      hmac;
-
-    TPMS_CONTEXT    evictedSessionContext;
-    TPM_HANDLE   evictedHandle;
 
     sessionDataArray[0] = &sessionData;
 

@@ -90,7 +90,10 @@ TSS2_RC SocketSendTpmCommand(
     UINT32 cnt, cnt1;
     UINT8 locality;
     TSS2_RC rval = TSS2_RC_SUCCESS;
+    
+#ifdef DEBUG    
     UINT32 commandCode    ;
+#endif
     
 #ifdef SAPI_CLIENT    
     UINT8 debugMsgLevel, statusBits;
@@ -101,21 +104,22 @@ TSS2_RC SocketSendTpmCommand(
     {
         goto returnFromSocketSendTpmCommand;
     }
-            
-    commandCode = CHANGE_ENDIAN_DWORD( ( (TPM20_Header_In *)command_buffer )->commandCode );
 
     if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
     {
 #ifdef DEBUG
-        (*printfFunction)(NO_PREFIX, "\n" );
+        (*printfFunction)(NO_PREFIX, "\n" );            
+        commandCode = CHANGE_ENDIAN_DWORD( ( (TPM20_Header_In *)command_buffer )->commandCode );        
         if( commandCode >= TPM_CC_NV_UndefineSpaceSpecial && commandCode <= TPM_CC_PolicyNvWritten )     
             (*printfFunction)( NO_PREFIX, "Cmd sent: %s\n", strTpmCommandCode( commandCode ) );
         else
             (*printfFunction)( NO_PREFIX, "Cmd sent: 0x%4.4x\n", CHANGE_ENDIAN_DWORD(commandCode ) );
-#endif
+
 #ifdef DEBUG_SOCKETS
         (*printfFunction)( NO_PREFIX, "Command sent on socket #0x%x: %s\n", TCTI_CONTEXT_INTEL->tpmSock, strTpmCommandCode( commandCode ) );
-#endif        
+#endif
+#endif
+        
     }
     // Size TPM 1.2 and TPM 2.0 headers overlap exactly, we can use
     // either 1.2 or 2.0 header to get the size.
