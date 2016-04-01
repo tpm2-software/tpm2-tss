@@ -47,6 +47,18 @@
 #define TSS2_RESMGR_UNLOADED_OBJECTS                ((TSS2_RC)( (12<<TSS2_LEVEL_IMPLEMENTATION_SPECIFIC_SHIFT) + TSS2_RESMGR_ERROR_LEVEL))
 #define TSS2_RESMGR_UNLOADED_SESSIONS               ((TSS2_RC)( (13<<TSS2_LEVEL_IMPLEMENTATION_SPECIFIC_SHIFT) + TSS2_RESMGR_ERROR_LEVEL))
 
+#define ALL_CONNECTIONS 0xffffffffffffffff
+
+
+// Defines for virtualized capabilities
+#define RM_TRANSIENT_MIN 10
+#define RM_LOADED_MIN 10
+#define RM_ACTIVE_SESSIONS_MAX 10
+#define RM_CONTEXT_GAP_MAX 0xffffff
+#define RM_TRANSIENT_MAX 0xffffff  // Current RM uses dynamically allocated slots in a linked list,
+                                   // so there is no limit for the number of transient objects other than
+                                   // max number of transient handles.
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -48,6 +48,15 @@
 #include <tss2/tss2_tcti.h>
 #include "tcti_util.h"
 
+#ifndef SAPI_CLIENT
+#include "criticalsection.h"
+extern TSS2_RC StartCriticalSection( TPM_MUTEX *tpmMutex, char *dbgString );
+extern TSS2_RC EndCriticalSection( TPM_MUTEX *tpmMutex, char *dbgString );
+extern TPM_MUTEX tpmMutex;
+#endif
+
+#define MUTEX_DBG_FUNCTION_STR "PlatformCommand"
+
 TSS2_RC PlatformCommand(
     TSS2_TCTI_CONTEXT *tctiContext,     /* in */
     char cmd )
@@ -56,40 +65,66 @@ TSS2_RC PlatformCommand(
     char sendbuf[] = { 0x0,0x0,0x0,0x0 };
     char recvbuf[] = { 0x0, 0x0, 0x0, 0x0 };
     TSS2_RC rval = TSS2_RC_SUCCESS;
-
+    char functionString[sizeof( MUTEX_DBG_FUNCTION_STR ) + 1 ];
+#ifndef SAPI_CLIENT
+    UINT8 mutexAcquired = 1;
+#endif
+    
+    strcpy( &functionString[0], MUTEX_DBG_FUNCTION_STR );
+    
     sendbuf[3] = cmd;
 
-    // Send the command
-    iResult = send( TCTI_CONTEXT_INTEL->otherSock, sendbuf, 4, 0 );
-    if (iResult == SOCKET_ERROR) {
-        (*printfFunction)(NO_PREFIX, "send failed with error: %d\n", WSAGetLastError() );
-        rval = TSS2_TCTI_RC_IO_ERROR;
-    }
-    else
+#ifndef SAPI_CLIENT    
+    if( cmd != MS_SIM_CANCEL_ON && cmd != MS_SIM_CANCEL_OFF &&
+            cmd != MS_SIM_POWER_ON && cmd != MS_SIM_POWER_OFF )
     {
-#ifdef DEBUG_SOCKETS
-        (*printfFunction)( NO_PREFIX, "Send Bytes to socket #0x%x: \n", TCTI_CONTEXT_INTEL->otherSock );
-        DebugPrintBuffer( NO_PREFIX, (UINT8 *)sendbuf, 4 );
+        rval = StartCriticalSection( &tpmMutex, &functionString[0] );
+    }
+    if( rval == TSS2_RC_SUCCESS )
 #endif
-        // Read result
-        iResult = recv( TCTI_CONTEXT_INTEL->otherSock, recvbuf, 4, 0);
+    {
+        // Send the command
+        iResult = send( TCTI_CONTEXT_INTEL->otherSock, sendbuf, 4, 0 );
         if (iResult == SOCKET_ERROR) {
-            (*printfFunction)(NO_PREFIX, "In PlatformCommand, recv failed (socket: 0x%x) with error: %d\n",
-                    TCTI_CONTEXT_INTEL->otherSock, WSAGetLastError() );
-            rval = TSS2_TCTI_RC_IO_ERROR;
-        }
-        else if( recvbuf[0] != 0 || recvbuf[1] != 0 || recvbuf[2] != 0 || recvbuf[3] != 0 )
-        {
-            (*printfFunction)(NO_PREFIX, "PlatformCommand failed with error: %d\n", recvbuf[3] );
+            DebugPrintf(NO_PREFIX, "send failed with error: %d\n", WSAGetLastError() );
             rval = TSS2_TCTI_RC_IO_ERROR;
         }
         else
         {
 #ifdef DEBUG_SOCKETS
-            (*printfFunction)(NO_PREFIX, "Receive bytes from socket #0x%x: \n", TCTI_CONTEXT_INTEL->otherSock );
-            DebugPrintBuffer( NO_PREFIX, (UINT8 *)recvbuf, 4 );
+            (*printfFunction)( NO_PREFIX, "Send Bytes to socket #0x%x: \n", TCTI_CONTEXT_INTEL->otherSock );
+            DebugPrintBuffer( NO_PREFIX, (UINT8 *)sendbuf, 4 );
 #endif
+            // Read result
+            iResult = recv( TCTI_CONTEXT_INTEL->otherSock, recvbuf, 4, 0);
+            if (iResult == SOCKET_ERROR) {
+                DebugPrintf(NO_PREFIX, "In PlatformCommand, recv failed (socket: 0x%x) with error: %d\n",
+                        TCTI_CONTEXT_INTEL->otherSock, WSAGetLastError() );
+                rval = TSS2_TCTI_RC_IO_ERROR;
+            }
+            else if( recvbuf[0] != 0 || recvbuf[1] != 0 || recvbuf[2] != 0 || recvbuf[3] != 0 )
+            {
+                DebugPrintf(NO_PREFIX, "PlatformCommand failed with error: %d\n", recvbuf[3] );
+                rval = TSS2_TCTI_RC_IO_ERROR;
+            }
+            else
+            {
+#ifdef DEBUG_SOCKETS
+                DebugPrintf(NO_PREFIX, "Receive bytes from socket #0x%x: \n", TCTI_CONTEXT_INTEL->otherSock );
+                DebugPrintBuffer( NO_PREFIX, (UINT8 *)recvbuf, 4 );
+#endif
+            }
         }
+
+#ifndef SAPI_CLIENT    
+        if( cmd != MS_SIM_CANCEL_ON && cmd != MS_SIM_CANCEL_OFF &&
+                cmd != MS_SIM_POWER_ON && cmd != MS_SIM_POWER_OFF )
+        {
+            // Critical section ends here
+            rval = EndCriticalSection( &tpmMutex, &functionString[0] );
+        }
+#endif
     }
+
     return rval;
 }
