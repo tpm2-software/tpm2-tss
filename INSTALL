@@ -31,7 +31,7 @@ tpm2tss-build to hold the build with default configuration
 tpm2tss-debug to hold a build with debug configuration
 
 In the TPM2.0-TSS directory bootstrap the build:
-$ ./bootsrap
+$ ./bootstrap
 
 From the tpm2tss-debug directory build the TPM2.0-TSS source code with the
 default configuration specified by your platform:
