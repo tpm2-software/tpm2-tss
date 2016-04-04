@@ -47,6 +47,7 @@ UINT32 TpmHash( TPMI_ALG_HASH hashAlg, UINT16 size, BYTE *data, TPM2B_DIGEST *re
     if( sysContext == 0 )
         return TSS2_APP_RC_INIT_SYS_CONTEXT_FAILED;
     
+    INIT_SIMPLE_TPM2B_SIZE( *result );
     rval = Tss2_Sys_Hash ( sysContext, 0, &dataSizedBuffer, hashAlg, TPM_RH_NULL, result, 0, 0);
 
     TeardownSysContext( &sysContext );
@@ -101,7 +102,7 @@ UINT32 TpmHashSequence( TPMI_ALG_HASH hashAlg, UINT8 numBuffers, TPM2B_DIGEST *b
             return( rval );
     }
 
-    result->t.size = sizeof( *result ) - 2;
+    INIT_SIMPLE_TPM2B_SIZE( *result );
     rval = Tss2_Sys_SequenceComplete ( sysContext, sequenceHandle, &cmdAuthArray, ( TPM2B_MAX_BUFFER *)&emptyBuffer,
             TPM_RH_PLATFORM, result, &validation, 0 );
 
