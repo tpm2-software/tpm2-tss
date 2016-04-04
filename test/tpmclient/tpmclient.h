@@ -40,5 +40,7 @@ TPM_RC CompareSizedByteBuffer( TPM2B *buffer1, TPM2B *buffer2 );
 
 extern TSS2_TCTI_CONTEXT *resMgrTctiContext;
 
+#define INIT_SIMPLE_TPM2B_SIZE( type ) (type).t.size = sizeof( type ) - 2;
+
 #endif
 

@@ -130,7 +130,7 @@ UINT32 LoadSessionEncryptDecryptKey( TPMT_SYM_DEF *symmetric, TPM2B_MAX_BUFFER *
         return TSS2_APP_RC_INIT_SYS_CONTEXT_FAILED;
     }
 
-    keyName->t.size = sizeof( *keyName ) - 2;
+    INIT_SIMPLE_TPM2B_SIZE( *keyName );
     rval = Tss2_Sys_LoadExternal( sysContext, 0, &inPrivate, &inPublic, TPM_RH_NULL, keyHandle, keyName, 0 );
 
     TeardownSysContext( &sysContext );
@@ -177,7 +177,7 @@ TSS2_RC EncryptCFB( SESSION *session, TPM2B_MAX_BUFFER *encryptedData, TPM2B_MAX
             *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
             sessionData.hmac.t.size = 0;
             encryptedData->t.size = sizeof( *encryptedData ) - 1;
-            ivOut.t.size = sizeof( ivOut ) - 2;
+            INIT_SIMPLE_TPM2B_SIZE( ivOut );
             rval = Tss2_Sys_EncryptDecrypt( sysContext, keyHandle, &sessionsData, NO, TPM_ALG_CFB, &ivIn,
                     clearData, encryptedData, &ivOut, 0 );
             if( rval == TSS2_RC_SUCCESS )
@@ -230,6 +230,8 @@ TSS2_RC DecryptCFB( SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM2B_MAX_BUF
             sessionData.nonce.t.size = 0;
             *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
             sessionData.hmac.t.size = 0;
+
+            INIT_SIMPLE_TPM2B_SIZE( ivOut );
             rval = Tss2_Sys_EncryptDecrypt( sysContext, keyHandle, &sessionsData, YES, TPM_ALG_CFB, &ivIn,
                     encryptedData, clearData, &ivOut, 0 );
             if( rval == TSS2_RC_SUCCESS )

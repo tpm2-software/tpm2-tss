@@ -41,8 +41,8 @@ UINT32 TpmHandleToName( TPM_HANDLE handle, TPM2B_NAME *name )
     UINT8 *namePtr = &( name->t.name[0] );
     
     // Initialize name to zero length in case of failure.
-    qualifiedName.b.size = sizeof( TPM2B_NAME ) - 2;
-    name->b.size = sizeof( TPM2B_NAME ) - 2;
+    INIT_SIMPLE_TPM2B_SIZE( *name );
+    INIT_SIMPLE_TPM2B_SIZE( qualifiedName );
 
     if( handle == ( TPM_HT_NO_HANDLE ) )
     {
