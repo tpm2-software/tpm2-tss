@@ -60,7 +60,7 @@ resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(TCTISOCKET_C) \
     common/sockets.cpp
 
 sysapi_libtss2_la_CFLAGS  = -I$(srcdir)/include -I$(srcdir)/sysapi/include
-sysapi_libtss2_la_LDFLAGS = $(LIBRARY_LDFLAGS) -Wl,--no-undefined
+sysapi_libtss2_la_LDFLAGS = $(LIBRARY_LDFLAGS)
 sysapi_libtss2_la_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
 
 tcti_libtctidevice_la_CFLAGS   = $(TCTIDEVICE_INC)
@@ -87,7 +87,7 @@ test_tpmtest_tpmtest_CXXFLAGS = -DSAPI_CLIENT $(TPMTEST_INC)
 test_tpmtest_tpmtest_LDADD    = $(libtss2) $(libtctisocket) $(libtctidevice)
 test_tpmtest_tpmtest_SOURCES  = $(TPMTEST_CXX) $(COMMON_C) $(SAMPLE_C)
 
-LIBRARY_LDFLAGS = -fPIC
+LIBRARY_LDFLAGS = -fPIC -Wl,--no-undefined
 
 # simple variables
 RESOURCEMGR_INC = -I$(srcdir)/include -I$(srcdir)/common \
