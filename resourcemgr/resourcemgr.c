@@ -1309,7 +1309,8 @@ TSS2_RC ResourceMgrSendTpmCommand(
                 goto SendCommand;
             }
 
-            if( foundEntryPtr->connectionId != cmdConnectionId )
+            if( foundEntryPtr->status.persistent == 0 &&
+                foundEntryPtr->connectionId != cmdConnectionId )
             {
                 responseRval = TSS2_RESMGR_UNOWNED_HANDLE;
                 goto SendCommand;
@@ -1932,6 +1933,12 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                                 foundEntryPtr->hierarchy, cmdConnectionId );
                         if( rval != TSS2_RC_SUCCESS )
                             goto returnFromResourceMgrReceiveTpmResponse;
+
+                        // Find entry for the new persistent object and flag it as persistent
+                        rval = FindEntry( entryList, RMFIND_REAL_HANDLE, persistentHandle, &foundEntryPtr );
+                        if( rval != TSS2_RC_SUCCESS )
+                            goto returnFromResourceMgrReceiveTpmResponse;
+                        foundEntryPtr->status.persistent = 1;
                     }
                     else
                     {
