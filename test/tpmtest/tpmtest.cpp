@@ -525,6 +525,7 @@ TSS2_RC StartPolicySession( TPMI_SH_AUTH_SESSION *sessionHandle )
 
     salt.t.size = 0;
     symmetric.algorithm = TPM_ALG_NULL;
+    nonceTpm.t.size = sizeof(nonceTpm) - 2;
 
     // Create policy session
     rval = Tss2_Sys_StartAuthSession ( sysContext, TPM_RH_NULL, TPM_RH_NULL, 0, &nonceCaller, &salt,
