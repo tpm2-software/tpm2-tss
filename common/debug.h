@@ -42,6 +42,7 @@ enum debugLevel { DBG_NO_COMMAND = 0, DBG_COMMAND = 1, DBG_COMMAND_RM = 2, DBG_C
 int DebugPrintfCallback( void *data, printf_type type, const char *format, ...);
 int DebugPrintf( printf_type type, const char *format, ...);
 void DebugPrintBuffer( printf_type type, UINT8 *command_buffer, UINT32 cnt1 );
+int DebugPrintBufferCallback( void *data, printf_type type, UINT8 *buffer, UINT32 length );
 const char* strTpmCommandCode( TPM_CC code );
 
 #ifdef DEBUG

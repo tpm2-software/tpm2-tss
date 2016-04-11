@@ -85,6 +85,16 @@ void DebugPrintBuffer( printf_type type, UINT8 *buffer, UINT32 length )
     fflush( stdout );
 }
 
+/* This callback function is intended for use with the TCTI log data
+ * callback mechanism. It provides an additional parameter for receiving
+ * arbitrary user specified data.
+ */
+int DebugPrintBufferCallback( void *data, printf_type type, UINT8 *buffer, UINT32 length )
+{
+    DebugPrintBuffer (type, buffer, length);
+    return 0;
+}
+
 const char *commandCodeStrings[] =
 {
     "TPM2_NV_UndefineSpaceSpecial", // 11f

@@ -133,7 +133,10 @@ TSS2_SYS_CONTEXT *sysContext;
 
 TCTI_SOCKET_CONF rmInterfaceConfig = {
     DEFAULT_HOSTNAME,
-    DEFAULT_RESMGR_TPM_PORT
+    DEFAULT_RESMGR_TPM_PORT,
+    DebugPrintfCallback,
+    DebugPrintBufferCallback,
+    NULL
 };
     
 TSS2_TCTI_CONTEXT *resMgrTctiContext = 0;
