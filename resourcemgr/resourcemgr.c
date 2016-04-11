@@ -2246,14 +2246,6 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
     char functionString[sizeof( MUTEX_DBG_FUNCTION_STR ) + 1 ];
     UINT8 criticalSectionEntered;
 
-#ifdef  _WIN32
-#elif __linux || __unix
-    int mutexWaitRetVal;
-    struct timespec semWait = { 0, 0 };
-#else
-#error Unsupported OS--need to add OS-specific support for threading here.
-#endif
-
     strcpy( &functionString[0], MUTEX_DBG_FUNCTION_STR );
 
     for(;;)
@@ -2405,7 +2397,7 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
                     numBytes = CHANGE_ENDIAN_DWORD( numBytes );
 
                     // Send TPM or RM response to calling application.
-                    rval = sendBytes( serverStruct->connectSock, (char *)rspBuffer, numBytes );
+                    rval = sendBytes( serverStruct->connectSock, (unsigned char *)rspBuffer, numBytes );
                     if( rval != TSS2_RC_SUCCESS )
                     {
                         tpmCmdServerBreakValue = 6;

@@ -58,7 +58,7 @@ static TSS2_RC tctiRecvBytes( TSS2_TCTI_CONTEXT *tctiContext, SOCKET sock, unsig
 {
     TSS2_RC result = 0;
     result = recvBytes( sock, data, len);
-    if (result == SOCKET_ERROR) {
+    if ( (INT32)result == SOCKET_ERROR) {
         TCTI_LOG( tctiContext, NO_PREFIX, "In recvBytes, recv failed (socket: 0x%x) with error: %d\n", sock, WSAGetLastError() );
         return TSS2_TCTI_RC_IO_ERROR;
     }
