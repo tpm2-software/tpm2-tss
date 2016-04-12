@@ -44,11 +44,11 @@
 TSS2_RC StartCriticalSection( TPM_MUTEX *tpmMutex, char *dbgString )
 {
 	TSS2_RC rval = TSS2_RC_SUCCESS;
-	UINT8 mutexAcquired;
+#ifdef DEBUG_MUTEX
+	UINT8 mutexAcquired = 0;
+#endif
 	int mutexWaitRetVal;
 	struct timespec semWait = { 0, 0 };
-
-	mutexAcquired = 0;
 
 	// Critical section starts here--take the mutex.
 	clock_gettime( CLOCK_REALTIME, &semWait );
@@ -59,12 +59,13 @@ TSS2_RC StartCriticalSection( TPM_MUTEX *tpmMutex, char *dbgString )
 	{
 		rval = TSS2_TCTI_RC_TRY_AGAIN;
 	}
-	else
+
+#ifdef DEBUG_MUTEX
+    else
 	{
 		mutexAcquired = 1;
 	}
 
-#ifdef DEBUG_MUTEX
 	if( mutexAcquired )
 	{
 		DebugPrintf(NO_PREFIX, "In %s, acquired mutex\n", dbgString );
@@ -81,18 +82,21 @@ TSS2_RC StartCriticalSection( TPM_MUTEX *tpmMutex, char *dbgString )
 TSS2_RC EndCriticalSection( TPM_MUTEX *tpmMutex, char *dbgString )
 {
 	TSS2_RC rval = TSS2_RC_SUCCESS;
+#ifdef DEBUG_MUTEX
 	UINT8 mutexReleased = 0;
+#endif
 
 	if( 0 != sem_post( tpmMutex ) )
 	{
 		rval = TSS2_TCTI_RC_TRY_AGAIN;
 	}
+
+#ifdef DEBUG_MUTEX
 	else
 	{
 	   mutexReleased = 1;
 	}
 
-#ifdef DEBUG_MUTEX
 	if( mutexReleased )
 	{
 		DebugPrintf(NO_PREFIX, "In PlatformCommand, released mutex\n" );
