@@ -2357,7 +2357,7 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
 
             if( rval != TSS2_RC_SUCCESS )
             {
-                continue;
+                goto tpmCmdServerDone;
             }
             else
             {
@@ -2500,6 +2500,8 @@ UINT8 OtherCmdServer( SERVER_STRUCT *serverStruct )
         FD_ZERO( &readFds );
         FD_SET( serverStruct->connectSock, &readFds );
 
+        criticalSectionEntered = 0;
+
         iResult = select( serverStruct->connectSock+1, &readFds, 0, 0, 0 );
         if( iResult == 0 )
         {
@@ -2534,7 +2536,15 @@ UINT8 OtherCmdServer( SERVER_STRUCT *serverStruct )
         if( command != MS_SIM_CANCEL_ON && command != MS_SIM_CANCEL_OFF &&
                 command != MS_SIM_POWER_ON && command != MS_SIM_POWER_OFF )
         {
-            StartCriticalSection( &tpmMutex, &functionString[0] );
+            rval = StartCriticalSection( &tpmMutex, &functionString[0] );
+            if( rval == TSS2_RC_SUCCESS )
+            {
+                criticalSectionEntered = 1;
+            }
+            else
+            {
+                goto retOtherCmdServer;
+            }
         }
 
         switch( command )
@@ -2582,7 +2592,7 @@ UINT8 OtherCmdServer( SERVER_STRUCT *serverStruct )
                 }
                 else
                 {
-                    criticalSectionEntered = 1;
+                    criticalSectionEntered = 0;
                 }
             }
             break;
