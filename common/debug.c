@@ -212,7 +212,17 @@ const char *commandCodeStrings[] =
     "TPM2_PolicyNvWritten" // 18f
 };
 
+char undefinedCommandString[10] = "";
+
 const char* strTpmCommandCode( TPM_CC code )
 {
-    return commandCodeStrings[ code - TPM_CC_FIRST ];
+    if( code >= TPM_CC_NV_UndefineSpaceSpecial && code <= TPM_CC_PolicyNvWritten )
+    {
+        return commandCodeStrings[ code - TPM_CC_FIRST ];
+    }
+    else
+    {
+        sprintf( &undefinedCommandString[0], "0x%4.4x", code );
+        return &undefinedCommandString[0];
+    }
 }
