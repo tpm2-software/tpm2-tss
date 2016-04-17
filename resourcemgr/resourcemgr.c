@@ -2233,7 +2233,7 @@ typedef struct serverStruct
 UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
 {
     UINT32 numBytes, sendCmd, trash = 0;
-    UINT8 locality, statusBits, debugLevel;
+    UINT8 locality;
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
     // This tells us what caused the tpmCmdServer to die.
@@ -2308,26 +2308,7 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
                 continue;
             }
             (( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.locality = locality;
-
-            // Receive debug level.
-            rval = rmRecvBytes( serverStruct->connectSock, (unsigned char*) &debugLevel, 1 );
-            if( rval != TSS2_RC_SUCCESS )
-            {
-                CreateErrorResponse( TSS2_TCTI_RC_IO_ERROR );
-                SendErrorResponse( serverStruct->connectSock ); 
-                continue;
-            }
-            SetDebug( debugLevel );
-
-            // Receive status bits.
-            rval = rmRecvBytes( serverStruct->connectSock, (unsigned char*) &statusBits, 1 );
-            if( rval != TSS2_RC_SUCCESS )
-            {
-                CreateErrorResponse( TSS2_TCTI_RC_IO_ERROR );
-                SendErrorResponse( serverStruct->connectSock ); 
-                continue;
-            }
-            (( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.commandSent = statusBits & 0x1;
+            (( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.commandSent = 1;
             (( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.rmDebugPrefix = NO_PREFIX;
 
             // Receive number of bytes.
