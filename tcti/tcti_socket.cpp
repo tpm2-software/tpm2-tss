@@ -274,12 +274,6 @@ TSS2_RC SocketSetLocality(
     return rval;
 }
 
-void CloseSockets( SOCKET otherSock, SOCKET tpmSock)
-{
-    closesocket(otherSock);
-    closesocket(tpmSock);
-}    
-
 void SocketFinalize(
     TSS2_TCTI_CONTEXT *tctiContext       /* in */
     )
