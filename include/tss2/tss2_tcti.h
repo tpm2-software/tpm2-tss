@@ -70,6 +70,68 @@ typedef void TSS2_TCTI_POLL_HANDLE;
 #define  TSS2_TCTI_TIMEOUT_BLOCK    -1
 #define  TSS2_TCTI_TIMEOUT_NONE     0
 
+// Macros to simplify access to values in common TCTI structure
+#define TSS2_TCTI_MAGIC(tctiContext) \
+    ((TSS2_TCTI_CONTEXT_VERSION*)tctiContext)->magic
+#define TSS2_TCTI_VERSION(tctiContext) \
+    ((TSS2_TCTI_CONTEXT_VERSION*)tctiContext)->version
+#define TSS2_TCTI_TRANSMIT(tctiContext) \
+    ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->transmit
+#define TSS2_TCTI_RECEIVE(tctiContext) \
+    ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->receive
+#define TSS2_TCTI_FINALIZE(tctiContext) \
+    ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->finalize
+#define TSS2_TCTI_CANCEL(tctiContext) \
+    ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->cancel
+#define TSS2_TCTI_GET_POLL_HANDLES(tctiContext) \
+    ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->getPollHandles
+#define TSS2_TCTI_SET_LOCALITY(tctiContext) \
+    ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->setLocality
+
+// Macros to simplify invocation of functions from the common TCTI structure
+#define tss2_tcti_transmit(tctiContext, size, command) \
+    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_CONTEXT: \
+    (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
+        TSS2_TCTI_RC_ABI_MISMATCH: \
+    (TSS2_TCTI_TRANSMIT(tctiContext) == NULL) ? \
+        TSS2_TCTI_RC_NOT_IMPLEMENTED: \
+    TSS2_TCTI_TRANSMIT(tctiContext)(tctiContext, size, command))
+#define tss2_tcti_receive(tctiContext, size, command) \
+    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_CONTEXT: \
+    (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
+        TSS2_TCTI_RC_ABI_MISMATCH: \
+    (TSS2_TCTI_RECEIVE(tctiContext) == NULL) ? \
+        TSS2_TCTI_RC_NOT_IMPLEMENTED: \
+    TSS2_TCTI_RECEIVE(tctiContext)(tctiContext, size, command))
+#define tss2_tcti_finalize(tctiContext, size, command) \
+    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_CONTEXT: \
+    (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
+        TSS2_TCTI_RC_ABI_MISMATCH: \
+    (TSS2_TCTI_FINALIZE(tctiContext) == NULL) ? \
+        TSS2_TCTI_RC_NOT_IMPLEMENTED: \
+    TSS2_TCTI_FINALIZE(tctiContext)(tctiContext, size, command))
+#define tss2_tcti_cancel(tctiContext, size, command) \
+    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_CONTEXT: \
+    (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
+        TSS2_TCTI_RC_ABI_MISMATCH: \
+    (TSS2_TCTI_CANCEL(tctiContext) == NULL) ? \
+        TSS2_TCTI_RC_NOT_IMPLEMENTED: \
+    TSS2_TCTI_CANCEL(tctiContext)(tctiContext, size, command))
+#define tss2_tcti_get_poll_handles(tctiContext, size, command) \
+    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_CONTEXT: \
+    (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
+        TSS2_TCTI_RC_ABI_MISMATCH: \
+    (TSS2_TCTI_GET_POLL_HANDLES(tctiContext) == NULL) ? \
+        TSS2_TCTI_RC_NOT_IMPLEMENTED: \
+    TSS2_TCTI_GET_POLL_HANDLES(tctiContext)(tctiContext, size, command))
+#define tss2_tcti_set_locality(tctiContext, size, command) \
+    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_CONTEXT: \
+    (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
+        TSS2_TCTI_RC_ABI_MISMATCH: \
+    (TSS2_TCTI_SET_LOCALITY(tctiContext) == NULL) ? \
+        TSS2_TCTI_RC_NOT_IMPLEMENTED: \
+    TSS2_TCTI_SET_LOCALITY(tctiContext)(tctiContext, size, command))
+
 typedef struct TSS2_TCTI_OPAQUE_CONTEXT_BLOB TSS2_TCTI_CONTEXT;
 
 /* superclass to get the version */
@@ -82,18 +144,18 @@ typedef struct {
 typedef struct {
     uint64_t magic;
     uint32_t version;
-    TSS2_RC (*transmit)( TSS2_TCTI_CONTEXT *tctiContext, size_t size, 
+    TSS2_RC (*transmit)( TSS2_TCTI_CONTEXT *tctiContext, size_t size,
 uint8_t *command);
-    TSS2_RC (*receive) (TSS2_TCTI_CONTEXT *tctiContext, size_t *size, 
+    TSS2_RC (*receive) (TSS2_TCTI_CONTEXT *tctiContext, size_t *size,
 uint8_t *response, int32_t timeout);
     void (*finalize) (TSS2_TCTI_CONTEXT *tctiContext);
     TSS2_RC (*cancel) (TSS2_TCTI_CONTEXT *tctiContext);
-    TSS2_RC (*getPollHandles) (TSS2_TCTI_CONTEXT *tctiContext, 
+    TSS2_RC (*getPollHandles) (TSS2_TCTI_CONTEXT *tctiContext,
 TSS2_TCTI_POLL_HANDLE *handles, size_t *num_handles);
     TSS2_RC (*setLocality) (TSS2_TCTI_CONTEXT *tctiContext, uint8_t locality);
 } TSS2_TCTI_CONTEXT_COMMON_V1;
 
-typedef TSS2_TCTI_CONTEXT_COMMON_V1 TSS2_TCTI_CONTEXT_COMMON_CURRENT; 
+typedef TSS2_TCTI_CONTEXT_COMMON_V1 TSS2_TCTI_CONTEXT_COMMON_CURRENT;
 
 #ifdef __cplusplus
 }
