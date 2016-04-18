@@ -67,7 +67,7 @@ tcti_libtctidevice_la_CFLAGS   = $(TCTIDEVICE_INC)
 tcti_libtctidevice_la_LDFLAGS  = $(LIBRARY_LDFLAGS) \
     -Wl,--version-script=$(srcdir)/tcti/tcti_device.map
 tcti_libtctidevice_la_SOURCES  = $(TCTIDEVICE_C) \
-    sysapi/sysapi_util/changeEndian.c $(TCTICOMMON_C)
+    sysapi/sysapi_util/changeEndian.c $(TCTICOMMON_C) common/debug.c
 
 tcti_libtctisocket_la_CFLAGS   = -DSAPI_CLIENT $(TCTISOCKET_INC)
 tcti_libtctisocket_la_CXXFLAGS = -DSAPI_CLIENT $(TCTISOCKET_INC)
