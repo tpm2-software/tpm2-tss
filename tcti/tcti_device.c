@@ -239,14 +239,14 @@ TSS2_RC InitDeviceTcti (
     else
     {
         // Init TCTI context.
-        ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->magic = TCTI_MAGIC;
-        ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->version = TCTI_VERSION;
-        ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->transmit = LocalTpmSendTpmCommand;
-        ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->receive = LocalTpmReceiveTpmResponse;
-        ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->finalize = LocalTpmFinalize;
-        ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->cancel = LocalTpmCancel;
-        ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->getPollHandles = 0;
-        ((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->setLocality = LocalTpmSetLocality;
+        TSS2_TCTI_MAGIC( tctiContext ) = TCTI_MAGIC;
+        TSS2_TCTI_VERSION( tctiContext ) = TCTI_VERSION;
+        TSS2_TCTI_TRANSMIT( tctiContext ) = LocalTpmSendTpmCommand;
+        TSS2_TCTI_RECEIVE( tctiContext ) = LocalTpmReceiveTpmResponse;
+        TSS2_TCTI_FINALIZE( tctiContext ) = LocalTpmFinalize;
+        TSS2_TCTI_CANCEL( tctiContext ) = LocalTpmCancel;
+        TSS2_TCTI_GET_POLL_HANDLES( tctiContext ) = 0;
+        TSS2_TCTI_SET_LOCALITY( tctiContext ) = LocalTpmSetLocality;
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.locality = 3;
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent = 0;
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.rmDebugPrefix = 0;
