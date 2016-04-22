@@ -2531,7 +2531,11 @@ UINT8 OtherCmdServer( SERVER_STRUCT *serverStruct )
         command = CHANGE_ENDIAN_DWORD( command );
 
         if( !simulator )
+        {
+            rval = CHANGE_ENDIAN_DWORD( TSS2_RC_SUCCESS );
+            rmSendBytes( serverStruct->connectSock, (unsigned char *)&rval, 4 );
             continue;
+        }
 
         if( command != MS_SIM_CANCEL_ON && command != MS_SIM_CANCEL_OFF &&
                 command != MS_SIM_POWER_ON && command != MS_SIM_POWER_OFF )
@@ -2760,18 +2764,21 @@ TSS2_RC InitResourceMgr( int debugLevel)
         freedSessionHandles[i] = freedObjectHandles[i] = UNAVAILABLE_FREED_HANDLE;
     }
 
-    rval = PlatformCommand( downstreamTctiContext, MS_SIM_POWER_ON );
-    if( rval != TPM_RC_SUCCESS )
+    if ( simulator )
     {
-        SetRmErrorLevel( &rval, TSS2_RESMGR_ERROR_LEVEL );
-        goto returnFromInitResourceMgr;
-    }
+        rval = PlatformCommand( downstreamTctiContext, MS_SIM_POWER_ON );
+        if( rval != TPM_RC_SUCCESS )
+        {
+            SetRmErrorLevel( &rval, TSS2_RESMGR_ERROR_LEVEL );
+            goto returnFromInitResourceMgr;
+        }
     
-    rval = PlatformCommand( downstreamTctiContext, MS_SIM_NV_ON );
-    if( rval != TPM_RC_SUCCESS )
-    {
-        SetRmErrorLevel( &rval, TSS2_RESMGR_ERROR_LEVEL );
-        goto returnFromInitResourceMgr;
+        rval = PlatformCommand( downstreamTctiContext, MS_SIM_NV_ON );
+        if( rval != TPM_RC_SUCCESS )
+        {
+            SetRmErrorLevel( &rval, TSS2_RESMGR_ERROR_LEVEL );
+            goto returnFromInitResourceMgr;
+        }
     }
     
     // This one should pass.
