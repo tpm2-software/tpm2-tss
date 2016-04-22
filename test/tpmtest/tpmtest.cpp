@@ -630,6 +630,7 @@ void TestSapiApis()
     CheckPassed(rval);
 
     // Get the command results
+    INIT_SIMPLE_TPM2B_SIZE( outData );
     rval = Tss2_Sys_GetTestResult_Complete( sysContext, &outData, &testResult );
     CheckPassed(rval);
 
@@ -649,6 +650,7 @@ void TestSapiApis()
     CheckPassed(rval);
 
     // Get the command results
+    INIT_SIMPLE_TPM2B_SIZE( outData );
     rval = Tss2_Sys_GetTestResult_Complete( sysContext, &outData, &testResult );
     CheckPassed(rval);
 
@@ -1710,6 +1712,7 @@ void TestNV()
     symmetric.algorithm = TPM_ALG_NULL;
     symmetric.keyBits.sym = 0;
     symmetric.mode.sym = 0;
+    INIT_SIMPLE_TPM2B_SIZE( nvSessionNonce );
     rval = Tss2_Sys_StartAuthSession ( sysContext, TPM_RH_NULL, TPM_RH_PLATFORM, 0, &nonceNewer, &salt,
             TPM_SE_TRIAL, &symmetric, TPM_ALG_SHA1, &nvSessionHandle, &nvSessionNonce );
     CheckPassed( rval );
@@ -1719,6 +1722,7 @@ void TestNV()
     rval = Tss2_Sys_PolicyCommandCode ( sysContext, nvSessionHandle, 0, TPM_CC_NV_UndefineSpaceSpecial, 0 );
     CheckPassed( rval );
 
+    INIT_SIMPLE_TPM2B_SIZE( nvAuth1 );
     rval = Tss2_Sys_PolicyGetDigest( sysContext, nvSessionHandle, 0, &nvAuth1, 0 );
     CheckPassed( rval );
 
@@ -1743,6 +1747,7 @@ void TestNV()
     rval = Tss2_Sys_NV_DefineSpace( sysContext, TPM_RH_PLATFORM, &sessionsData, &nvAuth, &publicInfo, &sessionsDataOut );
     CheckPassed( rval );
 
+    INIT_SIMPLE_TPM2B_SIZE( nvSessionNonce );
     rval = Tss2_Sys_StartAuthSession ( sysContext, TPM_RH_NULL, TPM_RH_PLATFORM, 0, &nonceCaller, &salt,
             TPM_SE_POLICY, &symmetric, TPM_ALG_SHA1, &nvSessionHandle, &nvSessionNonce );
     CheckPassed( rval );
@@ -1831,6 +1836,7 @@ void TestHierarchyControl()
 
     // Test SAPI for case where nvPublic.t.size != 0
     nvPublic.t.size = 0xff;
+    INIT_SIMPLE_TPM2B_SIZE( nvName );
     rval = Tss2_Sys_NV_ReadPublic( sysContext, TPM20_INDEX_TEST1, 0, &nvPublic, &nvName, 0 );
     CheckFailed( rval, TSS2_SYS_RC_BAD_VALUE );
 
@@ -2196,6 +2202,8 @@ void TestCreate()
 
     outPublic.t.size = 0;
     creationData.t.size = 0;
+    INIT_SIMPLE_TPM2B_SIZE( creationHash );
+    INIT_SIMPLE_TPM2B_SIZE( name );
     rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_NULL, &sessionsData, &inSensitive, &inPublic,
             &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
             &creationTicket, &name, &sessionsDataOut );
@@ -2228,6 +2236,7 @@ void TestCreate()
             &creationHash, &creationTicket, &sessionsDataOut );
     CheckPassed( rval );
 
+    INIT_SIMPLE_TPM2B_SIZE( name );
     rval = Tss2_Sys_Load ( sysContext, handle2048rsa, &sessionsData, &outPrivate, &outPublic,
             &loadedSha1KeyHandle, &name, &sessionsDataOut);
     CheckPassed( rval );
@@ -2313,6 +2322,7 @@ TPM_RC BuildPolicy( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession,
     CheckPassed( rval );
 
     // Get policy hash.
+    INIT_SIMPLE_TPM2B_SIZE( *policyDigest );
     rval = Tss2_Sys_PolicyGetDigest( sysContext, (*policySession)->sessionHandle,
             0, policyDigest, 0 );
     CheckPassed( rval );
@@ -2361,6 +2371,7 @@ TPM_RC CreateNVIndex( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TPM
     CheckPassed( rval );
 
     // Read policyHash
+    INIT_SIMPLE_TPM2B_SIZE( *policyDigest );
     rval = Tss2_Sys_PolicyGetDigest( sysContext,
             (*policySession)->sessionHandle, 0, policyDigest, 0 );
     CheckPassed( rval );
@@ -2509,6 +2520,7 @@ TPM_RC BuildPasswordPcrPolicy( TSS2_SYS_CONTEXT *sysContext, SESSION *policySess
     rval = Tss2_Sys_PCR_Read( sysContext, 0, &pcrs, &pcrUpdateCounter, &pcrSelectionOut, &pcrValues, 0 );
     CheckPassed( rval );
     // Hash them together
+    INIT_SIMPLE_TPM2B_SIZE( pcrDigest );
     rval = TpmHashSequence( policySession->authHash, pcrValues.count, &pcrValues.digests[0], &pcrDigest );
 
     rval = Tss2_Sys_PolicyPCR( sysContext, policySession->sessionHandle, 0, &pcrDigest, &pcrs, 0 );
@@ -2939,6 +2951,7 @@ void TestHash()
 
     dataToHash.t.size = sizeof( memoryToHash ) - MAX_DIGEST_BUFFER;
     memcpy( &dataToHash.t.buffer[0], &memoryToHash[MAX_DIGEST_BUFFER], dataToHash.t.size );
+    INIT_SIMPLE_TPM2B_SIZE( result );
     rval = Tss2_Sys_SequenceComplete ( sysContext, sequenceHandle[0], &sessionsData, &dataToHash,
             TPM_RH_PLATFORM, &result, &validation, &sessionsDataOut );
     CheckPassed( rval );
@@ -2963,6 +2976,7 @@ void TestHash()
     for( i = (MAX_TEST_SEQUENCES - 1); i >= 0; i-- )
 //    for( i = 0; i < MAX_TEST_SEQUENCES; i++ )
     {
+        INIT_SIMPLE_TPM2B_SIZE( result );
         rval = Tss2_Sys_SequenceComplete ( sysContext, sequenceHandle[i], &sessionsData, &dataToHash,
                 TPM_RH_PLATFORM, &result, &validation, &sessionsDataOut );
         CheckPassed( rval );
@@ -3331,6 +3345,7 @@ void TpmAuxReadWriteTest()
         rval = SetLocality( sysContext, testLocality );
         CheckPassed( rval );
 
+        INIT_SIMPLE_TPM2B_SIZE( nvData );
         rval = Tss2_Sys_NV_Read( sysContext, INDEX_AUX, INDEX_AUX, &nullSessionsData, 4, 0, &nvData, &nullSessionsDataOut );
         CheckPassed( rval );
 
@@ -3911,6 +3926,7 @@ void SimplePolicyTest()
     CheckPassed( rval );
 
     // Get policy digest.
+    INIT_SIMPLE_TPM2B_SIZE( authPolicy );
     rval = Tss2_Sys_PolicyGetDigest( sysContext, trialPolicySession->sessionHandle,
             0, &authPolicy, 0 );
     CheckPassed( rval );
@@ -3990,6 +4006,7 @@ void SimplePolicyTest()
     CheckPassed( rval );
 
     // Get policy digest.
+    INIT_SIMPLE_TPM2B_SIZE( authPolicy );
     rval = Tss2_Sys_PolicyGetDigest( sysContext, trialPolicySession->sessionHandle,
             0, &authPolicy, 0 );
     CheckPassed( rval );
@@ -4066,6 +4083,7 @@ void SimplePolicyTest()
     // And now read the data back.
     // If the command is successful, the command
     // HMAC was correct.
+    INIT_SIMPLE_TPM2B_SIZE( nvReadData );
     sessionCmdRval = Tss2_Sys_NV_Read( sysContext,
             TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST,
@@ -4293,6 +4311,7 @@ void SimpleHmacTest()
     // And now read the data back.
     // If the command is successful, the command
     // HMAC was correct.
+    INIT_SIMPLE_TPM2B_SIZE( nvReadData );
     sessionCmdRval = Tss2_Sys_NV_Read( sysContext,
             TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST,
@@ -4626,6 +4645,7 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
     // And now read the data back.
     // If the command is successful, the command
     // HMAC was correct.
+    INIT_SIMPLE_TPM2B_SIZE( nvReadData );
     sessionCmdRval = Tss2_Sys_NV_Read( simpleTestContext,
             TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST,
@@ -5431,6 +5451,7 @@ void TestEncryptDecryptSession()
         CheckPassed( rval );
 
         // Get the command results, in this case the read data.
+        INIT_SIMPLE_TPM2B_SIZE( readData );
         rval = Tss2_Sys_NV_Read_Complete( sysContext, &readData );
         CheckPassed( rval );
 
@@ -5528,6 +5549,7 @@ void TestRsaEncryptDecrypt()
     CheckPassed( rval );
 
     // Load private key into TPM
+    INIT_SIMPLE_TPM2B_SIZE( rsaKeyName );
     rval = Tss2_Sys_Load ( sysContext, handle2048rsa, 0, &outPrivate, &outPublic,
             &loadedSha1KeyHandle, &rsaKeyName, &sessionsDataOut);
     CheckPassed( rval );
@@ -6354,6 +6376,8 @@ void TestRM()
 
     outPublic.t.size = 0;
     creationData.t.size = 0;
+    INIT_SIMPLE_TPM2B_SIZE( name );
+    INIT_SIMPLE_TPM2B_SIZE( creationHash );
     rval = Tss2_Sys_CreatePrimary_Complete( sysContext, &newHandle, &outPublic, &creationData,
             &creationHash, &creationTicket, &name );
     CheckPassed( rval );
@@ -6373,6 +6397,8 @@ void TestRM()
     //
     outPublic.t.size = 0;
     creationData.t.size = 0;
+    INIT_SIMPLE_TPM2B_SIZE( name );
+    INIT_SIMPLE_TPM2B_SIZE( creationHash );
     rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_ENDORSEMENT, &sessionsData, &inSensitive, &inPublic,
             &outsideInfo, &creationPCR, &newHandleDummy, &outPublic, &creationData, &creationHash,
 			&creationTicket, &name, &sessionsDataOut );

@@ -2019,6 +2019,7 @@ void TestNV()
     sessionsData.cmdAuthsCount = 1;
     sessionsData.cmdAuths[0] = &sessionData;
 
+    INIT_SIMPLE_TPM2B_SIZE( nvData );
     rval = Tss2_Sys_NV_Read( sysContext, TPM_RH_PLATFORM, TPM20_INDEX_TEST1, &sessionsData, 32, 0, &nvData, &sessionsDataOut ); 
     CheckFailed( rval, TPM_RC_2 + TPM_RC_HANDLE );
 
@@ -2372,6 +2373,8 @@ void TestCreate(){
     // Do SAPI test for non-zero sized outPublic
     outPublic.t.size = 0xff;
     creationData.t.size = 0;
+    INIT_SIMPLE_TPM2B_SIZE( creationHash );
+    INIT_SIMPLE_TPM2B_SIZE( name );
     rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_PLATFORM, &sessionsData, &inSensitive, &inPublic,
             &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
             &creationTicket, &name, &sessionsDataOut );
@@ -2382,6 +2385,8 @@ void TestCreate(){
     
     outPublic.t.size = 0;
     INIT_SIMPLE_TPM2B_SIZE( creationData );
+    INIT_SIMPLE_TPM2B_SIZE( creationHash );
+    INIT_SIMPLE_TPM2B_SIZE( name );
     rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_PLATFORM, &sessionsData, &inSensitive, &inPublic,
             &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
             &creationTicket, &name, &sessionsDataOut );
@@ -2392,6 +2397,8 @@ void TestCreate(){
     
     outPublic.t.size = 0;
     creationData.t.size = 0;
+    INIT_SIMPLE_TPM2B_SIZE( creationHash );
+    INIT_SIMPLE_TPM2B_SIZE( name );
     rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_PLATFORM, &sessionsData, &inSensitive, &inPublic,
             &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
             &creationTicket, &name, &sessionsDataOut );
@@ -2416,6 +2423,7 @@ void TestCreate(){
     outsideInfo.t.size = 0;
     outPublic.t.size = 0;
     creationData.t.size = 0;
+    INIT_SIMPLE_TPM2B_SIZE( outPrivate );
     INIT_SIMPLE_TPM2B_SIZE( creationHash );
     rval = Tss2_Sys_Create( sysContext, handle2048rsa, &sessionsData, &inSensitive, &inPublic,
             &outsideInfo, &creationPCR,
@@ -3031,6 +3039,7 @@ TPM_RC PasswordUnseal( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession )
     
     // Now try to unseal the blob after setting the password.
     // This test should pass.
+    INIT_SIMPLE_TPM2B_SIZE( outData );
     cmdAuth.hmac.t.size = sizeof( passwordPCRTestPassword );
     memcpy( &cmdAuth.hmac.t.buffer, passwordPCRTestPassword, sizeof( passwordPCRTestPassword ) );
     rval = Tss2_Sys_Unseal( sysContext, blobHandle, &cmdAuthArray, &outData, 0 );
@@ -7074,6 +7083,8 @@ void TestCreate1()
     // Do SAPI test for non-zero sized outPublic
     outPublic.t.size = 0xff;
     creationData.t.size = 0;
+    INIT_SIMPLE_TPM2B_SIZE( creationHash );
+    INIT_SIMPLE_TPM2B_SIZE( name );
     rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_OWNER, &sessionsData, &inSensitive, &inPublic,
             &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
             &creationTicket, &name, &sessionsDataOut );
@@ -7081,6 +7092,8 @@ void TestCreate1()
 
     outPublic.t.size = 0;
     creationData.t.size = 0;
+    INIT_SIMPLE_TPM2B_SIZE( creationHash );
+    INIT_SIMPLE_TPM2B_SIZE( name );
     rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_OWNER, &sessionsData, &inSensitive, &inPublic,
             &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
             &creationTicket, &name, &sessionsDataOut );
