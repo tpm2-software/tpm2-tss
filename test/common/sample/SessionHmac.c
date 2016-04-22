@@ -71,7 +71,7 @@ UINT32 TpmComputeSessionHmac(
         return rval;
     }
 
-    pHash.t.size = sizeof( TPM2B_DIGEST ) - 2;
+    INIT_SIMPLE_TPM2B_SIZE( pHash );
     rval = ( *CalcPHash )( sysContext, handle1, handle2, pSession->authHash,
             responseCode, &pHash );
     if( rval != TPM_RC_SUCCESS )

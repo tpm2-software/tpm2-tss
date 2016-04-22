@@ -56,7 +56,7 @@ TSS2_RC GenerateSessionEncryptDecryptKey( SESSION *session, TPM2B_MAX_BUFFER *cf
     
     if( rval == TSS2_RC_SUCCESS )
     {
-        key.t.size = sizeof( key ) - 2;
+        INIT_SIMPLE_TPM2B_SIZE( key );
         rval = KDFa( session->authHash, &( sessionValue.b ), "CFB", &( session->nonceNewer.b ),
                 &( session->nonceOlder.b ), session->symmetric.keyBits.sym + blockSize, &key );
         if( rval == TSS2_RC_SUCCESS )
