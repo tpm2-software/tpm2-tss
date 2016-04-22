@@ -53,11 +53,9 @@ test_tcti_device_SOURCES = test/tcti_device.c test/tcti_device_test.c
 # how to build stuff
 resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS)
 resourcemgr_resourcemgr_CXXFLAGS = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS)
-resourcemgr_resourcemgr_LDADD    = $(libtss2)
+resourcemgr_resourcemgr_LDADD    = $(libtss2) $(libtctidevice) $(libtctisocket)
 resourcemgr_resourcemgr_LDFLAGS  = $(PTHREAD_LDFLAGS)
-resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(TCTISOCKET_C) \
-    $(TCTISOCKET_CXX) $(COMMON_C) $(TCTICOMMON_C) $(TCTIDEVICE_C) \
-    common/sockets.cpp
+resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(COMMON_SRC)
 
 sysapi_libtss2_la_CFLAGS  = -I$(srcdir)/include -I$(srcdir)/sysapi/include
 sysapi_libtss2_la_LDFLAGS = $(LIBRARY_LDFLAGS)

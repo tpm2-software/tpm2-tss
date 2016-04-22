@@ -7,6 +7,12 @@ void WSACleanup() {}
 int WSAGetLastError() { return errno; }
 #endif
 
+void CloseSockets( SOCKET otherSock, SOCKET tpmSock)
+{
+    closesocket(otherSock);
+    closesocket(tpmSock);
+}
+
 TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len )
 {
     int iResult = 0;

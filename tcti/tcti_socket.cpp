@@ -123,10 +123,6 @@ TSS2_RC SocketSendTpmCommand(
     UINT32 commandCode    ;
 #endif
     
-#ifdef SAPI_CLIENT    
-    UINT8 debugMsgLevel, statusBits;
-#endif
-
     rval = CommonSendChecks( tctiContext, command_buffer );
     if( rval != TSS2_RC_SUCCESS )
     {
@@ -161,21 +157,6 @@ TSS2_RC SocketSendTpmCommand(
     if( rval != TSS2_RC_SUCCESS )
         goto returnFromSocketSendTpmCommand;
 
-#ifdef SAPI_CLIENT    
-    // Send the debug level
-    debugMsgLevel = (UINT8)( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.debugMsgLevel;
-    rval = tctiSendBytes( tctiContext, TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&debugMsgLevel, 1 );
-    if( rval != TSS2_RC_SUCCESS )
-        goto returnFromSocketSendTpmCommand;
-
-    // Send status bits
-    statusBits = (UINT8)( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent;
-    statusBits |= ( (UINT8)( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.rmDebugPrefix ) << 1;
-    rval = tctiSendBytes( tctiContext, TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&statusBits, 1 );
-    if( rval != TSS2_RC_SUCCESS )
-        goto returnFromSocketSendTpmCommand;
-#endif
-    
 #ifdef DEBUG
     if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
     {
@@ -273,12 +254,6 @@ TSS2_RC SocketSetLocality(
 
     return rval;
 }
-
-void CloseSockets( SOCKET otherSock, SOCKET tpmSock)
-{
-    closesocket(otherSock);
-    closesocket(tpmSock);
-}    
 
 void SocketFinalize(
     TSS2_TCTI_CONTEXT *tctiContext       /* in */
