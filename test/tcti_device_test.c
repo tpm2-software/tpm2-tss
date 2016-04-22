@@ -12,7 +12,6 @@
 size_t
 tcti_dev_init_size (void **state)
 {
-    void *my_state = *state;
     size_t tcti_size = 0;
     TSS2_RC ret = TSS2_RC_SUCCESS;
 
@@ -36,7 +35,6 @@ tcti_dev_init_log_callback (void *data, printf_type type, const char *format, ..
 void
 tcti_dev_init_log (void **state)
 {
-    void *my_state = *state;
     size_t tcti_size = 0;
     uint8_t my_data = 0x9;
     TSS2_RC ret = TSS2_RC_SUCCESS;
@@ -76,7 +74,6 @@ tcti_dev_log_callback (void *data, printf_type type, const char *format, ...)
 bool
 tcti_dev_log_called (void **state)
 {
-    void *my_state = *state;
     size_t tcti_size = 0;
     bool called = false;
     TSS2_RC ret = TSS2_RC_SUCCESS;
