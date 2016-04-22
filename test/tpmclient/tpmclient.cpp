@@ -627,9 +627,9 @@ void TestTctiApis( TSS2_TCTI_CONTEXT *tstTctiContext, int againstRM )
     uint8_t responseBuffer[20];
     size_t responseSize;
     size_t expectedResponseSize;
-    SOCKET savedTpmSock;
-    SOCKET savedOtherSock;
-    int savedDevFile;
+    SOCKET savedTpmSock = 0;
+    SOCKET savedOtherSock = 0;
+    int savedDevFile = 0;
     uint64_t savedMagic;
     uint32_t savedVersion;
     uint8_t goodResponseBuffer[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
