@@ -221,8 +221,6 @@ typedef struct RESOURCE_MANAGER_ENTRY_STRUCT {
                                     // into the TPM or not.
         UINT16 stClear : 1;         // Only used for objects; indicates whether object
                                     // context is invalidated by TPM Restart.
-        UINT16 persistent : 1;      // Only used for objects; indicates whether object
-                                    // is persistent or not.
     } status;
     TPM_HANDLE virtualHandle;       // For transient objects and sequences, this is the virtual
                                     //  handle.
@@ -664,7 +662,6 @@ TSS2_RC AddEntry( TPM_HANDLE virtualHandle, TPM_HANDLE realHandle, TPM_HANDLE pa
     newEntry->connectionId = connectionId;
     newEntry->status.loaded = 1;
     newEntry->status.stClear = 0;
-    newEntry->status.persistent = 0;
     newEntry->nextEntry = 0;
     
     return TSS2_RC_SUCCESS;
@@ -973,6 +970,18 @@ TSS2_RC HandleGap()
     return rval;
 }
 
+UINT8 PersistentHandle( TPM_HANDLE handle )
+{
+    TPM_HT handleType;
+
+    handleType = handle >> 24;
+
+    if( handleType == TPM_HT_PERSISTENT )
+        return 1;
+    else
+        return 0;
+}
+
 //
 //  if ( connectionId matches that of rmElement) && virtualHandle matches element in list
 //    load context into TPM
@@ -1020,7 +1029,7 @@ TSS2_RC LoadContext( TPM_HANDLE virtualHandle, UINT64 connectionId, TPM_HANDLE *
             goto exitLoadContext;
     }
 
-    if( foundEntryPtr->status.persistent == 0 )
+    if( 0 == PersistentHandle( virtualHandle ) )
     {
         rval = Tss2_Sys_ContextLoad( resMgrSysContext, &( foundEntryPtr->context ), &( foundEntryPtr->realHandle ) );
         if( rval != TSS2_RC_SUCCESS )
@@ -1309,7 +1318,7 @@ TSS2_RC ResourceMgrSendTpmCommand(
                 goto SendCommand;
             }
 
-            if( foundEntryPtr->status.persistent == 0 &&
+            if( 0 == PersistentHandle( cmdParentHandle ) &&
                 foundEntryPtr->connectionId != cmdConnectionId )
             {
                 responseRval = TSS2_RESMGR_UNOWNED_HANDLE;
@@ -1560,18 +1569,6 @@ TSS2_RC EvictEntities( int numHandles, TPM_HANDLE *handles )
 returnFromEvictEntities:
     
     return rval;
-}
-
-UINT8 PersistentHandle( TPM_HANDLE handle )
-{
-    TPM_HT handleType;
-
-    handleType = handle >> 24;
-
-    if( handleType == TPM_HT_PERSISTENT )
-        return 1;
-    else
-        return 0;
 }
 
 TSS2_RC ResourceMgrReceiveTpmResponse(
@@ -1933,12 +1930,6 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                                 foundEntryPtr->hierarchy, cmdConnectionId );
                         if( rval != TSS2_RC_SUCCESS )
                             goto returnFromResourceMgrReceiveTpmResponse;
-
-                        // Find entry for the new persistent object and flag it as persistent
-                        rval = FindEntry( entryList, RMFIND_REAL_HANDLE, persistentHandle, &foundEntryPtr );
-                        if( rval != TSS2_RC_SUCCESS )
-                            goto returnFromResourceMgrReceiveTpmResponse;
-                        foundEntryPtr->status.persistent = 1;
                     }
                     else
                     {
