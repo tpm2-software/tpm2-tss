@@ -70,10 +70,12 @@ typedef struct {
               TSS2_TCTI_POLL_HANDLE *handles, size_t *num_handles);
     TSS2_RC (*setLocality) (TSS2_TCTI_CONTEXT *tctiContext, uint8_t locality);
     struct {
-        UINT32 debugMsgLevel: 8;
+        UINT32 debugMsgEnabled: 1;
         UINT32 locality: 8;
         UINT32 commandSent: 1;
-        UINT32 rmDebugPrefix: 1;  // Used to add a prefix to RM debug messages.
+        UINT32 rmDebugPrefix: 1;  // Used to add a prefix to RM debug messages.  This is ONLY used
+                                  // for TPM commands and responses as a way to differentiate
+                                  // RM generated TPM commands from application generated ones.
 
         // Following two fields used to save partial response status in case receive buffer's too small.
         UINT32 tagReceived: 1;
@@ -103,9 +105,5 @@ typedef struct {
 
 #define TCTI_CONTEXT ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)(SYS_CONTEXT->tctiContext) )
 #define TCTI_CONTEXT_INTEL ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )
-
-// TCTI debug message levels
-#define TSS2_TCTI_DEBUG_MSG_DISABLED 0
-#define TSS2_TCTI_DEBUG_MSG_ENABLED 1
 
 #endif

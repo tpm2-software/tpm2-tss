@@ -6204,7 +6204,7 @@ void TestRM()
     }
     else
     {
-        (( TSS2_TCTI_CONTEXT_INTEL *)otherResMgrTctiContext )->status.debugMsgLevel = debugLevel;
+        (( TSS2_TCTI_CONTEXT_INTEL *)otherResMgrTctiContext )->status.debugMsgEnabled = debugLevel;
     }
 
     otherSysContext = InitSysContext( 0, otherResMgrTctiContext, &abiVersion );
@@ -7880,7 +7880,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        (( TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->status.debugMsgLevel = debugLevel;
+        (( TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->status.debugMsgEnabled = debugLevel;
     }
 
     sysContext = InitSysContext( 0, resMgrTctiContext, &abiVersion );

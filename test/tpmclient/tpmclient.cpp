@@ -2543,7 +2543,7 @@ void TestEvict()
     }
     else
     {
-        (( TSS2_TCTI_CONTEXT_INTEL *)otherResMgrTctiContext )->status.debugMsgLevel = debugLevel;
+        (( TSS2_TCTI_CONTEXT_INTEL *)otherResMgrTctiContext )->status.debugMsgEnabled = debugLevel;
     }
     
     otherSysContext = InitSysContext( 0, otherResMgrTctiContext, &abiVersion );
@@ -6677,7 +6677,7 @@ void TestRM()
     }
     else
     {
-        (( TSS2_TCTI_CONTEXT_INTEL *)otherResMgrTctiContext )->status.debugMsgLevel = debugLevel;
+        (( TSS2_TCTI_CONTEXT_INTEL *)otherResMgrTctiContext )->status.debugMsgEnabled = debugLevel;
     }
     
     otherSysContext = InitSysContext( 0, otherResMgrTctiContext, &abiVersion );
@@ -7167,7 +7167,7 @@ void TestLocalTCTI()
     {
         if( debugLevel == DBG_COMMAND )
         {
-            ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_ENABLED;
+            ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgEnabled = debugLevel;
         }
         
         TestTctiApis( downstreamTctiContext, 0 );
@@ -7346,8 +7346,6 @@ void PrintHelp()
             "-dbg specifies level of debug messages:\n"
             "   0 (high level test results)\n"
             "   1 (test app send/receive byte streams)\n"
-            "   2 (resource manager send/receive byte streams)\n"
-            "   3 (resource manager tables)\n"
             "-startAuthSessionTest enables some special tests of the resource manager for starting sessions\n"
 #if __linux || __unix
             "-localTctiTest enables a TCTI interface test against a local TPM.  WARNING:  This test requires no resource manager and a local TPM\n"
@@ -7418,12 +7416,12 @@ int main(int argc, char* argv[])
             else if( 0 == strcmp( argv[count], "-dbg" ) )
             {
                 count++;
-                if( count >= argc || 1 != sscanf_s( argv[count], "%d", &debugLevel ) )
+                if( count >= argc || 1 != sscanf_s( argv[count], "%d", &debugLevel ) || debugLevel > 1 )
                 {
                     PrintHelp();
                     return 1;
                 }
-            }            
+            }
 #if __linux || __unix
             else if( 0 == strcmp( argv[count], "-localTctiTest" ) )
             {
@@ -7458,7 +7456,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        (( TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->status.debugMsgLevel = debugLevel;
+        (( TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->status.debugMsgEnabled = debugLevel;
         resMgrInitialized = 1;
     }
     

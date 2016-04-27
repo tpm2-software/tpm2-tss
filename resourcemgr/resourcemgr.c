@@ -54,7 +54,12 @@ typedef HANDLE THREAD_TYPE;
 typedef pthread_t THREAD_TYPE ;
 #define ExitThread pthread_exit
 #define CloseHandle( handle ) 
+
+#ifdef DEBUG
+#define MAX_COMMAND_LINE_ARGS 9
+#else
 #define MAX_COMMAND_LINE_ARGS 7
+#endif
 
 #else    
 #error Unsupported OS--need to add OS-specific support for threading here.        
@@ -65,6 +70,7 @@ typedef pthread_t THREAD_TYPE ;
 #define DEBUG_RESMGR_INIT        
 
 TPM_MUTEX tpmMutex;
+int debugLevel = 0xff;
 
 extern TSS2_RC GetCommands( TSS2_SYS_CONTEXT *resMgrSysContext, TPML_CCA **supportedCommands );
 extern UINT8 GetCommandAttributes( TPM_CC commandCode, TPML_CCA *supportedCommands, TPMA_CC *cmdAttributes );
@@ -75,6 +81,22 @@ void *(*rmMalloc)(size_t size) = malloc;
 void (*rmFree)(void *entry) = free;
 
 TPML_CCA *supportedCommands;
+
+
+#define ENABLE_RM_TPM_CMD_DEBUG_MSGS \
+if( rmCommandDebug == 1 ) \
+{ \
+    ( ( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.rmDebugPrefix = 1; \
+    ( ( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgEnabled = 1; \
+}
+
+#define DISABLE_RM_TPM_CMD_DEBUG_MSGS \
+if( rmCommandDebug == 1 ) \
+{ \
+    ( ( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.rmDebugPrefix = 0; \
+    ( ( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgEnabled = 0; \
+}
+
 
 int GetNumCmdHandles( TPM_CC commandCode, TPML_CCA *supportedCommands )
 {
@@ -340,21 +362,21 @@ static UINT32 maxActiveSessions;
 static UINT32 gapMaxValue;
 static UINT32 activeSessionCount = 0;
 
-void  SetDebug( UINT8 debugLevel )
+void  SetDebug( int debugLevel )
 {
-    if( debugLevel == DBG_COMMAND )
+    if( debugLevel == 0 )
     {
         commandDebug = 1;
         rmCommandDebug = 0;
         printRMTables = 0;
     }
-    else if( debugLevel == DBG_COMMAND_RM )
+    else if( debugLevel == 1 )
     {
         commandDebug = 1;
         rmCommandDebug = 1;
         printRMTables = 0;
     }
-    else if( debugLevel == DBG_COMMAND_RM_TABLES )
+    else if( debugLevel == 2 )
     {
         commandDebug = 1;
         rmCommandDebug = 1;
@@ -545,6 +567,7 @@ TSS2_RC GetConnectionId( UINT64 *connectionId, TSS2_TCTI_CONTEXT *tctiContext )
     return TSS2_RC_SUCCESS;
 }
 
+#ifdef DEBUG
 void PrintRMTables()
 {
     int i;
@@ -553,16 +576,17 @@ void PrintRMTables()
     if( !printRMTables )
         return;
 
-    DebugPrintf( RM_PREFIX, "RM entryList:\n" );
+    DebugPrintf( NO_PREFIX, "RM entryList:\n" );
     for( i = 0, entryPtr = entryList; entryPtr != 0; entryPtr = entryPtr->nextEntry, i++ )
     {
-        DebugPrintf( RM_PREFIX, "Entry: #%d, loaded: %d, virtual/real/parent handle: %8.8x/%8.8x/%8.8x, hierarchy: %8.8x, sequence: %016llX, connectionId: 0x%x\n",
+        DebugPrintf( NO_PREFIX, "Entry: #%d, loaded: %d, virtual/real/parent handle: %8.8x/%8.8x/%8.8x, hierarchy: %8.8x, sequence: %016llX, connectionId: 0x%x\n",
                 i, entryPtr->status.loaded, entryPtr->virtualHandle, entryPtr->realHandle, entryPtr->parentHandle,
                 entryPtr->hierarchy, entryPtr->context.sequence, entryPtr->connectionId );
     }
 
-    DebugPrintf( RM_PREFIX, "lastSessionSequenceNum = %8.8llx\n", lastSessionSequenceNum );
+    DebugPrintf( NO_PREFIX, "lastSessionSequenceNum = %8.8llx\n", lastSessionSequenceNum );
 }
+#endif
 
 TSS2_RC TestForLoadedHandles()
 {
@@ -571,6 +595,8 @@ TSS2_RC TestForLoadedHandles()
     TPMI_YES_NO moreData;
 	UINT32 i;
     
+    ENABLE_RM_TPM_CMD_DEBUG_MSGS;
+
     rval = Tss2_Sys_GetCapability( resMgrSysContext, 0,
             TPM_CAP_HANDLES, TRANSIENT_FIRST,
             20, &moreData, &capabilityData, 0 );
@@ -579,8 +605,8 @@ TSS2_RC TestForLoadedHandles()
     
     if( capabilityData.data.handles.count != 0 )
     {
-        DebugPrintf( RM_PREFIX, "Loaded transient object handles: \n" );
-        DebugPrintf( RM_PREFIX, "" );
+        DebugPrintf( NO_PREFIX, "Loaded transient object handles: \n" );
+        DebugPrintf( NO_PREFIX, "" );
         for( i = 0; i < capabilityData.data.handles.count; i++ )
         {
             DebugPrintf( NO_PREFIX, "0x%8x, ", capabilityData.data.handles.handle[i] );
@@ -601,7 +627,7 @@ TSS2_RC TestForLoadedHandles()
 
     if( capabilityData.data.handles.count != 0 )
     {
-        DebugPrintf( RM_PREFIX, "Loaded session handles: \n" );
+        DebugPrintf( NO_PREFIX, "Loaded session handles: \n" );
         for( i = 0; i < capabilityData.data.handles.count; i++ )
         {
             DebugPrintf( NO_PREFIX, "0x%8x, ", capabilityData.data.handles.handle[i] );
@@ -613,6 +639,7 @@ TSS2_RC TestForLoadedHandles()
 #endif
     
 endTestForLoadedHandles:
+    DISABLE_RM_TPM_CMD_DEBUG_MSGS;
     
     return rval;
 }    
@@ -624,6 +651,8 @@ TSS2_RC FlushAllLoadedHandles()
     TPMI_YES_NO moreData;
     UINT32 i;
 
+    ENABLE_RM_TPM_CMD_DEBUG_MSGS;
+
     rval = Tss2_Sys_GetCapability( resMgrSysContext, 0,
             TPM_CAP_HANDLES, TRANSIENT_FIRST,
             20, &moreData, &capabilityData, 0 );
@@ -632,8 +661,8 @@ TSS2_RC FlushAllLoadedHandles()
 
     if( capabilityData.data.handles.count != 0 )
     {
-        DebugPrintf( RM_PREFIX, "Flush loaded transient object handles: \n" );
-        DebugPrintf( RM_PREFIX, "" );
+        DebugPrintf( NO_PREFIX, "Flush loaded transient object handles: \n" );
+        DebugPrintf( NO_PREFIX, "" );
         for( i = 0; i < capabilityData.data.handles.count; i++ )
         {
             DebugPrintf( NO_PREFIX, "0x%8x, ", capabilityData.data.handles.handle[i] );
@@ -655,7 +684,7 @@ TSS2_RC FlushAllLoadedHandles()
 
     if( capabilityData.data.handles.count != 0 )
     {
-        DebugPrintf( RM_PREFIX, "Flush loaded session handles: \n" );
+        DebugPrintf( NO_PREFIX, "Flush loaded session handles: \n" );
         for( i = 0; i < capabilityData.data.handles.count; i++ )
         {
             DebugPrintf( NO_PREFIX, "0x%8x, ", capabilityData.data.handles.handle[i] );
@@ -670,6 +699,7 @@ TSS2_RC FlushAllLoadedHandles()
     }
 
 endFlushAllLoadedHandles:
+    DISABLE_RM_TPM_CMD_DEBUG_MSGS;
 
     return rval;
 }
@@ -821,6 +851,8 @@ TSS2_RC FlushSessionsAndClearTable( UINT64 connectionId )
     RESOURCE_MANAGER_ENTRY *entryPtr, *oldEntryPtr;
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
+    ENABLE_RM_TPM_CMD_DEBUG_MSGS;
+
     for( entryPtr = entryList; entryPtr != 0 && rval == TSS2_RC_SUCCESS; )
     {
         if( connectionId == entryPtr->connectionId )
@@ -852,6 +884,8 @@ TSS2_RC FlushSessionsAndClearTable( UINT64 connectionId )
         }
     }
 
+    DISABLE_RM_TPM_CMD_DEBUG_MSGS;
+
     return rval;
 }
 
@@ -864,6 +898,8 @@ TSS2_RC EvictContext(TPM_HANDLE virtualHandle)
     rval = FindEntry( entryList, RMFIND_VIRTUAL_HANDLE, virtualHandle, &foundEntryPtr);
     if( rval != TSS2_RC_SUCCESS )
         return rval;
+
+    ENABLE_RM_TPM_CMD_DEBUG_MSGS;
 
     if( foundEntryPtr->status.loaded )
     {
@@ -902,6 +938,8 @@ TSS2_RC EvictContext(TPM_HANDLE virtualHandle)
             foundEntryPtr->realHandle = 0;
         }
     }
+
+    DISABLE_RM_TPM_CMD_DEBUG_MSGS;
 
     return rval;
 }
@@ -1041,8 +1079,10 @@ TSS2_RC HandleGap()
                 if( oldestSessionEntryPtr )
                 {
 #ifdef DEBUG_GAP_HANDLING
-                    DebugPrintf( RM_PREFIX, "gap event occurred\n" );
+                    DebugPrintf( NO_PREFIX, "gap event occurred\n" );
 #endif                
+                    ENABLE_RM_TPM_CMD_DEBUG_MSGS;
+
                     // Perform gapping actions 
                     rval = Tss2_Sys_ContextLoad( resMgrSysContext, &( oldestSessionEntryPtr->context ), &( oldestSessionEntryPtr->realHandle ) );
                     if( rval == TSS2_RC_SUCCESS )
@@ -1058,6 +1098,8 @@ TSS2_RC HandleGap()
                     {
                         SetRmErrorLevel( &rval, TSS2_RESMGRTPM_ERROR_LEVEL );
                     }
+
+                    DISABLE_RM_TPM_CMD_DEBUG_MSGS;
                 }
             }
         }
@@ -1124,6 +1166,8 @@ TSS2_RC LoadContext( TPM_HANDLE virtualHandle, UINT64 connectionId, TPM_HANDLE *
             goto exitLoadContext;
     }
 
+    ENABLE_RM_TPM_CMD_DEBUG_MSGS;
+
     if( 0 == PersistentHandle( virtualHandle ) )
     {
         rval = Tss2_Sys_ContextLoad( resMgrSysContext, &( foundEntryPtr->context ), &( foundEntryPtr->realHandle ) );
@@ -1146,7 +1190,8 @@ TSS2_RC LoadContext( TPM_HANDLE virtualHandle, UINT64 connectionId, TPM_HANDLE *
     }
 
 exitLoadContext:
-    
+    DISABLE_RM_TPM_CMD_DEBUG_MSGS;
+
     return rval;
 }
 
@@ -1238,6 +1283,8 @@ TSS2_RC EvictOldestSession()
     {
         if( oldestSessionEntry )
         {
+            ENABLE_RM_TPM_CMD_DEBUG_MSGS;
+
             // Kick it out--flush it.
             rval = Tss2_Sys_FlushContext( resMgrSysContext, oldestSessionEntry->realHandle );
             if( rval == TPM_RC_SUCCESS )
@@ -1251,6 +1298,8 @@ TSS2_RC EvictOldestSession()
             {
                 SetRmErrorLevel( &rval, TSS2_RESMGRTPM_ERROR_LEVEL );
             }
+
+            DISABLE_RM_TPM_CMD_DEBUG_MSGS;
         }
     }
     
@@ -1271,6 +1320,8 @@ TSS2_RC ContextGapUpdateOldestSession()
         if( rval == TPM_RC_SUCCESS )
         {
 
+            ENABLE_RM_TPM_CMD_DEBUG_MSGS;
+
             // Load it.
             rval = Tss2_Sys_ContextLoad( resMgrSysContext, &(oldestSessionEntry->context), &(oldestSessionEntry->realHandle) );
             if( rval == TPM_RC_SUCCESS )
@@ -1288,6 +1339,8 @@ TSS2_RC ContextGapUpdateOldestSession()
             {
                 SetRmErrorLevel( &rval, TSS2_RESMGRTPM_ERROR_LEVEL );
             }
+
+            DISABLE_RM_TPM_CMD_DEBUG_MSGS;
         }
     }
     return rval;
@@ -1320,13 +1373,13 @@ TSS2_RC ResourceMgrSendTpmCommand(
     // DO RESOURCE MGR THINGS.
     //
     
-    if( rmCommandDebug == 1 )
+    if( commandDebug == 1 )
     {
-        ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_ENABLED;
+        ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->status.debugMsgEnabled = 1;
     }
     else
     {
-        ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_DISABLED;
+        ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->status.debugMsgEnabled = 0;
     }
 
     numHandles = GetNumCmdHandles( currentCommandCode, supportedCommands );
@@ -1575,19 +1628,10 @@ TSS2_RC ResourceMgrSendTpmCommand(
     
 SendCommand:
   
-    ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_ENABLED;
+    ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgEnabled = 0;
 
     if( responseRval == TSS2_RC_SUCCESS )
     {
-        if( commandDebug == 1 )
-        {
-            ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_ENABLED;
-        }
-        else
-        {
-            ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_DISABLED;
-        }
-
         //
         // Set locality for command
         //
@@ -1617,9 +1661,10 @@ SendCommand:
         CreateErrorResponse( responseRval );
         rmErrorDuringSend = 1;
     }
-
+    
+#ifdef DEBUG
     PrintRMTables();
-
+#endif
     return rval;
 }
 
@@ -1717,11 +1762,11 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
     {
         if( commandDebug == 1 )
         {
-            ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_ENABLED;
+            ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->status.debugMsgEnabled = 1;
         }
         else
         {
-            ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_DISABLED;
+            ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->status.debugMsgEnabled = 0;
         }
 
         //
@@ -1761,14 +1806,7 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
             goto returnFromResourceMgrReceiveTpmResponse;
         }
         
-        if( rmCommandDebug == 1 )
-        {
-            ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_ENABLED;
-        }
-        else
-        {
-            ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_DISABLED;
-        }
+        ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->status.debugMsgEnabled = 0;
 
         if( rval == TSS2_RC_SUCCESS )
         {
@@ -2197,9 +2235,10 @@ exitResourceMgrReceiveTpmResponse:
     if( responseRval == TSS2_RC_SUCCESS )
         responseRval = returnResponseRval;
 
-    
+#ifdef DEBUG    
     PrintRMTables();
-
+#endif
+    
     testForLoadedSessionsOrObjectsRval = TestForLoadedHandles();
 
     if( responseRval == TSS2_RC_SUCCESS )
@@ -2213,8 +2252,6 @@ exitResourceMgrReceiveTpmResponse:
         CopyErrorResponse( response_size, response_buffer );
     }
 
-    ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_ENABLED;
-    
     return rval;
 }
 
@@ -2732,7 +2769,9 @@ TSS2_RC InitResourceMgr( int debugLevel)
     printRMTables = 0;
 
     SetDebug( debugLevel );
-    
+
+    ENABLE_RM_TPM_CMD_DEBUG_MSGS;
+
     // Now do some resource manager initialization.
     // Init entry list.
     entryList = 0;
@@ -2911,9 +2950,9 @@ TSS2_RC InitResourceMgr( int debugLevel)
     activeSessionCount = 0;
     
 returnFromInitResourceMgr:
-
-    SetDebug( DBG_NO_COMMAND );
     
+    DISABLE_RM_TPM_CMD_DEBUG_MSGS;
+
     return rval;
 }
 
@@ -2935,6 +2974,12 @@ void PrintHelp()
             "-tpmhost specifies the host IP address for communicating with the TPM (default: %s; only valid if -sim used)\n"
             "-tpmport specifies the port number for communicating with the TPM (default: %d; only valid if -sim used)\n"
             "-apport specifies the port number for communicating with the calling application (default: %d)\n"
+#ifdef DEBUG            
+            "-dbg specifies level of debug messages:\n"
+            "   0 (application TPM command send/receive byte streams)\n"
+            "   1 (resource manager internal TPM command send/receive byte streams)\n"
+            "   2 (resource manager tables)\n"
+#endif            
             , version, DEFAULT_HOSTNAME, DEFAULT_SIMULATOR_TPM_PORT, DEFAULT_RESMGR_TPM_PORT );
 }
 
@@ -3008,6 +3053,18 @@ int main(int argc, char* argv[])
                     return 1;
                 }
             }
+#ifdef DEBUG            
+            else if( 0 == strcmp( argv[count], "-dbg" ) )
+            {
+                count++;
+                if( count >= argc || 1 != sscanf_s( argv[count], "%d", &debugLevel ) ||
+                        ( debugLevel > 2 ) )
+                {
+                    PrintHelp();
+                    return 1;
+                }
+            }
+#endif            
             else
             {
                 PrintHelp();
@@ -3039,12 +3096,6 @@ int main(int argc, char* argv[])
             DebugPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resDeviceTctiName, rval );
             return( 1 );
         }
-#ifdef DEBUG_RESMGR_INIT        
-        else
-        {
-            ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_ENABLED;
-        }
-#endif        
     }
     else
 #endif        
@@ -3055,12 +3106,6 @@ int main(int argc, char* argv[])
             DebugPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resSocketTctiName, rval );
             return( 1 );
         }
-#ifdef DEBUG_RESMGR_INIT        
-        else
-        {
-            ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_ENABLED;
-        }
-#endif        
     }
     // Init sysContext for use by RM.  Used to send RM specific TPM commands to the TPM.
     resMgrSysContext = InitSysContext( 0, downstreamTctiContext, &abiVersion );
@@ -3098,7 +3143,7 @@ int main(int argc, char* argv[])
     #error Unsupported OS--need to add OS-specific support for threading here.
 #endif
 
-    rval = InitResourceMgr( DBG_COMMAND_RM_TABLES );
+    rval = InitResourceMgr( debugLevel );
     if( rval != TSS2_RC_SUCCESS )
     {
         printf( "Resource Mgr failed to initialize.  Exiting...\n" );
@@ -3114,7 +3159,7 @@ int main(int argc, char* argv[])
     }
 
 #ifdef DEBUG_RESMGR_INIT        
-    ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgLevel = TSS2_TCTI_DEBUG_MSG_DISABLED;
+    ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgEnabled = 0;
 #endif        
 
     if( 0 != InitSockets( appHostName, appPort, 1, &appOtherSock, &appTpmSock, DebugPrintfCallback, NULL ) )

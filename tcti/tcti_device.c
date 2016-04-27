@@ -64,20 +64,26 @@ TSS2_RC LocalTpmSendTpmCommand(
     UINT32 commandCode;
     UINT32 cnt;
 #endif
+    printf_type rmPrefix;
     
     rval = CommonSendChecks( tctiContext, command_buffer );
 
     if( rval == TSS2_RC_SUCCESS )
     {
+        if( ( ( TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.rmDebugPrefix == 1 )
+            rmPrefix = RM_PREFIX;
+        else
+            rmPrefix = NO_PREFIX;
+
 #ifdef DEBUG
         commandCode = CHANGE_ENDIAN_DWORD( ( (TPM20_Header_In *)command_buffer )->commandCode );
         cnt = CHANGE_ENDIAN_DWORD(((TPM20_Header_In *) command_buffer)->commandSize);
 
-        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
+        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgEnabled == 1 )
         {
-            TCTI_LOG( tctiContext, NO_PREFIX, "\n" );
-            TCTI_LOG( tctiContext, NO_PREFIX, "Cmd sent: %s\n", strTpmCommandCode( commandCode ) );
-            DEBUG_PRINT_BUFFER( NO_PREFIX, command_buffer, cnt );
+            TCTI_LOG( tctiContext, rmPrefix, "" );
+            TCTI_LOG( tctiContext, rmPrefix, "Cmd sent: %s\n", strTpmCommandCode( commandCode ) );
+            DEBUG_PRINT_BUFFER( rmPrefix, command_buffer, cnt );
         }
 #endif
 
@@ -85,7 +91,7 @@ TSS2_RC LocalTpmSendTpmCommand(
 
         if( size < 0 )
         {
-            TCTI_LOG( tctiContext, NO_PREFIX, "send failed with error: %d\n", errno );
+            TCTI_LOG( tctiContext, rmPrefix, "send failed with error: %d\n", errno );
             rval = TSS2_TCTI_RC_IO_ERROR;
         }
         else if( (size_t)size != command_size )
@@ -116,6 +122,7 @@ TSS2_RC LocalTpmReceiveTpmResponse(
     TSS2_RC rval = TSS2_RC_SUCCESS;
     ssize_t  size;
     unsigned int i;
+    printf_type rmPrefix;
     
     rval = CommonReceiveChecks( tctiContext, response_size, response_buffer );
     if( rval != TSS2_RC_SUCCESS )
@@ -123,13 +130,18 @@ TSS2_RC LocalTpmReceiveTpmResponse(
         goto retLocalTpmReceive;
     }        
 
+    if( ( ( TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.rmDebugPrefix == 1 )
+        rmPrefix = RM_PREFIX;
+    else
+        rmPrefix = NO_PREFIX;
+
     if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived == 0 )
     {
         size = read( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile, &((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseBuffer[0], 4096 );
 
         if( size < 0 )
         {
-            TCTI_LOG( tctiContext, NO_PREFIX, "read failed with error: %d\n", errno );
+            TCTI_LOG( tctiContext, rmPrefix, "read failed with error: %d\n", errno );
             rval = TSS2_TCTI_RC_IO_ERROR;
             goto retLocalTpmReceive;
         }
@@ -164,12 +176,12 @@ TSS2_RC LocalTpmReceiveTpmResponse(
     }
 
 #ifdef DEBUG
-    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED &&
+    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgEnabled == 1 &&
             ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize > 0 )
     {
-        TCTI_LOG( tctiContext, NO_PREFIX, "\n" );
-        TCTI_LOG( tctiContext, NO_PREFIX, "Response Received: " );
-        DEBUG_PRINT_BUFFER( NO_PREFIX, response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
+        TCTI_LOG( tctiContext, rmPrefix, "\n" );
+        TCTI_LOG( tctiContext, rmPrefix, "Response Received: " );
+        DEBUG_PRINT_BUFFER( rmPrefix, response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
     }
 #endif
 
