@@ -3,6 +3,7 @@
 *.lo
 *.o
 *.opensdf
+*.pc
 *.pdb
 *.sdf
 *.suo

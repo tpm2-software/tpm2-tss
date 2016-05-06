@@ -1,0 +1,5 @@
+Name: tss2
+Description: TPM2 System API library.
+URL: https://github.com/01org/TPM2.0-TSS
+Version: @VERSION@
+Cflags: @includedir@/tss2

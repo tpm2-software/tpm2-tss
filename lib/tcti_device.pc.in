@@ -1,0 +1,7 @@
+Name: tcti_device
+Description: TCTI library for communicating with a TPM device node.
+URL: https://github.com/01org/TPM2.0-TSS
+Version: @VERSION@
+Requires: tss2
+Cflags: @includedir@/tcti
+Libs: -ltss2

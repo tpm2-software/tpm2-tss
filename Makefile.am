@@ -41,12 +41,16 @@ lib_LTLIBRARIES = $(libtss2) $(libtctidevice) $(libtctisocket)
 # unit tests
 check_PROGRAMS  = test/tcti_device
 TESTS = $(check_PROGRAMS)
+CLEANFILES = $(nodist_pkgconfig_DATA)
 
 # headers and where to install them
 libtss2dir      = $(includedir)/tss2
 libtss2_HEADERS = $(srcdir)/include/tss2/*.h
 libtctidir      = $(includedir)/tcti
 libtcti_HEADERS = $(srcdir)/include/tcti/*.h
+# pkg-config files
+pkgconfigdir          = $(libdir)/pkgconfig
+nodist_pkgconfig_DATA = lib/tss2.pc lib/tcti_device.pc lib/tcti_socket.pc
 
 test_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir) -I$(srcdir)/sysapi/include
 test_tcti_device_LDADD   = $(libtss2) $(libtctidevice) $(CMOCKA_LIBS)
@@ -86,6 +90,10 @@ test_tpmtest_tpmtest_CFLAGS   = -DSAPI_CLIENT $(TPMTEST_INC) $(AM_CFLAGS)
 test_tpmtest_tpmtest_CXXFLAGS = -DSAPI_CLIENT $(TPMTEST_INC) $(AM_CXXFLAGS)
 test_tpmtest_tpmtest_LDADD    = $(libtss2) $(libtctisocket) $(libtctidevice)
 test_tpmtest_tpmtest_SOURCES  = $(TPMTEST_CXX) $(COMMON_C) $(SAMPLE_C)
+
+%.pc : %.pc.in
+	sed -e "s,[@]VERSION[@],$(PACKAGE_VERSION),g; \
+	        s,[@]includedir[@],$(includedir),g;" $^ > $@
 
 LIBRARY_LDFLAGS = -fPIC -Wl,--no-undefined
 
