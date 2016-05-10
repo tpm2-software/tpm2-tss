@@ -6597,6 +6597,1155 @@ void ClearNVIndexList(TPMI_RH_PROVISION authHandle)
             TestNVIndexUndefine(capabilityData.data.handles.handle[i], capabilityData.data.handles.handle[i]);
     }
 }
+
+void symmetricEncryptDecryptTest()
+{
+    UINT32 rval;
+    TPMS_CONTEXT context;
+    TPM2B_SENSITIVE_CREATE  inSensitive;
+    TPM2B_PUBLIC            inPublic;
+    TPM2B_DATA              outsideInfo= { { 0, } };
+    TPML_PCR_SELECTION      creationPCR;
+    TPMS_AUTH_COMMAND sessionData;
+    TPMS_AUTH_RESPONSE sessionDataOut;
+    TSS2_SYS_CMD_AUTHS sessionsData;
+    
+    TSS2_SYS_RSP_AUTHS sessionsDataOut;
+    TPM2B_NAME name= { { sizeof( TPM2B_NAME ) - 2, } };
+    TPM2B_PRIVATE outPrivate = { { sizeof(TPM2B_PRIVATE)-2, } };
+    TPM2B_PUBLIC outPublic= { { 0, } };
+    TPM2B_CREATION_DATA creationData= { { 0, } };
+    TPM2B_DIGEST creationHash = { { sizeof( TPM2B_DIGEST ) - 2, } };
+    TPMT_TK_CREATION creationTicket = { 0, };
+    TPM_HANDLE loadedSymKeyHandle;
+    TPMI_DH_OBJECT symHandle;
+
+
+    TPMS_AUTH_COMMAND *sessionDataArray[1];
+    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
+
+    sessionDataArray[0] = &sessionData;
+    sessionDataOutArray[0] = &sessionDataOut;
+
+    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
+    sessionsData.cmdAuths = &sessionDataArray[0];
+
+    sessionsDataOut.rspAuthsCount = 1;
+
+    printf( "\nSYMMETRIC ENCRYPT/DECRYPT & HASH TESTS:\n" );
+
+    inSensitive.t.size =0;
+    inSensitive.t.sensitive.userAuth.t.size = 0;
+    inSensitive.t.sensitive.data.t.size = 0;
+
+    //inSensitive.t.sensitive.userAuth = loadedSha1KeyAuth;
+    //inSensitive.t.sensitive.userAuth = loadedSha1KeyAuth;
+    //inSensitive.t.sensitive.data.t.size = 0;
+    //inSensitive.t.size = loadedSha1KeyAuth.b.size + 2;
+
+    inPublic.t.publicArea.type = TPM_ALG_RSA;
+    inPublic.t.publicArea.nameAlg = TPM_ALG_SHA1;
+
+    // First clear attributes bit field.
+    *(UINT32 *)&( inPublic.t.publicArea.objectAttributes) = 0;
+    inPublic.t.publicArea.objectAttributes.restricted = 1;
+    inPublic.t.publicArea.objectAttributes.userWithAuth = 1;
+    inPublic.t.publicArea.objectAttributes.decrypt = 1;
+    inPublic.t.publicArea.objectAttributes.fixedTPM = 1;
+    inPublic.t.publicArea.objectAttributes.fixedParent = 1;
+    inPublic.t.publicArea.objectAttributes.sensitiveDataOrigin = 1;
+
+    inPublic.t.publicArea.authPolicy.t.size = 0;
+
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
+    inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
+    inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
+    inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
+
+    inPublic.t.publicArea.unique.rsa.t.size = 0;
+
+    outsideInfo.t.size = 0;
+    creationPCR.count = 0;
+
+    sessionData.sessionHandle = TPM_RS_PW;
+
+    // Init nonce.
+    sessionData.nonce.t.size = 0;
+
+    // init hmac
+    sessionData.hmac.t.size = 0;
+    // Init session attributes
+    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
+
+    sessionsData.cmdAuthsCount = 1;
+    sessionsData.cmdAuths[0] = &sessionData;
+
+    outPublic.t.size = 0;
+    creationData.t.size = 0;
+    creationPCR.count = 0;
+    //outPublic.t.publicArea.authPolicy.t.size = sizeof( TPM2B_DIGEST ) - 2;
+    //outPublic.t.publicArea.unique.keyedHash.t.size = sizeof( TPM2B_DIGEST ) - 2;
+    //INIT_SIMPLE_TPM2B_SIZE( creationHash );
+    //INIT_SIMPLE_TPM2B_SIZE( name );
+    rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_NULL, &sessionsData, &inSensitive, &inPublic,
+            &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
+            &creationTicket, &name, &sessionsDataOut );
+    CheckPassed( rval );
+
+    printf( "\nNew key successfully created (RSA 2048).  Handle: 0x%8.8x\n",
+            handle2048rsa );
+
+    rval = Tss2_Sys_ContextSave(sysContext, handle2048rsa, &context);
+    CheckPassed(rval);
+
+    rval = Tss2_Sys_ContextLoad(sysContext, &context, &symHandle);
+    CheckPassed(rval);
+
+    sessionDataArray[0] = &sessionData;
+    sessionDataOutArray[0] = &sessionDataOut;
+    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
+    sessionsData.cmdAuths = &sessionDataArray[0];
+    sessionsDataOut.rspAuthsCount = 1;
+    sessionData.sessionHandle = TPM_RS_PW;
+    sessionData.nonce.t.size = 0;
+    sessionsData.cmdAuthsCount = 1;
+    sessionsData.cmdAuths[0] = &sessionData;
+
+    inSensitive.t.size = 0;// inSensitive.t.sensitive.userAuth.b.size +2;
+    inSensitive.t.sensitive.userAuth.t.size = 0;
+    inSensitive.t.sensitive.data.t.size = 0;
+    inPublic.t.publicArea.type = TPM_ALG_SYMCIPHER;
+    inPublic.t.publicArea.nameAlg = TPM_ALG_SHA1;
+
+    // First clear attributes bit field.
+    *(UINT32 *)&( inPublic.t.publicArea.objectAttributes) = 0;
+    inPublic.t.publicArea.objectAttributes.restricted = 0;
+    inPublic.t.publicArea.objectAttributes.userWithAuth = 1;
+    inPublic.t.publicArea.objectAttributes.decrypt = 1;
+    inPublic.t.publicArea.objectAttributes.sign = 1;
+    inPublic.t.publicArea.objectAttributes.fixedTPM = 1;
+    inPublic.t.publicArea.objectAttributes.fixedParent = 1;
+    inPublic.t.publicArea.objectAttributes.sensitiveDataOrigin = 1;
+
+    inPublic.t.publicArea.authPolicy.t.size = 0;
+
+    inPublic.t.publicArea.parameters.symDetail.sym.algorithm = TPM_ALG_AES;
+    inPublic.t.publicArea.parameters.symDetail.sym.keyBits.sym = 128;
+    inPublic.t.publicArea.parameters.symDetail.sym.mode.sym = TPM_ALG_CFB;
+ 
+    inPublic.t.publicArea.unique.sym.t.size = 0;
+
+    outsideInfo.t.size = 0;
+    outPublic.t.size = 0;
+    creationData.t.size = 0;
+    creationPCR.count = 0; 
+    rval = Tss2_Sys_Create( sysContext, symHandle, &sessionsData, &inSensitive, &inPublic,
+            &outsideInfo, &creationPCR,
+            &outPrivate, &outPublic, &creationData,
+            &creationHash, &creationTicket, &sessionsDataOut );
+    CheckPassed( rval );
+
+    //INIT_SIMPLE_TPM2B_SIZE( name );
+    rval = Tss2_Sys_Load ( sysContext, symHandle, &sessionsData, &outPrivate, &outPublic,
+            &loadedSymKeyHandle, &name, &sessionsDataOut);
+    CheckPassed( rval );
+    printf( "\nLoaded key handle:  %8.8x\n", loadedSymKeyHandle );
+
+    const char msg[] = "message";
+    
+    TPMI_YES_NO decryptVal = NO;
+    TPM2B_MAX_BUFFER inData = { { sizeof(TPM2B_MAX_BUFFER)-2, } };
+    // Inputs
+    TPMI_ALG_SYM_MODE mode;
+    TPM2B_IV ivIn = { { sizeof(TPM2B_IV)-2, } };
+        // Outputs
+    TPM2B_MAX_BUFFER outData = { { sizeof(TPM2B_MAX_BUFFER)-2, } };
+    TPM2B_IV ivOut = { { sizeof(TPM2B_IV)-2, } };
+
+    mode = TPM_ALG_NULL;
+    ivIn.t.size = MAX_SYM_BLOCK_SIZE;
+    memset(ivIn.t.buffer, 0, MAX_SYM_BLOCK_SIZE);
+
+    inData.t.size = sizeof(msg);
+    memcpy(inData.t.buffer, msg, inData.t.size);
+
+    printf("\nENCRYPTDECRYPT TESTS: ENCRYPT\n");
+    
+    sessionData.sessionHandle = TPM_RS_PW;
+    // Init nonce.
+    sessionData.nonce.t.size = 0;
+    sessionData.hmac.t.size = 0;
+	
+    rval = Tss2_Sys_EncryptDecrypt(sysContext, loadedSymKeyHandle, &sessionsData, decryptVal, mode, &ivIn, &inData, &outData, &ivOut, &sessionsDataOut);
+    if(rval == TPM_RC_SUCCESS)
+	{
+        printf("\nEncrypted.\n");
+		CheckPassed(rval);
+    }
+	else
+        CheckFailed(rval, TPM_RC_COMMAND_CODE);
+
+    decryptVal = YES;
+    // Outputs
+    TPM2B_MAX_BUFFER outDeData = { { sizeof(TPM2B_MAX_BUFFER)-2, } };
+    TPM2B_IV ivDeOut = { { sizeof(TPM2B_IV)-2, } };
+
+    ivOut.t.size = MAX_SYM_BLOCK_SIZE;
+    memset(ivOut.t.buffer, 0, MAX_SYM_BLOCK_SIZE);
+
+    printf("\nENCRYPTDECRYPT TESTS: DECRYPT\n");
+
+    TPM2B_DIGEST outHash1 = { { sizeof( TPM2B_DIGEST ) - 2, } };
+    TPM2B_DIGEST outHash2 = { { sizeof( TPM2B_DIGEST ) - 2, } };
+    TPMT_TK_HASHCHECK validation;
+    TPMI_ALG_HASH  halg = TPM_ALG_SHA256;
+
+	if (rval == TPM_RC_SUCCESS)
+	{
+        rval = Tss2_Sys_EncryptDecrypt(sysContext, loadedSymKeyHandle, &sessionsData, decryptVal, mode, &ivOut, &outData, &outDeData, &ivDeOut, &sessionsDataOut);
+        if(rval == TPM_RC_SUCCESS)
+		{
+            printf("\nDecrypted.\n");
+	    CheckPassed(rval);
+		}
+        else
+            CheckFailed(rval, TPM_RC_COMMAND_CODE);
+
+	printf("\nHASH TESTS: HASH Comparison\n");
+
+        rval = Tss2_Sys_Hash(sysContext, 0, &outDeData, halg, TPM_RH_OWNER, &outHash1, &validation, 0);
+        CheckPassed(rval);
+
+	rval = Tss2_Sys_Hash(sysContext, 0, &inData, halg, TPM_RH_OWNER, &outHash2, &validation, 0);
+	CheckPassed(rval);
+	printf( "Hash value before encrypt: " );
+        PrintSizedBuffer( (TPM2B *)&outHash1 );
+        printf( "Hash value after decrypt: " );
+        PrintSizedBuffer( (TPM2B *)&outHash2 );
+	//rval = CompareTPM2B( (TPM2B *)&outHash1, (TPM2B *)&outHash2 );
+	//CheckPassed( rval );
+	}
+}
+
+void asymmetricEncryptDecryptTest()
+{
+    UINT32 rval;
+    TPM2B_SENSITIVE_CREATE  inSensitive;
+    TPM2B_PUBLIC            inPublic;
+    TPM2B_DATA              outsideInfo= { { 0, } };
+    TPML_PCR_SELECTION      creationPCR;
+    TPMS_AUTH_COMMAND sessionData;
+    TPMS_AUTH_RESPONSE sessionDataOut;
+    TSS2_SYS_CMD_AUTHS sessionsData;
+
+    TSS2_SYS_RSP_AUTHS sessionsDataOut;
+    TPM2B_NAME name= { { sizeof( TPM2B_NAME ) - 2, } };
+    TPM2B_PRIVATE outPrivate;
+    TPM2B_PUBLIC outPublic= { { 0, } };
+    TPM2B_CREATION_DATA creationData= { { 0, } };
+    TPM2B_DIGEST creationHash = { { sizeof( TPM2B_DIGEST ) - 2, } };
+    TPMT_TK_CREATION creationTicket = { 0, };
+
+    TPMS_AUTH_COMMAND *sessionDataArray[1];
+    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
+
+    sessionDataArray[0] = &sessionData;
+    sessionsData.cmdAuths = &sessionDataArray[0];
+    sessionDataOutArray[0] = &sessionDataOut;
+    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
+    sessionsDataOut.rspAuthsCount = 1;
+
+    printf( "\nASYMMETRIC ENCRYPT/DECRYPT & HASH TESTS:\n" );
+    //inSensitive.t.sensitive.userAuth = loadedSha1KeyAuth;
+    //inSensitive.t.sensitive.data.t.size = 0;
+    //inSensitive.t.size = loadedSha1KeyAuth.b.size + 2;
+
+    inPublic.t.publicArea.type = TPM_ALG_RSA;
+    inPublic.t.publicArea.nameAlg = TPM_ALG_SHA256;
+
+    // First clear attributes bit field.
+    *(UINT32 *)&( inPublic.t.publicArea.objectAttributes) = 0;
+    inPublic.t.publicArea.objectAttributes.restricted = 1;
+    inPublic.t.publicArea.objectAttributes.userWithAuth = 1;
+    inPublic.t.publicArea.objectAttributes.decrypt = 1;
+    inPublic.t.publicArea.objectAttributes.fixedTPM = 1;
+    inPublic.t.publicArea.objectAttributes.fixedParent = 1;
+    inPublic.t.publicArea.objectAttributes.sensitiveDataOrigin = 1;
+
+    inPublic.t.publicArea.authPolicy.t.size = 0;
+
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
+    inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
+    inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
+    inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
+
+    inPublic.t.publicArea.unique.rsa.t.size = 0;
+
+    outsideInfo.t.size = 0;
+    creationPCR.count = 0;
+
+    sessionData.sessionHandle = TPM_RS_PW;
+
+    // Init nonce.
+    sessionData.nonce.t.size = 0;
+
+    // init hmac
+    sessionData.hmac.t.size = 0;
+
+    // Init session attributes
+    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
+
+    sessionsData.cmdAuthsCount = 1;
+    sessionsData.cmdAuths[0] = &sessionData;
+
+
+    outPublic.t.size = 0;
+    creationData.t.size = 0;
+    rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_OWNER, &sessionsData, &inSensitive, &inPublic,
+            &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
+            &creationTicket, &name, &sessionsDataOut );
+    CheckPassed( rval );
+
+    printf( "\nNew key successfully created in owner hierarchy (RSA 2048).  Handle: 0x%8.8x\n",
+            handle2048rsa );
+    printf( "Name of created primary key: " );
+    PrintSizedBuffer( (TPM2B *)&name );
+
+    outPublic.t.size = 0;
+    creationData.t.size = 0;
+
+    sessionData.hmac.t.size = 0;
+
+    // First clear attributes bit field.
+    *(UINT32 *)&(inPublic.t.publicArea.objectAttributes) = 0;
+    inPublic.t.publicArea.objectAttributes.restricted = 0;
+    inPublic.t.publicArea.objectAttributes.userWithAuth = 1;
+    inPublic.t.publicArea.objectAttributes.decrypt = 1;
+    inPublic.t.publicArea.objectAttributes.sign = 1;
+    inPublic.t.publicArea.objectAttributes.fixedTPM = 1;
+    inPublic.t.publicArea.objectAttributes.fixedParent = 1;
+    inPublic.t.publicArea.objectAttributes.sensitiveDataOrigin = 1;
+
+    inPublic.t.publicArea.type = TPM_ALG_RSA;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_NULL;
+    inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
+    inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
+    inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
+    inPublic.t.publicArea.unique.rsa.t.size = 0;
+
+    outsideInfo.t.size = 0;
+    outPublic.t.size = 0;
+    creationData.t.size = 0;
+    rval = Tss2_Sys_Create( sysContext, handle2048rsa, &sessionsData, &inSensitive, &inPublic,
+            &outsideInfo, &creationPCR,
+            &outPrivate, &outPublic, &creationData,
+            &creationHash, &creationTicket, &sessionsDataOut );
+    CheckPassed( rval );
+    printf( "Name of created key: " );
+    PrintSizedBuffer( (TPM2B *)&name );
+
+    rval = Tss2_Sys_Load ( sysContext, handle2048rsa, &sessionsData, &outPrivate, &outPublic,
+            &loadedSha1KeyHandle, &name, &sessionsDataOut);
+    CheckPassed( rval );
+
+    printf( "Name of loading key: " );
+    PrintSizedBuffer( (TPM2B *)&name );
+    
+    printf( "\nLoaded key handle:  %8.8x\n", loadedSha1KeyHandle );
+
+    char buffer1contents[] = "test";
+    TPMT_RSA_DECRYPT inScheme;
+    TPM2B_PUBLIC_KEY_RSA message = { { sizeof(TPM2B_PUBLIC_KEY_RSA)-2, } };
+    TPM2B_PUBLIC_KEY_RSA messageOut = { { sizeof(TPM2B_PUBLIC_KEY_RSA)-2, } };
+    TPM2B_PUBLIC_KEY_RSA outData = { { sizeof(TPM2B_PUBLIC_KEY_RSA)-2, } };
+    TPM2B_MAX_BUFFER inData1, inData2;
+    TPM2B_DIGEST outHash1 = { { sizeof( TPM2B_DIGEST ) - 2,} }; 
+    TPM2B_DIGEST outHash2 = { { sizeof( TPM2B_DIGEST ) - 2,} };
+    TPMT_TK_HASHCHECK validation;
+    TPMI_ALG_HASH  halg = TPM_ALG_SHA256;
+
+    message.t.size = strlen(buffer1contents);
+    memcpy(message.t.buffer, buffer1contents, message.t.size);
+
+    inScheme.scheme = TPM_ALG_RSAES;
+    outsideInfo.t.size = 0;
+    rval = Tss2_Sys_RSA_Encrypt(sysContext, loadedSha1KeyHandle, 0, &message, &inScheme, &outsideInfo, &outData, 0);
+    CheckPassed(rval);
+    printf( "Encrypted data: " );
+    PrintSizedBuffer( (TPM2B *)&outData );
+
+	if (rval == TPM_RC_SUCCESS)
+	{
+	    rval = Tss2_Sys_RSA_Decrypt(sysContext, loadedSha1KeyHandle, &sessionsData, &outData, &inScheme, &outsideInfo, &messageOut, &sessionsDataOut);
+	    CheckPassed(rval);
+	    printf( "Decypted data: " );
+	    PrintSizedBuffer( (TPM2B *)&messageOut );
+
+	    printf("\nHASH TESTS: HASH Comparison\n");
+
+            inData1.t.size = message.t.size;
+	    memcpy(inData1.t.buffer, message.t.buffer, inData1.t.size);
+            rval = Tss2_Sys_Hash(sysContext, 0, &inData1, halg, TPM_RH_OWNER, &outHash1, &validation, 0);
+            CheckPassed(rval);
+
+	    inData2.t.size = messageOut.t.size;
+	    memcpy(inData2.t.buffer, messageOut.t.buffer, inData2.t.size);
+	    rval = Tss2_Sys_Hash(sysContext, 0, &inData2, halg, TPM_RH_OWNER, &outHash2, &validation, 0);
+	    CheckPassed(rval);
+
+	    printf( "Hash value before encrypt: " );
+    	    PrintSizedBuffer( (TPM2B *)&outHash1 );
+	    printf( "Hash value after decrypt: " );
+            PrintSizedBuffer( (TPM2B *)&outHash2 );
+	}
+}
+
+void verifySignatureExternalTest()
+{
+    UINT32 rval;
+    TPM2B_SENSITIVE_CREATE  inSensitive;
+    TPM2B_PUBLIC            inPublic;
+    TPM2B_DATA              outsideInfo;
+    TPML_PCR_SELECTION      creationPCR;
+
+    TSS2_SYS_CMD_AUTHS sessionsData;
+
+    TPMS_AUTH_COMMAND sessionData;
+    TPMS_AUTH_RESPONSE sessionDataOut;
+    TSS2_SYS_RSP_AUTHS sessionsDataOut;
+
+    TPMS_AUTH_COMMAND *sessionDataArray[1];
+    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
+
+    sessionDataArray[0] = &sessionData;
+    sessionsData.cmdAuths = &sessionDataArray[0];
+    sessionDataOutArray[0] = &sessionDataOut;
+    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
+    sessionsDataOut.rspAuthsCount = 1;
+
+    TPM2B_NAME name = { { sizeof( TPM2B_NAME ) - 2, } };
+    TPM2B_NAME nameExt = { { sizeof( TPM2B_NAME ) - 2, } };
+    TPM2B_PRIVATE outPrivate = { { sizeof( TPM2B_PRIVATE ) - 2, } };
+    TPM2B_PUBLIC outPublic = { { sizeof( TPM2B_PUBLIC ) - 2, } };
+    TPM2B_CREATION_DATA creationData  =  { { sizeof( TPM2B_CREATION_DATA ) - 2, } };
+    TPM2B_DIGEST creationHash= { { sizeof( TPM2B_DIGEST ) - 2, } };
+    TPMT_TK_CREATION creationTicket = { 0, 0, { { sizeof( TPM2B_DIGEST ) - 2, } } };
+    TPM_HANDLE loadedObjectHandle;
+    TPM2B_DIGEST msgHash;
+    TPMT_SIGNATURE signature;
+    TPMT_TK_VERIFIED validation;
+    TPMT_TK_HASHCHECK hashCheck;
+    TPMT_SIG_SCHEME inScheme;
+    
+    inSensitive.t.sensitive.userAuth = loadedSha1KeyAuth;
+    inSensitive.t.sensitive.data.t.size = 0;
+    inSensitive.t.size = loadedSha1KeyAuth.b.size + 2;
+
+    inPublic.t.publicArea.type = TPM_ALG_RSA;
+    inPublic.t.publicArea.nameAlg = TPM_ALG_SHA1;
+
+    // First clear attributes bit field.
+    *(UINT32 *)&( inPublic.t.publicArea.objectAttributes) = 0;
+    inPublic.t.publicArea.objectAttributes.restricted = 1;
+    inPublic.t.publicArea.objectAttributes.userWithAuth = 1;
+    inPublic.t.publicArea.objectAttributes.decrypt = 1;
+    inPublic.t.publicArea.objectAttributes.fixedTPM = 1;
+    inPublic.t.publicArea.objectAttributes.fixedParent = 1;
+    inPublic.t.publicArea.objectAttributes.sensitiveDataOrigin = 1;
+
+    inPublic.t.publicArea.authPolicy.t.size = 0;
+
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_ECB;
+    inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
+    inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
+    inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
+
+    inPublic.t.publicArea.unique.rsa.t.size = 0;
+
+    outsideInfo.t.size = 0;
+    creationPCR.count = 0;
+
+    sessionData.sessionHandle = TPM_RS_PW;
+
+    // Init nonce.
+    sessionData.nonce.t.size = 0;
+
+    // init hmac
+    sessionData.hmac.t.size = 0;
+
+    // Init session attributes
+    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
+
+    sessionsData.cmdAuthsCount = 1;
+    sessionsData.cmdAuths[0] = &sessionData;
+
+    printf( "\nVERIFICATION on PUBLIC LOADED KEY TESTS:\n" );
+
+    outPublic.t.size = 0;
+    creationData.t.size = 0;
+    rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_OWNER, &sessionsData, &inSensitive, &inPublic,
+            &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
+            &creationTicket, &name, &sessionsDataOut );
+    CheckPassed( rval );
+
+    printf( "\nNew key successfully created in owner hierarchy (RSA 2048).  Handle: 0x%8.8x\n",
+            handle2048rsa );
+    printf( "Name of created primary key: " );
+    PrintSizedBuffer( (TPM2B *)&name );
+
+    outPublic.t.size = 0;
+    creationData.t.size = sizeof( TPM2B_CREATION_DATA ) - 2;
+    outPublic.t.publicArea.authPolicy.t.size = sizeof( TPM2B_DIGEST ) - 2;
+    outPublic.t.publicArea.unique.keyedHash.t.size = sizeof( TPM2B_DIGEST ) - 2;
+    sessionData.hmac.t.size = 2;
+    sessionData.hmac.t.buffer[0] = 0x00;
+    sessionData.hmac.t.buffer[1] = 0xff;
+
+    inPublic.t.publicArea.type = TPM_ALG_RSA;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_NULL;
+    inPublic.t.publicArea.objectAttributes.restricted = 0;
+    inPublic.t.publicArea.objectAttributes.decrypt = 1;
+    inPublic.t.publicArea.objectAttributes.sign = 1;
+
+    inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
+    inPublic.t.publicArea.unique.keyedHash.t.size = 0;
+
+    outsideInfo.t.size = 0;
+    outPublic.t.size = 0;
+    creationData.t.size = 0;
+    rval = Tss2_Sys_Create( sysContext, handle2048rsa, &sessionsData, &inSensitive, &inPublic,
+            &outsideInfo, &creationPCR,
+            &outPrivate, &outPublic, &creationData,
+            &creationHash, &creationTicket, &sessionsDataOut );
+    CheckPassed( rval );
+    printf( "Name of created key: " );
+    PrintSizedBuffer( (TPM2B *)&name );
+
+    rval = Tss2_Sys_Load ( sysContext, handle2048rsa, &sessionsData, &outPrivate, &outPublic,
+            &loadedSha1KeyHandle, &name, &sessionsDataOut);
+    CheckPassed( rval );
+
+    printf( "Name of loading key: " );
+    PrintSizedBuffer( (TPM2B *)&name );
+
+    inScheme.scheme = TPM_ALG_RSASSA;
+    inScheme.details.rsassa.hashAlg = TPM_ALG_SHA1;
+    hashCheck.tag = TPM_ST_HASHCHECK;
+    hashCheck.hierarchy = TPM_RH_NULL;
+    hashCheck.digest.t.size = 0;
+
+    char SignMsg[]= "try to get sign with this msg!";
+    UINT16 length = sizeof(SignMsg);
+    BYTE *buffer = NULL;
+    UINT8 numBuffers = 0;
+    UINT16 cpLength = 0;
+
+    buffer = (BYTE*)malloc(length*sizeof(BYTE));
+    memset(buffer, 0, length*sizeof(BYTE));
+    memcpy (buffer, SignMsg, length);
+    
+    if(length%(MAX_DIGEST_BUFFER) != 0)
+        numBuffers = length/(MAX_DIGEST_BUFFER) + 1;
+    else
+        numBuffers = length/(MAX_DIGEST_BUFFER);
+
+    TPM2B_DIGEST *bufferList[numBuffers];
+    for(UINT8 i = 0; i < numBuffers; i++)
+    {
+        (bufferList)[i] = (TPM2B_DIGEST *)calloc(1,sizeof(TPM2B_DIGEST));
+        if(i < numBuffers-1)
+        {
+            for( UINT16 m = 0; m < MAX_DIGEST_BUFFER; m++)
+            {
+                bufferList[i]->t.buffer[m] = buffer[m + cpLength];
+            }
+            cpLength = i * MAX_DIGEST_BUFFER;
+        }
+        if(i == numBuffers-1 )
+        {
+            for(UINT16 j= 0; j < (length-cpLength); j++)
+            {
+                bufferList[i]->t.buffer[j] = buffer[cpLength + j];
+            }
+        }
+    }
+    if(numBuffers == 1)
+    {
+        rval = TpmHash(TPM_ALG_SHA1, length, buffer, &msgHash);
+        printf("tpmhash");
+        CheckPassed(rval);
+    }
+    else
+    {
+        TpmHashSequence(TPM_ALG_SHA1, numBuffers, bufferList[0], &msgHash);
+        printf("tpmhashsequence");
+    }
+
+    rval = Tss2_Sys_Sign(sysContext, loadedSha1KeyHandle, &sessionsData, &msgHash, &inScheme, &hashCheck, &signature, &sessionsDataOut);
+    CheckPassed(rval);
+
+    inPublic.t.publicArea.type = TPM_ALG_RSA;
+    inPublic.t.publicArea.nameAlg = TPM_ALG_SHA1;
+
+    *(UINT32 *)&( inPublic.t.publicArea.objectAttributes) = 0;
+    inPublic.t.publicArea.objectAttributes.userWithAuth = 0;
+
+    inPublic.t.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM_ALG_NULL;
+
+    inPublic.t.publicArea.objectAttributes.restricted = 0;
+    inPublic.t.publicArea.unique.keyedHash.t.size = 0;
+
+    rval = Tss2_Sys_LoadExternal ( sysContext, 0, 0, &outPublic, TPM_RH_OWNER, &loadedObjectHandle, &nameExt, &sessionsDataOut );
+    CheckPassed( rval );
+
+    printf( "\nLoaded key handle:  %8.8x\n", loadedObjectHandle );
+
+    rval = Tss2_Sys_VerifySignature(sysContext, /*loadedSha1KeyHandle*/loadedObjectHandle, NULL/*&sessionsData*/, &msgHash, &signature, &validation, &sessionsDataOut);
+    CheckPassed( rval );
+}
+
+void verifySignatureCreatedTest()
+{
+    UINT32 rval;
+    TPM2B_SENSITIVE_CREATE  inSensitive;
+    TPM2B_PUBLIC            inPublic;
+    TPM2B_DATA              outsideInfo;
+    TPML_PCR_SELECTION      creationPCR;
+
+    TSS2_SYS_CMD_AUTHS sessionsData;
+
+    TPMS_AUTH_COMMAND sessionData;
+    TPMS_AUTH_RESPONSE sessionDataOut;
+    TSS2_SYS_RSP_AUTHS sessionsDataOut;
+
+    TPMS_AUTH_COMMAND *sessionDataArray[1];
+    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
+
+    sessionDataArray[0] = &sessionData;
+    sessionsData.cmdAuths = &sessionDataArray[0];
+    sessionDataOutArray[0] = &sessionDataOut;
+    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
+    sessionsDataOut.rspAuthsCount = 1;
+
+    TPM2B_NAME name = { { sizeof( TPM2B_NAME ) - 2, } };
+    TPM2B_PRIVATE outPrivate = { { sizeof( TPM2B_PRIVATE ) - 2, } };
+    TPM2B_PUBLIC outPublic = { { sizeof( TPM2B_PUBLIC ) - 2, } };
+    TPM2B_CREATION_DATA creationData =  { { sizeof( TPM2B_CREATION_DATA ) - 2, } };
+    TPM2B_DIGEST creationHash = { { sizeof( TPM2B_DIGEST ) - 2, } };
+    TPMT_TK_CREATION creationTicket = { 0, 0, { { sizeof( TPM2B_DIGEST ) - 2, } } };
+    TPM2B_DIGEST msgHash;
+    TPMT_SIGNATURE signature;
+    TPMT_TK_VERIFIED validation;
+    TPMT_TK_HASHCHECK hashCheck;
+    TPMT_SIG_SCHEME inScheme;
+    
+    inSensitive.t.sensitive.userAuth = loadedSha1KeyAuth;
+    inSensitive.t.sensitive.data.t.size = 0;
+    inSensitive.t.size = loadedSha1KeyAuth.b.size + 2;
+
+    inPublic.t.publicArea.type = TPM_ALG_RSA;
+    inPublic.t.publicArea.nameAlg = TPM_ALG_SHA1;
+
+    // First clear attributes bit field.
+    *(UINT32 *)&( inPublic.t.publicArea.objectAttributes) = 0;
+    inPublic.t.publicArea.objectAttributes.restricted = 1;
+    inPublic.t.publicArea.objectAttributes.userWithAuth = 1;
+    inPublic.t.publicArea.objectAttributes.decrypt = 1;
+    inPublic.t.publicArea.objectAttributes.fixedTPM = 1;
+    inPublic.t.publicArea.objectAttributes.fixedParent = 1;
+    inPublic.t.publicArea.objectAttributes.sensitiveDataOrigin = 1;
+
+    inPublic.t.publicArea.authPolicy.t.size = 0;
+
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_ECB;
+    inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
+    inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
+    inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
+
+    inPublic.t.publicArea.unique.rsa.t.size = 0;
+
+    outsideInfo.t.size = 0;
+    creationPCR.count = 0;
+
+    sessionData.sessionHandle = TPM_RS_PW;
+
+    // Init nonce.
+    sessionData.nonce.t.size = 0;
+
+    // init hmac
+    sessionData.hmac.t.size = 0;
+
+    // Init session attributes
+    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
+
+    sessionsData.cmdAuthsCount = 1;
+    sessionsData.cmdAuths[0] = &sessionData;
+
+    printf( "\nVERIFICATION on CREATED KEY TESTS:\n" );
+
+    outPublic.t.size = 0;
+    creationData.t.size = 0;
+    rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_OWNER, &sessionsData, &inSensitive, &inPublic,
+            &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
+            &creationTicket, &name, &sessionsDataOut );
+    CheckPassed( rval );
+
+    printf( "\nNew key successfully created in owner hierarchy (RSA 2048).  Handle: 0x%8.8x\n",
+            handle2048rsa );
+    printf( "Name of created primary key: " );
+    PrintSizedBuffer( (TPM2B *)&name );
+
+    outPublic.t.size = 0;
+    creationData.t.size = sizeof( TPM2B_CREATION_DATA ) - 2;
+    outPublic.t.publicArea.authPolicy.t.size = sizeof( TPM2B_DIGEST ) - 2;
+    outPublic.t.publicArea.unique.keyedHash.t.size = sizeof( TPM2B_DIGEST ) - 2;
+    sessionData.hmac.t.size = 2;
+    sessionData.hmac.t.buffer[0] = 0x00;
+    sessionData.hmac.t.buffer[1] = 0xff;
+
+    inPublic.t.publicArea.type = TPM_ALG_RSA;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_NULL;
+    inPublic.t.publicArea.objectAttributes.restricted = 0;
+    inPublic.t.publicArea.objectAttributes.decrypt = 1;
+    inPublic.t.publicArea.objectAttributes.sign = 1;
+
+    inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
+    inPublic.t.publicArea.unique.keyedHash.t.size = 0;
+
+    outsideInfo.t.size = 0;
+    outPublic.t.size = 0;
+    creationData.t.size = 0;
+    rval = Tss2_Sys_Create( sysContext, handle2048rsa, &sessionsData, &inSensitive, &inPublic,
+            &outsideInfo, &creationPCR,
+            &outPrivate, &outPublic, &creationData,
+            &creationHash, &creationTicket, &sessionsDataOut );
+    CheckPassed( rval );
+    printf( "Name of created key: " );
+    PrintSizedBuffer( (TPM2B *)&name );
+
+    rval = Tss2_Sys_Load ( sysContext, handle2048rsa, &sessionsData, &outPrivate, &outPublic,
+            &loadedSha1KeyHandle, &name, &sessionsDataOut);
+    CheckPassed( rval );
+
+    printf( "Name of loading key: " );
+    PrintSizedBuffer( (TPM2B *)&name );
+
+    inScheme.scheme = TPM_ALG_RSASSA;
+    inScheme.details.rsassa.hashAlg = TPM_ALG_SHA1;
+    hashCheck.tag = TPM_ST_HASHCHECK;
+    hashCheck.hierarchy = TPM_RH_NULL;
+    hashCheck.digest.t.size = 0;
+
+    char SignMsg[]= "try to get sign with this msg!";
+    UINT16 length = sizeof(SignMsg);
+    BYTE *buffer = NULL;
+    UINT8 numBuffers = 0;
+    UINT16 cpLength = 0;
+
+    buffer = (BYTE*)malloc(length*sizeof(BYTE));
+    memset(buffer, 0, length*sizeof(BYTE));
+    memcpy (buffer, SignMsg, length);
+    if(length%(MAX_DIGEST_BUFFER) != 0)
+        numBuffers = length/(MAX_DIGEST_BUFFER) + 1;
+    else
+        numBuffers = length/(MAX_DIGEST_BUFFER);
+
+    TPM2B_DIGEST *bufferList[numBuffers];
+    for(UINT8 i = 0; i < numBuffers; i++)
+    {
+        (bufferList)[i] = (TPM2B_DIGEST *)calloc(1,sizeof(TPM2B_DIGEST));
+        if(i < numBuffers-1)
+        {
+            for( UINT16 m = 0; m < MAX_DIGEST_BUFFER; m++)
+            {
+                bufferList[i]->t.buffer[m] = buffer[m + cpLength];
+            }
+            cpLength = i * MAX_DIGEST_BUFFER;
+        }
+        if(i == numBuffers-1 )
+        {
+            for(UINT16 j= 0; j < (length-cpLength); j++)
+            {
+                bufferList[i]->t.buffer[j] = buffer[cpLength + j];
+            }
+        }
+    }
+    if(numBuffers == 1)
+    {
+        rval = TpmHash(TPM_ALG_SHA1, length, buffer, &msgHash);
+        printf("tpmhash");
+        CheckPassed(rval);
+    }
+    else
+    {
+        TpmHashSequence(TPM_ALG_SHA1, numBuffers, bufferList[0], &msgHash);
+        printf("tpmhashsequence");
+    }
+
+    printf("\ndigest(hex type):\n ");
+    for(UINT16 i = 0; i < msgHash.t.size; i++)
+    {
+         printf("%02x ", msgHash.t.buffer[i]);
+    }
+    printf("\n");
+
+    rval = Tss2_Sys_Sign(sysContext, loadedSha1KeyHandle, &sessionsData, &msgHash, &inScheme, &hashCheck, &signature, &sessionsDataOut);
+    CheckPassed(rval);
+
+    inPublic.t.publicArea.type = TPM_ALG_RSA;
+    inPublic.t.publicArea.nameAlg = TPM_ALG_SHA1;
+
+    *(UINT32 *)&( inPublic.t.publicArea.objectAttributes) = 0;
+    inPublic.t.publicArea.objectAttributes.userWithAuth = 0;
+
+    inPublic.t.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM_ALG_NULL;
+    inPublic.t.publicArea.objectAttributes.restricted = 0;
+    inPublic.t.publicArea.unique.keyedHash.t.size = 0;
+
+//    rval = Tss2_Sys_LoadExternal ( sysContext, 0, 0, &outPublic, TPM_RH_OWNER, &loadedObjectHandle, &nameExt, &sessionsDataOut );
+//    CheckPassed( rval );
+//    printf( "\nLoaded key handle:  %8.8x\n", loadedObjectHandle );
+
+
+    rval = Tss2_Sys_VerifySignature(sysContext, loadedSha1KeyHandle/*loadedObjectHandle*/, NULL/*&sessionsData*/, &msgHash, &signature, &validation, &sessionsDataOut);
+    if (rval == TPM_RC_SUCCESS)
+        CheckPassed( rval );
+    else
+        CheckFailed(rval, TPM_RC_SIGNATURE);
+}
+
+void nvExtensionTest()
+{
+    UINT32 rval;
+    TPMI_YES_NO moreData;
+    TPMS_CAPABILITY_DATA capabilityData;
+    TPM2B_PUBLIC outPublic;
+    TPM_HANDLE loadedObjectHandle;
+    TPM2B_NV_PUBLIC publicInfo;
+    TPM2B_AUTH  nvAuth;
+    TPMS_AUTH_COMMAND sessionData;
+    TPMS_AUTH_RESPONSE sessionDataOut;
+    TSS2_SYS_CMD_AUTHS sessionsData;
+    TSS2_SYS_RSP_AUTHS sessionsDataOut;
+    int i;
+    TPM2B_MAX_NV_BUFFER nvWriteData;
+    TPM2B_MAX_NV_BUFFER nvData;
+
+    TPM2B_NV_PUBLIC nvPublic;
+    TPM2B_NAME nvName;
+    TPM2B_NAME nvName1;
+    TPM2B_NAME nvName2;
+
+    TPMS_AUTH_COMMAND *sessionDataArray[1];
+    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
+
+    outPublic.t.size =0;
+    outPublic.t.publicArea.type = TPM_ALG_KEYEDHASH; //TPM_ALG_RSA;
+    outPublic.t.publicArea.nameAlg = TPM_ALG_SHA1; //TPM_ALG_SHA256;
+    *( UINT32 *)&( outPublic.t.publicArea.objectAttributes )= 0;
+    outPublic.t.publicArea.objectAttributes.userWithAuth = 1;
+    outPublic.t.publicArea.authPolicy.t.size = 0;
+    outPublic.t.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM_ALG_NULL; //TPM_ALG_RSASSA;
+    outPublic.t.publicArea.unique.keyedHash.t.size = 0;
+
+    printf( "\nNV EXTENSION TESTS:\n" );
+
+    // list the NV index
+    rval = Tss2_Sys_GetCapability( sysContext, 0, TPM_CAP_HANDLES, CHANGE_ENDIAN_DWORD(TPM_HT_NV_INDEX),
+                                   TPM_PT_NV_INDEX_MAX, &moreData, &capabilityData, 0 );
+    CheckPassed( rval );
+    printf( "\tThe count of defined NV Index: %d\n", capabilityData.data.handles.count);
+    for( UINT32 i=0; i < capabilityData.data.handles.count; i++ )
+    {
+        printf("\n\tNV Index: %x\n", capabilityData.data.handles.handle[i]);
+    }
+    INIT_SIMPLE_TPM2B_SIZE( nvName );
+    rval = Tss2_Sys_LoadExternal ( sysContext, 0, 0/*&inPrivate*/, &outPublic, TPM_RH_OWNER, &loadedObjectHandle, &nvName, 0 );
+    if (rval == TPM_RC_SUCCESS)
+        CheckPassed( rval );
+    else
+        CheckFailed(rval, TPM_RC_COMMAND_CODE);
+
+    rval = (*HandleToNameFunctionPtr)(loadedObjectHandle, &nvName1);
+    CheckPassed(rval);
+    printf( "Name of loaded key: " );
+    PrintSizedBuffer( (TPM2B *)&nvName1 );
+
+    rval = CompareTPM2B( &nvName.b, &nvName1.b );
+    CheckPassed( rval );
+
+    printf( "\nLoaded key handle:  %8.8x\n", loadedObjectHandle );
+
+    sessionDataArray[0] = &sessionData;
+    sessionDataOutArray[0] = &sessionDataOut;
+
+    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
+    sessionsData.cmdAuths = &sessionDataArray[0];
+
+    sessionsDataOut.rspAuthsCount = 1;
+
+    sessionData.sessionHandle = TPM_RS_PW;
+
+    // Init nonce.
+    sessionData.nonce.t.size = 0;
+
+    // init hmac
+    sessionData.hmac.t.size = 0;
+
+    // Init session attributes
+    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
+
+    sessionsData.cmdAuthsCount = 1;
+    sessionsData.cmdAuths[0] = &sessionData;
+
+    nvAuth.t.size = nvName1.t.size-2;
+    for( i = 0; i < nvAuth.t.size; i++ )
+        nvAuth.t.buffer[i] = nvName1.t.name[i];
+
+    publicInfo.t.size = sizeof( TPMI_RH_NV_INDEX ) +
+            sizeof( TPMI_ALG_HASH ) + sizeof( TPMA_NV ) + sizeof( UINT16) +
+            sizeof( UINT16 );
+    publicInfo.t.nvPublic.nvIndex = TPM20_INDEX_PASSWORD_TEST;
+    publicInfo.t.nvPublic.nameAlg = TPM_ALG_SHA1;
+
+    // First zero out attributes.
+    *(UINT32 *)&( publicInfo.t.nvPublic.attributes ) = 0;
+
+    // Now set the attributes.
+    publicInfo.t.nvPublic.attributes.TPMA_NV_AUTHREAD = 1;
+    publicInfo.t.nvPublic.attributes.TPMA_NV_AUTHWRITE = 1;
+    publicInfo.t.nvPublic.attributes.TPMA_NV_OWNERREAD = 1;
+    publicInfo.t.nvPublic.attributes.TPMA_NV_OWNERWRITE = 1;
+    publicInfo.t.nvPublic.authPolicy.t.size = 0;
+    publicInfo.t.nvPublic.dataSize = 32;
+
+    rval = Tss2_Sys_NV_DefineSpace( sysContext, TPM_RH_OWNER, &sessionsData, &nvAuth, &publicInfo, &sessionsDataOut );
+    CheckPassed( rval );
+  
+    printf("TPM 2.0 Test 1 Index:%x", publicInfo.t.nvPublic.nvIndex);
+
+    nvPublic.t.size = 0;
+    INIT_SIMPLE_TPM2B_SIZE( nvName2 );
+    rval = Tss2_Sys_NV_ReadPublic( sysContext, TPM20_INDEX_PASSWORD_TEST, 0, &nvPublic, &nvName2, 0 );
+    CheckPassed( rval );
+    printf( "Name of Public Key for NV: " );
+    PrintSizedBuffer( (TPM2B *)&nvName2 );
+
+    INIT_SIMPLE_TPM2B_SIZE(nvData);
+    rval = Tss2_Sys_NV_Read( sysContext, TPM_RH_OWNER, TPM20_INDEX_PASSWORD_TEST, &sessionsData, 20, 0, &nvData, &sessionsDataOut );
+    CheckFailed( rval, TPM_RC_NV_UNINITIALIZED );
+
+    // Should fail since index is already defined.
+    rval = Tss2_Sys_NV_DefineSpace( sysContext, TPM_RH_OWNER, &sessionsData, &nvAuth, &publicInfo, &sessionsDataOut );
+    CheckFailed( rval, TPM_RC_NV_DEFINED );
+
+    nvWriteData.t.size = nvName1.t.size-2;
+    for( i = 0; i < nvWriteData.t.size; i++ )
+        nvWriteData.t.buffer[i] = nvName1.t.name[i];
+
+    rval = Tss2_Sys_NV_Write( sysContext, TPM_RH_OWNER, TPM20_INDEX_PASSWORD_TEST, &sessionsData, &nvWriteData, 0, &sessionsDataOut ); 
+    if (rval == TPM_RC_SUCCESS)
+        CheckPassed( rval );
+    else
+        CheckFailed(rval, TPM_RC_NV_AUTHORIZATION);
+    
+    INIT_SIMPLE_TPM2B_SIZE( nvData);
+    rval = Tss2_Sys_NV_Read( sysContext, TPM_RH_OWNER, TPM20_INDEX_PASSWORD_TEST, &sessionsData, 20, 0, &nvData, &sessionsDataOut );
+    CheckPassed( rval );
+    printf("\nName of NV data: ");
+    for (int i=0; i<nvData.t.size; i++)
+    {
+        printf(" %2.2x ", nvData.t.buffer[i]);
+    }
+    printf("\n");
+
+    // Now undefine the index.
+    rval = Tss2_Sys_NV_UndefineSpace( sysContext, TPM_RH_OWNER, TPM20_INDEX_PASSWORD_TEST, &sessionsData, 0 );
+    CheckPassed( rval );
+
+    rval = Tss2_Sys_NV_DefineSpace( sysContext, TPM_RH_OWNER, &sessionsData, &nvAuth, &publicInfo, 0 );
+    CheckPassed( rval );
+
+    // Now undefine the index so that next run will work correctly.
+    rval = Tss2_Sys_NV_UndefineSpace( sysContext, TPM_RH_OWNER, TPM20_INDEX_PASSWORD_TEST, &sessionsData, 0 );
+    CheckPassed( rval );
+}
+
+void pcrExtendedTest()
+{
+    UINT32 rval;
+    TPMS_AUTH_COMMAND sessionData;
+    TSS2_SYS_CMD_AUTHS sessionsData;
+    UINT16 i, digestSize;
+    TPML_PCR_SELECTION  pcrSelection;
+    UINT32 pcrUpdateCounterBeforeExtend;
+    UINT32 pcrUpdateCounterAfterExtend;
+    UINT8 pcrBeforeExtend[20];
+    TPM2B_EVENT eventData;
+    TPML_DIGEST pcrValues;
+    TPML_DIGEST_VALUES digests;
+    TPML_PCR_SELECTION pcrSelectionOut;
+    
+    TPMS_AUTH_COMMAND *sessionDataArray[1];
+
+    sessionDataArray[0] = &sessionData;
+    sessionsData.cmdAuths = &sessionDataArray[0];
+
+    printf( "\nPCR EXTENSION TESTS:\n" );
+
+    // Init authHandle
+    sessionData.sessionHandle = TPM_RS_PW;
+
+    // Init nonce.
+    sessionData.nonce.t.size = 0;
+
+    // init hmac
+    sessionData.hmac.t.size = 0;
+
+    // Init session attributes
+    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
+
+    TPMI_YES_NO moreData;
+    TPMS_CAPABILITY_DATA capabilityData;
+
+    rval = Tss2_Sys_GetCapability( sysContext, 0, TPM_CAP_PCR_PROPERTIES, TPM_PT_PCR_COUNT,
+                                   1, &moreData, &capabilityData, 0 );
+    CheckPassed(rval);
+    printf("The Number of PCR implemented:%x\n",capabilityData.data.pcrProperties.pcrProperty[0].pcrSelect[0]);
+
+    // Init digests
+    digests.count = 1;
+    digests.digests[0].hashAlg = TPM_ALG_SHA1;
+    digestSize = GetDigestSize( digests.digests[0].hashAlg );
+
+    for( i = 0; i < digestSize; i++ )
+    {
+        digests.digests[0].digest.sha1[i] = (UINT8)(i % 256);
+    }
+
+    pcrSelection.count = 1;
+    pcrSelection.pcrSelections[0].hash = TPM_ALG_SHA1;
+    pcrSelection.pcrSelections[0].sizeofSelect = 3;
+
+    // Clear out PCR select bit field
+    pcrSelection.pcrSelections[0].pcrSelect[0] = 0;
+    pcrSelection.pcrSelections[0].pcrSelect[1] = 0;
+    pcrSelection.pcrSelections[0].pcrSelect[2] = 0;
+    pcrSelection.pcrSelections[0].pcrSelect[PCR_8 / 8] = 1 << (PCR_8 % 8);
+
+    rval = Tss2_Sys_PCR_Read( sysContext, 0, &pcrSelection, &pcrUpdateCounterBeforeExtend, &pcrSelectionOut, &pcrValues, 0 );
+    CheckPassed( rval );
+    printf( "Name of PCR Values Before Extend: " );
+    for(int i = 0; i < pcrValues.digests[0].t.size; i++)
+        printf("%02x ", pcrValues.digests[0].t.buffer[i]);
+    printf("\n");
+
+    memcpy( &( pcrBeforeExtend[0] ), &( pcrValues.digests[0].t.buffer[0] ), pcrValues.digests[0].t.size );
+
+    sessionsData.cmdAuthsCount = 1;
+    sessionsData.cmdAuths[0] = &sessionData;
+
+    rval = Tss2_Sys_PCR_Extend( sysContext, PCR_8, &sessionsData, &digests, 0 );
+    CheckPassed( rval );
+
+    rval = Tss2_Sys_PCR_Read( sysContext, 0, &pcrSelection, &pcrUpdateCounterAfterExtend, &pcrSelectionOut, &pcrValues, 0 );
+    CheckPassed( rval );
+
+    printf( "Name of PCR Values After Extended: " );
+    for(int i = 0; i < pcrValues.digests[0].t.size; i++)
+        printf("%02x ", pcrValues.digests[0].t.buffer[i]);
+    printf("\n");
+
+    memcpy( &( pcrAfterExtend[0] ), &( pcrValues.digests[0].t.buffer[0] ), pcrValues.digests[0].t.size );
+
+    if( pcrUpdateCounterBeforeExtend == pcrUpdateCounterAfterExtend )
+    {
+        printf( "ERROR!! pcrUpdateCounter didn't change value\n" );
+        Cleanup();
+    }
+
+    if( 0 == memcmp( &( pcrBeforeExtend[0] ), &( pcrAfterExtend[0] ), 20 ) )
+    {
+        printf( "ERROR!! PCR didn't change value\n" );
+        Cleanup();
+    }
+    pcrSelection.pcrSelections[0].sizeofSelect = 4;
+
+    rval = Tss2_Sys_PCR_Read( sysContext, 0, &pcrSelection, &pcrUpdateCounterAfterExtend, 0, 0, 0 );
+    CheckFailed( rval, TPM_RC_1 + TPM_RC_P + TPM_RC_VALUE );
+
+    eventData.t.size = 4;
+    eventData.t.buffer[0] = 0;
+    eventData.t.buffer[1] = 0xff;
+    eventData.t.buffer[2] = 0x55;
+    eventData.t.buffer[3] = 0xaa;
+
+    rval = Tss2_Sys_PCR_Event( sysContext, PCR_10, &sessionsData, &eventData, &digests, 0  );
+    CheckPassed( rval );
+    printf( "Name of PCR Event Digests: " );
+    for(UINT16 i = 0; i < digestSize; i++)
+        printf("%02x ", digests.digests[0].digest.sha1[i]);
+    printf("\n");
+}
+
+void TestClockTime()
+{
+    UINT32 rval;
+    TPMS_AUTH_COMMAND sessionData;
+    TPMS_AUTH_RESPONSE sessionDataOut;
+    TPMS_AUTH_COMMAND *sessionDataArray[1] = { &sessionData };
+    TPMS_AUTH_RESPONSE *sessionDataOutArray[1] = { &sessionDataOut };
+    // Here we need to note the sessionsData.cmdAuthsCount value to be set 1,
+    // otherwise Tss2_Sys_SetCmdAuths will return error 0x8000b(TSS2_SYS_RC_BAD_VALUE).
+    TSS2_SYS_CMD_AUTHS sessionsData = { 1, &sessionDataArray[0] };
+    TSS2_SYS_RSP_AUTHS sessionsDataOut = { 1, &sessionDataOutArray[0] };
+
+    sessionsData.cmdAuthsCount = 1;
+    sessionData.sessionHandle = TPM_RS_PW;
+    sessionData.nonce.t.size = 0;
+    sessionData.hmac.t.size = 0;
+    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
+
+    TPMS_TIME_INFO currentTime;
+
+    printf("\nCLOCK/TIME TEST:\n");
+    rval = Tss2_Sys_ReadClock(sysContext, &currentTime);
+    CheckPassed( rval );
+    printf("\nCurrent Time:%lu, Current Clock Info:%lu\n", currentTime.time, currentTime.clockInfo.clock );
+    // current value of Clock < newTime < 0xFFFF000000000000ULL,otherwise failed.
+    //UINT64 newTime = 0xFFFF000000000001;//16 numbers
+    UINT64 newTime = 0xFFF111111111;
+    rval = Tss2_Sys_ClockSet(sysContext, TPM_RH_OWNER, &sessionsData, newTime, &sessionsDataOut);
+    //CheckFailed( rval, TPM_RC_VALUE + TPM_RC_P + TPM_RC_1 );
+    CheckPassed(rval);
+
+    rval = Tss2_Sys_ReadClock(sysContext, &currentTime);
+    CheckPassed(rval);
+    printf("\nCurrent Time:%lu, Current Clock Info:%lu\n", currentTime.time, currentTime.clockInfo.clock);
+
+    TPM_CLOCK_ADJUST rateAdjust = 0;
+    rval = Tss2_Sys_ClockRateAdjust(sysContext, TPM_RH_OWNER, &sessionsData, rateAdjust, &sessionsDataOut);
+    CheckPassed( rval );
+
+    rateAdjust = TPM_CLOCK_COARSE_SLOWER;
+    rval = Tss2_Sys_ClockRateAdjust(sysContext, TPM_RH_OWNER, &sessionsData, rateAdjust, &sessionsDataOut);
+
+    CheckPassed(rval);
+
+    rateAdjust = TPM_CLOCK_COARSE_FASTER;
+    rval = Tss2_Sys_ClockRateAdjust(sysContext, TPM_RH_OWNER, &sessionsData, rateAdjust, &sessionsDataOut);
+
+    CheckPassed(rval);
+}
+
 void TpmTest()
 {
     UINT32 i;
@@ -6700,6 +7849,14 @@ void TpmTest()
 #endif
     }
 
+	symmetricEncryptDecryptTest();
+        asymmetricEncryptDecryptTest();
+        verifySignatureExternalTest();
+        verifySignatureCreatedTest();
+        nvExtensionTest();
+        pcrExtendedTest();
+        TestClockTime();
+	
     // clear out rm entries for objects.
     rval = Tss2_Sys_FlushContext( sysContext, handle2048rsa );
     CheckPassed( rval );
@@ -7265,6 +8422,132 @@ void PrintSimplePolicySessionTest()
            "  DeleteEntity( TPM20_INDEX_PASSWORD_TEST ):Passed\n"
            "  EndAuthSession:Passed\n");
 }
+void PrintSymmetricEncryptDecryptTest()
+{
+    printf("  create primary:   PASSED!\n"
+           "  New key successfully created in owner hierarchy (RSA 2048).  Handle: 0x8000000d\n"
+           "  Name of created primary key: 00 04 ed 89 58 53 b7 51 74 88 f8 d2 7c de b5 89 55 28 46 dd f8 35\n"
+           "  create key:   PASSED!\n"
+           "  Name of created key: 00 04 ed 89 58 53 b7 51 74 88 f8 d2 7c de b5 89 55 28 46 dd f8 35\n"
+           "  load key:   PASSED!\n"
+           "  Name of loading key: 00 04 60 df d7 7a f7 fd 2c c8 2d 61 04 52 4c cc 6a 2d dc 18 ca 98\n"
+           "  encrypt:   PASSED!\n"
+           "  decrypt:   PASSED!\n"
+           "  HASH TESTS: HASH Comparison\n"
+           "  hashing on original message:   PASSED!\n"
+           "  hashing on the decyprted message:   PASSED!\n"
+           "  Hash value before encrypt: 9f 86 d0 81 88 4c 7d 65 9a 2f ea a0 c5 5a d0 15\n"
+           "    a3 bf 4f 1b 2b 0b 82 2c d1 5d 6c 15 b0 f0 0a 08\n"
+           "  Hash value after decrypt: 9f 86 d0 81 88 4c 7d 65 9a 2f ea a0 c5 5a d0 15\n"
+           "    a3 bf 4f 1b 2b 0b 82 2c d1 5d 6c 15 b0 f0 0a 08\n");
+
+}
+void PrintAsymmetricEncryptDecryptTest()
+{
+    printf("  create primary:   PASSED!\n"
+           "  New key successfully created in owner hierarchy (RSA 2048).  Handle: 0x8000000d\n"
+           "  Name of created primary key: 00 04 ed 89 58 53 b7 51 74 88 f8 d2 7c de b5 89 55 28 46 dd f8 35\n"
+           "  create key:   PASSED!\n"
+           "  Name of created key: 00 04 ed 89 58 53 b7 51 74 88 f8 d2 7c de b5 89 55 28 46 dd f8 35\n"
+           "  load key:   PASSED!\n"
+           "  Name of loading key: 00 04 60 df d7 7a f7 fd 2c c8 2d 61 04 52 4c cc 6a 2d dc 18 ca 98\n"
+	   "  rsa encrypt:   PASSED!\n"
+	   "  Encrypted data: f0 7f fd c3 c6 dd 9e 98 6d 71 05 c7 ad 9a 8e 74\n"
+	   "	19 0a 47 cb dd ca c4 6a c1 55 d3 8b d6 76 b7 93\n"
+	   "	77 ca 05 3e 0e 90 8d bd 2d 1d 6d e8 7e bf fe 35\n"
+	   " 	3c 80 cf 3d 59 c0 0a a5 58 44 4f 93 9d 72 15 41\n"
+	   "	c2 6c 91 2d c8 ec 15 4a d8 1e be c6 04 c2 c9 8e\n"
+	   " 	2d 1b 0c c3 13 2d b7 5c 20 91 6c 65 bb 19 89 23\n"
+	   "	48 ab 29 cc 03 20 7f 06 7f a5 48 d7 58 f9 1a 39\n"
+	   "	89 c7 5b 3f d2 ff ad f4 32 13 2f 31 af 3a d3 bd\n"
+	   "	d2 ab 2e 1a aa 7a 65 b9 20 a7 25 d5 12 67 f8 23\n"
+	   "	fa 8c 6c 65 72 75 a6 57 21 94 df 25 a9 e7 c4 54\n"
+	   "	ca 0c fb ae 37 c9 6b 58 5e 9b 9f 58 31 f8 94 a6\n"
+	   "	0d bf 0a 78 a7 53 96 81 cf 90 45 0b 31 6c da e0\n"
+	   "	00 b3 7c 98 35 fa 6d 14 e6 0a 0c 1c 45 f7 3f 00\n"
+	   "	bd c8 fc 8e 83 55 b4 1e f8 a2 cb c5 cb bd 67 16\n"
+	   "	f9 e7 9b 8d 7b 32 bf 7b 67 3f d4 9c 35 33 6d 0e\n"
+	   "	ec e4 19 f4 bc 16 61 92 b3 9b 2b 8b b5 14 25 2b\n"
+           "  rsa decrypt:   PASSED!\n"
+	   "  Decypted data: 74 65 73 74\n"
+	   "  HASH TESTS: HASH Comparison\n"
+           "  hashing on original message:   PASSED!\n"
+           "  hashing on the decyprted message:   PASSED!\n"
+	   "  Hash value before encrypt: 9f 86 d0 81 88 4c 7d 65 9a 2f ea a0 c5 5a d0 15\n"
+	   "	a3 bf 4f 1b 2b 0b 82 2c d1 5d 6c 15 b0 f0 0a 08\n"
+	   "  Hash value after decrypt: 9f 86 d0 81 88 4c 7d 65 9a 2f ea a0 c5 5a d0 15\n"
+	   "	a3 bf 4f 1b 2b 0b 82 2c d1 5d 6c 15 b0 f0 0a 08\n");
+}
+void PrintVerifySignatureExternalTest()
+{
+    printf("  create primary:   PASSED!\n"
+           "  New key successfully created in owner hierarchy (RSA 2048).  Handle: 0x8000000d\n"
+           "  Name of created primary key: 00 04 ed 89 58 53 b7 51 74 88 f8 d2 7c de b5 89 55 28 46 dd f8 35\n"
+           "  create key:   PASSED!\n"
+           "  Name of created key: 00 04 ed 89 58 53 b7 51 74 88 f8 d2 7c de b5 89 55 28 46 dd f8 35\n"
+           "  load key:   PASSED!\n"
+           "  Name of loading key: 00 04 60 df d7 7a f7 fd 2c c8 2d 61 04 52 4c cc 6a 2d dc 18 ca 98\n"
+           "  tpm performing hash :   PASSED!\n"
+           "  digest(hex type):fe be a2 ef 8c ba 2e d7 6a 6e d4 40 31 fb a5 b1 26 a2 35 63\n"
+           "  sign the message:   PASSED!\n"	
+           "  verify signature using loaded key:   PASSED!\n");
+}
+void PrintVerifySignatureCreatedTest()
+{
+    printf("  create primary:   PASSED!\n"
+	   "  New key successfully created in owner hierarchy (RSA 2048).  Handle: 0x8000000d\n"
+  	   "  Name of created primary key: 00 04 ed 89 58 53 b7 51 74 88 f8 d2 7c de b5 89 55 28 46 dd f8 35\n"
+           "  create key:   PASSED!\n"
+	   "  Name of created key: 00 04 ed 89 58 53 b7 51 74 88 f8 d2 7c de b5 89 55 28 46 dd f8 35\n"
+           "  load key:   PASSED!\n"
+	   "  Name of loading key: 00 04 60 df d7 7a f7 fd 2c c8 2d 61 04 52 4c cc 6a 2d dc 18 ca 98\n"
+	   "  tpm performing hash :   PASSED!\n"
+	   "  digest(hex type):fe be a2 ef 8c ba 2e d7 6a 6e d4 40 31 fb a5 b1 26 a2 35 63\n"
+           "  sign the message:   PASSED!\n"
+           "  load external public key:   PASSED!\n"
+	   "  Loaded key handle:  8000000f\n"
+           "  verify signature using loaded key:   PASSED!\n");
+}
+void PrintNvExtensionTest()
+{
+    printf("   List the NV defined List:   PASSED!\n"
+           "   The count of defined NV Index: 0\n"
+           "   Load external key:   PASSED!\n"
+           "   Name of loaded key: 00 04 aa 6f 4a 8b 97 3a f7 3f d7 b4 e4 a4 fa 56 6c 96 79 b9 5d c8\n"
+           "   Loaded key handle:  80000009\n"
+	   "   Define NV space:   PASSED!\n"
+	   "   TPM 2.0 Test 1 Index:1500020\n"    
+	   "   Failed to read NV because uninitialized:   PASSED!\n"
+           "   Failed to define space because it is already defined:   PASSED!\n"
+           "   Write into NV:   PASSED!\n"
+           "   Read from NV:   PASSED!\n"
+	   "   Name of NV data:  00  04  aa  6f  4a  8b  97  3a  f7  3f  d7  b4  e4  a4  fa  56  6c  96  79  b9\n"
+           "   Undefine the NV index:      PASSED!\n"
+           "   Define NV space:   PASSED!\n"
+           "   Undefine the NV index:   PASSED!\n");
+}
+void PrintPcrExtendedTest()
+{
+    printf("  Get the number of PCR:   PASSED!\n"
+           "  The Number of PCR implemented:7f\n"
+           "  Read PCR values:   PASSED!\n"
+           "  Name of PCR Values Before Extend: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n"
+           "  Extend PCR values:   PASSED!\n"
+           "  Read PCR Values:   PASSED!\n"
+           "  Name of PCR Values After Extended: f8 7c fc 25 e0 47 ab 7f a1 c1 d2 cc a2 c7 ff aa 70 6c d2 3a\n" 
+           "  Failed to read the PCR value because no PCR selection:   PASSED!\n"
+           "  PCR Event:   PASSED!\n"
+           "  Name of PCR Event Digests: 2d dd 5b 98 e2 09 56 cd d5 88 1f a8 0f df 7c 2a a7 da 72 78\n");
+}
+void PrintClockTimeTest()
+{
+    printf(" Tss2_sys_ReadClock:PASSED\n"
+           " Tss2_Sys_ClockSet:PASSED\n"
+           " Tss2_sys_ReadClock:PASSED\n"
+           " Tss2_Sys_ClockRateAdjust:passing case:PASSED\n"
+           " Tss2_Sys_ClockRateAdjust:passing case:PASSED\n"
+	   " Tss2_Sys_ClockRateAdjust:passing case:PASSED\n");
+}
 
 typedef struct {
     const char *index;
@@ -7515,6 +8798,55 @@ SUB_MENUS_SETUP simplePolicySessionMenus[] =
     { "0", "RUN ALL TEST CASES", SimplePolicySessionTest, },
     { NULL, NULL, 0, },
 };
+SUB_MENUS_SETUP symmetricEncryptDecryptTestMenus[] =
+{
+    { "Q", "QUIT THIS TEST GROUP", 0, },
+    { "D", "PRINT DESCRIPTION ON ALL CASES IN THIS GROUP", PrintSymmetricEncryptDecryptTest, },
+    { "0", "RUN ALL TEST CASES", symmetricEncryptDecryptTest, },
+    { NULL, NULL, 0, },
+};
+SUB_MENUS_SETUP asymmetricEncryptDecryptTestMenus[] =
+{
+    { "Q", "QUIT THIS TEST GROUP", 0, },
+    { "D", "PRINT DESCRIPTION ON ALL CASES IN THIS GROUP", PrintAsymmetricEncryptDecryptTest, },
+    { "0", "RUN ALL TEST CASES", asymmetricEncryptDecryptTest, },
+    { NULL, NULL, 0, },
+};
+SUB_MENUS_SETUP verifySignatureExternalTestMenus[] =
+{
+    { "Q", "QUIT THIS TEST GROUP", 0, },
+    { "D", "PRINT DESCRIPTION ON ALL CASES IN THIS GROUP", PrintVerifySignatureExternalTest, },
+    { "0", "RUN ALL TEST CASES", verifySignatureExternalTest, },
+    { NULL, NULL, 0, },
+};
+SUB_MENUS_SETUP verifySignatureCreatedTestMenus[] =
+{
+    { "Q", "QUIT THIS TEST GROUP", 0, },
+    { "D", "PRINT DESCRIPTION ON ALL CASES IN THIS GROUP", PrintVerifySignatureCreatedTest, },
+    { "0", "RUN ALL TEST CASES", verifySignatureCreatedTest, },
+    { NULL, NULL, 0, },
+};
+SUB_MENUS_SETUP nvExtensionTestMenus[] =
+{
+    { "Q", "QUIT THIS TEST GROUP", 0, },
+    { "D", "PRINT DESCRIPTION ON ALL CASES IN THIS GROUP", PrintNvExtensionTest, },
+    { "0", "RUN ALL TEST CASES", nvExtensionTest, },
+    { NULL, NULL, 0, },
+};
+SUB_MENUS_SETUP pcrExtendedTestMenus[] =
+{
+    { "Q", "QUIT THIS TEST GROUP", 0, },
+    { "D", "PRINT DESCRIPTION ON ALL CASES IN THIS GROUP", PrintPcrExtendedTest, },
+    { "0", "RUN ALL TEST CASES", pcrExtendedTest, },
+    { NULL, NULL, 0, },
+};
+SUB_MENUS_SETUP clockTimeTestMenus[] =
+{
+    { "Q", "QUIT THIS TEST GROUP", 0, },
+    { "D", "PRINT DESCRIPTION ON ALL CASES IN THIS GROUP", PrintClockTimeTest, },
+    { "0", "RUN ALL TEST CASES", TestClockTime, },
+    { NULL, NULL, 0, },
+};
 
 MENUS_SETUP firstLevelMenus[] =
 {
@@ -7556,6 +8888,14 @@ MENUS_SETUP firstLevelMenus[] =
     { "31", "CHANGE_PPS TESTS", 0, changePpsTestMenus, },
     { "32", "EC Ephemeral TESTS", 0, ecEphemeralTestMenus, },
 
+	{ "33", "SYMMETRIC ENCRYPT/DECRYPT TESTS", 0, symmetricEncryptDecryptTestMenus, },
+    { "34", "ASYMMETRIC ENCRYPT/DECRYPT TESTS", 0, asymmetricEncryptDecryptTestMenus, },
+    { "35", "VERIFY SIGNATURE WITH EXTERNAL KEY TEST", 0, verifySignatureExternalTestMenus, },
+    { "36", "VERIFY SIGNATURE WITH CREATED KEY TEST", 0, verifySignatureCreatedTestMenus, },
+    { "37", "NV EXTENSION TEST", 0, nvExtensionTestMenus, },
+    { "38", "PCR EXTENDED TEST", 0, pcrExtendedTestMenus, },
+    { "39", "CLOCK/TIME TEST", 0, clockTimeTestMenus, },
+	
     { NULL, NULL, 0, },
 };
 
