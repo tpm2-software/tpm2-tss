@@ -92,6 +92,7 @@ test_tpmtest_tpmtest_LDADD    = $(libtss2) $(libtctisocket) $(libtctidevice)
 test_tpmtest_tpmtest_SOURCES  = $(TPMTEST_CXX) $(COMMON_C) $(SAMPLE_C)
 
 %.pc : %.pc.in
+	if [ ! -d $(dir $@) ]; then mkdir -p $(dir $@); fi
 	sed -e "s,[@]VERSION[@],$(PACKAGE_VERSION),g; \
 	        s,[@]includedir[@],$(includedir),g;" $^ > $@
 
