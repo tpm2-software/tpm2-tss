@@ -41,7 +41,7 @@ void Marshal_Simple_TPM2B( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **next
         }
         else
         {
-            usedCommandBuffSize = (INT64)*nextData - (INT64)inBuffPtr + sizeof( UINT16 );
+            usedCommandBuffSize = (INT64)(*nextData - inBuffPtr) + sizeof( UINT16 );
 
             // Check for possible writing past end of command buffer.
             if( usedCommandBuffSize > (INT64)maxCommandSize )
