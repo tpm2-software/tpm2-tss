@@ -37,7 +37,7 @@ AM_CXXFLAGS     = $(ERR_FLAGS)
 # stuff to build, what that stuff is, and where/if to install said stuff
 sbin_PROGRAMS   = $(resourcemgr)
 noinst_PROGRAMS = $(tpmclient) $(tpmtest)
-lib_LTLIBRARIES = $(libsapi) $(libtctidevice) $(libtctisocket)
+lib_LTLIBRARIES = $(libsapi) $(libtcti_device) $(libtcti_socket)
 # unit tests
 check_PROGRAMS  = test/tcti_device
 TESTS = $(check_PROGRAMS)
@@ -50,16 +50,16 @@ libtctidir      = $(includedir)/tcti
 libtcti_HEADERS = $(srcdir)/include/tcti/*.h
 # pkg-config files
 pkgconfigdir          = $(libdir)/pkgconfig
-nodist_pkgconfig_DATA = lib/sapi.pc lib/tcti_device.pc lib/tcti_socket.pc
+nodist_pkgconfig_DATA = lib/sapi.pc lib/tcti-device.pc lib/tcti-socket.pc
 
 test_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir) -I$(srcdir)/sysapi/include
-test_tcti_device_LDADD   = $(libsapi) $(libtctidevice) $(CMOCKA_LIBS)
+test_tcti_device_LDADD   = $(libsapi) $(libtcti_device) $(CMOCKA_LIBS)
 test_tcti_device_SOURCES = test/tcti_device.c test/tcti_device_test.c
 
 # how to build stuff
 resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS) $(AM_CFLAGS)
 resourcemgr_resourcemgr_CXXFLAGS = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS) $(AM_CXXFLAGS)
-resourcemgr_resourcemgr_LDADD    = $(libsapi) $(libtctidevice) $(libtctisocket)
+resourcemgr_resourcemgr_LDADD    = $(libsapi) $(libtcti_device) $(libtcti_socket)
 resourcemgr_resourcemgr_LDFLAGS  = $(PTHREAD_LDFLAGS)
 resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(COMMON_SRC)
 
@@ -67,28 +67,28 @@ sysapi_libsapi_la_CFLAGS  = -I$(srcdir)/sysapi/include $(AM_CFLAGS)
 sysapi_libsapi_la_LDFLAGS = $(LIBRARY_LDFLAGS)
 sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
 
-tcti_libtctidevice_la_CFLAGS   = $(TCTIDEVICE_INC) $(AM_CFLAGS)
-tcti_libtctidevice_la_LDFLAGS  = $(LIBRARY_LDFLAGS) \
+tcti_libtcti_device_la_CFLAGS   = $(TCTIDEVICE_INC) $(AM_CFLAGS)
+tcti_libtcti_device_la_LDFLAGS  = $(LIBRARY_LDFLAGS) \
     -Wl,--version-script=$(srcdir)/tcti/tcti_device.map
-tcti_libtctidevice_la_SOURCES  = $(TCTIDEVICE_C) \
+tcti_libtcti_device_la_SOURCES  = $(TCTIDEVICE_C) \
     sysapi/sysapi_util/changeEndian.c $(TCTICOMMON_C) common/debug.c
 
-tcti_libtctisocket_la_CFLAGS   = -DSAPI_CLIENT $(TCTISOCKET_INC) $(AM_CFLAGS)
-tcti_libtctisocket_la_CXXFLAGS = -DSAPI_CLIENT $(TCTISOCKET_INC) $(AM_CXXFLAGS)
-tcti_libtctisocket_la_LDFLAGS  = $(LIBRARY_LDFLAGS) \
+tcti_libtcti_socket_la_CFLAGS   = -DSAPI_CLIENT $(TCTISOCKET_INC) $(AM_CFLAGS)
+tcti_libtcti_socket_la_CXXFLAGS = -DSAPI_CLIENT $(TCTISOCKET_INC) $(AM_CXXFLAGS)
+tcti_libtcti_socket_la_LDFLAGS  = $(LIBRARY_LDFLAGS) \
     -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
-tcti_libtctisocket_la_SOURCES  =  $(TCTISOCKET_C) \
+tcti_libtcti_socket_la_SOURCES  =  $(TCTISOCKET_C) \
     sysapi/sysapi_util/changeEndian.c $(TCTISOCKET_CXX) $(TCTICOMMON_C) \
     common/sockets.cpp common/debug.c
 
 test_tpmclient_tpmclient_CFLAGS   = -DSAPI_CLIENT $(TPMCLIENT_INC) $(AM_CFLAGS)
 test_tpmclient_tpmclient_CXXFLAGS = -DSAPI_CLIENT $(TPMCLIENT_INC) $(TCTICOMMON_INC) $(TCTIDEVICE_INC) $(AM_CXXFLAGS)
-test_tpmclient_tpmclient_LDADD    = $(libsapi) $(libtctisocket) $(libtctidevice)
+test_tpmclient_tpmclient_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device)
 test_tpmclient_tpmclient_SOURCES  = $(TPMCLIENT_CXX) $(COMMON_C) $(SAMPLE_C)
 
 test_tpmtest_tpmtest_CFLAGS   = -DSAPI_CLIENT $(TPMTEST_INC) $(AM_CFLAGS)
 test_tpmtest_tpmtest_CXXFLAGS = -DSAPI_CLIENT $(TPMTEST_INC) $(AM_CXXFLAGS)
-test_tpmtest_tpmtest_LDADD    = $(libsapi) $(libtctisocket) $(libtctidevice)
+test_tpmtest_tpmtest_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device)
 test_tpmtest_tpmtest_SOURCES  = $(TPMTEST_CXX) $(COMMON_C) $(SAMPLE_C)
 
 %.pc : %.pc.in
@@ -126,8 +126,8 @@ TPMTEST_INC = -I$(srcdir)/include -I$(srcdir)/sysapi/include \
 TPMTEST_CXX = test/tpmtest/tpmtest.cpp
 
 libsapi = sysapi/libsapi.la
-libtctidevice = tcti/libtctidevice.la
-libtctisocket = tcti/libtctisocket.la
+libtcti_device = tcti/libtcti-device.la
+libtcti_socket = tcti/libtcti-socket.la
 resourcemgr = resourcemgr/resourcemgr
 tpmclient   = test/tpmclient/tpmclient
 tpmtest     = test/tpmtest/tpmtest
