@@ -13,10 +13,14 @@ produced an official source release. To obtain the tpm2.0-tss sources you
 must clone them from the 01.org GitHub organization TPM2.0-TSS git repository:
 git clone https://github.com/01org/TPM2.0-TSS
 
-To compile tpm2.0-tss execute the following commands from the root of the
-source directory:
+To configure the tpm2.0-tss source code first define the environment for your
+build using a config.site file. The default for the project is kept at
+lib/config.site. Pass this environment to the build through the CONFIG_SITE
+variable:
 $ ./bootstrap
-$ ./configure
+$ ./configure CONFIG_SITE=$(pwd)/lib/config.site
+
+Then compile the code:
 $ make
 
 We now have basic VPATH support which allows us to separate the source
