@@ -1,0 +1,2 @@
+CFLAGS="-Wall -Werror"
+CXXFLAGS="-Wall -Werror"

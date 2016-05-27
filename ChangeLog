@@ -1,3 +1,7 @@
+Unreleased
+Changed
+* Move default compiler flags to config.site file.
+
 2015-07-28 Will Arthur <will.c.arthur@intel.com>
 * 0.98 release
 * Added ability for resource manager to communicate with a real TPM via
