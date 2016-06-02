@@ -2707,6 +2707,11 @@ UINT32 WINAPI SockServer( LPVOID servStruct )
             printf( "Resource Mgr failed to create OTHER command server thread, error #%d.  Exiting...\n", rval );
             continue;
         }
+        rval = pthread_detach( cmdServerStruct->threadHandle );
+        if( rval != 0 )
+        {
+            printf( "Resource Mgr failed to detach a server thread, error #%d.  Warning and continue...\n", rval );
+        }
 #else
 #error Unsupported OS--need to add OS-specific support for threading here.        
 #endif
