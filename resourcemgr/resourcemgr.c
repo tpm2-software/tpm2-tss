@@ -2550,6 +2550,9 @@ UINT8 OtherCmdServer( SERVER_STRUCT *serverStruct )
         {
             rval = CHANGE_ENDIAN_DWORD( TSS2_RC_SUCCESS );
             rmSendBytes( serverStruct->connectSock, (unsigned char *)&rval, 4 );
+            if( command == TPM_SESSION_END )
+                break;
+
             continue;
         }
 
