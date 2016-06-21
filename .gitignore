@@ -40,6 +40,7 @@ ipch/
 test/tpmtest/tpmtest
 test-driver
 test-suite.log
+test/getcommands-malloc-mock_unit
 test/tcti_device
 test/*.log
 test/*.trs

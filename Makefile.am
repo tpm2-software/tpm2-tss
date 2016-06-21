@@ -37,7 +37,9 @@ sbin_PROGRAMS   = $(resourcemgr)
 noinst_PROGRAMS = $(tpmclient) $(tpmtest)
 lib_LTLIBRARIES = $(libsapi) $(libtcti_device) $(libtcti_socket)
 # unit tests
-check_PROGRAMS  = test/tcti_device
+check_PROGRAMS  = \
+    test/tcti_device \
+    test/getcommands-malloc-mock_unit
 TESTS = $(check_PROGRAMS)
 CLEANFILES = $(nodist_pkgconfig_DATA)
 
@@ -53,6 +55,14 @@ nodist_pkgconfig_DATA = lib/sapi.pc lib/tcti-device.pc lib/tcti-socket.pc
 test_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir) -I$(srcdir)/sysapi/include
 test_tcti_device_LDADD   = $(libsapi) $(libtcti_device) $(CMOCKA_LIBS)
 test_tcti_device_SOURCES = test/tcti_device.c test/tcti_device_test.c
+
+test_getcommands_malloc_mock_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+    -I$(srcdir)/sysapi/include/
+test_getcommands_malloc_mock_unit_LDADD   = $(CMOCKA_LIBS)
+test_getcommands_malloc_mock_unit_LDFLAGS = -Wl,--wrap=malloc \
+    -Wl,--wrap=Tss2_Sys_GetCapability
+test_getcommands_malloc_mock_unit_SOURCES = \
+    test/getcommands-malloc-mock_unit.c resourcemgr/getcommands.c
 
 # how to build stuff
 resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS) $(AM_CFLAGS)
@@ -100,7 +110,8 @@ LIBRARY_LDFLAGS = -fPIC -Wl,--no-undefined
 RESOURCEMGR_INC = -I$(srcdir)/include -I$(srcdir)/common \
     -I$(srcdir)/sysapi/include -I$(srcdir)/resourcemgr \
     -I$(srcdir)/test/tpmclient
-RESOURCEMGR_C = resourcemgr/resourcemgr.c resourcemgr/criticalsection_linux.c
+RESOURCEMGR_C = resourcemgr/resourcemgr.c resourcemgr/criticalsection_linux.c \
+    resourcemgr/getcommands.c
 
 TCTICOMMON_INC = -I$(srcdir)/include -I$(srcdir)/common \
     -I$(srcdir)/sysapi/include
