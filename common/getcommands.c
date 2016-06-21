@@ -33,7 +33,6 @@
 #ifdef SAPI_CLIENT
 TSS2_RC level = TSS2_ERROR_LEVEL( TSS2_APP_ERROR_LEVEL );
 #else
-extern void *(*rmMalloc)(size_t size);
 TSS2_RC level = TSS2_ERROR_LEVEL( TSS2_RESMGR_ERROR_LEVEL );
 #endif    
 
@@ -46,12 +45,6 @@ TSS2_RC GetCommands( TSS2_SYS_CONTEXT *resMgrSysContext, TPML_CCA **supportedCom
     TPMA_CC *commandPtr;
     TSS2_RC rval = TSS2_RC_SUCCESS;
     UINT32 i;
-    
-#ifdef SAPI_CLIENT
-    void *(*gcMalloc)(size_t size) = malloc;
-#else    
-    void *(*gcMalloc)(size_t size) = rmMalloc;
-#endif
     
     // First get the number of commands
     rval = Tss2_Sys_GetCapability( resMgrSysContext, 0,
@@ -70,7 +63,7 @@ TSS2_RC GetCommands( TSS2_SYS_CONTEXT *resMgrSysContext, TPML_CCA **supportedCom
     }
 
     // Allocate memory for them
-    *supportedCommands = (TPML_CCA *)gcMalloc( numCommands * sizeof( TPMA_CC ) + sizeof( UINT32 ) );
+    *supportedCommands = (TPML_CCA *)malloc( numCommands * sizeof( TPMA_CC ) + sizeof( UINT32 ) );
     if( !*supportedCommands )
     {
         rval = TSS2_BASE_RC_INSUFFICIENT_BUFFER + level;
