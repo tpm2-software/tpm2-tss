@@ -7,6 +7,7 @@ Changed
 * rename libtcti_socket to libtcti-socket
 * move $(includedir)/tss to $(includedir)/sapi
 * Move default compiler flags to config.site file.
+* Removed SAPI_CLIENT macro tests.
 
 2015-07-28 Will Arthur <will.c.arthur@intel.com>
 * 0.98 release

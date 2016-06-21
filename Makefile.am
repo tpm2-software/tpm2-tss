@@ -81,21 +81,21 @@ tcti_libtcti_device_la_LDFLAGS  = $(LIBRARY_LDFLAGS) \
 tcti_libtcti_device_la_SOURCES  = $(TCTIDEVICE_C) \
     sysapi/sysapi_util/changeEndian.c $(TCTICOMMON_C) common/debug.c
 
-tcti_libtcti_socket_la_CFLAGS   = -DSAPI_CLIENT $(TCTISOCKET_INC) $(AM_CFLAGS)
-tcti_libtcti_socket_la_CXXFLAGS = -DSAPI_CLIENT $(TCTISOCKET_INC) $(AM_CXXFLAGS)
+tcti_libtcti_socket_la_CFLAGS   = $(TCTISOCKET_INC) $(AM_CFLAGS)
+tcti_libtcti_socket_la_CXXFLAGS = $(TCTISOCKET_INC) $(AM_CXXFLAGS)
 tcti_libtcti_socket_la_LDFLAGS  = $(LIBRARY_LDFLAGS) \
     -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
 tcti_libtcti_socket_la_SOURCES  =  $(TCTISOCKET_C) \
     sysapi/sysapi_util/changeEndian.c $(TCTISOCKET_CXX) $(TCTICOMMON_C) \
     common/sockets.cpp common/debug.c
 
-test_tpmclient_tpmclient_CFLAGS   = -DSAPI_CLIENT $(TPMCLIENT_INC) $(AM_CFLAGS)
-test_tpmclient_tpmclient_CXXFLAGS = -DSAPI_CLIENT $(TPMCLIENT_INC) $(TCTICOMMON_INC) $(TCTIDEVICE_INC) $(AM_CXXFLAGS)
+test_tpmclient_tpmclient_CFLAGS   = $(TPMCLIENT_INC) $(AM_CFLAGS)
+test_tpmclient_tpmclient_CXXFLAGS = $(TPMCLIENT_INC) $(TCTICOMMON_INC) $(TCTIDEVICE_INC) $(AM_CXXFLAGS)
 test_tpmclient_tpmclient_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device)
 test_tpmclient_tpmclient_SOURCES  = $(TPMCLIENT_CXX) $(COMMON_C) $(SAMPLE_C)
 
-test_tpmtest_tpmtest_CFLAGS   = -DSAPI_CLIENT $(TPMTEST_INC) $(AM_CFLAGS)
-test_tpmtest_tpmtest_CXXFLAGS = -DSAPI_CLIENT $(TPMTEST_INC) $(AM_CXXFLAGS)
+test_tpmtest_tpmtest_CFLAGS   = $(TPMTEST_INC) $(AM_CFLAGS)
+test_tpmtest_tpmtest_CXXFLAGS = $(TPMTEST_INC) $(AM_CXXFLAGS)
 test_tpmtest_tpmtest_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device)
 test_tpmtest_tpmtest_SOURCES  = $(TPMTEST_CXX) $(COMMON_C) $(SAMPLE_C)
 
