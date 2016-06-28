@@ -71,6 +71,8 @@
 #include <tcti/tcti_socket.h>
 #include "syscontext.h"
 #include "debug.h"
+#include "utils.h"
+//#include "cases.h"
 
 //
 // TPM indices and sizes
@@ -187,46 +189,6 @@ TPMI_SH_AUTH_SESSION StartPolicySession();
 
 TPMI_SH_AUTH_SESSION InitNvAuxPolicySession();
 
-//
-// Used by some high level sample routines to copy the results.
-//
-void copyData( UINT8 *to, UINT8 *from, UINT32 length )
-{
-//    memcpy( to, from, length );
-
-//+++++
-	if( to != 0 && from != 0 )
-		 memcpy( to, from, length );
-//+++++
-}
-
-TPM_RC CompareTPM2B( TPM2B *buffer1, TPM2B *buffer2 )
-{
-    if( buffer1->size != buffer2->size )
-        return TPM_RC_FAILURE;
-    for( int i = 0; i < buffer1->size; i++ )
-    {
-        if( buffer1->buffer[0] != buffer2->buffer[0] )
-            return TPM_RC_FAILURE;
-    }
-    return TPM_RC_SUCCESS;
-}
-
-void PrintSizedBuffer( TPM2B *sizedBuffer )
-{
-    int i;
-
-    for( i = 0; i < sizedBuffer->size; i++ )
-    {
-        DebugPrintf( NO_PREFIX, "%2.2x ", sizedBuffer->buffer[i] );
-
-        if( ( (i+1) % 16 ) == 0 )
-        {
-            DebugPrintf( NO_PREFIX, "\n" );
-        }
-    }
-    DebugPrintf( NO_PREFIX, "\n" );
-}
 //-------
 /*
 void ErrorHandler( UINT32 rval )

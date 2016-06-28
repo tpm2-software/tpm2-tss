@@ -27,7 +27,10 @@ echo "Generating file lists: ${VARS_FILE}"
 
   src_listvar "test/common/sample" "*.c" "SAMPLE_C"
   src_listvar "test/common/sample" "*.h" "SAMPLE_H"
+  src_listvar "test/common/utilities" "*.cpp" "UTILS_C"
+  src_listvar "test/common/utilities" "*.h" "UTILS_H"
   printf "SAMPLE_SRC = \$(SAMPLE_C) \$(SAMPLE_H)\n"
+  printf "UTILS_SRC = \$(UTILS_C) \$(UTILS_H)\n"
 ) > ${VARS_FILE}
 
 printf "Running libtoolize ...\n"

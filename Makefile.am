@@ -82,12 +82,12 @@ tcti_libtctisocket_la_SOURCES  =  $(TCTISOCKET_C) \
 test_tpmclient_tpmclient_CFLAGS   = -DSAPI_CLIENT $(TPMCLIENT_INC) $(AM_CFLAGS)
 test_tpmclient_tpmclient_CXXFLAGS = -DSAPI_CLIENT $(TPMCLIENT_INC) $(TCTICOMMON_INC) $(TCTIDEVICE_INC) $(AM_CXXFLAGS)
 test_tpmclient_tpmclient_LDADD    = $(libtss2) $(libtctisocket) $(libtctidevice)
-test_tpmclient_tpmclient_SOURCES  = $(TPMCLIENT_CXX) $(COMMON_C) $(SAMPLE_C)
+test_tpmclient_tpmclient_SOURCES  = $(TPMCLIENT_CXX) $(COMMON_C) $(SAMPLE_C) $(UTILS_C)
 
 test_tpmtest_tpmtest_CFLAGS   = -DSAPI_CLIENT $(TPMTEST_INC) $(AM_CFLAGS)
 test_tpmtest_tpmtest_CXXFLAGS = -DSAPI_CLIENT $(TPMTEST_INC) $(AM_CXXFLAGS)
 test_tpmtest_tpmtest_LDADD    = $(libtss2) $(libtctisocket) $(libtctidevice)
-test_tpmtest_tpmtest_SOURCES  = $(TPMTEST_CXX) $(COMMON_C) $(SAMPLE_C)
+test_tpmtest_tpmtest_SOURCES  = $(TPMTEST_CXX) $(COMMON_C) $(SAMPLE_C) $(UTILS_C)
 
 %.pc : %.pc.in
 	if [ ! -d $(dir $@) ]; then mkdir -p $(dir $@); fi
@@ -115,12 +115,12 @@ TCTISOCKET_CXX = tcti/tcti_socket.cpp
 
 TPMCLIENT_INC = -I$(srcdir)/include -I$(srcdir)/sysapi/include \
     -I$(srcdir)/test/tpmclient -I$(srcdir)/common \
-    -I$(srcdir)/test/common/sample -I$(srcdir)/resourcemgr
+    -I$(srcdir)/test/common/sample -I$(srcdir)/test/common/utilities -I$(srcdir)/resourcemgr
 TPMCLIENT_CXX = test/tpmclient/tpmclient.cpp
 
 TPMTEST_INC = -I$(srcdir)/include -I$(srcdir)/sysapi/include \
     -I$(srcdir)/test/tpmclient -I$(srcdir)/common \
-    -I$(srcdir)/test/common/sample -I$(srcdir)/resourcemgr
+    -I$(srcdir)/test/common/sample -I$(srcdir)/test/common/utilities -I$(srcdir)/resourcemgr
 TPMTEST_CXX = test/tpmtest/tpmtest.cpp
 
 libtss2 = sysapi/libtss2.la
