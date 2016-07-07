@@ -9092,7 +9092,7 @@ void InitTpmTest()
         DisableMenuItems(12,3);
         DisableMenuItems(19,3);
         DisableMenuItems(24,2);
-        DisableMenuItems(29,5);
+        DisableMenuItems(27,7);
     }
 }
 
