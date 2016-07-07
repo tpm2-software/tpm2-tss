@@ -1925,7 +1925,7 @@ void TPM2CreatePrimary()
 
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_ECB;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
     inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
     inPublic.t.publicArea.parameters.rsaDetail.keyBits = 1024;
     inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
@@ -2009,7 +2009,7 @@ void TPM2Create()
 
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_ECB;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
     inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
     inPublic.t.publicArea.parameters.rsaDetail.keyBits = 1024;
     inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
@@ -2154,7 +2154,7 @@ void TestCreate()
 
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_ECB;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
     inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
     inPublic.t.publicArea.parameters.rsaDetail.keyBits = 1024;
     inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
@@ -5899,7 +5899,7 @@ void TestRM()
 
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_ECB;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
     inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
     inPublic.t.publicArea.parameters.rsaDetail.keyBits = 1024;
     inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
@@ -5960,7 +5960,7 @@ void TestRM()
 
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_ECB;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
     inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
     inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
     inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
@@ -6171,7 +6171,7 @@ void TestRM()
 
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_ECB;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
     inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
     inPublic.t.publicArea.parameters.rsaDetail.keyBits = 1024;
     inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
@@ -6236,7 +6236,7 @@ void TestRM()
 
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_ECB;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
     inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
     inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
     inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
@@ -7061,7 +7061,7 @@ void verifySignatureExternalTest()
 
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_ECB;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
     inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
     inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
     inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
@@ -7265,7 +7265,7 @@ void verifySignatureCreatedTest()
 
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_ECB;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
     inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
     inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
     inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
