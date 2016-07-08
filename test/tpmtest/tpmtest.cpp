@@ -6842,7 +6842,7 @@ void asymmetricEncryptDecryptTest()
 
     TSS2_SYS_RSP_AUTHS sessionsDataOut;
     TPM2B_NAME name= { { sizeof( TPM2B_NAME ) - 2, } };
-    TPM2B_PRIVATE outPrivate;
+    TPM2B_PRIVATE outPrivate = { { sizeof( TPM2B_PRIVATE ) - 2, } };
     TPM2B_PUBLIC outPublic= { { 0, } };
     TPM2B_CREATION_DATA creationData= { { 0, } };
     TPM2B_DIGEST creationHash = { { sizeof( TPM2B_DIGEST ) - 2, } };
