@@ -24,7 +24,7 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include <tss2/tpm20.h>
+#include <sapi/tpm20.h>
 #include "sysapi_util.h"
 
 void Unmarshal_Simple_TPM2B_NoSizeCheck( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, TPM2B *outTPM2B, TSS2_RC *rval )

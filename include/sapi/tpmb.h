@@ -54,7 +54,7 @@ Any marks and brands contained herein are the property of their respective owner
 
 #ifndef TSS2_API_VERSION_1_1_1_1
 #error Version mismatch among TSS2 header files. \
-       Do not include this file, #include <tss2/tpm20.h> instead.
+       Do not include this file, #include <sapi/tpm20.h> instead.
 #endif  /* TSS2_API_VERSION_1_1_1_1 */
 
 typedef struct {

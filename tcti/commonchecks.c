@@ -29,7 +29,7 @@
 #include <stdlib.h>   // Needed for _wtoi
 
 #include <tcti/common.h>
-#include <tss2/tpm20.h>
+#include <sapi/tpm20.h>
 #include "sysapi_util.h"
 #include "debug.h"
 

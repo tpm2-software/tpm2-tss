@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
 
-#include <tss2/tpm20.h>
+#include <sapi/tpm20.h>
 //#include "resourcemgr.h"
 //#include <sample.h>
 #include "sysapi_util.h"

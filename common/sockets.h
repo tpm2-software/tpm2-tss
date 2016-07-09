@@ -2,7 +2,7 @@
 extern "C" {
 #endif
 
-#include <tss2/tpm20.h>
+#include <sapi/tpm20.h>
 
 #ifndef _WIN32
 #include <sys/socket.h>

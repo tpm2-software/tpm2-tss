@@ -3,7 +3,7 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include <tss2/tpm20.h>
+#include <sapi/tpm20.h>
 #include "tcti_device_test.h"
 #include "sysapi/include/tcti_util.h"
 

@@ -29,7 +29,7 @@
 #define RESOURCEMGR_H
 
 //#include "tpmclient.h"
-#include <tss2/tss2_tcti.h>
+#include <sapi/tss2_tcti.h>
 #include "sysapi_util.h"
 #include <stdlib.h>
 

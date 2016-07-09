@@ -28,7 +28,7 @@
 #ifndef SYS_CONTEXT_H
 #define SYS_CONTEXT_H
 
-#include <tss2/tpm20.h>
+#include <sapi/tpm20.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "sysapi_util.h"

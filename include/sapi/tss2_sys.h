@@ -30,14 +30,14 @@
 
 #ifndef TSS2_API_VERSION_1_1_1_1
 #error Version mismatch among TSS2 header files. \
-       Do not include this file, #include <tss2/tpm20.h> instead.
+       Do not include this file, #include <sapi/tpm20.h> instead.
 #endif  /* TSS2_API_VERSION_1_1_1_1 */
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <tss2/tss2_tcti.h>
+#include <sapi/tss2_tcti.h>
 
 // Fields for ABI negotiation.
 #define TSSWG_INTEROP 1

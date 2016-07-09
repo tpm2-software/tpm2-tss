@@ -1,7 +1,7 @@
-Name: tcti_socket
+Name: tcti-socket
 Description: TCTI library for communicating with a TPM over a socket.
 URL: https://github.com/01org/TPM2.0-TSS
 Version: @VERSION@
-Requires: tss2
+Requires: sapi
 Cflags: -I@includedir@/tcti
-Libs: -ltctisocket
+Libs: -ltcti-socket

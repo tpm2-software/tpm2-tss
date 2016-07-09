@@ -28,7 +28,7 @@
 #ifndef TCTI_COMMON_H
 #define TCTI_COMMON_H
 
-#include <tss2/tpm20.h>
+#include <sapi/tpm20.h>
 
 typedef enum { NO_PREFIX = 0, RM_PREFIX = 1 } printf_type;
 typedef int (*TCTI_LOG_CALLBACK)( void *data, printf_type type, const char *format, ...);

@@ -32,7 +32,7 @@
 extern "C" {
 #endif
 
-#include <tss2/tpm20.h>
+#include <sapi/tpm20.h>
 #include <tcti/common.h>
 
 #define DEFAULT_SIMULATOR_TPM_PORT        2321

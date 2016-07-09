@@ -9,9 +9,9 @@ their license text in full here.
 
 The following files are provided under license from the Trusted Computing
 Group:
-include/tss2/implementation.h
-include/tss2/tpmb.h
-include/tss2/basetypes.h
+include/sapi/implementation.h
+include/sapi/tpmb.h
+include/sapi/basetypes.h
 
 The text of Trusted Computing Group license is as follows:
 /* Licenses and Notices

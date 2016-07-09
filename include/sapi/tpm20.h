@@ -38,12 +38,12 @@
 #include    <stdlib.h> 
 #include    <string.h> 
 
-#include    <tss2/tss2_common.h>
-#include    <tss2/tpmb.h>
-#include    <tss2/implementation.h>
-#include    <tss2/tss2_tpm2_types.h>
+#include    <sapi/tss2_common.h>
+#include    <sapi/tpmb.h>
+#include    <sapi/implementation.h>
+#include    <sapi/tss2_tpm2_types.h>
 
-#include    <tss2/tss2_tcti.h>
-#include    <tss2/tss2_sys.h>
+#include    <sapi/tss2_tcti.h>
+#include    <sapi/tss2_sys.h>
 
 #endif

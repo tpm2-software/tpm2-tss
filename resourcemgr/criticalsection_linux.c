@@ -26,7 +26,7 @@
 //**********************************************************************;
 
 #include <stdio.h>
-#include <tss2/tpm20.h>
+#include <sapi/tpm20.h>
 
 #include "criticalsection.h"
 #include "debug.h"

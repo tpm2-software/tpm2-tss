@@ -54,7 +54,7 @@
 #include <stdlib.h>   // Needed for _wtoi
 #include <string.h>
 
-#include <tss2/tpm20.h>
+#include <sapi/tpm20.h>
 #include "sysapi_util.h"
 #include "sample.h"
 #include "resourcemgr.h"

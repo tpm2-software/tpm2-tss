@@ -60,7 +60,7 @@
 #include <string.h>
 #include <unistd.h>   // Needed for isatty
 
-#include <tss2/tpm20.h>
+#include <sapi/tpm20.h>
 //#include "simulator.h"
 #include "sample.h"
 //#include "simdriver.h"

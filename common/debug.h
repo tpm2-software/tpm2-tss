@@ -28,7 +28,7 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#include <tss2/tpm20.h>
+#include <sapi/tpm20.h>
 #include <tcti/tcti_socket.h>
 #include <stdio.h>
 #include "sockets.h"

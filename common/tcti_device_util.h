@@ -1,4 +1,4 @@
-#include <tss2/tpm20.h>
+#include <sapi/tpm20.h>
 #include <tcti/tcti_device.h>
 
 #ifdef __cplusplus

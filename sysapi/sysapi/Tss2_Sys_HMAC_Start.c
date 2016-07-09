@@ -25,7 +25,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  ***********************************************************************/
 
-#include <tss2/tpm20.h>
+#include <sapi/tpm20.h>
 #include "sysapi_util.h"
 
 TPM_RC Tss2_Sys_HMAC_Start_Prepare(
