@@ -1,5 +1,11 @@
 Unreleased
+Added
+* added pkg-config files for libraries
 Changed
+* rename libtss2 to libsapi
+* rename libtcti_device to libtcti-device
+* rename libtcti_socket to libtcti-socket
+* move $(includedir)/tss to $(includedir)/sapi
 * Move default compiler flags to config.site file.
 
 2015-07-28 Will Arthur <will.c.arthur@intel.com>
