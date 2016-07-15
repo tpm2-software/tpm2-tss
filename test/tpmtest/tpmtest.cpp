@@ -2569,7 +2569,7 @@ TPM_RC CreateDataBlob( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TP
     inPublic.t.publicArea.authPolicy.t.size = 0;
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CBC;
+    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
     inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
     inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
     inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
