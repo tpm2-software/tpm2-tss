@@ -30,13 +30,6 @@
 #include <stdlib.h>
 #include "sysapi_util.h"
 
-#ifdef SAPI_CLIENT
-TSS2_RC level = TSS2_ERROR_LEVEL( TSS2_APP_ERROR_LEVEL );
-#else
-extern void *(*rmMalloc)(size_t size);
-TSS2_RC level = TSS2_ERROR_LEVEL( TSS2_RESMGR_ERROR_LEVEL );
-#endif    
-
 // Get the TPM 2.0 commands supported by the TPM.
 TSS2_RC GetCommands( TSS2_SYS_CONTEXT *resMgrSysContext, TPML_CCA **supportedCommands )
 {
@@ -46,13 +39,7 @@ TSS2_RC GetCommands( TSS2_SYS_CONTEXT *resMgrSysContext, TPML_CCA **supportedCom
     TPMA_CC *commandPtr;
     TSS2_RC rval = TSS2_RC_SUCCESS;
     UINT32 i;
-    
-#ifdef SAPI_CLIENT
-    void *(*gcMalloc)(size_t size) = malloc;
-#else    
-    void *(*gcMalloc)(size_t size) = rmMalloc;
-#endif
-    
+
     // First get the number of commands
     rval = Tss2_Sys_GetCapability( resMgrSysContext, 0,
             TPM_CAP_TPM_PROPERTIES, TPM_PT_TOTAL_COMMANDS,
@@ -70,10 +57,10 @@ TSS2_RC GetCommands( TSS2_SYS_CONTEXT *resMgrSysContext, TPML_CCA **supportedCom
     }
 
     // Allocate memory for them
-    *supportedCommands = (TPML_CCA *)gcMalloc( numCommands * sizeof( TPMA_CC ) + sizeof( UINT32 ) );
+    *supportedCommands = (TPML_CCA *)malloc( numCommands * sizeof( TPMA_CC ) + sizeof( UINT32 ) );
     if( !*supportedCommands )
     {
-        rval = TSS2_BASE_RC_INSUFFICIENT_BUFFER + level;
+        rval = TSS2_BASE_RC_INSUFFICIENT_BUFFER + TSS2_RESMGR_ERROR_LEVEL;
         goto returnFromGetCommands;
     }
 
@@ -102,7 +89,7 @@ TSS2_RC GetCommands( TSS2_SYS_CONTEXT *resMgrSysContext, TPML_CCA **supportedCom
             break;
         }
     }
-    
+
 returnFromGetCommands:
     return rval;
 }
@@ -120,7 +107,7 @@ UINT8 GetCommandAttributes( TPM_CC commandCode, TPML_CCA *supportedCommands, TPM
 {
     UINT32 i;
     UINT8 rval = 0;
-    
+
     for( i = 0; i < supportedCommands->count; i++ )
     {
         if( (TPM_CC)( supportedCommands->commandAttributes[i].commandIndex ) == commandCode )
