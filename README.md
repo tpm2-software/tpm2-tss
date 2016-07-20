@@ -13,15 +13,15 @@ The test application, tpmclient, tests many of the commands against the TPM 2.0 
 
 ## Build and Installation Instructions:
 
-* [Build and test the TPM 2.0 simulator](simulator.md)
+* [Build and test the TPM 2.0 simulator](doc/simulator.md)
 * Build and install TPM2.0-TSS for Linux: see [INSTALL](INSTALL)
-* [Build TPM2.0-TSS for Windows](buildwindows.md)
+* [Build TPM2.0-TSS for Windows](doc/buildwindows.md)
 
-## [Run Instructions](run.md)
+## [Run Instructions](doc/run.md)
 
-## [Architecture/Block Diagram](arch.md)
+## [Architecture/Block Diagram](doc/arch.md)
 
-## [Code Layout](layout.md)
+## [Code Layout](doc/layout.md)
 
 ## Resources
 TPM 2.0 specifications can be found at [Trusted Computing Group](http://www.trustedcomputinggroup.org/).
