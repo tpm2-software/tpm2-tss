@@ -45,15 +45,15 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
     TPM_RC rval;
     int i, j;
     UINT16 bytes = bits / 8;
-    
+
 #ifdef DEBUG
     DebugPrintf( 0, "KDFA, hashAlg = %4.4x\n", hashAlg );
     DebugPrintf( 0, "\n\nKDFA, key = \n" );
     PrintSizedBuffer( key );
 #endif
-    
+
     resultKey->t .size = 0;
-    
+
     tpm2b_i_2.t.size = 4;
 
     tpm2bBits.t.size = 4;
@@ -67,7 +67,7 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
     {
         tpm2bLabel.t.buffer[i] = label[i];
     }
-    
+
 #ifdef DEBUG
     DebugPrintf( 0, "\n\nKDFA, tpm2bLabel = \n" );
     PrintSizedBuffer( (TPM2B *)&tpm2bLabel );
@@ -78,7 +78,7 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
     DebugPrintf( 0, "\n\nKDFA, contextV = \n" );
     PrintSizedBuffer( contextV );
 #endif
-    
+
     resultKey->t.size = 0;
 
     i = 1;
@@ -120,6 +120,6 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
     DebugPrintf( 0, "\n\nKDFA, resultKey = \n" );
     PrintSizedBuffer( &( resultKey->b ) );
 #endif
-    
+
     return TPM_RC_SUCCESS;
 }

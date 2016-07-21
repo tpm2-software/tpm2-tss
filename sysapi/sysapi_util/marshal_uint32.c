@@ -48,4 +48,3 @@ void Marshal_UINT32( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **nextData, 
         }
     }
 }
-    

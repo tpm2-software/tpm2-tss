@@ -41,12 +41,12 @@ TPM_RC Tss2_Sys_PCR_Read_Prepare(
     if( pcrSelectionIn == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     CommonPreparePrologue( sysContext, TPM_CC_PCR_Read );
 
-    
-            
+
+
     Marshal_TPML_PCR_SELECTION( sysContext, pcrSelectionIn );
 
     SYS_CONTEXT->decryptAllowed = 0;
@@ -96,10 +96,10 @@ TPM_RC Tss2_Sys_PCR_Read(
     if( pcrSelectionIn == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     rval = Tss2_Sys_PCR_Read_Prepare( sysContext, pcrSelectionIn );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -109,7 +109,7 @@ TPM_RC Tss2_Sys_PCR_Read(
             rval = Tss2_Sys_PCR_Read_Complete( sysContext, pcrUpdateCounter, pcrSelectionOut, pcrValues );
         }
     }
-    
+
     return rval;
 }
 

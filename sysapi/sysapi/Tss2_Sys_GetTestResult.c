@@ -37,12 +37,12 @@ TPM_RC Tss2_Sys_GetTestResult_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_GetTestResult );
 
-    
-            
+
+
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 1;
     SYS_CONTEXT->authAllowed = 1;
@@ -82,10 +82,10 @@ TPM_RC Tss2_Sys_GetTestResult(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_GetTestResult_Prepare( sysContext );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -95,7 +95,7 @@ TPM_RC Tss2_Sys_GetTestResult(
             rval = Tss2_Sys_GetTestResult_Complete( sysContext, outData, testResult );
         }
     }
-    
+
     return rval;
 }
 

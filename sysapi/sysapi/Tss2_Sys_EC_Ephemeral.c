@@ -38,12 +38,12 @@ TPM_RC Tss2_Sys_EC_Ephemeral_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_EC_Ephemeral );
 
-    
-            
+
+
     Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), curveID, &(SYS_CONTEXT->rval) );
 
     SYS_CONTEXT->decryptAllowed = 0;
@@ -86,10 +86,10 @@ TPM_RC Tss2_Sys_EC_Ephemeral(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_EC_Ephemeral_Prepare( sysContext, curveID );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -99,7 +99,7 @@ TPM_RC Tss2_Sys_EC_Ephemeral(
             rval = Tss2_Sys_EC_Ephemeral_Complete( sysContext, Q, counter );
         }
     }
-    
+
     return rval;
 }
 

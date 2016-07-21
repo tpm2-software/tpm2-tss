@@ -40,7 +40,7 @@ TPM_RC Tss2_Sys_SequenceComplete_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_SequenceComplete );
 
@@ -50,7 +50,7 @@ TPM_RC Tss2_Sys_SequenceComplete_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( buffer->b ) );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), hierarchy, &(SYS_CONTEXT->rval) );
@@ -97,10 +97,10 @@ TPM_RC Tss2_Sys_SequenceComplete(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_SequenceComplete_Prepare( sysContext, sequenceHandle, buffer, hierarchy );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -110,7 +110,7 @@ TPM_RC Tss2_Sys_SequenceComplete(
             rval = Tss2_Sys_SequenceComplete_Complete( sysContext, result, validation );
         }
     }
-    
+
     return rval;
 }
 

@@ -46,7 +46,7 @@ TPM_RC Tss2_Sys_PolicyTicket_Prepare(
     if( ticket == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     CommonPreparePrologue( sysContext, TPM_CC_PolicyTicket );
 
@@ -56,7 +56,7 @@ TPM_RC Tss2_Sys_PolicyTicket_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( timeout->b ) );
 
     MARSHAL_SIMPLE_TPM2B( sysContext, &( cpHashA->b ) );
@@ -94,15 +94,15 @@ TPM_RC Tss2_Sys_PolicyTicket(
     if( ticket == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     rval = Tss2_Sys_PolicyTicket_Prepare( sysContext, policySession, timeout, cpHashA, policyRef, authName, ticket );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
     }
-    
+
     return rval;
 }
 

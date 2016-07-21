@@ -47,7 +47,7 @@ TPM_RC Tss2_Sys_NV_Certify_Prepare(
     if( inScheme == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     CommonPreparePrologue( sysContext, TPM_CC_NV_Certify );
 
@@ -61,7 +61,7 @@ TPM_RC Tss2_Sys_NV_Certify_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( qualifyingData->b ) );
 
     Marshal_TPMT_SIG_SCHEME( sysContext, inScheme );
@@ -119,10 +119,10 @@ TPM_RC Tss2_Sys_NV_Certify(
     if( inScheme == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     rval = Tss2_Sys_NV_Certify_Prepare( sysContext, signHandle, authHandle, nvIndex, qualifyingData, inScheme, size, offset );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -132,7 +132,7 @@ TPM_RC Tss2_Sys_NV_Certify(
             rval = Tss2_Sys_NV_Certify_Complete( sysContext, certifyInfo, signature );
         }
     }
-    
+
     return rval;
 }
 

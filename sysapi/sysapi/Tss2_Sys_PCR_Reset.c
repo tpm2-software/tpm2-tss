@@ -38,14 +38,14 @@ TPM_RC Tss2_Sys_PCR_Reset_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_PCR_Reset );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), pcrHandle, &(SYS_CONTEXT->rval) );
 
-    
-            
+
+
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 0;
     SYS_CONTEXT->authAllowed = 1;
@@ -65,15 +65,15 @@ TPM_RC Tss2_Sys_PCR_Reset(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_PCR_Reset_Prepare( sysContext, pcrHandle );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
     }
-    
+
     return rval;
 }
 

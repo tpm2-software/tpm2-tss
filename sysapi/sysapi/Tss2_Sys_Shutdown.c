@@ -38,12 +38,12 @@ TPM_RC Tss2_Sys_Shutdown_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_Shutdown );
 
-    
-            
+
+
     Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), shutdownType, &(SYS_CONTEXT->rval) );
 
     SYS_CONTEXT->decryptAllowed = 0;
@@ -65,15 +65,15 @@ TPM_RC Tss2_Sys_Shutdown(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_Shutdown_Prepare( sysContext, shutdownType );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
     }
-    
+
     return rval;
 }
 

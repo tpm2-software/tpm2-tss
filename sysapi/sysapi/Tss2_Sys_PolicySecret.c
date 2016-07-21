@@ -43,7 +43,7 @@ TPM_RC Tss2_Sys_PolicySecret_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_PolicySecret );
 
@@ -55,7 +55,7 @@ TPM_RC Tss2_Sys_PolicySecret_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( nonceTPM->b ) );
 
     MARSHAL_SIMPLE_TPM2B( sysContext, &( cpHashA->b ) );
@@ -109,10 +109,10 @@ TPM_RC Tss2_Sys_PolicySecret(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_PolicySecret_Prepare( sysContext, authHandle, policySession, nonceTPM, cpHashA, policyRef, expiration );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -122,7 +122,7 @@ TPM_RC Tss2_Sys_PolicySecret(
             rval = Tss2_Sys_PolicySecret_Complete( sysContext, timeout, policyTicket );
         }
     }
-    
+
     return rval;
 }
 

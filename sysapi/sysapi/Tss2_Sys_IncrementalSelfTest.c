@@ -41,12 +41,12 @@ TPM_RC Tss2_Sys_IncrementalSelfTest_Prepare(
     if( toTest == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     CommonPreparePrologue( sysContext, TPM_CC_IncrementalSelfTest );
 
-    
-            
+
+
     Marshal_TPML_ALG( sysContext, toTest );
 
     SYS_CONTEXT->decryptAllowed = 0;
@@ -88,10 +88,10 @@ TPM_RC Tss2_Sys_IncrementalSelfTest(
     if( toTest == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     rval = Tss2_Sys_IncrementalSelfTest_Prepare( sysContext, toTest );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -101,7 +101,7 @@ TPM_RC Tss2_Sys_IncrementalSelfTest(
             rval = Tss2_Sys_IncrementalSelfTest_Complete( sysContext, toDoList );
         }
     }
-    
+
     return rval;
 }
 

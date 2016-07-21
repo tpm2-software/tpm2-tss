@@ -44,7 +44,7 @@ TPM_RC Tss2_Sys_FieldUpgradeStart_Prepare(
     if( manifestSignature == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     CommonPreparePrologue( sysContext, TPM_CC_FieldUpgradeStart );
 
@@ -56,7 +56,7 @@ TPM_RC Tss2_Sys_FieldUpgradeStart_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( fuDigest->b ) );
 
     Marshal_TPMT_SIGNATURE( sysContext, manifestSignature );
@@ -86,15 +86,15 @@ TPM_RC Tss2_Sys_FieldUpgradeStart(
     if( manifestSignature == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     rval = Tss2_Sys_FieldUpgradeStart_Prepare( sysContext, authorization, keyHandle, fuDigest, manifestSignature );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
     }
-    
+
     return rval;
 }
 

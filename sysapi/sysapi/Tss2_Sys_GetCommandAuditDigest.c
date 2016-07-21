@@ -44,7 +44,7 @@ TPM_RC Tss2_Sys_GetCommandAuditDigest_Prepare(
     if( inScheme == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     CommonPreparePrologue( sysContext, TPM_CC_GetCommandAuditDigest );
 
@@ -56,7 +56,7 @@ TPM_RC Tss2_Sys_GetCommandAuditDigest_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( qualifyingData->b ) );
 
     Marshal_TPMT_SIG_SCHEME( sysContext, inScheme );
@@ -107,10 +107,10 @@ TPM_RC Tss2_Sys_GetCommandAuditDigest(
     if( inScheme == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     rval = Tss2_Sys_GetCommandAuditDigest_Prepare( sysContext, privacyHandle, signHandle, qualifyingData, inScheme );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -120,7 +120,7 @@ TPM_RC Tss2_Sys_GetCommandAuditDigest(
             rval = Tss2_Sys_GetCommandAuditDigest_Complete( sysContext, auditInfo, signature );
         }
     }
-    
+
     return rval;
 }
 

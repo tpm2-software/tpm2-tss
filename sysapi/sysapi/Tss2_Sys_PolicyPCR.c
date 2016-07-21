@@ -43,7 +43,7 @@ TPM_RC Tss2_Sys_PolicyPCR_Prepare(
     if( pcrs == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     CommonPreparePrologue( sysContext, TPM_CC_PolicyPCR );
 
@@ -53,7 +53,7 @@ TPM_RC Tss2_Sys_PolicyPCR_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( pcrDigest->b ) );
 
     Marshal_TPML_PCR_SELECTION( sysContext, pcrs );
@@ -82,15 +82,15 @@ TPM_RC Tss2_Sys_PolicyPCR(
     if( pcrs == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     rval = Tss2_Sys_PolicyPCR_Prepare( sysContext, policySession, pcrDigest, pcrs );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
     }
-    
+
     return rval;
 }
 

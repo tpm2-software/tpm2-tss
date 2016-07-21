@@ -41,7 +41,7 @@ TPM_RC Tss2_Sys_NV_Read_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_NV_Read );
 
@@ -49,8 +49,8 @@ TPM_RC Tss2_Sys_NV_Read_Prepare(
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), nvIndex, &(SYS_CONTEXT->rval) );
 
-    
-            
+
+
     Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), size, &(SYS_CONTEXT->rval) );
 
     Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), offset, &(SYS_CONTEXT->rval) );
@@ -94,10 +94,10 @@ TPM_RC Tss2_Sys_NV_Read(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_NV_Read_Prepare( sysContext, authHandle, nvIndex, size, offset );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -107,7 +107,7 @@ TPM_RC Tss2_Sys_NV_Read(
             rval = Tss2_Sys_NV_Read_Complete( sysContext, data );
         }
     }
-    
+
     return rval;
 }
 

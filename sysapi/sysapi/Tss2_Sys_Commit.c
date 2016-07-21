@@ -41,7 +41,7 @@ TPM_RC Tss2_Sys_Commit_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_Commit );
 
@@ -51,7 +51,7 @@ TPM_RC Tss2_Sys_Commit_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     Marshal_TPM2B_ECC_POINT( sysContext, P1 );
 
     MARSHAL_SIMPLE_TPM2B( sysContext, &( s2->b ) );
@@ -109,10 +109,10 @@ TPM_RC Tss2_Sys_Commit(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_Commit_Prepare( sysContext, signHandle, P1, s2, y2 );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -122,7 +122,7 @@ TPM_RC Tss2_Sys_Commit(
             rval = Tss2_Sys_Commit_Complete( sysContext, K, L, E, counter );
         }
     }
-    
+
     return rval;
 }
 

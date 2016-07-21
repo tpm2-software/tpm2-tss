@@ -74,7 +74,7 @@ TSS2_RC CopySessionDataIn( void **otherData, TPMS_AUTH_COMMAND const *sessionDat
     TSS2_RC rval = TSS2_RC_SUCCESS;
     UINT8 *inBuffPtr = *otherData;
     TPMS_AUTH_COMMAND *sessionDataCopy = (TPMS_AUTH_COMMAND *)sessionData;
-    
+
 	if( sessionData == 0 )
 	{
 		rval = TSS2_SYS_RC_BAD_VALUE;
@@ -82,10 +82,10 @@ TSS2_RC CopySessionDataIn( void **otherData, TPMS_AUTH_COMMAND const *sessionDat
 	}
 
     // Size of session data
-    *sessionSizePtr += CHANGE_ENDIAN_DWORD(  
+    *sessionSizePtr += CHANGE_ENDIAN_DWORD(
             sizeof( TPMI_SH_AUTH_SESSION ) + sizeof( UINT16 ) +
             sessionData->nonce.t.size + sizeof( UINT8 ) +
-            sizeof( UINT16 ) + sessionData->hmac.t.size );  
+            sizeof( UINT16 ) + sessionData->hmac.t.size );
 
     // copy session handle
     SESSION_MARSHAL_UINT32( inBuffPtr, *sessionSizePtr, (UINT8 **)otherData, sessionDataCopy->sessionHandle, &rval, exitCopySessionDataIn );
@@ -117,23 +117,23 @@ exitCopySessionDataIn:
 //      sessionData points to returned session data.
 //
 //      otherData points to next byte after the sessions data in the output data stream.
-//          This allows subsequent calls to this function to get the next session data.		*nextData	CXX0017: Error: symbol "nextData" not found	
+//          This allows subsequent calls to this function to get the next session data.		*nextData	CXX0017: Error: symbol "nextData" not found
 
 //
 TSS2_RC CopySessionDataOut( TPMS_AUTH_RESPONSE *sessionData, void **otherData, UINT8* outBuffPtr, UINT32 outBuffSize )
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
     TPMS_AUTH_RESPONSE *sessionDataCopy = (TPMS_AUTH_RESPONSE *)sessionData;
-    
+
     if( sessionData == 0 )
         return rval;
 
     outBuffSize -= ((UINT8 *)*otherData - outBuffPtr + 1 );
     outBuffPtr = *otherData;
-    
+
     // Copy nonceTpm
     SESSION_UNMARSHAL_SIMPLE_TPM2B( outBuffPtr, outBuffSize, (UINT8 **)otherData, &(sessionDataCopy->nonce.b), &rval, exitCopySessionDataOut );
-    
+
     // Copy sessionAttributes
     SESSION_UNMARSHAL_UINT8( outBuffPtr, outBuffSize, (UINT8 **)otherData, (UINT8 *)&( sessionDataCopy->sessionAttributes ), &rval, exitCopySessionDataOut );
 
@@ -174,7 +174,7 @@ TSS2_RC CopySessionsDataIn( void **otherData, TSS2_SYS_CMD_AUTHS const *sessions
 }
 
 TSS2_RC CopySessionsDataOut(
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray, 
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray,
     void *otherData,
     TPM_ST tag,
     UINT8* outBuffPtr,

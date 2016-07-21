@@ -39,14 +39,14 @@ TPM_RC Tss2_Sys_PolicyNameHash_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_PolicyNameHash );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), policySession, &(SYS_CONTEXT->rval) );
 
-    
-            
+
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( nameHash->b ) );
 
     SYS_CONTEXT->decryptAllowed = 1;
@@ -69,15 +69,15 @@ TPM_RC Tss2_Sys_PolicyNameHash(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_PolicyNameHash_Prepare( sysContext, policySession, nameHash );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
     }
-    
+
     return rval;
 }
 

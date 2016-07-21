@@ -65,7 +65,7 @@ TSS2_RC LocalTpmSendTpmCommand(
     UINT32 cnt;
 #endif
     printf_type rmPrefix;
-    
+
     rval = CommonSendChecks( tctiContext, command_buffer );
 
     if( rval == TSS2_RC_SUCCESS )
@@ -95,7 +95,7 @@ TSS2_RC LocalTpmSendTpmCommand(
             rval = TSS2_TCTI_RC_IO_ERROR;
         }
         else if( (size_t)size != command_size )
-        {        
+        {
             rval = TSS2_TCTI_RC_IO_ERROR;
         }
 
@@ -108,7 +108,7 @@ TSS2_RC LocalTpmSendTpmCommand(
 
         }
     }
-    
+
     return rval;
 }
 
@@ -123,12 +123,12 @@ TSS2_RC LocalTpmReceiveTpmResponse(
     ssize_t  size;
     unsigned int i;
     printf_type rmPrefix;
-    
+
     rval = CommonReceiveChecks( tctiContext, response_size, response_buffer );
     if( rval != TSS2_RC_SUCCESS )
     {
         goto retLocalTpmReceive;
-    }        
+    }
 
     if( ( ( TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.rmDebugPrefix == 1 )
         rmPrefix = RM_PREFIX;
@@ -153,7 +153,7 @@ TSS2_RC LocalTpmReceiveTpmResponse(
 
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = size;
     }
-    
+
     if( response_buffer == NULL )
     {
         // In this case, just return the size
@@ -163,10 +163,10 @@ TSS2_RC LocalTpmReceiveTpmResponse(
 
     if( *response_size < ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize )
     {
-        rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER; 
+        rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
         *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
         goto retLocalTpmReceive;
-    }        
+    }
 
     *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
 
@@ -186,15 +186,15 @@ TSS2_RC LocalTpmReceiveTpmResponse(
 #endif
 
     ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent = 0;
-    
+
 retLocalTpmReceive:
 
-    if( rval == TSS2_RC_SUCCESS && 
+    if( rval == TSS2_RC_SUCCESS &&
 		response_buffer != NULL )
     {
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage = TCTI_STAGE_RECEIVE_RESPONSE;
     }
-    
+
     return rval;
 }
 
@@ -227,7 +227,7 @@ TSS2_RC LocalTpmSetLocality(
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
     // TBD:  how do I do this?
-    
+
     return rval;
 }
 
@@ -268,7 +268,7 @@ TSS2_RC InitDeviceTcti (
         TCTI_LOG_DATA( tctiContext ) = config->logData;
 
         ( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile ) = open( config->device_path, O_RDWR );
-        if( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile < 0 ) 
+        if( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->devFile < 0 )
         {
             return( TSS2_TCTI_RC_IO_ERROR );
         }

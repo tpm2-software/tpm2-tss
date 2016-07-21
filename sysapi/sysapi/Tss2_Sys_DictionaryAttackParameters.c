@@ -41,14 +41,14 @@ TPM_RC Tss2_Sys_DictionaryAttackParameters_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_DictionaryAttackParameters );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), lockHandle, &(SYS_CONTEXT->rval) );
 
-    
-            
+
+
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), newMaxTries, &(SYS_CONTEXT->rval) );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), newRecoveryTime, &(SYS_CONTEXT->rval) );
@@ -77,15 +77,15 @@ TPM_RC Tss2_Sys_DictionaryAttackParameters(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_DictionaryAttackParameters_Prepare( sysContext, lockHandle, newMaxTries, newRecoveryTime, lockoutRecovery );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
     }
-    
+
     return rval;
 }
 

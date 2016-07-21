@@ -122,7 +122,7 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
     if( rval != TPM_RC_SUCCESS )
         return rval;
 
-    hashInputPtr = &( hashInput.t.buffer[hashInput.b.size] );    
+    hashInputPtr = &( hashInput.t.buffer[hashInput.b.size] );
     *(UINT32 *)hashInputPtr = CHANGE_ENDIAN_DWORD( *(UINT32 *)cmdCodePtr );
     hashInput.t.size += 4;
 

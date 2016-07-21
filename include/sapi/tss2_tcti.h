@@ -38,7 +38,7 @@
 // defined.
 //
 // The first field of a Context must be the common part
-// (see below). 
+// (see below).
 #ifndef TSS2_TCTI
 #define TSS2_TCTI
 

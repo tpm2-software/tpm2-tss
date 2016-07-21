@@ -39,7 +39,7 @@ UINT32 TpmHandleToName( TPM_HANDLE handle, TPM2B_NAME *name )
     TPM2B_NV_PUBLIC nvPublic;
     TSS2_SYS_CONTEXT *sysContext;
     UINT8 *namePtr = &( name->t.name[0] );
-    
+
     // Initialize name to zero length in case of failure.
     INIT_SIMPLE_TPM2B_SIZE( *name );
     INIT_SIMPLE_TPM2B_SIZE( qualifiedName );
@@ -61,7 +61,7 @@ UINT32 TpmHandleToName( TPM_HANDLE handle, TPM2B_NAME *name )
                 nvPublic.t.size = 0;
                 rval = Tss2_Sys_NV_ReadPublic( sysContext, handle, 0, &nvPublic, name, 0 );
                 TeardownSysContext( &sysContext );
-                break;  
+                break;
 
             case TPM_HT_TRANSIENT:
             case TPM_HT_PERSISTENT:
@@ -73,7 +73,7 @@ UINT32 TpmHandleToName( TPM_HANDLE handle, TPM2B_NAME *name )
 				rval = Tss2_Sys_ReadPublic( sysContext, handle, 0, &public, name, &qualifiedName, 0 );
                 TeardownSysContext( &sysContext );
                 break;
-                    
+
             default:
                 rval = TPM_RC_SUCCESS;
                 name->b.size = sizeof( TPM_HANDLE );

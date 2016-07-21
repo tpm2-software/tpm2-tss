@@ -48,5 +48,5 @@ TPM_RC CompareSizedByteBuffer( TPM2B *buffer1, TPM2B *buffer2 )
         }
     }
     return rval;
-}   
+}
 

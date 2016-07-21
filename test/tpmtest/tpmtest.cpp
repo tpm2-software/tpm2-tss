@@ -851,8 +851,8 @@ void TestStartAuthSession()
     SESSION *authSession;
     TPM2B_NONCE nonceCaller;
     UINT16 i;
-#ifdef DEBUG_GAP_HANDLING    
-    UINT16 debugGapMax = DEBUG_GAP_MAX, debugMaxActiveSessions = DEBUG_MAX_ACTIVE_SESSIONS;    
+#ifdef DEBUG_GAP_HANDLING
+    UINT16 debugGapMax = DEBUG_GAP_MAX, debugMaxActiveSessions = DEBUG_MAX_ACTIVE_SESSIONS;
     TPMS_CONTEXT    evictedSessionContext;
     TPM_HANDLE   evictedHandle;
 #endif
@@ -6609,7 +6609,7 @@ void symmetricEncryptDecryptTest()
     TPMS_AUTH_COMMAND sessionData;
     TPMS_AUTH_RESPONSE sessionDataOut;
     TSS2_SYS_CMD_AUTHS sessionsData;
-    
+
     TSS2_SYS_RSP_AUTHS sessionsDataOut;
     TPM2B_NAME name= { { sizeof( TPM2B_NAME ) - 2, } };
     TPM2B_PRIVATE outPrivate = { { sizeof(TPM2B_PRIVATE)-2, } };
@@ -6734,13 +6734,13 @@ void symmetricEncryptDecryptTest()
     inPublic.t.publicArea.parameters.symDetail.sym.algorithm = TPM_ALG_AES;
     inPublic.t.publicArea.parameters.symDetail.sym.keyBits.sym = 128;
     inPublic.t.publicArea.parameters.symDetail.sym.mode.sym = TPM_ALG_CFB;
- 
+
     inPublic.t.publicArea.unique.sym.t.size = 0;
 
     outsideInfo.t.size = 0;
     outPublic.t.size = 0;
     creationData.t.size = 0;
-    creationPCR.count = 0; 
+    creationPCR.count = 0;
     rval = Tss2_Sys_Create( sysContext, symHandle, &sessionsData, &inSensitive, &inPublic,
             &outsideInfo, &creationPCR,
             &outPrivate, &outPublic, &creationData,
@@ -6754,7 +6754,7 @@ void symmetricEncryptDecryptTest()
     printf( "\nLoaded key handle:  %8.8x\n", loadedSymKeyHandle );
 
     const char msg[] = "message";
-    
+
     TPMI_YES_NO decryptVal = NO;
     TPM2B_MAX_BUFFER inData = { { sizeof(TPM2B_MAX_BUFFER)-2, } };
     // Inputs
@@ -6772,12 +6772,12 @@ void symmetricEncryptDecryptTest()
     memcpy(inData.t.buffer, msg, inData.t.size);
 
     printf("\nENCRYPTDECRYPT TESTS: ENCRYPT\n");
-    
+
     sessionData.sessionHandle = TPM_RS_PW;
     // Init nonce.
     sessionData.nonce.t.size = 0;
     sessionData.hmac.t.size = 0;
-	
+
     rval = Tss2_Sys_EncryptDecrypt(sysContext, loadedSymKeyHandle, &sessionsData, decryptVal, mode, &ivIn, &inData, &outData, &ivOut, &sessionsDataOut);
     if(rval == TPM_RC_SUCCESS)
 	{
@@ -6954,7 +6954,7 @@ void asymmetricEncryptDecryptTest()
 
     printf( "Name of loading key: " );
     PrintSizedBuffer( (TPM2B *)&name );
-    
+
     printf( "\nLoaded key handle:  %8.8x\n", loadedSha1KeyHandle );
 
     char buffer1contents[] = "test";
@@ -6963,7 +6963,7 @@ void asymmetricEncryptDecryptTest()
     TPM2B_PUBLIC_KEY_RSA messageOut = { { sizeof(TPM2B_PUBLIC_KEY_RSA)-2, } };
     TPM2B_PUBLIC_KEY_RSA outData = { { sizeof(TPM2B_PUBLIC_KEY_RSA)-2, } };
     TPM2B_MAX_BUFFER inData1, inData2;
-    TPM2B_DIGEST outHash1 = { { sizeof( TPM2B_DIGEST ) - 2,} }; 
+    TPM2B_DIGEST outHash1 = { { sizeof( TPM2B_DIGEST ) - 2,} };
     TPM2B_DIGEST outHash2 = { { sizeof( TPM2B_DIGEST ) - 2,} };
     TPMT_TK_HASHCHECK validation;
     TPMI_ALG_HASH  halg = TPM_ALG_SHA256;
@@ -7040,7 +7040,7 @@ void verifySignatureExternalTest()
     TPMT_TK_VERIFIED validation;
     TPMT_TK_HASHCHECK hashCheck;
     TPMT_SIG_SCHEME inScheme;
-    
+
     inSensitive.t.sensitive.userAuth = loadedSha1KeyAuth;
     inSensitive.t.sensitive.data.t.size = 0;
     inSensitive.t.size = loadedSha1KeyAuth.b.size + 2;
@@ -7149,7 +7149,7 @@ void verifySignatureExternalTest()
     buffer = (BYTE*)malloc(length*sizeof(BYTE));
     memset(buffer, 0, length*sizeof(BYTE));
     memcpy (buffer, SignMsg, length);
-    
+
     if(length%(MAX_DIGEST_BUFFER) != 0)
         numBuffers = length/(MAX_DIGEST_BUFFER) + 1;
     else
@@ -7244,7 +7244,7 @@ void verifySignatureCreatedTest()
     TPMT_TK_VERIFIED validation;
     TPMT_TK_HASHCHECK hashCheck;
     TPMT_SIG_SCHEME inScheme;
-    
+
     inSensitive.t.sensitive.userAuth = loadedSha1KeyAuth;
     inSensitive.t.sensitive.data.t.size = 0;
     inSensitive.t.size = loadedSha1KeyAuth.b.size + 2;
@@ -7529,7 +7529,7 @@ void nvExtensionTest()
 
     rval = Tss2_Sys_NV_DefineSpace( sysContext, TPM_RH_OWNER, &sessionsData, &nvAuth, &publicInfo, &sessionsDataOut );
     CheckPassed( rval );
-  
+
     printf("TPM 2.0 Test 1 Index:%x", publicInfo.t.nvPublic.nvIndex);
 
     nvPublic.t.size = 0;
@@ -7551,12 +7551,12 @@ void nvExtensionTest()
     for( i = 0; i < nvWriteData.t.size; i++ )
         nvWriteData.t.buffer[i] = nvName1.t.name[i];
 
-    rval = Tss2_Sys_NV_Write( sysContext, TPM_RH_OWNER, TPM20_INDEX_PASSWORD_TEST, &sessionsData, &nvWriteData, 0, &sessionsDataOut ); 
+    rval = Tss2_Sys_NV_Write( sysContext, TPM_RH_OWNER, TPM20_INDEX_PASSWORD_TEST, &sessionsData, &nvWriteData, 0, &sessionsDataOut );
     if (rval == TPM_RC_SUCCESS)
         CheckPassed( rval );
     else
         CheckFailed(rval, TPM_RC_NV_AUTHORIZATION);
-    
+
     INIT_SIMPLE_TPM2B_SIZE( nvData);
     rval = Tss2_Sys_NV_Read( sysContext, TPM_RH_OWNER, TPM20_INDEX_PASSWORD_TEST, &sessionsData, 20, 0, &nvData, &sessionsDataOut );
     CheckPassed( rval );
@@ -7593,7 +7593,7 @@ void pcrExtendedTest()
     TPML_DIGEST pcrValues;
     TPML_DIGEST_VALUES digests;
     TPML_PCR_SELECTION pcrSelectionOut;
-    
+
     TPMS_AUTH_COMMAND *sessionDataArray[1];
 
     sessionDataArray[0] = &sessionData;
@@ -7856,7 +7856,7 @@ void TpmTest()
         nvExtensionTest();
         pcrExtendedTest();
         TestClockTime();
-	
+
     // clear out rm entries for objects.
     rval = Tss2_Sys_FlushContext( sysContext, handle2048rsa );
     CheckPassed( rval );
@@ -8489,7 +8489,7 @@ void PrintVerifySignatureExternalTest()
            "  Name of loading key: 00 04 60 df d7 7a f7 fd 2c c8 2d 61 04 52 4c cc 6a 2d dc 18 ca 98\n"
            "  tpm performing hash :   PASSED!\n"
            "  digest(hex type):fe be a2 ef 8c ba 2e d7 6a 6e d4 40 31 fb a5 b1 26 a2 35 63\n"
-           "  sign the message:   PASSED!\n"	
+           "  sign the message:   PASSED!\n"
            "  verify signature using loaded key:   PASSED!\n");
 }
 void PrintVerifySignatureCreatedTest()
@@ -8516,7 +8516,7 @@ void PrintNvExtensionTest()
            "   Name of loaded key: 00 04 aa 6f 4a 8b 97 3a f7 3f d7 b4 e4 a4 fa 56 6c 96 79 b9 5d c8\n"
            "   Loaded key handle:  80000009\n"
 	   "   Define NV space:   PASSED!\n"
-	   "   TPM 2.0 Test 1 Index:1500020\n"    
+	   "   TPM 2.0 Test 1 Index:1500020\n"
 	   "   Failed to read NV because uninitialized:   PASSED!\n"
            "   Failed to define space because it is already defined:   PASSED!\n"
            "   Write into NV:   PASSED!\n"
@@ -8534,7 +8534,7 @@ void PrintPcrExtendedTest()
            "  Name of PCR Values Before Extend: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n"
            "  Extend PCR values:   PASSED!\n"
            "  Read PCR Values:   PASSED!\n"
-           "  Name of PCR Values After Extended: f8 7c fc 25 e0 47 ab 7f a1 c1 d2 cc a2 c7 ff aa 70 6c d2 3a\n" 
+           "  Name of PCR Values After Extended: f8 7c fc 25 e0 47 ab 7f a1 c1 d2 cc a2 c7 ff aa 70 6c d2 3a\n"
            "  Failed to read the PCR value because no PCR selection:   PASSED!\n"
            "  PCR Event:   PASSED!\n"
            "  Name of PCR Event Digests: 2d dd 5b 98 e2 09 56 cd d5 88 1f a8 0f df 7c 2a a7 da 72 78\n");
@@ -8895,7 +8895,7 @@ MENUS_SETUP firstLevelMenus[] =
     { "37", "NV EXTENSION TEST", 0, nvExtensionTestMenus, },
     { "38", "PCR EXTENDED TEST", 0, pcrExtendedTestMenus, },
     { "39", "CLOCK/TIME TEST", 0, clockTimeTestMenus, },
-	
+
     { NULL, NULL, 0, },
 };
 

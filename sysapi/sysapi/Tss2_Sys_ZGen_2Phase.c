@@ -42,7 +42,7 @@ TPM_RC Tss2_Sys_ZGen_2Phase_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_ZGen_2Phase );
 
@@ -52,7 +52,7 @@ TPM_RC Tss2_Sys_ZGen_2Phase_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     Marshal_TPM2B_ECC_POINT( sysContext, inQsB );
 
     Marshal_TPM2B_ECC_POINT( sysContext, inQeB );
@@ -105,10 +105,10 @@ TPM_RC Tss2_Sys_ZGen_2Phase(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_ZGen_2Phase_Prepare( sysContext, keyA, inQsB, inQeB, inScheme, counter );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -118,7 +118,7 @@ TPM_RC Tss2_Sys_ZGen_2Phase(
             rval = Tss2_Sys_ZGen_2Phase_Complete( sysContext, outZ1, outZ2 );
         }
     }
-    
+
     return rval;
 }
 

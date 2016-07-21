@@ -45,7 +45,7 @@ TPM_RC Tss2_Sys_CreatePrimary_Prepare(
     if( creationPCR == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     CommonPreparePrologue( sysContext, TPM_CC_CreatePrimary );
 
@@ -55,7 +55,7 @@ TPM_RC Tss2_Sys_CreatePrimary_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     Marshal_TPM2B_SENSITIVE_CREATE( sysContext, inSensitive );
 
     Marshal_TPM2B_PUBLIC( sysContext, inPublic );
@@ -127,10 +127,10 @@ TPM_RC Tss2_Sys_CreatePrimary(
     if( creationPCR == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     rval = Tss2_Sys_CreatePrimary_Prepare( sysContext, primaryHandle, inSensitive, inPublic, outsideInfo, creationPCR );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -140,7 +140,7 @@ TPM_RC Tss2_Sys_CreatePrimary(
             rval = Tss2_Sys_CreatePrimary_Complete( sysContext, objectHandle, outPublic, creationData, creationHash, creationTicket, name );
         }
     }
-    
+
     return rval;
 }
 

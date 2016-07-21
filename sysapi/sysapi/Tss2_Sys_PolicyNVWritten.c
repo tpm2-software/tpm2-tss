@@ -39,14 +39,14 @@ TPM_RC Tss2_Sys_PolicyNvWritten_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_PolicyNvWritten );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), policySession, &(SYS_CONTEXT->rval) );
 
-    
-            
+
+
     Marshal_UINT8( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), writtenSet, &(SYS_CONTEXT->rval) );
 
     SYS_CONTEXT->decryptAllowed = 0;
@@ -69,15 +69,15 @@ TPM_RC Tss2_Sys_PolicyNvWritten(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_PolicyNvWritten_Prepare( sysContext, policySession, writtenSet );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
     }
-    
+
     return rval;
 }
 

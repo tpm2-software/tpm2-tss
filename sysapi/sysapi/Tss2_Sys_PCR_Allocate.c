@@ -42,14 +42,14 @@ TPM_RC Tss2_Sys_PCR_Allocate_Prepare(
     if( pcrAllocation == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     CommonPreparePrologue( sysContext, TPM_CC_PCR_Allocate );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), authHandle, &(SYS_CONTEXT->rval) );
 
-    
-            
+
+
     Marshal_TPML_PCR_SELECTION( sysContext, pcrAllocation );
 
     SYS_CONTEXT->decryptAllowed = 0;
@@ -104,10 +104,10 @@ TPM_RC Tss2_Sys_PCR_Allocate(
     if( pcrAllocation == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     rval = Tss2_Sys_PCR_Allocate_Prepare( sysContext, authHandle, pcrAllocation );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -117,7 +117,7 @@ TPM_RC Tss2_Sys_PCR_Allocate(
             rval = Tss2_Sys_PCR_Allocate_Complete( sysContext, allocationSuccess, maxPCR, sizeNeeded, sizeAvailable );
         }
     }
-    
+
     return rval;
 }
 

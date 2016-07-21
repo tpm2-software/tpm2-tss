@@ -34,7 +34,7 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
     )
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    
+
     if( sysContext == NULL || cmdAuthsArray == 0 )
     {
         rval = TSS2_SYS_RC_BAD_REFERENCE;
@@ -116,7 +116,7 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
                             otherData = SYS_CONTEXT->cpBuffer;
                             rval = CopySessionsDataIn( &otherData, cmdAuthsArray );
 
-                            // Update cpBuffer        
+                            // Update cpBuffer
                             SYS_CONTEXT->cpBuffer += authSize;
 
                             // Now update the command size.
@@ -153,7 +153,7 @@ TSS2_RC Tss2_Sys_GetRspAuths(
     else
     {
         int i = 0;
-    
+
         SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
 
         if( rspAuthsArray->rspAuthsCount == 0 )
@@ -172,7 +172,7 @@ TSS2_RC Tss2_Sys_GetRspAuths(
                 otherData = SYS_CONTEXT->tpmOutBuffPtr;
                 otherData = (UINT8 *)otherData + sizeof( TPM20_Header_Out ) - 1;
                 otherData = (UINT8 *)otherData + SYS_CONTEXT->numResponseHandles * sizeof( TPM_HANDLE );
-                otherData = (UINT8 *)otherData + CHANGE_ENDIAN_DWORD( *( SYS_CONTEXT->rspParamsSize ) ); 
+                otherData = (UINT8 *)otherData + CHANGE_ENDIAN_DWORD( *( SYS_CONTEXT->rspParamsSize ) );
                 otherData = (UINT8 *)otherData + sizeof( UINT32 );
 
                 otherDataSaved = otherData;

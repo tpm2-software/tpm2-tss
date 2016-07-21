@@ -38,12 +38,12 @@ TPM_RC Tss2_Sys_FirmwareRead_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_FirmwareRead );
 
-    
-            
+
+
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), sequenceNumber, &(SYS_CONTEXT->rval) );
 
     SYS_CONTEXT->decryptAllowed = 0;
@@ -82,10 +82,10 @@ TPM_RC Tss2_Sys_FirmwareRead(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_FirmwareRead_Prepare( sysContext, sequenceNumber );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -95,7 +95,7 @@ TPM_RC Tss2_Sys_FirmwareRead(
             rval = Tss2_Sys_FirmwareRead_Complete( sysContext, fuData );
         }
     }
-    
+
     return rval;
 }
 

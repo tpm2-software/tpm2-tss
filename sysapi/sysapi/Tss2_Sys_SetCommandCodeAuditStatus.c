@@ -44,14 +44,14 @@ TPM_RC Tss2_Sys_SetCommandCodeAuditStatus_Prepare(
     if( setList == NULL  || clearList == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     CommonPreparePrologue( sysContext, TPM_CC_SetCommandCodeAuditStatus );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), auth, &(SYS_CONTEXT->rval) );
 
-    
-            
+
+
     Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), auditAlg, &(SYS_CONTEXT->rval) );
 
     Marshal_TPML_CC( sysContext, setList );
@@ -83,15 +83,15 @@ TPM_RC Tss2_Sys_SetCommandCodeAuditStatus(
     if( setList == NULL  || clearList == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     rval = Tss2_Sys_SetCommandCodeAuditStatus_Prepare( sysContext, auth, auditAlg, setList, clearList );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
     }
-    
+
     return rval;
 }
 

@@ -35,7 +35,7 @@
 // defined.
 //
 // The first field of a Context must be the common part
-// (see below). 
+// (see below).
 #ifndef TSS2_TCTI_UTIL_H
 #define TSS2_TCTI_UTIL_H
 
@@ -66,7 +66,7 @@ typedef struct {
     TCTI_RECEIVE_PTR receive;
     TSS2_RC (*finalize) (TSS2_TCTI_CONTEXT *tctiContext);
     TSS2_RC (*cancel) (TSS2_TCTI_CONTEXT *tctiContext);
-    TSS2_RC (*getPollHandles) (TSS2_TCTI_CONTEXT *tctiContext, 
+    TSS2_RC (*getPollHandles) (TSS2_TCTI_CONTEXT *tctiContext,
               TSS2_TCTI_POLL_HANDLE *handles, size_t *num_handles);
     TSS2_RC (*setLocality) (TSS2_TCTI_CONTEXT *tctiContext, uint8_t locality);
     struct {
@@ -84,9 +84,9 @@ typedef struct {
     } status;
 
     // Following two fields used to save partial response in case receive buffer's too small.
-    TPM_ST tag;         
+    TPM_ST tag;
     TPM_RC responseSize;
-    
+
     TSS2_TCTI_CONTEXT *currentTctiContext;
 
     // Sockets if socket interface is being used.
@@ -95,7 +95,7 @@ typedef struct {
     SOCKET currentConnectSock;
 
     // File descriptor for device file if real TPM is being used.
-    int devFile;  
+    int devFile;
     UINT8 previousStage;            // Used to check for sequencing errors.
     unsigned char responseBuffer[4096];
     TCTI_LOG_CALLBACK logCallback;

@@ -42,14 +42,14 @@ TPM_RC Tss2_Sys_PCR_Extend_Prepare(
     if( digests == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     CommonPreparePrologue( sysContext, TPM_CC_PCR_Extend );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), pcrHandle, &(SYS_CONTEXT->rval) );
 
-    
-            
+
+
     Marshal_TPML_DIGEST_VALUES( sysContext, digests );
 
     SYS_CONTEXT->decryptAllowed = 0;
@@ -75,15 +75,15 @@ TPM_RC Tss2_Sys_PCR_Extend(
     if( digests == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     rval = Tss2_Sys_PCR_Extend_Prepare( sysContext, pcrHandle, digests );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
     }
-    
+
     return rval;
 }
 

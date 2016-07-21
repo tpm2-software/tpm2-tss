@@ -40,7 +40,7 @@ TPM_RC Tss2_Sys_NV_DefineSpace_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_NV_DefineSpace );
 
@@ -50,7 +50,7 @@ TPM_RC Tss2_Sys_NV_DefineSpace_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( auth->b ) );
 
     Marshal_TPM2B_NV_PUBLIC( sysContext, publicInfo );
@@ -76,15 +76,15 @@ TPM_RC Tss2_Sys_NV_DefineSpace(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_NV_DefineSpace_Prepare( sysContext, authHandle, auth, publicInfo );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
     }
-    
+
     return rval;
 }
 

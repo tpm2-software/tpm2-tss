@@ -34,7 +34,7 @@ TSS2_RC Tss2_Sys_GetTctiContext(
     )
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    
+
     if( sysContext == 0 || tctiContext == 0 )
     {
         rval = TSS2_SYS_RC_BAD_REFERENCE;

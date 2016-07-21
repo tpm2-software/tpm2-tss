@@ -46,7 +46,7 @@ void Unmarshal_TPMU_HA(
 	{
 #ifdef TPM_ALG_SHA
 	case TPM_ALG_SHA:
-		
+
 	for( i = 0; i < SHA_DIGEST_SIZE; i++ )
 	{
 		Unmarshal_UINT8( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &ha->sha[i], &( SYS_CONTEXT->rval ) );
@@ -55,7 +55,7 @@ void Unmarshal_TPMU_HA(
 #endif
 #ifdef TPM_ALG_SHA1
 	case TPM_ALG_SHA1:
-		
+
 	for( i = 0; i < SHA1_DIGEST_SIZE; i++ )
 	{
 		Unmarshal_UINT8( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &ha->sha1[i], &( SYS_CONTEXT->rval ) );
@@ -64,7 +64,7 @@ void Unmarshal_TPMU_HA(
 #endif
 #ifdef TPM_ALG_SHA256
 	case TPM_ALG_SHA256:
-		
+
 	for( i = 0; i < SHA256_DIGEST_SIZE; i++ )
 	{
 		Unmarshal_UINT8( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &ha->sha256[i], &( SYS_CONTEXT->rval ) );
@@ -73,7 +73,7 @@ void Unmarshal_TPMU_HA(
 #endif
 #ifdef TPM_ALG_SHA384
 	case TPM_ALG_SHA384:
-		
+
 	for( i = 0; i < SHA384_DIGEST_SIZE; i++ )
 	{
 		Unmarshal_UINT8( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &ha->sha384[i], &( SYS_CONTEXT->rval ) );
@@ -82,7 +82,7 @@ void Unmarshal_TPMU_HA(
 #endif
 #ifdef TPM_ALG_SHA512
 	case TPM_ALG_SHA512:
-		
+
 	for( i = 0; i < SHA512_DIGEST_SIZE; i++ )
 	{
 		Unmarshal_UINT8( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &ha->sha512[i], &( SYS_CONTEXT->rval ) );
@@ -91,7 +91,7 @@ void Unmarshal_TPMU_HA(
 #endif
 #ifdef TPM_ALG_SM3_256
 	case TPM_ALG_SM3_256:
-		
+
 	for( i = 0; i < SM3_256_DIGEST_SIZE; i++ )
 	{
 		Unmarshal_UINT8( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &ha->sm3_256[i], &( SYS_CONTEXT->rval ) );

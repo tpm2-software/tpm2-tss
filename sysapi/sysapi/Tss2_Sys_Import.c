@@ -46,7 +46,7 @@ TPM_RC Tss2_Sys_Import_Prepare(
     if( symmetricAlg == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     CommonPreparePrologue( sysContext, TPM_CC_Import );
 
@@ -56,7 +56,7 @@ TPM_RC Tss2_Sys_Import_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( encryptionKey->b ) );
 
     Marshal_TPM2B_PUBLIC( sysContext, objectPublic );
@@ -111,10 +111,10 @@ TPM_RC Tss2_Sys_Import(
     if( symmetricAlg == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     rval = Tss2_Sys_Import_Prepare( sysContext, parentHandle, encryptionKey, objectPublic, duplicate, inSymSeed, symmetricAlg );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -124,7 +124,7 @@ TPM_RC Tss2_Sys_Import(
             rval = Tss2_Sys_Import_Complete( sysContext, outPrivate );
         }
     }
-    
+
     return rval;
 }
 

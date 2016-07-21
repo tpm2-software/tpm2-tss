@@ -36,7 +36,7 @@
 //
 //  Output:	None
 //
-//  Description:	
+//  Description:
 //
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -67,7 +67,7 @@ UINT32 GetCommandSize( TSS2_SYS_CONTEXT *sysContext )
 void CopyCommandHeader( _TSS2_SYS_CONTEXT_BLOB *sysContext, TPM_CC commandCode )
 {
    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
-  
+
   ((TPM20_Header_In *) sysContext->tpmInBuffPtr)->tag = CHANGE_ENDIAN_WORD( TPM_ST_NO_SESSIONS );
 
   ((TPM20_Header_In *) sysContext->tpmInBuffPtr)->commandCode = CHANGE_ENDIAN_DWORD( commandCode );
@@ -78,9 +78,9 @@ void CopyCommandHeader( _TSS2_SYS_CONTEXT_BLOB *sysContext, TPM_CC commandCode )
 }
 
 TPM_RC FinishCommand( _TSS2_SYS_CONTEXT_BLOB *sysContext,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray, 
+    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     UINT32 *responseSize )
-{  
+{
     if( SYS_CONTEXT->rval != TSS2_RC_SUCCESS )
         return SYS_CONTEXT->rval;
 
@@ -98,7 +98,7 @@ TPM_RC FinishCommand( _TSS2_SYS_CONTEXT_BLOB *sysContext,
 // Common to all _Prepare
 TSS2_RC CommonPreparePrologue(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_CC commandCode 
+    TPM_CC commandCode
 )
 {
 	int numCommandHandles;
@@ -159,7 +159,7 @@ TSS2_RC CommonPrepareEpilogue(
 TSS2_RC CommonComplete( TSS2_SYS_CONTEXT *sysContext )
 {
     UINT32 rspSize = CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr )  )->responseSize );
-            
+
     if( sysContext == NULL )
     {
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -216,7 +216,7 @@ TSS2_RC CommonOneCall(
     {
         SYS_CONTEXT->rval = FinishCommand( SYS_CONTEXT, cmdAuthsArray, &responseSize );
 
-        if ( SYS_CONTEXT->rval == TSS2_RC_SUCCESS ) 
+        if ( SYS_CONTEXT->rval == TSS2_RC_SUCCESS )
         {
             if( SYS_CONTEXT->responseCode == TPM_RC_SUCCESS )
             {
@@ -239,7 +239,7 @@ TSS2_RC  CommonOneCallForNoResponseCmds(
     )
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    
+
     rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
 
     if( rval == TSS2_RC_SUCCESS )

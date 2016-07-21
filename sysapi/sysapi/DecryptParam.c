@@ -36,7 +36,7 @@ TSS2_RC Tss2_Sys_GetDecryptParam(
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
     TPM2B *decryptParam;
-    
+
     if( decryptParamSize == 0 || decryptParamBuffer == 0 || sysContext == 0 )
     {
         rval = TSS2_SYS_RC_BAD_REFERENCE;
@@ -62,7 +62,7 @@ TSS2_RC Tss2_Sys_GetDecryptParam(
 
 
 TSS2_RC Tss2_Sys_SetDecryptParam(
-	TSS2_SYS_CONTEXT 		*sysContext, 
+	TSS2_SYS_CONTEXT 		*sysContext,
 	size_t                  decryptParamSize,
 	const uint8_t			*decryptParamBuffer
 )
@@ -72,7 +72,7 @@ TSS2_RC Tss2_Sys_SetDecryptParam(
     TSS2_RC         rval = TSS2_RC_SUCCESS;
     UINT32          sizeToBeUsed;
     UINT32          currCommandSize;
-    
+
     if( decryptParamBuffer == 0 || sysContext == 0 )
     {
         rval = TSS2_SYS_RC_BAD_REFERENCE;
@@ -139,6 +139,6 @@ TSS2_RC Tss2_Sys_SetDecryptParam(
         }
     }
 
-exitTss2_Sys_SetDecryptParam:    
+exitTss2_Sys_SetDecryptParam:
     return rval;
 }

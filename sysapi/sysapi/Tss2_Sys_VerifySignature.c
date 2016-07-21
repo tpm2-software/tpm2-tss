@@ -43,7 +43,7 @@ TPM_RC Tss2_Sys_VerifySignature_Prepare(
     if( signature == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     CommonPreparePrologue( sysContext, TPM_CC_VerifySignature );
 
@@ -53,7 +53,7 @@ TPM_RC Tss2_Sys_VerifySignature_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( digest->b ) );
 
     Marshal_TPMT_SIGNATURE( sysContext, signature );
@@ -99,10 +99,10 @@ TPM_RC Tss2_Sys_VerifySignature(
     if( signature == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     rval = Tss2_Sys_VerifySignature_Prepare( sysContext, keyHandle, digest, signature );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -112,7 +112,7 @@ TPM_RC Tss2_Sys_VerifySignature(
             rval = Tss2_Sys_VerifySignature_Complete( sysContext, validation );
         }
     }
-    
+
     return rval;
 }
 

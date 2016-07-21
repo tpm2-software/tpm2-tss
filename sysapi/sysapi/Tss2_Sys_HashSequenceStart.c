@@ -39,7 +39,7 @@ TPM_RC Tss2_Sys_HashSequenceStart_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_HashSequenceStart );
 
@@ -47,7 +47,7 @@ TPM_RC Tss2_Sys_HashSequenceStart_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( auth->b ) );
 
     Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), hashAlg, &(SYS_CONTEXT->rval) );
@@ -89,10 +89,10 @@ TPM_RC Tss2_Sys_HashSequenceStart(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_HashSequenceStart_Prepare( sysContext, auth, hashAlg );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -102,7 +102,7 @@ TPM_RC Tss2_Sys_HashSequenceStart(
             rval = Tss2_Sys_HashSequenceStart_Complete( sysContext, sequenceHandle );
         }
     }
-    
+
     return rval;
 }
 

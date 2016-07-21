@@ -44,7 +44,7 @@ TPM_RC Tss2_Sys_Duplicate_Prepare(
     if( symmetricAlg == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     CommonPreparePrologue( sysContext, TPM_CC_Duplicate );
 
@@ -56,7 +56,7 @@ TPM_RC Tss2_Sys_Duplicate_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( encryptionKeyIn->b ) );
 
     Marshal_TPMT_SYM_DEF_OBJECT( sysContext, symmetricAlg );
@@ -111,10 +111,10 @@ TPM_RC Tss2_Sys_Duplicate(
     if( symmetricAlg == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     rval = Tss2_Sys_Duplicate_Prepare( sysContext, objectHandle, newParentHandle, encryptionKeyIn, symmetricAlg );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -124,7 +124,7 @@ TPM_RC Tss2_Sys_Duplicate(
             rval = Tss2_Sys_Duplicate_Complete( sysContext, encryptionKeyOut, duplicate, outSymSeed );
         }
     }
-    
+
     return rval;
 }
 

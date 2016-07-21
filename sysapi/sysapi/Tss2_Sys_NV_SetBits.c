@@ -40,7 +40,7 @@ TPM_RC Tss2_Sys_NV_SetBits_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_NV_SetBits );
 
@@ -48,8 +48,8 @@ TPM_RC Tss2_Sys_NV_SetBits_Prepare(
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), nvIndex, &(SYS_CONTEXT->rval) );
 
-    
-            
+
+
     Marshal_UINT64( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), bits, &(SYS_CONTEXT->rval) );
 
     SYS_CONTEXT->decryptAllowed = 0;
@@ -73,15 +73,15 @@ TPM_RC Tss2_Sys_NV_SetBits(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_NV_SetBits_Prepare( sysContext, authHandle, nvIndex, bits );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
     }
-    
+
     return rval;
 }
 

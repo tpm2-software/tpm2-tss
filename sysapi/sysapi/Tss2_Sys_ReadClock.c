@@ -37,12 +37,12 @@ TPM_RC Tss2_Sys_ReadClock_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_ReadClock );
 
-    
-            
+
+
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 0;
     SYS_CONTEXT->authAllowed = 0;
@@ -76,10 +76,10 @@ TPM_RC Tss2_Sys_ReadClock(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_ReadClock_Prepare( sysContext );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, 0, 0 );
@@ -89,7 +89,7 @@ TPM_RC Tss2_Sys_ReadClock(
             rval = Tss2_Sys_ReadClock_Complete( sysContext, currentTime );
         }
     }
-    
+
     return rval;
 }
 

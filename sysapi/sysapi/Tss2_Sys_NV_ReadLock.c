@@ -39,7 +39,7 @@ TPM_RC Tss2_Sys_NV_ReadLock_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_NV_ReadLock );
 
@@ -47,8 +47,8 @@ TPM_RC Tss2_Sys_NV_ReadLock_Prepare(
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), nvIndex, &(SYS_CONTEXT->rval) );
 
-    
-            
+
+
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 0;
     SYS_CONTEXT->authAllowed = 1;
@@ -69,15 +69,15 @@ TPM_RC Tss2_Sys_NV_ReadLock(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_NV_ReadLock_Prepare( sysContext, authHandle, nvIndex );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
     }
-    
+
     return rval;
 }
 

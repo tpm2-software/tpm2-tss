@@ -40,7 +40,7 @@ TPM_RC Tss2_Sys_Load_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_Load );
 
@@ -50,7 +50,7 @@ TPM_RC Tss2_Sys_Load_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( inPrivate->b ) );
 
     Marshal_TPM2B_PUBLIC( sysContext, inPublic );
@@ -97,10 +97,10 @@ TPM_RC Tss2_Sys_Load(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_Load_Prepare( sysContext, parentHandle, inPrivate, inPublic );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -110,7 +110,7 @@ TPM_RC Tss2_Sys_Load(
             rval = Tss2_Sys_Load_Complete( sysContext, objectHandle, name );
         }
     }
-    
+
     return rval;
 }
 

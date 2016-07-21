@@ -31,7 +31,7 @@ UINT16 CopySizedByteBuffer( TPM2B *dest, TPM2B *src )
 {
     int i;
     UINT16 rval = 0;
-    
+
     if( dest != 0 )
     {
         if( src == 0 )

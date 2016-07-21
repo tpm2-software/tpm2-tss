@@ -40,7 +40,7 @@ TPM_RC Tss2_Sys_LoadExternal_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_LoadExternal );
 
@@ -48,7 +48,7 @@ TPM_RC Tss2_Sys_LoadExternal_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     Marshal_TPM2B_SENSITIVE( sysContext, inPrivate );
 
     Marshal_TPM2B_PUBLIC( sysContext, inPublic );
@@ -97,10 +97,10 @@ TPM_RC Tss2_Sys_LoadExternal(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_LoadExternal_Prepare( sysContext, inPrivate, inPublic, hierarchy );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -110,7 +110,7 @@ TPM_RC Tss2_Sys_LoadExternal(
             rval = Tss2_Sys_LoadExternal_Complete( sysContext, objectHandle, name );
         }
     }
-    
+
     return rval;
 }
 

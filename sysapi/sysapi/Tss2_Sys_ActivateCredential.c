@@ -41,7 +41,7 @@ TPM_RC Tss2_Sys_ActivateCredential_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_ActivateCredential );
 
@@ -53,7 +53,7 @@ TPM_RC Tss2_Sys_ActivateCredential_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( credentialBlob->b ) );
 
     MARSHAL_SIMPLE_TPM2B( sysContext, &( secret->b ) );
@@ -97,10 +97,10 @@ TPM_RC Tss2_Sys_ActivateCredential(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_ActivateCredential_Prepare( sysContext, activateHandle, keyHandle, credentialBlob, secret );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -110,7 +110,7 @@ TPM_RC Tss2_Sys_ActivateCredential(
             rval = Tss2_Sys_ActivateCredential_Complete( sysContext, certInfo );
         }
     }
-    
+
     return rval;
 }
 

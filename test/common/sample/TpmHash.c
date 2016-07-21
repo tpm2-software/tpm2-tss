@@ -38,20 +38,20 @@ UINT32 TpmHash( TPMI_ALG_HASH hashAlg, UINT16 size, BYTE *data, TPM2B_DIGEST *re
     TPM2B_MAX_BUFFER dataSizedBuffer;
     UINT16 i;
     TSS2_SYS_CONTEXT *sysContext;
-    
+
     dataSizedBuffer.t.size = size;
     for( i = 0; i < size; i++ )
         dataSizedBuffer.t.buffer[i] = data[i];
-    
+
     sysContext = InitSysContext( 3000, resMgrTctiContext, &abiVersion );
     if( sysContext == 0 )
         return TSS2_APP_RC_INIT_SYS_CONTEXT_FAILED;
-    
+
     INIT_SIMPLE_TPM2B_SIZE( *result );
     rval = Tss2_Sys_Hash ( sysContext, 0, &dataSizedBuffer, hashAlg, TPM_RH_NULL, result, 0, 0);
 
     TeardownSysContext( &sysContext );
-    
+
     return rval;
 }
 
@@ -78,17 +78,17 @@ UINT32 TpmHashSequence( TPMI_ALG_HASH hashAlg, UINT8 numBuffers, TPM2B_DIGEST *b
 
     // Set result size to 0, in case any errors occur
     result->b.size = 0;
-    
+
     // Init input sessions struct
     cmdAuth.sessionHandle = TPM_RS_PW;
     cmdAuth.nonce.t.size = 0;
     *( (UINT8 *)((void *)&cmdAuth.sessionAttributes ) ) = 0;
     cmdAuth.hmac.t.size = 0;
-    
+
     sysContext = InitSysContext( 3000, resMgrTctiContext, &abiVersion );
     if( sysContext == 0 )
         return TSS2_APP_RC_INIT_SYS_CONTEXT_FAILED;
-    
+
     rval = Tss2_Sys_HashSequenceStart( sysContext, 0, &nullAuth, hashAlg, &sequenceHandle, 0 );
 
     if( rval != TPM_RC_SUCCESS )

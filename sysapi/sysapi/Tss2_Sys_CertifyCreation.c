@@ -46,7 +46,7 @@ TPM_RC Tss2_Sys_CertifyCreation_Prepare(
     if( inScheme == NULL  || creationTicket == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     CommonPreparePrologue( sysContext, TPM_CC_CertifyCreation );
 
@@ -58,7 +58,7 @@ TPM_RC Tss2_Sys_CertifyCreation_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( qualifyingData->b ) );
 
     MARSHAL_SIMPLE_TPM2B( sysContext, &( creationHash->b ) );
@@ -115,10 +115,10 @@ TPM_RC Tss2_Sys_CertifyCreation(
     if( inScheme == NULL  || creationTicket == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     rval = Tss2_Sys_CertifyCreation_Prepare( sysContext, signHandle, objectHandle, qualifyingData, creationHash, inScheme, creationTicket );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -128,7 +128,7 @@ TPM_RC Tss2_Sys_CertifyCreation(
             rval = Tss2_Sys_CertifyCreation_Complete( sysContext, certifyInfo, signature );
         }
     }
-    
+
     return rval;
 }
 

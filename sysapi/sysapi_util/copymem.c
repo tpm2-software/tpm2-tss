@@ -31,7 +31,7 @@ TSS2_RC CopyMem( UINT8 *dest, const UINT8 *src, const size_t len, const UINT8 *l
 {
     size_t i;
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    
+
     if( ( dest + len ) <= limit )
     {
         for( i = 0; i < len; i++ )
@@ -48,7 +48,7 @@ TSS2_RC CopyMemReverse( UINT8 *dest, const UINT8 *src, const size_t len, const U
 {
     int i;
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    
+
     if( dest < limit )
     {
         for( i = len - 1; i >= 0; i-- )

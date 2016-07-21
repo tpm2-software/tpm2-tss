@@ -38,14 +38,14 @@ TPM_RC Tss2_Sys_NV_ReadPublic_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_NV_ReadPublic );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), nvIndex, &(SYS_CONTEXT->rval) );
 
-    
-            
+
+
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 1;
     SYS_CONTEXT->authAllowed = 1;
@@ -86,10 +86,10 @@ TPM_RC Tss2_Sys_NV_ReadPublic(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_NV_ReadPublic_Prepare( sysContext, nvIndex );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -99,7 +99,7 @@ TPM_RC Tss2_Sys_NV_ReadPublic(
             rval = Tss2_Sys_NV_ReadPublic_Complete( sysContext, nvPublic, nvName );
         }
     }
-    
+
     return rval;
 }
 

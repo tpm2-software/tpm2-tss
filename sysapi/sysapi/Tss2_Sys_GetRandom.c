@@ -38,12 +38,12 @@ TPM_RC Tss2_Sys_GetRandom_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_GetRandom );
 
-    
-            
+
+
     Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), bytesRequested, &(SYS_CONTEXT->rval) );
 
     SYS_CONTEXT->decryptAllowed = 0;
@@ -82,10 +82,10 @@ TPM_RC Tss2_Sys_GetRandom(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_GetRandom_Prepare( sysContext, bytesRequested );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -95,7 +95,7 @@ TPM_RC Tss2_Sys_GetRandom(
             rval = Tss2_Sys_GetRandom_Complete( sysContext, randomBytes );
         }
     }
-    
+
     return rval;
 }
 

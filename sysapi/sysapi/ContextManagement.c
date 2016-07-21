@@ -44,12 +44,12 @@ size_t Tss2_Sys_GetContextSize(size_t maxCommandSize)
 TSS2_RC Tss2_Sys_Initialize(
     TSS2_SYS_CONTEXT *sysContext,
     size_t contextSize,
-    TSS2_TCTI_CONTEXT *tctiContext, 
+    TSS2_TCTI_CONTEXT *tctiContext,
     TSS2_ABI_VERSION *abiVersion
     )
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    
+
     if( sysContext == NULL || tctiContext == NULL || abiVersion == NULL )
     {
         rval = TSS2_SYS_RC_BAD_REFERENCE;
@@ -68,11 +68,11 @@ TSS2_RC Tss2_Sys_Initialize(
         rval = TSS2_SYS_RC_BAD_TCTI_STRUCTURE;
         goto end_Tss2_Sys_Initialize;
     }
-    
+
     // Checks for ABI negotiation.
     if( abiVersion->tssCreator != TSSWG_INTEROP ||
-        abiVersion->tssFamily != TSS_SAPI_FIRST_FAMILY ||     
-        abiVersion->tssLevel != TSS_SAPI_FIRST_LEVEL ||     
+        abiVersion->tssFamily != TSS_SAPI_FIRST_FAMILY ||
+        abiVersion->tssLevel != TSS_SAPI_FIRST_LEVEL ||
         abiVersion->tssVersion != TSS_SAPI_FIRST_LEVEL )
     {
         rval = TSS2_SYS_RC_ABI_MISMATCH;
@@ -94,8 +94,8 @@ TSS2_RC Tss2_Sys_Initialize(
 
         SYS_CONTEXT->previousStage = CMD_STAGE_INITIALIZE;
     }
-        
-end_Tss2_Sys_Initialize:    
+
+end_Tss2_Sys_Initialize:
     return rval;
 }
 

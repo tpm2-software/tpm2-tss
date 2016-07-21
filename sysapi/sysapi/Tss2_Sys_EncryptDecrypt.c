@@ -42,14 +42,14 @@ TPM_RC Tss2_Sys_EncryptDecrypt_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_EncryptDecrypt );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), keyHandle, &(SYS_CONTEXT->rval) );
 
-    
-            
+
+
     Marshal_UINT8( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), decrypt, &(SYS_CONTEXT->rval) );
 
     Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), mode, &(SYS_CONTEXT->rval) );
@@ -102,10 +102,10 @@ TPM_RC Tss2_Sys_EncryptDecrypt(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_EncryptDecrypt_Prepare( sysContext, keyHandle, decrypt, mode, ivIn, inData );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -115,7 +115,7 @@ TPM_RC Tss2_Sys_EncryptDecrypt(
             rval = Tss2_Sys_EncryptDecrypt_Complete( sysContext, outData, ivOut );
         }
     }
-    
+
     return rval;
 }
 

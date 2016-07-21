@@ -37,7 +37,7 @@ UINT32 LoadExternalHMACKey( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM_HANDLE *keyHa
     TPM2B_PUBLIC inPublic;
     UINT32 rval;
     TSS2_SYS_CONTEXT *sysContext;
-    
+
     keyAuth.size = 0;
 
     inPrivate.t.sensitiveArea.sensitiveType = TPM_ALG_KEYEDHASH;
@@ -67,6 +67,6 @@ UINT32 LoadExternalHMACKey( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM_HANDLE *keyHa
     rval = Tss2_Sys_LoadExternal( sysContext, 0, &inPrivate, &inPublic, TPM_RH_NULL, keyHandle, keyName, 0 );
 
     TeardownSysContext( &sysContext );
-    
+
     return rval;
 }

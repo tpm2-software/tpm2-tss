@@ -44,7 +44,7 @@ TPM_RC Tss2_Sys_Quote_Prepare(
     if( inScheme == NULL  || PCRselect == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     CommonPreparePrologue( sysContext, TPM_CC_Quote );
 
@@ -54,7 +54,7 @@ TPM_RC Tss2_Sys_Quote_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( qualifyingData->b ) );
 
     Marshal_TPMT_SIG_SCHEME( sysContext, inScheme );
@@ -107,10 +107,10 @@ TPM_RC Tss2_Sys_Quote(
     if( inScheme == NULL  || PCRselect == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     rval = Tss2_Sys_Quote_Prepare( sysContext, signHandle, qualifyingData, inScheme, PCRselect );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -120,7 +120,7 @@ TPM_RC Tss2_Sys_Quote(
             rval = Tss2_Sys_Quote_Complete( sysContext, quoted, signature );
         }
     }
-    
+
     return rval;
 }
 

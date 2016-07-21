@@ -69,7 +69,7 @@ int DebugPrintfCallback( void *data, printf_type type, const char *format, ...)
 void DebugPrintBuffer( printf_type type, UINT8 *buffer, UINT32 length )
 {
     UINT32  i;
-    
+
     for( i = 0; i < length; i++ )
     {
         if( ( i % 16 ) == 0 )
@@ -78,7 +78,7 @@ void DebugPrintBuffer( printf_type type, UINT8 *buffer, UINT32 length )
             if( type == RM_PREFIX )
                 DebugPrintf(NO_PREFIX,  "||  " );
         }
-        
+
         DebugPrintf(NO_PREFIX,  "%2.2x ", buffer[i] );
     }
     DebugPrintf(NO_PREFIX,  "\n\n" );

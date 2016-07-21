@@ -35,7 +35,7 @@
 
 TSS2_SYS_CONTEXT *InitSysContext(
     UINT16 maxCommandSize,
-    TSS2_TCTI_CONTEXT *tctiContext, 
+    TSS2_TCTI_CONTEXT *tctiContext,
     TSS2_ABI_VERSION *abiVersion
  );
 

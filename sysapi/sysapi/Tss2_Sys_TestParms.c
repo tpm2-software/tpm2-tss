@@ -41,12 +41,12 @@ TPM_RC Tss2_Sys_TestParms_Prepare(
     if( parameters == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     CommonPreparePrologue( sysContext, TPM_CC_TestParms );
 
-    
-            
+
+
     Marshal_TPMT_PUBLIC_PARMS( sysContext, parameters );
 
     SYS_CONTEXT->decryptAllowed = 0;
@@ -71,15 +71,15 @@ TPM_RC Tss2_Sys_TestParms(
     if( parameters == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     rval = Tss2_Sys_TestParms_Prepare( sysContext, parameters );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
     }
-    
+
     return rval;
 }
 

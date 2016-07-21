@@ -44,7 +44,7 @@ TPM_RC Tss2_Sys_RSA_Decrypt_Prepare(
     if( inScheme == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     CommonPreparePrologue( sysContext, TPM_CC_RSA_Decrypt );
 
@@ -54,7 +54,7 @@ TPM_RC Tss2_Sys_RSA_Decrypt_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( cipherText->b ) );
 
     Marshal_TPMT_RSA_DECRYPT( sysContext, inScheme );
@@ -103,10 +103,10 @@ TPM_RC Tss2_Sys_RSA_Decrypt(
     if( inScheme == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     rval = Tss2_Sys_RSA_Decrypt_Prepare( sysContext, keyHandle, cipherText, inScheme, label );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -116,7 +116,7 @@ TPM_RC Tss2_Sys_RSA_Decrypt(
             rval = Tss2_Sys_RSA_Decrypt_Complete( sysContext, message );
         }
     }
-    
+
     return rval;
 }
 

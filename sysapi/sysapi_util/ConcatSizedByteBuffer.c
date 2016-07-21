@@ -58,7 +58,7 @@ TPM_RC ConcatSizedByteBuffer( TPM2B_MAX_BUFFER *result, TPM2B *addBuffer )
             result->t.buffer[i + result->t.size] = addBuffer->buffer[i];
 
         result->t.size += addBuffer->size;
-        
+
         return TPM_RC_SUCCESS;
     }
 }

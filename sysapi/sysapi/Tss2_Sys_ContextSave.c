@@ -38,14 +38,14 @@ TPM_RC Tss2_Sys_ContextSave_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_ContextSave );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), saveHandle, &(SYS_CONTEXT->rval) );
 
-    
-            
+
+
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 0;
     SYS_CONTEXT->authAllowed = 0;
@@ -80,10 +80,10 @@ TPM_RC Tss2_Sys_ContextSave(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_ContextSave_Prepare( sysContext, saveHandle );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, 0, 0 );
@@ -93,7 +93,7 @@ TPM_RC Tss2_Sys_ContextSave(
             rval = Tss2_Sys_ContextSave_Complete( sysContext, context );
         }
     }
-    
+
     return rval;
 }
 

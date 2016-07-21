@@ -30,11 +30,11 @@
 
 TSS2_RC Tss2_Sys_GetCommandCode(
     TSS2_SYS_CONTEXT *sysContext,
-    UINT8 (*commandCode)[4]  
+    UINT8 (*commandCode)[4]
     )
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    
+
     if( sysContext == NULL || commandCode == NULL )
     {
         rval = TSS2_SYS_RC_BAD_REFERENCE;
@@ -47,6 +47,6 @@ TSS2_RC Tss2_Sys_GetCommandCode(
     {
         *(UINT32 *)*commandCode = CHANGE_ENDIAN_DWORD( SYS_CONTEXT->commandCodeSwapped );
     }
-    
+
     return( rval );
 }

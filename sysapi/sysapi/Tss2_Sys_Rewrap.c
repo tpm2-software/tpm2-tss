@@ -42,7 +42,7 @@ TPM_RC Tss2_Sys_Rewrap_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_Rewrap );
 
@@ -54,7 +54,7 @@ TPM_RC Tss2_Sys_Rewrap_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( inDuplicate->b ) );
 
     MARSHAL_SIMPLE_TPM2B( sysContext, &( name->b ) );
@@ -105,10 +105,10 @@ TPM_RC Tss2_Sys_Rewrap(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_Rewrap_Prepare( sysContext, oldParent, newParent, inDuplicate, name, inSymSeed );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -118,7 +118,7 @@ TPM_RC Tss2_Sys_Rewrap(
             rval = Tss2_Sys_Rewrap_Complete( sysContext, outDuplicate, outSymSeed );
         }
     }
-    
+
     return rval;
 }
 

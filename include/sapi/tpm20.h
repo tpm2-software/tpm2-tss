@@ -35,8 +35,8 @@
 
 #include    <stddef.h>
 #include    <stdint.h>
-#include    <stdlib.h> 
-#include    <string.h> 
+#include    <stdlib.h>
+#include    <string.h>
 
 #include    <sapi/tss2_common.h>
 #include    <sapi/tpmb.h>

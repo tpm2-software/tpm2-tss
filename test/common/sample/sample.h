@@ -48,13 +48,13 @@ enum TSS2_APP_RC_CODE
     APP_RC_PASSED,
     APP_RC_GET_NAME_FAILED,
     APP_RC_CREATE_SESSION_KEY_FAILED,
-    APP_RC_SESSION_SLOT_NOT_FOUND,            
-    APP_RC_BAD_ALGORITHM,            
+    APP_RC_SESSION_SLOT_NOT_FOUND,
+    APP_RC_BAD_ALGORITHM,
     APP_RC_SYS_CONTEXT_CREATE_FAILED,
     APP_RC_GET_SESSION_STRUCT_FAILED,
-    APP_RC_GET_SESSION_ALG_ID_FAILED, 
-    APP_RC_INIT_SYS_CONTEXT_FAILED, 
-    APP_RC_TEARDOWN_SYS_CONTEXT_FAILED, 
+    APP_RC_GET_SESSION_ALG_ID_FAILED,
+    APP_RC_INIT_SYS_CONTEXT_FAILED,
+    APP_RC_TEARDOWN_SYS_CONTEXT_FAILED,
     APP_RC_BAD_LOCALITY
 };
 
@@ -109,7 +109,7 @@ typedef struct {
     // other session related functions.
     TPMI_SH_AUTH_SESSION sessionHandle;
     TPM2B_NONCE nonceTPM;
-    
+
     // Internal state for the session
     TPM2B_DIGEST sessionKey;
     TPM2B_DIGEST authValueBind;     // authValue of bind object
@@ -172,7 +172,7 @@ extern UINT32 ( *ComputeSessionHmacPtr )(
     TPM_HANDLE handle2,                  // Second handle == 0xff000000 indicates no handle
     TPMA_SESSION sessionAttributes,      // Current session attributes
     TPM2B_DIGEST *result,                // Where the result hash is saved.
-    TPM_RC sessionCmdRval    
+    TPM_RC sessionCmdRval
     );
 
 
@@ -247,7 +247,7 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1,
 extern UINT32 (*HmacFunctionPtr)( TPMI_ALG_HASH hashAlg, TPM2B *key,TPM2B **bufferList, TPM2B_DIGEST *result );
 
 //
-// Pointer to generic hash wrapper function.  
+// Pointer to generic hash wrapper function.
 //
 // Inputs:
 //

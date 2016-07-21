@@ -51,19 +51,19 @@ TPM_RC AddEntity( TPM_HANDLE entityHandle, TPM2B_AUTH *auth )
 {
     int i;
     TPM_RC rval = TPM_RC_FAILURE;
-    
+
     for( i = 0; i < MAX_NUM_ENTITIES; i++ )
     {
         if( entities[i].entityHandle == TPM_HT_NO_HANDLE )
         {
-            entities[i].entityHandle = entityHandle; 
+            entities[i].entityHandle = entityHandle;
             CopySizedByteBuffer( &( entities[i].entityAuth.b ), &( auth->b ) );
 
             if( ( entityHandle >> HR_SHIFT ) == TPM_HT_NV_INDEX )
             {
                 entities[i].nvNameChanged = 0;
             }
-            
+
             rval = TPM_RC_SUCCESS;
             break;
         }
@@ -75,12 +75,12 @@ TPM_RC DeleteEntity( TPM_HANDLE entityHandle )
 {
     int i;
     TPM_RC rval = TPM_RC_FAILURE;
-    
+
     for( i = 0; i < MAX_NUM_ENTITIES; i++ )
     {
         if( entities[i].entityHandle == entityHandle )
         {
-            entities[i].entityHandle = TPM_HT_NO_HANDLE; 
+            entities[i].entityHandle = TPM_HT_NO_HANDLE;
             rval = TPM_RC_SUCCESS;
             break;
         }
@@ -92,7 +92,7 @@ TPM_RC GetEntityAuth( TPM_HANDLE entityHandle, TPM2B_AUTH *auth )
 {
     int i;
     TPM_RC rval = TPM_RC_FAILURE;
-    
+
     for( i = 0; i < MAX_NUM_ENTITIES; i++ )
     {
         if( entities[i].entityHandle == entityHandle )
@@ -110,7 +110,7 @@ TPM_RC GetEntity( TPM_HANDLE entityHandle, ENTITY **entity )
 {
     int i;
     TPM_RC rval = TPM_RC_FAILURE;
-    
+
     for( i = 0; i < MAX_NUM_ENTITIES; i++ )
     {
         if( entities[i].entityHandle == entityHandle )

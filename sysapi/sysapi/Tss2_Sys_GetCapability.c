@@ -40,12 +40,12 @@ TPM_RC Tss2_Sys_GetCapability_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_GetCapability );
 
-    
-            
+
+
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), capability, &(SYS_CONTEXT->rval) );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), property, &(SYS_CONTEXT->rval) );
@@ -94,10 +94,10 @@ TPM_RC Tss2_Sys_GetCapability(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_GetCapability_Prepare( sysContext, capability, property, propertyCount );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -107,7 +107,7 @@ TPM_RC Tss2_Sys_GetCapability(
             rval = Tss2_Sys_GetCapability_Complete( sysContext, moreData, capabilityData );
         }
     }
-    
+
     return rval;
 }
 

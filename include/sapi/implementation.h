@@ -1361,7 +1361,7 @@ typedef  UINT32             TPM_CC;
 #define COMMAND_COUNT							\
     (LIBRARY_COMMAND_ARRAY_SIZE + VENDOR_COMMAND_ARRAY_SIZE)
 
-    
+
 #ifndef MAX
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #endif

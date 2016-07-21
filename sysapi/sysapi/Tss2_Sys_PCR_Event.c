@@ -39,14 +39,14 @@ TPM_RC Tss2_Sys_PCR_Event_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_PCR_Event );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), pcrHandle, &(SYS_CONTEXT->rval) );
 
-    
-            
+
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( eventData->b ) );
 
     SYS_CONTEXT->decryptAllowed = 1;
@@ -86,10 +86,10 @@ TPM_RC Tss2_Sys_PCR_Event(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_PCR_Event_Prepare( sysContext, pcrHandle, eventData );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -99,7 +99,7 @@ TPM_RC Tss2_Sys_PCR_Event(
             rval = Tss2_Sys_PCR_Event_Complete( sysContext, digests );
         }
     }
-    
+
     return rval;
 }
 

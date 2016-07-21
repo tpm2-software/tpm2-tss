@@ -33,10 +33,10 @@ void Unmarshal_Simple_TPM2B( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **
 //deleted for now--spec issues with nested TPM2B's
 #if 0
     INT64 callerAllocatedSize;
-#endif    
+#endif
     int i;
     UINT16 length;
-    
+
     if( *rval == TSS2_RC_SUCCESS )
     {
         if( outBuffPtr == 0 || nextData == 0 || *nextData == 0 )

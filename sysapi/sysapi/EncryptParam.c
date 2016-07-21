@@ -37,7 +37,7 @@ TSS2_RC Tss2_Sys_GetEncryptParam(
     TSS2_RC rval = TSS2_RC_SUCCESS;
     TPM2B *encryptParam;
     void *otherData;
-    
+
     if( encryptParamSize == 0 || encryptParamBuffer == 0 || sysContext == 0 )
     {
         rval = TSS2_SYS_RC_BAD_REFERENCE;
@@ -55,7 +55,7 @@ TSS2_RC Tss2_Sys_GetEncryptParam(
     {
         // Get first parameter and return its
         // size and a pointer to it.
-        otherData = SYS_CONTEXT->rspParamsSize;        
+        otherData = SYS_CONTEXT->rspParamsSize;
         SYS_CONTEXT->rpBuffer = otherData;
         SYS_CONTEXT->rpBuffer += 4; // Skip over params size field.
         encryptParam = (TPM2B *)( SYS_CONTEXT->rpBuffer );
@@ -98,6 +98,6 @@ TSS2_RC Tss2_Sys_SetEncryptParam(
             }
         }
     }
-    
+
     return rval;
 }

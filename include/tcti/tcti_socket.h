@@ -68,7 +68,7 @@ TSS2_RC InitSocketTcti (
 TSS2_RC TeardownSocketTcti (TSS2_TCTI_CONTEXT *tctiContext);
 
 TSS2_RC SendSessionEndSocketTcti(
-    TSS2_TCTI_CONTEXT *tctiContext,      
+    TSS2_TCTI_CONTEXT *tctiContext,
     UINT8 tpmCmdServer
     );
 

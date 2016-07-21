@@ -39,14 +39,14 @@ TPM_RC Tss2_Sys_PolicyLocality_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_PolicyLocality );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), policySession, &(SYS_CONTEXT->rval) );
 
-    
-            
+
+
     Marshal_TPMA_LOCALITY( sysContext, locality );
 
     SYS_CONTEXT->decryptAllowed = 0;
@@ -69,15 +69,15 @@ TPM_RC Tss2_Sys_PolicyLocality(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_PolicyLocality_Prepare( sysContext, policySession, locality );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
     }
-    
+
     return rval;
 }
 

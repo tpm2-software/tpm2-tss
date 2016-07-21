@@ -38,12 +38,12 @@ TPM_RC Tss2_Sys_Vendor_TCG_Test_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_Vendor_TCG_Test );
 
-    
-            
+
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( inputData->b ) );
 
     SYS_CONTEXT->decryptAllowed = 1;
@@ -82,10 +82,10 @@ TPM_RC Tss2_Sys_Vendor_TCG_Test(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_Vendor_TCG_Test_Prepare( sysContext, inputData );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -95,7 +95,7 @@ TPM_RC Tss2_Sys_Vendor_TCG_Test(
             rval = Tss2_Sys_Vendor_TCG_Test_Complete( sysContext, outputData );
         }
     }
-    
+
     return rval;
 }
 

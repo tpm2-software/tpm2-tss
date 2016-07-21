@@ -38,14 +38,14 @@ TPM_RC Tss2_Sys_FlushContext_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_FlushContext );
 
     Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), flushHandle, &(SYS_CONTEXT->rval) );
 
-    
-            
+
+
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 0;
     SYS_CONTEXT->authAllowed = 0;
@@ -63,15 +63,15 @@ TPM_RC Tss2_Sys_FlushContext(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_FlushContext_Prepare( sysContext, flushHandle );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCallForNoResponseCmds( sysContext, 0, 0 );
     }
-    
+
     return rval;
 }
 

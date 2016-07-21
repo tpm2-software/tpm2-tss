@@ -30,7 +30,7 @@
 
 
 typedef struct {
-    TPM_ALG_ID  algId; 
+    TPM_ALG_ID  algId;
     UINT16      size;  // Size of digest
 } HASH_SIZE_INFO;
 
@@ -39,10 +39,10 @@ HASH_SIZE_INFO   hashSizes[] = {
     {TPM_ALG_SHA256,        SHA256_DIGEST_SIZE},
 #ifdef TPM_ALG_SHA384
     {TPM_ALG_SHA384,        SHA384_DIGEST_SIZE},
-#endif            
+#endif
 #ifdef TPM_ALG_SHA512
     {TPM_ALG_SHA512,        SHA512_DIGEST_SIZE},
-#endif            
+#endif
     {TPM_ALG_SM3_256,       SM3_256_DIGEST_SIZE},
     {TPM_ALG_NULL,0}
 };

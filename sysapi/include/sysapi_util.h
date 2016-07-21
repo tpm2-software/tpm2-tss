@@ -57,11 +57,11 @@ typedef struct {
     // rpHash, and for auditing.
     //
     TPM_CC commandCodeSwapped;
-    UINT32 cpBufferUsedSize;        
+    UINT32 cpBufferUsedSize;
     UINT8 *cpBuffer;
     UINT32 *rspParamsSize;  // Points to response paramsSize.
-    UINT32 rpBufferUsedSize;        
-    UINT8 *rpBuffer;  
+    UINT32 rpBufferUsedSize;
+    UINT8 *rpBuffer;
     UINT8 previousStage;            // Used to check for sequencing errors.
     TPM_RC responseCode;
     UINT8 authsCount;
@@ -69,7 +69,7 @@ typedef struct {
     struct
     {
         UINT16 tpmVersionInfoValid:1;  // Identifies whether the TPM version info fields are valid; if not valid
-                                      // this info can't be used for TPM version-specific workarounds.  
+                                      // this info can't be used for TPM version-specific workarounds.
         UINT16 decryptAllowed:1;  // Identifies whether this command supports an encrypted command parameter.
         UINT16 encryptAllowed:1;  // Identifies whether this command supports an encrypted response parameter.
 
@@ -91,7 +91,7 @@ typedef struct {
 
     // Location for next data in command/response buffer.
     UINT8 *nextData;
-    
+
 } _TSS2_SYS_CONTEXT_BLOB;
 
 
@@ -106,7 +106,7 @@ typedef struct _TPM20_Header_In {
   UINT32 commandSize;
   UINT32 commandCode;
 } TPM20_Header_In;
-                              
+
 typedef struct _TPM20_Header_Out {
   TPM_ST tag;
   UINT32 responseSize;
@@ -125,7 +125,7 @@ typedef struct {
   UINT32 commandSize;
   UINT32 commandCode;
 } TPM20_Cmd_Header;
-                              
+
 typedef struct {
   TPM_ST tag;
   UINT32 responseSize;
@@ -147,7 +147,7 @@ typedef struct {
 
 // Utility functions.
 void CopyCommandHeader( _TSS2_SYS_CONTEXT_BLOB *sysContext, TPM_CC commandCode );
-TPM_RC FinishCommand( _TSS2_SYS_CONTEXT_BLOB *sysContext,  
+TPM_RC FinishCommand( _TSS2_SYS_CONTEXT_BLOB *sysContext,
     const TSS2_SYS_CMD_AUTHS *cmdAuthsArray, UINT32 *responseSize );
 
 UINT16 GetDigestSize( TPM_ALG_ID authHash );
@@ -196,7 +196,7 @@ int GetNumResponseHandles( TPM_CC commandCode );
 
 TSS2_SYS_CONTEXT *InitSysContext(
     UINT16 maxCommandSize,
-    TSS2_TCTI_CONTEXT *tctiContext, 
+    TSS2_TCTI_CONTEXT *tctiContext,
     TSS2_ABI_VERSION *abiVersion
  );
 

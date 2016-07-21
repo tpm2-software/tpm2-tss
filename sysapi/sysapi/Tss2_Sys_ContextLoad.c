@@ -41,12 +41,12 @@ TPM_RC Tss2_Sys_ContextLoad_Prepare(
     if( context == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     CommonPreparePrologue( sysContext, TPM_CC_ContextLoad );
 
-    
-            
+
+
     Marshal_TPMS_CONTEXT( sysContext, context );
 
     SYS_CONTEXT->decryptAllowed = 0;
@@ -86,10 +86,10 @@ TPM_RC Tss2_Sys_ContextLoad(
     if( context == NULL  )
 	{
 		return TSS2_SYS_RC_BAD_REFERENCE;
-	} 
+	}
 
     rval = Tss2_Sys_ContextLoad_Prepare( sysContext, context );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, 0, 0 );
@@ -99,7 +99,7 @@ TPM_RC Tss2_Sys_ContextLoad(
             rval = Tss2_Sys_ContextLoad_Complete( sysContext, loadedHandle );
         }
     }
-    
+
     return rval;
 }
 

@@ -38,12 +38,12 @@ TPM_RC Tss2_Sys_StirRandom_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_StirRandom );
 
-    
-            
+
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( inData->b ) );
 
     SYS_CONTEXT->decryptAllowed = 1;
@@ -65,15 +65,15 @@ TPM_RC Tss2_Sys_StirRandom(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_StirRandom_Prepare( sysContext, inData );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
     }
-    
+
     return rval;
 }
 

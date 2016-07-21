@@ -41,7 +41,7 @@ TPM_RC Tss2_Sys_PolicyDuplicationSelect_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_PolicyDuplicationSelect );
 
@@ -51,7 +51,7 @@ TPM_RC Tss2_Sys_PolicyDuplicationSelect_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( objectName->b ) );
 
     MARSHAL_SIMPLE_TPM2B( sysContext, &( newParentName->b ) );
@@ -80,15 +80,15 @@ TPM_RC Tss2_Sys_PolicyDuplicationSelect(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_PolicyDuplicationSelect_Prepare( sysContext, policySession, objectName, newParentName, includeObject );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
     }
-    
+
     return rval;
 }
 

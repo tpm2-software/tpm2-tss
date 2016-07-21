@@ -53,16 +53,16 @@ UINT32 TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2B **bufferList, TPM2B_DIG
     UINT32 rval;
     TPM_HANDLE keyHandle;
     TPM2B_NAME keyName;
-    
+
     TPM2B keyAuth;
     TSS2_SYS_CONTEXT *sysContext;
 
     sessionDataArray[0] = &sessionData;
     sessionDataOutArray[0] = &sessionDataOut;
-    
+
     // Set result size to 0, in case any errors occur
     result->b.size = 0;
-    
+
     keyAuth.size = 0;
     nullAuth.t.size = 0;
 
@@ -71,7 +71,7 @@ UINT32 TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2B **bufferList, TPM2B_DIG
     {
         return( rval );
     }
-    
+
     // Init input sessions struct
     sessionData.sessionHandle = TPM_RS_PW;
     nonce.t.size = 0;
@@ -85,13 +85,13 @@ UINT32 TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2B **bufferList, TPM2B_DIG
     // Init sessions out struct
     sessionsDataOut.rspAuthsCount = 1;
     sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    
+
     emptyBuffer.size = 0;
 
     sysContext = InitSysContext( 3000, resMgrTctiContext, &abiVersion );
     if( sysContext == 0 )
         return TSS2_APP_ERROR_LEVEL + TPM_RC_FAILURE;
-    
+
     rval = Tss2_Sys_HMAC_Start( sysContext, keyHandle, &sessionsData, &nullAuth, hashAlg, &sequenceHandle, 0 );
 
     if( rval != TPM_RC_SUCCESS )

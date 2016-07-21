@@ -52,7 +52,7 @@ typedef int32_t     INT32;      /* signed, 32-bit integer */
 typedef uint64_t    UINT64;     /* unsigned, 64-bit integer */
 typedef int64_t     INT64;      /* signed, 64-bit integer */
 
-typedef UINT32 TSS2_RC; 
+typedef UINT32 TSS2_RC;
 
 
 /**
@@ -108,7 +108,7 @@ typedef struct {
 // These are not returned directly, but are combined with an ERROR_LEVEL to
 // produce the error codes for each layer.
 //
-#define TSS2_BASE_RC_GENERAL_FAILURE        1 /* Catch all for all errors 
+#define TSS2_BASE_RC_GENERAL_FAILURE        1 /* Catch all for all errors
                                                  not otherwise specifed */
 #define TSS2_BASE_RC_NOT_IMPLEMENTED        2 /* If called functionality isn't implemented */
 #define TSS2_BASE_RC_BAD_CONTEXT            3 /* A context structure is bad */
@@ -130,7 +130,7 @@ typedef struct {
 #define TSS2_BASE_RC_NO_DECRYPT_PARAM      14 /* If function called that uses decrypt
                                                  parameter, but command doesn't support
                                                  crypt parameter. */
-#define TSS2_BASE_RC_NO_ENCRYPT_PARAM      15 /* If function called that uses encrypt 
+#define TSS2_BASE_RC_NO_ENCRYPT_PARAM      15 /* If function called that uses encrypt
                                                  parameter, but command doesn't support
                                                  encrypt parameter. */
 #define TSS2_BASE_RC_BAD_SIZE              16 /* If size of a parameter is incorrect */

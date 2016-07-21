@@ -46,7 +46,7 @@ INT16 sessionEntriesUsed = 0;
 TPM_RC AddSession( SESSION_LIST_ENTRY **sessionEntry )
 {
     SESSION_LIST_ENTRY **lastEntry, *newEntry;
-    
+
 //    DebugPrintf( 0, "In AddSession\n" );
 
     // find end of list.
@@ -66,7 +66,7 @@ TPM_RC AddSession( SESSION_LIST_ENTRY **sessionEntry )
     {
         return TSS2_APP_RC_SESSION_SLOT_NOT_FOUND;
     }
-} 
+}
 
 
 void DeleteSession( SESSION *session )
@@ -75,7 +75,7 @@ void DeleteSession( SESSION *session )
     SESSION_LIST_ENTRY *newNextEntry;
 
 //    DebugPrintf( 0, "In DeleteSession\n" );
-    
+
     if( session == &sessionsList->session )
         sessionsList = 0;
     else
@@ -132,7 +132,7 @@ TPM_RC GetSessionAlgId( TPMI_SH_AUTH_SESSION sessionHandle, TPMI_ALG_HASH *sessi
     SESSION *session;
 
     DebugPrintf( 0, "In GetSessionAlgId\n" );
-    
+
     rval = GetSessionStruct( sessionHandle, &session );
 
     if( rval == TSS2_RC_SUCCESS )
@@ -164,7 +164,7 @@ TPM_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
     TSS2_SYS_CONTEXT *tmpSysContext;
     UINT16 bytes;
     int i;
-    
+
     key.t.size = 0;
 
     tmpSysContext = InitSysContext( 1000, tctiContext, &abiVersion );
@@ -175,7 +175,7 @@ TPM_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
     {
         session->nonceOlder.t.size = GetDigestSize( TPM_ALG_SHA1 );
         for( i = 0; i < session->nonceOlder.t.size; i++ )
-            session->nonceOlder.t.buffer[i] = 0; 
+            session->nonceOlder.t.buffer[i] = 0;
     }
 
     session->nonceNewer.t.size = session->nonceOlder.t.size;
@@ -220,7 +220,7 @@ TPM_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
             }
             else
             {
-                rval = KDFa( session->authHash, &(key.b), label, &( session->nonceNewer.b ), 
+                rval = KDFa( session->authHash, &(key.b), label, &( session->nonceNewer.b ),
                         &( session->nonceOlder.b ), bytes * 8, (TPM2B_MAX_BUFFER *)&( session->sessionKey ) );
             }
 
@@ -251,7 +251,7 @@ TPM_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
 // some uses.
 //
 TPM_RC StartAuthSessionWithParams( SESSION **session,
-    TPMI_DH_OBJECT tpmKey, TPM2B_MAX_BUFFER *salt, 
+    TPMI_DH_OBJECT tpmKey, TPM2B_MAX_BUFFER *salt,
     TPMI_DH_ENTITY bind, TPM2B_AUTH *bindAuth, TPM2B_NONCE *nonceCaller,
     TPM2B_ENCRYPTED_SECRET *encryptedSalt,
     TPM_SE sessionType, TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH algId,
@@ -259,12 +259,12 @@ TPM_RC StartAuthSessionWithParams( SESSION **session,
 {
     TPM_RC rval;
     SESSION_LIST_ENTRY *sessionEntry;
-    
+
     rval = AddSession( &sessionEntry );
     if( rval == TSS2_RC_SUCCESS )
     {
         *session = &sessionEntry->session;
-        
+
         // Copy handles to session struct.
         (*session)->bind = bind;
         (*session)->tpmKey = tpmKey;
@@ -289,7 +289,7 @@ TPM_RC StartAuthSessionWithParams( SESSION **session,
         // Copy bind' authValue.
         if( bindAuth == 0 )
         {
-            (*session)->authValueBind.b.size = 0;   
+            (*session)->authValueBind.b.size = 0;
         }
         else
         {
@@ -325,9 +325,9 @@ TPM_RC StartAuthSessionWithParams( SESSION **session,
 TPM_RC EndAuthSession( SESSION *session )
 {
     TPM_RC rval = TPM_RC_SUCCESS;
-    
+
     DeleteSession( session );
 
     return rval;
-}   
+}
 

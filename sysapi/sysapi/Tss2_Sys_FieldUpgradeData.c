@@ -38,12 +38,12 @@ TPM_RC Tss2_Sys_FieldUpgradeData_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_FieldUpgradeData );
 
-    
-            
+
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( fuData->b ) );
 
     SYS_CONTEXT->decryptAllowed = 1;
@@ -86,10 +86,10 @@ TPM_RC Tss2_Sys_FieldUpgradeData(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_FieldUpgradeData_Prepare( sysContext, fuData );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
@@ -99,7 +99,7 @@ TPM_RC Tss2_Sys_FieldUpgradeData(
             rval = Tss2_Sys_FieldUpgradeData_Complete( sysContext, nextDigest, firstDigest );
         }
     }
-    
+
     return rval;
 }
 

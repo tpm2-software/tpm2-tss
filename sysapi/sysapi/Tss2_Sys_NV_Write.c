@@ -41,7 +41,7 @@ TPM_RC Tss2_Sys_NV_Write_Prepare(
         return( TSS2_SYS_RC_BAD_REFERENCE );
     }
 
-     
+
 
     CommonPreparePrologue( sysContext, TPM_CC_NV_Write );
 
@@ -53,7 +53,7 @@ TPM_RC Tss2_Sys_NV_Write_Prepare(
 	{
 		SYS_CONTEXT->decryptNull = 1;
 	}
-            
+
     MARSHAL_SIMPLE_TPM2B( sysContext, &( data->b ) );
 
     Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), offset, &(SYS_CONTEXT->rval) );
@@ -80,15 +80,15 @@ TPM_RC Tss2_Sys_NV_Write(
 {
     TSS2_RC     rval = TPM_RC_SUCCESS;
 
-     
+
 
     rval = Tss2_Sys_NV_Write_Prepare( sysContext, authHandle, nvIndex, data, offset );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
     }
-    
+
     return rval;
 }
 

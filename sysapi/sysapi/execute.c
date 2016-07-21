@@ -51,7 +51,7 @@ TSS2_RC Tss2_Sys_ExecuteAsync(
 
     if( rval == TSS2_RC_SUCCESS )
     {
-        SYS_CONTEXT->previousStage = CMD_STAGE_SEND_COMMAND;    
+        SYS_CONTEXT->previousStage = CMD_STAGE_SEND_COMMAND;
     }
     return rval;
 }
@@ -64,7 +64,7 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
     TSS2_RC  rval = TSS2_RC_SUCCESS;
     size_t responseSize = 0;
     UINT8 tpmError = 0;
-    
+
     if( sysContext == 0 )
     {
         rval = TSS2_SYS_RC_BAD_REFERENCE;
@@ -76,7 +76,7 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
     else
     {
         responseSize = SYS_CONTEXT->maxResponseSize;
-        
+
         rval = (*( TCTI_CONTEXT )->receive)
                 ( SYS_CONTEXT->tctiContext, (size_t *)&responseSize, SYS_CONTEXT->tpmOutBuffPtr, timeout );
     }
@@ -100,8 +100,8 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
             // in each Part 3 command's Complete function for this.
             SYS_CONTEXT->nextData = SYS_CONTEXT->tpmOutBuffPtr;
 
-            Unmarshal_UINT16( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), 0, &(SYS_CONTEXT->rval) ); 
-            Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), (UINT32 *)&responseSize, &(SYS_CONTEXT->rval) ); 
+            Unmarshal_UINT16( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), 0, &(SYS_CONTEXT->rval) );
+            Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), (UINT32 *)&responseSize, &(SYS_CONTEXT->rval) );
 
             if( responseSize < ( sizeof( TPM20_Header_Out ) - 1 ) )
             {
@@ -113,7 +113,7 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
 
                 // Return TPM return code if no other errors have occured.
                 if( rval == TSS2_RC_SUCCESS )
-                {   
+                {
                     if( SYS_CONTEXT->rval != TPM_RC_SUCCESS )
                     {
                         tpmError = 1;
@@ -145,11 +145,11 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
         // Changed error code to what it should be.
         rval = TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
     }
-        
+
     return rval;
 }
 
- 
+
 
 TSS2_RC Tss2_Sys_Execute(
     TSS2_SYS_CONTEXT 		*sysContext

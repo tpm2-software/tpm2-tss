@@ -32,10 +32,10 @@
 TSS2_RC GetBlockSizeInBits( TPMI_ALG_SYM algorithm, UINT32 *blockSizeInBits )
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    
+
     if( algorithm == TPM_ALG_AES )
         *blockSizeInBits = 128;
-    else if( algorithm == TPM_ALG_SM3_256 ) 
+    else if( algorithm == TPM_ALG_SM3_256 )
         *blockSizeInBits = 128;
     else
         rval = TSS2_APP_RC_BAD_ALGORITHM;
@@ -53,7 +53,7 @@ TSS2_RC GenerateSessionEncryptDecryptKey( SESSION *session, TPM2B_MAX_BUFFER *cf
 
     CopySizedByteBuffer( &sessionValue.b, &session->sessionKey.b );
     CatSizedByteBuffer( &sessionValue.b, &authValue->b );
-    
+
     if( rval == TSS2_RC_SUCCESS )
     {
         INIT_SIMPLE_TPM2B_SIZE( key );
@@ -103,7 +103,7 @@ UINT32 LoadSessionEncryptDecryptKey( TPMT_SYM_DEF *symmetric, TPM2B_MAX_BUFFER *
     TPM2B_PUBLIC inPublic;
     UINT32 rval;
     TSS2_SYS_CONTEXT *sysContext;
-    
+
     keyAuth.size = 0;
 
     inPrivate.t.sensitiveArea.sensitiveType = TPM_ALG_SYMCIPHER;
@@ -134,7 +134,7 @@ UINT32 LoadSessionEncryptDecryptKey( TPMT_SYM_DEF *symmetric, TPM2B_MAX_BUFFER *
     rval = Tss2_Sys_LoadExternal( sysContext, 0, &inPrivate, &inPublic, TPM_RH_NULL, keyHandle, keyName, 0 );
 
     TeardownSysContext( &sysContext );
-    
+
     return rval;
 }
 
@@ -187,7 +187,7 @@ TSS2_RC EncryptCFB( SESSION *session, TPM2B_MAX_BUFFER *encryptedData, TPM2B_MAX
         }
     }
     TeardownSysContext( &sysContext );
-    
+
     return rval;
 }
 
@@ -241,7 +241,7 @@ TSS2_RC DecryptCFB( SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM2B_MAX_BUF
         }
     }
     TeardownSysContext( &sysContext );
-    
+
     return rval;
 }
 
@@ -254,7 +254,7 @@ TSS2_RC EncryptDecryptXOR( SESSION *session, TPM2B_MAX_BUFFER *outputData, TPM2B
 
     CopySizedByteBuffer( &key.b, &session->sessionKey.b );
     CatSizedByteBuffer( &key.b, &authValue->b );
-    
+
     rval = KDFa( session->authHash, &key.b, "XOR", &session->nonceNewer.b, &session->nonceOlder.b, inputData->t.size * 8, &mask );
     if( rval == TSS2_RC_SUCCESS )
     {
@@ -272,7 +272,7 @@ TSS2_RC EncryptDecryptXOR( SESSION *session, TPM2B_MAX_BUFFER *outputData, TPM2B
 TSS2_RC EncryptCommandParam( SESSION *session, TPM2B_MAX_BUFFER *encryptedData, TPM2B_MAX_BUFFER *clearData, TPM2B_AUTH *authValue )
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    
+
     if( session->symmetric.algorithm == TPM_ALG_AES )
     {
         // CFB mode encryption.
@@ -290,7 +290,7 @@ TSS2_RC EncryptCommandParam( SESSION *session, TPM2B_MAX_BUFFER *encryptedData, 
 TSS2_RC DecryptResponseParam( SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM2B_MAX_BUFFER *encryptedData, TPM2B_AUTH *authValue )
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    
+
     if( session->symmetric.algorithm == TPM_ALG_AES )
     {
         // CFB mode decryption.
