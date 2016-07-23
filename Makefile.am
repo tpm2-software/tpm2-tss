@@ -70,7 +70,8 @@ test_CommonPreparePrologue_unit_CFLAGS = $(CMOCKA_CFLAGS) \
 test_CommonPreparePrologue_unit_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
 test_CommonPreparePrologue_unit_LDADD = $(CMOCKA_LIBS)
 test_CommonPreparePrologue_unit_SOURCES = \
-    test/CommonPreparePrologue_unit.c sysapi/sysapi_util/CommandUtil.c
+    test/CommonPreparePrologue_unit.c sysapi/sysapi_util/CommandUtil.c \
+    sysapi/sysapi/ContextManagement.c
 
 # how to build stuff
 resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS) $(AM_CFLAGS)
