@@ -1222,6 +1222,7 @@ typedef  UINT32             TPM_CC;
 #if CC_PolicyNvWritten == YES
 #define  TPM_CC_PolicyNvWritten               (TPM_CC)(0x0000018f)
 #endif
+#define  TPM_CC_LAST                          (TPM_CC)(0x0000018f)
 #ifndef CC_Vendor_TCG_Test
 #   define CC_Vendor_TCG_Test NO
 #endif
