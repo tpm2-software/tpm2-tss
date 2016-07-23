@@ -105,7 +105,7 @@ TSS2_RC CommonPreparePrologue(
 
     if( sysContext == NULL )
     {
-        return SYS_CONTEXT->rval = TSS2_SYS_RC_BAD_REFERENCE;
+        return TSS2_SYS_RC_BAD_REFERENCE;
     }
 
     InitSysContextFields( sysContext );
