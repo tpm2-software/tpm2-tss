@@ -40,7 +40,7 @@ __wrap_Tss2_Sys_GetCapability (TSS2_SYS_CONTEXT         *sys_ctx,
 static void
 getcommand_malloc_fail (void **state)
 {
-    TSS2_SYS_CONTEXT *sys_ctx;
+    TSS2_SYS_CONTEXT *sys_ctx = NULL;
     TPML_CCA *commands;
     TSS2_RC ret, ret_expected = TSS2_BASE_RC_INSUFFICIENT_BUFFER + TSS2_RESMGR_ERROR_LEVEL;
 
