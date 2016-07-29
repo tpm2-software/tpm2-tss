@@ -40,7 +40,8 @@ lib_LTLIBRARIES = $(libsapi) $(libtcti_device) $(libtcti_socket)
 check_PROGRAMS  = \
     test/tcti_device \
     test/getcommands-malloc-mock_unit \
-    test/CommonPreparePrologue_unit
+    test/CommonPreparePrologue_unit \
+    test/CopyCommandHeader_unit
 TESTS = $(check_PROGRAMS)
 CLEANFILES = $(nodist_pkgconfig_DATA)
 
@@ -72,6 +73,14 @@ test_CommonPreparePrologue_unit_LDADD = $(CMOCKA_LIBS)
 test_CommonPreparePrologue_unit_SOURCES = \
     test/CommonPreparePrologue_unit.c sysapi/sysapi_util/CommandUtil.c \
     sysapi/sysapi/ContextManagement.c
+
+test_CopyCommandHeader_unit_CFLAGS = $(CMOCKA_CFLAGS) \
+    -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
+test_CopyCommandHeader_unit_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
+test_CopyCommandHeader_unit_LDADD = $(CMOCKA_LIBS)
+test_CopyCommandHeader_unit_SOURCES = \
+    test/CopyCommandHeader_unit.c sysapi/sysapi_util/CommandUtil.c \
+    sysapi/sysapi/ContextManagement.c sysapi/sysapi_util/changeEndian.c
 
 # how to build stuff
 resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS) $(AM_CFLAGS)
