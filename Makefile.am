@@ -42,6 +42,7 @@ check_PROGRAMS  = \
     test/getcommands-malloc-mock_unit \
     test/CommonPreparePrologue_unit \
     test/GetNumHandles_unit
+    test/CopyCommandHeader_unit
 TESTS = $(check_PROGRAMS)
 CLEANFILES = $(nodist_pkgconfig_DATA)
 
@@ -79,6 +80,13 @@ test_GetNumHandles_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
 test_GetNumHandles_unit_LDADD   = $(CMOCKA_LIBS)
 test_GetNumHandles_unit_SOURCES = \
     test/GetNumHandles_unit.c sysapi/sysapi_util/GetNumHandles.c
+test_CopyCommandHeader_unit_CFLAGS = $(CMOCKA_CFLAGS) \
+    -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
+test_CopyCommandHeader_unit_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
+test_CopyCommandHeader_unit_LDADD = $(CMOCKA_LIBS)
+test_CopyCommandHeader_unit_SOURCES = \
+    test/CopyCommandHeader_unit.c sysapi/sysapi_util/CommandUtil.c \
+    sysapi/sysapi/ContextManagement.c sysapi/sysapi_util/changeEndian.c
 
 # how to build stuff
 resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS) $(AM_CFLAGS)
