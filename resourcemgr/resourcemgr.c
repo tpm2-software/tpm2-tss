@@ -176,7 +176,7 @@ UINT8 simulator = 0;
 enum shutdownStartupSequenceType { TPM_RESET, TPM_RESTART, TPM_RESUME };
 
 TSS2_TCTI_CONTEXT *downstreamTctiContext = 0;
-TSS2_SYS_CONTEXT *resMgrSysContext, *tempSysContext;
+TSS2_SYS_CONTEXT *resMgrSysContext;
 
 TSS2_ABI_VERSION abiVersion = { TSSWG_INTEROP, TSS_SAPI_FIRST_FAMILY, TSS_SAPI_FIRST_LEVEL, TSS_SAPI_FIRST_VERSION };
 
@@ -3118,14 +3118,6 @@ int main(int argc, char* argv[])
     // Init sysContext for use by RM.  Used to send RM specific TPM commands to the TPM.
     resMgrSysContext = InitSysContext( 0, downstreamTctiContext, &abiVersion );
     if( resMgrSysContext == 0 )
-    {
-        InitSysContextFailure();
-        goto initDone;
-    }
-
-    // Init sysContext for use by marshalling and unmarshalling functions in RM.
-    tempSysContext = InitSysContext( 0, downstreamTctiContext, &abiVersion );
-    if( tempSysContext == 0 )
     {
         InitSysContextFailure();
         goto initDone;
