@@ -7173,7 +7173,7 @@ void TestLocalTCTI()
 
         TestTctiApis( downstreamTctiContext, 0 );
 
-        TeardownDeviceTcti( downstreamTctiContext );
+        TeardownDeviceTcti( &downstreamTctiContext );
 
         exit( 0 );
     }
