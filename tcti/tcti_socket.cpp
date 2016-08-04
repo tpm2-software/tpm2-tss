@@ -272,8 +272,6 @@ void SocketFinalize(
         SendSessionEndSocketTcti( tctiContext, 0 );
 
         CloseSockets( TCTI_CONTEXT_INTEL->otherSock, TCTI_CONTEXT_INTEL->tpmSock );
-
-        free( tctiContext );
     }
 }
 
@@ -529,12 +527,3 @@ TSS2_RC InitSocketTcti (
 
     return rval;
 }
-
-TSS2_RC TeardownSocketTcti (TSS2_TCTI_CONTEXT *tctiContext)
-{
-    ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->finalize( tctiContext );
-
-    return TSS2_RC_SUCCESS;
-}
-
-

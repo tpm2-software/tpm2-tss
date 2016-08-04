@@ -289,9 +289,13 @@ TSS2_RC InitTctiResMgrContext( TCTI_SOCKET_CONF *rmInterfaceConfig, TSS2_TCTI_CO
     return rval;
 }
 
-TSS2_RC TeardownTctiResMgrContext( TSS2_TCTI_CONTEXT *tctiContext )
+void TeardownTctiResMgrContext( TSS2_TCTI_CONTEXT **tctiContext )
 {
-    return TeardownSocketTcti( tctiContext );
+    if (*tctiContext) {
+        tss2_tcti_finalize( *tctiContext );
+        free( *tctiContext );
+        *tctiContext = NULL;
+    }
 }
 
 void Cleanup()
@@ -301,8 +305,7 @@ void Cleanup()
     if( resMgrTctiContext != 0 )
     {
         PlatformCommand( resMgrTctiContext, MS_SIM_POWER_OFF );
-
-        TeardownTctiResMgrContext( resMgrTctiContext );
+        TeardownTctiResMgrContext( &resMgrTctiContext );
     }
 
 #ifdef _WIN32
@@ -2558,8 +2561,7 @@ void TestEvict()
             &creationHash, &creationTicket, &sessionsDataOut );
     CheckPassed( rval );
 
-    rval = TeardownTctiResMgrContext( otherResMgrTctiContext );
-    CheckPassed( rval );
+    TeardownTctiResMgrContext( &otherResMgrTctiContext );
 
     TeardownSysContext( &otherSysContext );
 
@@ -6913,8 +6915,7 @@ void TestRM()
     rval = Tss2_Sys_FlushContext( sysContext, newHandleDummy );
     CheckPassed( rval );
 
-    rval = TeardownTctiResMgrContext( otherResMgrTctiContext );
-    CheckPassed( rval );
+    TeardownTctiResMgrContext( &otherResMgrTctiContext );
 
     TeardownSysContext( &otherSysContext );
 }
@@ -7468,11 +7469,8 @@ int main(int argc, char* argv[])
     else
     {
         TpmTest();
-
-        rval = TeardownTctiResMgrContext( resMgrTctiContext );
-        CheckPassed( rval );
-
         TeardownSysContext( &sysContext );
+        TeardownTctiResMgrContext( &resMgrTctiContext );
     }
 
     return 0;

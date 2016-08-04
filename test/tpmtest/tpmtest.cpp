@@ -312,9 +312,13 @@ TSS2_RC TeardownTctiResMgrContext( char *driverConfig )
 */
 //-----------
 //+++++++++++
-TSS2_RC TeardownTctiResMgrContext( TSS2_TCTI_CONTEXT *tctiContext )
+void TeardownTctiResMgrContext( TSS2_TCTI_CONTEXT **tctiContext )
 {
-    return TeardownSocketTcti( tctiContext );
+    if( *tctiContext ) {
+        tss2_tcti_finalize( *tctiContext );
+        free( *tctiContext );
+        *tctiContext = NULL;
+    }
 }
 //+++++++++++
 void Cleanup()
@@ -333,7 +337,7 @@ void Cleanup()
 
 	PlatformCommand( resMgrTctiContext, MS_SIM_POWER_OFF );
 
-	TeardownTctiResMgrContext( resMgrTctiContext );
+	TeardownTctiResMgrContext( &resMgrTctiContext );
 
 #ifdef _WIN32
     WSACleanup();
@@ -6424,10 +6428,8 @@ void TestRM()
     rval = Tss2_Sys_FlushContext( sysContext, newHandleDummy );
     CheckPassed( rval );
 
-    rval = TeardownTctiResMgrContext( otherResMgrTctiContext );
-    CheckPassed( rval );
-
     TeardownSysContext( &otherSysContext );
+    TeardownTctiResMgrContext( &otherResMgrTctiContext );
 }
 
 void EcEphemeralTest()
