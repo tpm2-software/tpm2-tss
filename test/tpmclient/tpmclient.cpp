@@ -59,7 +59,7 @@
 #include "sample.h"
 #include "resourcemgr.h"
 #include "tpmclient.h"
-#include "tcti_device_util.h"
+#include "common/tcti_util.h"
 
 // This is done to allow the tests to access fields
 // in the sysContext structure that are needed for
@@ -289,15 +289,6 @@ TSS2_RC InitTctiResMgrContext( TCTI_SOCKET_CONF *rmInterfaceConfig, TSS2_TCTI_CO
     return rval;
 }
 
-void TeardownTctiResMgrContext( TSS2_TCTI_CONTEXT **tctiContext )
-{
-    if (*tctiContext) {
-        tss2_tcti_finalize( *tctiContext );
-        free( *tctiContext );
-        *tctiContext = NULL;
-    }
-}
-
 void Cleanup()
 {
     fflush( stdout );
@@ -305,7 +296,7 @@ void Cleanup()
     if( resMgrTctiContext != 0 )
     {
         PlatformCommand( resMgrTctiContext, MS_SIM_POWER_OFF );
-        TeardownTctiResMgrContext( &resMgrTctiContext );
+        TeardownTctiContext( &resMgrTctiContext );
     }
 
 #ifdef _WIN32
@@ -2537,7 +2528,7 @@ void TestEvict()
 
     // Try creating a key under the persistent key using a different context.
 
-    rval = InitTctiResMgrContext( &rmInterfaceConfig, &otherResMgrTctiContext, &otherResMgrInterfaceName[0] );
+    rval = InitSocketTctiContext( &rmInterfaceConfig, &otherResMgrTctiContext);
     if( rval != TSS2_RC_SUCCESS )
     {
         DebugPrintf( NO_PREFIX, "Resource Mgr, failed initialization: 0x%x.  Exiting...\n", rval );
@@ -2561,7 +2552,7 @@ void TestEvict()
             &creationHash, &creationTicket, &sessionsDataOut );
     CheckPassed( rval );
 
-    TeardownTctiResMgrContext( &otherResMgrTctiContext );
+    TeardownTctiContext( &otherResMgrTctiContext );
 
     TeardownSysContext( &otherSysContext );
 
@@ -6670,7 +6661,7 @@ void TestRM()
     sessionsData.cmdAuthsCount = 1;
     sessionsData.cmdAuths[0] = &sessionData;
 
-    rval = InitTctiResMgrContext( &rmInterfaceConfig, &otherResMgrTctiContext, &otherResMgrInterfaceName[0] );
+    rval = InitSocketTctiContext( &rmInterfaceConfig, &otherResMgrTctiContext);
     if( rval != TSS2_RC_SUCCESS )
     {
         DebugPrintf( NO_PREFIX, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", otherResMgrInterfaceName, rval );
@@ -6915,7 +6906,7 @@ void TestRM()
     rval = Tss2_Sys_FlushContext( sysContext, newHandleDummy );
     CheckPassed( rval );
 
-    TeardownTctiResMgrContext( &otherResMgrTctiContext );
+    TeardownTctiContext( &otherResMgrTctiContext );
 
     TeardownSysContext( &otherSysContext );
 }
@@ -7173,7 +7164,7 @@ void TestLocalTCTI()
 
         TestTctiApis( downstreamTctiContext, 0 );
 
-        TeardownDeviceTcti( &downstreamTctiContext );
+        TeardownTctiContext( &downstreamTctiContext );
 
         exit( 0 );
     }
@@ -7443,7 +7434,7 @@ int main(int argc, char* argv[])
     }
 #endif
 
-    rval = InitTctiResMgrContext( &rmInterfaceConfig, &resMgrTctiContext, &resMgrInterfaceName[0] );
+    rval = InitSocketTctiContext( &rmInterfaceConfig, &resMgrTctiContext);
     if( rval != TSS2_RC_SUCCESS )
     {
         DebugPrintf( NO_PREFIX, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceName, rval );
@@ -7470,7 +7461,7 @@ int main(int argc, char* argv[])
     {
         TpmTest();
         TeardownSysContext( &sysContext );
-        TeardownTctiResMgrContext( &resMgrTctiContext );
+        TeardownTctiContext( &resMgrTctiContext );
     }
 
     return 0;
