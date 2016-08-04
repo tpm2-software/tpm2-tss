@@ -31,7 +31,7 @@
 #include <sapi/tpm20.h>
 #include <tcti/tcti_device.h>
 #include <tcti/tcti_socket.h>
-#include "tcti_device_util.h"
+#include "tcti_util.h"
 #include "resourcemgr.h"
 //#include <sample.h>
 #include "sockets.h"
@@ -2745,23 +2745,6 @@ TCTI_SOCKET_CONF simInterfaceConfig = {
 SOCKET simOtherSock;
 SOCKET simTpmSock;
 
-TSS2_RC InitSimulatorTctiContext( TCTI_SOCKET_CONF *tcti_conf, TSS2_TCTI_CONTEXT **tctiContext )
-{
-    size_t size;
-
-    TSS2_RC rval = TSS2_RC_SUCCESS;
-
-    rval = InitSocketTcti(NULL, &size, tcti_conf, 1 );
-    if( rval != TSS2_RC_SUCCESS )
-        return rval;
-
-    *tctiContext = malloc(size);
-
-    DebugPrintf( NO_PREFIX, "Initializing %s Interface\n", resSocketTctiName );
-    rval = InitSocketTcti(*tctiContext, &size, tcti_conf, 0 );
-    return rval;
-}
-
 TSS2_RC InitResourceMgr( int debugLevel)
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
@@ -3108,7 +3091,7 @@ int main(int argc, char* argv[])
     else
 #endif
     {
-        rval = InitSimulatorTctiContext( &simInterfaceConfig, &downstreamTctiContext );
+        rval = InitSocketTctiContext( &simInterfaceConfig, &downstreamTctiContext );
         if( rval != TSS2_RC_SUCCESS )
         {
             DebugPrintf( NO_PREFIX,  "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resSocketTctiName, rval );
@@ -3202,6 +3185,7 @@ int main(int argc, char* argv[])
     CloseHandle( tpmMutex );
 
     TeardownSysContext( &resMgrSysContext );
+    TeardownTctiContext( &downstreamTctiContext );
 
 initDone:
 
