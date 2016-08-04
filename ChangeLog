@@ -3,6 +3,7 @@ Added
 * Allow for unit tests to be enabled selectively.
 * added pkg-config files for libraries
 Changed
+* socket TCTI finalize no longer frees context
 * rename libtss2 to libsapi
 * rename libtcti_device to libtcti-device
 * rename libtcti_socket to libtcti-socket
