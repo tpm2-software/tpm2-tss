@@ -104,12 +104,14 @@ typedef void TSS2_TCTI_POLL_HANDLE;
         TSS2_TCTI_RC_NOT_IMPLEMENTED: \
     TSS2_TCTI_RECEIVE(tctiContext)(tctiContext, size, response, timeout))
 #define tss2_tcti_finalize(tctiContext) \
-    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_CONTEXT: \
-    (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
-        TSS2_TCTI_RC_ABI_MISMATCH: \
-    (TSS2_TCTI_FINALIZE(tctiContext) == NULL) ? \
-        TSS2_TCTI_RC_NOT_IMPLEMENTED: \
-    TSS2_TCTI_FINALIZE(tctiContext)(tctiContext))
+    do { \
+        if ((tctiContext != NULL) && \
+            (TSS2_TCTI_VERSION(tctiContext) >= 1) && \
+            (TSS2_TCTI_FINALIZE(tctiContext) != NULL)) \
+        { \
+            TSS2_TCTI_FINALIZE(tctiContext)(tctiContext); \
+        } \
+    } while (0)
 #define tss2_tcti_cancel(tctiContext) \
     ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_CONTEXT: \
     (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
