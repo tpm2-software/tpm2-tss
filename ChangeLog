@@ -1,5 +1,6 @@
 Unreleased
 Added
+* Allow for unit tests to be enabled selectively.
 * added pkg-config files for libraries
 Changed
 * rename libtss2 to libsapi

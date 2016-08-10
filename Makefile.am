@@ -36,12 +36,16 @@ AM_CXXFLAGS     = $(AM_CFLAGS)
 sbin_PROGRAMS   = $(resourcemgr)
 noinst_PROGRAMS = $(tpmclient) $(tpmtest)
 lib_LTLIBRARIES = $(libsapi) $(libtcti_device) $(libtcti_socket)
+
 # unit tests
+if UNIT
 check_PROGRAMS  = \
     test/tcti_device \
     test/getcommands-malloc-mock_unit \
     test/CommonPreparePrologue_unit \
     test/GetNumHandles_unit
+endif #UNIT
+
 TESTS = $(check_PROGRAMS)
 CLEANFILES = $(nodist_pkgconfig_DATA)
 
@@ -54,6 +58,7 @@ libtcti_HEADERS = $(srcdir)/include/tcti/*.h
 pkgconfigdir          = $(libdir)/pkgconfig
 nodist_pkgconfig_DATA = lib/sapi.pc lib/tcti-device.pc lib/tcti-socket.pc
 
+if UNIT
 test_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir) -I$(srcdir)/sysapi/include
 test_tcti_device_LDADD   = $(libsapi) $(libtcti_device) $(CMOCKA_LIBS)
 test_tcti_device_SOURCES = test/tcti_device.c test/tcti_device_test.c
@@ -79,6 +84,7 @@ test_GetNumHandles_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
 test_GetNumHandles_unit_LDADD   = $(CMOCKA_LIBS)
 test_GetNumHandles_unit_SOURCES = \
     test/GetNumHandles_unit.c sysapi/sysapi_util/GetNumHandles.c
+endif # UNIT
 
 # how to build stuff
 resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS) $(AM_CFLAGS)
