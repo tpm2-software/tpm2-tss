@@ -41,7 +41,7 @@ check_PROGRAMS  = \
     test/tcti_device \
     test/getcommands-malloc-mock_unit \
     test/CommonPreparePrologue_unit \
-    test/GetNumHandles_unit
+    test/GetNumHandles_unit \
     test/CopyCommandHeader_unit
 TESTS = $(check_PROGRAMS)
 CLEANFILES = $(nodist_pkgconfig_DATA)
