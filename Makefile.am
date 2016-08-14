@@ -60,11 +60,11 @@ pkgconfigdir          = $(libdir)/pkgconfig
 nodist_pkgconfig_DATA = lib/sapi.pc lib/tcti-device.pc lib/tcti-socket.pc
 
 if UNIT
-test_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir) -I$(srcdir)/sysapi/include
+test_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include -I$(srcdir)/sysapi/include
 test_tcti_device_LDADD   = $(libsapi) $(libtcti_device) $(CMOCKA_LIBS)
 test_tcti_device_SOURCES = test/tcti_device.c test/tcti_device_test.c
 
-test_getcommands_malloc_mock_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+test_getcommands_malloc_mock_unit_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
     -I$(srcdir)/sysapi/include/
 test_getcommands_malloc_mock_unit_LDADD   = $(CMOCKA_LIBS)
 test_getcommands_malloc_mock_unit_LDFLAGS = -Wl,--wrap=malloc \
@@ -72,7 +72,7 @@ test_getcommands_malloc_mock_unit_LDFLAGS = -Wl,--wrap=malloc \
 test_getcommands_malloc_mock_unit_SOURCES = \
     test/getcommands-malloc-mock_unit.c resourcemgr/getcommands.c
 
-test_CommonPreparePrologue_unit_CFLAGS = $(CMOCKA_CFLAGS) \
+test_CommonPreparePrologue_unit_CFLAGS = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
     -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
 test_CommonPreparePrologue_unit_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
 test_CommonPreparePrologue_unit_LDADD = $(CMOCKA_LIBS)
@@ -85,7 +85,8 @@ test_GetNumHandles_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
 test_GetNumHandles_unit_LDADD   = $(CMOCKA_LIBS)
 test_GetNumHandles_unit_SOURCES = \
     test/GetNumHandles_unit.c sysapi/sysapi_util/GetNumHandles.c
-test_CopyCommandHeader_unit_CFLAGS = $(CMOCKA_CFLAGS) \
+
+test_CopyCommandHeader_unit_CFLAGS = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
     -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
 test_CopyCommandHeader_unit_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
 test_CopyCommandHeader_unit_LDADD = $(CMOCKA_LIBS)
