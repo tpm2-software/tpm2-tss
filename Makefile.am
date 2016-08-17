@@ -182,13 +182,13 @@ TCTISOCKET_INC = $(TCTICOMMON_INC)
 TCTISOCKET_C   = tcti/platformcommand.c
 TCTISOCKET_CXX = tcti/tcti_socket.cpp
 
-TPMCLIENT_INC = -I$(srcdir)/include -I$(srcdir)/sysapi/include \
-    -I$(srcdir)/test/tpmclient -I$(srcdir)/common \
+TPMCLIENT_INC = -I$(srcdir)/include -I$(srcdir)/common \
+    -I$(srcdir)/test/tpmclient -I$(srcdir)/sysapi/include \
     -I$(srcdir)/test/common/sample -I$(srcdir)/resourcemgr
 TPMCLIENT_CXX = test/tpmclient/tpmclient.cpp
 
-TPMTEST_INC = -I$(srcdir)/include -I$(srcdir)/sysapi/include \
-    -I$(srcdir)/test/tpmclient -I$(srcdir)/common \
+TPMTEST_INC = -I$(srcdir)/include -I$(srcdir)/common \
+    -I$(srcdir)/test/tpmclient -I$(srcdir)/sysapi/include \
     -I$(srcdir)/test/common/sample -I$(srcdir)/resourcemgr
 TPMTEST_CXX = test/tpmtest/tpmtest.cpp
 
