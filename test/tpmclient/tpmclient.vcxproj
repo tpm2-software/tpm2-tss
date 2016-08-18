@@ -41,7 +41,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(SolutionDir)tpmclient;$(SolutionDir)tpmclient\simdriver;$(SolutionDir)resourceMgr;..\common\sample;$(IncludePath);..\..\common;$(SolutionDir)tcti\commonTcti</IncludePath>
+    <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(IncludePath);</IncludePath>
     <OutDir>$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -55,9 +55,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);SAPI_CLIENT;DEBUG</PreprocessorDefinitions>
-      <AdditionalOptions>/I..\..\include %(AdditionalOptions)</AdditionalOptions>
       <StructMemberAlignment>1Byte</StructMemberAlignment>
-      <AdditionalIncludeDirectories>..\..\sysapi\include;..\common\sample;..\..\resourcemgr\;..\..\syscontext;..\..\tpmsockets;..\..\common;..\..\tcti\tpmsockets.;..\..\tcti\localtpm;.</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include;.\; ..\common\sample;..\..\resourcemgr\;..\..\common;..\..\sysapi\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -97,22 +96,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\common\debug.h" />
-    <ClInclude Include="..\..\common\platform.h" />
     <ClInclude Include="..\..\common\sockets.h" />
     <ClInclude Include="..\..\common\syscontext.h" />
+    <ClInclude Include="..\..\common\tcti_util.h" />
     <ClInclude Include="..\..\include\tcti\tcti_socket.h" />
     <ClInclude Include="..\..\sysapi\include\endianConv.h" />
-    <ClInclude Include="..\..\sysapi\include\implementation.h" />
-    <ClInclude Include="..\..\sysapi\include\tpm20.h" />
-    <ClInclude Include="..\..\sysapi\include\tpmb.h" />
-    <ClInclude Include="..\..\sysapi\include\tss2_common.h" />
-    <ClInclude Include="..\..\sysapi\include\tss2_sys.h" />
-    <ClInclude Include="..\..\sysapi\include\tss2_sysapi_util.h" />
-    <ClInclude Include="..\..\sysapi\include\tss2_sys_api_marshalUnmarshal.h" />
-    <ClInclude Include="..\..\sysapi\include\tss2_sys_api_part3.h" />
-    <ClInclude Include="..\..\sysapi\include\tss2_tcti.h" />
-    <ClInclude Include="..\..\sysapi\include\tss2_tcti_util.h" />
-    <ClInclude Include="..\..\sysapi\include\tss2_tpm2_types.h" />
     <ClInclude Include="..\..\tcti\commonchecks.h" />
     <ClInclude Include="..\common\sample\sample.h" />
     <ClInclude Include="stdafx.h" />
@@ -123,6 +111,7 @@
     <ClCompile Include="..\..\common\debug.c" />
     <ClCompile Include="..\..\common\sockets.cpp" />
     <ClCompile Include="..\..\common\syscontext.c" />
+    <ClCompile Include="..\..\common\tcti_util.c" />
     <ClCompile Include="..\..\tcti\commonchecks.c" />
     <ClCompile Include="..\..\tcti\platformcommand.c" />
     <ClCompile Include="..\..\tcti\tcti_socket.cpp" />

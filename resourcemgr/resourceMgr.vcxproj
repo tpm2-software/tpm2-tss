@@ -39,7 +39,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)tcti\commontcti;$(IncludePath);..\include;..\test\tpmclient;..\common</IncludePath>
+    <IncludePath>$(IncludePath);</IncludePath>
     <OutDir>$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -84,37 +84,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\endianConv.h" />
-    <ClInclude Include="..\..\include\Implementation.h" />
     <ClInclude Include="..\common\debug.h" />
-    <ClInclude Include="..\common\platform.h" />
     <ClInclude Include="..\common\sockets.h" />
     <ClInclude Include="..\common\syscontext.h" />
+    <ClInclude Include="..\common\tcti_util.h" />
+    <ClInclude Include="..\include\tcti\common.h" />
     <ClInclude Include="..\include\tcti\tcti_socket.h" />
-    <ClInclude Include="..\sysapi\include\tpm20.h" />
-    <ClInclude Include="..\sysapi\include\tss2_common.h" />
-    <ClInclude Include="..\sysapi\include\tss2_sys.h" />
-    <ClInclude Include="..\sysapi\include\tss2_sys_api_part3.h" />
-    <ClInclude Include="..\sysapi\include\tss2_tcti.h" />
-    <ClInclude Include="..\sysapi\include\tss2_tcti_util.h" />
-    <ClInclude Include="..\sysapi\include\tss2_tpm2_types.h" />
     <ClInclude Include="..\tcti\commonchecks.h" />
     <ClInclude Include="criticalsection.h" />
     <ClInclude Include="resourcemgr.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\common\debug.c" />
-    <ClCompile Include="..\common\getcommands.c" />
     <ClCompile Include="..\common\sockets.cpp" />
     <ClCompile Include="..\common\syscontext.c" />
+    <ClCompile Include="..\common\tcti_util.c" />
     <ClCompile Include="..\tcti\commonchecks.c" />
     <ClCompile Include="..\tcti\platformcommand.c" />
     <ClCompile Include="..\tcti\tcti_socket.cpp" />
     <ClCompile Include="criticalsection_windows.c" />
+    <ClCompile Include="getcommands.c" />
     <ClCompile Include="resourcemgr.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\sysapi\tpm20lib-tpm.vcxproj" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
