@@ -2463,7 +2463,6 @@ void TestEvict()
 
     TSS2_TCTI_CONTEXT *otherResMgrTctiContext = 0;
     TSS2_SYS_CONTEXT *otherSysContext;
-    char otherResMgrInterfaceName[] = "Other Resource Manager";
 
     sessionDataArray[0] = &sessionData;
     sessionDataOutArray[0] = &sessionDataOut;
