@@ -51,8 +51,6 @@ CopyCommandHeader_nextData_unit (void **state)
 {
     _TSS2_SYS_CONTEXT_BLOB *sys_ctx = (_TSS2_SYS_CONTEXT_BLOB*)*state;
     TPM_CC cc = TPM_CC_GetCapability;
-    TPM20_Header_In *header = (TPM20_Header_In*)sys_ctx->tpmInBuffPtr;
-
 
     CopyCommandHeader (sys_ctx, cc);
     assert_int_equal (sys_ctx->nextData - sys_ctx->tpmInBuffPtr, sizeof (TPM20_Header_In));

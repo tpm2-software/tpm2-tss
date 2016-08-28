@@ -44,7 +44,8 @@ check_PROGRAMS  = \
     test/getcommands-malloc-mock_unit \
     test/CommonPreparePrologue_unit \
     test/GetNumHandles_unit \
-    test/CopyCommandHeader_unit
+    test/CopyCommandHeader_unit \
+    test/marshal-UINT16_unit
 endif #UNIT
 
 TESTS = $(check_PROGRAMS)
@@ -93,6 +94,15 @@ test_CopyCommandHeader_unit_LDADD = $(CMOCKA_LIBS)
 test_CopyCommandHeader_unit_SOURCES = \
     test/CopyCommandHeader_unit.c sysapi/sysapi_util/CommandUtil.c \
     sysapi/sysapi/ContextManagement.c sysapi/sysapi_util/changeEndian.c
+
+test_marshal_UINT16_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+    -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
+test_marshal_UINT16_unit_LDADD   = $(CMOCKA_LIBS)
+test_marshal_UINT16_unit_SOURCES = \
+    sysapi/sysapi_util/changeEndian.c \
+    sysapi/sysapi_util/checkoverflow.c \
+    sysapi/sysapi_util/marshal_uint16.c \
+    test/marshal-UINT16_unit.c
 endif # UNIT
 
 # how to build stuff
