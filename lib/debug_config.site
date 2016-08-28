@@ -1,2 +1,2 @@
-CFLAGS="-Wall -Werror -O0 -ggdb3"
-CXXFLAGS="-Wall -Werror -O0 -fno-operator-names -fpermissive -ggdb3"
+CFLAGS="-Wall -Werror -O0 -ggdb3 -DDEBUG -DDEBUG_SOCKETS"
+CXXFLAGS="-Wall -Werror -O0 -fno-operator-names -fpermissive -ggdb3 -DDEBUG -DDEBUG_SOCKETS"
