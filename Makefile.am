@@ -45,7 +45,8 @@ check_PROGRAMS  = \
     test/CommonPreparePrologue_unit \
     test/GetNumHandles_unit \
     test/CopyCommandHeader_unit \
-    test/marshal-UINT16_unit
+    test/marshal-UINT16_unit \
+    test/marshal-UINT32_unit
 endif #UNIT
 
 TESTS = $(check_PROGRAMS)
@@ -103,6 +104,15 @@ test_marshal_UINT16_unit_SOURCES = \
     sysapi/sysapi_util/checkoverflow.c \
     sysapi/sysapi_util/marshal_uint16.c \
     test/marshal-UINT16_unit.c
+
+test_marshal_UINT32_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+    -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
+test_marshal_UINT32_unit_LDADD   = $(CMOCKA_LIBS)
+test_marshal_UINT32_unit_SOURCES = \
+    sysapi/sysapi_util/changeEndian.c \
+    sysapi/sysapi_util/checkoverflow.c \
+    sysapi/sysapi_util/marshal_uint32.c \
+    test/marshal-UINT32_unit.c
 endif # UNIT
 
 # how to build stuff
