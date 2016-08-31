@@ -58,6 +58,32 @@ void InitSysContextFields(
     SYS_CONTEXT->rpBufferUsedSize = 0;
     SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
 }
+/**
+ * Initialize pointers to the various memory blocks / buffers in the opaque
+ * area of the TSS2_SYS_CONTEXT structure.
+ *
+ * tpmInBufferPtr: pointer to the memory area where we build command buffers
+ *   that we send to the TPM
+ * tpmOutBufferPtrs: pointer to the memory area where we store the TPMs
+ *   response
+ * maxComamndSize / maxResponseSize: the size of these memory areas.
+ *
+ * NOTE: It should only be necessary to invoke this function once for any
+ * given sys context.
+ */
+void InitSysContextPtrs(
+    TSS2_SYS_CONTEXT   *sysContext,
+    size_t              contextSize
+    )
+{
+    SYS_CONTEXT->tpmInBuffPtr =
+        (UINT8 *)SYS_CONTEXT + sizeof( _TSS2_SYS_CONTEXT_BLOB );
+    SYS_CONTEXT->tpmOutBuffPtr = SYS_CONTEXT->tpmInBuffPtr;
+    SYS_CONTEXT->maxCommandSize =
+        contextSize - ((UINT8 *)SYS_CONTEXT->tpmInBuffPtr - (UINT8 *)SYS_CONTEXT);
+    SYS_CONTEXT->maxResponseSize = SYS_CONTEXT->maxCommandSize;
+}
+
 
 UINT32 GetCommandSize( TSS2_SYS_CONTEXT *sysContext )
 {

@@ -160,6 +160,7 @@ TSS2_RC CopySessionsDataOut( TSS2_SYS_RSP_AUTHS *rspAuthsArray, void *otherData,
 TPM_RC ConcatSizedByteBuffer( TPM2B_MAX_BUFFER *result, TPM2B *addBuffer );
 
 void InitSysContextFields( TSS2_SYS_CONTEXT *sysContext );
+void InitSysContextPtrs ( TSS2_SYS_CONTEXT *sysContext, size_t contextSize );
 
 TSS2_RC CompleteChecks( TSS2_SYS_CONTEXT *sysContext );
 

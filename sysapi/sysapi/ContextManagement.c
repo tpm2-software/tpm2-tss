@@ -83,14 +83,8 @@ TSS2_RC Tss2_Sys_Initialize(
     {
         SYS_CONTEXT->tctiContext = (TSS2_TCTI_CONTEXT *)tctiContext;
 
+        InitSysContextPtrs( sysContext, contextSize );
         InitSysContextFields( sysContext );
-
-        // First block of memory used for sysContext.
-        // Remaining block used for in/out buffers.
-        SYS_CONTEXT->tpmInBuffPtr = (UINT8 *)( SYS_CONTEXT ) + sizeof( _TSS2_SYS_CONTEXT_BLOB );;
-        SYS_CONTEXT->tpmOutBuffPtr = SYS_CONTEXT->tpmInBuffPtr;
-        SYS_CONTEXT->maxCommandSize = SYS_CONTEXT->maxResponseSize =
-                contextSize - ( ( (UINT8 *)SYS_CONTEXT->tpmInBuffPtr ) - (UINT8 *)SYS_CONTEXT );
 
         SYS_CONTEXT->previousStage = CMD_STAGE_INITIALIZE;
     }
