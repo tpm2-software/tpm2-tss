@@ -49,6 +49,7 @@ check_PROGRAMS  = \
     test/unmarshal-UINT16_unit \
     test/marshal-UINT32_unit \
     test/unmarshal_UINT32_unit \
+    test/marshal-TPM2B-simple_unit \
     test/CheckOverflow_unit
 endif #UNIT
 
@@ -134,6 +135,23 @@ test_unmarshal_UINT32_unit_SOURCES = \
     sysapi/sysapi_util/checkoverflow.c \
     sysapi/sysapi_util/unmarshal_uint32.c \
     test/unmarshal-UINT32_unit.c
+
+test_marshal_TPM2B_simple_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+    -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
+test_marshal_TPM2B_simple_unit_LDADD   = $(CMOCKA_LIBS)
+test_marshal_TPM2B_simple_unit_SOURCES = \
+    sysapi/sysapi_util/changeEndian.c \
+    sysapi/sysapi_util/checkoverflow.c \
+    sysapi/sysapi_util/marshal_uint8.c \
+    sysapi/sysapi_util/unmarshal_uint8.c \
+    sysapi/sysapi_util/marshal_uint16.c \
+    sysapi/sysapi_util/unmarshal_uint16.c \
+    sysapi/sysapi_util/marshal_uint32.c \
+    sysapi/sysapi_util/CopySessionData.c \
+    sysapi/sysapi_util/marshal_simple_tpm2b.c \
+    sysapi/sysapi_util/unmarshal_simple_tpm2b.c \
+    sysapi/sysapi_util/unmarshal_simple_tpm2b_no_size_check.c \
+    test/marshal-TPM2B-simple_unit.c
 
 test_CheckOverflow_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
