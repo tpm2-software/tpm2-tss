@@ -46,6 +46,7 @@ check_PROGRAMS  = \
     test/GetNumHandles_unit \
     test/CopyCommandHeader_unit \
     test/marshal-UINT16_unit \
+    test/unmarshal-UINT16_unit \
     test/marshal-UINT32_unit \
     test/CheckOverflow_unit
 endif #UNIT
@@ -105,6 +106,15 @@ test_marshal_UINT16_unit_SOURCES = \
     sysapi/sysapi_util/checkoverflow.c \
     sysapi/sysapi_util/marshal_uint16.c \
     test/marshal-UINT16_unit.c
+
+test_unmarshal_UINT16_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+    -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
+test_unmarshal_UINT16_unit_LDADD   = $(CMOCKA_LIBS)
+test_unmarshal_UINT16_unit_SOURCES = \
+    sysapi/sysapi_util/changeEndian.c \
+    sysapi/sysapi_util/checkoverflow.c \
+    sysapi/sysapi_util/unmarshal_uint16.c \
+    test/unmarshal-UINT16_unit.c
 
 test_marshal_UINT32_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
