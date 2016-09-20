@@ -644,6 +644,18 @@ endTestForLoadedHandles:
     return rval;
 }
 
+UINT8 PersistentHandle( TPM_HANDLE handle )
+{
+    TPM_HT handleType;
+
+    handleType = handle >> 24;
+
+    if( handleType == TPM_HT_PERSISTENT )
+        return 1;
+    else
+        return 0;
+}
+
 TSS2_RC FlushAllLoadedHandles()
 {
     TPMS_CAPABILITY_DATA capabilityData;
@@ -855,7 +867,7 @@ TSS2_RC FlushSessionsAndClearTable( UINT64 connectionId )
 
     for( entryPtr = entryList; entryPtr != 0 && rval == TSS2_RC_SUCCESS; )
     {
-        if( connectionId == entryPtr->connectionId )
+        if( connectionId == entryPtr->connectionId && 0 == PersistentHandle(entryPtr->virtualHandle) )
         {
             if( ( entryPtr->virtualHandle & HR_RANGE_MASK ) == HR_HMAC_SESSION ||
                 ( entryPtr->virtualHandle & HR_RANGE_MASK ) == HR_POLICY_SESSION )
@@ -1105,18 +1117,6 @@ TSS2_RC HandleGap()
         }
     }
     return rval;
-}
-
-UINT8 PersistentHandle( TPM_HANDLE handle )
-{
-    TPM_HT handleType;
-
-    handleType = handle >> 24;
-
-    if( handleType == TPM_HT_PERSISTENT )
-        return 1;
-    else
-        return 0;
 }
 
 //
@@ -2472,6 +2472,14 @@ tpmCmdServerDone:
     // above.
     //
 
+    if( !criticalSectionEntered )
+    {
+        rval = StartCriticalSection( &tpmMutex, &functionString[0] );
+        if( rval == TSS2_RC_SUCCESS )
+        {
+            criticalSectionEntered = 1;
+        }
+    }
     if( criticalSectionEntered )
     {
         (void)FlushSessionsAndClearTable( serverStruct->connectSock );
