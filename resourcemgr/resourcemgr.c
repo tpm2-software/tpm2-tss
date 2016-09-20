@@ -1453,9 +1453,15 @@ TSS2_RC ResourceMgrSendTpmCommand(
             responseRval = FindEntry( entryList, RMFIND_VIRTUAL_HANDLE, cmdParentHandle, &foundEntryPtr );
             if( responseRval != TSS2_RC_SUCCESS )
             {
-                goto SendCommand;
+                if( PersistentHandle( cmdParentHandle ) )
+                {
+                    foundEntryPtr = NULL;
+                    responseRval = TSS2_RC_SUCCESS;
+                }
+                else
+                    goto SendCommand;
             }
-            cmdHierarchy = foundEntryPtr->hierarchy;
+            cmdHierarchy = (foundEntryPtr != NULL) ? foundEntryPtr->hierarchy : TPM_RH_NULL;
 
             break;
         case TPM_CC_Load:
@@ -1463,7 +1469,13 @@ TSS2_RC ResourceMgrSendTpmCommand(
             responseRval = FindEntry( entryList, RMFIND_VIRTUAL_HANDLE, cmdParentHandle, &foundEntryPtr );
             if( responseRval != TSS2_RC_SUCCESS )
             {
-                goto SendCommand;
+                if( PersistentHandle( cmdParentHandle ) )
+                {
+                    foundEntryPtr = NULL;
+                    responseRval = TSS2_RC_SUCCESS;
+                }
+                else
+                    goto SendCommand;
             }
 
             if( 0 == PersistentHandle( cmdParentHandle ) &&
@@ -1473,7 +1485,7 @@ TSS2_RC ResourceMgrSendTpmCommand(
                 goto SendCommand;
             }
 
-            cmdHierarchy = foundEntryPtr->hierarchy;
+            cmdHierarchy = (foundEntryPtr != NULL) ? foundEntryPtr->hierarchy : TPM_RH_NULL;
 
             // Skip past inPrivate param.
             RESMGR_UNMARSHAL_SIMPLE_TPM2B( command_buffer, command_size, &currentPtr, 0, &responseRval, SendCommand );
@@ -2068,13 +2080,14 @@ TSS2_RC ResourceMgrReceiveTpmResponse(
                     {
                         // Find entry for persistent object.
                         rval = FindEntry( entryList, RMFIND_REAL_HANDLE, persistentHandle, &foundEntryPtr );
-                        if( rval != TSS2_RC_SUCCESS )
-                            goto returnFromResourceMgrReceiveTpmResponse;
-
-                        // Need to remove RM entry for persistent copy.
-                        rval = RemoveEntry( foundEntryPtr );
-                        if( rval != TSS2_RC_SUCCESS )
-                            goto returnFromResourceMgrReceiveTpmResponse;
+                        if( rval == TSS2_RC_SUCCESS )
+                        {
+                            // Need to remove RM entry for persistent copy.
+                            rval = RemoveEntry( foundEntryPtr );
+                            if( rval != TSS2_RC_SUCCESS )
+                                goto returnFromResourceMgrReceiveTpmResponse;
+                        }
+                        rval = TSS2_RC_SUCCESS;
                     }
                 }
 
