@@ -948,6 +948,7 @@ TSS2_RC EvictContext(TPM_HANDLE virtualHandle)
         if( !IsSessionHandle( virtualHandle ) )
         {
             foundEntryPtr->realHandle = 0;
+            foundEntryPtr->hierarchy = foundEntryPtr->context.hierarchy;
         }
     }
 
