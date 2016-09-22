@@ -1,0 +1,12 @@
+[Unit]
+Description=TPM2 resource manager & access broker
+Documentation=http://www.github.com/01org/TPM2.0-TSS
+
+[Service]
+ExecStart=/usr/local/sbin/resourcemgr
+StandardOutput=null
+User=tss
+Group=tss
+
+[Install]
+WantedBy=multi-user.target
