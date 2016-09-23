@@ -9059,8 +9059,6 @@ void InitTpmTest()
 
     GetSetDecryptParamTests();
 
-    PlatformCommand( resMgrTctiContext, MS_SIM_POWER_ON );
-    PlatformCommand(  resMgrTctiContext, MS_SIM_NV_ON );
     Tss2_Sys_Startup ( sysContext, TPM_SU_CLEAR );
     CheckTpmType();
     CheckHierarchy();

@@ -7210,11 +7210,6 @@ void TpmTest()
     RmZeroSizedResponseTest();
 #endif
 
-    rval = PlatformCommand( resMgrTctiContext, MS_SIM_POWER_ON );
-    CheckPassed( rval );
-
-    rval = PlatformCommand( resMgrTctiContext, MS_SIM_NV_ON );
-    CheckPassed( rval );
     TestTpmStartup();
 
     // Run this directly after Startup tests to test for
