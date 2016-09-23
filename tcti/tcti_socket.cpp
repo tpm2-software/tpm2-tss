@@ -473,6 +473,26 @@ retSocketReceiveTpmResponse:
 #define HOSTNAME_LENGTH 200
 #define PORT_LENGTH 4
 
+static TSS2_RC InitializeMsTpm2Simulator(
+    TSS2_TCTI_CONTEXT *tctiContext
+    )
+{
+    TSS2_TCTI_CONTEXT_INTEL *intel_tctiCtx;
+    TSS2_RC rval;
+
+    intel_tctiCtx = (TSS2_TCTI_CONTEXT_INTEL*)tctiContext;
+    rval = PlatformCommand( tctiContext ,MS_SIM_POWER_ON );
+    if( rval != TSS2_RC_SUCCESS ) {
+        CloseSockets( intel_tctiCtx->otherSock, intel_tctiCtx->tpmSock );
+        return rval;
+    }
+    rval = PlatformCommand( tctiContext, MS_SIM_NV_ON );
+    if( rval != TSS2_RC_SUCCESS )
+        CloseSockets( intel_tctiCtx->otherSock, intel_tctiCtx->tpmSock );
+
+    return rval;
+}
+
 TSS2_RC InitSocketTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     size_t *contextSize,            // IN/OUT
@@ -518,6 +538,7 @@ TSS2_RC InitSocketTcti (
         {
             ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->otherSock = otherSock;
             ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->tpmSock = tpmSock;
+            rval = InitializeMsTpm2Simulator( tctiContext );
         }
         else
         {
