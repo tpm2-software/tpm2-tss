@@ -2773,23 +2773,6 @@ TSS2_RC InitResourceMgr( int debugLevel)
         freedSessionHandles[i] = freedObjectHandles[i] = UNAVAILABLE_FREED_HANDLE;
     }
 
-    if ( simulator )
-    {
-        rval = PlatformCommand( downstreamTctiContext, MS_SIM_POWER_ON );
-        if( rval != TPM_RC_SUCCESS )
-        {
-            SetRmErrorLevel( &rval, TSS2_RESMGR_ERROR_LEVEL );
-            goto returnFromInitResourceMgr;
-        }
-
-        rval = PlatformCommand( downstreamTctiContext, MS_SIM_NV_ON );
-        if( rval != TPM_RC_SUCCESS )
-        {
-            SetRmErrorLevel( &rval, TSS2_RESMGR_ERROR_LEVEL );
-            goto returnFromInitResourceMgr;
-        }
-    }
-
     // This one should pass.
     rval = Tss2_Sys_Startup( resMgrSysContext, TPM_SU_CLEAR );
     if( rval != TPM_RC_SUCCESS && rval != TPM_RC_INITIALIZE )
