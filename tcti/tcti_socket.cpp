@@ -1,5 +1,5 @@
 //**********************************************************************;
-// Copyright (c) 2015, Intel Corporation
+// Copyright (c) 2015, 2016 Intel Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -24,21 +24,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
-
-//
-// NOTE:  this file is used in two places:  application SAPI (to
-// communicate with RM) and RM calls to SAPI (to communicate with
-// TPM simulator.
-//
-// There will be a few small differences between the two uses and
-// these will be handled via #ifdef's and different header files.
-//
-
-//
-// NOTE:  uncomment following if you think you need to see all
-// socket communications.
-//
-//#define DEBUG_SOCKETS
 
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
