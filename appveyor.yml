@@ -1,0 +1,8 @@
+version: 1.0.{build}
+environment:
+  TSSTOOLS_PATH: '"C:\Program Files (x86)\Microsoft Visual Studio 10.0"'
+build:
+  project: tss.sln
+  parallel: true
+  verbosity: minimal
+

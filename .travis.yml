@@ -1,0 +1,20 @@
+language: cpp
+compiler:
+  - clang
+  - gcc
+
+addons:
+  apt:
+    packages:
+    - autoconf-archive
+
+install: true
+
+before_script:
+  - ./bootstrap
+script:
+  - mkdir ./build
+  - pushd ./build
+  - ../configure
+  - make 
+  - make test
