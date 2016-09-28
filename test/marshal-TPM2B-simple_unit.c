@@ -97,7 +97,7 @@ marshal_TPM2B_NAME_good (void **state)
      */
     assert_int_equal (data->buffer, nextData - marshalled_size);
     /* Finally the return code should indicate success. */
-    assert_return_code (data->rc, TSS2_RC_SUCCESS);
+    assert_int_equal (data->rc, TSS2_RC_SUCCESS);
 }
 void
 unmarshal_TPM2B_NAME_good (void **state)
@@ -124,7 +124,7 @@ unmarshal_TPM2B_NAME_good (void **state)
                             &name2b_unmarshal.b,
                             &rc);
     /* The return code should indicate success */
-    assert_return_code (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
     /* The size of the unmarshalled structure should match the reference */
     assert_int_equal (name2b_unmarshal.t.size, name2b.t.size);
     /* the contents of the name buffer should match the reference */

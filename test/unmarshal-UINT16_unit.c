@@ -83,7 +83,7 @@ unmarshal_UINT16_good (void **state)
      */
     assert_int_equal (data->buffer, nextData - sizeof (uint16_t));
     /* Finally the return code should indicate success. */
-    assert_return_code (data->rc, TSS2_RC_SUCCESS);
+    assert_int_equal (data->rc, TSS2_RC_SUCCESS);
 }
 int
 main (void)

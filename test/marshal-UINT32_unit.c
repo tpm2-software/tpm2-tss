@@ -77,7 +77,7 @@ marshal_UINT32_good (void **state)
      */
     assert_int_equal (data->buffer, nextData - sizeof (uint32_t));
     /* Finally the return code should indicate success. */
-    assert_return_code (data->rc, TSS2_RC_SUCCESS);
+    assert_int_equal (data->rc, TSS2_RC_SUCCESS);
 }
 /**
  * Attempt to marshal a uint32_t into a buffer that's only got room for a
@@ -107,7 +107,7 @@ marshal_UINT32_too_small (void **state)
      * The return code should indicate we don't have enough space and the
      * nextData pointer shouldn't have moved.
      */
-    assert_return_code (data->rc, TSS2_SYS_RC_INSUFFICIENT_CONTEXT);
+    assert_int_equal (data->rc, TSS2_SYS_RC_INSUFFICIENT_CONTEXT);
     assert_int_equal (data->buffer, nextData - sizeof (uint8_t));
 }
 void
@@ -126,7 +126,7 @@ marshal_UINT32_under_ptr (void **state)
                     data->data_host,
                     &data->rc);
     /* again, not enough space, and no change to nextData */
-    assert_return_code (data->rc, TSS2_SYS_RC_INSUFFICIENT_CONTEXT);
+    assert_int_equal (data->rc, TSS2_SYS_RC_INSUFFICIENT_CONTEXT);
     assert_int_equal (data->buffer, nextData - sizeof (uint8_t));
 }
 /**
@@ -150,7 +150,7 @@ marshal_UINT32_past_end (void **state)
                     data->data_host,
                     &data->rc);
     /* rc should indicate error and no change to the pointers */
-    assert_return_code (data->rc, TSS2_SYS_RC_INSUFFICIENT_CONTEXT);
+    assert_int_equal (data->rc, TSS2_SYS_RC_INSUFFICIENT_CONTEXT);
     assert_int_equal (nextData,
                       data->buffer + data->buffer_size + sizeof (uint8_t));
 }
@@ -170,7 +170,7 @@ marshal_UINT32_rc_previous_fail (void **state)
     TSS2_RC rc = TSS2_SYS_RC_BAD_SIZE;
     /* 'rc' is checked first, all other parameters can be NULL.*/
     Marshal_UINT32 (NULL, 0, NULL, 0, &rc);
-    assert_return_code (rc, TSS2_SYS_RC_BAD_SIZE);
+    assert_int_equal (rc, TSS2_SYS_RC_BAD_SIZE);
 }
 int
 main (void)
