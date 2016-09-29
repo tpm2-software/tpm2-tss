@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/01org/TPM2.0-TSS.svg?branch=master)](https://travis-ci.org/01org/TPM2.0-TSS)
+
 ## TPM (Trusted Platform Module) 2.0 Software Stack (TSS):
 
 This stack consists of the following layers from top to bottom:
