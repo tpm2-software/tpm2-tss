@@ -1,5 +1,5 @@
 //**********************************************************************;
-// Copyright (c) 2015, Intel Corporation
+// Copyright (c) 2015, 2016 Intel Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -30,21 +30,17 @@
 
 void Marshal_UINT64( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **nextData, UINT64 value, TSS2_RC *rval )
 {
-    if( *rval == TSS2_RC_SUCCESS )
-    {
-        if( inBuffPtr == 0 || nextData == 0 || *nextData == 0 )
-        {
-            *rval = TSS2_SYS_RC_BAD_REFERENCE;
-        }
-        else
-        {
-            *rval = CheckOverflow( inBuffPtr, maxCommandSize, *nextData, sizeof(UINT64) );
+    if( *rval != TSS2_RC_SUCCESS )
+        return;
 
-            if( *rval == TSS2_RC_SUCCESS )
-            {
-                *( (UINT64 *)*nextData ) = CHANGE_ENDIAN_QWORD( value );
-                *nextData = *nextData + sizeof( UINT64 );
-            }
-        }
-    }
+    *rval = CheckDataPointers( inBuffPtr, nextData);
+    if( *rval != TSS2_RC_SUCCESS )
+        return;
+
+    *rval = CheckOverflow( inBuffPtr, maxCommandSize, *nextData, sizeof(UINT64) );
+    if( *rval != TSS2_RC_SUCCESS )
+        return;
+
+    *( (UINT64 *)*nextData ) = CHANGE_ENDIAN_QWORD( value );
+    *nextData = *nextData + sizeof( UINT64 );
 }
