@@ -1,5 +1,5 @@
 //**********************************************************************;
-// Copyright (c) 2015, Intel Corporation
+// Copyright (c) 2015, 2016 Intel Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -30,25 +30,21 @@
 
 void Unmarshal_UINT16( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, UINT16 *value, TSS2_RC *rval )
 {
-    if( *rval == TSS2_RC_SUCCESS )
-    {
-        if( outBuffPtr == 0 || nextData == 0 || *nextData == 0 )
-        {
-            *rval = TSS2_SYS_RC_BAD_REFERENCE;
-        }
-        else
-        {
-            *rval = CheckOverflow( outBuffPtr, maxResponseSize, *nextData, sizeof(UINT16) );
+    if( *rval != TSS2_RC_SUCCESS )
+        return;
 
-            if( *rval == TSS2_RC_SUCCESS )
-            {
-                if( value )
-                {
-                    *value = CHANGE_ENDIAN_WORD( *(UINT16 *)*nextData );
-                }
-                *nextData = *nextData + sizeof( UINT16 );
-            }
-        }
+    *rval = CheckDataPointers( outBuffPtr, nextData );
+    if( *rval != TSS2_RC_SUCCESS )
+        return;
+
+    *rval = CheckOverflow( outBuffPtr, maxResponseSize, *nextData, sizeof(UINT16) );
+    if( *rval != TSS2_RC_SUCCESS )
+        return;
+
+    if( value )
+    {
+        *value = CHANGE_ENDIAN_WORD( *(UINT16 *)*nextData );
     }
+    *nextData = *nextData + sizeof( UINT16 );
 }
 

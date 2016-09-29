@@ -65,20 +65,6 @@ CheckOverflow_buf_next_equal (void **state)
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 }
 /**
- * Test an error case where nextData < buffer. Regardless of the size of the
- * data buffer this should fail.
- */
-void
-CheckOverflow_nextData_lt_buffer_start (void **state)
-{
-    TSS2_RC rc;
-    UINT8 *buffer = (UINT8*)0x5, *nextData = buffer - 1;
-    UINT32 bufferSize = 0x5, size = 0x1;
-
-    rc = CheckOverflow (buffer, bufferSize, nextData, size);
-    assert_int_equal (rc, TSS2_SYS_RC_INSUFFICIENT_CONTEXT);
-}
-/**
  * This tests another edge case: nextData in this case is beyond the end of
  * the provided buffer.
  */
@@ -93,21 +79,56 @@ CheckOverflow_nextData_gt_buffer_end (void **state)
     assert_int_equal (rc, TSS2_SYS_RC_INSUFFICIENT_CONTEXT);
 }
 /**
- * See if we can force a failure by screwing up the pointer arithmetic in
- * CheckOverflow. Specifically the function subtracts 'buffer' from
- * 'nextData'. If we set buffer to a very large number and nextData to a
- * very small one we cause a roll-over and the calculated buffer size
- * appears to be very small and CheckOverflow doesn't return an error.
+ * Pass the CheckDataPointers function a NULL first parameter.
+ * This should return a bad reference error.
  */
 void
-CheckOverflow_underflow (void **state)
+CheckDataPointers_null_buffer (void **state)
 {
-    TSS2_RC rc = TSS2_RC_SUCCESS;
-    UINT32 bufferSize = 0x16, size = 0x10;
-    UINT8 *buffer = UINT64_MAX - 1, *nextData = (UINT8*)1;
+    TSS2_RC rc;
+    UINT8 *buffer = NULL, *nextData = (UINT8*)5;
 
-    rc = CheckOverflow (buffer, bufferSize, nextData, size);
-    assert_int_equal (rc, TSS2_SYS_RC_INSUFFICIENT_CONTEXT);
+    rc = CheckDataPointers (buffer, &nextData);
+    assert_int_equal (rc, TSS2_SYS_RC_BAD_REFERENCE);
+}
+/**
+ * Pass the CheckDataPointers function a reference to a null pointer
+ * in the second parameter. This should result in a bad reference RC.
+ */
+void
+CheckDataPointers_null_nextData (void **state)
+{
+    TSS2_RC rc;
+    UINT8 *buffer = (UINT8*)5, *nextData = NULL;
+
+    rc = CheckDataPointers (buffer, &nextData);
+    assert_int_equal (rc, TSS2_SYS_RC_BAD_REFERENCE);
+}
+/**
+ * Pass the CheckDataPointers function a NULL second paraemter. This should
+ * result in a bad reference RC.
+ */
+void
+CheckDataPointers_null_nextData_ptr (void **state)
+{
+    TSS2_RC rc;
+    UINT8 *buffer = (UINT8*)5, **nextData = NULL;
+
+    rc = CheckDataPointers (buffer, nextData);
+    assert_int_equal (rc, TSS2_SYS_RC_BAD_REFERENCE);
+}
+/**
+ * Test an error case where nextData < buffer. Regardless of the size of the
+ * data buffer this should fail.
+ */
+void
+CheckDataPointers_nextData_lt_buffer_start (void **state)
+{
+    TSS2_RC rc;
+    UINT8 *buffer = (UINT8*)0x5, *nextData = buffer - 1;
+
+    rc = CheckDataPointers (buffer, &nextData);
+    assert_int_equal (rc, TSS2_SYS_RC_BAD_REFERENCE);
 }
 
 int
@@ -118,9 +139,11 @@ main (void)
         unit_test (CheckOverflow_whole_buffer),
         unit_test (CheckOverflow_overflow),
         unit_test (CheckOverflow_buf_next_equal),
-        unit_test (CheckOverflow_nextData_lt_buffer_start),
         unit_test (CheckOverflow_nextData_gt_buffer_end),
-        unit_test (CheckOverflow_underflow),
+        unit_test (CheckDataPointers_null_buffer),
+        unit_test (CheckDataPointers_null_nextData),
+        unit_test (CheckDataPointers_null_nextData_ptr),
+        unit_test (CheckDataPointers_nextData_lt_buffer_start),
     };
     return run_tests (tests);
 }

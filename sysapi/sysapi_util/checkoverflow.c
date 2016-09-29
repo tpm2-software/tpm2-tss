@@ -1,5 +1,5 @@
 //**********************************************************************;
-// Copyright (c) 2015, Intel Corporation
+// Copyright (c) 2015, 2016 Intel Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -41,4 +41,21 @@ TSS2_RC CheckOverflow( UINT8 *buffer, UINT32 bufferSize, UINT8 *nextData, UINT32
     }
 
     return( rval );
+}
+/**
+ * The buffer and nextData parameters track the front of the output command
+ * buffer and the next location where data is to be written in said buffer
+ * respectively. In the marshal_* functions depend on these two pointers
+ * being in a relatively sane order. Specifically neither should be NULL,
+ * and buffer must be less than nextData.
+ */
+TSS2_RC CheckDataPointers( UINT8 *buffer, UINT8 **nextData )
+{
+    if( buffer == NULL || nextData == NULL || *nextData == NULL \
+        || *nextData < buffer )
+    {
+        return TSS2_SYS_RC_BAD_REFERENCE;
+    }
+
+    return TSS2_RC_SUCCESS;
 }

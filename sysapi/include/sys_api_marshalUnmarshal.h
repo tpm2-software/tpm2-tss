@@ -43,6 +43,7 @@ void Marshal_TPMS_EMPTY( TSS2_SYS_CONTEXT *sysContext, TPMS_EMPTY *empty );
 void Unmarshal_TPMS_EMPTY( TSS2_SYS_CONTEXT *sysContext, TPMS_EMPTY *empty );
 
 TSS2_RC CheckOverflow( UINT8 *buffer, UINT32 bufferSize, UINT8 *nextData, UINT32 size );
+TSS2_RC CheckDataPointers( UINT8 *buffer, UINT8 **nextData );
 
 
 // Macro for unmarshalling/marshalling in SYSAPI code.  We needed access to generic base functions in resource manager and
