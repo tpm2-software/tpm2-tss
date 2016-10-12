@@ -22,7 +22,7 @@ TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len )
     for( bytesRead = 0, length = len; bytesRead != len; length -= iResult, bytesRead += iResult )
     {
         iResult = recv( tpmSock, (char *)&( data[bytesRead] ), length, 0);
-        if (iResult == SOCKET_ERROR)
+        if ((iResult == SOCKET_ERROR) || (!iResult))
             return TSS2_TCTI_RC_IO_ERROR;
     }
 
