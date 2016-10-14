@@ -159,7 +159,7 @@ static TSS2_RC rmSendBytes( SOCKET sock, const unsigned char *data, int len )
 
     ret = sendBytes( sock, data, len);
     if (ret != TSS2_RC_SUCCESS)
-        DebugPrintf( NO_PREFIX, "In recvBytes, recv failed (socket: 0x%x) with error: %d\n", sock, WSAGetLastError() );
+        DebugPrintf( NO_PREFIX, "In rmSendBytes, send failed (socket: 0x%x) with error: %d\n", sock, WSAGetLastError() );
     return ret;
 }
 
