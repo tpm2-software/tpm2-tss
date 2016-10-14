@@ -36,7 +36,7 @@ TSS2_RC sendBytes( SOCKET tpmSock, const unsigned char *data, int len )
 
     for( sentLength = 0; sentLength < len; len -= iResult, sentLength += iResult )
     {
-        iResult = send( tpmSock, (char *)data, len, 0  );
+        iResult = send( tpmSock, (char *)data, len, MSG_NOSIGNAL );
         if (iResult == SOCKET_ERROR)
             return TSS2_TCTI_RC_IO_ERROR;
     }

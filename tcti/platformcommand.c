@@ -61,7 +61,7 @@ TSS2_RC PlatformCommand(
     sendbuf[3] = cmd;
 
     // Send the command
-    iResult = send( TCTI_CONTEXT_INTEL->otherSock, sendbuf, 4, 0 );
+    iResult = send( TCTI_CONTEXT_INTEL->otherSock, sendbuf, 4, MSG_NOSIGNAL );
     if (iResult == SOCKET_ERROR) {
         TCTI_LOG( tctiContext, NO_PREFIX, "send failed with error: %d\n", WSAGetLastError() );
         rval = TSS2_TCTI_RC_IO_ERROR;
