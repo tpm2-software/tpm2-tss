@@ -2372,6 +2372,12 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             }
 
             numBytes = CHANGE_ENDIAN_DWORD( numBytes );
+            if( numBytes > maxCmdSize )
+            {
+                CreateErrorResponse( TSS2_TCTI_RC_INSUFFICIENT_BUFFER );
+                SendErrorResponse( serverStruct->connectSock );
+                continue;
+            }
 
             // Receive the TPM command bytes from calling application.
             rval = rmRecvBytes( serverStruct->connectSock, (unsigned char *)cmdBuffer, numBytes);
