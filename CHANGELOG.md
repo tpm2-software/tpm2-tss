@@ -31,7 +31,7 @@ resourcemgr.
 ### Security
 - Fix buffer overflow in resourcemgr.
 
-## [0.98] - 2015-07-28 Will Arthur <will.c.arthur@intel.com>
+## [0.98] - 2015-07-28
 ### Added
 - Added ability for resource manager to communicate with a real TPM via
 /dev/tpm0 (Linux only). Added command line switch to select simulator if not
@@ -46,7 +46,7 @@ with new directory structure.
 - Split out debug and TPM platform command code in tpmsockets.cpp into
 separate files. This code didn’t belong in this file.
 
-## [0.97] - 2015-??-?? Will Arthur <will.c.arthur@intel.com>
+## [0.97] - 2015-??-??
 ### Added
 - Added code to save context in RM table when an object is context loaded.
 - Added code to get hierarchy from context when object is context loaded.
@@ -81,7 +81,7 @@ a persistent object was needed, the RM would give a 0xc0002 error.
 characters.
 - Fixed TestShutdown to work with 1.22 simulator.
 
-## [0.96] - 2015-04-16 Will Arthur <will.c.arthur@intel.com>
+## [0.96] - 2015-04-16
 ### Added
 - Added buffer overrun checks to all SAPI code.
 - Added buffer overrun checks to resource manager code.
@@ -90,7 +90,7 @@ parameters.
 ### Changed
 - Auto-generated most of the SAPI code from the TPM 2.0 specification.
 
-## [0.95.1] - 2015-01-26 Will Arthur <will.c.arthur@intel.com>
+## [0.95.1] - 2015-01-26
 ### Added
 - Added code to dynamically work around simulator 1.19 bugs:
 - Added code to RM and simDriver to support timeout on receive calls.
@@ -205,7 +205,7 @@ buffer.
 causes problems with some compilers.
 - Removed unneeded includes from resource manager source.
 
-## [0.95] - 2014-10-17 Will Arthur <will.c.arthur@intel.com>
+## [0.95] - 2014-10-17
 ### Added
 - Added support for Shutdown/Startup and effects on saved contexts.
 - Added support for stClear bit objects. On a TPM Restart, objects with this
@@ -256,7 +256,7 @@ the compiler was generating incorrect code because these were int bit fields.
 the global one.
 - Removed pack pragma from header files for external interfaces.
 
-## [0.93] - 2014-08-01 Will Arthur <will.c.arthur@intel.com>
+## [0.93] - 2014-08-01
 ### Added
 - Added IsSession routine and fixed all instances in resource manager where a
 handle is checked for being a session handle (some were incorrect).
@@ -318,7 +318,7 @@ CheckResponseHmacs.
 CheckResponseHmacs.
 - Removed DRIVER_NOT_FOUND and DRIVERINFO_NOT_FOUND error codes.
 
-## [0.92] - 2014-06-17 Will Arthur <will.c.arthur@intel.com>
+## [0.92] - 2014-06-17
 ### Changed
 - Fixed bugs in sockets send and receive code. Needed to account for actual
 bytes sent/received instead of assuming them. This was causing intermittent
@@ -333,14 +333,14 @@ simulator.
 - Fixed error handling if sockets interface fails to connect.
 - Fixed build error: now I make directories that are needed.
 
-## [0.91] - 2014-06-04 Will Arthur <will.c.arthur@intel.com>
+## [0.91] - 2014-06-04
 ### Added
 - Added code optimized builds to System API library code
 - Added warning flags to compiler command lines.
 ### Changed
 - Fixed all compiler warnings when built under Windows and Linux.
 
-## [0.90] - 2014-05-28 Will Arthur <will.c.arthur@intel.com>
+## [0.90] - 2014-05-28
 ### Added
 - Added support for encrypt/decrypt sessions with one-call functions.
 - Added cleaned up and reorganized header files that comply with latest SAPI
@@ -366,7 +366,7 @@ report any bugs found so that fixes can be rolled out.
 3. Still need to add support for separate debug and production builds.
 Production build will be optimized for code size.
 
-## [0.82] - 2013-12-16 Will Arthur <will.c.arthur@intel.com>
+## [0.82] - 2013-12-16
 ### Added
 - Added support for building and running system API code and tests under
 Linux.
@@ -377,7 +377,7 @@ commands currently. The system API changes to support this have been
 prototyped for these commands and are awaitingTSS approval before being ported
 to all the other commands.
 
-## [0.81] - 2013-12-02 Will Arthur <will.c.arthur@intel.com>
+## [0.81] - 2013-12-02
 ### Added
 - Added support for TPM2_PolicyNvWritten command.
 ### Changed
@@ -389,7 +389,7 @@ commands currently. The system API changes to support this have been
 prototyped for these commands and are awaitingTSS approval before being ported
 to all the other commands.
 
-## [0.80] - 2013-11-19 Will Arthur <will.c.arthur@intel.com>
+## [0.80] - 2013-11-19
 ### Added
 - Added code to create a new session for reading/writing the NV index after
 it’s first written. This tests the other case for bound sessions.
@@ -432,7 +432,7 @@ commands currently. The system API changes to support this have been
 prototyped for these commands and are awaitingTSS approval before being ported
 to all the other commands.
 
-## [0.67] - 2013-08-07 Will Arthur <will.c.arthur@intel.com>
+## [0.67] - 2013-08-07
 ### Added
 - Plumbed in a resource mgr (doesn't actually do anything other than pass
 through at this time).
@@ -500,7 +500,7 @@ Write commands currently. The system API changes to support this are still
 being prototyped. After they are finalized, these changes will be extended to
 all functions that use sessions.
 
-## [0.66] - 2013-??-?? Will Arthur <will.c.arthur@intel.com>
+## [0.66] - 2013-??-??
 ### Added
 - Added CertifyCreation function
 - Added EcEphemeral function
@@ -508,7 +508,7 @@ all functions that use sessions.
 ### Changed
 - Cleaned up for general TCG release
 
-## [0.65] - 2013-04-10 Will Arthur <will.c.arthur@intel.com>
+## [0.65] - 2013-04-10
 ### Added
 - All TPM 2.0 functions now supported.
 - Limited testing done on following functions:
@@ -557,7 +557,7 @@ all functions that use sessions.
 - tspi_sys_TPM2_NV_UndefineSpaceSpecial
 No testing done on all other 61 functions
 
-## [0.60] - 2013-03-29 Will Arthur <will.c.arthur@intel.com>
+## [0.60] - 2013-03-29
 ### Added
 - Added changes to make it comply with TSS 2.0 system library API
 ### Removed
