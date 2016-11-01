@@ -1,5 +1,5 @@
-m4_define([tpm20_major_version], [0])
-m4_define([tpm20_minor_version], [98])
+m4_define([tpm20_major_version], [1])
+m4_define([tpm20_minor_version], [0])
 m4_define([tpm20_version_string], [tpm20_major_version.tpm20_minor_version])
 
 AC_INIT([tpm2.0-tss], [tpm20_version_string])
