@@ -11,11 +11,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Allow for unit tests to be enabled selectively.
 - added pkg-config files for libraries
 ### Changed
-- Fix buffer overflow in resourcemgr.
-- Set MSG_NOSIGNAL for client connections to avoid SIGPIPE killing
-resourcemgr.
-- Close client sockets when resourcemgr recv call returns 0.
-- Fixes to handling of persistent objects by resourcemgr.
 - move simulator initialization code to socket TCTI init function.
 - socket TCTI finalize no longer frees context
 - rename libtss2 to libsapi
@@ -23,10 +18,18 @@ resourcemgr.
 - rename libtcti_socket to libtcti-socket
 - move $(includedir)/tss to $(includedir)/sapi
 - Move default compiler flags to config.site file.
+### Fixed
+- Fix run away resourcemgr threads by closing client sockets when resourcemgr
+recv() call returns 0.
+- Set MSG_NOSIGNAL for client connections to avoid SIGPIPE killing
+resourcemgr.
+- Fixes to handling of persistent objects by resourcemgr.
 ### Removed
 - Semicolon from TPMA_* macros definitions.
 - Windows build files.
 - SAPI_CLIENT macro tests.
+### Security
+- Fix buffer overflow in resourcemgr.
 
 ## [0.98] - 2015-07-28 Will Arthur <will.c.arthur@intel.com>
 ### Added
