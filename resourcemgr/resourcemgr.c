@@ -355,7 +355,6 @@ static BOOL shutdown_state = 0;
 
 static UINT32 maxCmdSize;
 static UINT32 maxRspSize;
-static UINT8 *cmdBuffer;
 static UINT8 *rspBuffer;
 
 static UINT32 maxActiveSessions;
@@ -2295,6 +2294,17 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
     char functionString[sizeof( MUTEX_DBG_FUNCTION_STR ) + 1 ];
     UINT8 criticalSectionEntered;
 
+    // buffer to hold TPM command from client
+    UINT8 *cmdBuffer;
+    cmdBuffer = (*rmMalloc)( maxCmdSize );
+    if( cmdBuffer == NULL )
+    {
+        // failure to allocate memory, kill the server
+        rval = TSS2_RESMGR_MEMALLOC_FAILED;
+        tpmCmdServerBreakValue = 8;
+        goto tpmCmdServerDone;
+    }
+
     strcpy( &functionString[0], MUTEX_DBG_FUNCTION_STR );
 
     for(;;)
@@ -2498,6 +2508,10 @@ tpmCmdServerDone:
     closesocket( serverStruct->connectSock );
 	CloseHandle( serverStruct->threadHandle );
     (*rmFree)( serverStruct );
+    if (cmdBuffer != NULL)
+    {
+        free(cmdBuffer);
+    }
 	ExitThread( 0 );
 
 	return tpmCmdServerBreakValue;
@@ -2936,11 +2950,6 @@ TSS2_RC InitResourceMgr( int debugLevel)
         SetRmErrorLevel( &rval, TSS2_RESMGR_ERROR_LEVEL );
         goto returnFromInitResourceMgr;
     }
-
-    // Allocate memory for command/response buffers.
-    cmdBuffer = (*rmMalloc)( maxCmdSize );
-    if( cmdBuffer == 0 )
-        return TSS2_RESMGR_MEMALLOC_FAILED;
 
     rspBuffer = (*rmMalloc)( maxRspSize );
     if( rspBuffer == 0 )
