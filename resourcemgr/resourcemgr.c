@@ -355,7 +355,6 @@ static BOOL shutdown_state = 0;
 
 static UINT32 maxCmdSize;
 static UINT32 maxRspSize;
-static UINT8 *cmdBuffer;
 static UINT8 *rspBuffer;
 
 static UINT32 maxActiveSessions;
@@ -2295,6 +2294,18 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
     char functionString[sizeof( MUTEX_DBG_FUNCTION_STR ) + 1 ];
     UINT8 criticalSectionEntered;
 
+    //move cmdBuffer from global to local
+    UINT8 *cmdBuffer;
+    //malloc buffer for cmdBuffer
+    cmdBuffer = (*rmMalloc)( maxCmdSize );
+    if( cmdBuffer == 0 )
+    {   
+        rval = TSS2_RESMGR_MEMALLOC_FAILED;
+        //malloc buffer error, kill the server
+        tpmCmdServerBreakValue = 8; 
+        goto tpmCmdServerDone;
+    }
+
     strcpy( &functionString[0], MUTEX_DBG_FUNCTION_STR );
 
     for(;;)
@@ -2358,10 +2369,7 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
                 SendErrorResponse( serverStruct->connectSock );
                 continue;
             }
-            (( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.locality = locality;
-            (( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.commandSent = 1;
-            (( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.rmDebugPrefix = NO_PREFIX;
-
+    
             // Receive number of bytes.
             rval = rmRecvBytes( serverStruct->connectSock, (unsigned char*) &numBytes, 4);
             if( rval != TSS2_RC_SUCCESS )
@@ -2399,6 +2407,11 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             {
                 criticalSectionEntered = 1;
             }
+
+            //mv these lines after StartCriticalSection, protect global variable downstreamTctiContext
+            (( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.locality = locality;
+            (( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.commandSent = 1;
+            (( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.rmDebugPrefix = NO_PREFIX;
 
             // Send TPM command to TPM.
             ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->currentConnectSock = serverStruct->connectSock;
@@ -2498,6 +2511,11 @@ tpmCmdServerDone:
     closesocket( serverStruct->connectSock );
 	CloseHandle( serverStruct->threadHandle );
     (*rmFree)( serverStruct );
+    //free cmdBuffer
+    if (cmdBuffer != 0)
+    {
+        free(cmdBuffer);
+    }
 	ExitThread( 0 );
 
 	return tpmCmdServerBreakValue;
@@ -2936,11 +2954,6 @@ TSS2_RC InitResourceMgr( int debugLevel)
         SetRmErrorLevel( &rval, TSS2_RESMGR_ERROR_LEVEL );
         goto returnFromInitResourceMgr;
     }
-
-    // Allocate memory for command/response buffers.
-    cmdBuffer = (*rmMalloc)( maxCmdSize );
-    if( cmdBuffer == 0 )
-        return TSS2_RESMGR_MEMALLOC_FAILED;
 
     rspBuffer = (*rmMalloc)( maxRspSize );
     if( rspBuffer == 0 )
