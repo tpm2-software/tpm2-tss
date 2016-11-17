@@ -40,7 +40,7 @@ lib_LTLIBRARIES = $(libsapi) $(libtcti_device) $(libtcti_socket)
 # unit tests
 if UNIT
 check_PROGRAMS  = \
-    test/tcti_device_unit \
+    test/tcti-device_unit \
     test/getcommands-malloc-mock_unit \
     test/CommonPreparePrologue_unit \
     test/GetNumHandles_unit \
@@ -68,7 +68,7 @@ nodist_pkgconfig_DATA = lib/sapi.pc lib/tcti-device.pc lib/tcti-socket.pc
 if UNIT
 test_tcti_device_unit_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include -I$(srcdir)/sysapi/include
 test_tcti_device_unit_LDADD   = $(libsapi) $(libtcti_device) $(CMOCKA_LIBS)
-test_tcti_device_unit_SOURCES = test/tcti_device_test.c
+test_tcti_device_unit_SOURCES = test/tcti-device_unit.c
 
 test_getcommands_malloc_mock_unit_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
     -I$(srcdir)/sysapi/include/
