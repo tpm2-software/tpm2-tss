@@ -41,6 +41,5 @@ test/tpmtest/tpmtest
 test-driver
 test-suite.log
 test/*_unit
-test/tcti_device
 test/*.log
 test/*.trs
