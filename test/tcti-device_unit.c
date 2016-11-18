@@ -71,8 +71,8 @@ tcti_dev_log_callback (void *data, printf_type type, const char *format, ...)
     return 0;
 }
 
-bool
-tcti_dev_log_called (void **state)
+static void
+tcti_device_log_called_test (void **state)
 {
     size_t tcti_size = 0;
     bool called = false;
@@ -92,15 +92,9 @@ tcti_dev_log_called (void **state)
         free (ctx);
     /* the 'called' variable should be changed from false to true after this */
     TCTI_LOG (ctx, NO_PREFIX, "test log call");
-    return called;
+    assert_true (called);
 }
 /* end tcti_dev_init_log */
-
-static void
-tcti_dev_log_called_test (void **state)
-{
-    assert_true (tcti_dev_log_called (state));
-}
 
 int
 main(int argc, char* argv[])
@@ -108,7 +102,7 @@ main(int argc, char* argv[])
     const UnitTest tests[] = {
         unit_test(tcti_device_init_size_test),
         unit_test (tcti_device_init_log_test),
-        unit_test(tcti_dev_log_called_test),
+        unit_test (tcti_device_log_called_test),
     };
     return run_tests(tests);
 }
