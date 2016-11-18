@@ -21,6 +21,20 @@ tcti_device_init_size_test (void **state)
     ret = InitDeviceTcti (NULL, &tcti_size, NULL);
     assert_int_equal (ret, TSS2_RC_SUCCESS);
 }
+/**
+ * When passed a non-NULL context blob and size the config structure must
+ * also be non-NULL. No way to initialize the TCTI otherwise.
+ */
+static void
+tcti_device_init_null_config_test (void **state)
+{
+    size_t tcti_size;
+    TSS2_RC rc;
+    TSS2_TCTI_CONTEXT *tcti_context = (TSS2_TCTI_CONTEXT*)1;
+
+    rc = InitDeviceTcti (tcti_context, &tcti_size, NULL);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
+}
 
 /* begin tcti_dev_init_log */
 /* This test configures the device TCTI with a logging callback and some user
@@ -113,6 +127,7 @@ main(int argc, char* argv[])
 {
     const UnitTest tests[] = {
         unit_test(tcti_device_init_size_test),
+        unit_test (tcti_device_init_null_config_test),
         unit_test(tcti_dev_init_log_test),
         unit_test(tcti_dev_log_called_test),
     };
