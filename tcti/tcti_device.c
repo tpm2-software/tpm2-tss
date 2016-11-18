@@ -239,6 +239,8 @@ TSS2_RC InitDeviceTcti (
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
+    if( tctiContext == NULL && contextSize == NULL )
+        return TSS2_TCTI_RC_BAD_VALUE;
     if( tctiContext == NULL )
     {
         *contextSize = sizeof( TSS2_TCTI_CONTEXT_INTEL );
