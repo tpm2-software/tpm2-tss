@@ -32,8 +32,8 @@ tcti_dev_init_log_callback (void *data, printf_type type, const char *format, ..
 {
     return 0;
 }
-void
-tcti_dev_init_log (void **state)
+static void
+tcti_device_init_log_test (void **state)
 {
     size_t tcti_size = 0;
     uint8_t my_data = 0x9;
@@ -97,12 +97,6 @@ tcti_dev_log_called (void **state)
 /* end tcti_dev_init_log */
 
 static void
-tcti_dev_init_log_test (void **state)
-{
-    tcti_dev_init_log (state);
-}
-
-static void
 tcti_dev_log_called_test (void **state)
 {
     assert_true (tcti_dev_log_called (state));
@@ -113,7 +107,7 @@ main(int argc, char* argv[])
 {
     const UnitTest tests[] = {
         unit_test(tcti_device_init_size_test),
-        unit_test(tcti_dev_init_log_test),
+        unit_test (tcti_device_init_log_test),
         unit_test(tcti_dev_log_called_test),
     };
     return run_tests(tests);
