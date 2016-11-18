@@ -8,6 +8,18 @@
 #include "tcti/logging.h"
 #include "sysapi/include/tcti_util.h"
 
+/**
+ * When passed all NULL values ensure that we get back the expected RC
+ * indicating bad values.
+ */
+static void
+tcti_device_init_all_null_test (void **state)
+{
+    TSS2_RC rc;
+
+    rc = InitDeviceTcti (NULL, NULL, NULL);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
+}
 /* Determine the size of a TCTI context structure. Requires calling the
  * initialization function for the device TCTI with the first parameter
  * (the TCTI context) NULL.
@@ -126,6 +138,7 @@ int
 main(int argc, char* argv[])
 {
     const UnitTest tests[] = {
+        unit_test (tcti_device_init_all_null_test),
         unit_test(tcti_device_init_size_test),
         unit_test (tcti_device_init_null_config_test),
         unit_test(tcti_dev_init_log_test),
