@@ -4,7 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ## Unreleased
+### Added
+- Unit test for device TCTI bug fixes.
 ### Fixed
+- NULL dereference bug in device TCTI init function.
 - Two race conditions in the resourcemgr.
 
 ## [1.0] - 2016-11-01
