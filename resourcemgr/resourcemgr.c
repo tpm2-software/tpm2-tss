@@ -2368,10 +2368,6 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
                 SendErrorResponse( serverStruct->connectSock );
                 continue;
             }
-            (( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.locality = locality;
-            (( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.commandSent = 1;
-            (( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.rmDebugPrefix = NO_PREFIX;
-
             // Receive number of bytes.
             rval = rmRecvBytes( serverStruct->connectSock, (unsigned char*) &numBytes, 4);
             if( rval != TSS2_RC_SUCCESS )
@@ -2409,6 +2405,11 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
             {
                 criticalSectionEntered = 1;
             }
+
+            // Set client specific locality for command we're about to send
+            (( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.locality = locality;
+            (( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.commandSent = 1;
+            (( TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.rmDebugPrefix = NO_PREFIX;
 
             // Send TPM command to TPM.
             ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext)->currentConnectSock = serverStruct->connectSock;
