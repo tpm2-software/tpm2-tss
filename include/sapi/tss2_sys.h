@@ -1,5 +1,5 @@
 //**********************************************************************;
-// Copyright (c) 2015, Intel Corporation
+// Copyright (c) 2015, 2016 Intel Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -92,7 +92,7 @@ TSS2_RC Tss2_Sys_Initialize(
     TSS2_ABI_VERSION *abiVersion
     );
 
-void Tss2_Sys_Finalize(
+TSS2_RC Tss2_Sys_Finalize(
     TSS2_SYS_CONTEXT *sysContext
     );
 
