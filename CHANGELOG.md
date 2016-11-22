@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 ### Added
 - Unit test for device TCTI bug fixes.
 ### Fixed
+- Wrong return type for Tss2_Sys_Finalize (API break).
 - NULL dereference bug in device TCTI init function.
 - Two race conditions in the resourcemgr.
 

@@ -1,5 +1,5 @@
 //**********************************************************************;
-// Copyright (c) 2015, Intel Corporation
+// Copyright (c) 2015, 2016, Intel Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,10 +28,10 @@
 #include <sapi/tpm20.h>
 #include "sysapi_util.h"
 
-void Tss2_Sys_Finalize(
+TSS2_RC Tss2_Sys_Finalize(
     TSS2_SYS_CONTEXT *sysContext
     )
 {
-	// Nothing to do here.
+    return TSS2_RC_SUCCESS;
 }
 
