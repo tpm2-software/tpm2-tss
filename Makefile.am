@@ -39,16 +39,16 @@ lib_LTLIBRARIES = $(libsapi) $(libtcti_device) $(libtcti_socket)
 # unit tests
 if UNIT
 check_PROGRAMS  = \
-    test/tcti_device \
-    test/CommonPreparePrologue_unit \
-    test/GetNumHandles_unit \
-    test/CopyCommandHeader_unit \
-    test/marshal-UINT16_unit \
-    test/unmarshal-UINT16_unit \
-    test/marshal-UINT32_unit \
-    test/unmarshal_UINT32_unit \
-    test/marshal-TPM2B-simple_unit \
-    test/CheckOverflow_unit
+    test/unit/CheckOverflow \
+    test/unit/CommonPreparePrologue \
+    test/unit/CopyCommandHeader \
+    test/unit/GetNumHandles \
+    test/unit/marshal-TPM2B-simple \
+    test/unit/marshal-UINT16 \
+    test/unit/marshal-UINT32 \
+    test/unit/tcti-device \
+    test/unit/unmarshal-UINT16 \
+    test/unit/unmarshal-UINT32
 endif #UNIT
 
 TESTS = $(check_PROGRAMS)
@@ -75,72 +75,72 @@ EXTRA_DIST = \
     man/tcti-socket.7.in
 
 if UNIT
-test_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include -I$(srcdir)/sysapi/include
-test_tcti_device_LDADD   = $(libsapi) $(libtcti_device) $(CMOCKA_LIBS)
-test_tcti_device_SOURCES = test/tcti_device.c test/tcti_device_test.c
+test_unit_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include -I$(srcdir)/sysapi/include
+test_unit_tcti_device_LDADD   = $(libsapi) $(libtcti_device) $(CMOCKA_LIBS)
+test_unit_tcti_device_SOURCES = test/unit/tcti-device.c
 
-test_CommonPreparePrologue_unit_CFLAGS = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
+test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
     -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_CommonPreparePrologue_unit_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
-test_CommonPreparePrologue_unit_LDADD = $(CMOCKA_LIBS)
-test_CommonPreparePrologue_unit_SOURCES = \
-    test/CommonPreparePrologue_unit.c sysapi/sysapi_util/CommandUtil.c \
+test_unit_CommonPreparePrologue_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
+test_unit_CommonPreparePrologue_LDADD = $(CMOCKA_LIBS)
+test_unit_CommonPreparePrologue_SOURCES = \
+    test/unit/CommonPreparePrologue.c sysapi/sysapi_util/CommandUtil.c \
     sysapi/sysapi/ContextManagement.c
 
-test_GetNumHandles_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+test_unit_GetNumHandles_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/sysapi/include
-test_GetNumHandles_unit_LDADD   = $(CMOCKA_LIBS)
-test_GetNumHandles_unit_SOURCES = \
-    test/GetNumHandles_unit.c sysapi/sysapi_util/GetNumHandles.c
+test_unit_GetNumHandles_LDADD   = $(CMOCKA_LIBS)
+test_unit_GetNumHandles_SOURCES = \
+    test/unit/GetNumHandles.c sysapi/sysapi_util/GetNumHandles.c
 
-test_CopyCommandHeader_unit_CFLAGS = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
+test_unit_CopyCommandHeader_CFLAGS = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
     -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_CopyCommandHeader_unit_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
-test_CopyCommandHeader_unit_LDADD = $(CMOCKA_LIBS)
-test_CopyCommandHeader_unit_SOURCES = \
-    test/CopyCommandHeader_unit.c sysapi/sysapi_util/CommandUtil.c \
+test_unit_CopyCommandHeader_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
+test_unit_CopyCommandHeader_LDADD = $(CMOCKA_LIBS)
+test_unit_CopyCommandHeader_SOURCES = \
+    test/unit/CopyCommandHeader.c sysapi/sysapi_util/CommandUtil.c \
     sysapi/sysapi/ContextManagement.c sysapi/sysapi_util/changeEndian.c
 
-test_marshal_UINT16_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+test_unit_marshal_UINT16_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_marshal_UINT16_unit_LDADD   = $(CMOCKA_LIBS)
-test_marshal_UINT16_unit_SOURCES = \
+test_unit_marshal_UINT16_LDADD   = $(CMOCKA_LIBS)
+test_unit_marshal_UINT16_SOURCES = \
     sysapi/sysapi_util/changeEndian.c \
     sysapi/sysapi_util/checkoverflow.c \
     sysapi/sysapi_util/marshal_uint16.c \
-    test/marshal-UINT16_unit.c
+    test/unit/marshal-UINT16.c
 
-test_unmarshal_UINT16_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+test_unit_unmarshal_UINT16_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_unmarshal_UINT16_unit_LDADD   = $(CMOCKA_LIBS)
-test_unmarshal_UINT16_unit_SOURCES = \
+test_unit_unmarshal_UINT16_LDADD   = $(CMOCKA_LIBS)
+test_unit_unmarshal_UINT16_SOURCES = \
     sysapi/sysapi_util/changeEndian.c \
     sysapi/sysapi_util/checkoverflow.c \
     sysapi/sysapi_util/unmarshal_uint16.c \
-    test/unmarshal-UINT16_unit.c
+    test/unit/unmarshal-UINT16.c
 
-test_marshal_UINT32_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+test_unit_marshal_UINT32_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_marshal_UINT32_unit_LDADD   = $(CMOCKA_LIBS)
-test_marshal_UINT32_unit_SOURCES = \
+test_unit_marshal_UINT32_LDADD   = $(CMOCKA_LIBS)
+test_unit_marshal_UINT32_SOURCES = \
     sysapi/sysapi_util/changeEndian.c \
     sysapi/sysapi_util/checkoverflow.c \
     sysapi/sysapi_util/marshal_uint32.c \
-    test/marshal-UINT32_unit.c
+    test/unit/marshal-UINT32.c
 
-test_unmarshal_UINT32_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+test_unit_unmarshal_UINT32_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_unmarshal_UINT32_unit_LDADD   = $(CMOCKA_LIBS)
-test_unmarshal_UINT32_unit_SOURCES = \
+test_unit_unmarshal_UINT32_LDADD   = $(CMOCKA_LIBS)
+test_unit_unmarshal_UINT32_SOURCES = \
     sysapi/sysapi_util/changeEndian.c \
     sysapi/sysapi_util/checkoverflow.c \
     sysapi/sysapi_util/unmarshal_uint32.c \
-    test/unmarshal-UINT32_unit.c
+    test/unit/unmarshal-UINT32.c
 
-test_marshal_TPM2B_simple_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+test_unit_marshal_TPM2B_simple_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_marshal_TPM2B_simple_unit_LDADD   = $(CMOCKA_LIBS)
-test_marshal_TPM2B_simple_unit_SOURCES = \
+test_unit_marshal_TPM2B_simple_LDADD   = $(CMOCKA_LIBS)
+test_unit_marshal_TPM2B_simple_SOURCES = \
     sysapi/sysapi_util/changeEndian.c \
     sysapi/sysapi_util/checkoverflow.c \
     sysapi/sysapi_util/marshal_uint8.c \
@@ -152,14 +152,14 @@ test_marshal_TPM2B_simple_unit_SOURCES = \
     sysapi/sysapi_util/marshal_simple_tpm2b.c \
     sysapi/sysapi_util/unmarshal_simple_tpm2b.c \
     sysapi/sysapi_util/unmarshal_simple_tpm2b_no_size_check.c \
-    test/marshal-TPM2B-simple_unit.c
+    test/unit/marshal-TPM2B-simple.c
 
-test_CheckOverflow_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+test_unit_CheckOverflow_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_CheckOverflow_unit_LDADD   = $(CMOCKA_LIBS)
-test_CheckOverflow_unit_SOURCES = \
+test_unit_CheckOverflow_LDADD   = $(CMOCKA_LIBS)
+test_unit_CheckOverflow_SOURCES = \
     sysapi/sysapi_util/checkoverflow.c \
-    test/CheckOverflow_unit.c
+    test/unit/CheckOverflow.c
 endif # UNIT
 
 # how to build stuff
