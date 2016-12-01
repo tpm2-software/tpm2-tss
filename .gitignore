@@ -1,6 +1,7 @@
 *.a
 *.la
 *.lo
+*.log
 *.o
 *.opensdf
 *.pc
@@ -9,6 +10,7 @@
 *.suo
 *.ses
 *.tag
+*.trs
 *vcxproj.user
 .deps/
 .dirstamp
@@ -41,5 +43,6 @@ test/tpmtest/tpmtest
 test-driver
 test-suite.log
 test/*_unit
-test/*.log
-test/*.trs
+# ignore all files in test/unit without a file extension
+test/unit/*
+test/unit/!*.*
