@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 ## Unreleased
 ### Added
 - Unit test for device TCTI bug fixes.
+### Changed
+- Move unit tests from test/ to test/unit/.
 ### Fixed
 - NULL dereference bug in device TCTI init function.
 

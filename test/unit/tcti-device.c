@@ -1,25 +1,53 @@
-#include <stdio.h>
-#include <tcti/tcti_device.h>
 #include <stdbool.h>
-#include "tcti/logging.h"
+#include <stdio.h>
+
 #include <setjmp.h>
 #include <cmocka.h>
 
+#include "sapi/tpm20.h"
+#include "endianConv.h"
+#include "tcti/tcti_device.h"
+#include "tcti/logging.h"
+#include "sysapi/include/tcti_util.h"
+
+/**
+ * When passed all NULL values ensure that we get back the expected RC
+ * indicating bad values.
+ */
+static void
+tcti_device_init_all_null_test (void **state)
+{
+    TSS2_RC rc;
+
+    rc = InitDeviceTcti (NULL, NULL, NULL);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
+}
 /* Determine the size of a TCTI context structure. Requires calling the
  * initialization function for the device TCTI with the first parameter
  * (the TCTI context) NULL.
  */
-size_t
-tcti_dev_init_size (void **state)
+static void
+tcti_device_init_size_test (void **state)
 {
     size_t tcti_size = 0;
     TSS2_RC ret = TSS2_RC_SUCCESS;
 
     ret = InitDeviceTcti (NULL, &tcti_size, NULL);
-    if (ret != TSS2_RC_SUCCESS)
-        return 0;
-    else
-        return tcti_size;
+    assert_int_equal (ret, TSS2_RC_SUCCESS);
+}
+/**
+ * When passed a non-NULL context blob and size the config structure must
+ * also be non-NULL. No way to initialize the TCTI otherwise.
+ */
+static void
+tcti_device_init_null_config_test (void **state)
+{
+    size_t tcti_size;
+    TSS2_RC rc;
+    TSS2_TCTI_CONTEXT *tcti_context = (TSS2_TCTI_CONTEXT*)1;
+
+    rc = InitDeviceTcti (tcti_context, &tcti_size, NULL);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
 }
 
 /* begin tcti_dev_init_log */
@@ -32,8 +60,8 @@ tcti_dev_init_log_callback (void *data, printf_type type, const char *format, ..
 {
     return 0;
 }
-void
-tcti_dev_init_log (void **state)
+static void
+tcti_device_init_log_test (void **state)
 {
     size_t tcti_size = 0;
     uint8_t my_data = 0x9;
@@ -71,8 +99,8 @@ tcti_dev_log_callback (void *data, printf_type type, const char *format, ...)
     return 0;
 }
 
-bool
-tcti_dev_log_called (void **state)
+static void
+tcti_device_log_called_test (void **state)
 {
     size_t tcti_size = 0;
     bool called = false;
@@ -92,6 +120,19 @@ tcti_dev_log_called (void **state)
         free (ctx);
     /* the 'called' variable should be changed from false to true after this */
     TCTI_LOG (ctx, NO_PREFIX, "test log call");
-    return called;
+    assert_true (called);
 }
 /* end tcti_dev_init_log */
+
+int
+main(int argc, char* argv[])
+{
+    const UnitTest tests[] = {
+        unit_test (tcti_device_init_all_null_test),
+        unit_test(tcti_device_init_size_test),
+        unit_test (tcti_device_init_log_test),
+        unit_test (tcti_device_log_called_test),
+        unit_test (tcti_device_init_null_config_test),
+    };
+    return run_tests(tests);
+}
