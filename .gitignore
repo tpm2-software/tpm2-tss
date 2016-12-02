@@ -37,6 +37,7 @@ missing
 NVChip
 src_vars.mk
 resourcemgr/resourcemgr
+test/integration/get-random
 test/tpmclient/tpmclient
 .klocwork/
 ipch/
