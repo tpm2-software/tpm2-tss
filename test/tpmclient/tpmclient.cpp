@@ -1258,23 +1258,6 @@ void TestSapiApis()
 }
 
 
-void TestTpmSelftest()
-{
-    UINT32 rval;
-
-    DebugPrintf( NO_PREFIX, "\nSELFTEST TESTS:\n" );
-
-    rval = Tss2_Sys_SelfTest( sysContext, 0, YES, 0);
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_SelfTest( sysContext, 0, NO, 0);
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_SelfTest( sysContext, 0, YES, 0);
-    CheckPassed( rval );
-
-}
-
 void TestTpmGetCapability()
 {
     UINT32 rval;
@@ -7206,8 +7189,6 @@ void TpmTest()
 
     // Clear DA lockout.
     TestDictionaryAttackLockReset();
-
-    TestTpmSelftest();
 
     TestDictionaryAttackLockReset();
 
