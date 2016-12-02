@@ -55,6 +55,9 @@ TESTS_UNIT  = \
     test/unit/unmarshal-UINT32
 endif #UNIT
 
+TESTS_INTEGRATION = \
+    test/integration/get-random
+
 TESTS = $(check_PROGRAMS)
 CLEANFILES = $(nodist_pkgconfig_DATA)
 
@@ -205,6 +208,10 @@ test_tpmtest_tpmtest_SOURCES  = $(TPMTEST_CXX) $(COMMON_C) $(SAMPLE_C)
 
 test_integration_libtest_utils_la_SOURCES = test/integration/test-options.c \
     test/integration/context-util.c
+
+test_integration_get_random_LDADD   = $(TESTS_LDADD)
+test_integration_get_random_SOURCES = test/integration/get-random.c \
+    test/integration/main.c
 
 TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES)
 
