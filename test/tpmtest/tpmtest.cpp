@@ -691,23 +691,6 @@ void TestSapiApis()
 }
 
 
-void TestTpmSelftest()
-{
-    UINT32 rval;
-
-    printf( "\nSELFTEST TESTS:\n" );
-
-    rval = Tss2_Sys_SelfTest( sysContext, 0, YES, 0);
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_SelfTest( sysContext, 0, NO, 0);
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_SelfTest( sysContext, 0, YES, 0);
-    CheckPassed( rval );
-
-}
-
 void TestTpmGetCapability()
 {
     UINT32 rval;
@@ -7735,7 +7718,6 @@ void TpmTest()
 
     GetTpmVersion();
 
-    TestTpmSelftest();
 
     TestSapiApis();
 
@@ -7956,12 +7938,6 @@ void PrintGetSetDecryptParamTest()
 void PrintGetVersionTestDescription()
 {
     printf("  GetCapability Case(capability:TPM_CAP_TPM_PROPERTIES,property:TPM_PT_REVISION,propertyCount:1):Passed\n");
-}
-void PrintSelfTestDescription()
-{
-    printf("  SelfTest Case(fullTest:YES):Passed\n"
-           "  SelfTest Case(fullTest:NO):Passed\n"
-           "  SelfTest Case(fullTest:YES):Passed\n");
 }
 void PrintSapiTestDescription()
 {
@@ -8582,13 +8558,6 @@ SUB_MENUS_SETUP getVersionTestMenus[] =
     { "0", "RUN ALL TEST CASES", GetTpmVersion, },
     { NULL, NULL, 0, },
 };
-SUB_MENUS_SETUP selfTestMenus[] =
-{
-    { "Q", "QUIT THIS TEST GROUP", 0, },
-    { "D", "PRINT DESCRIPTION ON ALL CASES IN THIS GROUP", PrintSelfTestDescription, },
-    { "0", "RUN ALL TEST CASES", TestTpmSelftest, },
-    { NULL, NULL, 0, },
-};
 SUB_MENUS_SETUP sapiTestMenus[] =
 {
     { "Q", "QUIT THIS TEST GROUP", 0, },
@@ -8826,7 +8795,6 @@ MENUS_SETUP firstLevelMenus[] =
     { "4", "NV INDEX TESTS", 0, nvTestMenus, },
     { "5", "UNSEAL TEST", 0, unsealTestMenus, },
     { "6", "TPM Version TESTS", 0, getVersionTestMenus, },
-    { "7", "SELFTEST TESTS", 0, selfTestMenus, },
     { "8", "GET TEST RESULT TESTS", 0, sapiTestMenus, },
     { "9", "DICTIONARY ATTACK LOCK RESET TEST", 0, DALRTestMenus, },
     { "10", "START_AUTH_SESSION TESTS", 0, startAuthSessionMenus, },
