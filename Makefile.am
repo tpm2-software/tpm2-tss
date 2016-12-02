@@ -36,10 +36,12 @@ AM_CXXFLAGS     = $(AM_CFLAGS)
 sbin_PROGRAMS   = $(resourcemgr)
 noinst_PROGRAMS = $(tpmclient) $(tpmtest)
 lib_LTLIBRARIES = $(libsapi) $(libtcti_device) $(libtcti_socket)
+noinst_LTLIBRARIES = test/integration/libtest_utils.la
+check_PROGRAMS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
 
 # unit tests
 if UNIT
-check_PROGRAMS  = \
+TESTS_UNIT  = \
     test/unit/CheckOverflow \
     test/unit/CommonPreparePrologue \
     test/unit/CopyCommandHeader \
@@ -55,6 +57,11 @@ endif #UNIT
 
 TESTS = $(check_PROGRAMS)
 CLEANFILES = $(nodist_pkgconfig_DATA)
+
+AM_TESTS_ENVIRONMENT = \
+    export TPM20TEST_TCTI_NAME="socket"; \
+    export TPM20TEST_SOCKET_ADDRESS="127.0.0.1"; \
+    export TPM20TEST_SOCKET_PORT="2321";
 
 # headers and where to install them
 libsapidir      = $(includedir)/sapi
@@ -195,6 +202,11 @@ test_tpmtest_tpmtest_CFLAGS   = $(TPMTEST_INC) $(AM_CFLAGS)
 test_tpmtest_tpmtest_CXXFLAGS = $(TPMTEST_INC) $(AM_CXXFLAGS)
 test_tpmtest_tpmtest_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device)
 test_tpmtest_tpmtest_SOURCES  = $(TPMTEST_CXX) $(COMMON_C) $(SAMPLE_C)
+
+test_integration_libtest_utils_la_SOURCES = test/integration/test-options.c \
+    test/integration/context-util.c
+
+TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES)
 
 %.pc : %.pc.in
 	if [ ! -d $(dir $@) ]; then mkdir -p $(dir $@); fi
