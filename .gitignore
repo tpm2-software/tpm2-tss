@@ -36,6 +36,8 @@ Makefile.in
 missing
 src_vars.mk
 resourcemgr/resourcemgr
+test/integration/get-random
+test/integration/self-test
 test/tpmclient/tpmclient
 .klocwork/
 ipch/
