@@ -54,7 +54,8 @@ TESTS_UNIT  = \
 endif #UNIT
 
 TESTS_INTEGRATION = \
-    test/integration/get-random
+    test/integration/get-random \
+    test/integration/self-test
 
 TESTS = $(check_PROGRAMS)
 CLEANFILES = \
@@ -203,6 +204,10 @@ test_integration_libtest_utils_la_SOURCES = test/integration/test-options.c \
 
 test_integration_get_random_LDADD   = $(TESTS_LDADD)
 test_integration_get_random_SOURCES = test/integration/get-random.c \
+    test/integration/main.c
+
+test_integration_self_test_LDADD   = $(TESTS_LDADD)
+test_integration_self_test_SOURCES = test/integration/self-test.c \
     test/integration/main.c
 
 TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES)
