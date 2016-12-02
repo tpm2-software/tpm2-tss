@@ -35,10 +35,12 @@ AM_CXXFLAGS     = $(AM_CFLAGS)
 # stuff to build, what that stuff is, and where/if to install said stuff
 noinst_PROGRAMS = $(tpmclient)
 lib_LTLIBRARIES = $(libsapi) $(libtcti_device) $(libtcti_socket)
+noinst_LTLIBRARIES = test/integration/libtest_utils.la
+check_PROGRAMS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
 
 # unit tests
 if UNIT
-check_PROGRAMS  = \
+TESTS_UNIT  = \
     test/unit/CheckOverflow \
     test/unit/CommonPreparePrologue \
     test/unit/CopyCommandHeader \
@@ -56,6 +58,11 @@ CLEANFILES = \
     $(nodist_pkgconfig_DATA) \
     $(man3_MANS) \
     $(man7_MANS)
+
+AM_TESTS_ENVIRONMENT = \
+    export TPM20TEST_TCTI_NAME="socket"; \
+    export TPM20TEST_SOCKET_ADDRESS="127.0.0.1"; \
+    export TPM20TEST_SOCKET_PORT="2321";
 
 # headers and where to install them
 libsapidir      = $(includedir)/sapi
@@ -187,6 +194,11 @@ test_tpmclient_tpmclient_CFLAGS   = $(TPMCLIENT_INC) $(AM_CFLAGS)
 test_tpmclient_tpmclient_CXXFLAGS = $(TPMCLIENT_INC) $(TCTICOMMON_INC) $(TCTIDEVICE_INC) $(AM_CXXFLAGS) -DNO_RM_TESTS
 test_tpmclient_tpmclient_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device)
 test_tpmclient_tpmclient_SOURCES  = $(TPMCLIENT_CXX) $(COMMON_C) $(SAMPLE_C)
+
+test_integration_libtest_utils_la_SOURCES = test/integration/test-options.c \
+    test/integration/context-util.c
+
+TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES)
 
 %.pc : %.pc.in
 	$(call make_parent_dir,$@)
