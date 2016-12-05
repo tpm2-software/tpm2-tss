@@ -182,6 +182,28 @@ test_tpmclient_tpmclient_SOURCES  = $(TPMCLIENT_CXX) $(COMMON_C) $(SAMPLE_C)
 
 LIBRARY_LDFLAGS = -fPIC -Wl,--no-undefined
 
+# simulator build / run scripts
+CLEANFILES += test/simulator-build.sh test/simulator-run.sh test/simulator.inc
+.PHONY = simulator-build simulator-start simulator-stop clean-local-ibmtpm
+clean-local : clean-local-ibmtpm
+clean-local-ibmtpm :
+	rm -rf test/ibmtpm*
+
+test/simulator.inc : $(srcdir)/script/simulator.inc
+	cp $< $@
+test/simulator-build.sh : $(srcdir)/script/simulator-build.sh
+	cp $< $@
+	chmod 755 $@
+simulator-build : test/simulator-build.sh test/simulator.inc
+	test/simulator-build.sh
+test/simulator-run.sh : $(srcdir)/script/simulator-run.sh
+	cp $< $@
+	chmod 755 $@
+simulator-start : test/simulator-run.sh test/simulator.inc
+	test/simulator-run.sh start
+simulator-stop : test/simulator-run.sh test/simulator.inc
+	test/simulator-run.sh stop
+
 # simple variables
 TCTICOMMON_INC = -I$(srcdir)/include -I$(srcdir)/common \
     -I$(srcdir)/sysapi/include
