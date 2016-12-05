@@ -24,4 +24,7 @@ script:
   - pushd ./build
   - CONFIG_SITE=../lib/default_config.site ../configure --enable-unit
   - make -j$(nproc)
-  - make -j$(nproc) check
+  - make simulator-build
+  - make simulator-start
+  - make check
+  - make simulator-stop
