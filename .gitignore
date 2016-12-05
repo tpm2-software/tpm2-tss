@@ -34,6 +34,7 @@ m4/
 Makefile
 Makefile.in
 missing
+NVChip
 src_vars.mk
 resourcemgr/resourcemgr
 test/tpmclient/tpmclient
@@ -43,6 +44,9 @@ test/tpmtest/tpmtest
 test-driver
 test-suite.log
 test/*_unit
+test/*.pid
+test/ibmtpm*
+test/simulator*
 # ignore all files in test/unit without a file extension
 test/unit/*
 test/unit/!*.*
