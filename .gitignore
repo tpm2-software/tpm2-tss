@@ -32,6 +32,7 @@ m4/
 Makefile
 Makefile.in
 missing
+NVChip
 src_vars.mk
 resourcemgr/resourcemgr
 test/tpmclient/tpmclient
@@ -42,5 +43,9 @@ test-driver
 test-suite.log
 test/*_unit
 test/tcti_device
+test/!*.*
+test/*.pid
 test/*.log
 test/*.trs
+test/ibmtpm*
+test/simulator*
