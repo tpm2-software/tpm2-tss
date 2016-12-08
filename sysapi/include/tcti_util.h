@@ -39,7 +39,7 @@
 #ifndef TSS2_TCTI_UTIL_H
 #define TSS2_TCTI_UTIL_H
 
-#if defined linux || defined unix
+#if defined(__linux__) || defined(__unix__)
 #include <sys/socket.h>
 #define SOCKET int
 #endif

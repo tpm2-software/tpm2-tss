@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 ### Added
 - Unit test for device TCTI bug fixes.
 ### Changed
+- Added std=gnu99 to default CONFIG_SITE.
+- Update Linux / Unix OS detection to use non-obsolete macros.
 - Move unit tests from test/ to test/unit/.
 ### Fixed
 - NULL dereference bug in device TCTI init function.
