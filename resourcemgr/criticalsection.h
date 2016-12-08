@@ -28,9 +28,9 @@
 #ifndef CRITICALSECTION_H
 #define CRITICALSECTION_H
 
-#ifdef  _WIN32
+#if defined(_WIN32)
 typedef HANDLE TPM_MUTEX;
-#elif __linux || __unix
+#elif defined(__linux__) || defined(__unix__)
 #include <time.h>
 #include <semaphore.h>
 typedef sem_t TPM_MUTEX;
@@ -48,4 +48,3 @@ TSS2_RC StartCriticalSection( TPM_MUTEX *tpmMutex, char *dbgString );
 TSS2_RC EndCriticalSection( TPM_MUTEX *tpmMutex, char *dbgString );
 
 #endif
-
