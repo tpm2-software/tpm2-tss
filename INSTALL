@@ -36,7 +36,8 @@ This will install the libraries and the resource manager to locations
 determined at configure time. See the output of ./configure --help for the
 available options. Typically you won't need to do much more than provide an
 alternative --prefix option at configure time, and maybe DESTDIR at install
-time if you're packaging for a distro.
+time if you're packaging for a distro. It may be necessary to run sudo ldconfig
+to update the run time bindings, before running the resource manager.
 
 We now have basic VPATH support which allows us to separate the source
 directory from the build directory. This allows for a developer to do a debug
