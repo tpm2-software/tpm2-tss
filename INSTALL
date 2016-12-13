@@ -38,6 +38,11 @@ available options. Typically you won't need to do much more than provide an
 alternative --prefix option at configure time, and maybe DESTDIR at install
 time if you're packaging for a distro.
 
+NOTE: It may be necessary to run ldconfig (as root) to update the run-time
+bindings before executing a program that links against libsapi or a TCTI
+library (including the resourcemgr):
+$ sudo ldconfig
+
 We now have basic VPATH support which allows us to separate the source
 directory from the build directory. This allows for a developer to do a debug
 build and a regular build from the same sources. Any changes to the source
