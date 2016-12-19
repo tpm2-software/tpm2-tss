@@ -39,13 +39,14 @@
 #include "syscontext.h"
 #include "debug.h"
 
-#ifdef _WIN32
+#if defined(_WIN32)
 
 typedef HANDLE THREAD_TYPE;
 #define MAX_COMMAND_LINE_ARGS 6
 
-#elif __linux || __unix
+#elif defined(__linux__) || defined(__unix__)
 
+#include <sys/select.h>
 #include <time.h>
 #include <stdarg.h>
 #define sprintf_s   snprintf

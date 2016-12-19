@@ -36,25 +36,36 @@ AM_CXXFLAGS     = $(AM_CFLAGS)
 sbin_PROGRAMS   = $(resourcemgr)
 noinst_PROGRAMS = $(tpmclient) $(tpmtest)
 lib_LTLIBRARIES = $(libsapi) $(libtcti_device) $(libtcti_socket)
+noinst_LTLIBRARIES = test/integration/libtest_utils.la
+check_PROGRAMS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
 
 # unit tests
 if UNIT
-check_PROGRAMS  = \
-    test/tcti-device_unit \
-    test/getcommands-malloc-mock_unit \
-    test/CommonPreparePrologue_unit \
-    test/GetNumHandles_unit \
-    test/CopyCommandHeader_unit \
-    test/marshal-UINT16_unit \
-    test/unmarshal-UINT16_unit \
-    test/marshal-UINT32_unit \
-    test/unmarshal_UINT32_unit \
-    test/marshal-TPM2B-simple_unit \
-    test/CheckOverflow_unit
+TESTS_UNIT  = \
+    test/unit/CheckOverflow \
+    test/unit/CommonPreparePrologue \
+    test/unit/CopyCommandHeader \
+    test/unit/getcommands-malloc-mock \
+    test/unit/GetNumHandles \
+    test/unit/marshal-TPM2B-simple \
+    test/unit/marshal-UINT16 \
+    test/unit/marshal-UINT32 \
+    test/unit/tcti-device \
+    test/unit/unmarshal-UINT16 \
+    test/unit/unmarshal-UINT32
 endif #UNIT
+
+TESTS_INTEGRATION = \
+    test/integration/get-random \
+    test/integration/self-test
 
 TESTS = $(check_PROGRAMS)
 CLEANFILES = $(nodist_pkgconfig_DATA)
+
+AM_TESTS_ENVIRONMENT = \
+    export TPM20TEST_TCTI_NAME="socket"; \
+    export TPM20TEST_SOCKET_ADDRESS="127.0.0.1"; \
+    export TPM20TEST_SOCKET_PORT="2321";
 
 # headers and where to install them
 libsapidir      = $(includedir)/sapi
@@ -66,80 +77,80 @@ pkgconfigdir          = $(libdir)/pkgconfig
 nodist_pkgconfig_DATA = lib/sapi.pc lib/tcti-device.pc lib/tcti-socket.pc
 
 if UNIT
-test_tcti_device_unit_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include -I$(srcdir)/sysapi/include
-test_tcti_device_unit_LDADD   = $(libsapi) $(libtcti_device) $(CMOCKA_LIBS)
-test_tcti_device_unit_SOURCES = test/tcti-device_unit.c
+test_unit_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include -I$(srcdir)/sysapi/include
+test_unit_tcti_device_LDADD   = $(libsapi) $(libtcti_device) $(CMOCKA_LIBS)
+test_unit_tcti_device_SOURCES = test/unit/tcti-device.c
 
-test_getcommands_malloc_mock_unit_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
+test_unit_getcommands_malloc_mock_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
     -I$(srcdir)/sysapi/include/
-test_getcommands_malloc_mock_unit_LDADD   = $(CMOCKA_LIBS)
-test_getcommands_malloc_mock_unit_LDFLAGS = -Wl,--wrap=malloc \
+test_unit_getcommands_malloc_mock_LDADD   = $(CMOCKA_LIBS)
+test_unit_getcommands_malloc_mock_LDFLAGS = -Wl,--wrap=malloc \
     -Wl,--wrap=Tss2_Sys_GetCapability
-test_getcommands_malloc_mock_unit_SOURCES = \
-    test/getcommands-malloc-mock_unit.c resourcemgr/getcommands.c
+test_unit_getcommands_malloc_mock_SOURCES = \
+    test/unit/getcommands-malloc-mock.c resourcemgr/getcommands.c
 
-test_CommonPreparePrologue_unit_CFLAGS = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
+test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
     -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_CommonPreparePrologue_unit_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
-test_CommonPreparePrologue_unit_LDADD = $(CMOCKA_LIBS)
-test_CommonPreparePrologue_unit_SOURCES = \
-    test/CommonPreparePrologue_unit.c sysapi/sysapi_util/CommandUtil.c \
+test_unit_CommonPreparePrologue_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
+test_unit_CommonPreparePrologue_LDADD = $(CMOCKA_LIBS)
+test_unit_CommonPreparePrologue_SOURCES = \
+    test/unit/CommonPreparePrologue.c sysapi/sysapi_util/CommandUtil.c \
     sysapi/sysapi/ContextManagement.c
 
-test_GetNumHandles_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+test_unit_GetNumHandles_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/sysapi/include
-test_GetNumHandles_unit_LDADD   = $(CMOCKA_LIBS)
-test_GetNumHandles_unit_SOURCES = \
-    test/GetNumHandles_unit.c sysapi/sysapi_util/GetNumHandles.c
+test_unit_GetNumHandles_LDADD   = $(CMOCKA_LIBS)
+test_unit_GetNumHandles_SOURCES = \
+    test/unit/GetNumHandles.c sysapi/sysapi_util/GetNumHandles.c
 
-test_CopyCommandHeader_unit_CFLAGS = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
+test_unit_CopyCommandHeader_CFLAGS = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
     -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_CopyCommandHeader_unit_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
-test_CopyCommandHeader_unit_LDADD = $(CMOCKA_LIBS)
-test_CopyCommandHeader_unit_SOURCES = \
-    test/CopyCommandHeader_unit.c sysapi/sysapi_util/CommandUtil.c \
+test_unit_CopyCommandHeader_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
+test_unit_CopyCommandHeader_LDADD = $(CMOCKA_LIBS)
+test_unit_CopyCommandHeader_SOURCES = \
+    test/unit/CopyCommandHeader.c sysapi/sysapi_util/CommandUtil.c \
     sysapi/sysapi/ContextManagement.c sysapi/sysapi_util/changeEndian.c
 
-test_marshal_UINT16_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+test_unit_marshal_UINT16_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_marshal_UINT16_unit_LDADD   = $(CMOCKA_LIBS)
-test_marshal_UINT16_unit_SOURCES = \
+test_unit_marshal_UINT16_LDADD   = $(CMOCKA_LIBS)
+test_unit_marshal_UINT16_SOURCES = \
     sysapi/sysapi_util/changeEndian.c \
     sysapi/sysapi_util/checkoverflow.c \
     sysapi/sysapi_util/marshal_uint16.c \
-    test/marshal-UINT16_unit.c
+    test/unit/marshal-UINT16.c
 
-test_unmarshal_UINT16_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+test_unit_unmarshal_UINT16_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_unmarshal_UINT16_unit_LDADD   = $(CMOCKA_LIBS)
-test_unmarshal_UINT16_unit_SOURCES = \
+test_unit_unmarshal_UINT16_LDADD   = $(CMOCKA_LIBS)
+test_unit_unmarshal_UINT16_SOURCES = \
     sysapi/sysapi_util/changeEndian.c \
     sysapi/sysapi_util/checkoverflow.c \
     sysapi/sysapi_util/unmarshal_uint16.c \
-    test/unmarshal-UINT16_unit.c
+    test/unit/unmarshal-UINT16.c
 
-test_marshal_UINT32_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+test_unit_marshal_UINT32_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_marshal_UINT32_unit_LDADD   = $(CMOCKA_LIBS)
-test_marshal_UINT32_unit_SOURCES = \
+test_unit_marshal_UINT32_LDADD   = $(CMOCKA_LIBS)
+test_unit_marshal_UINT32_SOURCES = \
     sysapi/sysapi_util/changeEndian.c \
     sysapi/sysapi_util/checkoverflow.c \
     sysapi/sysapi_util/marshal_uint32.c \
-    test/marshal-UINT32_unit.c
+    test/unit/marshal-UINT32.c
 
-test_unmarshal_UINT32_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+test_unit_unmarshal_UINT32_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_unmarshal_UINT32_unit_LDADD   = $(CMOCKA_LIBS)
-test_unmarshal_UINT32_unit_SOURCES = \
+test_unit_unmarshal_UINT32_LDADD   = $(CMOCKA_LIBS)
+test_unit_unmarshal_UINT32_SOURCES = \
     sysapi/sysapi_util/changeEndian.c \
     sysapi/sysapi_util/checkoverflow.c \
     sysapi/sysapi_util/unmarshal_uint32.c \
-    test/unmarshal-UINT32_unit.c
+    test/unit/unmarshal-UINT32.c
 
-test_marshal_TPM2B_simple_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+test_unit_marshal_TPM2B_simple_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_marshal_TPM2B_simple_unit_LDADD   = $(CMOCKA_LIBS)
-test_marshal_TPM2B_simple_unit_SOURCES = \
+test_unit_marshal_TPM2B_simple_LDADD   = $(CMOCKA_LIBS)
+test_unit_marshal_TPM2B_simple_SOURCES = \
     sysapi/sysapi_util/changeEndian.c \
     sysapi/sysapi_util/checkoverflow.c \
     sysapi/sysapi_util/marshal_uint8.c \
@@ -151,14 +162,14 @@ test_marshal_TPM2B_simple_unit_SOURCES = \
     sysapi/sysapi_util/marshal_simple_tpm2b.c \
     sysapi/sysapi_util/unmarshal_simple_tpm2b.c \
     sysapi/sysapi_util/unmarshal_simple_tpm2b_no_size_check.c \
-    test/marshal-TPM2B-simple_unit.c
+    test/unit/marshal-TPM2B-simple.c
 
-test_CheckOverflow_unit_CFLAGS  = $(CMOCKA_CFLAGS) \
+test_unit_CheckOverflow_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_CheckOverflow_unit_LDADD   = $(CMOCKA_LIBS)
-test_CheckOverflow_unit_SOURCES = \
+test_unit_CheckOverflow_LDADD   = $(CMOCKA_LIBS)
+test_unit_CheckOverflow_SOURCES = \
     sysapi/sysapi_util/checkoverflow.c \
-    test/CheckOverflow_unit.c
+    test/unit/CheckOverflow.c
 endif # UNIT
 
 # how to build stuff
@@ -196,12 +207,47 @@ test_tpmtest_tpmtest_CXXFLAGS = $(TPMTEST_INC) $(AM_CXXFLAGS)
 test_tpmtest_tpmtest_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device)
 test_tpmtest_tpmtest_SOURCES  = $(TPMTEST_CXX) $(COMMON_C) $(SAMPLE_C)
 
+test_integration_libtest_utils_la_SOURCES = test/integration/test-options.c \
+    test/integration/context-util.c
+
+test_integration_get_random_LDADD   = $(TESTS_LDADD)
+test_integration_get_random_SOURCES = test/integration/get-random.c \
+    test/integration/main.c
+
+test_integration_self_test_LDADD   = $(TESTS_LDADD)
+test_integration_self_test_SOURCES = test/integration/self-test.c \
+    test/integration/main.c
+
+TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES)
+
 %.pc : %.pc.in
 	if [ ! -d $(dir $@) ]; then mkdir -p $(dir $@); fi
 	sed -e "s,[@]VERSION[@],$(PACKAGE_VERSION),g; \
 	        s,[@]includedir[@],$(includedir),g;" $^ > $@
 
 LIBRARY_LDFLAGS = -fPIC -Wl,--no-undefined
+
+# simulator build / run scripts
+CLEANFILES += test/simulator-build.sh test/simulator-run.sh test/simulator.inc
+.PHONY = simulator-build simulator-start simulator-stop clean-local-ibmtpm
+clean-local : clean-local-ibmtpm
+clean-local-ibmtpm :
+	rm -rf test/ibmtpm*
+
+test/simulator.inc : $(srcdir)/script/simulator.inc
+	cp $< $@
+test/simulator-build.sh : $(srcdir)/script/simulator-build.sh
+	cp $< $@
+	chmod 755 $@
+simulator-build : test/simulator-build.sh test/simulator.inc
+	test/simulator-build.sh
+test/simulator-run.sh : $(srcdir)/script/simulator-run.sh
+	cp $< $@
+	chmod 755 $@
+simulator-start : test/simulator-run.sh test/simulator.inc
+	test/simulator-run.sh start
+simulator-stop : test/simulator-run.sh test/simulator.inc
+	test/simulator-run.sh stop
 
 # simple variables
 RESOURCEMGR_INC = -I$(srcdir)/include -I$(srcdir)/common \

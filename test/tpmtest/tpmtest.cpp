@@ -691,23 +691,6 @@ void TestSapiApis()
 }
 
 
-void TestTpmSelftest()
-{
-    UINT32 rval;
-
-    printf( "\nSELFTEST TESTS:\n" );
-
-    rval = Tss2_Sys_SelfTest( sysContext, 0, YES, 0);
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_SelfTest( sysContext, 0, NO, 0);
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_SelfTest( sysContext, 0, YES, 0);
-    CheckPassed( rval );
-
-}
-
 void TestTpmGetCapability()
 {
     UINT32 rval;
@@ -1323,28 +1306,6 @@ void TestPcrExtend()
 
     rval = Tss2_Sys_PCR_Event( sysContext, PCR_8, &sessionsData, &eventData, &digests, 0  );
     CheckPassed( rval );
-}
-
-void TestGetRandom()
-{
-    UINT32 rval;
-    TPM2B_DIGEST        randomBytes1, randomBytes2;
-
-    printf( "\nGET_RANDOM TESTS:\n" );
-
-    INIT_SIMPLE_TPM2B_SIZE( randomBytes1 );
-    rval = Tss2_Sys_GetRandom( sysContext, 0, 20, &randomBytes1, 0 );
-    CheckPassed( rval );
-
-    INIT_SIMPLE_TPM2B_SIZE( randomBytes2 );
-    rval = Tss2_Sys_GetRandom( sysContext, 0, 20, &randomBytes2, 0 );
-    CheckPassed( rval );
-
-    if( 0 == memcmp( &randomBytes1, &randomBytes2, 20 ) )
-    {
-        printf( "ERROR!! Random value is the same\n" );
-        Cleanup();
-    }
 }
 
 void TestShutdown()
@@ -7757,7 +7718,6 @@ void TpmTest()
 
     GetTpmVersion();
 
-    TestTpmSelftest();
 
     TestSapiApis();
 
@@ -7813,8 +7773,6 @@ void TpmTest()
 
         if( nullPlatformAuth )
             TestHierarchyChangeAuth();
-
-        TestGetRandom();
 
         if( i < 1 )
             TestShutdown();
@@ -7980,12 +7938,6 @@ void PrintGetSetDecryptParamTest()
 void PrintGetVersionTestDescription()
 {
     printf("  GetCapability Case(capability:TPM_CAP_TPM_PROPERTIES,property:TPM_PT_REVISION,propertyCount:1):Passed\n");
-}
-void PrintSelfTestDescription()
-{
-    printf("  SelfTest Case(fullTest:YES):Passed\n"
-           "  SelfTest Case(fullTest:NO):Passed\n"
-           "  SelfTest Case(fullTest:YES):Passed\n");
 }
 void PrintSapiTestDescription()
 {
@@ -8259,11 +8211,6 @@ void PrintHierarchyChangeAuthDescription()
            "  HierarchyChangeAuth Case(authHandle:0x4000000C,authArray:{1,{sessionHandle:TPM_RS_PW,hmac:{size=20,buffer:{0,...19}}}},newAuth:{0}):Passed\n"
            "  HierarchyChangeAuth Case(authHandle:0x4000000C,authArray:{1,{sessionHandle:TPM_RS_PW,hmac:{size=20,buffer:{0,...19}}}},newAuth:{0}):Failed(0x9A2)\n"
            "  HierarchyChangeAuth Case(authHandle:0,authArray:{1,{sessionHandle:TPM_RS_PW,hmac:{size=20,buffer:{0,...19}}}},NewAuth:{0}):Failed(0x184)\n");
-}
-void PrintGetRandomTestDescription()
-{
-    printf("  GetRandom Case(authArray:0,bytesRequested:20):Passed\n"
-           "  GetRandom Case(authArray:0,bytesRequested:20):Passed\n");
 }
 void PrintShutdownTestDescription()
 {
@@ -8611,13 +8558,6 @@ SUB_MENUS_SETUP getVersionTestMenus[] =
     { "0", "RUN ALL TEST CASES", GetTpmVersion, },
     { NULL, NULL, 0, },
 };
-SUB_MENUS_SETUP selfTestMenus[] =
-{
-    { "Q", "QUIT THIS TEST GROUP", 0, },
-    { "D", "PRINT DESCRIPTION ON ALL CASES IN THIS GROUP", PrintSelfTestDescription, },
-    { "0", "RUN ALL TEST CASES", TestTpmSelftest, },
-    { NULL, NULL, 0, },
-};
 SUB_MENUS_SETUP sapiTestMenus[] =
 {
     { "Q", "QUIT THIS TEST GROUP", 0, },
@@ -8721,13 +8661,6 @@ SUB_MENUS_SETUP hierarchyChangeAuthMenus[] =
     { "Q", "QUIT THIS TEST GROUP", 0, },
     { "D", "PRINT DESCRIPTION ON ALL CASES IN THIS GROUP", PrintHierarchyChangeAuthDescription, },
     { "0", "RUN ALL TEST CASES", TestHierarchyChangeAuth, },
-    { NULL, NULL, 0, },
-};
-SUB_MENUS_SETUP getRandomTestMenus[] =
-{
-    { "Q", "QUIT THIS TEST GROUP", 0, },
-    { "D", "PRINT DESCRIPTION ON ALL CASES IN THIS GROUP", PrintGetRandomTestDescription, },
-    { "0", "RUN ALL TEST CASES", TestGetRandom, },
     { NULL, NULL, 0, },
 };
 SUB_MENUS_SETUP shutdownTestMenus[] =
@@ -8862,7 +8795,6 @@ MENUS_SETUP firstLevelMenus[] =
     { "4", "NV INDEX TESTS", 0, nvTestMenus, },
     { "5", "UNSEAL TEST", 0, unsealTestMenus, },
     { "6", "TPM Version TESTS", 0, getVersionTestMenus, },
-    { "7", "SELFTEST TESTS", 0, selfTestMenus, },
     { "8", "GET TEST RESULT TESTS", 0, sapiTestMenus, },
     { "9", "DICTIONARY ATTACK LOCK RESET TEST", 0, DALRTestMenus, },
     { "10", "START_AUTH_SESSION TESTS", 0, startAuthSessionMenus, },
@@ -8875,7 +8807,6 @@ MENUS_SETUP firstLevelMenus[] =
     { "17", "CLEAR and CLEAR CONTROL TESTS", 0, clearTestMenus, },
     { "18", "CHANGE_EPS TESTS", 0, changeEpsTestMenus, },
     { "19", "HIERARCHY_CHANGE_AUTH TESTS", 0, hierarchyChangeAuthMenus, },
-    { "20", "GET_RANDOM TESTS", 0, getRandomTestMenus, },
     { "21", "SHUTDOWN TESTS", 0, shutdownTestMenus, },
     { "22", "PASSWORD TESTS", 0, passwordTestMenus, },
     { "23", "HMAC SESSION TESTS", 0, hmacSessionTestMenus, },

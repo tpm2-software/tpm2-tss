@@ -1258,23 +1258,6 @@ void TestSapiApis()
 }
 
 
-void TestTpmSelftest()
-{
-    UINT32 rval;
-
-    DebugPrintf( NO_PREFIX, "\nSELFTEST TESTS:\n" );
-
-    rval = Tss2_Sys_SelfTest( sysContext, 0, YES, 0);
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_SelfTest( sysContext, 0, NO, 0);
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_SelfTest( sysContext, 0, YES, 0);
-    CheckPassed( rval );
-
-}
-
 void TestTpmGetCapability()
 {
     UINT32 rval;
@@ -1895,28 +1878,6 @@ void TestPcrExtend()
 
     rval = Tss2_Sys_PCR_Event( sysContext, PCR_18, &sessionsData, &eventData, &digests, 0  );
     CheckPassed( rval );
-}
-
-void TestGetRandom()
-{
-    UINT32 rval;
-    TPM2B_DIGEST        randomBytes1, randomBytes2;
-
-    DebugPrintf( NO_PREFIX, "\nGET_RANDOM TESTS:\n" );
-
-    INIT_SIMPLE_TPM2B_SIZE( randomBytes1 );
-    rval = Tss2_Sys_GetRandom( sysContext, 0, 20, &randomBytes1, 0 );
-    CheckPassed( rval );
-
-    INIT_SIMPLE_TPM2B_SIZE( randomBytes2 );
-    rval = Tss2_Sys_GetRandom( sysContext, 0, 20, &randomBytes2, 0 );
-    CheckPassed( rval );
-
-    if( 0 == memcmp( &randomBytes1, &randomBytes2, 20 ) )
-    {
-        DebugPrintf( NO_PREFIX, "ERROR!! Random value is the same\n" );
-        Cleanup();
-    }
 }
 
 void TestShutdown()
@@ -7229,8 +7190,6 @@ void TpmTest()
     // Clear DA lockout.
     TestDictionaryAttackLockReset();
 
-    TestTpmSelftest();
-
     TestDictionaryAttackLockReset();
 
     TestCreate();
@@ -7270,8 +7229,6 @@ void TpmTest()
         TestChangePps();
 
         TestHierarchyChangeAuth();
-
-        TestGetRandom();
 
         if( i < 2 )
             TestShutdown();

@@ -31,7 +31,7 @@
 #include "criticalsection.h"
 #include "debug.h"
 
-#if __linux || __unix
+#if defined(__linux__) || defined(__unix__)
 
 //
 // This function starts a critical section, e.g. some code that must
