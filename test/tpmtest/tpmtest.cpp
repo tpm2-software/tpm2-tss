@@ -7542,123 +7542,6 @@ void nvExtensionTest()
     CheckPassed( rval );
 }
 
-void pcrExtendedTest()
-{
-    UINT32 rval;
-    TPMS_AUTH_COMMAND sessionData;
-    TSS2_SYS_CMD_AUTHS sessionsData;
-    UINT16 i, digestSize;
-    TPML_PCR_SELECTION  pcrSelection;
-    UINT32 pcrUpdateCounterBeforeExtend;
-    UINT32 pcrUpdateCounterAfterExtend;
-    UINT8 pcrBeforeExtend[20];
-    TPM2B_EVENT eventData;
-    TPML_DIGEST pcrValues;
-    TPML_DIGEST_VALUES digests;
-    TPML_PCR_SELECTION pcrSelectionOut;
-
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-
-    sessionDataArray[0] = &sessionData;
-    sessionsData.cmdAuths = &sessionDataArray[0];
-
-    printf( "\nPCR EXTENSION TESTS:\n" );
-
-    // Init authHandle
-    sessionData.sessionHandle = TPM_RS_PW;
-
-    // Init nonce.
-    sessionData.nonce.t.size = 0;
-
-    // init hmac
-    sessionData.hmac.t.size = 0;
-
-    // Init session attributes
-    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
-
-    TPMI_YES_NO moreData;
-    TPMS_CAPABILITY_DATA capabilityData;
-
-    rval = Tss2_Sys_GetCapability( sysContext, 0, TPM_CAP_PCR_PROPERTIES, TPM_PT_PCR_COUNT,
-                                   1, &moreData, &capabilityData, 0 );
-    CheckPassed(rval);
-    printf("The Number of PCR implemented:%x\n",capabilityData.data.pcrProperties.pcrProperty[0].pcrSelect[0]);
-
-    // Init digests
-    digests.count = 1;
-    digests.digests[0].hashAlg = TPM_ALG_SHA1;
-    digestSize = GetDigestSize( digests.digests[0].hashAlg );
-
-    for( i = 0; i < digestSize; i++ )
-    {
-        digests.digests[0].digest.sha1[i] = (UINT8)(i % 256);
-    }
-
-    pcrSelection.count = 1;
-    pcrSelection.pcrSelections[0].hash = TPM_ALG_SHA1;
-    pcrSelection.pcrSelections[0].sizeofSelect = 3;
-
-    // Clear out PCR select bit field
-    pcrSelection.pcrSelections[0].pcrSelect[0] = 0;
-    pcrSelection.pcrSelections[0].pcrSelect[1] = 0;
-    pcrSelection.pcrSelections[0].pcrSelect[2] = 0;
-    pcrSelection.pcrSelections[0].pcrSelect[PCR_8 / 8] = 1 << (PCR_8 % 8);
-
-    rval = Tss2_Sys_PCR_Read( sysContext, 0, &pcrSelection, &pcrUpdateCounterBeforeExtend, &pcrSelectionOut, &pcrValues, 0 );
-    CheckPassed( rval );
-    printf( "Name of PCR Values Before Extend: " );
-    for(int i = 0; i < pcrValues.digests[0].t.size; i++)
-        printf("%02x ", pcrValues.digests[0].t.buffer[i]);
-    printf("\n");
-
-    memcpy( &( pcrBeforeExtend[0] ), &( pcrValues.digests[0].t.buffer[0] ), pcrValues.digests[0].t.size );
-
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0] = &sessionData;
-
-    rval = Tss2_Sys_PCR_Extend( sysContext, PCR_8, &sessionsData, &digests, 0 );
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_PCR_Read( sysContext, 0, &pcrSelection, &pcrUpdateCounterAfterExtend, &pcrSelectionOut, &pcrValues, 0 );
-    CheckPassed( rval );
-
-    printf( "Name of PCR Values After Extended: " );
-    for(int i = 0; i < pcrValues.digests[0].t.size; i++)
-        printf("%02x ", pcrValues.digests[0].t.buffer[i]);
-    printf("\n");
-
-    memcpy( &( pcrAfterExtend[0] ), &( pcrValues.digests[0].t.buffer[0] ), pcrValues.digests[0].t.size );
-
-    if( pcrUpdateCounterBeforeExtend == pcrUpdateCounterAfterExtend )
-    {
-        printf( "ERROR!! pcrUpdateCounter didn't change value\n" );
-        Cleanup();
-    }
-
-    if( 0 == memcmp( &( pcrBeforeExtend[0] ), &( pcrAfterExtend[0] ), 20 ) )
-    {
-        printf( "ERROR!! PCR didn't change value\n" );
-        Cleanup();
-    }
-    pcrSelection.pcrSelections[0].sizeofSelect = 4;
-
-    rval = Tss2_Sys_PCR_Read( sysContext, 0, &pcrSelection, &pcrUpdateCounterAfterExtend, 0, 0, 0 );
-    CheckFailed( rval, TPM_RC_1 + TPM_RC_P + TPM_RC_VALUE );
-
-    eventData.t.size = 4;
-    eventData.t.buffer[0] = 0;
-    eventData.t.buffer[1] = 0xff;
-    eventData.t.buffer[2] = 0x55;
-    eventData.t.buffer[3] = 0xaa;
-
-    rval = Tss2_Sys_PCR_Event( sysContext, PCR_10, &sessionsData, &eventData, &digests, 0  );
-    CheckPassed( rval );
-    printf( "Name of PCR Event Digests: " );
-    for(UINT16 i = 0; i < digestSize; i++)
-        printf("%02x ", digests.digests[0].digest.sha1[i]);
-    printf("\n");
-}
-
 void TestClockTime()
 {
     UINT32 rval;
@@ -7814,7 +7697,6 @@ void TpmTest()
         verifySignatureExternalTest();
         verifySignatureCreatedTest();
         nvExtensionTest();
-        pcrExtendedTest();
         TestClockTime();
 
     // clear out rm entries for objects.
@@ -8614,13 +8496,6 @@ SUB_MENUS_SETUP getCapabilityTestMenus[] =
     { "0", "RUN ALL TEST CASES", TestTpmGetCapability, },
     { NULL, NULL, 0, },
 };
-SUB_MENUS_SETUP pcrExtendTestMenus[] =
-{
-    { "Q", "QUIT THIS TEST GROUP", 0, },
-    { "D", "PRINT DESCRIPTION ON ALL CASES IN THIS GROUP", PrintPcrExtendTestDescription, },
-    { "0", "RUN ALL TEST CASES", TestPcrExtend, },
-    { NULL, NULL, 0, },
-};
 SUB_MENUS_SETUP hashTestMenus[] =
 {
     { "Q", "QUIT THIS TEST GROUP", 0, },
@@ -8768,13 +8643,6 @@ SUB_MENUS_SETUP nvExtensionTestMenus[] =
     { "0", "RUN ALL TEST CASES", nvExtensionTest, },
     { NULL, NULL, 0, },
 };
-SUB_MENUS_SETUP pcrExtendedTestMenus[] =
-{
-    { "Q", "QUIT THIS TEST GROUP", 0, },
-    { "D", "PRINT DESCRIPTION ON ALL CASES IN THIS GROUP", PrintPcrExtendedTest, },
-    { "0", "RUN ALL TEST CASES", pcrExtendedTest, },
-    { NULL, NULL, 0, },
-};
 SUB_MENUS_SETUP clockTimeTestMenus[] =
 {
     { "Q", "QUIT THIS TEST GROUP", 0, },
@@ -8801,7 +8669,6 @@ MENUS_SETUP firstLevelMenus[] =
     { "11", "HIERARCHY CONTROL TESTS", 0, hierarchyControlMenus, },
     { "12", "GET/SET ENCRYPT PARAM TESTS", 0, getSetEncryptParamMenus, },
     { "13", "GET_CAPABILITY TESTS", 0, getCapabilityTestMenus, },
-    { "14", "PCR_EXTEND, PCR_EVENT, PCR_ALLOCATE, and PCR_READ TESTS", 0, pcrExtendTestMenus, },
     { "15", "HASH TESTS", 0, hashTestMenus, },
     { "16", "POLICY TESTS", 0, policyTestMenus, },
     { "17", "CLEAR and CLEAR CONTROL TESTS", 0, clearTestMenus, },
@@ -8826,7 +8693,6 @@ MENUS_SETUP firstLevelMenus[] =
     { "35", "VERIFY SIGNATURE WITH EXTERNAL KEY TEST", 0, verifySignatureExternalTestMenus, },
     { "36", "VERIFY SIGNATURE WITH CREATED KEY TEST", 0, verifySignatureCreatedTestMenus, },
     { "37", "NV EXTENSION TEST", 0, nvExtensionTestMenus, },
-    { "38", "PCR EXTENDED TEST", 0, pcrExtendedTestMenus, },
     { "39", "CLOCK/TIME TEST", 0, clockTimeTestMenus, },
 
     { NULL, NULL, 0, },
