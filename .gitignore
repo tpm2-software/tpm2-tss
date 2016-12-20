@@ -40,6 +40,7 @@ src_vars.mk
 resourcemgr/resourcemgr
 test/integration/get-random
 test/integration/self-test
+test/integration/pcr-extension
 test/tpmclient/tpmclient
 .klocwork/
 ipch/
