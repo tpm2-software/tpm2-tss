@@ -57,7 +57,8 @@ endif #UNIT
 
 TESTS_INTEGRATION = \
     test/integration/get-random \
-    test/integration/self-test
+    test/integration/self-test \
+    test/integration/pcr-extension
 
 TESTS = $(check_PROGRAMS)
 CLEANFILES = $(nodist_pkgconfig_DATA)
@@ -216,6 +217,10 @@ test_integration_get_random_SOURCES = test/integration/get-random.c \
 
 test_integration_self_test_LDADD   = $(TESTS_LDADD)
 test_integration_self_test_SOURCES = test/integration/self-test.c \
+    test/integration/main.c
+
+test_integration_pcr_extension_LDADD   = $(TESTS_LDADD)
+test_integration_pcr_extension_SOURCES = test/integration/pcr-extension.c \
     test/integration/main.c
 
 TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES)
