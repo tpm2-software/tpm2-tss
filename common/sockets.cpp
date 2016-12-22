@@ -5,6 +5,9 @@
 #ifndef _WIN32
 void WSACleanup() {}
 int WSAGetLastError() { return errno; }
+int wasInterrupted() { return errno == EINTR; }
+#else
+int wasInterrupted() { return 0; }
 #endif
 
 void CloseSockets( SOCKET otherSock, SOCKET tpmSock)
@@ -22,7 +25,13 @@ TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len )
     for( bytesRead = 0, length = len; bytesRead != len; length -= iResult, bytesRead += iResult )
     {
         iResult = recv( tpmSock, (char *)&( data[bytesRead] ), length, 0);
-        if ((iResult == SOCKET_ERROR) || (!iResult))
+        if (iResult == SOCKET_ERROR)
+        {
+            if (wasInterrupted())
+                continue;
+            return TSS2_TCTI_RC_IO_ERROR;
+        }
+        else if (!iResult)
             return TSS2_TCTI_RC_IO_ERROR;
     }
 
@@ -38,7 +47,12 @@ TSS2_RC sendBytes( SOCKET tpmSock, const unsigned char *data, int len )
     {
         iResult = send( tpmSock, (char *)data, len, MSG_NOSIGNAL );
         if (iResult == SOCKET_ERROR)
-            return TSS2_TCTI_RC_IO_ERROR;
+        {
+            if (wasInterrupted())
+                continue;
+            else
+                return TSS2_TCTI_RC_IO_ERROR;
+        }
     }
 
     return TSS2_RC_SUCCESS;
