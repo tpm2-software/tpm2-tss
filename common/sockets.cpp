@@ -70,6 +70,9 @@ InitSockets( const char *hostName,
 {
     sockaddr_in otherService;
     sockaddr_in tpmService;
+#ifndef _WIN32
+    int optval = 1;
+#endif
     int iResult = 0;            // used to return function results
 
 #ifdef _WIN32
@@ -94,6 +97,13 @@ InitSockets( const char *hostName,
         return(1);
     }
     else {
+#ifndef _WIN32
+        iResult = setsockopt(*otherSock, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
+        if (iResult) {
+          SAFE_CALL( debugfunc, data, NO_PREFIX, "setsockopt failed with error = %d\n", WSAGetLastError() );
+          return(1);
+        }
+#endif
         SAFE_CALL( debugfunc, data, NO_PREFIX, "socket created:  0x%x\n", *otherSock );
         otherService.sin_family = AF_INET;
         otherService.sin_addr.s_addr = inet_addr( hostName );
@@ -136,6 +146,15 @@ InitSockets( const char *hostName,
         return(1);
     }
     else {
+#ifndef _WIN32
+        iResult = setsockopt(*tpmSock, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
+        if (iResult) {
+          SAFE_CALL( debugfunc, data, NO_PREFIX, "setsockopt failed with error = %d\n", WSAGetLastError() );
+          closesocket(*otherSock);
+          WSACleanup();
+          return(1);
+        }
+#endif
         SAFE_CALL( debugfunc, data, NO_PREFIX, "socket created:  0x%x\n", *tpmSock );
         tpmService.sin_family = AF_INET;
         tpmService.sin_addr.s_addr = inet_addr( hostName );
