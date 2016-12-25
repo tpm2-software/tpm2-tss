@@ -19,7 +19,12 @@ STOP_MSG="Stopping tpm_server daemon"
 
 case $1 in
     start)
-        echo -n "${START_MSG} ${DAEMON}: "
+        if [ -x "${DAEMON}" ]; then
+            echo -n "${START_MSG} ${DAEMON}: "
+        else
+            echo "can't find simulator executable, has it been built?"
+            exit 1
+        fi
         nohup ${DAEMON} ${OPTIONS} > /dev/null 2>&1 &
         RET=$?
         PID=$!
