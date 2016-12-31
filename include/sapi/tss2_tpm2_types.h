@@ -442,7 +442,7 @@ typedef	TPM_HANDLE TPM_HC;
 #define	HR_NV_INDEX	(TPM_HT_NV_INDEX << HR_SHIFT )	 /*   */
 #define	HR_PERMANENT	(TPM_HT_PERMANENT << HR_SHIFT )	 /*   */
 #define	PCR_FIRST	(HR_PCR + 0 )	 /* first PCR  */
-#define	PCR_LAST	(PCR_FIRST + IMPLEMENTATION_PCR1 )	 /* last PCR  */
+#define	PCR_LAST	(PCR_FIRST + IMPLEMENTATION_PCR - 1 )	 /* last PCR  */
 #define	HMAC_SESSION_FIRST	(HR_HMAC_SESSION + 0 )	 /* first HMAC session  */
 #define	HMAC_SESSION_LAST	(HMAC_SESSION_FIRST+MAX_ACTIVE_SESSIONS1 )	 /* last HMAC session  */
 #define	LOADED_SESSION_FIRST	(HMAC_SESSION_FIRST )	 /* used in GetCapability  */
