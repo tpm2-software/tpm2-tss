@@ -452,7 +452,7 @@ typedef	TPM_HANDLE TPM_HC;
 #define	TRANSIENT_FIRST	(HR_TRANSIENT + 0 )	 /* first transient object  */
 #define	ACTIVE_SESSION_FIRST	(POLICY_SESSION_FIRST )	 /* used in GetCapability  */
 #define	ACTIVE_SESSION_LAST	(POLICY_SESSION_LAST )	 /* used in GetCapability  */
-#define	TRANSIENT_LAST	(TRANSIENT_FIRST+MAX_LOADED_OBJECTS1 )	 /* last transient object  */
+#define	TRANSIENT_LAST	(TRANSIENT_FIRST + MAX_LOADED_OBJECTS - 1 )	 /* last transient object  */
 #define	PERSISTENT_FIRST	(HR_PERSISTENT + 0 )	 /* first persistent object  */
 #define	PERSISTENT_LAST	(PERSISTENT_FIRST + 0x00FFFFFF )	 /* last persistent object  */
 #define	PLATFORM_PERSISTENT	(PERSISTENT_FIRST + 0x00800000 )	 /* first platform persistent object  */
