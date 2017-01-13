@@ -6792,181 +6792,6 @@ void symmetricEncryptDecryptTest()
 	}
 }
 
-void asymmetricEncryptDecryptTest()
-{
-    UINT32 rval;
-    TPM2B_SENSITIVE_CREATE  inSensitive;
-    TPM2B_PUBLIC            inPublic;
-    TPM2B_DATA              outsideInfo= { { 0, } };
-    TPML_PCR_SELECTION      creationPCR;
-    TPMS_AUTH_COMMAND sessionData;
-    TPMS_AUTH_RESPONSE sessionDataOut;
-    TSS2_SYS_CMD_AUTHS sessionsData;
-
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
-    TPM2B_NAME name= { { sizeof( TPM2B_NAME ) - 2, } };
-    TPM2B_PRIVATE outPrivate = { { sizeof( TPM2B_PRIVATE ) - 2, } };
-    TPM2B_PUBLIC outPublic= { { 0, } };
-    TPM2B_CREATION_DATA creationData= { { 0, } };
-    TPM2B_DIGEST creationHash = { { sizeof( TPM2B_DIGEST ) - 2, } };
-    TPMT_TK_CREATION creationTicket = { 0, };
-
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-
-    sessionDataArray[0] = &sessionData;
-    sessionsData.cmdAuths = &sessionDataArray[0];
-    sessionDataOutArray[0] = &sessionDataOut;
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsDataOut.rspAuthsCount = 1;
-
-    printf( "\nASYMMETRIC ENCRYPT/DECRYPT & HASH TESTS:\n" );
-    //inSensitive.t.sensitive.userAuth = loadedSha1KeyAuth;
-    //inSensitive.t.sensitive.data.t.size = 0;
-    //inSensitive.t.size = loadedSha1KeyAuth.b.size + 2;
-
-    inPublic.t.publicArea.type = TPM_ALG_RSA;
-    inPublic.t.publicArea.nameAlg = TPM_ALG_SHA256;
-
-    // First clear attributes bit field.
-    *(UINT32 *)&( inPublic.t.publicArea.objectAttributes) = 0;
-    inPublic.t.publicArea.objectAttributes.restricted = 1;
-    inPublic.t.publicArea.objectAttributes.userWithAuth = 1;
-    inPublic.t.publicArea.objectAttributes.decrypt = 1;
-    inPublic.t.publicArea.objectAttributes.fixedTPM = 1;
-    inPublic.t.publicArea.objectAttributes.fixedParent = 1;
-    inPublic.t.publicArea.objectAttributes.sensitiveDataOrigin = 1;
-
-    inPublic.t.publicArea.authPolicy.t.size = 0;
-
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
-    inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
-    inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
-    inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
-
-    inPublic.t.publicArea.unique.rsa.t.size = 0;
-
-    outsideInfo.t.size = 0;
-    creationPCR.count = 0;
-
-    sessionData.sessionHandle = TPM_RS_PW;
-
-    // Init nonce.
-    sessionData.nonce.t.size = 0;
-
-    // init hmac
-    sessionData.hmac.t.size = 0;
-
-    // Init session attributes
-    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
-
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0] = &sessionData;
-
-
-    outPublic.t.size = 0;
-    creationData.t.size = 0;
-    rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_OWNER, &sessionsData, &inSensitive, &inPublic,
-            &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
-            &creationTicket, &name, &sessionsDataOut );
-    CheckPassed( rval );
-
-    printf( "\nNew key successfully created in owner hierarchy (RSA 2048).  Handle: 0x%8.8x\n",
-            handle2048rsa );
-    printf( "Name of created primary key: " );
-    PrintSizedBuffer( (TPM2B *)&name );
-
-    outPublic.t.size = 0;
-    creationData.t.size = 0;
-
-    sessionData.hmac.t.size = 0;
-
-    // First clear attributes bit field.
-    *(UINT32 *)&(inPublic.t.publicArea.objectAttributes) = 0;
-    inPublic.t.publicArea.objectAttributes.restricted = 0;
-    inPublic.t.publicArea.objectAttributes.userWithAuth = 1;
-    inPublic.t.publicArea.objectAttributes.decrypt = 1;
-    inPublic.t.publicArea.objectAttributes.sign = 1;
-    inPublic.t.publicArea.objectAttributes.fixedTPM = 1;
-    inPublic.t.publicArea.objectAttributes.fixedParent = 1;
-    inPublic.t.publicArea.objectAttributes.sensitiveDataOrigin = 1;
-
-    inPublic.t.publicArea.type = TPM_ALG_RSA;
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_NULL;
-    inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
-    inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
-    inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
-    inPublic.t.publicArea.unique.rsa.t.size = 0;
-
-    outsideInfo.t.size = 0;
-    outPublic.t.size = 0;
-    creationData.t.size = 0;
-    rval = Tss2_Sys_Create( sysContext, handle2048rsa, &sessionsData, &inSensitive, &inPublic,
-            &outsideInfo, &creationPCR,
-            &outPrivate, &outPublic, &creationData,
-            &creationHash, &creationTicket, &sessionsDataOut );
-    CheckPassed( rval );
-    printf( "Name of created key: " );
-    PrintSizedBuffer( (TPM2B *)&name );
-
-    rval = Tss2_Sys_Load ( sysContext, handle2048rsa, &sessionsData, &outPrivate, &outPublic,
-            &loadedSha1KeyHandle, &name, &sessionsDataOut);
-    CheckPassed( rval );
-
-    printf( "Name of loading key: " );
-    PrintSizedBuffer( (TPM2B *)&name );
-
-    printf( "\nLoaded key handle:  %8.8x\n", loadedSha1KeyHandle );
-
-    char buffer1contents[] = "test";
-    TPMT_RSA_DECRYPT inScheme;
-    TPM2B_PUBLIC_KEY_RSA message = { { sizeof(TPM2B_PUBLIC_KEY_RSA)-2, } };
-    TPM2B_PUBLIC_KEY_RSA messageOut = { { sizeof(TPM2B_PUBLIC_KEY_RSA)-2, } };
-    TPM2B_PUBLIC_KEY_RSA outData = { { sizeof(TPM2B_PUBLIC_KEY_RSA)-2, } };
-    TPM2B_MAX_BUFFER inData1, inData2;
-    TPM2B_DIGEST outHash1 = { { sizeof( TPM2B_DIGEST ) - 2,} };
-    TPM2B_DIGEST outHash2 = { { sizeof( TPM2B_DIGEST ) - 2,} };
-    TPMT_TK_HASHCHECK validation;
-    TPMI_ALG_HASH  halg = TPM_ALG_SHA256;
-
-    message.t.size = strlen(buffer1contents);
-    memcpy(message.t.buffer, buffer1contents, message.t.size);
-
-    inScheme.scheme = TPM_ALG_RSAES;
-    outsideInfo.t.size = 0;
-    rval = Tss2_Sys_RSA_Encrypt(sysContext, loadedSha1KeyHandle, 0, &message, &inScheme, &outsideInfo, &outData, 0);
-    CheckPassed(rval);
-    printf( "Encrypted data: " );
-    PrintSizedBuffer( (TPM2B *)&outData );
-
-	if (rval == TPM_RC_SUCCESS)
-	{
-	    rval = Tss2_Sys_RSA_Decrypt(sysContext, loadedSha1KeyHandle, &sessionsData, &outData, &inScheme, &outsideInfo, &messageOut, &sessionsDataOut);
-	    CheckPassed(rval);
-	    printf( "Decypted data: " );
-	    PrintSizedBuffer( (TPM2B *)&messageOut );
-
-	    printf("\nHASH TESTS: HASH Comparison\n");
-
-            inData1.t.size = message.t.size;
-	    memcpy(inData1.t.buffer, message.t.buffer, inData1.t.size);
-            rval = Tss2_Sys_Hash(sysContext, 0, &inData1, halg, TPM_RH_OWNER, &outHash1, &validation, 0);
-            CheckPassed(rval);
-
-	    inData2.t.size = messageOut.t.size;
-	    memcpy(inData2.t.buffer, messageOut.t.buffer, inData2.t.size);
-	    rval = Tss2_Sys_Hash(sysContext, 0, &inData2, halg, TPM_RH_OWNER, &outHash2, &validation, 0);
-	    CheckPassed(rval);
-
-	    printf( "Hash value before encrypt: " );
-    	    PrintSizedBuffer( (TPM2B *)&outHash1 );
-	    printf( "Hash value after decrypt: " );
-            PrintSizedBuffer( (TPM2B *)&outHash2 );
-	}
-}
-
 void verifySignatureExternalTest()
 {
     UINT32 rval;
@@ -7693,7 +7518,6 @@ void TpmTest()
     }
 
 	symmetricEncryptDecryptTest();
-        asymmetricEncryptDecryptTest();
         verifySignatureExternalTest();
         verifySignatureCreatedTest();
         nvExtensionTest();
@@ -8273,42 +8097,6 @@ void PrintSymmetricEncryptDecryptTest()
            "    a3 bf 4f 1b 2b 0b 82 2c d1 5d 6c 15 b0 f0 0a 08\n");
 
 }
-void PrintAsymmetricEncryptDecryptTest()
-{
-    printf("  create primary:   PASSED!\n"
-           "  New key successfully created in owner hierarchy (RSA 2048).  Handle: 0x8000000d\n"
-           "  Name of created primary key: 00 04 ed 89 58 53 b7 51 74 88 f8 d2 7c de b5 89 55 28 46 dd f8 35\n"
-           "  create key:   PASSED!\n"
-           "  Name of created key: 00 04 ed 89 58 53 b7 51 74 88 f8 d2 7c de b5 89 55 28 46 dd f8 35\n"
-           "  load key:   PASSED!\n"
-           "  Name of loading key: 00 04 60 df d7 7a f7 fd 2c c8 2d 61 04 52 4c cc 6a 2d dc 18 ca 98\n"
-	   "  rsa encrypt:   PASSED!\n"
-	   "  Encrypted data: f0 7f fd c3 c6 dd 9e 98 6d 71 05 c7 ad 9a 8e 74\n"
-	   "	19 0a 47 cb dd ca c4 6a c1 55 d3 8b d6 76 b7 93\n"
-	   "	77 ca 05 3e 0e 90 8d bd 2d 1d 6d e8 7e bf fe 35\n"
-	   " 	3c 80 cf 3d 59 c0 0a a5 58 44 4f 93 9d 72 15 41\n"
-	   "	c2 6c 91 2d c8 ec 15 4a d8 1e be c6 04 c2 c9 8e\n"
-	   " 	2d 1b 0c c3 13 2d b7 5c 20 91 6c 65 bb 19 89 23\n"
-	   "	48 ab 29 cc 03 20 7f 06 7f a5 48 d7 58 f9 1a 39\n"
-	   "	89 c7 5b 3f d2 ff ad f4 32 13 2f 31 af 3a d3 bd\n"
-	   "	d2 ab 2e 1a aa 7a 65 b9 20 a7 25 d5 12 67 f8 23\n"
-	   "	fa 8c 6c 65 72 75 a6 57 21 94 df 25 a9 e7 c4 54\n"
-	   "	ca 0c fb ae 37 c9 6b 58 5e 9b 9f 58 31 f8 94 a6\n"
-	   "	0d bf 0a 78 a7 53 96 81 cf 90 45 0b 31 6c da e0\n"
-	   "	00 b3 7c 98 35 fa 6d 14 e6 0a 0c 1c 45 f7 3f 00\n"
-	   "	bd c8 fc 8e 83 55 b4 1e f8 a2 cb c5 cb bd 67 16\n"
-	   "	f9 e7 9b 8d 7b 32 bf 7b 67 3f d4 9c 35 33 6d 0e\n"
-	   "	ec e4 19 f4 bc 16 61 92 b3 9b 2b 8b b5 14 25 2b\n"
-           "  rsa decrypt:   PASSED!\n"
-	   "  Decypted data: 74 65 73 74\n"
-	   "  HASH TESTS: HASH Comparison\n"
-           "  hashing on original message:   PASSED!\n"
-           "  hashing on the decyprted message:   PASSED!\n"
-	   "  Hash value before encrypt: 9f 86 d0 81 88 4c 7d 65 9a 2f ea a0 c5 5a d0 15\n"
-	   "	a3 bf 4f 1b 2b 0b 82 2c d1 5d 6c 15 b0 f0 0a 08\n"
-	   "  Hash value after decrypt: 9f 86 d0 81 88 4c 7d 65 9a 2f ea a0 c5 5a d0 15\n"
-	   "	a3 bf 4f 1b 2b 0b 82 2c d1 5d 6c 15 b0 f0 0a 08\n");
-}
 void PrintVerifySignatureExternalTest()
 {
     printf("  create primary:   PASSED!\n"
@@ -8615,13 +8403,6 @@ SUB_MENUS_SETUP symmetricEncryptDecryptTestMenus[] =
     { "0", "RUN ALL TEST CASES", symmetricEncryptDecryptTest, },
     { NULL, NULL, 0, },
 };
-SUB_MENUS_SETUP asymmetricEncryptDecryptTestMenus[] =
-{
-    { "Q", "QUIT THIS TEST GROUP", 0, },
-    { "D", "PRINT DESCRIPTION ON ALL CASES IN THIS GROUP", PrintAsymmetricEncryptDecryptTest, },
-    { "0", "RUN ALL TEST CASES", asymmetricEncryptDecryptTest, },
-    { NULL, NULL, 0, },
-};
 SUB_MENUS_SETUP verifySignatureExternalTestMenus[] =
 {
     { "Q", "QUIT THIS TEST GROUP", 0, },
@@ -8689,7 +8470,6 @@ MENUS_SETUP firstLevelMenus[] =
     { "32", "EC Ephemeral TESTS", 0, ecEphemeralTestMenus, },
 
 	{ "33", "SYMMETRIC ENCRYPT/DECRYPT TESTS", 0, symmetricEncryptDecryptTestMenus, },
-    { "34", "ASYMMETRIC ENCRYPT/DECRYPT TESTS", 0, asymmetricEncryptDecryptTestMenus, },
     { "35", "VERIFY SIGNATURE WITH EXTERNAL KEY TEST", 0, verifySignatureExternalTestMenus, },
     { "36", "VERIFY SIGNATURE WITH CREATED KEY TEST", 0, verifySignatureCreatedTestMenus, },
     { "37", "NV EXTENSION TEST", 0, nvExtensionTestMenus, },
