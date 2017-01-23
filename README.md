@@ -1,5 +1,11 @@
 [![Build Status](https://travis-ci.org/01org/TPM2.0-TSS.svg?branch=master)](https://travis-ci.org/01org/TPM2.0-TSS)
 
+# WARNING: Resource Manager Deprecated
+The current resource manager implementation in [$(srcdir)/resourcemgr/resourcemgr.c](https://github.com/01org/TPM2.0-TSS/blob/master/resourcemgr/resourcemgr.c) should be considered a prototype only.
+It is not suitable for regular use as it has numerous threading issues and likely other latent bugs that can't be quantified without significant investment of time and resources.
+As such we've decided to write a new implementation as a proper daemon using dbus and more modern development practices.
+Patches fixing issues with the existing resource manager are welcome but this code will be removed as soon as the replacement is ready.
+
 ## TPM (Trusted Platform Module) 2.0 Software Stack (TSS):
 
 This stack consists of the following layers from top to bottom:

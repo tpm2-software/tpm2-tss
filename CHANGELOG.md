@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 ### Added
 - Unit test for device TCTI bug fixes.
 ### Changed
+- README.md updated to add note about deprecation of resourcemgr code. A
+replacement has been in the works for a while but the existing code will
+remain in place until the replacement is ready.
 - Added std=gnu99 to default CONFIG_SITE.
 - Update Linux / Unix OS detection to use non-obsolete macros.
 - Move unit tests from test/ to test/unit/.
