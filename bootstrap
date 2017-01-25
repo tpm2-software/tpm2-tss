@@ -13,6 +13,7 @@ src_listvar () {
 }
 
 VARS_FILE=src_vars.mk
+AUTORECONF=${AUTORECONF:-autoreconf}
 
 echo "Generating file lists: ${VARS_FILE}"
 (
@@ -30,4 +31,4 @@ echo "Generating file lists: ${VARS_FILE}"
   printf "SAMPLE_SRC = \$(SAMPLE_C) \$(SAMPLE_H)\n"
 ) > ${VARS_FILE}
 
-autoreconf --install --sym
+${AUTORECONF} --install --sym
