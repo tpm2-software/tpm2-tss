@@ -51,6 +51,7 @@ TESTS_UNIT  = \
     test/unit/marshal-UINT32 \
     test/unit/tcti-device \
     test/unit/UINT8-marshal \
+    test/unit/UINT16-marshal \
     test/unit/unmarshal-UINT16 \
     test/unit/unmarshal-UINT32
 endif #UNIT
@@ -177,6 +178,10 @@ test_unit_CheckOverflow_SOURCES = \
 test_unit_UINT8_marshal_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include
 test_unit_UINT8_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_UINT8_marshal_SOURCES = test/unit/UINT8-marshal.c
+
+test_unit_UINT16_marshal_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include
+test_unit_UINT16_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
+test_unit_UINT16_marshal_SOURCES = test/unit/UINT16-marshal.c
 endif # UNIT
 
 # how to build stuff

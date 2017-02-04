@@ -89,3 +89,66 @@ UINT8_Unmarshal (
 
     return TSS2_RC_SUCCESS;
 }
+
+TSS2_RC
+UINT16_Marshal (
+    UINT16 const *src,
+    uint8_t       buffer [],
+    size_t        buffer_size,
+    size_t       *offset
+    )
+{
+    size_t local_offset = 0;
+
+    if (offset != NULL)
+        local_offset = *offset;
+
+    if (src == NULL || (buffer == NULL && offset == NULL)) {
+        return TSS2_TYPES_RC_BAD_REFERENCE;
+    } else if (buffer == NULL && offset != NULL) {
+        *offset += sizeof (*src);
+        return TSS2_RC_SUCCESS;
+    } else if (buffer_size < local_offset ||
+               buffer_size - local_offset < sizeof (*src))
+    {
+        return TSS2_TYPES_RC_INSUFFICIENT_BUFFER;
+    }
+    (*(UINT16*)&buffer [local_offset]) = htobe16 (*src);
+    if (offset != NULL) {
+        *offset = local_offset + sizeof (*src);
+    }
+
+    return TSS2_RC_SUCCESS;
+}
+
+TSS2_RC
+UINT16_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    UINT16         *dest
+    )
+{
+    size_t local_offset = 0;
+
+    if (offset != NULL)
+        local_offset = *offset;
+
+    if (buffer == NULL || (dest == NULL && offset == NULL)) {
+        return TSS2_TYPES_RC_BAD_REFERENCE;
+    } else if (dest == NULL && offset != NULL) {
+        *offset += sizeof (UINT16);
+        return TSS2_RC_SUCCESS;
+    } else if (buffer_size < local_offset ||
+               sizeof (*dest) > buffer_size - local_offset)
+    {
+        return TSS2_TYPES_RC_INSUFFICIENT_BUFFER;
+    }
+
+    *dest = be16toh (*(UINT16*)&buffer [local_offset]);
+    if (offset != NULL) {
+        *offset = local_offset + sizeof (*dest);
+    }
+
+    return TSS2_RC_SUCCESS;
+}
