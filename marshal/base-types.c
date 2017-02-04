@@ -102,3 +102,16 @@ BASE_MARSHAL   (UINT8,  HOST_TO_BE_8);
 BASE_UNMARSHAL (UINT8,  BE_TO_HOST_8);
 BASE_MARSHAL   (UINT16, HOST_TO_BE_16);
 BASE_UNMARSHAL (UINT16, BE_TO_HOST_16);
+
+/*
+ * If we don't have endian.h then we need to fake it with our own endianness
+ * conversion functions.
+ */
+#if !defined(HAVE_ENDIAN_H) && !defined(WORDS_BIGENDIAN)
+UINT16
+endian_conv_16 (UINT16 value)
+{
+    return ((value & (0xff))      << 8) | \
+           ((value & (0xff << 8)) >> 8);
+}
+#endif /* HAVE_ENDIAN_H */

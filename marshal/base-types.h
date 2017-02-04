@@ -28,7 +28,6 @@
 #ifndef BASE_TYPES_H
 #define BASE_TYPES_H
 
-#include <endian.h>
 #include "sapi/tpm20.h"
 
 /*
@@ -37,9 +36,29 @@
  */
 static inline UINT8 noop8 (UINT8 value) { return value; }
 
+#if defined(HAVE_ENDIAN_H)
+
+#include <endian.h>
 #define HOST_TO_BE_8(value)  noop8   (value)
 #define HOST_TO_BE_16(value) htobe16 (value)
 #define BE_TO_HOST_8(value)  noop8   (value)
 #define BE_TO_HOST_16(value) be16toh (value)
 
+#elif defined(WORDS_BIGENDIAN)
+
+static inline UINT16 noop16 (UINT16 value) { return value; }
+#define HOST_TO_BE_8(value)  noop8  (value)
+#define HOST_TO_BE_16(value) noop16 (value)
+#define BE_TO_HOST_8(value)  noop8  (value)
+#define BE_TO_HOST_16(value) noop16 (value)
+
+#else
+
+UINT16 endian_conv_16 (UINT16 value);
+#define HOST_TO_BE_8(value)  noop8          (value)
+#define HOST_TO_BE_16(value) endian_conv_16 (value)
+#define BE_TO_HOST_8(value)  noop8          (value)
+#define BE_TO_HOST_16(value) endian_conv_16 (value)
+
+#endif /* HAVE_ENDIAN_H */
 #endif /* BASE_TYPES_H  */
