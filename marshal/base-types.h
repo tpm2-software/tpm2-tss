@@ -36,29 +36,42 @@
  */
 static inline UINT8 noop8 (UINT8 value) { return value; }
 
+#define CAST_TO_TYPE(ptr, type) (*(type*)ptr)
+#define CAST_TO_UINT8(ptr)      CAST_TO_TYPE(ptr, UINT8)
+#define CAST_TO_UINT16(ptr)     CAST_TO_TYPE(ptr, UINT16)
+#define CAST_TO_UINT32(ptr)     CAST_TO_TYPE(ptr, UINT32)
+
 #if defined(HAVE_ENDIAN_H)
 
 #include <endian.h>
 #define HOST_TO_BE_8(value)  noop8   (value)
 #define HOST_TO_BE_16(value) htobe16 (value)
+#define HOST_TO_BE_32(value) htobe32 (value)
 #define BE_TO_HOST_8(value)  noop8   (value)
 #define BE_TO_HOST_16(value) be16toh (value)
+#define BE_TO_HOST_32(value) be32toh (value)
 
 #elif defined(WORDS_BIGENDIAN)
 
 static inline UINT16 noop16 (UINT16 value) { return value; }
+static inline UINT32 noop32 (UINT32 value) { return value; }
 #define HOST_TO_BE_8(value)  noop8  (value)
 #define HOST_TO_BE_16(value) noop16 (value)
+#define HOST_TO_BE_32(value) noop32 (value)
 #define BE_TO_HOST_8(value)  noop8  (value)
 #define BE_TO_HOST_16(value) noop16 (value)
+#define BE_TO_HOST_32(value) noop32 (value)
 
 #else
 
 UINT16 endian_conv_16 (UINT16 value);
+UINT32 endian_conv_32 (UINT32 value);
 #define HOST_TO_BE_8(value)  noop8          (value)
 #define HOST_TO_BE_16(value) endian_conv_16 (value)
+#define HOST_TO_BE_32(value) endian_conv_32 (value)
 #define BE_TO_HOST_8(value)  noop8          (value)
 #define BE_TO_HOST_16(value) endian_conv_16 (value)
+#define BE_TO_HOST_32(value) endian_conv_32 (value)
 
 #endif /* HAVE_ENDIAN_H */
 #endif /* BASE_TYPES_H  */

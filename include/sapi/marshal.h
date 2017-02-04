@@ -73,6 +73,22 @@ UINT16_Unmarshal (
     UINT16         *dest
     );
 
+TSS2_RC
+UINT32_Marshal (
+    UINT32 const   *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset
+    );
+
+TSS2_RC
+UINT32_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    UINT32         *dest
+    );
+
 #ifdef __cplusplus
 }
 #endif
