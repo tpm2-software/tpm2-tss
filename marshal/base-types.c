@@ -104,6 +104,8 @@ BASE_MARSHAL   (UINT16, HOST_TO_BE_16);
 BASE_UNMARSHAL (UINT16, BE_TO_HOST_16);
 BASE_MARSHAL   (UINT32, HOST_TO_BE_32);
 BASE_UNMARSHAL (UINT32, BE_TO_HOST_32);
+BASE_MARSHAL   (UINT64, HOST_TO_BE_64);
+BASE_UNMARSHAL (UINT64, BE_TO_HOST_64);
 
 /*
  * If we don't have endian.h then we need to fake it with our own endianness
@@ -124,4 +126,17 @@ endian_conv_32 (UINT32 value)
            ((value & (0xff << 16)) >> 8)  | \
            ((value & (0xff << 24)) >> 24);
 }
+UINT64
+endian_conv_64 (UINT64 value)
+{
+    return ((value & (0xffL))       << 56) | \
+           ((value & (0xffL << 8))  << 40) | \
+           ((value & (0xffL << 16)) << 24) | \
+           ((value & (0xffL << 24)) << 8)  | \
+           ((value & (0xffL << 32)) >> 8)  | \
+           ((value & (0xffL << 40)) >> 24) | \
+           ((value & (0xffL << 48)) >> 40) | \
+           ((value & (0xffL << 56)) >> 56);
+}
+
 #endif /* HAVE_ENDIAN_H */
