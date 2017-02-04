@@ -25,130 +25,80 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
+#include "sapi/marshal.h"
 #include "sapi/tpm20.h"
 
-TSS2_RC
-UINT8_Marshal (
-    UINT8 const  *src,
-    uint8_t       buffer [],
-    size_t        buffer_size,
-    size_t       *offset
-    )
-{
-    size_t local_offset = 0;
+#include "base-types.h"
 
-    if (offset != NULL)
-        local_offset = *offset;
-
-    if (src == NULL || (buffer == NULL && offset == NULL)) {
-        return TSS2_TYPES_RC_BAD_REFERENCE;
-    } else if (buffer == NULL && offset != NULL) {
-        *offset += sizeof (*src);
-        return TSS2_RC_SUCCESS;
-    } else if (buffer_size < local_offset ||
-               buffer_size - local_offset < sizeof (*src))
-    {
-        return TSS2_TYPES_RC_INSUFFICIENT_BUFFER;
-    }
-    buffer [local_offset] = *src;
-    if (offset != NULL) {
-        *offset = local_offset + sizeof (*src);
-    }
-
-    return TSS2_RC_SUCCESS;
+#define BASE_MARSHAL(type, marshal_func) \
+TSS2_RC \
+type##_Marshal ( \
+    type    const *src, \
+    uint8_t        buffer [], \
+    size_t         buffer_size, \
+    size_t        *offset \
+    ) \
+{ \
+    size_t  local_offset = 0; \
+\
+    if (offset != NULL) \
+        local_offset = *offset; \
+\
+    if (src == NULL || (buffer == NULL && offset == NULL)) { \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (buffer == NULL && offset != NULL) { \
+        *offset += sizeof (*src); \
+        return TSS2_RC_SUCCESS; \
+    } else if (buffer_size < local_offset || \
+               buffer_size - local_offset < sizeof (*src)) \
+    { \
+        return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
+    } \
+\
+    data_ptr  = (type*)&buffer [local_offset]; \
+    *data_ptr = marshal_func (*src); \
+    if (offset != NULL) { \
+        *offset = local_offset + sizeof (*src); \
+    } \
+\
+    return TSS2_RC_SUCCESS; \
 }
 
-TSS2_RC
-UINT8_Unmarshal (
-    uint8_t const   buffer[],
-    size_t          buffer_size,
-    size_t         *offset,
-    UINT8          *dest
-    )
-{
-    size_t local_offset = 0;
-
-    if (offset != NULL)
-        local_offset = *offset;
-
-    if (buffer == NULL || (dest == NULL && offset == NULL)) {
-        return TSS2_TYPES_RC_BAD_REFERENCE;
-    } else if (dest == NULL && offset != NULL) {
-        *offset += sizeof (UINT8);
-        return TSS2_RC_SUCCESS;
-    } else if (buffer_size < local_offset ||
-               sizeof (*dest) > buffer_size - local_offset)
-    {
-        return TSS2_TYPES_RC_INSUFFICIENT_BUFFER;
-    }
-
-    *dest = buffer [local_offset];
-    if (offset != NULL) {
-        *offset = local_offset + sizeof (*dest);
-    }
-
-    return TSS2_RC_SUCCESS;
+#define BASE_UNMARSHAL(type, unmarshal_func) \
+TSS2_RC \
+type##_Unmarshal ( \
+    uint8_t const buffer[], \
+    size_t        buffer_size, \
+    size_t       *offset, \
+    type         *dest \
+    ) \
+{ \
+    size_t  local_offset = 0; \
+\
+    if (offset != NULL) \
+        local_offset = *offset; \
+\
+    if (buffer == NULL || (dest == NULL && offset == NULL)) { \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (dest == NULL && offset != NULL) { \
+        *offset += sizeof (type); \
+        return TSS2_RC_SUCCESS; \
+    } else if (buffer_size < local_offset || \
+               sizeof (*dest) > buffer_size - local_offset) \
+    { \
+        return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
+    } \
+\
+    data_ptr = (type*)&buffer [local_offset]; \
+    *dest = unmarshal_func (*data_ptr); \
+    if (offset != NULL) { \
+        *offset = local_offset + sizeof (*dest); \
+    } \
+\
+    return TSS2_RC_SUCCESS; \
 }
 
-TSS2_RC
-UINT16_Marshal (
-    UINT16 const *src,
-    uint8_t       buffer [],
-    size_t        buffer_size,
-    size_t       *offset
-    )
-{
-    size_t local_offset = 0;
-
-    if (offset != NULL)
-        local_offset = *offset;
-
-    if (src == NULL || (buffer == NULL && offset == NULL)) {
-        return TSS2_TYPES_RC_BAD_REFERENCE;
-    } else if (buffer == NULL && offset != NULL) {
-        *offset += sizeof (*src);
-        return TSS2_RC_SUCCESS;
-    } else if (buffer_size < local_offset ||
-               buffer_size - local_offset < sizeof (*src))
-    {
-        return TSS2_TYPES_RC_INSUFFICIENT_BUFFER;
-    }
-    (*(UINT16*)&buffer [local_offset]) = htobe16 (*src);
-    if (offset != NULL) {
-        *offset = local_offset + sizeof (*src);
-    }
-
-    return TSS2_RC_SUCCESS;
-}
-
-TSS2_RC
-UINT16_Unmarshal (
-    uint8_t const   buffer[],
-    size_t          buffer_size,
-    size_t         *offset,
-    UINT16         *dest
-    )
-{
-    size_t local_offset = 0;
-
-    if (offset != NULL)
-        local_offset = *offset;
-
-    if (buffer == NULL || (dest == NULL && offset == NULL)) {
-        return TSS2_TYPES_RC_BAD_REFERENCE;
-    } else if (dest == NULL && offset != NULL) {
-        *offset += sizeof (UINT16);
-        return TSS2_RC_SUCCESS;
-    } else if (buffer_size < local_offset ||
-               sizeof (*dest) > buffer_size - local_offset)
-    {
-        return TSS2_TYPES_RC_INSUFFICIENT_BUFFER;
-    }
-
-    *dest = be16toh (*(UINT16*)&buffer [local_offset]);
-    if (offset != NULL) {
-        *offset = local_offset + sizeof (*dest);
-    }
-
-    return TSS2_RC_SUCCESS;
-}
+BASE_MARSHAL   (UINT8,  HOST_TO_BE_8);
+BASE_UNMARSHAL (UINT8,  BE_TO_HOST_8);
+BASE_MARSHAL   (UINT16, HOST_TO_BE_16);
+BASE_UNMARSHAL (UINT16, BE_TO_HOST_16);
