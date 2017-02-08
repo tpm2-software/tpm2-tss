@@ -29,7 +29,7 @@
 include src_vars.mk
 
 ACLOCAL_AMFLAGS = -I m4
-AM_CFLAGS       = -I$(srcdir)/include -I$(srcdir)/sysapi/include
+AM_CFLAGS       = -I$(srcdir)/include -I$(srcdir)/sysapi/include -I$(srcdir)/log
 
 # stuff to build, what that stuff is, and where/if to install said stuff
 sbin_PROGRAMS   = $(resourcemgr)
@@ -200,10 +200,11 @@ resourcemgr_resourcemgr_LDADD    = $(libsapi) $(libtcti_device) $(libtcti_socket
 resourcemgr_resourcemgr_LDFLAGS  = $(PTHREAD_LDFLAGS)
 resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(COMMON_SRC)
 
-marshal_libmarshal_la_LDFLAGS = $(LIBRARY_LDFLAGS)
-marshal_libmarshal_la_SOURCES = marshal/base-types.c
+marshal_libmarshal_la_LDFLAGS = $(LIBRARY_LDFLAGS) -Wl,--version-script=$(srcdir)/lib/libmarshal.map
+marshal_libmarshal_la_SOURCES = marshal/base-types.c log/log.c
 
 sysapi_libsapi_la_CFLAGS  = -I$(srcdir)/sysapi/include $(AM_CFLAGS)
+sysapi_libsapi_la_LIBADD  = $(libmarshal)
 sysapi_libsapi_la_LDFLAGS = $(LIBRARY_LDFLAGS)
 sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
 

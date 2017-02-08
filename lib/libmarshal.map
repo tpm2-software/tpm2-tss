@@ -1,0 +1,13 @@
+{
+    global:
+        UINT8_Marshal;
+        UINT8_Unmarshal;
+        UINT16_Marshal;
+        UINT16_Unmarshal;
+        UINT32_Marshal;
+        UINT32_Unmarshal;
+        UINT64_Marshal;
+        UINT64_Unmarshal;
+    local:
+        *;
+};

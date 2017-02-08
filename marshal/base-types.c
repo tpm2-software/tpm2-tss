@@ -25,9 +25,12 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
+#include <inttypes.h>
+
 #include "sapi/marshal.h"
 #include "sapi/tpm20.h"
 
+#include "log.h"
 #include "base-types.h"
 
 #define BASE_MARSHAL(type, marshal_func) \
@@ -41,24 +44,41 @@ type##_Marshal ( \
 { \
     size_t  local_offset = 0; \
 \
-    if (offset != NULL) \
+    if (offset != NULL) { \
+        LOG (INFO, "offset non-NULL, initial value: %zu", *offset); \
         local_offset = *offset; \
+    } \
 \
     if (src == NULL || (buffer == NULL && offset == NULL)) { \
+        LOG (WARNING, "src or buffer and offset parameter are NULL"); \
         return TSS2_TYPES_RC_BAD_REFERENCE; \
     } else if (buffer == NULL && offset != NULL) { \
         *offset += sizeof (*src); \
+        LOG (INFO, "buffer NULL and offset non-NULL, updating offset to %zu", \
+             *offset); \
         return TSS2_RC_SUCCESS; \
     } else if (buffer_size < local_offset || \
                buffer_size - local_offset < sizeof (*src)) \
     { \
+        LOG (WARNING, \
+             "buffer_size: %zu with offset: %zu are insufficient for object " \
+             "of size %zu", \
+             buffer_size, \
+             local_offset, \
+             sizeof (*src)); \
         return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
     } \
 \
-    data_ptr  = (type*)&buffer [local_offset]; \
-    *data_ptr = marshal_func (*src); \
+    LOG (DEBUG, \
+         "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx", \
+         (uintptr_t)src, \
+         (uintptr_t)buffer, \
+         local_offset); \
+    CAST_TO_##type (&buffer [local_offset]) = marshal_func (*src); \
     if (offset != NULL) { \
         *offset = local_offset + sizeof (*src); \
+        LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
     } \
 \
     return TSS2_RC_SUCCESS; \
@@ -75,24 +95,42 @@ type##_Unmarshal ( \
 { \
     size_t  local_offset = 0; \
 \
-    if (offset != NULL) \
+    if (offset != NULL) { \
+        LOG (INFO, "offset non-NULL, initial value: %zu", *offset); \
         local_offset = *offset; \
+    } \
 \
     if (buffer == NULL || (dest == NULL && offset == NULL)) { \
+        LOG (WARNING, "buffer or dest and offset parameter are NULL"); \
         return TSS2_TYPES_RC_BAD_REFERENCE; \
     } else if (dest == NULL && offset != NULL) { \
         *offset += sizeof (type); \
+        LOG (INFO, \
+             "buffer NULL and offset non-NULL, updating offset to %zu", \
+             *offset); \
         return TSS2_RC_SUCCESS; \
     } else if (buffer_size < local_offset || \
                sizeof (*dest) > buffer_size - local_offset) \
     { \
+        LOG (WARNING, \
+             "buffer_size: %zu with offset: %zu are insufficient for object " \
+             "of size %zu", \
+             buffer_size, \
+             local_offset, \
+             sizeof (*dest)); \
         return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
     } \
 \
-    data_ptr = (type*)&buffer [local_offset]; \
-    *dest = unmarshal_func (*data_ptr); \
+    LOG (DEBUG, \
+         "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx", \
+         (uintptr_t)buffer, \
+         (uintptr_t)dest, \
+         local_offset); \
+    *dest = unmarshal_func (CAST_TO_##type (&buffer [local_offset])); \
     if (offset != NULL) { \
         *offset = local_offset + sizeof (*dest); \
+        LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
     } \
 \
     return TSS2_RC_SUCCESS; \

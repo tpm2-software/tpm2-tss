@@ -1,2 +1,2 @@
-CFLAGS="-Wall -Werror -O0 -ggdb3 -DDEBUG -DDEBUG_SOCKETS"
+CFLAGS="-Wall -Werror -O0 -ggdb3 -DDEBUG_SOCKETS -DMARSHAL_LOG_LEVEL=DEBUG"
 CXXFLAGS="-Wall -Werror -O0 -fno-operator-names -fpermissive -ggdb3 -DDEBUG -DDEBUG_SOCKETS"
