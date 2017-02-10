@@ -60,22 +60,6 @@ TSS2_RC CheckDataPointers( UINT8 *buffer, UINT8 **nextData );
 #define MARSHAL_SIMPLE_TPM2B( sysContext, value ) \
     Marshal_Simple_TPM2B( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &( SYS_CONTEXT->nextData ), value, &(SYS_CONTEXT->rval ) )
 
-#define Marshal_INT8( sysContext, var ) Marshal_int8_t( sysContext, (int8_t *)var )
-
-#define Unmarshal_INT8( sysContext, var ) Unmarshal_int8_t( sysContext, (int8_t *)var )
-
-#define Marshal_BOOL( sysContext, var ) Marshal_int( sysContext, (int *)var )
-
-#define Unmarshal_BOOL( sysContext, var ) Unmarshal_int( sysContext, (int *)var )
-
-#define Marshal_INT16( sysContext, var ) Marshal_int16_t( sysContext, (int16_t *)var )
-
-#define Unmarshal_INT16( sysContext, var ) Unmarshal_int16_t( sysContext, (int16_t *)var )
-
-#define Marshal_INT64( sysContext, var ) Marshal_int64_t( sysContext, (int64_t *)var )
-
-#define Unmarshal_INT64( sysContext, var ) Unmarshal_int64_t( sysContext, (int64_t *)var )
-
 #define Marshal_TPM_ALGORITHM_ID( sysContext, var ) Marshal_UINT32( sysContext, (UINT32 *)var )
 
 #define Unmarshal_TPM_ALGORITHM_ID( sysContext, var ) Unmarshal_UINT32( sysContext, (UINT32 *)var )
