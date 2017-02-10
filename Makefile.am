@@ -34,7 +34,7 @@ AM_CFLAGS       = -I$(srcdir)/include -I$(srcdir)/sysapi/include
 # stuff to build, what that stuff is, and where/if to install said stuff
 sbin_PROGRAMS   = $(resourcemgr)
 noinst_PROGRAMS = $(tpmclient) $(tpmtest)
-lib_LTLIBRARIES = $(libsapi) $(libtcti_device) $(libtcti_socket)
+lib_LTLIBRARIES = $(libmarshal) $(libsapi) $(libtcti_device) $(libtcti_socket)
 noinst_LTLIBRARIES = test/integration/libtest_utils.la
 check_PROGRAMS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
 
@@ -50,6 +50,7 @@ TESTS_UNIT  = \
     test/unit/marshal-UINT16 \
     test/unit/marshal-UINT32 \
     test/unit/tcti-device \
+    test/unit/UINT8-marshal \
     test/unit/unmarshal-UINT16 \
     test/unit/unmarshal-UINT32
 endif #UNIT
@@ -73,6 +74,7 @@ libsapidir      = $(includedir)/sapi
 libsapi_HEADERS = $(srcdir)/include/sapi/*.h
 libtctidir      = $(includedir)/tcti
 libtcti_HEADERS = $(srcdir)/include/tcti/*.h
+
 # pkg-config files
 pkgconfigdir          = $(libdir)/pkgconfig
 nodist_pkgconfig_DATA = lib/sapi.pc lib/tcti-device.pc lib/tcti-socket.pc
@@ -171,6 +173,10 @@ test_unit_CheckOverflow_LDADD   = $(CMOCKA_LIBS)
 test_unit_CheckOverflow_SOURCES = \
     sysapi/sysapi_util/checkoverflow.c \
     test/unit/CheckOverflow.c
+
+test_unit_UINT8_marshal_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include
+test_unit_UINT8_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
+test_unit_UINT8_marshal_SOURCES = test/unit/UINT8-marshal.c
 endif # UNIT
 
 # how to build stuff
@@ -178,6 +184,9 @@ resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS) $(AM_CFL
 resourcemgr_resourcemgr_LDADD    = $(libsapi) $(libtcti_device) $(libtcti_socket)
 resourcemgr_resourcemgr_LDFLAGS  = $(PTHREAD_LDFLAGS)
 resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(COMMON_SRC)
+
+marshal_libmarshal_la_LDFLAGS = $(LIBRARY_LDFLAGS)
+marshal_libmarshal_la_SOURCES = marshal/base-types.c
 
 sysapi_libsapi_la_CFLAGS  = -I$(srcdir)/sysapi/include $(AM_CFLAGS)
 sysapi_libsapi_la_LDFLAGS = $(LIBRARY_LDFLAGS)
@@ -282,6 +291,7 @@ TPMTEST_INC = -I$(srcdir)/include -I$(srcdir)/common \
 libsapi = sysapi/libsapi.la
 libtcti_device = tcti/libtcti-device.la
 libtcti_socket = tcti/libtcti-socket.la
+libmarshal = marshal/libmarshal.la
 resourcemgr = resourcemgr/resourcemgr
 tpmclient   = test/tpmclient/tpmclient
 tpmtest     = test/tpmtest/tpmtest
