@@ -28,17 +28,54 @@
 #ifndef TSS2_SYS_API_MARSHAL_UNMARSHAL_H
 #define TSS2_SYS_API_MARSHAL_UNMARSHAL_H
 
+#include "sapi/marshal.h"
+
 void Marshal_Simple_TPM2B( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **nextData, TPM2B *value, TSS2_RC *rval );
 void Unmarshal_Simple_TPM2B( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, TPM2B *value, TSS2_RC *rval );
 void Unmarshal_Simple_TPM2B_NoSizeCheck( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, TPM2B *value, TSS2_RC *rval );
 void Marshal_UINT64( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **nextData, UINT64 value, TSS2_RC *rval );
 void Marshal_UINT32( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **nextData, UINT32 value, TSS2_RC *rval );
 void Marshal_UINT16( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **nextData, UINT16 value, TSS2_RC *rval );
-void Marshal_UINT8( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **nextData, UINT8 value, TSS2_RC *rval );
+/*
+ * inBuffPtr is a UINT8* that's the start of the input buffer
+ * maxCommandSize is a size_t / UINT32 holding the inBuffPtr size
+ * nextData is a UINT8** that points to the next location in inBuffPtr to write to
+ * src is the input UINT8
+ * rval is the TSS2_RC* to store the results of UINT8_Marshal in
+ */
+#define Marshal_UINT8(inBuffPtr, maxCommandSize, nextData, src, rval) \
+    do { \
+        if (*rval != TSS2_RC_SUCCESS) \
+            break; \
+        size_t index = *nextData - inBuffPtr; \
+        UINT8 floop = src; \
+        *rval = UINT8_Marshal (&floop, \
+                               inBuffPtr, \
+                               maxCommandSize, \
+                               &index); \
+        *nextData = inBuffPtr + index; \
+    } while (0);
 void Unmarshal_UINT64( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, UINT64 *value, TSS2_RC *rval );
 void Unmarshal_UINT32( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, UINT32 *value, TSS2_RC *rval );
 void Unmarshal_UINT16( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, UINT16 *value, TSS2_RC *rval );
-void Unmarshal_UINT8( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, UINT8 *value, TSS2_RC *rval );
+/*
+ * outBuffPtr is a UINT8* that's the start of the input buffer
+ * maxCommandSize is a size_t / UINT32 holding the inBuffPtr size
+ * nextData is a UINT8** that points to the next location in inBuffPtr to write to
+ * dest is the output UINT8
+ * rval is the TSS2_RC* to store the results of UINT8_Marshal in
+ */
+#define Unmarshal_UINT8(outBuffPtr, maxResponseSize, nextData, dest, rval) \
+    do { \
+        if (*rval != TSS2_RC_SUCCESS) \
+            break; \
+        size_t index = *nextData - outBuffPtr; \
+        *rval = UINT8_Unmarshal (outBuffPtr, \
+                                 maxResponseSize, \
+                                 &index, \
+                                 dest); \
+        *nextData = outBuffPtr + index; \
+    } while (0);
 void Marshal_TPMS_EMPTY( TSS2_SYS_CONTEXT *sysContext, TPMS_EMPTY *empty );
 void Unmarshal_TPMS_EMPTY( TSS2_SYS_CONTEXT *sysContext, TPMS_EMPTY *empty );
 

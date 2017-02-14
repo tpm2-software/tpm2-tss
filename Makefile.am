@@ -155,12 +155,10 @@ test_unit_unmarshal_UINT32_SOURCES = \
 
 test_unit_marshal_TPM2B_simple_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_unit_marshal_TPM2B_simple_LDADD   = $(CMOCKA_LIBS)
+test_unit_marshal_TPM2B_simple_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_marshal_TPM2B_simple_SOURCES = \
     sysapi/sysapi_util/changeEndian.c \
     sysapi/sysapi_util/checkoverflow.c \
-    sysapi/sysapi_util/marshal_uint8.c \
-    sysapi/sysapi_util/unmarshal_uint8.c \
     sysapi/sysapi_util/marshal_uint16.c \
     sysapi/sysapi_util/unmarshal_uint16.c \
     sysapi/sysapi_util/marshal_uint32.c \
@@ -196,7 +194,7 @@ endif # UNIT
 
 # how to build stuff
 resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS) $(AM_CFLAGS)
-resourcemgr_resourcemgr_LDADD    = $(libsapi) $(libtcti_device) $(libtcti_socket)
+resourcemgr_resourcemgr_LDADD    = $(libsapi) $(libtcti_device) $(libtcti_socket) $(libmarshal)
 resourcemgr_resourcemgr_LDFLAGS  = $(PTHREAD_LDFLAGS)
 resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(COMMON_SRC)
 
