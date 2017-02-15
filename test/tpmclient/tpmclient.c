@@ -5995,7 +5995,7 @@ void GetContextSizeTests()
     }
 
     rval = Tss2_Sys_Startup( testSysContext, TPM_SU_CLEAR );
-    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT );
+    CheckFailed( rval, TSS2_TYPES_RC_INSUFFICIENT_BUFFER );
 
 	rval = Tss2_Sys_GetTestResult_Prepare( testSysContext );
 	CheckPassed( rval );
