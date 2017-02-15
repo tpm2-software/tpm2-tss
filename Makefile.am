@@ -47,13 +47,11 @@ TESTS_UNIT  = \
     test/unit/getcommands-malloc-mock \
     test/unit/GetNumHandles \
     test/unit/marshal-TPM2B-simple \
-    test/unit/marshal-UINT32 \
     test/unit/tcti-device \
     test/unit/UINT8-marshal \
     test/unit/UINT16-marshal \
     test/unit/UINT32-marshal \
-    test/unit/UINT64-marshal \
-    test/unit/unmarshal-UINT32
+    test/unit/UINT64-marshal
 endif #UNIT
 
 TESTS_INTEGRATION = \
@@ -115,31 +113,12 @@ test_unit_CopyCommandHeader_SOURCES = \
     test/unit/CopyCommandHeader.c sysapi/sysapi_util/CommandUtil.c \
     sysapi/sysapi/ContextManagement.c sysapi/sysapi_util/changeEndian.c
 
-test_unit_marshal_UINT32_CFLAGS  = $(CMOCKA_CFLAGS) \
-    -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_unit_marshal_UINT32_LDADD   = $(CMOCKA_LIBS)
-test_unit_marshal_UINT32_SOURCES = \
-    sysapi/sysapi_util/changeEndian.c \
-    sysapi/sysapi_util/checkoverflow.c \
-    sysapi/sysapi_util/marshal_uint32.c \
-    test/unit/marshal-UINT32.c
-
-test_unit_unmarshal_UINT32_CFLAGS  = $(CMOCKA_CFLAGS) \
-    -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_unit_unmarshal_UINT32_LDADD   = $(CMOCKA_LIBS)
-test_unit_unmarshal_UINT32_SOURCES = \
-    sysapi/sysapi_util/changeEndian.c \
-    sysapi/sysapi_util/checkoverflow.c \
-    sysapi/sysapi_util/unmarshal_uint32.c \
-    test/unit/unmarshal-UINT32.c
-
 test_unit_marshal_TPM2B_simple_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
 test_unit_marshal_TPM2B_simple_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_marshal_TPM2B_simple_SOURCES = \
     sysapi/sysapi_util/changeEndian.c \
     sysapi/sysapi_util/checkoverflow.c \
-    sysapi/sysapi_util/marshal_uint32.c \
     sysapi/sysapi_util/CopySessionData.c \
     sysapi/sysapi_util/marshal_simple_tpm2b.c \
     sysapi/sysapi_util/unmarshal_simple_tpm2b.c \

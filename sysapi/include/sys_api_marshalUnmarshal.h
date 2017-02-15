@@ -34,7 +34,18 @@ void Marshal_Simple_TPM2B( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **next
 void Unmarshal_Simple_TPM2B( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, TPM2B *value, TSS2_RC *rval );
 void Unmarshal_Simple_TPM2B_NoSizeCheck( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, TPM2B *value, TSS2_RC *rval );
 void Marshal_UINT64( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **nextData, UINT64 value, TSS2_RC *rval );
-void Marshal_UINT32( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **nextData, UINT32 value, TSS2_RC *rval );
+#define Marshal_UINT32(inBuffPtr, maxCommandSize, nextData, src, rval) \
+    do { \
+        if (*rval != TSS2_RC_SUCCESS) \
+            break; \
+        size_t index = *nextData - inBuffPtr; \
+        UINT32 floop = src; \
+        *rval = UINT32_Marshal (&floop, \
+                                inBuffPtr, \
+                                maxCommandSize, \
+                                &index); \
+        *nextData = inBuffPtr + index; \
+    } while (0);
 #define Marshal_UINT16(inBuffPtr, maxCommandSize, nextData, src, rval) \
     do { \
         if (*rval != TSS2_RC_SUCCESS) \
@@ -67,7 +78,17 @@ void Marshal_UINT32( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **nextData, 
         *nextData = inBuffPtr + index; \
     } while (0);
 void Unmarshal_UINT64( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, UINT64 *value, TSS2_RC *rval );
-void Unmarshal_UINT32( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, UINT32 *value, TSS2_RC *rval );
+#define Unmarshal_UINT32(outBuffPtr, maxResponseSize, nextData, dest, rval) \
+    do { \
+        if (*rval != TSS2_RC_SUCCESS) \
+            break; \
+        size_t index = *nextData - outBuffPtr; \
+        *rval = UINT32_Unmarshal (outBuffPtr, \
+                                  maxResponseSize, \
+                                  &index, \
+                                  dest); \
+        *nextData = outBuffPtr + index; \
+    } while (0);
 #define Unmarshal_UINT16(outBuffPtr, maxResponseSize, nextData, dest, rval) \
     do { \
         if (*rval != TSS2_RC_SUCCESS) \
