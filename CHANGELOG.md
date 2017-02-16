@@ -5,8 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ## Unreleased
 ### Added
+- Library for marshaling TPM2 types: libmarshal.
 - Unit test for device TCTI bug fixes.
 ### Changed
+- Cleaned out a number of marshaling functions from the SAPI code. Things
+required by the resource manager were removed from libsapi and moved into
+the 'common directory.
 - README.md updated to add note about deprecation of resourcemgr code. A
 replacement has been in the works for a while but the existing code will
 remain in place until the replacement is ready.
