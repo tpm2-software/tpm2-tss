@@ -1,5 +1,11 @@
 {
     global:
+        # convenience functions to convert endianness
+        endian_conv_8;
+        endian_conv_16;
+        endian_conv_32;
+        endian_conv_64;
+        # marshalling functions for TPM2 types
         UINT8_Marshal;
         UINT8_Unmarshal;
         UINT16_Marshal;
