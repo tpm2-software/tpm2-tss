@@ -30,57 +30,51 @@
 
 #include "sapi/tpm20.h"
 
-/*
- * This no-op function is used in base-types.c in BASE_(UN)?MARSHAL so that
- * we have a valid function pointer for the function template.
- */
-static inline UINT8 noop8 (UINT8 value) { return value; }
-
 #define CAST_TO_TYPE(ptr, type) (*(type*)ptr)
 #define CAST_TO_UINT8(ptr)      CAST_TO_TYPE(ptr, UINT8)
 #define CAST_TO_UINT16(ptr)     CAST_TO_TYPE(ptr, UINT16)
 #define CAST_TO_UINT32(ptr)     CAST_TO_TYPE(ptr, UINT32)
 #define CAST_TO_UINT64(ptr)     CAST_TO_TYPE(ptr, UINT64)
 
-#if defined(HAVE_ENDIAN_H)
-
-#include <endian.h>
-#define HOST_TO_BE_8(value)  noop8   (value)
-#define HOST_TO_BE_16(value) htobe16 (value)
-#define HOST_TO_BE_32(value) htobe32 (value)
-#define HOST_TO_BE_64(value) htobe64 (value)
-#define BE_TO_HOST_8(value)  noop8   (value)
-#define BE_TO_HOST_16(value) be16toh (value)
-#define BE_TO_HOST_32(value) be32toh (value)
-#define BE_TO_HOST_64(value) be64toh (value)
-
-#elif defined(WORDS_BIGENDIAN)
-
-static inline UINT16 noop16 (UINT16 value) { return value; }
-static inline UINT32 noop32 (UINT32 value) { return value; }
-static inline UINT64 noop64 (UINT64 value) { return value; }
-#define HOST_TO_BE_8(value)  noop8  (value)
-#define HOST_TO_BE_16(value) noop16 (value)
-#define HOST_TO_BE_32(value) noop32 (value)
-#define HOST_TO_BE_64(value) noop64 (value)
-#define BE_TO_HOST_8(value)  noop8  (value)
-#define BE_TO_HOST_16(value) noop16 (value)
-#define BE_TO_HOST_32(value) noop32 (value)
-#define BE_TO_HOST_64(value) noop64 (value)
-
-#else
-
+/*
+ * These no-op functions are used on big endian (BE) systems for the host
+ * to / from BE macros. We need them so that we have a valid function
+ * pointers for the base type marshalling function template.
+ */
+static inline UINT8  noop_8  (UINT8 value)  { return value; };
+static inline UINT16 noop_16 (UINT16 value) { return value; };
+static inline UINT32 noop_32 (UINT32 value) { return value; };
+static inline UINT64 noop_64 (UINT64 value) { return value; };
+/*
+ * These functions are used to convert the endianness of base types. We
+ * use them on little endian (LE) systems for the host to / from BE macros.
+ */
+UINT8  endian_conv_8  (UINT8 value);
 UINT16 endian_conv_16 (UINT16 value);
 UINT32 endian_conv_32 (UINT32 value);
 UINT64 endian_conv_64 (UINT64 value);
-#define HOST_TO_BE_8(value)  noop8          (value)
+/*
+ * These macros should be used in any place where a base type needs to be
+ * converted from the host byte order (host) to a big endian representation.
+ */
+#if defined(WORDS_BIGENDIAN)
+#define HOST_TO_BE_8(value)  noop_8  (value)
+#define HOST_TO_BE_16(value) noop_16 (value)
+#define HOST_TO_BE_32(value) noop_32 (value)
+#define HOST_TO_BE_64(value) noop_64 (value)
+#define BE_TO_HOST_8(value)  noop_8  (value)
+#define BE_TO_HOST_16(value) noop_16 (value)
+#define BE_TO_HOST_32(value) noop_32 (value)
+#define BE_TO_HOST_64(value) noop_64 (value)
+#else
+#define HOST_TO_BE_8(value)  endian_conv_8  (value)
 #define HOST_TO_BE_16(value) endian_conv_16 (value)
 #define HOST_TO_BE_32(value) endian_conv_32 (value)
 #define HOST_TO_BE_64(value) endian_conv_64 (value)
-#define BE_TO_HOST_8(value)  noop8          (value)
+#define BE_TO_HOST_8(value)  endian_conv_8  (value)
 #define BE_TO_HOST_16(value) endian_conv_16 (value)
 #define BE_TO_HOST_32(value) endian_conv_32 (value)
 #define BE_TO_HOST_64(value) endian_conv_64 (value)
+#endif /* WORDS_BIGENDIAN */
 
-#endif /* HAVE_ENDIAN_H */
 #endif /* BASE_TYPES_H  */

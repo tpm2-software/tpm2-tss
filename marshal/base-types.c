@@ -145,11 +145,11 @@ BASE_UNMARSHAL (UINT32, BE_TO_HOST_32);
 BASE_MARSHAL   (UINT64, HOST_TO_BE_64);
 BASE_UNMARSHAL (UINT64, BE_TO_HOST_64);
 
-/*
- * If we don't have endian.h then we need to fake it with our own endianness
- * conversion functions.
- */
-#if !defined(HAVE_ENDIAN_H) && !defined(WORDS_BIGENDIAN)
+UINT8
+endian_conv_8 (UINT8 value)
+{
+    return value;
+}
 UINT16
 endian_conv_16 (UINT16 value)
 {
@@ -176,5 +176,3 @@ endian_conv_64 (UINT64 value)
            ((value & (0xffL << 48)) >> 40) | \
            ((value & (0xffL << 56)) >> 56);
 }
-
-#endif /* HAVE_ENDIAN_H */
