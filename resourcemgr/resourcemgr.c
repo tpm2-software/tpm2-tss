@@ -39,6 +39,7 @@
 #include "sysapi_util.h"
 #include "syscontext.h"
 #include "debug.h"
+#include "checkoverflow.h"
 
 #if defined(__linux__) || defined(__unix__)
 

@@ -41,7 +41,6 @@ check_PROGRAMS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
 # unit tests
 if UNIT
 TESTS_UNIT  = \
-    test/unit/CheckOverflow \
     test/unit/CommonPreparePrologue \
     test/unit/CopyCommandHeader \
     test/unit/getcommands-malloc-mock \
@@ -118,19 +117,11 @@ test_unit_marshal_TPM2B_simple_CFLAGS  = $(CMOCKA_CFLAGS) \
 test_unit_marshal_TPM2B_simple_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_marshal_TPM2B_simple_SOURCES = \
     sysapi/sysapi_util/changeEndian.c \
-    sysapi/sysapi_util/checkoverflow.c \
     sysapi/sysapi_util/CopySessionData.c \
     sysapi/sysapi_util/marshal_simple_tpm2b.c \
     sysapi/sysapi_util/unmarshal_simple_tpm2b.c \
     sysapi/sysapi_util/unmarshal_simple_tpm2b_no_size_check.c \
     test/unit/marshal-TPM2B-simple.c
-
-test_unit_CheckOverflow_CFLAGS  = $(CMOCKA_CFLAGS) \
-    -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_unit_CheckOverflow_LDADD   = $(CMOCKA_LIBS)
-test_unit_CheckOverflow_SOURCES = \
-    sysapi/sysapi_util/checkoverflow.c \
-    test/unit/CheckOverflow.c
 
 test_unit_UINT8_marshal_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include
 test_unit_UINT8_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
