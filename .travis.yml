@@ -28,3 +28,13 @@ script:
   - make simulator-start
   - make check
   - make simulator-stop
+  - |
+    for LOG in $(ls -1 test/unit/*.log); do
+        echo "${LOG}"
+        cat ${LOG}
+    done
+  - |
+    for LOG in $(ls -1 test/integration/*.log); do
+        echo "${LOG}"
+        cat ${LOG}
+    done
