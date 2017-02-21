@@ -2724,6 +2724,7 @@ UINT32 WINAPI SockServer( LPVOID servStruct )
         if( cmdServerStruct->connectSock == INVALID_SOCKET )
         {
             printf( "Accept failed.  Error is 0x%x\n", WSAGetLastError() );
+            (*rmFree)( cmdServerStruct );
             continue;
         }
 
@@ -2768,6 +2769,7 @@ UINT32 WINAPI SockServer( LPVOID servStruct )
     if( 0 == strcmp( &otherCmdStr[0], serverStruct->serverName ) )
     {
         printf( "SockServer died (%s), socket: 0x%x.\n", serverStruct->serverName, serverStruct->connectSock );
+        (*rmFree)( cmdServerStruct );
         ExitThread( 0 );
     }
 
