@@ -20,10 +20,7 @@ Since the FAPI and ESAPI haven't been implemented yet, this repository only cont
 The test application, tpmclient, tests many of the commands against the TPM 2.0 simulator.  The tpmclient application can be altered and used as a sandbox to test and develop any TPM 2.0 command sequences, and provides an excellent development and learning vehicle.
 
 ## Build and Installation Instructions:
-
-* [Build and test the TPM 2.0 simulator](doc/simulator.md)
-* Build and install TPM2.0-TSS for Linux: see [INSTALL](INSTALL)
-* [Build TPM2.0-TSS for Windows](doc/buildwindows.md)
+* Instructions to build and install TPM2.0-TSS are available in the [INSTALL](INSTALL) file.
 
 ## [Run Instructions](doc/run.md)
 
