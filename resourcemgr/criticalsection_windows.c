@@ -31,8 +31,6 @@
 #include "criticalsection.h"
 #include "debug.h"
 
-#ifdef	_WIN32
-
 //
 // This function starts a critical section, e.g. some code that must
 // not be interfered with.
@@ -102,5 +100,3 @@ TSS2_RC EndCriticalSection( TPM_MUTEX *tpmMutex, char *dbgString )
 
 	return rval;
 }
-
-#endif // _WIN32

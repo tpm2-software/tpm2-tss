@@ -30,30 +30,14 @@
 //
 
 
-#ifdef _WIN32
-#include "stdafx.h"
-//++++
-#else
 #include <stdarg.h>
-//++++
-#endif
 
 #ifndef UNICODE
 #define UNICODE 1
 #endif
 
-#ifdef _WIN32
-// link with Ws2_32.lib
-#pragma comment(lib,"Ws2_32.lib")
-
-#include <winsock2.h>
-#include <ws2tcpip.h>
-//++++++
-#else
 #define sprintf_s   snprintf
 #define sscanf_s    sscanf
-//+++++
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
@@ -339,9 +323,6 @@ void Cleanup()
 
 	TeardownTctiResMgrContext( &resMgrTctiContext );
 
-#ifdef _WIN32
-    WSACleanup();
-#endif
     exit(1);
 }
 

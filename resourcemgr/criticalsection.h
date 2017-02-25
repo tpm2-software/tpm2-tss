@@ -28,13 +28,9 @@
 #ifndef CRITICALSECTION_H
 #define CRITICALSECTION_H
 
-#if defined(_WIN32)
-typedef HANDLE TPM_MUTEX;
-#elif defined(__linux__) || defined(__unix__)
 #include <time.h>
 #include <semaphore.h>
 typedef sem_t TPM_MUTEX;
-#endif
 
 #define MILLISECOND_WAIT 2000
 
