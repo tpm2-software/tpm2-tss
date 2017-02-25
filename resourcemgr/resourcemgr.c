@@ -39,12 +39,7 @@
 #include "syscontext.h"
 #include "debug.h"
 
-#if defined(_WIN32)
-
-typedef HANDLE THREAD_TYPE;
-#define MAX_COMMAND_LINE_ARGS 6
-
-#elif defined(__linux__) || defined(__unix__)
+#if defined(__linux__) || defined(__unix__)
 
 #include <sys/select.h>
 #include <time.h>
@@ -168,11 +163,8 @@ int printRMTables = 0;
 int rmCommandDebug = 0;
 int commandDebug = 0;
 
-#ifdef  _WIN32
-UINT8 simulator = 1;
-#else
+/* default behavior is to use device TCTI */
 UINT8 simulator = 0;
-#endif
 
 enum shutdownStartupSequenceType { TPM_RESET, TPM_RESTART, TPM_RESUME };
 
@@ -2703,12 +2695,8 @@ UINT32 WINAPI SockServer( LPVOID servStruct )
     UINT8 continueServer = 1;
     SERVER_STRUCT *serverStruct = (SERVER_STRUCT *)servStruct;
     SERVER_STRUCT *cmdServerStruct;
-#ifdef  _WIN32
-    // do nothing.
-#elif __linux || __unix
 
     int rval = 0;
-#endif
     printf( "Starting SockServer (%s), socket: 0x%x.\n", serverStruct->serverName, serverStruct->connectSock );
 
     do
@@ -2735,18 +2723,7 @@ UINT32 WINAPI SockServer( LPVOID servStruct )
 
         printf( "Resource Manager %s Server accepted client\n", serverStruct->serverName );
 
-#ifdef  _WIN32
-        cmdServerStruct->threadHandle = CreateThread( NULL, 0,
-                (LPTHREAD_START_ROUTINE)serverStruct->serverFn,
-                (LPVOID)cmdServerStruct, 0, NULL );
-        if( cmdServerStruct->threadHandle == NULL )
-        {
-            closesocket( cmdServerStruct->connectSock );
-            (*rmFree)( cmdServerStruct );
-            printf( "Resource Mgr failed to create OTHER command server thread.  Exiting...\n" );
-            continue;
-        }
-#elif __linux || __unix
+#if defined(__linux__) || defined(__unix__)
         rval = pthread_create( &cmdServerStruct->threadHandle, 0, (void *)serverStruct->serverFn, cmdServerStruct );
         if( rval != 0 )
         {
@@ -3015,10 +2992,6 @@ int main(int argc, char* argv[])
     THREAD_TYPE sockServerThread;
     UINT8 tpmHostNameSpecified = 0, tpmPortSpecified = 0;
 
-#ifdef  _WIN32
-	SECURITY_ATTRIBUTES mutexAttributes = { sizeof( SECURITY_ATTRIBUTES ), NULL, TRUE };
-#endif
-
     setvbuf (stdout, NULL, _IONBF, BUFSIZ);
     if( argc > MAX_COMMAND_LINE_ARGS )
     {
@@ -3029,14 +3002,11 @@ int main(int argc, char* argv[])
     {
         for( count = 1; count < argc; count++ )
         {
-#if __linux || __unix
             if( 0 == strcmp( argv[count], "-sim" ) )
             {
                 simulator = 1;
             }
-            else
-#endif
-            if( 0 == strcmp( argv[count], "-tpmhost" ) )
+            else if( 0 == strcmp( argv[count], "-tpmhost" ) )
             {
                 count++;
                 simInterfaceConfig.hostname = argv[count];
@@ -3130,15 +3100,7 @@ int main(int argc, char* argv[])
         goto initDone;
     }
 
-#ifdef  _WIN32
-    // Create mutex.
-    tpmMutex = CreateMutex( &mutexAttributes, FALSE, NULL );
-    if( tpmMutex == NULL )
-    {
-        DebugPrintf( NO_PREFIX, "Resource Mgr failed to create mutex.  Exiting...\n", rval );
-        return( 1 );
-    }
-#elif __linux || __unix
+#if defined(__linux__) || defined(__unix__)
     // Create semaphore
     rval = sem_init( &tpmMutex, 0, 1 );
     if( rval != 0 )
@@ -3180,15 +3142,7 @@ int main(int argc, char* argv[])
     tpmCmdServerStruct.connectSock = appTpmSock;
 
     // Start socket servers for upstream interface.
-
-#ifdef  _WIN32
-    if( NULL == ( sockServerThread = CreateThread( NULL, 0,
-            (LPTHREAD_START_ROUTINE)SockServer,
-            (LPVOID)&otherCmdServerStruct, 0, NULL ) ) )
-    {
-        printf( "Resource Mgr failed to create OTHER command server thread.  Exiting...\n" );
-    }
-#elif __linux || __unix
+#if defined(__linux__) || defined(__unix__)
     rval = pthread_create( &sockServerThread, 0, (void *)SockServer, &otherCmdServerStruct );
     if( rval != 0 )
     {

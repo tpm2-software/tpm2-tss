@@ -29,26 +29,14 @@
 // tpmclient.cpp : Defines the entry point for the console test application.
 //
 
-#ifdef _WIN32
-#include "stdafx.h"
-#else
 #include <stdarg.h>
-#endif
 
 #ifndef UNICODE
 #define UNICODE 1
 #endif
 
-#ifdef _WIN32
-// link with Ws2_32.lib
-#pragma comment(lib,"Ws2_32.lib")
-
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#else
 #define sprintf_s   snprintf
 #define sscanf_s    sscanf
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
@@ -299,9 +287,6 @@ void Cleanup()
         TeardownTctiContext( &resMgrTctiContext );
     }
 
-#ifdef _WIN32
-    WSACleanup();
-#endif
     exit(1);
 }
 
@@ -7166,10 +7151,7 @@ void TpmTest()
 
     GetSetDecryptParamTests();
 
-#ifdef _WIN32
-    // This test can only be run agains the simulator
     RmZeroSizedResponseTest();
-#endif
 
     TestTpmStartup();
 
@@ -7378,7 +7360,7 @@ int main(int argc, char* argv[])
             }
         }
     }
-#if __linux || __unix
+#if defined(__linux__) || defined(__unix__)
     if( testLocalTcti )
     {
         TestLocalTCTI();
@@ -7389,9 +7371,6 @@ int main(int argc, char* argv[])
     if( rval != TSS2_RC_SUCCESS )
     {
         DebugPrintf( NO_PREFIX, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceName, rval );
-#ifdef _WIN32
-        WSACleanup();
-#endif
         if( resMgrTctiContext != 0 )
             free( resMgrTctiContext );
 

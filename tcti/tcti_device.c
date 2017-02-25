@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
+#include <unistd.h>
 
 #include <sapi/tpm20.h>
 //#include "resourcemgr.h"
@@ -40,12 +41,6 @@
 #include "commonchecks.h"
 #include <tcti/tcti_device.h>
 #include "logging.h"
-
-#ifdef  _WIN32
-#define ssize_t int
-#elif __linux
-#include <unistd.h>
-#endif
 
 #define HOSTNAME_LENGTH 200
 

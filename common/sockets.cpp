@@ -2,13 +2,9 @@
 #include "debug.h"
 #include "sockets.h"
 
-#ifndef _WIN32
 void WSACleanup() {}
 int WSAGetLastError() { return errno; }
 int wasInterrupted() { return errno == EINTR; }
-#else
-int wasInterrupted() { return 0; }
-#endif
 
 void CloseSockets( SOCKET otherSock, SOCKET tpmSock)
 {
@@ -70,26 +66,8 @@ InitSockets( const char *hostName,
 {
     sockaddr_in otherService;
     sockaddr_in tpmService;
-#ifndef _WIN32
-    int optval = 1;
-#endif
     int iResult = 0;            // used to return function results
 
-#ifdef _WIN32
-    WSADATA wsaData = {0};
-    static UINT8 socketsEnabled = 0;
-
-    if( socketsEnabled == 0 )
-    {
-        // Initialize Winsock
-        iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-        if (iResult != 0) {
-            SAFE_CALL( debugfunc, data, NO_PREFIX, "WSAStartup failed: %d\n", iResult);
-            return 1;
-        }
-        socketsEnabled = 1;
-    }
-#endif
     *otherSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (*otherSock == INVALID_SOCKET)
     {
@@ -97,13 +75,6 @@ InitSockets( const char *hostName,
         return(1);
     }
     else {
-#ifndef _WIN32
-        iResult = setsockopt(*otherSock, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
-        if (iResult) {
-          SAFE_CALL( debugfunc, data, NO_PREFIX, "setsockopt failed with error = %d\n", WSAGetLastError() );
-          return(1);
-        }
-#endif
         SAFE_CALL( debugfunc, data, NO_PREFIX, "socket created:  0x%x\n", *otherSock );
         otherService.sin_family = AF_INET;
         otherService.sin_addr.s_addr = inet_addr( hostName );
@@ -146,15 +117,6 @@ InitSockets( const char *hostName,
         return(1);
     }
     else {
-#ifndef _WIN32
-        iResult = setsockopt(*tpmSock, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
-        if (iResult) {
-          SAFE_CALL( debugfunc, data, NO_PREFIX, "setsockopt failed with error = %d\n", WSAGetLastError() );
-          closesocket(*otherSock);
-          WSACleanup();
-          return(1);
-        }
-#endif
         SAFE_CALL( debugfunc, data, NO_PREFIX, "socket created:  0x%x\n", *tpmSock );
         tpmService.sin_family = AF_INET;
         tpmService.sin_addr.s_addr = inet_addr( hostName );

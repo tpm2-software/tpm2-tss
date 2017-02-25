@@ -54,11 +54,7 @@ extern "C" {
 #include "tss2_common.h"
 #include <stddef.h>
 
-#if defined(_WIN32)
-#include <winsock2.h>
-#include <windows.h>
-typedef HANDLE TSS2_TCTI_POLL_HANDLE;
-#elif defined(__linux__) || defined(__unix__)
+#if defined(__linux__) || defined(__unix__)
 #include <poll.h>
 typedef struct pollfd TSS2_TCTI_POLL_HANDLE;
 #else

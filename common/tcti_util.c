@@ -1,7 +1,6 @@
 #include "tcti_util.h"
 #include "debug.h"
 
-#ifndef _WIN32
 TSS2_RC InitDeviceTctiContext( const TCTI_DEVICE_CONF *driverConfig, TSS2_TCTI_CONTEXT **tctiContext, const char *deviceTctiName )
 {
     size_t size;
@@ -18,7 +17,6 @@ TSS2_RC InitDeviceTctiContext( const TCTI_DEVICE_CONF *driverConfig, TSS2_TCTI_C
     rval = InitDeviceTcti(*tctiContext, &size, driverConfig );
     return rval;
 }
-#endif //_WIN32
 
 TSS2_RC
 InitSocketTctiContext (const TCTI_SOCKET_CONF  *device_conf,
