@@ -30,7 +30,6 @@ include src_vars.mk
 
 ACLOCAL_AMFLAGS = -I m4
 AM_CFLAGS       = -I$(srcdir)/include -I$(srcdir)/sysapi/include
-AM_CXXFLAGS     = $(AM_CFLAGS)
 
 # stuff to build, what that stuff is, and where/if to install said stuff
 sbin_PROGRAMS   = $(resourcemgr)
@@ -176,7 +175,6 @@ endif # UNIT
 
 # how to build stuff
 resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS) $(AM_CFLAGS)
-resourcemgr_resourcemgr_CXXFLAGS = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS) $(AM_CXXFLAGS)
 resourcemgr_resourcemgr_LDADD    = $(libsapi) $(libtcti_device) $(libtcti_socket)
 resourcemgr_resourcemgr_LDFLAGS  = $(PTHREAD_LDFLAGS)
 resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(COMMON_SRC)
@@ -192,22 +190,19 @@ tcti_libtcti_device_la_SOURCES  = $(TCTIDEVICE_C) \
     sysapi/sysapi_util/changeEndian.c $(TCTICOMMON_C) common/debug.c
 
 tcti_libtcti_socket_la_CFLAGS   = $(TCTISOCKET_INC) $(AM_CFLAGS)
-tcti_libtcti_socket_la_CXXFLAGS = $(TCTISOCKET_INC) $(AM_CXXFLAGS)
 tcti_libtcti_socket_la_LDFLAGS  = $(LIBRARY_LDFLAGS) \
     -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
 tcti_libtcti_socket_la_SOURCES  =  $(TCTISOCKET_C) \
-    sysapi/sysapi_util/changeEndian.c $(TCTISOCKET_CXX) $(TCTICOMMON_C) \
-    common/sockets.cpp common/debug.c
+    sysapi/sysapi_util/changeEndian.c $(TCTICOMMON_C) \
+    common/sockets.c common/debug.c
 
 test_tpmclient_tpmclient_CFLAGS   = $(TPMCLIENT_INC) $(AM_CFLAGS)
-test_tpmclient_tpmclient_CXXFLAGS = $(TPMCLIENT_INC) $(TCTICOMMON_INC) $(TCTIDEVICE_INC) $(AM_CXXFLAGS)
 test_tpmclient_tpmclient_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device)
-test_tpmclient_tpmclient_SOURCES  = $(TPMCLIENT_CXX) $(COMMON_C) $(SAMPLE_C)
+test_tpmclient_tpmclient_SOURCES  = test/tpmclient/tpmclient.c $(COMMON_C) $(SAMPLE_C)
 
 test_tpmtest_tpmtest_CFLAGS   = $(TPMTEST_INC) $(AM_CFLAGS)
-test_tpmtest_tpmtest_CXXFLAGS = $(TPMTEST_INC) $(AM_CXXFLAGS)
 test_tpmtest_tpmtest_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device)
-test_tpmtest_tpmtest_SOURCES  = $(TPMTEST_CXX) $(COMMON_C) $(SAMPLE_C)
+test_tpmtest_tpmtest_SOURCES  = test/tpmtest/tpmtest.c $(COMMON_C) $(SAMPLE_C)
 
 test_integration_libtest_utils_la_SOURCES = test/integration/test-options.c \
     test/integration/context-util.c
@@ -274,18 +269,15 @@ TCTIDEVICE_INC = $(TCTICOMMON_INC)
 TCTIDEVICE_C   = tcti/tcti_device.c
 
 TCTISOCKET_INC = $(TCTICOMMON_INC)
-TCTISOCKET_C   = tcti/platformcommand.c
-TCTISOCKET_CXX = tcti/tcti_socket.cpp
+TCTISOCKET_C   = tcti/platformcommand.c tcti/tcti_socket.c
 
 TPMCLIENT_INC = -I$(srcdir)/include -I$(srcdir)/common \
     -I$(srcdir)/test/tpmclient -I$(srcdir)/sysapi/include \
     -I$(srcdir)/test/common/sample -I$(srcdir)/resourcemgr
-TPMCLIENT_CXX = test/tpmclient/tpmclient.cpp
 
 TPMTEST_INC = -I$(srcdir)/include -I$(srcdir)/common \
     -I$(srcdir)/test/tpmclient -I$(srcdir)/sysapi/include \
     -I$(srcdir)/test/common/sample -I$(srcdir)/resourcemgr
-TPMTEST_CXX = test/tpmtest/tpmtest.cpp
 
 libsapi = sysapi/libsapi.la
 libtcti_device = tcti/libtcti-device.la

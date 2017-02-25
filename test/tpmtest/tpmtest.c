@@ -31,6 +31,7 @@
 
 
 #include <stdarg.h>
+#include <stdbool.h>
 
 #ifndef UNICODE
 #define UNICODE 1
@@ -186,9 +187,11 @@ void copyData( UINT8 *to, UINT8 *from, UINT32 length )
 
 TPM_RC CompareTPM2B( TPM2B *buffer1, TPM2B *buffer2 )
 {
+    int i;
+
     if( buffer1->size != buffer2->size )
         return TPM_RC_FAILURE;
-    for( int i = 0; i < buffer1->size; i++ )
+    for( i = 0; i < buffer1->size; i++ )
     {
         if( buffer1->buffer[0] != buffer2->buffer[0] )
             return TPM_RC_FAILURE;
@@ -1410,7 +1413,8 @@ void TestNVReadCase()
     UINT32 rval = Tss2_Sys_NV_Read( sysContext, TPM_RH_PLATFORM, TPM20_INDEX_TEST1, &sessionsData, 32, 0, &nvData, &sessionsDataOut );
 //    CheckFailed( rval, TPM_RC_NV_UNINITIALIZED );
     CheckPassed( rval );
-    for (int i=0; i<nvData.t.size; i++)
+    int i;
+    for (i=0; i<nvData.t.size; i++)
     {
         printf(" %2.2x ", nvData.t.buffer[i]);
     }
@@ -1452,7 +1456,8 @@ void TestNVWriteCase()
     sessionsData.cmdAuths[0] = &sessionData;
 
     nvWriteData.t.size = 8;
-    for( int i = 0; i < nvWriteData.t.size; i++ )
+    int i;
+    for( i = 0; i < nvWriteData.t.size; i++ )
         nvWriteData.t.buffer[i] = 0x1f - i;
     rval = Tss2_Sys_NV_Write( sysContext, TPM_RH_PLATFORM, TPM20_INDEX_TEST1, &sessionsData, &nvWriteData, 0, &sessionsDataOut );
     CheckPassed(rval);
@@ -6534,7 +6539,8 @@ void ClearNVIndexList(TPMI_RH_PROVISION authHandle)
                                    TPM_PT_NV_INDEX_MAX, &moreData, &capabilityData, 0 );
     CheckPassed( rval );
     printf( "\tThe count of defined NV Index: %d\n", capabilityData.data.handles.count);
-    for( UINT32 i=0; i < capabilityData.data.handles.count; i++ )
+    UINT32 i;
+    for( i=0; i < capabilityData.data.handles.count; i++ )
     {
         printf("\n\tNV Index: %x\n", capabilityData.data.handles.handle[i]);
         if( TestNVIndexUndefine(authHandle, capabilityData.data.handles.handle[i]) )
@@ -6925,12 +6931,14 @@ void verifySignatureExternalTest()
         numBuffers = length/(MAX_DIGEST_BUFFER);
 
     TPM2B_DIGEST *bufferList[numBuffers];
-    for(UINT8 i = 0; i < numBuffers; i++)
+    UINT8 i;
+    for(i = 0; i < numBuffers; i++)
     {
         (bufferList)[i] = (TPM2B_DIGEST *)calloc(1,sizeof(TPM2B_DIGEST));
         if(i < numBuffers-1)
         {
-            for( UINT16 m = 0; m < MAX_DIGEST_BUFFER; m++)
+            UINT16 m;
+            for( m = 0; m < MAX_DIGEST_BUFFER; m++)
             {
                 bufferList[i]->t.buffer[m] = buffer[m + cpLength];
             }
@@ -6938,7 +6946,8 @@ void verifySignatureExternalTest()
         }
         if(i == numBuffers-1 )
         {
-            for(UINT16 j= 0; j < (length-cpLength); j++)
+            UINT16 j;
+            for(j= 0; j < (length-cpLength); j++)
             {
                 bufferList[i]->t.buffer[j] = buffer[cpLength + j];
             }
@@ -7128,12 +7137,14 @@ void verifySignatureCreatedTest()
         numBuffers = length/(MAX_DIGEST_BUFFER);
 
     TPM2B_DIGEST *bufferList[numBuffers];
-    for(UINT8 i = 0; i < numBuffers; i++)
+    UINT8 i;
+    for(i = 0; i < numBuffers; i++)
     {
         (bufferList)[i] = (TPM2B_DIGEST *)calloc(1,sizeof(TPM2B_DIGEST));
         if(i < numBuffers-1)
         {
-            for( UINT16 m = 0; m < MAX_DIGEST_BUFFER; m++)
+            UINT16 m;
+            for( m = 0; m < MAX_DIGEST_BUFFER; m++)
             {
                 bufferList[i]->t.buffer[m] = buffer[m + cpLength];
             }
@@ -7141,7 +7152,8 @@ void verifySignatureCreatedTest()
         }
         if(i == numBuffers-1 )
         {
-            for(UINT16 j= 0; j < (length-cpLength); j++)
+            UINT16 j;
+            for(j= 0; j < (length-cpLength); j++)
             {
                 bufferList[i]->t.buffer[j] = buffer[cpLength + j];
             }
@@ -7160,7 +7172,7 @@ void verifySignatureCreatedTest()
     }
 
     printf("\ndigest(hex type):\n ");
-    for(UINT16 i = 0; i < msgHash.t.size; i++)
+    for(i = 0; i < msgHash.t.size; i++)
     {
          printf("%02x ", msgHash.t.buffer[i]);
     }
@@ -7232,7 +7244,7 @@ void nvExtensionTest()
                                    TPM_PT_NV_INDEX_MAX, &moreData, &capabilityData, 0 );
     CheckPassed( rval );
     printf( "\tThe count of defined NV Index: %d\n", capabilityData.data.handles.count);
-    for( UINT32 i=0; i < capabilityData.data.handles.count; i++ )
+    for( i=0; i < capabilityData.data.handles.count; i++ )
     {
         printf("\n\tNV Index: %x\n", capabilityData.data.handles.handle[i]);
     }
@@ -7330,7 +7342,7 @@ void nvExtensionTest()
     rval = Tss2_Sys_NV_Read( sysContext, TPM_RH_OWNER, TPM20_INDEX_PASSWORD_TEST, &sessionsData, 20, 0, &nvData, &sessionsDataOut );
     CheckPassed( rval );
     printf("\nName of NV data: ");
-    for (int i=0; i<nvData.t.size; i++)
+    for ( i=0; i<nvData.t.size; i++)
     {
         printf(" %2.2x ", nvData.t.buffer[i]);
     }
@@ -8459,14 +8471,75 @@ MENUS_SETUP firstLevelMenus[] =
     { NULL, NULL, 0, },
 };
 
-template <typename T>
-int getchoice(const T *choices)
+int getchoice_menu(MENUS_SETUP *choices)
 {
 	int scanfCnt = 0;
 	int chosen = 0;
     int selected = 0;
     char strSelect[50];
-    const T *option = NULL;
+    MENUS_SETUP *option;
+
+    do {
+        option = choices;
+
+        while (option->index != NULL)
+        {
+            if (!option->disabled)
+                printf("%s - %s\n", option->index, option->name);
+            option++;
+        }
+
+        printf("Please select an action:");
+        scanfCnt = scanf("%s", &strSelect[0]);
+        if(scanfCnt != 0)
+            scanfCnt = 0;
+        selected = atoi(strSelect);
+
+        option = choices;
+        while (option->index != NULL)
+        {
+            if( strcmp(strSelect, "q") == 0 )
+            {
+                chosen = 1;
+                selected = 0;
+                break;
+            }
+            else if( strcmp(strSelect, "d") == 0 )
+            {
+                chosen = 1;
+                selected = 1;
+                break;
+            }
+            else if( !option->disabled && strcmp(strSelect, option->index) == 0 )
+            {
+                chosen = 1;
+                if( strcmp(strSelect, "D") == 0 )
+                    selected = 1;
+                else if( strcmp(strSelect, "Q") == 0 )
+                    selected = 0;
+                else
+                    selected += 2;
+                break;
+            }
+            option++;
+        }
+
+        if (!chosen)
+        {
+            printf("Incorrect choice,select again!\n\n");
+        }
+    } while (!chosen);
+
+    return selected;
+}
+
+int getchoice_submenu(SUB_MENUS_SETUP *choices)
+{
+	int scanfCnt = 0;
+	int chosen = 0;
+    int selected = 0;
+    char strSelect[50];
+    SUB_MENUS_SETUP *option = NULL;
 
 
     do {
@@ -8795,7 +8868,7 @@ int main(int argc, char* argv[])
         do
         {
             printf("\n");
-            choice = getchoice( firstLevelMenus );
+            choice = getchoice_menu( firstLevelMenus );
 //            printf("\nYou have chosen: %s - %s\n\n", firstLevelMenus[choice].index, firstLevelMenus[choice].name);
             if ( firstLevelMenus[choice].testFn != 0 )
             {
@@ -8805,7 +8878,7 @@ int main(int argc, char* argv[])
             {
                 do{
                     printf("\n%s:\n", firstLevelMenus[choice].name);
-                    subChoice = getchoice( firstLevelMenus[choice].subMenus );
+                    subChoice = getchoice_submenu( firstLevelMenus[choice].subMenus );
                     if( subChoice != 0 )
                     {
                         printf("\n%s:\n", firstLevelMenus[choice].subMenus[subChoice].name);
