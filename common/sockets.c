@@ -1,3 +1,6 @@
+#include <unistd.h>
+#include <netinet/in.h>
+
 #include <tcti/tcti_socket.h>
 #include "debug.h"
 #include "sockets.h"
@@ -64,8 +67,8 @@ InitSockets( const char *hostName,
              TCTI_LOG_CALLBACK debugfunc,
              void* data )
 {
-    sockaddr_in otherService;
-    sockaddr_in tpmService;
+    struct sockaddr_in otherService;
+    struct sockaddr_in tpmService;
     int iResult = 0;            // used to return function results
 
     *otherSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);

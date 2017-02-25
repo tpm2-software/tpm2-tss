@@ -7,7 +7,6 @@ extern "C" {
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <errno.h>
-#include <unistd.h>
 #include <arpa/inet.h>
 void WSACleanup();
 #define closesocket(serverSock) close(serverSock)

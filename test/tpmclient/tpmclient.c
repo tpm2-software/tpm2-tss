@@ -30,6 +30,7 @@
 //
 
 #include <stdarg.h>
+#include <stdbool.h>
 
 #ifndef UNICODE
 #define UNICODE 1
@@ -184,9 +185,11 @@ void copyData( UINT8 *to, UINT8 *from, UINT32 length )
 
 TPM_RC CompareTPM2B( TPM2B *buffer1, TPM2B *buffer2 )
 {
+    int i;
+
     if( buffer1->size != buffer2->size )
         return TPM_RC_FAILURE;
-    for( int i = 0; i < buffer1->size; i++ )
+    for( i = 0; i < buffer1->size; i++ )
     {
         if( buffer1->buffer[0] != buffer2->buffer[0] )
             return TPM_RC_FAILURE;
@@ -7066,7 +7069,8 @@ void TestCreate1()
     rval = Tss2_Sys_RSA_Encrypt(sysContext, keyHandle, 0, &message, &inScheme, &outsideInfo, &outData, &sessionsDataOut);
     CheckPassed( rval );
 
-    for (int i=0; i<message.t.size; i++)
+    int i;
+    for (i=0; i<message.t.size; i++)
     	printf("\nlabel size:%d, label buffer:%x, outData size:%d, outData buffer:%x, msg size:%d, msg buffer:%x", outsideInfo.t.size, outsideInfo.t.buffer[i], outData.t.size, outData.t.buffer[i], message.t.size, message.t.buffer[i]);
     CheckPassed(rval);
 }

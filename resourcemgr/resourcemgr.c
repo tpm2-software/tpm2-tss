@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
+#include <unistd.h>
 
 #include <sapi/tpm20.h>
 #include <tcti/tcti_device.h>
