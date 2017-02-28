@@ -42,6 +42,86 @@ extern "C" {
 #endif
 
 TSS2_RC
+BYTE_Marshal (
+    BYTE const     *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset
+    );
+
+TSS2_RC
+BYTE_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    BYTE           *dest
+    );
+
+TSS2_RC
+INT8_Marshal (
+    INT8 const     *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset
+    );
+
+TSS2_RC
+INT8_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    INT8           *dest
+    );
+
+TSS2_RC
+INT16_Marshal (
+    INT16 const    *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset
+    );
+
+TSS2_RC
+INT16_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    INT16          *dest
+    );
+
+TSS2_RC
+INT32_Marshal (
+    INT32 const    *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset
+    );
+
+TSS2_RC
+INT32_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    INT32          *dest
+    );
+
+TSS2_RC
+INT64_Marshal (
+    INT64 const    *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset
+    );
+
+TSS2_RC
+INT64_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    INT64          *dest
+    );
+
+TSS2_RC
 UINT8_Marshal (
     UINT8 const    *src,
     uint8_t         buffer [],

@@ -136,6 +136,20 @@ type##_Unmarshal ( \
     return TSS2_RC_SUCCESS; \
 }
 
+/*
+ * These macros expand to (un)marshal functions for each of the base types
+ * the specification part 2, table 3: Definition of Base Types.
+ */
+BASE_MARSHAL   (BYTE,   HOST_TO_BE_8);
+BASE_UNMARSHAL (BYTE,   BE_TO_HOST_8);
+BASE_MARSHAL   (INT8,   HOST_TO_BE_8);
+BASE_UNMARSHAL (INT8,   BE_TO_HOST_8);
+BASE_MARSHAL   (INT16,  HOST_TO_BE_16);
+BASE_UNMARSHAL (INT16,  BE_TO_HOST_16);
+BASE_MARSHAL   (INT32,  HOST_TO_BE_32);
+BASE_UNMARSHAL (INT32,  BE_TO_HOST_32);
+BASE_MARSHAL   (INT64,  HOST_TO_BE_64);
+BASE_UNMARSHAL (INT64,  BE_TO_HOST_64);
 BASE_MARSHAL   (UINT8,  HOST_TO_BE_8);
 BASE_UNMARSHAL (UINT8,  BE_TO_HOST_8);
 BASE_MARSHAL   (UINT16, HOST_TO_BE_16);
