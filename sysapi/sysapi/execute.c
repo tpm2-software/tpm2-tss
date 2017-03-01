@@ -44,9 +44,9 @@ TSS2_RC Tss2_Sys_ExecuteAsync(
     }
     else
     {
-        rval = (*( TCTI_CONTEXT )->transmit)( SYS_CONTEXT->tctiContext,
-            CHANGE_ENDIAN_DWORD( ((TPM20_Header_In *)SYS_CONTEXT->tpmInBuffPtr )->commandSize),
-            SYS_CONTEXT->tpmInBuffPtr );
+        rval = tss2_tcti_transmit (SYS_CONTEXT->tctiContext,
+                                   CHANGE_ENDIAN_DWORD( ((TPM20_Header_In *)SYS_CONTEXT->tpmInBuffPtr )->commandSize),
+                                   SYS_CONTEXT->tpmInBuffPtr);
     }
 
     if( rval == TSS2_RC_SUCCESS )
@@ -76,9 +76,10 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
     else
     {
         responseSize = SYS_CONTEXT->maxResponseSize;
-
-        rval = (*( TCTI_CONTEXT )->receive)
-                ( SYS_CONTEXT->tctiContext, (size_t *)&responseSize, SYS_CONTEXT->tpmOutBuffPtr, timeout );
+        rval = tss2_tcti_receive (SYS_CONTEXT->tctiContext,
+                                  &responseSize,
+                                  SYS_CONTEXT->tpmOutBuffPtr,
+                                  timeout);
     }
 
     if( rval == TSS2_RC_SUCCESS )
