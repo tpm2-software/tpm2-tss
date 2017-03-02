@@ -24,6 +24,8 @@
         UINT32_Unmarshal;
         UINT64_Marshal;
         UINT64_Unmarshal;
+        TPM_ST_Marshal;
+        TPM_ST_Unmarshal;
     local:
         *;
 };

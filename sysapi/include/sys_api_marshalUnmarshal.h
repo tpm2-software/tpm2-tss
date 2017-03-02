@@ -80,6 +80,8 @@ void Unmarshal_Simple_TPM2B_NoSizeCheck( UINT8 *outBuffPtr, UINT32 maxResponseSi
  * - rval (TSS2_RC*): Pointer to TSS2_RC instace where the response code
  *     is stored.
  */
+#define Marshal_TPM_ST(inBuffPtr, maxCommandSize, nextData, src, rval) \
+    MARSHAL_ADAPTER(TPM_ST, inBuffPtr, maxCommandSize, nextData, src, rval)
 #define Marshal_UINT64(inBuffPtr, maxCommandSize, nextData, src, rval) \
     MARSHAL_ADAPTER(UINT64, inBuffPtr, maxCommandSize, nextData, src, rval)
 #define Marshal_UINT32(inBuffPtr, maxCommandSize, nextData, src, rval) \
@@ -104,6 +106,8 @@ void Unmarshal_Simple_TPM2B_NoSizeCheck( UINT8 *outBuffPtr, UINT32 maxResponseSi
  * - rval (TSS2_RC*): Pointer to TSS2_RC instace where the response code
  *     is stored
  */
+#define Unmarshal_TPM_ST(outBuffPtr, maxResponseSize, nextData, dest, rval) \
+    UNMARSHAL_ADAPTER(TPM_ST, outBuffPtr, maxResponseSize, nextData, dest, rval)
 #define Unmarshal_UINT64(outBuffPtr, maxResponseSize, nextData, dest, rval) \
     UNMARSHAL_ADAPTER(UINT64, outBuffPtr, maxResponseSize, nextData, dest, rval)
 #define Unmarshal_UINT32(outBuffPtr, maxResponseSize, nextData, dest, rval) \

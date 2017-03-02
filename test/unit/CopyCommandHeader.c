@@ -27,6 +27,8 @@ CopyCommandHeader_sys_setup (void **state)
      *  must point to the data after the context structure.
      */
     sys_ctx->tpmInBuffPtr = (UINT8*) (sys_ctx + sizeof (_TSS2_SYS_CONTEXT_BLOB));
+    InitSysContextFields ((TSS2_SYS_CONTEXT*)sys_ctx);
+    InitSysContextPtrs ((TSS2_SYS_CONTEXT*)sys_ctx, size_ctx);
 
     *state = sys_ctx;
 }

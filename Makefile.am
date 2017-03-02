@@ -107,7 +107,7 @@ test_unit_GetNumHandles_SOURCES = \
 test_unit_CopyCommandHeader_CFLAGS = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
     -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
 test_unit_CopyCommandHeader_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
-test_unit_CopyCommandHeader_LDADD = $(CMOCKA_LIBS)
+test_unit_CopyCommandHeader_LDADD = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_CopyCommandHeader_SOURCES = \
     test/unit/CopyCommandHeader.c sysapi/sysapi_util/CommandUtil.c \
     sysapi/sysapi/ContextManagement.c sysapi/sysapi_util/changeEndian.c
