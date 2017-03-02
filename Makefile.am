@@ -93,35 +93,24 @@ test_unit_getcommands_malloc_mock_SOURCES = \
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
     -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
 test_unit_CommonPreparePrologue_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
-test_unit_CommonPreparePrologue_LDADD = $(CMOCKA_LIBS)
-test_unit_CommonPreparePrologue_SOURCES = \
-    test/unit/CommonPreparePrologue.c sysapi/sysapi_util/CommandUtil.c \
-    sysapi/sysapi/ContextManagement.c
+test_unit_CommonPreparePrologue_LDADD = $(CMOCKA_LIBS) $(libsapi)
+test_unit_CommonPreparePrologue_SOURCES = test/unit/CommonPreparePrologue.c
 
 test_unit_GetNumHandles_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/sysapi/include
-test_unit_GetNumHandles_LDADD   = $(CMOCKA_LIBS)
-test_unit_GetNumHandles_SOURCES = \
-    test/unit/GetNumHandles.c sysapi/sysapi_util/GetNumHandles.c
+test_unit_GetNumHandles_LDADD   = $(CMOCKA_LIBS) $(libsapi)
+test_unit_GetNumHandles_SOURCES = test/unit/GetNumHandles.c
 
 test_unit_CopyCommandHeader_CFLAGS = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
     -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
 test_unit_CopyCommandHeader_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
-test_unit_CopyCommandHeader_LDADD = $(CMOCKA_LIBS) $(libmarshal)
-test_unit_CopyCommandHeader_SOURCES = \
-    test/unit/CopyCommandHeader.c sysapi/sysapi_util/CommandUtil.c \
-    sysapi/sysapi/ContextManagement.c sysapi/sysapi_util/changeEndian.c
+test_unit_CopyCommandHeader_LDADD = $(CMOCKA_LIBS) $(libsapi)
+test_unit_CopyCommandHeader_SOURCES = test/unit/CopyCommandHeader.c
 
 test_unit_marshal_TPM2B_simple_CFLAGS  = $(CMOCKA_CFLAGS) \
     -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
-test_unit_marshal_TPM2B_simple_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
-test_unit_marshal_TPM2B_simple_SOURCES = \
-    sysapi/sysapi_util/changeEndian.c \
-    sysapi/sysapi_util/CopySessionData.c \
-    sysapi/sysapi_util/marshal_simple_tpm2b.c \
-    sysapi/sysapi_util/unmarshal_simple_tpm2b.c \
-    sysapi/sysapi_util/unmarshal_simple_tpm2b_no_size_check.c \
-    test/unit/marshal-TPM2B-simple.c
+test_unit_marshal_TPM2B_simple_LDADD   = $(CMOCKA_LIBS) $(libsapi)
+test_unit_marshal_TPM2B_simple_SOURCES = test/unit/marshal-TPM2B-simple.c
 
 test_unit_UINT8_marshal_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include
 test_unit_UINT8_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
