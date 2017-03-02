@@ -241,7 +241,6 @@ TSS2_RC CommonOneCall(
     TSS2_SYS_RSP_AUTHS *rspAuthsArray
     )
 {
-    TSS2_RC     rval = TSS2_RC_SUCCESS;
     UINT32      responseSize;
 
     if( SYS_CONTEXT->rval != TSS2_RC_SUCCESS )
@@ -252,7 +251,7 @@ TSS2_RC CommonOneCall(
         SYS_CONTEXT->rval = Tss2_Sys_SetCmdAuths( sysContext, cmdAuthsArray );
     }
 
-    if( rval == TSS2_RC_SUCCESS )
+    if( SYS_CONTEXT->rval == TSS2_RC_SUCCESS )
     {
         SYS_CONTEXT->rval = FinishCommand( SYS_CONTEXT, cmdAuthsArray, &responseSize );
 
