@@ -30,8 +30,9 @@ include src_vars.mk
 
 INCLUDE_DIRS    = -I$(srcdir)/include -I$(srcdir)/sysapi/include
 ACLOCAL_AMFLAGS = -I m4
-AM_CFLAGS       = -I$(srcdir)/include -I$(srcdir)/sysapi/include
+AM_CFLAGS       = $(INCLUDE_DIRS) $(EXTRA_CFLAGS)
 AM_CXXFLAGS     = $(AM_CFLAGS)
+AM_LDFLAGS      = $(EXTRA_LDFLAGS)
 
 # stuff to build, what that stuff is, and where/if to install said stuff
 noinst_PROGRAMS = $(tpmclient)
@@ -184,15 +185,13 @@ sysapi_libsapi_la_LDFLAGS = $(LIBRARY_LDFLAGS)
 sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
 
 tcti_libtcti_device_la_CFLAGS   = $(TCTIDEVICE_INC) $(AM_CFLAGS)
-tcti_libtcti_device_la_LDFLAGS  = $(LIBRARY_LDFLAGS) \
-    -Wl,--version-script=$(srcdir)/tcti/tcti_device.map
+tcti_libtcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_device.map
 tcti_libtcti_device_la_SOURCES  = $(TCTIDEVICE_C) \
     sysapi/sysapi_util/changeEndian.c $(TCTICOMMON_C) common/debug.c
 
 tcti_libtcti_socket_la_CFLAGS   = $(TCTISOCKET_INC) $(AM_CFLAGS)
 tcti_libtcti_socket_la_CXXFLAGS = $(TCTISOCKET_INC) $(AM_CXXFLAGS)
-tcti_libtcti_socket_la_LDFLAGS  = $(LIBRARY_LDFLAGS) \
-    -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
+tcti_libtcti_socket_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
 tcti_libtcti_socket_la_SOURCES  =  $(TCTISOCKET_C) \
     sysapi/sysapi_util/changeEndian.c $(TCTISOCKET_CXX) $(TCTICOMMON_C) \
     common/sockets.cpp common/debug.c
@@ -233,8 +232,6 @@ man/man3/%.3 : man/%.3.in $(srcdir)/man/man-postlude.troff
 
 man/man7/%.7 : man/%.7.in $(srcdir)/man/man-postlude.troff
 	$(call make_man,$@,$<,$(srcdir)/man/man-postlude.troff)
-
-LIBRARY_LDFLAGS = -fPIC -Wl,--no-undefined
 
 # simulator build / run scripts
 CLEANFILES += test/simulator-build.sh test/simulator-run.sh test/simulator.inc
