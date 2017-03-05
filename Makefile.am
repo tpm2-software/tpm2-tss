@@ -28,6 +28,7 @@
 
 include src_vars.mk
 
+INCLUDE_DIRS    = -I$(srcdir)/include -I$(srcdir)/sysapi/include
 ACLOCAL_AMFLAGS = -I m4
 AM_CFLAGS       = -I$(srcdir)/include -I$(srcdir)/sysapi/include
 AM_CXXFLAGS     = $(AM_CFLAGS)
