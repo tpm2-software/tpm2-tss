@@ -25,7 +25,7 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include <sapi/tpm20.h>
+#include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
 void Marshal_Simple_TPM2B( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **nextData, TPM2B *value, TSS2_RC *rval )

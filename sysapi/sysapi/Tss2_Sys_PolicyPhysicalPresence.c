@@ -25,7 +25,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  ***********************************************************************/
 
-#include <sapi/tpm20.h>
+#include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
 TPM_RC Tss2_Sys_PolicyPhysicalPresence_Prepare(

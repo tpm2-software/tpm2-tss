@@ -4,7 +4,7 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include <sapi/tpm20.h>
+#include "sapi/tpm20.h"
 
 extern TSS2_RC GetCommands( TSS2_SYS_CONTEXT *resMgrSysContext, TPML_CCA **supportedCommands );
 

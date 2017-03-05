@@ -25,7 +25,7 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include <sapi/tpm20.h>
+#include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
 UINT64 ChangeEndianQword( UINT64 p )

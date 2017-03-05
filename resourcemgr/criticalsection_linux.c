@@ -26,10 +26,10 @@
 //**********************************************************************;
 
 #include <stdio.h>
-#include <sapi/tpm20.h>
+#include "sapi/tpm20.h"
 
 #include "criticalsection.h"
-#include "debug.h"
+#include "common/debug.h"
 
 #if defined(__linux__) || defined(__unix__)
 

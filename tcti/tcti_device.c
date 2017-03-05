@@ -29,7 +29,7 @@
 #include <stdlib.h>   // Needed for _wtoi
 #include <unistd.h>
 
-#include <sapi/tpm20.h>
+#include "sapi/tpm20.h"
 //#include "resourcemgr.h"
 //#include <sample.h>
 #include "sysapi_util.h"
@@ -37,9 +37,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "debug.h"
+#include "common/debug.h"
 #include "commonchecks.h"
-#include <tcti/tcti_device.h>
+#include "tcti/tcti_device.h"
 #include "logging.h"
 
 #define HOSTNAME_LENGTH 200

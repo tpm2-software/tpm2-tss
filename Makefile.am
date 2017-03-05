@@ -28,7 +28,7 @@
 
 include src_vars.mk
 
-INCLUDE_DIRS    = -I$(srcdir)/include -I$(srcdir)/sysapi/include -I$(srcdir)/log
+INCLUDE_DIRS    = -I$(srcdir)/include -I$(srcdir)/sysapi/include
 ACLOCAL_AMFLAGS = -I m4
 AM_CFLAGS       = $(INCLUDE_DIRS) $(EXTRA_CFLAGS)
 AM_LDFLAGS      = $(EXTRA_LDFLAGS)
@@ -80,86 +80,79 @@ pkgconfigdir          = $(libdir)/pkgconfig
 nodist_pkgconfig_DATA = lib/sapi.pc lib/tcti-device.pc lib/tcti-socket.pc
 
 if UNIT
-test_unit_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include -I$(srcdir)/sysapi/include
+test_unit_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_tcti_device_LDADD   = $(libsapi) $(libtcti_device) $(CMOCKA_LIBS)
 test_unit_tcti_device_SOURCES = test/unit/tcti-device.c
 
-test_unit_getcommands_malloc_mock_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
-    -I$(srcdir)/sysapi/include/
+test_unit_getcommands_malloc_mock_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_getcommands_malloc_mock_LDADD   = $(CMOCKA_LIBS)
 test_unit_getcommands_malloc_mock_LDFLAGS = -Wl,--wrap=malloc \
     -Wl,--wrap=Tss2_Sys_GetCapability
 test_unit_getcommands_malloc_mock_SOURCES = \
     test/unit/getcommands-malloc-mock.c resourcemgr/getcommands.c
 
-test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
-    -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
+test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_CommonPreparePrologue_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
 test_unit_CommonPreparePrologue_LDADD = $(CMOCKA_LIBS) $(libsapi)
 test_unit_CommonPreparePrologue_SOURCES = test/unit/CommonPreparePrologue.c
 
-test_unit_GetNumHandles_CFLAGS  = $(CMOCKA_CFLAGS) \
-    -I$(srcdir)/include -I$(srcdir)/sysapi/include
+test_unit_GetNumHandles_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_GetNumHandles_LDADD   = $(CMOCKA_LIBS) $(libsapi)
 test_unit_GetNumHandles_SOURCES = test/unit/GetNumHandles.c
 
-test_unit_CopyCommandHeader_CFLAGS = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
-    -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
+test_unit_CopyCommandHeader_CFLAGS = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_CopyCommandHeader_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
 test_unit_CopyCommandHeader_LDADD = $(CMOCKA_LIBS) $(libsapi)
 test_unit_CopyCommandHeader_SOURCES = test/unit/CopyCommandHeader.c
 
-test_unit_marshal_TPM2B_simple_CFLAGS  = $(CMOCKA_CFLAGS) \
-    -I$(srcdir)/include -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
+test_unit_marshal_TPM2B_simple_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_marshal_TPM2B_simple_LDADD   = $(CMOCKA_LIBS) $(libsapi)
 test_unit_marshal_TPM2B_simple_SOURCES = test/unit/marshal-TPM2B-simple.c
 
-test_unit_UINT8_marshal_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include
+test_unit_UINT8_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_UINT8_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_UINT8_marshal_SOURCES = test/unit/UINT8-marshal.c
 
-test_unit_UINT16_marshal_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include
+test_unit_UINT16_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_UINT16_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_UINT16_marshal_SOURCES = test/unit/UINT16-marshal.c
 
-test_unit_UINT32_marshal_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include
+test_unit_UINT32_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_UINT32_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_UINT32_marshal_SOURCES = test/unit/UINT32-marshal.c
 
-test_unit_UINT64_marshal_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include
+test_unit_UINT64_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_UINT64_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_UINT64_marshal_SOURCES = test/unit/UINT64-marshal.c
 endif # UNIT
 
 # how to build stuff
-resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS) $(AM_CFLAGS)
+resourcemgr_resourcemgr_CFLAGS   = $(AM_CFLAGS) $(PTHREAD_CFLAGS)
 resourcemgr_resourcemgr_LDADD    = $(libsapi) $(libtcti_device) $(libtcti_socket) $(libmarshal)
 resourcemgr_resourcemgr_LDFLAGS  = $(PTHREAD_LDFLAGS)
-resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(COMMON_SRC)
+resourcemgr_resourcemgr_SOURCES  = $(COMMON_SRC) resourcemgr/resourcemgr.c \
+    resourcemgr/criticalsection_linux.c resourcemgr/getcommands.c
 
 marshal_libmarshal_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/libmarshal.map
 marshal_libmarshal_la_SOURCES = marshal/base-types.c log/log.c
 
-sysapi_libsapi_la_CFLAGS  = -I$(srcdir)/sysapi/include $(AM_CFLAGS)
 sysapi_libsapi_la_LIBADD  = $(libmarshal)
 sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
 
-tcti_libtcti_device_la_CFLAGS   = $(TCTIDEVICE_INC) $(AM_CFLAGS)
+tcti_libtcti_device_la_CFLAGS   = $(AM_CFLAGS)
 tcti_libtcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_device.map
-tcti_libtcti_device_la_SOURCES  = $(TCTIDEVICE_C) \
-    sysapi/sysapi_util/changeEndian.c $(TCTICOMMON_C) common/debug.c
+tcti_libtcti_device_la_SOURCES  = tcti/tcti_device.c tcti/commonchecks.c \
+    common/debug.c sysapi/sysapi_util/changeEndian.c
 
-tcti_libtcti_socket_la_CFLAGS   = $(TCTISOCKET_INC) $(AM_CFLAGS)
+tcti_libtcti_socket_la_CFLAGS   = $(AM_CFLAGS)
 tcti_libtcti_socket_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
-tcti_libtcti_socket_la_SOURCES  =  $(TCTISOCKET_C) \
-    sysapi/sysapi_util/changeEndian.c $(TCTICOMMON_C) \
-    common/sockets.c common/debug.c
+tcti_libtcti_socket_la_SOURCES  = tcti/platformcommand.c tcti/tcti_socket.c \
+    sysapi/sysapi_util/changeEndian.c tcti/commonchecks.c common/sockets.c \
+    common/debug.c
 
-test_tpmclient_tpmclient_CFLAGS   = $(TPMCLIENT_INC) $(AM_CFLAGS)
 test_tpmclient_tpmclient_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device)
 test_tpmclient_tpmclient_SOURCES  = test/tpmclient/tpmclient.c $(COMMON_C) $(SAMPLE_C)
 
-test_tpmtest_tpmtest_CFLAGS   = $(TPMTEST_INC) $(AM_CFLAGS)
 test_tpmtest_tpmtest_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device)
 test_tpmtest_tpmtest_SOURCES  = test/tpmtest/tpmtest.c $(COMMON_C) $(SAMPLE_C)
 
@@ -212,30 +205,6 @@ simulator-stop : test/simulator-run.sh test/simulator.inc
 	test/simulator-run.sh stop
 
 # simple variables
-RESOURCEMGR_INC = -I$(srcdir)/include -I$(srcdir)/common \
-    -I$(srcdir)/sysapi/include -I$(srcdir)/resourcemgr \
-    -I$(srcdir)/test/tpmclient
-RESOURCEMGR_C = resourcemgr/resourcemgr.c resourcemgr/criticalsection_linux.c \
-    resourcemgr/getcommands.c
-
-TCTICOMMON_INC = -I$(srcdir)/include -I$(srcdir)/common \
-    -I$(srcdir)/sysapi/include
-TCTICOMMON_C   = tcti/commonchecks.c
-
-TCTIDEVICE_INC = $(TCTICOMMON_INC)
-TCTIDEVICE_C   = tcti/tcti_device.c
-
-TCTISOCKET_INC = $(TCTICOMMON_INC)
-TCTISOCKET_C   = tcti/platformcommand.c tcti/tcti_socket.c
-
-TPMCLIENT_INC = -I$(srcdir)/include -I$(srcdir)/common \
-    -I$(srcdir)/test/tpmclient -I$(srcdir)/sysapi/include \
-    -I$(srcdir)/test/common/sample -I$(srcdir)/resourcemgr
-
-TPMTEST_INC = -I$(srcdir)/include -I$(srcdir)/common \
-    -I$(srcdir)/test/tpmclient -I$(srcdir)/sysapi/include \
-    -I$(srcdir)/test/common/sample -I$(srcdir)/resourcemgr
-
 libsapi = sysapi/libsapi.la
 libtcti_device = tcti/libtcti-device.la
 libtcti_socket = tcti/libtcti-socket.la

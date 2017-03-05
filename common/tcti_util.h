@@ -1,9 +1,9 @@
 #ifndef TCTI_UTIL_H
 #define TCTI_UTIL_H
 
-#include <sapi/tpm20.h>
-#include <tcti/tcti_device.h>
-#include <tcti/tcti_socket.h>
+#include "sapi/tpm20.h"
+#include "tcti/tcti_device.h"
+#include "tcti/tcti_socket.h"
 
 #ifdef __cplusplus
 extern "C" {
