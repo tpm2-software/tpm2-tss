@@ -31,6 +31,7 @@ include src_vars.mk
 INCLUDE_DIRS    = -I$(srcdir)/include -I$(srcdir)/sysapi/include -I$(srcdir)/log
 ACLOCAL_AMFLAGS = -I m4
 AM_CFLAGS       = $(INCLUDE_DIRS) $(EXTRA_CFLAGS)
+AM_LDFLAGS      = $(EXTRA_LDFLAGS)
 
 # stuff to build, what that stuff is, and where/if to install said stuff
 sbin_PROGRAMS   = $(resourcemgr)
@@ -136,23 +137,20 @@ resourcemgr_resourcemgr_LDADD    = $(libsapi) $(libtcti_device) $(libtcti_socket
 resourcemgr_resourcemgr_LDFLAGS  = $(PTHREAD_LDFLAGS)
 resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(COMMON_SRC)
 
-marshal_libmarshal_la_LDFLAGS = $(LIBRARY_LDFLAGS) -Wl,--version-script=$(srcdir)/lib/libmarshal.map
+marshal_libmarshal_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/libmarshal.map
 marshal_libmarshal_la_SOURCES = marshal/base-types.c log/log.c
 
 sysapi_libsapi_la_CFLAGS  = -I$(srcdir)/sysapi/include $(AM_CFLAGS)
 sysapi_libsapi_la_LIBADD  = $(libmarshal)
-sysapi_libsapi_la_LDFLAGS = $(LIBRARY_LDFLAGS)
 sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
 
 tcti_libtcti_device_la_CFLAGS   = $(TCTIDEVICE_INC) $(AM_CFLAGS)
-tcti_libtcti_device_la_LDFLAGS  = $(LIBRARY_LDFLAGS) \
-    -Wl,--version-script=$(srcdir)/tcti/tcti_device.map
+tcti_libtcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_device.map
 tcti_libtcti_device_la_SOURCES  = $(TCTIDEVICE_C) \
     sysapi/sysapi_util/changeEndian.c $(TCTICOMMON_C) common/debug.c
 
 tcti_libtcti_socket_la_CFLAGS   = $(TCTISOCKET_INC) $(AM_CFLAGS)
-tcti_libtcti_socket_la_LDFLAGS  = $(LIBRARY_LDFLAGS) \
-    -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
+tcti_libtcti_socket_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
 tcti_libtcti_socket_la_SOURCES  =  $(TCTISOCKET_C) \
     sysapi/sysapi_util/changeEndian.c $(TCTICOMMON_C) \
     common/sockets.c common/debug.c
@@ -190,8 +188,6 @@ TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES)
 	if [ ! -d $(dir $@) ]; then mkdir -p $(dir $@); fi
 	sed -e "s,[@]VERSION[@],$(PACKAGE_VERSION),g; \
 	        s,[@]includedir[@],$(includedir),g;" $^ > $@
-
-LIBRARY_LDFLAGS = -fPIC -Wl,--no-undefined
 
 # simulator build / run scripts
 CLEANFILES += test/simulator-build.sh test/simulator-run.sh test/simulator.inc

@@ -39,10 +39,27 @@ AC_DEFUN([add_cflag],[
         )]
     )]
 )
+dnl add_ldlag:
+dnl   A macro to add a LDLAG to the EXTRA_LDFLAGS variable. This macro will
+dnl   check to be sure the linker supprts the flag. Flags can be made
+dnl   mandatory (configure will fail).
+dnl $1: linker flag to add to EXTRA_LDFLAGS.
+dnl $2: Set to "required" to cause configure failure if flag not supported.
+AC_DEFUN([add_ldflag],[
+    AX_CHECK_LINK_FLAG([$1],[
+        EXTRA_CFLAGS="$EXTRA_LDFLAGS $1"],[
+        AS_IF([test x$2 != xrequired],[
+            AC_MSG_WARN([Optional LDFLAG "$1" not supported by your linker, continuing.])],[
+            AC_MSG_ERROR([Required LDFLAG "$1" not supported by your linker, aborting.])]
+        )]
+    )]
+)
 
 add_cflag([-Wall])
 add_cflag([-Werror])
 add_cflag([-std=gnu99])
+add_ldflag([-fPIC])
+add_ldflag([-Wl,--no-undefined])
 
 AC_SUBST([EXTRA_CFLAGS])
 AC_SUBST([EXTRA_LDFLAGS])
