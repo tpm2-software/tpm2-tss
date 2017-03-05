@@ -54,9 +54,9 @@
 #include <stdlib.h>   // Needed for _wtoi
 #include <string.h>
 
-#include <sapi/tpm20.h>
+#include "sapi/tpm20.h"
 #include "sysapi_util.h"
-#include "sample.h"
+#include "test/common/sample/sample.h"
 #include "tpmclient.h"
 #include "common/tcti_util.h"
 
@@ -68,10 +68,10 @@
 //
 #include "sysapi_util.h"
 
-#include <tcti/tcti_device.h>
-#include <tcti/tcti_socket.h>
-#include "syscontext.h"
-#include "debug.h"
+#include "tcti/tcti_device.h"
+#include "tcti/tcti_socket.h"
+#include "common/syscontext.h"
+#include "common/debug.h"
 
 //
 // TPM indices and sizes

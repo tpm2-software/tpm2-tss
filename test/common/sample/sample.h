@@ -33,12 +33,12 @@ extern "C" {
 #endif
 
 
-#include <sapi/tss2_tpm2_types.h>
-#include "tpmclient.h"
+#include "sapi/tss2_tpm2_types.h"
+#include "test/tpmclient/tpmclient.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "syscontext.h"
-#include "debug.h"
+#include "common/syscontext.h"
+#include "common/debug.h"
 
 extern TSS2_TCTI_CONTEXT *resMgrTctiContext;
 extern TSS2_ABI_VERSION abiVersion;

@@ -1,4 +1,4 @@
-#include <sapi/tpm20.h>
+#include "sapi/tpm20.h"
 
 #include "tcti_util.h"
 
