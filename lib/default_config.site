@@ -1,2 +1,0 @@
-CFLAGS="-Wall -Werror -std=gnu99"
-CXXFLAGS="-Wall -Werror"
