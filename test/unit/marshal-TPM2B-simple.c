@@ -4,8 +4,8 @@
 
 #include <setjmp.h>
 #include <cmocka.h>
-#include <tpm20.h>
 
+#include "sapi/tpm20.h"
 #include "sys_api_marshalUnmarshal.h"
 #include "sysapi_util.h"
 

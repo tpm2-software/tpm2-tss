@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
 
-#include <sapi/tpm20.h>
+#include "sapi/tpm20.h"
 #include "debug.h"
 
 int DebugPrintf( printf_type type, const char *format, ...)

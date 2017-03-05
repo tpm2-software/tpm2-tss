@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
 
-#include <sapi/tpm20.h>
+#include "sapi/tpm20.h"
 //#include "resourcemgr.h"
 //#include <sample.h>
 #include "sysapi_util.h"
@@ -38,7 +38,7 @@
 #include <fcntl.h>
 #include "common/debug.h"
 #include "commonchecks.h"
-#include <tcti/tcti_device.h>
+#include "tcti/tcti_device.h"
 #include "logging.h"
 
 #ifdef  _WIN32

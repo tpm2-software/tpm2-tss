@@ -25,7 +25,7 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include <sapi/tpm20.h>
+#include "sapi/tpm20.h"
 #include "sample.h"
 
 TSS2_RC SetLocality( TSS2_SYS_CONTEXT *sysContext, UINT8 locality )
