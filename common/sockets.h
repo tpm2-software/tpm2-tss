@@ -2,7 +2,7 @@
 extern "C" {
 #endif
 
-#include <sapi/tpm20.h>
+#include "sapi/tpm20.h"
 
 #include <sys/socket.h>
 #include <sys/un.h>

@@ -45,17 +45,17 @@
 #include <string.h>
 #include <unistd.h>   // Needed for isatty
 
-#include <sapi/tpm20.h>
+#include "sapi/tpm20.h"
 //#include "simulator.h"
-#include "sample.h"
+#include "test/common/sample/sample.h"
 //#include "simdriver.h"
-#include "resourcemgr.h"
-#include "tpmclient.h"
+#include "resourcemgr/resourcemgr.h"
+#include "test/tpmclient/tpmclient.h"
 #include "sysapi_util.h"
 //+++++
-#include <tcti/tcti_socket.h>
-#include "syscontext.h"
-#include "debug.h"
+#include "tcti/tcti_socket.h"
+#include "common/syscontext.h"
+#include "common/debug.h"
 
 //
 // TPM indices and sizes

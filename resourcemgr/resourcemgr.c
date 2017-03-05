@@ -29,17 +29,17 @@
 #include <stdlib.h>   // Needed for _wtoi
 #include <unistd.h>
 
-#include <sapi/tpm20.h>
-#include <tcti/tcti_device.h>
-#include <tcti/tcti_socket.h>
+#include "sapi/tpm20.h"
+#include "tcti/tcti_device.h"
+#include "tcti/tcti_socket.h"
 #include "tcti_util.h"
 #include "resourcemgr.h"
 //#include <sample.h>
-#include "sockets.h"
-#include "sysapi_util.h"
-#include "syscontext.h"
-#include "debug.h"
-#include "checkoverflow.h"
+#include "common/sockets.h"
+#include "sysapi/include/sysapi_util.h"
+#include "common/syscontext.h"
+#include "common/debug.h"
+#include "common/checkoverflow.h"
 
 #if defined(__linux__) || defined(__unix__)
 
