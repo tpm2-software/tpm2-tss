@@ -28,8 +28,9 @@
 
 include src_vars.mk
 
+INCLUDE_DIRS    = -I$(srcdir)/include -I$(srcdir)/sysapi/include -I$(srcdir)/log
 ACLOCAL_AMFLAGS = -I m4
-AM_CFLAGS       = -I$(srcdir)/include -I$(srcdir)/sysapi/include -I$(srcdir)/log
+AM_CFLAGS       = $(INCLUDE_DIRS) $(EXTRA_CFLAGS)
 
 # stuff to build, what that stuff is, and where/if to install said stuff
 sbin_PROGRAMS   = $(resourcemgr)
