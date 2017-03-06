@@ -52,7 +52,12 @@ AC_DEFUN([add_ldflag],[
 
 add_cflag([-Wall])
 add_cflag([-Werror])
-add_ldflag([-fPIC])
+add_cflag([-Wformat])
+add_cflag([-Wformat-security])
+add_cflag([-Wstack-protector])
+add_cflag([-fstack-protector-all])
+add_cflag([-fpic])
+add_cflag([-fPIC])
 add_ldflag([-Wl,--no-undefined])
 
 AC_SUBST([EXTRA_CFLAGS])
