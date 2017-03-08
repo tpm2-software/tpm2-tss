@@ -30,7 +30,8 @@ depcomp
 install-sh
 libtool
 ltmain.sh
-m4/
+m4/libtool*
+m4/lt*.m4
 Makefile
 Makefile.in
 missing

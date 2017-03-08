@@ -32,7 +32,7 @@
 #include "sapi/tpm20.h"
 #include "tcti/tcti_device.h"
 #include "tcti/tcti_socket.h"
-#include "tcti_util.h"
+#include "common/tcti_util.h"
 #include "resourcemgr.h"
 //#include <sample.h>
 #include "common/sockets.h"
@@ -2287,7 +2287,7 @@ UINT8 TpmCmdServer( SERVER_STRUCT *serverStruct )
     fd_set readFds;
     int iResult;
     char functionString[sizeof( MUTEX_DBG_FUNCTION_STR ) + 1 ];
-    UINT8 criticalSectionEntered;
+    UINT8 criticalSectionEntered = 0;
 
     // buffer to hold TPM command from client
     UINT8 *cmdBuffer;
