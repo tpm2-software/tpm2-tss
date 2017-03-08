@@ -92,15 +92,13 @@ UINT32 GetCommandSize( TSS2_SYS_CONTEXT *sysContext )
 
 void CopyCommandHeader( _TSS2_SYS_CONTEXT_BLOB *sysContext, TPM_CC commandCode )
 {
-    TPM_ST st_no_sessions = TPM_ST_NO_SESSIONS;
-
    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
     SYS_CONTEXT->nextData = SYS_CONTEXT->tpmInBuffPtr;
 
     Marshal_TPM_ST (SYS_CONTEXT->tpmInBuffPtr,
                     SYS_CONTEXT->maxCommandSize,
                     &(SYS_CONTEXT->nextData),
-                    st_no_sessions,
+                    TPM_ST_NO_SESSIONS,
                     &(SYS_CONTEXT->rval));
 
   ((TPM20_Header_In *) sysContext->tpmInBuffPtr)->commandCode = CHANGE_ENDIAN_DWORD( commandCode );

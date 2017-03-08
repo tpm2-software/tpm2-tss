@@ -43,7 +43,7 @@ extern "C" {
 
 TSS2_RC
 BYTE_Marshal (
-    BYTE const     *src,
+    BYTE           src,
     uint8_t         buffer [],
     size_t          buffer_size,
     size_t         *offset
@@ -59,7 +59,7 @@ BYTE_Unmarshal (
 
 TSS2_RC
 INT8_Marshal (
-    INT8 const     *src,
+    INT8            src,
     uint8_t         buffer [],
     size_t          buffer_size,
     size_t         *offset
@@ -75,7 +75,7 @@ INT8_Unmarshal (
 
 TSS2_RC
 INT16_Marshal (
-    INT16 const    *src,
+    INT16           src,
     uint8_t         buffer [],
     size_t          buffer_size,
     size_t         *offset
@@ -91,7 +91,7 @@ INT16_Unmarshal (
 
 TSS2_RC
 INT32_Marshal (
-    INT32 const    *src,
+    INT32           src,
     uint8_t         buffer [],
     size_t          buffer_size,
     size_t         *offset
@@ -107,7 +107,7 @@ INT32_Unmarshal (
 
 TSS2_RC
 INT64_Marshal (
-    INT64 const    *src,
+    INT64           src,
     uint8_t         buffer [],
     size_t          buffer_size,
     size_t         *offset
@@ -123,7 +123,7 @@ INT64_Unmarshal (
 
 TSS2_RC
 UINT8_Marshal (
-    UINT8 const    *src,
+    UINT8           src,
     uint8_t         buffer [],
     size_t          buffer_size,
     size_t         *offset
@@ -139,7 +139,7 @@ UINT8_Unmarshal (
 
 TSS2_RC
 UINT16_Marshal (
-    UINT16 const   *src,
+    UINT16          src,
     uint8_t         buffer [],
     size_t          buffer_size,
     size_t         *offset
@@ -155,7 +155,7 @@ UINT16_Unmarshal (
 
 TSS2_RC
 UINT32_Marshal (
-    UINT32 const   *src,
+    UINT32          src,
     uint8_t         buffer [],
     size_t          buffer_size,
     size_t         *offset
@@ -171,7 +171,7 @@ UINT32_Unmarshal (
 
 TSS2_RC
 UINT64_Marshal (
-    UINT64 const   *src,
+    UINT64          src,
     uint8_t         buffer [],
     size_t          buffer_size,
     size_t         *offset
@@ -187,7 +187,7 @@ UINT64_Unmarshal (
 
 TSS2_RC
 TPM_ST_Marshal (
-    TPM_ST const   *src,
+    TPM_ST          src,
     uint8_t         buffer [],
     size_t          buffer_size,
     size_t         *offset

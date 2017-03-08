@@ -17,7 +17,7 @@ UINT8_marshal_success (void **state)
     size_t  buffer_size = sizeof (buffer);
     TSS2_RC rc;
 
-    rc = UINT8_Marshal (&src, buffer, buffer_size, NULL);
+    rc = UINT8_Marshal (src, buffer, buffer_size, NULL);
 
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (src, buffer [0]);
@@ -34,27 +34,11 @@ UINT8_marshal_success_offset (void **state)
     size_t  offset = 1;
     TSS2_RC rc;
 
-    rc = UINT8_Marshal (&src, buffer, buffer_size, &offset);
+    rc = UINT8_Marshal (src, buffer, buffer_size, &offset);
 
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (src, buffer [1]);
     assert_int_equal (offset, sizeof (buffer));
-}
-/*
- * Test case passing NULL src. Test to be sure offset and buffer aren't changed.
- */
-void
-UINT8_marshal_src_null (void **state)
-{
-    uint8_t buffer [2] = { 0 };
-    size_t  buffer_size = sizeof (buffer);
-    size_t  offset = 1;
-    TSS2_RC rc;
-
-    rc = UINT8_Marshal (NULL, buffer, buffer_size, &offset);
-
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
-    assert_int_equal (offset, 1);
 }
 /*
  * Test case passing NULL buffer and non-NULL offset. Test to be sure offset
@@ -67,7 +51,7 @@ UINT8_marshal_buffer_null_with_offset (void **state)
     size_t offset = 100;
     TSS2_RC rc;
 
-    rc = UINT8_Marshal (&src, NULL, 2, &offset);
+    rc = UINT8_Marshal (src, NULL, 2, &offset);
 
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (offset, 100 + sizeof (src));
@@ -81,7 +65,7 @@ UINT8_marshal_buffer_null_offset_null (void **state)
     UINT8 src = 0x1a;
     TSS2_RC rc;
 
-    rc = UINT8_Marshal (&src, NULL, sizeof (src), NULL);
+    rc = UINT8_Marshal (src, NULL, sizeof (src), NULL);
 
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 }
@@ -97,7 +81,7 @@ UINT8_marshal_buffer_size_lt_data (void **state)
     size_t  offset = 2;
     TSS2_RC rc;
 
-    rc = UINT8_Marshal (&src, buffer, sizeof (src), &offset);
+    rc = UINT8_Marshal (src, buffer, sizeof (src), &offset);
 
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 2);
@@ -115,7 +99,7 @@ UINT8_marshal_buffer_size_lt_offset (void **state)
     size_t  offset = sizeof (buffer) + 1;
     TSS2_RC rc;
 
-    rc = UINT8_Marshal (&src, buffer, buffer_size, &offset);
+    rc = UINT8_Marshal (src, buffer, buffer_size, &offset);
 
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, sizeof (buffer) + 1);
@@ -222,7 +206,6 @@ main (void)
     const UnitTest tests [] = {
         unit_test (UINT8_marshal_success),
         unit_test (UINT8_marshal_success_offset),
-        unit_test (UINT8_marshal_src_null),
         unit_test (UINT8_marshal_buffer_null_with_offset),
         unit_test (UINT8_marshal_buffer_null_offset_null),
         unit_test (UINT8_marshal_buffer_size_lt_data),

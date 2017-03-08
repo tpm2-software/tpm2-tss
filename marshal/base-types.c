@@ -37,7 +37,7 @@
 #define BASE_MARSHAL(type, marshal_func) \
 TSS2_RC \
 type##_Marshal ( \
-    type    const *src, \
+    type           src, \
     uint8_t        buffer [], \
     size_t         buffer_size, \
     size_t        *offset \
@@ -50,36 +50,36 @@ type##_Marshal ( \
         local_offset = *offset; \
     } \
 \
-    if (src == NULL || (buffer == NULL && offset == NULL)) { \
-        LOG (WARNING, "src or buffer and offset parameter are NULL"); \
+    if (buffer == NULL && offset == NULL) { \
+        LOG (WARNING, "buffer and offset parameter are NULL"); \
         return TSS2_TYPES_RC_BAD_REFERENCE; \
     } else if (buffer == NULL && offset != NULL) { \
-        *offset += sizeof (*src); \
+        *offset += sizeof (src); \
         LOG (INFO, "buffer NULL and offset non-NULL, updating offset to %zu", \
              *offset); \
         return TSS2_RC_SUCCESS; \
     } else if (buffer_size < local_offset || \
-               buffer_size - local_offset < sizeof (*src)) \
+               buffer_size - local_offset < sizeof (src)) \
     { \
         LOG (WARNING, \
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
              local_offset, \
-             sizeof (*src)); \
+             sizeof (src)); \
         return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
     } \
 \
     LOG (DEBUG, \
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", \
-         (uintptr_t)src, \
+         (uintptr_t)&src, \
          (uintptr_t)buffer, \
          local_offset); \
-    type tmp = marshal_func (*src); \
-    memcpy (&buffer [local_offset], &tmp, sizeof (tmp)); \
+    src = marshal_func (src); \
+    memcpy (&buffer [local_offset], &src, sizeof (src)); \
     if (offset != NULL) { \
-        *offset = local_offset + sizeof (*src); \
+        *offset = local_offset + sizeof (src); \
         LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
     } \
 \
@@ -196,14 +196,14 @@ endian_conv_64 (UINT64 value)
 }
 TSS2_RC
 TPM_ST_Marshal (
-    TPM_ST const   *src,
+    TPM_ST          src,
     uint8_t         buffer [],
     size_t          buffer_size,
     size_t         *offset
     )
 {
     LOG (DEBUG, "Marshalling TPM_ST as UINT16");
-    return UINT16_Marshal ((UINT16*)src, buffer, buffer_size, offset);
+    return UINT16_Marshal ((UINT16)src, buffer, buffer_size, offset);
 }
 TSS2_RC
 TPM_ST_Unmarshal (

@@ -40,8 +40,7 @@
             break;\
         } \
         size_t index = *nextData - inBuffPtr; \
-        type floop = src; \
-        *rval = type##_Marshal (&floop, \
+        *rval = type##_Marshal (src, \
                                 inBuffPtr, \
                                 maxCommandSize, \
                                 &index); \
