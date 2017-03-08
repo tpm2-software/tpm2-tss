@@ -58,7 +58,7 @@
 #include "sysapi_util.h"
 #include "sample.h"
 #include "tpmclient.h"
-#include "tcti_util.h"
+#include "common/tcti_util.h"
 
 // This is done to allow the tests to access fields
 // in the sysContext structure that are needed for
