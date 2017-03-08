@@ -39,6 +39,20 @@ AC_DEFUN([add_cflag],[
         )]
     )]
 )
+dnl add_preproc_flag
+dnl
+dnl $1: Preprocessor flag to add to EXTRA_CFLAGS.
+dnl $2: Set to "required" t ocause configure failure if preprocesor flag
+dnl     is not supported.
+AC_DEFUN([add_preproc_flag],[
+    AX_CHECK_PREPROC_FLAG([$1],[
+        EXTRA_CFLAGS="$EXTRA_CFLAGS $1"],[
+        AS_IF([test x$2 != xrequired],[
+            AC_MSG_WARN([Optional preprocessor flag "$1" not supported by your compiler, continuing.])],[
+            AC_MSG_ERROR([Required preprocessor flag "$1" not supported by your compiler, aborting.])]
+        )]
+    )]
+)
 dnl add_ldlag:
 dnl   A macro to add a LDLAG to the EXTRA_LDFLAGS variable. This macro will
 dnl   check to be sure the linker supprts the flag. Flags can be made
@@ -63,6 +77,8 @@ add_cflag([-Wformat-security])
 add_cflag([-fstack-protector-all])
 add_cflag([-fpic])
 add_cflag([-fPIC])
+add_preproc_flag([-D_FORTIFY_SOURCE=2])
+add_preproc_flag([-U_FORTIFY_SOURCE])
 add_ldflag([-Wl,--no-undefined])
 add_ldflag([-Wl,-z,noexecstack])
 add_ldflag([-Wl,-z,now])
