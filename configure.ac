@@ -19,13 +19,13 @@ AS_IF([test "x$enable_unit" != xno],
                                     [1])])])
 AM_CONDITIONAL([UNIT], [test "x$enable_unit" != xno])
 
-dnl add_cflag:
+dnl add_compiler_flag:
 dnl   A macro to add a CFLAG to the EXTRA_CFLAGS variable. This macro will
 dnl   check to be sure the compiler supprts the flag. Flags can be made
 dnl   mandatory (configure will fail).
 dnl $1: C compiler flag to add to EXTRA_CFLAGS.
 dnl $2: Set to "required" to cause configure failure if flag not supported..
-AC_DEFUN([add_cflag],[
+AC_DEFUN([add_compiler_flag],[
     AX_CHECK_COMPILE_FLAG([$1],[
         EXTRA_CFLAGS="$EXTRA_CFLAGS $1"],[
         AS_IF([test x$2 != xrequired],[
@@ -48,13 +48,13 @@ AC_DEFUN([add_preproc_flag],[
         )]
     )]
 )
-dnl add_ldlag:
+dnl add_link_lag:
 dnl   A macro to add a LDLAG to the EXTRA_LDFLAGS variable. This macro will
 dnl   check to be sure the linker supprts the flag. Flags can be made
 dnl   mandatory (configure will fail).
 dnl $1: linker flag to add to EXTRA_LDFLAGS.
 dnl $2: Set to "required" to cause configure failure if flag not supported.
-AC_DEFUN([add_ldflag],[
+AC_DEFUN([add_link_flag],[
     AX_CHECK_LINK_FLAG([$1],[
         EXTRA_CFLAGS="$EXTRA_LDFLAGS $1"],[
         AS_IF([test x$2 != xrequired],[
@@ -64,19 +64,19 @@ AC_DEFUN([add_ldflag],[
     )]
 )
 
-add_cflag([-Wall])
-add_cflag([-Werror])
-add_cflag([-Wformat])
-add_cflag([-Wformat-security])
-add_cflag([-fstack-protector-all])
-add_cflag([-fpic])
-add_cflag([-fPIC])
+add_compiler_flag([-Wall])
+add_compiler_flag([-Werror])
+add_compiler_flag([-Wformat])
+add_compiler_flag([-Wformat-security])
+add_compiler_flag([-fstack-protector-all])
+add_compiler_flag([-fpic])
+add_compiler_flag([-fPIC])
 add_preproc_flag([-D_FORTIFY_SOURCE=2])
 add_preproc_flag([-U_FORTIFY_SOURCE])
-add_ldflag([-Wl,--no-undefined])
-add_ldflag([-Wl,-z,noexecstack])
-add_ldflag([-Wl,-z,now])
-add_ldflag([-Wl,-z,relro])
+add_link_flag([-Wl,--no-undefined])
+add_link_flag([-Wl,-z,noexecstack])
+add_link_flag([-Wl,-z,now])
+add_link_flag([-Wl,-z,relro])
 
 AC_SUBST([EXTRA_CFLAGS])
 AC_SUBST([EXTRA_LDFLAGS])
