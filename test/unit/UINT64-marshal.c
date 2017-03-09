@@ -13,15 +13,16 @@
 void
 UINT64_marshal_success (void **state)
 {
-    UINT64   src = 0xdeadbeefdeadbeef;
+    UINT64   src = 0xdeadbeefdeadbeef, tmp;
     uint8_t buffer [8] = { 0 };
     size_t  buffer_size = sizeof (buffer);
     TSS2_RC rc;
 
     rc = UINT64_Marshal (&src, buffer, buffer_size, NULL);
+    tmp = HOST_TO_BE_64 (src);
 
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (HOST_TO_BE_64 (src), CAST_TO_UINT64 (&buffer [0]));
+    assert_memory_equal (&tmp, &buffer [0], sizeof (tmp));
 }
 /*
  * Test case for successful UINT64 marshaling with offset.
@@ -29,16 +30,17 @@ UINT64_marshal_success (void **state)
 void
 UINT64_marshal_success_offset (void **state)
 {
-    UINT64 src = 0xdeadbeefdeadbeef;
+    UINT64 src = 0xdeadbeefdeadbeef, tmp = 0;
     uint8_t buffer [9] = { 0 };
     size_t  buffer_size = sizeof (buffer);
     size_t  offset = 1;
     TSS2_RC rc;
 
     rc = UINT64_Marshal (&src, buffer, buffer_size, &offset);
+    tmp = HOST_TO_BE_64 (src);
 
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (HOST_TO_BE_64 (src), CAST_TO_UINT64 (&buffer [1]));
+    assert_memory_equal (&tmp, &buffer [1], sizeof (tmp));
     assert_int_equal (offset, sizeof (buffer));
 }
 /*
@@ -129,13 +131,14 @@ UINT64_unmarshal_success (void **state)
 {
     uint8_t buffer [8] = { 0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef };
     uint8_t buffer_size = sizeof (buffer);
-    UINT64   dest = 0;
+    UINT64   dest = 0, tmp = 0;
     TSS2_RC rc;
 
     rc = UINT64_Unmarshal (buffer, buffer_size, NULL, &dest);
+    tmp = HOST_TO_BE_64 (dest);
 
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (HOST_TO_BE_64 (dest), CAST_TO_UINT64 (buffer));
+    assert_memory_equal (&tmp, buffer, sizeof (tmp));
 }
 /*
  * Test case for successful UINT64 unmarshaling with offset.
@@ -143,16 +146,17 @@ UINT64_unmarshal_success (void **state)
 void
 UINT64_unmarshal_success_offset (void **state)
 {
-    UINT64   dest = 0;
+    UINT64   dest = 0, tmp = 0;
     uint8_t buffer [9] = { 0xff, 0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef };
     size_t  buffer_size = sizeof (buffer);
     size_t  offset = 1;
     TSS2_RC rc;
 
     rc = UINT64_Unmarshal (buffer, buffer_size, &offset, &dest);
+    tmp = HOST_TO_BE_64 (dest);
 
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (HOST_TO_BE_64 (dest), CAST_TO_UINT64 (&buffer [1]));
+    assert_memory_equal (&tmp, &buffer [1], sizeof (tmp));
     assert_int_equal (offset, 9);
 }
 /*

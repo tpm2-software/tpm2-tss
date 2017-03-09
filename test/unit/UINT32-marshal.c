@@ -13,15 +13,16 @@
 void
 UINT32_marshal_success (void **state)
 {
-    UINT32   src = 0xdeadbeef;
+    UINT32   src = 0xdeadbeef, tmp = 0;
     uint8_t buffer [4] = { 0 };
     size_t  buffer_size = sizeof (buffer);
     TSS2_RC rc;
 
     rc = UINT32_Marshal (&src, buffer, buffer_size, NULL);
 
+    tmp = HOST_TO_BE_32 (src);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (HOST_TO_BE_32 (src), CAST_TO_UINT32 (&buffer [0]));
+    assert_memory_equal (&tmp, buffer, sizeof (tmp));
 }
 /*
  * Test case for successful UINT32 marshaling with offset.
@@ -29,16 +30,17 @@ UINT32_marshal_success (void **state)
 void
 UINT32_marshal_success_offset (void **state)
 {
-    UINT32 src = 0xdeadbeef;
+    UINT32 src = 0xdeadbeef, tmp = 0;
     uint8_t buffer [5] = { 0 };
     size_t  buffer_size = sizeof (buffer);
     size_t  offset = 1;
     TSS2_RC rc;
 
     rc = UINT32_Marshal (&src, buffer, buffer_size, &offset);
+    tmp = HOST_TO_BE_32 (src);
 
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (HOST_TO_BE_32 (src), CAST_TO_UINT32 (&buffer [1]));
+    assert_memory_equal (&tmp, &buffer [1], sizeof (tmp));
     assert_int_equal (offset, sizeof (buffer));
 }
 /*
@@ -129,13 +131,14 @@ UINT32_unmarshal_success (void **state)
 {
     uint8_t buffer [4] = { 0xde, 0xad, 0xbe, 0xef };
     uint8_t buffer_size = sizeof (buffer);
-    UINT32   dest = 0;
+    UINT32   dest = 0, tmp = 0;
     TSS2_RC rc;
 
     rc = UINT32_Unmarshal (buffer, buffer_size, NULL, &dest);
+    tmp = HOST_TO_BE_32 (dest);
 
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (HOST_TO_BE_32 (dest), CAST_TO_UINT32 (buffer));
+    assert_memory_equal (&tmp, buffer, sizeof (tmp));
 }
 /*
  * Test case for successful UINT32 unmarshaling with offset.
@@ -143,16 +146,17 @@ UINT32_unmarshal_success (void **state)
 void
 UINT32_unmarshal_success_offset (void **state)
 {
-    UINT32   dest = 0;
+    UINT32   dest = 0, tmp = 0;
     uint8_t buffer [5] = { 0xff, 0xde, 0xad, 0xbe, 0xef };
     size_t  buffer_size = sizeof (buffer);
     size_t  offset = 1;
     TSS2_RC rc;
 
     rc = UINT32_Unmarshal (buffer, buffer_size, &offset, &dest);
+    tmp = HOST_TO_BE_32 (dest);
 
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (HOST_TO_BE_32 (dest), CAST_TO_UINT32 (&buffer [1]));
+    assert_memory_equal (&tmp, &buffer [1], sizeof (tmp));
     assert_int_equal (offset, 5);
 }
 /*

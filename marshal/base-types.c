@@ -26,6 +26,7 @@
 //**********************************************************************;
 
 #include <inttypes.h>
+#include <string.h>
 
 #include "sapi/marshal.h"
 #include "sapi/tpm20.h"
@@ -75,7 +76,8 @@ type##_Marshal ( \
          (uintptr_t)src, \
          (uintptr_t)buffer, \
          local_offset); \
-    CAST_TO_##type (&buffer [local_offset]) = marshal_func (*src); \
+    type tmp = marshal_func (*src); \
+    memcpy (&buffer [local_offset], &tmp, sizeof (tmp)); \
     if (offset != NULL) { \
         *offset = local_offset + sizeof (*src); \
         LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
@@ -127,7 +129,9 @@ type##_Unmarshal ( \
          (uintptr_t)buffer, \
          (uintptr_t)dest, \
          local_offset); \
-    *dest = unmarshal_func (CAST_TO_##type (&buffer [local_offset])); \
+    type tmp = 0; \
+    memcpy (&tmp, &buffer [local_offset], sizeof (tmp)); \
+    *dest = unmarshal_func (tmp); \
     if (offset != NULL) { \
         *offset = local_offset + sizeof (*dest); \
         LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \

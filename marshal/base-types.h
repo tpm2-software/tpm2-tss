@@ -30,17 +30,6 @@
 
 #include "sapi/tpm20.h"
 
-#define CAST_TO_TYPE(ptr, type) (*(type*)ptr)
-#define CAST_TO_BYTE(ptr)       CAST_TO_TYPE(ptr, BYTE)
-#define CAST_TO_INT8(ptr)       CAST_TO_TYPE(ptr, INT8)
-#define CAST_TO_INT16(ptr)      CAST_TO_TYPE(ptr, INT16)
-#define CAST_TO_INT32(ptr)      CAST_TO_TYPE(ptr, INT32)
-#define CAST_TO_INT64(ptr)      CAST_TO_TYPE(ptr, INT64)
-#define CAST_TO_UINT8(ptr)      CAST_TO_TYPE(ptr, UINT8)
-#define CAST_TO_UINT16(ptr)     CAST_TO_TYPE(ptr, UINT16)
-#define CAST_TO_UINT32(ptr)     CAST_TO_TYPE(ptr, UINT32)
-#define CAST_TO_UINT64(ptr)     CAST_TO_TYPE(ptr, UINT64)
-
 /*
  * These no-op functions are used on big endian (BE) systems for the host
  * to / from BE macros. We need them so that we have a valid function
@@ -81,5 +70,4 @@ UINT64 endian_conv_64 (UINT64 value);
 #define BE_TO_HOST_32(value) endian_conv_32 (value)
 #define BE_TO_HOST_64(value) endian_conv_64 (value)
 #endif /* WORDS_BIGENDIAN */
-
 #endif /* BASE_TYPES_H  */
