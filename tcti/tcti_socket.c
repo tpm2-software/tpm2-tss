@@ -29,6 +29,8 @@
 #include <stdlib.h>   // Needed for _wtoi
 
 #include "sapi/tpm20.h"
+#include "sapi/marshal.h"
+#include "marshal/base-types.h"
 #include "tcti/tcti_socket.h"
 #include "sysapi_util.h"
 #include "common/debug.h"
@@ -74,7 +76,8 @@ TSS2_RC SendSessionEndSocketTcti(
     TSS2_TCTI_CONTEXT *tctiContext,       /* in */
     UINT8 tpmCmdServer )
 {
-    UINT32 tpmSendCommand = TPM_SESSION_END;  // Value for "send command" to MS simulator.
+    // Value for "send command" to MS simulator
+    uint8_t buffer [4] = { 0, };
     SOCKET sock;
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
@@ -87,8 +90,11 @@ TSS2_RC SendSessionEndSocketTcti(
         sock = TCTI_CONTEXT_INTEL->otherSock;
     }
 
-    tpmSendCommand = CHANGE_ENDIAN_DWORD(tpmSendCommand);
-    rval = tctiSendBytes( tctiContext, sock, (char unsigned *)&tpmSendCommand, 4 );
+    rval = UINT32_Marshal (TPM_SESSION_END, buffer, sizeof (buffer), NULL);
+    if (rval == TSS2_RC_SUCCESS) {
+        return rval;
+    }
+    rval = tctiSendBytes( tctiContext, sock, (char unsigned *)buffer, 4 );
 
     return( rval );
 }
@@ -99,16 +105,16 @@ TSS2_RC SocketSendTpmCommand(
     uint8_t           *command_buffer     /* in */
     )
 {
-    UINT32 tpmSendCommand = MS_SIM_TPM_SEND_COMMAND;  // Value for "send command" to MS simulator.
+    UINT32 tpmSendCommand;
     UINT32 cnt, cnt1;
     UINT8 locality;
     TSS2_RC rval = TSS2_RC_SUCCESS;
+    size_t offset;
 
 #ifdef DEBUG
     UINT32 commandCode;
     printf_type rmPrefix;
 #endif
-
     rval = CommonSendChecks( tctiContext, command_buffer );
     if( rval != TSS2_RC_SUCCESS )
     {
@@ -124,7 +130,11 @@ TSS2_RC SocketSendTpmCommand(
     if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgEnabled == 1 )
     {
         TCTI_LOG( tctiContext, rmPrefix, "" );
-		commandCode = CHANGE_ENDIAN_DWORD( ( (TPM20_Header_In *)command_buffer )->commandCode );
+        offset = sizeof (TPM_ST) + sizeof (UINT32);
+        rval = TPM_CC_Unmarshal (command_buffer,
+                                 command_size,
+                                 &offset,
+                                 &commandCode);
 #ifdef DEBUG_SOCKETS
         TCTI_LOG( tctiContext, NO_PREFIX, "Command sent on socket #0x%x: %s\n", TCTI_CONTEXT_INTEL->tpmSock, strTpmCommandCode( commandCode ) );
 #else
@@ -134,10 +144,14 @@ TSS2_RC SocketSendTpmCommand(
 #endif
     // Size TPM 1.2 and TPM 2.0 headers overlap exactly, we can use
     // either 1.2 or 2.0 header to get the size.
-    cnt = CHANGE_ENDIAN_DWORD(((TPM20_Header_In *) command_buffer)->commandSize);
+    offset = sizeof (TPM_ST);
+    rval = UINT32_Unmarshal (command_buffer, command_size, &offset, &cnt);
 
     // Send TPM_SEND_COMMAND
-    tpmSendCommand = CHANGE_ENDIAN_DWORD(tpmSendCommand);
+    rval = UINT32_Marshal (MS_SIM_TPM_SEND_COMMAND,
+                           (uint8_t*)&tpmSendCommand,
+                           sizeof (tpmSendCommand),
+                           NULL);  // Value for "send command" to MS simulator.
     rval = tctiSendBytes( tctiContext, TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&tpmSendCommand, 4 );
     if( rval != TSS2_RC_SUCCESS )
         goto returnFromSocketSendTpmCommand;
@@ -157,7 +171,7 @@ TSS2_RC SocketSendTpmCommand(
 
     // Send number of bytes.
     cnt1 = cnt;
-    cnt = CHANGE_ENDIAN_DWORD(cnt);
+    cnt = HOST_TO_BE_32(cnt);
     rval = tctiSendBytes( tctiContext, TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&cnt, 4 );
     if( rval != TSS2_RC_SUCCESS )
         goto returnFromSocketSendTpmCommand;
@@ -328,7 +342,7 @@ TSS2_RC SocketReceiveTpmResponse(
         if( rval != TSS2_RC_SUCCESS )
             goto retSocketReceiveTpmResponse;
 
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = CHANGE_ENDIAN_DWORD( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
+        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = BE_TO_HOST_32(((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived = 1;
     }
 
@@ -368,7 +382,7 @@ TSS2_RC SocketReceiveTpmResponse(
             }
             else
             {
-                ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = CHANGE_ENDIAN_DWORD( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
+                ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = BE_TO_HOST_32 (((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
                 ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived = 1;
             }
         }
@@ -395,7 +409,7 @@ TSS2_RC SocketReceiveTpmResponse(
 
         if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived == 1 )
         {
-            *(TPM_RC *)response_buffer = CHANGE_ENDIAN_DWORD( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->responseSize );
+            *(TPM_RC *)response_buffer = HOST_TO_BE_32( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->responseSize );
             responseSizeDelta += sizeof( TPM_RC );
             response_buffer += sizeof( TPM_RC );
         }
