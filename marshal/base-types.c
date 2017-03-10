@@ -185,14 +185,14 @@ endian_conv_32 (UINT32 value)
 UINT64
 endian_conv_64 (UINT64 value)
 {
-    return ((value & (0xffL))       << 56) | \
-           ((value & (0xffL << 8))  << 40) | \
-           ((value & (0xffL << 16)) << 24) | \
-           ((value & (0xffL << 24)) << 8)  | \
-           ((value & (0xffL << 32)) >> 8)  | \
-           ((value & (0xffL << 40)) >> 24) | \
-           ((value & (0xffL << 48)) >> 40) | \
-           ((value & (0xffL << 56)) >> 56);
+    return ((value & (0xffULL))       << 56) | \
+           ((value & (0xffULL << 8))  << 40) | \
+           ((value & (0xffULL << 16)) << 24) | \
+           ((value & (0xffULL << 24)) << 8)  | \
+           ((value & (0xffULL << 32)) >> 8)  | \
+           ((value & (0xffULL << 40)) >> 24) | \
+           ((value & (0xffULL << 48)) >> 40) | \
+           ((value & (0xffULL << 56)) >> 56);
 }
 TSS2_RC
 TPM_CC_Marshal (
