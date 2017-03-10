@@ -186,6 +186,22 @@ UINT64_Unmarshal (
     );
 
 TSS2_RC
+TPM_CC_Marshal (
+    TPM_CC          src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset
+    );
+
+TSS2_RC
+TPM_CC_Unmarshal (
+    uint8_t const   buffer [],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPM_CC         *dest
+    );
+
+TSS2_RC
 TPM_ST_Marshal (
     TPM_ST          src,
     uint8_t         buffer [],

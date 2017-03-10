@@ -195,6 +195,28 @@ endian_conv_64 (UINT64 value)
            ((value & (0xffL << 56)) >> 56);
 }
 TSS2_RC
+TPM_CC_Marshal (
+    TPM_CC          src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset
+    )
+{
+    LOG (DEBUG, "Marshalling TPM_CC as UINT32");
+    return UINT32_Marshal (src, buffer, buffer_size, offset);
+}
+TSS2_RC
+TPM_CC_Unmarshal (
+    uint8_t const   buffer [],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPM_CC         *dest
+    )
+{
+    LOG (DEBUG, "Unmarshalling TPM_CC as UINT32");
+    return UINT32_Unmarshal (buffer, buffer_size, offset, dest);
+}
+TSS2_RC
 TPM_ST_Marshal (
     TPM_ST          src,
     uint8_t         buffer [],
