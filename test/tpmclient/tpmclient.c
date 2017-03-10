@@ -1927,12 +1927,13 @@ void TestNV()
     DebugPrintf( NO_PREFIX, "\nNV INDEX TESTS:\n" );
 
     nvAuth.t.size = 20;
-    for( i = 0; i < nvAuth.t.size; i++ )
+    for( i = 0; i < nvAuth.t.size; i++ ) {
         nvAuth.t.buffer[i] = (UINT8)i;
+    }
 
-	publicInfo.t.size = sizeof( TPMI_RH_NV_INDEX ) +
-            sizeof( TPMI_ALG_HASH ) + sizeof( TPMA_NV ) + sizeof( UINT16) +
-            sizeof( UINT16 );
+    publicInfo.t.size = sizeof( TPMI_RH_NV_INDEX ) +
+        sizeof( TPMI_ALG_HASH ) + sizeof( TPMA_NV ) + sizeof( UINT16) +
+        sizeof( UINT16 );
     publicInfo.t.nvPublic.nvIndex = TPM20_INDEX_TEST1;
     publicInfo.t.nvPublic.nameAlg = TPM_ALG_SHA1;
 
@@ -2156,12 +2157,13 @@ void TestHierarchyControl()
     DebugPrintf( NO_PREFIX, "\nHIERARCHY CONTROL TESTS:\n" );
 
     nvAuth.t.size = 20;
-    for( i = 0; i < nvAuth.t.size; i++ )
+    for( i = 0; i < nvAuth.t.size; i++ ) {
         nvAuth.t.buffer[i] = i;
+    }
 
-	publicInfo.t.size = sizeof( TPMI_RH_NV_INDEX ) +
-            sizeof( TPMI_ALG_HASH ) + sizeof( TPMA_NV ) + sizeof( UINT16) +
-            sizeof( UINT16 );
+    publicInfo.t.size = sizeof( TPMI_RH_NV_INDEX ) +
+        sizeof( TPMI_ALG_HASH ) + sizeof( TPMA_NV ) + sizeof( UINT16) +
+        sizeof( UINT16 );
     publicInfo.t.nvPublic.nvIndex = TPM20_INDEX_TEST1;
     publicInfo.t.nvPublic.nameAlg = TPM_ALG_SHA1;
 
@@ -3932,12 +3934,13 @@ void CreatePasswordTestNV( TPMI_RH_NV_INDEX nvIndex, char * password )
     sessionsData.cmdAuths[0] = &sessionData;
 
     nvAuth.t.size = strlen( password );
-    for( i = 0; i < nvAuth.t.size; i++ )
+    for( i = 0; i < nvAuth.t.size; i++ ) {
         nvAuth.t.buffer[i] = password[i];
+    }
 
-	publicInfo.t.size = sizeof( TPMI_RH_NV_INDEX ) +
-            sizeof( TPMI_ALG_HASH ) + sizeof( TPMA_NV ) + sizeof( UINT16) +
-            sizeof( UINT16 );
+    publicInfo.t.size = sizeof( TPMI_RH_NV_INDEX ) +
+        sizeof( TPMI_ALG_HASH ) + sizeof( TPMA_NV ) + sizeof( UINT16) +
+        sizeof( UINT16 );
     publicInfo.t.nvPublic.nvIndex = nvIndex;
     publicInfo.t.nvPublic.nameAlg = TPM_ALG_SHA1;
 
