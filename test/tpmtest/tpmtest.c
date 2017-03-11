@@ -40,6 +40,7 @@
 #define sprintf_s   snprintf
 #define sscanf_s    sscanf
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
 #include <string.h>
@@ -7383,7 +7384,7 @@ void TestClockTime()
     printf("\nCLOCK/TIME TEST:\n");
     rval = Tss2_Sys_ReadClock(sysContext, &currentTime);
     CheckPassed( rval );
-    printf("\nCurrent Time:%lu, Current Clock Info:%lu\n", currentTime.time, currentTime.clockInfo.clock );
+    printf("\nCurrent Time:%" PRIu64 ", Current Clock Info:%" PRIu64 "\n", currentTime.time, currentTime.clockInfo.clock );
     // current value of Clock < newTime < 0xFFFF000000000000ULL,otherwise failed.
     //UINT64 newTime = 0xFFFF000000000001;//16 numbers
     UINT64 newTime = 0xFFF111111111;
@@ -7393,7 +7394,7 @@ void TestClockTime()
 
     rval = Tss2_Sys_ReadClock(sysContext, &currentTime);
     CheckPassed(rval);
-    printf("\nCurrent Time:%lu, Current Clock Info:%lu\n", currentTime.time, currentTime.clockInfo.clock);
+    printf("\nCurrent Time:%" PRIu64 ", Current Clock Info:%" PRIu64 "\n", currentTime.time, currentTime.clockInfo.clock);
 
     TPM_CLOCK_ADJUST rateAdjust = 0;
     rval = Tss2_Sys_ClockRateAdjust(sysContext, TPM_RH_OWNER, &sessionsData, rateAdjust, &sessionsDataOut);
