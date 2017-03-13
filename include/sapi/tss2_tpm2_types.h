@@ -202,9 +202,9 @@ typedef	UINT32 TPM_RC;
 
 /* Table 17  Definition of INT8 TPM_CLOCK_ADJUST Constants <IN> */
 typedef	INT8 TPM_CLOCK_ADJUST;
-#define	TPM_CLOCK_COARSE_SLOWER	(3 )	 /* Slow the Clock update rate by one coarse adjustment step.  */
-#define	TPM_CLOCK_MEDIUM_SLOWER	(2 )	 /* Slow the Clock update rate by one medium adjustment step.  */
-#define	TPM_CLOCK_FINE_SLOWER	(1 )	 /* Slow the Clock update rate by one fine adjustment step.  */
+#define	TPM_CLOCK_COARSE_SLOWER	(-3 )	 /* Slow the Clock update rate by one coarse adjustment step.  */
+#define	TPM_CLOCK_MEDIUM_SLOWER	(-2 )	 /* Slow the Clock update rate by one medium adjustment step.  */
+#define	TPM_CLOCK_FINE_SLOWER	(-1 )	 /* Slow the Clock update rate by one fine adjustment step.  */
 #define	TPM_CLOCK_NO_CHANGE	(0 )	 /* No change to the Clock update rate.  */
 #define	TPM_CLOCK_FINE_FASTER	(1 )	 /* Speed the Clock update rate by one fine adjustment step.  */
 #define	TPM_CLOCK_MEDIUM_FASTER	(2 )	 /* Speed the Clock update rate by one medium adjustment step.  */
