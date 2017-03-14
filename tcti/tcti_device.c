@@ -36,7 +36,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "debug.h"
+#include "common/debug.h"
 #include "commonchecks.h"
 #include <tcti/tcti_device.h>
 #include "logging.h"
