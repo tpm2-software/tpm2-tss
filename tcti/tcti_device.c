@@ -30,9 +30,7 @@
 #include <unistd.h>
 
 #include "sapi/tpm20.h"
-//#include "resourcemgr.h"
-//#include <sample.h>
-#include "sysapi_util.h"
+#include "sapi/marshal.h"
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -71,9 +69,16 @@ TSS2_RC LocalTpmSendTpmCommand(
             rmPrefix = NO_PREFIX;
 
 #ifdef DEBUG
-        commandCode = CHANGE_ENDIAN_DWORD( ( (TPM20_Header_In *)command_buffer )->commandCode );
-        cnt = CHANGE_ENDIAN_DWORD(((TPM20_Header_In *) command_buffer)->commandSize);
-
+        TSS2_RC rc;
+        size_t offset = sizeof (TPM_ST);
+        rc = TPM_ST_Unmarshal (command_buffer,
+                               command_size,
+                               &offset,
+                               &commandCode);
+        rc = UINT32_Unmarshal (command_buffer,
+                               command_size,
+                               &offset,
+                               &cnt);
         if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgEnabled == 1 )
         {
             TCTI_LOG( tctiContext, rmPrefix, "" );

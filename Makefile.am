@@ -141,8 +141,9 @@ sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
 
 tcti_libtcti_device_la_CFLAGS   = $(AM_CFLAGS)
 tcti_libtcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_device.map
+tcti_libtcti_device_la_LIBADD   = $(libmarshal)
 tcti_libtcti_device_la_SOURCES  = tcti/tcti_device.c tcti/commonchecks.c \
-    common/debug.c sysapi/sysapi_util/changeEndian.c
+    common/debug.c
 
 tcti_libtcti_socket_la_CFLAGS   = $(AM_CFLAGS)
 tcti_libtcti_socket_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
