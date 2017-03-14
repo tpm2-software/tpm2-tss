@@ -81,8 +81,10 @@ nodist_pkgconfig_DATA = lib/sapi.pc lib/tcti-device.pc lib/tcti-socket.pc
 
 if UNIT
 test_unit_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_tcti_device_LDADD   = $(libsapi) $(libtcti_device) $(CMOCKA_LIBS)
-test_unit_tcti_device_SOURCES = test/unit/tcti-device.c
+test_unit_tcti_device_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
+test_unit_tcti_device_LDFLAGS = -Wl,--wrap=read -Wl,-wrap=write
+test_unit_tcti_device_SOURCES = tcti/commonchecks.c tcti/tcti_device.c \
+    test/unit/tcti-device.c
 
 test_unit_getcommands_malloc_mock_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_getcommands_malloc_mock_LDADD   = $(CMOCKA_LIBS)
