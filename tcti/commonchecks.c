@@ -31,7 +31,7 @@
 #include <tcti/common.h>
 #include <sapi/tpm20.h>
 #include "sysapi_util.h"
-#include "debug.h"
+#include "common/debug.h"
 
 #ifdef __cplusplus
 extern "C" {

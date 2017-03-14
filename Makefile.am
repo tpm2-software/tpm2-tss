@@ -29,7 +29,7 @@
 include src_vars.mk
 
 ACLOCAL_AMFLAGS = -I m4
-AM_CFLAGS       = -I$(srcdir)/include
+AM_CFLAGS       = -I$(srcdir)/include -I$(srcdir)/sysapi/include
 AM_CXXFLAGS     = $(AM_CFLAGS)
 
 # stuff to build, what that stuff is, and where/if to install said stuff
@@ -75,9 +75,11 @@ EXTRA_DIST = \
     man/tcti-socket.7.in
 
 if UNIT
-test_unit_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include -I$(srcdir)/sysapi/include
-test_unit_tcti_device_LDADD   = $(libsapi) $(libtcti_device) $(CMOCKA_LIBS)
-test_unit_tcti_device_SOURCES = test/unit/tcti-device.c
+test_unit_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
+test_unit_tcti_device_LDADD   = $(CMOCKA_LIBS)
+test_unit_tcti_device_LDFLAGS = -Wl,--wrap=read -Wl,-wrap=write
+test_unit_tcti_device_SOURCES = tcti/commonchecks.c tcti/tcti_device.c \
+    ./sysapi/sysapi_util/changeEndian.c test/unit/tcti-device.c
 
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
     -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
