@@ -39,6 +39,8 @@ missing
 NVChip
 src_vars.mk
 resourcemgr/resourcemgr
+test/integration/*
+!test/integration/*.[ch]
 test/integration/get-random
 test/integration/self-test
 test/integration/pcr-extension
