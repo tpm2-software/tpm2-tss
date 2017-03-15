@@ -33,4 +33,8 @@ AX_ADD_LINK_FLAG([-Wl,-z,noexecstack])
 AX_ADD_LINK_FLAG([-Wl,-z,now])
 AX_ADD_LINK_FLAG([-Wl,-z,relro])
 
+# work around GCC bug #53119
+#   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53119
+AX_ADD_COMPILER_FLAG([-Wno-missing-braces])
+
 AC_OUTPUT
