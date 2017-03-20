@@ -260,6 +260,10 @@ TPM_RC StartAuthSessionWithParams( SESSION **session,
     TPM_RC rval;
     SESSION_LIST_ENTRY *sessionEntry;
 
+    if (session == NULL) {
+        return TSS2_APP_RC_BAD_REFERENCE;
+    }
+
     rval = AddSession( &sessionEntry );
     if( rval == TSS2_RC_SUCCESS )
     {

@@ -40,6 +40,7 @@
 #define sprintf_s   snprintf
 #define sscanf_s    sscanf
 
+#include <assert.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
@@ -820,7 +821,7 @@ void TestStartAuthSession()
     UINT32 rval;
     TPM2B_ENCRYPTED_SECRET encryptedSalt;
     TPMT_SYM_DEF symmetric;
-    SESSION *authSession;
+    SESSION *authSession = NULL;
     TPM2B_NONCE nonceCaller;
     UINT16 i;
 #ifdef DEBUG_GAP_HANDLING
@@ -2695,7 +2696,7 @@ void TestPolicy()
 {
     UINT32 rval;
     unsigned int i, num;
-    SESSION *policySession;
+    SESSION *policySession = NULL;
 
     printf( "\nPOLICY TESTS:\n" );
 
@@ -2715,6 +2716,7 @@ void TestPolicy()
         if( policyTestSetups[i].buildPolicyFn != 0)
         {
             rval = BuildPolicy( sysContext, &policySession, policyTestSetups[i].buildPolicyFn, &policyDigest, true );
+            assert (policySession != NULL);
             CheckPassed( rval );
         }
         // Create entity that will use that policyDigest as authPolicy.
@@ -2736,8 +2738,10 @@ void TestPolicy()
         CheckPassed( rval );
 
         // Need to flush the session here.
-        rval = Tss2_Sys_FlushContext( sysContext, policySession->sessionHandle );
-        CheckPassed( rval );
+        if (policySession != NULL) {
+            rval = Tss2_Sys_FlushContext( sysContext, policySession->sessionHandle );
+            CheckPassed( rval );
+        }
 
         // And remove the session from test app session table.
         rval = EndAuthSession( policySession );
@@ -3827,7 +3831,7 @@ void SimplePolicyTest()
 {
     UINT32 rval, sessionCmdRval;
     TPM2B_AUTH  nvAuth;
-    SESSION *nvSession, *trialPolicySession;
+    SESSION *nvSession = NULL, *trialPolicySession = NULL;
     TPMA_NV nvAttributes;
     TPM2B_DIGEST authPolicy;
     TPM2B_NAME nvName;
@@ -5116,7 +5120,7 @@ UINT32 writeDataString = 0xdeadbeef;
 void TestEncryptDecryptSession()
 {
     TSS2_RC             rval = TSS2_RC_SUCCESS;
-    SESSION             *encryptDecryptSession;
+    SESSION             *encryptDecryptSession = NULL;
     TPMT_SYM_DEF        symmetric;
     TPM2B_MAX_NV_BUFFER writeData, encryptedWriteData;
     TPM2B_MAX_NV_BUFFER encryptedReadData, decryptedReadData,
@@ -6419,7 +6423,7 @@ void TestNVUndefineSpaceSpecial()
 {
     UINT32 rval;
     TPM2B_AUTH  nvAuth;
-    SESSION *nvSession, *trialSession;
+    SESSION *nvSession = NULL, *trialSession = NULL;
     TPMA_NV nvAttributes;
     TPM2B_DIGEST authPolicy;
 
