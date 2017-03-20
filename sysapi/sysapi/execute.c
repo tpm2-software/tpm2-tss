@@ -113,18 +113,17 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
                               &SYS_CONTEXT->nextData,
                               &SYS_CONTEXT->rsp_header.size,
                               &(SYS_CONTEXT->rval) );
-
+            Unmarshal_UINT32 (SYS_CONTEXT->tpmOutBuffPtr,
+                              SYS_CONTEXT->maxCommandSize,
+                              &SYS_CONTEXT->nextData,
+                              &SYS_CONTEXT->rsp_header.rsp_code,
+                              &SYS_CONTEXT->rval);
             if (SYS_CONTEXT->rsp_header.size < sizeof(TPM20_Header_Out) - 1)
             {
                 rval = SYS_CONTEXT->rval = TSS2_SYS_RC_INSUFFICIENT_RESPONSE;
             }
             else
             {
-                Unmarshal_UINT32 (SYS_CONTEXT->tpmOutBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
-                                  &SYS_CONTEXT->nextData,
-                                  &SYS_CONTEXT->rsp_header.rsp_code,
-                                  &SYS_CONTEXT->rval);
                 if (SYS_CONTEXT->rsp_header.rsp_code == TSS2_RC_SUCCESS) {
                     if( SYS_CONTEXT->rval != TPM_RC_SUCCESS )
                     {

@@ -43,6 +43,7 @@
 #include <stdlib.h>   // Needed for _wtoi
 #include <string.h>
 
+#include "marshal/base-types.h"
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 #include "test/common/sample/sample.h"
@@ -6259,7 +6260,7 @@ void CmdRspAuthsTests()
     ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = savedMaxCommandSize;
 
     // Setup for response auths test.
-    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = CHANGE_ENDIAN_DWORD( savedMaxCommandSize );
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = BE_TO_HOST_32( savedMaxCommandSize );
     rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
     CheckPassed( rval ); // #15
 
@@ -6335,19 +6336,19 @@ void CmdRspAuthsTests()
     // Test for non-matching count: cmd auth count doesn't
     // match returned auth count.
     rspAuths.rspAuthsCount = 3;
-    savedResponseSize = CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->tpmOutBuffPtr ) )->responseSize );
-    ( (TPM20_Header_Out *)( ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->tpmOutBuffPtr ) )->responseSize = CHANGE_ENDIAN_DWORD( savedResponseSize - 5 );
+    savedResponseSize = ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->rsp_header.size;
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->rsp_header.size = savedResponseSize - 5;
     rval = Tss2_Sys_GetRspAuths( sysContext, &rspAuths );
     CheckFailed( rval, TSS2_SYS_RC_INVALID_SESSIONS ); // #15
 
     // Test for malformed response.
     rspAuths.rspAuthsCount = 2;
-    ( (TPM20_Header_Out *)( ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->tpmOutBuffPtr ) )->responseSize = CHANGE_ENDIAN_DWORD( savedResponseSize - 7 );
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->rsp_header.size = savedResponseSize - 7;
     rval = Tss2_Sys_GetRspAuths( sysContext, &rspAuths );
     CheckFailed( rval, TSS2_SYS_RC_MALFORMED_RESPONSE ); // #16
 
     // Ths one should pass.
-    ( (TPM20_Header_Out *)( ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->tpmOutBuffPtr ) )->responseSize = CHANGE_ENDIAN_DWORD( savedResponseSize );
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->rsp_header.size = savedResponseSize;
     rval = Tss2_Sys_GetRspAuths( sysContext, &rspAuths );
     CheckPassed( rval ); // #17
 

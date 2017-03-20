@@ -25,6 +25,7 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
+#include "marshal/base-types.h"
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
@@ -177,33 +178,33 @@ TSS2_RC Tss2_Sys_GetRspAuths(
 
                 otherDataSaved = otherData;
 
-                if( TPM_ST_SESSIONS == CHANGE_ENDIAN_WORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->tag ) )
+                if( TPM_ST_SESSIONS == SYS_CONTEXT->rsp_header.tag )
                 {
                     for( i = 0; i < rspAuthsArray->rspAuthsCount; i++ )
                     {
                         // Before copying, make sure that we aren't going to go past the output buffer + the response size.
-                        if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->responseSize ) ) )
+                        if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + SYS_CONTEXT->rsp_header.size) )
                         {
                             rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
                             break;
                         }
 
                         otherData = (UINT8 *)otherData + sizeof( UINT16 ) + CHANGE_ENDIAN_WORD( *(UINT16 *)otherData ); // Nonce
-                        if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->responseSize ) ) )
+                        if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + SYS_CONTEXT->rsp_header.size) )
                         {
                             rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
                             break;
                         }
 
                         otherData = (UINT8 *)otherData + 1;  // session attributes.
-                        if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->responseSize ) ) )
+                        if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + SYS_CONTEXT->rsp_header.size) )
                         {
                             rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
                             break;
                         }
 
                         otherData = (UINT8 *)otherData + sizeof( UINT16 ) + CHANGE_ENDIAN_WORD( *(UINT16 *)otherData ); // hmac
-                        if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->responseSize ) ) )
+                        if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + SYS_CONTEXT->rsp_header.size) )
                         {
                             rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
                             break;
@@ -230,7 +231,7 @@ TSS2_RC Tss2_Sys_GetRspAuths(
                             // Get start of authorization area.
                             otherData = otherDataSaved;
                             rval = CopySessionsDataOut( rspAuthsArray, otherData,
-                                    CHANGE_ENDIAN_WORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->tag ),
+                                    SYS_CONTEXT->rsp_header.tag,
                                     SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize );
                         }
                     }
