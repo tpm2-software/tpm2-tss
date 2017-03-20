@@ -98,13 +98,11 @@ TSS2_RC GenerateSessionEncryptDecryptKey( SESSION *session, TPM2B_MAX_BUFFER *cf
 
 UINT32 LoadSessionEncryptDecryptKey( TPMT_SYM_DEF *symmetric, TPM2B_MAX_BUFFER *key, TPM_HANDLE *keyHandle, TPM2B_NAME *keyName )
 {
-    TPM2B keyAuth;
+    TPM2B keyAuth = { 0 };
     TPM2B_SENSITIVE inPrivate;
     TPM2B_PUBLIC inPublic;
     UINT32 rval;
     TSS2_SYS_CONTEXT *sysContext;
-
-    keyAuth.size = 0;
 
     inPrivate.t.sensitiveArea.sensitiveType = TPM_ALG_SYMCIPHER;
     inPrivate.t.size = CopySizedByteBuffer( &(inPrivate.t.sensitiveArea.authValue.b), &keyAuth);
