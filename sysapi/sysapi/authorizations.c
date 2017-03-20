@@ -67,7 +67,7 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
             if( cmdAuthsArray->cmdAuthsCount > 0 )
             {
                 // Change command tag.
-                ( (TPM20_Header_In *)( SYS_CONTEXT->tpmInBuffPtr ) )->tag = CHANGE_ENDIAN_WORD( TPM_ST_SESSIONS );
+                ( (TPM20_Header_In *)( SYS_CONTEXT->tpmInBuffPtr ) )->tag = HOST_TO_BE_16( TPM_ST_SESSIONS );
 
                 // Calculate size needed for authorization area
                 // and check for any null pointers.
@@ -97,7 +97,7 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
                 if( rval == TSS2_RC_SUCCESS )
                 {
                     authSize += sizeof( UINT32 ); // authorization size field
-                    newCmdSize = (UINT64)authSize + (UINT64)CHANGE_ENDIAN_DWORD( ( (TPM20_Header_In *)( SYS_CONTEXT->tpmInBuffPtr ) )->commandSize );
+                    newCmdSize = (UINT64)authSize + (UINT64)BE_TO_HOST_32( ( (TPM20_Header_In *)( SYS_CONTEXT->tpmInBuffPtr ) )->commandSize );
 
                     if( newCmdSize > (UINT64)( SYS_CONTEXT->maxCommandSize ) )
                     {
@@ -121,7 +121,7 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
                             SYS_CONTEXT->cpBuffer += authSize;
 
                             // Now update the command size.
-                            ( (TPM20_Header_In *)( SYS_CONTEXT->tpmInBuffPtr ) )->commandSize = CHANGE_ENDIAN_DWORD( (UINT32)newCmdSize );
+                            ( (TPM20_Header_In *)( SYS_CONTEXT->tpmInBuffPtr ) )->commandSize = HOST_TO_BE_32( (UINT32)newCmdSize );
 
                             SYS_CONTEXT->authsCount = cmdAuthsArray->cmdAuthsCount;
                         }
@@ -173,7 +173,7 @@ TSS2_RC Tss2_Sys_GetRspAuths(
                 otherData = SYS_CONTEXT->tpmOutBuffPtr;
                 otherData = (UINT8 *)otherData + sizeof( TPM20_Header_Out ) - 1;
                 otherData = (UINT8 *)otherData + SYS_CONTEXT->numResponseHandles * sizeof( TPM_HANDLE );
-                otherData = (UINT8 *)otherData + CHANGE_ENDIAN_DWORD( *( SYS_CONTEXT->rspParamsSize ) );
+                otherData = (UINT8 *)otherData + BE_TO_HOST_32( *( SYS_CONTEXT->rspParamsSize ) );
                 otherData = (UINT8 *)otherData + sizeof( UINT32 );
 
                 otherDataSaved = otherData;
@@ -189,7 +189,7 @@ TSS2_RC Tss2_Sys_GetRspAuths(
                             break;
                         }
 
-                        otherData = (UINT8 *)otherData + sizeof( UINT16 ) + CHANGE_ENDIAN_WORD( *(UINT16 *)otherData ); // Nonce
+                        otherData = (UINT8 *)otherData + sizeof( UINT16 ) + BE_TO_HOST_16( *(UINT16 *)otherData ); // Nonce
                         if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + SYS_CONTEXT->rsp_header.size) )
                         {
                             rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
@@ -203,7 +203,7 @@ TSS2_RC Tss2_Sys_GetRspAuths(
                             break;
                         }
 
-                        otherData = (UINT8 *)otherData + sizeof( UINT16 ) + CHANGE_ENDIAN_WORD( *(UINT16 *)otherData ); // hmac
+                        otherData = (UINT8 *)otherData + sizeof( UINT16 ) + BE_TO_HOST_16( *(UINT16 *)otherData ); // hmac
                         if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + SYS_CONTEXT->rsp_header.size) )
                         {
                             rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
