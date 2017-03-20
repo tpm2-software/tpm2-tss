@@ -96,34 +96,44 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
         {
             SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
 
-            // Unmarshal the tag, response size, and response code here so that nextData pointer
-            // is set up for getting response handles.  This avoids having to put special code
-            // in each Part 3 command's Complete function for this.
+            /*
+             * Unmarshal the tag, response size, and response code as soon
+             * as possible. Later processing code should get this data from
+             * the TPM20_Rsp_Header in the context structure. No need to
+             * unmarshal this stuff again.
+             */
             SYS_CONTEXT->nextData = SYS_CONTEXT->tpmOutBuffPtr;
+            Unmarshal_TPM_ST (SYS_CONTEXT->tpmOutBuffPtr,
+                              SYS_CONTEXT->maxCommandSize,
+                              &SYS_CONTEXT->nextData,
+                              &SYS_CONTEXT->rsp_header.tag,
+                              &SYS_CONTEXT->rval);
+            Unmarshal_UINT32 (SYS_CONTEXT->tpmOutBuffPtr,
+                              SYS_CONTEXT->maxCommandSize,
+                              &SYS_CONTEXT->nextData,
+                              &SYS_CONTEXT->rsp_header.size,
+                              &(SYS_CONTEXT->rval) );
 
-            Unmarshal_UINT16( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), 0, &(SYS_CONTEXT->rval) );
-            Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), (UINT32 *)&responseSize, &(SYS_CONTEXT->rval) );
-
-            if( responseSize < ( sizeof( TPM20_Header_Out ) - 1 ) )
+            if (SYS_CONTEXT->rsp_header.size < sizeof(TPM20_Header_Out) - 1)
             {
                 rval = SYS_CONTEXT->rval = TSS2_SYS_RC_INSUFFICIENT_RESPONSE;
             }
             else
             {
-                Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), &rval, &(SYS_CONTEXT->rval) );
-
-                // Return TPM return code if no other errors have occured.
-                if( rval == TSS2_RC_SUCCESS )
-                {
+                Unmarshal_UINT32 (SYS_CONTEXT->tpmOutBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData,
+                                  &SYS_CONTEXT->rsp_header.rsp_code,
+                                  &SYS_CONTEXT->rval);
+                if (SYS_CONTEXT->rsp_header.rsp_code == TSS2_RC_SUCCESS) {
                     if( SYS_CONTEXT->rval != TPM_RC_SUCCESS )
                     {
                         tpmError = 1;
-                        SYS_CONTEXT->responseCode = rval = SYS_CONTEXT->rval;
+                        rval = SYS_CONTEXT->rval;
                     }
-                }
-                else
-                {
-                    SYS_CONTEXT->rval = rval;
+                } else {
+                    rval = SYS_CONTEXT->rsp_header.rsp_code;
+                    SYS_CONTEXT->rval = SYS_CONTEXT->rsp_header.rsp_code;
                 }
             }
         }
@@ -138,7 +148,6 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
         else
         {
             SYS_CONTEXT->previousStage = CMD_STAGE_RECEIVE_RESPONSE;
-            SYS_CONTEXT->responseCode = SYS_CONTEXT->rval;
         }
     }
     else if( rval == TSS2_TCTI_RC_INSUFFICIENT_BUFFER )

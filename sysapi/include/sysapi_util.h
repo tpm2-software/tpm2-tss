@@ -41,6 +41,12 @@ extern "C" {
 enum cmdStates { CMD_STAGE_INITIALIZE, CMD_STAGE_PREPARE, CMD_STAGE_SEND_COMMAND, CMD_STAGE_RECEIVE_RESPONSE, CMD_STAGE_ALL = 0xff };
 
 typedef struct {
+  TPM_ST  tag;
+  UINT32  size;
+  TPM_RC  rsp_code;
+} TPM20_Rsp_Header;
+
+typedef struct {
     //
     // These are inputs to system API functions.
     //
@@ -51,6 +57,8 @@ typedef struct {
     UINT32 maxCommandSize;          // Input: max size of command buffer area
     UINT8 *tpmOutBuffPtr;           // Input: Pointer to response buffer
     UINT32 maxResponseSize;         // Input: max size of response buffer area
+
+    TPM20_Rsp_Header rsp_header;
 
     //
     // These are set by system API and used by helper functions to calculate cpHash,
@@ -63,7 +71,6 @@ typedef struct {
     UINT32 rpBufferUsedSize;
     UINT8 *rpBuffer;
     UINT8 previousStage;            // Used to check for sequencing errors.
-    TPM_RC responseCode;
     UINT8 authsCount;
     UINT8 numResponseHandles;
     struct
@@ -119,18 +126,6 @@ typedef struct _TPM20_ErrorResponse {
   UINT32 responseSize;
   UINT32 responseCode;
 } TPM20_ErrorResponse;
-
-typedef struct {
-  TPM_ST tag;
-  UINT32 commandSize;
-  UINT32 commandCode;
-} TPM20_Cmd_Header;
-
-typedef struct {
-  TPM_ST tag;
-  UINT32 responseSize;
-  UINT32 responseCode;
-} TPM20_Rsp_Header;
 
 #pragma pack(pop)
 

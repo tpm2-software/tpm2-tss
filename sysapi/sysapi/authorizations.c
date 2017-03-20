@@ -145,7 +145,7 @@ TSS2_RC Tss2_Sys_GetRspAuths(
         rval = TSS2_SYS_RC_BAD_REFERENCE;
     }
     else if( SYS_CONTEXT->previousStage != CMD_STAGE_RECEIVE_RESPONSE ||
-            CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->responseCode ) != TPM_RC_SUCCESS ||
+             SYS_CONTEXT->rsp_header.rsp_code != TPM_RC_SUCCESS ||
             SYS_CONTEXT->authAllowed == 0 )
     {
         rval = TSS2_SYS_RC_BAD_SEQUENCE;

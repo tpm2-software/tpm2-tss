@@ -255,7 +255,7 @@ TSS2_RC CommonOneCall(
 
         if ( SYS_CONTEXT->rval == TSS2_RC_SUCCESS )
         {
-            if( SYS_CONTEXT->responseCode == TPM_RC_SUCCESS )
+            if( SYS_CONTEXT->rsp_header.rsp_code == TPM_RC_SUCCESS )
             {
                 if( CHANGE_ENDIAN_WORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr )  )->tag ) == TPM_ST_SESSIONS &&
                         rspAuthsArray != 0 )
