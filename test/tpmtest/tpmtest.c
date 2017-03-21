@@ -4865,14 +4865,6 @@ void HmacSessionTest()
 
                 if( decryptEncryptSetups[k] == DECRYPT_SESSION )
                 {
-                    if( decryptEncryptMode == CFB_MODE )
-                    {
-//                        rval = EncryptCFB( &nvSession, &( nvWriteData.b ) );
-                    }
-                    else if( decryptEncryptMode == XOR_MODE )
-                    {
-//                        rval = EncryptXOR( &nvSession, &( nvWriteData.b ) );
-                    }
                     sessionsData.cmdAuths[0]->sessionAttributes.decrypt = 1;
                 }
                 else
@@ -4976,14 +4968,6 @@ void HmacSessionTest()
 
                     if( decryptEncryptSetups[k] == ENCRYPT_SESSION )
                     {
-                        if( decryptEncryptMode == CFB_MODE )
-                        {
-//                            rval = EncryptCFB( nvSession, &( nvData.b ) );
-                        }
-                        else if( decryptEncryptMode == XOR_MODE )
-                        {
-//                            rval = EncryptXOR( nvSession, &( nvData.b ) );
-                        }
                         CheckPassed( rval );
                     }
 
