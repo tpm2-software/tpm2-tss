@@ -4988,7 +4988,7 @@ void HmacSessionTest()
         // Iterate through variations of decrypt and encrypt sessions.
         for( k = 0; k < sizeof( decryptEncryptSetups ); k++ )
         {
-            for( decryptEncryptMode = CFB_MODE; decryptEncryptMode < XOR_MODE; decryptEncryptMode++ )
+            for( decryptEncryptMode = CFB_MODE; decryptEncryptMode <= XOR_MODE; decryptEncryptMode++ )
             {
                 TPMS_AUTH_COMMAND sessionData = { TPM_RS_PW, };
                 TPMS_AUTH_RESPONSE sessionDataOut;
