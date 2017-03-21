@@ -182,15 +182,7 @@ TPM_RC ComputeCommandHmacs( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1,
     for( i = 0; ( i < 2 ) && ( i < pSessionsDataIn->cmdAuthsCount ); i++ )
     {
         authPtr = &( pSessionsDataIn->cmdAuths[i]->hmac );
-
-        if( i == 0 || i == 1  )
-        {
-            entityHandle = handle1;
-        }
-        else
-        {
-            entityHandle = TPM_HT_NO_HANDLE;
-        }
+        entityHandle = handle1;
 
         if( authPtr != 0 )
         {
@@ -221,14 +213,7 @@ TPM_RC CheckResponseHMACs( TSS2_SYS_CONTEXT *sysContext, TPM_RC responseCode,
     {
         for( i = 0; ( i < 2 ) && ( i < pSessionsDataIn->cmdAuthsCount ); i++ )
         {
-            if( i == 0 || i == 1  )
-            {
-                entityHandle = handle1;
-            }
-            else
-            {
-                entityHandle = TPM_HT_NO_HANDLE;
-            }
+            entityHandle = handle1;
 
             if( ( pSessionsDataIn->cmdAuths[i]->sessionHandle >> HR_SHIFT ) == TPM_HT_HMAC_SESSION )
             {
