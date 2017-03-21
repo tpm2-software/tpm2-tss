@@ -32,7 +32,7 @@
 
 UINT32 LoadExternalHMACKey( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM_HANDLE *keyHandle, TPM2B_NAME *keyName )
 {
-    TPM2B keyAuth;
+    TPM2B keyAuth = { 0 };
     TPM2B_SENSITIVE inPrivate;
     TPM2B_PUBLIC inPublic;
     UINT32 rval;
