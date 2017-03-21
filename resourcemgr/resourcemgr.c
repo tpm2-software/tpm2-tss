@@ -1577,9 +1577,6 @@ TSS2_RC ResourceMgrSendTpmCommand(
             break;
     }
 
-    if( responseRval != TSS2_RC_SUCCESS )
-        goto SendCommand;
-
     // Load context for any sessions specified in the authorizations area.
     if( numSessionHandles )
     {
