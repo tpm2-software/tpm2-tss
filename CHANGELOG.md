@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Library for marshaling TPM2 types: libmarshal.
 - Unit test for device TCTI bug fixes.
 ### Changed
+- Converted all cpp files to c, removed dependency on C++ compiler.
 - Cleaned out a number of marshaling functions from the SAPI code. Things
 required by the resource manager were removed from libsapi and moved into
 the 'common directory.
