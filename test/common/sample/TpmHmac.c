@@ -95,7 +95,7 @@ UINT32 TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2B **bufferList, TPM2B_DIG
     rval = Tss2_Sys_HMAC_Start( sysContext, keyHandle, &sessionsData, &nullAuth, hashAlg, &sequenceHandle, 0 );
 
     if( rval != TPM_RC_SUCCESS )
-        return( rval );
+        goto teardown;
 
     hmac.t.size = 0;
     sessionData.hmac = hmac;
@@ -104,7 +104,7 @@ UINT32 TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2B **bufferList, TPM2B_DIG
         rval = Tss2_Sys_SequenceUpdate ( sysContext, sequenceHandle, &sessionsData, (TPM2B_MAX_BUFFER *)( bufferList[i] ), &sessionsDataOut );
 
         if( rval != TPM_RC_SUCCESS )
-            return( rval );
+            goto teardown;
     }
 
     INIT_SIMPLE_TPM2B_SIZE( *result );
@@ -112,12 +112,12 @@ UINT32 TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2B **bufferList, TPM2B_DIG
             TPM_RH_PLATFORM, result, &validation, &sessionsDataOut );
 
     if( rval != TPM_RC_SUCCESS )
-        return( rval );
+        goto teardown;
 
     rval = Tss2_Sys_FlushContext( sysContext, keyHandle );
 
+teardown:
     TeardownSysContext( &sysContext );
-
     return rval;
 
 }
