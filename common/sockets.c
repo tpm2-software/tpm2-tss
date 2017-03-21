@@ -67,8 +67,8 @@ InitSockets( const char *hostName,
              TCTI_LOG_CALLBACK debugfunc,
              void* data )
 {
-    struct sockaddr_in otherService;
-    struct sockaddr_in tpmService;
+    struct sockaddr_in otherService = { 0 };
+    struct sockaddr_in tpmService = { 0 };
     int iResult = 0;            // used to return function results
 
     *otherSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
