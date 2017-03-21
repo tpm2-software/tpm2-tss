@@ -92,26 +92,22 @@ UINT32 TpmHashSequence( TPMI_ALG_HASH hashAlg, UINT8 numBuffers, TPM2B_DIGEST *b
     rval = Tss2_Sys_HashSequenceStart( sysContext, 0, &nullAuth, hashAlg, &sequenceHandle, 0 );
 
     if( rval != TPM_RC_SUCCESS )
-        return( rval );
+        goto teardown;
 
     for( i = 0; i < numBuffers; i++ )
     {
         rval = Tss2_Sys_SequenceUpdate ( sysContext, sequenceHandle, &cmdAuthArray, (TPM2B_MAX_BUFFER *)&bufferList[i], 0 );
 
         if( rval != TPM_RC_SUCCESS )
-            return( rval );
+            goto teardown;
     }
 
     INIT_SIMPLE_TPM2B_SIZE( *result );
     rval = Tss2_Sys_SequenceComplete ( sysContext, sequenceHandle, &cmdAuthArray, ( TPM2B_MAX_BUFFER *)&emptyBuffer,
             TPM_RH_PLATFORM, result, &validation, 0 );
 
-    if( rval != TPM_RC_SUCCESS )
-        return( rval );
-
+teardown:
     TeardownSysContext( &sysContext );
-
     return rval;
-
 }
 
