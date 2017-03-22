@@ -25,6 +25,7 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
+#include "marshal/base-types.h"
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
@@ -34,6 +35,7 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
     )
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
+    uint8_t *next_data_local;
 
     if( sysContext == NULL || cmdAuthsArray == 0 )
     {
@@ -44,6 +46,7 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
         SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
 
         SYS_CONTEXT->authsCount = 0;
+        next_data_local = SYS_CONTEXT->tpmInBuffPtr;
 
         if( cmdAuthsArray->cmdAuthsCount > MAX_SESSION_NUM )
         {
@@ -65,8 +68,12 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
 
             if( cmdAuthsArray->cmdAuthsCount > 0 )
             {
-                // Change command tag.
-                ( (TPM20_Header_In *)( SYS_CONTEXT->tpmInBuffPtr ) )->tag = CHANGE_ENDIAN_WORD( TPM_ST_SESSIONS );
+                // Set tag in header to TPM_ST_SESSIONS in header.
+                Marshal_TPM_ST (SYS_CONTEXT->tpmInBuffPtr,
+                                SYS_CONTEXT->maxCommandSize,
+                                &next_data_local,
+                                TPM_ST_SESSIONS,
+                                &(SYS_CONTEXT->rval));
 
                 // Calculate size needed for authorization area
                 // and check for any null pointers.
@@ -95,8 +102,17 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
 
                 if( rval == TSS2_RC_SUCCESS )
                 {
+                    UINT32 cmd_size;
+
+                    Unmarshal_UINT32 (SYS_CONTEXT->tpmInBuffPtr,
+                                      SYS_CONTEXT->maxCommandSize,
+                                      &next_data_local,
+                                      &cmd_size,
+                                      &(SYS_CONTEXT->rval));
                     authSize += sizeof( UINT32 ); // authorization size field
-                    newCmdSize = (UINT64)authSize + (UINT64)CHANGE_ENDIAN_DWORD( ( (TPM20_Header_In *)( SYS_CONTEXT->tpmInBuffPtr ) )->commandSize );
+                    newCmdSize = authSize + cmd_size;
+                    // reset next_data_local to start of commandSize
+                    next_data_local -= sizeof (UINT32);
 
                     if( newCmdSize > (UINT64)( SYS_CONTEXT->maxCommandSize ) )
                     {
@@ -120,7 +136,11 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
                             SYS_CONTEXT->cpBuffer += authSize;
 
                             // Now update the command size.
-                            ( (TPM20_Header_In *)( SYS_CONTEXT->tpmInBuffPtr ) )->commandSize = CHANGE_ENDIAN_DWORD( (UINT32)newCmdSize );
+                            Marshal_UINT32 (SYS_CONTEXT->tpmInBuffPtr,
+                                            SYS_CONTEXT->maxCommandSize,
+                                            &next_data_local,
+                                            newCmdSize,
+                                            &(SYS_CONTEXT->rval));
 
                             SYS_CONTEXT->authsCount = cmdAuthsArray->cmdAuthsCount;
                         }
