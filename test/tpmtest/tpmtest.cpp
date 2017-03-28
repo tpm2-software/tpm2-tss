@@ -472,6 +472,66 @@ void GetTpmVersion()
     }
 }
 
+static TPMS_CAPABILITY_DATA capabilityDataCommands;
+
+// Get the TPM 2.0 commands supported by the TPM.
+static void GetCommands()
+{
+    UINT32 numCommands = 0;
+    TPMI_YES_NO moreData;
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+    TPMS_CAPABILITY_DATA capabilityData;
+
+    // First get the number of commands
+    rval = Tss2_Sys_GetCapability( sysContext, 0,
+            TPM_CAP_TPM_PROPERTIES, TPM_PT_TOTAL_COMMANDS,
+            1, 0, &capabilityData, 0 );
+    CheckPassed( rval );
+
+    if( capabilityData.capability == TPM_CAP_TPM_PROPERTIES &&
+            capabilityData.data.tpmProperties.count == 1 &&
+            capabilityData.data.tpmProperties.tpmProperty[0].property == TPM_PT_TOTAL_COMMANDS )
+    {
+        numCommands = capabilityData.data.tpmProperties.tpmProperty[0].value;
+    }
+    else
+    {
+        DebugPrintf( NO_PREFIX, "Failed to get the number of supported commands!\n" );
+        Cleanup();
+    }
+
+    // Now get the command structures for all of them.
+    rval = Tss2_Sys_GetCapability( sysContext, 0,
+            TPM_CAP_COMMANDS, TPM_CC_FIRST,
+            numCommands, &moreData, &capabilityDataCommands, 0 );
+    CheckPassed( rval );
+}
+
+//
+// Searches in a list for command attributes bit field for a command code.
+// Assumes that the capabilityDataCommands structure has been populated by
+// calling GetCommands beforehand.
+//
+// Returns:
+//  true, if found.
+//  false, if not found.  This means that the TPM doesn't support this command.
+//
+static bool IsCommandImpl( TPM_CC commandCode )
+{
+    UINT32 i;
+    bool rval = false;
+
+    for( i = 0; i < capabilityDataCommands.data.command.count; i++ )
+    {
+        if( (TPM_CC)( capabilityDataCommands.data.command.commandAttributes[i].commandIndex ) == commandCode )
+        {
+            rval = true;
+            break;
+        }
+    }
+
+    return rval;
+}
 
 void TestDictionaryAttackLockReset()
 {
@@ -1076,6 +1136,12 @@ void TestChangeEps()
 
     printf( "\nCHANGE_EPS TESTS:\n" );
 
+    if (!IsCommandImpl( TPM_CC_ChangeEPS ))
+    {
+        printf("Command TPM_CC_ChangeEPS not supported");
+        return;
+    }
+
 	sessionsData.cmdAuthsCount = 1;
 
     // Init authHandle
@@ -1121,6 +1187,12 @@ void TestChangePps()
     sessionsDataOut.rspAuthsCount = 1;
 
     printf( "\nCHANGE_PPS TESTS:\n" );
+
+    if (!IsCommandImpl( TPM_CC_ChangePPS ))
+    {
+        printf("Command TPM_CC_ChangePPS not supported");
+        return;
+    }
 
     sessionsData.cmdAuthsCount = 1;
 
@@ -5195,6 +5267,12 @@ void TestEncryptDecryptSession()
 
     printf( "\n\nDECRYPT/ENCRYPT SESSION TESTS:\n" );
 
+    if (!IsCommandImpl( TPM_CC_EncryptDecrypt ))
+    {
+        printf("Command TPM_CC_EncryptDecrypt not supported");
+        return;
+    }
+
     writeData.t.size = sizeof( writeDataString );
     memcpy( (void *)&writeData.t.buffer, (void *)&writeDataString,
             sizeof( writeDataString ) );
@@ -6439,6 +6517,12 @@ void EcEphemeralTest()
     UINT16 counter;
 
     printf( "\nEC Ephemeral TESTS:\n" );
+
+    if (!IsCommandImpl( TPM_CC_EC_Ephemeral ))
+    {
+        printf("Command TPM_CC_EC_Ephemeral not supported");
+        return;
+    }
 
     // Test SAPI for case of Q size field not being set to 0.
     Q.t.size = 0xff;
@@ -9061,6 +9145,9 @@ void InitTpmTest()
 
     Tss2_Sys_Startup ( sysContext, TPM_SU_CLEAR );
     CheckTpmType();
+
+    GetCommands();
+
     CheckHierarchy();
     if( nullPlatformAuth )
         ClearNVIndexList(TPM_RH_PLATFORM);
