@@ -21,7 +21,7 @@ TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len )
     int length;
     int bytesRead;
 
-    for( bytesRead = 0, length = len; bytesRead != len; length -= iResult, bytesRead += iResult )
+    for( bytesRead = 0, length = len; bytesRead != len; )
     {
         iResult = recv( tpmSock, (char *)&( data[bytesRead] ), length, 0);
         if (iResult == SOCKET_ERROR)
@@ -32,6 +32,9 @@ TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len )
         }
         else if (!iResult)
             return TSS2_TCTI_RC_IO_ERROR;
+
+        length -= iResult;
+        bytesRead += iResult;
     }
 
     return TSS2_RC_SUCCESS;
@@ -42,7 +45,7 @@ TSS2_RC sendBytes( SOCKET tpmSock, const unsigned char *data, int len )
     int iResult = 0;
     int sentLength = 0;
 
-    for( sentLength = 0; sentLength < len; len -= iResult, sentLength += iResult )
+    for( sentLength = 0; sentLength < len; )
     {
         iResult = send( tpmSock, (char *)data, len, MSG_NOSIGNAL );
         if (iResult == SOCKET_ERROR)
@@ -52,6 +55,9 @@ TSS2_RC sendBytes( SOCKET tpmSock, const unsigned char *data, int len )
             else
                 return TSS2_TCTI_RC_IO_ERROR;
         }
+
+        len -= iResult;
+        sentLength += iResult;
     }
 
     return TSS2_RC_SUCCESS;
