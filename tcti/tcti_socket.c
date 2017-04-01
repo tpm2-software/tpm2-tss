@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
+#include <sys/time.h>
 
 #include "sapi/tpm20.h"
 #include "sapi/marshal.h"
