@@ -1,4 +1,4 @@
-#ifndef LOG_h
+#ifndef LOG_H
 #define LOG_H
 
 typedef enum {
