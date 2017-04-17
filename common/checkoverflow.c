@@ -34,7 +34,7 @@ TSS2_RC CheckOverflow( UINT8 *buffer, UINT32 bufferSize, UINT8 *nextData, UINT32
     TSS2_RC rval = TSS2_RC_SUCCESS;
     INT64 usedSize;
 
-    usedSize = (INT64)(nextData - buffer) - 1 + size;
+    usedSize = (INT64)(nextData - buffer) + size;
     if( usedSize > (INT64)bufferSize )
     {
         rval = TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
