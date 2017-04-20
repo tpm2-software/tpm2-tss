@@ -88,8 +88,6 @@
 TPM_CC currentCommandCode;
 TPM_CC *currentCommandCodePtr = &currentCommandCode;
 
-TPML_CCA *supportedCommands;
-
 //----
 //char errorString[200];
 //----
@@ -460,22 +458,23 @@ void GetTpmVersion()
     }
 }
 
+static TPMS_CAPABILITY_DATA capabilityDataCommands;
+
 // Get the TPM 2.0 commands supported by the TPM.
-TSS2_RC GetCommands( TSS2_SYS_CONTEXT *resMgrSysContext, TPML_CCA **supportedCommands )
+static void GetCommands()
 {
-    UINT32 numCommands;
+    UINT32 numCommands = 0;
     TPMI_YES_NO moreData;
-    TPMS_CAPABILITY_DATA capabilityData;
-    TPMA_CC *commandPtr;
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    UINT32 i;
+    TPMS_CAPABILITY_DATA capabilityData;
 
     // First get the number of commands
-    rval = Tss2_Sys_GetCapability( resMgrSysContext, 0,
+    rval = Tss2_Sys_GetCapability( sysContext, 0,
             TPM_CAP_TPM_PROPERTIES, TPM_PT_TOTAL_COMMANDS,
             1, 0, &capabilityData, 0 );
-    if( rval == TPM_RC_SUCCESS &&
-            capabilityData.capability == TPM_CAP_TPM_PROPERTIES &&
+    CheckPassed( rval );
+
+    if( capabilityData.capability == TPM_CAP_TPM_PROPERTIES &&
             capabilityData.data.tpmProperties.count == 1 &&
             capabilityData.data.tpmProperties.tpmProperty[0].property == TPM_PT_TOTAL_COMMANDS )
     {
@@ -483,67 +482,37 @@ TSS2_RC GetCommands( TSS2_SYS_CONTEXT *resMgrSysContext, TPML_CCA **supportedCom
     }
     else
     {
-        goto returnFromGetCommands;
+        DebugPrintf( NO_PREFIX, "Failed to get the number of supported commands!\n" );
+        Cleanup();
     }
 
-    // Allocate memory for them
-    *supportedCommands = (TPML_CCA *)malloc( numCommands * sizeof( TPMA_CC ) + sizeof( UINT32 ) );
-    if( !*supportedCommands )
-    {
-        rval = TSS2_BASE_RC_INSUFFICIENT_BUFFER + TSS2_RESMGR_ERROR_LEVEL;
-        goto returnFromGetCommands;
-    }
-
-    for( commandPtr = &( ( *supportedCommands )->commandAttributes[0] ), ( *supportedCommands )->count = 0;
-            ( *supportedCommands )->count < numCommands;
-            ( *supportedCommands )->count += capabilityData.data.command.count,
-                    commandPtr += capabilityData.data.command.count )
-    {
-        // Now get the command structures for all of them.
-        rval = Tss2_Sys_GetCapability( resMgrSysContext, 0,
-                TPM_CAP_COMMANDS, TPM_CC_FIRST,
-                numCommands, &moreData, &capabilityData, 0 );
-
-        if( rval == TPM_RC_SUCCESS &&
-                capabilityData.capability == TPM_CAP_COMMANDS  &&
-                capabilityData.data.command.count >= 1 )
-        {
-            for( i = 0; i < capabilityData.data.command.count; i ++ )
-            {
-                commandPtr[ ( *supportedCommands )->count + i ].val =
-                        capabilityData.data.command.commandAttributes[i].val;
-            }
-        }
-        else
-        {
-            break;
-        }
-    }
-
-returnFromGetCommands:
-    return rval;
+    // Now get the command structures for all of them.
+    rval = Tss2_Sys_GetCapability( sysContext, 0,
+            TPM_CAP_COMMANDS, TPM_CC_FIRST,
+            numCommands, &moreData, &capabilityDataCommands, 0 );
+    CheckPassed( rval );
 }
 
 //
 // Searches in a list for command attributes bit field for a command code.
-// Assumes that the supportedCommands structure has been populated by
+// Assumes that the capabilityDataCommands structure has been populated by
 // calling GetCommands beforehand.
 //
 // Returns:
-//  1, if found.
-//  0, if not found.  This means that the TPM doesn't support this command.
+//  true, if found.
+//  false, if not found.  This means that the TPM doesn't support this command.
 //
-UINT8 IsCommandImpl( TPM_CC commandCode, TPML_CCA *supportedCommands )
+static bool IsCommandImpl( TPM_CC commandCode )
 {
     UINT32 i;
-    UINT8 rval = 0;
+    bool rval = false;
 
-    for( i = 0; i < supportedCommands->count; i++ )
+    for( i = 0; i < capabilityDataCommands.data.command.count; i++ )
     {
-        if( (TPM_CC)( supportedCommands->commandAttributes[i].commandIndex ) == commandCode )
+        if( (TPM_CC)( capabilityDataCommands.data.command.commandAttributes[i].commandIndex ) == commandCode )
         {
-            rval = 1;
-			break;
+            rval = true;
+            break;
         }
     }
 
@@ -1136,7 +1105,7 @@ void TestChangeEps()
 
     printf( "\nCHANGE_EPS TESTS:\n" );
 
-    if (0 == IsCommandImpl( TPM_CC_ChangeEPS, supportedCommands ))
+    if (!IsCommandImpl( TPM_CC_ChangeEPS ))
     {
         printf("Command TPM_CC_ChangeEPS not supported");
         return;
@@ -1188,7 +1157,7 @@ void TestChangePps()
 
     printf( "\nCHANGE_PPS TESTS:\n" );
 
-    if (0 == IsCommandImpl( TPM_CC_ChangePPS, supportedCommands ))
+    if (!IsCommandImpl( TPM_CC_ChangePPS ))
     {
         printf("Command TPM_CC_ChangePPS not supported");
         return;
@@ -5237,7 +5206,7 @@ void TestEncryptDecryptSession()
 
     printf( "\n\nDECRYPT/ENCRYPT SESSION TESTS:\n" );
 
-    if (0 == IsCommandImpl( TPM_CC_EncryptDecrypt, supportedCommands ))
+    if (!IsCommandImpl( TPM_CC_EncryptDecrypt ))
     {
         printf("Command TPM_CC_EncryptDecrypt not supported");
         return;
@@ -6488,7 +6457,7 @@ void EcEphemeralTest()
 
     printf( "\nEC Ephemeral TESTS:\n" );
 
-    if (0 == IsCommandImpl( TPM_CC_EC_Ephemeral, supportedCommands ))
+    if (!IsCommandImpl( TPM_CC_EC_Ephemeral ))
     {
         printf("Command TPM_CC_EC_Ephemeral not supported");
         return;
@@ -8800,7 +8769,7 @@ void InitTpmTest()
     Tss2_Sys_Startup ( sysContext, TPM_SU_CLEAR );
     CheckTpmType();
 
-    GetCommands( sysContext, &supportedCommands );
+    GetCommands();
 
     CheckHierarchy();
     if( nullPlatformAuth )
