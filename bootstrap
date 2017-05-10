@@ -13,6 +13,7 @@ src_listvar () {
 }
 
 VARS_FILE=src_vars.mk
+AUTORECONF=${AUTORECONF:-autoreconf}
 
 echo "Generating file lists: ${VARS_FILE}"
 (
@@ -30,11 +31,3 @@ echo "Generating file lists: ${VARS_FILE}"
   printf "SAMPLE_SRC = \$(SAMPLE_C) \$(SAMPLE_H)\n"
 ) > ${VARS_FILE}
 
-printf "Running libtoolize ...\n"
-libtoolize --install
-printf "Running aclocal ...\n"
-aclocal
-printf "Running autoconf ...\n"
-autoconf
-printf "Running automake ...\n"
-automake --add-missing
