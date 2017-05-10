@@ -64,7 +64,6 @@
 //#include "simulator.h"
 #include "sample.h"
 //#include "simdriver.h"
-#include "resourcemgr.h"
 #include "tpmclient.h"
 #include "sysapi_util.h"
 //+++++
@@ -132,7 +131,7 @@ TSS2_SYS_CONTEXT *sysContext;
 
 TCTI_SOCKET_CONF rmInterfaceConfig = {
     DEFAULT_HOSTNAME,
-    DEFAULT_RESMGR_TPM_PORT,
+    DEFAULT_SIMULATOR_TPM_PORT,
     DebugPrintfCallback,
     DebugPrintBufferCallback,
     NULL
@@ -6051,17 +6050,6 @@ void TestRM()
 
     outsideInfo.t.size = 0;
 
-    // This one should fail, because a different context is trying to use the primary object.
-    outPublic.t.size = 0;
-    creationData.t.size = 0;
-    INIT_SIMPLE_TPM2B_SIZE( outPrivate );
-    INIT_SIMPLE_TPM2B_SIZE( creationHash );
-    rval = Tss2_Sys_Create( otherSysContext, handle2048rsa, &sessionsData, &inSensitive, &inPublic,
-            &outsideInfo, &creationPCR,
-            &outPrivate, &outPublic, &creationData,
-            &creationHash, &creationTicket, &sessionsDataOut );
-    CheckFailed( rval, TSS2_RESMGR_UNOWNED_HANDLE );
-
     // This one should pass, because the same context is allowed to save the context.
     rval = Tss2_Sys_ContextSave( sysContext, handle2048rsa, &context );
     CheckPassed( rval );
@@ -6327,17 +6315,6 @@ void TestRM()
 
     outsideInfo.t.size = 0;
 
-    // This one should fail, because a different context is trying to use the primary object.
-    outPublic.t.size = 0;
-    creationData.t.size = 0;
-    INIT_SIMPLE_TPM2B_SIZE( outPrivate );
-    INIT_SIMPLE_TPM2B_SIZE( creationHash );
-    rval = Tss2_Sys_Create( otherSysContext, handle2048rsa, &sessionsData, &inSensitive, &inPublic,
-            &outsideInfo, &creationPCR,
-            &outPrivate, &outPublic, &creationData,
-            &creationHash, &creationTicket, &sessionsDataOut );
-    CheckFailed( rval, TSS2_RESMGR_UNOWNED_HANDLE );
-
     // This one should pass, because the same context is allowed to save the context.
     rval = Tss2_Sys_ContextSave( sysContext, handle2048rsa, &context );
     CheckPassed( rval );
@@ -6493,10 +6470,6 @@ void TestRM()
     // Flush original connection's object.
     rval = Tss2_Sys_FlushContext( sysContext, newHandle );
     CheckPassed( rval );
-
-    // Now try flushing new object from wrong connection.  Shouldn't be able to.
-    rval = Tss2_Sys_FlushContext( sysContext, newNewHandle );
-    CheckFailed( rval, TSS2_RESMGR_UNOWNED_HANDLE );
 
     // Now flush new object from other connection.  Should work.
     rval = Tss2_Sys_FlushContext( otherSysContext, newNewHandle );
@@ -9202,7 +9175,7 @@ void PrintHelp()
             "   2 (resource manager send/receive byte streams)\n"
             "   3 (resource manager tables)\n"
             "-startAuthSessionTest enables some special tests of the resource manager for starting sessions\n"
-            , version, DEFAULT_HOSTNAME, DEFAULT_RESMGR_TPM_PORT );
+            , version, DEFAULT_HOSTNAME, DEFAULT_SIMULATOR_TPM_PORT );
 }
 
 #if 0
