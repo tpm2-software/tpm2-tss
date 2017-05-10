@@ -29,6 +29,12 @@
 // tpmclient.cpp : Defines the entry point for the console test application.
 //
 
+#ifdef NO_RM_TESTS
+#include "tpmclient_wo_rm.h"
+#else
+#define SESSIONS_COUNT 5
+#endif
+
 #include <stdarg.h>
 #include <stdbool.h>
 
@@ -47,7 +53,6 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 #include "test/common/sample/sample.h"
-#include "resourcemgr/resourcemgr.h"
 #include "tpmclient.h"
 #include "common/tcti_util.h"
 
@@ -123,7 +128,7 @@ TSS2_SYS_CONTEXT *sysContext;
 
 TCTI_SOCKET_CONF rmInterfaceConfig = {
     DEFAULT_HOSTNAME,
-    DEFAULT_RESMGR_TPM_PORT,
+    DEFAULT_SIMULATOR_TPM_PORT,
     DebugPrintfCallback,
     DebugPrintBufferCallback,
     NULL
@@ -311,21 +316,21 @@ void Delay( UINT16 delay)
     }
 }
 
-void CheckPassed( UINT32 rval )
-{
-    DebugPrintf( NO_PREFIX, "\tpassing case:  " );
-    if ( rval != TPM_RC_SUCCESS) {
-        ErrorHandler( rval);
-        DebugPrintf( NO_PREFIX, "\tFAILED!  %s\n", errorString );
-        Cleanup();
-    }
-    else
-    {
-        DebugPrintf( NO_PREFIX, "\tPASSED!\n" );
-    }
-
-    Delay(demoDelay);
-}
+#define CheckPassed(rval) {				\
+    							\
+    DebugPrintf( NO_PREFIX, "\tpassing case:  " );			\
+    if ( rval != TPM_RC_SUCCESS) {					\
+      ErrorHandler( rval);						\
+      DebugPrintf( NO_PREFIX, "\tFAILED!  %s (%s@%u)\n",		\
+		   errorString, __FUNCTION__, __LINE__ );		\
+      Cleanup();							\
+    } else {								\
+      DebugPrintf( NO_PREFIX, "\tPASSED! (%s@%u)\n",			\
+		   __FUNCTION__, __LINE__);				\
+    }									\
+    									\
+    Delay(demoDelay);							\
+  }
 
 TPMS_AUTH_COMMAND nullSessionData;
 TPMS_AUTH_RESPONSE nullSessionDataOut;
@@ -336,20 +341,20 @@ TSS2_SYS_RSP_AUTHS nullSessionsDataOut = { 1, &nullSessionDataOutArray[0] };
 TPM2B_NONCE nullSessionNonce, nullSessionNonceOut;
 TPM2B_AUTH nullSessionHmac;
 
-void CheckFailed( UINT32 rval, UINT32 expectedTpmErrorCode )
-{
-    DebugPrintf( NO_PREFIX, "\tfailing case: " );
-    if ( rval != expectedTpmErrorCode) {
-        ErrorHandler( rval);
-        DebugPrintf( NO_PREFIX, "\tFAILED!  Ret code s/b: %x, but was: %x\n", expectedTpmErrorCode, rval );
-        Cleanup();
-    }
-    else
-    {
-        DebugPrintf( NO_PREFIX, "\tPASSED!\n" );
-    }
-    Delay(demoDelay);
-}
+#define CheckFailed(rval, expectedTpmErrorCode) {			\
+    DebugPrintf( NO_PREFIX, "\tfailing case:");				\
+    if ( rval != expectedTpmErrorCode) {				\
+      ErrorHandler( rval);						\
+      DebugPrintf( NO_PREFIX, "\tFAILED!  Ret code s/b: 0x%x, but was: 0x%x (%s@%u)\n", \
+		   expectedTpmErrorCode, rval, __FUNCTION__, __LINE__ ); \
+      Cleanup();							\
+    }	else {								\
+      DebugPrintf( NO_PREFIX, "\tPASSED! (%s@%u)\n",			\
+		   __FUNCTION__, __LINE__);				\
+    }									\
+    Delay(demoDelay);							\
+  }
+
 
 TSS2_RC TpmReset()
 {
@@ -760,14 +765,17 @@ void TestTctiApis( TSS2_TCTI_CONTEXT *tstTctiContext, int againstRM )
     rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)tstTctiContext )->receive( tstTctiContext, 0, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
     CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE ); // #14
 
+#ifdef SKIP_RECEIVE_IO_ERROR_TEST
+    printf("** Skipping receive IO error test\n");
+#else
     //
     // Test receive for IO error.
-    //
+    //    
     ForceIOError( tstTctiContext, &savedTpmSock, &savedOtherSock, &savedDevFile, 1 );
     rval = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)tstTctiContext )->receive( tstTctiContext, &responseSize, &responseBuffer[0], TSS2_TCTI_TIMEOUT_BLOCK );
     CleanupIOError( tstTctiContext, savedTpmSock, savedOtherSock, savedDevFile, 1 );
     CheckFailed( rval, TSS2_TCTI_RC_IO_ERROR ); // #16
-
+#endif // SKIP_RECEIVE_IO_ERROR_TEST
     //
     // Test receive for BAD CONTEXT:  magic.
     //
@@ -1383,7 +1391,7 @@ SESSION *sessions[300];
 #define DEBUG_MAX_ACTIVE_SESSIONS   8
 #define DEBUG_GAP_MAX   2*DEBUG_MAX_ACTIVE_SESSIONS
 
-SESSION *sessions[5];
+SESSION *sessions[SESSIONS_COUNT];
 
 #endif
 
@@ -1400,22 +1408,14 @@ void TestStartAuthSession()
     TPMS_CONTEXT    evictedSessionContext;
     TPM_HANDLE   evictedHandle;
 #endif
-    TPMA_LOCALITY locality;
     TPM_HANDLE badSessionHandle = 0x03010000;
 
     TPMS_AUTH_COMMAND sessionData;
     TPM2B_NONCE     nonce;
-    TSS2_SYS_CMD_AUTHS sessionsDataIn;
 
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
 
     TPM2B_AUTH      hmac;
 
-    sessionDataArray[0] = &sessionData;
-
-    sessionsDataIn.cmdAuths = &sessionDataArray[0];
-
-    sessionsDataIn.cmdAuthsCount = 1;
 
     // Init sessionHandle
     sessionData.sessionHandle = badSessionHandle;
@@ -1468,7 +1468,7 @@ void TestStartAuthSession()
         // Init session struct
         rval = StartAuthSessionWithParams( &sessions[i], TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY, &symmetric, TPM_ALG_SHA256, resMgrTctiContext );
         CheckPassed( rval );
-        DebugPrintf( NO_PREFIX, "Number of sessions created: %d\n\n", i );
+        DebugPrintf( NO_PREFIX, "Number of sessions created: %d\n\n", i+1 );
 
 #ifdef DEBUG_GAP_HANDLING
         if( i == 0 )
@@ -1479,7 +1479,7 @@ void TestStartAuthSession()
         }
 #endif
     }
-
+    
 #ifdef DEBUG_GAP_HANDLING
     DebugPrintf( NO_PREFIX, "loading evicted session's context\n" );
     // Now try loading an evicted session's context.
@@ -1489,9 +1489,19 @@ void TestStartAuthSession()
     CheckFailed( rval, TPM_RC_HANDLE + TPM_RC_P + ( 1 << 8  ));
 #endif
 
+#ifdef SKIP_BAD_HANDLE_TEST
+    printf("** Skipping bad session handle test\n");
+#else
     // Now try two ways of using a bad session handle.  Both should fail.
-
     // first way is to use as command parameter.
+    TPMA_LOCALITY locality;
+    TSS2_SYS_CMD_AUTHS sessionsDataIn;
+    TPMS_AUTH_COMMAND *sessionDataArray[1];
+
+    sessionDataArray[0] = &sessionData;
+    sessionsDataIn.cmdAuths = &sessionDataArray[0];
+    sessionsDataIn.cmdAuthsCount = 1;
+
     *(UINT8 *)( (void *)&locality ) = 0;
     locality.TPM_LOC_THREE = 1;
     rval = Tss2_Sys_PolicyLocality( sysContext, badSessionHandle, 0, locality, 0 );
@@ -1500,7 +1510,8 @@ void TestStartAuthSession()
     // Second way is to use as handle in session area.
     rval = Tss2_Sys_PolicyLocality( sysContext, sessions[0]->sessionHandle, &sessionsDataIn, locality, 0 );
     CheckFailed( rval, TSS2_RESMGRTPM_ERROR_LEVEL + TPM_RC_VALUE + TPM_RC_S + ( 1 << 8 ) );
-
+#endif // SKIP_1
+    
     // clean up the sessions that I don't want here.
 #ifdef DEBUG_GAP_HANDLING
     for( i = 0; i < ( debugMaxActiveSessions*3); i++ )
@@ -2490,7 +2501,7 @@ void TestEvict()
     {
         (( TSS2_TCTI_CONTEXT_INTEL *)otherResMgrTctiContext )->status.debugMsgEnabled = debugLevel;
     }
-
+    
     otherSysContext = InitSysContext( 0, otherResMgrTctiContext, &abiVersion );
     if( otherSysContext == 0 )
     {
@@ -3007,8 +3018,12 @@ POLICY_TEST_SETUP policyTestSetups[] =
     // this case.
     { "LOCALITY", 0, CreateNVIndex, TestLocality },
     { "PASSWORD", BuildPasswordPolicy, CreateDataBlob, PasswordUnseal },
+    #ifndef SKIP_PASSWORD_PCR_POLICY_TEST
     { "PASSWORD/PCR", BuildPasswordPcrPolicy, CreateDataBlob, PasswordUnseal },
+    #endif
+    #ifndef SKIP_AUTH_VALUE_POLICY_TEST
     { "AUTHVALUE", BuildAuthValuePolicy, CreateDataBlob, AuthValueUnseal },
+    #endif
     // TBD...
 };
 
@@ -4907,10 +4922,18 @@ TPM2B_MAX_BUFFER nonNullSalt = { { 2, { 0xa5, 0 } } };
 
 HMAC_TEST_SETUP hmacTestSetups[] =
 {
+#ifndef SKIP_UNBOUND_UNSALTED_HMAC_TEST
     { TPM_RH_NULL, TPM_RH_NULL, &nullSalt, "UNBOUND/UNSALTED SESSION TEST" },
+#endif //SKIP_UNBOUND_UNSALTED_HMAC_TEST
+#ifndef SKIP_BOUND_SESSION_HMAC_TEST
     { TPM_RH_NULL, TPM20_INDEX_PASSWORD_TEST, &nullSalt, "BOUND SESSION TEST" },
+#endif //SKIP_BOUND_SESSION_HMAC_TEST
+#ifndef SKIP_SALTED_SESSION_HMAC_TEST
     { 0, TPM_RH_NULL, &nonNullSalt, "SALTED SESSION TEST" },
+#endif //SKIP_SALTED_SESSION_HMAC_TEST
+#ifndef SKIP_BOUND_SALTED_SESSION_HMAC_TEST
     { 0, TPM20_INDEX_PASSWORD_TEST, &nonNullSalt, "BOUND/SALTED SESSION TEST" },
+#endif //SKIP_BOUND_SALTED_SESSION_HMAC_TEST
 };
 
 #define PLAINTEXT_SESSION 0
@@ -6285,7 +6308,7 @@ void CmdRspAuthsTests()
     CheckPassed( rval ); // #2
 
     rval = Tss2_Sys_Execute( otherSysContext );
-    CheckFailed( rval, TPM_RC_VALUE | TPM_RC_1 | TPM_RC_H ); // #3
+    CheckFailed( rval, (TPM_RC_VALUE | TPM_RC_1 | TPM_RC_H) ); // #3
 
     rval = Tss2_Sys_GetRspAuths( otherSysContext, &rspAuths );
     CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #4
@@ -6543,7 +6566,6 @@ void TestRM()
 
     TSS2_SYS_RSP_AUTHS sessionsDataOut;
     TPM2B_NAME name;
-    TPM2B_PRIVATE outPrivate;
     TPM2B_PUBLIC outPublic;
     TPM2B_CREATION_DATA creationData;
     TPM2B_DIGEST creationHash;
@@ -6679,16 +6701,6 @@ void TestRM()
 
     outsideInfo.t.size = 0;
 
-    // This one should fail, because a different context is trying to use the primary object.
-    outPublic.t.size = 0;
-    creationData.t.size = 0;
-    INIT_SIMPLE_TPM2B_SIZE( outPrivate );
-    INIT_SIMPLE_TPM2B_SIZE( creationHash );
-    rval = Tss2_Sys_Create( otherSysContext, handle2048rsa, &sessionsData, &inSensitive, &inPublic,
-            &outsideInfo, &creationPCR,
-            &outPrivate, &outPublic, &creationData,
-            &creationHash, &creationTicket, &sessionsDataOut );
-    CheckFailed( rval, TSS2_RESMGR_UNOWNED_HANDLE );
 
     // This one should pass, because the same context is allowed to save the context.
     rval = Tss2_Sys_ContextSave( sysContext, handle2048rsa, &context );
@@ -6846,10 +6858,6 @@ void TestRM()
     // Flush original connection's object.
     rval = Tss2_Sys_FlushContext( sysContext, newHandle );
     CheckPassed( rval );
-
-    // Now try flushing new object from wrong connection.  Shouldn't be able to.
-    rval = Tss2_Sys_FlushContext( sysContext, newNewHandle );
-    CheckFailed( rval, TSS2_RESMGR_UNOWNED_HANDLE );
 
     // Now flush new object from other connection.  Should work.
     rval = Tss2_Sys_FlushContext( otherSysContext, newNewHandle );
@@ -7065,10 +7073,11 @@ void TestCreate1()
     //printf("keyHandle: %x\n", keyHandle);
     INIT_SIMPLE_TPM2B_SIZE( outData );
     rval = Tss2_Sys_RSA_Encrypt(sysContext, keyHandle, &sessionsData, &message, &inScheme, &outsideInfo, &outData, &sessionsDataOut);
-    if( tpmSpecVersion >= 124 )
+    if( tpmSpecVersion >= 124 ) {
         CheckFailed( rval, TPM_RC_S + TPM_RC_1 + TPM_RC_HANDLE );
-    else
+    } else {
         CheckFailed( rval, TPM_RC_1 + TPM_RC_HANDLE );
+    }
 
     INIT_SIMPLE_TPM2B_SIZE( outData );
     rval = Tss2_Sys_RSA_Encrypt(sysContext, keyHandle, 0, &message, &inScheme, &outsideInfo, &outData, &sessionsDataOut);
@@ -7160,7 +7169,11 @@ void TpmTest()
 
     GetSetDecryptParamTests();
 
+#ifdef SKIP_RM_ZERO_SIZED_RESPONSE_TEST
+    printf("*** Skipping rm zero sized response tests\n");
+#else
     RmZeroSizedResponseTest();
+#endif
 
     TestTpmStartup();
 
@@ -7172,9 +7185,12 @@ void TpmTest()
 
     GetTpmManufacturer();
 
-    TestTctiApis( resMgrTctiContext, 1 );
-
+    TestTctiApis( resMgrTctiContext, 0 );
+#ifdef SKIP_CMD_RSP_AUTH_TEST
+    printf("** Skipping cmd rsp auth tests\n");
+#else
     CmdRspAuthsTests();
+#endif
 
     PrepareTests();
 
@@ -7185,7 +7201,11 @@ void TpmTest()
 
     TestCreate();
 
+#ifdef SKIP_TEST_CREATE1_TEST
+    printf("** Skipping TestCreate1()\n");
+#else
     TestCreate1();
+#endif // SKIP_TEST_CREATE1_TEST
 
     TestSapiApis();
 
@@ -7196,10 +7216,12 @@ void TpmTest()
     GetSetEncryptParamTests();
 
     TestEncryptDecryptSession();
-
     SimpleHmacOrPolicyTest( true );
-
+#ifdef SKIP_SIMPLE_HMAC_OR_POLCY_FALSE_TEST
+    printf("** Skipping SimpleHmacOrPolicyTest(false)\n");
+#else
     SimpleHmacOrPolicyTest( false );
+#endif //SKIP_SIMPLE_HMAC_OR_POLCY_FALSE_TEST
 
     for( i = 1; i <= (UINT32)passCount; i++ )
     {
@@ -7208,8 +7230,11 @@ void TpmTest()
         TestTpmGetCapability();
 
         TestPcrExtend();
-
+#ifdef SKIP_HASH_TEST
+	printf("** Skpping hash test\n");
+#else
         TestHash();
+#endif
 
         TestPolicy();
 
@@ -7227,8 +7252,11 @@ void TpmTest()
         TestNV();
 
         TestCreate();
-
+#ifdef SKIP_EVICT_TEST
+	printf("** Skipping TestEvict()\n");
+#else
         TestEvict();
+#endif
 
         NvIndexProto();
 
@@ -7243,8 +7271,11 @@ void TpmTest()
         TestPcrAllocate();
 
         TestUnseal();
-
+#ifdef SKIP_RM_TEST
+	printf("** Skipping TestRM()\n");
+#else
         TestRM();
+#endif
 
         EcEphemeralTest();
 #if 0
@@ -7287,7 +7318,7 @@ void PrintHelp()
 #ifdef SHARED_OUT_FILE
             "-out selects the output file (default is stdout)\n"
 #endif
-            , version, DEFAULT_HOSTNAME, DEFAULT_RESMGR_TPM_PORT );
+            , version, DEFAULT_HOSTNAME, DEFAULT_SIMULATOR_TPM_PORT );
 }
 
 int main(int argc, char* argv[])
@@ -7402,7 +7433,8 @@ int main(int argc, char* argv[])
         TeardownSysContext( &sysContext );
         TeardownTctiContext( &resMgrTctiContext );
     }
-
+    printf("========== DONE! ===========\n");
+    
     return 0;
 }
 

@@ -34,8 +34,7 @@ AM_CFLAGS       = $(INCLUDE_DIRS) $(EXTRA_CFLAGS)
 AM_LDFLAGS      = $(EXTRA_LDFLAGS)
 
 # stuff to build, what that stuff is, and where/if to install said stuff
-sbin_PROGRAMS   = $(resourcemgr)
-noinst_PROGRAMS = $(tpmclient) $(tpmtest)
+noinst_PROGRAMS = $(tpmclient)
 lib_LTLIBRARIES = $(libmarshal) $(libsapi) $(libtcti_device) $(libtcti_socket)
 noinst_LTLIBRARIES = test/integration/libtest_utils.la
 check_PROGRAMS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
@@ -45,7 +44,6 @@ if UNIT
 TESTS_UNIT  = \
     test/unit/CommonPreparePrologue \
     test/unit/CopyCommandHeader \
-    test/unit/getcommands-malloc-mock \
     test/unit/GetNumHandles \
     test/unit/marshal-TPM2B-simple \
     test/unit/tcti-device \
@@ -87,13 +85,6 @@ test_unit_tcti_device_LDFLAGS = -Wl,--wrap=read -Wl,-wrap=write
 test_unit_tcti_device_SOURCES = tcti/commonchecks.c tcti/tcti_device.c \
     test/unit/tcti-device.c
 
-test_unit_getcommands_malloc_mock_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_getcommands_malloc_mock_LDADD   = $(CMOCKA_LIBS)
-test_unit_getcommands_malloc_mock_LDFLAGS = -Wl,--wrap=malloc \
-    -Wl,--wrap=Tss2_Sys_GetCapability
-test_unit_getcommands_malloc_mock_SOURCES = \
-    test/unit/getcommands-malloc-mock.c resourcemgr/getcommands.c
-
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_CommonPreparePrologue_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
 test_unit_CommonPreparePrologue_LDADD = $(CMOCKA_LIBS) $(libsapi)
@@ -129,13 +120,6 @@ test_unit_UINT64_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_UINT64_marshal_SOURCES = test/unit/UINT64-marshal.c
 endif # UNIT
 
-# how to build stuff
-resourcemgr_resourcemgr_CFLAGS   = $(AM_CFLAGS) $(PTHREAD_CFLAGS)
-resourcemgr_resourcemgr_LDADD    = $(libsapi) $(libtcti_device) $(libtcti_socket) $(libmarshal)
-resourcemgr_resourcemgr_LDFLAGS  = $(PTHREAD_LDFLAGS)
-resourcemgr_resourcemgr_SOURCES  = $(COMMON_SRC) resourcemgr/resourcemgr.c \
-    resourcemgr/criticalsection_linux.c resourcemgr/getcommands.c
-
 marshal_libmarshal_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/libmarshal.map
 marshal_libmarshal_la_SOURCES = marshal/base-types.c log/log.c
 
@@ -154,11 +138,9 @@ tcti_libtcti_socket_la_SOURCES  = tcti/platformcommand.c tcti/tcti_socket.c \
     sysapi/sysapi_util/changeEndian.c tcti/commonchecks.c common/sockets.c \
     common/debug.c
 
+test_tpmclient_tpmclient_CFLAGS   = $(AM_CFLAGS) -DNO_RM_TESTS
 test_tpmclient_tpmclient_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device) $(libmarshal)
 test_tpmclient_tpmclient_SOURCES  = test/tpmclient/tpmclient.c $(COMMON_C) $(SAMPLE_C)
-
-test_tpmtest_tpmtest_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device) $(libmarshal)
-test_tpmtest_tpmtest_SOURCES  = test/tpmtest/tpmtest.c $(COMMON_C) $(SAMPLE_C)
 
 test_integration_libtest_utils_la_SOURCES = test/integration/test-options.c \
     test/integration/context-util.c
@@ -217,6 +199,4 @@ libsapi = sysapi/libsapi.la
 libtcti_device = tcti/libtcti-device.la
 libtcti_socket = tcti/libtcti-socket.la
 libmarshal = marshal/libmarshal.la
-resourcemgr = resourcemgr/resourcemgr
 tpmclient   = test/tpmclient/tpmclient
-tpmtest     = test/tpmtest/tpmtest

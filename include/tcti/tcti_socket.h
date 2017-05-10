@@ -38,9 +38,6 @@ extern "C" {
 #define DEFAULT_SIMULATOR_TPM_PORT        2321
 #define TSS2_SIMULATOR_INTERFACE_INIT_FAILED              ((TSS2_RC)(1 + TSS2_DRIVER_ERROR_LEVEL))
 
-#define DEFAULT_RESMGR_TPM_PORT        2323
-#define TSS2_RESMGR_INTERFACE_INIT_FAILED                 ((TSS2_RC)(1 + TSS2_TCTI_ERROR_LEVEL))
-
 #define DEFAULT_HOSTNAME        "127.0.0.1"
 
 /* global data defined in the socket TCTI */
