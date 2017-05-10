@@ -33,7 +33,6 @@ AM_CFLAGS       = -I$(srcdir)/include
 AM_CXXFLAGS     = $(AM_CFLAGS)
 
 # stuff to build, what that stuff is, and where/if to install said stuff
-sbin_PROGRAMS   = $(resourcemgr)
 noinst_PROGRAMS = $(tpmclient) $(tpmtest)
 lib_LTLIBRARIES = $(libsapi) $(libtcti_device) $(libtcti_socket)
 
@@ -41,7 +40,6 @@ lib_LTLIBRARIES = $(libsapi) $(libtcti_device) $(libtcti_socket)
 if UNIT
 check_PROGRAMS  = \
     test/tcti_device \
-    test/getcommands-malloc-mock_unit \
     test/CommonPreparePrologue_unit \
     test/GetNumHandles_unit \
     test/CopyCommandHeader_unit \
@@ -69,14 +67,6 @@ if UNIT
 test_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include -I$(srcdir)/sysapi/include
 test_tcti_device_LDADD   = $(libsapi) $(libtcti_device) $(CMOCKA_LIBS)
 test_tcti_device_SOURCES = test/tcti_device.c test/tcti_device_test.c
-
-test_getcommands_malloc_mock_unit_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
-    -I$(srcdir)/sysapi/include/
-test_getcommands_malloc_mock_unit_LDADD   = $(CMOCKA_LIBS)
-test_getcommands_malloc_mock_unit_LDFLAGS = -Wl,--wrap=malloc \
-    -Wl,--wrap=Tss2_Sys_GetCapability
-test_getcommands_malloc_mock_unit_SOURCES = \
-    test/getcommands-malloc-mock_unit.c resourcemgr/getcommands.c
 
 test_CommonPreparePrologue_unit_CFLAGS = $(CMOCKA_CFLAGS) -I$(srcdir)/include \
     -I$(srcdir)/include/sapi -I$(srcdir)/sysapi/include/
@@ -162,12 +152,6 @@ test_CheckOverflow_unit_SOURCES = \
 endif # UNIT
 
 # how to build stuff
-resourcemgr_resourcemgr_CFLAGS   = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS) $(AM_CFLAGS)
-resourcemgr_resourcemgr_CXXFLAGS = $(RESOURCEMGR_INC) $(PTHREAD_CFLAGS) $(AM_CXXFLAGS)
-resourcemgr_resourcemgr_LDADD    = $(libsapi) $(libtcti_device) $(libtcti_socket)
-resourcemgr_resourcemgr_LDFLAGS  = $(PTHREAD_LDFLAGS)
-resourcemgr_resourcemgr_SOURCES  = $(RESOURCEMGR_C) $(COMMON_SRC)
-
 sysapi_libsapi_la_CFLAGS  = -I$(srcdir)/sysapi/include $(AM_CFLAGS)
 sysapi_libsapi_la_LDFLAGS = $(LIBRARY_LDFLAGS)
 sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
@@ -204,12 +188,6 @@ test_tpmtest_tpmtest_SOURCES  = $(TPMTEST_CXX) $(COMMON_C) $(SAMPLE_C)
 LIBRARY_LDFLAGS = -fPIC -Wl,--no-undefined
 
 # simple variables
-RESOURCEMGR_INC = -I$(srcdir)/include -I$(srcdir)/common \
-    -I$(srcdir)/sysapi/include -I$(srcdir)/resourcemgr \
-    -I$(srcdir)/test/tpmclient
-RESOURCEMGR_C = resourcemgr/resourcemgr.c resourcemgr/criticalsection_linux.c \
-    resourcemgr/getcommands.c
-
 TCTICOMMON_INC = -I$(srcdir)/include -I$(srcdir)/common \
     -I$(srcdir)/sysapi/include
 TCTICOMMON_C   = tcti/commonchecks.c
@@ -223,17 +201,16 @@ TCTISOCKET_CXX = tcti/tcti_socket.cpp
 
 TPMCLIENT_INC = -I$(srcdir)/include -I$(srcdir)/common \
     -I$(srcdir)/test/tpmclient -I$(srcdir)/sysapi/include \
-    -I$(srcdir)/test/common/sample -I$(srcdir)/resourcemgr
+    -I$(srcdir)/test/common/sample
 TPMCLIENT_CXX = test/tpmclient/tpmclient.cpp
 
 TPMTEST_INC = -I$(srcdir)/include -I$(srcdir)/common \
     -I$(srcdir)/test/tpmclient -I$(srcdir)/sysapi/include \
-    -I$(srcdir)/test/common/sample -I$(srcdir)/resourcemgr
+    -I$(srcdir)/test/common/sample
 TPMTEST_CXX = test/tpmtest/tpmtest.cpp
 
 libsapi = sysapi/libsapi.la
 libtcti_device = tcti/libtcti-device.la
 libtcti_socket = tcti/libtcti-socket.la
-resourcemgr = resourcemgr/resourcemgr
 tpmclient   = test/tpmclient/tpmclient
 tpmtest     = test/tpmtest/tpmtest

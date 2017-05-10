@@ -57,7 +57,6 @@
 #include <sapi/tpm20.h>
 #include "sysapi_util.h"
 #include "sample.h"
-#include "resourcemgr.h"
 #include "tpmclient.h"
 #include "tcti_util.h"
 
@@ -133,7 +132,7 @@ TSS2_SYS_CONTEXT *sysContext;
 
 TCTI_SOCKET_CONF rmInterfaceConfig = {
     DEFAULT_HOSTNAME,
-    DEFAULT_RESMGR_TPM_PORT,
+    DEFAULT_SIMULATOR_TPM_PORT,
     DebugPrintfCallback,
     DebugPrintBufferCallback,
     NULL
@@ -6725,16 +6724,6 @@ void TestRM()
 
     outsideInfo.t.size = 0;
 
-    // This one should fail, because a different context is trying to use the primary object.
-    outPublic.t.size = 0;
-    creationData.t.size = 0;
-    INIT_SIMPLE_TPM2B_SIZE( outPrivate );
-    INIT_SIMPLE_TPM2B_SIZE( creationHash );
-    rval = Tss2_Sys_Create( otherSysContext, handle2048rsa, &sessionsData, &inSensitive, &inPublic,
-            &outsideInfo, &creationPCR,
-            &outPrivate, &outPublic, &creationData,
-            &creationHash, &creationTicket, &sessionsDataOut );
-    CheckFailed( rval, TSS2_RESMGR_UNOWNED_HANDLE );
 
     // This one should pass, because the same context is allowed to save the context.
     rval = Tss2_Sys_ContextSave( sysContext, handle2048rsa, &context );
@@ -6892,10 +6881,6 @@ void TestRM()
     // Flush original connection's object.
     rval = Tss2_Sys_FlushContext( sysContext, newHandle );
     CheckPassed( rval );
-
-    // Now try flushing new object from wrong connection.  Shouldn't be able to.
-    rval = Tss2_Sys_FlushContext( sysContext, newNewHandle );
-    CheckFailed( rval, TSS2_RESMGR_UNOWNED_HANDLE );
 
     // Now flush new object from other connection.  Should work.
     rval = Tss2_Sys_FlushContext( otherSysContext, newNewHandle );
@@ -7339,7 +7324,7 @@ void PrintHelp()
 #ifdef SHARED_OUT_FILE
             "-out selects the output file (default is stdout)\n"
 #endif
-            , version, DEFAULT_HOSTNAME, DEFAULT_RESMGR_TPM_PORT );
+            , version, DEFAULT_HOSTNAME, DEFAULT_SIMULATOR_TPM_PORT );
 }
 
 int main(int argc, char* argv[])
