@@ -33,7 +33,7 @@ AM_CFLAGS       = -I$(srcdir)/include
 AM_CXXFLAGS     = $(AM_CFLAGS)
 
 # stuff to build, what that stuff is, and where/if to install said stuff
-noinst_PROGRAMS = $(tpmclient) $(tpmtest)
+noinst_PROGRAMS = $(tpmclient)
 lib_LTLIBRARIES = $(libsapi) $(libtcti_device) $(libtcti_socket)
 
 # unit tests
@@ -171,14 +171,9 @@ tcti_libtcti_socket_la_SOURCES  =  $(TCTISOCKET_C) \
     common/sockets.cpp common/debug.c
 
 test_tpmclient_tpmclient_CFLAGS   = $(TPMCLIENT_INC) $(AM_CFLAGS)
-test_tpmclient_tpmclient_CXXFLAGS = $(TPMCLIENT_INC) $(TCTICOMMON_INC) $(TCTIDEVICE_INC) $(AM_CXXFLAGS)
+test_tpmclient_tpmclient_CXXFLAGS = $(TPMCLIENT_INC) $(TCTICOMMON_INC) $(TCTIDEVICE_INC) $(AM_CXXFLAGS) -DNO_RM_TESTS
 test_tpmclient_tpmclient_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device)
 test_tpmclient_tpmclient_SOURCES  = $(TPMCLIENT_CXX) $(COMMON_C) $(SAMPLE_C)
-
-test_tpmtest_tpmtest_CFLAGS   = $(TPMTEST_INC) $(AM_CFLAGS)
-test_tpmtest_tpmtest_CXXFLAGS = $(TPMTEST_INC) $(AM_CXXFLAGS)
-test_tpmtest_tpmtest_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device)
-test_tpmtest_tpmtest_SOURCES  = $(TPMTEST_CXX) $(COMMON_C) $(SAMPLE_C)
 
 %.pc : %.pc.in
 	if [ ! -d $(dir $@) ]; then mkdir -p $(dir $@); fi
@@ -204,13 +199,7 @@ TPMCLIENT_INC = -I$(srcdir)/include -I$(srcdir)/common \
     -I$(srcdir)/test/common/sample
 TPMCLIENT_CXX = test/tpmclient/tpmclient.cpp
 
-TPMTEST_INC = -I$(srcdir)/include -I$(srcdir)/common \
-    -I$(srcdir)/test/tpmclient -I$(srcdir)/sysapi/include \
-    -I$(srcdir)/test/common/sample
-TPMTEST_CXX = test/tpmtest/tpmtest.cpp
-
 libsapi = sysapi/libsapi.la
 libtcti_device = tcti/libtcti-device.la
 libtcti_socket = tcti/libtcti-socket.la
 tpmclient   = test/tpmclient/tpmclient
-tpmtest     = test/tpmtest/tpmtest
