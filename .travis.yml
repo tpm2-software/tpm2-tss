@@ -24,9 +24,9 @@ script:
   - pushd ./build
   - ../configure --enable-unit
   - make -j$(nproc)
-  - make check
   - make simulator-build
   - make simulator-start
+  - make check
   - test/tpmclient/tpmclient
   - make simulator-stop
   - |
