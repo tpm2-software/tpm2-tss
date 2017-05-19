@@ -210,7 +210,7 @@ TSS2_RC CommonComplete( TSS2_SYS_CONTEXT *sysContext )
     }
     else
     {
-        TPM_ST tag;
+        TPM_ST tag = 0;
         SYS_CONTEXT->nextData = (UINT8 *)( SYS_CONTEXT->rspParamsSize );
 
         // Save response params size if command has authorization area.
