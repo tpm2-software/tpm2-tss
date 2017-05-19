@@ -4949,7 +4949,8 @@ UINT8 decryptEncryptSetups[] = { PLAINTEXT_SESSION };
 void HmacSessionTest()
 {
     UINT32 rval;
-    unsigned int i, j, k, decryptEncryptMode;
+    int i, j, k;
+    unsigned int decryptEncryptMode;
     TPM2B_MAX_NV_BUFFER nvWriteData;
     UINT8 dataToWrite[] = { 0x00, 0xff, 0x55, 0xaa };
     TPM2B_NAME nvName;
