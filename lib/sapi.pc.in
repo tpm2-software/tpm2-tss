@@ -3,4 +3,4 @@ Description: TPM2 System API library.
 URL: https://github.com/01org/TPM2.0-TSS
 Version: @VERSION@
 Cflags: -I@includedir@/sapi
-Libs: -lsapi
+Libs: -lmarshal -lsapi
