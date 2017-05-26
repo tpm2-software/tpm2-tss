@@ -87,7 +87,7 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
     {
         // Inner loop
 
-        i_Swizzled = CHANGE_ENDIAN_DWORD( i );
+        i_Swizzled = CHANGE_ENDIAN_DWORD( i++ );
         *(UINT32 *)tpm2b_i_2Ptr = i_Swizzled;
 
         j = 0;
