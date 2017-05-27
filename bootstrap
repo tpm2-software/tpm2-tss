@@ -8,7 +8,7 @@ src_listvar () {
     suffix=$2
     var=$3
 
-    find "${basedir}" -name "${suffix}" | tr '\n' ' ' | (echo -n "${var} = " && cat)
+    find "${basedir}" -name "${suffix}" | LC_ALL=C sort | tr '\n' ' ' | (echo -n "${var} = " && cat)
     echo ""
 }
 
