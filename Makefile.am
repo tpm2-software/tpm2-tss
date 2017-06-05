@@ -52,7 +52,9 @@ check_PROGRAMS  = \
 endif #UNIT
 
 TESTS = $(check_PROGRAMS)
-CLEANFILES = $(nodist_pkgconfig_DATA)
+CLEANFILES = \
+    $(nodist_pkgconfig_DATA) \
+    $(man7_MANS)
 
 # headers and where to install them
 libsapidir      = $(includedir)/sapi
@@ -62,6 +64,10 @@ libtcti_HEADERS = $(srcdir)/include/tcti/*.h
 # pkg-config files
 pkgconfigdir          = $(libdir)/pkgconfig
 nodist_pkgconfig_DATA = lib/sapi.pc lib/tcti-device.pc lib/tcti-socket.pc
+# man pages / documentation
+man7_MANS = man/man7/tcti-device.7 man/man7/tcti-socket.7
+
+EXTRA_DIST = man/tcti-device.7.in man/tcti-socket.7.in
 
 if UNIT
 test_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) -I$(srcdir)/include -I$(srcdir)/sysapi/include
@@ -176,9 +182,14 @@ test_tpmclient_tpmclient_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_devic
 test_tpmclient_tpmclient_SOURCES  = $(TPMCLIENT_CXX) $(COMMON_C) $(SAMPLE_C)
 
 %.pc : %.pc.in
-	if [ ! -d $(dir $@) ]; then mkdir -p $(dir $@); fi
+	$(call make_parent_dir,$@)
 	sed -e "s,[@]VERSION[@],$(PACKAGE_VERSION),g; \
 	        s,[@]includedir[@],$(includedir),g;" $^ > $@
+
+man/man7/%.7 : man/%.7.in $(srcdir)/man/man-postlude.troff
+	$(call make_parent_dir,$@)
+	cat $^ $(srcdir)/man/man-postlude.troff > $@
+	sed -i -e "s,[@]VERSION[@],$(PACKAGE_VERSION),g;" $@
 
 LIBRARY_LDFLAGS = -fPIC -Wl,--no-undefined
 
@@ -225,3 +236,7 @@ libsapi = sysapi/libsapi.la
 libtcti_device = tcti/libtcti-device.la
 libtcti_socket = tcti/libtcti-socket.la
 tpmclient   = test/tpmclient/tpmclient
+
+define make_parent_dir
+    if [ ! -d $(dir $1) ]; then mkdir -p $(dir $1); fi
+endef
