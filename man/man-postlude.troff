@@ -1,6 +1,7 @@
 .SH AUTHOR
 Philip Tricca <philip.b.tricca@intel.com>
 .SH "SEE ALSO"
+.BR InitDeviceTcti (3),
 .BR tcti-device (7),
 .BR tcti-socket (7),
 .BR tcti-tabrmd (7),
