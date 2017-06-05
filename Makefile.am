@@ -66,7 +66,7 @@ libtcti_HEADERS = $(srcdir)/include/tcti/*.h
 pkgconfigdir          = $(libdir)/pkgconfig
 nodist_pkgconfig_DATA = lib/sapi.pc lib/tcti-device.pc lib/tcti-socket.pc
 # man pages / documentation
-man3_MANS = man/man3/InitDeviceTcti.3
+man3_MANS = man/man3/InitDeviceTcti.3 man/man3/InitSocketTcti.3
 man7_MANS = man/man7/tcti-device.7 man/man7/tcti-socket.7
 
 EXTRA_DIST = \
