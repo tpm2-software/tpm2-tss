@@ -32,6 +32,7 @@ libtool
 ltmain.sh
 m4/libtool*
 m4/lt*.m4
+man/man[0-9]/*
 Makefile
 Makefile.in
 missing

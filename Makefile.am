@@ -61,7 +61,10 @@ TESTS_INTEGRATION = \
     test/integration/start-auth-session
 
 TESTS = $(check_PROGRAMS)
-CLEANFILES = $(nodist_pkgconfig_DATA)
+CLEANFILES = \
+    $(nodist_pkgconfig_DATA) \
+    $(man3_MANS) \
+    $(man7_MANS)
 
 AM_TESTS_ENVIRONMENT = \
     export TPM20TEST_TCTI_NAME="socket"; \
@@ -77,6 +80,14 @@ libtcti_HEADERS = $(srcdir)/include/tcti/*.h
 # pkg-config files
 pkgconfigdir          = $(libdir)/pkgconfig
 nodist_pkgconfig_DATA = lib/sapi.pc lib/tcti-device.pc lib/tcti-socket.pc
+# man pages / documentation
+man3_MANS = man/man3/InitDeviceTcti.3 man/man3/InitSocketTcti.3
+man7_MANS = man/man7/tcti-device.7 man/man7/tcti-socket.7
+
+EXTRA_DIST = \
+    man/InitDeviceTcti.3.in \
+    man/tcti-device.7.in \
+    man/tcti-socket.7.in
 
 if UNIT
 test_unit_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
@@ -168,9 +179,15 @@ test_integration_asymmetric_encrypt_decrypt_SOURCES = test/integration/asymmetri
 TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES)
 
 %.pc : %.pc.in
-	if [ ! -d $(dir $@) ]; then mkdir -p $(dir $@); fi
+	$(call make_parent_dir,$@)
 	sed -e "s,[@]VERSION[@],$(PACKAGE_VERSION),g; \
 	        s,[@]includedir[@],$(includedir),g;" $^ > $@
+
+man/man3/%.3 : man/%.3.in $(srcdir)/man/man-postlude.troff
+	$(call make_man,$@,$<,$(srcdir)/man/man-postlude.troff)
+
+man/man7/%.7 : man/%.7.in $(srcdir)/man/man-postlude.troff
+	$(call make_man,$@,$<,$(srcdir)/man/man-postlude.troff)
 
 # simulator build / run scripts
 CLEANFILES += test/simulator-build.sh test/simulator-run.sh test/simulator.inc
@@ -200,3 +217,16 @@ libtcti_device = tcti/libtcti-device.la
 libtcti_socket = tcti/libtcti-socket.la
 libmarshal = marshal/libmarshal.la
 tpmclient   = test/tpmclient/tpmclient
+
+define make_parent_dir
+    if [ ! -d $(dir $1) ]; then mkdir -p $(dir $1); fi
+endef
+# function to transform man .in files to man pages
+# $1: target
+# $2: .in file
+# $3: man postlude file
+define make_man
+    $(call make_parent_dir,$1)
+    cat $2 $3 > $1
+    sed -i -e "s,[@]VERSION[@],$(PACKAGE_VERSION),g;" $1
+endef
