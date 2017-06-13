@@ -18,6 +18,7 @@ AUTORECONF=${AUTORECONF:-autoreconf}
 echo "Generating file lists: ${VARS_FILE}"
 (
   src_listvar "sysapi/sysapi" "*.c" "SYSAPI_C"
+  src_listvar "sysapi/include" "*.h" "SYSAPI_H"
   src_listvar "sysapi/sysapi_util" "*.c" "SYSAPIUTIL_C"
   printf "SYSAPI_SRC = \$(SYSAPI_H) \$(SYSAPI_C) \$(SYSAPIUTIL_C)\n"
 
