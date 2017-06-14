@@ -6932,30 +6932,6 @@ void AbiVersionTests()
     free( sysContext );
 }
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern int dummy_test();
-
-#ifdef __cplusplus
-}
-#endif
-
-extern TSS2_RC SocketSendTpmCommand(
-    TSS2_TCTI_CONTEXT *tctiContext,       /* in */
-    size_t             command_size,      /* in */
-    uint8_t           *command_buffer     /* in */
-    );
-
-TSS2_RC SocketReceiveTpmResponse(
-    TSS2_TCTI_CONTEXT *tctiContext,     /* in */
-    size_t          *response_size,     /* out */
-    unsigned char   *response_buffer,    /* in */
-    int32_t         timeout
-    );
-
 void TestCreate1()
 {
     UINT32 rval;

@@ -38,10 +38,6 @@
 #include "commonchecks.h"
 #include "logging.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 static TSS2_RC tctiRecvBytes( TSS2_TCTI_CONTEXT *tctiContext, SOCKET sock, unsigned char *data, int len )
 {
     TSS2_RC result = 0;
@@ -465,10 +461,6 @@ retSocketReceiveTpmResponse:
 
     return rval;
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 #define HOSTNAME_LENGTH 200
 #define PORT_LENGTH 4

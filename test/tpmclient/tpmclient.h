@@ -29,18 +29,36 @@
 #define TPMCLIENT_H
 
 #define TPMBUF_LEN 0x8000
-
-extern void InitSysContextFailure();
-
 #define GLOBAL_SYS_CONTEXT_SIZE 4096
+#define INIT_SIMPLE_TPM2B_SIZE( type ) (type).t.size = sizeof( type ) - 2;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void InitSysContextFailure();
 UINT32 TpmHash( TPMI_ALG_HASH hashAlg, UINT16 size, BYTE *data, TPM2B_DIGEST *result );
 UINT32 TpmHandleToName( TPM_HANDLE handle, TPM2B_NAME *name );
 TPM_RC CompareSizedByteBuffer( TPM2B *buffer1, TPM2B *buffer2 );
 
 extern TSS2_TCTI_CONTEXT *resMgrTctiContext;
 
-#define INIT_SIMPLE_TPM2B_SIZE( type ) (type).t.size = sizeof( type ) - 2;
+TSS2_RC SocketSendTpmCommand(
+    TSS2_TCTI_CONTEXT *tctiContext,       /* in */
+    size_t             command_size,      /* in */
+    uint8_t           *command_buffer     /* in */
+    );
+
+TSS2_RC SocketReceiveTpmResponse(
+    TSS2_TCTI_CONTEXT *tctiContext,     /* in */
+    size_t          *response_size,     /* out */
+    unsigned char   *response_buffer,    /* in */
+    int32_t         timeout
+    );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
