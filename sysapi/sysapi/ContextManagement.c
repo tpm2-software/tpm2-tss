@@ -48,25 +48,21 @@ TSS2_RC Tss2_Sys_Initialize(
     TSS2_ABI_VERSION *abiVersion
     )
 {
-    TSS2_RC rval = TSS2_RC_SUCCESS;
 
     if( sysContext == NULL || tctiContext == NULL || abiVersion == NULL )
     {
-        rval = TSS2_SYS_RC_BAD_REFERENCE;
-        goto end_Tss2_Sys_Initialize;
+        return TSS2_SYS_RC_BAD_REFERENCE;
     }
 
     if( contextSize < sizeof( _TSS2_SYS_CONTEXT_BLOB ) )
     {
-        rval = TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
-        goto end_Tss2_Sys_Initialize;
+        return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
     }
 
     if( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->transmit == NULL ||
         ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->receive== NULL )
     {
-        rval = TSS2_SYS_RC_BAD_TCTI_STRUCTURE;
-        goto end_Tss2_Sys_Initialize;
+        return TSS2_SYS_RC_BAD_TCTI_STRUCTURE;
     }
 
     // Checks for ABI negotiation.
@@ -75,21 +71,14 @@ TSS2_RC Tss2_Sys_Initialize(
         abiVersion->tssLevel != TSS_SAPI_FIRST_LEVEL ||
         abiVersion->tssVersion != TSS_SAPI_FIRST_LEVEL )
     {
-        rval = TSS2_SYS_RC_ABI_MISMATCH;
-        goto end_Tss2_Sys_Initialize;
+        return TSS2_SYS_RC_ABI_MISMATCH;
     }
 
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        SYS_CONTEXT->tctiContext = (TSS2_TCTI_CONTEXT *)tctiContext;
+    SYS_CONTEXT->tctiContext = (TSS2_TCTI_CONTEXT *)tctiContext;
+    InitSysContextPtrs( sysContext, contextSize );
+    InitSysContextFields( sysContext );
+    SYS_CONTEXT->previousStage = CMD_STAGE_INITIALIZE;
 
-        InitSysContextPtrs( sysContext, contextSize );
-        InitSysContextFields( sysContext );
-
-        SYS_CONTEXT->previousStage = CMD_STAGE_INITIALIZE;
-    }
-
-end_Tss2_Sys_Initialize:
-    return rval;
+    return TSS2_RC_SUCCESS;
 }
 
