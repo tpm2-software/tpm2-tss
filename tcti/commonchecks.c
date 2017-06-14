@@ -38,30 +38,23 @@ TSS2_RC CommonSendChecks(
     uint8_t           *command_buffer     /* in */
     )
 {
-    TSS2_RC rval = TSS2_RC_SUCCESS;
-
     if( tctiContext == NULL || command_buffer == NULL )
     {
-        rval = TSS2_TCTI_RC_BAD_REFERENCE;
-        goto returnFromCommonSendChecks;
+        return TSS2_TCTI_RC_BAD_REFERENCE;
     }
 
     if( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage == TCTI_STAGE_SEND_COMMAND )
     {
-        rval = TSS2_TCTI_RC_BAD_SEQUENCE;
-        goto returnFromCommonSendChecks;
+        return TSS2_TCTI_RC_BAD_SEQUENCE;
     }
 
     if( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->magic != TCTI_MAGIC ||
         ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->version != TCTI_VERSION )
     {
-        rval = TSS2_TCTI_RC_BAD_CONTEXT;
-        goto returnFromCommonSendChecks;
+        return TSS2_TCTI_RC_BAD_CONTEXT;
     }
 
-returnFromCommonSendChecks:
-
-    return rval;
+    return TSS2_RC_SUCCESS;
 }
 
 
@@ -71,28 +64,21 @@ TSS2_RC CommonReceiveChecks(
     unsigned char   *response_buffer    /* in */
     )
 {
-	TSS2_RC rval = TSS2_RC_SUCCESS;
-
     if( tctiContext == NULL || response_size == NULL )
     {
-        rval = TSS2_TCTI_RC_BAD_REFERENCE;
-        goto retCommonReceiveChecks;
+        return TSS2_TCTI_RC_BAD_REFERENCE;
     }
 
     if( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage == TCTI_STAGE_RECEIVE_RESPONSE )
     {
-        rval = TSS2_TCTI_RC_BAD_SEQUENCE;
-        goto retCommonReceiveChecks;
+        return TSS2_TCTI_RC_BAD_SEQUENCE;
     }
 
     if( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->magic != TCTI_MAGIC ||
         ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->version != TCTI_VERSION )
     {
-        rval = TSS2_TCTI_RC_BAD_CONTEXT;
-        goto retCommonReceiveChecks;
+        return TSS2_TCTI_RC_BAD_CONTEXT;
     }
 
-retCommonReceiveChecks:
-
-    return rval;
+    return TSS2_RC_SUCCESS;
 }
