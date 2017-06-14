@@ -29,11 +29,6 @@
 #include "sample.h"
 #include "sysapi_util.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 void InitEntities()
 {
     int i;
@@ -42,10 +37,6 @@ void InitEntities()
         entities[i].entityHandle = TPM_HT_NO_HANDLE;
     }
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 TPM_RC AddEntity( TPM_HANDLE entityHandle, TPM2B_AUTH *auth )
 {

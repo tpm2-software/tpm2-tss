@@ -33,10 +33,6 @@
 #include "sysapi_util.h"
 #include "common/debug.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 TSS2_RC CommonSendChecks(
     TSS2_TCTI_CONTEXT *tctiContext,       /* in */
     uint8_t           *command_buffer     /* in */
@@ -100,7 +96,3 @@ retCommonReceiveChecks:
 
     return rval;
 }
-
-#ifdef __cplusplus
-}
-#endif
