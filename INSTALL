@@ -35,7 +35,7 @@ time if you're packaging for a distro.
 
 NOTE: It may be necessary to run ldconfig (as root) to update the run-time
 bindings before executing a program that links against libsapi or a TCTI
-library (including the resourcemgr):
+library:
 $ sudo ldconfig
 
 We now have basic VPATH support which allows us to separate the source
