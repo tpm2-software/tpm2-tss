@@ -17,7 +17,7 @@ The prior should be used for direct access to the TPM through the Linux kernel d
 The later implements the protocol exposed by the Microsoft software TPM2 simulator.
 
 # Build and Installation Instructions:
-Instructions to build and install TPM2.0-TSS are available in the [INSTALL](INSTALL) file.
+Instructions to build and install TPM2.0-TSS are available in the [INSTALL](INSTALL.md) file.
 
 # Test Suite
 This repository contains a test suite intended to exercise the TCTI and SAPI code.
