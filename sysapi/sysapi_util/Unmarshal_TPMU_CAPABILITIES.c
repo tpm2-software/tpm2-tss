@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015, 2017 Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -85,6 +85,11 @@ void Unmarshal_TPMU_CAPABILITIES(
 #ifdef TPM_CAP_ECC_CURVES
 	case TPM_CAP_ECC_CURVES:
 			Unmarshal_TPML_ECC_CURVE( sysContext, &capabilities->eccCurves );
+			break;
+#endif
+#ifdef TPM_CAP_VENDOR_PROPERTY
+	case TPM_CAP_VENDOR_PROPERTY:
+			Unmarshal_TPML_INTEL_PTT_PROPERTY( sysContext, &capabilities->intelPttProperty );
 			break;
 #endif
 	}
