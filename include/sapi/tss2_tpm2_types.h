@@ -1,5 +1,5 @@
 //**********************************************************************;
-// Copyright (c) 2015, Intel Corporation
+// Copyright (c) 2015, 2017 Intel Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -1181,6 +1181,12 @@ typedef	struct {
 	TPM_ECC_CURVE	eccCurves[MAX_ECC_CURVES];	 /* array of ECC curve identifiers  */
 } TPML_ECC_CURVE;
 
+/* Implementation specific structure to hold Intel PTT specific property data. */
+typedef	struct {
+	UINT32	count;	/* number of properties zero is allowed.  */
+	UINT32	property;	/* property value */
+} TPML_INTEL_PTT_PROPERTY;
+
 /* Table 107  Definition of TPMU_CAPABILITIES Union <OUT> */
 typedef	union {
 	TPML_ALG_PROPERTY	algorithms;	 /*   */
@@ -1192,6 +1198,7 @@ typedef	union {
 	TPML_TAGGED_TPM_PROPERTY	tpmProperties;	 /*   */
 	TPML_TAGGED_PCR_PROPERTY	pcrProperties;	 /*   */
 	TPML_ECC_CURVE	eccCurves;	 /* TPM_ALG_ECC  */
+	TPML_INTEL_PTT_PROPERTY	intelPttProperty;
 } TPMU_CAPABILITIES;
 
 /* Table 108  Definition of TPMS_CAPABILITY_DATA Structure <OUT> */
