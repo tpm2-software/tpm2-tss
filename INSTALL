@@ -6,7 +6,7 @@ GNU Automake
 GNU Libtool
 C compiler
 C++ compiler
-C Library Development Libraries and Header Files (for pthreads headers)
+C Library Development Libraries and Header Files
 cmocka unit test framework
 pkg-config
 
