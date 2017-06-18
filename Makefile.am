@@ -58,11 +58,11 @@ TESTS_UNIT  = \
 endif #UNIT
 if SIMULATOR_BIN
 TESTS_INTEGRATION = \
-    test/integration/get-random \
-    test/integration/self-test \
-    test/integration/pcr-extension \
-    test/integration/asymmetric-encrypt-decrypt \
-    test/integration/start-auth-session
+    test/integration/asymmetric-encrypt-decrypt.int \
+    test/integration/get-random.int \
+    test/integration/pcr-extension.int \
+    test/integration/self-test.int \
+    test/integration/start-auth-session.int
 endif #SIMULATOR_BIN
 
 CLEANFILES = \
@@ -155,25 +155,26 @@ test_tpmclient_tpmclient_SOURCES  = test/tpmclient/tpmclient.c $(COMMON_C) $(SAM
 test_integration_libtest_utils_la_SOURCES = test/integration/test-options.c \
     test/integration/context-util.c
 
-test_integration_get_random_LDADD   = $(TESTS_LDADD)
-test_integration_get_random_SOURCES = test/integration/get-random.c \
+test_integration_asymmetric_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
+test_integration_asymmetric_encrypt_decrypt_int_SOURCES = \
+    test/integration/asymmetric-encrypt-decrypt.int.c \
     test/integration/main.c
 
-test_integration_self_test_LDADD   = $(TESTS_LDADD)
-test_integration_self_test_SOURCES = test/integration/self-test.c \
+test_integration_get_random_int_LDADD   = $(TESTS_LDADD)
+test_integration_get_random_int_SOURCES = test/integration/get-random.int.c \
     test/integration/main.c
 
-test_integration_start_auth_session_LDADD = $(TESTS_LDADD)
-test_integration_start_auth_session_SOURCES = test/integration/main.c \
-    test/integration/start-auth-session.c
-
-test_integration_pcr_extension_LDADD   = $(TESTS_LDADD)
-test_integration_pcr_extension_SOURCES = test/integration/pcr-extension.c \
+test_integration_pcr_extension_int_LDADD   = $(TESTS_LDADD)
+test_integration_pcr_extension_int_SOURCES = test/integration/pcr-extension.int.c \
     test/integration/main.c
 
-test_integration_asymmetric_encrypt_decrypt_LDADD   = $(TESTS_LDADD)
-test_integration_asymmetric_encrypt_decrypt_SOURCES = test/integration/asymmetric-encrypt-decrypt.c \
+test_integration_self_test_int_LDADD   = $(TESTS_LDADD)
+test_integration_self_test_int_SOURCES = test/integration/self-test.int.c \
     test/integration/main.c
+
+test_integration_start_auth_session_int_LDADD = $(TESTS_LDADD)
+test_integration_start_auth_session_int_SOURCES = test/integration/main.c \
+    test/integration/start-auth-session.int.c
 
 TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES)
 
