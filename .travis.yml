@@ -15,7 +15,12 @@ addons:
     - libcmocka0
     - libcmocka-dev
 
-install: true
+install:
+  - wget https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm532.tar
+  - sha256sum ibmtpm532.tar | grep -q ^abc0b420257917ccb42a9750588565d5e84a2b4e99a6f9f46c3dad1f9912864f
+  - mkdir ibmtpm532
+  - tar axf ibmtpm532.tar -C ibmtpm532
+  - make -C ibmtpm532/src -j$(nproc)
 
 before_script:
   - ./bootstrap
@@ -23,11 +28,11 @@ before_script:
 script:
   - mkdir ./build
   - pushd ./build
-  - ../configure --enable-unit
+  - ../configure --enable-unit --with-simulatorbin=$(pwd)/../ibmtpm532/src/tpm_server
   - make -j$(nproc)
   - make simulator-build
+  - make -j$(nproc) check
   - make simulator-start
-  - make check
   - test/tpmclient/tpmclient
   - make simulator-stop
   - |
