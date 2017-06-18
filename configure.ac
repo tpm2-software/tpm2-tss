@@ -19,6 +19,20 @@ AS_IF([test "x$enable_unit" != xno],
                          [AC_DEFINE([HAVE_CMOCKA],
                                     [1])])])
 AM_CONDITIONAL([UNIT], [test "x$enable_unit" != xno])
+#
+# simulator binary
+#
+AC_MSG_CHECKING([Checking for simulator binary: $with_simulatorbin])
+AC_ARG_WITH([simulatorbin],
+            [AS_HELP_STRING([--with-simulatorbin=tpm_server],[simulator executable])],
+            [AS_IF([test \( -f "$with_simulatorbin" \) -a \( -x "$with_simulatorbin" \)],
+                   [AC_MSG_RESULT([success])
+                    AC_SUBST([SIMULATOR_BIN],[$with_simulatorbin])
+                    AX_NORMALIZE_PATH([with_simulatorbin])
+                    with_simulatorbin_set=yes],
+                   [AC_MSG_ERROR([TPM simulator binary provided does not exist])])],
+            [with_simulatorbin_set=no])
+AM_CONDITIONAL([SIMULATOR_BIN],[test "x$with_simulatorbin_set" = "xyes"])
 
 AX_ADD_COMPILER_FLAG([-Wall])
 AX_ADD_COMPILER_FLAG([-Werror])

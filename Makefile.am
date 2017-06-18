@@ -1,6 +1,5 @@
 #;**********************************************************************;
-#
-# Copyright (c) 2015, Intel Corporation
+# Copyright (c) 2015, 2016, 2017 Intel Corporation
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without 
@@ -37,9 +36,14 @@ AM_LDFLAGS      = $(EXTRA_LDFLAGS)
 noinst_PROGRAMS = $(tpmclient)
 lib_LTLIBRARIES = $(libmarshal) $(libsapi) $(libtcti_device) $(libtcti_socket)
 noinst_LTLIBRARIES = test/integration/libtest_utils.la
-check_PROGRAMS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
 
-# unit tests
+# test harness configuration
+TEST_EXTENSIONS = .int
+INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler.sh
+INT_LOG_FLAGS = --simulator-bin=$(SIMULATOR_BIN)
+
+check_PROGRAMS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
+TESTS = $(check_PROGRAMS)
 if UNIT
 TESTS_UNIT  = \
     test/unit/CommonPreparePrologue \
@@ -52,24 +56,19 @@ TESTS_UNIT  = \
     test/unit/UINT32-marshal \
     test/unit/UINT64-marshal
 endif #UNIT
-
+if SIMULATOR_BIN
 TESTS_INTEGRATION = \
     test/integration/get-random \
     test/integration/self-test \
     test/integration/pcr-extension \
     test/integration/asymmetric-encrypt-decrypt \
     test/integration/start-auth-session
+endif #SIMULATOR_BIN
 
-TESTS = $(check_PROGRAMS)
 CLEANFILES = \
     $(nodist_pkgconfig_DATA) \
     $(man3_MANS) \
     $(man7_MANS)
-
-AM_TESTS_ENVIRONMENT = \
-    export TPM20TEST_TCTI_NAME="socket"; \
-    export TPM20TEST_SOCKET_ADDRESS="127.0.0.1"; \
-    export TPM20TEST_SOCKET_PORT="2321";
 
 # headers and where to install them
 libsapidir      = $(includedir)/sapi
