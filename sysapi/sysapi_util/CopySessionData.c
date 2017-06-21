@@ -188,14 +188,11 @@ TSS2_RC CopySessionsDataOut(
     {
         if( tag == TPM_ST_SESSIONS )
         {
-            if( rspAuthsArray != 0 )
+            for( i = 0; i < rspAuthsArray->rspAuthsCount; i++ )
             {
-                for( i = 0; i < rspAuthsArray->rspAuthsCount; i++ )
-                {
-                    rval = CopySessionDataOut( rspAuthsArray->rspAuths[i], &otherData, outBuffPtr, outBuffSize );
-                    if( rval != TSS2_RC_SUCCESS )
-                        break;
-                }
+                rval = CopySessionDataOut( rspAuthsArray->rspAuths[i], &otherData, outBuffPtr, outBuffSize );
+                if( rval != TSS2_RC_SUCCESS )
+                    break;
             }
         }
     }
