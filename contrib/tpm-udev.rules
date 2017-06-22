@@ -1,1 +1,0 @@
-KERNEL=="tpm[0-9]*", MODE="0600", OWNER="tss", GROUP="tss"
