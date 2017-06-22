@@ -6919,9 +6919,6 @@ void PrintHelp()
             "-rmhost specifies the host IP address for the system running the resource manager (default: %s)\n"
             "-rmport specifies the port number for the system running the resource manager (default: %d)\n"
             "-demoDelay specifies a delay in units of loops, not time (default:  0)\n"
-#ifdef SHARED_OUT_FILE
-            "-out selects the output file (default is stdout)\n"
-#endif
             , version, DEFAULT_HOSTNAME, DEFAULT_SIMULATOR_TPM_PORT );
 }
 
@@ -6931,11 +6928,7 @@ int main(int argc, char* argv[])
     TSS2_RC rval;
 
     setvbuf (stdout, NULL, _IONBF, BUFSIZ);
-#ifdef SHARED_OUT_FILE
-    if( argc > 12 )
-#else
     if( argc > 10 )
-#endif
     {
         PrintHelp();
         return 1;
