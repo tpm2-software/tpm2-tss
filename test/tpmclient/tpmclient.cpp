@@ -123,7 +123,6 @@ TPM2B_AUTH loadedSha1KeyAuth;
 
 TPM_HANDLE handle1024, handle2048sha1, handle2048rsa;
 
-UINT32 passCount = 1;
 UINT32 demoDelay = 0;
 int debugLevel = 0;
 UINT8 indent = 0;
@@ -7138,7 +7137,6 @@ void TestLocalTCTI()
 void TpmTest()
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    UINT32 i;
 
     nullSessionsDataOut.rspAuthsCount = 1;
     nullSessionsDataOut.rspAuths[0]->nonce = nullSessionNonceOut;
@@ -7222,66 +7220,44 @@ void TpmTest()
     SimpleHmacOrPolicyTest( false );
 #endif //SKIP_SIMPLE_HMAC_OR_POLCY_FALSE_TEST
 
-    for( i = 1; i <= (UINT32)passCount; i++ )
-    {
-        DebugPrintf( NO_PREFIX, "\n****** PASS #: %d ******\n\n", i );
+    TestTpmGetCapability();
 
-        TestTpmGetCapability();
-
-        TestPcrExtend();
+    TestPcrExtend();
 #ifdef SKIP_HASH_TEST
-	printf("** Skpping hash test\n");
+    printf("** Skpping hash test\n");
 #else
-        TestHash();
+    TestHash();
 #endif
 
-        TestPolicy();
-
-        TestTpmClear();
-
-        TestChangeEps();
-
-        TestChangePps();
-
-        TestHierarchyChangeAuth();
-
-        if( i < 2 )
-            TestShutdown();
-
-        TestNV();
-
-        TestCreate();
+    TestPolicy();
+    TestTpmClear();
+    TestChangeEps();
+    TestChangePps();
+    TestHierarchyChangeAuth();
+    TestShutdown();
+    TestNV();
+    TestCreate();
 #ifdef SKIP_EVICT_TEST
-	printf("** Skipping TestEvict()\n");
+    printf("** Skipping TestEvict()\n");
 #else
-        TestEvict();
+    TestEvict();
 #endif
-
-        NvIndexProto();
-
-        PasswordTest();
-
-        HmacSessionTest();
-
-        TestQuote();
-
-        TestDictionaryAttackLockReset();
-
-        TestPcrAllocate();
-
-        TestUnseal();
+    NvIndexProto();
+    PasswordTest();
+    HmacSessionTest();
+    TestQuote();
+    TestDictionaryAttackLockReset();
+    TestPcrAllocate();
+    TestUnseal();
 #ifdef SKIP_RM_TEST
-	printf("** Skipping TestRM()\n");
+    printf("** Skipping TestRM()\n");
 #else
-        TestRM();
+    TestRM();
 #endif
-
-        EcEphemeralTest();
+    EcEphemeralTest();
 #if 0
-        TestRsaEncryptDecrypt();
+    TestRsaEncryptDecrypt();
 #endif
-    }
-
     // Clear out RM entries for objects.
     rval = Tss2_Sys_FlushContext( sysContext, handle2048rsa );
     CheckPassed( rval );
@@ -7296,7 +7272,7 @@ char version[] = "0.90";
 
 void PrintHelp()
 {
-    printf( "TPM client test app, Version %s\nUsage:  tpmclient [-rmhost hostname|ip_addr] [-rmport port] [-passes passNum] [-demoDelay delay] [-dbg dbgLevel] [-startAuthSessionTest] "
+    printf( "TPM client test app, Version %s\nUsage:  tpmclient [-rmhost hostname|ip_addr] [-rmport port] [-demoDelay delay] [-dbg dbgLevel] [-startAuthSessionTest] "
 #if __linux || __unix
             "[-localTctiTest]"
 #endif
@@ -7305,7 +7281,6 @@ void PrintHelp()
             "\n"
             "-rmhost specifies the host IP address for the system running the resource manager (default: %s)\n"
             "-rmport specifies the port number for the system running the resource manager (default: %d)\n"
-            "-passes specifies the number of test passes (default: 1)\n"
             "-demoDelay specifies a delay in units of loops, not time (default:  0)\n"
             "-dbg specifies level of debug messages:\n"
             "   0 (high level test results)\n"
@@ -7354,15 +7329,6 @@ int main(int argc, char* argv[])
                 count++;
                 rmInterfaceConfig.port = strtoul(argv[count], NULL, 10);
                 if( count >= argc)
-                {
-                    PrintHelp();
-                    return 1;
-                }
-            }
-            else if( 0 == strcmp( argv[count], "-passes" ) )
-            {
-                count++;
-                if( count >= argc || 1 != sscanf_s( argv[count], "%x", &passCount ) )
                 {
                     PrintHelp();
                     return 1;
