@@ -124,7 +124,6 @@ TPM2B_AUTH loadedSha1KeyAuth;
 TPM_HANDLE handle1024, handle2048sha1, handle2048rsa;
 
 UINT32 demoDelay = 0;
-int debugLevel = 0;
 UINT8 indent = 0;
 
 TSS2_SYS_CONTEXT *sysContext;
@@ -2498,10 +2497,6 @@ void TestEvict()
         DebugPrintf( NO_PREFIX, "Resource Mgr, failed initialization: 0x%x.  Exiting...\n", rval );
         Cleanup();
         return;
-    }
-    else
-    {
-        (( TSS2_TCTI_CONTEXT_INTEL *)otherResMgrTctiContext )->status.debugMsgEnabled = debugLevel;
     }
     
     otherSysContext = InitSysContext( 0, otherResMgrTctiContext, &abiVersion );
@@ -6643,10 +6638,6 @@ void TestRM()
         Cleanup();
         return;
     }
-    else
-    {
-        (( TSS2_TCTI_CONTEXT_INTEL *)otherResMgrTctiContext )->status.debugMsgEnabled = debugLevel;
-    }
 
     otherSysContext = InitSysContext( 0, otherResMgrTctiContext, &abiVersion );
     if( otherSysContext == 0 )
@@ -7119,11 +7110,6 @@ void TestLocalTCTI()
     }
     else
     {
-        if( debugLevel == DBG_COMMAND )
-        {
-            ((TSS2_TCTI_CONTEXT_INTEL *)downstreamTctiContext )->status.debugMsgEnabled = debugLevel;
-        }
-
         TestTctiApis( downstreamTctiContext, 0 );
 
         TeardownTctiContext( &downstreamTctiContext );
@@ -7272,7 +7258,7 @@ char version[] = "0.90";
 
 void PrintHelp()
 {
-    printf( "TPM client test app, Version %s\nUsage:  tpmclient [-rmhost hostname|ip_addr] [-rmport port] [-demoDelay delay] [-dbg dbgLevel] [-startAuthSessionTest] "
+    printf( "TPM client test app, Version %s\nUsage:  tpmclient [-rmhost hostname|ip_addr] [-rmport port] [-demoDelay delay] [-startAuthSessionTest] "
 #if __linux || __unix
             "[-localTctiTest]"
 #endif
@@ -7282,9 +7268,6 @@ void PrintHelp()
             "-rmhost specifies the host IP address for the system running the resource manager (default: %s)\n"
             "-rmport specifies the port number for the system running the resource manager (default: %d)\n"
             "-demoDelay specifies a delay in units of loops, not time (default:  0)\n"
-            "-dbg specifies level of debug messages:\n"
-            "   0 (high level test results)\n"
-            "   1 (test app send/receive byte streams)\n"
             "-startAuthSessionTest enables some special tests of the resource manager for starting sessions\n"
 #if __linux || __unix
             "-localTctiTest enables a TCTI interface test against a local TPM.  WARNING:  This test requires no resource manager and a local TPM\n"
@@ -7343,15 +7326,6 @@ int main(int argc, char* argv[])
                     return 1;
                 }
             }
-            else if( 0 == strcmp( argv[count], "-dbg" ) )
-            {
-                count++;
-                if( count >= argc || 1 != sscanf_s( argv[count], "%d", &debugLevel ) || debugLevel > 1 )
-                {
-                    PrintHelp();
-                    return 1;
-                }
-            }
 #if __linux || __unix
             else if( 0 == strcmp( argv[count], "-localTctiTest" ) )
             {
@@ -7386,7 +7360,6 @@ int main(int argc, char* argv[])
     }
     else
     {
-        (( TSS2_TCTI_CONTEXT_INTEL *)resMgrTctiContext )->status.debugMsgEnabled = debugLevel;
         resMgrInitialized = 1;
     }
 
