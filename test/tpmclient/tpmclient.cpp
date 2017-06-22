@@ -7258,7 +7258,7 @@ char version[] = "0.90";
 
 void PrintHelp()
 {
-    printf( "TPM client test app, Version %s\nUsage:  tpmclient [-rmhost hostname|ip_addr] [-rmport port] [-demoDelay delay] [-startAuthSessionTest] "
+    printf( "TPM client test app, Version %s\nUsage:  tpmclient [-rmhost hostname|ip_addr] [-rmport port] [-demoDelay delay] "
 #if __linux || __unix
             "[-localTctiTest]"
 #endif
@@ -7268,7 +7268,6 @@ void PrintHelp()
             "-rmhost specifies the host IP address for the system running the resource manager (default: %s)\n"
             "-rmport specifies the port number for the system running the resource manager (default: %d)\n"
             "-demoDelay specifies a delay in units of loops, not time (default:  0)\n"
-            "-startAuthSessionTest enables some special tests of the resource manager for starting sessions\n"
 #if __linux || __unix
             "-localTctiTest enables a TCTI interface test against a local TPM.  WARNING:  This test requires no resource manager and a local TPM\n"
 #endif
