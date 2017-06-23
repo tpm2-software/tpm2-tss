@@ -35,12 +35,6 @@
 #define SESSIONS_COUNT 5
 #endif
 
-#ifdef _WIN32
-#include "stdafx.h"
-#else
-#include <stdarg.h>
-#endif
-
 #ifndef UNICODE
 #define UNICODE 1
 #endif
