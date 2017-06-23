@@ -35,7 +35,6 @@
 #define SESSIONS_COUNT 5
 #endif
 
-#include <stdarg.h>
 #include <stdbool.h>
 
 #ifndef UNICODE
