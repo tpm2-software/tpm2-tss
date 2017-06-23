@@ -8,7 +8,7 @@ required:
 * GNU Automake
 * GNU Libtool
 * C compiler
-* C Library Development Libraries and Header Files (for pthreads headers)
+* C Library Development Libraries and Header Files
 * pkg-config
 
 The following are dependencies only required when building the test suite.

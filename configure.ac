@@ -3,8 +3,6 @@ AC_INIT([tpm2.0-tss],
 AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CC
 LT_INIT()
-AC_C_BIGENDIAN
-AX_PTHREAD([], [AC_MSG_ERROR([requires pthread])])
 AM_INIT_AUTOMAKE([foreign
                   subdir-objects])
 AC_CONFIG_FILES([Makefile])
