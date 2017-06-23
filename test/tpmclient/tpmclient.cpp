@@ -256,8 +256,6 @@ void ErrorHandler( UINT32 rval )
     sprintf_s( errorString, errorStringSize, "%s Error: 0x%x\n", levelString, rval );
 }
 
-char resMgrInterfaceName[] = "Resource Manager";
-
 TSS2_RC InitTctiResMgrContext( TCTI_SOCKET_CONF *rmInterfaceConfig, TSS2_TCTI_CONTEXT **tctiContext, char *name )
 {
     size_t size;
@@ -6977,7 +6975,7 @@ int main(int argc, char* argv[])
     rval = InitSocketTctiContext( &rmInterfaceConfig, &resMgrTctiContext);
     if( rval != TSS2_RC_SUCCESS )
     {
-        DebugPrintf( NO_PREFIX, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", resMgrInterfaceName, rval );
+        DebugPrintf( NO_PREFIX, "InitSocketTctiContext, failed initialization: 0x%x.  Exiting...\n", rval );
 #ifdef _WIN32
         WSACleanup();
 #endif
