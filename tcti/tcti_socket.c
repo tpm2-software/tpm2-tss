@@ -31,12 +31,12 @@
 
 #include "sapi/tpm20.h"
 #include "sapi/marshal.h"
-#include "marshal/base-types.h"
 #include "tcti/tcti_socket.h"
 #include "sysapi_util.h"
 #include "common/debug.h"
 #include "commonchecks.h"
 #include "logging.h"
+#include "tss2_endian.h"
 
 static TSS2_RC tctiRecvBytes( TSS2_TCTI_CONTEXT *tctiContext, SOCKET sock, unsigned char *data, int len )
 {

@@ -27,6 +27,7 @@
 
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
+#include "tss2_endian.h"
 
 #define SESSION_MARSHAL_UINT32( buffer, size, currentPtr, value, rval, exitLoc ) \
     Marshal_UINT32( buffer, size, currentPtr, value, rval ); \
@@ -82,10 +83,9 @@ TSS2_RC CopySessionDataIn( void **otherData, TPMS_AUTH_COMMAND const *sessionDat
 	}
 
     // Size of session data
-    *sessionSizePtr += CHANGE_ENDIAN_DWORD(
-            sizeof( TPMI_SH_AUTH_SESSION ) + sizeof( UINT16 ) +
-            sessionData->nonce.t.size + sizeof( UINT8 ) +
-            sizeof( UINT16 ) + sessionData->hmac.t.size );
+    *sessionSizePtr += BE_TO_HOST_32(sizeof(TPMI_SH_AUTH_SESSION) +
+                         sizeof(UINT16) + sessionData->nonce.t.size + sizeof(UINT8) +
+                         sizeof(UINT16) + sessionData->hmac.t.size);
 
     // copy session handle
     SESSION_MARSHAL_UINT32( inBuffPtr, *sessionSizePtr, (UINT8 **)otherData, sessionDataCopy->sessionHandle, &rval, exitCopySessionDataIn );

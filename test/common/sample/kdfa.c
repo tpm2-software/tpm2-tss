@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "sysapi_util.h"
+#include "tss2_endian.h"
 
 //
 //
@@ -57,7 +58,7 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
     tpm2b_i_2.t.size = 4;
 
     tpm2bBits.t.size = 4;
-    bitsSwizzled = CHANGE_ENDIAN_DWORD( bits );
+    bitsSwizzled = BE_TO_HOST_32(bits);
     *(UINT32 *)tpm2bBitsPtr = bitsSwizzled;
 
     for(i = 0; label[i] != 0 ;i++ );
@@ -87,7 +88,7 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
     {
         // Inner loop
 
-        i_Swizzled = CHANGE_ENDIAN_DWORD( i++ );
+        i_Swizzled = BE_TO_HOST_32(i++);
         *(UINT32 *)tpm2b_i_2Ptr = i_Swizzled;
 
         j = 0;

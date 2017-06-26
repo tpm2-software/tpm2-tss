@@ -25,7 +25,7 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include "marshal/base-types.h"
+#include "tss2_endian.h"
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 

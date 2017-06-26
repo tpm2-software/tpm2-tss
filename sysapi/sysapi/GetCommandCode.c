@@ -27,6 +27,7 @@
 
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
+#include "tss2_endian.h"
 
 TSS2_RC Tss2_Sys_GetCommandCode(
     TSS2_SYS_CONTEXT *sysContext,
@@ -45,7 +46,7 @@ TSS2_RC Tss2_Sys_GetCommandCode(
     }
     else
     {
-        *(UINT32 *)*commandCode = CHANGE_ENDIAN_DWORD( SYS_CONTEXT->commandCodeSwapped );
+        *(UINT32 *)*commandCode = BE_TO_HOST_32(SYS_CONTEXT->commandCodeSwapped);
     }
 
     return( rval );

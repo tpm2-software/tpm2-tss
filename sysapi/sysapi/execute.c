@@ -27,6 +27,7 @@
 
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
+#include "tss2_endian.h"
 
 TSS2_RC Tss2_Sys_ExecuteAsync(
     TSS2_SYS_CONTEXT 		*sysContext
@@ -44,9 +45,9 @@ TSS2_RC Tss2_Sys_ExecuteAsync(
     }
     else
     {
-        rval = tss2_tcti_transmit (SYS_CONTEXT->tctiContext,
-                                   CHANGE_ENDIAN_DWORD( ((TPM20_Header_In *)SYS_CONTEXT->tpmInBuffPtr )->commandSize),
-                                   SYS_CONTEXT->tpmInBuffPtr);
+        rval = tss2_tcti_transmit(SYS_CONTEXT->tctiContext,
+                                  HOST_TO_BE_32(((TPM20_Header_In *)SYS_CONTEXT->tpmInBuffPtr)->commandSize),
+                                  SYS_CONTEXT->tpmInBuffPtr);
     }
 
     if( rval == TSS2_RC_SUCCESS )

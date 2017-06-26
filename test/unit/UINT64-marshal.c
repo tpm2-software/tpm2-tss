@@ -4,8 +4,8 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include "marshal/base-types.h"
 #include "sapi/marshal.h"
+#include "tss2_endian.h"
 
 /*
  * Test case for successful UINT64 marshaling with NULL offset.

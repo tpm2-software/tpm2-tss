@@ -27,6 +27,7 @@
 
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
+#include "tss2_endian.h"
 
 void Marshal_TPM2B_NV_PUBLIC(
 	TSS2_SYS_CONTEXT *sysContext,
@@ -47,7 +48,7 @@ void Marshal_TPM2B_NV_PUBLIC(
 		Marshal_TPMS_NV_PUBLIC( sysContext, &nvPublic->t.nvPublic );
 	}
 
-	*(UINT16 *)sizePtr = CHANGE_ENDIAN_WORD( SYS_CONTEXT->nextData - (UINT8 *)sizePtr - 2 );
+	*(UINT16 *)sizePtr = BE_TO_HOST_16(SYS_CONTEXT->nextData - (UINT8 *)sizePtr - 2);
 
 	return;
 }
