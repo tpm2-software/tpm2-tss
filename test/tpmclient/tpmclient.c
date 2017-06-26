@@ -48,12 +48,12 @@
 #include <stdlib.h>   // Needed for _wtoi
 #include <string.h>
 
-#include "marshal/base-types.h"
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 #include "test/common/sample/sample.h"
 #include "tpmclient.h"
 #include "common/tcti_util.h"
+#include "tss2_endian.h"
 
 // This is done to allow the tests to access fields
 // in the sysContext structure that are needed for
@@ -930,7 +930,7 @@ void TestSapiApis()
     // Get the command results
     // NOTE: this test modifies internal fields of the sysContext structure.
     // DON'T DO THIS IN REAL APPS!!
-    savedRspSize = CHANGE_ENDIAN_DWORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr )  )->responseSize );
+    savedRspSize = BE_TO_HOST_32(((TPM20_Header_Out *)(SYS_CONTEXT->tpmOutBuffPtr))->responseSize);
     ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr )  )->responseSize = 4097;
     INIT_SIMPLE_TPM2B_SIZE( outData );
     rval = Tss2_Sys_GetTestResult_Complete( sysContext, &outData, &testResult );
@@ -960,7 +960,7 @@ void TestTpmGetCapability()
     rval = Tss2_Sys_GetCapability( sysContext, 0, TPM_CAP_TPM_PROPERTIES, TPM_PT_MANUFACTURER, 1, &moreData, &capabilityData, 0 );
     CheckPassed( rval );
 
-    *( (UINT32 *)manuIDPtr ) = CHANGE_ENDIAN_DWORD( capabilityData.data.tpmProperties.tpmProperty[0].value );
+    *((UINT32 *)manuIDPtr) = BE_TO_HOST_32(capabilityData.data.tpmProperties.tpmProperty[0].value);
     DebugPrintf( NO_PREFIX, "\t\tcount: %d, property: %x, manuId: %s\n",
             capabilityData.data.tpmProperties.count,
             capabilityData.data.tpmProperties.tpmProperty[0].property,
@@ -5595,8 +5595,8 @@ void GetSetDecryptParamTests()
     rval = Tss2_Sys_GetCpBuffer( decryptParamTestSysContext, &cpBufferUsedSize2, &cpBuffer2 );
     CheckPassed( rval );
     nvWriteData.t.size = MAX_NV_BUFFER_SIZE -
-            CHANGE_ENDIAN_DWORD( ( (TPM20_Header_In *)( ( (_TSS2_SYS_CONTEXT_BLOB *)decryptParamTestSysContext )->tpmInBuffPtr ) )->commandSize ) +
-            1;
+            BE_TO_HOST_32(((TPM20_Header_In *)(((_TSS2_SYS_CONTEXT_BLOB *)decryptParamTestSysContext)->tpmInBuffPtr))->commandSize) + 1;
+
     rval = Tss2_Sys_SetDecryptParam( decryptParamTestSysContext, nvWriteData.t.size, &( nvWriteData.t.buffer[0] ) );
     CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT );
 

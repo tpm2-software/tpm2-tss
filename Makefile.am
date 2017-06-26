@@ -27,7 +27,7 @@
 
 include src_vars.mk
 
-INCLUDE_DIRS    = -I$(srcdir)/include -I$(srcdir)/sysapi/include
+INCLUDE_DIRS    = -I$(srcdir)/include -I$(srcdir)/sysapi/include -I$(srcdir)/marshal
 ACLOCAL_AMFLAGS = -I m4
 AM_CFLAGS       = $(INCLUDE_DIRS) $(EXTRA_CFLAGS)
 AM_LDFLAGS      = $(EXTRA_LDFLAGS)
@@ -145,8 +145,7 @@ tcti_libtcti_device_la_SOURCES  = tcti/tcti_device.c tcti/commonchecks.c \
 tcti_libtcti_socket_la_CFLAGS   = $(AM_CFLAGS)
 tcti_libtcti_socket_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
 tcti_libtcti_socket_la_SOURCES  = tcti/platformcommand.c tcti/tcti_socket.c \
-    sysapi/sysapi_util/changeEndian.c tcti/commonchecks.c common/sockets.c \
-    common/debug.c
+                                  tcti/commonchecks.c common/sockets.c common/debug.c
 
 test_tpmclient_tpmclient_CFLAGS   = $(AM_CFLAGS) -DNO_RM_TESTS
 test_tpmclient_tpmclient_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device) $(libmarshal)

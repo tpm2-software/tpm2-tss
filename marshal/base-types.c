@@ -30,9 +30,8 @@
 
 #include "sapi/marshal.h"
 #include "sapi/tpm20.h"
-
+#include "tss2_endian.h"
 #include "log.h"
-#include "base-types.h"
 
 #define BASE_MARSHAL(type, marshal_func) \
 TSS2_RC \
@@ -144,6 +143,10 @@ type##_Unmarshal ( \
  * These macros expand to (un)marshal functions for each of the base types
  * the specification part 2, table 3: Definition of Base Types.
  */
+
+#define HOST_TO_BE_8(value) (value)
+#define BE_TO_HOST_8(value) (value)
+
 BASE_MARSHAL   (BYTE,   HOST_TO_BE_8);
 BASE_UNMARSHAL (BYTE,   BE_TO_HOST_8);
 BASE_MARSHAL   (INT8,   HOST_TO_BE_8);
@@ -163,37 +166,6 @@ BASE_UNMARSHAL (UINT32, BE_TO_HOST_32);
 BASE_MARSHAL   (UINT64, HOST_TO_BE_64);
 BASE_UNMARSHAL (UINT64, BE_TO_HOST_64);
 
-UINT8
-endian_conv_8 (UINT8 value)
-{
-    return value;
-}
-UINT16
-endian_conv_16 (UINT16 value)
-{
-    return ((value & (0xff))      << 8) | \
-           ((value & (0xff << 8)) >> 8);
-}
-UINT32
-endian_conv_32 (UINT32 value)
-{
-    return ((value & (0xff))       << 24) | \
-           ((value & (0xff << 8))  << 8)  | \
-           ((value & (0xff << 16)) >> 8)  | \
-           ((value & (0xff << 24)) >> 24);
-}
-UINT64
-endian_conv_64 (UINT64 value)
-{
-    return ((value & (0xffULL))       << 56) | \
-           ((value & (0xffULL << 8))  << 40) | \
-           ((value & (0xffULL << 16)) << 24) | \
-           ((value & (0xffULL << 24)) << 8)  | \
-           ((value & (0xffULL << 32)) >> 8)  | \
-           ((value & (0xffULL << 40)) >> 24) | \
-           ((value & (0xffULL << 48)) >> 40) | \
-           ((value & (0xffULL << 56)) >> 56);
-}
 TSS2_RC
 TPM_CC_Marshal (
     TPM_CC          src,

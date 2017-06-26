@@ -27,6 +27,7 @@
 
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
+#include "tss2_endian.h"
 
 TSS2_RC Tss2_Sys_GetEncryptParam(
 	TSS2_SYS_CONTEXT 	*sysContext,
@@ -47,7 +48,7 @@ TSS2_RC Tss2_Sys_GetEncryptParam(
         rval = TSS2_SYS_RC_BAD_SEQUENCE;
     }
     else if( SYS_CONTEXT->encryptAllowed == 0 ||
-            ( CHANGE_ENDIAN_WORD( ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr )  )->tag ) == TPM_ST_NO_SESSIONS ) )
+            (BE_TO_HOST_16(((TPM20_Header_Out *)(SYS_CONTEXT->tpmOutBuffPtr))->tag) == TPM_ST_NO_SESSIONS))
     {
         rval = TSS2_SYS_RC_NO_ENCRYPT_PARAM;
     }
@@ -59,7 +60,7 @@ TSS2_RC Tss2_Sys_GetEncryptParam(
         SYS_CONTEXT->rpBuffer = otherData;
         SYS_CONTEXT->rpBuffer += 4; // Skip over params size field.
         encryptParam = (TPM2B *)( SYS_CONTEXT->rpBuffer );
-        *encryptParamSize = CHANGE_ENDIAN_WORD( encryptParam->size );
+        *encryptParamSize = BE_TO_HOST_16(encryptParam->size);
         *encryptParamBuffer = &( encryptParam->buffer[0] );
     }
     return rval;

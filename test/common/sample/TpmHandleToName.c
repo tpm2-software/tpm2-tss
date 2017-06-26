@@ -28,6 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sample.h"
 #include "sysapi_util.h"
+#include "tss2_endian.h"
 
 //
 //
@@ -77,7 +78,7 @@ UINT32 TpmHandleToName( TPM_HANDLE handle, TPM2B_NAME *name )
             default:
                 rval = TPM_RC_SUCCESS;
                 name->b.size = sizeof( TPM_HANDLE );
-                *(TPM_HANDLE *)namePtr = CHANGE_ENDIAN_DWORD( handle );
+                *(TPM_HANDLE *)namePtr = BE_TO_HOST_32(handle);
         }
     }
     return rval;

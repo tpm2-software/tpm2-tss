@@ -32,7 +32,6 @@
 extern "C" {
 #endif
 
-#include "endianConv.h"
 #include "tcti_util.h"
 
 // TBD:  delete this after porting completed.

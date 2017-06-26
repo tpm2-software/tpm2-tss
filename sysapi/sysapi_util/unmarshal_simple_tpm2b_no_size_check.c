@@ -26,6 +26,7 @@
 
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
+#include "tss2_endian.h"
 
 void Unmarshal_Simple_TPM2B_NoSizeCheck( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, TPM2B *outTPM2B, TSS2_RC *rval )
 {
@@ -46,7 +47,7 @@ void Unmarshal_Simple_TPM2B_NoSizeCheck( UINT8 *outBuffPtr, UINT32 maxResponseSi
         {
             if( *rval == TSS2_RC_SUCCESS )
             {
-                length = CHANGE_ENDIAN_WORD( *(UINT16 *)*nextData );
+                length = BE_TO_HOST_16(*(UINT16 *)*nextData);
 
                 if( outTPM2B != 0 )
                 {

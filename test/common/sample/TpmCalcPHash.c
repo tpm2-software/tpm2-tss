@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "sysapi_util.h"
+#include "tss2_endian.h"
 
 //
 // This function is a helper function used to calculate cpHash and rpHash.
@@ -112,7 +113,7 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
     if( responseCode != TPM_RC_NO_RESPONSE )
     {
         hashInputPtr = &( hashInput.t.buffer[hashInput.b.size] );
-        *(UINT32 *)hashInputPtr = CHANGE_ENDIAN_DWORD( responseCode );
+        *(UINT32 *)hashInputPtr = BE_TO_HOST_32(responseCode);
         hashInput.b.size += 4;
         hashInputPtr += 4;
     }
@@ -123,7 +124,7 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
         return rval;
 
     hashInputPtr = &( hashInput.t.buffer[hashInput.b.size] );
-    *(UINT32 *)hashInputPtr = CHANGE_ENDIAN_DWORD( *(UINT32 *)cmdCodePtr );
+    *(UINT32 *)hashInputPtr = BE_TO_HOST_32(*(UINT32 *)cmdCodePtr);
     hashInput.t.size += 4;
 
     // Create pHash input byte stream:  now add in names for the handles.
