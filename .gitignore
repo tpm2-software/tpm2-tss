@@ -15,6 +15,11 @@
 .deps/
 .dirstamp
 .libs
+*~
+.*.swp
+.*.swo
+*.patch
+tags
 aclocal.m4
 autom4te.cache/
 [Bb]uild/
