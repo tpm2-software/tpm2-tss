@@ -51,6 +51,7 @@ TESTS_UNIT  = \
     test/unit/GetNumHandles \
     test/unit/marshal-TPM2B-simple \
     test/unit/tcti-device \
+    test/unit/tcti-socket \
     test/unit/UINT8-marshal \
     test/unit/UINT16-marshal \
     test/unit/UINT32-marshal \
@@ -103,6 +104,13 @@ test_unit_tcti_device_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_tcti_device_LDFLAGS = -Wl,--wrap=read -Wl,-wrap=write
 test_unit_tcti_device_SOURCES = tcti/commonchecks.c tcti/tcti_device.c \
     test/unit/tcti-device.c
+
+test_unit_tcti_socket_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
+test_unit_tcti_socket_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
+test_unit_tcti_socket_LDFLAGS = -Wl,--wrap=connect,--wrap=recv,--wrap=select,--wrap=send
+test_unit_tcti_socket_SOURCES = tcti/platformcommand.c tcti/tcti_socket.c \
+    tcti/commonchecks.c tcti/commonchecks.h tcti/sockets.c tcti/sockets.h \
+    common/debug.c common/debug.h tcti/logging.h test/unit/tcti-socket.c
 
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_CommonPreparePrologue_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
