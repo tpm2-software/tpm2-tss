@@ -10,6 +10,23 @@ C Library Development Libraries and Header Files
 cmocka unit test framework
 pkg-config
 
+On Ubuntu these packages can be installed with the following commands.
+
+$ sudo apt -y update
+$ sudo apt -y install \
+  autoconf-archive \
+  libcmocka0 \
+  libcmocka-dev \
+  build-essential \
+  git \
+  pkg-config \
+  gcc \
+  g++ \
+  m4 \
+  libtool \
+  automake \
+  autoconf
+
 Currently the tpm2.0-tss is only distributed via GitHub as we have not yet
 produced an official source release. To obtain the tpm2.0-tss sources you
 must clone them from the 01.org GitHub organization TPM2.0-TSS git repository:
@@ -63,3 +80,13 @@ optimization disabled and debug symbols:
 $ CONFIG_SITE=$(pwd)/../TPM2.0-TSS/lib/debug_config.site \
   ../TPM2.0-TSS/configure
 $ make
+
+If you are having trouble installing the dependencies on your machine you can
+build in a container.
+
+$ docker build -t tpm2 .
+$ docker run --name temp tpm2 /bin/true
+$ docker cp temp:/TPM2.0-TSS TPM2.0-TSS
+$ docker rm temp
+
+TPM2.0-TSS is now in your working directory and contains all the built files.
