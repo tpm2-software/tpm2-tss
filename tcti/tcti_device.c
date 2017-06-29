@@ -212,11 +212,17 @@ TSS2_RC LocalTpmCancel(
     TSS2_TCTI_CONTEXT *tctiContext
     )
 {
-    TSS2_RC rval = TSS2_RC_SUCCESS;
+    /* Linux driver doesn't expose a mechanism to cancel commands. */
+    return TSS2_TCTI_RC_NOT_IMPLEMENTED;
+}
 
-    // TBD.  Needs support from device driver.
-
-    return rval;
+TSS2_RC LocalTpmGetPollHandles(
+    TSS2_TCTI_CONTEXT     *tctiContext,
+    TSS2_TCTI_POLL_HANDLE *handles,
+    size_t                *num_handles)
+{
+    /* Linux driver doesn't support polling. */
+    return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
 TSS2_RC LocalTpmSetLocality(
@@ -224,11 +230,11 @@ TSS2_RC LocalTpmSetLocality(
     uint8_t           locality     /* in */
     )
 {
-    TSS2_RC rval = TSS2_RC_SUCCESS;
-
-    // TBD:  how do I do this?
-
-    return rval;
+    /*
+     * Linux driver doesn't expose a mechanism for user space applications
+     * to set locality.
+     */
+    return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
 TSS2_RC InitDeviceTcti (
@@ -259,7 +265,7 @@ TSS2_RC InitDeviceTcti (
         TSS2_TCTI_RECEIVE( tctiContext ) = LocalTpmReceiveTpmResponse;
         TSS2_TCTI_FINALIZE( tctiContext ) = LocalTpmFinalize;
         TSS2_TCTI_CANCEL( tctiContext ) = LocalTpmCancel;
-        TSS2_TCTI_GET_POLL_HANDLES( tctiContext ) = 0;
+        TSS2_TCTI_GET_POLL_HANDLES( tctiContext ) = LocalTpmGetPollHandles;
         TSS2_TCTI_SET_LOCALITY( tctiContext ) = LocalTpmSetLocality;
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.locality = 3;
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent = 0;

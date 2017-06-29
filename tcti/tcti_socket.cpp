@@ -247,6 +247,14 @@ TSS2_RC SocketSetLocality(
     return rval;
 }
 
+TSS2_RC SocketGetPollHandles(
+    TSS2_TCTI_CONTEXT     *tctiContext,
+    TSS2_TCTI_POLL_HANDLE *handles,
+    size_t                *num_handles)
+{
+    return TSS2_TCTI_RC_NOT_IMPLEMENTED;
+}
+
 void SocketFinalize(
     TSS2_TCTI_CONTEXT *tctiContext       /* in */
     )
@@ -524,7 +532,7 @@ TSS2_RC InitSocketTcti (
         TSS2_TCTI_RECEIVE( tctiContext ) = SocketReceiveTpmResponse;
         TSS2_TCTI_FINALIZE( tctiContext ) = SocketFinalize;
         TSS2_TCTI_CANCEL( tctiContext ) = SocketCancel;
-        TSS2_TCTI_GET_POLL_HANDLES( tctiContext ) = 0;
+        TSS2_TCTI_GET_POLL_HANDLES( tctiContext ) = SocketGetPollHandles;
         TSS2_TCTI_SET_LOCALITY( tctiContext ) = SocketSetLocality;
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.debugMsgEnabled = 0;
         ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.locality = 3;
