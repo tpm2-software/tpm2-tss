@@ -502,10 +502,18 @@ TSS2_RC InitSocketTcti (
     SOCKET otherSock;
     SOCKET tpmSock;
 
-    if( tctiContext == NULL )
+    if( tctiContext == NULL && contextSize == NULL )
+    {
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
+    else if( tctiContext == NULL )
     {
         *contextSize = sizeof( TSS2_TCTI_CONTEXT_INTEL );
         return TSS2_RC_SUCCESS;
+    }
+    else if( conf == NULL )
+    {
+        return TSS2_TCTI_RC_BAD_VALUE;
     }
     else
     {
