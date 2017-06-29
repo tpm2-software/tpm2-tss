@@ -15,6 +15,24 @@ The following are dependencies only required when building the test suite.
 Most users will not need to install these dependencies:
 * cmocka unit test framework
 
+## Ubuntu
+```
+$ sudo apt -y update
+$ sudo apt -y install \
+  autoconf-archive \
+  libcmocka0 \
+  libcmocka-dev \
+  build-essential \
+  git \
+  pkg-config \
+  gcc \
+  g++ \
+  m4 \
+  libtool \
+  automake \
+  autoconf
+```
+
 # Building From Source
 ## Bootstrapping the Build
 To configure the tpm2.0-tss source code first run the bootstrap script, which
@@ -53,3 +71,17 @@ library:
 ```
 $ sudo ldconfig
 ```
+
+## Building In A Container
+
+If you are having trouble installing the dependencies on your machine you can
+build in a container.
+
+```
+$ docker build -t tpm2 .
+$ docker run --name temp tpm2 /bin/true
+$ docker cp temp:/TPM2.0-TSS TPM2.0-TSS
+$ docker rm temp
+```
+
+TPM2.0-TSS is now in your working directory and contains all the built files.
