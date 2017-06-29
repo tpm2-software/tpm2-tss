@@ -55,6 +55,7 @@ TESTS_UNIT  = \
     test/unit/marshal-UINT16 \
     test/unit/marshal-UINT32 \
     test/unit/tcti-device \
+    test/unit/tcti-socket \
     test/unit/unmarshal-UINT16 \
     test/unit/unmarshal-UINT32
 endif #UNIT
@@ -103,6 +104,14 @@ test_unit_tcti_device_LDADD   = $(CMOCKA_LIBS)
 test_unit_tcti_device_LDFLAGS = -Wl,--wrap=read -Wl,-wrap=write
 test_unit_tcti_device_SOURCES = tcti/commonchecks.c tcti/tcti_device.c \
     ./sysapi/sysapi_util/changeEndian.c test/unit/tcti-device.c
+
+test_unit_tcti_socket_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
+test_unit_tcti_socket_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
+test_unit_tcti_socket_LDFLAGS = -Wl,--wrap=connect,--wrap=recv,--wrap=select,--wrap=send
+test_unit_tcti_socket_SOURCES = tcti/platformcommand.c tcti/tcti_socket.cpp \
+    tcti/commonchecks.c tcti/commonchecks.h tcti/sockets.cpp tcti/sockets.h \
+    common/debug.c common/debug.h tcti/logging.h test/unit/tcti-socket.c \
+    sysapi/sysapi_util/changeEndian.c sysapi/include/endianConv.h
 
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_CommonPreparePrologue_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
