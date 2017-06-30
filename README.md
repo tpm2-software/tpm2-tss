@@ -57,5 +57,10 @@ We are currently working to decompose the existing monolithic `tpmclient` progra
 This approach has a number of advantages including the ability to run individual tests in isolation as well as reduced overhead, maintenance and automation.
 
 # [Architecture/Block Diagram](doc/arch.md)
+SAPI library, TAB/RM, and Test Code Block Diagram:
+![Architecture Block Diagram](https://github.com/01org/TPM2.0-TSS/raw/master/doc/TSS%20block%20diagram.png)
 
 # [Code Layout](doc/layout.md)
+Diagram of the directory structure for the code SAPI library, TAB/RM, and Test
+Code.
+![Code Layout](https://github.com/01org/TPM2.0-TSS/raw/master/doc/TSS%20layout.png)
