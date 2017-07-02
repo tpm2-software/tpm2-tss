@@ -36,6 +36,7 @@
 #include "common/debug.h"
 #include "commonchecks.h"
 #include "logging.h"
+#include "sockets.h"
 #include "tss2_endian.h"
 
 static TSS2_RC tctiRecvBytes( TSS2_TCTI_CONTEXT *tctiContext, SOCKET sock, unsigned char *data, int len )
