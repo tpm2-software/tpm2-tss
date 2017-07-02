@@ -184,12 +184,23 @@ tcti_libtcti_socket_la_CXXFLAGS = $(TCTISOCKET_INC) $(AM_CXXFLAGS)
 tcti_libtcti_socket_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
 tcti_libtcti_socket_la_SOURCES  =  $(TCTISOCKET_C) \
     sysapi/sysapi_util/changeEndian.c $(TCTISOCKET_CXX) $(TCTICOMMON_C) \
-    common/sockets.cpp common/debug.c
+    tcti/sockets.cpp common/debug.c
 
-test_tpmclient_tpmclient_CFLAGS   = $(TPMCLIENT_INC) $(AM_CFLAGS)
-test_tpmclient_tpmclient_CXXFLAGS = $(TPMCLIENT_INC) $(TCTICOMMON_INC) $(TCTIDEVICE_INC) $(AM_CXXFLAGS) -DNO_RM_TESTS
+test_tpmclient_tpmclient_CFLAGS   = $(AM_CFLAGS)
+test_tpmclient_tpmclient_CXXFLAGS = $(AM_CXXFLAGS) -DNO_RM_TESTS
 test_tpmclient_tpmclient_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device)
-test_tpmclient_tpmclient_SOURCES  = $(TPMCLIENT_CXX) $(COMMON_C) $(SAMPLE_C)
+test_tpmclient_tpmclient_SOURCES  = $(COMMON_C) \
+    test/tpmclient/CatSizedByteBuffer.c test/tpmclient/CopySizedBuffer.c \
+    test/tpmclient/CreateNullSession.c test/tpmclient/DecryptEncrypt.c \
+    test/tpmclient/Entity.c test/tpmclient/kdfa.c \
+    test/tpmclient/LoadExternalHMACKey.c test/tpmclient/sample.h \
+    test/tpmclient/SessionHmac.c test/tpmclient/SetLocality.c \
+    test/tpmclient/StartAuthSession.c test/tpmclient/syscontext.c \
+    test/tpmclient/syscontext.h test/tpmclient/tcti_util.c \
+    test/tpmclient/tcti_util.h test/tpmclient/TpmCalcPHash.c \
+    test/tpmclient/tpmclient.cpp test/tpmclient/tpmclient.h \
+    test/tpmclient/tpmclient_wo_rm.h test/tpmclient/TpmHandleToName.c \
+    test/tpmclient/TpmHash.c test/tpmclient/TpmHmac.c
 
 test_integration_libtest_utils_la_SOURCES = test/integration/test-options.c \
     test/integration/context-util.c
@@ -256,11 +267,6 @@ TCTIDEVICE_C   = tcti/tcti_device.c
 TCTISOCKET_INC = $(TCTICOMMON_INC)
 TCTISOCKET_C   = tcti/platformcommand.c
 TCTISOCKET_CXX = tcti/tcti_socket.cpp
-
-TPMCLIENT_INC = -I$(srcdir)/include -I$(srcdir)/common \
-    -I$(srcdir)/test/tpmclient -I$(srcdir)/sysapi/include \
-    -I$(srcdir)/test/common/sample
-TPMCLIENT_CXX = test/tpmclient/tpmclient.cpp
 
 libsapi = sysapi/libsapi.la
 libtcti_device = tcti/libtcti-device.la
