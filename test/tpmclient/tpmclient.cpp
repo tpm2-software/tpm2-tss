@@ -56,9 +56,9 @@
 
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
-#include "test/common/sample/sample.h"
+#include "sample.h"
 #include "tpmclient.h"
-#include "common/tcti_util.h"
+#include "tcti_util.h"
 
 // This is done to allow the tests to access fields
 // in the sysContext structure that are needed for
@@ -70,7 +70,7 @@
 
 #include "tcti/tcti_device.h"
 #include "tcti/tcti_socket.h"
-#include "common/syscontext.h"
+#include "syscontext.h"
 #include "common/debug.h"
 
 //

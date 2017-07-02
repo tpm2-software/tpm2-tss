@@ -34,6 +34,7 @@
 #include "common/debug.h"
 #include "commonchecks.h"
 #include "logging.h"
+#include "sockets.h"
 
 #ifdef __cplusplus
 extern "C" {
