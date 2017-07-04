@@ -538,7 +538,7 @@ TSS2_RC InitSocketTcti (
         TCTI_LOG_BUFFER_CALLBACK( tctiContext ) = conf->logBufferCallback;
         TCTI_LOG_DATA( tctiContext ) = conf->logData;
 
-        rval = (TSS2_RC) InitSockets( conf->hostname, conf->port, serverSockets, &otherSock, &tpmSock, TCTI_LOG_CALLBACK( tctiContext ), TCTI_LOG_DATA( tctiContext) );
+        rval = (TSS2_RC) InitSockets( conf->hostname, conf->port, &otherSock, &tpmSock, TCTI_LOG_CALLBACK( tctiContext ), TCTI_LOG_DATA( tctiContext) );
         if( rval == TSS2_RC_SUCCESS )
         {
             ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->otherSock = otherSock;
