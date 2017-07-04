@@ -84,9 +84,18 @@ man3_MANS = man/man3/InitDeviceTcti.3 man/man3/InitSocketTcti.3
 man7_MANS = man/man7/tcti-device.7 man/man7/tcti-socket.7
 
 EXTRA_DIST = \
+    lib/debug_config.site \
+    lib/libmarshal.map \
+    lib/tcti-device.pc.in \
+    lib/tcti-socket.pc.in \
+    lib/sapi.pc.in \
+    man/man-postlude.troff \
     man/InitDeviceTcti.3.in \
+    man/man3/InitSocketTcti.3 \
     man/tcti-device.7.in \
-    man/tcti-socket.7.in
+    man/tcti-socket.7.in \
+    tcti/tcti_device.map \
+    tcti/tcti_socket.map
 
 if UNIT
 test_unit_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
@@ -131,21 +140,24 @@ test_unit_UINT64_marshal_SOURCES = test/unit/UINT64-marshal.c
 endif # UNIT
 
 marshal_libmarshal_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/libmarshal.map
-marshal_libmarshal_la_SOURCES = marshal/base-types.c log/log.c
+marshal_libmarshal_la_SOURCES = marshal/base-types.c marshal/log.h \
+    marshal/tss2_endian.h log/log.c log/log.h
 
 sysapi_libsapi_la_LIBADD  = $(libmarshal)
-sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
+sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPI_H) $(SYSAPIUTIL_C) \
+    $(SYSAPIUTIL_H)
 
 tcti_libtcti_device_la_CFLAGS   = $(AM_CFLAGS)
 tcti_libtcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_device.map
 tcti_libtcti_device_la_LIBADD   = $(libmarshal)
 tcti_libtcti_device_la_SOURCES  = tcti/tcti_device.c tcti/commonchecks.c \
-    common/debug.c
+    tcti/commonchecks.h common/debug.c common/debug.h tcti/logging.h
 
 tcti_libtcti_socket_la_CFLAGS   = $(AM_CFLAGS)
 tcti_libtcti_socket_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
 tcti_libtcti_socket_la_SOURCES  = tcti/platformcommand.c tcti/tcti_socket.c \
-                                  tcti/commonchecks.c tcti/sockets.c common/debug.c
+    tcti/commonchecks.c tcti/commonchecks.h tcti/sockets.c tcti/sockets.h \
+    common/debug.c common/debug.h tcti/logging.h
 
 test_tpmclient_tpmclient_CFLAGS   = $(AM_CFLAGS) -DNO_RM_TESTS
 test_tpmclient_tpmclient_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device) $(libmarshal)
@@ -162,8 +174,9 @@ test_tpmclient_tpmclient_SOURCES  = $(COMMON_C) \
     test/tpmclient/tpmclient_wo_rm.h test/tpmclient/TpmHandleToName.c \
     test/tpmclient/TpmHash.c test/tpmclient/TpmHmac.c
 
-test_integration_libtest_utils_la_SOURCES = test/integration/test-options.c \
-    test/integration/context-util.c
+test_integration_libtest_utils_la_SOURCES = test/integration/context-util.c \
+    test/integration/context-util.h test/integration/test-options.c \
+    test/integration/test-options.h
 
 test_integration_asymmetric_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
 test_integration_asymmetric_encrypt_decrypt_int_SOURCES = \
