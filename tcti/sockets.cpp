@@ -2,7 +2,7 @@
 #include <netinet/in.h>
 
 #include "tcti/tcti_socket.h"
-#include "debug.h"
+#include "common/debug.h"
 #include "sockets.h"
 
 #ifndef _WIN32

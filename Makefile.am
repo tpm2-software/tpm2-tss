@@ -85,9 +85,17 @@ man3_MANS = man/man3/InitDeviceTcti.3 man/man3/InitSocketTcti.3
 man7_MANS = man/man7/tcti-device.7 man/man7/tcti-socket.7
 
 EXTRA_DIST = \
+    lib/debug_config.site \
+    lib/tcti-device.pc.in \
+    lib/tcti-socket.pc.in \
+    lib/sapi.pc.in \
+    man/man-postlude.troff \
     man/InitDeviceTcti.3.in \
+    man/man3/InitSocketTcti.3 \
     man/tcti-device.7.in \
-    man/tcti-socket.7.in
+    man/tcti-socket.7.in \
+    tcti/tcti_device.map \
+    tcti/tcti_socket.map
 
 if UNIT
 test_unit_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
@@ -170,21 +178,22 @@ test_unit_CheckOverflow_SOURCES = \
 endif # UNIT
 
 # how to build stuff
-sysapi_libsapi_la_CFLAGS  = -I$(srcdir)/sysapi/include $(AM_CFLAGS)
 sysapi_libsapi_la_LDFLAGS = $(LIBRARY_LDFLAGS)
-sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPIUTIL_C)
+sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPI_H) $(SYSAPIUTIL_C) \
+    $(SYSAPIUTIL_H)
 
 tcti_libtcti_device_la_CFLAGS   = $(AM_CFLAGS)
 tcti_libtcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_device.map
 tcti_libtcti_device_la_SOURCES  = tcti/tcti_device.c tcti/commonchecks.c \
-    common/debug.c sysapi/sysapi_util/changeEndian.c
+    tcti/commonchecks.h common/debug.c common/debug.h tcti/logging.h \
+    sysapi/sysapi_util/changeEndian.c
 
-tcti_libtcti_socket_la_CFLAGS   = $(TCTISOCKET_INC) $(AM_CFLAGS)
-tcti_libtcti_socket_la_CXXFLAGS = $(TCTISOCKET_INC) $(AM_CXXFLAGS)
+tcti_libtcti_socket_la_CFLAGS   = $(AM_CFLAGS)
+tcti_libtcti_socket_la_CXXFLAGS = $(AM_CXXFLAGS)
 tcti_libtcti_socket_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
-tcti_libtcti_socket_la_SOURCES  =  $(TCTISOCKET_C) \
-    sysapi/sysapi_util/changeEndian.c $(TCTISOCKET_CXX) $(TCTICOMMON_C) \
-    tcti/sockets.cpp common/debug.c
+tcti_libtcti_socket_la_SOURCES  = tcti/platformcommand.c tcti/tcti_socket.cpp \
+    tcti/commonchecks.c tcti/commonchecks.h tcti/sockets.cpp tcti/sockets.h \
+    common/debug.c common/debug.h tcti/logging.h
 
 test_tpmclient_tpmclient_CFLAGS   = $(AM_CFLAGS)
 test_tpmclient_tpmclient_CXXFLAGS = $(AM_CXXFLAGS) -DNO_RM_TESTS
@@ -202,8 +211,10 @@ test_tpmclient_tpmclient_SOURCES  = $(COMMON_C) \
     test/tpmclient/tpmclient_wo_rm.h test/tpmclient/TpmHandleToName.c \
     test/tpmclient/TpmHash.c test/tpmclient/TpmHmac.c
 
-test_integration_libtest_utils_la_SOURCES = test/integration/test-options.c \
-    test/integration/context-util.c
+test_integration_libtest_utils_la_SOURCES = test/integration/context-util.c \
+    test/integration/context-util.h test/integration/log.h \
+    test/integration/test-options.c test/integration/test-options.h \
+    test/integration/test.h
 
 test_integration_get_random_LDADD   = $(TESTS_LDADD)
 test_integration_get_random_SOURCES = test/integration/get-random.c \
