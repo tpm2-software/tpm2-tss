@@ -30,7 +30,6 @@ int WSAGetLastError();
 int
 InitSockets( const char *hostName,
              UINT16 port,
-             UINT8 serverSockets,
              SOCKET *otherSock,
              SOCKET *tpmSock,
              TCTI_LOG_CALLBACK  logCallback,
