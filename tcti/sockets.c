@@ -67,7 +67,6 @@ TSS2_RC sendBytes( SOCKET tpmSock, const unsigned char *data, int len )
 int
 InitSockets( const char *hostName,
              UINT16 port,
-             UINT8 serverSockets,
              SOCKET *otherSock,
              SOCKET *tpmSock,
              TCTI_LOG_CALLBACK debugfunc,
@@ -88,34 +87,6 @@ InitSockets( const char *hostName,
         otherService.sin_family = AF_INET;
         otherService.sin_addr.s_addr = inet_addr( hostName );
         otherService.sin_port = htons(port + 1);
-
-        if( serverSockets )
-        {
-            // Bind the socket.
-            iResult = bind(*otherSock, (SOCKADDR *) &otherService, sizeof (otherService));
-            if (iResult == SOCKET_ERROR) {
-                SAFE_CALL( debugfunc, data, NO_PREFIX, "bind failed with error %u\n", WSAGetLastError());
-                closesocket(*otherSock);
-                WSACleanup();
-                return 1;
-            }
-            else
-            {
-                SAFE_CALL( debugfunc, data, NO_PREFIX, "bind to IP address:port:  %s:%d\n", hostName, port + 1 );
-            }
-
-            iResult = listen( *otherSock, 4 );
-            if (iResult == SOCKET_ERROR) {
-                SAFE_CALL( debugfunc, data, NO_PREFIX, "listen failed with error %u\n", WSAGetLastError());
-                closesocket(*otherSock);
-                WSACleanup();
-                return 1;
-            }
-            else
-            {
-                SAFE_CALL( debugfunc, data, NO_PREFIX, "Other CMD server listening to socket:  0x%x\n", *otherSock );
-            }
-        }
     }
 
     *tpmSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -131,66 +102,36 @@ InitSockets( const char *hostName,
         tpmService.sin_addr.s_addr = inet_addr( hostName );
         tpmService.sin_port = htons( port );
 
-        if( serverSockets )
-        {
-            // Bind the socket.
-            iResult = bind(*tpmSock, (SOCKADDR *) &tpmService, sizeof (tpmService));
-            if (iResult == SOCKET_ERROR) {
-                SAFE_CALL( debugfunc, data, NO_PREFIX, "bind failed with error %u\n", WSAGetLastError());
-                closesocket(*tpmSock);
-                WSACleanup();
-                return 1;
-            }
-            else
-            {
-                SAFE_CALL( debugfunc, data, NO_PREFIX, "bind to IP address:port:  %s:%d\n", hostName, port );
-            }
-
-            iResult = listen( *tpmSock, 4 );
-            if (iResult == SOCKET_ERROR) {
-                SAFE_CALL( debugfunc, data, NO_PREFIX, "listen failed with error %u\n", WSAGetLastError());
-                closesocket(*tpmSock);
-                WSACleanup();
-                return 1;
-            }
-            else
-            {
-                SAFE_CALL( debugfunc, data, NO_PREFIX, "TPM CMD server listening to socket:  0x%x\n", *tpmSock );
-            }
-        }
     }
 
-    if( !serverSockets )
+    // Connect to server.
+    iResult = connect(*otherSock, (SOCKADDR *) &otherService, sizeof (otherService));
+    if (iResult == SOCKET_ERROR) {
+        SAFE_CALL( debugfunc, data, NO_PREFIX, "connect function failed with error: %d\n", WSAGetLastError() );
+        iResult = closesocket(*otherSock);
+        WSACleanup();
+        return 1;
+    }
+    else
     {
-        // Connect to server.
-        iResult = connect(*otherSock, (SOCKADDR *) &otherService, sizeof (otherService));
-        if (iResult == SOCKET_ERROR) {
-            SAFE_CALL( debugfunc, data, NO_PREFIX, "connect function failed with error: %d\n", WSAGetLastError() );
-            iResult = closesocket(*otherSock);
-            WSACleanup();
-            return 1;
-        }
-        else
-        {
-            SAFE_CALL( debugfunc, data, NO_PREFIX, "Client connected to server on port:  %d\n", port + 1 );
-        }
+        SAFE_CALL( debugfunc, data, NO_PREFIX, "Client connected to server on port:  %d\n", port + 1 );
+    }
 
-        // Connect to server.
-        iResult = connect(*tpmSock, (SOCKADDR *) &tpmService, sizeof (tpmService));
-        if (iResult == SOCKET_ERROR) {
-            SAFE_CALL( debugfunc, data, NO_PREFIX, "connect function failed with error: %d\n", WSAGetLastError() );
-            iResult = closesocket(*otherSock);
-            if (iResult == SOCKET_ERROR)
-            {
-                SAFE_CALL( debugfunc, data, NO_PREFIX, "closesocket function failed with error: %d\n", WSAGetLastError() );
-            }
-            WSACleanup();
-            return 1;
-        }
-        else
+    // Connect to server.
+    iResult = connect(*tpmSock, (SOCKADDR *) &tpmService, sizeof (tpmService));
+    if (iResult == SOCKET_ERROR) {
+        SAFE_CALL( debugfunc, data, NO_PREFIX, "connect function failed with error: %d\n", WSAGetLastError() );
+        iResult = closesocket(*otherSock);
+        if (iResult == SOCKET_ERROR)
         {
-            SAFE_CALL( debugfunc, data, NO_PREFIX, "Client connected to server on port:  %d\n", port );
+            SAFE_CALL( debugfunc, data, NO_PREFIX, "closesocket function failed with error: %d\n", WSAGetLastError() );
         }
+        WSACleanup();
+        return 1;
+    }
+    else
+    {
+        SAFE_CALL( debugfunc, data, NO_PREFIX, "Client connected to server on port:  %d\n", port );
     }
 
     return 0;
