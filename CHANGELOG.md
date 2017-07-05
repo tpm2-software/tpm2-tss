@@ -7,21 +7,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 ### Added
 - Library for marshaling TPM2 types: libmarshal.
 - Unit test for device TCTI bug fixes.
+- Unit test for socket TCTI bug fixes.
+- Integration test harness to give each test a private instance of the
+simulator for each test.
 ### Changed
 - Converted all cpp files to c, removed dependency on C++ compiler.
 - Cleaned out a number of marshaling functions from the SAPI code. Things
 required by the resource manager were removed from libsapi and moved into
 the 'common directory.
-- README.md updated to add note about deprecation of resourcemgr code. A
-replacement has been in the works for a while but the existing code will
-remain in place until the replacement is ready.
-- Added std=gnu99 to default CONFIG_SITE.
 - Update Linux / Unix OS detection to use non-obsolete macros.
 - Move unit tests from test/ to test/unit/.
+- Move integration tests to test/integration/.
 ### Fixed
 - Wrong return type for Tss2_Sys_Finalize (API break).
-- NULL dereference bug in device TCTI init function.
-- Two race conditions in the resourcemgr.
+- NULL dereference bug in device and socket TCTI init functions.
 
 ## [1.1.0] - 2017-05-10
 ### Changed
