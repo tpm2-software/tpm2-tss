@@ -222,7 +222,10 @@ const char* strTpmCommandCode( TPM_CC code )
     }
     else
     {
-        sprintf( &undefinedCommandString[0], "0x%4.4x", code );
+        snprintf( &undefinedCommandString[0],
+                  sizeof (undefinedCommandString),
+                  "0x%4.4x",
+                  code );
         return &undefinedCommandString[0];
     }
 }
