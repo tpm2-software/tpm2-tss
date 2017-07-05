@@ -13,6 +13,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 ### Fixed
 - NULL dereference bug in device TCTI init function.
 
+## [1.1.0] - 2017-05-10
+### Changed
+- tpmclient, disabled all tests that rely on the old resourcemgr.
+### Fixed
+- Fixed definition of PCR_LAST AND TRANSIENT_LAST macros.
+### Removed
+- tpmtest
+- resourcemgr, replacement is in new repo: https://github.com/01org/tpm2-abrmd
+
 ## [1.0] - 2016-11-01
 ### Added
 - Travis-CI integration with GitHub
