@@ -966,24 +966,11 @@ void TestTpmClear()
 
 }
 
-#ifdef DEBUG_GAP_HANDLING
-
-#define SESSIONS_ABOVE_MAX_ACTIVE 1
-#define DEBUG_MAX_ACTIVE_SESSIONS   32
-#define DEBUG_GAP_MAX   255
-
-//    SESSION sessions[DEBUG_GAP_MAX*3];
-SESSION *sessions[300];
-
-#else
-
 #define SESSIONS_ABOVE_MAX_ACTIVE 0
 #define DEBUG_MAX_ACTIVE_SESSIONS   8
 #define DEBUG_GAP_MAX   2*DEBUG_MAX_ACTIVE_SESSIONS
 
 SESSION *sessions[SESSIONS_COUNT];
-
-#endif
 
 void TestStartAuthSession()
 {
@@ -993,11 +980,6 @@ void TestStartAuthSession()
     SESSION *authSession = NULL;
     TPM2B_NONCE nonceCaller;
     UINT16 i;
-#ifdef DEBUG_GAP_HANDLING
-    UINT16 debugGapMax = DEBUG_GAP_MAX, debugMaxActiveSessions = DEBUG_MAX_ACTIVE_SESSIONS;
-    TPMS_CONTEXT    evictedSessionContext;
-    TPM_HANDLE   evictedHandle;
-#endif
     TPM_HANDLE badSessionHandle = 0x03010000;
 
     TPMS_AUTH_COMMAND sessionData;
@@ -1046,12 +1028,7 @@ void TestStartAuthSession()
     CheckFailed( rval, TPM_RC_VALUE + TPM_RC_P + TPM_RC_3 );
 
     // Try starting a bunch to see if resource manager handles this correctly.
-
-#ifdef DEBUG_GAP_HANDLING
-    for( i = 0; i < debugMaxActiveSessions*3; i++ )
-#else
     for( i = 0; i < ( sizeof(sessions) / sizeof (SESSION *) ); i++ )
-#endif
     {
 //        DebugPrintf( NO_PREFIX, "i = 0x%4.4x\n", i );
 
@@ -1060,25 +1037,8 @@ void TestStartAuthSession()
         CheckPassed( rval );
         DebugPrintf( NO_PREFIX, "Number of sessions created: %d\n\n", i+1 );
 
-#ifdef DEBUG_GAP_HANDLING
-        if( i == 0 )
-        {
-           // Save evicted session's context so we can use it for a test.
-           rval = Tss2_Sys_ContextSave( sysContext, sessions[i]->sessionHandle, &evictedSessionContext );
-           CheckPassed( rval );
-        }
-#endif
     }
     
-#ifdef DEBUG_GAP_HANDLING
-    DebugPrintf( NO_PREFIX, "loading evicted session's context\n" );
-    // Now try loading an evicted session's context.
-    // NOTE: simulator versions 01.19 and earlier this test will fail due to a
-    // simulator bug (unless patches have been applied).
-    rval = Tss2_Sys_ContextLoad( sysContext, &evictedSessionContext, &evictedHandle );
-    CheckFailed( rval, TPM_RC_HANDLE + TPM_RC_P + ( 1 << 8  ));
-#endif
-
 #ifdef SKIP_BAD_HANDLE_TEST
     printf("** Skipping bad session handle test\n");
 #else
@@ -1103,11 +1063,7 @@ void TestStartAuthSession()
 #endif // SKIP_1
     
     // clean up the sessions that I don't want here.
-#ifdef DEBUG_GAP_HANDLING
-    for( i = 0; i < ( debugMaxActiveSessions*3); i++ )
-#else
     for( i = 0; i < ( sizeof(sessions) / sizeof (SESSION *)); i++ )
-#endif
     {
 //        DebugPrintf( NO_PREFIX, "i(2) = 0x%4.4x\n", i );
         rval = Tss2_Sys_FlushContext( sysContext, sessions[i]->sessionHandle );
@@ -1119,12 +1075,7 @@ void TestStartAuthSession()
     rval = StartAuthSessionWithParams( &sessions[0], TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY, &symmetric, TPM_ALG_SHA256, resMgrTctiContext );
     CheckPassed( rval );
 
-#ifdef DEBUG_GAP_HANDLING
-//    for( i = 1; i < debugGapMax/2; i++ )
-    for( i = 1; i < 300; i++ )
-#else
     for( i = 1; i < ( sizeof(sessions) / sizeof (SESSION *) ); i++ )
-#endif
     {
 //        DebugPrintf( NO_PREFIX, "i(3) = 0x%4.4x\n", i );
 
@@ -1138,17 +1089,7 @@ void TestStartAuthSession()
         CheckPassed( rval );
     }
 
-#ifdef DEBUG_GAP_HANDLING
-    // Now do some gap tests.
-    rval = StartAuthSessionWithParams( &sessions[8], TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY, &symmetric, TPM_ALG_SHA256, resMgrTctiContext );
-    CheckPassed( rval );
-#endif
-
-#ifdef DEBUG_GAP_HANDLING
-    for( i = 9; i < debugGapMax; i++ )
-#else
     for( i = 0; i < ( sizeof(sessions) / sizeof (SESSION *) ); i++ )
-#endif
     {
 //        DebugPrintf( NO_PREFIX, "i(4) = 0x%4.4x\n", i );
         rval = StartAuthSessionWithParams( &sessions[i], TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY, &symmetric, TPM_ALG_SHA256, resMgrTctiContext );
@@ -1161,38 +1102,6 @@ void TestStartAuthSession()
         CheckPassed( rval );
 
     }
-
-#ifdef DEBUG_GAP_HANDLING
-    for( i = 0; i < 5; i++ )
-    {
-//        DebugPrintf( NO_PREFIX, "i(5) = 0x%4.4x\n", i );
-        rval = StartAuthSessionWithParams( &sessions[i+16], TPM_RH_NULL, 0, TPM_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM_SE_POLICY, &symmetric, TPM_ALG_SHA256, resMgrTctiContext );
-        CheckPassed( rval );
-    }
-
-    for( i = 0; i < 5; i++ )
-    {
-//        DebugPrintf( NO_PREFIX, "i(6) = 0x%4.4x\n", i );
-        rval = Tss2_Sys_FlushContext( sysContext, sessions[i+16]->sessionHandle );
-        CheckPassed( rval );
-
-        rval = EndAuthSession( sessions[i+16] );
-        CheckPassed( rval );
-    }
-
-    rval = Tss2_Sys_FlushContext( sysContext, sessions[0]->sessionHandle );
-    CheckPassed( rval );
-
-    rval = EndAuthSession( sessions[0] );
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_FlushContext( sysContext, sessions[8]->sessionHandle );
-    CheckPassed( rval );
-
-    rval = EndAuthSession( sessions[8] );
-    CheckPassed( rval );
-#endif
-
 }
 
 void TestChangeEps()
