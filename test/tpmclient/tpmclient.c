@@ -173,15 +173,6 @@ TPMI_SH_AUTH_SESSION StartPolicySession();
 
 TPMI_SH_AUTH_SESSION InitNvAuxPolicySession();
 
-//
-// Used by some high level sample routines to copy the results.
-//
-void copyData( UINT8 *to, UINT8 *from, UINT32 length )
-{
-    if( to != 0 && from != 0 )
-        memcpy( to, from, length );
-}
-
 TPM_RC CompareTPM2B( TPM2B *buffer1, TPM2B *buffer2 )
 {
     int i;
@@ -251,30 +242,6 @@ void ErrorHandler( UINT32 rval )
 	}
 
     sprintf_s( errorString, errorStringSize, "%s Error: 0x%x\n", levelString, rval );
-}
-
-TSS2_RC InitTctiResMgrContext( TCTI_SOCKET_CONF *rmInterfaceConfig, TSS2_TCTI_CONTEXT **tctiContext, char *name )
-{
-    size_t size;
-
-    TSS2_RC rval;
-
-    rval = InitSocketTcti(NULL, &size, rmInterfaceConfig, 0 );
-    if( rval != TSS2_RC_SUCCESS )
-        return rval;
-
-    *tctiContext = (TSS2_TCTI_CONTEXT *)malloc(size);
-
-    if( *tctiContext )
-    {
-        DebugPrintf( NO_PREFIX, "Initializing %s Interface\n", name);
-        rval = InitSocketTcti(*tctiContext, &size, rmInterfaceConfig, 0 );
-    }
-    else
-    {
-        rval = TSS2_TCTI_RC_BAD_CONTEXT;
-    }
-    return rval;
 }
 
 void Cleanup()
@@ -529,74 +496,6 @@ void TestTpmStartup()
     // for response.
     rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
     CheckPassed(rval);
-}
-
-
-void ForceIOError( TSS2_TCTI_CONTEXT *tstTctiContext, SOCKET *savedTpmSock, SOCKET *savedOtherSock, int *savedDevFile, int tpmSock )
-{
-    if( resMgrInitialized )
-    {
-        if( tpmSock )
-        {
-            *savedTpmSock = ( (TSS2_TCTI_CONTEXT_INTEL *)tstTctiContext )->tpmSock;
-            ( (TSS2_TCTI_CONTEXT_INTEL *)tstTctiContext )->tpmSock = ~*savedTpmSock;
-        }
-        else
-        {
-            *savedOtherSock = ( (TSS2_TCTI_CONTEXT_INTEL *)tstTctiContext )->otherSock;
-            ( (TSS2_TCTI_CONTEXT_INTEL *)tstTctiContext )->otherSock = ~*savedOtherSock;
-        }
-    }
-    else
-    {
-        *savedDevFile = ( (TSS2_TCTI_CONTEXT_INTEL *)tstTctiContext )->devFile;
-        ( (TSS2_TCTI_CONTEXT_INTEL *)tstTctiContext )->devFile = ~*savedDevFile;
-    }
-}
-
-void CleanupIOError( TSS2_TCTI_CONTEXT *tstTctiContext, SOCKET savedTpmSock, SOCKET savedOtherSock, int savedDevFile, int tpmSock )
-{
-    if( resMgrInitialized )
-    {
-        if( tpmSock )
-        {
-            ( (TSS2_TCTI_CONTEXT_INTEL *)tstTctiContext )->tpmSock = savedTpmSock;
-        }
-        else
-        {
-            ( (TSS2_TCTI_CONTEXT_INTEL *)tstTctiContext )->otherSock = savedOtherSock;
-        }
-    }
-    else
-    {
-        ( (TSS2_TCTI_CONTEXT_INTEL *)tstTctiContext )->devFile = savedDevFile;
-    }
-}
-
-void ForceContextError( TSS2_TCTI_CONTEXT *tstTctiContext, int magic, uint64_t *savedMagic, uint32_t *savedVersion )
-{
-    if( magic )
-    {
-        *savedMagic = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)tstTctiContext )->magic;
-        ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)tstTctiContext )->magic = ~*savedMagic;
-    }
-    else
-    {
-        *savedVersion = ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)tstTctiContext )->version;
-        ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)tstTctiContext )->version = ~*savedVersion;
-    }
-}
-
-void CleanupContextError( TSS2_TCTI_CONTEXT *tstTctiContext, int magic, uint64_t savedMagic, uint32_t savedVersion )
-{
-    if( magic )
-    {
-        ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)tstTctiContext )->magic = savedMagic;
-    }
-    else
-    {
-        ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)tstTctiContext )->version = savedVersion;
-    }
 }
 
 void TestSapiApis()
@@ -1760,76 +1659,6 @@ void TestNV()
     // Now undefine the index so that next run will work correctly.
     rval = Tss2_Sys_NV_UndefineSpace( sysContext, TPM_RH_OWNER, TPM20_INDEX_TEST2, &sessionsData, 0 );
     CheckPassed( rval );
-
-#if 0
-    DebugPrintf( NO_PREFIX, "\nStart of NVUndefineSpaceSpecial test\n" );
-
-    // Init nonceNewer
-    digestSize = GetDigestSize( TPM_ALG_SHA1 );
-    nonceNewer.t.size = digestSize;
-    for( i = 0; i < nonceNewer.t.size; i++ )
-        nonceNewer.t.buffer[i] = 0;
-
-    // Init salt
-    salt.t.size = 0;
-
-    // Init symmetric.
-    symmetric.algorithm = TPM_ALG_NULL;
-    symmetric.keyBits.sym = 0;
-    symmetric.mode.sym = 0;
-    INIT_SIMPLE_TPM2B_SIZE( nvSessionNonce );
-    rval = Tss2_Sys_StartAuthSession ( sysContext, TPM_RH_NULL, TPM_RH_PLATFORM, 0, &nonceNewer, &salt,
-            TPM_SE_TRIAL, &symmetric, TPM_ALG_SHA1, &nvSessionHandle, &nvSessionNonce );
-    CheckPassed( rval );
-
-    nvSessionHandle = ( ( TPM20_StartAuthSession_Out *)(TpmOutBuff) )->sessionHandle;
-
-    rval = Tss2_Sys_PolicyCommandCode ( sysContext, nvSessionHandle, 0, TPM_CC_NV_UndefineSpaceSpecial, 0 );
-    CheckPassed( rval );
-
-    INIT_SIMPLE_TPM2B_SIZE( nvAuth1 );
-    rval = Tss2_Sys_PolicyGetDigest( sysContext, nvSessionHandle, 0, &nvAuth1, 0 );
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_FlushContext( sysContext, nvSessionHandle );
-
-    nvAuth1 = (TPM2B_AUTH *)&( ( ( TPM20_PolicyGetDigest_Out *)(TpmOutBuff) )->otherData );
-    publicInfo.t.nvPublic.authPolicy.t.size = nvAuth1->t.size;
-    memcpy( &( publicInfo.t.nvPublic.authPolicy.t.buffer[0] ),c
-            &( nvAuth1->t.buffer[0] ),
-            publicInfo.t.nvPublic.authPolicy.t.size );
-
-    publicInfo.t.nvPublic.attributes.TPMA_NV_POLICY_DELETE = 1;
-    publicInfo.t.nvPublic.attributes.TPMA_NV_PPREAD = 1;
-    publicInfo.t.nvPublic.attributes.TPMA_NV_PPWRITE = 1;
-    publicInfo.t.nvPublic.attributes.TPMA_NV_OWNERREAD = 0;
-    publicInfo.t.nvPublic.attributes.TPMA_NV_OWNERWRITE = 0;
-    publicInfo.t.nvPublic.attributes.TPMA_NV_PLATFORMCREATE = 1;
-    publicInfo.t.nvPublic.attributes.TPMA_NV_ORDERLY = 1;
-
-    InitNullSession( &nvSession );
-
-    rval = Tss2_Sys_NV_DefineSpace( sysContext, TPM_RH_PLATFORM, &sessionsData, &nvAuth, &publicInfo, &sessionsDataOut );
-    CheckPassed( rval );
-
-    INIT_SIMPLE_TPM2B_SIZE( nvSessionNonce );
-    rval = Tss2_Sys_StartAuthSession ( sysContext, TPM_RH_NULL, TPM_RH_PLATFORM, 0, &nonceCaller, &salt,
-            TPM_SE_POLICY, &symmetric, TPM_ALG_SHA1, &nvSessionHandle, &nvSessionNonce );
-    CheckPassed( rval );
-
-    nvSession.sessionHandle = nvSessionHandle = ( ( TPM20_StartAuthSession_Out *)(TpmOutBuff) )->sessionHandle;
-
-    rval = Tss2_Sys_PolicyCommandCode ( sysContext, nvSessionHandle, 0, TPM_CC_NV_UndefineSpaceSpecial, 0 );
-    CheckPassed( rval );
-
-    nvSession->hmac = publicInfo.t.nvPublic.authPolicy;
-
-    nvSessions.cmdAuthsCount = 2;
-    nvSessions.session[0] = nvSession;
-
-    rval = Tss2_Sys_NVUndefineSpaceSpecial( sysContext, TPM20_INDEX_TEST2, TPM_RH_PLATFORM, &nvSessions, &sessionsData );
-    CheckPassed( rval );
-#endif
 }
 
 void TestHierarchyControl()
@@ -5398,87 +5227,6 @@ void TestEncryptDecryptSession()
     CheckPassed( rval );
 }
 
-
-void TestRsaEncryptDecrypt()
-{
-    TPM2B_SENSITIVE_CREATE  inSensitive;
-    TPM2B_PUBLIC            inPublic;
-    TPMS_AUTH_COMMAND sessionData;
-    TPMS_AUTH_RESPONSE sessionDataOut;
-    TPM2B_DATA              outsideInfo;
-    TPML_PCR_SELECTION      creationPCR;
-    TPM_RC                  rval;
-    TPM2B_PRIVATE outPrivate;
-    TPM2B_PUBLIC outPublic;
-    TPM2B_CREATION_DATA creationData;
-    TPM2B_DIGEST creationHash;
-    TPMT_TK_CREATION creationTicket;
-    TPM2B_NAME rsaKeyName;
-
-    TPMS_AUTH_COMMAND *sessionDataArray[1] = { &sessionData };
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1] = { &sessionDataOut };
-
-    TSS2_SYS_CMD_AUTHS sessionsData = { 1,  &sessionDataArray[0] };
-    TSS2_SYS_RSP_AUTHS sessionsDataOut = { 1, &sessionDataOutArray[0] };
-
-    inSensitive.t.sensitive.userAuth = loadedSha1KeyAuth;
-    inSensitive.t.sensitive.data.t.size = 0;
-
-    // Init nonce.
-    sessionData.nonce.t.size = 0;
-
-    // init hmac
-    sessionData.hmac.t.size = 0;
-
-    // Init session attributes
-    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
-
-    // Create public/private key pair.
-    inPublic.t.publicArea.type = TPM_ALG_RSA;
-    inPublic.t.publicArea.nameAlg = TPM_ALG_SHA1;
-    *(UINT32 *)( (void *)&( inPublic.t.publicArea.objectAttributes ) ) = 0;
-    inPublic.t.publicArea.objectAttributes.decrypt = 1;
-    inPublic.t.publicArea.authPolicy.t.size = 0;
-
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CTR;
-    inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
-    inPublic.t.publicArea.parameters.rsaDetail.keyBits = 1024;
-    inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
-    inPublic.t.publicArea.unique.rsa.t.size = 0;
-
-    outsideInfo.t.size = 0;
-    outPublic.t.size = 0;
-    creationData.t.size = 0;
-    INIT_SIMPLE_TPM2B_SIZE( outPrivate );
-    INIT_SIMPLE_TPM2B_SIZE( creationHash );
-    rval = Tss2_Sys_Create( sysContext, handle2048rsa, &sessionsData, &inSensitive, &inPublic,
-            &outsideInfo, &creationPCR,
-            &outPrivate, &outPublic, &creationData,
-            &creationHash, &creationTicket, &sessionsDataOut );
-
-    CheckPassed( rval );
-
-    // Load private key into TPM
-    INIT_SIMPLE_TPM2B_SIZE( rsaKeyName );
-    rval = Tss2_Sys_Load ( sysContext, handle2048rsa, 0, &outPrivate, &outPublic,
-            &loadedSha1KeyHandle, &rsaKeyName, &sessionsDataOut);
-    CheckPassed( rval );
-
-
-
-    // Encrypt message with public key
-
-    // Print encrypted message.
-
-    // Decrypt message with private key.
-
-    // Print decrypted message.
-
-}
-
-
 void GetSetDecryptParamTests()
 {
     TPM2B_MAX_NV_BUFFER nvWriteData = { { 4, { 0xde, 0xad, 0xbe, 0xef, } } };
@@ -6870,9 +6618,6 @@ void TpmTest()
     TestRM();
 #endif
     EcEphemeralTest();
-#if 0
-    TestRsaEncryptDecrypt();
-#endif
     // Clear out RM entries for objects.
     rval = Tss2_Sys_FlushContext( sysContext, handle2048rsa );
     CheckPassed( rval );
