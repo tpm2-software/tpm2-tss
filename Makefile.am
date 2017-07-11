@@ -60,6 +60,7 @@ endif #UNIT
 if SIMULATOR_BIN
 TESTS_INTEGRATION = \
     test/integration/asymmetric-encrypt-decrypt.int \
+    test/integration/create-primary-rsa-2048-aes-128-cfb.int \
     test/integration/get-random.int \
     test/integration/pcr-extension.int \
     test/integration/self-test.int \
@@ -182,13 +183,19 @@ test_tpmclient_tpmclient_SOURCES  = $(COMMON_C) \
     test/tpmclient/tpmclient_wo_rm.h test/tpmclient/TpmHandleToName.c \
     test/tpmclient/TpmHash.c test/tpmclient/TpmHmac.c
 
-test_integration_libtest_utils_la_SOURCES = test/integration/context-util.c \
-    test/integration/context-util.h test/integration/test-options.c \
-    test/integration/test-options.h
+test_integration_libtest_utils_la_SOURCES = \
+    test/integration/context-util.c test/integration/context-util.h \
+    test/integration/sapi-util.c    test/integration/sapi-util.h \
+    test/integration/test-options.c test/integration/test-options.h
 
 test_integration_asymmetric_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
 test_integration_asymmetric_encrypt_decrypt_int_SOURCES = \
     test/integration/asymmetric-encrypt-decrypt.int.c \
+    test/integration/main.c
+
+test_integration_create_primary_rsa_2048_aes_128_cfb_int_LDADD = $(TESTS_LDADD)
+test_integration_create_primary_rsa_2048_aes_128_cfb_int_SOURCES = \
+    test/integration/create-primary-rsa-2048-aes-128-cfb.int.c \
     test/integration/main.c
 
 test_integration_get_random_int_LDADD   = $(TESTS_LDADD)
