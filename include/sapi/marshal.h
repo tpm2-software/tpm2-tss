@@ -217,6 +217,118 @@ TPM_ST_Unmarshal (
     TPM_ST         *dest
     );
 
+TSS2_RC
+TPMA_ALGORITHM_Marshal (
+    TPMA_ALGORITHM  src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t          *offset);
+
+TSS2_RC
+TPMA_ALGORITHM_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMA_ALGORITHM *dest);
+
+TSS2_RC
+TPMA_CC_Marshal (
+    TPMA_CC         src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMA_CC_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMA_CC        *dest);
+
+TSS2_RC
+TPMA_LOCALITY_Marshal (
+    TPMA_LOCALITY   src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMA_LOCALITY_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMA_LOCALITY  *dest);
+TSS2_RC
+
+TPMA_NV_Marshal (
+    TPMA_NV         src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMA_NV_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMA_NV        *dest);
+
+TSS2_RC
+TPMA_OBJECT_Marshal (
+    TPMA_OBJECT     src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMA_OBJECT_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMA_OBJECT    *dest);
+
+TSS2_RC
+TPMA_PERMANENT_Marshal (
+    TPMA_PERMANENT  src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMA_PERMANENT_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMA_PERMANENT *dest);
+
+TSS2_RC
+TPMA_SESSION_Marshal (
+    TPMA_SESSION    src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMA_SESSION_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMA_SESSION   *dest);
+
+TSS2_RC
+TPMA_STARTUP_CLEAR_Marshal (
+    TPMA_STARTUP_CLEAR src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMA_STARTUP_CLEAR_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMA_STARTUP_CLEAR *dest);
+
 #ifdef __cplusplus
 }
 #endif
