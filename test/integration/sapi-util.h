@@ -48,6 +48,7 @@
     }
 #define TPM2B_DIGEST_INIT TPM2B_NAMED_INIT (TPM2B_DIGEST, buffer)
 #define TPM2B_NAME_INIT TPM2B_NAMED_INIT (TPM2B_NAME, name)
+#define TPM2B_PRIVATE_INIT TPM2B_NAMED_INIT (TPM2B_PRIVATE, buffer)
 /*
  * Use te provide SAPI context to create & load a primary key. The key will
  * be a 2048 bit (restricted decryption) RSA key. The associated symmetric
