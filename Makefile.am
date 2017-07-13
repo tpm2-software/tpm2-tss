@@ -61,6 +61,7 @@ if SIMULATOR_BIN
 TESTS_INTEGRATION = \
     test/integration/asymmetric-encrypt-decrypt.int \
     test/integration/create-primary-rsa-2048-aes-128-cfb.int \
+    test/integration/create-keyedhash-sha1-hmac.int \
     test/integration/get-random.int \
     test/integration/pcr-extension.int \
     test/integration/self-test.int \
@@ -196,6 +197,11 @@ test_integration_asymmetric_encrypt_decrypt_int_SOURCES = \
 test_integration_create_primary_rsa_2048_aes_128_cfb_int_LDADD = $(TESTS_LDADD)
 test_integration_create_primary_rsa_2048_aes_128_cfb_int_SOURCES = \
     test/integration/create-primary-rsa-2048-aes-128-cfb.int.c \
+    test/integration/main.c
+
+test_integration_create_keyedhash_sha1_hmac_int_LDADD   = $(TESTS_LDADD)
+test_integration_create_keyedhash_sha1_hmac_int_SOURCES = \
+    test/integration/create-keyedhash-sha1-hmac.int.c \
     test/integration/main.c
 
 test_integration_get_random_int_LDADD   = $(TESTS_LDADD)
