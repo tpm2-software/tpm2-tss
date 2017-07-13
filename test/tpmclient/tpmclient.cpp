@@ -119,7 +119,6 @@ TPM2B_AUTH loadedSha1KeyAuth;
 
 TPM_HANDLE handle1024, handle2048sha1, handle2048rsa;
 
-UINT32 demoDelay = 0;
 UINT8 indent = 0;
 
 TSS2_SYS_CONTEXT *sysContext;
@@ -293,7 +292,7 @@ void Delay( UINT16 delay)
 		   __FUNCTION__, __LINE__);				\
     }									\
     									\
-    Delay(demoDelay);							\
+    Delay(0);							\
   }
 
 TPMS_AUTH_COMMAND nullSessionData;
@@ -316,7 +315,7 @@ TPM2B_AUTH nullSessionHmac;
       DebugPrintf( NO_PREFIX, "\tPASSED! (%s@%u)\n",			\
 		   __FUNCTION__, __LINE__);				\
     }									\
-    Delay(demoDelay);							\
+    Delay(0);							\
   }
 
 
@@ -6542,13 +6541,12 @@ char version[] = "0.90";
 
 void PrintHelp()
 {
-    printf( "TPM client test app, Version %s\nUsage:  tpmclient [-rmhost hostname|ip_addr] [-rmport port] [-demoDelay delay] "
+    printf( "TPM client test app, Version %s\nUsage:  tpmclient [-rmhost hostname|ip_addr] [-rmport port] "
             "\n\n"
             "where:\n"
             "\n"
             "-rmhost specifies the host IP address for the system running the resource manager (default: %s)\n"
             "-rmport specifies the port number for the system running the resource manager (default: %d)\n"
-            "-demoDelay specifies a delay in units of loops, not time (default:  0)\n"
             , version, DEFAULT_HOSTNAME, DEFAULT_SIMULATOR_TPM_PORT );
 }
 
@@ -6582,15 +6580,6 @@ int main(int argc, char* argv[])
                 count++;
                 rmInterfaceConfig.port = strtoul(argv[count], NULL, 10);
                 if( count >= argc)
-                {
-                    PrintHelp();
-                    return 1;
-                }
-            }
-            else if( 0 == strcmp( argv[count], "-demoDelay" ) )
-            {
-                count++;
-                if( count >= argc || 1 != sscanf_s( argv[count], "%x", &demoDelay ) )
                 {
                     PrintHelp();
                     return 1;
