@@ -50,6 +50,7 @@
 #define sscanf_s    sscanf
 #endif
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
 #include <string.h>
@@ -6407,9 +6408,18 @@ void TestCreate1()
     CheckPassed(rval);
 }
 
-void TpmTest()
+int
+test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
+
+    sysContext = sapi_context;
+    rval = Tss2_Sys_GetTctiContext (sapi_context, &resMgrTctiContext);
+    if (rval != TSS2_RC_SUCCESS) {
+        printf ("Failed to get TCTI context from sapi_context: 0x%" PRIx32
+                "\n", rval);
+        return 1;
+    }
 
     nullSessionsDataOut.rspAuthsCount = 1;
     nullSessionsDataOut.rspAuths[0]->nonce = nullSessionNonceOut;
@@ -6534,96 +6544,6 @@ void TpmTest()
     CheckPassed( rval );
 
     PlatformCommand( resMgrTctiContext, MS_SIM_POWER_OFF );
-}
 
-
-char version[] = "0.90";
-
-void PrintHelp()
-{
-    printf( "TPM client test app, Version %s\nUsage:  tpmclient [-rmhost hostname|ip_addr] [-rmport port] "
-            "\n\n"
-            "where:\n"
-            "\n"
-            "-rmhost specifies the host IP address for the system running the resource manager (default: %s)\n"
-            "-rmport specifies the port number for the system running the resource manager (default: %d)\n"
-            , version, DEFAULT_HOSTNAME, DEFAULT_SIMULATOR_TPM_PORT );
-}
-
-int main(int argc, char* argv[])
-{
-    int count;
-    TSS2_RC rval;
-
-    setvbuf (stdout, NULL, _IONBF, BUFSIZ);
-    if( argc > 10 )
-    {
-        PrintHelp();
-        return 1;
-    }
-    else
-    {
-        for( count = 1; count < argc; count++ )
-        {
-           if( 0 == strcmp( argv[count], "-rmhost" ) )
-            {
-                count++;
-                if( count >= argc)
-                {
-                    PrintHelp();
-                    return 1;
-                }
-                rmInterfaceConfig.hostname = argv[count];
-            }
-            else if( 0 == strcmp( argv[count], "-rmport" ) )
-            {
-                count++;
-                rmInterfaceConfig.port = strtoul(argv[count], NULL, 10);
-                if( count >= argc)
-                {
-                    PrintHelp();
-                    return 1;
-                }
-            }
-            else
-            {
-                PrintHelp();
-                return 1;
-            }
-        }
-    }
-
-    rval = InitSocketTctiContext( &rmInterfaceConfig, &resMgrTctiContext);
-    if( rval != TSS2_RC_SUCCESS )
-    {
-        DebugPrintf( NO_PREFIX, "InitSocketTctiContext, failed initialization: 0x%x.  Exiting...\n", rval );
-#ifdef _WIN32
-        WSACleanup();
-#endif
-        if( resMgrTctiContext != 0 )
-            free( resMgrTctiContext );
-
-        return( 1 );
-    }
-    else
-    {
-        resMgrInitialized = 1;
-    }
-
-    sysContext = InitSysContext( 0, resMgrTctiContext, &abiVersion );
-    if( sysContext == 0 )
-    {
-        InitSysContextFailure();
-    }
-    else
-    {
-        TpmTest();
-        TeardownSysContext( &sysContext );
-        TeardownTctiContext( &resMgrTctiContext );
-    }
-    printf("========== DONE! ===========\n");
-    
     return 0;
 }
-
-

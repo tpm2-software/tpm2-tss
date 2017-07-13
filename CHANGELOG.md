@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Added std=gnu99 to default CONFIG_SITE.
 - Update Linux / Unix OS detection to use non-obsolete macros.
 - Move unit tests from test/ to test/unit/.
+- Move integration tests to test/integration/.
+- Port tpmclient to integration test harness.
 ### Fixed
 - NULL dereference bug in device TCTI init function.
 

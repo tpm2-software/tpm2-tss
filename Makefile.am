@@ -34,7 +34,6 @@ AM_CXXFLAGS     = $(AM_CFLAGS)
 AM_LDFLAGS      = $(EXTRA_LDFLAGS)
 
 # stuff to build, what that stuff is, and where/if to install said stuff
-noinst_PROGRAMS = $(tpmclient)
 lib_LTLIBRARIES = $(libsapi) $(libtcti_device) $(libtcti_socket)
 noinst_LTLIBRARIES = test/integration/libtest_utils.la
 
@@ -68,7 +67,8 @@ TESTS_INTEGRATION = \
     test/integration/get-random.int \
     test/integration/pcr-extension.int \
     test/integration/self-test.int \
-    test/integration/start-auth-session.int
+    test/integration/start-auth-session.int \
+    test/tpmclient/tpmclient.int
 endif #SIMULATOR_BIN
 
 CLEANFILES = \
@@ -207,19 +207,20 @@ tcti_libtcti_socket_la_SOURCES  = tcti/platformcommand.c tcti/tcti_socket.cpp \
     tcti/commonchecks.c tcti/commonchecks.h tcti/sockets.cpp tcti/sockets.h \
     common/debug.c common/debug.h tcti/logging.h
 
-test_tpmclient_tpmclient_CFLAGS   = $(AM_CFLAGS)
-test_tpmclient_tpmclient_CXXFLAGS = $(AM_CXXFLAGS) -DNO_RM_TESTS
-test_tpmclient_tpmclient_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device)
-test_tpmclient_tpmclient_SOURCES  = $(COMMON_C) \
+test_tpmclient_tpmclient_int_CFLAGS   = $(AM_CFLAGS) -DNO_RM_TESTS
+test_tpmclient_tpmclient_int_CXXFLAGS = $(AM_CXXFLAGS) -DNO_RM_TESTS
+test_tpmclient_tpmclient_int_LDADD    = $(TESTS_LDADD)
+test_tpmclient_tpmclient_int_SOURCES  = $(COMMON_C) \
     test/tpmclient/CatSizedByteBuffer.c test/tpmclient/CopySizedBuffer.c \
     test/tpmclient/CreateNullSession.c test/tpmclient/DecryptEncrypt.c \
     test/tpmclient/Entity.c test/tpmclient/kdfa.c \
-    test/tpmclient/LoadExternalHMACKey.c test/tpmclient/sample.h \
+    test/tpmclient/LoadExternalHMACKey.c test/integration/main.c \
+    test/tpmclient/sample.h \
     test/tpmclient/SessionHmac.c test/tpmclient/SetLocality.c \
     test/tpmclient/StartAuthSession.c test/tpmclient/syscontext.c \
     test/tpmclient/syscontext.h test/tpmclient/tcti_util.c \
     test/tpmclient/tcti_util.h test/tpmclient/TpmCalcPHash.c \
-    test/tpmclient/tpmclient.cpp test/tpmclient/tpmclient.h \
+    test/tpmclient/tpmclient.int.cpp test/tpmclient/tpmclient.h \
     test/tpmclient/tpmclient_wo_rm.h test/tpmclient/TpmHandleToName.c \
     test/tpmclient/TpmHash.c test/tpmclient/TpmHmac.c
 
@@ -279,28 +280,6 @@ man/man3/%.3 : man/%.3.in $(srcdir)/man/man-postlude.troff
 man/man7/%.7 : man/%.7.in $(srcdir)/man/man-postlude.troff
 	$(call make_man,$@,$<,$(srcdir)/man/man-postlude.troff)
 
-# simulator build / run scripts
-CLEANFILES += test/simulator-build.sh test/simulator-run.sh test/simulator.inc
-.PHONY = simulator-build simulator-start simulator-stop clean-local-ibmtpm
-clean-local : clean-local-ibmtpm
-clean-local-ibmtpm :
-	rm -rf test/ibmtpm*
-
-test/simulator.inc : $(srcdir)/script/simulator.inc
-	cp $< $@
-test/simulator-build.sh : $(srcdir)/script/simulator-build.sh
-	cp $< $@
-	chmod 755 $@
-simulator-build : test/simulator-build.sh test/simulator.inc
-	test/simulator-build.sh
-test/simulator-run.sh : $(srcdir)/script/simulator-run.sh
-	cp $< $@
-	chmod 755 $@
-simulator-start : test/simulator-run.sh test/simulator.inc
-	test/simulator-run.sh start
-simulator-stop : test/simulator-run.sh test/simulator.inc
-	test/simulator-run.sh stop
-
 # simple variables
 TCTICOMMON_INC = -I$(srcdir)/include -I$(srcdir)/common \
     -I$(srcdir)/sysapi/include
@@ -316,7 +295,6 @@ TCTISOCKET_CXX = tcti/tcti_socket.cpp
 libsapi = sysapi/libsapi.la
 libtcti_device = tcti/libtcti-device.la
 libtcti_socket = tcti/libtcti-socket.la
-tpmclient   = test/tpmclient/tpmclient
 
 define make_parent_dir
     if [ ! -d $(dir $1) ]; then mkdir -p $(dir $1); fi
