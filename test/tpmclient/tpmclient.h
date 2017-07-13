@@ -28,9 +28,15 @@
 #ifndef TPMCLIENT_H
 #define TPMCLIENT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define TPMBUF_LEN 0x8000
 
 extern void InitSysContextFailure();
+int test_invoke (TSS2_SYS_CONTEXT *sapi_context);
+
 
 #define GLOBAL_SYS_CONTEXT_SIZE 4096
 
@@ -41,6 +47,10 @@ TPM_RC CompareSizedByteBuffer( TPM2B *buffer1, TPM2B *buffer2 );
 extern TSS2_TCTI_CONTEXT *resMgrTctiContext;
 
 #define INIT_SIMPLE_TPM2B_SIZE( type ) (type).t.size = sizeof( type ) - 2;
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif
 
