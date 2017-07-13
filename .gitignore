@@ -50,7 +50,8 @@ test/integration/get-random
 test/integration/self-test
 test/integration/pcr-extension
 test/integration/asymmetric-encrypt-decrypt
-test/tpmclient/tpmclient
+test/tpmclient/*
+test/tpmclient/!*.*
 .klocwork/
 ipch/
 test/tpmtest/tpmtest
