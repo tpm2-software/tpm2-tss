@@ -1857,9 +1857,6 @@ void TestEvict()
     TPMS_AUTH_COMMAND *sessionDataArray[1];
     TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
 
-    TSS2_TCTI_CONTEXT *otherResMgrTctiContext = 0;
-    TSS2_SYS_CONTEXT *otherSysContext;
-
     sessionDataArray[0] = &sessionData;
     sessionDataOutArray[0] = &sessionDataOut;
 
@@ -1922,30 +1919,11 @@ void TestEvict()
     creationData.t.size = 0;
 
     // Try creating a key under the persistent key using a different context.
-
-    rval = InitSocketTctiContext( &rmInterfaceConfig, &otherResMgrTctiContext);
-    if( rval != TSS2_RC_SUCCESS )
-    {
-        DebugPrintf( NO_PREFIX, "Resource Mgr, failed initialization: 0x%x.  Exiting...\n", rval );
-        Cleanup();
-        return;
-    }
-    
-    otherSysContext = InitSysContext( 0, otherResMgrTctiContext, &abiVersion );
-    if( otherSysContext == 0 )
-    {
-        InitSysContextFailure();
-    }
-
-    rval = Tss2_Sys_Create( otherSysContext, 0x81800000, &sessionsData, &inSensitive, &inPublic,
+    rval = Tss2_Sys_Create( sysContext, 0x81800000, &sessionsData, &inSensitive, &inPublic,
             &outsideInfo, &creationPCR,
             &outPrivate, &outPublic, &creationData,
             &creationHash, &creationTicket, &sessionsDataOut );
     CheckPassed( rval );
-
-    TeardownTctiContext( &otherResMgrTctiContext );
-
-    TeardownSysContext( &otherSysContext );
 
     outsideInfo.t.size = 0;
     outPublic.t.size = 0;
