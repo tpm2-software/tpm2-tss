@@ -699,3 +699,11 @@ TPMS_MARSHAL_1(TPMS_TAGGED_PCR_SELECT,
 
 TPMS_UNMARSHAL_1(TPMS_TAGGED_PCR_SELECT,
                  tag, unmarshal_tagged_pcr_selection)
+
+TPMS_MARSHAL_2(TPMS_QUOTE_INFO,
+               pcrSelect, ADDR, TPML_PCR_SELECTION_Marshal,
+               pcrDigest, ADDR, TPM2B_DIGEST_Marshal)
+
+TPMS_UNMARSHAL_2(TPMS_QUOTE_INFO,
+                 pcrSelect, TPML_PCR_SELECTION_Unmarshal,
+                 pcrDigest, TPM2B_DIGEST_Unmarshal)
