@@ -18,6 +18,7 @@ the 'common directory.
 - Update Linux / Unix OS detection to use non-obsolete macros.
 - Move unit tests from test/ to test/unit/.
 - Move integration tests to test/integration/.
+- Port tpmclient to integration test harness.
 ### Fixed
 - Wrong return type for Tss2_Sys_Finalize (API break).
 - NULL dereference bug in device and socket TCTI init functions.
