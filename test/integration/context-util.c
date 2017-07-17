@@ -83,6 +83,7 @@ tcti_socket_init (char const *address,
     rc = InitSocketTcti (tcti_ctx, &size, &conf, 0);
     if (rc != TSS2_RC_SUCCESS) {
         fprintf (stderr, "Failed to initialize tcti context: 0x%x\n", rc);
+        free (tcti_ctx);
         return NULL;
     }
     return tcti_ctx;
@@ -116,6 +117,7 @@ sapi_init_from_tcti_ctx (TSS2_TCTI_CONTEXT *tcti_ctx)
     rc = Tss2_Sys_Initialize (sapi_ctx, size, tcti_ctx, &abi_version);
     if (rc != TSS2_RC_SUCCESS) {
         fprintf (stderr, "Failed to initialize SAPI context: 0x%x\n", rc);
+        free (sapi_ctx);
         return NULL;
     }
     return sapi_ctx;
