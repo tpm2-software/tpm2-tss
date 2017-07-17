@@ -70,8 +70,8 @@ InitSockets( const char *hostName,
              TCTI_LOG_CALLBACK debugfunc,
              void* data )
 {
-    sockaddr_in otherService;
-    sockaddr_in tpmService;
+    sockaddr_in otherService = { 0 };
+    sockaddr_in tpmService = { 0 };
     int iResult = 0;            // used to return function results
 
 #ifdef _WIN32
