@@ -23,9 +23,11 @@ RUN wget https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm532.tar && \
   tar axf ibmtpm532.tar -C ibmtpm532 && \
   make -C ibmtpm532/src -j$(nproc)
 
-RUN git clone https://github.com/01org/TPM2.0-TSS && \
-  cd TPM2.0-TSS && \
+COPY . TPM2.0-TSS
+
+RUN cd TPM2.0-TSS && \
   ./bootstrap && \
+  rm -rf ./build && \
   mkdir ./build && \
   cd ./build && \
   ../configure --enable-unit --with-simulatorbin=$(pwd)/../../ibmtpm532/src/tpm_server && \
