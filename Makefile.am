@@ -209,6 +209,9 @@ test_integration_start_auth_session_int_SOURCES = test/integration/main.c \
 
 TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES)
 
+gen_src:
+	./gen_src_var.sh
+
 %.pc : %.pc.in
 	$(call make_parent_dir,$@)
 	sed -e "s,[@]VERSION[@],$(PACKAGE_VERSION),g; \
@@ -222,7 +225,10 @@ man/man7/%.7 : man/%.7.in $(srcdir)/man/man-postlude.troff
 
 # simulator build / run scripts
 CLEANFILES += test/simulator-build.sh test/simulator-run.sh test/simulator.inc
-.PHONY = simulator-build simulator-start simulator-stop clean-local-ibmtpm
+.PHONY = simulator-build simulator-start simulator-stop clean-local-ibmtpm gen_src
+
+-include gen_src
+
 clean-local : clean-local-ibmtpm
 clean-local-ibmtpm :
 	rm -rf test/ibmtpm*
