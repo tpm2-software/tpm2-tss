@@ -101,7 +101,7 @@ TSS2_RC SocketSendTpmCommand(
     )
 {
     UINT32 tpmSendCommand = MS_SIM_TPM_SEND_COMMAND;  // Value for "send command" to MS simulator.
-    UINT32 cnt, cnt1;
+    UINT32 cnt = 0;
     UINT8 locality;
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
@@ -133,9 +133,6 @@ TSS2_RC SocketSendTpmCommand(
 #endif
     }
 #endif
-    // Size TPM 1.2 and TPM 2.0 headers overlap exactly, we can use
-    // either 1.2 or 2.0 header to get the size.
-    cnt = CHANGE_ENDIAN_DWORD(((TPM20_Header_In *) command_buffer)->commandSize);
 
     // Send TPM_SEND_COMMAND
     tpmSendCommand = CHANGE_ENDIAN_DWORD(tpmSendCommand);
@@ -157,21 +154,20 @@ TSS2_RC SocketSendTpmCommand(
 #endif
 
     // Send number of bytes.
-    cnt1 = cnt;
-    cnt = CHANGE_ENDIAN_DWORD(cnt);
+    cnt = CHANGE_ENDIAN_DWORD(command_size);
     rval = tctiSendBytes( tctiContext, TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&cnt, 4 );
     if( rval != TSS2_RC_SUCCESS )
         goto returnFromSocketSendTpmCommand;
 
     // Send the TPM command buffer
-    rval = tctiSendBytes( tctiContext, TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)command_buffer, cnt1 );
+    rval = tctiSendBytes( tctiContext, TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)command_buffer, command_size );
     if( rval != TSS2_RC_SUCCESS )
         goto returnFromSocketSendTpmCommand;
 
 #ifdef DEBUG
     if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgEnabled == 1 )
     {
-        DEBUG_PRINT_BUFFER( rmPrefix, command_buffer, cnt1 );
+        DEBUG_PRINT_BUFFER( rmPrefix, command_buffer, command_size );
     }
 #endif
     ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent = 1;
