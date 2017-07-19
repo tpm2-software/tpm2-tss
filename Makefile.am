@@ -52,6 +52,7 @@ TESTS_UNIT  = \
     test/unit/marshal-TPM2B-simple \
     test/unit/tcti-device \
     test/unit/tcti-socket \
+    test/unit/Tss2_Sys_Initialize \
     test/unit/UINT8-marshal \
     test/unit/UINT16-marshal \
     test/unit/UINT32-marshal \
@@ -129,6 +130,10 @@ test_unit_CopyCommandHeader_SOURCES = test/unit/CopyCommandHeader.c
 test_unit_marshal_TPM2B_simple_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_marshal_TPM2B_simple_LDADD   = $(CMOCKA_LIBS) $(libsapi)
 test_unit_marshal_TPM2B_simple_SOURCES = test/unit/marshal-TPM2B-simple.c
+
+test_unit_Tss2_Sys_Initialize_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
+test_unit_Tss2_Sys_Initialize_LDADD   = $(CMOCKA_LIBS) $(libsapi)
+test_unit_Tss2_Sys_Initialize_SOURCES = test/unit/Tss2_Sys_Initialize.c
 
 test_unit_UINT8_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_UINT8_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
