@@ -4685,6 +4685,7 @@ void HmacSessionTest()
                     symmetric.keyBits.aes = 128;
                     symmetric.mode.aes = TPM_ALG_CFB;
 
+                    EndAuthSession (nvSession);
                     rval = StartAuthSessionWithParams( &nvSession, hmacTestSetups[j].tpmKey,  hmacTestSetups[j].salt, hmacTestSetups[j].bound, &nvAuth, &nonceOlder, &encryptedSalt, TPM_SE_HMAC, &symmetric, TPM_ALG_SHA1, resMgrTctiContext );
                     CheckPassed( rval );
 
@@ -6479,6 +6480,11 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     TestDictionaryAttackLockReset();
 
     TestCreate();
+    rval = Tss2_Sys_FlushContext( sysContext, loadedSha1KeyHandle );
+    CheckPassed( rval );
+    HmacSessionTest();
+    TestTpmClear ();
+    TestCreate();
 
 #ifdef SKIP_TEST_CREATE1_TEST
     printf("** Skipping TestCreate1()\n");
@@ -6526,7 +6532,6 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 #endif
     NvIndexProto();
     PasswordTest();
-    HmacSessionTest();
     TestQuote();
     TestDictionaryAttackLockReset();
     TestPcrAllocate();

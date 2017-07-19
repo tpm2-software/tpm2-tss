@@ -36,22 +36,6 @@
 // around line 2571
 #define SKIP_EVICT_TEST
 
-// Skipping to avoid TPM Error 0x902 when ComputeCommandHmacs() in HmacSessionTest()
-// around line 5211
-#define SKIP_UNBOUND_UNSALTED_HMAC_TEST
-
-// Skipping to avoid Application Error 0x50102 when StartAuthSessionWithParams() in HMacSessionTest()
-// around line 5159
-#define SKIP_BOUND_SESSION_HMAC_TEST
-
-// Skipping to avoid Application Error 0x50102 when StartAuthSessionWithParams() in HMacSessionTest()
-// around line 5159
-#define SKIP_SALTED_SESSION_HMAC_TEST
-
-// Skipping to avoid Application Error 0x50102 when StartAuthSessionWithParams() in HMacSessionTest()
-// around line 5159
-#define SKIP_BOUND_SALTED_SESSION_HMAC_TEST
-
 // Skipping to avoid hang
 #define SKIP_RM_TEST
 
