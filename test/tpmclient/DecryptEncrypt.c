@@ -43,56 +43,52 @@ TSS2_RC GetBlockSizeInBits( TPMI_ALG_SYM algorithm, UINT32 *blockSizeInBits )
     return rval;
 }
 
-TSS2_RC GenerateSessionEncryptDecryptKey( SESSION *session, TPM2B_MAX_BUFFER *cfbKey, TPM2B_IV *ivIn, TPM2B_AUTH *authValue )
+TSS2_RC
+GenerateSessionEncryptDecryptKey (
+    SESSION              *session,
+    TPM2B_MAX_BUFFER     *cfbKey,
+    TPM2B_IV             *ivIn,
+    TPM2B_AUTH           *authValue)
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    UINT32 blockSize;
+    UINT32 blockSize = 0;
     TPM2B_MAX_BUFFER key, sessionValue;
 
-    rval = GetBlockSizeInBits( session->symmetric.algorithm, &blockSize );
+    if (ivIn == NULL || cfbKey == NULL) {
+        return APPLICATION_ERROR( TSS2_BASE_RC_INSUFFICIENT_BUFFER );
+    }
+    rval = GetBlockSizeInBits (session->symmetric.algorithm, &blockSize);
+    if (rval != TSS2_RC_SUCCESS) {
+        return rval;
+    }
 
+    INIT_SIMPLE_TPM2B_SIZE (key);
     CopySizedByteBuffer( &sessionValue.b, &session->sessionKey.b );
     CatSizedByteBuffer( &sessionValue.b, &authValue->b );
 
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        INIT_SIMPLE_TPM2B_SIZE( key );
-        rval = KDFa( session->authHash, &( sessionValue.b ), "CFB", &( session->nonceNewer.b ),
-                &( session->nonceOlder.b ), session->symmetric.keyBits.sym + blockSize, &key );
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            if( key.t.size == ( session->symmetric.keyBits.sym + blockSize ) / 8 )
-            {
-                if( ivIn != 0 && cfbKey != 0 )
-                {
-                    ivIn->t.size = blockSize / 8;
-                    cfbKey->t.size = (session->symmetric.keyBits.sym) / 8;
-
-                    if( ( ivIn->t.size <= sizeof( ivIn->t.buffer ) ) &&
-                            ( ( cfbKey->t.size + ivIn->t.size ) <= MAX_DIGEST_BUFFER ) &&
-                        ( cfbKey->t.size <= MAX_DIGEST_BUFFER ) )
-                    {
-
-                        memcpy( (void *)&ivIn->t.buffer[0],
-                                (void *)&( key.t.buffer[ cfbKey->t.size ] ),
-                                ivIn->t.size );
-
-                        memcpy( (void *)&cfbKey->t.buffer[0], (void *)&key.t.buffer[0],
-                                cfbKey->t.size );
-                    }
-                    else
-                    {
-                        rval = APPLICATION_ERROR( TSS2_BASE_RC_INSUFFICIENT_BUFFER );
-                    }
-                }
-                else
-                {
-                    rval = APPLICATION_ERROR( TSS2_BASE_RC_INSUFFICIENT_BUFFER );
-                }
-            }
-        }
+    rval = KDFa (session->authHash,
+                 &sessionValue.b,
+                 "CFB",
+                 &session->nonceNewer.b,
+                 &session->nonceOlder.b,
+                 session->symmetric.keyBits.sym + blockSize,
+                 &key);
+    if (rval != TSS2_RC_SUCCESS) {
+        return rval;
     }
 
+    if (key.t.size != (session->symmetric.keyBits.sym + blockSize) / 8) {
+        return APPLICATION_ERROR (TSS2_BASE_RC_INSUFFICIENT_BUFFER);
+    }
+
+    ivIn->t.size = blockSize / 8;
+    cfbKey->t.size = (session->symmetric.keyBits.sym) / 8;
+    if (ivIn->t.size > sizeof (ivIn->t.buffer) ||
+        (cfbKey->t.size + ivIn->t.size) > MAX_DIGEST_BUFFER) {
+        return APPLICATION_ERROR (TSS2_BASE_RC_INSUFFICIENT_BUFFER);
+    }
+    memcpy (ivIn->t.buffer, &key.t.buffer[cfbKey->t.size], ivIn->t.size);
+    memcpy (cfbKey->t.buffer, key.t.buffer, cfbKey->t.size);
     return rval;
 }
 
