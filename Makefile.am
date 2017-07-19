@@ -35,7 +35,7 @@ AM_LDFLAGS      = $(EXTRA_LDFLAGS)
 # stuff to build, what that stuff is, and where/if to install said stuff
 noinst_PROGRAMS = $(tpmclient)
 lib_LTLIBRARIES = $(libmarshal) $(libsapi) $(libtcti_device) $(libtcti_socket)
-noinst_LTLIBRARIES = test/integration/libtest_utils.la
+noinst_LTLIBRARIES = test/utils/libtest_utils.la
 
 # test harness configuration
 TEST_EXTENSIONS = .int
@@ -182,9 +182,9 @@ test_tpmclient_tpmclient_SOURCES  = $(COMMON_C) \
     test/tpmclient/tpmclient_wo_rm.h test/tpmclient/TpmHandleToName.c \
     test/tpmclient/TpmHash.c test/tpmclient/TpmHmac.c
 
-test_integration_libtest_utils_la_SOURCES = test/integration/context-util.c \
-    test/integration/context-util.h test/integration/test-options.c \
-    test/integration/test-options.h
+test_utils_libtest_utils_la_SOURCES = test/utils/context-util.c \
+    test/utils/context-util.h test/utils/test-options.c \
+    test/utils/test-options.h
 
 test_integration_asymmetric_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
 test_integration_asymmetric_encrypt_decrypt_int_SOURCES = \
@@ -247,6 +247,7 @@ libsapi = sysapi/libsapi.la
 libtcti_device = tcti/libtcti-device.la
 libtcti_socket = tcti/libtcti-socket.la
 libmarshal = marshal/libmarshal.la
+libtest_utils = test/utils/libtest_utils.la
 tpmclient   = test/tpmclient/tpmclient
 
 define make_parent_dir

@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "test-options.h"
+#include "test_utils/test-options.h"
 
 /*
  * A structure to map a string name to an element in the TCTI_TYPE

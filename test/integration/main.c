@@ -2,8 +2,8 @@
 
 #include "log.h"
 #include "test.h"
-#include "test-options.h"
-#include "context-util.h"
+#include "test_utils/test-options.h"
+#include "test_utils/context-util.h"
 
 /**
  * This program is a template for integration tests (ones that use the TCTI
