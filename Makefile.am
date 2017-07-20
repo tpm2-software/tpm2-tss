@@ -168,15 +168,14 @@ tcti_libtcti_socket_la_SOURCES  = tcti/platformcommand.c tcti/tcti_socket.c \
     common/debug.c common/debug.h tcti/logging.h
 
 test_tpmclient_tpmclient_CFLAGS   = $(AM_CFLAGS) -DNO_RM_TESTS
-test_tpmclient_tpmclient_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device) $(libmarshal)
+test_tpmclient_tpmclient_LDADD    = $(libsapi) $(libtcti_socket) $(libtcti_device) $(libmarshal) $(libtest_utils)
 test_tpmclient_tpmclient_SOURCES  = $(COMMON_C) \
     test/tpmclient/CatSizedByteBuffer.c test/tpmclient/CopySizedBuffer.c \
     test/tpmclient/CreateNullSession.c test/tpmclient/DecryptEncrypt.c \
     test/tpmclient/Entity.c test/tpmclient/kdfa.c \
     test/tpmclient/LoadExternalHMACKey.c test/tpmclient/sample.h \
     test/tpmclient/SessionHmac.c test/tpmclient/SetLocality.c \
-    test/tpmclient/StartAuthSession.c test/tpmclient/syscontext.c \
-    test/tpmclient/syscontext.h test/tpmclient/tcti_util.c \
+    test/tpmclient/StartAuthSession.c test/tpmclient/tcti_util.c \
     test/tpmclient/tcti_util.h test/tpmclient/TpmCalcPHash.c \
     test/tpmclient/tpmclient.c test/tpmclient/tpmclient.h \
     test/tpmclient/tpmclient_wo_rm.h test/tpmclient/TpmHandleToName.c \
@@ -184,7 +183,7 @@ test_tpmclient_tpmclient_SOURCES  = $(COMMON_C) \
 
 test_utils_libtest_utils_la_SOURCES = test/utils/context-util.c \
     test/utils/context-util.h test/utils/test-options.c \
-    test/utils/test-options.h
+    test/utils/test-options.h test/utils/syscontext.c
 
 test_integration_asymmetric_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
 test_integration_asymmetric_encrypt_decrypt_int_SOURCES = \

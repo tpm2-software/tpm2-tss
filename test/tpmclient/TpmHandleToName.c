@@ -29,6 +29,7 @@
 #include "sample.h"
 #include "sysapi_util.h"
 #include "tss2_endian.h"
+#include "test_utils/syscontext.h"
 
 //
 //

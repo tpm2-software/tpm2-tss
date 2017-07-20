@@ -28,6 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 #include "sample.h"
+#include "test_utils/syscontext.h"
 
 
 UINT32 LoadExternalHMACKey( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM_HANDLE *keyHandle, TPM2B_NAME *keyName )
