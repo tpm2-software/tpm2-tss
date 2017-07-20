@@ -65,7 +65,7 @@
 
 #include "tcti/tcti_device.h"
 #include "tcti/tcti_socket.h"
-#include "syscontext.h"
+#include "test_utils/syscontext.h"
 #include "common/debug.h"
 
 //

@@ -5,7 +5,7 @@
 #include "tcti/tcti_device.h"
 #include "tcti/tcti_socket.h"
 
-#include "context-util.h"
+#include "test_utils/context-util.h"
 
 /*
  * Initialize a TSS2_TCTI_CONTEXT for the device TCTI.

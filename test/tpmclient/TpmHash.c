@@ -28,6 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sample.h"
 #include "sysapi_util.h"
+#include "test_utils/syscontext.h"
 
 //
 // This function does a hash on a string of data.
