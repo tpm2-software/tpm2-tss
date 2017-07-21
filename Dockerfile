@@ -31,11 +31,8 @@ RUN cd TPM2.0-TSS && \
   mkdir ./build && \
   cd ./build && \
   ../configure --enable-unit --with-simulatorbin=$(pwd)/../../ibmtpm532/src/tpm_server && \
-  make -j$(nproc) && \
-  make simulator-build
+  make -j$(nproc)
 
 RUN cd TPM2.0-TSS/build && \
   make -j$(nproc) check && \
-  make simulator-start && \
-  test/tpmclient/tpmclient && \
-  make simulator-stop
+  cat test/tpmclient/tpmclient.log
