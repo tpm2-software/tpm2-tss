@@ -1235,6 +1235,230 @@ TPMU_ENCRYPTED_SECRET_Unmarshal (
     uint32_t       selector_value,
     TPMU_ENCRYPTED_SECRET *dest);
 
+TSS2_RC
+TPMT_HA_Marshal (
+    TPMT_HA const *src,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMT_HA_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    TPMT_HA *dest);
+
+TSS2_RC
+TPMT_SYM_DEF_Marshal (
+    TPMT_SYM_DEF const *src,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMT_SYM_DEF_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    TPMT_SYM_DEF  *dest);
+
+TSS2_RC
+TPMT_SYM_DEF_OBJECT_Marshal (
+    TPMT_SYM_DEF_OBJECT const *src,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMT_SYM_DEF_OBJECT_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    TPMT_SYM_DEF_OBJECT *dest);
+
+TSS2_RC
+TPMT_KEYEDHASH_SCHEME_Marshal (
+    TPMT_KEYEDHASH_SCHEME const *src,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMT_KEYEDHASH_SCHEME_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    TPMT_KEYEDHASH_SCHEME *dest);
+
+TSS2_RC
+TPMT_SIG_SCHEME_Marshal (
+    TPMT_SIG_SCHEME const *src,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMT_SIG_SCHEME_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    TPMT_SIG_SCHEME *dest);
+
+TSS2_RC
+TPMT_KDF_SCHEME_Marshal (
+    TPMT_KDF_SCHEME const *src,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMT_KDF_SCHEME_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    TPMT_KDF_SCHEME *dest);
+
+TSS2_RC
+TPMT_ASYM_SCHEME_Marshal (
+    TPMT_ASYM_SCHEME const *src,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMT_ASYM_SCHEME_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    TPMT_ASYM_SCHEME *dest);
+
+TSS2_RC
+TPMT_RSA_SCHEME_Marshal (
+    TPMT_RSA_SCHEME const *src,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMT_RSA_SCHEME_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    TPMT_RSA_SCHEME *dest);
+
+TSS2_RC
+TPMT_RSA_DECRYPT_Marshal (
+    TPMT_RSA_DECRYPT const *src,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMT_RSA_DECRYPT_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    TPMT_RSA_DECRYPT *dest);
+
+TSS2_RC
+TPMT_ECC_SCHEME_Marshal (
+    TPMT_ECC_SCHEME const *src,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMT_ECC_SCHEME_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    TPMT_ECC_SCHEME *dest);
+
+TSS2_RC
+TPMT_SIGNATURE_Marshal (
+    TPMT_SIGNATURE const *src,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMT_SIGNATURE_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    TPMT_SIGNATURE *dest);
+
+TSS2_RC
+TPMT_SENSITIVE_Marshal (
+    TPMT_SENSITIVE const *src,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMT_SENSITIVE_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    TPMT_SENSITIVE *dest);
+
+TSS2_RC
+TPMT_TK_CREATION_Marshal (
+    TPMT_TK_CREATION const *src,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMT_TK_CREATION_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    TPMT_TK_CREATION *dest);
+
+TSS2_RC
+TPMT_TK_VERIFIED_Marshal (
+    TPMT_TK_VERIFIED const *src,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMT_TK_VERIFIED_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    TPMT_TK_VERIFIED *dest);
+
+TSS2_RC
+TPMT_TK_AUTH_Marshal (
+    TPMT_TK_AUTH   const *src,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMT_TK_AUTH_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    TPMT_TK_AUTH  *dest);
+
+TSS2_RC
+TPMT_TK_HASHCHECK_Marshal (
+    TPMT_TK_HASHCHECK const *src,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMT_TK_HASHCHECK_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    TPMT_TK_HASHCHECK *dest);
+
 #ifdef __cplusplus
 }
 #endif
