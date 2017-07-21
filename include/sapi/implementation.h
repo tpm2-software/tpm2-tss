@@ -46,16 +46,18 @@
 #define      CC_NO        NO
 
 // From Vendor-Specific: Table 1 - Defines for Processor Values
-#define BIG_ENDIAN_TPM       	NO	/*  to YES or NO according to the processor */
+#define BIG_ENDIAN_TPM		NO	/*  to YES or NO according to the processor */
 #define LITTLE_ENDIAN_TPM	YES	/*  to YES or NO according to the processor */
 #define NO_AUTO_ALIGN		NO	/*  to YES if the processor does not allow unaligned accesses */
 
 // From Vendor-Specific: Table 2 - Defines for Implemented Algorithms
 
 #define  ALG_RSA               ALG_YES
+#define  ALG_SHA               ALG_YES
 #define  ALG_SHA1              ALG_YES
 #define  ALG_HMAC              ALG_YES
 #define  ALG_AES               ALG_YES
+#define  ALG_CAMELLIA          ALG_YES
 #define  ALG_MGF1              ALG_YES
 #define  ALG_XOR               ALG_YES
 #define  ALG_KEYEDHASH         ALG_YES
@@ -74,7 +76,7 @@
 #define  ALG_ECDAA             (ALG_YES*ALG_ECC)
 #define  ALG_SM2               (ALG_YES*ALG_ECC)
 #define  ALG_ECSCHNORR         (ALG_YES*ALG_ECC)
-#define  ALG_ECMQV             (ALG_NO*ALG_ECC)
+#define  ALG_ECMQV             (ALG_YES*ALG_ECC)
 #define  ALG_SYMCIPHER         ALG_YES
 #define  ALG_KDF1_SP800_56A    (ALG_YES*ALG_ECC)
 #define  ALG_KDF2              ALG_NO
@@ -475,6 +477,7 @@ typedef  UINT16             TPM_ECC_CURVE;
 // From TCG Algorithm Registry: Table 11 - Defines for SM2_P256 ECC Values Data in CrpiEccData.c
 
 // From TCG Algorithm Registry: Table 12 - Defines for SHA1 Hash Values
+#define  SHA_DIGEST_SIZE     20
 #define  SHA1_DIGEST_SIZE    20
 #define  SHA1_BLOCK_SIZE     64
 #define  SHA1_DER_SIZE       15
