@@ -188,8 +188,10 @@ test_tpmclient_tpmclient_int_SOURCES  = $(COMMON_C) \
 
 test_integration_libtest_utils_la_SOURCES = \
     test/integration/context-util.c test/integration/context-util.h \
+    test/integration/log.h \
     test/integration/sapi-util.c    test/integration/sapi-util.h \
-    test/integration/test-options.c test/integration/test-options.h
+    test/integration/test-options.c test/integration/test-options.h \
+    test/integration/test.h
 
 test_integration_asymmetric_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
 test_integration_asymmetric_encrypt_decrypt_int_SOURCES = \
