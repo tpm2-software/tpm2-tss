@@ -138,6 +138,12 @@ void Unmarshal_Simple_TPM2B_NoSizeCheck( UINT8 *outBuffPtr, UINT32 maxResponseSi
             &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
             var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
 
+#define Marshal_TPM2B_DIGEST(SYS_CONTEXT, digest) \
+    MARSHAL_ADAPTER(TPM2B_DIGEST, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            digest, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
 /*
  * These macros expand to adapter macros. They're meant to be a layer
  * adapting the existing Unmarshal_* API to the new stuff going into
@@ -212,6 +218,12 @@ void Unmarshal_Simple_TPM2B_NoSizeCheck( UINT8 *outBuffPtr, UINT32 maxResponseSi
             ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
             &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
             var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+#define Unmarshal_TPM2B_DIGEST(SYS_CONTEXT, digest) \
+    UNMARSHAL_ADAPTER(TPM2B_DIGEST, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            digest, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
 
 void Marshal_TPMS_EMPTY( TSS2_SYS_CONTEXT *sysContext, TPMS_EMPTY *empty );
 void Unmarshal_TPMS_EMPTY( TSS2_SYS_CONTEXT *sysContext, TPMS_EMPTY *empty );
