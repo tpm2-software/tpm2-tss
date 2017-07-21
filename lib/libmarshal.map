@@ -28,6 +28,22 @@
         TPM_CC_Unmarshal;
         TPM_ST_Marshal;
         TPM_ST_Unmarshal;
+        TPMA_ALGORITHM_Marshal;
+        TPMA_ALGORITHM_Unmarshal;
+        TPMA_CC_Marshal;
+        TPMA_CC_Unmarshal;
+        TPMA_LOCALITY_Marshal;
+        TPMA_LOCALITY_Unmarshal;
+        TPMA_NV_Marshal;
+        TPMA_NV_Unmarshal;
+        TPMA_OBJECT_Marshal;
+        TPMA_OBJECT_Unmarshal;
+        TPMA_PERMANENT_Marshal;
+        TPMA_PERMANENT_Unmarshal;
+        TPMA_SESSION_Marshal;
+        TPMA_SESSION_Unmarshal;
+        TPMA_STARTUP_CLEAR_Marshal;
+        TPMA_STARTUP_CLEAR_Unmarshal;
     local:
         *;
 };
