@@ -19,6 +19,10 @@ The later implements the protocol exposed by the Microsoft software TPM2 simulat
 # Build and Installation Instructions:
 Instructions to build and install TPM2.0-TSS are available in the [INSTALL](INSTALL.md) file.
 
+# Getting in Touch:
+If you're looking to discuss the source code in this project or get some questions answered you should join the 01org TPM2 mailing list: https://lists.01.org/mailman/listinfo/tpm2.
+We've also got an IRC channel set up on [FreeNode](https://freenode.net/) called #tpm2.0-tss.
+
 # Test Suite
 This repository contains a test suite intended to exercise the TCTI and SAPI code.
 This test suite is *not* intended to test a TPM implementation and so this test suite should only be run against a TPM simulator.
