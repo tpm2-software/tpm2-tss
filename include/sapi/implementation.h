@@ -318,7 +318,7 @@
     ((MAX_RSA_KEY_BYTES/2)*(3+CRT_FORMAT_RSA*2))
 #define  MAX_VENDOR_BUFFER_SIZE           1024
 
-// From TCG Algorithm Registry: Table 2 - Definition of TPM_ALG_ID Constants
+// From TCG Algorithm Registry: Table 3 - Definition of TPM_ALG_ID Constants
 
 typedef  UINT16             TPM_ALG_ID;
 #define  TPM_ALG_ERROR               (TPM_ALG_ID)(0x0000)
@@ -444,6 +444,18 @@ typedef  UINT16             TPM_ALG_ID;
 #if defined ALG_CTR && ALG_CTR == YES
 #define  TPM_ALG_CTR                 (TPM_ALG_ID)(0x0040)
 #endif
+#if defined ALG_SHA3_256 && ALG_SHA3_256 == YES
+#define TPM_ALG_SHA3_256 (TPM_ALG_ID)0x27
+#endif
+#define ALG_SHA3_256_VALUE 0x27
+#if defined ALG_SHA3_384 && ALG_SHA3_384 == YES
+#define TPM_ALG_SHA3_384 (TPM_ALG_ID)0x28
+#endif
+#define ALG_SHA3_384_VALUE 0x28
+#if defined ALG_SHA3_512 && ALG_SHA3_512 == YES
+#define TPM_ALG_SHA3_512 (TPM_ALG_ID)0x29
+#endif
+#define ALG_SHA3_512_VALUE 0x29
 #define  ALG_CTR_VALUE               0x0040
 #if defined ALG_OFB && ALG_OFB == YES
 #define  TPM_ALG_OFB                 (TPM_ALG_ID)(0x0041)
