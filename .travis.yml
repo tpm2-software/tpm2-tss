@@ -24,7 +24,7 @@ addons:
       name: "01org/TPM2.0-TSS"
       description: Build submitted via Travis-CI
     notification_email: philip.b.tricca@intel.com
-    build_command_prepend: "./configure; make clean"
+    build_command_prepend: "make clean"
     build_command: "make --jobs=$(($(nproc)*2))"
     branch_pattern: coverity_scan
 
