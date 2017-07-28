@@ -6209,47 +6209,6 @@ void EcEphemeralTest()
     CheckPassed( rval );
 }
 
-
-void AbiVersionTests()
-{
-    UINT32 contextSize = 1000;
-    TSS2_RC rval;
-    TSS2_SYS_CONTEXT *sysContext;
-    TSS2_ABI_VERSION tstAbiVersion = { TSSWG_INTEROP, TSS_SAPI_FIRST_FAMILY, TSS_SAPI_FIRST_LEVEL, TSS_SAPI_FIRST_VERSION };
-
-    DebugPrintf( NO_PREFIX, "\nABI NEGOTIATION TESTS:\n" );
-
-    // Get the size needed for system context structure.
-    contextSize = Tss2_Sys_GetContextSize( contextSize );
-
-    // Allocate the space for the system context structure.
-    sysContext = (TSS2_SYS_CONTEXT *)malloc( contextSize );
-
-    if( sysContext != 0 )
-    {
-        // Initialized the system context structure.
-        tstAbiVersion.tssCreator = 0xF0000000;
-        rval = Tss2_Sys_Initialize( sysContext, contextSize, resMgrTctiContext, &tstAbiVersion );
-        CheckFailed( rval, TSS2_SYS_RC_ABI_MISMATCH );
-
-        tstAbiVersion.tssCreator = TSSWG_INTEROP;
-        tstAbiVersion.tssFamily = 0xF0000000;
-        rval = Tss2_Sys_Initialize( sysContext, contextSize, resMgrTctiContext, &tstAbiVersion );
-        CheckFailed( rval, TSS2_SYS_RC_ABI_MISMATCH );
-
-        tstAbiVersion.tssFamily = TSS_SAPI_FIRST_FAMILY;
-        tstAbiVersion.tssLevel = 0xF0000000;
-        rval = Tss2_Sys_Initialize( sysContext, contextSize, resMgrTctiContext, &tstAbiVersion );
-        CheckFailed( rval, TSS2_SYS_RC_ABI_MISMATCH );
-
-        tstAbiVersion.tssLevel = TSS_SAPI_FIRST_LEVEL;
-        tstAbiVersion.tssVersion = 0xF0000000;
-        rval = Tss2_Sys_Initialize( sysContext, contextSize, resMgrTctiContext, &tstAbiVersion );
-        CheckFailed( rval, TSS2_SYS_RC_ABI_MISMATCH );
-    }
-    free( sysContext );
-}
-
 void TestCreate1()
 {
     UINT32 rval;
@@ -6413,8 +6372,6 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     InitEntities();
 
     InitNullSession( &nullSessionData);
-
-    AbiVersionTests();
 
     SysInitializeTests();
 
