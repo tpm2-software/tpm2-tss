@@ -63,6 +63,7 @@ TESTS_INTEGRATION = \
     test/integration/create-keyedhash-sha1-hmac.int \
     test/integration/evict-ctrl.int \
     test/integration/get-random.int \
+    test/integration/abi-version.int \
     test/integration/pcr-extension.int \
     test/integration/self-test.int \
     test/integration/start-auth-session.int \
@@ -215,6 +216,10 @@ test_integration_evict_ctrl_int_SOURCES = \
 
 test_integration_get_random_int_LDADD   = $(TESTS_LDADD)
 test_integration_get_random_int_SOURCES = test/integration/get-random.int.c \
+    test/integration/main.c
+
+test_integration_abi_version_int_LDADD   = $(TESTS_LDADD)
+test_integration_abi_version_int_SOURCES = test/integration/abi-version.int.c \
     test/integration/main.c
 
 test_integration_pcr_extension_int_LDADD   = $(TESTS_LDADD)
