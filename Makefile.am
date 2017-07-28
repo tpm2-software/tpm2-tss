@@ -213,6 +213,10 @@ test_integration_evict_ctrl_int_SOURCES = \
     test/integration/evict-ctrl.int.c \
     test/integration/main.c
 
+test_integration_sys_initialize_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_initialize_int_SOURCES = test/integration/sys-initialize.int.c \
+    test/integration/main.c
+
 test_integration_get_random_int_LDADD   = $(TESTS_LDADD)
 test_integration_get_random_int_SOURCES = test/integration/get-random.int.c \
     test/integration/main.c
