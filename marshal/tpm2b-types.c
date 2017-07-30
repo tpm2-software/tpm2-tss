@@ -34,34 +34,37 @@
 #include "tss2_endian.h"
 #include "log.h"
 
-#define BASE_MARSHAL(type) \
-TSS2_RC type##_Marshal(type src, uint8_t buffer[], \
+#define TPM2B_MARSHAL(type) \
+TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
                        size_t buffer_size, size_t *offset) \
 { \
-    size_t  local_offset = 0; \
+    size_t local_offset = 0; \
+    TSS2_RC rc; \
 \
+    if (src == NULL) { \
+        LOG (WARNING, "src param is NULL"); \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } \
     if (offset != NULL) { \
-        LOG (INFO, "offset non-NULL, initial value: %zu", *offset); \
+        LOG (DEBUG, "offset non-NULL, initial value: %zu", *offset); \
         local_offset = *offset; \
     } \
-\
     if (buffer == NULL && offset == NULL) { \
         LOG (WARNING, "buffer and offset parameter are NULL"); \
         return TSS2_TYPES_RC_BAD_REFERENCE; \
     } else if (buffer == NULL && offset != NULL) { \
-        *offset += sizeof (src); \
+        *offset += sizeof(src->t.size) + src->t.size; \
         LOG (INFO, "buffer NULL and offset non-NULL, updating offset to %zu", \
              *offset); \
         return TSS2_RC_SUCCESS; \
     } else if (buffer_size < local_offset || \
-               buffer_size - local_offset < sizeof (src)) \
-    { \
+               buffer_size - local_offset < (sizeof(src->t.size) + src->t.size)) { \
         LOG (WARNING, \
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
              local_offset, \
-             sizeof (src)); \
+             sizeof(src->t.size) + src->t.size); \
         return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
     } \
 \
@@ -72,59 +75,48 @@ TSS2_RC type##_Marshal(type src, uint8_t buffer[], \
          (uintptr_t)buffer, \
          local_offset); \
 \
-    switch (sizeof(type)) { \
-        case 1: \
-            break; \
-        case 2: \
-            src = HOST_TO_BE_16(src); \
-            break; \
-        case 4: \
-            src = HOST_TO_BE_32(src); \
-            break; \
-        case 8: \
-            src = HOST_TO_BE_64(src); \
-            break; \
+    rc = UINT16_Marshal(src->t.size, buffer, buffer_size, &local_offset); \
+    if (rc) \
+        return rc; \
 \
+    if (src->t.size) { \
+        memcpy(&buffer[local_offset], ((TPM2B *)src)->buffer, src->t.size); \
+        local_offset += src->t.size; \
     } \
-    memcpy (&buffer [local_offset], &src, sizeof(src)); \
+\
     if (offset != NULL) { \
-        *offset = local_offset + sizeof(src); \
+        *offset += local_offset - *offset; \
         LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
     } \
 \
     return TSS2_RC_SUCCESS; \
 }
 
-#define BASE_UNMARSHAL(type) \
+#define TPM2B_UNMARSHAL(type) \
 TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                          size_t *offset, type *dest) \
 { \
     size_t  local_offset = 0; \
-    type tmp = 0; \
+    UINT16 size = 0; \
+    TSS2_RC rc; \
 \
     if (offset != NULL) { \
-        LOG (INFO, "offset non-NULL, initial value: %zu", *offset); \
+        LOG (DEBUG, "offset non-NULL, initial value: %zu", *offset); \
         local_offset = *offset; \
     } \
 \
     if (buffer == NULL || (dest == NULL && offset == NULL)) { \
         LOG (WARNING, "buffer or dest and offset parameter are NULL"); \
         return TSS2_TYPES_RC_BAD_REFERENCE; \
-    } else if (dest == NULL && offset != NULL) { \
-        *offset += sizeof (type); \
-        LOG (INFO, \
-             "buffer NULL and offset non-NULL, updating offset to %zu", \
-             *offset); \
-        return TSS2_RC_SUCCESS; \
     } else if (buffer_size < local_offset || \
-               sizeof (*dest) > buffer_size - local_offset) \
+               sizeof(size) > buffer_size - local_offset) \
     { \
         LOG (WARNING, \
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
              local_offset, \
-             sizeof (*dest)); \
+             sizeof(size)); \
         return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
     } \
 \
@@ -135,26 +127,26 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
          (uintptr_t)dest, \
          local_offset); \
 \
-    memcpy (&tmp, &buffer [local_offset], sizeof (tmp)); \
+    rc = UINT16_Unmarshal(buffer, buffer_size, &local_offset, &size); \
+    if (rc) \
+        return rc; \
 \
-    switch (sizeof(type)) { \
-        case 1: \
-            *dest = (type)tmp; \
-            break; \
-        case 2: \
-            *dest = BE_TO_HOST_16(tmp); \
-            break; \
-        case 4: \
-            *dest = BE_TO_HOST_32(tmp); \
-            break; \
-        case 8: \
-            *dest = BE_TO_HOST_64(tmp); \
-            break; \
-\
+    if (size > buffer_size - local_offset) { \
+        LOG (WARNING, \
+             "buffer_size: %zu with offset: %zu are insufficient for object " \
+             "of size %zu", \
+             buffer_size, \
+             local_offset, \
+             (size_t)size); \
+        return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
     } \
-\
+    if (dest != NULL) { \
+        dest->t.size = size; \
+        memcpy(((TPM2B *)dest)->buffer, &buffer[local_offset], size); \
+    } \
+    local_offset += size; \
     if (offset != NULL) { \
-        *offset = local_offset + sizeof (*dest); \
+        *offset += local_offset - *offset; \
         LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
     } \
 \
@@ -162,26 +154,48 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 }
 
 /*
- * These macros expand to (un)marshal functions for each of the base types
- * the specification part 2, table 3: Definition of Base Types.
+ * These macros expand to (un)marshal functions for each of the TPMA types
+ * the specification part 2.
  */
-BASE_MARSHAL  (INT8);
-BASE_UNMARSHAL(INT8);
-BASE_MARSHAL  (INT16);
-BASE_UNMARSHAL(INT16);
-BASE_MARSHAL  (INT32);
-BASE_UNMARSHAL(INT32);
-BASE_MARSHAL  (INT64);
-BASE_UNMARSHAL(INT64);
-BASE_MARSHAL  (UINT8);
-BASE_UNMARSHAL(UINT8);
-BASE_MARSHAL  (UINT16);
-BASE_UNMARSHAL(UINT16);
-BASE_MARSHAL  (UINT32);
-BASE_UNMARSHAL(UINT32);
-BASE_MARSHAL  (UINT64);
-BASE_UNMARSHAL(UINT64);
-BASE_MARSHAL  (TPM_CC);
-BASE_UNMARSHAL(TPM_CC);
-BASE_MARSHAL  (TPM_ST);
-BASE_UNMARSHAL(TPM_ST);
+TPM2B_MARSHAL  (TPM2B_DIGEST);
+TPM2B_UNMARSHAL(TPM2B_DIGEST);
+TPM2B_MARSHAL  (TPM2B_DATA);
+TPM2B_UNMARSHAL(TPM2B_DATA);
+TPM2B_MARSHAL  (TPM2B_EVENT);
+TPM2B_UNMARSHAL(TPM2B_EVENT);
+TPM2B_MARSHAL  (TPM2B_MAX_BUFFER);
+TPM2B_UNMARSHAL(TPM2B_MAX_BUFFER);
+TPM2B_MARSHAL  (TPM2B_MAX_NV_BUFFER);
+TPM2B_UNMARSHAL(TPM2B_MAX_NV_BUFFER);
+TPM2B_MARSHAL  (TPM2B_IV);
+TPM2B_UNMARSHAL(TPM2B_IV);
+TPM2B_MARSHAL  (TPM2B_NAME);
+TPM2B_UNMARSHAL(TPM2B_NAME);
+TPM2B_MARSHAL  (TPM2B_DIGEST_VALUES);
+TPM2B_UNMARSHAL(TPM2B_DIGEST_VALUES);
+TPM2B_MARSHAL  (TPM2B_ATTEST);
+TPM2B_UNMARSHAL(TPM2B_ATTEST);
+TPM2B_MARSHAL  (TPM2B_SYM_KEY);
+TPM2B_UNMARSHAL(TPM2B_SYM_KEY);
+TPM2B_MARSHAL  (TPM2B_SENSITIVE_DATA);
+TPM2B_UNMARSHAL(TPM2B_SENSITIVE_DATA);
+TPM2B_MARSHAL  (TPM2B_PUBLIC_KEY_RSA);
+TPM2B_UNMARSHAL(TPM2B_PUBLIC_KEY_RSA);
+TPM2B_MARSHAL  (TPM2B_PRIVATE_KEY_RSA);
+TPM2B_UNMARSHAL(TPM2B_PRIVATE_KEY_RSA);
+TPM2B_MARSHAL  (TPM2B_ECC_PARAMETER);
+TPM2B_UNMARSHAL(TPM2B_ECC_PARAMETER);
+TPM2B_MARSHAL  (TPM2B_ENCRYPTED_SECRET);
+TPM2B_UNMARSHAL(TPM2B_ENCRYPTED_SECRET);
+TPM2B_MARSHAL  (TPM2B_PRIVATE_VENDOR_SPECIFIC);
+TPM2B_UNMARSHAL(TPM2B_PRIVATE_VENDOR_SPECIFIC);
+TPM2B_MARSHAL  (TPM2B_PRIVATE);
+TPM2B_UNMARSHAL(TPM2B_PRIVATE);
+TPM2B_MARSHAL  (TPM2B_ID_OBJECT);
+TPM2B_UNMARSHAL(TPM2B_ID_OBJECT);
+TPM2B_MARSHAL  (TPM2B_CONTEXT_SENSITIVE);
+TPM2B_UNMARSHAL(TPM2B_CONTEXT_SENSITIVE);
+TPM2B_MARSHAL  (TPM2B_CONTEXT_DATA);
+TPM2B_UNMARSHAL(TPM2B_CONTEXT_DATA);
+TPM2B_MARSHAL  (TPM2B_CREATION_DATA);
+TPM2B_UNMARSHAL(TPM2B_CREATION_DATA);

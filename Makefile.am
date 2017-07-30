@@ -153,8 +153,7 @@ test_unit_UINT64_marshal_SOURCES = test/unit/UINT64-marshal.c
 endif # UNIT
 
 marshal_libmarshal_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/libmarshal.map
-marshal_libmarshal_la_SOURCES = marshal/base-types.c marshal/log.h \
-    marshal/tss2_endian.h log/log.c log/log.h
+marshal_libmarshal_la_SOURCES = $(MARSHAL_SRC) log/log.c
 
 sysapi_libsapi_la_LIBADD  = $(libmarshal)
 sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPI_H) $(SYSAPIUTIL_C) \

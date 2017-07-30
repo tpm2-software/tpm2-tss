@@ -34,73 +34,79 @@
 #include "tss2_endian.h"
 #include "log.h"
 
-#define BASE_MARSHAL(type) \
-TSS2_RC type##_Marshal(type src, uint8_t buffer[], \
+#define ADDR &
+#define VAL
+
+#define TPML_MARSHAL(type, marshal_func, buf_name, op) \
+TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
                        size_t buffer_size, size_t *offset) \
 { \
     size_t  local_offset = 0; \
+    UINT32 i, count = 0; \
+    TSS2_RC ret = TSS2_RC_SUCCESS; \
+    uint8_t *buf_ptr = buffer; \
+    uint8_t local_buffer[buffer_size]; \
 \
     if (offset != NULL) { \
         LOG (INFO, "offset non-NULL, initial value: %zu", *offset); \
         local_offset = *offset; \
     } \
 \
+    if (src == NULL) { \
+        LOG (WARNING, "src is NULL"); \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } \
+\
     if (buffer == NULL && offset == NULL) { \
         LOG (WARNING, "buffer and offset parameter are NULL"); \
         return TSS2_TYPES_RC_BAD_REFERENCE; \
-    } else if (buffer == NULL && offset != NULL) { \
-        *offset += sizeof (src); \
-        LOG (INFO, "buffer NULL and offset non-NULL, updating offset to %zu", \
-             *offset); \
-        return TSS2_RC_SUCCESS; \
     } else if (buffer_size < local_offset || \
-               buffer_size - local_offset < sizeof (src)) \
-    { \
+               buffer_size - local_offset < sizeof(count)) { \
         LOG (WARNING, \
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
              local_offset, \
-             sizeof (src)); \
+             sizeof(count)); \
         return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
     } \
+\
+    if (buf_ptr == NULL) \
+        buf_ptr = local_buffer; \
 \
     LOG (DEBUG, \
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", \
          (uintptr_t)&src, \
-         (uintptr_t)buffer, \
+         (uintptr_t)buf_ptr, \
          local_offset); \
 \
-    switch (sizeof(type)) { \
-        case 1: \
-            break; \
-        case 2: \
-            src = HOST_TO_BE_16(src); \
-            break; \
-        case 4: \
-            src = HOST_TO_BE_32(src); \
-            break; \
-        case 8: \
-            src = HOST_TO_BE_64(src); \
-            break; \
+    ret = UINT32_Marshal(src->count, buf_ptr, buffer_size, &local_offset); \
+    if (ret) \
+        return ret; \
 \
+    for (i = 0; i < src->count; i++) \
+    { \
+        ret = marshal_func(op src->buf_name[i], buf_ptr, buffer_size, &local_offset); \
+        if (ret) \
+            return ret; \
     } \
-    memcpy (&buffer [local_offset], &src, sizeof(src)); \
     if (offset != NULL) { \
-        *offset = local_offset + sizeof(src); \
-        LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
+        *offset += local_offset - *offset; \
+        LOG (DEBUG, "offset parameter non-NULL updated to %zu", *offset); \
     } \
 \
     return TSS2_RC_SUCCESS; \
 }
 
-#define BASE_UNMARSHAL(type) \
+#define TPML_UNMARSHAL(type, unmarshal_func, buf_name) \
 TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                          size_t *offset, type *dest) \
 { \
     size_t  local_offset = 0; \
-    type tmp = 0; \
+    UINT32 i, count = 0; \
+    TSS2_RC ret = TSS2_RC_SUCCESS; \
+    type local_dst; \
 \
     if (offset != NULL) { \
         LOG (INFO, "offset non-NULL, initial value: %zu", *offset); \
@@ -110,21 +116,15 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     if (buffer == NULL || (dest == NULL && offset == NULL)) { \
         LOG (WARNING, "buffer or dest and offset parameter are NULL"); \
         return TSS2_TYPES_RC_BAD_REFERENCE; \
-    } else if (dest == NULL && offset != NULL) { \
-        *offset += sizeof (type); \
-        LOG (INFO, \
-             "buffer NULL and offset non-NULL, updating offset to %zu", \
-             *offset); \
-        return TSS2_RC_SUCCESS; \
     } else if (buffer_size < local_offset || \
-               sizeof (*dest) > buffer_size - local_offset) \
+               sizeof(count) > buffer_size - local_offset) \
     { \
         LOG (WARNING, \
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
              local_offset, \
-             sizeof (*dest)); \
+             sizeof(count)); \
         return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
     } \
 \
@@ -135,26 +135,24 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
          (uintptr_t)dest, \
          local_offset); \
 \
-    memcpy (&tmp, &buffer [local_offset], sizeof (tmp)); \
+    if (dest == NULL) \
+        dest = &local_dst; \
 \
-    switch (sizeof(type)) { \
-        case 1: \
-            *dest = (type)tmp; \
-            break; \
-        case 2: \
-            *dest = BE_TO_HOST_16(tmp); \
-            break; \
-        case 4: \
-            *dest = BE_TO_HOST_32(tmp); \
-            break; \
-        case 8: \
-            *dest = BE_TO_HOST_64(tmp); \
-            break; \
+    ret = UINT32_Unmarshal(buffer, buffer_size, &local_offset, &count); \
+    if (ret) \
+        return ret; \
 \
+    dest->count = count; \
+\
+    for (i = 0; i < count; i++) \
+    { \
+        ret = unmarshal_func(buffer, buffer_size, &local_offset, &dest->buf_name[i]); \
+        if (ret) \
+            return ret; \
     } \
 \
     if (offset != NULL) { \
-        *offset = local_offset + sizeof (*dest); \
+        *offset += local_offset - *offset; \
         LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
     } \
 \
@@ -162,26 +160,26 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 }
 
 /*
- * These macros expand to (un)marshal functions for each of the base types
- * the specification part 2, table 3: Definition of Base Types.
+ * These macros expand to (un)marshal functions for each of the TPML types
+ * the specification part 2.
  */
-BASE_MARSHAL  (INT8);
-BASE_UNMARSHAL(INT8);
-BASE_MARSHAL  (INT16);
-BASE_UNMARSHAL(INT16);
-BASE_MARSHAL  (INT32);
-BASE_UNMARSHAL(INT32);
-BASE_MARSHAL  (INT64);
-BASE_UNMARSHAL(INT64);
-BASE_MARSHAL  (UINT8);
-BASE_UNMARSHAL(UINT8);
-BASE_MARSHAL  (UINT16);
-BASE_UNMARSHAL(UINT16);
-BASE_MARSHAL  (UINT32);
-BASE_UNMARSHAL(UINT32);
-BASE_MARSHAL  (UINT64);
-BASE_UNMARSHAL(UINT64);
-BASE_MARSHAL  (TPM_CC);
-BASE_UNMARSHAL(TPM_CC);
-BASE_MARSHAL  (TPM_ST);
-BASE_UNMARSHAL(TPM_ST);
+TPML_MARSHAL(TPML_CC, TPM_CC_Marshal, commandCodes, VAL)
+TPML_UNMARSHAL(TPML_CC, TPM_CC_Unmarshal, commandCodes)
+TPML_MARSHAL(TPML_CCA, TPMA_CC_Marshal, commandAttributes, VAL)
+TPML_UNMARSHAL(TPML_CCA, TPMA_CC_Unmarshal, commandAttributes)
+TPML_MARSHAL(TPML_ALG, UINT16_Marshal, algorithms, VAL)
+TPML_UNMARSHAL(TPML_ALG, UINT16_Unmarshal, algorithms)
+TPML_MARSHAL(TPML_HANDLE, UINT32_Marshal, handle, VAL)
+TPML_UNMARSHAL(TPML_HANDLE, UINT32_Unmarshal, handle)
+TPML_MARSHAL(TPML_DIGEST, TPM2B_DIGEST_Marshal, digests, ADDR)
+TPML_UNMARSHAL(TPML_DIGEST, TPM2B_DIGEST_Unmarshal, digests)
+TPML_MARSHAL(TPML_ALG_PROPERTY, TPMS_ALG_PROPERTY_Marshal, algProperties, ADDR)
+TPML_UNMARSHAL(TPML_ALG_PROPERTY, TPMS_ALG_PROPERTY_Unmarshal, algProperties)
+TPML_MARSHAL(TPML_ECC_CURVE, UINT16_Marshal, eccCurves, VAL)
+TPML_UNMARSHAL(TPML_ECC_CURVE, UINT16_Unmarshal, eccCurves)
+TPML_MARSHAL(TPML_TAGGED_TPM_PROPERTY, TPMS_TAGGED_PROPERTY_Marshal, tpmProperty, ADDR)
+TPML_UNMARSHAL(TPML_TAGGED_TPM_PROPERTY, TPMS_TAGGED_PROPERTY_Unmarshal, tpmProperty)
+TPML_MARSHAL(TPML_TAGGED_PCR_PROPERTY, TPMS_TAGGED_PCR_SELECT_Marshal, pcrProperty, ADDR)
+TPML_UNMARSHAL(TPML_TAGGED_PCR_PROPERTY, TPMS_TAGGED_PCR_SELECT_Unmarshal, pcrProperty)
+TPML_MARSHAL(TPML_PCR_SELECTION, TPMS_PCR_SELECTION_Marshal, pcrSelections, ADDR)
+TPML_UNMARSHAL(TPML_PCR_SELECTION, TPMS_PCR_SELECTION_Unmarshal, pcrSelections)

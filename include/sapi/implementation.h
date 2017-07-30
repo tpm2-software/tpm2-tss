@@ -38,14 +38,7 @@
 #undef TRUE
 #undef FALSE
 
-// This table is built in to TpmStructures() Change these definitions to turn all algorithms or commands on or off
-#define      ALG_YES      YES
-#define      ALG_NO       NO
-#define      CC_YES       YES
-#define      CC_NO        NO
-
 // From TPM 2.0 Part 2: Table 4 - Defines for Logic Values
-
 #define  TRUE     1
 #define  FALSE    0
 #define  YES      1
@@ -53,18 +46,25 @@
 #define  SET      1
 #define  CLEAR    0
 
-// From Vendor-Specific: Table 1 - Defines for Processor Values
+// This table is built in to TpmStructures() Change these definitions to turn all algorithms or commands on or off
+#define      ALG_YES      YES
+#define      ALG_NO       NO
+#define      CC_YES       YES
+#define      CC_NO        NO
 
-#define BIG_ENDIAN_TPM       	NO	/*  to YES or NO according to the processor */
+// From Vendor-Specific: Table 1 - Defines for Processor Values
+#define BIG_ENDIAN_TPM		NO	/*  to YES or NO according to the processor */
 #define LITTLE_ENDIAN_TPM	YES	/*  to YES or NO according to the processor */
 #define NO_AUTO_ALIGN		NO	/*  to YES if the processor does not allow unaligned accesses */
 
 // From Vendor-Specific: Table 2 - Defines for Implemented Algorithms
 
 #define  ALG_RSA               ALG_YES
+#define  ALG_SHA               ALG_YES
 #define  ALG_SHA1              ALG_YES
 #define  ALG_HMAC              ALG_YES
 #define  ALG_AES               ALG_YES
+#define  ALG_CAMELLIA          ALG_YES
 #define  ALG_MGF1              ALG_YES
 #define  ALG_XOR               ALG_YES
 #define  ALG_KEYEDHASH         ALG_YES
@@ -83,7 +83,7 @@
 #define  ALG_ECDAA             (ALG_YES*ALG_ECC)
 #define  ALG_SM2               (ALG_YES*ALG_ECC)
 #define  ALG_ECSCHNORR         (ALG_YES*ALG_ECC)
-#define  ALG_ECMQV             (ALG_NO*ALG_ECC)
+#define  ALG_ECMQV             (ALG_YES*ALG_ECC)
 #define  ALG_SYMCIPHER         ALG_YES
 #define  ALG_KDF1_SP800_56A    (ALG_YES*ALG_ECC)
 #define  ALG_KDF2              ALG_NO
@@ -106,21 +106,17 @@
 #define  AES_KEY_SIZE_BITS_256      AES_ALLOWED_KEY_SIZE_256
 #define  MAX_AES_KEY_BITS           256
 #define  MAX_AES_KEY_BYTES          32
-#define MAX_AES_BLOCK_SIZE_BYTES				      \
-    MAX(AES_128_BLOCK_SIZE_BYTES,					\
-	MAX(AES_256_BLOCK_SIZE_BYTES, 0))
+#define  MAX_AES_BLOCK_SIZE_BYTES    AES_256_BLOCK_SIZE_BYTES
 #define  SM4_KEY_SIZES_BITS         {128}
 #define  SM4_KEY_SIZE_BITS_128      SM4_ALLOWED_KEY_SIZE_128
 #define  MAX_SM4_KEY_BITS           128
 #define  MAX_SM4_KEY_BYTES          16
-#define MAX_SM4_BLOCK_SIZE_BYTES			\
-    MAX(SM4_128_BLOCK_SIZE_BYTES, 0)
+#define  MAX_SM4_BLOCK_SIZE_BYTES    SM4_128_BLOCK_SIZE_BYTES
 #define  CAMELLIA_KEY_SIZES_BITS    {128}
 #define  CAMELLIA_KEY_SIZE_BITS_128    CAMELLIA_ALLOWED_KEY_SIZE_128
 #define  MAX_CAMELLIA_KEY_BITS      128
 #define  MAX_CAMELLIA_KEY_BYTES     16
-#define MAX_CAMELLIA_BLOCK_SIZE_BYTES				\
-    MAX(CAMELLIA_128_BLOCK_SIZE_BYTES, 0)
+#define  MAX_CAMELLIA_BLOCK_SIZE_BYTES CAMELLIA_128_BLOCK_SIZE_BYTES
 
 // From Vendor-Specific: Table 5 - Defines for Implemented Curves
 
@@ -488,6 +484,7 @@ typedef  UINT16             TPM_ECC_CURVE;
 // From TCG Algorithm Registry: Table 11 - Defines for SM2_P256 ECC Values Data in CrpiEccData.c
 
 // From TCG Algorithm Registry: Table 12 - Defines for SHA1 Hash Values
+#define  SHA_DIGEST_SIZE     20
 #define  SHA1_DIGEST_SIZE    20
 #define  SHA1_BLOCK_SIZE     64
 #define  SHA1_DER_SIZE       15
@@ -1331,36 +1328,14 @@ typedef  UINT32             TPM_CC;
 					  )
 
 #define VENDOR_COMMAND_ARRAY_SIZE   ( 0					\
-				      + CC_Vendor_TCG_Test		\
-				      )
+				      + CC_Vendor_TCG_Test)
 
 #define COMMAND_COUNT							\
     (LIBRARY_COMMAND_ARRAY_SIZE + VENDOR_COMMAND_ARRAY_SIZE)
 
 
-#ifndef MAX
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-#endif
-
-#define MAX_HASH_BLOCK_SIZE  (						\
-			      MAX(ALG_SHA1 * SHA1_BLOCK_SIZE,		\
-				  MAX(ALG_SHA256 * SHA256_BLOCK_SIZE,	\
-				      MAX(ALG_SHA384 * SHA384_BLOCK_SIZE, \
-					  MAX(ALG_SM3_256 * SM3_256_BLOCK_SIZE, \
-					      MAX(ALG_SHA512 * SHA512_BLOCK_SIZE, \
-						  0 ))))))
-
-#define MAX_DIGEST_SIZE      (						\
-			      MAX(ALG_SHA1 * SHA1_DIGEST_SIZE,		\
-				  MAX(ALG_SHA256 * SHA256_DIGEST_SIZE,	\
-				      MAX(ALG_SHA384 * SHA384_DIGEST_SIZE, \
-					  MAX(ALG_SM3_256 * SM3_256_DIGEST_SIZE, \
-					      MAX(ALG_SHA512 * SHA512_DIGEST_SIZE, \
-						  0 ))))))
-
-#if MAX_DIGEST_SIZE == 0 || MAX_HASH_BLOCK_SIZE == 0
-#error "Hash data not valid"
-#endif
+#define MAX_HASH_BLOCK_SIZE SHA512_BLOCK_SIZE
+#define MAX_DIGEST_SIZE SHA512_DIGEST_SIZE
 
 #define HASH_COUNT (ALG_SHA1+ALG_SHA256+ALG_SHA384+ALG_SM3_256+ALG_SHA512)
 
@@ -1369,10 +1344,6 @@ TPM2B_TYPE(MAX_HASH_BLOCK, MAX_HASH_BLOCK_SIZE);
 // Following typedef is for some old code
 
 typedef TPM2B_MAX_HASH_BLOCK    TPM2B_HASH_BLOCK;
-
-#ifndef MAX
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-#endif
 
 #ifndef ALG_CAMELLIA
 #   define ALG_CAMELLIA         NO
@@ -1401,20 +1372,9 @@ typedef TPM2B_MAX_HASH_BLOCK    TPM2B_HASH_BLOCK;
 #   define      MAX_AES_BLOCK_SIZE_BYTES 0
 #endif
 
-#define MAX_SYM_KEY_BITS (						\
-			  MAX(MAX_CAMELLIA_KEY_BITS * ALG_CAMELLIA,	\
-			      MAX(MAX_SM4_KEY_BITS * ALG_SM4,		\
-				  MAX(MAX_AES_KEY_BITS * ALG_AES,	\
-				      0))))
+#define MAX_SYM_KEY_BITS MAX_AES_KEY_BITS
 #define MAX_SYM_KEY_BYTES ((MAX_SYM_KEY_BITS + 7) / 8)
-#define MAX_SYM_BLOCK_SIZE  (						\
-			     MAX(MAX_CAMELLIA_BLOCK_SIZE_BYTES * ALG_CAMELLIA, \
-				 MAX(MAX_SM4_BLOCK_SIZE_BYTES * ALG_SM4, \
-				     MAX(MAX_AES_BLOCK_SIZE_BYTES * ALG_AES, \
-					 0))))
-#if MAX_SYM_KEY_BITS == 0 || MAX_SYM_BLOCK_SIZE == 0
-#   error Bad size for MAX_SYM_KEY_BITS or MAX_SYM_BLOCK_SIZE
-#endif
+#define MAX_SYM_BLOCK_SIZE MAX_AES_BLOCK_SIZE_BYTES
 
 // Define the 2B structure for a seed
 TPM2B_TYPE(SEED, PRIMARY_SEED_SIZE);
