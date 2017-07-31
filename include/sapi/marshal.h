@@ -483,6 +483,398 @@ TPM2B_SYM_KEY_Unmarshal (
     size_t         *offset,
     TPM2B_SYM_KEY  *dest);
 
+TSS2_RC
+TPMS_CONTEXT_Marshal (
+    TPMS_CONTEXT    const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_CONTEXT_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_CONTEXT   *dest);
+
+TSS2_RC
+TPMS_TIME_INFO_Marshal (
+    TPMS_TIME_INFO  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_TIME_INFO_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_TIME_INFO *dest);
+
+TSS2_RC
+TPMS_ECC_POINT_Marshal (
+    TPMS_ECC_POINT  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_ECC_POINT_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_ECC_POINT *dest);
+
+TSS2_RC
+TPMS_NV_PUBLIC_Marshal (
+    TPMS_NV_PUBLIC  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_NV_PUBLIC_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_NV_PUBLIC *dest);
+
+TSS2_RC
+TPMS_ALG_PROPERTY_Marshal (
+    TPMS_ALG_PROPERTY  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_ALG_PROPERTY_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_ALG_PROPERTY *dest);
+
+TSS2_RC
+TPMS_ALGORITHM_DESCRIPTION_Marshal (
+    TPMS_ALGORITHM_DESCRIPTION  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_ALGORITHM_DESCRIPTION_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_ALGORITHM_DESCRIPTION *dest);
+
+TSS2_RC
+TPMS_TAGGED_PROPERTY_Marshal (
+    TPMS_TAGGED_PROPERTY  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_TAGGED_PROPERTY_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_TAGGED_PROPERTY *dest);
+
+TSS2_RC
+TPMS_CLOCK_INFO_Marshal (
+    TPMS_CLOCK_INFO  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_CLOCK_INFO_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_CLOCK_INFO *dest);
+
+TSS2_RC
+TPMS_TIME_ATTEST_INFO_Marshal (
+    TPMS_TIME_ATTEST_INFO  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_TIME_ATTEST_INFO_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_TIME_ATTEST_INFO *dest);
+
+TSS2_RC
+TPMS_CERTIFY_INFO_Marshal (
+    TPMS_CERTIFY_INFO  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_CERTIFY_INFO_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_CERTIFY_INFO *dest);
+
+TSS2_RC
+TPMS_COMMAND_AUDIT_INFO_Marshal (
+    TPMS_COMMAND_AUDIT_INFO  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_COMMAND_AUDIT_INFO_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_COMMAND_AUDIT_INFO *dest);
+
+TSS2_RC
+TPMS_SESSION_AUDIT_INFO_Marshal (
+    TPMS_SESSION_AUDIT_INFO  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_SESSION_AUDIT_INFO_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_SESSION_AUDIT_INFO *dest);
+
+TSS2_RC
+TPMS_CREATION_INFO_Marshal (
+    TPMS_CREATION_INFO  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_CREATION_INFO_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_CREATION_INFO *dest);
+
+TSS2_RC
+TPMS_NV_CERTIFY_INFO_Marshal (
+    TPMS_NV_CERTIFY_INFO  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_NV_CERTIFY_INFO_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_NV_CERTIFY_INFO *dest);
+
+TSS2_RC
+TPMS_AUTH_COMMAND_Marshal (
+    TPMS_AUTH_COMMAND  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_AUTH_COMMAND_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_AUTH_COMMAND *dest);
+
+TSS2_RC
+TPMS_AUTH_RESPONSE_Marshal (
+    TPMS_AUTH_RESPONSE  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_AUTH_RESPONSE_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_AUTH_RESPONSE *dest);
+
+TSS2_RC
+TPMS_SENSITIVE_CREATE_Marshal (
+    TPMS_SENSITIVE_CREATE  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_SENSITIVE_CREATE_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_SENSITIVE_CREATE *dest);
+
+TSS2_RC
+TPMS_SCHEME_HASH_Marshal (
+    TPMS_SCHEME_HASH  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_SCHEME_HASH_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_SCHEME_HASH *dest);
+
+TSS2_RC
+TPMS_SCHEME_ECDAA_Marshal (
+    TPMS_SCHEME_ECDAA  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_SCHEME_ECDAA_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_SCHEME_ECDAA *dest);
+
+TSS2_RC
+TPMS_SCHEME_XOR_Marshal (
+    TPMS_SCHEME_XOR  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_SCHEME_XOR_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_SCHEME_XOR *dest);
+
+TSS2_RC
+TPMS_SIGNATURE_RSA_Marshal (
+    TPMS_SIGNATURE_RSA  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_SIGNATURE_RSA_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_SIGNATURE_RSA *dest);
+
+TSS2_RC
+TPMS_SIGNATURE_ECC_Marshal (
+    TPMS_SIGNATURE_ECC  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_SIGNATURE_ECC_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_SIGNATURE_ECC *dest);
+
+TSS2_RC
+TPMS_NV_PIN_COUNTER_PARAMETERS_Marshal (
+    TPMS_NV_PIN_COUNTER_PARAMETERS  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_NV_PIN_COUNTER_PARAMETERS_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_NV_PIN_COUNTER_PARAMETERS *dest);
+
+TSS2_RC
+TPMS_CONTEXT_DATA_Marshal (
+    TPMS_CONTEXT_DATA  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_CONTEXT_DATA_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_CONTEXT_DATA *dest);
+
+TSS2_RC
+TPMS_PCR_SELECT_Marshal (
+    TPMS_PCR_SELECT  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_PCR_SELECT_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_PCR_SELECT *dest);
+
+TSS2_RC
+TPMS_PCR_SELECTION_Marshal (
+    TPMS_PCR_SELECTION  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_PCR_SELECTION_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_PCR_SELECTION *dest);
+
+TSS2_RC
+TPMS_TAGGED_PCR_SELECT_Marshal (
+    TPMS_TAGGED_PCR_SELECT  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_TAGGED_PCR_SELECT_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_TAGGED_PCR_SELECT *dest);
+
+TSS2_RC
+TPMS_QUOTE_INFO_Marshal (
+    TPMS_QUOTE_INFO  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_QUOTE_INFO_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_QUOTE_INFO *dest);
+
 #ifdef __cplusplus
 }
 #endif
