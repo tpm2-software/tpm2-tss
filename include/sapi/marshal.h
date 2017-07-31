@@ -1043,6 +1043,198 @@ TPML_TAGGED_TPM_PROPERTY_Unmarshal (
     size_t         *offset,
     TPML_TAGGED_TPM_PROPERTY *dest);
 
+TSS2_RC
+TPMU_HA_Marshal (
+    TPMU_HA const *src,
+    uint32_t       selector_value,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMU_HA_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    uint32_t       selector_value,
+    TPMU_HA       *dest);
+
+TSS2_RC
+TPMU_CAPABILITIES_Marshal (
+    TPMU_CAPABILITIES const *src,
+    uint32_t       selector_value,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMU_CAPABILITIES_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    uint32_t       selector_value,
+    TPMU_CAPABILITIES *dest);
+
+TSS2_RC
+TPMU_ATTEST_Marshal (
+    TPMU_ATTEST const *src,
+    uint32_t       selector_value,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMU_ATTEST_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    uint32_t       selector_value,
+    TPMU_ATTEST *dest);
+
+TSS2_RC
+TPMU_SYM_KEY_BITS_Marshal (
+    TPMU_SYM_KEY_BITS const *src,
+    uint32_t       selector_value,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMU_SYM_KEY_BITS_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    uint32_t       selector_value,
+    TPMU_SYM_KEY_BITS *dest);
+
+TSS2_RC
+TPMU_SYM_MODE_Marshal (
+    TPMU_SYM_MODE const *src,
+    uint32_t       selector_value,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMU_SYM_MODE_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    uint32_t       selector_value,
+    TPMU_SYM_MODE *dest);
+
+TSS2_RC
+TPMU_SIG_SCHEME_Marshal (
+    TPMU_SIG_SCHEME const *src,
+    uint32_t       selector_value,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMU_SIG_SCHEME_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    uint32_t       selector_value,
+    TPMU_SIG_SCHEME *dest);
+
+TSS2_RC
+TPMU_KDF_SCHEME_Marshal (
+    TPMU_KDF_SCHEME const *src,
+    uint32_t       selector_value,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMU_KDF_SCHEME_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    uint32_t       selector_value,
+    TPMU_KDF_SCHEME *dest);
+
+TSS2_RC
+TPMU_ASYM_SCHEME_Marshal (
+    TPMU_ASYM_SCHEME const *src,
+    uint32_t       selector_value,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMU_ASYM_SCHEME_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    uint32_t       selector_value,
+    TPMU_ASYM_SCHEME *dest);
+
+TSS2_RC
+TPMU_SCHEME_KEYEDHASH_Marshal (
+    TPMU_SCHEME_KEYEDHASH const *src,
+    uint32_t       selector_value,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMU_SCHEME_KEYEDHASH_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    uint32_t       selector_value,
+    TPMU_SCHEME_KEYEDHASH *dest);
+
+TSS2_RC
+TPMU_SIGNATURE_Marshal (
+    TPMU_SIGNATURE const *src,
+    uint32_t       selector_value,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMU_SIGNATURE_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    uint32_t       selector_value,
+    TPMU_SIGNATURE *dest);
+
+TSS2_RC
+TPMU_SENSITIVE_COMPOSITE_Marshal (
+    TPMU_SENSITIVE_COMPOSITE const *src,
+    uint32_t       selector_value,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMU_SENSITIVE_COMPOSITE_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    uint32_t       selector_value,
+    TPMU_SENSITIVE_COMPOSITE *dest);
+
+TSS2_RC
+TPMU_ENCRYPTED_SECRET_Marshal (
+    TPMU_ENCRYPTED_SECRET const *src,
+    uint32_t       selector_value,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMU_ENCRYPTED_SECRET_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    uint32_t       selector_value,
+    TPMU_ENCRYPTED_SECRET *dest);
+
 #ifdef __cplusplus
 }
 #endif
