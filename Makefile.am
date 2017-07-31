@@ -172,7 +172,7 @@ tcti_libtcti_socket_la_SOURCES  = tcti/platformcommand.c tcti/tcti_socket.c \
     tcti/commonchecks.c tcti/commonchecks.h tcti/sockets.c tcti/sockets.h \
     common/debug.c common/debug.h tcti/logging.h
 
-test_tpmclient_tpmclient_int_CFLAGS   = $(AM_CFLAGS) -DNO_RM_TESTS
+test_tpmclient_tpmclient_int_CFLAGS   = $(AM_CFLAGS) -DNO_RM_TESTS -U_FORTIFY_SOURCE
 test_tpmclient_tpmclient_int_LDADD    = $(TESTS_LDADD)
 test_tpmclient_tpmclient_int_SOURCES  = $(COMMON_C) \
     test/tpmclient/CatSizedByteBuffer.c test/tpmclient/CopySizedBuffer.c \
