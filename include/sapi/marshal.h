@@ -875,6 +875,174 @@ TPMS_QUOTE_INFO_Unmarshal(
     size_t         *offset,
     TPMS_QUOTE_INFO *dest);
 
+TSS2_RC
+TPML_CC_Marshal (
+    TPML_CC const *src,
+    uint8_t      buffer[],
+    size_t       buffer_size,
+    size_t      *offset);
+
+TSS2_RC
+TPML_CC_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPML_CC        *dest);
+
+TSS2_RC
+TPML_CCA_Marshal (
+    TPML_CCA const *src,
+    uint8_t      buffer[],
+    size_t       buffer_size,
+    size_t      *offset);
+
+TSS2_RC
+TPML_CCA_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPML_CCA       *dest);
+
+TSS2_RC
+TPML_ALG_Marshal (
+    TPML_ALG const *src,
+    uint8_t      buffer[],
+    size_t       buffer_size,
+    size_t      *offset);
+
+TSS2_RC
+TPML_ALG_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPML_ALG       *dest);
+
+TSS2_RC
+TPML_HANDLE_Marshal (
+    TPML_HANDLE const *src,
+    uint8_t      buffer[],
+    size_t       buffer_size,
+    size_t      *offset);
+
+TSS2_RC
+TPML_HANDLE_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPML_HANDLE    *dest);
+
+TSS2_RC
+TPML_DIGEST_Marshal (
+    TPML_DIGEST const *src,
+    uint8_t      buffer[],
+    size_t       buffer_size,
+    size_t      *offset);
+
+TSS2_RC
+TPML_DIGEST_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPML_DIGEST    *dest);
+
+TSS2_RC
+TPML_DIGEST_VALUES_Marshal (
+    TPML_DIGEST_VALUES const *src,
+    uint8_t      buffer[],
+    size_t       buffer_size,
+    size_t      *offset);
+
+TSS2_RC
+TPML_DIGEST_VALUES_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPML_DIGEST_VALUES *dest);
+
+TSS2_RC
+TPML_PCR_SELECTION_Marshal (
+    TPML_PCR_SELECTION const *src,
+    uint8_t      buffer[],
+    size_t       buffer_size,
+    size_t      *offset);
+
+TSS2_RC
+TPML_PCR_SELECTION_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPML_PCR_SELECTION *dest);
+
+TSS2_RC
+TPML_ALG_PROPERTY_Marshal (
+    TPML_ALG_PROPERTY const *src,
+    uint8_t      buffer[],
+    size_t       buffer_size,
+    size_t      *offset);
+
+TSS2_RC
+TPML_ALG_PROPERTY_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPML_ALG_PROPERTY *dest);
+
+TSS2_RC
+TPML_ECC_CURVE_Marshal (
+    TPML_ECC_CURVE const *src,
+    uint8_t      buffer[],
+    size_t       buffer_size,
+    size_t      *offset);
+
+TSS2_RC
+TPML_ECC_CURVE_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPML_ECC_CURVE *dest);
+
+TSS2_RC
+TPML_TAGGED_PCR_PROPERTY_Marshal (
+    TPML_TAGGED_PCR_PROPERTY const *src,
+    uint8_t      buffer[],
+    size_t       buffer_size,
+    size_t      *offset);
+
+TSS2_RC
+TPML_TAGGED_PCR_PROPERTY_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPML_TAGGED_PCR_PROPERTY *dest);
+
+TSS2_RC
+TPML_PCR_SELECTION_Marshal (
+    TPML_PCR_SELECTION const *src,
+    uint8_t      buffer[],
+    size_t       buffer_size,
+    size_t      *offset);
+
+TSS2_RC
+TPML_PCR_SELECTION_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPML_PCR_SELECTION *dest);
+
+TSS2_RC
+TPML_TAGGED_TPM_PROPERTY_Marshal (
+    TPML_TAGGED_TPM_PROPERTY const *src,
+    uint8_t      buffer[],
+    size_t       buffer_size,
+    size_t      *offset);
+
+TSS2_RC
+TPML_TAGGED_TPM_PROPERTY_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPML_TAGGED_TPM_PROPERTY *dest);
+
 #ifdef __cplusplus
 }
 #endif
