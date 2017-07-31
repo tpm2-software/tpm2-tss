@@ -44,6 +44,28 @@
         TPMA_SESSION_Unmarshal;
         TPMA_STARTUP_CLEAR_Marshal;
         TPMA_STARTUP_CLEAR_Unmarshal;
+        TPM2B_DIGEST_Marshal;
+        TPM2B_DIGEST_Unmarshal;
+        TPM2B_NAME_Marshal;
+        TPM2B_NAME_Unmarshal;
+        TPM2B_MAX_NV_BUFFER_Marshal;
+        TPM2B_MAX_NV_BUFFER_Unmarshal;
+        TPM2B_SENSITIVE_DATA_Marshal;
+        TPM2B_SENSITIVE_DATA_Unmarshal;
+        TPM2B_ECC_PARAMETER_Marshal;
+        TPM2B_ECC_PARAMETER_Unmarshal;
+        TPM2B_PUBLIC_KEY_RSA_Marshal;
+        TPM2B_PUBLIC_KEY_RSA_Unmarshal;
+        TPM2B_PRIVATE_KEY_RSA_Marshal;
+        TPM2B_PRIVATE_KEY_RSA_Unmarshal;
+        TPM2B_CONTEXT_SENSITIVE_Marshal;
+        TPM2B_CONTEXT_SENSITIVE_Unmarshal;
+        TPM2B_CONTEXT_DATA_Marshal;
+        TPM2B_CONTEXT_DATA_Unmarshal;
+        TPM2B_DATA_Marshal;
+        TPM2B_DATA_Unmarshal;
+        TPM2B_SYM_KEY_Marshal;
+        TPM2B_SYM_KEY_Unmarshal;
     local:
         *;
 };
