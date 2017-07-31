@@ -294,6 +294,66 @@ void Unmarshal_Simple_TPM2B_NoSizeCheck( UINT8 *outBuffPtr, UINT32 maxResponseSi
             &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
             var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
 
+#define Marshal_TPML_CC(SYS_CONTEXT, var) \
+    MARSHAL_ADAPTER(TPML_CC, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+#define Marshal_TPML_CCA(SYS_CONTEXT, var) \
+    MARSHAL_ADAPTER(TPML_CCA, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+#define Marshal_TPML_ALG(SYS_CONTEXT, var) \
+    MARSHAL_ADAPTER(TPML_ALG, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+#define Marshal_TPML_ALG_PROPERTY(SYS_CONTEXT, var) \
+    MARSHAL_ADAPTER(TPML_ALG_PROPERTY, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+#define Marshal_TPML_HANDLE(SYS_CONTEXT, var) \
+    MARSHAL_ADAPTER(TPML_HANDLE, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+#define Marshal_TPML_DIGEST(SYS_CONTEXT, var) \
+    MARSHAL_ADAPTER(TPML_DIGEST, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+#define Marshal_TPML_ECC_CURVE(SYS_CONTEXT, var) \
+    MARSHAL_ADAPTER(TPML_ECC_CURVE, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+#define Marshal_TPML_TAGGED_TPM_PROPERTY(SYS_CONTEXT, var) \
+    MARSHAL_ADAPTER(TPML_TAGGED_TPM_PROPERTY, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+#define Marshal_TPML_TAGGED_PCR_PROPERTY(SYS_CONTEXT, var) \
+    MARSHAL_ADAPTER(TPML_TAGGED_PCR_PROPERTY, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+#define Marshal_TPML_PCR_SELECTION(SYS_CONTEXT, var) \
+    MARSHAL_ADAPTER(TPML_PCR_SELECTION, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
 /*
  * These macros expand to adapter macros. They're meant to be a layer
  * adapting the existing Unmarshal_* API to the new stuff going into
@@ -524,6 +584,68 @@ void Unmarshal_Simple_TPM2B_NoSizeCheck( UINT8 *outBuffPtr, UINT32 maxResponseSi
             &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
             var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
 
+#define Unmarshal_TPML_CC(SYS_CONTEXT, var) \
+    UNMARSHAL_ADAPTER(TPML_CC, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+#define Unmarshal_TPML_CCA(SYS_CONTEXT, var) \
+    UNMARSHAL_ADAPTER(TPML_CCA, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+#define Unmarshal_TPML_ALG(SYS_CONTEXT, var) \
+    UNMARSHAL_ADAPTER(TPML_ALG, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+#define Unmarshal_TPML_ALG_PROPERTY(SYS_CONTEXT, var) \
+    UNMARSHAL_ADAPTER(TPML_ALG_PROPERTY, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+#define Unmarshal_TPML_HANDLE(SYS_CONTEXT, var) \
+    UNMARSHAL_ADAPTER(TPML_HANDLE, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+#define Unmarshal_TPML_DIGEST(SYS_CONTEXT, var) \
+    UNMARSHAL_ADAPTER(TPML_DIGEST, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+#define Unmarshal_TPML_ECC_CURVE(SYS_CONTEXT, var) \
+    UNMARSHAL_ADAPTER(TPML_ECC_CURVE, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+#define Unmarshal_TPML_TAGGED_TPM_PROPERTY(SYS_CONTEXT, var) \
+    UNMARSHAL_ADAPTER(TPML_TAGGED_TPM_PROPERTY, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+#define Unmarshal_TPML_TAGGED_PCR_PROPERTY(SYS_CONTEXT, var) \
+    UNMARSHAL_ADAPTER(TPML_TAGGED_PCR_PROPERTY, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+#define Unmarshal_TPML_PCR_SELECTION(SYS_CONTEXT, var) \
+    UNMARSHAL_ADAPTER(TPML_PCR_SELECTION, ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->tpmInBuffPtr, \
+            ((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->maxCommandSize, \
+            &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->nextData), \
+            var, &(((_TSS2_SYS_CONTEXT_BLOB *)SYS_CONTEXT)->rval))
+
+
+
 void Marshal_TPMS_EMPTY( TSS2_SYS_CONTEXT *sysContext, TPMS_EMPTY *empty );
 void Unmarshal_TPMS_EMPTY( TSS2_SYS_CONTEXT *sysContext, TPMS_EMPTY *empty );
 
@@ -665,11 +787,6 @@ void Unmarshal_TPMS_EMPTY( TSS2_SYS_CONTEXT *sysContext, TPMS_EMPTY *empty );
 
 #define Unmarshal_TPMS_SIGNATURE_ECSCHNORR( sysContext, var ) Unmarshal_TPMS_SIGNATURE_ECC( sysContext, (TPMS_SIGNATURE_ECC *)var )
 
-void Marshal_TPML_ALG(
-	TSS2_SYS_CONTEXT *sysContext,
-	TPML_ALG *alg
-	);
-
 void Marshal_TPMT_SYM_DEF(
 	TSS2_SYS_CONTEXT *sysContext,
 	TPMT_SYM_DEF *symDef
@@ -683,11 +800,6 @@ void Marshal_TPM2B_SENSITIVE_CREATE(
 void Marshal_TPM2B_PUBLIC(
 	TSS2_SYS_CONTEXT *sysContext,
 	TPM2B_PUBLIC *publicVar
-	);
-
-void Marshal_TPML_PCR_SELECTION(
-	TSS2_SYS_CONTEXT *sysContext,
-	TPML_PCR_SELECTION *pcrSelection
 	);
 
 void Marshal_TPM2B_SENSITIVE(
@@ -730,11 +842,6 @@ void Marshal_TPMT_TK_HASHCHECK(
 	TPMT_TK_HASHCHECK *tkHashcheck
 	);
 
-void Marshal_TPML_CC(
-	TSS2_SYS_CONTEXT *sysContext,
-	TPML_CC *cc
-	);
-
 void Marshal_TPML_DIGEST_VALUES(
 	TSS2_SYS_CONTEXT *sysContext,
 	TPML_DIGEST_VALUES *digestValues
@@ -743,11 +850,6 @@ void Marshal_TPML_DIGEST_VALUES(
 void Marshal_TPMT_TK_AUTH(
 	TSS2_SYS_CONTEXT *sysContext,
 	TPMT_TK_AUTH *tkAuth
-	);
-
-void Marshal_TPML_DIGEST(
-	TSS2_SYS_CONTEXT *sysContext,
-	TPML_DIGEST *digest
 	);
 
 void Marshal_TPMT_TK_VERIFIED(
@@ -887,11 +989,6 @@ void Marshal_TPMT_SENSITIVE(
 	TPMT_SENSITIVE *sensitive
 	);
 
-void Unmarshal_TPML_ALG(
-	TSS2_SYS_CONTEXT *sysContext,
-	TPML_ALG *alg
-	);
-
 void Unmarshal_TPM2B_PUBLIC(
 	TSS2_SYS_CONTEXT *sysContext,
 	TPM2B_PUBLIC *publicVar
@@ -937,16 +1034,6 @@ void Unmarshal_TPMT_TK_VERIFIED(
 	TPMT_TK_VERIFIED *tkVerified
 	);
 
-void Unmarshal_TPML_PCR_SELECTION(
-	TSS2_SYS_CONTEXT *sysContext,
-	TPML_PCR_SELECTION *pcrSelection
-	);
-
-void Unmarshal_TPML_DIGEST(
-	TSS2_SYS_CONTEXT *sysContext,
-	TPML_DIGEST *digest
-	);
-
 void Unmarshal_TPMT_TK_AUTH(
 	TSS2_SYS_CONTEXT *sysContext,
 	TPMT_TK_AUTH *tkAuth
@@ -973,40 +1060,6 @@ void Unmarshal_TPMU_HA(
 	UINT32 selector
 	);
 
-void Unmarshal_TPML_CC(
-	TSS2_SYS_CONTEXT *sysContext,
-	TPML_CC *cc
-	);
-
-void Unmarshal_TPML_CCA(
-	TSS2_SYS_CONTEXT *sysContext,
-	TPML_CCA *cca
-	);
-
-void Unmarshal_TPML_HANDLE(
-	TSS2_SYS_CONTEXT *sysContext,
-	TPML_HANDLE *handle
-	);
-
-void Unmarshal_TPML_ALG_PROPERTY(
-	TSS2_SYS_CONTEXT *sysContext,
-	TPML_ALG_PROPERTY *algProperty
-	);
-
-void Unmarshal_TPML_TAGGED_TPM_PROPERTY(
-	TSS2_SYS_CONTEXT *sysContext,
-	TPML_TAGGED_TPM_PROPERTY *taggedTpmProperty
-	);
-
-void Unmarshal_TPML_TAGGED_PCR_PROPERTY(
-	TSS2_SYS_CONTEXT *sysContext,
-	TPML_TAGGED_PCR_PROPERTY *taggedPcrProperty
-	);
-
-void Unmarshal_TPML_ECC_CURVE(
-	TSS2_SYS_CONTEXT *sysContext,
-	TPML_ECC_CURVE *eccCurve
-	);
 
 void Unmarshal_TPMU_CAPABILITIES(
 	TSS2_SYS_CONTEXT *sysContext,
