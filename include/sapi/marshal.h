@@ -329,6 +329,160 @@ TPMA_STARTUP_CLEAR_Unmarshal (
     size_t         *offset,
     TPMA_STARTUP_CLEAR *dest);
 
+TSS2_RC
+TPM2B_DIGEST_Marshal (
+    TPM2B_DIGEST const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPM2B_DIGEST_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPM2B_DIGEST   *dest);
+
+TSS2_RC
+TPM2B_NAME_Marshal (
+    TPM2B_NAME const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPM2B_NAME_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPM2B_NAME     *dest);
+
+TSS2_RC
+TPM2B_MAX_NV_BUFFER_Marshal (
+    TPM2B_MAX_NV_BUFFER const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPM2B_MAX_NV_BUFFER_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPM2B_MAX_NV_BUFFER *dest);
+
+TSS2_RC
+TPM2B_SENSITIVE_DATA_Marshal (
+    TPM2B_SENSITIVE_DATA const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPM2B_SENSITIVE_DATA_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPM2B_SENSITIVE_DATA *dest);
+
+TSS2_RC
+TPM2B_ECC_PARAMETER_Marshal (
+    TPM2B_ECC_PARAMETER const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPM2B_ECC_PARAMETER_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPM2B_ECC_PARAMETER *dest);
+
+TSS2_RC
+TPM2B_PUBLIC_KEY_RSA_Marshal (
+    TPM2B_PUBLIC_KEY_RSA const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPM2B_PUBLIC_KEY_RSA_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPM2B_PUBLIC_KEY_RSA *dest);
+
+TSS2_RC
+TPM2B_PRIVATE_KEY_RSA_Marshal (
+    TPM2B_PRIVATE_KEY_RSA const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPM2B_PRIVATE_KEY_RSA_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPM2B_PRIVATE_KEY_RSA *dest);
+
+TSS2_RC
+TPM2B_CONTEXT_SENSITIVE_Marshal (
+    TPM2B_CONTEXT_SENSITIVE const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPM2B_CONTEXT_SENSITIVE_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPM2B_CONTEXT_SENSITIVE *dest);
+
+TSS2_RC
+TPM2B_CONTEXT_DATA_Marshal (
+    TPM2B_CONTEXT_DATA const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPM2B_CONTEXT_DATA_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPM2B_CONTEXT_DATA *dest);
+
+TSS2_RC
+TPM2B_DATA_Marshal (
+    TPM2B_DATA      const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPM2B_DATA_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPM2B_DATA     *dest);
+
+TSS2_RC
+TPM2B_SYM_KEY_Marshal (
+    TPM2B_SYM_KEY   const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPM2B_SYM_KEY_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPM2B_SYM_KEY  *dest);
+
 #ifdef __cplusplus
 }
 #endif
