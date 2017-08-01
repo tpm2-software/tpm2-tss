@@ -39,13 +39,8 @@
 #undef FALSE
 
 // From TPM 2.0 Part 2: Table 4 - Defines for Logic Values
-
-#define  TRUE     1
-#define  FALSE    0
 #define  YES      1
 #define  NO       0
-#define  SET      1
-#define  CLEAR    0
 
 // From Vendor-Specific: Table 1 - Defines for Processor Values
 

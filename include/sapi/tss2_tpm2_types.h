@@ -37,9 +37,6 @@
 
 #include "implementation.h"
 
-#define SET	1
-#define CLEAR	0
-
 #define    MAX_CAP_DATA         (MAX_CAP_BUFFER-sizeof(TPM_CAP)-sizeof(UINT32))
 #define    MAX_CAP_ALGS         (TPM_ALG_LAST - TPM_ALG_FIRST + 1)
 #define    MAX_CAP_HANDLES      (MAX_CAP_DATA/sizeof(TPM_HANDLE))
@@ -47,14 +44,6 @@
 #define    MAX_TPM_PROPERTIES   (MAX_CAP_DATA/sizeof(TPMS_TAGGED_PROPERTY))
 #define    MAX_PCR_PROPERTIES   (MAX_CAP_DATA/sizeof(TPMS_TAGGED_PCR_SELECT))
 #define    MAX_ECC_CURVES       (MAX_CAP_DATA/sizeof(TPM_ECC_CURVE))
-
-/* Table 4  Defines for Logic Values */
-#define	TRUE	1
-#define	FALSE	0
-#define	YES	1
-#define	NO	0
-#define	SET	1
-#define	CLEAR	0
 
 /* Table 5  Definition of Types for Documentation Clarity */
 typedef	UINT32	TPM_ALGORITHM_ID;	 /* this is the 1.2 compatible form of the TPM_ALG_ID  */
