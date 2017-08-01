@@ -42,20 +42,14 @@ void Unmarshal_TPMU_SCHEME_KEYEDHASH(
 
 	switch( selector )
 	{
-#ifdef TPM_ALG_HMAC
 	case TPM_ALG_HMAC:
 			Unmarshal_TPMS_SCHEME_HMAC( sysContext, &schemeKeyedhash->hmac );
 			break;
-#endif
-#ifdef TPM_ALG_XOR
 	case TPM_ALG_XOR:
 			Unmarshal_TPMS_SCHEME_XOR( sysContext, &schemeKeyedhash->exclusiveOr );
 			break;
-#endif
-#ifdef TPM_ALG_NULL
 	case TPM_ALG_NULL:
 					break;
-#endif
 	}
 	return;
 }

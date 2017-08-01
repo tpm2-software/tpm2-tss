@@ -39,30 +39,20 @@ void Marshal_TPMU_SYM_KEY_BITS(
 
 	switch( selector )
 	{
-#ifdef TPM_ALG_AES
 	case TPM_ALG_AES:
 			Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), symKeyBits->aes, &( SYS_CONTEXT->rval ) );
 			break;
-#endif
-#ifdef TPM_ALG_SM4
 	case TPM_ALG_SM4:
 			Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), symKeyBits->sm4, &( SYS_CONTEXT->rval ) );
 			break;
-#endif
-#ifdef TPM_ALG_CAMELLIA
 	case TPM_ALG_CAMELLIA:
 			Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), symKeyBits->camellia, &( SYS_CONTEXT->rval ) );
 			break;
-#endif
-#ifdef TPM_ALG_XOR
 	case TPM_ALG_XOR:
 			Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), symKeyBits->exclusiveOr, &( SYS_CONTEXT->rval ) );
 			break;
-#endif
-#ifdef TPM_ALG_NULL
 	case TPM_ALG_NULL:
 					break;
-#endif
 	}
 	return;
 }

@@ -39,26 +39,18 @@ void Marshal_TPMU_PUBLIC_PARMS(
 
 	switch( selector )
 	{
-#ifdef TPM_ALG_KEYEDHASH
 	case TPM_ALG_KEYEDHASH:
 			Marshal_TPMS_KEYEDHASH_PARMS( sysContext, &publicVarParms->keyedHashDetail );
 			break;
-#endif
-#ifdef TPM_ALG_SYMCIPHER
 	case TPM_ALG_SYMCIPHER:
 			Marshal_TPMS_SYMCIPHER_PARMS( sysContext, &publicVarParms->symDetail );
 			break;
-#endif
-#ifdef TPM_ALG_RSA
 	case TPM_ALG_RSA:
 			Marshal_TPMS_RSA_PARMS( sysContext, &publicVarParms->rsaDetail );
 			break;
-#endif
-#ifdef TPM_ALG_ECC
 	case TPM_ALG_ECC:
 			Marshal_TPMS_ECC_PARMS( sysContext, &publicVarParms->eccDetail );
 			break;
-#endif
 	}
 	return;
 }

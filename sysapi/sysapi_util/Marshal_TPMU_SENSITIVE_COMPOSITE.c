@@ -39,26 +39,18 @@ void Marshal_TPMU_SENSITIVE_COMPOSITE(
 
 	switch( selector )
 	{
-#ifdef TPM_ALG_RSA
 	case TPM_ALG_RSA:
 			MARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&sensitiveComposite->rsa );
 			break;
-#endif
-#ifdef TPM_ALG_ECC
 	case TPM_ALG_ECC:
 			MARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&sensitiveComposite->ecc );
 			break;
-#endif
-#ifdef TPM_ALG_KEYEDHASH
 	case TPM_ALG_KEYEDHASH:
 			MARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&sensitiveComposite->bits );
 			break;
-#endif
-#ifdef TPM_ALG_SYMCIPHER
 	case TPM_ALG_SYMCIPHER:
 			MARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&sensitiveComposite->sym );
 			break;
-#endif
 	}
 	return;
 }
