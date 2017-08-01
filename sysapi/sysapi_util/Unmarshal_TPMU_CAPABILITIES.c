@@ -42,51 +42,33 @@ void Unmarshal_TPMU_CAPABILITIES(
 
 	switch( selector )
 	{
-#ifdef TPM_CAP_ALGS
 	case TPM_CAP_ALGS:
 			Unmarshal_TPML_ALG_PROPERTY( sysContext, &capabilities->algorithms );
 			break;
-#endif
-#ifdef TPM_CAP_HANDLES
 	case TPM_CAP_HANDLES:
 			Unmarshal_TPML_HANDLE( sysContext, &capabilities->handles );
 			break;
-#endif
-#ifdef TPM_CAP_COMMANDS
 	case TPM_CAP_COMMANDS:
 			Unmarshal_TPML_CCA( sysContext, &capabilities->command );
 			break;
-#endif
-#ifdef TPM_CAP_PP_COMMANDS
 	case TPM_CAP_PP_COMMANDS:
 			Unmarshal_TPML_CC( sysContext, &capabilities->ppCommands );
 			break;
-#endif
-#ifdef TPM_CAP_AUDIT_COMMANDS
 	case TPM_CAP_AUDIT_COMMANDS:
 			Unmarshal_TPML_CC( sysContext, &capabilities->auditCommands );
 			break;
-#endif
-#ifdef TPM_CAP_PCRS
 	case TPM_CAP_PCRS:
 			Unmarshal_TPML_PCR_SELECTION( sysContext, &capabilities->assignedPCR );
 			break;
-#endif
-#ifdef TPM_CAP_TPM_PROPERTIES
 	case TPM_CAP_TPM_PROPERTIES:
 			Unmarshal_TPML_TAGGED_TPM_PROPERTY( sysContext, &capabilities->tpmProperties );
 			break;
-#endif
-#ifdef TPM_CAP_PCR_PROPERTIES
 	case TPM_CAP_PCR_PROPERTIES:
 			Unmarshal_TPML_TAGGED_PCR_PROPERTY( sysContext, &capabilities->pcrProperties );
 			break;
-#endif
-#ifdef TPM_CAP_ECC_CURVES
 	case TPM_CAP_ECC_CURVES:
 			Unmarshal_TPML_ECC_CURVE( sysContext, &capabilities->eccCurves );
 			break;
-#endif
 	}
 	return;
 }

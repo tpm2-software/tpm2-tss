@@ -42,60 +42,38 @@ void Unmarshal_TPMU_ASYM_SCHEME(
 
 	switch( selector )
 	{
-#ifdef TPM_ALG_ECDH
 	case TPM_ALG_ECDH:
 			Unmarshal_TPMS_KEY_SCHEME_ECDH( sysContext, &asymScheme->ecdh );
 			break;
-#endif
-#ifdef TPM_ALG_ECMQV
 	case TPM_ALG_ECMQV:
 			Unmarshal_TPMS_KEY_SCHEME_ECMQV( sysContext, &asymScheme->ecmqv );
 			break;
-#endif
-#ifdef TPM_ALG_RSASSA
 	case TPM_ALG_RSASSA:
 			Unmarshal_TPMS_SIG_SCHEME_RSASSA( sysContext, &asymScheme->rsassa );
 			break;
-#endif
-#ifdef TPM_ALG_RSAPSS
 	case TPM_ALG_RSAPSS:
 			Unmarshal_TPMS_SIG_SCHEME_RSAPSS( sysContext, &asymScheme->rsapss );
 			break;
-#endif
-#ifdef TPM_ALG_ECDSA
 	case TPM_ALG_ECDSA:
 			Unmarshal_TPMS_SIG_SCHEME_ECDSA( sysContext, &asymScheme->ecdsa );
 			break;
-#endif
-#ifdef TPM_ALG_ECDAA
 	case TPM_ALG_ECDAA:
 			Unmarshal_TPMS_SIG_SCHEME_ECDAA( sysContext, &asymScheme->ecdaa );
 			break;
-#endif
-#ifdef TPM_ALG_SM2
 	case TPM_ALG_SM2:
 			Unmarshal_TPMS_SIG_SCHEME_SM2( sysContext, &asymScheme->sm2 );
 			break;
-#endif
-#ifdef TPM_ALG_ECSCHNORR
 	case TPM_ALG_ECSCHNORR:
 			Unmarshal_TPMS_SIG_SCHEME_ECSCHNORR( sysContext, &asymScheme->ecschnorr );
 			break;
-#endif
-#ifdef TPM_ALG_RSAES
 	case TPM_ALG_RSAES:
 			Unmarshal_TPMS_ENC_SCHEME_RSAES( sysContext, &asymScheme->rsaes );
 			break;
-#endif
-#ifdef TPM_ALG_OAEP
 	case TPM_ALG_OAEP:
 			Unmarshal_TPMS_ENC_SCHEME_OAEP( sysContext, &asymScheme->oaep );
 			break;
-#endif
-#ifdef TPM_ALG_NULL
 	case TPM_ALG_NULL:
 					break;
-#endif
 	}
 	return;
 }

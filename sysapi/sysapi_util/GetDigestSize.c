@@ -37,12 +37,8 @@ typedef struct {
 HASH_SIZE_INFO   hashSizes[] = {
     {TPM_ALG_SHA1,          SHA1_DIGEST_SIZE},
     {TPM_ALG_SHA256,        SHA256_DIGEST_SIZE},
-#ifdef TPM_ALG_SHA384
     {TPM_ALG_SHA384,        SHA384_DIGEST_SIZE},
-#endif
-#ifdef TPM_ALG_SHA512
     {TPM_ALG_SHA512,        SHA512_DIGEST_SIZE},
-#endif
     {TPM_ALG_SM3_256,       SM3_256_DIGEST_SIZE},
     {TPM_ALG_NULL,0}
 };

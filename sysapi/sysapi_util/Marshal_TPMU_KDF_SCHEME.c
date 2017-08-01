@@ -39,30 +39,20 @@ void Marshal_TPMU_KDF_SCHEME(
 
 	switch( selector )
 	{
-#ifdef TPM_ALG_MGF1
 	case TPM_ALG_MGF1:
 			Marshal_TPMS_SCHEME_MGF1( sysContext, &kdfScheme->mgf1 );
 			break;
-#endif
-#ifdef TPM_ALG_KDF1_SP800_56A
 	case TPM_ALG_KDF1_SP800_56A:
 			Marshal_TPMS_SCHEME_KDF1_SP800_56A( sysContext, &kdfScheme->kdf1_sp800_56a );
 			break;
-#endif
-#ifdef TPM_ALG_KDF2
 	case TPM_ALG_KDF2:
 			Marshal_TPMS_SCHEME_KDF2( sysContext, &kdfScheme->kdf2 );
 			break;
-#endif
-#ifdef TPM_ALG_KDF1_SP800_108
 	case TPM_ALG_KDF1_SP800_108:
 			Marshal_TPMS_SCHEME_KDF1_SP800_108( sysContext, &kdfScheme->kdf1_sp800_108 );
 			break;
-#endif
-#ifdef TPM_ALG_NULL
 	case TPM_ALG_NULL:
 					break;
-#endif
 	}
 	return;
 }

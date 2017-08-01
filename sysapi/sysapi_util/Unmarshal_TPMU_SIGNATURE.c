@@ -42,45 +42,29 @@ void Unmarshal_TPMU_SIGNATURE(
 
 	switch( selector )
 	{
-#ifdef TPM_ALG_RSASSA
 	case TPM_ALG_RSASSA:
 			Unmarshal_TPMS_SIGNATURE_RSASSA( sysContext, &signature->rsassa );
 			break;
-#endif
-#ifdef TPM_ALG_RSAPSS
 	case TPM_ALG_RSAPSS:
 			Unmarshal_TPMS_SIGNATURE_RSAPSS( sysContext, &signature->rsapss );
 			break;
-#endif
-#ifdef TPM_ALG_ECDSA
 	case TPM_ALG_ECDSA:
 			Unmarshal_TPMS_SIGNATURE_ECDSA( sysContext, &signature->ecdsa );
 			break;
-#endif
-#ifdef TPM_ALG_ECDAA
 	case TPM_ALG_ECDAA:
 			Unmarshal_TPMS_SIGNATURE_ECDAA( sysContext, &signature->ecdaa );
 			break;
-#endif
-#ifdef TPM_ALG_SM2
 	case TPM_ALG_SM2:
 			Unmarshal_TPMS_SIGNATURE_SM2( sysContext, &signature->sm2 );
 			break;
-#endif
-#ifdef TPM_ALG_ECSCHNORR
 	case TPM_ALG_ECSCHNORR:
 			Unmarshal_TPMS_SIGNATURE_ECSCHNORR( sysContext, &signature->ecschnorr );
 			break;
-#endif
-#ifdef TPM_ALG_HMAC
 	case TPM_ALG_HMAC:
 			Unmarshal_TPMT_HA( sysContext, &signature->hmac );
 			break;
-#endif
-#ifdef TPM_ALG_NULL
 	case TPM_ALG_NULL:
 					break;
-#endif
 	}
 	return;
 }

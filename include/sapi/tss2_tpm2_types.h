@@ -41,7 +41,7 @@
 #define CLEAR	0
 
 #define    MAX_CAP_DATA         (MAX_CAP_BUFFER-sizeof(TPM_CAP)-sizeof(UINT32))
-#define    MAX_CAP_ALGS         (ALG_LAST_VALUE - ALG_FIRST_VALUE + 1)
+#define    MAX_CAP_ALGS         (TPM_ALG_LAST - TPM_ALG_FIRST + 1)
 #define    MAX_CAP_HANDLES      (MAX_CAP_DATA/sizeof(TPM_HANDLE))
 #define    MAX_CAP_CC           (COMMAND_COUNT)
 #define    MAX_TPM_PROPERTIES   (MAX_CAP_DATA/sizeof(TPMS_TAGGED_PROPERTY))
@@ -987,24 +987,11 @@ typedef	struct {
 
 /* Table 70  Definition of TPMU_HA Union <INOUT S> */
 typedef	union {
-#ifdef TPM_ALG_SHA
-	BYTE	sha[SHA_DIGEST_SIZE];	 /* all hashes  */
-#endif
-#ifdef TPM_ALG_SHA1
 	BYTE	sha1[SHA1_DIGEST_SIZE];	 /* all hashes  */
-#endif
-#ifdef TPM_ALG_SHA256
 	BYTE	sha256[SHA256_DIGEST_SIZE];	 /* all hashes  */
-#endif
-#ifdef TPM_ALG_SHA384
 	BYTE	sha384[SHA384_DIGEST_SIZE];	 /* all hashes  */
-#endif
-#ifdef TPM_ALG_SHA512
 	BYTE	sha512[SHA512_DIGEST_SIZE];	 /* all hashes  */
-#endif
-#ifdef TPM_ALG_SM3_256
 	BYTE	sm3_256[SM3_256_DIGEST_SIZE];	 /* all hashes  */
-#endif
 } TPMU_HA;
 
 /* Table 71  Definition of TPMT_HA Structure <INOUT> */
@@ -1313,30 +1300,18 @@ typedef	TPM_KEY_BITS TPMI_CAMELLIA_KEY_BITS;
 
 /* Table 125  Definition of TPMU_SYM_KEY_BITS Union */
 typedef	union {
-#ifdef TPM_ALG_AES
 	TPMI_AES_KEY_BITS	aes;	 /* all symmetric algorithms  */
-#endif
-#ifdef TPM_ALG_SM4
 	TPMI_SM4_KEY_BITS	sm4;	 /* all symmetric algorithms  */
-#endif
-#ifdef TPM_ALG_CAMELLIA
 	TPMI_CAMELLIA_KEY_BITS	camellia;	 /* all symmetric algorithms  */
-#endif
 	TPM_KEY_BITS	sym;	 /* when selector may be any of the symmetric block ciphers  */
 	TPMI_ALG_HASH	exclusiveOr;	 /* overload for using xorNOTE	TPM_ALG_NULL is not allowed  */
 } TPMU_SYM_KEY_BITS;
 
 /* Table 126  Definition of TPMU_SYM_MODE Union */
 typedef	union {
-#ifdef TPM_ALG_AES
 	TPMI_ALG_SYM_MODE	aes;	 /*   */
-#endif
-#ifdef TPM_ALG_SM4
 	TPMI_ALG_SYM_MODE	sm4;	 /*   */
-#endif
-#ifdef TPM_ALG_CAMELLIA
 	TPMI_ALG_SYM_MODE	camellia;	 /*   */
-#endif
 	TPMI_ALG_SYM_MODE	sym;	 /* when selector may be any of the symmetric block ciphers  */
 } TPMU_SYM_MODE;
 
@@ -1421,24 +1396,12 @@ typedef	TPMS_SCHEME_ECDAA	TPMS_SIG_SCHEME_ECDAA;	 /* schemes that need a hash an
 
 /* Table 144  Definition of TPMU_SIG_SCHEME Union <INOUT S> */
 typedef	union {
-#ifdef TPM_ALG_RSASSA
 	TPMS_SIG_SCHEME_RSASSA	rsassa;	 /* all signing schemes including anonymous schemes  */
-#endif
-#ifdef TPM_ALG_RSAPSS
 	TPMS_SIG_SCHEME_RSAPSS	rsapss;	 /* all signing schemes including anonymous schemes  */
-#endif
-#ifdef TPM_ALG_ECDSA
 	TPMS_SIG_SCHEME_ECDSA	ecdsa;	 /* all signing schemes including anonymous schemes  */
-#endif
-#ifdef TPM_ALG_ECDAA
 	TPMS_SIG_SCHEME_ECDAA	ecdaa;	 /* all signing schemes including anonymous schemes  */
-#endif
-#ifdef TPM_ALG_SM2
 	TPMS_SIG_SCHEME_SM2	sm2;	 /* all signing schemes including anonymous schemes  */
-#endif
-#ifdef TPM_ALG_ECSCHNORR
 	TPMS_SIG_SCHEME_ECSCHNORR	ecschnorr;	 /* all signing schemes including anonymous schemes  */
-#endif
 	TPMS_SCHEME_HMAC	hmac;	 /* the HMAC scheme  */
 	TPMS_SCHEME_HASH	any;	 /* selector that allows access to digest for any signing scheme  */
 } TPMU_SIG_SCHEME;
@@ -1465,18 +1428,10 @@ typedef	TPMS_SCHEME_HASH	TPMS_SCHEME_KDF1_SP800_108;	 /* hashbased key or maskge
 
 /* Table 149  Definition of TPMU_KDF_SCHEME Union <INOUT S> */
 typedef	union {
-#ifdef TPM_ALG_MGF1
 	TPMS_SCHEME_MGF1	mgf1;	 /*   */
-#endif
-#ifdef TPM_ALG_KDF1_SP800_56A
 	TPMS_SCHEME_KDF1_SP800_56A	kdf1_sp800_56a;	 /*   */
-#endif
-#ifdef TPM_ALG_KDF2
 	TPMS_SCHEME_KDF2	kdf2;	 /*   */
-#endif
-#ifdef TPM_ALG_KDF1_SP800_108
 	TPMS_SCHEME_KDF1_SP800_108	kdf1_sp800_108;	 /*   */
-#endif
 } TPMU_KDF_SCHEME;
 
 /* Table 150  Definition of TPMT_KDF_SCHEME Structure */
@@ -1490,36 +1445,16 @@ typedef	TPM_ALG_ID TPMI_ALG_ASYM_SCHEME;
 
 /* Table 152  Definition of TPMU_ASYM_SCHEME Union */
 typedef	union {
-#ifdef TPM_ALG_ECDH
 	TPMS_KEY_SCHEME_ECDH	ecdh;	 /*   */
-#endif
-#ifdef TPM_ALG_ECMQV
 	TPMS_KEY_SCHEME_ECMQV	ecmqv;	 /*   */
-#endif
-#ifdef TPM_ALG_RSASSA
 	TPMS_SIG_SCHEME_RSASSA	rsassa;	 /* signing and anonymous signing  */
-#endif
-#ifdef TPM_ALG_RSAPSS
 	TPMS_SIG_SCHEME_RSAPSS	rsapss;	 /* signing and anonymous signing  */
-#endif
-#ifdef TPM_ALG_ECDSA
 	TPMS_SIG_SCHEME_ECDSA	ecdsa;	 /* signing and anonymous signing  */
-#endif
-#ifdef TPM_ALG_ECDAA
 	TPMS_SIG_SCHEME_ECDAA	ecdaa;	 /* signing and anonymous signing  */
-#endif
-#ifdef TPM_ALG_SM2
 	TPMS_SIG_SCHEME_SM2	sm2;	 /* signing and anonymous signing  */
-#endif
-#ifdef TPM_ALG_ECSCHNORR
 	TPMS_SIG_SCHEME_ECSCHNORR	ecschnorr;	 /* signing and anonymous signing  */
-#endif
-#ifdef TPM_ALG_RSAES
 	TPMS_ENC_SCHEME_RSAES	rsaes;	 /* schemes with no hash  */
-#endif
-#ifdef TPM_ALG_OAEP
 	TPMS_ENC_SCHEME_OAEP	oaep;	 /* schemes with no hash  */
-#endif
 	TPMS_SCHEME_HASH	anySig;	 /*   */
 } TPMU_ASYM_SCHEME;
 
@@ -1620,24 +1555,12 @@ typedef	TPMS_SIGNATURE_ECC	TPMS_SIGNATURE_ECSCHNORR;	 /*   */
 
 /* Table 172  Definition of TPMU_SIGNATURE Union <INOUT S> */
 typedef	union {
-#ifdef TPM_ALG_RSASSA
 	TPMS_SIGNATURE_RSASSA	rsassa;	 /* all asymmetric signatures  */
-#endif
-#ifdef TPM_ALG_RSAPSS
 	TPMS_SIGNATURE_RSAPSS	rsapss;	 /* all asymmetric signatures  */
-#endif
-#ifdef TPM_ALG_ECDSA
 	TPMS_SIGNATURE_ECDSA	ecdsa;	 /* all asymmetric signatures  */
-#endif
-#ifdef TPM_ALG_ECDAA
 	TPMS_SIGNATURE_ECDAA	ecdaa;	 /* all asymmetric signatures  */
-#endif
-#ifdef TPM_ALG_SM2
 	TPMS_SIGNATURE_SM2	sm2;	 /* all asymmetric signatures  */
-#endif
-#ifdef TPM_ALG_ECSCHNORR
 	TPMS_SIGNATURE_ECSCHNORR	ecschnorr;	 /* all asymmetric signatures  */
-#endif
 	TPMT_HA	hmac;	 /* HMAC signature required to be supported  */
 	TPMS_SCHEME_HASH	any;	 /* used to access the hash  */
 } TPMU_SIGNATURE;

@@ -38,9 +38,6 @@
 #undef TRUE
 #undef FALSE
 
-// This table is built in to TpmStructures() Change these definitions to turn all algorithms or commands on or off
-#define      ALG_YES      YES
-#define      ALG_NO       NO
 #define      CC_YES       YES
 #define      CC_NO        NO
 
@@ -58,41 +55,6 @@
 #define BIG_ENDIAN_TPM       	NO	/*  to YES or NO according to the processor */
 #define LITTLE_ENDIAN_TPM	YES	/*  to YES or NO according to the processor */
 #define NO_AUTO_ALIGN		NO	/*  to YES if the processor does not allow unaligned accesses */
-
-// From Vendor-Specific: Table 2 - Defines for Implemented Algorithms
-
-#define  ALG_RSA               ALG_YES
-#define  ALG_SHA1              ALG_YES
-#define  ALG_HMAC              ALG_YES
-#define  ALG_AES               ALG_YES
-#define  ALG_MGF1              ALG_YES
-#define  ALG_XOR               ALG_YES
-#define  ALG_KEYEDHASH         ALG_YES
-#define  ALG_SHA256            ALG_YES
-#define  ALG_SHA384            ALG_YES
-#define  ALG_SHA512            ALG_YES
-#define  ALG_SM3_256           ALG_YES
-#define  ALG_SM4               ALG_YES
-#define  ALG_RSASSA            (ALG_YES*ALG_RSA)
-#define  ALG_RSAES             (ALG_YES*ALG_RSA)
-#define  ALG_RSAPSS            (ALG_YES*ALG_RSA)
-#define  ALG_OAEP              (ALG_YES*ALG_RSA)
-#define  ALG_ECC               ALG_YES
-#define  ALG_ECDH              (ALG_YES*ALG_ECC)
-#define  ALG_ECDSA             (ALG_YES*ALG_ECC)
-#define  ALG_ECDAA             (ALG_YES*ALG_ECC)
-#define  ALG_SM2               (ALG_YES*ALG_ECC)
-#define  ALG_ECSCHNORR         (ALG_YES*ALG_ECC)
-#define  ALG_ECMQV             (ALG_NO*ALG_ECC)
-#define  ALG_SYMCIPHER         ALG_YES
-#define  ALG_KDF1_SP800_56A    (ALG_YES*ALG_ECC)
-#define  ALG_KDF2              ALG_NO
-#define  ALG_KDF1_SP800_108    ALG_YES
-#define  ALG_CTR               ALG_YES
-#define  ALG_OFB               ALG_YES
-#define  ALG_CBC               ALG_YES
-#define  ALG_CFB               ALG_YES
-#define  ALG_ECB               ALG_YES
 
 // From Vendor-Specific: Table 4 - Defines for Key Size Constants
 
@@ -146,7 +108,7 @@
 #define  CC_ClearControl                  CC_YES
 #define  CC_ClockRateAdjust               CC_YES
 #define  CC_ClockSet                      CC_YES
-#define  CC_Commit                        (CC_YES*ALG_ECC)
+#define  CC_Commit                        CC_YES
 #define  CC_ContextLoad                   CC_YES
 #define  CC_ContextSave                   CC_YES
 #define  CC_Create                        CC_YES
@@ -154,9 +116,9 @@
 #define  CC_DictionaryAttackLockReset     CC_YES
 #define  CC_DictionaryAttackParameters    CC_YES
 #define  CC_Duplicate                     CC_YES
-#define  CC_ECC_Parameters                (CC_YES*ALG_ECC)
-#define  CC_ECDH_KeyGen                   (CC_YES*ALG_ECC)
-#define  CC_ECDH_ZGen                     (CC_YES*ALG_ECC)
+#define  CC_ECC_Parameters                CC_YES
+#define  CC_ECDH_KeyGen                   CC_YES
+#define  CC_ECDH_ZGen                     CC_YES
 #define  CC_EncryptDecrypt                CC_YES
 #define  CC_EventSequenceComplete         CC_YES
 #define  CC_EvictControl                  CC_YES
@@ -226,8 +188,8 @@
 #define  CC_ReadClock                     CC_YES
 #define  CC_ReadPublic                    CC_YES
 #define  CC_Rewrap                        CC_YES
-#define  CC_RSA_Decrypt                   (CC_YES*ALG_RSA)
-#define  CC_RSA_Encrypt                   (CC_YES*ALG_RSA)
+#define  CC_RSA_Decrypt                   CC_YES
+#define  CC_RSA_Encrypt                   CC_YES
 #define  CC_SelfTest                      CC_YES
 #define  CC_SequenceComplete              CC_YES
 #define  CC_SequenceUpdate                CC_YES
@@ -242,8 +204,8 @@
 #define  CC_TestParms                     CC_YES
 #define  CC_Unseal                        CC_YES
 #define  CC_VerifySignature               CC_YES
-#define  CC_ZGen_2Phase                   (CC_YES*ALG_ECC)
-#define  CC_EC_Ephemeral                  (CC_YES*ALG_ECC)
+#define  CC_ZGen_2Phase                   CC_YES
+#define  CC_EC_Ephemeral                  CC_YES
 #define  CC_PolicyNvWritten               CC_YES
 #define  CC_Vendor_TCG_Test               CC_YES
 
@@ -322,161 +284,46 @@
 
 typedef  UINT16             TPM_ALG_ID;
 #define  TPM_ALG_ERROR               (TPM_ALG_ID)(0x0000)
-#define  ALG_ERROR_VALUE             0x0000
-#if defined ALG_RSA && ALG_RSA == YES
 #define  TPM_ALG_RSA                 (TPM_ALG_ID)(0x0001)
-#endif
-#define  ALG_RSA_VALUE               0x0001
-#if defined ALG_SHA && ALG_SHA == YES
 #define  TPM_ALG_SHA                 (TPM_ALG_ID)(0x0004)
-#endif
-#define  ALG_SHA_VALUE               0x0004
-#if defined ALG_SHA1 && ALG_SHA1 == YES
 #define  TPM_ALG_SHA1                (TPM_ALG_ID)(0x0004)
-#endif
-#define  ALG_SHA1_VALUE              0x0004
-#if defined ALG_HMAC && ALG_HMAC == YES
 #define  TPM_ALG_HMAC                (TPM_ALG_ID)(0x0005)
-#endif
-#define  ALG_HMAC_VALUE              0x0005
-#if defined ALG_AES && ALG_AES == YES
 #define  TPM_ALG_AES                 (TPM_ALG_ID)(0x0006)
-#endif
-#define  ALG_AES_VALUE               0x0006
-#if defined ALG_MGF1 && ALG_MGF1 == YES
 #define  TPM_ALG_MGF1                (TPM_ALG_ID)(0x0007)
-#endif
-#define  ALG_MGF1_VALUE              0x0007
-#if defined ALG_KEYEDHASH && ALG_KEYEDHASH == YES
 #define  TPM_ALG_KEYEDHASH           (TPM_ALG_ID)(0x0008)
-#endif
-#define  ALG_KEYEDHASH_VALUE         0x0008
-#if defined ALG_XOR && ALG_XOR == YES
 #define  TPM_ALG_XOR                 (TPM_ALG_ID)(0x000A)
-#endif
-#define  ALG_XOR_VALUE               0x000A
-#if defined ALG_SHA256 && ALG_SHA256 == YES
 #define  TPM_ALG_SHA256              (TPM_ALG_ID)(0x000B)
-#endif
-#define  ALG_SHA256_VALUE            0x000B
-#if defined ALG_SHA384 && ALG_SHA384 == YES
 #define  TPM_ALG_SHA384              (TPM_ALG_ID)(0x000C)
-#endif
-#define  ALG_SHA384_VALUE            0x000C
-#if defined ALG_SHA512 && ALG_SHA512 == YES
 #define  TPM_ALG_SHA512              (TPM_ALG_ID)(0x000D)
-#endif
-#define  ALG_SHA512_VALUE            0x000D
 #define  TPM_ALG_NULL                (TPM_ALG_ID)(0x0010)
-#define  ALG_NULL_VALUE              0x0010
-#if defined ALG_SM3_256 && ALG_SM3_256 == YES
 #define  TPM_ALG_SM3_256             (TPM_ALG_ID)(0x0012)
-#endif
-#define  ALG_SM3_256_VALUE           0x0012
-#if defined ALG_SM4 && ALG_SM4 == YES
 #define  TPM_ALG_SM4                 (TPM_ALG_ID)(0x0013)
-#endif
-#define  ALG_SM4_VALUE               0x0013
-#if defined ALG_RSASSA && ALG_RSASSA == YES
 #define  TPM_ALG_RSASSA              (TPM_ALG_ID)(0x0014)
-#endif
-#define  ALG_RSASSA_VALUE            0x0014
-#if defined ALG_RSAES && ALG_RSAES == YES
 #define  TPM_ALG_RSAES               (TPM_ALG_ID)(0x0015)
-#endif
-#define  ALG_RSAES_VALUE             0x0015
-#if defined ALG_RSAPSS && ALG_RSAPSS == YES
 #define  TPM_ALG_RSAPSS              (TPM_ALG_ID)(0x0016)
-#endif
-#define  ALG_RSAPSS_VALUE            0x0016
-#if defined ALG_OAEP && ALG_OAEP == YES
 #define  TPM_ALG_OAEP                (TPM_ALG_ID)(0x0017)
-#endif
-#define  ALG_OAEP_VALUE              0x0017
-#if defined ALG_ECDSA && ALG_ECDSA == YES
 #define  TPM_ALG_ECDSA               (TPM_ALG_ID)(0x0018)
-#endif
-#define  ALG_ECDSA_VALUE             0x0018
-#if defined ALG_ECDH && ALG_ECDH == YES
 #define  TPM_ALG_ECDH                (TPM_ALG_ID)(0x0019)
-#endif
-#define  ALG_ECDH_VALUE              0x0019
-#if defined ALG_ECDAA && ALG_ECDAA == YES
 #define  TPM_ALG_ECDAA               (TPM_ALG_ID)(0x001A)
-#endif
-#define  ALG_ECDAA_VALUE             0x001A
-#if defined ALG_SM2 && ALG_SM2 == YES
 #define  TPM_ALG_SM2                 (TPM_ALG_ID)(0x001B)
-#endif
-#define  ALG_SM2_VALUE               0x001B
-#if defined ALG_ECSCHNORR && ALG_ECSCHNORR == YES
 #define  TPM_ALG_ECSCHNORR           (TPM_ALG_ID)(0x001C)
-#endif
-#define  ALG_ECSCHNORR_VALUE         0x001C
-#if defined ALG_ECMQV && ALG_ECMQV == YES
 #define  TPM_ALG_ECMQV               (TPM_ALG_ID)(0x001D)
-#endif
-#define  ALG_ECMQV_VALUE             0x001D
-#if defined ALG_KDF1_SP800_56A && ALG_KDF1_SP800_56A == YES
 #define  TPM_ALG_KDF1_SP800_56A      (TPM_ALG_ID)(0x0020)
-#endif
-#define  ALG_KDF1_SP800_56A_VALUE    0x0020
-#if defined ALG_KDF2 && ALG_KDF2 == YES
 #define  TPM_ALG_KDF2                (TPM_ALG_ID)(0x0021)
-#endif
-#define  ALG_KDF2_VALUE              0x0021
-#if defined ALG_KDF1_SP800_108 && ALG_KDF1_SP800_108 == YES
 #define  TPM_ALG_KDF1_SP800_108      (TPM_ALG_ID)(0x0022)
-#endif
-#define  ALG_KDF1_SP800_108_VALUE    0x0022
-#if defined ALG_ECC && ALG_ECC == YES
 #define  TPM_ALG_ECC                 (TPM_ALG_ID)(0x0023)
-#endif
-#define  ALG_ECC_VALUE               0x0023
-#if defined ALG_SYMCIPHER && ALG_SYMCIPHER == YES
 #define  TPM_ALG_SYMCIPHER           (TPM_ALG_ID)(0x0025)
-#endif
-#define  ALG_SYMCIPHER_VALUE         0x0025
-#if defined ALG_CAMELLIA && ALG_CAMELLIA == YES
 #define  TPM_ALG_CAMELLIA            (TPM_ALG_ID)(0x0026)
-#endif
-#define  ALG_CAMELLIA_VALUE          0x0026
-#if defined ALG_CTR && ALG_CTR == YES
 #define  TPM_ALG_CTR                 (TPM_ALG_ID)(0x0040)
-#endif
-#if defined ALG_SHA3_256 && ALG_SHA3_256 == YES
 #define TPM_ALG_SHA3_256 (TPM_ALG_ID)0x27
-#endif
-#define ALG_SHA3_256_VALUE 0x27
-#if defined ALG_SHA3_384 && ALG_SHA3_384 == YES
 #define TPM_ALG_SHA3_384 (TPM_ALG_ID)0x28
-#endif
-#define ALG_SHA3_384_VALUE 0x28
-#if defined ALG_SHA3_512 && ALG_SHA3_512 == YES
 #define TPM_ALG_SHA3_512 (TPM_ALG_ID)0x29
-#endif
-#define ALG_SHA3_512_VALUE 0x29
-#define  ALG_CTR_VALUE               0x0040
-#if defined ALG_OFB && ALG_OFB == YES
 #define  TPM_ALG_OFB                 (TPM_ALG_ID)(0x0041)
-#endif
-#define  ALG_OFB_VALUE               0x0041
-#if defined ALG_CBC && ALG_CBC == YES
 #define  TPM_ALG_CBC                 (TPM_ALG_ID)(0x0042)
-#endif
-#define  ALG_CBC_VALUE               0x0042
-#if defined ALG_CFB && ALG_CFB == YES
 #define  TPM_ALG_CFB                 (TPM_ALG_ID)(0x0043)
-#endif
-#define  ALG_CFB_VALUE               0x0043
-#if defined ALG_ECB && ALG_ECB == YES
 #define  TPM_ALG_ECB                 (TPM_ALG_ID)(0x0044)
-#endif
-#define  ALG_ECB_VALUE               0x0044
 #define  TPM_ALG_FIRST               (TPM_ALG_ID)(0x0001)
-#define  ALG_FIRST_VALUE             0x0001
 #define  TPM_ALG_LAST                (TPM_ALG_ID)(0x0044)
-#define  ALG_LAST_VALUE              0x0044
 //     From TCG Algorithm Registry: Table 3 - Definition of TPM_ECC_CURVE Constants
 
 typedef  UINT16             TPM_ECC_CURVE;
@@ -1355,74 +1202,43 @@ typedef  UINT32             TPM_CC;
 #endif
 
 #define MAX_HASH_BLOCK_SIZE  (						\
-			      MAX(ALG_SHA1 * SHA1_BLOCK_SIZE,		\
-				  MAX(ALG_SHA256 * SHA256_BLOCK_SIZE,	\
-				      MAX(ALG_SHA384 * SHA384_BLOCK_SIZE, \
-					  MAX(ALG_SM3_256 * SM3_256_BLOCK_SIZE, \
-					      MAX(ALG_SHA512 * SHA512_BLOCK_SIZE, \
+			      MAX(SHA1_BLOCK_SIZE,		\
+				  MAX(SHA256_BLOCK_SIZE,	\
+				      MAX(SHA384_BLOCK_SIZE, \
+					  MAX(SM3_256_BLOCK_SIZE, \
+					      MAX(SHA512_BLOCK_SIZE, \
 						  0 ))))))
 
 #define MAX_DIGEST_SIZE      (						\
-			      MAX(ALG_SHA1 * SHA1_DIGEST_SIZE,		\
-				  MAX(ALG_SHA256 * SHA256_DIGEST_SIZE,	\
-				      MAX(ALG_SHA384 * SHA384_DIGEST_SIZE, \
-					  MAX(ALG_SM3_256 * SM3_256_DIGEST_SIZE, \
-					      MAX(ALG_SHA512 * SHA512_DIGEST_SIZE, \
+			      MAX(SHA1_DIGEST_SIZE,		\
+				  MAX(SHA256_DIGEST_SIZE,	\
+				      MAX(SHA384_DIGEST_SIZE, \
+					  MAX(SM3_256_DIGEST_SIZE, \
+					      MAX(SHA512_DIGEST_SIZE, \
 						  0 ))))))
 
 #if MAX_DIGEST_SIZE == 0 || MAX_HASH_BLOCK_SIZE == 0
 #error "Hash data not valid"
 #endif
 
-#define HASH_COUNT (ALG_SHA1+ALG_SHA256+ALG_SHA384+ALG_SM3_256+ALG_SHA512)
+#define HASH_COUNT 5
 
 TPM2B_TYPE(MAX_HASH_BLOCK, MAX_HASH_BLOCK_SIZE);
-
-// Following typedef is for some old code
-
-typedef TPM2B_MAX_HASH_BLOCK    TPM2B_HASH_BLOCK;
 
 #ifndef MAX
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #endif
 
-#ifndef ALG_CAMELLIA
-#   define ALG_CAMELLIA         NO
-#endif
-
-#ifndef MAX_CAMELLIA_KEY_BITS
-#   define      MAX_CAMELLIA_KEY_BITS  0
-#   define      MAX_CAMELLIA_BLOCK_SIZE_BYTES 0
-#endif
-
-#ifndef ALG_SM4
-#   define ALG_SM4         NO
-#endif
-
-#ifndef MAX_SM4_KEY_BITS
-#   define      MAX_SM4_KEY_BITS  0
-#   define      MAX_SM4_BLOCK_SIZE_BYTES 0
-#endif
-
-#ifndef ALG_AES
-#   define ALG_AES         NO
-#endif
-
-#ifndef MAX_AES_KEY_BITS
-#   define      MAX_AES_KEY_BITS  0
-#   define      MAX_AES_BLOCK_SIZE_BYTES 0
-#endif
-
 #define MAX_SYM_KEY_BITS (						\
-			  MAX(MAX_CAMELLIA_KEY_BITS * ALG_CAMELLIA,	\
-			      MAX(MAX_SM4_KEY_BITS * ALG_SM4,		\
-				  MAX(MAX_AES_KEY_BITS * ALG_AES,	\
+			  MAX(MAX_CAMELLIA_KEY_BITS,	\
+			      MAX(MAX_SM4_KEY_BITS,		\
+				  MAX(MAX_AES_KEY_BITS,	\
 				      0))))
 #define MAX_SYM_KEY_BYTES ((MAX_SYM_KEY_BITS + 7) / 8)
 #define MAX_SYM_BLOCK_SIZE  (						\
-			     MAX(MAX_CAMELLIA_BLOCK_SIZE_BYTES * ALG_CAMELLIA, \
-				 MAX(MAX_SM4_BLOCK_SIZE_BYTES * ALG_SM4, \
-				     MAX(MAX_AES_BLOCK_SIZE_BYTES * ALG_AES, \
+			     MAX(MAX_CAMELLIA_BLOCK_SIZE_BYTES, \
+				 MAX(MAX_SM4_BLOCK_SIZE_BYTES, \
+				     MAX(MAX_AES_BLOCK_SIZE_BYTES, \
 					 0))))
 #if MAX_SYM_KEY_BITS == 0 || MAX_SYM_BLOCK_SIZE == 0
 #   error Bad size for MAX_SYM_KEY_BITS or MAX_SYM_BLOCK_SIZE

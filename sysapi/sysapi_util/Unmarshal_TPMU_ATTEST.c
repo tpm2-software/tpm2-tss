@@ -42,41 +42,27 @@ void Unmarshal_TPMU_ATTEST(
 
 	switch( selector )
 	{
-#ifdef TPM_ST_ATTEST_CERTIFY
 	case TPM_ST_ATTEST_CERTIFY:
 			Unmarshal_TPMS_CERTIFY_INFO( sysContext, &attest->certify );
 			break;
-#endif
-#ifdef TPM_ST_ATTEST_CREATION
 	case TPM_ST_ATTEST_CREATION:
 			Unmarshal_TPMS_CREATION_INFO( sysContext, &attest->creation );
 			break;
-#endif
-#ifdef TPM_ST_ATTEST_QUOTE
 	case TPM_ST_ATTEST_QUOTE:
 			Unmarshal_TPMS_QUOTE_INFO( sysContext, &attest->quote );
 			break;
-#endif
-#ifdef TPM_ST_ATTEST_COMMAND_AUDIT
 	case TPM_ST_ATTEST_COMMAND_AUDIT:
 			Unmarshal_TPMS_COMMAND_AUDIT_INFO( sysContext, &attest->commandAudit );
 			break;
-#endif
-#ifdef TPM_ST_ATTEST_SESSION_AUDIT
 	case TPM_ST_ATTEST_SESSION_AUDIT:
 			Unmarshal_TPMS_SESSION_AUDIT_INFO( sysContext, &attest->sessionAudit );
 			break;
-#endif
-#ifdef TPM_ST_ATTEST_TIME
 	case TPM_ST_ATTEST_TIME:
 			Unmarshal_TPMS_TIME_ATTEST_INFO( sysContext, &attest->time );
 			break;
-#endif
-#ifdef TPM_ST_ATTEST_NV
 	case TPM_ST_ATTEST_NV:
 			Unmarshal_TPMS_NV_CERTIFY_INFO( sysContext, &attest->nv );
 			break;
-#endif
 	}
 	return;
 }

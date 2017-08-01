@@ -39,26 +39,18 @@ void Marshal_TPMU_PUBLIC_ID(
 
 	switch( selector )
 	{
-#ifdef TPM_ALG_KEYEDHASH
 	case TPM_ALG_KEYEDHASH:
 			MARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&publicVarId->keyedHash );
 			break;
-#endif
-#ifdef TPM_ALG_SYMCIPHER
 	case TPM_ALG_SYMCIPHER:
 			MARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&publicVarId->sym );
 			break;
-#endif
-#ifdef TPM_ALG_RSA
 	case TPM_ALG_RSA:
 			MARSHAL_SIMPLE_TPM2B( sysContext, (TPM2B *)&publicVarId->rsa );
 			break;
-#endif
-#ifdef TPM_ALG_ECC
 	case TPM_ALG_ECC:
 			Marshal_TPMS_ECC_POINT( sysContext, &publicVarId->ecc );
 			break;
-#endif
 	}
 	return;
 }

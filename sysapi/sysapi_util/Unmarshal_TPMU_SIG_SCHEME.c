@@ -42,45 +42,29 @@ void Unmarshal_TPMU_SIG_SCHEME(
 
 	switch( selector )
 	{
-#ifdef TPM_ALG_RSASSA
 	case TPM_ALG_RSASSA:
 			Unmarshal_TPMS_SIG_SCHEME_RSASSA( sysContext, &sigScheme->rsassa );
 			break;
-#endif
-#ifdef TPM_ALG_RSAPSS
 	case TPM_ALG_RSAPSS:
 			Unmarshal_TPMS_SIG_SCHEME_RSAPSS( sysContext, &sigScheme->rsapss );
 			break;
-#endif
-#ifdef TPM_ALG_ECDSA
 	case TPM_ALG_ECDSA:
 			Unmarshal_TPMS_SIG_SCHEME_ECDSA( sysContext, &sigScheme->ecdsa );
 			break;
-#endif
-#ifdef TPM_ALG_ECDAA
 	case TPM_ALG_ECDAA:
 			Unmarshal_TPMS_SIG_SCHEME_ECDAA( sysContext, &sigScheme->ecdaa );
 			break;
-#endif
-#ifdef TPM_ALG_SM2
 	case TPM_ALG_SM2:
 			Unmarshal_TPMS_SIG_SCHEME_SM2( sysContext, &sigScheme->sm2 );
 			break;
-#endif
-#ifdef TPM_ALG_ECSCHNORR
 	case TPM_ALG_ECSCHNORR:
 			Unmarshal_TPMS_SIG_SCHEME_ECSCHNORR( sysContext, &sigScheme->ecschnorr );
 			break;
-#endif
-#ifdef TPM_ALG_HMAC
 	case TPM_ALG_HMAC:
 			Unmarshal_TPMS_SCHEME_HMAC( sysContext, &sigScheme->hmac );
 			break;
-#endif
-#ifdef TPM_ALG_NULL
 	case TPM_ALG_NULL:
 					break;
-#endif
 	}
 	return;
 }
