@@ -178,7 +178,7 @@ TCTI_SOCKET_CONF conf = {
 
 rc = InitSocketTcti (NULL, &size, NULL, 0);
 if (rc != TSS2_RC_SUCCESS) {
-    fprintf (stderr, "Failed to get allocation size for tabrmd TCTI "
+    fprintf (stderr, "Failed to get allocation size for socket TCTI "
              " context: 0x%" PRIx32 "\n", rc);
     exit (EXIT_FAILURE);
 }
@@ -190,7 +190,7 @@ if (tcti_context == NULL) {
 }
 rc = InitSocketTcti (&tcti_context, &size, &conf, 0);
 if (rc != TSS2_RC_SUCCESS) {
-    fprintf (stderr, "Failed to initialize tabrmd TCTI context: "
+    fprintf (stderr, "Failed to initialize socket TCTI context: "
              "0x%" PRIx32 "\n", rc);
     free (tcti_context);
     exit (EXIT_FAILURE);
