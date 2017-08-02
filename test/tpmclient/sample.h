@@ -37,7 +37,7 @@ extern "C" {
 #include "tpmclient.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "syscontext.h"
+#include "common/syscontext.h"
 #include "common/debug.h"
 
 extern TSS2_TCTI_CONTEXT *resMgrTctiContext;

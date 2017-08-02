@@ -68,6 +68,7 @@ TESTS_INTEGRATION = \
     test/integration/self-test.int \
     test/integration/start-auth-session.int \
     test/integration/sys-initialize.int \
+    test/integration/rm.int \
     test/tpmclient/tpmclient.int
 endif #SIMULATOR_BIN
 
@@ -181,9 +182,8 @@ test_tpmclient_tpmclient_int_SOURCES  = $(COMMON_C) \
     test/tpmclient/LoadExternalHMACKey.c test/integration/main.c \
     test/tpmclient/sample.h \
     test/tpmclient/SessionHmac.c test/tpmclient/SetLocality.c \
-    test/tpmclient/StartAuthSession.c test/tpmclient/syscontext.c \
-    test/tpmclient/syscontext.h test/tpmclient/tcti_util.c \
-    test/tpmclient/tcti_util.h test/tpmclient/TpmCalcPHash.c \
+    common/syscontext.h common/tcti_util.h \
+    test/tpmclient/StartAuthSession.c test/tpmclient/TpmCalcPHash.c \
     test/tpmclient/tpmclient.int.c test/tpmclient/tpmclient.h \
     test/tpmclient/tpmclient_wo_rm.h test/tpmclient/TpmHandleToName.c \
     test/tpmclient/TpmHash.c test/tpmclient/TpmHmac.c
@@ -238,6 +238,12 @@ test_integration_self_test_int_SOURCES = test/integration/self-test.int.c \
 test_integration_start_auth_session_int_LDADD = $(TESTS_LDADD)
 test_integration_start_auth_session_int_SOURCES = test/integration/main.c \
     test/integration/start-auth-session.int.c
+
+test_integration_rm_int_LDADD = $(TESTS_LDADD)
+test_integration_rm_int_SOURCES = test/integration/main.c \
+    test/integration/rm.int.c common/debug.c common/debug.h \
+    common/tcti_util.c common/tcti_util.h \
+    common/syscontext.c common/syscontext.h
 
 TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES)
 
