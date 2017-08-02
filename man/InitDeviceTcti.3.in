@@ -143,7 +143,7 @@ TCTI_DEVICE_CONF conf = {
 
 rc = InitDeviceTcti (NULL, &size, NULL);
 if (rc != TSS2_RC_SUCCESS) {
-    fprintf (stderr, "Failed to get allocation size for tabrmd TCTI "
+    fprintf (stderr, "Failed to get allocation size for device TCTI "
              " context: 0x%" PRIx32 "\n", rc);
     exit (EXIT_FAILURE);
 }
@@ -155,7 +155,7 @@ if (tcti_context == NULL) {
 }
 rc = InitDeviceTcti (&tcti_context, &size, &conf);
 if (rc != TSS2_RC_SUCCESS) {
-    fprintf (stderr, "Failed to initialize tabrmd TCTI context: "
+    fprintf (stderr, "Failed to initialize device TCTI context: "
              "0x%" PRIx32 "\n", rc);
     free (tcti_context);
     exit (EXIT_FAILURE);
