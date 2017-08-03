@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/01org/TPM2.0-TSS.svg?branch=master)](https://travis-ci.org/01org/TPM2.0-TSS)
+[![Build Status](https://travis-ci.org/01org/tpm2-tss.svg?branch=master)](https://travis-ci.org/01org/tpm2-tss)
 [![Coverity Scan](https://img.shields.io/coverity/scan/3997.svg)](https://scan.coverity.com/projects/tpm2-tss)
 
 # Overview
@@ -18,7 +18,7 @@ The prior should be used for direct access to the TPM through the Linux kernel d
 The later implements the protocol exposed by the Microsoft software TPM2 simulator.
 
 # Build and Installation Instructions:
-Instructions to build and install TPM2.0-TSS are available in the [INSTALL](INSTALL.md) file.
+Instructions to build and install tpm2-tss are available in the [INSTALL](INSTALL.md) file.
 
 # Getting in Touch:
 If you're looking to discuss the source code in this project or get some questions answered you should join the 01org TPM2 mailing list: https://lists.01.org/mailman/listinfo/tpm2.
@@ -63,7 +63,7 @@ This approach has a number of advantages including the ability to run individual
 
 # [Architecture/Block Diagram](doc/arch.md)
 SAPI library, TAB/RM, and Test Code Block Diagram:
-![Architecture Block Diagram](https://github.com/01org/TPM2.0-TSS/raw/master/doc/TSS%20block%20diagram.png)
+![Architecture Block Diagram](doc/TSS%20block%20diagram.png)
 
 # [Code Layout](doc/layout.md)
 Diagram of the directory structure for the code SAPI library, TAB/RM, and Test
