@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/01org/TPM2.0-TSS.svg?branch=master)](https://travis-ci.org/01org/TPM2.0-TSS)
+[![Build Status](https://travis-ci.org/01org/tpm2-tss.svg?branch=master)](https://travis-ci.org/01org/tpm2-tss)
 [![Coverity Scan](https://img.shields.io/coverity/scan/3997.svg)](https://scan.coverity.com/projects/tpm2-tss)
 
 ## TPM (Trusted Platform Module) 2.0 Software Stack (TSS):
