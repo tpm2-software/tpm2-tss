@@ -15,7 +15,7 @@
  * the value before encryption.
  */
 int
-test_invoke (TSS2_SYS_CONTEXT *sapi_context)
+test_invoke (TSS2_SYS_CONTEXT *sapi_context, test_opts_t *opts)
 {
     TSS2_RC rc;
     TPM2B_SENSITIVE_CREATE  in_sensitive;

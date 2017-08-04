@@ -13,7 +13,7 @@
  * PCR_Read SAPI is called again to check the PCR values are changed.
  */
 int
-test_invoke (TSS2_SYS_CONTEXT *sapi_context)
+test_invoke (TSS2_SYS_CONTEXT *sapi_context, test_opts_t *opts)
 {
     TSS2_RC rc;
     TPMI_YES_NO more_data;

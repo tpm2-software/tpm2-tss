@@ -13,7 +13,7 @@
  * at least this test shows the return randomBytes are differen.
  */
 int
-test_invoke (TSS2_SYS_CONTEXT *sapi_context)
+test_invoke (TSS2_SYS_CONTEXT *sapi_context, test_opts_t *opts)
 {
     TSS2_RC rc;
     TPM2B_DIGEST randomBytes1 = { { sizeof (TPM2B_DIGEST) - 2, } };

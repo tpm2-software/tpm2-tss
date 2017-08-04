@@ -5983,8 +5983,22 @@ void TestCreate1()
     CheckPassed(rval);
 }
 
+typedef enum {
+    UNKNOWN_TCTI,
+    DEVICE_TCTI,
+    SOCKET_TCTI,
+    N_TCTI,
+} TCTI_TYPE;
+
+typedef struct {
+    TCTI_TYPE tcti_type;
+    char     *device_file;
+    char     *socket_address;
+    uint16_t  socket_port;
+} test_opts_t;
+
 int
-test_invoke (TSS2_SYS_CONTEXT *sapi_context)
+test_invoke (TSS2_SYS_CONTEXT *sapi_context, test_opts_t *opts)
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
 

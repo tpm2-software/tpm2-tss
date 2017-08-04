@@ -116,7 +116,8 @@ test_unit_tcti_socket_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_tcti_socket_LDFLAGS = -Wl,--wrap=connect,--wrap=recv,--wrap=select,--wrap=send
 test_unit_tcti_socket_SOURCES = tcti/platformcommand.c tcti/tcti_socket.c \
     tcti/commonchecks.c tcti/commonchecks.h tcti/sockets.c tcti/sockets.h \
-    common/debug.c common/debug.h tcti/logging.h test/unit/tcti-socket.c
+    common/debug.c common/debug.h tcti/logging.h test/unit/tcti-socket.c \
+    tcti/logging.c
 
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_CommonPreparePrologue_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
@@ -165,13 +166,14 @@ tcti_libtcti_device_la_CFLAGS   = $(AM_CFLAGS)
 tcti_libtcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_device.map
 tcti_libtcti_device_la_LIBADD   = $(libmarshal)
 tcti_libtcti_device_la_SOURCES  = tcti/tcti_device.c tcti/commonchecks.c \
-    tcti/commonchecks.h common/debug.c common/debug.h tcti/logging.h
+    tcti/commonchecks.h common/debug.c common/debug.h tcti/logging.h \
+    tcti/logging.c
 
 tcti_libtcti_socket_la_CFLAGS   = $(AM_CFLAGS)
 tcti_libtcti_socket_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
 tcti_libtcti_socket_la_SOURCES  = tcti/platformcommand.c tcti/tcti_socket.c \
     tcti/commonchecks.c tcti/commonchecks.h tcti/sockets.c tcti/sockets.h \
-    common/debug.c common/debug.h tcti/logging.h
+    common/debug.c common/debug.h tcti/logging.h tcti/logging.c
 
 test_tpmclient_tpmclient_int_CFLAGS   = $(AM_CFLAGS) -DNO_RM_TESTS -U_FORTIFY_SOURCE
 test_tpmclient_tpmclient_int_LDADD    = $(TESTS_LDADD)
@@ -190,7 +192,7 @@ test_tpmclient_tpmclient_int_SOURCES  = $(COMMON_C) \
 
 test_integration_libtest_utils_la_SOURCES = \
     test/integration/context-util.c test/integration/context-util.h \
-    test/integration/log.h \
+    test/integration/log.h          tcti/logging.c \
     test/integration/sapi-util.c    test/integration/sapi-util.h \
     test/integration/test-options.c test/integration/test-options.h \
     test/integration/test.h

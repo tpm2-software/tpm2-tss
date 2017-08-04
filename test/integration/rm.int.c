@@ -6,13 +6,14 @@
 #include "tcti/tcti_device.h"
 #include "tcti/tcti_socket.h"
 #include "common/tcti_util.h"
+#include "context-util.h"
 #include <stdio.h>
 
 #define INIT_SIMPLE_TPM2B_SIZE( type ) (type).t.size = sizeof( type ) - 2;
 
 /**
  */
-int test_invoke(TSS2_SYS_CONTEXT *sapi_context) {
+int test_invoke(TSS2_SYS_CONTEXT *sapi_context, test_opts_t *opts) {
     TSS2_TCTI_CONTEXT *otherResMgrTctiContext = 0;
     TSS2_SYS_CONTEXT *otherSysContext;
     TPM2B_SENSITIVE_CREATE inSensitive;
@@ -23,13 +24,6 @@ int test_invoke(TSS2_SYS_CONTEXT *sapi_context) {
     TPMS_AUTH_RESPONSE sessionDataOut;
     TSS2_SYS_CMD_AUTHS sessionsData;
     TSS2_ABI_VERSION abiVersion = { TSSWG_INTEROP, TSS_SAPI_FIRST_FAMILY, TSS_SAPI_FIRST_LEVEL, TSS_SAPI_FIRST_VERSION };
-		TCTI_SOCKET_CONF rmInterfaceConfig = {
-				DEFAULT_HOSTNAME,
-				DEFAULT_SIMULATOR_TPM_PORT,
-				DebugPrintfCallback,
-				DebugPrintBufferCallback,
-				NULL
-		};
 
     TSS2_SYS_RSP_AUTHS sessionsDataOut;
     TPM2B_NAME name;
@@ -110,16 +104,14 @@ int test_invoke(TSS2_SYS_CONTEXT *sapi_context) {
     sessionsData.cmdAuthsCount = 1;
     sessionsData.cmdAuths[0] = &sessionData;
 
-    print_log("Resource Mgr, %s, connecting to %s:%d...",
-        otherResMgrInterfaceName,
-        rmInterfaceConfig.hostname,
-        rmInterfaceConfig.port);
-    rc = InitSocketTctiContext(&rmInterfaceConfig, &otherResMgrTctiContext);
-    if (rc != TSS2_RC_SUCCESS) {
-      print_log("Resource Mgr, %s, failed initialization: 0x%x.  Exiting...",
-                  otherResMgrInterfaceName, rc);
-      return 1;
+
+    print_log("Resource Mgr trying initialization...");
+    otherResMgrTctiContext = tcti_init_from_opts(opts);
+    if (otherResMgrTctiContext == NULL) {
+      print_fail("Resource Mgr, %s, failed initialization.  Exiting...",
+                  otherResMgrInterfaceName);
     }
+    print_log("otherResMgrTctiContext initialized");
 
     otherSysContext = InitSysContext(0, otherResMgrTctiContext, &abiVersion);
     if (otherSysContext == 0) {

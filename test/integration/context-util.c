@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "tcti/logging.h"
 #include "tcti/tcti_device.h"
 #include "tcti/tcti_socket.h"
 
@@ -60,7 +61,7 @@ tcti_socket_init (char const *address,
     TCTI_SOCKET_CONF conf = {
         .hostname          = address,
         .port              = port,
-        .logCallback       = NULL,
+        .logCallback       = tcti_log_callback,
         .logBufferCallback = NULL,
         .logData           = NULL,
     };
