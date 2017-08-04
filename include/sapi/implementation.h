@@ -35,9 +35,6 @@
 #ifndef _IMPLEMENTATION_H_
 #define _IMPLEMENTATION_H_
 
-#undef TRUE
-#undef FALSE
-
 // From TPM 2.0 Part 2: Table 4 - Defines for Logic Values
 #define  YES      1
 #define  NO       0
