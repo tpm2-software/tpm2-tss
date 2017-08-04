@@ -155,6 +155,11 @@ TSS2_TCTI_POLL_HANDLE *handles, size_t *num_handles);
 
 typedef TSS2_TCTI_CONTEXT_COMMON_V1 TSS2_TCTI_CONTEXT_COMMON_CURRENT;
 
+// function that is equivalent to the tss2_tcti_finalize macro
+TSS2_RC Tss2_Tcti_Finalize(
+    TSS2_TCTI_CONTEXT *tctiContext
+    );
+
 #ifdef __cplusplus
 }
 #endif
