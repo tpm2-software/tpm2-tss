@@ -484,6 +484,90 @@ TPM2B_SYM_KEY_Unmarshal (
     TPM2B_SYM_KEY  *dest);
 
 TSS2_RC
+TPM2B_ECC_POINT_Marshal (
+    TPM2B_ECC_POINT const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPM2B_ECC_POINT_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t          *offset,
+    TPM2B_ECC_POINT *dest);
+
+TSS2_RC
+TPM2B_NV_PUBLIC_Marshal (
+    TPM2B_NV_PUBLIC const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPM2B_NV_PUBLIC_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t          *offset,
+    TPM2B_NV_PUBLIC *dest);
+
+TSS2_RC
+TPM2B_SENSITIVE_Marshal (
+    TPM2B_SENSITIVE const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPM2B_SENSITIVE_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t          *offset,
+    TPM2B_SENSITIVE *dest);
+
+TSS2_RC
+TPM2B_SENSITIVE_CREATE_Marshal (
+    TPM2B_SENSITIVE_CREATE const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPM2B_SENSITIVE_CREATE_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t          *offset,
+    TPM2B_SENSITIVE_CREATE *dest);
+
+TSS2_RC
+TPM2B_CREATION_DATA_Marshal (
+    TPM2B_CREATION_DATA const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPM2B_CREATION_DATA_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t          *offset,
+    TPM2B_CREATION_DATA *dest);
+
+TSS2_RC
+TPM2B_PUBLIC_Marshal (
+    TPM2B_PUBLIC    const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPM2B_PUBLIC_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t          *offset,
+    TPM2B_PUBLIC    *dest);
+
+TSS2_RC
 TPMS_CONTEXT_Marshal (
     TPMS_CONTEXT    const *src,
     uint8_t         buffer [],
@@ -876,6 +960,118 @@ TPMS_QUOTE_INFO_Unmarshal(
     TPMS_QUOTE_INFO *dest);
 
 TSS2_RC
+TPMS_CREATION_DATA_Marshal (
+    TPMS_CREATION_DATA  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_CREATION_DATA_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_CREATION_DATA *dest);
+
+TSS2_RC
+TPMS_ECC_PARMS_Marshal (
+    TPMS_ECC_PARMS  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_ECC_PARMS_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_ECC_PARMS *dest);
+
+TSS2_RC
+TPMS_ATTEST_Marshal (
+    TPMS_ATTEST     const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_ATTEST_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_ATTEST *dest);
+
+TSS2_RC
+TPMS_ALGORITHM_DETAIL_ECC_Marshal (
+    TPMS_ALGORITHM_DETAIL_ECC const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_ALGORITHM_DETAIL_ECC_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_ALGORITHM_DETAIL_ECC *dest);
+
+TSS2_RC
+TPMS_CAPABILITY_DATA_Marshal (
+    TPMS_CAPABILITY_DATA const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_CAPABILITY_DATA_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_CAPABILITY_DATA *dest);
+
+TSS2_RC
+TPMS_KEYEDHASH_PARMS_Marshal (
+    TPMS_KEYEDHASH_PARMS const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_KEYEDHASH_PARMS_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_KEYEDHASH_PARMS *dest);
+
+TSS2_RC
+TPMS_RSA_PARMS_Marshal (
+    TPMS_RSA_PARMS  const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_RSA_PARMS_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_RSA_PARMS *dest);
+
+TSS2_RC
+TPMS_SYMCIPHER_PARMS_Marshal (
+    TPMS_SYMCIPHER_PARMS const *src,
+    uint8_t         buffer [],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMS_SYMCIPHER_PARMS_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_SYMCIPHER_PARMS *dest);
+
+TSS2_RC
 TPML_CC_Marshal (
     TPML_CC const *src,
     uint8_t      buffer[],
@@ -1042,6 +1238,20 @@ TPML_TAGGED_TPM_PROPERTY_Unmarshal (
     size_t          buffer_size,
     size_t         *offset,
     TPML_TAGGED_TPM_PROPERTY *dest);
+
+TSS2_RC
+TPML_DIGEST_VALUES_Marshal (
+    TPML_DIGEST_VALUES const *src,
+    uint8_t      buffer[],
+    size_t       buffer_size,
+    size_t      *offset);
+
+TSS2_RC
+TPML_DIGEST_VALUES_Unmarshal (
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPML_DIGEST_VALUES *dest);
 
 TSS2_RC
 TPMU_HA_Marshal (
@@ -1236,6 +1446,38 @@ TPMU_ENCRYPTED_SECRET_Unmarshal (
     TPMU_ENCRYPTED_SECRET *dest);
 
 TSS2_RC
+TPMU_PUBLIC_PARMS_Marshal (
+    TPMU_PUBLIC_PARMS const *src,
+    uint32_t       selector_value,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMU_PUBLIC_PARMS_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    uint32_t       selector_value,
+    TPMU_PUBLIC_PARMS *dest);
+
+TSS2_RC
+TPMU_PUBLIC_ID_Marshal (
+    TPMU_PUBLIC_ID const *src,
+    uint32_t       selector_value,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMU_PUBLIC_ID_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    uint32_t       selector_value,
+    TPMU_PUBLIC_ID *dest);
+
+TSS2_RC
 TPMT_HA_Marshal (
     TPMT_HA const *src,
     uint8_t        buffer[],
@@ -1402,6 +1644,34 @@ TPMT_SENSITIVE_Unmarshal (
     size_t         buffer_size,
     size_t        *offset,
     TPMT_SENSITIVE *dest);
+
+TSS2_RC
+TPMT_PUBLIC_Marshal (
+    TPMT_PUBLIC    const *src,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMT_PUBLIC_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    TPMT_PUBLIC   *dest);
+
+TSS2_RC
+TPMT_PUBLIC_PARMS_Marshal (
+    TPMT_PUBLIC_PARMS const *src,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+TPMT_PUBLIC_PARMS_Unmarshal (
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    TPMT_PUBLIC_PARMS *dest);
 
 TSS2_RC
 TPMT_TK_CREATION_Marshal (
