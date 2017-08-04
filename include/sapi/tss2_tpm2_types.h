@@ -588,7 +588,7 @@ typedef union {
 	unsigned int encrypt : 1;	/* SET 1 In a command this setting indicates that the TPM should use this session to encrypt the first parameter in the response. In a response it indicates that the attribute was set in the command and that the TPM used the session to encrypt the first parameter in the response using the parameter encryption scheme described in TPM 2.0 Part 1.CLEAR 0 Session not used for encryption.For a password authorization this attribute will be CLEAR in both the command and response.This attribute may only be SET in one session per command.This attribute may be SET in a session that is not associated with a command handle. Such a session is provided for purposes of encrypting a parameter and not for authorization.This attribute may only be SET if the first parameter of a response is a sized buffer TPM2B_.  */
 	unsigned int audit : 1;	/* SET 1 In a command or response this setting indicates that the session is for audit and that auditExclusive and auditReset have meaning. This session may also be used for authorization encryption or decryption. The encrypted and encrypt fields may be SET or CLEAR.CLEAR 0 Session is not used for audit.This attribute may only be SET in one session per command or response. If SET in the command then this attribute will be SET in the response.  */
 	};
-	UINT32 val;
+	UINT8 val;
 } TPMA_SESSION;
 
 #elif defined TPM_BITFIELD_BE
@@ -603,12 +603,12 @@ typedef union {
 	unsigned int auditExclusive : 1;	/* SET 1 In a command this setting indicates that the command should only be executed if the session is exclusive at the start of the command. In a response it indicates that the session is exclusive. This setting is only allowed if the audit attribute is SET TPM_RC_ATTRIBUTES.CLEAR 0 In a command indicates that the session need not be exclusive at the start of the command.  In a response indicates that the session is not exclusive.In this revision if audit is CLEAR auditExclusive must be CLEAR in the command and will be CLEAR in the response.  In a future revision this bit may have a different meaning if audit is CLEAR.See Exclusive Audit Session clause in TPM 2.0 Part 1.  */
 	unsigned int continueSession : 1;	/* SET 1 In a command this setting indicates that the session is to remain active after successful completion of the command. In a response it indicates that the session is still active. If SET in the command this attribute shall be SET in the response.CLEAR 0 In a command this setting indicates that the TPM should close the session and flush any related context when the command completes successfully. In a response it indicates that the session is closed and the context is no longer active.This attribute has no meaning for a password authorization and the TPM will allow any setting of the attribute in the command and SET the attribute in the response.This attribute will only be CLEAR in one response for a logical session. If the attribute is CLEAR the context associated with the session is no longer in use and the space is available. A session created after another session is ended may have the same handle but logically is not the same session.This attribute has no effect if the command does not complete successfully.  */
 	};
-	UINT32 val;
+	UINT8 val;
 } TPMA_SESSION;
 
 #else
 
-typedef uint32_t	TPMA_SESSION;
+typedef UINT8 TPMA_SESSION;
 
 #endif
 
@@ -633,7 +633,7 @@ typedef union {
 	unsigned int TPM_LOC_FOUR : 1;	/*   */
 	unsigned int Extended : 3;	/* If any of these bits is set an extended locality is indicated  */
 	};
-	UINT32 val;
+	UINT8 val;
 } TPMA_LOCALITY;
 
 #elif defined TPM_BITFIELD_BE
@@ -647,12 +647,12 @@ typedef union {
 	unsigned int TPM_LOC_ONE : 1;	/*   */
 	unsigned int TPM_LOC_ZERO : 1;	/*   */
 	};
-	UINT32 val;
+	UINT8 val;
 } TPMA_LOCALITY;
 
 #else
 
-typedef uint32_t	TPMA_LOCALITY;
+typedef UINT8 TPMA_LOCALITY;
 
 #endif
 
