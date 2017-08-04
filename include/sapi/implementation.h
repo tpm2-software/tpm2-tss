@@ -192,9 +192,9 @@ typedef  UINT16             TPM_ALG_ID;
 #define  TPM_ALG_SYMCIPHER           (TPM_ALG_ID)(0x0025)
 #define  TPM_ALG_CAMELLIA            (TPM_ALG_ID)(0x0026)
 #define  TPM_ALG_CTR                 (TPM_ALG_ID)(0x0040)
-#define TPM_ALG_SHA3_256 (TPM_ALG_ID)0x27
-#define TPM_ALG_SHA3_384 (TPM_ALG_ID)0x28
-#define TPM_ALG_SHA3_512 (TPM_ALG_ID)0x29
+#define  TPM_ALG_SHA3_256            (TPM_ALG_ID)(0x0027)
+#define  TPM_ALG_SHA3_384            (TPM_ALG_ID)(0x0028)
+#define  TPM_ALG_SHA3_512            (TPM_ALG_ID)(0x0029)
 #define  TPM_ALG_OFB                 (TPM_ALG_ID)(0x0041)
 #define  TPM_ALG_CBC                 (TPM_ALG_ID)(0x0042)
 #define  TPM_ALG_CFB                 (TPM_ALG_ID)(0x0043)
