@@ -380,6 +380,96 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
     return ret; \
 }
 
+#define TPMT_MARSHAL_6(type, m1, op1, fn1, m2, op2, fn2, m3, op3, fn3, \
+                       m4, op4, fn4, m5, op5, sel5, fn5, m6, op6, sel6, fn6) \
+TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
+                       size_t buffer_size, size_t *offset) \
+{ \
+    TSS2_RC ret = TSS2_RC_SUCCESS; \
+    size_t local_offset = 0; \
+\
+    if (src == NULL) \
+        return TSS2_SYS_RC_BAD_REFERENCE; \
+\
+    if (offset) \
+        local_offset = *offset; \
+\
+    LOG (DEBUG, \
+         "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx", (uintptr_t)src,  (uintptr_t)buffer, local_offset); \
+\
+    ret = fn1(op1 src->m1, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn2(op2 src->m2, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn3(op3 src->m3, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn4(op4 src->m4, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn5(op5 src->m5, src->sel5, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn6(op6 src->m6, src->sel6, buffer, buffer_size, &local_offset); \
+\
+    if (offset && ret == TSS2_RC_SUCCESS) { \
+        *offset += local_offset - *offset; \
+    } \
+\
+    return ret; \
+}
+
+#define TPMT_UNMARSHAL_6(type, m1, fn1, m2, fn2, m3, fn3, m4, fn4, m5, sel5, fn5, m6, sel6, fn6) \
+TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *offset, \
+                         type *dest) \
+{ \
+    TSS2_RC ret = TSS2_RC_SUCCESS; \
+    size_t local_offset = 0; \
+\
+    if (offset) \
+        local_offset = *offset; \
+\
+    LOG (DEBUG, \
+         "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, local_offset); \
+\
+    ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn2(buffer, buffer_size, &local_offset, dest ? &dest->m2 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn3(buffer, buffer_size, &local_offset, dest ? &dest->m3 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn4(buffer, buffer_size, &local_offset, dest ? &dest->m4 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn5(buffer, buffer_size, &local_offset, dest ? dest->sel5 : 0, dest ? &dest->m5 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn6(buffer, buffer_size, &local_offset, dest ? dest->sel6 : 0, dest ? &dest->m6 : NULL); \
+\
+    if (offset && ret == TSS2_RC_SUCCESS) { \
+        *offset += local_offset - *offset; \
+    } \
+\
+    return ret; \
+}
+
 /*
  * These macros expand to (un)marshal functions for each of the TPMT types
  * the specification part 2.
@@ -463,6 +553,26 @@ TPMT_UNMARSHAL_4(TPMT_SENSITIVE, sensitiveType, UINT16_Unmarshal,
                  authValue, TPM2B_DIGEST_Unmarshal,
                  seedValue, TPM2B_DIGEST_Unmarshal,
                  sensitive, sensitiveType, TPMU_SENSITIVE_COMPOSITE_Unmarshal)
+
+TPMT_MARSHAL_6(TPMT_PUBLIC, type, VAL, UINT16_Marshal,
+               nameAlg, VAL, UINT16_Marshal,
+               objectAttributes, VAL, TPMA_OBJECT_Marshal,
+               authPolicy, ADDR, TPM2B_DIGEST_Marshal,
+               parameters, ADDR, type, TPMU_PUBLIC_PARMS_Marshal,
+               unique, ADDR, type, TPMU_PUBLIC_ID_Marshal)
+
+TPMT_UNMARSHAL_6(TPMT_PUBLIC, type, UINT16_Unmarshal,
+                 nameAlg, UINT16_Unmarshal,
+                 objectAttributes, TPMA_OBJECT_Unmarshal,
+                 authPolicy, TPM2B_DIGEST_Unmarshal,
+                 parameters, type, TPMU_PUBLIC_PARMS_Unmarshal,
+                 unique, type, TPMU_PUBLIC_ID_Unmarshal)
+
+TPMT_MARSHAL_2(TPMT_PUBLIC_PARMS, type, VAL, UINT16_Marshal,
+               parameters, ADDR, type, TPMU_PUBLIC_PARMS_Marshal)
+
+TPMT_UNMARSHAL_2(TPMT_PUBLIC_PARMS, type, UINT16_Unmarshal,
+                 parameters, type, TPMU_PUBLIC_PARMS_Unmarshal)
 
 TPMT_MARSHAL_TK(TPMT_TK_CREATION, tag, UINT16_Marshal,
                 hierarchy, UINT32_Marshal, digest, TPM2B_DIGEST_Marshal)

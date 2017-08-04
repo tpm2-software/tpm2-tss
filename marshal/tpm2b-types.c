@@ -153,6 +153,140 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     return TSS2_RC_SUCCESS; \
 }
 
+#define TPM2B_MARSHAL_SUBTYPE(type, subtype, member) \
+TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
+                       size_t buffer_size, size_t *offset) \
+{ \
+    size_t local_offset = 0; \
+    UINT8 *ptr; \
+    TSS2_RC rc; \
+\
+    if (src == NULL) { \
+        LOG (WARNING, "src param is NULL"); \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } \
+\
+    if (offset != NULL) { \
+        LOG (DEBUG, "offset non-NULL, initial value: %zu", *offset); \
+        local_offset = *offset; \
+    } \
+\
+    if (buffer == NULL && offset == NULL) { \
+        LOG (WARNING, "buffer and offset parameter are NULL"); \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (buffer == NULL && offset != NULL) { \
+        *offset += sizeof(src->t.size) + src->t.size; \
+        LOG (INFO, "buffer NULL and offset non-NULL, updating offset to %zu", \
+             *offset); \
+        return TSS2_RC_SUCCESS; \
+    } else if (buffer_size < local_offset || \
+               buffer_size - local_offset < sizeof(src->t.size)) { \
+        LOG (WARNING, \
+             "buffer_size: %zu with offset: %zu are insufficient for object " \
+             "of size %zu", \
+             buffer_size, \
+             local_offset, \
+             sizeof(src->t.size)); \
+        return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
+    } \
+\
+    ptr = &buffer[local_offset]; \
+\
+    LOG (DEBUG, \
+         "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx", \
+         (uintptr_t)&src, \
+         (uintptr_t)buffer, \
+         local_offset); \
+\
+    rc = UINT16_Marshal(src->t.size, buffer, buffer_size, &local_offset); \
+    if (rc) \
+        return rc; \
+\
+    rc = subtype##_Marshal(&src->t.member, buffer, buffer_size, &local_offset); \
+    if (rc) \
+        return rc; \
+\
+    /* Update the size to the real value */ \
+    *(UINT16 *)ptr = HOST_TO_BE_16(buffer + local_offset - ptr - 2); \
+\
+    if (offset != NULL) { \
+        *offset += local_offset - *offset; \
+        LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
+    } \
+\
+    return TSS2_RC_SUCCESS; \
+}
+
+#define TPM2B_UNMARSHAL_SUBTYPE(type, subtype, member) \
+TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
+                         size_t *offset, type *dest) \
+{ \
+    size_t  local_offset = 0; \
+    UINT16 size = 0; \
+    TSS2_RC rc; \
+\
+    if (offset != NULL) { \
+        LOG (DEBUG, "offset non-NULL, initial value: %zu", *offset); \
+        local_offset = *offset; \
+    } \
+\
+    if (buffer == NULL || (dest == NULL && offset == NULL)) { \
+        LOG (WARNING, "buffer or dest and offset parameter are NULL"); \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (buffer_size < local_offset || \
+               sizeof(size) > buffer_size - local_offset) \
+    { \
+        LOG (WARNING, \
+             "buffer_size: %zu with offset: %zu are insufficient for object " \
+             "of size %zu", \
+             buffer_size, \
+             local_offset, \
+             sizeof(size)); \
+        return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
+    } \
+    if (dest->t.size != 0) { \
+        LOG (WARNING, "Size not zero"); \
+        return TSS2_SYS_RC_BAD_VALUE; \
+    } \
+\
+    LOG (DEBUG, \
+         "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx", \
+         (uintptr_t)buffer, \
+         (uintptr_t)dest, \
+         local_offset); \
+\
+    rc = UINT16_Unmarshal(buffer, buffer_size, &local_offset, &size); \
+    if (rc) \
+        return rc; \
+\
+    if (size > buffer_size - local_offset) { \
+        LOG (WARNING, \
+             "buffer_size: %zu with offset: %zu are insufficient for object " \
+             "of size %zu", \
+             buffer_size, \
+             local_offset, \
+             (size_t)size); \
+        return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
+    } \
+    if (dest != NULL) { \
+        dest->t.size = size; \
+        subtype##_Unmarshal(buffer, buffer_size, &local_offset, &dest->t.member); \
+        if (rc) \
+            return rc; \
+    } else { \
+        local_offset += size; \
+    } \
+\
+    if (offset != NULL) { \
+        *offset += local_offset - *offset; \
+        LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
+    } \
+\
+    return TSS2_RC_SUCCESS; \
+}
+
 /*
  * These macros expand to (un)marshal functions for each of the TPMA types
  * the specification part 2.
@@ -197,5 +331,15 @@ TPM2B_MARSHAL  (TPM2B_CONTEXT_SENSITIVE);
 TPM2B_UNMARSHAL(TPM2B_CONTEXT_SENSITIVE);
 TPM2B_MARSHAL  (TPM2B_CONTEXT_DATA);
 TPM2B_UNMARSHAL(TPM2B_CONTEXT_DATA);
-TPM2B_MARSHAL  (TPM2B_CREATION_DATA);
-TPM2B_UNMARSHAL(TPM2B_CREATION_DATA);
+TPM2B_MARSHAL_SUBTYPE(TPM2B_ECC_POINT, TPMS_ECC_POINT, point);
+TPM2B_UNMARSHAL_SUBTYPE(TPM2B_ECC_POINT, TPMS_ECC_POINT, point);
+TPM2B_MARSHAL_SUBTYPE(TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC, nvPublic);
+TPM2B_UNMARSHAL_SUBTYPE(TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC, nvPublic);
+TPM2B_MARSHAL_SUBTYPE(TPM2B_SENSITIVE, TPMT_SENSITIVE, sensitiveArea);
+TPM2B_UNMARSHAL_SUBTYPE(TPM2B_SENSITIVE, TPMT_SENSITIVE, sensitiveArea);
+TPM2B_MARSHAL_SUBTYPE(TPM2B_SENSITIVE_CREATE, TPMS_SENSITIVE_CREATE, sensitive);
+TPM2B_UNMARSHAL_SUBTYPE(TPM2B_SENSITIVE_CREATE, TPMS_SENSITIVE_CREATE, sensitive);
+TPM2B_MARSHAL_SUBTYPE(TPM2B_CREATION_DATA, TPMS_CREATION_DATA, creationData);
+TPM2B_UNMARSHAL_SUBTYPE(TPM2B_CREATION_DATA, TPMS_CREATION_DATA, creationData);
+TPM2B_MARSHAL_SUBTYPE(TPM2B_PUBLIC, TPMT_PUBLIC, publicArea);
+TPM2B_UNMARSHAL_SUBTYPE(TPM2B_PUBLIC, TPMT_PUBLIC, publicArea);

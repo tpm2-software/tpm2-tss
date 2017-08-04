@@ -465,14 +465,16 @@ TPMU_MARSHAL2(TPMU_SIGNATURE, TPM_ALG_RSASSA, ADDR, rsassa, TPMS_SIGNATURE_RSA_M
               TPM_ALG_ECDSA, ADDR, ecdsa, TPMS_SIGNATURE_ECC_Marshal,
               TPM_ALG_ECDAA, ADDR, ecdaa, TPMS_SIGNATURE_ECC_Marshal,
               TPM_ALG_SM2, ADDR, sm2, TPMS_SIGNATURE_ECC_Marshal,
-              TPM_ALG_ECSCHNORR, ADDR, ecschnorr, TPMS_SIGNATURE_ECC_Marshal)
+              TPM_ALG_ECSCHNORR, ADDR, ecschnorr, TPMS_SIGNATURE_ECC_Marshal,
+              TPM_ALG_HMAC, ADDR, hmac, TPMT_HA_Marshal)
 
 TPMU_UNMARSHAL2(TPMU_SIGNATURE, TPM_ALG_RSASSA, rsassa, TPMS_SIGNATURE_RSA_Unmarshal,
                 TPM_ALG_RSAPSS, rsapss, TPMS_SIGNATURE_RSA_Unmarshal,
                 TPM_ALG_ECDSA, ecdsa, TPMS_SIGNATURE_ECC_Unmarshal,
                 TPM_ALG_ECDAA, ecdaa, TPMS_SIGNATURE_ECC_Unmarshal,
                 TPM_ALG_SM2, sm2, TPMS_SIGNATURE_ECC_Unmarshal,
-                TPM_ALG_ECSCHNORR, ecschnorr, TPMS_SIGNATURE_ECC_Unmarshal)
+                TPM_ALG_ECSCHNORR, ecschnorr, TPMS_SIGNATURE_ECC_Unmarshal,
+                TPM_ALG_HMAC, hmac, TPMT_HA_Unmarshal)
 
 TPMU_MARSHAL2(TPMU_SENSITIVE_COMPOSITE, TPM_ALG_RSA, ADDR, rsa, TPM2B_PRIVATE_KEY_RSA_Marshal,
               TPM_ALG_ECC, ADDR, ecc, TPM2B_ECC_PARAMETER_Marshal,
@@ -493,3 +495,23 @@ TPMU_UNMARSHAL2(TPMU_ENCRYPTED_SECRET, TPM_ALG_ECC, ecc[0], unmarshal_ecc,
                 TPM_ALG_RSA, rsa[0], unmarshal_rsa,
                 TPM_ALG_SYMCIPHER, symmetric[0], unmarshal_symmetric,
                 TPM_ALG_KEYEDHASH, keyedHash[0], unmarshal_keyedhash)
+
+TPMU_MARSHAL2(TPMU_PUBLIC_ID, TPM_ALG_KEYEDHASH, ADDR, keyedHash, TPM2B_DIGEST_Marshal,
+              TPM_ALG_SYMCIPHER, ADDR, sym, TPM2B_DIGEST_Marshal,
+              TPM_ALG_RSA, ADDR, rsa, TPM2B_PUBLIC_KEY_RSA_Marshal,
+              TPM_ALG_ECC, ADDR, ecc, TPMS_ECC_POINT_Marshal)
+
+TPMU_UNMARSHAL2(TPMU_PUBLIC_ID, TPM_ALG_KEYEDHASH, keyedHash, TPM2B_DIGEST_Unmarshal,
+                TPM_ALG_SYMCIPHER, sym, TPM2B_DIGEST_Unmarshal,
+                TPM_ALG_RSA, rsa, TPM2B_PUBLIC_KEY_RSA_Unmarshal,
+                TPM_ALG_ECC, ecc, TPMS_ECC_POINT_Unmarshal)
+
+TPMU_MARSHAL2(TPMU_PUBLIC_PARMS, TPM_ALG_KEYEDHASH, ADDR, keyedHashDetail, TPMS_KEYEDHASH_PARMS_Marshal,
+              TPM_ALG_SYMCIPHER, ADDR, symDetail, TPMS_SYMCIPHER_PARMS_Marshal,
+              TPM_ALG_RSA, ADDR, rsaDetail, TPMS_RSA_PARMS_Marshal,
+              TPM_ALG_ECC, ADDR, eccDetail, TPMS_ECC_PARMS_Marshal)
+
+TPMU_UNMARSHAL2(TPMU_PUBLIC_PARMS, TPM_ALG_KEYEDHASH, keyedHashDetail, TPMS_KEYEDHASH_PARMS_Unmarshal,
+                TPM_ALG_SYMCIPHER, symDetail, TPMS_SYMCIPHER_PARMS_Unmarshal,
+                TPM_ALG_RSA, rsaDetail, TPMS_RSA_PARMS_Unmarshal,
+                TPM_ALG_ECC, eccDetail, TPMS_ECC_PARMS_Unmarshal)

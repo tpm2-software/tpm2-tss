@@ -224,6 +224,63 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
     return fn(buffer, buffer_size, offset, &dest->m); \
 }
 
+#define TPMS_MARSHAL_2_U(type, m1, op1, fn1, m2, op2, fn2) \
+TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
+                       size_t buffer_size, size_t *offset) \
+{ \
+    TSS2_RC ret = TSS2_RC_SUCCESS; \
+    size_t local_offset = 0; \
+\
+    if (src == NULL) { \
+        LOG (WARNING, "src param is NULL"); \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } \
+\
+    if (offset) \
+        local_offset = *offset; \
+\
+    LOG (DEBUG, \
+         "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, *offset); \
+\
+    ret = fn1(op1 src->m1, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn2(op2 src->m2, src->m1, buffer, buffer_size, &local_offset); \
+\
+    if (offset && ret == TSS2_RC_SUCCESS) { \
+        *offset += local_offset - *offset; \
+    } \
+    return ret; \
+}
+
+#define TPMS_UNMARSHAL_2_U(type, m1, fn1, m2, fn2) \
+TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *offset, \
+                         type *dest) \
+{ \
+    TSS2_RC ret = TSS2_RC_SUCCESS; \
+    size_t local_offset = 0; \
+\
+    LOG (DEBUG, \
+         "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, *offset); \
+\
+    if (offset) \
+        local_offset = *offset; \
+\
+    ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn2(buffer, buffer_size, &local_offset, dest ? dest->m1 : 0, dest ? &dest->m2 : NULL); \
+\
+    if (offset && ret == TSS2_RC_SUCCESS) { \
+        *offset += local_offset - *offset; \
+    } \
+    return ret; \
+}
+
 #define TPMS_MARSHAL_2(type, m1, op1, fn1, m2, op2, fn2) \
 TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
                        size_t buffer_size, size_t *offset) \
@@ -501,6 +558,334 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
     return ret; \
 }
 
+#define TPMS_MARSHAL_7(type, m1, op1, fn1, m2, op2, fn2, m3, op3, fn3, \
+                       m4, op4, fn4, m5, op5, fn5, m6, op6, fn6, m7, op7, fn7) \
+TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
+                       size_t buffer_size, size_t *offset) \
+{ \
+    TSS2_RC ret = TSS2_RC_SUCCESS; \
+    size_t local_offset = 0; \
+\
+    if (src == NULL) { \
+        LOG (WARNING, "src param is NULL"); \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } \
+\
+    if (offset) \
+        local_offset = *offset; \
+\
+    LOG (DEBUG, \
+         "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, *offset); \
+\
+    ret = fn1(op1 src->m1, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn2(op2 src->m2, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn3(op3 src->m3, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn4(op4 src->m4, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn5(op5 src->m5, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn6(op6 src->m6, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn7(op7 src->m7, buffer, buffer_size, &local_offset); \
+\
+    if (offset && ret == TSS2_RC_SUCCESS) { \
+        *offset += local_offset - *offset; \
+    } \
+    return ret; \
+}
+
+#define TPMS_UNMARSHAL_7(type, m1, fn1, m2, fn2, m3, fn3, m4, fn4, m5, fn5, m6, fn6, m7, fn7) \
+TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *offset, \
+                         type *dest) \
+{ \
+    TSS2_RC ret = TSS2_RC_SUCCESS; \
+    size_t local_offset = 0; \
+\
+    LOG (DEBUG, \
+         "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, *offset); \
+\
+    if (offset) \
+        local_offset = *offset; \
+\
+    ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn2(buffer, buffer_size, &local_offset, dest ? &dest->m2 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn3(buffer, buffer_size, &local_offset, dest ? &dest->m3 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn4(buffer, buffer_size, &local_offset, dest ? &dest->m4 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn5(buffer, buffer_size, &local_offset, dest ? &dest->m5 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn6(buffer, buffer_size, &local_offset, dest ? &dest->m6 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn7(buffer, buffer_size, &local_offset, dest ? &dest->m7 : NULL); \
+\
+    if (offset && ret == TSS2_RC_SUCCESS) { \
+        *offset += local_offset - *offset; \
+    } \
+    return ret; \
+}
+
+#define TPMS_MARSHAL_7_U(type, m1, op1, fn1, m2, op2, fn2, m3, op3, fn3, \
+                       m4, op4, fn4, m5, op5, fn5, m6, op6, fn6, m7, op7, fn7) \
+TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
+                       size_t buffer_size, size_t *offset) \
+{ \
+    TSS2_RC ret = TSS2_RC_SUCCESS; \
+    size_t local_offset = 0; \
+\
+    if (src == NULL) { \
+        LOG (WARNING, "src param is NULL"); \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } \
+\
+    if (offset) \
+        local_offset = *offset; \
+\
+    LOG (DEBUG, \
+         "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, *offset); \
+\
+    ret = fn1(op1 src->m1, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn2(op2 src->m2, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn3(op3 src->m3, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn4(op4 src->m4, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn5(op5 src->m5, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn6(op6 src->m6, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn7(op7 src->m7, src->m2, buffer, buffer_size, &local_offset); \
+\
+    if (offset && ret == TSS2_RC_SUCCESS) { \
+        *offset += local_offset - *offset; \
+    } \
+    return ret; \
+}
+
+#define TPMS_UNMARSHAL_7_U(type, m1, fn1, m2, fn2, m3, fn3, m4, fn4, m5, fn5, m6, fn6, m7, fn7) \
+TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *offset, \
+                         type *dest) \
+{ \
+    TSS2_RC ret = TSS2_RC_SUCCESS; \
+    size_t local_offset = 0; \
+\
+    LOG (DEBUG, \
+         "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, *offset); \
+\
+    if (offset) \
+        local_offset = *offset; \
+\
+    ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn2(buffer, buffer_size, &local_offset, dest ? &dest->m2 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn3(buffer, buffer_size, &local_offset, dest ? &dest->m3 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn4(buffer, buffer_size, &local_offset, dest ? &dest->m4 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn5(buffer, buffer_size, &local_offset, dest ? &dest->m5 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn6(buffer, buffer_size, &local_offset, dest ? &dest->m6 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn7(buffer, buffer_size, &local_offset, dest ? dest->m2 : 0, dest ? &dest->m7 : NULL); \
+\
+    if (offset && ret == TSS2_RC_SUCCESS) { \
+        *offset += local_offset - *offset; \
+    } \
+    return ret; \
+}
+
+#define TPMS_MARSHAL_11(type, m1, op1, fn1, m2, op2, fn2, m3, op3, fn3, \
+                       m4, op4, fn4, m5, op5, fn5, m6, op6, fn6, m7, op7, fn7, \
+                       m8, op8, fn8, m9, op9, fn9, m10, op10, fn10, m11, op11, fn11) \
+TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
+                       size_t buffer_size, size_t *offset) \
+{ \
+    TSS2_RC ret = TSS2_RC_SUCCESS; \
+    size_t local_offset = 0; \
+\
+    if (src == NULL) { \
+        LOG (WARNING, "src param is NULL"); \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } \
+\
+    if (offset) \
+        local_offset = *offset; \
+\
+    LOG (DEBUG, \
+         "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, *offset); \
+\
+    ret = fn1(op1 src->m1, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn2(op2 src->m2, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn3(op3 src->m3, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn4(op4 src->m4, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn5(op5 src->m5, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn6(op6 src->m6, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn7(op7 src->m7, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn8(op8 src->m8, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn9(op9 src->m9, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn10(op10 src->m10, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn11(op11 src->m11, buffer, buffer_size, &local_offset); \
+\
+    if (offset && ret == TSS2_RC_SUCCESS) { \
+        *offset += local_offset - *offset; \
+    } \
+    return ret; \
+}
+
+#define TPMS_UNMARSHAL_11(type, m1, fn1, m2, fn2, m3, fn3, m4, fn4, m5, fn5, m6, fn6, m7, fn7, \
+                          m8, fn8, m9, fn9, m10, fn10, m11, fn11) \
+TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *offset, \
+                         type *dest) \
+{ \
+    TSS2_RC ret = TSS2_RC_SUCCESS; \
+    size_t local_offset = 0; \
+\
+    LOG (DEBUG, \
+         "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, *offset); \
+\
+    if (offset) \
+        local_offset = *offset; \
+\
+    ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn2(buffer, buffer_size, &local_offset, dest ? &dest->m2 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn3(buffer, buffer_size, &local_offset, dest ? &dest->m3 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn4(buffer, buffer_size, &local_offset, dest ? &dest->m4 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn5(buffer, buffer_size, &local_offset, dest ? &dest->m5 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn6(buffer, buffer_size, &local_offset, dest ? &dest->m6 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn7(buffer, buffer_size, &local_offset, dest ? &dest->m7 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn8(buffer, buffer_size, &local_offset, dest ? &dest->m8 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn9(buffer, buffer_size, &local_offset, dest ? &dest->m9 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn10(buffer, buffer_size, &local_offset, dest ? &dest->m10 : NULL); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = fn11(buffer, buffer_size, &local_offset, dest ? &dest->m11 : NULL); \
+\
+    if (offset && ret == TSS2_RC_SUCCESS) { \
+        *offset += local_offset - *offset; \
+    } \
+    return ret; \
+}
+
 /*
  * These macros expand to (un)marshal functions for each of the TPMS types
  * the specification part 2.
@@ -748,3 +1133,109 @@ TPMS_MARSHAL_2(TPMS_QUOTE_INFO,
 TPMS_UNMARSHAL_2(TPMS_QUOTE_INFO,
                  pcrSelect, TPML_PCR_SELECTION_Unmarshal,
                  pcrDigest, TPM2B_DIGEST_Unmarshal)
+
+TPMS_MARSHAL_7(TPMS_CREATION_DATA,
+               pcrSelect, ADDR, TPML_PCR_SELECTION_Marshal,
+               pcrDigest, ADDR, TPM2B_DIGEST_Marshal,
+               locality, VAL, TPMA_LOCALITY_Marshal,
+               parentNameAlg, VAL, UINT16_Marshal,
+               parentName, ADDR, TPM2B_NAME_Marshal,
+               parentQualifiedName, ADDR, TPM2B_NAME_Marshal,
+               outsideInfo, ADDR, TPM2B_DATA_Marshal)
+
+TPMS_UNMARSHAL_7(TPMS_CREATION_DATA,
+                 pcrSelect, TPML_PCR_SELECTION_Unmarshal,
+                 pcrDigest, TPM2B_DIGEST_Unmarshal,
+                 locality, TPMA_LOCALITY_Unmarshal,
+                 parentNameAlg, UINT16_Unmarshal,
+                 parentName, TPM2B_NAME_Unmarshal,
+                 parentQualifiedName, TPM2B_NAME_Unmarshal,
+                 outsideInfo, TPM2B_DATA_Unmarshal)
+
+TPMS_MARSHAL_4(TPMS_ECC_PARMS,
+               symmetric, ADDR, TPMT_SYM_DEF_OBJECT_Marshal,
+               scheme, ADDR, TPMT_ECC_SCHEME_Marshal,
+               curveID, VAL, UINT16_Marshal,
+               kdf, ADDR, TPMT_KDF_SCHEME_Marshal)
+
+TPMS_UNMARSHAL_4(TPMS_ECC_PARMS,
+                 symmetric, TPMT_SYM_DEF_OBJECT_Unmarshal,
+                 scheme, TPMT_ECC_SCHEME_Unmarshal,
+                 curveID, UINT16_Unmarshal,
+                 kdf, TPMT_KDF_SCHEME_Unmarshal)
+
+TPMS_MARSHAL_7_U(TPMS_ATTEST,
+                 magic, VAL, UINT32_Marshal,
+                 type, VAL, TPM_ST_Marshal,
+                 qualifiedSigner, ADDR, TPM2B_NAME_Marshal,
+                 extraData, ADDR, TPM2B_DATA_Marshal,
+                 clockInfo, ADDR, TPMS_CLOCK_INFO_Marshal,
+                 firmwareVersion, VAL, UINT64_Marshal,
+                 attested, ADDR, TPMU_ATTEST_Marshal)
+
+TPMS_UNMARSHAL_7_U(TPMS_ATTEST,
+                   magic, UINT32_Unmarshal,
+                   type, TPM_ST_Unmarshal,
+                   qualifiedSigner, TPM2B_NAME_Unmarshal,
+                   extraData, TPM2B_DATA_Unmarshal,
+                   clockInfo, TPMS_CLOCK_INFO_Unmarshal,
+                   firmwareVersion, UINT64_Unmarshal,
+                   attested, TPMU_ATTEST_Unmarshal)
+
+TPMS_MARSHAL_11(TPMS_ALGORITHM_DETAIL_ECC,
+                curveID, VAL, UINT16_Marshal,
+                keySize, VAL, UINT16_Marshal,
+                kdf, ADDR, TPMT_KDF_SCHEME_Marshal,
+                sign, ADDR, TPMT_ECC_SCHEME_Marshal,
+                p, ADDR, TPM2B_ECC_PARAMETER_Marshal,
+                a, ADDR, TPM2B_ECC_PARAMETER_Marshal,
+                b, ADDR, TPM2B_ECC_PARAMETER_Marshal,
+                gX, ADDR, TPM2B_ECC_PARAMETER_Marshal,
+                gY, ADDR, TPM2B_ECC_PARAMETER_Marshal,
+                n, ADDR, TPM2B_ECC_PARAMETER_Marshal,
+                h, ADDR, TPM2B_ECC_PARAMETER_Marshal)
+
+TPMS_UNMARSHAL_11(TPMS_ALGORITHM_DETAIL_ECC,
+                  curveID, UINT16_Unmarshal,
+                  keySize, UINT16_Unmarshal,
+                  kdf, TPMT_KDF_SCHEME_Unmarshal,
+                  sign, TPMT_ECC_SCHEME_Unmarshal,
+                  p, TPM2B_ECC_PARAMETER_Unmarshal,
+                  a, TPM2B_ECC_PARAMETER_Unmarshal,
+                  b, TPM2B_ECC_PARAMETER_Unmarshal,
+                  gX, TPM2B_ECC_PARAMETER_Unmarshal,
+                  gY, TPM2B_ECC_PARAMETER_Unmarshal,
+                  n, TPM2B_ECC_PARAMETER_Unmarshal,
+                  h, TPM2B_ECC_PARAMETER_Unmarshal)
+
+TPMS_MARSHAL_2_U(TPMS_CAPABILITY_DATA,
+                 capability, VAL, UINT32_Marshal,
+                 data, ADDR, TPMU_CAPABILITIES_Marshal)
+
+TPMS_UNMARSHAL_2_U(TPMS_CAPABILITY_DATA,
+                   capability, UINT32_Unmarshal,
+                   data, TPMU_CAPABILITIES_Unmarshal)
+
+TPMS_MARSHAL_1(TPMS_KEYEDHASH_PARMS,
+               scheme, ADDR, TPMT_KEYEDHASH_SCHEME_Marshal)
+
+TPMS_UNMARSHAL_1(TPMS_KEYEDHASH_PARMS,
+                 scheme, TPMT_KEYEDHASH_SCHEME_Unmarshal)
+
+TPMS_MARSHAL_4(TPMS_RSA_PARMS,
+               symmetric, ADDR, TPMT_SYM_DEF_OBJECT_Marshal,
+               scheme, ADDR, TPMT_RSA_SCHEME_Marshal,
+               keyBits, VAL, UINT16_Marshal,
+               exponent, VAL, UINT32_Marshal)
+
+TPMS_UNMARSHAL_4(TPMS_RSA_PARMS,
+                 symmetric, TPMT_SYM_DEF_OBJECT_Unmarshal,
+                 scheme, TPMT_RSA_SCHEME_Unmarshal,
+                 keyBits, UINT16_Unmarshal,
+                 exponent, UINT32_Unmarshal)
+
+TPMS_MARSHAL_1(TPMS_SYMCIPHER_PARMS,
+               sym, ADDR, TPMT_SYM_DEF_OBJECT_Marshal)
+
+TPMS_UNMARSHAL_1(TPMS_SYMCIPHER_PARMS,
+                 sym, TPMT_SYM_DEF_OBJECT_Unmarshal)
