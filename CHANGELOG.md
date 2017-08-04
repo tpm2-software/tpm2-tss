@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ## Unreleased
 ### Added
+- Finished marshaling library. Added support for all TPM types.
+- Removed all sysapi/sysapi_utils/*arshal_TPM*.c files
 - Library for marshaling TPM2 types: libmarshal.
 - Unit test for device TCTI bug fixes.
 - Unit test for socket TCTI bug fixes.
