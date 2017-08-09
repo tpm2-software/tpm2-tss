@@ -26,7 +26,7 @@ CommonPreparePrologue_null_sys_context_unit (void **state)
  * in normal code. Use the opaque TSS2_SYS_CONTEXT in user space
  * applications. In the test cases we do this to induce error conditions.
  */
-static void
+static int
 CommonPreparePrologue_sys_setup (void **state)
 {
     _TSS2_SYS_CONTEXT_BLOB  *sys_ctx;
@@ -37,15 +37,18 @@ CommonPreparePrologue_sys_setup (void **state)
     assert_non_null (sys_ctx);
 
     *state = sys_ctx;
+    return 0;
 }
 
-static void
+static int
 CommonPreparePrologue_sys_teardown (void **state)
 {
     _TSS2_SYS_CONTEXT_BLOB *sys_ctx = (_TSS2_SYS_CONTEXT_BLOB*)*state;
 
     if (sys_ctx)
         free (sys_ctx);
+
+    return 0;
 }
 
 /**
@@ -86,17 +89,17 @@ CommonPreparePrologue_previous_stage_response (void **state)
 int
 main (int argc, char* arvg[])
 {
-    const UnitTest tests[] = {
-        unit_test(CommonPreparePrologue_null_sys_context_unit),
-        unit_test_setup_teardown (CommonPreparePrologue_previous_stage_initialize,
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test(CommonPreparePrologue_null_sys_context_unit),
+        cmocka_unit_test_setup_teardown (CommonPreparePrologue_previous_stage_initialize,
                                   CommonPreparePrologue_sys_setup,
                                   CommonPreparePrologue_sys_teardown),
-        unit_test_setup_teardown (CommonPreparePrologue_previous_stage_prepare,
+        cmocka_unit_test_setup_teardown (CommonPreparePrologue_previous_stage_prepare,
                                   CommonPreparePrologue_sys_setup,
                                   CommonPreparePrologue_sys_teardown),
-        unit_test_setup_teardown (CommonPreparePrologue_previous_stage_response,
+        cmocka_unit_test_setup_teardown (CommonPreparePrologue_previous_stage_response,
                                   CommonPreparePrologue_sys_setup,
                                   CommonPreparePrologue_sys_teardown),
     };
-    return run_tests (tests);
+    return cmocka_run_group_tests (tests, NULL, NULL);
 }

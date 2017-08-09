@@ -17,7 +17,7 @@ typedef struct {
     TSS2_RC  rc;
 } marshal_uint16_data_t;
 
-void
+static int
 marshal_UINT16_setup (void **state)
 {
     marshal_uint16_data_t *data;
@@ -30,9 +30,10 @@ marshal_UINT16_setup (void **state)
     data->rc          = TSS2_RC_SUCCESS;
 
     *state = data;
+    return 0;
 }
 
-void
+static int
 marshal_UINT16_teardown (void **state)
 {
     marshal_uint16_data_t *data;
@@ -43,6 +44,8 @@ marshal_UINT16_teardown (void **state)
             free (data->buffer);
         free (data);
     }
+
+    return 0;
 }
 /**
  * Make a call to Marshal_UINT16 function that should succeed. The *_setup
@@ -175,17 +178,17 @@ marshal_UINT16_rc_previous_fail (void **state)
 int
 main (void)
 {
-    const UnitTest tests [] = {
-        unit_test_setup_teardown (marshal_UINT16_good,
-                                  marshal_UINT16_setup,
-                                  marshal_UINT16_teardown),
-        unit_test_setup_teardown (marshal_UINT16_too_small,
-                                  marshal_UINT16_setup,
-                                  marshal_UINT16_teardown),
-        unit_test_setup_teardown (marshal_UINT16_past_end,
-                                  marshal_UINT16_setup,
-                                  marshal_UINT16_teardown),
-        unit_test (marshal_UINT16_rc_previous_fail),
+    const struct CMUnitTest tests [] = {
+        cmocka_unit_test_setup_teardown (marshal_UINT16_good,
+                                         marshal_UINT16_setup,
+                                         marshal_UINT16_teardown),
+        cmocka_unit_test_setup_teardown (marshal_UINT16_too_small,
+                                         marshal_UINT16_setup,
+                                         marshal_UINT16_teardown),
+        cmocka_unit_test_setup_teardown (marshal_UINT16_past_end,
+                                         marshal_UINT16_setup,
+                                         marshal_UINT16_teardown),
+        cmocka_unit_test (marshal_UINT16_rc_previous_fail),
     };
-    return run_tests (tests);
+    return cmocka_run_group_tests (tests, NULL, NULL);
 }

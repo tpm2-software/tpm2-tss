@@ -65,11 +65,11 @@ int
 main (int   argc,
       char *argv[])
 {
-    const UnitTest tests [] = {
-        unit_test (GetNumCommandHandles_PolicyPCR_unit),
-        unit_test (GetNumResponseHandles_HMAC_Start_unit),
-        unit_test (GetNumCommandHandles_LAST_plus_one),
-        unit_test (GetNumResponseHandles_LAST_plus_one),
+    const struct CMUnitTest tests [] = {
+        cmocka_unit_test (GetNumCommandHandles_PolicyPCR_unit),
+        cmocka_unit_test (GetNumResponseHandles_HMAC_Start_unit),
+        cmocka_unit_test (GetNumCommandHandles_LAST_plus_one),
+        cmocka_unit_test (GetNumResponseHandles_LAST_plus_one),
     };
-    return run_tests (tests);
+    return cmocka_run_group_tests (tests, NULL, NULL);
 }
