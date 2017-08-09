@@ -44,12 +44,14 @@ TPM_RC Tss2_Sys_LoadExternal_Prepare(
 
     CommonPreparePrologue( sysContext, TPM_CC_LoadExternal );
 
-    if( inPrivate == 0 )
-	{
+    /* If no private key is specified, set the private key size field (UINT16) to 0 */
+    if(inPrivate != NULL)
+    {
+        Marshal_TPM2B_SENSITIVE( sysContext, inPrivate );
+    } else {
 		SYS_CONTEXT->decryptNull = 1;
-	}
-
-    Marshal_TPM2B_SENSITIVE( sysContext, inPrivate );
+        Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), 0, &(SYS_CONTEXT->rval) );
+    }
 
     Marshal_TPM2B_PUBLIC( sysContext, inPublic );
 
