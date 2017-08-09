@@ -10,13 +10,16 @@ env:
   - secure: "isEwSgRODxm9JPZAhQUXP0yqPZmrD0PncBmi/y02RT0oq6Aewdag5f7CzrsJoPsaEsFcJJapIzdZLw1KXHkeAIHNhOtSE4y9tZGFBfB35pFIb0a/Im47djYrVlBXs7Ii/PllzW4xRMmhU16phwsU2N1nFyvfo9qma8R4ComL7GXTn4UqTjADg73YfPKr2NMt/6nilLKNLGE8FhjmPKhnlrBmKgCUU9BAyJ8cOR529bLOp4Wo5pGhopCHUKrYqRErISiFNcCRxjVyUEPUjMVT7/1QPGyAS2bpJa0rc2QYH9w+H0GkzliuGjzEUPaWcpDKjTimEym7F1XfmZxe1RPMH70KGsdlqe4UyWnWzsHDKnU/oCngKecx0g1beFSn/Mwfv58uDHZlegUZrstHDdkP4RZJEWyGkYDzuBCJ2UGAKJGnig/CE4w9fXFhCIltOW7/55KB53wwTec7bCXpoWV2LtC9L8TtdmmdwsBa4NHpZuLxAr3zlKt8O72mlVuo8C6iqwXCL32sahf4KGWNgc/X5GirbvsWvokGchB1p3vgwQdb/NZXKM77r7gMbnGhIOGzEmrCB3olaG+3RtF2+5KID/Z1LZHIlXDtrCa8dAmMvBIFvjFe9/L9T75d8GwiaOg2wEfNTb8bAsPsBdyKiYvWpKMIXJEcCTGKOpC9Nr0/+uk="
   # run coverity scan on gcc build to keep from DOSing coverity
   - coverity_scan_run_condition='"$CC" = gcc'
+  - PKG_CONFIG_PATH="$(pwd)/cmocka/lib/pkgconfig:/usr/lib/pkgconfig"
+  - LD_LIBRARY_PATH="$(pwd)/cmocka/lib:/usr/lib"
+  - CMOCKA_CFLAGS="-I$(pwd)/cmocka/include -I/usr/include"
+  - CMOCKA_LIBS="-L$(pwd)/cmocka/lib -lcmocka"
 
 addons:
   apt:
     packages:
     - autoconf-archive
-    - libcmocka0
-    - libcmocka-dev
+    - cmake
   coverity_scan:
     project:
       name: "01org/TPM2.0-TSS"
@@ -32,6 +35,16 @@ install:
   - mkdir ibmtpm532
   - tar axf ibmtpm532.tar -C ibmtpm532
   - make -C ibmtpm532/src -j$(nproc)
+  - wget https://cmocka.org/files/1.0/cmocka-1.0.1.tar.xz
+  - tar -Jxvf cmocka-1.0.1.tar.xz
+  - mkdir cmocka
+  - cd cmocka-1.0.1
+  - mkdir build
+  - cd build
+  - cmake ../ -DCMAKE_INSTALL_PREFIX=../../cmocka -DCMAKE_BUILD_TYPE=Release
+  - make
+  - make install
+  - cd ../../
 
 before_script:
   - ./bootstrap

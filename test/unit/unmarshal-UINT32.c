@@ -17,7 +17,7 @@ typedef struct {
     TSS2_RC  rc;
 } marshal_uint32_data_t;
 
-void
+static int
 unmarshal_UINT32_setup (void **state)
 {
     marshal_uint32_data_t *data;
@@ -36,9 +36,10 @@ unmarshal_UINT32_setup (void **state)
     memcpy (data->buffer, &data->data_net, sizeof (data->data_net));
 
     *state = data;
+    return 0;
 }
 
-void
+static int
 unmarshal_UINT32_teardown (void **state)
 {
     marshal_uint32_data_t *data;
@@ -49,6 +50,7 @@ unmarshal_UINT32_teardown (void **state)
             free (data->buffer);
         free (data);
     }
+    return 0;
 }
 /**
  * Make a call to Unmarshal_UINT32 function that should succeed. The *_setup
@@ -87,10 +89,10 @@ unmarshal_UINT32_good (void **state)
 int
 main (void)
 {
-    const UnitTest tests [] = {
-        unit_test_setup_teardown (unmarshal_UINT32_good,
-                                  unmarshal_UINT32_setup,
-                                  unmarshal_UINT32_teardown),
+    const struct CMUnitTest tests [] = {
+        cmocka_unit_test_setup_teardown (unmarshal_UINT32_good,
+                                         unmarshal_UINT32_setup,
+                                         unmarshal_UINT32_teardown),
     };
-    return run_tests (tests);
+    return cmocka_run_group_tests (tests, NULL, NULL);
 }

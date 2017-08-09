@@ -134,16 +134,16 @@ CheckDataPointers_nextData_lt_buffer_start (void **state)
 int
 main (void)
 {
-    const UnitTest tests [] = {
-        unit_test (CheckOverflow_good),
-        unit_test (CheckOverflow_whole_buffer),
-        unit_test (CheckOverflow_overflow),
-        unit_test (CheckOverflow_buf_next_equal),
-        unit_test (CheckOverflow_nextData_gt_buffer_end),
-        unit_test (CheckDataPointers_null_buffer),
-        unit_test (CheckDataPointers_null_nextData),
-        unit_test (CheckDataPointers_null_nextData_ptr),
-        unit_test (CheckDataPointers_nextData_lt_buffer_start),
+    const struct CMUnitTest tests [] = {
+        cmocka_unit_test (CheckOverflow_good),
+        cmocka_unit_test (CheckOverflow_whole_buffer),
+        cmocka_unit_test (CheckOverflow_overflow),
+        cmocka_unit_test (CheckOverflow_buf_next_equal),
+        cmocka_unit_test (CheckOverflow_nextData_gt_buffer_end),
+        cmocka_unit_test (CheckDataPointers_null_buffer),
+        cmocka_unit_test (CheckDataPointers_null_nextData),
+        cmocka_unit_test (CheckDataPointers_null_nextData_ptr),
+        cmocka_unit_test (CheckDataPointers_nextData_lt_buffer_start),
     };
-    return run_tests (tests);
+    return cmocka_run_group_tests (tests, NULL, NULL);
 }

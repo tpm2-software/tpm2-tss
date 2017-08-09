@@ -12,7 +12,7 @@
 /**
  *
  */
-static void
+static int
 CopyCommandHeader_sys_setup (void **state)
 {
     _TSS2_SYS_CONTEXT_BLOB *sys_ctx;
@@ -29,15 +29,18 @@ CopyCommandHeader_sys_setup (void **state)
     sys_ctx->tpmInBuffPtr = (UINT8*) (sys_ctx + sizeof (_TSS2_SYS_CONTEXT_BLOB));
 
     *state = sys_ctx;
+    return 0;
 }
 
-static void
+static int
 CopyCommandHeader_sys_teardown (void **state)
 {
     _TSS2_SYS_CONTEXT_BLOB *sys_ctx = (_TSS2_SYS_CONTEXT_BLOB*)*state;
 
     if (sys_ctx)
         free (sys_ctx);
+
+    return 0;
 }
 
 /**
@@ -96,16 +99,16 @@ CopyCommandHeader_commandcode_unit (void **state)
 int
 main (int argc, char* argv[])
 {
-    const UnitTest tests[] = {
-        unit_test_setup_teardown (CopyCommandHeader_nextData_unit,
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test_setup_teardown (CopyCommandHeader_nextData_unit,
                                   CopyCommandHeader_sys_setup,
                                   CopyCommandHeader_sys_teardown),
-        unit_test_setup_teardown (CopyCommandHeader_tag_unit,
+        cmocka_unit_test_setup_teardown (CopyCommandHeader_tag_unit,
                                   CopyCommandHeader_sys_setup,
                                   CopyCommandHeader_sys_teardown),
-        unit_test_setup_teardown (CopyCommandHeader_commandcode_unit,
+        cmocka_unit_test_setup_teardown (CopyCommandHeader_commandcode_unit,
                                   CopyCommandHeader_sys_setup,
                                   CopyCommandHeader_sys_teardown),
     };
-    return run_tests (tests);
+    return cmocka_run_group_tests (tests, NULL, NULL);
 }
