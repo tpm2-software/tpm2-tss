@@ -3293,7 +3293,10 @@ void TestUnseal()
     INIT_SIMPLE_TPM2B_SIZE( name );
     rval = Tss2_Sys_LoadExternal ( sysContext, 0, 0, &outPublic,
             TPM_RH_PLATFORM, &loadedObjectHandle, &name, 0 );
-    CheckFailed( rval,  TSS2_TYPES_RC_BAD_REFERENCE);
+    CheckPassed( rval );
+
+    rval = Tss2_Sys_FlushContext( sysContext, loadedObjectHandle );
+    CheckPassed( rval );
 
     INIT_SIMPLE_TPM2B_SIZE( name );
     rval = Tss2_Sys_Load ( sysContext, handle2048rsa, &sessionsData, &outPrivate, &outPublic,
