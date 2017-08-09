@@ -34,7 +34,7 @@ uint8_t name2b_marshalled[] = {
 };
 size_t marshalled_size = sizeof (name2b_marshalled);
 
-void
+static int
 marshal_TPM2B_NAME_setup (void **state)
 {
     marshal_simple2b_t *data;
@@ -45,9 +45,10 @@ marshal_TPM2B_NAME_setup (void **state)
     data->rc          = TSS2_RC_SUCCESS;
 
     *state = data;
+    return 0;
 }
 
-void
+static int
 marshal_TPM2B_NAME_teardown (void **state)
 {
     marshal_simple2b_t *data;
@@ -58,6 +59,7 @@ marshal_TPM2B_NAME_teardown (void **state)
             free (data->buffer);
         free (data);
     }
+    return 0;
 }
 /**
  * Make a call to Marshal_UINT16 function that should succeed. The *_setup
@@ -67,7 +69,7 @@ marshal_TPM2B_NAME_teardown (void **state)
  * The workings of the Marshal_UINT16 function is a bit complex, so we
  * assert the expected results as well.
  */
-void
+static void
 marshal_TPM2B_NAME_good (void **state)
 {
     marshal_simple2b_t *data;
@@ -99,7 +101,7 @@ marshal_TPM2B_NAME_good (void **state)
     /* Finally the return code should indicate success. */
     assert_int_equal (data->rc, TSS2_RC_SUCCESS);
 }
-void
+static void
 unmarshal_TPM2B_NAME_good (void **state)
 {
     /**
@@ -133,11 +135,11 @@ unmarshal_TPM2B_NAME_good (void **state)
 int
 main (void)
 {
-    const UnitTest tests [] = {
-        unit_test_setup_teardown (marshal_TPM2B_NAME_good,
+    const struct CMUnitTest tests [] = {
+        cmocka_unit_test_setup_teardown (marshal_TPM2B_NAME_good,
                                   marshal_TPM2B_NAME_setup,
                                   marshal_TPM2B_NAME_teardown),
-        unit_test (unmarshal_TPM2B_NAME_good),
+        cmocka_unit_test (unmarshal_TPM2B_NAME_good),
     };
-    return run_tests (tests);
+    return cmocka_run_group_tests (tests, NULL, NULL);
 }

@@ -299,7 +299,7 @@ tcti_socket_log_buffer_called_test (void **state)
 /*
  * This is a utility function to setup the "default" TCTI context.
  */
-static void
+static int
 tcti_socket_setup (void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = NULL;
@@ -313,18 +313,20 @@ tcti_socket_setup (void **state)
 
     ctx = tcti_socket_init_from_conf (&conf);
     *state = ctx;
+    return 0;
 }
 /*
  * This is a utility function to teardown a TCTI context allocated by the
  * tcti_socket_setup function.
  */
-static void
+static int
 tcti_socket_teardown (void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
 
     tss2_tcti_finalize (ctx);
     free (ctx);
+    return 0;
 }
 /*
  * This test exercises the successful code path through the receive function.
@@ -400,20 +402,20 @@ int
 main (int   argc,
       char *argv[])
 {
-    const UnitTest tests[] = {
-        unit_test (tcti_socket_init_all_null_test),
-        unit_test (tcti_socket_init_size_test),
-        unit_test (tcti_socket_init_null_config_test),
-        unit_test (tcti_socket_init_log_test),
-        unit_test (tcti_socket_init_log_buffer_test),
-        unit_test (tcti_socket_log_called_test),
-        unit_test (tcti_socket_log_buffer_called_test),
-        unit_test_setup_teardown (tcti_socket_receive_success_test,
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test (tcti_socket_init_all_null_test),
+        cmocka_unit_test (tcti_socket_init_size_test),
+        cmocka_unit_test (tcti_socket_init_null_config_test),
+        cmocka_unit_test (tcti_socket_init_log_test),
+        cmocka_unit_test (tcti_socket_init_log_buffer_test),
+        cmocka_unit_test (tcti_socket_log_called_test),
+        cmocka_unit_test (tcti_socket_log_buffer_called_test),
+        cmocka_unit_test_setup_teardown (tcti_socket_receive_success_test,
                                   tcti_socket_setup,
                                   tcti_socket_teardown),
-        unit_test_setup_teardown (tcti_socket_transmit_success_test,
+        cmocka_unit_test_setup_teardown (tcti_socket_transmit_success_test,
                                   tcti_socket_setup,
                                   tcti_socket_teardown)
     };
-    return run_tests (tests);
+    return cmocka_run_group_tests (tests, NULL, NULL);
 }

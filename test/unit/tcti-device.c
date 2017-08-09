@@ -163,7 +163,7 @@ tcti_device_setup (void **state)
     *state = ctx;
 }
 
-static void
+static int
 tcti_device_setup_with_command (void **state)
 {
     TSS2_RC rc;
@@ -184,15 +184,17 @@ tcti_device_setup_with_command (void **state)
     assert_true (rc == TSS2_RC_SUCCESS);
 
     *state = data;
+    return 0;
 }
 
-static void
+static int
 tcti_device_teardown (void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = *state;
 
     tss2_tcti_finalize (ctx);
     free (ctx);
+    return 0;
 }
 /*
  * A test case for a successful call to the receive function. This requires
@@ -236,18 +238,18 @@ tcti_device_transmit_success (void **state)
 int
 main(int argc, char* argv[])
 {
-    const UnitTest tests[] = {
-        unit_test (tcti_device_init_all_null_test),
-        unit_test(tcti_device_init_size_test),
-        unit_test (tcti_device_init_log_test),
-        unit_test (tcti_device_log_called_test),
-        unit_test (tcti_device_init_null_config_test),
-        unit_test_setup_teardown (tcti_device_receive_success,
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test (tcti_device_init_all_null_test),
+        cmocka_unit_test(tcti_device_init_size_test),
+        cmocka_unit_test (tcti_device_init_log_test),
+        cmocka_unit_test (tcti_device_log_called_test),
+        cmocka_unit_test (tcti_device_init_null_config_test),
+        cmocka_unit_test_setup_teardown (tcti_device_receive_success,
                                   tcti_device_setup_with_command,
                                   tcti_device_teardown),
-        unit_test_setup_teardown (tcti_device_transmit_success,
+        cmocka_unit_test_setup_teardown (tcti_device_transmit_success,
                                   tcti_device_setup_with_command,
                                   tcti_device_teardown),
     };
-    return run_tests(tests);
+    return cmocka_run_group_tests (tests, NULL, NULL);
 }

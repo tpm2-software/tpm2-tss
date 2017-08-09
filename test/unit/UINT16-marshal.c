@@ -207,19 +207,19 @@ UINT16_unmarshal_buffer_size_lt_dest (void **state)
 int
 main (void)
 {
-    const UnitTest tests [] = {
-        unit_test (UINT16_marshal_success),
-        unit_test (UINT16_marshal_success_offset),
-        unit_test (UINT16_marshal_buffer_null_with_offset),
-        unit_test (UINT16_marshal_buffer_null_offset_null),
-        unit_test (UINT16_marshal_buffer_size_lt_data),
-        unit_test (UINT16_marshal_buffer_size_lt_offset),
-        unit_test (UINT16_unmarshal_success),
-        unit_test (UINT16_unmarshal_success_offset),
-        unit_test (UINT16_unmarshal_buffer_null),
-        unit_test (UINT16_unmarshal_dest_null),
-        unit_test (UINT16_unmarshal_buffer_size_lt_offset),
-        unit_test (UINT16_unmarshal_buffer_size_lt_dest),
+    const struct CMUnitTest tests [] = {
+        cmocka_unit_test (UINT16_marshal_success),
+        cmocka_unit_test (UINT16_marshal_success_offset),
+        cmocka_unit_test (UINT16_marshal_buffer_null_with_offset),
+        cmocka_unit_test (UINT16_marshal_buffer_null_offset_null),
+        cmocka_unit_test (UINT16_marshal_buffer_size_lt_data),
+        cmocka_unit_test (UINT16_marshal_buffer_size_lt_offset),
+        cmocka_unit_test (UINT16_unmarshal_success),
+        cmocka_unit_test (UINT16_unmarshal_success_offset),
+        cmocka_unit_test (UINT16_unmarshal_buffer_null),
+        cmocka_unit_test (UINT16_unmarshal_dest_null),
+        cmocka_unit_test (UINT16_unmarshal_buffer_size_lt_offset),
+        cmocka_unit_test (UINT16_unmarshal_buffer_size_lt_dest),
     };
-    return run_tests (tests);
+    return cmocka_run_group_tests (tests, NULL, NULL);
 }
