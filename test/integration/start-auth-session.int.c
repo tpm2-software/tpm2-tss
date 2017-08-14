@@ -10,7 +10,7 @@
  * (which ends up being a trial policy) and then just tear it down.
  */
 int
-test_invoke (TSS2_SYS_CONTEXT *sapi_context)
+test_invoke (TSS2_SYS_CONTEXT *sapi_context, test_opts_t *opts)
 {
     TSS2_RC rc;
     TPM2B_NONCE nonce_caller = {

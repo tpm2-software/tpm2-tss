@@ -10,7 +10,7 @@
  * when fullTest set as YES and when it is set as NO.  
  */
 int
-test_invoke (TSS2_SYS_CONTEXT *sapi_context)
+test_invoke (TSS2_SYS_CONTEXT *sapi_context, test_opts_t *opts)
 {
     TSS2_RC rc;
     print_log( "SelfTest tests started." );

@@ -34,7 +34,7 @@ main (int   argc,
     rc = Tss2_Sys_Startup(sapi_context, TPM_SU_CLEAR);
     if (rc != TSS2_RC_SUCCESS && rc != TPM_RC_INITIALIZE)
         print_fail("TPM Startup FAILED! Response Code : 0x%x", rc);
-    ret = test_invoke (sapi_context);
+    ret = test_invoke (sapi_context, &opts);
     sapi_teardown_full (sapi_context);
     return ret;
 }

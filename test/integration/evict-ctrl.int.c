@@ -4,7 +4,7 @@
 #include "test.h"
 
 int
-test_invoke (TSS2_SYS_CONTEXT *sapi_context)
+test_invoke (TSS2_SYS_CONTEXT *sapi_context, test_opts_t *opts)
 {
     TPM_RC      rc             = TPM_RC_SUCCESS;
     TPM_HANDLE  primary_handle = 0;

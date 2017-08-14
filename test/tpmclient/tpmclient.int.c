@@ -66,8 +66,9 @@
 
 #include "tcti/tcti_device.h"
 #include "tcti/tcti_socket.h"
-#include "syscontext.h"
+#include "common/syscontext.h"
 #include "common/debug.h"
+#include "common/tcti_util.h"
 
 //
 // TPM indices and sizes
@@ -118,14 +119,6 @@ TPM_HANDLE handle1024, handle2048sha1, handle2048rsa;
 UINT8 indent = 0;
 
 TSS2_SYS_CONTEXT *sysContext;
-
-TCTI_SOCKET_CONF rmInterfaceConfig = {
-    DEFAULT_HOSTNAME,
-    DEFAULT_SIMULATOR_TPM_PORT,
-    DebugPrintfCallback,
-    DebugPrintBufferCallback,
-    NULL
-};
 
 TSS2_TCTI_CONTEXT *resMgrTctiContext = 0;
 TSS2_ABI_VERSION abiVersion = { TSSWG_INTEROP, TSS_SAPI_FIRST_FAMILY, TSS_SAPI_FIRST_LEVEL, TSS_SAPI_FIRST_VERSION };
@@ -5837,322 +5830,6 @@ void GetSetEncryptParamTests()
     CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #29
 }
 
-void TestRM()
-{
-    TSS2_TCTI_CONTEXT *otherResMgrTctiContext = 0;
-    TSS2_SYS_CONTEXT *otherSysContext;
-    TPM2B_SENSITIVE_CREATE  inSensitive;
-    TPM2B_PUBLIC            inPublic;
-    TPM2B_DATA              outsideInfo;
-    TPML_PCR_SELECTION      creationPCR;
-    TPMS_AUTH_COMMAND sessionData;
-    TPMS_AUTH_RESPONSE sessionDataOut;
-    TSS2_SYS_CMD_AUTHS sessionsData;
-
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
-    TPM2B_NAME name;
-    TPM2B_PUBLIC outPublic;
-    TPM2B_CREATION_DATA creationData;
-    TPM2B_DIGEST creationHash;
-    TPMT_TK_CREATION creationTicket;
-
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-    TSS2_RC rval = TSS2_RC_SUCCESS;
-
-    TPMS_CONTEXT context;
-    TSS2_TCTI_CONTEXT *tctiContext;
-
-    TPMI_DH_CONTEXT loadedHandle, newHandle, newNewHandle, newHandleDummy;
-    TPMS_CONTEXT    newContext;
-    char otherResMgrInterfaceName[] = "Test RM Resource Manager";
-
-    DebugPrintf( NO_PREFIX, "\nRM TESTS:\n" );
-
-    sessionDataArray[0] = &sessionData;
-    sessionDataOutArray[0] = &sessionDataOut;
-
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsData.cmdAuths = &sessionDataArray[0];
-
-    sessionsDataOut.rspAuthsCount = 1;
-    inSensitive.t.sensitive.userAuth = loadedSha1KeyAuth;
-    inSensitive.t.sensitive.userAuth = loadedSha1KeyAuth;
-    inSensitive.t.sensitive.data.t.size = 0;
-    inSensitive.t.size = loadedSha1KeyAuth.b.size + 2;
-
-    inPublic.t.publicArea.type = TPM_ALG_RSA;
-    inPublic.t.publicArea.nameAlg = TPM_ALG_SHA1;
-
-    // First clear attributes bit field.
-    *(UINT32 *)&( inPublic.t.publicArea.objectAttributes) = 0;
-    inPublic.t.publicArea.objectAttributes.restricted = 1;
-    inPublic.t.publicArea.objectAttributes.userWithAuth = 1;
-    inPublic.t.publicArea.objectAttributes.decrypt = 1;
-    inPublic.t.publicArea.objectAttributes.fixedTPM = 1;
-    inPublic.t.publicArea.objectAttributes.fixedParent = 1;
-    inPublic.t.publicArea.objectAttributes.sensitiveDataOrigin = 1;
-
-    inPublic.t.publicArea.authPolicy.t.size = 0;
-
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_ECB;
-    inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
-    inPublic.t.publicArea.parameters.rsaDetail.keyBits = 1024;
-    inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
-
-    inPublic.t.publicArea.unique.rsa.t.size = 0;
-
-    outsideInfo.t.size = 0;
-    creationPCR.count = 0;
-
-    sessionData.sessionHandle = TPM_RS_PW;
-
-    // Init nonce.
-    sessionData.nonce.t.size = 0;
-
-    // init hmac
-    sessionData.hmac.t.size = 0;
-
-    // Init session attributes
-    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
-
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0] = &sessionData;
-
-    rval = InitSocketTctiContext( &rmInterfaceConfig, &otherResMgrTctiContext);
-    if( rval != TSS2_RC_SUCCESS )
-    {
-        DebugPrintf( NO_PREFIX, "Resource Mgr, %s, failed initialization: 0x%x.  Exiting...\n", otherResMgrInterfaceName, rval );
-        Cleanup();
-        return;
-    }
-
-    otherSysContext = InitSysContext( 0, otherResMgrTctiContext, &abiVersion );
-    if( otherSysContext == 0 )
-    {
-        InitSysContextFailure();
-    }
-
-    // TEST WITH AN INVALID COMMAND CODE.
-
-    rval = Tss2_Sys_Startup_Prepare( sysContext, TPM_SU_CLEAR );
-    CheckPassed(rval);
-
-    //
-    // Alter the CC by altering the CC field in sysContext.
-    //
-    // WARNING:  This is something only a test application should do. Do
-    // not use this as sample code.
-    //
-    ((TPM20_Header_In *)( ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->tpmInBuffPtr) )->commandCode = TPM_CC_FIRST - 1;
-    rval = Tss2_Sys_Execute( sysContext );
-    CheckFailed( rval, TPM_RC_COMMAND_CODE );
-
-    // TEST OWNERSHIP
-
-    // Try to access a key created by the first TCTI context.
-    sessionData.hmac.t.size = 2;
-    sessionData.hmac.t.buffer[0] = 0x00;
-    sessionData.hmac.t.buffer[1] = 0xff;
-
-    inPublic.t.publicArea.type = TPM_ALG_RSA;
-    inPublic.t.publicArea.nameAlg = TPM_ALG_SHA1;
-
-    // First clear attributes bit field.
-    *(UINT32 *)&( inPublic.t.publicArea.objectAttributes) = 0;
-    inPublic.t.publicArea.objectAttributes.restricted = 1;
-    inPublic.t.publicArea.objectAttributes.userWithAuth = 1;
-    inPublic.t.publicArea.objectAttributes.decrypt = 1;
-    inPublic.t.publicArea.objectAttributes.fixedTPM = 1;
-    inPublic.t.publicArea.objectAttributes.fixedParent = 1;
-    inPublic.t.publicArea.objectAttributes.sensitiveDataOrigin = 1;
-
-    inPublic.t.publicArea.authPolicy.t.size = 0;
-
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-    inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_ECB;
-    inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
-    inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
-    inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
-
-    inPublic.t.publicArea.unique.rsa.t.size = 0;
-
-    outsideInfo.t.size = 0;
-
-
-    // This one should pass, because the same context is allowed to save the context.
-    rval = Tss2_Sys_ContextSave( sysContext, handle2048rsa, &context );
-    CheckPassed( rval );
-
-    // This one should pass, since we saved the context first.
-    rval = Tss2_Sys_ContextLoad( otherSysContext, &context, &loadedHandle );
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_FlushContext( otherSysContext, loadedHandle );
-    CheckPassed( rval );
-
-    // NOW, DO SOME LOCALITY TESTS
-
-    // Test with null tctiContext ptr.
-    rval = (((TSS2_TCTI_CONTEXT_COMMON_V1 *)otherResMgrTctiContext)->setLocality)( 0, 0 );
-    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE );
-
-    rval = (((TSS2_TCTI_CONTEXT_COMMON_V1 *)otherResMgrTctiContext)->setLocality)( otherResMgrTctiContext, 0 );
-    CheckPassed( rval );
-
-    // Now try changing localities between send and receive.
-    rval = Tss2_Sys_ContextLoad( otherSysContext, &context, &loadedHandle );
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_FlushContext_Prepare( otherSysContext, loadedHandle );
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_ExecuteAsync( otherSysContext );
-    CheckPassed( rval );
-
-    // This should fail because locality is changing between send and receive.
-    rval = (((TSS2_TCTI_CONTEXT_COMMON_V1 *)otherResMgrTctiContext)->setLocality)( otherResMgrTctiContext, 1 );
-    CheckFailed( rval, TSS2_TCTI_RC_BAD_SEQUENCE );
-
-    rval = Tss2_Sys_ExecuteFinish( otherSysContext, TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckPassed( rval );
-
-    // NOW, DO SOME CANCEL TESTS
-
-    rval = Tss2_Sys_GetTctiContext( sysContext, &tctiContext );
-    CheckPassed( rval );
-
-    // Try cancel with null tctiContext ptr.
-    rval = (((TSS2_TCTI_CONTEXT_COMMON_V1 *)otherResMgrTctiContext)->cancel)( 0 );
-    CheckFailed( rval, TSS2_TCTI_RC_BAD_REFERENCE );
-
-    // Try cancel when no commands are pending.
-    rval = (((TSS2_TCTI_CONTEXT_COMMON_V1 *)otherResMgrTctiContext)->cancel)( otherResMgrTctiContext );
-    CheckFailed( rval, TSS2_TCTI_RC_BAD_SEQUENCE );
-
-    // Then try cancel with a pending command:  send cancel before blocking _Finish call.
-    inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
-    rval = Tss2_Sys_CreatePrimary_Prepare( sysContext, TPM_RH_PLATFORM, &inSensitive, &inPublic,
-            &outsideInfo, &creationPCR );
-    CheckPassed( rval );
-
-    //
-    // NOTE: there are race conditions in tests that use cancel and
-    // are expecting to receive the CANCEL response code.  The tests
-    // typically pass, but may occasionally fail on the order of
-    // 1 out of 500 or so test passes.
-    //
-    // The OS could delay the test app long enough for the TPM to
-    // complete the CreatePrimary before the test app gets to run
-    // again.  To make these tests robust would require some way to
-    // create a critical section in the test app.
-    //
-    sessionData.hmac.t.size = 0;
-    sessionData.nonce.t.size = 0;
-    rval = Tss2_Sys_SetCmdAuths( sysContext, &sessionsData );
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_ExecuteAsync( sysContext );
-    CheckPassed( rval );
-
-    rval = (((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->cancel)( tctiContext );
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckFailed( rval, TPM_RC_CANCELED );
-
-     // Then try cancel with a pending command:  send cancel after non-blocking _Finish call.
-    rval = Tss2_Sys_CreatePrimary_Prepare( sysContext, TPM_RH_PLATFORM, &inSensitive, &inPublic,
-            &outsideInfo, &creationPCR );
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_SetCmdAuths( sysContext, &sessionsData );
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_ExecuteAsync( sysContext );
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_ExecuteFinish( sysContext, 0 );
-    CheckFailed( rval, TSS2_TCTI_RC_TRY_AGAIN );
-
-    rval = (((TSS2_TCTI_CONTEXT_COMMON_V1 *)tctiContext)->cancel)( tctiContext );
-    CheckPassed( rval );
-
-	rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckFailed( rval, TPM_RC_CANCELED );
-
-    // Then try cancel from a different connection:  it should just get a sequence error.
-    rval = Tss2_Sys_CreatePrimary_Prepare( sysContext, TPM_RH_PLATFORM, &inSensitive, &inPublic,
-            &outsideInfo, &creationPCR );
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_SetCmdAuths( sysContext, &sessionsData );
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_ExecuteAsync( sysContext );
-    CheckPassed( rval );
-
-    rval = (((TSS2_TCTI_CONTEXT_COMMON_V1 *)otherResMgrTctiContext)->cancel)( otherResMgrTctiContext );
-    CheckFailed( rval, TSS2_TCTI_RC_BAD_SEQUENCE );
-
-    rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
-    CheckPassed( rval );
-
-    outPublic.t.size = 0;
-    creationData.t.size = 0;
-    INIT_SIMPLE_TPM2B_SIZE( name );
-    INIT_SIMPLE_TPM2B_SIZE( creationHash );
-    creationHash.t.size = sizeof( creationHash );
-    rval = Tss2_Sys_CreatePrimary_Complete( sysContext, &newHandle, &outPublic, &creationData,
-            &creationHash, &creationTicket, &name );
-    CheckPassed( rval );
-
-    //
-    // Now try saving context for object and loading it using a different connection.
-    //
-
-    // First save context.
-    rval = Tss2_Sys_ContextSave( sysContext, newHandle, &newContext );
-    CheckPassed( rval );
-
-    //
-    // Now create an object with different hierarchy.  This will make sure that
-    // RM is getting correct hierarchy in it's table.
-    // NOTE:  this test can only be verified by looking at RM output.
-    //
-	outPublic.t.size = 0;
-    creationData.t.size = 0;
-    INIT_SIMPLE_TPM2B_SIZE( name );
-    INIT_SIMPLE_TPM2B_SIZE( creationHash );
-    rval = Tss2_Sys_CreatePrimary( sysContext, TPM_RH_ENDORSEMENT, &sessionsData, &inSensitive, &inPublic,
-            &outsideInfo, &creationPCR, &newHandleDummy, &outPublic, &creationData, &creationHash,
-			&creationTicket, &name, &sessionsDataOut );
-    CheckPassed( rval );
-
-    // Now try loading the context using a different connection.
-    rval = Tss2_Sys_ContextLoad( otherSysContext, &newContext, &newNewHandle );
-    CheckPassed( rval );
-
-    // Flush original connection's object.
-    rval = Tss2_Sys_FlushContext( sysContext, newHandle );
-    CheckPassed( rval );
-
-    // Now flush new object from other connection.  Should work.
-    rval = Tss2_Sys_FlushContext( otherSysContext, newNewHandle );
-    CheckPassed( rval );
-
-    // Now flush dummy object.
-    rval = Tss2_Sys_FlushContext( sysContext, newHandleDummy );
-    CheckPassed( rval );
-
-    TeardownTctiContext( &otherResMgrTctiContext );
-
-    TeardownSysContext( &otherSysContext );
-}
-
 void EcEphemeralTest()
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
@@ -6305,8 +5982,22 @@ void TestCreate1()
     CheckPassed(rval);
 }
 
+typedef enum {
+    UNKNOWN_TCTI,
+    DEVICE_TCTI,
+    SOCKET_TCTI,
+    N_TCTI,
+} TCTI_TYPE;
+
+typedef struct {
+    TCTI_TYPE tcti_type;
+    char     *device_file;
+    char     *socket_address;
+    uint16_t  socket_port;
+} test_opts_t;
+
 int
-test_invoke (TSS2_SYS_CONTEXT *sapi_context)
+test_invoke (TSS2_SYS_CONTEXT *sapi_context, test_opts_t *opts)
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
@@ -6425,11 +6116,6 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     TestDictionaryAttackLockReset();
     TestPcrAllocate();
     TestUnseal();
-#ifdef SKIP_RM_TEST
-    printf("** Skipping TestRM()\n");
-#else
-    TestRM();
-#endif
     EcEphemeralTest();
     // Clear out RM entries for objects.
     rval = Tss2_Sys_FlushContext( sysContext, handle2048rsa );

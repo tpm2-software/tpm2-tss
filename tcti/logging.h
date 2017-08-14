@@ -13,3 +13,10 @@
 #define TCTI_LOG_BUFFER( ctx, type, data, length ) \
     (TCTI_LOG_BUFFER_CALLBACK( ctx ) != NULL) ? \
       TCTI_LOG_BUFFER_CALLBACK_INVOKE( ctx, type, data, length ) : 0
+
+int tcti_log_callback(
+    void          *data,
+    printf_type   type,
+    const char    *format,
+    ...
+    );
