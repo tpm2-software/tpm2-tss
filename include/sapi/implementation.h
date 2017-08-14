@@ -420,8 +420,6 @@ typedef  UINT32             TPM_CC;
 
 #define HASH_COUNT 5
 
-TPM2B_TYPE(MAX_HASH_BLOCK, MAX_HASH_BLOCK_SIZE);
-
 #ifndef MAX
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #endif
@@ -440,8 +438,5 @@ TPM2B_TYPE(MAX_HASH_BLOCK, MAX_HASH_BLOCK_SIZE);
 #if MAX_SYM_KEY_BITS == 0 || MAX_SYM_BLOCK_SIZE == 0
 #   error Bad size for MAX_SYM_KEY_BITS or MAX_SYM_BLOCK_SIZE
 #endif
-
-// Define the 2B structure for a seed
-TPM2B_TYPE(SEED, PRIMARY_SEED_SIZE);
 
 #endif  // _IMPLEMENTATION_H_
