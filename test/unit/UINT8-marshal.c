@@ -165,6 +165,23 @@ UINT8_unmarshal_dest_null (void **state)
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 }
 /*
+ * Test case ensures the offset is updated when dest is NULL
+ * and offset is valid
+ */
+void
+UINT8_unmarshal_dest_null_offset_valid (void **state)
+{
+    uint8_t buffer [2];
+    size_t  offset = 1;
+    TSS2_RC rc;
+
+    rc = UINT8_Unmarshal (buffer, sizeof (buffer), &offset, NULL);
+
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (offset, 2);
+}
+
+/*
  * Test case ensures that INSUFFICIENT_BUFFER is returned when buffer_size
  * is less than the provided offset.
  */
@@ -214,6 +231,7 @@ main (void)
         cmocka_unit_test (UINT8_unmarshal_success_offset),
         cmocka_unit_test (UINT8_unmarshal_buffer_null),
         cmocka_unit_test (UINT8_unmarshal_dest_null),
+        cmocka_unit_test (UINT8_unmarshal_dest_null_offset_valid),
         cmocka_unit_test (UINT8_unmarshal_buffer_size_lt_offset),
         cmocka_unit_test (UINT8_unmarshal_buffer_size_lt_dest),
     };
