@@ -3,5 +3,5 @@ Description: TCTI library for communicating with a TPM over a socket.
 URL: https://github.com/01org/TPM2.0-TSS
 Version: @VERSION@
 Requires: sapi
-Cflags: -I@includedir@/tcti
-Libs: -ltcti-socket
+Cflags: -I@includedir@
+Libs: -ltcti-socket -L@libdir@
