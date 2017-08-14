@@ -420,10 +420,6 @@ typedef  UINT32             TPM_CC;
 
 #define HASH_COUNT 5
 
-#ifndef MAX
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-#endif
-
 #define MAX_SYM_KEY_BITS (						\
 			  MAX(MAX_CAMELLIA_KEY_BITS,	\
 			      MAX(MAX_SM4_KEY_BITS,		\
