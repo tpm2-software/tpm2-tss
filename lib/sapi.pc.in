@@ -2,5 +2,5 @@ Name: sapi
 Description: TPM2 System API library.
 URL: https://github.com/01org/TPM2.0-TSS
 Version: @VERSION@
-Cflags: -I@includedir@/sapi
-Libs: -lmarshal -lsapi
+Cflags: -I@includedir@
+Libs: -lmarshal -lsapi -L@libdir@

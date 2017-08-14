@@ -243,6 +243,7 @@ TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES)
 %.pc : %.pc.in
 	$(call make_parent_dir,$@)
 	sed -e "s,[@]VERSION[@],$(PACKAGE_VERSION),g; \
+	        s,[@]libdir[@],$(libdir),g; \
 	        s,[@]includedir[@],$(includedir),g;" $^ > $@
 
 man/man3/%.3 : man/%.3.in $(srcdir)/man/man-postlude.troff
