@@ -31,11 +31,14 @@ addons:
     branch_pattern: coverity_scan
 
 install:
+  - echo 'Building TPM2 Simulator...' && echo -en 'travis_fold:start:simulator\\r'
   - wget https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm532.tar
   - sha256sum ibmtpm532.tar | grep -q ^abc0b420257917ccb42a9750588565d5e84a2b4e99a6f9f46c3dad1f9912864f
   - mkdir ibmtpm532
   - tar axf ibmtpm532.tar -C ibmtpm532
   - make -C ibmtpm532/src -j$(nproc)
+  - echo -en 'travis_fold:end:simulator\\r'
+  - echo 'Building cmocka...' && echo -en 'travis_fold:start:cmocka\\r'
   - wget https://cmocka.org/files/1.0/cmocka-1.0.1.tar.xz
   - tar -Jxvf cmocka-1.0.1.tar.xz
   - mkdir cmocka
@@ -46,24 +49,37 @@ install:
   - make
   - make install
   - cd ../../
+  - echo -en 'travis_fold:end:cmocka\\r'
 
 before_script:
   - ./bootstrap
 
 script:
+  - echo 'Configuring TSS Source Code...' && echo -en 'travis_fold:start:tss-configure\\r'
   - mkdir ./build
   - pushd ./build
   - ../configure --enable-unit --with-simulatorbin=$(pwd)/../ibmtpm532/src/tpm_server
+  - echo -en 'travis_fold:end:tss-configure\\r'
+  - echo 'Building TSS Libraries...' && echo -en 'travis_fold:start:tss-build\\r'
   - make -j$(nproc)
+  - echo -en 'travis_fold:end:tss-build\\r'
+  - echo 'Executing TSS Test Harness...' && echo -en 'travis_fold:start:tss-check\\r'
   - make -j$(nproc) check
+  - echo -en 'travis_fold:end:tss-check\\r'
+  - echo 'Dumping TSS Unit Test Logs...' && echo -en 'travis_fold:start:tss-unit\\r'
   - |
     for LOG in $(ls -1 test/unit/*.log); do
         echo "${LOG}"
         cat ${LOG}
     done
+  - echo -en 'travis_fold:end:tss-unit\\r'
+  - echo 'Dumping TSS Integration Test Logs...' && echo -en 'travis_fold:start:tss-integration\\r'
   - |
     for LOG in $(ls -1 test/integration/*.log); do
         echo "${LOG}"
         cat ${LOG}
     done
+  - echo -en 'travis_fold:end:tss-integration\\r'
+  - echo 'Dumping tpmclient Log...' && echo -en 'travis_fold:start:tss-tpmclient\\r'
   - cat test/tpmclient/tpmclient.log
+  - echo -en 'travis_fold:end:tss-tpmclient\\r'
