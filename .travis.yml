@@ -1,11 +1,9 @@
-language: cpp
+language: c
 compiler:
   - gcc
   - clang
 
-# This is a lie: we don't need sudo but this is required to get an
-# Ubuntu image with a libc that isn't ancient, and with cmocka libs.
-sudo: required
+sudo: false
 dist: trusty
 
 env:
