@@ -33,6 +33,8 @@ void Unmarshal_TPML_INTEL_PTT_PROPERTY(
 	TPML_INTEL_PTT_PROPERTY *intelPttProperty
 )
 {
+	UINT32 i;
+
 	if (SYS_CONTEXT->rval != TSS2_RC_SUCCESS)
 		return;
 
@@ -40,7 +42,9 @@ void Unmarshal_TPML_INTEL_PTT_PROPERTY(
 		return;
 
 	Unmarshal_UINT32(SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &intelPttProperty->count, &(SYS_CONTEXT->rval));
-	Unmarshal_UINT32(SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &intelPttProperty->property, &(SYS_CONTEXT->rval));
-
+	for( i = 0; i < intelPttProperty->count; ++i )
+	{
+		Unmarshal_UINT32(SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &intelPttProperty->property[i], &(SYS_CONTEXT->rval));
+	}
 	return;
 }
