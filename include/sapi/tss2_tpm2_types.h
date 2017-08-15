@@ -47,6 +47,7 @@
 #define    MAX_TPM_PROPERTIES   (MAX_CAP_DATA/sizeof(TPMS_TAGGED_PROPERTY))
 #define    MAX_PCR_PROPERTIES   (MAX_CAP_DATA/sizeof(TPMS_TAGGED_PCR_SELECT))
 #define    MAX_ECC_CURVES       (MAX_CAP_DATA/sizeof(TPM_ECC_CURVE))
+#define    MAX_PTT_PROPERTIES   (MAX_CAP_DATA/sizeof(UINT32))
 
 /* Table 4  Defines for Logic Values */
 #define	TRUE	1
@@ -1184,7 +1185,7 @@ typedef	struct {
 /* Implementation specific structure to hold Intel PTT specific property data. */
 typedef	struct {
 	UINT32	count;	/* number of properties zero is allowed.  */
-	UINT32	property;	/* property value */
+	UINT32	property[MAX_PTT_PROPERTIES];	/* property value */
 } TPML_INTEL_PTT_PROPERTY;
 
 /* Table 107  Definition of TPMU_CAPABILITIES Union <OUT> */
