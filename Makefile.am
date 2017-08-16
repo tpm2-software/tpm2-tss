@@ -55,7 +55,8 @@ TESTS_UNIT  = \
     test/unit/UINT16-marshal \
     test/unit/UINT32-marshal \
     test/unit/UINT64-marshal \
-    test/unit/TPMA-marshal
+    test/unit/TPMA-marshal \
+    test/unit/TPM2B-marshal
 endif #UNIT
 if SIMULATOR_BIN
 TESTS_INTEGRATION = \
@@ -159,6 +160,10 @@ test_unit_UINT64_marshal_SOURCES = test/unit/UINT64-marshal.c
 test_unit_TPMA_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_TPMA_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_TPMA_marshal_SOURCES = test/unit/TPMA-marshal.c
+
+test_unit_TPM2B_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
+test_unit_TPM2B_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
+test_unit_TPM2B_marshal_SOURCES = test/unit/TPM2B-marshal.c
 endif # UNIT
 
 marshal_libmarshal_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/libmarshal.map
