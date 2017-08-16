@@ -28,7 +28,7 @@ script:
   - mkdir ./build
   - pushd ./build
   - ../configure --enable-unit --with-simulatorbin=$(pwd)/../ibmtpm532/src/tpm_server
-  - make -j$(nproc)
+  - make -j$(nproc) distcheck
   - make -j$(nproc) check
   - |
     for LOG in $(ls -1 test/unit/*.log); do

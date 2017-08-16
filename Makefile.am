@@ -74,7 +74,10 @@ endif #SIMULATOR_BIN
 CLEANFILES = \
     $(nodist_pkgconfig_DATA) \
     $(man3_MANS) \
-    $(man7_MANS)
+    $(man7_MANS) \
+    test/integration/*.log \
+    test/tpmclient/*.log \
+    test/unit/*.log
 
 # headers and where to install them
 libsapidir      = $(includedir)/sapi
@@ -98,6 +101,7 @@ EXTRA_DIST = \
     man/man3/InitSocketTcti.3 \
     man/tcti-device.7.in \
     man/tcti-socket.7.in \
+    $(INT_LOG_COMPILER) \
     tcti/tcti_device.map \
     tcti/tcti_socket.map
 
