@@ -245,7 +245,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
              sizeof(size)); \
         return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
     } \
-    if (dest->t.size != 0) { \
+    if (dest && dest->t.size != 0) { \
         LOG (WARNING, "Size not zero"); \
         return TSS2_SYS_RC_BAD_VALUE; \
     } \
