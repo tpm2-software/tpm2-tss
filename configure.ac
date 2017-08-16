@@ -1,4 +1,4 @@
-AC_INIT([tpm2.0-tss],
+AC_INIT([tpm2-tss],
         [m4_esyscmd_s([git describe --tags --always --dirty])])
 AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CC
@@ -6,6 +6,10 @@ LT_INIT()
 AM_INIT_AUTOMAKE([foreign
                   subdir-objects])
 AC_CONFIG_FILES([Makefile])
+
+# propagate configure arguments to distcheck
+AC_SUBST([DISTCHECK_CONFIGURE_FLAGS],[$ac_configure_args])
+
 AC_ARG_ENABLE([unit],
             [AS_HELP_STRING([--enable-unit],
                             [build cmocka unit tests (default is no)])],
