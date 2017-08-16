@@ -75,7 +75,10 @@ endif #SIMULATOR_BIN
 CLEANFILES = \
     $(nodist_pkgconfig_DATA) \
     $(man3_MANS) \
-    $(man7_MANS)
+    $(man7_MANS) \
+    test/integration/*.log \
+    test/tpmclient/*.log \
+    test/unit/*.log
 
 # headers and where to install them
 libsapidir      = $(includedir)/sapi
@@ -101,6 +104,7 @@ EXTRA_DIST = \
     man/man3/InitSocketTcti.3 \
     man/tcti-device.7.in \
     man/tcti-socket.7.in \
+    $(INT_LOG_COMPILER) \
     tcti/tcti_device.map \
     tcti/tcti_socket.map
 
@@ -158,7 +162,7 @@ test_unit_TPMA_marshal_SOURCES = test/unit/TPMA-marshal.c
 endif # UNIT
 
 marshal_libmarshal_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/libmarshal.map
-marshal_libmarshal_la_SOURCES = $(MARSHAL_SRC) log/log.c
+marshal_libmarshal_la_SOURCES = $(MARSHAL_SRC) log/log.c log/log.h
 
 sysapi_libsapi_la_LIBADD  = $(libmarshal)
 sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPI_H) $(SYSAPIUTIL_C) \
