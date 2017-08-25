@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## Unreleased
+## [1.2.0] - 2017-08-25
 ### Added
 - Support for PTT-specific capabilities.
 - Manuals with overviews for SAPI and TCTI layers & TCTI init functions.
