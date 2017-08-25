@@ -1,5 +1,8 @@
 AC_INIT([tpm2-tss],
-        [m4_esyscmd_s([git describe --tags --always --dirty])])
+        [2.0.0-dev],
+        [https://github.com/01org/tpm2-tss/issues],
+        [],
+        [https://github.com/01org/tpm2-tss])
 AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CC
 LT_INIT()
