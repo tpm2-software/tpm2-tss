@@ -1,0 +1,6 @@
+Name: sapi
+Description: TPM2 type marshalling and unmarshalling library.
+URL: https://github.com/01org/tpm2-tss
+Version: @VERSION@
+Cflags: -I@includedir@
+Libs: -lmarshal -L@libdir@
