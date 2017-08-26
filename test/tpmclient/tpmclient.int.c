@@ -466,12 +466,12 @@ void TestTpmStartup()
 
 
     //
-    // Now test the syncronous, non-one-call interface.
+    // Now test the synchronous, non-one-call interface.
     //
     rval = Tss2_Sys_Startup_Prepare( sysContext, TPM_SU_CLEAR );
     CheckPassed(rval);
 
-    // Execute the command syncronously.
+    // Execute the command synchronously.
     rval = Tss2_Sys_Execute( sysContext );
     CheckPassed( rval );
 
@@ -483,12 +483,12 @@ void TestTpmStartup()
 
 
     //
-    // Now test the asyncronous, non-one-call interface.
+    // Now test the asynchronous, non-one-call interface.
     //
     rval = Tss2_Sys_Startup_Prepare( sysContext, TPM_SU_CLEAR );
     CheckPassed(rval);
 
-    // Execute the command asyncronously.
+    // Execute the command asynchronously.
     rval = Tss2_Sys_ExecuteAsync( sysContext );
     CheckPassed(rval);
 
@@ -536,7 +536,7 @@ void TestSapiApis()
     CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #3
 
     //
-    // Now test the syncronous, non-one-call interface.
+    // Now test the synchronous, non-one-call interface.
     //
     rval = Tss2_Sys_GetTestResult_Prepare( sysContext );
     CheckPassed(rval); // #4
@@ -545,7 +545,7 @@ void TestSapiApis()
     rval = Tss2_Sys_Execute( 0 );
     CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #5
 
-    // Execute the command syncronously.
+    // Execute the command synchronously.
     rval = Tss2_Sys_Execute( sysContext );
     CheckPassed(rval); // #6
 
@@ -563,7 +563,7 @@ void TestSapiApis()
     CheckPassed(rval); // #9
 
     //
-    // Now test the asyncronous, non-one-call interface.
+    // Now test the asynchronous, non-one-call interface.
     //
     rval = Tss2_Sys_GetTestResult_Prepare( sysContext );
     CheckPassed(rval); // #10
@@ -582,7 +582,7 @@ void TestSapiApis()
     rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
     CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); // #13
 
-    // Execute the command asyncronously.
+    // Execute the command asynchronously.
     rval = Tss2_Sys_ExecuteAsync( sysContext );
     CheckPassed(rval); // #14
 
@@ -646,7 +646,7 @@ void TestSapiApis()
     rval = Tss2_Sys_ReadPublic_Prepare( sysContext, handle2048rsa );
     CheckPassed(rval); // #27
 
-    // Execute the command syncronously.
+    // Execute the command synchronously.
     rval = Tss2_Sys_ExecuteAsync( sysContext );
     CheckPassed( rval ); // #28
 
@@ -671,7 +671,7 @@ void TestSapiApis()
     rval = Tss2_Sys_ReadPublic_Prepare( sysContext, handle2048rsa );
     CheckPassed(rval); // #34
 
-    // Execute the command syncronously.
+    // Execute the command synchronously.
     rval = Tss2_Sys_Execute( sysContext );
     CheckPassed( rval ); // #35
 
@@ -690,7 +690,7 @@ void TestSapiApis()
             1 );
     CheckPassed(rval); // #38
 
-    // Execute the command asyncronously.
+    // Execute the command asynchronously.
     rval = Tss2_Sys_ExecuteAsync( sysContext );
     CheckPassed(rval); // #39
 
@@ -822,7 +822,7 @@ void TestSapiApis()
     rval = Tss2_Sys_GetTestResult_Prepare( sysContext );
     CheckPassed(rval); // #63
 
-    // Execute the command syncronously.
+    // Execute the command synchronously.
     rval = Tss2_Sys_Execute( sysContext );
     CheckPassed(rval); // #64
 
@@ -4901,7 +4901,7 @@ void TestEncryptDecryptSession()
         //
         // Write TPM index with encrypted parameter used
         // as the data to write.  Set session for encrypt.
-        // Use asyncronous APIs to do this.
+        // Use asynchronous APIs to do this.
         //
         // 1st time:  use null buffer, 2nd time use populated one;
         // this tests different cases for SetDecryptParam function.
@@ -5022,7 +5022,7 @@ void TestEncryptDecryptSession()
 
         //
         // Read TPM index with encrypt session; use
-        // syncronous APIs to do this.
+        // synchronous APIs to do this.
         //
 
         rval = Tss2_Sys_NV_Read_Prepare( sysContext, TPM20_INDEX_TEST1,
