@@ -320,7 +320,7 @@ sessions.
 - Added more policy tests: password/PCR, authValue, password
 - Added code to flush context of session handles I'm not using.
 - Added GetTestResult functions (had missed these previously)
-- Added tests for asyncronous and syncronous non-one call to Startup tests.
+- Added tests for asynchronous and synchronous non-one call to Startup tests.
 - Added GetTestResult tests.
 - Added test to create a bunch of sessions. This test found some resource
 manager issues.
