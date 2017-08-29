@@ -2,6 +2,6 @@ Name: tcti-device
 Description: TCTI library for communicating with a TPM device node.
 URL: https://github.com/01org/tpm2-tss
 Version: @VERSION@
-Requires: sapi
+Requires: marshal
 Cflags: -I@includedir@
 Libs: -ltcti-device -L@libdir@
