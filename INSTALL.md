@@ -33,6 +33,15 @@ $ sudo apt -y install \
   autoconf
 ```
 
+## Fedora
+
+There is a package already, so the package build dependencies information can be
+used to make sure that the needed packages to compile from source are installed:
+
+```
+$ sudo dnf builddep tpm2-tss
+```
+
 # Building From Source
 ## Bootstrapping the Build
 To configure the tpm2.0-tss source code first run the bootstrap script, which
