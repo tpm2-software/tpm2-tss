@@ -31,11 +31,11 @@ addons:
     branch_pattern: coverity_scan
 
 install:
-  - wget https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm532.tar
-  - sha256sum ibmtpm532.tar | grep -q ^abc0b420257917ccb42a9750588565d5e84a2b4e99a6f9f46c3dad1f9912864f
-  - mkdir ibmtpm532
-  - tar axf ibmtpm532.tar -C ibmtpm532
-  - make -C ibmtpm532/src -j$(nproc)
+  - wget https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm974.tar.gz
+  - sha256sum ibmtpm974.tar.gz | grep -q ^8e45d86129a0adb95fee4cee51f4b1e5b2d81ed3e55af875df53f98f39eb7ad7
+  - mkdir ibmtpm
+  - tar axf ibmtpm974.tar.gz -C ibmtpm
+  - make -C ibmtpm/src -j$(nproc)
   - wget https://cmocka.org/files/1.1/cmocka-1.1.1.tar.xz
   - tar -Jxvf cmocka-1.1.1.tar.xz
   - mkdir cmocka
@@ -53,7 +53,7 @@ before_script:
 script:
   - mkdir ./build
   - pushd ./build
-  - ../configure --enable-unit --with-simulatorbin=$(pwd)/../ibmtpm532/src/tpm_server
+  - ../configure --enable-unit --with-simulatorbin=$(pwd)/../ibmtpm/src/tpm_server
   - make -j$(nproc) distcheck
   - make -j$(nproc) check
   - |
