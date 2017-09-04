@@ -56,7 +56,7 @@
 #include <string.h>
 
 #include "sapi/tpm20.h"
-#include "sysapi_util.h"
+#include "../integration/sapi-util.h"
 #include "sample.h"
 #include "tpmclient.h"
 #include "tcti_util.h"
@@ -1815,10 +1815,10 @@ void TestCreate(){
     creationData.t.size = 0;
     INIT_SIMPLE_TPM2B_SIZE( outPrivate );
     INIT_SIMPLE_TPM2B_SIZE( creationHash );
-    rval = Tss2_Sys_Create( sysContext, handle2048rsa, &sessionsData, &inSensitive, &inPublic,
+    rval = TSS2_RETRY_EXP( Tss2_Sys_Create( sysContext, handle2048rsa, &sessionsData, &inSensitive, &inPublic,
             &outsideInfo, &creationPCR,
             &outPrivate, &outPublic, &creationData,
-            &creationHash, &creationTicket, &sessionsDataOut );
+            &creationHash, &creationTicket, &sessionsDataOut ));
     CheckPassed( rval );
 
     INIT_SIMPLE_TPM2B_SIZE( name );
@@ -3066,7 +3066,7 @@ void TpmAuxReadWriteTest()
         CheckPassed( rval );
 
         INIT_SIMPLE_TPM2B_SIZE( nvData );
-        rval = Tss2_Sys_NV_Read( sysContext, INDEX_AUX, INDEX_AUX, &nullSessionsData, 4, 0, &nvData, &nullSessionsDataOut );
+        rval = TSS2_RETRY_EXP( Tss2_Sys_NV_Read( sysContext, INDEX_AUX, INDEX_AUX, &nullSessionsData, 4, 0, &nvData, &nullSessionsDataOut ));
         CheckPassed( rval );
 
         rval = SetLocality( sysContext, 3 );

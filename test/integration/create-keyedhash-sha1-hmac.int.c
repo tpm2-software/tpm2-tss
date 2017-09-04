@@ -50,19 +50,19 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     inPublic.t.publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM_ALG_SHA1;
 
     print_log ("Create keyedhash SHA1 HMAC");
-    rc = Tss2_Sys_Create (sapi_context,
-                          parent_handle,
-                          &sessions_cmd,
-                          &inSensitive,
-                          &inPublic,
-                          &outsideInfo,
-                          &creationPCR,
-                          &outPrivate,
-                          &outPublic,
-                          &creationData,
-                          &creationHash,
-                          &creationTicket,
-                          &sessions_rsp);
+    rc = TSS2_RETRY_EXP (Tss2_Sys_Create (sapi_context,
+                                          parent_handle,
+                                          &sessions_cmd,
+                                          &inSensitive,
+                                          &inPublic,
+                                          &outsideInfo,
+                                          &creationPCR,
+                                          &outPrivate,
+                                          &outPublic,
+                                          &creationData,
+                                          &creationHash,
+                                          &creationTicket,
+                                          &sessions_rsp));
     if (rc == TPM_RC_SUCCESS) {
         print_log ("success");
     } else {
