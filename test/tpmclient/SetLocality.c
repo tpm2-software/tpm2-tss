@@ -27,6 +27,7 @@
 
 #include "sapi/tpm20.h"
 #include "sample.h"
+#include "../integration/sapi-util.h"
 
 TSS2_RC SetLocality( TSS2_SYS_CONTEXT *sysContext, UINT8 locality )
 {
