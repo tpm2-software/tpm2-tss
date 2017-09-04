@@ -27,7 +27,7 @@
 
 #include "sapi/tpm20.h"
 #include "sample.h"
-#include "sysapi_util.h"
+#include "../integration/sapi-util.h"
 #include <stdlib.h>
 
 #define SESSIONS_ARRAY_COUNT MAX_NUM_SESSIONS+1
