@@ -21,6 +21,7 @@ addons:
     packages:
     - autoconf-archive
     - cmake
+    - realpath
   coverity_scan:
     project:
       name: "01org/TPM2.0-TSS"
@@ -56,6 +57,7 @@ script:
   - ../configure --enable-unit --with-simulatorbin=$(pwd)/../ibmtpm/src/tpm_server
   - make -j$(nproc) distcheck
   - make -j$(nproc) check
+  - cat test-suite.log
   - |
     for LOG in $(ls -1 test/unit/*.log); do
         echo "${LOG}"
