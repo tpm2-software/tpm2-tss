@@ -2,7 +2,7 @@
 #include "log.h"
 #include "test.h"
 #include "sapi/tpm20.h"
-#include "sysapi_util.h"
+#include "sapi-util.h"
 /**
  * This program contains integration test for asymetric encrypt and
  * decrypt use case that has SAPIs Tss2_Sys_CreatePrimary,
@@ -113,7 +113,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     creation_data.t.size = 0;
     session_data.hmac.t.size = 0;
 
-    rc = Tss2_Sys_Create(sapi_context, sym_handle, &sessions_data, &in_sensitive, &in_public, &outside_info, &creation_pcr, &out_private, &out_public, &creation_data, &creation_hash, &creation_ticket, &sessions_data_out);
+    rc = TSS2_RETRY_EXP (Tss2_Sys_Create(sapi_context, sym_handle, &sessions_data, &in_sensitive, &in_public, &outside_info, &creation_pcr, &out_private, &out_public, &creation_data, &creation_hash, &creation_ticket, &sessions_data_out));
     if (rc != TPM_RC_SUCCESS)
         print_fail("Create FAILED! Response Code : 0x%x", rc);
 

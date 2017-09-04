@@ -35,6 +35,18 @@
 #define TSS2_APP_ERROR(base_rc)   (TSS2_APP_ERROR_LEVEL | base_rc)
 #define TSS2_APP_RC_BAD_REFERENCE  TSS2_APP_ERROR (TSS2_BASE_RC_BAD_REFERENCE)
 /*
+ * This macro is like the GNU TEMP_FAILURE_RETRY macro for the
+ * TPM_RC_RETRY response code.
+ */
+#define TSS2_RETRY_EXP(expression)                         \
+    ({                                                     \
+        TSS2_RC __result = 0;                              \
+        do {                                               \
+            __result = (expression);                       \
+        } while ((__result & 0x0000ffff) == TPM_RC_RETRY); \
+        __result;                                          \
+    })
+/*
  * tpm2b default initializers, these set the size to the max for the default
  * structure and zero's the data area.
  */
