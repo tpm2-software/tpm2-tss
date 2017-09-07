@@ -2,7 +2,7 @@
 [![Coverity Scan](https://img.shields.io/coverity/scan/3997.svg)](https://scan.coverity.com/projects/tpm2-tss)
 
 # Overview
-This repository hosts source code implementing the Trusted Computing Group's (TCG) TPM2 Software Stack (TSS)
+This repository hosts source code implementing the Trusted Computing Group's (TCG) TPM2 Software Stack (TSS).
 This stack consists of the following layers from top to bottom:
 
 * System API (SAPI) as described in the  [system level API and TPM command transmission interface specification](http://www.trustedcomputinggroup.org/resources/tss_system_level_api_and_tpm_command_transmission_interface_specification).
