@@ -269,7 +269,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     ret = fn2(op2 src->m2, src->m1, buffer, buffer_size, &local_offset); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
     } \
     return ret; \
 }
@@ -299,7 +299,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
     ret = fn2(buffer, buffer_size, &local_offset, dest ? dest->m1 : 0, dest ? &dest->m2 : NULL); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
     } \
     return ret; \
 }
@@ -334,7 +334,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     ret = fn2(op2 src->m2, buffer, buffer_size, &local_offset); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
     } \
     return ret; \
 }
@@ -364,7 +364,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
     ret = fn2(buffer, buffer_size, &local_offset, dest ? &dest->m2 : NULL); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
     } \
     return ret; \
 }
@@ -403,7 +403,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     ret = fn3(op3 src->m3, buffer, buffer_size, &local_offset); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
     } \
     return ret; \
 }
@@ -437,7 +437,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
     ret = fn3(buffer, buffer_size, &local_offset, dest ? &dest->m3 : NULL); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
     } \
     return ret; \
 }
@@ -480,7 +480,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     ret = fn4(op4 src->m4, buffer, buffer_size, &local_offset); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
     } \
     return ret; \
 }
@@ -518,7 +518,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
     ret = fn4(buffer, buffer_size, &local_offset, dest ? &dest->m4 : NULL); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
     } \
     return ret; \
 }
@@ -566,7 +566,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     ret = fn5(op5 src->m5, buffer, buffer_size, &local_offset); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
     } \
     return ret; \
 }
@@ -608,7 +608,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
     ret = fn5(buffer, buffer_size, &local_offset, dest ? &dest->m5 : NULL); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
     } \
     return ret; \
 }
@@ -664,7 +664,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     ret = fn7(op7 src->m7, buffer, buffer_size, &local_offset); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
     } \
     return ret; \
 }
@@ -714,7 +714,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
     ret = fn7(buffer, buffer_size, &local_offset, dest ? &dest->m7 : NULL); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
     } \
     return ret; \
 }
@@ -770,7 +770,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     ret = fn7(op7 src->m7, src->m2, buffer, buffer_size, &local_offset); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
     } \
     return ret; \
 }
@@ -820,7 +820,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
     ret = fn7(buffer, buffer_size, &local_offset, dest ? dest->m2 : 0, dest ? &dest->m7 : NULL); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
     } \
     return ret; \
 }
@@ -893,7 +893,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     ret = fn11(op11 src->m11, buffer, buffer_size, &local_offset); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
     } \
     return ret; \
 }
@@ -960,7 +960,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
     ret = fn11(buffer, buffer_size, &local_offset, dest ? &dest->m11 : NULL); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
     } \
     return ret; \
 }

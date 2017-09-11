@@ -73,8 +73,8 @@ static TSS2_RC marshal_tab(BYTE const *src, uint8_t buffer[],
     memcpy(&buffer[local_offset], src, size);
     local_offset += size;
 
-    if (offset != NULL) {
-        *offset += local_offset - *offset;
+    if (offset) {
+        *offset = local_offset;
         LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset);
     }
     return TSS2_RC_SUCCESS;
@@ -173,8 +173,8 @@ static TSS2_RC unmarshal_tab(uint8_t const buffer[], size_t buffer_size,
     memcpy(dest, &buffer[local_offset], size);
     local_offset += size;
 
-    if (offset != NULL) {
-        *offset += local_offset - *offset;
+    if (offset) {
+        *offset = local_offset;
         LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset);
     }
     return TSS2_RC_SUCCESS;

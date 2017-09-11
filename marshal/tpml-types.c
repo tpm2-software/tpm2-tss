@@ -92,7 +92,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
             return ret; \
     } \
     if (offset != NULL) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
         LOG (DEBUG, "offset parameter non-NULL updated to %zu", *offset); \
     } \
 \
@@ -152,7 +152,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } \
 \
     if (offset != NULL) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
         LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
     } \
 \
