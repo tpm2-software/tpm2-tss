@@ -48,8 +48,15 @@ AX_ADD_COMPILER_FLAG([-fstack-protector-all])
 AX_ADD_COMPILER_FLAG([-fpic])
 AX_ADD_COMPILER_FLAG([-fPIC])
 AX_ADD_COMPILER_FLAG([-fpack-struct])
-AX_ADD_PREPROC_FLAG([-U_FORTIFY_SOURCE])
-AX_ADD_PREPROC_FLAG([-D_FORTIFY_SOURCE=2])
+
+AC_ARG_ENABLE([debug],
+            [AS_HELP_STRING([--enable-debug],
+                            [build with debug info (default is no)])],
+            [enable_debug=$enableval],
+            [enable_debug=no])
+AS_IF([test "x$enable_debug" = "xyes"], AX_ADD_COMPILER_FLAG([-ggdb3 -O0]))
+AS_IF([test "x$enable_debug" = "xno"], [AX_ADD_PREPROC_FLAG([-U_FORTIFY_SOURCE])
+                                        AX_ADD_PREPROC_FLAG([-D_FORTIFY_SOURCE=2])])
 AX_ADD_LINK_FLAG([-Wl,--no-undefined])
 AX_ADD_LINK_FLAG([-Wl,-z,noexecstack])
 AX_ADD_LINK_FLAG([-Wl,-z,now])
