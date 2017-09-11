@@ -70,6 +70,11 @@ static TSS2_RC unmarshal_pcr_select(uint8_t const buffer[], size_t buffer_size,
     UINT32 i;
     TSS2_RC ret;
 
+    if (!ptr) {
+        LOG (WARNING, "dest param is NULL");
+        return TSS2_TYPES_RC_BAD_REFERENCE;
+    }
+
     ret = UINT8_Unmarshal(buffer, buffer_size, offset, &pcrSelect->sizeofSelect);
     if (ret)
         return ret;
@@ -122,6 +127,11 @@ static TSS2_RC unmarshal_pcr_selection(uint8_t const buffer[], size_t buffer_siz
     TPMS_PCR_SELECTION *pcrSelection = (TPMS_PCR_SELECTION *)ptr;
     UINT32 i;
     TSS2_RC ret;
+
+    if (!ptr) {
+        LOG (WARNING, "dest param is NULL");
+        return TSS2_TYPES_RC_BAD_REFERENCE;
+    }
 
     ret = UINT16_Unmarshal(buffer, buffer_size, offset, &pcrSelection->hash);
     if (ret)
@@ -179,6 +189,11 @@ static TSS2_RC unmarshal_tagged_pcr_selection(uint8_t const buffer[], size_t buf
     UINT32 i;
     TSS2_RC ret;
 
+    if (!ptr) {
+        LOG (WARNING, "dest param is NULL");
+        return TSS2_TYPES_RC_BAD_REFERENCE;
+    }
+
     ret = UINT32_Unmarshal(buffer, buffer_size, offset, &taggedPcrSelect->tag);
     if (ret)
         return ret;
@@ -221,7 +236,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, *offset); \
 \
-    return fn(buffer, buffer_size, offset, &dest->m); \
+    return fn(buffer, buffer_size, offset, dest ? &dest->m : NULL); \
 }
 
 #define TPMS_MARSHAL_2_U(type, m1, op1, fn1, m2, op2, fn2) \
