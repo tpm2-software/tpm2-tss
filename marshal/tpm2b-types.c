@@ -85,7 +85,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     } \
 \
     if (offset != NULL) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
         LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
     } \
 \
@@ -146,7 +146,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } \
     local_offset += size; \
     if (offset != NULL) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
         LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
     } \
 \
@@ -211,7 +211,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     *(UINT16 *)ptr = HOST_TO_BE_16(buffer + local_offset - ptr - 2); \
 \
     if (offset != NULL) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
         LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
     } \
 \
@@ -280,7 +280,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } \
 \
     if (offset != NULL) { \
-        *offset += local_offset - *offset; \
+        *offset = local_offset; \
         LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
     } \
 \
