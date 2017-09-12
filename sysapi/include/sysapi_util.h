@@ -103,6 +103,7 @@ typedef struct {
 
 #define SYS_CONTEXT ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )
 
+#pragma pack(push, 1)
 //
 // Generic header
 //
@@ -124,6 +125,8 @@ typedef struct _TPM20_ErrorResponse {
   UINT32 responseSize;
   UINT32 responseCode;
 } TPM20_ErrorResponse;
+
+#pragma pack(pop)
 
 typedef struct {
     TPM_CC commandCode;

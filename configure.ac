@@ -47,7 +47,6 @@ AX_ADD_COMPILER_FLAG([-Wformat-security])
 AX_ADD_COMPILER_FLAG([-fstack-protector-all])
 AX_ADD_COMPILER_FLAG([-fpic])
 AX_ADD_COMPILER_FLAG([-fPIC])
-AX_ADD_COMPILER_FLAG([-fpack-struct])
 
 AC_ARG_ENABLE([debug],
             [AS_HELP_STRING([--enable-debug],
