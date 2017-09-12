@@ -34,7 +34,7 @@
 #endif  /* TSS2_API_VERSION_1_1_1_1 */
 
 #include <stdint.h>
-
+#include "tss_compiler.h"
 #include "implementation.h"
 
 #define    MAX_CAP_DATA         (MAX_CAP_BUFFER-sizeof(TPM_CAP)-sizeof(UINT32))
@@ -972,7 +972,7 @@ typedef	struct {
 typedef	struct {
 	TPM_ALG_ID	alg;	 /* an algorithm  */
 	TPMA_ALGORITHM	attributes;	 /* the attributes of the algorithm  */
-} TPMS_ALGORITHM_DESCRIPTION;
+} PACKED TPMS_ALGORITHM_DESCRIPTION;
 
 /* Table 70  Definition of TPMU_HA Union <INOUT S> */
 typedef	union {
@@ -988,7 +988,7 @@ typedef	union {
 typedef	struct {
 	TPMI_ALG_HASH	hashAlg;	 /* selector of the hash contained in the digest that implies the size of the digestNOTE	The leading + on the type indicates that this structure should pass an indication to the unmarshaling function for TPMI_ALG_HASH so that TPM_ALG_NULL will be allowed if a use of a TPMT_HA allows TPM_ALG_NULL.   */
 	TPMU_HA	digest;	 /* the digest data   */
-} TPMT_HA;
+} PACKED TPMT_HA;
 
 /* Table 72  Definition of TPM2B_DIGEST Structure */
 TPM2B_TYPE1( DIGEST, sizeof(TPMU_HA), buffer );
@@ -1034,97 +1034,97 @@ TPM2B_TYPE1( NAME, sizeof(TPMU_NAME), name );
 typedef	struct {
 	UINT8	sizeofSelect;	 /* the size in octets of the pcrSelect array  */
 	BYTE	pcrSelect[PCR_SELECT_MAX];	 /* the bit map of selected PCR  */
-} TPMS_PCR_SELECT;
+} PACKED TPMS_PCR_SELECT;
 
 /* Table 85  Definition of TPMS_PCR_SELECTION Structure */
 typedef	struct {
 	TPMI_ALG_HASH	hash;	 /* the hash algorithm associated with the selection  */
 	UINT8	sizeofSelect;	 /* the size in octets of the pcrSelect array  */
 	BYTE	pcrSelect[PCR_SELECT_MAX];	 /* the bit map of selected PCR  */
-} TPMS_PCR_SELECTION;
+} PACKED TPMS_PCR_SELECTION;
 
 /* Table 88  Definition of TPMT_TK_CREATION Structure */
 typedef	struct {
 	TPM_ST	tag;	 /* ticket structure tag  */
 	TPMI_RH_HIERARCHY	hierarchy;	 /* the hierarchy containing name  */
 	TPM2B_DIGEST	digest;	 /* This shall be the HMAC produced using a proof value of hierarchy.  */
-} TPMT_TK_CREATION;
+} PACKED TPMT_TK_CREATION;
 
 /* Table 89  Definition of TPMT_TK_VERIFIED Structure */
 typedef	struct {
 	TPM_ST	tag;	 /* ticket structure tag  */
 	TPMI_RH_HIERARCHY	hierarchy;	 /* the hierarchy containing keyName  */
 	TPM2B_DIGEST	digest;	 /* This shall be the HMAC produced using a proof value of hierarchy.  */
-} TPMT_TK_VERIFIED;
+} PACKED TPMT_TK_VERIFIED;
 
 /* Table 90  Definition of TPMT_TK_AUTH Structure */
 typedef	struct {
 	TPM_ST	tag;	 /* ticket structure tag  */
 	TPMI_RH_HIERARCHY	hierarchy;	 /* the hierarchy of the object used to produce the ticket  */
 	TPM2B_DIGEST	digest;	 /* This shall be the HMAC produced using a proof value of hierarchy.  */
-} TPMT_TK_AUTH;
+} PACKED TPMT_TK_AUTH;
 
 /* Table 91  Definition of TPMT_TK_HASHCHECK Structure */
 typedef	struct {
 	TPM_ST	tag;	 /* ticket structure tag  */
 	TPMI_RH_HIERARCHY	hierarchy;	 /* the hierarchy  */
 	TPM2B_DIGEST	digest;	 /* This shall be the HMAC produced using a proof value of hierarchy.  */
-} TPMT_TK_HASHCHECK;
+} PACKED TPMT_TK_HASHCHECK;
 
 /* Table 92  Definition of TPMS_ALG_PROPERTY Structure <OUT> */
 typedef	struct {
 	TPM_ALG_ID	alg;	 /* an algorithm identifier  */
 	TPMA_ALGORITHM	algProperties;	 /* the attributes of the algorithm  */
-} TPMS_ALG_PROPERTY;
+} PACKED TPMS_ALG_PROPERTY;
 
 /* Table 93  Definition of TPMS_TAGGED_PROPERTY Structure <OUT> */
 typedef	struct {
 	TPM_PT	property;	 /* a property identifier  */
 	UINT32	value;	 /* the value of the property  */
-} TPMS_TAGGED_PROPERTY;
+} PACKED TPMS_TAGGED_PROPERTY;
 
 /* Table 94  Definition of TPMS_TAGGED_PCR_SELECT Structure <OUT> */
 typedef	struct {
 	TPM_PT_PCR	tag;	 /* the property identifier  */
 	UINT8	sizeofSelect;	 /* the size in octets of the pcrSelect array  */
 	BYTE	pcrSelect[PCR_SELECT_MAX];	 /* the bit map of PCR with the identified property  */
-} TPMS_TAGGED_PCR_SELECT;
+} PACKED TPMS_TAGGED_PCR_SELECT;
 
 /* Table 95  Definition of TPML_CC Structure */
 typedef	struct {
 	UINT32	count;	 /* number of commands in the commandCode list may be 0  */
 	TPM_CC	commandCodes[MAX_CAP_CC];	 /* a list of command codesThe maximum only applies to a command code list in a command. The response size is limited only by the size of the parameter buffer.  */
-} TPML_CC;
+} PACKED TPML_CC;
 
 /* Table 96  Definition of TPML_CCA Structure <OUT> */
 typedef	struct {
 	UINT32	count;	 /* number of values in the commandAttributes list may be 0  */
 	TPMA_CC	commandAttributes[MAX_CAP_CC];	 /* a list of command codes attributes  */
-} TPML_CCA;
+} PACKED TPML_CCA;
 
 /* Table 97  Definition of TPML_ALG Structure */
 typedef	struct {
 	UINT32	count;	 /* number of algorithms in the algorithms list may be 0  */
 	TPM_ALG_ID	algorithms[MAX_ALG_LIST_SIZE];	 /* a list of algorithm IDsThe maximum only applies to an algorithm list in a command. The response size is limited only by the size of the parameter buffer.  */
-} TPML_ALG;
+} PACKED TPML_ALG;
 
 /* Table 98  Definition of TPML_HANDLE Structure <OUT> */
 typedef	struct {
 	UINT32	count;	 /* the number of handles in the listmay have a value of 0  */
 	TPM_HANDLE	handle[MAX_CAP_HANDLES];	 /* an array of handles  */
-} TPML_HANDLE;
+} PACKED TPML_HANDLE;
 
 /* Table 99  Definition of TPML_DIGEST Structure */
 typedef	struct {
 	UINT32	count;	 /* number of digests in the list minimum is two for TPM2_PolicyOR.   */
 	TPM2B_DIGEST	digests[8];	 /* a list of digestsFor TPM2_PolicyOR all digests will have been computed using the digest of the policy session. For TPM2_PCR_Read each digest will be the size of the digest for the bank containing the PCR.  */
-} TPML_DIGEST;
+} PACKED TPML_DIGEST;
 
 /* Table 100  Definition of TPML_DIGEST_VALUES Structure */
 typedef	struct {
 	UINT32	count;	 /* number of digests in the list  */
 	TPMT_HA	digests[HASH_COUNT];	 /* a list of tagged digests  */
-} TPML_DIGEST_VALUES;
+} PACKED TPML_DIGEST_VALUES;
 
 /* Table 101  Definition of TPM2B_DIGEST_VALUES Structure */
 TPM2B_TYPE1( DIGEST_VALUES, sizeof(TPML_DIGEST_VALUES), buffer );
@@ -1133,31 +1133,31 @@ TPM2B_TYPE1( DIGEST_VALUES, sizeof(TPML_DIGEST_VALUES), buffer );
 typedef	struct {
 	UINT32	count;	 /* number of selection structuresA value of zero is allowed.  */
 	TPMS_PCR_SELECTION	pcrSelections[HASH_COUNT];	 /* list of selections  */
-} TPML_PCR_SELECTION;
+} PACKED TPML_PCR_SELECTION;
 
 /* Table 103  Definition of TPML_ALG_PROPERTY Structure <OUT> */
 typedef	struct {
 	UINT32	count;	 /* number of algorithm properties structuresA value of zero is allowed.  */
 	TPMS_ALG_PROPERTY	algProperties[MAX_CAP_ALGS];	 /* list of properties  */
-} TPML_ALG_PROPERTY;
+} PACKED TPML_ALG_PROPERTY;
 
 /* Table 104  Definition of TPML_TAGGED_TPM_PROPERTY Structure <OUT> */
 typedef	struct {
 	UINT32	count;	 /* number of propertiesA value of zero is allowed.  */
 	TPMS_TAGGED_PROPERTY	tpmProperty[MAX_TPM_PROPERTIES];	 /* an array of tagged properties  */
-} TPML_TAGGED_TPM_PROPERTY;
+} PACKED TPML_TAGGED_TPM_PROPERTY;
 
 /* Table 105  Definition of TPML_TAGGED_PCR_PROPERTY Structure <OUT> */
 typedef	struct {
 	UINT32	count;	 /* number of propertiesA value of zero is allowed.  */
 	TPMS_TAGGED_PCR_SELECT	pcrProperty[MAX_PCR_PROPERTIES];	 /* a tagged PCR selection  */
-} TPML_TAGGED_PCR_PROPERTY;
+} PACKED TPML_TAGGED_PCR_PROPERTY;
 
 /* Table 106  Definition of ECC TPML_ECC_CURVE Structure <OUT> */
 typedef	struct {
 	UINT32	count;	 /* number of curvesA value of zero is allowed.  */
 	TPM_ECC_CURVE	eccCurves[MAX_ECC_CURVES];	 /* array of ECC curve identifiers  */
-} TPML_ECC_CURVE;
+} PACKED TPML_ECC_CURVE;
 
 /* Table 107  Definition of TPMU_CAPABILITIES Union <OUT> */
 typedef	union {
@@ -1177,7 +1177,7 @@ typedef	union {
 typedef	struct {
 	TPM_CAP	capability;	 /* the capability  */
 	TPMU_CAPABILITIES	data;	 /* the capability data  */
-} TPMS_CAPABILITY_DATA;
+} PACKED TPMS_CAPABILITY_DATA;
 
 /* Table 109  Definition of TPMS_CLOCK_INFO Structure */
 typedef	struct {
@@ -1185,31 +1185,31 @@ typedef	struct {
 	UINT32	resetCount;	 /* number of occurrences of TPM Reset since the last TPM2_Clear  */
 	UINT32	restartCount;	 /* number of times that TPM2_Shutdown or _TPM_Hash_Start have occurred since the last TPM Reset or TPM2_Clear.  */
 	TPMI_YES_NO	safe;	 /* no value of Clock greater than the current value of Clock has been previously reported by the TPM. Set to YES on TPM2_Clear.  */
-} TPMS_CLOCK_INFO;
+} PACKED TPMS_CLOCK_INFO;
 
 /* Table 110  Definition of TPMS_TIME_INFO Structure */
 typedef	struct {
 	UINT64	time;	 /* time in milliseconds since the last _TPM_Init or TPM2_StartupThis structure element is used to report on the TPMs Time value.  */
 	TPMS_CLOCK_INFO	clockInfo;	 /* a structure containing the clock information  */
-} TPMS_TIME_INFO;
+} PACKED TPMS_TIME_INFO;
 
 /* Table 111  Definition of TPMS_TIME_ATTEST_INFO Structure <OUT> */
 typedef	struct {
 	TPMS_TIME_INFO	time;	 /* the Time Clock resetCount restartCount and Safe indicator  */
 	UINT64	firmwareVersion;	 /* a TPM vendorspecific value indicating the version number of the firmware  */
-} TPMS_TIME_ATTEST_INFO;
+} PACKED TPMS_TIME_ATTEST_INFO;
 
 /* Table 112  Definition of TPMS_CERTIFY_INFO Structure <OUT> */
 typedef	struct {
 	TPM2B_NAME	name;	 /* Name of the certified object  */
 	TPM2B_NAME	qualifiedName;	 /* Qualified Name of the certified object  */
-} TPMS_CERTIFY_INFO;
+} PACKED TPMS_CERTIFY_INFO;
 
 /* Table 113  Definition of TPMS_QUOTE_INFO Structure <OUT> */
 typedef	struct {
 	TPML_PCR_SELECTION	pcrSelect;	 /* information on algID PCR selected and digest  */
 	TPM2B_DIGEST	pcrDigest;	 /* digest of the selected PCR using the hash of the signing key  */
-} TPMS_QUOTE_INFO;
+} PACKED TPMS_QUOTE_INFO;
 
 /* Table 114  Definition of TPMS_COMMAND_AUDIT_INFO Structure <OUT> */
 typedef	struct {
@@ -1217,26 +1217,26 @@ typedef	struct {
 	TPM_ALG_ID	digestAlg;	 /* hash algorithm used for the command audit  */
 	TPM2B_DIGEST	auditDigest;	 /* the current value of the audit digest  */
 	TPM2B_DIGEST	commandDigest;	 /* digest of the command codes being audited using digestAlg  */
-} TPMS_COMMAND_AUDIT_INFO;
+} PACKED TPMS_COMMAND_AUDIT_INFO;
 
 /* Table 115  Definition of TPMS_SESSION_AUDIT_INFO Structure <OUT> */
 typedef	struct {
 	TPMI_YES_NO	exclusiveSession;	 /* current exclusive status of the session TRUE if all of the commands recorded in the sessionDigest were executed without any intervening TPM command that did not use this audit session  */
 	TPM2B_DIGEST	sessionDigest;	 /* the current value of the session audit digest  */
-} TPMS_SESSION_AUDIT_INFO;
+} PACKED TPMS_SESSION_AUDIT_INFO;
 
 /* Table 116  Definition of TPMS_CREATION_INFO Structure <OUT> */
 typedef	struct {
 	TPM2B_NAME	objectName;	 /* Name of the object  */
 	TPM2B_DIGEST	creationHash;	 /* creationHash  */
-} TPMS_CREATION_INFO;
+} PACKED TPMS_CREATION_INFO;
 
 /* Table 117  Definition of TPMS_NV_CERTIFY_INFO Structure <OUT> */
 typedef	struct {
 	TPM2B_NAME	indexName;	 /* Name of the NV Index  */
 	UINT16	offset;	 /* the offset parameter of TPM2_NV_Certify  */
 	TPM2B_MAX_NV_BUFFER	nvContents;	 /* contents of the NV Index  */
-} TPMS_NV_CERTIFY_INFO;
+} PACKED TPMS_NV_CERTIFY_INFO;
 
 /* Table 118  Definition of TPM_ST TPMI_ST_ATTEST Type <OUT> */
 typedef	TPM_ST TPMI_ST_ATTEST;
@@ -1262,7 +1262,7 @@ typedef	struct {
 	TPMS_CLOCK_INFO	clockInfo;	 /* Clock resetCount restartCount and Safe  */
 	UINT64	firmwareVersion;	 /* TPMvendorspecific value identifying the version number of the firmware  */
 	TPMU_ATTEST	attested;	 /* the typespecific attestation information  */
-} TPMS_ATTEST;
+} PACKED TPMS_ATTEST;
 
 /* Table 121  Definition of TPM2B_ATTEST Structure <OUT> */
 TPM2B_TYPE1( ATTEST, sizeof(TPMS_ATTEST), attestationData );
@@ -1273,14 +1273,14 @@ typedef	struct {
 	TPM2B_NONCE	nonce;	 /* the session nonce may be the Empty Buffer  */
 	TPMA_SESSION	sessionAttributes;	 /* the session attributes  */
 	TPM2B_AUTH	hmac;	 /* either an HMAC a password or an EmptyAuth  */
-} TPMS_AUTH_COMMAND;
+} PACKED TPMS_AUTH_COMMAND;
 
 /* Table 123  Definition of TPMS_AUTH_RESPONSE Structure <OUT> */
 typedef	struct {
 	TPM2B_NONCE	nonce;	 /* the session nonce may be the Empty Buffer  */
 	TPMA_SESSION	sessionAttributes;	 /* the session attributes  */
 	TPM2B_AUTH	hmac;	 /* either an HMAC or an EmptyAuth  */
-} TPMS_AUTH_RESPONSE;
+} PACKED TPMS_AUTH_RESPONSE;
 
 /* Table 124  Definition of  AES TPM_KEY_BITS TPMI_AES_KEY_BITS   Type */
 typedef	TPM_KEY_BITS TPMI_AES_KEY_BITS;
@@ -1315,14 +1315,14 @@ typedef	struct {
 	TPMI_ALG_SYM	algorithm;	 /* indicates a symmetric algorithm   */
 	TPMU_SYM_KEY_BITS	keyBits;	 /* a supported key size  */
 	TPMU_SYM_MODE	mode;	 /* the mode for the key  */
-} TPMT_SYM_DEF;
+} PACKED TPMT_SYM_DEF;
 
 /* Table 129  Definition of TPMT_SYM_DEF_OBJECT Structure */
 typedef	struct {
 	TPMI_ALG_SYM_OBJECT	algorithm;	 /* selects a symmetric block cipher   */
 	TPMU_SYM_KEY_BITS	keyBits;	 /* the key size  */
 	TPMU_SYM_MODE	mode;	 /* default mode  */
-} TPMT_SYM_DEF_OBJECT;
+} PACKED TPMT_SYM_DEF_OBJECT;
 
 /* Table 130  Definition of TPM2B_SYM_KEY Structure */
 TPM2B_TYPE1( SYM_KEY, MAX_SYM_KEY_BYTES, buffer );
@@ -1330,7 +1330,7 @@ TPM2B_TYPE1( SYM_KEY, MAX_SYM_KEY_BYTES, buffer );
 /* Table 131  Definition of TPMS_SYMCIPHER_PARMS Structure */
 typedef	struct {
 	TPMT_SYM_DEF_OBJECT	sym;	 /* a symmetric block cipher  */
-} TPMS_SYMCIPHER_PARMS;
+} PACKED TPMS_SYMCIPHER_PARMS;
 
 /* Table 132  Definition of TPM2B_SENSITIVE_DATA Structure */
 TPM2B_TYPE1( SENSITIVE_DATA, MAX_SYM_DATA, buffer );
@@ -1339,7 +1339,7 @@ TPM2B_TYPE1( SENSITIVE_DATA, MAX_SYM_DATA, buffer );
 typedef	struct {
 	TPM2B_AUTH	userAuth;	 /* the USER auth secret value  */
 	TPM2B_SENSITIVE_DATA	data;	 /* data to be sealed  */
-} TPMS_SENSITIVE_CREATE;
+} PACKED TPMS_SENSITIVE_CREATE;
 
 /* Table 134  Definition of TPM2B_SENSITIVE_CREATE Structure <IN S> */
 TPM2B_TYPE2( SENSITIVE_CREATE, TPMS_SENSITIVE_CREATE, sensitive );
@@ -1347,13 +1347,13 @@ TPM2B_TYPE2( SENSITIVE_CREATE, TPMS_SENSITIVE_CREATE, sensitive );
 /* Table 135  Definition of TPMS_SCHEME_HASH Structure */
 typedef	struct {
 	TPMI_ALG_HASH	hashAlg;	 /* the hash algorithm used to digest the message  */
-} TPMS_SCHEME_HASH;
+} PACKED TPMS_SCHEME_HASH;
 
 /* Table 136  Definition of ECC TPMS_SCHEME_ECDAA Structure */
 typedef	struct {
 	TPMI_ALG_HASH	hashAlg;	 /* the hash algorithm used to digest the message  */
 	UINT16	count;	 /* the counter value that is used between TPM2_Commit and the sign operation  */
-} TPMS_SCHEME_ECDAA;
+} PACKED TPMS_SCHEME_ECDAA;
 
 /* Table 137  Definition of TPM_ALG_ID TPMI_ALG_KEYEDHASH_SCHEME Type */
 typedef	TPM_ALG_ID TPMI_ALG_KEYEDHASH_SCHEME;
@@ -1365,7 +1365,7 @@ typedef	TPMS_SCHEME_HASH	TPMS_SCHEME_HMAC;	 /*   */
 typedef	struct {
 	TPMI_ALG_HASH	hashAlg;	 /* the hash algorithm used to digest the message  */
 	TPMI_ALG_KDF	kdf;	 /* the key derivation function  */
-} TPMS_SCHEME_XOR;
+} PACKED TPMS_SCHEME_XOR;
 
 /* Table 140  Definition of TPMU_SCHEME_KEYEDHASH Union <INOUT S> */
 typedef	union {
@@ -1378,7 +1378,7 @@ typedef	union {
 typedef	struct {
 	TPMI_ALG_KEYEDHASH_SCHEME	scheme;	 /* selects the scheme   */
 	TPMU_SCHEME_KEYEDHASH	details;	 /* the scheme parameters  */
-} TPMT_KEYEDHASH_SCHEME;
+} PACKED TPMT_KEYEDHASH_SCHEME;
 
 /* Table 142  Definition of RSA Types for RSA Signature Schemes  */
 typedef	TPMS_SCHEME_HASH	TPMS_SIG_SCHEME_RSASSA;	 /*   */
@@ -1407,7 +1407,7 @@ typedef	union {
 typedef	struct {
 	TPMI_ALG_SIG_SCHEME	scheme;	 /* scheme selector   */
 	TPMU_SIG_SCHEME	details;	 /* scheme parameters  */
-} TPMT_SIG_SCHEME;
+} PACKED TPMT_SIG_SCHEME;
 
 /* Table 146  Definition of Types for RSA Encryption Schemes */
 typedef	TPMS_SCHEME_HASH	TPMS_ENC_SCHEME_OAEP;	 /* schemes that only need a hash  */
@@ -1436,7 +1436,7 @@ typedef	union {
 typedef	struct {
 	TPMI_ALG_KDF	scheme;	 /* scheme selector   */
 	TPMU_KDF_SCHEME	details;	 /* scheme parameters  */
-} TPMT_KDF_SCHEME;
+} PACKED TPMT_KDF_SCHEME;
 
 /* Table 151  Definition of TPM_ALG_ID TPMI_ALG_ASYM_SCHEME Type <> */
 typedef	TPM_ALG_ID TPMI_ALG_ASYM_SCHEME;
@@ -1461,7 +1461,7 @@ typedef	union {
 typedef	struct {
 	TPMI_ALG_ASYM_SCHEME	scheme;	 /* scheme selector   */
 	TPMU_ASYM_SCHEME	details;	 /* scheme parameters  */
-} TPMT_ASYM_SCHEME;
+} PACKED TPMT_ASYM_SCHEME;
 
 /* Table 154  Definition of TPM_ALG_ID RSA TPMI_ALG_RSA_SCHEME Type */
 typedef	TPM_ALG_ID TPMI_ALG_RSA_SCHEME;
@@ -1470,7 +1470,7 @@ typedef	TPM_ALG_ID TPMI_ALG_RSA_SCHEME;
 typedef	struct {
 	TPMI_ALG_RSA_SCHEME	scheme;	 /* scheme selector   */
 	TPMU_ASYM_SCHEME	details;	 /* scheme parameters  */
-} TPMT_RSA_SCHEME;
+} PACKED TPMT_RSA_SCHEME;
 
 /* Table 156  Definition of TPM_ALG_ID RSA TPMI_ALG_RSA_DECRYPT Type */
 typedef	TPM_ALG_ID TPMI_ALG_RSA_DECRYPT;
@@ -1479,7 +1479,7 @@ typedef	TPM_ALG_ID TPMI_ALG_RSA_DECRYPT;
 typedef	struct {
 	TPMI_ALG_RSA_DECRYPT	scheme;	 /* scheme selector   */
 	TPMU_ASYM_SCHEME	details;	 /* scheme parameters  */
-} TPMT_RSA_DECRYPT;
+} PACKED TPMT_RSA_DECRYPT;
 
 /* Table 158  Definition of RSA TPM2B_PUBLIC_KEY_RSA Structure */
 TPM2B_TYPE1( PUBLIC_KEY_RSA, MAX_RSA_KEY_BYTES, buffer );
@@ -1497,7 +1497,7 @@ TPM2B_TYPE1( ECC_PARAMETER, MAX_ECC_KEY_BYTES, buffer );
 typedef	struct {
 	TPM2B_ECC_PARAMETER	x;	 /* X coordinate  */
 	TPM2B_ECC_PARAMETER	y;	 /* Y coordinate  */
-} TPMS_ECC_POINT;
+} PACKED TPMS_ECC_POINT;
 
 /* Table 163  Definition of ECC TPM2B_ECC_POINT Structure */
 TPM2B_TYPE2( ECC_POINT, TPMS_ECC_POINT, point );
@@ -1512,7 +1512,7 @@ typedef	TPM_ECC_CURVE TPMI_ECC_CURVE;
 typedef	struct {
 	TPMI_ALG_ECC_SCHEME	scheme;	 /* scheme selector   */
 	TPMU_ASYM_SCHEME	details;	 /* scheme parameters  */
-} TPMT_ECC_SCHEME;
+} PACKED TPMT_ECC_SCHEME;
 
 /* Table 167  Definition of ECC TPMS_ALGORITHM_DETAIL_ECC Structure <OUT> */
 typedef	struct {
@@ -1527,13 +1527,13 @@ typedef	struct {
 	TPM2B_ECC_PARAMETER	gY;	 /* y coordinate of base point G  */
 	TPM2B_ECC_PARAMETER	n;	 /* order of G  */
 	TPM2B_ECC_PARAMETER	h;	 /* cofactor a size of zero indicates a cofactor of 1  */
-} TPMS_ALGORITHM_DETAIL_ECC;
+} PACKED TPMS_ALGORITHM_DETAIL_ECC;
 
 /* Table 168  Definition of RSA TPMS_SIGNATURE_RSA Structure */
 typedef	struct {
 	TPMI_ALG_HASH	hash;	 /* the hash algorithm used to digest the messageTPM_ALG_NULL is not allowed.  */
 	TPM2B_PUBLIC_KEY_RSA	sig;	 /* The signature is the size of a public key.  */
-} TPMS_SIGNATURE_RSA;
+} PACKED TPMS_SIGNATURE_RSA;
 
 /* Table 169  Definition of Types for RSA Signature   */
 typedef	TPMS_SIGNATURE_RSA	TPMS_SIGNATURE_RSASSA;	 /*   */
@@ -1544,7 +1544,7 @@ typedef	struct {
 	TPMI_ALG_HASH	hash;	 /* the hash algorithm used in the signature processTPM_ALG_NULL is not allowed.  */
 	TPM2B_ECC_PARAMETER	signatureR;	 /*   */
 	TPM2B_ECC_PARAMETER	signatureS;	 /*   */
-} TPMS_SIGNATURE_ECC;
+} PACKED TPMS_SIGNATURE_ECC;
 
 /* Table 171  Definition of Types for ECC TPMS_SIGNATURE_ECC */
 typedef	TPMS_SIGNATURE_ECC	TPMS_SIGNATURE_ECDSA;	 /*   */
@@ -1569,7 +1569,7 @@ typedef	union {
 typedef	struct {
 	TPMI_ALG_SIG_SCHEME	sigAlg;	 /* selector of the algorithm used to construct the signature  */
 	TPMU_SIGNATURE	signature;	 /* This shall be the actual signature information.  */
-} TPMT_SIGNATURE;
+} PACKED TPMT_SIGNATURE;
 
 /* Table 174  Definition of TPMU_ENCRYPTED_SECRET Union <S> */
 typedef	union {
@@ -1598,13 +1598,13 @@ typedef	union {
 /* Table 178  Definition of TPMS_KEYEDHASH_PARMS Structure */
 typedef	struct {
 	TPMT_KEYEDHASH_SCHEME	scheme;	 /* Indicates the signing method used for a keyedHash signing object. This field also determines the size of the data field for a data object created with TPM2_Create or TPM2_CreatePrimary.  */
-} TPMS_KEYEDHASH_PARMS;
+} PACKED TPMS_KEYEDHASH_PARMS;
 
 /* Table 179  Definition of TPMS_ASYM_PARMS Structure <> */
 typedef	struct {
 	TPMT_SYM_DEF_OBJECT	symmetric;	 /* the companion symmetric algorithm for a restricted decryption key and shall be set to a supported symmetric algorithmThis field is optional for keys that are not decryption keys and shall be set to TPM_ALG_NULL if not used.  */
 	TPMT_ASYM_SCHEME	scheme;	 /* for a key with the sign attribute SET a valid signing scheme for the key typefor a key with the decrypt attribute SET a valid key exchange protocolfor a key with sign and decrypt attributes shall be TPM_ALG_NULL  */
-} TPMS_ASYM_PARMS;
+} PACKED TPMS_ASYM_PARMS;
 
 /* Table 180  Definition of RSA TPMS_RSA_PARMS Structure */
 typedef	struct {
@@ -1612,7 +1612,7 @@ typedef	struct {
 	TPMT_RSA_SCHEME	scheme;	 /* scheme.scheme shall befor an unrestricted signing key either TPM_ALG_RSAPSS TPM_ALG_RSASSA or TPM_ALG_NULLfor a restricted signing key either TPM_ALG_RSAPSS or TPM_ALG_RSASSAfor an unrestricted decryption key TPM_ALG_RSAES TPM_ALG_OAEP or TPM_ALG_NULL unless the object also has the sign attributefor a restricted decryption key TPM_ALG_NULLNOTE	When both sign and decrypt are SET restricted shall be CLEAR and scheme shall be TPM_ALG_NULL.   */
 	TPMI_RSA_KEY_BITS	keyBits;	 /* number of bits in the public modulus  */
 	UINT32	exponent;	 /* the public exponent A prime number greater than 2.When zero indicates that the exponent is the default of 216 + 1  */
-} TPMS_RSA_PARMS;
+} PACKED TPMS_RSA_PARMS;
 
 /* Table 181  Definition of ECC TPMS_ECC_PARMS Structure */
 typedef	struct {
@@ -1620,7 +1620,7 @@ typedef	struct {
 	TPMT_ECC_SCHEME	scheme;	 /* If the sign attribute of the key is SET then this shall be a valid signing scheme.NOTE	If the sign parameter in curveID indicates a mandatory scheme then this field shall have the same value.If the decrypt attribute of the key is SET then this shall be a valid key exchange scheme or TPM_ALG_NULL.If the key is a Storage Key then this field shall be TPM_ALG_NULL.   */
 	TPMI_ECC_CURVE	curveID;	 /* ECC curve ID  */
 	TPMT_KDF_SCHEME	kdf;	 /* an optional key derivation scheme for generating a symmetric key from a Z valueIf the kdf  parameter associated with curveID is not TPM_ALG_NULL then this is required to be NULL.NOTE	There are currently no commands where this parameter has effect and in the reference code this field needs to be set to TPM_ALG_NULL.  */
-} TPMS_ECC_PARMS;
+} PACKED TPMS_ECC_PARMS;
 
 /* Table 182  Definition of TPMU_PUBLIC_PARMS Union <INOUT S> */
 typedef	union {
@@ -1636,7 +1636,7 @@ typedef	union {
 typedef	struct {
 	TPMI_ALG_PUBLIC	type;	 /* the algorithm to be tested  */
 	TPMU_PUBLIC_PARMS	parameters;	 /* the algorithm details  */
-} TPMT_PUBLIC_PARMS;
+} PACKED TPMT_PUBLIC_PARMS;
 
 /* Table 184  Definition of TPMT_PUBLIC Structure */
 typedef	struct {
@@ -1646,7 +1646,7 @@ typedef	struct {
 	TPM2B_DIGEST	authPolicy;	 /* optional policy for using this keyThe policy is computed using the nameAlg of the object.NOTE 	Shall be the Empty Policy if no authorization policy is present.  */
 	TPMU_PUBLIC_PARMS	parameters;	 /* the algorithm or structure details  */
 	TPMU_PUBLIC_ID	unique;	 /* the unique identifier of the structureFor an asymmetric key this would be the public key.  */
-} TPMT_PUBLIC;
+} PACKED TPMT_PUBLIC;
 
 /* Table 185  Definition of TPM2B_PUBLIC Structure */
 TPM2B_TYPE2( PUBLIC, TPMT_PUBLIC, publicArea );
@@ -1670,7 +1670,7 @@ typedef	struct {
 	TPM2B_AUTH	authValue;	 /* user authorization dataThe authValue may be a zerolength string.This value shall not be larger than the size of the digest produced by the nameAlg of the object.  */
 	TPM2B_DIGEST	seedValue;	 /* for asymmetric key object the optional protection seed for other objects the obfuscation valueThis value shall not be larger than the size of the digest produced by nameAlg of the object.  */
 	TPMU_SENSITIVE_COMPOSITE	sensitive;	 /* the typespecific private data  */
-} TPMT_SENSITIVE;
+} PACKED TPMT_SENSITIVE;
 
 /* Table 189  Definition of TPM2B_SENSITIVE Structure <INOUT> */
 TPM2B_TYPE2( SENSITIVE, TPMT_SENSITIVE, sensitiveArea );
@@ -1680,7 +1680,7 @@ typedef	struct {
 	TPM2B_DIGEST	integrityOuter;	 /*   */
 	TPM2B_DIGEST	integrityInner;	 /* could also be a TPM2B_IV  */
 	TPM2B_SENSITIVE	sensitive;	 /* the sensitive area  */
-} _PRIVATE;
+} PACKED _PRIVATE;
 
 /* Table 191  Definition of TPM2B_PRIVATE Structure <INOUT S> */
 TPM2B_TYPE1( PRIVATE, sizeof(_PRIVATE), buffer );
@@ -1689,7 +1689,7 @@ TPM2B_TYPE1( PRIVATE, sizeof(_PRIVATE), buffer );
 typedef	struct {
 	TPM2B_DIGEST	integrityHMAC;	 /* HMAC using the nameAlg of the storage key on the target TPM  */
 	TPM2B_DIGEST	encIdentity;	 /* credential protector information returned if name matches the referenced objectAll of the encIdentity is encrypted including the size field.NOTE	The TPM is not required to check that the size is not larger than the digest of the nameAlg. However if the size is larger the ID object may not be usable on a TPM that has no digest larger than produced by nameAlg.  */
-} _ID_OBJECT;
+} PACKED _ID_OBJECT;
 
 /* Table 193  Definition of TPM2B_ID_OBJECT Structure <INOUT> */
 TPM2B_TYPE1( ID_OBJECT, sizeof(_ID_OBJECT), credential );
@@ -1737,7 +1737,7 @@ typedef uint32_t	TPM_NV_INDEX;
 typedef	struct {
 	UINT32	pinCount;	 /* This counter shows the current number of successful authValue authorization attempts to access a TPM_NT_PIN_PASS index or the current number of unsuccessful authValue authorization attempts to access a TPM_NT_PIN_FAIL index.  */
 	UINT32	pinLimit;	 /* This threshold is the value of pinCount at which the authValue authorization of the host TPM_NT_PIN_PASS or TPM_NT_PIN_FAIL index is locked out.  */
-} TPMS_NV_PIN_COUNTER_PARAMETERS;
+} PACKED TPMS_NV_PIN_COUNTER_PARAMETERS;
 
 /* Table 197  Definition of UINT32 TPMA_NV Bits */
 #if defined TPM_BITFIELD_LE
@@ -1843,7 +1843,7 @@ typedef	struct {
 	TPMA_NV	attributes;	 /* the Index attributes  */
 	TPM2B_DIGEST	authPolicy;	 /* optional access policy for the Index The policy is computed using the nameAlg NOTE 	Shall be the Empty Policy if no authorization 	policy is present.  */
 	UINT16	dataSize;	 /* the size of the data areaThe maximum size is implementationdependent. The minimum maximum size is platformspecific.  */
-} TPMS_NV_PUBLIC;
+} PACKED TPMS_NV_PUBLIC;
 
 /* Table 199  Definition of TPM2B_NV_PUBLIC Structure */
 TPM2B_TYPE2( NV_PUBLIC, TPMS_NV_PUBLIC, nvPublic );
@@ -1855,7 +1855,7 @@ TPM2B_TYPE1( CONTEXT_SENSITIVE, MAX_CONTEXT_SIZE, buffer );
 typedef	struct {
 	TPM2B_DIGEST	integrity;	 /* the integrity value  */
 	TPM2B_CONTEXT_SENSITIVE	encrypted;	 /* the sensitive area  */
-} TPMS_CONTEXT_DATA;
+} PACKED TPMS_CONTEXT_DATA;
 
 /* Table 202  Definition of TPM2B_CONTEXT_DATA Structure <INOUT> */
 TPM2B_TYPE1( CONTEXT_DATA, sizeof(TPMS_CONTEXT_DATA), buffer );
@@ -1866,7 +1866,7 @@ typedef	struct {
 	TPMI_DH_CONTEXT	savedHandle;	 /* a handle indicating if the context is a session object or sequence objectSee Table 204  Context Handle Values  */
 	TPMI_RH_HIERARCHY	hierarchy;	 /* the hierarchy of the context  */
 	TPM2B_CONTEXT_DATA	contextBlob;	 /* the context data and integrity HMAC  */
-} TPMS_CONTEXT;
+} PACKED TPMS_CONTEXT;
 
 /* Table 205  Definition of TPMS_CREATION_DATA Structure <OUT> */
 typedef	struct {
@@ -1877,7 +1877,7 @@ typedef	struct {
 	TPM2B_NAME	parentName;	 /* Name of the parent at time of creationThe size will match digest size associated with parentNameAlg unless it is TPM_ALG_NULL in which case the size will be 4 and parentName will be the hierarchy handle.  */
 	TPM2B_NAME	parentQualifiedName;	 /* Qualified Name of the parent at the time of creationSize is the same as parentName.  */
 	TPM2B_DATA	outsideInfo;	 /* association with additional information added by the key creatorThis will be the contents of the outsideInfo parameter in TPM2_Create or TPM2_CreatePrimary.  */
-} TPMS_CREATION_DATA;
+} PACKED TPMS_CREATION_DATA;
 
 /* Table 206  Definition of TPM2B_CREATION_DATA Structure <OUT> */
 TPM2B_TYPE2( CREATION_DATA, TPMS_CREATION_DATA, creationData );

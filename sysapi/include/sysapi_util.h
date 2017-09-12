@@ -32,6 +32,7 @@
 extern "C" {
 #endif
 
+#include <sapi/tss_compiler.h>
 #include "tcti_util.h"
 
 // TBD:  delete this after porting completed.
@@ -43,7 +44,7 @@ typedef struct {
   TPM_ST  tag;
   UINT32  size;
   TPM_RC  rsp_code;
-} TPM20_Rsp_Header;
+} PACKED TPM20_Rsp_Header;
 
 typedef struct {
     //
@@ -103,7 +104,6 @@ typedef struct {
 
 #define SYS_CONTEXT ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )
 
-#pragma pack(push, 1)
 //
 // Generic header
 //
@@ -111,22 +111,20 @@ typedef struct _TPM20_Header_In {
   TPM_ST tag;
   UINT32 commandSize;
   UINT32 commandCode;
-} TPM20_Header_In;
+} PACKED TPM20_Header_In;
 
 typedef struct _TPM20_Header_Out {
   TPM_ST tag;
   UINT32 responseSize;
   UINT32 responseCode;
   UINT8 otherData;
-} TPM20_Header_Out;
+} PACKED TPM20_Header_Out;
 
 typedef struct _TPM20_ErrorResponse {
   TPM_ST tag;
   UINT32 responseSize;
   UINT32 responseCode;
-} TPM20_ErrorResponse;
-
-#pragma pack(pop)
+} PACKED TPM20_ErrorResponse;
 
 typedef struct {
     TPM_CC commandCode;
