@@ -280,6 +280,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
 { \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
+    type tmp_dest; \
 \
     LOG (DEBUG, \
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
@@ -292,11 +293,11 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
             return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
 \
-    ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
+    ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : &tmp_dest.m1); \
     if (ret != TSS2_RC_SUCCESS) \
         return ret; \
 \
-    ret = fn2(buffer, buffer_size, &local_offset, dest ? dest->m1 : 0, dest ? &dest->m2 : NULL); \
+    ret = fn2(buffer, buffer_size, &local_offset, dest ? dest->m1 : tmp_dest.m1, dest ? &dest->m2 : NULL); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
         *offset = local_offset; \
