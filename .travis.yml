@@ -36,10 +36,10 @@ install:
   - mkdir ibmtpm532
   - tar axf ibmtpm532.tar -C ibmtpm532
   - make -C ibmtpm532/src -j$(nproc)
-  - wget https://cmocka.org/files/1.0/cmocka-1.0.1.tar.xz
-  - tar -Jxvf cmocka-1.0.1.tar.xz
+  - wget https://cmocka.org/files/1.1/cmocka-1.1.1.tar.xz
+  - tar -Jxvf cmocka-1.1.1.tar.xz
   - mkdir cmocka
-  - cd cmocka-1.0.1
+  - cd cmocka-1.1.1
   - mkdir build
   - cd build
   - cmake ../ -DCMAKE_INSTALL_PREFIX=../../cmocka -DCMAKE_BUILD_TYPE=Release
