@@ -282,11 +282,10 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
         return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
 \
-    if (offset) { \
+    if (offset) {\
         local_offset = *offset; \
-    } else { \
-        if (!buffer) \
-            return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (!buffer) { \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
 \
     LOG (DEBUG, \
@@ -319,9 +318,8 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
 \
     if (offset) { \
         local_offset = *offset; \
-    } else { \
-        if (!dest) \
-            return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (!dest) { \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
 \
     ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : &tmp_dest.m1); \
@@ -350,9 +348,8 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
 \
     if (offset) { \
         local_offset = *offset; \
-    } else { \
-        if (!buffer) \
-            return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (!buffer) { \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
 \
     LOG (DEBUG, \
@@ -384,9 +381,8 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
 \
     if (offset) { \
         local_offset = *offset; \
-    } else { \
-        if (!dest) \
-            return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (!dest) { \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
 \
     ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
@@ -415,9 +411,8 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
 \
     if (offset) { \
         local_offset = *offset; \
-    } else { \
-        if (!buffer) \
-            return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (!buffer) { \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
 \
     LOG (DEBUG, \
@@ -453,9 +448,8 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
 \
     if (offset) { \
         local_offset = *offset; \
-    } else { \
-        if (!dest) \
-            return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (!dest) { \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
 \
     ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
@@ -488,9 +482,8 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
 \
     if (offset) { \
         local_offset = *offset; \
-    } else { \
-        if (!buffer) \
-            return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (!buffer) { \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
 \
     LOG (DEBUG, \
@@ -526,9 +519,8 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
 \
     if (offset) { \
         local_offset = *offset; \
-    } else { \
-        if (!dest) \
-            return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (!dest) { \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
 \
     LOG (DEBUG, \
@@ -570,9 +562,8 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
 \
     if (offset) { \
         local_offset = *offset; \
-    } else { \
-        if (!buffer) \
-            return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (!buffer) { \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
 \
     LOG (DEBUG, \
@@ -616,9 +607,8 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
 \
     if (offset) { \
         local_offset = *offset; \
-    } else { \
-        if (!dest) \
-            return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (!dest) { \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
 \
     ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
@@ -660,9 +650,8 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
 \
     if (offset) { \
         local_offset = *offset; \
-    } else { \
-        if (!buffer) \
-            return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (!buffer) { \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
 \
     LOG (DEBUG, \
@@ -714,9 +703,8 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
 \
     if (offset) { \
         local_offset = *offset; \
-    } else { \
-        if (!dest) \
-            return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (!dest) { \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
 \
     ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
@@ -766,9 +754,8 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
 \
     if (offset) { \
         local_offset = *offset; \
-    } else { \
-        if (!buffer) \
-            return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (!buffer) { \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
 \
     LOG (DEBUG, \
@@ -820,9 +807,8 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
 \
     if (offset) { \
         local_offset = *offset; \
-    } else { \
-        if (!dest) \
-            return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (!dest) { \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
 \
     ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
@@ -873,9 +859,8 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
 \
     if (offset) { \
         local_offset = *offset; \
-    } else { \
-        if (!buffer) \
-            return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (!buffer) { \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
 \
     LOG (DEBUG, \
@@ -944,9 +929,8 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
 \
     if (offset) { \
         local_offset = *offset; \
-    } else { \
-        if (!dest) \
-            return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } else if (!dest) { \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
 \
     ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
