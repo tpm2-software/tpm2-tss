@@ -44,7 +44,7 @@ static TSS2_RC marshal_pcr_select(const UINT8 *ptr, uint8_t buffer[],
     UINT32 i;
     TSS2_RC ret;
 
-    if (ptr == NULL) {
+    if (!ptr) {
         LOG (WARNING, "src param is NULL");
         return TSS2_TYPES_RC_BAD_REFERENCE;
     }
@@ -97,7 +97,7 @@ static TSS2_RC marshal_pcr_selection(const TPMI_ALG_HASH *ptr, uint8_t buffer[],
     UINT32 i;
     TSS2_RC ret;
 
-    if (ptr == NULL) {
+    if (!ptr) {
         LOG (WARNING, "src param is NULL");
         return TSS2_TYPES_RC_BAD_REFERENCE;
     }
@@ -159,7 +159,7 @@ static TSS2_RC marshal_tagged_pcr_selection(const TPM_PT_PCR *ptr, uint8_t buffe
     UINT32 i;
     TSS2_RC ret;
 
-    if (ptr == NULL) {
+    if (!ptr) {
         LOG (WARNING, "src param is NULL");
         return TSS2_TYPES_RC_BAD_REFERENCE;
     }
@@ -216,7 +216,7 @@ static TSS2_RC unmarshal_tagged_pcr_selection(uint8_t const buffer[], size_t buf
 TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
                        size_t buffer_size, size_t *offset) \
 { \
-    if (src == NULL) { \
+    if (!src) { \
         LOG (WARNING, "src param is NULL"); \
         return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
@@ -246,7 +246,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    if (src == NULL) { \
+    if (!src) { \
         LOG (WARNING, "src param is NULL"); \
         return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
@@ -310,7 +310,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    if (src == NULL) { \
+    if (!src) { \
         LOG (WARNING, "src param is NULL"); \
         return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
@@ -373,7 +373,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    if (src == NULL) { \
+    if (!src) { \
         LOG (WARNING, "src param is NULL"); \
         return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
@@ -444,7 +444,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    if (src == NULL) { \
+    if (!src) { \
         LOG (WARNING, "src param is NULL"); \
         return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
@@ -524,7 +524,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    if (src == NULL) { \
+    if (!src) { \
         LOG (WARNING, "src param is NULL"); \
         return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
@@ -612,7 +612,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    if (src == NULL) { \
+    if (!src) { \
         LOG (WARNING, "src param is NULL"); \
         return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
@@ -716,7 +716,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    if (src == NULL) { \
+    if (!src) { \
         LOG (WARNING, "src param is NULL"); \
         return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
@@ -821,7 +821,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    if (src == NULL) { \
+    if (!src) { \
         LOG (WARNING, "src param is NULL"); \
         return TSS2_TYPES_RC_BAD_REFERENCE; \
     } \
