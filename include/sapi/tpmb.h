@@ -33,17 +33,19 @@
        Do not include this file, #include <sapi/tpm20.h> instead.
 #endif  /* TSS2_API_VERSION_1_1_1_1 */
 
+#include "tss_compiler.h"
+
 typedef struct {
     UINT16  size;
     BYTE    buffer[1];
-} TPM2B;
+} PACKED TPM2B;
 
 #define TPM2B_TYPE1(name, bytes, bufferName)  \
     typedef union {                           \
     struct  {                                 \
         UINT16  size;                         \
         BYTE    bufferName[bytes];            \
-    } t;                                      \
+    } PACKED t;                               \
     TPM2B   b;                                \
     } TPM2B_##name
 
@@ -52,7 +54,7 @@ typedef struct {
     struct  {                                 \
         UINT16  size;                         \
         type bufferName;                      \
-    } t;                                      \
+    } PACKED t;                               \
     TPM2B   b;                                \
     } TPM2B_##name
 
