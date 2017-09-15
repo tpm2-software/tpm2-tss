@@ -1367,7 +1367,7 @@ void TestPcrExtend()
     pcrSelection.pcrSelections[0].sizeofSelect = 4;
 
     rval = Tss2_Sys_PCR_Read( sysContext, 0, &pcrSelection, &pcrUpdateCounterAfterExtend, 0, 0, 0 );
-    CheckFailed( rval, TPM_RC_1 + TPM_RC_P + TPM_RC_VALUE );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_VALUE );
 
     eventData.t.size = 4;
     eventData.t.buffer[0] = 0;

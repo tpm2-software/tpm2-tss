@@ -36,6 +36,7 @@
 
 #define ADDR &
 #define VAL
+#define TAB_SIZE(tab) (sizeof(tab) / sizeof(tab[0]))
 
 static TSS2_RC marshal_pcr_select(const UINT8 *ptr, uint8_t buffer[],
                                   size_t buffer_size, size_t *offset)
@@ -52,6 +53,11 @@ static TSS2_RC marshal_pcr_select(const UINT8 *ptr, uint8_t buffer[],
     ret = UINT8_Marshal(pcrSelect->sizeofSelect, buffer, buffer_size, offset);
     if (ret)
         return ret;
+
+    if (pcrSelect->sizeofSelect > TAB_SIZE(pcrSelect->pcrSelect)) {
+        LOG (ERROR, "sizeofSelect value too big");
+        return TSS2_SYS_RC_BAD_VALUE;
+    }
 
     for (i = 0; i < pcrSelect->sizeofSelect; i++)
     {
@@ -79,6 +85,11 @@ static TSS2_RC unmarshal_pcr_select(uint8_t const buffer[], size_t buffer_size,
     if (ret)
         return ret;
 
+    if (pcrSelect->sizeofSelect > TAB_SIZE(pcrSelect->pcrSelect)) {
+        LOG (ERROR, "sizeofSelect value too big");
+        return TSS2_SYS_RC_MALFORMED_RESPONSE;
+    }
+
     for (i = 0; i < pcrSelect->sizeofSelect; i++)
     {
         ret = UINT8_Unmarshal(buffer, buffer_size, offset, &pcrSelect->pcrSelect[i]);
@@ -100,6 +111,11 @@ static TSS2_RC marshal_pcr_selection(const TPMI_ALG_HASH *ptr, uint8_t buffer[],
     if (ptr == NULL) {
         LOG (WARNING, "src param is NULL");
         return TSS2_TYPES_RC_BAD_REFERENCE;
+    }
+
+    if (pcrSelection->sizeofSelect > TAB_SIZE(pcrSelection->pcrSelect)) {
+        LOG (ERROR, "sizeofSelect value too big");
+        return TSS2_SYS_RC_BAD_VALUE;
     }
 
     ret = UINT16_Marshal(pcrSelection->hash, buffer, buffer_size, offset);
@@ -141,6 +157,11 @@ static TSS2_RC unmarshal_pcr_selection(uint8_t const buffer[], size_t buffer_siz
     if (ret)
         return ret;
 
+    if (pcrSelection->sizeofSelect > TAB_SIZE(pcrSelection->pcrSelect)) {
+        LOG (ERROR, "sizeofSelect value too big");
+        return TSS2_SYS_RC_MALFORMED_RESPONSE;
+    }
+
     for (i = 0; i < pcrSelection->sizeofSelect; i++)
     {
         ret = UINT8_Unmarshal(buffer, buffer_size, offset, &pcrSelection->pcrSelect[i]);
@@ -162,6 +183,11 @@ static TSS2_RC marshal_tagged_pcr_selection(const TPM_PT_PCR *ptr, uint8_t buffe
     if (ptr == NULL) {
         LOG (WARNING, "src param is NULL");
         return TSS2_TYPES_RC_BAD_REFERENCE;
+    }
+
+    if (taggedPcrSelect->sizeofSelect > TAB_SIZE(taggedPcrSelect->pcrSelect)) {
+        LOG (ERROR, "sizeofSelect value too big");
+        return TSS2_SYS_RC_BAD_VALUE;
     }
 
     ret = UINT32_Marshal(taggedPcrSelect->tag, buffer, buffer_size, offset);
@@ -201,6 +227,11 @@ static TSS2_RC unmarshal_tagged_pcr_selection(uint8_t const buffer[], size_t buf
     ret = UINT8_Unmarshal(buffer, buffer_size, offset, &taggedPcrSelect->sizeofSelect);
     if (ret)
         return ret;
+
+    if (taggedPcrSelect->sizeofSelect > TAB_SIZE(taggedPcrSelect->pcrSelect)) {
+        LOG (ERROR, "sizeofSelect value too big");
+        return TSS2_SYS_RC_MALFORMED_RESPONSE;
+    }
 
     for (i = 0; i < taggedPcrSelect->sizeofSelect; i++)
     {
