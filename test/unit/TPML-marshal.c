@@ -1,0 +1,477 @@
+#include <stdarg.h>
+#include <stddef.h>
+#include <setjmp.h>
+#include <cmocka.h>
+#include <stdio.h>
+#include <sapi/marshal.h>
+#include <marshal/tss2_endian.h>
+
+/*
+ * Success case
+ */
+static void
+tpml_marshal_success(void **state)
+{
+    TPML_HANDLE hndl = {0};
+    TPML_PCR_SELECTION sel = {0};
+    uint8_t buffer[sizeof(hndl) + sizeof(sel)] = { 0 };
+    size_t  buffer_size = sizeof(buffer);
+    TPML_HANDLE *ptr;
+    TPML_PCR_SELECTION *ptr2;
+    TSS2_RC rc;
+
+    hndl.count = 2;
+    hndl.handle[0] = 0x81000001;
+    hndl.handle[1] = 0x81000002;
+
+    ptr = (TPML_HANDLE *) buffer;
+
+    rc = TPML_HANDLE_Marshal(&hndl, buffer, buffer_size, NULL);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (ptr->count, HOST_TO_BE_32(2));
+    assert_int_equal (ptr->handle[0], HOST_TO_BE_32(0x81000001));
+    assert_int_equal (ptr->handle[1], HOST_TO_BE_32(0x81000002));
+
+    sel.count = 2;
+    sel.pcrSelections[0].hash = TPM_ALG_SHA1;
+    sel.pcrSelections[0].sizeofSelect = 3;
+    sel.pcrSelections[0].pcrSelect[0] = 0xaa;
+    sel.pcrSelections[0].pcrSelect[1] = 0xbb;
+    sel.pcrSelections[0].pcrSelect[2] = 0xcc;
+    sel.pcrSelections[1].hash = TPM_ALG_SHA256;
+    sel.pcrSelections[1].sizeofSelect = 2;
+    sel.pcrSelections[1].pcrSelect[0] = 0xdd;
+    sel.pcrSelections[1].pcrSelect[1] = 0xee;
+
+    ptr2 = (TPML_PCR_SELECTION *)(buffer);
+
+    rc = TPML_PCR_SELECTION_Marshal(&sel, buffer, buffer_size, NULL);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (ptr2->count, HOST_TO_BE_32(2));
+    assert_int_equal (ptr2->pcrSelections[0].hash, HOST_TO_BE_16(TPM_ALG_SHA1));
+    assert_int_equal (ptr2->pcrSelections[0].sizeofSelect, 3);
+    assert_int_equal (ptr2->pcrSelections[0].pcrSelect[0], 0xaa);
+    assert_int_equal (ptr2->pcrSelections[0].pcrSelect[1], 0xbb);
+    assert_int_equal (ptr2->pcrSelections[0].pcrSelect[2], 0xcc);
+    assert_int_equal (ptr2->pcrSelections[1].hash, HOST_TO_BE_16(TPM_ALG_SHA256));
+    assert_int_equal (ptr2->pcrSelections[1].sizeofSelect, 2);
+    assert_int_equal (ptr2->pcrSelections[1].pcrSelect[0], 0xdd);
+    assert_int_equal (ptr2->pcrSelections[1].pcrSelect[1], 0xee);
+}
+
+/*
+ * Success case with a valid offset
+ */
+static void
+tpml_marshal_success_offset(void **state)
+{
+    TPML_HANDLE hndl = {0};
+    TPML_PCR_SELECTION sel = {0};
+    uint8_t buffer[sizeof(hndl) + sizeof(sel) + 10] = { 0 };
+    size_t  buffer_size = sizeof(buffer);
+    TPML_HANDLE *ptr;
+    TPML_PCR_SELECTION *ptr2;
+    size_t offset = 10;
+    TSS2_RC rc;
+
+    hndl.count = 2;
+    hndl.handle[0] = 0x81000001;
+    hndl.handle[1] = 0x81000002;
+
+    ptr = (TPML_HANDLE *) (buffer + 10);
+
+    rc = TPML_HANDLE_Marshal(&hndl, buffer, buffer_size, &offset);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (ptr->count, HOST_TO_BE_32(2));
+    assert_int_equal (ptr->handle[0], HOST_TO_BE_32(0x81000001));
+    assert_int_equal (ptr->handle[1], HOST_TO_BE_32(0x81000002));
+    assert_int_equal (offset, 10 + 4 + 4 + 4);
+
+    sel.count = 2;
+    sel.pcrSelections[0].hash = TPM_ALG_SHA1;
+    sel.pcrSelections[0].sizeofSelect = 3;
+    sel.pcrSelections[0].pcrSelect[0] = 0xaa;
+    sel.pcrSelections[0].pcrSelect[1] = 0xbb;
+    sel.pcrSelections[0].pcrSelect[2] = 0xcc;
+    sel.pcrSelections[1].hash = TPM_ALG_SHA256;
+    sel.pcrSelections[1].sizeofSelect = 2;
+    sel.pcrSelections[1].pcrSelect[0] = 0xdd;
+    sel.pcrSelections[1].pcrSelect[1] = 0xee;
+
+    ptr2 = (TPML_PCR_SELECTION *)(buffer + 10 + 4 + 4 + 4);
+
+    rc = TPML_PCR_SELECTION_Marshal(&sel, buffer, buffer_size, &offset);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (ptr2->count, HOST_TO_BE_32(2));
+    assert_int_equal (ptr2->pcrSelections[0].hash, HOST_TO_BE_16(TPM_ALG_SHA1));
+    assert_int_equal (ptr2->pcrSelections[0].sizeofSelect, 3);
+    assert_int_equal (ptr2->pcrSelections[0].pcrSelect[0], 0xaa);
+    assert_int_equal (ptr2->pcrSelections[0].pcrSelect[1], 0xbb);
+    assert_int_equal (ptr2->pcrSelections[0].pcrSelect[2], 0xcc);
+    assert_int_equal (ptr2->pcrSelections[1].hash, HOST_TO_BE_16(TPM_ALG_SHA256));
+    assert_int_equal (ptr2->pcrSelections[1].sizeofSelect, 2);
+    assert_int_equal (ptr2->pcrSelections[1].pcrSelect[0], 0xdd);
+    assert_int_equal (ptr2->pcrSelections[1].pcrSelect[1], 0xee);
+    assert_int_equal (offset, 10 + 4 + 4 + 4 + 4 + 2 + 1 + 1 + 1 + 1 + 2 + 1 + 1 + 1);
+}
+
+/*
+ * Success case with a null buffer
+ */
+static void
+tpml_marshal_buffer_null_with_offset(void **state)
+{
+    TPML_HANDLE hndl = {0};
+    TPML_PCR_SELECTION sel = {0};
+    uint8_t buffer[sizeof(hndl) + sizeof(sel) + 99] = { 0 };
+    size_t  buffer_size = sizeof(buffer);
+    size_t offset = 99;
+    TSS2_RC rc;
+
+    hndl.count = 2;
+    hndl.handle[0] = 0x81000001;
+    hndl.handle[1] = 0x81000002;
+
+    rc = TPML_HANDLE_Marshal(&hndl, NULL, buffer_size, &offset);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (offset, 99 + 4 + 4 + 4);
+
+    sel.count = 2;
+    sel.pcrSelections[0].hash = TPM_ALG_SHA1;
+    sel.pcrSelections[0].sizeofSelect = 3;
+    sel.pcrSelections[0].pcrSelect[0] = 0xaa;
+    sel.pcrSelections[0].pcrSelect[1] = 0xbb;
+    sel.pcrSelections[0].pcrSelect[2] = 0xcc;
+    sel.pcrSelections[1].hash = TPM_ALG_SHA256;
+    sel.pcrSelections[1].sizeofSelect = 2;
+    sel.pcrSelections[1].pcrSelect[0] = 0xdd;
+    sel.pcrSelections[1].pcrSelect[1] = 0xee;
+
+    rc = TPML_PCR_SELECTION_Marshal(&sel, NULL, buffer_size, &offset);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (offset, 99 + 4 + 4 + 4 + 4 + 2 + 1 + 1 + 1 + 1 + 2 + 1 + 1 + 1);
+}
+
+/*
+ * Invalid case with a null buffer and a null offset
+ */
+static void
+tpml_marshal_buffer_null_offset_null(void **state)
+{
+    TPML_HANDLE hndl = {0};
+    TPML_PCR_SELECTION sel = {0};
+    TSS2_RC rc;
+
+    hndl.count = 2;
+    hndl.handle[0] = 0x81000001;
+    hndl.handle[1] = 0x81000002;
+
+    rc = TPML_HANDLE_Marshal(&hndl, NULL, sizeof(hndl), NULL);
+    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+
+    rc = TPML_PCR_SELECTION_Marshal(&sel, NULL, sizeof(sel), NULL);
+    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+}
+
+/*
+ * Invalid case with not big enough buffer
+ */
+static void
+tpml_marshal_buffer_size_lt_data_nad_lt_offset(void **state)
+{
+    TPML_HANDLE hndl = {0};
+    TPML_PCR_SELECTION sel = {0};
+    uint8_t buffer[sizeof(hndl) + sizeof(sel) + 10] = { 0 };
+    size_t  buffer_size = 3 * 4;
+    size_t offset = 10;
+    TSS2_RC rc;
+
+    hndl.count = 2;
+    hndl.handle[0] = 0x81000001;
+    hndl.handle[1] = 0x81000002;
+
+    rc = TPML_HANDLE_Marshal(&hndl, buffer, buffer_size, &offset);
+    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (offset, 10);
+
+    sel.count = 2;
+    sel.pcrSelections[0].hash = TPM_ALG_SHA1;
+    sel.pcrSelections[0].sizeofSelect = 3;
+    sel.pcrSelections[0].pcrSelect[0] = 0xaa;
+    sel.pcrSelections[0].pcrSelect[1] = 0xbb;
+    sel.pcrSelections[0].pcrSelect[2] = 0xcc;
+    sel.pcrSelections[1].hash = TPM_ALG_SHA256;
+    sel.pcrSelections[1].sizeofSelect = 2;
+    sel.pcrSelections[1].pcrSelect[0] = 0xdd;
+    sel.pcrSelections[1].pcrSelect[1] = 0xee;
+
+    offset = 2;
+    buffer_size = 4 + 2 + 4 + 2 + 2;
+    rc = TPML_PCR_SELECTION_Marshal(&sel, buffer, buffer_size, &offset);
+    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (offset, 2);
+}
+
+/*
+ * Invalid case with too big count
+ */
+static void
+tpml_marshal_invalid_count(void **state)
+{
+    TPML_HANDLE hndl = {0};
+    TPML_PCR_SELECTION sel = {0};
+    uint8_t buffer[sizeof(hndl) + sizeof(sel)] = { 0 };
+    size_t  buffer_size = sizeof(buffer);
+    TSS2_RC rc;
+
+    hndl.count = MAX_CAP_HANDLES + 2;
+    hndl.handle[0] = 0x81000001;
+    hndl.handle[1] = 0x81000002;
+
+    rc = TPML_HANDLE_Marshal(&hndl, buffer, buffer_size, NULL);
+    assert_int_equal (rc, TSS2_SYS_RC_BAD_VALUE);
+
+    sel.count = HASH_COUNT + 2;
+    sel.pcrSelections[0].hash = TPM_ALG_SHA1;
+    sel.pcrSelections[0].sizeofSelect = 3;
+    sel.pcrSelections[0].pcrSelect[0] = 0xaa;
+    sel.pcrSelections[0].pcrSelect[1] = 0xbb;
+    sel.pcrSelections[0].pcrSelect[2] = 0xcc;
+    sel.pcrSelections[1].hash = TPM_ALG_SHA256;
+    sel.pcrSelections[1].sizeofSelect = 2;
+    sel.pcrSelections[1].pcrSelect[0] = 0xdd;
+    sel.pcrSelections[1].pcrSelect[1] = 0xee;
+
+    rc = TPML_PCR_SELECTION_Marshal(&sel, buffer, buffer_size, NULL);
+    assert_int_equal (rc, TSS2_SYS_RC_BAD_VALUE);
+}
+
+/*
+ * Success case
+ */
+static void
+tpml_unmarshal_success(void **state)
+{
+    TPML_HANDLE hndl = {0};
+    TPML_PCR_SELECTION sel = {0};
+    uint8_t buffer[sizeof(hndl) + sizeof(sel) + 10] = { 0 };
+    size_t  buffer_size = sizeof(buffer);
+    TPML_HANDLE *ptr;
+    TPML_PCR_SELECTION *ptr2;
+    size_t offset = 0;
+    TSS2_RC rc;
+
+    ptr = (TPML_HANDLE *) (buffer);
+    ptr->count = HOST_TO_BE_32(2);
+    ptr->handle[0] = HOST_TO_BE_32(0x81000001);
+    ptr->handle[1] = HOST_TO_BE_32(0x81000002);
+
+    rc = TPML_HANDLE_Unmarshal(buffer, buffer_size, &offset, &hndl);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (hndl.count, 2);
+    assert_int_equal (hndl.handle[0], 0x81000001);
+    assert_int_equal (hndl.handle[1], 0x81000002);
+    assert_int_equal (offset, 4 + 4 + 4);
+
+    ptr2 = (TPML_PCR_SELECTION *)(buffer + 4 + 4 + 4);
+    ptr2->count = HOST_TO_BE_32(2);
+    ptr2->pcrSelections[0].hash = HOST_TO_BE_16(TPM_ALG_SHA1);
+    ptr2->pcrSelections[0].sizeofSelect = 3;
+    ptr2->pcrSelections[0].pcrSelect[0] = 0xaa;
+    ptr2->pcrSelections[0].pcrSelect[1] = 0xbb;
+    ptr2->pcrSelections[0].pcrSelect[2] = 0xcc;
+    ptr2->pcrSelections[1].hash = HOST_TO_BE_16(TPM_ALG_SHA256);
+    ptr2->pcrSelections[1].sizeofSelect = 2;
+    ptr2->pcrSelections[1].pcrSelect[0] = 0xdd;
+    ptr2->pcrSelections[1].pcrSelect[1] = 0xee;
+
+    rc = TPML_PCR_SELECTION_Unmarshal(buffer, buffer_size, &offset, &sel);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (sel.count, 2);
+    assert_int_equal (sel.pcrSelections[0].hash, TPM_ALG_SHA1);
+    assert_int_equal (sel.pcrSelections[0].sizeofSelect, 3);
+    assert_int_equal (sel.pcrSelections[0].pcrSelect[0], 0xaa);
+    assert_int_equal (sel.pcrSelections[0].pcrSelect[1], 0xbb);
+    assert_int_equal (sel.pcrSelections[0].pcrSelect[2], 0xcc);
+    assert_int_equal (sel.pcrSelections[1].hash, TPM_ALG_SHA256);
+    assert_int_equal (sel.pcrSelections[1].sizeofSelect, 2);
+    assert_int_equal (sel.pcrSelections[1].pcrSelect[0], 0xdd);
+    assert_int_equal (sel.pcrSelections[1].pcrSelect[1], 0xee);
+    assert_int_equal (offset, 4 + 4 + 4 + 4 + 2 + 1 + 1 + 1 + 1 + 2 + 1 + 1 + 1);
+}
+
+/*
+ * Invalid test case with buffer null and dest null
+ */
+static void
+tpml_unmarshal_dest_null_buff_null(void **state)
+{
+    size_t offset = 1;
+    TSS2_RC rc;
+
+    rc = TPML_HANDLE_Unmarshal(NULL, 120, &offset, NULL);
+    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (offset, 1);
+
+    rc = TPML_PCR_SELECTION_Unmarshal(NULL, 120, &offset, NULL);
+    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (offset, 1);
+}
+
+/*
+ * Invalid test case with offset null and dest null
+ */
+static void
+tpml_unmarshal_buffer_null_offset_null(void **state)
+{
+    TPML_HANDLE hndl = {0};
+    TPML_PCR_SELECTION sel = {0};
+    uint8_t buffer[sizeof(hndl) + sizeof(sel)] = { 0 };
+    size_t  buffer_size = sizeof(buffer);
+    TSS2_RC rc;
+
+    rc = TPML_HANDLE_Unmarshal(buffer, buffer_size, NULL, NULL);
+    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+
+    rc = TPML_PCR_SELECTION_Unmarshal(buffer, buffer_size, NULL, NULL);
+    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+}
+
+/*
+ * Test case ensures the offset is updated when dest is NULL
+ * and offset is valid
+ */
+static void
+tpml_unmarshal_dest_null_offset_valid(void **state)
+{
+    TPML_HANDLE hndl = {0};
+    TPML_PCR_SELECTION sel = {0};
+    uint8_t buffer[sizeof(hndl) + sizeof(sel) + 10] = { 0 };
+    size_t  buffer_size = sizeof(buffer);
+    TPML_HANDLE *ptr;
+    TPML_PCR_SELECTION *ptr2;
+    size_t offset = 0;
+    TSS2_RC rc;
+
+    ptr = (TPML_HANDLE *) (buffer);
+    ptr->count = HOST_TO_BE_32(2);
+    ptr->handle[0] = HOST_TO_BE_32(0x81000001);
+    ptr->handle[1] = HOST_TO_BE_32(0x81000002);
+
+    rc = TPML_HANDLE_Unmarshal(buffer, buffer_size, &offset, NULL);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (offset, 4 + 4 + 4);
+
+    ptr2 = (TPML_PCR_SELECTION *)(buffer + 4 + 4 + 4);
+    ptr2->count = HOST_TO_BE_32(2);
+    ptr2->pcrSelections[0].hash = HOST_TO_BE_16(TPM_ALG_SHA1);
+    ptr2->pcrSelections[0].sizeofSelect = 3;
+    ptr2->pcrSelections[0].pcrSelect[0] = 0xaa;
+    ptr2->pcrSelections[0].pcrSelect[1] = 0xbb;
+    ptr2->pcrSelections[0].pcrSelect[2] = 0xcc;
+    ptr2->pcrSelections[1].hash = HOST_TO_BE_16(TPM_ALG_SHA256);
+    ptr2->pcrSelections[1].sizeofSelect = 2;
+    ptr2->pcrSelections[1].pcrSelect[0] = 0xdd;
+    ptr2->pcrSelections[1].pcrSelect[1] = 0xee;
+
+    rc = TPML_PCR_SELECTION_Unmarshal(buffer, buffer_size, &offset, NULL);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (offset, 4 + 4 + 4 + 4 + 2 + 1 + 1 + 1 + 1 + 2 + 1 + 1 + 1);
+}
+
+/*
+ * Invalid case with not big enough buffer. Make sure offest is untouched.
+ */
+static void
+tpml_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
+{
+    TPML_HANDLE hndl = {0};
+    TPML_PCR_SELECTION sel = {0};
+    uint8_t buffer[sizeof(hndl) + sizeof(sel)] = { 0 };
+    TPML_HANDLE *ptr;
+    TPML_PCR_SELECTION *ptr2;
+    size_t offset = 2;
+    TSS2_RC rc;
+
+    ptr = (TPML_HANDLE *) (buffer + 2);
+    ptr->count = HOST_TO_BE_32(2);
+    ptr->handle[0] = HOST_TO_BE_32(0x81000001);
+    ptr->handle[1] = HOST_TO_BE_32(0x81000002);
+
+    rc = TPML_HANDLE_Unmarshal(buffer, 3 * 4, &offset, NULL);
+    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (offset, 2);
+
+    ptr2 = (TPML_PCR_SELECTION *) (buffer + 2);
+    ptr2->count = HOST_TO_BE_32(2);
+    ptr2->pcrSelections[0].hash = HOST_TO_BE_16(TPM_ALG_SHA1);
+    ptr2->pcrSelections[0].sizeofSelect = 3;
+    ptr2->pcrSelections[0].pcrSelect[0] = 0xaa;
+    ptr2->pcrSelections[0].pcrSelect[1] = 0xbb;
+    ptr2->pcrSelections[0].pcrSelect[2] = 0xcc;
+    ptr2->pcrSelections[1].hash = HOST_TO_BE_16(TPM_ALG_SHA256);
+    ptr2->pcrSelections[1].sizeofSelect = 2;
+    ptr2->pcrSelections[1].pcrSelect[0] = 0xdd;
+    ptr2->pcrSelections[1].pcrSelect[1] = 0xee;
+
+    rc = TPML_PCR_SELECTION_Unmarshal(buffer, 4 + 2 + 1 + 1 + 1 + 1 + 2 + 1 + 1 + 1, &offset, NULL);
+    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (offset, 2);
+}
+
+/*
+ * Invalid case with too big count
+ */
+static void
+tpml_unmarshal_invalid_count(void **state)
+{
+    TPML_HANDLE hndl = {0};
+    TPML_PCR_SELECTION sel = {0};
+    uint8_t buffer[sizeof(hndl) + sizeof(sel) + 10] = { 0 };
+    size_t  buffer_size = sizeof(buffer);
+    TPML_HANDLE *ptr;
+    TPML_PCR_SELECTION *ptr2;
+    size_t offset = 0;
+    TSS2_RC rc;
+
+    ptr = (TPML_HANDLE *) (buffer);
+    ptr->count = HOST_TO_BE_32(MAX_CAP_HANDLES + 2);
+    ptr->handle[0] = HOST_TO_BE_32(0x81000001);
+    ptr->handle[1] = HOST_TO_BE_32(0x81000002);
+
+    rc = TPML_HANDLE_Unmarshal(buffer, buffer_size, &offset, &hndl);
+    assert_int_equal (rc, TSS2_SYS_RC_MALFORMED_RESPONSE);
+
+    ptr2 = (TPML_PCR_SELECTION *)(buffer + 4 + 4 + 4);
+    ptr2->count = HOST_TO_BE_32(HASH_COUNT + 2);
+    ptr2->pcrSelections[0].hash = HOST_TO_BE_16(TPM_ALG_SHA1);
+    ptr2->pcrSelections[0].sizeofSelect = 3;
+    ptr2->pcrSelections[0].pcrSelect[0] = 0xaa;
+    ptr2->pcrSelections[0].pcrSelect[1] = 0xbb;
+    ptr2->pcrSelections[0].pcrSelect[2] = 0xcc;
+    ptr2->pcrSelections[1].hash = HOST_TO_BE_16(TPM_ALG_SHA256);
+    ptr2->pcrSelections[1].sizeofSelect = 2;
+    ptr2->pcrSelections[1].pcrSelect[0] = 0xdd;
+    ptr2->pcrSelections[1].pcrSelect[1] = 0xee;
+
+    rc = TPML_PCR_SELECTION_Unmarshal(buffer, buffer_size, &offset, &sel);
+    assert_int_equal (rc, TSS2_SYS_RC_MALFORMED_RESPONSE);
+}
+
+int main(void) {
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test (tpml_marshal_success),
+        cmocka_unit_test (tpml_marshal_success_offset),
+        cmocka_unit_test (tpml_marshal_buffer_null_with_offset),
+        cmocka_unit_test (tpml_marshal_buffer_null_offset_null),
+        cmocka_unit_test (tpml_marshal_buffer_size_lt_data_nad_lt_offset),
+        cmocka_unit_test (tpml_marshal_invalid_count),
+        cmocka_unit_test (tpml_unmarshal_success),
+        cmocka_unit_test (tpml_unmarshal_dest_null_buff_null),
+        cmocka_unit_test (tpml_unmarshal_buffer_null_offset_null),
+        cmocka_unit_test (tpml_unmarshal_dest_null_offset_valid),
+        cmocka_unit_test (tpml_unmarshal_buffer_size_lt_data_nad_lt_offset),
+        cmocka_unit_test (tpml_unmarshal_invalid_count),
+    };
+    return cmocka_run_group_tests(tests, NULL, NULL);
+}
