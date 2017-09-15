@@ -36,6 +36,7 @@
 
 #define ADDR &
 #define VAL
+#define TAB_SIZE(tab) (sizeof(tab) / sizeof(tab[0]))
 
 #define TPML_MARSHAL(type, marshal_func, buf_name, op) \
 TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
@@ -69,6 +70,11 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
              local_offset, \
              sizeof(count)); \
         return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
+    } \
+\
+    if (src->count > TAB_SIZE(src->buf_name)) { \
+        LOG (WARNING, "count too big"); \
+        return TSS2_SYS_RC_BAD_VALUE; \
     } \
 \
     if (buf_ptr == NULL) \
@@ -141,6 +147,11 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     ret = UINT32_Unmarshal(buffer, buffer_size, &local_offset, &count); \
     if (ret) \
         return ret; \
+\
+    if (count > TAB_SIZE(dest->buf_name)) { \
+        LOG (WARNING, "count too big"); \
+        return TSS2_SYS_RC_MALFORMED_RESPONSE; \
+    } \
 \
     dest->count = count; \
 \
