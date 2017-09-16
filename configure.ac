@@ -39,6 +39,7 @@ AM_CONDITIONAL([SIMULATOR_BIN],[test "x$with_simulatorbin_set" = "xyes"])
 
 AX_ADD_COMPILER_FLAG([-Wall])
 AX_ADD_COMPILER_FLAG([-Werror])
+AX_ADD_COMPILER_FLAG([-Wno-int-in-bool-context])
 AX_ADD_COMPILER_FLAG([-Wformat])
 AX_ADD_COMPILER_FLAG([-Wformat-security])
 AX_ADD_COMPILER_FLAG([-fstack-protector-all])
