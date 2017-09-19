@@ -44,7 +44,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    if (src == NULL) \
+    if (!src) \
         return TSS2_SYS_RC_BAD_REFERENCE; \
 \
     if (offset) \
@@ -105,7 +105,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    if (src == NULL) \
+    if (!src) \
         return TSS2_SYS_RC_BAD_REFERENCE; \
 \
     if (offset) \
@@ -174,7 +174,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    if (src == NULL) \
+    if (!src) \
         return TSS2_SYS_RC_BAD_REFERENCE; \
 \
     if (offset) \
@@ -244,7 +244,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    if (src == NULL) \
+    if (!src) \
         return TSS2_SYS_RC_BAD_REFERENCE; \
 \
     if (offset) \
@@ -322,7 +322,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    if (src == NULL) \
+    if (!src) \
         return TSS2_SYS_RC_BAD_REFERENCE; \
 \
     if (offset) \
@@ -408,7 +408,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    if (src == NULL) \
+    if (!src) \
         return TSS2_SYS_RC_BAD_REFERENCE; \
 \
     if (offset) \
