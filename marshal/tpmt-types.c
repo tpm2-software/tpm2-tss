@@ -75,6 +75,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
 { \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
+    type tmp = {0}; \
 \
     if (offset) \
         local_offset = *offset; \
@@ -85,11 +86,11 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, local_offset); \
 \
-    ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
+    ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : &tmp.m1); \
     if (ret != TSS2_RC_SUCCESS) \
         return ret; \
 \
-    ret = fn2(buffer, buffer_size, &local_offset, dest ? dest->sel : 0, dest ? &dest->m2 : NULL); \
+    ret = fn2(buffer, buffer_size, &local_offset, dest ? dest->sel : tmp.sel, dest ? &dest->m2 : NULL); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
         *offset = local_offset; \
@@ -140,6 +141,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
 { \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
+    type tmp = {0}; \
 \
     if (offset) \
         local_offset = *offset; \
@@ -150,15 +152,15 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, local_offset); \
 \
-    ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
+    ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : &tmp.m1); \
     if (ret != TSS2_RC_SUCCESS) \
         return ret; \
 \
-    ret = fn2(buffer, buffer_size, &local_offset, dest ? dest->sel2 : 0, dest ? &dest->m2 : NULL); \
+    ret = fn2(buffer, buffer_size, &local_offset, dest ? dest->sel2 : tmp.sel2, dest ? &dest->m2 : NULL); \
     if (ret != TSS2_RC_SUCCESS) \
         return ret; \
 \
-    ret = fn3(buffer, buffer_size, &local_offset, dest ? dest->sel3 : 0, dest ? &dest->m3 : NULL); \
+    ret = fn3(buffer, buffer_size, &local_offset, dest ? dest->sel3 : tmp.sel3, dest ? &dest->m3 : NULL); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
         *offset = local_offset; \
@@ -283,6 +285,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
 { \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
+    type tmp = {0}; \
 \
     if (offset) \
         local_offset = *offset; \
@@ -293,19 +296,19 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, local_offset); \
 \
-    ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
+    ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : &tmp.m1); \
     if (ret != TSS2_RC_SUCCESS) \
         return ret; \
 \
-    ret = fn2(buffer, buffer_size, &local_offset, dest ? &dest->m2 : NULL); \
+    ret = fn2(buffer, buffer_size, &local_offset, dest ? &dest->m2 : &tmp.m2); \
     if (ret != TSS2_RC_SUCCESS) \
         return ret; \
 \
-    ret = fn3(buffer, buffer_size, &local_offset, dest ? &dest->m3 : NULL); \
+    ret = fn3(buffer, buffer_size, &local_offset, dest ? &dest->m3 : &tmp.m3); \
     if (ret != TSS2_RC_SUCCESS) \
         return ret; \
 \
-    ret = fn4(buffer, buffer_size, &local_offset, dest ? dest->sel4 : 0, dest ? &dest->m4 : NULL); \
+    ret = fn4(buffer, buffer_size, &local_offset, dest ? dest->sel4 : tmp.sel4, dest ? &dest->m4 : NULL); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
         *offset = local_offset; \
@@ -455,6 +458,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
 { \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
+    type tmp = {0}; \
 \
     if (offset) \
         local_offset = *offset; \
@@ -465,27 +469,27 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *off
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, local_offset); \
 \
-    ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
+    ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : &tmp.m1); \
     if (ret != TSS2_RC_SUCCESS) \
         return ret; \
 \
-    ret = fn2(buffer, buffer_size, &local_offset, dest ? &dest->m2 : NULL); \
+    ret = fn2(buffer, buffer_size, &local_offset, dest ? &dest->m2 : &tmp.m2); \
     if (ret != TSS2_RC_SUCCESS) \
         return ret; \
 \
-    ret = fn3(buffer, buffer_size, &local_offset, dest ? &dest->m3 : NULL); \
+    ret = fn3(buffer, buffer_size, &local_offset, dest ? &dest->m3 : &tmp.m3); \
     if (ret != TSS2_RC_SUCCESS) \
         return ret; \
 \
-    ret = fn4(buffer, buffer_size, &local_offset, dest ? &dest->m4 : NULL); \
+    ret = fn4(buffer, buffer_size, &local_offset, dest ? &dest->m4 : &tmp.m4); \
     if (ret != TSS2_RC_SUCCESS) \
         return ret; \
 \
-    ret = fn5(buffer, buffer_size, &local_offset, dest ? dest->sel5 : 0, dest ? &dest->m5 : NULL); \
+    ret = fn5(buffer, buffer_size, &local_offset, dest ? dest->sel5 : tmp.sel5, dest ? &dest->m5 : NULL); \
     if (ret != TSS2_RC_SUCCESS) \
         return ret; \
 \
-    ret = fn6(buffer, buffer_size, &local_offset, dest ? dest->sel6 : 0, dest ? &dest->m6 : NULL); \
+    ret = fn6(buffer, buffer_size, &local_offset, dest ? dest->sel6 : tmp.sel6, dest ? &dest->m6 : NULL); \
 \
     if (offset && ret == TSS2_RC_SUCCESS) { \
         *offset = local_offset; \
