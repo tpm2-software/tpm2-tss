@@ -1,6 +1,7 @@
 language: c
 compiler:
   - gcc
+  - clang
 
 sudo: false
 dist: trusty
