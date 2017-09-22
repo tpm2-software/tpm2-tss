@@ -11,7 +11,8 @@ AC_DEFUN([AX_ADD_COMPILER_FLAG],[
         AS_IF([test x$2 != xrequired],[
             AC_MSG_WARN([Optional CFLAG "$1" not supported by your compiler, continuing.])],[
             AC_MSG_ERROR([Required CFLAG "$1" not supported by your compiler, aborting.])]
-        )]
+        )],[
+        -Wall -Werror]
     )]
 )
 dnl AX_ADD_PREPROC_FLAG:
