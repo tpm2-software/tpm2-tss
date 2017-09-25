@@ -1,7 +1,7 @@
 This file contains instructions to build and install the TSS libraries.
 
 # Dependencies
-To build and install the tpm2.0-tss software the following dependencies are
+To build and install the tpm2-tss software the following dependencies are
 required:
 * GNU Autoconf
 * GNU Autoconf archive
@@ -44,7 +44,7 @@ $ sudo dnf builddep tpm2-tss
 
 # Building From Source
 ## Bootstrapping the Build
-To configure the tpm2.0-tss source code first run the bootstrap script, which
+To configure the tpm2-tss source code first run the bootstrap script, which
 generates list of source files, and creates the configure script:
 ```
 $ ./bootstrap
@@ -63,7 +63,7 @@ $ make -j$(nproc)
 ```
 
 ## Installing the Libraries
-Once you've built the tpm2.0-tss software it can be installed with:
+Once you've built the tpm2-tss software it can be installed with:
 ```
 $ sudo make install
 ```
@@ -89,8 +89,8 @@ build in a container.
 ```
 $ docker build -t tpm2 .
 $ docker run --name temp tpm2 /bin/true
-$ docker cp temp:/TPM2.0-TSS TPM2.0-TSS
+$ docker cp temp:/tpm2-tss tpm2-tss
 $ docker rm temp
 ```
 
-TPM2.0-TSS is now in your working directory and contains all the built files.
+tpm2-tss is now in your working directory and contains all the built files.
