@@ -68,4 +68,4 @@ SAPI library, TAB/RM, and Test Code Block Diagram:
 # [Code Layout](doc/layout.md)
 Diagram of the directory structure for the code SAPI library, TAB/RM, and Test
 Code.
-![Code Layout](https://github.com/01org/TPM2.0-TSS/raw/master/doc/TSS%20layout.png)
+![Code Layout](https://github.com/01org/tpm2-tss/raw/master/doc/TSS%20layout.png)

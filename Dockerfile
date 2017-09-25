@@ -23,9 +23,9 @@ RUN wget https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm532.tar && \
   tar axf ibmtpm532.tar -C ibmtpm532 && \
   make -C ibmtpm532/src -j$(nproc)
 
-COPY . TPM2.0-TSS
+COPY . tpm2-tss
 
-RUN cd TPM2.0-TSS && \
+RUN cd tpm2-tss && \
   ./bootstrap && \
   rm -rf ./build && \
   mkdir ./build && \
@@ -33,6 +33,6 @@ RUN cd TPM2.0-TSS && \
   ../configure --enable-unit --with-simulatorbin=$(pwd)/../../ibmtpm532/src/tpm_server && \
   make -j$(nproc)
 
-RUN cd TPM2.0-TSS/build && \
+RUN cd tpm2-tss/build && \
   make -j$(nproc) check && \
   cat test/tpmclient/tpmclient.log
