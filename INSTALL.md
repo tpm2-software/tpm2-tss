@@ -68,11 +68,11 @@ Once you've built the tpm2-tss software it can be installed with:
 $ sudo make install
 ```
 
-This will install the libraries and the resource manager to locations
-determined at configure time. See the output of ./configure --help for the
-available options. Typically you won't need to do much more than provide an
-alternative --prefix option at configure time, and maybe DESTDIR at install
-time if you're packaging for a distro.
+This will install the libraries to a location determined at configure time.
+See the output of ./configure --help for the available options. Typically you
+won't need to do much more than provide an alternative --prefix option at
+configure time, and maybe DESTDIR at install time if you're packaging for a
+distro.
 
 **NOTE**: It may be necessary to run ldconfig (as root) to update the run-time
 bindings before executing a program that links against libsapi or a TCTI
