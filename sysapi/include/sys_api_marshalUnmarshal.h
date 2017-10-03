@@ -36,15 +36,12 @@
  */
 #define MARSHAL_ADAPTER(type, inBuffPtr, maxCommandSize, nextData, src, rval) \
     do { \
-        if (*rval != TSS2_RC_SUCCESS) { \
-            break;\
-        } \
-        size_t index = *nextData - inBuffPtr; \
+        if (*rval != TSS2_RC_SUCCESS) \
+            break; \
         *rval = type##_Marshal (src, \
                                 inBuffPtr, \
                                 maxCommandSize, \
-                                &index); \
-        *nextData = inBuffPtr + index; \
+                                nextData); \
     } while (0)
 /*
  * The UNMARSHAL_ADAPTER macro generates code that adapts the old Unmarshal_*
@@ -54,12 +51,11 @@
     do { \
         if (*rval != TSS2_RC_SUCCESS) \
             break; \
-        size_t index = *nextData - outBuffPtr; \
+        \
         *rval = type##_Unmarshal (outBuffPtr, \
                                   maxResponseSize, \
-                                  &index, \
+                                  nextData, \
                                   dest); \
-        *nextData = outBuffPtr + index; \
     } while (0)
 
 /*
@@ -68,16 +64,13 @@
  */
 #define MARSHAL_TPMU_ADAPTER(type, inBuffPtr, maxCommandSize, nextData, src, selector, rval) \
     do { \
-        if (*rval != TSS2_RC_SUCCESS) { \
-            break;\
-        } \
-        size_t index = *nextData - inBuffPtr; \
+        if (*rval != TSS2_RC_SUCCESS) \
+            break; \
         *rval = type##_Marshal (src, \
                                 selector, \
                                 inBuffPtr, \
                                 maxCommandSize, \
-                                &index); \
-        *nextData = inBuffPtr + index; \
+                                nexData); \
     } while (0)
 /*
  * The UNMARSHAL_ADAPTER macro generates code that adapts the old
@@ -87,19 +80,17 @@
     do { \
         if (*rval != TSS2_RC_SUCCESS) \
             break; \
-        size_t index = *nextData - outBuffPtr; \
         *rval = type##_Unmarshal (outBuffPtr, \
                                   maxResponseSize, \
-                                  &index, \
+                                  nextData, \
                                   selector, \
                                   dest); \
-        *nextData = outBuffPtr + index; \
     } while (0)
 
 
-void Marshal_Simple_TPM2B( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **nextData, TPM2B *value, TSS2_RC *rval );
-void Unmarshal_Simple_TPM2B( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, TPM2B *value, TSS2_RC *rval );
-void Unmarshal_Simple_TPM2B_NoSizeCheck( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, TPM2B *value, TSS2_RC *rval );
+void Marshal_Simple_TPM2B(UINT8 *inBuffPtr, UINT32 maxCommandSize, size_t *nextData, TPM2B *value, TSS2_RC *rval);
+void Unmarshal_Simple_TPM2B(UINT8 *outBuffPtr, UINT32 maxResponseSize, size_t *nextData, TPM2B *value, TSS2_RC *rval);
+void Unmarshal_Simple_TPM2B_NoSizeCheck(UINT8 *outBuffPtr, UINT32 maxResponseSize, size_t *nextData, TPM2B *value, TSS2_RC *rval);
 /*
  * These macros expand to adapter macros. They're meant to be a layer
  * adapting the existing Marshal_* API to the new stuff going into

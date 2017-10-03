@@ -28,45 +28,38 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-void Marshal_Simple_TPM2B( UINT8 *inBuffPtr, UINT32 maxCommandSize, UINT8 **nextData, TPM2B *value, TSS2_RC *rval )
+void Marshal_Simple_TPM2B(UINT8 *inBuffPtr, UINT32 maxCommandSize, size_t *nextData, TPM2B *value, TSS2_RC *rval)
 {
     INT64 usedCommandBuffSize;
     int i = 0;
 
-    if( *rval == TSS2_RC_SUCCESS )
-    {
-        if( inBuffPtr == 0 || nextData == 0 || *nextData == 0 )
-        {
-            *rval = TSS2_SYS_RC_BAD_REFERENCE;
+    if (*rval)
+        return;
+    if (!inBuffPtr || !nextData) {
+        *rval = TSS2_SYS_RC_BAD_REFERENCE;
+        return;
+    }
+
+    usedCommandBuffSize = (INT64)*nextData + sizeof(UINT16);
+
+    /* Check for possible writing past end of command buffer */
+    if (usedCommandBuffSize > (INT64)maxCommandSize) {
+        *rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
+        return;
+    }
+
+    if (value) {
+        *rval = UINT16_Marshal(value->size, inBuffPtr, maxCommandSize, nextData);
+        if (*rval)
+            return;
+
+        for (i = 0; i < value->size; i++) {
+            *rval = UINT8_Marshal(value->buffer[i], inBuffPtr, maxCommandSize, nextData);
+
+            if (*rval)
+                break;
         }
-        else
-        {
-            usedCommandBuffSize = (INT64)(*nextData - inBuffPtr) + sizeof( UINT16 );
-
-            // Check for possible writing past end of command buffer.
-            if( usedCommandBuffSize > (INT64)maxCommandSize )
-            {
-                *rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
-            }
-            else if( value == 0 )
-            {
-                Marshal_UINT16( inBuffPtr, maxCommandSize, nextData, 0, rval );
-            }
-            else
-            {
-                Marshal_UINT16( inBuffPtr, maxCommandSize, nextData, value->size, rval );
-
-                if( *rval == TSS2_RC_SUCCESS )
-                {
-                    for( i = 0; i < value->size; i++ )
-                    {
-                        Marshal_UINT8( inBuffPtr, maxCommandSize, nextData, value->buffer[i], rval );
-
-                        if( *rval != TSS2_RC_SUCCESS )
-                            break;
-                    }
-                }
-            }
-        }
+    } else {
+        *rval = UINT16_Marshal(0, inBuffPtr, maxCommandSize, nextData);
     }
 }

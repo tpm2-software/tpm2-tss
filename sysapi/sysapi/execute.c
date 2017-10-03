@@ -103,7 +103,7 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
              * the TPM20_Rsp_Header in the context structure. No need to
              * unmarshal this stuff again.
              */
-            SYS_CONTEXT->nextData = SYS_CONTEXT->tpmOutBuffPtr;
+            SYS_CONTEXT->nextData = 0;
             Unmarshal_TPM_ST (SYS_CONTEXT->tpmOutBuffPtr,
                               SYS_CONTEXT->maxCommandSize,
                               &SYS_CONTEXT->nextData,
