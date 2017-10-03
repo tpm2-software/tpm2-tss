@@ -73,6 +73,9 @@ TSS2_RC Tss2_Sys_SetDecryptParam(
     TSS2_RC         rval = TSS2_RC_SUCCESS;
     UINT32          sizeToBeUsed;
     UINT32          currCommandSize;
+    const UINT8 *src, *limit;
+    UINT8 *dst;
+    UINT32 len;
 
     if( decryptParamBuffer == 0 || sysContext == 0 )
     {
@@ -98,23 +101,30 @@ TSS2_RC Tss2_Sys_SetDecryptParam(
             return TSS2_SYS_RC_BAD_VALUE;
         }
 
-        // We're going to have to move stuff around.
-        // First move current cpBuffer down.
-        rval = CopyMemReverse( SYS_CONTEXT->cpBuffer + SYS_CONTEXT->cpBufferUsedSize + 2, SYS_CONTEXT->cpBuffer + 2,
-                    SYS_CONTEXT->cpBufferUsedSize - 2, SYS_CONTEXT->tpmInBuffPtr + SYS_CONTEXT->maxCommandSize );
-        if( rval != TSS2_RC_SUCCESS )
-        {
-            return rval;
-        }
-        SYS_CONTEXT->cpBufferUsedSize += decryptParamSize;
+        /* Move stuff around. First move current cpBuffer down. */
+        src = SYS_CONTEXT->cpBuffer + 2;
+        dst = SYS_CONTEXT->cpBuffer + SYS_CONTEXT->cpBufferUsedSize + 2;
+        len = SYS_CONTEXT->cpBufferUsedSize - 2;
+        limit = SYS_CONTEXT->tpmInBuffPtr + SYS_CONTEXT->maxCommandSize;
 
-        // Now copy in the encrypted decrypt param.
+        if (dst + len > limit)
+            return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+
+        memmove(dst, src, len);
+
+        SYS_CONTEXT->cpBufferUsedSize += decryptParamSize;
         *(UINT16 *)SYS_CONTEXT->cpBuffer = HOST_TO_BE_16(decryptParamSize);
-        rval = CopyMem( (uint8_t *)currDecryptParamBuffer, decryptParamBuffer, decryptParamSize, SYS_CONTEXT->tpmInBuffPtr + SYS_CONTEXT->maxCommandSize );
-        if( rval != TSS2_RC_SUCCESS )
-        {
-            return rval;
-        }
+
+        src = decryptParamBuffer;
+        dst = (UINT8 *) currDecryptParamBuffer;
+        len = decryptParamSize;
+        limit = SYS_CONTEXT->tpmInBuffPtr + SYS_CONTEXT->maxCommandSize;
+
+        if (dst + len > limit)
+            return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+
+        /* Now copy in the encrypted decrypt param. */
+        memmove(dst, src, len);
 
         // And fixup the command size.
         currCommandSize = BE_TO_HOST_32(((TPM20_Header_In *)(SYS_CONTEXT->tpmInBuffPtr))->commandSize);
@@ -127,12 +137,18 @@ TSS2_RC Tss2_Sys_SetDecryptParam(
         {
             return TSS2_SYS_RC_BAD_SIZE;
         }
+
         *(UINT16 *)SYS_CONTEXT->cpBuffer = HOST_TO_BE_16(decryptParamSize);
-        rval = CopyMem( (uint8_t *)currDecryptParamBuffer, decryptParamBuffer, decryptParamSize, SYS_CONTEXT->tpmInBuffPtr + SYS_CONTEXT->maxCommandSize );
-        if( rval != TSS2_RC_SUCCESS )
-        {
-            return rval;
-        }
+
+        src = decryptParamBuffer;
+        dst = (UINT8 *) currDecryptParamBuffer;
+        len = decryptParamSize;
+        limit = SYS_CONTEXT->tpmInBuffPtr + SYS_CONTEXT->maxCommandSize;
+
+        if (dst + len > limit)
+            return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+
+        memmove(dst, src, len);
     }
 
     return rval;
