@@ -80,7 +80,7 @@ marshal_TPM2B_NAME_good (void **state)
      * doesn't change.
      */
     data = (marshal_simple2b_t*)*state;
-    uint8_t *nextData = data->buffer;
+    size_t nextData = 0;
 
     Marshal_Simple_TPM2B (data->buffer,
                           data->buffer_size,
@@ -97,7 +97,7 @@ marshal_TPM2B_NAME_good (void **state)
      * The Marshal_* functions advance the 'nextData' parameter by the size of
      * the marshalled data.
      */
-    assert_int_equal (data->buffer, nextData - marshalled_size);
+    assert_int_equal (nextData, marshalled_size);
     /* Finally the return code should indicate success. */
     assert_int_equal (data->rc, TSS2_RC_SUCCESS);
 }
@@ -118,7 +118,7 @@ unmarshal_TPM2B_NAME_good (void **state)
      */
     name2b_unmarshal.t.size = sizeof (name2b_unmarshal.t.name);
 
-    uint8_t *nextData = name2b_marshalled;
+    size_t nextData = 0;
 
     Unmarshal_Simple_TPM2B (name2b_marshalled,
                             marshalled_size,
@@ -129,6 +129,9 @@ unmarshal_TPM2B_NAME_good (void **state)
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     /* The size of the unmarshalled structure should match the reference */
     assert_int_equal (name2b_unmarshal.t.size, name2b.t.size);
+    /* The size of the unmarshalled structure should match the nextData +
+     * sizeof(name2b.t.size) */
+    assert_int_equal (nextData, name2b.t.size + sizeof(UINT16));
     /* the contents of the name buffer should match the reference */
     assert_memory_equal (name2b_unmarshal.t.name, name2b.t.name, name2b.t.size);
 }
