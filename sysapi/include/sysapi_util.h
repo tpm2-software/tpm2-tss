@@ -176,12 +176,7 @@ TSS2_RC CommonPrepareEpilogue(
     TSS2_SYS_CONTEXT *sysContext
     );
 
-TSS2_RC CopyMem( UINT8 *dest, const UINT8 *src, const size_t len, const UINT8 *limit );
-
-TSS2_RC CopyMemReverse( UINT8 *dest, const UINT8 *src, const size_t len, const UINT8 *limit );
-
 int GetNumCommandHandles( TPM_CC commandCode );
-
 int GetNumResponseHandles( TPM_CC commandCode );
 
 TSS2_SYS_CONTEXT *InitSysContext(
