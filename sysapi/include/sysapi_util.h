@@ -95,9 +95,8 @@ typedef struct {
     // Marshalling functions check this and SAPI functions return it.
     TSS2_RC rval;
 
-    // Location for next data in command/response buffer.
-    UINT8 *nextData;
-
+    /* Offset to next data in command/response buffer. */
+    size_t nextData;
 } _TSS2_SYS_CONTEXT_BLOB;
 
 
@@ -146,10 +145,6 @@ TPM_RC FinishCommand( _TSS2_SYS_CONTEXT_BLOB *sysContext,
 
 UINT16 GetDigestSize( TPM_ALG_ID authHash );
 UINT32 GetCommandSize( TSS2_SYS_CONTEXT *sysContext );
-TSS2_RC CopySessionsDataIn( void **otherData, const TSS2_SYS_CMD_AUTHS *pSessionDataIn );
-TSS2_RC CopySessionDataIn( void **otherData, TPMS_AUTH_COMMAND const *sessionData, UINT32 *sessionSizePtr );
-TSS2_RC CopySessionDataOut( TPMS_AUTH_RESPONSE *sessionData, void **otherData, UINT8* outBuffPtr, UINT32 outBuffSize );
-TSS2_RC CopySessionsDataOut( TSS2_SYS_RSP_AUTHS *rspAuthsArray, void *otherData, TPM_ST tag, UINT8* outBuffPtr, UINT32 outBuffSize );
 
 TPM_RC ConcatSizedByteBuffer( TPM2B_MAX_BUFFER *result, TPM2B *addBuffer );
 
