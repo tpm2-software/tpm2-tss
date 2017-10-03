@@ -116,14 +116,9 @@ TPM_RC FinishCommand( _TSS2_SYS_CONTEXT_BLOB *sysContext,
     if( SYS_CONTEXT->rval != TSS2_RC_SUCCESS )
         return SYS_CONTEXT->rval;
 
-    // Now set the command size field, now that we know the size of the whole command.
-    // WILL NEED TO TO THIS DIFFERENTLY.  OR MAYBE NOT AT ALL HERE.
-//    ((TPM20_Header_In *) sysContext->tpmInBuffPtr)->commandSize = CHANGE_ENDIAN_DWORD( ( (UINT8 *)otherData ) -
-//            (UINT8 *)&( ( TPM20_Header_In *) sysContext->tpmInBuffPtr )->tag );
+    SYS_CONTEXT->rval = Tss2_Sys_Execute((TSS2_SYS_CONTEXT *)sysContext);
 
-    SYS_CONTEXT->rval = Tss2_Sys_Execute( (TSS2_SYS_CONTEXT *)sysContext );
-
-    return( SYS_CONTEXT->rval );
+    return SYS_CONTEXT->rval;
 }
 
 
