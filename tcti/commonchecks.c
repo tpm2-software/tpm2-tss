@@ -43,13 +43,13 @@ TSS2_RC CommonSendChecks(
         return TSS2_TCTI_RC_BAD_REFERENCE;
     }
 
-    if( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage == TCTI_STAGE_SEND_COMMAND )
+    if (TCTI_CONTEXT_INTEL->previousStage == TCTI_STAGE_SEND_COMMAND)
     {
         return TSS2_TCTI_RC_BAD_SEQUENCE;
     }
 
-    if( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->magic != TCTI_MAGIC ||
-        ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->version != TCTI_VERSION )
+    if (TCTI_CONTEXT_INTEL->magic != TCTI_MAGIC ||
+        TCTI_CONTEXT_INTEL->version != TCTI_VERSION)
     {
         return TSS2_TCTI_RC_BAD_CONTEXT;
     }
@@ -69,13 +69,13 @@ TSS2_RC CommonReceiveChecks(
         return TSS2_TCTI_RC_BAD_REFERENCE;
     }
 
-    if( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage == TCTI_STAGE_RECEIVE_RESPONSE )
+    if (TCTI_CONTEXT_INTEL->previousStage == TCTI_STAGE_RECEIVE_RESPONSE)
     {
         return TSS2_TCTI_RC_BAD_SEQUENCE;
     }
 
-    if( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->magic != TCTI_MAGIC ||
-        ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->version != TCTI_VERSION )
+    if (TCTI_CONTEXT_INTEL->magic != TCTI_MAGIC ||
+        TCTI_CONTEXT_INTEL->version != TCTI_VERSION)
     {
         return TSS2_TCTI_RC_BAD_CONTEXT;
     }
