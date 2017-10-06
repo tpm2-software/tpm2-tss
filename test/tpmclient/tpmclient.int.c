@@ -1732,7 +1732,7 @@ void TestCreate(){
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
     inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_ECB;
     inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
-    inPublic.t.publicArea.parameters.rsaDetail.keyBits = 1024;
+    inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
     inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
 
     inPublic.t.publicArea.unique.rsa.t.size = 0;
@@ -1753,8 +1753,6 @@ void TestCreate(){
 
     sessionsData.cmdAuthsCount = 1;
     sessionsData.cmdAuths[0] = &sessionData;
-
-    inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
 
     // Do SAPI test for non-zero sized outPublic
     outPublic.t.size = 0xff;
