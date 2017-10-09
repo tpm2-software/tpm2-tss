@@ -29,14 +29,14 @@
 #include <inttypes.h>
 #include <string.h>
 
-#include "sapi/marshal.h"
+#include "sapi/tss2_mu.h"
 #include "sapi/tpm20.h"
 #include "tss2_endian.h"
 #include "log.h"
 
 #define TPMA_MARSHAL(type) \
-TSS2_RC type##_Marshal(type src, uint8_t buffer[], \
-                       size_t buffer_size, size_t *offset) \
+TSS2_RC Tss2_MU_##type##_Marshal(type src, uint8_t buffer[], \
+                                 size_t buffer_size, size_t *offset) \
 { \
     size_t  local_offset = 0; \
 \
@@ -96,8 +96,8 @@ TSS2_RC type##_Marshal(type src, uint8_t buffer[], \
 }
 
 #define TPMA_UNMARSHAL(type) \
-TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
-                         size_t *offset, type *dest) \
+TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
+                                   size_t *offset, type *dest) \
 { \
     size_t  local_offset = 0; \
     type tmp = {0};\

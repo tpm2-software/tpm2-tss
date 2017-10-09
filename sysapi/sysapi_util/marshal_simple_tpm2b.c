@@ -49,17 +49,17 @@ void Marshal_Simple_TPM2B(UINT8 *inBuffPtr, UINT32 maxCommandSize, size_t *nextD
     }
 
     if (value) {
-        *rval = UINT16_Marshal(value->size, inBuffPtr, maxCommandSize, nextData);
+        *rval = Tss2_MU_UINT16_Marshal(value->size, inBuffPtr, maxCommandSize, nextData);
         if (*rval)
             return;
 
         for (i = 0; i < value->size; i++) {
-            *rval = UINT8_Marshal(value->buffer[i], inBuffPtr, maxCommandSize, nextData);
+            *rval = Tss2_MU_UINT8_Marshal(value->buffer[i], inBuffPtr, maxCommandSize, nextData);
 
             if (*rval)
                 break;
         }
     } else {
-        *rval = UINT16_Marshal(0, inBuffPtr, maxCommandSize, nextData);
+        *rval = Tss2_MU_UINT16_Marshal(0, inBuffPtr, maxCommandSize, nextData);
     }
 }

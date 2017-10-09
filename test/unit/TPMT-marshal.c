@@ -3,7 +3,7 @@
 #include <setjmp.h>
 #include <cmocka.h>
 #include <stdio.h>
-#include <sapi/marshal.h>
+#include <sapi/tss2_mu.h>
 #include <marshal/tss2_endian.h>
 
 /*
@@ -30,7 +30,7 @@ tpmt_marshal_success(void **state)
     tkt.digest.t.buffer[1] = 0xad;
     tkt.digest.t.buffer[2] = 0xbe;
     tkt.digest.t.buffer[3] = 0xef;
-    rc = TPMT_TK_CREATION_Marshal(&tkt, buffer, buffer_size, NULL);
+    rc = Tss2_MU_TPMT_TK_CREATION_Marshal(&tkt, buffer, buffer_size, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 
     ptr = (TPMT_TK_CREATION *)buffer;
@@ -49,7 +49,7 @@ tpmt_marshal_success(void **state)
     pub.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
     pub.parameters.rsaDetail.symmetric.keyBits.aes = 128;
     pub.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CBC;
-    rc = TPMT_PUBLIC_Marshal(&pub, buffer, buffer_size, NULL);
+    rc = Tss2_MU_TPMT_PUBLIC_Marshal(&pub, buffer, buffer_size, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     ptr4 = (TPMT_PUBLIC *)buffer;
     ptr5 = (TPMU_PUBLIC_PARMS *)(buffer + sizeof(TPMI_ALG_PUBLIC) + sizeof(TPMI_ALG_HASH) + sizeof(TPMA_OBJECT) + 2);
@@ -83,7 +83,7 @@ tpmt_marshal_success_offset(void **state)
     tkt.digest.t.buffer[1] = 0xad;
     tkt.digest.t.buffer[2] = 0xbe;
     tkt.digest.t.buffer[3] = 0xef;
-    rc = TPMT_TK_CREATION_Marshal(&tkt, buffer, buffer_size, &offset);
+    rc = Tss2_MU_TPMT_TK_CREATION_Marshal(&tkt, buffer, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 
     ptr = (TPMT_TK_CREATION *)(buffer + 10);
@@ -104,7 +104,7 @@ tpmt_marshal_success_offset(void **state)
     pub.parameters.keyedHashDetail.scheme.scheme = TPM_ALG_HMAC;
     pub.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM_ALG_SHA256;
 
-    rc = TPMT_PUBLIC_PARMS_Marshal(&pub, buffer, buffer_size, &offset);
+    rc = Tss2_MU_TPMT_PUBLIC_PARMS_Marshal(&pub, buffer, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     ptr4 = (TPMT_PUBLIC_PARMS *)(buffer + 10);
     ptr5 = (TPMS_KEYEDHASH_PARMS *)(buffer + 10 + 2);
@@ -134,7 +134,7 @@ tpmt_marshal_buffer_null_with_offset(void **state)
     tkt.digest.t.buffer[1] = 0xad;
     tkt.digest.t.buffer[2] = 0xbe;
     tkt.digest.t.buffer[3] = 0xef;
-    rc = TPMT_TK_CREATION_Marshal(&tkt, NULL, buffer_size, &offset);
+    rc = Tss2_MU_TPMT_TK_CREATION_Marshal(&tkt, NULL, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (offset, 10 + 2 + 4 + 2 + 1 + 1 + 1 + 1);
 
@@ -143,7 +143,7 @@ tpmt_marshal_buffer_null_with_offset(void **state)
     pub.parameters.keyedHashDetail.scheme.scheme = TPM_ALG_HMAC;
     pub.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM_ALG_SHA256;
 
-    rc = TPMT_PUBLIC_PARMS_Marshal(&pub, NULL, buffer_size, &offset);
+    rc = Tss2_MU_TPMT_PUBLIC_PARMS_Marshal(&pub, NULL, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (offset, 10 + 2 + 2 + 2);
 }
@@ -158,10 +158,10 @@ tpmt_marshal_buffer_null_offset_null(void **state)
     TPMT_PUBLIC_PARMS pub = {0};
     TSS2_RC rc;
 
-    rc = TPMT_TK_CREATION_Marshal(&tkt, NULL, sizeof(tkt), NULL);
+    rc = Tss2_MU_TPMT_TK_CREATION_Marshal(&tkt, NULL, sizeof(tkt), NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 
-    rc = TPMT_PUBLIC_PARMS_Marshal(&pub, NULL, sizeof(pub), NULL);
+    rc = Tss2_MU_TPMT_PUBLIC_PARMS_Marshal(&pub, NULL, sizeof(pub), NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 }
 
@@ -184,7 +184,7 @@ tpmt_marshal_buffer_size_lt_data_nad_lt_offset(void **state)
     tkt.digest.t.buffer[1] = 0xad;
     tkt.digest.t.buffer[2] = 0xbe;
     tkt.digest.t.buffer[3] = 0xef;
-    rc = TPMT_TK_CREATION_Marshal(&tkt, buffer, 10, &offset);
+    rc = Tss2_MU_TPMT_TK_CREATION_Marshal(&tkt, buffer, 10, &offset);
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 10);
 
@@ -192,7 +192,7 @@ tpmt_marshal_buffer_size_lt_data_nad_lt_offset(void **state)
     pub.parameters.keyedHashDetail.scheme.scheme = TPM_ALG_HMAC;
     pub.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM_ALG_SHA256;
 
-    rc = TPMT_PUBLIC_PARMS_Marshal(&pub, buffer, 8, &offset);
+    rc = Tss2_MU_TPMT_PUBLIC_PARMS_Marshal(&pub, buffer, 8, &offset);
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 10);
 }
@@ -227,7 +227,7 @@ tpmt_unmarshal_success(void **state)
     ptr3->t.buffer[2] = 0xbe;
     ptr3->t.buffer[3] = 0xef;
 
-    rc = TPMT_TK_CREATION_Unmarshal(buffer, buffer_size, &offset, &tkt);
+    rc = Tss2_MU_TPMT_TK_CREATION_Unmarshal(buffer, buffer_size, &offset, &tkt);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (tkt.tag, 0xbeef);
     assert_int_equal (tkt.hierarchy, TPM_RH_OWNER);
@@ -245,7 +245,7 @@ tpmt_unmarshal_success(void **state)
     ptr5->scheme.scheme = HOST_TO_BE_16(TPM_ALG_HMAC);
     ptr5->scheme.details.hmac.hashAlg = HOST_TO_BE_16(TPM_ALG_SHA256);
 
-    rc = TPMT_PUBLIC_PARMS_Unmarshal(buffer, buffer_size, &offset, &pub);
+    rc = Tss2_MU_TPMT_PUBLIC_PARMS_Unmarshal(buffer, buffer_size, &offset, &pub);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (pub.type, TPM_ALG_KEYEDHASH);
     assert_int_equal (pub.parameters.keyedHashDetail.scheme.scheme, TPM_ALG_HMAC);
@@ -262,11 +262,11 @@ tpmt_unmarshal_dest_null_buff_null(void **state)
     size_t offset = 1;
     TSS2_RC rc;
 
-    rc = TPMT_TK_CREATION_Unmarshal(NULL, 120, &offset, NULL);
+    rc = Tss2_MU_TPMT_TK_CREATION_Unmarshal(NULL, 120, &offset, NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
     assert_int_equal (offset, 1);
 
-    rc = TPMT_PUBLIC_PARMS_Unmarshal(NULL, 120, &offset, NULL);
+    rc = Tss2_MU_TPMT_PUBLIC_PARMS_Unmarshal(NULL, 120, &offset, NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
     assert_int_equal (offset, 1);
 }
@@ -283,10 +283,10 @@ tpmt_unmarshal_buffer_null_offset_null(void **state)
     size_t  buffer_size = sizeof(buffer);
     TSS2_RC rc;
 
-    rc = TPMT_TK_CREATION_Unmarshal(buffer, buffer_size, NULL, NULL);
+    rc = Tss2_MU_TPMT_TK_CREATION_Unmarshal(buffer, buffer_size, NULL, NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 
-    rc = TPMT_PUBLIC_PARMS_Unmarshal(buffer, buffer_size, NULL, NULL);
+    rc = Tss2_MU_TPMT_PUBLIC_PARMS_Unmarshal(buffer, buffer_size, NULL, NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 }
 
@@ -321,7 +321,7 @@ tpmt_unmarshal_dest_null_offset_valid(void **state)
     ptr3->t.buffer[2] = 0xbe;
     ptr3->t.buffer[3] = 0xef;
 
-    rc = TPMT_TK_CREATION_Unmarshal(buffer, buffer_size, &offset, NULL);
+    rc = Tss2_MU_TPMT_TK_CREATION_Unmarshal(buffer, buffer_size, &offset, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (offset, 2 + 4 + 2 + 1 + 1 + 1 + 1);
 
@@ -332,7 +332,7 @@ tpmt_unmarshal_dest_null_offset_valid(void **state)
     ptr5->scheme.scheme = HOST_TO_BE_16(TPM_ALG_HMAC);
     ptr5->scheme.details.hmac.hashAlg = HOST_TO_BE_16(TPM_ALG_SHA256);
 
-    rc = TPMT_PUBLIC_PARMS_Unmarshal(buffer, buffer_size, &offset, NULL);
+    rc = Tss2_MU_TPMT_PUBLIC_PARMS_Unmarshal(buffer, buffer_size, &offset, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (offset, 2 + 2 + 2);
 }
@@ -365,7 +365,7 @@ tpmt_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
     ptr3->t.buffer[1] = 0xad;
     ptr3->t.buffer[2] = 0xbe;
     ptr3->t.buffer[3] = 0xef;
-    rc = TPMT_TK_CREATION_Unmarshal(buffer, 15, &offset, NULL);
+    rc = Tss2_MU_TPMT_TK_CREATION_Unmarshal(buffer, 15, &offset, NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 5);
 
@@ -376,7 +376,7 @@ tpmt_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
     ptr5->scheme.scheme = HOST_TO_BE_16(TPM_ALG_HMAC);
     ptr5->scheme.details.hmac.hashAlg = HOST_TO_BE_16(TPM_ALG_SHA256);
 
-    rc = TPMT_PUBLIC_PARMS_Unmarshal(buffer, 6, &offset, NULL);
+    rc = Tss2_MU_TPMT_PUBLIC_PARMS_Unmarshal(buffer, 6, &offset, NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 5);
 }

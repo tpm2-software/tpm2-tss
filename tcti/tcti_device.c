@@ -30,7 +30,7 @@
 #include <unistd.h>
 
 #include "sapi/tpm20.h"
-#include "sapi/marshal.h"
+#include "sapi/tss2_mu.h"
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -71,11 +71,11 @@ TSS2_RC LocalTpmSendTpmCommand(
 #ifdef DEBUG
         TSS2_RC rc;
         size_t offset = sizeof (TPM_ST);
-        rc = TPM_ST_Unmarshal (command_buffer,
+        rc = Tss2_MU_TPM_ST_Unmarshal (command_buffer,
                                command_size,
                                &offset,
                                &commandCode);
-        rc = UINT32_Unmarshal (command_buffer,
+        rc = Tss2_MU_UINT32_Unmarshal (command_buffer,
                                command_size,
                                &offset,
                                &cnt);

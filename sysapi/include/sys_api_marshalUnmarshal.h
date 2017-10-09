@@ -28,7 +28,7 @@
 #ifndef TSS2_SYS_API_MARSHAL_UNMARSHAL_H
 #define TSS2_SYS_API_MARSHAL_UNMARSHAL_H
 
-#include "sapi/marshal.h"
+#include "sapi/tss2_mu.h"
 
 /*
  * The MARSHAL_ADAPTER macro generates code that adapts the old Marshal_* API
@@ -38,7 +38,7 @@
     do { \
         if (*rval != TSS2_RC_SUCCESS) \
             break; \
-        *rval = type##_Marshal (src, \
+        *rval = Tss2_MU_##type##_Marshal (src, \
                                 inBuffPtr, \
                                 maxCommandSize, \
                                 nextData); \
@@ -52,7 +52,7 @@
         if (*rval != TSS2_RC_SUCCESS) \
             break; \
         \
-        *rval = type##_Unmarshal (outBuffPtr, \
+        *rval = Tss2_MU_##type##_Unmarshal (outBuffPtr, \
                                   maxResponseSize, \
                                   nextData, \
                                   dest); \
@@ -66,7 +66,7 @@
     do { \
         if (*rval != TSS2_RC_SUCCESS) \
             break; \
-        *rval = type##_Marshal (src, \
+        *rval = Tss2_MU_##type##_Marshal (src, \
                                 selector, \
                                 inBuffPtr, \
                                 maxCommandSize, \
@@ -80,7 +80,7 @@
     do { \
         if (*rval != TSS2_RC_SUCCESS) \
             break; \
-        *rval = type##_Unmarshal (outBuffPtr, \
+        *rval = Tss2_MU_##type##_Unmarshal (outBuffPtr, \
                                   maxResponseSize, \
                                   nextData, \
                                   selector, \

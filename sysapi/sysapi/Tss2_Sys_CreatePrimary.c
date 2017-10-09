@@ -48,7 +48,7 @@ TPM_RC Tss2_Sys_CreatePrimary_Prepare(
     if (rval)
         return rval;
 
-    rval = UINT32_Marshal(primaryHandle, SYS_CONTEXT->tpmInBuffPtr,
+    rval = Tss2_MU_UINT32_Marshal(primaryHandle, SYS_CONTEXT->tpmInBuffPtr,
                           SYS_CONTEXT->maxCommandSize,
                           &SYS_CONTEXT->nextData);
     if (rval)
@@ -57,25 +57,25 @@ TPM_RC Tss2_Sys_CreatePrimary_Prepare(
     if (!inSensitive)
         SYS_CONTEXT->decryptNull = 1;
 
-    rval = TPM2B_SENSITIVE_CREATE_Marshal(inSensitive, SYS_CONTEXT->tpmInBuffPtr,
+    rval = Tss2_MU_TPM2B_SENSITIVE_CREATE_Marshal(inSensitive, SYS_CONTEXT->tpmInBuffPtr,
                                           SYS_CONTEXT->maxCommandSize,
                                           &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = TPM2B_PUBLIC_Marshal(inPublic, SYS_CONTEXT->tpmInBuffPtr,
+    rval = Tss2_MU_TPM2B_PUBLIC_Marshal(inPublic, SYS_CONTEXT->tpmInBuffPtr,
                                 SYS_CONTEXT->maxCommandSize,
                                 &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = TPM2B_DATA_Marshal(outsideInfo, SYS_CONTEXT->tpmInBuffPtr,
+    rval = Tss2_MU_TPM2B_DATA_Marshal(outsideInfo, SYS_CONTEXT->tpmInBuffPtr,
                               SYS_CONTEXT->maxCommandSize,
                               &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = TPML_PCR_SELECTION_Marshal(creationPCR, SYS_CONTEXT->tpmInBuffPtr,
+    rval = Tss2_MU_TPML_PCR_SELECTION_Marshal(creationPCR, SYS_CONTEXT->tpmInBuffPtr,
                                      SYS_CONTEXT->maxCommandSize,
                                      &SYS_CONTEXT->nextData);
     if (rval)
@@ -103,7 +103,7 @@ TPM_RC Tss2_Sys_CreatePrimary_Complete(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = UINT32_Unmarshal(SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize,
+    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize,
                             &SYS_CONTEXT->nextData, objectHandle);
     if (rval)
         return rval;
@@ -112,31 +112,31 @@ TPM_RC Tss2_Sys_CreatePrimary_Complete(
     if (rval)
         return rval;
 
-    rval = TPM2B_PUBLIC_Unmarshal(SYS_CONTEXT->tpmOutBuffPtr,
+    rval = Tss2_MU_TPM2B_PUBLIC_Unmarshal(SYS_CONTEXT->tpmOutBuffPtr,
                                   SYS_CONTEXT->maxResponseSize,
                                   &SYS_CONTEXT->nextData, outPublic);
     if (rval)
         return rval;
 
-    rval = TPM2B_CREATION_DATA_Unmarshal(SYS_CONTEXT->tpmOutBuffPtr,
+    rval = Tss2_MU_TPM2B_CREATION_DATA_Unmarshal(SYS_CONTEXT->tpmOutBuffPtr,
                                          SYS_CONTEXT->maxResponseSize,
                                          &SYS_CONTEXT->nextData, creationData);
     if (rval)
         return rval;
 
-    rval = TPM2B_DIGEST_Unmarshal(SYS_CONTEXT->tpmOutBuffPtr,
+    rval = Tss2_MU_TPM2B_DIGEST_Unmarshal(SYS_CONTEXT->tpmOutBuffPtr,
                                   SYS_CONTEXT->maxResponseSize,
                                   &SYS_CONTEXT->nextData, creationHash);
     if (rval)
         return rval;
 
-    rval = TPMT_TK_CREATION_Unmarshal(SYS_CONTEXT->tpmOutBuffPtr,
+    rval = Tss2_MU_TPMT_TK_CREATION_Unmarshal(SYS_CONTEXT->tpmOutBuffPtr,
                                       SYS_CONTEXT->maxResponseSize,
                                       &SYS_CONTEXT->nextData, creationTicket);
     if (rval)
         return rval;
 
-    rval = TPM2B_NAME_Unmarshal(SYS_CONTEXT->tpmOutBuffPtr,
+    rval = Tss2_MU_TPM2B_NAME_Unmarshal(SYS_CONTEXT->tpmOutBuffPtr,
                                 SYS_CONTEXT->maxResponseSize,
                                 &SYS_CONTEXT->nextData, name);
     return rval;

@@ -4,7 +4,7 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include "sapi/marshal.h"
+#include "sapi/tss2_mu.h"
 
 /*
  * Test case for successful UINT16 marshaling with NULL offset.
@@ -17,7 +17,7 @@ UINT16_marshal_success (void **state)
     size_t  buffer_size = sizeof (buffer);
     TSS2_RC rc;
 
-    rc = UINT16_Marshal (src, buffer, buffer_size, NULL);
+    rc = Tss2_MU_UINT16_Marshal (src, buffer, buffer_size, NULL);
 
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (0xde, buffer [0]);
@@ -35,7 +35,7 @@ UINT16_marshal_success_offset (void **state)
     size_t  offset = 1;
     TSS2_RC rc;
 
-    rc = UINT16_Marshal (src, buffer, buffer_size, &offset);
+    rc = Tss2_MU_UINT16_Marshal (src, buffer, buffer_size, &offset);
 
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal ((src & 0xff00) >> 8, buffer [1]);
@@ -53,7 +53,7 @@ UINT16_marshal_buffer_null_with_offset (void **state)
     size_t offset = 100;
     TSS2_RC rc;
 
-    rc = UINT16_Marshal (src, NULL, 2, &offset);
+    rc = Tss2_MU_UINT16_Marshal (src, NULL, 2, &offset);
 
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (offset, 100 + sizeof (src));
@@ -67,7 +67,7 @@ UINT16_marshal_buffer_null_offset_null (void **state)
     UINT16 src = 0xbeef;
     TSS2_RC rc;
 
-    rc = UINT16_Marshal (src, NULL, sizeof (src), NULL);
+    rc = Tss2_MU_UINT16_Marshal (src, NULL, sizeof (src), NULL);
 
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 }
@@ -83,7 +83,7 @@ UINT16_marshal_buffer_size_lt_data (void **state)
     size_t  offset = 2;
     TSS2_RC rc;
 
-    rc = UINT16_Marshal (src, buffer, sizeof (src), &offset);
+    rc = Tss2_MU_UINT16_Marshal (src, buffer, sizeof (src), &offset);
 
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 2);
@@ -101,7 +101,7 @@ UINT16_marshal_buffer_size_lt_offset (void **state)
     size_t  offset = sizeof (buffer) + 1;
     TSS2_RC rc;
 
-    rc = UINT16_Marshal (src, buffer, buffer_size, &offset);
+    rc = Tss2_MU_UINT16_Marshal (src, buffer, buffer_size, &offset);
 
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, sizeof (buffer) + 1);
@@ -117,7 +117,7 @@ UINT16_unmarshal_success (void **state)
     UINT16   dest = 0;
     TSS2_RC rc;
 
-    rc = UINT16_Unmarshal (buffer, buffer_size, NULL, &dest);
+    rc = Tss2_MU_UINT16_Unmarshal (buffer, buffer_size, NULL, &dest);
 
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (buffer [0], (dest & 0xff00) >> 8);
@@ -135,7 +135,7 @@ UINT16_unmarshal_success_offset (void **state)
     size_t  offset = 1;
     TSS2_RC rc;
 
-    rc = UINT16_Unmarshal (buffer, buffer_size, &offset, &dest);
+    rc = Tss2_MU_UINT16_Unmarshal (buffer, buffer_size, &offset, &dest);
 
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (buffer [1], (dest & 0xff00) >> 8);
@@ -150,7 +150,7 @@ UINT16_unmarshal_buffer_null (void **state)
 {
     TSS2_RC rc;
 
-    rc = UINT16_Unmarshal (NULL, 1, NULL, NULL);
+    rc = Tss2_MU_UINT16_Unmarshal (NULL, 1, NULL, NULL);
 
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 }
@@ -164,7 +164,7 @@ UINT16_unmarshal_dest_null (void **state)
     uint8_t buffer [1];
     TSS2_RC rc;
 
-    rc = UINT16_Unmarshal (buffer, sizeof (buffer), NULL, NULL);
+    rc = Tss2_MU_UINT16_Unmarshal (buffer, sizeof (buffer), NULL, NULL);
 
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 }
@@ -180,7 +180,7 @@ UINT16_unmarshal_buffer_size_lt_offset (void **state)
     size_t  offset = sizeof (buffer) + 1;
     TSS2_RC rc;
 
-    rc = UINT16_Unmarshal (buffer, sizeof (buffer), &offset, &dest);
+    rc = Tss2_MU_UINT16_Unmarshal (buffer, sizeof (buffer), &offset, &dest);
 
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, sizeof (buffer) + 1);
@@ -198,7 +198,7 @@ UINT16_unmarshal_buffer_size_lt_dest (void **state)
     size_t  offset = sizeof (buffer);
     TSS2_RC rc;
 
-    rc = UINT16_Unmarshal (buffer, sizeof (buffer), &offset, &dest);
+    rc = Tss2_MU_UINT16_Unmarshal (buffer, sizeof (buffer), &offset, &dest);
 
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, sizeof (buffer));

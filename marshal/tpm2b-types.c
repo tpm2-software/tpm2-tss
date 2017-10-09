@@ -29,14 +29,14 @@
 #include <inttypes.h>
 #include <string.h>
 
-#include "sapi/marshal.h"
+#include "sapi/tss2_mu.h"
 #include "sapi/tpm20.h"
 #include "tss2_endian.h"
 #include "log.h"
 
 #define TPM2B_MARSHAL(type) \
-TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
-                       size_t buffer_size, size_t *offset) \
+TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
+                                 size_t buffer_size, size_t *offset) \
 { \
     size_t local_offset = 0; \
     TSS2_RC rc; \
@@ -75,7 +75,7 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
          (uintptr_t)buffer, \
          local_offset); \
 \
-    rc = UINT16_Marshal(src->t.size, buffer, buffer_size, &local_offset); \
+    rc = Tss2_MU_UINT16_Marshal(src->t.size, buffer, buffer_size, &local_offset); \
     if (rc) \
         return rc; \
 \
@@ -93,8 +93,8 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
 }
 
 #define TPM2B_UNMARSHAL(type) \
-TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
-                         size_t *offset, type *dest) \
+TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
+                                   size_t *offset, type *dest) \
 { \
     size_t  local_offset = 0; \
     UINT16 size = 0; \
@@ -127,7 +127,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
          (uintptr_t)dest, \
          local_offset); \
 \
-    rc = UINT16_Unmarshal(buffer, buffer_size, &local_offset, &size); \
+    rc = Tss2_MU_UINT16_Unmarshal(buffer, buffer_size, &local_offset, &size); \
     if (rc) \
         return rc; \
 \
@@ -154,8 +154,8 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 }
 
 #define TPM2B_MARSHAL_SUBTYPE(type, subtype, member) \
-TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
-                       size_t buffer_size, size_t *offset) \
+TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
+                                 size_t buffer_size, size_t *offset) \
 { \
     size_t local_offset = 0; \
     UINT8 *ptr; \
@@ -199,11 +199,11 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
          (uintptr_t)buffer, \
          local_offset); \
 \
-    rc = UINT16_Marshal(src->t.size, buffer, buffer_size, &local_offset); \
+    rc = Tss2_MU_UINT16_Marshal(src->t.size, buffer, buffer_size, &local_offset); \
     if (rc) \
         return rc; \
 \
-    rc = subtype##_Marshal(&src->t.member, buffer, buffer_size, &local_offset); \
+    rc = Tss2_MU_##subtype##_Marshal(&src->t.member, buffer, buffer_size, &local_offset); \
     if (rc) \
         return rc; \
 \
@@ -219,8 +219,8 @@ TSS2_RC type##_Marshal(type const *src, uint8_t buffer[], \
 }
 
 #define TPM2B_UNMARSHAL_SUBTYPE(type, subtype, member) \
-TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
-                         size_t *offset, type *dest) \
+TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
+                                   size_t *offset, type *dest) \
 { \
     size_t  local_offset = 0; \
     UINT16 size = 0; \
@@ -257,7 +257,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
          (uintptr_t)dest, \
          local_offset); \
 \
-    rc = UINT16_Unmarshal(buffer, buffer_size, &local_offset, &size); \
+    rc = Tss2_MU_UINT16_Unmarshal(buffer, buffer_size, &local_offset, &size); \
     if (rc) \
         return rc; \
 \
@@ -272,7 +272,7 @@ TSS2_RC type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } \
     if (dest != NULL) { \
         dest->t.size = size; \
-        subtype##_Unmarshal(buffer, buffer_size, &local_offset, &dest->t.member); \
+        Tss2_MU_##subtype##_Unmarshal(buffer, buffer_size, &local_offset, &dest->t.member); \
         if (rc) \
             return rc; \
     } else { \
