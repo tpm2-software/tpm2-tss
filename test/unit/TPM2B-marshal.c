@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <setjmp.h>
 #include <cmocka.h>
-#include <sapi/marshal.h>
+#include <sapi/tss2_mu.h>
 #include <marshal/tss2_endian.h>
 
 /*
@@ -27,14 +27,14 @@ tpm2b_marshal_success(void **state) {
     memcpy(point.t.point.y.t.buffer, &value2, sizeof(value2));
     point.t.point.y.t.size = sizeof(value2);
 
-    rc = TPM2B_DIGEST_Marshal(&dgst, buffer, buffer_size, NULL);
+    rc = Tss2_MU_TPM2B_DIGEST_Marshal(&dgst, buffer, buffer_size, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (*size_ptr, HOST_TO_BE_16(4));
     assert_int_equal (*ptr, value);
 
     size_ptr = (uint16_t *) buffer;
     ptr = (uint32_t *) (buffer + 4);
-    rc = TPM2B_ECC_POINT_Marshal(&point, buffer, buffer_size, NULL);
+    rc = Tss2_MU_TPM2B_ECC_POINT_Marshal(&point, buffer, buffer_size, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     /*
      * size_ptr points to the size of the whole TPMS_ECC_POINT:
@@ -74,7 +74,7 @@ tpm2b_marshal_success_offset(void **state) {
     memcpy(point.t.point.y.t.buffer, &value2, sizeof(value2));
     point.t.point.y.t.size = sizeof(value2);
 
-    rc = TPM2B_DIGEST_Marshal(&dgst, buffer, buffer_size, &offset);
+    rc = Tss2_MU_TPM2B_DIGEST_Marshal(&dgst, buffer, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (*size_ptr, HOST_TO_BE_16(4));
     assert_int_equal (*ptr, value);
@@ -83,7 +83,7 @@ tpm2b_marshal_success_offset(void **state) {
 
     size_ptr = (uint16_t *) (buffer + offset);
     ptr = (uint32_t *) (buffer + offset + 4);
-    rc = TPM2B_ECC_POINT_Marshal(&point, buffer, buffer_size, &offset);
+    rc = Tss2_MU_TPM2B_ECC_POINT_Marshal(&point, buffer, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     /*
      * size_ptr points to the size of the whole TPMS_ECC_POINT:
@@ -125,12 +125,12 @@ tpm2b_marshal_buffer_null_with_offset(void **state)
     memcpy(point.t.point.y.t.buffer, &value2, sizeof(value2));
     point.t.point.y.t.size = sizeof(value2);
 
-    rc = TPM2B_DIGEST_Marshal(&dgst, NULL, buffer_size, &offset);
+    rc = Tss2_MU_TPM2B_DIGEST_Marshal(&dgst, NULL, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (offset, 10 + 2 + 4);
 
     offset = 10;
-    rc = TPM2B_ECC_POINT_Marshal(&point, NULL, buffer_size, &offset);
+    rc = Tss2_MU_TPM2B_ECC_POINT_Marshal(&point, NULL, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (offset, 10 + 2 + 2 + MAX_ECC_KEY_BYTES + 2 + MAX_ECC_KEY_BYTES);
 }
@@ -146,10 +146,10 @@ tpm2b_marshal_buffer_null_offset_null(void **state)
     size_t buffer_size = 1024;
     TSS2_RC rc;
 
-    rc = TPM2B_DIGEST_Marshal(&dgst, NULL, buffer_size, NULL);
+    rc = Tss2_MU_TPM2B_DIGEST_Marshal(&dgst, NULL, buffer_size, NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 
-    rc = TPM2B_ECC_POINT_Marshal(&point, NULL, buffer_size, NULL);
+    rc = Tss2_MU_TPM2B_ECC_POINT_Marshal(&point, NULL, buffer_size, NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 }
 
@@ -173,10 +173,10 @@ tpm2b_marshal_buffer_size_lt_data_nad_lt_offset(void **state) {
     memcpy(point.t.point.y.t.buffer, &value2, sizeof(value2));
     point.t.point.y.t.size = sizeof(value2);
 
-    rc = TPM2B_DIGEST_Marshal(&dgst, buffer, buffer_size, &offset);
+    rc = Tss2_MU_TPM2B_DIGEST_Marshal(&dgst, buffer, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 
-    rc = TPM2B_ECC_POINT_Marshal(&point, buffer, buffer_size, &offset);
+    rc = Tss2_MU_TPM2B_ECC_POINT_Marshal(&point, buffer, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 }
 
@@ -200,14 +200,14 @@ tpm2b_unmarshal_success(void **state)
     uint32_t *ptr;
     TSS2_RC rc;
 
-    rc = TPM2B_DIGEST_Unmarshal(buffer, buffer_size, &offset, &dgst);
+    rc = Tss2_MU_TPM2B_DIGEST_Unmarshal(buffer, buffer_size, &offset, &dgst);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (dgst.t.size, 4);
     ptr = (uint32_t *)dgst.t.buffer;
     assert_int_equal (*ptr, value);
     assert_int_equal (offset, 6);
 
-    rc = TPM2B_ECC_POINT_Unmarshal(buffer, buffer_size, &offset, &point);
+    rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(buffer, buffer_size, &offset, &point);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (point.t.point.x.t.size, 4);
     ptr = (uint32_t *)point.t.point.x.t.buffer;
@@ -241,14 +241,14 @@ tpm2b_unmarshal_success_offset(void **state)
     uint64_t *ptr2;
     TSS2_RC rc;
 
-    rc = TPM2B_DIGEST_Unmarshal(buffer, buffer_size, &offset, &dgst);
+    rc = Tss2_MU_TPM2B_DIGEST_Unmarshal(buffer, buffer_size, &offset, &dgst);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (dgst.t.size, 4);
     ptr = (uint32_t *)dgst.t.buffer;
     assert_int_equal (*ptr, value);
     assert_int_equal (offset, 12);
 
-    rc = TPM2B_ECC_POINT_Unmarshal(buffer, buffer_size, &offset, &point);
+    rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(buffer, buffer_size, &offset, &point);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (point.t.point.x.t.size, 8);
     ptr2 = (uint64_t *)point.t.point.x.t.buffer;
@@ -270,22 +270,22 @@ tpm2b_unmarshal_buffer_null (void **state)
     TSS2_RC rc;
     size_t offset;
 
-    rc = TPM2B_DIGEST_Unmarshal (NULL, 1, NULL, NULL);
+    rc = Tss2_MU_TPM2B_DIGEST_Unmarshal (NULL, 1, NULL, NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 
-    rc = TPM2B_ECC_POINT_Unmarshal (NULL, 1, NULL, NULL);
+    rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal (NULL, 1, NULL, NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 
-    rc = TPM2B_DIGEST_Unmarshal (NULL, 1, &offset, NULL);
+    rc = Tss2_MU_TPM2B_DIGEST_Unmarshal (NULL, 1, &offset, NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 
-    rc = TPM2B_ECC_POINT_Unmarshal (NULL, 1, &offset, NULL);
+    rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal (NULL, 1, &offset, NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 
-    rc = TPM2B_DIGEST_Unmarshal (NULL, 1, NULL, &dgst);
+    rc = Tss2_MU_TPM2B_DIGEST_Unmarshal (NULL, 1, NULL, &dgst);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 
-    rc = TPM2B_ECC_POINT_Unmarshal (NULL, 1, NULL, &point);
+    rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal (NULL, 1, NULL, &point);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 }
 /*
@@ -298,10 +298,10 @@ tpm2b_unmarshal_dest_null (void **state)
     uint8_t buffer [1];
     TSS2_RC rc;
 
-    rc = TPM2B_DIGEST_Unmarshal (buffer, sizeof (buffer), NULL, NULL);
+    rc = Tss2_MU_TPM2B_DIGEST_Unmarshal (buffer, sizeof (buffer), NULL, NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 
-    rc = TPM2B_ECC_POINT_Unmarshal (buffer, 1, NULL, NULL);
+    rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal (buffer, 1, NULL, NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 }
 
@@ -319,11 +319,11 @@ tpm2b_unmarshal_dest_null_offset_valid (void **state)
                              0x00, 0x04, 0x44, 0x33, 0x22, 0x11 }; /* ECC_POINT.y - 4 bytes */
     TSS2_RC rc;
 
-    rc = TPM2B_DIGEST_Unmarshal (buffer, sizeof (buffer), &offset, NULL);
+    rc = Tss2_MU_TPM2B_DIGEST_Unmarshal (buffer, sizeof (buffer), &offset, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (offset, 6);
 
-    rc = TPM2B_ECC_POINT_Unmarshal (buffer, sizeof (buffer), &offset, NULL);
+    rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal (buffer, sizeof (buffer), &offset, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (offset, 24);
 }
@@ -340,11 +340,11 @@ tpm2b_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
     size_t offset = sizeof(dgst) - 5;
     TSS2_RC rc;
 
-    rc = TPM2B_DIGEST_Unmarshal (buffer, 6, &offset, &dgst);
+    rc = Tss2_MU_TPM2B_DIGEST_Unmarshal (buffer, 6, &offset, &dgst);
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, sizeof(dgst) - 5);
 
-    rc = TPM2B_ECC_POINT_Unmarshal (buffer, 1, &offset, &point);
+    rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal (buffer, 1, &offset, &point);
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, sizeof(dgst) - 5);
 }

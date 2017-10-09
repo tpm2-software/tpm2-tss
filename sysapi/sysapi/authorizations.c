@@ -99,13 +99,13 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
 
     /* Now copy in the authorization area. */
     authOffset = SYS_CONTEXT->cpBuffer - SYS_CONTEXT->tpmInBuffPtr;
-    rval = UINT32_Marshal(authSize, SYS_CONTEXT->tpmInBuffPtr,
+    rval = Tss2_MU_UINT32_Marshal(authSize, SYS_CONTEXT->tpmInBuffPtr,
                           newCmdSize, &authOffset);
     if (rval)
         return rval;
 
     for (i = 0; i < cmdAuthsArray->cmdAuthsCount; i++) {
-        rval = TPMS_AUTH_COMMAND_Marshal(cmdAuthsArray->cmdAuths[i],
+        rval = Tss2_MU_TPMS_AUTH_COMMAND_Marshal(cmdAuthsArray->cmdAuths[i],
                                          SYS_CONTEXT->tpmInBuffPtr, newCmdSize,
                                          &authOffset);
         if (rval)
@@ -180,7 +180,7 @@ TSS2_RC Tss2_Sys_GetRspAuths(
 
     /* Unmarshal the auth area */
     for (i = 0; i < rspAuthsArray->rspAuthsCount; i++) {
-        rval = TPMS_AUTH_RESPONSE_Unmarshal(SYS_CONTEXT->tpmOutBuffPtr,
+        rval = Tss2_MU_TPMS_AUTH_RESPONSE_Unmarshal(SYS_CONTEXT->tpmOutBuffPtr,
                                             SYS_CONTEXT->maxCommandSize,
                                             &offset, rspAuthsArray->rspAuths[i]);
         if (rval)

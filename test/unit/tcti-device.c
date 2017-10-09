@@ -5,7 +5,7 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include "sapi/marshal.h"
+#include "sapi/tss2_mu.h"
 #include "tcti/tcti_device.h"
 #include "tcti/logging.h"
 #include "sysapi/include/tcti_util.h"
@@ -176,11 +176,11 @@ tcti_device_setup_with_command (void **state)
     data->buffer_size = 1024;
     data->data_size   = 512;
     data->buffer = malloc (data->buffer_size);
-    rc = TPM_ST_Marshal (TPM_ST_NO_SESSIONS, data->buffer, data->buffer_size, &index);
+    rc = Tss2_MU_TPM_ST_Marshal (TPM_ST_NO_SESSIONS, data->buffer, data->buffer_size, &index);
     assert_true (rc == TSS2_RC_SUCCESS);
-    rc = UINT32_Marshal (data->data_size, data->buffer, data->buffer_size, &index);
+    rc = Tss2_MU_UINT32_Marshal (data->data_size, data->buffer, data->buffer_size, &index);
     assert_true (rc == TSS2_RC_SUCCESS);
-    rc = TPM_CC_Marshal (TPM_CC_Create, data->buffer, data->buffer_size, &index);
+    rc = Tss2_MU_TPM_CC_Marshal (TPM_CC_Create, data->buffer, data->buffer_size, &index);
     assert_true (rc == TSS2_RC_SUCCESS);
 
     *state = data;

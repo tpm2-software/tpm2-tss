@@ -43,13 +43,13 @@ void Unmarshal_Simple_TPM2B_NoSizeCheck(UINT8 *outBuffPtr, UINT32 maxResponseSiz
 
     length = BE_TO_HOST_16(*(UINT16 *)(outBuffPtr + *nextData));
 
-    *rval = UINT16_Unmarshal(outBuffPtr, maxResponseSize, nextData, outTPM2B ? &outTPM2B->size : NULL);
+    *rval = Tss2_MU_UINT16_Unmarshal(outBuffPtr, maxResponseSize, nextData, outTPM2B ? &outTPM2B->size : NULL);
 
     if (*rval)
         return;
 
     for (i = 0; i < length; i++) {
-        *rval = UINT8_Unmarshal(outBuffPtr, maxResponseSize, nextData, outTPM2B ? &outTPM2B->buffer[i] : NULL);
+        *rval = Tss2_MU_UINT8_Unmarshal(outBuffPtr, maxResponseSize, nextData, outTPM2B ? &outTPM2B->buffer[i] : NULL);
 
         if (*rval)
             return;

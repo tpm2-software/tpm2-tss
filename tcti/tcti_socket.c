@@ -30,7 +30,7 @@
 #include <sys/time.h>
 
 #include "sapi/tpm20.h"
-#include "sapi/marshal.h"
+#include "sapi/tss2_mu.h"
 #include "tcti/tcti_socket.h"
 #include "sysapi_util.h"
 #include "common/debug.h"
@@ -88,7 +88,7 @@ TSS2_RC SendSessionEndSocketTcti(
         sock = TCTI_CONTEXT_INTEL->otherSock;
     }
 
-    rval = UINT32_Marshal (TPM_SESSION_END, buffer, sizeof (buffer), NULL);
+    rval = Tss2_MU_UINT32_Marshal (TPM_SESSION_END, buffer, sizeof (buffer), NULL);
     if (rval == TSS2_RC_SUCCESS) {
         return rval;
     }
@@ -129,7 +129,7 @@ TSS2_RC SocketSendTpmCommand(
     {
         TCTI_LOG( tctiContext, rmPrefix, "" );
         offset = sizeof (TPM_ST) + sizeof (UINT32);
-        rval = TPM_CC_Unmarshal (command_buffer,
+        rval = Tss2_MU_TPM_CC_Unmarshal (command_buffer,
                                  command_size,
                                  &offset,
                                  &commandCode);
@@ -143,10 +143,10 @@ TSS2_RC SocketSendTpmCommand(
     // Size TPM 1.2 and TPM 2.0 headers overlap exactly, we can use
     // either 1.2 or 2.0 header to get the size.
     offset = sizeof (TPM_ST);
-    rval = UINT32_Unmarshal (command_buffer, command_size, &offset, &cnt);
+    rval = Tss2_MU_UINT32_Unmarshal (command_buffer, command_size, &offset, &cnt);
 
     // Send TPM_SEND_COMMAND
-    rval = UINT32_Marshal (MS_SIM_TPM_SEND_COMMAND,
+    rval = Tss2_MU_UINT32_Marshal (MS_SIM_TPM_SEND_COMMAND,
                            (uint8_t*)&tpmSendCommand,
                            sizeof (tpmSendCommand),
                            NULL);  // Value for "send command" to MS simulator.
