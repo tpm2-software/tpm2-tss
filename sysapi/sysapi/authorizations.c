@@ -132,7 +132,7 @@ TSS2_RC Tss2_Sys_GetRspAuths(
         return TSS2_SYS_RC_BAD_REFERENCE;
 
     if (SYS_CONTEXT->previousStage != CMD_STAGE_RECEIVE_RESPONSE ||
-        SYS_CONTEXT->rsp_header.rsp_code != TPM_RC_SUCCESS ||
+        SYS_CONTEXT->rsp_header.responseCode != TPM_RC_SUCCESS ||
         SYS_CONTEXT->authAllowed == 0)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
@@ -145,7 +145,7 @@ TSS2_RC Tss2_Sys_GetRspAuths(
     if (TPM_ST_SESSIONS != SYS_CONTEXT->rsp_header.tag)
         return rval;
 
-    offset += sizeof(TPM20_Header_Out) - 1;
+    offset += sizeof(TPM20_Header_Out);
     offset += SYS_CONTEXT->numResponseHandles * sizeof(TPM_HANDLE);
     offset += BE_TO_HOST_32(*SYS_CONTEXT->rspParamsSize);
     offset += sizeof(UINT32);
@@ -154,24 +154,24 @@ TSS2_RC Tss2_Sys_GetRspAuths(
     /* Validate the auth area before copying it */
     for (i = 0; i < rspAuthsArray->rspAuthsCount; i++) {
 
-        if (offset_tmp > SYS_CONTEXT->rsp_header.size)
+        if (offset_tmp > SYS_CONTEXT->rsp_header.responseSize)
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
         offset_tmp += sizeof(UINT16) +
             BE_TO_HOST_16(*(UINT16 *)(SYS_CONTEXT->tpmOutBuffPtr + offset_tmp));
 
-        if (offset_tmp > SYS_CONTEXT->rsp_header.size)
+        if (offset_tmp > SYS_CONTEXT->rsp_header.responseSize)
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
         offset_tmp += 1;
 
-        if (offset_tmp > SYS_CONTEXT->rsp_header.size)
+        if (offset_tmp > SYS_CONTEXT->rsp_header.responseSize)
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
         offset_tmp += sizeof(UINT16) +
             BE_TO_HOST_16(*(UINT16 *)(SYS_CONTEXT->tpmOutBuffPtr + offset_tmp));
 
-        if (offset_tmp > SYS_CONTEXT->rsp_header.size)
+        if (offset_tmp > SYS_CONTEXT->rsp_header.responseSize)
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
         if (i + 1 > rspAuthsArray->rspAuthsCount)

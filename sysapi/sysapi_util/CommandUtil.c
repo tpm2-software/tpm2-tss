@@ -108,7 +108,6 @@ TPM_RC FinishCommand( _TSS2_SYS_CONTEXT_BLOB *sysContext,
     return SYS_CONTEXT->rval;
 }
 
-
 // Common to all _Prepare
 TSS2_RC CommonPreparePrologue(
     TSS2_SYS_CONTEXT *sysContext,
@@ -139,8 +138,9 @@ TSS2_RC CommonPreparePrologue(
 
         SYS_CONTEXT->commandCodeSwapped = HOST_TO_BE_32(commandCode);
 
-        SYS_CONTEXT->rspParamsSize = (UINT32 *)&(((TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->otherData ) +
-                GetNumResponseHandles( commandCode );
+        SYS_CONTEXT->rspParamsSize = (UINT32 *)(SYS_CONTEXT->tpmOutBuffPtr +
+                                     sizeof(TPM20_Header_Out) +
+                                     (GetNumResponseHandles(commandCode) * sizeof(UINT32)));
 
         numCommandHandles = GetNumCommandHandles( commandCode );
         SYS_CONTEXT->cpBuffer = SYS_CONTEXT->tpmInBuffPtr + SYS_CONTEXT->nextData + (numCommandHandles * sizeof(UINT32));
@@ -240,7 +240,7 @@ TSS2_RC CommonOneCall(
 
         if ( SYS_CONTEXT->rval == TSS2_RC_SUCCESS )
         {
-            if( SYS_CONTEXT->rsp_header.rsp_code == TPM_RC_SUCCESS )
+            if (SYS_CONTEXT->rsp_header.responseCode == TPM_RC_SUCCESS)
             {
                 if (BE_TO_HOST_16(((TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr))->tag) == TPM_ST_SESSIONS &&
                         rspAuthsArray != 0)

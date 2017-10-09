@@ -100,7 +100,7 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
             /*
              * Unmarshal the tag, response size, and response code as soon
              * as possible. Later processing code should get this data from
-             * the TPM20_Rsp_Header in the context structure. No need to
+             * the TPM20_Header_Out in the context structure. No need to
              * unmarshal this stuff again.
              */
             SYS_CONTEXT->nextData = 0;
@@ -112,28 +112,28 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
             Unmarshal_UINT32 (SYS_CONTEXT->tpmOutBuffPtr,
                               SYS_CONTEXT->maxCommandSize,
                               &SYS_CONTEXT->nextData,
-                              &SYS_CONTEXT->rsp_header.size,
+                              &SYS_CONTEXT->rsp_header.responseSize,
                               &(SYS_CONTEXT->rval) );
             Unmarshal_UINT32 (SYS_CONTEXT->tpmOutBuffPtr,
                               SYS_CONTEXT->maxCommandSize,
                               &SYS_CONTEXT->nextData,
-                              &SYS_CONTEXT->rsp_header.rsp_code,
+                              &SYS_CONTEXT->rsp_header.responseCode,
                               &SYS_CONTEXT->rval);
-            if (SYS_CONTEXT->rsp_header.size < sizeof(TPM20_Header_Out) - 1)
+            if (SYS_CONTEXT->rsp_header.responseSize < sizeof(TPM20_Header_Out))
             {
                 rval = SYS_CONTEXT->rval = TSS2_SYS_RC_INSUFFICIENT_RESPONSE;
             }
             else
             {
-                if (SYS_CONTEXT->rsp_header.rsp_code == TSS2_RC_SUCCESS) {
+                if (SYS_CONTEXT->rsp_header.responseCode == TSS2_RC_SUCCESS) {
                     if( SYS_CONTEXT->rval != TPM_RC_SUCCESS )
                     {
                         tpmError = 1;
                         rval = SYS_CONTEXT->rval;
                     }
                 } else {
-                    rval = SYS_CONTEXT->rsp_header.rsp_code;
-                    SYS_CONTEXT->rval = SYS_CONTEXT->rsp_header.rsp_code;
+                    rval = SYS_CONTEXT->rsp_header.responseCode;
+                    SYS_CONTEXT->rval = SYS_CONTEXT->rsp_header.responseCode;
                 }
             }
         }

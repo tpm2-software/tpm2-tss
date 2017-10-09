@@ -5642,19 +5642,19 @@ void CmdRspAuthsTests()
     // Test for non-matching count: cmd auth count doesn't
     // match returned auth count.
     rspAuths.rspAuthsCount = 3;
-    savedResponseSize = ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->rsp_header.size;
-    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->rsp_header.size = savedResponseSize - 5;
+    savedResponseSize = ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->rsp_header.responseSize;
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->rsp_header.responseSize = savedResponseSize - 5;
     rval = Tss2_Sys_GetRspAuths( sysContext, &rspAuths );
     CheckFailed( rval, TSS2_SYS_RC_INVALID_SESSIONS ); // #15
 
     // Test for malformed response.
     rspAuths.rspAuthsCount = 2;
-    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->rsp_header.size = savedResponseSize - 7;
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->rsp_header.responseSize = savedResponseSize - 7;
     rval = Tss2_Sys_GetRspAuths( sysContext, &rspAuths );
     CheckFailed( rval, TSS2_SYS_RC_MALFORMED_RESPONSE ); // #16
 
     // Ths one should pass.
-    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->rsp_header.size = savedResponseSize;
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->rsp_header.responseSize = savedResponseSize;
     rval = Tss2_Sys_GetRspAuths( sysContext, &rspAuths );
     CheckPassed( rval ); // #17
 

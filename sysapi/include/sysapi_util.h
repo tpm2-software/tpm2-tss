@@ -39,11 +39,25 @@ extern "C" {
 
 enum cmdStates { CMD_STAGE_INITIALIZE, CMD_STAGE_PREPARE, CMD_STAGE_SEND_COMMAND, CMD_STAGE_RECEIVE_RESPONSE, CMD_STAGE_ALL = 0xff };
 
-typedef struct {
-  TPM_ST  tag;
-  UINT32  size;
-  TPM_RC  rsp_code;
-} TPM20_Rsp_Header;
+#pragma pack(push, 1)
+typedef struct _TPM20_Header_In {
+  TPM_ST tag;
+  UINT32 commandSize;
+  UINT32 commandCode;
+} TPM20_Header_In;
+
+typedef struct _TPM20_Header_Out {
+  TPM_ST tag;
+  UINT32 responseSize;
+  UINT32 responseCode;
+} TPM20_Header_Out;
+
+typedef struct _TPM20_ErrorResponse {
+  TPM_ST tag;
+  UINT32 responseSize;
+  UINT32 responseCode;
+} TPM20_ErrorResponse;
+#pragma pack(pop)
 
 typedef struct {
     //
@@ -57,7 +71,7 @@ typedef struct {
     UINT8 *tpmOutBuffPtr;           // Input: Pointer to response buffer
     UINT32 maxResponseSize;         // Input: max size of response buffer area
 
-    TPM20_Rsp_Header rsp_header;
+    TPM20_Header_Out rsp_header;
 
     //
     // These are set by system API and used by helper functions to calculate cpHash,
@@ -101,31 +115,6 @@ typedef struct {
 
 
 #define SYS_CONTEXT ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )
-
-#pragma pack(push, 1)
-//
-// Generic header
-//
-typedef struct _TPM20_Header_In {
-  TPM_ST tag;
-  UINT32 commandSize;
-  UINT32 commandCode;
-} TPM20_Header_In;
-
-typedef struct _TPM20_Header_Out {
-  TPM_ST tag;
-  UINT32 responseSize;
-  UINT32 responseCode;
-  UINT8 otherData;
-} TPM20_Header_Out;
-
-typedef struct _TPM20_ErrorResponse {
-  TPM_ST tag;
-  UINT32 responseSize;
-  UINT32 responseCode;
-} TPM20_ErrorResponse;
-
-#pragma pack(pop)
 
 typedef struct {
     TPM_CC commandCode;
