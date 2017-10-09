@@ -114,7 +114,9 @@ typedef struct {
 } _TSS2_SYS_CONTEXT_BLOB;
 
 
-#define SYS_CONTEXT ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )
+#define SYS_CONTEXT ((_TSS2_SYS_CONTEXT_BLOB *)sysContext)
+#define SYS_RESP_HEADER ((TPM20_Header_Out *)(SYS_CONTEXT->tpmOutBuffPtr))
+#define SYS_REQ_HEADER ((TPM20_Header_In *)(SYS_CONTEXT->tpmInBuffPtr))
 
 typedef struct {
     TPM_CC commandCode;

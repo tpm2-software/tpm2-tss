@@ -58,7 +58,7 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
     if (!cmdAuthsArray->cmdAuthsCount)
         return rval;
 
-    ((TPM20_Header_In *)SYS_CONTEXT->tpmInBuffPtr)->tag = HOST_TO_BE_16(TPM_ST_SESSIONS);
+    SYS_REQ_HEADER->tag = HOST_TO_BE_16(TPM_ST_SESSIONS);
 
     /* Calculate size needed for authorization area, check for any null
      * pointers, and check for decrypt/encrypt sessions. */
@@ -81,7 +81,7 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
 
     newCmdSize = authSize;
     newCmdSize += sizeof(UINT32); /* authorization size field */
-    newCmdSize += BE_TO_HOST_32(((TPM20_Header_In *)SYS_CONTEXT->tpmInBuffPtr)->commandSize);
+    newCmdSize += BE_TO_HOST_32(SYS_REQ_HEADER->commandSize);
 
     if (newCmdSize > SYS_CONTEXT->maxCommandSize)
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
@@ -115,7 +115,7 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
     SYS_CONTEXT->cpBuffer += authSize + sizeof(UINT32);
 
     /* Now update the command size. */
-    ((TPM20_Header_In *)SYS_CONTEXT->tpmInBuffPtr)->commandSize = HOST_TO_BE_32(newCmdSize);
+    SYS_REQ_HEADER->commandSize = HOST_TO_BE_32(newCmdSize);
     SYS_CONTEXT->authsCount = cmdAuthsArray->cmdAuthsCount;
     return rval;
 }

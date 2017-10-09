@@ -88,7 +88,7 @@ TSS2_RC Tss2_Sys_SetDecryptParam(
         return rval;
     }
 
-    sizeToBeUsed = BE_TO_HOST_32(((TPM20_Header_In *)(SYS_CONTEXT->tpmInBuffPtr))->commandSize) + decryptParamSize;
+    sizeToBeUsed = BE_TO_HOST_32(SYS_REQ_HEADER->commandSize) + decryptParamSize;
     if( sizeToBeUsed > SYS_CONTEXT->maxCommandSize )
     {
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
@@ -127,9 +127,9 @@ TSS2_RC Tss2_Sys_SetDecryptParam(
         memmove(dst, src, len);
 
         // And fixup the command size.
-        currCommandSize = BE_TO_HOST_32(((TPM20_Header_In *)(SYS_CONTEXT->tpmInBuffPtr))->commandSize);
+        currCommandSize = BE_TO_HOST_32(SYS_REQ_HEADER->commandSize);
         currCommandSize += decryptParamSize;
-        ((TPM20_Header_In *)(SYS_CONTEXT->tpmInBuffPtr))->commandSize = HOST_TO_BE_32(currCommandSize);
+        SYS_REQ_HEADER->commandSize = HOST_TO_BE_32(currCommandSize);
     }
     else
     {

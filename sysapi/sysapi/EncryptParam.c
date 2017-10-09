@@ -47,8 +47,8 @@ TSS2_RC Tss2_Sys_GetEncryptParam(
     {
         rval = TSS2_SYS_RC_BAD_SEQUENCE;
     }
-    else if( SYS_CONTEXT->encryptAllowed == 0 ||
-            (BE_TO_HOST_16(((TPM20_Header_Out *)(SYS_CONTEXT->tpmOutBuffPtr))->tag) == TPM_ST_NO_SESSIONS))
+    else if (SYS_CONTEXT->encryptAllowed == 0 ||
+             BE_TO_HOST_16(SYS_RESP_HEADER->tag) == TPM_ST_NO_SESSIONS)
     {
         rval = TSS2_SYS_RC_NO_ENCRYPT_PARAM;
     }
