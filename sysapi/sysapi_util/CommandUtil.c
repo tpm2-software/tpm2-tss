@@ -75,7 +75,7 @@ void InitSysContextPtrs(
 
 UINT32 GetCommandSize( TSS2_SYS_CONTEXT *sysContext )
 {
-    return BE_TO_HOST_32(((TPM20_Header_In *) SYS_CONTEXT->tpmInBuffPtr)->commandSize);
+    return BE_TO_HOST_32(SYS_REQ_HEADER->commandSize);
 }
 
 void CopyCommandHeader( _TSS2_SYS_CONTEXT_BLOB *sysContext, TPM_CC commandCode )
@@ -89,7 +89,7 @@ void CopyCommandHeader( _TSS2_SYS_CONTEXT_BLOB *sysContext, TPM_CC commandCode )
                     TPM_ST_NO_SESSIONS,
                     &(SYS_CONTEXT->rval));
 
-  ((TPM20_Header_In *)sysContext->tpmInBuffPtr)->commandCode = BE_TO_HOST_32(commandCode);
+  SYS_REQ_HEADER->commandCode = BE_TO_HOST_32(commandCode);
 
   SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
 
@@ -161,7 +161,7 @@ TSS2_RC CommonPrepareEpilogue(
    SYS_CONTEXT->cpBufferUsedSize = (SYS_CONTEXT->tpmInBuffPtr + SYS_CONTEXT->nextData) - SYS_CONTEXT->cpBuffer;
 
    // Set current command size.
-   ((TPM20_Header_In *) SYS_CONTEXT->tpmInBuffPtr)->commandSize = HOST_TO_BE_32(SYS_CONTEXT->nextData);
+   SYS_REQ_HEADER->commandSize = HOST_TO_BE_32(SYS_CONTEXT->nextData);
 
    SYS_CONTEXT->previousStage = CMD_STAGE_PREPARE;
 
@@ -179,7 +179,7 @@ TSS2_RC CommonComplete( TSS2_SYS_CONTEXT *sysContext )
     }
     else
     {
-        rspSize = BE_TO_HOST_32(((TPM20_Header_Out *)(SYS_CONTEXT->tpmOutBuffPtr))->responseSize);
+        rspSize = BE_TO_HOST_32(SYS_RESP_HEADER->responseSize);
     }
 
     if( SYS_CONTEXT->previousStage != CMD_STAGE_RECEIVE_RESPONSE || SYS_CONTEXT->rval != TSS2_RC_SUCCESS )
@@ -209,7 +209,7 @@ TSS2_RC CommonComplete( TSS2_SYS_CONTEXT *sysContext )
         SYS_CONTEXT->rpBuffer = SYS_CONTEXT->tpmOutBuffPtr + SYS_CONTEXT->nextData;
 
         // Save response params size if command does not have an authorization area.
-        if (BE_TO_HOST_16(((TPM20_Header_Out *)(SYS_CONTEXT->tpmOutBuffPtr))->tag) != TPM_ST_SESSIONS)
+        if (BE_TO_HOST_16(SYS_RESP_HEADER->tag) != TPM_ST_SESSIONS)
         {
             SYS_CONTEXT->rpBufferUsedSize = rspSize - ( SYS_CONTEXT->rpBuffer - SYS_CONTEXT->tpmOutBuffPtr );
         }
@@ -242,8 +242,7 @@ TSS2_RC CommonOneCall(
         {
             if (SYS_CONTEXT->rsp_header.responseCode == TPM_RC_SUCCESS)
             {
-                if (BE_TO_HOST_16(((TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr))->tag) == TPM_ST_SESSIONS &&
-                        rspAuthsArray != 0)
+                if (BE_TO_HOST_16(SYS_RESP_HEADER->tag) == TPM_ST_SESSIONS && rspAuthsArray != 0)
                 {
                     SYS_CONTEXT->rval = Tss2_Sys_GetRspAuths( sysContext, rspAuthsArray );
                 }

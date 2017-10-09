@@ -829,11 +829,11 @@ void TestSapiApis()
     // Get the command results
     // NOTE: this test modifies internal fields of the sysContext structure.
     // DON'T DO THIS IN REAL APPS!!
-    savedRspSize = BE_TO_HOST_32(((TPM20_Header_Out *)(SYS_CONTEXT->tpmOutBuffPtr))->responseSize);
-    ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr )  )->responseSize = 4097;
+    savedRspSize = BE_TO_HOST_32(SYS_RESP_HEADER->responseSize);
+    SYS_RESP_HEADER->responseSize = 4097;
     INIT_SIMPLE_TPM2B_SIZE( outData );
     rval = Tss2_Sys_GetTestResult_Complete( sysContext, &outData, &testResult );
-    ( (TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr )  )->responseSize = savedRspSize;
+    SYS_RESP_HEADER->responseSize = savedRspSize;
     CheckFailed( rval, TSS2_SYS_RC_MALFORMED_RESPONSE ); // #65
 
     // NOTE: this test case is kind of bogus--no application would ever do this
@@ -5944,7 +5944,7 @@ void TestRM()
     // WARNING:  This is something only a test application should do. Do
     // not use this as sample code.
     //
-    ((TPM20_Header_In *)( ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->tpmInBuffPtr) )->commandCode = TPM_CC_FIRST - 1;
+    SYS_REQ_HEADER->commandCode = TPM_CC_FIRST - 1;
     rval = Tss2_Sys_Execute( sysContext );
     CheckFailed( rval, TPM_RC_COMMAND_CODE );
 
