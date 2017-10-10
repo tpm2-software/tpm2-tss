@@ -78,6 +78,7 @@ TESTS_INTEGRATION = \
 endif #SIMULATOR_BIN
 
 CLEANFILES = \
+    AUTHORS \
     $(nodist_pkgconfig_DATA) \
     $(man3_MANS) \
     $(man7_MANS) \
@@ -103,6 +104,7 @@ man3_MANS = man/man3/InitDeviceTcti.3 man/man3/InitSocketTcti.3
 man7_MANS = man/man7/tcti-device.7 man/man7/tcti-socket.7
 
 EXTRA_DIST = \
+    AUTHORS \
     lib/debug_config.site \
     lib/libmarshal.map \
     lib/marshal.pc.in \
@@ -278,6 +280,10 @@ test_integration_start_auth_session_int_SOURCES = test/integration/main.c \
     test/integration/start-auth-session.int.c
 
 TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES)
+
+AUTHORS :
+	git log --format='%aN <%aE>' | grep -v 'users.noreply.github.com' | sort | \
+	    uniq -c | sort -nr | sed 's/^\s*//' | cut -d" " -f2- > $@
 
 %.pc : %.pc.in
 	$(call make_parent_dir,$@)
