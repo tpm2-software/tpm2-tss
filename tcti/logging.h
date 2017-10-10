@@ -1,6 +1,6 @@
 #include "sapi/tpm20.h"
 
-#include "tcti_util.h"
+#include "tcti.h"
 
 #define TCTI_LOG_CALLBACK_INVOKE(ctx, type, format, ...) \
     TCTI_LOG_CALLBACK(ctx)(TCTI_LOG_DATA(ctx), type, format, ##__VA_ARGS__)

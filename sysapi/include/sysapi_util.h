@@ -32,8 +32,6 @@
 extern "C" {
 #endif
 
-#include "tcti_util.h"
-
 // TBD:  delete this after porting completed.
 #define CMD_STAGE_1     1
 

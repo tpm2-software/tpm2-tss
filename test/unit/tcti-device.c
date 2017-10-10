@@ -8,7 +8,7 @@
 #include "sapi/tss2_mu.h"
 #include "tcti/tcti_device.h"
 #include "tcti/logging.h"
-#include "sysapi/include/tcti_util.h"
+#include "tcti/tcti.h"
 
 /**
  * When passed all NULL values ensure that we get back the expected RC
