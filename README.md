@@ -65,7 +65,24 @@ This approach has a number of advantages including the ability to run individual
 SAPI library, TAB/RM, and Test Code Block Diagram:
 ![Architecture Block Diagram](doc/TSS%20block%20diagram.png)
 
-# [Code Layout](doc/layout.md)
-Diagram of the directory structure for the code SAPI library, TAB/RM, and Test
-Code.
-![Code Layout](https://github.com/01org/tpm2-tss/raw/master/doc/TSS%20layout.png)
+# Project Layout
+├── common  : utility functions used by multiple components  
+├── doc     : various bits of documentation  
+├── include : header files unstalled in $(includedir)  
+│   ├── sapi        : header files for TPM2 types and core libraries  
+│   └── tcti        : header files for TCTI libraries  
+├── lib     : data files used by the build or installed into $(libdir)  
+├── log     : logging functions  
+├── m4      : autoconf support macros  
+├── man     : man pages  
+├── marshal : TPM2 typer marshalling library implementation  
+├── script  : scripts used by the build or CI  
+├── sysapi  : system API implementation  
+│   ├── include     : headers internal to the SAPI  
+│   ├── sysapi      : system API implementation  
+│   └── sysapi_util : utility functions used by system API implementation  
+├── tcti    : TCTI implementation  
+└── test    : test code  
+    ├── integration : integration test harness and test cases  
+    ├── tpmclient   : monolithic, legacy test application  
+    └── unit        : unit tests  
