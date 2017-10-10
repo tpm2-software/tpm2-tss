@@ -2,7 +2,7 @@
 #include "log.h"
 #include "test.h"
 #include "sapi/tpm20.h"
-#include "sysapi/include/tcti_util.h"
+#include "tcti/tcti.h"
 #include "sysapi/include/sysapi_util.h"
 
 /**

@@ -204,13 +204,13 @@ tcti_libtcti_device_la_CFLAGS   = $(AM_CFLAGS)
 tcti_libtcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_device.map
 tcti_libtcti_device_la_LIBADD   = $(libmarshal)
 tcti_libtcti_device_la_SOURCES  = tcti/tcti_device.c tcti/commonchecks.c \
-    tcti/commonchecks.h common/debug.c common/debug.h tcti/logging.h
+    tcti/commonchecks.h common/debug.c common/debug.h tcti/logging.h tcti/tcti.h
 
 tcti_libtcti_socket_la_CFLAGS   = $(AM_CFLAGS)
 tcti_libtcti_socket_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
 tcti_libtcti_socket_la_SOURCES  = tcti/platformcommand.c tcti/tcti_socket.c \
     tcti/commonchecks.c tcti/commonchecks.h tcti/sockets.c tcti/sockets.h \
-    common/debug.c common/debug.h tcti/logging.h
+    common/debug.c common/debug.h tcti/logging.h tcti/tcti.h
 
 test_tpmclient_tpmclient_int_CFLAGS   = $(AM_CFLAGS) -DNO_RM_TESTS -U_FORTIFY_SOURCE
 test_tpmclient_tpmclient_int_LDADD    = $(TESTS_LDADD)

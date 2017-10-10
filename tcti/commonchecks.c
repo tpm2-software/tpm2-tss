@@ -30,7 +30,7 @@
 
 #include <tcti/common.h>
 #include "sapi/tpm20.h"
-#include "sysapi_util.h"
+#include "tcti.h"
 #include "common/debug.h"
 
 TSS2_RC CommonSendChecks(

@@ -47,7 +47,7 @@
 #include "common/debug.h"
 #include <sapi/tss2_tcti.h>
 #include "sockets.h"
-#include "tcti_util.h"
+#include "tcti.h"
 #include "logging.h"
 
 TSS2_RC PlatformCommand(
