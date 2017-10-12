@@ -7,6 +7,9 @@ via the guidelines here:
 https://security-center.intel.com/VulnerabilityHandlingGuidelines.aspx
 
 # Guideline for submitting changes:
+All changes to the source code must follow the coding standard documented
+[here](doc/coding_standard_c.md).
+
 All changes should be introduced via github pull requests. This allows anyone to
 comment and provide feedback in lieu of having a mailing list. For pull requests
 opened by non-maintainers, any maintainer may review and merge that pull
