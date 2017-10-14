@@ -1,5 +1,5 @@
 //**********************************************************************;
-// Copyright (c) 2015, Intel Corporation
+// Copyright (c) 2015, 2017 Intel Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -53,7 +53,6 @@
 #define TCTI_LOG_DATA(ctx)     ((TSS2_TCTI_CONTEXT_INTEL*)ctx)->logData
 #define TCTI_LOG_BUFFER_CALLBACK(ctx) ((TSS2_TCTI_CONTEXT_INTEL*)ctx)->logBufferCallback
 #define TCTI_CONTEXT ((TSS2_TCTI_CONTEXT_COMMON_CURRENT *)(SYS_CONTEXT->tctiContext))
-#define TCTI_CONTEXT_INTEL ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)
 
 typedef TSS2_RC (*TCTI_TRANSMIT_PTR)( TSS2_TCTI_CONTEXT *tctiContext, size_t size, uint8_t *command);
 typedef TSS2_RC (*TCTI_RECEIVE_PTR) (TSS2_TCTI_CONTEXT *tctiContext, size_t *size, uint8_t *response, int32_t timeout);
@@ -104,5 +103,16 @@ typedef struct {
     TCTI_LOG_BUFFER_CALLBACK logBufferCallback;
     void *logData;
 } TSS2_TCTI_CONTEXT_INTEL;
+
+/*
+ * This function is used to "up cast" the common TCTI interface type to the
+ * private type used in the implementation. This is how we control access to
+ * the data below the 'setLocality' function.
+ */
+static inline TSS2_TCTI_CONTEXT_INTEL*
+tcti_context_intel_cast (TSS2_TCTI_CONTEXT *ctx)
+{
+    return (TSS2_TCTI_CONTEXT_INTEL*)ctx;
+}
 
 #endif
