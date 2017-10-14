@@ -1,5 +1,5 @@
 //**********************************************************************;
-// Copyright (c) 2015, Intel Corporation
+// Copyright (c) 2015, 2017 Intel Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -54,6 +54,7 @@ TSS2_RC PlatformCommand(
     TSS2_TCTI_CONTEXT *tctiContext,     /* in */
     char cmd )
 {
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     int iResult = 0;            // used to return function results
     char sendbuf[] = { 0x0,0x0,0x0,0x0 };
     char recvbuf[] = { 0x0, 0x0, 0x0, 0x0 };
@@ -62,7 +63,7 @@ TSS2_RC PlatformCommand(
     sendbuf[3] = cmd;
 
     // Send the command
-    iResult = send( TCTI_CONTEXT_INTEL->otherSock, sendbuf, 4, MSG_NOSIGNAL );
+    iResult = send (tcti_intel->otherSock, sendbuf, 4, MSG_NOSIGNAL);
     if (iResult == SOCKET_ERROR) {
         TCTI_LOG( tctiContext, NO_PREFIX, "send failed with error: %d\n", WSAGetLastError() );
         rval = TSS2_TCTI_RC_IO_ERROR;
@@ -70,14 +71,14 @@ TSS2_RC PlatformCommand(
     else
     {
 #ifdef DEBUG_SOCKETS
-        TCTI_LOG( tctiContext, NO_PREFIX, "Send Bytes to socket #0x%x: \n", TCTI_CONTEXT_INTEL->otherSock );
+        TCTI_LOG( tctiContext, NO_PREFIX, "Send Bytes to socket #0x%x: \n", tcti_intel->otherSock );
         TCTI_LOG_BUFFER( tctiContext, NO_PREFIX, (UINT8 *)sendbuf, 4 );
 #endif
         // Read result
-        iResult = recv( TCTI_CONTEXT_INTEL->otherSock, recvbuf, 4, 0);
+        iResult = recv( tcti_intel->otherSock, recvbuf, 4, 0);
         if (iResult == SOCKET_ERROR) {
             TCTI_LOG( tctiContext, NO_PREFIX, "In PlatformCommand, recv failed (socket: 0x%x) with error: %d\n",
-                    TCTI_CONTEXT_INTEL->otherSock, WSAGetLastError() );
+                    tcti_intel->otherSock, WSAGetLastError() );
             rval = TSS2_TCTI_RC_IO_ERROR;
         }
         else if( recvbuf[0] != 0 || recvbuf[1] != 0 || recvbuf[2] != 0 || recvbuf[3] != 0 )
@@ -88,7 +89,7 @@ TSS2_RC PlatformCommand(
         else
         {
 #ifdef DEBUG_SOCKETS
-            TCTI_LOG( tctiContext, NO_PREFIX, "Receive bytes from socket #0x%x: \n", TCTI_CONTEXT_INTEL->otherSock );
+            TCTI_LOG( tctiContext, NO_PREFIX, "Receive bytes from socket #0x%x: \n", tcti_intel->otherSock );
             TCTI_LOG_BUFFER( tctiContext, NO_PREFIX, (UINT8 *)recvbuf, 4 );
 #endif
         }

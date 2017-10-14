@@ -1,5 +1,5 @@
 //**********************************************************************;
-// Copyright (c) 2015, Intel Corporation
+// Copyright (c) 2015, 2017 Intel Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -38,18 +38,20 @@ TSS2_RC CommonSendChecks(
     uint8_t           *command_buffer     /* in */
     )
 {
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
+
     if( tctiContext == NULL || command_buffer == NULL )
     {
         return TSS2_TCTI_RC_BAD_REFERENCE;
     }
 
-    if (TCTI_CONTEXT_INTEL->previousStage == TCTI_STAGE_SEND_COMMAND)
+    if (tcti_intel->previousStage == TCTI_STAGE_SEND_COMMAND)
     {
         return TSS2_TCTI_RC_BAD_SEQUENCE;
     }
 
-    if (TCTI_CONTEXT_INTEL->magic != TCTI_MAGIC ||
-        TCTI_CONTEXT_INTEL->version != TCTI_VERSION)
+    if (tcti_intel->magic != TCTI_MAGIC ||
+        tcti_intel->version != TCTI_VERSION)
     {
         return TSS2_TCTI_RC_BAD_CONTEXT;
     }
@@ -64,18 +66,20 @@ TSS2_RC CommonReceiveChecks(
     unsigned char   *response_buffer    /* in */
     )
 {
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
+
     if( tctiContext == NULL || response_size == NULL )
     {
         return TSS2_TCTI_RC_BAD_REFERENCE;
     }
 
-    if (TCTI_CONTEXT_INTEL->previousStage == TCTI_STAGE_RECEIVE_RESPONSE)
+    if (tcti_intel->previousStage == TCTI_STAGE_RECEIVE_RESPONSE)
     {
         return TSS2_TCTI_RC_BAD_SEQUENCE;
     }
 
-    if (TCTI_CONTEXT_INTEL->magic != TCTI_MAGIC ||
-        TCTI_CONTEXT_INTEL->version != TCTI_VERSION)
+    if (tcti_intel->magic != TCTI_MAGIC ||
+        tcti_intel->version != TCTI_VERSION)
     {
         return TSS2_TCTI_RC_BAD_CONTEXT;
     }

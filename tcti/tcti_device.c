@@ -50,6 +50,7 @@ TSS2_RC LocalTpmSendTpmCommand(
     uint8_t           *command_buffer     /* in */
     )
 {
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     TSS2_RC rval = TSS2_RC_SUCCESS;
     ssize_t size;
 
@@ -63,7 +64,7 @@ TSS2_RC LocalTpmSendTpmCommand(
 
     if( rval == TSS2_RC_SUCCESS )
     {
-        if (TCTI_CONTEXT_INTEL->status.rmDebugPrefix == 1)
+        if (tcti_intel->status.rmDebugPrefix == 1)
             rmPrefix = RM_PREFIX;
         else
             rmPrefix = NO_PREFIX;
@@ -79,7 +80,7 @@ TSS2_RC LocalTpmSendTpmCommand(
                                command_size,
                                &offset,
                                &cnt);
-        if (TCTI_CONTEXT_INTEL->status.debugMsgEnabled == 1)
+        if (tcti_intel->status.debugMsgEnabled == 1)
         {
             TCTI_LOG( tctiContext, rmPrefix, "" );
             TCTI_LOG( tctiContext, rmPrefix, "Cmd sent: %s\n", strTpmCommandCode( commandCode ) );
@@ -87,7 +88,7 @@ TSS2_RC LocalTpmSendTpmCommand(
         }
 #endif
 
-        size = write(TCTI_CONTEXT_INTEL->devFile, command_buffer, command_size);
+        size = write(tcti_intel->devFile, command_buffer, command_size);
 
         if( size < 0 )
         {
@@ -101,10 +102,10 @@ TSS2_RC LocalTpmSendTpmCommand(
 
         if( rval == TSS2_RC_SUCCESS )
         {
-            TCTI_CONTEXT_INTEL->previousStage = TCTI_STAGE_SEND_COMMAND;
-            TCTI_CONTEXT_INTEL->status.tagReceived = 0;
-            TCTI_CONTEXT_INTEL->status.responseSizeReceived = 0;
-            TCTI_CONTEXT_INTEL->status.protocolResponseSizeReceived = 0;
+            tcti_intel->previousStage = TCTI_STAGE_SEND_COMMAND;
+            tcti_intel->status.tagReceived = 0;
+            tcti_intel->status.responseSizeReceived = 0;
+            tcti_intel->status.protocolResponseSizeReceived = 0;
         }
     }
 
@@ -118,6 +119,7 @@ TSS2_RC LocalTpmReceiveTpmResponse(
     int32_t         timeout
     )
 {
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     TSS2_RC rval = TSS2_RC_SUCCESS;
     ssize_t  size;
     unsigned int i;
@@ -129,14 +131,14 @@ TSS2_RC LocalTpmReceiveTpmResponse(
         goto retLocalTpmReceive;
     }
 
-    if (TCTI_CONTEXT_INTEL->status.rmDebugPrefix == 1)
+    if (tcti_intel->status.rmDebugPrefix == 1)
         rmPrefix = RM_PREFIX;
     else
         rmPrefix = NO_PREFIX;
 
-    if (TCTI_CONTEXT_INTEL->status.tagReceived == 0)
+    if (tcti_intel->status.tagReceived == 0)
     {
-        size = read(TCTI_CONTEXT_INTEL->devFile, TCTI_CONTEXT_INTEL->responseBuffer, 4096);
+        size = read(tcti_intel->devFile, tcti_intel->responseBuffer, 4096);
 
         if( size < 0 )
         {
@@ -146,52 +148,52 @@ TSS2_RC LocalTpmReceiveTpmResponse(
         }
         else
         {
-            TCTI_CONTEXT_INTEL->status.tagReceived = 1;
-            TCTI_CONTEXT_INTEL->responseSize = size;
+            tcti_intel->status.tagReceived = 1;
+            tcti_intel->responseSize = size;
         }
 
-        TCTI_CONTEXT_INTEL->responseSize = size;
+        tcti_intel->responseSize = size;
     }
 
     if( response_buffer == NULL )
     {
         // In this case, just return the size
-        *response_size = TCTI_CONTEXT_INTEL->responseSize;
+        *response_size = tcti_intel->responseSize;
         goto retLocalTpmReceive;
     }
 
-    if (*response_size < TCTI_CONTEXT_INTEL->responseSize)
+    if (*response_size < tcti_intel->responseSize)
     {
         rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
-        *response_size = TCTI_CONTEXT_INTEL->responseSize;
+        *response_size = tcti_intel->responseSize;
         goto retLocalTpmReceive;
     }
 
-    *response_size = TCTI_CONTEXT_INTEL->responseSize;
+    *response_size = tcti_intel->responseSize;
 
     for( i = 0; i < *response_size; i++ )
     {
-        response_buffer[i] = TCTI_CONTEXT_INTEL->responseBuffer[i];
+        response_buffer[i] = tcti_intel->responseBuffer[i];
     }
 
 #ifdef DEBUG
-    if(TCTI_CONTEXT_INTEL->status.debugMsgEnabled == 1 &&
-       TCTI_CONTEXT_INTEL->responseSize > 0)
+    if(tcti_intel->status.debugMsgEnabled == 1 &&
+       tcti_intel->responseSize > 0)
     {
         TCTI_LOG( tctiContext, rmPrefix, "\n" );
         TCTI_LOG( tctiContext, rmPrefix, "Response Received: " );
-        DEBUG_PRINT_BUFFER(rmPrefix, response_buffer, TCTI_CONTEXT_INTEL->responseSize);
+        DEBUG_PRINT_BUFFER(rmPrefix, response_buffer, tcti_intel->responseSize);
     }
 #endif
 
-    TCTI_CONTEXT_INTEL->status.commandSent = 0;
+    tcti_intel->status.commandSent = 0;
 
 retLocalTpmReceive:
 
     if( rval == TSS2_RC_SUCCESS &&
 		response_buffer != NULL )
     {
-        TCTI_CONTEXT_INTEL->previousStage = TCTI_STAGE_RECEIVE_RESPONSE;
+        tcti_intel->previousStage = TCTI_STAGE_RECEIVE_RESPONSE;
     }
 
     return rval;
@@ -201,9 +203,11 @@ void LocalTpmFinalize(
     TSS2_TCTI_CONTEXT *tctiContext       /* in */
     )
 {
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
+
     if( tctiContext != NULL )
     {
-        close(TCTI_CONTEXT_INTEL->devFile);
+        close(tcti_intel->devFile);
     }
 }
 
@@ -242,6 +246,7 @@ TSS2_RC InitDeviceTcti (
     const TCTI_DEVICE_CONF *config  // IN
     )
 {
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
     if( tctiContext == NULL && contextSize == NULL )
@@ -266,16 +271,16 @@ TSS2_RC InitDeviceTcti (
         TSS2_TCTI_CANCEL( tctiContext ) = LocalTpmCancel;
         TSS2_TCTI_GET_POLL_HANDLES( tctiContext ) = LocalTpmGetPollHandles;
         TSS2_TCTI_SET_LOCALITY( tctiContext ) = LocalTpmSetLocality;
-        TCTI_CONTEXT_INTEL->status.locality = 3;
-        TCTI_CONTEXT_INTEL->status.commandSent = 0;
-        TCTI_CONTEXT_INTEL->status.rmDebugPrefix = 0;
-        TCTI_CONTEXT_INTEL->currentTctiContext = 0;
-        TCTI_CONTEXT_INTEL->previousStage = TCTI_STAGE_INITIALIZE;
+        tcti_intel->status.locality = 3;
+        tcti_intel->status.commandSent = 0;
+        tcti_intel->status.rmDebugPrefix = 0;
+        tcti_intel->currentTctiContext = 0;
+        tcti_intel->previousStage = TCTI_STAGE_INITIALIZE;
         TCTI_LOG_CALLBACK( tctiContext ) = config->logCallback;
         TCTI_LOG_DATA( tctiContext ) = config->logData;
 
-        TCTI_CONTEXT_INTEL->devFile = open(config->device_path, O_RDWR);
-        if (TCTI_CONTEXT_INTEL->devFile < 0)
+        tcti_intel->devFile = open(config->device_path, O_RDWR);
+        if (tcti_intel->devFile < 0)
         {
             return TSS2_TCTI_RC_IO_ERROR;
         }
