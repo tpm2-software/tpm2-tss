@@ -30,7 +30,7 @@
 #include <sys/time.h>
 
 #include "sapi/tpm20.h"
-#include "sapi/marshal.h"
+#include "sapi/tss2_mu.h"
 #include "tcti/tcti_socket.h"
 #include "sysapi_util.h"
 #include "common/debug.h"
@@ -88,7 +88,7 @@ TSS2_RC SendSessionEndSocketTcti(
         sock = TCTI_CONTEXT_INTEL->otherSock;
     }
 
-    rval = UINT32_Marshal (TPM_SESSION_END, buffer, sizeof (buffer), NULL);
+    rval = Tss2_MU_UINT32_Marshal (TPM_SESSION_END, buffer, sizeof (buffer), NULL);
     if (rval == TSS2_RC_SUCCESS) {
         return rval;
     }
@@ -120,33 +120,33 @@ TSS2_RC SocketSendTpmCommand(
     }
 
 #ifdef DEBUG
-    if( ( ( TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.rmDebugPrefix == 1 )
+    if (TCTI_CONTEXT_INTEL->status.rmDebugPrefix == 1)
         rmPrefix = RM_PREFIX;
     else
         rmPrefix = NO_PREFIX;
 
-    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgEnabled == 1 )
+    if (TCTI_CONTEXT_INTEL->status.debugMsgEnabled == 1)
     {
         TCTI_LOG( tctiContext, rmPrefix, "" );
         offset = sizeof (TPM_ST) + sizeof (UINT32);
-        rval = TPM_CC_Unmarshal (command_buffer,
+        rval = Tss2_MU_TPM_CC_Unmarshal (command_buffer,
                                  command_size,
                                  &offset,
                                  &commandCode);
 #ifdef DEBUG_SOCKETS
-        TCTI_LOG( tctiContext, NO_PREFIX, "Command sent on socket #0x%x: %s\n", TCTI_CONTEXT_INTEL->tpmSock, strTpmCommandCode( commandCode ) );
+        TCTI_LOG(tctiContext, NO_PREFIX, "Command sent on socket #0x%x: %s\n", TCTI_CONTEXT_INTEL->tpmSock, strTpmCommandCode(commandCode));
 #else
-        TCTI_LOG( tctiContext, NO_PREFIX, "Cmd sent: %s\n", strTpmCommandCode( commandCode ) );
+        TCTI_LOG(tctiContext, NO_PREFIX, "Cmd sent: %s\n", strTpmCommandCode(commandCode));
 #endif
     }
 #endif
     // Size TPM 1.2 and TPM 2.0 headers overlap exactly, we can use
     // either 1.2 or 2.0 header to get the size.
     offset = sizeof (TPM_ST);
-    rval = UINT32_Unmarshal (command_buffer, command_size, &offset, &cnt);
+    rval = Tss2_MU_UINT32_Unmarshal (command_buffer, command_size, &offset, &cnt);
 
     // Send TPM_SEND_COMMAND
-    rval = UINT32_Marshal (MS_SIM_TPM_SEND_COMMAND,
+    rval = Tss2_MU_UINT32_Marshal (MS_SIM_TPM_SEND_COMMAND,
                            (uint8_t*)&tpmSendCommand,
                            sizeof (tpmSendCommand),
                            NULL);  // Value for "send command" to MS simulator.
@@ -155,15 +155,15 @@ TSS2_RC SocketSendTpmCommand(
         goto returnFromSocketSendTpmCommand;
 
     // Send the locality
-    locality = (UINT8)( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.locality;
+    locality = (UINT8)TCTI_CONTEXT_INTEL->status.locality;
     rval = tctiSendBytes( tctiContext, TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&locality, 1 );
     if( rval != TSS2_RC_SUCCESS )
         goto returnFromSocketSendTpmCommand;
 
 #ifdef DEBUG
-    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgEnabled == 1 )
+    if (TCTI_CONTEXT_INTEL->status.debugMsgEnabled == 1)
     {
-        TCTI_LOG( tctiContext, rmPrefix, "Locality = %d", ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.locality );
+        TCTI_LOG( tctiContext, rmPrefix, "Locality = %d", TCTI_CONTEXT_INTEL->status.locality);
     }
 #endif
 
@@ -180,21 +180,21 @@ TSS2_RC SocketSendTpmCommand(
         goto returnFromSocketSendTpmCommand;
 
 #ifdef DEBUG
-    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgEnabled == 1 )
+    if (TCTI_CONTEXT_INTEL->status.debugMsgEnabled == 1)
     {
         DEBUG_PRINT_BUFFER( rmPrefix, command_buffer, cnt1 );
     }
 #endif
-    ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent = 1;
+    TCTI_CONTEXT_INTEL->status.commandSent = 1;
 
 returnFromSocketSendTpmCommand:
 
     if( rval == TSS2_RC_SUCCESS )
     {
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage = TCTI_STAGE_SEND_COMMAND;
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived = 0;
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived = 0;
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived = 0;
+        TCTI_CONTEXT_INTEL->previousStage = TCTI_STAGE_SEND_COMMAND;
+        TCTI_CONTEXT_INTEL->status.tagReceived = 0;
+        TCTI_CONTEXT_INTEL->status.responseSizeReceived = 0;
+        TCTI_CONTEXT_INTEL->status.protocolResponseSizeReceived = 0;
     }
 
     return rval;
@@ -210,23 +210,13 @@ TSS2_RC SocketCancel(
     {
         rval = TSS2_TCTI_RC_BAD_REFERENCE;
     }
-    else if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent != 1 )
+    else if (TCTI_CONTEXT_INTEL->status.commandSent != 1)
     {
         rval = TSS2_TCTI_RC_BAD_SEQUENCE;
     }
     else
     {
         rval = (TSS2_RC)PlatformCommand( tctiContext, MS_SIM_CANCEL_ON );
-#if 0
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = (TSS2_RC)PlatformCommand( tctiContext, MS_SIM_CANCEL_OFF );
-            if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgLevel == TSS2_TCTI_DEBUG_MSG_ENABLED )
-            {
-                TCTI_LOG( tctiContext, NO_PREFIX, "%s sent cancel ON command:\n", interfaceName );
-            }
-        }
-#endif
     }
 
     return rval;
@@ -243,15 +233,15 @@ TSS2_RC SocketSetLocality(
     {
         rval = TSS2_TCTI_RC_BAD_REFERENCE;
     }
-    else if( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.locality != locality )
+    else if (TCTI_CONTEXT_INTEL->status.locality != locality)
     {
-        if ( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent == 1 )
+        if (TCTI_CONTEXT_INTEL->status.commandSent == 1)
         {
             rval = TSS2_TCTI_RC_BAD_SEQUENCE;
         }
         else
         {
-            ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.locality = locality;
+            TCTI_CONTEXT_INTEL->status.locality = locality;
         }
     }
 
@@ -276,7 +266,7 @@ void SocketFinalize(
         SendSessionEndSocketTcti( tctiContext, 1 );
         SendSessionEndSocketTcti( tctiContext, 0 );
 
-        CloseSockets( TCTI_CONTEXT_INTEL->otherSock, TCTI_CONTEXT_INTEL->tpmSock );
+        CloseSockets(TCTI_CONTEXT_INTEL->otherSock, TCTI_CONTEXT_INTEL->tpmSock);
     }
 }
 
@@ -302,7 +292,7 @@ TSS2_RC SocketReceiveTpmResponse(
         goto retSocketReceiveTpmResponse;
     }
 
-    if( ( ( TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.rmDebugPrefix == 1 )
+    if (TCTI_CONTEXT_INTEL->status.rmDebugPrefix == 1)
         rmPrefix = RM_PREFIX;
     else
         rmPrefix = NO_PREFIX;
@@ -319,12 +309,12 @@ TSS2_RC SocketReceiveTpmResponse(
     }
 
     FD_ZERO( &readFds );
-    FD_SET( TCTI_CONTEXT_INTEL->tpmSock, &readFds );
+    FD_SET(TCTI_CONTEXT_INTEL->tpmSock, &readFds);
 
-    iResult = select( TCTI_CONTEXT_INTEL->tpmSock+1, &readFds, 0, 0, tvPtr );
+    iResult = select(TCTI_CONTEXT_INTEL->tpmSock + 1, &readFds, 0, 0, tvPtr);
     if( iResult == 0 )
     {
-        TCTI_LOG( tctiContext, rmPrefix, "select failed due to timeout, socket #: 0x%x\n", TCTI_CONTEXT_INTEL->tpmSock );
+        TCTI_LOG(tctiContext, rmPrefix, "select failed due to timeout, socket #: 0x%x\n", TCTI_CONTEXT_INTEL->tpmSock);
         rval = TSS2_TCTI_RC_TRY_AGAIN;
         goto retSocketReceiveTpmResponse;
     }
@@ -341,109 +331,109 @@ TSS2_RC SocketReceiveTpmResponse(
         goto retSocketReceiveTpmResponse;
     }
 
-    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived != 1 )
+    if (TCTI_CONTEXT_INTEL->status.protocolResponseSizeReceived != 1)
     {
         // Receive the size of the response.
-        rval = tctiRecvBytes( tctiContext, TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)& (((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize ), 4 );
+        rval = tctiRecvBytes(tctiContext, TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&TCTI_CONTEXT_INTEL->responseSize, 4);
         if( rval != TSS2_RC_SUCCESS )
             goto retSocketReceiveTpmResponse;
 
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = BE_TO_HOST_32(((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived = 1;
+        TCTI_CONTEXT_INTEL->responseSize = BE_TO_HOST_32(TCTI_CONTEXT_INTEL->responseSize);
+        TCTI_CONTEXT_INTEL->status.protocolResponseSizeReceived = 1;
     }
 
     if( response_buffer == NULL )
     {
         // In this case, just return the size
-        *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived = 1;
+        *response_size = TCTI_CONTEXT_INTEL->responseSize;
+        TCTI_CONTEXT_INTEL->status.protocolResponseSizeReceived = 1;
         goto retSocketReceiveTpmResponse;
     }
 
-    if( *response_size < ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize )
+    if (*response_size < TCTI_CONTEXT_INTEL->responseSize)
     {
-        *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
+        *response_size = TCTI_CONTEXT_INTEL->responseSize;
         rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
 
 
         // If possible, receive tag from TPM.
-        if( *response_size >= sizeof( TPM_ST ) && ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived == 0 )
+        if (*response_size >= sizeof( TPM_ST ) && TCTI_CONTEXT_INTEL->status.tagReceived == 0)
         {
-            if( TSS2_RC_SUCCESS != tctiRecvBytes( tctiContext, TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->tag ), 2 ) )
+            if(TSS2_RC_SUCCESS != tctiRecvBytes(tctiContext, TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&TCTI_CONTEXT_INTEL->tag, 2))
             {
                 goto retSocketReceiveTpmResponse;
             }
             else
             {
-                ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived = 1;
+                TCTI_CONTEXT_INTEL->status.tagReceived = 1;
             }
         }
 
         // If possible, receive response size from TPM
-        if( *response_size >= ( sizeof( TPM_ST ) + sizeof( TPM_RC ) ) && ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived == 0 )
+        if (*response_size >= (sizeof(TPM_ST) + sizeof(TPM_RC)) && TCTI_CONTEXT_INTEL->status.responseSizeReceived == 0)
         {
-            if( TSS2_RC_SUCCESS != tctiRecvBytes( tctiContext, TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->responseSize ), 4 ) )
+            if(TSS2_RC_SUCCESS != tctiRecvBytes(tctiContext, TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&TCTI_CONTEXT_INTEL->responseSize, 4))
             {
                 goto retSocketReceiveTpmResponse;
             }
             else
             {
-                ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize = BE_TO_HOST_32 (((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
-                ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived = 1;
+                TCTI_CONTEXT_INTEL->responseSize = BE_TO_HOST_32 (TCTI_CONTEXT_INTEL->responseSize);
+                TCTI_CONTEXT_INTEL->status.responseSizeReceived = 1;
             }
         }
     }
     else
     {
-        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgEnabled == 1 &&
-                ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize > 0 )
+        if (TCTI_CONTEXT_INTEL->status.debugMsgEnabled == 1 &&
+            TCTI_CONTEXT_INTEL->responseSize > 0)
         {
 #ifdef DEBUG
             TCTI_LOG( tctiContext, rmPrefix, "Response Received: " );
 #endif
 #ifdef DEBUG_SOCKETS
-            TCTI_LOG( tctiContext, rmPrefix, "from socket #0x%x:\n", TCTI_CONTEXT_INTEL->tpmSock );
+            TCTI_LOG(tctiContext, rmPrefix, "from socket #0x%x:\n", TCTI_CONTEXT_INTEL->tpmSock);
 #endif
         }
 
-        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived == 1 )
+        if (TCTI_CONTEXT_INTEL->status.tagReceived == 1)
         {
-            *(TPM_ST *)response_buffer = ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->tag;
-            responseSizeDelta += sizeof( TPM_ST );
-            response_buffer += sizeof( TPM_ST );
+            *(TPM_ST *)response_buffer = TCTI_CONTEXT_INTEL->tag;
+            responseSizeDelta += sizeof(TPM_ST);
+            response_buffer += sizeof(TPM_ST);
         }
 
-        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived == 1 )
+        if (TCTI_CONTEXT_INTEL->status.responseSizeReceived == 1)
         {
-            *(TPM_RC *)response_buffer = HOST_TO_BE_32( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->responseSize );
-            responseSizeDelta += sizeof( TPM_RC );
-            response_buffer += sizeof( TPM_RC );
+            *(TPM_RC *)response_buffer = HOST_TO_BE_32(TCTI_CONTEXT_INTEL->responseSize);
+            responseSizeDelta += sizeof(TPM_RC);
+            response_buffer += sizeof(TPM_RC);
         }
 
         // Receive the TPM response.
-        rval = tctiRecvBytes( tctiContext, TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize - responseSizeDelta );
+        rval = tctiRecvBytes(tctiContext, TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)response_buffer, TCTI_CONTEXT_INTEL->responseSize - responseSizeDelta );
         if( rval != TSS2_RC_SUCCESS )
             goto retSocketReceiveTpmResponse;
 
 #ifdef DEBUG
-        if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgEnabled == 1 )
+        if (TCTI_CONTEXT_INTEL->status.debugMsgEnabled == 1)
         {
-            DEBUG_PRINT_BUFFER( rmPrefix, response_buffer, ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize );
+            DEBUG_PRINT_BUFFER(rmPrefix, response_buffer, TCTI_CONTEXT_INTEL->responseSize);
         }
 #endif
 
         // Receive the appended four bytes of 0's
-        rval = tctiRecvBytes( tctiContext, TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&trash, 4 );
+        rval = tctiRecvBytes(tctiContext, TCTI_CONTEXT_INTEL->tpmSock, (unsigned char *)&trash, 4);
         if( rval != TSS2_RC_SUCCESS )
             goto retSocketReceiveTpmResponse;
     }
 
-    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize < *response_size )
+    if (TCTI_CONTEXT_INTEL->responseSize < *response_size)
     {
-        *response_size = ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->responseSize;
+        *response_size = TCTI_CONTEXT_INTEL->responseSize;
     }
 
-    ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent = 0;
+    TCTI_CONTEXT_INTEL->status.commandSent = 0;
 
     // Turn cancel off.
     if( rval == TSS2_RC_SUCCESS )
@@ -456,16 +446,10 @@ TSS2_RC SocketReceiveTpmResponse(
         PlatformCommand( tctiContext, MS_SIM_CANCEL_OFF );
     }
 
-    if( ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->status.debugMsgEnabled== 1 )
-    {
-//        TCTI_LOG( tctiContext, NO_PREFIX,  "%s sent cancel OFF command:\n", interfaceName );
-    }
-
 retSocketReceiveTpmResponse:
-    if( rval == TSS2_RC_SUCCESS &&
-		response_buffer != NULL )
+    if (rval == TSS2_RC_SUCCESS && response_buffer != NULL)
     {
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage = TCTI_STAGE_RECEIVE_RESPONSE;
+        TCTI_CONTEXT_INTEL->previousStage = TCTI_STAGE_RECEIVE_RESPONSE;
     }
 
     return rval;
@@ -541,15 +525,15 @@ TSS2_RC InitSocketTcti (
         TSS2_TCTI_CANCEL( tctiContext ) = SocketCancel;
         TSS2_TCTI_GET_POLL_HANDLES( tctiContext ) = SocketGetPollHandles;
         TSS2_TCTI_SET_LOCALITY( tctiContext ) = SocketSetLocality;
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.debugMsgEnabled = 0;
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.locality = 3;
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.commandSent = 0;
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.rmDebugPrefix = 0;
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.tagReceived = 0;
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.responseSizeReceived = 0;
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->status.protocolResponseSizeReceived = 0;
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->currentTctiContext = 0;
-        ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->previousStage = TCTI_STAGE_INITIALIZE;
+        TCTI_CONTEXT_INTEL->status.debugMsgEnabled = 0;
+        TCTI_CONTEXT_INTEL->status.locality = 3;
+        TCTI_CONTEXT_INTEL->status.commandSent = 0;
+        TCTI_CONTEXT_INTEL->status.rmDebugPrefix = 0;
+        TCTI_CONTEXT_INTEL->status.tagReceived = 0;
+        TCTI_CONTEXT_INTEL->status.responseSizeReceived = 0;
+        TCTI_CONTEXT_INTEL->status.protocolResponseSizeReceived = 0;
+        TCTI_CONTEXT_INTEL->currentTctiContext = 0;
+        TCTI_CONTEXT_INTEL->previousStage = TCTI_STAGE_INITIALIZE;
         TCTI_LOG_CALLBACK( tctiContext ) = conf->logCallback;
         TCTI_LOG_BUFFER_CALLBACK( tctiContext ) = conf->logBufferCallback;
         TCTI_LOG_DATA( tctiContext ) = conf->logData;
@@ -557,9 +541,9 @@ TSS2_RC InitSocketTcti (
         rval = (TSS2_RC) InitSockets( conf->hostname, conf->port, &otherSock, &tpmSock, TCTI_LOG_CALLBACK( tctiContext ), TCTI_LOG_DATA( tctiContext) );
         if( rval == TSS2_RC_SUCCESS )
         {
-            ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->otherSock = otherSock;
-            ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)->tpmSock = tpmSock;
-            rval = InitializeMsTpm2Simulator( tctiContext );
+            TCTI_CONTEXT_INTEL->otherSock = otherSock;
+            TCTI_CONTEXT_INTEL->tpmSock = tpmSock;
+            rval = InitializeMsTpm2Simulator(tctiContext);
         }
         else
         {

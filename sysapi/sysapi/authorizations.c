@@ -1,243 +1,191 @@
-//**********************************************************************;
-// Copyright (c) 2015, Intel Corporation
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-// this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright notice,
-// this list of conditions and the following disclaimer in the documentation
-// and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
-//**********************************************************************;
+/***********************************************************************
+ * Copyright (c) 2015 - 2017, Intel Corporation
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ ***********************************************************************/
 
 #include "tss2_endian.h"
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
 TSS2_RC Tss2_Sys_SetCmdAuths(
-    TSS2_SYS_CONTEXT            *sysContext,
-    const TSS2_SYS_CMD_AUTHS 	*cmdAuthsArray
-    )
+    TSS2_SYS_CONTEXT *sysContext,
+    const TSS2_SYS_CMD_AUTHS *cmdAuthsArray)
 {
+    uint8_t i;
+    UINT32 authSize = 0;
+    UINT32 newCmdSize = 0;
+    size_t authOffset;
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
-    if( sysContext == NULL || cmdAuthsArray == 0 )
-    {
-        rval = TSS2_SYS_RC_BAD_REFERENCE;
+    if (!sysContext || !cmdAuthsArray)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    if (cmdAuthsArray->cmdAuthsCount > MAX_SESSION_NUM)
+        return TSS2_SYS_RC_BAD_VALUE;
+
+    if (SYS_CONTEXT->previousStage != CMD_STAGE_PREPARE)
+        return TSS2_SYS_RC_BAD_SEQUENCE;
+
+    if (!SYS_CONTEXT->authAllowed)
+        return rval;
+
+    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
+    SYS_CONTEXT->authsCount = 0;
+
+    if (!cmdAuthsArray->cmdAuthsCount)
+        return rval;
+
+    SYS_REQ_HEADER->tag = HOST_TO_BE_16(TPM_ST_SESSIONS);
+
+    /* Calculate size needed for authorization area, check for any null
+     * pointers, and check for decrypt/encrypt sessions. */
+    for (i = 0; i < cmdAuthsArray->cmdAuthsCount; i++) {
+
+        if (!cmdAuthsArray->cmdAuths[i])
+            return TSS2_SYS_RC_BAD_VALUE;
+
+        authSize += sizeof(TPMI_SH_AUTH_SESSION);
+        authSize += sizeof(UINT16) + cmdAuthsArray->cmdAuths[i]->nonce.t.size;
+        authSize += sizeof(UINT8);
+        authSize += sizeof(UINT16) + cmdAuthsArray->cmdAuths[i]->hmac.t.size;
+
+        if (cmdAuthsArray->cmdAuths[i]->sessionAttributes.decrypt)
+            SYS_CONTEXT->decryptSession = 1;
+
+        if (cmdAuthsArray->cmdAuths[i]->sessionAttributes.encrypt)
+            SYS_CONTEXT->encryptSession = 1;
     }
-    else
-    {
-        SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
 
-        SYS_CONTEXT->authsCount = 0;
+    newCmdSize = authSize;
+    newCmdSize += sizeof(UINT32); /* authorization size field */
+    newCmdSize += BE_TO_HOST_32(SYS_REQ_HEADER->commandSize);
 
-        if( cmdAuthsArray->cmdAuthsCount > MAX_SESSION_NUM )
-        {
-            rval = TSS2_SYS_RC_BAD_VALUE;
-        }
-        else if( SYS_CONTEXT->previousStage != CMD_STAGE_PREPARE )
-        {
-            rval = TSS2_SYS_RC_BAD_SEQUENCE;
-        }
-        else if( SYS_CONTEXT->authAllowed != 1 )
-        {
-            // Don't do anything.  Let the TPM return an error code.
-        }
-        else
-        {
-            uint8_t i;
-            UINT32 authSize = 0;
-            UINT64 newCmdSize = 0;
+    if (newCmdSize > SYS_CONTEXT->maxCommandSize)
+        return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
 
-            if( cmdAuthsArray->cmdAuthsCount > 0 )
-            {
-                // Change command tag.
-                ( (TPM20_Header_In *)( SYS_CONTEXT->tpmInBuffPtr ) )->tag = HOST_TO_BE_16( TPM_ST_SESSIONS );
+    if (SYS_CONTEXT->cpBufferUsedSize > SYS_CONTEXT->maxCommandSize)
+        return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
 
-                // Calculate size needed for authorization area
-                // and check for any null pointers.
-                // Also check for decrypt/encrypt sessions.
-                for( i = 0; i < cmdAuthsArray->cmdAuthsCount; i++ )
-                {
-                    // Check for null pointer.
-                    if( cmdAuthsArray->cmdAuths[i] == 0 )
-                    {
-                        rval = TSS2_SYS_RC_BAD_VALUE;
-                        break;
-                    }
-                    authSize += sizeof( TPMI_SH_AUTH_SESSION ); // Handle
-                    authSize += sizeof( UINT16 ) + cmdAuthsArray->cmdAuths[i]->nonce.t.size; // nonce
-                    authSize += sizeof( UINT8 ); // sessionAttribues
-                    authSize += sizeof( UINT16 ) + cmdAuthsArray->cmdAuths[i]->hmac.t.size; // hmac
+    /* We're going to have to move stuff around.
+     * First move current cpBuffer down by the auth area size. */
+    memmove(SYS_CONTEXT->cpBuffer + authSize + sizeof(UINT32),
+            SYS_CONTEXT->cpBuffer, SYS_CONTEXT->cpBufferUsedSize);
 
-                    // Check for decrypt/encrypt sessions and set flags.   This is
-                    // done to support the one-call function.
-                    if( cmdAuthsArray->cmdAuths[i]->sessionAttributes.decrypt )
-                        SYS_CONTEXT->decryptSession = 1;
+    /* Reset the auth size field */
+    *(UINT32 *)SYS_CONTEXT->cpBuffer = 0;
 
-                    if( cmdAuthsArray->cmdAuths[i]->sessionAttributes.encrypt )
-                        SYS_CONTEXT->encryptSession = 1;
-                }
+    /* Now copy in the authorization area. */
+    authOffset = SYS_CONTEXT->cpBuffer - SYS_CONTEXT->tpmInBuffPtr;
+    rval = Tss2_MU_UINT32_Marshal(authSize, SYS_CONTEXT->tpmInBuffPtr,
+                          newCmdSize, &authOffset);
+    if (rval)
+        return rval;
 
-                if( rval == TSS2_RC_SUCCESS )
-                {
-                    authSize += sizeof( UINT32 ); // authorization size field
-                    newCmdSize = (UINT64)authSize + (UINT64)BE_TO_HOST_32( ( (TPM20_Header_In *)( SYS_CONTEXT->tpmInBuffPtr ) )->commandSize );
-
-                    if( newCmdSize > (UINT64)( SYS_CONTEXT->maxCommandSize ) )
-                    {
-                        rval = TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
-                    }
-                    else
-                    {
-                        void *otherData;
-
-                        // We're going to have to move stuff around.
-                        // First move current cpBuffer down.
-                        rval = CopyMemReverse( SYS_CONTEXT->cpBuffer + authSize, SYS_CONTEXT->cpBuffer, SYS_CONTEXT->cpBufferUsedSize, SYS_CONTEXT->tpmInBuffPtr + SYS_CONTEXT->maxCommandSize );
-
-                        if( rval == TSS2_RC_SUCCESS )
-                        {
-                            // Now copy in the authorization area.
-                            otherData = SYS_CONTEXT->cpBuffer;
-                            rval = CopySessionsDataIn( &otherData, cmdAuthsArray );
-
-                            // Update cpBuffer
-                            SYS_CONTEXT->cpBuffer += authSize;
-
-                            // Now update the command size.
-                            ( (TPM20_Header_In *)( SYS_CONTEXT->tpmInBuffPtr ) )->commandSize = HOST_TO_BE_32( (UINT32)newCmdSize );
-
-                            SYS_CONTEXT->authsCount = cmdAuthsArray->cmdAuthsCount;
-                        }
-                    }
-                }
-            }
-        }
+    for (i = 0; i < cmdAuthsArray->cmdAuthsCount; i++) {
+        rval = Tss2_MU_TPMS_AUTH_COMMAND_Marshal(cmdAuthsArray->cmdAuths[i],
+                                         SYS_CONTEXT->tpmInBuffPtr, newCmdSize,
+                                         &authOffset);
+        if (rval)
+            break;
     }
+
+    SYS_CONTEXT->cpBuffer += authSize + sizeof(UINT32);
+
+    /* Now update the command size. */
+    SYS_REQ_HEADER->commandSize = HOST_TO_BE_32(newCmdSize);
+    SYS_CONTEXT->authsCount = cmdAuthsArray->cmdAuthsCount;
     return rval;
 }
 
 TSS2_RC Tss2_Sys_GetRspAuths(
-    TSS2_SYS_CONTEXT 		*sysContext,
-    TSS2_SYS_RSP_AUTHS 		*rspAuthsArray
-    )
+    TSS2_SYS_CONTEXT *sysContext,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    void *otherData, *otherDataSaved;
+    size_t offset = 0, offset_tmp;
+    int i = 0;
 
-    if( sysContext == NULL || rspAuthsArray == NULL )
-    {
-        rval = TSS2_SYS_RC_BAD_REFERENCE;
+    if (!sysContext || !rspAuthsArray)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    if (SYS_CONTEXT->previousStage != CMD_STAGE_RECEIVE_RESPONSE ||
+        SYS_CONTEXT->rsp_header.responseCode != TPM_RC_SUCCESS ||
+        SYS_CONTEXT->authAllowed == 0)
+        return TSS2_SYS_RC_BAD_SEQUENCE;
+
+    if (rspAuthsArray->rspAuthsCount == 0)
+        return TSS2_SYS_RC_BAD_VALUE;
+
+    if (rspAuthsArray->rspAuthsCount != SYS_CONTEXT->authsCount)
+        return TSS2_SYS_RC_INVALID_SESSIONS;
+
+    if (TPM_ST_SESSIONS != SYS_CONTEXT->rsp_header.tag)
+        return rval;
+
+    offset += sizeof(TPM20_Header_Out);
+    offset += SYS_CONTEXT->numResponseHandles * sizeof(TPM_HANDLE);
+    offset += BE_TO_HOST_32(*SYS_CONTEXT->rspParamsSize);
+    offset += sizeof(UINT32);
+    offset_tmp = offset;
+
+    /* Validate the auth area before copying it */
+    for (i = 0; i < rspAuthsArray->rspAuthsCount; i++) {
+
+        if (offset_tmp > SYS_CONTEXT->rsp_header.responseSize)
+            return TSS2_SYS_RC_MALFORMED_RESPONSE;
+
+        offset_tmp += sizeof(UINT16) +
+            BE_TO_HOST_16(*(UINT16 *)(SYS_CONTEXT->tpmOutBuffPtr + offset_tmp));
+
+        if (offset_tmp > SYS_CONTEXT->rsp_header.responseSize)
+            return TSS2_SYS_RC_MALFORMED_RESPONSE;
+
+        offset_tmp += 1;
+
+        if (offset_tmp > SYS_CONTEXT->rsp_header.responseSize)
+            return TSS2_SYS_RC_MALFORMED_RESPONSE;
+
+        offset_tmp += sizeof(UINT16) +
+            BE_TO_HOST_16(*(UINT16 *)(SYS_CONTEXT->tpmOutBuffPtr + offset_tmp));
+
+        if (offset_tmp > SYS_CONTEXT->rsp_header.responseSize)
+            return TSS2_SYS_RC_MALFORMED_RESPONSE;
+
+        if (i + 1 > rspAuthsArray->rspAuthsCount)
+            return TSS2_SYS_RC_INVALID_SESSIONS;
     }
-    else if( SYS_CONTEXT->previousStage != CMD_STAGE_RECEIVE_RESPONSE ||
-             SYS_CONTEXT->rsp_header.rsp_code != TPM_RC_SUCCESS ||
-            SYS_CONTEXT->authAllowed == 0 )
-    {
-        rval = TSS2_SYS_RC_BAD_SEQUENCE;
+
+    /* Unmarshal the auth area */
+    for (i = 0; i < rspAuthsArray->rspAuthsCount; i++) {
+        rval = Tss2_MU_TPMS_AUTH_RESPONSE_Unmarshal(SYS_CONTEXT->tpmOutBuffPtr,
+                                            SYS_CONTEXT->maxCommandSize,
+                                            &offset, rspAuthsArray->rspAuths[i]);
+        if (rval)
+            break;
     }
-    else
-    {
-        int i = 0;
 
-        SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
-
-        if( rspAuthsArray->rspAuthsCount == 0 )
-        {
-            rval = TSS2_SYS_RC_BAD_VALUE;
-        }
-        else
-        {
-            if( rspAuthsArray->rspAuthsCount != SYS_CONTEXT->authsCount )
-            {
-                rval = TSS2_SYS_RC_INVALID_SESSIONS;
-            }
-            else
-            {
-                // Get start of authorization area.
-                otherData = SYS_CONTEXT->tpmOutBuffPtr;
-                otherData = (UINT8 *)otherData + sizeof( TPM20_Header_Out ) - 1;
-                otherData = (UINT8 *)otherData + SYS_CONTEXT->numResponseHandles * sizeof( TPM_HANDLE );
-                otherData = (UINT8 *)otherData + BE_TO_HOST_32( *( SYS_CONTEXT->rspParamsSize ) );
-                otherData = (UINT8 *)otherData + sizeof( UINT32 );
-
-                otherDataSaved = otherData;
-
-                if( TPM_ST_SESSIONS == SYS_CONTEXT->rsp_header.tag )
-                {
-                    for( i = 0; i < rspAuthsArray->rspAuthsCount; i++ )
-                    {
-                        // Before copying, make sure that we aren't going to go past the output buffer + the response size.
-                        if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + SYS_CONTEXT->rsp_header.size) )
-                        {
-                            rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
-                            break;
-                        }
-
-                        otherData = (UINT8 *)otherData + sizeof( UINT16 ) + BE_TO_HOST_16( *(UINT16 *)otherData ); // Nonce
-                        if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + SYS_CONTEXT->rsp_header.size) )
-                        {
-                            rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
-                            break;
-                        }
-
-                        otherData = (UINT8 *)otherData + 1;  // session attributes.
-                        if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + SYS_CONTEXT->rsp_header.size) )
-                        {
-                            rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
-                            break;
-                        }
-
-                        otherData = (UINT8 *)otherData + sizeof( UINT16 ) + BE_TO_HOST_16( *(UINT16 *)otherData ); // hmac
-                        if( (UINT8 *)otherData > ( SYS_CONTEXT->tpmOutBuffPtr + SYS_CONTEXT->rsp_header.size) )
-                        {
-                            rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
-                            break;
-                        }
-
-                        // Make sure that we don't run past the valid authorizations.
-                        if( ( i + 1 ) > rspAuthsArray->rspAuthsCount )
-                        {
-                            rval = TSS2_SYS_RC_INVALID_SESSIONS;
-                            break;
-                        }
-                    }
-                    if( rval == TSS2_RC_SUCCESS )
-                    {
-                        // Check that number of auths is equal to the number asked for.
-                        // Can't see how this would actually happen, but left it in as a failsafe against
-                        // future code modifications.
-                        if( i != rspAuthsArray->rspAuthsCount )
-                        {
-                            rval = TSS2_SYS_RC_INVALID_SESSIONS;
-                        }
-                        else
-                        {
-                            // Get start of authorization area.
-                            otherData = otherDataSaved;
-                            rval = CopySessionsDataOut( rspAuthsArray, otherData,
-                                    SYS_CONTEXT->rsp_header.tag,
-                                    SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize );
-                        }
-                    }
-                }
-            }
-        }
-    }
     return rval;
 }

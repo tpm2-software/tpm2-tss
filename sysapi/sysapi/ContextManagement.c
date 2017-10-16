@@ -59,8 +59,7 @@ TSS2_RC Tss2_Sys_Initialize(
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
     }
 
-    if( ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->transmit == NULL ||
-        ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )->receive== NULL )
+    if (TSS2_TCTI_TRANSMIT (tctiContext) == NULL || TSS2_TCTI_RECEIVE (tctiContext) == NULL)
     {
         return TSS2_SYS_RC_BAD_TCTI_STRUCTURE;
     }

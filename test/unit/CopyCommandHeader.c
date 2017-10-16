@@ -58,7 +58,7 @@ CopyCommandHeader_nextData_unit (void **state)
     TPM_CC cc = TPM_CC_GetCapability;
 
     CopyCommandHeader (sys_ctx, cc);
-    assert_int_equal (sys_ctx->nextData - sys_ctx->tpmInBuffPtr, sizeof (TPM20_Header_In));
+    assert_int_equal (sys_ctx->nextData, sizeof (TPM20_Header_In));
 }
 
 /**

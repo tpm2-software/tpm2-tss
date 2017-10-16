@@ -28,60 +28,30 @@
 #include "sysapi_util.h"
 #include "tss2_endian.h"
 
-void Unmarshal_Simple_TPM2B_NoSizeCheck( UINT8 *outBuffPtr, UINT32 maxResponseSize, UINT8 **nextData, TPM2B *outTPM2B, TSS2_RC *rval )
+void Unmarshal_Simple_TPM2B_NoSizeCheck(UINT8 *outBuffPtr, UINT32 maxResponseSize, size_t *nextData, TPM2B *outTPM2B, TSS2_RC *rval)
 {
-//deleted for now--spec issues with nested TPM2B's
-#if 0
-    INT64 callerAllocatedSize;
-#endif
     int i;
     UINT16 length;
 
-    if( *rval == TSS2_RC_SUCCESS )
-    {
-        if( outBuffPtr == 0 || nextData == 0 || *nextData == 0 )
-        {
-            *rval = TSS2_SYS_RC_BAD_REFERENCE;
-        }
-        else
-        {
-            if( *rval == TSS2_RC_SUCCESS )
-            {
-                length = BE_TO_HOST_16(*(UINT16 *)*nextData);
+    if(*rval)
+        return;
 
-                if( outTPM2B != 0 )
-                {
-                    Unmarshal_UINT16( outBuffPtr, maxResponseSize, nextData, &( outTPM2B->size ), rval );
-                }
-                else
-                {
-                    // Let low level function deal with NULL output pointer.
-                    Unmarshal_UINT16( outBuffPtr, maxResponseSize, nextData, 0, rval );
-                }
+    if (!outBuffPtr || !nextData) {
+        *rval = TSS2_SYS_RC_BAD_REFERENCE;
+        return;
+    }
 
-                if( *rval == TSS2_RC_SUCCESS )
-                {
-                    // Copy to output TPM2B.
-                    for( i = 0; i < length; i++ )
-                    {
-                        if( outTPM2B != 0 )
-                        {
-                            Unmarshal_UINT8( outBuffPtr, maxResponseSize, nextData,  &( outTPM2B->buffer[i] ), rval );
-                        }
-                        else
-                        {
-                            // Let low level function deal with NULL output pointer.
-                            Unmarshal_UINT8( outBuffPtr, maxResponseSize, nextData, 0, rval );
-                        }
+    length = BE_TO_HOST_16(*(UINT16 *)(outBuffPtr + *nextData));
 
-                        if( *rval != TSS2_RC_SUCCESS )
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
-        }
+    *rval = Tss2_MU_UINT16_Unmarshal(outBuffPtr, maxResponseSize, nextData, outTPM2B ? &outTPM2B->size : NULL);
+
+    if (*rval)
+        return;
+
+    for (i = 0; i < length; i++) {
+        *rval = Tss2_MU_UINT8_Unmarshal(outBuffPtr, maxResponseSize, nextData, outTPM2B ? &outTPM2B->buffer[i] : NULL);
+
+        if (*rval)
+            return;
     }
 }
-

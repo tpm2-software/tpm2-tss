@@ -52,6 +52,8 @@
 #define TCTI_LOG_CALLBACK(ctx) ((TSS2_TCTI_CONTEXT_INTEL*)ctx)->logCallback
 #define TCTI_LOG_DATA(ctx)     ((TSS2_TCTI_CONTEXT_INTEL*)ctx)->logData
 #define TCTI_LOG_BUFFER_CALLBACK(ctx) ((TSS2_TCTI_CONTEXT_INTEL*)ctx)->logBufferCallback
+#define TCTI_CONTEXT ((TSS2_TCTI_CONTEXT_COMMON_CURRENT *)(SYS_CONTEXT->tctiContext))
+#define TCTI_CONTEXT_INTEL ((TSS2_TCTI_CONTEXT_INTEL *)tctiContext)
 
 typedef TSS2_RC (*TCTI_TRANSMIT_PTR)( TSS2_TCTI_CONTEXT *tctiContext, size_t size, uint8_t *command);
 typedef TSS2_RC (*TCTI_RECEIVE_PTR) (TSS2_TCTI_CONTEXT *tctiContext, size_t *size, uint8_t *response, int32_t timeout);
@@ -102,8 +104,5 @@ typedef struct {
     TCTI_LOG_BUFFER_CALLBACK logBufferCallback;
     void *logData;
 } TSS2_TCTI_CONTEXT_INTEL;
-
-#define TCTI_CONTEXT ( (TSS2_TCTI_CONTEXT_COMMON_CURRENT *)(SYS_CONTEXT->tctiContext) )
-#define TCTI_CONTEXT_INTEL ( (TSS2_TCTI_CONTEXT_INTEL *)tctiContext )
 
 #endif

@@ -29,19 +29,6 @@
 #include "sysapi_util.h"
 #include "tss2_endian.h"
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//  Procedure:	CopyCommandHeader
-//
-//  Input:
-//
-//  Output:	None
-//
-//  Description:
-//
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-
 void InitSysContextFields(
     TSS2_SYS_CONTEXT *sysContext
     )
@@ -55,7 +42,7 @@ void InitSysContextFields(
     SYS_CONTEXT->encryptSession = 0;
     SYS_CONTEXT->prepareCalledFromOneCall = 0;
     SYS_CONTEXT->completeCalledFromOneCall = 0;
-    SYS_CONTEXT->nextData = SYS_CONTEXT->tpmInBuffPtr;
+    SYS_CONTEXT->nextData = 0;
     SYS_CONTEXT->rpBufferUsedSize = 0;
     SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
 }
@@ -88,13 +75,13 @@ void InitSysContextPtrs(
 
 UINT32 GetCommandSize( TSS2_SYS_CONTEXT *sysContext )
 {
-    return BE_TO_HOST_32(((TPM20_Header_In *) SYS_CONTEXT->tpmInBuffPtr)->commandSize);
+    return BE_TO_HOST_32(SYS_REQ_HEADER->commandSize);
 }
 
 void CopyCommandHeader( _TSS2_SYS_CONTEXT_BLOB *sysContext, TPM_CC commandCode )
 {
-   SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
-    SYS_CONTEXT->nextData = SYS_CONTEXT->tpmInBuffPtr;
+    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
+    SYS_CONTEXT->nextData = 0;
 
     Marshal_TPM_ST (SYS_CONTEXT->tpmInBuffPtr,
                     SYS_CONTEXT->maxCommandSize,
@@ -102,11 +89,11 @@ void CopyCommandHeader( _TSS2_SYS_CONTEXT_BLOB *sysContext, TPM_CC commandCode )
                     TPM_ST_NO_SESSIONS,
                     &(SYS_CONTEXT->rval));
 
-  ((TPM20_Header_In *)sysContext->tpmInBuffPtr)->commandCode = BE_TO_HOST_32(commandCode);
+  SYS_REQ_HEADER->commandCode = BE_TO_HOST_32(commandCode);
 
   SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
 
-  SYS_CONTEXT->nextData = SYS_CONTEXT->tpmInBuffPtr + sizeof( TPM20_Header_In );
+  SYS_CONTEXT->nextData = sizeof(TPM20_Header_In);
 }
 
 TPM_RC FinishCommand( _TSS2_SYS_CONTEXT_BLOB *sysContext,
@@ -116,16 +103,10 @@ TPM_RC FinishCommand( _TSS2_SYS_CONTEXT_BLOB *sysContext,
     if( SYS_CONTEXT->rval != TSS2_RC_SUCCESS )
         return SYS_CONTEXT->rval;
 
-    // Now set the command size field, now that we know the size of the whole command.
-    // WILL NEED TO TO THIS DIFFERENTLY.  OR MAYBE NOT AT ALL HERE.
-//    ((TPM20_Header_In *) sysContext->tpmInBuffPtr)->commandSize = CHANGE_ENDIAN_DWORD( ( (UINT8 *)otherData ) -
-//            (UINT8 *)&( ( TPM20_Header_In *) sysContext->tpmInBuffPtr )->tag );
+    SYS_CONTEXT->rval = Tss2_Sys_Execute((TSS2_SYS_CONTEXT *)sysContext);
 
-    SYS_CONTEXT->rval = Tss2_Sys_Execute( (TSS2_SYS_CONTEXT *)sysContext );
-
-    return( SYS_CONTEXT->rval );
+    return SYS_CONTEXT->rval;
 }
-
 
 // Common to all _Prepare
 TSS2_RC CommonPreparePrologue(
@@ -155,13 +136,14 @@ TSS2_RC CommonPreparePrologue(
 
         SYS_CONTEXT->numResponseHandles = GetNumResponseHandles( commandCode );
 
-        SYS_CONTEXT->commandCodeSwapped = BE_TO_HOST_32(commandCode);
+        SYS_CONTEXT->commandCodeSwapped = HOST_TO_BE_32(commandCode);
 
-        SYS_CONTEXT->rspParamsSize = (UINT32 *)&(((TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr ) )->otherData ) +
-                GetNumResponseHandles( commandCode );
+        SYS_CONTEXT->rspParamsSize = (UINT32 *)(SYS_CONTEXT->tpmOutBuffPtr +
+                                     sizeof(TPM20_Header_Out) +
+                                     (GetNumResponseHandles(commandCode) * sizeof(UINT32)));
 
         numCommandHandles = GetNumCommandHandles( commandCode );
-        SYS_CONTEXT->cpBuffer = SYS_CONTEXT->nextData + numCommandHandles * sizeof(UINT32);
+        SYS_CONTEXT->cpBuffer = SYS_CONTEXT->tpmInBuffPtr + SYS_CONTEXT->nextData + (numCommandHandles * sizeof(UINT32));
     }
 
     return SYS_CONTEXT->rval;
@@ -176,11 +158,10 @@ TSS2_RC CommonPrepareEpilogue(
    {
        return SYS_CONTEXT->rval;
    }
-   SYS_CONTEXT->cpBufferUsedSize = SYS_CONTEXT->nextData - SYS_CONTEXT->cpBuffer;
+   SYS_CONTEXT->cpBufferUsedSize = (SYS_CONTEXT->tpmInBuffPtr + SYS_CONTEXT->nextData) - SYS_CONTEXT->cpBuffer;
 
    // Set current command size.
-   ((TPM20_Header_In *) SYS_CONTEXT->tpmInBuffPtr)->commandSize =
-           BE_TO_HOST_32(SYS_CONTEXT->nextData - SYS_CONTEXT->tpmInBuffPtr);
+   SYS_REQ_HEADER->commandSize = HOST_TO_BE_32(SYS_CONTEXT->nextData);
 
    SYS_CONTEXT->previousStage = CMD_STAGE_PREPARE;
 
@@ -198,7 +179,7 @@ TSS2_RC CommonComplete( TSS2_SYS_CONTEXT *sysContext )
     }
     else
     {
-        rspSize = BE_TO_HOST_32(((TPM20_Header_Out *)(SYS_CONTEXT->tpmOutBuffPtr))->responseSize);
+        rspSize = BE_TO_HOST_32(SYS_RESP_HEADER->responseSize);
     }
 
     if( SYS_CONTEXT->previousStage != CMD_STAGE_RECEIVE_RESPONSE || SYS_CONTEXT->rval != TSS2_RC_SUCCESS )
@@ -212,25 +193,23 @@ TSS2_RC CommonComplete( TSS2_SYS_CONTEXT *sysContext )
     else
     {
         TPM_ST tag = 0;
-        SYS_CONTEXT->nextData = (UINT8 *)( SYS_CONTEXT->rspParamsSize );
+        SYS_CONTEXT->nextData = (UINT8 *)SYS_CONTEXT->rspParamsSize - SYS_CONTEXT->tpmOutBuffPtr;
 
         // Save response params size if command has authorization area.
-        UINT8 *tmp_ptr = SYS_CONTEXT->tpmOutBuffPtr;
+        size_t tmp = 0;
         Unmarshal_TPM_ST (SYS_CONTEXT->tpmOutBuffPtr,
                           SYS_CONTEXT->maxResponseSize,
-                          &tmp_ptr,
-                          &tag,
-                          &(SYS_CONTEXT->rval));
+                          &tmp, &tag, &SYS_CONTEXT->rval);
         if( tag == TPM_ST_SESSIONS )
         {
             Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &( SYS_CONTEXT->nextData ),
                     &( SYS_CONTEXT->rpBufferUsedSize ), &(SYS_CONTEXT->rval ) );
         }
 
-        SYS_CONTEXT->rpBuffer = SYS_CONTEXT->nextData;
+        SYS_CONTEXT->rpBuffer = SYS_CONTEXT->tpmOutBuffPtr + SYS_CONTEXT->nextData;
 
         // Save response params size if command does not have an authorization area.
-        if (BE_TO_HOST_16(((TPM20_Header_Out *)(SYS_CONTEXT->tpmOutBuffPtr))->tag) != TPM_ST_SESSIONS)
+        if (BE_TO_HOST_16(SYS_RESP_HEADER->tag) != TPM_ST_SESSIONS)
         {
             SYS_CONTEXT->rpBufferUsedSize = rspSize - ( SYS_CONTEXT->rpBuffer - SYS_CONTEXT->tpmOutBuffPtr );
         }
@@ -261,10 +240,9 @@ TSS2_RC CommonOneCall(
 
         if ( SYS_CONTEXT->rval == TSS2_RC_SUCCESS )
         {
-            if( SYS_CONTEXT->rsp_header.rsp_code == TPM_RC_SUCCESS )
+            if (SYS_CONTEXT->rsp_header.responseCode == TPM_RC_SUCCESS)
             {
-                if (BE_TO_HOST_16(((TPM20_Header_Out *)( SYS_CONTEXT->tpmOutBuffPtr))->tag) == TPM_ST_SESSIONS &&
-                        rspAuthsArray != 0)
+                if (BE_TO_HOST_16(SYS_RESP_HEADER->tag) == TPM_ST_SESSIONS && rspAuthsArray != 0)
                 {
                     SYS_CONTEXT->rval = Tss2_Sys_GetRspAuths( sysContext, rspAuthsArray );
                 }
@@ -283,14 +261,10 @@ TSS2_RC  CommonOneCallForNoResponseCmds(
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
-    rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
 
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        // command-specific
-
-        rval = CommonComplete( sysContext );
-    }
+    if(rval == TSS2_RC_SUCCESS)
+        rval = CommonComplete(sysContext);
 
     return rval;
 }

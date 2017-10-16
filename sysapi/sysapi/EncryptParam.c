@@ -47,8 +47,8 @@ TSS2_RC Tss2_Sys_GetEncryptParam(
     {
         rval = TSS2_SYS_RC_BAD_SEQUENCE;
     }
-    else if( SYS_CONTEXT->encryptAllowed == 0 ||
-            (BE_TO_HOST_16(((TPM20_Header_Out *)(SYS_CONTEXT->tpmOutBuffPtr))->tag) == TPM_ST_NO_SESSIONS))
+    else if (SYS_CONTEXT->encryptAllowed == 0 ||
+             BE_TO_HOST_16(SYS_RESP_HEADER->tag) == TPM_ST_NO_SESSIONS)
     {
         rval = TSS2_SYS_RC_NO_ENCRYPT_PARAM;
     }
@@ -75,7 +75,7 @@ TSS2_RC Tss2_Sys_SetEncryptParam(
 {
     TSS2_RC         rval = TSS2_RC_SUCCESS;
 	size_t          currEncryptParamSize;
-   	const uint8_t   *currEncryptParamBuffer;
+    uint8_t         *currEncryptParamBuffer;
 
     if( encryptParamBuffer == 0 || sysContext == 0 )
     {
@@ -83,7 +83,9 @@ TSS2_RC Tss2_Sys_SetEncryptParam(
     }
     else
     {
-        rval = Tss2_Sys_GetEncryptParam( sysContext, &currEncryptParamSize, &currEncryptParamBuffer );
+        rval = Tss2_Sys_GetEncryptParam(sysContext,
+                                    &currEncryptParamSize,
+                                    (const uint8_t **)&currEncryptParamBuffer);
 
         if( rval == TSS2_RC_SUCCESS )
         {
@@ -93,9 +95,11 @@ TSS2_RC Tss2_Sys_SetEncryptParam(
             }
             else
             {
-                CopyMem( (uint8_t *)currEncryptParamBuffer, encryptParamBuffer,
-                        encryptParamSize,
-                        SYS_CONTEXT->tpmInBuffPtr + SYS_CONTEXT->maxCommandSize );
+                if (currEncryptParamBuffer + encryptParamSize >
+                        SYS_CONTEXT->tpmInBuffPtr + SYS_CONTEXT->maxCommandSize)
+                    return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+
+                memmove(currEncryptParamBuffer, encryptParamBuffer, encryptParamSize);
             }
         }
     }

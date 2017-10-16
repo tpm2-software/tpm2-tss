@@ -32,18 +32,30 @@
 extern "C" {
 #endif
 
-#include "tcti_util.h"
-
 // TBD:  delete this after porting completed.
 #define CMD_STAGE_1     1
 
 enum cmdStates { CMD_STAGE_INITIALIZE, CMD_STAGE_PREPARE, CMD_STAGE_SEND_COMMAND, CMD_STAGE_RECEIVE_RESPONSE, CMD_STAGE_ALL = 0xff };
 
-typedef struct {
-  TPM_ST  tag;
-  UINT32  size;
-  TPM_RC  rsp_code;
-} TPM20_Rsp_Header;
+#pragma pack(push, 1)
+typedef struct _TPM20_Header_In {
+  TPM_ST tag;
+  UINT32 commandSize;
+  UINT32 commandCode;
+} TPM20_Header_In;
+
+typedef struct _TPM20_Header_Out {
+  TPM_ST tag;
+  UINT32 responseSize;
+  UINT32 responseCode;
+} TPM20_Header_Out;
+
+typedef struct _TPM20_ErrorResponse {
+  TPM_ST tag;
+  UINT32 responseSize;
+  UINT32 responseCode;
+} TPM20_ErrorResponse;
+#pragma pack(pop)
 
 typedef struct {
     //
@@ -57,7 +69,7 @@ typedef struct {
     UINT8 *tpmOutBuffPtr;           // Input: Pointer to response buffer
     UINT32 maxResponseSize;         // Input: max size of response buffer area
 
-    TPM20_Rsp_Header rsp_header;
+    TPM20_Header_Out rsp_header;
 
     //
     // These are set by system API and used by helper functions to calculate cpHash,
@@ -95,38 +107,14 @@ typedef struct {
     // Marshalling functions check this and SAPI functions return it.
     TSS2_RC rval;
 
-    // Location for next data in command/response buffer.
-    UINT8 *nextData;
-
+    /* Offset to next data in command/response buffer. */
+    size_t nextData;
 } _TSS2_SYS_CONTEXT_BLOB;
 
 
-#define SYS_CONTEXT ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )
-
-#pragma pack(push, 1)
-//
-// Generic header
-//
-typedef struct _TPM20_Header_In {
-  TPM_ST tag;
-  UINT32 commandSize;
-  UINT32 commandCode;
-} TPM20_Header_In;
-
-typedef struct _TPM20_Header_Out {
-  TPM_ST tag;
-  UINT32 responseSize;
-  UINT32 responseCode;
-  UINT8 otherData;
-} TPM20_Header_Out;
-
-typedef struct _TPM20_ErrorResponse {
-  TPM_ST tag;
-  UINT32 responseSize;
-  UINT32 responseCode;
-} TPM20_ErrorResponse;
-
-#pragma pack(pop)
+#define SYS_CONTEXT ((_TSS2_SYS_CONTEXT_BLOB *)sysContext)
+#define SYS_RESP_HEADER ((TPM20_Header_Out *)(SYS_CONTEXT->tpmOutBuffPtr))
+#define SYS_REQ_HEADER ((TPM20_Header_In *)(SYS_CONTEXT->tpmInBuffPtr))
 
 typedef struct {
     TPM_CC commandCode;
@@ -146,10 +134,6 @@ TPM_RC FinishCommand( _TSS2_SYS_CONTEXT_BLOB *sysContext,
 
 UINT16 GetDigestSize( TPM_ALG_ID authHash );
 UINT32 GetCommandSize( TSS2_SYS_CONTEXT *sysContext );
-TSS2_RC CopySessionsDataIn( void **otherData, const TSS2_SYS_CMD_AUTHS *pSessionDataIn );
-TSS2_RC CopySessionDataIn( void **otherData, TPMS_AUTH_COMMAND const *sessionData, UINT32 *sessionSizePtr );
-TSS2_RC CopySessionDataOut( TPMS_AUTH_RESPONSE *sessionData, void **otherData, UINT8* outBuffPtr, UINT32 outBuffSize );
-TSS2_RC CopySessionsDataOut( TSS2_SYS_RSP_AUTHS *rspAuthsArray, void *otherData, TPM_ST tag, UINT8* outBuffPtr, UINT32 outBuffSize );
 
 TPM_RC ConcatSizedByteBuffer( TPM2B_MAX_BUFFER *result, TPM2B *addBuffer );
 
@@ -181,12 +165,7 @@ TSS2_RC CommonPrepareEpilogue(
     TSS2_SYS_CONTEXT *sysContext
     );
 
-TSS2_RC CopyMem( UINT8 *dest, const UINT8 *src, const size_t len, const UINT8 *limit );
-
-TSS2_RC CopyMemReverse( UINT8 *dest, const UINT8 *src, const size_t len, const UINT8 *limit );
-
 int GetNumCommandHandles( TPM_CC commandCode );
-
 int GetNumResponseHandles( TPM_CC commandCode );
 
 TSS2_SYS_CONTEXT *InitSysContext(

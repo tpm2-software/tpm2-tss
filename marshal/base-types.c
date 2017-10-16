@@ -29,14 +29,14 @@
 #include <inttypes.h>
 #include <string.h>
 
-#include "sapi/marshal.h"
+#include "sapi/tss2_mu.h"
 #include "sapi/tpm20.h"
 #include "tss2_endian.h"
 #include "log.h"
 
 #define BASE_MARSHAL(type) \
 TSS2_RC \
-type##_Marshal ( \
+Tss2_MU_##type##_Marshal ( \
     type           src, \
     uint8_t        buffer [], \
     size_t         buffer_size, \
@@ -101,7 +101,7 @@ type##_Marshal ( \
 
 #define BASE_UNMARSHAL(type) \
 TSS2_RC \
-type##_Unmarshal ( \
+Tss2_MU_##type##_Unmarshal ( \
     uint8_t const buffer[], \
     size_t        buffer_size, \
     size_t       *offset, \
