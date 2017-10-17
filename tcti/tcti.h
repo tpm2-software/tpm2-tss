@@ -1,41 +1,42 @@
-//**********************************************************************;
-// Copyright (c) 2015, 2017 Intel Corporation
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-// this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright notice,
-// this list of conditions and the following disclaimer in the documentation
-// and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
-//**********************************************************************;
+/***********************************************************************
+ * Copyright (c) 2015 - 2017 Intel Corporation
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ ***********************************************************************/
 
-//
-// The context for TCTI implementations is on opaque
-// structure. There shall never be a definition of its content.
-// Implementation provide the size information to
-// applications via the initialize call.
-// This makes use of a compiler trick that allows type
-// checking of the pointer even though the type isn't
-// defined.
-//
-// The first field of a Context must be the common part
-// (see below).
+/*
+ * The context for TCTI implementations is on opaque
+ * structure. There shall never be a definition of its content.
+ * Implementation provide the size information to
+ * applications via the initialize call.
+ * This makes use of a compiler trick that allows type
+ * checking of the pointer even though the type isn't
+ * defined.
+ *
+ * The first field of a Context must be the common part
+ * (see below).
+ */
 #ifndef TSS2_TCTI_UTIL_H
 #define TSS2_TCTI_UTIL_H
 
@@ -74,30 +75,32 @@ typedef struct {
         UINT32 debugMsgEnabled: 1;
         UINT32 locality: 8;
         UINT32 commandSent: 1;
-        UINT32 rmDebugPrefix: 1;  // Used to add a prefix to RM debug messages.  This is ONLY used
-                                  // for TPM commands and responses as a way to differentiate
-                                  // RM generated TPM commands from application generated ones.
-
-        // Following two fields used to save partial response status in case receive buffer's too small.
+        /*
+         * Used to add a prefix to RM debug messages.  This is ONLY used
+         * for TPM commands and responses as a way to differentiate
+         * RM generated TPM commands from application generated ones.
+         */
+        UINT32 rmDebugPrefix: 1;
+        /* Following two fields used to save partial response status in case receive buffer's too small. */
         UINT32 tagReceived: 1;
         UINT32 responseSizeReceived: 1;
         UINT32 protocolResponseSizeReceived: 1;
     } status;
 
-    // Following two fields used to save partial response in case receive buffer's too small.
+    /* Following two fields used to save partial response in case receive buffer's too small. */
     TPM_ST tag;
     TPM_RC responseSize;
 
     TSS2_TCTI_CONTEXT *currentTctiContext;
 
-    // Sockets if socket interface is being used.
+    /* Sockets if socket interface is being used. */
     SOCKET otherSock;
     SOCKET tpmSock;
     SOCKET currentConnectSock;
 
-    // File descriptor for device file if real TPM is being used.
+    /* File descriptor for device file if real TPM is being used. */
     int devFile;
-    UINT8 previousStage;            // Used to check for sequencing errors.
+    UINT8 previousStage;            /* Used to check for sequencing errors. */
     unsigned char responseBuffer[4096];
     TCTI_LOG_CALLBACK logCallback;
     TCTI_LOG_BUFFER_CALLBACK logBufferCallback;
@@ -118,7 +121,7 @@ tcti_context_intel_cast (TSS2_TCTI_CONTEXT *ctx)
  * This function performs common checks on the context structure and the
  * buffer passed into TCTI 'transmit' functions.
  */
-TSS2_RC CommonSendChecks(
+TSS2_RC tcti_send_checks (
     TSS2_TCTI_CONTEXT *tctiContext,
     uint8_t           *command_buffer
     );
@@ -126,7 +129,7 @@ TSS2_RC CommonSendChecks(
  * This function performs common checks on the context structure, buffer and
  * size parameter passed to the TCTI 'receive' functions.
  */
-TSS2_RC CommonReceiveChecks(
+TSS2_RC tcti_receive_checks (
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t            *response_size,
     unsigned char     *response_buffer
