@@ -323,6 +323,20 @@ Tss2_MU_TPM2B_DIGEST_Unmarshal(
     TPM2B_DIGEST   *dest);
 
 TSS2_RC
+Tss2_MU_TPM2B_ATTEST_Marshal(
+    TPM2B_ATTEST const *src,
+    uint8_t         buffer[],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_ATTEST_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPM2B_ATTEST   *dest);
+
+TSS2_RC
 Tss2_MU_TPM2B_NAME_Marshal(
     TPM2B_NAME const *src,
     uint8_t         buffer[],
@@ -405,6 +419,20 @@ Tss2_MU_TPM2B_PRIVATE_KEY_RSA_Unmarshal(
     size_t          buffer_size,
     size_t         *offset,
     TPM2B_PRIVATE_KEY_RSA *dest);
+
+TSS2_RC
+Tss2_MU_TPM2B_PRIVATE_Marshal(
+    TPM2B_PRIVATE const *src,
+    uint8_t         buffer[],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_PRIVATE_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPM2B_PRIVATE  *dest);
 
 TSS2_RC
 Tss2_MU_TPM2B_CONTEXT_SENSITIVE_Marshal(
@@ -545,6 +573,132 @@ Tss2_MU_TPM2B_PUBLIC_Unmarshal(
     size_t          buffer_size,
     size_t          *offset,
     TPM2B_PUBLIC    *dest);
+
+TSS2_RC
+Tss2_MU_TPM2B_ENCRYPTED_SECRET_Marshal(
+    TPM2B_ENCRYPTED_SECRET  const *src,
+    uint8_t         buffer[],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_ENCRYPTED_SECRET_Unmarshal(
+    uint8_t const  buffer[],
+    size_t          buffer_size,
+    size_t          *offset,
+    TPM2B_ENCRYPTED_SECRET *dest);
+
+TSS2_RC
+Tss2_MU_TPM2B_ID_OBJECT_Marshal(
+    TPM2B_ID_OBJECT const *src,
+    uint8_t         buffer[],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_ID_OBJECT_Unmarshal(
+    uint8_t const  buffer[],
+    size_t          buffer_size,
+    size_t          *offset,
+    TPM2B_ID_OBJECT *dest);
+
+TSS2_RC
+Tss2_MU_TPM2B_IV_Marshal(
+    TPM2B_IV const *src,
+    uint8_t         buffer[],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_IV_Unmarshal(
+    uint8_t const  buffer[],
+    size_t          buffer_size,
+    size_t          *offset,
+    TPM2B_IV        *dest);
+
+TSS2_RC
+Tss2_MU_TPM2B_AUTH_Marshal(
+    TPM2B_AUTH const *src,
+    uint8_t         buffer[],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_AUTH_Unmarshal(
+    uint8_t const  buffer[],
+    size_t          buffer_size,
+    size_t          *offset,
+    TPM2B_AUTH      *dest);
+
+TSS2_RC
+Tss2_MU_TPM2B_EVENT_Marshal(
+    TPM2B_EVENT const *src,
+    uint8_t         buffer[],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_EVENT_Unmarshal(
+    uint8_t const  buffer[],
+    size_t          buffer_size,
+    size_t          *offset,
+    TPM2B_EVENT     *dest);
+
+TSS2_RC
+Tss2_MU_TPM2B_MAX_BUFFER_Marshal(
+    TPM2B_MAX_BUFFER const *src,
+    uint8_t         buffer[],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_MAX_BUFFER_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t          *offset,
+    TPM2B_MAX_BUFFER *dest);
+
+TSS2_RC
+Tss2_MU_TPM2B_NONCE_Marshal(
+    TPM2B_NONCE const *src,
+    uint8_t         buffer[],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_NONCE_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t          *offset,
+    TPM2B_NONCE     *dest);
+
+TSS2_RC
+Tss2_MU_TPM2B_OPERAND_Marshal(
+    TPM2B_OPERAND const *src,
+    uint8_t         buffer[],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_OPERAND_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t          *offset,
+    TPM2B_OPERAND   *dest);
+
+TSS2_RC
+Tss2_MU_TPM2B_TIMEOUT_Marshal(
+    TPM2B_TIMEOUT const *src,
+    uint8_t         buffer[],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_TIMEOUT_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t          *offset,
+    TPM2B_TIMEOUT   *dest);
 
 TSS2_RC
 Tss2_MU_TPMS_CONTEXT_Marshal(
