@@ -63,6 +63,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
                                           &creationHash,
                                           &creationTicket,
                                           &sessions_rsp));
+    Tss2_Sys_FlushContext( sapi_context, parent_handle );
     if (rc == TPM_RC_SUCCESS) {
         print_log ("success");
     } else {
