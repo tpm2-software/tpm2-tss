@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,84 +30,91 @@
 
 TPM_RC Tss2_Sys_GetCapability_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_CAP	capability,
-    UINT32	property,
-    UINT32	propertyCount
-    )
+    TPM_CAP capability,
+    UINT32 property,
+    UINT32 propertyCount)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TPM_RC rval;
 
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
+    rval = CommonPreparePrologue(sysContext, TPM_CC_GetCapability);
+    if (rval)
+        return rval;
 
-    CommonPreparePrologue( sysContext, TPM_CC_GetCapability );
+    rval = Tss2_MU_UINT32_Marshal(capability, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
+    rval = Tss2_MU_UINT32_Marshal(property, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), capability, &(SYS_CONTEXT->rval) );
-
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), property, &(SYS_CONTEXT->rval) );
-
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), propertyCount, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_UINT32_Marshal(propertyCount, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 0;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_GetCapability_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_YES_NO	*moreData,
-    TPMS_CAPABILITY_DATA	*capabilityData
-    )
+    TPMI_YES_NO *moreData,
+    TPMS_CAPABILITY_DATA *capabilityData)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TPM_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    Unmarshal_UINT8( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), moreData, &(SYS_CONTEXT->rval) );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    Unmarshal_TPMS_CAPABILITY_DATA( sysContext, capabilityData );
+    rval = Tss2_MU_UINT8_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                   SYS_CONTEXT->maxCommandSize,
+                                   &SYS_CONTEXT->nextData,
+                                   moreData);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPMS_CAPABILITY_DATA_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                                  SYS_CONTEXT->maxCommandSize,
+                                                  &SYS_CONTEXT->nextData,
+                                                  capabilityData);
 }
 
 TPM_RC Tss2_Sys_GetCapability(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM_CAP	capability,
-    UINT32	property,
-    UINT32	propertyCount,
-    TPMI_YES_NO	*moreData,
-    TPMS_CAPABILITY_DATA	*capabilityData,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPM_CAP capability,
+    UINT32 property,
+    UINT32 propertyCount,
+    TPMI_YES_NO *moreData,
+    TPMS_CAPABILITY_DATA *capabilityData,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_GetCapability_Prepare(sysContext, capability, property,
+                                          propertyCount);
+    if (rval)
+        return rval;
 
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-    rval = Tss2_Sys_GetCapability_Prepare( sysContext, capability, property, propertyCount );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
-
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_GetCapability_Complete( sysContext, moreData, capabilityData );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_GetCapability_Complete(sysContext, moreData, capabilityData);
 }
-

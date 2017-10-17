@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,72 +30,64 @@
 
 TPM_RC Tss2_Sys_Vendor_TCG_Test_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_DATA	*inputData
-    )
+    TPM2B_DATA *inputData)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
+    rval = CommonPreparePrologue(sysContext, TPM_CC_Vendor_TCG_Test);
+    if (rval)
+        return rval;
 
-    CommonPreparePrologue( sysContext, TPM_CC_Vendor_TCG_Test );
-
-
-
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( inputData->b ) );
+    rval = Tss2_MU_TPM2B_DATA_Marshal(inputData, SYS_CONTEXT->tpmInBuffPtr,
+                                      SYS_CONTEXT->maxCommandSize,
+                                      &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 1;
     SYS_CONTEXT->encryptAllowed = 1;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_Vendor_TCG_Test_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_DATA	*outputData
-    )
+    TPM2B_DATA *outputData)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    UNMARSHAL_SIMPLE_TPM2B( sysContext, &( outputData->b ) );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPM2B_DATA_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                        SYS_CONTEXT->maxCommandSize,
+                                        &SYS_CONTEXT->nextData, outputData);
 }
 
 TPM_RC Tss2_Sys_Vendor_TCG_Test(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DATA	*inputData,
-    TPM2B_DATA	*outputData,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPM2B_DATA *inputData,
+    TPM2B_DATA *outputData,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_Vendor_TCG_Test_Prepare(sysContext, inputData);
+    if (rval)
+        return rval;
 
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-    rval = Tss2_Sys_Vendor_TCG_Test_Prepare( sysContext, inputData );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
-
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_Vendor_TCG_Test_Complete( sysContext, outputData );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_Vendor_TCG_Test_Complete(sysContext, outputData);
 }
-

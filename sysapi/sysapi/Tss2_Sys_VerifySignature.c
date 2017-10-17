@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,89 +30,93 @@
 
 TPM_RC Tss2_Sys_VerifySignature_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	keyHandle,
-    TPM2B_DIGEST	*digest,
-    TPMT_SIGNATURE	*signature
-    )
+    TPMI_DH_OBJECT keyHandle,
+    TPM2B_DIGEST *digest,
+    TPMT_SIGNATURE *signature)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
+    TSS2_RC rval;
+
+    if (!sysContext || !signature)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    rval = CommonPreparePrologue(sysContext, TPM_CC_VerifySignature);
+    if (rval)
+        return rval;
+
+    rval = Tss2_MU_UINT32_Marshal(keyHandle, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
+
+    if (!digest) {
+        SYS_CONTEXT->decryptNull = 1;
+
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
+                                      SYS_CONTEXT->maxCommandSize,
+                                      &SYS_CONTEXT->nextData);
+    } else {
+
+        rval = Tss2_MU_TPM2B_DIGEST_Marshal(digest, SYS_CONTEXT->tpmInBuffPtr,
+                                            SYS_CONTEXT->maxCommandSize,
+                                            &SYS_CONTEXT->nextData);
     }
 
-    if( signature == NULL  )
-	{
-		return TSS2_SYS_RC_BAD_REFERENCE;
-	}
+    if (rval)
+        return rval;
 
-    CommonPreparePrologue( sysContext, TPM_CC_VerifySignature );
-
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), keyHandle, &(SYS_CONTEXT->rval) );
-
-    if( digest == 0 )
-	{
-		SYS_CONTEXT->decryptNull = 1;
-	}
-
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( digest->b ) );
-
-    Marshal_TPMT_SIGNATURE( sysContext, signature );
+    rval = Tss2_MU_TPMT_SIGNATURE_Marshal(signature, SYS_CONTEXT->tpmInBuffPtr,
+                                          SYS_CONTEXT->maxCommandSize,
+                                          &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 1;
     SYS_CONTEXT->encryptAllowed = 0;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_VerifySignature_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMT_TK_VERIFIED	*validation
-    )
+    TPMT_TK_VERIFIED *validation)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    Unmarshal_TPMT_TK_VERIFIED( sysContext, validation );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPMT_TK_VERIFIED_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                              SYS_CONTEXT->maxCommandSize,
+                                              &SYS_CONTEXT->nextData, validation);
 }
 
 TPM_RC Tss2_Sys_VerifySignature(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	keyHandle,
+    TPMI_DH_OBJECT keyHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DIGEST	*digest,
-    TPMT_SIGNATURE	*signature,
-    TPMT_TK_VERIFIED	*validation,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPM2B_DIGEST *digest,
+    TPMT_SIGNATURE *signature,
+    TPMT_TK_VERIFIED *validation,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
-    if( signature == NULL  )
-	{
-		return TSS2_SYS_RC_BAD_REFERENCE;
-	}
+    if (!signature)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = Tss2_Sys_VerifySignature_Prepare( sysContext, keyHandle, digest, signature );
+    rval = Tss2_Sys_VerifySignature_Prepare(sysContext, keyHandle, digest, signature);
+    if (rval)
+        return rval;
 
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_VerifySignature_Complete( sysContext, validation );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_VerifySignature_Complete(sysContext, validation);
 }
-

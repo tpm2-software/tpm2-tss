@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,97 +30,112 @@
 
 TPM_RC Tss2_Sys_GetCommandAuditDigest_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_ENDORSEMENT	privacyHandle,
-    TPMI_DH_OBJECT	signHandle,
-    TPM2B_DATA	*qualifyingData,
-    TPMT_SIG_SCHEME	*inScheme
-    )
+    TPMI_RH_ENDORSEMENT privacyHandle,
+    TPMI_DH_OBJECT signHandle,
+    TPM2B_DATA *qualifyingData,
+    TPMT_SIG_SCHEME *inScheme)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
+    TPM_RC rval;
+
+    if (!sysContext || !inScheme)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    rval = CommonPreparePrologue(sysContext, TPM_CC_GetCommandAuditDigest);
+    if (rval)
+        return rval;
+
+    rval = Tss2_MU_UINT32_Marshal(privacyHandle, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
+
+    rval = Tss2_MU_UINT32_Marshal(signHandle, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
+
+    if (!qualifyingData) {
+        SYS_CONTEXT->decryptNull = 1;
+
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
+                                      SYS_CONTEXT->maxCommandSize,
+                                      &SYS_CONTEXT->nextData);
+    } else {
+
+        rval = Tss2_MU_TPM2B_DATA_Marshal(qualifyingData, SYS_CONTEXT->tpmInBuffPtr,
+                                          SYS_CONTEXT->maxCommandSize,
+                                          &SYS_CONTEXT->nextData);
     }
 
-    if( inScheme == NULL  )
-	{
-		return TSS2_SYS_RC_BAD_REFERENCE;
-	}
+    if (rval)
+        return rval;
 
-    CommonPreparePrologue( sysContext, TPM_CC_GetCommandAuditDigest );
-
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), privacyHandle, &(SYS_CONTEXT->rval) );
-
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), signHandle, &(SYS_CONTEXT->rval) );
-
-    if( qualifyingData == 0 )
-	{
-		SYS_CONTEXT->decryptNull = 1;
-	}
-
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( qualifyingData->b ) );
-
-    Marshal_TPMT_SIG_SCHEME( sysContext, inScheme );
+    rval = Tss2_MU_TPMT_SIG_SCHEME_Marshal(inScheme, SYS_CONTEXT->tpmInBuffPtr,
+                                           SYS_CONTEXT->maxCommandSize,
+                                           &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 1;
     SYS_CONTEXT->encryptAllowed = 1;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_GetCommandAuditDigest_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_ATTEST	*auditInfo,
-    TPMT_SIGNATURE	*signature
-    )
+    TPM2B_ATTEST *auditInfo,
+    TPMT_SIGNATURE *signature)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TPM_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    UNMARSHAL_SIMPLE_TPM2B( sysContext, &( auditInfo->b ) );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    Unmarshal_TPMT_SIGNATURE( sysContext, signature );
+    rval = Tss2_MU_TPM2B_ATTEST_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                          SYS_CONTEXT->maxCommandSize,
+                                          &SYS_CONTEXT->nextData, auditInfo);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPMT_SIGNATURE_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                            SYS_CONTEXT->maxCommandSize,
+                                            &SYS_CONTEXT->nextData, signature);
 }
 
 TPM_RC Tss2_Sys_GetCommandAuditDigest(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_ENDORSEMENT	privacyHandle,
-    TPMI_DH_OBJECT	signHandle,
+    TPMI_RH_ENDORSEMENT privacyHandle,
+    TPMI_DH_OBJECT signHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DATA	*qualifyingData,
-    TPMT_SIG_SCHEME	*inScheme,
-    TPM2B_ATTEST	*auditInfo,
-    TPMT_SIGNATURE	*signature,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPM2B_DATA *qualifyingData,
+    TPMT_SIG_SCHEME *inScheme,
+    TPM2B_ATTEST *auditInfo,
+    TPMT_SIGNATURE *signature,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
-    if( inScheme == NULL  )
-	{
-		return TSS2_SYS_RC_BAD_REFERENCE;
-	}
+    if (!inScheme)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = Tss2_Sys_GetCommandAuditDigest_Prepare( sysContext, privacyHandle, signHandle, qualifyingData, inScheme );
+    rval = Tss2_Sys_GetCommandAuditDigest_Prepare(sysContext, privacyHandle,
+                                                  signHandle, qualifyingData,
+                                                  inScheme);
+    if (rval)
+        return rval;
 
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_GetCommandAuditDigest_Complete( sysContext, auditInfo, signature );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_GetCommandAuditDigest_Complete(sysContext, auditInfo,
+                                                   signature);
 }
-

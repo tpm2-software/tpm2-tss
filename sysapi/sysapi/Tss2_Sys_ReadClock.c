@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,67 +29,56 @@
 #include "sysapi_util.h"
 
 TPM_RC Tss2_Sys_ReadClock_Prepare(
-    TSS2_SYS_CONTEXT *sysContext
-    )
+    TSS2_SYS_CONTEXT *sysContext)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-
-    CommonPreparePrologue( sysContext, TPM_CC_ReadClock );
-
-
+    rval = CommonPreparePrologue(sysContext, TPM_CC_ReadClock);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 0;
     SYS_CONTEXT->authAllowed = 0;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_ReadClock_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMS_TIME_INFO	*currentTime
-    )
+    TPMS_TIME_INFO *currentTime)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    Unmarshal_TPMS_TIME_INFO( sysContext, currentTime );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPMS_TIME_INFO_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                            SYS_CONTEXT->maxCommandSize,
+                                            &SYS_CONTEXT->nextData,
+                                            currentTime);
 }
 
 TPM_RC Tss2_Sys_ReadClock(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMS_TIME_INFO	*currentTime
-    )
+    TPMS_TIME_INFO *currentTime)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_ReadClock_Prepare(sysContext);
+    if (rval)
+        return rval;
 
+    rval = CommonOneCall(sysContext, 0, 0);
+    if (rval)
+        return rval;
 
-    rval = Tss2_Sys_ReadClock_Prepare( sysContext );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, 0, 0 );
-
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_ReadClock_Complete( sysContext, currentTime );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_ReadClock_Complete(sysContext, currentTime);
 }
-

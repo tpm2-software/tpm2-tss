@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,83 +30,92 @@
 
 TPM_RC Tss2_Sys_HMAC_Start_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	handle,
-    TPM2B_AUTH	*auth,
-    TPMI_ALG_HASH	hashAlg
-    )
+    TPMI_DH_OBJECT handle,
+    TPM2B_AUTH *auth,
+    TPMI_ALG_HASH hashAlg)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
+    TSS2_RC rval;
+
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+
+    rval = CommonPreparePrologue(sysContext, TPM_CC_HMAC_Start);
+    if (rval)
+        return rval;
+
+    rval = Tss2_MU_UINT32_Marshal(handle, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
+
+    if (!auth) {
+        SYS_CONTEXT->decryptNull = 1;
+
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
+                                      SYS_CONTEXT->maxCommandSize,
+                                      &SYS_CONTEXT->nextData);
+    } else {
+
+        rval = Tss2_MU_TPM2B_AUTH_Marshal(auth, SYS_CONTEXT->tpmInBuffPtr,
+                                          SYS_CONTEXT->maxCommandSize,
+                                          &SYS_CONTEXT->nextData);
     }
 
+    if (rval)
+        return rval;
 
-
-    CommonPreparePrologue( sysContext, TPM_CC_HMAC_Start );
-
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), handle, &(SYS_CONTEXT->rval) );
-
-    if( auth == 0 )
-	{
-		SYS_CONTEXT->decryptNull = 1;
-	}
-
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( auth->b ) );
-
-    Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), hashAlg, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_UINT16_Marshal(hashAlg, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 1;
     SYS_CONTEXT->encryptAllowed = 0;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_HMAC_Start_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	*sequenceHandle
-    )
+    TPMI_DH_OBJECT *sequenceHandle)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
-    Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), sequenceHandle, &(SYS_CONTEXT->rval) );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    CommonComplete( sysContext );
+    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                    SYS_CONTEXT->maxCommandSize,
+                                    &SYS_CONTEXT->nextData,
+                                    sequenceHandle);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return CommonComplete(sysContext);
 }
 
 TPM_RC Tss2_Sys_HMAC_Start(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	handle,
+    TPMI_DH_OBJECT handle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_AUTH	*auth,
-    TPMI_ALG_HASH	hashAlg,
-    TPMI_DH_OBJECT	*sequenceHandle,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPM2B_AUTH *auth,
+    TPMI_ALG_HASH hashAlg,
+    TPMI_DH_OBJECT *sequenceHandle,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_HMAC_Start_Prepare(sysContext, handle, auth, hashAlg);
+    if (rval)
+        return rval;
 
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-    rval = Tss2_Sys_HMAC_Start_Prepare( sysContext, handle, auth, hashAlg );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
-
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_HMAC_Start_Complete( sysContext, sequenceHandle );
-        }
-    }
-
-    return rval;
+     return Tss2_Sys_HMAC_Start_Complete(sysContext, sequenceHandle);
 }
-

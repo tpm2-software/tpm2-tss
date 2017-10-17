@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,65 +30,75 @@
 
 TPM_RC Tss2_Sys_PCR_SetAuthPolicy_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_PLATFORM	authHandle,
-    TPM2B_DIGEST	*authPolicy,
-    TPMI_ALG_HASH	hashAlg,
-    TPMI_DH_PCR	pcrNum
-    )
+    TPMI_RH_PLATFORM authHandle,
+    TPM2B_DIGEST *authPolicy,
+    TPMI_ALG_HASH hashAlg,
+    TPMI_DH_PCR pcrNum)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
+    TSS2_RC rval;
+
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    rval = CommonPreparePrologue(sysContext, TPM_CC_PCR_SetAuthPolicy);
+    if (rval)
+        return rval;
+
+    rval = Tss2_MU_UINT32_Marshal(authHandle, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
+
+    if (!authPolicy) {
+        SYS_CONTEXT->decryptNull = 1;
+
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
+                                      SYS_CONTEXT->maxCommandSize,
+                                      &SYS_CONTEXT->nextData);
+    } else {
+
+        rval = Tss2_MU_TPM2B_DIGEST_Marshal(authPolicy, SYS_CONTEXT->tpmInBuffPtr,
+                                            SYS_CONTEXT->maxCommandSize,
+                                            &SYS_CONTEXT->nextData);
     }
 
+    if (rval)
+        return rval;
 
+    rval = Tss2_MU_UINT16_Marshal(hashAlg, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    CommonPreparePrologue( sysContext, TPM_CC_PCR_SetAuthPolicy );
-
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), authHandle, &(SYS_CONTEXT->rval) );
-
-    if( authPolicy == 0 )
-	{
-		SYS_CONTEXT->decryptNull = 1;
-	}
-
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( authPolicy->b ) );
-
-    Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), hashAlg, &(SYS_CONTEXT->rval) );
-
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), pcrNum, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_UINT32_Marshal(pcrNum, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 1;
     SYS_CONTEXT->encryptAllowed = 0;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
-
 
 TPM_RC Tss2_Sys_PCR_SetAuthPolicy(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_PLATFORM	authHandle,
+    TPMI_RH_PLATFORM authHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DIGEST	*authPolicy,
-    TPMI_ALG_HASH	hashAlg,
-    TPMI_DH_PCR	pcrNum,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPM2B_DIGEST *authPolicy,
+    TPMI_ALG_HASH hashAlg,
+    TPMI_DH_PCR pcrNum,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_PCR_SetAuthPolicy_Prepare(sysContext, authHandle, authPolicy, hashAlg, pcrNum);
+    if (rval)
+        return rval;
 
-
-    rval = Tss2_Sys_PCR_SetAuthPolicy_Prepare( sysContext, authHandle, authPolicy, hashAlg, pcrNum );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
-    }
-
-    return rval;
+    return CommonOneCallForNoResponseCmds(sysContext, cmdAuthsArray, rspAuthsArray);
 }
-

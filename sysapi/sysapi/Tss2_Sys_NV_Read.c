@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,84 +30,89 @@
 
 TPM_RC Tss2_Sys_NV_Read_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_NV_AUTH	authHandle,
-    TPMI_RH_NV_INDEX	nvIndex,
-    UINT16	size,
-    UINT16	offset
-    )
+    TPMI_RH_NV_AUTH authHandle,
+    TPMI_RH_NV_INDEX nvIndex,
+    UINT16 size,
+    UINT16 offset)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
+    rval = CommonPreparePrologue(sysContext, TPM_CC_NV_Read);
+    if (rval)
+        return rval;
 
-    CommonPreparePrologue( sysContext, TPM_CC_NV_Read );
+    rval = Tss2_MU_UINT32_Marshal(authHandle, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), authHandle, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_UINT32_Marshal(nvIndex, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), nvIndex, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_UINT16_Marshal(size, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-
-
-    Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), size, &(SYS_CONTEXT->rval) );
-
-    Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), offset, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_UINT16_Marshal(offset, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 1;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_NV_Read_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_MAX_NV_BUFFER	*data
-    )
+    TPM2B_MAX_NV_BUFFER *data)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    UNMARSHAL_SIMPLE_TPM2B( sysContext, &( data->b ) );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPM2B_MAX_NV_BUFFER_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                                 SYS_CONTEXT->maxCommandSize,
+                                                 &SYS_CONTEXT->nextData,
+                                                 data);
 }
 
 TPM_RC Tss2_Sys_NV_Read(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_NV_AUTH	authHandle,
-    TPMI_RH_NV_INDEX	nvIndex,
+    TPMI_RH_NV_AUTH authHandle,
+    TPMI_RH_NV_INDEX nvIndex,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    UINT16	size,
-    UINT16	offset,
-    TPM2B_MAX_NV_BUFFER	*data,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    UINT16 size,
+    UINT16 offset,
+    TPM2B_MAX_NV_BUFFER *data,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_NV_Read_Prepare(sysContext, authHandle, nvIndex, size, offset);
+    if (rval)
+        return rval;
 
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-    rval = Tss2_Sys_NV_Read_Prepare( sysContext, authHandle, nvIndex, size, offset );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
-
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_NV_Read_Complete( sysContext, data );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_NV_Read_Complete(sysContext, data);
 }
-

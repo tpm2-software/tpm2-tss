@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,72 +30,65 @@
 
 TPM_RC Tss2_Sys_Unseal_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	itemHandle
-    )
+    TPMI_DH_OBJECT itemHandle)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
+    rval = CommonPreparePrologue(sysContext, TPM_CC_Unseal);
+    if (rval)
+        return rval;
 
-    CommonPreparePrologue( sysContext, TPM_CC_Unseal );
-
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), itemHandle, &(SYS_CONTEXT->rval) );
-
-
+    rval = Tss2_MU_UINT32_Marshal(itemHandle, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 1;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_Unseal_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_SENSITIVE_DATA	*outData
-    )
+    TPM2B_SENSITIVE_DATA *outData)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    UNMARSHAL_SIMPLE_TPM2B( sysContext, &( outData->b ) );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPM2B_SENSITIVE_DATA_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                                  SYS_CONTEXT->maxCommandSize,
+                                                  &SYS_CONTEXT->nextData,
+                                                  outData);
 }
 
 TPM_RC Tss2_Sys_Unseal(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	itemHandle,
+    TPMI_DH_OBJECT itemHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_SENSITIVE_DATA	*outData,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPM2B_SENSITIVE_DATA *outData,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_Unseal_Prepare(sysContext, itemHandle);
+    if (rval)
+        return rval;
 
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-    rval = Tss2_Sys_Unseal_Prepare( sysContext, itemHandle );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
-
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_Unseal_Complete( sysContext, outData );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_Unseal_Complete(sysContext, outData);
 }
-

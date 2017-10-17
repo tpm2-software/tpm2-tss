@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,109 +30,133 @@
 
 TPM_RC Tss2_Sys_PolicySigned_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	authObject,
-    TPMI_SH_POLICY	policySession,
-    TPM2B_NONCE	*nonceTPM,
-    TPM2B_DIGEST	*cpHashA,
-    TPM2B_NONCE	*policyRef,
-    INT32	expiration,
-    TPMT_SIGNATURE	*auth
-    )
+    TPMI_DH_OBJECT authObject,
+    TPMI_SH_POLICY policySession,
+    TPM2B_NONCE *nonceTPM,
+    TPM2B_DIGEST *cpHashA,
+    TPM2B_NONCE *policyRef,
+    INT32 expiration,
+    TPMT_SIGNATURE *auth)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
+    TSS2_RC rval;
+
+    if (!sysContext || !auth)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    rval = CommonPreparePrologue(sysContext, TPM_CC_PolicySigned);
+    if (rval)
+        return rval;
+
+    rval = Tss2_MU_UINT32_Marshal(authObject, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
+
+    rval = Tss2_MU_UINT32_Marshal(policySession, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
+
+    if (!nonceTPM) {
+        SYS_CONTEXT->decryptNull = 1;
+
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
+                                      SYS_CONTEXT->maxCommandSize,
+                                      &SYS_CONTEXT->nextData);
+    } else {
+
+        rval = Tss2_MU_TPM2B_NONCE_Marshal(nonceTPM, SYS_CONTEXT->tpmInBuffPtr,
+                                           SYS_CONTEXT->maxCommandSize,
+                                           &SYS_CONTEXT->nextData);
     }
 
-    if( auth == NULL  )
-	{
-		return TSS2_SYS_RC_BAD_REFERENCE;
-	}
+    if (rval)
+        return rval;
 
-    CommonPreparePrologue( sysContext, TPM_CC_PolicySigned );
+    rval = Tss2_MU_TPM2B_DIGEST_Marshal(cpHashA, SYS_CONTEXT->tpmInBuffPtr,
+                                        SYS_CONTEXT->maxCommandSize,
+                                        &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), authObject, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_TPM2B_NONCE_Marshal(policyRef, SYS_CONTEXT->tpmInBuffPtr,
+                                       SYS_CONTEXT->maxCommandSize,
+                                       &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), policySession, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_UINT32_Marshal(expiration, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    if( nonceTPM == 0 )
-	{
-		SYS_CONTEXT->decryptNull = 1;
-	}
-
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( nonceTPM->b ) );
-
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( cpHashA->b ) );
-
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( policyRef->b ) );
-
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), expiration, &(SYS_CONTEXT->rval) );
-
-    Marshal_TPMT_SIGNATURE( sysContext, auth );
+    rval = Tss2_MU_TPMT_SIGNATURE_Marshal(auth, SYS_CONTEXT->tpmInBuffPtr,
+                                          SYS_CONTEXT->maxCommandSize,
+                                          &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 1;
     SYS_CONTEXT->encryptAllowed = 1;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_PolicySigned_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_TIMEOUT	*timeout,
-    TPMT_TK_AUTH	*policyTicket
-    )
+    TPM2B_TIMEOUT *timeout,
+    TPMT_TK_AUTH *policyTicket)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    UNMARSHAL_SIMPLE_TPM2B( sysContext, &( timeout->b ) );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    Unmarshal_TPMT_TK_AUTH( sysContext, policyTicket );
+    rval = Tss2_MU_TPM2B_TIMEOUT_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                           SYS_CONTEXT->maxCommandSize,
+                                           &SYS_CONTEXT->nextData, timeout);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPMT_TK_AUTH_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                          SYS_CONTEXT->maxCommandSize,
+                                          &SYS_CONTEXT->nextData, policyTicket);
 }
 
 TPM_RC Tss2_Sys_PolicySigned(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	authObject,
-    TPMI_SH_POLICY	policySession,
+    TPMI_DH_OBJECT authObject,
+    TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_NONCE	*nonceTPM,
-    TPM2B_DIGEST	*cpHashA,
-    TPM2B_NONCE	*policyRef,
-    INT32	expiration,
-    TPMT_SIGNATURE	*auth,
-    TPM2B_TIMEOUT	*timeout,
-    TPMT_TK_AUTH	*policyTicket,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPM2B_NONCE *nonceTPM,
+    TPM2B_DIGEST *cpHashA,
+    TPM2B_NONCE *policyRef,
+    INT32 expiration,
+    TPMT_SIGNATURE *auth,
+    TPM2B_TIMEOUT *timeout,
+    TPMT_TK_AUTH *policyTicket,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
-    if( auth == NULL  )
-	{
-		return TSS2_SYS_RC_BAD_REFERENCE;
-	}
+    if (!auth)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = Tss2_Sys_PolicySigned_Prepare( sysContext, authObject, policySession, nonceTPM, cpHashA, policyRef, expiration, auth );
+    rval = Tss2_Sys_PolicySigned_Prepare(sysContext, authObject, policySession, nonceTPM, cpHashA, policyRef, expiration, auth);
+    if (rval)
+        return rval;
 
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_PolicySigned_Complete( sysContext, timeout, policyTicket );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_PolicySigned_Complete(sysContext, timeout, policyTicket);
 }
-

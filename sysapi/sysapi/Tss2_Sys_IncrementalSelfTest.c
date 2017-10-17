@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,78 +30,67 @@
 
 TPM_RC Tss2_Sys_IncrementalSelfTest_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPML_ALG	*toTest
-    )
+    TPML_ALG *toTest)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
-    if( toTest == NULL  )
-	{
-		return TSS2_SYS_RC_BAD_REFERENCE;
-	}
+    if (!sysContext || !toTest)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    CommonPreparePrologue( sysContext, TPM_CC_IncrementalSelfTest );
+    rval = CommonPreparePrologue(sysContext, TPM_CC_IncrementalSelfTest);
+    if (rval)
+        return rval;
 
-
-
-    Marshal_TPML_ALG( sysContext, toTest );
+    rval = Tss2_MU_TPML_ALG_Marshal(toTest, SYS_CONTEXT->tpmInBuffPtr,
+                                    SYS_CONTEXT->maxCommandSize,
+                                    &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 0;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_IncrementalSelfTest_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPML_ALG	*toDoList
-    )
+    TPML_ALG *toDoList)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    Unmarshal_TPML_ALG( sysContext, toDoList );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPML_ALG_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                      SYS_CONTEXT->maxCommandSize,
+                                      &SYS_CONTEXT->nextData, toDoList);
 }
 
 TPM_RC Tss2_Sys_IncrementalSelfTest(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPML_ALG	*toTest,
-    TPML_ALG	*toDoList,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPML_ALG *toTest,
+    TPML_ALG *toDoList,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
-    if( toTest == NULL  )
-	{
-		return TSS2_SYS_RC_BAD_REFERENCE;
-	}
+    if (!toTest)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = Tss2_Sys_IncrementalSelfTest_Prepare( sysContext, toTest );
+    rval = Tss2_Sys_IncrementalSelfTest_Prepare(sysContext, toTest);
+    if (rval)
+        return rval;
 
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_IncrementalSelfTest_Complete( sysContext, toDoList );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_IncrementalSelfTest_Complete(sysContext, toDoList);
 }
-

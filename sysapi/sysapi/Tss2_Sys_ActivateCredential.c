@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,87 +30,103 @@
 
 TPM_RC Tss2_Sys_ActivateCredential_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	activateHandle,
-    TPMI_DH_OBJECT	keyHandle,
-    TPM2B_ID_OBJECT	*credentialBlob,
-    TPM2B_ENCRYPTED_SECRET	*secret
-    )
+    TPMI_DH_OBJECT activateHandle,
+    TPMI_DH_OBJECT keyHandle,
+    TPM2B_ID_OBJECT *credentialBlob,
+    TPM2B_ENCRYPTED_SECRET *secret)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
+    TPM_RC rval;
+
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    rval = CommonPreparePrologue(sysContext, TPM_CC_ActivateCredential);
+    if (rval)
+        return rval;
+
+    rval = Tss2_MU_UINT32_Marshal(activateHandle, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
+
+    rval = Tss2_MU_UINT32_Marshal(keyHandle, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
+
+    if (!credentialBlob) {
+        SYS_CONTEXT->decryptNull = 1;
+
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
+                                      SYS_CONTEXT->maxCommandSize,
+                                      &SYS_CONTEXT->nextData);
+    } else {
+
+        rval = Tss2_MU_TPM2B_ID_OBJECT_Marshal(credentialBlob,
+                                               SYS_CONTEXT->tpmInBuffPtr,
+                                               SYS_CONTEXT->maxCommandSize,
+                                               &SYS_CONTEXT->nextData);
     }
 
+    if (rval)
+        return rval;
 
-
-    CommonPreparePrologue( sysContext, TPM_CC_ActivateCredential );
-
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), activateHandle, &(SYS_CONTEXT->rval) );
-
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), keyHandle, &(SYS_CONTEXT->rval) );
-
-    if( credentialBlob == 0 )
-	{
-		SYS_CONTEXT->decryptNull = 1;
-	}
-
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( credentialBlob->b ) );
-
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( secret->b ) );
+    rval = Tss2_MU_TPM2B_ENCRYPTED_SECRET_Marshal(secret,
+                                                  SYS_CONTEXT->tpmInBuffPtr,
+                                                  SYS_CONTEXT->maxCommandSize,
+                                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 1;
     SYS_CONTEXT->encryptAllowed = 1;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_ActivateCredential_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_DIGEST	*certInfo
-    )
+    TPM2B_DIGEST *certInfo)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TPM_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    UNMARSHAL_SIMPLE_TPM2B( sysContext, &( certInfo->b ) );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPM2B_DIGEST_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                          SYS_CONTEXT->maxCommandSize,
+                                          &SYS_CONTEXT->nextData,
+                                          certInfo);
 }
 
 TPM_RC Tss2_Sys_ActivateCredential(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	activateHandle,
-    TPMI_DH_OBJECT	keyHandle,
+    TPMI_DH_OBJECT activateHandle,
+    TPMI_DH_OBJECT keyHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_ID_OBJECT	*credentialBlob,
-    TPM2B_ENCRYPTED_SECRET	*secret,
-    TPM2B_DIGEST	*certInfo,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPM2B_ID_OBJECT *credentialBlob,
+    TPM2B_ENCRYPTED_SECRET *secret,
+    TPM2B_DIGEST *certInfo,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_ActivateCredential_Prepare(sysContext, activateHandle,
+                                               keyHandle, credentialBlob,
+                                               secret);
+    if (rval)
+        return rval;
 
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-    rval = Tss2_Sys_ActivateCredential_Prepare( sysContext, activateHandle, keyHandle, credentialBlob, secret );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
-
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_ActivateCredential_Complete( sysContext, certInfo );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_ActivateCredential_Complete(sysContext, certInfo);
 }
-

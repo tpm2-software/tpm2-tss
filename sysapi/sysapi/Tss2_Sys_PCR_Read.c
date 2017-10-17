@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,86 +30,87 @@
 
 TPM_RC Tss2_Sys_PCR_Read_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPML_PCR_SELECTION	*pcrSelectionIn
-    )
+    TPML_PCR_SELECTION *pcrSelectionIn)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
-    if( pcrSelectionIn == NULL  )
-	{
-		return TSS2_SYS_RC_BAD_REFERENCE;
-	}
+    if (!sysContext || !pcrSelectionIn)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    CommonPreparePrologue( sysContext, TPM_CC_PCR_Read );
+    rval = CommonPreparePrologue(sysContext, TPM_CC_PCR_Read);
+    if (rval)
+        return rval;
 
-
-
-    Marshal_TPML_PCR_SELECTION( sysContext, pcrSelectionIn );
+    rval = Tss2_MU_TPML_PCR_SELECTION_Marshal(pcrSelectionIn,
+                                              SYS_CONTEXT->tpmInBuffPtr,
+                                              SYS_CONTEXT->maxCommandSize,
+                                              &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 0;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_PCR_Read_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    UINT32	*pcrUpdateCounter,
-    TPML_PCR_SELECTION	*pcrSelectionOut,
-    TPML_DIGEST	*pcrValues
-    )
+    UINT32 *pcrUpdateCounter,
+    TPML_PCR_SELECTION *pcrSelectionOut,
+    TPML_DIGEST *pcrValues)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    Unmarshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), pcrUpdateCounter, &(SYS_CONTEXT->rval) );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    Unmarshal_TPML_PCR_SELECTION( sysContext, pcrSelectionOut );
+    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                    SYS_CONTEXT->maxCommandSize,
+                                    &SYS_CONTEXT->nextData,
+                                    pcrUpdateCounter);
+    if (rval)
+        return rval;
 
-    Unmarshal_TPML_DIGEST( sysContext, pcrValues );
+    rval = Tss2_MU_TPML_PCR_SELECTION_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                                SYS_CONTEXT->maxCommandSize,
+                                                &SYS_CONTEXT->nextData,
+                                                pcrSelectionOut);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPML_DIGEST_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                         SYS_CONTEXT->maxCommandSize,
+                                         &SYS_CONTEXT->nextData, pcrValues);
 }
 
 TPM_RC Tss2_Sys_PCR_Read(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPML_PCR_SELECTION	*pcrSelectionIn,
-    UINT32	*pcrUpdateCounter,
-    TPML_PCR_SELECTION	*pcrSelectionOut,
-    TPML_DIGEST	*pcrValues,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPML_PCR_SELECTION *pcrSelectionIn,
+    UINT32 *pcrUpdateCounter,
+    TPML_PCR_SELECTION *pcrSelectionOut,
+    TPML_DIGEST *pcrValues,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
-    if( pcrSelectionIn == NULL  )
-	{
-		return TSS2_SYS_RC_BAD_REFERENCE;
-	}
+    if (!pcrSelectionIn)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = Tss2_Sys_PCR_Read_Prepare( sysContext, pcrSelectionIn );
+    rval = Tss2_Sys_PCR_Read_Prepare(sysContext, pcrSelectionIn);
+    if (rval)
+        return rval;
 
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_PCR_Read_Complete( sysContext, pcrUpdateCounter, pcrSelectionOut, pcrValues );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_PCR_Read_Complete(sysContext, pcrUpdateCounter,
+                                      pcrSelectionOut, pcrValues);
 }
-

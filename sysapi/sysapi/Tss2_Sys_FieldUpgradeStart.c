@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,71 +30,78 @@
 
 TPM_RC Tss2_Sys_FieldUpgradeStart_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_PLATFORM	authorization,
-    TPMI_DH_OBJECT	keyHandle,
-    TPM2B_DIGEST	*fuDigest,
-    TPMT_SIGNATURE	*manifestSignature
-    )
+    TPMI_RH_PLATFORM authorization,
+    TPMI_DH_OBJECT keyHandle,
+    TPM2B_DIGEST *fuDigest,
+    TPMT_SIGNATURE *manifestSignature)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
+    TPM_RC rval;
+
+    if (!sysContext || !manifestSignature)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    rval = CommonPreparePrologue(sysContext, TPM_CC_FieldUpgradeStart);
+    if (rval)
+        return rval;
+    rval = Tss2_MU_UINT32_Marshal(authorization, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
+
+    rval = Tss2_MU_UINT32_Marshal(keyHandle, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
+
+    if (!fuDigest) {
+        SYS_CONTEXT->decryptNull = 1;
+
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
+                                      SYS_CONTEXT->maxCommandSize,
+                                      &SYS_CONTEXT->nextData);
+    } else {
+
+        rval = Tss2_MU_TPM2B_DIGEST_Marshal(fuDigest, SYS_CONTEXT->tpmInBuffPtr,
+                                            SYS_CONTEXT->maxCommandSize,
+                                            &SYS_CONTEXT->nextData);
     }
 
-    if( manifestSignature == NULL  )
-	{
-		return TSS2_SYS_RC_BAD_REFERENCE;
-	}
+    if (rval)
+        return rval;
 
-    CommonPreparePrologue( sysContext, TPM_CC_FieldUpgradeStart );
-
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), authorization, &(SYS_CONTEXT->rval) );
-
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), keyHandle, &(SYS_CONTEXT->rval) );
-
-    if( fuDigest == 0 )
-	{
-		SYS_CONTEXT->decryptNull = 1;
-	}
-
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( fuDigest->b ) );
-
-    Marshal_TPMT_SIGNATURE( sysContext, manifestSignature );
+    rval = Tss2_MU_TPMT_SIGNATURE_Marshal(manifestSignature,
+                                          SYS_CONTEXT->tpmInBuffPtr,
+                                          SYS_CONTEXT->maxCommandSize,
+                                          &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 1;
     SYS_CONTEXT->encryptAllowed = 0;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
-
 
 TPM_RC Tss2_Sys_FieldUpgradeStart(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_PLATFORM	authorization,
-    TPMI_DH_OBJECT	keyHandle,
+    TPMI_RH_PLATFORM authorization,
+    TPMI_DH_OBJECT keyHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DIGEST	*fuDigest,
-    TPMT_SIGNATURE	*manifestSignature,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPM2B_DIGEST *fuDigest,
+    TPMT_SIGNATURE *manifestSignature,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
-    if( manifestSignature == NULL  )
-	{
-		return TSS2_SYS_RC_BAD_REFERENCE;
-	}
+    if (!manifestSignature)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = Tss2_Sys_FieldUpgradeStart_Prepare( sysContext, authorization, keyHandle, fuDigest, manifestSignature );
+    rval = Tss2_Sys_FieldUpgradeStart_Prepare(sysContext, authorization, keyHandle, fuDigest, manifestSignature);
+    if (rval)
+        return rval;
 
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
-    }
-
-    return rval;
+    return CommonOneCallForNoResponseCmds(sysContext, cmdAuthsArray, rspAuthsArray);
 }
-

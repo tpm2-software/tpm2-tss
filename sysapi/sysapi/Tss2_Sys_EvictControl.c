@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,58 +30,57 @@
 
 TPM_RC Tss2_Sys_EvictControl_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_PROVISION	auth,
-    TPMI_DH_OBJECT	objectHandle,
-    TPMI_DH_PERSISTENT	persistentHandle
-    )
+    TPMI_RH_PROVISION auth,
+    TPMI_DH_OBJECT objectHandle,
+    TPMI_DH_PERSISTENT persistentHandle)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TPM_RC rval;
 
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
+    rval = CommonPreparePrologue(sysContext, TPM_CC_EvictControl);
 
-    CommonPreparePrologue( sysContext, TPM_CC_EvictControl );
+    rval = Tss2_MU_UINT32_Marshal(auth, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), auth, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_UINT32_Marshal(objectHandle, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), objectHandle, &(SYS_CONTEXT->rval) );
-
-
-
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), persistentHandle, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_UINT32_Marshal(persistentHandle, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 0;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
-
 
 TPM_RC Tss2_Sys_EvictControl(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_PROVISION	auth,
-    TPMI_DH_OBJECT	objectHandle,
+    TPMI_RH_PROVISION auth,
+    TPMI_DH_OBJECT objectHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPMI_DH_PERSISTENT	persistentHandle,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPMI_DH_PERSISTENT persistentHandle,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_EvictControl_Prepare(sysContext, auth, objectHandle,
+                                         persistentHandle);
+    if (rval)
+        return rval;
 
-
-    rval = Tss2_Sys_EvictControl_Prepare( sysContext, auth, objectHandle, persistentHandle );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
-    }
-
-    return rval;
+    return CommonOneCallForNoResponseCmds(sysContext, cmdAuthsArray,
+                                          rspAuthsArray);
 }
-
