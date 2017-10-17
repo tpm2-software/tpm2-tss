@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,89 +30,99 @@
 
 TPM_RC Tss2_Sys_LoadExternal_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_SENSITIVE	*inPrivate,
-    TPM2B_PUBLIC	*inPublic,
-    TPMI_RH_HIERARCHY	hierarchy
-    )
+    TPM2B_SENSITIVE *inPrivate,
+    TPM2B_PUBLIC *inPublic,
+    TPMI_RH_HIERARCHY hierarchy)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
+    rval = CommonPreparePrologue(sysContext, TPM_CC_LoadExternal);
 
-    CommonPreparePrologue( sysContext, TPM_CC_LoadExternal );
+    /* If no private key is specified, set the private key size field to 0 */
+    if (!inPrivate) {
+        SYS_CONTEXT->decryptNull = 1;
 
-    /* If no private key is specified, set the private key size field (UINT16) to 0 */
-    if(inPrivate != NULL)
-    {
-        Marshal_TPM2B_SENSITIVE( sysContext, inPrivate );
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
+                                      SYS_CONTEXT->maxCommandSize,
+                                      &SYS_CONTEXT->nextData);
     } else {
-		SYS_CONTEXT->decryptNull = 1;
-        Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), 0, &(SYS_CONTEXT->rval) );
+
+        rval = Tss2_MU_TPM2B_SENSITIVE_Marshal(inPrivate,
+                                               SYS_CONTEXT->tpmInBuffPtr,
+                                               SYS_CONTEXT->maxCommandSize,
+                                               &SYS_CONTEXT->nextData);
     }
 
-    Marshal_TPM2B_PUBLIC( sysContext, inPublic );
+    if (rval)
+        return rval;
 
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), hierarchy, &(SYS_CONTEXT->rval) );
+   rval = Tss2_MU_TPM2B_PUBLIC_Marshal(inPublic, SYS_CONTEXT->tpmInBuffPtr,
+                                       SYS_CONTEXT->maxCommandSize,
+                                       &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
+
+   rval = Tss2_MU_UINT32_Marshal(hierarchy, SYS_CONTEXT->tpmInBuffPtr,
+                                 SYS_CONTEXT->maxCommandSize,
+                                 &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 1;
     SYS_CONTEXT->encryptAllowed = 1;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_LoadExternal_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_HANDLE	*objectHandle,
-    TPM2B_NAME	*name
-    )
+    TPM_HANDLE *objectHandle,
+    TPM2B_NAME *name)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
-    Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), objectHandle, &(SYS_CONTEXT->rval) );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    CommonComplete( sysContext );
+    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                    SYS_CONTEXT->maxCommandSize,
+                                    &SYS_CONTEXT->nextData,
+                                    objectHandle);
+    if (rval)
+        return rval;
 
-    UNMARSHAL_SIMPLE_TPM2B( sysContext, &( name->b ) );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPM2B_NAME_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                        SYS_CONTEXT->maxCommandSize,
+                                        &SYS_CONTEXT->nextData, name);
 }
 
 TPM_RC Tss2_Sys_LoadExternal(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_SENSITIVE	*inPrivate,
-    TPM2B_PUBLIC	*inPublic,
-    TPMI_RH_HIERARCHY	hierarchy,
-    TPM_HANDLE	*objectHandle,
-    TPM2B_NAME	*name,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPM2B_SENSITIVE *inPrivate,
+    TPM2B_PUBLIC *inPublic,
+    TPMI_RH_HIERARCHY hierarchy,
+    TPM_HANDLE *objectHandle,
+    TPM2B_NAME *name,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_LoadExternal_Prepare(sysContext, inPrivate, inPublic, hierarchy);
+    if (rval)
+        return rval;
 
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-    rval = Tss2_Sys_LoadExternal_Prepare( sysContext, inPrivate, inPublic, hierarchy );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
-
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_LoadExternal_Complete( sysContext, objectHandle, name );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_LoadExternal_Complete(sysContext, objectHandle, name);
 }
-

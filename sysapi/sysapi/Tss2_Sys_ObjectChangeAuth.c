@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,80 +30,81 @@
 
 TPM_RC Tss2_Sys_ObjectChangeAuth_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	objectHandle,
-    TPMI_DH_OBJECT	parentHandle,
-    TPM2B_AUTH	*newAuth
-    )
+    TPMI_DH_OBJECT objectHandle,
+    TPMI_DH_OBJECT parentHandle,
+    TPM2B_AUTH *newAuth)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
+    rval = CommonPreparePrologue(sysContext, TPM_CC_ObjectChangeAuth);
+    if (rval)
+        return rval;
 
-    CommonPreparePrologue( sysContext, TPM_CC_ObjectChangeAuth );
+    rval = Tss2_MU_UINT32_Marshal(objectHandle, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), objectHandle, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_UINT32_Marshal(parentHandle, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), parentHandle, &(SYS_CONTEXT->rval) );
-
-
-
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( newAuth->b ) );
+    rval = Tss2_MU_TPM2B_AUTH_Marshal(newAuth, SYS_CONTEXT->tpmInBuffPtr,
+                                      SYS_CONTEXT->maxCommandSize,
+                                      &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 1;
     SYS_CONTEXT->encryptAllowed = 1;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_ObjectChangeAuth_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_PRIVATE	*outPrivate
-    )
+    TPM2B_PRIVATE *outPrivate)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    UNMARSHAL_SIMPLE_TPM2B( sysContext, &( outPrivate->b ) );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPM2B_PRIVATE_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                           SYS_CONTEXT->maxCommandSize,
+                                           &SYS_CONTEXT->nextData,
+                                           outPrivate);
 }
 
 TPM_RC Tss2_Sys_ObjectChangeAuth(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	objectHandle,
-    TPMI_DH_OBJECT	parentHandle,
+    TPMI_DH_OBJECT objectHandle,
+    TPMI_DH_OBJECT parentHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_AUTH	*newAuth,
-    TPM2B_PRIVATE	*outPrivate,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPM2B_AUTH *newAuth,
+    TPM2B_PRIVATE *outPrivate,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_ObjectChangeAuth_Prepare(sysContext, objectHandle, parentHandle, newAuth);
+    if (rval)
+        return rval;
 
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-    rval = Tss2_Sys_ObjectChangeAuth_Prepare( sysContext, objectHandle, parentHandle, newAuth );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
-
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_ObjectChangeAuth_Complete( sysContext, outPrivate );
-        }
-    }
-
-    return rval;
+   return Tss2_Sys_ObjectChangeAuth_Complete(sysContext, outPrivate);
 }
-

@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,64 +30,60 @@
 
 TPM_RC Tss2_Sys_PP_Commands_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_PLATFORM	auth,
-    TPML_CC	*setList,
-    TPML_CC	*clearList
-    )
+    TPMI_RH_PLATFORM auth,
+    TPML_CC *setList,
+    TPML_CC *clearList)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
-    if( setList == NULL  || clearList == NULL  )
-	{
-		return TSS2_SYS_RC_BAD_REFERENCE;
-	}
+    if (!sysContext || !setList || !clearList)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    CommonPreparePrologue( sysContext, TPM_CC_PP_Commands );
+    rval = CommonPreparePrologue(sysContext, TPM_CC_PP_Commands);
+    if (rval)
+        return rval;
 
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), auth, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_UINT32_Marshal(auth, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
+    rval = Tss2_MU_TPML_CC_Marshal(setList, SYS_CONTEXT->tpmInBuffPtr,
+                                   SYS_CONTEXT->maxCommandSize,
+                                   &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-
-    Marshal_TPML_CC( sysContext, setList );
-
-    Marshal_TPML_CC( sysContext, clearList );
+    rval = Tss2_MU_TPML_CC_Marshal(clearList, SYS_CONTEXT->tpmInBuffPtr,
+                                   SYS_CONTEXT->maxCommandSize,
+                                   &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 0;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
-
 
 TPM_RC Tss2_Sys_PP_Commands(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_PLATFORM	auth,
+    TPMI_RH_PLATFORM auth,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPML_CC	*setList,
-    TPML_CC	*clearList,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPML_CC *setList,
+    TPML_CC *clearList,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
-    if( setList == NULL  || clearList == NULL  )
-	{
-		return TSS2_SYS_RC_BAD_REFERENCE;
-	}
+    if (!setList || !clearList)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = Tss2_Sys_PP_Commands_Prepare( sysContext, auth, setList, clearList );
+    rval = Tss2_Sys_PP_Commands_Prepare(sysContext, auth, setList, clearList);
+    if (rval)
+        return rval;
 
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
-    }
-
-    return rval;
+    return CommonOneCallForNoResponseCmds(sysContext, cmdAuthsArray, rspAuthsArray);
 }
-

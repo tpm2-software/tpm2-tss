@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,54 +30,48 @@
 
 TPM_RC Tss2_Sys_ClockRateAdjust_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_PROVISION	auth,
-    TPM_CLOCK_ADJUST	rateAdjust
-    )
+    TPMI_RH_PROVISION auth,
+    TPM_CLOCK_ADJUST rateAdjust)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TPM_RC rval;
 
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
+    rval = CommonPreparePrologue(sysContext, TPM_CC_ClockRateAdjust);
+    if (rval)
+        return rval;
 
-    CommonPreparePrologue( sysContext, TPM_CC_ClockRateAdjust );
-
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), auth, &(SYS_CONTEXT->rval) );
-
-
-
-    Marshal_UINT8( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), rateAdjust, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_UINT32_Marshal(auth, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
+    rval = Tss2_MU_UINT32_Marshal(rateAdjust, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 0;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
-
 
 TPM_RC Tss2_Sys_ClockRateAdjust(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_PROVISION	auth,
+    TPMI_RH_PROVISION auth,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM_CLOCK_ADJUST	rateAdjust,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPM_CLOCK_ADJUST rateAdjust,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_ClockRateAdjust_Prepare(sysContext, auth, rateAdjust);
+    if (rval)
+        return rval;
 
-
-    rval = Tss2_Sys_ClockRateAdjust_Prepare( sysContext, auth, rateAdjust );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCallForNoResponseCmds( sysContext, cmdAuthsArray, rspAuthsArray );
-    }
-
-    return rval;
+    return CommonOneCallForNoResponseCmds(sysContext, cmdAuthsArray, rspAuthsArray);
 }
-

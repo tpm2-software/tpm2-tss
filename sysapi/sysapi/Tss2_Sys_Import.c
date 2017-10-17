@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,101 +30,122 @@
 
 TPM_RC Tss2_Sys_Import_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	parentHandle,
-    TPM2B_DATA	*encryptionKey,
-    TPM2B_PUBLIC	*objectPublic,
-    TPM2B_PRIVATE	*duplicate,
-    TPM2B_ENCRYPTED_SECRET	*inSymSeed,
-    TPMT_SYM_DEF_OBJECT	*symmetricAlg
-    )
+    TPMI_DH_OBJECT parentHandle,
+    TPM2B_DATA *encryptionKey,
+    TPM2B_PUBLIC *objectPublic,
+    TPM2B_PRIVATE *duplicate,
+    TPM2B_ENCRYPTED_SECRET *inSymSeed,
+    TPMT_SYM_DEF_OBJECT *symmetricAlg)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
+    TSS2_RC rval;
+
+    if (!sysContext || !symmetricAlg)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    rval = CommonPreparePrologue(sysContext, TPM_CC_Import);
+    if (rval)
+        return rval;
+
+    rval = Tss2_MU_UINT32_Marshal(parentHandle, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
+
+    if (!encryptionKey) {
+        SYS_CONTEXT->decryptNull = 1;
+
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
+                                      SYS_CONTEXT->maxCommandSize,
+                                      &SYS_CONTEXT->nextData);
+    } else {
+
+        rval = Tss2_MU_TPM2B_DATA_Marshal(encryptionKey, SYS_CONTEXT->tpmInBuffPtr,
+                                          SYS_CONTEXT->maxCommandSize,
+                                          &SYS_CONTEXT->nextData);
     }
 
-    if( symmetricAlg == NULL  )
-	{
-		return TSS2_SYS_RC_BAD_REFERENCE;
-	}
+    if (rval)
+        return rval;
 
-    CommonPreparePrologue( sysContext, TPM_CC_Import );
+    rval = Tss2_MU_TPM2B_PUBLIC_Marshal(objectPublic, SYS_CONTEXT->tpmInBuffPtr,
+                                        SYS_CONTEXT->maxCommandSize,
+                                        &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), parentHandle, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_TPM2B_PRIVATE_Marshal(duplicate, SYS_CONTEXT->tpmInBuffPtr,
+                                         SYS_CONTEXT->maxCommandSize,
+                                         &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    if( encryptionKey == 0 )
-	{
-		SYS_CONTEXT->decryptNull = 1;
-	}
+    rval = Tss2_MU_TPM2B_ENCRYPTED_SECRET_Marshal(inSymSeed,
+                                                  SYS_CONTEXT->tpmInBuffPtr,
+                                                  SYS_CONTEXT->maxCommandSize,
+                                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( encryptionKey->b ) );
-
-    Marshal_TPM2B_PUBLIC( sysContext, objectPublic );
-
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( duplicate->b ) );
-
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( inSymSeed->b ) );
-
-    Marshal_TPMT_SYM_DEF_OBJECT( sysContext, symmetricAlg );
+    rval = Tss2_MU_TPMT_SYM_DEF_OBJECT_Marshal(symmetricAlg,
+                                               SYS_CONTEXT->tpmInBuffPtr,
+                                               SYS_CONTEXT->maxCommandSize,
+                                               &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 1;
     SYS_CONTEXT->encryptAllowed = 1;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_Import_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_PRIVATE	*outPrivate
-    )
+    TPM2B_PRIVATE *outPrivate)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    UNMARSHAL_SIMPLE_TPM2B( sysContext, &( outPrivate->b ) );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPM2B_PRIVATE_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                           SYS_CONTEXT->maxCommandSize,
+                                           &SYS_CONTEXT->nextData,
+                                           outPrivate);
 }
 
 TPM_RC Tss2_Sys_Import(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	parentHandle,
+    TPMI_DH_OBJECT parentHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DATA	*encryptionKey,
-    TPM2B_PUBLIC	*objectPublic,
-    TPM2B_PRIVATE	*duplicate,
-    TPM2B_ENCRYPTED_SECRET	*inSymSeed,
-    TPMT_SYM_DEF_OBJECT	*symmetricAlg,
-    TPM2B_PRIVATE	*outPrivate,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPM2B_DATA *encryptionKey,
+    TPM2B_PUBLIC *objectPublic,
+    TPM2B_PRIVATE *duplicate,
+    TPM2B_ENCRYPTED_SECRET *inSymSeed,
+    TPMT_SYM_DEF_OBJECT *symmetricAlg,
+    TPM2B_PRIVATE *outPrivate,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
-    if( symmetricAlg == NULL  )
-	{
-		return TSS2_SYS_RC_BAD_REFERENCE;
-	}
+    if (!symmetricAlg)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = Tss2_Sys_Import_Prepare( sysContext, parentHandle, encryptionKey, objectPublic, duplicate, inSymSeed, symmetricAlg );
+    rval = Tss2_Sys_Import_Prepare(sysContext, parentHandle, encryptionKey,
+                                   objectPublic, duplicate, inSymSeed,
+                                   symmetricAlg);
+    if (rval)
+        return rval;
 
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_Import_Complete( sysContext, outPrivate );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_Import_Complete(sysContext, outPrivate);
 }
-

@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,92 +30,107 @@
 
 TPM_RC Tss2_Sys_EncryptDecrypt_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	keyHandle,
-    TPMI_YES_NO	decrypt,
-    TPMI_ALG_SYM_MODE	mode,
-    TPM2B_IV	*ivIn,
-    TPM2B_MAX_BUFFER	*inData
-    )
+    TPMI_DH_OBJECT keyHandle,
+    TPMI_YES_NO decrypt,
+    TPMI_ALG_SYM_MODE mode,
+    TPM2B_IV *ivIn,
+    TPM2B_MAX_BUFFER *inData)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TPM_RC rval;
 
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
+    rval = CommonPreparePrologue(sysContext, TPM_CC_EncryptDecrypt);
+    if (rval)
+        return rval;
 
-    CommonPreparePrologue( sysContext, TPM_CC_EncryptDecrypt );
+    rval = Tss2_MU_UINT32_Marshal(keyHandle, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), keyHandle, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_UINT8_Marshal(decrypt, SYS_CONTEXT->tpmInBuffPtr,
+                                 SYS_CONTEXT->maxCommandSize,
+                                 &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
+    rval = Tss2_MU_UINT16_Marshal(mode, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
+    rval = Tss2_MU_TPM2B_IV_Marshal(ivIn, SYS_CONTEXT->tpmInBuffPtr,
+                                    SYS_CONTEXT->maxCommandSize,
+                                    &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    Marshal_UINT8( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), decrypt, &(SYS_CONTEXT->rval) );
-
-    Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), mode, &(SYS_CONTEXT->rval) );
-
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( ivIn->b ) );
-
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( inData->b ) );
+    rval = Tss2_MU_TPM2B_MAX_BUFFER_Marshal(inData, SYS_CONTEXT->tpmInBuffPtr,
+                                            SYS_CONTEXT->maxCommandSize,
+                                            &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 1;
     SYS_CONTEXT->encryptAllowed = 1;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_EncryptDecrypt_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_MAX_BUFFER	*outData,
-    TPM2B_IV	*ivOut
-    )
+    TPM2B_MAX_BUFFER *outData,
+    TPM2B_IV *ivOut)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TPM_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    UNMARSHAL_SIMPLE_TPM2B( sysContext, &( outData->b ) );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    UNMARSHAL_SIMPLE_TPM2B( sysContext, &( ivOut->b ) );
+    rval = Tss2_MU_TPM2B_MAX_BUFFER_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                              SYS_CONTEXT->maxCommandSize,
+                                              &SYS_CONTEXT->nextData,
+                                              outData);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPM2B_IV_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                      SYS_CONTEXT->maxCommandSize,
+                                      &SYS_CONTEXT->nextData,
+                                      ivOut);
 }
 
 TPM_RC Tss2_Sys_EncryptDecrypt(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	keyHandle,
+    TPMI_DH_OBJECT keyHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPMI_YES_NO	decrypt,
-    TPMI_ALG_SYM_MODE	mode,
-    TPM2B_IV	*ivIn,
-    TPM2B_MAX_BUFFER	*inData,
-    TPM2B_MAX_BUFFER	*outData,
-    TPM2B_IV	*ivOut,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPMI_YES_NO decrypt,
+    TPMI_ALG_SYM_MODE mode,
+    TPM2B_IV *ivIn,
+    TPM2B_MAX_BUFFER *inData,
+    TPM2B_MAX_BUFFER *outData,
+    TPM2B_IV *ivOut,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_EncryptDecrypt_Prepare(sysContext, keyHandle, decrypt,
+                                           mode, ivIn, inData);
+    if (rval)
+        return rval;
 
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-    rval = Tss2_Sys_EncryptDecrypt_Prepare( sysContext, keyHandle, decrypt, mode, ivIn, inData );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
-
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_EncryptDecrypt_Complete( sysContext, outData, ivOut );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_EncryptDecrypt_Complete(sysContext, outData, ivOut);
 }
-

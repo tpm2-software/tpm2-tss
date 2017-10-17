@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,109 +30,135 @@
 
 TPM_RC Tss2_Sys_StartAuthSession_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	tpmKey,
-    TPMI_DH_ENTITY	bind,
-    TPM2B_NONCE	*nonceCaller,
-    TPM2B_ENCRYPTED_SECRET	*encryptedSalt,
-    TPM_SE	sessionType,
-    TPMT_SYM_DEF	*symmetric,
-    TPMI_ALG_HASH	authHash
-    )
+    TPMI_DH_OBJECT tpmKey,
+    TPMI_DH_ENTITY bind,
+    TPM2B_NONCE *nonceCaller,
+    TPM2B_ENCRYPTED_SECRET *encryptedSalt,
+    TPM_SE sessionType,
+    TPMT_SYM_DEF *symmetric,
+    TPMI_ALG_HASH authHash)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
+    TSS2_RC rval;
+
+    if (!sysContext || !symmetric)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    rval = CommonPreparePrologue(sysContext, TPM_CC_StartAuthSession);
+    if (rval)
+        return rval;
+
+    rval = Tss2_MU_UINT32_Marshal(tpmKey, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
+
+    rval = Tss2_MU_UINT32_Marshal(bind, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
+
+    if (!nonceCaller) {
+        SYS_CONTEXT->decryptNull = 1;
+
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
+                                      SYS_CONTEXT->maxCommandSize,
+                                      &SYS_CONTEXT->nextData);
+    } else {
+
+        rval = Tss2_MU_TPM2B_NONCE_Marshal(nonceCaller, SYS_CONTEXT->tpmInBuffPtr,
+                                           SYS_CONTEXT->maxCommandSize,
+                                           &SYS_CONTEXT->nextData);
     }
 
-    if( symmetric == NULL  )
-	{
-		return TSS2_SYS_RC_BAD_REFERENCE;
-	}
+    if (rval)
+        return rval;
 
-    CommonPreparePrologue( sysContext, TPM_CC_StartAuthSession );
+    rval = Tss2_MU_TPM2B_ENCRYPTED_SECRET_Marshal(encryptedSalt,
+                                                  SYS_CONTEXT->tpmInBuffPtr,
+                                                  SYS_CONTEXT->maxCommandSize,
+                                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), tpmKey, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_UINT8_Marshal(sessionType, SYS_CONTEXT->tpmInBuffPtr,
+                                 SYS_CONTEXT->maxCommandSize,
+                                 &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), bind, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_TPMT_SYM_DEF_Marshal(symmetric, SYS_CONTEXT->tpmInBuffPtr,
+                                        SYS_CONTEXT->maxCommandSize,
+                                        &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    if( nonceCaller == 0 )
-	{
-		SYS_CONTEXT->decryptNull = 1;
-	}
-
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( nonceCaller->b ) );
-
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( encryptedSalt->b ) );
-
-    Marshal_UINT8( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), sessionType, &(SYS_CONTEXT->rval) );
-
-    Marshal_TPMT_SYM_DEF( sysContext, symmetric );
-
-    Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), authHash, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_UINT16_Marshal(authHash, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 1;
     SYS_CONTEXT->encryptAllowed = 1;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_StartAuthSession_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_SH_AUTH_SESSION	*sessionHandle,
-    TPM2B_NONCE	*nonceTPM
-    )
+    TPMI_SH_AUTH_SESSION *sessionHandle,
+    TPM2B_NONCE *nonceTPM)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
-    Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), sessionHandle, &(SYS_CONTEXT->rval) );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    CommonComplete( sysContext );
+    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                    SYS_CONTEXT->maxCommandSize,
+                                    &SYS_CONTEXT->nextData,
+                                    sessionHandle);
+    if (rval)
+        return rval;
 
-    UNMARSHAL_SIMPLE_TPM2B( sysContext, &( nonceTPM->b ) );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPM2B_NONCE_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                         SYS_CONTEXT->maxCommandSize,
+                                         &SYS_CONTEXT->nextData, nonceTPM);
 }
 
 TPM_RC Tss2_Sys_StartAuthSession(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	tpmKey,
-    TPMI_DH_ENTITY	bind,
+    TPMI_DH_OBJECT tpmKey,
+    TPMI_DH_ENTITY bind,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_NONCE	*nonceCaller,
-    TPM2B_ENCRYPTED_SECRET	*encryptedSalt,
-    TPM_SE	sessionType,
-    TPMT_SYM_DEF	*symmetric,
-    TPMI_ALG_HASH	authHash,
-    TPMI_SH_AUTH_SESSION	*sessionHandle,
-    TPM2B_NONCE	*nonceTPM,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPM2B_NONCE *nonceCaller,
+    TPM2B_ENCRYPTED_SECRET *encryptedSalt,
+    TPM_SE sessionType,
+    TPMT_SYM_DEF *symmetric,
+    TPMI_ALG_HASH authHash,
+    TPMI_SH_AUTH_SESSION *sessionHandle,
+    TPM2B_NONCE *nonceTPM,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
-    if( symmetric == NULL  )
-	{
-		return TSS2_SYS_RC_BAD_REFERENCE;
-	}
+    if (!symmetric)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = Tss2_Sys_StartAuthSession_Prepare( sysContext, tpmKey, bind, nonceCaller, encryptedSalt, sessionType, symmetric, authHash );
+    rval = Tss2_Sys_StartAuthSession_Prepare(sysContext, tpmKey, bind, nonceCaller, encryptedSalt, sessionType, symmetric, authHash);
+    if (rval)
+        return rval;
 
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_StartAuthSession_Complete( sysContext, sessionHandle, nonceTPM );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_StartAuthSession_Complete(sysContext, sessionHandle, nonceTPM);
 }
-

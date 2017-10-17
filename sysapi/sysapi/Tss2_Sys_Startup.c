@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,48 +30,39 @@
 
 TPM_RC Tss2_Sys_Startup_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_SU	startupType
-    )
+    TPM_SU startupType)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
+    rval = CommonPreparePrologue(sysContext, TPM_CC_Startup);
+    if (rval)
+        return rval;
 
-    CommonPreparePrologue( sysContext, TPM_CC_Startup );
-
-
-
-    Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), startupType, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_UINT16_Marshal(startupType, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 0;
     SYS_CONTEXT->authAllowed = 0;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
-
 
 TPM_RC Tss2_Sys_Startup(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_SU	startupType
-    )
+    TPM_SU startupType)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_Startup_Prepare(sysContext, startupType);
+    if (rval)
+        return rval;
 
-
-    rval = Tss2_Sys_Startup_Prepare( sysContext, startupType );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCallForNoResponseCmds( sysContext, 0, 0 );
-    }
-
-    return rval;
+    return CommonOneCallForNoResponseCmds(sysContext, 0, 0);
 }
-

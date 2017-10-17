@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,70 +30,62 @@
 
 TPM_RC Tss2_Sys_ContextSave_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_CONTEXT	saveHandle
-    )
+    TPMI_DH_CONTEXT saveHandle)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TPM_RC rval;
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
+    rval = CommonPreparePrologue(sysContext, TPM_CC_ContextSave);
+    if (rval)
+        return rval;
 
-
-    CommonPreparePrologue( sysContext, TPM_CC_ContextSave );
-
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), saveHandle, &(SYS_CONTEXT->rval) );
-
-
+    rval = Tss2_MU_UINT32_Marshal(saveHandle, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 0;
     SYS_CONTEXT->authAllowed = 0;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_ContextSave_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMS_CONTEXT	*context
-    )
+    TPMS_CONTEXT *context)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TPM_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    Unmarshal_TPMS_CONTEXT( sysContext, context );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPMS_CONTEXT_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                          SYS_CONTEXT->maxCommandSize,
+                                          &SYS_CONTEXT->nextData,
+                                          context);
 }
 
 TPM_RC Tss2_Sys_ContextSave(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_CONTEXT	saveHandle,
-    TPMS_CONTEXT	*context
-    )
+    TPMI_DH_CONTEXT saveHandle,
+    TPMS_CONTEXT *context)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_ContextSave_Prepare(sysContext, saveHandle);
+    if (rval)
+        return rval;
 
+    rval = CommonOneCall(sysContext, 0, 0);
+    if (rval)
+        return rval;
 
-    rval = Tss2_Sys_ContextSave_Prepare( sysContext, saveHandle );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, 0, 0 );
-
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_ContextSave_Complete( sysContext, context );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_ContextSave_Complete(sysContext, context);
 }
-

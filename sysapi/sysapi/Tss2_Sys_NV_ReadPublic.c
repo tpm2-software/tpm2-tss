@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,76 +30,74 @@
 
 TPM_RC Tss2_Sys_NV_ReadPublic_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_NV_INDEX	nvIndex
-    )
+    TPMI_RH_NV_INDEX nvIndex)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
+    rval = CommonPreparePrologue(sysContext, TPM_CC_NV_ReadPublic);
+    if (rval)
+        return rval;
 
-    CommonPreparePrologue( sysContext, TPM_CC_NV_ReadPublic );
-
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), nvIndex, &(SYS_CONTEXT->rval) );
-
-
+    rval = Tss2_MU_UINT32_Marshal(nvIndex, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 1;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_NV_ReadPublic_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_NV_PUBLIC	*nvPublic,
-    TPM2B_NAME	*nvName
-    )
+    TPM2B_NV_PUBLIC *nvPublic,
+    TPM2B_NAME *nvName)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    Unmarshal_TPM2B_NV_PUBLIC( sysContext, nvPublic );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    UNMARSHAL_SIMPLE_TPM2B( sysContext, &( nvName->b ) );
+    rval = Tss2_MU_TPM2B_NV_PUBLIC_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                             SYS_CONTEXT->maxCommandSize,
+                                             &SYS_CONTEXT->nextData,
+                                             nvPublic);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPM2B_NAME_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                        SYS_CONTEXT->maxCommandSize,
+                                        &SYS_CONTEXT->nextData,
+                                        nvName);
 }
 
 TPM_RC Tss2_Sys_NV_ReadPublic(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_NV_INDEX	nvIndex,
+    TPMI_RH_NV_INDEX nvIndex,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_NV_PUBLIC	*nvPublic,
-    TPM2B_NAME	*nvName,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPM2B_NV_PUBLIC *nvPublic,
+    TPM2B_NAME *nvName,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_NV_ReadPublic_Prepare(sysContext, nvIndex);
+    if (rval)
+        return rval;
 
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-    rval = Tss2_Sys_NV_ReadPublic_Prepare( sysContext, nvIndex );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
-
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_NV_ReadPublic_Complete( sysContext, nvPublic, nvName );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_NV_ReadPublic_Complete(sysContext, nvPublic, nvName);
 }
-

@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,95 +30,115 @@
 
 TPM_RC Tss2_Sys_ZGen_2Phase_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	keyA,
-    TPM2B_ECC_POINT	*inQsB,
-    TPM2B_ECC_POINT	*inQeB,
-    TPMI_ECC_KEY_EXCHANGE	inScheme,
-    UINT16	counter
-    )
+    TPMI_DH_OBJECT keyA,
+    TPM2B_ECC_POINT *inQsB,
+    TPM2B_ECC_POINT *inQeB,
+    TPMI_ECC_KEY_EXCHANGE inScheme,
+    UINT16 counter)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
+    TSS2_RC rval;
+
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    rval = CommonPreparePrologue(sysContext, TPM_CC_ZGen_2Phase);
+    if (rval)
+        return rval;
+
+    rval = Tss2_MU_UINT32_Marshal(keyA, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
+
+    if (!inQsB) {
+        SYS_CONTEXT->decryptNull = 1;
+
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
+                                      SYS_CONTEXT->maxCommandSize,
+                                      &SYS_CONTEXT->nextData);
+    } else {
+
+        rval = Tss2_MU_TPM2B_ECC_POINT_Marshal(inQsB, SYS_CONTEXT->tpmInBuffPtr,
+                                               SYS_CONTEXT->maxCommandSize,
+                                               &SYS_CONTEXT->nextData);
     }
 
+    if (rval)
+        return rval;
 
+    rval = Tss2_MU_TPM2B_ECC_POINT_Marshal(inQeB, SYS_CONTEXT->tpmInBuffPtr,
+                                           SYS_CONTEXT->maxCommandSize,
+                                           &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    CommonPreparePrologue( sysContext, TPM_CC_ZGen_2Phase );
+    rval = Tss2_MU_UINT16_Marshal(inScheme, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
-    Marshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), keyA, &(SYS_CONTEXT->rval) );
-
-    if( inQsB == 0 )
-	{
-		SYS_CONTEXT->decryptNull = 1;
-	}
-
-    Marshal_TPM2B_ECC_POINT( sysContext, inQsB );
-
-    Marshal_TPM2B_ECC_POINT( sysContext, inQeB );
-
-    Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), inScheme, &(SYS_CONTEXT->rval) );
-
-    Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), counter, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_UINT16_Marshal(counter, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 1;
     SYS_CONTEXT->encryptAllowed = 1;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_ZGen_2Phase_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_ECC_POINT	*outZ1,
-    TPM2B_ECC_POINT	*outZ2
-    )
+    TPM2B_ECC_POINT *outZ1,
+    TPM2B_ECC_POINT *outZ2)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TSS2_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    Unmarshal_TPM2B_ECC_POINT( sysContext, outZ1 );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    Unmarshal_TPM2B_ECC_POINT( sysContext, outZ2 );
+    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                             SYS_CONTEXT->maxCommandSize,
+                                             &SYS_CONTEXT->nextData, outZ1);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPM2B_ECC_POINT_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                             SYS_CONTEXT->maxCommandSize,
+                                             &SYS_CONTEXT->nextData, outZ2);
 }
 
 TPM_RC Tss2_Sys_ZGen_2Phase(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT	keyA,
+    TPMI_DH_OBJECT keyA,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_ECC_POINT	*inQsB,
-    TPM2B_ECC_POINT	*inQeB,
-    TPMI_ECC_KEY_EXCHANGE	inScheme,
-    UINT16	counter,
-    TPM2B_ECC_POINT	*outZ1,
-    TPM2B_ECC_POINT	*outZ2,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPM2B_ECC_POINT *inQsB,
+    TPM2B_ECC_POINT *inQeB,
+    TPMI_ECC_KEY_EXCHANGE inScheme,
+    UINT16 counter,
+    TPM2B_ECC_POINT *outZ1,
+    TPM2B_ECC_POINT *outZ2,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_ZGen_2Phase_Prepare(sysContext, keyA, inQsB, inQeB,
+                                        inScheme, counter);
+    if (rval)
+        return rval;
 
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-    rval = Tss2_Sys_ZGen_2Phase_Prepare( sysContext, keyA, inQsB, inQeB, inScheme, counter );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
-
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_ZGen_2Phase_Complete( sysContext, outZ1, outZ2 );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_ZGen_2Phase_Complete(sysContext, outZ1, outZ2);
 }
-

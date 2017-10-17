@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,76 +30,71 @@
 
 TPM_RC Tss2_Sys_EC_Ephemeral_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMI_ECC_CURVE	curveID
-    )
+    TPMI_ECC_CURVE curveID)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TPM_RC rval;
 
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
+    rval = CommonPreparePrologue(sysContext, TPM_CC_EC_Ephemeral);
+    if (rval)
+        return rval;
 
-    CommonPreparePrologue( sysContext, TPM_CC_EC_Ephemeral );
-
-
-
-    Marshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), curveID, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_UINT16_Marshal(curveID, SYS_CONTEXT->tpmInBuffPtr,
+                                  SYS_CONTEXT->maxCommandSize,
+                                  &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 1;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_EC_Ephemeral_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_ECC_POINT	*Q,
-    UINT16	*counter
-    )
+    TPM2B_ECC_POINT *Q,
+    UINT16 *counter)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TPM_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    Unmarshal_TPM2B_ECC_POINT( sysContext, Q );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
+    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                             SYS_CONTEXT->maxCommandSize,
+                                             &SYS_CONTEXT->nextData, Q);
+    if (rval)
+        return rval;
 
-    Unmarshal_UINT16( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), counter, &(SYS_CONTEXT->rval) );
-
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_UINT16_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                    SYS_CONTEXT->maxCommandSize,
+                                    &SYS_CONTEXT->nextData, counter);
 }
 
 TPM_RC Tss2_Sys_EC_Ephemeral(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPMI_ECC_CURVE	curveID,
-    TPM2B_ECC_POINT	*Q,
-    UINT16	*counter,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPMI_ECC_CURVE curveID,
+    TPM2B_ECC_POINT *Q,
+    UINT16 *counter,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_EC_Ephemeral_Prepare(sysContext, curveID);
+    if (rval)
+        return rval;
 
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-    rval = Tss2_Sys_EC_Ephemeral_Prepare( sysContext, curveID );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
-
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_EC_Ephemeral_Complete( sysContext, Q, counter );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_EC_Ephemeral_Complete(sysContext, Q, counter);
 }
-

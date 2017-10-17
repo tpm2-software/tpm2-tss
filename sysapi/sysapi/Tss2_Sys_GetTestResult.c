@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,73 +29,67 @@
 #include "sysapi_util.h"
 
 TPM_RC Tss2_Sys_GetTestResult_Prepare(
-    TSS2_SYS_CONTEXT *sysContext
-    )
+    TSS2_SYS_CONTEXT *sysContext)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TPM_RC rval;
 
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-
-    CommonPreparePrologue( sysContext, TPM_CC_GetTestResult );
-
-
+    rval = CommonPreparePrologue(sysContext, TPM_CC_GetTestResult);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 0;
     SYS_CONTEXT->encryptAllowed = 1;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_GetTestResult_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_MAX_BUFFER	*outData,
-    TPM_RC	*testResult
-    )
+    TPM2B_MAX_BUFFER *outData,
+    TPM_RC *testResult)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TPM_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    UNMARSHAL_SIMPLE_TPM2B( sysContext, &( outData->b ) );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    Unmarshal_UINT32( SYS_CONTEXT->tpmInBuffPtr, SYS_CONTEXT->maxCommandSize, &(SYS_CONTEXT->nextData), testResult, &(SYS_CONTEXT->rval) );
+    rval = Tss2_MU_TPM2B_MAX_BUFFER_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                              SYS_CONTEXT->maxCommandSize,
+                                              &SYS_CONTEXT->nextData,
+                                              outData);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                    SYS_CONTEXT->maxCommandSize,
+                                    &SYS_CONTEXT->nextData,
+                                    testResult);
 }
 
 TPM_RC Tss2_Sys_GetTestResult(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_MAX_BUFFER	*outData,
-    TPM_RC	*testResult,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPM2B_MAX_BUFFER *outData,
+    TPM_RC *testResult,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_GetTestResult_Prepare(sysContext);
+    if (rval)
+        return rval;
 
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-    rval = Tss2_Sys_GetTestResult_Prepare( sysContext );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
-
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_GetTestResult_Complete( sysContext, outData, testResult );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_GetTestResult_Complete(sysContext, outData, testResult);
 }
-

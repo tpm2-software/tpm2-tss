@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015 - 2017, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,76 +30,76 @@
 
 TPM_RC Tss2_Sys_FieldUpgradeData_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_MAX_BUFFER	*fuData
-    )
+    TPM2B_MAX_BUFFER *fuData)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TPM_RC rval;
 
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
+    rval = CommonPreparePrologue(sysContext, TPM_CC_FieldUpgradeData);
+    if (rval)
+        return rval;
 
-    CommonPreparePrologue( sysContext, TPM_CC_FieldUpgradeData );
-
-
-
-    MARSHAL_SIMPLE_TPM2B( sysContext, &( fuData->b ) );
+    rval = Tss2_MU_TPM2B_MAX_BUFFER_Marshal(fuData,
+                                            SYS_CONTEXT->tpmInBuffPtr,
+                                            SYS_CONTEXT->maxCommandSize,
+                                            &SYS_CONTEXT->nextData);
+    if (rval)
+        return rval;
 
     SYS_CONTEXT->decryptAllowed = 1;
     SYS_CONTEXT->encryptAllowed = 0;
     SYS_CONTEXT->authAllowed = 1;
 
-    CommonPrepareEpilogue( sysContext );
-
-    return SYS_CONTEXT->rval;
+    return CommonPrepareEpilogue(sysContext);
 }
 
 TPM_RC Tss2_Sys_FieldUpgradeData_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMT_HA	*nextDigest,
-    TPMT_HA	*firstDigest
-    )
+    TPMT_HA *nextDigest,
+    TPMT_HA *firstDigest)
 {
-    if( sysContext == NULL )
-    {
-        return( TSS2_SYS_RC_BAD_REFERENCE );
-    }
+    TPM_RC rval;
 
-    CommonComplete( sysContext );
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    Unmarshal_TPMT_HA( sysContext, nextDigest );
+    rval = CommonComplete(sysContext);
+    if (rval)
+        return rval;
 
-    Unmarshal_TPMT_HA( sysContext, firstDigest );
+    rval = Tss2_MU_TPMT_HA_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                     SYS_CONTEXT->maxCommandSize,
+                                     &SYS_CONTEXT->nextData,
+                                     nextDigest);
+    if (rval)
+        return rval;
 
-    return SYS_CONTEXT->rval;
+    return Tss2_MU_TPMT_HA_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                     SYS_CONTEXT->maxCommandSize,
+                                     &SYS_CONTEXT->nextData,
+                                     firstDigest);
 }
 
 TPM_RC Tss2_Sys_FieldUpgradeData(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_MAX_BUFFER	*fuData,
-    TPMT_HA	*nextDigest,
-    TPMT_HA	*firstDigest,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    )
+    TPM2B_MAX_BUFFER *fuData,
+    TPMT_HA *nextDigest,
+    TPMT_HA *firstDigest,
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
-    TSS2_RC     rval = TPM_RC_SUCCESS;
+    TSS2_RC rval;
 
+    rval = Tss2_Sys_FieldUpgradeData_Prepare(sysContext, fuData);
+    if (rval)
+        return rval;
 
+    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
 
-    rval = Tss2_Sys_FieldUpgradeData_Prepare( sysContext, fuData );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = CommonOneCall( sysContext, cmdAuthsArray, rspAuthsArray );
-
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            rval = Tss2_Sys_FieldUpgradeData_Complete( sysContext, nextDigest, firstDigest );
-        }
-    }
-
-    return rval;
+    return Tss2_Sys_FieldUpgradeData_Complete(sysContext, nextDigest,
+                                              firstDigest);
 }
-
