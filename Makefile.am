@@ -123,14 +123,14 @@ if UNIT
 test_unit_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_tcti_device_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_tcti_device_LDFLAGS = -Wl,--wrap=read -Wl,-wrap=write
-test_unit_tcti_device_SOURCES = tcti/commonchecks.c tcti/tcti_device.c \
+test_unit_tcti_device_SOURCES = tcti/tcti.c tcti/tcti.h tcti/tcti_device.c \
     test/unit/tcti-device.c
 
 test_unit_tcti_socket_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_tcti_socket_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_tcti_socket_LDFLAGS = -Wl,--wrap=connect,--wrap=recv,--wrap=select,--wrap=send
 test_unit_tcti_socket_SOURCES = tcti/platformcommand.c tcti/tcti_socket.c \
-    tcti/commonchecks.c tcti/commonchecks.h tcti/sockets.c tcti/sockets.h \
+    tcti/tcti.c tcti/tcti.h tcti/sockets.c tcti/sockets.h \
     common/debug.c common/debug.h tcti/logging.h test/unit/tcti-socket.c
 
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
@@ -198,14 +198,14 @@ sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPI_H) $(SYSAPIUTIL_C) \
 tcti_libtcti_device_la_CFLAGS   = $(AM_CFLAGS)
 tcti_libtcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_device.map
 tcti_libtcti_device_la_LIBADD   = $(libmarshal)
-tcti_libtcti_device_la_SOURCES  = tcti/tcti_device.c tcti/commonchecks.c \
-    tcti/commonchecks.h common/debug.c common/debug.h tcti/logging.h tcti/tcti.h
+tcti_libtcti_device_la_SOURCES  = tcti/tcti_device.c tcti/tcti.c \
+    tcti/tcti.h common/debug.c common/debug.h tcti/logging.h
 
 tcti_libtcti_socket_la_CFLAGS   = $(AM_CFLAGS)
 tcti_libtcti_socket_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
 tcti_libtcti_socket_la_SOURCES  = tcti/platformcommand.c tcti/tcti_socket.c \
-    tcti/commonchecks.c tcti/commonchecks.h tcti/sockets.c tcti/sockets.h \
-    common/debug.c common/debug.h tcti/logging.h tcti/tcti.h
+    tcti/tcti.c tcti/tcti.h tcti/sockets.c tcti/sockets.h \
+    common/debug.c common/debug.h tcti/logging.h
 
 test_tpmclient_tpmclient_int_CFLAGS   = $(AM_CFLAGS) -DNO_RM_TESTS -U_FORTIFY_SOURCE
 test_tpmclient_tpmclient_int_LDADD    = $(TESTS_LDADD)
