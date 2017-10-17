@@ -34,7 +34,7 @@
 #include "tcti/tcti_socket.h"
 #include "sysapi_util.h"
 #include "common/debug.h"
-#include "commonchecks.h"
+#include "tcti.h"
 #include "logging.h"
 #include "sockets.h"
 #include "tss2_endian.h"
