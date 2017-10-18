@@ -37,7 +37,7 @@ CopyCommandHeader_sys_setup (void **state)
 static int
 CopyCommandHeader_sys_teardown (void **state)
 {
-    _TSS2_SYS_CONTEXT_BLOB *sys_ctx = (_TSS2_SYS_CONTEXT_BLOB*)*state;
+    TSS2_SYS_CONTEXT *sys_ctx = (TSS2_SYS_CONTEXT*)*state;
 
     if (sys_ctx)
         free (sys_ctx);
@@ -54,11 +54,11 @@ CopyCommandHeader_sys_teardown (void **state)
 static void
 CopyCommandHeader_nextData_unit (void **state)
 {
-    _TSS2_SYS_CONTEXT_BLOB *sys_ctx = (_TSS2_SYS_CONTEXT_BLOB*)*state;
+    TSS2_SYS_CONTEXT *sys_ctx = (TSS2_SYS_CONTEXT*)*state;
     TPM_CC cc = TPM_CC_GetCapability;
 
     CopyCommandHeader (sys_ctx, cc);
-    assert_int_equal (sys_ctx->nextData, sizeof (TPM20_Header_In));
+    assert_int_equal (((_TSS2_SYS_CONTEXT_BLOB *)sys_ctx)->nextData, sizeof (TPM20_Header_In));
 }
 
 /**
@@ -78,7 +78,7 @@ CopyCommandHeader_tag_unit (void **state)
      */
     TPMI_ST_COMMAND_TAG tag_net = htons (TPM_ST_NO_SESSIONS);
 
-    CopyCommandHeader (sys_ctx, cc);
+    CopyCommandHeader ((TSS2_SYS_CONTEXT*)sys_ctx, cc);
     assert_int_equal (tag_net, header->tag);
 }
 /**
@@ -94,7 +94,7 @@ CopyCommandHeader_commandcode_unit (void **state)
     TPM_CC cc_net = htonl (cc);
     TPM20_Header_In *header = (TPM20_Header_In*)sys_ctx->tpmInBuffPtr;
 
-    CopyCommandHeader (sys_ctx, cc);
+    CopyCommandHeader ((TSS2_SYS_CONTEXT*)sys_ctx, cc);
     assert_int_equal (cc_net, header->commandCode);
 }
 

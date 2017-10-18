@@ -30,54 +30,41 @@
 
 size_t Tss2_Sys_GetContextSize(size_t maxCommandSize)
 {
-    if( maxCommandSize == 0 )
-    {
-        return( sizeof( _TSS2_SYS_CONTEXT_BLOB ) + MAX_COMMAND_SIZE );
+    if (maxCommandSize == 0) {
+        return sizeof(_TSS2_SYS_CONTEXT_BLOB) + MAX_COMMAND_SIZE;
+    } else {
+        return sizeof(_TSS2_SYS_CONTEXT_BLOB) +
+                     ((maxCommandSize > sizeof(TPM20_Header_In)) ?
+                       maxCommandSize : sizeof(TPM20_Header_In));
     }
-    else
-    {
-        return( sizeof( _TSS2_SYS_CONTEXT_BLOB ) +
-                ( ( maxCommandSize > sizeof( TPM20_Header_In ) ) ? maxCommandSize : ( sizeof( TPM20_Header_In )  ) ) );
-    }
-};
+}
 
 TSS2_RC Tss2_Sys_Initialize(
     TSS2_SYS_CONTEXT *sysContext,
     size_t contextSize,
     TSS2_TCTI_CONTEXT *tctiContext,
-    TSS2_ABI_VERSION *abiVersion
-    )
+    TSS2_ABI_VERSION *abiVersion)
 {
-
-    if( sysContext == NULL || tctiContext == NULL || abiVersion == NULL )
-    {
+    if (!sysContext || !tctiContext || !abiVersion)
         return TSS2_SYS_RC_BAD_REFERENCE;
-    }
 
-    if( contextSize < sizeof( _TSS2_SYS_CONTEXT_BLOB ) )
-    {
+    if (contextSize < sizeof(_TSS2_SYS_CONTEXT_BLOB))
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
-    }
 
     if (TSS2_TCTI_TRANSMIT (tctiContext) == NULL || TSS2_TCTI_RECEIVE (tctiContext) == NULL)
-    {
         return TSS2_SYS_RC_BAD_TCTI_STRUCTURE;
-    }
 
-    // Checks for ABI negotiation.
-    if( abiVersion->tssCreator != TSSWG_INTEROP ||
+    /* Checks for ABI negotiation. */
+    if (abiVersion->tssCreator != TSSWG_INTEROP ||
         abiVersion->tssFamily != TSS_SAPI_FIRST_FAMILY ||
         abiVersion->tssLevel != TSS_SAPI_FIRST_LEVEL ||
-        abiVersion->tssVersion != TSS_SAPI_FIRST_LEVEL )
-    {
+        abiVersion->tssVersion != TSS_SAPI_FIRST_LEVEL)
         return TSS2_SYS_RC_ABI_MISMATCH;
-    }
 
-    SYS_CONTEXT->tctiContext = (TSS2_TCTI_CONTEXT *)tctiContext;
-    InitSysContextPtrs( sysContext, contextSize );
-    InitSysContextFields( sysContext );
+    SYS_CONTEXT->tctiContext = tctiContext;
+    InitSysContextPtrs(sysContext, contextSize);
+    InitSysContextFields(sysContext);
     SYS_CONTEXT->previousStage = CMD_STAGE_INITIALIZE;
 
     return TSS2_RC_SUCCESS;
 }
-
