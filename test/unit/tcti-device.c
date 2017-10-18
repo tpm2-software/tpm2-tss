@@ -44,7 +44,8 @@ tcti_device_init_null_config_test (void **state)
 {
     size_t tcti_size;
     TSS2_RC rc;
-    TSS2_TCTI_CONTEXT *tcti_context = (TSS2_TCTI_CONTEXT*)1;
+    TSS2_TCTI_CONTEXT_INTEL tcti_intel = { 0 };
+    TSS2_TCTI_CONTEXT *tcti_context = (TSS2_TCTI_CONTEXT*)&tcti_intel;
 
     rc = InitDeviceTcti (tcti_context, &tcti_size, NULL);
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
