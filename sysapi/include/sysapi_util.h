@@ -126,12 +126,9 @@ typedef struct {
                             // parsing sessions following handles section.
 } COMMAND_HANDLES;
 
+struct TSS2_SYS_CONTEXT;
 
-// Utility functions.
-void CopyCommandHeader( _TSS2_SYS_CONTEXT_BLOB *sysContext, TPM_CC commandCode );
-TPM_RC FinishCommand( _TSS2_SYS_CONTEXT_BLOB *sysContext,
-    const TSS2_SYS_CMD_AUTHS *cmdAuthsArray, UINT32 *responseSize );
-
+TPM_RC CopyCommandHeader(TSS2_SYS_CONTEXT *sysContext, TPM_CC commandCode);
 UINT16 GetDigestSize( TPM_ALG_ID authHash );
 UINT32 GetCommandSize( TSS2_SYS_CONTEXT *sysContext );
 

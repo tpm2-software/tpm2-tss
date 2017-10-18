@@ -30,79 +30,60 @@
 #include "tss2_endian.h"
 
 TSS2_RC Tss2_Sys_GetEncryptParam(
-	TSS2_SYS_CONTEXT 	*sysContext,
-	size_t				*encryptParamSize,
-	const uint8_t 		**encryptParamBuffer
-)
+    TSS2_SYS_CONTEXT *sysContext,
+    size_t *encryptParamSize,
+    const uint8_t **encryptParamBuffer)
 {
-    TSS2_RC rval = TSS2_RC_SUCCESS;
     TPM2B *encryptParam;
-    void *otherData;
 
-    if( encryptParamSize == 0 || encryptParamBuffer == 0 || sysContext == 0 )
-    {
-        rval = TSS2_SYS_RC_BAD_REFERENCE;
-    }
-    else if( SYS_CONTEXT->previousStage != CMD_STAGE_RECEIVE_RESPONSE )
-    {
-        rval = TSS2_SYS_RC_BAD_SEQUENCE;
-    }
-    else if (SYS_CONTEXT->encryptAllowed == 0 ||
-             BE_TO_HOST_16(SYS_RESP_HEADER->tag) == TPM_ST_NO_SESSIONS)
-    {
-        rval = TSS2_SYS_RC_NO_ENCRYPT_PARAM;
-    }
-    else
-    {
-        // Get first parameter and return its
-        // size and a pointer to it.
-        otherData = SYS_CONTEXT->rspParamsSize;
-        SYS_CONTEXT->rpBuffer = otherData;
-        SYS_CONTEXT->rpBuffer += 4; // Skip over params size field.
-        encryptParam = (TPM2B *)( SYS_CONTEXT->rpBuffer );
-        *encryptParamSize = BE_TO_HOST_16(encryptParam->size);
-        *encryptParamBuffer = &( encryptParam->buffer[0] );
-    }
-    return rval;
+    if (!encryptParamSize || !encryptParamBuffer || !sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    if (SYS_CONTEXT->previousStage != CMD_STAGE_RECEIVE_RESPONSE)
+        return TSS2_SYS_RC_BAD_SEQUENCE;
+
+    if (SYS_CONTEXT->encryptAllowed == 0 ||
+        BE_TO_HOST_16(SYS_RESP_HEADER->tag) == TPM_ST_NO_SESSIONS)
+        return TSS2_SYS_RC_NO_ENCRYPT_PARAM;
+
+    /* Get first parameter and return its size and a pointer to it. */
+    SYS_CONTEXT->rpBuffer = (UINT8 *)SYS_CONTEXT->rspParamsSize;
+    /* Skip over params size field. */
+    SYS_CONTEXT->rpBuffer += 4;
+    encryptParam = (TPM2B *)SYS_CONTEXT->rpBuffer;
+    *encryptParamSize = BE_TO_HOST_16(encryptParam->size);
+    *encryptParamBuffer = encryptParam->buffer;
+
+    return TSS2_RC_SUCCESS;
 }
 
-
 TSS2_RC Tss2_Sys_SetEncryptParam(
-	TSS2_SYS_CONTEXT 		*sysContext,
-	size_t                  encryptParamSize,
-	const uint8_t			*encryptParamBuffer
-)
+    TSS2_SYS_CONTEXT *sysContext,
+    size_t encryptParamSize,
+    const uint8_t *encryptParamBuffer)
 {
-    TSS2_RC         rval = TSS2_RC_SUCCESS;
-	size_t          currEncryptParamSize;
-    uint8_t         *currEncryptParamBuffer;
+    TSS2_RC rval;
+    size_t currEncryptParamSize;
+    const uint8_t *currEncryptParamBuffer;
 
-    if( encryptParamBuffer == 0 || sysContext == 0 )
-    {
-        rval = TSS2_SYS_RC_BAD_REFERENCE;
-    }
-    else
-    {
-        rval = Tss2_Sys_GetEncryptParam(sysContext,
+    if (!encryptParamBuffer || !sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    rval = Tss2_Sys_GetEncryptParam(sysContext,
                                     &currEncryptParamSize,
-                                    (const uint8_t **)&currEncryptParamBuffer);
+                                    &currEncryptParamBuffer);
+    if (rval)
+        return rval;
 
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            if( encryptParamSize != currEncryptParamSize )
-            {
-                return TSS2_SYS_RC_BAD_SIZE;
-            }
-            else
-            {
-                if (currEncryptParamBuffer + encryptParamSize >
-                        SYS_CONTEXT->tpmInBuffPtr + SYS_CONTEXT->maxCommandSize)
-                    return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+    if (encryptParamSize != currEncryptParamSize)
+        return TSS2_SYS_RC_BAD_SIZE;
 
-                memmove(currEncryptParamBuffer, encryptParamBuffer, encryptParamSize);
-            }
-        }
-    }
+    if (currEncryptParamBuffer + encryptParamSize >
+        SYS_CONTEXT->tpmInBuffPtr + SYS_CONTEXT->maxCommandSize)
+        return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
 
-    return rval;
+    memmove((void *)currEncryptParamBuffer,
+            encryptParamBuffer, encryptParamSize);
+
+    return TSS2_RC_SUCCESS;
 }

@@ -31,24 +31,16 @@
 TPM_RC Tss2_Sys_GetCpBuffer(
     TSS2_SYS_CONTEXT *sysContext,
     size_t *cpBufferUsedSize,
-    const uint8_t **cpBuffer
-    )
+    const uint8_t **cpBuffer)
 {
-    TSS2_RC rval = TSS2_RC_SUCCESS;
+    if (!sysContext || !cpBufferUsedSize || !cpBuffer)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if( sysContext == NULL || cpBufferUsedSize == NULL ||
-            cpBuffer == NULL )
-    {
-        rval = TSS2_SYS_RC_BAD_REFERENCE;
-    }
-    else if( SYS_CONTEXT->previousStage == CMD_STAGE_PREPARE )
-    {
-        *cpBuffer = SYS_CONTEXT->cpBuffer;
-        *cpBufferUsedSize = SYS_CONTEXT->cpBufferUsedSize;
-    }
-    else
-    {
-        rval = TSS2_SYS_RC_BAD_SEQUENCE;
-    }
-    return( rval );
+    if (SYS_CONTEXT->previousStage != CMD_STAGE_PREPARE)
+        return TSS2_SYS_RC_BAD_SEQUENCE;
+
+    *cpBuffer = SYS_CONTEXT->cpBuffer;
+    *cpBufferUsedSize = SYS_CONTEXT->cpBufferUsedSize;
+
+    return TSS2_RC_SUCCESS;
 }

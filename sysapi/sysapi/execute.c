@@ -29,148 +29,118 @@
 #include "sysapi_util.h"
 #include "tss2_endian.h"
 
-TSS2_RC Tss2_Sys_ExecuteAsync(
-    TSS2_SYS_CONTEXT 		*sysContext
-    )
+TSS2_RC Tss2_Sys_ExecuteAsync(TSS2_SYS_CONTEXT *sysContext)
 {
-    TSS2_RC  rval = TSS2_RC_SUCCESS;
+    TSS2_RC rval;
 
-    if( sysContext == 0 )
-    {
-        rval = TSS2_SYS_RC_BAD_REFERENCE;
-    }
-    else if( SYS_CONTEXT->previousStage != CMD_STAGE_PREPARE )
-    {
-        rval = TSS2_SYS_RC_BAD_SEQUENCE;
-    }
-    else
-    {
-        rval = tss2_tcti_transmit(SYS_CONTEXT->tctiContext,
-                                  HOST_TO_BE_32(((TPM20_Header_In *)SYS_CONTEXT->tpmInBuffPtr)->commandSize),
-                                  SYS_CONTEXT->tpmInBuffPtr);
-    }
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        SYS_CONTEXT->previousStage = CMD_STAGE_SEND_COMMAND;
-    }
+    if (SYS_CONTEXT->previousStage != CMD_STAGE_PREPARE)
+        return TSS2_SYS_RC_BAD_SEQUENCE;
+
+    rval = tss2_tcti_transmit(SYS_CONTEXT->tctiContext,
+                              HOST_TO_BE_32(((TPM20_Header_In *)SYS_CONTEXT->tpmInBuffPtr)->commandSize),
+                              SYS_CONTEXT->tpmInBuffPtr);
+    if (rval)
+        return rval;
+
+    SYS_CONTEXT->previousStage = CMD_STAGE_SEND_COMMAND;
+
     return rval;
 }
 
 TSS2_RC Tss2_Sys_ExecuteFinish(
-    TSS2_SYS_CONTEXT 		*sysContext,
-    int32_t                 timeout
-    )
+    TSS2_SYS_CONTEXT *sysContext,
+    int32_t timeout)
 {
-    TSS2_RC  rval = TSS2_RC_SUCCESS;
+    TSS2_RC rval;
     size_t responseSize = 0;
-    UINT8 tpmError = 0;
 
-    if( sysContext == 0 )
-    {
-        rval = TSS2_SYS_RC_BAD_REFERENCE;
-    }
-    else if( SYS_CONTEXT->previousStage != CMD_STAGE_SEND_COMMAND )
-    {
-        rval = TSS2_SYS_RC_BAD_SEQUENCE;
-    }
-    else
-    {
-        responseSize = SYS_CONTEXT->maxResponseSize;
-        rval = tss2_tcti_receive (SYS_CONTEXT->tctiContext,
-                                  &responseSize,
-                                  SYS_CONTEXT->tpmOutBuffPtr,
-                                  timeout);
-    }
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        if( responseSize < sizeof( TPM20_ErrorResponse ) )
-        {
-            rval = TSS2_SYS_RC_INSUFFICIENT_RESPONSE;
-        }
-        else if( responseSize > SYS_CONTEXT->maxResponseSize )
-        {
-            rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
-        }
-        else
-        {
-            SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
+    if (SYS_CONTEXT->previousStage != CMD_STAGE_SEND_COMMAND)
+        return TSS2_SYS_RC_BAD_SEQUENCE;
 
-            /*
-             * Unmarshal the tag, response size, and response code as soon
-             * as possible. Later processing code should get this data from
-             * the TPM20_Header_Out in the context structure. No need to
-             * unmarshal this stuff again.
-             */
-            SYS_CONTEXT->nextData = 0;
-            Unmarshal_TPM_ST (SYS_CONTEXT->tpmOutBuffPtr,
-                              SYS_CONTEXT->maxCommandSize,
-                              &SYS_CONTEXT->nextData,
-                              &SYS_CONTEXT->rsp_header.tag,
-                              &SYS_CONTEXT->rval);
-            Unmarshal_UINT32 (SYS_CONTEXT->tpmOutBuffPtr,
-                              SYS_CONTEXT->maxCommandSize,
-                              &SYS_CONTEXT->nextData,
-                              &SYS_CONTEXT->rsp_header.responseSize,
-                              &(SYS_CONTEXT->rval) );
-            Unmarshal_UINT32 (SYS_CONTEXT->tpmOutBuffPtr,
-                              SYS_CONTEXT->maxCommandSize,
-                              &SYS_CONTEXT->nextData,
-                              &SYS_CONTEXT->rsp_header.responseCode,
-                              &SYS_CONTEXT->rval);
-            if (SYS_CONTEXT->rsp_header.responseSize < sizeof(TPM20_Header_Out))
-            {
-                rval = SYS_CONTEXT->rval = TSS2_SYS_RC_INSUFFICIENT_RESPONSE;
-            }
-            else
-            {
-                if (SYS_CONTEXT->rsp_header.responseCode == TSS2_RC_SUCCESS) {
-                    if( SYS_CONTEXT->rval != TPM_RC_SUCCESS )
-                    {
-                        tpmError = 1;
-                        rval = SYS_CONTEXT->rval;
-                    }
-                } else {
-                    rval = SYS_CONTEXT->rsp_header.responseCode;
-                    SYS_CONTEXT->rval = SYS_CONTEXT->rsp_header.responseCode;
-                }
-            }
-        }
+    responseSize = SYS_CONTEXT->maxResponseSize;
 
-        // If we received a TPM error other than CANCELED or if we didn't receive enough response bytes,
-        // reset SAPI state machine to CMD_STAGE_PREPARE.  There's nothing
-        // else we can do for current command.
-        if( ( tpmError && rval != TPM_RC_CANCELED ) || ( rval == TSS2_SYS_RC_INSUFFICIENT_RESPONSE ) )
-        {
-            SYS_CONTEXT->previousStage = CMD_STAGE_PREPARE;
-        }
-        else
-        {
-            SYS_CONTEXT->previousStage = CMD_STAGE_RECEIVE_RESPONSE;
-        }
-    }
-    else if( rval == TSS2_TCTI_RC_INSUFFICIENT_BUFFER )
-    {
-        // Changed error code to what it should be.
-        rval = TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+    rval = tss2_tcti_receive(SYS_CONTEXT->tctiContext, &responseSize,
+                             SYS_CONTEXT->tpmOutBuffPtr, timeout);
+    if (rval)
+        return rval;
+
+    if (rval == TSS2_TCTI_RC_INSUFFICIENT_BUFFER)
+        return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+
+    /*
+     * Unmarshal the tag, response size, and response code as soon
+     * as possible. Later processing code should get this data from
+     * the TPM20_Header_Out in the context structure. No need to
+     * unmarshal this stuff again.
+     */
+     SYS_CONTEXT->nextData = 0;
+
+     rval = Tss2_MU_TPM_ST_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                     SYS_CONTEXT->maxCommandSize,
+                                     &SYS_CONTEXT->nextData,
+                                     &SYS_CONTEXT->rsp_header.tag);
+    if (rval)
+        return rval;
+
+     rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                     SYS_CONTEXT->maxCommandSize,
+                                     &SYS_CONTEXT->nextData,
+                                     &SYS_CONTEXT->rsp_header.responseSize);
+    if (rval)
+        return rval;
+
+    if (SYS_CONTEXT->rsp_header.responseSize > SYS_CONTEXT->maxResponseSize) {
+        SYS_CONTEXT->rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
+        return TSS2_SYS_RC_MALFORMED_RESPONSE;
     }
 
+    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
+                                    SYS_CONTEXT->maxCommandSize,
+                                    &SYS_CONTEXT->nextData,
+                                    &SYS_CONTEXT->rsp_header.responseCode);
+    if (rval)
+        return rval;
+
+    rval = SYS_CONTEXT->rsp_header.responseCode;
+    /*
+     * NOTE: this is only to maintain state between API calls
+     * It should be eventually removed.
+     */
+    SYS_CONTEXT->rval = rval;
+
+    /* If we received a TPM error other than CANCELED or if we didn't
+     * receive enough response bytes, reset SAPI state machine to
+     * CMD_STAGE_PREPARE. There's nothing else we can do for current command.
+     */
+    if (SYS_CONTEXT->rsp_header.responseSize < sizeof(TPM20_Header_Out)) {
+        SYS_CONTEXT->previousStage = CMD_STAGE_PREPARE;
+        return TSS2_SYS_RC_INSUFFICIENT_RESPONSE;
+    }
+    if (rval == TPM_RC_CANCELED) {
+        SYS_CONTEXT->previousStage = CMD_STAGE_PREPARE;
+        return TSS2_SYS_RC_INSUFFICIENT_RESPONSE;
+    }
+
+    SYS_CONTEXT->previousStage = CMD_STAGE_RECEIVE_RESPONSE;
     return rval;
 }
 
-
-
-TSS2_RC Tss2_Sys_Execute(
-    TSS2_SYS_CONTEXT 		*sysContext
-    )
+TSS2_RC Tss2_Sys_Execute(TSS2_SYS_CONTEXT *sysContext)
 {
-    TSS2_RC rval = TSS2_RC_SUCCESS;
+    TSS2_RC rval;
 
-    rval = Tss2_Sys_ExecuteAsync( sysContext );
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
-    }
-    return rval;
+    if (!sysContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    rval = Tss2_Sys_ExecuteAsync(sysContext);
+    if (rval)
+        return rval;
+
+    return Tss2_Sys_ExecuteFinish(sysContext, TSS2_TCTI_TIMEOUT_BLOCK);
 }
