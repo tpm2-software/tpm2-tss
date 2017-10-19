@@ -49,8 +49,7 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
     UINT8 *hashInputPtr;
     size_t parametersSize;
     const uint8_t *startParams;
-    UINT8 cmdCode[4] = {0,0,0,0};
-    UINT8 *cmdCodePtr = &cmdCode[0];
+    TPM_CC cmdCode;
 
     name1.b.size = name2.b.size = 0;
 
@@ -119,12 +118,12 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
     }
 
     // Create pHash input byte stream:  now add command code.
-    rval = Tss2_Sys_GetCommandCode( sysContext, &cmdCode );
+    rval = Tss2_Sys_GetCommandCode( sysContext, (UINT8 (*)[4])&cmdCode );
     if( rval != TPM_RC_SUCCESS )
         return rval;
 
     hashInputPtr = &( hashInput.t.buffer[hashInput.b.size] );
-    *(UINT32 *)hashInputPtr = BE_TO_HOST_32(*(UINT32 *)cmdCodePtr);
+    *(UINT32 *)hashInputPtr = cmdCode;
     hashInput.t.size += 4;
 
     // Create pHash input byte stream:  now add in names for the handles.

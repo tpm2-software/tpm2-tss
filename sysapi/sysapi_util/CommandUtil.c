@@ -116,8 +116,8 @@ TSS2_RC CommonPreparePrologue(
     if (rval)
         return rval;
 
+    SYS_CONTEXT->commandCode = commandCode;
     SYS_CONTEXT->numResponseHandles = GetNumResponseHandles(commandCode);
-    SYS_CONTEXT->commandCodeSwapped = HOST_TO_BE_32(commandCode);
     SYS_CONTEXT->rspParamsSize = (UINT32 *)(SYS_CONTEXT->tpmOutBuffPtr +
                                      sizeof(TPM20_Header_Out) +
                                      (GetNumResponseHandles(commandCode) * sizeof(UINT32)));

@@ -75,7 +75,7 @@ typedef struct {
     // These are set by system API and used by helper functions to calculate cpHash,
     // rpHash, and for auditing.
     //
-    TPM_CC commandCodeSwapped;
+    TPM_CC commandCode;
     UINT32 cpBufferUsedSize;
     UINT8 *cpBuffer;
     UINT32 *rspParamsSize;  // Points to response paramsSize.
