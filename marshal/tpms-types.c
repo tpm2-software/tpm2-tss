@@ -243,6 +243,38 @@ static TSS2_RC unmarshal_tagged_pcr_selection(uint8_t const buffer[], size_t buf
     return TSS2_RC_SUCCESS;
 }
 
+#define TPMS_MARSHAL_0(type) \
+TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
+                                 size_t buffer_size, size_t *offset) \
+{ \
+    if (!src) { \
+        LOG (WARNING, "dest param is NULL"); \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } \
+\
+    LOG (DEBUG, \
+         "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, *offset); \
+\
+    return TSS2_RC_SUCCESS; \
+}
+
+#define TPMS_UNMARSHAL_0(type) \
+TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
+                                   size_t *offset, type *dest) \
+{ \
+    if (!dest) { \
+        LOG (WARNING, "src param is NULL"); \
+        return TSS2_TYPES_RC_BAD_REFERENCE; \
+    } \
+\
+    LOG (DEBUG, \
+         "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, *offset); \
+\
+    return TSS2_RC_SUCCESS; \
+}
+
 #define TPMS_MARSHAL_1(type, m, op, fn) \
 TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
                                  size_t buffer_size, size_t *offset) \
@@ -1334,3 +1366,7 @@ TPMS_MARSHAL_1(TPMS_SYMCIPHER_PARMS,
 
 TPMS_UNMARSHAL_1(TPMS_SYMCIPHER_PARMS,
                  sym, Tss2_MU_TPMT_SYM_DEF_OBJECT_Unmarshal)
+
+TPMS_MARSHAL_0(TPMS_EMPTY);
+
+TPMS_UNMARSHAL_0(TPMS_EMPTY);

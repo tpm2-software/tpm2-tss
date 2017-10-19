@@ -1848,6 +1848,75 @@ Tss2_MU_TPMT_TK_HASHCHECK_Unmarshal(
     size_t        *offset,
     TPMT_TK_HASHCHECK *dest);
 
+TSS2_RC Tss2_MU_TPM2_HANDLE_Marshal(
+    TPM2_HANDLE     in,
+    uint8_t         *buffer,
+    size_t          size,
+    size_t          *offset);
+
+TSS2_RC
+Tss2_MU_TPM2_HANDLE_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          size,
+    size_t          *offset,
+    TPM2_HANDLE     *out);
+
+TSS2_RC
+Tss2_MU_TPMI_ALG_HASH_Marshal(
+    TPMI_ALG_HASH   in,
+    uint8_t         *buffer,
+    size_t          size,
+    size_t          *offset);
+
+TSS2_RC
+Tss2_MU_TPMI_ALG_HASH_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          size,
+    size_t          *offset,
+    TPMI_ALG_HASH   *out);
+
+TSS2_RC
+Tss2_MU_BYTE_Marshal(
+    BYTE            in,
+    uint8_t         *buffer,
+    size_t          size,
+    size_t          *offset);
+
+TSS2_RC
+Tss2_MU_BYTE_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          size,
+    size_t          *offset,
+    BYTE            *out);
+
+TSS2_RC
+Tss2_MU_TPM2_SE_Marshal(
+    TPM2_SE         in,
+    uint8_t         *buffer,
+    size_t          size,
+    size_t          *offset);
+
+TSS2_RC
+Tss2_MU_TPM2_SE_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          size,
+    size_t          *offset,
+    TPM2_SE         *out);
+
+TSS2_RC
+Tss2_MU_TPMS_EMPTY_Marshal(
+    TPMS_EMPTY const *in,
+    uint8_t         *buffer,
+    size_t          size,
+    size_t          *offset);
+
+TSS2_RC
+Tss2_MU_TPMS_EMPTY_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          size,
+    size_t          *offset,
+    TPMS_EMPTY      *out);
+
 #ifdef __cplusplus
 }
 #endif

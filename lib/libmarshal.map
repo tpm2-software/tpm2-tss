@@ -192,8 +192,6 @@
         Tss2_MU_TPML_INTEL_PTT_PROPERTY_Unmarshal;
         Tss2_MU_TPMU_HA_Marshal;
         Tss2_MU_TPMU_HA_Unmarshal;
-        Tss2_MU_TPMU_CAPABILITIES_Marshal;
-        Tss2_MU_TPMU_CAPABILITIES_Unmarshal;
         Tss2_MU_TPMU_ATTEST_Marshal;
         Tss2_MU_TPMU_ATTEST_Unmarshal;
         Tss2_MU_TPMU_SYM_KEY_BITS_Marshal;
@@ -212,8 +210,6 @@
         Tss2_MU_TPMU_SIGNATURE_Unmarshal;
         Tss2_MU_TPMU_SENSITIVE_COMPOSITE_Marshal;
         Tss2_MU_TPMU_SENSITIVE_COMPOSITE_Unmarshal;
-        Tss2_MU_TPMU_ENCRYPTED_SECRET_Marshal;
-        Tss2_MU_TPMU_ENCRYPTED_SECRET_Unmarshal;
         Tss2_MU_TPMU_CAPABILITIES_Marshal;
         Tss2_MU_TPMU_CAPABILITIES_Unmarshal;
         Tss2_MU_TPMU_PUBLIC_PARMS_Marshal;
@@ -256,6 +252,16 @@
         Tss2_MU_TPMT_TK_AUTH_Unmarshal;
         Tss2_MU_TPMT_TK_HASHCHECK_Marshal;
         Tss2_MU_TPMT_TK_HASHCHECK_Unmarshal;
+        Tss2_MU_TPMS_EMPTY_Marshal;
+        Tss2_MU_TPMS_EMPTY_Unmarshal;
+        Tss2_MU_TPM2_HANDLE_Marshal;
+        Tss2_MU_TPM2_HANDLE_Unmarshal;
+        Tss2_MU_TPM2_SE_Marshal;
+        Tss2_MU_TPM2_SE_Unmarshal;
+        Tss2_MU_TPMI_ALG_HASH_Marshal;
+        Tss2_MU_TPMI_ALG_HASH_Unmarshal;
+        Tss2_MU_TPMI_BYTE_Marshal;
+        Tss2_MU_TPMI_BYTE_Unmarshal;
     local:
         *;
 };
