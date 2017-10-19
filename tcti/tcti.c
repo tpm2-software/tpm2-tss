@@ -33,18 +33,15 @@
 #include "tcti.h"
 #include "common/debug.h"
 
-TSS2_RC tcti_send_checks (
-    TSS2_TCTI_CONTEXT *tctiContext,
-    uint8_t *command_buffer
+TSS2_RC tcti_common_checks (
+    TSS2_TCTI_CONTEXT *tcti_context
     )
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel;
 
-    if (tctiContext == NULL || command_buffer == NULL) {
+    tcti_intel = tcti_context_intel_cast (tcti_context);
+    if (tcti_context == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
-    }
-    if (tcti_intel->previousStage == TCTI_STAGE_SEND_COMMAND) {
-        return TSS2_TCTI_RC_BAD_SEQUENCE;
     }
     if (tcti_intel->magic != TCTI_MAGIC ||
         tcti_intel->version != TCTI_VERSION) {
@@ -54,6 +51,28 @@ TSS2_RC tcti_send_checks (
     return TSS2_RC_SUCCESS;
 }
 
+TSS2_RC tcti_send_checks (
+    TSS2_TCTI_CONTEXT *tctiContext,
+    uint8_t *command_buffer
+    )
+{
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel;
+    TSS2_RC rc;
+
+    tcti_intel = tcti_context_intel_cast (tctiContext);;
+    rc = tcti_common_checks (tctiContext);
+    if (rc != TSS2_RC_SUCCESS) {
+        return rc;
+    }
+    if (command_buffer == NULL) {
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+    if (tcti_intel->previousStage == TCTI_STAGE_SEND_COMMAND) {
+        return TSS2_TCTI_RC_BAD_SEQUENCE;
+    }
+
+    return TSS2_RC_SUCCESS;
+}
 
 TSS2_RC tcti_receive_checks (
     TSS2_TCTI_CONTEXT *tctiContext,
@@ -61,17 +80,19 @@ TSS2_RC tcti_receive_checks (
     unsigned char *response_buffer
     )
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel;
+    TSS2_RC rc;
 
-    if (tctiContext == NULL || response_size == NULL) {
+    tcti_intel = tcti_context_intel_cast (tctiContext);
+    rc = tcti_common_checks (tctiContext);
+    if (rc != TSS2_RC_SUCCESS) {
+        return rc;
+    }
+    if (response_buffer == NULL || response_size == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
     }
     if (tcti_intel->previousStage == TCTI_STAGE_RECEIVE_RESPONSE) {
         return TSS2_TCTI_RC_BAD_SEQUENCE;
-    }
-    if (tcti_intel->magic != TCTI_MAGIC ||
-        tcti_intel->version != TCTI_VERSION) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
     }
 
     return TSS2_RC_SUCCESS;

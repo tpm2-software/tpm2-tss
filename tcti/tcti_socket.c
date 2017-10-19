@@ -255,9 +255,11 @@ TSS2_RC SocketCancel(
     )
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
+    TSS2_RC rc;
 
-    if (tctiContext == NULL) {
-        return TSS2_TCTI_RC_BAD_REFERENCE;
+    rc = tcti_common_checks (tctiContext);
+    if (rc != TSS2_RC_SUCCESS) {
+        return rc;
     } else if (tcti_intel->status.commandSent != 1) {
         return TSS2_TCTI_RC_BAD_SEQUENCE;
     } else {
@@ -271,16 +273,17 @@ TSS2_RC SocketSetLocality(
     )
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
+    TSS2_RC rc;
 
-    if (tctiContext == 0) {
-        return TSS2_TCTI_RC_BAD_REFERENCE;
-    } else if (tcti_intel->status.locality != locality) {
-        if (tcti_intel->status.commandSent == 1) {
-            return TSS2_TCTI_RC_BAD_SEQUENCE;
-        } else {
-            tcti_intel->status.locality = locality;
-        }
+    rc = tcti_common_checks (tctiContext);
+    if (rc != TSS2_RC_SUCCESS) {
+        return rc;
     }
+    if (tcti_intel->status.commandSent == 1) {
+        return TSS2_TCTI_RC_BAD_SEQUENCE;
+    }
+
+    tcti_intel->status.locality = locality;
 
     return TSS2_RC_SUCCESS;
 }
@@ -298,8 +301,10 @@ void SocketFinalize(
     )
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
+    TSS2_RC rc;
 
-    if (tctiContext == NULL) {
+    rc = tcti_common_checks (tctiContext);
+    if (rc != TSS2_RC_SUCCESS) {
         return;
     }
 

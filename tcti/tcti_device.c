@@ -189,10 +189,13 @@ void LocalTpmFinalize(
     )
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
+    TSS2_RC rc;
 
-    if (tctiContext != NULL) {
-        close(tcti_intel->devFile);
+    rc = tcti_common_checks (tctiContext);
+    if (rc != TSS2_RC_SUCCESS) {
+        return;
     }
+    close (tcti_intel->devFile);
 }
 
 TSS2_RC LocalTpmCancel(
