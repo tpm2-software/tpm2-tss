@@ -59,9 +59,7 @@ UINT32 TpmComputeSessionHmac(
     TPM_RC rval;
     UINT8 nvNameChanged = 0;
     ENTITY *nvEntity;
-    UINT8 commandCode[4] = { 0, 0, 0, 0 };
-    UINT32 *cmdCodePtr;
-    UINT32 cmdCode;
+    TPM_CC cmdCode;
 
     hmacKey.b.size = 0;
 
@@ -90,7 +88,7 @@ UINT32 TpmComputeSessionHmac(
         authValue.t.size = 0;
     }
 
-    rval = Tss2_Sys_GetCommandCode( sysContext, &commandCode );
+    rval = Tss2_Sys_GetCommandCode( sysContext, (UINT8 (*)[4])&cmdCode );
     if( rval != TPM_RC_SUCCESS )
         return rval;
 
@@ -126,8 +124,6 @@ UINT32 TpmComputeSessionHmac(
     sessionAttributesByteBuffer.buffer[0] = *(UINT8 *)&sessionAttributes;
     bufferList[i++] = &( sessionAttributesByteBuffer );
     bufferList[i++] = 0;
-    cmdCodePtr = (UINT32 *)&commandCode[0];
-    cmdCode = *cmdCodePtr;
 
 #ifdef  DEBUG
     for( i = 0; bufferList[i] != 0; i++ )
