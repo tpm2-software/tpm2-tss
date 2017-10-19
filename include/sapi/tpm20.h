@@ -45,5 +45,6 @@
 
 #include    <sapi/tss2_tcti.h>
 #include    <sapi/tss2_sys.h>
+#include    <sapi/tss2_mu.h>
 
 #endif

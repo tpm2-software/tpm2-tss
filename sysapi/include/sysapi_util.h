@@ -173,8 +173,6 @@ TSS2_SYS_CONTEXT *InitSysContext(
 
 void TeardownSysContext( TSS2_SYS_CONTEXT **sysContext );
 
-#include "sys_api_marshalUnmarshal.h"
-
 #ifdef __cplusplus
 }
 #endif
