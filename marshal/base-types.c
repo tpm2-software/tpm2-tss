@@ -173,6 +173,8 @@ Tss2_MU_##type##_Unmarshal ( \
  * These macros expand to (un)marshal functions for each of the base types
  * the specification part 2, table 3: Definition of Base Types.
  */
+BASE_MARSHAL  (BYTE);
+BASE_UNMARSHAL(BYTE);
 BASE_MARSHAL  (INT8);
 BASE_UNMARSHAL(INT8);
 BASE_MARSHAL  (INT16);
@@ -193,3 +195,9 @@ BASE_MARSHAL  (TPM2_CC);
 BASE_UNMARSHAL(TPM2_CC);
 BASE_MARSHAL  (TPM2_ST);
 BASE_UNMARSHAL(TPM2_ST);
+BASE_MARSHAL  (TPM2_SE);
+BASE_UNMARSHAL(TPM2_SE);
+BASE_MARSHAL  (TPM2_HANDLE);
+BASE_UNMARSHAL(TPM2_HANDLE);
+BASE_MARSHAL  (TPMI_ALG_HASH);
+BASE_UNMARSHAL(TPMI_ALG_HASH);
