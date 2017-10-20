@@ -173,17 +173,14 @@ TPMI_SH_AUTH_SESSION StartPolicySession();
 
 TPMI_SH_AUTH_SESSION InitNvAuxPolicySession();
 
-TPM_RC CompareTPM2B( TPM2B *buffer1, TPM2B *buffer2 )
+TPM_RC CompareTPM2B(TPM2B *buffer1, TPM2B *buffer2)
 {
-    int i;
-
-    if( buffer1->size != buffer2->size )
+    if (buffer1->size != buffer2->size)
         return TPM_RC_FAILURE;
-    for( i = 0; i < buffer1->size; i++ )
-    {
-        if( buffer1->buffer[0] != buffer2->buffer[0] )
+
+    if (memcmp(buffer1->buffer, buffer2->buffer, buffer1->size))
             return TPM_RC_FAILURE;
-    }
+
     return TPM_RC_SUCCESS;
 }
 
