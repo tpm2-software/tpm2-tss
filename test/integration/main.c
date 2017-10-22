@@ -4,6 +4,85 @@
 #include "test.h"
 #include "test-options.h"
 #include "context-util.h"
+#include "common/debug.h"
+#include "main.h"
+
+#define LEVEL_STRING_SIZE 50
+TSS2_TCTI_CONTEXT *resMgrTctiContextInt = 0;
+
+void ErrorHandlerInt( UINT32 rval )
+{
+    UINT32 errorLevel = rval & TSS2_ERROR_LEVEL_MASK;
+    char levelString[LEVEL_STRING_SIZE + 1];
+
+    switch( errorLevel )
+    {
+        case TSS2_TPM_ERROR_LEVEL:
+            strncpy( levelString, "TPM", LEVEL_STRING_SIZE );
+            break;
+        case TSS2_APP_ERROR_LEVEL:
+            strncpy( levelString, "Application", LEVEL_STRING_SIZE );
+            break;
+        case TSS2_SYS_ERROR_LEVEL:
+            strncpy( levelString, "System API", LEVEL_STRING_SIZE );
+            break;
+        case TSS2_SYS_PART2_ERROR_LEVEL:
+            strncpy( levelString, "System API TPM encoded", LEVEL_STRING_SIZE );
+            break;
+        case TSS2_TCTI_ERROR_LEVEL:
+            strncpy( levelString, "TCTI", LEVEL_STRING_SIZE );
+            break;
+        case TSS2_RESMGRTPM_ERROR_LEVEL:
+            strncpy( levelString, "Resource Mgr TPM encoded", LEVEL_STRING_SIZE );
+            break;
+        case TSS2_RESMGR_ERROR_LEVEL:
+            strncpy( levelString, "Resource Mgr", LEVEL_STRING_SIZE );
+            break;
+        case TSS2_DRIVER_ERROR_LEVEL:
+            strncpy( levelString, "Driver", LEVEL_STRING_SIZE );
+            break;
+        default:
+            strncpy( levelString, "Unknown Level", LEVEL_STRING_SIZE );
+            break;
+	}
+
+    sprintf_s( errorString, errorStringSize, "%s Error: 0x%x\n", levelString, rval );
+}
+
+void DelayInt( UINT16 delay)
+{
+    volatile UINT32 i, j;
+
+    for( j = 0; j < delay; j++ )
+    {
+        for( i = 0; i < 10000000; i++ )
+            ;
+    }
+}
+
+void CleanupInt()
+{
+    fflush( stdout );
+
+    if( resMgrTctiContextInt != 0 )
+    {
+        PlatformCommand( resMgrTctiContextInt, MS_SIM_POWER_OFF );
+        TeardownTctiContextInt( &resMgrTctiContextInt );
+    }
+
+    exit(1);
+}
+
+void TeardownTctiContextInt(TSS2_TCTI_CONTEXT **tctiContext)
+{
+    if (*tctiContext != NULL) {
+        tss2_tcti_finalize( *tctiContext );
+        free (*tctiContext);
+        *tctiContext = NULL;
+    }
+}
+
+
 
 /**
  * This program is a template for integration tests (ones that use the TCTI

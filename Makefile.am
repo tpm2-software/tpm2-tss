@@ -264,6 +264,8 @@ test_integration_abi_version_int_SOURCES = test/integration/abi-version.int.c \
 
 test_integration_pcr_extension_int_LDADD   = $(TESTS_LDADD)
 test_integration_pcr_extension_int_SOURCES = test/integration/pcr-extension.int.c \
+	common/debug.c \
+	common/debug.h \
     test/integration/main.c
 
 test_integration_self_test_int_LDADD   = $(TESTS_LDADD)
