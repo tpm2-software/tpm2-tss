@@ -58,7 +58,7 @@ TPM_RC Tss2_Sys_HashSequenceStart_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(hashAlg, SYS_CONTEXT->tpmInBuffPtr,
+    rval = Tss2_MU_UINT16_Marshal(hashAlg, SYS_CONTEXT->tpmInBuffPtr,
                                   SYS_CONTEXT->maxCommandSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
