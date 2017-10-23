@@ -188,6 +188,8 @@
         Tss2_MU_TPML_PCR_SELECTION_Unmarshal;
         Tss2_MU_TPML_DIGEST_VALUES_Marshal;
         Tss2_MU_TPML_DIGEST_VALUES_Unmarshal;
+        Tss2_MU_TPML_INTEL_PTT_PROPERTY_Marshal;
+        Tss2_MU_TPML_INTEL_PTT_PROPERTY_Unmarshal;
         Tss2_MU_TPMU_HA_Marshal;
         Tss2_MU_TPMU_HA_Unmarshal;
         Tss2_MU_TPMU_CAPABILITIES_Marshal;

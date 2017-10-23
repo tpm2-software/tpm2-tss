@@ -378,13 +378,15 @@ TPMU_MARSHAL2(TPMU_CAPABILITIES, TPM_CAP_ALGS, ADDR, algorithms, Tss2_MU_TPML_AL
               TPM_CAP_HANDLES, ADDR, handles, Tss2_MU_TPML_HANDLE_Marshal, TPM_CAP_COMMANDS, ADDR, command, Tss2_MU_TPML_CCA_Marshal,
               TPM_CAP_PP_COMMANDS, ADDR, ppCommands, Tss2_MU_TPML_CC_Marshal, TPM_CAP_AUDIT_COMMANDS, ADDR, auditCommands, Tss2_MU_TPML_CC_Marshal,
               TPM_CAP_PCRS, ADDR, assignedPCR, Tss2_MU_TPML_PCR_SELECTION_Marshal, TPM_CAP_TPM_PROPERTIES, ADDR, tpmProperties, Tss2_MU_TPML_TAGGED_TPM_PROPERTY_Marshal,
-              TPM_CAP_PCR_PROPERTIES, ADDR, pcrProperties, Tss2_MU_TPML_TAGGED_PCR_PROPERTY_Marshal, TPM_CAP_ECC_CURVES, ADDR, eccCurves, Tss2_MU_TPML_ECC_CURVE_Marshal)
+              TPM_CAP_PCR_PROPERTIES, ADDR, pcrProperties, Tss2_MU_TPML_TAGGED_PCR_PROPERTY_Marshal, TPM_CAP_ECC_CURVES, ADDR, eccCurves, Tss2_MU_TPML_ECC_CURVE_Marshal,
+              TPM_CAP_VENDOR_PROPERTY, ADDR, intelPttProperty, Tss2_MU_TPML_INTEL_PTT_PROPERTY_Marshal)
 
 TPMU_UNMARSHAL2(TPMU_CAPABILITIES, TPM_CAP_ALGS, algorithms, Tss2_MU_TPML_ALG_PROPERTY_Unmarshal,
                 TPM_CAP_HANDLES, handles, Tss2_MU_TPML_HANDLE_Unmarshal, TPM_CAP_COMMANDS, command, Tss2_MU_TPML_CCA_Unmarshal,
                 TPM_CAP_PP_COMMANDS, ppCommands, Tss2_MU_TPML_CC_Unmarshal, TPM_CAP_AUDIT_COMMANDS, auditCommands, Tss2_MU_TPML_CC_Unmarshal,
                 TPM_CAP_PCRS, assignedPCR, Tss2_MU_TPML_PCR_SELECTION_Unmarshal, TPM_CAP_TPM_PROPERTIES, tpmProperties, Tss2_MU_TPML_TAGGED_TPM_PROPERTY_Unmarshal,
-                TPM_CAP_PCR_PROPERTIES, pcrProperties, Tss2_MU_TPML_TAGGED_PCR_PROPERTY_Unmarshal, TPM_CAP_ECC_CURVES, eccCurves, Tss2_MU_TPML_ECC_CURVE_Unmarshal)
+                TPM_CAP_PCR_PROPERTIES, pcrProperties, Tss2_MU_TPML_TAGGED_PCR_PROPERTY_Unmarshal, TPM_CAP_ECC_CURVES, eccCurves, Tss2_MU_TPML_ECC_CURVE_Unmarshal,
+                TPM_CAP_VENDOR_PROPERTY, intelPttProperty, Tss2_MU_TPML_INTEL_PTT_PROPERTY_Unmarshal)
 
 TPMU_MARSHAL2(TPMU_ATTEST, TPM_ST_ATTEST_CERTIFY, ADDR, certify, Tss2_MU_TPMS_CERTIFY_INFO_Marshal,
               TPM_ST_ATTEST_CREATION, ADDR, creation, Tss2_MU_TPMS_CREATION_INFO_Marshal, TPM_ST_ATTEST_QUOTE, ADDR, quote, Tss2_MU_TPMS_QUOTE_INFO_Marshal,
