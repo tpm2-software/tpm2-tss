@@ -43,8 +43,8 @@ TPM_RC Tss2_Sys_Load_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(parentHandle, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Marshal(parentHandle, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -52,21 +52,21 @@ TPM_RC Tss2_Sys_Load_Prepare(
     if (!inPrivate) {
         SYS_CONTEXT->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
-                                      SYS_CONTEXT->maxCommandSize,
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->cmdBuffer,
+                                      SYS_CONTEXT->maxCmdSize,
                                       &SYS_CONTEXT->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_PRIVATE_Marshal(inPrivate, SYS_CONTEXT->tpmInBuffPtr,
-                                             SYS_CONTEXT->maxCommandSize,
+        rval = Tss2_MU_TPM2B_PRIVATE_Marshal(inPrivate, SYS_CONTEXT->cmdBuffer,
+                                             SYS_CONTEXT->maxCmdSize,
                                              &SYS_CONTEXT->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_PUBLIC_Marshal(inPublic, SYS_CONTEXT->tpmInBuffPtr,
-                                        SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPM2B_PUBLIC_Marshal(inPublic, SYS_CONTEXT->cmdBuffer,
+                                        SYS_CONTEXT->maxCmdSize,
                                         &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -88,8 +88,8 @@ TPM_RC Tss2_Sys_Load_Complete(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                    SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                    SYS_CONTEXT->maxCmdSize,
                                     &SYS_CONTEXT->nextData, objectHandle);
     if (rval)
         return rval;
@@ -98,8 +98,8 @@ TPM_RC Tss2_Sys_Load_Complete(
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_NAME_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                        SYS_CONTEXT->maxCommandSize,
+    return Tss2_MU_TPM2B_NAME_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                        SYS_CONTEXT->maxCmdSize,
                                         &SYS_CONTEXT->nextData, name);
 }
 

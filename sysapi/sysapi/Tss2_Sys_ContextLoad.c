@@ -41,8 +41,8 @@ TPM_RC Tss2_Sys_ContextLoad_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPMS_CONTEXT_Marshal(context, SYS_CONTEXT->tpmInBuffPtr,
-                                        SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPMS_CONTEXT_Marshal(context, SYS_CONTEXT->cmdBuffer,
+                                        SYS_CONTEXT->maxCmdSize,
                                         &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -63,8 +63,8 @@ TPM_RC Tss2_Sys_ContextLoad_Complete(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                    SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                    SYS_CONTEXT->maxCmdSize,
                                     &SYS_CONTEXT->nextData,
                                     loadedHandle);
     if (rval)

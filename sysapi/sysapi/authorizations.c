@@ -83,10 +83,10 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
     newCmdSize += sizeof(UINT32); /* authorization size field */
     newCmdSize += BE_TO_HOST_32(SYS_REQ_HEADER->commandSize);
 
-    if (newCmdSize > SYS_CONTEXT->maxCommandSize)
+    if (newCmdSize > SYS_CONTEXT->maxCmdSize)
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
 
-    if (SYS_CONTEXT->cpBufferUsedSize > SYS_CONTEXT->maxCommandSize)
+    if (SYS_CONTEXT->cpBufferUsedSize > SYS_CONTEXT->maxCmdSize)
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
 
     /* We're going to have to move stuff around.
@@ -98,15 +98,15 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
     *(UINT32 *)SYS_CONTEXT->cpBuffer = 0;
 
     /* Now copy in the authorization area. */
-    authOffset = SYS_CONTEXT->cpBuffer - SYS_CONTEXT->tpmInBuffPtr;
-    rval = Tss2_MU_UINT32_Marshal(authSize, SYS_CONTEXT->tpmInBuffPtr,
+    authOffset = SYS_CONTEXT->cpBuffer - SYS_CONTEXT->cmdBuffer;
+    rval = Tss2_MU_UINT32_Marshal(authSize, SYS_CONTEXT->cmdBuffer,
                           newCmdSize, &authOffset);
     if (rval)
         return rval;
 
     for (i = 0; i < cmdAuthsArray->cmdAuthsCount; i++) {
         rval = Tss2_MU_TPMS_AUTH_COMMAND_Marshal(cmdAuthsArray->cmdAuths[i],
-                                         SYS_CONTEXT->tpmInBuffPtr, newCmdSize,
+                                         SYS_CONTEXT->cmdBuffer, newCmdSize,
                                          &authOffset);
         if (rval)
             break;
@@ -158,7 +158,7 @@ TSS2_RC Tss2_Sys_GetRspAuths(
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
         offset_tmp += sizeof(UINT16) +
-            BE_TO_HOST_16(*(UINT16 *)(SYS_CONTEXT->tpmOutBuffPtr + offset_tmp));
+            BE_TO_HOST_16(*(UINT16 *)(SYS_CONTEXT->cmdBuffer + offset_tmp));
 
         if (offset_tmp > SYS_CONTEXT->rsp_header.responseSize)
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
@@ -169,7 +169,7 @@ TSS2_RC Tss2_Sys_GetRspAuths(
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
         offset_tmp += sizeof(UINT16) +
-            BE_TO_HOST_16(*(UINT16 *)(SYS_CONTEXT->tpmOutBuffPtr + offset_tmp));
+            BE_TO_HOST_16(*(UINT16 *)(SYS_CONTEXT->cmdBuffer + offset_tmp));
 
         if (offset_tmp > SYS_CONTEXT->rsp_header.responseSize)
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
@@ -180,8 +180,8 @@ TSS2_RC Tss2_Sys_GetRspAuths(
 
     /* Unmarshal the auth area */
     for (i = 0; i < rspAuthsArray->rspAuthsCount; i++) {
-        rval = Tss2_MU_TPMS_AUTH_RESPONSE_Unmarshal(SYS_CONTEXT->tpmOutBuffPtr,
-                                            SYS_CONTEXT->maxCommandSize,
+        rval = Tss2_MU_TPMS_AUTH_RESPONSE_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                            SYS_CONTEXT->maxCmdSize,
                                             &offset, rspAuthsArray->rspAuths[i]);
         if (rval)
             break;

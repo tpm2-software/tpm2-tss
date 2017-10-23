@@ -46,27 +46,27 @@ TPM_RC Tss2_Sys_Hash_Prepare(
     if (!data) {
         SYS_CONTEXT->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
-                                      SYS_CONTEXT->maxCommandSize,
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->cmdBuffer,
+                                      SYS_CONTEXT->maxCmdSize,
                                       &SYS_CONTEXT->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_MAX_BUFFER_Marshal(data, SYS_CONTEXT->tpmInBuffPtr,
-                                                SYS_CONTEXT->maxCommandSize,
+        rval = Tss2_MU_TPM2B_MAX_BUFFER_Marshal(data, SYS_CONTEXT->cmdBuffer,
+                                                SYS_CONTEXT->maxCmdSize,
                                                 &SYS_CONTEXT->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT16_Marshal(hashAlg, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT16_Marshal(hashAlg, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(hierarchy, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Marshal(hierarchy, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -92,15 +92,15 @@ TPM_RC Tss2_Sys_Hash_Complete(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_DIGEST_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                          SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPM2B_DIGEST_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                          SYS_CONTEXT->maxCmdSize,
                                           &SYS_CONTEXT->nextData,
                                           outHash);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPMT_TK_HASHCHECK_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                               SYS_CONTEXT->maxCommandSize,
+    return Tss2_MU_TPMT_TK_HASHCHECK_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                               SYS_CONTEXT->maxCmdSize,
                                                &SYS_CONTEXT->nextData,
                                                validation);
 }

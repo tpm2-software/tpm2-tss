@@ -58,17 +58,9 @@ typedef struct _TPM20_ErrorResponse {
 #pragma pack(pop)
 
 typedef struct {
-    //
-    // These are inputs to system API functions.
-    //
     TSS2_TCTI_CONTEXT *tctiContext;
-
-    // In and out buffers can be the same for a minimalized memory footprint implementation.
-    UINT8 *tpmInBuffPtr;            // Input: Pointer to command buffer area
-    UINT32 maxCommandSize;          // Input: max size of command buffer area
-    UINT8 *tpmOutBuffPtr;           // Input: Pointer to response buffer
-    UINT32 maxResponseSize;         // Input: max size of response buffer area
-
+    UINT8 *cmdBuffer;
+    UINT32 maxCmdSize;
     TPM20_Header_Out rsp_header;
 
     //
@@ -111,10 +103,9 @@ typedef struct {
     size_t nextData;
 } _TSS2_SYS_CONTEXT_BLOB;
 
-
 #define SYS_CONTEXT ((_TSS2_SYS_CONTEXT_BLOB *)sysContext)
-#define SYS_RESP_HEADER ((TPM20_Header_Out *)(SYS_CONTEXT->tpmOutBuffPtr))
-#define SYS_REQ_HEADER ((TPM20_Header_In *)(SYS_CONTEXT->tpmInBuffPtr))
+#define SYS_RESP_HEADER ((TPM20_Header_Out *)(SYS_CONTEXT->cmdBuffer))
+#define SYS_REQ_HEADER ((TPM20_Header_In *)(SYS_CONTEXT->cmdBuffer))
 
 typedef struct {
     TPM_CC commandCode;

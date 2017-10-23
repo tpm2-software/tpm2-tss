@@ -40,8 +40,8 @@ TSS2_RC Tss2_Sys_ExecuteAsync(TSS2_SYS_CONTEXT *sysContext)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
     rval = tss2_tcti_transmit(SYS_CONTEXT->tctiContext,
-                              HOST_TO_BE_32(((TPM20_Header_In *)SYS_CONTEXT->tpmInBuffPtr)->commandSize),
-                              SYS_CONTEXT->tpmInBuffPtr);
+                              HOST_TO_BE_32(((TPM20_Header_In *)SYS_CONTEXT->cmdBuffer)->commandSize),
+                              SYS_CONTEXT->cmdBuffer);
     if (rval)
         return rval;
 
@@ -63,10 +63,10 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
     if (SYS_CONTEXT->previousStage != CMD_STAGE_SEND_COMMAND)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    responseSize = SYS_CONTEXT->maxResponseSize;
+    responseSize = SYS_CONTEXT->maxCmdSize;
 
     rval = tss2_tcti_receive(SYS_CONTEXT->tctiContext, &responseSize,
-                             SYS_CONTEXT->tpmOutBuffPtr, timeout);
+                             SYS_CONTEXT->cmdBuffer, timeout);
     if (rval)
         return rval;
 
@@ -81,27 +81,27 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
      */
      SYS_CONTEXT->nextData = 0;
 
-     rval = Tss2_MU_TPM_ST_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                     SYS_CONTEXT->maxCommandSize,
+     rval = Tss2_MU_TPM_ST_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                     SYS_CONTEXT->maxCmdSize,
                                      &SYS_CONTEXT->nextData,
                                      &SYS_CONTEXT->rsp_header.tag);
     if (rval)
         return rval;
 
-     rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                     SYS_CONTEXT->maxCommandSize,
+     rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                     SYS_CONTEXT->maxCmdSize,
                                      &SYS_CONTEXT->nextData,
                                      &SYS_CONTEXT->rsp_header.responseSize);
     if (rval)
         return rval;
 
-    if (SYS_CONTEXT->rsp_header.responseSize > SYS_CONTEXT->maxResponseSize) {
+    if (SYS_CONTEXT->rsp_header.responseSize > SYS_CONTEXT->maxCmdSize) {
         SYS_CONTEXT->rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
         return TSS2_SYS_RC_MALFORMED_RESPONSE;
     }
 
-    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                    SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                    SYS_CONTEXT->maxCmdSize,
                                     &SYS_CONTEXT->nextData,
                                     &SYS_CONTEXT->rsp_header.responseCode);
     if (rval)

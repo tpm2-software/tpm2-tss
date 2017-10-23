@@ -42,8 +42,8 @@ TPM_RC Tss2_Sys_PCR_Read_Prepare(
         return rval;
 
     rval = Tss2_MU_TPML_PCR_SELECTION_Marshal(pcrSelectionIn,
-                                              SYS_CONTEXT->tpmInBuffPtr,
-                                              SYS_CONTEXT->maxCommandSize,
+                                              SYS_CONTEXT->cmdBuffer,
+                                              SYS_CONTEXT->maxCmdSize,
                                               &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -70,22 +70,22 @@ TPM_RC Tss2_Sys_PCR_Read_Complete(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                    SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                    SYS_CONTEXT->maxCmdSize,
                                     &SYS_CONTEXT->nextData,
                                     pcrUpdateCounter);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPML_PCR_SELECTION_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                                SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPML_PCR_SELECTION_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                                SYS_CONTEXT->maxCmdSize,
                                                 &SYS_CONTEXT->nextData,
                                                 pcrSelectionOut);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPML_DIGEST_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                         SYS_CONTEXT->maxCommandSize,
+    return Tss2_MU_TPML_DIGEST_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                         SYS_CONTEXT->maxCmdSize,
                                          &SYS_CONTEXT->nextData, pcrValues);
 }
 

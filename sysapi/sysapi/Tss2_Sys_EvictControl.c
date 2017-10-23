@@ -41,20 +41,20 @@ TPM_RC Tss2_Sys_EvictControl_Prepare(
 
     rval = CommonPreparePrologue(sysContext, TPM_CC_EvictControl);
 
-    rval = Tss2_MU_UINT32_Marshal(auth, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Marshal(auth, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(objectHandle, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Marshal(objectHandle, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(persistentHandle, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Marshal(persistentHandle, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;

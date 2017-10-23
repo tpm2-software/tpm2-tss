@@ -43,8 +43,8 @@ TPM_RC Tss2_Sys_SetPrimaryPolicy_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(authHandle, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Marshal(authHandle, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -52,21 +52,21 @@ TPM_RC Tss2_Sys_SetPrimaryPolicy_Prepare(
     if (!authPolicy) {
         SYS_CONTEXT->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
-                                      SYS_CONTEXT->maxCommandSize,
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->cmdBuffer,
+                                      SYS_CONTEXT->maxCmdSize,
                                       &SYS_CONTEXT->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_DIGEST_Marshal(authPolicy, SYS_CONTEXT->tpmInBuffPtr,
-                                            SYS_CONTEXT->maxCommandSize,
+        rval = Tss2_MU_TPM2B_DIGEST_Marshal(authPolicy, SYS_CONTEXT->cmdBuffer,
+                                            SYS_CONTEXT->maxCmdSize,
                                             &SYS_CONTEXT->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT16_Marshal(hashAlg, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT16_Marshal(hashAlg, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;

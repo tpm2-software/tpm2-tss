@@ -45,8 +45,8 @@ TPM_RC Tss2_Sys_ZGen_2Phase_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(keyA, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Marshal(keyA, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -54,33 +54,33 @@ TPM_RC Tss2_Sys_ZGen_2Phase_Prepare(
     if (!inQsB) {
         SYS_CONTEXT->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
-                                      SYS_CONTEXT->maxCommandSize,
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->cmdBuffer,
+                                      SYS_CONTEXT->maxCmdSize,
                                       &SYS_CONTEXT->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_ECC_POINT_Marshal(inQsB, SYS_CONTEXT->tpmInBuffPtr,
-                                               SYS_CONTEXT->maxCommandSize,
+        rval = Tss2_MU_TPM2B_ECC_POINT_Marshal(inQsB, SYS_CONTEXT->cmdBuffer,
+                                               SYS_CONTEXT->maxCmdSize,
                                                &SYS_CONTEXT->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_ECC_POINT_Marshal(inQeB, SYS_CONTEXT->tpmInBuffPtr,
-                                           SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPM2B_ECC_POINT_Marshal(inQeB, SYS_CONTEXT->cmdBuffer,
+                                           SYS_CONTEXT->maxCmdSize,
                                            &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT16_Marshal(inScheme, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT16_Marshal(inScheme, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT16_Marshal(counter, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT16_Marshal(counter, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -106,14 +106,14 @@ TPM_RC Tss2_Sys_ZGen_2Phase_Complete(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                             SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                             SYS_CONTEXT->maxCmdSize,
                                              &SYS_CONTEXT->nextData, outZ1);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_ECC_POINT_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                             SYS_CONTEXT->maxCommandSize,
+    return Tss2_MU_TPM2B_ECC_POINT_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                             SYS_CONTEXT->maxCmdSize,
                                              &SYS_CONTEXT->nextData, outZ2);
 }
 

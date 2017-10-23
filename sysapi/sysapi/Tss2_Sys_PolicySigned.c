@@ -47,14 +47,14 @@ TPM_RC Tss2_Sys_PolicySigned_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(authObject, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Marshal(authObject, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(policySession, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Marshal(policySession, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -62,39 +62,39 @@ TPM_RC Tss2_Sys_PolicySigned_Prepare(
     if (!nonceTPM) {
         SYS_CONTEXT->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
-                                      SYS_CONTEXT->maxCommandSize,
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->cmdBuffer,
+                                      SYS_CONTEXT->maxCmdSize,
                                       &SYS_CONTEXT->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_NONCE_Marshal(nonceTPM, SYS_CONTEXT->tpmInBuffPtr,
-                                           SYS_CONTEXT->maxCommandSize,
+        rval = Tss2_MU_TPM2B_NONCE_Marshal(nonceTPM, SYS_CONTEXT->cmdBuffer,
+                                           SYS_CONTEXT->maxCmdSize,
                                            &SYS_CONTEXT->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_DIGEST_Marshal(cpHashA, SYS_CONTEXT->tpmInBuffPtr,
-                                        SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPM2B_DIGEST_Marshal(cpHashA, SYS_CONTEXT->cmdBuffer,
+                                        SYS_CONTEXT->maxCmdSize,
                                         &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_NONCE_Marshal(policyRef, SYS_CONTEXT->tpmInBuffPtr,
-                                       SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPM2B_NONCE_Marshal(policyRef, SYS_CONTEXT->cmdBuffer,
+                                       SYS_CONTEXT->maxCmdSize,
                                        &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(expiration, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Marshal(expiration, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPMT_SIGNATURE_Marshal(auth, SYS_CONTEXT->tpmInBuffPtr,
-                                          SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPMT_SIGNATURE_Marshal(auth, SYS_CONTEXT->cmdBuffer,
+                                          SYS_CONTEXT->maxCmdSize,
                                           &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -120,14 +120,14 @@ TPM_RC Tss2_Sys_PolicySigned_Complete(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_TIMEOUT_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                           SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPM2B_TIMEOUT_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                           SYS_CONTEXT->maxCmdSize,
                                            &SYS_CONTEXT->nextData, timeout);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPMT_TK_AUTH_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                          SYS_CONTEXT->maxCommandSize,
+    return Tss2_MU_TPMT_TK_AUTH_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                          SYS_CONTEXT->maxCmdSize,
                                           &SYS_CONTEXT->nextData, policyTicket);
 }
 

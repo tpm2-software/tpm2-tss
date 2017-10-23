@@ -41,8 +41,8 @@ TPM_RC Tss2_Sys_EC_Ephemeral_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT16_Marshal(curveID, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT16_Marshal(curveID, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -67,14 +67,14 @@ TPM_RC Tss2_Sys_EC_Ephemeral_Complete(
     rval = CommonComplete(sysContext);
     if (rval)
         return rval;
-    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                             SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                             SYS_CONTEXT->maxCmdSize,
                                              &SYS_CONTEXT->nextData, Q);
     if (rval)
         return rval;
 
-    return Tss2_MU_UINT16_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                    SYS_CONTEXT->maxCommandSize,
+    return Tss2_MU_UINT16_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                    SYS_CONTEXT->maxCmdSize,
                                     &SYS_CONTEXT->nextData, counter);
 }
 

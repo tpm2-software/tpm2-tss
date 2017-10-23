@@ -5224,7 +5224,7 @@ void GetSetDecryptParamTests()
     rval = Tss2_Sys_GetCpBuffer( decryptParamTestSysContext, &cpBufferUsedSize2, &cpBuffer2 );
     CheckPassed( rval );
     nvWriteData.t.size = MAX_NV_BUFFER_SIZE -
-            BE_TO_HOST_32(((TPM20_Header_In *)(((_TSS2_SYS_CONTEXT_BLOB *)decryptParamTestSysContext)->tpmInBuffPtr))->commandSize) + 1;
+            BE_TO_HOST_32(((TPM20_Header_In *)(((_TSS2_SYS_CONTEXT_BLOB *)decryptParamTestSysContext)->cmdBuffer))->commandSize) + 1;
 
     rval = Tss2_Sys_SetDecryptParam( decryptParamTestSysContext, nvWriteData.t.size, &( nvWriteData.t.buffer[0] ) );
     CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT );
@@ -5534,36 +5534,36 @@ void CmdRspAuthsTests()
 
     // Test for insufficient context.
     cmdAuths.cmdAuthsCount= 0;
-    savedMaxCommandSize = ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize;
-    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = sizeof( TPM20_Header_In ) + 3 * sizeof( TPM_HANDLE ) - 1;
+    savedMaxCommandSize = ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCmdSize;
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCmdSize = sizeof( TPM20_Header_In ) + 3 * sizeof( TPM_HANDLE ) - 1;
     rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
     CheckPassed( rval ); // #12
 
     cmdAuths.cmdAuthsCount= 0;
-    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = sizeof( TPM20_Header_In ) + 3 * sizeof( TPM_HANDLE );
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCmdSize = sizeof( TPM20_Header_In ) + 3 * sizeof( TPM_HANDLE );
     rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
     CheckPassed( rval );// #13
 
     cmdAuths.cmdAuthsCount= 3;
-    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = sizeof( TPM20_Header_In ) + 3 * sizeof( TPM_HANDLE );
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCmdSize = sizeof( TPM20_Header_In ) + 3 * sizeof( TPM_HANDLE );
     rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
     CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT ); // #14
 
     // Do successful one; use this to get size of command.
-    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = savedMaxCommandSize;
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCmdSize = savedMaxCommandSize;
     rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
     CheckPassed( rval ); // #15
 
-    // Then set maxCommandSize to the the previously gotten commandSize - 1.  This should fail.
-    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = GetCommandSize( sysContext ) - 1;
+    // Then set maxCmdSize to the the previously gotten commandSize - 1.  This should fail.
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCmdSize = GetCommandSize( sysContext ) - 1;
     rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
     CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT ); // #16
 
     // Reset size of sysContext.
-    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = savedMaxCommandSize;
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCmdSize = savedMaxCommandSize;
 
     // Setup for response auths test.
-    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCommandSize = BE_TO_HOST_32( savedMaxCommandSize );
+    ( (_TSS2_SYS_CONTEXT_BLOB *)sysContext )->maxCmdSize = BE_TO_HOST_32( savedMaxCommandSize );
     rval = Tss2_Sys_SetCmdAuths( sysContext, &cmdAuths );
     CheckPassed( rval ); // #15
 
