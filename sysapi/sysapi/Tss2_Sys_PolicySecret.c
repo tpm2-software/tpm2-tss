@@ -74,15 +74,25 @@ TPM_RC Tss2_Sys_PolicySecret_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_DIGEST_Marshal(cpHashA, SYS_CONTEXT->tpmInBuffPtr,
-                                        SYS_CONTEXT->maxCommandSize,
-                                        &SYS_CONTEXT->nextData);
+    if (!cpHashA)
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
+                                      SYS_CONTEXT->maxCommandSize,
+                                      &SYS_CONTEXT->nextData);
+    else
+        rval = Tss2_MU_TPM2B_DIGEST_Marshal(cpHashA, SYS_CONTEXT->tpmInBuffPtr,
+                                            SYS_CONTEXT->maxCommandSize,
+                                            &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_NONCE_Marshal(policyRef, SYS_CONTEXT->tpmInBuffPtr,
-                                       SYS_CONTEXT->maxCommandSize,
-                                       &SYS_CONTEXT->nextData);
+    if (!policyRef)
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
+                                      SYS_CONTEXT->maxCommandSize,
+                                      &SYS_CONTEXT->nextData);
+    else
+        rval = Tss2_MU_TPM2B_NONCE_Marshal(policyRef, SYS_CONTEXT->tpmInBuffPtr,
+                                           SYS_CONTEXT->maxCommandSize,
+                                           &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
