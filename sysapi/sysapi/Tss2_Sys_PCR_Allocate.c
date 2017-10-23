@@ -42,15 +42,15 @@ TPM_RC Tss2_Sys_PCR_Allocate_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(authHandle, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Marshal(authHandle, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
     rval = Tss2_MU_TPML_PCR_SELECTION_Marshal(pcrAllocation,
-                                              SYS_CONTEXT->tpmInBuffPtr,
-                                              SYS_CONTEXT->maxCommandSize,
+                                              SYS_CONTEXT->cmdBuffer,
+                                              SYS_CONTEXT->maxCmdSize,
                                               &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -78,29 +78,29 @@ TPM_RC Tss2_Sys_PCR_Allocate_Complete(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT8_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                   SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT8_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                   SYS_CONTEXT->maxCmdSize,
                                    &SYS_CONTEXT->nextData,
                                    allocationSuccess);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                    SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                    SYS_CONTEXT->maxCmdSize,
                                     &SYS_CONTEXT->nextData,
                                     maxPCR);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                    SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                    SYS_CONTEXT->maxCmdSize,
                                     &SYS_CONTEXT->nextData,
                                     sizeNeeded);
     if (rval)
         return rval;
 
-    return Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                    SYS_CONTEXT->maxCommandSize,
+    return Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                    SYS_CONTEXT->maxCmdSize,
                                     &SYS_CONTEXT->nextData,
                                     sizeAvailable);
 }

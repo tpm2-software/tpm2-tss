@@ -45,14 +45,14 @@ TPM_RC Tss2_Sys_Rewrap_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(oldParent, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Marshal(oldParent, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(newParent, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Marshal(newParent, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -60,28 +60,28 @@ TPM_RC Tss2_Sys_Rewrap_Prepare(
     if (!inDuplicate) {
         SYS_CONTEXT->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
-                                      SYS_CONTEXT->maxCommandSize,
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->cmdBuffer,
+                                      SYS_CONTEXT->maxCmdSize,
                                       &SYS_CONTEXT->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_PRIVATE_Marshal(inDuplicate, SYS_CONTEXT->tpmInBuffPtr,
-                                             SYS_CONTEXT->maxCommandSize,
+        rval = Tss2_MU_TPM2B_PRIVATE_Marshal(inDuplicate, SYS_CONTEXT->cmdBuffer,
+                                             SYS_CONTEXT->maxCmdSize,
                                              &SYS_CONTEXT->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_NAME_Marshal(name, SYS_CONTEXT->tpmInBuffPtr,
-                                      SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPM2B_NAME_Marshal(name, SYS_CONTEXT->cmdBuffer,
+                                      SYS_CONTEXT->maxCmdSize,
                                       &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
     rval = Tss2_MU_TPM2B_ENCRYPTED_SECRET_Marshal(inSymSeed,
-                                                  SYS_CONTEXT->tpmInBuffPtr,
-                                                  SYS_CONTEXT->maxCommandSize,
+                                                  SYS_CONTEXT->cmdBuffer,
+                                                  SYS_CONTEXT->maxCmdSize,
                                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -107,14 +107,14 @@ TPM_RC Tss2_Sys_Rewrap_Complete(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_PRIVATE_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                           SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPM2B_PRIVATE_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                           SYS_CONTEXT->maxCmdSize,
                                            &SYS_CONTEXT->nextData, outDuplicate);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_ENCRYPTED_SECRET_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                                    SYS_CONTEXT->maxCommandSize,
+    return Tss2_MU_TPM2B_ENCRYPTED_SECRET_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                                    SYS_CONTEXT->maxCmdSize,
                                                     &SYS_CONTEXT->nextData,
                                                     outSymSeed);
 }

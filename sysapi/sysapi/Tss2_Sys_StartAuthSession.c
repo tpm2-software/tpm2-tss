@@ -47,14 +47,14 @@ TPM_RC Tss2_Sys_StartAuthSession_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(tpmKey, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Marshal(tpmKey, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(bind, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Marshal(bind, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -62,13 +62,13 @@ TPM_RC Tss2_Sys_StartAuthSession_Prepare(
     if (!nonceCaller) {
         SYS_CONTEXT->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
-                                      SYS_CONTEXT->maxCommandSize,
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->cmdBuffer,
+                                      SYS_CONTEXT->maxCmdSize,
                                       &SYS_CONTEXT->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_NONCE_Marshal(nonceCaller, SYS_CONTEXT->tpmInBuffPtr,
-                                           SYS_CONTEXT->maxCommandSize,
+        rval = Tss2_MU_TPM2B_NONCE_Marshal(nonceCaller, SYS_CONTEXT->cmdBuffer,
+                                           SYS_CONTEXT->maxCmdSize,
                                            &SYS_CONTEXT->nextData);
     }
 
@@ -76,26 +76,26 @@ TPM_RC Tss2_Sys_StartAuthSession_Prepare(
         return rval;
 
     rval = Tss2_MU_TPM2B_ENCRYPTED_SECRET_Marshal(encryptedSalt,
-                                                  SYS_CONTEXT->tpmInBuffPtr,
-                                                  SYS_CONTEXT->maxCommandSize,
+                                                  SYS_CONTEXT->cmdBuffer,
+                                                  SYS_CONTEXT->maxCmdSize,
                                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT8_Marshal(sessionType, SYS_CONTEXT->tpmInBuffPtr,
-                                 SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT8_Marshal(sessionType, SYS_CONTEXT->cmdBuffer,
+                                 SYS_CONTEXT->maxCmdSize,
                                  &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPMT_SYM_DEF_Marshal(symmetric, SYS_CONTEXT->tpmInBuffPtr,
-                                        SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPMT_SYM_DEF_Marshal(symmetric, SYS_CONTEXT->cmdBuffer,
+                                        SYS_CONTEXT->maxCmdSize,
                                         &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT16_Marshal(authHash, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT16_Marshal(authHash, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -117,8 +117,8 @@ TPM_RC Tss2_Sys_StartAuthSession_Complete(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                    SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                    SYS_CONTEXT->maxCmdSize,
                                     &SYS_CONTEXT->nextData,
                                     sessionHandle);
     if (rval)
@@ -128,8 +128,8 @@ TPM_RC Tss2_Sys_StartAuthSession_Complete(
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_NONCE_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                         SYS_CONTEXT->maxCommandSize,
+    return Tss2_MU_TPM2B_NONCE_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                         SYS_CONTEXT->maxCmdSize,
                                          &SYS_CONTEXT->nextData, nonceTPM);
 }
 

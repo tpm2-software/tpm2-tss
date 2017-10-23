@@ -42,8 +42,8 @@ TPM_RC Tss2_Sys_FieldUpgradeData_Prepare(
         return rval;
 
     rval = Tss2_MU_TPM2B_MAX_BUFFER_Marshal(fuData,
-                                            SYS_CONTEXT->tpmInBuffPtr,
-                                            SYS_CONTEXT->maxCommandSize,
+                                            SYS_CONTEXT->cmdBuffer,
+                                            SYS_CONTEXT->maxCmdSize,
                                             &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -69,15 +69,15 @@ TPM_RC Tss2_Sys_FieldUpgradeData_Complete(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPMT_HA_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                     SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPMT_HA_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                     SYS_CONTEXT->maxCmdSize,
                                      &SYS_CONTEXT->nextData,
                                      nextDigest);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPMT_HA_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                     SYS_CONTEXT->maxCommandSize,
+    return Tss2_MU_TPMT_HA_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                     SYS_CONTEXT->maxCmdSize,
                                      &SYS_CONTEXT->nextData,
                                      firstDigest);
 }

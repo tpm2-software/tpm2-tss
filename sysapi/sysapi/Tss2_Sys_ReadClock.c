@@ -60,8 +60,8 @@ TPM_RC Tss2_Sys_ReadClock_Complete(
     if (rval)
         return rval;
 
-    return Tss2_MU_TPMS_TIME_INFO_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                            SYS_CONTEXT->maxCommandSize,
+    return Tss2_MU_TPMS_TIME_INFO_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                            SYS_CONTEXT->maxCmdSize,
                                             &SYS_CONTEXT->nextData,
                                             currentTime);
 }

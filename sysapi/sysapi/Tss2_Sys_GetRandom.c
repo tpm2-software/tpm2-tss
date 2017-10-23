@@ -40,8 +40,8 @@ TPM_RC Tss2_Sys_GetRandom_Prepare(
     rval = CommonPreparePrologue(sysContext, TPM_CC_GetRandom);
     if (rval)
         return rval;
-    rval = Tss2_MU_UINT16_Marshal(bytesRequested, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT16_Marshal(bytesRequested, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -66,8 +66,8 @@ TPM_RC Tss2_Sys_GetRandom_Complete(
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_DIGEST_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                          SYS_CONTEXT->maxCommandSize,
+    return Tss2_MU_TPM2B_DIGEST_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                          SYS_CONTEXT->maxCmdSize,
                                           &SYS_CONTEXT->nextData, randomBytes);
 }
 

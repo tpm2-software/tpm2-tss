@@ -26,7 +26,7 @@ CopyCommandHeader_sys_setup (void **state)
      *  the command buffer in the memory pointed to by tpmInitBuffPtr. This
      *  must point to the data after the context structure.
      */
-    sys_ctx->tpmInBuffPtr = (UINT8*) (sys_ctx + sizeof (_TSS2_SYS_CONTEXT_BLOB));
+    sys_ctx->cmdBuffer = (UINT8*) (sys_ctx + sizeof (_TSS2_SYS_CONTEXT_BLOB));
     InitSysContextFields ((TSS2_SYS_CONTEXT*)sys_ctx);
     InitSysContextPtrs ((TSS2_SYS_CONTEXT*)sys_ctx, size_ctx);
 
@@ -63,7 +63,7 @@ CopyCommandHeader_nextData_unit (void **state)
 
 /**
  * After a call to CopyCommandHeader the tag in the TPM20_Header_In portion of
- * the tpmInBuffPtr member of the sys context should be TPM_ST_NO_SESSIONS
+ * the cmdBuffer member of the sys context should be TPM_ST_NO_SESSIONS
  * transformed into network byte order.
  */
 static void
@@ -71,7 +71,7 @@ CopyCommandHeader_tag_unit (void **state)
 {
     _TSS2_SYS_CONTEXT_BLOB *sys_ctx = (_TSS2_SYS_CONTEXT_BLOB*)*state;
     TPM_CC cc = TPM_CC_GetCapability;
-    TPM20_Header_In *header = (TPM20_Header_In*)sys_ctx->tpmInBuffPtr;
+    TPM20_Header_In *header = (TPM20_Header_In*)sys_ctx->cmdBuffer;
     /* The TSS code uses a custom function to convert stuff to network byte
      * order but we can just use htons. Not sure why we don't use htons/l
      * everywhere.
@@ -83,7 +83,7 @@ CopyCommandHeader_tag_unit (void **state)
 }
 /**
  * After a call to CopyCommandHeader the commandCode in the TPM20_Header_In
- * portion of the tpmInBuffPtr member of the sys context should be the command
+ * portion of the cmdBuffer member of the sys context should be the command
  * code parameter in network byte order.
  */
 static void
@@ -92,7 +92,7 @@ CopyCommandHeader_commandcode_unit (void **state)
     _TSS2_SYS_CONTEXT_BLOB *sys_ctx = (_TSS2_SYS_CONTEXT_BLOB*)*state;
     TPM_CC cc = TPM_CC_GetCapability;
     TPM_CC cc_net = htonl (cc);
-    TPM20_Header_In *header = (TPM20_Header_In*)sys_ctx->tpmInBuffPtr;
+    TPM20_Header_In *header = (TPM20_Header_In*)sys_ctx->cmdBuffer;
 
     CopyCommandHeader ((TSS2_SYS_CONTEXT*)sys_ctx, cc);
     assert_int_equal (cc_net, header->commandCode);

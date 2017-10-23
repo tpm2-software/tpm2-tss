@@ -44,26 +44,26 @@ TPM_RC Tss2_Sys_SetCommandCodeAuditStatus_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(auth, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Marshal(auth, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT16_Marshal(auditAlg, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT16_Marshal(auditAlg, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPML_CC_Marshal(setList, SYS_CONTEXT->tpmInBuffPtr,
-                                   SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPML_CC_Marshal(setList, SYS_CONTEXT->cmdBuffer,
+                                   SYS_CONTEXT->maxCmdSize,
                                    &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPML_CC_Marshal(clearList, SYS_CONTEXT->tpmInBuffPtr,
-                                   SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPML_CC_Marshal(clearList, SYS_CONTEXT->cmdBuffer,
+                                   SYS_CONTEXT->maxCmdSize,
                                    &SYS_CONTEXT->nextData);
     if (rval)
         return rval;

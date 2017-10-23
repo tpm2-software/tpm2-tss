@@ -44,8 +44,8 @@ TPM_RC Tss2_Sys_RSA_Decrypt_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(keyHandle, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Marshal(keyHandle, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -53,28 +53,28 @@ TPM_RC Tss2_Sys_RSA_Decrypt_Prepare(
     if (!cipherText) {
         SYS_CONTEXT->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
-                                      SYS_CONTEXT->maxCommandSize,
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->cmdBuffer,
+                                      SYS_CONTEXT->maxCmdSize,
                                       &SYS_CONTEXT->nextData);
     } else {
 
         rval = Tss2_MU_TPM2B_PUBLIC_KEY_RSA_Marshal(cipherText,
-                                                    SYS_CONTEXT->tpmInBuffPtr,
-                                                    SYS_CONTEXT->maxCommandSize,
+                                                    SYS_CONTEXT->cmdBuffer,
+                                                    SYS_CONTEXT->maxCmdSize,
                                                     &SYS_CONTEXT->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPMT_RSA_DECRYPT_Marshal(inScheme, SYS_CONTEXT->tpmInBuffPtr,
-                                            SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPMT_RSA_DECRYPT_Marshal(inScheme, SYS_CONTEXT->cmdBuffer,
+                                            SYS_CONTEXT->maxCmdSize,
                                             &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_DATA_Marshal(label, SYS_CONTEXT->tpmInBuffPtr,
-                                      SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPM2B_DATA_Marshal(label, SYS_CONTEXT->cmdBuffer,
+                                      SYS_CONTEXT->maxCmdSize,
                                       &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -99,8 +99,8 @@ TPM_RC Tss2_Sys_RSA_Decrypt_Complete(
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_PUBLIC_KEY_RSA_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                                  SYS_CONTEXT->maxCommandSize,
+    return Tss2_MU_TPM2B_PUBLIC_KEY_RSA_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                                  SYS_CONTEXT->maxCmdSize,
                                                   &SYS_CONTEXT->nextData, message);
 }
 

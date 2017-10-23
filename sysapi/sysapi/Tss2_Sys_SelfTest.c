@@ -41,8 +41,8 @@ TPM_RC Tss2_Sys_SelfTest_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT8_Marshal(fullTest, SYS_CONTEXT->tpmInBuffPtr,
-                                 SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT8_Marshal(fullTest, SYS_CONTEXT->cmdBuffer,
+                                 SYS_CONTEXT->maxCmdSize,
                                  &SYS_CONTEXT->nextData);
      if (rval)
         return rval;

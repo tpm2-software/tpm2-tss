@@ -42,14 +42,14 @@ TPM_RC Tss2_Sys_PCR_Extend_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(pcrHandle, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Marshal(pcrHandle, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPML_DIGEST_VALUES_Marshal(digests, SYS_CONTEXT->tpmInBuffPtr,
-                                              SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPML_DIGEST_VALUES_Marshal(digests, SYS_CONTEXT->cmdBuffer,
+                                              SYS_CONTEXT->maxCmdSize,
                                               &SYS_CONTEXT->nextData);
     if (rval)
         return rval;

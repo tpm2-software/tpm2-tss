@@ -43,8 +43,8 @@ TPM_RC Tss2_Sys_MakeCredential_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(handle, SYS_CONTEXT->tpmInBuffPtr,
-                                  SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_UINT32_Marshal(handle, SYS_CONTEXT->cmdBuffer,
+                                  SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -52,21 +52,21 @@ TPM_RC Tss2_Sys_MakeCredential_Prepare(
     if (!credential) {
         SYS_CONTEXT->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->tpmInBuffPtr,
-                                      SYS_CONTEXT->maxCommandSize,
+        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->cmdBuffer,
+                                      SYS_CONTEXT->maxCmdSize,
                                       &SYS_CONTEXT->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_DIGEST_Marshal(credential, SYS_CONTEXT->tpmInBuffPtr,
-                                            SYS_CONTEXT->maxCommandSize,
+        rval = Tss2_MU_TPM2B_DIGEST_Marshal(credential, SYS_CONTEXT->cmdBuffer,
+                                            SYS_CONTEXT->maxCmdSize,
                                             &SYS_CONTEXT->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_NAME_Marshal(objectName, SYS_CONTEXT->tpmInBuffPtr,
-                                      SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPM2B_NAME_Marshal(objectName, SYS_CONTEXT->cmdBuffer,
+                                      SYS_CONTEXT->maxCmdSize,
                                       &SYS_CONTEXT->nextData);
     if (rval)
         return rval;
@@ -92,15 +92,15 @@ TPM_RC Tss2_Sys_MakeCredential_Complete(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_ID_OBJECT_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                             SYS_CONTEXT->maxCommandSize,
+    rval = Tss2_MU_TPM2B_ID_OBJECT_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                             SYS_CONTEXT->maxCmdSize,
                                              &SYS_CONTEXT->nextData,
                                              credentialBlob);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_ENCRYPTED_SECRET_Unmarshal(SYS_CONTEXT->tpmInBuffPtr,
-                                                    SYS_CONTEXT->maxCommandSize,
+    return Tss2_MU_TPM2B_ENCRYPTED_SECRET_Unmarshal(SYS_CONTEXT->cmdBuffer,
+                                                    SYS_CONTEXT->maxCmdSize,
                                                     &SYS_CONTEXT->nextData,
                                                     secret);
 }

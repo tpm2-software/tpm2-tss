@@ -79,7 +79,7 @@ TSS2_RC Tss2_Sys_SetEncryptParam(
         return TSS2_SYS_RC_BAD_SIZE;
 
     if (currEncryptParamBuffer + encryptParamSize >
-        SYS_CONTEXT->tpmInBuffPtr + SYS_CONTEXT->maxCommandSize)
+        SYS_CONTEXT->cmdBuffer + SYS_CONTEXT->maxCmdSize)
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
 
     memmove((void *)currEncryptParamBuffer,
