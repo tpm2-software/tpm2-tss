@@ -44,6 +44,7 @@
 #define    MAX_TPM_PROPERTIES   (MAX_CAP_DATA/sizeof(TPMS_TAGGED_PROPERTY))
 #define    MAX_PCR_PROPERTIES   (MAX_CAP_DATA/sizeof(TPMS_TAGGED_PCR_SELECT))
 #define    MAX_ECC_CURVES       (MAX_CAP_DATA/sizeof(TPM_ECC_CURVE))
+#define    MAX_PTT_PROPERTIES   (MAX_CAP_DATA/sizeof(UINT32))
 
 /* Table 5  Definition of Types for Documentation Clarity */
 typedef	UINT32	TPM_ALGORITHM_ID;	 /* this is the 1.2 compatible form of the TPM_ALG_ID  */
@@ -1159,6 +1160,12 @@ typedef	struct {
 	TPM_ECC_CURVE	eccCurves[MAX_ECC_CURVES];	 /* array of ECC curve identifiers  */
 } TPML_ECC_CURVE;
 
+/* Implementation specific structure to hold Intel PTT specific property data. */
+typedef	struct {
+	UINT32	count;	/* number of properties zero is allowed.  */
+	UINT32	property[MAX_PTT_PROPERTIES];	/* property value */
+} TPML_INTEL_PTT_PROPERTY;
+
 /* Table 107  Definition of TPMU_CAPABILITIES Union <OUT> */
 typedef	union {
 	TPML_ALG_PROPERTY	algorithms;	 /*   */
@@ -1170,6 +1177,7 @@ typedef	union {
 	TPML_TAGGED_TPM_PROPERTY	tpmProperties;	 /*   */
 	TPML_TAGGED_PCR_PROPERTY	pcrProperties;	 /*   */
 	TPML_ECC_CURVE	eccCurves;	 /* TPM_ALG_ECC  */
+	TPML_INTEL_PTT_PROPERTY	intelPttProperty;
 	char na;        /* Not used. Common TPMU member only for parsing */
 } TPMU_CAPABILITIES;
 

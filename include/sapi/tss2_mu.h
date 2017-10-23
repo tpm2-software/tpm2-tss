@@ -1359,6 +1359,20 @@ Tss2_MU_TPML_TAGGED_TPM_PROPERTY_Unmarshal(
     TPML_TAGGED_TPM_PROPERTY *dest);
 
 TSS2_RC
+Tss2_MU_TPML_INTEL_PTT_PROPERTY_Marshal(
+    TPML_INTEL_PTT_PROPERTY const *src,
+    uint8_t      buffer[],
+    size_t       buffer_size,
+    size_t      *offset);
+
+TSS2_RC
+Tss2_MU_TPML_INTEL_PTT_PROPERTY_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPML_INTEL_PTT_PROPERTY *dest);
+
+TSS2_RC
 Tss2_MU_TPMU_HA_Marshal(
     TPMU_HA const *src,
     uint32_t       selector_value,
