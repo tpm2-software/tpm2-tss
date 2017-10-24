@@ -66,6 +66,7 @@ TESTS_INTEGRATION = \
     test/integration/asymmetric-encrypt-decrypt.int \
     test/integration/create-primary-rsa-2048-aes-128-cfb.int \
     test/integration/create-keyedhash-sha1-hmac.int \
+    test/integration/encrypt-decrypt.int \
     test/integration/evict-ctrl.int \
     test/integration/get-random.int \
     test/integration/hierarchy-change-auth.int \
@@ -244,6 +245,11 @@ test_integration_create_primary_rsa_2048_aes_128_cfb_int_SOURCES = \
 test_integration_create_keyedhash_sha1_hmac_int_LDADD   = $(TESTS_LDADD)
 test_integration_create_keyedhash_sha1_hmac_int_SOURCES = \
     test/integration/create-keyedhash-sha1-hmac.int.c \
+    test/integration/main.c
+
+test_integration_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
+test_integration_encrypt_decrypt_int_SOURCES = \
+    test/integration/encrypt-decrypt.int.c \
     test/integration/main.c
 
 test_integration_evict_ctrl_int_LDADD   = $(TESTS_LDADD)
