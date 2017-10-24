@@ -244,3 +244,63 @@ encrypt_cfb (
 {
     return encrypt_decrypt_cfb (sapi_context, handle, NO, data_in, data_out);
 }
+
+TSS2_RC
+encrypt_decrypt_2_cfb (
+    TSS2_SYS_CONTEXT *sapi_context,
+    TPMI_DH_OBJECT    handle,
+    TPMI_YES_NO       decrypt,
+    TPM2B_MAX_BUFFER *data_in,
+    TPM2B_MAX_BUFFER *data_out)
+{
+    TPMI_ALG_SYM_MODE mode = TPM_ALG_NULL;
+    TPM2B_IV iv_in = TPM2B_IV_INIT;
+    TPM2B_IV iv_out = TPM2B_IV_INIT;
+
+    /* session parameters */
+    /* command session info */
+    TPMS_AUTH_COMMAND   session_cmd = { .sessionHandle = TPM_RS_PW };
+    TPMS_AUTH_COMMAND  *session_cmd_array[1] = { &session_cmd };
+    TSS2_SYS_CMD_AUTHS  sessions_cmd = {
+        .cmdAuths = session_cmd_array,
+        .cmdAuthsCount = 1
+    };
+    /* response session info */
+    TPMS_AUTH_RESPONSE  session_rsp = { 0 };
+    TPMS_AUTH_RESPONSE *session_rsp_array[1] = { &session_rsp };
+    TSS2_SYS_RSP_AUTHS  sessions_rsp = {
+        .rspAuths = session_rsp_array,
+        .rspAuthsCount = 1
+    };
+
+    return Tss2_Sys_EncryptDecrypt2 (sapi_context,
+                                     handle,
+                                     &sessions_cmd,
+                                     data_in,
+                                     decrypt,
+                                     mode,
+                                     &iv_in,
+                                     data_out,
+                                     &iv_out,
+                                     &sessions_rsp);
+}
+
+TSS2_RC
+decrypt_2_cfb (
+    TSS2_SYS_CONTEXT *sapi_context,
+    TPMI_DH_OBJECT    handle,
+    TPM2B_MAX_BUFFER *data_in,
+    TPM2B_MAX_BUFFER *data_out)
+{
+    return encrypt_decrypt_2_cfb (sapi_context, handle, YES, data_in, data_out);
+}
+
+TSS2_RC
+encrypt_2_cfb (
+    TSS2_SYS_CONTEXT *sapi_context,
+    TPMI_DH_OBJECT    handle,
+    TPM2B_MAX_BUFFER *data_in,
+    TPM2B_MAX_BUFFER *data_out)
+{
+    return encrypt_decrypt_2_cfb (sapi_context, handle, NO, data_in, data_out);
+}
