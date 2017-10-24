@@ -120,5 +120,34 @@ decrypt_cfb (
     TPMI_DH_OBJECT    handle,
     TPM2B_MAX_BUFFER *data_in,
     TPM2B_MAX_BUFFER *data_out);
+/*
+ * This function is identical to the encrypt_decrypt_cfb function but under
+ * the covers it uses the EncryptDecrypt2 function instead of EncryptDecrypt.
+ */
+TSS2_RC
+encrypt_decrypt_2_cfb (
+    TSS2_SYS_CONTEXT *sapi_context,
+    TPMI_DH_OBJECT    handle,
+    TPMI_YES_NO       decrypt,
+    TPM2B_MAX_BUFFER *data_in,
+    TPM2B_MAX_BUFFER *data_out);
+/*
+ * This is a convenience wrapper around the encrypt_decrypt_2_cfb function.
+ */
+TSS2_RC
+encrypt_2_cfb (
+    TSS2_SYS_CONTEXT *sapi_context,
+    TPMI_DH_OBJECT    handle,
+    TPM2B_MAX_BUFFER *data_in,
+    TPM2B_MAX_BUFFER *data_out);
+/*
+ * This is a convenience wrapper around the encrypt_decrypt_2_cfb function.
+ */
+TSS2_RC
+decrypt_2_cfb (
+    TSS2_SYS_CONTEXT *sapi_context,
+    TPMI_DH_OBJECT    handle,
+    TPM2B_MAX_BUFFER *data_in,
+    TPM2B_MAX_BUFFER *data_out);
 
 #endif /* TEST_INTEGRATION_SAPI_UTIL_H */

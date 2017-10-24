@@ -1,5 +1,5 @@
 //**********************************************************************;
-// Copyright (c) 2015, Intel Corporation
+// Copyright (c) 2015 - 2017 Intel Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -245,6 +245,7 @@
 #define  CC_ZGen_2Phase                   (CC_YES*ALG_ECC)
 #define  CC_EC_Ephemeral                  (CC_YES*ALG_ECC)
 #define  CC_PolicyNvWritten               CC_YES
+#define  CC_EncryptDecrypt2               CC_YES
 #define  CC_Vendor_TCG_Test               CC_YES
 
 // From Vendor-Specific: Table 7 - Defines for Implementation Values
@@ -1197,7 +1198,13 @@ typedef  UINT32             TPM_CC;
 #if CC_PolicyNvWritten == YES
 #define  TPM_CC_PolicyNvWritten               (TPM_CC)(0x0000018f)
 #endif
-#define  TPM_CC_LAST                          (TPM_CC)(0x0000018f)
+#ifndef CC_EncryptDecrypt2
+#define CC_EncryptDecrypt2 NO
+#endif
+#if CC_EncryptDecrypt2 == YES
+#define  TPM_CC_EncryptDecrypt2               (TPM_CC)(0x00000193)
+#endif
+#define  TPM_CC_LAST                          (TPM_CC)(0x00000193)
 #ifndef CC_Vendor_TCG_Test
 #   define CC_Vendor_TCG_Test NO
 #endif
@@ -1328,6 +1335,10 @@ typedef  UINT32             TPM_CC;
 					  + (ADD_FILL || CC_ZGen_2Phase)                /* 0x0000018d */ \
 					  + (ADD_FILL || CC_EC_Ephemeral)               /* 0x0000018e */ \
 					  + (ADD_FILL || CC_PolicyNvWritten)            /* 0x0000018f */ \
+                                          + ADD_FILL                                    /* 0x00000190 */ \
+                                          + ADD_FILL                                    /* 0x00000191 */ \
+                                          + ADD_FILL                                    /* 0x00000192 */ \
+                                          + ADD_FILL                                    /* 0x00000193 */ \
 					  )
 
 #define VENDOR_COMMAND_ARRAY_SIZE   ( 0					\
