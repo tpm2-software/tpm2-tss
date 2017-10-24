@@ -1,5 +1,5 @@
 //**********************************************************************;
-// Copyright (c) 2015, Intel Corporation
+// Copyright (c) 2015 - 2017 Intel Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,7 @@ COMMAND_HANDLES commandArray[] =
     { TPM_CC_ECC_Parameters, 0, 0 },
     { TPM_CC_ZGen_2Phase, 1, 0 },
     { TPM_CC_EncryptDecrypt, 1, 0 },
+    { TPM_CC_EncryptDecrypt2, 1, 0 },
     { TPM_CC_Hash, 0, 0 },
     { TPM_CC_HMAC, 1, 0 },
     { TPM_CC_GetRandom, 0, 0 },
