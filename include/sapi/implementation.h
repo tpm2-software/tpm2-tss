@@ -1,5 +1,5 @@
 //**********************************************************************;
-// Copyright (c) 2015, Intel Corporation
+// Copyright (c) 2015 - 2017 Intel Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -391,7 +391,8 @@ typedef  UINT32             TPM_CC;
 #define  TPM_CC_ZGen_2Phase                   (TPM_CC)(0x0000018d)
 #define  TPM_CC_EC_Ephemeral                  (TPM_CC)(0x0000018e)
 #define  TPM_CC_PolicyNvWritten               (TPM_CC)(0x0000018f)
-#define  TPM_CC_LAST                          (TPM_CC)(0x0000018f)
+#define  TPM_CC_EncryptDecrypt2               (TPM_CC)(0x00000193)
+#define  TPM_CC_LAST                          (TPM_CC)(0x00000193)
 #define  TPM_CC_Vendor_TCG_Test               (TPM_CC)(0x20000000)
 
 #ifndef MAX
