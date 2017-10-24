@@ -3,6 +3,9 @@
 #include "test.h"
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
+#include "common/debug.h"
+#include "main.h"
+
 #define PCR_8   8
 /**
  * This program contains integration test for SAPI Tss2_Sys_PCR_Read
@@ -40,8 +43,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 
     print_log("PCR Extension tests started.");
     rc = Tss2_Sys_GetCapability(sapi_context, 0, TPM_CAP_PCR_PROPERTIES, TPM_PT_PCR_COUNT, 1, &more_data, &capability_data, 0);
-    if (rc != TSS2_RC_SUCCESS)
-        print_fail("GetCapability FAILED! Response Code : 0x%x", rc);
+    CheckPassedInt(rc);
     
     digests.count = 1;
     digests.digests[0].hashAlg = TPM_ALG_SHA1;
@@ -60,19 +62,18 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     pcr_selection.pcrSelections[0].pcrSelect[PCR_8 / 8] = 1 << (PCR_8 % 8);
 
     rc = Tss2_Sys_PCR_Read(sapi_context, 0, &pcr_selection, &pcr_update_counter_before_extend, &pcr_selection_out, &pcr_values, 0);
-    if (rc != TSS2_RC_SUCCESS)
-        print_fail("PCR_Read FAILED! Response Code : 0x%x", rc);
+    CheckPassedInt(rc);
+
     memcpy(&(pcr_before_extend[0]), &(pcr_values.digests[0].t.buffer[0]), pcr_values.digests[0].t.size);
 
     sessions_data.cmdAuthsCount = 1;
     sessions_data.cmdAuths[0] = &session_data;
     rc = Tss2_Sys_PCR_Extend(sapi_context, PCR_8, &sessions_data, &digests, 0);
-    if (rc != TSS2_RC_SUCCESS)
-        print_fail("PCR_Extend FAILED! Response Code : 0x%x", rc);
+    CheckPassedInt(rc);
 
     rc = Tss2_Sys_PCR_Read(sapi_context, 0, &pcr_selection, &pcr_update_counter_after_extend, &pcr_selection_out, &pcr_values, 0);
-    if (rc != TSS2_RC_SUCCESS)
-        print_fail("PCR_Read FAILED! Response Code : 0x%x", rc);
+    CheckPassedInt(rc);
+
     memcpy(&(pcr_after_extend[0]), &(pcr_values.digests[0].t.buffer[0]), pcr_values.digests[0].t.size);
 
     if(pcr_update_counter_before_extend == pcr_update_counter_after_extend)
