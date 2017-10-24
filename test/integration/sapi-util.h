@@ -49,6 +49,12 @@
 #define TPM2B_DIGEST_INIT TPM2B_NAMED_INIT (TPM2B_DIGEST, buffer)
 #define TPM2B_NAME_INIT TPM2B_NAMED_INIT (TPM2B_NAME, name)
 #define TPM2B_PRIVATE_INIT TPM2B_NAMED_INIT (TPM2B_PRIVATE, buffer)
+
+#define TPM2B_MAX_BUFFER_INIT { .t.size = MAX_DIGEST_BUFFER }
+#define TPM2B_IV_INIT { .t.size = MAX_SYM_BLOCK_SIZE }
+
+#define BUFFER_SIZE(type, field) (sizeof((((type *)NULL)->t.field)))
+#define TPM2B_TYPE_INIT(type, field) { .t = { .size = BUFFER_SIZE(type, field), }, }
 /*
  * Use te provide SAPI context to create & load a primary key. The key will
  * be a 2048 bit (restricted decryption) RSA key. The associated symmetric
@@ -58,5 +64,49 @@ TSS2_RC
 create_primary_rsa_2048_aes_128_cfb (
     TSS2_SYS_CONTEXT *sapi_context,
     TPM_HANDLE       *handle);
+/*
+ * This function creates a 128 bit symmetric AES key in cbc mode. This key will
+ * be created as the child of the parameter 'handle_parent'. The handle for the
+ * newly created AND loaded key is returned in the parameter 'handle'.
+ */
+TSS2_RC
+create_aes_128_cfb (
+    TSS2_SYS_CONTEXT *sapi_context,
+    TPM_HANDLE        handle_parent,
+    TPM_HANDLE       *handle);
+/*
+ * This function will decrypt or encrypt the 'data_in' buffer and return the
+ * results in the 'data_out' parameter. Decrypt or encrypt is selected using
+ * the 'decrypt' TPMI_YES_NO parameter. The key used for the operation is
+ * provided in the 'handle' parameter.
+ * Under the covers this function uses an IV of all zeros and so it can not
+ * be used for streaming. It can only be used to encrypt or decrypt a single
+ * buffer.
+ */
+TSS2_RC
+encrypt_decrypt_cfb (
+    TSS2_SYS_CONTEXT *sapi_context,
+    TPMI_DH_OBJECT    handle,
+    TPMI_YES_NO       decrypt,
+    TPM2B_MAX_BUFFER *data_in,
+    TPM2B_MAX_BUFFER *data_out);
+/*
+ * This is a convenience wrapper around the encrypt_decrypt_cfb function.
+ */
+TSS2_RC
+encrypt_cfb (
+    TSS2_SYS_CONTEXT *sapi_context,
+    TPMI_DH_OBJECT    handle,
+    TPM2B_MAX_BUFFER *data_in,
+    TPM2B_MAX_BUFFER *data_out);
+/*
+ * This is a convenience wrapper around the encrypt_decrypt_cfb function.
+ */
+TSS2_RC
+decrypt_cfb (
+    TSS2_SYS_CONTEXT *sapi_context,
+    TPMI_DH_OBJECT    handle,
+    TPM2B_MAX_BUFFER *data_in,
+    TPM2B_MAX_BUFFER *data_out);
 
 #endif /* TEST_INTEGRATION_SAPI_UTIL_H */
