@@ -257,28 +257,23 @@ test_integration_evict_ctrl_int_SOURCES = \
     test/integration/main.c
 
 test_integration_sys_initialize_int_LDADD   = $(TESTS_LDADD)
-test_integration_sys_initialize_int_SOURCES = \
-	test/integration/sys-initialize.int.c \
+test_integration_sys_initialize_int_SOURCES = test/integration/sys-initialize.int.c \
     test/integration/main.c
 
 test_integration_get_random_int_LDADD   = $(TESTS_LDADD)
-test_integration_get_random_int_SOURCES = \
-	test/integration/get-random.int.c \
+test_integration_get_random_int_SOURCES = test/integration/get-random.int.c \
     test/integration/main.c
 
 test_integration_abi_version_int_LDADD   = $(TESTS_LDADD)
-test_integration_abi_version_int_SOURCES = \
-	test/integration/abi-version.int.c \
+test_integration_abi_version_int_SOURCES = test/integration/abi-version.int.c \
     test/integration/main.c
 
 test_integration_pcr_extension_int_LDADD   = $(TESTS_LDADD)
-test_integration_pcr_extension_int_SOURCES = \
-	test/integration/pcr-extension.int.c \
+test_integration_pcr_extension_int_SOURCES = test/integration/pcr-extension.int.c \
     test/integration/main.c
 
 test_integration_self_test_int_LDADD   = $(TESTS_LDADD)
-test_integration_self_test_int_SOURCES = \
-	test/integration/self-test.int.c \
+test_integration_self_test_int_SOURCES = test/integration/self-test.int.c \
     test/integration/main.c
 
 test_integration_hierarchy_change_auth_int_LDADD = $(TESTS_LDADD)
@@ -287,12 +282,8 @@ test_integration_hierarchy_change_auth_int_SOURCES = \
     test/integration/main.c
 
 test_integration_start_auth_session_int_LDADD = $(TESTS_LDADD)
-test_integration_start_auth_session_int_SOURCES = \
-    test/integration/start-auth-session.int.c \
-    test/integration/main.c
-
-
-
+test_integration_start_auth_session_int_SOURCES = test/integration/main.c \
+    test/integration/start-auth-session.int.c
 
 TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES)
 
