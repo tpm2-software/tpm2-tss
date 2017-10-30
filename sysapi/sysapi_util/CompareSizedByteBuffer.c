@@ -28,25 +28,13 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-
-TPM_RC CompareSizedByteBuffer( TPM2B *buffer1, TPM2B *buffer2 )
+TPM_RC CompareSizedByteBuffer(TPM2B *buffer1, TPM2B *buffer2)
 {
-    int i;
-    TPM_RC rval = TPM_RC_SUCCESS;
+    if (buffer1->size != buffer2->size)
+        return TPM_RC_FAILURE;
 
-    if( buffer1->size != buffer2->size )
-        rval = TPM_RC_FAILURE;
-    else
-    {
-        for( i = 0; i < buffer1->size; i++ )
-        {
-            if( buffer1->buffer[i] != buffer2->buffer[i] )
-            {
-                rval = TPM_RC_FAILURE;
-                break;
-            }
-        }
-    }
-    return rval;
+    if (memcmp(buffer1->buffer, buffer2->buffer, buffer1->size))
+        return TPM_RC_FAILURE;
+
+    return TPM_RC_SUCCESS;
 }
-

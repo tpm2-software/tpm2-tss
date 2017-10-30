@@ -140,32 +140,28 @@ COMMAND_HANDLES commandArray[] =
     { TPM_CC_NV_Certify, 3, 0 }
 };
 
-int GetNumCommandHandles( TPM_CC commandCode )
+static int GetNumHandles(TPM_CC commandCode, uint8_t command)
 {
-    int rval = 0;
-    int i;
-    for( i = 0; i < ( sizeof( commandArray ) / sizeof( COMMAND_HANDLES ) ); i++ )
-    {
-        if( commandCode == commandArray[i].commandCode )
-        {
-            rval = commandArray[i].numCommandHandles;
-            break;
+    uint8_t i;
+
+    for (i = 0; i < sizeof(commandArray) / sizeof(COMMAND_HANDLES); i++) {
+        if (commandCode == commandArray[i].commandCode) {
+            if (command)
+                return commandArray[i].numCommandHandles;
+            else
+                return commandArray[i].numResponseHandles;
         }
     }
-    return rval;
+
+    return 0;
+}
+
+int GetNumCommandHandles(TPM_CC commandCode)
+{
+    return GetNumHandles(commandCode, 1);
 }
 
 int GetNumResponseHandles( TPM_CC commandCode )
 {
-    int rval = 0;
-    int i;
-    for( i = 0; i < ( sizeof( commandArray ) / sizeof( COMMAND_HANDLES ) ); i++ )
-    {
-        if( commandCode == commandArray[i].commandCode )
-        {
-            rval = commandArray[i].numResponseHandles;
-            break;
-        }
-    }
-    return rval;
+    return GetNumHandles(commandCode, 0);
 }
