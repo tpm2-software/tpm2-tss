@@ -28,10 +28,9 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-
 typedef struct {
     TPM_ALG_ID  algId;
-    UINT16      size;  // Size of digest
+    UINT16      size;
 } HASH_SIZE_INFO;
 
 HASH_SIZE_INFO   hashSizes[] = {
@@ -40,19 +39,16 @@ HASH_SIZE_INFO   hashSizes[] = {
     {TPM_ALG_SHA384,        SHA384_DIGEST_SIZE},
     {TPM_ALG_SHA512,        SHA512_DIGEST_SIZE},
     {TPM_ALG_SM3_256,       SM3_256_DIGEST_SIZE},
-    {TPM_ALG_NULL,0}
+    {TPM_ALG_NULL,          0}
 };
 
-
-UINT16 GetDigestSize( TPM_ALG_ID authHash )
+UINT16 GetDigestSize(TPM_ALG_ID authHash)
 {
-    INT8  i;
-    for(i = 0; i < ( sizeof( hashSizes ) / sizeof( HASH_SIZE_INFO ) ); i++ )
-    {
-        if( hashSizes[i].algId == authHash )
-            return hashSizes[i].size;
-    }
+    uint8_t  i;
 
-    // If not found, return 0 size, and let TPM handle the error.
-    return( 0 );
+    for (i = 0; i < sizeof(hashSizes) / sizeof(HASH_SIZE_INFO); i++)
+        if (hashSizes[i].algId == authHash)
+            return hashSizes[i].size;
+
+    return 0;
 }

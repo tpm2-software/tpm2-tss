@@ -28,37 +28,14 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-
-//
-// Concatenate two sized byte buffers from left to right.
-//
-// Inputs:
-//
-//      result -- pointer to TPM2B_MAX_BUFFER to hold result
-//      addBuffer -- pointer to TPM2B buffer to be concatenated with result
-//
-// Outputs:
-//
-//      result contains the concatenation, if size permits
-//      and it's size is updated accordingly.
-//
-//      If result isn't large enough, result doesn't change.
-//
-//      returned value is 0 for success, 1 for failure
-//
-TPM_RC ConcatSizedByteBuffer( TPM2B_MAX_BUFFER *result, TPM2B *addBuffer )
+TPM_RC ConcatSizedByteBuffer(TPM2B_MAX_BUFFER *result, TPM2B *addBuffer)
 {
-    int i;
-
-    if( ( result->t.size + addBuffer->size ) > MAX_DIGEST_BUFFER )
+    if (result->t.size + addBuffer->size > MAX_DIGEST_BUFFER)
         return TSS2_SYS_RC_BAD_VALUE;
-    else
-    {
-        for( i = 0; i < addBuffer->size; i++ )
-            result->t.buffer[i + result->t.size] = addBuffer->buffer[i];
 
-        result->t.size += addBuffer->size;
+    memmove(result->t.buffer + result->t.size,
+            addBuffer->buffer, addBuffer->size);
 
-        return TPM_RC_SUCCESS;
-    }
+    result->t.size += addBuffer->size;
+    return TPM_RC_SUCCESS;
 }
