@@ -14,21 +14,17 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 {
     TSS2_RC rc;
     TPM2B_NONCE nonce_caller = {
-        .t = {
-            .size   = SHA256_DIGEST_SIZE,
-            .buffer = {
+        .size   = SHA256_DIGEST_SIZE,
+        .buffer = {
                 0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef,
                 0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef,
                 0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef,
                 0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef
             }
-        }
     };
     TPM2B_NONCE nonce_tpm = {
-        .t = {
-            .size   = SHA256_DIGEST_SIZE,
-            .buffer = { 0 }
-        }
+        .size   = SHA256_DIGEST_SIZE,
+        .buffer = { 0 }
     };
     TPM2B_ENCRYPTED_SECRET encrypted_salt = { 0 };
     TPMI_SH_AUTH_SESSION   session_handle = 0;

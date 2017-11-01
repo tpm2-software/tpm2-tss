@@ -53,20 +53,18 @@
 #define TPM2B_SIZE(type) (sizeof (type) - 2)
 #define TPM2B_NAMED_INIT(type, field) \
     { \
-        .t = { \
-            .size = TPM2B_SIZE (type), \
-            .field = { 0 } \
-        } \
+        .size = TPM2B_SIZE (type), \
+        .field = { 0 } \
     }
 #define TPM2B_DIGEST_INIT TPM2B_NAMED_INIT (TPM2B_DIGEST, buffer)
 #define TPM2B_NAME_INIT TPM2B_NAMED_INIT (TPM2B_NAME, name)
 #define TPM2B_PRIVATE_INIT TPM2B_NAMED_INIT (TPM2B_PRIVATE, buffer)
 
-#define TPM2B_MAX_BUFFER_INIT { .t.size = MAX_DIGEST_BUFFER }
-#define TPM2B_IV_INIT { .t.size = MAX_SYM_BLOCK_SIZE }
+#define TPM2B_MAX_BUFFER_INIT { .size = MAX_DIGEST_BUFFER }
+#define TPM2B_IV_INIT { .size = MAX_SYM_BLOCK_SIZE }
 
 #define BUFFER_SIZE(type, field) (sizeof((((type *)NULL)->t.field)))
-#define TPM2B_TYPE_INIT(type, field) { .t = { .size = BUFFER_SIZE(type, field), }, }
+#define TPM2B_TYPE_INIT(type, field) { .size = BUFFER_SIZE(type, field), }
 /*
  * Use te provide SAPI context to create & load a primary key. The key will
  * be a 2048 bit (restricted decryption) RSA key. The associated symmetric

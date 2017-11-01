@@ -40,21 +40,21 @@ UINT32 LoadExternalHMACKey( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM_HANDLE *keyHa
 
     keyAuth.size = 0;
 
-    inPrivate.t.sensitiveArea.sensitiveType = TPM_ALG_KEYEDHASH;
-    inPrivate.t.size = CopySizedByteBuffer( &(inPrivate.t.sensitiveArea.authValue.b), &keyAuth);
-    inPrivate.t.sensitiveArea.seedValue.b.size = 0;
-    inPrivate.t.size += CopySizedByteBuffer( &inPrivate.t.sensitiveArea.sensitive.bits.b, key);
-    inPrivate.t.size += 2 * sizeof( UINT16 );
+    inPrivate.sensitiveArea.sensitiveType = TPM_ALG_KEYEDHASH;
+    inPrivate.size = CopySizedByteBuffer((TPM2B *)&inPrivate.sensitiveArea.authValue, (TPM2B *)&keyAuth);
+    inPrivate.sensitiveArea.seedValue.size = 0;
+    inPrivate.size += CopySizedByteBuffer((TPM2B *)&inPrivate.sensitiveArea.sensitive.bits, (TPM2B *)key);
+    inPrivate.size += 2 * sizeof( UINT16 );
 
-    inPublic.t.publicArea.type = TPM_ALG_KEYEDHASH;
-    inPublic.t.publicArea.nameAlg = TPM_ALG_NULL;
-    *( UINT32 *)&( inPublic.t.publicArea.objectAttributes )= 0;
-    inPublic.t.publicArea.objectAttributes.sign = 1;
-    inPublic.t.publicArea.objectAttributes.userWithAuth = 1;
-    inPublic.t.publicArea.authPolicy.t.size = 0;
-    inPublic.t.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM_ALG_HMAC;
-    inPublic.t.publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = hashAlg;
-    inPublic.t.publicArea.unique.keyedHash.t.size = 0;
+    inPublic.publicArea.type = TPM_ALG_KEYEDHASH;
+    inPublic.publicArea.nameAlg = TPM_ALG_NULL;
+    *( UINT32 *)&( inPublic.publicArea.objectAttributes )= 0;
+    inPublic.publicArea.objectAttributes.sign = 1;
+    inPublic.publicArea.objectAttributes.userWithAuth = 1;
+    inPublic.publicArea.authPolicy.size = 0;
+    inPublic.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM_ALG_HMAC;
+    inPublic.publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = hashAlg;
+    inPublic.publicArea.unique.keyedHash.size = 0;
 
     sysContext = InitSysContext( 1000, resMgrTctiContext, &abiVersion );
     if( sysContext == 0 )

@@ -39,8 +39,8 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
 {
     TPM2B_DIGEST tmpResult;
     TPM2B_DIGEST tpm2bLabel, tpm2bBits, tpm2b_i_2;
-    UINT8 *tpm2bBitsPtr = &tpm2bBits.t.buffer[0];
-    UINT8 *tpm2b_i_2Ptr = &tpm2b_i_2.t.buffer[0];
+    UINT8 *tpm2bBitsPtr = &tpm2bBits.buffer[0];
+    UINT8 *tpm2b_i_2Ptr = &tpm2b_i_2.buffer[0];
     TPM2B_DIGEST *bufferList[8];
     UINT32 bitsSwizzled, i_Swizzled;
     TPM_RC rval;
@@ -53,25 +53,25 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
     PrintSizedBuffer( key );
 #endif
 
-    resultKey->t .size = 0;
+    resultKey->size = 0;
 
-    tpm2b_i_2.t.size = 4;
+    tpm2b_i_2.size = 4;
 
-    tpm2bBits.t.size = 4;
+    tpm2bBits.size = 4;
     bitsSwizzled = BE_TO_HOST_32(bits);
     *(UINT32 *)tpm2bBitsPtr = bitsSwizzled;
 
     for(i = 0; label[i] != 0 ;i++ );
 
-    tpm2bLabel.t.size = i+1;
-    for( i = 0; i < tpm2bLabel.t.size; i++ )
+    tpm2bLabel.size = i+1;
+    for( i = 0; i < tpm2bLabel.size; i++ )
     {
-        tpm2bLabel.t.buffer[i] = label[i];
+        tpm2bLabel.buffer[i] = label[i];
     }
 
 #ifdef DEBUG
     DebugPrintf( 0, "\n\nKDFA, tpm2bLabel = \n" );
-    PrintSizedBuffer( (TPM2B *)&tpm2bLabel );
+    PrintSizedBuffer((TPM2B *)&tpm2bLabel);
 
     DebugPrintf( 0, "\n\nKDFA, contextU = \n" );
     PrintSizedBuffer( contextU );
@@ -80,11 +80,11 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
     PrintSizedBuffer( contextV );
 #endif
 
-    resultKey->t.size = 0;
+    resultKey->size = 0;
 
     i = 1;
 
-    while( resultKey->t.size < bytes )
+    while(resultKey->size < bytes)
     {
         // Inner loop
 
@@ -92,11 +92,11 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
         *(UINT32 *)tpm2b_i_2Ptr = i_Swizzled;
 
         j = 0;
-        bufferList[j++] = (TPM2B_DIGEST *)&(tpm2b_i_2.b);
-        bufferList[j++] = (TPM2B_DIGEST *)&(tpm2bLabel.b);
+        bufferList[j++] = (TPM2B_DIGEST *)&(tpm2b_i_2);
+        bufferList[j++] = (TPM2B_DIGEST *)&(tpm2bLabel);
         bufferList[j++] = (TPM2B_DIGEST *)contextU;
         bufferList[j++] = (TPM2B_DIGEST *)contextV;
-        bufferList[j++] = (TPM2B_DIGEST *)&(tpm2bBits.b);
+        bufferList[j++] = (TPM2B_DIGEST *)&(tpm2bBits);
         bufferList[j++] = (TPM2B_DIGEST *)0;
 #ifdef DEBUG
         for( j = 0; bufferList[j] != 0; j++ )
@@ -111,11 +111,11 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
             return( rval );
         }
 
-        ConcatSizedByteBuffer( resultKey, &(tmpResult.b) );
+        ConcatSizedByteBuffer(resultKey, (TPM2B *)&tmpResult);
     }
 
     // Truncate the result to the desired size.
-    resultKey->t.size = bytes;
+    resultKey->size = bytes;
 
 #ifdef DEBUG
     DebugPrintf( 0, "\n\nKDFA, resultKey = \n" );

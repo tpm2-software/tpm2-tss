@@ -39,9 +39,9 @@ UINT32 TpmHash( TPMI_ALG_HASH hashAlg, UINT16 size, BYTE *data, TPM2B_DIGEST *re
     UINT16 i;
     TSS2_SYS_CONTEXT *sysContext;
 
-    dataSizedBuffer.t.size = size;
+    dataSizedBuffer.size = size;
     for( i = 0; i < size; i++ )
-        dataSizedBuffer.t.buffer[i] = data[i];
+        dataSizedBuffer.buffer[i] = data[i];
 
     sysContext = InitSysContext( 3000, resMgrTctiContext, &abiVersion );
     if( sysContext == 0 )
@@ -73,17 +73,17 @@ UINT32 TpmHashSequence( TPMI_ALG_HASH hashAlg, UINT8 numBuffers, TPM2B_DIGEST *b
     TPMS_AUTH_COMMAND *cmdSessionArray[1] = { &cmdAuth };
     TSS2_SYS_CMD_AUTHS cmdAuthArray = { 1, &cmdSessionArray[0] };
 
-    nullAuth.t.size = 0;
+    nullAuth.size = 0;
     emptyBuffer.size = 0;
 
     // Set result size to 0, in case any errors occur
-    result->b.size = 0;
+    result->size = 0;
 
     // Init input sessions struct
     cmdAuth.sessionHandle = TPM_RS_PW;
-    cmdAuth.nonce.t.size = 0;
-    *( (UINT8 *)((void *)&cmdAuth.sessionAttributes ) ) = 0;
-    cmdAuth.hmac.t.size = 0;
+    cmdAuth.nonce.size = 0;
+    *(UINT8 *)((void *)&cmdAuth.sessionAttributes) = 0;
+    cmdAuth.hmac.size = 0;
 
     sysContext = InitSysContext( 3000, resMgrTctiContext, &abiVersion );
     if( sysContext == 0 )

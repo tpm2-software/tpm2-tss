@@ -41,10 +41,10 @@ void InitNullSession( TPMS_AUTH_COMMAND *nullSessionData )
         nullSessionData->sessionHandle = TPM_RS_PW;
 
         // Init nonce.
-        nullSessionData->nonce.t.size = 0;
+        nullSessionData->nonce.size = 0;
 
         // init hmac
-        nullSessionData->hmac.t.size = 0;
+        nullSessionData->hmac.size = 0;
 
         // Init session attributes
         *( (UINT8 *)((void *)&( nullSessionData->sessionAttributes ) ) ) = 0;

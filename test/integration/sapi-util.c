@@ -66,20 +66,19 @@ create_primary_rsa_2048_aes_128_cfb (
     if (sapi_context == NULL || handle == NULL) {
         return TSS2_APP_RC_BAD_REFERENCE;
     }
-    in_public.t.publicArea.type = TPM_ALG_RSA;
-    in_public.t.publicArea.nameAlg = TPM_ALG_SHA256;
-    in_public.t.publicArea.objectAttributes.restricted = 1;
-    in_public.t.publicArea.objectAttributes.userWithAuth = 1;
-    in_public.t.publicArea.objectAttributes.decrypt = 1;
-    in_public.t.publicArea.objectAttributes.fixedTPM = 1;
-    in_public.t.publicArea.objectAttributes.fixedParent = 1;
-    in_public.t.publicArea.objectAttributes.sensitiveDataOrigin = 1;
-
-    in_public.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
-    in_public.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-    in_public.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
-    in_public.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
-    in_public.t.publicArea.parameters.rsaDetail.keyBits = 2048;
+    in_public.publicArea.type = TPM_ALG_RSA;
+    in_public.publicArea.nameAlg = TPM_ALG_SHA256;
+    in_public.publicArea.objectAttributes.restricted = 1;
+    in_public.publicArea.objectAttributes.userWithAuth = 1;
+    in_public.publicArea.objectAttributes.decrypt = 1;
+    in_public.publicArea.objectAttributes.fixedTPM = 1;
+    in_public.publicArea.objectAttributes.fixedParent = 1;
+    in_public.publicArea.objectAttributes.sensitiveDataOrigin = 1;
+    in_public.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
+    in_public.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
+    in_public.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
+    in_public.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
+    in_public.publicArea.parameters.rsaDetail.keyBits = 2048;
 
     print_log ("CreatePrimary RSA 2048, AES 128 CFB");
     rc = Tss2_Sys_CreatePrimary (sapi_context,
@@ -115,7 +114,6 @@ create_aes_128_cfb (
     TPM2B_SENSITIVE_CREATE  in_sensitive    = { 0 };
     /* template defining key type */
     TPM2B_PUBLIC            in_public       = {
-        .t = {
             .publicArea.type = TPM_ALG_SYMCIPHER,
             .publicArea.nameAlg = TPM_ALG_SHA256,
             .publicArea.objectAttributes = {
@@ -124,14 +122,12 @@ create_aes_128_cfb (
                 .fixedParent = 1,
                 .sensitiveDataOrigin = 1,
                 .sign = 1,
-                .userWithAuth = 1,
-            },
+                .userWithAuth = 1, },
             .publicArea.parameters.symDetail.sym = {
                 .algorithm = TPM_ALG_AES,
                 .keyBits.sym = 128,
                 .mode.sym = TPM_ALG_CFB,
             },
-        }
     };
 
     TPM2B_DATA              outside_info    = { 0 };

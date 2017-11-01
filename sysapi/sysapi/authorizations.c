@@ -68,9 +68,9 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
             return TSS2_SYS_RC_BAD_VALUE;
 
         authSize += sizeof(TPMI_SH_AUTH_SESSION);
-        authSize += sizeof(UINT16) + cmdAuthsArray->cmdAuths[i]->nonce.t.size;
+        authSize += sizeof(UINT16) + cmdAuthsArray->cmdAuths[i]->nonce.size;
         authSize += sizeof(UINT8);
-        authSize += sizeof(UINT16) + cmdAuthsArray->cmdAuths[i]->hmac.t.size;
+        authSize += sizeof(UINT16) + cmdAuthsArray->cmdAuths[i]->hmac.size;
 
         if (cmdAuthsArray->cmdAuths[i]->sessionAttributes.decrypt)
             SYS_CONTEXT->decryptSession = 1;

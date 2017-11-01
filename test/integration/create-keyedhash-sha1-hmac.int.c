@@ -42,12 +42,12 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
        return rc;
     }
 
-    inPublic.t.publicArea.nameAlg = TPM_ALG_SHA1;
-    inPublic.t.publicArea.type = TPM_ALG_KEYEDHASH;
-    inPublic.t.publicArea.objectAttributes.sign = 1;
-    inPublic.t.publicArea.objectAttributes.sensitiveDataOrigin = 1;
-    inPublic.t.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM_ALG_HMAC;
-    inPublic.t.publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM_ALG_SHA1;
+    inPublic.publicArea.nameAlg = TPM_ALG_SHA1;
+    inPublic.publicArea.type = TPM_ALG_KEYEDHASH;
+    inPublic.publicArea.objectAttributes.sign = 1;
+    inPublic.publicArea.objectAttributes.sensitiveDataOrigin = 1;
+    inPublic.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM_ALG_HMAC;
+    inPublic.publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM_ALG_SHA1;
 
     print_log ("Create keyedhash SHA1 HMAC");
     rc = TSS2_RETRY_EXP (Tss2_Sys_Create (sapi_context,

@@ -53,18 +53,18 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
         LOG (WARNING, "buffer and offset parameter are NULL"); \
         return TSS2_TYPES_RC_BAD_REFERENCE; \
     } else if (buffer == NULL && offset != NULL) { \
-        *offset += sizeof(src->t.size) + src->t.size; \
+        *offset += sizeof(src->size) + src->size; \
         LOG (INFO, "buffer NULL and offset non-NULL, updating offset to %zu", \
              *offset); \
         return TSS2_RC_SUCCESS; \
     } else if (buffer_size < local_offset || \
-               buffer_size - local_offset < (sizeof(src->t.size) + src->t.size)) { \
+               buffer_size - local_offset < (sizeof(src->size) + src->size)) { \
         LOG (WARNING, \
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
              local_offset, \
-             sizeof(src->t.size) + src->t.size); \
+             sizeof(src->size) + src->size); \
         return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
     } \
 \
@@ -75,13 +75,13 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
          (uintptr_t)buffer, \
          local_offset); \
 \
-    rc = Tss2_MU_UINT16_Marshal(src->t.size, buffer, buffer_size, &local_offset); \
+    rc = Tss2_MU_UINT16_Marshal(src->size, buffer, buffer_size, &local_offset); \
     if (rc) \
         return rc; \
 \
-    if (src->t.size) { \
-        memcpy(&buffer[local_offset], ((TPM2B *)src)->buffer, src->t.size); \
-        local_offset += src->t.size; \
+    if (src->size) { \
+        memcpy(&buffer[local_offset], ((TPM2B *)src)->buffer, src->size); \
+        local_offset += src->size; \
     } \
 \
     if (offset != NULL) { \
@@ -141,7 +141,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
         return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
     } \
     if (dest != NULL) { \
-        dest->t.size = size; \
+        dest->size = size; \
         memcpy(((TPM2B *)dest)->buffer, &buffer[local_offset], size); \
     } \
     local_offset += size; \
@@ -175,18 +175,18 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
         LOG (WARNING, "buffer and offset parameter are NULL"); \
         return TSS2_TYPES_RC_BAD_REFERENCE; \
     } else if (buffer == NULL && offset != NULL) { \
-        *offset += sizeof(src->t.size) + src->t.size; \
+        *offset += sizeof(src->size) + src->size; \
         LOG (INFO, "buffer NULL and offset non-NULL, updating offset to %zu", \
              *offset); \
         return TSS2_RC_SUCCESS; \
     } else if (buffer_size < local_offset || \
-               buffer_size - local_offset < sizeof(src->t.size)) { \
+               buffer_size - local_offset < sizeof(src->size)) { \
         LOG (WARNING, \
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
              local_offset, \
-             sizeof(src->t.size)); \
+             sizeof(src->size)); \
         return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
     } \
 \
@@ -199,11 +199,11 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
          (uintptr_t)buffer, \
          local_offset); \
 \
-    rc = Tss2_MU_UINT16_Marshal(src->t.size, buffer, buffer_size, &local_offset); \
+    rc = Tss2_MU_UINT16_Marshal(src->size, buffer, buffer_size, &local_offset); \
     if (rc) \
         return rc; \
 \
-    rc = Tss2_MU_##subtype##_Marshal(&src->t.member, buffer, buffer_size, &local_offset); \
+    rc = Tss2_MU_##subtype##_Marshal(&src->member, buffer, buffer_size, &local_offset); \
     if (rc) \
         return rc; \
 \
@@ -245,7 +245,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
              sizeof(size)); \
         return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
     } \
-    if (dest && dest->t.size != 0) { \
+    if (dest && dest->size != 0) { \
         LOG (WARNING, "Size not zero"); \
         return TSS2_SYS_RC_BAD_VALUE; \
     } \
@@ -271,8 +271,8 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
         return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
     } \
     if (dest != NULL) { \
-        dest->t.size = size; \
-        Tss2_MU_##subtype##_Unmarshal(buffer, buffer_size, &local_offset, &dest->t.member); \
+        dest->size = size; \
+        Tss2_MU_##subtype##_Unmarshal(buffer, buffer_size, &local_offset, &dest->member); \
         if (rc) \
             return rc; \
     } else { \

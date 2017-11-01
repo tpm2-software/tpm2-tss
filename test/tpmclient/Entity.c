@@ -48,7 +48,7 @@ TPM_RC AddEntity( TPM_HANDLE entityHandle, TPM2B_AUTH *auth )
         if( entities[i].entityHandle == TPM_HT_NO_HANDLE )
         {
             entities[i].entityHandle = entityHandle;
-            CopySizedByteBuffer( &( entities[i].entityAuth.b ), &( auth->b ) );
+            CopySizedByteBuffer((TPM2B *)&entities[i].entityAuth, (TPM2B *)auth);
 
             if( ( entityHandle >> HR_SHIFT ) == TPM_HT_NV_INDEX )
             {
@@ -88,7 +88,7 @@ TPM_RC GetEntityAuth( TPM_HANDLE entityHandle, TPM2B_AUTH *auth )
     {
         if( entities[i].entityHandle == entityHandle )
         {
-            CopySizedByteBuffer( &( auth->b ), &( entities[i].entityAuth.b ) );
+            CopySizedByteBuffer((TPM2B *)auth, (TPM2B *)&entities[i].entityAuth);
             rval = TPM_RC_SUCCESS;
             break;
         }

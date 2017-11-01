@@ -61,7 +61,7 @@ UINT32 TpmComputeSessionHmac(
     ENTITY *nvEntity;
     TPM_CC cmdCode;
 
-    hmacKey.b.size = 0;
+    hmacKey.size = 0;
 
     rval = GetSessionStruct( pSessionDataIn->sessionHandle, &pSession );
     if( rval != TPM_RC_SUCCESS )
@@ -81,11 +81,11 @@ UINT32 TpmComputeSessionHmac(
     {
         rval = GetEntityAuth( entityHandle, &authValue );
         if( rval != TPM_RC_SUCCESS )
-            authValue.t.size = 0;
+            authValue.size = 0;
     }
     else
     {
-        authValue.t.size = 0;
+        authValue.size = 0;
     }
 
     rval = Tss2_Sys_GetCommandCode( sysContext, (UINT8 (*)[4])&cmdCode );
@@ -100,29 +100,29 @@ UINT32 TpmComputeSessionHmac(
         nvNameChanged = pSession->nvNameChanged;
     }
 
-    rval = ConcatSizedByteBuffer( (TPM2B_MAX_BUFFER *)&hmacKey, &( pSession->sessionKey.b ) );
+    rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&hmacKey, (TPM2B *)&pSession->sessionKey);
 
     if( ( pSession->bind == TPM_RH_NULL ) || ( pSession->bind != entityHandle )
             || nvNameChanged )
     {
-        rval = ConcatSizedByteBuffer( (TPM2B_MAX_BUFFER *)&hmacKey, &( authValue.b ) );
+        rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&hmacKey, (TPM2B *)&authValue);
     }
 
 #ifdef  DEBUG
     DebugPrintf( 0, "\n\nhmacKey = " );
-    PrintSizedBuffer( &(hmacKey.b) );
+    PrintSizedBuffer(&hmacKey);
 #endif
 
     // Create buffer list
     i = 0;
-    bufferList[i++] = &pHash.b;
-    bufferList[i++] = &( pSession->nonceNewer.b );
-    bufferList[i++] = &( pSession->nonceOlder.b );
-    bufferList[i++] = &( pSession->nonceTpmDecrypt.b );
-    bufferList[i++] = &( pSession->nonceTpmEncrypt.b );
+    bufferList[i++] = (TPM2B *)&pHash;
+    bufferList[i++] = (TPM2B *)&pSession->nonceNewer;
+    bufferList[i++] = (TPM2B *)&pSession->nonceOlder;
+    bufferList[i++] = (TPM2B *)&pSession->nonceTpmDecrypt;
+    bufferList[i++] = (TPM2B *)&pSession->nonceTpmEncrypt;
     sessionAttributesByteBuffer.size = 1;
     sessionAttributesByteBuffer.buffer[0] = *(UINT8 *)&sessionAttributes;
-    bufferList[i++] = &( sessionAttributesByteBuffer );
+    bufferList[i++] = &sessionAttributesByteBuffer;
     bufferList[i++] = 0;
 
 #ifdef  DEBUG
@@ -133,7 +133,7 @@ UINT32 TpmComputeSessionHmac(
     }
 #endif
 
-    rval = TpmHmac(pSession->authHash, &hmacKey.b, bufferList, result);
+    rval = TpmHmac(pSession->authHash, (TPM2B *)&hmacKey, bufferList, result);
     if( rval != TPM_RC_SUCCESS )
         return rval;
 
@@ -221,7 +221,7 @@ TPM_RC CheckResponseHMACs( TSS2_SYS_CONTEXT *sysContext, TPM_RC responseCode,
                 if( rval != TPM_RC_SUCCESS )
                     return rval;
 
-                rval = CompareSizedByteBuffer( &( auth.b ), &( pSessionsDataOut->rspAuths[i]->hmac.b ) );
+                rval = CompareSizedByteBuffer((TPM2B *)&auth, (TPM2B *)&pSessionsDataOut->rspAuths[i]->hmac);
                 if( rval != TPM_RC_SUCCESS )
                     return APPLICATION_HMAC_ERROR(i+1);
             }
@@ -229,5 +229,3 @@ TPM_RC CheckResponseHMACs( TSS2_SYS_CONTEXT *sysContext, TPM_RC responseCode,
     }
     return rval;
 }
-
-

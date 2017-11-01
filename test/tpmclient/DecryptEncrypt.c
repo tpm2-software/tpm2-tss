@@ -62,33 +62,33 @@ GenerateSessionEncryptDecryptKey (
         return rval;
     }
 
-    INIT_SIMPLE_TPM2B_SIZE (key);
-    CopySizedByteBuffer( &sessionValue.b, &session->sessionKey.b );
-    CatSizedByteBuffer( &sessionValue.b, &authValue->b );
+    INIT_SIMPLE_TPM2B_SIZE(key);
+    CopySizedByteBuffer((TPM2B *)&sessionValue, (TPM2B *)&session->sessionKey);
+    CatSizedByteBuffer((TPM2B *)&sessionValue, (TPM2B *)authValue);
 
     rval = KDFa (session->authHash,
-                 &sessionValue.b,
+                 (TPM2B *)&sessionValue,
                  "CFB",
-                 &session->nonceNewer.b,
-                 &session->nonceOlder.b,
+                 (TPM2B *)&session->nonceNewer,
+                 (TPM2B *)&session->nonceOlder,
                  session->symmetric.keyBits.sym + blockSize,
                  &key);
     if (rval != TSS2_RC_SUCCESS) {
         return rval;
     }
 
-    if (key.t.size != (session->symmetric.keyBits.sym + blockSize) / 8) {
+    if (key.size != (session->symmetric.keyBits.sym + blockSize) / 8) {
         return APPLICATION_ERROR (TSS2_BASE_RC_INSUFFICIENT_BUFFER);
     }
 
-    ivIn->t.size = blockSize / 8;
-    cfbKey->t.size = (session->symmetric.keyBits.sym) / 8;
-    if (ivIn->t.size > sizeof (ivIn->t.buffer) ||
-        (cfbKey->t.size + ivIn->t.size) > MAX_DIGEST_BUFFER) {
+    ivIn->size = blockSize / 8;
+    cfbKey->size = (session->symmetric.keyBits.sym) / 8;
+    if (ivIn->size > sizeof (ivIn->buffer) ||
+        (cfbKey->size + ivIn->size) > MAX_DIGEST_BUFFER) {
         return APPLICATION_ERROR (TSS2_BASE_RC_INSUFFICIENT_BUFFER);
     }
-    memcpy (ivIn->t.buffer, &key.t.buffer[cfbKey->t.size], ivIn->t.size);
-    memcpy (cfbKey->t.buffer, key.t.buffer, cfbKey->t.size);
+    memcpy (ivIn->buffer, &key.buffer[cfbKey->size], ivIn->size);
+    memcpy (cfbKey->buffer, key.buffer, cfbKey->size);
     return rval;
 }
 
@@ -100,23 +100,23 @@ UINT32 LoadSessionEncryptDecryptKey( TPMT_SYM_DEF *symmetric, TPM2B_MAX_BUFFER *
     UINT32 rval;
     TSS2_SYS_CONTEXT *sysContext;
 
-    inPrivate.t.sensitiveArea.sensitiveType = TPM_ALG_SYMCIPHER;
-    inPrivate.t.size = CopySizedByteBuffer( &(inPrivate.t.sensitiveArea.authValue.b), &keyAuth);
-    inPrivate.t.sensitiveArea.seedValue.b.size = 0;
-    inPrivate.t.size += CopySizedByteBuffer( &inPrivate.t.sensitiveArea.sensitive.bits.b, &key->b );
-    inPrivate.t.size += 2 * sizeof( UINT16 );
+    inPrivate.sensitiveArea.sensitiveType = TPM_ALG_SYMCIPHER;
+    inPrivate.size = CopySizedByteBuffer((TPM2B *)&inPrivate.sensitiveArea.authValue, (TPM2B *)&keyAuth);
+    inPrivate.sensitiveArea.seedValue.size = 0;
+    inPrivate.size += CopySizedByteBuffer((TPM2B *)&inPrivate.sensitiveArea.sensitive.bits, (TPM2B *)key);
+    inPrivate.size += 2 * sizeof( UINT16 );
 
-    inPublic.t.publicArea.type = TPM_ALG_SYMCIPHER;
-    inPublic.t.publicArea.nameAlg = TPM_ALG_NULL;
-    *( UINT32 *)&( inPublic.t.publicArea.objectAttributes )= 0;
-    inPublic.t.publicArea.objectAttributes.decrypt = 1;
-    inPublic.t.publicArea.objectAttributes.sign = 1;
-    inPublic.t.publicArea.objectAttributes.userWithAuth = 1;
-    inPublic.t.publicArea.authPolicy.t.size = 0;
-    inPublic.t.publicArea.parameters.symDetail.sym.algorithm = symmetric->algorithm;
-    inPublic.t.publicArea.parameters.symDetail.sym.keyBits = symmetric->keyBits;
-    inPublic.t.publicArea.parameters.symDetail.sym.mode = symmetric->mode;
-    inPublic.t.publicArea.unique.sym.t.size = 0;
+    inPublic.publicArea.type = TPM_ALG_SYMCIPHER;
+    inPublic.publicArea.nameAlg = TPM_ALG_NULL;
+    *( UINT32 *)&( inPublic.publicArea.objectAttributes )= 0;
+    inPublic.publicArea.objectAttributes.decrypt = 1;
+    inPublic.publicArea.objectAttributes.sign = 1;
+    inPublic.publicArea.objectAttributes.userWithAuth = 1;
+    inPublic.publicArea.authPolicy.size = 0;
+    inPublic.publicArea.parameters.symDetail.sym.algorithm = symmetric->algorithm;
+    inPublic.publicArea.parameters.symDetail.sym.keyBits = symmetric->keyBits;
+    inPublic.publicArea.parameters.symDetail.sym.mode = symmetric->mode;
+    inPublic.publicArea.unique.sym.size = 0;
 
     sysContext = InitSysContext( 1000, resMgrTctiContext, &abiVersion );
     if( sysContext == 0 )
@@ -167,10 +167,10 @@ TSS2_RC EncryptCFB( SESSION *session, TPM2B_MAX_BUFFER *encryptedData, TPM2B_MAX
         {
             // Encrypt the data.
             sessionData.sessionHandle = TPM_RS_PW;
-            sessionData.nonce.t.size = 0;
+            sessionData.nonce.size = 0;
             *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
-            sessionData.hmac.t.size = 0;
-            encryptedData->t.size = sizeof( *encryptedData ) - 1;
+            sessionData.hmac.size = 0;
+            encryptedData->size = sizeof( *encryptedData ) - 1;
             INIT_SIMPLE_TPM2B_SIZE( ivOut );
             rval = Tss2_Sys_EncryptDecrypt( sysContext, keyHandle, &sessionsData, NO, TPM_ALG_CFB, &ivIn,
                     clearData, encryptedData, &ivOut, 0 );
@@ -221,9 +221,9 @@ TSS2_RC DecryptCFB( SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM2B_MAX_BUF
         {
             // Decrypt the data.
             sessionData.sessionHandle = TPM_RS_PW;
-            sessionData.nonce.t.size = 0;
+            sessionData.nonce.size = 0;
             *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
-            sessionData.hmac.t.size = 0;
+            sessionData.hmac.size = 0;
 
             INIT_SIMPLE_TPM2B_SIZE( ivOut );
             rval = Tss2_Sys_EncryptDecrypt( sysContext, keyHandle, &sessionsData, YES, TPM_ALG_CFB, &ivIn,
@@ -246,17 +246,18 @@ TSS2_RC EncryptDecryptXOR( SESSION *session, TPM2B_MAX_BUFFER *outputData, TPM2B
     TPM2B_MAX_BUFFER key, mask;
     int i;
 
-    CopySizedByteBuffer( &key.b, &session->sessionKey.b );
-    CatSizedByteBuffer( &key.b, &authValue->b );
+    CopySizedByteBuffer((TPM2B *)&key, (TPM2B *)&session->sessionKey);
+    CatSizedByteBuffer((TPM2B *)&key, (TPM2B *)authValue);
 
-    rval = KDFa( session->authHash, &key.b, "XOR", &session->nonceNewer.b, &session->nonceOlder.b, inputData->t.size * 8, &mask );
+    rval = KDFa(session->authHash, (TPM2B *)&key, "XOR", (TPM2B *)&session->nonceNewer,
+                (TPM2B *)&session->nonceOlder, inputData->size * 8, &mask);
     if( rval == TSS2_RC_SUCCESS )
     {
-        for( i = 0; i < inputData->t.size; i++ )
+        for( i = 0; i < inputData->size; i++ )
         {
-            outputData->t.buffer[i] = inputData->t.buffer[i] ^ mask.t.buffer[i];
+            outputData->buffer[i] = inputData->buffer[i] ^ mask.buffer[i];
         }
-        outputData->t.size = inputData->t.size;
+        outputData->size = inputData->size;
     }
 
     return rval;
