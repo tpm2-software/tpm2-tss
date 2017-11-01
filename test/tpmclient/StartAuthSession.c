@@ -165,20 +165,20 @@ TPM_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
     UINT16 bytes;
     int i;
 
-    key.t.size = 0;
+    key.size = 0;
 
     tmpSysContext = InitSysContext( 1000, tctiContext, &abiVersion );
     if( tmpSysContext == 0 )
         return TSS2_APP_RC_INIT_SYS_CONTEXT_FAILED;
 
-    if( session->nonceOlder.t.size == 0 )
+    if( session->nonceOlder.size == 0 )
     {
-        session->nonceOlder.t.size = GetDigestSize( TPM_ALG_SHA1 );
-        for( i = 0; i < session->nonceOlder.t.size; i++ )
-            session->nonceOlder.t.buffer[i] = 0;
+        session->nonceOlder.size = GetDigestSize( TPM_ALG_SHA1 );
+        for( i = 0; i < session->nonceOlder.size; i++ )
+            session->nonceOlder.buffer[i] = 0;
     }
 
-    session->nonceNewer.t.size = session->nonceOlder.t.size;
+    session->nonceNewer.size = session->nonceOlder.size;
     rval = Tss2_Sys_StartAuthSession( tmpSysContext, session->tpmKey, session->bind, 0,
             &( session->nonceOlder ), &( session->encryptedSalt ), session->sessionType,
             &( session->symmetric ), session->authHash, &( session->sessionHandle ),
@@ -187,25 +187,25 @@ TPM_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
     if( rval == TPM_RC_SUCCESS )
     {
         if( session->tpmKey == TPM_RH_NULL )
-            session->salt.t.size = 0;
+            session->salt.size = 0;
         if( session->bind == TPM_RH_NULL )
-            session->authValueBind.t.size = 0;
+            session->authValueBind.size = 0;
 
         if( session->tpmKey == TPM_RH_NULL && session->bind == TPM_RH_NULL )
         {
-            session->sessionKey.b.size = 0;
+            session->sessionKey.size = 0;
         }
         else
         {
             // Generate the key used as input to the KDF.
-            rval = ConcatSizedByteBuffer( (TPM2B_MAX_BUFFER *)&key, &( session->authValueBind.b ) );
+            rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&key, (TPM2B *)&session->authValueBind);
             if( rval != TPM_RC_SUCCESS )
             {
                 TeardownSysContext( &tmpSysContext );
                 return(  rval );
             }
 
-            rval = ConcatSizedByteBuffer( (TPM2B_MAX_BUFFER *)&key, &( session->salt.b ) );
+            rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&key, (TPM2B *)&session->salt);
             if( rval != TPM_RC_SUCCESS )
             {
                 TeardownSysContext( &tmpSysContext );
@@ -214,14 +214,14 @@ TPM_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
 
             bytes = GetDigestSize( session->authHash );
 
-            if( key.t.size == 0 )
+            if( key.size == 0 )
             {
-                session->sessionKey.t.size = 0;
+                session->sessionKey.size = 0;
             }
             else
             {
-                rval = KDFa( session->authHash, &(key.b), label, &( session->nonceNewer.b ),
-                        &( session->nonceOlder.b ), bytes * 8, (TPM2B_MAX_BUFFER *)&( session->sessionKey ) );
+                rval = KDFa(session->authHash, (TPM2B *)&key, label, (TPM2B *)&session->nonceNewer,
+                            (TPM2B *)&session->nonceOlder, bytes * 8, (TPM2B_MAX_BUFFER *)&session->sessionKey);
             }
 
             if( rval != TPM_RC_SUCCESS )
@@ -231,8 +231,8 @@ TPM_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
             }
         }
 
-        session->nonceTpmDecrypt.b.size = 0;
-        session->nonceTpmEncrypt.b.size = 0;
+        session->nonceTpmDecrypt.size = 0;
+        session->nonceTpmEncrypt.size = 0;
         session->nvNameChanged = 0;
     }
 
@@ -276,10 +276,10 @@ TPM_RC StartAuthSessionWithParams( SESSION **session,
         // Copy nonceCaller to nonceOlder in session struct.
         // This will be used as nonceCaller when StartAuthSession
         // is called.
-        CopySizedByteBuffer( &(*session)->nonceOlder.b, &nonceCaller->b );
+        CopySizedByteBuffer((TPM2B *)&(*session)->nonceOlder, (TPM2B *)nonceCaller);
 
         // Copy encryptedSalt
-        CopySizedByteBuffer( &(*session)->encryptedSalt.b, &encryptedSalt->b );
+        CopySizedByteBuffer((TPM2B *)&(*session)->encryptedSalt, (TPM2B *)encryptedSalt);
 
         // Copy sessionType.
         (*session)->sessionType = sessionType;
@@ -293,25 +293,25 @@ TPM_RC StartAuthSessionWithParams( SESSION **session,
         // Copy bind' authValue.
         if( bindAuth == 0 )
         {
-            (*session)->authValueBind.b.size = 0;
+            (*session)->authValueBind.size = 0;
         }
         else
         {
-            CopySizedByteBuffer( &( (*session)->authValueBind.b ), &( bindAuth->b ) );
+            CopySizedByteBuffer((TPM2B *)&(*session)->authValueBind, (TPM2B *)bindAuth);
         }
 
         // Calculate sessionKey
         if( (*session)->tpmKey == TPM_RH_NULL )
         {
-            (*session)->salt.t.size = 0;
+            (*session)->salt.size = 0;
         }
         else
         {
-            CopySizedByteBuffer( &(*session)->salt.b, &salt->b );
+            CopySizedByteBuffer((TPM2B *)&(*session)->salt, (TPM2B *)salt);
         }
 
         if( (*session)->bind == TPM_RH_NULL )
-            (*session)->authValueBind.t.size = 0;
+            (*session)->authValueBind.size = 0;
 
         rval = StartAuthSession( *session, tctiContext );
         if( rval != TSS2_RC_SUCCESS )

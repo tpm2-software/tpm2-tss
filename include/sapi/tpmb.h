@@ -39,21 +39,14 @@ typedef struct {
 } TPM2B;
 
 #define TPM2B_TYPE1(name, bytes, bufferName)  \
-    typedef union {                           \
-    struct  {                                 \
+    typedef struct {                          \
         UINT16  size;                         \
         BYTE    bufferName[bytes];            \
-    } t;                                      \
-    TPM2B   b;                                \
     } TPM2B_##name
 
 #define TPM2B_TYPE2(name, type, bufferName)   \
-    typedef union {                           \
-    struct  {                                 \
+    typedef struct {                          \
         UINT16  size;                         \
         type bufferName;                      \
-    } t;                                      \
-    TPM2B   b;                                \
-    } TPM2B_##name
-
+    } TPM2B_##name;
 #endif

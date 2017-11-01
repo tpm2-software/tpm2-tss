@@ -16,8 +16,8 @@ int
 test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 {
     TSS2_RC rc;
-    TPM2B_DIGEST randomBytes1 = { { sizeof (TPM2B_DIGEST) - 2, } };
-    TPM2B_DIGEST randomBytes2 = { { sizeof (TPM2B_DIGEST) - 2, } };
+    TPM2B_DIGEST randomBytes1 = {sizeof (TPM2B_DIGEST) - 2,};
+    TPM2B_DIGEST randomBytes2 = {sizeof (TPM2B_DIGEST) - 2,};
     int bytes = 20;
 
     print_log("GetRandom tests started.");

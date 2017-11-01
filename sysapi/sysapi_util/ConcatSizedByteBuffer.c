@@ -30,12 +30,12 @@
 
 TPM_RC ConcatSizedByteBuffer(TPM2B_MAX_BUFFER *result, TPM2B *addBuffer)
 {
-    if (result->t.size + addBuffer->size > MAX_DIGEST_BUFFER)
+    if (result->size + addBuffer->size > MAX_DIGEST_BUFFER)
         return TSS2_SYS_RC_BAD_VALUE;
 
-    memmove(result->t.buffer + result->t.size,
+    memmove(result->buffer + result->size,
             addBuffer->buffer, addBuffer->size);
 
-    result->t.size += addBuffer->size;
+    result->size += addBuffer->size;
     return TPM_RC_SUCCESS;
 }

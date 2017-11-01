@@ -26,32 +26,32 @@ tpmu_marshal_success(void **state)
     assert_int_equal (memcmp(buffer, ha.sha512, SHA512_DIGEST_SIZE), 0);
 
     sig.ecdsa.hash = TPM_ALG_SHA1;
-    sig.ecdsa.signatureR.t.size = 4;
-    sig.ecdsa.signatureR.t.buffer[0] = 'a';
-    sig.ecdsa.signatureR.t.buffer[1] = 'b';
-    sig.ecdsa.signatureR.t.buffer[2] = 'c';
-    sig.ecdsa.signatureR.t.buffer[3] = 'd';
-    sig.ecdsa.signatureS.t.size = 4;
-    sig.ecdsa.signatureS.t.buffer[0] = 'e';
-    sig.ecdsa.signatureS.t.buffer[1] = 'd';
-    sig.ecdsa.signatureS.t.buffer[2] = 'f';
-    sig.ecdsa.signatureS.t.buffer[3] = 'g';
+    sig.ecdsa.signatureR.size = 4;
+    sig.ecdsa.signatureR.buffer[0] = 'a';
+    sig.ecdsa.signatureR.buffer[1] = 'b';
+    sig.ecdsa.signatureR.buffer[2] = 'c';
+    sig.ecdsa.signatureR.buffer[3] = 'd';
+    sig.ecdsa.signatureS.size = 4;
+    sig.ecdsa.signatureS.buffer[0] = 'e';
+    sig.ecdsa.signatureS.buffer[1] = 'd';
+    sig.ecdsa.signatureS.buffer[2] = 'f';
+    sig.ecdsa.signatureS.buffer[3] = 'g';
 
     rc = Tss2_MU_TPMU_SIGNATURE_Marshal(&sig, TPM_ALG_ECDSA, buffer, buffer_size, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     ptr = (TPMS_SIGNATURE_ECDSA *) buffer;
     assert_int_equal (ptr->hash, HOST_TO_BE_16(TPM_ALG_SHA1));
-    assert_int_equal (ptr->signatureR.t.size, HOST_TO_BE_16(4));
-    assert_int_equal (ptr->signatureR.t.buffer[0], 'a');
-    assert_int_equal (ptr->signatureR.t.buffer[1], 'b');
-    assert_int_equal (ptr->signatureR.t.buffer[2], 'c');
-    assert_int_equal (ptr->signatureR.t.buffer[3], 'd');
+    assert_int_equal (ptr->signatureR.size, HOST_TO_BE_16(4));
+    assert_int_equal (ptr->signatureR.buffer[0], 'a');
+    assert_int_equal (ptr->signatureR.buffer[1], 'b');
+    assert_int_equal (ptr->signatureR.buffer[2], 'c');
+    assert_int_equal (ptr->signatureR.buffer[3], 'd');
     ptr2 = (TPM2B_ECC_PARAMETER *) (buffer + 8);
-    assert_int_equal (ptr2->t.size, HOST_TO_BE_16(4));
-    assert_int_equal (ptr2->t.buffer[0], 'e');
-    assert_int_equal (ptr2->t.buffer[1], 'd');
-    assert_int_equal (ptr2->t.buffer[2], 'f');
-    assert_int_equal (ptr2->t.buffer[3], 'g');
+    assert_int_equal (ptr2->size, HOST_TO_BE_16(4));
+    assert_int_equal (ptr2->buffer[0], 'e');
+    assert_int_equal (ptr2->buffer[1], 'd');
+    assert_int_equal (ptr2->buffer[2], 'f');
+    assert_int_equal (ptr2->buffer[3], 'g');
 
 }
 /*
@@ -76,32 +76,32 @@ tpmu_marshal_success_offset(void **state)
     assert_int_equal (offset, 10 + SHA512_DIGEST_SIZE);
 
     sig.ecdsa.hash = TPM_ALG_SHA1;
-    sig.ecdsa.signatureR.t.size = 4;
-    sig.ecdsa.signatureR.t.buffer[0] = 'a';
-    sig.ecdsa.signatureR.t.buffer[1] = 'b';
-    sig.ecdsa.signatureR.t.buffer[2] = 'c';
-    sig.ecdsa.signatureR.t.buffer[3] = 'd';
-    sig.ecdsa.signatureS.t.size = 4;
-    sig.ecdsa.signatureS.t.buffer[0] = 'e';
-    sig.ecdsa.signatureS.t.buffer[1] = 'd';
-    sig.ecdsa.signatureS.t.buffer[2] = 'f';
-    sig.ecdsa.signatureS.t.buffer[3] = 'g';
+    sig.ecdsa.signatureR.size = 4;
+    sig.ecdsa.signatureR.buffer[0] = 'a';
+    sig.ecdsa.signatureR.buffer[1] = 'b';
+    sig.ecdsa.signatureR.buffer[2] = 'c';
+    sig.ecdsa.signatureR.buffer[3] = 'd';
+    sig.ecdsa.signatureS.size = 4;
+    sig.ecdsa.signatureS.buffer[0] = 'e';
+    sig.ecdsa.signatureS.buffer[1] = 'd';
+    sig.ecdsa.signatureS.buffer[2] = 'f';
+    sig.ecdsa.signatureS.buffer[3] = 'g';
 
     rc = Tss2_MU_TPMU_SIGNATURE_Marshal(&sig, TPM_ALG_ECDSA, buffer, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     ptr = (TPMS_SIGNATURE_ECDSA *) (buffer + 10 + SHA512_DIGEST_SIZE);
     assert_int_equal (ptr->hash, HOST_TO_BE_16(TPM_ALG_SHA1));
-    assert_int_equal (ptr->signatureR.t.size, HOST_TO_BE_16(4));
-    assert_int_equal (ptr->signatureR.t.buffer[0], 'a');
-    assert_int_equal (ptr->signatureR.t.buffer[1], 'b');
-    assert_int_equal (ptr->signatureR.t.buffer[2], 'c');
-    assert_int_equal (ptr->signatureR.t.buffer[3], 'd');
+    assert_int_equal (ptr->signatureR.size, HOST_TO_BE_16(4));
+    assert_int_equal (ptr->signatureR.buffer[0], 'a');
+    assert_int_equal (ptr->signatureR.buffer[1], 'b');
+    assert_int_equal (ptr->signatureR.buffer[2], 'c');
+    assert_int_equal (ptr->signatureR.buffer[3], 'd');
     ptr2 = (TPM2B_ECC_PARAMETER *) (buffer + 10 + SHA512_DIGEST_SIZE + 8);
-    assert_int_equal (ptr2->t.size, HOST_TO_BE_16(4));
-    assert_int_equal (ptr2->t.buffer[0], 'e');
-    assert_int_equal (ptr2->t.buffer[1], 'd');
-    assert_int_equal (ptr2->t.buffer[2], 'f');
-    assert_int_equal (ptr2->t.buffer[3], 'g');
+    assert_int_equal (ptr2->size, HOST_TO_BE_16(4));
+    assert_int_equal (ptr2->buffer[0], 'e');
+    assert_int_equal (ptr2->buffer[1], 'd');
+    assert_int_equal (ptr2->buffer[2], 'f');
+    assert_int_equal (ptr2->buffer[3], 'g');
     assert_int_equal (offset, 10 + SHA512_DIGEST_SIZE + 2 + ((2 + 1 + 1 + 1 + 1) * 2));
 }
 
@@ -124,16 +124,16 @@ tpmu_marshal_buffer_null_with_offset(void **state)
     assert_int_equal (offset, 10 + SHA512_DIGEST_SIZE);
 
     sig.ecdsa.hash = TPM_ALG_SHA1;
-    sig.ecdsa.signatureR.t.size = 4;
-    sig.ecdsa.signatureR.t.buffer[0] = 'a';
-    sig.ecdsa.signatureR.t.buffer[1] = 'b';
-    sig.ecdsa.signatureR.t.buffer[2] = 'c';
-    sig.ecdsa.signatureR.t.buffer[3] = 'd';
-    sig.ecdsa.signatureS.t.size = 4;
-    sig.ecdsa.signatureS.t.buffer[0] = 'e';
-    sig.ecdsa.signatureS.t.buffer[1] = 'd';
-    sig.ecdsa.signatureS.t.buffer[2] = 'f';
-    sig.ecdsa.signatureS.t.buffer[3] = 'g';
+    sig.ecdsa.signatureR.size = 4;
+    sig.ecdsa.signatureR.buffer[0] = 'a';
+    sig.ecdsa.signatureR.buffer[1] = 'b';
+    sig.ecdsa.signatureR.buffer[2] = 'c';
+    sig.ecdsa.signatureR.buffer[3] = 'd';
+    sig.ecdsa.signatureS.size = 4;
+    sig.ecdsa.signatureS.buffer[0] = 'e';
+    sig.ecdsa.signatureS.buffer[1] = 'd';
+    sig.ecdsa.signatureS.buffer[2] = 'f';
+    sig.ecdsa.signatureS.buffer[3] = 'g';
 
     rc = Tss2_MU_TPMU_SIGNATURE_Marshal(&sig, TPM_ALG_ECDSA, NULL, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
@@ -175,16 +175,16 @@ tpmu_marshal_buffer_size_lt_data_nad_lt_offset(void **state)
     assert_int_equal (offset, 10);
 
     sig.ecdsa.hash = TPM_ALG_SHA1;
-    sig.ecdsa.signatureR.t.size = 4;
-    sig.ecdsa.signatureR.t.buffer[0] = 'a';
-    sig.ecdsa.signatureR.t.buffer[1] = 'b';
-    sig.ecdsa.signatureR.t.buffer[2] = 'c';
-    sig.ecdsa.signatureR.t.buffer[3] = 'd';
-    sig.ecdsa.signatureS.t.size = 4;
-    sig.ecdsa.signatureS.t.buffer[0] = 'e';
-    sig.ecdsa.signatureS.t.buffer[1] = 'd';
-    sig.ecdsa.signatureS.t.buffer[2] = 'f';
-    sig.ecdsa.signatureS.t.buffer[3] = 'g';
+    sig.ecdsa.signatureR.size = 4;
+    sig.ecdsa.signatureR.buffer[0] = 'a';
+    sig.ecdsa.signatureR.buffer[1] = 'b';
+    sig.ecdsa.signatureR.buffer[2] = 'c';
+    sig.ecdsa.signatureR.buffer[3] = 'd';
+    sig.ecdsa.signatureS.size = 4;
+    sig.ecdsa.signatureS.buffer[0] = 'e';
+    sig.ecdsa.signatureS.buffer[1] = 'd';
+    sig.ecdsa.signatureS.buffer[2] = 'f';
+    sig.ecdsa.signatureS.buffer[3] = 'g';
 
     rc = Tss2_MU_TPMU_SIGNATURE_Marshal(&sig, TPM_ALG_ECDSA, buffer, 12, &offset);
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
@@ -216,31 +216,31 @@ tpmu_unmarshal_success(void **state)
     ptr = (TPMS_SIGNATURE_ECDSA *) buffer;
     ptr2 = (TPM2B_ECC_PARAMETER *) (buffer + 8);
     ptr->hash = HOST_TO_BE_16(TPM_ALG_SHA1);
-    ptr->signatureR.t.size = HOST_TO_BE_16(4);
-    ptr->signatureR.t.buffer[0] = 'a';
-    ptr->signatureR.t.buffer[1] = 'b';
-    ptr->signatureR.t.buffer[2] = 'c';
-    ptr->signatureR.t.buffer[3] = 'd';
-    ptr2->t.size = HOST_TO_BE_16(4);
-    ptr2->t.buffer[0] = 'e';
-    ptr2->t.buffer[1] = 'd';
-    ptr2->t.buffer[2] = 'f';
-    ptr2->t.buffer[3] = 'g';
+    ptr->signatureR.size = HOST_TO_BE_16(4);
+    ptr->signatureR.buffer[0] = 'a';
+    ptr->signatureR.buffer[1] = 'b';
+    ptr->signatureR.buffer[2] = 'c';
+    ptr->signatureR.buffer[3] = 'd';
+    ptr2->size = HOST_TO_BE_16(4);
+    ptr2->buffer[0] = 'e';
+    ptr2->buffer[1] = 'd';
+    ptr2->buffer[2] = 'f';
+    ptr2->buffer[3] = 'g';
 
     rc = Tss2_MU_TPMU_SIGNATURE_Unmarshal(buffer, buffer_size, &offset, TPM_ALG_ECDSA, &sig);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (offset, 14);
     assert_int_equal (sig.ecdsa.hash, TPM_ALG_SHA1);
-    assert_int_equal (sig.ecdsa.signatureR.t.size, 4);
-    assert_int_equal (sig.ecdsa.signatureR.t.buffer[0], 'a');
-    assert_int_equal (sig.ecdsa.signatureR.t.buffer[1], 'b');
-    assert_int_equal (sig.ecdsa.signatureR.t.buffer[2], 'c');
-    assert_int_equal (sig.ecdsa.signatureR.t.buffer[3], 'd');
-    assert_int_equal (sig.ecdsa.signatureS.t.size, 4);
-    assert_int_equal (sig.ecdsa.signatureS.t.buffer[0], 'e');
-    assert_int_equal (sig.ecdsa.signatureS.t.buffer[1], 'd');
-    assert_int_equal (sig.ecdsa.signatureS.t.buffer[2], 'f');
-    assert_int_equal (sig.ecdsa.signatureS.t.buffer[3], 'g');
+    assert_int_equal (sig.ecdsa.signatureR.size, 4);
+    assert_int_equal (sig.ecdsa.signatureR.buffer[0], 'a');
+    assert_int_equal (sig.ecdsa.signatureR.buffer[1], 'b');
+    assert_int_equal (sig.ecdsa.signatureR.buffer[2], 'c');
+    assert_int_equal (sig.ecdsa.signatureR.buffer[3], 'd');
+    assert_int_equal (sig.ecdsa.signatureS.size, 4);
+    assert_int_equal (sig.ecdsa.signatureS.buffer[0], 'e');
+    assert_int_equal (sig.ecdsa.signatureS.buffer[1], 'd');
+    assert_int_equal (sig.ecdsa.signatureS.buffer[2], 'f');
+    assert_int_equal (sig.ecdsa.signatureS.buffer[3], 'g');
 }
 
 /*
@@ -305,16 +305,16 @@ tpmu_unmarshal_dest_null_offset_valid(void **state)
     ptr = (TPMS_SIGNATURE_ECDSA *) buffer;
     ptr2 = (TPM2B_ECC_PARAMETER *) (buffer + 8);
     ptr->hash = HOST_TO_BE_16(TPM_ALG_SHA1);
-    ptr->signatureR.t.size = HOST_TO_BE_16(4);
-    ptr->signatureR.t.buffer[0] = 'a';
-    ptr->signatureR.t.buffer[1] = 'b';
-    ptr->signatureR.t.buffer[2] = 'c';
-    ptr->signatureR.t.buffer[3] = 'd';
-    ptr2->t.size = HOST_TO_BE_16(4);
-    ptr2->t.buffer[0] = 'e';
-    ptr2->t.buffer[1] = 'd';
-    ptr2->t.buffer[2] = 'f';
-    ptr2->t.buffer[3] = 'g';
+    ptr->signatureR.size = HOST_TO_BE_16(4);
+    ptr->signatureR.buffer[0] = 'a';
+    ptr->signatureR.buffer[1] = 'b';
+    ptr->signatureR.buffer[2] = 'c';
+    ptr->signatureR.buffer[3] = 'd';
+    ptr2->size = HOST_TO_BE_16(4);
+    ptr2->buffer[0] = 'e';
+    ptr2->buffer[1] = 'd';
+    ptr2->buffer[2] = 'f';
+    ptr2->buffer[3] = 'g';
 
     rc = Tss2_MU_TPMU_SIGNATURE_Unmarshal(buffer, buffer_size, &offset, TPM_ALG_ECDSA, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
@@ -343,16 +343,16 @@ tpmu_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
     ptr = (TPMS_SIGNATURE_ECDSA *) buffer;
     ptr2 = (TPM2B_ECC_PARAMETER *) (buffer + 8);
     ptr->hash = HOST_TO_BE_16(TPM_ALG_SHA1);
-    ptr->signatureR.t.size = HOST_TO_BE_16(4);
-    ptr->signatureR.t.buffer[0] = 'a';
-    ptr->signatureR.t.buffer[1] = 'b';
-    ptr->signatureR.t.buffer[2] = 'c';
-    ptr->signatureR.t.buffer[3] = 'd';
-    ptr2->t.size = HOST_TO_BE_16(4);
-    ptr2->t.buffer[0] = 'e';
-    ptr2->t.buffer[1] = 'd';
-    ptr2->t.buffer[2] = 'f';
-    ptr2->t.buffer[3] = 'g';
+    ptr->signatureR.size = HOST_TO_BE_16(4);
+    ptr->signatureR.buffer[0] = 'a';
+    ptr->signatureR.buffer[1] = 'b';
+    ptr->signatureR.buffer[2] = 'c';
+    ptr->signatureR.buffer[3] = 'd';
+    ptr2->size = HOST_TO_BE_16(4);
+    ptr2->buffer[0] = 'e';
+    ptr2->buffer[1] = 'd';
+    ptr2->buffer[2] = 'f';
+    ptr2->buffer[3] = 'g';
 
     rc = Tss2_MU_TPMU_SIGNATURE_Unmarshal(buffer, 14, &offset, TPM_ALG_ECDSA, &sig);
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);

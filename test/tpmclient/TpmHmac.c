@@ -61,10 +61,10 @@ UINT32 TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2B **bufferList, TPM2B_DIG
     sessionDataOutArray[0] = &sessionDataOut;
 
     // Set result size to 0, in case any errors occur
-    result->b.size = 0;
+    result->size = 0;
 
     keyAuth.size = 0;
-    nullAuth.t.size = 0;
+    nullAuth.size = 0;
 
     rval = LoadExternalHMACKey( hashAlg, key, &keyHandle, &keyName );
     if( rval != TPM_RC_SUCCESS )
@@ -74,9 +74,9 @@ UINT32 TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2B **bufferList, TPM2B_DIG
 
     // Init input sessions struct
     sessionData.sessionHandle = TPM_RS_PW;
-    nonce.t.size = 0;
+    nonce.size = 0;
     sessionData.nonce = nonce;
-    CopySizedByteBuffer( &(hmac.b), &keyAuth );
+    CopySizedByteBuffer((TPM2B *)&hmac, (TPM2B *)&keyAuth);
     sessionData.hmac = hmac;
     *( (UINT8 *)((void *)&( sessionData.sessionAttributes ) ) ) = 0;
     sessionsData.cmdAuthsCount = 1;
@@ -97,7 +97,7 @@ UINT32 TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2B **bufferList, TPM2B_DIG
     if( rval != TPM_RC_SUCCESS )
         goto teardown;
 
-    hmac.t.size = 0;
+    hmac.size = 0;
     sessionData.hmac = hmac;
     for( i = 0; bufferList[i] != 0; i++ )
     {

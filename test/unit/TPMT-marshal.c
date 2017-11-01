@@ -25,11 +25,11 @@ tpmt_marshal_success(void **state)
 
     tkt.tag = 0xbeef;
     tkt.hierarchy = TPM_RH_OWNER;
-    tkt.digest.t.size = 4;
-    tkt.digest.t.buffer[0] = 0xde;
-    tkt.digest.t.buffer[1] = 0xad;
-    tkt.digest.t.buffer[2] = 0xbe;
-    tkt.digest.t.buffer[3] = 0xef;
+    tkt.digest.size = 4;
+    tkt.digest.buffer[0] = 0xde;
+    tkt.digest.buffer[1] = 0xad;
+    tkt.digest.buffer[2] = 0xbe;
+    tkt.digest.buffer[3] = 0xef;
     rc = Tss2_MU_TPMT_TK_CREATION_Marshal(&tkt, buffer, buffer_size, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 
@@ -39,11 +39,11 @@ tpmt_marshal_success(void **state)
 
     assert_int_equal (ptr->tag, HOST_TO_BE_16(0xbeef));
     assert_int_equal (*ptr2, HOST_TO_BE_32(TPM_RH_OWNER));
-    assert_int_equal (ptr3->t.size, HOST_TO_BE_16(4));
-    assert_int_equal (ptr3->t.buffer[0], 0xde);
-    assert_int_equal (ptr3->t.buffer[1], 0xad);
-    assert_int_equal (ptr3->t.buffer[2], 0xbe);
-    assert_int_equal (ptr3->t.buffer[3], 0xef);
+    assert_int_equal (ptr3->size, HOST_TO_BE_16(4));
+    assert_int_equal (ptr3->buffer[0], 0xde);
+    assert_int_equal (ptr3->buffer[1], 0xad);
+    assert_int_equal (ptr3->buffer[2], 0xbe);
+    assert_int_equal (ptr3->buffer[3], 0xef);
 
     pub.type = TPM_ALG_RSA;
     pub.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
@@ -78,11 +78,11 @@ tpmt_marshal_success_offset(void **state)
 
     tkt.tag = 0xbeef;
     tkt.hierarchy = TPM_RH_OWNER;
-    tkt.digest.t.size = 4;
-    tkt.digest.t.buffer[0] = 0xde;
-    tkt.digest.t.buffer[1] = 0xad;
-    tkt.digest.t.buffer[2] = 0xbe;
-    tkt.digest.t.buffer[3] = 0xef;
+    tkt.digest.size = 4;
+    tkt.digest.buffer[0] = 0xde;
+    tkt.digest.buffer[1] = 0xad;
+    tkt.digest.buffer[2] = 0xbe;
+    tkt.digest.buffer[3] = 0xef;
     rc = Tss2_MU_TPMT_TK_CREATION_Marshal(&tkt, buffer, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 
@@ -92,11 +92,11 @@ tpmt_marshal_success_offset(void **state)
 
     assert_int_equal (ptr->tag, HOST_TO_BE_16(0xbeef));
     assert_int_equal (*ptr2, HOST_TO_BE_32(TPM_RH_OWNER));
-    assert_int_equal (ptr3->t.size, HOST_TO_BE_16(4));
-    assert_int_equal (ptr3->t.buffer[0], 0xde);
-    assert_int_equal (ptr3->t.buffer[1], 0xad);
-    assert_int_equal (ptr3->t.buffer[2], 0xbe);
-    assert_int_equal (ptr3->t.buffer[3], 0xef);
+    assert_int_equal (ptr3->size, HOST_TO_BE_16(4));
+    assert_int_equal (ptr3->buffer[0], 0xde);
+    assert_int_equal (ptr3->buffer[1], 0xad);
+    assert_int_equal (ptr3->buffer[2], 0xbe);
+    assert_int_equal (ptr3->buffer[3], 0xef);
     assert_int_equal (offset, 10 + 2 + 4 + 2 + 1 + 1 + 1 + 1);
 
     offset = 10;
@@ -129,11 +129,11 @@ tpmt_marshal_buffer_null_with_offset(void **state)
 
     tkt.tag = 0xbeef;
     tkt.hierarchy = TPM_RH_OWNER;
-    tkt.digest.t.size = 4;
-    tkt.digest.t.buffer[0] = 0xde;
-    tkt.digest.t.buffer[1] = 0xad;
-    tkt.digest.t.buffer[2] = 0xbe;
-    tkt.digest.t.buffer[3] = 0xef;
+    tkt.digest.size = 4;
+    tkt.digest.buffer[0] = 0xde;
+    tkt.digest.buffer[1] = 0xad;
+    tkt.digest.buffer[2] = 0xbe;
+    tkt.digest.buffer[3] = 0xef;
     rc = Tss2_MU_TPMT_TK_CREATION_Marshal(&tkt, NULL, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (offset, 10 + 2 + 4 + 2 + 1 + 1 + 1 + 1);
@@ -179,11 +179,11 @@ tpmt_marshal_buffer_size_lt_data_nad_lt_offset(void **state)
 
     tkt.tag = 0xbeef;
     tkt.hierarchy = TPM_RH_OWNER;
-    tkt.digest.t.size = 4;
-    tkt.digest.t.buffer[0] = 0xde;
-    tkt.digest.t.buffer[1] = 0xad;
-    tkt.digest.t.buffer[2] = 0xbe;
-    tkt.digest.t.buffer[3] = 0xef;
+    tkt.digest.size = 4;
+    tkt.digest.buffer[0] = 0xde;
+    tkt.digest.buffer[1] = 0xad;
+    tkt.digest.buffer[2] = 0xbe;
+    tkt.digest.buffer[3] = 0xef;
     rc = Tss2_MU_TPMT_TK_CREATION_Marshal(&tkt, buffer, 10, &offset);
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 10);
@@ -221,21 +221,21 @@ tpmt_unmarshal_success(void **state)
 
     ptr->tag = HOST_TO_BE_16(0xbeef);
     *ptr2 = HOST_TO_BE_32(TPM_RH_OWNER);
-    ptr3->t.size = HOST_TO_BE_16(4);
-    ptr3->t.buffer[0] = 0xde;
-    ptr3->t.buffer[1] = 0xad;
-    ptr3->t.buffer[2] = 0xbe;
-    ptr3->t.buffer[3] = 0xef;
+    ptr3->size = HOST_TO_BE_16(4);
+    ptr3->buffer[0] = 0xde;
+    ptr3->buffer[1] = 0xad;
+    ptr3->buffer[2] = 0xbe;
+    ptr3->buffer[3] = 0xef;
 
     rc = Tss2_MU_TPMT_TK_CREATION_Unmarshal(buffer, buffer_size, &offset, &tkt);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (tkt.tag, 0xbeef);
     assert_int_equal (tkt.hierarchy, TPM_RH_OWNER);
-    assert_int_equal (tkt.digest.t.size, 4);
-    assert_int_equal (tkt.digest.t.buffer[0], 0xde);
-    assert_int_equal (tkt.digest.t.buffer[1], 0xad);
-    assert_int_equal (tkt.digest.t.buffer[2], 0xbe);
-    assert_int_equal (tkt.digest.t.buffer[3], 0xef);
+    assert_int_equal (tkt.digest.size, 4);
+    assert_int_equal (tkt.digest.buffer[0], 0xde);
+    assert_int_equal (tkt.digest.buffer[1], 0xad);
+    assert_int_equal (tkt.digest.buffer[2], 0xbe);
+    assert_int_equal (tkt.digest.buffer[3], 0xef);
     assert_int_equal (offset, 2 + 4 + 2 + 1 + 1 + 1 + 1);
 
     offset = 0;
@@ -315,11 +315,11 @@ tpmt_unmarshal_dest_null_offset_valid(void **state)
 
     ptr->tag = HOST_TO_BE_16(0xbeef);
     *ptr2 = HOST_TO_BE_32(TPM_RH_OWNER);
-    ptr3->t.size = HOST_TO_BE_16(4);
-    ptr3->t.buffer[0] = 0xde;
-    ptr3->t.buffer[1] = 0xad;
-    ptr3->t.buffer[2] = 0xbe;
-    ptr3->t.buffer[3] = 0xef;
+    ptr3->size = HOST_TO_BE_16(4);
+    ptr3->buffer[0] = 0xde;
+    ptr3->buffer[1] = 0xad;
+    ptr3->buffer[2] = 0xbe;
+    ptr3->buffer[3] = 0xef;
 
     rc = Tss2_MU_TPMT_TK_CREATION_Unmarshal(buffer, buffer_size, &offset, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
@@ -360,11 +360,11 @@ tpmt_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
 
     ptr->tag = HOST_TO_BE_16(0xbeef);
     *ptr2 = HOST_TO_BE_32(TPM_RH_OWNER);
-    ptr3->t.size = HOST_TO_BE_16(4);
-    ptr3->t.buffer[0] = 0xde;
-    ptr3->t.buffer[1] = 0xad;
-    ptr3->t.buffer[2] = 0xbe;
-    ptr3->t.buffer[3] = 0xef;
+    ptr3->size = HOST_TO_BE_16(4);
+    ptr3->buffer[0] = 0xde;
+    ptr3->buffer[1] = 0xad;
+    ptr3->buffer[2] = 0xbe;
+    ptr3->buffer[3] = 0xef;
     rc = Tss2_MU_TPMT_TK_CREATION_Unmarshal(buffer, 15, &offset, NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 5);

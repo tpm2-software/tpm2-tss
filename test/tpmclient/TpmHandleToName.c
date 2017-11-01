@@ -39,7 +39,7 @@ UINT32 TpmHandleToName( TPM_HANDLE handle, TPM2B_NAME *name )
     TPM2B_PUBLIC public;
     TPM2B_NV_PUBLIC nvPublic;
     TSS2_SYS_CONTEXT *sysContext;
-    UINT8 *namePtr = &( name->t.name[0] );
+    UINT8 *namePtr = name->name;
 
     // Initialize name to zero length in case of failure.
     INIT_SIMPLE_TPM2B_SIZE( *name );
@@ -47,7 +47,7 @@ UINT32 TpmHandleToName( TPM_HANDLE handle, TPM2B_NAME *name )
 
     if( handle == ( TPM_HT_NO_HANDLE ) )
     {
-        name->b.size = 0;
+        name->size = 0;
         rval = TPM_RC_SUCCESS;
     }
     else
@@ -59,7 +59,7 @@ UINT32 TpmHandleToName( TPM_HANDLE handle, TPM2B_NAME *name )
                 if( sysContext == 0 )
                     return TSS2_APP_RC_INIT_SYS_CONTEXT_FAILED;
 
-                nvPublic.t.size = 0;
+                nvPublic.size = 0;
                 rval = Tss2_Sys_NV_ReadPublic( sysContext, handle, 0, &nvPublic, name, 0 );
                 TeardownSysContext( &sysContext );
                 break;
@@ -70,14 +70,14 @@ UINT32 TpmHandleToName( TPM_HANDLE handle, TPM2B_NAME *name )
                 if( sysContext == 0 )
                     return TSS2_APP_RC_INIT_SYS_CONTEXT_FAILED;
 
-                public.t.size = 0;
+                public.size = 0;
 				rval = Tss2_Sys_ReadPublic( sysContext, handle, 0, &public, name, &qualifiedName, 0 );
                 TeardownSysContext( &sysContext );
                 break;
 
             default:
                 rval = TPM_RC_SUCCESS;
-                name->b.size = sizeof( TPM_HANDLE );
+                name->size = sizeof(TPM_HANDLE);
                 *(TPM_HANDLE *)namePtr = BE_TO_HOST_32(handle);
         }
     }

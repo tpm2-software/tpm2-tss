@@ -51,7 +51,7 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
     const uint8_t *startParams;
     TPM_CC cmdCode;
 
-    name1.b.size = name2.b.size = 0;
+    name1.size = name2.size = 0;
 
     // Calculate pHash
     //
@@ -61,7 +61,7 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
     {
         if( handle1 == TPM_HT_NO_HANDLE )
         {
-            name1.t.size = 0;
+            name1.size = 0;
         }
         else
         {
@@ -86,7 +86,7 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
 
         if( handle2 == TPM_HT_NO_HANDLE )
         {
-            name2.t.size = 0;
+            name2.size = 0;
         }
         else
         {
@@ -108,12 +108,12 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
 #endif
 
     // Create pHash input byte stream:  first add response code, if any.
-    hashInput.b.size = 0;
+    hashInput.size = 0;
     if( responseCode != TPM_RC_NO_RESPONSE )
     {
-        hashInputPtr = &( hashInput.t.buffer[hashInput.b.size] );
+        hashInputPtr = &( hashInput.buffer[hashInput.size] );
         *(UINT32 *)hashInputPtr = BE_TO_HOST_32(responseCode);
-        hashInput.b.size += 4;
+        hashInput.size += 4;
         hashInputPtr += 4;
     }
 
@@ -122,25 +122,25 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
     if( rval != TPM_RC_SUCCESS )
         return rval;
 
-    hashInputPtr = &( hashInput.t.buffer[hashInput.b.size] );
+    hashInputPtr = &( hashInput.buffer[hashInput.size] );
     *(UINT32 *)hashInputPtr = cmdCode;
-    hashInput.t.size += 4;
+    hashInput.size += 4;
 
     // Create pHash input byte stream:  now add in names for the handles.
-    rval = ConcatSizedByteBuffer( &hashInput, &( name1.b ) );
+    rval = ConcatSizedByteBuffer(&hashInput, (TPM2B *)&name1);
     if( rval != TPM_RC_SUCCESS )
         return rval;
 
-    rval = ConcatSizedByteBuffer( &hashInput, &( name2.b ) );
+    rval = ConcatSizedByteBuffer(&hashInput, (TPM2B *)&name2);
     if( rval != TPM_RC_SUCCESS )
         return rval;
 
-    if( ( hashInput.t.size + parametersSize ) <= sizeof( hashInput.t.buffer ) )
+    if( ( hashInput.size + parametersSize ) <= sizeof( hashInput.buffer ) )
     {
         // Create pHash input byte stream:  now add in parameters byte stream
         for( i = 0; i < parametersSize; i++ )
-            hashInput.t.buffer[hashInput.t.size + i ] = startParams[i];
-        hashInput.t.size += (UINT16)parametersSize;
+            hashInput.buffer[hashInput.size + i ] = startParams[i];
+        hashInput.size += (UINT16)parametersSize;
     }
     else
     {
@@ -153,13 +153,13 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
 #endif
 
     // Now hash the whole mess.
-    if( hashInput.t.size > sizeof( hashInput.t.buffer ) )
+    if( hashInput.size > sizeof( hashInput.buffer ) )
     {
         rval = APPLICATION_ERROR( TSS2_BASE_RC_INSUFFICIENT_BUFFER );
     }
     else
     {
-        rval = TpmHash( authHash, hashInput.t.size, &( hashInput.t.buffer[0] ), pHash );
+        rval = TpmHash( authHash, hashInput.size, &( hashInput.buffer[0] ), pHash );
         if( rval != TPM_RC_SUCCESS )
             return rval;
 #ifdef DEBUG
