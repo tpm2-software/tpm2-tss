@@ -76,6 +76,7 @@ TESTS_INTEGRATION = \
     test/integration/self-test.int \
     test/integration/start-auth-session.int \
     test/integration/sys-initialize.int \
+    test/integration/tpm-properties.int \
     test/tpmclient/tpmclient.int
 endif #SIMULATOR_BIN
 
@@ -290,6 +291,10 @@ test_integration_hierarchy_change_auth_int_SOURCES = \
 test_integration_start_auth_session_int_LDADD = $(TESTS_LDADD)
 test_integration_start_auth_session_int_SOURCES = test/integration/main.c \
     test/integration/start-auth-session.int.c
+
+test_integration_tpm_properties_int_LDADD = $(TESTS_LDADD)
+test_integration_tpm_properties_int_SOURCES = test/integration/main.c \
+    test/integration/tpm-properties.int.c
 
 TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES)
 
