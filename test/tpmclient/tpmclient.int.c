@@ -111,41 +111,7 @@ UINT32 tpmManufacturer = 0;
 #define MSFT_MANUFACTURER_ID 0x4d534654
 #define IBM_MANUFACTURER_ID 0x49424d20
 
-//
-// These are helper functions that are called through function pointers so that
-// they could be swapped easily to point to different functions.
-//
-// Currently they are set to functions that use the TPM to perform the function, but SW-only
-// implementations could be substituted as well.
-//
-UINT32 ( *ComputeSessionHmacPtr )(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMS_AUTH_COMMAND *cmdAuth, // Pointer to session input struct
-    TPM_HANDLE entityHandle,             // Used to determine if we're accessing a different
-    // resource than the bound resoure.
-    TPM_RC responseCode,                 // Response code for the command, 0xffff for "none" is
-    // used to indicate that no response code is present
-    // (used for calculating command HMACs vs response HMACs).
-    TPM_HANDLE handle1,                  // First handle == 0xff000000 indicates no handle
-    TPM_HANDLE handle2,                  // Second handle == 0xff000000 indicates no handle
-    TPMA_SESSION sessionAttributes,      // Current session attributes
-    TPM2B_DIGEST *result,                // Where the result hash is saved.
-    TPM_RC sessionCmdRval
-    ) = TpmComputeSessionHmac;
-
-TPM_RC ( *GetSessionAlgIdPtr )( TPMI_SH_AUTH_SESSION authHandle, TPMI_ALG_HASH *sessionAlgId ) = GetSessionAlgId;
-
-TPM_RC ( *CalcPHash )( TSS2_SYS_CONTEXT *sysContext,TPM_HANDLE handle1, TPM_HANDLE handle2, TPMI_ALG_HASH authHash,
-    TPM_RC responseCode, TPM2B_DIGEST *pHash ) = TpmCalcPHash;
-
-UINT32 (*HmacFunctionPtr)( TPM_ALG_ID hashAlg, TPM2B *key,TPM2B **bufferList, TPM2B_DIGEST *result ) = TpmHmac;
-
-UINT32 (*HashFunctionPtr)( TPMI_ALG_HASH hashAlg, UINT16 size, BYTE *data, TPM2B_DIGEST *result ) = TpmHash;
-
-UINT32 (*HandleToNameFunctionPtr)( TPM_HANDLE handle, TPM2B_NAME *name ) = TpmHandleToName;
-
 TPMI_SH_AUTH_SESSION StartPolicySession();
-
 TPMI_SH_AUTH_SESSION InitNvAuxPolicySession();
 
 TPM_RC CompareTPM2B(TPM2B *buffer1, TPM2B *buffer2)
@@ -1762,7 +1728,7 @@ void TestCreate(){
             &loadedSha1KeyHandle, &name, &sessionsDataOut);
     CheckPassed( rval );
 
-    rval = (*HandleToNameFunctionPtr)( loadedSha1KeyHandle, &name1 );
+    rval = TpmHandleToName( loadedSha1KeyHandle, &name1 );
     CheckPassed( rval );
     DebugPrintf( NO_PREFIX, "Name of loaded key: " );
     PrintSizedBuffer( (TPM2B *)&name1 );
@@ -3366,8 +3332,7 @@ void SimplePolicyTest()
     CheckPassed( rval );
 
     // Get the name of the NV index.
-    rval = (*HandleToNameFunctionPtr)( TPM20_INDEX_PASSWORD_TEST,
-            &nvName );
+    rval = TpmHandleToName(TPM20_INDEX_PASSWORD_TEST, &nvName);
     CheckPassed( rval );
 
     //
@@ -3394,7 +3359,7 @@ void SimplePolicyTest()
 
     // Get the name of the session and save it in
     // the nvSession structure.
-    rval = (*HandleToNameFunctionPtr)( nvSession->sessionHandle,
+    rval = TpmHandleToName( nvSession->sessionHandle,
             &nvSession->name );
     CheckPassed( rval );
 
@@ -3606,7 +3571,7 @@ void SimpleHmacTest()
     CheckPassed( rval );
 
     // Get the name of the NV index.
-    rval = (*HandleToNameFunctionPtr)( TPM20_INDEX_PASSWORD_TEST,
+    rval = TpmHandleToName( TPM20_INDEX_PASSWORD_TEST,
             &nvName );
     CheckPassed( rval );
 
@@ -3634,7 +3599,7 @@ void SimpleHmacTest()
 
     // Get the name of the session and save it in
     // the nvSession structure.
-    rval = (*HandleToNameFunctionPtr)( nvSession->sessionHandle,
+    rval = TpmHandleToName( nvSession->sessionHandle,
             &nvSession->name );
     CheckPassed( rval );
 
@@ -3916,7 +3881,7 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
     CheckPassed( rval );
 
     // Get the name of the NV index.
-    rval = (*HandleToNameFunctionPtr)(
+    rval = TpmHandleToName(
             TPM20_INDEX_PASSWORD_TEST,
             &nvName );
     CheckPassed( rval );
@@ -3952,7 +3917,7 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
 
     // Get the name of the session and save it in
     // the nvSession structure.
-    rval = (*HandleToNameFunctionPtr)( nvSession->sessionHandle,
+    rval = TpmHandleToName( nvSession->sessionHandle,
             &(nvSession->name) );
     CheckPassed( rval );
 

@@ -105,7 +105,7 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
             PrintSizedBuffer( &( bufferList[j]->b ) );
         }
 #endif
-        rval = (*HmacFunctionPtr )( hashAlg, key, (TPM2B **)&( bufferList[0] ), &tmpResult );
+        rval = TpmHmac(hashAlg, key, (TPM2B **)&( bufferList[0] ), &tmpResult);
         if( rval != TPM_RC_SUCCESS )
         {
             return( rval );
