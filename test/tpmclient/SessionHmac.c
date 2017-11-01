@@ -70,8 +70,8 @@ UINT32 TpmComputeSessionHmac(
     }
 
     INIT_SIMPLE_TPM2B_SIZE( pHash );
-    rval = ( *CalcPHash )( sysContext, handle1, handle2, pSession->authHash,
-            responseCode, &pHash );
+    rval = TpmCalcPHash(sysContext, handle1, handle2, pSession->authHash,
+            responseCode, &pHash);
     if( rval != TPM_RC_SUCCESS )
         return rval;
 
@@ -133,7 +133,7 @@ UINT32 TpmComputeSessionHmac(
     }
 #endif
 
-    rval = (*HmacFunctionPtr)( pSession->authHash, &hmacKey.b, &( bufferList[0] ), result );
+    rval = TpmHmac(pSession->authHash, &hmacKey.b, bufferList, result);
     if( rval != TPM_RC_SUCCESS )
         return rval;
 
@@ -182,7 +182,7 @@ TPM_RC ComputeCommandHmacs( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1,
 
         if( authPtr != 0 )
         {
-            rval = ( *ComputeSessionHmacPtr )( sysContext,  pSessionsDataIn->cmdAuths[i],
+            rval = TpmComputeSessionHmac( sysContext,  pSessionsDataIn->cmdAuths[i],
                     entityHandle, TPM_RC_NO_RESPONSE, handle1, handle2,
                     pSessionsDataIn->cmdAuths[i]->sessionAttributes,
                     authPtr, sessionCmdRval );
@@ -213,7 +213,7 @@ TPM_RC CheckResponseHMACs( TSS2_SYS_CONTEXT *sysContext, TPM_RC responseCode,
 
             if( ( pSessionsDataIn->cmdAuths[i]->sessionHandle >> HR_SHIFT ) == TPM_HT_HMAC_SESSION )
             {
-                rval = ( *ComputeSessionHmacPtr )( sysContext,
+                rval = TpmComputeSessionHmac( sysContext,
                         pSessionsDataIn->cmdAuths[i], entityHandle,
                         responseCode, handle1, handle2,
                         pSessionsDataOut->rspAuths[i]->sessionAttributes,
