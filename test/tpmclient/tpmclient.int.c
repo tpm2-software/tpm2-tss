@@ -105,9 +105,6 @@ TCTI_SOCKET_CONF rmInterfaceConfig = {
 TSS2_TCTI_CONTEXT *resMgrTctiContext = 0;
 TSS2_ABI_VERSION abiVersion = { TSSWG_INTEROP, TSS_SAPI_FIRST_FAMILY, TSS_SAPI_FIRST_LEVEL, TSS_SAPI_FIRST_VERSION };
 
-UINT32 tpmSpecVersion = 0;
-UINT32 tpmManufacturer = 0;
-
 #define MSFT_MANUFACTURER_ID 0x4d534654
 #define IBM_MANUFACTURER_ID 0x49424d20
 
@@ -262,51 +259,6 @@ TSS2_RC TpmReset()
         rval = (TSS2_RC)PlatformCommand( resMgrTctiContext, MS_SIM_POWER_ON );
     }
     return rval;
-}
-
-void GetTpmVersion()
-{
-    TSS2_RC rval = TSS2_RC_SUCCESS;
-    TPMS_CAPABILITY_DATA capabilityData;
-
-    rval = Tss2_Sys_GetCapability( sysContext, 0,
-            TPM_CAP_TPM_PROPERTIES, TPM_PT_REVISION,
-            1, 0, &capabilityData, 0 );
-    CheckPassed( rval );
-
-    if( capabilityData.data.tpmProperties.count == 1 &&
-            (capabilityData.data.tpmProperties.tpmProperty[0].property == TPM_PT_REVISION) )
-    {
-        tpmSpecVersion = capabilityData.data.tpmProperties.tpmProperty[0].value;
-        DebugPrintf( NO_PREFIX, "TPM spec version:  %d\n", tpmSpecVersion );
-    }
-    else
-    {
-        DebugPrintf( NO_PREFIX, "Failed to get TPM spec version!!\n" );
-        Cleanup();
-    }
-}
-
-void GetTpmManufacturer()
-{
-    TSS2_RC rval = TSS2_RC_SUCCESS;
-    TPMS_CAPABILITY_DATA capabilityData;
-
-    rval = Tss2_Sys_GetCapability( sysContext, 0,
-            TPM_CAP_TPM_PROPERTIES, TPM_PT_MANUFACTURER,
-            1, 0, &capabilityData, 0 );
-    CheckPassed( rval );
-
-    if( capabilityData.data.tpmProperties.count == 1 &&
-            (capabilityData.data.tpmProperties.tpmProperty[0].property == TPM_PT_MANUFACTURER ) )
-    {
-        tpmManufacturer = capabilityData.data.tpmProperties.tpmProperty[0].value;
-    }
-    else
-    {
-        DebugPrintf( NO_PREFIX, "Failed to get TPM manufacturer!!\n" );
-        Cleanup();
-    }
 }
 
 void TestDictionaryAttackLockReset()
@@ -827,15 +779,7 @@ void TestTpmGetCapability()
             capabilityData.data.tpmProperties.tpmProperty[0].value );
 
     rval = Tss2_Sys_GetCapability( sysContext, 0, 0xff, TPM_PT_MANUFACTURER, 1, &moreData, &capabilityData, 0 );
-
-    if( tpmSpecVersion == 115 || tpmSpecVersion == 119 )
-    {
-        CheckFailed( rval, TPM_RC_VALUE );
-    }
-    else
-    {
-        CheckFailed( rval, TPM_RC_VALUE+TPM_RC_1+TPM_RC_P );
-    }
+    CheckFailed(rval, TPM_RC_VALUE+TPM_RC_1+TPM_RC_P);
 }
 
 void TestTpmClear()
@@ -1309,11 +1253,8 @@ void TestShutdown()
     rval = Tss2_Sys_Shutdown( sysContext, 0, TPM_SU_CLEAR, &sessionsDataOut );
     CheckPassed( rval );
 
-    if( !( tpmSpecVersion == 115 || tpmSpecVersion == 119 ) )
-    {
-        rval = Tss2_Sys_Shutdown( sysContext, 0, 0xff, 0 );
-        CheckFailed( rval, TPM_RC_VALUE+TPM_RC_1+TPM_RC_P );
-    }
+    rval = Tss2_Sys_Shutdown( sysContext, 0, 0xff, 0 );
+    CheckFailed( rval, TPM_RC_VALUE+TPM_RC_1+TPM_RC_P );
 }
 
 void TestNV()
@@ -4906,10 +4847,6 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     // Run this directly after Startup tests to test for
     // a resource mgr corner case with SaveContext.
     TestStartAuthSession();
-
-    GetTpmVersion();
-
-    GetTpmManufacturer();
     PrepareTests();
     // Clear DA lockout.
     TestDictionaryAttackLockReset();
