@@ -210,21 +210,20 @@ tcti_libtcti_socket_la_SOURCES  = tcti/platformcommand.c tcti/tcti_socket.c \
     tcti/tcti.c tcti/tcti.h tcti/sockets.c tcti/sockets.h \
     common/debug.c common/debug.h tcti/logging.h
 
-test_tpmclient_tpmclient_int_CFLAGS   = $(AM_CFLAGS) -DNO_RM_TESTS -U_FORTIFY_SOURCE
+test_tpmclient_tpmclient_int_CFLAGS   = $(AM_CFLAGS) -U_FORTIFY_SOURCE
 test_tpmclient_tpmclient_int_LDADD    = $(TESTS_LDADD)
 test_tpmclient_tpmclient_int_SOURCES  = $(COMMON_C) \
     test/tpmclient/CatSizedByteBuffer.c test/tpmclient/CopySizedBuffer.c \
     test/tpmclient/CreateNullSession.c test/tpmclient/DecryptEncrypt.c \
     test/tpmclient/Entity.c test/tpmclient/kdfa.c \
     test/tpmclient/LoadExternalHMACKey.c test/integration/main.c \
-    test/tpmclient/sample.h \
+    test/tpmclient/sample.h test/tpmclient/TpmHmac.c \
     test/tpmclient/SessionHmac.c test/tpmclient/SetLocality.c \
     test/tpmclient/StartAuthSession.c test/tpmclient/syscontext.c \
     test/tpmclient/syscontext.h test/tpmclient/tcti_util.c \
     test/tpmclient/tcti_util.h test/tpmclient/TpmCalcPHash.c \
     test/tpmclient/tpmclient.int.c test/tpmclient/tpmclient.h \
-    test/tpmclient/tpmclient_wo_rm.h test/tpmclient/TpmHandleToName.c \
-    test/tpmclient/TpmHash.c test/tpmclient/TpmHmac.c
+    test/tpmclient/TpmHandleToName.c test/tpmclient/TpmHash.c
 
 test_integration_libtest_utils_la_SOURCES = \
     test/integration/context-util.c test/integration/context-util.h \
