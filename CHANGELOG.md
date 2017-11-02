@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## Unreleased
+### Added
+- Implementation of the EncryptDecrypt2 command.
+- Coding standard documentation.
+- Support for latest TPM2 simulator v974 (only changes in test harness).
+### Fixed
+- Definition of HMAC_SESSION_LAST and POLICY_SESSION_LAST.
+
 ## [1.2.0] - 2017-08-25
 ### Added
 - Support for PTT-specific capabilities.
