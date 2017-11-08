@@ -128,12 +128,12 @@ tcti_device_log_called_test (void **state)
 ssize_t
 __wrap_read (int fd, void *buffer, size_t count)
 {
-    return (ssize_t)mock ();
+    return mock_type (ssize_t);
 }
 ssize_t
 __wrap_write (int fd, const void *buffer, size_t buffer_size)
 {
-    return (ssize_t)mock ();
+    return mock_type (ssize_t);
 }
 
 typedef struct {

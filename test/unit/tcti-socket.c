@@ -85,7 +85,7 @@ __wrap_connect (int                    sockfd,
                 const struct sockaddr *addr,
                 socklen_t              addrlen)
 {
-    return (int)mock ();
+    return mock_type (int);
 }
 /*
  * Wrap the 'recv' system call. The mock queue for this function must have an
@@ -98,8 +98,8 @@ __wrap_recv (int sockfd,
              size_t len,
              int flags)
 {
-    ssize_t  ret = (ssize_t)mock ();
-    uint8_t *buf_in = (uint8_t*)mock ();
+    ssize_t  ret = mock_type (ssize_t);
+    uint8_t *buf_in = mock_ptr_type (uint8_t*);
 
     memcpy (buf, buf_in, ret);
     return ret;
@@ -116,7 +116,7 @@ __wrap_select (int             nfds,
                fd_set         *exceptfds,
                struct timeval *timeout)
 {
-    return (int)mock ();
+    return mock_type (int);
 }
 /*
  * Wrap the 'send' system call. The mock queue for this function must have an
@@ -129,7 +129,7 @@ __wrap_send (int         sockfd,
              int         flags)
 
 {
-    return (TSS2_RC)mock ();
+    return mock_type (TSS2_RC);
 }
 /*
  * This is a utility function used by other tests to setup a TCTI context. It
