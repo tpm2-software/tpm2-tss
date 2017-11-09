@@ -41,5 +41,8 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
                    primary_handle, rc);
     }
 
+    Tss2_Sys_FlushContext( sapi_context, 0x81000000 );
+    Tss2_Sys_FlushContext( sapi_context, primary_handle );
+
     return rc;
 }

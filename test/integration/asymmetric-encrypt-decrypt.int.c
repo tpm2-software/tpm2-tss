@@ -114,12 +114,16 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     session_data.hmac.size = 0;
 
     rc = TSS2_RETRY_EXP (Tss2_Sys_Create(sapi_context, sym_handle, &sessions_data, &in_sensitive, &in_public, &outside_info, &creation_pcr, &out_private, &out_public, &creation_data, &creation_hash, &creation_ticket, &sessions_data_out));
-    if (rc != TPM_RC_SUCCESS)
+    if (rc != TPM_RC_SUCCESS) {
+        Tss2_Sys_FlushContext( sapi_context, sym_handle );
         print_fail("Create FAILED! Response Code : 0x%x", rc);
+    }
 
     rc = Tss2_Sys_Load(sapi_context, sym_handle, &sessions_data, &out_private, &out_public, &loaded_sym_handle, &name, &sessions_data_out);
-    if (rc != TPM_RC_SUCCESS)
+    if (rc != TPM_RC_SUCCESS) {
+        Tss2_Sys_FlushContext( sapi_context, sym_handle );
         print_fail("Load FAILED! Response Code : 0x%x", rc);
+    }
     print_log( "Loaded key handle:  %8.8x\n", loaded_sym_handle );
 
     input_message.size = strlen(message);
@@ -127,12 +131,17 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     in_scheme.scheme = TPM_ALG_RSAES;
     outside_info.size = 0;
     rc = Tss2_Sys_RSA_Encrypt(sapi_context, loaded_sym_handle, 0, &input_message, &in_scheme, &outside_info, &output_data, 0);
-    if(rc != TPM_RC_SUCCESS)
+    if (rc != TPM_RC_SUCCESS) {
+        Tss2_Sys_FlushContext( sapi_context, loaded_sym_handle );
+        Tss2_Sys_FlushContext( sapi_context, sym_handle );
         print_fail("RSA_Encrypt FAILED! Response Code : 0x%x", rc);
+    }
     print_log("Encrypt successed.");
 
     rc = Tss2_Sys_RSA_Decrypt(sapi_context, loaded_sym_handle, &sessions_data, &output_data, &in_scheme, &outside_info, &output_message, &sessions_data_out);
-    if(rc != TPM_RC_SUCCESS)
+    Tss2_Sys_FlushContext( sapi_context, loaded_sym_handle );
+    Tss2_Sys_FlushContext( sapi_context, sym_handle );
+    if (rc != TPM_RC_SUCCESS)
         print_fail("RSA_Decrypt FAILED! Response Code : 0x%x", rc);
     print_log("Decrypt successed.");
 

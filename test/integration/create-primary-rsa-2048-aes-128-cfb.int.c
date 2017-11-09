@@ -31,6 +31,11 @@ int
 test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 {
     TPM_HANDLE handle = 0;
+    TSS2_RC rc;
 
-    return create_primary_rsa_2048_aes_128_cfb (sapi_context, &handle);
+    rc = create_primary_rsa_2048_aes_128_cfb (sapi_context, &handle);
+    if (rc == TPM_RC_SUCCESS)
+        Tss2_Sys_FlushContext( sapi_context, handle );
+
+    return rc;
 }
