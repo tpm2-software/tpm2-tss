@@ -40,7 +40,6 @@
 
 #include    <sapi/tss2_common.h>
 #include    <sapi/tpmb.h>
-#include    <sapi/implementation.h>
 #include    <sapi/tss2_tpm2_types.h>
 
 #include    <sapi/tss2_tcti.h>
