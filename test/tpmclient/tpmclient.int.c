@@ -859,7 +859,7 @@ void TestPcrExtend()
         Cleanup();
     }
 
-    pcrSelection.pcrSelections[0].sizeofSelect = 4;
+    pcrSelection.pcrSelections[0].sizeofSelect = 255;
 
     rval = Tss2_Sys_PCR_Read( sysContext, 0, &pcrSelection, &pcrUpdateCounterAfterExtend, 0, 0, 0 );
     CheckFailed( rval, TSS2_SYS_RC_BAD_VALUE );
