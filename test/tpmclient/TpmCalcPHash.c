@@ -38,10 +38,10 @@
 // NOTE:  for calculating cpHash, set responseCode to TPM_RC_NO_RESPONSE; this
 // tells the function to leave it out of the calculation.
 //
-TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDLE handle2,
-    TPMI_ALG_HASH authHash, TPM_RC responseCode, TPM2B_DIGEST *pHash )
+TSS2_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDLE handle2,
+    TPMI_ALG_HASH authHash, TSS2_RC responseCode, TPM2B_DIGEST *pHash )
 {
-    TPM_RC rval = TPM_RC_SUCCESS;
+    TSS2_RC rval = TPM_RC_SUCCESS;
     UINT32 i;
     TPM2B_NAME name1;
     TPM2B_NAME name2;

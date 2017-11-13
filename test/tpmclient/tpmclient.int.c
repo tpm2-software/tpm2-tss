@@ -111,7 +111,7 @@ TSS2_ABI_VERSION abiVersion = { TSSWG_INTEROP, TSS_SAPI_FIRST_FAMILY, TSS_SAPI_F
 TPMI_SH_AUTH_SESSION StartPolicySession();
 TPMI_SH_AUTH_SESSION InitNvAuxPolicySession();
 
-TPM_RC CompareTPM2B(TPM2B *buffer1, TPM2B *buffer2)
+TSS2_RC CompareTPM2B(TPM2B *buffer1, TPM2B *buffer2)
 {
     if (buffer1->size != buffer2->size)
         return TPM_RC_FAILURE;
@@ -1324,7 +1324,7 @@ void TestCreate(){
 
 void TestEvict()
 {
-    TPM_RC rval = TPM_RC_SUCCESS;
+    TSS2_RC rval = TPM_RC_SUCCESS;
     TPMS_AUTH_COMMAND sessionData;
     TPMS_AUTH_RESPONSE sessionDataOut;
     TSS2_SYS_CMD_AUTHS sessionsData;
@@ -1355,10 +1355,10 @@ void TestEvict()
     CheckPassed( rval );
 }
 
-TPM_RC DefineNvIndex( TPMI_RH_PROVISION authHandle, TPMI_SH_AUTH_SESSION sessionAuthHandle, TPM2B_AUTH *auth, TPM2B_DIGEST *authPolicy,
+TSS2_RC DefineNvIndex( TPMI_RH_PROVISION authHandle, TPMI_SH_AUTH_SESSION sessionAuthHandle, TPM2B_AUTH *auth, TPM2B_DIGEST *authPolicy,
     TPMI_RH_NV_INDEX nvIndex, TPMI_ALG_HASH nameAlg, TPMA_NV attributes, UINT16 size  )
 {
-    TPM_RC rval = TPM_RC_SUCCESS;
+    TSS2_RC rval = TPM_RC_SUCCESS;
     TPM2B_NV_PUBLIC publicInfo;
 
     // Command and response session data structures.
@@ -1395,20 +1395,20 @@ TPM_RC DefineNvIndex( TPMI_RH_PROVISION authHandle, TPMI_SH_AUTH_SESSION session
 
 typedef struct {
     char name[50];
-    TPM_RC (*buildPolicyFn )( TSS2_SYS_CONTEXT *sysContext, SESSION *trialPolicySession, TPM2B_DIGEST *policyDigest );
-    TPM_RC (*createObjectFn )( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TPM2B_DIGEST *policyDigest );
-    TPM_RC (*testPolicyFn )( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession );
+    TSS2_RC (*buildPolicyFn )( TSS2_SYS_CONTEXT *sysContext, SESSION *trialPolicySession, TPM2B_DIGEST *policyDigest );
+    TSS2_RC (*createObjectFn )( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TPM2B_DIGEST *policyDigest );
+    TSS2_RC (*testPolicyFn )( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession );
 } POLICY_TEST_SETUP;
 
-TPM_RC BuildPolicy( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession,
-    TPM_RC (*buildPolicyFn )( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession, TPM2B_DIGEST *policyDigest ),
+TSS2_RC BuildPolicy( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession,
+    TSS2_RC (*buildPolicyFn )( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession, TPM2B_DIGEST *policyDigest ),
     TPM2B_DIGEST *policyDigest, bool trialSession )
 {
     // NOTE:  this policySession will be either a trial or normal policy session
     // depending on the value of the passed in trialSession parameter.
     TPM2B_ENCRYPTED_SECRET  encryptedSalt = {0,};
     TPMT_SYM_DEF symmetric;
-    TPM_RC rval;
+    TSS2_RC rval;
     TPM2B_NONCE nonceCaller;
 
     nonceCaller.size = 0;
@@ -1443,9 +1443,9 @@ TPM_RC BuildPolicy( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession,
     return rval;
 }
 
-TPM_RC CreateNVIndex( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TPM2B_DIGEST *policyDigest )
+TSS2_RC CreateNVIndex( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TPM2B_DIGEST *policyDigest )
 {
-    TPM_RC rval = TPM_RC_SUCCESS;
+    TSS2_RC rval = TPM_RC_SUCCESS;
     TPMA_LOCALITY locality;
     TPM2B_ENCRYPTED_SECRET encryptedSalt = {0};
     TPMT_SYM_DEF symmetric;
@@ -1497,7 +1497,7 @@ TPM_RC CreateNVIndex( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TPM
 }
 
 
-TPM_RC TestLocality( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession )
+TSS2_RC TestLocality( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession )
 {
     TSS2_RC rval = TPM_RC_SUCCESS;
     TSS2_SYS_CMD_AUTHS sessionsData;
@@ -1572,9 +1572,9 @@ UINT8 dataBlob[] = "some data";
 TPM_HANDLE blobHandle;
 TPM2B_AUTH blobAuth;
 
-TPM_RC BuildPasswordPolicy( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession, TPM2B_DIGEST *policyDigest )
+TSS2_RC BuildPasswordPolicy( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession, TPM2B_DIGEST *policyDigest )
 {
-    TPM_RC rval = TPM_RC_SUCCESS;
+    TSS2_RC rval = TPM_RC_SUCCESS;
 
     rval = Tss2_Sys_PolicyPassword( sysContext, policySession->sessionHandle, 0, 0 );
     CheckPassed( rval );
@@ -1582,9 +1582,9 @@ TPM_RC BuildPasswordPolicy( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession
     return rval;
 }
 
-TPM_RC BuildAuthValuePolicy( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession, TPM2B_DIGEST *policyDigest )
+TSS2_RC BuildAuthValuePolicy( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession, TPM2B_DIGEST *policyDigest )
 {
-    TPM_RC rval = TPM_RC_SUCCESS;
+    TSS2_RC rval = TPM_RC_SUCCESS;
 
     rval = Tss2_Sys_PolicyAuthValue( sysContext, policySession->sessionHandle, 0, 0 );
     CheckPassed( rval );
@@ -1593,9 +1593,9 @@ TPM_RC BuildAuthValuePolicy( TSS2_SYS_CONTEXT *sysContext, SESSION *policySessio
 }
 
 
-TPM_RC BuildPasswordPcrPolicy( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession, TPM2B_DIGEST *policyDigest )
+TSS2_RC BuildPasswordPcrPolicy( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession, TPM2B_DIGEST *policyDigest )
 {
-    TPM_RC rval = TPM_RC_SUCCESS;
+    TSS2_RC rval = TPM_RC_SUCCESS;
     TPM2B_DIGEST pcrDigest;
     TPML_PCR_SELECTION pcrs;
     TPML_DIGEST pcrValues;
@@ -1634,9 +1634,9 @@ TPM_RC BuildPasswordPcrPolicy( TSS2_SYS_CONTEXT *sysContext, SESSION *policySess
 }
 
 
-TPM_RC CreateDataBlob( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TPM2B_DIGEST *policyDigest )
+TSS2_RC CreateDataBlob( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TPM2B_DIGEST *policyDigest )
 {
-    TPM_RC rval = TPM_RC_SUCCESS;
+    TSS2_RC rval = TPM_RC_SUCCESS;
     TPMS_AUTH_COMMAND cmdAuth;
     TPMS_AUTH_COMMAND *cmdSessionArray[1] = { &cmdAuth };
     TSS2_SYS_CMD_AUTHS cmdAuthArray = { 1, &cmdSessionArray[0] };
@@ -1726,9 +1726,9 @@ TPM_RC CreateDataBlob( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TP
     return rval;
 }
 
-TPM_RC AuthValueUnseal( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession )
+TSS2_RC AuthValueUnseal( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession )
 {
-    TPM_RC rval = TPM_RC_SUCCESS;
+    TSS2_RC rval = TPM_RC_SUCCESS;
     TPM2B_SENSITIVE_DATA outData;
     TPMS_AUTH_COMMAND cmdAuth;
     TPMS_AUTH_COMMAND *cmdSessionArray[1] = { &cmdAuth };
@@ -1787,9 +1787,9 @@ TPM_RC AuthValueUnseal( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession )
     return rval;
 }
 
-TPM_RC PasswordUnseal( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession )
+TSS2_RC PasswordUnseal( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession )
 {
-    TPM_RC rval = TPM_RC_SUCCESS;
+    TSS2_RC rval = TPM_RC_SUCCESS;
     TPM2B_SENSITIVE_DATA outData;
     TPMS_AUTH_COMMAND cmdAuth;
     TPMS_AUTH_COMMAND *cmdSessionArray[1] = { &cmdAuth };
@@ -2227,7 +2227,7 @@ void ProvisionOtherIndices()
 TSS2_RC InitNvAuxPolicySession( TPMI_SH_AUTH_SESSION *nvAuxPolicySessionHandle )
 {
     TPMA_LOCALITY locality;
-    TPM_RC rval;
+    TSS2_RC rval;
 
     rval = StartPolicySession( nvAuxPolicySessionHandle );
     CheckPassed( rval );

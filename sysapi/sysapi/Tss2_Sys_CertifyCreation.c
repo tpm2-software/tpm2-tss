@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_CertifyCreation_Prepare(
+TSS2_RC Tss2_Sys_CertifyCreation_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
     TPMI_DH_OBJECT objectHandle,
@@ -37,7 +37,7 @@ TPM_RC Tss2_Sys_CertifyCreation_Prepare(
     TPMT_SIG_SCHEME *inScheme,
     TPMT_TK_CREATION *creationTicket)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext || !inScheme || !creationTicket)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -99,12 +99,12 @@ TPM_RC Tss2_Sys_CertifyCreation_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_CertifyCreation_Complete(
+TSS2_RC Tss2_Sys_CertifyCreation_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_ATTEST *certifyInfo,
     TPMT_SIGNATURE *signature)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -126,7 +126,7 @@ TPM_RC Tss2_Sys_CertifyCreation_Complete(
                                                    signature);
 }
 
-TPM_RC Tss2_Sys_CertifyCreation(
+TSS2_RC Tss2_Sys_CertifyCreation(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
     TPMI_DH_OBJECT objectHandle,

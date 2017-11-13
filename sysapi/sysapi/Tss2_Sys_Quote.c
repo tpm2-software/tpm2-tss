@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_Quote_Prepare(
+TSS2_RC Tss2_Sys_Quote_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
     TPM2B_DATA *qualifyingData,
@@ -85,7 +85,7 @@ TPM_RC Tss2_Sys_Quote_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_Quote_Complete(
+TSS2_RC Tss2_Sys_Quote_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_ATTEST *quoted,
     TPMT_SIGNATURE *signature)
@@ -110,7 +110,7 @@ TPM_RC Tss2_Sys_Quote_Complete(
                                             &SYS_CONTEXT->nextData, signature);
 }
 
-TPM_RC Tss2_Sys_Quote(
+TSS2_RC Tss2_Sys_Quote(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

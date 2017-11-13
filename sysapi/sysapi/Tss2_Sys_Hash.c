@@ -28,13 +28,13 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_Hash_Prepare(
+TSS2_RC Tss2_Sys_Hash_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_MAX_BUFFER *data,
     TPMI_ALG_HASH hashAlg,
     TPMI_RH_HIERARCHY hierarchy)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -78,12 +78,12 @@ TPM_RC Tss2_Sys_Hash_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_Hash_Complete(
+TSS2_RC Tss2_Sys_Hash_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_DIGEST *outHash,
     TPMT_TK_HASHCHECK *validation)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -105,7 +105,7 @@ TPM_RC Tss2_Sys_Hash_Complete(
                                                validation);
 }
 
-TPM_RC Tss2_Sys_Hash(
+TSS2_RC Tss2_Sys_Hash(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     TPM2B_MAX_BUFFER *data,

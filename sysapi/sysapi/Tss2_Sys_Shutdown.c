@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_Shutdown_Prepare(
+TSS2_RC Tss2_Sys_Shutdown_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPM_SU shutdownType)
 {
@@ -54,7 +54,7 @@ TPM_RC Tss2_Sys_Shutdown_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_Shutdown(
+TSS2_RC Tss2_Sys_Shutdown(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     TPM_SU shutdownType,

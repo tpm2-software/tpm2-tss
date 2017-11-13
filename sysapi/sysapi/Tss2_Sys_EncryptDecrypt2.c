@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_EncryptDecrypt2_Prepare (
+TSS2_RC Tss2_Sys_EncryptDecrypt2_Prepare (
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
     TPM2B_MAX_BUFFER *inData,
@@ -36,7 +36,7 @@ TPM_RC Tss2_Sys_EncryptDecrypt2_Prepare (
     TPMI_ALG_SYM_MODE mode,
     TPM2B_IV *ivIn)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -87,12 +87,12 @@ TPM_RC Tss2_Sys_EncryptDecrypt2_Prepare (
     return CommonPrepareEpilogue (sysContext);
 }
 
-TPM_RC Tss2_Sys_EncryptDecrypt2_Complete (
+TSS2_RC Tss2_Sys_EncryptDecrypt2_Complete (
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_MAX_BUFFER *outData,
     TPM2B_IV *ivOut)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -114,7 +114,7 @@ TPM_RC Tss2_Sys_EncryptDecrypt2_Complete (
                                        ivOut);
 }
 
-TPM_RC Tss2_Sys_EncryptDecrypt2 (
+TSS2_RC Tss2_Sys_EncryptDecrypt2 (
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

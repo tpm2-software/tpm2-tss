@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_Rewrap_Prepare(
+TSS2_RC Tss2_Sys_Rewrap_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT oldParent,
     TPMI_DH_OBJECT newParent,
@@ -93,7 +93,7 @@ TPM_RC Tss2_Sys_Rewrap_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_Rewrap_Complete(
+TSS2_RC Tss2_Sys_Rewrap_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_PRIVATE *outDuplicate,
     TPM2B_ENCRYPTED_SECRET *outSymSeed)
@@ -119,7 +119,7 @@ TPM_RC Tss2_Sys_Rewrap_Complete(
                                                     outSymSeed);
 }
 
-TPM_RC Tss2_Sys_Rewrap(
+TSS2_RC Tss2_Sys_Rewrap(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT oldParent,
     TPMI_DH_OBJECT newParent,

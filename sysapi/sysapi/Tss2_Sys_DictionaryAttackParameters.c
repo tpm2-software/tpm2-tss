@@ -28,14 +28,14 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_DictionaryAttackParameters_Prepare(
+TSS2_RC Tss2_Sys_DictionaryAttackParameters_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_LOCKOUT lockHandle,
     UINT32 newMaxTries,
     UINT32 newRecoveryTime,
     UINT32 lockoutRecovery)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -74,7 +74,7 @@ TPM_RC Tss2_Sys_DictionaryAttackParameters_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_DictionaryAttackParameters(
+TSS2_RC Tss2_Sys_DictionaryAttackParameters(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_LOCKOUT lockHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

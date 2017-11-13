@@ -28,12 +28,12 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_HierarchyChangeAuth_Prepare(
+TSS2_RC Tss2_Sys_HierarchyChangeAuth_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_HIERARCHY_AUTH authHandle,
     TPM2B_AUTH *newAuth)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -61,7 +61,7 @@ TPM_RC Tss2_Sys_HierarchyChangeAuth_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_HierarchyChangeAuth(
+TSS2_RC Tss2_Sys_HierarchyChangeAuth(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_HIERARCHY_AUTH authHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

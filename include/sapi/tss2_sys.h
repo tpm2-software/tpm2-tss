@@ -116,12 +116,12 @@ TSS2_RC Tss2_Sys_SetDecryptParam(
     const uint8_t *decryptParamBuffer
     );
 
-TPM_RC Tss2_Sys_GetCpBuffer(
+TSS2_RC Tss2_Sys_GetCpBuffer(
     TSS2_SYS_CONTEXT *sysContext,
     size_t *cpBufferUsedSize,
     const uint8_t **cpBuffer);
 
-TPM_RC Tss2_Sys_SetCmdAuths(
+TSS2_RC Tss2_Sys_SetCmdAuths(
     TSS2_SYS_CONTEXT * sysContext,
     const TSS2_SYS_CMD_AUTHS *cmdAuthsArray
     );
@@ -168,7 +168,7 @@ TSS2_RC Tss2_Sys_SetEncryptParam(
     const uint8_t *encryptParamBuffer
     );
 
-TPM_RC Tss2_Sys_GetRpBuffer(
+TSS2_RC Tss2_Sys_GetRpBuffer(
     TSS2_SYS_CONTEXT *sysContext,
     size_t *rpBufferUsedSize,
     const uint8_t **rpBuffer

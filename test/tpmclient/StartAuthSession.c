@@ -43,7 +43,7 @@ SESSION_LIST_ENTRY *sessionsList = 0;
 INT16 sessionEntriesUsed = 0;
 
 
-TPM_RC AddSession( SESSION_LIST_ENTRY **sessionEntry )
+TSS2_RC AddSession( SESSION_LIST_ENTRY **sessionEntry )
 {
     SESSION_LIST_ENTRY **lastEntry, *newEntry;
 
@@ -100,9 +100,9 @@ void DeleteSession( SESSION *session )
 }
 
 
-TPM_RC GetSessionStruct( TPMI_SH_AUTH_SESSION sessionHandle, SESSION **session )
+TSS2_RC GetSessionStruct( TPMI_SH_AUTH_SESSION sessionHandle, SESSION **session )
 {
-    TPM_RC rval = TSS2_APP_RC_GET_SESSION_STRUCT_FAILED;
+    TSS2_RC rval = TSS2_APP_RC_GET_SESSION_STRUCT_FAILED;
     SESSION_LIST_ENTRY *sessionEntry;
 
     DebugPrintf( 0, "In GetSessionStruct\n" );
@@ -126,9 +126,9 @@ TPM_RC GetSessionStruct( TPMI_SH_AUTH_SESSION sessionHandle, SESSION **session )
     return rval;
 }
 
-TPM_RC GetSessionAlgId( TPMI_SH_AUTH_SESSION sessionHandle, TPMI_ALG_HASH *sessionAlgId )
+TSS2_RC GetSessionAlgId( TPMI_SH_AUTH_SESSION sessionHandle, TPMI_ALG_HASH *sessionAlgId )
 {
-    TPM_RC rval = TSS2_APP_RC_GET_SESSION_ALG_ID_FAILED;
+    TSS2_RC rval = TSS2_APP_RC_GET_SESSION_ALG_ID_FAILED;
     SESSION *session;
 
     DebugPrintf( 0, "In GetSessionAlgId\n" );
@@ -156,9 +156,9 @@ void RollNonces( SESSION *session, TPM2B_NONCE *newNonce  )
 // It performs the command, calculates the session key, and updates a
 // SESSION structure.
 //
-TPM_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
+TSS2_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
 {
-    TPM_RC rval;
+    TSS2_RC rval;
     TPM2B_ENCRYPTED_SECRET key;
     char label[] = "ATH";
     TSS2_SYS_CONTEXT *tmpSysContext;
@@ -250,14 +250,14 @@ TPM_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
 // the function is called; cleaner this way, for
 // some uses.
 //
-TPM_RC StartAuthSessionWithParams( SESSION **session,
+TSS2_RC StartAuthSessionWithParams( SESSION **session,
     TPMI_DH_OBJECT tpmKey, TPM2B_MAX_BUFFER *salt,
     TPMI_DH_ENTITY bind, TPM2B_AUTH *bindAuth, TPM2B_NONCE *nonceCaller,
     TPM2B_ENCRYPTED_SECRET *encryptedSalt,
     TPM_SE sessionType, TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH algId,
     TSS2_TCTI_CONTEXT *tctiContext )
 {
-    TPM_RC rval;
+    TSS2_RC rval;
     SESSION_LIST_ENTRY *sessionEntry;
 
     if (session == NULL) {
@@ -326,9 +326,9 @@ TPM_RC StartAuthSessionWithParams( SESSION **session,
     return( rval );
 }
 
-TPM_RC EndAuthSession( SESSION *session )
+TSS2_RC EndAuthSession( SESSION *session )
 {
-    TPM_RC rval = TPM_RC_SUCCESS;
+    TSS2_RC rval = TPM_RC_SUCCESS;
 
     DeleteSession( session );
 

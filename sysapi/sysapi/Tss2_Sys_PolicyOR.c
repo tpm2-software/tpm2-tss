@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_PolicyOR_Prepare(
+TSS2_RC Tss2_Sys_PolicyOR_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     TPML_DIGEST *pHashList)
@@ -61,7 +61,7 @@ TPM_RC Tss2_Sys_PolicyOR_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_PolicyOR(
+TSS2_RC Tss2_Sys_PolicyOR(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

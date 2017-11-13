@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_PolicyAuthValue_Prepare(
+TSS2_RC Tss2_Sys_PolicyAuthValue_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession)
 {
@@ -54,7 +54,7 @@ TPM_RC Tss2_Sys_PolicyAuthValue_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_PolicyAuthValue(
+TSS2_RC Tss2_Sys_PolicyAuthValue(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

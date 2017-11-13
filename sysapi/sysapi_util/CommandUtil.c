@@ -58,9 +58,9 @@ UINT32 GetCommandSize(TSS2_SYS_CONTEXT *sysContext)
     return BE_TO_HOST_32(SYS_REQ_HEADER->commandSize);
 }
 
-TPM_RC CopyCommandHeader(TSS2_SYS_CONTEXT *sysContext, TPM_CC commandCode)
+TSS2_RC CopyCommandHeader(TSS2_SYS_CONTEXT *sysContext, TPM_CC commandCode)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -84,7 +84,7 @@ TSS2_RC CommonPreparePrologue(
     TPM_CC commandCode)
 {
 	int numCommandHandles;
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -129,7 +129,7 @@ TSS2_RC CommonComplete(TSS2_SYS_CONTEXT *sysContext)
     UINT32 rspSize;
     TPM_ST tag;
     size_t next = 0;
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;

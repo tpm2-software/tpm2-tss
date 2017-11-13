@@ -34,7 +34,7 @@
 //
 UINT32 TpmHandleToName( TPM_HANDLE handle, TPM2B_NAME *name )
 {
-    TPM_RC rval;
+    TSS2_RC rval;
     TPM2B_NAME qualifiedName;
     TPM2B_PUBLIC public;
     TPM2B_NV_PUBLIC nvPublic;
