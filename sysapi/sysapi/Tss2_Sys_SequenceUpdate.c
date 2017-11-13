@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_SequenceUpdate_Prepare(
+TSS2_RC Tss2_Sys_SequenceUpdate_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT sequenceHandle,
     TPM2B_MAX_BUFFER *buffer)
@@ -61,7 +61,7 @@ TPM_RC Tss2_Sys_SequenceUpdate_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_SequenceUpdate(
+TSS2_RC Tss2_Sys_SequenceUpdate(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT sequenceHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

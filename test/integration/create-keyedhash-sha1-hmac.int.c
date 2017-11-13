@@ -6,7 +6,7 @@
 int
 test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 {
-    TPM_RC                  rc                = TPM_RC_SUCCESS;
+    TSS2_RC                  rc                = TPM_RC_SUCCESS;
     TPM_HANDLE              parent_handle     = 0;
     TPM2B_SENSITIVE_CREATE  inSensitive       = { 0 };
     TPM2B_DATA              outsideInfo       = { 0 };

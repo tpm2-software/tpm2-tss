@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_ObjectChangeAuth_Prepare(
+TSS2_RC Tss2_Sys_ObjectChangeAuth_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT objectHandle,
     TPMI_DH_OBJECT parentHandle,
@@ -68,7 +68,7 @@ TPM_RC Tss2_Sys_ObjectChangeAuth_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_ObjectChangeAuth_Complete(
+TSS2_RC Tss2_Sys_ObjectChangeAuth_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_PRIVATE *outPrivate)
 {
@@ -87,7 +87,7 @@ TPM_RC Tss2_Sys_ObjectChangeAuth_Complete(
                                            outPrivate);
 }
 
-TPM_RC Tss2_Sys_ObjectChangeAuth(
+TSS2_RC Tss2_Sys_ObjectChangeAuth(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT objectHandle,
     TPMI_DH_OBJECT parentHandle,

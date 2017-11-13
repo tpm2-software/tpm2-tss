@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_Clear_Prepare(
+TSS2_RC Tss2_Sys_Clear_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_CLEAR authHandle)
 {
@@ -54,7 +54,7 @@ TPM_RC Tss2_Sys_Clear_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_Clear(
+TSS2_RC Tss2_Sys_Clear(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_CLEAR authHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

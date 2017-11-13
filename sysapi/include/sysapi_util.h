@@ -119,11 +119,11 @@ typedef struct {
 
 struct TSS2_SYS_CONTEXT;
 
-TPM_RC CopyCommandHeader(TSS2_SYS_CONTEXT *sysContext, TPM_CC commandCode);
+TSS2_RC CopyCommandHeader(TSS2_SYS_CONTEXT *sysContext, TPM_CC commandCode);
 UINT16 GetDigestSize( TPM_ALG_ID authHash );
 UINT32 GetCommandSize( TSS2_SYS_CONTEXT *sysContext );
 
-TPM_RC ConcatSizedByteBuffer( TPM2B_MAX_BUFFER *result, TPM2B *addBuffer );
+TSS2_RC ConcatSizedByteBuffer( TPM2B_MAX_BUFFER *result, TPM2B *addBuffer );
 
 void InitSysContextFields( TSS2_SYS_CONTEXT *sysContext );
 void InitSysContextPtrs ( TSS2_SYS_CONTEXT *sysContext, size_t contextSize );

@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_VerifySignature_Prepare(
+TSS2_RC Tss2_Sys_VerifySignature_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
     TPM2B_DIGEST *digest,
@@ -78,7 +78,7 @@ TPM_RC Tss2_Sys_VerifySignature_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_VerifySignature_Complete(
+TSS2_RC Tss2_Sys_VerifySignature_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMT_TK_VERIFIED *validation)
 {
@@ -96,7 +96,7 @@ TPM_RC Tss2_Sys_VerifySignature_Complete(
                                               &SYS_CONTEXT->nextData, validation);
 }
 
-TPM_RC Tss2_Sys_VerifySignature(
+TSS2_RC Tss2_Sys_VerifySignature(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

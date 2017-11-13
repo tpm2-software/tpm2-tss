@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_NV_ReadPublic_Prepare(
+TSS2_RC Tss2_Sys_NV_ReadPublic_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_INDEX nvIndex)
 {
@@ -54,7 +54,7 @@ TPM_RC Tss2_Sys_NV_ReadPublic_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_NV_ReadPublic_Complete(
+TSS2_RC Tss2_Sys_NV_ReadPublic_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_NV_PUBLIC *nvPublic,
     TPM2B_NAME *nvName)
@@ -81,7 +81,7 @@ TPM_RC Tss2_Sys_NV_ReadPublic_Complete(
                                         nvName);
 }
 
-TPM_RC Tss2_Sys_NV_ReadPublic(
+TSS2_RC Tss2_Sys_NV_ReadPublic(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_INDEX nvIndex,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

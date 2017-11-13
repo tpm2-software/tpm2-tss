@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_Import_Prepare(
+TSS2_RC Tss2_Sys_Import_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT parentHandle,
     TPM2B_DATA *encryptionKey,
@@ -101,7 +101,7 @@ TPM_RC Tss2_Sys_Import_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_Import_Complete(
+TSS2_RC Tss2_Sys_Import_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_PRIVATE *outPrivate)
 {
@@ -120,7 +120,7 @@ TPM_RC Tss2_Sys_Import_Complete(
                                            outPrivate);
 }
 
-TPM_RC Tss2_Sys_Import(
+TSS2_RC Tss2_Sys_Import(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT parentHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

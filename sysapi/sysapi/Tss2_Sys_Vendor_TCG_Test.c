@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_Vendor_TCG_Test_Prepare(
+TSS2_RC Tss2_Sys_Vendor_TCG_Test_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_DATA *inputData)
 {
@@ -54,7 +54,7 @@ TPM_RC Tss2_Sys_Vendor_TCG_Test_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_Vendor_TCG_Test_Complete(
+TSS2_RC Tss2_Sys_Vendor_TCG_Test_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_DATA *outputData)
 {
@@ -72,7 +72,7 @@ TPM_RC Tss2_Sys_Vendor_TCG_Test_Complete(
                                         &SYS_CONTEXT->nextData, outputData);
 }
 
-TPM_RC Tss2_Sys_Vendor_TCG_Test(
+TSS2_RC Tss2_Sys_Vendor_TCG_Test(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     TPM2B_DATA *inputData,

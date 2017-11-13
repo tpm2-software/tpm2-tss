@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_TestParms_Prepare(
+TSS2_RC Tss2_Sys_TestParms_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMT_PUBLIC_PARMS *parameters)
 {
@@ -54,7 +54,7 @@ TPM_RC Tss2_Sys_TestParms_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_TestParms(
+TSS2_RC Tss2_Sys_TestParms(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     TPMT_PUBLIC_PARMS *parameters,

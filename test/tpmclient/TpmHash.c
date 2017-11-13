@@ -34,7 +34,7 @@
 //
 UINT32 TpmHash( TPMI_ALG_HASH hashAlg, UINT16 size, BYTE *data, TPM2B_DIGEST *result )
 {
-    TPM_RC rval;
+    TSS2_RC rval;
     TPM2B_MAX_BUFFER dataSizedBuffer;
     UINT16 i;
     TSS2_SYS_CONTEXT *sysContext;

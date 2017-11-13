@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_NV_Certify_Prepare(
+TSS2_RC Tss2_Sys_NV_Certify_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
     TPMI_RH_NV_AUTH authHandle,
@@ -106,7 +106,7 @@ TPM_RC Tss2_Sys_NV_Certify_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_NV_Certify_Complete(
+TSS2_RC Tss2_Sys_NV_Certify_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_ATTEST *certifyInfo,
     TPMT_SIGNATURE *signature)
@@ -133,7 +133,7 @@ TPM_RC Tss2_Sys_NV_Certify_Complete(
                                             signature);
 }
 
-TPM_RC Tss2_Sys_NV_Certify(
+TSS2_RC Tss2_Sys_NV_Certify(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
     TPMI_RH_NV_AUTH authHandle,

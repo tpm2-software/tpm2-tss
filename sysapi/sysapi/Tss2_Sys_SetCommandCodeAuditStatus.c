@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_SetCommandCodeAuditStatus_Prepare(
+TSS2_RC Tss2_Sys_SetCommandCodeAuditStatus_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION auth,
     TPMI_ALG_HASH auditAlg,
@@ -75,7 +75,7 @@ TPM_RC Tss2_Sys_SetCommandCodeAuditStatus_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_SetCommandCodeAuditStatus(
+TSS2_RC Tss2_Sys_SetCommandCodeAuditStatus(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION auth,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

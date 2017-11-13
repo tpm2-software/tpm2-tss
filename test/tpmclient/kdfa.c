@@ -34,7 +34,7 @@
 
 //
 //
-TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
+TSS2_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
     TPM2B *contextU, TPM2B *contextV, UINT16 bits, TPM2B_MAX_BUFFER  *resultKey )
 {
     TPM2B_DIGEST tmpResult;
@@ -43,7 +43,7 @@ TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
     UINT8 *tpm2b_i_2Ptr = &tpm2b_i_2.buffer[0];
     TPM2B_DIGEST *bufferList[8];
     UINT32 bitsSwizzled, i_Swizzled;
-    TPM_RC rval;
+    TSS2_RC rval;
     int i, j;
     UINT16 bytes = bits / 8;
 

@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_ZGen_2Phase_Prepare(
+TSS2_RC Tss2_Sys_ZGen_2Phase_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyA,
     TPM2B_ECC_POINT *inQsB,
@@ -92,7 +92,7 @@ TPM_RC Tss2_Sys_ZGen_2Phase_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_ZGen_2Phase_Complete(
+TSS2_RC Tss2_Sys_ZGen_2Phase_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_ECC_POINT *outZ1,
     TPM2B_ECC_POINT *outZ2)
@@ -117,7 +117,7 @@ TPM_RC Tss2_Sys_ZGen_2Phase_Complete(
                                              &SYS_CONTEXT->nextData, outZ2);
 }
 
-TPM_RC Tss2_Sys_ZGen_2Phase(
+TSS2_RC Tss2_Sys_ZGen_2Phase(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyA,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

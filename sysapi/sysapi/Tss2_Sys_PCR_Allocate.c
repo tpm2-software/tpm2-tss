@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_PCR_Allocate_Prepare(
+TSS2_RC Tss2_Sys_PCR_Allocate_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authHandle,
     TPML_PCR_SELECTION *pcrAllocation)
@@ -62,7 +62,7 @@ TPM_RC Tss2_Sys_PCR_Allocate_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_PCR_Allocate_Complete(
+TSS2_RC Tss2_Sys_PCR_Allocate_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_YES_NO *allocationSuccess,
     UINT32 *maxPCR,
@@ -105,7 +105,7 @@ TPM_RC Tss2_Sys_PCR_Allocate_Complete(
                                     sizeAvailable);
 }
 
-TPM_RC Tss2_Sys_PCR_Allocate(
+TSS2_RC Tss2_Sys_PCR_Allocate(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
