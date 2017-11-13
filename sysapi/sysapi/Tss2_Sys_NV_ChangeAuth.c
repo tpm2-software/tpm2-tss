@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_NV_ChangeAuth_Prepare(
+TSS2_RC Tss2_Sys_NV_ChangeAuth_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_INDEX nvIndex,
     TPM2B_AUTH *newAuth)
@@ -61,7 +61,7 @@ TPM_RC Tss2_Sys_NV_ChangeAuth_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_NV_ChangeAuth(
+TSS2_RC Tss2_Sys_NV_ChangeAuth(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_INDEX nvIndex,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

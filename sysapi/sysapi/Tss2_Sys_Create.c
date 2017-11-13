@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_Create_Prepare(
+TSS2_RC Tss2_Sys_Create_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT parentHandle,
     TPM2B_SENSITIVE_CREATE *inSensitive,
@@ -36,7 +36,7 @@ TPM_RC Tss2_Sys_Create_Prepare(
     TPM2B_DATA *outsideInfo,
     TPML_PCR_SELECTION *creationPCR)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext || !creationPCR)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -94,7 +94,7 @@ TPM_RC Tss2_Sys_Create_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_Create_Complete(
+TSS2_RC Tss2_Sys_Create_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_PRIVATE *outPrivate,
     TPM2B_PUBLIC *outPublic,
@@ -102,7 +102,7 @@ TPM_RC Tss2_Sys_Create_Complete(
     TPM2B_DIGEST *creationHash,
     TPMT_TK_CREATION *creationTicket)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -145,7 +145,7 @@ TPM_RC Tss2_Sys_Create_Complete(
                                           creationTicket);
 }
 
-TPM_RC Tss2_Sys_Create(
+TSS2_RC Tss2_Sys_Create(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT parentHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

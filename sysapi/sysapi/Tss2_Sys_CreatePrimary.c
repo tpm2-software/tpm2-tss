@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_CreatePrimary_Prepare(
+TSS2_RC Tss2_Sys_CreatePrimary_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_HIERARCHY primaryHandle,
     TPM2B_SENSITIVE_CREATE *inSensitive,
@@ -97,7 +97,7 @@ TPM_RC Tss2_Sys_CreatePrimary_Prepare(
     return rval;
 }
 
-TPM_RC Tss2_Sys_CreatePrimary_Complete(
+TSS2_RC Tss2_Sys_CreatePrimary_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM_HANDLE *objectHandle,
     TPM2B_PUBLIC *outPublic,
@@ -154,7 +154,7 @@ TPM_RC Tss2_Sys_CreatePrimary_Complete(
     return rval;
 }
 
-TPM_RC Tss2_Sys_CreatePrimary(
+TSS2_RC Tss2_Sys_CreatePrimary(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_HIERARCHY primaryHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

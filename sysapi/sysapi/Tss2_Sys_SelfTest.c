@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_SelfTest_Prepare(
+TSS2_RC Tss2_Sys_SelfTest_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_YES_NO fullTest)
 {
@@ -54,7 +54,7 @@ TPM_RC Tss2_Sys_SelfTest_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_SelfTest(
+TSS2_RC Tss2_Sys_SelfTest(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     TPMI_YES_NO fullTest,

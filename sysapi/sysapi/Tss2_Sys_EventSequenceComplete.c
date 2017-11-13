@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_EventSequenceComplete_Prepare(
+TSS2_RC Tss2_Sys_EventSequenceComplete_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR pcrHandle,
     TPMI_DH_OBJECT sequenceHandle,
@@ -68,7 +68,7 @@ TPM_RC Tss2_Sys_EventSequenceComplete_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_EventSequenceComplete_Complete(
+TSS2_RC Tss2_Sys_EventSequenceComplete_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPML_DIGEST_VALUES *results)
 {
@@ -86,7 +86,7 @@ TPM_RC Tss2_Sys_EventSequenceComplete_Complete(
                                                 &SYS_CONTEXT->nextData, results);
 }
 
-TPM_RC Tss2_Sys_EventSequenceComplete(
+TSS2_RC Tss2_Sys_EventSequenceComplete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR pcrHandle,
     TPMI_DH_OBJECT sequenceHandle,

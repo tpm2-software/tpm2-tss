@@ -38,10 +38,10 @@ void InitEntities()
     }
 }
 
-TPM_RC AddEntity( TPM_HANDLE entityHandle, TPM2B_AUTH *auth )
+TSS2_RC AddEntity( TPM_HANDLE entityHandle, TPM2B_AUTH *auth )
 {
     int i;
-    TPM_RC rval = TPM_RC_FAILURE;
+    TSS2_RC rval = TPM_RC_FAILURE;
 
     for( i = 0; i < MAX_NUM_ENTITIES; i++ )
     {
@@ -62,10 +62,10 @@ TPM_RC AddEntity( TPM_HANDLE entityHandle, TPM2B_AUTH *auth )
     return rval;
 }
 
-TPM_RC DeleteEntity( TPM_HANDLE entityHandle )
+TSS2_RC DeleteEntity( TPM_HANDLE entityHandle )
 {
     int i;
-    TPM_RC rval = TPM_RC_FAILURE;
+    TSS2_RC rval = TPM_RC_FAILURE;
 
     for( i = 0; i < MAX_NUM_ENTITIES; i++ )
     {
@@ -79,10 +79,10 @@ TPM_RC DeleteEntity( TPM_HANDLE entityHandle )
     return rval;
 }
 
-TPM_RC GetEntityAuth( TPM_HANDLE entityHandle, TPM2B_AUTH *auth )
+TSS2_RC GetEntityAuth( TPM_HANDLE entityHandle, TPM2B_AUTH *auth )
 {
     int i;
-    TPM_RC rval = TPM_RC_FAILURE;
+    TSS2_RC rval = TPM_RC_FAILURE;
 
     for( i = 0; i < MAX_NUM_ENTITIES; i++ )
     {
@@ -97,10 +97,10 @@ TPM_RC GetEntityAuth( TPM_HANDLE entityHandle, TPM2B_AUTH *auth )
 }
 
 
-TPM_RC GetEntity( TPM_HANDLE entityHandle, ENTITY **entity )
+TSS2_RC GetEntity( TPM_HANDLE entityHandle, ENTITY **entity )
 {
     int i;
-    TPM_RC rval = TPM_RC_FAILURE;
+    TSS2_RC rval = TPM_RC_FAILURE;
 
     for( i = 0; i < MAX_NUM_ENTITIES; i++ )
     {

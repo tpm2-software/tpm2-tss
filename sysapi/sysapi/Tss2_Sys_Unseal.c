@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_Unseal_Prepare(
+TSS2_RC Tss2_Sys_Unseal_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT itemHandle)
 {
@@ -54,7 +54,7 @@ TPM_RC Tss2_Sys_Unseal_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_Unseal_Complete(
+TSS2_RC Tss2_Sys_Unseal_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_SENSITIVE_DATA *outData)
 {
@@ -73,7 +73,7 @@ TPM_RC Tss2_Sys_Unseal_Complete(
                                                   outData);
 }
 
-TPM_RC Tss2_Sys_Unseal(
+TSS2_RC Tss2_Sys_Unseal(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT itemHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

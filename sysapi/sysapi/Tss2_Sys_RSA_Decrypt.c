@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_RSA_Decrypt_Prepare(
+TSS2_RC Tss2_Sys_RSA_Decrypt_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
     TPM2B_PUBLIC_KEY_RSA *cipherText,
@@ -86,7 +86,7 @@ TPM_RC Tss2_Sys_RSA_Decrypt_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_RSA_Decrypt_Complete(
+TSS2_RC Tss2_Sys_RSA_Decrypt_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_PUBLIC_KEY_RSA *message)
 {
@@ -104,7 +104,7 @@ TPM_RC Tss2_Sys_RSA_Decrypt_Complete(
                                                   &SYS_CONTEXT->nextData, message);
 }
 
-TPM_RC Tss2_Sys_RSA_Decrypt(
+TSS2_RC Tss2_Sys_RSA_Decrypt(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

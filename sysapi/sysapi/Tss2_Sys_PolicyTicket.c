@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_PolicyTicket_Prepare(
+TSS2_RC Tss2_Sys_PolicyTicket_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     TPM2B_TIMEOUT *timeout,
@@ -99,7 +99,7 @@ TPM_RC Tss2_Sys_PolicyTicket_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_PolicyTicket(
+TSS2_RC Tss2_Sys_PolicyTicket(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
