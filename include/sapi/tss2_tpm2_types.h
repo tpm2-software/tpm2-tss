@@ -35,16 +35,230 @@
 
 #include <stdint.h>
 
-#include "implementation.h"
+/* Defines from previous implementation.h; DEPRECATED */
+#define  YES      1
+#define  NO       0
+#define MAX_COMMAND_SIZE		4096	/* maximum size of a command */
+#define MAX_RESPONSE_SIZE		4096	/* maximum size of a response */
+#define MAX_SESSION_NUM 		3	/* this is the current maximum value */
+#define HASH_COUNT NUM_PCR_BANKS                /* this is for compatibility */
 
-#define    MAX_CAP_DATA         (MAX_CAP_BUFFER-sizeof(TPM_CAP)-sizeof(UINT32))
-#define    MAX_CAP_ALGS         (TPM_ALG_LAST - TPM_ALG_FIRST + 1)
-#define    MAX_CAP_HANDLES      (MAX_CAP_DATA/sizeof(TPM_HANDLE))
-#define    MAX_CAP_CC           256
-#define    MAX_TPM_PROPERTIES   (MAX_CAP_DATA/sizeof(TPMS_TAGGED_PROPERTY))
-#define    MAX_PCR_PROPERTIES   (MAX_CAP_DATA/sizeof(TPMS_TAGGED_PCR_SELECT))
-#define    MAX_ECC_CURVES       (MAX_CAP_DATA/sizeof(TPM_ECC_CURVE))
-#define    MAX_PTT_PROPERTIES   (MAX_CAP_DATA/sizeof(UINT32))
+/* TPM constants for buffer sizes */
+#define NUM_PCR_BANKS 3
+#define MAX_DIGEST_BUFFER 1024
+#define MAX_NV_BUFFER_SIZE 2048
+#define MAX_PCRS 32
+#define MAX_ALG_LIST_SIZE 128
+#define MAX_CAP_CC 256
+#define MAX_CAP_BUFFER 1024
+#define MAX_CONTEXT_SIZE 5120
+
+/* Hash algorithm sizes */
+#define SHA_DIGEST_SIZE 20
+#define SHA1_DIGEST_SIZE 20
+#define SHA256_DIGEST_SIZE 32
+#define SHA384_DIGEST_SIZE 48
+#define SHA512_DIGEST_SIZE 64
+#define SM3_256_DIGEST_SIZE 32
+
+/* Encryption algorithm sizes */
+#define MAX_SYM_BLOCK_SIZE 16
+#define MAX_SYM_DATA 256
+#define MAX_ECC_KEY_BYTES 128
+#define MAX_SYM_KEY_BYTES 32
+#define MAX_RSA_KEY_BYTES 512
+
+/* Capability buffer sizes*/ 
+#define LABEL_MAX_BUFFER 32
+#define PCR_SELECT_MAX ((MAX_PCRS+7)/8)
+#define MAX_CAP_HANDLES ((MAX_CAP_BUFFER-sizeof(TPM_CAP)-\
+                               sizeof(UINT32))/sizeof(TPM_HANDLE))
+#define MAX_CAP_ALGS ((MAX_CAP_BUFFER-sizeof(TPM_CAP)-\
+                            sizeof(UINT32))/sizeof(TPMS_ALG_PROPERTY))
+#define MAX_TPM_PROPERTIES ((MAX_CAP_BUFFER-sizeof(TPM_CAP)-\
+                                  sizeof(UINT32))/sizeof(TPMS_TAGGED_PROPERTY))
+#define MAX_PCR_PROPERTIES ((MAX_CAP_BUFFER-sizeof(TPM_CAP)-\
+                                 sizeof(UINT32))/sizeof(TPMS_TAGGED_PCR_SELECT)) 
+#define MAX_ECC_CURVES ((MAX_CAP_BUFFER-sizeof(TPM_CAP)-\
+                              sizeof(UINT32))/sizeof(TPM_ECC_CURVE)) 
+#define MAX_TAGGED_POLICIES ((MAX_CAP_BUFFER-sizeof(TPM_CAP)-\
+                                   sizeof(UINT32))/sizeof(TPMS_TAGGED_POLICY)) 
+#define PRIVATE_VENDOR_SPECIFIC_BYTES ((MAX_RSA_KEY_BYTES/2)*(3+2))
+
+/* Vendor Specific Defines */
+#define MAX_PTT_PROPERTIES (MAX_CAP_BUFFER/sizeof(UINT32))
+
+// From TCG Algorithm Registry: Table 3 - Definition of TPM_ALG_ID Constants
+typedef  UINT16             TPM_ALG_ID;
+#define  TPM_ALG_ERROR               0x0000
+#define  TPM_ALG_RSA                 0x0001
+#define  TPM_ALG_SHA                 0x0004
+#define  TPM_ALG_SHA1                0x0004
+#define  TPM_ALG_HMAC                0x0005
+#define  TPM_ALG_AES                 0x0006
+#define  TPM_ALG_MGF1                0x0007
+#define  TPM_ALG_KEYEDHASH           0x0008
+#define  TPM_ALG_XOR                 0x000A
+#define  TPM_ALG_SHA256              0x000B
+#define  TPM_ALG_SHA384              0x000C
+#define  TPM_ALG_SHA512              0x000D
+#define  TPM_ALG_NULL                0x0010
+#define  TPM_ALG_SM3_256             0x0012
+#define  TPM_ALG_SM4                 0x0013
+#define  TPM_ALG_RSASSA              0x0014
+#define  TPM_ALG_RSAES               0x0015
+#define  TPM_ALG_RSAPSS              0x0016
+#define  TPM_ALG_OAEP                0x0017
+#define  TPM_ALG_ECDSA               0x0018
+#define  TPM_ALG_ECDH                0x0019
+#define  TPM_ALG_ECDAA               0x001A
+#define  TPM_ALG_SM2                 0x001B
+#define  TPM_ALG_ECSCHNORR           0x001C
+#define  TPM_ALG_ECMQV               0x001D
+#define  TPM_ALG_KDF1_SP800_56A      0x0020
+#define  TPM_ALG_KDF2                0x0021
+#define  TPM_ALG_KDF1_SP800_108      0x0022
+#define  TPM_ALG_ECC                 0x0023
+#define  TPM_ALG_SYMCIPHER           0x0025
+#define  TPM_ALG_CAMELLIA            0x0026
+#define  TPM_ALG_CTR                 0x0040
+#define  TPM_ALG_SHA3_256            0x0027
+#define  TPM_ALG_SHA3_384            0x0028
+#define  TPM_ALG_SHA3_512            0x0029
+#define  TPM_ALG_OFB                 0x0041
+#define  TPM_ALG_CBC                 0x0042
+#define  TPM_ALG_CFB                 0x0043
+#define  TPM_ALG_ECB                 0x0044
+#define  TPM_ALG_FIRST               0x0001
+#define  TPM_ALG_LAST                0x0044
+
+//     From TCG Algorithm Registry: Table 3 - Definition of TPM_ECC_CURVE Constants
+
+typedef  UINT16             TPM_ECC_CURVE;
+#define  TPM_ECC_NONE         (TPM_ECC_CURVE)(0x0000)
+#define  TPM_ECC_NIST_P192    (TPM_ECC_CURVE)(0x0001)
+#define  TPM_ECC_NIST_P224    (TPM_ECC_CURVE)(0x0002)
+#define  TPM_ECC_NIST_P256    (TPM_ECC_CURVE)(0x0003)
+#define  TPM_ECC_NIST_P384    (TPM_ECC_CURVE)(0x0004)
+#define  TPM_ECC_NIST_P521    (TPM_ECC_CURVE)(0x0005)
+#define  TPM_ECC_BN_P256      (TPM_ECC_CURVE)(0x0010)
+#define  TPM_ECC_BN_P638      (TPM_ECC_CURVE)(0x0011)
+#define  TPM_ECC_SM2_P256     (TPM_ECC_CURVE)(0x0020)
+
+// From TPM 2.0 Part 2: Table 13 - Definition of TPM_CC Constants
+typedef  UINT32             TPM_CC;
+#define  TPM_CC_NV_UndefineSpaceSpecial       (TPM_CC)(0x0000011f)
+#define TPM_CC_FIRST TPM_CC_NV_UndefineSpaceSpecial
+#define  TPM_CC_EvictControl                  (TPM_CC)(0x00000120)
+#define  TPM_CC_HierarchyControl              (TPM_CC)(0x00000121)
+#define  TPM_CC_NV_UndefineSpace              (TPM_CC)(0x00000122)
+#define  TPM_CC_ChangeEPS                     (TPM_CC)(0x00000124)
+#define  TPM_CC_ChangePPS                     (TPM_CC)(0x00000125)
+#define  TPM_CC_Clear                         (TPM_CC)(0x00000126)
+#define  TPM_CC_ClearControl                  (TPM_CC)(0x00000127)
+#define  TPM_CC_ClockSet                      (TPM_CC)(0x00000128)
+#define  TPM_CC_HierarchyChangeAuth           (TPM_CC)(0x00000129)
+#define  TPM_CC_NV_DefineSpace                (TPM_CC)(0x0000012a)
+#define  TPM_CC_PCR_Allocate                  (TPM_CC)(0x0000012b)
+#define  TPM_CC_PCR_SetAuthPolicy             (TPM_CC)(0x0000012c)
+#define  TPM_CC_PP_Commands                   (TPM_CC)(0x0000012d)
+#define  TPM_CC_SetPrimaryPolicy              (TPM_CC)(0x0000012e)
+#define  TPM_CC_FieldUpgradeStart             (TPM_CC)(0x0000012f)
+#define  TPM_CC_ClockRateAdjust               (TPM_CC)(0x00000130)
+#define  TPM_CC_CreatePrimary                 (TPM_CC)(0x00000131)
+#define  TPM_CC_NV_GlobalWriteLock            (TPM_CC)(0x00000132)
+#define  TPM_CC_GetCommandAuditDigest         (TPM_CC)(0x00000133)
+#define  TPM_CC_NV_Increment                  (TPM_CC)(0x00000134)
+#define  TPM_CC_NV_SetBits                    (TPM_CC)(0x00000135)
+#define  TPM_CC_NV_Extend                     (TPM_CC)(0x00000136)
+#define  TPM_CC_NV_Write                      (TPM_CC)(0x00000137)
+#define  TPM_CC_NV_WriteLock                  (TPM_CC)(0x00000138)
+#define  TPM_CC_DictionaryAttackLockReset     (TPM_CC)(0x00000139)
+#define  TPM_CC_DictionaryAttackParameters    (TPM_CC)(0x0000013a)
+#define  TPM_CC_NV_ChangeAuth                 (TPM_CC)(0x0000013b)
+#define  TPM_CC_PCR_Event                     (TPM_CC)(0x0000013c)
+#define  TPM_CC_PCR_Reset                     (TPM_CC)(0x0000013d)
+#define  TPM_CC_SequenceComplete              (TPM_CC)(0x0000013e)
+#define  TPM_CC_SetAlgorithmSet               (TPM_CC)(0x0000013f)
+#define  TPM_CC_SetCommandCodeAuditStatus     (TPM_CC)(0x00000140)
+#define  TPM_CC_FieldUpgradeData              (TPM_CC)(0x00000141)
+#define  TPM_CC_IncrementalSelfTest           (TPM_CC)(0x00000142)
+#define  TPM_CC_SelfTest                      (TPM_CC)(0x00000143)
+#define  TPM_CC_Startup                       (TPM_CC)(0x00000144)
+#define  TPM_CC_Shutdown                      (TPM_CC)(0x00000145)
+#define  TPM_CC_StirRandom                    (TPM_CC)(0x00000146)
+#define  TPM_CC_ActivateCredential            (TPM_CC)(0x00000147)
+#define  TPM_CC_Certify                       (TPM_CC)(0x00000148)
+#define  TPM_CC_PolicyNV                      (TPM_CC)(0x00000149)
+#define  TPM_CC_CertifyCreation               (TPM_CC)(0x0000014a)
+#define  TPM_CC_Duplicate                     (TPM_CC)(0x0000014b)
+#define  TPM_CC_GetTime                       (TPM_CC)(0x0000014c)
+#define  TPM_CC_GetSessionAuditDigest         (TPM_CC)(0x0000014d)
+#define  TPM_CC_NV_Read                       (TPM_CC)(0x0000014e)
+#define  TPM_CC_NV_ReadLock                   (TPM_CC)(0x0000014f)
+#define  TPM_CC_ObjectChangeAuth              (TPM_CC)(0x00000150)
+#define  TPM_CC_PolicySecret                  (TPM_CC)(0x00000151)
+#define  TPM_CC_Rewrap                        (TPM_CC)(0x00000152)
+#define  TPM_CC_Create                        (TPM_CC)(0x00000153)
+#define  TPM_CC_ECDH_ZGen                     (TPM_CC)(0x00000154)
+#define  TPM_CC_HMAC                          (TPM_CC)(0x00000155)
+#define  TPM_CC_Import                        (TPM_CC)(0x00000156)
+#define  TPM_CC_Load                          (TPM_CC)(0x00000157)
+#define  TPM_CC_Quote                         (TPM_CC)(0x00000158)
+#define  TPM_CC_RSA_Decrypt                   (TPM_CC)(0x00000159)
+#define  TPM_CC_HMAC_Start                    (TPM_CC)(0x0000015b)
+#define  TPM_CC_SequenceUpdate                (TPM_CC)(0x0000015c)
+#define  TPM_CC_Sign                          (TPM_CC)(0x0000015d)
+#define  TPM_CC_Unseal                        (TPM_CC)(0x0000015e)
+#define  TPM_CC_PolicySigned                  (TPM_CC)(0x00000160)
+#define  TPM_CC_ContextLoad                   (TPM_CC)(0x00000161)
+#define  TPM_CC_ContextSave                   (TPM_CC)(0x00000162)
+#define  TPM_CC_ECDH_KeyGen                   (TPM_CC)(0x00000163)
+#define  TPM_CC_EncryptDecrypt                (TPM_CC)(0x00000164)
+#define  TPM_CC_FlushContext                  (TPM_CC)(0x00000165)
+#define  TPM_CC_LoadExternal                  (TPM_CC)(0x00000167)
+#define  TPM_CC_MakeCredential                (TPM_CC)(0x00000168)
+#define  TPM_CC_NV_ReadPublic                 (TPM_CC)(0x00000169)
+#define  TPM_CC_PolicyAuthorize               (TPM_CC)(0x0000016a)
+#define  TPM_CC_PolicyAuthValue               (TPM_CC)(0x0000016b)
+#define  TPM_CC_PolicyCommandCode             (TPM_CC)(0x0000016c)
+#define  TPM_CC_PolicyCounterTimer            (TPM_CC)(0x0000016d)
+#define  TPM_CC_PolicyCpHash                  (TPM_CC)(0x0000016e)
+#define  TPM_CC_PolicyLocality                (TPM_CC)(0x0000016f)
+#define  TPM_CC_PolicyNameHash                (TPM_CC)(0x00000170)
+#define  TPM_CC_PolicyOR                      (TPM_CC)(0x00000171)
+#define  TPM_CC_PolicyTicket                  (TPM_CC)(0x00000172)
+#define  TPM_CC_ReadPublic                    (TPM_CC)(0x00000173)
+#define  TPM_CC_RSA_Encrypt                   (TPM_CC)(0x00000174)
+#define  TPM_CC_StartAuthSession              (TPM_CC)(0x00000176)
+#define  TPM_CC_VerifySignature               (TPM_CC)(0x00000177)
+#define  TPM_CC_ECC_Parameters                (TPM_CC)(0x00000178)
+#define  TPM_CC_FirmwareRead                  (TPM_CC)(0x00000179)
+#define  TPM_CC_GetCapability                 (TPM_CC)(0x0000017a)
+#define  TPM_CC_GetRandom                     (TPM_CC)(0x0000017b)
+#define  TPM_CC_GetTestResult                 (TPM_CC)(0x0000017c)
+#define  TPM_CC_Hash                          (TPM_CC)(0x0000017d)
+#define  TPM_CC_PCR_Read                      (TPM_CC)(0x0000017e)
+#define  TPM_CC_PolicyPCR                     (TPM_CC)(0x0000017f)
+#define  TPM_CC_PolicyRestart                 (TPM_CC)(0x00000180)
+#define  TPM_CC_ReadClock                     (TPM_CC)(0x00000181)
+#define  TPM_CC_PCR_Extend                    (TPM_CC)(0x00000182)
+#define  TPM_CC_PCR_SetAuthValue              (TPM_CC)(0x00000183)
+#define  TPM_CC_NV_Certify                    (TPM_CC)(0x00000184)
+#define  TPM_CC_EventSequenceComplete         (TPM_CC)(0x00000185)
+#define  TPM_CC_HashSequenceStart             (TPM_CC)(0x00000186)
+#define  TPM_CC_PolicyPhysicalPresence        (TPM_CC)(0x00000187)
+#define  TPM_CC_PolicyDuplicationSelect       (TPM_CC)(0x00000188)
+#define  TPM_CC_PolicyGetDigest               (TPM_CC)(0x00000189)
+#define  TPM_CC_TestParms                     (TPM_CC)(0x0000018a)
+#define  TPM_CC_Commit                        (TPM_CC)(0x0000018b)
+#define  TPM_CC_PolicyPassword                (TPM_CC)(0x0000018c)
+#define  TPM_CC_ZGen_2Phase                   (TPM_CC)(0x0000018d)
+#define  TPM_CC_EC_Ephemeral                  (TPM_CC)(0x0000018e)
+#define  TPM_CC_PolicyNvWritten               (TPM_CC)(0x0000018f)
+#define  TPM_CC_EncryptDecrypt2               (TPM_CC)(0x00000193)
+#define  TPM_CC_LAST                          (TPM_CC)(0x00000193)
+#define  TPM_CC_Vendor_TCG_Test               (TPM_CC)(0x20000000)
 
 /* Table 5  Definition of Types for Documentation Clarity */
 typedef	UINT32	TPM_ALGORITHM_ID;	 /* this is the 1.2 compatible form of the TPM_ALG_ID  */
@@ -432,17 +646,17 @@ typedef	TPM_HANDLE TPM_HC;
 #define	HR_NV_INDEX	(TPM_HT_NV_INDEX << HR_SHIFT )	 /*   */
 #define	HR_PERMANENT	(TPM_HT_PERMANENT << HR_SHIFT )	 /*   */
 #define	PCR_FIRST	(HR_PCR + 0 )	 /* first PCR  */
-#define	PCR_LAST	(PCR_FIRST + IMPLEMENTATION_PCR - 1 )	 /* last PCR  */
+#define	PCR_LAST	(PCR_FIRST + MAX_PCRS - 1 )	 /* last PCR  */
 #define	HMAC_SESSION_FIRST	(HR_HMAC_SESSION + 0 )	 /* first HMAC session  */
-#define	HMAC_SESSION_LAST	(HMAC_SESSION_FIRST + MAX_ACTIVE_SESSIONS - 1 )	 /* last HMAC session  */
+#define	HMAC_SESSION_LAST	(HMAC_SESSION_FIRST + 0x00fffffe )	 /* last HMAC session  */
 #define	LOADED_SESSION_FIRST	(HMAC_SESSION_FIRST )	 /* used in GetCapability  */
 #define	LOADED_SESSION_LAST	(HMAC_SESSION_LAST )	 /* used in GetCapability  */
 #define	POLICY_SESSION_FIRST	(HR_POLICY_SESSION + 0 )	 /* first policy session  */
-#define	POLICY_SESSION_LAST	(POLICY_SESSION_FIRST + MAX_ACTIVE_SESSIONS - 1 )	 /* last policy session   */
+#define	POLICY_SESSION_LAST	(POLICY_SESSION_FIRST + 0x00fffffe )	 /* last policy session   */
 #define	TRANSIENT_FIRST	(HR_TRANSIENT + 0 )	 /* first transient object  */
 #define	ACTIVE_SESSION_FIRST	(POLICY_SESSION_FIRST )	 /* used in GetCapability  */
 #define	ACTIVE_SESSION_LAST	(POLICY_SESSION_LAST )	 /* used in GetCapability  */
-#define	TRANSIENT_LAST	(TRANSIENT_FIRST + MAX_LOADED_OBJECTS - 1 )	 /* last transient object  */
+#define	TRANSIENT_LAST	(TRANSIENT_FIRST + 0x00fffffe )	 /* last transient object  */
 #define	PERSISTENT_FIRST	(HR_PERSISTENT + 0 )	 /* first persistent object  */
 #define	PERSISTENT_LAST	(PERSISTENT_FIRST + 0x00FFFFFF )	 /* last persistent object  */
 #define	PLATFORM_PERSISTENT	(PERSISTENT_FIRST + 0x00800000 )	 /* first platform persistent object  */
@@ -1124,7 +1338,7 @@ typedef	struct {
 /* Table 100  Definition of TPML_DIGEST_VALUES Structure */
 typedef	struct {
 	UINT32	count;	 /* number of digests in the list  */
-	TPMT_HA	digests[HASH_COUNT];	 /* a list of tagged digests  */
+	TPMT_HA	digests[NUM_PCR_BANKS];	 /* a list of tagged digests  */
 } TPML_DIGEST_VALUES;
 
 /* Table 101  Definition of TPM2B_DIGEST_VALUES Structure */
@@ -1133,7 +1347,7 @@ TPM2B_TYPE1( DIGEST_VALUES, sizeof(TPML_DIGEST_VALUES), buffer );
 /* Table 102  Definition of TPML_PCR_SELECTION Structure */
 typedef	struct {
 	UINT32	count;	 /* number of selection structuresA value of zero is allowed.  */
-	TPMS_PCR_SELECTION	pcrSelections[HASH_COUNT];	 /* list of selections  */
+	TPMS_PCR_SELECTION	pcrSelections[NUM_PCR_BANKS];	 /* list of selections  */
 } TPML_PCR_SELECTION;
 
 /* Table 103  Definition of TPML_ALG_PROPERTY Structure <OUT> */
