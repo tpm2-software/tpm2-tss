@@ -37,7 +37,7 @@ TSS2_RC Tss2_Sys_ECDH_KeyGen_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_ECDH_KeyGen);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_ECDH_KeyGen);
     if (rval)
         return rval;
 

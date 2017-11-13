@@ -38,7 +38,7 @@ TSS2_RC Tss2_Sys_PCR_Extend_Prepare(
     if (!sysContext || !digests)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PCR_Extend);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PCR_Extend);
     if (rval)
         return rval;
 

@@ -36,19 +36,19 @@ enum cmdStates {CMD_STAGE_INITIALIZE,
 
 #pragma pack(push, 1)
 typedef struct _TPM20_Header_In {
-  TPM_ST tag;
+  TPM2_ST tag;
   UINT32 commandSize;
   UINT32 commandCode;
 } TPM20_Header_In;
 
 typedef struct _TPM20_Header_Out {
-  TPM_ST tag;
+  TPM2_ST tag;
   UINT32 responseSize;
   UINT32 responseCode;
 } TPM20_Header_Out;
 
 typedef struct _TPM20_ErrorResponse {
-  TPM_ST tag;
+  TPM2_ST tag;
   UINT32 responseSize;
   UINT32 responseCode;
 } TPM20_ErrorResponse;
@@ -64,7 +64,7 @@ typedef struct {
     // These are set by system API and used by helper functions to calculate cpHash,
     // rpHash, and for auditing.
     //
-    TPM_CC commandCode;
+    TPM2_CC commandCode;
     UINT32 cpBufferUsedSize;
     UINT8 *cpBuffer;
     UINT32 *rspParamsSize;  // Points to response paramsSize.
@@ -105,7 +105,7 @@ typedef struct {
 #define SYS_REQ_HEADER ((TPM20_Header_In *)(SYS_CONTEXT->cmdBuffer))
 
 typedef struct {
-    TPM_CC commandCode;
+    TPM2_CC commandCode;
     int numCommandHandles;  // Num of handles that require authorization in
                             // command: used for virtualization and for
                             // parsing sessions following handles section.
@@ -119,8 +119,8 @@ struct TSS2_SYS_CONTEXT;
 #ifdef __cplusplus
 extern "C" {
 #endif
-TSS2_RC CopyCommandHeader(TSS2_SYS_CONTEXT *sysContext, TPM_CC commandCode);
-UINT16 GetDigestSize( TPM_ALG_ID authHash );
+TSS2_RC CopyCommandHeader(TSS2_SYS_CONTEXT *sysContext, TPM2_CC commandCode);
+UINT16 GetDigestSize( TPM2_ALG_ID authHash );
 UINT32 GetCommandSize( TSS2_SYS_CONTEXT *sysContext );
 
 TSS2_RC ConcatSizedByteBuffer( TPM2B_MAX_BUFFER *result, TPM2B *addBuffer );
@@ -146,15 +146,15 @@ TSS2_RC CommonOneCall(
 
 TSS2_RC CommonPreparePrologue(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_CC commandCode
+    TPM2_CC commandCode
     );
 
 TSS2_RC CommonPrepareEpilogue(
     TSS2_SYS_CONTEXT *sysContext
     );
 
-int GetNumCommandHandles( TPM_CC commandCode );
-int GetNumResponseHandles( TPM_CC commandCode );
+int GetNumCommandHandles( TPM2_CC commandCode );
+int GetNumResponseHandles( TPM2_CC commandCode );
 
 TSS2_SYS_CONTEXT *InitSysContext(
     UINT16 maxCommandSize,

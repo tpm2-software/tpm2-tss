@@ -40,7 +40,7 @@ TSS2_RC Tss2_Sys_PCR_SetAuthPolicy_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PCR_SetAuthPolicy);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PCR_SetAuthPolicy);
     if (rval)
         return rval;
 

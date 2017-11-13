@@ -29,20 +29,20 @@
 #include "sysapi_util.h"
 
 typedef struct {
-    TPM_ALG_ID  algId;
+    TPM2_ALG_ID  algId;
     UINT16      size;
 } HASH_SIZE_INFO;
 
 HASH_SIZE_INFO   hashSizes[] = {
-    {TPM_ALG_SHA1,          SHA1_DIGEST_SIZE},
-    {TPM_ALG_SHA256,        SHA256_DIGEST_SIZE},
-    {TPM_ALG_SHA384,        SHA384_DIGEST_SIZE},
-    {TPM_ALG_SHA512,        SHA512_DIGEST_SIZE},
-    {TPM_ALG_SM3_256,       SM3_256_DIGEST_SIZE},
-    {TPM_ALG_NULL,          0}
+    {TPM2_ALG_SHA1,          TPM2_SHA1_DIGEST_SIZE},
+    {TPM2_ALG_SHA256,        TPM2_SHA256_DIGEST_SIZE},
+    {TPM2_ALG_SHA384,        TPM2_SHA384_DIGEST_SIZE},
+    {TPM2_ALG_SHA512,        TPM2_SHA512_DIGEST_SIZE},
+    {TPM2_ALG_SM3_256,       TPM2_SM3_256_DIGEST_SIZE},
+    {TPM2_ALG_NULL,          0}
 };
 
-UINT16 GetDigestSize(TPM_ALG_ID authHash)
+UINT16 GetDigestSize(TPM2_ALG_ID authHash)
 {
     uint8_t  i;
 

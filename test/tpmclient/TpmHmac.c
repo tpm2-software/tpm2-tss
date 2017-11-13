@@ -51,7 +51,7 @@ UINT32 TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2B **bufferList, TPM2B_DIG
     TSS2_SYS_RSP_AUTHS sessionsDataOut;
 
     UINT32 rval;
-    TPM_HANDLE keyHandle;
+    TPM2_HANDLE keyHandle;
     TPM2B_NAME keyName;
 
     TPM2B keyAuth;
@@ -67,13 +67,13 @@ UINT32 TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2B **bufferList, TPM2B_DIG
     nullAuth.size = 0;
 
     rval = LoadExternalHMACKey( hashAlg, key, &keyHandle, &keyName );
-    if( rval != TPM_RC_SUCCESS )
+    if( rval != TPM2_RC_SUCCESS )
     {
         return( rval );
     }
 
     // Init input sessions struct
-    sessionData.sessionHandle = TPM_RS_PW;
+    sessionData.sessionHandle = TPM2_RS_PW;
     nonce.size = 0;
     sessionData.nonce = nonce;
     CopySizedByteBuffer((TPM2B *)&hmac, (TPM2B *)&keyAuth);
@@ -90,11 +90,11 @@ UINT32 TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2B **bufferList, TPM2B_DIG
 
     sysContext = InitSysContext( 3000, resMgrTctiContext, &abiVersion );
     if( sysContext == 0 )
-        return TSS2_APP_ERROR_LEVEL + TPM_RC_FAILURE;
+        return TSS2_APP_ERROR_LEVEL + TPM2_RC_FAILURE;
 
     rval = Tss2_Sys_HMAC_Start( sysContext, keyHandle, &sessionsData, &nullAuth, hashAlg, &sequenceHandle, 0 );
 
-    if( rval != TPM_RC_SUCCESS )
+    if( rval != TPM2_RC_SUCCESS )
         goto teardown;
 
     hmac.size = 0;
@@ -103,15 +103,15 @@ UINT32 TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2B **bufferList, TPM2B_DIG
     {
         rval = Tss2_Sys_SequenceUpdate ( sysContext, sequenceHandle, &sessionsData, (TPM2B_MAX_BUFFER *)( bufferList[i] ), &sessionsDataOut );
 
-        if( rval != TPM_RC_SUCCESS )
+        if( rval != TPM2_RC_SUCCESS )
             goto teardown;
     }
 
     INIT_SIMPLE_TPM2B_SIZE( *result );
     rval = Tss2_Sys_SequenceComplete ( sysContext, sequenceHandle, &sessionsData, ( TPM2B_MAX_BUFFER *)&emptyBuffer,
-            TPM_RH_PLATFORM, result, &validation, &sessionsDataOut );
+            TPM2_RH_PLATFORM, result, &validation, &sessionsDataOut );
 
-    if( rval != TPM_RC_SUCCESS )
+    if( rval != TPM2_RC_SUCCESS )
         goto teardown;
 
     rval = Tss2_Sys_FlushContext( sysContext, keyHandle );

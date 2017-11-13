@@ -39,7 +39,7 @@ TSS2_RC Tss2_Sys_LoadExternal_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_LoadExternal);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_LoadExternal);
 
     /* If no private key is specified, set the private key size field to 0 */
     if (!inPrivate) {
@@ -80,7 +80,7 @@ TSS2_RC Tss2_Sys_LoadExternal_Prepare(
 
 TSS2_RC Tss2_Sys_LoadExternal_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_HANDLE *objectHandle,
+    TPM2_HANDLE *objectHandle,
     TPM2B_NAME *name)
 {
     TSS2_RC rval;
@@ -110,7 +110,7 @@ TSS2_RC Tss2_Sys_LoadExternal(
     const TPM2B_SENSITIVE	*inPrivate,
     const TPM2B_PUBLIC	*inPublic,
     TPMI_RH_HIERARCHY hierarchy,
-    TPM_HANDLE *objectHandle,
+    TPM2_HANDLE *objectHandle,
     TPM2B_NAME *name,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {

@@ -38,7 +38,7 @@ TSS2_RC Tss2_Sys_PolicyOR_Prepare(
     if (!sysContext || !pHashList)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PolicyOR);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PolicyOR);
     if (rval)
         return rval;
 

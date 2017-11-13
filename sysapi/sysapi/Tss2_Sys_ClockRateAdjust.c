@@ -31,14 +31,14 @@
 TSS2_RC Tss2_Sys_ClockRateAdjust_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION auth,
-    TPM_CLOCK_ADJUST rateAdjust)
+    TPM2_CLOCK_ADJUST rateAdjust)
 {
     TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_ClockRateAdjust);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_ClockRateAdjust);
     if (rval)
         return rval;
 
@@ -64,7 +64,7 @@ TSS2_RC Tss2_Sys_ClockRateAdjust(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION auth,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM_CLOCK_ADJUST rateAdjust,
+    TPM2_CLOCK_ADJUST rateAdjust,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;

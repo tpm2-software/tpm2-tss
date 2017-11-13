@@ -30,7 +30,7 @@
 
 TSS2_RC Tss2_Sys_GetCapability_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_CAP capability,
+    TPM2_CAP capability,
     UINT32 property,
     UINT32 propertyCount)
 {
@@ -39,7 +39,7 @@ TSS2_RC Tss2_Sys_GetCapability_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_GetCapability);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_GetCapability);
     if (rval)
         return rval;
 
@@ -98,7 +98,7 @@ TSS2_RC Tss2_Sys_GetCapability_Complete(
 TSS2_RC Tss2_Sys_GetCapability(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM_CAP capability,
+    TPM2_CAP capability,
     UINT32 property,
     UINT32 propertyCount,
     TPMI_YES_NO *moreData,

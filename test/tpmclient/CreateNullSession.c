@@ -38,7 +38,7 @@ void InitNullSession( TPMS_AUTH_COMMAND *nullSessionData )
     if( nullSessionData )
     {
 
-        nullSessionData->sessionHandle = TPM_RS_PW;
+        nullSessionData->sessionHandle = TPM2_RS_PW;
 
         // Init nonce.
         nullSessionData->nonce.size = 0;

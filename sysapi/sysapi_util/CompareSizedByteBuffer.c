@@ -31,10 +31,10 @@
 TSS2_RC CompareSizedByteBuffer(TPM2B *buffer1, TPM2B *buffer2)
 {
     if (buffer1->size != buffer2->size)
-        return TPM_RC_FAILURE;
+        return TPM2_RC_FAILURE;
 
     if (memcmp(buffer1->buffer, buffer2->buffer, buffer1->size))
-        return TPM_RC_FAILURE;
+        return TPM2_RC_FAILURE;
 
-    return TPM_RC_SUCCESS;
+    return TPM2_RC_SUCCESS;
 }

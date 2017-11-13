@@ -37,7 +37,7 @@ TSS2_RC Tss2_Sys_FlushContext_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_FlushContext);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_FlushContext);
     if (rval)
         return rval;
     rval = Tss2_MU_UINT32_Marshal(flushHandle, SYS_CONTEXT->cmdBuffer,

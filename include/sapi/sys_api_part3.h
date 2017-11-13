@@ -34,378 +34,378 @@
 #endif  /* TSS2_API_VERSION_1_1_1_1 */
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_Startup_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_Shutdown_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_SelfTest_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PolicyRestart_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_StirRandom_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_SequenceUpdate_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_SetCommandCodeAuditStatus_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PCR_Extend_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PCR_SetAuthPolicy_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PCR_SetAuthValue_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PCR_Reset_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PolicyTicket_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PolicyOR_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PolicyPCR_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PolicyLocality_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PolicyNV_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PolicyCounterTimer_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PolicyCommandCode_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PolicyPhysicalPresence_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PolicyCpHash_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PolicyNameHash_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PolicyDuplicationSelect_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PolicyAuthorize_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PolicyAuthValue_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PolicyPassword_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PolicyNvWritten_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_HierarchyControl_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_SetPrimaryPolicy_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_ChangePPS_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_ChangeEPS_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_Clear_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_ClearControl_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_HierarchyChangeAuth_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_DictionaryAttackLockReset_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_DictionaryAttackParameters_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_PP_Commands_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_SetAlgorithmSet_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_FieldUpgradeStart_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_FlushContext_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_EvictControl_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_ClockSet_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_ClockRateAdjust_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_TestParms_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_NV_DefineSpace_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_NV_UndefineSpace_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_NV_UndefineSpaceSpecial_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_NV_Write_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_NV_Increment_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_NV_Extend_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_NV_SetBits_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_NV_WriteLock_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_NV_GlobalWriteLock_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
 } TPM20_NV_ReadLock_Out;
 
 typedef struct {
-	TPM_ST tag;
+	TPM2_ST tag;
 	UINT32 responseSize;
 	UINT32 responseCode;
 	UINT8 otherData;
@@ -415,23 +415,23 @@ typedef struct {
 
 TSS2_RC Tss2_Sys_Startup_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_SU	startupType
+    TPM2_SU	startupType
     );
 
 TSS2_RC Tss2_Sys_Startup(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_SU	startupType
+    TPM2_SU	startupType
     );
 
 TSS2_RC Tss2_Sys_Shutdown_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_SU	shutdownType
+    TPM2_SU	shutdownType
     );
 
 TSS2_RC Tss2_Sys_Shutdown(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM_SU	shutdownType,
+    TPM2_SU	shutdownType,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray
     );
 
@@ -472,14 +472,14 @@ TSS2_RC Tss2_Sys_GetTestResult_Prepare(
 TSS2_RC Tss2_Sys_GetTestResult_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_MAX_BUFFER	*outData,
-    TPM_RC	*testResult
+    TPM2_RC	*testResult
     );
 
 TSS2_RC Tss2_Sys_GetTestResult(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     TPM2B_MAX_BUFFER	*outData,
-    TPM_RC	*testResult,
+    TPM2_RC	*testResult,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray
     );
 
@@ -489,7 +489,7 @@ TSS2_RC Tss2_Sys_StartAuthSession_Prepare(
     TPMI_DH_ENTITY	bind,
     const TPM2B_NONCE	*nonceCaller,
     const TPM2B_ENCRYPTED_SECRET	*encryptedSalt,
-    TPM_SE	sessionType,
+    TPM2_SE	sessionType,
     const TPMT_SYM_DEF	*symmetric,
     TPMI_ALG_HASH	authHash
     );
@@ -507,7 +507,7 @@ TSS2_RC Tss2_Sys_StartAuthSession(
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     const TPM2B_NONCE	*nonceCaller,
     const TPM2B_ENCRYPTED_SECRET	*encryptedSalt,
-    TPM_SE	sessionType,
+    TPM2_SE	sessionType,
     const TPMT_SYM_DEF	*symmetric,
     TPMI_ALG_HASH	authHash,
     TPMI_SH_AUTH_SESSION	*sessionHandle,
@@ -570,7 +570,7 @@ TSS2_RC Tss2_Sys_Load_Prepare(
 
 TSS2_RC Tss2_Sys_Load_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_HANDLE	*objectHandle,
+    TPM2_HANDLE	*objectHandle,
     TPM2B_NAME	*name
     );
 
@@ -580,7 +580,7 @@ TSS2_RC Tss2_Sys_Load(
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     const TPM2B_PRIVATE	*inPrivate,
     const TPM2B_PUBLIC	*inPublic,
-    TPM_HANDLE	*objectHandle,
+    TPM2_HANDLE	*objectHandle,
     TPM2B_NAME	*name,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray
     );
@@ -594,7 +594,7 @@ TSS2_RC Tss2_Sys_LoadExternal_Prepare(
 
 TSS2_RC Tss2_Sys_LoadExternal_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_HANDLE	*objectHandle,
+    TPM2_HANDLE	*objectHandle,
     TPM2B_NAME	*name
     );
 
@@ -604,7 +604,7 @@ TSS2_RC Tss2_Sys_LoadExternal(
     const TPM2B_SENSITIVE	*inPrivate,
     const TPM2B_PUBLIC	*inPublic,
     TPMI_RH_HIERARCHY	hierarchy,
-    TPM_HANDLE	*objectHandle,
+    TPM2_HANDLE	*objectHandle,
     TPM2B_NAME	*name,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray
     );
@@ -1708,7 +1708,7 @@ TSS2_RC Tss2_Sys_PolicyNV_Prepare(
     TPMI_SH_POLICY	policySession,
     const TPM2B_OPERAND	*operandB,
     UINT16	offset,
-    TPM_EO	operation
+    TPM2_EO	operation
     );
 
 TSS2_RC Tss2_Sys_PolicyNV(
@@ -1719,7 +1719,7 @@ TSS2_RC Tss2_Sys_PolicyNV(
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     const TPM2B_OPERAND	*operandB,
     UINT16	offset,
-    TPM_EO	operation,
+    TPM2_EO	operation,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray
     );
 
@@ -1728,7 +1728,7 @@ TSS2_RC Tss2_Sys_PolicyCounterTimer_Prepare(
     TPMI_SH_POLICY	policySession,
     const TPM2B_OPERAND	*operandB,
     UINT16	offset,
-    TPM_EO	operation
+    TPM2_EO	operation
     );
 
 TSS2_RC Tss2_Sys_PolicyCounterTimer(
@@ -1737,21 +1737,21 @@ TSS2_RC Tss2_Sys_PolicyCounterTimer(
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     const TPM2B_OPERAND	*operandB,
     UINT16	offset,
-    TPM_EO	operation,
+    TPM2_EO	operation,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray
     );
 
 TSS2_RC Tss2_Sys_PolicyCommandCode_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY	policySession,
-    TPM_CC	code
+    TPM2_CC	code
     );
 
 TSS2_RC Tss2_Sys_PolicyCommandCode(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY	policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM_CC	code,
+    TPM2_CC	code,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray
     );
 
@@ -1900,7 +1900,7 @@ TSS2_RC Tss2_Sys_CreatePrimary_Prepare(
 
 TSS2_RC Tss2_Sys_CreatePrimary_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_HANDLE	*objectHandle,
+    TPM2_HANDLE	*objectHandle,
     TPM2B_PUBLIC	*outPublic,
     TPM2B_CREATION_DATA	*creationData,
     TPM2B_DIGEST	*creationHash,
@@ -1916,7 +1916,7 @@ TSS2_RC Tss2_Sys_CreatePrimary(
     const TPM2B_PUBLIC	*inPublic,
     const TPM2B_DATA	*outsideInfo,
     const TPML_PCR_SELECTION	*creationPCR,
-    TPM_HANDLE	*objectHandle,
+    TPM2_HANDLE	*objectHandle,
     TPM2B_PUBLIC	*outPublic,
     TPM2B_CREATION_DATA	*creationData,
     TPM2B_DIGEST	*creationHash,
@@ -2226,20 +2226,20 @@ TSS2_RC Tss2_Sys_ClockSet(
 TSS2_RC Tss2_Sys_ClockRateAdjust_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION	auth,
-    TPM_CLOCK_ADJUST	rateAdjust
+    TPM2_CLOCK_ADJUST	rateAdjust
     );
 
 TSS2_RC Tss2_Sys_ClockRateAdjust(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION	auth,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM_CLOCK_ADJUST	rateAdjust,
+    TPM2_CLOCK_ADJUST	rateAdjust,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray
     );
 
 TSS2_RC Tss2_Sys_GetCapability_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_CAP	capability,
+    TPM2_CAP	capability,
     UINT32	property,
     UINT32	propertyCount
     );
@@ -2253,7 +2253,7 @@ TSS2_RC Tss2_Sys_GetCapability_Complete(
 TSS2_RC Tss2_Sys_GetCapability(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM_CAP	capability,
+    TPM2_CAP	capability,
     UINT32	property,
     UINT32	propertyCount,
     TPMI_YES_NO	*moreData,

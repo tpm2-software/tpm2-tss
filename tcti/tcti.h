@@ -88,8 +88,8 @@ typedef struct {
     } status;
 
     /* Following two fields used to save partial response in case receive buffer's too small. */
-    TPM_ST tag;
-    TPM_RC responseSize;
+    TPM2_ST tag;
+    TPM2_RC responseSize;
 
     TSS2_TCTI_CONTEXT *currentTctiContext;
 
