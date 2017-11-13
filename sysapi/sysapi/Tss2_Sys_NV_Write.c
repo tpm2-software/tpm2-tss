@@ -40,7 +40,7 @@ TSS2_RC Tss2_Sys_NV_Write_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_NV_Write);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_NV_Write);
     if (rval)
         return rval;
 

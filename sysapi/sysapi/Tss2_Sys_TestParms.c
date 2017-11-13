@@ -37,7 +37,7 @@ TSS2_RC Tss2_Sys_TestParms_Prepare(
     if (!sysContext || !parameters)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_TestParms);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_TestParms);
     if (rval)
         return rval;
 

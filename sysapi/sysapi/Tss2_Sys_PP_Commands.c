@@ -39,7 +39,7 @@ TSS2_RC Tss2_Sys_PP_Commands_Prepare(
     if (!sysContext || !setList || !clearList)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PP_Commands);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PP_Commands);
     if (rval)
         return rval;
 

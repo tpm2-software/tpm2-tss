@@ -44,7 +44,7 @@ TSS2_RC Tss2_Sys_CreatePrimary_Prepare(
     if (!creationPCR)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_CreatePrimary);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_CreatePrimary);
     if (rval)
         return rval;
 
@@ -99,7 +99,7 @@ TSS2_RC Tss2_Sys_CreatePrimary_Prepare(
 
 TSS2_RC Tss2_Sys_CreatePrimary_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_HANDLE *objectHandle,
+    TPM2_HANDLE *objectHandle,
     TPM2B_PUBLIC *outPublic,
     TPM2B_CREATION_DATA *creationData,
     TPM2B_DIGEST *creationHash,
@@ -162,7 +162,7 @@ TSS2_RC Tss2_Sys_CreatePrimary(
     const TPM2B_PUBLIC	*inPublic,
     const TPM2B_DATA	*outsideInfo,
     const TPML_PCR_SELECTION	*creationPCR,
-    TPM_HANDLE *objectHandle,
+    TPM2_HANDLE *objectHandle,
     TPM2B_PUBLIC *outPublic,
     TPM2B_CREATION_DATA *creationData,
     TPM2B_DIGEST *creationHash,

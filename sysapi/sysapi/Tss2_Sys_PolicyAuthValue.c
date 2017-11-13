@@ -37,7 +37,7 @@ TSS2_RC Tss2_Sys_PolicyAuthValue_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PolicyAuthValue);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PolicyAuthValue);
     if (rval)
         return rval;
 

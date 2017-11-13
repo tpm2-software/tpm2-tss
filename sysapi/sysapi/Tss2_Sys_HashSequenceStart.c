@@ -38,7 +38,7 @@ TSS2_RC Tss2_Sys_HashSequenceStart_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_HashSequenceStart);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_HashSequenceStart);
     if (rval)
         return rval;
 

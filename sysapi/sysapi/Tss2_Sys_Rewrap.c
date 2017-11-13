@@ -41,7 +41,7 @@ TSS2_RC Tss2_Sys_Rewrap_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_Rewrap);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_Rewrap);
     if (rval)
         return rval;
 

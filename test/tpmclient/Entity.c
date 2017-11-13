@@ -34,62 +34,62 @@ void InitEntities()
     int i;
     for( i = 0; i < MAX_NUM_ENTITIES; i++ )
     {
-        entities[i].entityHandle = TPM_HT_NO_HANDLE;
+        entities[i].entityHandle = TPM2_HT_NO_HANDLE;
     }
 }
 
-TSS2_RC AddEntity( TPM_HANDLE entityHandle, TPM2B_AUTH *auth )
+TSS2_RC AddEntity( TPM2_HANDLE entityHandle, TPM2B_AUTH *auth )
 {
     int i;
-    TSS2_RC rval = TPM_RC_FAILURE;
+    TSS2_RC rval = TPM2_RC_FAILURE;
 
     for( i = 0; i < MAX_NUM_ENTITIES; i++ )
     {
-        if( entities[i].entityHandle == TPM_HT_NO_HANDLE )
+        if( entities[i].entityHandle == TPM2_HT_NO_HANDLE )
         {
             entities[i].entityHandle = entityHandle;
             CopySizedByteBuffer((TPM2B *)&entities[i].entityAuth, (TPM2B *)auth);
 
-            if( ( entityHandle >> HR_SHIFT ) == TPM_HT_NV_INDEX )
+            if( ( entityHandle >> TPM2_HR_SHIFT ) == TPM2_HT_NV_INDEX )
             {
                 entities[i].nvNameChanged = 0;
             }
 
-            rval = TPM_RC_SUCCESS;
+            rval = TPM2_RC_SUCCESS;
             break;
         }
     }
     return rval;
 }
 
-TSS2_RC DeleteEntity( TPM_HANDLE entityHandle )
+TSS2_RC DeleteEntity( TPM2_HANDLE entityHandle )
 {
     int i;
-    TSS2_RC rval = TPM_RC_FAILURE;
+    TSS2_RC rval = TPM2_RC_FAILURE;
 
     for( i = 0; i < MAX_NUM_ENTITIES; i++ )
     {
         if( entities[i].entityHandle == entityHandle )
         {
-            entities[i].entityHandle = TPM_HT_NO_HANDLE;
-            rval = TPM_RC_SUCCESS;
+            entities[i].entityHandle = TPM2_HT_NO_HANDLE;
+            rval = TPM2_RC_SUCCESS;
             break;
         }
     }
     return rval;
 }
 
-TSS2_RC GetEntityAuth( TPM_HANDLE entityHandle, TPM2B_AUTH *auth )
+TSS2_RC GetEntityAuth( TPM2_HANDLE entityHandle, TPM2B_AUTH *auth )
 {
     int i;
-    TSS2_RC rval = TPM_RC_FAILURE;
+    TSS2_RC rval = TPM2_RC_FAILURE;
 
     for( i = 0; i < MAX_NUM_ENTITIES; i++ )
     {
         if( entities[i].entityHandle == entityHandle )
         {
             CopySizedByteBuffer((TPM2B *)auth, (TPM2B *)&entities[i].entityAuth);
-            rval = TPM_RC_SUCCESS;
+            rval = TPM2_RC_SUCCESS;
             break;
         }
     }
@@ -97,17 +97,17 @@ TSS2_RC GetEntityAuth( TPM_HANDLE entityHandle, TPM2B_AUTH *auth )
 }
 
 
-TSS2_RC GetEntity( TPM_HANDLE entityHandle, ENTITY **entity )
+TSS2_RC GetEntity( TPM2_HANDLE entityHandle, ENTITY **entity )
 {
     int i;
-    TSS2_RC rval = TPM_RC_FAILURE;
+    TSS2_RC rval = TPM2_RC_FAILURE;
 
     for( i = 0; i < MAX_NUM_ENTITIES; i++ )
     {
         if( entities[i].entityHandle == entityHandle )
         {
             *entity = &( entities[i] );
-            rval = TPM_RC_SUCCESS;
+            rval = TPM2_RC_SUCCESS;
         }
     }
     return rval;

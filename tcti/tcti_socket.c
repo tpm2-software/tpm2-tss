@@ -152,8 +152,8 @@ TSS2_RC SocketSendTpmCommand(
 
     if (tcti_intel->status.debugMsgEnabled == 1) {
         TCTI_LOG (tctiContext, rmPrefix, "");
-        offset = sizeof (TPM_ST) + sizeof (UINT32);
-        rval = Tss2_MU_TPM_CC_Unmarshal (command_buffer,
+        offset = sizeof (TPM2_ST) + sizeof (UINT32);
+        rval = Tss2_MU_TPM2_CC_Unmarshal (command_buffer,
                                          command_size,
                                          &offset,
                                          &commandCode);
@@ -177,13 +177,13 @@ TSS2_RC SocketSendTpmCommand(
      * Size TPM 1.2 and TPM 2.0 headers overlap exactly, we can use
      * either 1.2 or 2.0 header to get the size.
      */
-    offset = sizeof (TPM_ST);
+    offset = sizeof (TPM2_ST);
     rval = Tss2_MU_UINT32_Unmarshal (command_buffer,
                                      command_size,
                                      &offset,
                                      &cnt);
 
-    /* Send TPM_SEND_COMMAND */
+    /* Send TPM2_SEND_COMMAND */
     rval = Tss2_MU_UINT32_Marshal (MS_SIM_TPM_SEND_COMMAND,
                            (uint8_t*)&tpmSendCommand,
                            sizeof (tpmSendCommand),
@@ -402,7 +402,7 @@ TSS2_RC SocketReceiveTpmResponse(
         rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
 
         /* If possible, receive tag from TPM. */
-        if (*response_size >= sizeof (TPM_ST) &&
+        if (*response_size >= sizeof (TPM2_ST) &&
             tcti_intel->status.tagReceived == 0)
         {
             rval = tctiRecvBytes (tctiContext,
@@ -417,7 +417,7 @@ TSS2_RC SocketReceiveTpmResponse(
         }
 
         /* If possible, receive response size from TPM */
-        if (*response_size >= (sizeof (TPM_ST) + sizeof (TPM_RC)) &&
+        if (*response_size >= (sizeof (TPM2_ST) + sizeof (TPM2_RC)) &&
             tcti_intel->status.responseSizeReceived == 0)
         {
             rval = tctiRecvBytes (tctiContext,
@@ -447,15 +447,15 @@ TSS2_RC SocketReceiveTpmResponse(
         }
 
         if (tcti_intel->status.tagReceived == 1) {
-            *(TPM_ST *)response_buffer = tcti_intel->tag;
-            responseSizeDelta += sizeof (TPM_ST);
-            response_buffer += sizeof (TPM_ST);
+            *(TPM2_ST *)response_buffer = tcti_intel->tag;
+            responseSizeDelta += sizeof (TPM2_ST);
+            response_buffer += sizeof (TPM2_ST);
         }
 
         if (tcti_intel->status.responseSizeReceived == 1) {
-            *(TPM_RC *)response_buffer = HOST_TO_BE_32 (tcti_intel->responseSize);
-            responseSizeDelta += sizeof (TPM_RC);
-            response_buffer += sizeof (TPM_RC);
+            *(TPM2_RC *)response_buffer = HOST_TO_BE_32 (tcti_intel->responseSize);
+            responseSizeDelta += sizeof (TPM2_RC);
+            response_buffer += sizeof (TPM2_RC);
         }
 
         /* Receive the TPM response. */
@@ -520,7 +520,7 @@ retSocketReceiveTpmResponse:
  *
  * NOTE: The caller will still need to call Tss2_Sys_Startup. If they
  * don't, an error will be returned from each call till they do but
- * the error will at least be meaningful (TPM_RC_INITIALIZE).
+ * the error will at least be meaningful (TPM2_RC_INITIALIZE).
  */
 static TSS2_RC InitializeMsTpm2Simulator(
     TSS2_TCTI_CONTEXT *tctiContext

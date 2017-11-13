@@ -132,7 +132,7 @@ tpm2b_marshal_buffer_null_with_offset(void **state)
     offset = 10;
     rc = Tss2_MU_TPM2B_ECC_POINT_Marshal(&point, NULL, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (offset, 10 + 2 + 2 + MAX_ECC_KEY_BYTES + 2 + MAX_ECC_KEY_BYTES);
+    assert_int_equal (offset, 10 + 2 + 2 + TPM2_MAX_ECC_KEY_BYTES + 2 + TPM2_MAX_ECC_KEY_BYTES);
 }
 
 /*

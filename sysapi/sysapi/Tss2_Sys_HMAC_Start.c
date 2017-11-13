@@ -40,7 +40,7 @@ TSS2_RC Tss2_Sys_HMAC_Start_Prepare(
         return TSS2_SYS_RC_BAD_REFERENCE;
 
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_HMAC_Start);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_HMAC_Start);
     if (rval)
         return rval;
 

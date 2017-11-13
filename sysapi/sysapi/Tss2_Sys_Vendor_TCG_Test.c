@@ -37,7 +37,7 @@ TSS2_RC Tss2_Sys_Vendor_TCG_Test_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_Vendor_TCG_Test);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_Vendor_TCG_Test);
     if (rval)
         return rval;
 

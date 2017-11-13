@@ -37,7 +37,7 @@ TSS2_RC Tss2_Sys_GetRandom_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_GetRandom);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_GetRandom);
     if (rval)
         return rval;
     rval = Tss2_MU_UINT16_Marshal(bytesRequested, SYS_CONTEXT->cmdBuffer,

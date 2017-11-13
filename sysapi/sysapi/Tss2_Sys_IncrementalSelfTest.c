@@ -37,7 +37,7 @@ TSS2_RC Tss2_Sys_IncrementalSelfTest_Prepare(
     if (!sysContext || !toTest)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_IncrementalSelfTest);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_IncrementalSelfTest);
     if (rval)
         return rval;
 

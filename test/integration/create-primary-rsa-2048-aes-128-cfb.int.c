@@ -30,7 +30,7 @@
 int
 test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 {
-    TPM_HANDLE handle = 0;
+    TPM2_HANDLE handle = 0;
 
     return create_primary_rsa_2048_aes_128_cfb (sapi_context, &handle);
 }

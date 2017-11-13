@@ -40,7 +40,7 @@ TSS2_RC Tss2_Sys_RSA_Encrypt_Prepare(
     if (!sysContext || !inScheme)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_RSA_Encrypt);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_RSA_Encrypt);
     if (rval)
         return rval;
 

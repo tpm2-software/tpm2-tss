@@ -38,7 +38,7 @@ TSS2_RC Tss2_Sys_PCR_Allocate_Prepare(
     if (!sysContext || !pcrAllocation)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PCR_Allocate);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PCR_Allocate);
     if (rval)
         return rval;
 
