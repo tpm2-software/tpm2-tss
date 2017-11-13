@@ -31,8 +31,8 @@
 TSS2_RC Tss2_Sys_VerifySignature_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
-    TPM2B_DIGEST *digest,
-    TPMT_SIGNATURE *signature)
+    const TPM2B_DIGEST	*digest,
+    const TPMT_SIGNATURE	*signature)
 {
     TSS2_RC rval;
 
@@ -100,8 +100,8 @@ TSS2_RC Tss2_Sys_VerifySignature(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DIGEST *digest,
-    TPMT_SIGNATURE *signature,
+    const TPM2B_DIGEST	*digest,
+    const TPMT_SIGNATURE	*signature,
     TPMT_TK_VERIFIED *validation,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {

@@ -32,10 +32,10 @@ TSS2_RC Tss2_Sys_CertifyCreation_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
     TPMI_DH_OBJECT objectHandle,
-    TPM2B_DATA *qualifyingData,
-    TPM2B_DIGEST *creationHash,
-    TPMT_SIG_SCHEME *inScheme,
-    TPMT_TK_CREATION *creationTicket)
+    const TPM2B_DATA	*qualifyingData,
+    const TPM2B_DIGEST	*creationHash,
+    const TPMT_SIG_SCHEME	*inScheme,
+    const TPMT_TK_CREATION	*creationTicket)
 {
     TSS2_RC rval;
 
@@ -131,10 +131,10 @@ TSS2_RC Tss2_Sys_CertifyCreation(
     TPMI_DH_OBJECT signHandle,
     TPMI_DH_OBJECT objectHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DATA *qualifyingData,
-    TPM2B_DIGEST *creationHash,
-    TPMT_SIG_SCHEME *inScheme,
-    TPMT_TK_CREATION *creationTicket,
+    const TPM2B_DATA	*qualifyingData,
+    const TPM2B_DIGEST	*creationHash,
+    const TPMT_SIG_SCHEME	*inScheme,
+    const TPMT_TK_CREATION	*creationTicket,
     TPM2B_ATTEST *certifyInfo,
     TPMT_SIGNATURE *signature,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)

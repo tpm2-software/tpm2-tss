@@ -31,7 +31,7 @@
 TSS2_RC Tss2_Sys_HMAC_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT handle,
-    TPM2B_MAX_BUFFER *buffer,
+    const TPM2B_MAX_BUFFER	*buffer,
     TPMI_ALG_HASH hashAlg)
 {
     TSS2_RC rval;
@@ -101,7 +101,7 @@ TSS2_RC Tss2_Sys_HMAC(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT handle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_MAX_BUFFER *buffer,
+    const TPM2B_MAX_BUFFER	*buffer,
     TPMI_ALG_HASH hashAlg,
     TPM2B_DIGEST *outHMAC,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)

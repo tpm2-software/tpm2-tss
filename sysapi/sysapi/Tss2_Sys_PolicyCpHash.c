@@ -31,7 +31,7 @@
 TSS2_RC Tss2_Sys_PolicyCpHash_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
-    TPM2B_DIGEST *cpHashA)
+    const TPM2B_DIGEST	*cpHashA)
 {
     TSS2_RC rval;
 
@@ -65,7 +65,7 @@ TSS2_RC Tss2_Sys_PolicyCpHash(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DIGEST *cpHashA,
+    const TPM2B_DIGEST	*cpHashA,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;

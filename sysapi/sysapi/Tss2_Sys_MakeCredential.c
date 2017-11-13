@@ -31,8 +31,8 @@
 TSS2_RC Tss2_Sys_MakeCredential_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT handle,
-    TPM2B_DIGEST *credential,
-    TPM2B_NAME *objectName)
+    const TPM2B_DIGEST	*credential,
+    const TPM2B_NAME	*objectName)
 {
     TSS2_RC rval;
 
@@ -109,8 +109,8 @@ TSS2_RC Tss2_Sys_MakeCredential(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT handle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DIGEST *credential,
-    TPM2B_NAME *objectName,
+    const TPM2B_DIGEST	*credential,
+    const TPM2B_NAME	*objectName,
     TPM2B_ID_OBJECT *credentialBlob,
     TPM2B_ENCRYPTED_SECRET *secret,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)

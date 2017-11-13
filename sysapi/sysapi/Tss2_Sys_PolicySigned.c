@@ -32,11 +32,11 @@ TSS2_RC Tss2_Sys_PolicySigned_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT authObject,
     TPMI_SH_POLICY policySession,
-    TPM2B_NONCE *nonceTPM,
-    TPM2B_DIGEST *cpHashA,
-    TPM2B_NONCE *policyRef,
+    const TPM2B_NONCE	*nonceTPM,
+    const TPM2B_DIGEST	*cpHashA,
+    const TPM2B_NONCE	*policyRef,
     INT32 expiration,
-    TPMT_SIGNATURE *auth)
+    const TPMT_SIGNATURE	*auth)
 {
     TSS2_RC rval;
 
@@ -136,11 +136,11 @@ TSS2_RC Tss2_Sys_PolicySigned(
     TPMI_DH_OBJECT authObject,
     TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_NONCE *nonceTPM,
-    TPM2B_DIGEST *cpHashA,
-    TPM2B_NONCE *policyRef,
+    const TPM2B_NONCE	*nonceTPM,
+    const TPM2B_DIGEST	*cpHashA,
+    const TPM2B_NONCE	*policyRef,
     INT32 expiration,
-    TPMT_SIGNATURE *auth,
+    const TPMT_SIGNATURE	*auth,
     TPM2B_TIMEOUT *timeout,
     TPMT_TK_AUTH *policyTicket,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)

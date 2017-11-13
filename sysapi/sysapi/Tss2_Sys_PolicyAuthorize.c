@@ -31,10 +31,10 @@
 TSS2_RC Tss2_Sys_PolicyAuthorize_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
-    TPM2B_DIGEST *approvedPolicy,
-    TPM2B_NONCE *policyRef,
-    TPM2B_NAME *keySign,
-    TPMT_TK_VERIFIED *checkTicket)
+    const TPM2B_DIGEST	*approvedPolicy,
+    const TPM2B_NONCE	*policyRef,
+    const TPM2B_NAME	*keySign,
+    const TPMT_TK_VERIFIED	*checkTicket)
 {
     TSS2_RC rval;
 
@@ -96,10 +96,10 @@ TSS2_RC Tss2_Sys_PolicyAuthorize(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DIGEST *approvedPolicy,
-    TPM2B_NONCE *policyRef,
-    TPM2B_NAME *keySign,
-    TPMT_TK_VERIFIED *checkTicket,
+    const TPM2B_DIGEST	*approvedPolicy,
+    const TPM2B_NONCE	*policyRef,
+    const TPM2B_NAME	*keySign,
+    const TPMT_TK_VERIFIED	*checkTicket,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;

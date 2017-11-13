@@ -32,8 +32,8 @@ TSS2_RC Tss2_Sys_ActivateCredential_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT activateHandle,
     TPMI_DH_OBJECT keyHandle,
-    TPM2B_ID_OBJECT *credentialBlob,
-    TPM2B_ENCRYPTED_SECRET *secret)
+    const TPM2B_ID_OBJECT	*credentialBlob,
+    const TPM2B_ENCRYPTED_SECRET	*secret)
 {
     TSS2_RC rval;
 
@@ -111,8 +111,8 @@ TSS2_RC Tss2_Sys_ActivateCredential(
     TPMI_DH_OBJECT activateHandle,
     TPMI_DH_OBJECT keyHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_ID_OBJECT *credentialBlob,
-    TPM2B_ENCRYPTED_SECRET *secret,
+    const TPM2B_ID_OBJECT	*credentialBlob,
+    const TPM2B_ENCRYPTED_SECRET	*secret,
     TPM2B_DIGEST *certInfo,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
