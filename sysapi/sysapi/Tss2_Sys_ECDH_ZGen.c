@@ -31,7 +31,7 @@
 TSS2_RC Tss2_Sys_ECDH_ZGen_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
-    TPM2B_ECC_POINT *inPoint)
+    const TPM2B_ECC_POINT	*inPoint)
 {
     TSS2_RC rval;
 
@@ -84,7 +84,7 @@ TSS2_RC Tss2_Sys_ECDH_ZGen(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_ECC_POINT *inPoint,
+    const TPM2B_ECC_POINT	*inPoint,
     TPM2B_ECC_POINT *outPoint,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {

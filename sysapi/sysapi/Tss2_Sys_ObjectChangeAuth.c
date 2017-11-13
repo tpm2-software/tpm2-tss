@@ -32,7 +32,7 @@ TSS2_RC Tss2_Sys_ObjectChangeAuth_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT objectHandle,
     TPMI_DH_OBJECT parentHandle,
-    TPM2B_AUTH *newAuth)
+    const TPM2B_AUTH	*newAuth)
 {
     TSS2_RC rval;
 
@@ -92,7 +92,7 @@ TSS2_RC Tss2_Sys_ObjectChangeAuth(
     TPMI_DH_OBJECT objectHandle,
     TPMI_DH_OBJECT parentHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_AUTH *newAuth,
+    const TPM2B_AUTH	*newAuth,
     TPM2B_PRIVATE *outPrivate,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {

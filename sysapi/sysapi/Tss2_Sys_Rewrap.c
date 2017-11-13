@@ -32,9 +32,9 @@ TSS2_RC Tss2_Sys_Rewrap_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT oldParent,
     TPMI_DH_OBJECT newParent,
-    TPM2B_PRIVATE *inDuplicate,
-    TPM2B_NAME *name,
-    TPM2B_ENCRYPTED_SECRET *inSymSeed)
+    const TPM2B_PRIVATE	*inDuplicate,
+    const TPM2B_NAME	*name,
+    const TPM2B_ENCRYPTED_SECRET	*inSymSeed)
 {
     TSS2_RC rval;
 
@@ -124,9 +124,9 @@ TSS2_RC Tss2_Sys_Rewrap(
     TPMI_DH_OBJECT oldParent,
     TPMI_DH_OBJECT newParent,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_PRIVATE *inDuplicate,
-    TPM2B_NAME *name,
-    TPM2B_ENCRYPTED_SECRET *inSymSeed,
+    const TPM2B_PRIVATE	*inDuplicate,
+    const TPM2B_NAME	*name,
+    const TPM2B_ENCRYPTED_SECRET	*inSymSeed,
     TPM2B_PRIVATE *outDuplicate,
     TPM2B_ENCRYPTED_SECRET *outSymSeed,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)

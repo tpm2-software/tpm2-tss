@@ -32,8 +32,8 @@ TSS2_RC Tss2_Sys_GetTime_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_ENDORSEMENT privacyAdminHandle,
     TPMI_DH_OBJECT signHandle,
-    TPM2B_DATA *qualifyingData,
-    TPMT_SIG_SCHEME *inScheme)
+    const TPM2B_DATA	*qualifyingData,
+    const TPMT_SIG_SCHEME	*inScheme)
 {
     TSS2_RC rval;
 
@@ -116,8 +116,8 @@ TSS2_RC Tss2_Sys_GetTime(
     TPMI_RH_ENDORSEMENT privacyAdminHandle,
     TPMI_DH_OBJECT signHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DATA *qualifyingData,
-    TPMT_SIG_SCHEME *inScheme,
+    const TPM2B_DATA	*qualifyingData,
+    const TPMT_SIG_SCHEME	*inScheme,
     TPM2B_ATTEST *timeInfo,
     TPMT_SIGNATURE *signature,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)

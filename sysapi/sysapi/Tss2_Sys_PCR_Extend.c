@@ -31,7 +31,7 @@
 TSS2_RC Tss2_Sys_PCR_Extend_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR pcrHandle,
-    TPML_DIGEST_VALUES *digests)
+    const TPML_DIGEST_VALUES	*digests)
 {
     TSS2_RC rval;
 
@@ -65,7 +65,7 @@ TSS2_RC Tss2_Sys_PCR_Extend(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR pcrHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPML_DIGEST_VALUES *digests,
+    const TPML_DIGEST_VALUES	*digests,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;

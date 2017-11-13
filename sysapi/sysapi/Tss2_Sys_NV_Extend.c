@@ -32,7 +32,7 @@ TSS2_RC Tss2_Sys_NV_Extend_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_AUTH authHandle,
     TPMI_RH_NV_INDEX nvIndex,
-    TPM2B_MAX_NV_BUFFER *data)
+    const TPM2B_MAX_NV_BUFFER	*data)
 {
     TSS2_RC rval;
 
@@ -73,7 +73,7 @@ TSS2_RC Tss2_Sys_NV_Extend(
     TPMI_RH_NV_AUTH authHandle,
     TPMI_RH_NV_INDEX nvIndex,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_MAX_NV_BUFFER *data,
+    const TPM2B_MAX_NV_BUFFER	*data,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;

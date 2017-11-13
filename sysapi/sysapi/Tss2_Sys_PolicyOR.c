@@ -31,7 +31,7 @@
 TSS2_RC Tss2_Sys_PolicyOR_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
-    TPML_DIGEST *pHashList)
+    const TPML_DIGEST	*pHashList)
 {
     TSS2_RC rval;
 
@@ -65,7 +65,7 @@ TSS2_RC Tss2_Sys_PolicyOR(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPML_DIGEST *pHashList,
+    const TPML_DIGEST	*pHashList,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;

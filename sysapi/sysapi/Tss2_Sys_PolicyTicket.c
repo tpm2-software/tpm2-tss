@@ -31,11 +31,11 @@
 TSS2_RC Tss2_Sys_PolicyTicket_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
-    TPM2B_TIMEOUT *timeout,
-    TPM2B_DIGEST *cpHashA,
-    TPM2B_NONCE *policyRef,
-    TPM2B_NAME *authName,
-    TPMT_TK_AUTH *ticket)
+    const TPM2B_TIMEOUT	*timeout,
+    const TPM2B_DIGEST	*cpHashA,
+    const TPM2B_NONCE	*policyRef,
+    const TPM2B_NAME	*authName,
+    const TPMT_TK_AUTH	*ticket)
 {
     TSS2_RC rval;
 
@@ -103,11 +103,11 @@ TSS2_RC Tss2_Sys_PolicyTicket(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_TIMEOUT *timeout,
-    TPM2B_DIGEST *cpHashA,
-    TPM2B_NONCE *policyRef,
-    TPM2B_NAME *authName,
-    TPMT_TK_AUTH *ticket,
+    const TPM2B_TIMEOUT	*timeout,
+    const TPM2B_DIGEST	*cpHashA,
+    const TPM2B_NONCE	*policyRef,
+    const TPM2B_NAME	*authName,
+    const TPMT_TK_AUTH	*ticket,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;

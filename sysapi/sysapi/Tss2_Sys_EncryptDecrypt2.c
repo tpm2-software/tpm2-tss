@@ -31,10 +31,10 @@
 TSS2_RC Tss2_Sys_EncryptDecrypt2_Prepare (
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
-    TPM2B_MAX_BUFFER *inData,
+    const TPM2B_MAX_BUFFER *inData,
     TPMI_YES_NO decrypt,
     TPMI_ALG_SYM_MODE mode,
-    TPM2B_IV *ivIn)
+    const TPM2B_IV *ivIn)
 {
     TSS2_RC rval;
 
@@ -118,10 +118,10 @@ TSS2_RC Tss2_Sys_EncryptDecrypt2 (
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_MAX_BUFFER *inData,
+    const TPM2B_MAX_BUFFER *inData,
     TPMI_YES_NO decrypt,
     TPMI_ALG_SYM_MODE mode,
-    TPM2B_IV *ivIn,
+    const TPM2B_IV *ivIn,
     TPM2B_MAX_BUFFER *outData,
     TPM2B_IV *ivOut,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)

@@ -31,10 +31,10 @@
 TSS2_RC Tss2_Sys_Create_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT parentHandle,
-    TPM2B_SENSITIVE_CREATE *inSensitive,
-    TPM2B_PUBLIC *inPublic,
-    TPM2B_DATA *outsideInfo,
-    TPML_PCR_SELECTION *creationPCR)
+    const TPM2B_SENSITIVE_CREATE	*inSensitive,
+    const TPM2B_PUBLIC	*inPublic,
+    const TPM2B_DATA	*outsideInfo,
+    const TPML_PCR_SELECTION	*creationPCR)
 {
     TSS2_RC rval;
 
@@ -149,10 +149,10 @@ TSS2_RC Tss2_Sys_Create(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT parentHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_SENSITIVE_CREATE *inSensitive,
-    TPM2B_PUBLIC *inPublic,
-    TPM2B_DATA *outsideInfo,
-    TPML_PCR_SELECTION *creationPCR,
+    const TPM2B_SENSITIVE_CREATE	*inSensitive,
+    const TPM2B_PUBLIC	*inPublic,
+    const TPM2B_DATA	*outsideInfo,
+    const TPML_PCR_SELECTION	*creationPCR,
     TPM2B_PRIVATE *outPrivate,
     TPM2B_PUBLIC *outPublic,
     TPM2B_CREATION_DATA *creationData,

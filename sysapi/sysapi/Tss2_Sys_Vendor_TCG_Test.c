@@ -30,7 +30,7 @@
 
 TSS2_RC Tss2_Sys_Vendor_TCG_Test_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_DATA *inputData)
+    const TPM2B_DATA	*inputData)
 {
     TSS2_RC rval;
 
@@ -75,7 +75,7 @@ TSS2_RC Tss2_Sys_Vendor_TCG_Test_Complete(
 TSS2_RC Tss2_Sys_Vendor_TCG_Test(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DATA *inputData,
+    const TPM2B_DATA	*inputData,
     TPM2B_DATA *outputData,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
