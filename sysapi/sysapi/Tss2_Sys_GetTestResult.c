@@ -28,10 +28,10 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_GetTestResult_Prepare(
+TSS2_RC Tss2_Sys_GetTestResult_Prepare(
     TSS2_SYS_CONTEXT *sysContext)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -47,12 +47,12 @@ TPM_RC Tss2_Sys_GetTestResult_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_GetTestResult_Complete(
+TSS2_RC Tss2_Sys_GetTestResult_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_MAX_BUFFER *outData,
-    TPM_RC *testResult)
+    TSS2_RC *testResult)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -74,11 +74,11 @@ TPM_RC Tss2_Sys_GetTestResult_Complete(
                                     testResult);
 }
 
-TPM_RC Tss2_Sys_GetTestResult(
+TSS2_RC Tss2_Sys_GetTestResult(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     TPM2B_MAX_BUFFER *outData,
-    TPM_RC *testResult,
+    TSS2_RC *testResult,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;

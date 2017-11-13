@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_GetSessionAuditDigest_Prepare(
+TSS2_RC Tss2_Sys_GetSessionAuditDigest_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_ENDORSEMENT privacyAdminHandle,
     TPMI_DH_OBJECT signHandle,
@@ -36,7 +36,7 @@ TPM_RC Tss2_Sys_GetSessionAuditDigest_Prepare(
     TPM2B_DATA *qualifyingData,
     TPMT_SIG_SCHEME *inScheme)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext || !inScheme)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -92,12 +92,12 @@ TPM_RC Tss2_Sys_GetSessionAuditDigest_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_GetSessionAuditDigest_Complete(
+TSS2_RC Tss2_Sys_GetSessionAuditDigest_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_ATTEST *auditInfo,
     TPMT_SIGNATURE *signature)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -117,7 +117,7 @@ TPM_RC Tss2_Sys_GetSessionAuditDigest_Complete(
                                             &SYS_CONTEXT->nextData, signature);
 }
 
-TPM_RC Tss2_Sys_GetSessionAuditDigest(
+TSS2_RC Tss2_Sys_GetSessionAuditDigest(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_ENDORSEMENT privacyAdminHandle,
     TPMI_DH_OBJECT signHandle,

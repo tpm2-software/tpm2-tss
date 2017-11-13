@@ -28,14 +28,14 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_GetTime_Prepare(
+TSS2_RC Tss2_Sys_GetTime_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_ENDORSEMENT privacyAdminHandle,
     TPMI_DH_OBJECT signHandle,
     TPM2B_DATA *qualifyingData,
     TPMT_SIG_SCHEME *inScheme)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext || !inScheme)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -84,12 +84,12 @@ TPM_RC Tss2_Sys_GetTime_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_GetTime_Complete(
+TSS2_RC Tss2_Sys_GetTime_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_ATTEST *timeInfo,
     TPMT_SIGNATURE *signature)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -111,7 +111,7 @@ TPM_RC Tss2_Sys_GetTime_Complete(
                                             signature);
 }
 
-TPM_RC Tss2_Sys_GetTime(
+TSS2_RC Tss2_Sys_GetTime(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_ENDORSEMENT privacyAdminHandle,
     TPMI_DH_OBJECT signHandle,

@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_PolicySigned_Prepare(
+TSS2_RC Tss2_Sys_PolicySigned_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT authObject,
     TPMI_SH_POLICY policySession,
@@ -106,7 +106,7 @@ TPM_RC Tss2_Sys_PolicySigned_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_PolicySigned_Complete(
+TSS2_RC Tss2_Sys_PolicySigned_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_TIMEOUT *timeout,
     TPMT_TK_AUTH *policyTicket)
@@ -131,7 +131,7 @@ TPM_RC Tss2_Sys_PolicySigned_Complete(
                                           &SYS_CONTEXT->nextData, policyTicket);
 }
 
-TPM_RC Tss2_Sys_PolicySigned(
+TSS2_RC Tss2_Sys_PolicySigned(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT authObject,
     TPMI_SH_POLICY policySession,

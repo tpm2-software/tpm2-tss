@@ -28,11 +28,11 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_EC_Ephemeral_Prepare(
+TSS2_RC Tss2_Sys_EC_Ephemeral_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_ECC_CURVE curveID)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -54,12 +54,12 @@ TPM_RC Tss2_Sys_EC_Ephemeral_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_EC_Ephemeral_Complete(
+TSS2_RC Tss2_Sys_EC_Ephemeral_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_ECC_POINT *Q,
     UINT16 *counter)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -78,7 +78,7 @@ TPM_RC Tss2_Sys_EC_Ephemeral_Complete(
                                     &SYS_CONTEXT->nextData, counter);
 }
 
-TPM_RC Tss2_Sys_EC_Ephemeral(
+TSS2_RC Tss2_Sys_EC_Ephemeral(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     TPMI_ECC_CURVE curveID,

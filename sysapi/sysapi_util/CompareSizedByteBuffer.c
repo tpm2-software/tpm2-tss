@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC CompareSizedByteBuffer(TPM2B *buffer1, TPM2B *buffer2)
+TSS2_RC CompareSizedByteBuffer(TPM2B *buffer1, TPM2B *buffer2)
 {
     if (buffer1->size != buffer2->size)
         return TPM_RC_FAILURE;

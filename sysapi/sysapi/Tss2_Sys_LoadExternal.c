@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_LoadExternal_Prepare(
+TSS2_RC Tss2_Sys_LoadExternal_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_SENSITIVE *inPrivate,
     TPM2B_PUBLIC *inPublic,
@@ -78,7 +78,7 @@ TPM_RC Tss2_Sys_LoadExternal_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_LoadExternal_Complete(
+TSS2_RC Tss2_Sys_LoadExternal_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM_HANDLE *objectHandle,
     TPM2B_NAME *name)
@@ -104,7 +104,7 @@ TPM_RC Tss2_Sys_LoadExternal_Complete(
                                         &SYS_CONTEXT->nextData, name);
 }
 
-TPM_RC Tss2_Sys_LoadExternal(
+TSS2_RC Tss2_Sys_LoadExternal(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     TPM2B_SENSITIVE *inPrivate,

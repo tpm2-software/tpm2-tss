@@ -28,14 +28,14 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_FieldUpgradeStart_Prepare(
+TSS2_RC Tss2_Sys_FieldUpgradeStart_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authorization,
     TPMI_DH_OBJECT keyHandle,
     TPM2B_DIGEST *fuDigest,
     TPMT_SIGNATURE *manifestSignature)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext || !manifestSignature)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -85,7 +85,7 @@ TPM_RC Tss2_Sys_FieldUpgradeStart_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_FieldUpgradeStart(
+TSS2_RC Tss2_Sys_FieldUpgradeStart(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authorization,
     TPMI_DH_OBJECT keyHandle,

@@ -39,14 +39,14 @@ UINT32 TpmComputeSessionHmac(
     TPMS_AUTH_COMMAND *pSessionDataIn, // Pointer to session input struct
     TPM_HANDLE entityHandle,             // Used to determine if we're accessing a different
                                          // resource than the bound resoure.
-    TPM_RC responseCode,                 // Response code for the command, 0xffff for "none" is
+    TSS2_RC responseCode,                 // Response code for the command, 0xffff for "none" is
                                          // used to indicate that no response code is present
                                          // (used for calculating command HMACs vs response HMACs).
     TPM_HANDLE handle1,                  // First handle == 0xff000000 indicates no handle
     TPM_HANDLE handle2,                  // Second handle == 0xff000000 indicates no handle
     TPMA_SESSION sessionAttributes,      // Current session attributes
     TPM2B_DIGEST *result,                // Where the result hash is saved.
-    TPM_RC sessionCmdRval
+    TSS2_RC sessionCmdRval
     )
 {
     TPM2B_MAX_BUFFER hmacKey;
@@ -56,7 +56,7 @@ UINT32 TpmComputeSessionHmac(
     TPM2B_AUTH authValue;
     TPM2B sessionAttributesByteBuffer;
     UINT16 i;
-    TPM_RC rval;
+    TSS2_RC rval;
     UINT8 nvNameChanged = 0;
     ENTITY *nvEntity;
     TPM_CC cmdCode;
@@ -164,12 +164,12 @@ UINT32 TpmComputeSessionHmac(
 }
 
 
-TPM_RC ComputeCommandHmacs( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1,
+TSS2_RC ComputeCommandHmacs( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1,
     TPM_HANDLE handle2, TSS2_SYS_CMD_AUTHS *pSessionsDataIn,
-    TPM_RC sessionCmdRval )
+    TSS2_RC sessionCmdRval )
 {
     uint8_t i;
-    TPM_RC rval = TPM_RC_SUCCESS;
+    TSS2_RC rval = TPM_RC_SUCCESS;
     TPM2B_AUTH *authPtr = 0;
     TPM_HANDLE entityHandle = TPM_HT_NO_HANDLE;
 
@@ -195,13 +195,13 @@ TPM_RC ComputeCommandHmacs( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1,
 }
 
 
-TPM_RC CheckResponseHMACs( TSS2_SYS_CONTEXT *sysContext, TPM_RC responseCode,
+TSS2_RC CheckResponseHMACs( TSS2_SYS_CONTEXT *sysContext, TSS2_RC responseCode,
     TSS2_SYS_CMD_AUTHS *pSessionsDataIn, TPM_HANDLE handle1, TPM_HANDLE handle2,
     TSS2_SYS_RSP_AUTHS *pSessionsDataOut )
 {
     TPM_HANDLE entityHandle = TPM_HT_NO_HANDLE;
     TPM2B_DIGEST auth;
-    TPM_RC rval = TPM_RC_SUCCESS;
+    TSS2_RC rval = TPM_RC_SUCCESS;
     uint8_t i;
 
     // Check response HMACs, if any.

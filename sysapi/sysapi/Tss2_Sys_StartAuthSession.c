@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_StartAuthSession_Prepare(
+TSS2_RC Tss2_Sys_StartAuthSession_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT tpmKey,
     TPMI_DH_ENTITY bind,
@@ -107,7 +107,7 @@ TPM_RC Tss2_Sys_StartAuthSession_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_StartAuthSession_Complete(
+TSS2_RC Tss2_Sys_StartAuthSession_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_AUTH_SESSION *sessionHandle,
     TPM2B_NONCE *nonceTPM)
@@ -133,7 +133,7 @@ TPM_RC Tss2_Sys_StartAuthSession_Complete(
                                          &SYS_CONTEXT->nextData, nonceTPM);
 }
 
-TPM_RC Tss2_Sys_StartAuthSession(
+TSS2_RC Tss2_Sys_StartAuthSession(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT tpmKey,
     TPMI_DH_ENTITY bind,

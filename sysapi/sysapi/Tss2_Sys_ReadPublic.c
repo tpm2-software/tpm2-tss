@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_ReadPublic_Prepare(
+TSS2_RC Tss2_Sys_ReadPublic_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT objectHandle)
 {
@@ -54,7 +54,7 @@ TPM_RC Tss2_Sys_ReadPublic_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_ReadPublic_Complete(
+TSS2_RC Tss2_Sys_ReadPublic_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_PUBLIC *outPublic,
     TPM2B_NAME *name,
@@ -86,7 +86,7 @@ TPM_RC Tss2_Sys_ReadPublic_Complete(
                                         &SYS_CONTEXT->nextData, qualifiedName);
 }
 
-TPM_RC Tss2_Sys_ReadPublic(
+TSS2_RC Tss2_Sys_ReadPublic(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT objectHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

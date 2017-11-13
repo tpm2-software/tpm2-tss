@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_Startup_Prepare(
+TSS2_RC Tss2_Sys_Startup_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPM_SU startupType)
 {
@@ -54,7 +54,7 @@ TPM_RC Tss2_Sys_Startup_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_Startup(
+TSS2_RC Tss2_Sys_Startup(
     TSS2_SYS_CONTEXT *sysContext,
     TPM_SU startupType)
 {

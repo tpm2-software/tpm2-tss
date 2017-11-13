@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_MakeCredential_Prepare(
+TSS2_RC Tss2_Sys_MakeCredential_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT handle,
     TPM2B_DIGEST *credential,
@@ -78,7 +78,7 @@ TPM_RC Tss2_Sys_MakeCredential_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_MakeCredential_Complete(
+TSS2_RC Tss2_Sys_MakeCredential_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_ID_OBJECT *credentialBlob,
     TPM2B_ENCRYPTED_SECRET *secret)
@@ -105,7 +105,7 @@ TPM_RC Tss2_Sys_MakeCredential_Complete(
                                                     secret);
 }
 
-TPM_RC Tss2_Sys_MakeCredential(
+TSS2_RC Tss2_Sys_MakeCredential(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT handle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

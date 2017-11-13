@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_IncrementalSelfTest_Prepare(
+TSS2_RC Tss2_Sys_IncrementalSelfTest_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPML_ALG *toTest)
 {
@@ -54,7 +54,7 @@ TPM_RC Tss2_Sys_IncrementalSelfTest_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_IncrementalSelfTest_Complete(
+TSS2_RC Tss2_Sys_IncrementalSelfTest_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPML_ALG *toDoList)
 {
@@ -72,7 +72,7 @@ TPM_RC Tss2_Sys_IncrementalSelfTest_Complete(
                                       &SYS_CONTEXT->nextData, toDoList);
 }
 
-TPM_RC Tss2_Sys_IncrementalSelfTest(
+TSS2_RC Tss2_Sys_IncrementalSelfTest(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     TPML_ALG *toTest,

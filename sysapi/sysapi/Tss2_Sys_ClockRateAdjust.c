@@ -28,12 +28,12 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_ClockRateAdjust_Prepare(
+TSS2_RC Tss2_Sys_ClockRateAdjust_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION auth,
     TPM_CLOCK_ADJUST rateAdjust)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -60,7 +60,7 @@ TPM_RC Tss2_Sys_ClockRateAdjust_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_ClockRateAdjust(
+TSS2_RC Tss2_Sys_ClockRateAdjust(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION auth,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
