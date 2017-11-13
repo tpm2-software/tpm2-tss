@@ -32,10 +32,10 @@ TSS2_RC Tss2_Sys_StartAuthSession_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT tpmKey,
     TPMI_DH_ENTITY bind,
-    TPM2B_NONCE *nonceCaller,
-    TPM2B_ENCRYPTED_SECRET *encryptedSalt,
+    const TPM2B_NONCE	*nonceCaller,
+    const TPM2B_ENCRYPTED_SECRET	*encryptedSalt,
     TPM_SE sessionType,
-    TPMT_SYM_DEF *symmetric,
+    const TPMT_SYM_DEF	*symmetric,
     TPMI_ALG_HASH authHash)
 {
     TSS2_RC rval;
@@ -138,10 +138,10 @@ TSS2_RC Tss2_Sys_StartAuthSession(
     TPMI_DH_OBJECT tpmKey,
     TPMI_DH_ENTITY bind,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_NONCE *nonceCaller,
-    TPM2B_ENCRYPTED_SECRET *encryptedSalt,
+    const TPM2B_NONCE	*nonceCaller,
+    const TPM2B_ENCRYPTED_SECRET	*encryptedSalt,
     TPM_SE sessionType,
-    TPMT_SYM_DEF *symmetric,
+    const TPMT_SYM_DEF	*symmetric,
     TPMI_ALG_HASH authHash,
     TPMI_SH_AUTH_SESSION *sessionHandle,
     TPM2B_NONCE *nonceTPM,

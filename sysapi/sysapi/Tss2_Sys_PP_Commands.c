@@ -31,8 +31,8 @@
 TSS2_RC Tss2_Sys_PP_Commands_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM auth,
-    TPML_CC *setList,
-    TPML_CC *clearList)
+    const TPML_CC	*setList,
+    const TPML_CC	*clearList)
 {
     TSS2_RC rval;
 
@@ -72,8 +72,8 @@ TSS2_RC Tss2_Sys_PP_Commands(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM auth,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPML_CC *setList,
-    TPML_CC *clearList,
+    const TPML_CC	*setList,
+    const TPML_CC	*clearList,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;

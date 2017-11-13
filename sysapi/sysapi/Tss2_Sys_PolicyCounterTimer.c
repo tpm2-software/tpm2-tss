@@ -31,7 +31,7 @@
 TSS2_RC Tss2_Sys_PolicyCounterTimer_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
-    TPM2B_OPERAND *operandB,
+    const TPM2B_OPERAND	*operandB,
     UINT16 offset,
     TPM_EO operation)
 {
@@ -89,7 +89,7 @@ TSS2_RC Tss2_Sys_PolicyCounterTimer(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_OPERAND *operandB,
+    const TPM2B_OPERAND	*operandB,
     UINT16 offset,
     TPM_EO operation,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)

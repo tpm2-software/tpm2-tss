@@ -31,8 +31,8 @@
 TSS2_RC Tss2_Sys_PolicyDuplicationSelect_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
-    TPM2B_NAME *objectName,
-    TPM2B_NAME *newParentName,
+    const TPM2B_NAME	*objectName,
+    const TPM2B_NAME	*newParentName,
     TPMI_YES_NO includeObject)
 {
     TSS2_RC rval;
@@ -89,8 +89,8 @@ TSS2_RC Tss2_Sys_PolicyDuplicationSelect(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_NAME *objectName,
-    TPM2B_NAME *newParentName,
+    const TPM2B_NAME	*objectName,
+    const TPM2B_NAME	*newParentName,
     TPMI_YES_NO includeObject,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {

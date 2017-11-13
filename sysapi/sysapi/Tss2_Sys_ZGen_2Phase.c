@@ -31,8 +31,8 @@
 TSS2_RC Tss2_Sys_ZGen_2Phase_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyA,
-    TPM2B_ECC_POINT *inQsB,
-    TPM2B_ECC_POINT *inQeB,
+    const TPM2B_ECC_POINT	*inQsB,
+    const TPM2B_ECC_POINT	*inQeB,
     TPMI_ECC_KEY_EXCHANGE inScheme,
     UINT16 counter)
 {
@@ -121,8 +121,8 @@ TSS2_RC Tss2_Sys_ZGen_2Phase(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyA,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_ECC_POINT *inQsB,
-    TPM2B_ECC_POINT *inQeB,
+    const TPM2B_ECC_POINT	*inQsB,
+    const TPM2B_ECC_POINT	*inQeB,
     TPMI_ECC_KEY_EXCHANGE inScheme,
     UINT16 counter,
     TPM2B_ECC_POINT *outZ1,

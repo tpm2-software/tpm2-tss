@@ -31,7 +31,7 @@
 TSS2_RC Tss2_Sys_HMAC_Start_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT handle,
-    TPM2B_AUTH *auth,
+    const TPM2B_AUTH	*auth,
     TPMI_ALG_HASH hashAlg)
 {
     TSS2_RC rval;
@@ -102,7 +102,7 @@ TSS2_RC Tss2_Sys_HMAC_Start(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT handle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_AUTH *auth,
+    const TPM2B_AUTH	*auth,
     TPMI_ALG_HASH hashAlg,
     TPMI_DH_OBJECT *sequenceHandle,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)

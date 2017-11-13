@@ -30,7 +30,7 @@
 
 TSS2_RC Tss2_Sys_TestParms_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMT_PUBLIC_PARMS *parameters)
+    const TPMT_PUBLIC_PARMS	*parameters)
 {
     TSS2_RC rval;
 
@@ -57,7 +57,7 @@ TSS2_RC Tss2_Sys_TestParms_Prepare(
 TSS2_RC Tss2_Sys_TestParms(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPMT_PUBLIC_PARMS *parameters,
+    const TPMT_PUBLIC_PARMS	*parameters,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;
