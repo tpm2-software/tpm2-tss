@@ -42,7 +42,7 @@ TSS2_RC Tss2_Sys_PolicyTicket_Prepare(
     if (!sysContext || !ticket)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PolicyTicket);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PolicyTicket);
     if (rval)
         return rval;
 

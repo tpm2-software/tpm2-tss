@@ -41,7 +41,7 @@ TSS2_RC Tss2_Sys_Create_Prepare(
     if (!sysContext || !creationPCR)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_Create);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_Create);
     if (rval)
         return rval;
 

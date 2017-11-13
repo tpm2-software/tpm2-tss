@@ -40,7 +40,7 @@ TSS2_RC Tss2_Sys_Certify_Prepare(
     if (!sysContext || !inScheme)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_Certify);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_Certify);
     if (rval)
         return rval;
 

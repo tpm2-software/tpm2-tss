@@ -67,8 +67,8 @@ TSS2_RC LocalTpmSendTpmCommand(
     }
 #ifdef DEBUG
     TSS2_RC rc;
-    size_t offset = sizeof (TPM_ST);
-    rc = Tss2_MU_TPM_ST_Unmarshal (command_buffer,
+    size_t offset = sizeof (TPM2_ST);
+    rc = Tss2_MU_TPM2_ST_Unmarshal (command_buffer,
                                    command_size,
                                    &offset,
                                    &commandCode);

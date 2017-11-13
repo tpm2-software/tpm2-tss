@@ -39,7 +39,7 @@ TSS2_RC Tss2_Sys_VerifySignature_Prepare(
     if (!sysContext || !signature)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_VerifySignature);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_VerifySignature);
     if (rval)
         return rval;
 

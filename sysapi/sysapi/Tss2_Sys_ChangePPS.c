@@ -37,7 +37,7 @@ TSS2_RC Tss2_Sys_ChangePPS_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_ChangePPS);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_ChangePPS);
     if (rval)
         return rval;
 

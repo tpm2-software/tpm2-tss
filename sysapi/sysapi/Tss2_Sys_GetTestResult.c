@@ -36,7 +36,7 @@ TSS2_RC Tss2_Sys_GetTestResult_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_GetTestResult);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_GetTestResult);
     if (rval)
         return rval;
 

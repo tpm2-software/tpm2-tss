@@ -6,11 +6,11 @@
 int
 test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 {
-    TSS2_RC      rc             = TPM_RC_SUCCESS;
-    TPM_HANDLE  primary_handle = 0;
+    TSS2_RC      rc             = TPM2_RC_SUCCESS;
+    TPM2_HANDLE  primary_handle = 0;
     /* session parameters */
     /* command session info */
-    TPMS_AUTH_COMMAND   session_cmd          = { .sessionHandle = TPM_RS_PW };
+    TPMS_AUTH_COMMAND   session_cmd          = { .sessionHandle = TPM2_RS_PW };
     TPMS_AUTH_COMMAND  *session_cmd_array[1] = { &session_cmd };
     TSS2_SYS_CMD_AUTHS  sessions_cmd         = {
         .cmdAuths      = session_cmd_array,
@@ -31,7 +31,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     }
 
     rc = Tss2_Sys_EvictControl (sapi_context,
-                                TPM_RH_OWNER,
+                                TPM2_RH_OWNER,
                                 primary_handle,
                                 &sessions_cmd,
                                 0x81000000,

@@ -34,7 +34,7 @@ TSS2_RC Tss2_Sys_StartAuthSession_Prepare(
     TPMI_DH_ENTITY bind,
     const TPM2B_NONCE	*nonceCaller,
     const TPM2B_ENCRYPTED_SECRET	*encryptedSalt,
-    TPM_SE sessionType,
+    TPM2_SE sessionType,
     const TPMT_SYM_DEF	*symmetric,
     TPMI_ALG_HASH authHash)
 {
@@ -43,7 +43,7 @@ TSS2_RC Tss2_Sys_StartAuthSession_Prepare(
     if (!sysContext || !symmetric)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_StartAuthSession);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_StartAuthSession);
     if (rval)
         return rval;
 
@@ -140,7 +140,7 @@ TSS2_RC Tss2_Sys_StartAuthSession(
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     const TPM2B_NONCE	*nonceCaller,
     const TPM2B_ENCRYPTED_SECRET	*encryptedSalt,
-    TPM_SE sessionType,
+    TPM2_SE sessionType,
     const TPMT_SYM_DEF	*symmetric,
     TPMI_ALG_HASH authHash,
     TPMI_SH_AUTH_SESSION *sessionHandle,

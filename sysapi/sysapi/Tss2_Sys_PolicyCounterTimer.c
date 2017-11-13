@@ -33,14 +33,14 @@ TSS2_RC Tss2_Sys_PolicyCounterTimer_Prepare(
     TPMI_SH_POLICY policySession,
     const TPM2B_OPERAND	*operandB,
     UINT16 offset,
-    TPM_EO operation)
+    TPM2_EO operation)
 {
     TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PolicyCounterTimer);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PolicyCounterTimer);
     if (rval)
         return rval;
 
@@ -91,7 +91,7 @@ TSS2_RC Tss2_Sys_PolicyCounterTimer(
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     const TPM2B_OPERAND	*operandB,
     UINT16 offset,
-    TPM_EO operation,
+    TPM2_EO operation,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;

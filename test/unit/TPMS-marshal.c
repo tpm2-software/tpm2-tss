@@ -21,12 +21,12 @@ tpms_marshal_success(void **state)
     uint16_t *alg_ptr;
     uint32_t *alg_properties_ptr;
     TPMS_CAPABILITY_DATA *ptr2;
-    uint16_t alg_expected = HOST_TO_BE_16(TPM_ALG_ECDSA);
+    uint16_t alg_expected = HOST_TO_BE_16(TPM2_ALG_ECDSA);
     uint32_t algprop_expected = HOST_TO_BE_32(TPMA_ALGORITHM_ASYMMETRIC | TPMA_ALGORITHM_SIGNING);
-    uint32_t capability = HOST_TO_BE_32(TPM_CAP_ECC_CURVES);
+    uint32_t capability = HOST_TO_BE_32(TPM2_CAP_TPM2_ECC_CURVES);
     TSS2_RC rc;
 
-    alg.alg = TPM_ALG_ECDSA;
+    alg.alg = TPM2_ALG_ECDSA;
     alg.algProperties.asymmetric = 1;
     alg.algProperties.signing = 1;
     alg_ptr = (uint16_t *)buffer;
@@ -36,20 +36,20 @@ tpms_marshal_success(void **state)
     assert_int_equal (*alg_ptr, alg_expected);
     assert_int_equal (*alg_properties_ptr, algprop_expected);
 
-    cap.capability = TPM_CAP_ECC_CURVES;
+    cap.capability = TPM2_CAP_TPM2_ECC_CURVES;
     cap.data.eccCurves.count = 3;
-    cap.data.eccCurves.eccCurves[0] = TPM_ECC_NIST_P256;
-    cap.data.eccCurves.eccCurves[1] = TPM_ECC_NIST_P384;
-    cap.data.eccCurves.eccCurves[2] = TPM_ECC_NIST_P521;
+    cap.data.eccCurves.eccCurves[0] = TPM2_ECC_NIST_P256;
+    cap.data.eccCurves.eccCurves[1] = TPM2_ECC_NIST_P384;
+    cap.data.eccCurves.eccCurves[2] = TPM2_ECC_NIST_P521;
     ptr2 = (TPMS_CAPABILITY_DATA *)buffer2;
 
     rc = Tss2_MU_TPMS_CAPABILITY_DATA_Marshal(&cap, buffer2, buffer_size2, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (ptr2->capability, capability);
     assert_int_equal (ptr2->data.eccCurves.count, HOST_TO_BE_32(3));
-    assert_int_equal (ptr2->data.eccCurves.eccCurves[0], HOST_TO_BE_16(TPM_ECC_NIST_P256));
-    assert_int_equal (ptr2->data.eccCurves.eccCurves[1], HOST_TO_BE_16(TPM_ECC_NIST_P384));
-    assert_int_equal (ptr2->data.eccCurves.eccCurves[2], HOST_TO_BE_16(TPM_ECC_NIST_P521));
+    assert_int_equal (ptr2->data.eccCurves.eccCurves[0], HOST_TO_BE_16(TPM2_ECC_NIST_P256));
+    assert_int_equal (ptr2->data.eccCurves.eccCurves[1], HOST_TO_BE_16(TPM2_ECC_NIST_P384));
+    assert_int_equal (ptr2->data.eccCurves.eccCurves[2], HOST_TO_BE_16(TPM2_ECC_NIST_P521));
 }
 
 /*
@@ -65,13 +65,13 @@ tpms_marshal_success_offset(void **state)
     uint16_t *alg_ptr;
     uint32_t *alg_properties_ptr;
     TPMS_CAPABILITY_DATA *ptr2;
-    uint16_t alg_expected = HOST_TO_BE_16(TPM_ALG_ECDSA);
+    uint16_t alg_expected = HOST_TO_BE_16(TPM2_ALG_ECDSA);
     uint32_t algprop_expected = HOST_TO_BE_32(TPMA_ALGORITHM_ASYMMETRIC | TPMA_ALGORITHM_SIGNING);
-    uint32_t capability = HOST_TO_BE_32(TPM_CAP_ECC_CURVES);
+    uint32_t capability = HOST_TO_BE_32(TPM2_CAP_TPM2_ECC_CURVES);
     size_t offset = 10;
     TSS2_RC rc;
 
-    alg.alg = TPM_ALG_ECDSA;
+    alg.alg = TPM2_ALG_ECDSA;
     alg.algProperties.asymmetric = 1;
     alg.algProperties.signing = 1;
     alg_ptr = (uint16_t *)(buffer + 10);
@@ -82,20 +82,20 @@ tpms_marshal_success_offset(void **state)
     assert_int_equal (*alg_ptr, alg_expected);
     assert_int_equal (*alg_properties_ptr, algprop_expected);
 
-    cap.capability = TPM_CAP_ECC_CURVES;
+    cap.capability = TPM2_CAP_TPM2_ECC_CURVES;
     cap.data.eccCurves.count = 3;
-    cap.data.eccCurves.eccCurves[0] = TPM_ECC_NIST_P256;
-    cap.data.eccCurves.eccCurves[1] = TPM_ECC_NIST_P384;
-    cap.data.eccCurves.eccCurves[2] = TPM_ECC_NIST_P521;
+    cap.data.eccCurves.eccCurves[0] = TPM2_ECC_NIST_P256;
+    cap.data.eccCurves.eccCurves[1] = TPM2_ECC_NIST_P384;
+    cap.data.eccCurves.eccCurves[2] = TPM2_ECC_NIST_P521;
     ptr2 = (TPMS_CAPABILITY_DATA *)(buffer + 10 + sizeof(*alg_ptr) + sizeof(*alg_properties_ptr));
 
     rc = Tss2_MU_TPMS_CAPABILITY_DATA_Marshal(&cap, buffer, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (ptr2->capability, capability);
     assert_int_equal (ptr2->data.eccCurves.count, HOST_TO_BE_32(3));
-    assert_int_equal (ptr2->data.eccCurves.eccCurves[0], HOST_TO_BE_16(TPM_ECC_NIST_P256));
-    assert_int_equal (ptr2->data.eccCurves.eccCurves[1], HOST_TO_BE_16(TPM_ECC_NIST_P384));
-    assert_int_equal (ptr2->data.eccCurves.eccCurves[2], HOST_TO_BE_16(TPM_ECC_NIST_P521));
+    assert_int_equal (ptr2->data.eccCurves.eccCurves[0], HOST_TO_BE_16(TPM2_ECC_NIST_P256));
+    assert_int_equal (ptr2->data.eccCurves.eccCurves[1], HOST_TO_BE_16(TPM2_ECC_NIST_P384));
+    assert_int_equal (ptr2->data.eccCurves.eccCurves[2], HOST_TO_BE_16(TPM2_ECC_NIST_P521));
     assert_int_equal (offset, 10 + sizeof(*alg_ptr) + sizeof(*alg_properties_ptr) + sizeof(capability) + 4 + (3 * 2));
 }
 
@@ -112,7 +112,7 @@ tpms_marshal_buffer_null_with_offset(void **state)
     size_t offset = 100;
     TSS2_RC rc;
 
-    alg.alg = TPM_ALG_ECDSA;
+    alg.alg = TPM2_ALG_ECDSA;
     alg.algProperties.asymmetric = 1;
     alg.algProperties.signing = 1;
 
@@ -120,11 +120,11 @@ tpms_marshal_buffer_null_with_offset(void **state)
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (offset, 100 + sizeof(*alg_ptr) + sizeof(*alg_properties_ptr));
 
-    cap.capability = TPM_CAP_ECC_CURVES;
+    cap.capability = TPM2_CAP_TPM2_ECC_CURVES;
     cap.data.eccCurves.count = 3;
-    cap.data.eccCurves.eccCurves[0] = TPM_ECC_NIST_P256;
-    cap.data.eccCurves.eccCurves[1] = TPM_ECC_NIST_P384;
-    cap.data.eccCurves.eccCurves[2] = TPM_ECC_NIST_P521;
+    cap.data.eccCurves.eccCurves[0] = TPM2_ECC_NIST_P256;
+    cap.data.eccCurves.eccCurves[1] = TPM2_ECC_NIST_P384;
+    cap.data.eccCurves.eccCurves[2] = TPM2_ECC_NIST_P521;
 
     rc = Tss2_MU_TPMS_CAPABILITY_DATA_Marshal(&cap, NULL, sizeof(cap), &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
@@ -161,7 +161,7 @@ tpms_marshal_buffer_size_lt_data_nad_lt_offset(void **state)
     size_t offset = 10;
     TSS2_RC rc;
 
-    alg.alg = TPM_ALG_ECDSA;
+    alg.alg = TPM2_ALG_ECDSA;
     alg.algProperties.asymmetric = 1;
     alg.algProperties.signing = 1;
     rc = Tss2_MU_TPMS_ALG_PROPERTY_Marshal(&alg, buffer, buffer_size, &offset);
@@ -170,11 +170,11 @@ tpms_marshal_buffer_size_lt_data_nad_lt_offset(void **state)
 
     buffer_size = 4;
     offset = 2;
-    cap.capability = TPM_CAP_ECC_CURVES;
+    cap.capability = TPM2_CAP_TPM2_ECC_CURVES;
     cap.data.eccCurves.count = 3;
-    cap.data.eccCurves.eccCurves[0] = TPM_ECC_NIST_P256;
-    cap.data.eccCurves.eccCurves[1] = TPM_ECC_NIST_P384;
-    cap.data.eccCurves.eccCurves[2] = TPM_ECC_NIST_P521;
+    cap.data.eccCurves.eccCurves[0] = TPM2_ECC_NIST_P256;
+    cap.data.eccCurves.eccCurves[1] = TPM2_ECC_NIST_P384;
+    cap.data.eccCurves.eccCurves[2] = TPM2_ECC_NIST_P521;
     rc = Tss2_MU_TPMS_CAPABILITY_DATA_Marshal(&cap, buffer, buffer_size, &offset);
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 2);
@@ -193,14 +193,14 @@ tpms_unmarshal_success(void **state)
     uint16_t *alg_ptr;
     uint32_t *alg_properties_ptr;
     TPMS_CAPABILITY_DATA *ptr2;
-    uint16_t alg_expected = TPM_ALG_ECDSA;
+    uint16_t alg_expected = TPM2_ALG_ECDSA;
     uint32_t algprop_expected = TPMA_ALGORITHM_ASYMMETRIC | TPMA_ALGORITHM_SIGNING;
-    uint32_t capability = TPM_CAP_ECC_CURVES;
+    uint32_t capability = TPM2_CAP_TPM2_ECC_CURVES;
     size_t offset = 0;
     TSS2_RC rc;
 
     alg_ptr = (uint16_t *) buffer;
-    *alg_ptr = HOST_TO_BE_16(TPM_ALG_ECDSA);
+    *alg_ptr = HOST_TO_BE_16(TPM2_ALG_ECDSA);
     alg_properties_ptr = (uint32_t *) (buffer + sizeof(*alg_ptr));
     *alg_properties_ptr = HOST_TO_BE_32(TPMA_ALGORITHM_ASYMMETRIC | TPMA_ALGORITHM_SIGNING);
 
@@ -210,20 +210,20 @@ tpms_unmarshal_success(void **state)
     assert_int_equal (alg.algProperties.val, algprop_expected);
 
     ptr2 = (TPMS_CAPABILITY_DATA *)(buffer + sizeof(alg));
-    ptr2->capability = HOST_TO_BE_32(TPM_CAP_ECC_CURVES);
+    ptr2->capability = HOST_TO_BE_32(TPM2_CAP_TPM2_ECC_CURVES);
     ptr2->data.eccCurves.count = HOST_TO_BE_32(3);
-    ptr2->data.eccCurves.eccCurves[0] = HOST_TO_BE_16(TPM_ECC_NIST_P256);
-    ptr2->data.eccCurves.eccCurves[1] = HOST_TO_BE_16(TPM_ECC_NIST_P384);
-    ptr2->data.eccCurves.eccCurves[2] = HOST_TO_BE_16(TPM_ECC_NIST_P521);
+    ptr2->data.eccCurves.eccCurves[0] = HOST_TO_BE_16(TPM2_ECC_NIST_P256);
+    ptr2->data.eccCurves.eccCurves[1] = HOST_TO_BE_16(TPM2_ECC_NIST_P384);
+    ptr2->data.eccCurves.eccCurves[2] = HOST_TO_BE_16(TPM2_ECC_NIST_P521);
 
     offset = sizeof(alg);
     rc = Tss2_MU_TPMS_CAPABILITY_DATA_Unmarshal(buffer, buffer_size, &offset, &cap);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (cap.capability, capability);
     assert_int_equal (cap.data.eccCurves.count, 3);
-    assert_int_equal (cap.data.eccCurves.eccCurves[0], TPM_ECC_NIST_P256);
-    assert_int_equal (cap.data.eccCurves.eccCurves[1], TPM_ECC_NIST_P384);
-    assert_int_equal (cap.data.eccCurves.eccCurves[2], TPM_ECC_NIST_P521);
+    assert_int_equal (cap.data.eccCurves.eccCurves[0], TPM2_ECC_NIST_P256);
+    assert_int_equal (cap.data.eccCurves.eccCurves[1], TPM2_ECC_NIST_P384);
+    assert_int_equal (cap.data.eccCurves.eccCurves[2], TPM2_ECC_NIST_P521);
     assert_int_equal (offset, sizeof(alg) + sizeof(capability) + 4 + (3 * 2));
 }
 
@@ -282,7 +282,7 @@ tpms_unmarshal_dest_null_offset_valid(void **state)
     TSS2_RC rc;
 
     alg_ptr = (uint16_t *) buffer;
-    *alg_ptr = HOST_TO_BE_16(TPM_ALG_ECDSA);
+    *alg_ptr = HOST_TO_BE_16(TPM2_ALG_ECDSA);
     alg_properties_ptr = (uint32_t *) (buffer + sizeof(*alg_ptr));
     *alg_properties_ptr = HOST_TO_BE_32(TPMA_ALGORITHM_ASYMMETRIC | TPMA_ALGORITHM_SIGNING);
 
@@ -291,11 +291,11 @@ tpms_unmarshal_dest_null_offset_valid(void **state)
     assert_int_equal (offset, sizeof(*alg_ptr) + sizeof(*alg_properties_ptr));
 
     ptr2 = (TPMS_CAPABILITY_DATA *)(buffer + sizeof(alg));
-    ptr2->capability = HOST_TO_BE_32(TPM_CAP_ECC_CURVES);
+    ptr2->capability = HOST_TO_BE_32(TPM2_CAP_TPM2_ECC_CURVES);
     ptr2->data.eccCurves.count = HOST_TO_BE_32(3);
-    ptr2->data.eccCurves.eccCurves[0] = HOST_TO_BE_16(TPM_ECC_NIST_P256);
-    ptr2->data.eccCurves.eccCurves[1] = HOST_TO_BE_16(TPM_ECC_NIST_P384);
-    ptr2->data.eccCurves.eccCurves[2] = HOST_TO_BE_16(TPM_ECC_NIST_P521);
+    ptr2->data.eccCurves.eccCurves[0] = HOST_TO_BE_16(TPM2_ECC_NIST_P256);
+    ptr2->data.eccCurves.eccCurves[1] = HOST_TO_BE_16(TPM2_ECC_NIST_P384);
+    ptr2->data.eccCurves.eccCurves[2] = HOST_TO_BE_16(TPM2_ECC_NIST_P521);
 
     offset = sizeof(alg);
     rc = Tss2_MU_TPMS_CAPABILITY_DATA_Unmarshal(buffer, buffer_size, &offset, NULL);
@@ -318,7 +318,7 @@ tpms_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
     TSS2_RC rc;
 
     ptr = (TPMS_ALG_PROPERTY *) buffer;
-    ptr->alg = HOST_TO_BE_16(TPM_ALG_ECDSA);
+    ptr->alg = HOST_TO_BE_16(TPM2_ALG_ECDSA);
     ptr->algProperties.val = HOST_TO_BE_32(TPMA_ALGORITHM_ASYMMETRIC | TPMA_ALGORITHM_SIGNING);
     rc = Tss2_MU_TPMS_ALG_PROPERTY_Unmarshal(buffer, sizeof(alg), &offset, &alg);
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
@@ -326,11 +326,11 @@ tpms_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
 
     offset = sizeof(alg);
     ptr2 = (TPMS_CAPABILITY_DATA *)(buffer + sizeof(alg) + 3);
-    ptr2->capability = HOST_TO_BE_32(TPM_CAP_ECC_CURVES);
+    ptr2->capability = HOST_TO_BE_32(TPM2_CAP_TPM2_ECC_CURVES);
     ptr2->data.eccCurves.count = HOST_TO_BE_32(3);
-    ptr2->data.eccCurves.eccCurves[0] = HOST_TO_BE_16(TPM_ECC_NIST_P256);
-    ptr2->data.eccCurves.eccCurves[1] = HOST_TO_BE_16(TPM_ECC_NIST_P384);
-    ptr2->data.eccCurves.eccCurves[2] = HOST_TO_BE_16(TPM_ECC_NIST_P521);
+    ptr2->data.eccCurves.eccCurves[0] = HOST_TO_BE_16(TPM2_ECC_NIST_P256);
+    ptr2->data.eccCurves.eccCurves[1] = HOST_TO_BE_16(TPM2_ECC_NIST_P384);
+    ptr2->data.eccCurves.eccCurves[2] = HOST_TO_BE_16(TPM2_ECC_NIST_P521);
     rc = Tss2_MU_TPMS_CAPABILITY_DATA_Unmarshal(buffer, 14, &offset, &cap);
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, sizeof(alg));
