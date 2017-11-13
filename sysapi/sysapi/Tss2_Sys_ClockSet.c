@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_ClockSet_Prepare(
+TSS2_RC Tss2_Sys_ClockSet_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION auth,
     UINT64 newTime)
@@ -38,7 +38,7 @@ TPM_RC Tss2_Sys_ClockSet_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_ClockSet);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_ClockSet);
     if (rval)
         return rval;
 
@@ -60,7 +60,7 @@ TPM_RC Tss2_Sys_ClockSet_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_ClockSet(
+TSS2_RC Tss2_Sys_ClockSet(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION auth,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

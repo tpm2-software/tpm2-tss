@@ -28,18 +28,18 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_EventSequenceComplete_Prepare(
+TSS2_RC Tss2_Sys_EventSequenceComplete_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR pcrHandle,
     TPMI_DH_OBJECT sequenceHandle,
-    TPM2B_MAX_BUFFER *buffer)
+    const TPM2B_MAX_BUFFER	*buffer)
 {
     TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_EventSequenceComplete);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_EventSequenceComplete);
     if (rval)
         return rval;
 
@@ -68,7 +68,7 @@ TPM_RC Tss2_Sys_EventSequenceComplete_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_EventSequenceComplete_Complete(
+TSS2_RC Tss2_Sys_EventSequenceComplete_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPML_DIGEST_VALUES *results)
 {
@@ -86,12 +86,12 @@ TPM_RC Tss2_Sys_EventSequenceComplete_Complete(
                                                 &SYS_CONTEXT->nextData, results);
 }
 
-TPM_RC Tss2_Sys_EventSequenceComplete(
+TSS2_RC Tss2_Sys_EventSequenceComplete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR pcrHandle,
     TPMI_DH_OBJECT sequenceHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_MAX_BUFFER *buffer,
+    const TPM2B_MAX_BUFFER	*buffer,
     TPML_DIGEST_VALUES *results,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {

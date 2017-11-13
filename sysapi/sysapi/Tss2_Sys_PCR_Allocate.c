@@ -28,17 +28,17 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_PCR_Allocate_Prepare(
+TSS2_RC Tss2_Sys_PCR_Allocate_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authHandle,
-    TPML_PCR_SELECTION *pcrAllocation)
+    const TPML_PCR_SELECTION	*pcrAllocation)
 {
     TSS2_RC rval;
 
     if (!sysContext || !pcrAllocation)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PCR_Allocate);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PCR_Allocate);
     if (rval)
         return rval;
 
@@ -62,7 +62,7 @@ TPM_RC Tss2_Sys_PCR_Allocate_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_PCR_Allocate_Complete(
+TSS2_RC Tss2_Sys_PCR_Allocate_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_YES_NO *allocationSuccess,
     UINT32 *maxPCR,
@@ -105,11 +105,11 @@ TPM_RC Tss2_Sys_PCR_Allocate_Complete(
                                     sizeAvailable);
 }
 
-TPM_RC Tss2_Sys_PCR_Allocate(
+TSS2_RC Tss2_Sys_PCR_Allocate(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPML_PCR_SELECTION *pcrAllocation,
+    const TPML_PCR_SELECTION	*pcrAllocation,
     TPMI_YES_NO *allocationSuccess,
     UINT32 *maxPCR,
     UINT32 *sizeNeeded,

@@ -43,7 +43,7 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
     if (!sysContext || !cmdAuthsArray)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if (cmdAuthsArray->cmdAuthsCount > MAX_SESSION_NUM)
+    if (cmdAuthsArray->cmdAuthsCount > TPM2_MAX_SESSION_NUM)
         return TSS2_SYS_RC_BAD_VALUE;
 
     if (SYS_CONTEXT->previousStage != CMD_STAGE_PREPARE)
@@ -58,7 +58,7 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
     if (!cmdAuthsArray->cmdAuthsCount)
         return rval;
 
-    SYS_REQ_HEADER->tag = HOST_TO_BE_16(TPM_ST_SESSIONS);
+    SYS_REQ_HEADER->tag = HOST_TO_BE_16(TPM2_ST_SESSIONS);
 
     /* Calculate size needed for authorization area, check for any null
      * pointers, and check for decrypt/encrypt sessions. */
@@ -132,7 +132,7 @@ TSS2_RC Tss2_Sys_GetRspAuths(
         return TSS2_SYS_RC_BAD_REFERENCE;
 
     if (SYS_CONTEXT->previousStage != CMD_STAGE_RECEIVE_RESPONSE ||
-        SYS_CONTEXT->rsp_header.responseCode != TPM_RC_SUCCESS ||
+        SYS_CONTEXT->rsp_header.responseCode != TPM2_RC_SUCCESS ||
         SYS_CONTEXT->authAllowed == 0)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
@@ -142,11 +142,11 @@ TSS2_RC Tss2_Sys_GetRspAuths(
     if (rspAuthsArray->rspAuthsCount != SYS_CONTEXT->authsCount)
         return TSS2_SYS_RC_INVALID_SESSIONS;
 
-    if (TPM_ST_SESSIONS != SYS_CONTEXT->rsp_header.tag)
+    if (TPM2_ST_SESSIONS != SYS_CONTEXT->rsp_header.tag)
         return rval;
 
     offset += sizeof(TPM20_Header_Out);
-    offset += SYS_CONTEXT->numResponseHandles * sizeof(TPM_HANDLE);
+    offset += SYS_CONTEXT->numResponseHandles * sizeof(TPM2_HANDLE);
     offset += BE_TO_HOST_32(*SYS_CONTEXT->rspParamsSize);
     offset += sizeof(UINT32);
     offset_tmp = offset;

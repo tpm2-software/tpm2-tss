@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_PolicyGetDigest_Prepare(
+TSS2_RC Tss2_Sys_PolicyGetDigest_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession)
 {
@@ -37,7 +37,7 @@ TPM_RC Tss2_Sys_PolicyGetDigest_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PolicyGetDigest);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PolicyGetDigest);
     if (rval)
         return rval;
 
@@ -54,7 +54,7 @@ TPM_RC Tss2_Sys_PolicyGetDigest_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_PolicyGetDigest_Complete(
+TSS2_RC Tss2_Sys_PolicyGetDigest_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_DIGEST *policyDigest)
 {
@@ -73,7 +73,7 @@ TPM_RC Tss2_Sys_PolicyGetDigest_Complete(
                                           policyDigest);
 }
 
-TPM_RC Tss2_Sys_PolicyGetDigest(
+TSS2_RC Tss2_Sys_PolicyGetDigest(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

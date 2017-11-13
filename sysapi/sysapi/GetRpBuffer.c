@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_GetRpBuffer(
+TSS2_RC Tss2_Sys_GetRpBuffer(
     TSS2_SYS_CONTEXT *sysContext,
     size_t *rpBufferUsedSize,
     const uint8_t **rpBuffer)

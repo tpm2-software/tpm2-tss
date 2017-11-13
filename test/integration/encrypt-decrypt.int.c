@@ -18,7 +18,7 @@ int
 test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 {
     TSS2_RC rc;
-    TPM_HANDLE handle_parent, handle;
+    TPM2_HANDLE handle_parent, handle;
     TPM2B_MAX_BUFFER data_in = { 0 };
     TPM2B_MAX_BUFFER data_encrypt = TPM2B_MAX_BUFFER_INIT;
     TPM2B_MAX_BUFFER data_decrypt = TPM2B_MAX_BUFFER_INIT;

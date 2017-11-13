@@ -359,7 +359,7 @@ tcti_socket_receive_success_test (void **state)
     will_return (__wrap_recv, 4);
     will_return (__wrap_recv, &response_in [2]);
     /* receive the rest of the command */
-    will_return (__wrap_recv, 0xc - sizeof (TPM_ST) - sizeof (UINT32));
+    will_return (__wrap_recv, 0xc - sizeof (TPM2_ST) - sizeof (UINT32));
     will_return (__wrap_recv, &response_in [6]);
     /* receive the 4 bytes of 0's appended by the simulator */
     will_return (__wrap_recv, 4);
@@ -387,7 +387,7 @@ tcti_socket_transmit_success_test (void **state)
                            0x01, 0x02 };
     size_t  command_size = sizeof (command);
 
-    /* send the TPM_SEND_COMMAND code */
+    /* send the TPM2_SEND_COMMAND code */
     will_return (__wrap_send, 4);
     /* send the locality for the command */
     will_return (__wrap_send, 1);

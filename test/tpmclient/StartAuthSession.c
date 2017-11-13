@@ -43,7 +43,7 @@ SESSION_LIST_ENTRY *sessionsList = 0;
 INT16 sessionEntriesUsed = 0;
 
 
-TPM_RC AddSession( SESSION_LIST_ENTRY **sessionEntry )
+TSS2_RC AddSession( SESSION_LIST_ENTRY **sessionEntry )
 {
     SESSION_LIST_ENTRY **lastEntry, *newEntry;
 
@@ -60,7 +60,7 @@ TPM_RC AddSession( SESSION_LIST_ENTRY **sessionEntry )
         *sessionEntry = *lastEntry = newEntry;
         newEntry->nextEntry = 0;
         sessionEntriesUsed++;
-        return TPM_RC_SUCCESS;
+        return TPM2_RC_SUCCESS;
     }
     else
     {
@@ -100,9 +100,9 @@ void DeleteSession( SESSION *session )
 }
 
 
-TPM_RC GetSessionStruct( TPMI_SH_AUTH_SESSION sessionHandle, SESSION **session )
+TSS2_RC GetSessionStruct( TPMI_SH_AUTH_SESSION sessionHandle, SESSION **session )
 {
-    TPM_RC rval = TSS2_APP_RC_GET_SESSION_STRUCT_FAILED;
+    TSS2_RC rval = TSS2_APP_RC_GET_SESSION_STRUCT_FAILED;
     SESSION_LIST_ENTRY *sessionEntry;
 
     DebugPrintf( 0, "In GetSessionStruct\n" );
@@ -126,9 +126,9 @@ TPM_RC GetSessionStruct( TPMI_SH_AUTH_SESSION sessionHandle, SESSION **session )
     return rval;
 }
 
-TPM_RC GetSessionAlgId( TPMI_SH_AUTH_SESSION sessionHandle, TPMI_ALG_HASH *sessionAlgId )
+TSS2_RC GetSessionAlgId( TPMI_SH_AUTH_SESSION sessionHandle, TPMI_ALG_HASH *sessionAlgId )
 {
-    TPM_RC rval = TSS2_APP_RC_GET_SESSION_ALG_ID_FAILED;
+    TSS2_RC rval = TSS2_APP_RC_GET_SESSION_ALG_ID_FAILED;
     SESSION *session;
 
     DebugPrintf( 0, "In GetSessionAlgId\n" );
@@ -156,9 +156,9 @@ void RollNonces( SESSION *session, TPM2B_NONCE *newNonce  )
 // It performs the command, calculates the session key, and updates a
 // SESSION structure.
 //
-TPM_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
+TSS2_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
 {
-    TPM_RC rval;
+    TSS2_RC rval;
     TPM2B_ENCRYPTED_SECRET key;
     char label[] = "ATH";
     TSS2_SYS_CONTEXT *tmpSysContext;
@@ -173,7 +173,7 @@ TPM_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
 
     if( session->nonceOlder.size == 0 )
     {
-        session->nonceOlder.size = GetDigestSize( TPM_ALG_SHA1 );
+        session->nonceOlder.size = GetDigestSize( TPM2_ALG_SHA1 );
         for( i = 0; i < session->nonceOlder.size; i++ )
             session->nonceOlder.buffer[i] = 0;
     }
@@ -184,14 +184,14 @@ TPM_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
             &( session->symmetric ), session->authHash, &( session->sessionHandle ),
             &( session->nonceNewer ), 0 );
 
-    if( rval == TPM_RC_SUCCESS )
+    if( rval == TPM2_RC_SUCCESS )
     {
-        if( session->tpmKey == TPM_RH_NULL )
+        if( session->tpmKey == TPM2_RH_NULL )
             session->salt.size = 0;
-        if( session->bind == TPM_RH_NULL )
+        if( session->bind == TPM2_RH_NULL )
             session->authValueBind.size = 0;
 
-        if( session->tpmKey == TPM_RH_NULL && session->bind == TPM_RH_NULL )
+        if( session->tpmKey == TPM2_RH_NULL && session->bind == TPM2_RH_NULL )
         {
             session->sessionKey.size = 0;
         }
@@ -199,14 +199,14 @@ TPM_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
         {
             // Generate the key used as input to the KDF.
             rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&key, (TPM2B *)&session->authValueBind);
-            if( rval != TPM_RC_SUCCESS )
+            if( rval != TPM2_RC_SUCCESS )
             {
                 TeardownSysContext( &tmpSysContext );
                 return(  rval );
             }
 
             rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&key, (TPM2B *)&session->salt);
-            if( rval != TPM_RC_SUCCESS )
+            if( rval != TPM2_RC_SUCCESS )
             {
                 TeardownSysContext( &tmpSysContext );
                 return( rval );
@@ -224,7 +224,7 @@ TPM_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
                             (TPM2B *)&session->nonceOlder, bytes * 8, (TPM2B_MAX_BUFFER *)&session->sessionKey);
             }
 
-            if( rval != TPM_RC_SUCCESS )
+            if( rval != TPM2_RC_SUCCESS )
             {
                 TeardownSysContext( &tmpSysContext );
                 return( TSS2_APP_RC_CREATE_SESSION_KEY_FAILED );
@@ -250,14 +250,14 @@ TPM_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
 // the function is called; cleaner this way, for
 // some uses.
 //
-TPM_RC StartAuthSessionWithParams( SESSION **session,
+TSS2_RC StartAuthSessionWithParams( SESSION **session,
     TPMI_DH_OBJECT tpmKey, TPM2B_MAX_BUFFER *salt,
     TPMI_DH_ENTITY bind, TPM2B_AUTH *bindAuth, TPM2B_NONCE *nonceCaller,
     TPM2B_ENCRYPTED_SECRET *encryptedSalt,
-    TPM_SE sessionType, TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH algId,
+    TPM2_SE sessionType, TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH algId,
     TSS2_TCTI_CONTEXT *tctiContext )
 {
-    TPM_RC rval;
+    TSS2_RC rval;
     SESSION_LIST_ENTRY *sessionEntry;
 
     if (session == NULL) {
@@ -301,7 +301,7 @@ TPM_RC StartAuthSessionWithParams( SESSION **session,
         }
 
         // Calculate sessionKey
-        if( (*session)->tpmKey == TPM_RH_NULL )
+        if( (*session)->tpmKey == TPM2_RH_NULL )
         {
             (*session)->salt.size = 0;
         }
@@ -310,7 +310,7 @@ TPM_RC StartAuthSessionWithParams( SESSION **session,
             CopySizedByteBuffer((TPM2B *)&(*session)->salt, (TPM2B *)salt);
         }
 
-        if( (*session)->bind == TPM_RH_NULL )
+        if( (*session)->bind == TPM2_RH_NULL )
             (*session)->authValueBind.size = 0;
 
         rval = StartAuthSession( *session, tctiContext );
@@ -326,9 +326,9 @@ TPM_RC StartAuthSessionWithParams( SESSION **session,
     return( rval );
 }
 
-TPM_RC EndAuthSession( SESSION *session )
+TSS2_RC EndAuthSession( SESSION *session )
 {
-    TPM_RC rval = TPM_RC_SUCCESS;
+    TSS2_RC rval = TPM2_RC_SUCCESS;
 
     DeleteSession( session );
 

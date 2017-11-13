@@ -28,11 +28,11 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_PolicyDuplicationSelect_Prepare(
+TSS2_RC Tss2_Sys_PolicyDuplicationSelect_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
-    TPM2B_NAME *objectName,
-    TPM2B_NAME *newParentName,
+    const TPM2B_NAME	*objectName,
+    const TPM2B_NAME	*newParentName,
     TPMI_YES_NO includeObject)
 {
     TSS2_RC rval;
@@ -40,7 +40,7 @@ TPM_RC Tss2_Sys_PolicyDuplicationSelect_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PolicyDuplicationSelect);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PolicyDuplicationSelect);
     if (rval)
         return rval;
 
@@ -85,12 +85,12 @@ TPM_RC Tss2_Sys_PolicyDuplicationSelect_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_PolicyDuplicationSelect(
+TSS2_RC Tss2_Sys_PolicyDuplicationSelect(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_NAME *objectName,
-    TPM2B_NAME *newParentName,
+    const TPM2B_NAME	*objectName,
+    const TPM2B_NAME	*newParentName,
     TPMI_YES_NO includeObject,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {

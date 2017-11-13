@@ -28,16 +28,16 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_Startup_Prepare(
+TSS2_RC Tss2_Sys_Startup_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_SU startupType)
+    TPM2_SU startupType)
 {
     TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_Startup);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_Startup);
     if (rval)
         return rval;
 
@@ -54,9 +54,9 @@ TPM_RC Tss2_Sys_Startup_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_Startup(
+TSS2_RC Tss2_Sys_Startup(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_SU startupType)
+    TPM2_SU startupType)
 {
     TSS2_RC rval;
 

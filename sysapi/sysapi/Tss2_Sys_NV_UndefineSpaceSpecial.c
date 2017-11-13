@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_NV_UndefineSpaceSpecial_Prepare(
+TSS2_RC Tss2_Sys_NV_UndefineSpaceSpecial_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_INDEX nvIndex,
     TPMI_RH_PLATFORM platform)
@@ -38,7 +38,7 @@ TPM_RC Tss2_Sys_NV_UndefineSpaceSpecial_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_NV_UndefineSpaceSpecial);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_NV_UndefineSpaceSpecial);
     if (rval)
         return rval;
 
@@ -61,7 +61,7 @@ TPM_RC Tss2_Sys_NV_UndefineSpaceSpecial_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_NV_UndefineSpaceSpecial(
+TSS2_RC Tss2_Sys_NV_UndefineSpaceSpecial(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_INDEX nvIndex,
     TPMI_RH_PLATFORM platform,

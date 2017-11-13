@@ -39,7 +39,7 @@ TSS2_RC Tss2_Sys_GetCommandCode(
     if (SYS_CONTEXT->previousStage == CMD_STAGE_INITIALIZE)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    *(TPM_CC *)commandCode = HOST_TO_BE_32(SYS_CONTEXT->commandCode);
+    *(TPM2_CC *)commandCode = HOST_TO_BE_32(SYS_CONTEXT->commandCode);
 
     return TSS2_RC_SUCCESS;
 }

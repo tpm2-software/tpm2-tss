@@ -28,16 +28,16 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_Vendor_TCG_Test_Prepare(
+TSS2_RC Tss2_Sys_Vendor_TCG_Test_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_DATA *inputData)
+    const TPM2B_DATA	*inputData)
 {
     TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_Vendor_TCG_Test);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_Vendor_TCG_Test);
     if (rval)
         return rval;
 
@@ -54,7 +54,7 @@ TPM_RC Tss2_Sys_Vendor_TCG_Test_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_Vendor_TCG_Test_Complete(
+TSS2_RC Tss2_Sys_Vendor_TCG_Test_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_DATA *outputData)
 {
@@ -72,10 +72,10 @@ TPM_RC Tss2_Sys_Vendor_TCG_Test_Complete(
                                         &SYS_CONTEXT->nextData, outputData);
 }
 
-TPM_RC Tss2_Sys_Vendor_TCG_Test(
+TSS2_RC Tss2_Sys_Vendor_TCG_Test(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DATA *inputData,
+    const TPM2B_DATA	*inputData,
     TPM2B_DATA *outputData,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {

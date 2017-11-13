@@ -28,19 +28,19 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_SetCommandCodeAuditStatus_Prepare(
+TSS2_RC Tss2_Sys_SetCommandCodeAuditStatus_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION auth,
     TPMI_ALG_HASH auditAlg,
-    TPML_CC *setList,
-    TPML_CC *clearList)
+    const TPML_CC	*setList,
+    const TPML_CC	*clearList)
 {
     TSS2_RC rval;
 
     if (!sysContext || !setList  || !clearList)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_SetCommandCodeAuditStatus);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_SetCommandCodeAuditStatus);
     if (rval)
         return rval;
 
@@ -75,13 +75,13 @@ TPM_RC Tss2_Sys_SetCommandCodeAuditStatus_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_SetCommandCodeAuditStatus(
+TSS2_RC Tss2_Sys_SetCommandCodeAuditStatus(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION auth,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     TPMI_ALG_HASH auditAlg,
-    TPML_CC *setList,
-    TPML_CC *clearList,
+    const TPML_CC	*setList,
+    const TPML_CC	*clearList,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;

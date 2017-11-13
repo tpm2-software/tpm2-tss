@@ -28,16 +28,16 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_TestParms_Prepare(
+TSS2_RC Tss2_Sys_TestParms_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMT_PUBLIC_PARMS *parameters)
+    const TPMT_PUBLIC_PARMS	*parameters)
 {
     TSS2_RC rval;
 
     if (!sysContext || !parameters)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_TestParms);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_TestParms);
     if (rval)
         return rval;
 
@@ -54,10 +54,10 @@ TPM_RC Tss2_Sys_TestParms_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_TestParms(
+TSS2_RC Tss2_Sys_TestParms(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPMT_PUBLIC_PARMS *parameters,
+    const TPMT_PUBLIC_PARMS	*parameters,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;

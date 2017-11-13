@@ -169,32 +169,32 @@ Tss2_MU_UINT64_Unmarshal(
     UINT64         *dest);
 
 TSS2_RC
-Tss2_MU_TPM_CC_Marshal(
-    TPM_CC          src,
+Tss2_MU_TPM2_CC_Marshal(
+    TPM2_CC          src,
     uint8_t         buffer[],
     size_t          buffer_size,
     size_t         *offset);
 
 TSS2_RC
-Tss2_MU_TPM_CC_Unmarshal(
+Tss2_MU_TPM2_CC_Unmarshal(
     uint8_t const   buffer[],
     size_t          buffer_size,
     size_t         *offset,
-    TPM_CC         *dest);
+    TPM2_CC         *dest);
 
 TSS2_RC
-Tss2_MU_TPM_ST_Marshal(
-    TPM_ST          src,
+Tss2_MU_TPM2_ST_Marshal(
+    TPM2_ST          src,
     uint8_t         buffer[],
     size_t          buffer_size,
     size_t         *offset);
 
 TSS2_RC
-Tss2_MU_TPM_ST_Unmarshal(
+Tss2_MU_TPM2_ST_Unmarshal(
     uint8_t const   buffer[],
     size_t          buffer_size,
     size_t         *offset,
-    TPM_ST         *dest);
+    TPM2_ST         *dest);
 
 TSS2_RC
 Tss2_MU_TPMA_ALGORITHM_Marshal(
