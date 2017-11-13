@@ -42,7 +42,7 @@ TSS2_RC Tss2_Sys_Import_Prepare(
     if (!sysContext || !symmetricAlg)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_Import);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_Import);
     if (rval)
         return rval;
 

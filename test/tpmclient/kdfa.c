@@ -106,7 +106,7 @@ TSS2_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
         }
 #endif
         rval = TpmHmac(hashAlg, key, (TPM2B **)&( bufferList[0] ), &tmpResult);
-        if( rval != TPM_RC_SUCCESS )
+        if( rval != TPM2_RC_SUCCESS )
         {
             return( rval );
         }
@@ -122,5 +122,5 @@ TSS2_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
     PrintSizedBuffer( &( resultKey->b ) );
 #endif
 
-    return TPM_RC_SUCCESS;
+    return TPM2_RC_SUCCESS;
 }

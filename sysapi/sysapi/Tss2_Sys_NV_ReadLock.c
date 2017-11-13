@@ -38,7 +38,7 @@ TSS2_RC Tss2_Sys_NV_ReadLock_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_NV_ReadLock);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_NV_ReadLock);
     if (rval)
         return rval;
 

@@ -6,8 +6,8 @@
 int
 test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 {
-    TSS2_RC                  rc                = TPM_RC_SUCCESS;
-    TPM_HANDLE              parent_handle     = 0;
+    TSS2_RC                  rc                = TPM2_RC_SUCCESS;
+    TPM2_HANDLE              parent_handle     = 0;
     TPM2B_SENSITIVE_CREATE  inSensitive       = { 0 };
     TPM2B_DATA              outsideInfo       = { 0 };
     TPML_PCR_SELECTION      creationPCR       = { 0 };
@@ -21,7 +21,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 
     /* session parameters */
     /* command session info */
-    TPMS_AUTH_COMMAND   session_cmd          = { .sessionHandle = TPM_RS_PW };
+    TPMS_AUTH_COMMAND   session_cmd          = { .sessionHandle = TPM2_RS_PW };
     TPMS_AUTH_COMMAND  *session_cmd_array[1] = { &session_cmd };
     TSS2_SYS_CMD_AUTHS  sessions_cmd         = {
         .cmdAuths      = session_cmd_array,
@@ -42,12 +42,12 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
        return rc;
     }
 
-    inPublic.publicArea.nameAlg = TPM_ALG_SHA1;
-    inPublic.publicArea.type = TPM_ALG_KEYEDHASH;
+    inPublic.publicArea.nameAlg = TPM2_ALG_SHA1;
+    inPublic.publicArea.type = TPM2_ALG_KEYEDHASH;
     inPublic.publicArea.objectAttributes.sign = 1;
     inPublic.publicArea.objectAttributes.sensitiveDataOrigin = 1;
-    inPublic.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM_ALG_HMAC;
-    inPublic.publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM_ALG_SHA1;
+    inPublic.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM2_ALG_HMAC;
+    inPublic.publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM2_ALG_SHA1;
 
     print_log ("Create keyedhash SHA1 HMAC");
     rc = TSS2_RETRY_EXP (Tss2_Sys_Create (sapi_context,
@@ -63,7 +63,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
                                           &creationHash,
                                           &creationTicket,
                                           &sessions_rsp));
-    if (rc == TPM_RC_SUCCESS) {
+    if (rc == TPM2_RC_SUCCESS) {
         print_log ("success");
     } else {
         print_fail ("Create FAILED! Response Code : 0x%x", rc);

@@ -214,11 +214,11 @@ const char *commandCodeStrings[] =
 
 char undefinedCommandString[10] = "";
 
-const char* strTpmCommandCode( TPM_CC code )
+const char* strTpmCommandCode( TPM2_CC code )
 {
-    if( code >= TPM_CC_NV_UndefineSpaceSpecial && code <= TPM_CC_PolicyNvWritten )
+    if( code >= TPM2_CC_NV_UndefineSpaceSpecial && code <= TPM2_CC_PolicyNvWritten )
     {
-        return commandCodeStrings[ code - TPM_CC_FIRST ];
+        return commandCodeStrings[ code - TPM2_CC_FIRST ];
     }
     else
     {

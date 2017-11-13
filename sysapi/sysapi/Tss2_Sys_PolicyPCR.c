@@ -39,7 +39,7 @@ TSS2_RC Tss2_Sys_PolicyPCR_Prepare(
     if (!sysContext || !pcrs)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PolicyPCR);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PolicyPCR);
     if (rval)
         return rval;
 

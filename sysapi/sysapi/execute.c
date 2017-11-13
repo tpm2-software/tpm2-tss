@@ -81,7 +81,7 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
      */
      SYS_CONTEXT->nextData = 0;
 
-     rval = Tss2_MU_TPM_ST_Unmarshal(SYS_CONTEXT->cmdBuffer,
+     rval = Tss2_MU_TPM2_ST_Unmarshal(SYS_CONTEXT->cmdBuffer,
                                      SYS_CONTEXT->maxCmdSize,
                                      &SYS_CONTEXT->nextData,
                                      &SYS_CONTEXT->rsp_header.tag);
@@ -122,7 +122,7 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
         SYS_CONTEXT->previousStage = CMD_STAGE_PREPARE;
         return TSS2_SYS_RC_INSUFFICIENT_RESPONSE;
     }
-    if (rval == TPM_RC_CANCELED) {
+    if (rval == TPM2_RC_CANCELED) {
         SYS_CONTEXT->previousStage = CMD_STAGE_PREPARE;
         return TSS2_SYS_RC_INSUFFICIENT_RESPONSE;
     }
