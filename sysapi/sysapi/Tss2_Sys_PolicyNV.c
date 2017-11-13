@@ -33,7 +33,7 @@ TSS2_RC Tss2_Sys_PolicyNV_Prepare(
     TPMI_RH_NV_AUTH authHandle,
     TPMI_RH_NV_INDEX nvIndex,
     TPMI_SH_POLICY policySession,
-    TPM2B_OPERAND *operandB,
+    const TPM2B_OPERAND	*operandB,
     UINT16 offset,
     TPM_EO operation)
 {
@@ -105,7 +105,7 @@ TSS2_RC Tss2_Sys_PolicyNV(
     TPMI_RH_NV_INDEX nvIndex,
     TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_OPERAND *operandB,
+    const TPM2B_OPERAND	*operandB,
     UINT16 offset,
     TPM_EO operation,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)

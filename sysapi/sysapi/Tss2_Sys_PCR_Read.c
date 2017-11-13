@@ -30,7 +30,7 @@
 
 TSS2_RC Tss2_Sys_PCR_Read_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPML_PCR_SELECTION *pcrSelectionIn)
+    const TPML_PCR_SELECTION	*pcrSelectionIn)
 {
     TSS2_RC rval;
 
@@ -92,7 +92,7 @@ TSS2_RC Tss2_Sys_PCR_Read_Complete(
 TSS2_RC Tss2_Sys_PCR_Read(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPML_PCR_SELECTION *pcrSelectionIn,
+    const TPML_PCR_SELECTION	*pcrSelectionIn,
     UINT32 *pcrUpdateCounter,
     TPML_PCR_SELECTION *pcrSelectionOut,
     TPML_DIGEST *pcrValues,

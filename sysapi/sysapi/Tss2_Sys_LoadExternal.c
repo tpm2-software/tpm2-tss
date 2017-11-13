@@ -30,8 +30,8 @@
 
 TSS2_RC Tss2_Sys_LoadExternal_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_SENSITIVE *inPrivate,
-    TPM2B_PUBLIC *inPublic,
+    const TPM2B_SENSITIVE	*inPrivate,
+    const TPM2B_PUBLIC	*inPublic,
     TPMI_RH_HIERARCHY hierarchy)
 {
     TSS2_RC rval;
@@ -107,8 +107,8 @@ TSS2_RC Tss2_Sys_LoadExternal_Complete(
 TSS2_RC Tss2_Sys_LoadExternal(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_SENSITIVE *inPrivate,
-    TPM2B_PUBLIC *inPublic,
+    const TPM2B_SENSITIVE	*inPrivate,
+    const TPM2B_PUBLIC	*inPublic,
     TPMI_RH_HIERARCHY hierarchy,
     TPM_HANDLE *objectHandle,
     TPM2B_NAME *name,

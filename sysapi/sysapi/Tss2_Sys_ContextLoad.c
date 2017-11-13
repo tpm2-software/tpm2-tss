@@ -30,7 +30,7 @@
 
 TSS2_RC Tss2_Sys_ContextLoad_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMS_CONTEXT *context)
+    const TPMS_CONTEXT	*context)
 {
     TSS2_RC rval;
 
@@ -75,7 +75,7 @@ TSS2_RC Tss2_Sys_ContextLoad_Complete(
 
 TSS2_RC Tss2_Sys_ContextLoad(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMS_CONTEXT *context,
+    const TPMS_CONTEXT	*context,
     TPMI_DH_CONTEXT *loadedHandle)
 {
     TSS2_RC rval;

@@ -31,9 +31,9 @@
 TSS2_RC Tss2_Sys_Commit_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
-    TPM2B_ECC_POINT *P1,
-    TPM2B_SENSITIVE_DATA *s2,
-    TPM2B_ECC_PARAMETER *y2)
+    const TPM2B_ECC_POINT	*P1,
+    const TPM2B_SENSITIVE_DATA	*s2,
+    const TPM2B_ECC_PARAMETER	*y2)
 {
     TSS2_RC rval;
 
@@ -127,9 +127,9 @@ TSS2_RC Tss2_Sys_Commit(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_ECC_POINT *P1,
-    TPM2B_SENSITIVE_DATA *s2,
-    TPM2B_ECC_PARAMETER *y2,
+    const TPM2B_ECC_POINT	*P1,
+    const TPM2B_SENSITIVE_DATA	*s2,
+    const TPM2B_ECC_PARAMETER	*y2,
     TPM2B_ECC_POINT *K,
     TPM2B_ECC_POINT *L,
     TPM2B_ECC_POINT *E,

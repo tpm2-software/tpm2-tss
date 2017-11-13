@@ -31,7 +31,7 @@
 TSS2_RC Tss2_Sys_SequenceUpdate_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT sequenceHandle,
-    TPM2B_MAX_BUFFER *buffer)
+    const TPM2B_MAX_BUFFER	*buffer)
 {
     TSS2_RC rval;
 
@@ -65,7 +65,7 @@ TSS2_RC Tss2_Sys_SequenceUpdate(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT sequenceHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_MAX_BUFFER *buffer,
+    const TPM2B_MAX_BUFFER	*buffer,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;

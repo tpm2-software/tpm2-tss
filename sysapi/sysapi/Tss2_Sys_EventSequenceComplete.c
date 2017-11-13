@@ -32,7 +32,7 @@ TSS2_RC Tss2_Sys_EventSequenceComplete_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR pcrHandle,
     TPMI_DH_OBJECT sequenceHandle,
-    TPM2B_MAX_BUFFER *buffer)
+    const TPM2B_MAX_BUFFER	*buffer)
 {
     TSS2_RC rval;
 
@@ -91,7 +91,7 @@ TSS2_RC Tss2_Sys_EventSequenceComplete(
     TPMI_DH_PCR pcrHandle,
     TPMI_DH_OBJECT sequenceHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_MAX_BUFFER *buffer,
+    const TPM2B_MAX_BUFFER	*buffer,
     TPML_DIGEST_VALUES *results,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {

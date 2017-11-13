@@ -31,7 +31,7 @@
 TSS2_RC Tss2_Sys_SetPrimaryPolicy_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_HIERARCHY_AUTH authHandle,
-    TPM2B_DIGEST *authPolicy,
+    const TPM2B_DIGEST	*authPolicy,
     TPMI_ALG_HASH hashAlg)
 {
     TSS2_RC rval;
@@ -82,7 +82,7 @@ TSS2_RC Tss2_Sys_SetPrimaryPolicy(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_HIERARCHY_AUTH authHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DIGEST *authPolicy,
+    const TPM2B_DIGEST	*authPolicy,
     TPMI_ALG_HASH hashAlg,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {

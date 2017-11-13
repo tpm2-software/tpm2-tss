@@ -31,7 +31,7 @@
 TSS2_RC Tss2_Sys_SequenceComplete_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT sequenceHandle,
-    TPM2B_MAX_BUFFER *buffer,
+    const TPM2B_MAX_BUFFER	*buffer,
     TPMI_RH_HIERARCHY hierarchy)
 {
     TSS2_RC rval;
@@ -107,7 +107,7 @@ TSS2_RC Tss2_Sys_SequenceComplete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT sequenceHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_MAX_BUFFER *buffer,
+    const TPM2B_MAX_BUFFER	*buffer,
     TPMI_RH_HIERARCHY hierarchy,
     TPM2B_DIGEST *result,
     TPMT_TK_HASHCHECK *validation,

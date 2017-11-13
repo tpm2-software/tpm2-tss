@@ -30,7 +30,7 @@
 
 TSS2_RC Tss2_Sys_Hash_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_MAX_BUFFER *data,
+    const TPM2B_MAX_BUFFER	*data,
     TPMI_ALG_HASH hashAlg,
     TPMI_RH_HIERARCHY hierarchy)
 {
@@ -108,7 +108,7 @@ TSS2_RC Tss2_Sys_Hash_Complete(
 TSS2_RC Tss2_Sys_Hash(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_MAX_BUFFER *data,
+    const TPM2B_MAX_BUFFER	*data,
     TPMI_ALG_HASH hashAlg,
     TPMI_RH_HIERARCHY hierarchy,
     TPM2B_DIGEST *outHash,

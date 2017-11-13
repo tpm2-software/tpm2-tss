@@ -31,7 +31,7 @@
 TSS2_RC Tss2_Sys_PCR_Event_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR pcrHandle,
-    TPM2B_EVENT *eventData)
+    const TPM2B_EVENT	*eventData)
 {
     TSS2_RC rval;
 
@@ -84,7 +84,7 @@ TSS2_RC Tss2_Sys_PCR_Event(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR pcrHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_EVENT *eventData,
+    const TPM2B_EVENT	*eventData,
     TPML_DIGEST_VALUES *digests,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {

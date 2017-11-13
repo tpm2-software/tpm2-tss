@@ -31,9 +31,9 @@
 TSS2_RC Tss2_Sys_RSA_Encrypt_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
-    TPM2B_PUBLIC_KEY_RSA *message,
-    TPMT_RSA_DECRYPT *inScheme,
-    TPM2B_DATA *label)
+    const TPM2B_PUBLIC_KEY_RSA	*message,
+    const TPMT_RSA_DECRYPT	*inScheme,
+    const TPM2B_DATA	*label)
 {
     TSS2_RC rval;
 
@@ -107,9 +107,9 @@ TSS2_RC Tss2_Sys_RSA_Encrypt(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_PUBLIC_KEY_RSA *message,
-    TPMT_RSA_DECRYPT *inScheme,
-    TPM2B_DATA *label,
+    const TPM2B_PUBLIC_KEY_RSA	*message,
+    const TPMT_RSA_DECRYPT	*inScheme,
+    const TPM2B_DATA	*label,
     TPM2B_PUBLIC_KEY_RSA *outData,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {

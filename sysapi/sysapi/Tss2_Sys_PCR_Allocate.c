@@ -31,7 +31,7 @@
 TSS2_RC Tss2_Sys_PCR_Allocate_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authHandle,
-    TPML_PCR_SELECTION *pcrAllocation)
+    const TPML_PCR_SELECTION	*pcrAllocation)
 {
     TSS2_RC rval;
 
@@ -109,7 +109,7 @@ TSS2_RC Tss2_Sys_PCR_Allocate(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPML_PCR_SELECTION *pcrAllocation,
+    const TPML_PCR_SELECTION	*pcrAllocation,
     TPMI_YES_NO *allocationSuccess,
     UINT32 *maxPCR,
     UINT32 *sizeNeeded,
