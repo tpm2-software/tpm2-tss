@@ -48,7 +48,7 @@ UINT32 TpmHash( TPMI_ALG_HASH hashAlg, UINT16 size, BYTE *data, TPM2B_DIGEST *re
         return TSS2_APP_RC_INIT_SYS_CONTEXT_FAILED;
 
     INIT_SIMPLE_TPM2B_SIZE( *result );
-    rval = Tss2_Sys_Hash ( sysContext, 0, &dataSizedBuffer, hashAlg, TPM_RH_NULL, result, 0, 0);
+    rval = Tss2_Sys_Hash ( sysContext, 0, &dataSizedBuffer, hashAlg, TPM2_RH_NULL, result, 0, 0);
 
     TeardownSysContext( &sysContext );
 
@@ -80,7 +80,7 @@ UINT32 TpmHashSequence( TPMI_ALG_HASH hashAlg, UINT8 numBuffers, TPM2B_DIGEST *b
     result->size = 0;
 
     // Init input sessions struct
-    cmdAuth.sessionHandle = TPM_RS_PW;
+    cmdAuth.sessionHandle = TPM2_RS_PW;
     cmdAuth.nonce.size = 0;
     *(UINT8 *)((void *)&cmdAuth.sessionAttributes) = 0;
     cmdAuth.hmac.size = 0;
@@ -91,20 +91,20 @@ UINT32 TpmHashSequence( TPMI_ALG_HASH hashAlg, UINT8 numBuffers, TPM2B_DIGEST *b
 
     rval = Tss2_Sys_HashSequenceStart( sysContext, 0, &nullAuth, hashAlg, &sequenceHandle, 0 );
 
-    if( rval != TPM_RC_SUCCESS )
+    if( rval != TPM2_RC_SUCCESS )
         goto teardown;
 
     for( i = 0; i < numBuffers; i++ )
     {
         rval = Tss2_Sys_SequenceUpdate ( sysContext, sequenceHandle, &cmdAuthArray, (TPM2B_MAX_BUFFER *)&bufferList[i], 0 );
 
-        if( rval != TPM_RC_SUCCESS )
+        if( rval != TPM2_RC_SUCCESS )
             goto teardown;
     }
 
     INIT_SIMPLE_TPM2B_SIZE( *result );
     rval = Tss2_Sys_SequenceComplete ( sysContext, sequenceHandle, &cmdAuthArray, ( TPM2B_MAX_BUFFER *)&emptyBuffer,
-            TPM_RH_PLATFORM, result, &validation, 0 );
+            TPM2_RH_PLATFORM, result, &validation, 0 );
 
 teardown:
     TeardownSysContext( &sysContext );

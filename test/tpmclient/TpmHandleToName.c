@@ -32,7 +32,7 @@
 
 //
 //
-UINT32 TpmHandleToName( TPM_HANDLE handle, TPM2B_NAME *name )
+UINT32 TpmHandleToName( TPM2_HANDLE handle, TPM2B_NAME *name )
 {
     TSS2_RC rval;
     TPM2B_NAME qualifiedName;
@@ -45,16 +45,16 @@ UINT32 TpmHandleToName( TPM_HANDLE handle, TPM2B_NAME *name )
     INIT_SIMPLE_TPM2B_SIZE( *name );
     INIT_SIMPLE_TPM2B_SIZE( qualifiedName );
 
-    if( handle == ( TPM_HT_NO_HANDLE ) )
+    if( handle == ( TPM2_HT_NO_HANDLE ) )
     {
         name->size = 0;
-        rval = TPM_RC_SUCCESS;
+        rval = TPM2_RC_SUCCESS;
     }
     else
     {
-        switch( handle >> HR_SHIFT )
+        switch( handle >> TPM2_HR_SHIFT )
         {
-            case TPM_HT_NV_INDEX:
+            case TPM2_HT_NV_INDEX:
                 sysContext = InitSysContext( 1000, resMgrTctiContext, &abiVersion );
                 if( sysContext == 0 )
                     return TSS2_APP_RC_INIT_SYS_CONTEXT_FAILED;
@@ -64,8 +64,8 @@ UINT32 TpmHandleToName( TPM_HANDLE handle, TPM2B_NAME *name )
                 TeardownSysContext( &sysContext );
                 break;
 
-            case TPM_HT_TRANSIENT:
-            case TPM_HT_PERSISTENT:
+            case TPM2_HT_TRANSIENT:
+            case TPM2_HT_PERSISTENT:
                 sysContext = InitSysContext( 1000, resMgrTctiContext, &abiVersion );
                 if( sysContext == 0 )
                     return TSS2_APP_RC_INIT_SYS_CONTEXT_FAILED;
@@ -76,9 +76,9 @@ UINT32 TpmHandleToName( TPM_HANDLE handle, TPM2B_NAME *name )
                 break;
 
             default:
-                rval = TPM_RC_SUCCESS;
-                name->size = sizeof(TPM_HANDLE);
-                *(TPM_HANDLE *)namePtr = BE_TO_HOST_32(handle);
+                rval = TPM2_RC_SUCCESS;
+                name->size = sizeof(TPM2_HANDLE);
+                *(TPM2_HANDLE *)namePtr = BE_TO_HOST_32(handle);
         }
     }
     return rval;

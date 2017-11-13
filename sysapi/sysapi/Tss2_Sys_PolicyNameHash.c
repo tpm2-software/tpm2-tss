@@ -38,7 +38,7 @@ TSS2_RC Tss2_Sys_PolicyNameHash_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PolicyNameHash);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PolicyNameHash);
     if (rval)
         return rval;
 

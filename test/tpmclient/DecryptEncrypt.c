@@ -33,9 +33,9 @@ TSS2_RC GetBlockSizeInBits( TPMI_ALG_SYM algorithm, UINT32 *blockSizeInBits )
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
-    if( algorithm == TPM_ALG_AES )
+    if( algorithm == TPM2_ALG_AES )
         *blockSizeInBits = 128;
-    else if( algorithm == TPM_ALG_SM3_256 )
+    else if( algorithm == TPM2_ALG_SM3_256 )
         *blockSizeInBits = 128;
     else
         rval = TSS2_APP_RC_BAD_ALGORITHM;
@@ -84,7 +84,7 @@ GenerateSessionEncryptDecryptKey (
     ivIn->size = blockSize / 8;
     cfbKey->size = (session->symmetric.keyBits.sym) / 8;
     if (ivIn->size > sizeof (ivIn->buffer) ||
-        (cfbKey->size + ivIn->size) > MAX_DIGEST_BUFFER) {
+        (cfbKey->size + ivIn->size) > TPM2_MAX_DIGEST_BUFFER) {
         return APPLICATION_ERROR (TSS2_BASE_RC_INSUFFICIENT_BUFFER);
     }
     memcpy (ivIn->buffer, &key.buffer[cfbKey->size], ivIn->size);
@@ -92,7 +92,7 @@ GenerateSessionEncryptDecryptKey (
     return rval;
 }
 
-UINT32 LoadSessionEncryptDecryptKey( TPMT_SYM_DEF *symmetric, TPM2B_MAX_BUFFER *key, TPM_HANDLE *keyHandle, TPM2B_NAME *keyName )
+UINT32 LoadSessionEncryptDecryptKey( TPMT_SYM_DEF *symmetric, TPM2B_MAX_BUFFER *key, TPM2_HANDLE *keyHandle, TPM2B_NAME *keyName )
 {
     TPM2B keyAuth = { 0 };
     TPM2B_SENSITIVE inPrivate;
@@ -100,14 +100,14 @@ UINT32 LoadSessionEncryptDecryptKey( TPMT_SYM_DEF *symmetric, TPM2B_MAX_BUFFER *
     UINT32 rval;
     TSS2_SYS_CONTEXT *sysContext;
 
-    inPrivate.sensitiveArea.sensitiveType = TPM_ALG_SYMCIPHER;
+    inPrivate.sensitiveArea.sensitiveType = TPM2_ALG_SYMCIPHER;
     inPrivate.size = CopySizedByteBuffer((TPM2B *)&inPrivate.sensitiveArea.authValue, (TPM2B *)&keyAuth);
     inPrivate.sensitiveArea.seedValue.size = 0;
     inPrivate.size += CopySizedByteBuffer((TPM2B *)&inPrivate.sensitiveArea.sensitive.bits, (TPM2B *)key);
     inPrivate.size += 2 * sizeof( UINT16 );
 
-    inPublic.publicArea.type = TPM_ALG_SYMCIPHER;
-    inPublic.publicArea.nameAlg = TPM_ALG_NULL;
+    inPublic.publicArea.type = TPM2_ALG_SYMCIPHER;
+    inPublic.publicArea.nameAlg = TPM2_ALG_NULL;
     *( UINT32 *)&( inPublic.publicArea.objectAttributes )= 0;
     inPublic.publicArea.objectAttributes.decrypt = 1;
     inPublic.publicArea.objectAttributes.sign = 1;
@@ -125,7 +125,7 @@ UINT32 LoadSessionEncryptDecryptKey( TPMT_SYM_DEF *symmetric, TPM2B_MAX_BUFFER *
     }
 
     INIT_SIMPLE_TPM2B_SIZE( *keyName );
-    rval = Tss2_Sys_LoadExternal( sysContext, 0, &inPrivate, &inPublic, TPM_RH_NULL, keyHandle, keyName, 0 );
+    rval = Tss2_Sys_LoadExternal( sysContext, 0, &inPrivate, &inPublic, TPM2_RH_NULL, keyHandle, keyName, 0 );
 
     TeardownSysContext( &sysContext );
 
@@ -137,7 +137,7 @@ TSS2_RC EncryptCFB( SESSION *session, TPM2B_MAX_BUFFER *encryptedData, TPM2B_MAX
     TSS2_RC rval = TSS2_RC_SUCCESS;
     TPM2B_MAX_BUFFER encryptKey;
     TPM2B_IV ivIn, ivOut;
-    TPM_HANDLE keyHandle;
+    TPM2_HANDLE keyHandle;
     TPM2B_NAME keyName;
     TSS2_SYS_CONTEXT *sysContext;
 
@@ -166,13 +166,13 @@ TSS2_RC EncryptCFB( SESSION *session, TPM2B_MAX_BUFFER *encryptedData, TPM2B_MAX
         if( rval == TSS2_RC_SUCCESS )
         {
             // Encrypt the data.
-            sessionData.sessionHandle = TPM_RS_PW;
+            sessionData.sessionHandle = TPM2_RS_PW;
             sessionData.nonce.size = 0;
             *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
             sessionData.hmac.size = 0;
             encryptedData->size = sizeof( *encryptedData ) - 1;
             INIT_SIMPLE_TPM2B_SIZE( ivOut );
-            rval = Tss2_Sys_EncryptDecrypt( sysContext, keyHandle, &sessionsData, NO, TPM_ALG_CFB, &ivIn,
+            rval = Tss2_Sys_EncryptDecrypt( sysContext, keyHandle, &sessionsData, NO, TPM2_ALG_CFB, &ivIn,
                     clearData, encryptedData, &ivOut, 0 );
             if( rval == TSS2_RC_SUCCESS )
             {
@@ -190,7 +190,7 @@ TSS2_RC DecryptCFB( SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM2B_MAX_BUF
     TSS2_RC rval = TSS2_RC_SUCCESS;
     TPM2B_MAX_BUFFER encryptKey;
     TPM2B_IV ivIn, ivOut;
-    TPM_HANDLE keyHandle;
+    TPM2_HANDLE keyHandle;
     TPM2B_NAME keyName;
     TSS2_SYS_CONTEXT *sysContext;
 
@@ -220,13 +220,13 @@ TSS2_RC DecryptCFB( SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM2B_MAX_BUF
         if( rval == TSS2_RC_SUCCESS )
         {
             // Decrypt the data.
-            sessionData.sessionHandle = TPM_RS_PW;
+            sessionData.sessionHandle = TPM2_RS_PW;
             sessionData.nonce.size = 0;
             *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
             sessionData.hmac.size = 0;
 
             INIT_SIMPLE_TPM2B_SIZE( ivOut );
-            rval = Tss2_Sys_EncryptDecrypt( sysContext, keyHandle, &sessionsData, YES, TPM_ALG_CFB, &ivIn,
+            rval = Tss2_Sys_EncryptDecrypt( sysContext, keyHandle, &sessionsData, YES, TPM2_ALG_CFB, &ivIn,
                     encryptedData, clearData, &ivOut, 0 );
             if( rval == TSS2_RC_SUCCESS )
             {
@@ -268,7 +268,7 @@ TSS2_RC EncryptCommandParam( SESSION *session, TPM2B_MAX_BUFFER *encryptedData, 
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
-    if( session->symmetric.algorithm == TPM_ALG_AES )
+    if( session->symmetric.algorithm == TPM2_ALG_AES )
     {
         // CFB mode encryption.
         rval = EncryptCFB( session, encryptedData, clearData, authValue );
@@ -286,7 +286,7 @@ TSS2_RC DecryptResponseParam( SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
-    if( session->symmetric.algorithm == TPM_ALG_AES )
+    if( session->symmetric.algorithm == TPM2_ALG_AES )
     {
         // CFB mode decryption.
         rval = DecryptCFB( session, clearData, encryptedData, authValue );

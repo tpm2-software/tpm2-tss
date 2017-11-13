@@ -40,7 +40,7 @@ TSS2_RC Tss2_Sys_FieldUpgradeStart_Prepare(
     if (!sysContext || !manifestSignature)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_FieldUpgradeStart);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_FieldUpgradeStart);
     if (rval)
         return rval;
     rval = Tss2_MU_UINT32_Marshal(authorization, SYS_CONTEXT->cmdBuffer,

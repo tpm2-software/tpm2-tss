@@ -40,7 +40,7 @@ TSS2_RC Tss2_Sys_Duplicate_Prepare(
     if (!sysContext || !symmetricAlg)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_Duplicate);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_Duplicate);
     if (rval)
         return rval;
 

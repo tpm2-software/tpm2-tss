@@ -36,7 +36,7 @@ TSS2_RC Tss2_Sys_ContextSave_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_ContextSave);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_ContextSave);
     if (rval)
         return rval;
 

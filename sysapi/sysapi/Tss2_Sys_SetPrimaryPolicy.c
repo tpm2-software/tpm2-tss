@@ -39,7 +39,7 @@ TSS2_RC Tss2_Sys_SetPrimaryPolicy_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_SetPrimaryPolicy);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_SetPrimaryPolicy);
     if (rval)
         return rval;
 

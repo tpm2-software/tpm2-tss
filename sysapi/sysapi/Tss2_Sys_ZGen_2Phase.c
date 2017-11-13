@@ -41,7 +41,7 @@ TSS2_RC Tss2_Sys_ZGen_2Phase_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_ZGen_2Phase);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_ZGen_2Phase);
     if (rval)
         return rval;
 
