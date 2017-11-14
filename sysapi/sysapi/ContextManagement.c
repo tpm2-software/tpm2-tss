@@ -31,7 +31,7 @@
 size_t Tss2_Sys_GetContextSize(size_t maxCommandSize)
 {
     if (maxCommandSize == 0) {
-        return sizeof(_TSS2_SYS_CONTEXT_BLOB) + MAX_COMMAND_SIZE;
+        return sizeof(_TSS2_SYS_CONTEXT_BLOB) + TPM2_MAX_COMMAND_SIZE;
     } else {
         return sizeof(_TSS2_SYS_CONTEXT_BLOB) +
                      ((maxCommandSize > sizeof(TPM20_Header_In)) ?

@@ -28,19 +28,19 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_Quote_Prepare(
+TSS2_RC Tss2_Sys_Quote_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
-    TPM2B_DATA *qualifyingData,
-    TPMT_SIG_SCHEME *inScheme,
-    TPML_PCR_SELECTION *PCRselect)
+    const TPM2B_DATA	*qualifyingData,
+    const TPMT_SIG_SCHEME	*inScheme,
+    const TPML_PCR_SELECTION	*PCRselect)
 {
     TSS2_RC rval;
 
     if (!sysContext || !inScheme || !PCRselect)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_Quote);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_Quote);
     if (rval)
         return rval;
 
@@ -85,7 +85,7 @@ TPM_RC Tss2_Sys_Quote_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_Quote_Complete(
+TSS2_RC Tss2_Sys_Quote_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_ATTEST *quoted,
     TPMT_SIGNATURE *signature)
@@ -110,13 +110,13 @@ TPM_RC Tss2_Sys_Quote_Complete(
                                             &SYS_CONTEXT->nextData, signature);
 }
 
-TPM_RC Tss2_Sys_Quote(
+TSS2_RC Tss2_Sys_Quote(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DATA *qualifyingData,
-    TPMT_SIG_SCHEME *inScheme,
-    TPML_PCR_SELECTION *PCRselect,
+    const TPM2B_DATA	*qualifyingData,
+    const TPMT_SIG_SCHEME	*inScheme,
+    const TPML_PCR_SELECTION	*PCRselect,
     TPM2B_ATTEST *quoted,
     TPMT_SIGNATURE *signature,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)

@@ -28,18 +28,18 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_PP_Commands_Prepare(
+TSS2_RC Tss2_Sys_PP_Commands_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM auth,
-    TPML_CC *setList,
-    TPML_CC *clearList)
+    const TPML_CC	*setList,
+    const TPML_CC	*clearList)
 {
     TSS2_RC rval;
 
     if (!sysContext || !setList || !clearList)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PP_Commands);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PP_Commands);
     if (rval)
         return rval;
 
@@ -68,12 +68,12 @@ TPM_RC Tss2_Sys_PP_Commands_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_PP_Commands(
+TSS2_RC Tss2_Sys_PP_Commands(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM auth,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPML_CC *setList,
-    TPML_CC *clearList,
+    const TPML_CC	*setList,
+    const TPML_CC	*clearList,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;

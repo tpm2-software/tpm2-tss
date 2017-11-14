@@ -28,19 +28,19 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_RSA_Encrypt_Prepare(
+TSS2_RC Tss2_Sys_RSA_Encrypt_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
-    TPM2B_PUBLIC_KEY_RSA *message,
-    TPMT_RSA_DECRYPT *inScheme,
-    TPM2B_DATA *label)
+    const TPM2B_PUBLIC_KEY_RSA	*message,
+    const TPMT_RSA_DECRYPT	*inScheme,
+    const TPM2B_DATA	*label)
 {
     TSS2_RC rval;
 
     if (!sysContext || !inScheme)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_RSA_Encrypt);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_RSA_Encrypt);
     if (rval)
         return rval;
 
@@ -85,7 +85,7 @@ TPM_RC Tss2_Sys_RSA_Encrypt_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_RSA_Encrypt_Complete(
+TSS2_RC Tss2_Sys_RSA_Encrypt_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_PUBLIC_KEY_RSA *outData)
 {
@@ -103,13 +103,13 @@ TPM_RC Tss2_Sys_RSA_Encrypt_Complete(
                                                   &SYS_CONTEXT->nextData, outData);
 }
 
-TPM_RC Tss2_Sys_RSA_Encrypt(
+TSS2_RC Tss2_Sys_RSA_Encrypt(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_PUBLIC_KEY_RSA *message,
-    TPMT_RSA_DECRYPT *inScheme,
-    TPM2B_DATA *label,
+    const TPM2B_PUBLIC_KEY_RSA	*message,
+    const TPMT_RSA_DECRYPT	*inScheme,
+    const TPM2B_DATA	*label,
     TPM2B_PUBLIC_KEY_RSA *outData,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {

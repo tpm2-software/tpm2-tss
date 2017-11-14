@@ -28,16 +28,16 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_PCR_Read_Prepare(
+TSS2_RC Tss2_Sys_PCR_Read_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPML_PCR_SELECTION *pcrSelectionIn)
+    const TPML_PCR_SELECTION	*pcrSelectionIn)
 {
     TSS2_RC rval;
 
     if (!sysContext || !pcrSelectionIn)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PCR_Read);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PCR_Read);
     if (rval)
         return rval;
 
@@ -55,7 +55,7 @@ TPM_RC Tss2_Sys_PCR_Read_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_PCR_Read_Complete(
+TSS2_RC Tss2_Sys_PCR_Read_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     UINT32 *pcrUpdateCounter,
     TPML_PCR_SELECTION *pcrSelectionOut,
@@ -89,10 +89,10 @@ TPM_RC Tss2_Sys_PCR_Read_Complete(
                                          &SYS_CONTEXT->nextData, pcrValues);
 }
 
-TPM_RC Tss2_Sys_PCR_Read(
+TSS2_RC Tss2_Sys_PCR_Read(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPML_PCR_SELECTION *pcrSelectionIn,
+    const TPML_PCR_SELECTION	*pcrSelectionIn,
     UINT32 *pcrUpdateCounter,
     TPML_PCR_SELECTION *pcrSelectionOut,
     TPML_DIGEST *pcrValues,

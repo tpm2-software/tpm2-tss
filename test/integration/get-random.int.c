@@ -6,7 +6,7 @@
 /**
  * This program contains integration test for SAPI Tss2_Sys_GetRandom.
  * First, this test is checking the return code to make sure the
- * SAPI is executed correctly(return code should return TPM_RC_SUCCESS).
+ * SAPI is executed correctly(return code should return TPM2_RC_SUCCESS).
  * Second, the SAPI is called twice to make sure the return randomBytes
  * are different by comparing the two randomBytes through memcmp.
  * It might not be the best test for random bytes generator but

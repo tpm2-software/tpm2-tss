@@ -28,10 +28,10 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_LoadExternal_Prepare(
+TSS2_RC Tss2_Sys_LoadExternal_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_SENSITIVE *inPrivate,
-    TPM2B_PUBLIC *inPublic,
+    const TPM2B_SENSITIVE	*inPrivate,
+    const TPM2B_PUBLIC	*inPublic,
     TPMI_RH_HIERARCHY hierarchy)
 {
     TSS2_RC rval;
@@ -39,7 +39,7 @@ TPM_RC Tss2_Sys_LoadExternal_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_LoadExternal);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_LoadExternal);
 
     /* If no private key is specified, set the private key size field to 0 */
     if (!inPrivate) {
@@ -78,9 +78,9 @@ TPM_RC Tss2_Sys_LoadExternal_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_LoadExternal_Complete(
+TSS2_RC Tss2_Sys_LoadExternal_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_HANDLE *objectHandle,
+    TPM2_HANDLE *objectHandle,
     TPM2B_NAME *name)
 {
     TSS2_RC rval;
@@ -104,13 +104,13 @@ TPM_RC Tss2_Sys_LoadExternal_Complete(
                                         &SYS_CONTEXT->nextData, name);
 }
 
-TPM_RC Tss2_Sys_LoadExternal(
+TSS2_RC Tss2_Sys_LoadExternal(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_SENSITIVE *inPrivate,
-    TPM2B_PUBLIC *inPublic,
+    const TPM2B_SENSITIVE	*inPrivate,
+    const TPM2B_PUBLIC	*inPublic,
     TPMI_RH_HIERARCHY hierarchy,
-    TPM_HANDLE *objectHandle,
+    TPM2_HANDLE *objectHandle,
     TPM2B_NAME *name,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {

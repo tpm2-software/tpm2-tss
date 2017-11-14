@@ -28,19 +28,19 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_Sign_Prepare(
+TSS2_RC Tss2_Sys_Sign_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
-    TPM2B_DIGEST *digest,
-    TPMT_SIG_SCHEME *inScheme,
-    TPMT_TK_HASHCHECK *validation)
+    const TPM2B_DIGEST	*digest,
+    const TPMT_SIG_SCHEME	*inScheme,
+    const TPMT_TK_HASHCHECK	*validation)
 {
     TSS2_RC rval;
 
     if (!sysContext || !inScheme || !validation)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_Sign);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_Sign);
     if (rval)
         return rval;
 
@@ -85,7 +85,7 @@ TPM_RC Tss2_Sys_Sign_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_Sign_Complete(
+TSS2_RC Tss2_Sys_Sign_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMT_SIGNATURE *signature)
 {
@@ -103,13 +103,13 @@ TPM_RC Tss2_Sys_Sign_Complete(
                                             &SYS_CONTEXT->nextData, signature);
 }
 
-TPM_RC Tss2_Sys_Sign(
+TSS2_RC Tss2_Sys_Sign(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DIGEST *digest,
-    TPMT_SIG_SCHEME *inScheme,
-    TPMT_TK_HASHCHECK *validation,
+    const TPM2B_DIGEST	*digest,
+    const TPMT_SIG_SCHEME	*inScheme,
+    const TPMT_TK_HASHCHECK	*validation,
     TPMT_SIGNATURE *signature,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {

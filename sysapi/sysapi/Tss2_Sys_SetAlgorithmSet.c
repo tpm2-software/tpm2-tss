@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_SetAlgorithmSet_Prepare(
+TSS2_RC Tss2_Sys_SetAlgorithmSet_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authHandle,
     UINT32 algorithmSet)
@@ -38,7 +38,7 @@ TPM_RC Tss2_Sys_SetAlgorithmSet_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_SetAlgorithmSet);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_SetAlgorithmSet);
     if (rval)
         return rval;
 
@@ -61,7 +61,7 @@ TPM_RC Tss2_Sys_SetAlgorithmSet_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_SetAlgorithmSet(
+TSS2_RC Tss2_Sys_SetAlgorithmSet(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

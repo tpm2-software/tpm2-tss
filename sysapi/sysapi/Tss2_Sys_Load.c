@@ -28,18 +28,18 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_Load_Prepare(
+TSS2_RC Tss2_Sys_Load_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT parentHandle,
-    TPM2B_PRIVATE *inPrivate,
-    TPM2B_PUBLIC *inPublic)
+    const TPM2B_PRIVATE	*inPrivate,
+    const TPM2B_PUBLIC	*inPublic)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_Load);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_Load);
     if (rval)
         return rval;
 
@@ -78,12 +78,12 @@ TPM_RC Tss2_Sys_Load_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_Load_Complete(
+TSS2_RC Tss2_Sys_Load_Complete(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_HANDLE *objectHandle,
+    TPM2_HANDLE *objectHandle,
     TPM2B_NAME *name)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -103,13 +103,13 @@ TPM_RC Tss2_Sys_Load_Complete(
                                         &SYS_CONTEXT->nextData, name);
 }
 
-TPM_RC Tss2_Sys_Load(
+TSS2_RC Tss2_Sys_Load(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT parentHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_PRIVATE *inPrivate,
-    TPM2B_PUBLIC *inPublic,
-    TPM_HANDLE *objectHandle,
+    const TPM2B_PRIVATE	*inPrivate,
+    const TPM2B_PUBLIC	*inPublic,
+    TPM2_HANDLE *objectHandle,
     TPM2B_NAME *name,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {

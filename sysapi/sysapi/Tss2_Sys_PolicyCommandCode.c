@@ -28,17 +28,17 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_PolicyCommandCode_Prepare(
+TSS2_RC Tss2_Sys_PolicyCommandCode_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
-    TPM_CC code)
+    TPM2_CC code)
 {
     TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PolicyCommandCode);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PolicyCommandCode);
     if (rval)
         return rval;
 
@@ -61,11 +61,11 @@ TPM_RC Tss2_Sys_PolicyCommandCode_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_PolicyCommandCode(
+TSS2_RC Tss2_Sys_PolicyCommandCode(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM_CC code,
+    TPM2_CC code,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;

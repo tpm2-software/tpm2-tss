@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_PCR_Reset_Prepare(
+TSS2_RC Tss2_Sys_PCR_Reset_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR pcrHandle)
 {
@@ -37,7 +37,7 @@ TPM_RC Tss2_Sys_PCR_Reset_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PCR_Reset);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PCR_Reset);
     if (rval)
         return rval;
 
@@ -54,7 +54,7 @@ TPM_RC Tss2_Sys_PCR_Reset_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_PCR_Reset(
+TSS2_RC Tss2_Sys_PCR_Reset(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR pcrHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

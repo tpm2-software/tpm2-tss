@@ -28,10 +28,10 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_HMAC_Start_Prepare(
+TSS2_RC Tss2_Sys_HMAC_Start_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT handle,
-    TPM2B_AUTH *auth,
+    const TPM2B_AUTH	*auth,
     TPMI_ALG_HASH hashAlg)
 {
     TSS2_RC rval;
@@ -40,7 +40,7 @@ TPM_RC Tss2_Sys_HMAC_Start_Prepare(
         return TSS2_SYS_RC_BAD_REFERENCE;
 
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_HMAC_Start);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_HMAC_Start);
     if (rval)
         return rval;
 
@@ -79,7 +79,7 @@ TPM_RC Tss2_Sys_HMAC_Start_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_HMAC_Start_Complete(
+TSS2_RC Tss2_Sys_HMAC_Start_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT *sequenceHandle)
 {
@@ -98,11 +98,11 @@ TPM_RC Tss2_Sys_HMAC_Start_Complete(
     return CommonComplete(sysContext);
 }
 
-TPM_RC Tss2_Sys_HMAC_Start(
+TSS2_RC Tss2_Sys_HMAC_Start(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT handle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_AUTH *auth,
+    const TPM2B_AUTH	*auth,
     TPMI_ALG_HASH hashAlg,
     TPMI_DH_OBJECT *sequenceHandle,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)

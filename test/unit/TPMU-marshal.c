@@ -20,12 +20,12 @@ tpmu_marshal_success(void **state)
     TPM2B_ECC_PARAMETER *ptr2;
     TSS2_RC rc;
 
-    memset(ha.sha512, 'a', SHA512_DIGEST_SIZE);
-    rc = Tss2_MU_TPMU_HA_Marshal(&ha, TPM_ALG_SHA512, buffer, buffer_size, NULL);
+    memset(ha.sha512, 'a', TPM2_SHA512_DIGEST_SIZE);
+    rc = Tss2_MU_TPMU_HA_Marshal(&ha, TPM2_ALG_SHA512, buffer, buffer_size, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (memcmp(buffer, ha.sha512, SHA512_DIGEST_SIZE), 0);
+    assert_int_equal (memcmp(buffer, ha.sha512, TPM2_SHA512_DIGEST_SIZE), 0);
 
-    sig.ecdsa.hash = TPM_ALG_SHA1;
+    sig.ecdsa.hash = TPM2_ALG_SHA1;
     sig.ecdsa.signatureR.size = 4;
     sig.ecdsa.signatureR.buffer[0] = 'a';
     sig.ecdsa.signatureR.buffer[1] = 'b';
@@ -37,10 +37,10 @@ tpmu_marshal_success(void **state)
     sig.ecdsa.signatureS.buffer[2] = 'f';
     sig.ecdsa.signatureS.buffer[3] = 'g';
 
-    rc = Tss2_MU_TPMU_SIGNATURE_Marshal(&sig, TPM_ALG_ECDSA, buffer, buffer_size, NULL);
+    rc = Tss2_MU_TPMU_SIGNATURE_Marshal(&sig, TPM2_ALG_ECDSA, buffer, buffer_size, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     ptr = (TPMS_SIGNATURE_ECDSA *) buffer;
-    assert_int_equal (ptr->hash, HOST_TO_BE_16(TPM_ALG_SHA1));
+    assert_int_equal (ptr->hash, HOST_TO_BE_16(TPM2_ALG_SHA1));
     assert_int_equal (ptr->signatureR.size, HOST_TO_BE_16(4));
     assert_int_equal (ptr->signatureR.buffer[0], 'a');
     assert_int_equal (ptr->signatureR.buffer[1], 'b');
@@ -69,13 +69,13 @@ tpmu_marshal_success_offset(void **state)
     size_t offset = 10;
     TSS2_RC rc;
 
-    memset(ha.sha512, 'a', SHA512_DIGEST_SIZE);
-    rc = Tss2_MU_TPMU_HA_Marshal(&ha, TPM_ALG_SHA512, buffer, buffer_size, &offset);
+    memset(ha.sha512, 'a', TPM2_SHA512_DIGEST_SIZE);
+    rc = Tss2_MU_TPMU_HA_Marshal(&ha, TPM2_ALG_SHA512, buffer, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (memcmp(buffer + 10, ha.sha512, SHA512_DIGEST_SIZE), 0);
-    assert_int_equal (offset, 10 + SHA512_DIGEST_SIZE);
+    assert_int_equal (memcmp(buffer + 10, ha.sha512, TPM2_SHA512_DIGEST_SIZE), 0);
+    assert_int_equal (offset, 10 + TPM2_SHA512_DIGEST_SIZE);
 
-    sig.ecdsa.hash = TPM_ALG_SHA1;
+    sig.ecdsa.hash = TPM2_ALG_SHA1;
     sig.ecdsa.signatureR.size = 4;
     sig.ecdsa.signatureR.buffer[0] = 'a';
     sig.ecdsa.signatureR.buffer[1] = 'b';
@@ -87,22 +87,22 @@ tpmu_marshal_success_offset(void **state)
     sig.ecdsa.signatureS.buffer[2] = 'f';
     sig.ecdsa.signatureS.buffer[3] = 'g';
 
-    rc = Tss2_MU_TPMU_SIGNATURE_Marshal(&sig, TPM_ALG_ECDSA, buffer, buffer_size, &offset);
+    rc = Tss2_MU_TPMU_SIGNATURE_Marshal(&sig, TPM2_ALG_ECDSA, buffer, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    ptr = (TPMS_SIGNATURE_ECDSA *) (buffer + 10 + SHA512_DIGEST_SIZE);
-    assert_int_equal (ptr->hash, HOST_TO_BE_16(TPM_ALG_SHA1));
+    ptr = (TPMS_SIGNATURE_ECDSA *) (buffer + 10 + TPM2_SHA512_DIGEST_SIZE);
+    assert_int_equal (ptr->hash, HOST_TO_BE_16(TPM2_ALG_SHA1));
     assert_int_equal (ptr->signatureR.size, HOST_TO_BE_16(4));
     assert_int_equal (ptr->signatureR.buffer[0], 'a');
     assert_int_equal (ptr->signatureR.buffer[1], 'b');
     assert_int_equal (ptr->signatureR.buffer[2], 'c');
     assert_int_equal (ptr->signatureR.buffer[3], 'd');
-    ptr2 = (TPM2B_ECC_PARAMETER *) (buffer + 10 + SHA512_DIGEST_SIZE + 8);
+    ptr2 = (TPM2B_ECC_PARAMETER *) (buffer + 10 + TPM2_SHA512_DIGEST_SIZE + 8);
     assert_int_equal (ptr2->size, HOST_TO_BE_16(4));
     assert_int_equal (ptr2->buffer[0], 'e');
     assert_int_equal (ptr2->buffer[1], 'd');
     assert_int_equal (ptr2->buffer[2], 'f');
     assert_int_equal (ptr2->buffer[3], 'g');
-    assert_int_equal (offset, 10 + SHA512_DIGEST_SIZE + 2 + ((2 + 1 + 1 + 1 + 1) * 2));
+    assert_int_equal (offset, 10 + TPM2_SHA512_DIGEST_SIZE + 2 + ((2 + 1 + 1 + 1 + 1) * 2));
 }
 
 /*
@@ -118,12 +118,12 @@ tpmu_marshal_buffer_null_with_offset(void **state)
     size_t offset = 10;
     TSS2_RC rc;
 
-    memset(ha.sha512, 'a', SHA512_DIGEST_SIZE);
-    rc = Tss2_MU_TPMU_HA_Marshal(&ha, TPM_ALG_SHA512, NULL, buffer_size, &offset);
+    memset(ha.sha512, 'a', TPM2_SHA512_DIGEST_SIZE);
+    rc = Tss2_MU_TPMU_HA_Marshal(&ha, TPM2_ALG_SHA512, NULL, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (offset, 10 + SHA512_DIGEST_SIZE);
+    assert_int_equal (offset, 10 + TPM2_SHA512_DIGEST_SIZE);
 
-    sig.ecdsa.hash = TPM_ALG_SHA1;
+    sig.ecdsa.hash = TPM2_ALG_SHA1;
     sig.ecdsa.signatureR.size = 4;
     sig.ecdsa.signatureR.buffer[0] = 'a';
     sig.ecdsa.signatureR.buffer[1] = 'b';
@@ -135,9 +135,9 @@ tpmu_marshal_buffer_null_with_offset(void **state)
     sig.ecdsa.signatureS.buffer[2] = 'f';
     sig.ecdsa.signatureS.buffer[3] = 'g';
 
-    rc = Tss2_MU_TPMU_SIGNATURE_Marshal(&sig, TPM_ALG_ECDSA, NULL, buffer_size, &offset);
+    rc = Tss2_MU_TPMU_SIGNATURE_Marshal(&sig, TPM2_ALG_ECDSA, NULL, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (offset, 10 + SHA512_DIGEST_SIZE + 2 + ((2 + 1 + 1 + 1 + 1) * 2));
+    assert_int_equal (offset, 10 + TPM2_SHA512_DIGEST_SIZE + 2 + ((2 + 1 + 1 + 1 + 1) * 2));
 }
 
 /*
@@ -150,10 +150,10 @@ tpmu_marshal_buffer_null_offset_null(void **state)
     TPMU_SIGNATURE sig = {0};
     TSS2_RC rc;
 
-    rc = Tss2_MU_TPMU_HA_Marshal(&ha, TPM_ALG_SHA512, NULL, sizeof(ha), NULL);
+    rc = Tss2_MU_TPMU_HA_Marshal(&ha, TPM2_ALG_SHA512, NULL, sizeof(ha), NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 
-    rc = Tss2_MU_TPMU_SIGNATURE_Marshal(&sig, TPM_ALG_ECDSA, NULL, sizeof(sig), NULL);
+    rc = Tss2_MU_TPMU_SIGNATURE_Marshal(&sig, TPM2_ALG_ECDSA, NULL, sizeof(sig), NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 }
 
@@ -169,12 +169,12 @@ tpmu_marshal_buffer_size_lt_data_nad_lt_offset(void **state)
     size_t offset = 10;
     TSS2_RC rc;
 
-    memset(ha.sha512, 'a', SHA512_DIGEST_SIZE);
-    rc = Tss2_MU_TPMU_HA_Marshal(&ha, TPM_ALG_SHA512, buffer, SHA512_DIGEST_SIZE - 1, &offset);
+    memset(ha.sha512, 'a', TPM2_SHA512_DIGEST_SIZE);
+    rc = Tss2_MU_TPMU_HA_Marshal(&ha, TPM2_ALG_SHA512, buffer, TPM2_SHA512_DIGEST_SIZE - 1, &offset);
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 10);
 
-    sig.ecdsa.hash = TPM_ALG_SHA1;
+    sig.ecdsa.hash = TPM2_ALG_SHA1;
     sig.ecdsa.signatureR.size = 4;
     sig.ecdsa.signatureR.buffer[0] = 'a';
     sig.ecdsa.signatureR.buffer[1] = 'b';
@@ -186,7 +186,7 @@ tpmu_marshal_buffer_size_lt_data_nad_lt_offset(void **state)
     sig.ecdsa.signatureS.buffer[2] = 'f';
     sig.ecdsa.signatureS.buffer[3] = 'g';
 
-    rc = Tss2_MU_TPMU_SIGNATURE_Marshal(&sig, TPM_ALG_ECDSA, buffer, 12, &offset);
+    rc = Tss2_MU_TPMU_SIGNATURE_Marshal(&sig, TPM2_ALG_ECDSA, buffer, 12, &offset);
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 10);
 }
@@ -206,16 +206,16 @@ tpmu_unmarshal_success(void **state)
     size_t offset = 0;
     TSS2_RC rc;
 
-    memset(buffer, 'a', SHA512_DIGEST_SIZE);
-    rc = Tss2_MU_TPMU_HA_Unmarshal(buffer, buffer_size, &offset, TPM_ALG_SHA512, &ha);
+    memset(buffer, 'a', TPM2_SHA512_DIGEST_SIZE);
+    rc = Tss2_MU_TPMU_HA_Unmarshal(buffer, buffer_size, &offset, TPM2_ALG_SHA512, &ha);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (offset, SHA512_DIGEST_SIZE);
-    assert_int_equal (memcmp(buffer, ha.sha512, SHA512_DIGEST_SIZE), 0);
+    assert_int_equal (offset, TPM2_SHA512_DIGEST_SIZE);
+    assert_int_equal (memcmp(buffer, ha.sha512, TPM2_SHA512_DIGEST_SIZE), 0);
 
     offset = 0;
     ptr = (TPMS_SIGNATURE_ECDSA *) buffer;
     ptr2 = (TPM2B_ECC_PARAMETER *) (buffer + 8);
-    ptr->hash = HOST_TO_BE_16(TPM_ALG_SHA1);
+    ptr->hash = HOST_TO_BE_16(TPM2_ALG_SHA1);
     ptr->signatureR.size = HOST_TO_BE_16(4);
     ptr->signatureR.buffer[0] = 'a';
     ptr->signatureR.buffer[1] = 'b';
@@ -227,10 +227,10 @@ tpmu_unmarshal_success(void **state)
     ptr2->buffer[2] = 'f';
     ptr2->buffer[3] = 'g';
 
-    rc = Tss2_MU_TPMU_SIGNATURE_Unmarshal(buffer, buffer_size, &offset, TPM_ALG_ECDSA, &sig);
+    rc = Tss2_MU_TPMU_SIGNATURE_Unmarshal(buffer, buffer_size, &offset, TPM2_ALG_ECDSA, &sig);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (offset, 14);
-    assert_int_equal (sig.ecdsa.hash, TPM_ALG_SHA1);
+    assert_int_equal (sig.ecdsa.hash, TPM2_ALG_SHA1);
     assert_int_equal (sig.ecdsa.signatureR.size, 4);
     assert_int_equal (sig.ecdsa.signatureR.buffer[0], 'a');
     assert_int_equal (sig.ecdsa.signatureR.buffer[1], 'b');
@@ -252,11 +252,11 @@ tpmu_unmarshal_dest_null_buff_null(void **state)
     size_t offset = 1;
     TSS2_RC rc;
 
-    rc = Tss2_MU_TPMU_HA_Unmarshal(NULL, SHA512_DIGEST_SIZE, &offset, TPM_ALG_SHA512, NULL);
+    rc = Tss2_MU_TPMU_HA_Unmarshal(NULL, TPM2_SHA512_DIGEST_SIZE, &offset, TPM2_ALG_SHA512, NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
     assert_int_equal (offset, 1);
 
-    rc = Tss2_MU_TPMU_SIGNATURE_Unmarshal(NULL, 32, &offset, TPM_ALG_ECDSA, NULL);
+    rc = Tss2_MU_TPMU_SIGNATURE_Unmarshal(NULL, 32, &offset, TPM2_ALG_ECDSA, NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
     assert_int_equal (offset, 1);
 }
@@ -273,10 +273,10 @@ tpmu_unmarshal_buffer_null_offset_null(void **state)
     size_t  buffer_size = sizeof(buffer);
     TSS2_RC rc;
 
-    rc = Tss2_MU_TPMU_HA_Unmarshal(buffer, buffer_size, NULL, TPM_ALG_SHA512, NULL);
+    rc = Tss2_MU_TPMU_HA_Unmarshal(buffer, buffer_size, NULL, TPM2_ALG_SHA512, NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 
-    rc = Tss2_MU_TPMU_SIGNATURE_Unmarshal(buffer, buffer_size, NULL, TPM_ALG_ECDSA, NULL);
+    rc = Tss2_MU_TPMU_SIGNATURE_Unmarshal(buffer, buffer_size, NULL, TPM2_ALG_ECDSA, NULL);
     assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
 }
 
@@ -296,15 +296,15 @@ tpmu_unmarshal_dest_null_offset_valid(void **state)
     size_t offset = 0;
     TSS2_RC rc;
 
-    memset(buffer, 'a', SHA512_DIGEST_SIZE);
-    rc = Tss2_MU_TPMU_HA_Unmarshal(buffer, buffer_size, &offset, TPM_ALG_SHA512, NULL);
+    memset(buffer, 'a', TPM2_SHA512_DIGEST_SIZE);
+    rc = Tss2_MU_TPMU_HA_Unmarshal(buffer, buffer_size, &offset, TPM2_ALG_SHA512, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (offset, SHA512_DIGEST_SIZE);
+    assert_int_equal (offset, TPM2_SHA512_DIGEST_SIZE);
 
     offset = 0;
     ptr = (TPMS_SIGNATURE_ECDSA *) buffer;
     ptr2 = (TPM2B_ECC_PARAMETER *) (buffer + 8);
-    ptr->hash = HOST_TO_BE_16(TPM_ALG_SHA1);
+    ptr->hash = HOST_TO_BE_16(TPM2_ALG_SHA1);
     ptr->signatureR.size = HOST_TO_BE_16(4);
     ptr->signatureR.buffer[0] = 'a';
     ptr->signatureR.buffer[1] = 'b';
@@ -316,7 +316,7 @@ tpmu_unmarshal_dest_null_offset_valid(void **state)
     ptr2->buffer[2] = 'f';
     ptr2->buffer[3] = 'g';
 
-    rc = Tss2_MU_TPMU_SIGNATURE_Unmarshal(buffer, buffer_size, &offset, TPM_ALG_ECDSA, NULL);
+    rc = Tss2_MU_TPMU_SIGNATURE_Unmarshal(buffer, buffer_size, &offset, TPM2_ALG_ECDSA, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (offset, 14);
 }
@@ -335,14 +335,14 @@ tpmu_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
     size_t offset = 5;
     TSS2_RC rc;
 
-    memset(buffer, 'a', SHA512_DIGEST_SIZE);
-    rc = Tss2_MU_TPMU_HA_Unmarshal(buffer, SHA512_DIGEST_SIZE - 1, &offset, TPM_ALG_SHA512, &ha);
+    memset(buffer, 'a', TPM2_SHA512_DIGEST_SIZE);
+    rc = Tss2_MU_TPMU_HA_Unmarshal(buffer, TPM2_SHA512_DIGEST_SIZE - 1, &offset, TPM2_ALG_SHA512, &ha);
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 5);
 
     ptr = (TPMS_SIGNATURE_ECDSA *) buffer;
     ptr2 = (TPM2B_ECC_PARAMETER *) (buffer + 8);
-    ptr->hash = HOST_TO_BE_16(TPM_ALG_SHA1);
+    ptr->hash = HOST_TO_BE_16(TPM2_ALG_SHA1);
     ptr->signatureR.size = HOST_TO_BE_16(4);
     ptr->signatureR.buffer[0] = 'a';
     ptr->signatureR.buffer[1] = 'b';
@@ -354,7 +354,7 @@ tpmu_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
     ptr2->buffer[2] = 'f';
     ptr2->buffer[3] = 'g';
 
-    rc = Tss2_MU_TPMU_SIGNATURE_Unmarshal(buffer, 14, &offset, TPM_ALG_ECDSA, &sig);
+    rc = Tss2_MU_TPMU_SIGNATURE_Unmarshal(buffer, 14, &offset, TPM2_ALG_ECDSA, &sig);
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 5);
 }

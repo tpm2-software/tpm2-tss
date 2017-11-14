@@ -28,16 +28,16 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_ContextLoad_Prepare(
+TSS2_RC Tss2_Sys_ContextLoad_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMS_CONTEXT *context)
+    const TPMS_CONTEXT	*context)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext || !context)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_ContextLoad);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_ContextLoad);
     if (rval)
         return rval;
 
@@ -54,11 +54,11 @@ TPM_RC Tss2_Sys_ContextLoad_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_ContextLoad_Complete(
+TSS2_RC Tss2_Sys_ContextLoad_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_CONTEXT *loadedHandle)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -73,9 +73,9 @@ TPM_RC Tss2_Sys_ContextLoad_Complete(
     return CommonComplete(sysContext);
 }
 
-TPM_RC Tss2_Sys_ContextLoad(
+TSS2_RC Tss2_Sys_ContextLoad(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMS_CONTEXT *context,
+    const TPMS_CONTEXT	*context,
     TPMI_DH_CONTEXT *loadedHandle)
 {
     TSS2_RC rval;

@@ -28,15 +28,15 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_ContextSave_Prepare(
+TSS2_RC Tss2_Sys_ContextSave_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_CONTEXT saveHandle)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_ContextSave);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_ContextSave);
     if (rval)
         return rval;
 
@@ -53,11 +53,11 @@ TPM_RC Tss2_Sys_ContextSave_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_ContextSave_Complete(
+TSS2_RC Tss2_Sys_ContextSave_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMS_CONTEXT *context)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -72,7 +72,7 @@ TPM_RC Tss2_Sys_ContextSave_Complete(
                                           context);
 }
 
-TPM_RC Tss2_Sys_ContextSave(
+TSS2_RC Tss2_Sys_ContextSave(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_CONTEXT saveHandle,
     TPMS_CONTEXT *context)

@@ -55,7 +55,7 @@ static void
 CopyCommandHeader_nextData_unit (void **state)
 {
     TSS2_SYS_CONTEXT *sys_ctx = (TSS2_SYS_CONTEXT*)*state;
-    TPM_CC cc = TPM_CC_GetCapability;
+    TPM2_CC cc = TPM2_CC_GetCapability;
 
     CopyCommandHeader (sys_ctx, cc);
     assert_int_equal (((_TSS2_SYS_CONTEXT_BLOB *)sys_ctx)->nextData, sizeof (TPM20_Header_In));
@@ -63,20 +63,20 @@ CopyCommandHeader_nextData_unit (void **state)
 
 /**
  * After a call to CopyCommandHeader the tag in the TPM20_Header_In portion of
- * the cmdBuffer member of the sys context should be TPM_ST_NO_SESSIONS
+ * the cmdBuffer member of the sys context should be TPM2_ST_NO_SESSIONS
  * transformed into network byte order.
  */
 static void
 CopyCommandHeader_tag_unit (void **state)
 {
     _TSS2_SYS_CONTEXT_BLOB *sys_ctx = (_TSS2_SYS_CONTEXT_BLOB*)*state;
-    TPM_CC cc = TPM_CC_GetCapability;
+    TPM2_CC cc = TPM2_CC_GetCapability;
     TPM20_Header_In *header = (TPM20_Header_In*)sys_ctx->cmdBuffer;
     /* The TSS code uses a custom function to convert stuff to network byte
      * order but we can just use htons. Not sure why we don't use htons/l
      * everywhere.
      */
-    TPMI_ST_COMMAND_TAG tag_net = htons (TPM_ST_NO_SESSIONS);
+    TPMI_ST_COMMAND_TAG tag_net = htons (TPM2_ST_NO_SESSIONS);
 
     CopyCommandHeader ((TSS2_SYS_CONTEXT*)sys_ctx, cc);
     assert_int_equal (tag_net, header->tag);
@@ -90,8 +90,8 @@ static void
 CopyCommandHeader_commandcode_unit (void **state)
 {
     _TSS2_SYS_CONTEXT_BLOB *sys_ctx = (_TSS2_SYS_CONTEXT_BLOB*)*state;
-    TPM_CC cc = TPM_CC_GetCapability;
-    TPM_CC cc_net = htonl (cc);
+    TPM2_CC cc = TPM2_CC_GetCapability;
+    TPM2_CC cc_net = htonl (cc);
     TPM20_Header_In *header = (TPM20_Header_In*)sys_ctx->cmdBuffer;
 
     CopyCommandHeader ((TSS2_SYS_CONTEXT*)sys_ctx, cc);

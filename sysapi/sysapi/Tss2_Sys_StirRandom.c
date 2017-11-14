@@ -28,16 +28,16 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_StirRandom_Prepare(
+TSS2_RC Tss2_Sys_StirRandom_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_SENSITIVE_DATA *inData)
+    const TPM2B_SENSITIVE_DATA	*inData)
 {
     TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_StirRandom);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_StirRandom);
     if (rval)
         return rval;
 
@@ -54,10 +54,10 @@ TPM_RC Tss2_Sys_StirRandom_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_StirRandom(
+TSS2_RC Tss2_Sys_StirRandom(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_SENSITIVE_DATA *inData,
+    const TPM2B_SENSITIVE_DATA	*inData,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;

@@ -14,8 +14,8 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     TPM2B_PUBLIC        outPublic;
     TPM2B_NAME          name = TPM2B_NAME_INIT;
     TPM2B_NAME          qualifiedName;
-    TPM_HANDLE          handle = 0;
-    TPM_CC              commandCode;
+    TPM2_HANDLE          handle = 0;
+    TPM2_CC              commandCode;
     size_t              rpBufferUsedSize;
     const uint8_t      *rpBuffer;
     TSS2_RC             rc;
@@ -190,7 +190,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     /* CheckFailed(rc, TSS2_SYS_RC_BAD_SEQUENCE); */
 
     /* Test one-call for null sapi_context pointer. */
-    rc = Tss2_Sys_Startup(0, TPM_SU_CLEAR);
+    rc = Tss2_Sys_Startup(0, TPM2_SU_CLEAR);
     if (rc != TSS2_SYS_RC_BAD_REFERENCE)
         print_fail ("SAPI invalid test FAILED! Response Code : 0x%x", rc);
 

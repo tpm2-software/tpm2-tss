@@ -9,13 +9,13 @@
 
 /**
  * Test to be sure we get back the expected # of command handles for
- * common command code: TPM_CC_PolicyPCR.
+ * common command code: TPM2_CC_PolicyPCR.
  */
 static void
 GetNumCommandHandles_PolicyPCR_unit (void **state)
 {
     int num_handles;
-    TPM_CC command_code = TPM_CC_PolicyPCR;
+    TPM2_CC command_code = TPM2_CC_PolicyPCR;
 
     num_handles = GetNumCommandHandles (command_code);
     assert_int_equal (num_handles, 1);
@@ -28,7 +28,7 @@ static void
 GetNumResponseHandles_HMAC_Start_unit (void **state)
 {
     int num_handles;
-    TPM_CC command_code = TPM_CC_HMAC_Start;
+    TPM2_CC command_code = TPM2_CC_HMAC_Start;
 
     num_handles = GetNumResponseHandles (command_code);
     assert_int_equal (num_handles, 1);
@@ -45,7 +45,7 @@ static void
 GetNumCommandHandles_LAST_plus_one (void **state)
 {
     int num_handles;
-    TPM_CC command_code = TPM_CC_LAST + 1;
+    TPM2_CC command_code = TPM2_CC_LAST + 1;
 
     num_handles = GetNumCommandHandles (command_code);
     assert_int_equal (num_handles, 0);
@@ -55,7 +55,7 @@ static void
 GetNumResponseHandles_LAST_plus_one (void **state)
 {
     int num_handles;
-    TPM_CC command_code = TPM_CC_LAST + 1;
+    TPM2_CC command_code = TPM2_CC_LAST + 1;
 
     num_handles = GetNumResponseHandles (command_code);
     assert_int_equal (num_handles, 0);

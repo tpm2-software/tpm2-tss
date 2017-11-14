@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_ECC_Parameters_Prepare(
+TSS2_RC Tss2_Sys_ECC_Parameters_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_ECC_CURVE curveID)
 {
@@ -37,7 +37,7 @@ TPM_RC Tss2_Sys_ECC_Parameters_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_ECC_Parameters);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_ECC_Parameters);
     if (rval)
         return rval;
 
@@ -54,7 +54,7 @@ TPM_RC Tss2_Sys_ECC_Parameters_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_ECC_Parameters_Complete(
+TSS2_RC Tss2_Sys_ECC_Parameters_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMS_ALGORITHM_DETAIL_ECC *parameters)
 {
@@ -73,7 +73,7 @@ TPM_RC Tss2_Sys_ECC_Parameters_Complete(
                                                        parameters);
 }
 
-TPM_RC Tss2_Sys_ECC_Parameters(
+TSS2_RC Tss2_Sys_ECC_Parameters(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     TPMI_ECC_CURVE curveID,

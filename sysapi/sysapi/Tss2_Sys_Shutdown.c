@@ -28,16 +28,16 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_Shutdown_Prepare(
+TSS2_RC Tss2_Sys_Shutdown_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_SU shutdownType)
+    TPM2_SU shutdownType)
 {
     TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_Shutdown);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_Shutdown);
     if (rval)
         return rval;
 
@@ -54,10 +54,10 @@ TPM_RC Tss2_Sys_Shutdown_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_Shutdown(
+TSS2_RC Tss2_Sys_Shutdown(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM_SU shutdownType,
+    TPM2_SU shutdownType,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;

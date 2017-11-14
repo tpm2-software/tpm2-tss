@@ -173,7 +173,7 @@ static TSS2_RC unmarshal_pcr_selection(uint8_t const buffer[], size_t buffer_siz
     return TSS2_RC_SUCCESS;
 }
 
-static TSS2_RC marshal_tagged_pcr_selection(const TPM_PT_PCR *ptr, uint8_t buffer[],
+static TSS2_RC marshal_tagged_pcr_selection(const TPM2_PT_PCR *ptr, uint8_t buffer[],
                                             size_t buffer_size, size_t *offset)
 {
     TPMS_TAGGED_PCR_SELECT *taggedPcrSelect = (TPMS_TAGGED_PCR_SELECT *)ptr;
@@ -209,7 +209,7 @@ static TSS2_RC marshal_tagged_pcr_selection(const TPM_PT_PCR *ptr, uint8_t buffe
 }
 
 static TSS2_RC unmarshal_tagged_pcr_selection(uint8_t const buffer[], size_t buffer_size,
-                                              size_t *offset, TPM_PT_PCR *ptr)
+                                              size_t *offset, TPM2_PT_PCR *ptr)
 {
     TPMS_TAGGED_PCR_SELECT *taggedPcrSelect = (TPMS_TAGGED_PCR_SELECT *)ptr;
     UINT32 i;
@@ -1261,7 +1261,7 @@ TPMS_UNMARSHAL_4(TPMS_ECC_PARMS,
 
 TPMS_MARSHAL_7_U(TPMS_ATTEST,
                  magic, VAL, Tss2_MU_UINT32_Marshal,
-                 type, VAL, Tss2_MU_TPM_ST_Marshal,
+                 type, VAL, Tss2_MU_TPM2_ST_Marshal,
                  qualifiedSigner, ADDR, Tss2_MU_TPM2B_NAME_Marshal,
                  extraData, ADDR, Tss2_MU_TPM2B_DATA_Marshal,
                  clockInfo, ADDR, Tss2_MU_TPMS_CLOCK_INFO_Marshal,
@@ -1270,7 +1270,7 @@ TPMS_MARSHAL_7_U(TPMS_ATTEST,
 
 TPMS_UNMARSHAL_7_U(TPMS_ATTEST,
                    magic, Tss2_MU_UINT32_Unmarshal,
-                   type, Tss2_MU_TPM_ST_Unmarshal,
+                   type, Tss2_MU_TPM2_ST_Unmarshal,
                    qualifiedSigner, Tss2_MU_TPM2B_NAME_Unmarshal,
                    extraData, Tss2_MU_TPM2B_DATA_Unmarshal,
                    clockInfo, Tss2_MU_TPMS_CLOCK_INFO_Unmarshal,

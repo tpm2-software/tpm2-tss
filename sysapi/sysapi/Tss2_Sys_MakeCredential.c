@@ -28,18 +28,18 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_MakeCredential_Prepare(
+TSS2_RC Tss2_Sys_MakeCredential_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT handle,
-    TPM2B_DIGEST *credential,
-    TPM2B_NAME *objectName)
+    const TPM2B_DIGEST	*credential,
+    const TPM2B_NAME	*objectName)
 {
     TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_MakeCredential);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_MakeCredential);
     if (rval)
         return rval;
 
@@ -78,7 +78,7 @@ TPM_RC Tss2_Sys_MakeCredential_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_MakeCredential_Complete(
+TSS2_RC Tss2_Sys_MakeCredential_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_ID_OBJECT *credentialBlob,
     TPM2B_ENCRYPTED_SECRET *secret)
@@ -105,12 +105,12 @@ TPM_RC Tss2_Sys_MakeCredential_Complete(
                                                     secret);
 }
 
-TPM_RC Tss2_Sys_MakeCredential(
+TSS2_RC Tss2_Sys_MakeCredential(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT handle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DIGEST *credential,
-    TPM2B_NAME *objectName,
+    const TPM2B_DIGEST	*credential,
+    const TPM2B_NAME	*objectName,
     TPM2B_ID_OBJECT *credentialBlob,
     TPM2B_ENCRYPTED_SECRET *secret,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)

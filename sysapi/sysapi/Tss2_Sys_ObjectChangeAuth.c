@@ -28,18 +28,18 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_ObjectChangeAuth_Prepare(
+TSS2_RC Tss2_Sys_ObjectChangeAuth_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT objectHandle,
     TPMI_DH_OBJECT parentHandle,
-    TPM2B_AUTH *newAuth)
+    const TPM2B_AUTH	*newAuth)
 {
     TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_ObjectChangeAuth);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_ObjectChangeAuth);
     if (rval)
         return rval;
 
@@ -68,7 +68,7 @@ TPM_RC Tss2_Sys_ObjectChangeAuth_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_ObjectChangeAuth_Complete(
+TSS2_RC Tss2_Sys_ObjectChangeAuth_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_PRIVATE *outPrivate)
 {
@@ -87,12 +87,12 @@ TPM_RC Tss2_Sys_ObjectChangeAuth_Complete(
                                            outPrivate);
 }
 
-TPM_RC Tss2_Sys_ObjectChangeAuth(
+TSS2_RC Tss2_Sys_ObjectChangeAuth(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT objectHandle,
     TPMI_DH_OBJECT parentHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_AUTH *newAuth,
+    const TPM2B_AUTH	*newAuth,
     TPM2B_PRIVATE *outPrivate,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
