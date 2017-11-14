@@ -9,8 +9,6 @@ dist: trusty
 env:
   global:
   - secure: "isEwSgRODxm9JPZAhQUXP0yqPZmrD0PncBmi/y02RT0oq6Aewdag5f7CzrsJoPsaEsFcJJapIzdZLw1KXHkeAIHNhOtSE4y9tZGFBfB35pFIb0a/Im47djYrVlBXs7Ii/PllzW4xRMmhU16phwsU2N1nFyvfo9qma8R4ComL7GXTn4UqTjADg73YfPKr2NMt/6nilLKNLGE8FhjmPKhnlrBmKgCUU9BAyJ8cOR529bLOp4Wo5pGhopCHUKrYqRErISiFNcCRxjVyUEPUjMVT7/1QPGyAS2bpJa0rc2QYH9w+H0GkzliuGjzEUPaWcpDKjTimEym7F1XfmZxe1RPMH70KGsdlqe4UyWnWzsHDKnU/oCngKecx0g1beFSn/Mwfv58uDHZlegUZrstHDdkP4RZJEWyGkYDzuBCJ2UGAKJGnig/CE4w9fXFhCIltOW7/55KB53wwTec7bCXpoWV2LtC9L8TtdmmdwsBa4NHpZuLxAr3zlKt8O72mlVuo8C6iqwXCL32sahf4KGWNgc/X5GirbvsWvokGchB1p3vgwQdb/NZXKM77r7gMbnGhIOGzEmrCB3olaG+3RtF2+5KID/Z1LZHIlXDtrCa8dAmMvBIFvjFe9/L9T75d8GwiaOg2wEfNTb8bAsPsBdyKiYvWpKMIXJEcCTGKOpC9Nr0/+uk="
-  # run coverity scan on gcc build to keep from DOSing coverity
-  - coverity_scan_run_condition='"$CC" = gcc'
   - PKG_CONFIG_PATH="$(pwd)/cmocka/lib/pkgconfig:/usr/lib/pkgconfig"
   - LD_LIBRARY_PATH="$(pwd)/cmocka/lib:/usr/lib"
   - CMOCKA_CFLAGS="-I$(pwd)/cmocka/include -I/usr/include"
@@ -26,7 +24,7 @@ addons:
       name: "01org/TPM2.0-TSS"
       description: Build submitted via Travis-CI
     notification_email: philip.b.tricca@intel.com
-    build_command_prepend: "make clean"
+    build_command_prepend: ./configure && make clean
     build_command: "make --jobs=$(($(nproc)*2))"
     branch_pattern: coverity_scan
 
@@ -51,6 +49,7 @@ before_script:
   - ./bootstrap
 
 script:
+  - if [ -f Makefile ]; then make distclean; fi
   - mkdir ./build
   - pushd ./build
   - ../configure --enable-unit --with-simulatorbin=$(pwd)/../ibmtpm/src/tpm_server
