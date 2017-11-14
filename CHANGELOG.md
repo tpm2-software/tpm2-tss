@@ -8,8 +8,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Implementation of the EncryptDecrypt2 command.
 - Coding standard documentation.
 - Support for latest TPM2 simulator v974 (only changes in test harness).
+- Check cmocka version for compatibility with 1.0 API.
 ### Fixed
 - Definition of HMAC_SESSION_LAST and POLICY_SESSION_LAST.
+- Drop cast from TPM_ALG_XXX definitions
+- Use mock functions with built-in cast to avoid compiler warnings from
+manual cast.
 
 ## [1.2.0] - 2017-08-25
 ### Added
