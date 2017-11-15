@@ -30,7 +30,7 @@
 #include "sample.h"
 
 
-UINT32 LoadExternalHMACKey( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM_HANDLE *keyHandle, TPM2B_NAME *keyName )
+UINT32 LoadExternalHMACKey( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2_HANDLE *keyHandle, TPM2B_NAME *keyName )
 {
     TPM2B keyAuth = { 0 };
     TPM2B_SENSITIVE inPrivate;
@@ -40,19 +40,19 @@ UINT32 LoadExternalHMACKey( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM_HANDLE *keyHa
 
     keyAuth.size = 0;
 
-    inPrivate.sensitiveArea.sensitiveType = TPM_ALG_KEYEDHASH;
+    inPrivate.sensitiveArea.sensitiveType = TPM2_ALG_KEYEDHASH;
     inPrivate.size = CopySizedByteBuffer((TPM2B *)&inPrivate.sensitiveArea.authValue, (TPM2B *)&keyAuth);
     inPrivate.sensitiveArea.seedValue.size = 0;
     inPrivate.size += CopySizedByteBuffer((TPM2B *)&inPrivate.sensitiveArea.sensitive.bits, (TPM2B *)key);
     inPrivate.size += 2 * sizeof( UINT16 );
 
-    inPublic.publicArea.type = TPM_ALG_KEYEDHASH;
-    inPublic.publicArea.nameAlg = TPM_ALG_NULL;
+    inPublic.publicArea.type = TPM2_ALG_KEYEDHASH;
+    inPublic.publicArea.nameAlg = TPM2_ALG_NULL;
     *( UINT32 *)&( inPublic.publicArea.objectAttributes )= 0;
     inPublic.publicArea.objectAttributes.sign = 1;
     inPublic.publicArea.objectAttributes.userWithAuth = 1;
     inPublic.publicArea.authPolicy.size = 0;
-    inPublic.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM_ALG_HMAC;
+    inPublic.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM2_ALG_HMAC;
     inPublic.publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = hashAlg;
     inPublic.publicArea.unique.keyedHash.size = 0;
 
@@ -60,11 +60,11 @@ UINT32 LoadExternalHMACKey( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM_HANDLE *keyHa
     if( sysContext == 0 )
     {
         TeardownSysContext( &sysContext );
-        return TSS2_APP_ERROR_LEVEL + TPM_RC_FAILURE;
+        return TSS2_APP_ERROR_LEVEL + TPM2_RC_FAILURE;
     }
 
     INIT_SIMPLE_TPM2B_SIZE( *keyName );
-    rval = Tss2_Sys_LoadExternal( sysContext, 0, &inPrivate, &inPublic, TPM_RH_NULL, keyHandle, keyName, 0 );
+    rval = Tss2_Sys_LoadExternal( sysContext, 0, &inPrivate, &inPublic, TPM2_RH_NULL, keyHandle, keyName, 0 );
 
     TeardownSysContext( &sysContext );
 

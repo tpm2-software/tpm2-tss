@@ -28,21 +28,21 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_Import_Prepare(
+TSS2_RC Tss2_Sys_Import_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT parentHandle,
-    TPM2B_DATA *encryptionKey,
-    TPM2B_PUBLIC *objectPublic,
-    TPM2B_PRIVATE *duplicate,
-    TPM2B_ENCRYPTED_SECRET *inSymSeed,
-    TPMT_SYM_DEF_OBJECT *symmetricAlg)
+    const TPM2B_DATA	*encryptionKey,
+    const TPM2B_PUBLIC	*objectPublic,
+    const TPM2B_PRIVATE	*duplicate,
+    const TPM2B_ENCRYPTED_SECRET	*inSymSeed,
+    const TPMT_SYM_DEF_OBJECT	*symmetricAlg)
 {
     TSS2_RC rval;
 
     if (!sysContext || !symmetricAlg)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_Import);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_Import);
     if (rval)
         return rval;
 
@@ -101,7 +101,7 @@ TPM_RC Tss2_Sys_Import_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_Import_Complete(
+TSS2_RC Tss2_Sys_Import_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_PRIVATE *outPrivate)
 {
@@ -120,15 +120,15 @@ TPM_RC Tss2_Sys_Import_Complete(
                                            outPrivate);
 }
 
-TPM_RC Tss2_Sys_Import(
+TSS2_RC Tss2_Sys_Import(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT parentHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DATA *encryptionKey,
-    TPM2B_PUBLIC *objectPublic,
-    TPM2B_PRIVATE *duplicate,
-    TPM2B_ENCRYPTED_SECRET *inSymSeed,
-    TPMT_SYM_DEF_OBJECT *symmetricAlg,
+    const TPM2B_DATA	*encryptionKey,
+    const TPM2B_PUBLIC	*objectPublic,
+    const TPM2B_PRIVATE	*duplicate,
+    const TPM2B_ENCRYPTED_SECRET	*inSymSeed,
+    const TPMT_SYM_DEF_OBJECT	*symmetricAlg,
     TPM2B_PRIVATE *outPrivate,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {

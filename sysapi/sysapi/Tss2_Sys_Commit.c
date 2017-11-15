@@ -28,19 +28,19 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_Commit_Prepare(
+TSS2_RC Tss2_Sys_Commit_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
-    TPM2B_ECC_POINT *P1,
-    TPM2B_SENSITIVE_DATA *s2,
-    TPM2B_ECC_PARAMETER *y2)
+    const TPM2B_ECC_POINT	*P1,
+    const TPM2B_SENSITIVE_DATA	*s2,
+    const TPM2B_ECC_PARAMETER	*y2)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_Commit);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_Commit);
     if (rval)
         return rval;
 
@@ -84,14 +84,14 @@ TPM_RC Tss2_Sys_Commit_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_Commit_Complete(
+TSS2_RC Tss2_Sys_Commit_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_ECC_POINT *K,
     TPM2B_ECC_POINT *L,
     TPM2B_ECC_POINT *E,
     UINT16 *counter)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -123,13 +123,13 @@ TPM_RC Tss2_Sys_Commit_Complete(
                                     &SYS_CONTEXT->nextData, counter);
 }
 
-TPM_RC Tss2_Sys_Commit(
+TSS2_RC Tss2_Sys_Commit(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_ECC_POINT *P1,
-    TPM2B_SENSITIVE_DATA *s2,
-    TPM2B_ECC_PARAMETER *y2,
+    const TPM2B_ECC_POINT	*P1,
+    const TPM2B_SENSITIVE_DATA	*s2,
+    const TPM2B_ECC_PARAMETER	*y2,
     TPM2B_ECC_POINT *K,
     TPM2B_ECC_POINT *L,
     TPM2B_ECC_POINT *E,

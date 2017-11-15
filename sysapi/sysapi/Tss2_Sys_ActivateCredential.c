@@ -28,19 +28,19 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_ActivateCredential_Prepare(
+TSS2_RC Tss2_Sys_ActivateCredential_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT activateHandle,
     TPMI_DH_OBJECT keyHandle,
-    TPM2B_ID_OBJECT *credentialBlob,
-    TPM2B_ENCRYPTED_SECRET *secret)
+    const TPM2B_ID_OBJECT	*credentialBlob,
+    const TPM2B_ENCRYPTED_SECRET	*secret)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_ActivateCredential);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_ActivateCredential);
     if (rval)
         return rval;
 
@@ -87,11 +87,11 @@ TPM_RC Tss2_Sys_ActivateCredential_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_ActivateCredential_Complete(
+TSS2_RC Tss2_Sys_ActivateCredential_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_DIGEST *certInfo)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -106,13 +106,13 @@ TPM_RC Tss2_Sys_ActivateCredential_Complete(
                                           certInfo);
 }
 
-TPM_RC Tss2_Sys_ActivateCredential(
+TSS2_RC Tss2_Sys_ActivateCredential(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT activateHandle,
     TPMI_DH_OBJECT keyHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_ID_OBJECT *credentialBlob,
-    TPM2B_ENCRYPTED_SECRET *secret,
+    const TPM2B_ID_OBJECT	*credentialBlob,
+    const TPM2B_ENCRYPTED_SECRET	*secret,
     TPM2B_DIGEST *certInfo,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {

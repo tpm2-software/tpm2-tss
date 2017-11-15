@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_PolicyNvWritten_Prepare(
+TSS2_RC Tss2_Sys_PolicyNvWritten_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     TPMI_YES_NO writtenSet)
@@ -38,7 +38,7 @@ TPM_RC Tss2_Sys_PolicyNvWritten_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PolicyNvWritten);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PolicyNvWritten);
     if (rval)
         return rval;
 
@@ -62,7 +62,7 @@ TPM_RC Tss2_Sys_PolicyNvWritten_Prepare(
 }
 
 
-TPM_RC Tss2_Sys_PolicyNvWritten(
+TSS2_RC Tss2_Sys_PolicyNvWritten(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

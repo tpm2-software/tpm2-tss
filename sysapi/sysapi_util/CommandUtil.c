@@ -58,9 +58,9 @@ UINT32 GetCommandSize(TSS2_SYS_CONTEXT *sysContext)
     return BE_TO_HOST_32(SYS_REQ_HEADER->commandSize);
 }
 
-TPM_RC CopyCommandHeader(TSS2_SYS_CONTEXT *sysContext, TPM_CC commandCode)
+TSS2_RC CopyCommandHeader(TSS2_SYS_CONTEXT *sysContext, TPM2_CC commandCode)
 {
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -68,7 +68,7 @@ TPM_RC CopyCommandHeader(TSS2_SYS_CONTEXT *sysContext, TPM_CC commandCode)
     SYS_CONTEXT->nextData = 0;
     SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
 
-    rval = Tss2_MU_TPM_ST_Marshal(TPM_ST_NO_SESSIONS, SYS_CONTEXT->cmdBuffer,
+    rval = Tss2_MU_TPM2_ST_Marshal(TPM2_ST_NO_SESSIONS, SYS_CONTEXT->cmdBuffer,
                                   SYS_CONTEXT->maxCmdSize,
                                   &SYS_CONTEXT->nextData);
     if (rval)
@@ -81,10 +81,10 @@ TPM_RC CopyCommandHeader(TSS2_SYS_CONTEXT *sysContext, TPM_CC commandCode)
 
 TSS2_RC CommonPreparePrologue(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM_CC commandCode)
+    TPM2_CC commandCode)
 {
 	int numCommandHandles;
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -127,9 +127,9 @@ TSS2_RC CommonPrepareEpilogue(TSS2_SYS_CONTEXT *sysContext)
 TSS2_RC CommonComplete(TSS2_SYS_CONTEXT *sysContext)
 {
     UINT32 rspSize;
-    TPM_ST tag;
+    TPM2_ST tag;
     size_t next = 0;
-    TPM_RC rval;
+    TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -152,14 +152,14 @@ TSS2_RC CommonComplete(TSS2_SYS_CONTEXT *sysContext)
     SYS_CONTEXT->nextData = (UINT8 *)SYS_CONTEXT->rspParamsSize -
                                      SYS_CONTEXT->cmdBuffer;
 
-    rval = Tss2_MU_TPM_ST_Unmarshal(SYS_CONTEXT->cmdBuffer,
+    rval = Tss2_MU_TPM2_ST_Unmarshal(SYS_CONTEXT->cmdBuffer,
                                     SYS_CONTEXT->maxCmdSize,
                                     &next, &tag);
     if (rval)
         return rval;
 
     /* Save response params size */
-    if (tag == TPM_ST_SESSIONS) {
+    if (tag == TPM2_ST_SESSIONS) {
         rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->cmdBuffer,
                                         SYS_CONTEXT->maxCmdSize,
                                         &SYS_CONTEXT->nextData,
@@ -170,7 +170,7 @@ TSS2_RC CommonComplete(TSS2_SYS_CONTEXT *sysContext)
 
     SYS_CONTEXT->rpBuffer = SYS_CONTEXT->cmdBuffer + SYS_CONTEXT->nextData;
 
-    if (tag != TPM_ST_SESSIONS) {
+    if (tag != TPM2_ST_SESSIONS) {
         SYS_CONTEXT->rpBufferUsedSize = rspSize -
                 (SYS_CONTEXT->rpBuffer - SYS_CONTEXT->cmdBuffer);
     }
@@ -201,7 +201,7 @@ TSS2_RC CommonOneCall(
     if (SYS_CONTEXT->rsp_header.responseCode)
         return SYS_CONTEXT->rsp_header.responseCode;
 
-    if (BE_TO_HOST_16(SYS_RESP_HEADER->tag) == TPM_ST_SESSIONS && rspAuthsArray)
+    if (BE_TO_HOST_16(SYS_RESP_HEADER->tag) == TPM2_ST_SESSIONS && rspAuthsArray)
         rval = Tss2_Sys_GetRspAuths(sysContext, rspAuthsArray);
 
     return rval;

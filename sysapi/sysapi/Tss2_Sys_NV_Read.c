@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_NV_Read_Prepare(
+TSS2_RC Tss2_Sys_NV_Read_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_AUTH authHandle,
     TPMI_RH_NV_INDEX nvIndex,
@@ -40,7 +40,7 @@ TPM_RC Tss2_Sys_NV_Read_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_NV_Read);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_NV_Read);
     if (rval)
         return rval;
 
@@ -75,7 +75,7 @@ TPM_RC Tss2_Sys_NV_Read_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_NV_Read_Complete(
+TSS2_RC Tss2_Sys_NV_Read_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_MAX_NV_BUFFER *data)
 {
@@ -94,7 +94,7 @@ TPM_RC Tss2_Sys_NV_Read_Complete(
                                                  data);
 }
 
-TPM_RC Tss2_Sys_NV_Read(
+TSS2_RC Tss2_Sys_NV_Read(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_AUTH authHandle,
     TPMI_RH_NV_INDEX nvIndex,

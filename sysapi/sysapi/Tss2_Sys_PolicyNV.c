@@ -28,21 +28,21 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_PolicyNV_Prepare(
+TSS2_RC Tss2_Sys_PolicyNV_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_AUTH authHandle,
     TPMI_RH_NV_INDEX nvIndex,
     TPMI_SH_POLICY policySession,
-    TPM2B_OPERAND *operandB,
+    const TPM2B_OPERAND	*operandB,
     UINT16 offset,
-    TPM_EO operation)
+    TPM2_EO operation)
 {
     TSS2_RC rval;
 
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PolicyNV);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PolicyNV);
     if (rval)
         return rval;
 
@@ -99,15 +99,15 @@ TPM_RC Tss2_Sys_PolicyNV_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_PolicyNV(
+TSS2_RC Tss2_Sys_PolicyNV(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_AUTH authHandle,
     TPMI_RH_NV_INDEX nvIndex,
     TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_OPERAND *operandB,
+    const TPM2B_OPERAND	*operandB,
     UINT16 offset,
-    TPM_EO operation,
+    TPM2_EO operation,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;

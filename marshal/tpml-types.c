@@ -174,8 +174,8 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
  * These macros expand to (un)marshal functions for each of the TPML types
  * the specification part 2.
  */
-TPML_MARSHAL(TPML_CC, Tss2_MU_TPM_CC_Marshal, commandCodes, VAL)
-TPML_UNMARSHAL(TPML_CC, Tss2_MU_TPM_CC_Unmarshal, commandCodes)
+TPML_MARSHAL(TPML_CC, Tss2_MU_TPM2_CC_Marshal, commandCodes, VAL)
+TPML_UNMARSHAL(TPML_CC, Tss2_MU_TPM2_CC_Unmarshal, commandCodes)
 TPML_MARSHAL(TPML_CCA, Tss2_MU_TPMA_CC_Marshal, commandAttributes, VAL)
 TPML_UNMARSHAL(TPML_CCA, Tss2_MU_TPMA_CC_Unmarshal, commandAttributes)
 TPML_MARSHAL(TPML_ALG, Tss2_MU_UINT16_Marshal, algorithms, VAL)

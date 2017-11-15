@@ -33,18 +33,18 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 
     session_data_array[0] = &session_data;
     sessions_data.cmdAuths = &session_data_array[0];
-    session_data.sessionHandle = TPM_RS_PW;
+    session_data.sessionHandle = TPM2_RS_PW;
     session_data.nonce.size = 0;
     session_data.hmac.size = 0;
     *( (UINT8 *)((void *)&session_data.sessionAttributes ) ) = 0;
 
     print_log("PCR Extension tests started.");
-    rc = Tss2_Sys_GetCapability(sapi_context, 0, TPM_CAP_PCR_PROPERTIES, TPM_PT_PCR_COUNT, 1, &more_data, &capability_data, 0);
+    rc = Tss2_Sys_GetCapability(sapi_context, 0, TPM2_CAP_PCR_PROPERTIES, TPM2_PT_PCR_COUNT, 1, &more_data, &capability_data, 0);
     if (rc != TSS2_RC_SUCCESS)
         print_fail("GetCapability FAILED! Response Code : 0x%x", rc);
 
     digests.count = 1;
-    digests.digests[0].hashAlg = TPM_ALG_SHA1;
+    digests.digests[0].hashAlg = TPM2_ALG_SHA1;
     digest_size = GetDigestSize( digests.digests[0].hashAlg );
 
     for( i = 0; i < digest_size; i++ )
@@ -52,7 +52,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
         digests.digests[0].digest.sha1[i] = (UINT8)(i % 256);
     }
     pcr_selection.count = 1;
-    pcr_selection.pcrSelections[0].hash = TPM_ALG_SHA1;
+    pcr_selection.pcrSelections[0].hash = TPM2_ALG_SHA1;
     pcr_selection.pcrSelections[0].sizeofSelect = 3;
     pcr_selection.pcrSelections[0].pcrSelect[0] = 0;
     pcr_selection.pcrSelections[0].pcrSelect[1] = 0;

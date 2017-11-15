@@ -43,7 +43,7 @@ TSS2_RC Tss2_Sys_GetEncryptParam(
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
     if (SYS_CONTEXT->encryptAllowed == 0 ||
-        BE_TO_HOST_16(SYS_RESP_HEADER->tag) == TPM_ST_NO_SESSIONS)
+        BE_TO_HOST_16(SYS_RESP_HEADER->tag) == TPM2_ST_NO_SESSIONS)
         return TSS2_SYS_RC_NO_ENCRYPT_PARAM;
 
     /* Get first parameter and return its size and a pointer to it. */

@@ -76,8 +76,8 @@ enum TSS2_APP_RC_CODE
 #define TSS2_APP_RC_TEARDOWN_SYS_CONTEXT_FAILED (APP_RC_TEARDOWN_SYS_CONTEXT_FAILED + APP_RC_OFFSET + TSS2_APP_ERROR_LEVEL)
 #define TSS2_APP_RC_BAD_LOCALITY                (APP_RC_BAD_LOCALITY + APP_RC_OFFSET + TSS2_APP_ERROR_LEVEL)
 
-#define TPM_HT_NO_HANDLE 0xfc000000
-#define TPM_RC_NO_RESPONSE 0xffffffff
+#define TPM2_HT_NO_HANDLE 0xfc000000
+#define TPM2_RC_NO_RESPONSE 0xffffffff
 
 #define MAX_NUM_SESSIONS MAX_ACTIVE_SESSIONS
 #define MAX_NUM_ENTITIES 100
@@ -86,7 +86,7 @@ enum TSS2_APP_RC_CODE
     ( TSS2_APP_ERROR_LEVEL + errCode )
 
 #define APPLICATION_HMAC_ERROR(i) \
-    ( TSS2_APP_ERROR_LEVEL + TPM_RC_S + TPM_RC_AUTH_FAIL + ( (i ) << 8 ) )
+    ( TSS2_APP_ERROR_LEVEL + TPM2_RC_S + TPM2_RC_AUTH_FAIL + ( (i ) << 8 ) )
 
 typedef struct {
     // Inputs to StartAuthSession; these need to be saved
@@ -95,7 +95,7 @@ typedef struct {
     TPMI_DH_ENTITY bind;
     TPM2B_ENCRYPTED_SECRET encryptedSalt;
     TPM2B_MAX_BUFFER salt;
-    TPM_SE sessionType;
+    TPM2_SE sessionType;
     TPMT_SYM_DEF symmetric;
     TPMI_ALG_HASH authHash;
 
@@ -134,22 +134,22 @@ typedef struct {
 // consists of handles/authValue pairs.
 //
 typedef struct{
-    TPM_HANDLE entityHandle;
+    TPM2_HANDLE entityHandle;
     TPM2B_AUTH entityAuth;
     UINT8 nvNameChanged;
 } ENTITY;
 
 void InitEntities();
-TPM_RC AddEntity( TPM_HANDLE entityHandle, TPM2B_AUTH *auth );
-TPM_RC DeleteEntity( TPM_HANDLE entityHandle );
-TPM_RC GetEntityAuth( TPM_HANDLE entityHandle, TPM2B_AUTH *auth );
-TPM_RC GetEntity( TPM_HANDLE entityHandle, ENTITY **entity );
-TPM_RC GetSessionStruct( TPMI_SH_AUTH_SESSION authHandle, SESSION **pSession );
-TPM_RC GetSessionAlgId( TPMI_SH_AUTH_SESSION authHandle, TPMI_ALG_HASH *sessionAlgId );
-TPM_RC EndAuthSession( SESSION *session );
-TPM_RC ComputeCommandHmacs( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1,
-    TPM_HANDLE handle2, TSS2_SYS_CMD_AUTHS *pSessionsData,
-    TPM_RC sessionCmdRval );
+TSS2_RC AddEntity( TPM2_HANDLE entityHandle, TPM2B_AUTH *auth );
+TSS2_RC DeleteEntity( TPM2_HANDLE entityHandle );
+TSS2_RC GetEntityAuth( TPM2_HANDLE entityHandle, TPM2B_AUTH *auth );
+TSS2_RC GetEntity( TPM2_HANDLE entityHandle, ENTITY **entity );
+TSS2_RC GetSessionStruct( TPMI_SH_AUTH_SESSION authHandle, SESSION **pSession );
+TSS2_RC GetSessionAlgId( TPMI_SH_AUTH_SESSION authHandle, TPMI_ALG_HASH *sessionAlgId );
+TSS2_RC EndAuthSession( SESSION *session );
+TSS2_RC ComputeCommandHmacs( TSS2_SYS_CONTEXT *sysContext, TPM2_HANDLE handle1,
+    TPM2_HANDLE handle2, TSS2_SYS_CMD_AUTHS *pSessionsData,
+    TSS2_RC sessionCmdRval );
 
 extern INT16 sessionEntriesUsed;
 
@@ -158,27 +158,27 @@ extern void InitSessionsTable();
 extern UINT32 ( *ComputeSessionHmacPtr )(
     TSS2_SYS_CONTEXT *sysContext,
     TPMS_AUTH_COMMAND *cmdAuth,          // Pointer to session input struct
-    TPM_HANDLE entityHandle,             // Used to determine if we're accessing a different
+    TPM2_HANDLE entityHandle,             // Used to determine if we're accessing a different
                                          // resource than the bound resoure.
-    TPM_RC responseCode,                 // Response code for the command, 0xffff for "none" is
+    TSS2_RC responseCode,                 // Response code for the command, 0xffff for "none" is
                                          // used to indicate that no response code is present
                                          // (used for calculating command HMACs vs response HMACs).
-    TPM_HANDLE handle1,                  // First handle == 0xff000000 indicates no handle
-    TPM_HANDLE handle2,                  // Second handle == 0xff000000 indicates no handle
+    TPM2_HANDLE handle1,                  // First handle == 0xff000000 indicates no handle
+    TPM2_HANDLE handle2,                  // Second handle == 0xff000000 indicates no handle
     TPMA_SESSION sessionAttributes,      // Current session attributes
     TPM2B_DIGEST *result,                // Where the result hash is saved.
-    TPM_RC sessionCmdRval
+    TSS2_RC sessionCmdRval
     );
 
 
-extern TPM_RC CheckResponseHMACs( TSS2_SYS_CONTEXT *sysContext,
-    TPM_RC responseCode,
-    TSS2_SYS_CMD_AUTHS *pSessionsDataIn, TPM_HANDLE handle1, TPM_HANDLE handle2,
+extern TSS2_RC CheckResponseHMACs( TSS2_SYS_CONTEXT *sysContext,
+    TSS2_RC responseCode,
+    TSS2_SYS_CMD_AUTHS *pSessionsDataIn, TPM2_HANDLE handle1, TPM2_HANDLE handle2,
     TSS2_SYS_RSP_AUTHS *pSessionsDataOut );
 
-TPM_RC StartAuthSessionWithParams( SESSION **session, TPMI_DH_OBJECT tpmKey, TPM2B_MAX_BUFFER *salt,
+TSS2_RC StartAuthSessionWithParams( SESSION **session, TPMI_DH_OBJECT tpmKey, TPM2B_MAX_BUFFER *salt,
     TPMI_DH_ENTITY bind, TPM2B_AUTH *bindAuth, TPM2B_NONCE *nonceCaller, TPM2B_ENCRYPTED_SECRET *encryptedSalt,
-    TPM_SE sessionType, TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH algId, TSS2_TCTI_CONTEXT *tctiContext );
+    TPM2_SE sessionType, TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH algId, TSS2_TCTI_CONTEXT *tctiContext );
 
 //
 // Used by upper layer code to save and update entity data
@@ -196,26 +196,26 @@ ENTITY entities[MAX_NUM_ENTITIES+1];
 UINT32 TpmComputeSessionHmac(
     TSS2_SYS_CONTEXT *sysContext,
     TPMS_AUTH_COMMAND *pSessionDataIn, // Pointer to session input struct
-    TPM_HANDLE entityHandle,             // Used to determine if we're accessing a different
+    TPM2_HANDLE entityHandle,             // Used to determine if we're accessing a different
                                          // resource than the bound resoure.
-    TPM_RC responseCode,                 // Response code for the command, 0xffff for "none" is
+    TSS2_RC responseCode,                 // Response code for the command, 0xffff for "none" is
                                          // used to indicate that no response code is present
                                          // (used for calculating command HMACs vs response HMACs).
-    TPM_HANDLE handle1,                  // First handle == 0xff000000 indicates no handle
-    TPM_HANDLE handle2,                  // Second handle == 0xff000000 indicates no handle
+    TPM2_HANDLE handle1,                  // First handle == 0xff000000 indicates no handle
+    TPM2_HANDLE handle2,                  // Second handle == 0xff000000 indicates no handle
     TPMA_SESSION sessionAttributes,      // Current session attributes
     TPM2B_DIGEST *result,                // Where the result hash is saved.
-    TPM_RC sessionCmdRval
+    TSS2_RC sessionCmdRval
     );
 
-TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1,
-    TPM_HANDLE handle2, TPMI_ALG_HASH authHash, TPM_RC responseCode, TPM2B_DIGEST *pHash );
+TSS2_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM2_HANDLE handle1,
+    TPM2_HANDLE handle2, TPMI_ALG_HASH authHash, TSS2_RC responseCode, TPM2B_DIGEST *pHash );
 
 void PrintSizedBuffer( TPM2B *sizedBuffer );
 
 void InitNullSession( TPMS_AUTH_COMMAND *nullSessionData );
 
-TPM_RC LoadExternalHMACKey( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM_HANDLE *keyHandle, TPM2B_NAME *keyName );
+TSS2_RC LoadExternalHMACKey( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2_HANDLE *keyHandle, TPM2B_NAME *keyName );
 
 UINT16 CopySizedByteBuffer( TPM2B *dest, TPM2B *src );
 
@@ -223,7 +223,7 @@ TSS2_RC EncryptCommandParam( SESSION *session, TPM2B_MAX_BUFFER *encryptedData, 
 
 TSS2_RC DecryptResponseParam( SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM2B_MAX_BUFFER *encryptedData, TPM2B_AUTH *authValue );
 
-TPM_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label, TPM2B *contextU, TPM2B *contextV,
+TSS2_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label, TPM2B *contextU, TPM2B *contextV,
     UINT16 bits, TPM2B_MAX_BUFFER *resultKey );
 
 UINT32 TpmHashSequence( TPMI_ALG_HASH hashAlg, UINT8 numBuffers, TPM2B_DIGEST *bufferList, TPM2B_DIGEST *result );
@@ -234,11 +234,11 @@ void RollNonces( SESSION *session, TPM2B_NONCE *newNonce  );
 
 TSS2_RC SetLocality( TSS2_SYS_CONTEXT *sysContext, UINT8 locality );
 
-TPM_RC TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key,TPM2B **bufferList, TPM2B_DIGEST *result );
+TSS2_RC TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key,TPM2B **bufferList, TPM2B_DIGEST *result );
 
 UINT32 TpmHash( TPMI_ALG_HASH hashAlg, UINT16 size, BYTE *data, TPM2B_DIGEST *result );
 
-UINT32 TpmHandleToName( TPM_HANDLE handle, TPM2B_NAME *name );
+UINT32 TpmHandleToName( TPM2_HANDLE handle, TPM2B_NAME *name );
 
 int TpmClientPrintf( UINT8 type, const char *format, ...);
 

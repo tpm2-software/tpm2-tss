@@ -35,13 +35,13 @@
 //
 // This function is a helper function used to calculate cpHash and rpHash.
 //
-// NOTE:  for calculating cpHash, set responseCode to TPM_RC_NO_RESPONSE; this
+// NOTE:  for calculating cpHash, set responseCode to TPM2_RC_NO_RESPONSE; this
 // tells the function to leave it out of the calculation.
 //
-TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDLE handle2,
-    TPMI_ALG_HASH authHash, TPM_RC responseCode, TPM2B_DIGEST *pHash )
+TSS2_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM2_HANDLE handle1, TPM2_HANDLE handle2,
+    TPMI_ALG_HASH authHash, TSS2_RC responseCode, TPM2B_DIGEST *pHash )
 {
-    TPM_RC rval = TPM_RC_SUCCESS;
+    TSS2_RC rval = TPM2_RC_SUCCESS;
     UINT32 i;
     TPM2B_NAME name1;
     TPM2B_NAME name2;
@@ -49,7 +49,7 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
     UINT8 *hashInputPtr;
     size_t parametersSize;
     const uint8_t *startParams;
-    TPM_CC cmdCode;
+    TPM2_CC cmdCode;
 
     name1.size = name2.size = 0;
 
@@ -57,9 +57,9 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
     //
 
     // Only get names for commands
-    if( responseCode == TPM_RC_NO_RESPONSE )
+    if( responseCode == TPM2_RC_NO_RESPONSE )
     {
-        if( handle1 == TPM_HT_NO_HANDLE )
+        if( handle1 == TPM2_HT_NO_HANDLE )
         {
             name1.size = 0;
         }
@@ -67,7 +67,7 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
         {
             // Get names for the handles
             rval = TpmHandleToName( handle1, &name1 );
-            if( rval != TPM_RC_SUCCESS )
+            if( rval != TPM2_RC_SUCCESS )
                 return rval;
         }
     }
@@ -78,27 +78,27 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
 #endif
 
     // Only get names for commands
-    if( responseCode == TPM_RC_NO_RESPONSE )
+    if( responseCode == TPM2_RC_NO_RESPONSE )
     {
         rval = Tss2_Sys_GetCpBuffer( sysContext, &parametersSize, &startParams);
-        if( rval != TPM_RC_SUCCESS )
+        if( rval != TPM2_RC_SUCCESS )
             return rval;
 
-        if( handle2 == TPM_HT_NO_HANDLE )
+        if( handle2 == TPM2_HT_NO_HANDLE )
         {
             name2.size = 0;
         }
         else
         {
             rval = TpmHandleToName( handle2, &name2 );
-            if( rval != TPM_RC_SUCCESS )
+            if( rval != TPM2_RC_SUCCESS )
                 return rval;
         }
     }
     else
     {
         rval = Tss2_Sys_GetRpBuffer( sysContext, &parametersSize, &startParams);
-        if( rval != TPM_RC_SUCCESS )
+        if( rval != TPM2_RC_SUCCESS )
             return rval;
     }
 
@@ -109,7 +109,7 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
 
     // Create pHash input byte stream:  first add response code, if any.
     hashInput.size = 0;
-    if( responseCode != TPM_RC_NO_RESPONSE )
+    if( responseCode != TPM2_RC_NO_RESPONSE )
     {
         hashInputPtr = &( hashInput.buffer[hashInput.size] );
         *(UINT32 *)hashInputPtr = BE_TO_HOST_32(responseCode);
@@ -119,7 +119,7 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
 
     // Create pHash input byte stream:  now add command code.
     rval = Tss2_Sys_GetCommandCode( sysContext, (UINT8 (*)[4])&cmdCode );
-    if( rval != TPM_RC_SUCCESS )
+    if( rval != TPM2_RC_SUCCESS )
         return rval;
 
     hashInputPtr = &( hashInput.buffer[hashInput.size] );
@@ -128,11 +128,11 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
 
     // Create pHash input byte stream:  now add in names for the handles.
     rval = ConcatSizedByteBuffer(&hashInput, (TPM2B *)&name1);
-    if( rval != TPM_RC_SUCCESS )
+    if( rval != TPM2_RC_SUCCESS )
         return rval;
 
     rval = ConcatSizedByteBuffer(&hashInput, (TPM2B *)&name2);
-    if( rval != TPM_RC_SUCCESS )
+    if( rval != TPM2_RC_SUCCESS )
         return rval;
 
     if( ( hashInput.size + parametersSize ) <= sizeof( hashInput.buffer ) )
@@ -160,7 +160,7 @@ TPM_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM_HANDLE handle1, TPM_HANDL
     else
     {
         rval = TpmHash( authHash, hashInput.size, &( hashInput.buffer[0] ), pHash );
-        if( rval != TPM_RC_SUCCESS )
+        if( rval != TPM2_RC_SUCCESS )
             return rval;
 #ifdef DEBUG
         DebugPrintf( 0, "\n\nPHASH = " );

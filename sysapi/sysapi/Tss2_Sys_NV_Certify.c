@@ -28,13 +28,13 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_NV_Certify_Prepare(
+TSS2_RC Tss2_Sys_NV_Certify_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
     TPMI_RH_NV_AUTH authHandle,
     TPMI_RH_NV_INDEX nvIndex,
-    TPM2B_DATA *qualifyingData,
-    TPMT_SIG_SCHEME *inScheme,
+    const TPM2B_DATA	*qualifyingData,
+    const TPMT_SIG_SCHEME	*inScheme,
     UINT16 size,
     UINT16 offset)
 {
@@ -43,7 +43,7 @@ TPM_RC Tss2_Sys_NV_Certify_Prepare(
     if (!sysContext || !inScheme)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_NV_Certify);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_NV_Certify);
     if (rval)
         return rval;
 
@@ -106,7 +106,7 @@ TPM_RC Tss2_Sys_NV_Certify_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_NV_Certify_Complete(
+TSS2_RC Tss2_Sys_NV_Certify_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_ATTEST *certifyInfo,
     TPMT_SIGNATURE *signature)
@@ -133,14 +133,14 @@ TPM_RC Tss2_Sys_NV_Certify_Complete(
                                             signature);
 }
 
-TPM_RC Tss2_Sys_NV_Certify(
+TSS2_RC Tss2_Sys_NV_Certify(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
     TPMI_RH_NV_AUTH authHandle,
     TPMI_RH_NV_INDEX nvIndex,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DATA *qualifyingData,
-    TPMT_SIG_SCHEME *inScheme,
+    const TPM2B_DATA	*qualifyingData,
+    const TPMT_SIG_SCHEME	*inScheme,
     UINT16 size,
     UINT16 offset,
     TPM2B_ATTEST *certifyInfo,

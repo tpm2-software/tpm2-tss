@@ -36,14 +36,14 @@
 #define TSS2_APP_RC_BAD_REFERENCE  TSS2_APP_ERROR (TSS2_BASE_RC_BAD_REFERENCE)
 /*
  * This macro is like the GNU TEMP_FAILURE_RETRY macro for the
- * TPM_RC_RETRY response code.
+ * TPM2_RC_RETRY response code.
  */
 #define TSS2_RETRY_EXP(expression)                         \
     ({                                                     \
         TSS2_RC __result = 0;                              \
         do {                                               \
             __result = (expression);                       \
-        } while ((__result & 0x0000ffff) == TPM_RC_RETRY); \
+        } while ((__result & 0x0000ffff) == TPM2_RC_RETRY); \
         __result;                                          \
     })
 /*
@@ -60,8 +60,8 @@
 #define TPM2B_NAME_INIT TPM2B_NAMED_INIT (TPM2B_NAME, name)
 #define TPM2B_PRIVATE_INIT TPM2B_NAMED_INIT (TPM2B_PRIVATE, buffer)
 
-#define TPM2B_MAX_BUFFER_INIT { .size = MAX_DIGEST_BUFFER }
-#define TPM2B_IV_INIT { .size = MAX_SYM_BLOCK_SIZE }
+#define TPM2B_MAX_BUFFER_INIT { .size = TPM2_MAX_DIGEST_BUFFER }
+#define TPM2B_IV_INIT { .size = TPM2_MAX_SYM_BLOCK_SIZE }
 
 #define BUFFER_SIZE(type, field) (sizeof((((type *)NULL)->t.field)))
 #define TPM2B_TYPE_INIT(type, field) { .size = BUFFER_SIZE(type, field), }
@@ -73,7 +73,7 @@
 TSS2_RC
 create_primary_rsa_2048_aes_128_cfb (
     TSS2_SYS_CONTEXT *sapi_context,
-    TPM_HANDLE       *handle);
+    TPM2_HANDLE       *handle);
 /*
  * This function creates a 128 bit symmetric AES key in cbc mode. This key will
  * be created as the child of the parameter 'handle_parent'. The handle for the
@@ -82,8 +82,8 @@ create_primary_rsa_2048_aes_128_cfb (
 TSS2_RC
 create_aes_128_cfb (
     TSS2_SYS_CONTEXT *sapi_context,
-    TPM_HANDLE        handle_parent,
-    TPM_HANDLE       *handle);
+    TPM2_HANDLE        handle_parent,
+    TPM2_HANDLE       *handle);
 /*
  * This function will decrypt or encrypt the 'data_in' buffer and return the
  * results in the 'data_out' parameter. Decrypt or encrypt is selected using

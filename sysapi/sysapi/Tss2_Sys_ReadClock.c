@@ -28,7 +28,7 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_ReadClock_Prepare(
+TSS2_RC Tss2_Sys_ReadClock_Prepare(
     TSS2_SYS_CONTEXT *sysContext)
 {
     TSS2_RC rval;
@@ -36,7 +36,7 @@ TPM_RC Tss2_Sys_ReadClock_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_ReadClock);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_ReadClock);
     if (rval)
         return rval;
 
@@ -47,7 +47,7 @@ TPM_RC Tss2_Sys_ReadClock_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_ReadClock_Complete(
+TSS2_RC Tss2_Sys_ReadClock_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMS_TIME_INFO *currentTime)
 {
@@ -66,7 +66,7 @@ TPM_RC Tss2_Sys_ReadClock_Complete(
                                             currentTime);
 }
 
-TPM_RC Tss2_Sys_ReadClock(
+TSS2_RC Tss2_Sys_ReadClock(
     TSS2_SYS_CONTEXT *sysContext,
     TPMS_TIME_INFO *currentTime)
 {

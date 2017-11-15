@@ -28,10 +28,10 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
-TPM_RC Tss2_Sys_PCR_SetAuthPolicy_Prepare(
+TSS2_RC Tss2_Sys_PCR_SetAuthPolicy_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authHandle,
-    TPM2B_DIGEST *authPolicy,
+    const TPM2B_DIGEST	*authPolicy,
     TPMI_ALG_HASH hashAlg,
     TPMI_DH_PCR pcrNum)
 {
@@ -40,7 +40,7 @@ TPM_RC Tss2_Sys_PCR_SetAuthPolicy_Prepare(
     if (!sysContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM_CC_PCR_SetAuthPolicy);
+    rval = CommonPreparePrologue(sysContext, TPM2_CC_PCR_SetAuthPolicy);
     if (rval)
         return rval;
 
@@ -85,11 +85,11 @@ TPM_RC Tss2_Sys_PCR_SetAuthPolicy_Prepare(
     return CommonPrepareEpilogue(sysContext);
 }
 
-TPM_RC Tss2_Sys_PCR_SetAuthPolicy(
+TSS2_RC Tss2_Sys_PCR_SetAuthPolicy(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TPM2B_DIGEST *authPolicy,
+    const TPM2B_DIGEST	*authPolicy,
     TPMI_ALG_HASH hashAlg,
     TPMI_DH_PCR pcrNum,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
