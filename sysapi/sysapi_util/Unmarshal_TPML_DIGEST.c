@@ -43,7 +43,7 @@ void Unmarshal_TPML_DIGEST(
 
 	Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &digest->count, &( SYS_CONTEXT->rval ) );
 
-	for( i = 0; i < digest->count; i++ )
+	for( i = 0; i < digest->count && SYS_CONTEXT->rval == TSS2_RC_SUCCESS; i++ )
 	{
 		UNMARSHAL_SIMPLE_TPM2B_NO_SIZE_CHECK( sysContext, (TPM2B *)&digest->digests[i] );
 	}

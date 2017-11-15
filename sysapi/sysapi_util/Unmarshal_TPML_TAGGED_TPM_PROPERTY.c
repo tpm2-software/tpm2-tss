@@ -43,7 +43,7 @@ void Unmarshal_TPML_TAGGED_TPM_PROPERTY(
 
 	Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &taggedTpmProperty->count, &( SYS_CONTEXT->rval ) );
 
-	for( i = 0; i < taggedTpmProperty->count; i++ )
+	for( i = 0; i < taggedTpmProperty->count && SYS_CONTEXT->rval == TSS2_RC_SUCCESS; i++ )
 	{
 		Unmarshal_TPMS_TAGGED_PROPERTY( sysContext, &taggedTpmProperty->tpmProperty[i] );
 	}

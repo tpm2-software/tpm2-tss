@@ -43,7 +43,7 @@ void Unmarshal_TPML_TAGGED_PCR_PROPERTY(
 
 	Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &taggedPcrProperty->count, &( SYS_CONTEXT->rval ) );
 
-	for( i = 0; i < taggedPcrProperty->count; i++ )
+	for( i = 0; i < taggedPcrProperty->count && SYS_CONTEXT->rval == TSS2_RC_SUCCESS; i++ )
 	{
 		Unmarshal_TPMS_TAGGED_PCR_SELECT( sysContext, &taggedPcrProperty->pcrProperty[i] );
 	}

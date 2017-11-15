@@ -43,7 +43,7 @@ void Unmarshal_TPML_CC(
 
 	Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &cc->count, &( SYS_CONTEXT->rval ) );
 
-	for( i = 0; i < cc->count; i++ )
+	for( i = 0; i < cc->count && SYS_CONTEXT->rval == TSS2_RC_SUCCESS; i++ )
 	{
 		Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &cc->commandCodes[i], &( SYS_CONTEXT->rval ) );
 	}
