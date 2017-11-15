@@ -43,7 +43,7 @@ void Unmarshal_TPML_PCR_SELECTION(
 
 	Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &pcrSelection->count, &( SYS_CONTEXT->rval ) );
 
-	for( i = 0; i < pcrSelection->count; i++ )
+	for( i = 0; i < pcrSelection->count && SYS_CONTEXT->rval == TSS2_RC_SUCCESS; i++ )
 	{
 		Unmarshal_TPMS_PCR_SELECTION( sysContext, &pcrSelection->pcrSelections[i] );
 	}

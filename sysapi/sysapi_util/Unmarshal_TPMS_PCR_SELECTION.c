@@ -44,7 +44,7 @@ void Unmarshal_TPMS_PCR_SELECTION(
 	Unmarshal_UINT16( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &pcrSelection->hash, &( SYS_CONTEXT->rval ) );
 	Unmarshal_UINT8( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &pcrSelection->sizeofSelect, &( SYS_CONTEXT->rval ) );
 
-	for( i = 0; i < pcrSelection->sizeofSelect; i++ )
+	for( i = 0; i < pcrSelection->sizeofSelect && SYS_CONTEXT->rval == TSS2_RC_SUCCESS; i++ )
 	{
 		Unmarshal_UINT8( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &pcrSelection->pcrSelect[i], &( SYS_CONTEXT->rval ) );
 	}

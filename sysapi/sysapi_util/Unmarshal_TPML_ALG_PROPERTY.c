@@ -43,7 +43,7 @@ void Unmarshal_TPML_ALG_PROPERTY(
 
 	Unmarshal_UINT32( SYS_CONTEXT->tpmOutBuffPtr, SYS_CONTEXT->maxResponseSize, &(SYS_CONTEXT->nextData), &algProperty->count, &( SYS_CONTEXT->rval ) );
 
-	for( i = 0; i < algProperty->count; i++ )
+	for( i = 0; i < algProperty->count && SYS_CONTEXT->rval == TSS2_RC_SUCCESS; i++ )
 	{
 		Unmarshal_TPMS_ALG_PROPERTY( sysContext, &algProperty->algProperties[i] );
 	}
