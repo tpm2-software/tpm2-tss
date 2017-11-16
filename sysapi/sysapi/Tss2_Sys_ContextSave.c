@@ -32,43 +32,46 @@ TSS2_RC Tss2_Sys_ContextSave_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_CONTEXT saveHandle)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
-    if (!sysContext)
+
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_ContextSave);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_ContextSave);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(saveHandle, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT32_Marshal(saveHandle, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 0;
-    SYS_CONTEXT->encryptAllowed = 0;
-    SYS_CONTEXT->authAllowed = 0;
+    ctx->decryptAllowed = 0;
+    ctx->encryptAllowed = 0;
+    ctx->authAllowed = 0;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_ContextSave_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMS_CONTEXT *context)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonComplete(sysContext);
+    rval = CommonComplete(ctx);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPMS_CONTEXT_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                          SYS_CONTEXT->maxCmdSize,
-                                          &SYS_CONTEXT->nextData,
+    return Tss2_MU_TPMS_CONTEXT_Unmarshal(ctx->cmdBuffer,
+                                          ctx->maxCmdSize,
+                                          &ctx->nextData,
                                           context);
 }
 
@@ -77,13 +80,14 @@ TSS2_RC Tss2_Sys_ContextSave(
     TPMI_DH_CONTEXT saveHandle,
     TPMS_CONTEXT *context)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_ContextSave_Prepare(sysContext, saveHandle);
     if (rval)
         return rval;
 
-    rval = CommonOneCall(sysContext, 0, 0);
+    rval = CommonOneCall(ctx, 0, 0);
     if (rval)
         return rval;
 

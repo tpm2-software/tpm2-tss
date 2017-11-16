@@ -31,65 +31,66 @@
 TSS2_RC Tss2_Sys_ZGen_2Phase_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyA,
-    const TPM2B_ECC_POINT	*inQsB,
-    const TPM2B_ECC_POINT	*inQeB,
+    const TPM2B_ECC_POINT *inQsB,
+    const TPM2B_ECC_POINT *inQeB,
     TPMI_ECC_KEY_EXCHANGE inScheme,
     UINT16 counter)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_ZGen_2Phase);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_ZGen_2Phase);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(keyA, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT32_Marshal(keyA, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
     if (!inQsB) {
-        SYS_CONTEXT->decryptNull = 1;
+        ctx->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->cmdBuffer,
-                                      SYS_CONTEXT->maxCmdSize,
-                                      &SYS_CONTEXT->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_ECC_POINT_Marshal(inQsB, SYS_CONTEXT->cmdBuffer,
-                                               SYS_CONTEXT->maxCmdSize,
-                                               &SYS_CONTEXT->nextData);
+        rval = Tss2_MU_TPM2B_ECC_POINT_Marshal(inQsB, ctx->cmdBuffer,
+                                               ctx->maxCmdSize,
+                                               &ctx->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_ECC_POINT_Marshal(inQeB, SYS_CONTEXT->cmdBuffer,
-                                           SYS_CONTEXT->maxCmdSize,
-                                           &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPM2B_ECC_POINT_Marshal(inQeB, ctx->cmdBuffer,
+                                           ctx->maxCmdSize,
+                                           &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT16_Marshal(inScheme, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT16_Marshal(inScheme, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT16_Marshal(counter, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT16_Marshal(counter, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 1;
-    SYS_CONTEXT->encryptAllowed = 1;
-    SYS_CONTEXT->authAllowed = 1;
+    ctx->decryptAllowed = 1;
+    ctx->encryptAllowed = 1;
+    ctx->authAllowed = 1;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_ZGen_2Phase_Complete(
@@ -97,38 +98,40 @@ TSS2_RC Tss2_Sys_ZGen_2Phase_Complete(
     TPM2B_ECC_POINT *outZ1,
     TPM2B_ECC_POINT *outZ2)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonComplete(sysContext);
+    rval = CommonComplete(ctx);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                             SYS_CONTEXT->maxCmdSize,
-                                             &SYS_CONTEXT->nextData, outZ1);
+    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer,
+                                             ctx->maxCmdSize,
+                                             &ctx->nextData, outZ1);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_ECC_POINT_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                             SYS_CONTEXT->maxCmdSize,
-                                             &SYS_CONTEXT->nextData, outZ2);
+    return Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer,
+                                             ctx->maxCmdSize,
+                                             &ctx->nextData, outZ2);
 }
 
 TSS2_RC Tss2_Sys_ZGen_2Phase(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyA,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    const TPM2B_ECC_POINT	*inQsB,
-    const TPM2B_ECC_POINT	*inQeB,
+    const TPM2B_ECC_POINT *inQsB,
+    const TPM2B_ECC_POINT *inQeB,
     TPMI_ECC_KEY_EXCHANGE inScheme,
     UINT16 counter,
     TPM2B_ECC_POINT *outZ1,
     TPM2B_ECC_POINT *outZ2,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_ZGen_2Phase_Prepare(sysContext, keyA, inQsB, inQeB,
@@ -136,7 +139,7 @@ TSS2_RC Tss2_Sys_ZGen_2Phase(
     if (rval)
         return rval;
 
-    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    rval = CommonOneCall(ctx, cmdAuthsArray, rspAuthsArray);
     if (rval)
         return rval;
 

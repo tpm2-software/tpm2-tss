@@ -32,26 +32,27 @@ TSS2_RC Tss2_Sys_ReadPublic_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT objectHandle)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_ReadPublic);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_ReadPublic);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(objectHandle, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT32_Marshal(objectHandle, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 0;
-    SYS_CONTEXT->encryptAllowed = 1;
-    SYS_CONTEXT->authAllowed = 1;
+    ctx->decryptAllowed = 0;
+    ctx->encryptAllowed = 1;
+    ctx->authAllowed = 1;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_ReadPublic_Complete(
@@ -60,30 +61,31 @@ TSS2_RC Tss2_Sys_ReadPublic_Complete(
     TPM2B_NAME *name,
     TPM2B_NAME *qualifiedName)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonComplete(sysContext);
+    rval = CommonComplete(ctx);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_PUBLIC_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                          SYS_CONTEXT->maxCmdSize,
-                                          &SYS_CONTEXT->nextData, outPublic);
+    rval = Tss2_MU_TPM2B_PUBLIC_Unmarshal(ctx->cmdBuffer,
+                                          ctx->maxCmdSize,
+                                          &ctx->nextData, outPublic);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_NAME_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                        SYS_CONTEXT->maxCmdSize,
-                                        &SYS_CONTEXT->nextData, name);
+    rval = Tss2_MU_TPM2B_NAME_Unmarshal(ctx->cmdBuffer,
+                                        ctx->maxCmdSize,
+                                        &ctx->nextData, name);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_NAME_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                        SYS_CONTEXT->maxCmdSize,
-                                        &SYS_CONTEXT->nextData, qualifiedName);
+    return Tss2_MU_TPM2B_NAME_Unmarshal(ctx->cmdBuffer,
+                                        ctx->maxCmdSize,
+                                        &ctx->nextData, qualifiedName);
 }
 
 TSS2_RC Tss2_Sys_ReadPublic(
@@ -95,13 +97,14 @@ TSS2_RC Tss2_Sys_ReadPublic(
     TPM2B_NAME *qualifiedName,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_ReadPublic_Prepare(sysContext, objectHandle);
     if (rval)
         return rval;
 
-    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    rval = CommonOneCall(ctx, cmdAuthsArray, rspAuthsArray);
     if (rval)
         return rval;
 

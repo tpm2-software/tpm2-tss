@@ -30,52 +30,53 @@
 
 TSS2_RC Tss2_Sys_Hash_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    const TPM2B_MAX_BUFFER	*data,
+    const TPM2B_MAX_BUFFER *data,
     TPMI_ALG_HASH hashAlg,
     TPMI_RH_HIERARCHY hierarchy)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_Hash);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_Hash);
     if (rval)
         return rval;
 
     if (!data) {
-        SYS_CONTEXT->decryptNull = 1;
+        ctx->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->cmdBuffer,
-                                      SYS_CONTEXT->maxCmdSize,
-                                      &SYS_CONTEXT->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_MAX_BUFFER_Marshal(data, SYS_CONTEXT->cmdBuffer,
-                                                SYS_CONTEXT->maxCmdSize,
-                                                &SYS_CONTEXT->nextData);
+        rval = Tss2_MU_TPM2B_MAX_BUFFER_Marshal(data, ctx->cmdBuffer,
+                                                ctx->maxCmdSize,
+                                                &ctx->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT16_Marshal(hashAlg, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT16_Marshal(hashAlg, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(hierarchy, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT32_Marshal(hierarchy, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 1;
-    SYS_CONTEXT->encryptAllowed = 1;
-    SYS_CONTEXT->authAllowed = 1;
+    ctx->decryptAllowed = 1;
+    ctx->encryptAllowed = 1;
+    ctx->authAllowed = 1;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_Hash_Complete(
@@ -83,45 +84,47 @@ TSS2_RC Tss2_Sys_Hash_Complete(
     TPM2B_DIGEST *outHash,
     TPMT_TK_HASHCHECK *validation)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonComplete(sysContext);
+    rval = CommonComplete(ctx);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_DIGEST_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                          SYS_CONTEXT->maxCmdSize,
-                                          &SYS_CONTEXT->nextData,
+    rval = Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer,
+                                          ctx->maxCmdSize,
+                                          &ctx->nextData,
                                           outHash);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPMT_TK_HASHCHECK_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                               SYS_CONTEXT->maxCmdSize,
-                                               &SYS_CONTEXT->nextData,
+    return Tss2_MU_TPMT_TK_HASHCHECK_Unmarshal(ctx->cmdBuffer,
+                                               ctx->maxCmdSize,
+                                               &ctx->nextData,
                                                validation);
 }
 
 TSS2_RC Tss2_Sys_Hash(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    const TPM2B_MAX_BUFFER	*data,
+    const TPM2B_MAX_BUFFER *data,
     TPMI_ALG_HASH hashAlg,
     TPMI_RH_HIERARCHY hierarchy,
     TPM2B_DIGEST *outHash,
     TPMT_TK_HASHCHECK *validation,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_Hash_Prepare(sysContext, data, hashAlg, hierarchy);
     if (rval)
         return rval;
 
-    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    rval = CommonOneCall(ctx, cmdAuthsArray, rspAuthsArray);
     if (rval)
         return rval;
 

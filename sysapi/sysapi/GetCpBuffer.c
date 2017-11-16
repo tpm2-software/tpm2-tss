@@ -33,14 +33,16 @@ TSS2_RC Tss2_Sys_GetCpBuffer(
     size_t *cpBufferUsedSize,
     const uint8_t **cpBuffer)
 {
-    if (!sysContext || !cpBufferUsedSize || !cpBuffer)
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+
+    if (!ctx || !cpBufferUsedSize || !cpBuffer)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if (SYS_CONTEXT->previousStage != CMD_STAGE_PREPARE)
+    if (ctx->previousStage != CMD_STAGE_PREPARE)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    *cpBuffer = SYS_CONTEXT->cpBuffer;
-    *cpBufferUsedSize = SYS_CONTEXT->cpBufferUsedSize;
+    *cpBuffer = ctx->cpBuffer;
+    *cpBufferUsedSize = ctx->cpBufferUsedSize;
 
     return TSS2_RC_SUCCESS;
 }

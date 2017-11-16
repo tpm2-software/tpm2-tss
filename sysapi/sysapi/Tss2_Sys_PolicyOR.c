@@ -31,43 +31,45 @@
 TSS2_RC Tss2_Sys_PolicyOR_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
-    const TPML_DIGEST	*pHashList)
+    const TPML_DIGEST *pHashList)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext || !pHashList)
+    if (!ctx || !pHashList)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_PolicyOR);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_PolicyOR);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(policySession, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT32_Marshal(policySession, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPML_DIGEST_Marshal(pHashList, SYS_CONTEXT->cmdBuffer,
-                                       SYS_CONTEXT->maxCmdSize,
-                                       &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPML_DIGEST_Marshal(pHashList, ctx->cmdBuffer,
+                                       ctx->maxCmdSize,
+                                       &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 0;
-    SYS_CONTEXT->encryptAllowed = 0;
-    SYS_CONTEXT->authAllowed = 1;
+    ctx->decryptAllowed = 0;
+    ctx->encryptAllowed = 0;
+    ctx->authAllowed = 1;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_PolicyOR(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    const TPML_DIGEST	*pHashList,
+    const TPML_DIGEST *pHashList,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!pHashList)
@@ -77,5 +79,5 @@ TSS2_RC Tss2_Sys_PolicyOR(
     if (rval)
         return rval;
 
-    return CommonOneCallForNoResponseCmds(sysContext, cmdAuthsArray, rspAuthsArray);
+    return CommonOneCallForNoResponseCmds(ctx, cmdAuthsArray, rspAuthsArray);
 }

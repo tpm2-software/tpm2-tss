@@ -34,31 +34,32 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
     TSS2_SYS_CONTEXT *sysContext,
     const TSS2_SYS_CMD_AUTHS *cmdAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     uint8_t i;
     UINT32 authSize = 0;
     UINT32 newCmdSize = 0;
     size_t authOffset;
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
-    if (!sysContext || !cmdAuthsArray)
+    if (!ctx || !cmdAuthsArray)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
     if (cmdAuthsArray->cmdAuthsCount > TPM2_MAX_SESSION_NUM)
         return TSS2_SYS_RC_BAD_VALUE;
 
-    if (SYS_CONTEXT->previousStage != CMD_STAGE_PREPARE)
+    if (ctx->previousStage != CMD_STAGE_PREPARE)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    if (!SYS_CONTEXT->authAllowed)
+    if (!ctx->authAllowed)
         return rval;
 
-    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
-    SYS_CONTEXT->authsCount = 0;
+    ctx->rval = TSS2_RC_SUCCESS;
+    ctx->authsCount = 0;
 
     if (!cmdAuthsArray->cmdAuthsCount)
         return rval;
 
-    SYS_REQ_HEADER->tag = HOST_TO_BE_16(TPM2_ST_SESSIONS);
+    req_header_from_cxt(ctx)->tag = HOST_TO_BE_16(TPM2_ST_SESSIONS);
 
     /* Calculate size needed for authorization area, check for any null
      * pointers, and check for decrypt/encrypt sessions. */
@@ -73,50 +74,50 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
         authSize += sizeof(UINT16) + cmdAuthsArray->cmdAuths[i]->hmac.size;
 
         if (cmdAuthsArray->cmdAuths[i]->sessionAttributes.decrypt)
-            SYS_CONTEXT->decryptSession = 1;
+            ctx->decryptSession = 1;
 
         if (cmdAuthsArray->cmdAuths[i]->sessionAttributes.encrypt)
-            SYS_CONTEXT->encryptSession = 1;
+            ctx->encryptSession = 1;
     }
 
     newCmdSize = authSize;
     newCmdSize += sizeof(UINT32); /* authorization size field */
-    newCmdSize += BE_TO_HOST_32(SYS_REQ_HEADER->commandSize);
+    newCmdSize += BE_TO_HOST_32(req_header_from_cxt(ctx)->commandSize);
 
-    if (newCmdSize > SYS_CONTEXT->maxCmdSize)
+    if (newCmdSize > ctx->maxCmdSize)
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
 
-    if (SYS_CONTEXT->cpBufferUsedSize > SYS_CONTEXT->maxCmdSize)
+    if (ctx->cpBufferUsedSize > ctx->maxCmdSize)
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
 
     /* We're going to have to move stuff around.
      * First move current cpBuffer down by the auth area size. */
-    memmove(SYS_CONTEXT->cpBuffer + authSize + sizeof(UINT32),
-            SYS_CONTEXT->cpBuffer, SYS_CONTEXT->cpBufferUsedSize);
+    memmove(ctx->cpBuffer + authSize + sizeof(UINT32),
+            ctx->cpBuffer, ctx->cpBufferUsedSize);
 
     /* Reset the auth size field */
-    *(UINT32 *)SYS_CONTEXT->cpBuffer = 0;
+    *(UINT32 *)ctx->cpBuffer = 0;
 
     /* Now copy in the authorization area. */
-    authOffset = SYS_CONTEXT->cpBuffer - SYS_CONTEXT->cmdBuffer;
-    rval = Tss2_MU_UINT32_Marshal(authSize, SYS_CONTEXT->cmdBuffer,
+    authOffset = ctx->cpBuffer - ctx->cmdBuffer;
+    rval = Tss2_MU_UINT32_Marshal(authSize, ctx->cmdBuffer,
                           newCmdSize, &authOffset);
     if (rval)
         return rval;
 
     for (i = 0; i < cmdAuthsArray->cmdAuthsCount; i++) {
         rval = Tss2_MU_TPMS_AUTH_COMMAND_Marshal(cmdAuthsArray->cmdAuths[i],
-                                         SYS_CONTEXT->cmdBuffer, newCmdSize,
+                                         ctx->cmdBuffer, newCmdSize,
                                          &authOffset);
         if (rval)
             break;
     }
 
-    SYS_CONTEXT->cpBuffer += authSize + sizeof(UINT32);
+    ctx->cpBuffer += authSize + sizeof(UINT32);
 
     /* Now update the command size. */
-    SYS_REQ_HEADER->commandSize = HOST_TO_BE_32(newCmdSize);
-    SYS_CONTEXT->authsCount = cmdAuthsArray->cmdAuthsCount;
+    req_header_from_cxt(ctx)->commandSize = HOST_TO_BE_32(newCmdSize);
+    ctx->authsCount = cmdAuthsArray->cmdAuthsCount;
     return rval;
 }
 
@@ -124,54 +125,55 @@ TSS2_RC Tss2_Sys_GetRspAuths(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval = TSS2_RC_SUCCESS;
     size_t offset = 0, offset_tmp;
     int i = 0;
 
-    if (!sysContext || !rspAuthsArray)
+    if (!ctx || !rspAuthsArray)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if (SYS_CONTEXT->previousStage != CMD_STAGE_RECEIVE_RESPONSE ||
-        SYS_CONTEXT->rsp_header.responseCode != TPM2_RC_SUCCESS ||
-        SYS_CONTEXT->authAllowed == 0)
+    if (ctx->previousStage != CMD_STAGE_RECEIVE_RESPONSE ||
+        ctx->rsp_header.responseCode != TSS2_RC_SUCCESS ||
+        ctx->authAllowed == 0)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
     if (rspAuthsArray->rspAuthsCount == 0)
         return TSS2_SYS_RC_BAD_VALUE;
 
-    if (rspAuthsArray->rspAuthsCount != SYS_CONTEXT->authsCount)
+    if (rspAuthsArray->rspAuthsCount != ctx->authsCount)
         return TSS2_SYS_RC_INVALID_SESSIONS;
 
-    if (TPM2_ST_SESSIONS != SYS_CONTEXT->rsp_header.tag)
+    if (TPM2_ST_SESSIONS != ctx->rsp_header.tag)
         return rval;
 
     offset += sizeof(TPM20_Header_Out);
-    offset += SYS_CONTEXT->numResponseHandles * sizeof(TPM2_HANDLE);
-    offset += BE_TO_HOST_32(*SYS_CONTEXT->rspParamsSize);
+    offset += ctx->numResponseHandles * sizeof(TPM2_HANDLE);
+    offset += BE_TO_HOST_32(*ctx->rspParamsSize);
     offset += sizeof(UINT32);
     offset_tmp = offset;
 
     /* Validate the auth area before copying it */
     for (i = 0; i < rspAuthsArray->rspAuthsCount; i++) {
 
-        if (offset_tmp > SYS_CONTEXT->rsp_header.responseSize)
+        if (offset_tmp > ctx->rsp_header.responseSize)
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
         offset_tmp += sizeof(UINT16) +
-            BE_TO_HOST_16(*(UINT16 *)(SYS_CONTEXT->cmdBuffer + offset_tmp));
+            BE_TO_HOST_16(*(UINT16 *)(ctx->cmdBuffer + offset_tmp));
 
-        if (offset_tmp > SYS_CONTEXT->rsp_header.responseSize)
+        if (offset_tmp > ctx->rsp_header.responseSize)
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
         offset_tmp += 1;
 
-        if (offset_tmp > SYS_CONTEXT->rsp_header.responseSize)
+        if (offset_tmp > ctx->rsp_header.responseSize)
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
         offset_tmp += sizeof(UINT16) +
-            BE_TO_HOST_16(*(UINT16 *)(SYS_CONTEXT->cmdBuffer + offset_tmp));
+            BE_TO_HOST_16(*(UINT16 *)(ctx->cmdBuffer + offset_tmp));
 
-        if (offset_tmp > SYS_CONTEXT->rsp_header.responseSize)
+        if (offset_tmp > ctx->rsp_header.responseSize)
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
         if (i + 1 > rspAuthsArray->rspAuthsCount)
@@ -180,8 +182,8 @@ TSS2_RC Tss2_Sys_GetRspAuths(
 
     /* Unmarshal the auth area */
     for (i = 0; i < rspAuthsArray->rspAuthsCount; i++) {
-        rval = Tss2_MU_TPMS_AUTH_RESPONSE_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                            SYS_CONTEXT->maxCmdSize,
+        rval = Tss2_MU_TPMS_AUTH_RESPONSE_Unmarshal(ctx->cmdBuffer,
+                                            ctx->maxCmdSize,
                                             &offset, rspAuthsArray->rspAuths[i]);
         if (rval)
             break;

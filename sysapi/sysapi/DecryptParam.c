@@ -34,19 +34,20 @@ TSS2_RC Tss2_Sys_GetDecryptParam(
     size_t *decryptParamSize,
     const uint8_t **decryptParamBuffer)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TPM2B *decryptParam;
 
-    if (!decryptParamSize || !decryptParamBuffer || !sysContext)
+    if (!decryptParamSize || !decryptParamBuffer || !ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if (SYS_CONTEXT->previousStage != CMD_STAGE_PREPARE)
+    if (ctx->previousStage != CMD_STAGE_PREPARE)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    if (SYS_CONTEXT->decryptAllowed == 0)
+    if (ctx->decryptAllowed == 0)
         return TSS2_SYS_RC_NO_DECRYPT_PARAM;
 
     /* Get first parameter and return its size and a pointer to it. */
-    decryptParam = (TPM2B *)(SYS_CONTEXT->cpBuffer);
+    decryptParam = (TPM2B *)(ctx->cpBuffer);
     *decryptParamSize = BE_TO_HOST_16(decryptParam->size);
     *decryptParamBuffer = decryptParam->buffer;
 
@@ -58,6 +59,7 @@ TSS2_RC Tss2_Sys_SetDecryptParam(
     size_t decryptParamSize,
     const uint8_t *decryptParamBuffer)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     size_t currDecryptParamSize;
     const uint8_t *currDecryptParamBuffer;
     TSS2_RC rval;
@@ -66,11 +68,11 @@ TSS2_RC Tss2_Sys_SetDecryptParam(
     UINT8 *dst;
     UINT32 len;
 
-    if (!decryptParamBuffer || !sysContext)
+    if (!decryptParamBuffer || !ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if (BE_TO_HOST_32(SYS_REQ_HEADER->commandSize) +
-        decryptParamSize > SYS_CONTEXT->maxCmdSize)
+    if (BE_TO_HOST_32(req_header_from_cxt(ctx)->commandSize) +
+        decryptParamSize > ctx->maxCmdSize)
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
 
     rval = Tss2_Sys_GetDecryptParam(sysContext, &currDecryptParamSize,
@@ -78,29 +80,29 @@ TSS2_RC Tss2_Sys_SetDecryptParam(
     if (rval)
         return rval;
 
-    if (currDecryptParamSize == 0 && SYS_CONTEXT->decryptNull)
+    if (currDecryptParamSize == 0 && ctx->decryptNull)
     {
         if (decryptParamSize < 1)
             return TSS2_SYS_RC_BAD_VALUE;
 
         /* Move stuff around. First move current cpBuffer down. */
-        src = SYS_CONTEXT->cpBuffer + 2;
-        dst = SYS_CONTEXT->cpBuffer + SYS_CONTEXT->cpBufferUsedSize + 2;
-        len = SYS_CONTEXT->cpBufferUsedSize - 2;
-        limit = SYS_CONTEXT->cmdBuffer + SYS_CONTEXT->maxCmdSize;
+        src = ctx->cpBuffer + 2;
+        dst = ctx->cpBuffer + ctx->cpBufferUsedSize + 2;
+        len = ctx->cpBufferUsedSize - 2;
+        limit = ctx->cmdBuffer + ctx->maxCmdSize;
 
         if (dst + len > limit)
             return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
 
         memmove(dst, src, len);
 
-        SYS_CONTEXT->cpBufferUsedSize += decryptParamSize;
-        *(UINT16 *)SYS_CONTEXT->cpBuffer = HOST_TO_BE_16(decryptParamSize);
+        ctx->cpBufferUsedSize += decryptParamSize;
+        *(UINT16 *)ctx->cpBuffer = HOST_TO_BE_16(decryptParamSize);
 
         src = decryptParamBuffer;
         dst = (UINT8 *) currDecryptParamBuffer;
         len = decryptParamSize;
-        limit = SYS_CONTEXT->cmdBuffer + SYS_CONTEXT->maxCmdSize;
+        limit = ctx->cmdBuffer + ctx->maxCmdSize;
 
         if (dst + len > limit)
             return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
@@ -109,21 +111,21 @@ TSS2_RC Tss2_Sys_SetDecryptParam(
         memmove(dst, src, len);
 
         /* And fixup the command size. */
-        currCommandSize = BE_TO_HOST_32(SYS_REQ_HEADER->commandSize);
+        currCommandSize = BE_TO_HOST_32(req_header_from_cxt(ctx)->commandSize);
         currCommandSize += decryptParamSize;
-        SYS_REQ_HEADER->commandSize = HOST_TO_BE_32(currCommandSize);
+        req_header_from_cxt(ctx)->commandSize = HOST_TO_BE_32(currCommandSize);
     }
     else
     {
         if (decryptParamSize != currDecryptParamSize)
             return TSS2_SYS_RC_BAD_SIZE;
 
-        *(UINT16 *)SYS_CONTEXT->cpBuffer = HOST_TO_BE_16(decryptParamSize);
+        *(UINT16 *)ctx->cpBuffer = HOST_TO_BE_16(decryptParamSize);
 
         src = decryptParamBuffer;
         dst = (UINT8 *) currDecryptParamBuffer;
         len = decryptParamSize;
-        limit = SYS_CONTEXT->cmdBuffer + SYS_CONTEXT->maxCmdSize;
+        limit = ctx->cmdBuffer + ctx->maxCmdSize;
 
         if (dst + len > limit)
             return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;

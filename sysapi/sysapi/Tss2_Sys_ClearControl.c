@@ -33,32 +33,33 @@ TSS2_RC Tss2_Sys_ClearControl_Prepare(
     TPMI_RH_CLEAR auth,
     TPMI_YES_NO disable)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_ClearControl);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_ClearControl);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(auth, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT32_Marshal(auth, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT8_Marshal(disable, SYS_CONTEXT->cmdBuffer,
-                                 SYS_CONTEXT->maxCmdSize,
-                                 &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT8_Marshal(disable, ctx->cmdBuffer,
+                                 ctx->maxCmdSize,
+                                 &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 0;
-    SYS_CONTEXT->encryptAllowed = 0;
-    SYS_CONTEXT->authAllowed = 1;
+    ctx->decryptAllowed = 0;
+    ctx->encryptAllowed = 0;
+    ctx->authAllowed = 1;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_ClearControl(
@@ -68,11 +69,12 @@ TSS2_RC Tss2_Sys_ClearControl(
     TPMI_YES_NO disable,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_ClearControl_Prepare(sysContext, auth, disable);
     if (rval)
         return rval;
 
-    return CommonOneCallForNoResponseCmds(sysContext, cmdAuthsArray, rspAuthsArray);
+    return CommonOneCallForNoResponseCmds(ctx, cmdAuthsArray, rspAuthsArray);
 }

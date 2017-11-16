@@ -27,8 +27,8 @@ CopyCommandHeader_sys_setup (void **state)
      *  must point to the data after the context structure.
      */
     sys_ctx->cmdBuffer = (UINT8*) (sys_ctx + sizeof (_TSS2_SYS_CONTEXT_BLOB));
-    InitSysContextFields ((TSS2_SYS_CONTEXT*)sys_ctx);
-    InitSysContextPtrs ((TSS2_SYS_CONTEXT*)sys_ctx, size_ctx);
+    InitSysContextFields (sys_ctx);
+    InitSysContextPtrs (sys_ctx, size_ctx);
 
     *state = sys_ctx;
     return 0;
@@ -54,11 +54,11 @@ CopyCommandHeader_sys_teardown (void **state)
 static void
 CopyCommandHeader_nextData_unit (void **state)
 {
-    TSS2_SYS_CONTEXT *sys_ctx = (TSS2_SYS_CONTEXT*)*state;
+    _TSS2_SYS_CONTEXT_BLOB *sys_ctx = (_TSS2_SYS_CONTEXT_BLOB *)*state;
     TPM2_CC cc = TPM2_CC_GetCapability;
 
     CopyCommandHeader (sys_ctx, cc);
-    assert_int_equal (((_TSS2_SYS_CONTEXT_BLOB *)sys_ctx)->nextData, sizeof (TPM20_Header_In));
+    assert_int_equal (sys_ctx->nextData, sizeof (TPM20_Header_In));
 }
 
 /**
@@ -78,7 +78,7 @@ CopyCommandHeader_tag_unit (void **state)
      */
     TPMI_ST_COMMAND_TAG tag_net = htons (TPM2_ST_NO_SESSIONS);
 
-    CopyCommandHeader ((TSS2_SYS_CONTEXT*)sys_ctx, cc);
+    CopyCommandHeader (sys_ctx, cc);
     assert_int_equal (tag_net, header->tag);
 }
 /**
@@ -94,7 +94,7 @@ CopyCommandHeader_commandcode_unit (void **state)
     TPM2_CC cc_net = htonl (cc);
     TPM20_Header_In *header = (TPM20_Header_In*)sys_ctx->cmdBuffer;
 
-    CopyCommandHeader ((TSS2_SYS_CONTEXT*)sys_ctx, cc);
+    CopyCommandHeader (sys_ctx, cc);
     assert_int_equal (cc_net, header->commandCode);
 }
 

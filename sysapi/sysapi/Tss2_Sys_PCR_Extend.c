@@ -31,43 +31,45 @@
 TSS2_RC Tss2_Sys_PCR_Extend_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR pcrHandle,
-    const TPML_DIGEST_VALUES	*digests)
+    const TPML_DIGEST_VALUES *digests)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext || !digests)
+    if (!ctx || !digests)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_PCR_Extend);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_PCR_Extend);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(pcrHandle, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT32_Marshal(pcrHandle, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPML_DIGEST_VALUES_Marshal(digests, SYS_CONTEXT->cmdBuffer,
-                                              SYS_CONTEXT->maxCmdSize,
-                                              &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPML_DIGEST_VALUES_Marshal(digests, ctx->cmdBuffer,
+                                              ctx->maxCmdSize,
+                                              &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 0;
-    SYS_CONTEXT->encryptAllowed = 0;
-    SYS_CONTEXT->authAllowed = 1;
+    ctx->decryptAllowed = 0;
+    ctx->encryptAllowed = 0;
+    ctx->authAllowed = 1;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_PCR_Extend(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR pcrHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    const TPML_DIGEST_VALUES	*digests,
+    const TPML_DIGEST_VALUES *digests,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!digests)
@@ -77,5 +79,5 @@ TSS2_RC Tss2_Sys_PCR_Extend(
     if (rval)
         return rval;
 
-    return CommonOneCallForNoResponseCmds(sysContext, cmdAuthsArray, rspAuthsArray);
+    return CommonOneCallForNoResponseCmds(ctx, cmdAuthsArray, rspAuthsArray);
 }

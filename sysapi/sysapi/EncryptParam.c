@@ -34,23 +34,24 @@ TSS2_RC Tss2_Sys_GetEncryptParam(
     size_t *encryptParamSize,
     const uint8_t **encryptParamBuffer)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TPM2B *encryptParam;
 
-    if (!encryptParamSize || !encryptParamBuffer || !sysContext)
+    if (!encryptParamSize || !encryptParamBuffer || !ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if (SYS_CONTEXT->previousStage != CMD_STAGE_RECEIVE_RESPONSE)
+    if (ctx->previousStage != CMD_STAGE_RECEIVE_RESPONSE)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    if (SYS_CONTEXT->encryptAllowed == 0 ||
-        BE_TO_HOST_16(SYS_RESP_HEADER->tag) == TPM2_ST_NO_SESSIONS)
+    if (ctx->encryptAllowed == 0 ||
+        BE_TO_HOST_16(resp_header_from_cxt(ctx)->tag) == TPM2_ST_NO_SESSIONS)
         return TSS2_SYS_RC_NO_ENCRYPT_PARAM;
 
     /* Get first parameter and return its size and a pointer to it. */
-    SYS_CONTEXT->rpBuffer = (UINT8 *)SYS_CONTEXT->rspParamsSize;
+    ctx->rpBuffer = (UINT8 *)ctx->rspParamsSize;
     /* Skip over params size field. */
-    SYS_CONTEXT->rpBuffer += 4;
-    encryptParam = (TPM2B *)SYS_CONTEXT->rpBuffer;
+    ctx->rpBuffer += 4;
+    encryptParam = (TPM2B *)ctx->rpBuffer;
     *encryptParamSize = BE_TO_HOST_16(encryptParam->size);
     *encryptParamBuffer = encryptParam->buffer;
 
@@ -62,11 +63,12 @@ TSS2_RC Tss2_Sys_SetEncryptParam(
     size_t encryptParamSize,
     const uint8_t *encryptParamBuffer)
 {
-    TSS2_RC rval;
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     size_t currEncryptParamSize;
     const uint8_t *currEncryptParamBuffer;
+    TSS2_RC rval;
 
-    if (!encryptParamBuffer || !sysContext)
+    if (!encryptParamBuffer || !ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
     rval = Tss2_Sys_GetEncryptParam(sysContext,
@@ -79,7 +81,7 @@ TSS2_RC Tss2_Sys_SetEncryptParam(
         return TSS2_SYS_RC_BAD_SIZE;
 
     if (currEncryptParamBuffer + encryptParamSize >
-        SYS_CONTEXT->cmdBuffer + SYS_CONTEXT->maxCmdSize)
+            ctx->cmdBuffer + ctx->maxCmdSize)
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
 
     memmove((void *)currEncryptParamBuffer,
