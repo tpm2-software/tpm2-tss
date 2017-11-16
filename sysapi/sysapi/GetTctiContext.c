@@ -30,19 +30,14 @@
 
 TSS2_RC Tss2_Sys_GetTctiContext(
     TSS2_SYS_CONTEXT *sysContext,
-    TSS2_TCTI_CONTEXT **tctiContext
-    )
+    TSS2_TCTI_CONTEXT **tctiContext)
 {
-    TSS2_RC rval = TSS2_RC_SUCCESS;
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
-    if( sysContext == 0 || tctiContext == 0 )
-    {
-        rval = TSS2_SYS_RC_BAD_REFERENCE;
-    }
-    else
-    {
-        *tctiContext = SYS_CONTEXT->tctiContext;
-    }
+    if (!ctx || !tctiContext)
+        return TSS2_SYS_RC_BAD_REFERENCE;
 
-    return rval;
+    *tctiContext = ctx->tctiContext;
+
+    return TSS2_RC_SUCCESS;
 }

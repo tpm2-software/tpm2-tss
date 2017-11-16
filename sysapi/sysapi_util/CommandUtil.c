@@ -29,194 +29,189 @@
 #include "sysapi_util.h"
 #include "tss2_endian.h"
 
-void InitSysContextFields(TSS2_SYS_CONTEXT *sysContext)
+void InitSysContextFields(_TSS2_SYS_CONTEXT_BLOB *ctx)
 {
-    SYS_CONTEXT->tpmVersionInfoValid = 0;
-    SYS_CONTEXT->decryptAllowed = 0;
-    SYS_CONTEXT->encryptAllowed = 0;
-    SYS_CONTEXT->decryptNull = 0;
-    SYS_CONTEXT->authAllowed = 0;
-    SYS_CONTEXT->decryptSession = 0;
-    SYS_CONTEXT->encryptSession = 0;
-    SYS_CONTEXT->prepareCalledFromOneCall = 0;
-    SYS_CONTEXT->completeCalledFromOneCall = 0;
-    SYS_CONTEXT->nextData = 0;
-    SYS_CONTEXT->rpBufferUsedSize = 0;
-    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
+    ctx->tpmVersionInfoValid = 0;
+    ctx->decryptAllowed = 0;
+    ctx->encryptAllowed = 0;
+    ctx->decryptNull = 0;
+    ctx->authAllowed = 0;
+    ctx->decryptSession = 0;
+    ctx->encryptSession = 0;
+    ctx->prepareCalledFromOneCall = 0;
+    ctx->completeCalledFromOneCall = 0;
+    ctx->nextData = 0;
+    ctx->rpBufferUsedSize = 0;
+    ctx->rval = TSS2_RC_SUCCESS;
 }
 
 void InitSysContextPtrs(
-    TSS2_SYS_CONTEXT *sysContext,
+    _TSS2_SYS_CONTEXT_BLOB *ctx,
     size_t contextSize)
 {
-    SYS_CONTEXT->cmdBuffer = (UINT8 *)SYS_CONTEXT + sizeof(_TSS2_SYS_CONTEXT_BLOB);
-    SYS_CONTEXT->maxCmdSize = contextSize - sizeof(_TSS2_SYS_CONTEXT_BLOB);
+    ctx->cmdBuffer = (UINT8 *)ctx + sizeof(_TSS2_SYS_CONTEXT_BLOB);
+    ctx->maxCmdSize = contextSize - sizeof(_TSS2_SYS_CONTEXT_BLOB);
 }
 
-UINT32 GetCommandSize(TSS2_SYS_CONTEXT *sysContext)
+UINT32 GetCommandSize(_TSS2_SYS_CONTEXT_BLOB *ctx)
 {
-    return BE_TO_HOST_32(SYS_REQ_HEADER->commandSize);
+    return BE_TO_HOST_32(req_header_from_cxt(ctx)->commandSize);
 }
 
-TSS2_RC CopyCommandHeader(TSS2_SYS_CONTEXT *sysContext, TPM2_CC commandCode)
+TSS2_RC CopyCommandHeader(_TSS2_SYS_CONTEXT_BLOB *ctx, TPM2_CC commandCode)
 {
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    SYS_CONTEXT->nextData = 0;
-    SYS_CONTEXT->rval = TSS2_RC_SUCCESS;
+    ctx->nextData = 0;
+    ctx->rval = TSS2_RC_SUCCESS;
 
-    rval = Tss2_MU_TPM2_ST_Marshal(TPM2_ST_NO_SESSIONS, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPM2_ST_Marshal(TPM2_ST_NO_SESSIONS, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_REQ_HEADER->commandCode = HOST_TO_BE_32(commandCode);
-    SYS_CONTEXT->nextData = sizeof(TPM20_Header_In);
+    req_header_from_cxt(ctx)->commandCode = HOST_TO_BE_32(commandCode);
+    ctx->nextData = sizeof(TPM20_Header_In);
     return rval;
 }
 
 TSS2_RC CommonPreparePrologue(
-    TSS2_SYS_CONTEXT *sysContext,
+    _TSS2_SYS_CONTEXT_BLOB *ctx,
     TPM2_CC commandCode)
 {
 	int numCommandHandles;
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    InitSysContextFields(sysContext);
+    InitSysContextFields(ctx);
 
     /* Need to check stage here. */
-    if (SYS_CONTEXT->previousStage != CMD_STAGE_INITIALIZE &&
-        SYS_CONTEXT->previousStage != CMD_STAGE_RECEIVE_RESPONSE &&
-        SYS_CONTEXT->previousStage != CMD_STAGE_PREPARE)
+    if (ctx->previousStage != CMD_STAGE_INITIALIZE &&
+        ctx->previousStage != CMD_STAGE_RECEIVE_RESPONSE &&
+        ctx->previousStage != CMD_STAGE_PREPARE)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    rval = CopyCommandHeader(sysContext, commandCode);
+    rval = CopyCommandHeader(ctx, commandCode);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->commandCode = commandCode;
-    SYS_CONTEXT->numResponseHandles = GetNumResponseHandles(commandCode);
-    SYS_CONTEXT->rspParamsSize = (UINT32 *)(SYS_CONTEXT->cmdBuffer +
-                                     sizeof(TPM20_Header_Out) +
-                                     (GetNumResponseHandles(commandCode) * sizeof(UINT32)));
+    ctx->commandCode = commandCode;
+    ctx->numResponseHandles = GetNumResponseHandles(commandCode);
+    ctx->rspParamsSize = (UINT32 *)(ctx->cmdBuffer + sizeof(TPM20_Header_Out) +
+                         (GetNumResponseHandles(commandCode) * sizeof(UINT32)));
 
     numCommandHandles = GetNumCommandHandles(commandCode);
-    SYS_CONTEXT->cpBuffer = SYS_CONTEXT->cmdBuffer +
-                            SYS_CONTEXT->nextData +
-                            (numCommandHandles * sizeof(UINT32));
+    ctx->cpBuffer = ctx->cmdBuffer + ctx->nextData +
+                                     (numCommandHandles * sizeof(UINT32));
     return rval;
 }
 
-TSS2_RC CommonPrepareEpilogue(TSS2_SYS_CONTEXT *sysContext)
+TSS2_RC CommonPrepareEpilogue(_TSS2_SYS_CONTEXT_BLOB *ctx)
 {
-    SYS_CONTEXT->cpBufferUsedSize = (SYS_CONTEXT->cmdBuffer + SYS_CONTEXT->nextData) -
-                                     SYS_CONTEXT->cpBuffer;
-    SYS_REQ_HEADER->commandSize = HOST_TO_BE_32(SYS_CONTEXT->nextData);
-    SYS_CONTEXT->previousStage = CMD_STAGE_PREPARE;
+    ctx->cpBufferUsedSize = ctx->cmdBuffer + ctx->nextData - ctx->cpBuffer;
+    req_header_from_cxt(ctx)->commandSize = HOST_TO_BE_32(ctx->nextData);
+    ctx->previousStage = CMD_STAGE_PREPARE;
 
     return TSS2_RC_SUCCESS;
 }
 
-TSS2_RC CommonComplete(TSS2_SYS_CONTEXT *sysContext)
+TSS2_RC CommonComplete(_TSS2_SYS_CONTEXT_BLOB *ctx)
 {
     UINT32 rspSize;
     TPM2_ST tag;
     size_t next = 0;
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rspSize = BE_TO_HOST_32(SYS_RESP_HEADER->responseSize);
+    rspSize = BE_TO_HOST_32(resp_header_from_cxt(ctx)->responseSize);
 
-    if(rspSize > SYS_CONTEXT->maxCmdSize) {
-        SYS_CONTEXT->rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
+    if(rspSize > ctx->maxCmdSize) {
+        ctx->rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
         return TSS2_SYS_RC_MALFORMED_RESPONSE;
     }
 
     /*
      * NOTE: should this depend on the status of previous
-     * API call? i.e. SYS_CONTEXT->rval != TSS2_RC_SUCCESS
+     * API call? i.e. ctx->rval != TSS2_RC_SUCCESS
      */
-    if (SYS_CONTEXT->previousStage != CMD_STAGE_RECEIVE_RESPONSE ||
-        SYS_CONTEXT->rval != TSS2_RC_SUCCESS)
+    if (ctx->previousStage != CMD_STAGE_RECEIVE_RESPONSE ||
+        ctx->rval != TSS2_RC_SUCCESS)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    SYS_CONTEXT->nextData = (UINT8 *)SYS_CONTEXT->rspParamsSize -
-                                     SYS_CONTEXT->cmdBuffer;
+    ctx->nextData = (UINT8 *)ctx->rspParamsSize - ctx->cmdBuffer;
 
-    rval = Tss2_MU_TPM2_ST_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                    SYS_CONTEXT->maxCmdSize,
+    rval = Tss2_MU_TPM2_ST_Unmarshal(ctx->cmdBuffer,
+                                    ctx->maxCmdSize,
                                     &next, &tag);
     if (rval)
         return rval;
 
     /* Save response params size */
     if (tag == TPM2_ST_SESSIONS) {
-        rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                        SYS_CONTEXT->maxCmdSize,
-                                        &SYS_CONTEXT->nextData,
-                                        &SYS_CONTEXT->rpBufferUsedSize);
+        rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer,
+                                        ctx->maxCmdSize,
+                                        &ctx->nextData,
+                                        &ctx->rpBufferUsedSize);
         if (rval)
             return rval;
     }
 
-    SYS_CONTEXT->rpBuffer = SYS_CONTEXT->cmdBuffer + SYS_CONTEXT->nextData;
+    ctx->rpBuffer = ctx->cmdBuffer + ctx->nextData;
 
-    if (tag != TPM2_ST_SESSIONS) {
-        SYS_CONTEXT->rpBufferUsedSize = rspSize -
-                (SYS_CONTEXT->rpBuffer - SYS_CONTEXT->cmdBuffer);
-    }
+    if (tag != TPM2_ST_SESSIONS)
+        ctx->rpBufferUsedSize = rspSize - (ctx->rpBuffer - ctx->cmdBuffer);
 
     return rval;
 }
 
 TSS2_RC CommonOneCall(
-    TSS2_SYS_CONTEXT *sysContext,
+    _TSS2_SYS_CONTEXT_BLOB *ctx,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;
 
-    if( SYS_CONTEXT->rval != TSS2_RC_SUCCESS )
-        return SYS_CONTEXT->rval;
+    if (ctx->rval != TSS2_RC_SUCCESS)
+        return ctx->rval;
 
     if (cmdAuthsArray) {
-        rval = Tss2_Sys_SetCmdAuths(sysContext, cmdAuthsArray);
+        rval = Tss2_Sys_SetCmdAuths((TSS2_SYS_CONTEXT *)ctx, cmdAuthsArray);
         if (rval)
             return rval;
     }
 
-    rval = Tss2_Sys_Execute(sysContext);
+    rval = Tss2_Sys_Execute((TSS2_SYS_CONTEXT *)ctx);
     if (rval)
         return rval;
 
-    if (SYS_CONTEXT->rsp_header.responseCode)
-        return SYS_CONTEXT->rsp_header.responseCode;
+    if (ctx->rsp_header.responseCode)
+        return ctx->rsp_header.responseCode;
 
-    if (BE_TO_HOST_16(SYS_RESP_HEADER->tag) == TPM2_ST_SESSIONS && rspAuthsArray)
-        rval = Tss2_Sys_GetRspAuths(sysContext, rspAuthsArray);
+    if (BE_TO_HOST_16(resp_header_from_cxt(ctx)->tag) ==
+            TPM2_ST_SESSIONS && rspAuthsArray)
+        rval = Tss2_Sys_GetRspAuths((TSS2_SYS_CONTEXT *)ctx, rspAuthsArray);
 
     return rval;
 }
 
 TSS2_RC CommonOneCallForNoResponseCmds(
-    TSS2_SYS_CONTEXT *sysContext,
+    _TSS2_SYS_CONTEXT_BLOB *ctx,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
     TSS2_RC rval;
 
-    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    rval = CommonOneCall(ctx, cmdAuthsArray, rspAuthsArray);
     if(rval)
         return rval;
 
-    return CommonComplete(sysContext);
+    return CommonComplete(ctx);
 }

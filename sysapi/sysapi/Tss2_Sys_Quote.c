@@ -31,58 +31,59 @@
 TSS2_RC Tss2_Sys_Quote_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
-    const TPM2B_DATA	*qualifyingData,
-    const TPMT_SIG_SCHEME	*inScheme,
-    const TPML_PCR_SELECTION	*PCRselect)
+    const TPM2B_DATA *qualifyingData,
+    const TPMT_SIG_SCHEME *inScheme,
+    const TPML_PCR_SELECTION *PCRselect)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext || !inScheme || !PCRselect)
+    if (!ctx || !inScheme || !PCRselect)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_Quote);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_Quote);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(signHandle, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT32_Marshal(signHandle, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
     if (!qualifyingData) {
-        SYS_CONTEXT->decryptNull = 1;
+        ctx->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->cmdBuffer,
-                                      SYS_CONTEXT->maxCmdSize,
-                                      &SYS_CONTEXT->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_DATA_Marshal(qualifyingData, SYS_CONTEXT->cmdBuffer,
-                                          SYS_CONTEXT->maxCmdSize,
-                                          &SYS_CONTEXT->nextData);
+        rval = Tss2_MU_TPM2B_DATA_Marshal(qualifyingData, ctx->cmdBuffer,
+                                          ctx->maxCmdSize,
+                                          &ctx->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPMT_SIG_SCHEME_Marshal(inScheme, SYS_CONTEXT->cmdBuffer,
-                                           SYS_CONTEXT->maxCmdSize,
-                                           &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPMT_SIG_SCHEME_Marshal(inScheme, ctx->cmdBuffer,
+                                           ctx->maxCmdSize,
+                                           &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPML_PCR_SELECTION_Marshal(PCRselect, SYS_CONTEXT->cmdBuffer,
-                                              SYS_CONTEXT->maxCmdSize,
-                                              &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPML_PCR_SELECTION_Marshal(PCRselect, ctx->cmdBuffer,
+                                              ctx->maxCmdSize,
+                                              &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 1;
-    SYS_CONTEXT->encryptAllowed = 1;
-    SYS_CONTEXT->authAllowed = 1;
+    ctx->decryptAllowed = 1;
+    ctx->encryptAllowed = 1;
+    ctx->authAllowed = 1;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_Quote_Complete(
@@ -90,37 +91,39 @@ TSS2_RC Tss2_Sys_Quote_Complete(
     TPM2B_ATTEST *quoted,
     TPMT_SIGNATURE *signature)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonComplete(sysContext);
+    rval = CommonComplete(ctx);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_ATTEST_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                          SYS_CONTEXT->maxCmdSize,
-                                          &SYS_CONTEXT->nextData, quoted);
+    rval = Tss2_MU_TPM2B_ATTEST_Unmarshal(ctx->cmdBuffer,
+                                          ctx->maxCmdSize,
+                                          &ctx->nextData, quoted);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPMT_SIGNATURE_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                            SYS_CONTEXT->maxCmdSize,
-                                            &SYS_CONTEXT->nextData, signature);
+    return Tss2_MU_TPMT_SIGNATURE_Unmarshal(ctx->cmdBuffer,
+                                            ctx->maxCmdSize,
+                                            &ctx->nextData, signature);
 }
 
 TSS2_RC Tss2_Sys_Quote(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    const TPM2B_DATA	*qualifyingData,
-    const TPMT_SIG_SCHEME	*inScheme,
-    const TPML_PCR_SELECTION	*PCRselect,
+    const TPM2B_DATA *qualifyingData,
+    const TPMT_SIG_SCHEME *inScheme,
+    const TPML_PCR_SELECTION *PCRselect,
     TPM2B_ATTEST *quoted,
     TPMT_SIGNATURE *signature,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!inScheme || !PCRselect)
@@ -131,7 +134,7 @@ TSS2_RC Tss2_Sys_Quote(
     if (rval)
         return rval;
 
-    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    rval = CommonOneCall(ctx, cmdAuthsArray, rspAuthsArray);
     if (rval)
         return rval;
 

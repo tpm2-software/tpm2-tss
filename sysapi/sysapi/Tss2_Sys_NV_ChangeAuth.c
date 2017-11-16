@@ -31,48 +31,50 @@
 TSS2_RC Tss2_Sys_NV_ChangeAuth_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_INDEX nvIndex,
-    const TPM2B_AUTH	*newAuth)
+    const TPM2B_AUTH *newAuth)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_NV_ChangeAuth);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_NV_ChangeAuth);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(nvIndex, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT32_Marshal(nvIndex, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_AUTH_Marshal(newAuth, SYS_CONTEXT->cmdBuffer,
-                                      SYS_CONTEXT->maxCmdSize,
-                                      &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPM2B_AUTH_Marshal(newAuth, ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 1;
-    SYS_CONTEXT->encryptAllowed = 0;
-    SYS_CONTEXT->authAllowed = 1;
+    ctx->decryptAllowed = 1;
+    ctx->encryptAllowed = 0;
+    ctx->authAllowed = 1;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_NV_ChangeAuth(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_INDEX nvIndex,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    const TPM2B_AUTH	*newAuth,
+    const TPM2B_AUTH *newAuth,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_NV_ChangeAuth_Prepare(sysContext, nvIndex, newAuth);
     if (rval)
         return rval;
 
-    return CommonOneCallForNoResponseCmds(sysContext, cmdAuthsArray, rspAuthsArray);
+    return CommonOneCallForNoResponseCmds(ctx, cmdAuthsArray, rspAuthsArray);
 }

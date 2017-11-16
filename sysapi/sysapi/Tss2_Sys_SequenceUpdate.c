@@ -31,48 +31,50 @@
 TSS2_RC Tss2_Sys_SequenceUpdate_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT sequenceHandle,
-    const TPM2B_MAX_BUFFER	*buffer)
+    const TPM2B_MAX_BUFFER *buffer)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_SequenceUpdate);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_SequenceUpdate);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(sequenceHandle, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT32_Marshal(sequenceHandle, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_MAX_BUFFER_Marshal(buffer, SYS_CONTEXT->cmdBuffer,
-                                            SYS_CONTEXT->maxCmdSize,
-                                            &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPM2B_MAX_BUFFER_Marshal(buffer, ctx->cmdBuffer,
+                                            ctx->maxCmdSize,
+                                            &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 1;
-    SYS_CONTEXT->encryptAllowed = 0;
-    SYS_CONTEXT->authAllowed = 1;
+    ctx->decryptAllowed = 1;
+    ctx->encryptAllowed = 0;
+    ctx->authAllowed = 1;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_SequenceUpdate(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT sequenceHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    const TPM2B_MAX_BUFFER	*buffer,
+    const TPM2B_MAX_BUFFER *buffer,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_SequenceUpdate_Prepare(sysContext, sequenceHandle, buffer);
     if (rval)
         return rval;
 
-    return CommonOneCallForNoResponseCmds(sysContext, cmdAuthsArray, rspAuthsArray);
+    return CommonOneCallForNoResponseCmds(ctx, cmdAuthsArray, rspAuthsArray);
 }

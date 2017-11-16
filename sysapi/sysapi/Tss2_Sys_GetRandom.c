@@ -32,43 +32,45 @@ TSS2_RC Tss2_Sys_GetRandom_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     UINT16 bytesRequested)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_GetRandom);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_GetRandom);
     if (rval)
         return rval;
-    rval = Tss2_MU_UINT16_Marshal(bytesRequested, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT16_Marshal(bytesRequested, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 0;
-    SYS_CONTEXT->encryptAllowed = 1;
-    SYS_CONTEXT->authAllowed = 1;
+    ctx->decryptAllowed = 0;
+    ctx->encryptAllowed = 1;
+    ctx->authAllowed = 1;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_GetRandom_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_DIGEST *randomBytes)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonComplete(sysContext);
+    rval = CommonComplete(ctx);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_DIGEST_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                          SYS_CONTEXT->maxCmdSize,
-                                          &SYS_CONTEXT->nextData, randomBytes);
+    return Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer,
+                                          ctx->maxCmdSize,
+                                          &ctx->nextData, randomBytes);
 }
 
 TSS2_RC Tss2_Sys_GetRandom(
@@ -78,13 +80,14 @@ TSS2_RC Tss2_Sys_GetRandom(
     TPM2B_DIGEST *randomBytes,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_GetRandom_Prepare(sysContext, bytesRequested);
     if (rval)
         return rval;
 
-    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    rval = CommonOneCall(ctx, cmdAuthsArray, rspAuthsArray);
     if (rval)
         return rval;
 

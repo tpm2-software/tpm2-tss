@@ -31,42 +31,42 @@
 
 TSS2_RC Tss2_Sys_ExecuteAsync(TSS2_SYS_CONTEXT *sysContext)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if (SYS_CONTEXT->previousStage != CMD_STAGE_PREPARE)
+    if (ctx->previousStage != CMD_STAGE_PREPARE)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    rval = tss2_tcti_transmit(SYS_CONTEXT->tctiContext,
-                              HOST_TO_BE_32(((TPM20_Header_In *)SYS_CONTEXT->cmdBuffer)->commandSize),
-                              SYS_CONTEXT->cmdBuffer);
+    rval = tss2_tcti_transmit(ctx->tctiContext,
+                              HOST_TO_BE_32(req_header_from_cxt(ctx)->commandSize),
+                              ctx->cmdBuffer);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->previousStage = CMD_STAGE_SEND_COMMAND;
+    ctx->previousStage = CMD_STAGE_SEND_COMMAND;
 
     return rval;
 }
 
-TSS2_RC Tss2_Sys_ExecuteFinish(
-    TSS2_SYS_CONTEXT *sysContext,
-    int32_t timeout)
+TSS2_RC Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
     size_t responseSize = 0;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if (SYS_CONTEXT->previousStage != CMD_STAGE_SEND_COMMAND)
+    if (ctx->previousStage != CMD_STAGE_SEND_COMMAND)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    responseSize = SYS_CONTEXT->maxCmdSize;
+    responseSize = ctx->maxCmdSize;
 
-    rval = tss2_tcti_receive(SYS_CONTEXT->tctiContext, &responseSize,
-                             SYS_CONTEXT->cmdBuffer, timeout);
+    rval = tss2_tcti_receive(ctx->tctiContext, &responseSize,
+                             ctx->cmdBuffer, timeout);
     if (rval)
         return rval;
 
@@ -79,55 +79,55 @@ TSS2_RC Tss2_Sys_ExecuteFinish(
      * the TPM20_Header_Out in the context structure. No need to
      * unmarshal this stuff again.
      */
-     SYS_CONTEXT->nextData = 0;
+     ctx->nextData = 0;
 
-     rval = Tss2_MU_TPM2_ST_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                     SYS_CONTEXT->maxCmdSize,
-                                     &SYS_CONTEXT->nextData,
-                                     &SYS_CONTEXT->rsp_header.tag);
+     rval = Tss2_MU_TPM2_ST_Unmarshal(ctx->cmdBuffer,
+                                     ctx->maxCmdSize,
+                                     &ctx->nextData,
+                                     &ctx->rsp_header.tag);
     if (rval)
         return rval;
 
-     rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                     SYS_CONTEXT->maxCmdSize,
-                                     &SYS_CONTEXT->nextData,
-                                     &SYS_CONTEXT->rsp_header.responseSize);
+     rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer,
+                                     ctx->maxCmdSize,
+                                     &ctx->nextData,
+                                     &ctx->rsp_header.responseSize);
     if (rval)
         return rval;
 
-    if (SYS_CONTEXT->rsp_header.responseSize > SYS_CONTEXT->maxCmdSize) {
-        SYS_CONTEXT->rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
+    if (ctx->rsp_header.responseSize > ctx->maxCmdSize) {
+        ctx->rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
         return TSS2_SYS_RC_MALFORMED_RESPONSE;
     }
 
-    rval = Tss2_MU_UINT32_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                    SYS_CONTEXT->maxCmdSize,
-                                    &SYS_CONTEXT->nextData,
-                                    &SYS_CONTEXT->rsp_header.responseCode);
+    rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer,
+                                    ctx->maxCmdSize,
+                                    &ctx->nextData,
+                                    &ctx->rsp_header.responseCode);
     if (rval)
         return rval;
 
-    rval = SYS_CONTEXT->rsp_header.responseCode;
+    rval = ctx->rsp_header.responseCode;
     /*
      * NOTE: this is only to maintain state between API calls
      * It should be eventually removed.
      */
-    SYS_CONTEXT->rval = rval;
+    ctx->rval = rval;
 
     /* If we received a TPM error other than CANCELED or if we didn't
      * receive enough response bytes, reset SAPI state machine to
      * CMD_STAGE_PREPARE. There's nothing else we can do for current command.
      */
-    if (SYS_CONTEXT->rsp_header.responseSize < sizeof(TPM20_Header_Out)) {
-        SYS_CONTEXT->previousStage = CMD_STAGE_PREPARE;
+    if (ctx->rsp_header.responseSize < sizeof(TPM20_Header_Out)) {
+        ctx->previousStage = CMD_STAGE_PREPARE;
         return TSS2_SYS_RC_INSUFFICIENT_RESPONSE;
     }
     if (rval == TPM2_RC_CANCELED) {
-        SYS_CONTEXT->previousStage = CMD_STAGE_PREPARE;
+        ctx->previousStage = CMD_STAGE_PREPARE;
         return TSS2_SYS_RC_INSUFFICIENT_RESPONSE;
     }
 
-    SYS_CONTEXT->previousStage = CMD_STAGE_RECEIVE_RESPONSE;
+    ctx->previousStage = CMD_STAGE_RECEIVE_RESPONSE;
     return rval;
 }
 

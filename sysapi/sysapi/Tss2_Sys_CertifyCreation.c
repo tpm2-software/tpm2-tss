@@ -32,71 +32,72 @@ TSS2_RC Tss2_Sys_CertifyCreation_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
     TPMI_DH_OBJECT objectHandle,
-    const TPM2B_DATA	*qualifyingData,
-    const TPM2B_DIGEST	*creationHash,
-    const TPMT_SIG_SCHEME	*inScheme,
-    const TPMT_TK_CREATION	*creationTicket)
+    const TPM2B_DATA *qualifyingData,
+    const TPM2B_DIGEST *creationHash,
+    const TPMT_SIG_SCHEME *inScheme,
+    const TPMT_TK_CREATION *creationTicket)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext || !inScheme || !creationTicket)
+    if (!ctx || !inScheme || !creationTicket)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_CertifyCreation);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_CertifyCreation);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(signHandle, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT32_Marshal(signHandle, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(objectHandle, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT32_Marshal(objectHandle, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
     if (!qualifyingData) {
-        SYS_CONTEXT->decryptNull = 1;
+        ctx->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->cmdBuffer,
-                                      SYS_CONTEXT->maxCmdSize,
-                                      &SYS_CONTEXT->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_DATA_Marshal(qualifyingData, SYS_CONTEXT->cmdBuffer,
-                                          SYS_CONTEXT->maxCmdSize,
-                                          &SYS_CONTEXT->nextData);
+        rval = Tss2_MU_TPM2B_DATA_Marshal(qualifyingData, ctx->cmdBuffer,
+                                          ctx->maxCmdSize,
+                                          &ctx->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval =  Tss2_MU_TPM2B_DIGEST_Marshal(creationHash, SYS_CONTEXT->cmdBuffer,
-                                         SYS_CONTEXT->maxCmdSize,
-                                         &SYS_CONTEXT->nextData);
+    rval =  Tss2_MU_TPM2B_DIGEST_Marshal(creationHash, ctx->cmdBuffer,
+                                         ctx->maxCmdSize,
+                                         &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPMT_SIG_SCHEME_Marshal(inScheme, SYS_CONTEXT->cmdBuffer,
-                                           SYS_CONTEXT->maxCmdSize,
-                                           &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPMT_SIG_SCHEME_Marshal(inScheme, ctx->cmdBuffer,
+                                           ctx->maxCmdSize,
+                                           &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPMT_TK_CREATION_Marshal(creationTicket, SYS_CONTEXT->cmdBuffer,
-                                            SYS_CONTEXT->maxCmdSize,
-                                            &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPMT_TK_CREATION_Marshal(creationTicket, ctx->cmdBuffer,
+                                            ctx->maxCmdSize,
+                                            &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 1;
-    SYS_CONTEXT->encryptAllowed = 1;
-    SYS_CONTEXT->authAllowed = 1;
+    ctx->decryptAllowed = 1;
+    ctx->encryptAllowed = 1;
+    ctx->authAllowed = 1;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_CertifyCreation_Complete(
@@ -104,25 +105,26 @@ TSS2_RC Tss2_Sys_CertifyCreation_Complete(
     TPM2B_ATTEST *certifyInfo,
     TPMT_SIGNATURE *signature)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonComplete(sysContext);
+    rval = CommonComplete(ctx);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_ATTEST_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                          SYS_CONTEXT->maxCmdSize,
-                                          &SYS_CONTEXT->nextData,
+    rval = Tss2_MU_TPM2B_ATTEST_Unmarshal(ctx->cmdBuffer,
+                                          ctx->maxCmdSize,
+                                          &ctx->nextData,
                                           certifyInfo);
     if (rval)
         return rval;
 
-    return rval = Tss2_MU_TPMT_SIGNATURE_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                                   SYS_CONTEXT->maxCmdSize,
-                                                   &SYS_CONTEXT->nextData,
+    return rval = Tss2_MU_TPMT_SIGNATURE_Unmarshal(ctx->cmdBuffer,
+                                                   ctx->maxCmdSize,
+                                                   &ctx->nextData,
                                                    signature);
 }
 
@@ -131,14 +133,15 @@ TSS2_RC Tss2_Sys_CertifyCreation(
     TPMI_DH_OBJECT signHandle,
     TPMI_DH_OBJECT objectHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    const TPM2B_DATA	*qualifyingData,
-    const TPM2B_DIGEST	*creationHash,
-    const TPMT_SIG_SCHEME	*inScheme,
-    const TPMT_TK_CREATION	*creationTicket,
+    const TPM2B_DATA *qualifyingData,
+    const TPM2B_DIGEST *creationHash,
+    const TPMT_SIG_SCHEME *inScheme,
+    const TPMT_TK_CREATION *creationTicket,
     TPM2B_ATTEST *certifyInfo,
     TPMT_SIGNATURE *signature,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if( inScheme == NULL  || creationTicket == NULL  )
@@ -150,7 +153,7 @@ TSS2_RC Tss2_Sys_CertifyCreation(
     if (rval)
         return rval;
 
-    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    rval = CommonOneCall(ctx, cmdAuthsArray, rspAuthsArray);
     if (rval)
         return rval;
 

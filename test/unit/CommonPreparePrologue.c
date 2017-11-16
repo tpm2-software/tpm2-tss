@@ -63,7 +63,7 @@ CommonPreparePrologue_previous_stage_initialize (void **state)
     TSS2_RC rc;
 
     sys_ctx->previousStage |= ~CMD_STAGE_INITIALIZE;
-    rc = CommonPreparePrologue ((TSS2_SYS_CONTEXT*)sys_ctx, 0);
+    rc = CommonPreparePrologue (sys_ctx, 0);
     assert_int_equal (rc, TSS2_SYS_RC_BAD_SEQUENCE);
 }
 static void
@@ -73,7 +73,7 @@ CommonPreparePrologue_previous_stage_prepare (void **state)
     TSS2_RC rc;
 
     sys_ctx->previousStage |= ~CMD_STAGE_RECEIVE_RESPONSE;
-    rc = CommonPreparePrologue ((TSS2_SYS_CONTEXT*)sys_ctx, 0);
+    rc = CommonPreparePrologue (sys_ctx, 0);
     assert_int_equal (rc, TSS2_SYS_RC_BAD_SEQUENCE);
 }
 static void
@@ -83,7 +83,7 @@ CommonPreparePrologue_previous_stage_response (void **state)
     TSS2_RC rc;
 
     sys_ctx->previousStage |= ~CMD_STAGE_PREPARE;
-    rc = CommonPreparePrologue ((TSS2_SYS_CONTEXT*)sys_ctx, 0);
+    rc = CommonPreparePrologue (sys_ctx, 0);
     assert_int_equal (rc, TSS2_SYS_RC_BAD_SEQUENCE);
 }
 int

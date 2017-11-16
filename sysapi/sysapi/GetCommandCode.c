@@ -33,13 +33,15 @@ TSS2_RC Tss2_Sys_GetCommandCode(
     TSS2_SYS_CONTEXT *sysContext,
     UINT8 (*commandCode)[4])
 {
-    if (!sysContext || !commandCode)
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+
+    if (!ctx || !commandCode)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if (SYS_CONTEXT->previousStage == CMD_STAGE_INITIALIZE)
+    if (ctx->previousStage == CMD_STAGE_INITIALIZE)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    *(TPM2_CC *)commandCode = HOST_TO_BE_32(SYS_CONTEXT->commandCode);
+    *(TPM2_CC *)commandCode = HOST_TO_BE_32(ctx->commandCode);
 
     return TSS2_RC_SUCCESS;
 }

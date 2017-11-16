@@ -32,44 +32,46 @@ TSS2_RC Tss2_Sys_IncrementalSelfTest_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPML_ALG *toTest)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext || !toTest)
+    if (!ctx || !toTest)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_IncrementalSelfTest);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_IncrementalSelfTest);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPML_ALG_Marshal(toTest, SYS_CONTEXT->cmdBuffer,
-                                    SYS_CONTEXT->maxCmdSize,
-                                    &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPML_ALG_Marshal(toTest, ctx->cmdBuffer,
+                                    ctx->maxCmdSize,
+                                    &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 0;
-    SYS_CONTEXT->encryptAllowed = 0;
-    SYS_CONTEXT->authAllowed = 1;
+    ctx->decryptAllowed = 0;
+    ctx->encryptAllowed = 0;
+    ctx->authAllowed = 1;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_IncrementalSelfTest_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPML_ALG *toDoList)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonComplete(sysContext);
+    rval = CommonComplete(ctx);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPML_ALG_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                      SYS_CONTEXT->maxCmdSize,
-                                      &SYS_CONTEXT->nextData, toDoList);
+    return Tss2_MU_TPML_ALG_Unmarshal(ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData, toDoList);
 }
 
 TSS2_RC Tss2_Sys_IncrementalSelfTest(
@@ -79,6 +81,7 @@ TSS2_RC Tss2_Sys_IncrementalSelfTest(
     TPML_ALG *toDoList,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!toTest)
@@ -88,7 +91,7 @@ TSS2_RC Tss2_Sys_IncrementalSelfTest(
     if (rval)
         return rval;
 
-    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    rval = CommonOneCall(ctx, cmdAuthsArray, rspAuthsArray);
     if (rval)
         return rval;
 

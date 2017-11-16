@@ -32,58 +32,60 @@ TSS2_RC Tss2_Sys_EventSequenceComplete_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR pcrHandle,
     TPMI_DH_OBJECT sequenceHandle,
-    const TPM2B_MAX_BUFFER	*buffer)
+    const TPM2B_MAX_BUFFER *buffer)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_EventSequenceComplete);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_EventSequenceComplete);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(pcrHandle, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT32_Marshal(pcrHandle, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(sequenceHandle, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT32_Marshal(sequenceHandle, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_MAX_BUFFER_Marshal(buffer, SYS_CONTEXT->cmdBuffer,
-                                            SYS_CONTEXT->maxCmdSize,
-                                            &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPM2B_MAX_BUFFER_Marshal(buffer, ctx->cmdBuffer,
+                                            ctx->maxCmdSize,
+                                            &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 1;
-    SYS_CONTEXT->encryptAllowed = 0;
-    SYS_CONTEXT->authAllowed = 1;
+    ctx->decryptAllowed = 1;
+    ctx->encryptAllowed = 0;
+    ctx->authAllowed = 1;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_EventSequenceComplete_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPML_DIGEST_VALUES *results)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonComplete(sysContext);
+    rval = CommonComplete(ctx);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPML_DIGEST_VALUES_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                                SYS_CONTEXT->maxCmdSize,
-                                                &SYS_CONTEXT->nextData, results);
+    return Tss2_MU_TPML_DIGEST_VALUES_Unmarshal(ctx->cmdBuffer,
+                                                ctx->maxCmdSize,
+                                                &ctx->nextData, results);
 }
 
 TSS2_RC Tss2_Sys_EventSequenceComplete(
@@ -91,10 +93,11 @@ TSS2_RC Tss2_Sys_EventSequenceComplete(
     TPMI_DH_PCR pcrHandle,
     TPMI_DH_OBJECT sequenceHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    const TPM2B_MAX_BUFFER	*buffer,
+    const TPM2B_MAX_BUFFER *buffer,
     TPML_DIGEST_VALUES *results,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_EventSequenceComplete_Prepare(sysContext, pcrHandle,
@@ -102,7 +105,7 @@ TSS2_RC Tss2_Sys_EventSequenceComplete(
     if (rval)
         return rval;
 
-    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    rval = CommonOneCall(ctx, cmdAuthsArray, rspAuthsArray);
     if (rval)
         return rval;
 

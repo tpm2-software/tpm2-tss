@@ -31,38 +31,40 @@
 TSS2_RC Tss2_Sys_ReadClock_Prepare(
     TSS2_SYS_CONTEXT *sysContext)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_ReadClock);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_ReadClock);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 0;
-    SYS_CONTEXT->encryptAllowed = 0;
-    SYS_CONTEXT->authAllowed = 0;
+    ctx->decryptAllowed = 0;
+    ctx->encryptAllowed = 0;
+    ctx->authAllowed = 0;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_ReadClock_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMS_TIME_INFO *currentTime)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonComplete(sysContext);
+    rval = CommonComplete(ctx);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPMS_TIME_INFO_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                            SYS_CONTEXT->maxCmdSize,
-                                            &SYS_CONTEXT->nextData,
+    return Tss2_MU_TPMS_TIME_INFO_Unmarshal(ctx->cmdBuffer,
+                                            ctx->maxCmdSize,
+                                            &ctx->nextData,
                                             currentTime);
 }
 
@@ -70,13 +72,14 @@ TSS2_RC Tss2_Sys_ReadClock(
     TSS2_SYS_CONTEXT *sysContext,
     TPMS_TIME_INFO *currentTime)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_ReadClock_Prepare(sysContext);
     if (rval)
         return rval;
 
-    rval = CommonOneCall(sysContext, 0, 0);
+    rval = CommonOneCall(ctx, 0, 0);
     if (rval)
         return rval;
 

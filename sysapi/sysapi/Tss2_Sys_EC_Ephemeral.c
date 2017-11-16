@@ -32,26 +32,27 @@ TSS2_RC Tss2_Sys_EC_Ephemeral_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_ECC_CURVE curveID)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_EC_Ephemeral);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_EC_Ephemeral);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT16_Marshal(curveID, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT16_Marshal(curveID, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 0;
-    SYS_CONTEXT->encryptAllowed = 1;
-    SYS_CONTEXT->authAllowed = 1;
+    ctx->decryptAllowed = 0;
+    ctx->encryptAllowed = 1;
+    ctx->authAllowed = 1;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_EC_Ephemeral_Complete(
@@ -59,23 +60,24 @@ TSS2_RC Tss2_Sys_EC_Ephemeral_Complete(
     TPM2B_ECC_POINT *Q,
     UINT16 *counter)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonComplete(sysContext);
+    rval = CommonComplete(ctx);
     if (rval)
         return rval;
-    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                             SYS_CONTEXT->maxCmdSize,
-                                             &SYS_CONTEXT->nextData, Q);
+    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer,
+                                             ctx->maxCmdSize,
+                                             &ctx->nextData, Q);
     if (rval)
         return rval;
 
-    return Tss2_MU_UINT16_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                    SYS_CONTEXT->maxCmdSize,
-                                    &SYS_CONTEXT->nextData, counter);
+    return Tss2_MU_UINT16_Unmarshal(ctx->cmdBuffer,
+                                    ctx->maxCmdSize,
+                                    &ctx->nextData, counter);
 }
 
 TSS2_RC Tss2_Sys_EC_Ephemeral(
@@ -86,13 +88,14 @@ TSS2_RC Tss2_Sys_EC_Ephemeral(
     UINT16 *counter,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_EC_Ephemeral_Prepare(sysContext, curveID);
     if (rval)
         return rval;
 
-    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    rval = CommonOneCall(ctx, cmdAuthsArray, rspAuthsArray);
     if (rval)
         return rval;
 

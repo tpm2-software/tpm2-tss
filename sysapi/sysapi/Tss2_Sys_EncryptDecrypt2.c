@@ -36,55 +36,56 @@ TSS2_RC Tss2_Sys_EncryptDecrypt2_Prepare (
     TPMI_ALG_SYM_MODE mode,
     const TPM2B_IV *ivIn)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue (sysContext, TPM2_CC_EncryptDecrypt2);
+    rval = CommonPreparePrologue (ctx, TPM2_CC_EncryptDecrypt2);
     if (rval)
         return rval;
 
     rval = Tss2_MU_UINT32_Marshal (keyHandle,
-                                   SYS_CONTEXT->cmdBuffer,
-                                   SYS_CONTEXT->maxCmdSize,
-                                   &SYS_CONTEXT->nextData);
+                                   ctx->cmdBuffer,
+                                   ctx->maxCmdSize,
+                                   &ctx->nextData);
     if (rval)
         return rval;
 
     rval = Tss2_MU_TPM2B_MAX_BUFFER_Marshal (inData,
-                                             SYS_CONTEXT->cmdBuffer,
-                                             SYS_CONTEXT->maxCmdSize,
-                                             &SYS_CONTEXT->nextData);
+                                             ctx->cmdBuffer,
+                                             ctx->maxCmdSize,
+                                             &ctx->nextData);
     if (rval)
         return rval;
 
     rval = Tss2_MU_UINT8_Marshal (decrypt,
-                                  SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+                                  ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
     rval = Tss2_MU_UINT16_Marshal (mode,
-                                   SYS_CONTEXT->cmdBuffer,
-                                   SYS_CONTEXT->maxCmdSize,
-                                   &SYS_CONTEXT->nextData);
+                                   ctx->cmdBuffer,
+                                   ctx->maxCmdSize,
+                                   &ctx->nextData);
     if (rval)
         return rval;
 
     rval = Tss2_MU_TPM2B_IV_Marshal (ivIn,
-                                     SYS_CONTEXT->cmdBuffer,
-                                     SYS_CONTEXT->maxCmdSize,
-                                     &SYS_CONTEXT->nextData);
+                                     ctx->cmdBuffer,
+                                     ctx->maxCmdSize,
+                                     &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 1;
-    SYS_CONTEXT->encryptAllowed = 1;
-    SYS_CONTEXT->authAllowed = 1;
+    ctx->decryptAllowed = 1;
+    ctx->encryptAllowed = 1;
+    ctx->authAllowed = 1;
 
-    return CommonPrepareEpilogue (sysContext);
+    return CommonPrepareEpilogue (ctx);
 }
 
 TSS2_RC Tss2_Sys_EncryptDecrypt2_Complete (
@@ -92,25 +93,26 @@ TSS2_RC Tss2_Sys_EncryptDecrypt2_Complete (
     TPM2B_MAX_BUFFER *outData,
     TPM2B_IV *ivOut)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonComplete (sysContext);
+    rval = CommonComplete (ctx);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_MAX_BUFFER_Unmarshal (SYS_CONTEXT->cmdBuffer,
-                                               SYS_CONTEXT->maxCmdSize,
-                                               &SYS_CONTEXT->nextData,
+    rval = Tss2_MU_TPM2B_MAX_BUFFER_Unmarshal (ctx->cmdBuffer,
+                                               ctx->maxCmdSize,
+                                               &ctx->nextData,
                                                outData);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_IV_Unmarshal (SYS_CONTEXT->cmdBuffer,
-                                       SYS_CONTEXT->maxCmdSize,
-                                       &SYS_CONTEXT->nextData,
+    return Tss2_MU_TPM2B_IV_Unmarshal (ctx->cmdBuffer,
+                                       ctx->maxCmdSize,
+                                       &ctx->nextData,
                                        ivOut);
 }
 
@@ -126,6 +128,7 @@ TSS2_RC Tss2_Sys_EncryptDecrypt2 (
     TPM2B_IV *ivOut,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_EncryptDecrypt2_Prepare (sysContext,
@@ -137,7 +140,7 @@ TSS2_RC Tss2_Sys_EncryptDecrypt2 (
     if (rval)
         return rval;
 
-    rval = CommonOneCall (sysContext, cmdAuthsArray, rspAuthsArray);
+    rval = CommonOneCall (ctx, cmdAuthsArray, rspAuthsArray);
     if (rval)
         return rval;
 

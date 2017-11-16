@@ -33,17 +33,19 @@ TSS2_RC Tss2_Sys_GetRpBuffer(
     size_t *rpBufferUsedSize,
     const uint8_t **rpBuffer)
 {
-    if (!sysContext || !rpBufferUsedSize || !rpBuffer)
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+
+    if (!ctx || !rpBufferUsedSize || !rpBuffer)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
     /* NOTE: should this depend on the status of previous
-     * API call? i.e. SYS_CONTEXT->rval != TSS2_RC_SUCCESS */
-    if (SYS_CONTEXT->previousStage != CMD_STAGE_RECEIVE_RESPONSE ||
-        SYS_CONTEXT->rval != TSS2_RC_SUCCESS)
+     * API call? i.e. ctx->rval != TSS2_RC_SUCCESS */
+    if (ctx->previousStage != CMD_STAGE_RECEIVE_RESPONSE ||
+        ctx->rval != TSS2_RC_SUCCESS)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    *rpBuffer = SYS_CONTEXT->rpBuffer;
-    *rpBufferUsedSize = SYS_CONTEXT->rpBufferUsedSize;
+    *rpBuffer = ctx->rpBuffer;
+    *rpBufferUsedSize = ctx->rpBufferUsedSize;
 
     return TSS2_RC_SUCCESS;
 }

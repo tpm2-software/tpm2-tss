@@ -45,7 +45,9 @@ TSS2_RC Tss2_Sys_Initialize(
     TSS2_TCTI_CONTEXT *tctiContext,
     TSS2_ABI_VERSION *abiVersion)
 {
-    if (!sysContext || !tctiContext || !abiVersion)
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+
+    if (!ctx || !tctiContext || !abiVersion)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
     if (contextSize < sizeof(_TSS2_SYS_CONTEXT_BLOB))
@@ -61,10 +63,10 @@ TSS2_RC Tss2_Sys_Initialize(
         abiVersion->tssVersion != TSS_SAPI_FIRST_LEVEL)
         return TSS2_SYS_RC_ABI_MISMATCH;
 
-    SYS_CONTEXT->tctiContext = tctiContext;
-    InitSysContextPtrs(sysContext, contextSize);
-    InitSysContextFields(sysContext);
-    SYS_CONTEXT->previousStage = CMD_STAGE_INITIALIZE;
+    ctx->tctiContext = tctiContext;
+    InitSysContextPtrs(ctx, contextSize);
+    InitSysContextFields(ctx);
+    ctx->previousStage = CMD_STAGE_INITIALIZE;
 
     return TSS2_RC_SUCCESS;
 }

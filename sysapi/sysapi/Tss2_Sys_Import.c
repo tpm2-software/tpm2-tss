@@ -31,92 +31,94 @@
 TSS2_RC Tss2_Sys_Import_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT parentHandle,
-    const TPM2B_DATA	*encryptionKey,
-    const TPM2B_PUBLIC	*objectPublic,
-    const TPM2B_PRIVATE	*duplicate,
-    const TPM2B_ENCRYPTED_SECRET	*inSymSeed,
-    const TPMT_SYM_DEF_OBJECT	*symmetricAlg)
+    const TPM2B_DATA *encryptionKey,
+    const TPM2B_PUBLIC *objectPublic,
+    const TPM2B_PRIVATE *duplicate,
+    const TPM2B_ENCRYPTED_SECRET *inSymSeed,
+    const TPMT_SYM_DEF_OBJECT *symmetricAlg)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext || !symmetricAlg)
+    if (!ctx || !symmetricAlg)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_Import);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_Import);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(parentHandle, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT32_Marshal(parentHandle, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
     if (!encryptionKey) {
-        SYS_CONTEXT->decryptNull = 1;
+        ctx->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->cmdBuffer,
-                                      SYS_CONTEXT->maxCmdSize,
-                                      &SYS_CONTEXT->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_DATA_Marshal(encryptionKey, SYS_CONTEXT->cmdBuffer,
-                                          SYS_CONTEXT->maxCmdSize,
-                                          &SYS_CONTEXT->nextData);
+        rval = Tss2_MU_TPM2B_DATA_Marshal(encryptionKey, ctx->cmdBuffer,
+                                          ctx->maxCmdSize,
+                                          &ctx->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_PUBLIC_Marshal(objectPublic, SYS_CONTEXT->cmdBuffer,
-                                        SYS_CONTEXT->maxCmdSize,
-                                        &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPM2B_PUBLIC_Marshal(objectPublic, ctx->cmdBuffer,
+                                        ctx->maxCmdSize,
+                                        &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_PRIVATE_Marshal(duplicate, SYS_CONTEXT->cmdBuffer,
-                                         SYS_CONTEXT->maxCmdSize,
-                                         &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPM2B_PRIVATE_Marshal(duplicate, ctx->cmdBuffer,
+                                         ctx->maxCmdSize,
+                                         &ctx->nextData);
     if (rval)
         return rval;
 
     rval = Tss2_MU_TPM2B_ENCRYPTED_SECRET_Marshal(inSymSeed,
-                                                  SYS_CONTEXT->cmdBuffer,
-                                                  SYS_CONTEXT->maxCmdSize,
-                                                  &SYS_CONTEXT->nextData);
+                                                  ctx->cmdBuffer,
+                                                  ctx->maxCmdSize,
+                                                  &ctx->nextData);
     if (rval)
         return rval;
 
     rval = Tss2_MU_TPMT_SYM_DEF_OBJECT_Marshal(symmetricAlg,
-                                               SYS_CONTEXT->cmdBuffer,
-                                               SYS_CONTEXT->maxCmdSize,
-                                               &SYS_CONTEXT->nextData);
+                                               ctx->cmdBuffer,
+                                               ctx->maxCmdSize,
+                                               &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 1;
-    SYS_CONTEXT->encryptAllowed = 1;
-    SYS_CONTEXT->authAllowed = 1;
+    ctx->decryptAllowed = 1;
+    ctx->encryptAllowed = 1;
+    ctx->authAllowed = 1;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_Import_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_PRIVATE *outPrivate)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonComplete(sysContext);
+    rval = CommonComplete(ctx);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_PRIVATE_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                           SYS_CONTEXT->maxCmdSize,
-                                           &SYS_CONTEXT->nextData,
+    return Tss2_MU_TPM2B_PRIVATE_Unmarshal(ctx->cmdBuffer,
+                                           ctx->maxCmdSize,
+                                           &ctx->nextData,
                                            outPrivate);
 }
 
@@ -124,14 +126,15 @@ TSS2_RC Tss2_Sys_Import(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT parentHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    const TPM2B_DATA	*encryptionKey,
-    const TPM2B_PUBLIC	*objectPublic,
-    const TPM2B_PRIVATE	*duplicate,
-    const TPM2B_ENCRYPTED_SECRET	*inSymSeed,
-    const TPMT_SYM_DEF_OBJECT	*symmetricAlg,
+    const TPM2B_DATA *encryptionKey,
+    const TPM2B_PUBLIC *objectPublic,
+    const TPM2B_PRIVATE *duplicate,
+    const TPM2B_ENCRYPTED_SECRET *inSymSeed,
+    const TPMT_SYM_DEF_OBJECT *symmetricAlg,
     TPM2B_PRIVATE *outPrivate,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!symmetricAlg)
@@ -143,7 +146,7 @@ TSS2_RC Tss2_Sys_Import(
     if (rval)
         return rval;
 
-    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    rval = CommonOneCall(ctx, cmdAuthsArray, rspAuthsArray);
     if (rval)
         return rval;
 

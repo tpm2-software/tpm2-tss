@@ -31,85 +31,87 @@
 TSS2_RC Tss2_Sys_PolicyTicket_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
-    const TPM2B_TIMEOUT	*timeout,
-    const TPM2B_DIGEST	*cpHashA,
-    const TPM2B_NONCE	*policyRef,
-    const TPM2B_NAME	*authName,
-    const TPMT_TK_AUTH	*ticket)
+    const TPM2B_TIMEOUT *timeout,
+    const TPM2B_DIGEST *cpHashA,
+    const TPM2B_NONCE *policyRef,
+    const TPM2B_NAME *authName,
+    const TPMT_TK_AUTH *ticket)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext || !ticket)
+    if (!ctx || !ticket)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_PolicyTicket);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_PolicyTicket);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(policySession, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT32_Marshal(policySession, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
     if (!timeout) {
-        SYS_CONTEXT->decryptNull = 1;
+        ctx->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->cmdBuffer,
-                                      SYS_CONTEXT->maxCmdSize,
-                                      &SYS_CONTEXT->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_TIMEOUT_Marshal(timeout, SYS_CONTEXT->cmdBuffer,
-                                             SYS_CONTEXT->maxCmdSize,
-                                             &SYS_CONTEXT->nextData);
+        rval = Tss2_MU_TPM2B_TIMEOUT_Marshal(timeout, ctx->cmdBuffer,
+                                             ctx->maxCmdSize,
+                                             &ctx->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_DIGEST_Marshal(cpHashA, SYS_CONTEXT->cmdBuffer,
-                                        SYS_CONTEXT->maxCmdSize,
-                                        &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPM2B_DIGEST_Marshal(cpHashA, ctx->cmdBuffer,
+                                        ctx->maxCmdSize,
+                                        &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_NONCE_Marshal(policyRef, SYS_CONTEXT->cmdBuffer,
-                                       SYS_CONTEXT->maxCmdSize,
-                                       &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPM2B_NONCE_Marshal(policyRef, ctx->cmdBuffer,
+                                       ctx->maxCmdSize,
+                                       &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_NAME_Marshal(authName, SYS_CONTEXT->cmdBuffer,
-                                      SYS_CONTEXT->maxCmdSize,
-                                      &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPM2B_NAME_Marshal(authName, ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPMT_TK_AUTH_Marshal(ticket, SYS_CONTEXT->cmdBuffer,
-                                        SYS_CONTEXT->maxCmdSize,
-                                        &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPMT_TK_AUTH_Marshal(ticket, ctx->cmdBuffer,
+                                        ctx->maxCmdSize,
+                                        &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 1;
-    SYS_CONTEXT->encryptAllowed = 0;
-    SYS_CONTEXT->authAllowed = 1;
+    ctx->decryptAllowed = 1;
+    ctx->encryptAllowed = 0;
+    ctx->authAllowed = 1;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_PolicyTicket(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    const TPM2B_TIMEOUT	*timeout,
-    const TPM2B_DIGEST	*cpHashA,
-    const TPM2B_NONCE	*policyRef,
-    const TPM2B_NAME	*authName,
-    const TPMT_TK_AUTH	*ticket,
+    const TPM2B_TIMEOUT *timeout,
+    const TPM2B_DIGEST *cpHashA,
+    const TPM2B_NONCE *policyRef,
+    const TPM2B_NAME *authName,
+    const TPMT_TK_AUTH *ticket,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ticket)
@@ -120,5 +122,5 @@ TSS2_RC Tss2_Sys_PolicyTicket(
     if (rval)
         return rval;
 
-    return CommonOneCallForNoResponseCmds(sysContext, cmdAuthsArray, rspAuthsArray);
+    return CommonOneCallForNoResponseCmds(ctx, cmdAuthsArray, rspAuthsArray);
 }

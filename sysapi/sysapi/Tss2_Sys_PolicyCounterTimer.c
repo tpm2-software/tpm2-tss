@@ -31,69 +31,71 @@
 TSS2_RC Tss2_Sys_PolicyCounterTimer_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
-    const TPM2B_OPERAND	*operandB,
+    const TPM2B_OPERAND *operandB,
     UINT16 offset,
     TPM2_EO operation)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_PolicyCounterTimer);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_PolicyCounterTimer);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(policySession, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT32_Marshal(policySession, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
     if (!operandB) {
-        SYS_CONTEXT->decryptNull = 1;
+        ctx->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->cmdBuffer,
-                                      SYS_CONTEXT->maxCmdSize,
-                                      &SYS_CONTEXT->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_OPERAND_Marshal(operandB, SYS_CONTEXT->cmdBuffer,
-                                             SYS_CONTEXT->maxCmdSize,
-                                             &SYS_CONTEXT->nextData);
+        rval = Tss2_MU_TPM2B_OPERAND_Marshal(operandB, ctx->cmdBuffer,
+                                             ctx->maxCmdSize,
+                                             &ctx->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT16_Marshal(offset, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT16_Marshal(offset, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT16_Marshal(operation, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT16_Marshal(operation, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 1;
-    SYS_CONTEXT->encryptAllowed = 0;
-    SYS_CONTEXT->authAllowed = 1;
+    ctx->decryptAllowed = 1;
+    ctx->encryptAllowed = 0;
+    ctx->authAllowed = 1;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_PolicyCounterTimer(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    const TPM2B_OPERAND	*operandB,
+    const TPM2B_OPERAND *operandB,
     UINT16 offset,
     TPM2_EO operation,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_PolicyCounterTimer_Prepare(sysContext, policySession,
@@ -101,5 +103,5 @@ TSS2_RC Tss2_Sys_PolicyCounterTimer(
     if (rval)
         return rval;
 
-    return CommonOneCallForNoResponseCmds(sysContext, cmdAuthsArray, rspAuthsArray);
+    return CommonOneCallForNoResponseCmds(ctx, cmdAuthsArray, rspAuthsArray);
 }

@@ -100,9 +100,25 @@ typedef struct {
     size_t nextData;
 } _TSS2_SYS_CONTEXT_BLOB;
 
-#define SYS_CONTEXT ((_TSS2_SYS_CONTEXT_BLOB *)sysContext)
-#define SYS_RESP_HEADER ((TPM20_Header_Out *)(SYS_CONTEXT->cmdBuffer))
-#define SYS_REQ_HEADER ((TPM20_Header_In *)(SYS_CONTEXT->cmdBuffer))
+struct TSS2_SYS_CONTEXT;
+
+static inline _TSS2_SYS_CONTEXT_BLOB *
+syscontext_cast(TSS2_SYS_CONTEXT *ctx)
+{
+    return (_TSS2_SYS_CONTEXT_BLOB*) ctx;
+}
+
+static inline TPM20_Header_Out *
+resp_header_from_cxt(_TSS2_SYS_CONTEXT_BLOB *ctx)
+{
+    return (TPM20_Header_Out *)ctx->cmdBuffer;
+}
+
+static inline TPM20_Header_In *
+req_header_from_cxt(_TSS2_SYS_CONTEXT_BLOB *ctx)
+{
+    return (TPM20_Header_In *)ctx->cmdBuffer;
+}
 
 typedef struct {
     TPM2_CC commandCode;
@@ -119,50 +135,40 @@ struct TSS2_SYS_CONTEXT;
 #ifdef __cplusplus
 extern "C" {
 #endif
-TSS2_RC CopyCommandHeader(TSS2_SYS_CONTEXT *sysContext, TPM2_CC commandCode);
-UINT16 GetDigestSize( TPM2_ALG_ID authHash );
-UINT32 GetCommandSize( TSS2_SYS_CONTEXT *sysContext );
 
-TSS2_RC ConcatSizedByteBuffer( TPM2B_MAX_BUFFER *result, TPM2B *addBuffer );
-
-void InitSysContextFields( TSS2_SYS_CONTEXT *sysContext );
-void InitSysContextPtrs ( TSS2_SYS_CONTEXT *sysContext, size_t contextSize );
-
-TSS2_RC CompleteChecks( TSS2_SYS_CONTEXT *sysContext );
-
-TSS2_RC CommonComplete( TSS2_SYS_CONTEXT *sysContext );
+TSS2_RC CopyCommandHeader(_TSS2_SYS_CONTEXT_BLOB *ctx, TPM2_CC commandCode);
+UINT16 GetDigestSize(TPM2_ALG_ID authHash);
+UINT32 GetCommandSize(_TSS2_SYS_CONTEXT_BLOB *ctx);
+TSS2_RC ConcatSizedByteBuffer(TPM2B_MAX_BUFFER *result, TPM2B *addBuffer);
+void InitSysContextFields(_TSS2_SYS_CONTEXT_BLOB *ctx);
+void InitSysContextPtrs(_TSS2_SYS_CONTEXT_BLOB *ctx, size_t contextSize);
+TSS2_RC CompleteChecks(_TSS2_SYS_CONTEXT_BLOB *ctx);
+TSS2_RC CommonComplete(_TSS2_SYS_CONTEXT_BLOB *ctx);
 
 TSS2_RC  CommonOneCallForNoResponseCmds(
-    TSS2_SYS_CONTEXT *sysContext,
+    _TSS2_SYS_CONTEXT_BLOB *ctx,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    );
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray);
 
 TSS2_RC CommonOneCall(
-    TSS2_SYS_CONTEXT *sysContext,
+    _TSS2_SYS_CONTEXT_BLOB *ctx,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
-    );
+    TSS2_SYS_RSP_AUTHS *rspAuthsArray);
 
 TSS2_RC CommonPreparePrologue(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPM2_CC commandCode
-    );
+    _TSS2_SYS_CONTEXT_BLOB *ctx,
+    TPM2_CC commandCode);
 
-TSS2_RC CommonPrepareEpilogue(
-    TSS2_SYS_CONTEXT *sysContext
-    );
-
-int GetNumCommandHandles( TPM2_CC commandCode );
-int GetNumResponseHandles( TPM2_CC commandCode );
+TSS2_RC CommonPrepareEpilogue(_TSS2_SYS_CONTEXT_BLOB *ctx);
+int GetNumCommandHandles(TPM2_CC commandCode);
+int GetNumResponseHandles(TPM2_CC commandCode);
 
 TSS2_SYS_CONTEXT *InitSysContext(
     UINT16 maxCommandSize,
     TSS2_TCTI_CONTEXT *tctiContext,
-    TSS2_ABI_VERSION *abiVersion
- );
+    TSS2_ABI_VERSION *abiVersion);
 
-void TeardownSysContext( TSS2_SYS_CONTEXT **sysContext );
+void TeardownSysContext(TSS2_SYS_CONTEXT **ctx);
 
 #ifdef __cplusplus
 }

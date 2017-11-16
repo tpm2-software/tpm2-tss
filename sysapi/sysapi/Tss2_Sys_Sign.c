@@ -31,88 +31,91 @@
 TSS2_RC Tss2_Sys_Sign_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
-    const TPM2B_DIGEST	*digest,
-    const TPMT_SIG_SCHEME	*inScheme,
-    const TPMT_TK_HASHCHECK	*validation)
+    const TPM2B_DIGEST *digest,
+    const TPMT_SIG_SCHEME *inScheme,
+    const TPMT_TK_HASHCHECK *validation)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext || !inScheme || !validation)
+    if (!ctx || !inScheme || !validation)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonPreparePrologue(sysContext, TPM2_CC_Sign);
+    rval = CommonPreparePrologue(ctx, TPM2_CC_Sign);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(keyHandle, SYS_CONTEXT->cmdBuffer,
-                                  SYS_CONTEXT->maxCmdSize,
-                                  &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_UINT32_Marshal(keyHandle, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 
     if (!digest) {
-        SYS_CONTEXT->decryptNull = 1;
+        ctx->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, SYS_CONTEXT->cmdBuffer,
-                                      SYS_CONTEXT->maxCmdSize,
-                                      &SYS_CONTEXT->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_DIGEST_Marshal(digest, SYS_CONTEXT->cmdBuffer,
-                                            SYS_CONTEXT->maxCmdSize,
-                                            &SYS_CONTEXT->nextData);
+        rval = Tss2_MU_TPM2B_DIGEST_Marshal(digest, ctx->cmdBuffer,
+                                            ctx->maxCmdSize,
+                                            &ctx->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPMT_SIG_SCHEME_Marshal(inScheme, SYS_CONTEXT->cmdBuffer,
-                                           SYS_CONTEXT->maxCmdSize,
-                                           &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPMT_SIG_SCHEME_Marshal(inScheme, ctx->cmdBuffer,
+                                           ctx->maxCmdSize,
+                                           &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPMT_TK_HASHCHECK_Marshal(validation, SYS_CONTEXT->cmdBuffer,
-                                             SYS_CONTEXT->maxCmdSize,
-                                             &SYS_CONTEXT->nextData);
+    rval = Tss2_MU_TPMT_TK_HASHCHECK_Marshal(validation, ctx->cmdBuffer,
+                                             ctx->maxCmdSize,
+                                             &ctx->nextData);
     if (rval)
         return rval;
 
-    SYS_CONTEXT->decryptAllowed = 1;
-    SYS_CONTEXT->encryptAllowed = 0;
-    SYS_CONTEXT->authAllowed = 1;
+    ctx->decryptAllowed = 1;
+    ctx->encryptAllowed = 0;
+    ctx->authAllowed = 1;
 
-    return CommonPrepareEpilogue(sysContext);
+    return CommonPrepareEpilogue(ctx);
 }
 
 TSS2_RC Tss2_Sys_Sign_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMT_SIGNATURE *signature)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
-    if (!sysContext)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonComplete(sysContext);
+    rval = CommonComplete(ctx);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPMT_SIGNATURE_Unmarshal(SYS_CONTEXT->cmdBuffer,
-                                            SYS_CONTEXT->maxCmdSize,
-                                            &SYS_CONTEXT->nextData, signature);
+    return Tss2_MU_TPMT_SIGNATURE_Unmarshal(ctx->cmdBuffer,
+                                            ctx->maxCmdSize,
+                                            &ctx->nextData, signature);
 }
 
 TSS2_RC Tss2_Sys_Sign(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    const TPM2B_DIGEST	*digest,
-    const TPMT_SIG_SCHEME	*inScheme,
-    const TPMT_TK_HASHCHECK	*validation,
+    const TPM2B_DIGEST *digest,
+    const TPMT_SIG_SCHEME *inScheme,
+    const TPMT_TK_HASHCHECK *validation,
     TPMT_SIGNATURE *signature,
     TSS2_SYS_RSP_AUTHS *rspAuthsArray)
 {
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!inScheme || !validation)
@@ -122,7 +125,7 @@ TSS2_RC Tss2_Sys_Sign(
     if (rval)
         return rval;
 
-    rval = CommonOneCall(sysContext, cmdAuthsArray, rspAuthsArray);
+    rval = CommonOneCall(ctx, cmdAuthsArray, rspAuthsArray);
     if (rval)
         return rval;
 
