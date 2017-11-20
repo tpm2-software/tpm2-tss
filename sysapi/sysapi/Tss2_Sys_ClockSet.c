@@ -61,6 +61,17 @@ TSS2_RC Tss2_Sys_ClockSet_Prepare(
     return CommonPrepareEpilogue(ctx);
 }
 
+TSS2_RC Tss2_Sys_ClockSet_Complete (
+    TSS2_SYS_CONTEXT *sysContext)
+{
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+
+    if (!ctx)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    return CommonComplete(ctx);
+}
+
 TSS2_RC Tss2_Sys_ClockSet(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION auth,
@@ -75,5 +86,9 @@ TSS2_RC Tss2_Sys_ClockSet(
     if (rval)
         return rval;
 
-    return CommonOneCallForNoResponseCmds(ctx, cmdAuthsArray, rspAuthsArray);
+    rval = CommonOneCall(ctx, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
+
+    return Tss2_Sys_ClockSet_Complete(sysContext);
 }

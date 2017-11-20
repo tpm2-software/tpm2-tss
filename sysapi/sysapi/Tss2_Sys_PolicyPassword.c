@@ -55,6 +55,17 @@ TSS2_RC Tss2_Sys_PolicyPassword_Prepare(
     return CommonPrepareEpilogue(ctx);
 }
 
+TSS2_RC Tss2_Sys_PolicyPassword_Complete (
+    TSS2_SYS_CONTEXT *sysContext)
+{
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+
+    if (!ctx)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    return CommonComplete(ctx);
+}
+
 TSS2_RC Tss2_Sys_PolicyPassword(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
@@ -68,5 +79,9 @@ TSS2_RC Tss2_Sys_PolicyPassword(
     if (rval)
         return rval;
 
-    return CommonOneCallForNoResponseCmds(ctx, cmdAuthsArray, rspAuthsArray);
+    rval = CommonOneCall(ctx, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
+
+    return Tss2_Sys_PolicyPassword_Complete(sysContext);
 }

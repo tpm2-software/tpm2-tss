@@ -28,6 +28,17 @@
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
 
+TSS2_RC Tss2_Sys_Finalize_Complete (
+    TSS2_SYS_CONTEXT *sysContext)
+{
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+
+    if (!ctx)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    return CommonComplete(ctx);
+}
+
 TSS2_RC Tss2_Sys_Finalize(
     TSS2_SYS_CONTEXT *sysContext)
 {
