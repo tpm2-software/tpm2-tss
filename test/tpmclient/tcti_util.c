@@ -35,7 +35,7 @@ InitSocketTctiContext (const TCTI_SOCKET_CONF  *device_conf,
 void TeardownTctiContext(TSS2_TCTI_CONTEXT **tctiContext)
 {
     if (*tctiContext != NULL) {
-        tss2_tcti_finalize( *tctiContext );
+        Tss2_Tcti_Finalize( *tctiContext );
         free (*tctiContext);
         *tctiContext = NULL;
     }

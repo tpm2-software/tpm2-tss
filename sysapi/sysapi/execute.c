@@ -40,7 +40,7 @@ TSS2_RC Tss2_Sys_ExecuteAsync(TSS2_SYS_CONTEXT *sysContext)
     if (ctx->previousStage != CMD_STAGE_PREPARE)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    rval = tss2_tcti_transmit(ctx->tctiContext,
+    rval = Tss2_Tcti_Transmit(ctx->tctiContext,
                               HOST_TO_BE_32(req_header_from_cxt(ctx)->commandSize),
                               ctx->cmdBuffer);
     if (rval)
@@ -65,7 +65,7 @@ TSS2_RC Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout)
 
     responseSize = ctx->maxCmdSize;
 
-    rval = tss2_tcti_receive(ctx->tctiContext, &responseSize,
+    rval = Tss2_Tcti_Receive(ctx->tctiContext, &responseSize,
                              ctx->cmdBuffer, timeout);
     if (rval)
         return rval;

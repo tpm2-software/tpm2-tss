@@ -85,21 +85,21 @@ typedef void TSS2_TCTI_POLL_HANDLE;
     ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->setLocality
 
 // Macros to simplify invocation of functions from the common TCTI structure
-#define tss2_tcti_transmit(tctiContext, size, command) \
+#define Tss2_Tcti_Transmit(tctiContext, size, command) \
     ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
     (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
         TSS2_TCTI_RC_ABI_MISMATCH: \
     (TSS2_TCTI_TRANSMIT(tctiContext) == NULL) ? \
         TSS2_TCTI_RC_NOT_IMPLEMENTED: \
     TSS2_TCTI_TRANSMIT(tctiContext)(tctiContext, size, command))
-#define tss2_tcti_receive(tctiContext, size, response, timeout) \
+#define Tss2_Tcti_Receive(tctiContext, size, response, timeout) \
     ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
     (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
         TSS2_TCTI_RC_ABI_MISMATCH: \
     (TSS2_TCTI_RECEIVE(tctiContext) == NULL) ? \
         TSS2_TCTI_RC_NOT_IMPLEMENTED: \
     TSS2_TCTI_RECEIVE(tctiContext)(tctiContext, size, response, timeout))
-#define tss2_tcti_finalize(tctiContext) \
+#define Tss2_Tcti_Finalize(tctiContext) \
     do { \
         if ((tctiContext != NULL) && \
             (TSS2_TCTI_VERSION(tctiContext) >= 1) && \
@@ -108,27 +108,37 @@ typedef void TSS2_TCTI_POLL_HANDLE;
             TSS2_TCTI_FINALIZE(tctiContext)(tctiContext); \
         } \
     } while (0)
-#define tss2_tcti_cancel(tctiContext) \
+#define Tss2_Tcti_Cancel(tctiContext) \
     ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
     (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
         TSS2_TCTI_RC_ABI_MISMATCH: \
     (TSS2_TCTI_CANCEL(tctiContext) == NULL) ? \
         TSS2_TCTI_RC_NOT_IMPLEMENTED: \
     TSS2_TCTI_CANCEL(tctiContext)(tctiContext))
-#define tss2_tcti_get_poll_handles(tctiContext, handles, num_handles) \
+#define Tss2_Tcti_GetPollHandles(tctiContext, handles, num_handles) \
     ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
     (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
         TSS2_TCTI_RC_ABI_MISMATCH: \
     (TSS2_TCTI_GET_POLL_HANDLES(tctiContext) == NULL) ? \
         TSS2_TCTI_RC_NOT_IMPLEMENTED: \
     TSS2_TCTI_GET_POLL_HANDLES(tctiContext)(tctiContext, handles, num_handles))
-#define tss2_tcti_set_locality(tctiContext, locality) \
+#define Tss2_Tcti_SetLocality(tctiContext, locality) \
     ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
     (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
         TSS2_TCTI_RC_ABI_MISMATCH: \
     (TSS2_TCTI_SET_LOCALITY(tctiContext) == NULL) ? \
         TSS2_TCTI_RC_NOT_IMPLEMENTED: \
     TSS2_TCTI_SET_LOCALITY(tctiContext)(tctiContext, locality))
+
+/* The following defines are kept for compatibility reasons.
+ * They are however deprecated.
+ * TODO: Must be removed before release */
+#define tss2_tcti_transmit Tss2_Tcti_Transmit
+#define tss2_tcti_receive Tss2_Tcti_Receive
+#define tss2_tcti_finalize Tss2_Tcti_Finalize
+#define tss2_tcti_cancel Tss2_Tcti_Cancel
+#define tss2_tcti_get_poll_handles Tss2_Tcti_GetPollHandles
+#define tss2_tcti_set_locality Tss2_Tcti_SetLocality
 
 typedef struct TSS2_TCTI_OPAQUE_CONTEXT_BLOB TSS2_TCTI_CONTEXT;
 

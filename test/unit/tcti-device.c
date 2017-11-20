@@ -193,7 +193,7 @@ tcti_device_teardown (void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = *state;
 
-    tss2_tcti_finalize (ctx);
+    Tss2_Tcti_Finalize (ctx);
     free (ctx);
     return 0;
 }
@@ -211,7 +211,7 @@ tcti_device_receive_success (void **state)
     TSS2_RC rc;
 
     will_return (__wrap_read, data->data_size);
-    rc = tss2_tcti_receive (data->ctx,
+    rc = Tss2_Tcti_Receive (data->ctx,
                             &data->buffer_size,
                             data->buffer,
                             TSS2_TCTI_TIMEOUT_BLOCK);
@@ -230,7 +230,7 @@ tcti_device_transmit_success (void **state)
     TSS2_RC rc;
 
     will_return (__wrap_write, data->buffer_size);
-    rc = tss2_tcti_transmit (data->ctx,
+    rc = Tss2_Tcti_Transmit (data->ctx,
                              data->buffer_size,
                              data->buffer);
     assert_true (rc == TSS2_RC_SUCCESS);
