@@ -68,12 +68,12 @@ create_primary_rsa_2048_aes_128_cfb (
     }
     in_public.publicArea.type = TPM2_ALG_RSA;
     in_public.publicArea.nameAlg = TPM2_ALG_SHA256;
-    in_public.publicArea.objectAttributes.restricted = 1;
-    in_public.publicArea.objectAttributes.userWithAuth = 1;
-    in_public.publicArea.objectAttributes.decrypt = 1;
-    in_public.publicArea.objectAttributes.fixedTPM = 1;
-    in_public.publicArea.objectAttributes.fixedParent = 1;
-    in_public.publicArea.objectAttributes.sensitiveDataOrigin = 1;
+    in_public.publicArea.objectAttributes |= TPMA_OBJECT_RESTRICTED;
+    in_public.publicArea.objectAttributes |= TPMA_OBJECT_USERWITHAUTH;
+    in_public.publicArea.objectAttributes |= TPMA_OBJECT_DECRYPT;
+    in_public.publicArea.objectAttributes |= TPMA_OBJECT_FIXEDTPM;
+    in_public.publicArea.objectAttributes |= TPMA_OBJECT_FIXEDPARENT;
+    in_public.publicArea.objectAttributes |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
     in_public.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM2_ALG_AES;
     in_public.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
     in_public.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM2_ALG_CFB;
@@ -116,13 +116,12 @@ create_aes_128_cfb (
     TPM2B_PUBLIC            in_public       = {
             .publicArea.type = TPM2_ALG_SYMCIPHER,
             .publicArea.nameAlg = TPM2_ALG_SHA256,
-            .publicArea.objectAttributes = {
-                .decrypt = 1,
-                .fixedTPM = 1,
-                .fixedParent = 1,
-                .sensitiveDataOrigin = 1,
-                .sign = 1,
-                .userWithAuth = 1, },
+            .publicArea.objectAttributes = TPMA_OBJECT_DECRYPT |
+                                           TPMA_OBJECT_FIXEDTPM |
+                                           TPMA_OBJECT_FIXEDPARENT |
+                                           TPMA_OBJECT_SENSITIVEDATAORIGIN |
+                                           TPMA_OBJECT_SIGN |
+                                           TPMA_OBJECT_USERWITHAUTH,
             .publicArea.parameters.symDetail.sym = {
                 .algorithm = TPM2_ALG_AES,
                 .keyBits.sym = 128,

@@ -44,8 +44,8 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 
     inPublic.publicArea.nameAlg = TPM2_ALG_SHA1;
     inPublic.publicArea.type = TPM2_ALG_KEYEDHASH;
-    inPublic.publicArea.objectAttributes.sign = 1;
-    inPublic.publicArea.objectAttributes.sensitiveDataOrigin = 1;
+    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_SIGN;
+    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
     inPublic.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM2_ALG_HMAC;
     inPublic.publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM2_ALG_SHA1;
 

@@ -62,12 +62,12 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     in_public.publicArea.type = TPM2_ALG_RSA;
     in_public.publicArea.nameAlg = TPM2_ALG_SHA256;
     *(UINT32 *)&(in_public.publicArea.objectAttributes) = 0;
-    in_public.publicArea.objectAttributes.restricted = 1;
-    in_public.publicArea.objectAttributes.userWithAuth = 1;
-    in_public.publicArea.objectAttributes.decrypt = 1;
-    in_public.publicArea.objectAttributes.fixedTPM = 1;
-    in_public.publicArea.objectAttributes.fixedParent = 1;
-    in_public.publicArea.objectAttributes.sensitiveDataOrigin = 1;
+    in_public.publicArea.objectAttributes |= TPMA_OBJECT_RESTRICTED;
+    in_public.publicArea.objectAttributes |= TPMA_OBJECT_USERWITHAUTH;
+    in_public.publicArea.objectAttributes |= TPMA_OBJECT_DECRYPT;
+    in_public.publicArea.objectAttributes |= TPMA_OBJECT_FIXEDTPM;
+    in_public.publicArea.objectAttributes |= TPMA_OBJECT_FIXEDPARENT;
+    in_public.publicArea.objectAttributes |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
 
     in_public.publicArea.authPolicy.size = 0;
 
@@ -100,13 +100,12 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 
     // First clear attributes bit field.
     *(UINT32 *)&(in_public.publicArea.objectAttributes) = 0;
-    in_public.publicArea.objectAttributes.restricted = 0;
-    in_public.publicArea.objectAttributes.userWithAuth = 1;
-    in_public.publicArea.objectAttributes.decrypt = 1;
-    in_public.publicArea.objectAttributes.sign = 1;
-    in_public.publicArea.objectAttributes.fixedTPM = 1;
-    in_public.publicArea.objectAttributes.fixedParent = 1;
-    in_public.publicArea.objectAttributes.sensitiveDataOrigin = 1;
+    in_public.publicArea.objectAttributes &= ~TPMA_OBJECT_RESTRICTED;
+    in_public.publicArea.objectAttributes |= TPMA_OBJECT_USERWITHAUTH;
+    in_public.publicArea.objectAttributes |= TPMA_OBJECT_DECRYPT;
+    in_public.publicArea.objectAttributes |= TPMA_OBJECT_FIXEDTPM;
+    in_public.publicArea.objectAttributes |= TPMA_OBJECT_FIXEDPARENT;
+    in_public.publicArea.objectAttributes |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
 
     outside_info.size = 0;
     out_public.size = 0;
