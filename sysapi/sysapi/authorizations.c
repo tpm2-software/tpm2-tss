@@ -73,10 +73,10 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
         authSize += sizeof(UINT8);
         authSize += sizeof(UINT16) + cmdAuthsArray->cmdAuths[i]->hmac.size;
 
-        if (cmdAuthsArray->cmdAuths[i]->sessionAttributes.decrypt)
+        if (cmdAuthsArray->cmdAuths[i]->sessionAttributes & TPMA_SESSION_DECRYPT)
             ctx->decryptSession = 1;
 
-        if (cmdAuthsArray->cmdAuths[i]->sessionAttributes.encrypt)
+        if (cmdAuthsArray->cmdAuths[i]->sessionAttributes & TPMA_SESSION_ENCRYPT)
             ctx->encryptSession = 1;
     }
 

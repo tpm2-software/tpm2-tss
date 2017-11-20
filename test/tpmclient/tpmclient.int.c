@@ -944,11 +944,11 @@ void TestNV()
     *(UINT32 *)&( publicInfo.nvPublic.attributes ) = 0;
 
     // Now set the attributes.
-    publicInfo.nvPublic.attributes.TPMA_NV_PPREAD = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_PPWRITE = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_WRITE_STCLEAR = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_PLATFORMCREATE = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_ORDERLY = 1;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PPREAD;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PPWRITE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_WRITE_STCLEAR;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_ORDERLY;
     publicInfo.nvPublic.authPolicy.size = 0;
     publicInfo.nvPublic.dataSize = 32;
 
@@ -1031,12 +1031,12 @@ void TestNV()
     rval = Tss2_Sys_NV_UndefineSpace( sysContext, TPM2_RH_PLATFORM, TPM20_INDEX_TEST1, &sessionsData, 0 );
     CheckPassed( rval );
 
-    publicInfo.nvPublic.attributes.TPMA_NV_PPREAD = 0;
-    publicInfo.nvPublic.attributes.TPMA_NV_PPWRITE = 0;
-    publicInfo.nvPublic.attributes.TPMA_NV_OWNERREAD = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_OWNERWRITE = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_PLATFORMCREATE = 0;
-    publicInfo.nvPublic.attributes.TPMA_NV_ORDERLY = 1;
+    publicInfo.nvPublic.attributes &= ~TPMA_NV_TPMA_NV_PPREAD;
+    publicInfo.nvPublic.attributes &= ~TPMA_NV_TPMA_NV_PPWRITE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_OWNERREAD;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_OWNERWRITE;
+    publicInfo.nvPublic.attributes &= ~TPMA_NV_TPMA_NV_PLATFORMCREATE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_ORDERLY;
     publicInfo.nvPublic.nvIndex = TPM20_INDEX_TEST2;
     rval = Tss2_Sys_NV_DefineSpace( sysContext, TPM2_RH_OWNER, &sessionsData, &nvAuth, &publicInfo, 0 );
     CheckPassed( rval );
@@ -1104,12 +1104,12 @@ void TestHierarchyControl()
     *(UINT32 *)&( publicInfo.nvPublic.attributes ) = 0;
 
     // Now set the attributes.
-    publicInfo.nvPublic.attributes.TPMA_NV_PPREAD = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_PPWRITE = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_PPWRITE = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_WRITE_STCLEAR = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_PLATFORMCREATE = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_ORDERLY = 1;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PPREAD;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PPWRITE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PPWRITE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_WRITE_STCLEAR;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_ORDERLY;
     publicInfo.nvPublic.authPolicy.size = 0;
     publicInfo.nvPublic.dataSize = 32;
 
@@ -1211,12 +1211,12 @@ void TestCreate(){
 
     // First clear attributes bit field.
     *(UINT32 *)&( inPublic.publicArea.objectAttributes) = 0;
-    inPublic.publicArea.objectAttributes.restricted = 1;
-    inPublic.publicArea.objectAttributes.userWithAuth = 1;
-    inPublic.publicArea.objectAttributes.decrypt = 1;
-    inPublic.publicArea.objectAttributes.fixedTPM = 1;
-    inPublic.publicArea.objectAttributes.fixedParent = 1;
-    inPublic.publicArea.objectAttributes.sensitiveDataOrigin = 1;
+    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_RESTRICTED;
+    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_USERWITHAUTH;
+    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_DECRYPT;
+    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_FIXEDTPM;
+    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_FIXEDPARENT;
+    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
 
     inPublic.publicArea.authPolicy.size = 0;
 
@@ -1288,8 +1288,8 @@ void TestCreate(){
     sessionData.hmac.buffer[1] = 0xff;
 
     inPublic.publicArea.type = TPM2_ALG_KEYEDHASH;
-    inPublic.publicArea.objectAttributes.decrypt = 0;
-    inPublic.publicArea.objectAttributes.sign = 1;
+    inPublic.publicArea.objectAttributes &= ~TPMA_OBJECT_DECRYPT;
+    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_SIGN;
 
     inPublic.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM2_ALG_HMAC;
     inPublic.publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM2_ALG_SHA1;
@@ -1375,7 +1375,7 @@ TSS2_RC DefineNvIndex( TPMI_RH_PROVISION authHandle, TPMI_SH_AUTH_SESSION sessio
     // Init session attributes
     *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
 
-    attributes.TPMA_NV_ORDERLY = 1;
+    attributes |= TPMA_NV_TPMA_NV_ORDERLY;
 
     // Init public info structure.
     publicInfo.nvPublic.attributes = attributes;
@@ -1467,7 +1467,7 @@ TSS2_RC CreateNVIndex( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TP
 
     // Send PolicyLocality command
     *(UINT8 *)( (void *)&locality ) = 0;
-    locality.TPM2_LOC_THREE = 1;
+    locality |= TPMA_LOCALITY_TPM2_LOC_THREE;
     rval = Tss2_Sys_PolicyLocality( sysContext, (*policySession)->sessionHandle,
             0, locality, 0 );
     CheckPassed( rval );
@@ -1482,9 +1482,9 @@ TSS2_RC CreateNVIndex( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TP
 
     // Now set the attributes.
     *(UINT32 *)( (void *)&nvAttributes ) = 0;
-    nvAttributes.TPMA_NV_POLICYREAD = 1;
-    nvAttributes.TPMA_NV_POLICYWRITE = 1;
-    nvAttributes.TPMA_NV_PLATFORMCREATE = 1;
+    nvAttributes |= TPMA_NV_TPMA_NV_POLICYREAD;
+    nvAttributes |= TPMA_NV_TPMA_NV_POLICYWRITE;
+    nvAttributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
 
     rval = DefineNvIndex( TPM2_RH_PLATFORM, TPM2_RS_PW, &nvAuth, policyDigest,
             TPM20_INDEX_PASSWORD_TEST, TPM2_ALG_SHA256, nvAttributes, 32  );
@@ -1524,7 +1524,7 @@ TSS2_RC TestLocality( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession )
     sessionsData.cmdAuths[0]->hmac.size = 0;
 
     *(UINT8 *)( (void *)&( sessionsData.cmdAuths[0]->sessionAttributes ) ) = 0;
-     sessionsData.cmdAuths[0]->sessionAttributes.continueSession = 1;
+     sessionsData.cmdAuths[0]->sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
 
     rval = SetLocality( sysContext, 2 );
     CheckPassed( rval );
@@ -1664,12 +1664,12 @@ TSS2_RC CreateDataBlob( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, T
     inPublic.publicArea.type = TPM2_ALG_RSA;
     inPublic.publicArea.nameAlg = TPM2_ALG_SHA1;
     *(UINT32 *)&( inPublic.publicArea.objectAttributes) = 0;
-    inPublic.publicArea.objectAttributes.restricted = 1;
-    inPublic.publicArea.objectAttributes.userWithAuth = 1;
-    inPublic.publicArea.objectAttributes.decrypt = 1;
-    inPublic.publicArea.objectAttributes.fixedTPM = 1;
-    inPublic.publicArea.objectAttributes.fixedParent = 1;
-    inPublic.publicArea.objectAttributes.sensitiveDataOrigin = 1;
+    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_RESTRICTED;
+    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_USERWITHAUTH;
+    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_DECRYPT;
+    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_FIXEDTPM;
+    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_FIXEDPARENT;
+    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
     inPublic.publicArea.authPolicy.size = 0;
     inPublic.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM2_ALG_AES;
     inPublic.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
@@ -1701,9 +1701,9 @@ TSS2_RC CreateDataBlob( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, T
 
     inPublic.publicArea.type = TPM2_ALG_KEYEDHASH;
     inPublic.publicArea.nameAlg = TPM2_ALG_SHA256;
-    inPublic.publicArea.objectAttributes.restricted = 0;
-    inPublic.publicArea.objectAttributes.decrypt = 0;
-    inPublic.publicArea.objectAttributes.sensitiveDataOrigin = 0;
+    inPublic.publicArea.objectAttributes &= ~TPMA_OBJECT_RESTRICTED;
+    inPublic.publicArea.objectAttributes &= ~TPMA_OBJECT_DECRYPT;
+    inPublic.publicArea.objectAttributes &= ~TPMA_OBJECT_SENSITIVEDATAORIGIN;
     CopySizedByteBuffer((TPM2B *)&inPublic.publicArea.authPolicy, (TPM2B *)policyDigest);
     inPublic.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM2_ALG_NULL;
     inPublic.publicArea.unique.keyedHash.size = 0;
@@ -1737,7 +1737,7 @@ TSS2_RC AuthValueUnseal( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession )
     cmdAuth.sessionHandle = policySession->sessionHandle;
     cmdAuth.nonce.size = 0;
     *( (UINT8 *)((void *)&cmdAuth.sessionAttributes ) ) = 0;
-    cmdAuth.sessionAttributes.continueSession = 1;
+    cmdAuth.sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
     cmdAuth.hmac.size = 0;
 
     // Now try to unseal the blob without setting the HMAC.
@@ -1798,7 +1798,7 @@ TSS2_RC PasswordUnseal( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession )
     cmdAuth.sessionHandle = policySession->sessionHandle;
     cmdAuth.nonce.size = 0;
     *( (UINT8 *)((void *)&cmdAuth.sessionAttributes ) ) = 0;
-    cmdAuth.sessionAttributes.continueSession = 1;
+    cmdAuth.sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
     cmdAuth.hmac.size = 0;
 
     // Now try to unseal the blob without setting the password.
@@ -2195,13 +2195,13 @@ void ProvisionOtherIndices()
     *(UINT32 *)&( publicInfo.nvPublic.attributes ) = 0;
 
     // Now set the attributes.
-    publicInfo.nvPublic.attributes.TPMA_NV_AUTHREAD = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_AUTHWRITE = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_PLATFORMCREATE = 1;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_AUTHREAD;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_AUTHWRITE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
     // Following commented out for convenience during development.
-    // publicInfo.nvPublic.attributes.TPMA_NV_POLICY_DELETE = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_WRITEDEFINE = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_ORDERLY = 1;
+    // publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_POLICY_DELETE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_WRITEDEFINE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_ORDERLY;
 
     publicInfo.nvPublic.authPolicy.size = 0;
     publicInfo.nvPublic.dataSize = NV_PS_INDEX_SIZE;
@@ -2234,8 +2234,8 @@ TSS2_RC InitNvAuxPolicySession( TPMI_SH_AUTH_SESSION *nvAuxPolicySessionHandle )
 
     // 2.  PolicyLocality(3)
     *(UINT8 *)((void *)&locality) = 0;
-    locality.TPM2_LOC_THREE = 1;
-    locality.TPM2_LOC_FOUR = 1;
+    locality |= TPMA_LOCALITY_TPM2_LOC_THREE;
+    locality |= TPMA_LOCALITY_TPM2_LOC_FOUR;
     rval = Tss2_Sys_PolicyLocality( sysContext, *nvAuxPolicySessionHandle, 0, locality, 0 );
 
     return( rval );
@@ -2314,9 +2314,9 @@ void ProvisionNvAux()
     *(UINT32 *)&( publicInfo.nvPublic.attributes ) = 0;
 
     // Now set the attributes.
-    publicInfo.nvPublic.attributes.TPMA_NV_AUTHREAD = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_POLICYWRITE = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_PLATFORMCREATE = 1;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_AUTHREAD;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_POLICYWRITE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
     // Following commented out for convenience during development.
     // publicInfo.nvPublic.attributes.TPMA_NV_POLICY_DELETE = 1;
 
@@ -2353,7 +2353,7 @@ void TpmAuxWrite( int locality)
     nullSessionData.sessionHandle = nvAuxPolicyAuthHandle;
 
     // Make sure that session terminates after NVWrite completes.
-    nullSessionData.sessionAttributes.continueSession = 0;
+    nullSessionData.sessionAttributes &= ~TPMA_SESSION_CONTINUESESSION;
 
     rval = SetLocality( sysContext, locality );
     CheckPassed( rval );
@@ -2394,7 +2394,7 @@ void TpmAuxReadWriteTest()
 
     DebugPrintf( NO_PREFIX, "TPM AUX READ/WRITE TEST\n" );
 
-    nullSessionData.sessionAttributes.continueSession = 0;
+    nullSessionData.sessionAttributes &= ~TPMA_SESSION_CONTINUESESSION;
 
     // Try writing it from all localities.  Only locality 3 should work.
     for( testLocality = 0; testLocality < 5; testLocality++ )
@@ -2620,7 +2620,7 @@ void TestUnseal()
     inPublic.publicArea.nameAlg = TPM2_ALG_SHA1;
 
     *(UINT32 *)&( inPublic.publicArea.objectAttributes) = 0;
-    inPublic.publicArea.objectAttributes.userWithAuth = 1;
+    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_USERWITHAUTH;
 
     inPublic.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM2_ALG_NULL;
 
@@ -2717,10 +2717,10 @@ void CreatePasswordTestNV( TPMI_RH_NV_INDEX nvIndex, char * password )
     *(UINT32 *)&( publicInfo.nvPublic.attributes ) = 0;
 
     // Now set the attributes.
-    publicInfo.nvPublic.attributes.TPMA_NV_AUTHREAD = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_AUTHWRITE = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_PLATFORMCREATE = 1;
-    publicInfo.nvPublic.attributes.TPMA_NV_ORDERLY = 1;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_AUTHREAD;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_AUTHWRITE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_ORDERLY;
     publicInfo.nvPublic.authPolicy.size = 0;
     publicInfo.nvPublic.dataSize = 32;
 
@@ -2898,9 +2898,9 @@ void SimplePolicyTest()
     // Now set the NV index's attributes:
     // policyRead, authWrite, and platormCreate.
     *(UINT32 *)( (void *)&nvAttributes ) = 0;
-    nvAttributes.TPMA_NV_POLICYREAD = 1;
-    nvAttributes.TPMA_NV_POLICYWRITE = 1;
-    nvAttributes.TPMA_NV_PLATFORMCREATE = 1;
+    nvAttributes |= TPMA_NV_TPMA_NV_POLICYREAD;
+    nvAttributes |= TPMA_NV_TPMA_NV_POLICYWRITE;
+    nvAttributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
 
     // Create the NV index.
     rval = DefineNvIndex( TPM2_RH_PLATFORM, TPM2_RS_PW,
@@ -2977,7 +2977,7 @@ void SimplePolicyTest()
     nvCmdAuths.cmdAuths[0]->nonce.buffer[0] = 0xa5;
     *( (UINT8 *)((void *)&sessionAttributes ) ) = 0;
     nvCmdAuths.cmdAuths[0]->sessionAttributes = sessionAttributes;
-    nvCmdAuths.cmdAuths[0]->sessionAttributes.continueSession = 1;
+    nvCmdAuths.cmdAuths[0]->sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
 
     // Roll nonces for command
     RollNonces( nvSession, &nvCmdAuths.cmdAuths[0]->nonce );
@@ -3025,7 +3025,7 @@ void SimplePolicyTest()
     RollNonces( nvSession, &nvCmdAuths.cmdAuths[0]->nonce );
 
     // End the session after next command.
-    nvCmdAuths.cmdAuths[0]->sessionAttributes.continueSession = 0;
+    nvCmdAuths.cmdAuths[0]->sessionAttributes &= ~TPMA_SESSION_CONTINUESESSION;
 
     // Complete command authorization area, by computing
     // HMAC and setting it in nvCmdAuths.
@@ -3137,9 +3137,9 @@ void SimpleHmacTest()
     // Now set the NV index's attributes:
     // policyRead, authWrite, and platormCreate.
     *(UINT32 *)( (void *)&nvAttributes ) = 0;
-    nvAttributes.TPMA_NV_AUTHREAD = 1;
-    nvAttributes.TPMA_NV_AUTHWRITE = 1;
-    nvAttributes.TPMA_NV_PLATFORMCREATE = 1;
+    nvAttributes |= TPMA_NV_TPMA_NV_AUTHREAD;
+    nvAttributes |= TPMA_NV_TPMA_NV_AUTHWRITE;
+    nvAttributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
 
     // Create the NV index.
     rval = DefineNvIndex( TPM2_RH_PLATFORM, TPM2_RS_PW,
@@ -3208,7 +3208,7 @@ void SimpleHmacTest()
     nvCmdAuths.cmdAuths[0]->nonce.buffer[0] = 0xa5;
     *( (UINT8 *)(&sessionAttributes ) ) = 0;
     nvCmdAuths.cmdAuths[0]->sessionAttributes = sessionAttributes;
-    nvCmdAuths.cmdAuths[0]->sessionAttributes.continueSession = 1;
+    nvCmdAuths.cmdAuths[0]->sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
 
     // Roll nonces for command
     RollNonces( nvSession, &nvCmdAuths.cmdAuths[0]->nonce );
@@ -3253,7 +3253,7 @@ void SimpleHmacTest()
     RollNonces( nvSession, &nvCmdAuths.cmdAuths[0]->nonce );
 
     // End the session after next command.
-    nvCmdAuths.cmdAuths[0]->sessionAttributes.continueSession = 0;
+    nvCmdAuths.cmdAuths[0]->sessionAttributes &= ~TPMA_SESSION_CONTINUESESSION;
 
     // Complete command authorization area, by computing
     // HMAC and setting it in nvCmdAuths.
@@ -3441,15 +3441,15 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
     *(UINT32 *)( &nvAttributes ) = 0;
     if( hmacTest )
     {
-        nvAttributes.TPMA_NV_AUTHREAD = 1;
-        nvAttributes.TPMA_NV_AUTHWRITE = 1;
+        nvAttributes |= TPMA_NV_TPMA_NV_AUTHREAD;
+        nvAttributes |= TPMA_NV_TPMA_NV_AUTHWRITE;
     }
     else
     {
-        nvAttributes.TPMA_NV_POLICYREAD = 1;
-        nvAttributes.TPMA_NV_POLICYWRITE = 1;
+        nvAttributes |= TPMA_NV_TPMA_NV_POLICYREAD;
+        nvAttributes |= TPMA_NV_TPMA_NV_POLICYWRITE;
     }
-    nvAttributes.TPMA_NV_PLATFORMCREATE = 1;
+    nvAttributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
 
     // Create the NV index.
     rval = DefineNvIndex( TPM2_RH_PLATFORM, TPM2_RS_PW,
@@ -3535,7 +3535,7 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
     nvCmdAuths.cmdAuths[0]->nonce.buffer[0] = 0xa5;
     *( (UINT8 *)(&sessionAttributes ) ) = 0;
     nvCmdAuths.cmdAuths[0]->sessionAttributes = sessionAttributes;
-    nvCmdAuths.cmdAuths[0]->sessionAttributes.continueSession = 1;
+    nvCmdAuths.cmdAuths[0]->sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
 
     // Roll nonces for command
     RollNonces( nvSession, &nvCmdAuths.cmdAuths[0]->nonce );
@@ -3588,7 +3588,7 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
     RollNonces( nvSession, &nvCmdAuths.cmdAuths[0]->nonce );
 
     // End the session after next command.
-    nvCmdAuths.cmdAuths[0]->sessionAttributes.continueSession = 0;
+    nvCmdAuths.cmdAuths[0]->sessionAttributes &= ~TPMA_SESSION_CONTINUESESSION;
 
     // Complete command authorization area, by computing
     // HMAC and setting it in nvCmdAuths.
@@ -3702,9 +3702,9 @@ void TestEncryptDecryptSession()
 
     // Create NV index with empty auth value.
     *(UINT32 *)( (void *)&nvAttributes ) = 0;
-    nvAttributes.TPMA_NV_AUTHREAD = 1;
-    nvAttributes.TPMA_NV_AUTHWRITE = 1;
-    nvAttributes.TPMA_NV_PLATFORMCREATE = 1;
+    nvAttributes |= TPMA_NV_TPMA_NV_AUTHREAD;
+    nvAttributes |= TPMA_NV_TPMA_NV_AUTHWRITE;
+    nvAttributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
 
     // No authorization required.
     authPolicy.size = 0;
@@ -3809,9 +3809,9 @@ void TestEncryptDecryptSession()
         *( (UINT8 *)((void *)&sessionAttributes ) ) = 0;
         decryptEncryptSessionCmdAuth.sessionAttributes =
                 sessionAttributes;
-        decryptEncryptSessionCmdAuth.sessionAttributes.continueSession
-                = 1;
-        decryptEncryptSessionCmdAuth.sessionAttributes.decrypt = 1;
+        decryptEncryptSessionCmdAuth.sessionAttributes |= 
+                TPMA_SESSION_CONTINUESESSION;
+        decryptEncryptSessionCmdAuth.sessionAttributes |= TPMA_SESSION_DECRYPT;
         decryptEncryptSessionCmdAuth.hmac.size = 0;
 
         rval = Tss2_Sys_SetCmdAuths( sysContext, &nvRdWrCmdAuths );
@@ -3910,10 +3910,10 @@ void TestEncryptDecryptSession()
         RollNonces( encryptDecryptSession,
                 &decryptEncryptSessionCmdAuth.nonce );
 
-        decryptEncryptSessionCmdAuth.sessionAttributes.decrypt = 0;
-        decryptEncryptSessionCmdAuth.sessionAttributes.encrypt = 1;
-        decryptEncryptSessionCmdAuth.sessionAttributes.continueSession =
-                1;
+        decryptEncryptSessionCmdAuth.sessionAttributes &= ~TPMA_SESSION_DECRYPT;
+        decryptEncryptSessionCmdAuth.sessionAttributes |= TPMA_SESSION_ENCRYPT;
+        decryptEncryptSessionCmdAuth.sessionAttributes |= 
+                TPMA_SESSION_CONTINUESESSION;
 
         rval = Tss2_Sys_SetCmdAuths( sysContext, &nvRdWrCmdAuths );
         CheckPassed( rval );
@@ -4261,9 +4261,9 @@ void GetSetEncryptParamTests()
 
     // Now set the attributes.
     *(UINT32 *)( (void *)&nvAttributes ) = 0;
-    nvAttributes.TPMA_NV_AUTHREAD = 1;
-    nvAttributes.TPMA_NV_AUTHWRITE = 1;
-    nvAttributes.TPMA_NV_PLATFORMCREATE = 1;
+    nvAttributes |= TPMA_NV_TPMA_NV_AUTHREAD;
+    nvAttributes |= TPMA_NV_TPMA_NV_AUTHWRITE;
+    nvAttributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
 
     rval = DefineNvIndex( TPM2_RH_PLATFORM, TPM2_RS_PW, &nvAuth, &authPolicy,
             TPM20_INDEX_PASSWORD_TEST, TPM2_ALG_SHA1, nvAttributes, 32  );

@@ -72,23 +72,23 @@ TSS2_RC Tss2_MU_##type##_Marshal(type src, uint8_t buffer[], \
          (uintptr_t)buffer, \
          local_offset); \
 \
-    switch (sizeof(src.val)) { \
+    switch (sizeof(src)) { \
         case 1: \
             break; \
         case 2: \
-            src.val = HOST_TO_BE_16(src.val); \
+            src = HOST_TO_BE_16(src); \
             break; \
         case 4: \
-            src.val = HOST_TO_BE_32(src.val); \
+            src = HOST_TO_BE_32(src); \
             break; \
         case 8: \
-            src.val = HOST_TO_BE_64(src.val); \
+            src = HOST_TO_BE_64(src); \
             break; \
 \
     } \
-    memcpy (&buffer [local_offset], &src, sizeof(src.val)); \
+    memcpy (&buffer [local_offset], &src, sizeof(src)); \
     if (offset != NULL) { \
-        *offset = local_offset + sizeof (src.val); \
+        *offset = local_offset + sizeof (src); \
         LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
     } \
 \
@@ -137,24 +137,24 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     memcpy (&tmp, &buffer [local_offset], sizeof (tmp)); \
 \
-    switch (sizeof(tmp.val)) { \
+    switch (sizeof(tmp)) { \
         case 1: \
-            dest->val = tmp.val; \
+            *dest = tmp; \
             break; \
         case 2: \
-            dest->val = BE_TO_HOST_16(tmp.val); \
+            *dest = BE_TO_HOST_16(tmp); \
             break; \
         case 4: \
-            dest->val = BE_TO_HOST_32(tmp.val); \
+            *dest = BE_TO_HOST_32(tmp); \
             break; \
         case 8: \
-            dest->val = BE_TO_HOST_64(tmp.val); \
+            *dest = BE_TO_HOST_64(tmp); \
             break; \
 \
     } \
 \
     if (offset != NULL) { \
-        *offset = local_offset + sizeof (dest->val); \
+        *offset = local_offset + sizeof (*dest); \
         LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
     } \
     return TSS2_RC_SUCCESS; \

@@ -27,8 +27,8 @@ tpms_marshal_success(void **state)
     TSS2_RC rc;
 
     alg.alg = TPM2_ALG_ECDSA;
-    alg.algProperties.asymmetric = 1;
-    alg.algProperties.signing = 1;
+    alg.algProperties |= TPMA_ALGORITHM_ASYMMETRIC;
+    alg.algProperties |= TPMA_ALGORITHM_SIGNING;
     alg_ptr = (uint16_t *)buffer;
     alg_properties_ptr = (uint32_t *)(buffer + sizeof(uint16_t));
     rc = Tss2_MU_TPMS_ALG_PROPERTY_Marshal(&alg, buffer, buffer_size, NULL);
@@ -72,8 +72,8 @@ tpms_marshal_success_offset(void **state)
     TSS2_RC rc;
 
     alg.alg = TPM2_ALG_ECDSA;
-    alg.algProperties.asymmetric = 1;
-    alg.algProperties.signing = 1;
+    alg.algProperties |= TPMA_ALGORITHM_ASYMMETRIC;
+    alg.algProperties |= TPMA_ALGORITHM_SIGNING;
     alg_ptr = (uint16_t *)(buffer + 10);
     alg_properties_ptr = (uint32_t *)(buffer + sizeof(*alg_ptr) + 10);
 
@@ -113,8 +113,8 @@ tpms_marshal_buffer_null_with_offset(void **state)
     TSS2_RC rc;
 
     alg.alg = TPM2_ALG_ECDSA;
-    alg.algProperties.asymmetric = 1;
-    alg.algProperties.signing = 1;
+    alg.algProperties |= TPMA_ALGORITHM_ASYMMETRIC;
+    alg.algProperties |= TPMA_ALGORITHM_SIGNING;
 
     rc = Tss2_MU_TPMS_ALG_PROPERTY_Marshal(&alg, NULL, sizeof(alg), &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
@@ -162,8 +162,8 @@ tpms_marshal_buffer_size_lt_data_nad_lt_offset(void **state)
     TSS2_RC rc;
 
     alg.alg = TPM2_ALG_ECDSA;
-    alg.algProperties.asymmetric = 1;
-    alg.algProperties.signing = 1;
+    alg.algProperties |= TPMA_ALGORITHM_ASYMMETRIC;
+    alg.algProperties |= TPMA_ALGORITHM_SIGNING;
     rc = Tss2_MU_TPMS_ALG_PROPERTY_Marshal(&alg, buffer, buffer_size, &offset);
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 10);
@@ -207,7 +207,7 @@ tpms_unmarshal_success(void **state)
     rc = Tss2_MU_TPMS_ALG_PROPERTY_Unmarshal(buffer, buffer_size, &offset, &alg);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (alg.alg, alg_expected);
-    assert_int_equal (alg.algProperties.val, algprop_expected);
+    assert_int_equal (alg.algProperties, algprop_expected);
 
     ptr2 = (TPMS_CAPABILITY_DATA *)(buffer + sizeof(alg));
     ptr2->capability = HOST_TO_BE_32(TPM2_CAP_ECC_CURVES);
@@ -319,7 +319,7 @@ tpms_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
 
     ptr = (TPMS_ALG_PROPERTY *) buffer;
     ptr->alg = HOST_TO_BE_16(TPM2_ALG_ECDSA);
-    ptr->algProperties.val = HOST_TO_BE_32(TPMA_ALGORITHM_ASYMMETRIC | TPMA_ALGORITHM_SIGNING);
+    ptr->algProperties = HOST_TO_BE_32(TPMA_ALGORITHM_ASYMMETRIC | TPMA_ALGORITHM_SIGNING);
     rc = Tss2_MU_TPMS_ALG_PROPERTY_Unmarshal(buffer, sizeof(alg), &offset, &alg);
     assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 3);
