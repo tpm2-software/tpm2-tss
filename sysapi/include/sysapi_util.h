@@ -145,11 +145,6 @@ void InitSysContextPtrs(_TSS2_SYS_CONTEXT_BLOB *ctx, size_t contextSize);
 TSS2_RC CompleteChecks(_TSS2_SYS_CONTEXT_BLOB *ctx);
 TSS2_RC CommonComplete(_TSS2_SYS_CONTEXT_BLOB *ctx);
 
-TSS2_RC  CommonOneCallForNoResponseCmds(
-    _TSS2_SYS_CONTEXT_BLOB *ctx,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray);
-
 TSS2_RC CommonOneCall(
     _TSS2_SYS_CONTEXT_BLOB *ctx,
     TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,

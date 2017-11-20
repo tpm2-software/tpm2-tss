@@ -201,17 +201,3 @@ TSS2_RC CommonOneCall(
 
     return rval;
 }
-
-TSS2_RC CommonOneCallForNoResponseCmds(
-    _TSS2_SYS_CONTEXT_BLOB *ctx,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
-{
-    TSS2_RC rval;
-
-    rval = CommonOneCall(ctx, cmdAuthsArray, rspAuthsArray);
-    if(rval)
-        return rval;
-
-    return CommonComplete(ctx);
-}

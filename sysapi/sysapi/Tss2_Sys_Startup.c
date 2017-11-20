@@ -55,6 +55,17 @@ TSS2_RC Tss2_Sys_Startup_Prepare(
     return CommonPrepareEpilogue(ctx);
 }
 
+TSS2_RC Tss2_Sys_Startup_Complete (
+    TSS2_SYS_CONTEXT *sysContext)
+{
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+
+    if (!ctx)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    return CommonComplete(ctx);
+}
+
 TSS2_RC Tss2_Sys_Startup(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2_SU startupType)
@@ -66,5 +77,9 @@ TSS2_RC Tss2_Sys_Startup(
     if (rval)
         return rval;
 
-    return CommonOneCallForNoResponseCmds(ctx, 0, 0);
+    rval = CommonOneCall(ctx, 0, 0);
+    if (rval)
+        return rval;
+
+    return Tss2_Sys_Startup_Complete(sysContext);
 }
