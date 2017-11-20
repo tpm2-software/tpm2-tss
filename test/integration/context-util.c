@@ -174,7 +174,7 @@ sapi_teardown_full (TSS2_SYS_CONTEXT *sapi_context)
     Tss2_Sys_Finalize (sapi_context);
     free (sapi_context);
     if (tcti_context) {
-        tss2_tcti_finalize (tcti_context);
+        Tss2_Tcti_Finalize (tcti_context);
         free (tcti_context);
     }
 }

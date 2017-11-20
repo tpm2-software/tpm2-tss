@@ -325,7 +325,7 @@ tcti_socket_teardown (void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
 
-    tss2_tcti_finalize (ctx);
+    Tss2_Tcti_Finalize (ctx);
     free (ctx);
     return 0;
 }
@@ -369,7 +369,7 @@ tcti_socket_receive_success_test (void **state)
     will_return (__wrap_recv, 4);
     will_return (__wrap_recv, platform_command_recv);
 
-    rc = tss2_tcti_receive (ctx, &response_size, response_out, TSS2_TCTI_TIMEOUT_BLOCK);
+    rc = Tss2_Tcti_Receive (ctx, &response_size, response_out, TSS2_TCTI_TIMEOUT_BLOCK);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_memory_equal (response_in, response_out, response_size);
 }
@@ -395,7 +395,7 @@ tcti_socket_transmit_success_test (void **state)
     will_return (__wrap_send, 4);
     /* send the command buffer */
     will_return (__wrap_send, 0xc);
-    rc = tss2_tcti_transmit (ctx, command_size, command);
+    rc = Tss2_Tcti_Transmit (ctx, command_size, command);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 }
 
