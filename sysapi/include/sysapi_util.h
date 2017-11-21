@@ -130,8 +130,6 @@ typedef struct {
                             // parsing sessions following handles section.
 } COMMAND_HANDLES;
 
-struct TSS2_SYS_CONTEXT;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
