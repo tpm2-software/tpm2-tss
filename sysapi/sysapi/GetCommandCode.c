@@ -31,7 +31,7 @@
 
 TSS2_RC Tss2_Sys_GetCommandCode(
     TSS2_SYS_CONTEXT *sysContext,
-    UINT8 (*commandCode)[4])
+    UINT8 *commandCode)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
@@ -41,7 +41,8 @@ TSS2_RC Tss2_Sys_GetCommandCode(
     if (ctx->previousStage == CMD_STAGE_INITIALIZE)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    *(TPM2_CC *)commandCode = HOST_TO_BE_32(ctx->commandCode);
+    TPM2_CC tmp = HOST_TO_BE_32(ctx->commandCode);
+    memcpy(commandCode, (void *)&tmp, sizeof(tmp));
 
     return TSS2_RC_SUCCESS;
 }

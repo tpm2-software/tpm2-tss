@@ -200,7 +200,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
         print_fail ("SAPI invalid test FAILED! Response Code : 0x%x", rc);
 
     /* Test GetCommandCode for bad reference */
-    rc = Tss2_Sys_GetCommandCode(0, (UINT8 (*)[4])&commandCode);
+    rc = Tss2_Sys_GetCommandCode(0, (UINT8 *)&commandCode);
     if (rc != TSS2_SYS_RC_BAD_REFERENCE)
         print_fail ("SAPI invalid test FAILED! Response Code : 0x%x", rc);
 
