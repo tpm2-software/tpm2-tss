@@ -18,8 +18,6 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     TSS2_RC rc;
     TPMI_YES_NO more_data;
     TPMS_CAPABILITY_DATA capability_data;
-    TPMS_AUTH_COMMAND session_data;
-    TSS2_SYS_CMD_AUTHS sessions_data;
     UINT16 i, digest_size;
     TPML_PCR_SELECTION  pcr_selection;
     UINT32 pcr_update_counter_before_extend;
@@ -29,14 +27,13 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     TPML_DIGEST pcr_values;
     TPML_DIGEST_VALUES digests;
     TPML_PCR_SELECTION pcr_selection_out;
-    TPMS_AUTH_COMMAND *session_data_array[1];
 
-    session_data_array[0] = &session_data;
-    sessions_data.cmdAuths = &session_data_array[0];
-    session_data.sessionHandle = TPM2_RS_PW;
-    session_data.nonce.size = 0;
-    session_data.hmac.size = 0;
-    *( (UINT8 *)((void *)&session_data.sessionAttributes ) ) = 0;
+    TSS2L_SYS_AUTH_COMMAND sessions_data = {
+        .count = 1,
+        .auths = {{.sessionHandle = TPM2_RS_PW,
+            .sessionAttributes = 0,
+            .nonce={.size=0},
+            .hmac={.size=0}}}};
 
     print_log("PCR Extension tests started.");
     rc = Tss2_Sys_GetCapability(sapi_context, 0, TPM2_CAP_PCR_PROPERTIES, TPM2_PT_PCR_COUNT, 1, &more_data, &capability_data, 0);
@@ -64,8 +61,6 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
         print_fail("PCR_Read FAILED! Response Code : 0x%x", rc);
     memcpy(&(pcr_before_extend[0]), &(pcr_values.digests[0].buffer[0]), pcr_values.digests[0].size);
 
-    sessions_data.cmdAuthsCount = 1;
-    sessions_data.cmdAuths[0] = &session_data;
     rc = Tss2_Sys_PCR_Extend(sapi_context, PCR_8, &sessions_data, &digests, 0);
     if (rc != TSS2_RC_SUCCESS)
         print_fail("PCR_Extend FAILED! Response Code : 0x%x", rc);

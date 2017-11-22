@@ -110,13 +110,13 @@ TSS2_RC Tss2_Sys_PCR_Allocate_Complete(
 TSS2_RC Tss2_Sys_PCR_Allocate(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authHandle,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     const TPML_PCR_SELECTION *pcrAllocation,
     TPMI_YES_NO *allocationSuccess,
     UINT32 *maxPCR,
     UINT32 *sizeNeeded,
     UINT32 *sizeAvailable,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;

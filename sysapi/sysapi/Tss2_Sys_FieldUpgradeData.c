@@ -86,11 +86,11 @@ TSS2_RC Tss2_Sys_FieldUpgradeData_Complete(
 
 TSS2_RC Tss2_Sys_FieldUpgradeData(
     TSS2_SYS_CONTEXT *sysContext,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TPM2B_MAX_BUFFER *fuData,
     TPMT_HA *nextDigest,
     TPMT_HA *firstDigest,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;

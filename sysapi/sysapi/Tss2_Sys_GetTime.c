@@ -117,12 +117,12 @@ TSS2_RC Tss2_Sys_GetTime(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_ENDORSEMENT privacyAdminHandle,
     TPMI_DH_OBJECT signHandle,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     const TPM2B_DATA *qualifyingData,
     const TPMT_SIG_SCHEME *inScheme,
     TPM2B_ATTEST *timeInfo,
     TPMT_SIGNATURE *signature,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;

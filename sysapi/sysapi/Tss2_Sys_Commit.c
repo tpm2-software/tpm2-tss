@@ -128,7 +128,7 @@ TSS2_RC Tss2_Sys_Commit_Complete(
 TSS2_RC Tss2_Sys_Commit(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     const TPM2B_ECC_POINT *P1,
     const TPM2B_SENSITIVE_DATA *s2,
     const TPM2B_ECC_PARAMETER *y2,
@@ -136,7 +136,7 @@ TSS2_RC Tss2_Sys_Commit(
     TPM2B_ECC_POINT *L,
     TPM2B_ECC_POINT *E,
     UINT16 *counter,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;

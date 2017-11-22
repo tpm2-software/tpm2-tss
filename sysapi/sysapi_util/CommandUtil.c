@@ -174,8 +174,8 @@ TSS2_RC CommonComplete(_TSS2_SYS_CONTEXT_BLOB *ctx)
 
 TSS2_RC CommonOneCall(
     _TSS2_SYS_CONTEXT_BLOB *ctx,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     TSS2_RC rval;
 

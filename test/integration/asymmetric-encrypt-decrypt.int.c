@@ -36,24 +36,12 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     TPM2B_PUBLIC_KEY_RSA output_message = {sizeof(TPM2B_PUBLIC_KEY_RSA)-2,};
     TPM2B_PUBLIC_KEY_RSA output_data = {sizeof(TPM2B_PUBLIC_KEY_RSA)-2,};
 
-    TPMS_AUTH_RESPONSE session_data_out;
-    TPMS_AUTH_COMMAND session_data;
-    TSS2_SYS_RSP_AUTHS sessions_data_out;
-    TSS2_SYS_CMD_AUTHS sessions_data;
-    TPMS_AUTH_COMMAND *session_data_array[1];
-    TPMS_AUTH_RESPONSE *session_data_out_array[1];
-
-    session_data_array[0] = &session_data;
-    session_data_out_array[0] = &session_data_out;
-    sessions_data_out.rspAuths = &session_data_out_array[0];
-    sessions_data.cmdAuths = &session_data_array[0];
-    sessions_data_out.rspAuthsCount = 1;
-    session_data.sessionHandle = TPM2_RS_PW;
-    session_data.nonce.size = 0;
-    session_data.hmac.size = 0;
-    *((UINT8 *)((void *)&session_data.sessionAttributes)) = 0;
-    sessions_data.cmdAuthsCount = 1;
-    sessions_data.cmdAuths[0] = &session_data;
+    TSS2L_SYS_AUTH_RESPONSE sessions_data_out;
+    TSS2L_SYS_AUTH_COMMAND sessions_data = {
+        .count = 1,
+        .auths = {{.sessionHandle = TPM2_RS_PW,
+            .nonce={.size=0},
+            .hmac={.size=0}}}};
 
     in_sensitive.size =0;
     in_sensitive.sensitive.userAuth.size = 0;
@@ -110,7 +98,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     outside_info.size = 0;
     out_public.size = 0;
     creation_data.size = 0;
-    session_data.hmac.size = 0;
+    sessions_data.auths[0].hmac.size = 0;
 
     rc = TSS2_RETRY_EXP (Tss2_Sys_Create(sapi_context, sym_handle, &sessions_data, &in_sensitive, &in_public, &outside_info, &creation_pcr, &out_private, &out_public, &creation_data, &creation_hash, &creation_ticket, &sessions_data_out));
     if (rc != TPM2_RC_SUCCESS)

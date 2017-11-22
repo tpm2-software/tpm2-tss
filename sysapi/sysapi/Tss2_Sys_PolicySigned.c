@@ -137,7 +137,7 @@ TSS2_RC Tss2_Sys_PolicySigned(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT authObject,
     TPMI_SH_POLICY policySession,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     const TPM2B_NONCE *nonceTPM,
     const TPM2B_DIGEST *cpHashA,
     const TPM2B_NONCE *policyRef,
@@ -145,7 +145,7 @@ TSS2_RC Tss2_Sys_PolicySigned(
     const TPMT_SIGNATURE *auth,
     TPM2B_TIMEOUT *timeout,
     TPMT_TK_AUTH *policyTicket,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;

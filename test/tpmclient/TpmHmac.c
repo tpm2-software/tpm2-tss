@@ -40,15 +40,10 @@ UINT32 TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2B **bufferList, TPM2B_DIG
     TPM2B emptyBuffer;
     TPMT_TK_HASHCHECK validation;
 
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    TPMS_AUTH_COMMAND sessionData;
-    TSS2_SYS_CMD_AUTHS sessionsData;
     TPM2B_AUTH hmac;
     TPM2B_NONCE nonce;
 
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-    TPMS_AUTH_RESPONSE sessionDataOut;
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
 
     UINT32 rval;
     TPM2_HANDLE keyHandle;
@@ -56,9 +51,6 @@ UINT32 TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2B **bufferList, TPM2B_DIG
 
     TPM2B keyAuth;
     TSS2_SYS_CONTEXT *sysContext;
-
-    sessionDataArray[0] = &sessionData;
-    sessionDataOutArray[0] = &sessionDataOut;
 
     // Set result size to 0, in case any errors occur
     result->size = 0;
@@ -73,18 +65,14 @@ UINT32 TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2B **bufferList, TPM2B_DIG
     }
 
     // Init input sessions struct
-    sessionData.sessionHandle = TPM2_RS_PW;
     nonce.size = 0;
-    sessionData.nonce = nonce;
     CopySizedByteBuffer((TPM2B *)&hmac, (TPM2B *)&keyAuth);
-    sessionData.hmac = hmac;
-    *( (UINT8 *)((void *)&( sessionData.sessionAttributes ) ) ) = 0;
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths = &sessionDataArray[0];
-
-    // Init sessions out struct
-    sessionsDataOut.rspAuthsCount = 1;
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
+    TSS2L_SYS_AUTH_COMMAND sessionsData = {
+        .count = 1,
+        .auths = {{ .sessionHandle = TPM2_RS_PW,
+            .sessionAttributes = 0,
+            .nonce=nonce,
+            .hmac=hmac }}};
 
     emptyBuffer.size = 0;
 
@@ -98,7 +86,7 @@ UINT32 TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2B **bufferList, TPM2B_DIG
         goto teardown;
 
     hmac.size = 0;
-    sessionData.hmac = hmac;
+    sessionsData.auths[0].hmac = hmac;
     for( i = 0; bufferList[i] != 0; i++ )
     {
         rval = Tss2_Sys_SequenceUpdate ( sysContext, sequenceHandle, &sessionsData, (TPM2B_MAX_BUFFER *)( bufferList[i] ), &sessionsDataOut );

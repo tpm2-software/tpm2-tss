@@ -21,18 +21,14 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 
     /* session parameters */
     /* command session info */
-    TPMS_AUTH_COMMAND   session_cmd          = { .sessionHandle = TPM2_RS_PW };
-    TPMS_AUTH_COMMAND  *session_cmd_array[1] = { &session_cmd };
-    TSS2_SYS_CMD_AUTHS  sessions_cmd         = {
-        .cmdAuths      = session_cmd_array,
-        .cmdAuthsCount = 1
+    TSS2L_SYS_AUTH_COMMAND  sessions_cmd         = {
+        .auths = {{ .sessionHandle = TPM2_RS_PW }},
+        .count = 1
     };
     /* response session info */
-    TPMS_AUTH_RESPONSE  session_rsp          = { 0 };
-    TPMS_AUTH_RESPONSE *session_rsp_array[1] = { &session_rsp };
-    TSS2_SYS_RSP_AUTHS  sessions_rsp         = {
-        .rspAuths      = session_rsp_array,
-        .rspAuthsCount = 1
+    TSS2L_SYS_AUTH_RESPONSE  sessions_rsp         = {
+        .auths = { 0 },
+        .count = 0
     };
 
     rc = create_primary_rsa_2048_aes_128_cfb (sapi_context, &parent_handle);

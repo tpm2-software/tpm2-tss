@@ -68,9 +68,9 @@ TSS2_RC Tss2_Sys_Shutdown_Complete (
 
 TSS2_RC Tss2_Sys_Shutdown(
     TSS2_SYS_CONTEXT *sysContext,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TPM2_SU shutdownType,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;

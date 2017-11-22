@@ -127,13 +127,13 @@ TSS2_RC Tss2_Sys_Duplicate(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT objectHandle,
     TPMI_DH_OBJECT newParentHandle,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     const TPM2B_DATA *encryptionKeyIn,
     const TPMT_SYM_DEF_OBJECT *symmetricAlg,
     TPM2B_DATA *encryptionKeyOut,
     TPM2B_PRIVATE *duplicate,
     TPM2B_ENCRYPTED_SECRET *outSymSeed,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;

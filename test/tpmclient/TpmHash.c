@@ -69,21 +69,17 @@ UINT32 TpmHashSequence( TPMI_ALG_HASH hashAlg, UINT8 numBuffers, TPM2B_DIGEST *b
     TPM2B emptyBuffer;
     TPMT_TK_HASHCHECK validation;
 
-    TPMS_AUTH_COMMAND cmdAuth;
-    TPMS_AUTH_COMMAND *cmdSessionArray[1] = { &cmdAuth };
-    TSS2_SYS_CMD_AUTHS cmdAuthArray = { 1, &cmdSessionArray[0] };
+    TSS2L_SYS_AUTH_COMMAND cmdAuthArray = { .count = 1, .auths= {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce={.size=0},
+        .hmac={.size=0}}}};
 
     nullAuth.size = 0;
     emptyBuffer.size = 0;
 
     // Set result size to 0, in case any errors occur
     result->size = 0;
-
-    // Init input sessions struct
-    cmdAuth.sessionHandle = TPM2_RS_PW;
-    cmdAuth.nonce.size = 0;
-    *(UINT8 *)((void *)&cmdAuth.sessionAttributes) = 0;
-    cmdAuth.hmac.size = 0;
 
     sysContext = InitSysContext( 3000, resMgrTctiContext, &abiVersion );
     if( sysContext == 0 )
