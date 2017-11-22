@@ -24,13 +24,14 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
 # THE POSSIBILITY OF SUCH DAMAGE.
 #;**********************************************************************;
+@CODE_COVERAGE_RULES@
 
 include src_vars.mk
 
 INCLUDE_DIRS    = -I$(srcdir)/include -I$(srcdir)/sysapi/include -I$(srcdir)/marshal
 ACLOCAL_AMFLAGS = -I m4
-AM_CFLAGS       = $(INCLUDE_DIRS) $(EXTRA_CFLAGS)
-AM_LDFLAGS      = $(EXTRA_LDFLAGS)
+AM_CFLAGS       = $(INCLUDE_DIRS) $(EXTRA_CFLAGS) $(CODE_COVERAGE_CFLAGS)
+AM_LDFLAGS      = $(EXTRA_LDFLAGS) $(CODE_COVERAGE_LIBS)
 
 # stuff to build, what that stuff is, and where/if to install said stuff
 lib_LTLIBRARIES = $(libmarshal) $(libsapi) $(libtcti_device) $(libtcti_socket)
