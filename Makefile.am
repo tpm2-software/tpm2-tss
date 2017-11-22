@@ -41,6 +41,8 @@ TEST_EXTENSIONS = .int
 INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler.sh
 INT_LOG_FLAGS = --simulator-bin=$(SIMULATOR_BIN)
 
+check-programs: $(check_PROGRAMS)
+
 check_PROGRAMS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
 TESTS = $(check_PROGRAMS)
 if UNIT
