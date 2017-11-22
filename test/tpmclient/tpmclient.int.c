@@ -33,6 +33,7 @@
 
 #include "sapi/tpm20.h"
 #include "../integration/sapi-util.h"
+#include "../integration/test.h"
 #include "sample.h"
 #include "tpmclient.h"
 #include "tcti_util.h"
@@ -209,22 +210,6 @@ void Delay( UINT16 delay)
     }
 }
 
-#define CheckPassed(rval) {				\
-    							\
-    DebugPrintf( NO_PREFIX, "\tpassing case:  " );			\
-    if ( rval != TPM2_RC_SUCCESS) {					\
-      ErrorHandler( rval);						\
-      DebugPrintf( NO_PREFIX, "\tFAILED!  %s (%s@%u)\n",		\
-		   errorString, __FUNCTION__, __LINE__ );		\
-      Cleanup();							\
-    } else {								\
-      DebugPrintf( NO_PREFIX, "\tPASSED! (%s@%u)\n",			\
-		   __FUNCTION__, __LINE__);				\
-    }									\
-    									\
-    Delay(0);							\
-  }
-
 TPMS_AUTH_COMMAND nullSessionData;
 TPMS_AUTH_RESPONSE nullSessionDataOut;
 TPMS_AUTH_COMMAND *nullSessionDataArray[1] = { &nullSessionData };
@@ -233,21 +218,6 @@ TSS2_SYS_CMD_AUTHS nullSessionsData = { 1, &nullSessionDataArray[0] };
 TSS2_SYS_RSP_AUTHS nullSessionsDataOut = { 1, &nullSessionDataOutArray[0] };
 TPM2B_NONCE nullSessionNonce, nullSessionNonceOut;
 TPM2B_AUTH nullSessionHmac;
-
-#define CheckFailed(rval, expectedTpmErrorCode) {			\
-    DebugPrintf( NO_PREFIX, "\tfailing case:");				\
-    if ( rval != expectedTpmErrorCode) {				\
-      ErrorHandler( rval);						\
-      DebugPrintf( NO_PREFIX, "\tFAILED!  Ret code s/b: 0x%x, but was: 0x%x (%s@%u)\n", \
-		   expectedTpmErrorCode, rval, __FUNCTION__, __LINE__ ); \
-      Cleanup();							\
-    }	else {								\
-      DebugPrintf( NO_PREFIX, "\tPASSED! (%s@%u)\n",			\
-		   __FUNCTION__, __LINE__);				\
-    }									\
-    Delay(0);							\
-  }
-
 
 TSS2_RC TpmReset()
 {
