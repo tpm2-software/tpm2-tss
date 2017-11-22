@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "sysapi_util.h"
+#include "tss2_endian.h"
 
 //
 // This function calculates the session HMAC and updates session state.
@@ -88,9 +89,12 @@ UINT32 TpmComputeSessionHmac(
         authValue.size = 0;
     }
 
-    rval = Tss2_Sys_GetCommandCode( sysContext, (UINT8 (*)[4])&cmdCode );
+    rval = Tss2_Sys_GetCommandCode( sysContext, (UINT8 *)&cmdCode );
     if( rval != TPM2_RC_SUCCESS )
         return rval;
+
+    // cmdCode comes back as BigEndian; not suited for comparisons below.
+    cmdCode = BE_TO_HOST_32(cmdCode);
 
     if( ( entityHandle >> TPM2_HR_SHIFT ) == TPM2_HT_NV_INDEX )
     {

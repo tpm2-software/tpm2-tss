@@ -148,7 +148,7 @@ TSS2_RC Tss2_Sys_Execute(
 //
 TSS2_RC Tss2_Sys_GetCommandCode(
     TSS2_SYS_CONTEXT *sysContext,
-    UINT8 (*commandCode)[4]
+    UINT8 *commandCode
     );
 
 TSS2_RC Tss2_Sys_GetRspAuths(

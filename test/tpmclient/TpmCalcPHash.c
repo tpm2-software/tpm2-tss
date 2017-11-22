@@ -118,7 +118,7 @@ TSS2_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM2_HANDLE handle1, TPM2_HA
     }
 
     // Create pHash input byte stream:  now add command code.
-    rval = Tss2_Sys_GetCommandCode( sysContext, (UINT8 (*)[4])&cmdCode );
+    rval = Tss2_Sys_GetCommandCode( sysContext, (UINT8 *)&cmdCode );
     if( rval != TPM2_RC_SUCCESS )
         return rval;
 
