@@ -35,7 +35,7 @@ TSS2_RC Tss2_Sys_GetEncryptParam(
     const uint8_t **encryptParamBuffer)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TPM2B *encryptParam;
+    uint8_t *offset;
 
     if (!encryptParamSize || !encryptParamBuffer || !ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -47,13 +47,15 @@ TSS2_RC Tss2_Sys_GetEncryptParam(
         BE_TO_HOST_16(resp_header_from_cxt(ctx)->tag) == TPM2_ST_NO_SESSIONS)
         return TSS2_SYS_RC_NO_ENCRYPT_PARAM;
 
-    /* Get first parameter and return its size and a pointer to it. */
-    ctx->rpBuffer = (UINT8 *)ctx->rspParamsSize;
-    /* Skip over params size field. */
-    ctx->rpBuffer += 4;
-    encryptParam = (TPM2B *)ctx->rpBuffer;
-    *encryptParamSize = BE_TO_HOST_16(encryptParam->size);
-    *encryptParamBuffer = encryptParam->buffer;
+    /* Get first parameter, interpret it as a TPM2B and return its size field
+     * and a pointer to its buffer area. */
+    offset = ctx->cmdBuffer
+            + sizeof(TPM20_Header_Out)
+            + ctx->numResponseHandles * sizeof(TPM2_HANDLE)
+            + sizeof(TPM2_PARAMETER_SIZE);
+
+    *encryptParamSize = BE_TO_HOST_16(*((UINT16 *)offset));
+    *encryptParamBuffer = offset + sizeof(UINT16);
 
     return TSS2_RC_SUCCESS;
 }

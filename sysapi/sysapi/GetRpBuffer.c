@@ -34,6 +34,7 @@ TSS2_RC Tss2_Sys_GetRpBuffer(
     const uint8_t **rpBuffer)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_RC rval;
 
     if (!ctx || !rpBufferUsedSize || !rpBuffer)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -44,8 +45,31 @@ TSS2_RC Tss2_Sys_GetRpBuffer(
         ctx->rval != TSS2_RC_SUCCESS)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    *rpBuffer = ctx->rpBuffer;
-    *rpBufferUsedSize = ctx->rpBufferUsedSize;
+    /* Calculate the position of the response parameter section within the TPM
+     * repsponse as well as its size. Structure is:
+     * Header (tag, responseSize, responseCode)
+     * handle(if Command has handles)
+     * parameterSize (if TPM_ST_SESSIONS), size of rpArea
+     * rpArea
+     * Sessions (if TPM_ST_SESSIONS) */
+    size_t offset = sizeof(TPM20_Header_Out); /* Skip over the header */
+    offset += ctx->numResponseHandles * sizeof(TPM2_HANDLE); /* Skip handle */
+
+    if (ctx->rsp_header.tag == TPM2_ST_SESSIONS) {
+        /* If sessions are used a parameterSize values exists for convenience */
+        TPM2_PARAMETER_SIZE parameterSize;
+        rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer,
+                ctx->rsp_header.responseSize, &offset, &parameterSize);
+        if (rval != TSS2_RC_SUCCESS) {
+            return rval;
+        }
+        *rpBuffer = ctx->cmdBuffer + offset;
+        *rpBufferUsedSize = parameterSize;
+    } else {
+        /* If no session is used the remainder is the rpArea */
+        *rpBuffer = ctx->cmdBuffer + offset;
+        *rpBufferUsedSize = ctx->rsp_header.responseSize - offset;
+    }
 
     return TSS2_RC_SUCCESS;
 }
