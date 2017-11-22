@@ -65,4 +65,6 @@ AX_ADD_LINK_FLAG([-Wl,-z,relro])
 #   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53119
 AX_ADD_COMPILER_FLAG([-Wno-missing-braces])
 
+AX_CODE_COVERAGE
+
 AC_OUTPUT

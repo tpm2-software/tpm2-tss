@@ -47,6 +47,10 @@ install:
   - make
   - make install
   - cd ../../
+  - wget http://ftpmirror.gnu.org/autoconf-archive/autoconf-archive-2017.09.28.tar.xz
+  - sha256sum autoconf-archive-2017.09.28.tar.xz | grep -q 5c9fb5845b38b28982a3ef12836f76b35f46799ef4a2e46b48e2bd3c6182fa01
+  - tar xJf autoconf-archive-2017.09.28.tar.xz
+  - cp autoconf-archive-2017.09.28/m4/ax_code_coverage.m4 m4/
 
 before_script:
   - ./bootstrap
