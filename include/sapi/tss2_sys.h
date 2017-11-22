@@ -55,17 +55,14 @@ typedef struct _TSS2_SYS_OPAQUE_CONTEXT_BLOB TSS2_SYS_CONTEXT;
 // Input structure for authorization area(s).
 //
 typedef struct {
-    uint8_t cmdAuthsCount;
-    TPMS_AUTH_COMMAND **cmdAuths;
-} TSS2_SYS_CMD_AUTHS;
+    uint16_t          count;
+    TPMS_AUTH_COMMAND auths[3];
+} TSS2L_SYS_AUTH_COMMAND;
 
-//
-// Output structure for authorization area(s).
-//
 typedef struct {
-    uint8_t rspAuthsCount;
-    TPMS_AUTH_RESPONSE **rspAuths;
-} TSS2_SYS_RSP_AUTHS;
+    uint16_t           count;
+    TPMS_AUTH_RESPONSE auths[3];
+} TSS2L_SYS_AUTH_RESPONSE;
 
 
 //
@@ -123,7 +120,7 @@ TSS2_RC Tss2_Sys_GetCpBuffer(
 
 TSS2_RC Tss2_Sys_SetCmdAuths(
     TSS2_SYS_CONTEXT * sysContext,
-    const TSS2_SYS_CMD_AUTHS *cmdAuthsArray
+    const TSS2L_SYS_AUTH_COMMAND *cmdAuthsArray
     );
 
 
@@ -153,7 +150,7 @@ TSS2_RC Tss2_Sys_GetCommandCode(
 
 TSS2_RC Tss2_Sys_GetRspAuths(
     TSS2_SYS_CONTEXT *sysContext,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray
     );
 
 TSS2_RC Tss2_Sys_GetEncryptParam(

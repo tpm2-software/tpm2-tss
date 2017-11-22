@@ -140,14 +140,14 @@ TSS2_RC Tss2_Sys_NV_Certify(
     TPMI_DH_OBJECT signHandle,
     TPMI_RH_NV_AUTH authHandle,
     TPMI_RH_NV_INDEX nvIndex,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     const TPM2B_DATA *qualifyingData,
     const TPMT_SIG_SCHEME *inScheme,
     UINT16 size,
     UINT16 offset,
     TPM2B_ATTEST *certifyInfo,
     TPMT_SIGNATURE *signature,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;

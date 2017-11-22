@@ -119,14 +119,14 @@ TSS2_RC Tss2_Sys_EncryptDecrypt2_Complete (
 TSS2_RC Tss2_Sys_EncryptDecrypt2 (
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     const TPM2B_MAX_BUFFER *inData,
     TPMI_YES_NO decrypt,
     TPMI_ALG_SYM_MODE mode,
     const TPM2B_IV *ivIn,
     TPM2B_MAX_BUFFER *outData,
     TPM2B_IV *ivOut,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;

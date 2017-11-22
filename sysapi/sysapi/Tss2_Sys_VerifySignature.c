@@ -101,11 +101,11 @@ TSS2_RC Tss2_Sys_VerifySignature_Complete(
 TSS2_RC Tss2_Sys_VerifySignature(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     const TPM2B_DIGEST *digest,
     const TPMT_SIGNATURE *signature,
     TPMT_TK_VERIFIED *validation,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;

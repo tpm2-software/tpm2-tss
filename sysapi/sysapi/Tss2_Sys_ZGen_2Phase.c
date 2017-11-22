@@ -122,14 +122,14 @@ TSS2_RC Tss2_Sys_ZGen_2Phase_Complete(
 TSS2_RC Tss2_Sys_ZGen_2Phase(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyA,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     const TPM2B_ECC_POINT *inQsB,
     const TPM2B_ECC_POINT *inQeB,
     TPMI_ECC_KEY_EXCHANGE inScheme,
     UINT16 counter,
     TPM2B_ECC_POINT *outZ1,
     TPM2B_ECC_POINT *outZ2,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;

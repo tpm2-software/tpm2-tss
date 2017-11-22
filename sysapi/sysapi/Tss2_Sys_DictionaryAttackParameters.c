@@ -89,11 +89,11 @@ TSS2_RC Tss2_Sys_DictionaryAttackParameters_Complete (
 TSS2_RC Tss2_Sys_DictionaryAttackParameters(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_LOCKOUT lockHandle,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     UINT32 newMaxTries,
     UINT32 newRecoveryTime,
     UINT32 lockoutRecovery,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;

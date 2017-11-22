@@ -159,7 +159,7 @@ TSS2_RC Tss2_Sys_CreatePrimary_Complete(
 TSS2_RC Tss2_Sys_CreatePrimary(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_HIERARCHY primaryHandle,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     const TPM2B_SENSITIVE_CREATE *inSensitive,
     const TPM2B_PUBLIC *inPublic,
     const TPM2B_DATA *outsideInfo,
@@ -170,7 +170,7 @@ TSS2_RC Tss2_Sys_CreatePrimary(
     TPM2B_DIGEST *creationHash,
     TPMT_TK_CREATION *creationTicket,
     TPM2B_NAME *name,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;

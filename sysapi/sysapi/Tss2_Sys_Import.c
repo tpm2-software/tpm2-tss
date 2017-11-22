@@ -125,14 +125,14 @@ TSS2_RC Tss2_Sys_Import_Complete(
 TSS2_RC Tss2_Sys_Import(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT parentHandle,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     const TPM2B_DATA *encryptionKey,
     const TPM2B_PUBLIC *objectPublic,
     const TPM2B_PRIVATE *duplicate,
     const TPM2B_ENCRYPTED_SECRET *inSymSeed,
     const TPMT_SYM_DEF_OBJECT *symmetricAlg,
     TPM2B_PRIVATE *outPrivate,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;

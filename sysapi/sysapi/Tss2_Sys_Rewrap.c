@@ -125,13 +125,13 @@ TSS2_RC Tss2_Sys_Rewrap(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT oldParent,
     TPMI_DH_OBJECT newParent,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     const TPM2B_PRIVATE *inDuplicate,
     const TPM2B_NAME *name,
     const TPM2B_ENCRYPTED_SECRET *inSymSeed,
     TPM2B_PRIVATE *outDuplicate,
     TPM2B_ENCRYPTED_SECRET *outSymSeed,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;

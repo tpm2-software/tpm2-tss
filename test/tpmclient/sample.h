@@ -148,7 +148,7 @@ TSS2_RC GetSessionStruct( TPMI_SH_AUTH_SESSION authHandle, SESSION **pSession );
 TSS2_RC GetSessionAlgId( TPMI_SH_AUTH_SESSION authHandle, TPMI_ALG_HASH *sessionAlgId );
 TSS2_RC EndAuthSession( SESSION *session );
 TSS2_RC ComputeCommandHmacs( TSS2_SYS_CONTEXT *sysContext, TPM2_HANDLE handle1,
-    TPM2_HANDLE handle2, TSS2_SYS_CMD_AUTHS *pSessionsData,
+    TPM2_HANDLE handle2, TSS2L_SYS_AUTH_COMMAND *pSessionsData,
     TSS2_RC sessionCmdRval );
 
 extern INT16 sessionEntriesUsed;
@@ -173,8 +173,8 @@ extern UINT32 ( *ComputeSessionHmacPtr )(
 
 extern TSS2_RC CheckResponseHMACs( TSS2_SYS_CONTEXT *sysContext,
     TSS2_RC responseCode,
-    TSS2_SYS_CMD_AUTHS *pSessionsDataIn, TPM2_HANDLE handle1, TPM2_HANDLE handle2,
-    TSS2_SYS_RSP_AUTHS *pSessionsDataOut );
+    TSS2L_SYS_AUTH_COMMAND *pSessionsDataIn, TPM2_HANDLE handle1, TPM2_HANDLE handle2,
+    TSS2L_SYS_AUTH_RESPONSE *pSessionsDataOut );
 
 TSS2_RC StartAuthSessionWithParams( SESSION **session, TPMI_DH_OBJECT tpmKey, TPM2B_MAX_BUFFER *salt,
     TPMI_DH_ENTITY bind, TPM2B_AUTH *bindAuth, TPM2B_NONCE *nonceCaller, TPM2B_ENCRYPTED_SECRET *encryptedSalt,

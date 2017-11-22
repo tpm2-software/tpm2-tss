@@ -77,8 +77,8 @@ TSS2_RC Tss2_Sys_NV_UndefineSpaceSpecial(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_INDEX nvIndex,
     TPMI_RH_PLATFORM platform,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;

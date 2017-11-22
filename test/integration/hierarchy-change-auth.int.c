@@ -13,32 +13,16 @@ test_owner_auth (TSS2_SYS_CONTEXT *sapi_context)
 	UINT32 rval;
 	TPM2B_AUTH newAuth;
 	TPM2B_AUTH resetAuth;
-	TPMS_AUTH_COMMAND sessionData;
-	TSS2_SYS_CMD_AUTHS sessionsData;
 	int i;
 
-	TPMS_AUTH_COMMAND *sessionDataArray[1];
-
-	sessionDataArray[0] = &sessionData;
-
-	sessionsData.cmdAuths = &sessionDataArray[0];
+    TSS2L_SYS_AUTH_COMMAND sessionsData = {
+        .count = 1,
+        .auths = {{.sessionHandle = TPM2_RS_PW,
+            .sessionAttributes = 0x00,
+            .nonce={.size=0},
+            .hmac={.size=0}}}};
 
 	print_log("\nHIERARCHY_CHANGE_AUTH TESTS:\n" );
-
-	/* Init authHandle */
-	sessionData.sessionHandle = TPM2_RS_PW;
-
-	/* Init nonce */
-	sessionData.nonce.size = 0;
-
-	/* Init hmac */
-	sessionData.hmac.size = 0;
-
-	/* Init session attributes */
-	*( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0x00;
-
-	sessionsData.cmdAuthsCount = 1;
-	sessionsData.cmdAuths[0] = &sessionData;
 
 	newAuth.size = 0;
 	rval = Tss2_Sys_HierarchyChangeAuth( sapi_context, TPM2_RH_OWNER, &sessionsData, &newAuth, 0);
@@ -55,13 +39,13 @@ test_owner_auth (TSS2_SYS_CONTEXT *sapi_context)
 		print_fail("HierarchyChangeAuth FAILED! Response Code : 0x%x", rval);
 
 	/* Create hmac session */
-	sessionData.hmac = newAuth;
+	sessionsData.auths[0].hmac = newAuth;
 	rval = Tss2_Sys_HierarchyChangeAuth( sapi_context, TPM2_RH_OWNER, &sessionsData, &newAuth, 0 );
 	if (rval != TPM2_RC_SUCCESS)
 		print_fail("HierarchyChangeAuth FAILED! Response Code : 0x%x", rval);
 
 	/* Provide current auth value in SessionData hmac field */
-	sessionData.hmac = newAuth;
+	sessionsData.auths[0].hmac = newAuth;
 	/* change auth value to different value */
 	newAuth.buffer[0] = 3;
 	rval = Tss2_Sys_HierarchyChangeAuth( sapi_context, TPM2_RH_OWNER, &sessionsData, &newAuth, 0 );
@@ -69,7 +53,7 @@ test_owner_auth (TSS2_SYS_CONTEXT *sapi_context)
 		print_fail("HierarchyChangeAuth FAILED! Response Code : 0x%x", rval);
 
 	/* Provide current auth value in SessionData hmac field */
-	sessionData.hmac = newAuth;
+	sessionsData.auths[0].hmac = newAuth;
 	/* change auth value to different value */
 	newAuth.buffer[0] = 4;
 	/* backup auth value to restore to empty buffer after test */
@@ -86,7 +70,6 @@ test_owner_auth (TSS2_SYS_CONTEXT *sapi_context)
 	if (rval != (TPM2_RC_1 + TPM2_RC_S + TPM2_RC_BAD_AUTH))
 		print_fail("HierarchyChangeAuth FAILED! Response Code : 0x%x", rval);
 
-	sessionsData.cmdAuths[0] = &sessionData;
 	rval = Tss2_Sys_HierarchyChangeAuth( sapi_context, TPM2_RH_OWNER, &sessionsData, &newAuth, 0 );
 	if (rval != (TPM2_RC_1 + TPM2_RC_S + TPM2_RC_BAD_AUTH))
 		print_fail("HierarchyChangeAuth FAILED! Response Code : 0x%x", rval);
@@ -97,7 +80,7 @@ test_owner_auth (TSS2_SYS_CONTEXT *sapi_context)
 		print_fail("HierarchyChangeAuth FAILED! Response Code : 0x%x", rval);
 
 	/* Set auth to zero again with valid session */
-	sessionData.hmac = resetAuth;
+	sessionsData.auths[0].hmac = resetAuth;
 	/* change auth value to different value */
 	newAuth.size = 0;
 	rval = Tss2_Sys_HierarchyChangeAuth( sapi_context, TPM2_RH_OWNER, &sessionsData, &newAuth, 0 );
@@ -116,32 +99,16 @@ test_platform_auth (TSS2_SYS_CONTEXT *sapi_context)
 	UINT32 rval;
 	TPM2B_AUTH newAuth;
 	TPM2B_AUTH resetAuth;
-	TPMS_AUTH_COMMAND sessionData;
-	TSS2_SYS_CMD_AUTHS sessionsData;
 	int i;
 
-	TPMS_AUTH_COMMAND *sessionDataArray[1];
-
-	sessionDataArray[0] = &sessionData;
-
-	sessionsData.cmdAuths = &sessionDataArray[0];
+    TSS2L_SYS_AUTH_COMMAND sessionsData = {
+        .count = 1,
+        .auths = {{.sessionHandle = TPM2_RS_PW,
+            .sessionAttributes = 0x00,
+            .nonce={.size=0},
+            .hmac={.size=0}}}};
 
 	print_log("\nHIERARCHY_CHANGE_AUTH TESTS:\n" );
-
-	/* Init authHandle */
-	sessionData.sessionHandle = TPM2_RS_PW;
-
-	/* Init nonce */
-	sessionData.nonce.size = 0;
-
-	/* Init hmac */
-	sessionData.hmac.size = 0;
-
-	/* Init session attributes */
-	*( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
-
-	sessionsData.cmdAuthsCount = 1;
-	sessionsData.cmdAuths[0] = &sessionData;
 
 	newAuth.size = 0;
 	rval = Tss2_Sys_HierarchyChangeAuth( sapi_context, TPM2_RH_PLATFORM, &sessionsData, &newAuth, 0);
@@ -158,13 +125,13 @@ test_platform_auth (TSS2_SYS_CONTEXT *sapi_context)
 		print_fail("HierarchyChangeAuth FAILED! Response Code : 0x%x", rval);
 
 	/* Create hmac session */
-	sessionData.hmac = newAuth;
+	sessionsData.auths[0].hmac = newAuth;
 	rval = Tss2_Sys_HierarchyChangeAuth( sapi_context, TPM2_RH_PLATFORM, &sessionsData, &newAuth, 0 );
 	if (rval != TPM2_RC_SUCCESS)
 		print_fail("HierarchyChangeAuth FAILED! Response Code : 0x%x", rval);
 
 	/* Provide current auth value in SessionData hmac field */
-	sessionData.hmac = newAuth;
+	sessionsData.auths[0].hmac = newAuth;
 	/* change auth value to different value */
 	newAuth.buffer[0] = 3;
 	rval = Tss2_Sys_HierarchyChangeAuth( sapi_context, TPM2_RH_PLATFORM, &sessionsData, &newAuth, 0 );
@@ -172,7 +139,7 @@ test_platform_auth (TSS2_SYS_CONTEXT *sapi_context)
 		print_fail("HierarchyChangeAuth FAILED! Response Code : 0x%x", rval);
 
 	/* Provide current auth value in SessionData hmac field */
-	sessionData.hmac = newAuth;
+	sessionsData.auths[0].hmac = newAuth;
 	/* change auth value to different value */
 	newAuth.buffer[0] = 4;
 	/* backup auth value to restore to empty buffer after test */
@@ -189,7 +156,6 @@ test_platform_auth (TSS2_SYS_CONTEXT *sapi_context)
 	if (rval != (TPM2_RC_1 + TPM2_RC_S + TPM2_RC_BAD_AUTH))
 		print_fail("HierarchyChangeAuth FAILED! Response Code : 0x%x", rval);
 
-	sessionsData.cmdAuths[0] = &sessionData;
 	rval = Tss2_Sys_HierarchyChangeAuth( sapi_context, TPM2_RH_PLATFORM, &sessionsData, &newAuth, 0 );
 	if (rval != (TPM2_RC_1 + TPM2_RC_S + TPM2_RC_BAD_AUTH))
 		print_fail("HierarchyChangeAuth FAILED! Response Code : 0x%x", rval);
@@ -200,7 +166,7 @@ test_platform_auth (TSS2_SYS_CONTEXT *sapi_context)
 		print_fail("HierarchyChangeAuth FAILED! Response Code : 0x%x", rval);
 
 	/* Set auth to zero again with valid session */
-	sessionData.hmac = resetAuth;
+	sessionsData.auths[0].hmac = resetAuth;
 	/* change auth value to different value */
 	newAuth.size = 0;
 	rval = Tss2_Sys_HierarchyChangeAuth( sapi_context, TPM2_RH_PLATFORM, &sessionsData, &newAuth, 0 );

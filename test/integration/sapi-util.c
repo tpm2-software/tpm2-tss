@@ -49,18 +49,14 @@ create_primary_rsa_2048_aes_128_cfb (
     TPM2B_NAME              name            = TPM2B_NAME_INIT;
     /* session parameters */
     /* command session info */
-    TPMS_AUTH_COMMAND   session_cmd = { .sessionHandle = TPM2_RS_PW };
-    TPMS_AUTH_COMMAND  *session_cmd_array[1] = { &session_cmd };
-    TSS2_SYS_CMD_AUTHS  sessions_cmd = {
-        .cmdAuths      = session_cmd_array,
-        .cmdAuthsCount = 1
+    TSS2L_SYS_AUTH_COMMAND  sessions_cmd = {
+        .auths = {{ .sessionHandle = TPM2_RS_PW }},
+        .count = 1
     };
     /* response session info */
-    TPMS_AUTH_RESPONSE  session_rsp          = { 0 };
-    TPMS_AUTH_RESPONSE *session_rsp_array[1] = { &session_rsp };
-    TSS2_SYS_RSP_AUTHS  sessions_rsp     = {
-        .rspAuths      = session_rsp_array,
-        .rspAuthsCount = 1
+    TSS2L_SYS_AUTH_RESPONSE  sessions_rsp     = {
+        .auths = { 0 },
+        .count = 0
     };
 
     if (sapi_context == NULL || handle == NULL) {
@@ -139,18 +135,14 @@ create_aes_128_cfb (
     TPM2B_NAME              name            = TPM2B_NAME_INIT;
     /* session parameters */
     /* command session info */
-    TPMS_AUTH_COMMAND   session_cmd = { .sessionHandle = TPM2_RS_PW };
-    TPMS_AUTH_COMMAND  *session_cmd_array[1] = { &session_cmd };
-    TSS2_SYS_CMD_AUTHS  sessions_cmd = {
-        .cmdAuths      = session_cmd_array,
-        .cmdAuthsCount = 1
+    TSS2L_SYS_AUTH_COMMAND  sessions_cmd = {
+        .auths = {{ .sessionHandle = TPM2_RS_PW }},
+        .count = 1
     };
     /* response session info */
-    TPMS_AUTH_RESPONSE  session_rsp          = { 0 };
-    TPMS_AUTH_RESPONSE *session_rsp_array[1] = { &session_rsp };
-    TSS2_SYS_RSP_AUTHS  sessions_rsp     = {
-        .rspAuths      = session_rsp_array,
-        .rspAuthsCount = 1
+    TSS2L_SYS_AUTH_RESPONSE  sessions_rsp     = {
+        .auths = { 0 },
+        .count = 0
     };
 
     rc = TSS2_RETRY_EXP (Tss2_Sys_Create (sapi_context,
@@ -194,18 +186,15 @@ encrypt_decrypt_cfb (
 
     /* session parameters */
     /* command session info */
-    TPMS_AUTH_COMMAND   session_cmd = { .sessionHandle = TPM2_RS_PW };
-    TPMS_AUTH_COMMAND  *session_cmd_array[1] = { &session_cmd };
-    TSS2_SYS_CMD_AUTHS  sessions_cmd = {
-        .cmdAuths = session_cmd_array,
-        .cmdAuthsCount = 1
+    /* command session info */
+    TSS2L_SYS_AUTH_COMMAND  sessions_cmd = {
+        .auths = {{ .sessionHandle = TPM2_RS_PW }},
+        .count = 1
     };
     /* response session info */
-    TPMS_AUTH_RESPONSE  session_rsp = { 0 };
-    TPMS_AUTH_RESPONSE *session_rsp_array[1] = { &session_rsp };
-    TSS2_SYS_RSP_AUTHS  sessions_rsp = {
-        .rspAuths = session_rsp_array,
-        .rspAuthsCount = 1
+    TSS2L_SYS_AUTH_RESPONSE  sessions_rsp     = {
+        .auths = { 0 },
+        .count = 0
     };
 
     return Tss2_Sys_EncryptDecrypt (sapi_context,
@@ -254,18 +243,15 @@ encrypt_decrypt_2_cfb (
 
     /* session parameters */
     /* command session info */
-    TPMS_AUTH_COMMAND   session_cmd = { .sessionHandle = TPM2_RS_PW };
-    TPMS_AUTH_COMMAND  *session_cmd_array[1] = { &session_cmd };
-    TSS2_SYS_CMD_AUTHS  sessions_cmd = {
-        .cmdAuths = session_cmd_array,
-        .cmdAuthsCount = 1
+    /* command session info */
+    TSS2L_SYS_AUTH_COMMAND  sessions_cmd = {
+        .auths = {{ .sessionHandle = TPM2_RS_PW }},
+        .count = 1
     };
     /* response session info */
-    TPMS_AUTH_RESPONSE  session_rsp = { 0 };
-    TPMS_AUTH_RESPONSE *session_rsp_array[1] = { &session_rsp };
-    TSS2_SYS_RSP_AUTHS  sessions_rsp = {
-        .rspAuths = session_rsp_array,
-        .rspAuthsCount = 1
+    TSS2L_SYS_AUTH_RESPONSE  sessions_rsp     = {
+        .auths = { 0 },
+        .count = 0
     };
 
     return Tss2_Sys_EncryptDecrypt2 (sapi_context,

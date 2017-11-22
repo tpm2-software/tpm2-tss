@@ -112,11 +112,11 @@ TSS2_RC Tss2_Sys_ActivateCredential(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT activateHandle,
     TPMI_DH_OBJECT keyHandle,
-    TSS2_SYS_CMD_AUTHS const *cmdAuthsArray,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     const TPM2B_ID_OBJECT *credentialBlob,
     const TPM2B_ENCRYPTED_SECRET *secret,
     TPM2B_DIGEST *certInfo,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     TSS2_RC rval;
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);

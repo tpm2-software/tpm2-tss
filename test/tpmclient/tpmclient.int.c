@@ -225,12 +225,8 @@ void Delay( UINT16 delay)
     Delay(0);							\
   }
 
-TPMS_AUTH_COMMAND nullSessionData;
-TPMS_AUTH_RESPONSE nullSessionDataOut;
-TPMS_AUTH_COMMAND *nullSessionDataArray[1] = { &nullSessionData };
-TPMS_AUTH_RESPONSE *nullSessionDataOutArray[1] = { &nullSessionDataOut };
-TSS2_SYS_CMD_AUTHS nullSessionsData = { 1, &nullSessionDataArray[0] };
-TSS2_SYS_RSP_AUTHS nullSessionsDataOut = { 1, &nullSessionDataOutArray[0] };
+TSS2L_SYS_AUTH_COMMAND nullSessionsData = { 1, { 0 } };
+TSS2L_SYS_AUTH_RESPONSE nullSessionsDataOut = { 0, { 0 } };
 TPM2B_NONCE nullSessionNonce, nullSessionNonceOut;
 TPM2B_AUTH nullSessionHmac;
 
@@ -264,38 +260,15 @@ TSS2_RC TpmReset()
 void TestDictionaryAttackLockReset()
 {
     UINT32 rval;
-    TPMS_AUTH_COMMAND sessionData;
-    TPMS_AUTH_RESPONSE sessionDataOut;
-    TSS2_SYS_CMD_AUTHS sessionsData;
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
 
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-
-    sessionDataArray[0] = &sessionData;
-    sessionDataOutArray[0] = &sessionDataOut;
-
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsData.cmdAuths = &sessionDataArray[0];
-
-    sessionsDataOut.rspAuthsCount = 1;
+    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths = {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce={.size=0},
+        .hmac={.size=0}}}};
 
     DebugPrintf( NO_PREFIX, "\nDICTIONARY ATTACK LOCK RESET TEST  :\n" );
-
-    // Init authHandle
-    sessionData.sessionHandle = TPM2_RS_PW;
-
-    // Init nonce.
-    sessionData.nonce.size = 0;
-
-    // init hmac
-    sessionData.hmac.size = 0;
-
-    // Init session attributes
-    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
-
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0] = &sessionData;
 
     rval = Tss2_Sys_DictionaryAttackLockReset ( sysContext, TPM2_RH_LOCKOUT, &sessionsData, &sessionsDataOut );
     CheckPassed( rval );
@@ -438,43 +411,17 @@ void TestTpmGetCapability()
 void TestTpmClear()
 {
     UINT32 rval;
-    TPM2B_AUTH      hmac;
-    TPMS_AUTH_COMMAND sessionData;
-    TPMS_AUTH_RESPONSE sessionDataOut;
-    TPM2B_NONCE     nonce;
-    TSS2_SYS_CMD_AUTHS sessionsDataIn;
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
+    TPM2B_AUTH      hmac = { .size = 0 };
+    TPM2B_NONCE     nonce = { .size = 0 };
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
 
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-
-    sessionDataArray[0] = &sessionData;
-    sessionDataOutArray[0] = &sessionDataOut;
-
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsDataIn.cmdAuths = &sessionDataArray[0];
-
-    sessionsDataOut.rspAuthsCount = 1;
-    sessionsDataOut.rspAuths[0] = &sessionDataOut;
+    TSS2L_SYS_AUTH_COMMAND sessionsDataIn = { .count = 1, .auths = {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce=nonce,
+        .hmac=hmac}}};
 
     DebugPrintf( NO_PREFIX, "\nCLEAR and CLEAR CONTROL TESTS:\n" );
-
-    // Init sessionHandle
-    sessionData.sessionHandle = TPM2_RS_PW;
-
-    // Init nonce.
-    nonce.size = 0;
-    sessionData.nonce = nonce;
-
-    // init hmac
-    hmac.size = 0;
-    sessionData.hmac = hmac;
-
-    // Init session attributes
-    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
-
-    sessionsDataIn.cmdAuthsCount = 1;
-    sessionsDataIn.cmdAuths[0] = &sessionData;
 
     rval = Tss2_Sys_Clear ( sysContext, TPM2_RH_PLATFORM, &sessionsDataIn, 0 );
     CheckPassed( rval );
@@ -488,17 +435,12 @@ void TestTpmClear()
     rval = Tss2_Sys_ClearControl ( sysContext, TPM2_RH_PLATFORM, &sessionsDataIn, NO, &sessionsDataOut );
     CheckPassed( rval );
 
-    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0xff;
-    sessionsDataIn.cmdAuths[0] = &sessionData;
+    sessionsDataIn.auths[0].sessionAttributes = 0xff;
     rval = Tss2_Sys_Clear ( sysContext, TPM2_RH_PLATFORM, &sessionsDataIn, &sessionsDataOut );
     CheckFailed( rval, TPM2_RC_9 + TPM2_RC_RESERVED_BITS );
 
     rval = Tss2_Sys_ClearControl ( sysContext, TPM2_RH_PLATFORM, &sessionsDataIn, NO, &sessionsDataOut );
     CheckFailed( rval, TPM2_RC_9 + TPM2_RC_RESERVED_BITS );
-
-    hmac.size = 0;
-
-
 }
 
 #define SESSIONS_ABOVE_MAX_ACTIVE 0
@@ -614,38 +556,14 @@ void TestStartAuthSession()
 void TestChangeEps()
 {
     UINT32 rval;
-    TSS2_SYS_CMD_AUTHS sessionsData;
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
-
-    TPMS_AUTH_COMMAND sessionData;
-    TPMS_AUTH_RESPONSE sessionDataOut;
-
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-
-    sessionDataArray[0] = &sessionData;
-    sessionDataOutArray[0] = &sessionDataOut;
-
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsData.cmdAuths = &sessionDataArray[0];
-
-    sessionsDataOut.rspAuthsCount = 1;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
+    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths = {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce = {.size = 0},
+        .hmac = {.size = 0}}}};
 
     DebugPrintf( NO_PREFIX, "\nCHANGE_EPS TESTS:\n" );
-
-	sessionsData.cmdAuthsCount = 1;
-
-    // Init authHandle
-    sessionsData.cmdAuths[0]->sessionHandle = TPM2_RS_PW;
-
-    // Init nonce.
-    sessionsData.cmdAuths[0]->nonce.size = 0;
-
-    // init hmac
-    sessionsData.cmdAuths[0]->hmac.size = 0;
-
-    // Init session attributes
-    *( (UINT8 *)((void *)&sessionsData.cmdAuths[0]->sessionAttributes ) ) = 0;
 
     rval = Tss2_Sys_ChangeEPS( sysContext, TPM2_RH_PLATFORM, &sessionsData, &sessionsDataOut );
     CheckPassed( rval );
@@ -654,39 +572,16 @@ void TestChangeEps()
 void TestChangePps()
 {
     UINT32 rval;
-    TSS2_SYS_CMD_AUTHS sessionsData;
 
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
 
-    TPMS_AUTH_COMMAND sessionData;
-    TPMS_AUTH_RESPONSE sessionDataOut;
-
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-
-    sessionDataArray[0] = &sessionData;
-    sessionDataOutArray[0] = &sessionDataOut;
-
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsData.cmdAuths = &sessionDataArray[0];
-
-    sessionsDataOut.rspAuthsCount = 1;
+    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths = {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce = {.size = 0},
+        .hmac = {.size = 0}}}};
 
     DebugPrintf( NO_PREFIX, "\nCHANGE_PPS TESTS:\n" );
-
-    sessionsData.cmdAuthsCount = 1;
-
-    // Init authHandle
-    sessionsData.cmdAuths[0]->sessionHandle = TPM2_RS_PW;
-
-    // Init nonce.
-    sessionsData.cmdAuths[0]->nonce.size = 0;
-
-    // init hmac
-    sessionsData.cmdAuths[0]->hmac.size = 0;
-
-    // Init session attributes
-    *( (UINT8 *)((void *)&sessionsData.cmdAuths[0]->sessionAttributes ) ) = 0;
 
     rval = Tss2_Sys_ChangePPS( sysContext, TPM2_RH_PLATFORM, &sessionsData, &sessionsDataOut );
     CheckPassed( rval );
@@ -696,32 +591,15 @@ void TestHierarchyChangeAuth()
 {
     UINT32 rval;
     TPM2B_AUTH      newAuth;
-    TPMS_AUTH_COMMAND sessionData;
-    TSS2_SYS_CMD_AUTHS sessionsData;
     int i;
 
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-
-    sessionDataArray[0] = &sessionData;
-
-    sessionsData.cmdAuths = &sessionDataArray[0];
+    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths = {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce = {.size = 0},
+        .hmac = {.size = 0}}}};
 
     DebugPrintf( NO_PREFIX, "\nHIERARCHY_CHANGE_AUTH TESTS:\n" );
-
-    // Init authHandle
-    sessionData.sessionHandle = TPM2_RS_PW;
-
-    // Init nonce.
-    sessionData.nonce.size = 0;
-
-    // init hmac
-    sessionData.hmac.size = 0;
-
-    // Init session attributes
-    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
-
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0] = &sessionData;
 
     newAuth.size = 0;
     rval = Tss2_Sys_HierarchyChangeAuth( sysContext, TPM2_RH_PLATFORM, &sessionsData, &newAuth, 0 );
@@ -735,7 +613,7 @@ void TestHierarchyChangeAuth()
     rval = Tss2_Sys_HierarchyChangeAuth( sysContext, TPM2_RH_PLATFORM, &sessionsData, &newAuth, 0 );
     CheckPassed( rval );
 
-    sessionData.hmac = newAuth;
+    sessionsData.auths[0].hmac = newAuth;
     rval = Tss2_Sys_HierarchyChangeAuth( sysContext, TPM2_RH_PLATFORM, &sessionsData, &newAuth, 0 );
     CheckPassed( rval );
 
@@ -745,7 +623,6 @@ void TestHierarchyChangeAuth()
     rval = Tss2_Sys_HierarchyChangeAuth( sysContext, TPM2_RH_PLATFORM, &sessionsData, &newAuth, 0 );
     CheckPassed( rval );
 
-    sessionsData.cmdAuths[0] = &sessionData;
     rval = Tss2_Sys_HierarchyChangeAuth( sysContext, TPM2_RH_PLATFORM, &sessionsData, &newAuth, 0 );
     CheckFailed( rval, TPM2_RC_1 + TPM2_RC_S + TPM2_RC_BAD_AUTH );
 
@@ -778,8 +655,6 @@ void TestHierarchyChangeAuth()
 void TestPcrExtend()
 {
     UINT32 rval;
-    TPMS_AUTH_COMMAND sessionData;
-    TSS2_SYS_CMD_AUTHS sessionsData;
     UINT16 i, digestSize;
     TPML_PCR_SELECTION  pcrSelection;
     UINT32 pcrUpdateCounterBeforeExtend;
@@ -790,24 +665,13 @@ void TestPcrExtend()
     TPML_DIGEST_VALUES digests;
     TPML_PCR_SELECTION pcrSelectionOut;
 
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-
-    sessionDataArray[0] = &sessionData;
-    sessionsData.cmdAuths = &sessionDataArray[0];
+    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths = {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce = {.size = 0},
+        .hmac = {.size = 0}}}};
 
     DebugPrintf( NO_PREFIX, "\nPCR_EXTEND, PCR_EVENT, PCR_ALLOCATE, and PCR_READ TESTS:\n" );
-
-    // Init authHandle
-    sessionData.sessionHandle = TPM2_RS_PW;
-
-    // Init nonce.
-    sessionData.nonce.size = 0;
-
-    // init hmac
-    sessionData.hmac.size = 0;
-
-    // Init session attributes
-    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
 
     // Init digests
     digests.count = 1;
@@ -837,9 +701,6 @@ void TestPcrExtend()
     if( pcrValues.digests[0].size <= PCR_SIZE &&
             pcrValues.digests[0].size <= sizeof( pcrValues.digests[0].buffer ) )
         memcpy( &( pcrBeforeExtend[0] ), &( pcrValues.digests[0].buffer[0] ), pcrValues.digests[0].size );
-
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0] = &sessionData;
 
     rval = Tss2_Sys_PCR_Extend( sysContext, PCR_17, &sessionsData, &digests, 0  );
     CheckPassed( rval );
@@ -879,16 +740,7 @@ void TestPcrExtend()
 void TestShutdown()
 {
     UINT32 rval;
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
-
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-    TPMS_AUTH_RESPONSE sessionDataOut;
-
-    sessionDataOutArray[0] = &sessionDataOut;
-
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-
-    sessionsDataOut.rspAuthsCount = 1;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
 
     DebugPrintf( NO_PREFIX, "\nSHUTDOWN TESTS:\n" );
 
@@ -907,10 +759,7 @@ void TestNV()
     UINT32 rval;
     TPM2B_NV_PUBLIC publicInfo;
     TPM2B_AUTH  nvAuth;
-    TPMS_AUTH_COMMAND sessionData;
-    TPMS_AUTH_RESPONSE sessionDataOut;
-    TSS2_SYS_CMD_AUTHS sessionsData;
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
     int i;
     TPM2B_MAX_NV_BUFFER nvWriteData;
     TPM2B_MAX_NV_BUFFER nvData;
@@ -918,16 +767,11 @@ void TestNV()
     TPM2B_NV_PUBLIC nvPublic;
     TPM2B_NAME nvName;
 
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-
-    sessionDataArray[0] = &sessionData;
-    sessionDataOutArray[0] = &sessionDataOut;
-
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsData.cmdAuths = &sessionDataArray[0];
-
-    sessionsDataOut.rspAuthsCount = 1;
+    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths = {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce = {.size = 0},
+        .hmac = {.size = 0}}}};
 
     DebugPrintf( NO_PREFIX, "\nNV INDEX TESTS:\n" );
 
@@ -953,20 +797,6 @@ void TestNV()
     publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_ORDERLY;
     publicInfo.nvPublic.authPolicy.size = 0;
     publicInfo.nvPublic.dataSize = 32;
-
-    sessionData.sessionHandle = TPM2_RS_PW;
-
-    // Init nonce.
-    sessionData.nonce.size = 0;
-
-    // init hmac
-    sessionData.hmac.size = 0;
-
-    // Init session attributes
-    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
-
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0] = &sessionData;
 
     INIT_SIMPLE_TPM2B_SIZE( nvData );
     rval = Tss2_Sys_NV_Read( sysContext, TPM2_RH_PLATFORM, TPM20_INDEX_TEST1, &sessionsData, 32, 0, &nvData, &sessionsDataOut );
@@ -1069,25 +899,17 @@ void TestHierarchyControl()
     UINT32 rval;
     TPM2B_NV_PUBLIC publicInfo;
     TPM2B_AUTH  nvAuth;
-    TPMS_AUTH_COMMAND sessionData;
-    TPMS_AUTH_RESPONSE sessionDataOut;
-    TSS2_SYS_CMD_AUTHS sessionsData;
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
     int i;
     TPM2B_NAME nvName;
     TPM2B_NV_PUBLIC nvPublic;
     TPM2B_MAX_NV_BUFFER nvData;
 
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-
-    sessionDataArray[0] = &sessionData;
-    sessionDataOutArray[0] = &sessionDataOut;
-
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsData.cmdAuths = &sessionDataArray[0];
-
-    sessionsDataOut.rspAuthsCount = 1;
+    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths = {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce = {.size = 0},
+        .hmac = {.size = 0}}}};
 
     DebugPrintf( NO_PREFIX, "\nHIERARCHY CONTROL TESTS:\n" );
 
@@ -1114,20 +936,6 @@ void TestHierarchyControl()
     publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_ORDERLY;
     publicInfo.nvPublic.authPolicy.size = 0;
     publicInfo.nvPublic.dataSize = 32;
-
-    sessionData.sessionHandle = TPM2_RS_PW;
-
-    // Init nonce.
-    sessionData.nonce.size = 0;
-
-    // init hmac
-    sessionData.hmac.size = 0;
-
-    // Init session attributes
-    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
-
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0] = &sessionData;
 
     rval = Tss2_Sys_NV_DefineSpace( sysContext, TPM2_RH_PLATFORM, &sessionsData, &nvAuth, &publicInfo, 0 );
     CheckPassed( rval );
@@ -1177,11 +985,7 @@ void TestCreate(){
     TPM2B_SENSITIVE_CREATE  inSensitive = {sizeof( TPM2B_SENSITIVE_CREATE ) - 2,};
     TPM2B_DATA              outsideInfo = {sizeof( TPM2B_DATA ) - 2,};
     TPML_PCR_SELECTION      creationPCR;
-    TPMS_AUTH_COMMAND sessionData;
-    TPMS_AUTH_RESPONSE sessionDataOut;
-    TSS2_SYS_CMD_AUTHS sessionsData;
-
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
 	TPM2B_NAME name = {sizeof( TPM2B_NAME ) - 2,};
 	TPM2B_NAME name1 = {sizeof( TPM2B_NAME ) - 2,};
     TPM2B_PRIVATE outPrivate = {sizeof( TPM2B_PRIVATE ) - 2,};
@@ -1190,16 +994,11 @@ void TestCreate(){
 	TPM2B_DIGEST creationHash = {sizeof( TPM2B_DIGEST ) - 2,};
 	TPMT_TK_CREATION creationTicket = { 0, 0, {sizeof( TPM2B_DIGEST ) - 2,} };
 
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-
-    sessionDataArray[0] = &sessionData;
-    sessionDataOutArray[0] = &sessionDataOut;
-
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsData.cmdAuths = &sessionDataArray[0];
-
-    sessionsDataOut.rspAuthsCount = 1;
+    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths = {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce = {.size = 0},
+        .hmac = {.size = 0}}}};
 
     DebugPrintf( NO_PREFIX, "\nCREATE, CREATE PRIMARY, and LOAD TESTS:\n" );
 
@@ -1233,20 +1032,6 @@ void TestCreate(){
 
     outsideInfo.size = 0;
     creationPCR.count = 0;
-
-    sessionData.sessionHandle = TPM2_RS_PW;
-
-    // Init nonce.
-    sessionData.nonce.size = 0;
-
-    // init hmac
-    sessionData.hmac.size = 0;
-
-    // Init session attributes
-    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
-
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0] = &sessionData;
 
     // Do SAPI test for non-zero sized outPublic
     outPublic.size = 0xff;
@@ -1285,9 +1070,9 @@ void TestCreate(){
     DebugPrintf( NO_PREFIX, "\nNew key successfully created in platform hierarchy (RSA 2048).  Handle: 0x%8.8x\n",
             handle2048rsa );
 
-    sessionData.hmac.size = 2;
-    sessionData.hmac.buffer[0] = 0x00;
-    sessionData.hmac.buffer[1] = 0xff;
+    sessionsData.auths[0].hmac.size = 2;
+    sessionsData.auths[0].hmac.buffer[0] = 0x00;
+    sessionsData.auths[0].hmac.buffer[1] = 0xff;
 
     inPublic.publicArea.type = TPM2_ALG_KEYEDHASH;
     inPublic.publicArea.objectAttributes &= ~TPMA_OBJECT_DECRYPT;
@@ -1327,32 +1112,20 @@ void TestCreate(){
 void TestEvict()
 {
     TSS2_RC rval = TPM2_RC_SUCCESS;
-    TPMS_AUTH_COMMAND sessionData;
-    TPMS_AUTH_RESPONSE sessionDataOut;
-    TSS2_SYS_CMD_AUTHS sessionsData;
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-
-    sessionDataArray[0] = &sessionData;
-    sessionDataOutArray[0] = &sessionDataOut;
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsData.cmdAuths = &sessionDataArray[0];
-    sessionsData.cmdAuthsCount = 1;
-    sessionsDataOut.rspAuthsCount = 1;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
+    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths = {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce = {.size = 0},
+        .hmac = {.size = 0}}}};
 
     DebugPrintf( NO_PREFIX, "\nEVICT CONTROL TESTS:\n" );
-
-    sessionData.sessionHandle = TPM2_RS_PW;
-    sessionData.nonce.size = 0;
-    sessionData.hmac.size = 0;
-    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
 
     rval = Tss2_Sys_EvictControl( sysContext, TPM2_RH_PLATFORM, handle2048rsa, &sessionsData, 0x81800000, &sessionsDataOut );
     CheckPassed( rval );
 
     // Reset persistent key to be transitent.
-    sessionData.hmac.size = 0;
+    sessionsData.auths[0].hmac.size = 0;
     rval = Tss2_Sys_EvictControl( sysContext, TPM2_RH_PLATFORM, 0x81800000, &sessionsData, 0x81800000, &sessionsDataOut );
     CheckPassed( rval );
 }
@@ -1364,18 +1137,12 @@ TSS2_RC DefineNvIndex( TPMI_RH_PROVISION authHandle, TPMI_SH_AUTH_SESSION sessio
     TPM2B_NV_PUBLIC publicInfo;
 
     // Command and response session data structures.
-    TPMS_AUTH_COMMAND sessionData = { sessionAuthHandle, };
-    TPMS_AUTH_RESPONSE sessionDataOut;
-    TPMS_AUTH_COMMAND *sessionDataArray[1] = { &sessionData };
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1] = { &sessionDataOut };
-    TSS2_SYS_CMD_AUTHS sessionsData = { 1, &sessionDataArray[0] };
-    TSS2_SYS_RSP_AUTHS sessionsDataOut = { 1, &sessionDataOutArray[0] };
-    // Init nonce.
-    sessionData.nonce.size = 0;
-    // init hmac
-    sessionData.hmac.size = 0;
-    // Init session attributes
-    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
+    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths = {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce = {.size = 0},
+        .hmac = {.size = 0}}}};
 
     attributes |= TPMA_NV_TPMA_NV_ORDERLY;
 
@@ -1502,31 +1269,17 @@ TSS2_RC CreateNVIndex( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TP
 TSS2_RC TestLocality( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession )
 {
     TSS2_RC rval = TPM2_RC_SUCCESS;
-    TSS2_SYS_CMD_AUTHS sessionsData;
     TPM2B_MAX_NV_BUFFER nvWriteData;
-    TSS2_SYS_RSP_AUTHS sessionsDataOut = { 1, };
-    TPMS_AUTH_COMMAND sessionData;
-    TPMS_AUTH_RESPONSE sessionDataOut;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut = { 1, };
+    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths = {{
+        .sessionHandle = policySession->sessionHandle,
+        .sessionAttributes = TPMA_SESSION_CONTINUESESSION,
+        .nonce = {.size = 0},
+        .hmac = {.size = 0}}}};
 
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-
-    sessionDataArray[0] = &sessionData;
-    sessionDataOutArray[0] = &sessionDataOut;
-
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsData.cmdAuths = &sessionDataArray[0];
 
     // Init write data.
     nvWriteData.size = 0;
-
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0]->sessionHandle = policySession->sessionHandle;
-    sessionsData.cmdAuths[0]->nonce.size = 0;
-    sessionsData.cmdAuths[0]->hmac.size = 0;
-
-    *(UINT8 *)( (void *)&( sessionsData.cmdAuths[0]->sessionAttributes ) ) = 0;
-     sessionsData.cmdAuths[0]->sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
 
     rval = SetLocality( sysContext, 2 );
     CheckPassed( rval );
@@ -1553,10 +1306,10 @@ TSS2_RC TestLocality( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession )
     CheckFailed( rval, TPM2_RC_POLICY_FAIL + TPM2_RC_S + TPM2_RC_1 );
 
     // Delete NV index
-    sessionsData.cmdAuths[0]->sessionHandle = TPM2_RS_PW;
-    sessionsData.cmdAuths[0]->nonce.size = 0;
-    sessionsData.cmdAuths[0]->nonce.buffer[0] = 0xa5;
-    sessionData.hmac.size = 0;
+    sessionsData.auths[0].sessionHandle = TPM2_RS_PW;
+    sessionsData.auths[0].nonce.size = 0;
+    sessionsData.auths[0].nonce.buffer[0] = 0xa5;
+    sessionsData.auths[0].hmac.size = 0;
 
     // Now undefine the index.
     rval = Tss2_Sys_NV_UndefineSpace( sysContext, TPM2_RH_PLATFORM,
@@ -1639,9 +1392,6 @@ TSS2_RC BuildPasswordPcrPolicy( TSS2_SYS_CONTEXT *sysContext, SESSION *policySes
 TSS2_RC CreateDataBlob( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TPM2B_DIGEST *policyDigest )
 {
     TSS2_RC rval = TPM2_RC_SUCCESS;
-    TPMS_AUTH_COMMAND cmdAuth;
-    TPMS_AUTH_COMMAND *cmdSessionArray[1] = { &cmdAuth };
-    TSS2_SYS_CMD_AUTHS cmdAuthArray = { 1, &cmdSessionArray[0] };
     TPM2B_SENSITIVE_CREATE inSensitive;
     TPM2B_PUBLIC inPublic;
     TPM2B_DATA outsideInfo = {0,};
@@ -1655,10 +1405,11 @@ TSS2_RC CreateDataBlob( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, T
 	TPM2B_DIGEST data;
     TPM2B_PRIVATE outPrivate;
 
-    cmdAuth.sessionHandle = TPM2_RS_PW;
-    cmdAuth.nonce.size = 0;
-    *( (UINT8 *)((void *)&cmdAuth.sessionAttributes ) ) = 0;
-    cmdAuth.hmac.size = 0;
+    TSS2L_SYS_AUTH_COMMAND cmdAuthArray = { .count = 1, .auths = {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce = {.size = 0},
+        .hmac = {.size = 0}}}};
 
     inSensitive.sensitive.userAuth.size = 0;
     inSensitive.sensitive.data.size = 0;
@@ -1691,7 +1442,7 @@ TSS2_RC CreateDataBlob( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, T
             &creationTicket, &srkName, 0 );
     CheckPassed( rval );
 
-    cmdAuth.sessionHandle = TPM2_RS_PW;
+    cmdAuthArray.auths[0].sessionHandle = TPM2_RS_PW;
 
     inSensitive.sensitive.userAuth.size = 0;
     blobAuth.size = sizeof( passwordPCRTestPassword );
@@ -1732,15 +1483,11 @@ TSS2_RC AuthValueUnseal( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession )
 {
     TSS2_RC rval = TPM2_RC_SUCCESS;
     TPM2B_SENSITIVE_DATA outData;
-    TPMS_AUTH_COMMAND cmdAuth;
-    TPMS_AUTH_COMMAND *cmdSessionArray[1] = { &cmdAuth };
-    TSS2_SYS_CMD_AUTHS cmdAuthArray = { 1, &cmdSessionArray[0] };
-
-    cmdAuth.sessionHandle = policySession->sessionHandle;
-    cmdAuth.nonce.size = 0;
-    *( (UINT8 *)((void *)&cmdAuth.sessionAttributes ) ) = 0;
-    cmdAuth.sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
-    cmdAuth.hmac.size = 0;
+    TSS2L_SYS_AUTH_COMMAND cmdAuthArray = { .count = 1, .auths = {{
+        .sessionHandle = policySession->sessionHandle,
+        .sessionAttributes = TPMA_SESSION_CONTINUESESSION,
+        .nonce = {.size = 0},
+        .hmac = {.size = 0}}}};
 
     // Now try to unseal the blob without setting the HMAC.
     // This test should fail.
@@ -1764,7 +1511,7 @@ TSS2_RC AuthValueUnseal( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession )
     CheckPassed( rval );
 
     // Roll nonces for command.
-    RollNonces( policySession, &cmdAuth.nonce );
+    RollNonces( policySession, &cmdAuthArray.auths[0].nonce );
 
     // Now generate the HMAC.
     rval = ComputeCommandHmacs( sysContext,
@@ -1793,15 +1540,11 @@ TSS2_RC PasswordUnseal( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession )
 {
     TSS2_RC rval = TPM2_RC_SUCCESS;
     TPM2B_SENSITIVE_DATA outData;
-    TPMS_AUTH_COMMAND cmdAuth;
-    TPMS_AUTH_COMMAND *cmdSessionArray[1] = { &cmdAuth };
-    TSS2_SYS_CMD_AUTHS cmdAuthArray = { 1, &cmdSessionArray[0] };
-
-    cmdAuth.sessionHandle = policySession->sessionHandle;
-    cmdAuth.nonce.size = 0;
-    *( (UINT8 *)((void *)&cmdAuth.sessionAttributes ) ) = 0;
-    cmdAuth.sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
-    cmdAuth.hmac.size = 0;
+    TSS2L_SYS_AUTH_COMMAND cmdAuthArray = { .count = 1, .auths = {{
+        .sessionHandle = policySession->sessionHandle,
+        .sessionAttributes = TPMA_SESSION_CONTINUESESSION,
+        .nonce = {.size = 0},
+        .hmac = {.size = 0}}}};
 
     // Now try to unseal the blob without setting the password.
     // This test should fail.
@@ -1815,8 +1558,8 @@ TSS2_RC PasswordUnseal( TSS2_SYS_CONTEXT *sysContext, SESSION *policySession )
     // Now try to unseal the blob after setting the password.
     // This test should pass.
     INIT_SIMPLE_TPM2B_SIZE( outData );
-    cmdAuth.hmac.size = sizeof( passwordPCRTestPassword );
-    memcpy( &cmdAuth.hmac.buffer, passwordPCRTestPassword, sizeof( passwordPCRTestPassword ) );
+    cmdAuthArray.auths[0].hmac.size = sizeof( passwordPCRTestPassword );
+    memcpy( &cmdAuthArray.auths[0].hmac.buffer, passwordPCRTestPassword, sizeof( passwordPCRTestPassword ) );
     rval = Tss2_Sys_Unseal( sysContext, blobHandle, &cmdAuthArray, &outData, 0 );
     CheckPassed( rval );
 
@@ -1921,15 +1664,11 @@ void TestHash()
     UINT32 rval;
     TPM2B_AUTH auth;
     TPMI_DH_OBJECT  sequenceHandle[MAX_TEST_SEQUENCES];
-    TPMS_AUTH_COMMAND sessionData, sessionData1;
-    TPMS_AUTH_RESPONSE sessionDataOut, sessionDataOut1;
-    TSS2_SYS_CMD_AUTHS sessionsData;
+    TSS2L_SYS_AUTH_COMMAND sessionsData;
     TPM2B_MAX_BUFFER dataToHash;
     TPM2B_DIGEST result;
     TPMT_TK_HASHCHECK validation;
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
-    TPMS_AUTH_COMMAND *sessionDataArray[2];
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[2];
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
     UINT8 memoryToHash[] =
     {
           0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
@@ -2004,17 +1743,6 @@ void TestHash()
             { 0xB3, 0xFD, 0x6A, 0xD2, 0x9F, 0xD0, 0x13, 0x52, 0xBA, 0xFC,
               0x8B, 0x22, 0xC9, 0x6D, 0x88, 0x42, 0xA3, 0x3C, 0xB0, 0xC9 };
 
-
-    sessionDataArray[0] = &sessionData;
-    sessionDataOutArray[0] = &sessionDataOut;
-    sessionDataArray[1] = &sessionData1;
-    sessionDataOutArray[1] = &sessionDataOut1;
-
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsData.cmdAuths = &sessionDataArray[0];
-
-    sessionsDataOut.rspAuthsCount = 1;
-
     DebugPrintf( NO_PREFIX, "\nHASH TESTS:\n" );
 
     auth.size = 2;
@@ -2023,13 +1751,11 @@ void TestHash()
     rval = Tss2_Sys_HashSequenceStart ( sysContext, 0, &auth, TPM2_ALG_SHA1, &sequenceHandle[0], 0 );
     CheckPassed( rval );
 
-    sessionData.sessionHandle = TPM2_RS_PW;
-    sessionData.nonce.size = 0;
-    sessionData.hmac = auth;
-    *((UINT8 *)((void *)&sessionData.sessionAttributes)) = 0;
-
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0] = &sessionData;
+    sessionsData.auths[0].sessionHandle = TPM2_RS_PW;
+    sessionsData.auths[0].nonce.size = 0;
+    sessionsData.auths[0].hmac = auth;
+    sessionsData.auths[0].sessionAttributes = 0;
+    sessionsData.count = 1;
 
     dataToHash.size = TPM2_MAX_DIGEST_BUFFER;
     memcpy( &dataToHash.buffer[0], &memoryToHash[0], dataToHash.size );
@@ -2057,39 +1783,16 @@ void TestQuote()
     UINT8 qualDataString[] = { 0x00, 0xff, 0x55, 0xaa };
     TPMT_SIG_SCHEME inScheme;
     TPML_PCR_SELECTION  pcrSelection;
-    TPMS_AUTH_COMMAND sessionData;
-    TPMS_AUTH_RESPONSE sessionDataOut;
-    TSS2_SYS_CMD_AUTHS sessionsData;
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
     TPM2B_ATTEST quoted;
     TPMT_SIGNATURE signature;
-
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-
-    sessionDataArray[0] = &sessionData;
-    sessionDataOutArray[0] = &sessionDataOut;
-
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsData.cmdAuths = &sessionDataArray[0];
-
-    sessionsDataOut.rspAuthsCount = 1;
+    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths= {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce={.size=0},
+        .hmac={.size=2, .buffer={0x00,0xff}}}}};
 
     DebugPrintf( NO_PREFIX, "\nQUOTE CONTROL TESTS:\n" );
-
-    // Init authHandle
-    sessionData.sessionHandle = TPM2_RS_PW;
-
-    // Init nonce.
-    sessionData.nonce.size = 0;
-
-    // init hmac
-    sessionData.hmac.size = 2;
-    sessionData.hmac.buffer[0] = 0x00;
-    sessionData.hmac.buffer[1] = 0xff;
-
-    // Init session attributes
-    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
 
     qualifyingData.size = sizeof( qualDataString );
     memcpy( &( qualifyingData.buffer[0] ), qualDataString, sizeof( qualDataString ) );
@@ -2107,9 +1810,6 @@ void TestQuote()
 
     // Now set the PCR you want
     pcrSelection.pcrSelections[0].pcrSelect[( PCR_17/8 )] = ( 1 << ( PCR_18 % 8) );
-
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0] = &sessionData;
 
     // Test with wrong type of key.
     INIT_SIMPLE_TPM2B_SIZE( quoted );
@@ -2133,22 +1833,13 @@ void ProvisionOtherIndices()
     TPMI_SH_AUTH_SESSION otherIndicesPolicyAuthHandle;
     TPM2B_DIGEST  nvPolicyHash;
     TPM2B_AUTH  nvAuth;
-    TPMS_AUTH_COMMAND otherIndicesSessionData;
-    TPMS_AUTH_RESPONSE otherIndicesSessionDataOut;
-    TSS2_SYS_CMD_AUTHS otherIndicesSessionsData;
-    TSS2_SYS_RSP_AUTHS otherIndicesSessionsDataOut;
+    TSS2L_SYS_AUTH_RESPONSE otherIndicesSessionsDataOut;
     TPM2B_NV_PUBLIC publicInfo;
-
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-
-    sessionDataArray[0] = &otherIndicesSessionData;
-    sessionDataOutArray[0] = &otherIndicesSessionDataOut;
-
-    otherIndicesSessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    otherIndicesSessionsData.cmdAuths = &sessionDataArray[0];
-
-    otherIndicesSessionsDataOut.rspAuthsCount = 1;
+    TSS2L_SYS_AUTH_COMMAND otherIndicesSessionsData = { .count = 1, .auths= {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce={.size=0},
+        .hmac={.size=0}}}};
 
     DebugPrintf( NO_PREFIX, "\nPROVISION OTHER NV INDICES:\n" );
 
@@ -2172,20 +1863,8 @@ void ProvisionOtherIndices()
     // Now save the policy digest from the first OR branch.
     DEBUG_PRINT_BUFFER( NO_PREFIX, &( nvPolicyHash.buffer[0] ), nvPolicyHash.size );
 
-    // 4.  CreateNvIndex
-    otherIndicesSessionData.sessionHandle = TPM2_RS_PW;
-
-    // Init nonce.
-    otherIndicesSessionData.nonce.size = 0;
-
-    // init hmac
-    otherIndicesSessionData.hmac.size = 0;
-
     // init nvAuth
     nvAuth.size = 0;
-
-    // Init session attributes
-    *( (UINT8 *)((void *)&otherIndicesSessionData.sessionAttributes ) ) = 0;
 
     publicInfo.size = sizeof( TPMI_RH_NV_INDEX ) +
             sizeof( TPMI_ALG_HASH ) + sizeof( TPMA_NV ) + sizeof( UINT16) +
@@ -2194,7 +1873,7 @@ void ProvisionOtherIndices()
     publicInfo.nvPublic.nameAlg = TPM2_ALG_SHA1;
 
     // First zero out attributes.
-    *(UINT32 *)&( publicInfo.nvPublic.attributes ) = 0;
+    publicInfo.nvPublic.attributes = 0;
 
     // Now set the attributes.
     publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_AUTHREAD;
@@ -2207,9 +1886,6 @@ void ProvisionOtherIndices()
 
     publicInfo.nvPublic.authPolicy.size = 0;
     publicInfo.nvPublic.dataSize = NV_PS_INDEX_SIZE;
-
-    otherIndicesSessionsData.cmdAuthsCount = 1;
-    otherIndicesSessionsData.cmdAuths[0] = &otherIndicesSessionData;
 
     rval = Tss2_Sys_NV_DefineSpace( sysContext, TPM2_RH_PLATFORM, &otherIndicesSessionsData,
             &nvAuth, &publicInfo, &otherIndicesSessionsDataOut );
@@ -2249,22 +1925,13 @@ void ProvisionNvAux()
     TPMI_SH_AUTH_SESSION nvAuxPolicyAuthHandle;
     TPM2B_DIGEST  nvPolicyHash;
     TPM2B_AUTH  nvAuth;
-    TPMS_AUTH_COMMAND nvAuxSessionData;
-    TPMS_AUTH_RESPONSE nvAuxSessionDataOut;
-    TSS2_SYS_CMD_AUTHS nvAuxSessionsData;
-    TSS2_SYS_RSP_AUTHS nvAuxSessionsDataOut;
+    TSS2L_SYS_AUTH_RESPONSE nvAuxSessionsDataOut;
     TPM2B_NV_PUBLIC publicInfo;
-
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-
-    sessionDataArray[0] = &nvAuxSessionData;
-    sessionDataOutArray[0] = &nvAuxSessionDataOut;
-
-    nvAuxSessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    nvAuxSessionsData.cmdAuths = &sessionDataArray[0];
-
-    nvAuxSessionsDataOut.rspAuthsCount = 1;
+    TSS2L_SYS_AUTH_COMMAND nvAuxSessionsData = { .count = 1, .auths= {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce={.size=0},
+        .hmac={.size=0}}}};
 
     DebugPrintf( NO_PREFIX, "\nPROVISION NV AUX:\n" );
 
@@ -2288,23 +1955,8 @@ void ProvisionNvAux()
     // Now save the policy digest.
     DEBUG_PRINT_BUFFER( NO_PREFIX, &( nvPolicyHash.buffer[0] ), nvPolicyHash.size );
 
-    // 4.  CreateNvIndex
-    nvAuxSessionData.sessionHandle = TPM2_RS_PW;
-
-    // Init nonce.
-    nvAuxSessionData.nonce.size = 0;
-
-    // init hmac
-    nvAuxSessionData.hmac.size = 0;
-
     // init nvAuth
     nvAuth.size = 0;
-
-    // Init session attributes
-    *( (UINT8 *)((void *)&nvAuxSessionData.sessionAttributes ) ) = 0;
-
-    nvAuxSessionsData.cmdAuthsCount = 1;
-    nvAuxSessionsData.cmdAuths[0] = &nvAuxSessionData;
 
     publicInfo.size = sizeof( TPMI_RH_NV_INDEX ) +
             sizeof( TPMI_ALG_HASH ) + sizeof( TPMA_NV ) + sizeof( UINT16) +
@@ -2352,16 +2004,15 @@ void TpmAuxWrite( int locality)
     for( i = 0; i < nvWriteData.size; i++ )
         nvWriteData.buffer[i] = 0xff - i;
 
-    nullSessionData.sessionHandle = nvAuxPolicyAuthHandle;
+    nullSessionsData.auths[0].sessionHandle = nvAuxPolicyAuthHandle;
 
     // Make sure that session terminates after NVWrite completes.
-    nullSessionData.sessionAttributes &= ~TPMA_SESSION_CONTINUESESSION;
+    nullSessionsData.auths[0].sessionAttributes &= ~TPMA_SESSION_CONTINUESESSION;
 
     rval = SetLocality( sysContext, locality );
     CheckPassed( rval );
 
-    nullSessionsData.cmdAuthsCount = 1;
-    nullSessionsData.cmdAuths[0] = &nullSessionData;
+    nullSessionsData.count = 1;
 
     rval = Tss2_Sys_NV_Write( sysContext, INDEX_AUX, INDEX_AUX, &nullSessionsData, &nvWriteData, 0, &nullSessionsDataOut );
 
@@ -2396,7 +2047,7 @@ void TpmAuxReadWriteTest()
 
     DebugPrintf( NO_PREFIX, "TPM AUX READ/WRITE TEST\n" );
 
-    nullSessionData.sessionAttributes &= ~TPMA_SESSION_CONTINUESESSION;
+    nullSessionsData.auths[0].sessionAttributes &= ~TPMA_SESSION_CONTINUESESSION;
 
     // Try writing it from all localities.  Only locality 3 should work.
     for( testLocality = 0; testLocality < 5; testLocality++ )
@@ -2404,9 +2055,7 @@ void TpmAuxReadWriteTest()
         TpmAuxWrite( testLocality );
     }
 
-    nullSessionData.sessionHandle = TPM2_RS_PW;
-
-    nullSessionsData.cmdAuths[0] = &nullSessionData;
+    nullSessionsData.auths[0].sessionHandle = TPM2_RS_PW;
 
     // Try reading it from all localities.  They all should work.
     for( testLocality = 0; testLocality < 5; testLocality++ )
@@ -2430,16 +2079,13 @@ void TpmOtherIndicesReadWriteTest()
     int i;
     TPM2B_MAX_NV_BUFFER nvData;
 
-    nullSessionData.sessionHandle = TPM2_RS_PW;
+    nullSessionsData.auths[0].sessionHandle = TPM2_RS_PW;
 
     DebugPrintf( NO_PREFIX, "TPM OTHER READ/WRITE TEST\n" );
 
     nvWriteData.size = 4;
     for( i = 0; i < nvWriteData.size; i++ )
         nvWriteData.buffer[i] = 0xff - i;
-
-    nullSessionsData.cmdAuthsCount = 1;
-    nullSessionsData.cmdAuths[0] = &nullSessionData;
 
     rval = Tss2_Sys_NV_Write( sysContext, INDEX_LCP_SUP, INDEX_LCP_SUP, &nullSessionsData, &nvWriteData, 0, &nullSessionsDataOut );
     CheckPassed( rval );
@@ -2492,44 +2138,21 @@ void TestPcrAllocate()
 {
     UINT32 rval;
     TPML_PCR_SELECTION  pcrSelection;
-    TPMS_AUTH_COMMAND sessionData;
-    TPMS_AUTH_RESPONSE sessionDataOut;
-    TSS2_SYS_CMD_AUTHS sessionsData;
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
     TPMI_YES_NO allocationSuccess;
     UINT32 maxPcr;
     UINT32 sizeNeeded;
     UINT32 sizeAvailable;
 
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-
-    sessionDataArray[0] = &sessionData;
-    sessionDataOutArray[0] = &sessionDataOut;
-
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsData.cmdAuths = &sessionDataArray[0];
-
-    sessionsDataOut.rspAuthsCount = 1;
+    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths= {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce={.size=0},
+        .hmac={.size=0}}}};
 
     DebugPrintf( NO_PREFIX, "\nPCR ALLOCATE TEST  :\n" );
 
-    // Init authHandle
-    sessionData.sessionHandle = TPM2_RS_PW;
-
-    // Init nonce.
-    sessionData.nonce.size = 0;
-
-    // init hmac
-    sessionData.hmac.size = 0;
-
-    // Init session attributes
-    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
-
     pcrSelection.count = 0;
-
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0] = &sessionData;
 
     rval = Tss2_Sys_PCR_Allocate( sysContext, TPM2_RH_PLATFORM, &sessionsData, &pcrSelection,
             &allocationSuccess, &maxPcr, &sizeNeeded, &sizeAvailable, &sessionsDataOut);
@@ -2559,26 +2182,18 @@ void TestPcrAllocate()
 void TestUnseal()
 {
     UINT32 rval;
-    TPMS_AUTH_COMMAND sessionData;
-    TPMS_AUTH_RESPONSE sessionDataOut;
-    TSS2_SYS_CMD_AUTHS sessionsData;
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
     TPM2B_SENSITIVE_CREATE  inSensitive;
     TPML_PCR_SELECTION      creationPCR;
     TPM2B_DATA              outsideInfo;
     TPM2B_PUBLIC            inPublic;
     TPM2_HANDLE loadedObjectHandle;
 
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-
-    sessionDataArray[0] = &sessionData;
-    sessionDataOutArray[0] = &sessionDataOut;
-
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsData.cmdAuths = &sessionDataArray[0];
-
-    sessionsDataOut.rspAuthsCount = 1;
+    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths= {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce={.size=0},
+        .hmac={.size=2, .buffer={0x00,0xff}}}}};
 
     TPM2B_PRIVATE outPrivate;
     TPM2B_PUBLIC outPublic;
@@ -2593,18 +2208,6 @@ void TestUnseal()
     const char sensitiveData[] = "this is sensitive";
 
     DebugPrintf( NO_PREFIX, "\nUNSEAL TEST  :\n" );
-
-    sessionData.sessionHandle = TPM2_RS_PW;
-
-    // Init nonce.
-    sessionData.nonce.size = 0;
-
-    sessionData.hmac.size = 2;
-    sessionData.hmac.buffer[0] = 0x00;
-    sessionData.hmac.buffer[1] = 0xff;
-
-    // Init session attributes
-    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
 
     inSensitive.sensitive.userAuth.size = sizeof( authStr ) - 1;
     memcpy( &( inSensitive.sensitive.userAuth.buffer[0] ), authStr, sizeof( authStr ) - 1 );
@@ -2630,9 +2233,6 @@ void TestUnseal()
 
     outsideInfo.size = 0;
 
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0]  = &sessionData;
-
     outPublic.size = 0;
     creationData.size = 0;
     INIT_SIMPLE_TPM2B_SIZE( creationHash );
@@ -2656,8 +2256,8 @@ void TestUnseal()
             &loadedObjectHandle, &name, &sessionsDataOut);
     CheckPassed( rval );
 
-    sessionData.hmac.size = sizeof( authStr ) - 1;
-    memcpy( &( sessionData.hmac.buffer[0] ), authStr, sizeof( authStr ) - 1 );
+    sessionsData.auths[0].hmac.size = sizeof( authStr ) - 1;
+    memcpy( &( sessionsData.auths[0].hmac.buffer[0] ), authStr, sizeof( authStr ) - 1 );
 
     INIT_SIMPLE_TPM2B_SIZE( outData );
     rval = Tss2_Sys_Unseal( sysContext, loadedObjectHandle, &sessionsData, &outData, &sessionsDataOut );
@@ -2673,37 +2273,16 @@ void CreatePasswordTestNV( TPMI_RH_NV_INDEX nvIndex, char * password )
 {
     UINT32 rval;
     int i;
-    TPMS_AUTH_COMMAND sessionData;
-    TPMS_AUTH_RESPONSE sessionDataOut;
-    TSS2_SYS_CMD_AUTHS sessionsData;
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
     TPM2B_NV_PUBLIC publicInfo;
     TPM2B_AUTH  nvAuth;
 
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
 
-    sessionDataArray[0] = &sessionData;
-    sessionDataOutArray[0] = &sessionDataOut;
-
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsData.cmdAuths = &sessionDataArray[0];
-
-    sessionData.sessionHandle = TPM2_RS_PW;
-
-    // Init nonce.
-    sessionData.nonce.size = 0;
-
-    // init hmac
-    sessionData.hmac.size = 0;
-
-    // Init session attributes
-    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
-
-    sessionsDataOut.rspAuthsCount = 1;
-
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0] = &sessionData;
+    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths= {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce={.size=0},
+        .hmac={.size=0}}}};
 
     nvAuth.size = strlen( password );
     for( i = 0; i < nvAuth.size; i++ ) {
@@ -2740,25 +2319,16 @@ void PasswordTest()
     UINT32 rval;
     int i;
 
-    // Authorization structure for command.
-    TPMS_AUTH_COMMAND sessionData;
-
-    // Authorization structure for response.
-    TPMS_AUTH_RESPONSE sessionDataOut;
-
-    // Create and init authorization area for command:
-    // only 1 authorization area.
-    TPMS_AUTH_COMMAND *sessionDataArray[1] = { &sessionData };
-
-    // Create authorization area for response:
-    // only 1 authorization area.
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1] = { &sessionDataOut };
+    // Authorization array for response.
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
 
     // Authorization array for command (only has one auth structure).
-    TSS2_SYS_CMD_AUTHS sessionsData = { 1, &sessionDataArray[0] };
+    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths= {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce={.size=0},
+        .hmac={.size=0}}}};
 
-    // Authorization array for response (only has one auth structure).
-    TSS2_SYS_RSP_AUTHS sessionsDataOut = { 1, &sessionDataOutArray[0] };
     TPM2B_MAX_NV_BUFFER nvWriteData;
 
     DebugPrintf( NO_PREFIX, "\nPASSWORD TESTS:\n" );
@@ -2768,24 +2338,10 @@ void PasswordTest()
     // "test password".
     CreatePasswordTestNV( TPM20_INDEX_PASSWORD_TEST, password );
 
-    //
-    // Initialize the command authorization area.
-    //
-
-    // Init sessionHandle, nonce, session
-    // attributes, and hmac (password).
-    sessionData.sessionHandle = TPM2_RS_PW;
-    // Set zero sized nonce.
-    sessionData.nonce.size = 0;
-    // sessionAttributes is a bit field.  To initialize
-    // it to 0, cast to a pointer to UINT8 and
-    // write 0 to that pointer.
-    *( (UINT8 *)&sessionData.sessionAttributes ) = 0;
-
     // Init password (HMAC field in authorization structure).
-    sessionData.hmac.size = strlen( password );
-    memcpy( &( sessionData.hmac.buffer[0] ),
-            &( password[0] ), sessionData.hmac.size );
+    sessionsData.auths[0].hmac.size = strlen( password );
+    memcpy( &( sessionsData.auths[0].hmac.buffer[0] ),
+            &( password[0] ), sessionsData.auths[0].hmac.size );
 
     // Initialize write data.
     nvWriteData.size = 4;
@@ -2804,7 +2360,7 @@ void PasswordTest()
     CheckPassed( rval );
 
     // Alter the password so it's incorrect.
-    sessionData.hmac.buffer[4] = 0xff;
+    sessionsData.auths[0].hmac.buffer[4] = 0xff;
     rval = Tss2_Sys_NV_Write( sysContext,
             TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST,
@@ -2818,7 +2374,7 @@ void PasswordTest()
 
     // Change hmac to null one, since null auth is
     // used to undefine the index.
-    sessionData.hmac.size = 0;
+    sessionsData.auths[0].hmac.size = 0;
 
     // Now undefine the index.
     rval = Tss2_Sys_NV_UndefineSpace( sysContext, TPM2_RH_PLATFORM,
@@ -2840,17 +2396,17 @@ void SimplePolicyTest()
     int i;
     TPM2B_ENCRYPTED_SECRET encryptedSalt;
     TPMT_SYM_DEF symmetric;
-    TPMA_SESSION sessionAttributes;
-
-    // Command authorization area: one password session.
-    TPMS_AUTH_COMMAND nvCmdAuth = { TPM2_RS_PW, };
-    TPMS_AUTH_COMMAND *nvCmdAuthArray[1] = { &nvCmdAuth };
-    TSS2_SYS_CMD_AUTHS nvCmdAuths = { 1, &nvCmdAuthArray[0] };
 
     // Response authorization area.
-    TPMS_AUTH_RESPONSE nvRspAuth;
-    TPMS_AUTH_RESPONSE *nvRspAuthArray[1] = { &nvRspAuth };
-    TSS2_SYS_RSP_AUTHS nvRspAuths = { 1, &nvRspAuthArray[0] };
+    TSS2L_SYS_AUTH_RESPONSE nvRspAuths;
+
+    // Command authorization area: one password session.
+    TSS2L_SYS_AUTH_COMMAND nvCmdAuths = { .count = 1, .auths= {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce={.size=0},
+        .hmac={.size=0}}}};
+
     TPM2_ALG_ID sessionAlg = TPM2_ALG_SHA256;
     TPM2B_NONCE nonceCaller;
 
@@ -2975,15 +2531,14 @@ void SimplePolicyTest()
     CheckPassed( rval );
 
     // Configure command authorization area, except for HMAC.
-    nvCmdAuths.cmdAuths[0]->sessionHandle = nvSession->sessionHandle;
-    nvCmdAuths.cmdAuths[0]->nonce.size = 1;
-    nvCmdAuths.cmdAuths[0]->nonce.buffer[0] = 0xa5;
-    *( (UINT8 *)((void *)&sessionAttributes ) ) = 0;
-    nvCmdAuths.cmdAuths[0]->sessionAttributes = sessionAttributes;
-    nvCmdAuths.cmdAuths[0]->sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
+    nvCmdAuths.auths[0].sessionHandle = nvSession->sessionHandle;
+    nvCmdAuths.auths[0].nonce.size = 1;
+    nvCmdAuths.auths[0].nonce.buffer[0] = 0xa5;
+    nvCmdAuths.auths[0].sessionAttributes = 0;
+    nvCmdAuths.auths[0].sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
 
     // Roll nonces for command
-    RollNonces( nvSession, &nvCmdAuths.cmdAuths[0]->nonce );
+    RollNonces( nvSession, &nvCmdAuths.auths[0].nonce );
 
     // Complete command authorization area, by computing
     // HMAC and setting it in nvCmdAuths.
@@ -3003,7 +2558,7 @@ void SimplePolicyTest()
     CheckPassed( sessionCmdRval );
 
     // Roll nonces for response
-    RollNonces( nvSession, &nvRspAuths.rspAuths[0]->nonce );
+    RollNonces( nvSession, &nvRspAuths.auths[0].nonce );
 
     if( sessionCmdRval == TPM2_RC_SUCCESS )
     {
@@ -3025,10 +2580,10 @@ void SimplePolicyTest()
     CheckPassed( rval );
 
     // Roll nonces for command
-    RollNonces( nvSession, &nvCmdAuths.cmdAuths[0]->nonce );
+    RollNonces( nvSession, &nvCmdAuths.auths[0].nonce );
 
     // End the session after next command.
-    nvCmdAuths.cmdAuths[0]->sessionAttributes &= ~TPMA_SESSION_CONTINUESESSION;
+    nvCmdAuths.auths[0].sessionAttributes &= ~TPMA_SESSION_CONTINUESESSION;
 
     // Complete command authorization area, by computing
     // HMAC and setting it in nvCmdAuths.
@@ -3050,7 +2605,7 @@ void SimplePolicyTest()
     CheckPassed( sessionCmdRval );
 
     // Roll nonces for response
-    RollNonces( nvSession, &nvRspAuths.rspAuths[0]->nonce );
+    RollNonces( nvSession, &nvRspAuths.auths[0].nonce );
 
     if( sessionCmdRval == TPM2_RC_SUCCESS )
     {
@@ -3077,9 +2632,9 @@ void SimplePolicyTest()
     //
 
     // Setup authorization for undefining the NV index.
-    nvCmdAuths.cmdAuths[0]->sessionHandle = TPM2_RS_PW;
-    nvCmdAuths.cmdAuths[0]->nonce.size = 0;
-    nvCmdAuths.cmdAuths[0]->hmac.size = 0;
+    nvCmdAuths.auths[0].sessionHandle = TPM2_RS_PW;
+    nvCmdAuths.auths[0].nonce.size = 0;
+    nvCmdAuths.auths[0].hmac.size = 0;
 
     // Undefine the NV index.
     rval = Tss2_Sys_NV_UndefineSpace( sysContext,
@@ -3108,15 +2663,16 @@ void SimpleHmacTest()
     TPMT_SYM_DEF symmetric;
     TPMA_SESSION sessionAttributes;
 
-    // Command authorization area: one password session.
-    TPMS_AUTH_COMMAND nvCmdAuth = { TPM2_RS_PW, };
-    TPMS_AUTH_COMMAND *nvCmdAuthArray[1] = { &nvCmdAuth };
-    TSS2_SYS_CMD_AUTHS nvCmdAuths = { 1, &nvCmdAuthArray[0] };
-
     // Response authorization area.
-    TPMS_AUTH_RESPONSE nvRspAuth;
-    TPMS_AUTH_RESPONSE *nvRspAuthArray[1] = { &nvRspAuth };
-    TSS2_SYS_RSP_AUTHS nvRspAuths = { 1, &nvRspAuthArray[0] };
+    TSS2L_SYS_AUTH_RESPONSE nvRspAuths;
+
+    // Command authorization area: one password session.
+    TSS2L_SYS_AUTH_COMMAND nvCmdAuths = { .count = 1, .auths= {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce={.size=0},
+        .hmac={.size=0}}}};
+
     TPM2B_NONCE nonceCaller;
 
     nonceCaller.size = 0;
@@ -3206,15 +2762,15 @@ void SimpleHmacTest()
     CheckPassed( rval );
 
     // Configure command authorization area, except for HMAC.
-    nvCmdAuths.cmdAuths[0]->sessionHandle = nvSession->sessionHandle;
-    nvCmdAuths.cmdAuths[0]->nonce.size = 1;
-    nvCmdAuths.cmdAuths[0]->nonce.buffer[0] = 0xa5;
+    nvCmdAuths.auths[0].sessionHandle = nvSession->sessionHandle;
+    nvCmdAuths.auths[0].nonce.size = 1;
+    nvCmdAuths.auths[0].nonce.buffer[0] = 0xa5;
     *( (UINT8 *)(&sessionAttributes ) ) = 0;
-    nvCmdAuths.cmdAuths[0]->sessionAttributes = sessionAttributes;
-    nvCmdAuths.cmdAuths[0]->sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
+    nvCmdAuths.auths[0].sessionAttributes = 0;
+    nvCmdAuths.auths[0].sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
 
     // Roll nonces for command
-    RollNonces( nvSession, &nvCmdAuths.cmdAuths[0]->nonce );
+    RollNonces( nvSession, &nvCmdAuths.auths[0].nonce );
 
     // Complete command authorization area, by computing
     // HMAC and setting it in nvCmdAuths.
@@ -3234,7 +2790,7 @@ void SimpleHmacTest()
     CheckPassed( sessionCmdRval );
 
     // Roll nonces for response
-    RollNonces( nvSession, &nvRspAuths.rspAuths[0]->nonce );
+    RollNonces( nvSession, &nvRspAuths.auths[0].nonce );
 
     if( sessionCmdRval == TPM2_RC_SUCCESS )
     {
@@ -3253,10 +2809,10 @@ void SimpleHmacTest()
     CheckPassed( rval );
 
     // Roll nonces for command
-    RollNonces( nvSession, &nvCmdAuths.cmdAuths[0]->nonce );
+    RollNonces( nvSession, &nvCmdAuths.auths[0].nonce );
 
     // End the session after next command.
-    nvCmdAuths.cmdAuths[0]->sessionAttributes &= ~TPMA_SESSION_CONTINUESESSION;
+    nvCmdAuths.auths[0].sessionAttributes &= ~TPMA_SESSION_CONTINUESESSION;
 
     // Complete command authorization area, by computing
     // HMAC and setting it in nvCmdAuths.
@@ -3278,7 +2834,7 @@ void SimpleHmacTest()
     CheckPassed( sessionCmdRval );
 
     // Roll nonces for response
-    RollNonces( nvSession, &nvRspAuths.rspAuths[0]->nonce );
+    RollNonces( nvSession, &nvRspAuths.auths[0].nonce );
 
     if( sessionCmdRval == TPM2_RC_SUCCESS )
     {
@@ -3305,9 +2861,9 @@ void SimpleHmacTest()
     //
 
     // Setup authorization for undefining the NV index.
-    nvCmdAuths.cmdAuths[0]->sessionHandle = TPM2_RS_PW;
-    nvCmdAuths.cmdAuths[0]->nonce.size = 0;
-    nvCmdAuths.cmdAuths[0]->hmac.size = 0;
+    nvCmdAuths.auths[0].sessionHandle = TPM2_RS_PW;
+    nvCmdAuths.auths[0].nonce.size = 0;
+    nvCmdAuths.auths[0].hmac.size = 0;
 
     // Undefine the NV index.
     rval = Tss2_Sys_NV_UndefineSpace( sysContext,
@@ -3341,21 +2897,20 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
     int i;
     TPM2B_ENCRYPTED_SECRET encryptedSalt;
     TPMT_SYM_DEF symmetric;
-    TPMA_SESSION sessionAttributes;
     TPM2_SE tpmSe;
     char *testString;
     char testStringHmac[] = "HMAC";
     char testStringPolicy[] = "POLICY";
 
-    // Command authorization area: one password session.
-    TPMS_AUTH_COMMAND nvCmdAuth = { TPM2_RS_PW, };
-    TPMS_AUTH_COMMAND *nvCmdAuthArray[1] = {&nvCmdAuth};
-    TSS2_SYS_CMD_AUTHS nvCmdAuths = { 1, &nvCmdAuthArray[0] };
-
     // Response authorization area.
-    TPMS_AUTH_RESPONSE nvRspAuth;
-    TPMS_AUTH_RESPONSE *nvRspAuthArray[1] = { &nvRspAuth };
-    TSS2_SYS_RSP_AUTHS nvRspAuths = { 1, &nvRspAuthArray[0] };
+    TSS2L_SYS_AUTH_RESPONSE nvRspAuths;
+
+    // Command authorization area: one password session.
+    TSS2L_SYS_AUTH_COMMAND nvCmdAuths = { .count = 1, .auths= {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce={.size=0},
+        .hmac={.size=0}}}};
 
     TSS2_SYS_CONTEXT *simpleTestContext;
     TPM2B_NONCE nonceCaller;
@@ -3532,16 +3087,15 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
     CheckPassed( rval );
 
     // Configure command authorization area, except for HMAC.
-    nvCmdAuths.cmdAuths[0]->sessionHandle =
+    nvCmdAuths.auths[0].sessionHandle =
             nvSession->sessionHandle;
-    nvCmdAuths.cmdAuths[0]->nonce.size = 1;
-    nvCmdAuths.cmdAuths[0]->nonce.buffer[0] = 0xa5;
-    *( (UINT8 *)(&sessionAttributes ) ) = 0;
-    nvCmdAuths.cmdAuths[0]->sessionAttributes = sessionAttributes;
-    nvCmdAuths.cmdAuths[0]->sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
+    nvCmdAuths.auths[0].nonce.size = 1;
+    nvCmdAuths.auths[0].nonce.buffer[0] = 0xa5;
+    nvCmdAuths.auths[0].sessionAttributes = 0;
+    nvCmdAuths.auths[0].sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
 
     // Roll nonces for command
-    RollNonces( nvSession, &nvCmdAuths.cmdAuths[0]->nonce );
+    RollNonces( nvSession, &nvCmdAuths.auths[0].nonce );
 
     // Complete command authorization area, by computing
     // HMAC and setting it in nvCmdAuths.
@@ -3560,7 +3114,7 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
     CheckPassed( sessionCmdRval );
 
     // Roll nonces for response
-    RollNonces( nvSession, &nvRspAuths.rspAuths[0]->nonce );
+    RollNonces( nvSession, &nvRspAuths.auths[0].nonce );
 
     if( sessionCmdRval == TPM2_RC_SUCCESS )
     {
@@ -3588,10 +3142,10 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
     CheckPassed( rval );
 
     // Roll nonces for command
-    RollNonces( nvSession, &nvCmdAuths.cmdAuths[0]->nonce );
+    RollNonces( nvSession, &nvCmdAuths.auths[0].nonce );
 
     // End the session after next command.
-    nvCmdAuths.cmdAuths[0]->sessionAttributes &= ~TPMA_SESSION_CONTINUESESSION;
+    nvCmdAuths.auths[0].sessionAttributes &= ~TPMA_SESSION_CONTINUESESSION;
 
     // Complete command authorization area, by computing
     // HMAC and setting it in nvCmdAuths.
@@ -3613,7 +3167,7 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
     CheckPassed( sessionCmdRval );
 
     // Roll nonces for response
-    RollNonces( nvSession, &nvRspAuths.rspAuths[0]->nonce );
+    RollNonces( nvSession, &nvRspAuths.auths[0].nonce );
 
     if( sessionCmdRval == TPM2_RC_SUCCESS )
     {
@@ -3640,9 +3194,9 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
     //
 
     // Setup authorization for undefining the NV index.
-    nvCmdAuths.cmdAuths[0]->sessionHandle = TPM2_RS_PW;
-    nvCmdAuths.cmdAuths[0]->nonce.size = 0;
-    nvCmdAuths.cmdAuths[0]->hmac.size = 0;
+    nvCmdAuths.auths[0].sessionHandle = TPM2_RS_PW;
+    nvCmdAuths.auths[0].nonce.size = 0;
+    nvCmdAuths.auths[0].hmac.size = 0;
 
     // Undefine the NV index.
     rval = Tss2_Sys_NV_UndefineSpace( simpleTestContext,
@@ -3681,20 +3235,16 @@ void TestEncryptDecryptSession()
     TPM2B_DIGEST        authPolicy;
     TPMA_NV             nvAttributes;
     int                 i;
-    TPMA_SESSION        sessionAttributes;
     TPM2B_NONCE         nonceCaller;
 
     nonceCaller.size = 0;
 
-    // Authorization structure for undefine command.
-    TPMS_AUTH_COMMAND nvUndefineAuth;
-
-    // Create and init authorization area for undefine command:
-    // only 1 authorization area.
-    TPMS_AUTH_COMMAND *nvUndefineAuthArray[1] = { &nvUndefineAuth };
-
     // Authorization array for command (only has one auth structure).
-    TSS2_SYS_CMD_AUTHS nvUndefineAuths = { 1, &nvUndefineAuthArray[0] };
+    TSS2L_SYS_AUTH_COMMAND nvUndefineAuths = { .count = 1, .auths= {{
+        .sessionHandle = TPM2_RS_PW,
+        .sessionAttributes = 0,
+        .nonce={.size=0},
+        .hmac={.size=0}}}};
 
     DebugPrintf( NO_PREFIX, "\n\nDECRYPT/ENCRYPT SESSION TESTS:\n" );
 
@@ -3724,39 +3274,12 @@ void TestEncryptDecryptSession()
     //
     for( i = 0; i < 2; i++ )
     {
-        // Authorization structure for NV
-        // read/write commands.
-        TPMS_AUTH_COMMAND nvRdWrCmdAuth;
-
-        // Authorization structure for
-        // encrypt/decrypt session.
-        TPMS_AUTH_COMMAND decryptEncryptSessionCmdAuth;
-
-        // Create and init authorization area for
-        // NV read/write commands:
-        // 2 authorization areas.
-        TPMS_AUTH_COMMAND *nvRdWrCmdAuthArray[2] =
-                { &nvRdWrCmdAuth, &decryptEncryptSessionCmdAuth };
-
         // Authorization array for commands
         // (has two auth structures).
-        TSS2_SYS_CMD_AUTHS nvRdWrCmdAuths =
-                { 2, &nvRdWrCmdAuthArray[0] };
+        TSS2L_SYS_AUTH_COMMAND nvRdWrCmdAuths = { .count = 2 };
 
-        // Authorization structure for NV read/write responses.
-        TPMS_AUTH_RESPONSE nvRdWrRspAuth;
-        // Authorization structure for decrypt/encrypt
-        // session responses.
-        TPMS_AUTH_RESPONSE decryptEncryptSessionRspAuth;
-
-        // Create and init authorization area for NV
-        // read/write responses:  2 authorization areas.
-        TPMS_AUTH_RESPONSE *nvRdWrRspAuthArray[2] =
-                { &nvRdWrRspAuth, &decryptEncryptSessionRspAuth };
         // Authorization array for responses
-        // (has two auth structures).
-        TSS2_SYS_RSP_AUTHS nvRdWrRspAuths =
-                { 2, &nvRdWrRspAuthArray[0] };
+        TSS2L_SYS_AUTH_RESPONSE nvRdWrRspAuths;
 
         // Setup session parameters.
         if( i == 0 )
@@ -3798,25 +3321,23 @@ void TestEncryptDecryptSession()
         CheckPassed( rval );
 
         // Set up password authorization session structure.
-        nvRdWrCmdAuth.sessionHandle = TPM2_RS_PW;
-        nvRdWrCmdAuth.nonce.size = 0;
-        *( (UINT8 *)((void *)&nvRdWrCmdAuth.sessionAttributes ) ) = 0;
-        nvRdWrCmdAuth.hmac.size = nvAuth.size;
-        memcpy( (void *)&nvRdWrCmdAuth.hmac.buffer[0],
+        nvRdWrCmdAuths.auths[0].sessionHandle = TPM2_RS_PW;
+        nvRdWrCmdAuths.auths[0].nonce.size = 0;
+        nvRdWrCmdAuths.auths[0].sessionAttributes = 0;
+        nvRdWrCmdAuths.auths[0].hmac.size = nvAuth.size;
+        memcpy( (void *)&nvRdWrCmdAuths.auths[0].hmac.buffer[0],
                 (void *)&nvAuth.buffer[0],
-                nvRdWrCmdAuth.hmac.size );
+                nvRdWrCmdAuths.auths[0].hmac.size );
 
         // Set up encrypt/decrypt session structure.
-        decryptEncryptSessionCmdAuth.sessionHandle =
+        nvRdWrCmdAuths.auths[1].sessionHandle =
                 encryptDecryptSession->sessionHandle;
-        decryptEncryptSessionCmdAuth.nonce.size = 0;
-        *( (UINT8 *)((void *)&sessionAttributes ) ) = 0;
-        decryptEncryptSessionCmdAuth.sessionAttributes =
-                sessionAttributes;
-        decryptEncryptSessionCmdAuth.sessionAttributes |= 
+        nvRdWrCmdAuths.auths[1].nonce.size = 0;
+        nvRdWrCmdAuths.auths[1].sessionAttributes = 0;
+        nvRdWrCmdAuths.auths[1].sessionAttributes |= 
                 TPMA_SESSION_CONTINUESESSION;
-        decryptEncryptSessionCmdAuth.sessionAttributes |= TPMA_SESSION_DECRYPT;
-        decryptEncryptSessionCmdAuth.hmac.size = 0;
+        nvRdWrCmdAuths.auths[1].sessionAttributes |= TPMA_SESSION_DECRYPT;
+        nvRdWrCmdAuths.auths[1].hmac.size = 0;
 
         rval = Tss2_Sys_SetCmdAuths( sysContext, &nvRdWrCmdAuths );
         CheckPassed( rval );
@@ -3840,7 +3361,7 @@ void TestEncryptDecryptSession()
 
         // Roll nonces for command.
         RollNonces( encryptDecryptSession,
-                &decryptEncryptSessionCmdAuth.nonce );
+                &nvRdWrCmdAuths.auths[1].nonce );
 
         // Encrypt write data.
         rval = EncryptCommandParam(encryptDecryptSession,
@@ -3866,29 +3387,29 @@ void TestEncryptDecryptSession()
 
         // Roll the nonces for response
         RollNonces( encryptDecryptSession,
-                &nvRdWrRspAuths.rspAuths[1]->nonce );
+                &nvRdWrRspAuths.auths[1].nonce );
 
 
         // Don't need nonces for anything else, so roll
         // the nonces for next command.
         RollNonces( encryptDecryptSession,
-                &decryptEncryptSessionCmdAuth.nonce );
+                &nvRdWrCmdAuths.auths[1].nonce );
 
         // Now read the data without encrypt set.
-        nvRdWrCmdAuths.cmdAuthsCount = 1;
-        nvRdWrRspAuths.rspAuthsCount = 1;
+        nvRdWrCmdAuths.count = 1;
+        nvRdWrRspAuths.count = 1;
         INIT_SIMPLE_TPM2B_SIZE( readData );
         rval = Tss2_Sys_NV_Read( sysContext, TPM20_INDEX_TEST1,
                 TPM20_INDEX_TEST1, &nvRdWrCmdAuths,
                 sizeof( writeDataString ), 0, &readData,
                 &nvRdWrRspAuths );
         CheckPassed( rval );
-        nvRdWrCmdAuths.cmdAuthsCount = 2;
-        nvRdWrRspAuths.rspAuthsCount = 2;
+        nvRdWrCmdAuths.count = 2;
+        nvRdWrRspAuths.count = 2;
 
         // Roll the nonces for response
         RollNonces( encryptDecryptSession,
-                &nvRdWrRspAuths.rspAuths[1]->nonce );
+                &nvRdWrRspAuths.auths[1].nonce );
 
         // Check that write and read data are equal.  This
         // verifies that the decrypt session was setup correctly.
@@ -3912,11 +3433,11 @@ void TestEncryptDecryptSession()
 
         // Roll the nonces for next command.
         RollNonces( encryptDecryptSession,
-                &decryptEncryptSessionCmdAuth.nonce );
+                &nvRdWrCmdAuths.auths[1].nonce );
 
-        decryptEncryptSessionCmdAuth.sessionAttributes &= ~TPMA_SESSION_DECRYPT;
-        decryptEncryptSessionCmdAuth.sessionAttributes |= TPMA_SESSION_ENCRYPT;
-        decryptEncryptSessionCmdAuth.sessionAttributes |= 
+        nvRdWrCmdAuths.auths[1].sessionAttributes &= ~TPMA_SESSION_DECRYPT;
+        nvRdWrCmdAuths.auths[1].sessionAttributes |= TPMA_SESSION_ENCRYPT;
+        nvRdWrCmdAuths.auths[1].sessionAttributes |= 
                 TPMA_SESSION_CONTINUESESSION;
 
         rval = Tss2_Sys_SetCmdAuths( sysContext, &nvRdWrCmdAuths );
@@ -3937,7 +3458,7 @@ void TestEncryptDecryptSession()
 
         // Roll the nonces for response
         RollNonces( encryptDecryptSession,
-                &nvRdWrRspAuths.rspAuths[1]->nonce );
+                &nvRdWrRspAuths.auths[1].nonce );
 
         // Decrypt read data.
         encryptedReadData.size = encryptParamSize;
@@ -3951,7 +3472,7 @@ void TestEncryptDecryptSession()
 
         // Roll the nonces.
         RollNonces( encryptDecryptSession,
-                &nvRdWrRspAuths.rspAuths[1]->nonce );
+                &nvRdWrRspAuths.auths[1].nonce );
 
         rval = Tss2_Sys_SetEncryptParam( sysContext,
                 (uint8_t)decryptedReadData.size,
@@ -3981,12 +3502,6 @@ void TestEncryptDecryptSession()
         rval = EndAuthSession( encryptDecryptSession );
         CheckPassed( rval );
     }
-
-    // Set authorization for NV undefine command.
-    nvUndefineAuth.sessionHandle = TPM2_RS_PW;
-    nvUndefineAuth.nonce.size = 0;
-    *( (UINT8 *)((void *)&nvUndefineAuth.sessionAttributes ) ) = 0;
-    nvUndefineAuth.hmac.size = 0;
 
     // Undefine NV index.
     rval = Tss2_Sys_NV_UndefineSpace( sysContext,
@@ -4233,12 +3748,9 @@ void GetSetEncryptParamTests()
     TPMA_NV nvAttributes;
     TPM2B_AUTH  nvAuth;
 
-    TPMS_AUTH_COMMAND sessionData = { TPM2_RS_PW, };
-    TPMS_AUTH_RESPONSE sessionDataOut;
-    TPMS_AUTH_COMMAND *sessionDataArray[1] = { &sessionData };
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1] = { &sessionDataOut };
-    TSS2_SYS_CMD_AUTHS sessionsData = { 1, &sessionDataArray[0] };
-    TSS2_SYS_RSP_AUTHS sessionsDataOut = { 1, &sessionDataOutArray[0] };
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
+    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths= {{
+        .sessionHandle = TPM2_RS_PW }}};
 
     TPM2B_MAX_NV_BUFFER nvReadData;
     const uint8_t 		*cpBuffer;
@@ -4412,9 +3924,9 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
         return 1;
     }
 
-    nullSessionsDataOut.rspAuthsCount = 1;
-    nullSessionsDataOut.rspAuths[0]->nonce = nullSessionNonceOut;
-    nullSessionsDataOut.rspAuths[0]->hmac = nullSessionHmac;
+    nullSessionsDataOut.count = 1;
+    nullSessionsDataOut.auths[0].nonce = nullSessionNonceOut;
+    nullSessionsDataOut.auths[0].hmac = nullSessionHmac;
     nullSessionNonceOut.size = 0;
     nullSessionNonce.size = 0;
 
@@ -4427,7 +3939,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 
     InitEntities();
 
-    InitNullSession( &nullSessionData);
+    InitNullSession( &nullSessionsData.auths[0]);
 
     SysFinalizeTests();
 

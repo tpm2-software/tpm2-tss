@@ -32,7 +32,7 @@
 
 TSS2_RC Tss2_Sys_SetCmdAuths(
     TSS2_SYS_CONTEXT *sysContext,
-    const TSS2_SYS_CMD_AUTHS *cmdAuthsArray)
+    const TSS2L_SYS_AUTH_COMMAND *cmdAuthsArray)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     uint8_t i;
@@ -44,7 +44,7 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
     if (!ctx || !cmdAuthsArray)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if (cmdAuthsArray->cmdAuthsCount > TPM2_MAX_SESSION_NUM)
+    if (cmdAuthsArray->count > TPM2_MAX_SESSION_NUM)
         return TSS2_SYS_RC_BAD_VALUE;
 
     if (ctx->previousStage != CMD_STAGE_PREPARE)
@@ -56,27 +56,23 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
     ctx->rval = TSS2_RC_SUCCESS;
     ctx->authsCount = 0;
 
-    if (!cmdAuthsArray->cmdAuthsCount)
+    if (!cmdAuthsArray->count)
         return rval;
 
     req_header_from_cxt(ctx)->tag = HOST_TO_BE_16(TPM2_ST_SESSIONS);
 
     /* Calculate size needed for authorization area, check for any null
      * pointers, and check for decrypt/encrypt sessions. */
-    for (i = 0; i < cmdAuthsArray->cmdAuthsCount; i++) {
-
-        if (!cmdAuthsArray->cmdAuths[i])
-            return TSS2_SYS_RC_BAD_VALUE;
-
+    for (i = 0; i < cmdAuthsArray->count; i++) {
         authSize += sizeof(TPMI_SH_AUTH_SESSION);
-        authSize += sizeof(UINT16) + cmdAuthsArray->cmdAuths[i]->nonce.size;
+        authSize += sizeof(UINT16) + cmdAuthsArray->auths[i].nonce.size;
         authSize += sizeof(UINT8);
-        authSize += sizeof(UINT16) + cmdAuthsArray->cmdAuths[i]->hmac.size;
+        authSize += sizeof(UINT16) + cmdAuthsArray->auths[i].hmac.size;
 
-        if (cmdAuthsArray->cmdAuths[i]->sessionAttributes & TPMA_SESSION_DECRYPT)
+        if (cmdAuthsArray->auths[i].sessionAttributes & TPMA_SESSION_DECRYPT)
             ctx->decryptSession = 1;
 
-        if (cmdAuthsArray->cmdAuths[i]->sessionAttributes & TPMA_SESSION_ENCRYPT)
+        if (cmdAuthsArray->auths[i].sessionAttributes & TPMA_SESSION_ENCRYPT)
             ctx->encryptSession = 1;
     }
 
@@ -105,8 +101,8 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
     if (rval)
         return rval;
 
-    for (i = 0; i < cmdAuthsArray->cmdAuthsCount; i++) {
-        rval = Tss2_MU_TPMS_AUTH_COMMAND_Marshal(cmdAuthsArray->cmdAuths[i],
+    for (i = 0; i < cmdAuthsArray->count; i++) {
+        rval = Tss2_MU_TPMS_AUTH_COMMAND_Marshal(&cmdAuthsArray->auths[i],
                                          ctx->cmdBuffer, newCmdSize,
                                          &authOffset);
         if (rval)
@@ -117,13 +113,13 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
 
     /* Now update the command size. */
     req_header_from_cxt(ctx)->commandSize = HOST_TO_BE_32(newCmdSize);
-    ctx->authsCount = cmdAuthsArray->cmdAuthsCount;
+    ctx->authsCount = cmdAuthsArray->count;
     return rval;
 }
 
 TSS2_RC Tss2_Sys_GetRspAuths(
     TSS2_SYS_CONTEXT *sysContext,
-    TSS2_SYS_RSP_AUTHS *rspAuthsArray)
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval = TSS2_RC_SUCCESS;
@@ -138,11 +134,6 @@ TSS2_RC Tss2_Sys_GetRspAuths(
         ctx->authAllowed == 0)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    if (rspAuthsArray->rspAuthsCount == 0)
-        return TSS2_SYS_RC_BAD_VALUE;
-
-    if (rspAuthsArray->rspAuthsCount != ctx->authsCount)
-        return TSS2_SYS_RC_INVALID_SESSIONS;
 
     if (TPM2_ST_SESSIONS != ctx->rsp_header.tag)
         return rval;
@@ -154,7 +145,7 @@ TSS2_RC Tss2_Sys_GetRspAuths(
     offset_tmp = offset;
 
     /* Validate the auth area before copying it */
-    for (i = 0; i < rspAuthsArray->rspAuthsCount; i++) {
+    for (i = 0; i < ctx->authsCount; i++) {
 
         if (offset_tmp > ctx->rsp_header.responseSize)
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
@@ -176,18 +167,20 @@ TSS2_RC Tss2_Sys_GetRspAuths(
         if (offset_tmp > ctx->rsp_header.responseSize)
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
-        if (i + 1 > rspAuthsArray->rspAuthsCount)
+        if (i + 1 > ctx->authsCount)
             return TSS2_SYS_RC_INVALID_SESSIONS;
     }
 
     /* Unmarshal the auth area */
-    for (i = 0; i < rspAuthsArray->rspAuthsCount; i++) {
+    for (i = 0; i < ctx->authsCount; i++) {
         rval = Tss2_MU_TPMS_AUTH_RESPONSE_Unmarshal(ctx->cmdBuffer,
                                             ctx->maxCmdSize,
-                                            &offset, rspAuthsArray->rspAuths[i]);
+                                            &offset, &rspAuthsArray->auths[i]);
         if (rval)
             break;
     }
+
+    rspAuthsArray->count = ctx->authsCount;
 
     return rval;
 }

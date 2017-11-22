@@ -141,15 +141,10 @@ TSS2_RC EncryptCFB( SESSION *session, TPM2B_MAX_BUFFER *encryptedData, TPM2B_MAX
     TPM2B_NAME keyName;
     TSS2_SYS_CONTEXT *sysContext;
 
-    // Authorization structure for command.
-    TPMS_AUTH_COMMAND sessionData;
-
-    // Create and init authorization area for command:
-    // only 1 authorization area.
-    TPMS_AUTH_COMMAND *sessionDataArray[1] = { &sessionData };
-
     // Authorization array for command (only has one auth structure).
-    TSS2_SYS_CMD_AUTHS sessionsData = { 1, &sessionDataArray[0] };
+    TSS2L_SYS_AUTH_COMMAND sessionsData = {
+        .count = 1,
+        .auths = { 0 }};
 
     sysContext = InitSysContext( 1000, resMgrTctiContext, &abiVersion );
     if( sysContext == 0 )
@@ -166,10 +161,10 @@ TSS2_RC EncryptCFB( SESSION *session, TPM2B_MAX_BUFFER *encryptedData, TPM2B_MAX
         if( rval == TSS2_RC_SUCCESS )
         {
             // Encrypt the data.
-            sessionData.sessionHandle = TPM2_RS_PW;
-            sessionData.nonce.size = 0;
-            *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
-            sessionData.hmac.size = 0;
+            sessionsData.auths[0].sessionHandle = TPM2_RS_PW;
+            sessionsData.auths[0].nonce.size = 0;
+            sessionsData.auths[0].sessionAttributes = 0;
+            sessionsData.auths[0].hmac.size = 0;
             encryptedData->size = sizeof( *encryptedData ) - 1;
             INIT_SIMPLE_TPM2B_SIZE( ivOut );
             rval = Tss2_Sys_EncryptDecrypt( sysContext, keyHandle, &sessionsData, NO, TPM2_ALG_CFB, &ivIn,
@@ -193,17 +188,10 @@ TSS2_RC DecryptCFB( SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM2B_MAX_BUF
     TPM2_HANDLE keyHandle;
     TPM2B_NAME keyName;
     TSS2_SYS_CONTEXT *sysContext;
-
-    // Authorization structure for command.
-    TPMS_AUTH_COMMAND sessionData;
-
-    // Create and init authorization area for command:
-    // only 1 authorization area.
-    TPMS_AUTH_COMMAND *sessionDataArray[1] = { &sessionData };
-
-    // Authorization array for command (only has one auth structure).
-    TSS2_SYS_CMD_AUTHS sessionsData = { 1, &sessionDataArray[0] };
-
+   // Authorization array for command (only has one auth structure).
+     TSS2L_SYS_AUTH_COMMAND sessionsData = {
+        .count = 1,
+        .auths = { 0 }};
 
     sysContext = InitSysContext( 1000, resMgrTctiContext, &abiVersion );
     if( sysContext == 0 )
@@ -220,10 +208,10 @@ TSS2_RC DecryptCFB( SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM2B_MAX_BUF
         if( rval == TSS2_RC_SUCCESS )
         {
             // Decrypt the data.
-            sessionData.sessionHandle = TPM2_RS_PW;
-            sessionData.nonce.size = 0;
-            *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
-            sessionData.hmac.size = 0;
+            sessionsData.auths[0].sessionHandle = TPM2_RS_PW;
+            sessionsData.auths[0].nonce.size = 0;
+            sessionsData.auths[0].sessionAttributes = 0;
+            sessionsData.auths[0].hmac.size = 0;
 
             INIT_SIMPLE_TPM2B_SIZE( ivOut );
             rval = Tss2_Sys_EncryptDecrypt( sysContext, keyHandle, &sessionsData, YES, TPM2_ALG_CFB, &ivIn,
