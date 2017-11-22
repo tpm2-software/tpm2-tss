@@ -41,7 +41,6 @@ void InitSysContextFields(_TSS2_SYS_CONTEXT_BLOB *ctx)
     ctx->prepareCalledFromOneCall = 0;
     ctx->completeCalledFromOneCall = 0;
     ctx->nextData = 0;
-    ctx->rpBufferUsedSize = 0;
     ctx->rval = TSS2_RC_SUCCESS;
 }
 
@@ -154,20 +153,15 @@ TSS2_RC CommonComplete(_TSS2_SYS_CONTEXT_BLOB *ctx)
     if (rval)
         return rval;
 
-    /* Save response params size */
+    /* Skiping over response params size field */
     if (tag == TPM2_ST_SESSIONS) {
         rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer,
                                         ctx->maxCmdSize,
                                         &ctx->nextData,
-                                        &ctx->rpBufferUsedSize);
+                                        NULL);
         if (rval)
             return rval;
     }
-
-    ctx->rpBuffer = ctx->cmdBuffer + ctx->nextData;
-
-    if (tag != TPM2_ST_SESSIONS)
-        ctx->rpBufferUsedSize = rspSize - (ctx->rpBuffer - ctx->cmdBuffer);
 
     return rval;
 }
