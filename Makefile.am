@@ -304,20 +304,20 @@ test_integration_system_api_int_SOURCES = test/integration/main.c \
 TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES)
 
 AUTHORS :
-	git log --format='%aN <%aE>' | grep -v 'users.noreply.github.com' | sort | \
+	$(AM_V_GEN)git log --format='%aN <%aE>' | grep -v 'users.noreply.github.com' | sort | \
 	    uniq -c | sort -nr | sed 's/^\s*//' | cut -d" " -f2- > $@
 
 %.pc : %.pc.in
-	$(call make_parent_dir,$@)
+	$(AM_V_GEN)$(call make_parent_dir,$@) && \
 	sed -e "s,[@]VERSION[@],$(PACKAGE_VERSION),g; \
 	        s,[@]libdir[@],$(libdir),g; \
 	        s,[@]includedir[@],$(includedir),g;" $^ > $@
 
 man/man3/%.3 : man/%.3.in $(srcdir)/man/man-postlude.troff
-	$(call make_man,$@,$<,$(srcdir)/man/man-postlude.troff)
+	$(AM_V_GEN)$(call make_man,$@,$<,$(srcdir)/man/man-postlude.troff)
 
 man/man7/%.7 : man/%.7.in $(srcdir)/man/man-postlude.troff
-	$(call make_man,$@,$<,$(srcdir)/man/man-postlude.troff)
+	$(AM_V_GEN)$(call make_man,$@,$<,$(srcdir)/man/man-postlude.troff)
 
 # simple variables
 libsapi = sysapi/libsapi.la
@@ -333,7 +333,7 @@ endef
 # $2: .in file
 # $3: man postlude file
 define make_man
-    $(call make_parent_dir,$1)
-    cat $2 $3 > $1
+    $(call make_parent_dir,$1) && \
+    cat $2 $3 > $1 && \
     sed -i -e "s,[@]VERSION[@],$(PACKAGE_VERSION),g;" $1
 endef
