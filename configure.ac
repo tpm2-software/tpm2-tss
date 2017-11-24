@@ -8,6 +8,8 @@ AC_PROG_CC
 LT_INIT()
 AM_INIT_AUTOMAKE([foreign
                   subdir-objects])
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])]) #Backward compatible setting of "silent-rules"
+
 AC_CONFIG_FILES([Makefile])
 
 # propagate configure arguments to distcheck
