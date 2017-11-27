@@ -103,6 +103,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     in_public.publicArea.objectAttributes &= ~TPMA_OBJECT_RESTRICTED;
     in_public.publicArea.objectAttributes |= TPMA_OBJECT_USERWITHAUTH;
     in_public.publicArea.objectAttributes |= TPMA_OBJECT_DECRYPT;
+    in_public.publicArea.objectAttributes |= TPMA_OBJECT_SIGN;
     in_public.publicArea.objectAttributes |= TPMA_OBJECT_FIXEDTPM;
     in_public.publicArea.objectAttributes |= TPMA_OBJECT_FIXEDPARENT;
     in_public.publicArea.objectAttributes |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
