@@ -1195,7 +1195,6 @@ typedef	union {
 	BYTE	sha384[TPM2_SHA384_DIGEST_SIZE];	 /* all hashes  */
 	BYTE	sha512[TPM2_SHA512_DIGEST_SIZE];	 /* all hashes  */
 	BYTE	sm3_256[TPM2_SM3_256_DIGEST_SIZE];	 /* all hashes  */
-	char na;        /* Not used. Common TPMU member only for parsing */
 } TPMU_HA;
 
 /* Table 71  Definition of TPMT_HA Structure <INOUT> */
@@ -1238,7 +1237,6 @@ TPM2B_TYPE1( IV, TPM2_MAX_SYM_BLOCK_SIZE, buffer );
 typedef	union {
 	TPMT_HA	digest;	 /* when the Name is a digest  */
 	TPM2_HANDLE	handle;	 /* when the Name is a handle  */
-	char na;        /* Not used. Common TPMU member only for parsing */
 } TPMU_NAME;
 
 /* Table 83  Definition of TPM2B_NAME Structure */
@@ -1391,7 +1389,6 @@ typedef	union {
 	TPML_TAGGED_PCR_PROPERTY	pcrProperties;	 /*   */
 	TPML_ECC_CURVE	eccCurves;	 /* TPM2_ALG_ECC  */
 	TPML_INTEL_PTT_PROPERTY	intelPttProperty;
-	char na;        /* Not used. Common TPMU member only for parsing */
 } TPMU_CAPABILITIES;
 
 /* Table 108  Definition of TPMS_CAPABILITY_DATA Structure <OUT> */
@@ -1471,7 +1468,6 @@ typedef	union {
 	TPMS_SESSION_AUDIT_INFO	sessionAudit;	 /*  */
 	TPMS_TIME_ATTEST_INFO	time;	 /*  */
 	TPMS_NV_CERTIFY_INFO	nv;	 /*  */
-	char na;        /* Not used. Common TPMU member only for parsing */
 } TPMU_ATTEST;
 
 /* Table 120  Definition of TPMS_ATTEST Structure <OUT> */
@@ -1519,7 +1515,6 @@ typedef	union {
 	TPMI_TPM2_CAMELLIA_KEY_BITS	camellia;	 /* all symmetric algorithms  */
 	TPM2_KEY_BITS	sym;	 /* when selector may be any of the symmetric block ciphers  */
 	TPMI_ALG_HASH	exclusiveOr;	 /* overload for using xorNOTE	TPM2_ALG_NULL is not allowed  */
-	char na;        /* Not used. Common TPMU member only for parsing */
 } TPMU_SYM_KEY_BITS;
 
 /* Table 126  Definition of TPMU_SYM_MODE Union */
@@ -1528,7 +1523,6 @@ typedef	union {
 	TPMI_ALG_SYM_MODE	sm4;	 /*   */
 	TPMI_ALG_SYM_MODE	camellia;	 /*   */
 	TPMI_ALG_SYM_MODE	sym;	 /* when selector may be any of the symmetric block ciphers  */
-	char na;        /* Not used. Common TPMU member only for parsing */
 } TPMU_SYM_MODE;
 
 /* Table 128  Definition of TPMT_SYM_DEF Structure */
@@ -1592,7 +1586,6 @@ typedef	struct {
 typedef	union {
 	TPMS_SCHEME_HMAC	hmac;	 /* the signing scheme  */
 	TPMS_SCHEME_XOR	exclusiveOr;	 /* the obfuscation scheme  */
-	char na;        /* Not used. Common TPMU member only for parsing */
 } TPMU_SCHEME_KEYEDHASH;
 
 /* Table 141  Definition of TPMT_KEYEDHASH_SCHEME Structure */
@@ -1621,7 +1614,6 @@ typedef	union {
 	TPMS_SIG_SCHEME_ECSCHNORR	ecschnorr;	 /* all signing schemes including anonymous schemes  */
 	TPMS_SCHEME_HMAC	hmac;	 /* the HMAC scheme  */
 	TPMS_SCHEME_HASH	any;	 /* selector that allows access to digest for any signing scheme  */
-	char na;        /* Not used. Common TPMU member only for parsing */
 } TPMU_SIG_SCHEME;
 
 /* Table 145  Definition of TPMT_SIG_SCHEME Structure */
@@ -1650,7 +1642,6 @@ typedef	union {
 	TPMS_SCHEME_KDF1_SP800_56A	kdf1_sp800_56a;	 /*   */
 	TPMS_SCHEME_KDF2	kdf2;	 /*   */
 	TPMS_SCHEME_KDF1_SP800_108	kdf1_sp800_108;	 /*   */
-	char na;        /* Not used. Common TPMU member only for parsing */
 } TPMU_KDF_SCHEME;
 
 /* Table 150  Definition of TPMT_KDF_SCHEME Structure */
@@ -1675,7 +1666,6 @@ typedef	union {
 	TPMS_ENC_SCHEME_RSAES	rsaes;	 /* schemes with no hash  */
 	TPMS_ENC_SCHEME_OAEP	oaep;	 /* schemes with no hash  */
 	TPMS_SCHEME_HASH	anySig;	 /*   */
-	char na;        /* Not used. Common TPMU member only for parsing */
 } TPMU_ASYM_SCHEME;
 
 /* Table 153  Definition of TPMT_ASYM_SCHEME Structure <> */
@@ -1783,7 +1773,6 @@ typedef	union {
 	TPMS_SIGNATURE_ECSCHNORR	ecschnorr;	 /* all asymmetric signatures  */
 	TPMT_HA	hmac;	 /* HMAC signature required to be supported  */
 	TPMS_SCHEME_HASH	any;	 /* used to access the hash  */
-	char na;        /* Not used. Common TPMU member only for parsing */
 } TPMU_SIGNATURE;
 
 /* Table 173  Definition of TPMT_SIGNATURE Structure */
@@ -1798,7 +1787,6 @@ typedef	union {
 	BYTE	rsa[TPM2_MAX_RSA_KEY_BYTES];	 /*   */
 	BYTE	symmetric[sizeof(TPM2B_DIGEST)];	 /*   */
 	BYTE	keyedHash[sizeof(TPM2B_DIGEST)];	 /* Any symmetrically encrypted secret value will be limited to be no larger than a digest.  */
-	char na;        /* Not used. Common TPMU member only for parsing */
 } TPMU_ENCRYPTED_SECRET;
 
 /* Table 175  Definition of TPM2B_ENCRYPTED_SECRET Structure */
@@ -1813,7 +1801,6 @@ typedef	union {
 	TPM2B_DIGEST	sym;	 /*   */
 	TPM2B_PUBLIC_KEY_RSA	rsa;	 /*   */
 	TPMS_ECC_POINT	ecc;	 /*   */
-	char na;        /* Not used. Common TPMU member only for parsing */
 } TPMU_PUBLIC_ID;
 
 /* Table 178  Definition of TPMS_KEYEDHASH_PARMS Structure */
@@ -1850,7 +1837,6 @@ typedef	union {
 	TPMS_RSA_PARMS	rsaDetail;	 /* decrypt + sign2  */
 	TPMS_ECC_PARMS	eccDetail;	 /* decrypt + sign2  */
 	TPMS_ASYM_PARMS	asymDetail;	 /* common scheme structure for RSA and ECC keys  */
-	char na;        /* Not used. Common TPMU member only for parsing */
 } TPMU_PUBLIC_PARMS;
 
 /* Table 183  Definition of TPMT_PUBLIC_PARMS Structure */
@@ -1882,7 +1868,6 @@ typedef	union {
 	TPM2B_SENSITIVE_DATA	bits;	 /* the private data  */
 	TPM2B_SYM_KEY	sym;	 /* the symmetric key  */
 	TPM2B_PRIVATE_VENDOR_SPECIFIC	any;	 /* vendorspecific size for key storage  */
-	char na;        /* Not used. Common TPMU member only for parsing */
 } TPMU_SENSITIVE_COMPOSITE;
 
 /* Table 188  Definition of TPMT_SENSITIVE Structure */
