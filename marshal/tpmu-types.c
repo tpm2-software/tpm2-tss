@@ -135,7 +135,7 @@ static TSS2_RC marshal_keyedhash(BYTE const *src, uint8_t buffer[],
 }
 
 
-static TSS2_RC marshal_null(char const *src, uint8_t buffer[],
+static TSS2_RC marshal_null(void const *src, uint8_t buffer[],
                             size_t buffer_size, size_t *offset)
 {
     return TSS2_RC_SUCCESS;
@@ -234,8 +234,8 @@ static TSS2_RC unmarshal_keyedhash(uint8_t const buffer[], size_t buffer_size,
     return unmarshal_tab(buffer, buffer_size, offset, dest, sizeof(TPM2B_DIGEST));
 }
 
-static TSS2_RC unmashal_null(uint8_t const buffer[], size_t buffer_size,
-                             size_t *offset, char *dest)
+static TSS2_RC unmarshal_null(uint8_t const buffer[], size_t buffer_size,
+                              size_t *offset, void *dest)
 {
     return TSS2_RC_SUCCESS;
 }
@@ -243,21 +243,20 @@ static TSS2_RC unmashal_null(uint8_t const buffer[], size_t buffer_size,
 /* In order to marshal TPM Union types, which differ in number of members,
  * their types, and don't have any common pattern, Variadic Macros will be used.
  * It allows the macros to accept variable number of arguments.
- * Every TPMU type gets a new "char na;" member, which will the one common
- * member every union has. Then an intermediate TPMU_(UN)MARSHAL2(...)
- * macro is defined, which can be called with any number of params,
- * (upto 34, which is the max needed). The intermediate macro then calls
- * the real TPMU_(UN)MARSHAL() macro, passing the number of parameters
- * required for given type and filling the gap with the fake member 'na' and
- * fake selector -1, -2, etc. That way the <TYPE>_Marshal functions generated
- * can handle up to 11 mamebers, but only the first required cases for
- * a given <TYPE> are valid  and the rest is filled with the fake member (na),
- * fake selectors, and a fake function (un)marshal_null().
+ * An intermediate TPMU_(UN)MARSHAL2(...) macro is defined, which can be
+ * called with any number of params, (upto 34, which is the max needed).
+ * The intermediate macro then calls the real TPMU_(UN)MARSHAL() macro,
+ * passing the number of parameters required for given type and filling
+ * the gap with the first member and fake selector -1, -2, etc.
+ * That way the <TYPE>_Marshal functions generated can handle up to 11
+ * mamebers, but only the first required cases for a given <TYPE> are valid
+ * and the rest is filled with the fisrt member, fake selectors, and a fake
+ * function (un)marshal_null().
  */
-
 #define TPMU_MARSHAL(type, sel, op, m, fn, sel2, op2, m2, fn2, sel3, op3, m3, fn3, \
-                     sel4, op4, m4, fn4, sel5, op5, m5, fn5, sel6, op6, m6, fn6, sel7, op7, m7, fn7, \
-                     sel8, op8, m8, fn8, sel9, op9, m9, fn9, sel10, op10, m10, fn10, sel11, op11, m11, fn11, ...) \
+                     sel4, op4, m4, fn4, sel5, op5, m5, fn5, sel6, op6, m6, fn6, \
+                     sel7, op7, m7, fn7, sel8, op8, m8, fn8, sel9, op9, m9, fn9, \
+                     sel10, op10, m10, fn10, sel11, op11, m11, fn11, ...) \
 TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buffer[], \
                                  size_t buffer_size, size_t *offset) \
 { \
@@ -308,10 +307,12 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buf
     return ret; \
 }
 
-#define TPMU_MARSHAL2(...) TPMU_MARSHAL(__VA_ARGS__, -1, ADDR, na, marshal_null, -2, ADDR, na, marshal_null,\
-                                        -3, ADDR, na, marshal_null, -4, ADDR, na, marshal_null, -5, ADDR, na, marshal_null, \
-                                        -6, ADDR, na, marshal_null, -7, ADDR, na, marshal_null, -8, ADDR, na, marshal_null, \
-                                        -9, ADDR, na, marshal_null, -10, ADDR, na, marshal_null)
+#define TPMU_MARSHAL2(type, sel, op, m, fn, ...) \
+    TPMU_MARSHAL(type, sel, op, m, fn, __VA_ARGS__, -1, ADDR, m, marshal_null, \
+                 -2, ADDR, m, marshal_null, -3, ADDR, m, marshal_null, \
+                 -4, ADDR, m, marshal_null, -5, ADDR, m, marshal_null, \
+                 -6, ADDR, m, marshal_null, -7, ADDR, m, marshal_null, \
+                 -8, ADDR, m, marshal_null, -9, ADDR, m, marshal_null)
 
 #define TPMU_UNMARSHAL(type, sel, m, fn, sel2, m2, fn2, sel3, m3, fn3, \
                        sel4, m4, fn4, sel5, m5, fn5, sel6, m6, fn6, sel7, m7, fn7, \
@@ -361,10 +362,11 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     return ret; \
 }
 
-#define TPMU_UNMARSHAL2(...) TPMU_UNMARSHAL(__VA_ARGS__, -1, na, unmashal_null, -2, na, unmashal_null,\
-                                            -3, na, unmashal_null, -4, na, unmashal_null, -5, na, unmashal_null, \
-                                            -6, na, unmashal_null, -7, na, unmashal_null, -8, na, unmashal_null, \
-                                            -9, na, unmashal_null, -10, na, unmashal_null)
+#define TPMU_UNMARSHAL2(type, sel, m, fn, ...) \
+    TPMU_UNMARSHAL(type, sel, m, fn, __VA_ARGS__, -1, m, unmarshal_null, \
+            -2, m, unmarshal_null, -3, m, unmarshal_null, -4, m, unmarshal_null, \
+            -5, m, unmarshal_null, -6, m, unmarshal_null, -7, m, unmarshal_null, \
+            -8, m, unmarshal_null, -9, m, unmarshal_null)
 
 TPMU_MARSHAL2(TPMU_HA, TPM2_ALG_SHA1, ADDR, sha1[0], marshal_hash_sha,
               TPM2_ALG_SHA256, ADDR, sha256[0], marshal_hash_sha256, TPM2_ALG_SHA384, ADDR, sha384[0], marshal_hash_sha384,
