@@ -32,6 +32,8 @@ ACLOCAL_AMFLAGS = -I m4
 AM_CFLAGS       = $(INCLUDE_DIRS) $(EXTRA_CFLAGS)
 AM_LDFLAGS      = $(EXTRA_LDFLAGS)
 
+DISTCHECK_CONFIGURE_FLAGS = --enable-unit --enable-indent
+
 # stuff to build, what that stuff is, and where/if to install said stuff
 lib_LTLIBRARIES = $(libmarshal) $(libsapi) $(libtcti_device) $(libtcti_socket)
 noinst_LTLIBRARIES = test/integration/libtest_utils.la
@@ -92,9 +94,9 @@ CLEANFILES = \
 
 # headers and where to install them
 libsapidir      = $(includedir)/sapi
-libsapi_HEADERS = $(srcdir)/include/sapi/*.h
+libsapi_HEADERS = $(SAPI_HEADS)
 libtctidir      = $(includedir)/tcti
-libtcti_HEADERS = $(srcdir)/include/tcti/*.h
+libtcti_HEADERS = $(TCTI_HEADS)
 
 # pkg-config files
 pkgconfigdir          = $(libdir)/pkgconfig
@@ -337,3 +339,28 @@ define make_man
     cat $2 $3 > $1
     sed -i -e "s,[@]VERSION[@],$(PACKAGE_VERSION),g;" $1
 endef
+
+EXTRA_DIST += indent.pro
+if INDENT
+check-local: check-indent
+
+check-indent: indent.log
+	@if [ -s indent.log ]; then echo "ERROR: See indent.log"; exit 1; fi
+
+indent.log: $(filter %.c.indentlog,$(DIST_SOURCES:%.c=%.c.indentlog)) $(filter %.h.indentlog,$(DIST_SOURCES:%.h=%.h.indentlog)) $(HEADERS:%.h=%.h.indentlog)
+	@cat $^>$@
+
+%.indentlog: % indent.pro
+	@if [ -s $@ ]; then rm $@; fi
+	@touch $@
+	@cp $< $<.tmp1
+	@sed 's/extern "C" {//' -i $<.tmp1
+	@INDENT_PROFILE=$(top_srcdir)/indent.pro indent $<.tmp1 -o $<.tmp2 2>/dev/null
+	@diff -Naur $<.tmp1 $<.tmp2 >>$@ || true
+	@rm $<.tmp1 $<.tmp2
+	@sed -e "s/\.tmp[1-2]//g" -i $@
+
+CLEANFILES += indent.log
+CLEANFILES += $(filter %.c.indentlog,$(DIST_SOURCES:%.c=%.c.indentlog)) $(filter %.h.indentlog,$(DIST_SOURCES:%.h=%.h.indentlog))
+CLEANFILES += $(HEADERS:%.h=%.h.indentlog)
+endif #INDENT
