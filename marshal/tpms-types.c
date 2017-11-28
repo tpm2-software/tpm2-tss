@@ -1113,11 +1113,9 @@ TPMS_UNMARSHAL_2(TPMS_SENSITIVE_CREATE,
                  userAuth, Tss2_MU_TPM2B_DIGEST_Unmarshal,
                  data, Tss2_MU_TPM2B_SENSITIVE_DATA_Unmarshal);
 
-TPMS_MARSHAL_1(TPMS_SCHEME_HASH,
-               hashAlg, VAL, Tss2_MU_UINT16_Marshal);
+TPMS_MARSHAL_1(TPMS_SCHEME_HASH, hashAlg, VAL, Tss2_MU_UINT16_Marshal);
 
-TPMS_UNMARSHAL_1(TPMS_SCHEME_HASH,
-                 hashAlg, Tss2_MU_UINT16_Unmarshal);
+TPMS_UNMARSHAL_1(TPMS_SCHEME_HASH, hashAlg, Tss2_MU_UINT16_Unmarshal);
 
 TPMS_MARSHAL_2(TPMS_SCHEME_ECDAA,
                hashAlg, VAL, Tss2_MU_UINT16_Marshal,
@@ -1203,23 +1201,17 @@ TPMS_UNMARSHAL_4(TPMS_CONTEXT,
                  hierarchy, Tss2_MU_UINT32_Unmarshal,
                  contextBlob, Tss2_MU_TPM2B_CONTEXT_DATA_Unmarshal);
 
-TPMS_MARSHAL_1(TPMS_PCR_SELECT,
-               sizeofSelect, ADDR, marshal_pcr_select);
+TPMS_MARSHAL_1(TPMS_PCR_SELECT, sizeofSelect, ADDR, marshal_pcr_select);
 
-TPMS_UNMARSHAL_1(TPMS_PCR_SELECT,
-                 sizeofSelect, unmarshal_pcr_select);
+TPMS_UNMARSHAL_1(TPMS_PCR_SELECT, sizeofSelect, unmarshal_pcr_select);
 
-TPMS_MARSHAL_1(TPMS_PCR_SELECTION,
-               hash, ADDR, marshal_pcr_selection);
+TPMS_MARSHAL_1(TPMS_PCR_SELECTION, hash, ADDR, marshal_pcr_selection);
 
-TPMS_UNMARSHAL_1(TPMS_PCR_SELECTION,
-                 hash, unmarshal_pcr_selection);
+TPMS_UNMARSHAL_1(TPMS_PCR_SELECTION, hash, unmarshal_pcr_selection);
 
-TPMS_MARSHAL_1(TPMS_TAGGED_PCR_SELECT,
-               tag, ADDR, marshal_tagged_pcr_selection);
+TPMS_MARSHAL_1(TPMS_TAGGED_PCR_SELECT, tag, ADDR, marshal_tagged_pcr_selection);
 
-TPMS_UNMARSHAL_1(TPMS_TAGGED_PCR_SELECT,
-                 tag, unmarshal_tagged_pcr_selection);
+TPMS_UNMARSHAL_1(TPMS_TAGGED_PCR_SELECT, tag, unmarshal_tagged_pcr_selection);
 
 TPMS_MARSHAL_2(TPMS_QUOTE_INFO,
                pcrSelect, ADDR, Tss2_MU_TPML_PCR_SELECTION_Marshal,
