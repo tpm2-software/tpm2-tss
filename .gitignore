@@ -59,6 +59,8 @@ test/tpmtest/tpmtest
 test-driver
 test-suite.log
 test/ibmtpm*
+*.indentlog
+indent.log
 # ignore all files in test/unit without a file extension
 test/unit/*
 test/unit/!*.*

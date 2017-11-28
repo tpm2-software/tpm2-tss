@@ -61,6 +61,21 @@ AX_ADD_LINK_FLAG([-Wl,-z,noexecstack])
 AX_ADD_LINK_FLAG([-Wl,-z,now])
 AX_ADD_LINK_FLAG([-Wl,-z,relro])
 
+#
+# Indent checking
+#
+AC_CHECK_PROG([INDENTPROG], [indent], [yes])
+AC_ARG_ENABLE([indent],
+            [AS_HELP_STRING([--enable-indent],
+                            [build with indent-checking)])],
+            [enable_indent=$enableval],
+            [enable_indent=$INDENTPROG])
+AS_IF([test "x$enable_indent" = "xyes" -a "x$INDENTPROG" != "xyes" ], 
+            [AC_MSG_ERROR([indent binary not found])])
+AM_CONDITIONAL([INDENT],[test "x$enable_indent" = "xyes"])
+
+
+
 # work around GCC bug #53119
 #   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53119
 AX_ADD_COMPILER_FLAG([-Wno-missing-braces])

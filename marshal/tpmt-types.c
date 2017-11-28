@@ -503,125 +503,135 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
  * the specification part 2.
  */
 TPMT_MARSHAL_2(TPMT_HA, hashAlg, VAL, Tss2_MU_UINT16_Marshal,
-               digest, ADDR, hashAlg, Tss2_MU_TPMU_HA_Marshal)
+               digest, ADDR, hashAlg, Tss2_MU_TPMU_HA_Marshal);
 
 TPMT_UNMARSHAL_2(TPMT_HA, hashAlg, Tss2_MU_UINT16_Unmarshal,
-                 digest, hashAlg, Tss2_MU_TPMU_HA_Unmarshal)
+                 digest, hashAlg, Tss2_MU_TPMU_HA_Unmarshal);
 
 TPMT_MARSHAL_3(TPMT_SYM_DEF, algorithm, VAL, Tss2_MU_UINT16_Marshal,
                keyBits, ADDR, algorithm, Tss2_MU_TPMU_SYM_KEY_BITS_Marshal,
-               mode, ADDR, algorithm, Tss2_MU_TPMU_SYM_MODE_Marshal)
+               mode, ADDR, algorithm, Tss2_MU_TPMU_SYM_MODE_Marshal);
 
 TPMT_UNMARSHAL_3(TPMT_SYM_DEF, algorithm, Tss2_MU_UINT16_Unmarshal,
                  keyBits, algorithm, Tss2_MU_TPMU_SYM_KEY_BITS_Unmarshal,
-                 mode, algorithm, Tss2_MU_TPMU_SYM_MODE_Unmarshal)
+                 mode, algorithm, Tss2_MU_TPMU_SYM_MODE_Unmarshal);
 
 TPMT_MARSHAL_3(TPMT_SYM_DEF_OBJECT, algorithm, VAL, Tss2_MU_UINT16_Marshal,
                keyBits, ADDR, algorithm, Tss2_MU_TPMU_SYM_KEY_BITS_Marshal,
-               mode, ADDR, algorithm, Tss2_MU_TPMU_SYM_MODE_Marshal)
+               mode, ADDR, algorithm, Tss2_MU_TPMU_SYM_MODE_Marshal);
 
 TPMT_UNMARSHAL_3(TPMT_SYM_DEF_OBJECT, algorithm, Tss2_MU_UINT16_Unmarshal,
                  keyBits, algorithm, Tss2_MU_TPMU_SYM_KEY_BITS_Unmarshal,
-                 mode, algorithm, Tss2_MU_TPMU_SYM_MODE_Unmarshal)
+                 mode, algorithm, Tss2_MU_TPMU_SYM_MODE_Unmarshal);
 
 TPMT_MARSHAL_2(TPMT_KEYEDHASH_SCHEME, scheme, VAL, Tss2_MU_UINT16_Marshal,
-               details, ADDR, scheme, Tss2_MU_TPMU_SCHEME_KEYEDHASH_Marshal)
+               details, ADDR, scheme, Tss2_MU_TPMU_SCHEME_KEYEDHASH_Marshal);
 
 TPMT_UNMARSHAL_2(TPMT_KEYEDHASH_SCHEME, scheme, Tss2_MU_UINT16_Unmarshal,
-                 details, scheme, Tss2_MU_TPMU_SCHEME_KEYEDHASH_Unmarshal)
+                 details, scheme, Tss2_MU_TPMU_SCHEME_KEYEDHASH_Unmarshal);
 
 TPMT_MARSHAL_2(TPMT_SIG_SCHEME, scheme, VAL, Tss2_MU_UINT16_Marshal,
-               details, ADDR, scheme, Tss2_MU_TPMU_SIG_SCHEME_Marshal)
+               details, ADDR, scheme, Tss2_MU_TPMU_SIG_SCHEME_Marshal);
 
 TPMT_UNMARSHAL_2(TPMT_SIG_SCHEME, scheme, Tss2_MU_UINT16_Unmarshal,
-                 details, scheme, Tss2_MU_TPMU_SIG_SCHEME_Unmarshal)
+                 details, scheme, Tss2_MU_TPMU_SIG_SCHEME_Unmarshal);
 
 TPMT_MARSHAL_2(TPMT_KDF_SCHEME, scheme, VAL, Tss2_MU_UINT16_Marshal,
-               details, ADDR, scheme, Tss2_MU_TPMU_KDF_SCHEME_Marshal)
+               details, ADDR, scheme, Tss2_MU_TPMU_KDF_SCHEME_Marshal);
 
 TPMT_UNMARSHAL_2(TPMT_KDF_SCHEME, scheme, Tss2_MU_UINT16_Unmarshal,
-                 details, scheme, Tss2_MU_TPMU_KDF_SCHEME_Unmarshal)
+                 details, scheme, Tss2_MU_TPMU_KDF_SCHEME_Unmarshal);
 
 TPMT_MARSHAL_2(TPMT_ASYM_SCHEME, scheme, VAL, Tss2_MU_UINT16_Marshal,
-               details, ADDR, scheme, Tss2_MU_TPMU_ASYM_SCHEME_Marshal)
+               details, ADDR, scheme, Tss2_MU_TPMU_ASYM_SCHEME_Marshal);
 
 TPMT_UNMARSHAL_2(TPMT_ASYM_SCHEME, scheme, Tss2_MU_UINT16_Unmarshal,
-                 details, scheme, Tss2_MU_TPMU_ASYM_SCHEME_Unmarshal)
+                 details, scheme, Tss2_MU_TPMU_ASYM_SCHEME_Unmarshal);
 
 TPMT_MARSHAL_2(TPMT_RSA_SCHEME, scheme, VAL, Tss2_MU_UINT16_Marshal,
-               details, ADDR, scheme, Tss2_MU_TPMU_ASYM_SCHEME_Marshal)
+               details, ADDR, scheme, Tss2_MU_TPMU_ASYM_SCHEME_Marshal);
 
 TPMT_UNMARSHAL_2(TPMT_RSA_SCHEME, scheme, Tss2_MU_UINT16_Unmarshal,
-                 details, scheme, Tss2_MU_TPMU_ASYM_SCHEME_Unmarshal)
+                 details, scheme, Tss2_MU_TPMU_ASYM_SCHEME_Unmarshal);
 
 TPMT_MARSHAL_2(TPMT_RSA_DECRYPT, scheme, VAL, Tss2_MU_UINT16_Marshal,
-               details, ADDR, scheme, Tss2_MU_TPMU_ASYM_SCHEME_Marshal)
+               details, ADDR, scheme, Tss2_MU_TPMU_ASYM_SCHEME_Marshal);
 
 TPMT_UNMARSHAL_2(TPMT_RSA_DECRYPT, scheme, Tss2_MU_UINT16_Unmarshal,
-                 details, scheme, Tss2_MU_TPMU_ASYM_SCHEME_Unmarshal)
+                 details, scheme, Tss2_MU_TPMU_ASYM_SCHEME_Unmarshal);
 
 TPMT_MARSHAL_2(TPMT_ECC_SCHEME, scheme, VAL, Tss2_MU_UINT16_Marshal,
-               details, ADDR, scheme, Tss2_MU_TPMU_ASYM_SCHEME_Marshal)
+               details, ADDR, scheme, Tss2_MU_TPMU_ASYM_SCHEME_Marshal);
 
 TPMT_UNMARSHAL_2(TPMT_ECC_SCHEME, scheme, Tss2_MU_UINT16_Unmarshal,
-                 details, scheme, Tss2_MU_TPMU_ASYM_SCHEME_Unmarshal)
+                 details, scheme, Tss2_MU_TPMU_ASYM_SCHEME_Unmarshal);
 
 TPMT_MARSHAL_2(TPMT_SIGNATURE, sigAlg, VAL, Tss2_MU_UINT16_Marshal,
-               signature, ADDR, sigAlg, Tss2_MU_TPMU_SIGNATURE_Marshal)
+               signature, ADDR, sigAlg, Tss2_MU_TPMU_SIGNATURE_Marshal);
 
 TPMT_UNMARSHAL_2(TPMT_SIGNATURE, sigAlg, Tss2_MU_UINT16_Unmarshal,
-                 signature, sigAlg, Tss2_MU_TPMU_SIGNATURE_Unmarshal)
+                 signature, sigAlg, Tss2_MU_TPMU_SIGNATURE_Unmarshal);
 
 TPMT_MARSHAL_4(TPMT_SENSITIVE, sensitiveType, VAL, Tss2_MU_UINT16_Marshal,
                authValue, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal,
                seedValue, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal,
-               sensitive, sensitiveType, ADDR, Tss2_MU_TPMU_SENSITIVE_COMPOSITE_Marshal)
+               sensitive, sensitiveType, ADDR,
+               Tss2_MU_TPMU_SENSITIVE_COMPOSITE_Marshal);
 
 TPMT_UNMARSHAL_4(TPMT_SENSITIVE, sensitiveType, Tss2_MU_UINT16_Unmarshal,
                  authValue, Tss2_MU_TPM2B_DIGEST_Unmarshal,
                  seedValue, Tss2_MU_TPM2B_DIGEST_Unmarshal,
-                 sensitive, sensitiveType, Tss2_MU_TPMU_SENSITIVE_COMPOSITE_Unmarshal)
+                 sensitive, sensitiveType,
+                 Tss2_MU_TPMU_SENSITIVE_COMPOSITE_Unmarshal);
 
 TPMT_MARSHAL_6(TPMT_PUBLIC, type, VAL, Tss2_MU_UINT16_Marshal,
                nameAlg, VAL, Tss2_MU_UINT16_Marshal,
                objectAttributes, VAL, Tss2_MU_TPMA_OBJECT_Marshal,
                authPolicy, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal,
                parameters, ADDR, type, Tss2_MU_TPMU_PUBLIC_PARMS_Marshal,
-               unique, ADDR, type, Tss2_MU_TPMU_PUBLIC_ID_Marshal)
+               unique, ADDR, type, Tss2_MU_TPMU_PUBLIC_ID_Marshal);
 
 TPMT_UNMARSHAL_6(TPMT_PUBLIC, type, Tss2_MU_UINT16_Unmarshal,
                  nameAlg, Tss2_MU_UINT16_Unmarshal,
                  objectAttributes, Tss2_MU_TPMA_OBJECT_Unmarshal,
                  authPolicy, Tss2_MU_TPM2B_DIGEST_Unmarshal,
                  parameters, type, Tss2_MU_TPMU_PUBLIC_PARMS_Unmarshal,
-                 unique, type, Tss2_MU_TPMU_PUBLIC_ID_Unmarshal)
+                 unique, type, Tss2_MU_TPMU_PUBLIC_ID_Unmarshal);
 
 TPMT_MARSHAL_2(TPMT_PUBLIC_PARMS, type, VAL, Tss2_MU_UINT16_Marshal,
-               parameters, ADDR, type, Tss2_MU_TPMU_PUBLIC_PARMS_Marshal)
+               parameters, ADDR, type, Tss2_MU_TPMU_PUBLIC_PARMS_Marshal);
 
 TPMT_UNMARSHAL_2(TPMT_PUBLIC_PARMS, type, Tss2_MU_UINT16_Unmarshal,
-                 parameters, type, Tss2_MU_TPMU_PUBLIC_PARMS_Unmarshal)
+                 parameters, type, Tss2_MU_TPMU_PUBLIC_PARMS_Unmarshal);
 
 TPMT_MARSHAL_TK(TPMT_TK_CREATION, tag, Tss2_MU_UINT16_Marshal,
-                hierarchy, Tss2_MU_UINT32_Marshal, digest, Tss2_MU_TPM2B_DIGEST_Marshal)
+                hierarchy, Tss2_MU_UINT32_Marshal, digest,
+                Tss2_MU_TPM2B_DIGEST_Marshal);
 
 TPMT_UNMARSHAL_TK(TPMT_TK_CREATION, tag, Tss2_MU_UINT16_Unmarshal,
-                  hierarchy, Tss2_MU_UINT32_Unmarshal, digest, Tss2_MU_TPM2B_DIGEST_Unmarshal)
+                  hierarchy, Tss2_MU_UINT32_Unmarshal, digest,
+                  Tss2_MU_TPM2B_DIGEST_Unmarshal);
 
 TPMT_MARSHAL_TK(TPMT_TK_VERIFIED, tag, Tss2_MU_UINT16_Marshal,
-                hierarchy, Tss2_MU_UINT32_Marshal, digest, Tss2_MU_TPM2B_DIGEST_Marshal)
+                hierarchy, Tss2_MU_UINT32_Marshal, digest,
+                Tss2_MU_TPM2B_DIGEST_Marshal);
 
 TPMT_UNMARSHAL_TK(TPMT_TK_VERIFIED, tag, Tss2_MU_UINT16_Unmarshal,
-                  hierarchy, Tss2_MU_UINT32_Unmarshal, digest, Tss2_MU_TPM2B_DIGEST_Unmarshal)
+                  hierarchy, Tss2_MU_UINT32_Unmarshal, digest,
+                  Tss2_MU_TPM2B_DIGEST_Unmarshal);
 
 TPMT_MARSHAL_TK(TPMT_TK_AUTH, tag, Tss2_MU_UINT16_Marshal,
-                hierarchy, Tss2_MU_UINT32_Marshal, digest, Tss2_MU_TPM2B_DIGEST_Marshal)
+                hierarchy, Tss2_MU_UINT32_Marshal, digest,
+                Tss2_MU_TPM2B_DIGEST_Marshal);
 
 TPMT_UNMARSHAL_TK(TPMT_TK_AUTH, tag, Tss2_MU_UINT16_Unmarshal,
-                  hierarchy, Tss2_MU_UINT32_Unmarshal, digest, Tss2_MU_TPM2B_DIGEST_Unmarshal)
+                  hierarchy, Tss2_MU_UINT32_Unmarshal, digest,
+                  Tss2_MU_TPM2B_DIGEST_Unmarshal);
 
 TPMT_MARSHAL_TK(TPMT_TK_HASHCHECK, tag, Tss2_MU_UINT16_Marshal,
-                hierarchy, Tss2_MU_UINT32_Marshal, digest, Tss2_MU_TPM2B_DIGEST_Marshal)
+                hierarchy, Tss2_MU_UINT32_Marshal, digest,
+                Tss2_MU_TPM2B_DIGEST_Marshal);
 
 TPMT_UNMARSHAL_TK(TPMT_TK_HASHCHECK, tag, Tss2_MU_UINT16_Unmarshal,
-                  hierarchy, Tss2_MU_UINT32_Unmarshal, digest, Tss2_MU_TPM2B_DIGEST_Unmarshal)
+                  hierarchy, Tss2_MU_UINT32_Unmarshal, digest,
+                  Tss2_MU_TPM2B_DIGEST_Unmarshal);

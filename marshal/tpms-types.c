@@ -987,247 +987,239 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
  */
 TPMS_MARSHAL_2(TPMS_ALG_PROPERTY,
                alg, VAL, Tss2_MU_UINT16_Marshal,
-               algProperties, VAL, Tss2_MU_TPMA_ALGORITHM_Marshal)
+               algProperties, VAL, Tss2_MU_TPMA_ALGORITHM_Marshal);
 
 TPMS_UNMARSHAL_2(TPMS_ALG_PROPERTY,
                  alg, Tss2_MU_UINT16_Unmarshal,
-                 algProperties, Tss2_MU_TPMA_ALGORITHM_Unmarshal)
+                 algProperties, Tss2_MU_TPMA_ALGORITHM_Unmarshal);
 
 TPMS_MARSHAL_2(TPMS_ALGORITHM_DESCRIPTION,
                alg, VAL, Tss2_MU_UINT16_Marshal,
-               attributes, VAL, Tss2_MU_TPMA_ALGORITHM_Marshal)
+               attributes, VAL, Tss2_MU_TPMA_ALGORITHM_Marshal);
 
 TPMS_UNMARSHAL_2(TPMS_ALGORITHM_DESCRIPTION,
                  alg, Tss2_MU_UINT16_Unmarshal,
-                 attributes, Tss2_MU_TPMA_ALGORITHM_Unmarshal)
+                 attributes, Tss2_MU_TPMA_ALGORITHM_Unmarshal);
 
 TPMS_MARSHAL_2(TPMS_TAGGED_PROPERTY,
                property, VAL, Tss2_MU_UINT32_Marshal,
-               value, VAL, Tss2_MU_UINT32_Marshal)
+               value, VAL, Tss2_MU_UINT32_Marshal);
 
 TPMS_UNMARSHAL_2(TPMS_TAGGED_PROPERTY,
                  property, Tss2_MU_UINT32_Unmarshal,
-                 value, Tss2_MU_UINT32_Unmarshal)
+                 value, Tss2_MU_UINT32_Unmarshal);
 
 TPMS_MARSHAL_4(TPMS_CLOCK_INFO,
                clock, VAL, Tss2_MU_UINT64_Marshal,
                resetCount, VAL, Tss2_MU_UINT32_Marshal,
                restartCount, VAL, Tss2_MU_UINT32_Marshal,
-               safe, VAL, Tss2_MU_UINT8_Marshal)
+               safe, VAL, Tss2_MU_UINT8_Marshal);
 
 TPMS_UNMARSHAL_4(TPMS_CLOCK_INFO,
                  clock, Tss2_MU_UINT64_Unmarshal,
                  resetCount, Tss2_MU_UINT32_Unmarshal,
                  restartCount, Tss2_MU_UINT32_Unmarshal,
-                 safe, Tss2_MU_UINT8_Unmarshal)
+                 safe, Tss2_MU_UINT8_Unmarshal);
 
 TPMS_MARSHAL_2(TPMS_TIME_INFO,
                time, VAL, Tss2_MU_UINT64_Marshal,
-               clockInfo, ADDR, Tss2_MU_TPMS_CLOCK_INFO_Marshal)
+               clockInfo, ADDR, Tss2_MU_TPMS_CLOCK_INFO_Marshal);
 
 TPMS_UNMARSHAL_2(TPMS_TIME_INFO,
                  time, Tss2_MU_UINT64_Unmarshal,
-                 clockInfo, Tss2_MU_TPMS_CLOCK_INFO_Unmarshal)
+                 clockInfo, Tss2_MU_TPMS_CLOCK_INFO_Unmarshal);
 
 TPMS_MARSHAL_2(TPMS_TIME_ATTEST_INFO,
                time, ADDR, Tss2_MU_TPMS_TIME_INFO_Marshal,
-               firmwareVersion, VAL, Tss2_MU_UINT64_Marshal)
+               firmwareVersion, VAL, Tss2_MU_UINT64_Marshal);
 
 TPMS_UNMARSHAL_2(TPMS_TIME_ATTEST_INFO,
                  time, Tss2_MU_TPMS_TIME_INFO_Unmarshal,
-                 firmwareVersion, Tss2_MU_UINT64_Unmarshal)
+                 firmwareVersion, Tss2_MU_UINT64_Unmarshal);
 
 TPMS_MARSHAL_2(TPMS_CERTIFY_INFO,
                name, ADDR, Tss2_MU_TPM2B_NAME_Marshal,
-               qualifiedName, ADDR, Tss2_MU_TPM2B_NAME_Marshal)
+               qualifiedName, ADDR, Tss2_MU_TPM2B_NAME_Marshal);
 
 TPMS_UNMARSHAL_2(TPMS_CERTIFY_INFO,
                  name, Tss2_MU_TPM2B_NAME_Unmarshal,
-                 qualifiedName, Tss2_MU_TPM2B_NAME_Unmarshal)
+                 qualifiedName, Tss2_MU_TPM2B_NAME_Unmarshal);
 
 TPMS_MARSHAL_4(TPMS_COMMAND_AUDIT_INFO,
                auditCounter, VAL, Tss2_MU_UINT64_Marshal,
                digestAlg, VAL, Tss2_MU_UINT16_Marshal,
                auditDigest, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal,
-               commandDigest, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal)
+               commandDigest, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal);
 
 TPMS_UNMARSHAL_4(TPMS_COMMAND_AUDIT_INFO,
                  auditCounter, Tss2_MU_UINT64_Unmarshal,
                  digestAlg, Tss2_MU_UINT16_Unmarshal,
                  auditDigest, Tss2_MU_TPM2B_DIGEST_Unmarshal,
-                 commandDigest, Tss2_MU_TPM2B_DIGEST_Unmarshal)
+                 commandDigest, Tss2_MU_TPM2B_DIGEST_Unmarshal);
 
 TPMS_MARSHAL_2(TPMS_SESSION_AUDIT_INFO,
                exclusiveSession, VAL, Tss2_MU_UINT8_Marshal,
-               sessionDigest, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal)
+               sessionDigest, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal);
 
 TPMS_UNMARSHAL_2(TPMS_SESSION_AUDIT_INFO,
                  exclusiveSession, Tss2_MU_UINT8_Unmarshal,
-                 sessionDigest, Tss2_MU_TPM2B_DIGEST_Unmarshal)
+                 sessionDigest, Tss2_MU_TPM2B_DIGEST_Unmarshal);
 
 TPMS_MARSHAL_2(TPMS_CREATION_INFO,
                objectName, ADDR, Tss2_MU_TPM2B_NAME_Marshal,
-               creationHash, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal)
+               creationHash, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal);
 
 TPMS_UNMARSHAL_2(TPMS_CREATION_INFO,
                  objectName, Tss2_MU_TPM2B_NAME_Unmarshal,
-                 creationHash, Tss2_MU_TPM2B_DIGEST_Unmarshal)
+                 creationHash, Tss2_MU_TPM2B_DIGEST_Unmarshal);
 
 TPMS_MARSHAL_3(TPMS_NV_CERTIFY_INFO,
                indexName, ADDR, Tss2_MU_TPM2B_NAME_Marshal,
                offset, VAL, Tss2_MU_UINT16_Marshal,
-               nvContents, ADDR, Tss2_MU_TPM2B_MAX_NV_BUFFER_Marshal)
+               nvContents, ADDR, Tss2_MU_TPM2B_MAX_NV_BUFFER_Marshal);
 
 TPMS_UNMARSHAL_3(TPMS_NV_CERTIFY_INFO,
                  indexName, Tss2_MU_TPM2B_NAME_Unmarshal,
                  offset, Tss2_MU_UINT16_Unmarshal,
-                 nvContents, Tss2_MU_TPM2B_MAX_NV_BUFFER_Unmarshal)
+                 nvContents, Tss2_MU_TPM2B_MAX_NV_BUFFER_Unmarshal);
 
 TPMS_MARSHAL_4(TPMS_AUTH_COMMAND,
                sessionHandle, VAL, Tss2_MU_UINT32_Marshal,
                nonce, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal,
                sessionAttributes, VAL, Tss2_MU_TPMA_SESSION_Marshal,
-               hmac, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal)
+               hmac, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal);
 
 TPMS_UNMARSHAL_4(TPMS_AUTH_COMMAND,
                  sessionHandle, Tss2_MU_UINT32_Unmarshal,
                  nonce, Tss2_MU_TPM2B_DIGEST_Unmarshal,
                  sessionAttributes, Tss2_MU_TPMA_SESSION_Unmarshal,
-                 hmac, Tss2_MU_TPM2B_DIGEST_Unmarshal)
+                 hmac, Tss2_MU_TPM2B_DIGEST_Unmarshal);
 
 TPMS_MARSHAL_3(TPMS_AUTH_RESPONSE,
                nonce, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal,
                sessionAttributes, VAL, Tss2_MU_TPMA_SESSION_Marshal,
-               hmac, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal)
+               hmac, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal);
 
 TPMS_UNMARSHAL_3(TPMS_AUTH_RESPONSE,
                  nonce, Tss2_MU_TPM2B_DIGEST_Unmarshal,
                  sessionAttributes, Tss2_MU_TPMA_SESSION_Unmarshal,
-                 hmac, Tss2_MU_TPM2B_DIGEST_Unmarshal)
+                 hmac, Tss2_MU_TPM2B_DIGEST_Unmarshal);
 
 TPMS_MARSHAL_2(TPMS_SENSITIVE_CREATE,
                userAuth, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal,
-               data, ADDR, Tss2_MU_TPM2B_SENSITIVE_DATA_Marshal)
+               data, ADDR, Tss2_MU_TPM2B_SENSITIVE_DATA_Marshal);
 
 TPMS_UNMARSHAL_2(TPMS_SENSITIVE_CREATE,
                  userAuth, Tss2_MU_TPM2B_DIGEST_Unmarshal,
-                 data, Tss2_MU_TPM2B_SENSITIVE_DATA_Unmarshal)
+                 data, Tss2_MU_TPM2B_SENSITIVE_DATA_Unmarshal);
 
-TPMS_MARSHAL_1(TPMS_SCHEME_HASH,
-               hashAlg, VAL, Tss2_MU_UINT16_Marshal)
+TPMS_MARSHAL_1(TPMS_SCHEME_HASH, hashAlg, VAL, Tss2_MU_UINT16_Marshal);
 
-TPMS_UNMARSHAL_1(TPMS_SCHEME_HASH,
-                 hashAlg, Tss2_MU_UINT16_Unmarshal)
+TPMS_UNMARSHAL_1(TPMS_SCHEME_HASH, hashAlg, Tss2_MU_UINT16_Unmarshal);
 
 TPMS_MARSHAL_2(TPMS_SCHEME_ECDAA,
                hashAlg, VAL, Tss2_MU_UINT16_Marshal,
-               count, VAL, Tss2_MU_UINT16_Marshal)
+               count, VAL, Tss2_MU_UINT16_Marshal);
 
 TPMS_UNMARSHAL_2(TPMS_SCHEME_ECDAA,
                  hashAlg, Tss2_MU_UINT16_Unmarshal,
-                 count, Tss2_MU_UINT16_Unmarshal)
+                 count, Tss2_MU_UINT16_Unmarshal);
 
 TPMS_MARSHAL_2(TPMS_SCHEME_XOR,
                hashAlg, VAL, Tss2_MU_UINT16_Marshal,
-               kdf, VAL, Tss2_MU_UINT16_Marshal)
+               kdf, VAL, Tss2_MU_UINT16_Marshal);
 
 TPMS_UNMARSHAL_2(TPMS_SCHEME_XOR,
                  hashAlg, Tss2_MU_UINT16_Unmarshal,
-                 kdf, Tss2_MU_UINT16_Unmarshal)
+                 kdf, Tss2_MU_UINT16_Unmarshal);
 
 TPMS_MARSHAL_2(TPMS_ECC_POINT,
                x, ADDR, Tss2_MU_TPM2B_ECC_PARAMETER_Marshal,
-               y, ADDR, Tss2_MU_TPM2B_ECC_PARAMETER_Marshal)
+               y, ADDR, Tss2_MU_TPM2B_ECC_PARAMETER_Marshal);
 
 TPMS_UNMARSHAL_2(TPMS_ECC_POINT,
                  x, Tss2_MU_TPM2B_ECC_PARAMETER_Unmarshal,
-                 y, Tss2_MU_TPM2B_ECC_PARAMETER_Unmarshal)
+                 y, Tss2_MU_TPM2B_ECC_PARAMETER_Unmarshal);
 
 TPMS_MARSHAL_2(TPMS_SIGNATURE_RSA,
                hash, VAL, Tss2_MU_UINT16_Marshal,
-               sig, ADDR, Tss2_MU_TPM2B_PUBLIC_KEY_RSA_Marshal)
+               sig, ADDR, Tss2_MU_TPM2B_PUBLIC_KEY_RSA_Marshal);
 
 TPMS_UNMARSHAL_2(TPMS_SIGNATURE_RSA,
                  hash, Tss2_MU_UINT16_Unmarshal,
-                 sig, Tss2_MU_TPM2B_PUBLIC_KEY_RSA_Unmarshal)
+                 sig, Tss2_MU_TPM2B_PUBLIC_KEY_RSA_Unmarshal);
 
 TPMS_MARSHAL_3(TPMS_SIGNATURE_ECC,
                hash, VAL, Tss2_MU_UINT16_Marshal,
                signatureR, ADDR, Tss2_MU_TPM2B_ECC_PARAMETER_Marshal,
-               signatureS, ADDR, Tss2_MU_TPM2B_ECC_PARAMETER_Marshal)
+               signatureS, ADDR, Tss2_MU_TPM2B_ECC_PARAMETER_Marshal);
 
 TPMS_UNMARSHAL_3(TPMS_SIGNATURE_ECC,
                  hash, Tss2_MU_UINT16_Unmarshal,
                  signatureR, Tss2_MU_TPM2B_ECC_PARAMETER_Unmarshal,
-                 signatureS, Tss2_MU_TPM2B_ECC_PARAMETER_Unmarshal)
+                 signatureS, Tss2_MU_TPM2B_ECC_PARAMETER_Unmarshal);
 
 TPMS_MARSHAL_2(TPMS_NV_PIN_COUNTER_PARAMETERS,
                pinCount, VAL, Tss2_MU_UINT32_Marshal,
-               pinLimit, VAL, Tss2_MU_UINT32_Marshal)
+               pinLimit, VAL, Tss2_MU_UINT32_Marshal);
 
 TPMS_UNMARSHAL_2(TPMS_NV_PIN_COUNTER_PARAMETERS,
                  pinCount, Tss2_MU_UINT32_Unmarshal,
-                 pinLimit, Tss2_MU_UINT32_Unmarshal)
+                 pinLimit, Tss2_MU_UINT32_Unmarshal);
 
 TPMS_MARSHAL_5(TPMS_NV_PUBLIC,
                nvIndex, VAL, Tss2_MU_UINT32_Marshal,
                nameAlg, VAL, Tss2_MU_UINT16_Marshal,
                attributes, VAL, Tss2_MU_TPMA_NV_Marshal,
                authPolicy, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal,
-               dataSize, VAL, Tss2_MU_UINT16_Marshal)
+               dataSize, VAL, Tss2_MU_UINT16_Marshal);
 
 TPMS_UNMARSHAL_5(TPMS_NV_PUBLIC,
                  nvIndex, Tss2_MU_UINT32_Unmarshal,
                  nameAlg, Tss2_MU_UINT16_Unmarshal,
                  attributes, Tss2_MU_TPMA_NV_Unmarshal,
                  authPolicy, Tss2_MU_TPM2B_DIGEST_Unmarshal,
-                 dataSize, Tss2_MU_UINT16_Unmarshal)
+                 dataSize, Tss2_MU_UINT16_Unmarshal);
 
 TPMS_MARSHAL_2(TPMS_CONTEXT_DATA,
                integrity, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal,
-               encrypted, ADDR, Tss2_MU_TPM2B_CONTEXT_SENSITIVE_Marshal)
+               encrypted, ADDR, Tss2_MU_TPM2B_CONTEXT_SENSITIVE_Marshal);
 
 TPMS_UNMARSHAL_2(TPMS_CONTEXT_DATA,
                  integrity, Tss2_MU_TPM2B_DIGEST_Unmarshal,
-                 encrypted, Tss2_MU_TPM2B_CONTEXT_SENSITIVE_Unmarshal)
+                 encrypted, Tss2_MU_TPM2B_CONTEXT_SENSITIVE_Unmarshal);
 
 TPMS_MARSHAL_4(TPMS_CONTEXT,
                sequence, VAL, Tss2_MU_UINT64_Marshal,
                savedHandle, VAL, Tss2_MU_UINT32_Marshal,
                hierarchy, VAL, Tss2_MU_UINT32_Marshal,
-               contextBlob, ADDR, Tss2_MU_TPM2B_CONTEXT_DATA_Marshal)
+               contextBlob, ADDR, Tss2_MU_TPM2B_CONTEXT_DATA_Marshal);
 
 TPMS_UNMARSHAL_4(TPMS_CONTEXT,
                  sequence, Tss2_MU_UINT64_Unmarshal,
                  savedHandle, Tss2_MU_UINT32_Unmarshal,
                  hierarchy, Tss2_MU_UINT32_Unmarshal,
-                 contextBlob, Tss2_MU_TPM2B_CONTEXT_DATA_Unmarshal)
+                 contextBlob, Tss2_MU_TPM2B_CONTEXT_DATA_Unmarshal);
 
-TPMS_MARSHAL_1(TPMS_PCR_SELECT,
-               sizeofSelect, ADDR, marshal_pcr_select)
+TPMS_MARSHAL_1(TPMS_PCR_SELECT, sizeofSelect, ADDR, marshal_pcr_select);
 
-TPMS_UNMARSHAL_1(TPMS_PCR_SELECT,
-                 sizeofSelect, unmarshal_pcr_select)
+TPMS_UNMARSHAL_1(TPMS_PCR_SELECT, sizeofSelect, unmarshal_pcr_select);
 
-TPMS_MARSHAL_1(TPMS_PCR_SELECTION,
-               hash, ADDR, marshal_pcr_selection)
+TPMS_MARSHAL_1(TPMS_PCR_SELECTION, hash, ADDR, marshal_pcr_selection);
 
-TPMS_UNMARSHAL_1(TPMS_PCR_SELECTION,
-                 hash, unmarshal_pcr_selection)
+TPMS_UNMARSHAL_1(TPMS_PCR_SELECTION, hash, unmarshal_pcr_selection);
 
-TPMS_MARSHAL_1(TPMS_TAGGED_PCR_SELECT,
-               tag, ADDR, marshal_tagged_pcr_selection)
+TPMS_MARSHAL_1(TPMS_TAGGED_PCR_SELECT, tag, ADDR, marshal_tagged_pcr_selection);
 
-TPMS_UNMARSHAL_1(TPMS_TAGGED_PCR_SELECT,
-                 tag, unmarshal_tagged_pcr_selection)
+TPMS_UNMARSHAL_1(TPMS_TAGGED_PCR_SELECT, tag, unmarshal_tagged_pcr_selection);
 
 TPMS_MARSHAL_2(TPMS_QUOTE_INFO,
                pcrSelect, ADDR, Tss2_MU_TPML_PCR_SELECTION_Marshal,
-               pcrDigest, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal)
+               pcrDigest, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal);
 
 TPMS_UNMARSHAL_2(TPMS_QUOTE_INFO,
                  pcrSelect, Tss2_MU_TPML_PCR_SELECTION_Unmarshal,
-                 pcrDigest, Tss2_MU_TPM2B_DIGEST_Unmarshal)
+                 pcrDigest, Tss2_MU_TPM2B_DIGEST_Unmarshal);
 
 TPMS_MARSHAL_7(TPMS_CREATION_DATA,
                pcrSelect, ADDR, Tss2_MU_TPML_PCR_SELECTION_Marshal,
@@ -1236,7 +1228,7 @@ TPMS_MARSHAL_7(TPMS_CREATION_DATA,
                parentNameAlg, VAL, Tss2_MU_UINT16_Marshal,
                parentName, ADDR, Tss2_MU_TPM2B_NAME_Marshal,
                parentQualifiedName, ADDR, Tss2_MU_TPM2B_NAME_Marshal,
-               outsideInfo, ADDR, Tss2_MU_TPM2B_DATA_Marshal)
+               outsideInfo, ADDR, Tss2_MU_TPM2B_DATA_Marshal);
 
 TPMS_UNMARSHAL_7(TPMS_CREATION_DATA,
                  pcrSelect, Tss2_MU_TPML_PCR_SELECTION_Unmarshal,
@@ -1245,19 +1237,19 @@ TPMS_UNMARSHAL_7(TPMS_CREATION_DATA,
                  parentNameAlg, Tss2_MU_UINT16_Unmarshal,
                  parentName, Tss2_MU_TPM2B_NAME_Unmarshal,
                  parentQualifiedName, Tss2_MU_TPM2B_NAME_Unmarshal,
-                 outsideInfo, Tss2_MU_TPM2B_DATA_Unmarshal)
+                 outsideInfo, Tss2_MU_TPM2B_DATA_Unmarshal);
 
 TPMS_MARSHAL_4(TPMS_ECC_PARMS,
                symmetric, ADDR, Tss2_MU_TPMT_SYM_DEF_OBJECT_Marshal,
                scheme, ADDR, Tss2_MU_TPMT_ECC_SCHEME_Marshal,
                curveID, VAL, Tss2_MU_UINT16_Marshal,
-               kdf, ADDR, Tss2_MU_TPMT_KDF_SCHEME_Marshal)
+               kdf, ADDR, Tss2_MU_TPMT_KDF_SCHEME_Marshal);
 
 TPMS_UNMARSHAL_4(TPMS_ECC_PARMS,
                  symmetric, Tss2_MU_TPMT_SYM_DEF_OBJECT_Unmarshal,
                  scheme, Tss2_MU_TPMT_ECC_SCHEME_Unmarshal,
                  curveID, Tss2_MU_UINT16_Unmarshal,
-                 kdf, Tss2_MU_TPMT_KDF_SCHEME_Unmarshal)
+                 kdf, Tss2_MU_TPMT_KDF_SCHEME_Unmarshal);
 
 TPMS_MARSHAL_7_U(TPMS_ATTEST,
                  magic, VAL, Tss2_MU_UINT32_Marshal,
@@ -1266,7 +1258,7 @@ TPMS_MARSHAL_7_U(TPMS_ATTEST,
                  extraData, ADDR, Tss2_MU_TPM2B_DATA_Marshal,
                  clockInfo, ADDR, Tss2_MU_TPMS_CLOCK_INFO_Marshal,
                  firmwareVersion, VAL, Tss2_MU_UINT64_Marshal,
-                 attested, ADDR, Tss2_MU_TPMU_ATTEST_Marshal)
+                 attested, ADDR, Tss2_MU_TPMU_ATTEST_Marshal);
 
 TPMS_UNMARSHAL_7_U(TPMS_ATTEST,
                    magic, Tss2_MU_UINT32_Unmarshal,
@@ -1275,7 +1267,7 @@ TPMS_UNMARSHAL_7_U(TPMS_ATTEST,
                    extraData, Tss2_MU_TPM2B_DATA_Unmarshal,
                    clockInfo, Tss2_MU_TPMS_CLOCK_INFO_Unmarshal,
                    firmwareVersion, Tss2_MU_UINT64_Unmarshal,
-                   attested, Tss2_MU_TPMU_ATTEST_Unmarshal)
+                   attested, Tss2_MU_TPMU_ATTEST_Unmarshal);
 
 TPMS_MARSHAL_11(TPMS_ALGORITHM_DETAIL_ECC,
                 curveID, VAL, Tss2_MU_UINT16_Marshal,
@@ -1288,7 +1280,7 @@ TPMS_MARSHAL_11(TPMS_ALGORITHM_DETAIL_ECC,
                 gX, ADDR, Tss2_MU_TPM2B_ECC_PARAMETER_Marshal,
                 gY, ADDR, Tss2_MU_TPM2B_ECC_PARAMETER_Marshal,
                 n, ADDR, Tss2_MU_TPM2B_ECC_PARAMETER_Marshal,
-                h, ADDR, Tss2_MU_TPM2B_ECC_PARAMETER_Marshal)
+                h, ADDR, Tss2_MU_TPM2B_ECC_PARAMETER_Marshal);
 
 TPMS_UNMARSHAL_11(TPMS_ALGORITHM_DETAIL_ECC,
                   curveID, Tss2_MU_UINT16_Unmarshal,
@@ -1301,36 +1293,36 @@ TPMS_UNMARSHAL_11(TPMS_ALGORITHM_DETAIL_ECC,
                   gX, Tss2_MU_TPM2B_ECC_PARAMETER_Unmarshal,
                   gY, Tss2_MU_TPM2B_ECC_PARAMETER_Unmarshal,
                   n, Tss2_MU_TPM2B_ECC_PARAMETER_Unmarshal,
-                  h, Tss2_MU_TPM2B_ECC_PARAMETER_Unmarshal)
+                  h, Tss2_MU_TPM2B_ECC_PARAMETER_Unmarshal);
 
 TPMS_MARSHAL_2_U(TPMS_CAPABILITY_DATA,
                  capability, VAL, Tss2_MU_UINT32_Marshal,
-                 data, ADDR, Tss2_MU_TPMU_CAPABILITIES_Marshal)
+                 data, ADDR, Tss2_MU_TPMU_CAPABILITIES_Marshal);
 
 TPMS_UNMARSHAL_2_U(TPMS_CAPABILITY_DATA,
                    capability, Tss2_MU_UINT32_Unmarshal,
-                   data, Tss2_MU_TPMU_CAPABILITIES_Unmarshal)
+                   data, Tss2_MU_TPMU_CAPABILITIES_Unmarshal);
 
 TPMS_MARSHAL_1(TPMS_KEYEDHASH_PARMS,
-               scheme, ADDR, Tss2_MU_TPMT_KEYEDHASH_SCHEME_Marshal)
+               scheme, ADDR, Tss2_MU_TPMT_KEYEDHASH_SCHEME_Marshal);
 
 TPMS_UNMARSHAL_1(TPMS_KEYEDHASH_PARMS,
-                 scheme, Tss2_MU_TPMT_KEYEDHASH_SCHEME_Unmarshal)
+                 scheme, Tss2_MU_TPMT_KEYEDHASH_SCHEME_Unmarshal);
 
 TPMS_MARSHAL_4(TPMS_RSA_PARMS,
                symmetric, ADDR, Tss2_MU_TPMT_SYM_DEF_OBJECT_Marshal,
                scheme, ADDR, Tss2_MU_TPMT_RSA_SCHEME_Marshal,
                keyBits, VAL, Tss2_MU_UINT16_Marshal,
-               exponent, VAL, Tss2_MU_UINT32_Marshal)
+               exponent, VAL, Tss2_MU_UINT32_Marshal);
 
 TPMS_UNMARSHAL_4(TPMS_RSA_PARMS,
                  symmetric, Tss2_MU_TPMT_SYM_DEF_OBJECT_Unmarshal,
                  scheme, Tss2_MU_TPMT_RSA_SCHEME_Unmarshal,
                  keyBits, Tss2_MU_UINT16_Unmarshal,
-                 exponent, Tss2_MU_UINT32_Unmarshal)
+                 exponent, Tss2_MU_UINT32_Unmarshal);
 
 TPMS_MARSHAL_1(TPMS_SYMCIPHER_PARMS,
-               sym, ADDR, Tss2_MU_TPMT_SYM_DEF_OBJECT_Marshal)
+               sym, ADDR, Tss2_MU_TPMT_SYM_DEF_OBJECT_Marshal);
 
 TPMS_UNMARSHAL_1(TPMS_SYMCIPHER_PARMS,
-                 sym, Tss2_MU_TPMT_SYM_DEF_OBJECT_Unmarshal)
+                 sym, Tss2_MU_TPMT_SYM_DEF_OBJECT_Unmarshal);
