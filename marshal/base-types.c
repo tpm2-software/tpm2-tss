@@ -51,7 +51,7 @@ Tss2_MU_##type##_Marshal ( \
 \
     if (buffer == NULL && offset == NULL) { \
         LOG (WARNING, "buffer and offset parameter are NULL"); \
-        return TSS2_TYPES_RC_BAD_REFERENCE; \
+        return TSS2_MU_RC_BAD_REFERENCE; \
     } else if (buffer == NULL && offset != NULL) { \
         *offset += sizeof (src); \
         LOG (INFO, "buffer NULL and offset non-NULL, updating offset to %zu", \
@@ -66,7 +66,7 @@ Tss2_MU_##type##_Marshal ( \
              buffer_size, \
              local_offset, \
              sizeof (src)); \
-        return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
+        return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
     } \
 \
     LOG (DEBUG, \
@@ -117,7 +117,7 @@ Tss2_MU_##type##_Unmarshal ( \
 \
     if (buffer == NULL || (dest == NULL && offset == NULL)) { \
         LOG (WARNING, "buffer or dest and offset parameter are NULL"); \
-        return TSS2_TYPES_RC_BAD_REFERENCE; \
+        return TSS2_MU_RC_BAD_REFERENCE; \
     } else if (dest == NULL && offset != NULL) { \
         *offset += sizeof (type); \
         LOG (INFO, \
@@ -133,7 +133,7 @@ Tss2_MU_##type##_Unmarshal ( \
              buffer_size, \
              local_offset, \
              sizeof (*dest)); \
-        return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
+        return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
     } \
 \
     LOG (DEBUG, \

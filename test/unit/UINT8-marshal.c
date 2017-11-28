@@ -67,7 +67,7 @@ UINT8_marshal_buffer_null_offset_null (void **state)
 
     rc = Tss2_MU_UINT8_Marshal (src, NULL, sizeof (src), NULL);
 
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 }
 /*
  * Test failing case where buffer_size - offset (size of available space
@@ -83,7 +83,7 @@ UINT8_marshal_buffer_size_lt_data (void **state)
 
     rc = Tss2_MU_UINT8_Marshal (src, buffer, sizeof (src), &offset);
 
-    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 2);
 }
 /*
@@ -101,7 +101,7 @@ UINT8_marshal_buffer_size_lt_offset (void **state)
 
     rc = Tss2_MU_UINT8_Marshal (src, buffer, buffer_size, &offset);
 
-    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, sizeof (buffer) + 1);
 }
 /*
@@ -148,7 +148,7 @@ UINT8_unmarshal_buffer_null (void **state)
 
     rc = Tss2_MU_UINT8_Unmarshal (NULL, 1, NULL, NULL);
 
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 }
 /*
  * Test case ensures a NULL dest and offset parameters produce an
@@ -162,7 +162,7 @@ UINT8_unmarshal_dest_null (void **state)
 
     rc = Tss2_MU_UINT8_Unmarshal (buffer, sizeof (buffer), NULL, NULL);
 
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 }
 /*
  * Test case ensures the offset is updated when dest is NULL
@@ -195,7 +195,7 @@ UINT8_unmarshal_buffer_size_lt_offset (void **state)
 
     rc = Tss2_MU_UINT8_Unmarshal (buffer, sizeof (buffer), &offset, &dest);
 
-    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, sizeof (buffer) + 1);
     assert_int_equal (dest, 0);
 }
@@ -213,7 +213,7 @@ UINT8_unmarshal_buffer_size_lt_dest (void **state)
 
     rc = Tss2_MU_UINT8_Unmarshal (buffer, sizeof (buffer), &offset, &dest);
 
-    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, sizeof (buffer));
     assert_int_equal (dest, 0);
 }

@@ -31,12 +31,7 @@
 
 #include <stdlib.h>
 #include <sapi/tpm20.h>
-
-#define TSS2_TYPES_RC_LAYER TSS2_ERROR_LEVEL(14)
-#define TSS2_TYPES_RC_BAD_REFERENCE \
-    ((TSS2_RC)(TSS2_TYPES_RC_LAYER | TSS2_BASE_RC_BAD_REFERENCE))
-#define TSS2_TYPES_RC_INSUFFICIENT_BUFFER \
-    ((TSS2_RC)(TSS2_TYPES_RC_LAYER | TSS2_BASE_RC_INSUFFICIENT_BUFFER))
+#include <sapi/tss2_common.h>
 
 #ifdef __cplusplus
 extern "C" {

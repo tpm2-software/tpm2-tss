@@ -60,7 +60,7 @@ UINT32 LoadExternalHMACKey( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2_HANDLE *keyH
     if( sysContext == 0 )
     {
         TeardownSysContext( &sysContext );
-        return TSS2_APP_ERROR_LEVEL + TPM2_RC_FAILURE;
+        return TSS2_APP_RC_LAYER + TPM2_RC_FAILURE;
     }
 
     INIT_SIMPLE_TPM2B_SIZE( *keyName );

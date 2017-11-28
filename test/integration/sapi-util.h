@@ -28,13 +28,6 @@
 
 #include "sapi/tpm20.h"
 /*
- * Definition of TSS2_RC values returned by application level stuff. We use
- * this "level" for errors returned by functions in the integration test
- * harness.
- */
-#define TSS2_APP_ERROR(base_rc)   (TSS2_APP_ERROR_LEVEL | base_rc)
-#define TSS2_APP_RC_BAD_REFERENCE  TSS2_APP_ERROR (TSS2_BASE_RC_BAD_REFERENCE)
-/*
  * This macro is like the GNU TEMP_FAILURE_RETRY macro for the
  * TPM2_RC_RETRY response code.
  */

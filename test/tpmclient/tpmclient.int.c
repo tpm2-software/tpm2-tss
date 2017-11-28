@@ -142,33 +142,33 @@ void PrintSizedBuffer( TPM2B *sizedBuffer )
 
 void ErrorHandler( UINT32 rval )
 {
-    UINT32 errorLevel = rval & TSS2_ERROR_LEVEL_MASK;
+    UINT32 errorLevel = rval & TSS2_RC_LAYER_MASK;
     char levelString[LEVEL_STRING_SIZE + 1];
 
     switch( errorLevel )
     {
-        case TSS2_TPM_ERROR_LEVEL:
+        case TSS2_TPM_RC_LAYER:
             strncpy( levelString, "TPM", LEVEL_STRING_SIZE );
             break;
-        case TSS2_APP_ERROR_LEVEL:
+        case TSS2_APP_RC_LAYER:
             strncpy( levelString, "Application", LEVEL_STRING_SIZE );
             break;
-        case TSS2_SYS_ERROR_LEVEL:
+        case TSS2_SYS_RC_LAYER:
             strncpy( levelString, "System API", LEVEL_STRING_SIZE );
             break;
-        case TSS2_SYS_PART2_ERROR_LEVEL:
+        case TSS2_MU_RC_LAYER:
             strncpy( levelString, "System API TPM encoded", LEVEL_STRING_SIZE );
             break;
-        case TSS2_TCTI_ERROR_LEVEL:
+        case TSS2_TCTI_RC_LAYER:
             strncpy( levelString, "TCTI", LEVEL_STRING_SIZE );
             break;
-        case TSS2_RESMGRTPM_ERROR_LEVEL:
+        case TSS2_RESMGRTPM_RC_LAYER:
             strncpy( levelString, "Resource Mgr TPM encoded", LEVEL_STRING_SIZE );
             break;
-        case TSS2_RESMGR_ERROR_LEVEL:
+        case TSS2_RESMGR_RC_LAYER:
             strncpy( levelString, "Resource Mgr", LEVEL_STRING_SIZE );
             break;
-        case TSS2_DRIVER_ERROR_LEVEL:
+        case TSS2_DRIVER_RC_LAYER:
             strncpy( levelString, "Driver", LEVEL_STRING_SIZE );
             break;
         default:
@@ -4184,7 +4184,7 @@ void GetContextSizeTests()
     }
 
     rval = Tss2_Sys_Startup( testSysContext, TPM2_SU_CLEAR );
-    CheckFailed( rval, TSS2_TYPES_RC_INSUFFICIENT_BUFFER );
+    CheckFailed( rval, TSS2_MU_RC_INSUFFICIENT_BUFFER );
 
 	rval = Tss2_Sys_GetTestResult_Prepare( testSysContext );
 	CheckPassed( rval );

@@ -164,10 +164,10 @@ tpml_marshal_buffer_null_offset_null(void **state)
     hndl.handle[1] = 0x81000002;
 
     rc = Tss2_MU_TPML_HANDLE_Marshal(&hndl, NULL, sizeof(hndl), NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 
     rc = Tss2_MU_TPML_PCR_SELECTION_Marshal(&sel, NULL, sizeof(sel), NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 }
 
 /*
@@ -188,7 +188,7 @@ tpml_marshal_buffer_size_lt_data_nad_lt_offset(void **state)
     hndl.handle[1] = 0x81000002;
 
     rc = Tss2_MU_TPML_HANDLE_Marshal(&hndl, buffer, buffer_size, &offset);
-    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 10);
 
     sel.count = 2;
@@ -205,7 +205,7 @@ tpml_marshal_buffer_size_lt_data_nad_lt_offset(void **state)
     offset = 2;
     buffer_size = 4 + 2 + 4 + 2 + 2;
     rc = Tss2_MU_TPML_PCR_SELECTION_Marshal(&sel, buffer, buffer_size, &offset);
-    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 2);
 }
 
@@ -305,11 +305,11 @@ tpml_unmarshal_dest_null_buff_null(void **state)
     TSS2_RC rc;
 
     rc = Tss2_MU_TPML_HANDLE_Unmarshal(NULL, 120, &offset, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
     assert_int_equal (offset, 1);
 
     rc = Tss2_MU_TPML_PCR_SELECTION_Unmarshal(NULL, 120, &offset, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
     assert_int_equal (offset, 1);
 }
 
@@ -326,10 +326,10 @@ tpml_unmarshal_buffer_null_offset_null(void **state)
     TSS2_RC rc;
 
     rc = Tss2_MU_TPML_HANDLE_Unmarshal(buffer, buffer_size, NULL, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 
     rc = Tss2_MU_TPML_PCR_SELECTION_Unmarshal(buffer, buffer_size, NULL, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 }
 
 /*
@@ -391,7 +391,7 @@ tpml_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
     ptr->handle[1] = HOST_TO_BE_32(0x81000002);
 
     rc = Tss2_MU_TPML_HANDLE_Unmarshal(buffer, 3 * 4, &offset, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 2);
 
     uint8_t data [] = {
@@ -406,7 +406,7 @@ tpml_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
     memcpy(buffer + 2, &data[0], sizeof(data));
 
     rc = Tss2_MU_TPML_PCR_SELECTION_Unmarshal(buffer, 4 + 2 + 1 + 1 + 1 + 1 + 2 + 1 + 1 + 1, &offset, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 2);
 }
 
