@@ -51,8 +51,9 @@
 #define BE_TO_HOST_64(value) (value)
 
 #else
+#include <stdint.h>
 
-static inline uint16_t endian_conv_16(UINT16 value)
+static inline uint16_t endian_conv_16(uint16_t value)
 {
     return ((value & (0xff))      << 8) | \
            ((value & (0xff << 8)) >> 8);
