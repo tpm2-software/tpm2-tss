@@ -75,6 +75,9 @@ InitSockets( const char *hostName,
     struct sockaddr_in otherService = { 0 };
     struct sockaddr_in tpmService = { 0 };
     int iResult = 0;            // used to return function results
+#if defined(TSS2_USE_SO_NOSIGPIPE)
+    int no_sigpipe_val = 1;
+#endif
 
     *otherSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (*otherSock == INVALID_SOCKET)
@@ -103,6 +106,26 @@ InitSockets( const char *hostName,
         tpmService.sin_port = htons( port );
 
     }
+
+#if defined(TSS2_USE_SO_NOSIGPIPE)
+    iResult = setsockopt(*otherSock, SOL_SOCKET, SO_NOSIGPIPE, (void*)&no_sigpipe_val, sizeof(no_sigpipe_val));
+    if (iResult)
+    {
+        SAFE_CALL( debugfunc, data, NO_PREFIX, "setting SO_NOSIGPIPE failed with error = %d\n", WSAGetLastError() );
+        closesocket( *otherSock );
+        WSACleanup();
+        return 1;
+    }
+
+    iResult = setsockopt(*tpmSock, SOL_SOCKET, SO_NOSIGPIPE, (void*)&no_sigpipe_val, sizeof(no_sigpipe_val));
+    if (iResult)
+    {
+        SAFE_CALL( debugfunc, data, NO_PREFIX, "setting SO_NOSIGPIPE failed with error = %d\n", WSAGetLastError() );
+        closesocket( *otherSock );
+        WSACleanup();
+        return 1;
+    }
+#endif
 
     // Connect to server.
     iResult = connect(*otherSock, (SOCKADDR *) &otherService, sizeof (otherService));
