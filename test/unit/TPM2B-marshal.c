@@ -146,10 +146,10 @@ tpm2b_marshal_buffer_null_offset_null(void **state)
     TSS2_RC rc;
 
     rc = Tss2_MU_TPM2B_DIGEST_Marshal(&dgst, NULL, buffer_size, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 
     rc = Tss2_MU_TPM2B_ECC_POINT_Marshal(&point, NULL, buffer_size, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 }
 
 /*
@@ -270,22 +270,22 @@ tpm2b_unmarshal_buffer_null (void **state)
     size_t offset;
 
     rc = Tss2_MU_TPM2B_DIGEST_Unmarshal (NULL, 1, NULL, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 
     rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal (NULL, 1, NULL, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 
     rc = Tss2_MU_TPM2B_DIGEST_Unmarshal (NULL, 1, &offset, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 
     rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal (NULL, 1, &offset, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 
     rc = Tss2_MU_TPM2B_DIGEST_Unmarshal (NULL, 1, NULL, &dgst);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 
     rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal (NULL, 1, NULL, &point);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 }
 /*
  * Test case ensures a NULL dest and offset parameters produce an
@@ -298,10 +298,10 @@ tpm2b_unmarshal_dest_null (void **state)
     TSS2_RC rc;
 
     rc = Tss2_MU_TPM2B_DIGEST_Unmarshal (buffer, sizeof (buffer), NULL, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 
     rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal (buffer, 1, NULL, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 }
 
 /*
@@ -340,11 +340,11 @@ tpm2b_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
     TSS2_RC rc;
 
     rc = Tss2_MU_TPM2B_DIGEST_Unmarshal (buffer, 6, &offset, &dgst);
-    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, sizeof(dgst) - 5);
 
     rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal (buffer, 1, &offset, &point);
-    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, sizeof(dgst) - 5);
 }
 

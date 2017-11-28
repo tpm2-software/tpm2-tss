@@ -142,10 +142,10 @@ tpms_marshal_buffer_null_offset_null(void **state)
     TSS2_RC rc;
 
     rc = Tss2_MU_TPMS_ALG_PROPERTY_Marshal(&alg, NULL, sizeof(alg), NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 
     rc = Tss2_MU_TPMS_CAPABILITY_DATA_Marshal(&cap, NULL, sizeof(cap), NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 }
 
 /*
@@ -165,7 +165,7 @@ tpms_marshal_buffer_size_lt_data_nad_lt_offset(void **state)
     alg.algProperties |= TPMA_ALGORITHM_ASYMMETRIC;
     alg.algProperties |= TPMA_ALGORITHM_SIGNING;
     rc = Tss2_MU_TPMS_ALG_PROPERTY_Marshal(&alg, buffer, buffer_size, &offset);
-    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 10);
 
     buffer_size = 4;
@@ -176,7 +176,7 @@ tpms_marshal_buffer_size_lt_data_nad_lt_offset(void **state)
     cap.data.eccCurves.eccCurves[1] = TPM2_ECC_NIST_P384;
     cap.data.eccCurves.eccCurves[2] = TPM2_ECC_NIST_P521;
     rc = Tss2_MU_TPMS_CAPABILITY_DATA_Marshal(&cap, buffer, buffer_size, &offset);
-    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 2);
 }
 
@@ -237,11 +237,11 @@ tpms_unmarshal_dest_null_buff_null(void **state)
     TSS2_RC rc;
 
     rc = Tss2_MU_TPMS_ALG_PROPERTY_Unmarshal(NULL, 120, &offset, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
     assert_int_equal (offset, 1);
 
     rc = Tss2_MU_TPMS_CAPABILITY_DATA_Unmarshal(NULL, 120, &offset, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
     assert_int_equal (offset, 1);
 }
 
@@ -256,10 +256,10 @@ tpms_unmarshal_buffer_null_offset_null(void **state)
     TSS2_RC rc;
 
     rc = Tss2_MU_TPMS_ALG_PROPERTY_Unmarshal(buffer, buffer_size, NULL, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 
     rc = Tss2_MU_TPMS_CAPABILITY_DATA_Unmarshal(buffer, buffer_size, NULL, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 }
 
 /*
@@ -317,7 +317,7 @@ tpms_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
     ptr->alg = HOST_TO_BE_16(TPM2_ALG_ECDSA);
     ptr->algProperties = HOST_TO_BE_32(TPMA_ALGORITHM_ASYMMETRIC | TPMA_ALGORITHM_SIGNING);
     rc = Tss2_MU_TPMS_ALG_PROPERTY_Unmarshal(buffer, sizeof(alg), &offset, &alg);
-    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 3);
 
     offset = sizeof(alg);
@@ -328,7 +328,7 @@ tpms_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
     ptr2->data.eccCurves.eccCurves[1] = HOST_TO_BE_16(TPM2_ECC_NIST_P384);
     ptr2->data.eccCurves.eccCurves[2] = HOST_TO_BE_16(TPM2_ECC_NIST_P521);
     rc = Tss2_MU_TPMS_CAPABILITY_DATA_Unmarshal(buffer, 14, &offset, &cap);
-    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, sizeof(alg));
 }
 

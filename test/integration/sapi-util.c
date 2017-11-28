@@ -60,7 +60,7 @@ create_primary_rsa_2048_aes_128_cfb (
     };
 
     if (sapi_context == NULL || handle == NULL) {
-        return TSS2_APP_RC_BAD_REFERENCE;
+        return TSS2_RC_LAYER_MASK | TSS2_BASE_RC_BAD_REFERENCE;
     }
     in_public.publicArea.type = TPM2_ALG_RSA;
     in_public.publicArea.nameAlg = TPM2_ALG_SHA256;

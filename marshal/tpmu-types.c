@@ -44,7 +44,7 @@ static TSS2_RC marshal_tab(BYTE const *src, uint8_t buffer[],
 
     if (src == NULL) { \
         LOG (WARNING, "src param is NULL"); \
-        return TSS2_TYPES_RC_BAD_REFERENCE; \
+        return TSS2_MU_RC_BAD_REFERENCE; \
     }
 
     if (offset != NULL) {
@@ -54,7 +54,7 @@ static TSS2_RC marshal_tab(BYTE const *src, uint8_t buffer[],
 
     if (buffer == NULL && offset == NULL) {
         LOG (WARNING, "buffer and offset parameter are NULL");
-        return TSS2_TYPES_RC_BAD_REFERENCE;
+        return TSS2_MU_RC_BAD_REFERENCE;
     } else if (buffer == NULL && offset != NULL) {
         *offset += size;
         LOG (INFO, "buffer NULL and offset non-NULL, updating offset to %zu",
@@ -63,7 +63,7 @@ static TSS2_RC marshal_tab(BYTE const *src, uint8_t buffer[],
     } else if (buffer_size < local_offset || buffer_size - local_offset < size) {
         LOG (WARNING, "buffer_size: %zu with offset: %zu are insufficient for "
              "object of size %zu", buffer_size, local_offset, size);
-        return TSS2_TYPES_RC_INSUFFICIENT_BUFFER;
+        return TSS2_MU_RC_INSUFFICIENT_BUFFER;
     }
 
     LOG (DEBUG, "Marshalling TPMU tab of %d bytes from 0x%" PRIxPTR " to buffer 0x%"
@@ -153,7 +153,7 @@ static TSS2_RC unmarshal_tab(uint8_t const buffer[], size_t buffer_size,
 
     if (buffer == NULL || (dest == NULL && offset == NULL)) {
         LOG (WARNING, "buffer or dest and offset parameter are NULL");
-        return TSS2_TYPES_RC_BAD_REFERENCE;
+        return TSS2_MU_RC_BAD_REFERENCE;
     } else if (dest == NULL && offset != NULL) {
         *offset += size;
         LOG (INFO, "buffer NULL and offset non-NULL, updating offset to %zu",
@@ -162,7 +162,7 @@ static TSS2_RC unmarshal_tab(uint8_t const buffer[], size_t buffer_size,
     } else if (buffer_size < local_offset || size > buffer_size - local_offset) {
         LOG (WARNING, "buffer_size: %zu with offset: %zu are insufficient for "
              "object of size %zu", buffer_size, local_offset, size);
-        return TSS2_TYPES_RC_INSUFFICIENT_BUFFER;
+        return TSS2_MU_RC_INSUFFICIENT_BUFFER;
     }
 
     LOG (DEBUG,
@@ -264,7 +264,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buf
 \
     if (src == NULL) { \
         LOG (WARNING, "src param is NULL"); \
-        return TSS2_TYPES_RC_BAD_REFERENCE; \
+        return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
     switch (selector) { \

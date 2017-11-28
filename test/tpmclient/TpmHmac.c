@@ -78,7 +78,7 @@ UINT32 TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2B **bufferList, TPM2B_DIG
 
     sysContext = InitSysContext( 3000, resMgrTctiContext, &abiVersion );
     if( sysContext == 0 )
-        return TSS2_APP_ERROR_LEVEL + TPM2_RC_FAILURE;
+        return TSS2_APP_RC_LAYER + TPM2_RC_FAILURE;
 
     rval = Tss2_Sys_HMAC_Start( sysContext, keyHandle, &sessionsData, &nullAuth, hashAlg, &sequenceHandle, 0 );
 

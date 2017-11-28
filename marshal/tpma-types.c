@@ -47,7 +47,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type src, uint8_t buffer[], \
 \
     if (buffer == NULL && offset == NULL) { \
         LOG (WARNING, "buffer and offset parameter are NULL"); \
-        return TSS2_TYPES_RC_BAD_REFERENCE; \
+        return TSS2_MU_RC_BAD_REFERENCE; \
     } else if (buffer == NULL && offset != NULL) { \
         *offset += sizeof (src); \
         LOG (INFO, "buffer NULL and offset non-NULL, updating offset to %zu", \
@@ -62,7 +62,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type src, uint8_t buffer[], \
              buffer_size, \
              local_offset, \
              sizeof (src)); \
-        return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
+        return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
     } \
 \
     LOG (DEBUG, \
@@ -109,7 +109,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     if (buffer == NULL || (dest == NULL && offset == NULL)) { \
         LOG (WARNING, "buffer or dest and offset parameter are NULL"); \
-        return TSS2_TYPES_RC_BAD_REFERENCE; \
+        return TSS2_MU_RC_BAD_REFERENCE; \
     } else if (dest == NULL && offset != NULL) { \
         *offset += sizeof (type); \
         LOG (INFO, \
@@ -125,7 +125,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
              buffer_size, \
              local_offset, \
              sizeof (*dest)); \
-        return TSS2_TYPES_RC_INSUFFICIENT_BUFFER; \
+        return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
     } \
 \
     LOG (DEBUG, \

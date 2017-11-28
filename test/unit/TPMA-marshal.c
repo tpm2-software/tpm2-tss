@@ -119,14 +119,14 @@ tpma_marshal_buffer_null_offset_null(void **state)
     alg |= TPMA_ALGORITHM_SIGNING;
 
     rc = Tss2_MU_TPMA_ALGORITHM_Marshal(alg, NULL, sizeof(alg), NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 
     session |= TPMA_SESSION_AUDIT;
     session |= TPMA_SESSION_DECRYPT;
     session |= TPMA_SESSION_AUDITRESET;
 
     rc = Tss2_MU_TPMA_SESSION_Marshal(session, NULL, sizeof(session), NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 }
 
 /*
@@ -148,7 +148,7 @@ tpma_marshal_buffer_size_lt_data_nad_lt_offset(void **state)
     alg |= TPMA_ALGORITHM_SIGNING;
 
     rc = Tss2_MU_TPMA_ALGORITHM_Marshal(alg, buffer, buffer_size, &offset);
-    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 2);
 
     session |= TPMA_SESSION_AUDIT;
@@ -156,7 +156,7 @@ tpma_marshal_buffer_size_lt_data_nad_lt_offset(void **state)
     session |= TPMA_SESSION_AUDITRESET;
 
     rc = Tss2_MU_TPMA_SESSION_Marshal(session, buffer2, buffer_size2, &offset);
-    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 2);
 }
 
@@ -205,12 +205,12 @@ tpma_unmarshal_dest_null_buff_null(void **state)
     TSS2_RC rc;
 
     rc = Tss2_MU_TPMA_ALGORITHM_Unmarshal(NULL, 20, &offset, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
     assert_int_equal (offset, 0);
 
 
     rc = Tss2_MU_TPMA_SESSION_Unmarshal(NULL, 20, &offset, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
     assert_int_equal (offset, 0);
 }
 
@@ -227,11 +227,11 @@ tpma_unmarshal_buffer_null_offset_null(void **state)
     TSS2_RC rc;
 
     rc = Tss2_MU_TPMA_ALGORITHM_Unmarshal(buffer, buffer_size, NULL, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 
 
     rc = Tss2_MU_TPMA_SESSION_Unmarshal(buffer, buffer_size, NULL, NULL);
-    assert_int_equal (rc, TSS2_TYPES_RC_BAD_REFERENCE);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
 }
 /*
  * Test case ensures the offset is updated when dest is NULL
@@ -280,7 +280,7 @@ tpma_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
     alg |= TPMA_ALGORITHM_SIGNING;
 
     rc = Tss2_MU_TPMA_ALGORITHM_Unmarshal(buffer, sizeof(alg), &offset, &alg);
-    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 1);
 
     session |= TPMA_SESSION_AUDIT;
@@ -288,7 +288,7 @@ tpma_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
     session |= TPMA_SESSION_AUDITRESET;
 
     rc = Tss2_MU_TPMA_SESSION_Unmarshal(buffer, 1, &offset, &session);
-    assert_int_equal (rc, TSS2_TYPES_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
     assert_int_equal (offset, 1);
 }
 

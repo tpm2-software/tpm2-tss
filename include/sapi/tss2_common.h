@@ -77,27 +77,26 @@ typedef struct {
 // This macro is used to indicate the level of the error:  use 5 and 6th
 // nibble for error level.
 
-#define TSS2_RC_LEVEL_SHIFT   16
+#define TSS2_RC_LAYER_SHIFT   16
 
-#define TSS2_ERROR_LEVEL( level )     ( level << TSS2_RC_LEVEL_SHIFT )
+#define TSS2_RC_LAYER( level )     ( level << TSS2_RC_LAYER_SHIFT )
 
 
 //
 // Error code levels.   These indicate what level in the software stack
 // the error codes are coming from.
 //
-#define TSS2_TPM_ERROR_LEVEL             TSS2_ERROR_LEVEL(0)
-#define TSS2_APP_ERROR_LEVEL             TSS2_ERROR_LEVEL(5)
-#define TSS2_FEATURE_ERROR_LEVEL         TSS2_ERROR_LEVEL(6)
-#define TSS2_ESAPI_ERROR_LEVEL           TSS2_ERROR_LEVEL(7)
-#define TSS2_SYS_ERROR_LEVEL             TSS2_ERROR_LEVEL(8)
-#define TSS2_SYS_PART2_ERROR_LEVEL       TSS2_ERROR_LEVEL(9)
-#define TSS2_TCTI_ERROR_LEVEL            TSS2_ERROR_LEVEL(10)
-#define TSS2_RESMGRTPM_ERROR_LEVEL       TSS2_ERROR_LEVEL(11)
-#define TSS2_RESMGR_ERROR_LEVEL          TSS2_ERROR_LEVEL(12)
-#define TSS2_DRIVER_ERROR_LEVEL          TSS2_ERROR_LEVEL(13)
+#define TSS2_TPM_RC_LAYER             TSS2_RC_LAYER(0)
+#define TSS2_FEATURE_RC_LAYER         TSS2_RC_LAYER(6)
+#define TSS2_ESAPI_RC_LAYER           TSS2_RC_LAYER(7)
+#define TSS2_SYS_RC_LAYER             TSS2_RC_LAYER(8)
+#define TSS2_MU_RC_LAYER              TSS2_RC_LAYER(9)
+#define TSS2_TCTI_RC_LAYER            TSS2_RC_LAYER(10)
+#define TSS2_RESMGRTPM_RC_LAYER       TSS2_RC_LAYER(11)
+#define TSS2_RESMGR_RC_LAYER          TSS2_RC_LAYER(12)
+#define TSS2_DRIVER_RC_LAYER          TSS2_RC_LAYER(13)
 
-#define TSS2_ERROR_LEVEL_MASK            TSS2_ERROR_LEVEL(0xff)
+#define TSS2_RC_LAYER_MASK            TSS2_RC_LAYER(0xff)
 
 /**
  * Error Codes
@@ -105,7 +104,7 @@ typedef struct {
 
 //
 // Base error codes
-// These are not returned directly, but are combined with an ERROR_LEVEL to
+// These are not returned directly, but are combined with an RC_LAYER to
 // produce the error codes for each layer.
 //
 #define TSS2_BASE_RC_GENERAL_FAILURE        1 /* Catch all for all errors
@@ -152,66 +151,80 @@ typedef struct {
 // TCTI error codes
 //
 
-#define TSS2_TCTI_RC_GENERAL_FAILURE            ((TSS2_RC)(TSS2_TCTI_ERROR_LEVEL | \
+#define TSS2_TCTI_RC_GENERAL_FAILURE            ((TSS2_RC)(TSS2_TCTI_RC_LAYER | \
                                                     TSS2_BASE_RC_GENERAL_FAILURE))
-#define TSS2_TCTI_RC_NOT_IMPLEMENTED            ((TSS2_RC)(TSS2_TCTI_ERROR_LEVEL | \
+#define TSS2_TCTI_RC_NOT_IMPLEMENTED            ((TSS2_RC)(TSS2_TCTI_RC_LAYER | \
                                                     TSS2_BASE_RC_NOT_IMPLEMENTED))
-#define TSS2_TCTI_RC_BAD_CONTEXT                ((TSS2_RC)(TSS2_TCTI_ERROR_LEVEL | \
+#define TSS2_TCTI_RC_BAD_CONTEXT                ((TSS2_RC)(TSS2_TCTI_RC_LAYER | \
                                                      TSS2_BASE_RC_BAD_CONTEXT))
-#define TSS2_TCTI_RC_ABI_MISMATCH               ((TSS2_RC)(TSS2_TCTI_ERROR_LEVEL | \
+#define TSS2_TCTI_RC_ABI_MISMATCH               ((TSS2_RC)(TSS2_TCTI_RC_LAYER | \
                                                      TSS2_BASE_RC_ABI_MISMATCH))
-#define TSS2_TCTI_RC_BAD_REFERENCE              ((TSS2_RC)(TSS2_TCTI_ERROR_LEVEL | \
+#define TSS2_TCTI_RC_BAD_REFERENCE              ((TSS2_RC)(TSS2_TCTI_RC_LAYER | \
                                                      TSS2_BASE_RC_BAD_REFERENCE))
-#define TSS2_TCTI_RC_INSUFFICIENT_BUFFER        ((TSS2_RC)(TSS2_TCTI_ERROR_LEVEL | \
+#define TSS2_TCTI_RC_INSUFFICIENT_BUFFER        ((TSS2_RC)(TSS2_TCTI_RC_LAYER | \
                                                      TSS2_BASE_RC_INSUFFICIENT_BUFFER))
-#define TSS2_TCTI_RC_BAD_SEQUENCE               ((TSS2_RC)(TSS2_TCTI_ERROR_LEVEL |  \
+#define TSS2_TCTI_RC_BAD_SEQUENCE               ((TSS2_RC)(TSS2_TCTI_RC_LAYER |  \
                                                      TSS2_BASE_RC_BAD_SEQUENCE))
-#define TSS2_TCTI_RC_NO_CONNECTION              ((TSS2_RC)(TSS2_TCTI_ERROR_LEVEL | \
+#define TSS2_TCTI_RC_NO_CONNECTION              ((TSS2_RC)(TSS2_TCTI_RC_LAYER | \
                                                      TSS2_BASE_RC_NO_CONNECTION))
-#define TSS2_TCTI_RC_TRY_AGAIN                  ((TSS2_RC)(TSS2_TCTI_ERROR_LEVEL | \
+#define TSS2_TCTI_RC_TRY_AGAIN                  ((TSS2_RC)(TSS2_TCTI_RC_LAYER | \
                                                      TSS2_BASE_RC_TRY_AGAIN))
-#define TSS2_TCTI_RC_IO_ERROR                   ((TSS2_RC)(TSS2_TCTI_ERROR_LEVEL | \
+#define TSS2_TCTI_RC_IO_ERROR                   ((TSS2_RC)(TSS2_TCTI_RC_LAYER | \
                                                      TSS2_BASE_RC_IO_ERROR))
-#define TSS2_TCTI_RC_BAD_VALUE                  ((TSS2_RC)(TSS2_TCTI_ERROR_LEVEL | \
+#define TSS2_TCTI_RC_BAD_VALUE                  ((TSS2_RC)(TSS2_TCTI_RC_LAYER | \
                                                      TSS2_BASE_RC_BAD_VALUE))
-#define TSS2_TCTI_RC_NOT_PERMITTED              ((TSS2_RC)(TSS2_TCTI_ERROR_LEVEL | \
+#define TSS2_TCTI_RC_NOT_PERMITTED              ((TSS2_RC)(TSS2_TCTI_RC_LAYER | \
                                                      TSS2_BASE_RC_NOT_PERMITTED))
-#define TSS2_TCTI_RC_MALFORMED_RESPONSE         ((TSS2_RC)(TSS2_TCTI_ERROR_LEVEL | \
+#define TSS2_TCTI_RC_MALFORMED_RESPONSE         ((TSS2_RC)(TSS2_TCTI_RC_LAYER | \
                                                      TSS2_BASE_RC_MALFORMED_RESPONSE))
-#define TSS2_TCTI_RC_NOT_SUPPORTED              ((TSS2_RC)(TSS2_TCTI_ERROR_LEVEL | \
+#define TSS2_TCTI_RC_NOT_SUPPORTED              ((TSS2_RC)(TSS2_TCTI_RC_LAYER | \
                                                      TSS2_BASE_RC_NOT_SUPPORTED))
 //
 // SAPI error codes
 //
-#define TSS2_SYS_RC_GENERAL_FAILURE            ((TSS2_RC)(TSS2_SYS_ERROR_LEVEL | \
+#define TSS2_SYS_RC_GENERAL_FAILURE            ((TSS2_RC)(TSS2_SYS_RC_LAYER | \
                                                     TSS2_BASE_RC_GENERAL_FAILURE))
-#define TSS2_SYS_RC_ABI_MISMATCH                ((TSS2_RC)(TSS2_SYS_ERROR_LEVEL | \
+#define TSS2_SYS_RC_ABI_MISMATCH                ((TSS2_RC)(TSS2_SYS_RC_LAYER | \
                                                      TSS2_BASE_RC_ABI_MISMATCH))
-#define TSS2_SYS_RC_BAD_REFERENCE               ((TSS2_RC)(TSS2_SYS_ERROR_LEVEL | \
+#define TSS2_SYS_RC_BAD_REFERENCE               ((TSS2_RC)(TSS2_SYS_RC_LAYER | \
                                                      TSS2_BASE_RC_BAD_REFERENCE))
-#define TSS2_SYS_RC_INSUFFICIENT_BUFFER         ((TSS2_RC)(TSS2_SYS_ERROR_LEVEL | \
+#define TSS2_SYS_RC_INSUFFICIENT_BUFFER         ((TSS2_RC)(TSS2_SYS_RC_LAYER | \
                                                      TSS2_BASE_RC_INSUFFICIENT_BUFFER))
-#define TSS2_SYS_RC_BAD_SEQUENCE                ((TSS2_RC)(TSS2_SYS_ERROR_LEVEL | \
+#define TSS2_SYS_RC_BAD_SEQUENCE                ((TSS2_RC)(TSS2_SYS_RC_LAYER | \
                                                      TSS2_BASE_RC_BAD_SEQUENCE))
-#define TSS2_SYS_RC_BAD_VALUE                   ((TSS2_RC)(TSS2_SYS_ERROR_LEVEL | \
+#define TSS2_SYS_RC_BAD_VALUE                   ((TSS2_RC)(TSS2_SYS_RC_LAYER | \
                                                      TSS2_BASE_RC_BAD_VALUE))
-#define TSS2_SYS_RC_INVALID_SESSIONS            ((TSS2_RC)(TSS2_SYS_ERROR_LEVEL | \
+#define TSS2_SYS_RC_INVALID_SESSIONS            ((TSS2_RC)(TSS2_SYS_RC_LAYER | \
                                                      TSS2_BASE_RC_INVALID_SESSIONS))
-#define TSS2_SYS_RC_NO_DECRYPT_PARAM            ((TSS2_RC)(TSS2_SYS_ERROR_LEVEL | \
+#define TSS2_SYS_RC_NO_DECRYPT_PARAM            ((TSS2_RC)(TSS2_SYS_RC_LAYER | \
                                                      TSS2_BASE_RC_NO_DECRYPT_PARAM))
-#define TSS2_SYS_RC_NO_ENCRYPT_PARAM            ((TSS2_RC)(TSS2_SYS_ERROR_LEVEL | \
+#define TSS2_SYS_RC_NO_ENCRYPT_PARAM            ((TSS2_RC)(TSS2_SYS_RC_LAYER | \
                                                      TSS2_BASE_RC_NO_ENCRYPT_PARAM))
-#define TSS2_SYS_RC_BAD_SIZE                    ((TSS2_RC)(TSS2_SYS_ERROR_LEVEL | \
+#define TSS2_SYS_RC_BAD_SIZE                    ((TSS2_RC)(TSS2_SYS_RC_LAYER | \
                                                      TSS2_BASE_RC_BAD_SIZE))
-#define TSS2_SYS_RC_MALFORMED_RESPONSE          ((TSS2_RC)(TSS2_SYS_ERROR_LEVEL | \
+#define TSS2_SYS_RC_MALFORMED_RESPONSE          ((TSS2_RC)(TSS2_SYS_RC_LAYER | \
                                                      TSS2_BASE_RC_MALFORMED_RESPONSE))
-#define TSS2_SYS_RC_INSUFFICIENT_CONTEXT        ((TSS2_RC)(TSS2_SYS_ERROR_LEVEL | \
+#define TSS2_SYS_RC_INSUFFICIENT_CONTEXT        ((TSS2_RC)(TSS2_SYS_RC_LAYER | \
                                                      TSS2_BASE_RC_INSUFFICIENT_CONTEXT))
-#define TSS2_SYS_RC_INSUFFICIENT_RESPONSE       ((TSS2_RC)(TSS2_SYS_ERROR_LEVEL | \
+#define TSS2_SYS_RC_INSUFFICIENT_RESPONSE       ((TSS2_RC)(TSS2_SYS_RC_LAYER | \
                                                      TSS2_BASE_RC_INSUFFICIENT_RESPONSE))
-#define TSS2_SYS_RC_INCOMPATIBLE_TCTI           ((TSS2_RC)(TSS2_SYS_ERROR_LEVEL | \
+#define TSS2_SYS_RC_INCOMPATIBLE_TCTI           ((TSS2_RC)(TSS2_SYS_RC_LAYER | \
                                                      TSS2_BASE_RC_INCOMPATIBLE_TCTI))
-#define TSS2_SYS_RC_BAD_TCTI_STRUCTURE          ((TSS2_RC)(TSS2_SYS_ERROR_LEVEL | \
+#define TSS2_SYS_RC_BAD_TCTI_STRUCTURE          ((TSS2_RC)(TSS2_SYS_RC_LAYER | \
                                                      TSS2_BASE_RC_BAD_TCTI_STRUCTURE))
+
+//
+// NUAPI error codes
+//
+#define TSS2_MU_RC_GENERAL_FAILURE              ((TSS2_RC)(TSS2_MU_RC_LAYER | \
+                                                     TSS2_BASE_RC_GENERAL_FAILURE))
+#define TSS2_MU_RC_BAD_REFERENCE                ((TSS2_RC)(TSS2_MU_RC_LAYER | \
+                                                     TSS2_BASE_RC_BAD_REFERENCE))
+#define TSS2_MU_RC_BAD_SIZE                     ((TSS2_RC)(TSS2_MU_RC_LAYER | \
+                                                     TSS2_BASE_RC_BAD_SIZE))
+#define TSS2_MU_RC_BAD_VALUE                    ((TSS2_RC)(TSS2_MU_RC_LAYER | \
+                                                     TSS2_BASE_RC_BAD_VALUE))
+#define TSS2_MU_RC_INSUFFICIENT_BUFFER          ((TSS2_RC)(TSS2_MU_RC_LAYER | \
+                                                     TSS2_BASE_RC_INSUFFICIENT_BUFFER))
 
 #endif /* TSS2_COMMON_H */
