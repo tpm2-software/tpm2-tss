@@ -54,7 +54,7 @@ extern "C" {
 #include "tss2_common.h"
 #include <stddef.h>
 
-#if defined(__linux__) || defined(__unix__)
+#if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
 #include <poll.h>
 typedef struct pollfd TSS2_TCTI_POLL_HANDLE;
 #else
