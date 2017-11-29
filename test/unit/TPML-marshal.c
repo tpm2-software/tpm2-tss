@@ -120,8 +120,7 @@ tpml_marshal_buffer_null_with_offset(void **state)
 {
     TPML_HANDLE hndl = {0};
     TPML_PCR_SELECTION sel = {0};
-    uint8_t buffer[sizeof(hndl) + sizeof(sel) + 99] = { 0 };
-    size_t  buffer_size = sizeof(buffer);
+    size_t  buffer_size = sizeof(hndl) + sizeof(sel) + 99;
     size_t offset = 99;
     TSS2_RC rc;
 
@@ -319,9 +318,7 @@ tpml_unmarshal_dest_null_buff_null(void **state)
 static void
 tpml_unmarshal_buffer_null_offset_null(void **state)
 {
-    TPML_HANDLE hndl = {0};
-    TPML_PCR_SELECTION sel = {0};
-    uint8_t buffer[sizeof(hndl) + sizeof(sel)] = { 0 };
+    uint8_t buffer[sizeof(TPML_HANDLE) + sizeof(TPML_PCR_SELECTION)] = { 0 };
     size_t  buffer_size = sizeof(buffer);
     TSS2_RC rc;
 
@@ -339,9 +336,7 @@ tpml_unmarshal_buffer_null_offset_null(void **state)
 static void
 tpml_unmarshal_dest_null_offset_valid(void **state)
 {
-    TPML_HANDLE hndl = {0};
-    TPML_PCR_SELECTION sel = {0};
-    uint8_t buffer[sizeof(hndl) + sizeof(sel) + 10] = { 0 };
+    uint8_t buffer[sizeof(TPML_HANDLE) + sizeof(TPML_PCR_SELECTION) + 10] = { 0 };
     size_t  buffer_size = sizeof(buffer);
     TPML_HANDLE *ptr;
     size_t offset = 0;
@@ -378,9 +373,7 @@ tpml_unmarshal_dest_null_offset_valid(void **state)
 static void
 tpml_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
 {
-    TPML_HANDLE hndl = {0};
-    TPML_PCR_SELECTION sel = {0};
-    uint8_t buffer[sizeof(hndl) + sizeof(sel)] = { 0 };
+    uint8_t buffer[sizeof(TPML_HANDLE) + sizeof(TPML_PCR_SELECTION)] = { 0 };
     TPML_HANDLE *ptr;
     size_t offset = 2;
     TSS2_RC rc;
