@@ -122,8 +122,7 @@ tpmt_marshal_buffer_null_with_offset(void **state)
 {
     TPMT_TK_CREATION tkt = {0};
     TPMT_PUBLIC_PARMS pub = {0};
-    uint8_t buffer[sizeof(tkt) + sizeof(pub) + 10] = { 0 };
-    size_t  buffer_size = sizeof(buffer);
+    size_t  buffer_size = sizeof(tkt) + sizeof(pub) + 10;
     size_t offset = 10;
     TSS2_RC rc;
 
@@ -277,9 +276,7 @@ tpmt_unmarshal_dest_null_buff_null(void **state)
 static void
 tpmt_unmarshal_buffer_null_offset_null(void **state)
 {
-    TPMT_TK_CREATION tkt = {0};
-    TPMT_PUBLIC_PARMS pub = {0};
-    uint8_t buffer[sizeof(tkt) + sizeof(pub)] = { 0 };
+    uint8_t buffer[sizeof(TPMT_TK_CREATION) + sizeof(TPMT_PUBLIC_PARMS)] = { 0 };
     size_t  buffer_size = sizeof(buffer);
     TSS2_RC rc;
 
@@ -297,9 +294,8 @@ tpmt_unmarshal_buffer_null_offset_null(void **state)
 static void
 tpmt_unmarshal_dest_null_offset_valid(void **state)
 {
-    TPMT_TK_CREATION tkt = {0};
-    TPMT_PUBLIC_PARMS pub = {0};
-    uint8_t buffer[sizeof(tkt) + sizeof(pub)] = { 0 };
+    TPMT_TK_CREATION tkt;
+    uint8_t buffer[sizeof(tkt) + sizeof(TPMT_PUBLIC_PARMS)] = { 0 };
     size_t  buffer_size = sizeof(buffer);
     TPMT_TK_CREATION *ptr;
     TPMI_RH_HIERARCHY *ptr2;
@@ -343,9 +339,8 @@ tpmt_unmarshal_dest_null_offset_valid(void **state)
 static void
 tpmt_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
 {
-    TPMT_TK_CREATION tkt = {0};
-    TPMT_PUBLIC_PARMS pub = {0};
-    uint8_t buffer[sizeof(tkt) + sizeof(pub)] = { 0 };
+    TPMT_TK_CREATION tkt;
+    uint8_t buffer[sizeof(tkt) + sizeof(TPMT_PUBLIC_PARMS)] = { 0 };
     TPMT_TK_CREATION *ptr;
     TPMI_RH_HIERARCHY *ptr2;
     TPM2B_DIGEST *ptr3;
