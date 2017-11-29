@@ -41,6 +41,8 @@ TSS2_RC Tss2_Sys_EvictControl_Prepare(
         return TSS2_SYS_RC_BAD_REFERENCE;
 
     rval = CommonPreparePrologue(ctx, TPM2_CC_EvictControl);
+    if (rval)
+        return rval;
 
     rval = Tss2_MU_UINT32_Marshal(auth, ctx->cmdBuffer,
                                   ctx->maxCmdSize,
