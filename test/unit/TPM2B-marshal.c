@@ -112,8 +112,7 @@ tpm2b_marshal_buffer_null_with_offset(void **state)
     TPM2B_DIGEST dgst = {4, {0}};
     TPM2B_ECC_POINT point = {sizeof(TPMS_ECC_POINT), {0}};
     size_t offset = 10;
-    uint8_t buffer[sizeof(dgst) + sizeof(point) + 10] = {0};
-    size_t  buffer_size = sizeof(buffer);
+    size_t  buffer_size = sizeof(dgst) + sizeof(point) + 10;
     uint32_t value = 0xdeadbeef;
     uint64_t value2 = 0xdeadbeefdeadbeefULL;
 
