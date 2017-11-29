@@ -251,9 +251,7 @@ tpms_unmarshal_dest_null_buff_null(void **state)
 static void
 tpms_unmarshal_buffer_null_offset_null(void **state)
 {
-    TPMS_ALG_PROPERTY alg = {0};
-    TPMS_CAPABILITY_DATA cap = {0};
-    uint8_t buffer[sizeof(alg) + sizeof(cap)] = { 0 };
+    uint8_t buffer[sizeof(TPMS_ALG_PROPERTY) + sizeof(TPMS_CAPABILITY_DATA)] = { 0 };
     size_t  buffer_size = sizeof(buffer);
     TSS2_RC rc;
 
@@ -271,9 +269,7 @@ tpms_unmarshal_buffer_null_offset_null(void **state)
 static void
 tpms_unmarshal_dest_null_offset_valid(void **state)
 {
-    TPMS_ALG_PROPERTY alg = {0};
-    TPMS_CAPABILITY_DATA cap = {0};
-    uint8_t buffer[sizeof(alg) + sizeof(cap)] = { 0 };
+    uint8_t buffer[sizeof(TPMS_ALG_PROPERTY) + sizeof(TPMS_CAPABILITY_DATA)] = { 0 };
     size_t  buffer_size = sizeof(buffer);
     uint16_t *alg_ptr;
     uint32_t *alg_properties_ptr;
@@ -290,17 +286,17 @@ tpms_unmarshal_dest_null_offset_valid(void **state)
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (offset, sizeof(*alg_ptr) + sizeof(*alg_properties_ptr));
 
-    ptr2 = (TPMS_CAPABILITY_DATA *)(buffer + sizeof(alg));
+    ptr2 = (TPMS_CAPABILITY_DATA *)(buffer + sizeof(TPMS_ALG_PROPERTY));
     ptr2->capability = HOST_TO_BE_32(TPM2_CAP_ECC_CURVES);
     ptr2->data.eccCurves.count = HOST_TO_BE_32(3);
     ptr2->data.eccCurves.eccCurves[0] = HOST_TO_BE_16(TPM2_ECC_NIST_P256);
     ptr2->data.eccCurves.eccCurves[1] = HOST_TO_BE_16(TPM2_ECC_NIST_P384);
     ptr2->data.eccCurves.eccCurves[2] = HOST_TO_BE_16(TPM2_ECC_NIST_P521);
 
-    offset = sizeof(alg);
+    offset = sizeof(TPMS_ALG_PROPERTY);
     rc = Tss2_MU_TPMS_CAPABILITY_DATA_Unmarshal(buffer, buffer_size, &offset, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (offset, sizeof(alg) + 4 + 4 + (3 * 2));
+    assert_int_equal (offset, sizeof(TPMS_ALG_PROPERTY) + 4 + 4 + (3 * 2));
 }
 
 /*
