@@ -240,9 +240,8 @@ tpma_unmarshal_buffer_null_offset_null(void **state)
 static void
 tpma_unmarshal_dest_null_offset_valid(void **state)
 {
-    TPMA_ALGORITHM alg = {0};
     TPMA_SESSION session = {0};
-    uint8_t buffer[sizeof(alg) + sizeof(session)] = { 0 };
+    uint8_t buffer[sizeof(TPMA_ALGORITHM) + sizeof(session)] = { 0 };
     size_t buffer_size = sizeof(buffer);
     size_t offset = 0;
     uint32_t alg_expected = HOST_TO_BE_32(TPMA_ALGORITHM_ASYMMETRIC | TPMA_ALGORITHM_SIGNING);
@@ -257,16 +256,9 @@ tpma_unmarshal_dest_null_offset_valid(void **state)
     *ptr = alg_expected;
     *ptr2 = session_expected;
 
-    alg |= TPMA_ALGORITHM_ASYMMETRIC;
-    alg |= TPMA_ALGORITHM_SIGNING;
-
     rc = Tss2_MU_TPMA_ALGORITHM_Unmarshal(buffer, buffer_size, &offset, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (offset, sizeof(alg));
-
-    session |= TPMA_SESSION_AUDIT;
-    session |= TPMA_SESSION_DECRYPT;
-    session |= TPMA_SESSION_AUDITRESET;
+    assert_int_equal (offset, sizeof(TPMA_ALGORITHM));
 
     rc = Tss2_MU_TPMA_SESSION_Unmarshal(buffer, buffer_size, &offset, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
