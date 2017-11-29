@@ -196,7 +196,9 @@ test_unit_TPMU_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_TPMU_marshal_SOURCES = test/unit/TPMU-marshal.c
 endif # UNIT
 
+if HAVE_LD_VERSION_SCRIPT
 marshal_libmarshal_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/libmarshal.map
+endif # HAVE_LD_VERSION_SCRIPT
 marshal_libmarshal_la_SOURCES = $(MARSHAL_SRC) log/log.c log/log.h
 
 sysapi_libsapi_la_LIBADD  = $(libmarshal)
@@ -204,13 +206,17 @@ sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPI_H) $(SYSAPIUTIL_C) \
     $(SYSAPIUTIL_H)
 
 tcti_libtcti_device_la_CFLAGS   = $(AM_CFLAGS)
+if HAVE_LD_VERSION_SCRIPT
 tcti_libtcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_device.map
+endif # HAVE_LD_VERSION_SCRIPT
 tcti_libtcti_device_la_LIBADD   = $(libmarshal)
 tcti_libtcti_device_la_SOURCES  = tcti/tcti_device.c tcti/tcti.c \
     tcti/tcti.h common/debug.c common/debug.h tcti/logging.h
 
 tcti_libtcti_socket_la_CFLAGS   = $(AM_CFLAGS)
+if HAVE_LD_VERSION_SCRIPT
 tcti_libtcti_socket_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
+endif # HAVE_LD_VERSION_SCRIPT
 tcti_libtcti_socket_la_SOURCES  = tcti/platformcommand.c tcti/tcti_socket.c \
     tcti/tcti.c tcti/tcti.h tcti/sockets.c tcti/sockets.h \
     common/debug.c common/debug.h tcti/logging.h

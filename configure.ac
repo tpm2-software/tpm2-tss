@@ -39,6 +39,8 @@ AC_ARG_WITH([simulatorbin],
             [with_simulatorbin_set=no])
 AM_CONDITIONAL([SIMULATOR_BIN],[test "x$with_simulatorbin_set" = "xyes"])
 
+gl_LD_VERSION_SCRIPT
+
 AX_ADD_COMPILER_FLAG([-Wall])
 AX_ADD_COMPILER_FLAG([-Werror])
 AX_ADD_COMPILER_FLAG([-std=gnu99])
