@@ -114,7 +114,6 @@ TSS2_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM2_HANDLE handle1, TPM2_HA
         hashInputPtr = &( hashInput.buffer[hashInput.size] );
         *(UINT32 *)hashInputPtr = BE_TO_HOST_32(responseCode);
         hashInput.size += 4;
-        hashInputPtr += 4;
     }
 
     // Create pHash input byte stream:  now add command code.

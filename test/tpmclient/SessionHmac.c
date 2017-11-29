@@ -105,11 +105,15 @@ UINT32 TpmComputeSessionHmac(
     }
 
     rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&hmacKey, (TPM2B *)&pSession->sessionKey);
+    if( rval != TPM2_RC_SUCCESS )
+        return rval;
 
     if( ( pSession->bind == TPM2_RH_NULL ) || ( pSession->bind != entityHandle )
             || nvNameChanged )
     {
         rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&hmacKey, (TPM2B *)&authValue);
+        if( rval != TPM2_RC_SUCCESS )
+            return rval;
     }
 
 #ifdef  DEBUG
