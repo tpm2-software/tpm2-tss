@@ -182,12 +182,19 @@ TSS2_RC SocketSendTpmCommand(
                                      command_size,
                                      &offset,
                                      &cnt);
+    if (rval != TSS2_RC_SUCCESS) {
+        return rval;
+    }
 
     /* Send TPM2_SEND_COMMAND */
     rval = Tss2_MU_UINT32_Marshal (MS_SIM_TPM_SEND_COMMAND,
                            (uint8_t*)&tpmSendCommand,
                            sizeof (tpmSendCommand),
                            NULL);  /* Value for "send command" to MS simulator. */
+    if (rval != TSS2_RC_SUCCESS) {
+        return rval;
+    }
+
     rval = tctiSendBytes (tctiContext,
                           tcti_intel->tpmSock,
                           (unsigned char *)&tpmSendCommand,
