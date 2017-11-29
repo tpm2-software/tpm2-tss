@@ -41,6 +41,8 @@ TSS2_RC Tss2_Sys_LoadExternal_Prepare(
         return TSS2_SYS_RC_BAD_REFERENCE;
 
     rval = CommonPreparePrologue(ctx, TPM2_CC_LoadExternal);
+    if (rval)
+        return rval;
 
     /* If no private key is specified, set the private key size field to 0 */
     if (!inPrivate) {
