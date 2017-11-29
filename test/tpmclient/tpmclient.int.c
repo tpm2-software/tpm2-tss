@@ -575,8 +575,10 @@ void TestStartAuthSession()
     for( i = 0; i < ( sizeof(sessions) / sizeof (SESSION *)); i++ )
     {
         rval = Tss2_Sys_FlushContext( sysContext, sessions[i]->sessionHandle );
+        CheckPassed( rval );
 
         rval = EndAuthSession( sessions[i] );
+        CheckPassed( rval );
     }
 
     // Now do some gap tests.
@@ -2659,6 +2661,7 @@ void TestUnseal()
 
     INIT_SIMPLE_TPM2B_SIZE( outData );
     rval = Tss2_Sys_Unseal( sysContext, loadedObjectHandle, &sessionsData, &outData, &sessionsDataOut );
+    CheckPassed( rval );
 
     rval = Tss2_Sys_FlushContext( sysContext, loadedObjectHandle );
 
@@ -3713,6 +3716,7 @@ void TestEncryptDecryptSession()
             &nvAuth, &authPolicy, TPM20_INDEX_TEST1,
             TPM2_ALG_SHA1, nvAttributes,
             sizeof( writeDataString ) );
+    CheckPassed( rval );
 
     //
     // 1st pass with CFB mode.
