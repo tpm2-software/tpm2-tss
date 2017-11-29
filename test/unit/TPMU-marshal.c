@@ -113,8 +113,7 @@ tpmu_marshal_buffer_null_with_offset(void **state)
 {
     TPMU_HA ha = {0};
     TPMU_SIGNATURE sig = {0};
-    uint8_t buffer[sizeof(ha) + sizeof(sig) + 10] = { 0 };
-    size_t  buffer_size = sizeof(buffer);
+    size_t  buffer_size = sizeof(ha) + sizeof(sig) + 10;
     size_t offset = 10;
     TSS2_RC rc;
 
@@ -267,9 +266,7 @@ tpmu_unmarshal_dest_null_buff_null(void **state)
 static void
 tpmu_unmarshal_buffer_null_offset_null(void **state)
 {
-    TPMU_HA ha = {0};
-    TPMU_SIGNATURE sig = {0};
-    uint8_t buffer[sizeof(ha) + sizeof(sig)] = { 0 };
+    uint8_t buffer[sizeof(TPMU_HA) + sizeof(TPMU_SIGNATURE)] = { 0 };
     size_t  buffer_size = sizeof(buffer);
     TSS2_RC rc;
 
@@ -287,9 +284,7 @@ tpmu_unmarshal_buffer_null_offset_null(void **state)
 static void
 tpmu_unmarshal_dest_null_offset_valid(void **state)
 {
-    TPMU_HA ha = {0};
-    TPMU_SIGNATURE sig = {0};
-    uint8_t buffer[sizeof(ha) + sizeof(sig)] = { 0 };
+    uint8_t buffer[sizeof(TPMU_HA) + sizeof(TPMU_SIGNATURE)] = { 0 };
     size_t  buffer_size = sizeof(buffer);
     TPMS_SIGNATURE_ECDSA *ptr;
     TPM2B_ECC_PARAMETER *ptr2;
