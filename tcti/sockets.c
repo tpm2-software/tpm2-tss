@@ -131,7 +131,7 @@ InitSockets( const char *hostName,
     iResult = connect(*otherSock, (SOCKADDR *) &otherService, sizeof (otherService));
     if (iResult == SOCKET_ERROR) {
         SAFE_CALL( debugfunc, data, NO_PREFIX, "connect function failed with error: %d\n", WSAGetLastError() );
-        iResult = closesocket(*otherSock);
+        closesocket(*otherSock);
         WSACleanup();
         return 1;
     }
