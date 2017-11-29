@@ -117,11 +117,10 @@ tcti_device_log_called_test (void **state)
     assert_non_null (ctx);
     ret = InitDeviceTcti (ctx, 0, &conf);
     assert_true (ret == TSS2_RC_SUCCESS);
-    if (ctx)
-        free (ctx);
     /* the 'called' variable should be changed from false to true after this */
     TCTI_LOG (ctx, NO_PREFIX, "test log call");
     assert_true (called);
+    free (ctx);
 }
 /* end tcti_dev_init_log */
 /* wrap functions for read & write required to test receive / transmit */
