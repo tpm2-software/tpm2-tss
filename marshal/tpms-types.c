@@ -254,7 +254,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
 \
     LOG (DEBUG, \
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
     return fn(op src->m, buffer, buffer_size, offset); \
 }
@@ -265,7 +265,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 { \
     LOG (DEBUG, \
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
     return fn(buffer, buffer_size, offset, dest ? &dest->m : NULL); \
 }
@@ -290,7 +290,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
 \
     LOG (DEBUG, \
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
     ret = fn1(op1 src->m1, buffer, buffer_size, &local_offset); \
     if (ret != TSS2_RC_SUCCESS) \
@@ -314,7 +314,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     LOG (DEBUG, \
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
     if (offset) { \
         local_offset = *offset; \
@@ -354,7 +354,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
 \
     LOG (DEBUG, \
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
     ret = fn1(op1 src->m1, buffer, buffer_size, &local_offset); \
     if (ret != TSS2_RC_SUCCESS) \
@@ -377,7 +377,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     LOG (DEBUG, \
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
     if (offset) { \
         local_offset = *offset; \
@@ -417,7 +417,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
 \
     LOG (DEBUG, \
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
     ret = fn1(op1 src->m1, buffer, buffer_size, &local_offset); \
     if (ret != TSS2_RC_SUCCESS) \
@@ -444,7 +444,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     LOG (DEBUG, \
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
     if (offset) { \
         local_offset = *offset; \
@@ -488,7 +488,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
 \
     LOG (DEBUG, \
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
     ret = fn1(op1 src->m1, buffer, buffer_size, &local_offset); \
     if (ret != TSS2_RC_SUCCESS) \
@@ -525,7 +525,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     LOG (DEBUG, \
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
     ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
     if (ret != TSS2_RC_SUCCESS) \
@@ -568,7 +568,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
 \
     LOG (DEBUG, \
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
     ret = fn1(op1 src->m1, buffer, buffer_size, &local_offset); \
     if (ret != TSS2_RC_SUCCESS) \
@@ -603,7 +603,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     LOG (DEBUG, \
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
     if (offset) { \
         local_offset = *offset; \
@@ -656,7 +656,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
 \
     LOG (DEBUG, \
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
     ret = fn1(op1 src->m1, buffer, buffer_size, &local_offset); \
     if (ret != TSS2_RC_SUCCESS) \
@@ -699,7 +699,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     LOG (DEBUG, \
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
     if (offset) { \
         local_offset = *offset; \
@@ -760,7 +760,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
 \
     LOG (DEBUG, \
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
     ret = fn1(op1 src->m1, buffer, buffer_size, &local_offset); \
     if (ret != TSS2_RC_SUCCESS) \
@@ -803,7 +803,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     LOG (DEBUG, \
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
     if (offset) { \
         local_offset = *offset; \
@@ -865,7 +865,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
 \
     LOG (DEBUG, \
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
     ret = fn1(op1 src->m1, buffer, buffer_size, &local_offset); \
     if (ret != TSS2_RC_SUCCESS) \
@@ -925,7 +925,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     LOG (DEBUG, \
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
     if (offset) { \
         local_offset = *offset; \
