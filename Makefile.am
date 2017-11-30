@@ -138,14 +138,14 @@ test_unit_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_tcti_device_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_tcti_device_LDFLAGS = -Wl,--wrap=read -Wl,-wrap=write
 test_unit_tcti_device_SOURCES = tcti/tcti.c tcti/tcti.h tcti/tcti_device.c \
-    test/unit/tcti-device.c
+    test/unit/tcti-device.c log/log.h log/log.c
 
 test_unit_tcti_socket_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_tcti_socket_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_tcti_socket_LDFLAGS = -Wl,--wrap=connect,--wrap=recv,--wrap=select,--wrap=send
 test_unit_tcti_socket_SOURCES = tcti/platformcommand.c tcti/tcti_socket.c \
     tcti/tcti.c tcti/tcti.h tcti/sockets.c tcti/sockets.h \
-    common/debug.c common/debug.h tcti/logging.h test/unit/tcti-socket.c
+     test/unit/tcti-socket.c log/log.h log/log.c
 
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_CommonPreparePrologue_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
@@ -217,7 +217,7 @@ tcti_libtcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_devic
 endif # HAVE_LD_VERSION_SCRIPT
 tcti_libtcti_device_la_LIBADD   = $(libmarshal)
 tcti_libtcti_device_la_SOURCES  = tcti/tcti_device.c tcti/tcti.c \
-    tcti/tcti.h common/debug.c common/debug.h tcti/logging.h
+    tcti/tcti.h log/log.h log/log.c
 
 tcti_libtcti_socket_la_CFLAGS   = $(AM_CFLAGS)
 if HAVE_LD_VERSION_SCRIPT
@@ -225,8 +225,7 @@ tcti_libtcti_socket_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_socke
 endif # HAVE_LD_VERSION_SCRIPT
 tcti_libtcti_socket_la_LIBADD   = $(libmarshal)
 tcti_libtcti_socket_la_SOURCES  = tcti/platformcommand.c tcti/tcti_socket.c \
-    tcti/tcti.c tcti/tcti.h tcti/sockets.c tcti/sockets.h \
-    common/debug.c common/debug.h tcti/logging.h
+    tcti/tcti.c tcti/tcti.h tcti/sockets.c tcti/sockets.h log/log.h log/log.c
 
 test_tpmclient_tpmclient_int_CFLAGS   = $(AM_CFLAGS) -U_FORTIFY_SOURCE
 test_tpmclient_tpmclient_int_LDADD    = $(TESTS_LDADD)
@@ -241,7 +240,8 @@ test_tpmclient_tpmclient_int_SOURCES  = $(COMMON_C) \
     test/tpmclient/syscontext.h test/tpmclient/tcti_util.c \
     test/tpmclient/tcti_util.h test/tpmclient/TpmCalcPHash.c \
     test/tpmclient/tpmclient.int.c test/tpmclient/tpmclient.h \
-    test/tpmclient/TpmHandleToName.c test/tpmclient/TpmHash.c
+    test/tpmclient/TpmHandleToName.c test/tpmclient/TpmHash.c \
+    log/log.h log/log.c
 
 test_integration_libtest_utils_la_SOURCES = \
     test/integration/context-util.c test/integration/context-util.h \

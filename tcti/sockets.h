@@ -31,9 +31,7 @@ int
 InitSockets( const char *hostName,
              UINT16 port,
              SOCKET *otherSock,
-             SOCKET *tpmSock,
-             TCTI_LOG_CALLBACK  logCallback,
-             void *logData );
+             SOCKET *tpmSock);
 void CloseSockets( SOCKET serverSock, SOCKET tpmSock );
 TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len );
 TSS2_RC sendBytes( SOCKET tpmSock, const unsigned char *data, int len );

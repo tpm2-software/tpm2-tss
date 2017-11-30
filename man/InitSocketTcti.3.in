@@ -7,15 +7,10 @@ InitSocketTcti \- Initialization function for the Microsoft TPM simulator TCTI l
 .SH SYNOPSIS
 .B #include <tcti/tcti_socket.h>
 .sp
-.BI "typedef int (*TCTI_LOG_CALLBACK)( void " "*data" ", printf_type" "type" ", const char " "*format" ", "..." ");"
-.sp
 .nf
 typedef struct {
     const char *hostname;
     uint16_t port;
-    TCTI_LOG_CALLBACK logCallback;
-    TCTI_LOG_BUFFER_CALLBACK logBufferCallback;
-    void *logData;
 } TCTI_SOCKET_CONF;
 .fi
 .sp
@@ -75,24 +70,7 @@ member is an unsigned 16 bit integer containing the port number for the
 simulator command / response port. The simulator listens for \*(lqplatform
 commands\*(rq on
 .I port+1
-and so an additional connection will be made to this port. The
-.I logCallback
-member is a pointer to a callback function that will be called by the
-socket TCTI. This is expected to be a
-.I printf
-like function. The
-.I logBufferCallback
-mamber is a pointer to a call back function that will be invoked by the
-socket TCTI before a command buffer is transmitted or after a resposne buffer
-is received. This is expected to be a
-.I printf
-like function. The
-.I logData
-member is a void pointer that may be used to pass user data to the
-.I logCallback
-and
-.I logBufferCallback
-functions on each invocation.
+and so an additional connection will be made to this port.
 .sp
 The
 .I serverSockets
@@ -127,35 +105,6 @@ parameters are NULL, or if the
 .I config
 parameter is NULL.
 .SH EXAMPLE
-Logging functions:
-.sp
-.nf
-int DebugPrintfCallback (void *data, printf_type type, const char *format, ...)
-{
-    va_list args;
-    int rval = 0;
-
-    va_start( args, format );
-    rval = vprintf( format, args );
-    va_end (args);
-
-    return rval;
-}
-void DebugPrintBuffer (printf_type type, UINT8 *buffer, UINT32 length)
-{
-    UINT32  i;
-
-    for( i = 0; i < length; i++ )
-    {
-        if( ( i % 16 ) == 0 ) {
-            printf ("\n");
-        }
-
-        printf ("%2.2x ", buffer[i] );
-    }
-    printf ("\n\n");
-}
-.fi
 .sp
 TCTI initialization fragment:
 .sp
@@ -171,9 +120,6 @@ size_t size;
 TCTI_SOCKET_CONF conf = {
     .hostname          = "127.0.0.1",
     .port              = 2321,
-    .logCallback       = DebugPrintfCallback,
-    .logBufferCallback = DebugPrintBuffer,
-    .logData           = NULL,
 };
 
 rc = InitSocketTcti (NULL, &size, NULL, 0);

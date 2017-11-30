@@ -28,16 +28,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <inttypes.h>
 
 #include "sapi/tpm20.h"
 #include "sapi/tss2_mu.h"
 #include "tcti/tcti_socket.h"
 #include "sysapi_util.h"
-#include "common/debug.h"
 #include "tcti.h"
-#include "logging.h"
 #include "sockets.h"
 #include "tss2_endian.h"
+#define LOGMODULE tcti
+#include "log/log.h"
 
 static TSS2_RC tctiRecvBytes (
     TSS2_TCTI_CONTEXT *tctiContext,
@@ -49,20 +50,11 @@ static TSS2_RC tctiRecvBytes (
     TSS2_RC result = 0;
     result = recvBytes (sock, data, len);
     if ((INT32)result == SOCKET_ERROR) {
-        TCTI_LOG (tctiContext,
-                  NO_PREFIX,
-                  "In recvBytes, recv failed (socket: 0x%x) with error: %d\n",
-                  sock,
-                  WSAGetLastError ());
+        LOG_ERROR("In recvBytes, recv failed (socket: 0x%x) with error: %d",
+                  sock, WSAGetLastError ());
         return TSS2_TCTI_RC_IO_ERROR;
     }
-#ifdef DEBUG_SOCKETS
-    TCTI_LOG (tctiContext,
-              NO_PREFIX,
-              "Receive Bytes from socket #0x%x: \n",
-              sock);
-    TCTI_LOG_BUFFER (tctiContext, NO_PREFIX, data, len);
-#endif
+    LOGBLOB_DEBUG(data, len, "Receive Bytes from socket #0x%x:", sock);
 
     return TSS2_RC_SUCCESS;
 }
@@ -76,18 +68,12 @@ static TSS2_RC tctiSendBytes (
 {
     TSS2_RC ret = TSS2_RC_SUCCESS;
 
-#ifdef DEBUG_SOCKETS
-    TCTI_LOG (tctiContext, NO_PREFIX, "Send Bytes to socket #0x%x: \n", sock);
-    TCTI_LOG_BUFFER (tctiContext, NO_PREFIX, (UINT8 *)data, len);
-#endif
+    LOGBLOB_DEBUG(data, len, "Send Bytes to socket #0x%x:", sock);
 
     ret = sendBytes (sock, data, len);
     if (ret != TSS2_RC_SUCCESS) {
-        TCTI_LOG (tctiContext,
-                  NO_PREFIX,
-                  "In recvBytes, recv failed (socket: 0x%x) with error: %d\n",
-                  sock,
-                  WSAGetLastError ());
+        LOG_ERROR("In recvBytes, recv failed (socket: 0x%x) with error: %d",
+                  sock, WSAGetLastError ());
     }
     return ret;
 }
@@ -134,44 +120,22 @@ TSS2_RC SocketSendTpmCommand(
     TSS2_RC rval = TSS2_RC_SUCCESS;
     size_t offset;
 
-#ifdef DEBUG
-    UINT32 commandCode;
-    printf_type rmPrefix;
-#endif
     rval = tcti_send_checks (tctiContext, command_buffer);
     if (rval != TSS2_RC_SUCCESS) {
         return rval;
     }
 
-#ifdef DEBUG
-    if (tcti_intel->status.rmDebugPrefix == 1) {
-        rmPrefix = RM_PREFIX;
-    } else {
-        rmPrefix = NO_PREFIX;
-    }
-
-    if (tcti_intel->status.debugMsgEnabled == 1) {
-        TCTI_LOG (tctiContext, rmPrefix, "");
-        offset = sizeof (TPM2_ST) + sizeof (UINT32);
-        rval = Tss2_MU_TPM2_CC_Unmarshal (command_buffer,
-                                         command_size,
-                                         &offset,
-                                         &commandCode);
-
-#ifdef DEBUG_SOCKETS
-        TCTI_LOG (tctiContext,
-                  NO_PREFIX,
-                  "Command sent on socket #0x%x: %s\n",
-                  TCTI_CONTEXT_INTEL->tpmSock,
-                  strTpmCommandCode (commandCode));
-
-#else
-        TCTI_LOG (tctiContext,
-                  NO_PREFIX,
-                  "Cmd sent: %s\n",
-                  strTpmCommandCode (commandCode));
-#endif
-    }
+#if LOGLEVEL == LOGLEVEL_DEBUG || \
+    LOGLEVEL == LOGLEVEL_TRACE
+    UINT32 commandCode;
+    offset = sizeof (TPM2_ST) + sizeof (UINT32);
+    rval = Tss2_MU_TPM2_CC_Unmarshal (command_buffer,
+                                     command_size,
+                                     &offset,
+                                     &commandCode);
+    if (rval) return rval;
+    LOG_DEBUG("Command sent on socket #0x%x: %" PRIx16, tcti_intel->tpmSock,
+        commandCode);
 #endif
     /*
      * Size TPM 1.2 and TPM 2.0 headers overlap exactly, we can use
@@ -213,14 +177,7 @@ TSS2_RC SocketSendTpmCommand(
         return rval;
     }
 
-#ifdef DEBUG
-    if (tcti_intel->status.debugMsgEnabled == 1) {
-        TCTI_LOG (tctiContext,
-                  rmPrefix,
-                  "Locality = %d",
-                  tcti_intel->status.locality);
-    }
-#endif
+    LOG_DEBUG("Locality = %d", tcti_intel->status.locality);
 
     /* Send number of bytes. */
     cnt1 = cnt;
@@ -241,12 +198,8 @@ TSS2_RC SocketSendTpmCommand(
     if (rval != TSS2_RC_SUCCESS) {
         return rval;
     }
+    LOGBLOB_DEBUG(command_buffer, cnt1, "Sent command buffer=");
 
-#ifdef DEBUG
-    if (tcti_intel->status.debugMsgEnabled == 1) {
-        DEBUG_PRINT_BUFFER (rmPrefix, command_buffer, cnt1);
-    }
-#endif
     tcti_intel->status.commandSent = 1;
 
     tcti_intel->previousStage = TCTI_STAGE_SEND_COMMAND;
@@ -336,17 +289,10 @@ TSS2_RC SocketReceiveTpmResponse(
     int32_t timeoutMsecs = timeout % 1000;
     int iResult;
     unsigned char responseSizeDelta = 0;
-    printf_type rmPrefix;
 
     rval = tcti_receive_checks (tctiContext, response_size, response_buffer);
     if (rval != TSS2_RC_SUCCESS) {
         goto retSocketReceiveTpmResponse;
-    }
-
-    if (tcti_intel->status.rmDebugPrefix == 1) {
-        rmPrefix = RM_PREFIX;
-    } else {
-        rmPrefix = NO_PREFIX;
     }
 
     if (timeout == TSS2_TCTI_TIMEOUT_BLOCK) {
@@ -362,23 +308,17 @@ TSS2_RC SocketReceiveTpmResponse(
 
     iResult = select (tcti_intel->tpmSock + 1, &readFds, 0, 0, tvPtr);
     if (iResult == 0) {
-        TCTI_LOG (tctiContext,
-                  rmPrefix,
-                  "select failed due to timeout, socket #: 0x%x\n",
+        LOG_ERROR("select failed due to timeout, socket #: 0x%x",
                   tcti_intel->tpmSock);
         rval = TSS2_TCTI_RC_TRY_AGAIN;
         goto retSocketReceiveTpmResponse;
     } else if (iResult == SOCKET_ERROR) {
-        TCTI_LOG (tctiContext,
-                  rmPrefix,
-                  "select failed with socket error: %d\n",
+        LOG_ERROR("select failed with socket error: %d",
                   WSAGetLastError ());
         rval = TSS2_TCTI_RC_IO_ERROR;
         goto retSocketReceiveTpmResponse;
     } else if (iResult != 1) {
-        TCTI_LOG (tctiContext,
-                  rmPrefix,
-                  "select failed, read the wrong # of bytes: %d\n",
+        LOG_ERROR("select failed, read the wrong # of bytes: %d",
                   iResult);
         rval = TSS2_TCTI_RC_IO_ERROR;
         goto retSocketReceiveTpmResponse;
@@ -439,18 +379,11 @@ TSS2_RC SocketReceiveTpmResponse(
             }
         }
     } else {
-        if (tcti_intel->status.debugMsgEnabled == 1 &&
-            tcti_intel->responseSize > 0)
+        if (tcti_intel->responseSize > 0)
         {
-#ifdef DEBUG
-            TCTI_LOG (tctiContext, rmPrefix, "Response Received: ");
-#endif
-#ifdef DEBUG_SOCKETS
-            TCTI_LOG (tctiContext,
-                      rmPrefix,
-                      "from socket #0x%x:\n",
+            LOG_DEBUG("Response Received: ");
+            LOG_DEBUG("from socket #0x%x:",
                       tcti_intel->tpmSock);
-#endif
         }
 
         if (tcti_intel->status.tagReceived == 1) {
@@ -473,14 +406,8 @@ TSS2_RC SocketReceiveTpmResponse(
         if (rval != TSS2_RC_SUCCESS) {
             goto retSocketReceiveTpmResponse;
         }
-
-#ifdef DEBUG
-        if (tcti_intel->status.debugMsgEnabled == 1) {
-            DEBUG_PRINT_BUFFER (rmPrefix,
-                                response_buffer,
-                                tcti_intel->responseSize);
-        }
-#endif
+        LOGBLOB_DEBUG(response_buffer, tcti_intel->responseSize,
+            "Received response buffer=");
 
         /* Receive the appended four bytes of 0's */
         rval = tctiRecvBytes (tctiContext,
@@ -579,25 +506,18 @@ TSS2_RC InitSocketTcti (
     TSS2_TCTI_CANCEL (tctiContext) = SocketCancel;
     TSS2_TCTI_GET_POLL_HANDLES (tctiContext) = SocketGetPollHandles;
     TSS2_TCTI_SET_LOCALITY (tctiContext) = SocketSetLocality;
-    tcti_intel->status.debugMsgEnabled = 0;
     tcti_intel->status.locality = 3;
     tcti_intel->status.commandSent = 0;
-    tcti_intel->status.rmDebugPrefix = 0;
     tcti_intel->status.tagReceived = 0;
     tcti_intel->status.responseSizeReceived = 0;
     tcti_intel->status.protocolResponseSizeReceived = 0;
     tcti_intel->currentTctiContext = 0;
     tcti_intel->previousStage = TCTI_STAGE_INITIALIZE;
-    TCTI_LOG_CALLBACK (tctiContext) = conf->logCallback;
-    TCTI_LOG_BUFFER_CALLBACK (tctiContext) = conf->logBufferCallback;
-    TCTI_LOG_DATA (tctiContext) = conf->logData;
 
     rval = (TSS2_RC) InitSockets (conf->hostname,
                                   conf->port,
                                   &otherSock,
-                                  &tpmSock,
-                                  TCTI_LOG_CALLBACK (tctiContext),
-                                  TCTI_LOG_DATA (tctiContext));
+                                  &tpmSock);
     if (rval == TSS2_RC_SUCCESS) {
         tcti_intel->otherSock = otherSock;
         tcti_intel->tpmSock = tpmSock;

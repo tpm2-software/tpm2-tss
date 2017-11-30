@@ -31,7 +31,6 @@
 #include <tcti/common.h>
 #include "sapi/tpm20.h"
 #include "tcti.h"
-#include "common/debug.h"
 
 TSS2_RC tcti_common_checks (
     TSS2_TCTI_CONTEXT *tcti_context

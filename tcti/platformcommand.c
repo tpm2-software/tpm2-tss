@@ -32,23 +32,17 @@
 // to send platform commands to the simulator.
 //
 
-//
-// NOTE:  uncomment following if you think you need to see all
-// socket communications.
-//
-//#define DEBUG_SOCKETS
-
 #include <stdio.h>
 #include <stdlib.h>   // Needed for _wtoi
 
 #include "sapi/tpm20.h"
 #include "tcti/tcti_socket.h"
 #include "sysapi_util.h"
-#include "common/debug.h"
 #include <sapi/tss2_tcti.h>
 #include "sockets.h"
 #include "tcti.h"
-#include "logging.h"
+#define LOGMODULE tcti
+#include "log/log.h"
 
 TSS2_RC PlatformCommand(
     TSS2_TCTI_CONTEXT *tctiContext,     /* in */
@@ -65,33 +59,27 @@ TSS2_RC PlatformCommand(
     // Send the command
     iResult = send (tcti_intel->otherSock, sendbuf, 4, MSG_NOSIGNAL);
     if (iResult == SOCKET_ERROR) {
-        TCTI_LOG( tctiContext, NO_PREFIX, "send failed with error: %d\n", WSAGetLastError() );
+        LOG_ERROR("send failed with error: %d", WSAGetLastError() );
         rval = TSS2_TCTI_RC_IO_ERROR;
     }
     else
     {
-#ifdef DEBUG_SOCKETS
-        TCTI_LOG( tctiContext, NO_PREFIX, "Send Bytes to socket #0x%x: \n", tcti_intel->otherSock );
-        TCTI_LOG_BUFFER( tctiContext, NO_PREFIX, (UINT8 *)sendbuf, 4 );
-#endif
+        LOGBLOB_DEBUG((uint8_t *)sendbuf, 4, "Send Bytes to socket #0x%x:", tcti_intel->otherSock);
         // Read result
         iResult = recv( tcti_intel->otherSock, recvbuf, 4, 0);
         if (iResult == SOCKET_ERROR) {
-            TCTI_LOG( tctiContext, NO_PREFIX, "In PlatformCommand, recv failed (socket: 0x%x) with error: %d\n",
+            LOG_ERROR("In PlatformCommand, recv failed (socket: 0x%x) with error: %d",
                     tcti_intel->otherSock, WSAGetLastError() );
             rval = TSS2_TCTI_RC_IO_ERROR;
         }
         else if( recvbuf[0] != 0 || recvbuf[1] != 0 || recvbuf[2] != 0 || recvbuf[3] != 0 )
         {
-            TCTI_LOG( tctiContext, NO_PREFIX, "PlatformCommand failed with error: %d\n", recvbuf[3] );
+            LOG_ERROR( "PlatformCommand failed with error: %d", recvbuf[3] );
             rval = TSS2_TCTI_RC_IO_ERROR;
         }
         else
         {
-#ifdef DEBUG_SOCKETS
-            TCTI_LOG( tctiContext, NO_PREFIX, "Receive bytes from socket #0x%x: \n", tcti_intel->otherSock );
-            TCTI_LOG_BUFFER( tctiContext, NO_PREFIX, (UINT8 *)recvbuf, 4 );
-#endif
+            LOGBLOB_DEBUG((uint8_t *)recvbuf, 4, "Receive bytes from socket #0x%x:", tcti_intel->otherSock );
         }
     }
     return rval;
