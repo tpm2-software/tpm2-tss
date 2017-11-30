@@ -7,13 +7,9 @@ InitDeviceTcti \- Initialization function for the device TCTI library.
 .SH SYNOPSIS
 .B #include <tcti/tcti_device.h>
 .sp
-.BI "typedef int (*TCTI_LOG_CALLBACK)( void " "*data" ", printf_type" "type" ", const char " "*format" ", "..." ");"
-.sp
 .nf
 typedef struct {
     const char *device_path;
-    TCTI_LOG_CALLBACK logCallback;
-    void *logData;
 } TCTI_DEVICE_CONF;
 .fi
 .sp
@@ -66,19 +62,6 @@ structure. The
 member of this structure is a C string that contains the path to the device
 node exposed by the TPM device driver.
 .sp
-The
-.I logCallback
-parameter is a pointer to a callback function that will be called by the
-device TCTI. This is expected to be a
-.I printf
-like function.
-.sp
-The
-.I logData
-member is a void pointer to user data that will be supplied to the
-.I logCallback
-function on each invocation.
-.sp
 Once initialized, the TCTI context returned exposes the Trusted Computing
 Group (TCG) defined API for the lowest level communication with the TPM.
 Using this API the caller can exchange (send / receive) TPM2 command and
@@ -108,22 +91,6 @@ parameters are NULL, or if the
 .I config
 parameter is NULL.
 .SH EXAMPLE
-Logging function:
-.sp
-.nf
-int DebugPrintfCallback( void *data, printf_type type, const char *format, ...)
-{
-    va_list args;
-    int rval = 0;
-
-    va_start( args, format );
-    rval = vprintf( format, args );
-    va_end (args);
-
-    return rval;
-}
-.fi
-.sp
 TCTI initialization fragment:
 .sp
 .nf
@@ -137,8 +104,6 @@ TSS2_TCTI_CONTEXT *tcti_context;
 size_t size;
 TCTI_DEVICE_CONF conf = {
     .device_path = "/dev/tpm0",
-    .logCallback = DebugPrintfCallback,
-    .logData     = NULL,
 };
 
 rc = InitDeviceTcti (NULL, &size, NULL);
