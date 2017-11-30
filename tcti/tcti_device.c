@@ -35,10 +35,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "common/debug.h"
+#include <inttypes.h>
 #include "tcti.h"
 #include "tcti/tcti_device.h"
-#include "logging.h"
+#define LOGMODULE tcti
+#include "log/log.h"
 
 TSS2_RC LocalTpmSendTpmCommand(
     TSS2_TCTI_CONTEXT *tctiContext,
@@ -50,47 +51,33 @@ TSS2_RC LocalTpmSendTpmCommand(
     TSS2_RC rval = TSS2_RC_SUCCESS;
     ssize_t size;
 
-#ifdef DEBUG
-    UINT32 commandCode;
-    UINT32 cnt;
-#endif
-    printf_type rmPrefix;
-
     rval = tcti_send_checks (tctiContext, command_buffer);
     if (rval != TSS2_RC_SUCCESS) {
         return rval;
     }
-    if (tcti_intel->status.rmDebugPrefix == 1) {
-        rmPrefix = RM_PREFIX;
-    } else {
-        rmPrefix = NO_PREFIX;
-    }
-#ifdef DEBUG
+
+#if LOGLEVEL == LOGLEVEL_DEBUG || \
+    LOGLEVEL == LOGLEVEL_TRACE
+    TPM2_ST commandCode = 0xffff;
+    UINT32 cnt = 0xffffffff;
     TSS2_RC rc;
     size_t offset = sizeof (TPM2_ST);
     rc = Tss2_MU_TPM2_ST_Unmarshal (command_buffer,
                                    command_size,
                                    &offset,
                                    &commandCode);
+    if (rc) return rc;
     rc = Tss2_MU_UINT32_Unmarshal (command_buffer,
                                    command_size,
                                    &offset,
                                    &cnt);
-    if (tcti_intel->status.debugMsgEnabled == 1) {
-        TCTI_LOG (tctiContext, rmPrefix, "");
-        TCTI_LOG (tctiContext,
-                  rmPrefix,
-                  "Cmd sent: %s\n",
-                  strTpmCommandCode (commandCode));
-        DEBUG_PRINT_BUFFER (rmPrefix, command_buffer, cnt);
-    }
+    if (rc) return rc;
+    LOGBLOB_DEBUG(command_buffer, cnt, "Cmd sent: %" PRIx16 "; Buffer:",
+        commandCode);
 #endif
     size = write (tcti_intel->devFile, command_buffer, command_size);
     if (size < 0) {
-        TCTI_LOG (tctiContext,
-                  rmPrefix,
-                  "send failed with error: %d\n",
-                  errno);
+        LOG_ERROR("send failed with error: %d", errno);
         return TSS2_TCTI_RC_IO_ERROR;
     } else if ((size_t)size != command_size) {
         return TSS2_TCTI_RC_IO_ERROR;
@@ -115,26 +102,16 @@ TSS2_RC LocalTpmReceiveTpmResponse(
     TSS2_RC rval = TSS2_RC_SUCCESS;
     ssize_t  size;
     unsigned int i;
-    printf_type rmPrefix;
 
     rval = tcti_receive_checks (tctiContext, response_size, response_buffer);
     if (rval != TSS2_RC_SUCCESS) {
         goto retLocalTpmReceive;
     }
 
-    if (tcti_intel->status.rmDebugPrefix == 1) {
-        rmPrefix = RM_PREFIX;
-    } else {
-        rmPrefix = NO_PREFIX;
-    }
-
     if (tcti_intel->status.tagReceived == 0) {
         size = read (tcti_intel->devFile, tcti_intel->responseBuffer, 4096);
         if (size < 0) {
-            TCTI_LOG (tctiContext,
-                      rmPrefix,
-                      "read failed with error: %d\n",
-                      errno);
+            LOG_ERROR("send failed with error: %d", errno);
             rval = TSS2_TCTI_RC_IO_ERROR;
             goto retLocalTpmReceive;
         } else {
@@ -162,17 +139,7 @@ TSS2_RC LocalTpmReceiveTpmResponse(
         response_buffer[i] = tcti_intel->responseBuffer[i];
     }
 
-#ifdef DEBUG
-    if (tcti_intel->status.debugMsgEnabled == 1 &&
-        tcti_intel->responseSize > 0)
-    {
-        TCTI_LOG (tctiContext, rmPrefix, "\n");
-        TCTI_LOG (tctiContext, rmPrefix, "Response Received: ");
-        DEBUG_PRINT_BUFFER (rmPrefix,
-                            response_buffer,
-                            tcti_intel->responseSize);
-    }
-#endif
+    LOGBLOB_DEBUG(response_buffer, tcti_intel->responseSize, "Response Received");
 
     tcti_intel->status.commandSent = 0;
 
@@ -257,11 +224,8 @@ TSS2_RC InitDeviceTcti (
     TSS2_TCTI_SET_LOCALITY (tctiContext) = LocalTpmSetLocality;
     tcti_intel->status.locality = 3;
     tcti_intel->status.commandSent = 0;
-    tcti_intel->status.rmDebugPrefix = 0;
     tcti_intel->currentTctiContext = 0;
     tcti_intel->previousStage = TCTI_STAGE_INITIALIZE;
-    TCTI_LOG_CALLBACK (tctiContext) = config->logCallback;
-    TCTI_LOG_DATA (tctiContext) = config->logData;
 
     tcti_intel->devFile = open (config->device_path, O_RDWR);
     if (tcti_intel->devFile < 0) {

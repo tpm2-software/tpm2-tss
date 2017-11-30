@@ -7,7 +7,6 @@
 
 #include "sapi/tss2_mu.h"
 #include "tcti/tcti_device.h"
-#include "tcti/logging.h"
 #include "tcti/tcti.h"
 
 /**
@@ -51,78 +50,6 @@ tcti_device_init_null_config_test (void **state)
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
 }
 
-/* begin tcti_dev_init_log */
-/* This test configures the device TCTI with a logging callback and some user
- * data. It checks to be sure that the initialization function sets the
- * internal data in the TCTI to use / point to this data accordingly.
- */
-int
-tcti_dev_init_log_callback (void *data, printf_type type, const char *format, ...)
-{
-    return 0;
-}
-static void
-tcti_device_init_log_test (void **state)
-{
-    size_t tcti_size = 0;
-    uint8_t my_data = 0x9;
-    TSS2_RC ret = TSS2_RC_SUCCESS;
-    TSS2_TCTI_CONTEXT *ctx = NULL;
-    TCTI_DEVICE_CONF conf = {
-        "/dev/null", tcti_dev_init_log_callback, &my_data
-    };
-
-    ret = InitDeviceTcti (NULL, &tcti_size, NULL);
-    assert_true (ret == TSS2_RC_SUCCESS);
-    ctx = calloc (1, tcti_size);
-    assert_non_null (ctx);
-    ret = InitDeviceTcti (ctx, 0, &conf);
-    assert_true (ret == TSS2_RC_SUCCESS);
-    assert_true (TCTI_LOG_CALLBACK (ctx) == tcti_dev_init_log_callback);
-    assert_true (*(uint8_t*)TCTI_LOG_DATA (ctx) == my_data);
-    if (ctx)
-        free (ctx);
-}
-/* end tcti dev_init_log */
-
-/* begin tcti_dev_init_log_called */
-/* Initialize TCTI context providing a pointer to a logging function and some
- * data. The test case calls the logging function through the TCTI interface
- * and checks to be sure that the function is called and that the user data
- * provided is what we expect. We detect that the logging function was called
- * by having it change the user data provided and then detecting this change.
- * The caller responsible for freeing the context.
- */
-int
-tcti_dev_log_callback (void *data, printf_type type, const char *format, ...)
-{
-    *(bool*)data = true;
-    return 0;
-}
-
-static void
-tcti_device_log_called_test (void **state)
-{
-    size_t tcti_size = 0;
-    bool called = false;
-    TSS2_RC ret = TSS2_RC_SUCCESS;
-    TSS2_TCTI_CONTEXT *ctx = NULL;
-    TCTI_DEVICE_CONF conf = {
-        "/dev/null", tcti_dev_log_callback, &called
-    };
-
-    ret = InitDeviceTcti (NULL, &tcti_size, NULL);
-    assert_true (ret == TSS2_RC_SUCCESS);
-    ctx = calloc (1, tcti_size);
-    assert_non_null (ctx);
-    ret = InitDeviceTcti (ctx, 0, &conf);
-    assert_true (ret == TSS2_RC_SUCCESS);
-    /* the 'called' variable should be changed from false to true after this */
-    TCTI_LOG (ctx, NO_PREFIX, "test log call");
-    assert_true (called);
-    free (ctx);
-}
-/* end tcti_dev_init_log */
 /* wrap functions for read & write required to test receive / transmit */
 ssize_t
 __wrap_read (int fd, void *buffer, size_t count)
@@ -150,8 +77,6 @@ tcti_device_setup (void **state)
     TSS2_TCTI_CONTEXT *ctx = NULL;
     TCTI_DEVICE_CONF conf = {
         .device_path = "/dev/null",
-        .logCallback = NULL,
-        .logData     = NULL
     };
 
     ret = InitDeviceTcti (NULL, &tcti_size, NULL);
@@ -241,8 +166,6 @@ main(int argc, char* argv[])
     const struct CMUnitTest tests[] = {
         cmocka_unit_test (tcti_device_init_all_null_test),
         cmocka_unit_test(tcti_device_init_size_test),
-        cmocka_unit_test (tcti_device_init_log_test),
-        cmocka_unit_test (tcti_device_log_called_test),
         cmocka_unit_test (tcti_device_init_null_config_test),
         cmocka_unit_test_setup_teardown (tcti_device_receive_success,
                                   tcti_device_setup_with_command,
