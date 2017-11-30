@@ -32,7 +32,8 @@
 #include "sapi/tss2_mu.h"
 #include "sapi/tpm20.h"
 #include "tss2_endian.h"
-#include "log.h"
+#define LOGMODULE marshal
+#include "log/log.h"
 
 #define ADDR &
 #define VAL
@@ -46,7 +47,7 @@ static TSS2_RC marshal_pcr_select(const UINT8 *ptr, uint8_t buffer[],
     TSS2_RC ret;
 
     if (!ptr) {
-        LOG (WARNING, "src param is NULL");
+        LOG_WARNING("src param is NULL");
         return TSS2_MU_RC_BAD_REFERENCE;
     }
 
@@ -55,7 +56,7 @@ static TSS2_RC marshal_pcr_select(const UINT8 *ptr, uint8_t buffer[],
         return ret;
 
     if (pcrSelect->sizeofSelect > TAB_SIZE(pcrSelect->pcrSelect)) {
-        LOG (ERROR, "sizeofSelect value too big");
+        LOG_ERROR("sizeofSelect value too big");
         return TSS2_SYS_RC_BAD_VALUE;
     }
 
@@ -77,7 +78,7 @@ static TSS2_RC unmarshal_pcr_select(uint8_t const buffer[], size_t buffer_size,
     TSS2_RC ret;
 
     if (!ptr) {
-        LOG (WARNING, "dest param is NULL");
+        LOG_WARNING("dest param is NULL");
         return TSS2_MU_RC_BAD_REFERENCE;
     }
 
@@ -86,7 +87,7 @@ static TSS2_RC unmarshal_pcr_select(uint8_t const buffer[], size_t buffer_size,
         return ret;
 
     if (pcrSelect->sizeofSelect > TAB_SIZE(pcrSelect->pcrSelect)) {
-        LOG (ERROR, "sizeofSelect value too big");
+        LOG_ERROR("sizeofSelect value too big");
         return TSS2_SYS_RC_MALFORMED_RESPONSE;
     }
 
@@ -109,12 +110,12 @@ static TSS2_RC marshal_pcr_selection(const TPMI_ALG_HASH *ptr, uint8_t buffer[],
     TSS2_RC ret;
 
     if (!ptr) {
-        LOG (WARNING, "src param is NULL");
+        LOG_WARNING("src param is NULL");
         return TSS2_MU_RC_BAD_REFERENCE;
     }
 
     if (pcrSelection->sizeofSelect > TAB_SIZE(pcrSelection->pcrSelect)) {
-        LOG (ERROR, "sizeofSelect value too big");
+        LOG_ERROR("sizeofSelect value too big");
         return TSS2_SYS_RC_BAD_VALUE;
     }
 
@@ -145,7 +146,7 @@ static TSS2_RC unmarshal_pcr_selection(uint8_t const buffer[], size_t buffer_siz
     TSS2_RC ret;
 
     if (!ptr) {
-        LOG (WARNING, "dest param is NULL");
+        LOG_WARNING("dest param is NULL");
         return TSS2_MU_RC_BAD_REFERENCE;
     }
 
@@ -158,7 +159,7 @@ static TSS2_RC unmarshal_pcr_selection(uint8_t const buffer[], size_t buffer_siz
         return ret;
 
     if (pcrSelection->sizeofSelect > TAB_SIZE(pcrSelection->pcrSelect)) {
-        LOG (ERROR, "sizeofSelect value too big");
+        LOG_ERROR("sizeofSelect value too big");
         return TSS2_SYS_RC_MALFORMED_RESPONSE;
     }
 
@@ -181,12 +182,12 @@ static TSS2_RC marshal_tagged_pcr_selection(const TPM2_PT_PCR *ptr, uint8_t buff
     TSS2_RC ret;
 
     if (!ptr) {
-        LOG (WARNING, "src param is NULL");
+        LOG_WARNING("src param is NULL");
         return TSS2_MU_RC_BAD_REFERENCE;
     }
 
     if (taggedPcrSelect->sizeofSelect > TAB_SIZE(taggedPcrSelect->pcrSelect)) {
-        LOG (ERROR, "sizeofSelect value too big");
+        LOG_ERROR("sizeofSelect value too big");
         return TSS2_SYS_RC_BAD_VALUE;
     }
 
@@ -216,7 +217,7 @@ static TSS2_RC unmarshal_tagged_pcr_selection(uint8_t const buffer[], size_t buf
     TSS2_RC ret;
 
     if (!ptr) {
-        LOG (WARNING, "dest param is NULL");
+        LOG_WARNING("dest param is NULL");
         return TSS2_MU_RC_BAD_REFERENCE;
     }
 
@@ -229,7 +230,7 @@ static TSS2_RC unmarshal_tagged_pcr_selection(uint8_t const buffer[], size_t buf
         return ret;
 
     if (taggedPcrSelect->sizeofSelect > TAB_SIZE(taggedPcrSelect->pcrSelect)) {
-        LOG (ERROR, "sizeofSelect value too big");
+        LOG_ERROR("sizeofSelect value too big");
         return TSS2_SYS_RC_MALFORMED_RESPONSE;
     }
 
@@ -248,11 +249,11 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
                                  size_t buffer_size, size_t *offset) \
 { \
     if (!src) { \
-        LOG (WARNING, "dest param is NULL"); \
+        LOG_WARNING("dest param is NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG( \
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, *offset); \
 \
@@ -264,11 +265,11 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
 { \
     if (!dest) { \
-        LOG (WARNING, "src param is NULL"); \
+        LOG_WARNING("src param is NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG( \
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, *offset); \
 \
@@ -280,11 +281,11 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
                                  size_t buffer_size, size_t *offset) \
 { \
     if (!src) { \
-        LOG (WARNING, "src param is NULL"); \
+        LOG_WARNING("src param is NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
@@ -295,7 +296,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
 { \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
@@ -310,7 +311,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     size_t local_offset = 0; \
 \
     if (!src) { \
-        LOG (WARNING, "src param is NULL"); \
+        LOG_WARNING("src param is NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
@@ -320,7 +321,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
@@ -344,7 +345,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     size_t local_offset = 0; \
     type tmp_dest; \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
@@ -374,7 +375,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     size_t local_offset = 0; \
 \
     if (!src) { \
-        LOG (WARNING, "src param is NULL"); \
+        LOG_WARNING("src param is NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
@@ -384,7 +385,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
@@ -407,7 +408,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
@@ -437,7 +438,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     size_t local_offset = 0; \
 \
     if (!src) { \
-        LOG (WARNING, "src param is NULL"); \
+        LOG_WARNING("src param is NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
@@ -447,7 +448,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
@@ -474,7 +475,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
@@ -508,7 +509,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     size_t local_offset = 0; \
 \
     if (!src) { \
-        LOG (WARNING, "src param is NULL"); \
+        LOG_WARNING("src param is NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
@@ -518,7 +519,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
@@ -555,7 +556,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
@@ -588,7 +589,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     size_t local_offset = 0; \
 \
     if (!src) { \
-        LOG (WARNING, "src param is NULL"); \
+        LOG_WARNING("src param is NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
@@ -598,7 +599,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
@@ -633,7 +634,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
@@ -676,7 +677,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     size_t local_offset = 0; \
 \
     if (!src) { \
-        LOG (WARNING, "src param is NULL"); \
+        LOG_WARNING("src param is NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
@@ -686,7 +687,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
@@ -729,7 +730,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
@@ -780,7 +781,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     size_t local_offset = 0; \
 \
     if (!src) { \
-        LOG (WARNING, "src param is NULL"); \
+        LOG_WARNING("src param is NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
@@ -790,7 +791,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
@@ -833,7 +834,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
@@ -885,7 +886,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     size_t local_offset = 0; \
 \
     if (!src) { \
-        LOG (WARNING, "src param is NULL"); \
+        LOG_WARNING("src param is NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
@@ -895,7 +896,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
@@ -955,7 +956,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, offset?*offset:0xffff); \
 \
