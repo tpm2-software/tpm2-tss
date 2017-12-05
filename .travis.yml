@@ -9,6 +9,8 @@ dist: trusty
 env:
   global:
   - secure: "isEwSgRODxm9JPZAhQUXP0yqPZmrD0PncBmi/y02RT0oq6Aewdag5f7CzrsJoPsaEsFcJJapIzdZLw1KXHkeAIHNhOtSE4y9tZGFBfB35pFIb0a/Im47djYrVlBXs7Ii/PllzW4xRMmhU16phwsU2N1nFyvfo9qma8R4ComL7GXTn4UqTjADg73YfPKr2NMt/6nilLKNLGE8FhjmPKhnlrBmKgCUU9BAyJ8cOR529bLOp4Wo5pGhopCHUKrYqRErISiFNcCRxjVyUEPUjMVT7/1QPGyAS2bpJa0rc2QYH9w+H0GkzliuGjzEUPaWcpDKjTimEym7F1XfmZxe1RPMH70KGsdlqe4UyWnWzsHDKnU/oCngKecx0g1beFSn/Mwfv58uDHZlegUZrstHDdkP4RZJEWyGkYDzuBCJ2UGAKJGnig/CE4w9fXFhCIltOW7/55KB53wwTec7bCXpoWV2LtC9L8TtdmmdwsBa4NHpZuLxAr3zlKt8O72mlVuo8C6iqwXCL32sahf4KGWNgc/X5GirbvsWvokGchB1p3vgwQdb/NZXKM77r7gMbnGhIOGzEmrCB3olaG+3RtF2+5KID/Z1LZHIlXDtrCa8dAmMvBIFvjFe9/L9T75d8GwiaOg2wEfNTb8bAsPsBdyKiYvWpKMIXJEcCTGKOpC9Nr0/+uk="
+  # COVERALLS_REPO_TOKEN
+  - secure: "BJUO7GJjP+WgMgSwTTteuc2KKum7Na++92pCLDa3hAzwZZ2OA+MbR9Zd25Yp0kT1K7bIPGDVdg0RksMI9P+Lbun3pajqLWfJpXrAF5IywllQx7bT4x1KeJridJeDnHZVSobTn4oAaGl5JrtpGgXAOjzpgLl1ljP0STyZUF+kC4RSK4Wt2DdT2acj5B8PT6cqR3btfStWgWKlm8t2nOFDGxTCbI4YIwcfgFhOG/ATx7Uc/z08MBI3z7lezy0nBt1/o2gDPZVb4Pa5A390P6Gv0g6mFu1te+P2IFmrWR6mF2Jh5GiJFWR7935rX5d2HxCkCNO7uEmncM4WeDk5PE9+TIcg7T2d9G1JR762aLMvNtUcmlfa6JX/EvveZK47ThwAictwvlD3tgfDy1E7Wdb1O6PtLsUIXRx50UocqBMeSQvOfR1330FuF/td9VGNFqxKW0wDWVIyl8QMK+p7t0aE+2py2Hb3IYVQEk98aWnffvEFeYfNPBywOiVD7trsTFEXKusVypAWDF3kvOmNuetL6ADfPnIfzvPw6DxQzwsxPUo0ahM2C2pzY/MavSlDM8+Q/EZiLkw9g39IgxjDsExD2EEu8U9jyz8iSmbKsrK6Z4L3BWO6a0gFakBAfWR1Rsb15UfVPYlJgPwtAdbgQ65ElgVeyTdkDCuE64iby2nZeP4="
   # run coverity scan on gcc build to keep from DOSing coverity
   - coverity_scan_run_condition='"$CC" = gcc'
   - PKG_CONFIG_PATH="$(pwd)/cmocka/lib/pkgconfig:/usr/lib/pkgconfig"
@@ -22,6 +24,7 @@ addons:
     - autoconf-archive
     - cmake
     - realpath
+    - lcov
   coverity_scan:
     project:
       name: "01org/tpm2-tss"
@@ -51,6 +54,7 @@ install:
   - sha256sum autoconf-archive-2017.09.28.tar.xz | grep -q 5c9fb5845b38b28982a3ef12836f76b35f46799ef4a2e46b48e2bd3c6182fa01
   - tar xJf autoconf-archive-2017.09.28.tar.xz
   - cp autoconf-archive-2017.09.28/m4/ax_code_coverage.m4 m4/
+  - pip install --user cpp-coveralls
 
 before_script:
   - ./bootstrap
@@ -58,7 +62,11 @@ before_script:
 script:
   - mkdir ./build
   - pushd ./build
-  - ../configure --enable-unit --with-simulatorbin=$(pwd)/../ibmtpm/src/tpm_server
+  - |
+    if [ "$CC" == "gcc" ]; then
+      export CONFIGURE_OPTIONS="--enable-code-coverage";
+    fi
+  - ../configure --enable-unit $CONFIGURE_OPTIONS --with-simulatorbin=$(pwd)/../ibmtpm/src/tpm_server
   - make -j$(nproc) distcheck
   - make -j$(nproc) check-programs
   - make -j1 check
@@ -74,3 +82,8 @@ script:
         cat ${LOG}
     done
   - cat test/tpmclient/tpmclient.log
+  - popd
+  - |
+    if [ "$CC" == "gcc" ]; then
+        coveralls --build-root=build --gcov-options '\-lp'
+    fi
