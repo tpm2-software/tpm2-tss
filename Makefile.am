@@ -140,8 +140,8 @@ test_unit_tcti_device_LDFLAGS = -Wl,--wrap=read -Wl,-wrap=write
 test_unit_tcti_device_SOURCES = tcti/tcti.c tcti/tcti.h tcti/tcti_device.c \
     test/unit/tcti-device.c log/log.h log/log.c
 
-test_unit_tcti_socket_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_tcti_socket_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
+test_unit_tcti_socket_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS) $(URIPARSER_CFLAGS)
+test_unit_tcti_socket_LDADD   = $(CMOCKA_LIBS) $(libmarshal) $(URIPARSER_LIBS)
 test_unit_tcti_socket_LDFLAGS = -Wl,--wrap=connect,--wrap=recv,--wrap=select,--wrap=send
 test_unit_tcti_socket_SOURCES = tcti/platformcommand.c tcti/tcti_socket.c \
     tcti/tcti.c tcti/tcti.h tcti/sockets.c tcti/sockets.h \
@@ -219,11 +219,11 @@ tcti_libtcti_device_la_LIBADD   = $(libmarshal)
 tcti_libtcti_device_la_SOURCES  = tcti/tcti_device.c tcti/tcti.c \
     tcti/tcti.h log/log.h log/log.c
 
-tcti_libtcti_socket_la_CFLAGS   = $(AM_CFLAGS)
+tcti_libtcti_socket_la_CFLAGS   = $(AM_CFLAGS) $(URIPARSER_CFLAGS)
 if HAVE_LD_VERSION_SCRIPT
 tcti_libtcti_socket_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
 endif # HAVE_LD_VERSION_SCRIPT
-tcti_libtcti_socket_la_LIBADD   = $(libmarshal)
+tcti_libtcti_socket_la_LIBADD   = $(libmarshal) $(URIPARSER_LIBS)
 tcti_libtcti_socket_la_SOURCES  = tcti/platformcommand.c tcti/tcti_socket.c \
     tcti/tcti.c tcti/tcti.h tcti/sockets.c tcti/sockets.h log/log.h log/log.c
 

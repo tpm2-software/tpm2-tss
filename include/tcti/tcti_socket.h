@@ -64,6 +64,12 @@ TSS2_RC SendSessionEndSocketTcti(
     UINT8 tpmCmdServer
     );
 
+TSS2_RC Tss2_Tcti_Socket_Init (
+    TSS2_TCTI_CONTEXT *tctiContext,
+    size_t *size,
+    const char *conf
+    );
+
 // Commands to send to OTHER port.
 #define MS_SIM_POWER_ON         1
 #define MS_SIM_POWER_OFF        2
