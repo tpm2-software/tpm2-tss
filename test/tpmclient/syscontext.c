@@ -58,10 +58,12 @@ TSS2_SYS_CONTEXT *InitSysContext(
         // Initialized the system context structure.
         rval = Tss2_Sys_Initialize( sysContext, contextSize, tctiContext, abiVersion );
 
-        if( rval == TSS2_RC_SUCCESS )
+        if( rval == TSS2_RC_SUCCESS ) {
             return sysContext;
-        else
-            return 0;
+        } else {
+	    free (sysContext);
+	    return NULL;
+	}
     }
     else
     {
