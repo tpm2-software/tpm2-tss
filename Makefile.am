@@ -217,6 +217,7 @@ tcti_libtcti_socket_la_CFLAGS   = $(AM_CFLAGS)
 if HAVE_LD_VERSION_SCRIPT
 tcti_libtcti_socket_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
 endif # HAVE_LD_VERSION_SCRIPT
+tcti_libtcti_socket_la_LIBADD   = $(libmarshal)
 tcti_libtcti_socket_la_SOURCES  = tcti/platformcommand.c tcti/tcti_socket.c \
     tcti/tcti.c tcti/tcti.h tcti/sockets.c tcti/sockets.h \
     common/debug.c common/debug.h tcti/logging.h
