@@ -25,10 +25,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  **********************************************************************/
 
+#include <inttypes.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
 #include <inttypes.h>
+
+#include <uriparser/Uri.h>
 
 #include "sapi/tpm20.h"
 #include "sapi/tss2_mu.h"
@@ -39,6 +43,8 @@
 #include "tss2_endian.h"
 #define LOGMODULE tcti
 #include "log/log.h"
+
+#define TCTI_SOCKET_DEFAULT "tcp://127.0.0.1:2321"
 
 static TSS2_RC tctiRecvBytes (
     TSS2_TCTI_CONTEXT *tctiContext,
@@ -527,4 +533,85 @@ TSS2_RC InitSocketTcti (
     }
 
     return rval;
+}
+/*
+ * This is a utility function to extract a TCP port number from a string.
+ * The string must be 6 characters long. If the supplied string contains an
+ * invalid port number then 0 is returned.
+ */
+static uint16_t
+string_to_port (char port_str[6])
+{
+    uint32_t port = 0;
+
+    if (sscanf (port_str, "%" SCNu32, &port) == EOF || port > UINT16_MAX) {
+        return 0;
+    }
+    return port;
+}
+
+TSS2_RC Tss2_Tcti_Socket_Init (
+    TSS2_TCTI_CONTEXT *tctiContext,
+    size_t *size,
+    const char *conf
+    )
+{
+    TCTI_SOCKET_CONF sock_conf = { 0 };
+    TSS2_RC rc;
+    UriParserStateA state;
+    UriUriA uri;
+    const char *uri_str = conf != NULL ? conf : TCTI_SOCKET_DEFAULT;
+    size_t range;
+    /* maximum 5 digits in uint16_t + 1 for \0 */
+    char port[6] = { 0 };
+    char hostname[HOST_NAME_MAX + 1] = { 0 };
+
+    state.uri = &uri;
+    if (uriParseUriA (&state, uri_str) != URI_SUCCESS) {
+        rc = TSS2_TCTI_RC_BAD_VALUE;
+        goto out;
+    }
+
+    /* extract host & domain name / fqdn */
+    range = uri.hostText.afterLast - uri.hostText.first;
+    if (range > HOST_NAME_MAX) {
+        rc = TSS2_TCTI_RC_BAD_VALUE;
+        goto out;
+    }
+    strncpy (hostname, uri.hostText.first, range);
+    sock_conf.hostname = hostname;
+
+    /* extract port number */
+    range = uri.portText.afterLast - uri.portText.first;
+    if (range <= 5 && range > 0) {
+        strncpy (port, uri.portText.first, range);
+        sock_conf.port = string_to_port (port);
+        if (sock_conf.port == 0) {
+            rc = TSS2_TCTI_RC_BAD_VALUE;
+            goto out;
+        }
+    } else if (range == 0) {
+        sock_conf.port = DEFAULT_SIMULATOR_TPM_PORT;
+    } else { /* range > 5 */
+        rc = TSS2_TCTI_RC_BAD_VALUE;
+        goto out;
+    }
+    rc = InitSocketTcti (tctiContext, size, &sock_conf, 0);
+out:
+    uriFreeUriMembersA (&uri);
+    return rc;
+}
+
+/* public info structure */
+const static TSS2_TCTI_INFO tss2_tcti_info = {
+    .name = "tcti-socket",
+    .description = "TCTI module for communication with the Microsoft TPM2 Simulator.",
+    .config_help = "Connection URI in the form tcp://ip_address[:port]. Default is tcp://127.0.0.1:2321.",
+    .init = Tss2_Tcti_Socket_Init,
+};
+
+const TSS2_TCTI_INFO*
+Tss2_Tcti_Info (void)
+{
+    return &tss2_tcti_info;
 }
