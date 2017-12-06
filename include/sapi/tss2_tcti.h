@@ -1,5 +1,5 @@
 //**********************************************************************;
-// Copyright (c) 2015, Intel Corporation
+// Copyright (c) 2015 - 2017, Intel Corporation
 //
 // Copyright 2015, Andreas Fuchs @ Fraunhofer SIT
 //
@@ -164,6 +164,23 @@ TSS2_TCTI_POLL_HANDLE *handles, size_t *num_handles);
 } TSS2_TCTI_CONTEXT_COMMON_V1;
 
 typedef TSS2_TCTI_CONTEXT_COMMON_V1 TSS2_TCTI_CONTEXT_COMMON_CURRENT;
+
+#define TCTI_INFO_SYMBOL "Tss2_Tcti_Info"
+
+typedef TSS2_RC (*TSS2_TCTI_INIT_FUNC) (
+    TSS2_TCTI_CONTEXT *tctiContext,
+    size_t *size,
+    const char *config
+    );
+
+typedef struct {
+    const char *name;
+    const char *description;
+    const char *config_help;
+    TSS2_TCTI_INIT_FUNC init;
+} TSS2_TCTI_INFO;
+
+typedef const TSS2_TCTI_INFO* (*TSS2_TCTI_INFO_FUNC) (void);
 
 #ifdef __cplusplus
 }
