@@ -249,7 +249,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
 { \
     if (!src) { \
         LOG (WARNING, "dest param is NULL"); \
-        return TSS2_TYPES_RC_BAD_REFERENCE; \
+        return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
     LOG (DEBUG, \
@@ -265,7 +265,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 { \
     if (!dest) { \
         LOG (WARNING, "src param is NULL"); \
-        return TSS2_TYPES_RC_BAD_REFERENCE; \
+        return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
     LOG (DEBUG, \
