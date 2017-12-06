@@ -45,6 +45,12 @@ TSS2_RC InitDeviceTcti (
     const TCTI_DEVICE_CONF *config  // IN
     );
 
+TSS2_RC Tss2_Tcti_Device_Init (
+    TSS2_TCTI_CONTEXT *tctiContext,
+    size_t *size,
+    const char *conf
+    );
+
 #ifdef __cplusplus
 }
 #endif
