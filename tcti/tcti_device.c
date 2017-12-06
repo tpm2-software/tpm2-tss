@@ -41,6 +41,8 @@
 #define LOGMODULE tcti
 #include "log/log.h"
 
+#define TCTI_DEVICE_DEFAULT "/dev/tpm0"
+
 TSS2_RC LocalTpmSendTpmCommand(
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t command_size,
@@ -233,4 +235,31 @@ TSS2_RC InitDeviceTcti (
     }
 
     return rval;
+}
+
+TSS2_RC Tss2_Tcti_Device_Init (
+    TSS2_TCTI_CONTEXT *tctiContext,
+    size_t *size,
+    const char *conf
+    )
+{
+    const char *dev_path = conf != NULL ? conf : TCTI_DEVICE_DEFAULT;
+    TCTI_DEVICE_CONF dev_conf = {
+        .device_path = dev_path,
+    };
+
+    return InitDeviceTcti (tctiContext, size, &dev_conf);
+}
+
+const static TSS2_TCTI_INFO tss2_tcti_info = {
+    .name = "tcti-device",
+    .description = "TCTI module for communication with Linux kernel interface.",
+    .config_help = "Path to TPM character device: \"/dev/tpm0\" is default.",
+    .init = Tss2_Tcti_Device_Init,
+};
+
+const TSS2_TCTI_INFO*
+Tss2_Tcti_Info (void)
+{
+    return &tss2_tcti_info;
 }
