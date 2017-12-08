@@ -112,6 +112,12 @@ man7_MANS = man/man7/tcti-device.7 man/man7/tcti-socket.7
 
 EXTRA_DIST = \
     AUTHORS \
+    CHANGELOG.md \
+    CONTRIBUTING.md \
+    INSTALL.md \
+    LICENSE \
+    README.md \
+    RELEASE.md \
     lib/debug_config.site \
     lib/libmarshal.map \
     lib/marshal.pc.in \
