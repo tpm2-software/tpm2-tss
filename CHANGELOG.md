@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## Unreleased
+## [1.3.0] - 2017-12-07
 ### Added
 - Implementation of the EncryptDecrypt2 command.
 - Coding standard documentation.
@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Drop cast from TPM_ALG_XXX definitions
 - Use mock functions with built-in cast to avoid compiler warnings from
 manual cast.
+- Free memory correctly on error condition return paths in InitSysContext
+& SockServer.
 
 ## [1.2.0] - 2017-08-25
 ### Added
