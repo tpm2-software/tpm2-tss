@@ -94,7 +94,13 @@ man3_MANS = man/man3/InitDeviceTcti.3 man/man3/InitSocketTcti.3
 man7_MANS = man/man7/tcti-device.7 man/man7/tcti-socket.7
 
 EXTRA_DIST = \
+    AUTHORS \
+    CHANGELOG.md \
+    CONTRIBUTING.md \
+    INSTALL \
     LICENSE \
+    README.md \
+    RELEASE.md \
     lib/debug_config.site \
     lib/tcti-device.pc.in \
     lib/tcti-socket.pc.in \
