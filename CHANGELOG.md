@@ -16,6 +16,20 @@ the 'common directory.
 ### Fixed
 - Wrong return type for Tss2_Sys_Finalize (API break).
 
+## [1.3.0] - 2017-12-07
+### Added
+- Implementation of the EncryptDecrypt2 command.
+- Coding standard documentation.
+- Support for latest TPM2 simulator v974 (only changes in test harness).
+- Check cmocka version for compatibility with 1.0 API.
+### Fixed
+- Definition of HMAC_SESSION_LAST and POLICY_SESSION_LAST.
+- Drop cast from TPM_ALG_XXX definitions
+- Use mock functions with built-in cast to avoid compiler warnings from
+manual cast.
+- Free memory correctly on error condition return paths in InitSysContext
+& SockServer.
+
 ## [1.2.0] - 2017-08-25
 ### Added
 - Support for PTT-specific capabilities.
