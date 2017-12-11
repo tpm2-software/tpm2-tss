@@ -418,6 +418,10 @@ TSS2_RC Tss2_Sys_Startup_Prepare(
     TPM2_SU	startupType
     );
 
+TSS2_RC Tss2_Sys_Startup_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_Startup(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2_SU	startupType
@@ -426,6 +430,10 @@ TSS2_RC Tss2_Sys_Startup(
 TSS2_RC Tss2_Sys_Shutdown_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2_SU	shutdownType
+    );
+
+TSS2_RC Tss2_Sys_Shutdown_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_Shutdown(
@@ -438,6 +446,10 @@ TSS2_RC Tss2_Sys_Shutdown(
 TSS2_RC Tss2_Sys_SelfTest_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_YES_NO	fullTest
+    );
+
+TSS2_RC Tss2_Sys_SelfTest_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_SelfTest(
@@ -518,6 +530,10 @@ TSS2_RC Tss2_Sys_StartAuthSession(
 TSS2_RC Tss2_Sys_PolicyRestart_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY	sessionHandle
+    );
+
+TSS2_RC Tss2_Sys_PolicyRestart_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_PolicyRestart(
@@ -1062,6 +1078,10 @@ TSS2_RC Tss2_Sys_StirRandom_Prepare(
     const TPM2B_SENSITIVE_DATA	*inData
     );
 
+TSS2_RC Tss2_Sys_StirRandom_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_StirRandom(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
@@ -1115,6 +1135,10 @@ TSS2_RC Tss2_Sys_SequenceUpdate_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT	sequenceHandle,
     const TPM2B_MAX_BUFFER	*buffer
+    );
+
+TSS2_RC Tss2_Sys_SequenceUpdate_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_SequenceUpdate(
@@ -1437,6 +1461,10 @@ TSS2_RC Tss2_Sys_SetCommandCodeAuditStatus_Prepare(
     const TPML_CC	*clearList
     );
 
+TSS2_RC Tss2_Sys_SetCommandCodeAuditStatus_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_SetCommandCodeAuditStatus(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION	auth,
@@ -1451,6 +1479,10 @@ TSS2_RC Tss2_Sys_PCR_Extend_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR	pcrHandle,
     const TPML_DIGEST_VALUES	*digests
+    );
+
+TSS2_RC Tss2_Sys_PCR_Extend_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_PCR_Extend(
@@ -1537,6 +1569,10 @@ TSS2_RC Tss2_Sys_PCR_SetAuthPolicy_Prepare(
     TPMI_DH_PCR	pcrNum
     );
 
+TSS2_RC Tss2_Sys_PCR_SetAuthPolicy_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_PCR_SetAuthPolicy(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM	authHandle,
@@ -1553,6 +1589,10 @@ TSS2_RC Tss2_Sys_PCR_SetAuthValue_Prepare(
     const TPM2B_DIGEST	*auth
     );
 
+TSS2_RC Tss2_Sys_PCR_SetAuthValue_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_PCR_SetAuthValue(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR	pcrHandle,
@@ -1564,6 +1604,10 @@ TSS2_RC Tss2_Sys_PCR_SetAuthValue(
 TSS2_RC Tss2_Sys_PCR_Reset_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR	pcrHandle
+    );
+
+TSS2_RC Tss2_Sys_PCR_Reset_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_PCR_Reset(
@@ -1645,6 +1689,10 @@ TSS2_RC Tss2_Sys_PolicyTicket_Prepare(
     const TPMT_TK_AUTH	*ticket
     );
 
+TSS2_RC Tss2_Sys_PolicyTicket_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_PolicyTicket(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY	policySession,
@@ -1663,6 +1711,10 @@ TSS2_RC Tss2_Sys_PolicyOR_Prepare(
     const TPML_DIGEST	*pHashList
     );
 
+TSS2_RC Tss2_Sys_PolicyOR_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_PolicyOR(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY	policySession,
@@ -1678,6 +1730,10 @@ TSS2_RC Tss2_Sys_PolicyPCR_Prepare(
     const TPML_PCR_SELECTION	*pcrs
     );
 
+TSS2_RC Tss2_Sys_PolicyPCR_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_PolicyPCR(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY	policySession,
@@ -1691,6 +1747,10 @@ TSS2_RC Tss2_Sys_PolicyLocality_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY	policySession,
     TPMA_LOCALITY	locality
+    );
+
+TSS2_RC Tss2_Sys_PolicyLocality_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_PolicyLocality(
@@ -1709,6 +1769,10 @@ TSS2_RC Tss2_Sys_PolicyNV_Prepare(
     const TPM2B_OPERAND	*operandB,
     UINT16	offset,
     TPM2_EO	operation
+    );
+
+TSS2_RC Tss2_Sys_PolicyNV_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_PolicyNV(
@@ -1731,6 +1795,10 @@ TSS2_RC Tss2_Sys_PolicyCounterTimer_Prepare(
     TPM2_EO	operation
     );
 
+TSS2_RC Tss2_Sys_PolicyCounterTimer_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_PolicyCounterTimer(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY	policySession,
@@ -1747,6 +1815,10 @@ TSS2_RC Tss2_Sys_PolicyCommandCode_Prepare(
     TPM2_CC	code
     );
 
+TSS2_RC Tss2_Sys_PolicyCommandCode_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_PolicyCommandCode(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY	policySession,
@@ -1760,6 +1832,10 @@ TSS2_RC Tss2_Sys_PolicyPhysicalPresence_Prepare(
     TPMI_SH_POLICY	policySession
     );
 
+TSS2_RC Tss2_Sys_PolicyPhysicalPresence_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_PolicyPhysicalPresence(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY	policySession,
@@ -1771,6 +1847,10 @@ TSS2_RC Tss2_Sys_PolicyCpHash_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY	policySession,
     const TPM2B_DIGEST	*cpHashA
+    );
+
+TSS2_RC Tss2_Sys_PolicyCpHash_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_PolicyCpHash(
@@ -1787,6 +1867,10 @@ TSS2_RC Tss2_Sys_PolicyNameHash_Prepare(
     const TPM2B_DIGEST	*nameHash
     );
 
+TSS2_RC Tss2_Sys_PolicyNameHash_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_PolicyNameHash(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY	policySession,
@@ -1801,6 +1885,10 @@ TSS2_RC Tss2_Sys_PolicyDuplicationSelect_Prepare(
     const TPM2B_NAME	*objectName,
     const TPM2B_NAME	*newParentName,
     TPMI_YES_NO	includeObject
+    );
+
+TSS2_RC Tss2_Sys_PolicyDuplicationSelect_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_PolicyDuplicationSelect(
@@ -1822,6 +1910,10 @@ TSS2_RC Tss2_Sys_PolicyAuthorize_Prepare(
     const TPMT_TK_VERIFIED	*checkTicket
     );
 
+TSS2_RC Tss2_Sys_PolicyAuthorize_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_PolicyAuthorize(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY	policySession,
@@ -1838,6 +1930,10 @@ TSS2_RC Tss2_Sys_PolicyAuthValue_Prepare(
     TPMI_SH_POLICY	policySession
     );
 
+TSS2_RC Tss2_Sys_PolicyAuthValue_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_PolicyAuthValue(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY	policySession,
@@ -1848,6 +1944,10 @@ TSS2_RC Tss2_Sys_PolicyAuthValue(
 TSS2_RC Tss2_Sys_PolicyPassword_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY	policySession
+    );
+
+TSS2_RC Tss2_Sys_PolicyPassword_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_PolicyPassword(
@@ -1879,6 +1979,10 @@ TSS2_RC Tss2_Sys_PolicyNvWritten_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY	policySession,
     TPMI_YES_NO	writtenSet
+    );
+
+TSS2_RC Tss2_Sys_PolicyNvWritten_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_PolicyNvWritten(
@@ -1932,6 +2036,10 @@ TSS2_RC Tss2_Sys_HierarchyControl_Prepare(
     TPMI_YES_NO	state
     );
 
+TSS2_RC Tss2_Sys_HierarchyControl_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_HierarchyControl(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_HIERARCHY	authHandle,
@@ -1948,6 +2056,10 @@ TSS2_RC Tss2_Sys_SetPrimaryPolicy_Prepare(
     TPMI_ALG_HASH	hashAlg
     );
 
+TSS2_RC Tss2_Sys_SetPrimaryPolicy_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_SetPrimaryPolicy(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_HIERARCHY_AUTH	authHandle,
@@ -1962,6 +2074,10 @@ TSS2_RC Tss2_Sys_ChangePPS_Prepare(
     TPMI_RH_PLATFORM	authHandle
     );
 
+TSS2_RC Tss2_Sys_ChangePPS_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_ChangePPS(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM	authHandle,
@@ -1972,6 +2088,10 @@ TSS2_RC Tss2_Sys_ChangePPS(
 TSS2_RC Tss2_Sys_ChangeEPS_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM	authHandle
+    );
+
+TSS2_RC Tss2_Sys_ChangeEPS_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_ChangeEPS(
@@ -1986,6 +2106,10 @@ TSS2_RC Tss2_Sys_Clear_Prepare(
     TPMI_RH_CLEAR	authHandle
     );
 
+TSS2_RC Tss2_Sys_Clear_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_Clear(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_CLEAR	authHandle,
@@ -1997,6 +2121,10 @@ TSS2_RC Tss2_Sys_ClearControl_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_CLEAR	auth,
     TPMI_YES_NO	disable
+    );
+
+TSS2_RC Tss2_Sys_ClearControl_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_ClearControl(
@@ -2013,6 +2141,10 @@ TSS2_RC Tss2_Sys_HierarchyChangeAuth_Prepare(
     const TPM2B_AUTH	*newAuth
     );
 
+TSS2_RC Tss2_Sys_HierarchyChangeAuth_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_HierarchyChangeAuth(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_HIERARCHY_AUTH	authHandle,
@@ -2024,6 +2156,10 @@ TSS2_RC Tss2_Sys_HierarchyChangeAuth(
 TSS2_RC Tss2_Sys_DictionaryAttackLockReset_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_LOCKOUT	lockHandle
+    );
+
+TSS2_RC Tss2_Sys_DictionaryAttackLockReset_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_DictionaryAttackLockReset(
@@ -2039,6 +2175,10 @@ TSS2_RC Tss2_Sys_DictionaryAttackParameters_Prepare(
     UINT32	newMaxTries,
     UINT32	newRecoveryTime,
     UINT32	lockoutRecovery
+    );
+
+TSS2_RC Tss2_Sys_DictionaryAttackParameters_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_DictionaryAttackParameters(
@@ -2058,6 +2198,10 @@ TSS2_RC Tss2_Sys_PP_Commands_Prepare(
     const TPML_CC	*clearList
     );
 
+TSS2_RC Tss2_Sys_PP_Commands_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_PP_Commands(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM	auth,
@@ -2071,6 +2215,10 @@ TSS2_RC Tss2_Sys_SetAlgorithmSet_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM	authHandle,
     UINT32	algorithmSet
+    );
+
+TSS2_RC Tss2_Sys_SetAlgorithmSet_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_SetAlgorithmSet(
@@ -2087,6 +2235,10 @@ TSS2_RC Tss2_Sys_FieldUpgradeStart_Prepare(
     TPMI_DH_OBJECT	keyHandle,
     TPM2B_DIGEST	*fuDigest,
     TPMT_SIGNATURE	*manifestSignature
+    );
+
+TSS2_RC Tss2_Sys_FieldUpgradeStart_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_FieldUpgradeStart(
@@ -2174,6 +2326,10 @@ TSS2_RC Tss2_Sys_FlushContext_Prepare(
     TPMI_DH_CONTEXT	flushHandle
     );
 
+TSS2_RC Tss2_Sys_FlushContext_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_FlushContext(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_CONTEXT	flushHandle
@@ -2184,6 +2340,10 @@ TSS2_RC Tss2_Sys_EvictControl_Prepare(
     TPMI_RH_PROVISION	auth,
     TPMI_DH_OBJECT	objectHandle,
     TPMI_DH_PERSISTENT	persistentHandle
+    );
+
+TSS2_RC Tss2_Sys_EvictControl_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_EvictControl(
@@ -2215,6 +2375,10 @@ TSS2_RC Tss2_Sys_ClockSet_Prepare(
     UINT64	newTime
     );
 
+TSS2_RC Tss2_Sys_ClockSet_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_ClockSet(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION	auth,
@@ -2227,6 +2391,10 @@ TSS2_RC Tss2_Sys_ClockRateAdjust_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION	auth,
     TPM2_CLOCK_ADJUST	rateAdjust
+    );
+
+TSS2_RC Tss2_Sys_ClockRateAdjust_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_ClockRateAdjust(
@@ -2266,6 +2434,10 @@ TSS2_RC Tss2_Sys_TestParms_Prepare(
     const TPMT_PUBLIC_PARMS	*parameters
     );
 
+TSS2_RC Tss2_Sys_TestParms_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_TestParms(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
@@ -2278,6 +2450,10 @@ TSS2_RC Tss2_Sys_NV_DefineSpace_Prepare(
     TPMI_RH_PROVISION	authHandle,
     const TPM2B_AUTH	*auth,
     const TPM2B_NV_PUBLIC	*publicInfo
+    );
+
+TSS2_RC Tss2_Sys_NV_DefineSpace_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_NV_DefineSpace(
@@ -2295,6 +2471,10 @@ TSS2_RC Tss2_Sys_NV_UndefineSpace_Prepare(
     TPMI_RH_NV_INDEX	nvIndex
     );
 
+TSS2_RC Tss2_Sys_NV_UndefineSpace_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_NV_UndefineSpace(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION	authHandle,
@@ -2307,6 +2487,10 @@ TSS2_RC Tss2_Sys_NV_UndefineSpaceSpecial_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_INDEX	nvIndex,
     TPMI_RH_PLATFORM	platform
+    );
+
+TSS2_RC Tss2_Sys_NV_UndefineSpaceSpecial_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_NV_UndefineSpaceSpecial(
@@ -2345,6 +2529,10 @@ TSS2_RC Tss2_Sys_NV_Write_Prepare(
     UINT16	offset
     );
 
+TSS2_RC Tss2_Sys_NV_Write_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_NV_Write(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_AUTH	authHandle,
@@ -2361,6 +2549,10 @@ TSS2_RC Tss2_Sys_NV_Increment_Prepare(
     TPMI_RH_NV_INDEX	nvIndex
     );
 
+TSS2_RC Tss2_Sys_NV_Increment_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_NV_Increment(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_AUTH	authHandle,
@@ -2374,6 +2566,10 @@ TSS2_RC Tss2_Sys_NV_Extend_Prepare(
     TPMI_RH_NV_AUTH	authHandle,
     TPMI_RH_NV_INDEX	nvIndex,
     const TPM2B_MAX_NV_BUFFER	*data
+    );
+
+TSS2_RC Tss2_Sys_NV_Extend_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_NV_Extend(
@@ -2392,6 +2588,10 @@ TSS2_RC Tss2_Sys_NV_SetBits_Prepare(
     UINT64	bits
     );
 
+TSS2_RC Tss2_Sys_NV_SetBits_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_NV_SetBits(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_AUTH	authHandle,
@@ -2407,6 +2607,10 @@ TSS2_RC Tss2_Sys_NV_WriteLock_Prepare(
     TPMI_RH_NV_INDEX	nvIndex
     );
 
+TSS2_RC Tss2_Sys_NV_WriteLock_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_NV_WriteLock(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_AUTH	authHandle,
@@ -2418,6 +2622,10 @@ TSS2_RC Tss2_Sys_NV_WriteLock(
 TSS2_RC Tss2_Sys_NV_GlobalWriteLock_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION	authHandle
+    );
+
+TSS2_RC Tss2_Sys_NV_GlobalWriteLock_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_NV_GlobalWriteLock(
@@ -2457,6 +2665,10 @@ TSS2_RC Tss2_Sys_NV_ReadLock_Prepare(
     TPMI_RH_NV_INDEX	nvIndex
     );
 
+TSS2_RC Tss2_Sys_NV_ReadLock_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
 TSS2_RC Tss2_Sys_NV_ReadLock(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_AUTH	authHandle,
@@ -2469,6 +2681,10 @@ TSS2_RC Tss2_Sys_NV_ChangeAuth_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_INDEX	nvIndex,
     const TPM2B_AUTH	*newAuth
+    );
+
+TSS2_RC Tss2_Sys_NV_ChangeAuth_Complete(
+    TSS2_SYS_CONTEXT *sysContext
     );
 
 TSS2_RC Tss2_Sys_NV_ChangeAuth(
