@@ -30,7 +30,7 @@
 
 TSS2_RC Tss2_Sys_IncrementalSelfTest_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPML_ALG *toTest)
+    const TPML_ALG *toTest)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
@@ -77,7 +77,7 @@ TSS2_RC Tss2_Sys_IncrementalSelfTest_Complete(
 TSS2_RC Tss2_Sys_IncrementalSelfTest(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
-    TPML_ALG *toTest,
+    const TPML_ALG *toTest,
     TPML_ALG *toDoList,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
