@@ -14,6 +14,7 @@ following sections describe them for the supported platforms.
 * C Library Development Libraries and Header Files
 * pkg-config
 * uriparser
+* libgcrypt
 
 The following are dependencies only required when building the test suite.
 Most users will not need to install these dependencies:
@@ -35,6 +36,7 @@ $ sudo apt -y install \
   libtool \
   automake \
   liburiparser-dev \
+  libgcrypt20-dev \
   autoconf
 ```
 

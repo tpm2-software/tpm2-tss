@@ -139,6 +139,11 @@ typedef struct {
 #define TSS2_BASE_RC_INCOMPATIBLE_TCTI     20 /* Unknown or unusable TCTI version */
 #define TSS2_BASE_RC_NOT_SUPPORTED         21 /* Functionality not supported. */
 #define TSS2_BASE_RC_BAD_TCTI_STRUCTURE    22 /* TCTI context is bad. */
+#define TSS2_BASE_RC_MEMORY                23U /* memory allocation failed */
+#define TSS2_BASE_RC_BAD_TR                24U /* invalid ESYS_TR handle */
+#define TSS2_BASE_RC_MULTIPLE_DECRYPT_SESSIONS 25U /* More than one session with TPMA_SESSION_DECRYPT bit set */
+#define TSS2_BASE_RC_MULTIPLE_ENCRYPT_SESSIONS 26U /* More than one session with TPMA_SE
+SSION_ENCRYPT bit set */
 
 // Base error codes from 0xf800 - 0xffff are reserved for level- and implementation-specific
 // errors.
@@ -226,5 +231,59 @@ typedef struct {
                                                      TSS2_BASE_RC_BAD_VALUE))
 #define TSS2_MU_RC_INSUFFICIENT_BUFFER          ((TSS2_RC)(TSS2_MU_RC_LAYER | \
                                                      TSS2_BASE_RC_INSUFFICIENT_BUFFER))
+
+/*
+ * ESAPI Error Codes
+ */
+#define TSS2_ESYS_RC_GENERAL_FAILURE             ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_GENERAL_FAILURE))
+#define TSS2_ESYS_RC_ABI_MISMATCH                ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_ABI_MISMATCH))
+#define TSS2_ESYS_RC_BAD_REFERENCE               ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_BAD_REFERENCE))
+#define TSS2_ESYS_RC_INSUFFICIENT_BUFFER         ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_INSUFFICIENT_BUFFER))
+#define TSS2_ESYS_RC_BAD_SEQUENCE                ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_BAD_SEQUENCE))
+#define TSS2_ESYS_RC_INVALID_SESSIONS            ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_INVALID_SESSIONS))
+#define TSS2_ESYS_RC_TRY_AGAIN                   ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_TRY_AGAIN))
+#define TSS2_ESYS_RC_IO_ERROR                    ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_BAD_IO_ERROR))
+#define TSS2_ESYS_RC_BAD_VALUE                   ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_BAD_VALUE))
+#define TSS2_ESYS_RC_NO_DECRYPT_PARAM            ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_NO_DECRYPT_PARAM))
+#define TSS2_ESYS_RC_NO_ENCRYPT_PARAM            ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_NO_ENCRYPT_PARAM))
+#define TSS2_ESYS_RC_BAD_SIZE                    ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_BAD_SIZE))
+#define TSS2_ESYS_RC_MALFORMED_RESPONSE          ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_MALFORMED_RESPONSE))
+#define TSS2_ESYS_RC_INSUFFICIENT_CONTEXT        ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_INSUFFICIENT_CONTEXT))
+#define TSS2_ESYS_RC_INSUFFICIENT_RESPONSE       ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_INSUFFICIENT_RESPONSE))
+#define TSS2_ESYS_RC_INCOMPATIBLE_TCTI           ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_INCOMPATIBLE_TCTI))
+#define TSS2_ESYS_RC_BAD_TCTI_STRUCTURE          ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_BAD_TCTI_STRUCTURE))
+#define TSS2_ESYS_RC_MEMORY                      ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_MEMORY))
+#define TSS2_ESYS_RC_BAD_TR                      ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                        TSS2_BASE_RC_BAD_TR))
+#define TSS2_ESYS_RC_MULTIPLE_DECRYPT_SESSIONS   ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                        TSS2_BASE_RC_MULTIPLE_DECRYPT_SESSIONS))
+#define TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS   ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                         TSS2_BASE_RC_MULTIPLE_ENCRYPT_SESSIONS))
+#define TSS2_ESYS_RC_AUTH_MISSING                ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_AUTH_MISSING))
+#define TSS2_ESYS_RC_NOT_IMPLEMENTED             ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_NOT_IMPLEMENTED))
+#define TSS2_ESYS_RC_BAD_CONTEXT                 ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                        TSS2_BASE_RC_BAD_CONTEXT))
+#define TSS2_ESYS_RC_FILE_ERROR                  ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      STSS2_BASE_RC_FILE_ERROR))
 
 #endif /* TSS2_COMMON_H */

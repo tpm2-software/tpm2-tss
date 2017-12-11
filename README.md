@@ -7,6 +7,11 @@
 This repository hosts source code implementing the Trusted Computing Group's (TCG) TPM2 Software Stack (TSS).
 This stack consists of the following layers from top to bottom:
 
+* Enhanded System API (ESAPI) as described in the  [TSS 2.0 Enhanced System API (ESAPI) Specification](https://trustedcomputinggroup.org/wp-content/uploads/TSS_ESAPI_Version-0.9_Revision-04_reviewEND030918.pdf).
+This API is a 1-to-1 mapping of the TPM2 commands documented in Part 3 of the TPM2 specification.
+Additionally there are asynchronous versions of each command.
+In addition to SAPI, the ESAPI performs tracking of meta data for TPM object and automatic calculation of session based authorization and encryption values.
+Both the synchronous and asynchronous API are exposed through a single library: libesapi.
 * System API (SAPI) as described in the  [system level API and TPM command transmission interface specification](http://www.trustedcomputinggroup.org/resources/tss_system_level_api_and_tpm_command_transmission_interface_specification).
 This API is a 1-to-1 mapping of the TPM2 commands documented in Part 3 of the TPM2 specification.
 Additionally there are asynchronous versions of each command.
@@ -27,7 +32,7 @@ If you're looking to discuss the source code in this project or get some questio
 We've also got an IRC channel set up on [FreeNode](https://freenode.net/) called #tpm2.0-tss.
 
 # Test Suite
-This repository contains a test suite intended to exercise the TCTI and SAPI code.
+This repository contains a test suite intended to exercise the TCTI, SAPI and ESAPI code.
 This test suite is *not* intended to test a TPM implementation and so this test suite should only be run against a TPM simulator.
 If this test suite is executed against a TPM other than the software simulator it may cause damage to the TPM (NV storage wear out etc).
 You have been warned.
@@ -45,7 +50,7 @@ NOTE: The Intel TCG TSS is currently tested against the 974 version of the simul
 Compatibility with later versions has not yet been tested.
 
 ## Testing
-To test the various TCTI and SAPI api calls, unit and integraion tests can
+To test the various TCTI, SAPI and ESAPI api calls, unit and integraion tests can
 be run by configuring the build to enable unit testing and running the "check"
 build target. It is recommended to use a simulator for testing, and the
 simulator will be automatically launched by the tests. Please review the
@@ -67,7 +72,11 @@ SAPI library, TAB/RM, and Test Code Block Diagram:
 # Project Layout
 ├── common  : utility functions used by multiple components  
 ├── doc     : various bits of documentation  
+├── esapi   : system API implementation  
+│   ├── esapi       : enhanced system API implementation  
+│   └── esapi_util  : utility functions used by ESAPI implementation  
 ├── include : header files unstalled in $(includedir)  
+│   ├── esapi       : header file for ESAPI library  
 │   ├── sapi        : header files for TPM2 types and core libraries  
 │   └── tcti        : header files for TCTI libraries  
 ├── lib     : data files used by the build or installed into $(libdir)  

@@ -22,6 +22,12 @@ echo "Generating file lists: ${VARS_FILE}"
   src_listvar "sysapi/sysapi_util" "*.c" "SYSAPIUTIL_C"
   printf "SYSAPI_SRC = \$(SYSAPI_H) \$(SYSAPI_C) \$(SYSAPIUTIL_C)\n"
 
+  src_listvar "esapi/esapi" "*.h" "ESAPI_H"
+  src_listvar "esapi/esapi" "*.c" "ESAPI_C"
+  src_listvar "esapi/esapi_util" "*.c" "ESAPIUTIL_C"
+  src_listvar "esapi/esapi_util" "*.h" "ESAPIUTIL_H"
+  printf "ESAPI_SRC = \$(ESAPI_H) \$(ESAPI_C) \$(ESAPIUTIL_C) \$(ESAPIUTIL_H)\n"
+
   src_listvar "marshal" "*.c" "MARSHAL_C"
   src_listvar "marshal" "*.h" "MARSHAL_H"
   printf "MARSHAL_SRC = \$(MARSHAL_C) \$(MARSHAL_H)"
