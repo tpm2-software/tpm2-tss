@@ -20,7 +20,6 @@
 #define ENV_SOCKET_ADDRESS "TPM20TEST_SOCKET_ADDRESS"
 #define ENV_SOCKET_PORT    "TPM20TEST_SOCKET_PORT"
 
-
 typedef enum {
     UNKNOWN_TCTI,
     DEVICE_TCTI,
@@ -30,16 +29,16 @@ typedef enum {
 
 typedef struct {
     TCTI_TYPE tcti_type;
-    char     *device_file;
-    char     *socket_address;
-    uint16_t  socket_port;
+    char *device_file;
+    char *socket_address;
+    uint16_t socket_port;
 } test_opts_t;
 
 /* functions to get test options from the user and to print helpful stuff */
-char* const  tcti_name_from_type        (TCTI_TYPE             tcti_type);
-TCTI_TYPE    tcti_type_from_name        (char const           *tcti_str);
-int          get_test_opts_from_env     (test_opts_t          *opts);
-int          sanity_check_test_opts     (test_opts_t          *opts);
-void         dump_test_opts             (test_opts_t          *opts);
+char *const tcti_name_from_type(TCTI_TYPE tcti_type);
+TCTI_TYPE tcti_type_from_name(char const *tcti_str);
+int get_test_opts_from_env(test_opts_t * opts);
+int sanity_check_test_opts(test_opts_t * opts);
+void dump_test_opts(test_opts_t * opts);
 
-#endif /* TEST_OPTIONS_H */
+#endif                          /* TEST_OPTIONS_H */

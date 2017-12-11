@@ -30,6 +30,30 @@ AM_CONDITIONAL([UNIT], [test "x$enable_unit" != xno])
 # Uriparser library required by simulator TCTI library.
 PKG_CHECK_MODULES([URIPARSER],[liburiparser])
 
+AC_ARG_ENABLE([esapi],
+            [AS_HELP_STRING([--enable-esapi],
+                            [build the esapi layer (default is yes)])],
+            [enable_esapi=$enableval],
+            [enable_esapi=yes])
+AS_IF([test "x$enable_esapi" != xno],
+      [AC_CHECK_HEADER([gcrypt.h])])
+AS_IF([test "x$enable_esapi" != xno],
+      [AC_CHECK_LIB([gcrypt], [gcry_mac_open])])
+AM_CONDITIONAL([ESAPI], [test "x$enable_esapi" != xno])
+
+AC_ARG_WITH([tctidefaultmodule],
+            [AS_HELP_STRING([--with-tctidefaultmodule],
+                            [The default tcti module for an Esys context.])],
+            [],
+            [with_tctidefaultmodule=Socket])
+AC_SUBST([TCTI_DEFAULT_MODULE], [$with_tctidefaultmodule])
+
+AC_ARG_WITH([tctidefaultconfig],
+            [AS_HELP_STRING([--with-tctidefaultconfig],
+                            [The default tcti module's configuration.])],
+            [],
+            [with_tctidefaultconfig="tcp://127.0.0.1:2321"])
+AC_SUBST([TCTI_DEFAULT_CONFIG], [$with_tctidefaultconfig])
 #
 # simulator binary
 #
@@ -90,3 +114,15 @@ AX_ADD_COMPILER_FLAG([-Wno-missing-braces])
 AX_CODE_COVERAGE
 
 AC_OUTPUT
+
+AC_MSG_RESULT([
+    $PACKAGE_NAME $VERSION
+    esapi:              $enable_esapi
+    tctidefaultmodule:  $with_tctidefaultmodule
+    tctidefaultconfig:  $with_tctidefaultconfig
+    unit:               $enable_unit
+    debug:              $enable_debug
+    simulatorbin:       $with_simulatorbin
+    loglevel:           $with_loglevel
+])
+    

@@ -37,6 +37,10 @@ AM_LDFLAGS      = $(EXTRA_LDFLAGS) $(CODE_COVERAGE_LIBS)
 lib_LTLIBRARIES = $(libmarshal) $(libsapi) $(libtcti_device) $(libtcti_socket)
 noinst_LTLIBRARIES = test/integration/libtest_utils.la
 
+if ESAPI
+lib_LTLIBRARIES += $(libesapi)
+endif
+
 # test harness configuration
 TEST_EXTENSIONS = .int
 INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler.sh
@@ -84,6 +88,13 @@ TESTS_INTEGRATION = \
     test/integration/policy-template.int \
     test/integration/create-loaded.int \
     test/tpmclient/tpmclient.int
+if ESAPI
+TESTS_INTEGRATION += \
+    test/integration/esys-get-random.int \
+    test/integration/esys-create-session-auth.int \
+    test/integration/esys-create-primary-hmac.int \
+    test/integration/esys-create-primary-ecc-hmac.int
+endif #ESAPI
 endif #SIMULATOR_BIN
 
 CLEANFILES = \
@@ -100,6 +111,10 @@ libsapidir      = $(includedir)/sapi
 libsapi_HEADERS = $(srcdir)/include/sapi/*.h
 libtctidir      = $(includedir)/tcti
 libtcti_HEADERS = $(srcdir)/include/tcti/*.h
+if ESAPI
+libesapidir      = $(includedir)/esapi
+libesapi_HEADERS = $(srcdir)/include/esapi/*.h
+endif
 
 # pkg-config files
 pkgconfigdir          = $(libdir)/pkgconfig
@@ -212,6 +227,17 @@ marshal_libmarshal_la_SOURCES = $(MARSHAL_SRC) log/log.c log/log.h
 sysapi_libsapi_la_LIBADD  = $(libmarshal)
 sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPI_H) $(SYSAPIUTIL_C) \
     $(SYSAPIUTIL_H)
+
+if ESAPI
+esapi_libesapi_la_CFLAGS  = $(AM_CFLAGS) -Wno-unused-variable -Wno-unused-label \
+                            -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
+                            -I$(srcdir)/esapi/esapi_util \
+                            -DESYS_TCTI_DEFAULT_MODULE=$(TCTI_DEFAULT_MODULE) \
+                            -DESYS_TCTI_DEFAULT_CONFIG=$(TCTI_DEFAULT_CONFIG)
+esapi_libesapi_la_LIBADD  = $(libsapi) $(libmarshal) $(libtcti_device) $(libtcti_socket)
+esapi_libesapi_la_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
+esapi_libesapi_la_SOURCES = $(ESAPI_SRC) log/log.h log/log.c
+endif
 
 tcti_libtcti_device_la_CFLAGS   = $(AM_CFLAGS)
 if HAVE_LD_VERSION_SCRIPT
@@ -332,6 +358,42 @@ test_integration_system_api_int_LDADD   = $(TESTS_LDADD)
 test_integration_system_api_int_SOURCES = test/integration/main.c log/log.h log/log.c \
     test/integration/system-api.int.c
 
+if ESAPI
+test_integration_esys_get_random_int_CFLAGS  = $(AM_CFLAGS) \
+    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
+    -I$(srcdir)/esapi/esapi_util
+test_integration_esys_get_random_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_get_random_int_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
+test_integration_esys_get_random_int_SOURCES = test/integration/esys-get-random.int.c \
+	test/integration/main-esapi.c log/log.h log/log.c test/integration/test-esapi.h
+
+test_integration_esys_create_session_auth_int_CFLAGS  = $(AM_CFLAGS) \
+    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
+    -I$(srcdir)/esapi/esapi_util
+test_integration_esys_create_session_auth_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_create_session_auth_int_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
+test_integration_esys_create_session_auth_int_SOURCES = test/integration/esys-create-session-auth.int.c \
+	test/integration/main-esapi.c log/log.h log/log.c test/integration/test-esapi.h
+
+test_integration_esys_create_primary_hmac_int_CFLAGS  = $(AM_CFLAGS) \
+    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
+    -I$(srcdir)/esapi/esapi_util
+test_integration_esys_create_primary_hmac_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_create_primary_hmac_int_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
+test_integration_esys_create_primary_hmac_int_SOURCES = \
+    test/integration/esys-create-primary-hmac.int.c test/integration/main-esapi.c \
+    log/log.h log/log.c test/integration/test-esapi.h
+
+test_integration_esys_create_primary_ecc_hmac_int_CFLAGS  = $(AM_CFLAGS) -DTEST_ECC \
+    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
+    -I$(srcdir)/esapi/esapi_util
+test_integration_esys_create_primary_ecc_hmac_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_create_primary_ecc_hmac_int_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
+test_integration_esys_create_primary_ecc_hmac_int_SOURCES = \
+    test/integration/esys-create-primary-hmac.int.c test/integration/main-esapi.c \
+    log/log.h log/log.c test/integration/test-esapi.h
+endif
+
 test_integration_policy_template_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_policy_template_int_LDADD   = $(TESTS_LDADD)
 test_integration_policy_template_int_SOURCES = test/integration/main.c log/log.h log/log.c \
@@ -363,6 +425,9 @@ man/man7/%.7 : man/%.7.in $(srcdir)/man/man-postlude.troff
 
 # simple variables
 libsapi = sysapi/libsapi.la
+if ESAPI
+libesapi = esapi/libesapi.la
+endif
 libtcti_device = tcti/libtcti-device.la
 libtcti_socket = tcti/libtcti-socket.la
 libmarshal = marshal/libmarshal.la

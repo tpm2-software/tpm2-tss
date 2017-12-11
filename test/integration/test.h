@@ -9,4 +9,4 @@
  * Return values:
  * A successful test will return 0, any other value indicates failure.
  */
-int test_invoke (TSS2_SYS_CONTEXT *sapi_context);
+int test_invoke(TSS2_SYS_CONTEXT * sapi_context);
