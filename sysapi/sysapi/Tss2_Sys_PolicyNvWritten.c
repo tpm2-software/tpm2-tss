@@ -62,7 +62,7 @@ TSS2_RC Tss2_Sys_PolicyNvWritten_Prepare(
     return CommonPrepareEpilogue(ctx);
 }
 
-TSS2_RC Tss2_Sys_PolicyNVWritten_Complete (
+TSS2_RC Tss2_Sys_PolicyNvWritten_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
@@ -91,5 +91,5 @@ TSS2_RC Tss2_Sys_PolicyNvWritten(
     if (rval)
         return rval;
 
-    return Tss2_Sys_PolicyNVWritten_Complete(sysContext);
+    return Tss2_Sys_PolicyNvWritten_Complete(sysContext);
 }
