@@ -84,6 +84,6 @@ script:
   - cat test/tpmclient/tpmclient.log
   - popd
   - |
-    if [ "$CC" == "gcc" ]; then
+    if [ "$CC" == "gcc" -a -n "$COVERALLS_REPO_TOKEN" ]; then
         coveralls --build-root=build --gcov-options '\-lp'
     fi
