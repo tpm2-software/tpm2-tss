@@ -47,7 +47,7 @@
 
 #include <tcti/common.h>
 
-#define TCTI_MAGIC   0x7e18e9defa8bc9e2
+#define TCTI_MAGIC   0x7e18e9defa8bc9e2ULL
 #define TCTI_VERSION 0x1
 
 #define TCTI_LOG_CALLBACK(ctx) ((TSS2_TCTI_CONTEXT_INTEL*)ctx)->logCallback
