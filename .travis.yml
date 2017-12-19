@@ -23,6 +23,7 @@ addons:
     packages:
     - autoconf-archive
     - cmake
+    - liburiparser-dev
     - realpath
     - lcov
   coverity_scan:
