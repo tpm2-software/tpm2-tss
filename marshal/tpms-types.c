@@ -1370,3 +1370,11 @@ TPMS_UNMARSHAL_1(TPMS_SYMCIPHER_PARMS,
 TPMS_MARSHAL_0(TPMS_EMPTY);
 
 TPMS_UNMARSHAL_0(TPMS_EMPTY);
+
+TPMS_MARSHAL_2(TPMS_AC_OUTPUT,
+               tag, VAL, Tss2_MU_UINT32_Marshal,
+               data, VAL, Tss2_MU_UINT32_Marshal)
+
+TPMS_UNMARSHAL_2(TPMS_AC_OUTPUT,
+                 tag, Tss2_MU_UINT32_Unmarshal,
+                 data, Tss2_MU_UINT32_Unmarshal)

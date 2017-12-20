@@ -1200,6 +1200,20 @@ Tss2_MU_TPMS_SYMCIPHER_PARMS_Unmarshal(
     TPMS_SYMCIPHER_PARMS *dest);
 
 TSS2_RC
+Tss2_MU_TPMS_AC_OUTPUT_Marshal(
+    TPMS_AC_OUTPUT  const *src,
+    uint8_t         buffer[],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPMS_AC_OUTPUT_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_AC_OUTPUT *dest);
+
+TSS2_RC
 Tss2_MU_TPML_CC_Marshal(
     TPML_CC const *src,
     uint8_t      buffer[],
@@ -1366,6 +1380,20 @@ Tss2_MU_TPML_INTEL_PTT_PROPERTY_Unmarshal(
     size_t          buffer_size,
     size_t         *offset,
     TPML_INTEL_PTT_PROPERTY *dest);
+
+TSS2_RC
+Tss2_MU_TPML_AC_CAPABILITIES_Marshal(
+    TPML_AC_CAPABILITIES const *src,
+    uint8_t      buffer[],
+    size_t       buffer_size,
+    size_t      *offset);
+
+TSS2_RC
+Tss2_MU_TPML_AC_CAPABILITIES_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPML_AC_CAPABILITIES *dest);
 
 TSS2_RC
 Tss2_MU_TPMU_HA_Marshal(
