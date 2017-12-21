@@ -75,7 +75,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 { \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
-    type tmp = {0}; \
+    type tmp; \
 \
     if (offset) \
         local_offset = *offset; \
@@ -85,6 +85,8 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     LOG (DEBUG, \
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, local_offset); \
+\
+    memset(&tmp, '\0', sizeof(tmp)); \
 \
     ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : &tmp.m1); \
     if (ret != TSS2_RC_SUCCESS) \
@@ -141,12 +143,14 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 { \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
-    type tmp = {0}; \
+    type tmp; \
 \
     if (offset) \
         local_offset = *offset; \
     else if (!dest) \
         return TSS2_MU_RC_BAD_REFERENCE; \
+\
+    memset(&tmp, '\0', sizeof(tmp)); \
 \
     LOG (DEBUG, \
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
@@ -285,12 +289,14 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 { \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
-    type tmp = {0}; \
+    type tmp; \
 \
     if (offset) \
         local_offset = *offset; \
     else if (!dest) \
         return TSS2_MU_RC_BAD_REFERENCE; \
+\
+    memset(&tmp, '\0', sizeof(tmp)); \
 \
     LOG (DEBUG, \
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
@@ -458,12 +464,14 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 { \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
-    type tmp = {0}; \
+    type tmp; \
 \
     if (offset) \
         local_offset = *offset; \
     else if (!dest) \
         return TSS2_MU_RC_BAD_REFERENCE; \
+\
+    memset(&tmp, '\0', sizeof(tmp)); \
 \
     LOG (DEBUG, \
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
