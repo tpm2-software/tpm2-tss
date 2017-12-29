@@ -57,6 +57,9 @@ extern "C" {
 #if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
 #include <poll.h>
 typedef struct pollfd TSS2_TCTI_POLL_HANDLE;
+#elif defined(_WIN32)
+#include <windows.h>
+typedef HANDLE TSS2_TCTI_POLL_HANDLE;
 #else
 typedef void TSS2_TCTI_POLL_HANDLE;
 #error Info: Platform not supported for TCTI_POLL_HANDLES
