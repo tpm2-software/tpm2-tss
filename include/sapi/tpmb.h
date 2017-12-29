@@ -48,5 +48,5 @@ typedef struct {
     typedef struct {                          \
         UINT16  size;                         \
         type bufferName;                      \
-    } TPM2B_##name;
+    } TPM2B_##name
 #endif
