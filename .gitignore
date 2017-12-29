@@ -18,6 +18,7 @@
 .deps/
 .dirstamp
 .libs
+.vs/
 *~
 .*.swp
 .*.swo
