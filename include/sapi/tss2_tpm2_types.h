@@ -1185,7 +1185,7 @@ typedef	TPM2_ST TPMI_ST_COMMAND_TAG;
 
 /* Table 68  Definition of TPMS_EMPTY Structure <INOUT> */
 typedef	struct {
-	BYTE empty[0];	 /* a structure with no member  */
+	BYTE empty[1];	 /* a structure with no member  */
 } TPMS_EMPTY;
 
 /* Table 69  Definition of TPMS_ALGORITHM_DESCRIPTION Structure <OUT> */
