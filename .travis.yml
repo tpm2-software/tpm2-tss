@@ -68,8 +68,7 @@ script:
     fi
   - ../configure --enable-unit $CONFIGURE_OPTIONS --with-simulatorbin=$(pwd)/../ibmtpm/src/tpm_server
   - make -j$(nproc) distcheck
-  - make -j$(nproc) check-programs
-  - make -j1 check
+  - make -j$(nproc) check
   - cat test-suite.log
   - |
     for LOG in $(ls -1 test/unit/*.log); do
