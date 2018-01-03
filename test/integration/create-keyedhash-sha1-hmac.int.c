@@ -1,5 +1,6 @@
 #include "inttypes.h"
-#include "log.h"
+#define LOGMODULE test
+#include "log/log.h"
 #include "sapi-util.h"
 #include "test.h"
 
@@ -33,7 +34,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 
     rc = create_primary_rsa_2048_aes_128_cfb (sapi_context, &parent_handle);
     if (rc == TSS2_RC_SUCCESS) {
-        print_log ("primary created successfully: 0x%" PRIx32, parent_handle);
+        LOG_INFO("primary created successfully: 0x%" PRIx32, parent_handle);
     } else {
        return rc;
     }
@@ -45,7 +46,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     inPublic.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM2_ALG_HMAC;
     inPublic.publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM2_ALG_SHA1;
 
-    print_log ("Create keyedhash SHA1 HMAC");
+    LOG_INFO("Create keyedhash SHA1 HMAC");
     rc = TSS2_RETRY_EXP (Tss2_Sys_Create (sapi_context,
                                           parent_handle,
                                           &sessions_cmd,
@@ -60,9 +61,10 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
                                           &creationTicket,
                                           &sessions_rsp));
     if (rc == TPM2_RC_SUCCESS) {
-        print_log ("success");
+        LOG_INFO("success");
     } else {
-        print_fail ("Create FAILED! Response Code : 0x%x", rc);
+        LOG_ERROR("Create FAILED! Response Code : 0x%x", rc);
+        exit(1);
     }
 
     return rc;

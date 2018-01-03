@@ -31,6 +31,8 @@
 #include <stdlib.h>
 #include "sysapi_util.h"
 #include "tss2_endian.h"
+#define LOGMODULE test
+#include "log/log.h"
 
 //
 // This function is a helper function used to calculate cpHash and rpHash.
@@ -71,11 +73,7 @@ TSS2_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM2_HANDLE handle1, TPM2_HA
                 return rval;
         }
     }
-
-#ifdef DEBUG
-    DebugPrintf( 0, "\n\nNAME1 = \n" );
-    PrintSizedBuffer( &(name1.b) );
-#endif
+    LOGBLOB_DEBUG(&name1.name[0], name1.size, "NAME1 =");
 
     // Only get names for commands
     if( responseCode == TPM2_RC_NO_RESPONSE )
@@ -102,10 +100,7 @@ TSS2_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM2_HANDLE handle1, TPM2_HA
             return rval;
     }
 
-#ifdef DEBUG
-    DebugPrintf( 0, "\n\nNAME2 = \n" );
-    PrintSizedBuffer( &(name2.b) );
-#endif
+    LOGBLOB_DEBUG(&name2.name[0], name2.size, "NAME2 =");
 
     // Create pHash input byte stream:  first add response code, if any.
     hashInput.size = 0;
@@ -146,10 +141,7 @@ TSS2_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM2_HANDLE handle1, TPM2_HA
         return( APPLICATION_ERROR( TSS2_BASE_RC_INSUFFICIENT_BUFFER ) );
 
     }
-#ifdef DEBUG
-    DebugPrintf( 0, "\n\nPHASH input bytes= \n" );
-    PrintSizedBuffer( &(hashInput.b) );
-#endif
+    LOGBLOB_DEBUG(&hashInput.buffer[0], hashInput.size, "PHASH input bytes=");
 
     // Now hash the whole mess.
     if( hashInput.size > sizeof( hashInput.buffer ) )
@@ -161,10 +153,7 @@ TSS2_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM2_HANDLE handle1, TPM2_HA
         rval = TpmHash( authHash, hashInput.size, &( hashInput.buffer[0] ), pHash );
         if( rval != TPM2_RC_SUCCESS )
             return rval;
-#ifdef DEBUG
-        DebugPrintf( 0, "\n\nPHASH = " );
-        PrintSizedBuffer( &(pHash->b) );
-#endif
+        LOGBLOB_DEBUG(&pHash->buffer[0], pHash->size, "PHASH =");
     }
 
     return rval;

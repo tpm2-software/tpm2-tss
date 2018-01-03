@@ -49,7 +49,7 @@ TSS2_RC AddSession( SESSION_LIST_ENTRY **sessionEntry )
 {
     SESSION_LIST_ENTRY **lastEntry, *newEntry;
 
-//    LOG_INFO("In AddSession\n" );
+//    LOG_INFO("In AddSession" );
 
     // find end of list.
     for( lastEntry = &sessionsList; *lastEntry != 0; lastEntry = &( (SESSION_LIST_ENTRY *)*lastEntry)->nextEntry )
@@ -76,7 +76,7 @@ void DeleteSession( SESSION *session )
     SESSION_LIST_ENTRY *predSession;
     SESSION_LIST_ENTRY *newNextEntry;
 
-//    LOG_INFO("In DeleteSession\n" );
+//    LOG_INFO("In DeleteSession" );
 
     if( session == &sessionsList->session )
         sessionsList = 0;
@@ -107,7 +107,7 @@ TSS2_RC GetSessionStruct( TPMI_SH_AUTH_SESSION sessionHandle, SESSION **session 
     TSS2_RC rval = TSS2_APP_RC_GET_SESSION_STRUCT_FAILED;
     SESSION_LIST_ENTRY *sessionEntry;
 
-    LOG_INFO("In GetSessionStruct\n" );
+    LOG_INFO("In GetSessionStruct" );
 
     if( session != 0 )
     {
@@ -133,7 +133,7 @@ TSS2_RC GetSessionAlgId( TPMI_SH_AUTH_SESSION sessionHandle, TPMI_ALG_HASH *sess
     TSS2_RC rval = TSS2_APP_RC_GET_SESSION_ALG_ID_FAILED;
     SESSION *session;
 
-    LOG_INFO("In GetSessionAlgId\n" );
+    LOG_INFO("In GetSessionAlgId" );
 
     rval = GetSessionStruct( sessionHandle, &session );
 
