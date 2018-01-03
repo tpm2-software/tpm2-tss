@@ -23,7 +23,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "log.h"
+#define LOGMODULE test
+#include "log/log.h"
 #include "sapi-util.h"
 #include "test.h"
 
