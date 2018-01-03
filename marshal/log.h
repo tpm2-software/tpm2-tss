@@ -1,5 +1,6 @@
 #ifndef TSS2T_LOG_H
 
+#define LOGMODULE marshal
 #include "log/log.h"
 
 #include <stdio.h>
@@ -25,7 +26,7 @@
     if (level >= MARSHAL_LOG_LEVEL) do { \
         fprintf (stderr, \
                  "%s:marshal:%s:%d " fmt "\n", \
-                 level_to_str (level), \
+                 log_strings[level], \
                  __FILE__, \
                  __LINE__, \
                  ##__VA_ARGS__); \
