@@ -1,5 +1,6 @@
 #include <stdio.h>
-#include "log.h"
+#define LOGMODULE test
+#include "log/log.h"
 #include "test.h"
 #include "sapi/tpm20.h"
 #include "sysapi_util.h"
@@ -35,11 +36,12 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
             .nonce={.size=0},
             .hmac={.size=0}}}};
 
-    print_log("PCR Extension tests started.");
+    LOG_INFO("PCR Extension tests started.");
     rc = Tss2_Sys_GetCapability(sapi_context, 0, TPM2_CAP_PCR_PROPERTIES, TPM2_PT_PCR_COUNT, 1, &more_data, &capability_data, 0);
-    if (rc != TSS2_RC_SUCCESS)
-        print_fail("GetCapability FAILED! Response Code : 0x%x", rc);
-
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("GetCapability FAILED! Response Code : 0x%x", rc);
+        exit(1);
+    }
     digests.count = 1;
     digests.digests[0].hashAlg = TPM2_ALG_SHA1;
     digest_size = GetDigestSize( digests.digests[0].hashAlg );
@@ -57,26 +59,33 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     pcr_selection.pcrSelections[0].pcrSelect[PCR_8 / 8] = 1 << (PCR_8 % 8);
 
     rc = Tss2_Sys_PCR_Read(sapi_context, 0, &pcr_selection, &pcr_update_counter_before_extend, &pcr_selection_out, &pcr_values, 0);
-    if (rc != TSS2_RC_SUCCESS)
-        print_fail("PCR_Read FAILED! Response Code : 0x%x", rc);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("PCR_Read FAILED! Response Code : 0x%x", rc);
+        exit(1);
+    }
     memcpy(&(pcr_before_extend[0]), &(pcr_values.digests[0].buffer[0]), pcr_values.digests[0].size);
 
     rc = Tss2_Sys_PCR_Extend(sapi_context, PCR_8, &sessions_data, &digests, 0);
-    if (rc != TSS2_RC_SUCCESS)
-        print_fail("PCR_Extend FAILED! Response Code : 0x%x", rc);
-
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("PCR_Extend FAILED! Response Code : 0x%x", rc);
+        exit(1);
+    }
     rc = Tss2_Sys_PCR_Read(sapi_context, 0, &pcr_selection, &pcr_update_counter_after_extend, &pcr_selection_out, &pcr_values, 0);
-    if (rc != TSS2_RC_SUCCESS)
-        print_fail("PCR_Read FAILED! Response Code : 0x%x", rc);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("PCR_Read FAILED! Response Code : 0x%x", rc);
+        exit(1);
+    }
     memcpy(&(pcr_after_extend[0]), &(pcr_values.digests[0].buffer[0]), pcr_values.digests[0].size);
 
-    if(pcr_update_counter_before_extend == pcr_update_counter_after_extend)
-        print_fail("ERROR!! pcr_update_counter didn't change value\n");
-
-    if(memcmp(&(pcr_before_extend[0]), &(pcr_after_extend[0]), 20) == 0)
-        print_fail("ERROR!! PCR didn't change value\n");
-
-    print_log("PCR Extension Test Passed!");
+    if(pcr_update_counter_before_extend == pcr_update_counter_after_extend) {
+        LOG_ERROR("ERROR!! pcr_update_counter didn't change value");
+        exit(1);
+    }
+    if(memcmp(&(pcr_before_extend[0]), &(pcr_after_extend[0]), 20) == 0) {
+        LOG_ERROR("ERROR!! PCR didn't change value");
+        exit(1);
+    }
+    LOG_INFO("PCR Extension Test Passed!");
     return 0;
 }
 

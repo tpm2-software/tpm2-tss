@@ -1,5 +1,6 @@
 #include <stdio.h>
-#include "log.h"
+#define LOGMODULE test
+#include "log/log.h"
 #include "test.h"
 #include "sapi/tpm20.h"
 
@@ -13,7 +14,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     TSS2_TCTI_CONTEXT *tcti_context = NULL;
     TSS2_ABI_VERSION tstAbiVersion = { TSSWG_INTEROP, TSS_SAPI_FIRST_FAMILY, TSS_SAPI_FIRST_LEVEL, TSS_SAPI_FIRST_VERSION };
 
-    print_log( "ABI NEGOTIATION TESTS" );
+    LOG_INFO( "ABI NEGOTIATION TESTS" );
 
     // Get the size needed for sapi context structure.
     contextSize = Tss2_Sys_GetContextSize( 0 );
@@ -21,7 +22,8 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     rc = Tss2_Sys_GetTctiContext (sapi_context, &tcti_context);
     if( rc != TSS2_RC_SUCCESS )
     {
-        print_fail("ABIVersion FAILED! Response Code : %x", rc);
+        LOG_ERROR("ABIVersion FAILED! Response Code : %x", rc);
+        exit(1);
     }
 
     // Initialized the system context structure.
@@ -29,7 +31,8 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     rc = Tss2_Sys_Initialize( sapi_context, contextSize, tcti_context, &tstAbiVersion );
     if( rc != TSS2_SYS_RC_ABI_MISMATCH )
     {
-        print_fail("ABIVersion FAILED! Response Code : %x", rc);
+        LOG_ERROR("ABIVersion FAILED! Response Code : %x", rc);
+        exit(1);
     }
 
     tstAbiVersion.tssCreator = TSSWG_INTEROP;
@@ -37,7 +40,8 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     rc = Tss2_Sys_Initialize( sapi_context, contextSize, tcti_context, &tstAbiVersion );
     if( rc != TSS2_SYS_RC_ABI_MISMATCH )
     {
-        print_fail("ABIVersion FAILED! Response Code : %x", rc);
+        LOG_ERROR("ABIVersion FAILED! Response Code : %x", rc);
+        exit(1);
     }
 
     tstAbiVersion.tssFamily = TSS_SAPI_FIRST_FAMILY;
@@ -45,7 +49,8 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     rc = Tss2_Sys_Initialize( sapi_context, contextSize, tcti_context, &tstAbiVersion );
     if( rc != TSS2_SYS_RC_ABI_MISMATCH )
     {
-        print_fail("ABIVersion FAILED! Response Code : %x", rc);
+        LOG_ERROR("ABIVersion FAILED! Response Code : %x", rc);
+        exit(1);
     }
 
     tstAbiVersion.tssLevel = TSS_SAPI_FIRST_LEVEL;
@@ -53,10 +58,10 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     rc = Tss2_Sys_Initialize( sapi_context, contextSize, tcti_context, &tstAbiVersion );
     if( rc != TSS2_SYS_RC_ABI_MISMATCH )
     {
-        print_fail("ABIVersion FAILED! Response Code : %x", rc);
+        LOG_ERROR("ABIVersion FAILED! Response Code : %x", rc);
     }
 
 
-    print_log("ABIVersion Test Passed!");
+    LOG_INFO("ABIVersion Test Passed!");
     return 0;
 }

@@ -1,5 +1,6 @@
 #include "inttypes.h"
-#include "log.h"
+#define LOGMODULE test
+#include "log/log.h"
 #include "sapi-util.h"
 #include "test.h"
 
@@ -22,7 +23,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 
     rc = create_primary_rsa_2048_aes_128_cfb (sapi_context, &primary_handle);
     if (rc != TSS2_RC_SUCCESS) {
-        print_log ("failed to create primary: 0x%" PRIx32, rc);
+        LOG_INFO("failed to create primary: 0x%" PRIx32, rc);
         return rc;
     }
 
@@ -33,7 +34,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
                                 0x81000000,
                                 &sessions_rsp);
     if (rc != TSS2_RC_SUCCESS) {
-        print_log ("failed to make key 0x%" PRIx32 " persistent: 0x%" PRIx32,
+        LOG_INFO("failed to make key 0x%" PRIx32 " persistent: 0x%" PRIx32,
                    primary_handle, rc);
     }
 

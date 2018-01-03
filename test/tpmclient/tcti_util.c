@@ -14,7 +14,7 @@ TSS2_RC InitDeviceTctiContext( const TCTI_DEVICE_CONF *driverConfig, TSS2_TCTI_C
 
     *tctiContext = malloc(size);
 
-    LOG_DEBUG("Initializing %s Interface\n", deviceTctiName );
+    LOG_DEBUG("Initializing %s Interface", deviceTctiName );
     rval = InitDeviceTcti(*tctiContext, &size, driverConfig );
     return rval;
 }
