@@ -54,6 +54,13 @@ AX_ADD_COMPILER_FLAG([-fPIC])
 
 AX_ADD_PREPROC_FLAG([-D_DEFAULT_SOURCE])
 
+AC_ARG_WITH([loglevel],
+            [AS_HELP_STRING([--with-loglevel={none,error,warning,info,debug,trace}],
+                            [sets the maximum log level (default is trace)])],
+            [],
+            [with_loglevel=trace])
+AC_DEFINE_UNQUOTED([LOGLEVEL], [$with_loglevel])
+
 AC_ARG_ENABLE([debug],
             [AS_HELP_STRING([--enable-debug],
                             [build with debug info (default is no)])],
