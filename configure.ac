@@ -45,7 +45,7 @@ gl_LD_VERSION_SCRIPT
 
 AX_ADD_COMPILER_FLAG([-Wall])
 AX_ADD_COMPILER_FLAG([-Werror])
-AX_ADD_COMPILER_FLAG([-std=gnu99])
+AX_ADD_COMPILER_FLAG([-std=c99])
 AX_ADD_COMPILER_FLAG([-Wformat])
 AX_ADD_COMPILER_FLAG([-Wformat-security])
 AX_ADD_COMPILER_FLAG([-fstack-protector-all])
@@ -58,6 +58,8 @@ AC_ARG_WITH([loglevel],
             [],
             [with_loglevel=trace])
 AC_DEFINE_UNQUOTED([LOGLEVEL], [$with_loglevel])
+
+AX_ADD_PREPROC_FLAG([-D_DEFAULT_SOURCE])
 
 AC_ARG_ENABLE([debug],
             [AS_HELP_STRING([--enable-debug],

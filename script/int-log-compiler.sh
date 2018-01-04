@@ -157,20 +157,47 @@ TEST_NAME=$(basename "${TEST_BIN}")
 SIM_LOG_FILE=${TEST_BIN}_simulator.log
 SIM_PID_FILE=${TEST_BIN}_simulator.pid
 SIM_TMP_DIR=$(mktemp --directory --tmpdir=/tmp tpm_server_XXXXXX)
-for i in $(seq 5); do
-    SIM_PORT=$(od -A n -N 2 -t u2 /dev/urandom | awk -v min=1024 -v max=65535 '{print ($1 % (max - min)) + min}')
-    simulator_start ${SIM_BIN} ${SIM_PORT} ${SIM_LOG_FILE} ${SIM_PID_FILE} ${SIM_TMP_DIR}
-    if [ $? -eq 0 ]; then
-        break;
-    else
-        echo "Failed to start simulator on port ${SIM_PORT}, retrying"
+PORT_MIN=1024
+PORT_MAX=65534
+BACKOFF_FACTOR=2
+BACKOFF_MAX=6
+BACKOFF=1
+for i in $(seq ${BACKOFF_MAX}); do
+    SIM_PORT_DATA=$(od -A n -N 2 -t u2 /dev/urandom | awk -v min=${PORT_MIN} -v max=${PORT_MAX} '{print ($1 % (max - min)) + min}')
+    if [ $(expr ${SIM_PORT_DATA} % 2) -eq 1 ]; then
+        SIM_PORT_DATA=$((${SIM_PORT_DATA}-1))
+    fi
+    SIM_PORT_CMD=$((${SIM_PORT_DATA}+1))
+    echo "Starting simulator on port ${SIM_PORT_DATA}"
+    simulator_start ${SIM_BIN} ${SIM_PORT_DATA} ${SIM_LOG_FILE} ${SIM_PID_FILE} ${SIM_TMP_DIR}
+    sleep 1 # give daemon time to bind to ports
+    PID=$(cat ${SIM_PID_FILE})
+    echo "simulator PID: ${PID}";
+    netstat -ltpn 2> /dev/null | grep "${PID}" | grep -q "${SIM_PORT_DATA}"
+    ret_data=$?
+    netstat -ltpn 2> /dev/null | grep "${PID}" | grep -q "${SIM_PORT_CMD}"
+    ret_cmd=$?
+    if [ \( $ret_data -eq 0 \) -a \( $ret_cmd -eq 0 \) ]; then
+        echo "Simulator with PID ${PID} bound to port ${SIM_PORT_DATA} and " \
+             "${SIM_PORT_CMD} successfully.";
+        break
+    fi
+    echo "Port conflict? Cleaning up PID: ${PID}"
+    kill "${PID}"
+    BACKOFF=$((${BACKOFF}*${BACKOFF_FACTOR}))
+    echo "Failed to start simulator: port ${SIM_PORT_DATA} or " \
+         "${SIM_PORT_CMD} probably in use. Retrying in ${BACKOFF}."
+    sleep ${BACKOFF}
+    if [ $i -eq 10 ]; then
+        echo "Failed to start simulator after $i tries. Giving up.";
+        exit 1
     fi
 done
 
 # execute the test script
 env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
-    TPM20TEST_SOCKET_PORT="${SIM_PORT}" \
+    TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
     G_MESSAGES_DEBUG=all $@
 ret=$?
 
