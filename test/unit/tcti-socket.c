@@ -34,7 +34,6 @@
 
 #include "sapi/tpm20.h"
 #include "tcti/tcti.h"
-#include "tcti/logging.h"
 #include "tcti/tcti_socket.h"
 
 /* When passed all NULL values ensure that we get back the expected RC. */
@@ -168,134 +167,6 @@ tcti_socket_init_from_conf (TCTI_SOCKET_CONF *conf)
     assert_int_equal (ret, TSS2_RC_SUCCESS);
     return ctx;
 }
-/* begin tcti_socket_init_log */
-/*
- * This test configures the socket TCTI with a logging callback and some user
- * data. It checks to be sure that the initialization function sets the
- * internal data in the TCTI to use / point to this data accordingly.
- */
-int
-tcti_socket_init_log_callback (void        *data,
-                               printf_type  type,
-                               const char  *format,
-                               ...)
-{
-    return 0;
-}
-
-static void
-tcti_socket_init_log_test (void **state)
-{
-    uint8_t my_data = 0x9;
-    TSS2_TCTI_CONTEXT *ctx = NULL;
-    TCTI_SOCKET_CONF conf = {
-        "localhost", 666, tcti_socket_init_log_callback, NULL, &my_data
-    };
-
-    ctx = tcti_socket_init_from_conf (&conf);
-    assert_true (TCTI_LOG_CALLBACK (ctx) == tcti_socket_init_log_callback);
-    assert_int_equal (*(uint8_t*)TCTI_LOG_DATA (ctx), my_data);
-    if (ctx)
-        free (ctx);
-}
-/* end tcti_socket_init_log */
-
-/* begin tcti_socket_init_buff_log */
-/*
- * This test configures the socket TCTI with the buffer logging callback and
- * some user data. It checks to be sure that the initialization function sets
- * the internal data in the TCTI to use / point to this data accordingly.
- */
-int
-tcti_socket_init_log_buffer_callback (void        *data,
-                                      printf_type  type,
-                                      uint8_t     *buffer,
-                                      uint32_t     length)
-{
-    return 0;
-}
-
-static void
-tcti_socket_init_log_buffer_test (void **state)
-{
-    uint8_t my_data = 0x9;
-    TSS2_TCTI_CONTEXT *ctx = NULL;
-    TCTI_SOCKET_CONF conf = {
-        "localhost", 666, NULL, tcti_socket_init_log_buffer_callback, &my_data
-    };
-
-    ctx = tcti_socket_init_from_conf (&conf);
-    assert_true (TCTI_LOG_BUFFER_CALLBACK (ctx) == tcti_socket_init_log_buffer_callback);
-    assert_int_equal (*(uint8_t*)TCTI_LOG_DATA (ctx), my_data);
-    if (ctx)
-        free (ctx);
-}
-/* end tcti_socket_init_log */
-
-/* begin tcti_socket_log_called_test */
-/*
- * This test configures the socket TCTI with a logging callback and some user
- * data. It then invokes the logging function and checks to be sure that the
- * supplied user data is changed in the expected way.
- */
-int
-tcti_socket_log_called_callback (void        *data,
-                                 printf_type  type,
-                                 const char  *format,
-                                 ...)
-{
-    *(bool*)data = true;
-    return 0;
-}
-
-static void
-tcti_socket_log_called_test (void **state)
-{
-    bool called = false;
-    TSS2_TCTI_CONTEXT *ctx = NULL;
-    TCTI_SOCKET_CONF conf = {
-        "localhost", 666, tcti_socket_log_called_callback, NULL, &called
-    };
-
-    ctx = tcti_socket_init_from_conf (&conf);
-    TCTI_LOG (ctx, NO_PREFIX, "test log call");
-    if (ctx)
-        free (ctx);
-    assert_true (called);
-}
-/* end tcti_socket_init_log */
-/* begin tcti_socket_log_buffer_called_test */
-/*
- * This test configures the socket TCTI with the buffer logging callback and
- * some user data. It checks to be sure that when invoked, the buffer logging
- * callback sets the user data to a known value.
- */
-int
-tcti_socket_log_buffer_called_callback (void        *data,
-                                        printf_type  type,
-                                        uint8_t     *buffer,
-                                        uint32_t     length)
-{
-    *(bool*)data = true;
-    return 0;
-}
-
-static void
-tcti_socket_log_buffer_called_test (void **state)
-{
-    bool called = false;
-    TSS2_TCTI_CONTEXT *ctx = NULL;
-    TCTI_SOCKET_CONF conf = {
-        "localhost", 666, NULL, tcti_socket_log_buffer_called_callback, &called
-    };
-
-    ctx = tcti_socket_init_from_conf (&conf);
-    TCTI_LOG_BUFFER (ctx, NO_PREFIX, NULL, 0);
-    if (ctx)
-        free (ctx);
-    assert_true (called);
-}
-/* end tcti_socket_init_log */
 
 /*
  * This is a utility function to setup the "default" TCTI context.
@@ -307,9 +178,6 @@ tcti_socket_setup (void **state)
     TCTI_SOCKET_CONF conf = {
         .hostname          = "localhost",
         .port              = 666,
-        .logCallback       = NULL,
-        .logBufferCallback = NULL,
-        .logData           = NULL
     };
 
     ctx = tcti_socket_init_from_conf (&conf);
@@ -407,10 +275,6 @@ main (int   argc,
         cmocka_unit_test (tcti_socket_init_all_null_test),
         cmocka_unit_test (tcti_socket_init_size_test),
         cmocka_unit_test (tcti_socket_init_null_config_test),
-        cmocka_unit_test (tcti_socket_init_log_test),
-        cmocka_unit_test (tcti_socket_init_log_buffer_test),
-        cmocka_unit_test (tcti_socket_log_called_test),
-        cmocka_unit_test (tcti_socket_log_buffer_called_test),
         cmocka_unit_test_setup_teardown (tcti_socket_receive_success_test,
                                   tcti_socket_setup,
                                   tcti_socket_teardown),

@@ -1,5 +1,6 @@
 #include "tcti_util.h"
-#include "common/debug.h"
+#define LOGMODULE testtpmclient
+#include "log/log.h"
 
 TSS2_RC InitDeviceTctiContext( const TCTI_DEVICE_CONF *driverConfig, TSS2_TCTI_CONTEXT **tctiContext, const char *deviceTctiName )
 {
@@ -13,7 +14,7 @@ TSS2_RC InitDeviceTctiContext( const TCTI_DEVICE_CONF *driverConfig, TSS2_TCTI_C
 
     *tctiContext = malloc(size);
 
-    DebugPrintf( NO_PREFIX, "Initializing %s Interface\n", deviceTctiName );
+    LOG_DEBUG("Initializing %s Interface", deviceTctiName );
     rval = InitDeviceTcti(*tctiContext, &size, driverConfig );
     return rval;
 }

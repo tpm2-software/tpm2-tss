@@ -3,7 +3,8 @@
 
 #include "sapi/tpm20.h"
 
-#include "log.h"
+#define LOGMODULE test
+#include "log/log.h"
 #include "test.h"
 /*
  * This is an incredibly simple test to create the most simple session
@@ -30,7 +31,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     TPMI_SH_AUTH_SESSION   session_handle = 0;
     TPMT_SYM_DEF           symmetric      = { .algorithm = TPM2_ALG_NULL };
 
-    print_log ("StartAuthSession for TPM2_SE_POLICY (policy session)");
+    LOG_INFO("StartAuthSession for TPM2_SE_POLICY (policy session)");
     rc = Tss2_Sys_StartAuthSession (sapi_context,
                                     TPM2_RH_NULL,     /* tpmKey */
                                     TPM2_RH_NULL,     /* bind */
@@ -44,18 +45,22 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
                                     &nonce_tpm,      /* nonceTPM */
                                     0                /* rspAuthsArray */
                                     );
-    if (rc != TSS2_RC_SUCCESS)
-        print_fail ("Tss2_Sys_StartAuthSession failed: 0x%" PRIx32, rc);
-    print_log ("StartAuthSession for TPM2_SE_POLICY success! Session handle: "
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Tss2_Sys_StartAuthSession failed: 0x%" PRIx32, rc);
+        exit(1);
+    }
+    LOG_INFO("StartAuthSession for TPM2_SE_POLICY success! Session handle: "
                "0x%" PRIx32, session_handle);
     /*
      * Clean out the session we've created. Would be nice if we didn't have
      * to do this ...
      */
     rc = Tss2_Sys_FlushContext (sapi_context, session_handle);
-    if (rc != TSS2_RC_SUCCESS)
-        print_fail ("Tss2_Sys_FlushContext failed: 0x%" PRIx32, rc);
-    print_log ("Flushed context for session handle: 0x%" PRIx32 " success!",
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Tss2_Sys_FlushContext failed: 0x%" PRIx32, rc);
+        exit(1);
+    }
+    LOG_INFO("Flushed context for session handle: 0x%" PRIx32 " success!",
                session_handle);
 
     return 0;

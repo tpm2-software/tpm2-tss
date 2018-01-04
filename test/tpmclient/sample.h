@@ -38,7 +38,6 @@ extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 #include "syscontext.h"
-#include "common/debug.h"
 
 extern TSS2_TCTI_CONTEXT *resMgrTctiContext;
 extern TSS2_ABI_VERSION abiVersion;
@@ -219,8 +218,6 @@ UINT32 TpmComputeSessionHmac(
 
 TSS2_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM2_HANDLE handle1,
     TPM2_HANDLE handle2, TPMI_ALG_HASH authHash, TSS2_RC responseCode, TPM2B_DIGEST *pHash );
-
-void PrintSizedBuffer( TPM2B *sizedBuffer );
 
 void InitNullSession( TPMS_AUTH_COMMAND *nullSessionData );
 

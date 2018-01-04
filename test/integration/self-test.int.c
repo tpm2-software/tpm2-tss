@@ -1,5 +1,6 @@
 #include <stdio.h>
-#include "log.h"
+#define LOGMODULE test
+#include "log/log.h"
 #include "test.h"
 #include "sapi/tpm20.h"
 
@@ -13,16 +14,22 @@ int
 test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 {
     TSS2_RC rc;
-    print_log( "SelfTest tests started." );
+    LOG_INFO( "SelfTest tests started." );
     rc = Tss2_Sys_SelfTest( sapi_context, 0, YES, 0);
-    if (rc != TSS2_RC_SUCCESS)
-        print_fail("SelfTest FAILED! Response Code : 0x%x", rc);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("SelfTest FAILED! Response Code : 0x%x", rc);
+        exit(1);
+    }
     rc = Tss2_Sys_SelfTest( sapi_context, 0, NO, 0);
-    if (rc != TSS2_RC_SUCCESS)
-        print_fail("SelfTest FAILED! Response Code : 0x%x", rc);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("SelfTest FAILED! Response Code : 0x%x", rc);
+        exit(1);
+    }
     rc = Tss2_Sys_SelfTest(sapi_context, 0, YES, 0);
-    if (rc != TSS2_RC_SUCCESS)
-        print_fail("SelfTest FAILED! Response Code : 0x%x", rc);
-    print_log("SelfTest tests passed.");
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("SelfTest FAILED! Response Code : 0x%x", rc);
+        exit(1);
+    }
+    LOG_INFO("SelfTest tests passed.");
     return 0;
 }

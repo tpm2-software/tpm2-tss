@@ -50,9 +50,6 @@
 #define TCTI_MAGIC   0x7e18e9defa8bc9e2ULL
 #define TCTI_VERSION 0x1
 
-#define TCTI_LOG_CALLBACK(ctx) ((TSS2_TCTI_CONTEXT_INTEL*)ctx)->logCallback
-#define TCTI_LOG_DATA(ctx)     ((TSS2_TCTI_CONTEXT_INTEL*)ctx)->logData
-#define TCTI_LOG_BUFFER_CALLBACK(ctx) ((TSS2_TCTI_CONTEXT_INTEL*)ctx)->logBufferCallback
 #define TCTI_CONTEXT ((TSS2_TCTI_CONTEXT_COMMON_CURRENT *)(SYS_CONTEXT->tctiContext))
 
 typedef TSS2_RC (*TCTI_TRANSMIT_PTR)( TSS2_TCTI_CONTEXT *tctiContext, size_t size, uint8_t *command);
@@ -72,16 +69,9 @@ typedef struct {
               TSS2_TCTI_POLL_HANDLE *handles, size_t *num_handles);
     TSS2_RC (*setLocality) (TSS2_TCTI_CONTEXT *tctiContext, uint8_t locality);
     struct {
-        UINT32 debugMsgEnabled: 1;
+        UINT32 reserved: 1; /* Used to be debugMsgEnabled which is deprecated */
         UINT32 locality: 8;
         UINT32 commandSent: 1;
-        /*
-         * Used to add a prefix to RM debug messages.  This is ONLY used
-         * for TPM commands and responses as a way to differentiate
-         * RM generated TPM commands from application generated ones.
-         */
-        UINT32 rmDebugPrefix: 1;
-        /* Following two fields used to save partial response status in case receive buffer's too small. */
         UINT32 tagReceived: 1;
         UINT32 responseSizeReceived: 1;
         UINT32 protocolResponseSizeReceived: 1;
@@ -102,9 +92,6 @@ typedef struct {
     int devFile;
     UINT8 previousStage;            /* Used to check for sequencing errors. */
     unsigned char responseBuffer[4096];
-    TCTI_LOG_CALLBACK logCallback;
-    TCTI_LOG_BUFFER_CALLBACK logBufferCallback;
-    void *logData;
 } TSS2_TCTI_CONTEXT_INTEL;
 
 /*

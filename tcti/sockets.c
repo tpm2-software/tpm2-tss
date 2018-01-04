@@ -2,8 +2,9 @@
 #include <netinet/in.h>
 
 #include "tcti/tcti_socket.h"
-#include "common/debug.h"
 #include "sockets.h"
+#define LOGMODULE tcti
+#include "log/log.h"
 
 void WSACleanup() {}
 int WSAGetLastError() { return errno; }
@@ -63,14 +64,11 @@ TSS2_RC sendBytes( SOCKET tpmSock, const unsigned char *data, int len )
     return TSS2_RC_SUCCESS;
 }
 
-#define SAFE_CALL(func, ...) (func != NULL) ? func(__VA_ARGS__) : 0
 int
 InitSockets( const char *hostName,
              UINT16 port,
              SOCKET *otherSock,
-             SOCKET *tpmSock,
-             TCTI_LOG_CALLBACK debugfunc,
-             void* data )
+             SOCKET *tpmSock)
 {
     struct sockaddr_in otherService = { 0 };
     struct sockaddr_in tpmService = { 0 };
@@ -82,11 +80,11 @@ InitSockets( const char *hostName,
     *otherSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (*otherSock == INVALID_SOCKET)
     {
-        SAFE_CALL( debugfunc, data, NO_PREFIX, "socket creation failed with error = %d\n", WSAGetLastError() );
+        LOG_DEBUG("socket creation failed with error = %d", WSAGetLastError() );
         return(1);
     }
     else {
-        SAFE_CALL( debugfunc, data, NO_PREFIX, "socket created:  0x%x\n", *otherSock );
+        LOG_DEBUG("socket created:  0x%x", *otherSock );
         otherService.sin_family = AF_INET;
         otherService.sin_addr.s_addr = inet_addr( hostName );
         otherService.sin_port = htons(port + 1);
@@ -95,12 +93,12 @@ InitSockets( const char *hostName,
     *tpmSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (*tpmSock == INVALID_SOCKET)
     {
-        SAFE_CALL( debugfunc, data, NO_PREFIX, "socket creation failed with error = %d\n", WSAGetLastError() );
+        LOG_DEBUG("socket creation failed with error = %d", WSAGetLastError() );
         closesocket( *otherSock );
         return(1);
     }
     else {
-        SAFE_CALL( debugfunc, data, NO_PREFIX, "socket created:  0x%x\n", *tpmSock );
+        LOG_DEBUG("socket created:  0x%x", *tpmSock );
         tpmService.sin_family = AF_INET;
         tpmService.sin_addr.s_addr = inet_addr( hostName );
         tpmService.sin_port = htons( port );
@@ -130,31 +128,31 @@ InitSockets( const char *hostName,
     // Connect to server.
     iResult = connect(*otherSock, (SOCKADDR *) &otherService, sizeof (otherService));
     if (iResult == SOCKET_ERROR) {
-        SAFE_CALL( debugfunc, data, NO_PREFIX, "connect function failed with error: %d\n", WSAGetLastError() );
-        closesocket(*otherSock);
+        LOG_DEBUG("connect function failed with error: %d", WSAGetLastError() );
+        iResult = closesocket(*otherSock);
         WSACleanup();
         return 1;
     }
     else
     {
-        SAFE_CALL( debugfunc, data, NO_PREFIX, "Client connected to server on port:  %d\n", port + 1 );
+        LOG_DEBUG("Client connected to server on port:  %d", port + 1 );
     }
 
     // Connect to server.
     iResult = connect(*tpmSock, (SOCKADDR *) &tpmService, sizeof (tpmService));
     if (iResult == SOCKET_ERROR) {
-        SAFE_CALL( debugfunc, data, NO_PREFIX, "connect function failed with error: %d\n", WSAGetLastError() );
+        LOG_DEBUG("connect function failed with error: %d", WSAGetLastError() );
         iResult = closesocket(*otherSock);
         if (iResult == SOCKET_ERROR)
         {
-            SAFE_CALL( debugfunc, data, NO_PREFIX, "closesocket function failed with error: %d\n", WSAGetLastError() );
+            LOG_DEBUG("closesocket function failed with error: %d", WSAGetLastError() );
         }
         WSACleanup();
         return 1;
     }
     else
     {
-        SAFE_CALL( debugfunc, data, NO_PREFIX, "Client connected to server on port:  %d\n", port );
+        LOG_DEBUG("Client connected to server on port:  %d", port );
     }
 
     return 0;

@@ -50,9 +50,6 @@ TSS2_RC PlatformCommand(
 typedef struct {
     const char *hostname;
     uint16_t port;
-    TCTI_LOG_CALLBACK logCallback;
-    TCTI_LOG_BUFFER_CALLBACK logBufferCallback;
-    void *logData;
 } TCTI_SOCKET_CONF;
 
 TSS2_RC InitSocketTcti (

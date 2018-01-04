@@ -52,6 +52,13 @@ AX_ADD_COMPILER_FLAG([-fstack-protector-all])
 AX_ADD_COMPILER_FLAG([-fpic])
 AX_ADD_COMPILER_FLAG([-fPIC])
 
+AC_ARG_WITH([loglevel],
+            [AS_HELP_STRING([--with-loglevel={none,error,warning,info,debug,trace}],
+                            [sets the maximum log level (default is trace)])],
+            [],
+            [with_loglevel=trace])
+AC_DEFINE_UNQUOTED([LOGLEVEL], [$with_loglevel])
+
 AX_ADD_PREPROC_FLAG([-D_DEFAULT_SOURCE])
 
 AC_ARG_ENABLE([debug],

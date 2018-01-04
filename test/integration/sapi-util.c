@@ -25,7 +25,8 @@
  */
 #include <inttypes.h>
 
-#include "log.h"
+#define LOGMODULE testintegration
+#include "log/log.h"
 #include "sapi-util.h"
 /*
  * Use te provide SAPI context to create & load a primary key. The key will
@@ -76,7 +77,7 @@ create_primary_rsa_2048_aes_128_cfb (
     in_public.publicArea.parameters.rsaDetail.scheme.scheme = TPM2_ALG_NULL;
     in_public.publicArea.parameters.rsaDetail.keyBits = 2048;
 
-    print_log ("CreatePrimary RSA 2048, AES 128 CFB");
+    LOG_INFO("CreatePrimary RSA 2048, AES 128 CFB");
     rc = Tss2_Sys_CreatePrimary (sapi_context,
                                  TPM2_RH_OWNER,
                                  &sessions_cmd,
@@ -92,9 +93,10 @@ create_primary_rsa_2048_aes_128_cfb (
                                  &name,
                                  &sessions_rsp);
     if (rc == TPM2_RC_SUCCESS) {
-        print_log ("success");
+        LOG_INFO("success");
     } else {
-        print_fail ("CreatePrimary FAILED! Response Code : 0x%x", rc);
+        LOG_ERROR("CreatePrimary FAILED! Response Code : 0x%x", rc);
+        exit(1);
     }
 
     return rc;

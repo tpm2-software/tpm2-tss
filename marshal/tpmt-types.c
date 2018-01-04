@@ -32,7 +32,8 @@
 #include "sapi/tss2_mu.h"
 #include "sapi/tpm20.h"
 #include "tss2_endian.h"
-#include "log.h"
+#define LOGMODULE marshal
+#include "log/log.h"
 
 #define ADDR &
 #define VAL
@@ -52,7 +53,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     else if (!buffer) \
         return TSS2_MU_RC_BAD_REFERENCE; \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)src,  (uintptr_t)buffer, local_offset); \
 \
@@ -82,7 +83,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     else if (!dest) \
         return TSS2_MU_RC_BAD_REFERENCE; \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, local_offset); \
 \
@@ -116,7 +117,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     else if (!buffer) \
         return TSS2_MU_RC_BAD_REFERENCE; \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)src,  (uintptr_t)buffer, local_offset); \
 \
@@ -152,7 +153,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     memset(&tmp, '\0', sizeof(tmp)); \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, local_offset); \
 \
@@ -188,7 +189,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     else if (!buffer) \
         return TSS2_MU_RC_BAD_REFERENCE; \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)src,  (uintptr_t)buffer, local_offset); \
 \
@@ -221,7 +222,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     else if (!dest) \
         return TSS2_MU_RC_BAD_REFERENCE; \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, local_offset); \
 \
@@ -258,7 +259,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     else if (!buffer) \
         return TSS2_MU_RC_BAD_REFERENCE; \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)src,  (uintptr_t)buffer, local_offset); \
 \
@@ -298,7 +299,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     memset(&tmp, '\0', sizeof(tmp)); \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, local_offset); \
 \
@@ -339,7 +340,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     else if (!buffer) \
         return TSS2_MU_RC_BAD_REFERENCE; \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)src,  (uintptr_t)buffer, local_offset); \
 \
@@ -380,7 +381,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     else if (!dest) \
         return TSS2_MU_RC_BAD_REFERENCE; \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, local_offset); \
 \
@@ -425,7 +426,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     else if (!buffer) \
         return TSS2_MU_RC_BAD_REFERENCE; \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)src,  (uintptr_t)buffer, local_offset); \
 \
@@ -473,7 +474,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     memset(&tmp, '\0', sizeof(tmp)); \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, local_offset); \
 \

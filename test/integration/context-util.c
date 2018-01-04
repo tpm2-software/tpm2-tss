@@ -15,8 +15,6 @@ tcti_device_init (char const *device_path)
 {
     TCTI_DEVICE_CONF conf = {
         .device_path =device_path,
-        .logCallback = NULL,
-        .logData     = NULL,
     };
     size_t size;
     TSS2_RC rc;
@@ -48,8 +46,7 @@ tcti_device_init (char const *device_path)
 }
 /*
  * Initialize a socket TCTI instance using the provided options structure.
- * The hostname and port are the only configuration options used. Callbacks
- * for logging are set to NULL.
+ * The hostname and port are the only configuration options used.
  * The caller is returned a TCTI context structure that is allocated by this
  * function. This structure must be freed by the caller.
  */
@@ -60,9 +57,6 @@ tcti_socket_init (char const *address,
     TCTI_SOCKET_CONF conf = {
         .hostname          = address,
         .port              = port,
-        .logCallback       = NULL,
-        .logBufferCallback = NULL,
-        .logData           = NULL,
     };
     size_t size;
     TSS2_RC rc;

@@ -32,7 +32,8 @@
 #include "sapi/tss2_mu.h"
 #include "sapi/tpm20.h"
 #include "tss2_endian.h"
-#include "log.h"
+#define LOGMODULE marshal
+#include "log/log.h"
 
 #define TPM2B_MARSHAL(type) \
 TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
@@ -42,24 +43,24 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     TSS2_RC rc; \
 \
     if (src == NULL) { \
-        LOG (WARNING, "src param is NULL"); \
+        LOG_WARNING("src param is NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
     if (offset != NULL) { \
-        LOG (DEBUG, "offset non-NULL, initial value: %zu", *offset); \
+        LOG_DEBUG("offset non-NULL, initial value: %zu", *offset); \
         local_offset = *offset; \
     } \
     if (buffer == NULL && offset == NULL) { \
-        LOG (WARNING, "buffer and offset parameter are NULL"); \
+        LOG_WARNING("buffer and offset parameter are NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } else if (buffer == NULL && offset != NULL) { \
         *offset += sizeof(src->size) + src->size; \
-        LOG (INFO, "buffer NULL and offset non-NULL, updating offset to %zu", \
+        LOG_TRACE("buffer NULL and offset non-NULL, updating offset to %zu", \
              *offset); \
         return TSS2_RC_SUCCESS; \
     } else if (buffer_size < local_offset || \
                buffer_size - local_offset < (sizeof(src->size) + src->size)) { \
-        LOG (WARNING, \
+        LOG_WARNING(\
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
@@ -68,7 +69,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
         return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
     } \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", \
          (uintptr_t)&src, \
@@ -86,7 +87,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
 \
     if (offset != NULL) { \
         *offset = local_offset; \
-        LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
+        LOG_DEBUG("offset parameter non-NULL, updated to %zu", *offset); \
     } \
 \
     return TSS2_RC_SUCCESS; \
@@ -101,17 +102,17 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     TSS2_RC rc; \
 \
     if (offset != NULL) { \
-        LOG (DEBUG, "offset non-NULL, initial value: %zu", *offset); \
+        LOG_DEBUG("offset non-NULL, initial value: %zu", *offset); \
         local_offset = *offset; \
     } \
 \
     if (buffer == NULL || (dest == NULL && offset == NULL)) { \
-        LOG (WARNING, "buffer or dest and offset parameter are NULL"); \
+        LOG_WARNING("buffer or dest and offset parameter are NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } else if (buffer_size < local_offset || \
                sizeof(size) > buffer_size - local_offset) \
     { \
-        LOG (WARNING, \
+        LOG_WARNING(\
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
@@ -120,7 +121,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
         return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
     } \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", \
          (uintptr_t)buffer, \
@@ -132,7 +133,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
         return rc; \
 \
     if (size > buffer_size - local_offset) { \
-        LOG (WARNING, \
+        LOG_WARNING(\
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
@@ -147,7 +148,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     local_offset += size; \
     if (offset != NULL) { \
         *offset = local_offset; \
-        LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
+        LOG_DEBUG("offset parameter non-NULL, updated to %zu", *offset); \
     } \
 \
     return TSS2_RC_SUCCESS; \
@@ -162,26 +163,26 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     TSS2_RC rc; \
 \
     if (src == NULL) { \
-        LOG (WARNING, "src param is NULL"); \
+        LOG_WARNING("src param is NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
     if (offset != NULL) { \
-        LOG (DEBUG, "offset non-NULL, initial value: %zu", *offset); \
+        LOG_DEBUG("offset non-NULL, initial value: %zu", *offset); \
         local_offset = *offset; \
     } \
 \
     if (buffer == NULL && offset == NULL) { \
-        LOG (WARNING, "buffer and offset parameter are NULL"); \
+        LOG_WARNING("buffer and offset parameter are NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } else if (buffer == NULL && offset != NULL) { \
         *offset += sizeof(src->size) + src->size; \
-        LOG (INFO, "buffer NULL and offset non-NULL, updating offset to %zu", \
+        LOG_TRACE("buffer NULL and offset non-NULL, updating offset to %zu", \
              *offset); \
         return TSS2_RC_SUCCESS; \
     } else if (buffer_size < local_offset || \
                buffer_size - local_offset < sizeof(src->size)) { \
-        LOG (WARNING, \
+        LOG_WARNING(\
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
@@ -192,7 +193,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
 \
     ptr = &buffer[local_offset]; \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", \
          (uintptr_t)&src, \
@@ -212,7 +213,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
 \
     if (offset != NULL) { \
         *offset = local_offset; \
-        LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
+        LOG_DEBUG("offset parameter non-NULL, updated to %zu", *offset); \
     } \
 \
     return TSS2_RC_SUCCESS; \
@@ -227,17 +228,17 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     TSS2_RC rc; \
 \
     if (offset != NULL) { \
-        LOG (DEBUG, "offset non-NULL, initial value: %zu", *offset); \
+        LOG_DEBUG("offset non-NULL, initial value: %zu", *offset); \
         local_offset = *offset; \
     } \
 \
     if (buffer == NULL || (dest == NULL && offset == NULL)) { \
-        LOG (WARNING, "buffer or dest and offset parameter are NULL"); \
+        LOG_WARNING("buffer or dest and offset parameter are NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } else if (buffer_size < local_offset || \
                sizeof(size) > buffer_size - local_offset) \
     { \
-        LOG (WARNING, \
+        LOG_WARNING(\
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
@@ -246,11 +247,11 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
         return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
     } \
     if (dest && dest->size != 0) { \
-        LOG (WARNING, "Size not zero"); \
+        LOG_WARNING("Size not zero"); \
         return TSS2_SYS_RC_BAD_VALUE; \
     } \
 \
-    LOG (DEBUG, \
+    LOG_DEBUG(\
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", \
          (uintptr_t)buffer, \
@@ -262,7 +263,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
         return rc; \
 \
     if (size > buffer_size - local_offset) { \
-        LOG (WARNING, \
+        LOG_WARNING(\
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
@@ -281,7 +282,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     if (offset != NULL) { \
         *offset = local_offset; \
-        LOG (DEBUG, "offset parameter non-NULL, updated to %zu", *offset); \
+        LOG_DEBUG("offset parameter non-NULL, updated to %zu", *offset); \
     } \
 \
     return TSS2_RC_SUCCESS; \

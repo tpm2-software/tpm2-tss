@@ -1,6 +1,7 @@
 #include <stdbool.h>
 
-#include "log.h"
+#define LOGMODULE test
+#include "log/log.h"
 #include "test.h"
 #include "test-options.h"
 #include "context-util.h"
@@ -32,8 +33,10 @@ main (int   argc,
     if (sapi_context == NULL)
         exit (1);
     rc = Tss2_Sys_Startup(sapi_context, TPM2_SU_CLEAR);
-    if (rc != TSS2_RC_SUCCESS && rc != TPM2_RC_INITIALIZE)
-        print_fail("TPM Startup FAILED! Response Code : 0x%x", rc);
+    if (rc != TSS2_RC_SUCCESS && rc != TPM2_RC_INITIALIZE) {
+        LOG_ERROR("TPM Startup FAILED! Response Code : 0x%x", rc);
+        exit(1);
+    }
     ret = test_invoke (sapi_context);
     sapi_teardown_full (sapi_context);
     return ret;

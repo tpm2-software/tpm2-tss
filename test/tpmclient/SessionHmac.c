@@ -31,6 +31,8 @@
 #include <stdlib.h>
 #include "sysapi_util.h"
 #include "tss2_endian.h"
+#define LOGMODULE test
+#include "log/log.h"
 
 //
 // This function calculates the session HMAC and updates session state.
@@ -115,11 +117,7 @@ UINT32 TpmComputeSessionHmac(
         if( rval != TPM2_RC_SUCCESS )
             return rval;
     }
-
-#ifdef  DEBUG
-    DebugPrintf( 0, "\n\nhmacKey = " );
-    PrintSizedBuffer(&hmacKey);
-#endif
+    LOGBLOB_DEBUG(&hmacKey.buffer[0], hmacKey.size, "hmacKey=");
 
     // Create buffer list
     i = 0;
@@ -133,12 +131,13 @@ UINT32 TpmComputeSessionHmac(
     bufferList[i++] = &sessionAttributesByteBuffer;
     bufferList[i++] = 0;
 
-#ifdef  DEBUG
-    for( i = 0; bufferList[i] != 0; i++ )
-    {
-        DebugPrintf( 0, "\n\nbufferlist[%d]:\n", i );
-        PrintSizedBuffer( bufferList[i] );
-    }
+#if LOGLEVEL == LOGLEVEL_DEBUG || \
+    LOGLEVEL == LOGLEVEL_TRACE
+        for(int j = 0; bufferList[j] != 0; j++ )
+        {
+            LOGBLOB_DEBUG(&bufferList[j]->buffer[0], bufferList[j]->size, 
+                "bufferlist[%d]:", j);
+        }
 #endif
 
     rval = TpmHmac(pSession->authHash, (TPM2B *)&hmacKey, bufferList, result);
