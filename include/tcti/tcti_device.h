@@ -37,8 +37,6 @@ extern "C" {
 
 typedef struct {
     const char *device_path;
-    TCTI_LOG_CALLBACK logCallback;
-    void *logData;
 } TCTI_DEVICE_CONF;
 
 TSS2_RC InitDeviceTcti (
