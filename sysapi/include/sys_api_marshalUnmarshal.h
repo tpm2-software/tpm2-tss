@@ -984,5 +984,14 @@ void Unmarshal_TPMS_CREATION_DATA(
 	TPMS_CREATION_DATA *creationData
 	);
 
+void Unmarshal_TPMS_AC_OUTPUT(
+	TSS2_SYS_CONTEXT *sysContext,
+	TPMS_AC_OUTPUT *acDataOut
+	);
+
+void Unmarshal_TPML_AC_CAPABILITIES(
+	TSS2_SYS_CONTEXT *sysContext,
+	TPML_AC_CAPABILITIES *capabilityData
+	);
 
 #endif
