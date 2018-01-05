@@ -137,7 +137,10 @@ COMMAND_HANDLES commandArray[] =
     { TPM_CC_NV_Read, 2, 0 },
     { TPM_CC_NV_ReadLock, 2, 0 },
     { TPM_CC_NV_ChangeAuth, 1, 0 },
-    { TPM_CC_NV_Certify, 3, 0 }
+    { TPM_CC_NV_Certify, 3, 0 },
+    { TPM_CC_AC_GetCapability, 1, 0 },
+    { TPM_CC_AC_Send, 3, 0 },
+    { TPM_CC_Policy_AC_SendSelect, 1, 0 }
 };
 
 int GetNumCommandHandles( TPM_CC commandCode )

@@ -48,6 +48,8 @@
 #define    MAX_PCR_PROPERTIES   (MAX_CAP_DATA/sizeof(TPMS_TAGGED_PCR_SELECT))
 #define    MAX_ECC_CURVES       (MAX_CAP_DATA/sizeof(TPM_ECC_CURVE))
 #define    MAX_PTT_PROPERTIES   (MAX_CAP_DATA/sizeof(UINT32))
+/* Attached Component Capabilities */
+#define TPM2_MAX_AC_CAPABILITIES (MAX_CAP_DATA/sizeof(TPMS_AC_OUTPUT))
 
 /* Table 4  Defines for Logic Values */
 #define	TRUE	1
@@ -1963,4 +1965,30 @@ typedef	struct {
 /* Table 206  Definition of TPM2B_CREATION_DATA Structure <OUT> */
 TPM2B_TYPE2( CREATION_DATA, TPMS_CREATION_DATA, creationData );
 
+typedef UINT32 TPM_AT;
+
+/* Definition of (UINT32) TPM_AT Constants.
+ * Note: values of 0x80000000 through 0xFFFFFFFF are reserved for vendor-specific use */
+#define TPM_AT_ANY   0x00000000 /* In a command, a non-specific request for AC information. In a response, indicates that outputData is not meaningful */
+#define TPM_AT_ERROR 0x00000001 /* Indicates a TCG defined, device-specific error */
+#define TPM_AT_PV1   0x00000002 /* Indicates the most significant 32 bits of a pairing value for the AC */
+#define TPM_AT_VEND  0x80000000 /* Value added to a TPM_AT to indicate a vendor-specific tag value */
+
+typedef UINT32 TPM_EA;
+
+#define TPM_AE_NONE  0x00000000 /* In a command, a non-specific request for AC information. In a response, indicates that outputData is not meaningful */
+
+typedef TPM_HANDLE TPMI_RH_AC; /* Interface used to identify an attached component */
+
+/* Definition of TPMS_AC_OUTPUT Structure <OUT> */
+typedef struct {
+    TPM_AT tag; /* Indicates the contents of data */
+    UINT32 data; /* Data returned from the AC */
+} TPMS_AC_OUTPUT;
+
+/* Definition of TPML_AC_CAPABILITIES Structure <OUT> */
+typedef struct {
+    UINT32 count; /* Number of values in the acCapabilities list. May be 0 */
+    TPMS_AC_OUTPUT acCapabilities[TPM2_MAX_AC_CAPABILITIES]; /* List of AC values */
+} TPML_AC_CAPABILITIES;
 #endif

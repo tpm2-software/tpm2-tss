@@ -247,6 +247,9 @@
 #define  CC_PolicyNvWritten               CC_YES
 #define  CC_EncryptDecrypt2               CC_YES
 #define  CC_Vendor_TCG_Test               CC_YES
+#define  CC_AC_GetCapability              CC_YES
+#define  CC_AC_Send                       CC_YES
+#define  CC_Policy_AC_SendSelect          CC_YES
 
 // From Vendor-Specific: Table 7 - Defines for Implementation Values
 
@@ -1204,7 +1207,29 @@ typedef  UINT32             TPM_CC;
 #if CC_EncryptDecrypt2 == YES
 #define  TPM_CC_EncryptDecrypt2               (TPM_CC)(0x00000193)
 #endif
-#define  TPM_CC_LAST                          (TPM_CC)(0x00000193)
+
+#ifndef CC_AC_GetCapability
+#define CC_AC_GetCapability NO
+#endif
+#if CC_AC_GetCapability == YES
+#define  TPM_CC_AC_GetCapability              (TPM_CC)(0x00000194)
+#endif
+
+#ifndef CC_AC_Send
+#define CC_AC_Send NO
+#endif
+#if CC_AC_Send == YES
+#define  TPM_CC_AC_Send                       (TPM_CC)(0x00000195)
+#endif
+
+#ifndef CC_Policy_AC_SendSelect
+#define CC_Policy_AC_SendSelect NO
+#endif
+#if CC_Policy_AC_SendSelect == YES
+#define  TPM_CC_Policy_AC_SendSelect          (TPM_CC)(0x00000196)
+#endif
+
+#define  TPM_CC_LAST                          (TPM_CC)(0x00000196)
 #ifndef CC_Vendor_TCG_Test
 #   define CC_Vendor_TCG_Test NO
 #endif
