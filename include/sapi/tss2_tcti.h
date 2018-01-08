@@ -165,7 +165,7 @@ TSS2_TCTI_POLL_HANDLE *handles, size_t *num_handles);
 
 typedef TSS2_TCTI_CONTEXT_COMMON_V1 TSS2_TCTI_CONTEXT_COMMON_CURRENT;
 
-#define TCTI_INFO_SYMBOL "Tss2_Tcti_Info"
+#define TSS2_TCTI_INFO_SYMBOL "Tss2_Tcti_Info"
 
 typedef TSS2_RC (*TSS2_TCTI_INIT_FUNC) (
     TSS2_TCTI_CONTEXT *tctiContext,
