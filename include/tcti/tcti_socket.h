@@ -40,6 +40,8 @@ extern "C" {
 
 #define DEFAULT_HOSTNAME        "127.0.0.1"
 
+#define TCTI_SOCKET_DEFAULT "tcp://127.0.0.1:2321"
+
 /* global data defined in the socket TCTI */
 extern int (*printfFunction)( printf_type type, const char *format, ...);
 

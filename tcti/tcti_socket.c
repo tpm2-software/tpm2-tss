@@ -44,8 +44,6 @@
 #define LOGMODULE tcti
 #include "log/log.h"
 
-#define TCTI_SOCKET_DEFAULT "tcp://127.0.0.1:2321"
-
 static TSS2_RC tctiRecvBytes (
     TSS2_TCTI_CONTEXT *tctiContext,
     SOCKET sock,
@@ -606,7 +604,8 @@ out:
 const static TSS2_TCTI_INFO tss2_tcti_info = {
     .name = "tcti-socket",
     .description = "TCTI module for communication with the Microsoft TPM2 Simulator.",
-    .config_help = "Connection URI in the form tcp://ip_address[:port]. Default is tcp://127.0.0.1:2321.",
+    .config_help = "Connection URI in the form tcp://ip_address[:port]. " \
+        "Default is: TCTI_SOCKET_DEFAULT.",
     .init = Tss2_Tcti_Socket_Init,
 };
 
