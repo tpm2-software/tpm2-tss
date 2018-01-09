@@ -131,7 +131,7 @@ test_unit_tcti_socket_SOURCES = tcti/platformcommand.c tcti/tcti_socket.cpp \
 
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_CommonPreparePrologue_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
-test_unit_CommonPreparePrologue_LDADD = $(CMOCKA_LIBS)
+test_unit_CommonPreparePrologue_LDADD = $(CMOCKA_LIBS) $(libsapi)
 test_unit_CommonPreparePrologue_SOURCES = \
     test/unit/CommonPreparePrologue.c sysapi/sysapi_util/CommandUtil.c \
     sysapi/sysapi/ContextManagement.c
@@ -142,7 +142,7 @@ test_unit_GetNumHandles_SOURCES = test/unit/GetNumHandles.c
 
 test_unit_CopyCommandHeader_CFLAGS = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_CopyCommandHeader_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
-test_unit_CopyCommandHeader_LDADD = $(CMOCKA_LIBS)
+test_unit_CopyCommandHeader_LDADD = $(CMOCKA_LIBS) $(libsapi)
 test_unit_CopyCommandHeader_SOURCES = \
     test/unit/CopyCommandHeader.c sysapi/sysapi_util/CommandUtil.c \
     sysapi/sysapi/ContextManagement.c sysapi/sysapi_util/changeEndian.c
