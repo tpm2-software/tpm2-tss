@@ -70,6 +70,12 @@ underscores.
 Objects created using the GObject system follow the GObject naming convention
 with individual words in object names as upper case characters.
 
+### Exceptions
+Exceptions to these rules are made for compliance with the TCG
+specifications. All function names, parameters, and other data types must
+be implemented faithfully to the specification and so may violate the naming
+conventions defined here.
+
 ### Examples
 ```c
 unsigned int table_index = find_index(jacket_table, “color”, COLOR_RED);
