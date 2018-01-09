@@ -12,6 +12,12 @@
 #define LOGDEFAULT LOGLEVEL_WARNING
 #endif
 
+#if defined (__GNUC__)
+#define COMPILER_ATTR(...) __attribute__((__VA_ARGS__))
+#else
+#define COMPILER_ATTR(...)
+#endif
+
 typedef enum {
     LOGLEVEL_NONE     = 0,
     LOGLEVEL_ERROR    = 1,
@@ -22,7 +28,7 @@ typedef enum {
     LOGLEVEL_UNDEFINED    = 0xff
 } log_level;
 
-static const char *log_strings[] __attribute__((unused)) = {
+static const char *log_strings[] COMPILER_ATTR(unused) = {
     "none",
     "ERROR",
     "WARNING",
@@ -34,7 +40,7 @@ static const char *log_strings[] __attribute__((unused)) = {
 #define xstr(s) str(s)
 #define str(s) #s
 
-static log_level LOGMODULE_status __attribute__((unused)) = LOGLEVEL_UNDEFINED;
+static log_level LOGMODULE_status COMPILER_ATTR(unused) = LOGLEVEL_UNDEFINED;
 
 #if LOGLEVEL == LOGLEVEL_ERROR || \
     LOGLEVEL == LOGLEVEL_WARNING || \
@@ -136,13 +142,13 @@ doLog(log_level loglevel, const char *module, log_level logdefault,
        log_level *status,
        const char *file, const char *func, int line,
        const char *msg, ...)
-    __attribute__((unused, format (printf, 8, 9)));
+    COMPILER_ATTR(unused, format (printf, 8, 9));
 
 void
 doLogBlob(log_level loglevel, const char *module, log_level logdefault,
           log_level *status,
           const char *file, const char *func, int line,
           const uint8_t *buffer, size_t size, const char *msg, ...)
-    __attribute__((unused, format (printf, 10, 11)));
+    COMPILER_ATTR(unused, format (printf, 10, 11));
 
 #endif /* LOG_H */
