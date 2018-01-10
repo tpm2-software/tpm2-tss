@@ -57,6 +57,7 @@ AX_ADD_COMPILER_FLAG([-fpic])
 AX_ADD_COMPILER_FLAG([-fPIC])
 
 AX_ADD_PREPROC_FLAG([-D_DEFAULT_SOURCE])
+AX_ADD_PREPROC_FLAG([-D_BSD_SOURCE])
 
 AC_ARG_WITH([loglevel],
             [AS_HELP_STRING([--with-loglevel={none,error,warning,info,debug,trace}],
