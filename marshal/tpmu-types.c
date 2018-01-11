@@ -240,18 +240,44 @@ static TSS2_RC unmarshal_null(uint8_t const buffer[], size_t buffer_size,
     return TSS2_RC_SUCCESS;
 }
 
-/* In order to marshal TPM Union types, which differ in number of members,
- * their types, and don't have any common pattern, Variadic Macros will be used.
- * It allows the macros to accept variable number of arguments.
- * An intermediate TPMU_(UN)MARSHAL2(...) macro is defined, which can be
- * called with any number of params, (upto 34, which is the max needed).
- * The intermediate macro then calls the real TPMU_(UN)MARSHAL() macro,
- * passing the number of parameters required for given type and filling
- * the gap with the first member and fake selector -1, -2, etc.
- * That way the <TYPE>_Marshal functions generated can handle up to 11
- * mamebers, but only the first required cases for a given <TYPE> are valid
- * and the rest is filled with the fisrt member, fake selectors, and a fake
- * function (un)marshal_null().
+/*
+ * The TPMU_* types are unions with some number of members. The marshal
+ * function for each union uses the provided selector value to identify the
+ * member from the union that's written to the buffer. This is a pattern
+ * that can be leveraged to generate the function bodies using macros.
+ *
+ * The TPMU_MARSHAL macro is used to generate these function bodies. It is
+ * used below, once to define the marshalling function for each of the 15
+ * unique TPMU_* types. The parameters are:
+ *   type - The type of the TPMU_* being marshalled. This is used to
+ *       generate the name of the function and the type of its first
+ *       parameter.
+ *   The remaining parameters are grouped as 4-tuples. There are 11 of them,
+ *       each defined as <selector, operator, member, function> where:
+ *       selector - The constant value, typically from a table in some TCG
+ *           registry, that the generated function will use to select the
+ *           member marshalled / written in network byte order to the buffer.
+ *       operator - The member being marshalled may be passed by value or
+ *           reference to its marshalling function. If it's by value this
+ *           should be 'VAL', if by reference 'ADDR'.
+ *       member - The name of the member data from the union passed to the
+ *           marshalling function (the next parameter).
+ *       function - A function capable of marshalling the 'member' from the
+ *           TPMU_* being marshalled.
+ *
+ * This macro takes 11 such 4-tuples. This is the maximum number of members
+ * in the TPMU_* types. All parameters after the first 45 parameters (11*4+1)
+ * are taken as variadic arguments (...) but they are ignored. The reason for
+ * this is documented with the TPMU_MARSHAL2 macro below.
+ *
+ * NOTE: this macro must be passed 11 4-tuples even when defining TPMU_* types
+ * with fewer than 11 members. The extra tuples should be defined as:
+ * <-X, ADDR, m, marshal_null> where:
+ *     -X - A unique negative constant value.
+ *     ADDR - The macro defined at the top of this file.
+ *     m - Any valid member from the TPMU_* being marshalled.
+ *     marshal_null - A function defined above that is effectively a
+ *         marshalling no-op.
  */
 #define TPMU_MARSHAL(type, sel, op, m, fn, sel2, op2, m2, fn2, sel3, op3, m3, fn3, \
                      sel4, op4, m4, fn4, sel5, op5, m5, fn5, sel6, op6, m6, fn6, \
