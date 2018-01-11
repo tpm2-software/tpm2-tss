@@ -333,6 +333,29 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buf
     return ret; \
 }
 
+/*
+ * The TPMU_MARSHAL2 macro is a thin wrapper around the TPMU_MARSHAL macro.
+ * This macro is designed to keep us from having to provide dummy 4-tuples
+ * to satisfy the required 45 (11*4+1) parameters required by TPMU_MARSHAL.
+ *
+ * It does this by accepting the tuples describing the variable number of
+ * members in a TPMU_* union (except for the first one) as variadic
+ * arguments. It passes the supplied tuples to TPMU_MARSHAL while providing
+ * additional no-op tuples to pad out the remaining required parameters to
+ * the TPMU_MARSHAL macro.
+ *
+ * NOTE: Remember that all parameters to the TPMU_MARSHAL macro beyond the
+ * first 45 are variadic parameters and are ignored by the macro. This
+ * allows the TPMU_MARSHAL2 macro to provide the maximum required no-op
+ * tuples.
+ * e.g. The TPMU_* unions have between 2 and 11 members. A 2 member
+ * TPMU_* will require 9 no-op tuples to provide 45 parameters to the
+ * TPMU_MARSHAL macro (note the 9 no-op tuples used in the TPMU_MARSHAL2
+ * macro). The largest TPMU_* with 11 members will need to provide 0 no-op
+ * tuples. In this last case the 9 no-op tuples provided by the
+ * TPMU_MARSHAL2 macro will fall into the variadic parameters accepted by
+ * TPMU_MARSHAL and they will be ignored.
+ */
 #define TPMU_MARSHAL2(type, sel, op, m, fn, ...) \
     TPMU_MARSHAL(type, sel, op, m, fn, __VA_ARGS__, -1, ADDR, m, marshal_null, \
                  -2, ADDR, m, marshal_null, -3, ADDR, m, marshal_null, \
