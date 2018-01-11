@@ -363,6 +363,14 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buf
                  -6, ADDR, m, marshal_null, -7, ADDR, m, marshal_null, \
                  -8, ADDR, m, marshal_null, -9, ADDR, m, marshal_null)
 
+/*
+ * The TPMU_UNMARSHAL macro functions in the same way as the TPMU_MARSHAL
+ * macro. The main difference is that instead of a 4-tuple of <selector,
+ * operator, member, function> we remove the operator element and have
+ * a 3-tuple of <selector, member, function>. The operator element isn't
+ * needed because the first parameter to the function element is always a
+ * referenece (never a value).
+ */
 #define TPMU_UNMARSHAL(type, sel, m, fn, sel2, m2, fn2, sel3, m3, fn3, \
                        sel4, m4, fn4, sel5, m5, fn5, sel6, m6, fn6, sel7, m7, fn7, \
                        sel8, m8, fn8, sel9, m9, fn9, sel10, m10, fn10, sel11, m11, fn11, ...) \
@@ -411,6 +419,11 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     return ret; \
 }
 
+/*
+ * The TPMU_UNMARSHAL2 operates on the same principles as the TPMU_MARSHAL2
+ * function. The difference again is that the <selector, member, function>
+ * tuple is a 3-tuple (not the 4-tuple used by TPMU_MARSHAL2).
+ */
 #define TPMU_UNMARSHAL2(type, sel, m, fn, ...) \
     TPMU_UNMARSHAL(type, sel, m, fn, __VA_ARGS__, -1, m, unmarshal_null, \
             -2, m, unmarshal_null, -3, m, unmarshal_null, -4, m, unmarshal_null, \
