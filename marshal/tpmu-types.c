@@ -519,3 +519,10 @@ TPMU_UNMARSHAL2(TPMU_PUBLIC_PARMS, TPM2_ALG_KEYEDHASH, keyedHashDetail, Tss2_MU_
                 TPM2_ALG_SYMCIPHER, symDetail, Tss2_MU_TPMS_SYMCIPHER_PARMS_Unmarshal,
                 TPM2_ALG_RSA, rsaDetail, Tss2_MU_TPMS_RSA_PARMS_Unmarshal,
                 TPM2_ALG_ECC, eccDetail, Tss2_MU_TPMS_ECC_PARMS_Unmarshal)
+
+TPMU_MARSHAL2(TPMU_NAME,
+    1, ADDR, digest, Tss2_MU_TPMT_HA_Marshal,
+    0, VAL, handle, Tss2_MU_TPM2_HANDLE_Marshal)
+TPMU_UNMARSHAL2(TPMU_NAME,
+    1, digest, Tss2_MU_TPMT_HA_Unmarshal,
+    0, handle, Tss2_MU_TPM2_HANDLE_Unmarshal)
