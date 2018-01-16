@@ -151,4 +151,22 @@ doLogBlob(log_level loglevel, const char *module, log_level logdefault,
           const uint8_t *buffer, size_t size, const char *msg, ...)
     COMPILER_ATTR(unused, format (printf, 10, 11));
 
+#if defined(_MSC_VER)
+inline char*
+index (const char *s,
+       int c)
+{
+    return strchr(s, c);
+}
+
+#define _CRT_DECLARE_NONSTDC_NAMES 1
+#include <string.h>
+inline int
+strncasecmp (const char *s1,
+             const char *s2,
+             size_t len)
+{
+    return _strnicmp(s1, s2, len);
+}
+#endif /* _MSC_VER */
 #endif /* LOG_H */
