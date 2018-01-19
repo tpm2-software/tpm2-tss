@@ -27,6 +27,7 @@ doLogBlob(log_level loglevel, const char *module, log_level logdefault,
     size_t width = 8;
     size_t buffer_size = (size * 2) + (size / width) * 2 + 1;
     char buffer[buffer_size];
+    buffer[0] = '\0';
     for (size_t i = 0, off = 0; i < size && off < buffer_size; i++, off+=2) {
         if (width < buffer_size && i % width == 0) {
             *(&buffer[0] + off) = '\n';
