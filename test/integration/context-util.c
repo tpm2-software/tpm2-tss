@@ -153,6 +153,17 @@ tcti_init_from_opts (test_opts_t *options)
     }
 }
 /*
+ * Teardown / Finalize TCTI context and free memory.
+ */
+void
+tcti_teardown (TSS2_TCTI_CONTEXT *tcti_context)
+{
+    if (tcti_context) {
+        Tss2_Tcti_Finalize (tcti_context);
+        free (tcti_context);
+    }
+}
+/*
  * Teardown and free the resoruces associted with a SAPI context structure.
  * This includes tearing down the TCTI as well.
  */
@@ -167,8 +178,5 @@ sapi_teardown_full (TSS2_SYS_CONTEXT *sapi_context)
         return;
     Tss2_Sys_Finalize (sapi_context);
     free (sapi_context);
-    if (tcti_context) {
-        Tss2_Tcti_Finalize (tcti_context);
-        free (tcti_context);
-    }
+    tcti_teardown (tcti_context);
 }

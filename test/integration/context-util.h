@@ -13,6 +13,7 @@ TSS2_TCTI_CONTEXT*    tcti_socket_init    (char const         *address,
                                            uint16_t            port);
 TSS2_TCTI_CONTEXT*    tcti_init_from_opts (test_opts_t        *options);
 TSS2_SYS_CONTEXT*     sapi_init_from_opts (test_opts_t        *options);
+void                  tcti_teardown       (TSS2_TCTI_CONTEXT  *tcti_context);
 void                  sapi_teardown_full  (TSS2_SYS_CONTEXT   *sapi_context);
 
 #endif /* CONTEXT_UTIL_H */

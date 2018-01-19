@@ -32,10 +32,10 @@
 #include <string.h>
 
 #include "sapi/tpm20.h"
+#include "../integration/context-util.h"
 #include "../integration/sapi-util.h"
 #include "sample.h"
 #include "tpmclient.h"
-#include "tcti_util.h"
 #include "tss2_endian.h"
 #include "sysapi_util.h"
 #include "tcti/tcti_device.h"
@@ -168,7 +168,8 @@ void Cleanup()
     if( resMgrTctiContext != 0 )
     {
         PlatformCommand( resMgrTctiContext, MS_SIM_POWER_OFF );
-        TeardownTctiContext( &resMgrTctiContext );
+        tcti_teardown (resMgrTctiContext);
+        resMgrTctiContext = NULL;
     }
 
     exit(1);

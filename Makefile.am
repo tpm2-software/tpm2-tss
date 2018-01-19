@@ -237,8 +237,7 @@ test_tpmclient_tpmclient_int_SOURCES  = \
     test/tpmclient/sample.h test/tpmclient/TpmHmac.c \
     test/tpmclient/SessionHmac.c test/tpmclient/SetLocality.c \
     test/tpmclient/StartAuthSession.c test/tpmclient/syscontext.c \
-    test/tpmclient/syscontext.h test/tpmclient/tcti_util.c \
-    test/tpmclient/tcti_util.h test/tpmclient/TpmCalcPHash.c \
+    test/tpmclient/syscontext.h test/tpmclient/TpmCalcPHash.c \
     test/tpmclient/tpmclient.int.c test/tpmclient/tpmclient.h \
     test/tpmclient/TpmHandleToName.c test/tpmclient/TpmHash.c \
     log/log.h log/log.c
