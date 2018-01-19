@@ -13,14 +13,11 @@
 TSS2_TCTI_CONTEXT*
 tcti_device_init (char const *device_path)
 {
-    TCTI_DEVICE_CONF conf = {
-        .device_path =device_path,
-    };
     size_t size;
     TSS2_RC rc;
     TSS2_TCTI_CONTEXT *tcti_ctx;
 
-    rc = InitDeviceTcti (NULL, &size, 0);
+    rc = Tss2_Tcti_Device_Init (NULL, &size, 0);
     if (rc != TSS2_RC_SUCCESS) {
         fprintf (stderr,
                  "Failed to get allocation size for device tcti context: "
@@ -34,7 +31,7 @@ tcti_device_init (char const *device_path)
                  strerror (errno));
         return NULL;
     }
-    rc = InitDeviceTcti (tcti_ctx, &size, &conf);
+    rc = Tss2_Tcti_Device_Init (tcti_ctx, &size, device_path);
     if (rc != TSS2_RC_SUCCESS) {
         fprintf (stderr,
                  "Failed to initialize device TCTI context: 0x%x\n",

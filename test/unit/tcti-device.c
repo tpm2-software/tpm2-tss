@@ -18,7 +18,7 @@ tcti_device_init_all_null_test (void **state)
 {
     TSS2_RC rc;
 
-    rc = InitDeviceTcti (NULL, NULL, NULL);
+    rc = Tss2_Tcti_Device_Init (NULL, NULL, NULL);
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
 }
 /* Determine the size of a TCTI context structure. Requires calling the
@@ -31,25 +31,9 @@ tcti_device_init_size_test (void **state)
     size_t tcti_size = 0;
     TSS2_RC ret = TSS2_RC_SUCCESS;
 
-    ret = InitDeviceTcti (NULL, &tcti_size, NULL);
+    ret = Tss2_Tcti_Device_Init (NULL, &tcti_size, NULL);
     assert_int_equal (ret, TSS2_RC_SUCCESS);
 }
-/**
- * When passed a non-NULL context blob and size the config structure must
- * also be non-NULL. No way to initialize the TCTI otherwise.
- */
-static void
-tcti_device_init_null_config_test (void **state)
-{
-    size_t tcti_size;
-    TSS2_RC rc;
-    TSS2_TCTI_CONTEXT_INTEL tcti_intel = { 0 };
-    TSS2_TCTI_CONTEXT *tcti_context = (TSS2_TCTI_CONTEXT*)&tcti_intel;
-
-    rc = InitDeviceTcti (tcti_context, &tcti_size, NULL);
-    assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
-}
-
 /* wrap functions for read & write required to test receive / transmit */
 ssize_t
 __wrap_read (int fd, void *buffer, size_t count)
@@ -75,15 +59,12 @@ tcti_device_setup (void **state)
     size_t tcti_size = 0;
     TSS2_RC ret = TSS2_RC_SUCCESS;
     TSS2_TCTI_CONTEXT *ctx = NULL;
-    TCTI_DEVICE_CONF conf = {
-        .device_path = "/dev/null",
-    };
 
-    ret = InitDeviceTcti (NULL, &tcti_size, NULL);
+    ret = Tss2_Tcti_Device_Init (NULL, &tcti_size, NULL);
     assert_true (ret == TSS2_RC_SUCCESS);
     ctx = calloc (1, tcti_size);
     assert_non_null (ctx);
-    ret = InitDeviceTcti (ctx, 0, &conf);
+    ret = Tss2_Tcti_Device_Init (ctx, 0, "/dev/null");
     assert_true (ret == TSS2_RC_SUCCESS);
     *state = ctx;
 }
@@ -167,7 +148,6 @@ main(int argc, char* argv[])
     const struct CMUnitTest tests[] = {
         cmocka_unit_test (tcti_device_init_all_null_test),
         cmocka_unit_test(tcti_device_init_size_test),
-        cmocka_unit_test (tcti_device_init_null_config_test),
         cmocka_unit_test_setup_teardown (tcti_device_receive_success,
                                   tcti_device_setup_with_command,
                                   tcti_device_teardown),

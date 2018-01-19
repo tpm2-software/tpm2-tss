@@ -194,7 +194,8 @@ TSS2_RC LocalTpmSetLocality(
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
-TSS2_RC InitDeviceTcti (
+static TSS2_RC
+_InitDeviceTcti (
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t *contextSize,
     const TCTI_DEVICE_CONF *config
@@ -235,6 +236,16 @@ TSS2_RC InitDeviceTcti (
     return rval;
 }
 
+TSS2_RC
+InitDeviceTcti (
+    TSS2_TCTI_CONTEXT *tctiContext,
+    size_t *contextSize,
+    const TCTI_DEVICE_CONF *config
+    )
+{
+    return _InitDeviceTcti (tctiContext, contextSize, config);
+}
+
 TSS2_RC Tss2_Tcti_Device_Init (
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t *size,
@@ -246,7 +257,7 @@ TSS2_RC Tss2_Tcti_Device_Init (
         .device_path = dev_path,
     };
 
-    return InitDeviceTcti (tctiContext, size, &dev_conf);
+    return _InitDeviceTcti (tctiContext, size, &dev_conf);
 }
 
 const static TSS2_TCTI_INFO tss2_tcti_info = {
