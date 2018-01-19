@@ -32,8 +32,9 @@
 extern "C" {
 #endif
 
+#include "common.h"
+
 #include <sapi/tpm20.h>
-#include <tcti/common.h>
 
 #define TCTI_DEVICE_DEFAULT "/dev/tpm0"
 
