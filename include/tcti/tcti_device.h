@@ -46,7 +46,7 @@ TSS2_RC InitDeviceTcti (
     TSS2_TCTI_CONTEXT *tctiContext, // OUT
     size_t *contextSize,            // IN/OUT
     const TCTI_DEVICE_CONF *config  // IN
-    );
+    ) COMPILER_ATTR (deprecated);
 
 TSS2_RC Tss2_Tcti_Device_Init (
     TSS2_TCTI_CONTEXT *tctiContext,
