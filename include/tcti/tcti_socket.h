@@ -60,7 +60,7 @@ TSS2_RC InitSocketTcti (
     size_t *contextSize,            // IN/OUT
     const TCTI_SOCKET_CONF *config,             // IN
     const uint8_t serverSockets
-    );
+    ) COMPILER_ATTR (deprecated);
 
 TSS2_RC SendSessionEndSocketTcti(
     TSS2_TCTI_CONTEXT *tctiContext,

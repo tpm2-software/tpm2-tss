@@ -42,7 +42,7 @@ tcti_socket_init_all_null_test (void **state)
 {
     TSS2_RC rc;
 
-    rc = InitSocketTcti (NULL, NULL, NULL, 0);
+    rc = Tss2_Tcti_Socket_Init (NULL, NULL, NULL);
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
 }
 /*
@@ -56,24 +56,9 @@ tcti_socket_init_size_test (void **state)
     size_t tcti_size = 0;
     TSS2_RC ret = TSS2_RC_SUCCESS;
 
-    ret = InitSocketTcti (NULL, &tcti_size, NULL, 0);
+    ret = Tss2_Tcti_Socket_Init (NULL, &tcti_size, NULL);
     assert_int_equal (ret, TSS2_RC_SUCCESS);
     assert_int_equal (tcti_size, sizeof (TSS2_TCTI_CONTEXT_INTEL));
-}
-/*
- * When passed a non-NULL context blob and size the config structure must
- * also be non-NULL. No way to initialize the TCTI otherwise.
- */
-static void
-tcti_socket_init_null_config_test (void **state)
-{
-    size_t tcti_size;
-    TSS2_RC rc;
-    TSS2_TCTI_CONTEXT_INTEL tcti_intel = { 0 };
-    TSS2_TCTI_CONTEXT *tcti_context = (TSS2_TCTI_CONTEXT*)&tcti_intel;
-
-    rc = InitSocketTcti (tcti_context, &tcti_size, NULL, 0);
-    assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
 }
 /*
  * Wrap the 'connect' system call. The mock queue for this function must have
@@ -136,14 +121,14 @@ __wrap_send (int         sockfd,
  * mock functions necessary for a the successful call to 'InitSocketTcti'.
  */
 static TSS2_TCTI_CONTEXT*
-tcti_socket_init_from_conf (TCTI_SOCKET_CONF *conf)
+tcti_socket_init_from_conf (const char *conf)
 {
     size_t tcti_size = 0;
     uint8_t recv_buf[4] = { 0 };
     TSS2_RC ret = TSS2_RC_SUCCESS;
     TSS2_TCTI_CONTEXT *ctx = NULL;
 
-    ret = InitSocketTcti (NULL, &tcti_size, NULL, 0);
+    ret = Tss2_Tcti_Socket_Init (NULL, &tcti_size, NULL);
     assert_true (ret == TSS2_RC_SUCCESS);
     ctx = calloc (1, tcti_size);
     assert_non_null (ctx);
@@ -163,7 +148,7 @@ tcti_socket_init_from_conf (TCTI_SOCKET_CONF *conf)
     will_return (__wrap_send, 4);
     will_return (__wrap_recv, 4);
     will_return (__wrap_recv, recv_buf);
-    ret = InitSocketTcti (ctx, &tcti_size, conf, 0);
+    ret = Tss2_Tcti_Socket_Init (ctx, &tcti_size, conf);
     assert_int_equal (ret, TSS2_RC_SUCCESS);
     return ctx;
 }
@@ -174,14 +159,8 @@ tcti_socket_init_from_conf (TCTI_SOCKET_CONF *conf)
 static int
 tcti_socket_setup (void **state)
 {
-    TSS2_TCTI_CONTEXT *ctx = NULL;
-    TCTI_SOCKET_CONF conf = {
-        .hostname          = "localhost",
-        .port              = 666,
-    };
+    *state = tcti_socket_init_from_conf ("tcp://127.0.0.1:666");
 
-    ctx = tcti_socket_init_from_conf (&conf);
-    *state = ctx;
     return 0;
 }
 /*
@@ -274,7 +253,6 @@ main (int   argc,
     const struct CMUnitTest tests[] = {
         cmocka_unit_test (tcti_socket_init_all_null_test),
         cmocka_unit_test (tcti_socket_init_size_test),
-        cmocka_unit_test (tcti_socket_init_null_config_test),
         cmocka_unit_test_setup_teardown (tcti_socket_receive_success_test,
                                   tcti_socket_setup,
                                   tcti_socket_teardown),
