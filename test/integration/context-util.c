@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -51,15 +52,13 @@ TSS2_TCTI_CONTEXT*
 tcti_socket_init (char const *address,
                   uint16_t    port)
 {
-    TCTI_SOCKET_CONF conf = {
-        .hostname          = address,
-        .port              = port,
-    };
     size_t size;
     TSS2_RC rc;
     TSS2_TCTI_CONTEXT *tcti_ctx;
+    char conf_str[256] = { 0 };
 
-    rc = InitSocketTcti (NULL, &size, &conf, 0);
+    snprintf (conf_str, 256, "tcp://%s:%" PRIu16, address, port);
+    rc = Tss2_Tcti_Socket_Init (NULL, &size, conf_str);
     if (rc != TSS2_RC_SUCCESS) {
         fprintf (stderr, "Faled to get allocation size for tcti context: "
                  "0x%x\n", rc);
@@ -71,7 +70,7 @@ tcti_socket_init (char const *address,
                  strerror (errno));
         return NULL;
     }
-    rc = InitSocketTcti (tcti_ctx, &size, &conf, 0);
+    rc = Tss2_Tcti_Socket_Init (tcti_ctx, &size, conf_str);
     if (rc != TSS2_RC_SUCCESS) {
         fprintf (stderr, "Failed to initialize tcti context: 0x%x\n", rc);
         free (tcti_ctx);

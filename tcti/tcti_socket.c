@@ -481,7 +481,8 @@ static TSS2_RC InitializeMsTpm2Simulator(
     return rval;
 }
 
-TSS2_RC InitSocketTcti (
+TSS2_RC
+_InitSocketTcti (
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t *contextSize,
     const TCTI_SOCKET_CONF *conf,
@@ -531,6 +532,16 @@ TSS2_RC InitSocketTcti (
     }
 
     return rval;
+}
+TSS2_RC
+InitSocketTcti (
+    TSS2_TCTI_CONTEXT *tctiContext,
+    size_t *contextSize,
+    const TCTI_SOCKET_CONF *conf,
+    const uint8_t serverSockets
+    )
+{
+    return _InitSocketTcti (tctiContext, contextSize, conf, serverSockets);
 }
 /*
  * This is a utility function to extract a TCP port number from a string.
@@ -594,7 +605,7 @@ TSS2_RC Tss2_Tcti_Socket_Init (
         rc = TSS2_TCTI_RC_BAD_VALUE;
         goto out;
     }
-    rc = InitSocketTcti (tctiContext, size, &sock_conf, 0);
+    rc = _InitSocketTcti (tctiContext, size, &sock_conf, 0);
 out:
     uriFreeUriMembersA (&uri);
     return rc;
