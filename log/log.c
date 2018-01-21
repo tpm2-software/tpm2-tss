@@ -98,7 +98,7 @@ getLogLevel(const char *module, log_level logdefault)
     char *i = envlevel;
     if (envlevel == NULL)
         return loglevel;
-    while ((i = index(i, '+')) != NULL) {
+    while ((i = strchr(i, '+')) != NULL) {
         if ((envlevel <= i - strlen("all") && strncasecmp(i - 3, "all", 3) == 0) ||
             (envlevel <= i - strlen(module) &&
              strncasecmp(i - strlen(module), module, strlen(module)) == 0)) {
