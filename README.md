@@ -56,7 +56,7 @@ The `tpmclient` program will run either until completion, or until an error occu
 Please report failures in a Github 'issue' with a full log of the test run.
 This must include output from the `tpmclient` program.
 This output must include full debug messages which requires that the libraries and binaries be built with debug flags enabled.
-See [INSTALL](INSTALL) for instructions to build with debug flags enabled.
+See [INSTALL](INSTALL.md) for instructions to build with debug flags enabled.
 
 ## Test Suite Decomposition
 We are currently working to decompose the existing monolithic `tpmclient` program into individual test programs that can be integrated into an automated test harness.
