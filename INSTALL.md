@@ -30,6 +30,7 @@ $ sudo apt -y install \
   m4 \
   libtool \
   automake \
+  liburiparser-dev \
   autoconf
 ```
 
