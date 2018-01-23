@@ -34,7 +34,7 @@ extern "C" {
 
 #include "common.h"
 
-#include <sapi/tpm20.h>
+#include "sapi/tpm20.h"
 
 #define TCTI_DEVICE_DEFAULT "/dev/tpm0"
 

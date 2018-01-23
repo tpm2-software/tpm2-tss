@@ -37,7 +37,7 @@
 extern "C" {
 #endif
 
-#include <sapi/tss2_tcti.h>
+#include "sapi/tss2_tcti.h"
 
 // Fields for ABI negotiation.
 #define TSSWG_INTEROP 1

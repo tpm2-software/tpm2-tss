@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <tcti/common.h>
+#include "tcti/common.h"
 #include "sapi/tpm20.h"
 #include "tcti.h"
 

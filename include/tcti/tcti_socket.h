@@ -34,7 +34,7 @@ extern "C" {
 
 #include "common.h"
 
-#include <sapi/tpm20.h>
+#include "sapi/tpm20.h"
 
 #define DEFAULT_SIMULATOR_TPM_PORT        2321
 #define TSS2_SIMULATOR_INTERFACE_INIT_FAILED              ((TSS2_RC)(1 + TSS2_DRIVER_ERROR_LEVEL))
