@@ -35,32 +35,29 @@ You have been warned.
 The TPM library specification contains reference code sufficient to construct a software TPM 2.0 simulator.
 This code was provided by Microsoft and they provide a binary download for Windows [here](https://www.microsoft.com/en-us/download/details.aspx?id=52507).
 IBM has repackaged this code with a few Makefiles so that the Microsoft code can be built and run on Linux systems.
-The Linux version of the Microsoft TPM 2.0 simulator can be obtained [here](https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm532.tar).
+The Linux version of the Microsoft TPM 2.0 simulator can be obtained [here](https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm974.tar.gz).
 Once you've downloaded and successfully built and execute the simulator it will, by default, be accepting connections on the localhost, port 2321.
 
 Issues building or running the simulator should be reported to the IBM software TPM2 project.
 
-NOTE: The Intel TCG TSS is currently tested against the 532 version of the simulator.
+NOTE: The Intel TCG TSS is currently tested against the 974 version of the simulator.
 Compatibility with later versions has not yet been tested.
 
-## Test Suite
-The test suite is implemented in the tpmclient program.
-This is a monolithic C program that exercises various TCTI and SAPI API calls.
-Once the test environment is set up (simulator is built and running), the tpmclient program can be executed:
-
+## Testing
+To test the various TCTI and SAPI api calls, unit and integraion tests can
+be run by configuring the build to enable unit testing and running the "check"
+build target. It is recommended to use a simulator for testing, and the
+simulator will be automatically launched by the tests. Please review the
+dependency list in [INSTALL](INSTALL.md) for dependencies when building
+the test suite.
 ```
-$ test/tpmclient/tpmclient
+$ ./configure --enable-unit --with-simulatorbin=$HOME/ibmtpm/src/tpm_server
+$ make -j$(nproc) check
 ```
+This will generate a file called "test-suite.log" in the root of the build
+directory.
 
-The `tpmclient` program will run either until completion, or until an error occurs.
 Please report failures in a Github 'issue' with a full log of the test run.
-This must include output from the `tpmclient` program.
-This output must include full debug messages which requires that the libraries and binaries be built with debug flags enabled.
-See [INSTALL](INSTALL.md) for instructions to build with debug flags enabled.
-
-## Test Suite Decomposition
-We are currently working to decompose the existing monolithic `tpmclient` program into individual test programs that can be integrated into an automated test harness.
-This approach has a number of advantages including the ability to run individual tests in isolation as well as reduced overhead, maintenance and automation.
 
 # [Architecture/Block Diagram](doc/arch.md)
 SAPI library, TAB/RM, and Test Code Block Diagram:
