@@ -28,7 +28,7 @@
 #ifndef TCTI_COMMON_H
 #define TCTI_COMMON_H
 
-#include <sapi/tpm20.h>
+#include "sapi/tpm20.h"
 
 #if defined (__GNUC__)
 #define COMPILER_ATTR(...) __attribute__((__VA_ARGS__))

@@ -30,8 +30,8 @@
 #define MARSHAL_H
 
 #include <stdlib.h>
-#include <sapi/tpm20.h>
-#include <sapi/tss2_common.h>
+#include "sapi/tpm20.h"
+#include "sapi/tss2_common.h"
 
 #ifdef __cplusplus
 extern "C" {

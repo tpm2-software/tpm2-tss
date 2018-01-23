@@ -45,7 +45,7 @@
 #define SOCKET int
 #endif
 
-#include <tcti/common.h>
+#include "tcti/common.h"
 
 #define TCTI_MAGIC   0x7e18e9defa8bc9e2ULL
 #define TCTI_VERSION 0x1
