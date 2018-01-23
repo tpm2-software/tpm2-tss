@@ -10,6 +10,7 @@ required:
 * C compiler
 * C Library Development Libraries and Header Files
 * pkg-config
+* uriparser
 
 The following are dependencies only required when building the test suite.
 Most users will not need to install these dependencies:
