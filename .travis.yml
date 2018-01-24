@@ -26,6 +26,7 @@ addons:
     - liburiparser-dev
     - realpath
     - lcov
+    - libssl-dev
   coverity_scan:
     project:
       name: "01org/tpm2-tss"
