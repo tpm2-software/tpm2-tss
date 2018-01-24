@@ -24,6 +24,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <inttypes.h>
+#include <openssl/sha.h>
 
 #define LOGMODULE testintegration
 #include "log/log.h"
@@ -286,4 +287,34 @@ encrypt_2_cfb (
     TPM2B_MAX_BUFFER *data_out)
 {
     return encrypt_decrypt_2_cfb (sapi_context, handle, NO, data_in, data_out);
+}
+
+TSS2_RC
+hash (
+    TPM2_ALG_ID alg,
+    const void *data,
+    int size,
+    TPM2B_DIGEST *out)
+{
+    switch (alg) {
+    case TPM2_ALG_SHA1:
+        SHA1(data, size, out->buffer);
+        out->size = TPM2_SHA1_DIGEST_SIZE;
+        break;
+    case TPM2_ALG_SHA256:
+        SHA256(data, size, out->buffer);
+        out->size = TPM2_SHA256_DIGEST_SIZE;
+        break;
+    case TPM2_ALG_SHA384:
+        SHA384(data, size, out->buffer);
+        out->size = TPM2_SHA384_DIGEST_SIZE;
+        break;
+    case TPM2_ALG_SHA512:
+        SHA512(data, size, out->buffer);
+        out->size = TPM2_SHA512_DIGEST_SIZE;
+        break;
+    default:
+        return TSS2_SYS_RC_BAD_VALUE;
+    }
+    return TPM2_RC_SUCCESS;
 }
