@@ -2816,4 +2816,22 @@ TSS2_RC Tss2_Sys_Policy_AC_SendSelect(
     TPMI_YES_NO includeObject,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray
     );
+
+TSS2_RC Tss2_Sys_PolicyTemplate_Prepare(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPMI_SH_POLICY policySession,
+    const TPM2B_DIGEST *templateHash
+    );
+
+TSS2_RC Tss2_Sys_PolicyTemplate_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
+TSS2_RC Tss2_Sys_PolicyTemplate(
+    TSS2_SYS_CONTEXT *sysContext,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+    TPMI_SH_POLICY policySession,
+    const TPM2B_DIGEST *templateHash,
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray
+    );
 #endif
