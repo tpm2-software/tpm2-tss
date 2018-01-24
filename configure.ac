@@ -45,6 +45,9 @@ AC_ARG_WITH([simulatorbin],
             [with_simulatorbin_set=no])
 AM_CONDITIONAL([SIMULATOR_BIN],[test "x$with_simulatorbin_set" = "xyes"])
 
+AS_IF([test "x$with_simulatorbin_set" == xyes],
+      [PKG_CHECK_MODULES([LIBSSL],[libssl])])
+
 gl_LD_VERSION_SCRIPT
 
 AX_ADD_COMPILER_FLAG([-Wall])

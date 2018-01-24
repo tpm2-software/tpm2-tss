@@ -141,4 +141,16 @@ decrypt_2_cfb (
     TPM2B_MAX_BUFFER *data_in,
     TPM2B_MAX_BUFFER *data_out);
 
+/*
+ * This is a helper function for digest calculation.
+ * alg can be TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPM2_ALG_SHA384,
+ * and TPM2_ALG_SHA512
+ */
+TSS2_RC
+hash (
+    TPM2_ALG_ID alg,
+    const void *data,
+    int size,
+    TPM2B_DIGEST *out);
+
 #endif /* TEST_INTEGRATION_SAPI_UTIL_H */
