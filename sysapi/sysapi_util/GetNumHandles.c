@@ -100,6 +100,7 @@ COMMAND_HANDLES commandArray[] =
     { TPM2_CC_PolicyAuthValue, 1, 0 },
     { TPM2_CC_PolicyPassword, 1, 0 },
     { TPM2_CC_PolicyGetDigest, 1, 0 },
+    { TPM2_CC_PolicyTemplate, 1, 0 },
     { TPM2_CC_CreatePrimary, 1, 1 },
     { TPM2_CC_HierarchyControl, 1, 0 },
     { TPM2_CC_SetPrimaryPolicy, 1, 0 },
