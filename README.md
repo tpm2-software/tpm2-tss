@@ -73,7 +73,7 @@ SAPI library, TAB/RM, and Test Code Block Diagram:
 ├── log     : logging functions  
 ├── m4      : autoconf support macros  
 ├── man     : man pages  
-├── marshal : TPM2 typer marshalling library implementation  
+├── marshal : TPM2 type marshalling library implementation  
 ├── script  : scripts used by the build or CI  
 ├── sysapi  : system API implementation  
 │   ├── include     : headers internal to the SAPI  
