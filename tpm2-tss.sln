@@ -5,6 +5,11 @@ VisualStudioVersion = 15.0.27130.2020
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tss2-mu", "marshal\tss2-mu.vcxproj", "{A6D8F061-6827-492F-80C3-32C4DD4FC52E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tss2-sapi", "sysapi\tss2-sapi.vcxproj", "{10D9862F-0E36-4ACC-AF19-930B00A88A98}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A6D8F061-6827-492F-80C3-32C4DD4FC52E} = {A6D8F061-6827-492F-80C3-32C4DD4FC52E}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +26,14 @@ Global
 		{A6D8F061-6827-492F-80C3-32C4DD4FC52E}.Release|x64.Build.0 = Release|x64
 		{A6D8F061-6827-492F-80C3-32C4DD4FC52E}.Release|x86.ActiveCfg = Release|Win32
 		{A6D8F061-6827-492F-80C3-32C4DD4FC52E}.Release|x86.Build.0 = Release|Win32
+		{10D9862F-0E36-4ACC-AF19-930B00A88A98}.Debug|x64.ActiveCfg = Debug|x64
+		{10D9862F-0E36-4ACC-AF19-930B00A88A98}.Debug|x64.Build.0 = Debug|x64
+		{10D9862F-0E36-4ACC-AF19-930B00A88A98}.Debug|x86.ActiveCfg = Debug|Win32
+		{10D9862F-0E36-4ACC-AF19-930B00A88A98}.Debug|x86.Build.0 = Debug|Win32
+		{10D9862F-0E36-4ACC-AF19-930B00A88A98}.Release|x64.ActiveCfg = Release|x64
+		{10D9862F-0E36-4ACC-AF19-930B00A88A98}.Release|x64.Build.0 = Release|x64
+		{10D9862F-0E36-4ACC-AF19-930B00A88A98}.Release|x86.ActiveCfg = Release|Win32
+		{10D9862F-0E36-4ACC-AF19-930B00A88A98}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
