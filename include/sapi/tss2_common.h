@@ -81,6 +81,7 @@ typedef struct {
 
 #define TSS2_RC_LAYER( level )     ( level << TSS2_RC_LAYER_SHIFT )
 
+#define TSS2_RC_LAYER_COUNT (TSS2_RC_LAYER_MASK >> TSS2_RC_LAYER_SHIFT)
 
 //
 // Error code levels.   These indicate what level in the software stack

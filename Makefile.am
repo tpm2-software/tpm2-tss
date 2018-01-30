@@ -28,13 +28,17 @@
 
 include src_vars.mk
 
-INCLUDE_DIRS    = -I$(srcdir)/include -I$(srcdir)/sysapi/include -I$(srcdir)/marshal
+INCLUDE_DIRS    = -I$(srcdir)/include -I$(srcdir)/sysapi/include -I$(srcdir)/marshal \
+    -I$(srcdir)/error
+
 ACLOCAL_AMFLAGS = -I m4
 AM_CFLAGS       = $(INCLUDE_DIRS) $(EXTRA_CFLAGS) $(CODE_COVERAGE_CFLAGS)
 AM_LDFLAGS      = $(EXTRA_LDFLAGS) $(CODE_COVERAGE_LIBS)
 
 # stuff to build, what that stuff is, and where/if to install said stuff
-lib_LTLIBRARIES = $(libmarshal) $(libsapi) $(libtcti_device) $(libtcti_socket)
+lib_LTLIBRARIES = $(libmarshal) $(libsapi) $(libtcti_device) \
+    $(libtcti_socket) $(liberror)
+
 noinst_LTLIBRARIES = test/integration/libtest_utils.la
 
 # test harness configuration
@@ -62,7 +66,9 @@ TESTS_UNIT  = \
     test/unit/TPMS-marshal \
     test/unit/TPML-marshal \
     test/unit/TPMT-marshal \
-    test/unit/TPMU-marshal
+    test/unit/TPMU-marshal \
+    test/unit/error
+
 endif #UNIT
 if SIMULATOR_BIN
 TESTS_INTEGRATION = \
@@ -119,7 +125,9 @@ EXTRA_DIST = \
     README.md \
     RELEASE.md \
     lib/debug_config.site \
+    lib/liberror.map \
     lib/libmarshal.map \
+    lib/error.pc.in \
     lib/marshal.pc.in \
     lib/tcti-device.pc.in \
     lib/tcti-socket.pc.in \
@@ -200,12 +208,22 @@ test_unit_TPMT_marshal_SOURCES = test/unit/TPMT-marshal.c
 test_unit_TPMU_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_TPMU_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_TPMU_marshal_SOURCES = test/unit/TPMU-marshal.c
+
+test_unit_error_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
+test_unit_error_LDADD   = $(CMOCKA_LIBS) $(liberror)
+test_unit_error_SOURCES = test/unit/error.c
+
 endif # UNIT
 
 if HAVE_LD_VERSION_SCRIPT
 marshal_libmarshal_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/libmarshal.map
 endif # HAVE_LD_VERSION_SCRIPT
 marshal_libmarshal_la_SOURCES = $(MARSHAL_SRC) log/log.c log/log.h
+
+if HAVE_LD_VERSION_SCRIPT
+error_liberror_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/liberror.map
+endif # HAVE_LD_VERSION_SCRIPT
+error_liberror_la_SOURCES = $(ERROR_SRC)
 
 sysapi_libsapi_la_LIBADD  = $(libmarshal)
 sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPI_H) $(SYSAPIUTIL_C) \
@@ -353,6 +371,8 @@ libsapi = sysapi/libsapi.la
 libtcti_device = tcti/libtcti-device.la
 libtcti_socket = tcti/libtcti-socket.la
 libmarshal = marshal/libmarshal.la
+liberror = error/liberror.la
+
 
 define make_parent_dir
     if [ ! -d $(dir $1) ]; then mkdir -p $(dir $1); fi

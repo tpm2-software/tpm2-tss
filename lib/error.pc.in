@@ -1,0 +1,6 @@
+Name: sapi
+Description: TSS2 error decoding library.
+URL: https://github.com/01org/tpm2-tss
+Version: @VERSION@
+Cflags: -I@includedir@
+Libs: -lerror -L@libdir@

@@ -24,7 +24,11 @@ echo "Generating file lists: ${VARS_FILE}"
 
   src_listvar "marshal" "*.c" "MARSHAL_C"
   src_listvar "marshal" "*.h" "MARSHAL_H"
-  printf "MARSHAL_SRC = \$(MARSHAL_C) \$(MARSHAL_H)"
+  printf "MARSHAL_SRC = \$(MARSHAL_C) \$(MARSHAL_H)\n"
+
+  src_listvar "error" "*.c" "ERROR_C"
+  src_listvar "error" "*.h" "ERROR_H"
+  printf "ERROR_SRC = \$(ERROR_C) \$(ERROR_H)"
 ) > ${VARS_FILE}
 
 ${AUTORECONF} --install --sym

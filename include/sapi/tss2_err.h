@@ -1,5 +1,5 @@
 //**********************************************************************;
-// Copyright (c) 2015, Intel Corporation
+// Copyright (c) 2018, Intel Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -24,24 +24,55 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
+#ifndef TSS2_ERR_H_
+#define TSS2_ERR_H_
 
-#ifndef     TPM20_H
-#define     TPM20_H
+#include <stdbool.h>
 
-/* TSS2_VERSION_<CREATOR>_<FAMILY>_<LEVEL>_<REVISION> */
-#define TSS2_API_VERSION_1_1_1_1
+#include <sapi/tpm20.h>
 
-#include    <stddef.h>
-#include    <stdint.h>
-#include    <stdlib.h>
-#include    <string.h>
-
-#include    <sapi/tss2_common.h>
-#include    <sapi/tpmb.h>
-#include    <sapi/tss2_tpm2_types.h>
-
-#include    <sapi/tss2_tcti.h>
-#include    <sapi/tss2_sys.h>
-#include    <sapi/tss2_mu.h>
-#include    <sapi/tss2_err.h>
+#ifdef __cplusplus
+extern "C" {
 #endif
+
+/**
+ * The maximum size of a layer name.
+ */
+#define TSS2_ERR_LAYER_NAME_MAX  4
+
+/**
+ * The maximum size for layer specific error strings.
+ */
+#define TSS2_ERR_LAYER_ERROR_STR_MAX  512
+
+/**
+ * A custom error handler prototype.
+ * @param rc
+ *  The rc to decode with only the error bits set, ie no need to mask the
+ *  layer bits out. Handlers will never be invoked with the error bits set
+ *  to 0, as zero always indicates success.
+ * @return
+ *  An error string describing the rc. If the handler cannot determine
+ *  a valid response, it can return NULL indicating that the framework
+ *  should just print the raw hexidecimal value of the error field of
+ *  a tpm2_err_layer_rc.
+ *  Note that this WILL NOT BE FREED by the caller,
+ *  i.e. static.
+ */
+typedef const char *(*Tss2_Error_Handler)(TSS2_RC rc);
+
+bool
+Tss2_Rc_Set_Handler(
+    UINT8 layer,
+    const char *name,
+    Tss2_Error_Handler handler);
+
+const char *
+Tss2_Rc_StrError(
+    TSS2_RC rc);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* TSS2_ERR_H_ */
