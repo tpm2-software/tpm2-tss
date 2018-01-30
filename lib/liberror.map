@@ -1,0 +1,7 @@
+{
+    global:
+		Tss2_Rc_Set_Handler;
+		Tss2_Rc_StrError;
+    local:
+        *;
+};

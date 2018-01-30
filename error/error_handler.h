@@ -1,5 +1,5 @@
 //**********************************************************************;
-// Copyright (c) 2015, Intel Corporation
+// Copyright (c) 2018, Intel Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -25,23 +25,36 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#ifndef     TPM20_H
-#define     TPM20_H
+#ifndef ERROR_HANDLER_H_
+#define ERROR_HANDLER_H_
 
-/* TSS2_VERSION_<CREATOR>_<FAMILY>_<LEVEL>_<REVISION> */
-#define TSS2_API_VERSION_1_1_1_1
-
-#include    <stddef.h>
-#include    <stdint.h>
-#include    <stdlib.h>
-#include    <string.h>
-
-#include    <sapi/tss2_common.h>
-#include    <sapi/tpmb.h>
-#include    <sapi/tss2_tpm2_types.h>
-
-#include    <sapi/tss2_tcti.h>
-#include    <sapi/tss2_sys.h>
-#include    <sapi/tss2_mu.h>
-#include    <sapi/tss2_err.h>
+#if defined (__GNUC__)
+#define COMPILER_ATTR(...) __attribute__((__VA_ARGS__))
+#else
+#define COMPILER_ATTR(...)
 #endif
+
+
+void
+clearbuf(
+    char *buffer);
+
+void COMPILER_ATTR(format (printf, 3, 4))
+    _catbuf(
+        char *buf,
+        size_t len,
+        const char *fmt,
+        ...);
+
+/**
+ * Concatenates (safely) onto a static buffer given a format and varaidic
+ * arguments similar to sprintf.
+ * @param b
+ *   The static buffer to concatenate onto.
+ * @param fmt
+ *   The format specifier as understood by printf followed by the variadic
+ *   parameters for the specifier.
+ */
+#define catbuf(b, fmt, ...) _catbuf(b, sizeof(b), fmt, ##__VA_ARGS__)
+
+#endif /* ERROR_ERROR_HANDLER_H_ */

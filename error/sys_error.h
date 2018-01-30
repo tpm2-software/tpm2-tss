@@ -1,5 +1,5 @@
 //**********************************************************************;
-// Copyright (c) 2015, Intel Corporation
+// Copyright (c) 2018, Intel Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -25,23 +25,9 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#ifndef     TPM20_H
-#define     TPM20_H
+#ifndef ERROR_SYS_ERROR_H_
+#define ERROR_SYS_ERROR_H_
 
-/* TSS2_VERSION_<CREATOR>_<FAMILY>_<LEVEL>_<REVISION> */
-#define TSS2_API_VERSION_1_1_1_1
+const char *sys_err_handler(TSS2_RC rc);
 
-#include    <stddef.h>
-#include    <stdint.h>
-#include    <stdlib.h>
-#include    <string.h>
-
-#include    <sapi/tss2_common.h>
-#include    <sapi/tpmb.h>
-#include    <sapi/tss2_tpm2_types.h>
-
-#include    <sapi/tss2_tcti.h>
-#include    <sapi/tss2_sys.h>
-#include    <sapi/tss2_mu.h>
-#include    <sapi/tss2_err.h>
-#endif
+#endif /* ERROR_SYS_ERROR_H_ */
