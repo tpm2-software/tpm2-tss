@@ -23,6 +23,7 @@ addons:
     packages:
     - autoconf-archive
     - cmake
+    - libgcrypt20-dev
     - liburiparser-dev
     - realpath
     - lcov
