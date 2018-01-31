@@ -34,25 +34,23 @@ enum cmdStates {CMD_STAGE_INITIALIZE,
                 CMD_STAGE_RECEIVE_RESPONSE,
                 CMD_STAGE_ALL = 0xff };
 
-#pragma pack(push, 1)
-typedef struct _TPM20_Header_In {
+typedef struct __attribute__ ((__packed__)) _TPM20_Header_In {
   TPM2_ST tag;
   UINT32 commandSize;
   UINT32 commandCode;
 } TPM20_Header_In;
 
-typedef struct _TPM20_Header_Out {
+typedef struct __attribute__ ((__packed__)) _TPM20_Header_Out {
   TPM2_ST tag;
   UINT32 responseSize;
   UINT32 responseCode;
 } TPM20_Header_Out;
 
-typedef struct _TPM20_ErrorResponse {
+typedef struct __attribute__ ((__packed__)) _TPM20_ErrorResponse {
   TPM2_ST tag;
   UINT32 responseSize;
   UINT32 responseCode;
 } TPM20_ErrorResponse;
-#pragma pack(pop)
 
 typedef struct {
     TSS2_TCTI_CONTEXT *tctiContext;
