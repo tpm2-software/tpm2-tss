@@ -36,9 +36,14 @@ AC_ARG_ENABLE([esapi],
             [enable_esapi=$enableval],
             [enable_esapi=yes])
 AS_IF([test "x$enable_esapi" != xno],
-      [AC_CHECK_HEADER([gcrypt.h])])
+      [AC_CHECK_HEADER([gcrypt.h],
+                       [],
+                       [AC_MSG_ERROR([Missing required header: gcrypt.h.])])])
 AS_IF([test "x$enable_esapi" != xno],
-      [AC_CHECK_LIB([gcrypt], [gcry_mac_open])])
+      [AC_CHECK_LIB([gcrypt],
+                    [gcry_mac_open],
+                    [],
+                    [AC_MSG_ERROR([Missing required library: gcrypt.])])])
 AM_CONDITIONAL([ESAPI], [test "x$enable_esapi" != xno])
 
 AC_ARG_WITH([tctidefaultmodule],
