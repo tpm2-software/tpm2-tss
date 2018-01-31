@@ -25,7 +25,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
 #ifndef ESYS_MU_H
-#define ESYS_TSS2T_H
+#define ESYS_MU_H
 
 #include <sapi/tpm20.h>
 #include <stdlib.h>
@@ -213,4 +213,4 @@ Tss2_MU_IESYS_CONTEXT_DATA_Unmarshal(const uint8_t *buffer,
 }
 #endif
 
-#endif /* ESYS_TSS2T_H */
+#endif /* ESYS_MU_H */
