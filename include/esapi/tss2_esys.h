@@ -29,7 +29,6 @@
 #include <sapi/tpm20.h>
 #include <sapi/tss2_tcti.h>
 #include <sapi/tss2_sys.h>
-#include <esys_types.h>
 #include <stdbool.h>
 
 #ifdef __cplusplus
