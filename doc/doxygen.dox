@@ -1,0 +1,774 @@
+/*!
+ \mainpage TPM Software Stack 2.0
+ This is an implementation of the TCG TPM Software Stack 2.0 specification.
+ It includes several TCTI modules, Marshaling/Unmarshaling, SystemAPI and Enhanced System API.
+
+ See https://trustedcomputinggroup.org/work-groups/software-stack/
+ and https://trustedcomputinggroup.org/specifications-public-review/
+*/
+
+/*!
+ \defgroup esys Enhanced System API
+ \todo Description
+*/
+
+/*!
+ \defgroup esys_context Esys Context ESYS_CONTEXT
+ \ingroup esys
+ \todo Description
+ \{
+ \typedef ESYS_CONTEXT
+ Reference to the ESYS_CONTEXT that holds data for the connection to the TPM as
+ well as the metadata for TPM Resource; such as Transient key, Persistent 
+ objects, NV spaces, Sessions or PCRs.
+ \fn TSS2_RC Esys_Initialize(ESYS_CONTEXT ** esys_context, TSS2_TCTI_CONTEXT * tcti, TSS2_ABI_VERSION * abiVersion)
+ \fn void Esys_Finalize(ESYS_CONTEXT * esys_context)
+ \fn TSS2_RC Esys_GetTcti(ESYS_CONTEXT * esys_context, TSS2_TCTI_CONTEXT ** tcti)
+ \fn TSS2_RC Esys_GetPollHandles(ESYS_CONTEXT * esys_context, TSS2_TCTI_POLL_HANDLE ** handles, size_t * count)
+ \fn TSS2_RC Esys_SetTimeout(ESYS_CONTEXT *esys_context, int32_t timeout)
+ \}
+*/
+
+/*!
+ \defgroup esys_tr Esys Tpm Resource ESYS_TR
+ \ingroup esys
+ Virtual objects with meta data for Tpm Resources.
+ The Esys TPM Resources are the virtual objects inside the ESYSCONTEXT that hold
+ the metadata for corresponding TPM Resources.
+
+ There are a set of global ESYS_TR objects such as ESYS_TR_NON or for the 
+ various PCRs and hierarchies. ESYS_TR_MIN_OBJECT denotes the first non-global
+ ESYS_TR object.
+ \{
+ \typedef ESYS_TR
+ Reference to the virtual object inside the ESYS_CONTEXT that holds the metadata
+ for the corresponding TPM Resource. Such can be Transient key, Persistent 
+ objects, NV spaces, Sessions or PCRs.
+ \fn TSS2_RC Esys_TR_SetAuth(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle, TPM2B_AUTH const *authValue)
+ \fn TSS2_RC Esys_TR_GetName(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle, TPM2B_NAME ** name)
+ \fn TSS2_RC Esys_TR_FromTPMPublic_Async( ESYS_CONTEXT *esysContext, TPM2_HANDLE tpm_handle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT *esysContext, ESYS_TR *esys_handle)
+ \fn TSS2_RC Esys_TR_FromTPMPublic(ESYS_CONTEXT *esysContext, TPM2_HANDLE tpm_handle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, ESYS_TR *object)
+ \fn TSS2_RC Esys_TR_Serialize(ESYS_CONTEXT *esys_context, ESYS_TR esys_handle, uint8_t **buffer, size_t *buffer_size)
+ \fn TSS2_RC Esys_TR_Deserialize(ESYS_CONTEXT *esys_context, uint8_t const *buffer, size_t buffer_size, ESYS_TR *esys_handle)
+ \fn TSS2_RC Esys_TR_Close(ESYS_CONTEXT *esys_context, ESYS_TR *object)
+ \fn TSS2_RC Esys_TRSess_GetAttributes(ESYS_CONTEXT * esysContext, ESYS_TR esys_handle, TPMA_SESSION * flags)
+ \fn TSS2_RC Esys_TRSess_SetAttributes(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle, TPMA_SESSION flags, TPMA_SESSION mask)
+ \}
+*/
+
+/*!
+ \defgroup esys_tr_defines Global ESYS_TR objects
+ \ingroup esys_tr
+ A set of defines for global virtual objects that are always present in every
+ ESYS_CONTEXT.
+ \{
+ \def ESYS_TR_NONE
+ \def ESYS_TR_PASSWORD
+ \def ESYS_TR_PCR0
+ \def ESYS_TR_PCR1
+ \def ESYS_TR_PCR2
+ \def ESYS_TR_PCR3
+ \def ESYS_TR_PCR4
+ \def ESYS_TR_PCR5
+ \def ESYS_TR_PCR6
+ \def ESYS_TR_PCR7
+ \def ESYS_TR_PCR8
+ \def ESYS_TR_PCR9
+ \def ESYS_TR_PCR10
+ \def ESYS_TR_PCR11
+ \def ESYS_TR_PCR12
+ \def ESYS_TR_PCR13
+ \def ESYS_TR_PCR14
+ \def ESYS_TR_PCR15
+ \def ESYS_TR_PCR16
+ \def ESYS_TR_PCR17
+ \def ESYS_TR_PCR18
+ \def ESYS_TR_PCR19
+ \def ESYS_TR_PCR20
+ \def ESYS_TR_PCR21
+ \def ESYS_TR_PCR22
+ \def ESYS_TR_PCR23
+ \def ESYS_TR_PCR24
+ \def ESYS_TR_PCR25
+ \def ESYS_TR_PCR26
+ \def ESYS_TR_PCR27
+ \def ESYS_TR_PCR28
+ \def ESYS_TR_PCR29
+ \def ESYS_TR_PCR30
+ \def ESYS_TR_PCR31
+ \def ESYS_TR_RH_OWNER
+ \def ESYS_TR_RH_NULL
+ \def ESYS_TR_RH_LOCKOUT
+ \def ESYS_TR_RH_ENDORSEMENT
+ \def ESYS_TR_RH_PLATFORM
+ \def ESYS_TR_RH_PLATFORM_NV
+ \def ESYS_TR_RH_AUTH_00
+ \def ESYS_TR_RH_AUTH_FF
+ \def ESYS_TR_MIN_OBJECT 0x1000
+ \}
+*/
+
+/*!
+ \defgroup esys_tpm Esys TPM Commands
+ \ingroup esys
+ The following function represent interactions with the corresponding TPM
+ commands.
+ \{
+ \defgroup Esys_ActivateCredential
+ \{
+ \fn TSS2_RC Esys_ActivateCredential_async(ESYS_CONTEXT *esysContext, ESYS_TR activateHandle, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_ID_OBJECT *credentialBlob, const TPM2B_ENCRYPTED_SECRET *secret)
+ \fn TSS2_RC Esys_ActivateCredential(ESYS_CONTEXT *esysContext, ESYS_TR activateHandle, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_ID_OBJECT *credentialBlob, const TPM2B_ENCRYPTED_SECRET *secret, TPM2B_DIGEST **certInfo)
+ \fn TSS2_RC Esys_ActivateCredential_finish(ESYS_CONTEXT *esysContext, TPM2B_DIGEST **certInfo)
+ \}
+ \defgroup Esys_Certify
+ \{
+ \fn TSS2_RC Esys_Certify_async(ESYS_CONTEXT *esysContext, ESYS_TR objectHandle, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme)
+ \fn TSS2_RC Esys_Certify(ESYS_CONTEXT *esysContext, ESYS_TR objectHandle, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme, TPM2B_ATTEST **certifyInfo, TPMT_SIGNATURE **signature)
+ \fn TSS2_RC Esys_Certify_finish(ESYS_CONTEXT *esysContext, TPM2B_ATTEST **certifyInfo, TPMT_SIGNATURE **signature)
+ \}
+ \defgroup Esys_CertifyCreation
+ \{
+ \fn TSS2_RC Esys_CertifyCreation_async(ESYS_CONTEXT *esysContext, ESYS_TR signHandle, ESYS_TR objectHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPM2B_DIGEST *creationHash, const TPMT_SIG_SCHEME *inScheme, const TPMT_TK_CREATION *creationTicket)
+ \fn TSS2_RC Esys_CertifyCreation(ESYS_CONTEXT *esysContext, ESYS_TR signHandle, ESYS_TR objectHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPM2B_DIGEST *creationHash, const TPMT_SIG_SCHEME *inScheme, const TPMT_TK_CREATION *creationTicket, TPM2B_ATTEST **certifyInfo, TPMT_SIGNATURE **signature)
+ \fn TSS2_RC Esys_CertifyCreation_finish(ESYS_CONTEXT *esysContext, TPM2B_ATTEST **certifyInfo, TPMT_SIGNATURE **signature)
+ \}
+ \defgroup Esys_ChangeEPS
+ \{
+ \fn TSS2_RC Esys_ChangeEPS_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_ChangeEPS(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_ChangeEPS_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_ChangePPS
+ \{
+ \fn TSS2_RC Esys_ChangePPS_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_ChangePPS(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_ChangePPS_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_Clear
+ \{
+ \fn TSS2_RC Esys_Clear_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \}
+ \defgroup Esys_ClearControl
+ \{
+ \fn TSS2_RC Esys_ClearControl_async(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO disable)
+ \fn TSS2_RC Esys_ClearControl(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO disable)
+ \fn TSS2_RC Esys_ClearControl_finish(ESYS_CONTEXT *esysContext)
+ \fn TSS2_RC Esys_Clear(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_Clear_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_ClockRateAdjust
+ \{
+ \fn TSS2_RC Esys_ClockRateAdjust_async(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2_CLOCK_ADJUST rateAdjust)
+ \fn TSS2_RC Esys_ClockRateAdjust(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2_CLOCK_ADJUST rateAdjust)
+ \fn TSS2_RC Esys_ClockRateAdjust_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_ClockSet
+ \{
+ \fn TSS2_RC Esys_ClockSet_async(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT64 newTime)
+ \fn TSS2_RC Esys_ClockSet(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT64 newTime)
+ \fn TSS2_RC Esys_ClockSet_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_Commit
+ \{
+ \fn TSS2_RC Esys_Commit_async(ESYS_CONTEXT *esysContext, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_ECC_POINT *P1, const TPM2B_SENSITIVE_DATA *s2, const TPM2B_ECC_PARAMETER *y2)
+ \fn TSS2_RC Esys_Commit(ESYS_CONTEXT *esysContext, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_ECC_POINT *P1, const TPM2B_SENSITIVE_DATA *s2, const TPM2B_ECC_PARAMETER *y2, TPM2B_ECC_POINT **K, TPM2B_ECC_POINT **L, TPM2B_ECC_POINT **E, UINT16 *counter)
+ \fn TSS2_RC Esys_Commit_finish(ESYS_CONTEXT *esysContext, TPM2B_ECC_POINT **K, TPM2B_ECC_POINT **L, TPM2B_ECC_POINT **E, UINT16 *counter)
+ \}
+ \defgroup Esys_ContextLoad
+ \{
+ \fn TSS2_RC Esys_ContextLoad_async(ESYS_CONTEXT *esysContext, const TPMS_CONTEXT *context)
+ \fn TSS2_RC Esys_ContextLoad(ESYS_CONTEXT *esysContext, const TPMS_CONTEXT *context, ESYS_TR *loadedHandle)
+ \fn TSS2_RC Esys_ContextLoad_finish(ESYS_CONTEXT *esysContext, ESYS_TR *loadedHandle)
+ \}
+ \defgroup Esys_ContextSave
+ \{
+ \fn TSS2_RC Esys_ContextSave_async(ESYS_CONTEXT *esysContext, ESYS_TR saveHandle)
+ \fn TSS2_RC Esys_ContextSave(ESYS_CONTEXT *esysContext, ESYS_TR saveHandle, TPMS_CONTEXT **context)
+ \fn TSS2_RC Esys_ContextSave_finish(ESYS_CONTEXT *esysContext, TPMS_CONTEXT **context)
+ \}
+ \defgroup Esys_Create
+ \{
+ \fn TSS2_RC Esys_Create_async(ESYS_CONTEXT *esysContext, ESYS_TR parentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_SENSITIVE_CREATE *inSensitive, const TPM2B_PUBLIC *inPublic, const TPM2B_DATA *outsideInfo, const TPML_PCR_SELECTION *creationPCR)
+ \fn TSS2_RC Esys_Create(ESYS_CONTEXT *esysContext, ESYS_TR parentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_SENSITIVE_CREATE *inSensitive, const TPM2B_PUBLIC *inPublic, const TPM2B_DATA *outsideInfo, const TPML_PCR_SELECTION *creationPCR, TPM2B_PRIVATE **outPrivate, TPM2B_PUBLIC **outPublic, TPM2B_CREATION_DATA **creationData, TPM2B_DIGEST **creationHash, TPMT_TK_CREATION **creationTicket)
+ \fn TSS2_RC Esys_Create_finish(ESYS_CONTEXT *esysContext, TPM2B_PRIVATE **outPrivate, TPM2B_PUBLIC **outPublic, TPM2B_CREATION_DATA **creationData, TPM2B_DIGEST **creationHash, TPMT_TK_CREATION **creationTicket)
+ \}
+ \defgroup Esys_CreatePrimary
+ \{
+ \fn TSS2_RC Esys_CreatePrimary_async(ESYS_CONTEXT *esysContext, ESYS_TR primaryHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_SENSITIVE_CREATE *inSensitive, const TPM2B_PUBLIC *inPublic, const TPM2B_DATA *outsideInfo, const TPML_PCR_SELECTION *creationPCR)
+ \fn TSS2_RC Esys_CreatePrimary(ESYS_CONTEXT *esysContext, ESYS_TR primaryHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_SENSITIVE_CREATE *inSensitive, const TPM2B_PUBLIC *inPublic, const TPM2B_DATA *outsideInfo, const TPML_PCR_SELECTION *creationPCR, ESYS_TR *objectHandle, TPM2B_PUBLIC **outPublic, TPM2B_CREATION_DATA **creationData, TPM2B_DIGEST **creationHash, TPMT_TK_CREATION **creationTicket)
+ \fn TSS2_RC Esys_CreatePrimary_finish(ESYS_CONTEXT *esysContext, ESYS_TR *objectHandle, TPM2B_PUBLIC **outPublic, TPM2B_CREATION_DATA **creationData, TPM2B_DIGEST **creationHash, TPMT_TK_CREATION **creationTicket)
+ \}
+ \defgroup Esys_DictionaryAttackLockReset
+ \{
+ \fn TSS2_RC Esys_DictionaryAttackLockReset_async(ESYS_CONTEXT *esysContext, ESYS_TR lockHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_DictionaryAttackLockReset(ESYS_CONTEXT *esysContext, ESYS_TR lockHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_DictionaryAttackLockReset_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_DictionaryAttackParameters
+ \{
+ \fn TSS2_RC Esys_DictionaryAttackParameters_async(ESYS_CONTEXT *esysContext, ESYS_TR lockHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT32 newMaxTries, UINT32 newRecoveryTime, UINT32 lockoutRecovery)
+ \fn TSS2_RC Esys_DictionaryAttackParameters(ESYS_CONTEXT *esysContext, ESYS_TR lockHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT32 newMaxTries, UINT32 newRecoveryTime, UINT32 lockoutRecovery)
+ \fn TSS2_RC Esys_DictionaryAttackParameters_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_Duplicate
+ \{
+ \fn TSS2_RC Esys_Duplicate_async(ESYS_CONTEXT *esysContext, ESYS_TR objectHandle, ESYS_TR newParentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *encryptionKeyIn, const TPMT_SYM_DEF_OBJECT *symmetricAlg)
+ \fn TSS2_RC Esys_Duplicate(ESYS_CONTEXT *esysContext, ESYS_TR objectHandle, ESYS_TR newParentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *encryptionKeyIn, const TPMT_SYM_DEF_OBJECT *symmetricAlg, TPM2B_DATA **encryptionKeyOut, TPM2B_PRIVATE **duplicate, TPM2B_ENCRYPTED_SECRET **outSymSeed)
+ \fn TSS2_RC Esys_Duplicate_finish(ESYS_CONTEXT *esysContext, TPM2B_DATA **encryptionKeyOut, TPM2B_PRIVATE **duplicate, TPM2B_ENCRYPTED_SECRET **outSymSeed)
+ \}
+ \defgroup Esys_ECC_Parameters
+ \{
+ \fn TSS2_RC Esys_ECC_Parameters_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_ECC_CURVE curveID)
+ \fn TSS2_RC Esys_ECC_Parameters(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_ECC_CURVE curveID, TPMS_ALGORITHM_DETAIL_ECC **parameters)
+ \fn TSS2_RC Esys_ECC_Parameters_finish(ESYS_CONTEXT *esysContext, TPMS_ALGORITHM_DETAIL_ECC **parameters)
+ \}
+ \defgroup Esys_ECDH_KeyGen
+ \{
+ \fn TSS2_RC Esys_ECDH_KeyGen_async(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_ECDH_KeyGen(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2B_ECC_POINT **zPoint, TPM2B_ECC_POINT **pubPoint)
+ \fn TSS2_RC Esys_ECDH_KeyGen_finish(ESYS_CONTEXT *esysContext, TPM2B_ECC_POINT **zPoint, TPM2B_ECC_POINT **pubPoint)
+ \}
+ \defgroup Esys_ECDH_ZGen
+ \{
+ \fn TSS2_RC Esys_ECDH_ZGen_async(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_ECC_POINT *inPoint)
+ \fn TSS2_RC Esys_ECDH_ZGen(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_ECC_POINT *inPoint, TPM2B_ECC_POINT **outPoint)
+ \fn TSS2_RC Esys_ECDH_ZGen_finish(ESYS_CONTEXT *esysContext, TPM2B_ECC_POINT **outPoint)
+ \}
+ \defgroup Esys_EC_Ephemeral
+ \{
+ \fn TSS2_RC Esys_EC_Ephemeral_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_ECC_CURVE curveID)
+ \fn TSS2_RC Esys_EC_Ephemeral(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_ECC_CURVE curveID, TPM2B_ECC_POINT **Q, UINT16 *counter)
+ \fn TSS2_RC Esys_EC_Ephemeral_finish(ESYS_CONTEXT *esysContext, TPM2B_ECC_POINT **Q, UINT16 *counter)
+ \}
+ \defgroup Esys_EncryptDecrypt
+ \{
+ \fn TSS2_RC Esys_EncryptDecrypt_async(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO decrypt, TPMI_ALG_SYM_MODE mode, const TPM2B_IV *ivIn, const TPM2B_MAX_BUFFER *inData)
+ \fn TSS2_RC Esys_EncryptDecrypt(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO decrypt, TPMI_ALG_SYM_MODE mode, const TPM2B_IV *ivIn, const TPM2B_MAX_BUFFER *inData, TPM2B_MAX_BUFFER **outData, TPM2B_IV **ivOut)
+ \fn TSS2_RC Esys_EncryptDecrypt_finish(ESYS_CONTEXT *esysContext, TPM2B_MAX_BUFFER **outData, TPM2B_IV **ivOut)
+ \}
+ \defgroup Esys_EventSequenceComplete
+ \{
+ \fn TSS2_RC Esys_EventSequenceComplete_async(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR sequenceHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *buffer)
+ \fn TSS2_RC Esys_EventSequenceComplete(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR sequenceHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *buffer, TPML_DIGEST_VALUES **results)
+ \fn TSS2_RC Esys_EventSequenceComplete_finish(ESYS_CONTEXT *esysContext, TPML_DIGEST_VALUES **results)
+ \}
+ \defgroup Esys_EvictControl
+ \{
+ \fn TSS2_RC Esys_EvictControl_async(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR objectHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_DH_PERSISTENT persistentHandle)
+ \fn TSS2_RC Esys_EvictControl(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR objectHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_DH_PERSISTENT persistentHandle, ESYS_TR *newObjectHandle)
+ \fn TSS2_RC Esys_EvictControl_finish(ESYS_CONTEXT *esysContext, ESYS_TR *newObjectHandle)
+ \}
+ \defgroup Esys_FlushContext
+ \{
+ \fn TSS2_RC Esys_FlushContext_async(ESYS_CONTEXT *esysContext, TPMI_DH_CONTEXT flushHandle)
+ \fn TSS2_RC Esys_FlushContext(ESYS_CONTEXT *esysContext, TPMI_DH_CONTEXT flushHandle)
+ \fn TSS2_RC Esys_FlushContext_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_GetCapability
+ \{
+ \fn TSS2_RC Esys_GetCapability_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2_CAP capability, UINT32 property, UINT32 propertyCount)
+ \fn TSS2_RC Esys_GetCapability(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2_CAP capability, UINT32 property, UINT32 propertyCount, TPMI_YES_NO *moreData, TPMS_CAPABILITY_DATA **capabilityData)
+ \fn TSS2_RC Esys_GetCapability_finish(ESYS_CONTEXT *esysContext, TPMI_YES_NO *moreData, TPMS_CAPABILITY_DATA **capabilityData)
+ \}
+ \defgroup Esys_GetCommandAuditDigest
+ \{
+ \fn TSS2_RC Esys_GetCommandAuditDigest_async(ESYS_CONTEXT *esysContext, ESYS_TR privacyHandle, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme)
+ \fn TSS2_RC Esys_GetCommandAuditDigest(ESYS_CONTEXT *esysContext, ESYS_TR privacyHandle, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme, TPM2B_ATTEST **auditInfo, TPMT_SIGNATURE **signature)
+ \fn TSS2_RC Esys_GetCommandAuditDigest_finish(ESYS_CONTEXT *esysContext, TPM2B_ATTEST **auditInfo, TPMT_SIGNATURE **signature)
+ \}
+ \defgroup Esys_GetRandom
+ \{
+ \fn TSS2_RC Esys_GetRandom_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT16 bytesRequested)
+ \fn TSS2_RC Esys_GetRandom(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT16 bytesRequested, TPM2B_DIGEST **randomBytes)
+ \fn TSS2_RC Esys_GetRandom_finish(ESYS_CONTEXT *esysContext, TPM2B_DIGEST **randomBytes)
+ \}
+ \defgroup Esys_GetSessionAuditDigest
+ \{
+ \fn TSS2_RC Esys_GetSessionAuditDigest_async(ESYS_CONTEXT *esysContext, ESYS_TR privacyAdminHandle, ESYS_TR signHandle, ESYS_TR sessionHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme)
+ \fn TSS2_RC Esys_GetSessionAuditDigest(ESYS_CONTEXT *esysContext, ESYS_TR privacyAdminHandle, ESYS_TR signHandle, ESYS_TR sessionHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme, TPM2B_ATTEST **auditInfo, TPMT_SIGNATURE **signature)
+ \fn TSS2_RC Esys_GetSessionAuditDigest_finish(ESYS_CONTEXT *esysContext, TPM2B_ATTEST **auditInfo, TPMT_SIGNATURE **signature)
+ \}
+ \defgroup Esys_GetTestResult
+ \{
+ \fn TSS2_RC Esys_GetTestResult_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_GetTestResult(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2B_MAX_BUFFER **outData, TPM2_RC *testResult)
+ \fn TSS2_RC Esys_GetTestResult_finish(ESYS_CONTEXT *esysContext, TPM2B_MAX_BUFFER **outData, TPM2_RC *testResult)
+ \}
+ \defgroup Esys_GetTime
+ \{
+ \fn TSS2_RC Esys_GetTime_async(ESYS_CONTEXT *esysContext, ESYS_TR privacyAdminHandle, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme)
+ \fn TSS2_RC Esys_GetTime(ESYS_CONTEXT *esysContext, ESYS_TR privacyAdminHandle, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme, TPM2B_ATTEST **timeInfo, TPMT_SIGNATURE **signature)
+ \fn TSS2_RC Esys_GetTime_finish(ESYS_CONTEXT *esysContext, TPM2B_ATTEST **timeInfo, TPMT_SIGNATURE **signature)
+ \}
+ \defgroup Esys_Hash
+ \{
+ \fn TSS2_RC Esys_Hash_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *data, TPMI_ALG_HASH hashAlg, TPMI_RH_HIERARCHY hierarchy)
+ \fn TSS2_RC Esys_Hash(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *data, TPMI_ALG_HASH hashAlg, TPMI_RH_HIERARCHY hierarchy, TPM2B_DIGEST **outHash, TPMT_TK_HASHCHECK **validation)
+ \fn TSS2_RC Esys_Hash_finish(ESYS_CONTEXT *esysContext, TPM2B_DIGEST **outHash, TPMT_TK_HASHCHECK **validation)
+ \}
+ \defgroup Esys_HashSequenceStart
+ \{
+ \fn TSS2_RC Esys_HashSequenceStart_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *auth, TPMI_ALG_HASH hashAlg)
+ \fn TSS2_RC Esys_HashSequenceStart(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *auth, TPMI_ALG_HASH hashAlg, ESYS_TR *sequenceHandle)
+ \fn TSS2_RC Esys_HashSequenceStart_finish(ESYS_CONTEXT *esysContext, ESYS_TR *sequenceHandle)
+ \}
+ \defgroup Esys_HierarchyChangeAuth
+ \{
+ \fn TSS2_RC Esys_HierarchyChangeAuth_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *newAuth)
+ \fn TSS2_RC Esys_HierarchyChangeAuth(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *newAuth)
+ \fn TSS2_RC Esys_HierarchyChangeAuth_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_HierarchyControl
+ \{
+ \fn TSS2_RC Esys_HierarchyControl_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_RH_ENABLES enable, TPMI_YES_NO state)
+ \fn TSS2_RC Esys_HierarchyControl(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_RH_ENABLES enable, TPMI_YES_NO state)
+ \fn TSS2_RC Esys_HierarchyControl_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_HMAC
+ \{
+ \fn TSS2_RC Esys_HMAC_async(ESYS_CONTEXT *esysContext, ESYS_TR handle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *buffer, TPMI_ALG_HASH hashAlg)
+ \fn TSS2_RC Esys_HMAC(ESYS_CONTEXT *esysContext, ESYS_TR handle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *buffer, TPMI_ALG_HASH hashAlg, TPM2B_DIGEST **outHMAC)
+ \fn TSS2_RC Esys_HMAC_finish(ESYS_CONTEXT *esysContext, TPM2B_DIGEST **outHMAC)
+ \}
+ \defgroup Esys_HMAC_Start
+ \{
+ \fn TSS2_RC Esys_HMAC_Start_async(ESYS_CONTEXT *esysContext, ESYS_TR handle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *auth, TPMI_ALG_HASH hashAlg)
+ \fn TSS2_RC Esys_HMAC_Start(ESYS_CONTEXT *esysContext, ESYS_TR handle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *auth, TPMI_ALG_HASH hashAlg, ESYS_TR *sequenceHandle)
+ \fn TSS2_RC Esys_HMAC_Start_finish(ESYS_CONTEXT *esysContext, ESYS_TR *sequenceHandle)
+ \}
+ \defgroup Esys_Import
+ \{
+ \fn TSS2_RC Esys_Import_async(ESYS_CONTEXT *esysContext, ESYS_TR parentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *encryptionKey, const TPM2B_PUBLIC *objectPublic, const TPM2B_PRIVATE *duplicate, const TPM2B_ENCRYPTED_SECRET *inSymSeed, const TPMT_SYM_DEF_OBJECT *symmetricAlg)
+ \fn TSS2_RC Esys_Import(ESYS_CONTEXT *esysContext, ESYS_TR parentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *encryptionKey, const TPM2B_PUBLIC *objectPublic, const TPM2B_PRIVATE *duplicate, const TPM2B_ENCRYPTED_SECRET *inSymSeed, const TPMT_SYM_DEF_OBJECT *symmetricAlg, TPM2B_PRIVATE **outPrivate)
+ \fn TSS2_RC Esys_Import_finish(ESYS_CONTEXT *esysContext, TPM2B_PRIVATE **outPrivate)
+ \}
+ \defgroup Esys_IncrementalSelfTest
+ \{
+ \fn TSS2_RC Esys_IncrementalSelfTest_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_ALG *toTest)
+ \fn TSS2_RC Esys_IncrementalSelfTest(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_ALG *toTest, TPML_ALG **toDoList)
+ \fn TSS2_RC Esys_IncrementalSelfTest_finish(ESYS_CONTEXT *esysContext, TPML_ALG **toDoList)
+ \}
+ \defgroup Esys_Load
+ \{
+ \fn TSS2_RC Esys_Load_async(ESYS_CONTEXT *esysContext, ESYS_TR parentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_PRIVATE *inPrivate, const TPM2B_PUBLIC *inPublic)
+ \fn TSS2_RC Esys_Load(ESYS_CONTEXT *esysContext, ESYS_TR parentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_PRIVATE *inPrivate, const TPM2B_PUBLIC *inPublic, ESYS_TR *objectHandle)
+ \}
+ \defgroup Esys_LoadExternal
+ \{
+ \fn TSS2_RC Esys_LoadExternal_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_SENSITIVE *inPrivate, const TPM2B_PUBLIC *inPublic, TPMI_RH_HIERARCHY hierarchy)
+ \fn TSS2_RC Esys_LoadExternal(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_SENSITIVE *inPrivate, const TPM2B_PUBLIC *inPublic, TPMI_RH_HIERARCHY hierarchy, ESYS_TR *objectHandle)
+ \fn TSS2_RC Esys_LoadExternal_finish(ESYS_CONTEXT *esysContext, ESYS_TR *objectHandle)
+ \fn TSS2_RC Esys_Load_finish(ESYS_CONTEXT *esysContext, ESYS_TR *objectHandle)
+ \}
+ \defgroup Esys_MakeCredential
+ \{
+ \fn TSS2_RC Esys_MakeCredential_async(ESYS_CONTEXT *esysContext, ESYS_TR handle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *credential, const TPM2B_NAME *objectName)
+ \fn TSS2_RC Esys_MakeCredential(ESYS_CONTEXT *esysContext, ESYS_TR handle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *credential, const TPM2B_NAME *objectName, TPM2B_ID_OBJECT **credentialBlob, TPM2B_ENCRYPTED_SECRET **secret)
+ \fn TSS2_RC Esys_MakeCredential_finish(ESYS_CONTEXT *esysContext, TPM2B_ID_OBJECT **credentialBlob, TPM2B_ENCRYPTED_SECRET **secret)
+ \}
+ \defgroup Esys_NV_Certify
+ \{
+ \fn TSS2_RC Esys_NV_Certify_async(ESYS_CONTEXT *esysContext, ESYS_TR signHandle, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme, UINT16 size, UINT16 offset)
+ \fn TSS2_RC Esys_NV_Certify(ESYS_CONTEXT *esysContext, ESYS_TR signHandle, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme, UINT16 size, UINT16 offset, TPM2B_ATTEST **certifyInfo, TPMT_SIGNATURE **signature)
+ \fn TSS2_RC Esys_NV_Certify_finish(ESYS_CONTEXT *esysContext, TPM2B_ATTEST **certifyInfo, TPMT_SIGNATURE **signature)
+ \}
+ \defgroup Esys_NV_ChangeAuth
+ \{
+ \fn TSS2_RC Esys_NV_ChangeAuth_async(ESYS_CONTEXT *esysContext, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *newAuth)
+ \fn TSS2_RC Esys_NV_ChangeAuth(ESYS_CONTEXT *esysContext, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *newAuth)
+ \fn TSS2_RC Esys_NV_ChangeAuth_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_NV_DefineSpace
+ \{
+ \fn TSS2_RC Esys_NV_DefineSpace_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *auth, const TPM2B_NV_PUBLIC *publicInfo)
+ \fn TSS2_RC Esys_NV_DefineSpace(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *auth, const TPM2B_NV_PUBLIC *publicInfo, ESYS_TR *nvHandle)
+ \fn TSS2_RC Esys_NV_DefineSpace_finish(ESYS_CONTEXT *esysContext, ESYS_TR *nvHandle)
+ \}
+ \defgroup Esys_NV_Extend
+ \{
+ \fn TSS2_RC Esys_NV_Extend_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_NV_BUFFER *data)
+ \fn TSS2_RC Esys_NV_Extend(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_NV_BUFFER *data)
+ \fn TSS2_RC Esys_NV_Extend_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_NV_GlobalWriteLock
+ \{
+ \fn TSS2_RC Esys_NV_GlobalWriteLock_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_NV_GlobalWriteLock(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_NV_GlobalWriteLock_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_NV_Increment
+ \{
+ \fn TSS2_RC Esys_NV_Increment_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_NV_Increment(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_NV_Increment_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_NV_Read
+ \{
+ \fn TSS2_RC Esys_NV_Read_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT16 size, UINT16 offset)
+ \fn TSS2_RC Esys_NV_Read(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT16 size, UINT16 offset, TPM2B_MAX_NV_BUFFER **data)
+ \fn TSS2_RC Esys_NV_Read_finish(ESYS_CONTEXT *esysContext, TPM2B_MAX_NV_BUFFER **data)
+ \}
+ \defgroup Esys_NV_ReadLock
+ \{
+ \fn TSS2_RC Esys_NV_ReadLock_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_NV_ReadLock(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_NV_ReadLock_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_NV_ReadPublic
+ \{
+ \fn TSS2_RC Esys_NV_ReadPublic_async(ESYS_CONTEXT *esysContext, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_NV_ReadPublic(ESYS_CONTEXT *esysContext, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2B_NV_PUBLIC **nvPublic, TPM2B_NAME **nvName)
+ \fn TSS2_RC Esys_NV_ReadPublic_finish(ESYS_CONTEXT *esysContext, TPM2B_NV_PUBLIC **nvPublic, TPM2B_NAME **nvName)
+ \}
+ \defgroup Esys_NV_SetBits
+ \{
+ \fn TSS2_RC Esys_NV_SetBits_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT64 bits)
+ \fn TSS2_RC Esys_NV_SetBits(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT64 bits)
+ \fn TSS2_RC Esys_NV_SetBits_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_NV_UndefineSpace
+ \{
+ \fn TSS2_RC Esys_NV_UndefineSpace_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_NV_UndefineSpace(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_NV_UndefineSpace_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_NV_UndefineSpaceSpecial
+ \{
+ \fn TSS2_RC Esys_NV_UndefineSpaceSpecial_async(ESYS_CONTEXT *esysContext, ESYS_TR nvIndex, ESYS_TR platform, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_NV_UndefineSpaceSpecial(ESYS_CONTEXT *esysContext, ESYS_TR nvIndex, ESYS_TR platform, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_NV_UndefineSpaceSpecial_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_NV_Write
+ \{
+ \fn TSS2_RC Esys_NV_Write_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_NV_BUFFER *data, UINT16 offset)
+ \fn TSS2_RC Esys_NV_Write(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_NV_BUFFER *data, UINT16 offset)
+ \fn TSS2_RC Esys_NV_Write_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_NV_WriteLock
+ \{
+ \fn TSS2_RC Esys_NV_WriteLock_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_NV_WriteLock(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_NV_WriteLock_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_ObjectChangeAuth
+ \{
+ \fn TSS2_RC Esys_ObjectChangeAuth_async(ESYS_CONTEXT *esysContext, ESYS_TR objectHandle, ESYS_TR parentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *newAuth)
+ \fn TSS2_RC Esys_ObjectChangeAuth(ESYS_CONTEXT *esysContext, ESYS_TR objectHandle, ESYS_TR parentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *newAuth, TPM2B_PRIVATE **outPrivate)
+ \fn TSS2_RC Esys_ObjectChangeAuth_finish(ESYS_CONTEXT *esysContext, TPM2B_PRIVATE **outPrivate)
+ \}
+ \defgroup Esys_PCR_Allocate
+ \{
+ \fn TSS2_RC Esys_PCR_Allocate_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_PCR_SELECTION *pcrAllocation)
+ \fn TSS2_RC Esys_PCR_Allocate(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_PCR_SELECTION *pcrAllocation, TPMI_YES_NO *allocationSuccess, UINT32 *maxPCR, UINT32 *sizeNeeded, UINT32 *sizeAvailable)
+ \fn TSS2_RC Esys_PCR_Allocate_finish(ESYS_CONTEXT *esysContext, TPMI_YES_NO *allocationSuccess, UINT32 *maxPCR, UINT32 *sizeNeeded, UINT32 *sizeAvailable)
+ \}
+ \defgroup Esys_PCR_Event
+ \{
+ \fn TSS2_RC Esys_PCR_Event_async(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_EVENT *eventData)
+ \fn TSS2_RC Esys_PCR_Event(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_EVENT *eventData, TPML_DIGEST_VALUES **digests)
+ \fn TSS2_RC Esys_PCR_Event_finish(ESYS_CONTEXT *esysContext, TPML_DIGEST_VALUES **digests)
+ \}
+ \defgroup Esys_PCR_Extend
+ \{
+ \fn TSS2_RC Esys_PCR_Extend_async(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_DIGEST_VALUES *digests)
+ \fn TSS2_RC Esys_PCR_Extend(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_DIGEST_VALUES *digests)
+ \fn TSS2_RC Esys_PCR_Extend_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PCR_Read
+ \{
+ \fn TSS2_RC Esys_PCR_Read_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_PCR_SELECTION *pcrSelectionIn)
+ \fn TSS2_RC Esys_PCR_Read(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_PCR_SELECTION *pcrSelectionIn, UINT32 *pcrUpdateCounter, TPML_PCR_SELECTION **pcrSelectionOut, TPML_DIGEST **pcrValues)
+ \fn TSS2_RC Esys_PCR_Read_finish(ESYS_CONTEXT *esysContext, UINT32 *pcrUpdateCounter, TPML_PCR_SELECTION **pcrSelectionOut, TPML_DIGEST **pcrValues)
+ \}
+ \defgroup Esys_PCR_Reset
+ \{
+ \fn TSS2_RC Esys_PCR_Reset_async(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_PCR_Reset(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_PCR_Reset_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PCR_SetAuthPolicy
+ \{
+ \fn TSS2_RC Esys_PCR_SetAuthPolicy_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *authPolicy, TPMI_ALG_HASH hashAlg, TPMI_DH_PCR pcrNum)
+ \fn TSS2_RC Esys_PCR_SetAuthPolicy(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *authPolicy, TPMI_ALG_HASH hashAlg, TPMI_DH_PCR pcrNum)
+ \fn TSS2_RC Esys_PCR_SetAuthPolicy_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PCR_SetAuthValue
+ \{
+ \fn TSS2_RC Esys_PCR_SetAuthValue_async(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *auth)
+ \fn TSS2_RC Esys_PCR_SetAuthValue(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *auth)
+ \fn TSS2_RC Esys_PCR_SetAuthValue_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PolicyAuthorize
+ \{
+ \fn TSS2_RC Esys_PolicyAuthorize_async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *approvedPolicy, const TPM2B_NONCE *policyRef, const TPM2B_NAME *keySign, const TPMT_TK_VERIFIED *checkTicket)
+ \fn TSS2_RC Esys_PolicyAuthorize(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *approvedPolicy, const TPM2B_NONCE *policyRef, const TPM2B_NAME *keySign, const TPMT_TK_VERIFIED *checkTicket)
+ \fn TSS2_RC Esys_PolicyAuthorize_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PolicyAuthValue
+ \{
+ \fn TSS2_RC Esys_PolicyAuthValue_async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_PolicyAuthValue(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_PolicyAuthValue_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PolicyCommandCode
+ \{
+ \fn TSS2_RC Esys_PolicyCommandCode_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, TPM2_CC code)
+ \fn TSS2_RC Esys_PolicyCommandCode(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, TPM2_CC code)
+ \fn TSS2_RC Esys_PolicyCommandCode_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PolicyCounterTimer
+ \{
+ \fn TSS2_RC Esys_PolicyCounterTimer_async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_OPERAND *operandB, UINT16 offset, TPM2_EO operation)
+ \fn TSS2_RC Esys_PolicyCounterTimer(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_OPERAND *operandB, UINT16 offset, TPM2_EO operation)
+ \fn TSS2_RC Esys_PolicyCounterTimer_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PolicyCpHash
+ \{
+ \fn TSS2_RC Esys_PolicyCpHash_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, const TPM2B_DIGEST *cpHashA)
+ \fn TSS2_RC Esys_PolicyCpHash(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, const TPM2B_DIGEST *cpHashA)
+ \fn TSS2_RC Esys_PolicyCpHash_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PolicyDuplicationSelect
+ \{
+ \fn TSS2_RC Esys_PolicyDuplicationSelect_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, const TPM2B_NAME *objectName, const TPM2B_NAME *newParentName, TPMI_YES_NO includeObject)
+ \fn TSS2_RC Esys_PolicyDuplicationSelect(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, const TPM2B_NAME *objectName, const TPM2B_NAME *newParentName, TPMI_YES_NO includeObject)
+ \fn TSS2_RC Esys_PolicyDuplicationSelect_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PolicyGetDigest
+ \{
+ \fn TSS2_RC Esys_PolicyGetDigest_async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_PolicyGetDigest(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2B_DIGEST **policyDigest)
+ \fn TSS2_RC Esys_PolicyGetDigest_finish(ESYS_CONTEXT *esysContext, TPM2B_DIGEST **policyDigest)
+ \}
+ \defgroup Esys_PolicyLocality
+ \{
+ \fn TSS2_RC Esys_PolicyLocality_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, TPMA_LOCALITY locality)
+ \fn TSS2_RC Esys_PolicyLocality(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, TPMA_LOCALITY locality)
+ \fn TSS2_RC Esys_PolicyLocality_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PolicyNameHash
+ \{
+ \fn TSS2_RC Esys_PolicyNameHash_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, const TPM2B_DIGEST *nameHash)
+ \fn TSS2_RC Esys_PolicyNameHash(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, const TPM2B_DIGEST *nameHash)
+ \fn TSS2_RC Esys_PolicyNameHash_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PolicyNV
+ \{
+ \fn TSS2_RC Esys_PolicyNV_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_OPERAND *operandB, UINT16 offset, TPM2_EO operation)
+ \fn TSS2_RC Esys_PolicyNV(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_OPERAND *operandB, UINT16 offset, TPM2_EO operation)
+ \fn TSS2_RC Esys_PolicyNV_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PolicyNvWritten
+ \{
+ \fn TSS2_RC Esys_PolicyNvWritten_async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO writtenSet)
+ \fn TSS2_RC Esys_PolicyNvWritten(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO writtenSet)
+ \fn TSS2_RC Esys_PolicyNvWritten_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PolicyOR
+ \{
+ \fn TSS2_RC Esys_PolicyOR_async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_DIGEST *pHashList)
+ \fn TSS2_RC Esys_PolicyOR(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_DIGEST *pHashList)
+ \fn TSS2_RC Esys_PolicyOR_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PolicyPassword
+ \{
+ \fn TSS2_RC Esys_PolicyPassword_async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_PolicyPassword(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_PolicyPassword_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PolicyPCR
+ \{
+ \fn TSS2_RC Esys_PolicyPCR_async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *pcrDigest, const TPML_PCR_SELECTION *pcrs)
+ \fn TSS2_RC Esys_PolicyPCR(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *pcrDigest, const TPML_PCR_SELECTION *pcrs)
+ \fn TSS2_RC Esys_PolicyPCR_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PolicyPhysicalPresence
+ \{
+ \fn TSS2_RC Esys_PolicyPhysicalPresence_async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_PolicyPhysicalPresence(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_PolicyPhysicalPresence_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PolicyRestart
+ \{
+ \fn TSS2_RC Esys_PolicyRestart_async(ESYS_CONTEXT *esysContext, ESYS_TR sessionHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_PolicyRestart(ESYS_CONTEXT *esysContext, ESYS_TR sessionHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_PolicyRestart_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PolicySecret
+ \{
+ \fn TSS2_RC Esys_PolicySecret_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NONCE *nonceTPM, const TPM2B_DIGEST *cpHashA, const TPM2B_NONCE *policyRef, INT32 expiration)
+ \fn TSS2_RC Esys_PolicySecret(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NONCE *nonceTPM, const TPM2B_DIGEST *cpHashA, const TPM2B_NONCE *policyRef, INT32 expiration, TPM2B_TIMEOUT **timeout, TPMT_TK_AUTH **policyTicket)
+ \fn TSS2_RC Esys_PolicySecret_finish(ESYS_CONTEXT *esysContext, TPM2B_TIMEOUT **timeout, TPMT_TK_AUTH **policyTicket)
+ \}
+ \defgroup Esys_PolicySigned
+ \{
+ \fn TSS2_RC Esys_PolicySigned_async(ESYS_CONTEXT *esysContext, ESYS_TR authObject, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NONCE *nonceTPM, const TPM2B_DIGEST *cpHashA, const TPM2B_NONCE *policyRef, INT32 expiration, const TPMT_SIGNATURE *auth)
+ \fn TSS2_RC Esys_PolicySigned(ESYS_CONTEXT *esysContext, ESYS_TR authObject, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NONCE *nonceTPM, const TPM2B_DIGEST *cpHashA, const TPM2B_NONCE *policyRef, INT32 expiration, const TPMT_SIGNATURE *auth, TPM2B_TIMEOUT **timeout, TPMT_TK_AUTH **policyTicket)
+ \fn TSS2_RC Esys_PolicySigned_finish(ESYS_CONTEXT *esysContext, TPM2B_TIMEOUT **timeout, TPMT_TK_AUTH **policyTicket)
+ \}
+ \defgroup Esys_PolicyTicket
+ \{
+ \fn TSS2_RC Esys_PolicyTicket_async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_TIMEOUT *timeout, const TPM2B_DIGEST *cpHashA, const TPM2B_NONCE *policyRef, const TPM2B_NAME *authName, const TPMT_TK_AUTH *ticket)
+ \fn TSS2_RC Esys_PolicyTicket(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_TIMEOUT *timeout, const TPM2B_DIGEST *cpHashA, const TPM2B_NONCE *policyRef, const TPM2B_NAME *authName, const TPMT_TK_AUTH *ticket)
+ \fn TSS2_RC Esys_PolicyTicket_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_PP_Commands
+ \{
+ \fn TSS2_RC Esys_PP_Commands_async(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_CC *setList, const TPML_CC *clearList)
+ \fn TSS2_RC Esys_PP_Commands(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_CC *setList, const TPML_CC *clearList)
+ \fn TSS2_RC Esys_PP_Commands_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_Quote
+ \{
+ \fn TSS2_RC Esys_Quote_async(ESYS_CONTEXT *esysContext, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme, const TPML_PCR_SELECTION *PCRselect)
+ \fn TSS2_RC Esys_Quote(ESYS_CONTEXT *esysContext, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme, const TPML_PCR_SELECTION *PCRselect, TPM2B_ATTEST **quoted, TPMT_SIGNATURE **signature)
+ \fn TSS2_RC Esys_Quote_finish(ESYS_CONTEXT *esysContext, TPM2B_ATTEST **quoted, TPMT_SIGNATURE **signature)
+ \}
+ \defgroup Esys_ReadClock
+ \{
+ \fn TSS2_RC Esys_ReadClock_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_ReadClock(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMS_TIME_INFO **currentTime)
+ \fn TSS2_RC Esys_ReadClock_finish(ESYS_CONTEXT *esysContext, TPMS_TIME_INFO **currentTime)
+ \}
+ \defgroup Esys_ReadPublic
+ \{
+ \fn TSS2_RC Esys_ReadPublic_async(ESYS_CONTEXT *esysContext, ESYS_TR objectHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_ReadPublic(ESYS_CONTEXT *esysContext, ESYS_TR objectHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2B_PUBLIC **outPublic, TPM2B_NAME **name, TPM2B_NAME **qualifiedName)
+ \fn TSS2_RC Esys_ReadPublic_finish(ESYS_CONTEXT *esysContext, TPM2B_PUBLIC **outPublic, TPM2B_NAME **name, TPM2B_NAME **qualifiedName)
+ \}
+ \defgroup Esys_Rewrap
+ \{
+ \fn TSS2_RC Esys_Rewrap_async(ESYS_CONTEXT *esysContext, ESYS_TR oldParent, ESYS_TR newParent, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_PRIVATE *inDuplicate, const TPM2B_NAME *name, const TPM2B_ENCRYPTED_SECRET *inSymSeed)
+ \fn TSS2_RC Esys_Rewrap(ESYS_CONTEXT *esysContext, ESYS_TR oldParent, ESYS_TR newParent, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_PRIVATE *inDuplicate, const TPM2B_NAME *name, const TPM2B_ENCRYPTED_SECRET *inSymSeed, TPM2B_PRIVATE **outDuplicate, TPM2B_ENCRYPTED_SECRET **outSymSeed)
+ \fn TSS2_RC Esys_Rewrap_finish(ESYS_CONTEXT *esysContext, TPM2B_PRIVATE **outDuplicate, TPM2B_ENCRYPTED_SECRET **outSymSeed)
+ \}
+ \defgroup Esys_RSA_Decrypt
+ \{
+ \fn TSS2_RC Esys_RSA_Decrypt_async(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_PUBLIC_KEY_RSA *cipherText, const TPMT_RSA_DECRYPT *inScheme, const TPM2B_DATA *label)
+ \fn TSS2_RC Esys_RSA_Decrypt(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_PUBLIC_KEY_RSA *cipherText, const TPMT_RSA_DECRYPT *inScheme, const TPM2B_DATA *label, TPM2B_PUBLIC_KEY_RSA **message)
+ \fn TSS2_RC Esys_RSA_Decrypt_finish(ESYS_CONTEXT *esysContext, TPM2B_PUBLIC_KEY_RSA **message)
+ \}
+ \defgroup Esys_RSA_Encrypt
+ \{
+ \fn TSS2_RC Esys_RSA_Encrypt_async(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_PUBLIC_KEY_RSA *message, const TPMT_RSA_DECRYPT *inScheme, const TPM2B_DATA *label)
+ \fn TSS2_RC Esys_RSA_Encrypt(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_PUBLIC_KEY_RSA *message, const TPMT_RSA_DECRYPT *inScheme, const TPM2B_DATA *label, TPM2B_PUBLIC_KEY_RSA **outData)
+ \fn TSS2_RC Esys_RSA_Encrypt_finish(ESYS_CONTEXT *esysContext, TPM2B_PUBLIC_KEY_RSA **outData)
+ \}
+ \defgroup Esys_SelfTest
+ \{
+ \fn TSS2_RC Esys_SelfTest_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO fullTest)
+ \fn TSS2_RC Esys_SelfTest(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO fullTest)
+ \fn TSS2_RC Esys_SelfTest_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_SequenceComplete
+ \{
+ \fn TSS2_RC Esys_SequenceComplete_async(ESYS_CONTEXT *esysContext, ESYS_TR sequenceHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *buffer, TPMI_RH_HIERARCHY hierarchy)
+ \fn TSS2_RC Esys_SequenceComplete(ESYS_CONTEXT *esysContext, ESYS_TR sequenceHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *buffer, TPMI_RH_HIERARCHY hierarchy, TPM2B_DIGEST **result, TPMT_TK_HASHCHECK **validation)
+ \fn TSS2_RC Esys_SequenceComplete_finish(ESYS_CONTEXT *esysContext, TPM2B_DIGEST **result, TPMT_TK_HASHCHECK **validation)
+ \}
+ \defgroup Esys_SequenceUpdate
+ \{
+ \fn TSS2_RC Esys_SequenceUpdate_async(ESYS_CONTEXT *esysContext, ESYS_TR sequenceHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *buffer)
+ \fn TSS2_RC Esys_SequenceUpdate(ESYS_CONTEXT *esysContext, ESYS_TR sequenceHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *buffer)
+ \fn TSS2_RC Esys_SequenceUpdate_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_SetAlgorithmSet
+ \{
+ \fn TSS2_RC Esys_SetAlgorithmSet_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT32 algorithmSet)
+ \fn TSS2_RC Esys_SetAlgorithmSet(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT32 algorithmSet)
+ \fn TSS2_RC Esys_SetAlgorithmSet_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_SetCommandCodeAuditStatus
+ \{
+ \fn TSS2_RC Esys_SetCommandCodeAuditStatus_async(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_ALG_HASH auditAlg, const TPML_CC *setList, const TPML_CC *clearList)
+ \fn TSS2_RC Esys_SetCommandCodeAuditStatus(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_ALG_HASH auditAlg, const TPML_CC *setList, const TPML_CC *clearList)
+ \fn TSS2_RC Esys_SetCommandCodeAuditStatus_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_SetPrimaryPolicy
+ \{
+ \fn TSS2_RC Esys_SetPrimaryPolicy_async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *authPolicy, TPMI_ALG_HASH hashAlg)
+ \fn TSS2_RC Esys_SetPrimaryPolicy(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *authPolicy, TPMI_ALG_HASH hashAlg)
+ \fn TSS2_RC Esys_SetPrimaryPolicy_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_Shutdown
+ \{
+ \fn TSS2_RC Esys_Shutdown_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2_SU shutdownType)
+ \fn TSS2_RC Esys_Shutdown(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2_SU shutdownType)
+ \fn TSS2_RC Esys_Shutdown_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_Sign
+ \{
+ \fn TSS2_RC Esys_Sign_async(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *digest, const TPMT_SIG_SCHEME *inScheme, const TPMT_TK_HASHCHECK *validation)
+ \fn TSS2_RC Esys_Sign(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *digest, const TPMT_SIG_SCHEME *inScheme, const TPMT_TK_HASHCHECK *validation, TPMT_SIGNATURE **signature)
+ \fn TSS2_RC Esys_Sign_finish(ESYS_CONTEXT *esysContext, TPMT_SIGNATURE **signature)
+ \}
+ \defgroup Esys_StartAuthSession
+ \{
+ \fn TSS2_RC Esys_StartAuthSession_async(ESYS_CONTEXT *esysContext, ESYS_TR tpmKey, ESYS_TR bind, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NONCE *nonceCaller, const TPM2B_ENCRYPTED_SECRET *encryptedSalt, TPM2_SE sessionType, const TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH authHash)
+ \fn TSS2_RC Esys_StartAuthSession(ESYS_CONTEXT *esysContext, ESYS_TR tpmKey, ESYS_TR bind, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NONCE *nonceCaller, const TPM2B_ENCRYPTED_SECRET *encryptedSalt, TPM2_SE sessionType, const TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH authHash, ESYS_TR *sessionHandle, TPM2B_NONCE **nonceTPM)
+ \fn TSS2_RC Esys_StartAuthSession_finish(ESYS_CONTEXT *esysContext, ESYS_TR *sessionHandle, TPM2B_NONCE **nonceTPM)
+ \}
+ \defgroup Esys_Startup
+ \{
+ \fn TSS2_RC Esys_Startup_async(ESYS_CONTEXT *esysContext, TPM2_SU startupType)
+ \fn TSS2_RC Esys_Startup(ESYS_CONTEXT *esysContext, TPM2_SU startupType)
+ \fn TSS2_RC Esys_Startup_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_StirRandom
+ \{
+ \fn TSS2_RC Esys_StirRandom_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_SENSITIVE_DATA *inData)
+ \fn TSS2_RC Esys_StirRandom(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_SENSITIVE_DATA *inData)
+ \fn TSS2_RC Esys_StirRandom_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_TestParms
+ \{
+ \fn TSS2_RC Esys_TestParms_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPMT_PUBLIC_PARMS *parameters)
+ \fn TSS2_RC Esys_TestParms(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPMT_PUBLIC_PARMS *parameters)
+ \fn TSS2_RC Esys_TestParms_finish(ESYS_CONTEXT *esysContext)
+ \}
+ \defgroup Esys_Unseal
+ \{
+ \fn TSS2_RC Esys_Unseal_async(ESYS_CONTEXT *esysContext, ESYS_TR itemHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
+ \fn TSS2_RC Esys_Unseal(ESYS_CONTEXT *esysContext, ESYS_TR itemHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2B_SENSITIVE_DATA **outData)
+ \fn TSS2_RC Esys_Unseal_finish(ESYS_CONTEXT *esysContext, TPM2B_SENSITIVE_DATA **outData)
+ \}
+ \defgroup Esys_Vendor_TCG_Test
+ \{
+ \fn TSS2_RC Esys_Vendor_TCG_Test_async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *inputData)
+ \fn TSS2_RC Esys_Vendor_TCG_Test(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *inputData, TPM2B_DATA **outputData)
+ \fn TSS2_RC Esys_Vendor_TCG_Test_finish(ESYS_CONTEXT *esysContext, TPM2B_DATA **outputData)
+ \}
+ \defgroup Esys_VerifySignature
+ \{
+ \fn TSS2_RC Esys_VerifySignature_async(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *digest, const TPMT_SIGNATURE *signature)
+ \fn TSS2_RC Esys_VerifySignature(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *digest, const TPMT_SIGNATURE *signature, TPMT_TK_VERIFIED **validation)
+ \fn TSS2_RC Esys_VerifySignature_finish(ESYS_CONTEXT *esysContext, TPMT_TK_VERIFIED **validation)
+ \}
+ \defgroup Esys_ZGen_2Phase
+ \{
+ \fn TSS2_RC Esys_ZGen_2Phase_async(ESYS_CONTEXT *esysContext, ESYS_TR keyA, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_ECC_POINT *inQsB, const TPM2B_ECC_POINT *inQeB, TPMI_ECC_KEY_EXCHANGE inScheme, UINT16 counter)
+ \fn TSS2_RC Esys_ZGen_2Phase(ESYS_CONTEXT *esysContext, ESYS_TR keyA, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_ECC_POINT *inQsB, const TPM2B_ECC_POINT *inQeB, TPMI_ECC_KEY_EXCHANGE inScheme, UINT16 counter, TPM2B_ECC_POINT **outZ1, TPM2B_ECC_POINT **outZ2)
+ \fn TSS2_RC Esys_ZGen_2Phase_finish(ESYS_CONTEXT *esysContext, TPM2B_ECC_POINT **outZ1, TPM2B_ECC_POINT **outZ2)
+ \}
+ \}
+*/
+
+/*!
+ \defgroup iesys Internals of Enhanced System API
+ \ingroup esys
+ This module holds internal APIs of the ESAPI implementation.
+ \{
+ \}
+*/
+
+
+
+/*!
+ \defgroup Testgroup Testing
+ \todo description
+ \{
+
+ \}
+*/
+

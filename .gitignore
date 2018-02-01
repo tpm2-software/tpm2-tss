@@ -66,3 +66,10 @@ test/ibmtpm*
 # ignore all files in test/unit without a file extension
 test/unit/*
 test/unit/!*.*
+doc/Doxyfile
+doc/doxy/
+doc/html/
+doc/man/
+tpm2-tss-2.0.0-dev.tar.gz
+tpm2-tss-2.0.0-dev/
+
