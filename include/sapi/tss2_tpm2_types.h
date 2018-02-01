@@ -259,6 +259,7 @@ typedef  UINT32             TPM2_CC;
 #define  TPM2_CC_EC_Ephemeral                  (TPM2_CC)(0x0000018e)
 #define  TPM2_CC_PolicyNvWritten               (TPM2_CC)(0x0000018f)
 #define  TPM2_CC_PolicyTemplate                (TPM2_CC)(0x00000190)
+#define  TPM2_CC_CreateLoaded                  (TPM2_CC)(0x00000191)
 #define  TPM2_CC_EncryptDecrypt2               (TPM2_CC)(0x00000193)
 #define  TPM2_CC_AC_GetCapability              (TPM2_CC)(0x00000194)
 #define  TPM2_CC_AC_Send                       (TPM2_CC)(0x00000195)
