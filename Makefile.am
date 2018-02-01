@@ -25,6 +25,9 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 #;**********************************************************************;
 @CODE_COVERAGE_RULES@
+@DX_RULES@
+
+MOSTLYCLEANFILES = $(DX_CLEANFILES)
 
 include src_vars.mk
 

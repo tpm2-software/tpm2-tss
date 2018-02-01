@@ -10,7 +10,7 @@ AM_INIT_AUTOMAKE([foreign
                   subdir-objects])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])]) #Backward compatible setting of "silent-rules"
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile doc/Doxyfile])
 
 # propagate configure arguments to distcheck
 AC_SUBST([DISTCHECK_CONFIGURE_FLAGS],[$ac_configure_args])
@@ -111,6 +111,18 @@ AX_ADD_LINK_FLAG([-Wl,-z,relro])
 #   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53119
 AX_ADD_COMPILER_FLAG([-Wno-missing-braces])
 
+dnl --------- Doxy Gen -----------------------
+DX_INIT_DOXYGEN($PACKAGE_NAME, [doc/Doxyfile], [doc/doxy])
+DX_HTML_FEATURE(ON)
+DX_CHM_FEATURE(OFF)
+DX_CHI_FEATURE(OFF)
+DX_MAN_FEATURE(ON)
+DX_RTF_FEATURE(OFF)
+DX_XML_FEATURE(OFF)
+DX_PDF_FEATURE(OFF)
+DX_PS_FEATURE(OFF)
+
+
 AX_CODE_COVERAGE
 
 AC_OUTPUT
@@ -124,5 +136,6 @@ AC_MSG_RESULT([
     debug:              $enable_debug
     simulatorbin:       $with_simulatorbin
     loglevel:           $with_loglevel
+    doxygen:            $DX_FLAG_doc $enable_doxygen_doc
 ])
     
