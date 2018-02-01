@@ -2834,4 +2834,32 @@ TSS2_RC Tss2_Sys_PolicyTemplate(
     const TPM2B_DIGEST *templateHash,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray
     );
+
+TSS2_RC Tss2_Sys_CreateLoaded_Prepare(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPMI_RH_HIERARCHY parentHandle,
+    const TPM2B_SENSITIVE_CREATE *inSensitive,
+    const TPM2B_PUBLIC *inPublic
+    );
+
+TSS2_RC Tss2_Sys_CreateLoaded_Complete(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPM2_HANDLE *objectHandle,
+    TPM2B_PRIVATE *outPrivate,
+    TPM2B_PUBLIC *outPublic,
+    TPM2B_NAME *name
+    );
+
+TSS2_RC Tss2_Sys_CreateLoaded(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPMI_RH_HIERARCHY parentHandle,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+    const TPM2B_SENSITIVE_CREATE *inSensitive,
+    const TPM2B_PUBLIC *inPublic,
+    TPM2_HANDLE *objectHandle,
+    TPM2B_PRIVATE *outPrivate,
+    TPM2B_PUBLIC *outPublic,
+    TPM2B_NAME *name,
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray
+    );
 #endif
