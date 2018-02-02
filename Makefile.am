@@ -336,8 +336,8 @@ test_integration_policy_template_int_LDADD   = $(TESTS_LDADD)
 test_integration_policy_template_int_SOURCES = test/integration/main.c log/log.h log/log.c \
     test/integration/policy-template.int.c
 
-TESTS_CFLAGS = $(LIBSSL_CFLAGS)
-TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES) $(LIBSSL_LIBS)
+TESTS_CFLAGS = $(LIBCRYPTO_CFLAGS)
+TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES) $(LIBCRYPTO_LIBS)
 
 AUTHORS :
 	$(AM_V_GEN)git log --format='%aN <%aE>' | grep -v 'users.noreply.github.com' | sort | \
