@@ -101,6 +101,7 @@ EXTRA_DIST = \
     LICENSE \
     README.md \
     RELEASE.md \
+    VERSION \
     lib/debug_config.site \
     lib/tcti-device.pc.in \
     lib/tcti-socket.pc.in \
