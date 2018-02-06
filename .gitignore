@@ -56,3 +56,4 @@ test/ibmtpm*
 # ignore all files in test/unit without a file extension
 test/unit/*
 test/unit/!*.*
+VERSION

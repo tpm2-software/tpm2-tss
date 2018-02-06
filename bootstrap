@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+# put version string into file used @ configure time, see AC_INIT
+git describe --tags --always --dirty > VERSION
+
 # generate list of source files for use in Makefile.am
 # if you add new source files, you must run ./bootstrap again
 src_listvar () {

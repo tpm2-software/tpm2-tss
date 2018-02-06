@@ -1,5 +1,5 @@
 AC_INIT([tpm2-tss],
-        [m4_esyscmd_s([git describe --tags --always --dirty])])
+        [m4_esyscmd_s([cat VERSION])])
 AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CC
 AC_PROG_CXX
