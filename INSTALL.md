@@ -35,6 +35,7 @@ $ sudo apt -y install \
   libtool \
   automake \
   liburiparser-dev \
+  libssl-dev \
   autoconf
 ```
 
