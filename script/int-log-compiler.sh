@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #;**********************************************************************;
-# Copyright (c) 2017, Intel Corporation
+# Copyright (c) 2017 - 2018, Intel Corporation
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -53,6 +53,23 @@ while test $# -gt 0; do
     esac
     shift
 done
+
+sanity_test ()
+# Verify the running shell and OS environment is sufficient to run these tests.
+{
+# Check special file
+if [ ! -e /dev/urandom ]; then
+	echo  "Missing file /dev/urandom; exiting"
+       	exit 1
+fi
+
+# Check netstat
+NETSTAT_LINES=$(netstat -n | wc -l)
+if [ "$NETSTAT_LINES" -le 2 ] ; then
+	echo "Command netstat not listing ports; exiting"
+	exit 1
+fi
+}
 
 # This function takes a PID as a parameter and determines whether or not the
 # process is currently running. If the daemon is running 0 is returned. Any
@@ -146,6 +163,8 @@ daemon_stop ()
     fi
     return ${ret}
 }
+
+sanity_test
 
 # Once option processing is done, $@ should be the name of the test executable
 # followed by all of the options passed to the test executable.
