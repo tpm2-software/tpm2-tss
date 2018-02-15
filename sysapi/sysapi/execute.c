@@ -67,11 +67,11 @@ TSS2_RC Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout)
 
     rval = Tss2_Tcti_Receive(ctx->tctiContext, &responseSize,
                              ctx->cmdBuffer, timeout);
-    if (rval)
-        return rval;
-
     if (rval == TSS2_TCTI_RC_INSUFFICIENT_BUFFER)
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+
+    if (rval)
+        return rval;
 
     /*
      * Unmarshal the tag, response size, and response code as soon
