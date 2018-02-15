@@ -72,9 +72,9 @@ TSS2_RC Tss2_Sys_Commit_Prepare(
     if (rval)
         return rval;
 
-    Tss2_MU_TPM2B_ECC_PARAMETER_Marshal(y2, ctx->cmdBuffer,
-                                        ctx->maxCmdSize,
-                                        &ctx->nextData);
+    rval = Tss2_MU_TPM2B_ECC_PARAMETER_Marshal(y2, ctx->cmdBuffer,
+                                               ctx->maxCmdSize,
+                                               &ctx->nextData);
     if (rval)
         return rval;
 
