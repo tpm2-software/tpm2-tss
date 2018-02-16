@@ -38,7 +38,6 @@ AM_LDFLAGS      = $(EXTRA_LDFLAGS) $(CODE_COVERAGE_LIBS)
 
 # stuff to build, what that stuff is, and where/if to install said stuff
 lib_LTLIBRARIES = $(libmarshal) $(libsapi) $(libtcti_device) $(libtcti_socket)
-noinst_LTLIBRARIES = test/integration/libtest_utils.la
 
 if ESAPI
 lib_LTLIBRARIES += $(libesapi)
@@ -72,6 +71,7 @@ TESTS_UNIT  = \
     test/unit/TPMU-marshal
 endif #UNIT
 if SIMULATOR_BIN
+noinst_LTLIBRARIES = test/integration/libtest_utils.la
 TESTS_INTEGRATION = \
     test/integration/asymmetric-encrypt-decrypt.int \
     test/integration/create-primary-rsa-2048-aes-128-cfb.int \
