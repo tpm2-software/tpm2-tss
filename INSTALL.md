@@ -11,10 +11,12 @@ following sections describe them for the supported platforms.
 * GNU Automake
 * GNU Libtool
 * C compiler
-* C Library Development Libraries and Header Files
+
+### C Library Development Libraries and Header Files
 * pkg-config
 * uriparser
 * libgcrypt
+* libssl-dev
 
 The following are dependencies only required when building the test suite.
 Most users will not need to install these dependencies:
@@ -37,6 +39,7 @@ $ sudo apt -y install \
   automake \
   liburiparser-dev \
   libgcrypt20-dev \
+  libssl-dev \
   autoconf
 ```
 
