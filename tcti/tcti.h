@@ -41,6 +41,7 @@
 #define TSS2_TCTI_UTIL_H
 
 #include <errno.h>
+#include <sapi/tpm20.h>
 
 #if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
 #include <sys/socket.h>
@@ -138,5 +139,15 @@ TSS2_RC tcti_receive_checks (
     size_t            *response_size,
     unsigned char     *response_buffer
     );
+/*
+ * Write 'size' bytes from 'buf' to file descriptor 'fd'. Additionally this
+ * function will retry calls to the 'write' function when recoverable errors
+ * are detected. This is currently limited to interrupted system calls and
+ * short writes.
+ */
+ssize_t write_all (
+    int fd,
+    const uint8_t *buf,
+    size_t size);
 
 #endif
