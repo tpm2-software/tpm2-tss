@@ -43,16 +43,17 @@ TSS2_RC PlatformCommand(
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     int iResult = 0;            // used to return function results
-    char sendbuf[] = { 0x0,0x0,0x0,0x0 };
+    uint8_t sendbuf[] = { 0x0, 0x0, 0x0, 0x0 };
     char recvbuf[] = { 0x0, 0x0, 0x0, 0x0 };
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
     sendbuf[3] = cmd;
 
     // Send the command
-    iResult = send (tcti_intel->otherSock, sendbuf, 4, MSG_NOSIGNAL);
-    if (iResult == SOCKET_ERROR) {
-        LOG_ERROR("send failed with error: %d", WSAGetLastError() );
+    iResult = write_all (tcti_intel->otherSock, sendbuf, sizeof (sendbuf));
+    if (iResult < sizeof (sendbuf)) {
+        LOG_ERROR("Failed to send platform command %d with error: %d",
+                  cmd, iResult);
         rval = TSS2_TCTI_RC_IO_ERROR;
     }
     else

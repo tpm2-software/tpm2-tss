@@ -167,11 +167,10 @@ test_unit_tcti_device_LDFLAGS = -Wl,--wrap=read -Wl,-wrap=write
 test_unit_tcti_device_SOURCES = test/unit/tcti-device.c tcti/tcti_device.c log/log.h
 
 test_unit_tcti_socket_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS) $(URIPARSER_CFLAGS)
-test_unit_tcti_socket_LDADD   = $(CMOCKA_LIBS) $(libmarshal) $(URIPARSER_LIBS)
-test_unit_tcti_socket_LDFLAGS = -Wl,--wrap=connect,--wrap=recv,--wrap=select,--wrap=send
+test_unit_tcti_socket_LDADD   = $(CMOCKA_LIBS) $(libmarshal) $(URIPARSER_LIBS) $(libutil)
+test_unit_tcti_socket_LDFLAGS = -Wl,--wrap=connect,--wrap=recv,--wrap=select,--wrap=write
 test_unit_tcti_socket_SOURCES = tcti/platformcommand.c tcti/tcti_socket.c \
-    tcti/tcti.c tcti/tcti.h tcti/sockets.c tcti/sockets.h \
-     test/unit/tcti-socket.c log/log.h log/log.c
+    tcti/sockets.c tcti/sockets.h test/unit/tcti-socket.c
 
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_CommonPreparePrologue_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
