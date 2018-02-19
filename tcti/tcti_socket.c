@@ -70,16 +70,15 @@ static TSS2_RC tctiSendBytes (
     int len
     )
 {
-    TSS2_RC ret = TSS2_RC_SUCCESS;
-
+    int ret;
     LOGBLOB_DEBUG(data, len, "Send Bytes to socket #0x%x:", sock);
 
-    ret = sendBytes (sock, data, len);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("In recvBytes, recv failed (socket: 0x%x) with error: %d",
-                  sock, WSAGetLastError ());
+    ret = write_all (sock, data, len);
+    if (ret < len) {
+        LOG_ERROR("Failed to write to fd %d: %d", sock, WSAGetLastError ());
+        return TSS2_TCTI_RC_IO_ERROR;
     }
-    return ret;
+    return TSS2_RC_SUCCESS;
 }
 
 TSS2_RC SendSessionEndSocketTcti (

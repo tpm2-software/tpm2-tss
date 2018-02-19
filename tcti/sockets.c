@@ -67,29 +67,6 @@ TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len )
     return TSS2_RC_SUCCESS;
 }
 
-TSS2_RC sendBytes( SOCKET tpmSock, const unsigned char *data, int len )
-{
-    int iResult = 0;
-    int sentLength = 0;
-
-    for( sentLength = 0; sentLength < len; )
-    {
-        iResult = send( tpmSock, (char *)data, len, MSG_NOSIGNAL );
-        if (iResult == SOCKET_ERROR)
-        {
-            if (wasInterrupted())
-                continue;
-            else
-                return TSS2_TCTI_RC_IO_ERROR;
-        }
-
-        len -= iResult;
-        sentLength += iResult;
-    }
-
-    return TSS2_RC_SUCCESS;
-}
-
 int
 InitSockets( const char *hostName,
              UINT16 port,

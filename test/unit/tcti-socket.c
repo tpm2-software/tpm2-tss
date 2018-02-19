@@ -107,10 +107,9 @@ __wrap_select (int             nfds,
  * integer to return as a response.
  */
 ssize_t
-__wrap_send (int         sockfd,
-             const void *buf,
-             size_t      len,
-             int         flags)
+__wrap_write (int sockfd,
+              const void *buf,
+              size_t len)
 
 {
     return mock_type (TSS2_RC);
@@ -142,10 +141,10 @@ tcti_socket_init_from_conf (const char *conf)
      * two 'PlatformCommands are sent on initialization, 4 bytes sent for
      * each, 4 byte response received (all 0's) for each.
      */
-    will_return (__wrap_send, 4);
+    will_return (__wrap_write, 4);
     will_return (__wrap_recv, 4);
     will_return (__wrap_recv, recv_buf);
-    will_return (__wrap_send, 4);
+    will_return (__wrap_write, 4);
     will_return (__wrap_recv, 4);
     will_return (__wrap_recv, recv_buf);
     ret = Tss2_Tcti_Socket_Init (ctx, &tcti_size, conf);
@@ -212,7 +211,7 @@ tcti_socket_receive_success_test (void **state)
     will_return (__wrap_recv, 4);
     will_return (__wrap_recv, &response_in [12]);
     /* platform command sends 4 bytes and receives the same */
-    will_return (__wrap_send, 4);
+    will_return (__wrap_write, 4);
     will_return (__wrap_recv, 4);
     will_return (__wrap_recv, platform_command_recv);
 
@@ -235,13 +234,13 @@ tcti_socket_transmit_success_test (void **state)
     size_t  command_size = sizeof (command);
 
     /* send the TPM2_SEND_COMMAND code */
-    will_return (__wrap_send, 4);
+    will_return (__wrap_write, 4);
     /* send the locality for the command */
-    will_return (__wrap_send, 1);
+    will_return (__wrap_write, 1);
     /* send the number of bytes in command */
-    will_return (__wrap_send, 4);
+    will_return (__wrap_write, 4);
     /* send the command buffer */
-    will_return (__wrap_send, 0xc);
+    will_return (__wrap_write, 0xc);
     rc = Tss2_Tcti_Transmit (ctx, command_size, command);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 }
