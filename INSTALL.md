@@ -16,9 +16,12 @@ following sections describe them for the supported platforms.
 * uriparser
 * libgcrypt
 
-The following are dependencies only required when building the test suite.
-Most users will not need to install these dependencies:
-* cmocka unit test framework
+The following are dependencies only required when building test suites.
+* Integration test suite (see ./configure option --with-simulatorbin):
+** OpenSSL
+* Unit test suite (see ./configure option --enable-unit):
+** cmocka unit test framework
+Most users will not need to install these dependencies.
 
 ### Ubuntu
 ```
@@ -37,6 +40,7 @@ $ sudo apt -y install \
   automake \
   liburiparser-dev \
   libgcrypt20-dev \
+  libssl-dev \
   autoconf
 ```
 
