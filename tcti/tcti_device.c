@@ -55,26 +55,10 @@ TSS2_RC LocalTpmSendTpmCommand(
     if (rval != TSS2_RC_SUCCESS) {
         return rval;
     }
-
-#if LOGLEVEL == LOGLEVEL_DEBUG || \
-    LOGLEVEL == LOGLEVEL_TRACE
-    TPM2_ST commandCode = 0xffff;
-    UINT32 cnt = 0xffffffff;
-    TSS2_RC rc;
-    size_t offset = sizeof (TPM2_ST);
-    rc = Tss2_MU_TPM2_ST_Unmarshal (command_buffer,
-                                   command_size,
-                                   &offset,
-                                   &commandCode);
-    if (rc) return rc;
-    rc = Tss2_MU_UINT32_Unmarshal (command_buffer,
-                                   command_size,
-                                   &offset,
-                                   &cnt);
-    if (rc) return rc;
-    LOGBLOB_DEBUG(command_buffer, cnt, "Cmd sent: %" PRIx16 "; Buffer:",
-        commandCode);
-#endif
+    LOGBLOB_DEBUG (command_buffer,
+                   command_size,
+                   "sending " PRIx16 " byte command buffer:",
+                   command_size);
     size = write (tcti_intel->devFile, command_buffer, command_size);
     if (size < 0) {
         LOG_ERROR("send failed with error: %d", errno);
