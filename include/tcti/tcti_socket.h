@@ -43,9 +43,6 @@ extern "C" {
 
 #define TCTI_SOCKET_DEFAULT "tcp://127.0.0.1:2321"
 
-/* global data defined in the socket TCTI */
-extern int (*printfFunction)( printf_type type, const char *format, ...);
-
 TSS2_RC PlatformCommand(
     TSS2_TCTI_CONTEXT *tctiContext,     /* in */
     char cmd );
