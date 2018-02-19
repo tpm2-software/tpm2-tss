@@ -59,9 +59,9 @@ TSS2_RC LocalTpmSendTpmCommand(
                    command_size,
                    "sending %zu byte command buffer:",
                    command_size);
-    size = TEMP_RETRY (write (tcti_intel->devFile,
-                              command_buffer,
-                              command_size));
+    size = write_all (tcti_intel->devFile,
+                      command_buffer,
+                      command_size);
     if (size < 0) {
         LOG_ERROR("send failed with error: %d", errno);
         return TSS2_TCTI_RC_IO_ERROR;
