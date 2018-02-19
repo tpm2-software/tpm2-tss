@@ -40,6 +40,8 @@
 #ifndef TSS2_TCTI_UTIL_H
 #define TSS2_TCTI_UTIL_H
 
+#include <errno.h>
+
 #if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
 #include <sys/socket.h>
 #define SOCKET int
@@ -51,6 +53,13 @@
 #define TCTI_VERSION 0x1
 
 #define TCTI_CONTEXT ((TSS2_TCTI_CONTEXT_COMMON_CURRENT *)(SYS_CONTEXT->tctiContext))
+
+#define TEMP_RETRY(exp) \
+({  int __ret; \
+    do { \
+        __ret = exp; \
+    } while (__ret == -1 && errno == EINTR); \
+    __ret; })
 
 typedef TSS2_RC (*TCTI_TRANSMIT_PTR)( TSS2_TCTI_CONTEXT *tctiContext, size_t size, uint8_t *command);
 typedef TSS2_RC (*TCTI_RECEIVE_PTR) (TSS2_TCTI_CONTEXT *tctiContext, size_t *size, uint8_t *response, int32_t timeout);

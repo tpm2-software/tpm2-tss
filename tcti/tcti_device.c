@@ -59,7 +59,9 @@ TSS2_RC LocalTpmSendTpmCommand(
                    command_size,
                    "sending %zu byte command buffer:",
                    command_size);
-    size = write (tcti_intel->devFile, command_buffer, command_size);
+    size = TEMP_RETRY (write (tcti_intel->devFile,
+                              command_buffer,
+                              command_size));
     if (size < 0) {
         LOG_ERROR("send failed with error: %d", errno);
         return TSS2_TCTI_RC_IO_ERROR;
@@ -96,7 +98,9 @@ TSS2_RC LocalTpmReceiveTpmResponse(
     }
 
     if (tcti_intel->status.tagReceived == 0) {
-        size = read (tcti_intel->devFile, tcti_intel->responseBuffer, 4096);
+        size = TEMP_RETRY (read (tcti_intel->devFile,
+                                 tcti_intel->responseBuffer,
+                                 4096));
         if (size < 0) {
             LOG_ERROR("send failed with error: %d", errno);
             rval = TSS2_TCTI_RC_IO_ERROR;
