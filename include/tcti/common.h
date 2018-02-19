@@ -28,16 +28,10 @@
 #ifndef TCTI_COMMON_H
 #define TCTI_COMMON_H
 
-#include "sapi/tpm20.h"
-
 #if defined (__GNUC__)
 #define COMPILER_ATTR(...) __attribute__((__VA_ARGS__))
 #else
 #define COMPILER_ATTR(...)
 #endif
-
-typedef enum { NO_PREFIX = 0, RM_PREFIX = 1 } printf_type;
-typedef int (*TCTI_LOG_CALLBACK)( void *data, printf_type type, const char *format, ...);
-typedef int (*TCTI_LOG_BUFFER_CALLBACK)( void *useriData, printf_type type, UINT8 *buffer, UINT32 length);
 
 #endif /* TCTI_COMMON_H */
