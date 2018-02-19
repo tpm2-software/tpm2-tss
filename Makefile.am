@@ -38,6 +38,7 @@ AM_LDFLAGS      = $(EXTRA_LDFLAGS) $(CODE_COVERAGE_LIBS)
 
 # stuff to build, what that stuff is, and where/if to install said stuff
 lib_LTLIBRARIES = $(libmarshal) $(libsapi) $(libtcti_device) $(libtcti_socket)
+noinst_LTLIBRARIES = $(libutil)
 
 if ESAPI
 lib_LTLIBRARIES += $(libesapi)
@@ -59,6 +60,7 @@ TESTS_UNIT  = \
     test/unit/GetNumHandles \
     test/unit/tcti-device \
     test/unit/tcti-socket \
+    test/unit/util \
     test/unit/UINT8-marshal \
     test/unit/UINT16-marshal \
     test/unit/UINT32-marshal \
@@ -71,7 +73,7 @@ TESTS_UNIT  = \
     test/unit/TPMU-marshal
 endif #UNIT
 if SIMULATOR_BIN
-noinst_LTLIBRARIES = test/integration/libtest_utils.la
+noinst_LTLIBRARIES += test/integration/libtest_utils.la
 TESTS_INTEGRATION = \
     test/integration/asymmetric-encrypt-decrypt.int \
     test/integration/create-primary-rsa-2048-aes-128-cfb.int \
@@ -154,11 +156,15 @@ EXTRA_DIST = \
     tcti/tcti_socket.map
 
 if UNIT
+test_unit_util_CFLAGS = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
+test_unit_util_LDADD = $(CMOCKA_LIBS) $(libutil)
+test_unit_util_LDFLAGS = -Wl,--wrap=write
+test_unit_util_SOURCES = test/unit/util.c
+
 test_unit_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_tcti_device_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
+test_unit_tcti_device_LDADD   = $(CMOCKA_LIBS) $(libmarshal) $(libutil)
 test_unit_tcti_device_LDFLAGS = -Wl,--wrap=read -Wl,-wrap=write
-test_unit_tcti_device_SOURCES = tcti/tcti.c tcti/tcti.h tcti/tcti_device.c \
-    test/unit/tcti-device.c log/log.h log/log.c
+test_unit_tcti_device_SOURCES = test/unit/tcti-device.c tcti/tcti_device.c log/log.h
 
 test_unit_tcti_socket_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS) $(URIPARSER_CFLAGS)
 test_unit_tcti_socket_LDADD   = $(CMOCKA_LIBS) $(libmarshal) $(URIPARSER_LIBS)
@@ -222,6 +228,9 @@ test_unit_TPMU_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
 test_unit_TPMU_marshal_SOURCES = test/unit/TPMU-marshal.c
 endif # UNIT
 
+libutil_la_CFLAGS = $(AM_CFLAGS)
+libutil_la_SOURCES = log/log.c log/log.h tcti/tcti.c tcti/tcti.h
+
 if HAVE_LD_VERSION_SCRIPT
 marshal_libmarshal_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/libmarshal.map
 endif # HAVE_LD_VERSION_SCRIPT
@@ -246,9 +255,8 @@ tcti_libtcti_device_la_CFLAGS   = $(AM_CFLAGS)
 if HAVE_LD_VERSION_SCRIPT
 tcti_libtcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_device.map
 endif # HAVE_LD_VERSION_SCRIPT
-tcti_libtcti_device_la_LIBADD   = $(libmarshal)
-tcti_libtcti_device_la_SOURCES  = tcti/tcti_device.c tcti/tcti.c \
-    tcti/tcti.h log/log.h log/log.c
+tcti_libtcti_device_la_LIBADD   = $(libmarshal) $(libutil)
+tcti_libtcti_device_la_SOURCES  = tcti/tcti_device.c log/log.h
 
 tcti_libtcti_socket_la_CFLAGS   = $(AM_CFLAGS) $(URIPARSER_CFLAGS)
 if HAVE_LD_VERSION_SCRIPT
@@ -433,6 +441,7 @@ libesapi = esapi/libesapi.la
 endif
 libtcti_device = tcti/libtcti-device.la
 libtcti_socket = tcti/libtcti-socket.la
+libutil = libutil.la
 libmarshal = marshal/libmarshal.la
 
 define make_parent_dir

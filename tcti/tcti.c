@@ -25,12 +25,16 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "tcti/common.h"
 #include "sapi/tpm20.h"
 #include "tcti.h"
+#define LOGMODULE tcti
+#include "log/log.h"
 
 TSS2_RC tcti_common_checks (
     TSS2_TCTI_CONTEXT *tcti_context
@@ -95,4 +99,32 @@ TSS2_RC tcti_receive_checks (
     }
 
     return TSS2_RC_SUCCESS;
+}
+
+ssize_t write_all (
+    int fd,
+    const uint8_t *buf,
+    size_t size)
+{
+    ssize_t written = 0;
+    size_t written_total = 0;
+
+    do {
+        LOG_DEBUG("writing %zu bytes starting at 0x%" PRIxPTR " to fd %d",
+                  size - written_total,
+                  (uintptr_t)buf + written_total,
+                  fd);
+        written = TEMP_RETRY (write (fd,
+                                     (const char*)&buf [written_total],
+                                     size - written_total));
+        if (written >= 0) {
+            LOG_DEBUG ("wrote %zd bytes to fd %d", written, fd);
+            written_total += (size_t)written;
+        } else {
+            LOG_ERROR ("failed to write to fd %d: %s", fd, strerror (errno));
+            return written_total;
+        }
+    } while (written_total < size);
+
+    return (ssize_t)written_total;
 }
