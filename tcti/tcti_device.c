@@ -57,13 +57,16 @@ TSS2_RC LocalTpmSendTpmCommand(
     }
     LOGBLOB_DEBUG (command_buffer,
                    command_size,
-                   "sending " PRIx16 " byte command buffer:",
+                   "sending %zu byte command buffer:",
                    command_size);
     size = write (tcti_intel->devFile, command_buffer, command_size);
     if (size < 0) {
         LOG_ERROR("send failed with error: %d", errno);
         return TSS2_TCTI_RC_IO_ERROR;
     } else if ((size_t)size != command_size) {
+        LOG_ERROR ("wrong number of bytes written. Expected %zu, wrote %zd.",
+                   command_size,
+                   size);
         return TSS2_TCTI_RC_IO_ERROR;
     }
 
