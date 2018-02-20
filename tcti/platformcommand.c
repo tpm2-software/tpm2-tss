@@ -25,8 +25,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "sapi/tpm20.h"
 #include "tcti/tcti_socket.h"
@@ -38,43 +40,50 @@
 #include "log/log.h"
 
 TSS2_RC PlatformCommand(
-    TSS2_TCTI_CONTEXT *tctiContext,     /* in */
-    char cmd )
+    TSS2_TCTI_CONTEXT *tctiContext,
+    UINT32 cmd)
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
-    int iResult = 0;            // used to return function results
-    uint8_t sendbuf[] = { 0x0, 0x0, 0x0, 0x0 };
-    char recvbuf[] = { 0x0, 0x0, 0x0, 0x0 };
-    TSS2_RC rval = TSS2_RC_SUCCESS;
+    uint8_t buf [sizeof (cmd)] = { 0 };
+    UINT32 rsp = 0;
+    TSS2_RC rc = TSS2_RC_SUCCESS;
+    int ret;
+    ssize_t read_ret;
 
-    sendbuf[3] = cmd;
+    rc = Tss2_MU_UINT32_Marshal (cmd, buf, sizeof (cmd), NULL);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR ("Failed to marshal platform command %" PRIu32 ", rc: 0x%"
+                   PRIx32, cmd, rc);
+        return rc;
+    }
 
-    // Send the command
-    iResult = write_all (tcti_intel->otherSock, sendbuf, sizeof (sendbuf));
-    if (iResult < sizeof (sendbuf)) {
+    LOGBLOB_DEBUG(buf, sizeof (cmd), "Sending %zu bytes to socket %" PRIu32
+                  ":", sizeof (cmd), tcti_intel->otherSock);
+    ret = write_all (tcti_intel->otherSock, buf, sizeof (cmd));
+    if (ret < sizeof (cmd)) {
         LOG_ERROR("Failed to send platform command %d with error: %d",
-                  cmd, iResult);
-        rval = TSS2_TCTI_RC_IO_ERROR;
+                  cmd, ret);
+        return TSS2_TCTI_RC_IO_ERROR;
     }
-    else
-    {
-        LOGBLOB_DEBUG((uint8_t *)sendbuf, 4, "Send Bytes to socket #0x%x:", tcti_intel->otherSock);
-        // Read result
-        iResult = recv( tcti_intel->otherSock, recvbuf, 4, 0);
-        if (iResult == SOCKET_ERROR) {
-            LOG_ERROR("In PlatformCommand, recv failed (socket: 0x%x) with error: %d",
-                    tcti_intel->otherSock, WSAGetLastError() );
-            rval = TSS2_TCTI_RC_IO_ERROR;
-        }
-        else if( recvbuf[0] != 0 || recvbuf[1] != 0 || recvbuf[2] != 0 || recvbuf[3] != 0 )
-        {
-            LOG_ERROR( "PlatformCommand failed with error: %d", recvbuf[3] );
-            rval = TSS2_TCTI_RC_IO_ERROR;
-        }
-        else
-        {
-            LOGBLOB_DEBUG((uint8_t *)recvbuf, 4, "Receive bytes from socket #0x%x:", tcti_intel->otherSock );
-        }
+
+    read_ret = read (tcti_intel->otherSock, buf, sizeof (buf));
+    if (read_ret < sizeof (buf)) {
+        LOG_ERROR("Failed to get response to platform command, errno %d: %s",
+                  errno, strerror (errno));
+        return TSS2_TCTI_RC_IO_ERROR;
     }
-    return rval;
+
+    LOGBLOB_DEBUG (buf, sizeof (buf), "Received %zu bytes from socket 0x%"
+                   PRIx32 ":", read_ret, tcti_intel->otherSock);
+    rc = Tss2_MU_UINT32_Unmarshal (buf, sizeof (rsp), NULL, &rsp);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR ("Failed to unmarshal response to platform command. rc: 0x%"
+                   PRIx32, rc);
+        return rc;
+    }
+    if (rsp != 0) {
+        LOG_INFO ("Platform command failed with error: %" PRIu32, rsp);
+        return TSS2_TCTI_RC_IO_ERROR;
+    }
+    return rc;
 }

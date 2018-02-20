@@ -42,9 +42,21 @@ extern "C" {
 
 #define TCTI_SOCKET_DEFAULT "tcp://127.0.0.1:2321"
 
+/*
+ * Command codes that may be sent to simulator through out of band command
+ * channel (aka "the other socket").
+ */
+#define MS_SIM_POWER_ON         1
+#define MS_SIM_POWER_OFF        2
+#define MS_SIM_TPM_SEND_COMMAND 8
+#define MS_SIM_CANCEL_ON        9
+#define MS_SIM_CANCEL_OFF       10
+#define MS_SIM_NV_ON            11
+#define TPM_SESSION_END         20
+
 TSS2_RC PlatformCommand(
-    TSS2_TCTI_CONTEXT *tctiContext,     /* in */
-    char cmd );
+    TSS2_TCTI_CONTEXT *tctiContext,
+    UINT32 cmd);
 
 typedef struct {
     const char *hostname;
@@ -68,15 +80,6 @@ TSS2_RC Tss2_Tcti_Socket_Init (
     size_t *size,
     const char *conf
     );
-
-// Commands to send to OTHER port.
-#define MS_SIM_POWER_ON         1
-#define MS_SIM_POWER_OFF        2
-#define MS_SIM_TPM_SEND_COMMAND 8
-#define MS_SIM_CANCEL_ON        9
-#define MS_SIM_CANCEL_OFF       10
-#define MS_SIM_NV_ON            11
-#define TPM_SESSION_END         20
 
 #ifdef __cplusplus
 }

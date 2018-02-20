@@ -88,6 +88,17 @@ __wrap_recv (int sockfd,
     memcpy (buf, buf_in, ret);
     return ret;
 }
+ssize_t
+__wrap_read (int sockfd,
+             void *buf,
+             size_t len)
+{
+    ssize_t  ret = mock_type (ssize_t);
+    uint8_t *buf_in = mock_ptr_type (uint8_t*);
+
+    memcpy (buf, buf_in, ret);
+    return ret;
+}
 /*
  * Wrap the 'select' system call. The mock queue for this function must have
  * an integer to return as a response (the # of fds ready to be read /
@@ -142,11 +153,11 @@ tcti_socket_init_from_conf (const char *conf)
      * each, 4 byte response received (all 0's) for each.
      */
     will_return (__wrap_write, 4);
-    will_return (__wrap_recv, 4);
-    will_return (__wrap_recv, recv_buf);
+    will_return (__wrap_read, 4);
+    will_return (__wrap_read, recv_buf);
     will_return (__wrap_write, 4);
-    will_return (__wrap_recv, 4);
-    will_return (__wrap_recv, recv_buf);
+    will_return (__wrap_read, 4);
+    will_return (__wrap_read, recv_buf);
     ret = Tss2_Tcti_Socket_Init (ctx, &tcti_size, conf);
     assert_int_equal (ret, TSS2_RC_SUCCESS);
     return ctx;
@@ -212,8 +223,8 @@ tcti_socket_receive_success_test (void **state)
     will_return (__wrap_recv, &response_in [12]);
     /* platform command sends 4 bytes and receives the same */
     will_return (__wrap_write, 4);
-    will_return (__wrap_recv, 4);
-    will_return (__wrap_recv, platform_command_recv);
+    will_return (__wrap_read, 4);
+    will_return (__wrap_read, platform_command_recv);
 
     rc = Tss2_Tcti_Receive (ctx, &response_size, response_out, TSS2_TCTI_TIMEOUT_BLOCK);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
