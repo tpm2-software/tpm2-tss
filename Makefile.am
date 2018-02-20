@@ -233,7 +233,8 @@ libutil_la_SOURCES = log/log.c log/log.h tcti/tcti.c tcti/tcti.h
 if HAVE_LD_VERSION_SCRIPT
 marshal_libmarshal_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/libmarshal.map
 endif # HAVE_LD_VERSION_SCRIPT
-marshal_libmarshal_la_SOURCES = $(MARSHAL_SRC) log/log.c log/log.h
+marshal_libmarshal_la_LIBADD = $(libutil)
+marshal_libmarshal_la_SOURCES = $(MARSHAL_SRC)
 
 sysapi_libsapi_la_LIBADD  = $(libmarshal)
 sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPI_H) $(SYSAPIUTIL_C) \
@@ -245,9 +246,9 @@ esapi_libesapi_la_CFLAGS  = $(AM_CFLAGS) -Wno-unused-variable -Wno-unused-label 
                             -I$(srcdir)/esapi/esapi_util \
                             -DESYS_TCTI_DEFAULT_MODULE=$(TCTI_DEFAULT_MODULE) \
                             -DESYS_TCTI_DEFAULT_CONFIG=$(TCTI_DEFAULT_CONFIG)
-esapi_libesapi_la_LIBADD  = $(libsapi) $(libmarshal) $(libtcti_device) $(libtcti_socket)
+esapi_libesapi_la_LIBADD  = $(libsapi) $(libmarshal) $(libtcti_device) $(libtcti_socket) $(libutil)
 esapi_libesapi_la_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
-esapi_libesapi_la_SOURCES = $(ESAPI_SRC) log/log.h log/log.c
+esapi_libesapi_la_SOURCES = $(ESAPI_SRC)
 endif
 
 tcti_libtcti_device_la_CFLAGS   = $(AM_CFLAGS)
@@ -255,15 +256,15 @@ if HAVE_LD_VERSION_SCRIPT
 tcti_libtcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_device.map
 endif # HAVE_LD_VERSION_SCRIPT
 tcti_libtcti_device_la_LIBADD   = $(libmarshal) $(libutil)
-tcti_libtcti_device_la_SOURCES  = tcti/tcti_device.c log/log.h
+tcti_libtcti_device_la_SOURCES  = tcti/tcti_device.c
 
 tcti_libtcti_socket_la_CFLAGS   = $(AM_CFLAGS) $(URIPARSER_CFLAGS)
 if HAVE_LD_VERSION_SCRIPT
 tcti_libtcti_socket_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
 endif # HAVE_LD_VERSION_SCRIPT
-tcti_libtcti_socket_la_LIBADD   = $(libmarshal) $(URIPARSER_LIBS)
+tcti_libtcti_socket_la_LIBADD   = $(libmarshal) $(URIPARSER_LIBS) $(libutil)
 tcti_libtcti_socket_la_SOURCES  = tcti/platformcommand.c tcti/tcti_socket.c \
-    tcti/tcti.c tcti/tcti.h tcti/sockets.c tcti/sockets.h log/log.h log/log.c
+    tcti/sockets.c tcti/sockets.h
 
 test_tpmclient_tpmclient_int_CFLAGS   = $(AM_CFLAGS) -U_FORTIFY_SOURCE  $(TESTS_CFLAGS)
 test_tpmclient_tpmclient_int_LDADD    = $(TESTS_LDADD)
@@ -277,8 +278,7 @@ test_tpmclient_tpmclient_int_SOURCES  = \
     test/tpmclient/StartAuthSession.c test/tpmclient/syscontext.c \
     test/tpmclient/syscontext.h test/tpmclient/TpmCalcPHash.c \
     test/tpmclient/tpmclient.int.c test/tpmclient/tpmclient.h \
-    test/tpmclient/TpmHandleToName.c test/tpmclient/TpmHash.c \
-    log/log.h log/log.c
+    test/tpmclient/TpmHandleToName.c test/tpmclient/TpmHash.c
 
 test_integration_libtest_utils_la_SOURCES = \
     test/integration/context-util.c test/integration/context-util.h \
@@ -289,83 +289,77 @@ test_integration_libtest_utils_la_SOURCES = \
 test_integration_asymmetric_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_asymmetric_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
 test_integration_asymmetric_encrypt_decrypt_int_SOURCES = \
-    test/integration/asymmetric-encrypt-decrypt.int.c \
-    test/integration/main.c log/log.h log/log.c
+    test/integration/asymmetric-encrypt-decrypt.int.c test/integration/main.c
 
 test_integration_create_primary_rsa_2048_aes_128_cfb_int_CFLAGS = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_create_primary_rsa_2048_aes_128_cfb_int_LDADD  = $(TESTS_LDADD)
 test_integration_create_primary_rsa_2048_aes_128_cfb_int_SOURCES = \
     test/integration/create-primary-rsa-2048-aes-128-cfb.int.c \
-    test/integration/main.c log/log.h log/log.c
+    test/integration/main.c
 
 test_integration_create_keyedhash_sha1_hmac_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_create_keyedhash_sha1_hmac_int_LDADD   = $(TESTS_LDADD)
 test_integration_create_keyedhash_sha1_hmac_int_SOURCES = \
-    test/integration/create-keyedhash-sha1-hmac.int.c \
-    test/integration/main.c log/log.h log/log.c
+    test/integration/create-keyedhash-sha1-hmac.int.c test/integration/main.c
 
 test_integration_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
 test_integration_encrypt_decrypt_int_SOURCES = \
-    test/integration/encrypt-decrypt.int.c \
-    test/integration/main.c log/log.h log/log.c
+    test/integration/encrypt-decrypt.int.c test/integration/main.c
 
 test_integration_encrypt_decrypt_2_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_encrypt_decrypt_2_int_LDADD   = $(TESTS_LDADD)
 test_integration_encrypt_decrypt_2_int_SOURCES = \
-    test/integration/encrypt-decrypt-2.int.c \
-    test/integration/main.c log/log.h log/log.c
+    test/integration/encrypt-decrypt-2.int.c test/integration/main.c
 
 test_integration_evict_ctrl_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_evict_ctrl_int_LDADD   = $(TESTS_LDADD)
 test_integration_evict_ctrl_int_SOURCES = \
-    test/integration/evict-ctrl.int.c \
-    test/integration/main.c log/log.h log/log.c
+    test/integration/evict-ctrl.int.c test/integration/main.c
 
 test_integration_sys_initialize_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_sys_initialize_int_LDADD   = $(TESTS_LDADD)
 test_integration_sys_initialize_int_SOURCES = test/integration/sys-initialize.int.c \
-    test/integration/main.c log/log.h log/log.c
+    test/integration/main.c
 
 test_integration_get_random_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_get_random_int_LDADD   = $(TESTS_LDADD)
 test_integration_get_random_int_SOURCES = test/integration/get-random.int.c \
-    test/integration/main.c log/log.h log/log.c
+    test/integration/main.c
 
 test_integration_abi_version_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_abi_version_int_LDADD   = $(TESTS_LDADD)
 test_integration_abi_version_int_SOURCES = test/integration/abi-version.int.c \
-    test/integration/main.c log/log.h log/log.c
+    test/integration/main.c
 
 test_integration_pcr_extension_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_pcr_extension_int_LDADD   = $(TESTS_LDADD)
 test_integration_pcr_extension_int_SOURCES = test/integration/pcr-extension.int.c \
-    test/integration/main.c log/log.h log/log.c
+    test/integration/main.c
 
 test_integration_self_test_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_self_test_int_LDADD   = $(TESTS_LDADD)
 test_integration_self_test_int_SOURCES = test/integration/self-test.int.c \
-    test/integration/main.c log/log.h log/log.c
+    test/integration/main.c
 
 test_integration_hierarchy_change_auth_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_hierarchy_change_auth_int_LDADD   = $(TESTS_LDADD)
 test_integration_hierarchy_change_auth_int_SOURCES = \
-    test/integration/hierarchy-change-auth.int.c \
-    test/integration/main.c log/log.h log/log.c
+    test/integration/hierarchy-change-auth.int.c test/integration/main.c
 
 test_integration_start_auth_session_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_start_auth_session_int_LDADD   = $(TESTS_LDADD)
-test_integration_start_auth_session_int_SOURCES = test/integration/main.c log/log.h log/log.c \
+test_integration_start_auth_session_int_SOURCES = test/integration/main.c \
     test/integration/start-auth-session.int.c
 
 test_integration_tpm_properties_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_tpm_properties_int_LDADD   = $(TESTS_LDADD)
-test_integration_tpm_properties_int_SOURCES = test/integration/main.c log/log.h log/log.c \
+test_integration_tpm_properties_int_SOURCES = test/integration/main.c \
     test/integration/tpm-properties.int.c
 
 test_integration_system_api_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_system_api_int_LDADD   = $(TESTS_LDADD)
-test_integration_system_api_int_SOURCES = test/integration/main.c log/log.h log/log.c \
+test_integration_system_api_int_SOURCES = test/integration/main.c \
     test/integration/system-api.int.c
 
 if ESAPI
@@ -375,7 +369,7 @@ test_integration_esys_get_random_int_CFLAGS  = $(AM_CFLAGS) \
 test_integration_esys_get_random_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_get_random_int_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
 test_integration_esys_get_random_int_SOURCES = test/integration/esys-get-random.int.c \
-	test/integration/main-esapi.c log/log.h log/log.c test/integration/test-esapi.h
+	test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_create_session_auth_int_CFLAGS  = $(AM_CFLAGS) \
     -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
@@ -383,7 +377,7 @@ test_integration_esys_create_session_auth_int_CFLAGS  = $(AM_CFLAGS) \
 test_integration_esys_create_session_auth_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_create_session_auth_int_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
 test_integration_esys_create_session_auth_int_SOURCES = test/integration/esys-create-session-auth.int.c \
-	test/integration/main-esapi.c log/log.h log/log.c test/integration/test-esapi.h
+	test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_create_primary_hmac_int_CFLAGS  = $(AM_CFLAGS) \
     -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
@@ -392,7 +386,7 @@ test_integration_esys_create_primary_hmac_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_create_primary_hmac_int_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
 test_integration_esys_create_primary_hmac_int_SOURCES = \
     test/integration/esys-create-primary-hmac.int.c test/integration/main-esapi.c \
-    log/log.h log/log.c test/integration/test-esapi.h
+    test/integration/test-esapi.h
 
 test_integration_esys_create_primary_ecc_hmac_int_CFLAGS  = $(AM_CFLAGS) -DTEST_ECC \
     -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
@@ -401,21 +395,21 @@ test_integration_esys_create_primary_ecc_hmac_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_create_primary_ecc_hmac_int_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
 test_integration_esys_create_primary_ecc_hmac_int_SOURCES = \
     test/integration/esys-create-primary-hmac.int.c test/integration/main-esapi.c \
-    log/log.h log/log.c test/integration/test-esapi.h
+    test/integration/test-esapi.h
 endif
 
 test_integration_policy_template_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_policy_template_int_LDADD   = $(TESTS_LDADD)
-test_integration_policy_template_int_SOURCES = test/integration/main.c log/log.h log/log.c \
+test_integration_policy_template_int_SOURCES = test/integration/main.c \
     test/integration/policy-template.int.c
 
 test_integration_create_loaded_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_create_loaded_int_LDADD   = $(TESTS_LDADD)
-test_integration_create_loaded_int_SOURCES = test/integration/main.c log/log.h log/log.c \
+test_integration_create_loaded_int_SOURCES = test/integration/main.c \
     test/integration/create-loaded.int.c
 
 TESTS_CFLAGS = $(LIBCRYPTO_CFLAGS)
-TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES) $(LIBCRYPTO_LIBS)
+TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES) $(LIBCRYPTO_LIBS) $(libutil)
 
 AUTHORS :
 	$(AM_V_GEN)git log --format='%aN <%aE>' | grep -v 'users.noreply.github.com' | sort | \
