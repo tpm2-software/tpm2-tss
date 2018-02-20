@@ -140,6 +140,7 @@ COMMAND_HANDLES commandArray[] =
     { TPM2_CC_NV_ChangeAuth, 1, 0 },
     { TPM2_CC_NV_Certify, 3, 0 },
     { TPM2_CC_CreateLoaded, 1, 1 },
+    { TPM2_CC_PolicyAuthorizeNV, 3, 0 },
     { TPM2_CC_AC_GetCapability, 1, 0 },
     { TPM2_CC_AC_Send, 3, 0 },
     { TPM2_CC_Policy_AC_SendSelect, 1, 0 }

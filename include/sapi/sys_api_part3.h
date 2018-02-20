@@ -2862,4 +2862,24 @@ TSS2_RC Tss2_Sys_CreateLoaded(
     TPM2B_NAME *name,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray
     );
+
+TSS2_RC Tss2_Sys_PolicyAuthorizeNV_Prepare(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPMI_RH_NV_AUTH authHandle,
+    TPMI_RH_NV_INDEX nvIndex,
+    TPMI_SH_POLICY policySession
+    );
+
+TSS2_RC Tss2_Sys_PolicyAuthorizeNV_Complete(
+    TSS2_SYS_CONTEXT *sysContext
+    );
+
+TSS2_RC Tss2_Sys_PolicyAuthorizeNV(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPMI_RH_NV_AUTH authHandle,
+    TPMI_RH_NV_INDEX nvIndex,
+    TPMI_SH_POLICY policySession,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray
+    );
 #endif
