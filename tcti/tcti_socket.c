@@ -444,9 +444,6 @@ retSocketReceiveTpmResponse:
     return rval;
 }
 
-#define HOSTNAME_LENGTH 200
-#define PORT_LENGTH 4
-
 /**
  * This function sends the Microsoft simulator the MS_SIM_POWER_ON and
  * MS_SIM_NV_ON commands using the PlatformCommand mechanism. Without
