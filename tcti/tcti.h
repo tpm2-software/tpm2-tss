@@ -55,12 +55,20 @@
 
 #define TCTI_CONTEXT ((TSS2_TCTI_CONTEXT_COMMON_CURRENT *)(SYS_CONTEXT->tctiContext))
 
+#define TPM_HEADER_SIZE (sizeof (TPM2_ST) + sizeof (UINT32) + sizeof (UINT32))
+
 #define TEMP_RETRY(exp) \
 ({  int __ret; \
     do { \
         __ret = exp; \
     } while (__ret == -1 && errno == EINTR); \
     __ret; })
+
+typedef struct {
+    TPM2_ST tag;
+    UINT32 size;
+    UINT32 code;
+} tpm_header_t;
 
 typedef TSS2_RC (*TCTI_TRANSMIT_PTR)( TSS2_TCTI_CONTEXT *tctiContext, size_t size, uint8_t *command);
 typedef TSS2_RC (*TCTI_RECEIVE_PTR) (TSS2_TCTI_CONTEXT *tctiContext, size_t *size, uint8_t *response, int32_t timeout);

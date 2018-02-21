@@ -92,6 +92,45 @@ TSS2_RC send_sim_session_end (
     return xmit_buf (sock, buf, sizeof (buf));
 }
 
+/*
+ * Utility to function to parse the first 10 bytes of a buffer and populate
+ * the 'header' structure with the results. The provided buffer is assumed to
+ * be at least 10 bytes long.
+ */
+TSS2_RC parse_header (
+    uint8_t *buf,
+    tpm_header_t *header)
+{
+    TSS2_RC rc;
+    size_t offset = 0;
+
+    LOG_TRACE ("Parsing header from buffer: 0x%" PRIxPTR, (uintptr_t)buf);
+    rc = Tss2_MU_TPM2_ST_Unmarshal (buf,
+                                    TPM_HEADER_SIZE,
+                                    &offset,
+                                    &header->tag);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR ("Failed to unmarshal tag.");
+        return rc;
+    }
+    rc = Tss2_MU_UINT32_Unmarshal (buf,
+                                   TPM_HEADER_SIZE,
+                                   &offset,
+                                   &header->size);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR ("Failed to unmarshal command size.");
+        return rc;
+    }
+    rc = Tss2_MU_UINT32_Unmarshal (buf,
+                                   TPM_HEADER_SIZE,
+                                   &offset,
+                                   &header->code);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR ("Failed to unmarshal command code.");
+    }
+    return rc;
+}
+
 TSS2_RC SocketSendTpmCommand(
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t command_size,
@@ -100,41 +139,29 @@ TSS2_RC SocketSendTpmCommand(
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     UINT32 sim_cmd;
-    UINT32 cnt, cnt1;
     UINT8 locality;
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    size_t offset;
+    tpm_header_t header;
+    uint8_t buf [sizeof (UINT32)] = { 0 };
 
     rval = tcti_send_checks (tctiContext, command_buffer);
     if (rval != TSS2_RC_SUCCESS) {
         return rval;
     }
 
-#if LOGLEVEL == LOGLEVEL_DEBUG || \
-    LOGLEVEL == LOGLEVEL_TRACE
-    UINT32 commandCode;
-    offset = sizeof (TPM2_ST) + sizeof (UINT32);
-    rval = Tss2_MU_TPM2_CC_Unmarshal (command_buffer,
-                                     command_size,
-                                     &offset,
-                                     &commandCode);
-    if (rval) return rval;
-    LOG_DEBUG("Command sent on socket #0x%x: %" PRIx16, tcti_intel->tpmSock,
-        commandCode);
-#endif
-    /*
-     * Size TPM 1.2 and TPM 2.0 headers overlap exactly, we can use
-     * either 1.2 or 2.0 header to get the size.
-     */
-    offset = sizeof (TPM2_ST);
-    rval = Tss2_MU_UINT32_Unmarshal (command_buffer,
-                                     command_size,
-                                     &offset,
-                                     &cnt);
+    rval = parse_header (command_buffer, &header);
     if (rval != TSS2_RC_SUCCESS) {
         return rval;
     }
+    if (command_size != header.size) {
+        LOG_ERROR ("Buffer size parameter: %zu, and TPM2 command header size "
+                   "field: %" PRIu32 " disagree. Rejecting command.",
+                   command_size, header.size);
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
 
+    LOG_DEBUG("Command sent on socket #0x%x: %" PRIx16, tcti_intel->tpmSock,
+              header.code);
     /* Send TPM2_SEND_COMMAND */
     rval = Tss2_MU_UINT32_Marshal (MS_SIM_TPM_SEND_COMMAND,
                                    (uint8_t*)&sim_cmd,
@@ -159,19 +186,21 @@ TSS2_RC SocketSendTpmCommand(
     LOG_DEBUG("Locality = %d", tcti_intel->status.locality);
 
     /* Send number of bytes. */
-    cnt1 = cnt;
-    cnt = HOST_TO_BE_32(cnt);
-    rval = xmit_buf (tcti_intel->tpmSock, &cnt, sizeof (cnt));
+    rval = Tss2_MU_UINT32_Marshal (header.size, buf, sizeof (buf), NULL);
+    if (rval != TSS2_RC_SUCCESS) {
+        return rval;
+    }
+    rval = xmit_buf (tcti_intel->tpmSock, buf, sizeof (buf));
     if (rval != TSS2_RC_SUCCESS) {
         return rval;
     }
 
     /* Send the TPM command buffer */
-    rval = xmit_buf (tcti_intel->tpmSock, command_buffer, cnt1);
+    rval = xmit_buf (tcti_intel->tpmSock, command_buffer, header.size);
     if (rval != TSS2_RC_SUCCESS) {
         return rval;
     }
-    LOGBLOB_DEBUG(command_buffer, cnt1, "Sent command buffer=");
+    LOGBLOB_DEBUG(command_buffer, command_size, "Sent command buffer=");
 
     tcti_intel->status.commandSent = 1;
 
