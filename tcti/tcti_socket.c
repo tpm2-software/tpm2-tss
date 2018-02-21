@@ -177,52 +177,47 @@ TSS2_RC send_sim_cmd_setup (
     return xmit_buf (tcti_intel->tpmSock, buf, sizeof (buf));
 }
 
-TSS2_RC SocketSendTpmCommand(
-    TSS2_TCTI_CONTEXT *tctiContext,
-    size_t command_size,
-    const uint8_t *command_buffer
-    )
+TSS2_RC tcti_socket_transmit (
+    TSS2_TCTI_CONTEXT *tcti_ctx,
+    size_t size,
+    const uint8_t *cmd_buf)
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
-    TSS2_RC rval = TSS2_RC_SUCCESS;
-    tpm_header_t header;
+    tpm_header_t header = { 0 };
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tcti_ctx);
+    TSS2_RC rc;
 
-    rval = tcti_send_checks (tctiContext, command_buffer);
-    if (rval != TSS2_RC_SUCCESS) {
-        return rval;
+    rc = tcti_send_checks (tcti_ctx, cmd_buf);
+    if (rc != TSS2_RC_SUCCESS) {
+        return rc;
     }
-
-    rval = parse_header (command_buffer, &header);
-    if (rval != TSS2_RC_SUCCESS) {
-        return rval;
+    rc = parse_header (cmd_buf, &header);
+    if (rc != TSS2_RC_SUCCESS) {
+        return rc;
     }
-    if (command_size != header.size) {
+    if (header.size != size) {
         LOG_ERROR ("Buffer size parameter: %zu, and TPM2 command header size "
-                   "field: %" PRIu32 " disagree. Rejecting command.",
-                   command_size, header.size);
+                   "field: %" PRIu32 " disagree.", size, header.size);
         return TSS2_TCTI_RC_BAD_VALUE;
     }
 
-    rval = send_sim_cmd_setup (tcti_intel, header.size);
-    if (rval != TSS2_RC_SUCCESS) {
-        return rval;
+    LOG_DEBUG ("Sending command with TPM_CC 0x%" PRIx32 " and size %" PRIu32,
+               header.code, header.size);
+    rc = send_sim_cmd_setup (tcti_intel, header.size);
+    if (rc != TSS2_RC_SUCCESS) {
+        return rc;
     }
-
-    /* Send the TPM command buffer */
-    rval = xmit_buf (tcti_intel->tpmSock, command_buffer, header.size);
-    if (rval != TSS2_RC_SUCCESS) {
-        return rval;
+    rc = xmit_buf (tcti_intel->tpmSock, cmd_buf, size);
+    if (rc != TSS2_RC_SUCCESS) {
+        return rc;
     }
-    LOGBLOB_DEBUG(command_buffer, command_size, "Sent command buffer=");
-
-    tcti_intel->status.commandSent = 1;
 
     tcti_intel->previousStage = TCTI_STAGE_SEND_COMMAND;
+    tcti_intel->status.commandSent = 1;
     tcti_intel->status.tagReceived = 0;
     tcti_intel->status.responseSizeReceived = 0;
     tcti_intel->status.protocolResponseSizeReceived = 0;
 
-    return rval;
+    return rc;
 }
 
 TSS2_RC SocketCancel(
@@ -513,7 +508,7 @@ _InitSocketTcti (
 
     TSS2_TCTI_MAGIC (tctiContext) = TCTI_MAGIC;
     TSS2_TCTI_VERSION (tctiContext) = TCTI_VERSION;
-    TSS2_TCTI_TRANSMIT (tctiContext) = SocketSendTpmCommand;
+    TSS2_TCTI_TRANSMIT (tctiContext) = tcti_socket_transmit;
     TSS2_TCTI_RECEIVE (tctiContext) = SocketReceiveTpmResponse;
     TSS2_TCTI_FINALIZE (tctiContext) = SocketFinalize;
     TSS2_TCTI_CANCEL (tctiContext) = SocketCancel;
