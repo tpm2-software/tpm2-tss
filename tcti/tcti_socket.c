@@ -79,33 +79,17 @@ static TSS2_RC xmit_buf (
     return TSS2_RC_SUCCESS;
 }
 
-TSS2_RC SendSessionEndSocketTcti (
-    TSS2_TCTI_CONTEXT *tctiContext,
-    UINT8 tpmCmdServer
-    )
+TSS2_RC send_sim_session_end (
+    SOCKET sock)
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
-    /* Value for "send command" to MS simulator */
-    uint8_t buffer [4] = { 0, };
-    SOCKET sock;
-    TSS2_RC rval = TSS2_RC_SUCCESS;
+    uint8_t buf [4] = { 0, };
+    TSS2_RC rc;
 
-    if (tpmCmdServer) {
-        sock = tcti_intel->tpmSock;
-    } else {
-        sock = tcti_intel->otherSock;
+    rc = Tss2_MU_UINT32_Marshal (TPM_SESSION_END, buf, sizeof (buf), NULL);
+    if (rc == TSS2_RC_SUCCESS) {
+        return rc;
     }
-
-    rval = Tss2_MU_UINT32_Marshal (TPM_SESSION_END,
-                                   buffer,
-                                   sizeof (buffer),
-                                   NULL);
-    if (rval == TSS2_RC_SUCCESS) {
-        return rval;
-    }
-    rval = xmit_buf (sock, buffer, sizeof (buffer));
-
-    return( rval );
+    return xmit_buf (sock, buf, sizeof (buf));
 }
 
 TSS2_RC SocketSendTpmCommand(
@@ -257,8 +241,8 @@ void SocketFinalize(
         return;
     }
 
-    SendSessionEndSocketTcti (tctiContext, 1);
-    SendSessionEndSocketTcti (tctiContext, 0);
+    send_sim_session_end (tcti_intel->otherSock);
+    send_sim_session_end (tcti_intel->tpmSock);
 
     CloseSockets (tcti_intel->otherSock, tcti_intel->tpmSock);
 }
