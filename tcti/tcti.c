@@ -56,7 +56,7 @@ TSS2_RC tcti_common_checks (
 
 TSS2_RC tcti_send_checks (
     TSS2_TCTI_CONTEXT *tctiContext,
-    uint8_t *command_buffer
+    const uint8_t *command_buffer
     )
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel;
