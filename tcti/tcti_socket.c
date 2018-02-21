@@ -63,18 +63,16 @@ static TSS2_RC tctiRecvBytes (
     return TSS2_RC_SUCCESS;
 }
 
-static TSS2_RC tctiSendBytes (
-    TSS2_TCTI_CONTEXT *tctiContext,
+static TSS2_RC xmit_buf (
     SOCKET sock,
-    const unsigned char *data,
-    int len
-    )
+    const void *buf,
+    size_t size)
 {
     int ret;
-    LOGBLOB_DEBUG(data, len, "Send Bytes to socket #0x%x:", sock);
 
-    ret = write_all (sock, data, len);
-    if (ret < len) {
+    LOGBLOB_DEBUG (buf, size, "Writing %zu bytes to socket %d:", size, sock);
+    ret = write_all (sock, buf, size);
+    if (ret < size) {
         LOG_ERROR("Failed to write to fd %d: %d", sock, WSAGetLastError ());
         return TSS2_TCTI_RC_IO_ERROR;
     }
@@ -105,7 +103,7 @@ TSS2_RC SendSessionEndSocketTcti (
     if (rval == TSS2_RC_SUCCESS) {
         return rval;
     }
-    rval = tctiSendBytes (tctiContext, sock, (char unsigned *)buffer, 4);
+    rval = xmit_buf (sock, buffer, sizeof (buffer));
 
     return( rval );
 }
@@ -117,7 +115,7 @@ TSS2_RC SocketSendTpmCommand(
     )
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
-    UINT32 tpmSendCommand;
+    UINT32 sim_cmd;
     UINT32 cnt, cnt1;
     UINT8 locality;
     TSS2_RC rval = TSS2_RC_SUCCESS;
@@ -155,27 +153,21 @@ TSS2_RC SocketSendTpmCommand(
 
     /* Send TPM2_SEND_COMMAND */
     rval = Tss2_MU_UINT32_Marshal (MS_SIM_TPM_SEND_COMMAND,
-                           (uint8_t*)&tpmSendCommand,
-                           sizeof (tpmSendCommand),
-                           NULL);  /* Value for "send command" to MS simulator. */
+                                   (uint8_t*)&sim_cmd,
+                                   sizeof (sim_cmd),
+                                   NULL);
     if (rval != TSS2_RC_SUCCESS) {
         return rval;
     }
 
-    rval = tctiSendBytes (tctiContext,
-                          tcti_intel->tpmSock,
-                          (unsigned char *)&tpmSendCommand,
-                          4);
+    rval = xmit_buf (tcti_intel->tpmSock, &sim_cmd, sizeof (sim_cmd));
     if (rval != TSS2_RC_SUCCESS) {
         return rval;
     }
 
     /* Send the locality */
     locality = (UINT8)tcti_intel->status.locality;
-    rval = tctiSendBytes (tctiContext,
-                          tcti_intel->tpmSock,
-                          (unsigned char *)&locality,
-                          1);
+    rval = xmit_buf (tcti_intel->tpmSock, &locality, sizeof (locality));
     if (rval != TSS2_RC_SUCCESS) {
         return rval;
     }
@@ -185,19 +177,13 @@ TSS2_RC SocketSendTpmCommand(
     /* Send number of bytes. */
     cnt1 = cnt;
     cnt = HOST_TO_BE_32(cnt);
-    rval = tctiSendBytes (tctiContext,
-                          tcti_intel->tpmSock,
-                          (unsigned char *)&cnt,
-                          4);
+    rval = xmit_buf (tcti_intel->tpmSock, &cnt, sizeof (cnt));
     if (rval != TSS2_RC_SUCCESS) {
         return rval;
     }
 
     /* Send the TPM command buffer */
-    rval = tctiSendBytes (tctiContext,
-                          tcti_intel->tpmSock,
-                          (unsigned char *)command_buffer,
-                          cnt1);
+    rval = xmit_buf (tcti_intel->tpmSock, command_buffer, cnt1);
     if (rval != TSS2_RC_SUCCESS) {
         return rval;
     }
