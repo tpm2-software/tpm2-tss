@@ -98,7 +98,7 @@ TSS2_RC send_sim_session_end (
  * be at least 10 bytes long.
  */
 TSS2_RC parse_header (
-    uint8_t *buf,
+    const uint8_t *buf,
     tpm_header_t *header)
 {
     TSS2_RC rc;
@@ -180,7 +180,7 @@ TSS2_RC send_sim_cmd_setup (
 TSS2_RC SocketSendTpmCommand(
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t command_size,
-    uint8_t *command_buffer
+    const uint8_t *command_buffer
     )
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);

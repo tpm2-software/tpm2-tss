@@ -136,7 +136,7 @@ TSS2_RC tcti_common_checks (
  */
 TSS2_RC tcti_send_checks (
     TSS2_TCTI_CONTEXT *tctiContext,
-    uint8_t           *command_buffer
+    const uint8_t *command_buffer
     );
 /*
  * This function performs common checks on the context structure, buffer and

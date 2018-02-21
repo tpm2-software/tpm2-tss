@@ -155,8 +155,9 @@ typedef struct {
 typedef struct {
     uint64_t magic;
     uint32_t version;
-    TSS2_RC (*transmit)( TSS2_TCTI_CONTEXT *tctiContext, size_t size,
-uint8_t *command);
+    TSS2_RC (*transmit) (TSS2_TCTI_CONTEXT *tctiContext,
+                         size_t size,
+                         const uint8_t *command);
     TSS2_RC (*receive) (TSS2_TCTI_CONTEXT *tctiContext, size_t *size,
 uint8_t *response, int32_t timeout);
     void (*finalize) (TSS2_TCTI_CONTEXT *tctiContext);

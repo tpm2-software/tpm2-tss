@@ -44,7 +44,7 @@
 TSS2_RC LocalTpmSendTpmCommand(
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t command_size,
-    uint8_t *command_buffer
+    const uint8_t *command_buffer
     )
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
