@@ -70,11 +70,6 @@ TSS2_RC InitSocketTcti (
     const uint8_t serverSockets
     ) COMPILER_ATTR (deprecated);
 
-TSS2_RC SendSessionEndSocketTcti(
-    TSS2_TCTI_CONTEXT *tctiContext,
-    UINT8 tpmCmdServer
-    );
-
 TSS2_RC Tss2_Tcti_Socket_Init (
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t *size,
