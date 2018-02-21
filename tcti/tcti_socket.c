@@ -131,6 +131,52 @@ TSS2_RC parse_header (
     return rc;
 }
 
+/*
+ * This fucntion is used to send the simulator a sort of command message
+ * that tells it we're about to send it a TPM command. This requires that
+ * we first send it a 4 byte code that's defined by the simulator. Then
+ * another byte identifying the locality and finally the size of the TPM
+ * command buffer that we're about to send. After these 9 bytes are sent
+ * the simulator will accept a TPM command buffer.
+ */
+TSS2_RC send_sim_cmd_setup (
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel,
+    UINT32 size)
+{
+    uint8_t buf [sizeof (UINT32)] = { 0 }, locality;
+    TSS2_RC rc;
+
+    /* Send simulator code to tell it we're sending a command buffer */
+    rc = Tss2_MU_UINT32_Marshal (MS_SIM_TPM_SEND_COMMAND,
+                                 buf,
+                                 sizeof (UINT32),
+                                 NULL);
+    if (rc != TSS2_RC_SUCCESS) {
+        return rc;
+    }
+    rc = xmit_buf (tcti_intel->tpmSock, buf, sizeof (buf));
+    if (rc != TSS2_RC_SUCCESS) {
+        return rc;
+    }
+
+    /* Send the locality */
+    locality = (UINT8)tcti_intel->status.locality;
+    rc = xmit_buf (tcti_intel->tpmSock, &locality, sizeof (locality));
+    if (rc != TSS2_RC_SUCCESS) {
+        return rc;
+    }
+
+    /*
+     * Send command size. This is the size of the command buffer that will
+     * be sent next.
+     */
+    rc = Tss2_MU_UINT32_Marshal (size, buf, sizeof (buf), NULL);
+    if (rc != TSS2_RC_SUCCESS) {
+        return rc;
+    }
+    return xmit_buf (tcti_intel->tpmSock, buf, sizeof (buf));
+}
+
 TSS2_RC SocketSendTpmCommand(
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t command_size,
@@ -138,11 +184,8 @@ TSS2_RC SocketSendTpmCommand(
     )
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
-    UINT32 sim_cmd;
-    UINT8 locality;
     TSS2_RC rval = TSS2_RC_SUCCESS;
     tpm_header_t header;
-    uint8_t buf [sizeof (UINT32)] = { 0 };
 
     rval = tcti_send_checks (tctiContext, command_buffer);
     if (rval != TSS2_RC_SUCCESS) {
@@ -160,37 +203,7 @@ TSS2_RC SocketSendTpmCommand(
         return TSS2_TCTI_RC_BAD_VALUE;
     }
 
-    LOG_DEBUG("Command sent on socket #0x%x: %" PRIx16, tcti_intel->tpmSock,
-              header.code);
-    /* Send TPM2_SEND_COMMAND */
-    rval = Tss2_MU_UINT32_Marshal (MS_SIM_TPM_SEND_COMMAND,
-                                   (uint8_t*)&sim_cmd,
-                                   sizeof (sim_cmd),
-                                   NULL);
-    if (rval != TSS2_RC_SUCCESS) {
-        return rval;
-    }
-
-    rval = xmit_buf (tcti_intel->tpmSock, &sim_cmd, sizeof (sim_cmd));
-    if (rval != TSS2_RC_SUCCESS) {
-        return rval;
-    }
-
-    /* Send the locality */
-    locality = (UINT8)tcti_intel->status.locality;
-    rval = xmit_buf (tcti_intel->tpmSock, &locality, sizeof (locality));
-    if (rval != TSS2_RC_SUCCESS) {
-        return rval;
-    }
-
-    LOG_DEBUG("Locality = %d", tcti_intel->status.locality);
-
-    /* Send number of bytes. */
-    rval = Tss2_MU_UINT32_Marshal (header.size, buf, sizeof (buf), NULL);
-    if (rval != TSS2_RC_SUCCESS) {
-        return rval;
-    }
-    rval = xmit_buf (tcti_intel->tpmSock, buf, sizeof (buf));
+    rval = send_sim_cmd_setup (tcti_intel, header.size);
     if (rval != TSS2_RC_SUCCESS) {
         return rval;
     }
