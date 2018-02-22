@@ -108,7 +108,7 @@ EXTRA_DIST = \
     lib/sapi.pc.in \
     man/man-postlude.troff \
     man/InitDeviceTcti.3.in \
-    man/man3/InitSocketTcti.3 \
+    man/InitSocketTcti.3.in \
     man/tcti-device.7.in \
     man/tcti-socket.7.in \
     $(INT_LOG_COMPILER) \
