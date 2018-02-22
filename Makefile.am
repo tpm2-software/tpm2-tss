@@ -92,6 +92,7 @@ TESTS_INTEGRATION = \
     test/integration/system-api.int \
     test/integration/policy-template.int \
     test/integration/create-loaded.int \
+    test/integration/policy-authorizeNV.int \
     test/tpmclient/tpmclient.int
 if ESAPI
 TESTS_INTEGRATION += \
@@ -559,6 +560,11 @@ test_integration_create_loaded_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_create_loaded_int_LDADD   = $(TESTS_LDADD)
 test_integration_create_loaded_int_SOURCES = test/integration/main.c \
     test/integration/create-loaded.int.c
+
+test_integration_policy_authorizeNV_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_policy_authorizeNV_int_LDADD   = $(TESTS_LDADD)
+test_integration_policy_authorizeNV_int_SOURCES = test/integration/main.c log/log.h log/log.c \
+    test/integration/policy-authorizeNV.int.c
 
 TESTS_CFLAGS = $(LIBCRYPTO_CFLAGS)
 TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES) $(LIBCRYPTO_LIBS) $(libutil)
