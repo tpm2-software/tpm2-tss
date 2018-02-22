@@ -3,6 +3,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## Unreleased
+### Added
+- Attached Component commands from the last public review spec.
+### Fixed
+- Essential files missing from release tarballs are now included.
+- Version string generation has been moved from configure.ac to the
+bootstrap script. It is now stored in a file named `VERSION` that is
+shipped in the release tarball.
+- We've stopped shipping the built man page for InitSocketTcti.3 and now
+ship the source.
+
 ## [1.3.0] - 2017-12-07
 ### Added
 - Implementation of the EncryptDecrypt2 command.
