@@ -139,41 +139,36 @@ TSS2_RC parse_header (
  * command buffer that we're about to send. After these 9 bytes are sent
  * the simulator will accept a TPM command buffer.
  */
+#define SIM_CMD_SIZE (sizeof (UINT32) + sizeof (UINT8) + sizeof (UINT32))
 TSS2_RC send_sim_cmd_setup (
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel,
     UINT32 size)
 {
-    uint8_t buf [sizeof (UINT32)] = { 0 }, locality;
+    uint8_t buf [SIM_CMD_SIZE] = { 0 };
+    size_t offset = 0;
     TSS2_RC rc;
 
-    /* Send simulator code to tell it we're sending a command buffer */
     rc = Tss2_MU_UINT32_Marshal (MS_SIM_TPM_SEND_COMMAND,
                                  buf,
-                                 sizeof (UINT32),
-                                 NULL);
-    if (rc != TSS2_RC_SUCCESS) {
-        return rc;
-    }
-    rc = xmit_buf (tcti_intel->tpmSock, buf, sizeof (buf));
+                                 sizeof (buf),
+                                 &offset);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
 
-    /* Send the locality */
-    locality = (UINT8)tcti_intel->status.locality;
-    rc = xmit_buf (tcti_intel->tpmSock, &locality, sizeof (locality));
+    rc = Tss2_MU_UINT8_Marshal (tcti_intel->status.locality,
+                                buf,
+                                sizeof (buf),
+                                &offset);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
 
-    /*
-     * Send command size. This is the size of the command buffer that will
-     * be sent next.
-     */
-    rc = Tss2_MU_UINT32_Marshal (size, buf, sizeof (buf), NULL);
+    rc = Tss2_MU_UINT32_Marshal (size, buf, sizeof (buf), &offset);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
+
     return xmit_buf (tcti_intel->tpmSock, buf, sizeof (buf));
 }
 
