@@ -30,17 +30,14 @@
 #ifndef TSS2_TCTI_H
 #define TSS2_TCTI_H
 
-#ifndef TSS2_API_VERSION_1_1_1_1
-#error Version mismatch among TSS2 header files. \
-       Do not include this file, #include <sapi/tpm20.h> instead.
-#endif  /* TSS2_API_VERSION_1_1_1_1 */
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "tss2_common.h"
+#include <stdint.h>
 #include <stddef.h>
+#include "tss2_common.h"
+#include "tss2_tpm2_types.h"
 
 #if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
 #include <poll.h>
