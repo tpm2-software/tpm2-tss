@@ -172,10 +172,6 @@ TSS2_RC iesys_get_nv_name(
     TPMS_NV_PUBLIC *nvPublic,
     TPM2B_NAME *name);
 
-TSS2_RC iesys_get_nv_name2B(
-    TPM2B_NV_PUBLIC *publicArea2B,
-    TPM2B_NAME *name);
-
 TSS2_RC iesys_get_object_name(
     TPM2B_PUBLIC *publicArea2B,
     TPM2B_NAME *name);
