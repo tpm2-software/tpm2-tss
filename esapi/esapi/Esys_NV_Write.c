@@ -338,8 +338,9 @@ Esys_NV_Write_finish(
 
     if (nvIndexNode != NULL) {
         nvIndexNode->rsrc.misc.rsrc_nv_pub.nvPublic.attributes |= TPMA_NV_TPMA_NV_WRITTEN;
-        r = iesys_get_nv_name2B(&nvIndexNode->rsrc.misc.rsrc_nv_pub, &nvIndexNode->rsrc.name);
-        return_if_error(r, "Error get nvname2b")
+        r = iesys_nv_get_name(&nvIndexNode->rsrc.misc.rsrc_nv_pub,
+                              &nvIndexNode->rsrc.name);
+        return_if_error(r, "Error get nvname")
      }
     esysContext->state = _ESYS_STATE_FINISHED;
 

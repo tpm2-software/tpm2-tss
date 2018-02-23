@@ -418,18 +418,6 @@ iesys_get_nv_name(TPMS_NV_PUBLIC * nvPublic, TPM2B_NAME * name)
 }
 
 TSS2_RC
-iesys_get_nv_name2B(TPM2B_NV_PUBLIC * publicArea2B, TPM2B_NAME * name)
-{
-    size_t offset = 0;
-    TSS2_RC r = iesys_get_nv_name(&publicArea2B->nvPublic, name);
-    return_if_error(r, "Getting NV Name");
-    r = Tss2_MU_UINT16_Marshal(publicArea2B->nvPublic.nameAlg, &name->name[0],
-                               2, &offset);
-    return_if_error(r, "Marshaling");
-    return TSS2_RC_SUCCESS;
-}
-
-TSS2_RC
 iesys_get_object_name(TPM2B_PUBLIC * publicArea2B, TPM2B_NAME * name)
 {
     BYTE buffer[sizeof(TPMT_PUBLIC)];
