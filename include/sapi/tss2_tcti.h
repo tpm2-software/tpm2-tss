@@ -120,16 +120,6 @@ typedef void TSS2_TCTI_POLL_HANDLE;
         TSS2_TCTI_RC_NOT_IMPLEMENTED: \
     TSS2_TCTI_SET_LOCALITY(tctiContext)(tctiContext, locality))
 
-/* The following defines are kept for compatibility reasons.
- * They are however deprecated.
- * TODO: Must be removed before release */
-#define tss2_tcti_transmit Tss2_Tcti_Transmit
-#define tss2_tcti_receive Tss2_Tcti_Receive
-#define tss2_tcti_finalize Tss2_Tcti_Finalize
-#define tss2_tcti_cancel Tss2_Tcti_Cancel
-#define tss2_tcti_get_poll_handles Tss2_Tcti_GetPollHandles
-#define tss2_tcti_set_locality Tss2_Tcti_SetLocality
-
 typedef struct TSS2_TCTI_OPAQUE_CONTEXT_BLOB TSS2_TCTI_CONTEXT;
 
 /* superclass to get the version */
