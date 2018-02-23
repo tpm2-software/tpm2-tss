@@ -67,15 +67,19 @@ Esys_TR_Serialize(ESYS_CONTEXT * esys_context,
 
     r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     return_if_error(r, "Get resource object");
+
     r = Tss2_MU_IESYS_RESOURCE_Marshal(&esys_object->rsrc, NULL, SIZE_MAX,
                                             buffer_size);
     return_if_error(r, "Marshal resource object");
+
     *buffer = malloc(*buffer_size);
     return_if_null(*buffer, "Buffer could not be allocated",
                    TSS2_ESYS_RC_MEMORY);
+
     r = Tss2_MU_IESYS_RESOURCE_Marshal(&esys_object->rsrc, *buffer,
                                             *buffer_size, &offset);
     return_if_error(r, "Marshal resource object");
+
     return TSS2_RC_SUCCESS;
 };
 
@@ -102,9 +106,11 @@ Esys_TR_Deserialize(ESYS_CONTEXT * esys_context,
 
     r = esys_CreateResourceObject(esys_context, *esys_handle, &esys_object);
     return_if_error(r, "Get resource object");
+
     r = Tss2_MU_IESYS_RESOURCE_Unmarshal(buffer, buffer_size, &offset,
                                               &esys_object->rsrc);
     return_if_error(r, "Unmarshal resource object");
+
     return TSS2_RC_SUCCESS;
 }
 
@@ -125,6 +131,7 @@ Esys_TR_FromTPMPublic_Async(ESYS_CONTEXT * esys_context,
     RSRC_NODE_T *esysHandleNode = NULL;
     r = esys_CreateResourceObject(esys_context, esys_handle, &esysHandleNode);
     goto_if_error(r, "Error create resource", error_cleanup);
+
     esysHandleNode->rsrc.handle = tpm_handle;
     esys_context->esys_handle = esys_handle;
 
@@ -133,6 +140,7 @@ Esys_TR_FromTPMPublic_Async(ESYS_CONTEXT * esys_context,
         r = Esys_NV_ReadPublic_async(esys_context, esys_handle, shandle1,
                                      shandle2, shandle3);
         goto_if_error(r, "Error NV_ReadPublic", error_cleanup);
+
     } else {
         esys_context->in.ReadPublic.objectHandle = esys_handle;
         r = Esys_ReadPublic_async(esys_context, esys_handle, shandle1, shandle2,
@@ -159,12 +167,14 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * esys_handle)
 
     r = esys_GetResourceObject(esys_context, objectHandle, &objectHandleNode);
     goto_if_error(r, "get resource", error_cleanup);
+
     if (objectHandleNode->rsrc.handle >= TPM2_NV_INDEX_FIRST
         && objectHandleNode->rsrc.handle <= TPM2_NV_INDEX_LAST) {
         TPM2B_NV_PUBLIC *nvPublic;
         TPM2B_NAME *nvName;
         r = Esys_NV_ReadPublic_finish(esys_context, &nvPublic, &nvName);
         goto_if_error(r, "Error NV_ReadPublic", error_cleanup);
+
         objectHandleNode->rsrc.rsrcType = IESYSC_NV_RSRC;
         objectHandleNode->rsrc.name = *nvName;
         objectHandleNode->rsrc.misc.rsrc_nv_pub = *nvPublic;
@@ -176,8 +186,9 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * esys_handle)
         TPM2B_NAME *qualifiedName = NULL;
         r = Esys_ReadPublic_finish(esys_context, &public, &name,
                                    &qualifiedName);
-        goto_if_error(r, "Error ReadPublic", error_cleanup)
-            objectHandleNode->rsrc.rsrcType = IESYSC_KEY_RSRC;
+        goto_if_error(r, "Error ReadPublic", error_cleanup);
+
+        objectHandleNode->rsrc.rsrcType = IESYSC_KEY_RSRC;
         objectHandleNode->rsrc.name = *name;
         objectHandleNode->rsrc.misc.rsrc_key_pub = *public;
         SAFE_FREE(public);
@@ -223,8 +234,10 @@ Esys_TR_FromTPMPublic(ESYS_CONTEXT * esys_context,
     r = Esys_TR_FromTPMPublic_Async(esys_context, shandle1, shandle2, shandle3,
                                     tpm_handle);
     goto_if_error(r, "Error TR FromTPMPublic", error_cleanup);
+
     r = Esys_TR_FromTPMPublic_Finish(esys_context, object);
     goto_if_error(r, "Error TR FromTPMPublic", error_cleanup);
+
     return r;
  error_cleanup:
     return r;
@@ -302,6 +315,7 @@ Esys_TR_GetName(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
     RSRC_NODE_T *esys_object;
     TSS2_RC r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     return_if_error(r, "Objec not found");
+
     *name = malloc(sizeof(TPM2B_NAME));
     if (*name == NULL) {
         LOG_ERROR("Error: out of memory");
@@ -310,10 +324,12 @@ Esys_TR_GetName(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
     if (esys_object->rsrc.rsrcType == IESYSC_KEY_RSRC) {
         r = iesys_get_name(&esys_object->rsrc.misc.rsrc_key_pub, *name);
         goto_if_error(r, "Error get name", error_cleanup);
+
     } else {
         if (esys_object->rsrc.rsrcType == IESYSC_NV_RSRC) {
             r = iesys_nv_get_name(&esys_object->rsrc.misc.rsrc_nv_pub, *name);
             goto_if_error(r, "Error get name", error_cleanup);
+
         } else {
             size_t offset = 0;
             Tss2_MU_TPM2_HANDLE_Marshal(esys_object->rsrc.handle,
@@ -347,6 +363,7 @@ Esys_TRSess_GetAttributes(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
     RSRC_NODE_T *esys_object;
     TSS2_RC r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     return_if_error(r, "Object not found");
+
     if (esys_object->rsrc.rsrcType != IESYSC_SESSION_RSRC)
         return_error(TSS2_ESYS_RC_BAD_TR, "Object is not a session object");
     *flags = esys_object->rsrc.misc.rsrc_session.sessionAttributes;
@@ -371,6 +388,7 @@ Esys_TRSess_SetAttributes(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
     RSRC_NODE_T *esys_object;
     TSS2_RC r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     return_if_error(r, "Object not found");
+
     if (esys_object->rsrc.rsrcType != IESYSC_SESSION_RSRC)
         return_error(TSS2_ESYS_RC_BAD_TR, "Object is not a session object");
     esys_object->rsrc.misc.rsrc_session.sessionAttributes =
