@@ -1,46 +1,34 @@
-//**********************************************************************;
-// Copyright (c) 2015 - 2017, Intel Corporation
-//
-// Copyright 2015, Andreas Fuchs @ Fraunhofer SIT
-//
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-// this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright notice,
-// this list of conditions and the following disclaimer in the documentation
-// and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
-//**********************************************************************;
-
-//
-// The context for TCTI implementations is on opaque
-// structure. There shall never be a definition of its content.
-// Implementation provide the size information to
-// applications via the initialize call.
-// This makes use of a compiler trick that allows type
-// checking of the pointer even though the type isn't
-// defined.
-//
-// The first field of a Context must be the common part
-// (see below).
-#ifndef TSS2_TCTI
-#define TSS2_TCTI
+/*
+ * Copyright (c) 2015 - 2018, Intel Corporation
+ *
+ * Copyright 2015, Andreas Fuchs @ Fraunhofer SIT
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+#ifndef TSS2_TCTI_H
+#define TSS2_TCTI_H
 
 #ifndef TSS2_API_VERSION_1_1_1_1
 #error Version mismatch among TSS2 header files. \
@@ -62,14 +50,16 @@ typedef struct pollfd TSS2_TCTI_POLL_HANDLE;
 typedef HANDLE TSS2_TCTI_POLL_HANDLE;
 #else
 typedef void TSS2_TCTI_POLL_HANDLE;
-#error Info: Platform not supported for TCTI_POLL_HANDLES
+#ifndef TSS2_TCTI_SUPPRESS_POLL_WARNINGS
+#pragma message "Info: Platform not supported for TCTI_POLL_HANDLES"
+#endif
 #endif
 
-// The following are used to configure timeout characteristics.
+/* The following are used to configure timeout characteristics. */
 #define  TSS2_TCTI_TIMEOUT_BLOCK    -1
 #define  TSS2_TCTI_TIMEOUT_NONE     0
 
-// Macros to simplify access to values in common TCTI structure
+/* Macros to simplify access to values in common TCTI structure */
 #define TSS2_TCTI_MAGIC(tctiContext) \
     ((TSS2_TCTI_CONTEXT_VERSION*)tctiContext)->magic
 #define TSS2_TCTI_VERSION(tctiContext) \
@@ -87,7 +77,7 @@ typedef void TSS2_TCTI_POLL_HANDLE;
 #define TSS2_TCTI_SET_LOCALITY(tctiContext) \
     ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->setLocality
 
-// Macros to simplify invocation of functions from the common TCTI structure
+/* Macros to simplify invocation of functions from the common TCTI structure */
 #define Tss2_Tcti_Transmit(tctiContext, size, command) \
     ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
     (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
