@@ -35,57 +35,55 @@
 extern "C" {
 #endif
 
-
-/** Reference for a Tpm Resource object. */
 typedef uint32_t ESYS_TR;
 
-#define ESYS_TR_NONE    0xfff  /**< ESYS_TR for no provided Tpm Resource. */
-#define ESYS_TR_PASSWORD 0x0ff /**< ESYS_TR for Password based authentication. */
-#define ESYS_TR_PCR0    0 /**< ESYS_TR for PCR 0. */
-#define ESYS_TR_PCR1    1 /**< ESYS_TR for PCR 1. */
-#define ESYS_TR_PCR2    2 /**< ESYS_TR for PCR 2. */
-#define ESYS_TR_PCR3    3 /**< ESYS_TR for PCR 3. */
-#define ESYS_TR_PCR4    4 /**< ESYS_TR for PCR 4. */
-#define ESYS_TR_PCR5    5 /**< ESYS_TR for PCR 5. */
-#define ESYS_TR_PCR6    6 /**< ESYS_TR for PCR 6. */
-#define ESYS_TR_PCR7    7 /**< ESYS_TR for PCR 7. */
-#define ESYS_TR_PCR8    8 /**< ESYS_TR for PCR 8. */
-#define ESYS_TR_PCR9    9 /**< ESYS_TR for PCR 9. */
-#define ESYS_TR_PCR10    10 /**< ESYS_TR for PCR 10. */
-#define ESYS_TR_PCR11    11 /**< ESYS_TR for PCR 11. */
-#define ESYS_TR_PCR12    12 /**< ESYS_TR for PCR 12. */
-#define ESYS_TR_PCR13    13 /**< ESYS_TR for PCR 13. */
-#define ESYS_TR_PCR14    14 /**< ESYS_TR for PCR 14. */
-#define ESYS_TR_PCR15    15 /**< ESYS_TR for PCR 15. */
-#define ESYS_TR_PCR16    16 /**< ESYS_TR for PCR 16. */
-#define ESYS_TR_PCR17    17 /**< ESYS_TR for PCR 17. */
-#define ESYS_TR_PCR18    18 /**< ESYS_TR for PCR 18. */
-#define ESYS_TR_PCR19    19 /**< ESYS_TR for PCR 19. */
-#define ESYS_TR_PCR20    20 /**< ESYS_TR for PCR 20. */
-#define ESYS_TR_PCR21    21 /**< ESYS_TR for PCR 21. */
-#define ESYS_TR_PCR22    22 /**< ESYS_TR for PCR 22. */
-#define ESYS_TR_PCR23    23 /**< ESYS_TR for PCR 23. */
-#define ESYS_TR_PCR24    24 /**< ESYS_TR for PCR 24. */
-#define ESYS_TR_PCR25    25 /**< ESYS_TR for PCR 25. */
-#define ESYS_TR_PCR26    26 /**< ESYS_TR for PCR 26. */
-#define ESYS_TR_PCR27    27 /**< ESYS_TR for PCR 27. */
-#define ESYS_TR_PCR28    28 /**< ESYS_TR for PCR 28. */
-#define ESYS_TR_PCR29    29 /**< ESYS_TR for PCR 29. */
-#define ESYS_TR_PCR30    30 /**< ESYS_TR for PCR 30. */
-#define ESYS_TR_PCR31    31 /**< ESYS_TR for PCR 31. */
+#define ESYS_TR_NONE    0xfff
+#define ESYS_TR_PASSWORD 0x0ff
+#define ESYS_TR_PCR0    0
+#define ESYS_TR_PCR1    1
+#define ESYS_TR_PCR2    2
+#define ESYS_TR_PCR3    3
+#define ESYS_TR_PCR4    4
+#define ESYS_TR_PCR5    5
+#define ESYS_TR_PCR6    6
+#define ESYS_TR_PCR7    7
+#define ESYS_TR_PCR8    8
+#define ESYS_TR_PCR9    9
+#define ESYS_TR_PCR10    10
+#define ESYS_TR_PCR11    11
+#define ESYS_TR_PCR12    12
+#define ESYS_TR_PCR13    13
+#define ESYS_TR_PCR14    14
+#define ESYS_TR_PCR15    15
+#define ESYS_TR_PCR16    16
+#define ESYS_TR_PCR17    17
+#define ESYS_TR_PCR18    18
+#define ESYS_TR_PCR19    19
+#define ESYS_TR_PCR20    20
+#define ESYS_TR_PCR21    21
+#define ESYS_TR_PCR22    22
+#define ESYS_TR_PCR23    23
+#define ESYS_TR_PCR24    24
+#define ESYS_TR_PCR25    25
+#define ESYS_TR_PCR26    26
+#define ESYS_TR_PCR27    27
+#define ESYS_TR_PCR28    28
+#define ESYS_TR_PCR29    29
+#define ESYS_TR_PCR30    30
+#define ESYS_TR_PCR31    31
 
-#define ESYS_TR_RH_OWNER 0x101 /**< ESYS_TR for the owner hierarchy. */
-#define ESYS_TR_RH_NULL 0x107 /**< ESYS_TR for the ephemeral hierarchy. */
-#define ESYS_TR_RH_LOCKOUT 0x10A  /**< ESYS_TR for the lockout authorization. */
-#define ESYS_TR_RH_ENDORSEMENT 0x10B  /**< ESYS_TR for the endorsement hierarchy. */
-#define ESYS_TR_RH_PLATFORM 0x10C /**< ESYS_TR for the platform hierarchy. */
-#define ESYS_TR_RH_PLATFORM_NV 0x10D /**< ESYS_TR for the plaform nv hierarchy. */
-#define ESYS_TR_RH_AUTH_00 0x110 /**< ESYS_TR for the vendor specific auth 00. */
-#define ESYS_TR_RH_AUTH_FF 0x20F /**< ESYS_TR for the vendor specific auth ff. */
+/* From TPM_RH_CONSTANTS */
+#define ESYS_TR_RH_OWNER    0x101
+#define    ESYS_TR_RH_NULL        0x107
+#define    ESYS_TR_RH_LOCKOUT    0x10A
+#define    ESYS_TR_RH_ENDORSEMENT    0x10B
+#define    ESYS_TR_RH_PLATFORM    0x10C
+#define ESYS_TR_RH_PLATFORM_NV    0x10D
+#define ESYS_TR_RH_AUTH_00    0x110
+#define ESYS_TR_RH_AUTH_FF    0x20F
 
-#define ESYS_TR_MIN_OBJECT 0x1000 /**< The first non-global ESYS_TR. */
+#define ESYS_TR_MIN_OBJECT 0x1000
 
-/** The context object for the Esys API. */
 typedef struct ESYS_CONTEXT ESYS_CONTEXT;
 
 /*
@@ -900,6 +898,40 @@ Esys_EncryptDecrypt_async(
 
 TSS2_RC
 Esys_EncryptDecrypt_finish(
+    ESYS_CONTEXT *esysContext,
+    TPM2B_MAX_BUFFER **outData,
+    TPM2B_IV **ivOut);
+
+/* Table 60 - TPM2_EncryptDecrypt2 Command */
+
+TSS2_RC
+Esys_EncryptDecrypt2(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR keyHandle,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    const TPM2B_MAX_BUFFER *inData,
+    TPMI_YES_NO decrypt,
+    TPMI_ALG_SYM_MODE mode,
+    const TPM2B_IV *ivIn,
+    TPM2B_MAX_BUFFER **outData,
+    TPM2B_IV **ivOut);
+
+TSS2_RC
+Esys_EncryptDecrypt2_async(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR keyHandle,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    const TPM2B_MAX_BUFFER *inData,
+    TPMI_YES_NO decrypt,
+    TPMI_ALG_SYM_MODE mode,
+    const TPM2B_IV *ivIn);
+
+TSS2_RC
+Esys_EncryptDecrypt2_finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_MAX_BUFFER **outData,
     TPM2B_IV **ivOut);
