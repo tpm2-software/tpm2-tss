@@ -192,7 +192,8 @@ Esys_EventSequenceComplete_async(
 
     iesys_compute_session_value(esysContext->session_tab[0],
                 &pcrHandleNode->rsrc.name, &pcrHandleNode->auth);
-    iesys_compute_session_value(esysContext->session_tab[1], NULL, NULL);
+    iesys_compute_session_value(esysContext->session_tab[1],
+                &sequenceHandleNode->rsrc.name, &sequenceHandleNode->auth);
     iesys_compute_session_value(esysContext->session_tab[2], NULL, NULL);
     r = iesys_gen_auths(esysContext, pcrHandleNode, sequenceHandleNode, NULL, &auths);
     return_if_error(r, "Error in computation of auth values");
