@@ -256,6 +256,8 @@ iesys_compute_rp_hashtab(ESYS_CONTEXT * esys_context,
 
     for (int i = 0; i < rspAuths->count; i++) {
         RSRC_NODE_T *session = esys_context->session_tab[i];
+        if (session == NULL)
+            continue;
         bool rpHashFound = false;
         for (int j = 0; j < *rpHashNum; j++)
             if (rp_hash_tab[j].alg == session->rsrc.misc.rsrc_session.authHash) {
