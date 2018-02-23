@@ -342,6 +342,19 @@ Esys_NV_DefineSpace_finish(
         esysContext->state = _ESYS_STATE_ERRORRESPONSE;
         goto error_cleanup;;
     }
+    nvHandleNode->rsrc.rsrcType = IESYSC_NV_RSRC;
+    r = iesys_nv_get_name(esysContext->in.NV_DefineSpace.publicInfo,
+                          &nvHandleNode->rsrc.name);
+    if (r != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Error finish (ExecuteFinish) NV_DefineSpace: %" PRIx32, r);
+        esysContext->state = _ESYS_STATE_ERRORRESPONSE;
+        goto error_cleanup;
+    }
+    nvHandleNode->rsrc.handle =
+        esysContext->in.NV_DefineSpace.publicInfo->nvPublic.nvIndex;
+    nvHandleNode->rsrc.misc.rsrc_nv_pub =
+        *esysContext->in.NV_DefineSpace.publicInfo;
+    nvHandleNode->auth = *esysContext->in.NV_DefineSpace.auth;
     esysContext->state = _ESYS_STATE_FINISHED;
 
     return r;
