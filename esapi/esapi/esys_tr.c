@@ -63,6 +63,7 @@ Esys_TR_Serialize(ESYS_CONTEXT * esys_context,
     TSS2_RC r = TSS2_RC_SUCCESS;
     RSRC_NODE_T *esys_object;
     size_t offset = 0;
+    *buffer_size = 0;
 
     r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     return_if_error(r, "Get resource object");
