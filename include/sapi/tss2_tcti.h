@@ -122,6 +122,31 @@ typedef void TSS2_TCTI_POLL_HANDLE;
 
 typedef struct TSS2_TCTI_OPAQUE_CONTEXT_BLOB TSS2_TCTI_CONTEXT;
 
+/*
+ * Types for TCTI functions. These are used for pointers to functions in the
+ * TCTI context structure.
+ */
+typedef TSS2_RC (*TSS2_TCTI_TRANSMIT_FCN) (
+    TSS2_TCTI_CONTEXT *tctiContext,
+    size_t size,
+    uint8_t const *command);
+typedef TSS2_RC (*TSS2_TCTI_RECEIVE_FCN) (
+    TSS2_TCTI_CONTEXT *tctiContext,
+    size_t *size,
+    uint8_t *response,
+    int32_t timeout);
+typedef void (*TSS2_TCTI_FINALIZE_FCN) (
+    TSS2_TCTI_CONTEXT *tctiContext);
+typedef TSS2_RC (*TSS2_TCTI_CANCEL_FCN) (
+    TSS2_TCTI_CONTEXT *tctiContext);
+typedef TSS2_RC (*TSS2_TCTI_GET_POLL_HANDLES_FCN) (
+    TSS2_TCTI_CONTEXT *tctiContext,
+    TSS2_TCTI_POLL_HANDLE *handles,
+    size_t *num_handles);
+typedef TSS2_RC (*TSS2_TCTI_SET_LOCALITY_FCN) (
+    TSS2_TCTI_CONTEXT *tctiContext,
+    uint8_t locality);
+
 /* superclass to get the version */
 typedef struct {
     uint64_t magic;
@@ -132,16 +157,12 @@ typedef struct {
 typedef struct {
     uint64_t magic;
     uint32_t version;
-    TSS2_RC (*transmit) (TSS2_TCTI_CONTEXT *tctiContext,
-                         size_t size,
-                         const uint8_t *command);
-    TSS2_RC (*receive) (TSS2_TCTI_CONTEXT *tctiContext, size_t *size,
-uint8_t *response, int32_t timeout);
-    void (*finalize) (TSS2_TCTI_CONTEXT *tctiContext);
-    TSS2_RC (*cancel) (TSS2_TCTI_CONTEXT *tctiContext);
-    TSS2_RC (*getPollHandles) (TSS2_TCTI_CONTEXT *tctiContext,
-TSS2_TCTI_POLL_HANDLE *handles, size_t *num_handles);
-    TSS2_RC (*setLocality) (TSS2_TCTI_CONTEXT *tctiContext, uint8_t locality);
+    TSS2_TCTI_TRANSMIT_FCN transmit;
+    TSS2_TCTI_RECEIVE_FCN receive;
+    TSS2_TCTI_FINALIZE_FCN finalize;
+    TSS2_TCTI_CANCEL_FCN cancel;
+    TSS2_TCTI_GET_POLL_HANDLES_FCN getPollHandles;
+    TSS2_TCTI_SET_LOCALITY_FCN setLocality;
 } TSS2_TCTI_CONTEXT_COMMON_V1;
 
 typedef TSS2_TCTI_CONTEXT_COMMON_V1 TSS2_TCTI_CONTEXT_COMMON_CURRENT;
