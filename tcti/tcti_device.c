@@ -83,7 +83,7 @@ TSS2_RC LocalTpmSendTpmCommand(
 TSS2_RC LocalTpmReceiveTpmResponse(
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t *response_size,
-    unsigned char *response_buffer,
+    uint8_t *response_buffer,
     int32_t timeout
     )
 {
