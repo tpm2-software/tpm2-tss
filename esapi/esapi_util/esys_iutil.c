@@ -1082,6 +1082,51 @@ iesys_gen_auths(ESYS_CONTEXT * esys_context,
 }
 
 TSS2_RC
+iesys_check_response(ESYS_CONTEXT * esys_context)
+{
+    TSS2_RC r;
+    const uint8_t *rpBuffer;
+    size_t rpBuffer_size;
+    TSS2L_SYS_AUTH_RESPONSE rspAuths = {0};
+    HASH_TAB_ITEM rp_hash_tab[3];
+    HASH_TAB_ITEM rp_hash_tab2[3];
+    uint8_t rpHashNum = 0;
+    r = Tss2_Sys_GetRspAuths(esys_context->sys, &rspAuths);
+    return_if_error(r, "Error: GetRspAuths");
+
+    if (rspAuths.count != esys_context->authsCount) {
+        LOG_ERROR("Number of response auths differs: %i (expected %i)",
+                  rspAuths.count, esys_context->authsCount);
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
+    }
+    /*
+     * At least one session object is defined so the rp hashes must be computed
+     * and the HMACs of the responses have to be checked.
+     * Encrypted response parameters will be decrypted.
+     */
+    if (esys_context->session_type[0] >= ESYS_TR_MIN_OBJECT ||
+        esys_context->session_type[1] >= ESYS_TR_MIN_OBJECT ||
+        esys_context->session_type[2] >= ESYS_TR_MIN_OBJECT) {
+        r = Tss2_Sys_GetRpBuffer(esys_context->sys, &rpBuffer_size, &rpBuffer);
+        return_if_error(r, "Error: get rp buffer");
+
+        r = iesys_compute_rp_hashtab(esys_context,
+                                     &rspAuths, rpBuffer, rpBuffer_size,
+                                     &rp_hash_tab[0], &rpHashNum);
+        return_if_error(r, "Error: while computing response hashes");
+
+        r = iesys_check_rp_hmacs(esys_context, &rspAuths, &rp_hash_tab[0]);
+        return_if_error(r, "Error: response hmac check");
+
+        if (esys_context->encryptNonce != NULL) {
+            r = iesys_decrypt_param(esys_context, rpBuffer, rpBuffer_size);
+            return_if_error(r, "Error: while decrypting parameter.");
+        }
+    }
+    return TSS2_RC_SUCCESS;
+}
+
+TSS2_RC
 iesys_nv_get_name(TPM2B_NV_PUBLIC * publicInfo, TPM2B_NAME * name)
 {
     BYTE buffer[sizeof(TPMS_NV_PUBLIC)];

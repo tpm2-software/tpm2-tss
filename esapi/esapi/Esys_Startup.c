@@ -165,7 +165,6 @@ Esys_Startup_finish(
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
     TSS2_RC r = TSS2_RC_SUCCESS;
-
     r = Tss2_Sys_ExecuteFinish(esysContext->sys, esysContext->timeout);
     if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) {
         LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32, r);

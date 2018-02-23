@@ -221,7 +221,6 @@ Esys_ContextLoad_finish(
     goto_if_error(r, "while unmarshaling context ", error_cleanup);
 
     loadedHandleNode->rsrc = esyscontextData.esysMetadata.data;
-
     r = Tss2_Sys_ExecuteFinish(esysContext->sys, esysContext->timeout);
     if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) {
         LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32, r);

@@ -215,7 +215,6 @@ Esys_Vendor_TCG_Test_finish(
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }
     }
-
     r = Tss2_Sys_ExecuteFinish(esysContext->sys, esysContext->timeout);
     if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) {
         LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32, r);
@@ -250,50 +249,9 @@ Esys_Vendor_TCG_Test_finish(
      * Now the verification of the response (hmac check) and if necessary the
      * parameter decryption have to be done
      */
-    const uint8_t *rpBuffer;
-    size_t rpBuffer_size;
-    TSS2L_SYS_AUTH_RESPONSE rspAuths = {0};
-    HASH_TAB_ITEM rp_hash_tab[3];
-    HASH_TAB_ITEM rp_hash_tab2[3];
-    uint8_t rpHashNum = 0;
-    uint8_t rpHashNum2 = 0;
-    r = Tss2_Sys_GetRspAuths(esysContext->sys, &rspAuths);
-    if (r != TSS2_RC_SUCCESS)
-        goto error_cleanup;
-
-    if (rspAuths.count != esysContext->authsCount) {
-        LOG_ERROR("Number of response auths differs: %i (expected %i)",
-                rspAuths.count, esysContext->authsCount);
-        r = TSS2_ESYS_RC_GENERAL_FAILURE;
-        goto error_cleanup;
-    }
-    /*
-     * At least one session object is defined so the rp hashes must be computed
-     * and the HMACs of the responses have to be checked.
-     * Encrypted response parameters will be decrypted.
-     */
-    if (esysContext->session_type[0] >= ESYS_TR_MIN_OBJECT ||
-        esysContext->session_type[1] >= ESYS_TR_MIN_OBJECT ||
-        esysContext->session_type[2] >= ESYS_TR_MIN_OBJECT) {
-        r = Tss2_Sys_GetRpBuffer(esysContext->sys, &rpBuffer_size, &rpBuffer);
-        goto_if_error(r, "Error: get rp buffer",
+    r = iesys_check_response(esysContext);
+    goto_if_error(r, "Error: check response",
                       error_cleanup);
-
-        r = iesys_compute_rp_hashtab(esysContext,
-                                     &rspAuths, rpBuffer, rpBuffer_size,
-                                     &rp_hash_tab[0], &rpHashNum);
-        goto_if_error(r, "Error: while computing response hashes",
-                      error_cleanup);
-
-        r = iesys_check_rp_hmacs(esysContext, &rspAuths, &rp_hash_tab[0]);
-        goto_if_error(r, "Error: response hmac check",
-                      error_cleanup);
-        if (esysContext->encryptNonce != NULL) {
-            r = iesys_decrypt_param(esysContext, rpBuffer, rpBuffer_size);
-            goto_if_error(r, "Error: while decrypting parameter.",
-                          error_cleanup);
-        }
-    }
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
