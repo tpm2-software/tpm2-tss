@@ -173,7 +173,8 @@ Esys_NV_UndefineSpaceSpecial_async(
 
     iesys_compute_session_value(esysContext->session_tab[0],
                 &nvIndexNode->rsrc.name, &nvIndexNode->auth);
-    iesys_compute_session_value(esysContext->session_tab[1], NULL, NULL);
+    iesys_compute_session_value(esysContext->session_tab[1],
+                &platformNode->rsrc.name, &platformNode->auth);
     r = iesys_gen_auths(esysContext, nvIndexNode, platformNode, NULL, &auths);
     return_if_error(r, "Error in computation of auth values");
 

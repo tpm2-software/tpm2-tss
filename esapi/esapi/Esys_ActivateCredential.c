@@ -207,7 +207,8 @@ Esys_ActivateCredential_async(
 
     iesys_compute_session_value(esysContext->session_tab[0],
                 &activateHandleNode->rsrc.name, &activateHandleNode->auth);
-    iesys_compute_session_value(esysContext->session_tab[1], NULL, NULL);
+    iesys_compute_session_value(esysContext->session_tab[1],
+                &keyHandleNode->rsrc.name, &keyHandleNode->auth);
     iesys_compute_session_value(esysContext->session_tab[2], NULL, NULL);
     r = iesys_gen_auths(esysContext, activateHandleNode, keyHandleNode, NULL, &auths);
     return_if_error(r, "Error in computation of auth values");

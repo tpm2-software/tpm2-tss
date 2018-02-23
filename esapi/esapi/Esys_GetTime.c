@@ -211,7 +211,8 @@ Esys_GetTime_async(
 
     iesys_compute_session_value(esysContext->session_tab[0],
                 &privacyAdminHandleNode->rsrc.name, &privacyAdminHandleNode->auth);
-    iesys_compute_session_value(esysContext->session_tab[1], NULL, NULL);
+    iesys_compute_session_value(esysContext->session_tab[1],
+                &signHandleNode->rsrc.name, &signHandleNode->auth);
     iesys_compute_session_value(esysContext->session_tab[2], NULL, NULL);
     r = iesys_gen_auths(esysContext, privacyAdminHandleNode, signHandleNode, NULL, &auths);
     return_if_error(r, "Error in computation of auth values");
