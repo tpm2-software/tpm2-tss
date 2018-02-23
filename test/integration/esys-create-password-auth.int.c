@@ -1,6 +1,6 @@
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
- * All rights reserved.
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG All
+ * rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -42,14 +42,12 @@
 #include "esys_iutil.h"
 
 /*
- * This test is intended to test parameter encryption/decryption, session management,
- * hmac computation, and session key generation.
+ * This test is intended to test password authentication.
  * We start by creating a primary key (Esys_CreatePrimary).
- * The primary key will be used as tpmKey for Esys_StartAuthSession. Parameter
- * encryption and decryption will be activated for the session.
- * The session will be used to Create a second key by Eys_Create (with password)
- * This key will be Loaded to and a third key will be created with the second
- * key as parent key (Esys_Create).
+ * Based in the primary a second key with an password define in the sensitive
+ * area will be created.
+ * This key will be loaded and will be used as parent to create a third key.
+ * Password authentication  will be used to create this key.
  */
 
 int
@@ -57,24 +55,24 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     uint32_t r = 0;
 
-    TPM2B_AUTH authValuePrimary = {
+   TPM2B_AUTH authValuePrimary = {
         .size = 5,
         .buffer = {1, 2, 3, 4, 5}
     };
 
-    TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
-        .size = 4,
-        .sensitive = {
-            .userAuth = {
-                 .size = 0,
-                 .buffer = {0 },
-             },
-            .data = {
-                 .size = 0,
-                 .buffer = {0},
-             },
-        },
-    };
+   TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
+       .size = 4,
+       .sensitive = {
+           .userAuth = {
+                .size = 0,
+                .buffer = {0 },
+            },
+           .data = {
+                .size = 0,
+                .buffer = {0},
+            },
+       },
+   };
 
     inSensitivePrimary.sensitive.userAuth = authValuePrimary;
 
@@ -85,7 +83,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
             .type = TPM2_ALG_ECC,
             .nameAlg = TPM2_ALG_SHA256,
             .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
-                                 TPMA_OBJECT_USERWITHAUTH |
                                  TPMA_OBJECT_RESTRICTED |
                                  TPMA_OBJECT_SIGN_ENCRYPT |
                                  TPMA_OBJECT_FIXEDTPM |
@@ -193,32 +190,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, primaryHandle_handle, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    ESYS_TR session;
-    TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,
-                              .keyBits = {.aes =
-                                          128},
-                              .mode = {.aes = TPM2_ALG_CFB}};
-
-    TPMA_SESSION sessionAttributes;
-    memset(&sessionAttributes, 0, sizeof sessionAttributes);
-    sessionAttributes |= TPMA_SESSION_DECRYPT;
-    sessionAttributes |= TPMA_SESSION_ENCRYPT;
-    sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
-    TPM2_SE sessionType = TPM2_SE_HMAC;
-    TPMI_ALG_HASH authHash = TPM2_ALG_SHA256;
-    TPM2B_NONCE *nonceTpm;
-
-    r = Esys_StartAuthSession(esys_context, primaryHandle_handle, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              NULL,
-                              sessionType, &symmetric, authHash, &session,
-                              &nonceTpm);
-
-    goto_if_error(r, "Error Esys_StartAuthSessiony", error);
-    r = Esys_TRSess_SetAttributes(esys_context, session, sessionAttributes,
-                                  0xff);
-    goto_if_error(r, "Error Esys_TRSess_SetAttributes", error);
-
     TPM2B_AUTH authKey2 = {
         .size = 6,
         .buffer = {6, 7, 8, 9, 10, 11}
@@ -308,7 +279,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     r = Esys_Create(esys_context,
                     primaryHandle_handle,
-                    session, ESYS_TR_NONE, ESYS_TR_NONE,
+                    ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                     &inSensitive2,
                     &inPublic2,
                     &outsideInfo2,
@@ -324,7 +295,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     r = Esys_Load(esys_context,
                   primaryHandle_handle,
-                  session,
+                  ESYS_TR_PASSWORD,
                   ESYS_TR_NONE,
                   ESYS_TR_NONE, outPrivate2, outPublic2, &loadedKeyHandle);
     goto_if_error(r, "Error esys load ", error);
@@ -336,7 +307,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     r = Esys_Create(esys_context,
                     loadedKeyHandle,
-                    session, ESYS_TR_NONE, ESYS_TR_NONE,
+                    ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                     &inSensitive3,
                     &inPublic2,
                     &outsideInfo2,

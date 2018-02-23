@@ -1,6 +1,6 @@
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
- * All rights reserved.
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG All
+ * rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -42,14 +42,13 @@
 #include "esys_iutil.h"
 
 /*
- * This test is intended to test parameter encryption/decryption, session management,
- * hmac computation, and session key generation.
- * We start by creating a primary key (Esys_CreatePrimary).
- * The primary key will be used as tpmKey for Esys_StartAuthSession. Parameter
- * encryption and decryption will be activated for the session.
- * The session will be used to Create a second key by Eys_Create (with password)
- * This key will be Loaded to and a third key will be created with the second
- * key as parent key (Esys_Create).
+ * This test is intended to test EvictControl and ESAPI Serialization.
+ * We start by creating a primary key (Esys_CreatePrimary). Based on this
+ * key a persistent object is created (Esys_EvictControl). The resource of
+ * this object will be serialized and deserialized with the corresponding
+ * ESAPI functions (Esys_TR_Serialize, Esys_TR_Deserialize).
+ * To check whether the deserialization was successful a new object will
+ * be created with the handle returned by the deserialize function.
  */
 
 int
@@ -57,24 +56,24 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     uint32_t r = 0;
 
-    TPM2B_AUTH authValuePrimary = {
+   TPM2B_AUTH authValuePrimary = {
         .size = 5,
         .buffer = {1, 2, 3, 4, 5}
     };
 
-    TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
-        .size = 4,
-        .sensitive = {
-            .userAuth = {
-                 .size = 0,
-                 .buffer = {0 },
-             },
-            .data = {
-                 .size = 0,
-                 .buffer = {0},
-             },
-        },
-    };
+   TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
+       .size = 4,
+       .sensitive = {
+           .userAuth = {
+                .size = 0,
+                .buffer = {0 },
+            },
+           .data = {
+                .size = 0,
+                .buffer = {0},
+            },
+       },
+   };
 
     inSensitivePrimary.sensitive.userAuth = authValuePrimary;
 
@@ -85,7 +84,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
             .type = TPM2_ALG_ECC,
             .nameAlg = TPM2_ALG_SHA256,
             .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
-                                 TPMA_OBJECT_USERWITHAUTH |
                                  TPMA_OBJECT_RESTRICTED |
                                  TPMA_OBJECT_SIGN_ENCRYPT |
                                  TPMA_OBJECT_FIXEDTPM |
@@ -193,33 +191,25 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, primaryHandle_handle, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    ESYS_TR session;
-    TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,
-                              .keyBits = {.aes =
-                                          128},
-                              .mode = {.aes = TPM2_ALG_CFB}};
+    TPM2_HANDLE permanentHandle = TPM2_PERSISTENT_FIRST;
+    ESYS_TR new_primary_handle1;
+    ESYS_TR new_primary_handle2;
 
-    TPMA_SESSION sessionAttributes;
-    memset(&sessionAttributes, 0, sizeof sessionAttributes);
-    sessionAttributes |= TPMA_SESSION_DECRYPT;
-    sessionAttributes |= TPMA_SESSION_ENCRYPT;
-    sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
-    TPM2_SE sessionType = TPM2_SE_HMAC;
-    TPMI_ALG_HASH authHash = TPM2_ALG_SHA256;
-    TPM2B_NONCE *nonceTpm;
+    r = Esys_EvictControl(esys_context, ESYS_TR_RH_OWNER, primaryHandle_handle,
+                          ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                          permanentHandle, &new_primary_handle1);
+    goto_if_error(r, "Error Esys EvictControl", error);
 
-    r = Esys_StartAuthSession(esys_context, primaryHandle_handle, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              NULL,
-                              sessionType, &symmetric, authHash, &session,
-                              &nonceTpm);
+    size_t buffer_size;
+    uint8_t *buffer;
 
-    goto_if_error(r, "Error Esys_StartAuthSessiony", error);
-    r = Esys_TRSess_SetAttributes(esys_context, session, sessionAttributes,
-                                  0xff);
-    goto_if_error(r, "Error Esys_TRSess_SetAttributes", error);
+    r = Esys_TR_Serialize(esys_context, new_primary_handle1, &buffer, &buffer_size);
+    goto_if_error(r, "Error Esys_TR_Serialize", error);
 
-    TPM2B_AUTH authKey2 = {
+    r = Esys_TR_Deserialize(esys_context, buffer, buffer_size, &new_primary_handle2);
+    goto_if_error(r, "Error Esys_TR_Deserialize", error);
+
+   TPM2B_AUTH authKey2 = {
         .size = 6,
         .buffer = {6, 7, 8, 9, 10, 11}
     };
@@ -239,20 +229,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     };
 
     inSensitive2.sensitive.userAuth = authKey2;
-
-    TPM2B_SENSITIVE_CREATE inSensitive3 = {
-        .size = 1,
-        .sensitive = {
-            .userAuth = {
-                 .size = 0,
-                 .buffer = {}
-             },
-            .data = {
-                 .size = 0,
-                 .buffer = {}
-             }
-        }
-    };
 
     TPM2B_PUBLIC inPublic2 = {
         .size = 0,
@@ -306,9 +282,12 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TPM2B_DIGEST *creationHash2;
     TPMT_TK_CREATION *creationTicket2;
 
+    r = Esys_TR_SetAuth(esys_context, new_primary_handle2, &authValuePrimary);
+    goto_if_error(r, "Error: TR_SetAuth", error);
+
     r = Esys_Create(esys_context,
-                    primaryHandle_handle,
-                    session, ESYS_TR_NONE, ESYS_TR_NONE,
+                    new_primary_handle2,
+                    ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                     &inSensitive2,
                     &inPublic2,
                     &outsideInfo2,
@@ -316,35 +295,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                     &outPrivate2,
                     &outPublic2,
                     &creationData2, &creationHash2, &creationTicket2);
-    goto_if_error(r, "Error esys create ", error);
-
-    LOG_INFO("\nSecond key created.");
-
-    ESYS_TR loadedKeyHandle;
-
-    r = Esys_Load(esys_context,
-                  primaryHandle_handle,
-                  session,
-                  ESYS_TR_NONE,
-                  ESYS_TR_NONE, outPrivate2, outPublic2, &loadedKeyHandle);
-    goto_if_error(r, "Error esys load ", error);
-
-    LOG_INFO("\nSecond Key loaded.");
-
-    r = Esys_TR_SetAuth(esys_context, loadedKeyHandle, &authKey2);
-    goto_if_error(r, "Error esys TR_SetAuth ", error);
-
-    r = Esys_Create(esys_context,
-                    loadedKeyHandle,
-                    session, ESYS_TR_NONE, ESYS_TR_NONE,
-                    &inSensitive3,
-                    &inPublic2,
-                    &outsideInfo2,
-                    &creationPCR2,
-                    &outPrivate2,
-                    &outPublic2,
-                    &creationData2, &creationHash2, &creationTicket2);
-    goto_if_error(r, "Error esys second create ", error);
+    goto_if_error(r, "Error esys create with new handle from evict object", error);
 
     return 0;
 
