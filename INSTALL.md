@@ -11,16 +11,20 @@ following sections describe them for the supported platforms.
 * GNU Automake
 * GNU Libtool
 * C compiler
-* C Library Development Libraries and Header Files
+* C Library development libraries and header files
 * pkg-config
-* uriparser
-* libgcrypt
+* uriparser development libraries and header files
+* libgcrypt development libraries and header files
 
 The following are dependencies only required when building test suites.
 * Integration test suite (see ./configure option --with-simulatorbin):
-** OpenSSL
+
+   OpenSSL libraries and header files
+
 * Unit test suite (see ./configure option --enable-unit):
-** cmocka unit test framework
+
+   cmocka unit test framework
+
 Most users will not need to install these dependencies.
 
 ### Ubuntu
