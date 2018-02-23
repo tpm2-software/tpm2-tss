@@ -247,6 +247,9 @@ TSS2_RC iesys_gen_auths(
     RSRC_NODE_T *h3,
     TSS2L_SYS_AUTH_COMMAND *auths);
 
+TSS2_RC iesys_check_response(
+    ESYS_CONTEXT * esys_context);
+
 TSS2_RC iesys_nv_get_name(
     TPM2B_NV_PUBLIC *publicInfo,
     TPM2B_NAME *name);
