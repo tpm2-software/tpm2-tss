@@ -73,6 +73,8 @@ typedef void TSS2_TCTI_POLL_HANDLE;
     ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->getPollHandles
 #define TSS2_TCTI_SET_LOCALITY(tctiContext) \
     ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->setLocality
+#define TSS2_TCTI_MAKE_STICKY(tctiContext) \
+    ((TSS2_TCTI_CONTEXT_COMMON_V2*)tctiContext)->makeSticky
 
 /* Macros to simplify invocation of functions from the common TCTI structure */
 #define Tss2_Tcti_Transmit(tctiContext, size, command) \
@@ -119,6 +121,13 @@ typedef void TSS2_TCTI_POLL_HANDLE;
     (TSS2_TCTI_SET_LOCALITY(tctiContext) == NULL) ? \
         TSS2_TCTI_RC_NOT_IMPLEMENTED: \
     TSS2_TCTI_SET_LOCALITY(tctiContext)(tctiContext, locality))
+#define Tss2_Tcti_MakeSticky(tctiContext, handle, sticky) \
+    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_CONTEXT: \
+    (TSS2_TCTI_VERSION(tctiContext) < 2) ? \
+        TSS2_TCTI_RC_ABI_MISMATCH: \
+    (TSS2_TCTI_MAKE_STICKY(tctiContext) == NULL) ? \
+        TSS2_TCTI_RC_NOT_IMPLEMENTED: \
+    TSS2_TCTI_MAKE_STICKY(tctiContext)(tctiContext, handle, sticky))
 
 typedef struct TSS2_TCTI_OPAQUE_CONTEXT_BLOB TSS2_TCTI_CONTEXT;
 
@@ -146,6 +155,10 @@ typedef TSS2_RC (*TSS2_TCTI_GET_POLL_HANDLES_FCN) (
 typedef TSS2_RC (*TSS2_TCTI_SET_LOCALITY_FCN) (
     TSS2_TCTI_CONTEXT *tctiContext,
     uint8_t locality);
+typedef TSS2_RC (*TSS2_TCTI_MAKE_STICKY_FCN) (
+    TSS2_TCTI_CONTEXT *tctiContext,
+    TPM2_HANDLE *handle,
+    uint8_t sticky);
 
 /* superclass to get the version */
 typedef struct {
@@ -167,7 +180,12 @@ typedef struct {
     TSS2_TCTI_SET_LOCALITY_FCN setLocality;
 } TSS2_TCTI_CONTEXT_COMMON_V1;
 
-typedef TSS2_TCTI_CONTEXT_COMMON_V1 TSS2_TCTI_CONTEXT_COMMON_CURRENT;
+typedef struct {
+    TSS2_TCTI_CONTEXT_COMMON_V1 v1;
+    TSS2_TCTI_MAKE_STICKY_FCN makeSticky;
+} TSS2_TCTI_CONTEXT_COMMON_V2;
+
+typedef TSS2_TCTI_CONTEXT_COMMON_V2 TSS2_TCTI_CONTEXT_COMMON_CURRENT;
 
 #define TSS2_TCTI_INFO_SYMBOL "Tss2_Tcti_Info"
 
