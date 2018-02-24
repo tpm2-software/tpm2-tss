@@ -611,6 +611,10 @@ out:
 
 /* public info structure */
 const static TSS2_TCTI_INFO tss2_tcti_info = {
+    .version = {
+        .magic = TCTI_MAGIC,
+        .version = TCTI_VERSION,
+    },
     .name = "tcti-socket",
     .description = "TCTI module for communication with the Microsoft TPM2 Simulator.",
     .config_help = "Connection URI in the form tcp://ip_address[:port]. " \

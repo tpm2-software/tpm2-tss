@@ -151,7 +151,9 @@ typedef TSS2_RC (*TSS2_TCTI_SET_LOCALITY_FCN) (
 typedef struct {
     uint64_t magic;
     uint32_t version;
-} TSS2_TCTI_CONTEXT_VERSION ;
+} TSS2_TCTI_VERSION ;
+
+typedef TSS2_TCTI_VERSION TSS2_TCTI_CONTEXT_VERSION;
 
 /* current version #1 known to this implementation */
 typedef struct {
@@ -176,6 +178,7 @@ typedef TSS2_RC (*TSS2_TCTI_INIT_FUNC) (
     );
 
 typedef struct {
+    TSS2_TCTI_VERSION version;
     const char *name;
     const char *description;
     const char *config_help;
