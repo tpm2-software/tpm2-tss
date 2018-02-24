@@ -128,3 +128,11 @@ ssize_t write_all (
 
     return (ssize_t)written_total;
 }
+
+TSS2_RC tcti_make_sticky_not_implemented (
+    TSS2_TCTI_CONTEXT *tctiContext,
+    TPM2_HANDLE *handle,
+    uint8_t sticky)
+{
+    return TSS2_TCTI_RC_NOT_IMPLEMENTED;
+}

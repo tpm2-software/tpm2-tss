@@ -44,8 +44,8 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     }
 
     // NOTE: don't do this in real applications.
-    tctiContextIntel.transmit = (TCTI_TRANSMIT_PTR)0;
-    tctiContextIntel.receive = (TCTI_RECEIVE_PTR)1;
+    tctiContextIntel.transmit = (TSS2_TCTI_TRANSMIT_FCN)0;
+    tctiContextIntel.receive = (TSS2_TCTI_RECEIVE_FCN)1;
 
     rc = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, sizeof( _TSS2_SYS_CONTEXT_BLOB ), (TSS2_TCTI_CONTEXT *)&tctiContextIntel, (TSS2_ABI_VERSION *)1 );
     if( rc != TSS2_SYS_RC_BAD_TCTI_STRUCTURE ) {
@@ -54,8 +54,8 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     }
 
     // NOTE: don't do this in real applications.
-    tctiContextIntel.transmit = (TCTI_TRANSMIT_PTR)1;
-    tctiContextIntel.receive = (TCTI_RECEIVE_PTR)0;
+    tctiContextIntel.transmit = (TSS2_TCTI_TRANSMIT_FCN)1;
+    tctiContextIntel.receive = (TSS2_TCTI_RECEIVE_FCN)0;
 
     rc = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, sizeof( _TSS2_SYS_CONTEXT_BLOB ), (TSS2_TCTI_CONTEXT *)&tctiContextIntel, (TSS2_ABI_VERSION *)1 );
     if( rc != TSS2_SYS_RC_BAD_TCTI_STRUCTURE ) {

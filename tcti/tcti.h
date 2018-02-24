@@ -51,7 +51,7 @@
 #include "tcti/common.h"
 
 #define TCTI_MAGIC   0x7e18e9defa8bc9e2ULL
-#define TCTI_VERSION 0x1
+#define TCTI_VERSION 0x2
 
 #define TCTI_CONTEXT ((TSS2_TCTI_CONTEXT_COMMON_CURRENT *)(SYS_CONTEXT->tctiContext))
 
@@ -70,22 +70,20 @@ typedef struct {
     UINT32 code;
 } tpm_header_t;
 
-typedef TSS2_RC (*TCTI_TRANSMIT_PTR)( TSS2_TCTI_CONTEXT *tctiContext, size_t size, uint8_t *command);
-typedef TSS2_RC (*TCTI_RECEIVE_PTR) (TSS2_TCTI_CONTEXT *tctiContext, size_t *size, uint8_t *response, int32_t timeout);
-
 enum tctiStates { TCTI_STAGE_INITIALIZE, TCTI_STAGE_SEND_COMMAND, TCTI_STAGE_RECEIVE_RESPONSE };
 
 /* current Intel version */
 typedef struct {
     uint64_t magic;
     uint32_t version;
-    TCTI_TRANSMIT_PTR transmit;
-    TCTI_RECEIVE_PTR receive;
-    TSS2_RC (*finalize) (TSS2_TCTI_CONTEXT *tctiContext);
-    TSS2_RC (*cancel) (TSS2_TCTI_CONTEXT *tctiContext);
-    TSS2_RC (*getPollHandles) (TSS2_TCTI_CONTEXT *tctiContext,
-              TSS2_TCTI_POLL_HANDLE *handles, size_t *num_handles);
-    TSS2_RC (*setLocality) (TSS2_TCTI_CONTEXT *tctiContext, uint8_t locality);
+    TSS2_TCTI_TRANSMIT_FCN transmit;
+    TSS2_TCTI_RECEIVE_FCN receive;
+    TSS2_TCTI_FINALIZE_FCN finalize;
+    TSS2_TCTI_CANCEL_FCN cancel;
+    TSS2_TCTI_GET_POLL_HANDLES_FCN getPollHandles;
+    TSS2_TCTI_SET_LOCALITY_FCN setLocality;
+    TSS2_TCTI_MAKE_STICKY_FCN makeSticky;
+
     struct {
         UINT32 reserved: 1; /* Used to be debugMsgEnabled which is deprecated */
         UINT32 locality: 8;
@@ -147,6 +145,14 @@ TSS2_RC tcti_receive_checks (
     size_t            *response_size,
     unsigned char     *response_buffer
     );
+/*
+ * Just a function with the right prototype that returns the not implemented
+ * RC for the TCTI layer.
+ */
+TSS2_RC tcti_make_sticky_not_implemented (
+    TSS2_TCTI_CONTEXT *tctiContext,
+    TPM2_HANDLE *handle,
+    uint8_t sticky);
 /*
  * Write 'size' bytes from 'buf' to file descriptor 'fd'. Additionally this
  * function will retry calls to the 'write' function when recoverable errors

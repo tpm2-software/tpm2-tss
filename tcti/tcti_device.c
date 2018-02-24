@@ -214,6 +214,7 @@ _InitDeviceTcti (
     TSS2_TCTI_CANCEL (tctiContext) = LocalTpmCancel;
     TSS2_TCTI_GET_POLL_HANDLES (tctiContext) = LocalTpmGetPollHandles;
     TSS2_TCTI_SET_LOCALITY (tctiContext) = LocalTpmSetLocality;
+    TSS2_TCTI_MAKE_STICKY (tctiContext) = tcti_make_sticky_not_implemented;
     tcti_intel->status.locality = 3;
     tcti_intel->status.commandSent = 0;
     tcti_intel->currentTctiContext = 0;

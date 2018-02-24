@@ -22,8 +22,8 @@
 typedef struct {
     uint64_t magic;
     uint32_t version;
-    TCTI_TRANSMIT_PTR transmit;
-    TCTI_RECEIVE_PTR receive;
+    TSS2_TCTI_TRANSMIT_FCN transmit;
+    TSS2_TCTI_RECEIVE_FCN receive;
     TSS2_RC (*finalize) (TSS2_TCTI_CONTEXT *tctiContext);
     TSS2_RC (*cancel) (TSS2_TCTI_CONTEXT *tctiContext);
     TSS2_RC (*getPollHandles) (TSS2_TCTI_CONTEXT *tctiContext,
