@@ -28,10 +28,10 @@
 #ifndef TSS2_TPMS_TYPES_H
 #define TSS2_TPMS_TYPES_H
 
-#ifndef TSS2_API_VERSION_1_1_1_1
+#ifndef TSS2_API_VERSION_1_2_1_108
 #error Version mismatch among TSS2 header files. \
        Do not include this file, #include <sapi/tpm20.h> instead.
-#endif  /* TSS2_API_VERSION_1_1_1_1 */
+#endif  /* TSS2_API_VERSION_1_2_1_108 */
 
 #include <stdint.h>
 

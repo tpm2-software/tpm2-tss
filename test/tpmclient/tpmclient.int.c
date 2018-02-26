@@ -144,7 +144,7 @@ void ErrorHandler( UINT32 rval )
         case TSS2_TCTI_RC_LAYER:
             strncpy( levelString, "TCTI", LEVEL_STRING_SIZE );
             break;
-        case TSS2_RESMGRTPM_RC_LAYER:
+        case TSS2_RESMGR_TPM_RC_LAYER:
             strncpy( levelString, "Resource Mgr TPM encoded", LEVEL_STRING_SIZE );
             break;
         case TSS2_RESMGR_RC_LAYER:
