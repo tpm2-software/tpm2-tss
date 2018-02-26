@@ -26,9 +26,9 @@
  ******************************************************************************/
 
 #include <sapi/tpm20.h>
-#ifndef TSS2_API_VERSION_1_1_1_1
+#ifndef TSS2_API_VERSION_1_2_1_108
 #error Version missmatch among TSS2 header files !
-#endif /* TSS2_API_VERSION_1_1_1_1 */
+#endif /* TSS2_API_VERSION_1_2_1_108 */
 #include "esys_types.h"
 #include <esapi/tss2_esys.h>
 #include "esys_iutil.h"

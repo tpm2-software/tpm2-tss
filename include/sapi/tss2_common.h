@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015, Intel Corporation
+ * Copyright (c) 2015-2018, Intel Corporation
  *
  * Copyright 2015, Andreas Fuchs @ Fraunhofer SIT
  *
@@ -30,132 +30,104 @@
 
 #ifndef TSS2_COMMON_H
 #define TSS2_COMMON_H
+#define TSS2_API_VERSION_1_2_1_108
 
-#ifndef TSS2_API_VERSION_1_1_1_1
-#error Version mismatch among TSS2 header files. \
-       Do not include this file, #include <sapi/tpm20.h> instead.
-#endif  /* TSS2_API_VERSION_1_1_1_1 */
-
-/**
+#include <stdint.h>
+/*
  * Type definitions
  */
-#include <stdint.h>
+typedef uint8_t     UINT8;
+typedef uint8_t     BYTE;
+typedef int8_t      INT8;
+typedef int         BOOL;
+typedef uint16_t    UINT16;
+typedef int16_t     INT16;
+typedef uint32_t    UINT32;
+typedef int32_t     INT32;
+typedef uint64_t    UINT64;
+typedef int64_t     INT64;
 
-typedef uint8_t     UINT8;      /* unsigned, 8-bit integer */
-typedef uint8_t     BYTE;       /* unsigned 8-bit integer */
-typedef int8_t      INT8;       /* signed, 8-bit integer */
-typedef int         BOOL;       /* a bit in an int  */
-typedef uint16_t    UINT16;     /* unsigned, 16-bit integer */
-typedef int16_t     INT16;      /* signed, 16-bit integer */
-typedef uint32_t    UINT32;     /* unsigned, 32-bit integer */
-typedef int32_t     INT32;      /* signed, 32-bit integer */
-typedef uint64_t    UINT64;     /* unsigned, 64-bit integer */
-typedef int64_t     INT64;      /* signed, 64-bit integer */
-
-typedef UINT32 TSS2_RC;
-
-
-/**
- * ABI runetime negotiation structure.
+/*
+ * ABI runtime negotiation definitions
  */
 typedef struct {
-    UINT32 tssCreator;  /* If == 1, this equals TSSWG-Interop
-                   If == 2..9, this is reserved
-                   If > TCG_VENDOR_ID_FIRST, this equals Vendor-ID */
-    UINT32 tssFamily;   /* Free-to-use for creator > TCG_VENDOR_FIRST */
-    UINT32 tssLevel;    /* Free-to-use for creator > TCG_VENDOR_FIRST */
-    UINT32 tssVersion;      /* Free-to-use for creator > TCG_VENDOR_FIRST */
+    uint32_t tssCreator;
+    uint32_t tssFamily;
+    uint32_t tssLevel;
+    uint32_t tssVersion;
 } TSS2_ABI_VERSION;
 
+#define TSS2_ABI_VERSION_CURRENT {1, 2, 1, 108}
 
-/**
- * Error Levels
- *
- *
+/*
+ * Return Codes
  */
+/* The return type for all TSS2 functions */
+typedef uint32_t TSS2_RC;
 
-// This macro is used to indicate the level of the error:  use 5 and 6th
-// nibble for error level.
+/* For return values other than SUCCESS, the second most significant
+ * byte of the return value is a layer code indicating the software
+ * layer that generated the error.
+ */
+#define TSS2_RC_LAYER_SHIFT      (16)
+#define TSS2_RC_LAYER(level)     ((TSS2_RC)level << TSS2_RC_LAYER_SHIFT)
+#define TSS2_RC_LAYER_MASK       TSS2_RC_LAYER(0xff)
 
-#define TSS2_RC_LAYER_SHIFT   16
-
-#define TSS2_RC_LAYER( level )     ( level << TSS2_RC_LAYER_SHIFT )
-
-
-//
-// Error code levels.   These indicate what level in the software stack
-// the error codes are coming from.
-//
+/* These layer codes are reserved for software layers defined in the TCG
+ * specifications.
+ */
 #define TSS2_TPM_RC_LAYER             TSS2_RC_LAYER(0)
 #define TSS2_FEATURE_RC_LAYER         TSS2_RC_LAYER(6)
 #define TSS2_ESAPI_RC_LAYER           TSS2_RC_LAYER(7)
 #define TSS2_SYS_RC_LAYER             TSS2_RC_LAYER(8)
 #define TSS2_MU_RC_LAYER              TSS2_RC_LAYER(9)
 #define TSS2_TCTI_RC_LAYER            TSS2_RC_LAYER(10)
-#define TSS2_RESMGRTPM_RC_LAYER       TSS2_RC_LAYER(11)
-#define TSS2_RESMGR_RC_LAYER          TSS2_RC_LAYER(12)
+#define TSS2_RESMGR_RC_LAYER          TSS2_RC_LAYER(11)
+#define TSS2_RESMGR_TPM_RC_LAYER      TSS2_RC_LAYER(12)
 #define TSS2_DRIVER_RC_LAYER          TSS2_RC_LAYER(13)
 
-#define TSS2_RC_LAYER_MASK            TSS2_RC_LAYER(0xff)
-
-/**
- * Error Codes
+/* Base return codes.
+ * These base codes indicate the error that occurred. They are
+ * logical-ORed with a layer code to produce the TSS2 return value.
  */
-
-//
-// Base error codes
-// These are not returned directly, but are combined with an RC_LAYER to
-// produce the error codes for each layer.
-//
-#define TSS2_BASE_RC_GENERAL_FAILURE        1 /* Catch all for all errors
-                                                 not otherwise specifed */
-#define TSS2_BASE_RC_NOT_IMPLEMENTED        2 /* If called functionality isn't implemented */
-#define TSS2_BASE_RC_BAD_CONTEXT            3 /* A context structure is bad */
-#define TSS2_BASE_RC_ABI_MISMATCH           4 /* Passed in ABI version doesn't match
-                                                 called module's ABI version */
-#define TSS2_BASE_RC_BAD_REFERENCE          5 /* A pointer is NULL that isn't allowed to
-                                                 be NULL. */
-#define TSS2_BASE_RC_INSUFFICIENT_BUFFER    6 /* A buffer isn't large enough */
-#define TSS2_BASE_RC_BAD_SEQUENCE           7 /* Function called in the wrong order */
-#define TSS2_BASE_RC_NO_CONNECTION          8 /* Fails to connect to next lower layer */
-#define TSS2_BASE_RC_TRY_AGAIN              9 /* Operation timed out; function must be
-                                                 called again to be completed */
-#define TSS2_BASE_RC_IO_ERROR              10 /* IO failure */
-#define TSS2_BASE_RC_BAD_VALUE             11 /* A parameter has a bad value */
-#define TSS2_BASE_RC_NOT_PERMITTED         12 /* Operation not permitted. */
-#define TSS2_BASE_RC_INVALID_SESSIONS      13 /* Session structures were sent, but */
-                                              /* command doesn't use them or doesn't use
-                                                 the specifed number of them */
-#define TSS2_BASE_RC_NO_DECRYPT_PARAM      14 /* If function called that uses decrypt
-                                                 parameter, but command doesn't support
-                                                 crypt parameter. */
-#define TSS2_BASE_RC_NO_ENCRYPT_PARAM      15 /* If function called that uses encrypt
-                                                 parameter, but command doesn't support
-                                                 encrypt parameter. */
-#define TSS2_BASE_RC_BAD_SIZE              16 /* If size of a parameter is incorrect */
-#define TSS2_BASE_RC_MALFORMED_RESPONSE    17 /* Response is malformed */
-#define TSS2_BASE_RC_INSUFFICIENT_CONTEXT  18 /* Context not large enough */
-#define TSS2_BASE_RC_INSUFFICIENT_RESPONSE 19 /* Response is not long enough */
-#define TSS2_BASE_RC_INCOMPATIBLE_TCTI     20 /* Unknown or unusable TCTI version */
-#define TSS2_BASE_RC_NOT_SUPPORTED         21 /* Functionality not supported. */
-#define TSS2_BASE_RC_BAD_TCTI_STRUCTURE    22 /* TCTI context is bad. */
-#define TSS2_BASE_RC_MEMORY                23U /* memory allocation failed */
-#define TSS2_BASE_RC_BAD_TR                24U /* invalid ESYS_TR handle */
+#define TSS2_BASE_RC_GENERAL_FAILURE            1U /* Catch all for all errors not otherwise specifed */
+#define TSS2_BASE_RC_NOT_IMPLEMENTED            2U /* If called functionality isn't implemented */
+#define TSS2_BASE_RC_BAD_CONTEXT                3U /* A context structure is bad */
+#define TSS2_BASE_RC_ABI_MISMATCH               4U /* Passed in ABI version doesn't match called module's ABI version */
+#define TSS2_BASE_RC_BAD_REFERENCE              5U /* A pointer is NULL that isn't allowed to be NULL. */
+#define TSS2_BASE_RC_INSUFFICIENT_BUFFER        6U /* A buffer isn't large enough */
+#define TSS2_BASE_RC_BAD_SEQUENCE               7U /* Function called in the wrong order */
+#define TSS2_BASE_RC_NO_CONNECTION              8U /* Fails to connect to next lower layer */
+#define TSS2_BASE_RC_TRY_AGAIN                  9U /* Operation timed out; function must be called again to be completed */
+#define TSS2_BASE_RC_IO_ERROR                  10U /* IO failure */
+#define TSS2_BASE_RC_BAD_VALUE                 11U /* A parameter has a bad value */
+#define TSS2_BASE_RC_NOT_PERMITTED             12U /* Operation not permitted. */
+#define TSS2_BASE_RC_INVALID_SESSIONS          13U /* Session structures were sent, but command doesn't use them or doesn't use the specifed number of them */
+#define TSS2_BASE_RC_NO_DECRYPT_PARAM          14U /* If function called that uses decrypt parameter, but command doesn't support crypt parameter. */
+#define TSS2_BASE_RC_NO_ENCRYPT_PARAM          15U /* If function called that uses encrypt parameter, but command doesn't support encrypt parameter. */
+#define TSS2_BASE_RC_BAD_SIZE                  16U /* If size of a parameter is incorrect */
+#define TSS2_BASE_RC_MALFORMED_RESPONSE        17U /* Response is malformed */
+#define TSS2_BASE_RC_INSUFFICIENT_CONTEXT      18U /* Context not large enough */
+#define TSS2_BASE_RC_INSUFFICIENT_RESPONSE     19U /* Response is not long enough */
+#define TSS2_BASE_RC_INCOMPATIBLE_TCTI         20U /* Unknown or unusable TCTI version */
+#define TSS2_BASE_RC_NOT_SUPPORTED             21U /* Functionality not supported. */
+#define TSS2_BASE_RC_BAD_TCTI_STRUCTURE        22U /* TCTI context is bad. */
+#define TSS2_BASE_RC_MEMORY                    23U /* memory allocation failed */
+#define TSS2_BASE_RC_BAD_TR                    24U /* invalid ESYS_TR handle */
 #define TSS2_BASE_RC_MULTIPLE_DECRYPT_SESSIONS 25U /* More than one session with TPMA_SESSION_DECRYPT bit set */
-#define TSS2_BASE_RC_MULTIPLE_ENCRYPT_SESSIONS 26U /* More than one session with TPMA_SE
-SSION_ENCRYPT bit set */
+#define TSS2_BASE_RC_MULTIPLE_ENCRYPT_SESSIONS 26U /* More than one session with TPMA_SESSION_ENCRYPT bit set */
+#define TSS2_BASE_RC_RSP_AUTH_FAILED           27U /* Response HMAC from TPM did not verify */
 
-// Base error codes from 0xf800 - 0xffff are reserved for level- and implementation-specific
-// errors.
+/* Base return codes in the range 0xf800 - 0xffff are reserved for
+ * implementation-specific purposes.
+ */
+#define TSS2_LAYER_IMPLEMENTATION_SPECIFIC_OFFSET 0xf800
 #define TSS2_LEVEL_IMPLEMENTATION_SPECIFIC_SHIFT 11
-#define TSS2_LEVEL_IMPLEMENTATION_SPECIFIC_OFFSET 0xf800
 
-#define TSS2_RC_SUCCESS                         ((TSS2_RC)0)
+/* Success is the same for all software layers */
+#define TSS2_RC_SUCCESS ((TSS2_RC) 0)
 
-//
-// TCTI error codes
-//
-
+/* TCTI error codes */
 #define TSS2_TCTI_RC_GENERAL_FAILURE            ((TSS2_RC)(TSS2_TCTI_RC_LAYER | \
                                                     TSS2_BASE_RC_GENERAL_FAILURE))
 #define TSS2_TCTI_RC_NOT_IMPLEMENTED            ((TSS2_RC)(TSS2_TCTI_RC_LAYER | \
@@ -184,9 +156,7 @@ SSION_ENCRYPT bit set */
                                                      TSS2_BASE_RC_MALFORMED_RESPONSE))
 #define TSS2_TCTI_RC_NOT_SUPPORTED              ((TSS2_RC)(TSS2_TCTI_RC_LAYER | \
                                                      TSS2_BASE_RC_NOT_SUPPORTED))
-//
-// SAPI error codes
-//
+/* SAPI error codes */
 #define TSS2_SYS_RC_GENERAL_FAILURE            ((TSS2_RC)(TSS2_SYS_RC_LAYER | \
                                                     TSS2_BASE_RC_GENERAL_FAILURE))
 #define TSS2_SYS_RC_ABI_MISMATCH                ((TSS2_RC)(TSS2_SYS_RC_LAYER | \
@@ -218,9 +188,7 @@ SSION_ENCRYPT bit set */
 #define TSS2_SYS_RC_BAD_TCTI_STRUCTURE          ((TSS2_RC)(TSS2_SYS_RC_LAYER | \
                                                      TSS2_BASE_RC_BAD_TCTI_STRUCTURE))
 
-//
-// NUAPI error codes
-//
+/* MUAPI error codes */
 #define TSS2_MU_RC_GENERAL_FAILURE              ((TSS2_RC)(TSS2_MU_RC_LAYER | \
                                                      TSS2_BASE_RC_GENERAL_FAILURE))
 #define TSS2_MU_RC_BAD_REFERENCE                ((TSS2_RC)(TSS2_MU_RC_LAYER | \
@@ -232,9 +200,7 @@ SSION_ENCRYPT bit set */
 #define TSS2_MU_RC_INSUFFICIENT_BUFFER          ((TSS2_RC)(TSS2_MU_RC_LAYER | \
                                                      TSS2_BASE_RC_INSUFFICIENT_BUFFER))
 
-/*
- * ESAPI Error Codes
- */
+/* ESAPI Error Codes */
 #define TSS2_ESYS_RC_GENERAL_FAILURE             ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
                                                       TSS2_BASE_RC_GENERAL_FAILURE))
 #define TSS2_ESYS_RC_ABI_MISMATCH                ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
@@ -285,5 +251,4 @@ SSION_ENCRYPT bit set */
                                                         TSS2_BASE_RC_BAD_CONTEXT))
 #define TSS2_ESYS_RC_FILE_ERROR                  ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
                                                       STSS2_BASE_RC_FILE_ERROR))
-
 #endif /* TSS2_COMMON_H */

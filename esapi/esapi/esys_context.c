@@ -25,9 +25,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
 #include <sapi/tpm20.h>
-#ifndef TSS2_API_VERSION_1_1_1_1
+#ifndef TSS2_API_VERSION_1_2_1_108
 #error Version missmatch among TSS2 header files !
-#endif                          /* TSS2_API_VERSION_1_1_1_1 */
+#endif                          /* TSS2_API_VERSION_1_2_1_108 */
 #include <sapi/tss2_sys.h>
 #include <sysapi_util.h>
 #include <tss2_esys.h>
