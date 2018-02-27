@@ -42,11 +42,24 @@ static const char *log_strings[] COMPILER_ATTR(unused) = {
 
 static log_level LOGMODULE_status COMPILER_ATTR(unused) = LOGLEVEL_UNDEFINED;
 
-#if LOGLEVEL == LOGLEVEL_ERROR || \
-    LOGLEVEL == LOGLEVEL_WARNING || \
-    LOGLEVEL == LOGLEVEL_INFO || \
-    LOGLEVEL == LOGLEVEL_DEBUG || \
-    LOGLEVEL == LOGLEVEL_TRACE
+#ifndef MAXLOGLEVEL
+#error "MAXLOGLEVEL undefined"
+#endif
+#if MAXLOGLEVEL != 'E' && \
+    MAXLOGLEVEL != 'W' && \
+    MAXLOGLEVEL != 'I' && \
+    MAXLOGLEVEL != 'D' && \
+    MAXLOGLEVEL != 'T' && \
+    MAXLOGLEVEL != 'N'
+#error "Unknown MAXLOGLEVEL"
+#endif
+
+/* MAXLOGLEVEL is Error or "higher" */
+#if MAXLOGLEVEL == 'E' || \
+    MAXLOGLEVEL == 'W' || \
+    MAXLOGLEVEL == 'I' || \
+    MAXLOGLEVEL == 'D' || \
+    MAXLOGLEVEL == 'T'
 #define LOG_ERROR(FORMAT, ...) doLog(LOGLEVEL_ERROR, \
                                      xstr(LOGMODULE), LOGDEFAULT, \
                                      &LOGMODULE_status, \
@@ -58,15 +71,16 @@ static log_level LOGMODULE_status COMPILER_ATTR(unused) = LOGLEVEL_UNDEFINED;
                                              __FILE__, __func__, __LINE__, \
                                              BUFFER, SIZE, \
                                              FORMAT, ## __VA_ARGS__)
-#else /* LOGLEVEL >= LOGLEVEL_ERROR */
+#else /* MAXLOGLEVEL is not Error or "higher" */
 #define LOG_ERROR(FORMAT, ...) {}
 #define LOGBLOB_ERROR(FORMAT, ...) {}
-#endif /* LOGLEVEL >= LOGLEVEL_ERROR */
+#endif
 
-#if LOGLEVEL == LOGLEVEL_WARNING || \
-    LOGLEVEL == LOGLEVEL_INFO || \
-    LOGLEVEL == LOGLEVEL_DEBUG || \
-    LOGLEVEL == LOGLEVEL_TRACE
+/* MAXLOGLEVEL is Warning or "higher" */
+#if MAXLOGLEVEL == 'W' || \
+    MAXLOGLEVEL == 'I' || \
+    MAXLOGLEVEL == 'D' || \
+    MAXLOGLEVEL == 'T'
 #define LOG_WARNING(FORMAT, ...) doLog(LOGLEVEL_WARNING, \
                                      xstr(LOGMODULE), LOGDEFAULT, \
                                      &LOGMODULE_status, \
@@ -78,14 +92,15 @@ static log_level LOGMODULE_status COMPILER_ATTR(unused) = LOGLEVEL_UNDEFINED;
                                                  __FILE__, __func__, __LINE__, \
                                                  BUFFER, SIZE, \
                                                  FORMAT, ## __VA_ARGS__)
-#else /* LOGLEVEL >= LOGLEVEL_WARNING */
+#else /* MAXLOGLEVEL is not Warning or "higher" */
 #define LOG_WARNING(FORMAT, ...) {}
 #define LOGBLOB_WARNING(FORMAT, ...) {}
-#endif /* LOGLEVEL >= LOGLEVEL_WARNING */
+#endif
 
-#if LOGLEVEL == LOGLEVEL_INFO || \
-    LOGLEVEL == LOGLEVEL_DEBUG || \
-    LOGLEVEL == LOGLEVEL_TRACE
+/* MAXLOGLEVEL is Info or "higher" */
+#if MAXLOGLEVEL == 'I' || \
+    MAXLOGLEVEL == 'D' || \
+    MAXLOGLEVEL == 'T'
 #define LOG_INFO(FORMAT, ...) doLog(LOGLEVEL_INFO, \
                                      xstr(LOGMODULE), LOGDEFAULT, \
                                      &LOGMODULE_status, \
@@ -97,13 +112,14 @@ static log_level LOGMODULE_status COMPILER_ATTR(unused) = LOGLEVEL_UNDEFINED;
                                      __FILE__, __func__, __LINE__, \
                                      BUFFER, SIZE, \
                                      FORMAT, ## __VA_ARGS__)
-#else /* LOGLEVEL >= LOGLEVEL_INFO */
+#else /* MAXLOGLEVEL is not Info or "higher" */
 #define LOG_INFO(FORMAT, ...) {}
 #define LOGBLOB_INFO(FORMAT, ...) {}
-#endif /* LOGLEVEL >= LOGLEVEL_INFO */
+#endif
 
-#if LOGLEVEL == LOGLEVEL_DEBUG || \
-    LOGLEVEL == LOGLEVEL_TRACE
+/* MAXLOGLEVEL is Debug or "higher" */
+#if MAXLOGLEVEL == 'D' || \
+    MAXLOGLEVEL == 'T'
 #define LOG_DEBUG(FORMAT, ...) doLog(LOGLEVEL_DEBUG, \
                                      xstr(LOGMODULE), LOGDEFAULT, \
                                      &LOGMODULE_status, \
@@ -115,12 +131,13 @@ static log_level LOGMODULE_status COMPILER_ATTR(unused) = LOGLEVEL_UNDEFINED;
                                              __FILE__, __func__, __LINE__, \
                                              BUFFER, SIZE, \
                                              FORMAT, ## __VA_ARGS__)
-#else /* LOGLEVEL >= LOGLEVEL_DEBUG */
+#else /* MAXLOGLEVEL is not Debug or "higher" */
 #define LOG_DEBUG(FORMAT, ...) {}
 #define LOGBLOB_DEBUG(FORMAT, ...) {}
-#endif /* LOGLEVEL >= LOGLEVEL_DEBUG */
+#endif
 
-#if LOGLEVEL == LOGLEVEL_TRACE
+/* MAXLOGLEVEL is Trace */
+#if MAXLOGLEVEL == 'T'
 #define LOG_TRACE(FORMAT, ...) doLog(LOGLEVEL_TRACE, \
                                      xstr(LOGMODULE), LOGDEFAULT, \
                                      &LOGMODULE_status, \
@@ -132,10 +149,10 @@ static log_level LOGMODULE_status COMPILER_ATTR(unused) = LOGLEVEL_UNDEFINED;
                                              __FILE__, __func__, __LINE__, \
                                              BUFFER, SIZE, \
                                              FORMAT, ## __VA_ARGS__)
-#else /* LOGLEVEL >= LOGLEVEL_TRACE */
+#else /* MAXLOGLEVEL is not Trace */
 #define LOG_TRACE(FORMAT, ...) {}
 #define LOGBLOB_TRACE(FORMAT, ...) {}
-#endif /* LOGLEVEL >= LOGLEVEL_TRACE */
+#endif
 
 void
 doLog(log_level loglevel, const char *module, log_level logdefault,
