@@ -205,10 +205,10 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = esys_GetResourceObject(esys_context, objectHandle_handle,
                                &objectHandle_node);
     goto_if_error(r, "Error Esys GetResourceObject", error);
-    LOG_INFO("Created Primary with handle 0x%08x...",
+    LOG_INFO("Created Primary with TPM handle 0x%08x...",
              objectHandle_node->rsrc.handle);
-    r = Tss2_Sys_FlushContext(esys_context->sys,
-                              objectHandle_node->rsrc.handle);
+
+    r = Esys_FlushContext(esys_context, objectHandle_handle);
     goto_if_error(r, "Error during FlushContext", error);
 
     LOG_INFO("Done with handle 0x%08x...", objectHandle_node->rsrc.handle);
