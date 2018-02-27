@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #;**********************************************************************;
-# Copyright (c) 2017, Intel Corporation
+# Copyright (c) 2017 - 2018, Intel Corporation
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -53,6 +53,23 @@ while test $# -gt 0; do
     esac
     shift
 done
+
+# Verify the running shell and OS environment is sufficient to run these tests.
+sanity_test ()
+{
+# Check special file
+if [ ! -e /dev/urandom ]; then
+        echo  "Missing file /dev/urandom; exiting"
+        exit 1
+fi
+
+# Check ps
+PS_LINES=$(ps -e 2>/dev/null | wc -l)
+if [ "$PS_LINES" -eq 0 ] ; then
+        echo "Command ps not listing processes; exiting"
+        exit 1
+fi
+}
 
 # This function takes a PID as a parameter and determines whether or not the
 # process is currently running. If the daemon is running 0 is returned. Any
@@ -147,6 +164,8 @@ daemon_stop ()
     return ${ret}
 }
 
+sanity_test
+
 # Once option processing is done, $@ should be the name of the test executable
 # followed by all of the options passed to the test executable.
 TEST_BIN=$(realpath "$1")
@@ -171,7 +190,16 @@ for i in $(seq ${BACKOFF_MAX}); do
     echo "Starting simulator on port ${SIM_PORT_DATA}"
     simulator_start ${SIM_BIN} ${SIM_PORT_DATA} ${SIM_LOG_FILE} ${SIM_PID_FILE} ${SIM_TMP_DIR}
     sleep 1 # give daemon time to bind to ports
+    if [ ! -s ${SIM_PID_FILE} ] ; then
+        echo "Simulator PID file is empty or missing. Giving up."
+        exit 1
+    fi
     PID=$(cat ${SIM_PID_FILE})
+    ps -e | grep -w ${PID} 2>/dev/null
+    if [ $? -ne 0 ] ; then
+        echo "Simulator PID ${PID} not found. Giving up."
+        exit 1
+    fi
     echo "simulator PID: ${PID}";
     netstat -ltpn 2> /dev/null | grep "${PID}" | grep -q "${SIM_PORT_DATA}"
     ret_data=$?
