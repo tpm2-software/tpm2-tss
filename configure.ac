@@ -20,11 +20,14 @@ AC_ARG_ENABLE([unit],
                             [build cmocka unit tests (default is no)])],
             [enable_unit=$enableval],
             [enable_unit=no])
+m4_define([cmocka_min_version], [1.0])
+m4_define([cmocka_err], [Unit test enabled, but cmocka missing or version requirements not met. cmocka version must be >= cmocka_min_version])
 AS_IF([test "x$enable_unit" != xno],
       [PKG_CHECK_MODULES([CMOCKA],
-                         [cmocka >= 1.0],
+                         [cmocka >= cmocka_min_version],
                          [AC_DEFINE([HAVE_CMOCKA],
-                                    [1])])])
+                                    [1])],
+                         [AC_MSG_ERROR([cmocka_err])])])
 AM_CONDITIONAL([UNIT], [test "x$enable_unit" != xno])
 
 # Uriparser library required by simulator TCTI library.
