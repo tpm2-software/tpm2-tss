@@ -1,5 +1,8 @@
 #include "sapi/tpm20.h"
 
+#define YES 1
+#define NO  0
+
 /*
  * This is the prototype for all integration tests in the tpm2-tss
  * project. Integration tests are intended to exercise the combined
