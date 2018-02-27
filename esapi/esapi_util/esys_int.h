@@ -162,6 +162,15 @@ typedef struct {
 
 
 typedef struct {
+    ESYS_TR parentHandle;
+    TPM2B_SENSITIVE_CREATE *inSensitive;
+    TPM2B_SENSITIVE_CREATE inSensitiveData;
+    TPM2B_TEMPLATE *inPublic;
+    TPM2B_TEMPLATE inPublicData;
+} CreateLoaded_IN;
+
+
+typedef struct {
     ESYS_TR objectHandle;
     ESYS_TR newParentHandle;
     TPM2B_DATA *encryptionKeyIn;
@@ -650,6 +659,20 @@ typedef struct {
 
 
 typedef struct {
+    TPMI_SH_POLICY policySession;
+    TPM2B_DIGEST *templateHash;
+    TPM2B_DIGEST templateHashData;
+} PolicyTemplate_IN;
+
+
+typedef struct {
+    ESYS_TR authHandle;
+    ESYS_TR nvIndex;
+    ESYS_TR policySession;
+} PolicyAuthorizeNV_IN;
+
+
+typedef struct {
     ESYS_TR primaryHandle;
     TPM2B_SENSITIVE_CREATE *inSensitive;
     TPM2B_SENSITIVE_CREATE inSensitiveData;
@@ -731,6 +754,27 @@ typedef struct {
     ESYS_TR authHandle;
     UINT32 algorithmSet;
 } SetAlgorithmSet_IN;
+
+
+typedef struct {
+    ESYS_TR authorization;
+    ESYS_TR keyHandle;
+    TPM2B_DIGEST *fuDigest;
+    TPM2B_DIGEST fuDigestData;
+    TPMT_SIGNATURE *manifestSignature;
+    TPMT_SIGNATURE manifestSignatureData;
+} FieldUpgradeStart_IN;
+
+
+typedef struct {
+    TPM2B_MAX_BUFFER *fuData;
+    TPM2B_MAX_BUFFER fuDataData;
+} FieldUpgradeData_IN;
+
+
+typedef struct {
+    UINT32 sequenceNumber;
+} FirmwareRead_IN;
 
 
 typedef struct {
@@ -906,6 +950,7 @@ typedef union {
     MakeCredential_IN MakeCredential;
     Unseal_IN Unseal;
     ObjectChangeAuth_IN ObjectChangeAuth;
+    CreateLoaded_IN CreateLoaded;
     Duplicate_IN Duplicate;
     Rewrap_IN Rewrap;
     Import_IN Import;
@@ -962,6 +1007,8 @@ typedef union {
     PolicyPassword_IN PolicyPassword;
     PolicyGetDigest_IN PolicyGetDigest;
     PolicyNvWritten_IN PolicyNvWritten;
+    PolicyTemplate_IN PolicyTemplate;
+    PolicyAuthorizeNV_IN PolicyAuthorizeNV;
     CreatePrimary_IN CreatePrimary;
     HierarchyControl_IN HierarchyControl;
     SetPrimaryPolicy_IN SetPrimaryPolicy;
@@ -974,6 +1021,9 @@ typedef union {
     DictionaryAttackParameters_IN DictionaryAttackParameters;
     PP_Commands_IN PP_Commands;
     SetAlgorithmSet_IN SetAlgorithmSet;
+    FieldUpgradeStart_IN FieldUpgradeStart;
+    FieldUpgradeData_IN FieldUpgradeData;
+    FirmwareRead_IN FirmwareRead;
     ContextSave_IN ContextSave;
     ContextLoad_IN ContextLoad;
     FlushContext_IN FlushContext;
