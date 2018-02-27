@@ -1544,6 +1544,9 @@ typedef struct {
 /* Definition of TPM2B_PUBLIC Structure */
 TPM2B_TYPE2(PUBLIC, TPMT_PUBLIC, publicArea);
 
+/* Definition of TPM2B_TEMPLATE Structure */
+TPM2B_TYPE1(TEMPLATE, sizeof(TPMT_PUBLIC), buffer);
+
 /* Definition of TPM2B_PRIVATE_VENDOR_SPECIFIC Structure<> */
 TPM2B_TYPE1(PRIVATE_VENDOR_SPECIFIC, TPM2_PRIVATE_VENDOR_SPECIFIC_BYTES, buffer);
 
