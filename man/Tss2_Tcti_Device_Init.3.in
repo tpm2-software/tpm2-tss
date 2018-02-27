@@ -1,66 +1,60 @@
 .\" Process this file with
 .\" groff -man -Tascii foo.1
 .\"
-.TH InitDeviceTcti 3 "JUNE 2017" Intel "TPM2 Software Stack"
+.TH Tss2_Tcti_Device_Init 3 "MARCH 2018" Intel "TPM2 Software Stack"
 .SH NAME
-InitDeviceTcti \- Initialization function for the device TCTI library.
+Tss2_Tcti_Device_init \- Initialization function for the device TCTI library.
 .SH SYNOPSIS
 .B #include <tcti/tcti_device.h>
 .sp
-.nf
-typedef struct {
-    const char *device_path;
-} TCTI_DEVICE_CONF;
-.fi
 .sp
-.BI "TSS2_RC InitDeviceTcti (TSS2_TCTI_CONTEXT " "*tctiContext" ", size_t " "*contextSize" ", const TCTI_DEVICE_CONF " "*config" ");"
+.BI "TSS2_RC Tss2_Tcti_Device_Init (TSS2_TCTI_CONTEXT " "*tctiContext" ", size_t " "*size" ", const char " "*conf" ");"
 .sp
 The
-.BR  InitDeviceTcti ()
+.BR  Tss2_Tcti_Device_Init ()
 function initializes a TCTI context used to communicate with the TPM device
 driver.
 .SH DESCRIPTION
-.BR InitDeviceTcti ()
+.BR Tss2_Tcti_Device_Init ()
 attempts to initialize a caller allocated
-.I tcti_context
+.I tctiContext
 of size
 .I size
 \&. Since the
-.I tcti_context
+.I tctiContext
 must be a caller allocated buffer, the caller needs to know the size required
 by the TCTI library. The minimum size of this context can be discovered by
 providing
 .BR NULL
 for the
-.I tcti_context
+.I tctiContext
 and a non-
 .BR NULL
 .I size
 parameter. The initialization function will then populate the
 .I size
 parameter with the minimum size of the
-.I tcti_context
+.I tctiContext
 buffer. The caller must then allocate a buffer of this size (or larger) and
 call
-.B InitDeviceTcti ()
+.B Tss2_Tcti_Device_Init ()
 again providing the newly allocated
-.I tcti_context
+.I tctiContext
 and the size of this context in the
 .I size
 parameter. This patterm is common to all TCTI initialization functions. We
 provide an example of this pattern using the
-.BR InitDeviceTcti ()
+.BR Tss2_Tcti_Device_Init ()
 function in the section titled
 .B EXAMPLE.
 .sp
 The
-.I config
-parameter is a reference to an instance of the
-.B TCTI_DEVICE_CONF
-structure. The
-.I device_path
-member of this structure is a C string that contains the path to the device
-node exposed by the TPM device driver.
+.I conf
+parameter is a C string. If this string is
+.BR NULL
+then the library will use a default configuration string for the caller.
+Alternatively, the caller may provide a configuration string that must
+contain the path to the device node exposed by the TPM device driver.
 .sp
 Once initialized, the TCTI context returned exposes the Trusted Computing
 Group (TCG) defined API for the lowest level communication with the TPM.
@@ -70,26 +64,30 @@ caller will initialize a context using this funnction before passing the
 context to a higher level API like the System API (SAPI), and then never touch
 it again.
 .sp
-For a more thorough discussion of the TCTI API see the \*(lqTSS System Level
-API and TPM Command Transmission Interface Specification\*(rq as published by
+TCG TSS 2.0 TPM Command
+Transmission Interface (TCTI) API
+Specification
+
+For a more thorough discussion of the TCTI API see the \*(lqTCG TSS 2.0 TPM Command
+Transmission Interface (TCTI) API Specification\*(rq as published by
 the TCG:
-\%https://trustedcomputinggroup.org/tss-system-level-api-tpm-command-transmission-interface-specification/
+\%https://trustedcomputinggroup.org/wp-content/uploads/TSS_TCTI_Version-1.0_Revision-05_Review_END030918.pdf
 .SH RETURN VALUE
 A successful call to
-.BR InitDeviceTcti ()
+.BR Tss2_Tcti_Device_Init ()
 will return
 .B TSS2_RC_SUCCESS.
 An unsuccessful call will produce a response code described in section
 .B ERRORS.
 .SH ERRORS
 .B TSS2_TCTI_RC_BAD_VALUE
-is returned if both the
-.I tcti_context
-and the
-.I size
-parameters are NULL, or if the
-.I config
-parameter is NULL.
+is returned if any parameters contain unexpected values.
+.B TSS2_TCTI_RC_BAD_REFERENCE
+is returned if any parameters are NULL when they should not be.
+.B TSS2_TCTI_RC_BAD_CONTEXT
+is returned if the size of the provided
+.i tctiContext
+is insufficient.
 .SH EXAMPLE
 TCTI initialization fragment:
 .sp
@@ -102,11 +100,9 @@ TCTI initialization fragment:
 TSS2_RC rc;
 TSS2_TCTI_CONTEXT *tcti_context;
 size_t size;
-TCTI_DEVICE_CONF conf = {
-    .device_path = "/dev/tpm0",
-};
+char *conf = "/dev/tpm0",
 
-rc = InitDeviceTcti (NULL, &size, NULL);
+rc = Tss2_Tcti_Device_Init (NULL, &size, NULL);
 if (rc != TSS2_RC_SUCCESS) {
     fprintf (stderr, "Failed to get allocation size for device TCTI "
              " context: 0x%" PRIx32 "\n", rc);
@@ -118,7 +114,7 @@ if (tcti_context == NULL) {
              strerror (errno));
     exit (EXIT_FAILURE);
 }
-rc = InitDeviceTcti (&tcti_context, &size, &conf);
+rc = Tss2_Tcti_Device_Init (&tcti_context, &size, &conf);
 if (rc != TSS2_RC_SUCCESS) {
     fprintf (stderr, "Failed to initialize device TCTI context: "
              "0x%" PRIx32 "\n", rc);

@@ -34,6 +34,7 @@
 #endif  /* TSS2_API_VERSION_1_2_1_108 */
 
 #include <stdint.h>
+#include "tpmb.h"
 
 #define TPM2_MAX_COMMAND_SIZE  4096 /* maximum size of a command */
 #define TPM2_MAX_RESPONSE_SIZE 4096 /* maximum size of a response */
