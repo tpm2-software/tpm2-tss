@@ -596,6 +596,38 @@ Esys_ObjectChangeAuth_finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_PRIVATE **outPrivate);
 
+/* Table 35 - TPM2_CreateLoaded Command */
+
+TSS2_RC
+Esys_CreateLoaded(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR parentHandle,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    const TPM2B_SENSITIVE_CREATE *inSensitive,
+    const TPM2B_TEMPLATE *inPublic,
+    ESYS_TR *objectHandle,
+    TPM2B_PRIVATE **outPrivate,
+    TPM2B_PUBLIC **outPublic);
+
+TSS2_RC
+Esys_CreateLoaded_async(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR parentHandle,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    const TPM2B_SENSITIVE_CREATE *inSensitive,
+    const TPM2B_TEMPLATE *inPublic);
+
+TSS2_RC
+Esys_CreateLoaded_finish(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR *objectHandle,
+    TPM2B_PRIVATE **outPrivate,
+    TPM2B_PUBLIC **outPublic);
+
 /* Table 37 - TPM2_Duplicate Command */
 
 TSS2_RC
@@ -2190,6 +2222,56 @@ TSS2_RC
 Esys_PolicyNvWritten_finish(
     ESYS_CONTEXT *esysContext);
 
+/* Table 153 - TPM2_PolicyTemplate Command */
+
+TSS2_RC
+Esys_PolicyTemplate(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    TPMI_SH_POLICY policySession,
+    const TPM2B_DIGEST *templateHash);
+
+TSS2_RC
+Esys_PolicyTemplate_async(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    TPMI_SH_POLICY policySession,
+    const TPM2B_DIGEST *templateHash);
+
+TSS2_RC
+Esys_PolicyTemplate_finish(
+    ESYS_CONTEXT *esysContext);
+
+/* Table 155 - TPM2_PolicyAuthorizeNV Command */
+
+TSS2_RC
+Esys_PolicyAuthorizeNV(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR authHandle,
+    ESYS_TR nvIndex,
+    ESYS_TR policySession,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3);
+
+TSS2_RC
+Esys_PolicyAuthorizeNV_async(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR authHandle,
+    ESYS_TR nvIndex,
+    ESYS_TR policySession,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3);
+
+TSS2_RC
+Esys_PolicyAuthorizeNV_finish(
+    ESYS_CONTEXT *esysContext);
+
 /* Table 157 - TPM2_CreatePrimary Command */
 
 TSS2_RC
@@ -2495,6 +2577,84 @@ Esys_SetAlgorithmSet_async(
 TSS2_RC
 Esys_SetAlgorithmSet_finish(
     ESYS_CONTEXT *esysContext);
+
+/* Table 181 - TPM2_FieldUpgradeStart Command */
+
+TSS2_RC
+Esys_FieldUpgradeStart(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR authorization,
+    ESYS_TR keyHandle,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    const TPM2B_DIGEST *fuDigest,
+    const TPMT_SIGNATURE *manifestSignature);
+
+TSS2_RC
+Esys_FieldUpgradeStart_async(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR authorization,
+    ESYS_TR keyHandle,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    const TPM2B_DIGEST *fuDigest,
+    const TPMT_SIGNATURE *manifestSignature);
+
+TSS2_RC
+Esys_FieldUpgradeStart_finish(
+    ESYS_CONTEXT *esysContext);
+
+/* Table 183 - TPM2_FieldUpgradeData Command */
+
+TSS2_RC
+Esys_FieldUpgradeData(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    const TPM2B_MAX_BUFFER *fuData,
+    TPMT_HA **nextDigest,
+    TPMT_HA **firstDigest);
+
+TSS2_RC
+Esys_FieldUpgradeData_async(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    const TPM2B_MAX_BUFFER *fuData);
+
+TSS2_RC
+Esys_FieldUpgradeData_finish(
+    ESYS_CONTEXT *esysContext,
+    TPMT_HA **nextDigest,
+    TPMT_HA **firstDigest);
+
+/* Table 185 - TPM2_FirmwareRead Command */
+
+TSS2_RC
+Esys_FirmwareRead(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    UINT32 sequenceNumber,
+    TPM2B_MAX_BUFFER **fuData);
+
+TSS2_RC
+Esys_FirmwareRead_async(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    UINT32 sequenceNumber);
+
+TSS2_RC
+Esys_FirmwareRead_finish(
+    ESYS_CONTEXT *esysContext,
+    TPM2B_MAX_BUFFER **fuData);
 
 /* Table 187 - TPM2_ContextSave Command */
 
