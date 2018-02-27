@@ -29,6 +29,7 @@
 #define LOGMODULE testintegration
 #include "log/log.h"
 #include "sapi-util.h"
+#include "test.h"
 /*
  * Use te provide SAPI context to create & load a primary key. The key will
  * be a 2048 bit (restricted decryption) RSA key. The associated symmetric
