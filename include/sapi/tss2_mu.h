@@ -696,6 +696,20 @@ Tss2_MU_TPM2B_TIMEOUT_Unmarshal(
     TPM2B_TIMEOUT   *dest);
 
 TSS2_RC
+Tss2_MU_TPM2B_TEMPLATE_Marshal(
+    TPM2B_TEMPLATE  const *src,
+    uint8_t         buffer[],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_TEMPLATE_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t          *offset,
+    TPM2B_TEMPLATE  *dest);
+
+TSS2_RC
 Tss2_MU_TPMS_CONTEXT_Marshal(
     TPMS_CONTEXT    const *src,
     uint8_t         buffer[],
