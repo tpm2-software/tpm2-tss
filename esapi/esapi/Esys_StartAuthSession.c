@@ -425,7 +425,7 @@ Esys_StartAuthSession_finish(
         if (tpmKey != ESYS_TR_NONE)
             secret_size += keyHash_size;
         if (bind != ESYS_TR_NONE && bindNode != NULL)
-            secret_size += bindNode->rsrc.auth.size;
+            secret_size += bindNode->auth.size;
         if (secret_size == 0) {
             return_error(TSS2_ESYS_RC_GENERAL_FAILURE,
                          "Invalid secret size (0).");
@@ -436,15 +436,15 @@ Esys_StartAuthSession_finish(
             return TSS2_ESYS_RC_MEMORY;
          }
         if  (bind != ESYS_TR_NONE && bindNode != NULL
-             && bindNode->rsrc.auth.size > 0)
-             memcpy(&secret[0], &bindNode->rsrc.auth.buffer[0], bindNode->rsrc.auth.size);
+             && bindNode->auth.size > 0)
+             memcpy(&secret[0], &bindNode->auth.buffer[0], bindNode->auth.size);
         if (tpmKey != ESYS_TR_NONE)
             memcpy(&secret[(bind == ESYS_TR_NONE || bindNode == NULL) ? 0
-                               : bindNode->rsrc.auth.size],
+                               : bindNode->auth.size],
                            &esysContext->salt.buffer[0], keyHash_size);
         if (bind != ESYS_TR_NONE &&  bindNode != NULL)
             iesys_compute_bound_entity(&bindNode->rsrc.name,
-                                       &bindNode->rsrc.auth,
+                                       &bindNode->auth,
                                        &sessionHandleNode->rsrc.misc.rsrc_session.bound_entity);
         LOGBLOB_DEBUG(secret, secret_size, "ESYS Session Secret");
         r = iesys_crypto_KDFa(esysContext->in.StartAuthSession.authHash, secret,

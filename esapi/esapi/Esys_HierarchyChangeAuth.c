@@ -208,6 +208,9 @@ TSS2_RC
 Esys_HierarchyChangeAuth_finish(
     ESYS_CONTEXT *esysContext)
 {
+    ESYS_TR authHandle;
+    RSRC_NODE_T *authHandleNode;
+
     LOG_TRACE("complete");
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
@@ -265,6 +268,11 @@ Esys_HierarchyChangeAuth_finish(
         esysContext->state = _ESYS_STATE_ERRORRESPONSE;
         return r;;
     }
+    authHandle = esysContext->in.HierarchyChangeAuth.authHandle;
+    r = esys_GetResourceObject(esysContext, authHandle, &authHandleNode);
+    return_if_error(r, "get resource");
+
+    authHandleNode->auth = *esysContext->in.NV_ChangeAuth.newAuth;
     esysContext->state = _ESYS_STATE_FINISHED;
 
     return r;

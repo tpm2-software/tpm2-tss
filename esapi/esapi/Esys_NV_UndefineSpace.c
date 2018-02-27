@@ -264,6 +264,10 @@ Esys_NV_UndefineSpace_finish(
         esysContext->state = _ESYS_STATE_ERRORRESPONSE;
         return r;;
     }
+    /* The ESYS_TR object (nvIndex) has to be invalidated */
+    r = Esys_TR_Close(esysContext, &esysContext->in.NV_UndefineSpace.nvIndex);
+    return_if_error(r, "invalidate object");
+
     esysContext->state = _ESYS_STATE_FINISHED;
 
     return r;

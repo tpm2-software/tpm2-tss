@@ -305,6 +305,10 @@ Esys_SequenceComplete_finish(
         esysContext->state = _ESYS_STATE_ERRORRESPONSE;
         goto error_cleanup;;
     }
+    /* The ESYS_TR sequence object has to be invalidated */
+    r = Esys_TR_Close(esysContext, &esysContext->in.SequenceComplete.sequenceHandle);
+    goto_if_error(r, "invalidate object", error_cleanup);
+
     esysContext->state = _ESYS_STATE_FINISHED;
 
     return r;
