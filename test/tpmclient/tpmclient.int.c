@@ -2896,6 +2896,8 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
         testString = testStringPolicy;
 
     LOG_INFO("SIMPLE %s SESSION TEST:", testString );
+    /* If LOG_INFO is not compiled in, this variable is unused */
+    (void)(testString);
 
     // Create sysContext structure.
     simpleTestContext = InitSysContext( 1000, resMgrTctiContext, &abiVersion );

@@ -95,12 +95,24 @@ AX_ADD_PREPROC_FLAG([-D_DEFAULT_SOURCE])
 AX_ADD_PREPROC_FLAG([-D_BSD_SOURCE])
 AX_ADD_PREPROC_FLAG([-D_POSIX_SOURCE])
 
-AC_ARG_WITH([loglevel],
-            [AS_HELP_STRING([--with-loglevel={none,error,warning,info,debug,trace}],
+AC_ARG_WITH([maxloglevel],
+            [AS_HELP_STRING([--with-maxloglevel={none,error,warning,info,debug,trace}],
                             [sets the maximum log level (default is trace)])],
             [],
-            [with_loglevel=trace])
-AC_DEFINE_UNQUOTED([LOGLEVEL], [$with_loglevel])
+            [with_maxloglevel=trace])
+AS_IF([test "x$with_maxloglevel" = "xnone"],
+      AC_DEFINE_UNQUOTED([MAXLOGLEVEL], ['N']),
+AS_IF([test "x$with_maxloglevel" = "xerror"],
+      AC_DEFINE_UNQUOTED([MAXLOGLEVEL], ['E']),
+AS_IF([test "x$with_maxloglevel" = "xwarning"],
+      AC_DEFINE_UNQUOTED([MAXLOGLEVEL], ['W']),
+AS_IF([test "x$with_maxloglevel" = "xinfo"],
+      AC_DEFINE_UNQUOTED([MAXLOGLEVEL], ['I']),
+AS_IF([test "x$with_maxloglevel" = "xdebug"],
+      AC_DEFINE_UNQUOTED([MAXLOGLEVEL], ['D']),
+AS_IF([test "x$with_maxloglevel" = "xtrace"],
+      AC_DEFINE_UNQUOTED([MAXLOGLEVEL], ['T']),
+AC_MSG_ERROR([Bad value for --with-maxloglevel])))))))
 
 AC_ARG_ENABLE([debug],
             [AS_HELP_STRING([--enable-debug],
