@@ -18,7 +18,7 @@ following sections describe them for the supported platforms.
 
 The following are dependencies only required when building test suites.
 * Integration test suite (see ./configure option --with-simulatorbin):
-** OpenSSL
+* OpenSSL
 * Unit test suite (see ./configure option --enable-unit):
 * cmocka unit test framework, version >= 1.0
 Most users will not need to install these dependencies.
