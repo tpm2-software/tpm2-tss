@@ -30,10 +30,6 @@
 #ifndef TSS2_TCTI_H
 #define TSS2_TCTI_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdint.h>
 #include <stddef.h>
 #include "tss2_common.h"
@@ -204,9 +200,5 @@ typedef struct {
 } TSS2_TCTI_INFO;
 
 typedef const TSS2_TCTI_INFO* (*TSS2_TCTI_INFO_FUNC) (void);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
