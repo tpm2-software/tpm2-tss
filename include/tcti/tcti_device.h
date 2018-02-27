@@ -27,31 +27,17 @@
 #ifndef TCTI_DEVICE_H
 #define TCTI_DEVICE_H
 
+#include <sapi/tss2_tcti.h>
+#include "common.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "common.h"
-
-#include "sapi/tpm20.h"
-
-#define TCTI_DEVICE_DEFAULT "/dev/tpm0"
-
-typedef struct {
-    const char *device_path;
-} TCTI_DEVICE_CONF;
-
-TSS2_RC InitDeviceTcti (
-    TSS2_TCTI_CONTEXT *tctiContext, // OUT
-    size_t *contextSize,            // IN/OUT
-    const TCTI_DEVICE_CONF *config  // IN
-    ) COMPILER_ATTR (deprecated);
-
 TSS2_RC Tss2_Tcti_Device_Init (
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t *size,
-    const char *conf
-    );
+    const char *conf);
 
 #ifdef __cplusplus
 }

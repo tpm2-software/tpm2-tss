@@ -177,7 +177,7 @@ esapi_libesapi_la_SOURCES = $(ESAPI_SRC)
 endif #ESAPI
 
 ### Man Pages
-man3_MANS = man/man3/InitDeviceTcti.3 man/man3/InitSocketTcti.3
+man3_MANS = man/man3/Tss2_Tcti_Device_Init.3 man/man3/InitSocketTcti.3
 man7_MANS = man/man7/tcti-device.7 man/man7/tcti-socket.7
 
 man/man3/%.3 : man/%.3.in $(srcdir)/man/man-postlude.troff
@@ -188,7 +188,7 @@ man/man7/%.7 : man/%.7.in $(srcdir)/man/man-postlude.troff
 
 EXTRA_DIST += \
     man/man-postlude.troff \
-    man/InitDeviceTcti.3.in \
+    man/Tss2_Tcti_Device_Init.3.in \
     man/InitSocketTcti.3.in \
     man/tcti-device.7.in \
     man/tcti-socket.7.in
