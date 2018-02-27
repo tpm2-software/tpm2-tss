@@ -94,6 +94,8 @@
         Tss2_MU_TPM2B_OPERAND_Unmarshal;
         Tss2_MU_TPM2B_TIMEOUT_Marshal;
         Tss2_MU_TPM2B_TIMEOUT_Unmarshal;
+        Tss2_MU_TPM2B_TEMPLATE_Marshal;
+        Tss2_MU_TPM2B_TEMPLATE_Unmarshal;
         Tss2_MU_TPMS_CONTEXT_Marshal;
         Tss2_MU_TPMS_CONTEXT_Unmarshal;
         Tss2_MU_TPMS_TIME_INFO_Marshal;
