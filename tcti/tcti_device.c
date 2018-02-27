@@ -41,11 +41,11 @@
 
 #define TCTI_DEVICE_DEFAULT "/dev/tpm0"
 
-TSS2_RC LocalTpmSendTpmCommand(
+TSS2_RC
+tcti_device_transmit (
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t command_size,
-    const uint8_t *command_buffer
-    )
+    const uint8_t *command_buffer)
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     TSS2_RC rval = TSS2_RC_SUCCESS;
@@ -80,12 +80,12 @@ TSS2_RC LocalTpmSendTpmCommand(
     return TSS2_RC_SUCCESS;
 }
 
-TSS2_RC LocalTpmReceiveTpmResponse(
+TSS2_RC
+tcti_device_receive (
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t *response_size,
     uint8_t *response_buffer,
-    int32_t timeout
-    )
+    int32_t timeout)
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     TSS2_RC rval = TSS2_RC_SUCCESS;
@@ -142,9 +142,9 @@ retLocalTpmReceive:
     return rval;
 }
 
-void LocalTpmFinalize(
-    TSS2_TCTI_CONTEXT *tctiContext
-    )
+void
+tcti_device_finalize (
+    TSS2_TCTI_CONTEXT *tctiContext)
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     TSS2_RC rc;
@@ -156,15 +156,16 @@ void LocalTpmFinalize(
     close (tcti_intel->devFile);
 }
 
-TSS2_RC LocalTpmCancel(
-    TSS2_TCTI_CONTEXT *tctiContext
-    )
+TSS2_RC
+tcti_device_cancel (
+    TSS2_TCTI_CONTEXT *tctiContext)
 {
     /* Linux driver doesn't expose a mechanism to cancel commands. */
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
-TSS2_RC LocalTpmGetPollHandles(
+TSS2_RC
+tcti_device_get_poll_handles (
     TSS2_TCTI_CONTEXT *tctiContext,
     TSS2_TCTI_POLL_HANDLE *handles,
     size_t *num_handles)
@@ -173,10 +174,10 @@ TSS2_RC LocalTpmGetPollHandles(
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
-TSS2_RC LocalTpmSetLocality(
+TSS2_RC
+tcti_device_set_locality (
     TSS2_TCTI_CONTEXT *tctiContext,
-    uint8_t locality
-    )
+    uint8_t locality)
 {
     /*
      * Linux driver doesn't expose a mechanism for user space applications
@@ -185,11 +186,11 @@ TSS2_RC LocalTpmSetLocality(
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
-TSS2_RC Tss2_Tcti_Device_Init (
+TSS2_RC
+Tss2_Tcti_Device_Init (
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t *size,
-    const char *conf
-    )
+    const char *conf)
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     const char *dev_path = conf != NULL ? conf : TCTI_DEVICE_DEFAULT;
@@ -204,13 +205,14 @@ TSS2_RC Tss2_Tcti_Device_Init (
     /* Init TCTI context */
     TSS2_TCTI_MAGIC (tctiContext) = TCTI_MAGIC;
     TSS2_TCTI_VERSION (tctiContext) = TCTI_VERSION;
-    TSS2_TCTI_TRANSMIT (tctiContext) = LocalTpmSendTpmCommand;
-    TSS2_TCTI_RECEIVE (tctiContext) = LocalTpmReceiveTpmResponse;
-    TSS2_TCTI_FINALIZE (tctiContext) = LocalTpmFinalize;
-    TSS2_TCTI_CANCEL (tctiContext) = LocalTpmCancel;
-    TSS2_TCTI_GET_POLL_HANDLES (tctiContext) = LocalTpmGetPollHandles;
-    TSS2_TCTI_SET_LOCALITY (tctiContext) = LocalTpmSetLocality;
+    TSS2_TCTI_TRANSMIT (tctiContext) = tcti_device_transmit;
+    TSS2_TCTI_RECEIVE (tctiContext) = tcti_device_receive;
+    TSS2_TCTI_FINALIZE (tctiContext) = tcti_device_finalize;
+    TSS2_TCTI_CANCEL (tctiContext) = tcti_device_cancel;
+    TSS2_TCTI_GET_POLL_HANDLES (tctiContext) = tcti_device_get_poll_handles;
+    TSS2_TCTI_SET_LOCALITY (tctiContext) = tcti_device_set_locality;
     TSS2_TCTI_MAKE_STICKY (tctiContext) = tcti_make_sticky_not_implemented;
+
     tcti_intel->status.locality = 3;
     tcti_intel->status.commandSent = 0;
     tcti_intel->currentTctiContext = 0;
