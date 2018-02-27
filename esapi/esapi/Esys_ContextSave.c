@@ -237,6 +237,14 @@ Esys_ContextSave_finish(
     goto_if_error(r, "while marshaling context ", error_cleanup);
 
     (lcontext)->contextBlob.size = offset;
+    /*
+     * If the ESYS_TR object being saved refers to a session,
+     * the ESYS_TR object is invalidated.
+     */
+    if (esys_object->rsrc.rsrcType == IESYSC_SESSION_RSRC) {
+        r = Esys_TR_Close(esysContext,  &esysContext->in.ContextSave.saveHandle);
+        goto_if_error(r, "invalidate object", error_cleanup);
+    }
     if (context != NULL)
         *context = lcontext;
     else
