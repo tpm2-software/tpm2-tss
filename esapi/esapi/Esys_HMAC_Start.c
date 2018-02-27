@@ -301,6 +301,7 @@ Esys_HMAC_Start_finish(
                                 &sequenceHandleNode->rsrc.name.name[0],sizeof(TPMU_NAME),
                                 &offset);
     sequenceHandleNode->rsrc.name.size = offset;
+    sequenceHandleNode->auth = *esysContext->in.HMAC_Start.auth;
     esysContext->state = _ESYS_STATE_FINISHED;
 
     return r;

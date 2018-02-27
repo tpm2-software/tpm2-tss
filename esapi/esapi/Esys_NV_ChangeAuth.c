@@ -208,6 +208,9 @@ TSS2_RC
 Esys_NV_ChangeAuth_finish(
     ESYS_CONTEXT *esysContext)
 {
+    ESYS_TR nvIndex;
+    RSRC_NODE_T *nvIndexNode;
+
     LOG_TRACE("complete");
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
@@ -265,6 +268,11 @@ Esys_NV_ChangeAuth_finish(
         esysContext->state = _ESYS_STATE_ERRORRESPONSE;
         return r;;
     }
+    nvIndex = esysContext->in.NV_ChangeAuth.nvIndex;
+    r = esys_GetResourceObject(esysContext, nvIndex, &nvIndexNode);
+    return_if_error(r, "get resource");
+
+    nvIndexNode->auth = *esysContext->in.NV_ChangeAuth.newAuth;
     esysContext->state = _ESYS_STATE_FINISHED;
 
     return r;

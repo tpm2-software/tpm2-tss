@@ -124,7 +124,6 @@ typedef struct {
     TPM2_HANDLE                                  handle;    /**< Handle used by TPM */
     TPM2B_NAME                                     name;    /**< TPM name of the object */
     BYTE                                   authValueSet;    /**< Indication whether auth value was set */
-    TPM2B_AUTH                                     auth;    /**< auth value of the object */
     IESYSC_RESOURCE_TYPE                       rsrcType;    /**< Selector for resource type */
     IESYS_RSRC_UNION                               misc;    /**< Resource specific information */
 } IESYS_RESOURCE;

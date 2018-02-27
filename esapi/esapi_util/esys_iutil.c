@@ -462,16 +462,6 @@ iesys_create_NV_resource(TPMS_NV_PUBLIC * nvPublic,
     return iesys_get_nv_name(nvPublic, &(*nvResource)->name);
 }
 
-TSS2_RC
-iesys_set_resource_auth(IESYS_RESOURCE * resource, TPM2B_AUTH * authValue)
-{
-    return_if_null(resource, "resource equal NULL", TSS2_ESYS_RC_BAD_REFERENCE);
-    return_if_null(authValue, "auth equal NULL", TSS2_ESYS_RC_BAD_REFERENCE);
-    resource->authValueSet = 1;
-    resource->auth = *authValue;
-    return TSS2_RC_SUCCESS;
-}
-
 bool
 iesys_compare_name(TPM2B_PUBLIC * publicInfo, TPM2B_NAME * name)
 {

@@ -180,10 +180,6 @@ TSS2_RC iesys_create_NV_resource(
     TPMS_NV_PUBLIC *nvPublic,
     IESYS_RESOURCE **nvResource);
 
-TSS2_RC iesys_set_resource_auth(
-    IESYS_RESOURCE *resource,
-    TPM2B_AUTH *authValue);
-
 TSS2_RC iesys_finalize(ESYS_CONTEXT *context);
 
 bool iesys_compare_name(
