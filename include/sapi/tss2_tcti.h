@@ -155,6 +155,10 @@ typedef TSS2_RC (*TSS2_TCTI_MAKE_STICKY_FCN) (
     TSS2_TCTI_CONTEXT *tctiContext,
     TPM2_HANDLE *handle,
     uint8_t sticky);
+typedef TSS2_RC (*TSS2_TCTI_INIT_FUNC) (
+    TSS2_TCTI_CONTEXT *tctiContext,
+    size_t *size,
+    const char *config);
 
 /* superclass to get the version */
 typedef struct {
@@ -184,12 +188,6 @@ typedef struct {
 typedef TSS2_TCTI_CONTEXT_COMMON_V2 TSS2_TCTI_CONTEXT_COMMON_CURRENT;
 
 #define TSS2_TCTI_INFO_SYMBOL "Tss2_Tcti_Info"
-
-typedef TSS2_RC (*TSS2_TCTI_INIT_FUNC) (
-    TSS2_TCTI_CONTEXT *tctiContext,
-    size_t *size,
-    const char *config
-    );
 
 typedef struct {
     TSS2_TCTI_VERSION version;
