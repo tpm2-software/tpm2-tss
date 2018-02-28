@@ -85,18 +85,17 @@ tcti_proxy_receive(
 {
     TSS2_RC rval;
     TSS2_TCTI_CONTEXT_PROXY *tcti_proxy = tcti_proxy_cast(tctiContext);
+
     if (tcti_proxy->count == 2) {
-        if (response_buffer == NULL) {
-            *response_size = sizeof(yielded_response);
-            return TSS2_RC_SUCCESS;
-        }
-        memcpy(response_buffer, &yielded_response[0], sizeof(yielded_response));
         *response_size = sizeof(yielded_response);
+        if (response_buffer != NULL)
+            memcpy(response_buffer, &yielded_response[0], sizeof(yielded_response));
+
         return TSS2_RC_SUCCESS;
     }
 
     rval = Tss2_Tcti_Receive(tcti_proxy->tctiInner, response_size,
-        response_buffer, timeout);
+                             response_buffer, timeout);
     if (rval != TSS2_RC_SUCCESS) {
         LOG_ERROR("Calling TCTI Transmit");
         return rval;
