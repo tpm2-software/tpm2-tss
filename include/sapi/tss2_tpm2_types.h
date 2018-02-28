@@ -671,406 +671,110 @@ typedef TPM2_HANDLE TPM2_HC;
 #define TPM2_PERMANENT_LAST       (TPM2_RH_LAST)
 
 /* Definition of UINT32 TPMA_ALGORITHM Bits */
-#if defined TPM_BITFIELD_LE
-
-typedef union {
-    struct {
-    unsigned int asymmetric : 1; /* SET 1 an asymmetric algorithm with public and private portionsCLEAR 0 not an asymmetric algorithm */
-    unsigned int symmetric : 1;  /* SET 1 a symmetric block cipherCLEAR 0 not a symmetric block cipher */
-    unsigned int hash : 1;       /* SET 1 a hash algorithmCLEAR 0 not a hash algorithm */
-    unsigned int object : 1;     /* SET 1 an algorithm that may be used as an object typeCLEAR 0 an algorithm that is not used as an object type */
-    unsigned int reserved1 : 4;
-    unsigned int signing : 1;    /* SET 1 a signing algorithm. The setting of asymmetric symmetric and hash will indicate the type of signing algorithm.CLEAR 0 not a signing algorithm */
-    unsigned int encrypting : 1; /* SET 1 an encryptiondecryption algorithm. The setting of asymmetric symmetric and hash will indicate the type of encryptiondecryption algorithm.CLEAR 0 not an encryptiondecryption algorithm */
-    unsigned int method : 1;     /* SET 1 a method such as a key derivative function KDFCLEAR 0 not a method */
-    unsigned int reserved2 : 21;
-    };
-    UINT32 val;
-} TPMA_ALGORITHM;
-
-#elif defined TPM_BITFIELD_BE
-
-typedef union {
-    struct {
-    unsigned int reserved1 : 21;
-    unsigned int method : 1;     /* SET 1 a method such as a key derivative function KDFCLEAR 0 not a method */
-    unsigned int encrypting : 1; /* SET 1 an encryptiondecryption algorithm. The setting of asymmetric symmetric and hash will indicate the type of encryptiondecryption algorithm.CLEAR 0 not an encryptiondecryption algorithm */
-    unsigned int signing : 1;    /* SET 1 a signing algorithm. The setting of asymmetric symmetric and hash will indicate the type of signing algorithm.CLEAR 0 not a signing algorithm */
-    unsigned int reserved2 : 4;
-    unsigned int object : 1;     /* SET 1 an algorithm that may be used as an object typeCLEAR 0 an algorithm that is not used as an object type */
-    unsigned int hash : 1;       /* SET 1 a hash algorithmCLEAR 0 not a hash algorithm */
-    unsigned int symmetric : 1;  /* SET 1 a symmetric block cipherCLEAR 0 not a symmetric block cipher */
-    unsigned int asymmetric : 1; /* SET 1 an asymmetric algorithm with public and private portionsCLEAR 0 not an asymmetric algorithm */
-    };
-    UINT32 val;
-} TPMA_ALGORITHM;
-
-#else
 typedef uint32_t TPMA_ALGORITHM;
-#endif
 
-#define TPMA_ALGORITHM_ASYMMETRIC 0x00000001
-#define TPMA_ALGORITHM_SYMMETRIC  0x00000002
-#define TPMA_ALGORITHM_HASH       0x00000004
-#define TPMA_ALGORITHM_OBJECT     0x00000008
+#define TPMA_ALGORITHM_ASYMMETRIC 0x00000001 /* SET 1 an asymmetric algorithm with public and private portionsCLEAR 0 not an asymmetric algorithm */
+#define TPMA_ALGORITHM_SYMMETRIC  0x00000002 /* SET 1 a symmetric block cipherCLEAR 0 not a symmetric block cipher */
+#define TPMA_ALGORITHM_HASH       0x00000004 /* SET 1 a hash algorithmCLEAR 0 not a hash algorithm */
+#define TPMA_ALGORITHM_OBJECT     0x00000008 /* SET 1 an algorithm that may be used as an object typeCLEAR 0 an algorithm that is not used as an object type */
 #define TPMA_ALGORITHM_RESERVED1  0x000000F0
-#define TPMA_ALGORITHM_SIGNING    0x00000100
-#define TPMA_ALGORITHM_ENCRYPTING 0x00000200
-#define TPMA_ALGORITHM_METHOD     0x00000400
+#define TPMA_ALGORITHM_SIGNING    0x00000100 /* SET 1 a signing algorithm. The setting of asymmetric symmetric and hash will indicate the type of signing algorithm.CLEAR 0 not a signing algorithm */
+#define TPMA_ALGORITHM_ENCRYPTING 0x00000200 /* SET 1 an encryptiondecryption algorithm. The setting of asymmetric symmetric and hash will indicate the type of encryptiondecryption algorithm.CLEAR 0 not an encryptiondecryption algorithm */
+#define TPMA_ALGORITHM_METHOD     0x00000400 /* SET 1 a method such as a key derivative function KDFCLEAR 0 not a method */
 #define TPMA_ALGORITHM_RESERVED2  0xFFFFF800
 
 /* Definition of UINT32 TPMA_OBJECT Bits */
-#if defined TPM_BITFIELD_LE
-
-typedef union {
-    struct {
-    unsigned int reserved1 : 1;            /* shall be zero */
-    unsigned int fixedTPM : 1;             /* SET 1 The hierarchy of the object as indicated by its Qualified Name may not change.CLEAR 0 The hierarchy of the object may change as a result of this object or an ancestor key being duplicated for use in another hierarchy. */
-    unsigned int stClear : 1;              /* SET 1 Previously saved contexts of this object may not be loaded after StartupCLEAR.CLEAR 0 Saved contexts of this object may be used after a ShutdownSTATE and subsequent Startup. */
-    unsigned int reserved2 : 1;            /* shall be zero */
-    unsigned int fixedParent : 1;          /* SET 1 The parent of the object may not change.CLEAR 0 The parent of the object may change as the result of a TPM2_Duplicate of the object. */
-    unsigned int sensitiveDataOrigin : 1;  /* SET 1 Indicates that when the object was created with TPM2_Create or TPM2_CreatePrimary the TPM generated all of the sensitive data other than the authValue.CLEAR 0 A portion of the sensitive data other than the authValue was provided by the caller. */
-    unsigned int userWithAuth : 1;         /* SET 1 Approval of USER role actions with this object may be with an HMAC session or with a password using the authValue of the object or a policy session.CLEAR 0 Approval of USER role actions with this object may only be done with a policy session. */
-    unsigned int adminWithPolicy : 1;      /* SET 1 Approval of ADMIN role actions with this object may only be done with a policy session.CLEAR 0 Approval of ADMIN role actions with this object may be with an HMAC session or with a password using the authValue of the object or a policy session. */
-    unsigned int reserved3 : 2;            /* shall be zero */
-    unsigned int noDA : 1;                 /* SET 1 The object is not subject to dictionary attack protections.CLEAR 0 The object is subject to dictionary attack protections. */
-    unsigned int encryptedDuplication : 1; /* SET 1 If the object is duplicated then symmetricAlg shall not be TPM2_ALG_NULL and newParentHandle shall not be TPM2_RH_NULL.CLEAR 0 The object may be duplicated without an inner wrapper on the private portion of the object and the new parent may be TPM2_RH_NULL. */
-    unsigned int reserved4 : 4;            /* shall be zero */
-    unsigned int restricted : 1;           /* SET 1 Key usage is restricted to manipulate structures of known format the parent of this key shall have restricted SET.CLEAR 0 Key usage is not restricted to use on special formats. */
-    unsigned int decrypt : 1;              /* SET 1 The private portion of the key may be used to decrypt.CLEAR 0 The private portion of the key may not be used to decrypt. */
-    unsigned int sign : 1;                 /* SET 1 For a symmetric cipher object the private portion of the key may be used to encrypt.  For other objects the private portion of the key may be used to sign.CLEAR 0 The private portion of the key may not be used to sign or encrypt. */
-    unsigned int reserved5 : 13;           /* shall be zero */
-    };
-    UINT32 val;
-} TPMA_OBJECT;
-
-#elif defined TPM_BITFIELD_BE
-
-typedef union {
-    struct {
-    unsigned int reserved1 : 13;           /* shall be zero */
-    unsigned int sign : 1;                 /* SET 1 For a symmetric cipher object the private portion of the key may be used to encrypt.  For other objects the private portion of the key may be used to sign.CLEAR 0 The private portion of the key may not be used to sign or encrypt. */
-    unsigned int decrypt : 1;              /* SET 1 The private portion of the key may be used to decrypt.CLEAR 0 The private portion of the key may not be used to decrypt. */
-    unsigned int restricted : 1;           /* SET 1 Key usage is restricted to manipulate structures of known format the parent of this key shall have restricted SET.CLEAR 0 Key usage is not restricted to use on special formats. */
-    unsigned int reserved2 : 4;            /* shall be zero */
-    unsigned int encryptedDuplication : 1; /* SET 1 If the object is duplicated then symmetricAlg shall not be TPM2_ALG_NULL and newParentHandle shall not be TPM2_RH_NULL.CLEAR 0 The object may be duplicated without an inner wrapper on the private portion of the object and the new parent may be TPM2_RH_NULL. */
-    unsigned int noDA : 1;                 /* SET 1 The object is not subject to dictionary attack protections.CLEAR 0 The object is subject to dictionary attack protections. */
-    unsigned int reserved3 : 2;            /* shall be zero */
-    unsigned int adminWithPolicy : 1;      /* SET 1 Approval of ADMIN role actions with this object may only be done with a policy session.CLEAR 0 Approval of ADMIN role actions with this object may be with an HMAC session or with a password using the authValue of the object or a policy session. */
-    unsigned int userWithAuth : 1;         /* SET 1 Approval of USER role actions with this object may be with an HMAC session or with a password using the authValue of the object or a policy session.CLEAR 0 Approval of USER role actions with this object may only be done with a policy session. */
-    unsigned int sensitiveDataOrigin : 1;  /* SET 1 Indicates that when the object was created with TPM2_Create or TPM2_CreatePrimary the TPM generated all of the sensitive data other than the authValue.CLEAR 0 A portion of the sensitive data other than the authValue was provided by the caller. */
-    unsigned int fixedParent : 1;          /* SET 1 The parent of the object may not change.CLEAR 0 The parent of the object may change as the result of a TPM2_Duplicate of the object. */
-    unsigned int reserved4 : 1;            /* shall be zero */
-    unsigned int stClear : 1;              /* SET 1 Previously saved contexts of this object may not be loaded after StartupCLEAR.CLEAR 0 Saved contexts of this object may be used after a ShutdownSTATE and subsequent Startup. */
-    unsigned int fixedTPM : 1;             /* SET 1 The hierarchy of the object as indicated by its Qualified Name may not change.CLEAR 0 The hierarchy of the object may change as a result of this object or an ancestor key being duplicated for use in another hierarchy. */
-    unsigned int reserved5 : 1;            /* shall be zero */
-    };
-    UINT32 val;
-} TPMA_OBJECT;
-
-#else
 typedef uint32_t TPMA_OBJECT;
-#endif
 
-#define TPMA_OBJECT_RESERVED1            0x00000001
-#define TPMA_OBJECT_FIXEDTPM             0x00000002
-#define TPMA_OBJECT_STCLEAR              0x00000004
-#define TPMA_OBJECT_RESERVED2            0x00000008
-#define TPMA_OBJECT_FIXEDPARENT          0x00000010
-#define TPMA_OBJECT_SENSITIVEDATAORIGIN  0x00000020
-#define TPMA_OBJECT_USERWITHAUTH         0x00000040
-#define TPMA_OBJECT_ADMINWITHPOLICY      0x00000080
-#define TPMA_OBJECT_RESERVED3            0x00000300
-#define TPMA_OBJECT_NODA                 0x00000400
-#define TPMA_OBJECT_ENCRYPTEDDUPLICATION 0x00000800
-#define TPMA_OBJECT_RESERVED4            0x0000F000
-#define TPMA_OBJECT_RESTRICTED           0x00010000
-#define TPMA_OBJECT_DECRYPT              0x00020000
-#define TPMA_OBJECT_SIGN                 0x00040000
+#define TPMA_OBJECT_RESERVED1            0x00000001 /* shall be zero */
+#define TPMA_OBJECT_FIXEDTPM             0x00000002 /* SET 1 The hierarchy of the object as indicated by its Qualified Name may not change.CLEAR 0 The hierarchy of the object may change as a result of this object or an ancestor key being duplicated for use in another hierarchy. */
+#define TPMA_OBJECT_STCLEAR              0x00000004 /* SET 1 Previously saved contexts of this object may not be loaded after StartupCLEAR.CLEAR 0 Saved contexts of this object may be used after a ShutdownSTATE and subsequent Startup. */
+#define TPMA_OBJECT_RESERVED2            0x00000008 /* shall be zero */
+#define TPMA_OBJECT_FIXEDPARENT          0x00000010 /* SET 1 The parent of the object may not change.CLEAR 0 The parent of the object may change as the result of a TPM2_Duplicate of the object. */
+#define TPMA_OBJECT_SENSITIVEDATAORIGIN  0x00000020 /* SET 1 Indicates that when the object was created with TPM2_Create or TPM2_CreatePrimary the TPM generated all of the sensitive data other than the authValue.CLEAR 0 A portion of the sensitive data other than the authValue was provided by the caller. */
+#define TPMA_OBJECT_USERWITHAUTH         0x00000040 /* SET 1 Approval of USER role actions with this object may be with an HMAC session or with a password using the authValue of the object or a policy session.CLEAR 0 Approval of USER role actions with this object may only be done with a policy session. */
+#define TPMA_OBJECT_ADMINWITHPOLICY      0x00000080 /* SET 1 Approval of ADMIN role actions with this object may only be done with a policy session.CLEAR 0 Approval of ADMIN role actions with this object may be with an HMAC session or with a password using the authValue of the object or a policy session. */
+#define TPMA_OBJECT_RESERVED3            0x00000300 /* shall be zero */
+#define TPMA_OBJECT_NODA                 0x00000400 /* SET 1 The object is not subject to dictionary attack protections.CLEAR 0 The object is subject to dictionary attack protections. */
+#define TPMA_OBJECT_ENCRYPTEDDUPLICATION 0x00000800 /* SET 1 If the object is duplicated then symmetricAlg shall not be TPM2_ALG_NULL and newParentHandle shall not be TPM2_RH_NULL.CLEAR 0 The object may be duplicated without an inner wrapper on the private portion of the object and the new parent may be TPM2_RH_NULL. */
+#define TPMA_OBJECT_RESERVED4            0x0000F000 /* shall be zero */
+#define TPMA_OBJECT_RESTRICTED           0x00010000 /* SET 1 Key usage is restricted to manipulate structures of known format the parent of this key shall have restricted SET.CLEAR 0 Key usage is not restricted to use on special formats. */
+#define TPMA_OBJECT_DECRYPT              0x00020000 /* SET 1 The private portion of the key may be used to decrypt.CLEAR 0 The private portion of the key may not be used to decrypt. */
+#define TPMA_OBJECT_SIGN                 0x00040000 /* SET 1 For a symmetric cipher object the private portion of the key may be used to encrypt.  For other objects the private portion of the key may be used to sign.CLEAR 0 The private portion of the key may not be used to sign or encrypt. */
 #define TPMA_OBJECT_SIGN_ENCRYPT         0x00040000
-#define TPMA_OBJECT_RESERVED5            0xFFF80000
+#define TPMA_OBJECT_RESERVED5            0xFFF80000 /* shall be zero */
 
 /* Definition of UINT8 TPMA_SESSION Bits <INOUT> */
-#if defined TPM_BITFIELD_LE
-
-typedef union {
-    struct {
-    unsigned char continueSession : 1; /* SET 1 In a command this setting indicates that the session is to remain active after successful completion of the command. In a response it indicates that the session is still active. If SET in the command this attribute shall be SET in the response.CLEAR 0 In a command this setting indicates that the TPM should close the session and flush any related context when the command completes successfully. In a response it indicates that the session is closed and the context is no longer active.This attribute has no meaning for a password authorization and the TPM will allow any setting of the attribute in the command and SET the attribute in the response.This attribute will only be CLEAR in one response for a logical session. If the attribute is CLEAR the context associated with the session is no longer in use and the space is available. A session created after another session is ended may have the same handle but logically is not the same session.This attribute has no effect if the command does not complete successfully. */
-    unsigned char auditExclusive : 1;  /* SET 1 In a command this setting indicates that the command should only be executed if the session is exclusive at the start of the command. In a response it indicates that the session is exclusive. This setting is only allowed if the audit attribute is SET TPM2_RC_ATTRIBUTES.CLEAR 0 In a command indicates that the session need not be exclusive at the start of the command.  In a response indicates that the session is not exclusive.In this revision if audit is CLEAR auditExclusive must be CLEAR in the command and will be CLEAR in the response.  In a future revision this bit may have a different meaning if audit is CLEAR.See Exclusive Audit Session clause in TPM 2.0 Part 1. */
-    unsigned char auditReset : 1;      /* SET 1 In a command this setting indicates that the audit digest of the session should be initialized and the exclusive status of the session SET. This setting is only allowed if the audit attribute is SET TPM2_RC_ATTRIBUTES.CLEAR 0 In a command indicates that the audit digest should not be initialized.This bit is always CLEAR in a response.In this revision if audit is CLEAR auditReset must be clear in the command and will be CLEAR in the response.  In a future revision this bit may have a different meaning if audit is CLEAR. */
-    unsigned char reserved1 : 2;       /* shall be CLEAR */
-    unsigned char decrypt : 1;         /* SET 1 In a command this setting indicates that the first parameter in the command is symmetrically encrypted using the parameter encryption scheme described in TPM 2.0 Part 1. The TPM will decrypt the parameter after performing any HMAC computations and before unmarshaling the parameter. In a response the attribute is copied from the request but has no effect on the response.CLEAR 0 Session not used for encryption.For a password authorization this attribute will be CLEAR in both the command and response.This attribute may only be SET in one session per command.This attribute may be SET in a session that is not associated with a command handle. Such a session is provided for purposes of encrypting a parameter and not for authorization.This attribute may be SET in combination with any other session attributes.This attribute may only be SET if the first parameter of the command is a sized buffer TPM2B_. */
-    unsigned char encrypt : 1;         /* SET 1 In a command this setting indicates that the TPM should use this session to encrypt the first parameter in the response. In a response it indicates that the attribute was set in the command and that the TPM used the session to encrypt the first parameter in the response using the parameter encryption scheme described in TPM 2.0 Part 1.CLEAR 0 Session not used for encryption.For a password authorization this attribute will be CLEAR in both the command and response.This attribute may only be SET in one session per command.This attribute may be SET in a session that is not associated with a command handle. Such a session is provided for purposes of encrypting a parameter and not for authorization.This attribute may only be SET if the first parameter of a response is a sized buffer TPM2B_. */
-    unsigned char audit : 1;           /* SET 1 In a command or response this setting indicates that the session is for audit and that auditExclusive and auditReset have meaning. This session may also be used for authorization encryption or decryption. The encrypted and encrypt fields may be SET or CLEAR.CLEAR 0 Session is not used for audit.This attribute may only be SET in one session per command or response. If SET in the command then this attribute will be SET in the response. */
-    };
-    UINT8 val;
-} TPMA_SESSION;
-
-#elif defined TPM_BITFIELD_BE
-
-typedef union {
-    struct {
-    unsigned char audit : 1;           /* SET 1 In a command or response this setting indicates that the session is for audit and that auditExclusive and auditReset have meaning. This session may also be used for authorization encryption or decryption. The encrypted and encrypt fields may be SET or CLEAR.CLEAR 0 Session is not used for audit.This attribute may only be SET in one session per command or response. If SET in the command then this attribute will be SET in the response. */
-    unsigned char encrypt : 1;         /* SET 1 In a command this setting indicates that the TPM should use this session to encrypt the first parameter in the response. In a response it indicates that the attribute was set in the command and that the TPM used the session to encrypt the first parameter in the response using the parameter encryption scheme described in TPM 2.0 Part 1.CLEAR 0 Session not used for encryption.For a password authorization this attribute will be CLEAR in both the command and response.This attribute may only be SET in one session per command.This attribute may be SET in a session that is not associated with a command handle. Such a session is provided for purposes of encrypting a parameter and not for authorization.This attribute may only be SET if the first parameter of a response is a sized buffer TPM2B_. */
-    unsigned char decrypt : 1;         /* SET 1 In a command this setting indicates that the first parameter in the command is symmetrically encrypted using the parameter encryption scheme described in TPM 2.0 Part 1. The TPM will decrypt the parameter after performing any HMAC computations and before unmarshaling the parameter. In a response the attribute is copied from the request but has no effect on the response.CLEAR 0 Session not used for encryption.For a password authorization this attribute will be CLEAR in both the command and response.This attribute may only be SET in one session per command.This attribute may be SET in a session that is not associated with a command handle. Such a session is provided for purposes of encrypting a parameter and not for authorization.This attribute may be SET in combination with any other session attributes.This attribute may only be SET if the first parameter of the command is a sized buffer TPM2B_. */
-    unsigned char reserved1 : 2;       /* shall be CLEAR */
-    unsigned char auditReset : 1;      /* SET 1 In a command this setting indicates that the audit digest of the session should be initialized and the exclusive status of the session SET. This setting is only allowed if the audit attribute is SET TPM2_RC_ATTRIBUTES.CLEAR 0 In a command indicates that the audit digest should not be initialized.This bit is always CLEAR in a response.In this revision if audit is CLEAR auditReset must be clear in the command and will be CLEAR in the response.  In a future revision this bit may have a different meaning if audit is CLEAR. */
-    unsigned char auditExclusive : 1;  /* SET 1 In a command this setting indicates that the command should only be executed if the session is exclusive at the start of the command. In a response it indicates that the session is exclusive. This setting is only allowed if the audit attribute is SET TPM2_RC_ATTRIBUTES.CLEAR 0 In a command indicates that the session need not be exclusive at the start of the command.  In a response indicates that the session is not exclusive.In this revision if audit is CLEAR auditExclusive must be CLEAR in the command and will be CLEAR in the response.  In a future revision this bit may have a different meaning if audit is CLEAR.See Exclusive Audit Session clause in TPM 2.0 Part 1. */
-    unsigned char continueSession : 1; /* SET 1 In a command this setting indicates that the session is to remain active after successful completion of the command. In a response it indicates that the session is still active. If SET in the command this attribute shall be SET in the response.CLEAR 0 In a command this setting indicates that the TPM should close the session and flush any related context when the command completes successfully. In a response it indicates that the session is closed and the context is no longer active.This attribute has no meaning for a password authorization and the TPM will allow any setting of the attribute in the command and SET the attribute in the response.This attribute will only be CLEAR in one response for a logical session. If the attribute is CLEAR the context associated with the session is no longer in use and the space is available. A session created after another session is ended may have the same handle but logically is not the same session.This attribute has no effect if the command does not complete successfully. */
-    };
-    UINT8 val;
-} TPMA_SESSION;
-
-#else
 typedef UINT8 TPMA_SESSION;
-#endif
 
-#define TPMA_SESSION_CONTINUESESSION 0x00000001
-#define TPMA_SESSION_AUDITEXCLUSIVE  0x00000002
-#define TPMA_SESSION_AUDITRESET      0x00000004
-#define TPMA_SESSION_RESERVED1       0x00000018
-#define TPMA_SESSION_DECRYPT         0x00000020
-#define TPMA_SESSION_ENCRYPT         0x00000040
-#define TPMA_SESSION_AUDIT           0x00000080
+#define TPMA_SESSION_CONTINUESESSION 0x00000001 /* SET 1 In a command this setting indicates that the session is to remain active after successful completion of the command. In a response it indicates that the session is still active. If SET in the command this attribute shall be SET in the response.CLEAR 0 In a command this setting indicates that the TPM should close the session and flush any related context when the command completes successfully. In a response it indicates that the session is closed and the context is no longer active.This attribute has no meaning for a password authorization and the TPM will allow any setting of the attribute in the command and SET the attribute in the response.This attribute will only be CLEAR in one response for a logical session. If the attribute is CLEAR the context associated with the session is no longer in use and the space is available. A session created after another session is ended may have the same handle but logically is not the same session.This attribute has no effect if the command does not complete successfully. */
+#define TPMA_SESSION_AUDITEXCLUSIVE  0x00000002 /* SET 1 In a command this setting indicates that the command should only be executed if the session is exclusive at the start of the command. In a response it indicates that the session is exclusive. This setting is only allowed if the audit attribute is SET TPM2_RC_ATTRIBUTES.CLEAR 0 In a command indicates that the session need not be exclusive at the start of the command.  In a response indicates that the session is not exclusive.In this revision if audit is CLEAR auditExclusive must be CLEAR in the command and will be CLEAR in the response.  In a future revision this bit may have a different meaning if audit is CLEAR.See Exclusive Audit Session clause in TPM 2.0 Part 1. */
+#define TPMA_SESSION_AUDITRESET      0x00000004 /* SET 1 In a command this setting indicates that the audit digest of the session should be initialized and the exclusive status of the session SET. This setting is only allowed if the audit attribute is SET TPM2_RC_ATTRIBUTES.CLEAR 0 In a command indicates that the audit digest should not be initialized.This bit is always CLEAR in a response.In this revision if audit is CLEAR auditReset must be clear in the command and will be CLEAR in the response.  In a future revision this bit may have a different meaning if audit is CLEAR. */
+#define TPMA_SESSION_RESERVED1       0x00000018 /* shall be CLEAR */
+#define TPMA_SESSION_DECRYPT         0x00000020 /* SET 1 In a command this setting indicates that the first parameter in the command is symmetrically encrypted using the parameter encryption scheme described in TPM 2.0 Part 1. The TPM will decrypt the parameter after performing any HMAC computations and before unmarshaling the parameter. In a response the attribute is copied from the request but has no effect on the response.CLEAR 0 Session not used for encryption.For a password authorization this attribute will be CLEAR in both the command and response.This attribute may only be SET in one session per command.This attribute may be SET in a session that is not associated with a command handle. Such a session is provided for purposes of encrypting a parameter and not for authorization.This attribute may be SET in combination with any other session attributes.This attribute may only be SET if the first parameter of the command is a sized buffer TPM2B_. */
+#define TPMA_SESSION_ENCRYPT         0x00000040 /* SET 1 In a command this setting indicates that the TPM should use this session to encrypt the first parameter in the response. In a response it indicates that the attribute was set in the command and that the TPM used the session to encrypt the first parameter in the response using the parameter encryption scheme described in TPM 2.0 Part 1.CLEAR 0 Session not used for encryption.For a password authorization this attribute will be CLEAR in both the command and response.This attribute may only be SET in one session per command.This attribute may be SET in a session that is not associated with a command handle. Such a session is provided for purposes of encrypting a parameter and not for authorization.This attribute may only be SET if the first parameter of a response is a sized buffer TPM2B_. */
+#define TPMA_SESSION_AUDIT           0x00000080 /* SET 1 In a command or response this setting indicates that the session is for audit and that auditExclusive and auditReset have meaning. This session may also be used for authorization encryption or decryption. The encrypted and encrypt fields may be SET or CLEAR.CLEAR 0 Session is not used for audit.This attribute may only be SET in one session per command or response. If SET in the command then this attribute will be SET in the response. */
 
 /* Definition of UINT8 TPMA_LOCALITY Bits <INOUT> */
-#if defined TPM_BITFIELD_LE
-
-typedef union {
-    struct {
-    unsigned char TPM2_LOC_ZERO : 1;
-    unsigned char TPM2_LOC_ONE : 1;
-    unsigned char TPM2_LOC_TWO : 1;
-    unsigned char TPM2_LOC_THREE : 1;
-    unsigned char TPM2_LOC_FOUR : 1;
-    unsigned char Extended : 3; /* If any of these bits is set an extended locality is indicated */
-    };
-    UINT8 val;
-} TPMA_LOCALITY;
-
-#elif defined TPM_BITFIELD_BE
-
-typedef union {
-    struct {
-    unsigned char Extended : 3; /* If any of these bits is set an extended locality is indicated */
-    unsigned char TPM2_LOC_FOUR : 1;
-    unsigned char TPM2_LOC_THREE : 1;
-    unsigned char TPM2_LOC_TWO : 1;
-    unsigned char TPM2_LOC_ONE : 1;
-    unsigned char TPM2_LOC_ZERO : 1;
-    };
-    UINT8 val;
-} TPMA_LOCALITY;
-
-#else
 typedef UINT8 TPMA_LOCALITY;
-#endif
 
 #define TPMA_LOCALITY_TPM2_LOC_ZERO    0x00000001
 #define TPMA_LOCALITY_TPM2_LOC_ONE     0x00000002
 #define TPMA_LOCALITY_TPM2_LOC_TWO     0x00000004
 #define TPMA_LOCALITY_TPM2_LOC_THREE   0x00000008
 #define TPMA_LOCALITY_TPM2_LOC_FOUR    0x00000010
-#define TPMA_LOCALITY_EXTENDED         0x000000E0
+#define TPMA_LOCALITY_EXTENDED         0x000000E0 /* If any of these bits is set an extended locality is indicated */
 
 /* Definition of UINT32 TPMA_PERMANENT Bits <OUT> */
-#if defined TPM_BITFIELD_LE
-
-typedef union {
-    struct {
-    unsigned int ownerAuthSet : 1;       /* SET 1 TPM2_HierarchyChangeAuth with ownerAuth has been executed since the last TPM2_Clear.CLEAR 0 ownerAuth has not been changed since TPM2_Clear. */
-    unsigned int endorsementAuthSet : 1; /* SET 1 TPM2_HierarchyChangeAuth with endorsementAuth has been executed since the last TPM2_Clear.CLEAR 0 endorsementAuth has not been changed since TPM2_Clear. */
-    unsigned int lockoutAuthSet : 1;     /* SET 1 TPM2_HierarchyChangeAuth with lockoutAuth has been executed since the last TPM2_Clear.CLEAR 0 lockoutAuth has not been changed since TPM2_Clear. */
-    unsigned int reserved1 : 5;
-    unsigned int disableClear : 1;       /* SET 1 TPM2_Clear is disabled.CLEAR 0 TPM2_Clear is enabled.. NOTE See TPM2_ClearControl in TPM 2.0 Part 3 for details on changing this attribute. */
-    unsigned int inLockout : 1;          /* SET 1 The TPM is in lockout and commands that require authorization with other than Platform Authorization or Lockout Authorization will not succeed. */
-    unsigned int tpmGeneratedEPS : 1;    /* SET 1 The EPS was created by the TPM.CLEAR 0 The EPS was created outside of the TPM using a manufacturerspecific process. */
-    unsigned int reserved2 : 21;
-    };
-    UINT32 val;
-} TPMA_PERMANENT;
-
-#elif defined TPM_BITFIELD_BE
-
-typedef union {
-    struct {
-    unsigned int reserved1 : 21;
-    unsigned int tpmGeneratedEPS : 1;    /* SET 1 The EPS was created by the TPM.CLEAR 0 The EPS was created outside of the TPM using a manufacturerspecific process. */
-    unsigned int inLockout : 1;          /* SET 1 The TPM is in lockout and commands that require authorization with other than Platform Authorization or Lockout Authorization will not succeed. */
-    unsigned int disableClear : 1;       /* SET 1 TPM2_Clear is disabled.CLEAR 0 TPM2_Clear is enabled.. NOTE See TPM2_ClearControl in TPM 2.0 Part 3 for details on changing this attribute. */
-    unsigned int reserved2 : 5;
-    unsigned int lockoutAuthSet : 1;     /* SET 1 TPM2_HierarchyChangeAuth with lockoutAuth has been executed since the last TPM2_Clear.CLEAR 0 lockoutAuth has not been changed since TPM2_Clear. */
-    unsigned int endorsementAuthSet : 1; /* SET 1 TPM2_HierarchyChangeAuth with endorsementAuth has been executed since the last TPM2_Clear.CLEAR 0 endorsementAuth has not been changed since TPM2_Clear. */
-    unsigned int ownerAuthSet : 1;       /* SET 1 TPM2_HierarchyChangeAuth with ownerAuth has been executed since the last TPM2_Clear.CLEAR 0 ownerAuth has not been changed since TPM2_Clear. */
-    };
-    UINT32 val;
-} TPMA_PERMANENT;
-
-#else
 typedef uint32_t TPMA_PERMANENT;
-#endif
 
-#define TPMA_PERMANENT_OWNERAUTHSET        0x00000001
-#define TPMA_PERMANENT_ENDORSEMENTAUTHSET  0x00000002
-#define TPMA_PERMANENT_LOCKOUTAUTHSET      0x00000004
+#define TPMA_PERMANENT_OWNERAUTHSET        0x00000001 /* SET 1 TPM2_HierarchyChangeAuth with ownerAuth has been executed since the last TPM2_Clear.CLEAR 0 ownerAuth has not been changed since TPM2_Clear. */
+#define TPMA_PERMANENT_ENDORSEMENTAUTHSET  0x00000002 /* SET 1 TPM2_HierarchyChangeAuth with endorsementAuth has been executed since the last TPM2_Clear.CLEAR 0 endorsementAuth has not been changed since TPM2_Clear. */
+#define TPMA_PERMANENT_LOCKOUTAUTHSET      0x00000004 /* SET 1 TPM2_HierarchyChangeAuth with lockoutAuth has been executed since the last TPM2_Clear.CLEAR 0 lockoutAuth has not been changed since TPM2_Clear. */
 #define TPMA_PERMANENT_RESERVED1           0x000000F8
-#define TPMA_PERMANENT_DISABLECLEAR        0x00000100
-#define TPMA_PERMANENT_INLOCKOUT           0x00000200
-#define TPMA_PERMANENT_TPMGENERATEDEPS     0x00000400
+#define TPMA_PERMANENT_DISABLECLEAR        0x00000100 /* SET 1 TPM2_Clear is disabled.CLEAR 0 TPM2_Clear is enabled.. NOTE See TPM2_ClearControl in TPM 2.0 Part 3 for details on changing this attribute. */
+#define TPMA_PERMANENT_INLOCKOUT           0x00000200 /* SET 1 The TPM is in lockout and commands that require authorization with other than Platform Authorization or Lockout Authorization will not succeed. */
+#define TPMA_PERMANENT_TPMGENERATEDEPS     0x00000400 /* SET 1 The EPS was created by the TPM.CLEAR 0 The EPS was created outside of the TPM using a manufacturerspecific process. */
 #define TPMA_PERMANENT_RESERVED2           0xFFFFF800
 
 /* Definition of UINT32 TPMA_STARTUP_CLEAR Bits <OUT> */
-#if defined TPM_BITFIELD_LE
-
-typedef union {
-    struct {
-    unsigned int phEnable : 1;   /* SET 1 The platform hierarchy is enabled and platformAuth or platformPolicy may be used for authorization.CLEAR 0 platformAuth and platformPolicy may not be used for authorizations and objects in the platform hierarchy including persistent objects cannot be used.. NOTE See TPM2_HierarchyControl in TPM 2.0 Part 3 for details on changing this attribute. */
-    unsigned int shEnable : 1;   /* SET 1 The Storage hierarchy is enabled and ownerAuth or ownerPolicy may be used for authorization. NV indices defined using owner authorization are accessible.CLEAR 0 ownerAuth and ownerPolicy may not be used for authorizations and objects in the Storage hierarchy persistent objects and NV indices defined using owner authorization cannot be used.. NOTE See TPM2_HierarchyControl in TPM 2.0 Part 3 for details on changing this attribute. */
-    unsigned int ehEnable : 1;   /* SET 1 The EPS hierarchy is enabled and Endorsement Authorization may be used to authorize commands.CLEAR 0 Endorsement Authorization may not be used for authorizations and objects in the endorsement hierarchy including persistent objects cannot be used.. NOTE See TPM2_HierarchyControl in TPM 2.0 Part 3 for details on changing this attribute. */
-    unsigned int phEnableNV : 1; /* SET 1 NV indices that have TPMA_PLATFORM_CREATE SET may be read or written. The platform can create define and undefine indices.CLEAR 0 NV indices that have TPMA_PLATFORM_CREATE SET may not be read or written TPM2_RC_HANDLE. The platform cannot  define TPM2_RC_HIERARCHY or undefined TPM2_RC_HANDLE indices.. NOTE See TPM2_HierarchyControl in TPM 2.0 Part 3 for details on changing this attribute.NOTE read refers to these commands TPM2_NV_Read TPM2_NV_ReadPublic TPM_NV_Certify TPM2_PolicyNVwrite refers to these commands TPM2_NV_Write TPM2_NV_Increment TPM2_NV_Extend TPM2_NV_SetBitsNOTE The TPM must query the index TPMA_PLATFORM_CREATE attribute to determine whether phEnableNV is applicable. Since the TPM will return TPM2_RC_HANDLE if the index does not exist it also returns this error code if the index is disabled. Otherwise the TPM would leak the existence of an index even when disabled. */
-    unsigned int reserved1 : 27; /* shall be zero */
-    unsigned int orderly : 1;    /* SET 1 The TPM received a TPM2_Shutdown and a matching TPM2_Startup.CLEAR 0 TPM2_StartupTPM2_SU_CLEAR was not preceded by a TPM2_Shutdown of any type.. NOTE  A shutdown is orderly if the TPM receives a TPM2_Shutdown of any type followed by a TPM2_Startup of any type. However the TPM will return an error if TPM2_StartupTPM2_SU_STATE was not preceded by TPM2_State_SaveTPM2_SU_STATE. */
-    };
-    UINT32 val;
-} TPMA_STARTUP_CLEAR;
-
-#elif defined TPM_BITFIELD_BE
-
-typedef union {
-    struct {
-    unsigned int orderly : 1;    /* SET 1 The TPM received a TPM2_Shutdown and a matching TPM2_Startup.CLEAR 0 TPM2_StartupTPM2_SU_CLEAR was not preceded by a TPM2_Shutdown of any type.. NOTE  A shutdown is orderly if the TPM receives a TPM2_Shutdown of any type followed by a TPM2_Startup of any type. However the TPM will return an error if TPM2_StartupTPM2_SU_STATE was not preceded by TPM2_State_SaveTPM2_SU_STATE. */
-    unsigned int reserved1 : 27; /* shall be zero */
-    unsigned int phEnableNV : 1; /* SET 1 NV indices that have TPMA_PLATFORM_CREATE SET may be read or written. The platform can create define and undefine indices.CLEAR 0 NV indices that have TPMA_PLATFORM_CREATE SET may not be read or written TPM2_RC_HANDLE. The platform cannot  define TPM2_RC_HIERARCHY or undefined TPM2_RC_HANDLE indices.. NOTE See TPM2_HierarchyControl in TPM 2.0 Part 3 for details on changing this attribute.NOTE read refers to these commands TPM2_NV_Read TPM2_NV_ReadPublic TPM_NV_Certify TPM2_PolicyNVwrite refers to these commands TPM2_NV_Write TPM2_NV_Increment TPM2_NV_Extend TPM2_NV_SetBitsNOTE The TPM must query the index TPMA_PLATFORM_CREATE attribute to determine whether phEnableNV is applicable. Since the TPM will return TPM2_RC_HANDLE if the index does not exist it also returns this error code if the index is disabled. Otherwise the TPM would leak the existence of an index even when disabled. */
-    unsigned int ehEnable : 1;   /* SET 1 The EPS hierarchy is enabled and Endorsement Authorization may be used to authorize commands.CLEAR 0 Endorsement Authorization may not be used for authorizations and objects in the endorsement hierarchy including persistent objects cannot be used.. NOTE See TPM2_HierarchyControl in TPM 2.0 Part 3 for details on changing this attribute. */
-    unsigned int shEnable : 1;   /* SET 1 The Storage hierarchy is enabled and ownerAuth or ownerPolicy may be used for authorization. NV indices defined using owner authorization are accessible.CLEAR 0 ownerAuth and ownerPolicy may not be used for authorizations and objects in the Storage hierarchy persistent objects and NV indices defined using owner authorization cannot be used.. NOTE See TPM2_HierarchyControl in TPM 2.0 Part 3 for details on changing this attribute. */
-    unsigned int phEnable : 1;   /* SET 1 The platform hierarchy is enabled and platformAuth or platformPolicy may be used for authorization.CLEAR 0 platformAuth and platformPolicy may not be used for authorizations and objects in the platform hierarchy including persistent objects cannot be used.. NOTE See TPM2_HierarchyControl in TPM 2.0 Part 3 for details on changing this attribute. */
-    };
-    UINT32 val;
-} TPMA_STARTUP_CLEAR;
-
-#else
 typedef uint32_t TPMA_STARTUP_CLEAR;
-#endif
 
-#define TPMA_STARTUP_CLEAR_PHENABLE    0x00000001
-#define TPMA_STARTUP_CLEAR_SHENABLE    0x00000002
-#define TPMA_STARTUP_CLEAR_EHENABLE    0x00000004
-#define TPMA_STARTUP_CLEAR_PHENABLENV  0x00000008
-#define TPMA_STARTUP_CLEAR_RESERVED1   0x7FFFFFF0
-#define TPMA_STARTUP_CLEAR_ORDERLY     0x80000000
+#define TPMA_STARTUP_CLEAR_PHENABLE    0x00000001 /* SET 1 The platform hierarchy is enabled and platformAuth or platformPolicy may be used for authorization.CLEAR 0 platformAuth and platformPolicy may not be used for authorizations and objects in the platform hierarchy including persistent objects cannot be used.. NOTE See TPM2_HierarchyControl in TPM 2.0 Part 3 for details on changing this attribute. */
+#define TPMA_STARTUP_CLEAR_SHENABLE    0x00000002 /* SET 1 The Storage hierarchy is enabled and ownerAuth or ownerPolicy may be used for authorization. NV indices defined using owner authorization are accessible.CLEAR 0 ownerAuth and ownerPolicy may not be used for authorizations and objects in the Storage hierarchy persistent objects and NV indices defined using owner authorization cannot be used.. NOTE See TPM2_HierarchyControl in TPM 2.0 Part 3 for details on changing this attribute. */
+#define TPMA_STARTUP_CLEAR_EHENABLE    0x00000004 /* SET 1 The EPS hierarchy is enabled and Endorsement Authorization may be used to authorize commands.CLEAR 0 Endorsement Authorization may not be used for authorizations and objects in the endorsement hierarchy including persistent objects cannot be used.. NOTE See TPM2_HierarchyControl in TPM 2.0 Part 3 for details on changing this attribute. */
+#define TPMA_STARTUP_CLEAR_PHENABLENV  0x00000008 /* SET 1 NV indices that have TPMA_PLATFORM_CREATE SET may be read or written. The platform can create define and undefine indices.CLEAR 0 NV indices that have TPMA_PLATFORM_CREATE SET may not be read or written TPM2_RC_HANDLE. The platform cannot  define TPM2_RC_HIERARCHY or undefined TPM2_RC_HANDLE indices.. NOTE See TPM2_HierarchyControl in TPM 2.0 Part 3 for details on changing this attribute.NOTE read refers to these commands TPM2_NV_Read TPM2_NV_ReadPublic TPM_NV_Certify TPM2_PolicyNVwrite refers to these commands TPM2_NV_Write TPM2_NV_Increment TPM2_NV_Extend TPM2_NV_SetBitsNOTE The TPM must query the index TPMA_PLATFORM_CREATE attribute to determine whether phEnableNV is applicable. Since the TPM will return TPM2_RC_HANDLE if the index does not exist it also returns this error code if the index is disabled. Otherwise the TPM would leak the existence of an index even when disabled. */
+#define TPMA_STARTUP_CLEAR_RESERVED1   0x7FFFFFF0 /* shall be zero */
+#define TPMA_STARTUP_CLEAR_ORDERLY     0x80000000 /* SET 1 The TPM received a TPM2_Shutdown and a matching TPM2_Startup.CLEAR 0 TPM2_StartupTPM2_SU_CLEAR was not preceded by a TPM2_Shutdown of any type.. NOTE  A shutdown is orderly if the TPM receives a TPM2_Shutdown of any type followed by a TPM2_Startup of any type. However the TPM will return an error if TPM2_StartupTPM2_SU_STATE was not preceded by TPM2_State_SaveTPM2_SU_STATE. */
 
 /* Definition of UINT32 TPMA_MEMORY Bits <Out> */
-#if defined TPM_BITFIELD_LE
-
-typedef union {
-    struct {
-    unsigned int sharedRAM : 1;         /* SET 1 indicates that the RAM memory used for authorization session contexts is shared with the memory used for transient objectsCLEAR 0 indicates that the memory used for authorization sessions is not shared with memory used for transient objects */
-    unsigned int sharedNV : 1;          /* SET 1 indicates that the NV memory used for persistent objects is shared with the NV memory used for NV Index valuesCLEAR 0 indicates that the persistent objects and NV Index values are allocated from separate sections of NV */
-    unsigned int objectCopiedToRam : 1; /* SET 1 indicates that the TPM copies persistent objects to a transientobject slot in RAM when the persistent object is referenced in a command. The TRM is required to make sure that an object slot is available.CLEAR 0 indicates that the TPM does not use transientobject slots when persistent objects are referenced */
-    unsigned int reserved1 : 29;        /* shall be zero */
-    };
-    UINT32 val;
-} TPMA_MEMORY;
-
-#elif defined TPM_BITFIELD_BE
-
-typedef union {
-    struct {
-    unsigned int reserved1 : 29;        /* shall be zero */
-    unsigned int objectCopiedToRam : 1; /* SET 1 indicates that the TPM copies persistent objects to a transientobject slot in RAM when the persistent object is referenced in a command. The TRM is required to make sure that an object slot is available.CLEAR 0 indicates that the TPM does not use transientobject slots when persistent objects are referenced */
-    unsigned int sharedNV : 1;          /* SET 1 indicates that the NV memory used for persistent objects is shared with the NV memory used for NV Index valuesCLEAR 0 indicates that the persistent objects and NV Index values are allocated from separate sections of NV */
-    unsigned int sharedRAM : 1;         /* SET 1 indicates that the RAM memory used for authorization session contexts is shared with the memory used for transient objectsCLEAR 0 indicates that the memory used for authorization sessions is not shared with memory used for transient objects */
-    };
-    UINT32 val;
-} TPMA_MEMORY;
-
-#else
 typedef uint32_t TPMA_MEMORY;
-#endif
 
-#define TPMA_MEMORY_SHAREDRAM            0x00000001
-#define TPMA_MEMORY_SHAREDNV             0x00000002
-#define TPMA_MEMORY_OBJECTCOPIEDTORAM    0x00000004
-#define TPMA_MEMORY_RESERVED1            0xFFFFFFF8
+#define TPMA_MEMORY_SHAREDRAM            0x00000001 /* SET 1 indicates that the RAM memory used for authorization session contexts is shared with the memory used for transient objectsCLEAR 0 indicates that the memory used for authorization sessions is not shared with memory used for transient objects */
+#define TPMA_MEMORY_SHAREDNV             0x00000002 /* SET 1 indicates that the NV memory used for persistent objects is shared with the NV memory used for NV Index valuesCLEAR 0 indicates that the persistent objects and NV Index values are allocated from separate sections of NV */
+#define TPMA_MEMORY_OBJECTCOPIEDTORAM    0x00000004 /* SET 1 indicates that the TPM copies persistent objects to a transientobject slot in RAM when the persistent object is referenced in a command. The TRM is required to make sure that an object slot is available.CLEAR 0 indicates that the TPM does not use transientobject slots when persistent objects are referenced */
+#define TPMA_MEMORY_RESERVED1            0xFFFFFFF8 /* shall be zero */
 
 /* Definition of TPM2_CC TPMA_CC Bits <OUT> */
-#if defined TPM_BITFIELD_LE
-
-typedef union {
-    struct {
-    unsigned int commandIndex : 16; /* indicates the command being selected */
-    unsigned int reserved1 : 6;     /* shall be zero */
-    unsigned int nv : 1;            /* SET 1 indicates that the command may write to NVCLEAR 0 indicates that the command does not write to NV */
-    unsigned int extensive : 1;     /* SET 1 This command could flush any number of loaded contexts.CLEAR 0 no additional changes other than indicated by the flushed attribute */
-    unsigned int flushed : 1;       /* SET 1 The context associated with any transient handle in the command will be flushed when this command completes.CLEAR 0 No context is flushed as a side effect of this command. */
-    unsigned int cHandles : 3;      /* indicates the number of the handles in the handle area for this command */
-    unsigned int rHandle : 1;       /* SET 1 indicates the presence of the handle area in the response */
-    unsigned int V : 1;             /* SET 1 indicates that the command is vendorspecificCLEAR 0 indicates that the command is defined in a version of this specification */
-    unsigned int Res : 2;           /* allocated for software shall be zero */
-    };
-    UINT32 val;
-} TPMA_CC;
-
-#elif defined TPM_BITFIELD_BE
-
-typedef union {
-    struct {
-    unsigned int Res : 2;       /* allocated for software shall be zero */
-    unsigned int V : 1;         /* SET 1 indicates that the command is vendorspecificCLEAR 0 indicates that the command is defined in a version of this specification */
-    unsigned int rHandle : 1;   /* SET 1 indicates the presence of the handle area in the response */
-    unsigned int cHandles : 3;  /* indicates the number of the handles in the handle area for this command */
-    unsigned int flushed : 1;   /* SET 1 The context associated with any transient handle in the command will be flushed when this command completes.CLEAR 0 No context is flushed as a side effect of this command. */
-    unsigned int extensive : 1; /* SET 1 This command could flush any number of loaded contexts.CLEAR 0 no additional changes other than indicated by the flushed attribute */
-    unsigned int nv : 1;        /* SET 1 indicates that the command may write to NVCLEAR 0 indicates that the command does not write to NV */
-    unsigned int reserved1 : 6; /* shall be zero */
-    unsigned int commandIndex : 16; /* indicates the command being selected */
-    };
-    UINT32 val;
-} TPMA_CC;
-
-#else
 typedef uint32_t TPMA_CC;
-#endif
 
 #define TPMA_CC_COMMANDINDEX_SHIFT 0
-#define TPMA_CC_COMMANDINDEX       0x0000FFFF
-#define TPMA_CC_RESERVED1          0x003F0000
-#define TPMA_CC_NV                 0x00400000
-#define TPMA_CC_EXTENSIVE          0x00800000
-#define TPMA_CC_FLUSHED            0x01000000
-#define TPMA_CC_CHANDLES           0x0E000000
-#define TPMA_CC_RHANDLE            0x10000000
-#define TPMA_CC_V                  0x20000000
-#define TPMA_CC_RES                0xC0000000
+#define TPMA_CC_COMMANDINDEX       0x0000FFFF /* indicates the command being selected */
+#define TPMA_CC_RESERVED1          0x003F0000 /* shall be zero */
+#define TPMA_CC_NV                 0x00400000 /* SET 1 indicates that the command may write to NV. CLEAR 0 indicates that the command does not write to NV */
+#define TPMA_CC_EXTENSIVE          0x00800000 /* SET 1 This command could flush any number of loaded contexts.CLEAR 0 no additional changes other than indicated by the flushed attribute */
+#define TPMA_CC_FLUSHED            0x01000000 /* SET 1 The context associated with any transient handle in the command will be flushed when this command completes.CLEAR 0 No context is flushed as a side effect of this command. */
+#define TPMA_CC_CHANDLES           0x0E000000 /* indicates the number of the handles in the handle area for this command */
+#define TPMA_CC_RHANDLE            0x10000000 /* SET 1 indicates the presence of the handle area in the response */
+#define TPMA_CC_V                  0x20000000 /* SET 1 indicates that the command is vendorspecificCLEAR 0 indicates that the command is defined in a version of this specification */
+#define TPMA_CC_RES                0xC0000000 /* allocated for software shall be zero */
 #define TPMA_CC_RES_SHIFT          30
 
 /* Definition of UINT32 TPMA_MODES Bits <Out> */
-#if defined TPM_BITFIELD_LE
-
-typedef union {
-    struct {
-    unsigned int FIPS_140_2 : 1;    /* SET 1 indicates that the TPM is designed to comply with all of the FIPS 1402 requirements at Level 1 or higher. */
-    unsigned int reserved1 : 31;    /* shall be zero */
-    };
-    UINT32 val;
-} TPMA_MODES;
-
-#elif defined TPM_BITFIELD_BE
-
-typedef union {
-    struct {
-    unsigned int reserved1 : 31;    /* shall be zero */
-    unsigned int FIPS_140_2 : 1;    /* SET 1 indicates that the TPM is designed to comply with all of the FIPS 1402 requirements at Level 1 or higher. */
-    };
-    UINT32 val;
-} TPMA_MODES;
-
-#else
 typedef uint32_t TPMA_MODES;
-#endif
 
-#define TPMA_MODES_FIPS_140_2   0x00000001
-#define TPMA_MODES_RESERVED1    0xFFFFFFFE
+#define TPMA_MODES_FIPS_140_2   0x00000001 /* SET 1 indicates that the TPM is designed to comply with all of the FIPS 1402 requirements at Level 1 or higher. */
+#define TPMA_MODES_RESERVED1    0xFFFFFFFE /* shall be zero */
 
 /* Definition of BYTE TPMI_YES_NO Type */
 typedef BYTE TPMI_YES_NO;
@@ -1883,32 +1587,10 @@ typedef struct {
 TPM2B_TYPE1(ID_OBJECT, sizeof(_ID_OBJECT), credential);
 
 /* Definition of UINT32 TPM2_NV_INDEX Bits <> */
-#if defined TPM_BITFIELD_LE
-
-typedef union {
-    struct {
-    unsigned int index : 24; /* The Index of the NV location */
-    unsigned int RH_NV : 8;  /* constant value of TPM2_HT_NV_INDEX indicating the NV Index range */
-    };
-    UINT32 val;
-} TPM2_NV_INDEX;
-
-#elif defined TPM_BITFIELD_BE
-
-typedef union {
-    struct {
-    unsigned int RH_NV : 8;  /* constant value of TPM2_HT_NV_INDEX indicating the NV Index range */
-    unsigned int index : 24; /* The Index of the NV location */
-    };
-    UINT32 val;
-} TPM2_NV_INDEX;
-
-#else
 typedef uint32_t TPM2_NV_INDEX;
-#endif
 
-#define TPM2_NV_INDEX_INDEX    0x00FFFFFF
-#define TPM2_NV_INDEX_RH_NV    0xFF000000
+#define TPM2_NV_INDEX_INDEX    0x00FFFFFF /* The Index of the NV location */
+#define TPM2_NV_INDEX_RH_NV    0xFF000000 /* constant value of TPM2_HT_NV_INDEX indicating the NV Index range */
 
 /* Definition of TPM2_NT Constants */
 #define TPM2_NT_ORDINARY (0x0) /* Ordinary contains data that is opaque to the TPM that can only be modified using TPM2_NV_Write. */
@@ -1925,95 +1607,32 @@ typedef struct {
 } TPMS_NV_PIN_COUNTER_PARAMETERS;
 
 /* Definition of UINT32 TPMA_NV Bits */
-#if defined TPM_BITFIELD_LE
-typedef union {
-    struct {
-    unsigned int TPMA_NV_PPWRITE : 1;       /* SET 1 The Index data can be written if Platform Authorization is provided.CLEAR 0 Writing of the Index data cannot be authorized with Platform Authorization. */
-    unsigned int TPMA_NV_OWNERWRITE : 1;    /* SET 1 The Index data can be written if Owner Authorization is provided.CLEAR 0 Writing of the Index data cannot be authorized with Owner Authorization. */
-    unsigned int TPMA_NV_AUTHWRITE : 1;     /* SET 1 Authorizations to change the Index contents that require USER role may be provided with an HMAC session or password.CLEAR 0 Authorizations to change the Index contents that require USER role may not be provided with an HMAC session or password. */
-    unsigned int TPMA_NV_POLICYWRITE : 1;   /* SET 1 Authorizations to change the Index contents that require USER role may be provided with a policy session.CLEAR 0 Authorizations to change the Index contents that require USER role may not be provided with a policy session.. NOTE TPM2_NV_ChangeAuth always requires that authorization be provided in a policy session. */
-    unsigned int TPM2_NT : 4;               /* The type of the index. NOTE A TPM is not required to support all TPM2_NT values */
-    unsigned int reserved1 : 2;             /* shall be zeroreserved for future use */
-    unsigned int TPMA_NV_POLICY_DELETE : 1; /* SET 1 Index may not be deleted unless the authPolicy is satisfied using TPM2_NV_UndefineSpaceSpecial.CLEAR 0 Index may be deleted with proper platform or owner authorization using TPM2_NV_UndefineSpace. */
-    unsigned int TPMA_NV_WRITELOCKED : 1;   /* SET 1 Index cannot be written.CLEAR 0 Index can be written. */
-    unsigned int TPMA_NV_WRITEALL : 1;      /* SET 1 A partial write of the Index data is not allowed. The write size shall match the defined space size.CLEAR 0 Partial writes are allowed. This setting is required if the .dataSize of the Index is larger than NV_MAX_BUFFER_SIZE for the implementation. */
-    unsigned int TPMA_NV_WRITEDEFINE : 1;   /* SET 1 TPM2_NV_WriteLock may be used to prevent further writes to this location.CLEAR 0 TPM2_NV_WriteLock does not block subsequent writes if TPMA_NV_WRITE_STCLEAR is also CLEAR. */
-    unsigned int TPMA_NV_WRITE_STCLEAR : 1; /* SET 1 TPM2_NV_WriteLock may be used to prevent further writes to this location until the next TPM Reset or TPM Restart.CLEAR 0 TPM2_NV_WriteLock does not block subsequent writes if TPMA_NV_WRITEDEFINE is also CLEAR. */
-    unsigned int TPMA_NV_GLOBALLOCK : 1;    /* SET 1 If TPM2_NV_GlobalWriteLock is successful then further writes to this location are not permitted until the next TPM Reset or TPM Restart.CLEAR 0 TPM2_NV_GlobalWriteLock has no effect on the writing of the data at this Index. */
-    unsigned int TPMA_NV_PPREAD : 1;        /* SET 1 The Index data can be read if Platform Authorization is provided.CLEAR 0 Reading of the Index data cannot be authorized with Platform Authorization. */
-    unsigned int TPMA_NV_OWNERREAD : 1;     /* SET 1 The Index data can be read if Owner Authorization is provided.CLEAR 0 Reading of the Index data cannot be authorized with Owner Authorization. */
-    unsigned int TPMA_NV_AUTHREAD : 1;      /* SET 1 The Index data may be read if the authValue is provided.CLEAR 0 Reading of the Index data cannot be authorized with the Index authValue. */
-    unsigned int TPMA_NV_POLICYREAD : 1;    /* SET 1 The Index data may be read if the authPolicy is satisfied.CLEAR 0 Reading of the Index data cannot be authorized with the Index authPolicy. */
-    unsigned int reserved2 : 5;             /* shall be zeroreserved for future use */
-    unsigned int TPMA_NV_NO_DA : 1;         /* SET 1 Authorization failures of the Index do not affect the DA logic and authorization of the Index is not blocked when the TPM is in Lockout mode.CLEAR 0 Authorization failures of the Index will increment the authorization failure counter and authorizations of this Index are not allowed when the TPM is in Lockout mode. */
-    unsigned int TPMA_NV_ORDERLY : 1;       /* SET 1 NV Index state is only required to be saved when the TPM performs an orderly shutdown TPM2_Shutdown.CLEAR 0 NV Index state is required to be persistent after the command to update the Index completes successfully that is the NV update is synchronous with the update command. */
-    unsigned int TPMA_NV_CLEAR_STCLEAR : 1; /* SET 1 TPMA_NV_WRITTEN for the Index is CLEAR by TPM Reset or TPM Restart.CLEAR 0 TPMA_NV_WRITTEN is not changed by TPM Restart.NOTE 1    This attribute may only be SET if TPM2_NT is not TPM2_NT_COUNTER.NOTE 2    If the TPMA_NV_ORDERLY is SET TPMA_NV_WRITTEN will be CLEAR by TPM Reset. */
-    unsigned int TPMA_NV_READLOCKED : 1;    /* SET 1 Reads of the Index are blocked until the next TPM Reset or TPM Restart.CLEAR 0 Reads of the Index are allowed if proper authorization is provided. */
-    unsigned int TPMA_NV_WRITTEN : 1;       /* SET 1 Index has been written.CLEAR 0 Index has not been written. */
-    unsigned int TPMA_NV_PLATFORMCREATE : 1;/* SET 1 This Index may be undefined with Platform Authorization but not with Owner Authorization.CLEAR 0 This Index may be undefined using Owner Authorization but not with Platform Authorization. The TPM will validate that this attribute is SET when the Index is defined using Platform Authorization and will validate that this attribute is CLEAR when the Index is defined using Owner Authorization. */
-    unsigned int TPMA_NV_READ_STCLEAR : 1;  /* SET 1 TPM2_NV_ReadLock may be used to SET TPMA_NV_READLOCKED for this Index.CLEAR 0 TPM2_NV_ReadLock has no effect on this Index. */
-    };
-    UINT32 val;
-} TPMA_NV;
-#elif defined TPM_BITFIELD_BE
-typedef union {
-    struct {
-    unsigned int TPMA_NV_READ_STCLEAR : 1;   /* SET 1 TPM2_NV_ReadLock may be used to SET TPMA_NV_READLOCKED for this Index.CLEAR 0 TPM2_NV_ReadLock has no effect on this Index. */
-    unsigned int TPMA_NV_PLATFORMCREATE : 1; /* SET 1 This Index may be undefined with Platform Authorization but not with Owner Authorization.CLEAR 0 This Index may be undefined using Owner Authorization but not with Platform Authorization. The TPM will validate that this attribute is SET when the Index is defined using Platform Authorization and will validate that this attribute is CLEAR when the Index is defined using Owner Authorization. */
-    unsigned int TPMA_NV_WRITTEN : 1;        /* SET 1 Index has been written.CLEAR 0 Index has not been written. */
-    unsigned int TPMA_NV_READLOCKED : 1;     /* SET 1 Reads of the Index are blocked until the next TPM Reset or TPM Restart.CLEAR 0 Reads of the Index are allowed if proper authorization is provided. */
-    unsigned int TPMA_NV_CLEAR_STCLEAR : 1;  /* SET 1 TPMA_NV_WRITTEN for the Index is CLEAR by TPM Reset or TPM Restart.CLEAR 0 TPMA_NV_WRITTEN is not changed by TPM Restart.NOTE 1    This attribute may only be SET if TPM2_NT is not TPM2_NT_COUNTER.NOTE 2    If the TPMA_NV_ORDERLY is SET TPMA_NV_WRITTEN will be CLEAR by TPM Reset. */
-    unsigned int TPMA_NV_ORDERLY : 1;        /* SET 1 NV Index state is only required to be saved when the TPM performs an orderly shutdown TPM2_Shutdown.CLEAR 0 NV Index state is required to be persistent after the command to update the Index completes successfully that is the NV update is synchronous with the update command. */
-    unsigned int TPMA_NV_NO_DA : 1;          /* SET 1 Authorization failures of the Index do not affect the DA logic and authorization of the Index is not blocked when the TPM is in Lockout mode.CLEAR 0 Authorization failures of the Index will increment the authorization failure counter and authorizations of this Index are not allowed when the TPM is in Lockout mode. */
-    unsigned int reserved1 : 5;              /* shall be zeroreserved for future use */
-    unsigned int TPMA_NV_POLICYREAD : 1;     /* SET 1 The Index data may be read if the authPolicy is satisfied.CLEAR 0 Reading of the Index data cannot be authorized with the Index authPolicy. */
-    unsigned int TPMA_NV_AUTHREAD : 1;       /* SET 1 The Index data may be read if the authValue is provided.CLEAR 0 Reading of the Index data cannot be authorized with the Index authValue. */
-    unsigned int TPMA_NV_OWNERREAD : 1;      /* SET 1 The Index data can be read if Owner Authorization is provided.CLEAR 0 Reading of the Index data cannot be authorized with Owner Authorization. */
-    unsigned int TPMA_NV_PPREAD : 1;         /* SET 1 The Index data can be read if Platform Authorization is provided.CLEAR 0 Reading of the Index data cannot be authorized with Platform Authorization. */
-    unsigned int TPMA_NV_GLOBALLOCK : 1;     /* SET 1 If TPM2_NV_GlobalWriteLock is successful then further writes to this location are not permitted until the next TPM Reset or TPM Restart.CLEAR 0 TPM2_NV_GlobalWriteLock has no effect on the writing of the data at this Index. */
-    unsigned int TPMA_NV_WRITE_STCLEAR : 1;  /* SET 1 TPM2_NV_WriteLock may be used to prevent further writes to this location until the next TPM Reset or TPM Restart.CLEAR 0 TPM2_NV_WriteLock does not block subsequent writes if TPMA_NV_WRITEDEFINE is also CLEAR. */
-    unsigned int TPMA_NV_WRITEDEFINE : 1;    /* SET 1 TPM2_NV_WriteLock may be used to prevent further writes to this location.CLEAR 0 TPM2_NV_WriteLock does not block subsequent writes if TPMA_NV_WRITE_STCLEAR is also CLEAR. */
-    unsigned int TPMA_NV_WRITEALL : 1;       /* SET 1 A partial write of the Index data is not allowed. The write size shall match the defined space size.CLEAR 0 Partial writes are allowed. This setting is required if the .dataSize of the Index is larger than NV_MAX_BUFFER_SIZE for the implementation. */
-    unsigned int TPMA_NV_WRITELOCKED : 1;    /* SET 1 Index cannot be written.CLEAR 0 Index can be written. */
-    unsigned int TPMA_NV_POLICY_DELETE : 1;  /* SET 1 Index may not be deleted unless the authPolicy is satisfied using TPM2_NV_UndefineSpaceSpecial.CLEAR 0 Index may be deleted with proper platform or owner authorization using TPM2_NV_UndefineSpace. */
-    unsigned int reserved2 : 2;              /* shall be zeroreserved for future use */
-    unsigned int TPM2_NT : 4;                /* The type of the index. NOTE A TPM is not required to support all TPM2_NT values */
-    unsigned int TPMA_NV_POLICYWRITE : 1;    /* SET 1 Authorizations to change the Index contents that require USER role may be provided with a policy session.CLEAR 0 Authorizations to change the Index contents that require USER role may not be provided with a policy session.. NOTE TPM2_NV_ChangeAuth always requires that authorization be provided in a policy session. */
-    unsigned int TPMA_NV_AUTHWRITE : 1;      /* SET 1 Authorizations to change the Index contents that require USER role may be provided with an HMAC session or password.CLEAR 0 Authorizations to change the Index contents that require USER role may not be provided with an HMAC session or password. */
-    unsigned int TPMA_NV_OWNERWRITE : 1;     /* SET 1 The Index data can be written if Owner Authorization is provided.CLEAR 0 Writing of the Index data cannot be authorized with Owner Authorization. */
-    unsigned int TPMA_NV_PPWRITE : 1;        /* SET 1 The Index data can be written if Platform Authorization is provided.CLEAR 0 Writing of the Index data cannot be authorized with Platform Authorization. */
-    };
-    UINT32 val;
-} TPMA_NV;
-
-#else
 typedef uint32_t TPMA_NV;
-#endif
 
-#define TPMA_NV_TPMA_NV_PPWRITE        0x00000001
-#define TPMA_NV_TPMA_NV_OWNERWRITE     0x00000002
-#define TPMA_NV_TPMA_NV_AUTHWRITE      0x00000004
-#define TPMA_NV_TPMA_NV_POLICYWRITE    0x00000008
-#define TPMA_NV_TPM2_NT                0x000000F0
-#define TPMA_NV_RESERVED1              0x00000300
-#define TPMA_NV_TPMA_NV_POLICY_DELETE  0x00000400
-#define TPMA_NV_TPMA_NV_WRITELOCKED    0x00000800
-#define TPMA_NV_TPMA_NV_WRITEALL       0x00001000
-#define TPMA_NV_TPMA_NV_WRITEDEFINE    0x00002000
-#define TPMA_NV_TPMA_NV_WRITE_STCLEAR  0x00004000
-#define TPMA_NV_TPMA_NV_GLOBALLOCK     0x00008000
-#define TPMA_NV_TPMA_NV_PPREAD         0x00010000
-#define TPMA_NV_TPMA_NV_OWNERREAD      0x00020000
-#define TPMA_NV_TPMA_NV_AUTHREAD       0x00040000
-#define TPMA_NV_TPMA_NV_POLICYREAD     0x00080000
-#define TPMA_NV_RESERVED2              0x01F00000
-#define TPMA_NV_TPMA_NV_NO_DA          0x02000000
-#define TPMA_NV_TPMA_NV_ORDERLY        0x04000000
-#define TPMA_NV_TPMA_NV_CLEAR_STCLEAR  0x08000000
-#define TPMA_NV_TPMA_NV_READLOCKED     0x10000000
-#define TPMA_NV_TPMA_NV_WRITTEN        0x20000000
-#define TPMA_NV_TPMA_NV_PLATFORMCREATE 0x40000000
-#define TPMA_NV_TPMA_NV_READ_STCLEAR   0x80000000
+#define TPMA_NV_TPMA_NV_PPWRITE        0x00000001 /* SET 1 The Index data can be written if Platform Authorization is provided.CLEAR 0 Writing of the Index data cannot be authorized with Platform Authorization. */
+#define TPMA_NV_TPMA_NV_OWNERWRITE     0x00000002 /* SET 1 The Index data can be written if Owner Authorization is provided.CLEAR 0 Writing of the Index data cannot be authorized with Owner Authorization. */
+#define TPMA_NV_TPMA_NV_AUTHWRITE      0x00000004 /* SET 1 Authorizations to change the Index contents that require USER role may be provided with an HMAC session or password.CLEAR 0 Authorizations to change the Index contents that require USER role may not be provided with an HMAC session or password. */
+#define TPMA_NV_TPMA_NV_POLICYWRITE    0x00000008 /* SET 1 Authorizations to change the Index contents that require USER role may be provided with a policy session.CLEAR 0 Authorizations to change the Index contents that require USER role may not be provided with a policy session.. NOTE TPM2_NV_ChangeAuth always requires that authorization be provided in a policy session. */
+#define TPMA_NV_TPM2_NT                0x000000F0 /* The type of the index. NOTE A TPM is not required to support all TPM2_NT values */
+#define TPMA_NV_RESERVED1              0x00000300 /* shall be zeroreserved for future use */
+#define TPMA_NV_TPMA_NV_POLICY_DELETE  0x00000400 /* SET 1 Index may not be deleted unless the authPolicy is satisfied using TPM2_NV_UndefineSpaceSpecial.CLEAR 0 Index may be deleted with proper platform or owner authorization using TPM2_NV_UndefineSpace. */
+#define TPMA_NV_TPMA_NV_WRITELOCKED    0x00000800 /* SET 1 Index cannot be written.CLEAR 0 Index can be written. */
+#define TPMA_NV_TPMA_NV_WRITEALL       0x00001000 /* SET 1 A partial write of the Index data is not allowed. The write size shall match the defined space size.CLEAR 0 Partial writes are allowed. This setting is required if the .dataSize of the Index is larger than NV_MAX_BUFFER_SIZE for the implementation. */
+#define TPMA_NV_TPMA_NV_WRITEDEFINE    0x00002000 /* SET 1 TPM2_NV_WriteLock may be used to prevent further writes to this location.CLEAR 0 TPM2_NV_WriteLock does not block subsequent writes if TPMA_NV_WRITE_STCLEAR is also CLEAR. */
+#define TPMA_NV_TPMA_NV_WRITE_STCLEAR  0x00004000 /* SET 1 TPM2_NV_WriteLock may be used to prevent further writes to this location until the next TPM Reset or TPM Restart.CLEAR 0 TPM2_NV_WriteLock does not block subsequent writes if TPMA_NV_WRITEDEFINE is also CLEAR. */
+#define TPMA_NV_TPMA_NV_GLOBALLOCK     0x00008000 /* SET 1 If TPM2_NV_GlobalWriteLock is successful then further writes to this location are not permitted until the next TPM Reset or TPM Restart.CLEAR 0 TPM2_NV_GlobalWriteLock has no effect on the writing of the data at this Index. */
+#define TPMA_NV_TPMA_NV_PPREAD         0x00010000 /* SET 1 The Index data can be read if Platform Authorization is provided.CLEAR 0 Reading of the Index data cannot be authorized with Platform Authorization. */
+#define TPMA_NV_TPMA_NV_OWNERREAD      0x00020000 /* SET 1 The Index data can be read if Owner Authorization is provided.CLEAR 0 Reading of the Index data cannot be authorized with Owner Authorization. */
+#define TPMA_NV_TPMA_NV_AUTHREAD       0x00040000 /* SET 1 The Index data may be read if the authValue is provided.CLEAR 0 Reading of the Index data cannot be authorized with the Index authValue. */
+#define TPMA_NV_TPMA_NV_POLICYREAD     0x00080000 /* SET 1 The Index data may be read if the authPolicy is satisfied.CLEAR 0 Reading of the Index data cannot be authorized with the Index authPolicy. */
+#define TPMA_NV_RESERVED2              0x01F00000 /* shall be zeroreserved for future use */
+#define TPMA_NV_TPMA_NV_NO_DA          0x02000000 /* SET 1 Authorization failures of the Index do not affect the DA logic and authorization of the Index is not blocked when the TPM is in Lockout mode.CLEAR 0 Authorization failures of the Index will increment the authorization failure counter and authorizations of this Index are not allowed when the TPM is in Lockout mode. */
+#define TPMA_NV_TPMA_NV_ORDERLY        0x04000000 /* SET 1 NV Index state is only required to be saved when the TPM performs an orderly shutdown TPM2_Shutdown.CLEAR 0 NV Index state is required to be persistent after the command to update the Index completes successfully that is the NV update is synchronous with the update command. */
+#define TPMA_NV_TPMA_NV_CLEAR_STCLEAR  0x08000000 /* SET 1 TPMA_NV_WRITTEN for the Index is CLEAR by TPM Reset or TPM Restart.CLEAR 0 TPMA_NV_WRITTEN is not changed by TPM Restart.NOTE 1    This attribute may only be SET if TPM2_NT is not TPM2_NT_COUNTER.NOTE 2    If the TPMA_NV_ORDERLY is SET TPMA_NV_WRITTEN will be CLEAR by TPM Reset. */
+#define TPMA_NV_TPMA_NV_READLOCKED     0x10000000 /* SET 1 Reads of the Index are blocked until the next TPM Reset or TPM Restart.CLEAR 0 Reads of the Index are allowed if proper authorization is provided. */
+#define TPMA_NV_TPMA_NV_WRITTEN        0x20000000 /* SET 1 Index has been written.CLEAR 0 Index has not been written. */
+#define TPMA_NV_TPMA_NV_PLATFORMCREATE 0x40000000 /* SET 1 This Index may be undefined with Platform Authorization but not with Owner Authorization.CLEAR 0 This Index may be undefined using Owner Authorization but not with Platform Authorization. The TPM will validate that this attribute is SET when the Index is defined using Platform Authorization and will validate that this attribute is CLEAR when the Index is defined using Owner Authorization. */
+#define TPMA_NV_TPMA_NV_READ_STCLEAR   0x80000000 /* SET 1 TPM2_NV_ReadLock may be used to SET TPMA_NV_READLOCKED for this Index.CLEAR 0 TPM2_NV_ReadLock has no effect on this Index. */
 
 /* Definition of TPMS_NV_PUBLIC Structure */
 typedef struct {
