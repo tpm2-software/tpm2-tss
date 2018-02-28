@@ -1634,6 +1634,22 @@ Tss2_MU_TPMU_PUBLIC_ID_Unmarshal(
     TPMU_PUBLIC_ID *dest);
 
 TSS2_RC
+Tss2_MU_TPMU_NAME_Marshal(
+    TPMU_NAME      const *src,
+    uint32_t       selector_value,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPMU_NAME_Unmarshal(
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    uint32_t       selector_value,
+    TPMU_NAME     *dest);
+
+TSS2_RC
 Tss2_MU_TPMT_HA_Marshal(
     TPMT_HA const *src,
     uint8_t        buffer[],
