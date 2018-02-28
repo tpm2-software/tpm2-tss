@@ -1,250 +1,100 @@
 #;**********************************************************************;
 # Copyright (c) 2015, 2016, 2017 Intel Corporation
+# Copyright (c) 2018 Fraunhofer SIT sponsored by Infineon Technologies AG
 # All rights reserved.
 #
-# Redistribution and use in source and binary forms, with or without 
+# Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
-# 1. Redistributions of source code must retain the above copyright notice, 
+#
+# 1. Redistributions of source code must retain the above copyright notice,
 # this list of conditions and the following disclaimer.
-# 
-# 2. Redistributions in binary form must reproduce the above copyright notice, 
-# this list of conditions and the following disclaimer in the documentation 
+#
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
 # and/or other materials provided with the distribution.
-# 
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 #;**********************************************************************;
-@CODE_COVERAGE_RULES@
-@DX_RULES@
 
-MOSTLYCLEANFILES = $(DX_CLEANFILES)
-
-include src_vars.mk
-
+### Initialize global variables used throughout the file ###
 INCLUDE_DIRS    = -I$(srcdir)/include -I$(srcdir)/sysapi/include -I$(srcdir)/marshal
 ACLOCAL_AMFLAGS = -I m4
 AM_CFLAGS       = $(INCLUDE_DIRS) $(EXTRA_CFLAGS) $(CODE_COVERAGE_CFLAGS)
 AM_LDFLAGS      = $(EXTRA_LDFLAGS) $(CODE_COVERAGE_LIBS)
 
-# stuff to build, what that stuff is, and where/if to install said stuff
-lib_LTLIBRARIES = $(libmarshal) $(libsapi) $(libtcti_device) $(libtcti_socket)
-noinst_LTLIBRARIES = $(libutil)
+# Initialize empty variables to be extended throughout
+lib_LTLIBRARIES =
+noinst_LTLIBRARIES =
+EXTRA_DIST =
+CLEANFILES =
+MOSTLYCLEANFILES =
 
-if ESAPI
-lib_LTLIBRARIES += $(libesapi)
-endif
+### Add ax_* rules ###
+# ax_code_coverage
+@CODE_COVERAGE_RULES@
 
-# test harness configuration
-TEST_EXTENSIONS = .int
-INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler.sh
-INT_LOG_FLAGS = --simulator-bin=$(SIMULATOR_BIN)
+# ax_doxygen
+@DX_RULES@
+MOSTLYCLEANFILES += $(DX_CLEANFILES)
 
-check-programs: $(check_PROGRAMS)
+### Include make files ###
+# Add source code files from bootstrap
+include src_vars.mk
 
-check_PROGRAMS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
-TESTS = $(check_PROGRAMS)
-if UNIT
-TESTS_UNIT  = \
-    test/unit/CommonPreparePrologue \
-    test/unit/CopyCommandHeader \
-    test/unit/GetNumHandles \
-    test/unit/tcti-device \
-    test/unit/tcti-socket \
-    test/unit/util \
-    test/unit/UINT8-marshal \
-    test/unit/UINT16-marshal \
-    test/unit/UINT32-marshal \
-    test/unit/UINT64-marshal \
-    test/unit/TPMA-marshal \
-    test/unit/TPM2B-marshal \
-    test/unit/TPMS-marshal \
-    test/unit/TPML-marshal \
-    test/unit/TPMT-marshal \
-    test/unit/TPMU-marshal
-endif #UNIT
-if SIMULATOR_BIN
-noinst_LTLIBRARIES += test/integration/libtest_utils.la
-TESTS_INTEGRATION = \
-    test/integration/asymmetric-encrypt-decrypt.int \
-    test/integration/create-primary-rsa-2048-aes-128-cfb.int \
-    test/integration/create-keyedhash-sha1-hmac.int \
-    test/integration/encrypt-decrypt.int \
-    test/integration/encrypt-decrypt-2.int \
-    test/integration/evict-ctrl.int \
-    test/integration/get-random.int \
-    test/integration/hierarchy-change-auth.int \
-    test/integration/abi-version.int \
-    test/integration/pcr-extension.int \
-    test/integration/self-test.int \
-    test/integration/start-auth-session.int \
-    test/integration/sys-initialize.int \
-    test/integration/tpm-properties.int \
-    test/integration/system-api.int \
-    test/integration/policy-template.int \
-    test/integration/create-loaded.int \
-    test/integration/policy-authorizeNV.int \
-    test/tpmclient/tpmclient.int
-if ESAPI
-TESTS_INTEGRATION += \
-    test/integration/esys-clockset.int \
-    test/integration/esys-clockset-session.int \
-    test/integration/esys-create-fail.int \
-    test/integration/esys-create-password-auth.int \
-    test/integration/esys-create-primary-ecc-hmac.int \
-    test/integration/esys-create-primary-hmac.int \
-    test/integration/esys-create-session-auth.int \
-    test/integration/esys-evict-control-serialization.int \
-    test/integration/esys-get-capability.int \
-    test/integration/esys-get-random.int \
-    test/integration/esys-make-credential.int \
-    test/integration/esys-make-credential-session.int \
-    test/integration/esys-nv-ram-extend-index.int \
-    test/integration/esys-nv-ram-extend-index-session.int \
-    test/integration/esys-nv-ram-ordinary-index.int \
-    test/integration/esys-nv-ram-ordinary-index-session.int \
-    test/integration/esys-quote.int \
-    test/integration/esys-rsa-encrypt-decrypt.int \
-    test/integration/esys-save-and-load-context.int
-endif #ESAPI
-endif #SIMULATOR_BIN
+# Add test definitions
+include Makefile-test.am
 
-CLEANFILES = \
-    AUTHORS \
-    $(nodist_pkgconfig_DATA) \
-    $(man3_MANS) \
-    $(man7_MANS) \
-    test/integration/*.log \
-    test/tpmclient/*.log \
-    test/unit/*.log
-
-# headers and where to install them
-libsapidir      = $(includedir)/sapi
-libsapi_HEADERS = $(srcdir)/include/sapi/*.h
-libtctidir      = $(includedir)/tcti
-libtcti_HEADERS = $(srcdir)/include/tcti/*.h
-if ESAPI
-libesapidir      = $(includedir)/esapi
-libesapi_HEADERS = $(srcdir)/include/esapi/*.h
-endif
-
-# pkg-config files
-pkgconfigdir          = $(libdir)/pkgconfig
-nodist_pkgconfig_DATA = \
-    lib/marshal.pc \
-    lib/sapi.pc \
-    lib/tcti-device.pc \
-    lib/tcti-socket.pc
-# man pages / documentation
-man3_MANS = man/man3/InitDeviceTcti.3 man/man3/InitSocketTcti.3
-man7_MANS = man/man7/tcti-device.7 man/man7/tcti-socket.7
-
-EXTRA_DIST = \
-    AUTHORS \
+### Distributiuon files ###
+# Adding user and developer information
+EXTRA_DIST += \
     CHANGELOG.md \
     CONTRIBUTING.md \
     INSTALL.md \
     LICENSE \
     README.md \
-    RELEASE.md \
-    lib/debug_config.site \
-    lib/libmarshal.map \
-    lib/marshal.pc.in \
-    lib/tcti-device.pc.in \
-    lib/tcti-socket.pc.in \
-    lib/sapi.pc.in \
-    man/man-postlude.troff \
-    man/InitDeviceTcti.3.in \
-    man/InitSocketTcti.3.in \
-    man/tcti-device.7.in \
-    man/tcti-socket.7.in \
-    $(INT_LOG_COMPILER) \
-    tcti/tcti_device.map \
-    tcti/tcti_socket.map
+    RELEASE.md
 
-if UNIT
-test_unit_util_CFLAGS = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_util_LDADD = $(CMOCKA_LIBS) $(libutil)
-test_unit_util_LDFLAGS = -Wl,--wrap=write
-test_unit_util_SOURCES = test/unit/util.c
+# TODO: To be removed in the next commit
+EXTRA_DIST += \
+    lib/debug_config.site
 
-test_unit_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_tcti_device_LDADD   = $(CMOCKA_LIBS) $(libmarshal) $(libutil)
-test_unit_tcti_device_LDFLAGS = -Wl,--wrap=read -Wl,-wrap=write
-test_unit_tcti_device_SOURCES = test/unit/tcti-device.c tcti/tcti_device.c log/log.h
+# Generate the AUTHORS file from git log
+AUTHORS :
+	$(AM_V_GEN)git log --format='%aN <%aE>' | grep -v 'users.noreply.github.com' | sort | \
+	    uniq -c | sort -nr | sed 's/^\s*//' | cut -d" " -f2- > $@
+EXTRA_DIST += AUTHORS
+CLEANFILES += AUTHORS
 
-test_unit_tcti_socket_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS) $(URIPARSER_CFLAGS)
-test_unit_tcti_socket_LDADD   = $(CMOCKA_LIBS) $(libmarshal) $(URIPARSER_LIBS) $(libutil)
-test_unit_tcti_socket_LDFLAGS = -Wl,--wrap=connect,--wrap=recv,--wrap=read,--wrap=select,--wrap=write
-test_unit_tcti_socket_SOURCES = tcti/platformcommand.c tcti/tcti_socket.c \
-    tcti/sockets.c tcti/sockets.h test/unit/tcti-socket.c
+# pkg-config setup. pc-file declarations happen in the corresponding modules
+pkgconfigdir          = $(libdir)/pkgconfig
+nodist_pkgconfig_DATA =
+CLEANFILES += $(nodist_pkgconfig_DATA)
 
-test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_CommonPreparePrologue_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
-test_unit_CommonPreparePrologue_LDADD = $(CMOCKA_LIBS) $(libsapi)
-test_unit_CommonPreparePrologue_SOURCES = test/unit/CommonPreparePrologue.c
+%.pc : %.pc.in
+	$(AM_V_GEN)$(call make_parent_dir,$@) && \
+	sed -e "s,[@]VERSION[@],$(PACKAGE_VERSION),g; \
+	        s,[@]libdir[@],$(libdir),g; \
+	        s,[@]includedir[@],$(includedir),g;" $^ > $@
 
-test_unit_GetNumHandles_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_GetNumHandles_LDADD   = $(CMOCKA_LIBS) $(libsapi)
-test_unit_GetNumHandles_SOURCES = test/unit/GetNumHandles.c
-
-test_unit_CopyCommandHeader_CFLAGS = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_CopyCommandHeader_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
-test_unit_CopyCommandHeader_LDADD = $(CMOCKA_LIBS) $(libsapi)
-test_unit_CopyCommandHeader_SOURCES = test/unit/CopyCommandHeader.c
-
-test_unit_UINT8_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_UINT8_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
-test_unit_UINT8_marshal_SOURCES = test/unit/UINT8-marshal.c
-
-test_unit_UINT16_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_UINT16_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
-test_unit_UINT16_marshal_SOURCES = test/unit/UINT16-marshal.c
-
-test_unit_UINT32_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_UINT32_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
-test_unit_UINT32_marshal_SOURCES = test/unit/UINT32-marshal.c
-
-test_unit_UINT64_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_UINT64_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
-test_unit_UINT64_marshal_SOURCES = test/unit/UINT64-marshal.c
-
-test_unit_TPMA_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_TPMA_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
-test_unit_TPMA_marshal_SOURCES = test/unit/TPMA-marshal.c
-
-test_unit_TPM2B_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_TPM2B_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
-test_unit_TPM2B_marshal_SOURCES = test/unit/TPM2B-marshal.c
-
-test_unit_TPMS_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_TPMS_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
-test_unit_TPMS_marshal_SOURCES = test/unit/TPMS-marshal.c
-
-test_unit_TPML_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_TPML_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
-test_unit_TPML_marshal_SOURCES = test/unit/TPML-marshal.c
-
-test_unit_TPMT_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_TPMT_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
-test_unit_TPMT_marshal_SOURCES = test/unit/TPMT-marshal.c
-
-test_unit_TPMU_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_TPMU_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
-test_unit_TPMU_marshal_SOURCES = test/unit/TPMU-marshal.c
-endif # UNIT
-
+### Internal utility library
+libutil = libutil.la
+noinst_LTLIBRARIES += $(libutil)
 libutil_la_CFLAGS = $(AM_CFLAGS)
 libutil_la_SOURCES = log/log.c log/log.h tcti/tcti.c tcti/tcti.h
+
+### TCG TSS Marshaling/Unmarshalling spec library ###
+libmarshal = marshal/libmarshal.la
+lib_LTLIBRARIES += $(libmarshal)
 
 if HAVE_LD_VERSION_SCRIPT
 marshal_libmarshal_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/libmarshal.map
@@ -252,20 +102,18 @@ endif # HAVE_LD_VERSION_SCRIPT
 marshal_libmarshal_la_LIBADD = $(libutil)
 marshal_libmarshal_la_SOURCES = $(MARSHAL_SRC)
 
-sysapi_libsapi_la_LIBADD  = $(libmarshal)
-sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPI_H) $(SYSAPIUTIL_C) \
-    $(SYSAPIUTIL_H)
+nodist_pkgconfig_DATA += lib/marshal.pc
+EXTRA_DIST += \
+    lib/libmarshal.map \
+    lib/marshal.pc.in
 
-if ESAPI
-esapi_libesapi_la_CFLAGS  = $(AM_CFLAGS) -Wno-unused-variable -Wno-unused-label \
-                            -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-                            -I$(srcdir)/esapi/esapi_util \
-                            -DESYS_TCTI_DEFAULT_MODULE=$(TCTI_DEFAULT_MODULE) \
-                            -DESYS_TCTI_DEFAULT_CONFIG=$(TCTI_DEFAULT_CONFIG)
-esapi_libesapi_la_LIBADD  = $(libsapi) $(libmarshal) $(libtcti_device) $(libtcti_socket) $(libutil)
-esapi_libesapi_la_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
-esapi_libesapi_la_SOURCES = $(ESAPI_SRC)
-endif
+### TCG TSS TCTI spec libraries ###
+# tcti headers
+libtctidir      = $(includedir)/tcti
+libtcti_HEADERS = $(srcdir)/include/tcti/*.h
+
+# tcti device library
+lib_LTLIBRARIES += tcti/libtcti-device.la
 
 tcti_libtcti_device_la_CFLAGS   = $(AM_CFLAGS)
 if HAVE_LD_VERSION_SCRIPT
@@ -273,6 +121,15 @@ tcti_libtcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_devic
 endif # HAVE_LD_VERSION_SCRIPT
 tcti_libtcti_device_la_LIBADD   = $(libmarshal) $(libutil)
 tcti_libtcti_device_la_SOURCES  = tcti/tcti_device.c
+
+nodist_pkgconfig_DATA += lib/tcti-device.pc
+EXTRA_DIST += \
+    tcti/tcti_device.map \
+    lib/tcti-device.pc.in
+
+# tcti socket library
+libtcti_socket = tcti/libtcti-socket.la
+lib_LTLIBRARIES += $(libtcti_socket)
 
 tcti_libtcti_socket_la_CFLAGS   = $(AM_CFLAGS) $(URIPARSER_CFLAGS)
 if HAVE_LD_VERSION_SCRIPT
@@ -282,302 +139,50 @@ tcti_libtcti_socket_la_LIBADD   = $(libmarshal) $(URIPARSER_LIBS) $(libutil)
 tcti_libtcti_socket_la_SOURCES  = tcti/platformcommand.c tcti/tcti_socket.c \
     tcti/sockets.c tcti/sockets.h
 
-test_tpmclient_tpmclient_int_CFLAGS   = $(AM_CFLAGS) -U_FORTIFY_SOURCE  $(TESTS_CFLAGS)
-test_tpmclient_tpmclient_int_LDADD    = $(TESTS_LDADD)
-test_tpmclient_tpmclient_int_SOURCES  = \
-    test/tpmclient/CatSizedByteBuffer.c test/tpmclient/CopySizedBuffer.c \
-    test/tpmclient/CreateNullSession.c test/tpmclient/DecryptEncrypt.c \
-    test/tpmclient/Entity.c test/tpmclient/kdfa.c \
-    test/tpmclient/LoadExternalHMACKey.c test/integration/main.c \
-    test/tpmclient/sample.h test/tpmclient/TpmHmac.c \
-    test/tpmclient/SessionHmac.c test/tpmclient/SetLocality.c \
-    test/tpmclient/StartAuthSession.c test/tpmclient/syscontext.c \
-    test/tpmclient/syscontext.h test/tpmclient/TpmCalcPHash.c \
-    test/tpmclient/tpmclient.int.c test/tpmclient/tpmclient.h \
-    test/tpmclient/TpmHandleToName.c test/tpmclient/TpmHash.c
+nodist_pkgconfig_DATA += lib/tcti-socket.pc
+EXTRA_DIST += \
+    tcti/tcti_socket.map \
+    lib/tcti-socket.pc.in
 
-test_integration_libtest_utils_la_SOURCES = \
-    test/integration/context-util.c test/integration/context-util.h \
-    test/integration/sapi-util.c    test/integration/sapi-util.h \
-    test/integration/test-options.c test/integration/test-options.h \
-    test/integration/test.h
+### TCG TSS SAPI spec library ###
+# Headers
+libsapidir      = $(includedir)/sapi
+libsapi_HEADERS = $(srcdir)/include/sapi/*.h
 
-test_integration_asymmetric_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_asymmetric_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
-test_integration_asymmetric_encrypt_decrypt_int_SOURCES = \
-    test/integration/asymmetric-encrypt-decrypt.int.c test/integration/main.c
+# Library
+libsapi = sysapi/libsapi.la
+lib_LTLIBRARIES += $(libsapi)
+sysapi_libsapi_la_LIBADD  = $(libmarshal)
+sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPI_H) $(SYSAPIUTIL_C) \
+    $(SYSAPIUTIL_H)
 
-test_integration_create_primary_rsa_2048_aes_128_cfb_int_CFLAGS = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_create_primary_rsa_2048_aes_128_cfb_int_LDADD  = $(TESTS_LDADD)
-test_integration_create_primary_rsa_2048_aes_128_cfb_int_SOURCES = \
-    test/integration/create-primary-rsa-2048-aes-128-cfb.int.c \
-    test/integration/main.c
+nodist_pkgconfig_DATA += lib/sapi.pc
 
-test_integration_create_keyedhash_sha1_hmac_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_create_keyedhash_sha1_hmac_int_LDADD   = $(TESTS_LDADD)
-test_integration_create_keyedhash_sha1_hmac_int_SOURCES = \
-    test/integration/create-keyedhash-sha1-hmac.int.c test/integration/main.c
+EXTRA_DIST += \
+    lib/sapi.pc.in
 
-test_integration_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
-test_integration_encrypt_decrypt_int_SOURCES = \
-    test/integration/encrypt-decrypt.int.c test/integration/main.c
-
-test_integration_encrypt_decrypt_2_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_encrypt_decrypt_2_int_LDADD   = $(TESTS_LDADD)
-test_integration_encrypt_decrypt_2_int_SOURCES = \
-    test/integration/encrypt-decrypt-2.int.c test/integration/main.c
-
-test_integration_evict_ctrl_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_evict_ctrl_int_LDADD   = $(TESTS_LDADD)
-test_integration_evict_ctrl_int_SOURCES = \
-    test/integration/evict-ctrl.int.c test/integration/main.c
-
-test_integration_sys_initialize_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sys_initialize_int_LDADD   = $(TESTS_LDADD)
-test_integration_sys_initialize_int_SOURCES = test/integration/sys-initialize.int.c \
-    test/integration/main.c
-
-test_integration_get_random_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_get_random_int_LDADD   = $(TESTS_LDADD)
-test_integration_get_random_int_SOURCES = test/integration/get-random.int.c \
-    test/integration/main.c
-
-test_integration_abi_version_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_abi_version_int_LDADD   = $(TESTS_LDADD)
-test_integration_abi_version_int_SOURCES = test/integration/abi-version.int.c \
-    test/integration/main.c
-
-test_integration_pcr_extension_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_pcr_extension_int_LDADD   = $(TESTS_LDADD)
-test_integration_pcr_extension_int_SOURCES = test/integration/pcr-extension.int.c \
-    test/integration/main.c
-
-test_integration_self_test_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_self_test_int_LDADD   = $(TESTS_LDADD)
-test_integration_self_test_int_SOURCES = test/integration/self-test.int.c \
-    test/integration/main.c
-
-test_integration_hierarchy_change_auth_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_hierarchy_change_auth_int_LDADD   = $(TESTS_LDADD)
-test_integration_hierarchy_change_auth_int_SOURCES = \
-    test/integration/hierarchy-change-auth.int.c test/integration/main.c
-
-test_integration_start_auth_session_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_start_auth_session_int_LDADD   = $(TESTS_LDADD)
-test_integration_start_auth_session_int_SOURCES = test/integration/main.c \
-    test/integration/start-auth-session.int.c
-
-test_integration_tpm_properties_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_tpm_properties_int_LDADD   = $(TESTS_LDADD)
-test_integration_tpm_properties_int_SOURCES = test/integration/main.c \
-    test/integration/tpm-properties.int.c
-
-test_integration_system_api_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_system_api_int_LDADD   = $(TESTS_LDADD)
-test_integration_system_api_int_SOURCES = test/integration/main.c \
-    test/integration/system-api.int.c
-
+### TCG TSS ESAPI spec library ###
 if ESAPI
-test_integration_esys_clockset_int_CFLAGS  = $(AM_CFLAGS) \
-    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/esapi/esapi_util
-test_integration_esys_clockset_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_clockset_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_clockset_int_SOURCES = \
-    test/integration/esys-clockset.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+# Headers
+libesapidir      = $(includedir)/esapi
+libesapi_HEADERS = $(srcdir)/include/esapi/*.h
 
-test_integration_esys_clockset_session_int_CFLAGS  = $(AM_CFLAGS) \
-    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/esapi/esapi_util -DTEST_SESSION
-test_integration_esys_clockset_session_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_clockset_session_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_clockset_session_int_SOURCES = \
-    test/integration/esys-clockset.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+# Library
+libesapi = esapi/libesapi.la
+lib_LTLIBRARIES += $(libesapi)
+esapi_libesapi_la_CFLAGS  = $(AM_CFLAGS) -Wno-unused-variable -Wno-unused-label \
+                            -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
+                            -I$(srcdir)/esapi/esapi_util \
+                            -DESYS_TCTI_DEFAULT_MODULE=$(TCTI_DEFAULT_MODULE) \
+                            -DESYS_TCTI_DEFAULT_CONFIG=$(TCTI_DEFAULT_CONFIG)
+esapi_libesapi_la_LIBADD  = $(libsapi) $(libmarshal) $(libtcti_device) $(libtcti_socket) $(libutil)
+esapi_libesapi_la_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
+esapi_libesapi_la_SOURCES = $(ESAPI_SRC)
+endif #ESAPI
 
-test_integration_esys_create_fail_int_CFLAGS  = $(AM_CFLAGS) \
-    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/esapi/esapi_util
-test_integration_esys_create_fail_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_create_fail_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_create_fail_int_SOURCES = \
-    test/integration/esys-create-fail.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
-
-test_integration_esys_create_password_auth_int_CFLAGS  = $(AM_CFLAGS) \
-    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/esapi/esapi_util
-test_integration_esys_create_password_auth_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_create_password_auth_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_create_password_auth_int_SOURCES = \
-    test/integration/esys-create-password-auth.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
-
-test_integration_esys_create_primary_ecc_hmac_int_CFLAGS  = $(AM_CFLAGS) \
-    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/esapi/esapi_util
-test_integration_esys_create_primary_ecc_hmac_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_create_primary_ecc_hmac_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_create_primary_ecc_hmac_int_SOURCES = \
-    test/integration/esys-create-primary-hmac.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
-
-test_integration_esys_create_primary_hmac_int_CFLAGS  = $(AM_CFLAGS) \
-    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/esapi/esapi_util
-test_integration_esys_create_primary_hmac_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_create_primary_hmac_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_create_primary_hmac_int_SOURCES = \
-    test/integration/esys-create-primary-hmac.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
-
-test_integration_esys_create_session_auth_int_CFLAGS  = $(AM_CFLAGS) \
-    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/esapi/esapi_util
-test_integration_esys_create_session_auth_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_create_session_auth_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_create_session_auth_int_SOURCES = \
-    test/integration/esys-create-session-auth.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
-
-test_integration_esys_evict_control_serialization_int_CFLAGS  = $(AM_CFLAGS) \
-    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/esapi/esapi_util
-test_integration_esys_evict_control_serialization_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_evict_control_serialization_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_evict_control_serialization_int_SOURCES = \
-    test/integration/esys-evict-control-serialization.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
-
-test_integration_esys_get_capability_int_CFLAGS  = $(AM_CFLAGS) \
-    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/esapi/esapi_util
-test_integration_esys_get_capability_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_get_capability_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_get_capability_int_SOURCES = \
-    test/integration/esys-get-capability.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
-
-test_integration_esys_get_random_int_CFLAGS  = $(AM_CFLAGS) \
-    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/esapi/esapi_util
-test_integration_esys_get_random_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_get_random_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_get_random_int_SOURCES = \
-    test/integration/esys-get-random.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
-
-test_integration_esys_make_credential_int_CFLAGS  = $(AM_CFLAGS) \
-    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/esapi/esapi_util
-test_integration_esys_make_credential_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_make_credential_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_make_credential_int_SOURCES = \
-    test/integration/esys-make-credential.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
-
-test_integration_esys_make_credential_session_int_CFLAGS  = $(AM_CFLAGS) \
-    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/esapi/esapi_util -DTEST_SESSION
-test_integration_esys_make_credential_session_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_make_credential_session_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_make_credential_session_int_SOURCES = \
-    test/integration/esys-make-credential.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
-
-test_integration_esys_nv_ram_extend_index_int_CFLAGS  = $(AM_CFLAGS) \
-    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/esapi/esapi_util
-test_integration_esys_nv_ram_extend_index_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_nv_ram_extend_index_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_nv_ram_extend_index_int_SOURCES = \
-    test/integration/esys-nv-ram-extend-index.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
-
-test_integration_esys_nv_ram_extend_index_session_int_CFLAGS  = $(AM_CFLAGS) \
-    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/esapi/esapi_util -DTEST_SESSION
-test_integration_esys_nv_ram_extend_index_session_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_nv_ram_extend_index_session_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_nv_ram_extend_index_session_int_SOURCES = \
-    test/integration/esys-nv-ram-extend-index.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
-
-test_integration_esys_nv_ram_ordinary_index_int_CFLAGS  = $(AM_CFLAGS) \
-    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/esapi/esapi_util
-test_integration_esys_nv_ram_ordinary_index_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_nv_ram_ordinary_index_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_nv_ram_ordinary_index_int_SOURCES = \
-    test/integration/esys-nv-ram-ordinary-index.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
-
-test_integration_esys_nv_ram_ordinary_index_session_int_CFLAGS  = $(AM_CFLAGS) \
-    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/esapi/esapi_util -DTEST_SESSION
-test_integration_esys_nv_ram_ordinary_index_session_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_nv_ram_ordinary_index_session_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_nv_ram_ordinary_index_session_int_SOURCES = \
-    test/integration/esys-nv-ram-ordinary-index.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
-
-test_integration_esys_quote_int_CFLAGS  = $(AM_CFLAGS) \
-    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/esapi/esapi_util
-test_integration_esys_quote_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_quote_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_quote_int_SOURCES = \
-    test/integration/esys-quote.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
-
-test_integration_esys_rsa_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) \
-    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/esapi/esapi_util
-test_integration_esys_rsa_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_rsa_encrypt_decrypt_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_rsa_encrypt_decrypt_int_SOURCES = \
-    test/integration/esys-rsa-encrypt-decrypt.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
-
-test_integration_esys_save_and_load_context_int_CFLAGS  = $(AM_CFLAGS) \
-    -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/esapi/esapi_util
-test_integration_esys_save_and_load_context_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_save_and_load_context_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_save_and_load_context_int_SOURCES = \
-    test/integration/esys-save-and-load-context.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
-endif
-
-test_integration_policy_template_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_policy_template_int_LDADD   = $(TESTS_LDADD)
-test_integration_policy_template_int_SOURCES = test/integration/main.c \
-    test/integration/policy-template.int.c
-
-test_integration_create_loaded_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_create_loaded_int_LDADD   = $(TESTS_LDADD)
-test_integration_create_loaded_int_SOURCES = test/integration/main.c \
-    test/integration/create-loaded.int.c
-
-test_integration_policy_authorizeNV_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_policy_authorizeNV_int_LDADD   = $(TESTS_LDADD)
-test_integration_policy_authorizeNV_int_SOURCES = test/integration/main.c log/log.h log/log.c \
-    test/integration/policy-authorizeNV.int.c
-
-TESTS_CFLAGS = $(LIBCRYPTO_CFLAGS)
-TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES) $(LIBCRYPTO_LIBS) $(libutil)
-
-AUTHORS :
-	$(AM_V_GEN)git log --format='%aN <%aE>' | grep -v 'users.noreply.github.com' | sort | \
-	    uniq -c | sort -nr | sed 's/^\s*//' | cut -d" " -f2- > $@
-
-%.pc : %.pc.in
-	$(AM_V_GEN)$(call make_parent_dir,$@) && \
-	sed -e "s,[@]VERSION[@],$(PACKAGE_VERSION),g; \
-	        s,[@]libdir[@],$(libdir),g; \
-	        s,[@]includedir[@],$(includedir),g;" $^ > $@
+### Man Pages
+man3_MANS = man/man3/InitDeviceTcti.3 man/man3/InitSocketTcti.3
+man7_MANS = man/man7/tcti-device.7 man/man7/tcti-socket.7
 
 man/man3/%.3 : man/%.3.in $(srcdir)/man/man-postlude.troff
 	$(AM_V_GEN)$(call make_man,$@,$<,$(srcdir)/man/man-postlude.troff)
@@ -585,19 +190,22 @@ man/man3/%.3 : man/%.3.in $(srcdir)/man/man-postlude.troff
 man/man7/%.7 : man/%.7.in $(srcdir)/man/man-postlude.troff
 	$(AM_V_GEN)$(call make_man,$@,$<,$(srcdir)/man/man-postlude.troff)
 
-# simple variables
-libsapi = sysapi/libsapi.la
-if ESAPI
-libesapi = esapi/libesapi.la
-endif
-libtcti_device = tcti/libtcti-device.la
-libtcti_socket = tcti/libtcti-socket.la
-libutil = libutil.la
-libmarshal = marshal/libmarshal.la
+EXTRA_DIST += \
+    man/man-postlude.troff \
+    man/InitDeviceTcti.3.in \
+    man/InitSocketTcti.3.in \
+    man/tcti-device.7.in \
+    man/tcti-socket.7.in
 
+CLEANFILES += \
+    $(man3_MANS) \
+    $(man7_MANS)
+
+### Helper Functions ###
 define make_parent_dir
     if [ ! -d $(dir $1) ]; then mkdir -p $(dir $1); fi
 endef
+
 # function to transform man .in files to man pages
 # $1: target
 # $2: .in file
