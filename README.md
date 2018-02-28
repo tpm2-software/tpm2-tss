@@ -65,6 +65,10 @@ directory.
 
 Please report failures in a Github 'issue' with a full log of the test run.
 
+NOTE: The unit and integration tests can be enabled independently.
+The --enable-unit option controls uint tests, and --with-simulatorbin controls
+the integration test.
+
 # [Architecture/Block Diagram](doc/arch.md)
 SAPI library, TAB/RM, and Test Code Block Diagram:
 ![Architecture Block Diagram](doc/TSS%20block%20diagram.png)
