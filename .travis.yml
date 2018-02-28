@@ -29,12 +29,13 @@ addons:
     branch_pattern: coverity_scan
 
 install:
-  - wget https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm974.tar.gz
+  - wget http://mirror.twobit.us/tpm2-deps/ibmtpm974.tar.gz
   - sha256sum ibmtpm974.tar.gz | grep -q ^8e45d86129a0adb95fee4cee51f4b1e5b2d81ed3e55af875df53f98f39eb7ad7
   - mkdir ibmtpm
   - tar axf ibmtpm974.tar.gz -C ibmtpm
   - make -C ibmtpm/src -j$(nproc)
-  - wget https://cmocka.org/files/1.1/cmocka-1.1.1.tar.xz
+  - wget http://mirror.twobit.us/tpm2-deps/cmocka-1.1.1.tar.xz
+  - sha256sum cmocka-1.1.1.tar.xz | grep -q f02ef48a7039aa77191d525c5b1aee3f13286b77a13615d11bc1148753fc0389
   - tar -Jxvf cmocka-1.1.1.tar.xz
   - mkdir cmocka
   - cd cmocka-1.1.1
