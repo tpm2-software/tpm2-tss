@@ -32,7 +32,7 @@ TSS2_RC Tss2_Sys_CreateLoaded_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_HIERARCHY parentHandle,
     const TPM2B_SENSITIVE_CREATE *inSensitive,
-    const TPM2B_PUBLIC *inPublic)
+    const TPM2B_TEMPLATE *inPublic)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
@@ -69,9 +69,9 @@ TSS2_RC Tss2_Sys_CreateLoaded_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_PUBLIC_Marshal(inPublic, ctx->cmdBuffer,
-                                        ctx->maxCmdSize,
-                                        &ctx->nextData);
+    rval = Tss2_MU_TPM2B_TEMPLATE_Marshal(inPublic, ctx->cmdBuffer,
+                                          ctx->maxCmdSize,
+                                          &ctx->nextData);
     if (rval)
         return rval;
 
@@ -129,7 +129,7 @@ TSS2_RC Tss2_Sys_CreateLoaded(
     TPMI_RH_HIERARCHY parentHandle,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     const TPM2B_SENSITIVE_CREATE *inSensitive,
-    const TPM2B_PUBLIC *inPublic,
+    const TPM2B_TEMPLATE *inPublic,
     TPM2_HANDLE *objectHandle,
     TPM2B_PRIVATE *outPrivate,
     TPM2B_PUBLIC *outPublic,
