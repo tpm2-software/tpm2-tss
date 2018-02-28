@@ -30,6 +30,7 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -226,6 +227,8 @@ Tss2_Tcti_Device_Init (
 
     tcti_intel->devFile = open (dev_path, O_RDWR);
     if (tcti_intel->devFile < 0) {
+        LOG_ERROR ("Failed to open device file %s: %s",
+                   dev_path, strerror (errno));
         return TSS2_TCTI_RC_IO_ERROR;
     }
 
