@@ -222,6 +222,8 @@
         Tss2_MU_TPMU_PUBLIC_PARMS_Unmarshal;
         Tss2_MU_TPMU_PUBLIC_ID_Marshal;
         Tss2_MU_TPMU_PUBLIC_ID_Unmarshal;
+        Tss2_MU_TPMU_NAME_Marshal;
+        Tss2_MU_TPMU_NAME_Unmarshal;
         Tss2_MU_TPMT_HA_Marshal;
         Tss2_MU_TPMT_HA_Unmarshal;
         Tss2_MU_TPMT_SYM_DEF_Marshal;

@@ -625,3 +625,16 @@ TPMU_UNMARSHAL2(TPMU_PUBLIC_PARMS,
     TPM2_ALG_SYMCIPHER, symDetail, Tss2_MU_TPMS_SYMCIPHER_PARMS_Unmarshal,
     TPM2_ALG_RSA, rsaDetail, Tss2_MU_TPMS_RSA_PARMS_Unmarshal,
     TPM2_ALG_ECC, eccDetail, Tss2_MU_TPMS_ECC_PARMS_Unmarshal)
+
+TPMU_MARSHAL2(TPMU_NAME,
+    sizeof(TPM2_HANDLE), VAL, handle, Tss2_MU_UINT32_Marshal,
+    sizeof(TPM2_ALG_ID) + TPM2_SHA1_DIGEST_SIZE, ADDR, digest, Tss2_MU_TPMT_HA_Marshal,
+    sizeof(TPM2_ALG_ID) + TPM2_SHA256_DIGEST_SIZE, ADDR, digest, Tss2_MU_TPMT_HA_Marshal,
+    sizeof(TPM2_ALG_ID) + TPM2_SHA384_DIGEST_SIZE, ADDR, digest, Tss2_MU_TPMT_HA_Marshal,
+    sizeof(TPM2_ALG_ID) + TPM2_SHA512_DIGEST_SIZE, ADDR, digest, Tss2_MU_TPMT_HA_Marshal)
+TPMU_UNMARSHAL2(TPMU_NAME,
+    sizeof(TPM2_HANDLE), handle, Tss2_MU_UINT32_Unmarshal,
+    sizeof(TPM2_ALG_ID) + TPM2_SHA1_DIGEST_SIZE, digest, Tss2_MU_TPMT_HA_Unmarshal,
+    sizeof(TPM2_ALG_ID) + TPM2_SHA256_DIGEST_SIZE, digest, Tss2_MU_TPMT_HA_Unmarshal,
+    sizeof(TPM2_ALG_ID) + TPM2_SHA384_DIGEST_SIZE, digest, Tss2_MU_TPMT_HA_Unmarshal,
+    sizeof(TPM2_ALG_ID) + TPM2_SHA512_DIGEST_SIZE, digest, Tss2_MU_TPMT_HA_Unmarshal)
