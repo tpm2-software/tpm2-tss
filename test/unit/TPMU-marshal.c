@@ -354,6 +354,43 @@ tpmu_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
     assert_int_equal (offset, 5);
 }
 
+static void
+tpmu_name_marshal(void **state)
+{
+    TPMU_NAME name = {0};
+    TPMT_HA ha = {0};
+    uint8_t buf[256] = {0};
+    TPM2_HANDLE hdl = TPM2_RS_PW;
+    TPM2_HANDLE hdl_expected = HOST_TO_BE_32(TPM2_RS_PW);
+    TPM2_ALG_ID id_expected = HOST_TO_BE_16(TPM2_ALG_SHA1);
+    size_t size = sizeof(hdl), offset = 0;
+    const char digest[] = {0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x01, 0x02,
+                           0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+                           0x10, 0x11, 0x12, 0x13, 0x14};
+    TPM2_RC rc;
+
+    /* Handle case */
+    size = sizeof(hdl);
+    name.handle = hdl;
+
+    rc = Tss2_MU_TPMU_NAME_Marshal(&name, size, buf, sizeof(hdl), &offset);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (offset, sizeof(hdl));
+    assert_memory_equal ((void *) buf, &hdl_expected, sizeof(hdl));
+
+    /* Digest case */
+    offset = 0;
+    size = sizeof(TPM2_ALG_ID) + TPM2_SHA1_DIGEST_SIZE;
+    ha.hashAlg = TPM2_ALG_SHA1;
+    memcpy(&ha.digest, digest, TPM2_SHA1_DIGEST_SIZE);
+    memcpy(&name.digest, &ha, sizeof(ha));
+    rc = Tss2_MU_TPMU_NAME_Marshal(&name, size, buf, TPM2_SHA1_DIGEST_SIZE + 2, &offset);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (offset, TPM2_SHA1_DIGEST_SIZE + 2);
+    assert_memory_equal (buf, &id_expected, sizeof(TPM2_ALG_ID));
+    assert_memory_equal (buf + 2, digest, TPM2_SHA1_DIGEST_SIZE);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test (tpmu_marshal_success),
@@ -366,6 +403,7 @@ int main(void) {
         cmocka_unit_test (tpmu_unmarshal_buffer_null_offset_null),
         cmocka_unit_test (tpmu_unmarshal_dest_null_offset_valid),
         cmocka_unit_test (tpmu_unmarshal_buffer_size_lt_data_nad_lt_offset),
+        cmocka_unit_test (tpmu_name_marshal),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
