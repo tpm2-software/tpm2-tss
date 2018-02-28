@@ -64,7 +64,6 @@ tcti_device_transmit (
                       command_buffer,
                       command_size);
     if (size < 0) {
-        LOG_ERROR("send failed with error: %d", errno);
         return TSS2_TCTI_RC_IO_ERROR;
     } else if ((size_t)size != command_size) {
         LOG_ERROR ("wrong number of bytes written. Expected %zu, wrote %zd.",
