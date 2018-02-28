@@ -96,6 +96,12 @@ tcti_device_receive (
     if (rval != TSS2_RC_SUCCESS) {
         goto retLocalTpmReceive;
     }
+    if (timeout != TSS2_TCTI_TIMEOUT_BLOCK) {
+        LOG_WARNING ("The underlying IPC mechanism does not support "
+                     "asynchronous I/O. The 'timeout' parameter must be "
+                     "TSS2_TCTI_TIMEOUT_BLOCK");
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
 
     if (tcti_intel->status.tagReceived == 0) {
         size = TEMP_RETRY (read (tcti_intel->devFile,
