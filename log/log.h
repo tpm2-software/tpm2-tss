@@ -18,14 +18,22 @@
 #define COMPILER_ATTR(...)
 #endif
 
+#define LOGL_NONE    0
+#define LOGL_ERROR   2
+#define LOGL_WARNING 3
+#define LOGL_INFO    4
+#define LOGL_DEBUG   5
+#define LOGL_TRACE   6
+#define LOGL_UNDEF   0xFF
+
 typedef enum {
-    LOGLEVEL_NONE     = 0,
-    LOGLEVEL_ERROR    = 1,
-    LOGLEVEL_WARNING  = 2,
-    LOGLEVEL_INFO     = 3,
-    LOGLEVEL_DEBUG    = 4,
-    LOGLEVEL_TRACE    = 5,
-    LOGLEVEL_UNDEFINED    = 0xff
+    LOGLEVEL_NONE      = LOGL_NONE,
+    LOGLEVEL_ERROR     = LOGL_ERROR,
+    LOGLEVEL_WARNING   = LOGL_WARNING,
+    LOGLEVEL_INFO      = LOGL_INFO,
+    LOGLEVEL_DEBUG     = LOGL_DEBUG,
+    LOGLEVEL_TRACE     = LOGL_TRACE,
+    LOGLEVEL_UNDEFINED = LOGL_UNDEF
 } log_level;
 
 static const char *log_strings[] COMPILER_ATTR(unused) = {
@@ -45,21 +53,15 @@ static log_level LOGMODULE_status COMPILER_ATTR(unused) = LOGLEVEL_UNDEFINED;
 #ifndef MAXLOGLEVEL
 #error "MAXLOGLEVEL undefined"
 #endif
-#if MAXLOGLEVEL != 'E' && \
-    MAXLOGLEVEL != 'W' && \
-    MAXLOGLEVEL != 'I' && \
-    MAXLOGLEVEL != 'D' && \
-    MAXLOGLEVEL != 'T' && \
-    MAXLOGLEVEL != 'N'
-#error "Unknown MAXLOGLEVEL"
+
+#if MAXLOGLEVEL > LOGL_TRACE || MAXLOGLEVEL < LOGL_ERROR
+    #if MAXLOGLEVEL != LOGL_NONE
+        #error "Unknown MAXLOGLEVEL"
+    #endif
 #endif
 
 /* MAXLOGLEVEL is Error or "higher" */
-#if MAXLOGLEVEL == 'E' || \
-    MAXLOGLEVEL == 'W' || \
-    MAXLOGLEVEL == 'I' || \
-    MAXLOGLEVEL == 'D' || \
-    MAXLOGLEVEL == 'T'
+#if MAXLOGLEVEL >= LOGL_ERROR
 #define LOG_ERROR(FORMAT, ...) doLog(LOGLEVEL_ERROR, \
                                      xstr(LOGMODULE), LOGDEFAULT, \
                                      &LOGMODULE_status, \
@@ -77,10 +79,7 @@ static log_level LOGMODULE_status COMPILER_ATTR(unused) = LOGLEVEL_UNDEFINED;
 #endif
 
 /* MAXLOGLEVEL is Warning or "higher" */
-#if MAXLOGLEVEL == 'W' || \
-    MAXLOGLEVEL == 'I' || \
-    MAXLOGLEVEL == 'D' || \
-    MAXLOGLEVEL == 'T'
+#if MAXLOGLEVEL >= LOGL_WARNING
 #define LOG_WARNING(FORMAT, ...) doLog(LOGLEVEL_WARNING, \
                                      xstr(LOGMODULE), LOGDEFAULT, \
                                      &LOGMODULE_status, \
@@ -98,9 +97,7 @@ static log_level LOGMODULE_status COMPILER_ATTR(unused) = LOGLEVEL_UNDEFINED;
 #endif
 
 /* MAXLOGLEVEL is Info or "higher" */
-#if MAXLOGLEVEL == 'I' || \
-    MAXLOGLEVEL == 'D' || \
-    MAXLOGLEVEL == 'T'
+#if MAXLOGLEVEL >= LOGL_INFO
 #define LOG_INFO(FORMAT, ...) doLog(LOGLEVEL_INFO, \
                                      xstr(LOGMODULE), LOGDEFAULT, \
                                      &LOGMODULE_status, \
@@ -118,8 +115,7 @@ static log_level LOGMODULE_status COMPILER_ATTR(unused) = LOGLEVEL_UNDEFINED;
 #endif
 
 /* MAXLOGLEVEL is Debug or "higher" */
-#if MAXLOGLEVEL == 'D' || \
-    MAXLOGLEVEL == 'T'
+#if MAXLOGLEVEL >= LOGL_DEBUG
 #define LOG_DEBUG(FORMAT, ...) doLog(LOGLEVEL_DEBUG, \
                                      xstr(LOGMODULE), LOGDEFAULT, \
                                      &LOGMODULE_status, \
@@ -137,7 +133,7 @@ static log_level LOGMODULE_status COMPILER_ATTR(unused) = LOGLEVEL_UNDEFINED;
 #endif
 
 /* MAXLOGLEVEL is Trace */
-#if MAXLOGLEVEL == 'T'
+#if MAXLOGLEVEL >= LOGL_TRACE
 #define LOG_TRACE(FORMAT, ...) doLog(LOGLEVEL_TRACE, \
                                      xstr(LOGMODULE), LOGDEFAULT, \
                                      &LOGMODULE_status, \
