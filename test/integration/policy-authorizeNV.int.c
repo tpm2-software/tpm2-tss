@@ -134,7 +134,8 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 
     /* Create a symmetric encryption key using the password session */
     TPM2B_SENSITIVE_CREATE  in_sensitive    = { 0 };
-    TPM2B_PUBLIC            in_public       = { 0 };
+    TPMT_PUBLIC             in_public       = { 0 };
+    TPM2B_TEMPLATE          public_template = { 0 };
     TPM2B_PRIVATE           out_private     = { 0 };
     TPM2B_PUBLIC            out_public      = { 0 };
     TPM2B_NAME              name            = TPM2B_NAME_INIT;
@@ -145,20 +146,31 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
                    0xb8, 0xa0, 0x85, 0xca, 0x67, 0x27, 0x3c, 0x03,
                    0xa6, 0x7c, 0x11, 0x39, 0x8f, 0x2a, 0x4a, 0x13,
                    0xbd, 0x05, 0x37, 0xf8, 0x5f, 0x47, 0x56, 0xcb};
-    memcpy(in_public.publicArea.authPolicy.buffer, auth, TPM2_SHA256_DIGEST_SIZE);
-    in_public.publicArea.type = TPM2_ALG_SYMCIPHER;
-    in_public.publicArea.nameAlg = TPM2_ALG_SHA256;
-    in_public.publicArea.objectAttributes |= TPMA_OBJECT_USERWITHAUTH;
-    in_public.publicArea.objectAttributes |= TPMA_OBJECT_DECRYPT;
-    in_public.publicArea.objectAttributes |= TPMA_OBJECT_SIGN;
-    in_public.publicArea.objectAttributes |= TPMA_OBJECT_FIXEDTPM;
-    in_public.publicArea.objectAttributes |= TPMA_OBJECT_FIXEDPARENT;
-    in_public.publicArea.objectAttributes |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
-    in_public.publicArea.parameters.symDetail.sym.algorithm = TPM2_ALG_AES;
-    in_public.publicArea.parameters.symDetail.sym.keyBits.sym = 128;
-    in_public.publicArea.parameters.symDetail.sym.mode.sym = TPM2_ALG_CFB;
-    in_public.publicArea.authPolicy.size = TPM2_SHA256_DIGEST_SIZE;
+    memcpy(in_public.authPolicy.buffer, auth, TPM2_SHA256_DIGEST_SIZE);
+    in_public.type = TPM2_ALG_SYMCIPHER;
+    in_public.nameAlg = TPM2_ALG_SHA256;
+    in_public.objectAttributes |= TPMA_OBJECT_USERWITHAUTH;
+    in_public.objectAttributes |= TPMA_OBJECT_DECRYPT;
+    in_public.objectAttributes |= TPMA_OBJECT_SIGN;
+    in_public.objectAttributes |= TPMA_OBJECT_FIXEDTPM;
+    in_public.objectAttributes |= TPMA_OBJECT_FIXEDPARENT;
+    in_public.objectAttributes |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
+    in_public.parameters.symDetail.sym.algorithm = TPM2_ALG_AES;
+    in_public.parameters.symDetail.sym.keyBits.sym = 128;
+    in_public.parameters.symDetail.sym.mode.sym = TPM2_ALG_CFB;
+    in_public.authPolicy.size = TPM2_SHA256_DIGEST_SIZE;
 
+    uint8_t public_buf[sizeof(in_public)] = {0};
+    size_t offset = 0;
+
+    rc = Tss2_MU_TPMT_PUBLIC_Marshal(&in_public, public_buf,
+                                     sizeof(in_public), &offset);
+    if (rc != TPM2_RC_SUCCESS) {
+        LOG_ERROR("Tss2_MU_TPMT_PUBLIC_Marshal FAILED! Response Code: 0x%x", rc);
+        exit(1);
+    }
+    public_template.size = offset;
+    memcpy(public_template.buffer, public_buf, offset);
     cmd_auth.count = 1;
     cmd_auth.auths[0].sessionHandle = TPM2_RS_PW;
     cmd_auth.auths[0].hmac.size = TPM2_SHA256_DIGEST_SIZE;
@@ -169,7 +181,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
                                 TPM2_RH_OWNER,
                                 &cmd_auth,
                                 &in_sensitive,
-                                &in_public,
+                                &public_template,
                                 &object_handle,
                                 &out_private,
                                 &out_public,

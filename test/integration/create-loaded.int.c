@@ -34,7 +34,8 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 {
     TSS2_RC                 rc              = TSS2_RC_SUCCESS;
     TPM2B_SENSITIVE_CREATE  in_sensitive    = { 0 };
-    TPM2B_PUBLIC            in_public       = { 0 };
+    TPMT_PUBLIC             in_public       = { 0 };
+    TPM2B_TEMPLATE          public_template = { 0 };
     TPM2B_PRIVATE           out_private     = { 0 };
     TPM2B_PUBLIC            out_public      = { 0 };
     TPM2B_NAME              name            = TPM2B_NAME_INIT;
@@ -51,20 +52,31 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     if (sapi_context == NULL)
         return TSS2_RC_LAYER_MASK | TSS2_BASE_RC_BAD_REFERENCE;
 
-    in_public.publicArea.type = TPM2_ALG_RSA;
-    in_public.publicArea.nameAlg = TPM2_ALG_SHA256;
-    in_public.publicArea.objectAttributes |= TPMA_OBJECT_RESTRICTED;
-    in_public.publicArea.objectAttributes |= TPMA_OBJECT_USERWITHAUTH;
-    in_public.publicArea.objectAttributes |= TPMA_OBJECT_DECRYPT;
-    in_public.publicArea.objectAttributes |= TPMA_OBJECT_FIXEDTPM;
-    in_public.publicArea.objectAttributes |= TPMA_OBJECT_FIXEDPARENT;
-    in_public.publicArea.objectAttributes |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
-    in_public.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM2_ALG_AES;
-    in_public.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-    in_public.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM2_ALG_CFB;
-    in_public.publicArea.parameters.rsaDetail.scheme.scheme = TPM2_ALG_NULL;
-    in_public.publicArea.parameters.rsaDetail.keyBits = 2048;
+    in_public.type = TPM2_ALG_RSA;
+    in_public.nameAlg = TPM2_ALG_SHA256;
+    in_public.objectAttributes |= TPMA_OBJECT_RESTRICTED;
+    in_public.objectAttributes |= TPMA_OBJECT_USERWITHAUTH;
+    in_public.objectAttributes |= TPMA_OBJECT_DECRYPT;
+    in_public.objectAttributes |= TPMA_OBJECT_FIXEDTPM;
+    in_public.objectAttributes |= TPMA_OBJECT_FIXEDPARENT;
+    in_public.objectAttributes |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
+    in_public.parameters.rsaDetail.symmetric.algorithm = TPM2_ALG_AES;
+    in_public.parameters.rsaDetail.symmetric.keyBits.aes = 128;
+    in_public.parameters.rsaDetail.symmetric.mode.aes = TPM2_ALG_CFB;
+    in_public.parameters.rsaDetail.scheme.scheme = TPM2_ALG_NULL;
+    in_public.parameters.rsaDetail.keyBits = 2048;
 
+    uint8_t public_buf[sizeof(in_public)] = {0};
+    size_t offset = 0;
+
+    rc = Tss2_MU_TPMT_PUBLIC_Marshal(&in_public, public_buf,
+                                     sizeof(in_public), &offset);
+    if (rc != TPM2_RC_SUCCESS) {
+        LOG_ERROR("Tss2_MU_TPMT_PUBLIC_Marshal FAILED! Response Code: 0x%x", rc);
+        exit(1);
+    }
+    public_template.size = offset;
+    memcpy(public_template.buffer, public_buf, offset);
     /* Create an object using CreateLoaded.
      * The result should be that the created object
      * stays in the TPM
@@ -74,7 +86,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
                                 TPM2_RH_OWNER,
                                 &auth_cmd,
                                 &in_sensitive,
-                                &in_public,
+                                &public_template,
                                 &object_handle,
                                 &out_private,
                                 &out_public,
