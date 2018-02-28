@@ -2231,8 +2231,8 @@ TSS2_RC Tss2_Sys_FieldUpgradeStart_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authorization,
     TPMI_DH_OBJECT keyHandle,
-    TPM2B_DIGEST *fuDigest,
-    TPMT_SIGNATURE *manifestSignature
+    TPM2B_DIGEST const *fuDigest,
+    TPMT_SIGNATURE const *manifestSignature
     );
 
 TSS2_RC Tss2_Sys_FieldUpgradeStart_Complete(
@@ -2244,14 +2244,14 @@ TSS2_RC Tss2_Sys_FieldUpgradeStart(
     TPMI_RH_PLATFORM authorization,
     TPMI_DH_OBJECT keyHandle,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
-    TPM2B_DIGEST *fuDigest,
-    TPMT_SIGNATURE *manifestSignature,
+    TPM2B_DIGEST const *fuDigest,
+    TPMT_SIGNATURE const *manifestSignature,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray
     );
 
 TSS2_RC Tss2_Sys_FieldUpgradeData_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_MAX_BUFFER *fuData
+    TPM2B_MAX_BUFFER const *fuData
     );
 
 TSS2_RC Tss2_Sys_FieldUpgradeData_Complete(
@@ -2263,7 +2263,7 @@ TSS2_RC Tss2_Sys_FieldUpgradeData_Complete(
 TSS2_RC Tss2_Sys_FieldUpgradeData(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
-    TPM2B_MAX_BUFFER *fuData,
+    TPM2B_MAX_BUFFER const *fuData,
     TPMT_HA *nextDigest,
     TPMT_HA *firstDigest,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray

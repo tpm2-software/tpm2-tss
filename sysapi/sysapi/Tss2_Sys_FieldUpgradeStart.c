@@ -32,8 +32,8 @@ TSS2_RC Tss2_Sys_FieldUpgradeStart_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authorization,
     TPMI_DH_OBJECT keyHandle,
-    TPM2B_DIGEST *fuDigest,
-    TPMT_SIGNATURE *manifestSignature)
+    TPM2B_DIGEST const *fuDigest,
+    TPMT_SIGNATURE const *manifestSignature)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
@@ -102,8 +102,8 @@ TSS2_RC Tss2_Sys_FieldUpgradeStart(
     TPMI_RH_PLATFORM authorization,
     TPMI_DH_OBJECT keyHandle,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
-    TPM2B_DIGEST *fuDigest,
-    TPMT_SIGNATURE *manifestSignature,
+    TPM2B_DIGEST const *fuDigest,
+    TPMT_SIGNATURE const *manifestSignature,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
