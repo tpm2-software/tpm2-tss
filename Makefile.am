@@ -64,10 +64,6 @@ EXTRA_DIST += \
     README.md \
     RELEASE.md
 
-# TODO: To be removed in the next commit
-EXTRA_DIST += \
-    lib/debug_config.site
-
 # Generate the AUTHORS file from git log
 AUTHORS :
 	$(AM_V_GEN)git log --format='%aN <%aE>' | grep -v 'users.noreply.github.com' | sort | \
