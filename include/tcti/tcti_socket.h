@@ -27,20 +27,7 @@
 #ifndef TCTI_SOCKET_H
 #define TCTI_SOCKET_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "common.h"
-
-#include "sapi/tpm20.h"
-
-#define DEFAULT_SIMULATOR_TPM_PORT        2321
-#define TSS2_SIMULATOR_INTERFACE_INIT_FAILED              ((TSS2_RC)(1 + TSS2_DRIVER_ERROR_LEVEL))
-
-#define DEFAULT_HOSTNAME        "127.0.0.1"
-
-#define TCTI_SOCKET_DEFAULT "tcp://127.0.0.1:2321"
+#include <sapi/tss2_tcti.h>
 
 /*
  * Command codes that may be sent to simulator through out of band command
@@ -54,21 +41,13 @@ extern "C" {
 #define MS_SIM_NV_ON            11
 #define TPM_SESSION_END         20
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 TSS2_RC PlatformCommand(
     TSS2_TCTI_CONTEXT *tctiContext,
     UINT32 cmd);
-
-typedef struct {
-    const char *hostname;
-    uint16_t port;
-} TCTI_SOCKET_CONF;
-
-TSS2_RC InitSocketTcti (
-    TSS2_TCTI_CONTEXT *tctiContext, // OUT
-    size_t *contextSize,            // IN/OUT
-    const TCTI_SOCKET_CONF *config,             // IN
-    const uint8_t serverSockets
-    ) COMPILER_ATTR (deprecated);
 
 TSS2_RC Tss2_Tcti_Socket_Init (
     TSS2_TCTI_CONTEXT *tctiContext,

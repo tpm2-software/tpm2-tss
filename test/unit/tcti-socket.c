@@ -26,6 +26,7 @@
 //**********************************************************************;
 
 #include <inttypes.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -35,6 +36,75 @@
 #include "sapi/tpm20.h"
 #include "tcti/tcti.h"
 #include "tcti/tcti_socket.h"
+
+/*
+ * This function is implemented in the socket TCTI module but not exposed
+ * through the public headers.
+ */
+TSS2_RC
+conf_str_to_host_port (
+    const char *conf,
+    char *hostname,
+    uint16_t *port);
+/* */
+static void
+conf_str_to_host_port_success_test (void **state)
+{
+    TSS2_RC rc;
+    char *conf = "tcp://127.0.0.1:2321";
+    char hostname [HOST_NAME_MAX] = { 0 };
+    uint16_t port;
+
+    rc = conf_str_to_host_port (conf, hostname, &port);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (port, 2321);
+    assert_string_equal (hostname, "127.0.0.1");
+}
+/*
+ * This tests our ability to handle conf strings that don't have the port
+ * component of the URI. In this case the 'conf_str_to_host_port' function
+ * should not touch the 'port' parameter and so we check to be sure it's
+ * unchanged.
+ */
+#define NO_PORT_VALUE 646
+static void
+conf_str_to_host_port_no_port_test (void **state)
+{
+    TSS2_RC rc;
+    char *conf = "tcp://127.0.0.1";
+    char hostname [HOST_NAME_MAX] = { 0 };
+    uint16_t port = NO_PORT_VALUE;
+
+    rc = conf_str_to_host_port (conf, hostname, &port);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (port, NO_PORT_VALUE);
+}
+/*
+ * The 'conf_str_to_host_port' function rejects ports over UINT16_MAX.
+ */
+static void
+conf_str_to_host_port_invalid_port_large_test (void **state)
+{
+    TSS2_RC rc;
+    char *conf = "tcp://127.0.0.1:99999";
+    char hostname [HOST_NAME_MAX] = { 0 };
+    uint16_t port;
+
+    rc = conf_str_to_host_port (conf, hostname, &port);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
+}
+/* The 'conf_str_to_host_port' function rejects URIs with port == 0 */
+static void
+conf_str_to_host_port_invalid_port_0_test (void **state)
+{
+    TSS2_RC rc;
+    char *conf = "tcp://127.0.0.1:0";
+    char hostname [HOST_NAME_MAX] = { 0 };
+    uint16_t port;
+
+    rc = conf_str_to_host_port (conf, hostname, &port);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
+}
 
 /* When passed all NULL values ensure that we get back the expected RC. */
 static void
@@ -261,6 +331,10 @@ main (int   argc,
       char *argv[])
 {
     const struct CMUnitTest tests[] = {
+        cmocka_unit_test (conf_str_to_host_port_success_test),
+        cmocka_unit_test (conf_str_to_host_port_no_port_test),
+        cmocka_unit_test (conf_str_to_host_port_invalid_port_large_test),
+        cmocka_unit_test (conf_str_to_host_port_invalid_port_0_test),
         cmocka_unit_test (tcti_socket_init_all_null_test),
         cmocka_unit_test (tcti_socket_init_size_test),
         cmocka_unit_test_setup_teardown (tcti_socket_receive_success_test,
