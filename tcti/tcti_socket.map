@@ -1,6 +1,5 @@
 {
     global:
-        InitSocketTcti;
         PlatformCommand;
         Tss2_Tcti_Info;
         Tss2_Tcti_Socket_Init;
