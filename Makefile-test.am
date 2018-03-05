@@ -45,6 +45,7 @@ TESTS_UNIT  = \
     test/unit/CommonPreparePrologue \
     test/unit/CopyCommandHeader \
     test/unit/GetNumHandles \
+    test/unit/socket \
     test/unit/tcti-device \
     test/unit/tcti-socket \
     test/unit/util \
@@ -127,6 +128,11 @@ test_unit_tcti_socket_LDADD   = $(CMOCKA_LIBS) $(libmarshal) $(URIPARSER_LIBS) $
 test_unit_tcti_socket_LDFLAGS = -Wl,--wrap=connect,--wrap=recv,--wrap=read,--wrap=select,--wrap=write
 test_unit_tcti_socket_SOURCES = tcti/platformcommand.c tcti/tcti_socket.c \
     tcti/sockets.c tcti/sockets.h test/unit/tcti-socket.c
+
+test_unit_socket_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
+test_unit_socket_LDADD   = $(CMOCKA_LIBS) $(libutil)
+test_unit_socket_LDFLAGS = -Wl,--wrap=connect,--wrap=socket
+test_unit_socket_SOURCES = test/unit/socket.c tcti/sockets.c tcti/sockets.h
 
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_CommonPreparePrologue_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
