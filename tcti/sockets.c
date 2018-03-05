@@ -31,36 +31,37 @@
 #include <unistd.h>
 
 #include "sockets.h"
+#include "tcti.h"
 #define LOGMODULE tcti
 #include "log/log.h"
 
 void WSACleanup() {}
 int WSAGetLastError() { return errno; }
-int wasInterrupted() { return errno == EINTR; }
 
-TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len )
+ssize_t
+socket_recv_buf (
+    SOCKET sock,
+    unsigned char *data,
+    size_t size)
 {
-    int iResult = 0;
-    int length;
-    int bytesRead;
+    ssize_t recvd;
+    size_t recvd_total = 0;
 
-    for( bytesRead = 0, length = len; bytesRead != len; )
-    {
-        iResult = recv( tpmSock, (char *)&( data[bytesRead] ), length, 0);
-        if (iResult == SOCKET_ERROR)
-        {
-            if (wasInterrupted())
-                continue;
-            return TSS2_TCTI_RC_IO_ERROR;
+    LOG_DEBUG ("reading %zu bytes from socket %d to buffer at 0x%" PRIxPTR,
+               size, sock, (uintptr_t)data);
+    do {
+        recvd = TEMP_RETRY (read (sock, &data [recvd_total], size));
+        if (recvd < 0) {
+            LOG_WARNING ("read on socket %d failed with errno %d: %s",
+                         sock, errno, strerror (errno));
+            return recvd_total;
         }
-        else if (!iResult)
-            return TSS2_TCTI_RC_IO_ERROR;
+        LOGBLOB_DEBUG (&data [recvd_total], recvd, "read %zd bytes from socket %d:", recvd, sock);
+        recvd_total += recvd;
+        size -= recvd;
+    } while (size > 0);
 
-        length -= iResult;
-        bytesRead += iResult;
-    }
-
-    return TSS2_RC_SUCCESS;
+    return recvd_total;
 }
 
 TSS2_RC

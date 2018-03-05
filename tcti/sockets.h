@@ -26,7 +26,11 @@ socket_connect (
 TSS2_RC
 socket_close (
     SOCKET *socket);
-TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len );
+ssize_t
+socket_recv_buf (
+    SOCKET sock,
+    unsigned char *data,
+    size_t size);
 
 #ifdef __cplusplus
 }

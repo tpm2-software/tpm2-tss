@@ -125,7 +125,7 @@ test_unit_tcti_device_SOURCES = test/unit/tcti-device.c tcti/tcti_device.c log/l
 
 test_unit_tcti_socket_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS) $(URIPARSER_CFLAGS)
 test_unit_tcti_socket_LDADD   = $(CMOCKA_LIBS) $(libmarshal) $(URIPARSER_LIBS) $(libutil)
-test_unit_tcti_socket_LDFLAGS = -Wl,--wrap=connect,--wrap=recv,--wrap=read,--wrap=select,--wrap=write
+test_unit_tcti_socket_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=select,--wrap=write
 test_unit_tcti_socket_SOURCES = tcti/platformcommand.c tcti/tcti_socket.c \
     tcti/sockets.c tcti/sockets.h test/unit/tcti-socket.c
 
