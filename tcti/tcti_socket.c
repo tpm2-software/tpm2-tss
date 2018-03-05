@@ -276,7 +276,8 @@ void SocketFinalize(
     send_sim_session_end (tcti_intel->otherSock);
     send_sim_session_end (tcti_intel->tpmSock);
 
-    CloseSockets (tcti_intel->otherSock, tcti_intel->tpmSock);
+    socket_close (&tcti_intel->otherSock);
+    socket_close (&tcti_intel->tpmSock);
 }
 
 TSS2_RC SocketReceiveTpmResponse(
@@ -467,13 +468,15 @@ static TSS2_RC InitializeMsTpm2Simulator(
 
     rval = PlatformCommand (tctiContext ,MS_SIM_POWER_ON);
     if (rval != TSS2_RC_SUCCESS) {
-        CloseSockets (tcti_intel->otherSock, tcti_intel->tpmSock);
+        socket_close (&tcti_intel->otherSock);
+        socket_close (&tcti_intel->tpmSock);
         return rval;
     }
 
     rval = PlatformCommand (tctiContext, MS_SIM_NV_ON);
     if (rval != TSS2_RC_SUCCESS) {
-        CloseSockets (tcti_intel->otherSock, tcti_intel->tpmSock);
+        socket_close (&tcti_intel->otherSock);
+        socket_close (&tcti_intel->tpmSock);
     }
 
     return rval;
@@ -535,7 +538,8 @@ _InitSocketTcti (
     return TSS2_RC_SUCCESS;
 
 fail_out:
-    CloseSockets (*otherSock, *tpmSock);
+    socket_close (tpmSock);
+    socket_close (otherSock);
 
     return TSS2_TCTI_RC_IO_ERROR;
 }
