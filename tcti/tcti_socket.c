@@ -278,7 +278,8 @@ void SocketFinalize(
     send_sim_session_end (tcti_intel->otherSock);
     send_sim_session_end (tcti_intel->tpmSock);
 
-    CloseSockets (tcti_intel->otherSock, tcti_intel->tpmSock);
+    socket_close (&tcti_intel->otherSock);
+    socket_close (&tcti_intel->tpmSock);
 }
 
 TSS2_RC SocketReceiveTpmResponse(
@@ -460,22 +461,23 @@ retSocketReceiveTpmResponse:
  * don't, an error will be returned from each call till they do but
  * the error will at least be meaningful (TPM2_RC_INITIALIZE).
  */
-static TSS2_RC InitializeMsTpm2Simulator(
-    TSS2_TCTI_CONTEXT *tctiContext
-    )
+static TSS2_RC
+simulator_setup (
+    TSS2_TCTI_CONTEXT *tctiContext)
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     TSS2_RC rval;
 
+    LOG_TRACE ("Initializing TCTI context 0x%" PRIxPTR,
+               (uintptr_t)tctiContext);
     rval = PlatformCommand (tctiContext ,MS_SIM_POWER_ON);
     if (rval != TSS2_RC_SUCCESS) {
-        CloseSockets (tcti_intel->otherSock, tcti_intel->tpmSock);
+        LOG_WARNING ("Failed to send MS_SIM_POWER_ON platform command.");
         return rval;
     }
 
     rval = PlatformCommand (tctiContext, MS_SIM_NV_ON);
     if (rval != TSS2_RC_SUCCESS) {
-        CloseSockets (tcti_intel->otherSock, tcti_intel->tpmSock);
+        LOG_WARNING ("Failed to send MS_SIM_NV_ON platform command.");
     }
 
     return rval;
@@ -597,6 +599,7 @@ Tss2_Tcti_Socket_Init (
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     TSS2_RC rc;
+    SOCKET *tpmSock, *otherSock = NULL;
     const char *uri_str = conf != NULL ? conf : TCTI_SOCKET_DEFAULT_CONF;
     char hostname[HOST_NAME_MAX + 1] = { 0 };
     uint16_t port = TCTI_SOCKET_DEFAULT_PORT;
@@ -615,24 +618,33 @@ Tss2_Tcti_Socket_Init (
         return rc;
     }
 
-    rc = (TSS2_RC) InitSockets (hostname,
-                                port,
-                                &tcti_intel->otherSock,
-                                &tcti_intel->tpmSock);
+    tpmSock = &tcti_intel->tpmSock;
+    otherSock = &tcti_intel->otherSock;
+
+    rc = socket_connect (hostname, port, tpmSock);
     if (rc != TSS2_RC_SUCCESS) {
-        CloseSockets (tcti_intel->otherSock, tcti_intel->tpmSock);
-        goto out;
+        return rc;
     }
 
-    rc = InitializeMsTpm2Simulator (tctiContext);
+    rc = socket_connect (hostname, port + 1, otherSock);
     if (rc != TSS2_RC_SUCCESS) {
-        CloseSockets (tcti_intel->otherSock, tcti_intel->tpmSock);
-        goto out;
+        goto fail_out;
+    }
+
+    rc = simulator_setup (tctiContext);
+    if (rc != TSS2_RC_SUCCESS) {
+        goto fail_out;
     }
 
     tcti_socket_init_context_data (tctiContext);
-out:
-    return rc;
+
+    return TSS2_RC_SUCCESS;
+
+fail_out:
+    socket_close (tpmSock);
+    socket_close (otherSock);
+
+    return TSS2_TCTI_RC_IO_ERROR;
 }
 
 /* public info structure */
