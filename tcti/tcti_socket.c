@@ -461,24 +461,23 @@ retSocketReceiveTpmResponse:
  * don't, an error will be returned from each call till they do but
  * the error will at least be meaningful (TPM2_RC_INITIALIZE).
  */
-static TSS2_RC InitializeMsTpm2Simulator(
-    TSS2_TCTI_CONTEXT *tctiContext
-    )
+static TSS2_RC
+simulator_setup (
+    TSS2_TCTI_CONTEXT *tctiContext)
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     TSS2_RC rval;
 
+    LOG_TRACE ("Initializing TCTI context 0x%" PRIxPTR,
+               (uintptr_t)tctiContext);
     rval = PlatformCommand (tctiContext ,MS_SIM_POWER_ON);
     if (rval != TSS2_RC_SUCCESS) {
-        socket_close (&tcti_intel->otherSock);
-        socket_close (&tcti_intel->tpmSock);
+        LOG_WARNING ("Failed to send MS_SIM_POWER_ON platform command.");
         return rval;
     }
 
     rval = PlatformCommand (tctiContext, MS_SIM_NV_ON);
     if (rval != TSS2_RC_SUCCESS) {
-        socket_close (&tcti_intel->otherSock);
-        socket_close (&tcti_intel->tpmSock);
+        LOG_WARNING ("Failed to send MS_SIM_NV_ON platform command.");
     }
 
     return rval;
@@ -632,7 +631,7 @@ Tss2_Tcti_Socket_Init (
         goto fail_out;
     }
 
-    rc = InitializeMsTpm2Simulator (tctiContext);
+    rc = simulator_setup (tctiContext);
     if (rc != TSS2_RC_SUCCESS) {
         goto fail_out;
     }
