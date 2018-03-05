@@ -38,12 +38,6 @@ void WSACleanup() {}
 int WSAGetLastError() { return errno; }
 int wasInterrupted() { return errno == EINTR; }
 
-void CloseSockets( SOCKET otherSock, SOCKET tpmSock)
-{
-    closesocket(otherSock);
-    closesocket(tpmSock);
-}
-
 TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len )
 {
     int iResult = 0;
@@ -65,6 +59,29 @@ TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len )
         length -= iResult;
         bytesRead += iResult;
     }
+
+    return TSS2_RC_SUCCESS;
+}
+
+TSS2_RC
+socket_close (
+    SOCKET *socket)
+{
+    int ret;
+
+    if (socket == NULL) {
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+    if (*socket == -1) {
+        return TSS2_RC_SUCCESS;
+    }
+    ret = close (*socket);
+    if (ret == -1) {
+        LOG_WARNING ("Failed to close SOCKET %d. errno %d: %s",
+                     *socket, errno, strerror (errno));
+        return TSS2_TCTI_RC_IO_ERROR;
+    }
+    *socket = -1;
 
     return TSS2_RC_SUCCESS;
 }
@@ -95,7 +112,7 @@ socket_connect (
     if (ret == -1) {
         LOG_WARNING ("Failed to connect to host %s on port %" PRIu16 ", errno "
                      "%d: %s", hostname, port, errno, strerror (errno));
-        close (*sock);
+        socket_close (sock);
         return TSS2_TCTI_RC_IO_ERROR;
     }
 
