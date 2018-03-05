@@ -35,7 +35,6 @@
 #define LOGMODULE tcti
 #include "log/log.h"
 
-void WSACleanup() {}
 int WSAGetLastError() { return errno; }
 
 ssize_t

@@ -257,9 +257,6 @@ TSS2_RC SocketReceiveTpmResponse(
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     UINT32 trash;
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    fd_set readFds;
-    struct timeval tv, *tvPtr;
-    int32_t timeoutMsecs = timeout % 1000;
     int iResult;
     unsigned char responseSizeDelta = 0;
 
@@ -268,33 +265,10 @@ TSS2_RC SocketReceiveTpmResponse(
         goto retSocketReceiveTpmResponse;
     }
 
-    if (timeout == TSS2_TCTI_TIMEOUT_BLOCK) {
-        tvPtr = 0;
-    } else {
-        tv.tv_sec = timeout / 1000;
-        tv.tv_usec = timeoutMsecs * 1000;
-        tvPtr = &tv;
-    }
-
-    FD_ZERO (&readFds);
-    FD_SET (tcti_intel->tpmSock, &readFds);
-
-    iResult = select (tcti_intel->tpmSock + 1, &readFds, 0, 0, tvPtr);
-    if (iResult == 0) {
-        LOG_ERROR("select failed due to timeout, socket #: 0x%x",
-                  tcti_intel->tpmSock);
-        rval = TSS2_TCTI_RC_TRY_AGAIN;
-        goto retSocketReceiveTpmResponse;
-    } else if (iResult == SOCKET_ERROR) {
-        LOG_ERROR("select failed with socket error: %d",
-                  WSAGetLastError ());
-        rval = TSS2_TCTI_RC_IO_ERROR;
-        goto retSocketReceiveTpmResponse;
-    } else if (iResult != 1) {
-        LOG_ERROR("select failed, read the wrong # of bytes: %d",
-                  iResult);
-        rval = TSS2_TCTI_RC_IO_ERROR;
-        goto retSocketReceiveTpmResponse;
+    if (timeout != TSS2_TCTI_TIMEOUT_BLOCK) {
+        LOG_WARNING ("Asynchronous I/O not implemented. The 'timeout' "
+                     "parameter must be TSS2_TCTI_TIMEOUT_BLOCK.");
+        return TSS2_TCTI_RC_BAD_VALUE;
     }
 
     if (tcti_intel->status.protocolResponseSizeReceived != 1) {
