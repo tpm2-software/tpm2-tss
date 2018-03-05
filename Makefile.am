@@ -174,6 +174,9 @@ esapi_libesapi_la_CFLAGS  = $(AM_CFLAGS) -Wno-unused-variable -Wno-unused-label 
 esapi_libesapi_la_LIBADD  = $(libsapi) $(libmarshal) $(libtcti_device) $(libtcti_socket) $(libutil)
 esapi_libesapi_la_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
 esapi_libesapi_la_SOURCES = $(ESAPI_SRC)
+
+nodist_pkgconfig_DATA += lib/esapi.pc
+EXTRA_DIST += lib/esapi.pc.in
 endif #ESAPI
 
 ### Man Pages
