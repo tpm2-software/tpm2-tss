@@ -158,20 +158,6 @@ __wrap_read (int sockfd,
     return ret;
 }
 /*
- * Wrap the 'select' system call. The mock queue for this function must have
- * an integer to return as a response (the # of fds ready to be read /
- * written).
- */
-int
-__wrap_select (int             nfds,
-               fd_set         *readfds,
-               fd_set         *writefds,
-               fd_set         *exceptfds,
-               struct timeval *timeout)
-{
-    return mock_type (int);
-}
-/*
  * Wrap the 'send' system call. The mock queue for this function must have an
  * integer to return as a response.
  */
@@ -262,8 +248,6 @@ tcti_socket_receive_success_test (void **state)
     uint8_t response_out [12] = { 0 };
     uint8_t platform_command_recv [4] = { 0 };
 
-    /* select returns 1 fd ready for recv-ing */
-    will_return (__wrap_select, 1);
     /* receive response size */
     will_return (__wrap_read, 4);
     will_return (__wrap_read, &response_in [2]);

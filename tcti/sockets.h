@@ -14,7 +14,6 @@ void WSACleanup();
 #define SOCKET int
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
-int WSAGetLastError();
 #define WINAPI
 #define LPVOID void *
 
