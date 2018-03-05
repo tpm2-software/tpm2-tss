@@ -18,20 +18,11 @@ int WSAGetLastError();
 #define WINAPI
 #define LPVOID void *
 
-#if !defined(MSG_NOSIGNAL)
-# if defined(SO_NOSIGPIPE)
-#   define MSG_NOSIGNAL 0
-#   define TSS2_USE_SO_NOSIGPIPE
-# else
-#   error "Neither MSG_NOSIGNAL nor SO_NOSIGPIPE is defined."
-# endif
-#endif
-
-int
-InitSockets( const char *hostName,
-             UINT16 port,
-             SOCKET *otherSock,
-             SOCKET *tpmSock);
+TSS2_RC
+socket_connect (
+    const char *hostname,
+    uint16_t port,
+    SOCKET *socket);
 void CloseSockets( SOCKET serverSock, SOCKET tpmSock );
 TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len );
 

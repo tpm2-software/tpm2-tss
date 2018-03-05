@@ -597,6 +597,7 @@ Tss2_Tcti_Socket_Init (
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     TSS2_RC rc;
+    SOCKET *tpmSock, *otherSock = NULL;
     const char *uri_str = conf != NULL ? conf : TCTI_SOCKET_DEFAULT_CONF;
     char hostname[HOST_NAME_MAX + 1] = { 0 };
     uint16_t port = TCTI_SOCKET_DEFAULT_PORT;
@@ -615,24 +616,32 @@ Tss2_Tcti_Socket_Init (
         return rc;
     }
 
-    rc = (TSS2_RC) InitSockets (hostname,
-                                port,
-                                &tcti_intel->otherSock,
-                                &tcti_intel->tpmSock);
+    tpmSock = &tcti_intel->tpmSock;
+    otherSock = &tcti_intel->otherSock;
+
+    rc = socket_connect (hostname, port, tpmSock);
     if (rc != TSS2_RC_SUCCESS) {
-        CloseSockets (tcti_intel->otherSock, tcti_intel->tpmSock);
-        goto out;
+        return rc;
+    }
+
+    rc = socket_connect (hostname, port + 1, otherSock);
+    if (rc != TSS2_RC_SUCCESS) {
+        goto fail_out;
     }
 
     rc = InitializeMsTpm2Simulator (tctiContext);
     if (rc != TSS2_RC_SUCCESS) {
-        CloseSockets (tcti_intel->otherSock, tcti_intel->tpmSock);
-        goto out;
+        goto fail_out;
     }
 
     tcti_socket_init_context_data (tctiContext);
-out:
-    return rc;
+
+    return TSS2_RC_SUCCESS;
+
+fail_out:
+    CloseSockets (*otherSock, *tpmSock);
+
+    return TSS2_TCTI_RC_IO_ERROR;
 }
 
 /* public info structure */
