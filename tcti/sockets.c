@@ -24,10 +24,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <unistd.h>
+#include <errno.h>
+#include <inttypes.h>
 #include <netinet/in.h>
+#include <string.h>
+#include <unistd.h>
 
-#include "tcti/tcti_socket.h"
 #include "sockets.h"
 #define LOGMODULE tcti
 #include "log/log.h"
@@ -67,96 +69,35 @@ TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len )
     return TSS2_RC_SUCCESS;
 }
 
-int
-InitSockets( const char *hostName,
-             UINT16 port,
-             SOCKET *otherSock,
-             SOCKET *tpmSock)
+TSS2_RC
+socket_connect (
+    const char *hostname,
+    uint16_t port,
+    SOCKET *sock)
 {
-    struct sockaddr_in otherService = { 0 };
-    struct sockaddr_in tpmService = { 0 };
-    int iResult = 0;            // used to return function results
-#if defined(TSS2_USE_SO_NOSIGPIPE)
-    int no_sigpipe_val = 1;
-#endif
+    struct sockaddr_in sockaddr = { 0 };
+    int ret = 0;
 
-    *otherSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (*otherSock == INVALID_SOCKET)
-    {
-        LOG_DEBUG("socket creation failed with error = %d", WSAGetLastError() );
-        return(1);
+    LOG_DEBUG ("Creating AF_INET stream socket");
+    *sock = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (*sock == -1) {
+        LOG_WARNING ("Failed to create socket. errno %d: %s",
+                     errno, strerror (errno));
+        return TSS2_TCTI_RC_IO_ERROR;
     }
-    else {
-        LOG_DEBUG("socket created:  0x%x", *otherSock );
-        otherService.sin_family = AF_INET;
-        otherService.sin_addr.s_addr = inet_addr( hostName );
-        otherService.sin_port = htons(port + 1);
-    }
+    sockaddr.sin_family = AF_INET;
+    sockaddr.sin_addr.s_addr = inet_addr (hostname);
+    sockaddr.sin_port = htons (port);
 
-    *tpmSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (*tpmSock == INVALID_SOCKET)
-    {
-        LOG_DEBUG("socket creation failed with error = %d", WSAGetLastError() );
-        closesocket( *otherSock );
-        return(1);
-    }
-    else {
-        LOG_DEBUG("socket created:  0x%x", *tpmSock );
-        tpmService.sin_family = AF_INET;
-        tpmService.sin_addr.s_addr = inet_addr( hostName );
-        tpmService.sin_port = htons( port );
-
+    LOG_DEBUG ("Connecting socket %d to hostname %s on port %" PRIu16,
+               *sock, hostname, port);
+    ret = connect (*sock, (struct sockaddr*)&sockaddr, sizeof (sockaddr));
+    if (ret == -1) {
+        LOG_WARNING ("Failed to connect to host %s on port %" PRIu16 ", errno "
+                     "%d: %s", hostname, port, errno, strerror (errno));
+        close (*sock);
+        return TSS2_TCTI_RC_IO_ERROR;
     }
 
-#if defined(TSS2_USE_SO_NOSIGPIPE)
-    iResult = setsockopt(*otherSock, SOL_SOCKET, SO_NOSIGPIPE, (void*)&no_sigpipe_val, sizeof(no_sigpipe_val));
-    if (iResult)
-    {
-        SAFE_CALL( debugfunc, data, NO_PREFIX, "setting SO_NOSIGPIPE failed with error = %d\n", WSAGetLastError() );
-        closesocket( *otherSock );
-        WSACleanup();
-        return 1;
-    }
-
-    iResult = setsockopt(*tpmSock, SOL_SOCKET, SO_NOSIGPIPE, (void*)&no_sigpipe_val, sizeof(no_sigpipe_val));
-    if (iResult)
-    {
-        SAFE_CALL( debugfunc, data, NO_PREFIX, "setting SO_NOSIGPIPE failed with error = %d\n", WSAGetLastError() );
-        closesocket( *otherSock );
-        WSACleanup();
-        return 1;
-    }
-#endif
-
-    // Connect to server.
-    iResult = connect(*otherSock, (SOCKADDR *) &otherService, sizeof (otherService));
-    if (iResult == SOCKET_ERROR) {
-        LOG_DEBUG("connect function failed with error: %d", WSAGetLastError() );
-        iResult = closesocket(*otherSock);
-        WSACleanup();
-        return 1;
-    }
-    else
-    {
-        LOG_DEBUG("Client connected to server on port:  %d", port + 1 );
-    }
-
-    // Connect to server.
-    iResult = connect(*tpmSock, (SOCKADDR *) &tpmService, sizeof (tpmService));
-    if (iResult == SOCKET_ERROR) {
-        LOG_DEBUG("connect function failed with error: %d", WSAGetLastError() );
-        iResult = closesocket(*otherSock);
-        if (iResult == SOCKET_ERROR)
-        {
-            LOG_DEBUG("closesocket function failed with error: %d", WSAGetLastError() );
-        }
-        WSACleanup();
-        return 1;
-    }
-    else
-    {
-        LOG_DEBUG("Client connected to server on port:  %d", port );
-    }
-
-    return 0;
+    return TSS2_RC_SUCCESS;
 }
