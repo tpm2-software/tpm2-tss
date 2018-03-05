@@ -489,8 +489,7 @@ _InitSocketTcti (
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    SOCKET otherSock;
-    SOCKET tpmSock;
+    SOCKET *tpmSock, *otherSock = 0;
 
     if (tctiContext == NULL && contextSize == NULL) {
         return TSS2_TCTI_RC_BAD_VALUE;
@@ -501,6 +500,8 @@ _InitSocketTcti (
         return TSS2_TCTI_RC_BAD_VALUE;
     }
 
+    tpmSock = &tcti_intel->tpmSock;
+    otherSock = &tcti_intel->otherSock;
     TSS2_TCTI_MAGIC (tctiContext) = TCTI_MAGIC;
     TSS2_TCTI_VERSION (tctiContext) = TCTI_VERSION;
     TSS2_TCTI_TRANSMIT (tctiContext) = tcti_socket_transmit;
@@ -518,19 +519,25 @@ _InitSocketTcti (
     tcti_intel->currentTctiContext = 0;
     tcti_intel->previousStage = TCTI_STAGE_INITIALIZE;
 
-    rval = (TSS2_RC) InitSockets (conf->hostname,
-                                  conf->port,
-                                  &otherSock,
-                                  &tpmSock);
-    if (rval == TSS2_RC_SUCCESS) {
-        tcti_intel->otherSock = otherSock;
-        tcti_intel->tpmSock = tpmSock;
-        rval = InitializeMsTpm2Simulator (tctiContext);
-    } else {
-        CloseSockets (otherSock, tpmSock);
+    rval = socket_connect (conf->hostname, conf->port, tpmSock);
+    if (rval != TSS2_RC_SUCCESS) {
+        return rval;
+    }
+    rval = socket_connect (conf->hostname, conf->port + 1, otherSock);
+    if (rval != TSS2_RC_SUCCESS) {
+        goto fail_out;
+    }
+    rval = InitializeMsTpm2Simulator (tctiContext);
+    if (rval != TSS2_RC_SUCCESS) {
+        goto fail_out;
     }
 
-    return rval;
+    return TSS2_RC_SUCCESS;
+
+fail_out:
+    CloseSockets (*otherSock, *tpmSock);
+
+    return TSS2_TCTI_RC_IO_ERROR;
 }
 TSS2_RC
 InitSocketTcti (
