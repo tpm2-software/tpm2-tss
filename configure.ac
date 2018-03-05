@@ -27,9 +27,9 @@
 #;**********************************************************************;
 AC_INIT([tpm2-tss],
         [2.0.0-dev],
-        [https://github.com/01org/tpm2-tss/issues],
+        [https://github.com/tpm2-software/tpm2-tss/issues],
         [],
-        [https://github.com/01org/tpm2-tss])
+        [https://github.com/tpm2-software/tpm2-tss])
 AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CC
 LT_INIT()
