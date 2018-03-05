@@ -46,25 +46,6 @@
 #define TCTI_SOCKET_DEFAULT_CONF "tcp://127.0.0.1:2321"
 #define TCTI_SOCKET_DEFAULT_PORT 2321
 
-static TSS2_RC tctiRecvBytes (
-    TSS2_TCTI_CONTEXT *tctiContext,
-    SOCKET sock,
-    unsigned char *data,
-    int len
-    )
-{
-    TSS2_RC result = 0;
-    result = recvBytes (sock, data, len);
-    if ((INT32)result == SOCKET_ERROR) {
-        LOG_ERROR("In recvBytes, recv failed (socket: 0x%x) with error: %d",
-                  sock, WSAGetLastError ());
-        return TSS2_TCTI_RC_IO_ERROR;
-    }
-    LOGBLOB_DEBUG(data, len, "Receive Bytes from socket #0x%x:", sock);
-
-    return TSS2_RC_SUCCESS;
-}
-
 static TSS2_RC xmit_buf (
     SOCKET sock,
     const void *buf,
@@ -334,15 +315,16 @@ TSS2_RC SocketReceiveTpmResponse(
 
     if (tcti_intel->status.protocolResponseSizeReceived != 1) {
         /* Receive the size of the response. */
-        rval = tctiRecvBytes (tctiContext,
-                              tcti_intel->tpmSock,
-                              (unsigned char *)&tcti_intel->responseSize,
-                              4);
-        if (rval != TSS2_RC_SUCCESS) {
+        iResult = socket_recv_buf (tcti_intel->tpmSock,
+                                   (unsigned char *)&tcti_intel->responseSize,
+                                   4);
+        if (iResult != 4) {
+            rval = TSS2_TCTI_RC_IO_ERROR;
             goto retSocketReceiveTpmResponse;
         }
 
         tcti_intel->responseSize = BE_TO_HOST_32 (tcti_intel->responseSize);
+        LOG_DEBUG ("response size: %" PRIu32, tcti_intel->responseSize);
         tcti_intel->status.protocolResponseSizeReceived = 1;
     }
 
@@ -360,11 +342,11 @@ TSS2_RC SocketReceiveTpmResponse(
         if (*response_size >= sizeof (TPM2_ST) &&
             tcti_intel->status.tagReceived == 0)
         {
-            rval = tctiRecvBytes (tctiContext,
-                                  tcti_intel->tpmSock,
-                                  (unsigned char *)&tcti_intel->tag,
-                                  2);
-            if (rval != TSS2_RC_SUCCESS) {
+            iResult = socket_recv_buf (tcti_intel->tpmSock,
+                                       (unsigned char *)&tcti_intel->tag,
+                                       2);
+            if (iResult < 2) {
+                rval = TSS2_TCTI_RC_IO_ERROR;
                 goto retSocketReceiveTpmResponse;
             } else {
                 tcti_intel->status.tagReceived = 1;
@@ -375,11 +357,11 @@ TSS2_RC SocketReceiveTpmResponse(
         if (*response_size >= (sizeof (TPM2_ST) + sizeof (TPM2_RC)) &&
             tcti_intel->status.responseSizeReceived == 0)
         {
-            rval = tctiRecvBytes (tctiContext,
-                                  tcti_intel->tpmSock,
-                                  (unsigned char *)&tcti_intel->responseSize,
-                                  4);
-            if (rval != TSS2_RC_SUCCESS) {
+            iResult = socket_recv_buf (tcti_intel->tpmSock,
+                                       (unsigned char *)&tcti_intel->responseSize,
+                                       4);
+            if (iResult != 4) {
+                rval = TSS2_TCTI_RC_IO_ERROR;
                 goto retSocketReceiveTpmResponse;
             } else {
                 tcti_intel->responseSize = BE_TO_HOST_32 (tcti_intel->responseSize);
@@ -407,22 +389,22 @@ TSS2_RC SocketReceiveTpmResponse(
         }
 
         /* Receive the TPM response. */
-        rval = tctiRecvBytes (tctiContext,
-                              tcti_intel->tpmSock,
-                              (unsigned char *)response_buffer,
-                              tcti_intel->responseSize - responseSizeDelta);
-        if (rval != TSS2_RC_SUCCESS) {
+        iResult = socket_recv_buf (tcti_intel->tpmSock,
+                                   (unsigned char *)response_buffer,
+                                   tcti_intel->responseSize - responseSizeDelta);
+        if (iResult < 0) {
+            rval = TSS2_TCTI_RC_IO_ERROR;
             goto retSocketReceiveTpmResponse;
         }
         LOGBLOB_DEBUG(response_buffer, tcti_intel->responseSize,
             "Received response buffer=");
 
         /* Receive the appended four bytes of 0's */
-        rval = tctiRecvBytes (tctiContext,
-                              tcti_intel->tpmSock,
-                              (unsigned char *)&trash,
-                              4);
-        if (rval != TSS2_RC_SUCCESS) {
+        iResult = socket_recv_buf (tcti_intel->tpmSock,
+                                   (unsigned char *)&trash,
+                                   4);
+        if (iResult != 4) {
+            rval = TSS2_TCTI_RC_IO_ERROR;
             goto retSocketReceiveTpmResponse;
         }
     }

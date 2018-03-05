@@ -147,18 +147,6 @@ __wrap_connect (int                    sockfd,
  * a buffer to copy data from to return to the caller.
  */
 ssize_t
-__wrap_recv (int sockfd,
-             void *buf,
-             size_t len,
-             int flags)
-{
-    ssize_t  ret = mock_type (ssize_t);
-    uint8_t *buf_in = mock_ptr_type (uint8_t*);
-
-    memcpy (buf, buf_in, ret);
-    return ret;
-}
-ssize_t
 __wrap_read (int sockfd,
              void *buf,
              size_t len)
@@ -277,20 +265,20 @@ tcti_socket_receive_success_test (void **state)
     /* select returns 1 fd ready for recv-ing */
     will_return (__wrap_select, 1);
     /* receive response size */
-    will_return (__wrap_recv, 4);
-    will_return (__wrap_recv, &response_in [2]);
+    will_return (__wrap_read, 4);
+    will_return (__wrap_read, &response_in [2]);
     /* receive tag */
-    will_return (__wrap_recv, 2);
-    will_return (__wrap_recv, response_in);
+    will_return (__wrap_read, 2);
+    will_return (__wrap_read, response_in);
     /* receive size (again)  */
-    will_return (__wrap_recv, 4);
-    will_return (__wrap_recv, &response_in [2]);
+    will_return (__wrap_read, 4);
+    will_return (__wrap_read, &response_in [2]);
     /* receive the rest of the command */
-    will_return (__wrap_recv, 0xc - sizeof (TPM2_ST) - sizeof (UINT32));
-    will_return (__wrap_recv, &response_in [6]);
+    will_return (__wrap_read, 0xc - sizeof (TPM2_ST) - sizeof (UINT32));
+    will_return (__wrap_read, &response_in [6]);
     /* receive the 4 bytes of 0's appended by the simulator */
-    will_return (__wrap_recv, 4);
-    will_return (__wrap_recv, &response_in [12]);
+    will_return (__wrap_read, 4);
+    will_return (__wrap_read, &response_in [12]);
     /* platform command sends 4 bytes and receives the same */
     will_return (__wrap_write, 4);
     will_return (__wrap_read, 4);
