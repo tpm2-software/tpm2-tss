@@ -46,22 +46,6 @@
 #define TCTI_SOCKET_DEFAULT_CONF "tcp://127.0.0.1:2321"
 #define TCTI_SOCKET_DEFAULT_PORT 2321
 
-static TSS2_RC xmit_buf (
-    SOCKET sock,
-    const void *buf,
-    size_t size)
-{
-    int ret;
-
-    LOGBLOB_DEBUG (buf, size, "Writing %zu bytes to socket %d:", size, sock);
-    ret = write_all (sock, buf, size);
-    if (ret < size) {
-        LOG_ERROR("Failed to write to fd %d: %d", sock, WSAGetLastError ());
-        return TSS2_TCTI_RC_IO_ERROR;
-    }
-    return TSS2_RC_SUCCESS;
-}
-
 TSS2_RC send_sim_session_end (
     SOCKET sock)
 {
@@ -72,7 +56,7 @@ TSS2_RC send_sim_session_end (
     if (rc == TSS2_RC_SUCCESS) {
         return rc;
     }
-    return xmit_buf (sock, buf, sizeof (buf));
+    return socket_xmit_buf (sock, buf, sizeof (buf));
 }
 
 /*
@@ -152,7 +136,7 @@ TSS2_RC send_sim_cmd_setup (
         return rc;
     }
 
-    return xmit_buf (tcti_intel->tpmSock, buf, sizeof (buf));
+    return socket_xmit_buf (tcti_intel->tpmSock, buf, sizeof (buf));
 }
 
 TSS2_RC tcti_socket_transmit (
@@ -184,7 +168,7 @@ TSS2_RC tcti_socket_transmit (
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
-    rc = xmit_buf (tcti_intel->tpmSock, cmd_buf, size);
+    rc = socket_xmit_buf (tcti_intel->tpmSock, cmd_buf, size);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }

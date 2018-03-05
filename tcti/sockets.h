@@ -31,6 +31,11 @@ socket_recv_buf (
     SOCKET sock,
     unsigned char *data,
     size_t size);
+TSS2_RC
+socket_xmit_buf (
+    SOCKET sock,
+    const void *buf,
+    size_t size);
 
 #ifdef __cplusplus
 }

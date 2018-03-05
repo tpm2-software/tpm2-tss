@@ -65,6 +65,23 @@ socket_recv_buf (
 }
 
 TSS2_RC
+socket_xmit_buf (
+    SOCKET sock,
+    const void *buf,
+    size_t size)
+{
+    int ret;
+
+    LOGBLOB_DEBUG (buf, size, "Writing %zu bytes to socket %d:", size, sock);
+    ret = write_all (sock, buf, size);
+    if (ret < size) {
+        LOG_ERROR("write to fd %d failed, errno %d: %s", sock, errno, strerror (errno));
+        return TSS2_TCTI_RC_IO_ERROR;
+    }
+    return TSS2_RC_SUCCESS;
+}
+
+TSS2_RC
 socket_close (
     SOCKET *socket)
 {
