@@ -1,0 +1,7 @@
+Name: esapi
+Description: TPM2 Enhanced System API library.
+URL: https://github.com/tpm2-software/tpm2-tss
+Version: @VERSION@
+Requires: marshal sapi
+Cflags: -I@includedir@
+Libs: -lesapi -lgcrypt -L@libdir@
