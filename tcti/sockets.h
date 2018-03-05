@@ -23,7 +23,9 @@ socket_connect (
     const char *hostname,
     uint16_t port,
     SOCKET *socket);
-void CloseSockets( SOCKET serverSock, SOCKET tpmSock );
+TSS2_RC
+socket_close (
+    SOCKET *socket);
 TSS2_RC recvBytes( SOCKET tpmSock, unsigned char *data, int len );
 
 #ifdef __cplusplus
