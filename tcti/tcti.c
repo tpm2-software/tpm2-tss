@@ -36,9 +36,9 @@
 #define LOGMODULE tcti
 #include "log/log.h"
 
-TSS2_RC tcti_common_checks (
-    TSS2_TCTI_CONTEXT *tcti_context
-    )
+TSS2_RC
+tcti_common_checks (
+    TSS2_TCTI_CONTEXT *tcti_context)
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel;
 
@@ -54,10 +54,10 @@ TSS2_RC tcti_common_checks (
     return TSS2_RC_SUCCESS;
 }
 
-TSS2_RC tcti_send_checks (
+TSS2_RC
+tcti_send_checks (
     TSS2_TCTI_CONTEXT *tctiContext,
-    const uint8_t *command_buffer
-    )
+    const uint8_t *command_buffer)
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel;
     TSS2_RC rc;
@@ -77,11 +77,11 @@ TSS2_RC tcti_send_checks (
     return TSS2_RC_SUCCESS;
 }
 
-TSS2_RC tcti_receive_checks (
+TSS2_RC
+tcti_receive_checks (
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t *response_size,
-    unsigned char *response_buffer
-    )
+    unsigned char *response_buffer)
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel;
     TSS2_RC rc;
@@ -101,7 +101,8 @@ TSS2_RC tcti_receive_checks (
     return TSS2_RC_SUCCESS;
 }
 
-ssize_t write_all (
+ssize_t
+write_all (
     int fd,
     const uint8_t *buf,
     size_t size)
@@ -129,7 +130,8 @@ ssize_t write_all (
     return (ssize_t)written_total;
 }
 
-TSS2_RC tcti_make_sticky_not_implemented (
+TSS2_RC
+tcti_make_sticky_not_implemented (
     TSS2_TCTI_CONTEXT *tctiContext,
     TPM2_HANDLE *handle,
     uint8_t sticky)

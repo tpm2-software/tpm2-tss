@@ -125,31 +125,32 @@ tcti_context_intel_cast (TSS2_TCTI_CONTEXT *ctx)
  * be used by all externally facing TCTI functions before the context is used
  * as any of the private types.
  */
-TSS2_RC tcti_common_checks (
-    TSS2_TCTI_CONTEXT *tcti_context
-    );
+TSS2_RC
+tcti_common_checks (
+    TSS2_TCTI_CONTEXT *tcti_context);
 /*
  * This function performs common checks on the context structure and the
  * buffer passed into TCTI 'transmit' functions.
  */
-TSS2_RC tcti_send_checks (
+TSS2_RC
+tcti_send_checks (
     TSS2_TCTI_CONTEXT *tctiContext,
-    const uint8_t *command_buffer
-    );
+    const uint8_t *command_buffer);
 /*
  * This function performs common checks on the context structure, buffer and
  * size parameter passed to the TCTI 'receive' functions.
  */
-TSS2_RC tcti_receive_checks (
+TSS2_RC
+tcti_receive_checks (
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t            *response_size,
-    unsigned char     *response_buffer
-    );
+    unsigned char     *response_buffer);
 /*
  * Just a function with the right prototype that returns the not implemented
  * RC for the TCTI layer.
  */
-TSS2_RC tcti_make_sticky_not_implemented (
+TSS2_RC
+tcti_make_sticky_not_implemented (
     TSS2_TCTI_CONTEXT *tctiContext,
     TPM2_HANDLE *handle,
     uint8_t sticky);

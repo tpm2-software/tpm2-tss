@@ -49,12 +49,12 @@ tcti_device_transmit (
     const uint8_t *command_buffer)
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
-    TSS2_RC rval = TSS2_RC_SUCCESS;
+    TSS2_RC rc = TSS2_RC_SUCCESS;
     ssize_t size;
 
-    rval = tcti_send_checks (tctiContext, command_buffer);
-    if (rval != TSS2_RC_SUCCESS) {
-        return rval;
+    rc = tcti_send_checks (tctiContext, command_buffer);
+    if (rc != TSS2_RC_SUCCESS) {
+        return rc;
     }
     LOGBLOB_DEBUG (command_buffer,
                    command_size,
@@ -88,12 +88,12 @@ tcti_device_receive (
     int32_t timeout)
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
-    TSS2_RC rval = TSS2_RC_SUCCESS;
+    TSS2_RC rc = TSS2_RC_SUCCESS;
     ssize_t  size;
     unsigned int i;
 
-    rval = tcti_receive_checks (tctiContext, response_size, response_buffer);
-    if (rval != TSS2_RC_SUCCESS) {
+    rc = tcti_receive_checks (tctiContext, response_size, response_buffer);
+    if (rc != TSS2_RC_SUCCESS) {
         goto retLocalTpmReceive;
     }
     if (timeout != TSS2_TCTI_TIMEOUT_BLOCK) {
@@ -109,7 +109,7 @@ tcti_device_receive (
                                  4096));
         if (size < 0) {
             LOG_ERROR("send failed with error: %d", errno);
-            rval = TSS2_TCTI_RC_IO_ERROR;
+            rc = TSS2_TCTI_RC_IO_ERROR;
             goto retLocalTpmReceive;
         } else {
             tcti_intel->status.tagReceived = 1;
@@ -125,7 +125,7 @@ tcti_device_receive (
     }
 
     if (*response_size < tcti_intel->responseSize) {
-        rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
+        rc = TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
         *response_size = tcti_intel->responseSize;
         goto retLocalTpmReceive;
     }
@@ -141,11 +141,11 @@ tcti_device_receive (
     tcti_intel->status.commandSent = 0;
 
 retLocalTpmReceive:
-    if (rval == TSS2_RC_SUCCESS && response_buffer != NULL ) {
+    if (rc == TSS2_RC_SUCCESS && response_buffer != NULL ) {
         tcti_intel->previousStage = TCTI_STAGE_RECEIVE_RESPONSE;
     }
 
-    return rval;
+    return rc;
 }
 
 void
