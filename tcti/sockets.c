@@ -35,8 +35,6 @@
 #define LOGMODULE tcti
 #include "log/log.h"
 
-int WSAGetLastError() { return errno; }
-
 ssize_t
 socket_recv_buf (
     SOCKET sock,
