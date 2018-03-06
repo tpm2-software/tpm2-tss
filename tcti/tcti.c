@@ -40,14 +40,11 @@ TSS2_RC
 tcti_common_checks (
     TSS2_TCTI_CONTEXT *tcti_context)
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel;
-
-    tcti_intel = tcti_context_intel_cast (tcti_context);
     if (tcti_context == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
     }
-    if (tcti_intel->magic != TCTI_MAGIC ||
-        tcti_intel->version != TCTI_VERSION) {
+    if (TSS2_TCTI_MAGIC (tcti_context) != TCTI_MAGIC ||
+        TSS2_TCTI_VERSION (tcti_context) != TCTI_VERSION) {
         return TSS2_TCTI_RC_BAD_CONTEXT;
     }
 

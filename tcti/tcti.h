@@ -74,15 +74,7 @@ enum tctiStates { TCTI_STAGE_INITIALIZE, TCTI_STAGE_SEND_COMMAND, TCTI_STAGE_REC
 
 /* current Intel version */
 typedef struct {
-    uint64_t magic;
-    uint32_t version;
-    TSS2_TCTI_TRANSMIT_FCN transmit;
-    TSS2_TCTI_RECEIVE_FCN receive;
-    TSS2_TCTI_FINALIZE_FCN finalize;
-    TSS2_TCTI_CANCEL_FCN cancel;
-    TSS2_TCTI_GET_POLL_HANDLES_FCN getPollHandles;
-    TSS2_TCTI_SET_LOCALITY_FCN setLocality;
-    TSS2_TCTI_MAKE_STICKY_FCN makeSticky;
+    TSS2_TCTI_CONTEXT_COMMON_V2 v2;
 
     struct {
         UINT32 reserved: 1; /* Used to be debugMsgEnabled which is deprecated */
