@@ -1,20 +1,16 @@
-#ifdef __cplusplus
-extern "C" {
-#endif
+
+#include <arpa/inet.h>
+#include <errno.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 
 #include "sapi/tpm20.h"
 
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <errno.h>
-#include <arpa/inet.h>
-#define closesocket(serverSock) close(serverSock)
-#define SOCKADDR struct sockaddr
 #define SOCKET int
-#define INVALID_SOCKET -1
-#define SOCKET_ERROR -1
-#define WINAPI
-#define LPVOID void *
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 TSS2_RC
 socket_connect (
