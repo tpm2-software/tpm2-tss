@@ -1,5 +1,5 @@
 /***********************************************************************
- * Copyright (c) 2015 - 2017 Intel Corporation
+ * Copyright (c) 2015 - 2018 Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -173,6 +173,17 @@ tcti_make_sticky_not_implemented (
     TSS2_TCTI_CONTEXT *tctiContext,
     TPM2_HANDLE *handle,
     uint8_t sticky);
+/*
+ * Read 'size' bytes from file descriptor 'fd' into buffer 'buf'. Additionally
+ * this function will retry calls to the 'read' function when temporary errors
+ * are detected. This is currently limited to interrupted system calls and
+ * short reads.
+ */
+ssize_t
+read_all (
+    int fd,
+    uint8_t *data,
+    size_t size);
 /*
  * Write 'size' bytes from 'buf' to file descriptor 'fd'. Additionally this
  * function will retry calls to the 'write' function when recoverable errors

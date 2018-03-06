@@ -107,12 +107,9 @@ tcti_device_receive (
         uint8_t header_buf [TPM_HEADER_SIZE];
         LOG_INFO ("Header not yet received, reading %zd byte header from fd %d",
                   sizeof (header_buf), tcti_intel->devFile);
-        size = TEMP_RETRY (read (tcti_intel->devFile,
-                                 header_buf,
-                                 sizeof (header_buf)));
+        size = read_all (tcti_intel->devFile, header_buf, sizeof (header_buf));
         if (size < 0) {
-            LOG_WARNING ("Failed to read response header. %d: %s",
-                         errno, strerror (errno));
+            LOG_WARNING ("Failed to read response header.");
             rc = TSS2_TCTI_RC_IO_ERROR;
             goto retLocalTpmReceive;
         }
@@ -138,12 +135,11 @@ tcti_device_receive (
         goto retLocalTpmReceive;
     }
     /* Read the rest of the response, minus the header that we already jave. */
-    size = TEMP_RETRY (read (tcti_intel->devFile,
-                             response_buffer,
-                             tcti_intel->header.size - TPM_HEADER_SIZE));
+    size = read_all (tcti_intel->devFile,
+                     response_buffer,
+                     tcti_intel->header.size - TPM_HEADER_SIZE);
     if (size < 0) {
-        LOG_WARNING ("Failed to read response body. %d: %s",
-                     errno, strerror (errno));
+        LOG_WARNING ("Failed to read response body.");
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto retLocalTpmReceive;
     }
