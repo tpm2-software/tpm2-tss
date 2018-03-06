@@ -35,17 +35,17 @@
 #include <uriparser/Uri.h>
 
 #include "sapi/tss2_mu.h"
-#include "tcti/tcti_socket.h"
-#include "sysapi_util.h"
-#include "tcti.h"
 #include "sockets.h"
+#include "tcti/tcti_socket.h"
+#include "tcti.h"
 #define LOGMODULE tcti
 #include "log/log.h"
 
 #define TCTI_SOCKET_DEFAULT_CONF "tcp://127.0.0.1:2321"
 #define TCTI_SOCKET_DEFAULT_PORT 2321
 
-TSS2_RC send_sim_session_end (
+TSS2_RC
+send_sim_session_end (
     SOCKET sock)
 {
     uint8_t buf [4] = { 0, };
@@ -63,7 +63,8 @@ TSS2_RC send_sim_session_end (
  * the 'header' structure with the results. The provided buffer is assumed to
  * be at least 10 bytes long.
  */
-TSS2_RC parse_header (
+TSS2_RC
+parse_header (
     const uint8_t *buf,
     tpm_header_t *header)
 {
@@ -106,7 +107,8 @@ TSS2_RC parse_header (
  * the simulator will accept a TPM command buffer.
  */
 #define SIM_CMD_SIZE (sizeof (UINT32) + sizeof (UINT8) + sizeof (UINT32))
-TSS2_RC send_sim_cmd_setup (
+TSS2_RC
+send_sim_cmd_setup (
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel,
     UINT32 size)
 {
@@ -138,7 +140,8 @@ TSS2_RC send_sim_cmd_setup (
     return socket_xmit_buf (tcti_intel->tpmSock, buf, sizeof (buf));
 }
 
-TSS2_RC tcti_socket_transmit (
+TSS2_RC
+tcti_socket_transmit (
     TSS2_TCTI_CONTEXT *tcti_ctx,
     size_t size,
     const uint8_t *cmd_buf)
@@ -181,9 +184,9 @@ TSS2_RC tcti_socket_transmit (
     return rc;
 }
 
-TSS2_RC SocketCancel(
-    TSS2_TCTI_CONTEXT *tctiContext
-    )
+TSS2_RC
+tcti_socket_cancel (
+    TSS2_TCTI_CONTEXT *tctiContext)
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     TSS2_RC rc;
@@ -198,10 +201,10 @@ TSS2_RC SocketCancel(
     }
 }
 
-TSS2_RC SocketSetLocality(
+TSS2_RC
+tcti_socket_set_locality (
     TSS2_TCTI_CONTEXT *tctiContext,
-    uint8_t locality
-    )
+    uint8_t locality)
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     TSS2_RC rc;
@@ -219,7 +222,8 @@ TSS2_RC SocketSetLocality(
     return TSS2_RC_SUCCESS;
 }
 
-TSS2_RC SocketGetPollHandles(
+TSS2_RC
+tcti_socket_get_poll_handles (
     TSS2_TCTI_CONTEXT *tctiContext,
     TSS2_TCTI_POLL_HANDLE *handles,
     size_t *num_handles)
@@ -227,9 +231,9 @@ TSS2_RC SocketGetPollHandles(
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
-void SocketFinalize(
-    TSS2_TCTI_CONTEXT *tctiContext
-    )
+void
+tcti_socket_finalize(
+    TSS2_TCTI_CONTEXT *tctiContext)
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     TSS2_RC rc;
@@ -246,20 +250,20 @@ void SocketFinalize(
     socket_close (&tcti_intel->tpmSock);
 }
 
-TSS2_RC SocketReceiveTpmResponse(
+TSS2_RC
+tcti_socket_receive (
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t *response_size,
     unsigned char *response_buffer,
-    int32_t timeout
-    )
+    int32_t timeout)
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     UINT32 trash;
-    TSS2_RC rval = TSS2_RC_SUCCESS;
-    int iResult;
+    TSS2_RC rc;
+    int ret;
 
-    rval = tcti_receive_checks (tctiContext, response_size, response_buffer);
-    if (rval != TSS2_RC_SUCCESS) {
+    rc = tcti_receive_checks (tctiContext, response_size, response_buffer);
+    if (rc != TSS2_RC_SUCCESS) {
         goto retSocketReceiveTpmResponse;
     }
 
@@ -272,21 +276,19 @@ TSS2_RC SocketReceiveTpmResponse(
     if (tcti_intel->status.protocolResponseSizeReceived != 1) {
         /* Receive the size of the response. */
         uint8_t size_buf [sizeof (UINT32)];
-        iResult = socket_recv_buf (tcti_intel->tpmSock,
-                                   size_buf,
-                                   sizeof (UINT32));
-        if (iResult != sizeof (UINT32)) {
-            rval = TSS2_TCTI_RC_IO_ERROR;
+        ret = socket_recv_buf (tcti_intel->tpmSock, size_buf, sizeof (UINT32));
+        if (ret != sizeof (UINT32)) {
+            rc = TSS2_TCTI_RC_IO_ERROR;
             goto retSocketReceiveTpmResponse;
         }
 
-        rval = Tss2_MU_UINT32_Unmarshal (size_buf,
-                                         sizeof (size_buf),
-                                         0,
-                                         &tcti_intel->responseSize);
-        if (rval != TSS2_RC_SUCCESS) {
+        rc = Tss2_MU_UINT32_Unmarshal (size_buf,
+                                       sizeof (size_buf),
+                                       0,
+                                       &tcti_intel->responseSize);
+        if (rc != TSS2_RC_SUCCESS) {
             LOG_WARNING ("Failed to unmarshal size from tpm2 simulator "
-                         "protocol: 0x%" PRIu32, rval);
+                         "protocol: 0x%" PRIu32, rc);
             goto retSocketReceiveTpmResponse;
         }
 
@@ -302,39 +304,39 @@ TSS2_RC SocketReceiveTpmResponse(
 
     if (*response_size < tcti_intel->responseSize) {
         *response_size = tcti_intel->responseSize;
-        rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
+        rc = TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
         goto retSocketReceiveTpmResponse;
     }
 
     /* Receive the TPM response. */
-    iResult = socket_recv_buf (tcti_intel->tpmSock,
-                               (unsigned char *)response_buffer,
-                               tcti_intel->responseSize);
-    if (iResult < 0) {
-        rval = TSS2_TCTI_RC_IO_ERROR;
+    ret = socket_recv_buf (tcti_intel->tpmSock,
+                           (unsigned char *)response_buffer,
+                           tcti_intel->responseSize);
+    if (ret < 0) {
+        rc = TSS2_TCTI_RC_IO_ERROR;
         goto retSocketReceiveTpmResponse;
     }
     LOGBLOB_DEBUG(response_buffer, tcti_intel->responseSize,
         "Received response buffer=");
 
     /* Receive the appended four bytes of 0's */
-    iResult = socket_recv_buf (tcti_intel->tpmSock,
-                               (unsigned char *)&trash,
-                               4);
-    if (iResult != 4) {
-        rval = TSS2_TCTI_RC_IO_ERROR;
+    ret = socket_recv_buf (tcti_intel->tpmSock,
+                           (unsigned char *)&trash,
+                           4);
+    if (ret != 4) {
+        rc = TSS2_TCTI_RC_IO_ERROR;
         goto retSocketReceiveTpmResponse;
     }
 
     tcti_intel->status.commandSent = 0;
 
-    rval = PlatformCommand (tctiContext, MS_SIM_CANCEL_OFF);
+    rc = PlatformCommand (tctiContext, MS_SIM_CANCEL_OFF);
 retSocketReceiveTpmResponse:
-    if (rval == TSS2_RC_SUCCESS && response_buffer != NULL) {
+    if (rc == TSS2_RC_SUCCESS && response_buffer != NULL) {
         tcti_intel->previousStage = TCTI_STAGE_RECEIVE_RESPONSE;
     }
 
-    return rval;
+    return rc;
 }
 
 /**
@@ -353,22 +355,22 @@ static TSS2_RC
 simulator_setup (
     TSS2_TCTI_CONTEXT *tctiContext)
 {
-    TSS2_RC rval;
+    TSS2_RC rc;
 
     LOG_TRACE ("Initializing TCTI context 0x%" PRIxPTR,
                (uintptr_t)tctiContext);
-    rval = PlatformCommand (tctiContext ,MS_SIM_POWER_ON);
-    if (rval != TSS2_RC_SUCCESS) {
+    rc = PlatformCommand (tctiContext ,MS_SIM_POWER_ON);
+    if (rc != TSS2_RC_SUCCESS) {
         LOG_WARNING ("Failed to send MS_SIM_POWER_ON platform command.");
-        return rval;
+        return rc;
     }
 
-    rval = PlatformCommand (tctiContext, MS_SIM_NV_ON);
-    if (rval != TSS2_RC_SUCCESS) {
+    rc = PlatformCommand (tctiContext, MS_SIM_NV_ON);
+    if (rc != TSS2_RC_SUCCESS) {
         LOG_WARNING ("Failed to send MS_SIM_NV_ON platform command.");
     }
 
-    return rval;
+    return rc;
 }
 
 /*
@@ -461,11 +463,11 @@ tcti_socket_init_context_data (
     TSS2_TCTI_MAGIC (tcti_ctx) = TCTI_MAGIC;
     TSS2_TCTI_VERSION (tcti_ctx) = TCTI_VERSION;
     TSS2_TCTI_TRANSMIT (tcti_ctx) = tcti_socket_transmit;
-    TSS2_TCTI_RECEIVE (tcti_ctx) = SocketReceiveTpmResponse;
-    TSS2_TCTI_FINALIZE (tcti_ctx) = SocketFinalize;
-    TSS2_TCTI_CANCEL (tcti_ctx) = SocketCancel;
-    TSS2_TCTI_GET_POLL_HANDLES (tcti_ctx) = SocketGetPollHandles;
-    TSS2_TCTI_SET_LOCALITY (tcti_ctx) = SocketSetLocality;
+    TSS2_TCTI_RECEIVE (tcti_ctx) = tcti_socket_receive;
+    TSS2_TCTI_FINALIZE (tcti_ctx) = tcti_socket_finalize;
+    TSS2_TCTI_CANCEL (tcti_ctx) = tcti_socket_cancel;
+    TSS2_TCTI_GET_POLL_HANDLES (tcti_ctx) = tcti_socket_get_poll_handles;
+    TSS2_TCTI_SET_LOCALITY (tcti_ctx) = tcti_socket_set_locality;
     TSS2_TCTI_MAKE_STICKY (tcti_ctx) = tcti_make_sticky_not_implemented;
     tcti_intel->status.locality = 3;
     tcti_intel->status.commandSent = 0;
