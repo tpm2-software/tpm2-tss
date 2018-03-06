@@ -52,7 +52,7 @@ tcti_common_checks (
 }
 
 TSS2_RC
-tcti_send_checks (
+tcti_transmit_checks (
     TSS2_TCTI_CONTEXT *tctiContext,
     const uint8_t *command_buffer)
 {
@@ -64,11 +64,11 @@ tcti_send_checks (
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
+    if (tcti_intel->state != TCTI_STATE_TRANSMIT) {
+        return TSS2_TCTI_RC_BAD_SEQUENCE;
+    }
     if (command_buffer == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
-    }
-    if (tcti_intel->previousStage == TCTI_STAGE_SEND_COMMAND) {
-        return TSS2_TCTI_RC_BAD_SEQUENCE;
     }
 
     return TSS2_RC_SUCCESS;
@@ -88,11 +88,11 @@ tcti_receive_checks (
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
+    if (tcti_intel->state != TCTI_STATE_RECEIVE) {
+        return TSS2_TCTI_RC_BAD_SEQUENCE;
+    }
     if (response_buffer == NULL || response_size == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
-    }
-    if (tcti_intel->previousStage == TCTI_STAGE_RECEIVE_RESPONSE) {
-        return TSS2_TCTI_RC_BAD_SEQUENCE;
     }
 
     return TSS2_RC_SUCCESS;

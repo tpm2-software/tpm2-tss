@@ -69,12 +69,42 @@ typedef struct {
     UINT32 size;
     UINT32 code;
 } tpm_header_t;
-
-enum tctiStates { TCTI_STAGE_INITIALIZE, TCTI_STAGE_SEND_COMMAND, TCTI_STAGE_RECEIVE_RESPONSE };
+/*
+ * The elements in this enumeration represent the possible states that the
+ * TCTI can be in. The state machine is as follows:
+ * An instantiated TCTI context begins in the TRANSMIT state:
+ *   TRANSMIT:
+ *     transmit:    success transitions the state machine to RECEIVE
+ *                  failure leaves the state unchanged
+ *     receive:     produces TSS2_TCTI_RC_BAD_SEQUENCE
+ *     finalize:    transitions state machine to FINAL state
+ *     cancel:      produces TSS2_TCTI_RC_BAD_SEQUENCE
+ *     setLocality: success or failure leaves state unchanged
+ *   RECEIVE:
+ *     transmit:    produces TSS2_TCTI_RC_BAD_SEQUENCE
+ *     receive:     success transitions the state machine to TRANSMIT
+ *                  failure with the following RCs leave the state unchanged:
+ *                    TRY_AGAIN, INSUFFICIENT_BUFFER, BAD_CONTEXT,
+ *                    BAD_REFERENCE, BAD_VALUE, BAD_SEQUENCE
+ *                  all other failures transition state machine to
+ *                    TRANSMIT (not recoverable)
+ *     finalize:    transitions state machine to FINAL state
+ *     cancel:      success transitions state machine to TRANSMIT
+ *                  failure leaves state unchanged
+ *     setLocality: produces TSS2_TCTI_RC_BAD_SEQUENCE
+ *   FINAL:
+ *     all function calls produce TSS2_TCTI_RC_BAD_SEQUENCE
+ */
+typedef enum {
+    TCTI_STATE_FINAL,
+    TCTI_STATE_TRANSMIT,
+    TCTI_STATE_RECEIVE,
+} tcti_state_t;
 
 /* current Intel version */
 typedef struct {
     TSS2_TCTI_CONTEXT_COMMON_V2 v2;
+    tcti_state_t state;
 
     struct {
         UINT32 reserved: 1; /* Used to be debugMsgEnabled which is deprecated */
@@ -95,7 +125,6 @@ typedef struct {
 
     /* File descriptor for device file if real TPM is being used. */
     int devFile;
-    UINT8 previousStage;            /* Used to check for sequencing errors. */
     unsigned char responseBuffer[4096];
 } TSS2_TCTI_CONTEXT_INTEL;
 
@@ -122,7 +151,7 @@ tcti_common_checks (
  * buffer passed into TCTI 'transmit' functions.
  */
 TSS2_RC
-tcti_send_checks (
+tcti_transmit_checks (
     TSS2_TCTI_CONTEXT *tctiContext,
     const uint8_t *command_buffer);
 /*
