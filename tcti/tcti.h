@@ -42,6 +42,7 @@
 
 #include <errno.h>
 #include <sapi/tpm20.h>
+#include <stdbool.h>
 
 #if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
 #include <sys/socket.h>
@@ -105,6 +106,7 @@ typedef enum {
 typedef struct {
     TSS2_TCTI_CONTEXT_COMMON_V2 v2;
     tcti_state_t state;
+    tpm_header_t header;
 
     struct {
         UINT32 reserved: 1; /* Used to be debugMsgEnabled which is deprecated */
@@ -125,7 +127,6 @@ typedef struct {
 
     /* File descriptor for device file if real TPM is being used. */
     int devFile;
-    unsigned char responseBuffer[4096];
 } TSS2_TCTI_CONTEXT_INTEL;
 
 /*
@@ -182,5 +183,14 @@ ssize_t write_all (
     int fd,
     const uint8_t *buf,
     size_t size);
+/*
+ * Utility to function to parse the first 10 bytes of a buffer and populate
+ * the 'header' structure with the results. The provided buffer is assumed to
+ * be at least 10 bytes long.
+ */
+TSS2_RC
+parse_header (
+    const uint8_t *buf,
+    tpm_header_t *header);
 
 #endif

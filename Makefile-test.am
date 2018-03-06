@@ -114,7 +114,7 @@ CLEANFILES += \
 
 if UNIT
 test_unit_util_CFLAGS = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_util_LDADD = $(CMOCKA_LIBS) $(libutil)
+test_unit_util_LDADD = $(CMOCKA_LIBS) $(libutil) $(libmarshal)
 test_unit_util_LDFLAGS = -Wl,--wrap=write
 test_unit_util_SOURCES = test/unit/util.c
 
@@ -130,7 +130,7 @@ test_unit_tcti_socket_SOURCES = tcti/platformcommand.c tcti/tcti_socket.c \
     tcti/sockets.c tcti/sockets.h test/unit/tcti-socket.c
 
 test_unit_socket_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
-test_unit_socket_LDADD   = $(CMOCKA_LIBS) $(libutil)
+test_unit_socket_LDADD   = $(CMOCKA_LIBS) $(libutil) $(libmarshal)
 test_unit_socket_LDFLAGS = -Wl,--wrap=connect,--wrap=socket
 test_unit_socket_SOURCES = test/unit/socket.c tcti/sockets.c tcti/sockets.h
 
