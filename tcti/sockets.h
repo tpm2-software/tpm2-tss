@@ -8,7 +8,6 @@ extern "C" {
 #include <sys/un.h>
 #include <errno.h>
 #include <arpa/inet.h>
-void WSACleanup();
 #define closesocket(serverSock) close(serverSock)
 #define SOCKADDR struct sockaddr
 #define SOCKET int

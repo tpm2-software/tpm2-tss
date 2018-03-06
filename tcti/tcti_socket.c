@@ -39,7 +39,6 @@
 #include "sysapi_util.h"
 #include "tcti.h"
 #include "sockets.h"
-#include "tss2_endian.h"
 #define LOGMODULE tcti
 #include "log/log.h"
 
@@ -258,7 +257,6 @@ TSS2_RC SocketReceiveTpmResponse(
     UINT32 trash;
     TSS2_RC rval = TSS2_RC_SUCCESS;
     int iResult;
-    unsigned char responseSizeDelta = 0;
 
     rval = tcti_receive_checks (tctiContext, response_size, response_buffer);
     if (rval != TSS2_RC_SUCCESS) {
@@ -273,15 +271,25 @@ TSS2_RC SocketReceiveTpmResponse(
 
     if (tcti_intel->status.protocolResponseSizeReceived != 1) {
         /* Receive the size of the response. */
+        uint8_t size_buf [sizeof (UINT32)];
         iResult = socket_recv_buf (tcti_intel->tpmSock,
-                                   (unsigned char *)&tcti_intel->responseSize,
-                                   4);
-        if (iResult != 4) {
+                                   size_buf,
+                                   sizeof (UINT32));
+        if (iResult != sizeof (UINT32)) {
             rval = TSS2_TCTI_RC_IO_ERROR;
             goto retSocketReceiveTpmResponse;
         }
 
-        tcti_intel->responseSize = BE_TO_HOST_32 (tcti_intel->responseSize);
+        rval = Tss2_MU_UINT32_Unmarshal (size_buf,
+                                         sizeof (size_buf),
+                                         0,
+                                         &tcti_intel->responseSize);
+        if (rval != TSS2_RC_SUCCESS) {
+            LOG_WARNING ("Failed to unmarshal size from tpm2 simulator "
+                         "protocol: 0x%" PRIu32, rval);
+            goto retSocketReceiveTpmResponse;
+        }
+
         LOG_DEBUG ("response size: %" PRIu32, tcti_intel->responseSize);
         tcti_intel->status.protocolResponseSizeReceived = 1;
     }
@@ -295,92 +303,32 @@ TSS2_RC SocketReceiveTpmResponse(
     if (*response_size < tcti_intel->responseSize) {
         *response_size = tcti_intel->responseSize;
         rval = TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
-
-        /* If possible, receive tag from TPM. */
-        if (*response_size >= sizeof (TPM2_ST) &&
-            tcti_intel->status.tagReceived == 0)
-        {
-            iResult = socket_recv_buf (tcti_intel->tpmSock,
-                                       (unsigned char *)&tcti_intel->tag,
-                                       2);
-            if (iResult < 2) {
-                rval = TSS2_TCTI_RC_IO_ERROR;
-                goto retSocketReceiveTpmResponse;
-            } else {
-                tcti_intel->status.tagReceived = 1;
-            }
-        }
-
-        /* If possible, receive response size from TPM */
-        if (*response_size >= (sizeof (TPM2_ST) + sizeof (TPM2_RC)) &&
-            tcti_intel->status.responseSizeReceived == 0)
-        {
-            iResult = socket_recv_buf (tcti_intel->tpmSock,
-                                       (unsigned char *)&tcti_intel->responseSize,
-                                       4);
-            if (iResult != 4) {
-                rval = TSS2_TCTI_RC_IO_ERROR;
-                goto retSocketReceiveTpmResponse;
-            } else {
-                tcti_intel->responseSize = BE_TO_HOST_32 (tcti_intel->responseSize);
-                tcti_intel->status.responseSizeReceived = 1;
-            }
-        }
-    } else {
-        if (tcti_intel->responseSize > 0)
-        {
-            LOG_DEBUG("Response Received: ");
-            LOG_DEBUG("from socket #0x%x:",
-                      tcti_intel->tpmSock);
-        }
-
-        if (tcti_intel->status.tagReceived == 1) {
-            *(TPM2_ST *)response_buffer = tcti_intel->tag;
-            responseSizeDelta += sizeof (TPM2_ST);
-            response_buffer += sizeof (TPM2_ST);
-        }
-
-        if (tcti_intel->status.responseSizeReceived == 1) {
-            *(TPM2_RC *)response_buffer = HOST_TO_BE_32 (tcti_intel->responseSize);
-            responseSizeDelta += sizeof (TPM2_RC);
-            response_buffer += sizeof (TPM2_RC);
-        }
-
-        /* Receive the TPM response. */
-        iResult = socket_recv_buf (tcti_intel->tpmSock,
-                                   (unsigned char *)response_buffer,
-                                   tcti_intel->responseSize - responseSizeDelta);
-        if (iResult < 0) {
-            rval = TSS2_TCTI_RC_IO_ERROR;
-            goto retSocketReceiveTpmResponse;
-        }
-        LOGBLOB_DEBUG(response_buffer, tcti_intel->responseSize,
-            "Received response buffer=");
-
-        /* Receive the appended four bytes of 0's */
-        iResult = socket_recv_buf (tcti_intel->tpmSock,
-                                   (unsigned char *)&trash,
-                                   4);
-        if (iResult != 4) {
-            rval = TSS2_TCTI_RC_IO_ERROR;
-            goto retSocketReceiveTpmResponse;
-        }
+        goto retSocketReceiveTpmResponse;
     }
 
-    if (tcti_intel->responseSize < *response_size) {
-        *response_size = tcti_intel->responseSize;
+    /* Receive the TPM response. */
+    iResult = socket_recv_buf (tcti_intel->tpmSock,
+                               (unsigned char *)response_buffer,
+                               tcti_intel->responseSize);
+    if (iResult < 0) {
+        rval = TSS2_TCTI_RC_IO_ERROR;
+        goto retSocketReceiveTpmResponse;
+    }
+    LOGBLOB_DEBUG(response_buffer, tcti_intel->responseSize,
+        "Received response buffer=");
+
+    /* Receive the appended four bytes of 0's */
+    iResult = socket_recv_buf (tcti_intel->tpmSock,
+                               (unsigned char *)&trash,
+                               4);
+    if (iResult != 4) {
+        rval = TSS2_TCTI_RC_IO_ERROR;
+        goto retSocketReceiveTpmResponse;
     }
 
     tcti_intel->status.commandSent = 0;
 
-    /* Turn cancel off. */
-    if (rval == TSS2_RC_SUCCESS) {
-        rval = PlatformCommand (tctiContext, MS_SIM_CANCEL_OFF);
-    } else {
-        /* Ignore return value so earlier error code is preserved. */
-        PlatformCommand (tctiContext, MS_SIM_CANCEL_OFF);
-    }
-
+    rval = PlatformCommand (tctiContext, MS_SIM_CANCEL_OFF);
 retSocketReceiveTpmResponse:
     if (rval == TSS2_RC_SUCCESS && response_buffer != NULL) {
         tcti_intel->previousStage = TCTI_STAGE_RECEIVE_RESPONSE;
