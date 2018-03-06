@@ -84,7 +84,7 @@ send_sim_cmd_setup (
         return rc;
     }
 
-    rc = Tss2_MU_UINT8_Marshal (tcti_intel->status.locality,
+    rc = Tss2_MU_UINT8_Marshal (tcti_intel->locality,
                                 buf,
                                 sizeof (buf),
                                 &offset);
@@ -136,10 +136,6 @@ tcti_socket_transmit (
     }
 
     tcti_intel->state = TCTI_STATE_RECEIVE;
-    tcti_intel->status.commandSent = 1;
-    tcti_intel->status.tagReceived = 0;
-    tcti_intel->status.responseSizeReceived = 0;
-    tcti_intel->status.protocolResponseSizeReceived = 0;
 
     return rc;
 }
@@ -181,11 +177,11 @@ tcti_socket_set_locality (
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
-    if (tcti_intel->status.commandSent == 1) {
+    if (tcti_intel->state != TCTI_STATE_TRANSMIT) {
         return TSS2_TCTI_RC_BAD_SEQUENCE;
     }
 
-    tcti_intel->status.locality = locality;
+    tcti_intel->locality = locality;
     return TSS2_RC_SUCCESS;
 }
 
@@ -240,7 +236,7 @@ tcti_socket_receive (
         return TSS2_TCTI_RC_BAD_VALUE;
     }
 
-    if (tcti_intel->status.protocolResponseSizeReceived != 1) {
+    if (tcti_intel->header.size == 0) {
         /* Receive the size of the response. */
         uint8_t size_buf [sizeof (UINT32)];
         ret = socket_recv_buf (tcti_intel->tpmSock, size_buf, sizeof (UINT32));
@@ -252,39 +248,38 @@ tcti_socket_receive (
         rc = Tss2_MU_UINT32_Unmarshal (size_buf,
                                        sizeof (size_buf),
                                        0,
-                                       &tcti_intel->responseSize);
+                                       &tcti_intel->header.size);
         if (rc != TSS2_RC_SUCCESS) {
             LOG_WARNING ("Failed to unmarshal size from tpm2 simulator "
                          "protocol: 0x%" PRIu32, rc);
             goto retSocketReceiveTpmResponse;
         }
 
-        LOG_DEBUG ("response size: %" PRIu32, tcti_intel->responseSize);
-        tcti_intel->status.protocolResponseSizeReceived = 1;
+        LOG_DEBUG ("response size: %" PRIu32, tcti_intel->header.size);
     }
 
     if (response_buffer == NULL) {
-        *response_size = tcti_intel->responseSize;
-        tcti_intel->status.protocolResponseSizeReceived = 1;
+        *response_size = tcti_intel->header.size;
         goto retSocketReceiveTpmResponse;
     }
 
-    if (*response_size < tcti_intel->responseSize) {
-        *response_size = tcti_intel->responseSize;
+    if (*response_size < tcti_intel->header.size) {
+        *response_size = tcti_intel->header.size;
         rc = TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
         goto retSocketReceiveTpmResponse;
     }
 
     /* Receive the TPM response. */
+    LOG_DEBUG ("Reading response of size %" PRIu32, tcti_intel->header.size);
     ret = socket_recv_buf (tcti_intel->tpmSock,
                            (unsigned char *)response_buffer,
-                           tcti_intel->responseSize);
+                           tcti_intel->header.size);
     if (ret < 0) {
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto retSocketReceiveTpmResponse;
     }
-    LOGBLOB_DEBUG(response_buffer, tcti_intel->responseSize,
-        "Received response buffer=");
+    LOGBLOB_DEBUG(response_buffer, tcti_intel->header.size,
+                  "Response buffer received:");
 
     /* Receive the appended four bytes of 0's */
     ret = socket_recv_buf (tcti_intel->tpmSock,
@@ -295,11 +290,10 @@ tcti_socket_receive (
         goto retSocketReceiveTpmResponse;
     }
 
-    tcti_intel->status.commandSent = 0;
-
     rc = PlatformCommand (tctiContext, MS_SIM_CANCEL_OFF);
 retSocketReceiveTpmResponse:
     if (rc == TSS2_RC_SUCCESS && response_buffer != NULL) {
+        tcti_intel->header.size = 0;
         tcti_intel->state = TCTI_STATE_TRANSMIT;
     }
 
@@ -437,11 +431,8 @@ tcti_socket_init_context_data (
     TSS2_TCTI_SET_LOCALITY (tcti_ctx) = tcti_socket_set_locality;
     TSS2_TCTI_MAKE_STICKY (tcti_ctx) = tcti_make_sticky_not_implemented;
     tcti_intel->state = TCTI_STATE_TRANSMIT;
-    tcti_intel->status.locality = 3;
-    tcti_intel->status.commandSent = 0;
-    tcti_intel->status.tagReceived = 0;
-    tcti_intel->status.responseSizeReceived = 0;
-    tcti_intel->status.protocolResponseSizeReceived = 0;
+    tcti_intel->locality = 3;
+    memset (&tcti_intel->header, 0, sizeof (tcti_intel->header));
 }
 /*
  * This is an implementation of the standard TCTI initialization function for
