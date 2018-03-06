@@ -474,7 +474,6 @@ tcti_socket_init_context_data (
     tcti_intel->status.tagReceived = 0;
     tcti_intel->status.responseSizeReceived = 0;
     tcti_intel->status.protocolResponseSizeReceived = 0;
-    tcti_intel->currentTctiContext = 0;
     tcti_intel->previousStage = TCTI_STAGE_INITIALIZE;
 }
 /*

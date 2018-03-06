@@ -221,7 +221,6 @@ Tss2_Tcti_Device_Init (
 
     tcti_intel->status.locality = 3;
     tcti_intel->status.commandSent = 0;
-    tcti_intel->currentTctiContext = 0;
     tcti_intel->previousStage = TCTI_STAGE_INITIALIZE;
 
     tcti_intel->devFile = open (dev_path, O_RDWR);
