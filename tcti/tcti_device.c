@@ -90,7 +90,6 @@ tcti_device_receive (
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     TSS2_RC rc = TSS2_RC_SUCCESS;
     ssize_t  size;
-    unsigned int i;
 
     rc = tcti_receive_checks (tctiContext, response_size, response_buffer);
     if (rc != TSS2_RC_SUCCESS) {
@@ -103,45 +102,57 @@ tcti_device_receive (
         return TSS2_TCTI_RC_BAD_VALUE;
     }
 
-    if (tcti_intel->status.tagReceived == 0) {
+    /* Read header first to get size of response. */
+    if (tcti_intel->header.size == 0) {
+        uint8_t header_buf [TPM_HEADER_SIZE];
+        LOG_INFO ("Header not yet received, reading %zd byte header from fd %d",
+                  sizeof (header_buf), tcti_intel->devFile);
         size = TEMP_RETRY (read (tcti_intel->devFile,
-                                 tcti_intel->responseBuffer,
-                                 4096));
+                                 header_buf,
+                                 sizeof (header_buf)));
         if (size < 0) {
-            LOG_ERROR("send failed with error: %d", errno);
+            LOG_WARNING ("Failed to read response header. %d: %s",
+                         errno, strerror (errno));
             rc = TSS2_TCTI_RC_IO_ERROR;
             goto retLocalTpmReceive;
-        } else {
-            tcti_intel->status.tagReceived = 1;
-            tcti_intel->responseSize = size;
         }
-
-        tcti_intel->responseSize = size;
+        LOGBLOB_DEBUG (header_buf, TPM_HEADER_SIZE, "Response header received");
+        rc = parse_header (header_buf, &tcti_intel->header);
+        if (rc != TSS2_RC_SUCCESS) {
+            return rc;
+        }
+        LOG_INFO ("Received response header with size: %" PRIu32,
+                  tcti_intel->header.size);
     }
 
+    *response_size = tcti_intel->header.size;
     if (response_buffer == NULL) {
-        *response_size = tcti_intel->responseSize;
+        LOG_DEBUG ("response_buffer is null, returning size: %zd", *response_size);
         goto retLocalTpmReceive;
     }
-
-    if (*response_size < tcti_intel->responseSize) {
+    if (*response_size < tcti_intel->header.size) {
+        LOG_WARNING ("Size of user supplied response buffer %zd is less than "
+                     "the size of the response buffer: %" PRIu32,
+                     *response_size, tcti_intel->header.size);
         rc = TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
-        *response_size = tcti_intel->responseSize;
         goto retLocalTpmReceive;
     }
-
-    *response_size = tcti_intel->responseSize;
-
-    for (i = 0; i < *response_size; i++) {
-        response_buffer[i] = tcti_intel->responseBuffer[i];
+    /* Read the rest of the response, minus the header that we already jave. */
+    size = TEMP_RETRY (read (tcti_intel->devFile,
+                             response_buffer,
+                             tcti_intel->header.size - TPM_HEADER_SIZE));
+    if (size < 0) {
+        LOG_WARNING ("Failed to read response body. %d: %s",
+                     errno, strerror (errno));
+        rc = TSS2_TCTI_RC_IO_ERROR;
+        goto retLocalTpmReceive;
     }
 
     LOGBLOB_DEBUG(response_buffer, tcti_intel->responseSize, "Response Received");
 
-    tcti_intel->status.commandSent = 0;
-
 retLocalTpmReceive:
     if (rc == TSS2_RC_SUCCESS && response_buffer != NULL ) {
+        tcti_intel->header.size = 0;
         tcti_intel->state = TCTI_STATE_TRANSMIT;
     }
 
@@ -220,6 +231,7 @@ Tss2_Tcti_Device_Init (
     TSS2_TCTI_SET_LOCALITY (tctiContext) = tcti_device_set_locality;
     TSS2_TCTI_MAKE_STICKY (tctiContext) = tcti_make_sticky_not_implemented;
     tcti_intel->state = TCTI_STATE_TRANSMIT;
+    memset (&tcti_intel->header, 0, sizeof (tcti_intel->header));
 
     tcti_intel->status.locality = 3;
     tcti_intel->status.commandSent = 0;

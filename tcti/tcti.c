@@ -91,7 +91,7 @@ tcti_receive_checks (
     if (tcti_intel->state != TCTI_STATE_RECEIVE) {
         return TSS2_TCTI_RC_BAD_SEQUENCE;
     }
-    if (response_buffer == NULL || response_size == NULL) {
+    if (response_buffer == NULL && response_size == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
     }
 
@@ -134,4 +134,39 @@ tcti_make_sticky_not_implemented (
     uint8_t sticky)
 {
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
+}
+
+TSS2_RC
+parse_header (
+    const uint8_t *buf,
+    tpm_header_t *header)
+{
+    TSS2_RC rc;
+    size_t offset = 0;
+
+    LOG_TRACE ("Parsing header from buffer: 0x%" PRIxPTR, (uintptr_t)buf);
+    rc = Tss2_MU_TPM2_ST_Unmarshal (buf,
+                                    TPM_HEADER_SIZE,
+                                    &offset,
+                                    &header->tag);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR ("Failed to unmarshal tag.");
+        return rc;
+    }
+    rc = Tss2_MU_UINT32_Unmarshal (buf,
+                                   TPM_HEADER_SIZE,
+                                   &offset,
+                                   &header->size);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR ("Failed to unmarshal command size.");
+        return rc;
+    }
+    rc = Tss2_MU_UINT32_Unmarshal (buf,
+                                   TPM_HEADER_SIZE,
+                                   &offset,
+                                   &header->code);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR ("Failed to unmarshal command code.");
+    }
+    return rc;
 }

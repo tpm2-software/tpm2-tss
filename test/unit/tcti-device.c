@@ -36,9 +36,13 @@ tcti_device_init_size_test (void **state)
 }
 /* wrap functions for read & write required to test receive / transmit */
 ssize_t
-__wrap_read (int fd, void *buffer, size_t count)
+__wrap_read (int fd, void *buf, size_t count)
 {
-    return mock_type (ssize_t);
+    ssize_t ret = mock_type (ssize_t);
+    uint8_t *buf_in = mock_type (uint8_t*);
+
+    memcpy (buf, buf_in, ret);
+    return ret;
 }
 ssize_t
 __wrap_write (int fd, const void *buffer, size_t buffer_size)
@@ -111,7 +115,7 @@ tcti_device_teardown (void **state)
  * data received.
  */
 static void
-tcti_device_receive_success (void **state)
+tcti_device_receive_one_call_success (void **state)
 {
     data_t *data = *state;
     TSS2_RC rc;
@@ -119,13 +123,43 @@ tcti_device_receive_success (void **state)
 
     /* Keep state machine check in `receive` from returning error. */
     tcti_intel->state = TCTI_STATE_RECEIVE;
-    will_return (__wrap_read, data->data_size);
+    will_return (__wrap_read, TPM_HEADER_SIZE);
+    will_return (__wrap_read, data->buffer);
+    will_return (__wrap_read, data->data_size - TPM_HEADER_SIZE);
+    will_return (__wrap_read, &data->buffer [TPM_HEADER_SIZE]);
     rc = Tss2_Tcti_Receive (data->ctx,
                             &data->buffer_size,
                             data->buffer,
                             TSS2_TCTI_TIMEOUT_BLOCK);
     assert_true (rc == TSS2_RC_SUCCESS);
     assert_int_equal (data->data_size, data->buffer_size);
+}
+static void
+tcti_device_receive_two_call_success (void **state)
+{
+    data_t *data = *state;
+    TSS2_RC rc;
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (data->ctx);
+    size_t size = 0;
+
+    /* Keep state machine check in `receive` from returning error. */
+    tcti_intel->state = TCTI_STATE_RECEIVE;
+    will_return (__wrap_read, TPM_HEADER_SIZE);
+    will_return (__wrap_read, data->buffer);
+    will_return (__wrap_read, data->data_size - TPM_HEADER_SIZE);
+    will_return (__wrap_read, &data->buffer [TPM_HEADER_SIZE]);
+    rc = Tss2_Tcti_Receive (data->ctx,
+                            &size,
+                            NULL,
+                            TSS2_TCTI_TIMEOUT_BLOCK);
+    printf ("got size: %zd", size);
+    assert_int_equal (size, data->data_size);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    rc = Tss2_Tcti_Receive (data->ctx,
+                            &data->buffer_size,
+                            data->buffer,
+                            TSS2_TCTI_TIMEOUT_BLOCK);
+    assert_true (rc == TSS2_RC_SUCCESS);
 }
 /*
  * A test case for a successful call to the transmit function. This requires
@@ -151,9 +185,12 @@ main(int argc, char* argv[])
     const struct CMUnitTest tests[] = {
         cmocka_unit_test (tcti_device_init_all_null_test),
         cmocka_unit_test(tcti_device_init_size_test),
-        cmocka_unit_test_setup_teardown (tcti_device_receive_success,
+        cmocka_unit_test_setup_teardown (tcti_device_receive_one_call_success,
                                   tcti_device_setup_with_command,
                                   tcti_device_teardown),
+        cmocka_unit_test_setup_teardown (tcti_device_receive_two_call_success,
+                                         tcti_device_setup_with_command,
+                                         tcti_device_teardown),
         cmocka_unit_test_setup_teardown (tcti_device_transmit_success,
                                   tcti_device_setup_with_command,
                                   tcti_device_teardown),
