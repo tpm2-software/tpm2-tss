@@ -97,12 +97,9 @@ typedef struct {
     TPM2_ST tag;
     TPM2_RC responseSize;
 
-    TSS2_TCTI_CONTEXT *currentTctiContext;
-
     /* Sockets if socket interface is being used. */
     SOCKET otherSock;
     SOCKET tpmSock;
-    SOCKET currentConnectSock;
 
     /* File descriptor for device file if real TPM is being used. */
     int devFile;
