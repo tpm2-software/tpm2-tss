@@ -107,19 +107,7 @@ typedef struct {
     TSS2_TCTI_CONTEXT_COMMON_V2 v2;
     tcti_state_t state;
     tpm_header_t header;
-
-    struct {
-        UINT32 reserved: 1; /* Used to be debugMsgEnabled which is deprecated */
-        UINT32 locality: 8;
-        UINT32 commandSent: 1;
-        UINT32 tagReceived: 1;
-        UINT32 responseSizeReceived: 1;
-        UINT32 protocolResponseSizeReceived: 1;
-    } status;
-
-    /* Following two fields used to save partial response in case receive buffer's too small. */
-    TPM2_ST tag;
-    TPM2_RC responseSize;
+    uint8_t locality;
 
     /* Sockets if socket interface is being used. */
     SOCKET otherSock;
