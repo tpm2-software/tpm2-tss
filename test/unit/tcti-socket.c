@@ -237,6 +237,7 @@ static void
 tcti_socket_receive_success_test (void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (ctx);
     TSS2_RC rc = TSS2_RC_SUCCESS;
     size_t response_size = 0xc;
     uint8_t response_in [] = { 0x80, 0x02,
@@ -248,6 +249,8 @@ tcti_socket_receive_success_test (void **state)
     uint8_t response_out [12] = { 0 };
     uint8_t platform_command_recv [4] = { 0 };
 
+    /* Keep state machine check in `receive` from returning error. */
+    tcti_intel->state = TCTI_STATE_RECEIVE;
     /* receive response size */
     will_return (__wrap_read, 4);
     will_return (__wrap_read, &response_in [2]);

@@ -52,7 +52,7 @@ tcti_device_transmit (
     TSS2_RC rc = TSS2_RC_SUCCESS;
     ssize_t size;
 
-    rc = tcti_send_checks (tctiContext, command_buffer);
+    rc = tcti_transmit_checks (tctiContext, command_buffer);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -72,7 +72,7 @@ tcti_device_transmit (
         return TSS2_TCTI_RC_IO_ERROR;
     }
 
-    tcti_intel->previousStage = TCTI_STAGE_SEND_COMMAND;
+    tcti_intel->state = TCTI_STATE_RECEIVE;
     tcti_intel->status.tagReceived = 0;
     tcti_intel->status.responseSizeReceived = 0;
     tcti_intel->status.protocolResponseSizeReceived = 0;
@@ -142,7 +142,7 @@ tcti_device_receive (
 
 retLocalTpmReceive:
     if (rc == TSS2_RC_SUCCESS && response_buffer != NULL ) {
-        tcti_intel->previousStage = TCTI_STAGE_RECEIVE_RESPONSE;
+        tcti_intel->state = TCTI_STATE_TRANSMIT;
     }
 
     return rc;
@@ -160,6 +160,7 @@ tcti_device_finalize (
         return;
     }
     close (tcti_intel->devFile);
+    tcti_intel->state = TCTI_STATE_FINAL;
 }
 
 TSS2_RC
@@ -218,10 +219,10 @@ Tss2_Tcti_Device_Init (
     TSS2_TCTI_GET_POLL_HANDLES (tctiContext) = tcti_device_get_poll_handles;
     TSS2_TCTI_SET_LOCALITY (tctiContext) = tcti_device_set_locality;
     TSS2_TCTI_MAKE_STICKY (tctiContext) = tcti_make_sticky_not_implemented;
+    tcti_intel->state = TCTI_STATE_TRANSMIT;
 
     tcti_intel->status.locality = 3;
     tcti_intel->status.commandSent = 0;
-    tcti_intel->previousStage = TCTI_STAGE_INITIALIZE;
 
     tcti_intel->devFile = open (dev_path, O_RDWR);
     if (tcti_intel->devFile < 0) {

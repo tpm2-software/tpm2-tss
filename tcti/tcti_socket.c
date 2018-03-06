@@ -150,7 +150,7 @@ tcti_socket_transmit (
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tcti_ctx);
     TSS2_RC rc;
 
-    rc = tcti_send_checks (tcti_ctx, cmd_buf);
+    rc = tcti_transmit_checks (tcti_ctx, cmd_buf);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -175,7 +175,7 @@ tcti_socket_transmit (
         return rc;
     }
 
-    tcti_intel->previousStage = TCTI_STAGE_SEND_COMMAND;
+    tcti_intel->state = TCTI_STATE_RECEIVE;
     tcti_intel->status.commandSent = 1;
     tcti_intel->status.tagReceived = 0;
     tcti_intel->status.responseSizeReceived = 0;
@@ -191,14 +191,22 @@ tcti_socket_cancel (
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
     TSS2_RC rc;
 
+    /* the TCTI must have executed the transmit function successfully */
     rc = tcti_common_checks (tctiContext);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
-    } else if (tcti_intel->status.commandSent != 1) {
-        return TSS2_TCTI_RC_BAD_SEQUENCE;
-    } else {
-        return PlatformCommand (tctiContext, MS_SIM_CANCEL_ON);
     }
+    if (tcti_intel->state != TCTI_STATE_RECEIVE) {
+        return TSS2_TCTI_RC_BAD_SEQUENCE;
+    }
+
+    rc = PlatformCommand (tctiContext, MS_SIM_CANCEL_ON);
+    if (rc != TSS2_RC_SUCCESS) {
+        return rc;
+    }
+
+    tcti_intel->state = TCTI_STATE_TRANSMIT;
+    return rc;
 }
 
 TSS2_RC
@@ -218,7 +226,6 @@ tcti_socket_set_locality (
     }
 
     tcti_intel->status.locality = locality;
-
     return TSS2_RC_SUCCESS;
 }
 
@@ -333,7 +340,7 @@ tcti_socket_receive (
     rc = PlatformCommand (tctiContext, MS_SIM_CANCEL_OFF);
 retSocketReceiveTpmResponse:
     if (rc == TSS2_RC_SUCCESS && response_buffer != NULL) {
-        tcti_intel->previousStage = TCTI_STAGE_RECEIVE_RESPONSE;
+        tcti_intel->state = TCTI_STATE_TRANSMIT;
     }
 
     return rc;
@@ -469,12 +476,12 @@ tcti_socket_init_context_data (
     TSS2_TCTI_GET_POLL_HANDLES (tcti_ctx) = tcti_socket_get_poll_handles;
     TSS2_TCTI_SET_LOCALITY (tcti_ctx) = tcti_socket_set_locality;
     TSS2_TCTI_MAKE_STICKY (tcti_ctx) = tcti_make_sticky_not_implemented;
+    tcti_intel->state = TCTI_STATE_TRANSMIT;
     tcti_intel->status.locality = 3;
     tcti_intel->status.commandSent = 0;
     tcti_intel->status.tagReceived = 0;
     tcti_intel->status.responseSizeReceived = 0;
     tcti_intel->status.protocolResponseSizeReceived = 0;
-    tcti_intel->previousStage = TCTI_STAGE_INITIALIZE;
 }
 /*
  * This is an implementation of the standard TCTI initialization function for

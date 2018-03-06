@@ -115,7 +115,10 @@ tcti_device_receive_success (void **state)
 {
     data_t *data = *state;
     TSS2_RC rc;
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (data->ctx);
 
+    /* Keep state machine check in `receive` from returning error. */
+    tcti_intel->state = TCTI_STATE_RECEIVE;
     will_return (__wrap_read, data->data_size);
     rc = Tss2_Tcti_Receive (data->ctx,
                             &data->buffer_size,
