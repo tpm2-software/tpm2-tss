@@ -1983,19 +1983,19 @@ Esys_PolicyCounterTimer_finish(
 TSS2_RC
 Esys_PolicyCommandCode(
     ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_SH_POLICY policySession,
     TPM2_CC code);
 
 TSS2_RC
 Esys_PolicyCommandCode_async(
     ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_SH_POLICY policySession,
     TPM2_CC code);
 
 TSS2_RC

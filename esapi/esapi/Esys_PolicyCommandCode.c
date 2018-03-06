@@ -40,7 +40,7 @@
 /** Store command parameters inside the ESYS_CONTEXT for use during _finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
-    TPMI_SH_POLICY policySession,
+    ESYS_TR policySession,
     TPM2_CC code)
 {
     esysContext->in.PolicyCommandCode.policySession = policySession;
@@ -55,10 +55,11 @@ static void store_input_parameters (
  * parameters is allocated by the function implementation.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
+ * @param[in] policySession Input handle of type ESYS_TR for
+ *     object with handle type TPMI_SH_POLICY.
  * @param[in] shandle1 First session handle.
  * @param[in] shandle2 Second session handle.
  * @param[in] shandle3 Third session handle.
- * @param[in] policySession Input parameter of type TPMI_SH_POLICY.
  * @param[in] code Input parameter of type TPM2_CC.
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_RC_BAD_SEQUENCE if context is not ready for this function
@@ -67,19 +68,19 @@ static void store_input_parameters (
 TSS2_RC
 Esys_PolicyCommandCode(
     ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_SH_POLICY policySession,
     TPM2_CC code)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     r = Esys_PolicyCommandCode_async(esysContext,
+                policySession,
                 shandle1,
                 shandle2,
                 shandle3,
-                policySession,
                 code);
     return_if_error(r, "Error in async function");
 
@@ -117,10 +118,11 @@ Esys_PolicyCommandCode(
  * In order to retrieve the TPM's response call Esys_PolicyCommandCode_finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
+ * @param[in] policySession Input handle of type ESYS_TR for
+ *     object with handle type TPMI_SH_POLICY.
  * @param[in] shandle1 First session handle.
  * @param[in] shandle2 Second session handle.
  * @param[in] shandle3 Third session handle.
- * @param[in] policySession Input parameter of type TPMI_SH_POLICY.
  * @param[in] code Input parameter of type TPM2_CC.
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_RC_BAD_SEQUENCE if context is not ready for this function
@@ -129,14 +131,15 @@ Esys_PolicyCommandCode(
 TSS2_RC
 Esys_PolicyCommandCode_async(
     ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_SH_POLICY policySession,
     TPM2_CC code)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    RSRC_NODE_T *policySessionNode;
 
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
@@ -148,11 +151,12 @@ Esys_PolicyCommandCode_async(
     r = check_session_feasability(shandle1, shandle2, shandle3, 0);
     return_if_error(r, "Check session usage");
 
-    store_input_parameters(esysContext,
-                policySession,
-                code);
+    store_input_parameters(esysContext, policySession, code);
+    r = esys_GetResourceObject(esysContext, policySession, &policySessionNode);
+    if (r != TPM2_RC_SUCCESS)
+        return r;
     r = Tss2_Sys_PolicyCommandCode_Prepare(esysContext->sys,
-                policySession,
+                (policySessionNode == NULL) ? TPM2_RH_NULL : policySessionNode->rsrc.handle,
                 code);
     if (r != TSS2_RC_SUCCESS) {
         LOG_ERROR("Error async PolicyCommandCode");
@@ -163,7 +167,7 @@ Esys_PolicyCommandCode_async(
 
     iesys_compute_session_value(esysContext->session_tab[0], NULL, NULL);
     iesys_compute_session_value(esysContext->session_tab[1], NULL, NULL);
-    r = iesys_gen_auths(esysContext, NULL, NULL, NULL, &auths);
+    r = iesys_gen_auths(esysContext, policySessionNode, NULL, NULL, &auths);
     return_if_error(r, "Error in computation of auth values");
 
     esysContext->authsCount = auths.count;
@@ -221,10 +225,10 @@ Esys_PolicyCommandCode_finish(
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
         r = Esys_PolicyCommandCode_async(esysContext,
+                esysContext->in.PolicyCommandCode.policySession,
                 esysContext->session_type[0],
                 esysContext->session_type[1],
                 esysContext->session_type[2],
-                esysContext->in.PolicyCommandCode.policySession,
                 esysContext->in.PolicyCommandCode.code);
         if (r != TSS2_RC_SUCCESS) {
             LOG_ERROR("Error attempting to resubmit");

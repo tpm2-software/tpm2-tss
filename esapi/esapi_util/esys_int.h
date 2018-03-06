@@ -590,7 +590,7 @@ typedef struct {
 
 
 typedef struct {
-    TPMI_SH_POLICY policySession;
+    ESYS_TR policySession;
     TPM2_CC code;
 } PolicyCommandCode_IN;
 
