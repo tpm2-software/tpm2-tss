@@ -38,27 +38,10 @@
 ssize_t
 socket_recv_buf (
     SOCKET sock,
-    unsigned char *data,
+    uint8_t *data,
     size_t size)
 {
-    ssize_t recvd;
-    size_t recvd_total = 0;
-
-    LOG_DEBUG ("reading %zu bytes from socket %d to buffer at 0x%" PRIxPTR,
-               size, sock, (uintptr_t)data);
-    do {
-        recvd = TEMP_RETRY (read (sock, &data [recvd_total], size));
-        if (recvd < 0) {
-            LOG_WARNING ("read on socket %d failed with errno %d: %s",
-                         sock, errno, strerror (errno));
-            return recvd_total;
-        }
-        LOGBLOB_DEBUG (&data [recvd_total], recvd, "read %zd bytes from socket %d:", recvd, sock);
-        recvd_total += recvd;
-        size -= recvd;
-    } while (size > 0);
-
-    return recvd_total;
+    return read_all (sock, data, size);
 }
 
 TSS2_RC
