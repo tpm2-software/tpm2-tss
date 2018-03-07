@@ -226,9 +226,11 @@ tcti_socket_receive (
     int ret;
 
     rc = tcti_receive_checks (tctiContext, response_size, response_buffer);
-    if (rc != TSS2_RC_SUCCESS) {
-        goto retSocketReceiveTpmResponse;
-    }
+    if (rc != TSS2_RC_SUCCESS)
+        return rc;
+
+    if (!response_size)
+        return TSS2_TCTI_RC_BAD_REFERENCE;
 
     if (timeout != TSS2_TCTI_TIMEOUT_BLOCK) {
         LOG_WARNING ("Asynchronous I/O not implemented. The 'timeout' "
@@ -247,7 +249,7 @@ tcti_socket_receive (
 
         rc = Tss2_MU_UINT32_Unmarshal (size_buf,
                                        sizeof (size_buf),
-                                       0,
+                                       NULL,
                                        &tcti_intel->header.size);
         if (rc != TSS2_RC_SUCCESS) {
             LOG_WARNING ("Failed to unmarshal size from tpm2 simulator "
@@ -260,7 +262,7 @@ tcti_socket_receive (
 
     if (response_buffer == NULL) {
         *response_size = tcti_intel->header.size;
-        goto retSocketReceiveTpmResponse;
+        return TSS2_RC_SUCCESS;
     }
 
     if (*response_size < tcti_intel->header.size) {
@@ -292,7 +294,7 @@ tcti_socket_receive (
 
     rc = PlatformCommand (tctiContext, MS_SIM_CANCEL_OFF);
 retSocketReceiveTpmResponse:
-    if (rc == TSS2_RC_SUCCESS && response_buffer != NULL) {
+    if (rc == TSS2_RC_SUCCESS) {
         tcti_intel->header.size = 0;
         tcti_intel->state = TCTI_STATE_TRANSMIT;
     }

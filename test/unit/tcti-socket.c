@@ -302,6 +302,11 @@ tcti_socket_receive_size_success_test (void **state)
 
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (response_size, 0xc);
+
+    /* test for invalid responce size ptr */
+    rc = Tss2_Tcti_Receive (ctx, NULL, response_out, TSS2_TCTI_TIMEOUT_BLOCK);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
+
     /* receive tag */
     will_return (__wrap_read, 2);
     will_return (__wrap_read, response_in);
