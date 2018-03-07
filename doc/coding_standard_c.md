@@ -163,11 +163,65 @@ within the source even if they are already included in that header. This
 provides a complete context for readers of the source file... i.e., they
 don't have to search through headers to determine where a resource came from.
 
+Files included by all source files must conform to the following format and
+order. Each entry in the list below defines a contiguous block of `include`
+directives separated by a blank line:
+* System headers - These are headers provided by the core c libraries
+(typically from libc).
+* External dependencies - These are headers installed on the platform defining
+interfaces to external libraries.
+* Standard TSS2 headers - These are headers that define the public TSS2 types
+and interfaces. They are all located under $(srcdir)/include/* and will be
+installed as part of the `install` build target. These *must* be included
+using the quoted include variant (using `"` instead of the angle brackets).
+* Internal headers - These are headers defining the interfaces to code modules
+that are internal to the project.
+
+Headers in each block must listed in alphabetical order.
+
 ### Example
-Consider a header and source that use FILE pointers declared in stdio.h. The
-header must `#include <stdio.h>` to ensure files that include it will be able
-to compile. The corresponding source #includes the associated header and
-therefore receives the benefit of stdio.h automatically.
+header: `example-module.h`
+```
+/*
+ * BSD license block
+ */
+#ifndef EXAMPLE_MODULE_H
+#define EXAMPLE_MODULE_H
+
+#include <stdint.h>
+#include <sys/types.h>
+
+#include "tss2/tss2_tpm2_types.h"
+
+#include "internal-module.h"
+
+/*
+ * preprocess or directives and declarations using stuff from included headers
+ */
+
+#endif /* EXAMPLE_MODULE_H */
+```
+
+implementation: `example-module.c`
+```
+/*
+ * BSD license block
+ */
+#include <inttypes.h>
+#include <stdint.h>
+
+#include <foo/bar.h>
+
+#include "tss2/tss2_tcti.h"
+#include "tss2/tss2_tpm2_types.h"
+
+#include "example-module.h"
+#include "internal-module.h"
+
+/*
+ * Implementation / code using headers listed above.
+ */
+```
 
 ## Types
 Types shall be selected for their use case. Variables should only be of a
