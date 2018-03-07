@@ -54,7 +54,8 @@ code would benefit from some restructuring.
 ## Whitespace
 All indentation must be spaces, not tabs. Lines are indented in multiples of
 4 spaces. Each line of code and documentation will end with a non-whitespace
-character.
+character. There must *not* be any whitespace between the last line of code
+or documentation in a file and the end of the file.
 
 ## Naming Variables, Functions and Other Stuff
 Names should clearly convey the purpose of whatever is being named. While the
