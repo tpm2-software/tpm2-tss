@@ -271,7 +271,7 @@ Esys_NV_ReadLock_finish(
     return_if_error(r, "get resource");
 
     if (nvIndexNode != NULL) {
-        nvIndexNode->rsrc.misc.rsrc_nv_pub.nvPublic.attributes |=  TPMA_NV_TPMA_NV_READLOCKED;
+        nvIndexNode->rsrc.misc.rsrc_nv_pub.nvPublic.attributes |=  TPMA_NV_READLOCKED;
         r = iesys_nv_get_name(&nvIndexNode->rsrc.misc.rsrc_nv_pub,
                               &nvIndexNode->rsrc.name);
         return_if_error(r, "Error get nvname")

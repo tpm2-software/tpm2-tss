@@ -88,11 +88,11 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                 .nvIndex =TPM2_NV_INDEX_FIRST,
                 .nameAlg = TPM2_ALG_SHA1,
                 .attributes = (
-                    TPMA_NV_TPMA_NV_OWNERWRITE |
-                    TPMA_NV_TPMA_NV_AUTHWRITE |
-                    TPMA_NV_TPMA_NV_WRITE_STCLEAR |
-                    TPMA_NV_TPMA_NV_AUTHREAD |
-                    TPMA_NV_TPMA_NV_OWNERREAD |
+                    TPMA_NV_OWNERWRITE |
+                    TPMA_NV_AUTHWRITE |
+                    TPMA_NV_WRITE_STCLEAR |
+                    TPMA_NV_AUTHREAD |
+                    TPMA_NV_OWNERREAD |
                     TPM2_NT_EXTEND << TPM2_NT_EXTEND
                  ),
                 .authPolicy = {

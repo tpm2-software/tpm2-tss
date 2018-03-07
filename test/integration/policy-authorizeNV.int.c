@@ -68,12 +68,12 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
         sizeof(UINT16);
     nv_public.nvPublic.nvIndex = nv_index;
     nv_public.nvPublic.nameAlg = TPM2_ALG_SHA256;
-    nv_public.nvPublic.attributes = TPMA_NV_TPMA_NV_PPREAD;
-    nv_public.nvPublic.attributes |= TPMA_NV_TPMA_NV_PPWRITE;
-    nv_public.nvPublic.attributes |= TPMA_NV_TPMA_NV_WRITE_STCLEAR;
-    nv_public.nvPublic.attributes |= TPMA_NV_TPMA_NV_ORDERLY;
-    nv_public.nvPublic.attributes |= TPMA_NV_TPMA_NV_OWNERREAD;
-    nv_public.nvPublic.attributes |= TPMA_NV_TPMA_NV_OWNERWRITE;
+    nv_public.nvPublic.attributes = TPMA_NV_PPREAD;
+    nv_public.nvPublic.attributes |= TPMA_NV_PPWRITE;
+    nv_public.nvPublic.attributes |= TPMA_NV_WRITE_STCLEAR;
+    nv_public.nvPublic.attributes |= TPMA_NV_ORDERLY;
+    nv_public.nvPublic.attributes |= TPMA_NV_OWNERREAD;
+    nv_public.nvPublic.attributes |= TPMA_NV_OWNERWRITE;
     nv_public.nvPublic.authPolicy.size = 0;
     nv_public.nvPublic.dataSize = sizeof(TPMT_HA);
     cmd_auth.count = 1;
