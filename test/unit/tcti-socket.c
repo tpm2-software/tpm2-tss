@@ -276,6 +276,54 @@ tcti_socket_receive_success_test (void **state)
     assert_memory_equal (response_in, response_out, response_size);
 }
 /*
+ */
+static void
+tcti_socket_receive_size_success_test (void **state)
+{
+    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (ctx);
+    TSS2_RC rc = TSS2_RC_SUCCESS;
+    size_t response_size = 0;
+    uint8_t response_in [] = { 0x80, 0x02,
+                               0x00, 0x00, 0x00, 0x0c,
+                               0x00, 0x00, 0x00, 0x00,
+                               0x01, 0x02,
+    /* simulator appends 4 bytes of 0's to every response */
+                               0x00, 0x00, 0x00, 0x00 };
+    uint8_t response_out [12] = { 0 };
+    uint8_t platform_command_recv [4] = { 0 };
+
+    /* Keep state machine check in `receive` from returning error. */
+    tcti_intel->state = TCTI_STATE_RECEIVE;
+    /* receive response size */
+    will_return (__wrap_read, 4);
+    will_return (__wrap_read, &response_in [2]);
+    rc = Tss2_Tcti_Receive (ctx, &response_size, NULL, TSS2_TCTI_TIMEOUT_BLOCK);
+
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (response_size, 0xc);
+    /* receive tag */
+    will_return (__wrap_read, 2);
+    will_return (__wrap_read, response_in);
+    /* receive size (again)  */
+    will_return (__wrap_read, 4);
+    will_return (__wrap_read, &response_in [2]);
+    /* receive the rest of the command */
+    will_return (__wrap_read, 0xc - sizeof (TPM2_ST) - sizeof (UINT32));
+    will_return (__wrap_read, &response_in [6]);
+    /* receive the 4 bytes of 0's appended by the simulator */
+    will_return (__wrap_read, 4);
+    will_return (__wrap_read, &response_in [12]);
+    /* platform command sends 4 bytes and receives the same */
+    will_return (__wrap_write, 4);
+    will_return (__wrap_read, 4);
+    will_return (__wrap_read, platform_command_recv);
+
+    rc = Tss2_Tcti_Receive (ctx, &response_size, response_out, TSS2_TCTI_TIMEOUT_BLOCK);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_memory_equal (response_in, response_out, response_size);
+}
+/*
  * This test exercises the successful code path through the transmit function.
  */
 static void
@@ -313,6 +361,9 @@ main (int   argc,
         cmocka_unit_test (tcti_socket_init_all_null_test),
         cmocka_unit_test (tcti_socket_init_size_test),
         cmocka_unit_test_setup_teardown (tcti_socket_receive_success_test,
+                                  tcti_socket_setup,
+                                  tcti_socket_teardown),
+        cmocka_unit_test_setup_teardown (tcti_socket_receive_size_success_test,
                                   tcti_socket_setup,
                                   tcti_socket_teardown),
         cmocka_unit_test_setup_teardown (tcti_socket_transmit_success_test,
