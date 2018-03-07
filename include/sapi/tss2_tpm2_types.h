@@ -571,18 +571,25 @@ typedef UINT32 TPM2_PT_PCR;
 #define TPM2_PT_PCR_RESET_L3     (0x00000008) /* a SET bit in the TPMS_PCR_SELECT indicates that the PCR may be reset by TPM2_PCR_Reset from locality 3This property is only present if localities 1 2 and 3 are implemented. */
 #define TPM2_PT_PCR_EXTEND_L4    (0x00000009) /* a SET bit in the TPMS_PCR_SELECT indicates that the PCR may be extended from locality 4This property is only present if localities 1 2 3 and 4 are implemented. */
 #define TPM2_PT_PCR_RESET_L4     (0x0000000A) /* a SET bit in the TPMS_PCR_SELECT indicates that the PCR may be reset by TPM2_PCR_Reset from locality 4This property is only present if localities 1 2 3 and 4 are implemented. */
-#define TPM2_PT_PCR_RESERVED1    (0x0000000B  0x00000010) /* the values in this range are reserved They correspond to values that may be used to describe attributes associated with the extended localities 32255.synthesize additional software localities. The meaning of these properties need not be the same as the meaning for the Extend and Reset properties above. */
+/* NOTE: The values in the range 0x0000000B - 0x00000010 are reserved.
+ * They correspond to values that may be used to describe attributes
+ * associated with the extended localities (32-255).
+ * The meaning of these properties need not be the same as the meaning
+ * for the Extend and Reset properties above.
+ */
 #define TPM2_PT_PCR_NO_INCREMENT (0x00000011) /* a SET bit in the TPMS_PCR_SELECT indicates that modifications to this PCR reset or Extend will not increment the pcrUpdateCounter */
 #define TPM2_PT_PCR_DRTM_RESET   (0x00000012) /* a SET bit in the TPMS_PCR_SELECT indicates that the PCR is reset by a DRTM eventThese PCR are reset to 1 on TPM2_Startup and reset to 0 on a _TPM_Hash_End event following a _TPM_Hash_Start event. */
 #define TPM2_PT_PCR_POLICY       (0x00000013) /* a SET bit in the TPMS_PCR_SELECT indicates that the PCR is controlled by policyThis property is only present if the TPM supports policy control of a PCR. */
 #define TPM2_PT_PCR_AUTH         (0x00000014) /* a SET bit in the TPMS_PCR_SELECT indicates that the PCR is controlled by an authorization valueThis property is only present if the TPM supports authorization control of a PCR. */
-#define TPM2_PT_PCR_RESERVED2    (0x00000015) /* reserved for the next 2nd TPM2_PT_PCR_POLICY set */
-#define TPM2_PT_PCR_RESERVED3    (0x00000016) /* reserved for the next 2nd TPM2_PT_PCR_AUTH set */
-#define TPM2_PT_PCR_RESERVED4    (0x00000017  0x00000210) /* reserved for the 2nd through 255th TPM2_PT_PCR_POLICY and TPM2_PT_PCR_AUTH values */
-#define TPM2_PT_PCR_RESERVED5    (0x00000211) /* reserved to the 256th and highest allowed TPM2_PT_PCR_POLICY set */
-#define TPM2_PT_PCR_RESERVED6    (0x00000212) /* reserved to the 256th and highest allowed TPM2_PT_PCR_AUTH set */
-#define TPM2_PT_PCR_RESERVED7    (0x00000213) /* new PCR property values may be assigned starting with this value */
 #define TPM2_PT_TPM2_PCR_LAST    (0x00000014) /* top of the range of TPM2_PT_PCR properties of the implementationIf the TPM receives a request for a PCR property with a value larger than this the TPM will return a zero length list and set the moreData parameter to NO.. NOTE This is an implementationspecific value. The value shown reflects the reference code implementation. */
+/* NOTE: The following values are reserved:
+ * 0x00000015 is reserved for the next 2nd TPM2_PT_PCR_POLICY set.
+ * 0x00000016 is reserved for the next 2nd TPM2_PT_PCR_AUTH set.
+ * 0x00000017 - 0x00000210 are reserved for the 2nd through 255th TPM2_PT_PCR_POLICY and TPM2_PT_PCR_AUTH values.
+ * 0x00000211 is reserved to the 256th and highest allowed TPM2_PT_PCR_POLICY set.
+ * 0x00000212 is reserved to the 256th and highest allowed TPM2_PT_PCR_AUTH set.
+ * A new PCR property values may be assigned starting with value 0x00000213.
+ */
 
 /* Definition of UINT32 TPM2_PS Constants <OUT> */
 typedef UINT32 TPM2_PS;
