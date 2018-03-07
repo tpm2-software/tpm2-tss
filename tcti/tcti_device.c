@@ -73,10 +73,6 @@ tcti_device_transmit (
     }
 
     tcti_intel->state = TCTI_STATE_RECEIVE;
-    tcti_intel->status.tagReceived = 0;
-    tcti_intel->status.responseSizeReceived = 0;
-    tcti_intel->status.protocolResponseSizeReceived = 0;
-
     return TSS2_RC_SUCCESS;
 }
 
@@ -107,12 +103,9 @@ tcti_device_receive (
         uint8_t header_buf [TPM_HEADER_SIZE];
         LOG_INFO ("Header not yet received, reading %zd byte header from fd %d",
                   sizeof (header_buf), tcti_intel->devFile);
-        size = TEMP_RETRY (read (tcti_intel->devFile,
-                                 header_buf,
-                                 sizeof (header_buf)));
+        size = read_all (tcti_intel->devFile, header_buf, sizeof (header_buf));
         if (size < 0) {
-            LOG_WARNING ("Failed to read response header. %d: %s",
-                         errno, strerror (errno));
+            LOG_WARNING ("Failed to read response header.");
             rc = TSS2_TCTI_RC_IO_ERROR;
             goto retLocalTpmReceive;
         }
@@ -138,17 +131,16 @@ tcti_device_receive (
         goto retLocalTpmReceive;
     }
     /* Read the rest of the response, minus the header that we already jave. */
-    size = TEMP_RETRY (read (tcti_intel->devFile,
-                             response_buffer,
-                             tcti_intel->header.size - TPM_HEADER_SIZE));
+    size = read_all (tcti_intel->devFile,
+                     response_buffer,
+                     tcti_intel->header.size - TPM_HEADER_SIZE);
     if (size < 0) {
-        LOG_WARNING ("Failed to read response body. %d: %s",
-                     errno, strerror (errno));
+        LOG_WARNING ("Failed to read response body.");
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto retLocalTpmReceive;
     }
 
-    LOGBLOB_DEBUG(response_buffer, tcti_intel->responseSize, "Response Received");
+    LOGBLOB_DEBUG(response_buffer, tcti_intel->header.size, "Response Received");
 
 retLocalTpmReceive:
     if (rc == TSS2_RC_SUCCESS && response_buffer != NULL ) {
@@ -232,9 +224,7 @@ Tss2_Tcti_Device_Init (
     TSS2_TCTI_MAKE_STICKY (tctiContext) = tcti_make_sticky_not_implemented;
     tcti_intel->state = TCTI_STATE_TRANSMIT;
     memset (&tcti_intel->header, 0, sizeof (tcti_intel->header));
-
-    tcti_intel->status.locality = 3;
-    tcti_intel->status.commandSent = 0;
+    tcti_intel->locality = 3;
 
     tcti_intel->devFile = open (dev_path, O_RDWR);
     if (tcti_intel->devFile < 0) {

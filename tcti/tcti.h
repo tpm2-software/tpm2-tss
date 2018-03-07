@@ -1,5 +1,5 @@
 /***********************************************************************
- * Copyright (c) 2015 - 2017 Intel Corporation
+ * Copyright (c) 2015 - 2018 Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -107,19 +107,7 @@ typedef struct {
     TSS2_TCTI_CONTEXT_COMMON_V2 v2;
     tcti_state_t state;
     tpm_header_t header;
-
-    struct {
-        UINT32 reserved: 1; /* Used to be debugMsgEnabled which is deprecated */
-        UINT32 locality: 8;
-        UINT32 commandSent: 1;
-        UINT32 tagReceived: 1;
-        UINT32 responseSizeReceived: 1;
-        UINT32 protocolResponseSizeReceived: 1;
-    } status;
-
-    /* Following two fields used to save partial response in case receive buffer's too small. */
-    TPM2_ST tag;
-    TPM2_RC responseSize;
+    uint8_t locality;
 
     /* Sockets if socket interface is being used. */
     SOCKET otherSock;
@@ -173,6 +161,17 @@ tcti_make_sticky_not_implemented (
     TSS2_TCTI_CONTEXT *tctiContext,
     TPM2_HANDLE *handle,
     uint8_t sticky);
+/*
+ * Read 'size' bytes from file descriptor 'fd' into buffer 'buf'. Additionally
+ * this function will retry calls to the 'read' function when temporary errors
+ * are detected. This is currently limited to interrupted system calls and
+ * short reads.
+ */
+ssize_t
+read_all (
+    int fd,
+    uint8_t *data,
+    size_t size);
 /*
  * Write 'size' bytes from 'buf' to file descriptor 'fd'. Additionally this
  * function will retry calls to the 'write' function when recoverable errors
