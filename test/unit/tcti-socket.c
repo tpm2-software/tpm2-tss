@@ -231,6 +231,28 @@ tcti_socket_teardown (void **state)
     return 0;
 }
 /*
+ */
+static void
+tcti_socket_receive_null_size_test (void **state)
+{
+    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (ctx);
+    TSS2_RC rc;
+
+    /* Keep state machine check in `receive` from returning error. */
+    tcti_intel->state = TCTI_STATE_RECEIVE;
+    rc = Tss2_Tcti_Receive (ctx,
+                            NULL, /* NULL 'size' parameter */
+                            NULL,
+                            TSS2_TCTI_TIMEOUT_BLOCK);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
+    rc = Tss2_Tcti_Receive (ctx,
+                            NULL, /* NULL 'size' parameter */
+                            (uint8_t*)1, /* non-NULL buffer */
+                            TSS2_TCTI_TIMEOUT_BLOCK);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
+}
+/*
  * This test exercises the successful code path through the receive function.
  */
 static void
@@ -360,6 +382,9 @@ main (int   argc,
         cmocka_unit_test (conf_str_to_host_port_invalid_port_0_test),
         cmocka_unit_test (tcti_socket_init_all_null_test),
         cmocka_unit_test (tcti_socket_init_size_test),
+        cmocka_unit_test_setup_teardown (tcti_socket_receive_null_size_test,
+                                         tcti_socket_setup,
+                                         tcti_socket_teardown),
         cmocka_unit_test_setup_teardown (tcti_socket_receive_success_test,
                                   tcti_socket_setup,
                                   tcti_socket_teardown),
