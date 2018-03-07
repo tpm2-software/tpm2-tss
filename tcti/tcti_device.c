@@ -89,7 +89,7 @@ tcti_device_receive (
 
     rc = tcti_receive_checks (tctiContext, response_size, response_buffer);
     if (rc != TSS2_RC_SUCCESS) {
-        goto retLocalTpmReceive;
+        return rc;
     }
     if (timeout != TSS2_TCTI_TIMEOUT_BLOCK) {
         LOG_WARNING ("The underlying IPC mechanism does not support "
@@ -107,7 +107,7 @@ tcti_device_receive (
         if (size < 0) {
             LOG_WARNING ("Failed to read response header.");
             rc = TSS2_TCTI_RC_IO_ERROR;
-            goto retLocalTpmReceive;
+            goto trans_state_out;
         }
         LOGBLOB_DEBUG (header_buf, TPM_HEADER_SIZE, "Response header received");
         rc = parse_header (header_buf, &tcti_intel->header);
@@ -121,14 +121,13 @@ tcti_device_receive (
     *response_size = tcti_intel->header.size;
     if (response_buffer == NULL) {
         LOG_DEBUG ("response_buffer is null, returning size: %zd", *response_size);
-        goto retLocalTpmReceive;
+        return TSS2_RC_SUCCESS;
     }
     if (*response_size < tcti_intel->header.size) {
         LOG_WARNING ("Size of user supplied response buffer %zd is less than "
                      "the size of the response buffer: %" PRIu32,
                      *response_size, tcti_intel->header.size);
-        rc = TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
-        goto retLocalTpmReceive;
+        return TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
     }
     /* Read the rest of the response, minus the header that we already jave. */
     size = read_all (tcti_intel->devFile,
@@ -137,16 +136,19 @@ tcti_device_receive (
     if (size < 0) {
         LOG_WARNING ("Failed to read response body.");
         rc = TSS2_TCTI_RC_IO_ERROR;
-        goto retLocalTpmReceive;
+        goto trans_state_out;
     }
 
     LOGBLOB_DEBUG(response_buffer, tcti_intel->header.size, "Response Received");
 
-retLocalTpmReceive:
-    if (rc == TSS2_RC_SUCCESS && response_buffer != NULL ) {
-        tcti_intel->header.size = 0;
-        tcti_intel->state = TCTI_STATE_TRANSMIT;
-    }
+    /*
+     * Executing code beyond this point transitions the state machine to
+     * TRANSMIT. Another call to this function will not be possible until
+     * another command is sent to the TPM.
+     */
+trans_state_out:
+    tcti_intel->header.size = 0;
+    tcti_intel->state = TCTI_STATE_TRANSMIT;
 
     return rc;
 }

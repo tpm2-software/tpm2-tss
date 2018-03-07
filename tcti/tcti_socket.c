@@ -227,7 +227,7 @@ tcti_socket_receive (
 
     rc = tcti_receive_checks (tctiContext, response_size, response_buffer);
     if (rc != TSS2_RC_SUCCESS) {
-        goto retSocketReceiveTpmResponse;
+        return rc;
     }
 
     if (timeout != TSS2_TCTI_TIMEOUT_BLOCK) {
@@ -242,7 +242,7 @@ tcti_socket_receive (
         ret = socket_recv_buf (tcti_intel->tpmSock, size_buf, sizeof (UINT32));
         if (ret != sizeof (UINT32)) {
             rc = TSS2_TCTI_RC_IO_ERROR;
-            goto retSocketReceiveTpmResponse;
+            goto trans_state_out;
         }
 
         rc = Tss2_MU_UINT32_Unmarshal (size_buf,
@@ -252,21 +252,20 @@ tcti_socket_receive (
         if (rc != TSS2_RC_SUCCESS) {
             LOG_WARNING ("Failed to unmarshal size from tpm2 simulator "
                          "protocol: 0x%" PRIu32, rc);
-            goto retSocketReceiveTpmResponse;
+            goto trans_state_out;
         }
 
         LOG_DEBUG ("response size: %" PRIu32, tcti_intel->header.size);
     }
 
+    *response_size = tcti_intel->header.size;
     if (response_buffer == NULL) {
-        *response_size = tcti_intel->header.size;
-        goto retSocketReceiveTpmResponse;
+        return TSS2_RC_SUCCESS;
     }
 
     if (*response_size < tcti_intel->header.size) {
         *response_size = tcti_intel->header.size;
-        rc = TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
-        goto retSocketReceiveTpmResponse;
+        return TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
     }
 
     /* Receive the TPM response. */
@@ -276,7 +275,7 @@ tcti_socket_receive (
                            tcti_intel->header.size);
     if (ret < 0) {
         rc = TSS2_TCTI_RC_IO_ERROR;
-        goto retSocketReceiveTpmResponse;
+        goto trans_state_out;
     }
     LOGBLOB_DEBUG(response_buffer, tcti_intel->header.size,
                   "Response buffer received:");
@@ -287,15 +286,18 @@ tcti_socket_receive (
                            4);
     if (ret != 4) {
         rc = TSS2_TCTI_RC_IO_ERROR;
-        goto retSocketReceiveTpmResponse;
+        goto trans_state_out;
     }
 
     rc = PlatformCommand (tctiContext, MS_SIM_CANCEL_OFF);
-retSocketReceiveTpmResponse:
-    if (rc == TSS2_RC_SUCCESS && response_buffer != NULL) {
-        tcti_intel->header.size = 0;
-        tcti_intel->state = TCTI_STATE_TRANSMIT;
-    }
+    /*
+     * Executing code beyond this point transitions the state machine to
+     * TRANSMIT. Another call to this function will not be possible until
+     * another command is sent to the TPM.
+     */
+trans_state_out:
+    tcti_intel->header.size = 0;
+    tcti_intel->state = TCTI_STATE_TRANSMIT;
 
     return rc;
 }
