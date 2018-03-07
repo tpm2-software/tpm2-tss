@@ -247,7 +247,7 @@ tcti_socket_receive (
 
         rc = Tss2_MU_UINT32_Unmarshal (size_buf,
                                        sizeof (size_buf),
-                                       0,
+                                       NULL,
                                        &tcti_intel->header.size);
         if (rc != TSS2_RC_SUCCESS) {
             LOG_WARNING ("Failed to unmarshal size from tpm2 simulator "
