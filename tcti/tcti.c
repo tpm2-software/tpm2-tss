@@ -91,7 +91,7 @@ tcti_receive_checks (
     if (tcti_intel->state != TCTI_STATE_RECEIVE) {
         return TSS2_TCTI_RC_BAD_SEQUENCE;
     }
-    if (response_buffer == NULL && response_size == NULL) {
+    if (response_size == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
     }
 

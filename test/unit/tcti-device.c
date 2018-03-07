@@ -57,7 +57,7 @@ typedef struct {
     size_t   data_size;
 } data_t;
 /* Setup functions to create the context for the device TCTI */
-static void
+static int
 tcti_device_setup (void **state)
 {
     size_t tcti_size = 0;
@@ -70,7 +70,9 @@ tcti_device_setup (void **state)
     assert_non_null (ctx);
     ret = Tss2_Tcti_Device_Init (ctx, 0, "/dev/null");
     assert_true (ret == TSS2_RC_SUCCESS);
+
     *state = ctx;
+    return 0;
 }
 
 static int
@@ -100,12 +102,44 @@ tcti_device_setup_with_command (void **state)
 static int
 tcti_device_teardown (void **state)
 {
-    data_t *data = *state;
-    TSS2_TCTI_CONTEXT *ctx = data->ctx;
+    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
 
     Tss2_Tcti_Finalize (ctx);
     free (ctx);
+
     return 0;
+
+}
+static int
+tcti_device_teardown_with_data (void **state)
+{
+    data_t *data = *state;
+
+    tcti_device_teardown ((void**)&data->ctx);
+    free (data);
+    return 0;
+}
+/*
+ */
+static void
+tcti_device_receive_null_size_test (void **state)
+{
+    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (ctx);
+    TSS2_RC rc;
+
+    /* Keep state machine check in `receive` from returning error. */
+    tcti_intel->state = TCTI_STATE_RECEIVE;
+    rc = Tss2_Tcti_Receive (ctx,
+                            NULL, /* NULL 'size' parameter */
+                            NULL,
+                            TSS2_TCTI_TIMEOUT_BLOCK);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
+    rc = Tss2_Tcti_Receive (ctx,
+                            NULL, /* NULL 'size' parameter */
+                            (uint8_t*)1, /* non-NULL buffer */
+                            TSS2_TCTI_TIMEOUT_BLOCK);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
 }
 /*
  * A test case for a successful call to the receive function. This requires
@@ -185,15 +219,18 @@ main(int argc, char* argv[])
     const struct CMUnitTest tests[] = {
         cmocka_unit_test (tcti_device_init_all_null_test),
         cmocka_unit_test(tcti_device_init_size_test),
+        cmocka_unit_test_setup_teardown (tcti_device_receive_null_size_test,
+                                         tcti_device_setup,
+                                         tcti_device_teardown),
         cmocka_unit_test_setup_teardown (tcti_device_receive_one_call_success,
                                   tcti_device_setup_with_command,
                                   tcti_device_teardown),
         cmocka_unit_test_setup_teardown (tcti_device_receive_two_call_success,
                                          tcti_device_setup_with_command,
-                                         tcti_device_teardown),
+                                         tcti_device_teardown_with_data),
         cmocka_unit_test_setup_teardown (tcti_device_transmit_success,
                                   tcti_device_setup_with_command,
-                                  tcti_device_teardown),
+                                  tcti_device_teardown_with_data),
     };
     return cmocka_run_group_tests (tests, NULL, NULL);
 }
