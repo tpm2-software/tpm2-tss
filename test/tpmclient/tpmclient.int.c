@@ -766,11 +766,11 @@ void TestNV()
     *(UINT32 *)&( publicInfo.nvPublic.attributes ) = 0;
 
     // Now set the attributes.
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PPREAD;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PPWRITE;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_WRITE_STCLEAR;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_ORDERLY;
+    publicInfo.nvPublic.attributes |= TPMA_NV_PPREAD;
+    publicInfo.nvPublic.attributes |= TPMA_NV_PPWRITE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_WRITE_STCLEAR;
+    publicInfo.nvPublic.attributes |= TPMA_NV_PLATFORMCREATE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_ORDERLY;
     publicInfo.nvPublic.authPolicy.size = 0;
     publicInfo.nvPublic.dataSize = 32;
 
@@ -839,12 +839,12 @@ void TestNV()
     rval = Tss2_Sys_NV_UndefineSpace( sysContext, TPM2_RH_PLATFORM, TPM20_INDEX_TEST1, &sessionsData, 0 );
     CheckPassed( rval );
 
-    publicInfo.nvPublic.attributes &= ~TPMA_NV_TPMA_NV_PPREAD;
-    publicInfo.nvPublic.attributes &= ~TPMA_NV_TPMA_NV_PPWRITE;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_OWNERREAD;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_OWNERWRITE;
-    publicInfo.nvPublic.attributes &= ~TPMA_NV_TPMA_NV_PLATFORMCREATE;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_ORDERLY;
+    publicInfo.nvPublic.attributes &= ~TPMA_NV_PPREAD;
+    publicInfo.nvPublic.attributes &= ~TPMA_NV_PPWRITE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_OWNERREAD;
+    publicInfo.nvPublic.attributes |= TPMA_NV_OWNERWRITE;
+    publicInfo.nvPublic.attributes &= ~TPMA_NV_PLATFORMCREATE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_ORDERLY;
     publicInfo.nvPublic.nvIndex = TPM20_INDEX_TEST2;
     rval = Tss2_Sys_NV_DefineSpace( sysContext, TPM2_RH_OWNER, &sessionsData, &nvAuth, &publicInfo, 0 );
     CheckPassed( rval );
@@ -904,12 +904,12 @@ void TestHierarchyControl()
     *(UINT32 *)&( publicInfo.nvPublic.attributes ) = 0;
 
     // Now set the attributes.
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PPREAD;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PPWRITE;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PPWRITE;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_WRITE_STCLEAR;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_ORDERLY;
+    publicInfo.nvPublic.attributes |= TPMA_NV_PPREAD;
+    publicInfo.nvPublic.attributes |= TPMA_NV_PPWRITE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_PPWRITE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_WRITE_STCLEAR;
+    publicInfo.nvPublic.attributes |= TPMA_NV_PLATFORMCREATE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_ORDERLY;
     publicInfo.nvPublic.authPolicy.size = 0;
     publicInfo.nvPublic.dataSize = 32;
 
@@ -1119,7 +1119,7 @@ TSS2_RC DefineNvIndex( TPMI_RH_PROVISION authHandle, TPMI_SH_AUTH_SESSION sessio
         .nonce = {.size = 0},
         .hmac = {.size = 0}}}};
 
-    attributes |= TPMA_NV_TPMA_NV_ORDERLY;
+    attributes |= TPMA_NV_ORDERLY;
 
     // Init public info structure.
     publicInfo.nvPublic.attributes = attributes;
@@ -1226,9 +1226,9 @@ TSS2_RC CreateNVIndex( TSS2_SYS_CONTEXT *sysContext, SESSION **policySession, TP
 
     // Now set the attributes.
     *(UINT32 *)( (void *)&nvAttributes ) = 0;
-    nvAttributes |= TPMA_NV_TPMA_NV_POLICYREAD;
-    nvAttributes |= TPMA_NV_TPMA_NV_POLICYWRITE;
-    nvAttributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
+    nvAttributes |= TPMA_NV_POLICYREAD;
+    nvAttributes |= TPMA_NV_POLICYWRITE;
+    nvAttributes |= TPMA_NV_PLATFORMCREATE;
 
     rval = DefineNvIndex( TPM2_RH_PLATFORM, TPM2_RS_PW, &nvAuth, policyDigest,
             TPM20_INDEX_PASSWORD_TEST, TPM2_ALG_SHA256, nvAttributes, 32  );
@@ -1844,13 +1844,13 @@ void ProvisionOtherIndices()
     publicInfo.nvPublic.attributes = 0;
 
     // Now set the attributes.
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_AUTHREAD;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_AUTHWRITE;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_AUTHREAD;
+    publicInfo.nvPublic.attributes |= TPMA_NV_AUTHWRITE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_PLATFORMCREATE;
     // Following commented out for convenience during development.
-    // publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_POLICY_DELETE;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_WRITEDEFINE;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_ORDERLY;
+    // publicInfo.nvPublic.attributes |= TPMA_NV_POLICY_DELETE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_WRITEDEFINE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_ORDERLY;
 
     publicInfo.nvPublic.authPolicy.size = 0;
     publicInfo.nvPublic.dataSize = NV_PS_INDEX_SIZE;
@@ -1936,9 +1936,9 @@ void ProvisionNvAux()
     *(UINT32 *)&( publicInfo.nvPublic.attributes ) = 0;
 
     // Now set the attributes.
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_AUTHREAD;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_POLICYWRITE;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_AUTHREAD;
+    publicInfo.nvPublic.attributes |= TPMA_NV_POLICYWRITE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_PLATFORMCREATE;
     // Following commented out for convenience during development.
     // publicInfo.nvPublic.attributes.TPMA_NV_POLICY_DELETE = 1;
 
@@ -2267,10 +2267,10 @@ void CreatePasswordTestNV( TPMI_RH_NV_INDEX nvIndex, char * password )
     *(UINT32 *)&( publicInfo.nvPublic.attributes ) = 0;
 
     // Now set the attributes.
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_AUTHREAD;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_AUTHWRITE;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
-    publicInfo.nvPublic.attributes |= TPMA_NV_TPMA_NV_ORDERLY;
+    publicInfo.nvPublic.attributes |= TPMA_NV_AUTHREAD;
+    publicInfo.nvPublic.attributes |= TPMA_NV_AUTHWRITE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_PLATFORMCREATE;
+    publicInfo.nvPublic.attributes |= TPMA_NV_ORDERLY;
     publicInfo.nvPublic.authPolicy.size = 0;
     publicInfo.nvPublic.dataSize = 32;
 
@@ -2425,9 +2425,9 @@ void SimplePolicyTest()
     // Now set the NV index's attributes:
     // policyRead, authWrite, and platormCreate.
     *(UINT32 *)( (void *)&nvAttributes ) = 0;
-    nvAttributes |= TPMA_NV_TPMA_NV_POLICYREAD;
-    nvAttributes |= TPMA_NV_TPMA_NV_POLICYWRITE;
-    nvAttributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
+    nvAttributes |= TPMA_NV_POLICYREAD;
+    nvAttributes |= TPMA_NV_POLICYWRITE;
+    nvAttributes |= TPMA_NV_PLATFORMCREATE;
 
     // Create the NV index.
     rval = DefineNvIndex( TPM2_RH_PLATFORM, TPM2_RS_PW,
@@ -2664,9 +2664,9 @@ void SimpleHmacTest()
     // Now set the NV index's attributes:
     // policyRead, authWrite, and platormCreate.
     *(UINT32 *)( (void *)&nvAttributes ) = 0;
-    nvAttributes |= TPMA_NV_TPMA_NV_AUTHREAD;
-    nvAttributes |= TPMA_NV_TPMA_NV_AUTHWRITE;
-    nvAttributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
+    nvAttributes |= TPMA_NV_AUTHREAD;
+    nvAttributes |= TPMA_NV_AUTHWRITE;
+    nvAttributes |= TPMA_NV_PLATFORMCREATE;
 
     // Create the NV index.
     rval = DefineNvIndex( TPM2_RH_PLATFORM, TPM2_RS_PW,
@@ -2969,15 +2969,15 @@ void SimpleHmacOrPolicyTest( bool hmacTest )
     *(UINT32 *)( &nvAttributes ) = 0;
     if( hmacTest )
     {
-        nvAttributes |= TPMA_NV_TPMA_NV_AUTHREAD;
-        nvAttributes |= TPMA_NV_TPMA_NV_AUTHWRITE;
+        nvAttributes |= TPMA_NV_AUTHREAD;
+        nvAttributes |= TPMA_NV_AUTHWRITE;
     }
     else
     {
-        nvAttributes |= TPMA_NV_TPMA_NV_POLICYREAD;
-        nvAttributes |= TPMA_NV_TPMA_NV_POLICYWRITE;
+        nvAttributes |= TPMA_NV_POLICYREAD;
+        nvAttributes |= TPMA_NV_POLICYWRITE;
     }
-    nvAttributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
+    nvAttributes |= TPMA_NV_PLATFORMCREATE;
 
     // Create the NV index.
     rval = DefineNvIndex( TPM2_RH_PLATFORM, TPM2_RS_PW,
@@ -3225,9 +3225,9 @@ void TestEncryptDecryptSession()
 
     // Create NV index with empty auth value.
     *(UINT32 *)( (void *)&nvAttributes ) = 0;
-    nvAttributes |= TPMA_NV_TPMA_NV_AUTHREAD;
-    nvAttributes |= TPMA_NV_TPMA_NV_AUTHWRITE;
-    nvAttributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
+    nvAttributes |= TPMA_NV_AUTHREAD;
+    nvAttributes |= TPMA_NV_AUTHWRITE;
+    nvAttributes |= TPMA_NV_PLATFORMCREATE;
 
     // No authorization required.
     authPolicy.size = 0;
@@ -3741,9 +3741,9 @@ void GetSetEncryptParamTests()
 
     // Now set the attributes.
     *(UINT32 *)( (void *)&nvAttributes ) = 0;
-    nvAttributes |= TPMA_NV_TPMA_NV_AUTHREAD;
-    nvAttributes |= TPMA_NV_TPMA_NV_AUTHWRITE;
-    nvAttributes |= TPMA_NV_TPMA_NV_PLATFORMCREATE;
+    nvAttributes |= TPMA_NV_AUTHREAD;
+    nvAttributes |= TPMA_NV_AUTHWRITE;
+    nvAttributes |= TPMA_NV_PLATFORMCREATE;
 
     rval = DefineNvIndex( TPM2_RH_PLATFORM, TPM2_RS_PW, &nvAuth, &authPolicy,
             TPM20_INDEX_PASSWORD_TEST, TPM2_ALG_SHA1, nvAttributes, 32  );
