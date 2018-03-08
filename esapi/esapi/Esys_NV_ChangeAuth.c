@@ -253,6 +253,18 @@ Esys_NV_ChangeAuth_finish(
         return r;
     }
     /*
+     * Session value has to be updated before checking the response to ensure
+     * correct computation of hmac with new auth value.
+     */
+    nvIndex = esysContext->in.NV_ChangeAuth.nvIndex;
+    r = esys_GetResourceObject(esysContext, nvIndex, &nvIndexNode);
+    return_if_error(r, "get resource");
+
+    nvIndexNode->auth = *esysContext->in.NV_ChangeAuth.newAuth;
+    iesys_compute_session_value(esysContext->session_tab[0],
+                                &nvIndexNode->rsrc.name, &nvIndexNode->auth);
+
+    /*
      * Now the verification of the response (hmac check) and if necessary the
      * parameter decryption have to be done
      */
@@ -268,11 +280,6 @@ Esys_NV_ChangeAuth_finish(
         esysContext->state = _ESYS_STATE_ERRORRESPONSE;
         return r;;
     }
-    nvIndex = esysContext->in.NV_ChangeAuth.nvIndex;
-    r = esys_GetResourceObject(esysContext, nvIndex, &nvIndexNode);
-    return_if_error(r, "get resource");
-
-    nvIndexNode->auth = *esysContext->in.NV_ChangeAuth.newAuth;
     esysContext->state = _ESYS_STATE_FINISHED;
 
     return r;
