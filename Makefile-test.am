@@ -82,6 +82,7 @@ TESTS_INTEGRATION = \
     test/integration/policy-template.int \
     test/integration/create-loaded.int \
     test/integration/policy-authorizeNV.int \
+    test/integration/command-cancel.int \
     test/tpmclient/tpmclient.int
 if ESAPI
 TESTS_INTEGRATION += \
@@ -473,4 +474,9 @@ test_integration_policy_authorizeNV_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_policy_authorizeNV_int_LDADD   = $(TESTS_LDADD)
 test_integration_policy_authorizeNV_int_SOURCES = test/integration/main.c log/log.h log/log.c \
     test/integration/policy-authorizeNV.int.c
+
+test_integration_command_cancel_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_command_cancel_int_LDADD   = $(TESTS_LDADD)
+test_integration_command_cancel_int_SOURCES = test/integration/main.c log/log.h log/log.c \
+    test/integration/command-cancel.int.c
 endif #SIMULATOR_BIN
