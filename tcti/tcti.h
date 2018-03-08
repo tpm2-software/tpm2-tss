@@ -109,6 +109,11 @@ typedef struct {
     tpm_header_t header;
     uint8_t locality;
 
+    /* Flag indicating if a command has been cancelled.
+     * This is a temporary flag, which will be changed into
+     * a tcti state when support for asynch operation will be added */
+    bool cancel;
+
     /* Sockets if socket interface is being used. */
     SOCKET otherSock;
     SOCKET tpmSock;

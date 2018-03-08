@@ -269,7 +269,6 @@ tcti_socket_receive_success_test (void **state)
     /* simulator appends 4 bytes of 0's to every response */
                                0x00, 0x00, 0x00, 0x00 };
     uint8_t response_out [12] = { 0 };
-    uint8_t platform_command_recv [4] = { 0 };
 
     /* Keep state machine check in `receive` from returning error. */
     tcti_intel->state = TCTI_STATE_RECEIVE;
@@ -288,10 +287,6 @@ tcti_socket_receive_success_test (void **state)
     /* receive the 4 bytes of 0's appended by the simulator */
     will_return (__wrap_read, 4);
     will_return (__wrap_read, &response_in [12]);
-    /* platform command sends 4 bytes and receives the same */
-    will_return (__wrap_write, 4);
-    will_return (__wrap_read, 4);
-    will_return (__wrap_read, platform_command_recv);
 
     rc = Tss2_Tcti_Receive (ctx, &response_size, response_out, TSS2_TCTI_TIMEOUT_BLOCK);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
@@ -313,7 +308,6 @@ tcti_socket_receive_size_success_test (void **state)
     /* simulator appends 4 bytes of 0's to every response */
                                0x00, 0x00, 0x00, 0x00 };
     uint8_t response_out [12] = { 0 };
-    uint8_t platform_command_recv [4] = { 0 };
 
     /* Keep state machine check in `receive` from returning error. */
     tcti_intel->state = TCTI_STATE_RECEIVE;
@@ -336,10 +330,6 @@ tcti_socket_receive_size_success_test (void **state)
     /* receive the 4 bytes of 0's appended by the simulator */
     will_return (__wrap_read, 4);
     will_return (__wrap_read, &response_in [12]);
-    /* platform command sends 4 bytes and receives the same */
-    will_return (__wrap_write, 4);
-    will_return (__wrap_read, 4);
-    will_return (__wrap_read, platform_command_recv);
 
     rc = Tss2_Tcti_Receive (ctx, &response_size, response_out, TSS2_TCTI_TIMEOUT_BLOCK);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
