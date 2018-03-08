@@ -162,6 +162,8 @@ tcti_socket_cancel (
     }
 
     tcti_intel->state = TCTI_STATE_TRANSMIT;
+    tcti_intel->cancel = 1;
+
     return rc;
 }
 
@@ -289,7 +291,10 @@ tcti_socket_receive (
         goto trans_state_out;
     }
 
-    rc = PlatformCommand (tctiContext, MS_SIM_CANCEL_OFF);
+    if (tcti_intel->cancel) {
+        rc = PlatformCommand (tctiContext, MS_SIM_CANCEL_OFF);
+        tcti_intel->cancel = 0;
+    }
     /*
      * Executing code beyond this point transitions the state machine to
      * TRANSMIT. Another call to this function will not be possible until
