@@ -28,7 +28,6 @@
 #define TCTI_DEVICE_H
 
 #include <sapi/tss2_tcti.h>
-#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {
