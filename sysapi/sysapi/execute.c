@@ -124,7 +124,7 @@ TSS2_RC Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout)
     }
     if (rval == TPM2_RC_CANCELED) {
         ctx->previousStage = CMD_STAGE_PREPARE;
-        return TSS2_SYS_RC_INSUFFICIENT_RESPONSE;
+        return rval;
     }
 
     ctx->previousStage = CMD_STAGE_RECEIVE_RESPONSE;
