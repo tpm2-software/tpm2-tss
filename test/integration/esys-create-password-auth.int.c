@@ -42,7 +42,8 @@
 #include "esys_iutil.h"
 
 /*
- * This test is intended to test password authentication.
+ * This test is intended to test password authentication for the ESAPI command
+ * Create.
  * We start by creating a primary key (Esys_CreatePrimary).
  * Based in the primary a second key with an password define in the sensitive
  * area will be created.
@@ -174,7 +175,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TPMT_TK_CREATION *creationTicket;
 
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
-                           ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary, &inPublic,
+                           ESYS_TR_NONE, ESYS_TR_NONE,
+                           &inSensitivePrimary, &inPublic,
                            &outsideInfo, &creationPCR, &primaryHandle_handle,
                            &outPublic, &creationData, &creationHash,
                            &creationTicket);

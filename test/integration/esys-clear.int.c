@@ -77,17 +77,16 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     ESYS_TR authHandle_handle = ESYS_TR_RH_PLATFORM;
 
-    r = Esys_Clear(
-        esys_context,
-        authHandle_handle,
+    r = Esys_Clear(esys_context,
+                   authHandle_handle,
 #ifdef TEST_SESSION
-        session,
+                   session,
 #else
-        ESYS_TR_PASSWORD,
+                   ESYS_TR_PASSWORD,
 #endif
-        ESYS_TR_NONE,
-        ESYS_TR_NONE
-        );
+                   ESYS_TR_NONE,
+                   ESYS_TR_NONE
+                   );
     goto_if_error(r, "Error: Clear", error);
 
 #ifdef TEST_SESSION
@@ -97,6 +96,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     return 0;
 
-error:
+ error:
     return 1;
 }

@@ -41,9 +41,9 @@
 #include "esys_types.h"
 #include "esys_iutil.h"
 
-#define goto_error_if_not_failed(rc,msg,label) \
-	if (rc == TSS2_RC_SUCCESS) { \
-		LOG_ERROR("Error %s (%x) in Line %i: \n", msg, __LINE__, rc); \
+#define goto_error_if_not_failed(rc,msg,label)                          \
+	if (rc == TSS2_RC_SUCCESS) {                                        \
+		LOG_ERROR("Error %s (%x) in Line %i: \n", msg, __LINE__, rc);   \
 		goto label; }
 
 /*
@@ -58,24 +58,24 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     uint32_t r = 0;
 
-   TPM2B_AUTH authValuePrimary = {
+    TPM2B_AUTH authValuePrimary = {
         .size = 5,
         .buffer = {1, 2, 3, 4, 5}
     };
 
-   TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
-       .size = 4,
-       .sensitive = {
-           .userAuth = {
-                .size = 0,
-                .buffer = {0 },
-            },
-           .data = {
-                .size = 0,
-                .buffer = {0},
-            },
-       },
-   };
+    TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
+        .size = 4,
+        .sensitive = {
+            .userAuth = {
+                 .size = 0,
+                 .buffer = {0 },
+             },
+            .data = {
+                 .size = 0,
+                 .buffer = {0},
+             },
+        },
+    };
 
     inSensitivePrimary.sensitive.userAuth = authValuePrimary;
 
@@ -189,7 +189,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error Esys GetResourceObject", error);
 
     LOG_INFO("Created Primary with handle 0x%08x...",
-           primaryHandle_node->rsrc.handle);
+             primaryHandle_node->rsrc.handle);
 
     r = Esys_TR_SetAuth(esys_context, primaryHandle_handle, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
@@ -210,17 +210,22 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                     &outPrivate2,
                     &outPublic2,
                     &creationData2, &creationHash2, &creationTicket2);
-   goto_error_if_not_failed(r, "Error esys create did not fail with NULL parameters",
-                            error);
+    goto_error_if_not_failed(r, "Error esys create did not fail with NULL parameters",
+                             error);
 
     r = Esys_Create_finish(NULL,
-                    &outPrivate2,
-                    &outPublic2,
-                    &creationData2, &creationHash2, &creationTicket2);
-   goto_error_if_not_failed(r, "Error esys create finish wiht NULL context did not fail",
-                            error);
+                           &outPrivate2,
+                           &outPublic2,
+                           &creationData2, &creationHash2, &creationTicket2);
 
-     return 0;
+    goto_error_if_not_failed(
+        r, "Error esys create finish wiht NULL context did not fail",
+        error);
+
+    r = Esys_FlushContext(esys_context, primaryHandle_handle);
+    goto_if_error(r, "Error during FlushContext", error);
+
+    return 0;
 
  error:
     return 1;
