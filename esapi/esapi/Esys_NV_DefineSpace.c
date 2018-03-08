@@ -170,6 +170,16 @@ Esys_NV_DefineSpace_async(
     r = iesys_check_sequence_async(esysContext);
     if (r != TSS2_RC_SUCCESS)
         return r;
+
+    /* Prevent creation of undeletable NV space */
+    if (publicInfo != NULL &&
+        (publicInfo->nvPublic.attributes & TPMA_NV_POLICY_DELETE) != 0 &&
+        publicInfo->nvPublic.authPolicy.size == 0) {
+        r = TSS2_ESYS_RC_BAD_VALUE;
+        LOG_ERROR("Preventing creation of undeletable NV index.");
+        esysContext->state = _ESYS_STATE_INIT;
+        return r;
+    }
     r = check_session_feasability(shandle1, shandle2, shandle3, 1);
     return_if_error(r, "Check session usage");
 
