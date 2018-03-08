@@ -253,6 +253,18 @@ Esys_HierarchyChangeAuth_finish(
         return r;
     }
     /*
+     * Session value has to be updated before checking the response to ensure
+     * correct computation of hmac with new auth value.
+     */
+    authHandle = esysContext->in.HierarchyChangeAuth.authHandle;
+    r = esys_GetResourceObject(esysContext, authHandle, &authHandleNode);
+    return_if_error(r, "get resource");
+
+    authHandleNode->auth = *esysContext->in.HierarchyChangeAuth.newAuth;
+    iesys_compute_session_value(esysContext->session_tab[0],
+                                &authHandleNode->rsrc.name, &authHandleNode->auth);
+
+    /*
      * Now the verification of the response (hmac check) and if necessary the
      * parameter decryption have to be done
      */
@@ -268,11 +280,6 @@ Esys_HierarchyChangeAuth_finish(
         esysContext->state = _ESYS_STATE_ERRORRESPONSE;
         return r;;
     }
-    authHandle = esysContext->in.HierarchyChangeAuth.authHandle;
-    r = esys_GetResourceObject(esysContext, authHandle, &authHandleNode);
-    return_if_error(r, "get resource");
-
-    authHandleNode->auth = *esysContext->in.NV_ChangeAuth.newAuth;
     esysContext->state = _ESYS_STATE_FINISHED;
 
     return r;
