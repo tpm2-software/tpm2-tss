@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <setjmp.h>
 #include <cmocka.h>
 #include "sapi/tss2_mu.h"
