@@ -90,6 +90,11 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         );
     goto_if_error(r, "Error: Clear", error);
 
+#ifdef TEST_SESSION
+    r = Esys_FlushContext(esys_context, session);
+    goto_if_error(r, "Error: FlushContext", error);
+#endif
+
     return 0;
 
 error:
