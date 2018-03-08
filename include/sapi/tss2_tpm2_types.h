@@ -35,7 +35,6 @@
 #endif  /* TSS2_API_VERSION_1_2_1_108 */
 
 #include <stdint.h>
-#include "tpmb.h"
 
 #define TPM2_MAX_COMMAND_SIZE  4096 /* maximum size of a command */
 #define TPM2_MAX_RESPONSE_SIZE 4096 /* maximum size of a response */
@@ -899,10 +898,16 @@ typedef struct {
 } TPMT_HA;
 
 /* Definition of TPM2B_DIGEST Structure */
-TPM2B_TYPE1(DIGEST, sizeof(TPMU_HA), buffer);
+typedef struct {
+    UINT16 size;
+    BYTE buffer[sizeof(TPMU_HA)];
+} TPM2B_DIGEST;
 
 /* Definition of TPM2B_DATA Structure */
-TPM2B_TYPE1(DATA, sizeof(TPMT_HA), buffer);
+typedef struct {
+    UINT16 size;
+    BYTE buffer[sizeof(TPMU_HA)];
+} TPM2B_DATA;
 
 /* Definition of Types for TPM2B_NONCE */
 typedef TPM2B_DIGEST  TPM2B_NONCE; /* size limited to the same as the digest structure */
@@ -914,19 +919,31 @@ typedef TPM2B_DIGEST  TPM2B_AUTH; /* size limited to the same as the digest stru
 typedef TPM2B_DIGEST  TPM2B_OPERAND; /* size limited to the same as the digest structure */
 
 /* Definition of TPM2B_EVENT Structure */
-TPM2B_TYPE1(EVENT, 1024, buffer);
+typedef struct {
+    UINT16 size;
+    BYTE buffer[1024];
+} TPM2B_EVENT;
 
 /* Definition of TPM2B_MAX_BUFFER Structure */
-TPM2B_TYPE1(MAX_BUFFER, TPM2_MAX_DIGEST_BUFFER, buffer);
+typedef struct {
+    UINT16 size;
+    BYTE buffer[TPM2_MAX_DIGEST_BUFFER];
+} TPM2B_MAX_BUFFER;
 
 /* Definition of TPM2B_MAX_NV_BUFFER Structure */
-TPM2B_TYPE1(MAX_NV_BUFFER, TPM2_MAX_NV_BUFFER_SIZE, buffer);
+typedef struct {
+    UINT16 size;
+    BYTE buffer[TPM2_MAX_NV_BUFFER_SIZE];
+} TPM2B_MAX_NV_BUFFER;
 
 /* Definition of Types for TPM2B_TIMEOUT */
 typedef TPM2B_DIGEST  TPM2B_TIMEOUT; /* size limited to the same as the digest structure */
 
 /* Definition of TPM2B_IV Structure <INOUT> */
-TPM2B_TYPE1(IV, TPM2_MAX_SYM_BLOCK_SIZE, buffer);
+typedef struct {
+    UINT16 size;
+    BYTE buffer[TPM2_MAX_SYM_BLOCK_SIZE];
+} TPM2B_IV;
 
 /* Definition of TPMU_NAME Union <> */
 typedef union {
@@ -935,7 +952,10 @@ typedef union {
 } TPMU_NAME;
 
 /* Definition of TPM2B_NAME Structure */
-TPM2B_TYPE1(NAME, sizeof(TPMU_NAME), name);
+typedef struct {
+    UINT16 size;
+    BYTE name[sizeof(TPMU_NAME)];
+} TPM2B_NAME;
 
 /* Definition of TPMS_PCR_SELECT Structure */
 typedef struct {
@@ -1174,7 +1194,10 @@ typedef struct {
 } TPMS_ATTEST;
 
 /* Definition of TPM2B_ATTEST Structure <OUT> */
-TPM2B_TYPE1(ATTEST, sizeof(TPMS_ATTEST), attestationData);
+typedef struct {
+    UINT16 size;
+    BYTE attestationData[sizeof(TPMS_ATTEST)];
+} TPM2B_ATTEST;
 
 /* Definition of TPMS_AUTH_COMMAND Structure <IN> */
 typedef struct {
@@ -1232,7 +1255,10 @@ typedef struct {
 } TPMT_SYM_DEF_OBJECT;
 
 /* Definition of TPM2B_SYM_KEY Structure */
-TPM2B_TYPE1(SYM_KEY, TPM2_MAX_SYM_KEY_BYTES, buffer);
+typedef struct {
+    UINT16 size;
+    BYTE buffer[TPM2_MAX_SYM_KEY_BYTES];
+} TPM2B_SYM_KEY;
 
 /* Definition of TPMS_SYMCIPHER_PARMS Structure */
 typedef struct {
@@ -1240,7 +1266,10 @@ typedef struct {
 } TPMS_SYMCIPHER_PARMS;
 
 /* Definition of TPM2B_SENSITIVE_DATA Structure */
-TPM2B_TYPE1(SENSITIVE_DATA, TPM2_MAX_SYM_DATA, buffer);
+typedef struct {
+    UINT16 size;
+    BYTE buffer[TPM2_MAX_SYM_DATA];
+} TPM2B_SENSITIVE_DATA;
 
 /* Definition of TPMS_SENSITIVE_CREATE Structure <IN> */
 typedef struct {
@@ -1249,7 +1278,10 @@ typedef struct {
 } TPMS_SENSITIVE_CREATE;
 
 /* Definition of TPM2B_SENSITIVE_CREATE Structure <IN S> */
-TPM2B_TYPE2(SENSITIVE_CREATE, TPMS_SENSITIVE_CREATE, sensitive);
+typedef struct {
+    UINT16  size;
+    TPMS_SENSITIVE_CREATE sensitive;
+} TPM2B_SENSITIVE_CREATE;
 
 /* Definition of TPMS_SCHEME_HASH Structure */
 typedef struct {
@@ -1385,16 +1417,25 @@ typedef struct {
 } TPMT_RSA_DECRYPT;
 
 /* Definition of RSA TPM2B_PUBLIC_KEY_RSA Structure */
-TPM2B_TYPE1(PUBLIC_KEY_RSA, TPM2_MAX_RSA_KEY_BYTES, buffer);
+typedef struct {
+    UINT16 size;
+    BYTE buffer[TPM2_MAX_RSA_KEY_BYTES];
+} TPM2B_PUBLIC_KEY_RSA;
 
 /* Definition of RSA TPM2_KEY_BITS TPMI_RSA_KEY_BITS Type */
 typedef TPM2_KEY_BITS TPMI_RSA_KEY_BITS;
 
 /* Definition of RSA TPM2B_PRIVATE_KEY_RSA Structure */
-TPM2B_TYPE1(PRIVATE_KEY_RSA, TPM2_MAX_RSA_KEY_BYTES/2, buffer);
+typedef struct {
+    UINT16 size;
+    BYTE buffer[TPM2_MAX_RSA_KEY_BYTES/2];
+} TPM2B_PRIVATE_KEY_RSA;
 
 /* Definition of ECC TPM2B_ECC_PARAMETER Structure */
-TPM2B_TYPE1(ECC_PARAMETER, TPM2_MAX_ECC_KEY_BYTES, buffer);
+typedef struct {
+    UINT16 size;
+    BYTE buffer[TPM2_MAX_ECC_KEY_BYTES];
+} TPM2B_ECC_PARAMETER;
 
 /* Definition of ECC TPMS_ECC_POINT Structure */
 typedef struct {
@@ -1403,7 +1444,10 @@ typedef struct {
 } TPMS_ECC_POINT;
 
 /* Definition of ECC TPM2B_ECC_POINT Structure */
-TPM2B_TYPE2(ECC_POINT, TPMS_ECC_POINT, point);
+typedef struct {
+    UINT16  size;
+    TPMS_ECC_POINT point;
+} TPM2B_ECC_POINT;
 
 /* Definition of TPM2_ALG_ID ECC TPMI_ALG_ECC_SCHEME Type */
 typedef TPM2_ALG_ID TPMI_ALG_ECC_SCHEME;
@@ -1482,7 +1526,10 @@ typedef union {
 } TPMU_ENCRYPTED_SECRET;
 
 /* Definition of TPM2B_ENCRYPTED_SECRET Structure */
-TPM2B_TYPE1(ENCRYPTED_SECRET, sizeof(TPMU_ENCRYPTED_SECRET), secret);
+typedef struct {
+    UINT16 size;
+    BYTE secret[sizeof(TPMU_ENCRYPTED_SECRET)];
+} TPM2B_ENCRYPTED_SECRET;
 
 /* Definition of TPM2_ALG_ID TPMI_ALG_PUBLIC Type */
 typedef TPM2_ALG_ID TPMI_ALG_PUBLIC;
@@ -1548,13 +1595,22 @@ typedef struct {
 } TPMT_PUBLIC;
 
 /* Definition of TPM2B_PUBLIC Structure */
-TPM2B_TYPE2(PUBLIC, TPMT_PUBLIC, publicArea);
+typedef struct {
+    UINT16  size;
+    TPMT_PUBLIC publicArea;
+} TPM2B_PUBLIC;
 
 /* Definition of TPM2B_TEMPLATE Structure */
-TPM2B_TYPE1(TEMPLATE, sizeof(TPMT_PUBLIC), buffer);
+typedef struct {
+    UINT16 size;
+    BYTE buffer[sizeof(TPMT_PUBLIC)];
+} TPM2B_TEMPLATE;
 
 /* Definition of TPM2B_PRIVATE_VENDOR_SPECIFIC Structure<> */
-TPM2B_TYPE1(PRIVATE_VENDOR_SPECIFIC, TPM2_PRIVATE_VENDOR_SPECIFIC_BYTES, buffer);
+typedef struct {
+    UINT16 size;
+    BYTE buffer[TPM2_PRIVATE_VENDOR_SPECIFIC_BYTES];
+} TPM2B_PRIVATE_VENDOR_SPECIFIC;
 
 /* Definition of TPMU_SENSITIVE_COMPOSITE Union <INOUT S> */
 typedef union {
@@ -1574,7 +1630,10 @@ typedef struct {
 } TPMT_SENSITIVE;
 
 /* Definition of TPM2B_SENSITIVE Structure <INOUT> */
-TPM2B_TYPE2(SENSITIVE, TPMT_SENSITIVE, sensitiveArea);
+typedef struct {
+    UINT16  size;
+    TPMT_SENSITIVE sensitiveArea;
+} TPM2B_SENSITIVE;
 
 /* Definition of _PRIVATE Structure <> */
 typedef struct {
@@ -1584,7 +1643,10 @@ typedef struct {
 } _PRIVATE;
 
 /* Definition of TPM2B_PRIVATE Structure <INOUT S> */
-TPM2B_TYPE1(PRIVATE, sizeof(_PRIVATE), buffer);
+typedef struct {
+    UINT16 size;
+    BYTE buffer[sizeof(_PRIVATE)];
+} TPM2B_PRIVATE;
 
 /* Definition of _ID_OBJECT Structure <> */
 typedef struct {
@@ -1593,7 +1655,10 @@ typedef struct {
 } _ID_OBJECT;
 
 /* Definition of TPM2B_ID_OBJECT Structure <INOUT> */
-TPM2B_TYPE1(ID_OBJECT, sizeof(_ID_OBJECT), credential);
+typedef struct {
+    UINT16 size;
+    BYTE credential[sizeof(_ID_OBJECT)];
+} TPM2B_ID_OBJECT;
 
 /* Definition of UINT32 TPM2_NV_INDEX Bits <> */
 typedef uint32_t TPM2_NV_INDEX;
@@ -1653,10 +1718,16 @@ typedef struct {
 } TPMS_NV_PUBLIC;
 
 /* Definition of TPM2B_NV_PUBLIC Structure */
-TPM2B_TYPE2(NV_PUBLIC, TPMS_NV_PUBLIC, nvPublic);
+typedef struct {
+    UINT16  size;
+    TPMS_NV_PUBLIC nvPublic;
+} TPM2B_NV_PUBLIC;
 
 /* Definition of TPM2B_CONTEXT_SENSITIVE Structure <INOUT> */
-TPM2B_TYPE1(CONTEXT_SENSITIVE, TPM2_MAX_CONTEXT_SIZE, buffer);
+typedef struct {
+    UINT16 size;
+    BYTE buffer[TPM2_MAX_CONTEXT_SIZE];
+} TPM2B_CONTEXT_SENSITIVE;
 
 /* Definition of TPMS_CONTEXT_DATA Structure <INOUT S> */
 typedef struct {
@@ -1665,7 +1736,10 @@ typedef struct {
 } TPMS_CONTEXT_DATA;
 
 /* Definition of TPM2B_CONTEXT_DATA Structure <INOUT> */
-TPM2B_TYPE1(CONTEXT_DATA, sizeof(TPMS_CONTEXT_DATA), buffer);
+typedef struct {
+    UINT16 size;
+    BYTE buffer[sizeof(TPMS_CONTEXT_DATA)];
+} TPM2B_CONTEXT_DATA;
 
 /* Definition of TPMS_CONTEXT Structure */
 typedef struct {
@@ -1687,7 +1761,10 @@ typedef struct {
 } TPMS_CREATION_DATA;
 
 /* Definition of TPM2B_CREATION_DATA Structure <OUT> */
-TPM2B_TYPE2(CREATION_DATA, TPMS_CREATION_DATA, creationData);
+typedef struct {
+    UINT16  size;
+    TPMS_CREATION_DATA creationData;
+} TPM2B_CREATION_DATA;
 
 typedef UINT32 TPM_AT;
 
