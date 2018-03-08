@@ -1033,9 +1033,6 @@ typedef struct {
     TPMT_HA digests[TPM2_NUM_PCR_BANKS]; /* a list of tagged digests */
 } TPML_DIGEST_VALUES;
 
-/* Definition of TPM2B_DIGEST_VALUES Structure */
-TPM2B_TYPE1(DIGEST_VALUES, sizeof(TPML_DIGEST_VALUES), buffer);
-
 /* Definition of TPML_PCR_SELECTION Structure */
 typedef struct {
     UINT32 count; /* number of selection structuresA value of zero is allowed. */
