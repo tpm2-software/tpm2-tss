@@ -25,25 +25,27 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
 
+#define _GNU_SOURCE
+#include <getopt.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <signal.h>
+#include <stdint.h>
 #include <sapi/tpm20.h>
-#ifndef TSS2_API_VERSION_1_2_1_108
-#error Version missmatch among TSS2 header files !
-#endif /* TSS2_API_VERSION_1_2_1_108 */
-#include "esys_types.h"
-#include <esapi/tss2_esys.h>
-#include "esys_iutil.h"
-#include "esys_mu.h"
-#include <sapi/tss2_sys.h>
-#define LOGMODULE esys
+#define LOGMODULE test
 #include "log/log.h"
+#include "test.h"
+#include "sysapi_util.h"
+#include <esapi/tss2_esys.h>
+#include "esys_types.h"
+#include "esys_iutil.h"
+
 
 /*
- * This test is intended to test then change of an authorization value of
- * a hiearachy.
- * To check whether the change was successful a primary key is created
- * with the handle of this hierarchie and the new authorization.
- * Also second primary is created after a call of Esys_TR_SetAuth with
- * the new auth value.
+ * This test is intended to test the ESAPI command CreateLoaded.
+ * We start by creating a primary key (Esys_CreatePrimary).
+ * This primary key will be used as parent key for CreateLoaded.
  */
 
 int
@@ -76,45 +78,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: During initialization of session", error);
 #endif /* TEST_SESSION */
 
-    ESYS_TR authHandle_handle = ESYS_TR_RH_OWNER;
-    TPM2B_AUTH newAuth = {
-        .size = 5,
-        .buffer = {1, 2, 3, 4, 5}
-    };
-
-    r = Esys_HierarchyChangeAuth(esys_context,
-                                 authHandle_handle,
-#ifdef TEST_SESSION
-                                 session,
-#else
-                                 ESYS_TR_PASSWORD,
-#endif
-                                 ESYS_TR_NONE,
-                                 ESYS_TR_NONE,
-                                 &newAuth);
-    goto_if_error(r, "Error: HierarchyChangeAuth", error);
-
-#ifdef TEST_SESSION
-    r = Esys_FlushContext(esys_context, session);
-    goto_if_error(r, "Flushing context", error);
-#endif
-
-
-    TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
-       .size = 4,
-       .sensitive = {
-           .userAuth = {
-                .size = 0,
-                .buffer = {0 },
-            },
-           .data = {
-                .size = 0,
-                .buffer = {0},
-            },
-       },
-   };
-
-      TPM2B_PUBLIC inPublic = {
+    TPM2B_PUBLIC inPublic = {
         .size = 0,
         .publicArea = {
             .type = TPM2_ALG_RSA,
@@ -145,9 +109,30 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
              },
         },
     };
-    LOG_INFO("\nRSA key will be created.");
 
-    TPM2B_DATA outsideInfo = {
+   TPM2B_AUTH authValuePrimary = {
+        .size = 5,
+        .buffer = {1, 2, 3, 4, 5}
+    };
+
+   TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
+       .size = 4,
+       .sensitive = {
+           .userAuth = {
+                .size = 0,
+                .buffer = {0 },
+            },
+           .data = {
+                .size = 0,
+                .buffer = {0},
+            },
+       },
+   };
+    return 0;
+
+    inSensitivePrimary.sensitive.userAuth = authValuePrimary;
+
+   TPM2B_DATA outsideInfo = {
         .size = 0,
         .buffer = {},
     };
@@ -156,6 +141,12 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         .count = 0,
     };
 
+    TPM2B_AUTH authValue = {
+        .size = 0,
+        .buffer = {}
+    };
+
+    r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
     ESYS_TR primaryHandle_handle;
@@ -171,21 +162,61 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
+   TPM2B_AUTH authValueObject = {
+        .size = 5,
+        .buffer = {6, 7, 8, 9, 10}
+    };
+
+   TPM2B_SENSITIVE_CREATE inSensitiveObject = {
+       .size = 4,
+       .sensitive = {
+           .userAuth = {
+                .size = 0,
+                .buffer = {0 },
+            },
+           .data = {
+                .size = 0,
+                .buffer = {0},
+            },
+       },
+   };
+
+   inSensitiveObject.sensitive.userAuth = authValueObject;
+
+    TPM2B_TEMPLATE                 inPublic2;
+    ESYS_TR                        objectHandle_handle;
+    TPM2B_PRIVATE                  *outPrivate2;
+    TPM2B_PUBLIC                   *outPublic2;
+
+    r = Esys_CreateLoaded (
+        esys_context,
+        primaryHandle_handle,
+#ifdef TEST_SESSION
+        session,
+#else
+        ESYS_TR_PASSWORD,
+#endif
+        ESYS_TR_NONE,
+        ESYS_TR_NONE,
+        &inSensitiveObject,
+        &inPublic2,
+        &objectHandle_handle,
+        &outPrivate2,
+        &outPublic2
+        );
+    goto_if_error(r, "Error: CreateLoaded", error);
+
     r = Esys_FlushContext(esys_context, primaryHandle_handle);
     goto_if_error(r, "Flushing context", error);
 
-    r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &newAuth);
-    goto_if_error(r, "Error SetAuth", error);
-
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
-                           ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary, &inPublic,
-                           &outsideInfo, &creationPCR, &primaryHandle_handle,
-                           &outPublic, &creationData, &creationHash,
-                           &creationTicket);
-    goto_if_error(r, "Error esys create primary", error);
-
-    r = Esys_FlushContext(esys_context, primaryHandle_handle);
+    r = Esys_FlushContext(esys_context, objectHandle_handle);
     goto_if_error(r, "Flushing context", error);
+
+#ifdef TEST_SESSION
+    r = Esys_FlushContext(esys_context, session);
+    goto_if_error(r, "Error: FlushContext", error);
+#endif
+
 
     return 0;
 
