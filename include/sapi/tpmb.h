@@ -33,11 +33,6 @@
        Do not include this file, #include <sapi/tpm20.h> instead.
 #endif  /* TSS2_API_VERSION_1_2_1_108 */
 
-typedef struct {
-    UINT16  size;
-    BYTE    buffer[1];
-} TPM2B;
-
 #define TPM2B_TYPE1(name, bytes, bufferName)  \
     typedef struct {                          \
         UINT16  size;                         \
