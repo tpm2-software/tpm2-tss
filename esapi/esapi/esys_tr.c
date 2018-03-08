@@ -256,14 +256,15 @@ Esys_TR_FromTPMPublic(ESYS_CONTEXT * esys_context,
 TSS2_RC
 Esys_TR_Close(ESYS_CONTEXT * esys_context, ESYS_TR * object)
 {
-    RSRC_NODE_T *node_rsrc;
-    RSRC_NODE_T **update_node;
-    for (node_rsrc = esys_context->rsrc_list, update_node =
-         &esys_context->rsrc_list; node_rsrc != NULL;
-         update_node = &node_rsrc, node_rsrc = node_rsrc->next) {
-        if (node_rsrc->esys_handle == *object) {
-            *update_node = node_rsrc->next;
-            SAFE_FREE(node_rsrc);
+    RSRC_NODE_T *node;
+    RSRC_NODE_T **update_ptr;
+    for (node = esys_context->rsrc_list,
+         update_ptr = &esys_context->rsrc_list;
+         node != NULL;
+         update_ptr = &node->next, node = node->next) {
+        if (node->esys_handle == *object) {
+            *update_ptr = node->next;
+            SAFE_FREE(node);
             *object = ESYS_TR_NONE;
             return TSS2_RC_SUCCESS;
         }
@@ -314,7 +315,7 @@ Esys_TR_GetName(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
 {
     RSRC_NODE_T *esys_object;
     TSS2_RC r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
-    return_if_error(r, "Objec not found");
+    return_if_error(r, "Object not found");
 
     *name = malloc(sizeof(TPM2B_NAME));
     if (*name == NULL) {
