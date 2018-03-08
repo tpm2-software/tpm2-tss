@@ -93,7 +93,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                     TPMA_NV_WRITE_STCLEAR |
                     TPMA_NV_AUTHREAD |
                     TPMA_NV_OWNERREAD |
-                    TPM2_NT_EXTEND << TPM2_NT_EXTEND
+                    TPM2_NT_EXTEND << TPMA_NV_TPM2_NT_SHIFT
                  ),
                 .authPolicy = {
                          .size = 0,
@@ -193,7 +193,7 @@ r = Esys_NV_Read(
 #endif
     ESYS_TR_NONE,
     ESYS_TR_NONE,
-    0,
+    20,
     0,
     &nv_test_data2);
 
