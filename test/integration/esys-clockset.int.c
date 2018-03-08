@@ -33,7 +33,6 @@
 #include <signal.h>
 #include <stdint.h>
 #include <gcrypt.h>
-
 #include <sapi/tpm20.h>
 #define LOGMODULE test
 #include "log/log.h"
@@ -69,7 +68,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCaller,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1, &session,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              &session,
                               &nonceTpm);
 
     goto_if_error(r, "Error: During initialization of session", error);
@@ -78,18 +78,17 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     ESYS_TR auth_handle = ESYS_TR_RH_OWNER;
     UINT64 newTime = 0xffffff;
 
-    r = Esys_ClockSet (
-        esys_context,
-        auth_handle,
+    r = Esys_ClockSet(esys_context,
+                      auth_handle,
 #ifdef TEST_SESSION
-        session,
+                      session,
 #else
-        ESYS_TR_PASSWORD,
+                      ESYS_TR_PASSWORD,
 #endif
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        newTime
-        );
+                      ESYS_TR_NONE,
+                      ESYS_TR_NONE,
+                      newTime
+                      );
     goto_if_error(r, "Error: ClockSet", error);
 
 #ifdef TEST_SESSION
@@ -99,6 +98,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     return 0;
 
-error:
+ error:
     return 1;
 }

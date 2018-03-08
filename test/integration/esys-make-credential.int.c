@@ -44,10 +44,11 @@
 /*
  * This test is intended to test the function Esys_MakeCredential
  * We start by creating a primary key (Esys_CreatePrimary).
- * Based in the primary a second key.
+ * Based in the primary a second key will be created.
  * The public part of the key will be loaded by the function
  * Esys_LoadExternal. A credential will be encrypted with this
- * key with the command Esys_MakeCredential.
+ * key with the command Esys_MakeCredential. The credential
+ * will be activated with Esys_ActivateCredential.
  */
 
 int
@@ -98,7 +99,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                               TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1, &session2,
                               &nonceTpm);
 
-   goto_if_error(r, "Error: During initialization of session", error);
+    goto_if_error(r, "Error: During initialization of session", error);
 
     r = esys_GetResourceObject(esys_context, session2,
                                &session2_node);
@@ -130,45 +131,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     inSensitivePrimary.sensitive.userAuth = authValuePrimary;
 
-#ifdef TEST_ECC
-    TPM2B_PUBLIC inPublic = {
-        .size = 0,
-        .publicArea = {
-            .type = TPM2_ALG_ECC,
-            .nameAlg = TPM2_ALG_SHA256,
-            .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
-                                 TPMA_OBJECT_RESTRICTED |
-                                 TPMA_OBJECT_SIGN_ENCRYPT |
-                                 TPMA_OBJECT_FIXEDTPM |
-                                 TPMA_OBJECT_FIXEDPARENT |
-                                 TPMA_OBJECT_SENSITIVEDATAORIGIN),
-            .authPolicy = {
-                 .size = 0,
-             },
-            .parameters.eccDetail = {
-                 .symmetric = {
-                     .algorithm = TPM2_ALG_NULL,
-                     .keyBits.aes = 128,
-                     .mode.aes = TPM2_ALG_ECB,
-                 },
-                 .scheme = {
-                      .scheme = TPM2_ALG_ECDSA,
-                      .details = {
-                          .ecdsa = {.hashAlg  = TPM2_ALG_SHA256}},
-                  },
-                 .curveID = TPM2_ECC_NIST_P256,
-                 .kdf = {
-                      .scheme = TPM2_ALG_NULL,
-                      .details = {}}
-             },
-            .unique.ecc = {
-                 .x = {.size = 0,.buffer = {}},
-                 .y = {.size = 0,.buffer = {}},
-             },
-        },
-    };
-    LOG_INFO("\nECC key will be created.");
-#else
     TPM2B_PUBLIC inPublic = {
         .size = 0,
         .publicArea = {
@@ -201,7 +163,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         },
     };
     LOG_INFO("\nRSA key will be created.");
-#endif // TEST_ECC
 
     TPM2B_DATA outsideInfo = {
         .size = 0,
@@ -347,15 +308,14 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TPM2B_NAME *primaryKeyName;
     TPM2B_NAME *primaryKeyQualifiedName;
 
-    r = Esys_ReadPublic(
-        esys_context,
-        primaryHandle_handle,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        &primaryKeyPublic,
-        &primaryKeyName,
-        &primaryKeyQualifiedName);
+    r = Esys_ReadPublic(esys_context,
+                        primaryHandle_handle,
+                        ESYS_TR_NONE,
+                        ESYS_TR_NONE,
+                        ESYS_TR_NONE,
+                        &primaryKeyPublic,
+                        &primaryKeyName,
+                        &primaryKeyQualifiedName);
 
     goto_if_error(r, "Error esys read public", error);
 
@@ -367,17 +327,16 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TPM2B_ID_OBJECT                *credentialBlob;
     TPM2B_ENCRYPTED_SECRET         *secret;
 
-    r = Esys_MakeCredential(
-        esys_context,
-        loadedKeyHandle,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        &credential,
-        primaryKeyName,
-        &credentialBlob,
-        &secret
-        );
+    r = Esys_MakeCredential(esys_context,
+                            loadedKeyHandle,
+                            ESYS_TR_NONE,
+                            ESYS_TR_NONE,
+                            ESYS_TR_NONE,
+                            &credential,
+                            primaryKeyName,
+                            &credentialBlob,
+                            &secret
+                            );
     goto_if_error(r, "Error: MakeCredential", error);
 
     r = Esys_FlushContext(esys_context, loadedKeyHandle);
@@ -385,16 +344,15 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     TPM2B_DIGEST *certInfo;
 
-    r = Esys_Load(
-        esys_context,
-        primaryHandle_handle,
+    r = Esys_Load(esys_context,
+                  primaryHandle_handle,
 #ifdef TEST_SESSION
-        session,
+                  session,
 #else
-        ESYS_TR_PASSWORD,
+                  ESYS_TR_PASSWORD,
 #endif
-        ESYS_TR_NONE,
-        ESYS_TR_NONE, outPrivate2, outPublic2, &loadedKeyHandle);
+                  ESYS_TR_NONE,
+                  ESYS_TR_NONE, outPrivate2, outPublic2, &loadedKeyHandle);
     goto_if_error(r, "Error esys load ", error);
 
     LOG_INFO("\nSecond Key loaded.");
@@ -402,26 +360,25 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, loadedKeyHandle, &authKey2);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    r = Esys_ActivateCredential(
-        esys_context,
-        primaryHandle_handle,
-        loadedKeyHandle,
+    r = Esys_ActivateCredential(esys_context,
+                                primaryHandle_handle,
+                                loadedKeyHandle,
 
 #ifdef TEST_SESSION
-        session,
+                                session,
 #else
-        ESYS_TR_PASSWORD,
+                                ESYS_TR_PASSWORD,
 #endif
 #ifdef TEST_SESSION
-        session2,
+                                session2,
 #else
-        ESYS_TR_PASSWORD,
+                                ESYS_TR_PASSWORD,
 #endif
-        ESYS_TR_NONE,
-        credentialBlob,
-        secret,
-        &certInfo
-        );
+                                ESYS_TR_NONE,
+                                credentialBlob,
+                                secret,
+                                &certInfo
+                                );
     goto_if_error(r, "Error: ActivateCredential", error);
 
     return 0;
