@@ -47,6 +47,11 @@ typedef int32_t     INT32;
 typedef uint64_t    UINT64;
 typedef int64_t     INT64;
 
+typedef struct {
+    UINT16 size;
+    BYTE buffer[1];
+} TPM2B;
+
 /*
  * ABI runtime negotiation definitions
  */
