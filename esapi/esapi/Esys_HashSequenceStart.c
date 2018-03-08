@@ -280,10 +280,7 @@ Esys_HashSequenceStart_finish(
     }
 
     size_t offset = 0;
-    Tss2_MU_TPM2_HANDLE_Marshal(sequenceHandleNode->rsrc.handle,
-                                 &sequenceHandleNode->rsrc.name.name[0],sizeof(TPMU_NAME),
-                                 &offset);
-    sequenceHandleNode->rsrc.name.size = offset;
+    sequenceHandleNode->rsrc.name.size = 0;
     esysContext->state = _ESYS_STATE_FINISHED;
 
     return r;

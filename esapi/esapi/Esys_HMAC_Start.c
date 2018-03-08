@@ -297,10 +297,7 @@ Esys_HMAC_Start_finish(
     }
 
     size_t offset = 0;
-    Tss2_MU_TPM2_HANDLE_Marshal(sequenceHandleNode->rsrc.handle,
-                                &sequenceHandleNode->rsrc.name.name[0],sizeof(TPMU_NAME),
-                                &offset);
-    sequenceHandleNode->rsrc.name.size = offset;
+    sequenceHandleNode->rsrc.name.size = 0;
     sequenceHandleNode->auth = *esysContext->in.HMAC_Start.auth;
     esysContext->state = _ESYS_STATE_FINISHED;
 
