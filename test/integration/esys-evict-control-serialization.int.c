@@ -56,66 +56,27 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     uint32_t r = 0;
 
-   TPM2B_AUTH authValuePrimary = {
+    TPM2B_AUTH authValuePrimary = {
         .size = 5,
         .buffer = {1, 2, 3, 4, 5}
     };
 
-   TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
-       .size = 4,
-       .sensitive = {
-           .userAuth = {
-                .size = 0,
-                .buffer = {0 },
-            },
-           .data = {
-                .size = 0,
-                .buffer = {0},
-            },
-       },
-   };
-
-    inSensitivePrimary.sensitive.userAuth = authValuePrimary;
-
-#ifdef TEST_ECC
-    TPM2B_PUBLIC inPublic = {
-        .size = 0,
-        .publicArea = {
-            .type = TPM2_ALG_ECC,
-            .nameAlg = TPM2_ALG_SHA256,
-            .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
-                                 TPMA_OBJECT_RESTRICTED |
-                                 TPMA_OBJECT_SIGN_ENCRYPT |
-                                 TPMA_OBJECT_FIXEDTPM |
-                                 TPMA_OBJECT_FIXEDPARENT |
-                                 TPMA_OBJECT_SENSITIVEDATAORIGIN),
-            .authPolicy = {
+    TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
+        .size = 4,
+        .sensitive = {
+            .userAuth = {
                  .size = 0,
+                 .buffer = {0 },
              },
-            .parameters.eccDetail = {
-                 .symmetric = {
-                     .algorithm = TPM2_ALG_NULL,
-                     .keyBits.aes = 128,
-                     .mode.aes = TPM2_ALG_ECB,
-                 },
-                 .scheme = {
-                      .scheme = TPM2_ALG_ECDSA,
-                      .details = {
-                          .ecdsa = {.hashAlg  = TPM2_ALG_SHA256}},
-                  },
-                 .curveID = TPM2_ECC_NIST_P256,
-                 .kdf = {
-                      .scheme = TPM2_ALG_NULL,
-                      .details = {}}
-             },
-            .unique.ecc = {
-                 .x = {.size = 0,.buffer = {}},
-                 .y = {.size = 0,.buffer = {}},
+            .data = {
+                 .size = 0,
+                 .buffer = {0},
              },
         },
     };
-    LOG_INFO("\nECC key will be created.");
-#else
+
+    inSensitivePrimary.sensitive.userAuth = authValuePrimary;
+
     TPM2B_PUBLIC inPublic = {
         .size = 0,
         .publicArea = {
@@ -148,7 +109,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         },
     };
     LOG_INFO("\nRSA key will be created.");
-#endif // TEST_ECC
 
     TPM2B_DATA outsideInfo = {
         .size = 0,
@@ -209,7 +169,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TR_Deserialize(esys_context, buffer, buffer_size, &new_primary_handle2);
     goto_if_error(r, "Error Esys_TR_Deserialize", error);
 
-   TPM2B_AUTH authKey2 = {
+    TPM2B_AUTH authKey2 = {
         .size = 6,
         .buffer = {6, 7, 8, 9, 10, 11}
     };
@@ -295,7 +255,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                     &outPrivate2,
                     &outPublic2,
                     &creationData2, &creationHash2, &creationTicket2);
-    goto_if_error(r, "Error esys create with new handle from evict object", error);
+    goto_if_error(r, "Error esys create with new handle from evict object",
+                  error);
 
     r = Esys_FlushContext(esys_context, primaryHandle_handle);
     goto_if_error(r, "Error during FlushContext", error);
