@@ -40,15 +40,10 @@
 #include <esapi/tss2_esys.h>
 #include "esys_types.h"
 #include "esys_iutil.h"
-#include "test-esapi.h"
 
 /*
- * This test is intended to test the ESAPI commands  nv define space, nv write,
- * nv read command, nv lock write and nv lock read, and nv undefine.
- * The names stored in the ESAPI resource are compared
- * with the names delivered from the TPM by the command ReadPublic.
- * only one of the tests NV_ReadLock and NV_WriteLock can be activated
- * by the defines TEST_READ_LOCK and TEST_WRITE_LOCK (-D option)
+ * This test is intended to test the definition of a counter in NV ram and to
+ * test the ESAPI NV_Increment function.
  */
 
 int
@@ -94,15 +89,15 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                 TPMA_NV_OWNERWRITE |
                 TPMA_NV_AUTHWRITE |
                 TPMA_NV_WRITE_STCLEAR |
-                TPMA_NV_READ_STCLEAR |
                 TPMA_NV_AUTHREAD |
-                TPMA_NV_OWNERREAD
+                TPMA_NV_OWNERREAD |
+                TPM2_NT_COUNTER << TPMA_NV_TPM2_NT_SHIFT
                 ),
             .authPolicy = {
                  .size = 0,
                  .buffer = {},
              },
-            .dataSize = 32,
+            .dataSize = 8,
         }
     };
 
@@ -120,11 +115,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                             &nvHandle_handle);
 
     goto_if_error(r, "Error esys define nv space", error);
-
-    UINT16 offset = 0;
-    TPM2B_MAX_NV_BUFFER nv_test_data = { .size = 20,
-                                         .buffer={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
-                                                  1, 2, 3, 4, 5, 6, 7, 8, 9}};
 
     TPM2B_NV_PUBLIC *nvPublic;
     TPM2B_NAME *nvName;
@@ -148,18 +138,16 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         LOG_ERROR("Error: define space name not equalt");
         goto error;
     }
-    r = Esys_NV_Write(esys_context,
-                      nvHandle_handle,
-                      nvHandle_handle,
+    r = Esys_NV_Increment(esys_context,
+                          nvHandle_handle,
+                          nvHandle_handle,
 #ifdef TEST_SESSION
-                      session,
+                          session,
 #else
-                      ESYS_TR_PASSWORD,
+                          ESYS_TR_PASSWORD,
 #endif
-                      ESYS_TR_NONE,
-                      ESYS_TR_NONE,
-                      &nv_test_data,
-                      offset);
+                          ESYS_TR_NONE,
+                          ESYS_TR_NONE);
 
     goto_if_error(r, "Error esys nv write", error);
 
@@ -181,7 +169,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         goto error;
     }
 
-    TPM2B_MAX_NV_BUFFER *nv_test_data2;
+    TPM2B_MAX_NV_BUFFER *nv_test_data;
 
     r = Esys_NV_Read(esys_context,
                      nvHandle_handle,
@@ -193,9 +181,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 #endif
                      ESYS_TR_NONE,
                      ESYS_TR_NONE,
-                     20,
+                     8,
                      0,
-                     &nv_test_data2);
+                     &nv_test_data);
 
     goto_if_error(r, "Error esys nv read", error);
 
@@ -217,100 +205,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         goto error;
     }
 
-#ifdef TEST_READ_LOCK
-    r = Esys_NV_ReadLock(esys_context,
-                         nvHandle_handle,
-                         nvHandle_handle,
-#ifdef TEST_SESSION
-                         session,
-#else
-                         ESYS_TR_PASSWORD,
-#endif
-                         ESYS_TR_NONE,
-                         ESYS_TR_NONE
-                         );
-    goto_if_error(r, "Error: NV_ReadLock", error);
-
-    r = Esys_NV_ReadPublic(esys_context,
-                           nvHandle_handle,
-                           ESYS_TR_NONE,
-                           ESYS_TR_NONE,
-                           ESYS_TR_NONE,
-                           &nvPublic,
-                           &nvName);
-    goto_if_error(r, "Error: nv read public", error);
-
-    r = esys_GetResourceObject(esys_context, nvHandle_handle, &nvHandleNode);
-    goto_if_error(r, "Error: nv get resource object", error);
-
-    if (nvName->size != nvHandleNode->rsrc.name.size ||
-        memcmp(&nvName->name, &nvHandleNode->rsrc.name.name, nvName->size) != 0) {
-        LOG_ERROR("Error: nv read name not equal");
-        goto error;
-    }
-
-    r = Esys_NV_Read(esys_context,
-                     nvHandle_handle,
-                     nvHandle_handle,
-#ifdef TEST_SESSION
-                     session,
-#else
-                     ESYS_TR_PASSWORD,
-#endif
-                     ESYS_TR_NONE,
-                     ESYS_TR_NONE,
-                     20,
-                     0,
-                     &nv_test_data2);
-
-    goto_error_if_not_failed(r, "Error esys nv write successful in write lock state", error);
-#else /* TEST_READ_LOCK */
-#ifdef TEST_WRITE_LOCK
-    r = Esys_NV_WriteLock(esys_context,
-                          nvHandle_handle,
-                          nvHandle_handle,
-#ifdef TEST_SESSION
-                          session,
-#else
-                          ESYS_TR_PASSWORD,
-#endif
-                          ESYS_TR_NONE,
-                          ESYS_TR_NONE
-                          );
-    goto_if_error(r, "Error: NV_WriteLock", error);
-
-    r = Esys_NV_ReadPublic(esys_context,
-                           nvHandle_handle,
-                           ESYS_TR_NONE,
-                           ESYS_TR_NONE,
-                           ESYS_TR_NONE,
-                           &nvPublic,
-                           &nvName);
-
-    r = esys_GetResourceObject(esys_context, nvHandle_handle, &nvHandleNode);
-    goto_if_error(r, "Error: nv get resource object", error);
-
-    if (nvName->size != nvHandleNode->rsrc.name.size ||
-        memcmp(&nvName->name, &nvHandleNode->rsrc.name.name, nvName->size) != 0) {
-        LOG_ERROR("Error: nv read name not equal");
-        goto error;
-    }
-    r = Esys_NV_Write(esys_context,
-                      nvHandle_handle,
-                      nvHandle_handle,
-#ifdef TEST_SESSION
-                      session,
-#else
-                      ESYS_TR_PASSWORD,
-#endif
-                      ESYS_TR_NONE,
-                      ESYS_TR_NONE,
-                      &nv_test_data,
-                      offset);
-    goto_error_if_not_failed(r, "Error esys nv write successful in write lock state", error);
-#endif /* TEST_WRITE_LOCK */
-#endif /* TEST_READ_LOCK */
-
     r = Esys_NV_UndefineSpace(esys_context,
                               ESYS_TR_RH_OWNER,
                               nvHandle_handle,
@@ -324,9 +218,10 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                               );
     goto_if_error(r, "Error: NV_UndefineSpace", error);
 
+
 #ifdef TEST_SESSION
-     r = Esys_FlushContext(esys_context, session);
-     goto_if_error(r, "Error: FlushContext", error);
+    r = Esys_FlushContext(esys_context, session);
+    goto_if_error(r, "Error: FlushContext", error);
 #endif
     return 0;
 

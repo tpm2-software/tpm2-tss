@@ -90,9 +90,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
              },
             .parameters.rsaDetail = {
                  .symmetric = {
-                     .algorithm =
-                     TPM2_ALG_NULL},
-                 .scheme = TPM2_ALG_RSAES,
+                     .algorithm = TPM2_ALG_NULL},
+                 .scheme = { .scheme = TPM2_ALG_RSAES },
                  .keyBits = 2048,
                  .exponent = 65537,
              },

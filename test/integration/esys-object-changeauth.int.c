@@ -40,13 +40,11 @@
 #include <esapi/tss2_esys.h>
 #include "esys_types.h"
 #include "esys_iutil.h"
-#include "test-esapi.h"
 
 /*
- * This test is intended to test password authentication.
+ * This test is intended to test the ESAPI command ObjectChangeAuth.
  * We start by creating a primary key (Esys_CreatePrimary).
- * Based in the primary several calls with NULL parameters,
- * which should not be allowed, will be tested.
+ * The auth value for this primary will be changed.
  */
 
 int
@@ -54,66 +52,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     uint32_t r = 0;
 
-    TPM2B_AUTH authValuePrimary = {
-        .size = 5,
-        .buffer = {1, 2, 3, 4, 5}
-    };
-
-    TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
-        .size = 4,
-        .sensitive = {
-            .userAuth = {
-                 .size = 0,
-                 .buffer = {0 },
-             },
-            .data = {
-                 .size = 0,
-                 .buffer = {0},
-             },
-        },
-    };
-
-    inSensitivePrimary.sensitive.userAuth = authValuePrimary;
-
-#ifdef TEST_ECC
-    TPM2B_PUBLIC inPublic = {
-        .size = 0,
-        .publicArea = {
-            .type = TPM2_ALG_ECC,
-            .nameAlg = TPM2_ALG_SHA256,
-            .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
-                                 TPMA_OBJECT_RESTRICTED |
-                                 TPMA_OBJECT_SIGN_ENCRYPT |
-                                 TPMA_OBJECT_FIXEDTPM |
-                                 TPMA_OBJECT_FIXEDPARENT |
-                                 TPMA_OBJECT_SENSITIVEDATAORIGIN),
-            .authPolicy = {
-                 .size = 0,
-             },
-            .parameters.eccDetail = {
-                 .symmetric = {
-                     .algorithm = TPM2_ALG_NULL,
-                     .keyBits.aes = 128,
-                     .mode.aes = TPM2_ALG_ECB,
-                 },
-                 .scheme = {
-                      .scheme = TPM2_ALG_ECDSA,
-                      .details = {
-                          .ecdsa = {.hashAlg  = TPM2_ALG_SHA256}},
-                  },
-                 .curveID = TPM2_ECC_NIST_P256,
-                 .kdf = {
-                      .scheme = TPM2_ALG_NULL,
-                      .details = {}}
-             },
-            .unique.ecc = {
-                 .x = {.size = 0,.buffer = {}},
-                 .y = {.size = 0,.buffer = {}},
-             },
-        },
-    };
-    LOG_INFO("\nECC key will be created.");
-#else
     TPM2B_PUBLIC inPublic = {
         .size = 0,
         .publicArea = {
@@ -145,8 +83,28 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
              },
         },
     };
-    LOG_INFO("\nRSA key will be created.");
-#endif // TEST_ECC
+
+    TPM2B_AUTH authValuePrimary = {
+        .size = 5,
+        .buffer = {1, 2, 3, 4, 5}
+    };
+
+    TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
+        .size = 4,
+        .sensitive = {
+            .userAuth = {
+                 .size = 0,
+                 .buffer = {0 },
+             },
+            .data = {
+                 .size = 0,
+                 .buffer = {0},
+             },
+        },
+    };
+    return 0;
+
+    inSensitivePrimary.sensitive.userAuth = authValuePrimary;
 
     TPM2B_DATA outsideInfo = {
         .size = 0,
@@ -166,62 +124,37 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: TR_SetAuth", error);
 
     ESYS_TR primaryHandle_handle;
-    RSRC_NODE_T *primaryHandle_node;
     TPM2B_PUBLIC *outPublic;
     TPM2B_CREATION_DATA *creationData;
     TPM2B_DIGEST *creationHash;
     TPMT_TK_CREATION *creationTicket;
 
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
-                           ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary,
-                           &inPublic,
+                           ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary, &inPublic,
                            &outsideInfo, &creationPCR, &primaryHandle_handle,
                            &outPublic, &creationData, &creationHash,
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-    r = esys_GetResourceObject(esys_context, primaryHandle_handle,
-                               &primaryHandle_node);
-    goto_if_error(r, "Error Esys GetResourceObject", error);
+    TPM2B_AUTH newAuth = {.size = 20,
+                          .buffer={30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+                                   40, 41, 42, 43, 44, 45, 46, 47, 48, 49}};
 
-    LOG_INFO("Created Primary with handle 0x%08x...",
-             primaryHandle_node->rsrc.handle);
+    TPM2B_PRIVATE *outPrivate;
 
-    r = Esys_TR_SetAuth(esys_context, primaryHandle_handle, &authValuePrimary);
-    goto_if_error(r, "Error: TR_SetAuth", error);
-
-    TPM2B_PUBLIC *outPublic2;
-    TPM2B_PRIVATE *outPrivate2;
-    TPM2B_CREATION_DATA *creationData2;
-    TPM2B_DIGEST *creationHash2;
-    TPMT_TK_CREATION *creationTicket2;
-
-    r = Esys_Create(esys_context,
-                    primaryHandle_handle,
-                    ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL,
-                    &outPrivate2,
-                    &outPublic2,
-                    &creationData2, &creationHash2, &creationTicket2);
-    goto_error_if_not_failed(r, "Error esys create did not fail with NULL parameters",
-                             error);
-
-    r = Esys_Create_finish(NULL,
-                           &outPrivate2,
-                           &outPublic2,
-                           &creationData2, &creationHash2, &creationTicket2);
-
-    goto_error_if_not_failed(
-        r, "Error esys create finish wiht NULL context did not fail",
-        error);
+    r = Esys_ObjectChangeAuth(esys_context,
+                              ESYS_TR_RH_OWNER,
+                              primaryHandle_handle,
+                              ESYS_TR_PASSWORD,
+                              ESYS_TR_PASSWORD,
+                              ESYS_TR_NONE,
+                              &newAuth,
+                              &outPrivate
+                              );
+    goto_if_error(r, "Error: ObjectChangeAuth", error);
 
     r = Esys_FlushContext(esys_context, primaryHandle_handle);
     goto_if_error(r, "Error during FlushContext", error);
-
-    return 0;
 
  error:
     return 1;
