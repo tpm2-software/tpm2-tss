@@ -80,7 +80,7 @@ AC_ARG_WITH([tctidefaultmodule],
             [AS_HELP_STRING([--with-tctidefaultmodule],
                             [The default tcti module for an Esys context.])],
             [],
-            [with_tctidefaultmodule=Socket])
+            [with_tctidefaultmodule=Mssim])
 AC_SUBST([TCTI_DEFAULT_MODULE], [$with_tctidefaultmodule])
 
 AC_ARG_WITH([tctidefaultconfig],

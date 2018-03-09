@@ -47,7 +47,7 @@ TESTS_UNIT  = \
     test/unit/GetNumHandles \
     test/unit/socket \
     test/unit/tcti-device \
-    test/unit/tcti-socket \
+    test/unit/tcti-mssim \
     test/unit/util \
     test/unit/UINT8-marshal \
     test/unit/UINT16-marshal \
@@ -138,11 +138,11 @@ test_unit_tcti_device_LDADD   = $(CMOCKA_LIBS) $(libmarshal) $(libutil)
 test_unit_tcti_device_LDFLAGS = -Wl,--wrap=read -Wl,-wrap=write
 test_unit_tcti_device_SOURCES = test/unit/tcti-device.c tcti/tcti_device.c log/log.h
 
-test_unit_tcti_socket_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS) $(URIPARSER_CFLAGS)
-test_unit_tcti_socket_LDADD   = $(CMOCKA_LIBS) $(libmarshal) $(URIPARSER_LIBS) $(libutil)
-test_unit_tcti_socket_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=select,--wrap=write
-test_unit_tcti_socket_SOURCES = tcti/tcti_socket.c tcti/sockets.c \
-                                tcti/sockets.h test/unit/tcti-socket.c
+test_unit_tcti_mssim_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS) $(URIPARSER_CFLAGS)
+test_unit_tcti_mssim_LDADD   = $(CMOCKA_LIBS) $(libmarshal) $(URIPARSER_LIBS) $(libutil)
+test_unit_tcti_mssim_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=select,--wrap=write
+test_unit_tcti_mssim_SOURCES = tcti/tcti-mssim.c tcti/sockets.c \
+                               tcti/sockets.h test/unit/tcti-mssim.c
 
 test_unit_socket_CFLAGS  = $(CMOCKA_CFLAGS) $(AM_CFLAGS)
 test_unit_socket_LDADD   = $(CMOCKA_LIBS) $(libutil) $(libmarshal)

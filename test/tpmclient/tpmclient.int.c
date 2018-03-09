@@ -39,7 +39,7 @@
 #include "tss2_endian.h"
 #include "sysapi_util.h"
 #include "tcti/tcti_device.h"
-#include "tcti/tcti_socket.h"
+#include "tcti/tcti_mssim.h"
 #include "syscontext.h"
 #define LOGMODULE testtpmclient
 #include "log/log.h"

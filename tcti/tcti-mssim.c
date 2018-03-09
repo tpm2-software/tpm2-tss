@@ -37,7 +37,7 @@
 
 #include "sapi/tss2_mu.h"
 #include "sockets.h"
-#include "tcti/tcti_socket.h"
+#include "tcti/tcti_mssim.h"
 #include "tcti.h"
 #define LOGMODULE tcti
 #include "log/log.h"
@@ -151,7 +151,7 @@ send_sim_cmd_setup (
 }
 
 TSS2_RC
-tcti_socket_transmit (
+tcti_mssim_transmit (
     TSS2_TCTI_CONTEXT *tcti_ctx,
     size_t size,
     const uint8_t *cmd_buf)
@@ -191,7 +191,7 @@ tcti_socket_transmit (
 }
 
 TSS2_RC
-tcti_socket_cancel (
+tcti_mssim_cancel (
     TSS2_TCTI_CONTEXT *tctiContext)
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
@@ -218,7 +218,7 @@ tcti_socket_cancel (
 }
 
 TSS2_RC
-tcti_socket_set_locality (
+tcti_mssim_set_locality (
     TSS2_TCTI_CONTEXT *tctiContext,
     uint8_t locality)
 {
@@ -238,7 +238,7 @@ tcti_socket_set_locality (
 }
 
 TSS2_RC
-tcti_socket_get_poll_handles (
+tcti_mssim_get_poll_handles (
     TSS2_TCTI_CONTEXT *tctiContext,
     TSS2_TCTI_POLL_HANDLE *handles,
     size_t *num_handles)
@@ -247,7 +247,7 @@ tcti_socket_get_poll_handles (
 }
 
 void
-tcti_socket_finalize(
+tcti_mssim_finalize(
     TSS2_TCTI_CONTEXT *tctiContext)
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
@@ -266,7 +266,7 @@ tcti_socket_finalize(
 }
 
 TSS2_RC
-tcti_socket_receive (
+tcti_mssim_receive (
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t *response_size,
     unsigned char *response_buffer,
@@ -473,19 +473,19 @@ out:
 }
 
 void
-tcti_socket_init_context_data (
+tcti_mssim_init_context_data (
     TSS2_TCTI_CONTEXT *tcti_ctx)
 {
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tcti_ctx);
 
     TSS2_TCTI_MAGIC (tcti_ctx) = TCTI_MAGIC;
     TSS2_TCTI_VERSION (tcti_ctx) = TCTI_VERSION;
-    TSS2_TCTI_TRANSMIT (tcti_ctx) = tcti_socket_transmit;
-    TSS2_TCTI_RECEIVE (tcti_ctx) = tcti_socket_receive;
-    TSS2_TCTI_FINALIZE (tcti_ctx) = tcti_socket_finalize;
-    TSS2_TCTI_CANCEL (tcti_ctx) = tcti_socket_cancel;
-    TSS2_TCTI_GET_POLL_HANDLES (tcti_ctx) = tcti_socket_get_poll_handles;
-    TSS2_TCTI_SET_LOCALITY (tcti_ctx) = tcti_socket_set_locality;
+    TSS2_TCTI_TRANSMIT (tcti_ctx) = tcti_mssim_transmit;
+    TSS2_TCTI_RECEIVE (tcti_ctx) = tcti_mssim_receive;
+    TSS2_TCTI_FINALIZE (tcti_ctx) = tcti_mssim_finalize;
+    TSS2_TCTI_CANCEL (tcti_ctx) = tcti_mssim_cancel;
+    TSS2_TCTI_GET_POLL_HANDLES (tcti_ctx) = tcti_mssim_get_poll_handles;
+    TSS2_TCTI_SET_LOCALITY (tcti_ctx) = tcti_mssim_set_locality;
     TSS2_TCTI_MAKE_STICKY (tcti_ctx) = tcti_make_sticky_not_implemented;
     tcti_intel->state = TCTI_STATE_TRANSMIT;
     tcti_intel->locality = 3;
@@ -496,7 +496,7 @@ tcti_socket_init_context_data (
  * this module.
  */
 TSS2_RC
-Tss2_Tcti_Socket_Init (
+Tss2_Tcti_Mssim_Init (
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t *size,
     const char *conf)
@@ -540,7 +540,7 @@ Tss2_Tcti_Socket_Init (
         goto fail_out;
     }
 
-    tcti_socket_init_context_data (tctiContext);
+    tcti_mssim_init_context_data (tctiContext);
 
     return TSS2_RC_SUCCESS;
 
@@ -561,7 +561,7 @@ const static TSS2_TCTI_INFO tss2_tcti_info = {
     .description = "TCTI module for communication with the Microsoft TPM2 Simulator.",
     .config_help = "Connection URI in the form tcp://ip_address[:port]. " \
         "Default is: TCTI_SOCKET_DEFAULT.",
-    .init = Tss2_Tcti_Socket_Init,
+    .init = Tss2_Tcti_Mssim_Init,
 };
 
 const TSS2_TCTI_INFO*

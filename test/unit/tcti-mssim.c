@@ -35,7 +35,7 @@
 
 #include "sapi/tpm20.h"
 #include "tcti/tcti.h"
-#include "tcti/tcti_socket.h"
+#include "tcti/tcti_mssim.h"
 
 /*
  * This function is implemented in the socket TCTI module but not exposed
@@ -112,7 +112,7 @@ tcti_socket_init_all_null_test (void **state)
 {
     TSS2_RC rc;
 
-    rc = Tss2_Tcti_Socket_Init (NULL, NULL, NULL);
+    rc = Tss2_Tcti_Mssim_Init (NULL, NULL, NULL);
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
 }
 /*
@@ -126,7 +126,7 @@ tcti_socket_init_size_test (void **state)
     size_t tcti_size = 0;
     TSS2_RC ret = TSS2_RC_SUCCESS;
 
-    ret = Tss2_Tcti_Socket_Init (NULL, &tcti_size, NULL);
+    ret = Tss2_Tcti_Mssim_Init (NULL, &tcti_size, NULL);
     assert_int_equal (ret, TSS2_RC_SUCCESS);
     assert_int_equal (tcti_size, sizeof (TSS2_TCTI_CONTEXT_INTEL));
 }
@@ -172,7 +172,8 @@ __wrap_write (int sockfd,
 /*
  * This is a utility function used by other tests to setup a TCTI context. It
  * effectively wraps the init / allocate / init pattern as well as priming the
- * mock functions necessary for a the successful call to 'InitSocketTcti'.
+ * mock functions necessary for a the successful call to
+ * 'Tss2_Tcti_Mssim_Init'.
  */
 static TSS2_TCTI_CONTEXT*
 tcti_socket_init_from_conf (const char *conf)
@@ -182,7 +183,7 @@ tcti_socket_init_from_conf (const char *conf)
     TSS2_RC ret = TSS2_RC_SUCCESS;
     TSS2_TCTI_CONTEXT *ctx = NULL;
 
-    ret = Tss2_Tcti_Socket_Init (NULL, &tcti_size, NULL);
+    ret = Tss2_Tcti_Mssim_Init (NULL, &tcti_size, NULL);
     assert_true (ret == TSS2_RC_SUCCESS);
     ctx = calloc (1, tcti_size);
     assert_non_null (ctx);
@@ -202,7 +203,7 @@ tcti_socket_init_from_conf (const char *conf)
     will_return (__wrap_write, 4);
     will_return (__wrap_read, 4);
     will_return (__wrap_read, recv_buf);
-    ret = Tss2_Tcti_Socket_Init (ctx, &tcti_size, conf);
+    ret = Tss2_Tcti_Mssim_Init (ctx, &tcti_size, conf);
     assert_int_equal (ret, TSS2_RC_SUCCESS);
     return ctx;
 }
