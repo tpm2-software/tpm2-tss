@@ -2,7 +2,7 @@
 Philip Tricca <philip.b.tricca@intel.com>
 .SH "SEE ALSO"
 .BR Tss2_Tcti_Device_Init (3),
-.BR InitSocketTcti (3),
+.BR Tss2_Tcti_Socket_Init (3),
 .BR tcti-device (7),
 .BR tcti-socket (7),
 .BR tcti-tabrmd (7),
