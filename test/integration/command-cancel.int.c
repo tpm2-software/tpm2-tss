@@ -92,12 +92,12 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     }
     LOG_DEBUG("FlushContext SUCCESS!");
 
-    rc = PlatformCommand(tcti_context, MS_SIM_CANCEL_ON);
+    rc = tcti_platform_command(tcti_context, MS_SIM_CANCEL_ON);
     if (rc != TPM2_RC_SUCCESS) {
-        LOG_ERROR("PlatformCommand FAILED! Response Code : 0x%x", rc);
+        LOG_ERROR("tcti_platform_command FAILED! Response Code : 0x%x", rc);
         exit(1);
     }
-    LOG_DEBUG("PlatformCommand CANCEL_ON SUCCESS!");
+    LOG_DEBUG("tcti_platform_command CANCEL_ON SUCCESS!");
 
     rc = Tss2_Sys_CreatePrimary (sapi_context,
                                  TPM2_RH_OWNER,
@@ -120,12 +120,12 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     }
     LOG_DEBUG("create_primary returned rc cancelled!");
 
-    rc = PlatformCommand(tcti_context, MS_SIM_CANCEL_OFF);
+    rc = tcti_platform_command(tcti_context, MS_SIM_CANCEL_OFF);
     if (rc != TPM2_RC_SUCCESS) {
         LOG_ERROR("FlushContext FAILED! Response Code : 0x%x", rc);
         exit(1);
     }
-    LOG_DEBUG("PlatformCommand CANCEL_OFF SUCCESS!");
+    LOG_DEBUG("tcti_platform_command CANCEL_OFF SUCCESS!");
 
     rc = create_primary_rsa_2048_aes_128_cfb(sapi_context, &handle);
     if (rc != TPM2_RC_SUCCESS) {

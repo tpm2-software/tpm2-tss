@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <inttypes.h>
+#include <unistd.h>
 
 #include <uriparser/Uri.h>
 
@@ -43,6 +44,55 @@
 
 #define TCTI_SOCKET_DEFAULT_CONF "tcp://127.0.0.1:2321"
 #define TCTI_SOCKET_DEFAULT_PORT 2321
+
+TSS2_RC tcti_platform_command (
+    TSS2_TCTI_CONTEXT *tctiContext,
+    UINT32 cmd)
+{
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
+    uint8_t buf [sizeof (cmd)] = { 0 };
+    UINT32 rsp = 0;
+    TSS2_RC rc = TSS2_RC_SUCCESS;
+    int ret;
+    ssize_t read_ret;
+
+    rc = Tss2_MU_UINT32_Marshal (cmd, buf, sizeof (cmd), NULL);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR ("Failed to marshal platform command %" PRIu32 ", rc: 0x%"
+                   PRIx32, cmd, rc);
+        return rc;
+    }
+
+    LOGBLOB_DEBUG(buf, sizeof (cmd), "Sending %zu bytes to socket %" PRIu32
+                  ":", sizeof (cmd), tcti_intel->otherSock);
+    ret = write_all (tcti_intel->otherSock, buf, sizeof (cmd));
+    if (ret < sizeof (cmd)) {
+        LOG_ERROR("Failed to send platform command %d with error: %d",
+                  cmd, ret);
+        return TSS2_TCTI_RC_IO_ERROR;
+    }
+
+    read_ret = read (tcti_intel->otherSock, buf, sizeof (buf));
+    if (read_ret < sizeof (buf)) {
+        LOG_ERROR("Failed to get response to platform command, errno %d: %s",
+                  errno, strerror (errno));
+        return TSS2_TCTI_RC_IO_ERROR;
+    }
+
+    LOGBLOB_DEBUG (buf, sizeof (buf), "Received %zu bytes from socket 0x%"
+                   PRIx32 ":", read_ret, tcti_intel->otherSock);
+    rc = Tss2_MU_UINT32_Unmarshal (buf, sizeof (rsp), NULL, &rsp);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR ("Failed to unmarshal response to platform command. rc: 0x%"
+                   PRIx32, rc);
+        return rc;
+    }
+    if (rsp != 0) {
+        LOG_INFO ("Platform command failed with error: %" PRIu32, rsp);
+        return TSS2_TCTI_RC_IO_ERROR;
+    }
+    return rc;
+}
 
 TSS2_RC
 send_sim_session_end (
@@ -156,7 +206,7 @@ tcti_socket_cancel (
         return TSS2_TCTI_RC_BAD_SEQUENCE;
     }
 
-    rc = PlatformCommand (tctiContext, MS_SIM_CANCEL_ON);
+    rc = tcti_platform_command (tctiContext, MS_SIM_CANCEL_ON);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -292,7 +342,7 @@ tcti_socket_receive (
     }
 
     if (tcti_intel->cancel) {
-        rc = PlatformCommand (tctiContext, MS_SIM_CANCEL_OFF);
+        rc = tcti_platform_command (tctiContext, MS_SIM_CANCEL_OFF);
         tcti_intel->cancel = 0;
     }
     /*
@@ -309,7 +359,7 @@ trans_state_out:
 
 /**
  * This function sends the Microsoft simulator the MS_SIM_POWER_ON and
- * MS_SIM_NV_ON commands using the PlatformCommand mechanism. Without
+ * MS_SIM_NV_ON commands using the platform command mechanism. Without
  * these the simulator will respond with zero sized buffer which causes
  * the TSS to freak out. Sending this command more than once is harmelss
  * so it's advisable to call this function as part of the TCTI context
@@ -327,13 +377,13 @@ simulator_setup (
 
     LOG_TRACE ("Initializing TCTI context 0x%" PRIxPTR,
                (uintptr_t)tctiContext);
-    rc = PlatformCommand (tctiContext ,MS_SIM_POWER_ON);
+    rc = tcti_platform_command (tctiContext, MS_SIM_POWER_ON);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_WARNING ("Failed to send MS_SIM_POWER_ON platform command.");
         return rc;
     }
 
-    rc = PlatformCommand (tctiContext, MS_SIM_NV_ON);
+    rc = tcti_platform_command (tctiContext, MS_SIM_NV_ON);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_WARNING ("Failed to send MS_SIM_NV_ON platform command.");
     }

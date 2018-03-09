@@ -132,8 +132,7 @@ if HAVE_LD_VERSION_SCRIPT
 tcti_libtcti_socket_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
 endif # HAVE_LD_VERSION_SCRIPT
 tcti_libtcti_socket_la_LIBADD   = $(libmarshal) $(URIPARSER_LIBS) $(libutil)
-tcti_libtcti_socket_la_SOURCES  = tcti/platformcommand.c tcti/tcti_socket.c \
-    tcti/sockets.c tcti/sockets.h
+tcti_libtcti_socket_la_SOURCES  = tcti/tcti_socket.c tcti/sockets.c tcti/sockets.h
 
 nodist_pkgconfig_DATA += lib/tcti-socket.pc
 EXTRA_DIST += \

@@ -45,15 +45,14 @@
 extern "C" {
 #endif
 
-TSS2_RC PlatformCommand(
+TSS2_RC tcti_platform_command(
     TSS2_TCTI_CONTEXT *tctiContext,
     UINT32 cmd);
 
 TSS2_RC Tss2_Tcti_Socket_Init (
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t *size,
-    const char *conf
-    );
+    const char *conf);
 
 #ifdef __cplusplus
 }

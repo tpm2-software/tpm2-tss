@@ -162,7 +162,7 @@ void Cleanup()
 
     if( resMgrTctiContext != 0 )
     {
-        PlatformCommand( resMgrTctiContext, MS_SIM_POWER_OFF );
+        tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_OFF );
         tcti_teardown (resMgrTctiContext);
         resMgrTctiContext = NULL;
     }
@@ -225,10 +225,10 @@ TSS2_RC TpmReset()
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
-    rval = (TSS2_RC)PlatformCommand( resMgrTctiContext, MS_SIM_POWER_OFF );
+    rval = (TSS2_RC)tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_OFF );
     if( rval == TSS2_RC_SUCCESS )
     {
-        rval = (TSS2_RC)PlatformCommand( resMgrTctiContext, MS_SIM_POWER_ON );
+        rval = (TSS2_RC)tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_ON );
     }
     return rval;
 }
@@ -298,9 +298,9 @@ void TestTpmStartup()
 
 
     // Cycle power using simulator interface.
-    rval = PlatformCommand( resMgrTctiContext, MS_SIM_POWER_OFF );
+    rval = tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_OFF );
     CheckPassed( rval );
-    rval = PlatformCommand( resMgrTctiContext, MS_SIM_POWER_ON );
+    rval = tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_ON );
     CheckPassed( rval );
 
 
@@ -315,9 +315,9 @@ void TestTpmStartup()
     CheckPassed( rval );
 
     // Cycle power using simulator interface.
-    rval = PlatformCommand( resMgrTctiContext, MS_SIM_POWER_OFF );
+    rval = tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_OFF );
     CheckPassed( rval );
-    rval = PlatformCommand( resMgrTctiContext, MS_SIM_POWER_ON );
+    rval = tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_ON );
     CheckPassed( rval );
 
 
@@ -2847,7 +2847,7 @@ void SimpleHmacTest()
 
     CheckPassed( rval );
 
-    PlatformCommand( resMgrTctiContext, MS_SIM_POWER_OFF );
+    tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_OFF );
 }
 
 
@@ -3898,7 +3898,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     loadedSha1KeyAuth.buffer[0] = 0x00;
     loadedSha1KeyAuth.buffer[1] = 0xff;
 
-    rval = PlatformCommand( resMgrTctiContext, MS_SIM_POWER_OFF );
+    rval = tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_OFF );
     CheckPassed( rval );
 
     InitEntities();
@@ -3952,6 +3952,6 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     rval = Tss2_Sys_FlushContext( sysContext, loadedSha1KeyHandle );
     CheckPassed( rval );
 
-    PlatformCommand( resMgrTctiContext, MS_SIM_POWER_OFF );
+    tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_OFF );
     return 0;
 }

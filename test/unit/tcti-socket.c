@@ -193,7 +193,7 @@ tcti_socket_init_from_conf (const char *conf)
     will_return (__wrap_connect, 0);
     will_return (__wrap_connect, 0);
     /*
-     * two 'PlatformCommands are sent on initialization, 4 bytes sent for
+     * two 'platform commands are sent on initialization, 4 bytes sent for
      * each, 4 byte response received (all 0's) for each.
      */
     will_return (__wrap_write, 4);
