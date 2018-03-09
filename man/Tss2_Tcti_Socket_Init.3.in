@@ -1,39 +1,31 @@
 .\" Process this file with
 .\" groff -man -Tascii foo.1
 .\"
-.TH InitSocketTcti 3 "JUNE 2017" Intel "TPM2 Software Stack"
+.TH Tss2_Tcti_Socket_Init 3 "JUNE 2017" Intel "TPM2 Software Stack"
 .SH NAME
-InitSocketTcti \- Initialization function for the Microsoft TPM simulator TCTI library.
+Tss2_Tcti_Socket_Init \- Initialization function for the Microsoft TPM simulator TCTI library.
 .SH SYNOPSIS
 .B #include <tcti/tcti_socket.h>
 .sp
-.nf
-typedef struct {
-    const char *hostname;
-    uint16_t port;
-} TCTI_SOCKET_CONF;
-.fi
-.sp
-.BI "TSS2_RC InitSocketTcti (TSS2_TCTI_CONTEXT " "*tctiContext" ", size_t " "*contextSize" ", const TCTI_SOCKET_CONF " "*config" ", const uint8_t " "serverSockets" ");"
-
+.BI "TSS2_RC Tss2_Tcti_Socket_Init (TSS2_TCTI_CONTEXT " "*tctiContext" ", size_t " "*contextSize" ", const char " "*conf" ");"
 .sp
 The
-.BR  InitSocketTcti ()
-function initializes a TCTI context used to communicate with the Microsoft TPM
+.BR  Tss2_Tcti_Socket_Init ()
+function initializes a TCTI context used to communicate with the Microsoft TPM2
 simulator.
 .SH DESCRIPTION
-.BR InitSocketTcti ()
+.BR Tss2_Tcti_Socket_Init ()
 attempts to initialize a caller allocated
 .I tcti_context
 of size
 .I size
-using caller provided configuration information from
-.I config
+using caller provided configuration string
+.I conf
 \&. Since the
 .I tcti_context
-must be a caller allocated buffer, the caller needs to know the size required
-by the TCTI library. The minimum size of this context can be discovered by
-providing
+must be a caller allocated buffer, the caller needs to know the buffer size
+required by the TCTI library. The minimum size of this context can be
+discovered by providing
 .BR NULL
 for the
 .I tcti_context
@@ -46,35 +38,30 @@ parameter with the minimum size of the
 .I tcti_context
 buffer. The caller must then allocate a buffer of this size (or larger) and
 call
-.B InitSocketTcti ()
+.B Tss2_Tcti_Socket_Init ()
 again providing the newly allocated
 .I tcti_context
 and the size of this context in the
 .I size
 parameter. This patterm is common to all TCTI initialization functions. We
 provide an example of this pattern using the
-.BR InitSocketTcti ()
+.BR Tss2_Tcti_Socket_Init ()
 function in the section titled
 .B EXAMPLE.
 .sp
 The
-.I config
-parameter is a reference to an instance of the
-.B TCTI_SOCKET_CONF
-structure. The
-.I hostname
-member of this structure is a C string that contains the hostname or IPv4
-address of the Microsoft TPM simulator. The
-.I port
-member is an unsigned 16 bit integer containing the port number for the
-simulator command / response port. The simulator listens for \*(lqplatform
-commands\*(rq on
-.I port+1
-and so an additional connection will be made to this port.
-.sp
-The
-.I serverSockets
-parameter should always be 0 for client code.
+.I conf
+parameter is a C string used to configure the TCTI context. This
+configuration string is a URI with the IP address and port used to connect
+to an instance of the Microsoft TPM2 simulator. The URI scheme used is the
+non-standard
+.I tcp
+scheme. If a NULL
+.I conf
+string is provided then the default of
+.I tcp://127.0.0.1:2321/
+is used. If the URI provided omits the port component then the default port
+of 2321 is used.
 .sp
 Once initialized, the TCTI context returned exposes the Trusted Computing
 Group (TCG) defined API for the lowest level communication with the TPM.
@@ -90,7 +77,7 @@ the TCG:
 \%https://trustedcomputinggroup.org/tss-system-level-api-tpm-command-transmission-interface-specification/
 .SH RETURN VALUE
 A successful call to
-.BR InitSocketTcti ()
+.BR Tss2_Tcti_Socket_Init ()
 will return
 .B TSS2_RC_SUCCESS.
 An unsuccessful call will produce a response code described in section
@@ -117,12 +104,9 @@ TCTI initialization fragment:
 TSS2_RC rc;
 TSS2_TCTI_CONTEXT *tcti_context;
 size_t size;
-TCTI_SOCKET_CONF conf = {
-    .hostname          = "127.0.0.1",
-    .port              = 2321,
-};
+const char *conf = "tcp://127.0.0.1:2321/"
 
-rc = InitSocketTcti (NULL, &size, NULL, 0);
+rc = Tss2_Tcti_Socket_Init (NULL, &size, NULL);
 if (rc != TSS2_RC_SUCCESS) {
     fprintf (stderr, "Failed to get allocation size for socket TCTI "
              " context: 0x%" PRIx32 "\n", rc);
@@ -134,7 +118,7 @@ if (tcti_context == NULL) {
              strerror (errno));
     exit (EXIT_FAILURE);
 }
-rc = InitSocketTcti (&tcti_context, &size, &conf, 0);
+rc = Tss2_Tcti_Socket_Init (&tcti_context, &size, conf);
 if (rc != TSS2_RC_SUCCESS) {
     fprintf (stderr, "Failed to initialize socket TCTI context: "
              "0x%" PRIx32 "\n", rc);
