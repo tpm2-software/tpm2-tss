@@ -1,13 +1,13 @@
 #include "sapi/tpm20.h"
 #include "tcti/tcti_device.h"
-#include "tcti/tcti_socket.h"
+#include "tcti/tcti_mssim.h"
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <inttypes.h>
 
 #ifndef ESYS_TCTI_DEFAULT_MODULE
-#define ESYS_TCTI_DEFAULT_MODULE Socket
+#define ESYS_TCTI_DEFAULT_MODULE Mssim
 #endif
 #ifndef ESYS_TCTI_DEFAULT_CONFIG
 #define ESYS_TCTI_DEFAULT_CONFIG tcp://127.0.0.1:2321

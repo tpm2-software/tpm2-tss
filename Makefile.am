@@ -123,21 +123,19 @@ EXTRA_DIST += \
     tcti/tcti_device.map \
     lib/tcti-device.pc.in
 
-# tcti socket library
-libtcti_socket = tcti/libtcti-socket.la
-lib_LTLIBRARIES += $(libtcti_socket)
+# tcti library for microsoft simulator
+libtcti_mssim = tcti/libtcti-mssim.la
+lib_LTLIBRARIES += $(libtcti_mssim)
 
-tcti_libtcti_socket_la_CFLAGS   = $(AM_CFLAGS) $(URIPARSER_CFLAGS)
+tcti_libtcti_mssim_la_CFLAGS   = $(AM_CFLAGS) $(URIPARSER_CFLAGS)
 if HAVE_LD_VERSION_SCRIPT
-tcti_libtcti_socket_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_socket.map
+tcti_libtcti_mssim_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tcti-mssim.map
 endif # HAVE_LD_VERSION_SCRIPT
-tcti_libtcti_socket_la_LIBADD   = $(libmarshal) $(URIPARSER_LIBS) $(libutil)
-tcti_libtcti_socket_la_SOURCES  = tcti/tcti_socket.c tcti/sockets.c tcti/sockets.h
+tcti_libtcti_mssim_la_LIBADD   = $(libmarshal) $(URIPARSER_LIBS) $(libutil)
+tcti_libtcti_mssim_la_SOURCES  = tcti/tcti-mssim.c tcti/sockets.c tcti/sockets.h
 
-nodist_pkgconfig_DATA += lib/tcti-socket.pc
-EXTRA_DIST += \
-    tcti/tcti_socket.map \
-    lib/tcti-socket.pc.in
+nodist_pkgconfig_DATA += lib/tcti-mssim.pc
+EXTRA_DIST += lib/tcti-mssim.map lib/tcti-mssim.pc.in
 
 ### TCG TSS SAPI spec library ###
 # Headers
@@ -170,7 +168,7 @@ esapi_libesapi_la_CFLAGS  = $(AM_CFLAGS) -Wno-unused-variable -Wno-unused-label 
                             -I$(srcdir)/esapi/esapi_util \
                             -DESYS_TCTI_DEFAULT_MODULE=$(TCTI_DEFAULT_MODULE) \
                             -DESYS_TCTI_DEFAULT_CONFIG=$(TCTI_DEFAULT_CONFIG)
-esapi_libesapi_la_LIBADD  = $(libsapi) $(libmarshal) $(libtcti_device) $(libtcti_socket) $(libutil)
+esapi_libesapi_la_LIBADD  = $(libsapi) $(libmarshal) $(libtcti_device) $(libtcti_mssim) $(libutil)
 esapi_libesapi_la_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
 esapi_libesapi_la_SOURCES = $(ESAPI_SRC)
 
@@ -179,8 +177,8 @@ EXTRA_DIST += lib/esapi.pc.in
 endif #ESAPI
 
 ### Man Pages
-man3_MANS = man/man3/Tss2_Tcti_Device_Init.3 man/man3/Tss2_Tcti_Socket_Init.3
-man7_MANS = man/man7/tcti-device.7 man/man7/tcti-socket.7
+man3_MANS = man/man3/Tss2_Tcti_Device_Init.3 man/man3/Tss2_Tcti_Mssim_Init.3
+man7_MANS = man/man7/tcti-device.7 man/man7/tcti-mssim.7
 
 man/man3/%.3 : man/%.3.in $(srcdir)/man/man-postlude.troff
 	$(AM_V_GEN)$(call make_man,$@,$<,$(srcdir)/man/man-postlude.troff)
@@ -191,9 +189,9 @@ man/man7/%.7 : man/%.7.in $(srcdir)/man/man-postlude.troff
 EXTRA_DIST += \
     man/man-postlude.troff \
     man/Tss2_Tcti_Device_Init.3.in \
-    man/Tss2_Tcti_Socket_Init.3.in \
+    man/Tss2_Tcti_Mssim_Init.3.in \
     man/tcti-device.7.in \
-    man/tcti-socket.7.in
+    man/tcti-mssim.7.in
 
 CLEANFILES += \
     $(man3_MANS) \

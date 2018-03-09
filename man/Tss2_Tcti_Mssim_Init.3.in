@@ -1,20 +1,20 @@
 .\" Process this file with
 .\" groff -man -Tascii foo.1
 .\"
-.TH Tss2_Tcti_Socket_Init 3 "JUNE 2017" Intel "TPM2 Software Stack"
+.TH Tss2_Tcti_Mssim_Init 3 "JUNE 2017" Intel "TPM2 Software Stack"
 .SH NAME
-Tss2_Tcti_Socket_Init \- Initialization function for the Microsoft TPM simulator TCTI library.
+Tss2_Tcti_Mssim_Init \- Initialization function for the Microsoft TPM simulator TCTI library.
 .SH SYNOPSIS
-.B #include <tcti/tcti_socket.h>
+.B #include <tcti/tcti_mssim.h>
 .sp
-.BI "TSS2_RC Tss2_Tcti_Socket_Init (TSS2_TCTI_CONTEXT " "*tctiContext" ", size_t " "*contextSize" ", const char " "*conf" ");"
+.BI "TSS2_RC Tss2_Tcti_Mssim_Init (TSS2_TCTI_CONTEXT " "*tctiContext" ", size_t " "*contextSize" ", const char " "*conf" ");"
 .sp
 The
-.BR  Tss2_Tcti_Socket_Init ()
+.BR  Tss2_Tcti_Mssim_Init ()
 function initializes a TCTI context used to communicate with the Microsoft TPM2
 simulator.
 .SH DESCRIPTION
-.BR Tss2_Tcti_Socket_Init ()
+.BR Tss2_Tcti_Mssim_Init ()
 attempts to initialize a caller allocated
 .I tcti_context
 of size
@@ -38,14 +38,14 @@ parameter with the minimum size of the
 .I tcti_context
 buffer. The caller must then allocate a buffer of this size (or larger) and
 call
-.B Tss2_Tcti_Socket_Init ()
+.B Tss2_Tcti_Mssim_Init ()
 again providing the newly allocated
 .I tcti_context
 and the size of this context in the
 .I size
 parameter. This patterm is common to all TCTI initialization functions. We
 provide an example of this pattern using the
-.BR Tss2_Tcti_Socket_Init ()
+.BR Tss2_Tcti_Mssim_Init ()
 function in the section titled
 .B EXAMPLE.
 .sp
@@ -77,7 +77,7 @@ the TCG:
 \%https://trustedcomputinggroup.org/tss-system-level-api-tpm-command-transmission-interface-specification/
 .SH RETURN VALUE
 A successful call to
-.BR Tss2_Tcti_Socket_Init ()
+.BR Tss2_Tcti_Mssim_Init ()
 will return
 .B TSS2_RC_SUCCESS.
 An unsuccessful call will produce a response code described in section
@@ -99,16 +99,16 @@ TCTI initialization fragment:
 #include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <tcti/tcti_socket.h>
+#include <tcti/tcti_mssim.h>
 
 TSS2_RC rc;
 TSS2_TCTI_CONTEXT *tcti_context;
 size_t size;
 const char *conf = "tcp://127.0.0.1:2321/"
 
-rc = Tss2_Tcti_Socket_Init (NULL, &size, NULL);
+rc = Tss2_Tcti_Mssim_Init (NULL, &size, NULL);
 if (rc != TSS2_RC_SUCCESS) {
-    fprintf (stderr, "Failed to get allocation size for socket TCTI "
+    fprintf (stderr, "Failed to get allocation size for mssim TCTI "
              " context: 0x%" PRIx32 "\n", rc);
     exit (EXIT_FAILURE);
 }
@@ -118,9 +118,9 @@ if (tcti_context == NULL) {
              strerror (errno));
     exit (EXIT_FAILURE);
 }
-rc = Tss2_Tcti_Socket_Init (&tcti_context, &size, conf);
+rc = Tss2_Tcti_Mssim_Init (&tcti_context, &size, conf);
 if (rc != TSS2_RC_SUCCESS) {
-    fprintf (stderr, "Failed to initialize socket TCTI context: "
+    fprintf (stderr, "Failed to initialize mssim TCTI context: "
              "0x%" PRIx32 "\n", rc);
     free (tcti_context);
     exit (EXIT_FAILURE);
