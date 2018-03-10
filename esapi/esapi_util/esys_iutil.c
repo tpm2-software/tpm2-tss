@@ -24,7 +24,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
-#include <sapi/tpm20.h>
+#include "tpm20.h"
 #include "esys_iutil.h"
 #include "tss2_esys.h"
 #include "esys_mu.h"

@@ -1,7 +1,7 @@
 #include <inttypes.h>
 #include <stdio.h>
 
-#include "sapi/tpm20.h"
+#include "tpm20.h"
 
 #define LOGMODULE test
 #include "log/log.h"

@@ -3,7 +3,7 @@
 #include "log/log.h"
 #include "sapi-util.h"
 #include "test.h"
-#include "sapi/tpm20.h"
+#include "tpm20.h"
 
 /*
  * Test auth value changes for Owner Auth

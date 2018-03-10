@@ -1,5 +1,5 @@
-#include "sapi/tpm20.h"
-#include <esapi/tss2_esys.h>
+#include "tpm20.h"
+#include "tss2_esys.h"
 
 #define goto_error_if_not_failed(rc,msg,label)                          \
 	if (rc == TSS2_RC_SUCCESS) {                                        \

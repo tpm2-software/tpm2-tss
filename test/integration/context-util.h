@@ -1,7 +1,7 @@
 #ifndef CONTEXT_UTIL_H
 #define CONTEXT_UTIL_H
 
-#include "sapi/tpm20.h"
+#include "tpm20.h"
 #include "test-options.h"
 
 /**

@@ -23,7 +23,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "tcti/tcti_mssim.h"
+#include "tss2_tcti_mssim.h"
 #define LOGMODULE test
 #include "log/log.h"
 #include "sapi-util.h"

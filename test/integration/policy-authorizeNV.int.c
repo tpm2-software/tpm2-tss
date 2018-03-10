@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <openssl/rand.h>
 
-#include "sapi/tpm20.h"
+#include "tpm20.h"
 #define LOGMODULE test
 #include "log/log.h"
 #include "test.h"

@@ -31,15 +31,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "sapi/tpm20.h"
+#include "tpm20.h"
+#include "tss2_tcti_device.h"
+#include "tss2_tcti_mssim.h"
+
 #include "../integration/context-util.h"
 #include "../integration/sapi-util.h"
 #include "sample.h"
 #include "tpmclient.h"
 #include "tss2_endian.h"
 #include "sysapi_util.h"
-#include "tcti/tcti_device.h"
-#include "tcti/tcti_mssim.h"
 #include "syscontext.h"
 #define LOGMODULE testtpmclient
 #include "log/log.h"

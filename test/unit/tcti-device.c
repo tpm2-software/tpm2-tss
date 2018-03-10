@@ -5,8 +5,8 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include "sapi/tss2_mu.h"
-#include "tcti/tcti_device.h"
+#include "tss2_mu.h"
+#include "tss2_tcti_device.h"
 #include "tcti/tcti.h"
 
 /**

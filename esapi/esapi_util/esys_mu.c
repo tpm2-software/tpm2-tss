@@ -31,13 +31,13 @@
 #define _SVID_SOURCE 1
 #endif
 
-#include "sapi/tpm20.h"
+#include "tpm20.h"
 #ifndef TSS2_API_VERSION_1_2_1_108
 #error Version missmatch among TSS2 header files !
 #endif /* TSS2_API_VERSION_1_2_1_108 */
 
-#include <sysapi_util.h>
-#include <sapi/tss2_mu.h>
+#include "sysapi_util.h"
+#include "tss2_mu.h"
 #include <inttypes.h>
 
 #include "tss2_esys.h"

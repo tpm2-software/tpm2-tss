@@ -3,7 +3,7 @@
 #include <string.h>
 #include <setjmp.h>
 #include <cmocka.h>
-#include "sapi/tss2_mu.h"
+#include "tss2_mu.h"
 #include "marshal/tss2_endian.h"
 
 /*

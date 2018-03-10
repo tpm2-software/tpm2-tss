@@ -35,9 +35,9 @@
 
 #include <uriparser/Uri.h>
 
-#include "sapi/tss2_mu.h"
+#include "tss2_mu.h"
 #include "sockets.h"
-#include "tcti/tcti_mssim.h"
+#include "tss2_tcti_mssim.h"
 #include "tcti.h"
 #define LOGMODULE tcti
 #include "log/log.h"

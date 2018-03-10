@@ -25,7 +25,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  ***********************************************************************/
 
-#include "sapi/tpm20.h"
+#include "tpm20.h"
 #include "sysapi_util.h"
 
 TSS2_RC Tss2_Sys_ReadClock_Prepare(

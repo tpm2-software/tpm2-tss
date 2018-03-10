@@ -26,10 +26,10 @@
  *******************************************************************************/
 #ifndef TSS2_ESYS_H
 #define TSS2_ESYS_H
-#include <sapi/tpm20.h>
-#include <sapi/tss2_tcti.h>
-#include <sapi/tss2_sys.h>
 #include <stdbool.h>
+
+#include "tss2_tcti.h"
+#include "tss2_sys.h"
 
 #ifdef __cplusplus
 extern "C" {

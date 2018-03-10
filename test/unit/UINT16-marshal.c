@@ -4,7 +4,7 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include "sapi/tss2_mu.h"
+#include "tss2_mu.h"
 
 /*
  * Test case for successful UINT16 marshaling with NULL offset.

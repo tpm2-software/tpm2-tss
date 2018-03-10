@@ -2,7 +2,7 @@
 #define LOGMODULE test
 #include "log/log.h"
 #include "test.h"
-#include "sapi/tpm20.h"
+#include "tpm20.h"
 #include "sapi-util.h"
 /**
  * This program contains integration test for asymetric encrypt and

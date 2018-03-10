@@ -27,7 +27,7 @@
  ***********************************************************************/
 
 #include "tss2_endian.h"
-#include "sapi/tpm20.h"
+#include "tpm20.h"
 #include "sysapi_util.h"
 
 TSS2_RC Tss2_Sys_SetCmdAuths(

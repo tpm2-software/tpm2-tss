@@ -36,7 +36,7 @@
 #include <unistd.h>
 
 #include "tcti.h"
-#include "tcti/tcti_device.h"
+#include "tss2_tcti_device.h"
 #define LOGMODULE tcti
 #include "log/log.h"
 

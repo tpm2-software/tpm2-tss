@@ -4,7 +4,7 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include "sapi/tpm20.h"
+#include "tpm20.h"
 #include "sysapi_util.h"
 
 #define MAX_SIZE_CTX 4096

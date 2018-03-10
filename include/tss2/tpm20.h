@@ -1,5 +1,8 @@
-/*
- * Copyright (c) 2015 - 2018, Intel Corporation
+/***********************************************************************;
+ * Copyright (c) 2015-2018, Intel Corporation
+ *
+ * Copyright 2015, Andreas Fuchs @ Fraunhofer SIT
+ *
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,23 +26,18 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
- */
-#ifndef TCTI_DEVICE_H
-#define TCTI_DEVICE_H
+ ***********************************************************************/
 
-#include <sapi/tss2_tcti.h>
+#ifndef     TPM20_H
+#define     TPM20_H
+#include    <stddef.h>
+#include    <stdint.h>
+#include    <stdlib.h>
+#include    <string.h>
 
-#ifdef __cplusplus
-extern "C" {
+#include    "tss2_common.h"
+#include    "tss2_tpm2_types.h"
+#include    "tss2_tcti.h"
+#include    "tss2_sys.h"
+#include    "tss2_mu.h"
 #endif
-
-TSS2_RC Tss2_Tcti_Device_Init (
-    TSS2_TCTI_CONTEXT *tctiContext,
-    size_t *size,
-    const char *conf);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* TCTI_DEVICE_H */

@@ -27,7 +27,7 @@
 #;**********************************************************************;
 
 ### Initialize global variables used throughout the file ###
-INCLUDE_DIRS    = -I$(srcdir)/include -I$(srcdir)/sysapi/include -I$(srcdir)/marshal
+INCLUDE_DIRS    = -I$(srcdir) -I$(srcdir)/include/tss2
 ACLOCAL_AMFLAGS = -I m4
 AM_CFLAGS       = $(INCLUDE_DIRS) $(EXTRA_CFLAGS) $(CODE_COVERAGE_CFLAGS)
 AM_LDFLAGS      = $(EXTRA_LDFLAGS) $(CODE_COVERAGE_LIBS)
@@ -82,6 +82,14 @@ CLEANFILES += $(nodist_pkgconfig_DATA)
 	        s,[@]libdir[@],$(libdir),g; \
 	        s,[@]includedir[@],$(includedir),g;" $^ > $@
 
+# Base TSS2 headers
+tss2dir = $(includedir)/tss2
+tss2_HEADERS = \
+    $(srcdir)/include/tss2/tss2_common.h \
+    $(srcdir)/include/tss2/tss2_tcti.h \
+    $(srcdir)/include/tss2/tss2_tpm2_types.h \
+    $(srcdir)/include/tss2/tpm20.h
+
 ### Internal utility library
 libutil = libutil.la
 noinst_LTLIBRARIES += $(libutil)
@@ -90,7 +98,10 @@ libutil_la_SOURCES = log/log.c log/log.h tcti/tcti.c tcti/tcti.h
 
 ### TCG TSS Marshaling/Unmarshalling spec library ###
 libmarshal = marshal/libmarshal.la
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_mu.h
 lib_LTLIBRARIES += $(libmarshal)
+nodist_pkgconfig_DATA += lib/marshal.pc
+EXTRA_DIST += lib/libmarshal.map lib/marshal.pc.in
 
 if HAVE_LD_VERSION_SCRIPT
 marshal_libmarshal_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/libmarshal.map
@@ -98,18 +109,13 @@ endif # HAVE_LD_VERSION_SCRIPT
 marshal_libmarshal_la_LIBADD = $(libutil)
 marshal_libmarshal_la_SOURCES = $(MARSHAL_SRC)
 
-nodist_pkgconfig_DATA += lib/marshal.pc
-EXTRA_DIST += \
-    lib/libmarshal.map \
-    lib/marshal.pc.in
-
 ### TCG TSS TCTI spec libraries ###
-# tcti headers
-libtctidir      = $(includedir)/tcti
-libtcti_HEADERS = $(srcdir)/include/tcti/*.h
-
 # tcti device library
-lib_LTLIBRARIES += tcti/libtcti-device.la
+libtcti_device = tcti/libtcti-device.la
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_device.h
+lib_LTLIBRARIES += $(libtcti_device)
+nodist_pkgconfig_DATA += lib/tcti-device.pc
+EXTRA_DIST += tcti/tcti_device.map lib/tcti-device.pc.in
 
 tcti_libtcti_device_la_CFLAGS   = $(AM_CFLAGS)
 if HAVE_LD_VERSION_SCRIPT
@@ -118,14 +124,12 @@ endif # HAVE_LD_VERSION_SCRIPT
 tcti_libtcti_device_la_LIBADD   = $(libmarshal) $(libutil)
 tcti_libtcti_device_la_SOURCES  = tcti/tcti_device.c
 
-nodist_pkgconfig_DATA += lib/tcti-device.pc
-EXTRA_DIST += \
-    tcti/tcti_device.map \
-    lib/tcti-device.pc.in
-
 # tcti library for microsoft simulator
 libtcti_mssim = tcti/libtcti-mssim.la
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_mssim.h
 lib_LTLIBRARIES += $(libtcti_mssim)
+nodist_pkgconfig_DATA += lib/tcti-mssim.pc
+EXTRA_DIST += lib/tcti-mssim.map lib/tcti-mssim.pc.in
 
 tcti_libtcti_mssim_la_CFLAGS   = $(AM_CFLAGS) $(URIPARSER_CFLAGS)
 if HAVE_LD_VERSION_SCRIPT
@@ -134,46 +138,34 @@ endif # HAVE_LD_VERSION_SCRIPT
 tcti_libtcti_mssim_la_LIBADD   = $(libmarshal) $(URIPARSER_LIBS) $(libutil)
 tcti_libtcti_mssim_la_SOURCES  = tcti/tcti-mssim.c tcti/sockets.c tcti/sockets.h
 
-nodist_pkgconfig_DATA += lib/tcti-mssim.pc
-EXTRA_DIST += lib/tcti-mssim.map lib/tcti-mssim.pc.in
-
 ### TCG TSS SAPI spec library ###
-# Headers
-libsapidir      = $(includedir)/sapi
-libsapi_HEADERS = $(srcdir)/include/sapi/*.h
-
-# Library
 libsapi = sysapi/libsapi.la
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_sys.h
 lib_LTLIBRARIES += $(libsapi)
+nodist_pkgconfig_DATA += lib/sapi.pc
+EXTRA_DIST += lib/sapi.pc.in
+
+sysapi_libsapi_la_CFLAGS = $(AM_CFLAGS) -I$(srcdir)/marshal -I$(srcdir)/sysapi/include
 sysapi_libsapi_la_LIBADD  = $(libmarshal)
 sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPI_H) $(SYSAPIUTIL_C) \
     $(SYSAPIUTIL_H)
 
-nodist_pkgconfig_DATA += lib/sapi.pc
-
-EXTRA_DIST += \
-    lib/sapi.pc.in
-
 ### TCG TSS ESAPI spec library ###
 if ESAPI
-# Headers
-libesapidir      = $(includedir)/esapi
-libesapi_HEADERS = $(srcdir)/include/esapi/*.h
-
-# Library
 libesapi = esapi/libesapi.la
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_esys.h
 lib_LTLIBRARIES += $(libesapi)
+nodist_pkgconfig_DATA += lib/esapi.pc
+EXTRA_DIST += lib/esapi.pc.in
+
 esapi_libesapi_la_CFLAGS  = $(AM_CFLAGS) -Wno-unused-variable -Wno-unused-label \
-                            -I. -I$(srcdir)/esapi/esapi -I$(srcdir)/include/esapi \
-                            -I$(srcdir)/esapi/esapi_util \
+                            -I$(srcdir)/sysapi/include -I$(srcdir)/esapi/esapi_util \
                             -DESYS_TCTI_DEFAULT_MODULE=$(TCTI_DEFAULT_MODULE) \
                             -DESYS_TCTI_DEFAULT_CONFIG=$(TCTI_DEFAULT_CONFIG)
 esapi_libesapi_la_LIBADD  = $(libsapi) $(libmarshal) $(libtcti_device) $(libtcti_mssim) $(libutil)
 esapi_libesapi_la_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
 esapi_libesapi_la_SOURCES = $(ESAPI_SRC)
 
-nodist_pkgconfig_DATA += lib/esapi.pc
-EXTRA_DIST += lib/esapi.pc.in
 endif #ESAPI
 
 ### Man Pages

@@ -27,14 +27,14 @@
 #ifndef ESYS_CRYPTO_H
 #define ESYS_CRYPTO_H
 
-#include <sapi/tss2_common.h>
+#include "tss2_common.h"
 #ifndef TSS2_API_VERSION_1_2_1_108
 #error Version missmatch among TSS2 header files !
 #endif  /* TSS2_API_VERSION_1_2_1_108 */
 
 #include <stdint.h>
 #include <stddef.h>
-#include <sapi/tss2_tpm2_types.h>
+#include "tss2_tpm2_types.h"
 
 #include <stdarg.h>
 

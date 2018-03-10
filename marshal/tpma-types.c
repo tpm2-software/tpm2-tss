@@ -29,8 +29,8 @@
 #include <inttypes.h>
 #include <string.h>
 
-#include "sapi/tss2_mu.h"
-#include "sapi/tpm20.h"
+#include "tss2_mu.h"
+#include "tpm20.h"
 #include "tss2_endian.h"
 #define LOGMODULE marshal
 #include "log/log.h"
