@@ -2,7 +2,7 @@
 #define LOGMODULE test
 #include "log/log.h"
 #include "test.h"
-#include "sapi/tpm20.h"
+#include "tpm20.h"
 #include "sysapi_util.h"
 
 int

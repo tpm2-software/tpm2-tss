@@ -5,11 +5,11 @@
 #include "test-esapi.h"
 #include "test-options.h"
 #include "context-util.h"
-#include <esapi/tss2_esys.h>
-#include <esys_types.h>
+#include "tss2_esys.h"
+#include "esys_types.h"
 #include "esys_iutil.h"
+#include "tss2_tcti.h"
 #include "tcti/tcti.h"
-#include "sapi/tss2_tcti.h"
 
 /** Define a proxy tcti that returns yielded on every second invocation
  * thus the corresponding handling code in ESAPI can be tested.

@@ -31,7 +31,7 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include "sapi/tpm20.h"
+#include "tpm20.h"
 #include "tcti/sockets.h"
 
 int

@@ -33,9 +33,9 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include "sapi/tpm20.h"
+#include "tpm20.h"
+#include "tss2_tcti_mssim.h"
 #include "tcti/tcti.h"
-#include "tcti/tcti_mssim.h"
 
 /*
  * This function is implemented in the socket TCTI module but not exposed

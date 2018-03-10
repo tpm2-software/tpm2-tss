@@ -24,32 +24,16 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef TCTI_SOCKET_H
-#define TCTI_SOCKET_H
+#ifndef TCTI_DEVICE_H
+#define TCTI_DEVICE_H
 
-#include <sapi/tss2_tcti.h>
-
-/*
- * Command codes that may be sent to simulator through out of band command
- * channel (aka "the other socket").
- */
-#define MS_SIM_POWER_ON         1
-#define MS_SIM_POWER_OFF        2
-#define MS_SIM_TPM_SEND_COMMAND 8
-#define MS_SIM_CANCEL_ON        9
-#define MS_SIM_CANCEL_OFF       10
-#define MS_SIM_NV_ON            11
-#define TPM_SESSION_END         20
+#include "tss2_tcti.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-TSS2_RC tcti_platform_command(
-    TSS2_TCTI_CONTEXT *tctiContext,
-    UINT32 cmd);
-
-TSS2_RC Tss2_Tcti_Mssim_Init (
+TSS2_RC Tss2_Tcti_Device_Init (
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t *size,
     const char *conf);
@@ -58,4 +42,4 @@ TSS2_RC Tss2_Tcti_Mssim_Init (
 }
 #endif
 
-#endif /* TCTI_SOCKET_H */
+#endif /* TCTI_DEVICE_H */

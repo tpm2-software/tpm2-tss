@@ -25,7 +25,7 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include "sapi/tpm20.h"
+#include "tpm20.h"
 #include "sample.h"
 #include "sysapi_util.h"
 

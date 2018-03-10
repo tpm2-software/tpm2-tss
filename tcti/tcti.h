@@ -41,13 +41,14 @@
 #define TSS2_TCTI_UTIL_H
 
 #include <errno.h>
-#include <sapi/tpm20.h>
 #include <stdbool.h>
 
 #if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
 #include <sys/socket.h>
 #define SOCKET int
 #endif
+
+#include "tpm20.h"
 
 #define TCTI_MAGIC   0x7e18e9defa8bc9e2ULL
 #define TCTI_VERSION 0x2

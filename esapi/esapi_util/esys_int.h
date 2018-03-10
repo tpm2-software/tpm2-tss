@@ -27,7 +27,7 @@
 #ifndef ESYS_INT_H
 #define ESYS_INT_H
 
-#include <sapi/tpm20.h>
+#include "tpm20.h"
 #include <stdbool.h>
 #include <tss2_esys.h>
 #include "esys_types.h"

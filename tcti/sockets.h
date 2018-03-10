@@ -4,7 +4,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#include "sapi/tpm20.h"
+#include "tpm20.h"
 
 #define SOCKET int
 

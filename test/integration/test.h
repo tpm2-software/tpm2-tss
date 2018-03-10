@@ -1,4 +1,4 @@
-#include "sapi/tpm20.h"
+#include "tpm20.h"
 
 #define YES 1
 #define NO  0

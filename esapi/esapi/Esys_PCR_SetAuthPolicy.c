@@ -25,15 +25,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#include <sapi/tpm20.h>
+#include "tpm20.h"
 #ifndef TSS2_API_VERSION_1_2_1_108
 #error Version missmatch among TSS2 header files !
 #endif /* TSS2_API_VERSION_1_2_1_108 */
 #include "esys_types.h"
-#include <esapi/tss2_esys.h>
+#include "tss2_esys.h"
 #include "esys_iutil.h"
 #include "esys_mu.h"
-#include <sapi/tss2_sys.h>
+#include "tss2_sys.h"
 #define LOGMODULE esys
 #include "log/log.h"
 

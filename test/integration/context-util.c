@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "tcti/tcti_device.h"
-#include "tcti/tcti_mssim.h"
+#include "tss2_tcti_device.h"
+#include "tss2_tcti_mssim.h"
 
 #include "context-util.h"
 

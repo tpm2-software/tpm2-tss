@@ -24,12 +24,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
-#include <sapi/tpm20.h>
+#include "tpm20.h"
 #ifndef TSS2_API_VERSION_1_2_1_108
 #error Version missmatch among TSS2 header files !
 #endif                          /* TSS2_API_VERSION_1_2_1_108 */
-#include <sapi/tss2_sys.h>
-#include <sysapi_util.h>
+#include "tss2_sys.h"
+#include "sysapi_util.h"
 #include <tss2_esys.h>
 #include "esys_types.h"
 #include "esys_crypto.h"

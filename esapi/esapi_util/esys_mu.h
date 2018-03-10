@@ -27,13 +27,13 @@
 #ifndef ESYS_MU_H
 #define ESYS_MU_H
 
-#include <sapi/tpm20.h>
+#include "tpm20.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include "esys_types.h"
-#include "sapi/tss2_mu.h"
+#include "tss2_mu.h"
 #ifndef FALSE
 #define FALSE 0
 #endif

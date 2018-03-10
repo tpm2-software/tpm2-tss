@@ -33,12 +33,12 @@
 #include <signal.h>
 #include <stdint.h>
 #include <gcrypt.h>
-#include <sapi/tpm20.h>
+#include "tpm20.h"
 #define LOGMODULE test
 #include "log/log.h"
 #include "test.h"
 #include "sysapi_util.h"
-#include <esapi/tss2_esys.h>
+#include "tss2_esys.h"
 #include "esys_types.h"
 #include "esys_iutil.h"
 
