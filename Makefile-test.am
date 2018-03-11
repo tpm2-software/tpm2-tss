@@ -137,18 +137,20 @@ test_unit_util_SOURCES = test/unit/util.c
 test_unit_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tcti_device_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
 test_unit_tcti_device_LDFLAGS = -Wl,--wrap=read -Wl,-wrap=write
-test_unit_tcti_device_SOURCES = test/unit/tcti-device.c tcti/tcti_device.c log/log.h
+test_unit_tcti_device_SOURCES = test/unit/tcti-device.c \
+    src/tss2-tcti/tcti-device.c log/log.h
 
 test_unit_tcti_mssim_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(URIPARSER_CFLAGS)
 test_unit_tcti_mssim_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(URIPARSER_LIBS) $(libutil)
 test_unit_tcti_mssim_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=select,--wrap=write
-test_unit_tcti_mssim_SOURCES = tcti/tcti-mssim.c tcti/sockets.c \
-                               tcti/sockets.h test/unit/tcti-mssim.c
+test_unit_tcti_mssim_SOURCES = src/tss2-tcti/tcti-mssim.c src/tss2-tcti/sockets.c \
+                               src/tss2-tcti/sockets.h test/unit/tcti-mssim.c
 
 test_unit_socket_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_socket_LDADD   = $(CMOCKA_LIBS) $(libutil) $(libtss2_mu)
 test_unit_socket_LDFLAGS = -Wl,--wrap=connect,--wrap=socket
-test_unit_socket_SOURCES = test/unit/socket.c tcti/sockets.c tcti/sockets.h
+test_unit_socket_SOURCES = test/unit/socket.c src/tss2-tcti/sockets.c \
+    src/tss2-tcti/sockets.h
 
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_CommonPreparePrologue_LDFLAGS = -Wl,--unresolved-symbols=ignore-all

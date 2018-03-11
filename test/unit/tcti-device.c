@@ -7,7 +7,7 @@
 
 #include "tss2_mu.h"
 #include "tss2_tcti_device.h"
-#include "tcti/tcti.h"
+#include "tss2-tcti/tcti.h"
 
 /**
  * When passed all NULL values ensure that we get back the expected RC

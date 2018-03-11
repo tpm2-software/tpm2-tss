@@ -3,7 +3,7 @@
 #include "log/log.h"
 #include "test.h"
 #include "tpm20.h"
-#include "tcti/tcti.h"
+#include "tss2-tcti/tcti.h"
 #include "sysapi/include/sysapi_util.h"
 
 /**

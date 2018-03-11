@@ -35,7 +35,7 @@
 
 #include "tpm20.h"
 #include "tss2_tcti_mssim.h"
-#include "tcti/tcti.h"
+#include "tss2-tcti/tcti.h"
 
 /*
  * This function is implemented in the socket TCTI module but not exposed

@@ -32,7 +32,7 @@
 #include <cmocka.h>
 
 #include "tpm20.h"
-#include "tcti/sockets.h"
+#include "tss2-tcti/sockets.h"
 
 int
 __wrap_socket (
