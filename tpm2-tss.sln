@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tss2-mu", "src\tss2-mu\tss2-mu.vcxproj", "{A6D8F061-6827-492F-80C3-32C4DD4FC52E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tss2-sapi", "sysapi\tss2-sapi.vcxproj", "{10D9862F-0E36-4ACC-AF19-930B00A88A98}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tss2-sys", "src\tss2-sys\tss2-sys.vcxproj", "{10D9862F-0E36-4ACC-AF19-930B00A88A98}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A6D8F061-6827-492F-80C3-32C4DD4FC52E} = {A6D8F061-6827-492F-80C3-32C4DD4FC52E}
 	EndProjectSection

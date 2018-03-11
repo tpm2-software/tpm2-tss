@@ -26,11 +26,11 @@
     <ClInclude Include="..\include\sapi\tss2_sys.h" />
     <ClInclude Include="..\include\sapi\tss2_tcti.h" />
     <ClInclude Include="..\include\sapi\tss2_tpm2_types.h" />
-    <ClInclude Include="..\log\log.h" />
+    <ClInclude Include="..\..\log\log.h" />
     <ClInclude Include="sysapi\include\sysapi_util.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\log\log.c" />
+    <ClCompile Include="..\..\log\log.c" />
     <ClCompile Include="sysapi\authorizations.c" />
     <ClCompile Include="sysapi\ContextManagement.c" />
     <ClCompile Include="sysapi\DecryptParam.c" />
@@ -163,7 +163,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{10d9862f-0e36-4acc-af19-930b00a88a98}</ProjectGuid>
     <Keyword>Clang</Keyword>
-    <RootNamespace>tss2_sapi</RootNamespace>
+    <RootNamespace>tss2_sys</RootNamespace>
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -199,16 +199,16 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_USRDLL;tss2_sapi_EXPORTS;MAXLOGLEVEL=6;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN32;NDEBUG;_WINDOWS;_USRDLL;tss2_sapi_EXPORTS;MAXLOGLEVEL=3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">_DEBUG;_WINDOWS;_USRDLL;tss2_sapi_EXPORTS;MAXLOGLEVEL=6;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NDEBUG;_WINDOWS;_USRDLL;tss2_sapi_EXPORTS;MAXLOGLEVEL=3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\include\tss2;$(SolutionDir)\src\tss2-mu;$(SolutionDir)/sysapi/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_USRDLL;tss2_sys_EXPORTS;MAXLOGLEVEL=6;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN32;NDEBUG;_WINDOWS;_USRDLL;tss2_sys_EXPORTS;MAXLOGLEVEL=3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">_DEBUG;_WINDOWS;_USRDLL;tss2_sys_EXPORTS;MAXLOGLEVEL=6;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NDEBUG;_WINDOWS;_USRDLL;tss2_sys_EXPORTS;MAXLOGLEVEL=3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\src;$(SolutionDir)\include\tss2;$(SolutionDir)\src\tss2-mu;$(SolutionDir)\src\tss2-sys\include;(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ModuleDefinitionFile>$(SolutionDir)\lib\tss2-sapi.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>$(SolutionDir)\lib\tss2-sys.def</ModuleDefinitionFile>
       <AdditionalDependencies>$(OutDir)\tss2-mu.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

@@ -17,10 +17,10 @@ AUTORECONF=${AUTORECONF:-autoreconf}
 
 echo "Generating file lists: ${VARS_FILE}"
 (
-  src_listvar "sysapi/sysapi" "*.c" "SYSAPI_C"
-  src_listvar "sysapi/include" "*.h" "SYSAPI_H"
-  src_listvar "sysapi/sysapi_util" "*.c" "SYSAPIUTIL_C"
-  printf "SYSAPI_SRC = \$(SYSAPI_H) \$(SYSAPI_C) \$(SYSAPIUTIL_C)\n"
+  src_listvar "src/tss2-sys/sysapi" "*.c" "TSS2_SYS_C"
+  src_listvar "src/tss2-sys/include" "*.h" "TSS2_SYS_H"
+  src_listvar "src/tss2-sys/sysapi_util" "*.c" "TSS2_SYS_UTIL_C"
+  printf "TSS2_SYS_SRC = \$(TSS2_SYS_H) \$(TSS2_SYS_C) \$(TSS2_SYS_UTIL_C)\n"
 
   src_listvar "esapi/esapi" "*.h" "ESAPI_H"
   src_listvar "esapi/esapi" "*.c" "ESAPI_C"

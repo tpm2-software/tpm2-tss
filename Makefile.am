@@ -140,16 +140,15 @@ src_tss2_tcti_libtss2_tcti_mssim_la_SOURCES  = src/tss2-tcti/tcti-mssim.c \
     src/tss2-tcti/sockets.c src/tss2-tcti/sockets.h
 
 ### TCG TSS SAPI spec library ###
-libsapi = sysapi/libsapi.la
+libtss2_sys = src/tss2-sys/libtss2-sys.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_sys.h
-lib_LTLIBRARIES += $(libsapi)
-nodist_pkgconfig_DATA += lib/sapi.pc
-EXTRA_DIST += lib/sapi.pc.in
+lib_LTLIBRARIES += $(libtss2_sys)
+nodist_pkgconfig_DATA += lib/tss2-sys.pc
+EXTRA_DIST += lib/tss2-sys.pc.in
 
-sysapi_libsapi_la_CFLAGS = $(AM_CFLAGS) -I$(srcdir)/src/tss2-mu -I$(srcdir)/sysapi/include
-sysapi_libsapi_la_LIBADD  = $(libtss2_mu)
-sysapi_libsapi_la_SOURCES = $(SYSAPI_C) $(SYSAPI_H) $(SYSAPIUTIL_C) \
-    $(SYSAPIUTIL_H)
+src_tss2_sys_libtss2_sys_la_CFLAGS = $(AM_CFLAGS) -I$(srcdir)/src/tss2-mu -I$(srcdir)/src/tss2-sys/include
+src_tss2_sys_libtss2_sys_la_LIBADD = $(libtss2_mu)
+src_tss2_sys_libtss2_sys_la_SOURCES = $(TSS2_SYS_SRC)
 
 ### TCG TSS ESAPI spec library ###
 if ESAPI
@@ -160,10 +159,11 @@ nodist_pkgconfig_DATA += lib/esapi.pc
 EXTRA_DIST += lib/esapi.pc.in
 
 esapi_libesapi_la_CFLAGS  = $(AM_CFLAGS) -Wno-unused-variable -Wno-unused-label \
-                            -I$(srcdir)/sysapi/include -I$(srcdir)/esapi/esapi_util \
+                            -I$(srcdir)/src/tss2-sys/include -I$(srcdir)/esapi/esapi_util \
                             -DESYS_TCTI_DEFAULT_MODULE=$(TCTI_DEFAULT_MODULE) \
                             -DESYS_TCTI_DEFAULT_CONFIG=$(TCTI_DEFAULT_CONFIG)
-esapi_libesapi_la_LIBADD  = $(libsapi) $(libtss2_mu) $(libtss2_tcti_device) $(libtss2_tcti_mssim) $(libutil)
+esapi_libesapi_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) \
+    $(libtss2_tcti_device) $(libtss2_tcti_mssim) $(libutil)
 esapi_libesapi_la_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
 esapi_libesapi_la_SOURCES = $(ESAPI_SRC)
 
