@@ -5,7 +5,7 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include "tcti/tcti.h"
+#include "tss2-tcti/tcti.h"
 #define LOGMODULE unit_util
 #include "log/log.h"
 

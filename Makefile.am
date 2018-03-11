@@ -94,7 +94,7 @@ tss2_HEADERS = \
 libutil = libutil.la
 noinst_LTLIBRARIES += $(libutil)
 libutil_la_CFLAGS = $(AM_CFLAGS)
-libutil_la_SOURCES = log/log.c log/log.h tcti/tcti.c tcti/tcti.h
+libutil_la_SOURCES = log/log.c log/log.h src/tss2-tcti/tcti.c src/tss2-tcti/tcti.h
 
 ### TCG TSS Marshaling/Unmarshalling spec library ###
 libtss2_mu = src/tss2-mu/libtss2-mu.la
@@ -111,32 +111,33 @@ src_tss2_mu_libtss2_mu_la_SOURCES = $(TSS2_MU_SRC)
 
 ### TCG TSS TCTI spec libraries ###
 # tcti device library
-libtcti_device = tcti/libtcti-device.la
+libtss2_tcti_device = src/tss2-tcti/libtss2-tcti-device.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_device.h
-lib_LTLIBRARIES += $(libtcti_device)
-nodist_pkgconfig_DATA += lib/tcti-device.pc
-EXTRA_DIST += tcti/tcti_device.map lib/tcti-device.pc.in
+lib_LTLIBRARIES += $(libtss2_tcti_device)
+nodist_pkgconfig_DATA += lib/tss2-tcti-device.pc
+EXTRA_DIST += lib/tss2-tcti-device.map lib/tss2-tcti-device.pc.in
 
-tcti_libtcti_device_la_CFLAGS   = $(AM_CFLAGS)
+src_tss2_tcti_libtss2_tcti_device_la_CFLAGS   = $(AM_CFLAGS)
 if HAVE_LD_VERSION_SCRIPT
-tcti_libtcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/tcti/tcti_device.map
+src_tss2_tcti_libtss2_tcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-device.map
 endif # HAVE_LD_VERSION_SCRIPT
-tcti_libtcti_device_la_LIBADD   = $(libtss2_mu) $(libutil)
-tcti_libtcti_device_la_SOURCES  = tcti/tcti_device.c
+src_tss2_tcti_libtss2_tcti_device_la_LIBADD   = $(libtss2_mu) $(libutil)
+src_tss2_tcti_libtss2_tcti_device_la_SOURCES  = src/tss2-tcti/tcti-device.c
 
 # tcti library for microsoft simulator
-libtcti_mssim = tcti/libtcti-mssim.la
+libtss2_tcti_mssim = src/tss2-tcti/libtss2-tcti-mssim.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_mssim.h
-lib_LTLIBRARIES += $(libtcti_mssim)
-nodist_pkgconfig_DATA += lib/tcti-mssim.pc
-EXTRA_DIST += lib/tcti-mssim.map lib/tcti-mssim.pc.in
+lib_LTLIBRARIES += $(libtss2_tcti_mssim)
+nodist_pkgconfig_DATA += lib/tss2-tcti-mssim.pc
+EXTRA_DIST += lib/tss2-tcti-mssim.map lib/tss2-tcti-mssim.pc.in
 
-tcti_libtcti_mssim_la_CFLAGS   = $(AM_CFLAGS) $(URIPARSER_CFLAGS)
+src_tss2_tcti_libtss2_tcti_mssim_la_CFLAGS   = $(AM_CFLAGS) $(URIPARSER_CFLAGS)
 if HAVE_LD_VERSION_SCRIPT
-tcti_libtcti_mssim_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tcti-mssim.map
+src_tss2_tcti_libtss2_tcti_mssim_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-mssim.map
 endif # HAVE_LD_VERSION_SCRIPT
-tcti_libtcti_mssim_la_LIBADD   = $(libtss2_mu) $(URIPARSER_LIBS) $(libutil)
-tcti_libtcti_mssim_la_SOURCES  = tcti/tcti-mssim.c tcti/sockets.c tcti/sockets.h
+src_tss2_tcti_libtss2_tcti_mssim_la_LIBADD   = $(libtss2_mu) $(URIPARSER_LIBS) $(libutil)
+src_tss2_tcti_libtss2_tcti_mssim_la_SOURCES  = src/tss2-tcti/tcti-mssim.c \
+    src/tss2-tcti/sockets.c src/tss2-tcti/sockets.h
 
 ### TCG TSS SAPI spec library ###
 libsapi = sysapi/libsapi.la
@@ -162,7 +163,7 @@ esapi_libesapi_la_CFLAGS  = $(AM_CFLAGS) -Wno-unused-variable -Wno-unused-label 
                             -I$(srcdir)/sysapi/include -I$(srcdir)/esapi/esapi_util \
                             -DESYS_TCTI_DEFAULT_MODULE=$(TCTI_DEFAULT_MODULE) \
                             -DESYS_TCTI_DEFAULT_CONFIG=$(TCTI_DEFAULT_CONFIG)
-esapi_libesapi_la_LIBADD  = $(libsapi) $(libtss2_mu) $(libtcti_device) $(libtcti_mssim) $(libutil)
+esapi_libesapi_la_LIBADD  = $(libsapi) $(libtss2_mu) $(libtss2_tcti_device) $(libtss2_tcti_mssim) $(libutil)
 esapi_libesapi_la_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
 esapi_libesapi_la_SOURCES = $(ESAPI_SRC)
 
@@ -170,7 +171,7 @@ endif #ESAPI
 
 ### Man Pages
 man3_MANS = man/man3/Tss2_Tcti_Device_Init.3 man/man3/Tss2_Tcti_Mssim_Init.3
-man7_MANS = man/man7/tcti-device.7 man/man7/tcti-mssim.7
+man7_MANS = man/man7/tss2-tcti-device.7 man/man7/tss2-tcti-mssim.7
 
 man/man3/%.3 : man/%.3.in $(srcdir)/man/man-postlude.troff
 	$(AM_V_GEN)$(call make_man,$@,$<,$(srcdir)/man/man-postlude.troff)
@@ -182,8 +183,8 @@ EXTRA_DIST += \
     man/man-postlude.troff \
     man/Tss2_Tcti_Device_Init.3.in \
     man/Tss2_Tcti_Mssim_Init.3.in \
-    man/tcti-device.7.in \
-    man/tcti-mssim.7.in
+    man/tss2-tcti-device.7.in \
+    man/tss2-tcti-mssim.7.in
 
 CLEANFILES += \
     $(man3_MANS) \
