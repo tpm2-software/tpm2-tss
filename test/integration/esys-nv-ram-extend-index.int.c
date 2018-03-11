@@ -34,7 +34,7 @@
 #include <stdint.h>
 #include "tpm20.h"
 #define LOGMODULE test
-#include "log/log.h"
+#include "util/log.h"
 #include "test.h"
 #include "sysapi_util.h"
 #include "tss2_esys.h"

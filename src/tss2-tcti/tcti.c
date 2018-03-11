@@ -33,7 +33,7 @@
 #include "tpm20.h"
 #include "tcti.h"
 #define LOGMODULE tcti
-#include "log/log.h"
+#include "util/log.h"
 
 TSS2_RC
 tcti_common_checks (

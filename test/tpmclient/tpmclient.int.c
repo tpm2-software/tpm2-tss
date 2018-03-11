@@ -39,11 +39,11 @@
 #include "../integration/sapi-util.h"
 #include "sample.h"
 #include "tpmclient.h"
-#include "tss2-mu/tss2_endian.h"
+#include "util/tss2_endian.h"
 #include "sysapi_util.h"
 #include "syscontext.h"
 #define LOGMODULE testtpmclient
-#include "log/log.h"
+#include "util/log.h"
 
 //
 // TPM indices and sizes

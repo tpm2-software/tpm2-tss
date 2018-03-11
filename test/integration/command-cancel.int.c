@@ -25,7 +25,7 @@
  */
 #include "tss2_tcti_mssim.h"
 #define LOGMODULE test
-#include "log/log.h"
+#include "util/log.h"
 #include "sapi-util.h"
 #include "test.h"
 

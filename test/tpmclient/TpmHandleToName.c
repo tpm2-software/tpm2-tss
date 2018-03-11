@@ -28,7 +28,7 @@
 #include "tpm20.h"
 #include "sample.h"
 #include "sysapi_util.h"
-#include "tss2-mu/tss2_endian.h"
+#include "util/tss2_endian.h"
 
 //
 //

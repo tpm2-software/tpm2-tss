@@ -4,7 +4,7 @@
 #include "tpm20.h"
 
 #define LOGMODULE test
-#include "log/log.h"
+#include "util/log.h"
 #include "test.h"
 /*
  * This is an incredibly simple test to create the most simple session

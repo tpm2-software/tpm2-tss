@@ -27,7 +27,7 @@
 
 #include "tpm20.h"
 #include "sysapi_util.h"
-#include "tss2_endian.h"
+#include "util/tss2_endian.h"
 
 void InitSysContextFields(_TSS2_SYS_CONTEXT_BLOB *ctx)
 {

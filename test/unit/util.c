@@ -7,7 +7,7 @@
 
 #include "tss2-tcti/tcti.h"
 #define LOGMODULE unit_util
-#include "log/log.h"
+#include "util/log.h"
 
 ssize_t
 __wrap_write (int fd, const void *buffer, size_t buffer_size)

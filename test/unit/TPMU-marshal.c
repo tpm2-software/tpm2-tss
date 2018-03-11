@@ -5,7 +5,7 @@
 #include <cmocka.h>
 #include <stdio.h>
 #include "tss2_mu.h"
-#include "tss2-mu/tss2_endian.h"
+#include "util/tss2_endian.h"
 
 /*
  * Success case

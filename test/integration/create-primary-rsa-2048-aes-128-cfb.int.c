@@ -24,7 +24,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define LOGMODULE test
-#include "log/log.h"
+#include "util/log.h"
 #include "sapi-util.h"
 #include "test.h"
 

@@ -1,7 +1,7 @@
 #include <stdbool.h>
 
 #define LOGMODULE test
-#include "log/log.h"
+#include "util/log.h"
 #include "test.h"
 #include "test-options.h"
 #include "context-util.h"

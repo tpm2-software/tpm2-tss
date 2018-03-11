@@ -32,7 +32,7 @@
 #include "tss2_sys.h"
 #include "sysapi_util.h"
 #define LOGMODULE sys
-#include "log/log.h"
+#include "util/log.h"
 
 #include "esys_crypto.h"
 #include "esys_iutil.h"
