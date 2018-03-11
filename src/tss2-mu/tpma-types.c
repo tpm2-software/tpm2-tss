@@ -31,9 +31,9 @@
 
 #include "tss2_mu.h"
 #include "tpm20.h"
-#include "tss2_endian.h"
+#include "util/tss2_endian.h"
 #define LOGMODULE marshal
-#include "log/log.h"
+#include "util/log.h"
 
 #define TPMA_MARSHAL(type) \
 TSS2_RC Tss2_MU_##type##_Marshal(type src, uint8_t buffer[], \

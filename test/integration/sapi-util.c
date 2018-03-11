@@ -27,7 +27,7 @@
 #include <openssl/sha.h>
 
 #define LOGMODULE testintegration
-#include "log/log.h"
+#include "util/log.h"
 #include "sapi-util.h"
 #include "test.h"
 /*

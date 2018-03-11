@@ -35,7 +35,7 @@
 #include "esys_mu.h"
 #include "tss2_sys.h"
 #define LOGMODULE esys
-#include "log/log.h"
+#include "util/log.h"
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _finish */
 /** One-Call function for TPM2_ReadClock

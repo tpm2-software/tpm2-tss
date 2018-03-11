@@ -30,7 +30,7 @@
 #include "../integration/sapi-util.h"
 #include <stdlib.h>
 #define LOGMODULE testtpmclient
-#include "log/log.h"
+#include "util/log.h"
 
 #define SESSIONS_ARRAY_COUNT MAX_NUM_SESSIONS+1
 

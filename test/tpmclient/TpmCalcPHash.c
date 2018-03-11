@@ -30,9 +30,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "sysapi_util.h"
-#include "tss2-mu/tss2_endian.h"
+#include "util/tss2_endian.h"
 #define LOGMODULE test
-#include "log/log.h"
+#include "util/log.h"
 
 //
 // This function is a helper function used to calculate cpHash and rpHash.

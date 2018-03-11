@@ -94,7 +94,8 @@ tss2_HEADERS = \
 libutil = libutil.la
 noinst_LTLIBRARIES += $(libutil)
 libutil_la_CFLAGS = $(AM_CFLAGS)
-libutil_la_SOURCES = log/log.c log/log.h src/tss2-tcti/tcti.c src/tss2-tcti/tcti.h
+libutil_la_SOURCES = src/util/log.c src/util/log.h src/util/tss2_endian.h \
+    src/tss2-tcti/tcti.c src/tss2-tcti/tcti.h
 
 ### TCG TSS Marshaling/Unmarshalling spec library ###
 libtss2_mu = src/tss2-mu/libtss2-mu.la
@@ -146,7 +147,7 @@ lib_LTLIBRARIES += $(libtss2_sys)
 nodist_pkgconfig_DATA += lib/tss2-sys.pc
 EXTRA_DIST += lib/tss2-sys.pc.in
 
-src_tss2_sys_libtss2_sys_la_CFLAGS = $(AM_CFLAGS) -I$(srcdir)/src/tss2-mu -I$(srcdir)/src/tss2-sys/include
+src_tss2_sys_libtss2_sys_la_CFLAGS = $(AM_CFLAGS) -I$(srcdir)/src/tss2-sys/include
 src_tss2_sys_libtss2_sys_la_LIBADD = $(libtss2_mu)
 src_tss2_sys_libtss2_sys_la_SOURCES = $(TSS2_SYS_SRC)
 

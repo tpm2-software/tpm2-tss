@@ -138,7 +138,7 @@ test_unit_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tcti_device_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
 test_unit_tcti_device_LDFLAGS = -Wl,--wrap=read -Wl,-wrap=write
 test_unit_tcti_device_SOURCES = test/unit/tcti-device.c \
-    src/tss2-tcti/tcti-device.c log/log.h
+    src/tss2-tcti/tcti-device.c
 
 test_unit_tcti_mssim_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(URIPARSER_CFLAGS)
 test_unit_tcti_mssim_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(URIPARSER_LIBS) $(libutil)
@@ -557,11 +557,11 @@ test_integration_create_loaded_int_SOURCES = test/integration/main.c \
 
 test_integration_policy_authorizeNV_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_policy_authorizeNV_int_LDADD   = $(TESTS_LDADD)
-test_integration_policy_authorizeNV_int_SOURCES = test/integration/main.c log/log.h log/log.c \
+test_integration_policy_authorizeNV_int_SOURCES = test/integration/main.c \
     test/integration/policy-authorizeNV.int.c
 
 test_integration_command_cancel_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_command_cancel_int_LDADD   = $(TESTS_LDADD)
-test_integration_command_cancel_int_SOURCES = test/integration/main.c log/log.h log/log.c \
+test_integration_command_cancel_int_SOURCES = test/integration/main.c \
     test/integration/command-cancel.int.c
 endif #SIMULATOR_BIN

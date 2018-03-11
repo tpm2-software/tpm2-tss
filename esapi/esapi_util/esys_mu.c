@@ -43,7 +43,7 @@
 #include "tss2_esys.h"
 #include "esys_mu.h"
 #define LOGMODULE esys_types
-#include "log/log.h"
+#include "util/log.h"
 
 /**
  * Marshal an array of BYTE structures into a byte buffer.

@@ -1,6 +1,6 @@
 #include <stdio.h>
 #define LOGMODULE test
-#include "log/log.h"
+#include "util/log.h"
 #include "test.h"
 #include "tpm20.h"
 #include "tss2-tcti/tcti.h"

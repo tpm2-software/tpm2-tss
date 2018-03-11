@@ -38,7 +38,7 @@
 #include "tcti.h"
 #include "tss2_tcti_device.h"
 #define LOGMODULE tcti
-#include "log/log.h"
+#include "util/log.h"
 
 #define TCTI_DEVICE_DEFAULT "/dev/tpm0"
 

@@ -26,7 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  ***********************************************************************/
 
-#include "tss2_endian.h"
+#include "util/tss2_endian.h"
 #include "tpm20.h"
 #include "sysapi_util.h"
 

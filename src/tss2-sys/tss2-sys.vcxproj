@@ -26,11 +26,12 @@
     <ClInclude Include="..\include\sapi\tss2_sys.h" />
     <ClInclude Include="..\include\sapi\tss2_tcti.h" />
     <ClInclude Include="..\include\sapi\tss2_tpm2_types.h" />
-    <ClInclude Include="..\..\log\log.h" />
+    <ClInclude Include="..\util\log.h" />
+    <ClInclude Include="..\util\tss2_endian.h" />
     <ClInclude Include="sysapi\include\sysapi_util.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\log\log.c" />
+    <ClCompile Include="..\util\log.c" />
     <ClCompile Include="sysapi\authorizations.c" />
     <ClCompile Include="sysapi\ContextManagement.c" />
     <ClCompile Include="sysapi\DecryptParam.c" />

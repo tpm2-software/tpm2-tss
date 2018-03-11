@@ -35,7 +35,7 @@
 #include "esys_crypto.h"
 #include <tss2_esys.h>
 #define LOGMODULE esys
-#include "log/log.h"
+#include "util/log.h"
 #include "esys_iutil.h"
 #include "esys_mu.h"
 #include <inttypes.h>

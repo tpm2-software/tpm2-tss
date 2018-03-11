@@ -19,11 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\log\log.h" />
-    <ClInclude Include="tss2_endian.h" />
+    <ClInclude Include="..\util\log.h" />
+    <ClInclude Include="..\util\tss2_endian.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\log\log.c" />
+    <ClCompile Include="..\util\log.c" />
     <ClCompile Include="base-types.c" />
     <ClCompile Include="tpm2b-types.c" />
     <ClCompile Include="tpma-types.c" />
@@ -75,7 +75,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN32;NDEBUG;_WINDOWS;_USRDLL;libtss2_mu_EXPORTS;MAXLOGLEVEL=3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">_DEBUG;_WINDOWS;_USRDLL;libtss2_mu_EXPORTS;MAXLOGLEVEL=6;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NDEBUG;_WINDOWS;_USRDLL;libtss2_mu_EXPORTS;MAXLOGLEVEL=3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\include\tss2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\src;$(SolutionDir)\include\tss2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

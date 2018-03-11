@@ -27,7 +27,7 @@
 
 #include "tpm20.h"
 #include "sysapi_util.h"
-#include "tss2_endian.h"
+#include "util/tss2_endian.h"
 
 TSS2_RC Tss2_Sys_ExecuteAsync(TSS2_SYS_CONTEXT *sysContext)
 {

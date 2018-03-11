@@ -35,7 +35,7 @@
 #include "esys_mu.h"
 #include "tss2_sys.h"
 #define LOGMODULE esys
-#include "log/log.h"
+#include "util/log.h"
 
 /*
  * This test is intended to test then change of an authorization value of

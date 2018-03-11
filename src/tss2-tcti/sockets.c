@@ -33,7 +33,7 @@
 #include "sockets.h"
 #include "tcti.h"
 #define LOGMODULE tcti
-#include "log/log.h"
+#include "util/log.h"
 
 ssize_t
 socket_recv_buf (

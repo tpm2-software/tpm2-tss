@@ -40,7 +40,7 @@
 #include "tss2_tcti_mssim.h"
 #include "tcti.h"
 #define LOGMODULE tcti
-#include "log/log.h"
+#include "util/log.h"
 
 #define TCTI_SOCKET_DEFAULT_CONF "tcp://127.0.0.1:2321"
 #define TCTI_SOCKET_DEFAULT_PORT 2321
