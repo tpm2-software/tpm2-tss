@@ -4,7 +4,7 @@
 #include <setjmp.h>
 #include <cmocka.h>
 #include "tss2_mu.h"
-#include "marshal/tss2_endian.h"
+#include "tss2-mu/tss2_endian.h"
 
 /*
  * Success case

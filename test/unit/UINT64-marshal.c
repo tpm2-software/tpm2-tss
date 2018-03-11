@@ -5,7 +5,7 @@
 #include <cmocka.h>
 
 #include "tss2_mu.h"
-#include "tss2_endian.h"
+#include "tss2-mu/tss2_endian.h"
 
 /*
  * Test case for successful UINT64 marshaling with NULL offset.

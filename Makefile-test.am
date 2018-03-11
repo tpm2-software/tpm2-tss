@@ -26,7 +26,7 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 #;**********************************************************************;
 
-TESTS_CFLAGS = $(AM_CFLAGS) $(LIBCRYPTO_CFLAGS) -I$(srcdir)/marshal \
+TESTS_CFLAGS = $(AM_CFLAGS) $(LIBCRYPTO_CFLAGS) -I$(srcdir)/src/tss2-mu \
     -I$(srcdir)/sysapi/include -I$(srcdir)/esapi/esapi_util
 TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES) $(LIBCRYPTO_LIBS) $(libutil)
 
@@ -130,23 +130,23 @@ CLEANFILES += \
 
 if UNIT
 test_unit_util_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_util_LDADD = $(CMOCKA_LIBS) $(libutil) $(libmarshal)
+test_unit_util_LDADD = $(CMOCKA_LIBS) $(libutil) $(libtss2_mu)
 test_unit_util_LDFLAGS = -Wl,--wrap=write
 test_unit_util_SOURCES = test/unit/util.c
 
 test_unit_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_tcti_device_LDADD   = $(CMOCKA_LIBS) $(libmarshal) $(libutil)
+test_unit_tcti_device_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
 test_unit_tcti_device_LDFLAGS = -Wl,--wrap=read -Wl,-wrap=write
 test_unit_tcti_device_SOURCES = test/unit/tcti-device.c tcti/tcti_device.c log/log.h
 
 test_unit_tcti_mssim_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(URIPARSER_CFLAGS)
-test_unit_tcti_mssim_LDADD   = $(CMOCKA_LIBS) $(libmarshal) $(URIPARSER_LIBS) $(libutil)
+test_unit_tcti_mssim_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(URIPARSER_LIBS) $(libutil)
 test_unit_tcti_mssim_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=select,--wrap=write
 test_unit_tcti_mssim_SOURCES = tcti/tcti-mssim.c tcti/sockets.c \
                                tcti/sockets.h test/unit/tcti-mssim.c
 
 test_unit_socket_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_socket_LDADD   = $(CMOCKA_LIBS) $(libutil) $(libmarshal)
+test_unit_socket_LDADD   = $(CMOCKA_LIBS) $(libutil) $(libtss2_mu)
 test_unit_socket_LDFLAGS = -Wl,--wrap=connect,--wrap=socket
 test_unit_socket_SOURCES = test/unit/socket.c tcti/sockets.c tcti/sockets.h
 
@@ -165,43 +165,43 @@ test_unit_CopyCommandHeader_LDADD = $(CMOCKA_LIBS) $(libsapi)
 test_unit_CopyCommandHeader_SOURCES = test/unit/CopyCommandHeader.c
 
 test_unit_UINT8_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_UINT8_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
+test_unit_UINT8_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
 test_unit_UINT8_marshal_SOURCES = test/unit/UINT8-marshal.c
 
 test_unit_UINT16_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_UINT16_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
+test_unit_UINT16_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
 test_unit_UINT16_marshal_SOURCES = test/unit/UINT16-marshal.c
 
 test_unit_UINT32_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_UINT32_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
+test_unit_UINT32_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
 test_unit_UINT32_marshal_SOURCES = test/unit/UINT32-marshal.c
 
 test_unit_UINT64_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_UINT64_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
+test_unit_UINT64_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
 test_unit_UINT64_marshal_SOURCES = test/unit/UINT64-marshal.c
 
 test_unit_TPMA_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_TPMA_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
+test_unit_TPMA_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
 test_unit_TPMA_marshal_SOURCES = test/unit/TPMA-marshal.c
 
 test_unit_TPM2B_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_TPM2B_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
+test_unit_TPM2B_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
 test_unit_TPM2B_marshal_SOURCES = test/unit/TPM2B-marshal.c
 
 test_unit_TPMS_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_TPMS_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
+test_unit_TPMS_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
 test_unit_TPMS_marshal_SOURCES = test/unit/TPMS-marshal.c
 
 test_unit_TPML_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_TPML_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
+test_unit_TPML_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
 test_unit_TPML_marshal_SOURCES = test/unit/TPML-marshal.c
 
 test_unit_TPMT_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_TPMT_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
+test_unit_TPMT_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
 test_unit_TPMT_marshal_SOURCES = test/unit/TPMT-marshal.c
 
 test_unit_TPMU_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_TPMU_marshal_LDADD   = $(CMOCKA_LIBS) $(libmarshal)
+test_unit_TPMU_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
 test_unit_TPMU_marshal_SOURCES = test/unit/TPMU-marshal.c
 endif # UNIT
 
