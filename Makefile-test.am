@@ -27,7 +27,7 @@
 #;**********************************************************************;
 
 TESTS_CFLAGS = $(AM_CFLAGS) $(LIBCRYPTO_CFLAGS) -I$(srcdir)/src/tss2-mu \
-    -I$(srcdir)/sysapi/include -I$(srcdir)/esapi/esapi_util
+    -I$(srcdir)/src/tss2-sys/include -I$(srcdir)/esapi/esapi_util
 TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES) $(LIBCRYPTO_LIBS) $(libutil)
 
 # test harness configuration
@@ -154,16 +154,16 @@ test_unit_socket_SOURCES = test/unit/socket.c src/tss2-tcti/sockets.c \
 
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_CommonPreparePrologue_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
-test_unit_CommonPreparePrologue_LDADD = $(CMOCKA_LIBS) $(libsapi)
+test_unit_CommonPreparePrologue_LDADD = $(CMOCKA_LIBS) $(libtss2_sys)
 test_unit_CommonPreparePrologue_SOURCES = test/unit/CommonPreparePrologue.c
 
 test_unit_GetNumHandles_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_GetNumHandles_LDADD   = $(CMOCKA_LIBS) $(libsapi)
+test_unit_GetNumHandles_LDADD   = $(CMOCKA_LIBS) $(libtss2_sys)
 test_unit_GetNumHandles_SOURCES = test/unit/GetNumHandles.c
 
 test_unit_CopyCommandHeader_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_CopyCommandHeader_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
-test_unit_CopyCommandHeader_LDADD = $(CMOCKA_LIBS) $(libsapi)
+test_unit_CopyCommandHeader_LDADD = $(CMOCKA_LIBS) $(libtss2_sys)
 test_unit_CopyCommandHeader_SOURCES = test/unit/CopyCommandHeader.c
 
 test_unit_UINT8_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
