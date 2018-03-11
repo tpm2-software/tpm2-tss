@@ -1,5 +1,5 @@
 #;**********************************************************************;
-# Copyright (c) 2015, 2016, 2017 Intel Corporation
+# Copyright (c) 2015 - 2018 Intel Corporation
 # Copyright (c) 2018 Fraunhofer SIT sponsored by Infineon Technologies AG
 # All rights reserved.
 #
@@ -27,7 +27,7 @@
 #;**********************************************************************;
 
 TESTS_CFLAGS = $(AM_CFLAGS) $(LIBCRYPTO_CFLAGS) -I$(srcdir)/src/tss2-mu \
-    -I$(srcdir)/src/tss2-sys/include -I$(srcdir)/esapi/esapi_util
+    -I$(srcdir)/src/tss2-sys/include -I$(srcdir)/src/tss2-esys/esapi_util
 TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES) $(LIBCRYPTO_LIBS) $(libutil)
 
 # test harness configuration
