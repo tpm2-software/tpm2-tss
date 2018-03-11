@@ -1,5 +1,5 @@
 #;**********************************************************************;
-# Copyright (c) 2015, 2016, 2017 Intel Corporation
+# Copyright (c) 2015 - 2018 Intel Corporation
 # Copyright (c) 2018 Fraunhofer SIT sponsored by Infineon Technologies AG
 # All rights reserved.
 #
@@ -153,20 +153,21 @@ src_tss2_sys_libtss2_sys_la_SOURCES = $(TSS2_SYS_SRC)
 
 ### TCG TSS ESAPI spec library ###
 if ESAPI
-libesapi = esapi/libesapi.la
+libtss2_esys = src/tss2-esys/libtss2-esys.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_esys.h
-lib_LTLIBRARIES += $(libesapi)
-nodist_pkgconfig_DATA += lib/esapi.pc
-EXTRA_DIST += lib/esapi.pc.in
+lib_LTLIBRARIES += $(libtss2_esys)
+nodist_pkgconfig_DATA += lib/tss2-esys.pc
+EXTRA_DIST += lib/tss2-esys.pc.in
 
-esapi_libesapi_la_CFLAGS  = $(AM_CFLAGS) -Wno-unused-variable -Wno-unused-label \
-                            -I$(srcdir)/src/tss2-sys/include -I$(srcdir)/esapi/esapi_util \
-                            -DESYS_TCTI_DEFAULT_MODULE=$(TCTI_DEFAULT_MODULE) \
-                            -DESYS_TCTI_DEFAULT_CONFIG=$(TCTI_DEFAULT_CONFIG)
-esapi_libesapi_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) \
+src_tss2_esys_libtss2_esys_la_CFLAGS  = $(AM_CFLAGS) \
+    -Wno-unused-variable -Wno-unused-label \
+    -I$(srcdir)/src/tss2-sys/include -I$(srcdir)/src/tss2-esys/esapi_util \
+    -DESYS_TCTI_DEFAULT_MODULE=$(TCTI_DEFAULT_MODULE) \
+    -DESYS_TCTI_DEFAULT_CONFIG=$(TCTI_DEFAULT_CONFIG)
+src_tss2_esys_libtss2_esys_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) \
     $(libtss2_tcti_device) $(libtss2_tcti_mssim) $(libutil)
-esapi_libesapi_la_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
-esapi_libesapi_la_SOURCES = $(ESAPI_SRC)
+src_tss2_esys_libtss2_esys_la_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
+src_tss2_esys_libtss2_esys_la_SOURCES = $(TSS2_ESYS_SRC)
 
 endif #ESAPI
 
