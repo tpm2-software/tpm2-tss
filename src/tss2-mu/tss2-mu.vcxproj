@@ -19,11 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\log\log.h" />
+    <ClInclude Include="..\..\log\log.h" />
     <ClInclude Include="tss2_endian.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\log\log.c" />
+    <ClCompile Include="..\..\log\log.c" />
     <ClCompile Include="base-types.c" />
     <ClCompile Include="tpm2b-types.c" />
     <ClCompile Include="tpma-types.c" />

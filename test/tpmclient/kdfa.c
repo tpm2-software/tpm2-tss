@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "sysapi_util.h"
-#include "tss2_endian.h"
+#include "tss2-mu/tss2_endian.h"
 #define LOGMODULE test
 #include "log/log.h"
 //
