@@ -508,13 +508,13 @@ Tss2_Tcti_Mssim_Init (
     char hostname[HOST_NAME_MAX + 1] = { 0 };
     uint16_t port = TCTI_SOCKET_DEFAULT_PORT;
 
+    LOG_TRACE ("tctiContext: 0x%" PRIxPTR ", size: 0x%" PRIxPTR ", conf: %s",
+               (uintptr_t)tctiContext, (uintptr_t)size, uri_str);
     if (tctiContext == NULL && size == NULL) {
         return TSS2_TCTI_RC_BAD_VALUE;
-    } else if( tctiContext == NULL ) {
+    } else if (tctiContext == NULL) {
         *size = sizeof (TSS2_TCTI_CONTEXT_INTEL);
         return TSS2_RC_SUCCESS;
-    } else if( conf == NULL ) {
-        return TSS2_TCTI_RC_BAD_VALUE;
     }
 
     rc = conf_str_to_host_port (uri_str, hostname, &port);

@@ -218,6 +218,13 @@ tcti_socket_setup (void **state)
 
     return 0;
 }
+static void
+tcti_socket_init_null_conf_test (void **state)
+{
+    TSS2_TCTI_CONTEXT *ctx = tcti_socket_init_from_conf (NULL);
+    assert_non_null (ctx);
+    free (ctx);
+}
 /*
  * This is a utility function to teardown a TCTI context allocated by the
  * tcti_socket_setup function.
@@ -373,6 +380,7 @@ main (int   argc,
         cmocka_unit_test (conf_str_to_host_port_invalid_port_0_test),
         cmocka_unit_test (tcti_socket_init_all_null_test),
         cmocka_unit_test (tcti_socket_init_size_test),
+        cmocka_unit_test (tcti_socket_init_null_conf_test),
         cmocka_unit_test_setup_teardown (tcti_socket_receive_null_size_test,
                                          tcti_socket_setup,
                                          tcti_socket_teardown),
