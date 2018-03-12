@@ -195,11 +195,6 @@ for i in $(seq ${BACKOFF_MAX}); do
         exit 1
     fi
     PID=$(cat ${SIM_PID_FILE})
-    ps -e | grep -w ${PID} 2>/dev/null
-    if [ $? -ne 0 ] ; then
-        echo "Simulator PID ${PID} not found. Giving up."
-        exit 1
-    fi
     echo "simulator PID: ${PID}";
     netstat -ltpn 2> /dev/null | grep "${PID}" | grep -q "${SIM_PORT_DATA}"
     ret_data=$?
