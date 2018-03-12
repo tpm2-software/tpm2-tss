@@ -57,18 +57,18 @@ done
 # Verify the running shell and OS environment is sufficient to run these tests.
 sanity_test ()
 {
-# Check special file
-if [ ! -e /dev/urandom ]; then
+    # Check special file
+    if [ ! -e /dev/urandom ]; then
         echo  "Missing file /dev/urandom; exiting"
         exit 1
-fi
+    fi
 
-# Check ps
-PS_LINES=$(ps -e 2>/dev/null | wc -l)
-if [ "$PS_LINES" -eq 0 ] ; then
+    # Check ps
+    PS_LINES=$(ps -e 2>/dev/null | wc -l)
+    if [ "$PS_LINES" -eq 0 ] ; then
         echo "Command ps not listing processes; exiting"
         exit 1
-fi
+    fi
 }
 
 # This function takes a PID as a parameter and determines whether or not the
