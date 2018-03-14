@@ -27,7 +27,7 @@
 #;**********************************************************************;
 
 ### Initialize global variables used throughout the file ###
-INCLUDE_DIRS    = -I$(srcdir) -I$(srcdir)/src -I$(srcdir)/include/tss2
+INCLUDE_DIRS    = -I$(srcdir)/src -I$(srcdir)/include/tss2
 ACLOCAL_AMFLAGS = -I m4
 AM_CFLAGS       = $(INCLUDE_DIRS) $(EXTRA_CFLAGS) $(CODE_COVERAGE_CFLAGS)
 AM_LDFLAGS      = $(EXTRA_LDFLAGS) $(CODE_COVERAGE_LIBS)
@@ -147,7 +147,7 @@ lib_LTLIBRARIES += $(libtss2_sys)
 nodist_pkgconfig_DATA += lib/tss2-sys.pc
 EXTRA_DIST += lib/tss2-sys.pc.in
 
-src_tss2_sys_libtss2_sys_la_CFLAGS = $(AM_CFLAGS) -I$(srcdir)/src/tss2-sys/include
+src_tss2_sys_libtss2_sys_la_CFLAGS = $(AM_CFLAGS) -I$(srcdir)/src/tss2-sys
 src_tss2_sys_libtss2_sys_la_LIBADD = $(libtss2_mu)
 src_tss2_sys_libtss2_sys_la_SOURCES = $(TSS2_SYS_SRC)
 
@@ -161,7 +161,7 @@ EXTRA_DIST += lib/tss2-esys.pc.in
 
 src_tss2_esys_libtss2_esys_la_CFLAGS  = $(AM_CFLAGS) \
     -Wno-unused-variable -Wno-unused-label \
-    -I$(srcdir)/src/tss2-sys/include -I$(srcdir)/src/tss2-esys/esapi_util \
+    -I$(srcdir)/src/tss2-sys -I$(srcdir)/src/tss2-esys/esapi_util \
     -DESYS_TCTI_DEFAULT_MODULE=$(TCTI_DEFAULT_MODULE) \
     -DESYS_TCTI_DEFAULT_CONFIG=$(TCTI_DEFAULT_CONFIG)
 src_tss2_esys_libtss2_esys_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) \

@@ -27,46 +27,35 @@
 
 #include "tpm20.h"
 #include "sysapi_util.h"
+#include "util/tss2_endian.h"
 
-size_t Tss2_Sys_GetContextSize(size_t maxCommandSize)
-{
-    if (maxCommandSize == 0) {
-        return sizeof(_TSS2_SYS_CONTEXT_BLOB) + TPM2_MAX_COMMAND_SIZE;
-    } else {
-        return sizeof(_TSS2_SYS_CONTEXT_BLOB) +
-                     ((maxCommandSize > sizeof(TPM20_Header_In)) ?
-                       maxCommandSize : sizeof(TPM20_Header_In));
-    }
-}
-
-TSS2_RC Tss2_Sys_Initialize(
+TSS2_RC Tss2_Sys_GetEncryptParam(
     TSS2_SYS_CONTEXT *sysContext,
-    size_t contextSize,
-    TSS2_TCTI_CONTEXT *tctiContext,
-    TSS2_ABI_VERSION *abiVersion)
+    size_t *encryptParamSize,
+    const uint8_t **encryptParamBuffer)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    uint8_t *offset;
 
-    if (!ctx || !tctiContext || !abiVersion)
+    if (!encryptParamSize || !encryptParamBuffer || !ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if (contextSize < sizeof(_TSS2_SYS_CONTEXT_BLOB))
-        return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+    if (ctx->previousStage != CMD_STAGE_RECEIVE_RESPONSE)
+        return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    if (TSS2_TCTI_TRANSMIT (tctiContext) == NULL || TSS2_TCTI_RECEIVE (tctiContext) == NULL)
-        return TSS2_SYS_RC_BAD_TCTI_STRUCTURE;
+    if (ctx->encryptAllowed == 0 ||
+        BE_TO_HOST_16(resp_header_from_cxt(ctx)->tag) == TPM2_ST_NO_SESSIONS)
+        return TSS2_SYS_RC_NO_ENCRYPT_PARAM;
 
-    /* Checks for ABI negotiation. */
-    if (abiVersion->tssCreator != TSSWG_INTEROP ||
-        abiVersion->tssFamily != TSS_SAPI_FIRST_FAMILY ||
-        abiVersion->tssLevel != TSS_SAPI_FIRST_LEVEL ||
-        abiVersion->tssVersion != TSS_SAPI_FIRST_LEVEL)
-        return TSS2_SYS_RC_ABI_MISMATCH;
+    /* Get first parameter, interpret it as a TPM2B and return its size field
+     * and a pointer to its buffer area. */
+    offset = ctx->cmdBuffer
+            + sizeof(TPM20_Header_Out)
+            + ctx->numResponseHandles * sizeof(TPM2_HANDLE)
+            + sizeof(TPM2_PARAMETER_SIZE);
 
-    ctx->tctiContext = tctiContext;
-    InitSysContextPtrs(ctx, contextSize);
-    InitSysContextFields(ctx);
-    ctx->previousStage = CMD_STAGE_INITIALIZE;
+    *encryptParamSize = BE_TO_HOST_16(*((UINT16 *)offset));
+    *encryptParamBuffer = offset + sizeof(UINT16);
 
     return TSS2_RC_SUCCESS;
 }

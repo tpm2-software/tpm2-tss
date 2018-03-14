@@ -4,7 +4,7 @@
 #include "test.h"
 #include "tpm20.h"
 #include "tss2-tcti/tcti.h"
-#include "tss2-sys/include/sysapi_util.h"
+#include "tss2-sys/sysapi_util.h"
 
 /**
  */
