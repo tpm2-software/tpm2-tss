@@ -93,60 +93,6 @@ tcti_receive_checks (
     return TSS2_RC_SUCCESS;
 }
 
-ssize_t
-read_all (
-    int fd,
-    uint8_t *data,
-    size_t size)
-{
-    ssize_t recvd;
-    size_t recvd_total = 0;
-
-    LOG_DEBUG ("reading %zu bytes from fd %d to buffer at 0x%" PRIxPTR,
-               size, fd, (uintptr_t)data);
-    do {
-        recvd = TEMP_RETRY (read (fd, &data [recvd_total], size));
-        if (recvd < 0) {
-            LOG_WARNING ("read on fd %d failed with errno %d: %s",
-                         fd, errno, strerror (errno));
-            return recvd_total;
-        }
-        LOGBLOB_DEBUG (&data [recvd_total], recvd, "read %zd bytes from fd %d:", recvd, fd);
-        recvd_total += recvd;
-        size -= recvd;
-    } while (size > 0);
-
-    return recvd_total;
-}
-
-ssize_t
-write_all (
-    int fd,
-    const uint8_t *buf,
-    size_t size)
-{
-    ssize_t written = 0;
-    size_t written_total = 0;
-
-    do {
-        LOG_DEBUG("writing %zu bytes starting at 0x%" PRIxPTR " to fd %d",
-                  size - written_total,
-                  (uintptr_t)buf + written_total,
-                  fd);
-        written = TEMP_RETRY (write (fd,
-                                     (const char*)&buf [written_total],
-                                     size - written_total));
-        if (written >= 0) {
-            LOG_DEBUG ("wrote %zd bytes to fd %d", written, fd);
-            written_total += (size_t)written;
-        } else {
-            LOG_ERROR ("failed to write to fd %d: %s", fd, strerror (errno));
-            return written_total;
-        }
-    } while (written_total < size);
-
-    return (ssize_t)written_total;
-}
 
 TSS2_RC
 tcti_make_sticky_not_implemented (

@@ -43,12 +43,9 @@
 #include <errno.h>
 #include <stdbool.h>
 
-#if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
-#include <sys/socket.h>
-#define SOCKET int
-#endif
+#include "tss2_tcti.h"
 
-#include "tpm20.h"
+#include "util/io.h"
 
 #define TCTI_MAGIC   0x7e18e9defa8bc9e2ULL
 #define TCTI_VERSION 0x2
@@ -56,13 +53,6 @@
 #define TCTI_CONTEXT ((TSS2_TCTI_CONTEXT_COMMON_CURRENT *)(SYS_CONTEXT->tctiContext))
 
 #define TPM_HEADER_SIZE (sizeof (TPM2_ST) + sizeof (UINT32) + sizeof (UINT32))
-
-#define TEMP_RETRY(exp) \
-({  int __ret; \
-    do { \
-        __ret = exp; \
-    } while (__ret == -1 && errno == EINTR); \
-    __ret; })
 
 typedef struct {
     TPM2_ST tag;
@@ -174,27 +164,6 @@ tcti_make_sticky_not_implemented (
     TSS2_TCTI_CONTEXT *tctiContext,
     TPM2_HANDLE *handle,
     uint8_t sticky);
-/*
- * Read 'size' bytes from file descriptor 'fd' into buffer 'buf'. Additionally
- * this function will retry calls to the 'read' function when temporary errors
- * are detected. This is currently limited to interrupted system calls and
- * short reads.
- */
-ssize_t
-read_all (
-    int fd,
-    uint8_t *data,
-    size_t size);
-/*
- * Write 'size' bytes from 'buf' to file descriptor 'fd'. Additionally this
- * function will retry calls to the 'write' function when recoverable errors
- * are detected. This is currently limited to interrupted system calls and
- * short writes.
- */
-ssize_t write_all (
-    int fd,
-    const uint8_t *buf,
-    size_t size);
 /*
  * Utility to function to parse the first 10 bytes of a buffer and populate
  * the 'header' structure with the results. The provided buffer is assumed to

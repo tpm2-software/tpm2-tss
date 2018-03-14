@@ -31,8 +31,9 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include "tpm20.h"
-#include "tss2-tcti/sockets.h"
+#include "util/io.h"
+#define LOGMODULE test
+#include "util/log.h"
 
 int
 __wrap_socket (
@@ -53,6 +54,31 @@ __wrap_connect (
     return mock_type (int);
 }
 
+ssize_t
+__wrap_write (int fd, const void *buffer, size_t buffer_size)
+{
+    LOG_DEBUG ("writing %zd bytes from 0x%" PRIxPTR " to fd: %d",
+               buffer_size, (uintptr_t)buffer, fd);
+    return mock_type (ssize_t);
+}
+
+/*
+ * A test case for a successful call to the receive function. This requires
+ * that the context and the command buffer be valid (including the size
+ * field being set appropriately). The result should be an RC indicating
+ * success and the size parameter be updated to reflect the size of the
+ * data received.
+ */
+static void
+write_all_simple_success_test (void **state)
+{
+    ssize_t ret;
+    uint8_t buf [10];
+
+    will_return (__wrap_write, sizeof (buf));
+    ret = write_all (99, buf, sizeof (buf));
+    assert_int_equal(ret, sizeof (buf));
+}
 /* When passed all NULL values ensure that we get back the expected RC. */
 static void
 socket_connect_test (void **state)
@@ -96,6 +122,7 @@ main (int   argc,
       char *argv[])
 {
     const struct CMUnitTest tests[] = {
+        cmocka_unit_test (write_all_simple_success_test),
         cmocka_unit_test (socket_connect_test),
         cmocka_unit_test (socket_connect_socket_fail_test),
         cmocka_unit_test (socket_connect_connect_fail_test),
