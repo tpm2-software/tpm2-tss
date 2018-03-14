@@ -70,7 +70,7 @@ tcti_proxy_transmit(
 }
 
 uint8_t yielded_response[] = {
-    0x00, 0x00,             /* TPM_ST_NO_SESSION */
+    0x80, 0x01,             /* TPM_ST_NO_SESSION */
     0x00, 0x00, 0x00, 0x0A, /* Response Size 10 */
     0x00, 0x00, 0x09, 0x08  /* TPM_RC_YIELDED */
 };
@@ -162,8 +162,8 @@ int
 main(int argc, char *argv[])
 {
     TSS2_RC rc;
-    TSS2_TCTI_CONTEXT *tcti_context = calloc(1,
-        sizeof(TSS2_TCTI_CONTEXT_PROXY));
+    size_t tcti_size;
+    TSS2_TCTI_CONTEXT *tcti_context;
     TSS2_TCTI_CONTEXT *tcti_inner;
     ESYS_CONTEXT *esys_context;
     TSS2_ABI_VERSION abiVersion =
@@ -188,7 +188,16 @@ TSS_SAPI_FIRST_VERSION };
         LOG_ERROR("TPM Startup FAILED! Error tcti init");
         exit(1);
     }
-    size_t tcti_size = sizeof(TSS2_TCTI_CONTEXT_PROXY);
+    rc = tcti_proxy_initialize(NULL, &tcti_size, tcti_inner);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("tcti initialization FAILED! Response Code : 0x%x", rc);
+        return 1;
+    }
+    tcti_context = calloc(1, tcti_size);
+    if (tcti_inner == NULL) {
+        LOG_ERROR("TPM Startup FAILED! Error tcti init");
+        exit(1);
+    }
     rc = tcti_proxy_initialize(tcti_context, &tcti_size, tcti_inner);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("tcti initialization FAILED! Response Code : 0x%x", rc);
