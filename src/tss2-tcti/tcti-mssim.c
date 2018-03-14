@@ -160,7 +160,7 @@ tcti_mssim_transmit (
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tcti_ctx);
     TSS2_RC rc;
 
-    rc = tcti_transmit_checks (tcti_ctx, cmd_buf);
+    rc = tcti_transmit_checks (tcti_intel, cmd_buf);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -277,7 +277,7 @@ tcti_mssim_receive (
     TSS2_RC rc;
     int ret;
 
-    rc = tcti_receive_checks (tctiContext, response_size, response_buffer);
+    rc = tcti_receive_checks (tcti_intel, response_size, response_buffer);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }

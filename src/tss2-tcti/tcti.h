@@ -132,6 +132,15 @@ tcti_context_intel_cast (TSS2_TCTI_CONTEXT *ctx)
     return (TSS2_TCTI_CONTEXT_INTEL*)ctx;
 }
 /*
+ * This function is used to "down cast" the Intel TCTI context to the opaque
+ * context type.
+ */
+static inline TSS2_TCTI_CONTEXT*
+tcti_context_base_cast (TSS2_TCTI_CONTEXT_INTEL *ctx)
+{
+    return (TSS2_TCTI_CONTEXT*)ctx;
+}
+/*
  * This funciton performs common checks on the context structure. It should
  * be used by all externally facing TCTI functions before the context is used
  * as any of the private types.
@@ -145,7 +154,7 @@ tcti_common_checks (
  */
 TSS2_RC
 tcti_transmit_checks (
-    TSS2_TCTI_CONTEXT *tctiContext,
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel,
     const uint8_t *command_buffer);
 /*
  * This function performs common checks on the context structure, buffer and
@@ -153,9 +162,9 @@ tcti_transmit_checks (
  */
 TSS2_RC
 tcti_receive_checks (
-    TSS2_TCTI_CONTEXT *tctiContext,
-    size_t            *response_size,
-    unsigned char     *response_buffer);
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel,
+    size_t *response_size,
+    unsigned char *response_buffer);
 /*
  * Just a function with the right prototype that returns the not implemented
  * RC for the TCTI layer.

@@ -52,14 +52,12 @@ tcti_common_checks (
 
 TSS2_RC
 tcti_transmit_checks (
-    TSS2_TCTI_CONTEXT *tctiContext,
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel,
     const uint8_t *command_buffer)
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel;
     TSS2_RC rc;
 
-    tcti_intel = tcti_context_intel_cast (tctiContext);;
-    rc = tcti_common_checks (tctiContext);
+    rc = tcti_common_checks (tcti_context_base_cast (tcti_intel));
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -75,15 +73,13 @@ tcti_transmit_checks (
 
 TSS2_RC
 tcti_receive_checks (
-    TSS2_TCTI_CONTEXT *tctiContext,
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel,
     size_t *response_size,
     unsigned char *response_buffer)
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel;
     TSS2_RC rc;
 
-    tcti_intel = tcti_context_intel_cast (tctiContext);
-    rc = tcti_common_checks (tctiContext);
+    rc = tcti_common_checks (tcti_context_base_cast (tcti_intel));
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
