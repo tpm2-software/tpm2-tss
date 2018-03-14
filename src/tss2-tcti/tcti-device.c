@@ -52,7 +52,7 @@ tcti_device_transmit (
     TSS2_RC rc = TSS2_RC_SUCCESS;
     ssize_t size;
 
-    rc = tcti_transmit_checks (tctiContext, command_buffer);
+    rc = tcti_transmit_checks (tcti_intel, command_buffer);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -87,7 +87,7 @@ tcti_device_receive (
     TSS2_RC rc = TSS2_RC_SUCCESS;
     ssize_t  size;
 
-    rc = tcti_receive_checks (tctiContext, response_size, response_buffer);
+    rc = tcti_receive_checks (tcti_intel, response_size, response_buffer);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
