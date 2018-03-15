@@ -68,12 +68,6 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
         authSize += sizeof(UINT16) + cmdAuthsArray->auths[i].nonce.size;
         authSize += sizeof(UINT8);
         authSize += sizeof(UINT16) + cmdAuthsArray->auths[i].hmac.size;
-
-        if (cmdAuthsArray->auths[i].sessionAttributes & TPMA_SESSION_DECRYPT)
-            ctx->decryptSession = 1;
-
-        if (cmdAuthsArray->auths[i].sessionAttributes & TPMA_SESSION_ENCRYPT)
-            ctx->encryptSession = 1;
     }
 
     newCmdSize = authSize;
