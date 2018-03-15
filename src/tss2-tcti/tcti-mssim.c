@@ -36,6 +36,7 @@
 #include <uriparser/Uri.h>
 
 #include "tss2_mu.h"
+
 #include "tss2_tcti_mssim.h"
 #include "tcti.h"
 #define LOGMODULE tcti

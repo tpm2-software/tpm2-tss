@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdlib.h>
 
 #define LOGMODULE test
 #include "util/log.h"

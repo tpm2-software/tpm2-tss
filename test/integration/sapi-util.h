@@ -26,7 +26,9 @@
 #ifndef TEST_INTEGRATION_SAPI_UTIL_H
 #define TEST_INTEGRATION_SAPI_UTIL_H
 
-#include "tpm20.h"
+#include "tss2_tpm2_types.h"
+#include "tss2_sys.h"
+
 /*
  * This macro is like the GNU TEMP_FAILURE_RETRY macro for the
  * TPM2_RC_RETRY response code.

@@ -25,9 +25,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  ***********************************************************************/
+#include <string.h>
 
 #include "util/tss2_endian.h"
-#include "tpm20.h"
+#include "tss2_tpm2_types.h"
+#include "tss2_mu.h"
 #include "sysapi_util.h"
 
 TSS2_RC Tss2_Sys_SetCmdAuths(

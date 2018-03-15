@@ -29,11 +29,13 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include "tpm20.h"
+#include "tss2_tcti.h"
 #include "tss2_tcti_mssim.h"
 #include "tss2-tcti/tcti.h"
 

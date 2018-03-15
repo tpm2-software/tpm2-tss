@@ -34,12 +34,12 @@
 #include <stdint.h>
 #include <gcrypt.h>
 
-#include "tpm20.h"
+#include "tss2_esys.h"
+
 #define LOGMODULE test
 #include "util/log.h"
 #include "test.h"
 #include "sysapi_util.h"
-#include "tss2_esys.h"
 #include "esys_types.h"
 #include "esys_iutil.h"
 

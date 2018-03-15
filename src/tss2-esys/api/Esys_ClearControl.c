@@ -25,7 +25,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#include "tpm20.h"
+#include "tss2_mu.h"
+#include "tss2_sys.h"
 #ifndef TSS2_API_VERSION_1_2_1_108
 #error Version missmatch among TSS2 header files !
 #endif /* TSS2_API_VERSION_1_2_1_108 */

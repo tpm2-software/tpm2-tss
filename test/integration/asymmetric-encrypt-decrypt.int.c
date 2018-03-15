@@ -1,8 +1,13 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "tss2_tcti.h"
+#include "tss2_sys.h"
+
 #define LOGMODULE test
 #include "util/log.h"
 #include "test.h"
-#include "tpm20.h"
 #include "sapi-util.h"
 /**
  * This program contains integration test for asymetric encrypt and

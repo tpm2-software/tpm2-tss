@@ -1,9 +1,12 @@
+#include <stdlib.h>
+
+#include "tss2_sys.h"
+
 #include "inttypes.h"
 #define LOGMODULE test
 #include "util/log.h"
 #include "sapi-util.h"
 #include "test.h"
-#include "tpm20.h"
 
 /*
  * Test auth value changes for Owner Auth

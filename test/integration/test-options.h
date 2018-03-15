@@ -1,7 +1,7 @@
 #ifndef TEST_OPTIONS_H
 #define TEST_OPTIONS_H
 
-#include "tpm20.h"
+#include <stdint.h>
 
 /* Default TCTI */
 #define TCTI_DEFAULT      SOCKET_TCTI

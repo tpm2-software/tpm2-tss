@@ -87,8 +87,7 @@ tss2dir = $(includedir)/tss2
 tss2_HEADERS = \
     $(srcdir)/include/tss2/tss2_common.h \
     $(srcdir)/include/tss2/tss2_tcti.h \
-    $(srcdir)/include/tss2/tss2_tpm2_types.h \
-    $(srcdir)/include/tss2/tpm20.h
+    $(srcdir)/include/tss2/tss2_tpm2_types.h
 
 ### Internal utility library
 libutil = libutil.la

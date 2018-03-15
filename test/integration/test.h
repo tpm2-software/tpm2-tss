@@ -1,4 +1,4 @@
-#include "tpm20.h"
+#include "tss2_sys.h"
 
 #define YES 1
 #define NO  0

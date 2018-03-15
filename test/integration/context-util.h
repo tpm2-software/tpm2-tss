@@ -1,7 +1,9 @@
 #ifndef CONTEXT_UTIL_H
 #define CONTEXT_UTIL_H
 
-#include "tpm20.h"
+#include "tss2_tcti.h"
+#include "tss2_sys.h"
+
 #include "test-options.h"
 
 /**

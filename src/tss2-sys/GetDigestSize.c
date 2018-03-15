@@ -25,7 +25,7 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include "tpm20.h"
+#include "tss2_tpm2_types.h"
 #include "sysapi_util.h"
 
 typedef struct {

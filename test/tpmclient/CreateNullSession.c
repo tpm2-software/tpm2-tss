@@ -25,10 +25,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include "tpm20.h"
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "tss2_tpm2_types.h"
 
 TPM2B_NONCE nullSessionNonce;
 TPM2B_AUTH nullSessionHmac;

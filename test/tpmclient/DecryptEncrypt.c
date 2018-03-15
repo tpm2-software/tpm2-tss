@@ -24,10 +24,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
-
-#include "tpm20.h"
-#include "sample.h"
 #include <string.h>
+
+#include "tss2_tpm2_types.h"
+
+#include "sample.h"
 
 TSS2_RC GetBlockSizeInBits( TPMI_ALG_SYM algorithm, UINT32 *blockSizeInBits )
 {

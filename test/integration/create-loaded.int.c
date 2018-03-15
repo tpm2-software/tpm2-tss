@@ -24,6 +24,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <inttypes.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "tss2_mu.h"
+#include "tss2_sys.h"
 
 #define LOGMODULE test
 #include "util/log.h"

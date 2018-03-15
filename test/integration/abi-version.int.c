@@ -1,8 +1,11 @@
+#include <stdlib.h>
+
+#include "tss2_sys.h"
+
 #include <stdio.h>
 #define LOGMODULE test
 #include "util/log.h"
 #include "test.h"
-#include "tpm20.h"
 
 /**
  */

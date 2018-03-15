@@ -31,6 +31,8 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
+#include "tss2_tpm2_types.h"
+
 #include "util/io.h"
 #define LOGMODULE test
 #include "util/log.h"
