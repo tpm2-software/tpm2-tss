@@ -124,7 +124,7 @@ COMMAND_HANDLES commandArray[] =
     { TPM2_CC_ClockSet, 1, 0 },
     { TPM2_CC_ClockRateAdjust, 1, 0 },
     { TPM2_CC_GetCapability, 0, 0 },
-    { TPM2_CC_TestParms, 1, 0 },
+    { TPM2_CC_TestParms, 0, 0 },
     { TPM2_CC_NV_DefineSpace, 1, 0 },
     { TPM2_CC_NV_UndefineSpace, 2, 0 },
     { TPM2_CC_NV_UndefineSpaceSpecial, 2, 0 },
