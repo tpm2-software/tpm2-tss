@@ -1,5 +1,5 @@
 /***********************************************************************;
- * Copyright (c) 2015 - 2017, Intel Corporation
+ * Copyright (c) 2015 - 2018, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,38 +65,23 @@ typedef struct {
     UINT32 maxCmdSize;
     TPM20_Header_Out rsp_header;
 
-    //
-    // These are set by system API and used by helper functions to calculate cpHash,
-    // rpHash, and for auditing.
-    //
-    TPM2_CC commandCode;    // This is in host endianess
+    TPM2_CC commandCode;    /* In host endian */
     UINT32 cpBufferUsedSize;
     UINT8 *cpBuffer;
-    UINT32 *rspParamsSize;  // Points to response paramsSize.
-    UINT8 previousStage;            // Used to check for sequencing errors.
+    UINT32 *rspParamsSize;
+    UINT8 previousStage;
     UINT8 authsCount;
     UINT8 numResponseHandles;
+
     struct
     {
-        UINT16 tpmVersionInfoValid:1;  // Identifies whether the TPM version info fields are valid; if not valid
-                                      // this info can't be used for TPM version-specific workarounds.
-        UINT16 decryptAllowed:1;  // Identifies whether this command supports an encrypted command parameter.
-        UINT16 encryptAllowed:1;  // Identifies whether this command supports an encrypted response parameter.
-
-        UINT16 decryptNull:1;     // Indicates that the decrypt param was NULL at _Prepare call.
+        UINT16 decryptAllowed:1;
+        UINT16 encryptAllowed:1;
+        UINT16 decryptNull:1;
         UINT16 authAllowed:1;
-
-        // Following are used to support decrypt/encrypt sessions with one-call.
-        UINT16 decryptSession:1; // If true, complex TPM2B's are not marshalled but instead treated as simple TPM2B's.
-        UINT16 encryptSession:1; // If true, complex TPM2B's are not unmarshalled but instead treated as simple TPM2B's.
-        UINT16 prepareCalledFromOneCall:1;    // Indicates that the _Prepare call was called from the one-call.
-        UINT16 completeCalledFromOneCall:1;    // Indicates that the _Prepare call was called from the one-call.
     };
 
-    // Used to maintain state of SAPI functions.
-
-    // Placeholder for current rval.  This is a convenience and code size optimization for SAPI functions.
-    // Marshalling functions check this and SAPI functions return it.
+    /* This doesn't belong here and should be removed*/
     TSS2_RC rval;
 
     /* Offset to next data in command/response buffer. */
@@ -125,12 +110,8 @@ req_header_from_cxt(_TSS2_SYS_CONTEXT_BLOB *ctx)
 
 typedef struct {
     TPM2_CC commandCode;
-    int numCommandHandles;  // Num of handles that require authorization in
-                            // command: used for virtualization and for
-                            // parsing sessions following handles section.
-    int numResponseHandles; // Num of handles that require authorization in
-                            // in response: used for virtualization and for
-                            // parsing sessions following handles section.
+    int numCommandHandles;
+    int numResponseHandles;
 } COMMAND_HANDLES;
 
 #ifdef __cplusplus
@@ -169,4 +150,4 @@ void TeardownSysContext(TSS2_SYS_CONTEXT **ctx);
 #ifdef __cplusplus
 }
 #endif
-#endif  // TSS2_SYSAPI_UTIL_H
+#endif
