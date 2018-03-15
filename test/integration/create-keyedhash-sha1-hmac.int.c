@@ -1,3 +1,7 @@
+#include <stdlib.h>
+
+#include "tss2_tpm2_types.h"
+
 #include "inttypes.h"
 #define LOGMODULE test
 #include "util/log.h"

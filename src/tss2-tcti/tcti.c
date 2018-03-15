@@ -28,9 +28,12 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
-#include "tpm20.h"
+#include "tss2_tpm2_types.h"
+#include "tss2_mu.h"
+
 #include "tcti.h"
 #define LOGMODULE tcti
 #include "util/log.h"

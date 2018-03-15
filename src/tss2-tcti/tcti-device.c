@@ -35,6 +35,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "tss2_tcti.h"
+
 #include "tcti.h"
 #include "tss2_tcti_device.h"
 #define LOGMODULE tcti

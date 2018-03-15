@@ -1,8 +1,11 @@
 #include <stdio.h>
+#include <stdlib.h>
+
+#include "tss2_sys.h"
+
 #define LOGMODULE test
 #include "util/log.h"
 #include "test.h"
-#include "tpm20.h"
 
 /*
  * This program contains integration test for SAPI Tss2_Sys_SelfTest

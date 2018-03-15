@@ -1,8 +1,13 @@
 #include <inttypes.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <openssl/rand.h>
 
-#include "tpm20.h"
+#include "tss2_mu.h"
+#include "tss2_sys.h"
+
 #define LOGMODULE test
 #include "util/log.h"
 #include "test.h"

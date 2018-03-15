@@ -24,7 +24,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
-#include "tpm20.h"
+#include "tss2_mu.h"
+#include "tss2_sys.h"
 #include "esys_iutil.h"
 #include "tss2_esys.h"
 #include "esys_mu.h"

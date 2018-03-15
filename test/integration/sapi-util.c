@@ -24,6 +24,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <inttypes.h>
+#include <stdlib.h>
+
 #include <openssl/sha.h>
 
 #define LOGMODULE testintegration

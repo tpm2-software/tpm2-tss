@@ -25,7 +25,9 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include "tpm20.h"
+#include <string.h>
+
+#include "tss2_tpm2_types.h"
 #include "sysapi_util.h"
 
 TSS2_RC ConcatSizedByteBuffer(TPM2B_MAX_BUFFER *result, TPM2B *addBuffer)

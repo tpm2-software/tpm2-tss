@@ -28,9 +28,12 @@
 #ifndef SYS_CONTEXT_H
 #define SYS_CONTEXT_H
 
-#include "tpm20.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "tss2_sys.h"
+#include "tss2_tcti.h"
+
 #include "sysapi_util.h"
 
 TSS2_SYS_CONTEXT *InitSysContext(

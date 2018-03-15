@@ -28,6 +28,10 @@
 #ifndef TSS2_SYSAPI_UTIL_H
 #define TSS2_SYSAPI_UTIL_H
 
+#include "tss2_tpm2_types.h"
+#include "tss2_tcti.h"
+#include "tss2_sys.h"
+
 enum cmdStates {CMD_STAGE_INITIALIZE,
                 CMD_STAGE_PREPARE,
                 CMD_STAGE_SEND_COMMAND,

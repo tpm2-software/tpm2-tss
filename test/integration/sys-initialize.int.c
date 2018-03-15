@@ -1,11 +1,14 @@
 #include <stdio.h>
-#define LOGMODULE test
-#include "util/log.h"
-#include "test.h"
-#include "tpm20.h"
+#include <stdlib.h>
+
+#include "tss2_sys.h"
+
 #include "tss2-tcti/tcti.h"
 #include "tss2-sys/sysapi_util.h"
 
+#define LOGMODULE test
+#include "util/log.h"
+#include "test.h"
 /**
  */
 int

@@ -24,11 +24,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
-
-#include "tpm20.h"
-#include "sample.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "tss2_tpm2_types.h"
+
+#include "sample.h"
 #include "sysapi_util.h"
 #include "util/tss2_endian.h"
 #define LOGMODULE test

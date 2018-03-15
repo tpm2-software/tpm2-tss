@@ -25,7 +25,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  ***********************************************************************/
 
-#include "tpm20.h"
+#include "tss2_tpm2_types.h"
+#include "tss2_mu.h"
 #include "sysapi_util.h"
 
 TSS2_RC Tss2_Sys_IncrementalSelfTest_Prepare(

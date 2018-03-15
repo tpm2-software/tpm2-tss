@@ -25,7 +25,9 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include "tpm20.h"
+#include <string.h>
+
+#include "tss2_tpm2_types.h"
 
 UINT16 CopySizedByteBuffer( TPM2B *dest, TPM2B *src )
 {

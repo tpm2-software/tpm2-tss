@@ -24,12 +24,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
-
-#include "tpm20.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "sysapi_util.h"
 
+#include "tss2_sys.h"
+
+#include "sysapi_util.h"
 
 // Allocates space for and initializes system
 // context structure.

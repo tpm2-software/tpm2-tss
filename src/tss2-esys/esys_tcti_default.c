@@ -1,4 +1,5 @@
-#include "tpm20.h"
+#include "tss2_mu.h"
+#include "tss2_sys.h"
 #include "tss2_tcti_device.h"
 #include "tss2_tcti_mssim.h"
 #include <errno.h>

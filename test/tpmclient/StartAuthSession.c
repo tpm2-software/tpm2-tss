@@ -25,10 +25,12 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#include "tpm20.h"
+#include <stdlib.h>
+
+#include "tss2_sys.h"
+
 #include "sample.h"
 #include "../integration/sapi-util.h"
-#include <stdlib.h>
 #define LOGMODULE testtpmclient
 #include "util/log.h"
 

@@ -30,7 +30,7 @@
 #include <string.h>
 
 #include "tss2_mu.h"
-#include "tpm20.h"
+
 #include "util/tss2_endian.h"
 #define LOGMODULE marshal
 #include "util/log.h"

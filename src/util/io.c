@@ -30,6 +30,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "tss2_tpm2_types.h"
+
 #include "io.h"
 #define LOGMODULE tcti
 #include "util/log.h"

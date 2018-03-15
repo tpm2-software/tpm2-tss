@@ -28,6 +28,9 @@
 #ifndef TPMCLIENT_H
 #define TPMCLIENT_H
 
+#include "tss2_mu.h"
+#include "tss2_sys.h"
+
 #define TPMBUF_LEN 0x8000
 #define GLOBAL_SYS_CONTEXT_SIZE 4096
 #define INIT_SIMPLE_TPM2B_SIZE(type) (type).size = sizeof(type) - 2;
