@@ -61,6 +61,11 @@
 
 #define SESSIONS_COUNT 1
 
+#define TSSWG_INTEROP 1
+#define TSS_SAPI_FIRST_FAMILY 2
+#define TSS_SAPI_FIRST_LEVEL 1
+#define TSS_SAPI_FIRST_VERSION 108
+
 #define SET_PCR_SELECT_BIT( pcrSelection, pcr ) \
                                                 (pcrSelection).pcrSelect[( (pcr)/8 )] |= ( 1 << ( (pcr) % 8) );
 

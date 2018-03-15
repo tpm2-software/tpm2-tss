@@ -43,12 +43,6 @@
 extern "C" {
 #endif
 
-#define TSSWG_INTEROP 1
-#define MAX_NON_VENDOR_SPECIFIC 0x20000000
-#define TSS_SAPI_FIRST_FAMILY 1
-#define TSS_SAPI_FIRST_LEVEL 1
-#define TSS_SAPI_FIRST_VERSION 1
-
 /* SAPI context blob */
 typedef struct _TSS2_SYS_OPAQUE_CONTEXT_BLOB TSS2_SYS_CONTEXT;
 
