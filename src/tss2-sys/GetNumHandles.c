@@ -90,6 +90,7 @@ COMMAND_HANDLES commandArray[] =
     { TPM2_CC_PolicyPCR, 1, 0 },
     { TPM2_CC_PolicyLocality, 1, 0 },
     { TPM2_CC_PolicyNV, 3, 0 },
+    { TPM2_CC_PolicyNvWritten, 1, 0 },
     { TPM2_CC_PolicyCounterTimer, 1, 0 },
     { TPM2_CC_PolicyCommandCode, 1, 0 },
     { TPM2_CC_PolicyPhysicalPresence, 1, 0 },
