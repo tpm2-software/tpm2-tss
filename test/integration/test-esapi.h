@@ -1,5 +1,10 @@
 #include "tss2_esys.h"
 
+#define TSSWG_INTEROP 1
+#define TSS_SAPI_FIRST_FAMILY 2
+#define TSS_SAPI_FIRST_LEVEL 1
+#define TSS_SAPI_FIRST_VERSION 108
+
 #define goto_error_if_not_failed(rc,msg,label)                          \
 	if (rc == TSS2_RC_SUCCESS) {                                        \
 		LOG_ERROR("Error %s (%x) in Line %i: \n", msg, __LINE__, rc);   \

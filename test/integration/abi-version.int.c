@@ -7,6 +7,11 @@
 #include "util/log.h"
 #include "test.h"
 
+#define TSSWG_INTEROP 1
+#define TSS_SAPI_FIRST_FAMILY 2
+#define TSS_SAPI_FIRST_LEVEL 1
+#define TSS_SAPI_FIRST_VERSION 108
+
 /**
  */
 int

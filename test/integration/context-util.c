@@ -90,10 +90,10 @@ sapi_init_from_tcti_ctx(TSS2_TCTI_CONTEXT * tcti_ctx)
     TSS2_RC rc;
     size_t size;
     TSS2_ABI_VERSION abi_version = {
-        .tssCreator = TSSWG_INTEROP,
-        .tssFamily = TSS_SAPI_FIRST_FAMILY,
-        .tssLevel = TSS_SAPI_FIRST_LEVEL,
-        .tssVersion = TSS_SAPI_FIRST_VERSION,
+        .tssCreator = 1,
+        .tssFamily = 2,
+        .tssLevel = 1,
+        .tssVersion = 108,
     };
 
     size = Tss2_Sys_GetContextSize(0);
