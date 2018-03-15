@@ -67,12 +67,11 @@ Esys_Initialize(ESYS_CONTEXT ** esys_context, TSS2_TCTI_CONTEXT * tcti,
 
     /* Allocate memory for the ESYS context; after that all errors must jump to
        cleanup_return instead of returning ! */
-    *esys_context = malloc(sizeof(ESYS_CONTEXT));
+    *esys_context = calloc(1, sizeof(ESYS_CONTEXT));
     if (esys_context == NULL) {
         LOG_ERROR("Error: During malloc.");
         return TSS2_ESYS_RC_MEMORY;
     }
-    memset(*esys_context, 0, sizeof(ESYS_CONTEXT));
 
     /* Allocate memory for the SYS context */
     syssize = Tss2_Sys_GetContextSize(0);
