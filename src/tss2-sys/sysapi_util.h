@@ -31,6 +31,7 @@
 #include "tss2_tpm2_types.h"
 #include "tss2_tcti.h"
 #include "tss2_sys.h"
+#include "util/tpm2b.h"
 
 enum cmdStates {CMD_STAGE_INITIALIZE,
                 CMD_STAGE_PREPARE,

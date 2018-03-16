@@ -27,6 +27,8 @@
 
 #include "tss2_tpm2_types.h"
 
+#include "util/tpm2b.h"
+
 void CatSizedByteBuffer( TPM2B *dest, TPM2B *src )
 {
     int i;

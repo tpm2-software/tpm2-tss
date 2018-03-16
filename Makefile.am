@@ -93,8 +93,7 @@ tss2_HEADERS = \
 libutil = libutil.la
 noinst_LTLIBRARIES += $(libutil)
 libutil_la_CFLAGS = $(AM_CFLAGS)
-libutil_la_SOURCES = src/util/log.c src/util/log.h src/util/tss2_endian.h \
-    src/util/io.c src/util/io.h
+libutil_la_SOURCES = $(UTIL_SRC)
 
 ### TCG TSS Marshaling/Unmarshalling spec library ###
 libtss2_mu = src/tss2-mu/libtss2-mu.la
