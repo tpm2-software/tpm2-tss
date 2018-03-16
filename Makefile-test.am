@@ -61,7 +61,8 @@ TESTS_UNIT  = \
     test/unit/TPMU-marshal
 if ESAPI
 TESTS_UNIT += \
-    test/unit/esys-context-null
+    test/unit/esys-context-null \
+    test/unit/esys-resubmissions
 endif ESAPI
 endif #UNIT
 
@@ -207,7 +208,12 @@ if ESAPI
 test_unit_esys_context_null_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_context_null_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_context_null_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_unit_esys_context_null_SOURCES = test/unit/esys-context-null.c 
+test_unit_esys_context_null_SOURCES = test/unit/esys-context-null.c
+
+test_unit_esys_resubmissions_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_esys_resubmissions_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_esys_resubmissions_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_unit_esys_resubmissions_SOURCES = test/unit/esys-resubmissions.c
 endif # ESAPI
 endif # UNIT
 
