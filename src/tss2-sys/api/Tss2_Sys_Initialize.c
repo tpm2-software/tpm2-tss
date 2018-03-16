@@ -25,9 +25,14 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
+#include <inttypes.h>
+
 #include "tss2_tpm2_types.h"
 #include "tss2_mu.h"
+
 #include "sysapi_util.h"
+#define LOGMODULE sys
+#include "util/log.h"
 
 TSS2_RC Tss2_Sys_Initialize(
     TSS2_SYS_CONTEXT *sysContext,
@@ -37,7 +42,7 @@ TSS2_RC Tss2_Sys_Initialize(
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
-    if (!ctx || !tctiContext || !abiVersion)
+    if (!ctx || !tctiContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
     if (contextSize < sizeof(_TSS2_SYS_CONTEXT_BLOB))
@@ -47,11 +52,20 @@ TSS2_RC Tss2_Sys_Initialize(
         return TSS2_SYS_RC_BAD_TCTI_STRUCTURE;
 
     /* Checks for ABI negotiation. */
-    if (abiVersion->tssCreator != TSSWG_INTEROP ||
-        abiVersion->tssFamily != TSS_SAPI_FIRST_FAMILY ||
-        abiVersion->tssLevel != TSS_SAPI_FIRST_LEVEL ||
-        abiVersion->tssVersion != TSS_SAPI_FIRST_LEVEL)
+    if (abiVersion != NULL &&
+        (abiVersion->tssCreator != TSSWG_INTEROP ||
+         abiVersion->tssFamily != TSS_SAPI_FIRST_FAMILY ||
+         abiVersion->tssLevel != TSS_SAPI_FIRST_LEVEL ||
+         abiVersion->tssVersion != TSS_SAPI_FIRST_LEVEL)) {
+        LOG_ERROR("ABI-Version of application %" PRIx32 ".%" PRIu32 ".%"
+                  PRIu32 ".%" PRIu32 " differs from ABI version of SAPI %"
+                  PRIx32 ".%" PRIu32 ".%" PRIu32 ".%" PRIu32,
+                  abiVersion->tssCreator, abiVersion->tssFamily,
+                  abiVersion->tssLevel, abiVersion->tssVersion,
+                  TSSWG_INTEROP, TSS_SAPI_FIRST_FAMILY,
+                  TSS_SAPI_FIRST_LEVEL, TSS_SAPI_FIRST_LEVEL);
         return TSS2_SYS_RC_ABI_MISMATCH;
+    }
 
     ctx->tctiContext = tctiContext;
     InitSysContextPtrs(ctx, contextSize);
