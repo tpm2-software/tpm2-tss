@@ -31,6 +31,7 @@
 
 #include "tss2_mu.h"
 
+#include "util/tpm2b.h"
 #include "util/tss2_endian.h"
 #define LOGMODULE marshal
 #include "util/log.h"

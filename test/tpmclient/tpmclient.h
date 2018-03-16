@@ -30,6 +30,7 @@
 
 #include "tss2_mu.h"
 #include "tss2_sys.h"
+#include "util/tpm2b.h"
 
 #define TPMBUF_LEN 0x8000
 #define GLOBAL_SYS_CONTEXT_SIZE 4096

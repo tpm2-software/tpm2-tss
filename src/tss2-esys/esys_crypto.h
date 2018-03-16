@@ -38,6 +38,8 @@
 
 #include <stdarg.h>
 
+#include "util/tpm2b.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
