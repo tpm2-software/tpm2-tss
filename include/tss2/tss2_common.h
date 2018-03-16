@@ -216,7 +216,7 @@ typedef uint32_t TSS2_RC;
 #define TSS2_ESYS_RC_TRY_AGAIN                   ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
                                                       TSS2_BASE_RC_TRY_AGAIN))
 #define TSS2_ESYS_RC_IO_ERROR                    ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
-                                                      TSS2_BASE_RC_BAD_IO_ERROR))
+                                                      TSS2_BASE_RC_IO_ERROR))
 #define TSS2_ESYS_RC_BAD_VALUE                   ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
                                                       TSS2_BASE_RC_BAD_VALUE))
 #define TSS2_ESYS_RC_NO_DECRYPT_PARAM            ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
