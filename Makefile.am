@@ -147,7 +147,7 @@ nodist_pkgconfig_DATA += lib/tss2-sys.pc
 EXTRA_DIST += lib/tss2-sys.pc.in
 
 src_tss2_sys_libtss2_sys_la_CFLAGS = $(AM_CFLAGS) -I$(srcdir)/src/tss2-sys
-src_tss2_sys_libtss2_sys_la_LIBADD = $(libtss2_mu)
+src_tss2_sys_libtss2_sys_la_LIBADD = $(libtss2_mu) $(libutil)
 src_tss2_sys_libtss2_sys_la_SOURCES = $(TSS2_SYS_SRC)
 
 ### TCG TSS ESAPI spec library ###

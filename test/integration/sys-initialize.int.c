@@ -24,25 +24,19 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 
     rc = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)0, 10, (TSS2_TCTI_CONTEXT *)1, (TSS2_ABI_VERSION *)1 );
     if( rc != TSS2_SYS_RC_BAD_REFERENCE  ) {
-        LOG_ERROR("Sys_Initialize FAILED! Response Code : %x", rc);
+        LOG_ERROR("Sys_Initialize context NULL test FAILED! Response Code : %x", rc);
         exit(1);
     }
 
     rc = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, 10, (TSS2_TCTI_CONTEXT *)0, (TSS2_ABI_VERSION *)1 );
     if( rc != TSS2_SYS_RC_BAD_REFERENCE  ) {
-        LOG_ERROR("Sys_Initialize FAILED! Response Code : %x", rc);
-        exit(1);
-    }
-
-    rc = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, 10, (TSS2_TCTI_CONTEXT *)1, (TSS2_ABI_VERSION *)0 );
-    if( rc != TSS2_SYS_RC_BAD_REFERENCE  ) {
-        LOG_ERROR("Sys_Initialize FAILED! Response Code : %x", rc);
+        LOG_ERROR("Sys_Initialize tcti  NULL test FAILED! Response Code : %x", rc);
         exit(1);
     }
 
     rc = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, 10, (TSS2_TCTI_CONTEXT *)1, (TSS2_ABI_VERSION *)1 );
     if( rc != TSS2_SYS_RC_INSUFFICIENT_CONTEXT ) {
-        LOG_ERROR("Sys_Initialize FAILED! Response Code : %x", rc);
+        LOG_ERROR("Sys_Initialize insufficient context FAILED! Response Code : %x", rc);
         exit(1);
     }
 
