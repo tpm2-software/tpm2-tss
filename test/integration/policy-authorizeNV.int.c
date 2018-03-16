@@ -156,7 +156,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     in_public.nameAlg = TPM2_ALG_SHA256;
     in_public.objectAttributes |= TPMA_OBJECT_USERWITHAUTH;
     in_public.objectAttributes |= TPMA_OBJECT_DECRYPT;
-    in_public.objectAttributes |= TPMA_OBJECT_SIGN;
+    in_public.objectAttributes |= TPMA_OBJECT_SIGN_ENCRYPT;
     in_public.objectAttributes |= TPMA_OBJECT_FIXEDTPM;
     in_public.objectAttributes |= TPMA_OBJECT_FIXEDPARENT;
     in_public.objectAttributes |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
