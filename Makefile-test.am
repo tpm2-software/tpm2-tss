@@ -59,6 +59,10 @@ TESTS_UNIT  = \
     test/unit/TPML-marshal \
     test/unit/TPMT-marshal \
     test/unit/TPMU-marshal
+if ESAPI
+TESTS_UNIT += \
+    test/unit/esys-context-null
+endif ESAPI
 endif #UNIT
 
 if SIMULATOR_BIN
@@ -198,6 +202,13 @@ test_unit_TPMT_marshal_SOURCES = test/unit/TPMT-marshal.c
 test_unit_TPMU_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_TPMU_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
 test_unit_TPMU_marshal_SOURCES = test/unit/TPMU-marshal.c
+
+if ESAPI
+test_unit_esys_context_null_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_esys_context_null_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_esys_context_null_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_unit_esys_context_null_SOURCES = test/unit/esys-context-null.c 
+endif # ESAPI
 endif # UNIT
 
 if SIMULATOR_BIN
