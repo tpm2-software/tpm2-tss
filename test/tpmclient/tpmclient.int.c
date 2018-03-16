@@ -1053,7 +1053,7 @@ void TestCreate(){
 
     inPublic.publicArea.type = TPM2_ALG_KEYEDHASH;
     inPublic.publicArea.objectAttributes &= ~TPMA_OBJECT_DECRYPT;
-    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_SIGN;
+    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_SIGN_ENCRYPT;
 
     inPublic.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM2_ALG_HMAC;
     inPublic.publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM2_ALG_SHA1;

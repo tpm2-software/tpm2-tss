@@ -50,7 +50,7 @@ UINT32 LoadExternalHMACKey( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2_HANDLE *keyH
     inPublic.publicArea.type = TPM2_ALG_KEYEDHASH;
     inPublic.publicArea.nameAlg = TPM2_ALG_NULL;
     *( UINT32 *)&( inPublic.publicArea.objectAttributes )= 0;
-    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_SIGN;
+    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_SIGN_ENCRYPT;
     inPublic.publicArea.objectAttributes |= TPMA_OBJECT_USERWITHAUTH;
     inPublic.publicArea.authPolicy.size = 0;
     inPublic.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM2_ALG_HMAC;

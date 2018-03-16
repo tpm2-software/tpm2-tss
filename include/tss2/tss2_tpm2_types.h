@@ -708,8 +708,7 @@ typedef uint32_t TPMA_OBJECT;
 #define TPMA_OBJECT_RESERVED4_MASK       0x0000F000 /* shall be zero */
 #define TPMA_OBJECT_RESTRICTED           0x00010000 /* SET 1 Key usage is restricted to manipulate structures of known format the parent of this key shall have restricted SET.CLEAR 0 Key usage is not restricted to use on special formats. */
 #define TPMA_OBJECT_DECRYPT              0x00020000 /* SET 1 The private portion of the key may be used to decrypt.CLEAR 0 The private portion of the key may not be used to decrypt. */
-#define TPMA_OBJECT_SIGN                 0x00040000 /* SET 1 For a symmetric cipher object the private portion of the key may be used to encrypt.  For other objects the private portion of the key may be used to sign.CLEAR 0 The private portion of the key may not be used to sign or encrypt. */
-#define TPMA_OBJECT_SIGN_ENCRYPT         0x00040000
+#define TPMA_OBJECT_SIGN_ENCRYPT         0x00040000 /* SET 1 For a symmetric cipher object the private portion of the key may be used to encrypt.  For other objects the private portion of the key may be used to sign.CLEAR 0 The private portion of the key may not be used to sign or encrypt. */
 #define TPMA_OBJECT_RESERVED5_MASK       0xFFF80000 /* shall be zero */
 
 /* Definition of UINT8 TPMA_SESSION Bits <INOUT> */

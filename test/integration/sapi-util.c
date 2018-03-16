@@ -122,7 +122,7 @@ create_aes_128_cfb (
                                            TPMA_OBJECT_FIXEDTPM |
                                            TPMA_OBJECT_FIXEDPARENT |
                                            TPMA_OBJECT_SENSITIVEDATAORIGIN |
-                                           TPMA_OBJECT_SIGN |
+                                           TPMA_OBJECT_SIGN_ENCRYPT |
                                            TPMA_OBJECT_USERWITHAUTH,
             .publicArea.parameters.symDetail.sym = {
                 .algorithm = TPM2_ALG_AES,

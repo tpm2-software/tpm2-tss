@@ -111,7 +111,7 @@ UINT32 LoadSessionEncryptDecryptKey( TPMT_SYM_DEF *symmetric, TPM2B_MAX_BUFFER *
     inPublic.publicArea.nameAlg = TPM2_ALG_NULL;
     *( UINT32 *)&( inPublic.publicArea.objectAttributes )= 0;
     inPublic.publicArea.objectAttributes |= TPMA_OBJECT_DECRYPT;
-    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_SIGN;
+    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_SIGN_ENCRYPT;
     inPublic.publicArea.objectAttributes |= TPMA_OBJECT_USERWITHAUTH;
     inPublic.publicArea.authPolicy.size = 0;
     inPublic.publicArea.parameters.symDetail.sym.algorithm = symmetric->algorithm;
