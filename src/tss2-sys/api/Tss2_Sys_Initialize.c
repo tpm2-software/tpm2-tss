@@ -56,7 +56,7 @@ TSS2_RC Tss2_Sys_Initialize(
         (abiVersion->tssCreator != TSSWG_INTEROP ||
          abiVersion->tssFamily != TSS_SAPI_FIRST_FAMILY ||
          abiVersion->tssLevel != TSS_SAPI_FIRST_LEVEL ||
-         abiVersion->tssVersion != TSS_SAPI_FIRST_LEVEL)) {
+         abiVersion->tssVersion != TSS_SAPI_FIRST_VERSION)) {
         LOG_ERROR("ABI-Version of application %" PRIx32 ".%" PRIu32 ".%"
                   PRIu32 ".%" PRIu32 " differs from ABI version of SAPI %"
                   PRIx32 ".%" PRIu32 ".%" PRIu32 ".%" PRIu32,
