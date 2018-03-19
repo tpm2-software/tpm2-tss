@@ -916,7 +916,7 @@ iesys_check_sequence_async(ESYS_CONTEXT * esys_context)
         LOG_DEBUG("The command will be resubmitted for the %i time.",
                   esys_context->submissionCount);
     } else {
-        esys_context->submissionCount = 0;
+        esys_context->submissionCount = 1;
     }
     return TSS2_RC_SUCCESS;
 }

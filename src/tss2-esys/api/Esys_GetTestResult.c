@@ -208,7 +208,7 @@ Esys_GetTestResult_finish(
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
             "resubmission: %" PRIx32, r);
-        if (esysContext->submissionCount > _ESYS_MAX_SUMBISSIONS) {
+        if (esysContext->submissionCount >= _ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of resubmissions has been reached.");
             esysContext->state = _ESYS_STATE_ERRORRESPONSE;
             goto error_cleanup;

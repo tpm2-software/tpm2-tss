@@ -1078,7 +1078,7 @@ struct ESYS_CONTEXT {
     TSS2_TCTI_CONTEXT *tcti_app_param;
 };
 
-#define _ESYS_MAX_SUMBISSIONS 5
+#define _ESYS_MAX_SUBMISSIONS 5
 
 #define _ESYS_ASSERT_NON_NULL(x)     if (x == NULL) {         LOG_ERROR(str(x) " == NULL.");         return TSS2_ESYS_RC_BAD_REFERENCE;     }
 
