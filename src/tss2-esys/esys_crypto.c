@@ -898,7 +898,6 @@ iesys_cryptogcry_pk_decrypt(TPM2B_PUBLIC * key,
             LOG_ERROR("Illegal RSA scheme");
             return TSS2_SYS_RC_BAD_VALUE;
         }
-        size_t offset = 0;
         err =
             gcry_sexp_build(&sexp_cipher, NULL,
                             "(enc-val (flags %s) (rsa (a  %b))", padding,

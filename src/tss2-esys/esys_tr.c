@@ -291,7 +291,6 @@ TSS2_RC
 Esys_TR_SetAuth(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
                 TPM2B_AUTH const *authValue)
 {
-    IESYS_RESOURCE *rsrc;
     RSRC_NODE_T *esys_object;
     TSS2_RC r;
     r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
