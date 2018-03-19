@@ -120,6 +120,45 @@ socket_connect_connect_fail_test (void **state)
     assert_int_equal (rc, TSS2_TCTI_RC_IO_ERROR);
 }
 
+/* When passed all NULL values ensure that we get back the expected RC. */
+static void
+socket_ipv6_connect_test (void **state)
+{
+    TSS2_RC rc;
+    SOCKET sock;
+
+    will_return (__wrap_socket, 0);
+    will_return (__wrap_socket, 1);
+    will_return (__wrap_connect, 0);
+    will_return (__wrap_connect, 1);
+    rc = socket_connect ("::1", 666, &sock);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+}
+static void
+socket_ipv6_connect_socket_fail_test (void **state)
+{
+    TSS2_RC rc;
+    SOCKET sock;
+
+    will_return (__wrap_socket, EINVAL);
+    will_return (__wrap_socket, -1);
+    rc = socket_connect ("::1", 555, &sock);
+    assert_int_equal (rc, TSS2_TCTI_RC_IO_ERROR);
+}
+static void
+socket_ipv6_connect_connect_fail_test (void **state)
+{
+    TSS2_RC rc;
+    SOCKET sock;
+
+    will_return (__wrap_socket, 0);
+    will_return (__wrap_socket, 1);
+    will_return (__wrap_connect, ENOTSOCK);
+    will_return (__wrap_connect, -1);
+    rc = socket_connect ("::1", 444, &sock);
+    assert_int_equal (rc, TSS2_TCTI_RC_IO_ERROR);
+}
+
 static void
 socket_connect_null_test (void **state)
 {
@@ -140,6 +179,9 @@ main (int   argc,
         cmocka_unit_test (socket_connect_null_test),
         cmocka_unit_test (socket_connect_socket_fail_test),
         cmocka_unit_test (socket_connect_connect_fail_test),
+        cmocka_unit_test (socket_ipv6_connect_test),
+        cmocka_unit_test (socket_ipv6_connect_socket_fail_test),
+        cmocka_unit_test (socket_ipv6_connect_connect_fail_test),
     };
     return cmocka_run_group_tests (tests, NULL, NULL);
 }
