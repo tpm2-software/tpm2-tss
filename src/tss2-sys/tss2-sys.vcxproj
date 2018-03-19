@@ -157,7 +157,7 @@
     <ClCompile Include="api\Tss2_Sys_Vendor_TCG_Test.c" />
     <ClCompile Include="api\Tss2_Sys_VerifySignature.c" />
     <ClCompile Include="api\Tss2_Sys_ZGen_2Phase.c" />
-    <ClCompile Include="CommandUtil.c" />
+    <ClCompile Include="sysapi_util.c" />
     <ClCompile Include="CompareSizedByteBuffer.c" />
     <ClCompile Include="ConcatSizedByteBuffer.c" />
     <ClCompile Include="GetDigestSize.c" />
