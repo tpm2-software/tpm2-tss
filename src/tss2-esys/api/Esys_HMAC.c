@@ -88,7 +88,7 @@ Esys_HMAC(
     TPMI_ALG_HASH hashAlg,
     TPM2B_DIGEST **outHMAC)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_HMAC_async(esysContext,
                 handle,
@@ -155,7 +155,7 @@ Esys_HMAC_async(
     const TPM2B_MAX_BUFFER *buffer,
     TPMI_ALG_HASH hashAlg)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *handleNode;
 
@@ -235,7 +235,7 @@ Esys_HMAC_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (outHMAC != NULL) {
         *outHMAC = calloc(sizeof(TPM2B_DIGEST), 1);
         if (*outHMAC == NULL) {

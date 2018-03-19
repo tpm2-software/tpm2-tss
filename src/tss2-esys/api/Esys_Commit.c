@@ -113,7 +113,7 @@ Esys_Commit(
     TPM2B_ECC_POINT **E,
     UINT16 *counter)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_Commit_async(esysContext,
                 signHandle,
@@ -186,7 +186,7 @@ Esys_Commit_async(
     const TPM2B_SENSITIVE_DATA *s2,
     const TPM2B_ECC_PARAMETER *y2)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *signHandleNode;
 
@@ -277,7 +277,7 @@ Esys_Commit_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (K != NULL) {
         *K = calloc(sizeof(TPM2B_ECC_POINT), 1);
         if (*K == NULL) {

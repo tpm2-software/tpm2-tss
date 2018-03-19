@@ -80,7 +80,7 @@ Esys_ReadPublic(
     TPM2B_NAME **name,
     TPM2B_NAME **qualifiedName)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_ReadPublic_async(esysContext,
                 objectHandle,
@@ -143,7 +143,7 @@ Esys_ReadPublic_async(
     ESYS_TR shandle2,
     ESYS_TR shandle3)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *objectHandleNode;
 
@@ -222,7 +222,7 @@ Esys_ReadPublic_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (outPublic != NULL) {
         *outPublic = calloc(sizeof(TPM2B_PUBLIC), 1);
         if (*outPublic == NULL) {

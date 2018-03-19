@@ -105,7 +105,7 @@ Esys_Duplicate(
     TPM2B_PRIVATE **duplicate,
     TPM2B_ENCRYPTED_SECRET **outSymSeed)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_Duplicate_async(esysContext,
                 objectHandle,
@@ -178,7 +178,7 @@ Esys_Duplicate_async(
     const TPM2B_DATA *encryptionKeyIn,
     const TPMT_SYM_DEF_OBJECT *symmetricAlg)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *objectHandleNode;
     RSRC_NODE_T *newParentHandleNode;
@@ -269,7 +269,7 @@ Esys_Duplicate_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (encryptionKeyOut != NULL) {
         *encryptionKeyOut = calloc(sizeof(TPM2B_DATA), 1);
         if (*encryptionKeyOut == NULL) {

@@ -110,7 +110,7 @@ Esys_StartAuthSession(
     ESYS_TR *sessionHandle,
     TPM2B_NONCE **nonceTPM)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_StartAuthSession_async(esysContext,
                 tpmKey,
@@ -189,7 +189,7 @@ Esys_StartAuthSession_async(
     const TPMT_SYM_DEF *symmetric,
     TPMI_ALG_HASH authHash)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TPM2B_ENCRYPTED_SECRET encryptedSaltAux = {0};
     const TPM2B_ENCRYPTED_SECRET *encryptedSalt = &encryptedSaltAux;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
@@ -308,7 +308,7 @@ Esys_StartAuthSession_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     IESYS_RESOURCE *sessionHandleRsrc = NULL;
     RSRC_NODE_T *sessionHandleNode = NULL;
 

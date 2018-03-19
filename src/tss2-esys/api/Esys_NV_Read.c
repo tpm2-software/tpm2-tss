@@ -87,7 +87,7 @@ Esys_NV_Read(
     UINT16 offset,
     TPM2B_MAX_NV_BUFFER **data)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_NV_Read_async(esysContext,
                 authHandle,
@@ -158,7 +158,7 @@ Esys_NV_Read_async(
     UINT16 size,
     UINT16 offset)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *authHandleNode;
     RSRC_NODE_T *nvIndexNode;
@@ -243,7 +243,7 @@ Esys_NV_Read_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (data != NULL) {
         *data = calloc(sizeof(TPM2B_MAX_NV_BUFFER), 1);
         if (*data == NULL) {

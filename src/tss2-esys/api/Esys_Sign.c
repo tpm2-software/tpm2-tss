@@ -104,7 +104,7 @@ Esys_Sign(
     const TPMT_TK_HASHCHECK *validation,
     TPMT_SIGNATURE **signature)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_Sign_async(esysContext,
                 keyHandle,
@@ -174,7 +174,7 @@ Esys_Sign_async(
     const TPMT_SIG_SCHEME *inScheme,
     const TPMT_TK_HASHCHECK *validation)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *keyHandleNode;
 
@@ -256,7 +256,7 @@ Esys_Sign_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (signature != NULL) {
         *signature = calloc(sizeof(TPMT_SIGNATURE), 1);
         if (*signature == NULL) {

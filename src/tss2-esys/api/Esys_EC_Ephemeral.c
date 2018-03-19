@@ -76,7 +76,7 @@ Esys_EC_Ephemeral(
     TPM2B_ECC_POINT **Q,
     UINT16 *counter)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_EC_Ephemeral_async(esysContext,
                 shandle1,
@@ -137,7 +137,7 @@ Esys_EC_Ephemeral_async(
     ESYS_TR shandle3,
     TPMI_ECC_CURVE curveID)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
 
     if (esysContext == NULL) {
@@ -210,7 +210,7 @@ Esys_EC_Ephemeral_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (Q != NULL) {
         *Q = calloc(sizeof(TPM2B_ECC_POINT), 1);
         if (*Q == NULL) {

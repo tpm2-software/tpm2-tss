@@ -73,7 +73,7 @@ Esys_GetRandom(
     UINT16 bytesRequested,
     TPM2B_DIGEST **randomBytes)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_GetRandom_async(esysContext,
                 shandle1,
@@ -133,7 +133,7 @@ Esys_GetRandom_async(
     ESYS_TR shandle3,
     UINT16 bytesRequested)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
 
     if (esysContext == NULL) {
@@ -203,7 +203,7 @@ Esys_GetRandom_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (randomBytes != NULL) {
         *randomBytes = calloc(sizeof(TPM2B_DIGEST), 1);
         if (*randomBytes == NULL) {

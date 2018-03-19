@@ -82,7 +82,7 @@ Esys_EvictControl(
     TPMI_DH_PERSISTENT persistentHandle,
     ESYS_TR *newObjectHandle)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_EvictControl_async(esysContext,
                 auth,
@@ -150,7 +150,7 @@ Esys_EvictControl_async(
     ESYS_TR shandle3,
     TPMI_DH_PERSISTENT persistentHandle)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *authNode;
     RSRC_NODE_T *objectHandleNode;
@@ -236,7 +236,7 @@ Esys_EvictControl_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     IESYS_RESOURCE *newObjectHandleRsrc = NULL;
     RSRC_NODE_T *newObjectHandleNode = NULL;
 

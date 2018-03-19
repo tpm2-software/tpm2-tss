@@ -79,7 +79,7 @@ Esys_IncrementalSelfTest(
     const TPML_ALG *toTest,
     TPML_ALG **toDoList)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_IncrementalSelfTest_async(esysContext,
                 shandle1,
@@ -139,7 +139,7 @@ Esys_IncrementalSelfTest_async(
     ESYS_TR shandle3,
     const TPML_ALG *toTest)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
 
     if (esysContext == NULL) {
@@ -209,7 +209,7 @@ Esys_IncrementalSelfTest_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (toDoList != NULL) {
         *toDoList = calloc(sizeof(TPML_ALG), 1);
         if (*toDoList == NULL) {

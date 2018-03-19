@@ -107,7 +107,7 @@ Esys_Quote(
     TPM2B_ATTEST **quoted,
     TPMT_SIGNATURE **signature)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_Quote_async(esysContext,
                 signHandle,
@@ -178,7 +178,7 @@ Esys_Quote_async(
     const TPMT_SIG_SCHEME *inScheme,
     const TPML_PCR_SELECTION *PCRselect)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *signHandleNode;
 
@@ -263,7 +263,7 @@ Esys_Quote_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (quoted != NULL) {
         *quoted = calloc(sizeof(TPM2B_ATTEST), 1);
         if (*quoted == NULL) {

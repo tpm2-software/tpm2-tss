@@ -94,7 +94,7 @@ Esys_VerifySignature(
     const TPMT_SIGNATURE *signature,
     TPMT_TK_VERIFIED **validation)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_VerifySignature_async(esysContext,
                 keyHandle,
@@ -161,7 +161,7 @@ Esys_VerifySignature_async(
     const TPM2B_DIGEST *digest,
     const TPMT_SIGNATURE *signature)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *keyHandleNode;
 
@@ -240,7 +240,7 @@ Esys_VerifySignature_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (validation != NULL) {
         *validation = calloc(sizeof(TPMT_TK_VERIFIED), 1);
         if (*validation == NULL) {

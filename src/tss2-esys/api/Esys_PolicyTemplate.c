@@ -80,7 +80,7 @@ Esys_PolicyTemplate(
     TPMI_SH_POLICY policySession,
     const TPM2B_DIGEST *templateHash)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_PolicyTemplate_async(esysContext,
                 shandle1,
@@ -142,7 +142,7 @@ Esys_PolicyTemplate_async(
     TPMI_SH_POLICY policySession,
     const TPM2B_DIGEST *templateHash)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
 
     if (esysContext == NULL) {
@@ -212,7 +212,7 @@ Esys_PolicyTemplate_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     r = Tss2_Sys_ExecuteFinish(esysContext->sys, esysContext->timeout);
     if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) {
         LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32, r);

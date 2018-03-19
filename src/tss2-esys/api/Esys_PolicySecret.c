@@ -116,7 +116,7 @@ Esys_PolicySecret(
     TPM2B_TIMEOUT **timeout,
     TPMT_TK_AUTH **policyTicket)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_PolicySecret_async(esysContext,
                 authHandle,
@@ -194,7 +194,7 @@ Esys_PolicySecret_async(
     const TPM2B_NONCE *policyRef,
     INT32 expiration)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *authHandleNode;
     RSRC_NODE_T *policySessionNode;
@@ -286,7 +286,7 @@ Esys_PolicySecret_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (timeout != NULL) {
         *timeout = calloc(sizeof(TPM2B_TIMEOUT), 1);
         if (*timeout == NULL) {

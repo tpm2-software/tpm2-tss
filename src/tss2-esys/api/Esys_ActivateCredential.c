@@ -99,7 +99,7 @@ Esys_ActivateCredential(
     const TPM2B_ENCRYPTED_SECRET *secret,
     TPM2B_DIGEST **certInfo)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_ActivateCredential_async(esysContext,
                 activateHandle,
@@ -170,7 +170,7 @@ Esys_ActivateCredential_async(
     const TPM2B_ID_OBJECT *credentialBlob,
     const TPM2B_ENCRYPTED_SECRET *secret)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *activateHandleNode;
     RSRC_NODE_T *keyHandleNode;
@@ -256,7 +256,7 @@ Esys_ActivateCredential_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (certInfo != NULL) {
         *certInfo = calloc(sizeof(TPM2B_DIGEST), 1);
         if (*certInfo == NULL) {

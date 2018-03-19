@@ -124,7 +124,7 @@ Esys_Import(
     const TPMT_SYM_DEF_OBJECT *symmetricAlg,
     TPM2B_PRIVATE **outPrivate)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_Import_async(esysContext,
                 parentHandle,
@@ -200,7 +200,7 @@ Esys_Import_async(
     const TPM2B_ENCRYPTED_SECRET *inSymSeed,
     const TPMT_SYM_DEF_OBJECT *symmetricAlg)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *parentHandleNode;
 
@@ -286,7 +286,7 @@ Esys_Import_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (outPrivate != NULL) {
         *outPrivate = calloc(sizeof(TPM2B_PRIVATE), 1);
         if (*outPrivate == NULL) {

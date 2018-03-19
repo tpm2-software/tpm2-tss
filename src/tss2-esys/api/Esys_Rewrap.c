@@ -112,7 +112,7 @@ Esys_Rewrap(
     TPM2B_PRIVATE **outDuplicate,
     TPM2B_ENCRYPTED_SECRET **outSymSeed)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_Rewrap_async(esysContext,
                 oldParent,
@@ -187,7 +187,7 @@ Esys_Rewrap_async(
     const TPM2B_NAME *name,
     const TPM2B_ENCRYPTED_SECRET *inSymSeed)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *oldParentNode;
     RSRC_NODE_T *newParentNode;
@@ -277,7 +277,7 @@ Esys_Rewrap_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (outDuplicate != NULL) {
         *outDuplicate = calloc(sizeof(TPM2B_PRIVATE), 1);
         if (*outDuplicate == NULL) {

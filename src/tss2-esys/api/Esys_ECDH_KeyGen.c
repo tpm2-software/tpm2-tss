@@ -77,7 +77,7 @@ Esys_ECDH_KeyGen(
     TPM2B_ECC_POINT **zPoint,
     TPM2B_ECC_POINT **pubPoint)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_ECDH_KeyGen_async(esysContext,
                 keyHandle,
@@ -139,7 +139,7 @@ Esys_ECDH_KeyGen_async(
     ESYS_TR shandle2,
     ESYS_TR shandle3)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *keyHandleNode;
 
@@ -215,7 +215,7 @@ Esys_ECDH_KeyGen_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (zPoint != NULL) {
         *zPoint = calloc(sizeof(TPM2B_ECC_POINT), 1);
         if (*zPoint == NULL) {

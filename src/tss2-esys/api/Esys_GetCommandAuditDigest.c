@@ -102,7 +102,7 @@ Esys_GetCommandAuditDigest(
     TPM2B_ATTEST **auditInfo,
     TPMT_SIGNATURE **signature)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_GetCommandAuditDigest_async(esysContext,
                 privacyHandle,
@@ -174,7 +174,7 @@ Esys_GetCommandAuditDigest_async(
     const TPM2B_DATA *qualifyingData,
     const TPMT_SIG_SCHEME *inScheme)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *privacyHandleNode;
     RSRC_NODE_T *signHandleNode;
@@ -263,7 +263,7 @@ Esys_GetCommandAuditDigest_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (auditInfo != NULL) {
         *auditInfo = calloc(sizeof(TPM2B_ATTEST), 1);
         if (*auditInfo == NULL) {

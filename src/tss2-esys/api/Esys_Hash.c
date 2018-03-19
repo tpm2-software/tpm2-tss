@@ -90,7 +90,7 @@ Esys_Hash(
     TPM2B_DIGEST **outHash,
     TPMT_TK_HASHCHECK **validation)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_Hash_async(esysContext,
                 shandle1,
@@ -157,7 +157,7 @@ Esys_Hash_async(
     TPMI_ALG_HASH hashAlg,
     TPMI_RH_HIERARCHY hierarchy)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
 
     if (esysContext == NULL) {
@@ -236,7 +236,7 @@ Esys_Hash_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (outHash != NULL) {
         *outHash = calloc(sizeof(TPM2B_DIGEST), 1);
         if (*outHash == NULL) {

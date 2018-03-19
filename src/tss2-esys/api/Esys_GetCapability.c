@@ -84,7 +84,7 @@ Esys_GetCapability(
     TPMI_YES_NO *moreData,
     TPMS_CAPABILITY_DATA **capabilityData)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_GetCapability_async(esysContext,
                 shandle1,
@@ -151,7 +151,7 @@ Esys_GetCapability_async(
     UINT32 property,
     UINT32 propertyCount)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
 
     if (esysContext == NULL) {
@@ -230,7 +230,7 @@ Esys_GetCapability_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (capabilityData != NULL) {
         *capabilityData = calloc(sizeof(TPMS_CAPABILITY_DATA), 1);
         if (*capabilityData == NULL) {

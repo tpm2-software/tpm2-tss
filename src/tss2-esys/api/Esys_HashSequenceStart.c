@@ -82,7 +82,7 @@ Esys_HashSequenceStart(
     TPMI_ALG_HASH hashAlg,
     ESYS_TR *sequenceHandle)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_HashSequenceStart_async(esysContext,
                 shandle1,
@@ -145,7 +145,7 @@ Esys_HashSequenceStart_async(
     const TPM2B_AUTH *auth,
     TPMI_ALG_HASH hashAlg)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
 
     if (esysContext == NULL) {
@@ -217,7 +217,7 @@ Esys_HashSequenceStart_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     IESYS_RESOURCE *sequenceHandleRsrc = NULL;
     RSRC_NODE_T *sequenceHandleNode = NULL;
 

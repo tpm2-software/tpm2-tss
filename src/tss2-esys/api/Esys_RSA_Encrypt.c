@@ -104,7 +104,7 @@ Esys_RSA_Encrypt(
     const TPM2B_DATA *label,
     TPM2B_PUBLIC_KEY_RSA **outData)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_RSA_Encrypt_async(esysContext,
                 keyHandle,
@@ -174,7 +174,7 @@ Esys_RSA_Encrypt_async(
     const TPMT_RSA_DECRYPT *inScheme,
     const TPM2B_DATA *label)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *keyHandleNode;
 
@@ -255,7 +255,7 @@ Esys_RSA_Encrypt_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (outData != NULL) {
         *outData = calloc(sizeof(TPM2B_PUBLIC_KEY_RSA), 1);
         if (*outData == NULL) {

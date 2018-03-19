@@ -92,7 +92,7 @@ Esys_LoadExternal(
     TPMI_RH_HIERARCHY hierarchy,
     ESYS_TR *objectHandle)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_LoadExternal_async(esysContext,
                 shandle1,
@@ -158,7 +158,7 @@ Esys_LoadExternal_async(
     const TPM2B_PUBLIC *inPublic,
     TPMI_RH_HIERARCHY hierarchy)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
 
     if (esysContext == NULL) {
@@ -233,7 +233,7 @@ Esys_LoadExternal_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TPM2B_NAME name;
     IESYS_RESOURCE *objectHandleRsrc = NULL;
     RSRC_NODE_T *objectHandleNode = NULL;

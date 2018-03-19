@@ -74,7 +74,7 @@ Esys_PolicyGetDigest(
     ESYS_TR shandle3,
     TPM2B_DIGEST **policyDigest)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_PolicyGetDigest_async(esysContext,
                 policySession,
@@ -135,7 +135,7 @@ Esys_PolicyGetDigest_async(
     ESYS_TR shandle2,
     ESYS_TR shandle3)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *policySessionNode;
 
@@ -208,7 +208,7 @@ Esys_PolicyGetDigest_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (policyDigest != NULL) {
         *policyDigest = calloc(sizeof(TPM2B_DIGEST), 1);
         if (*policyDigest == NULL) {

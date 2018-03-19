@@ -125,7 +125,7 @@ Esys_CreatePrimary(
     TPM2B_DIGEST **creationHash,
     TPMT_TK_CREATION **creationTicket)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_CreatePrimary_async(esysContext,
                 primaryHandle,
@@ -202,7 +202,7 @@ Esys_CreatePrimary_async(
     const TPM2B_DATA *outsideInfo,
     const TPML_PCR_SELECTION *creationPCR)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *primaryHandleNode;
 
@@ -298,7 +298,7 @@ Esys_CreatePrimary_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TPM2B_NAME name;
     IESYS_RESOURCE *objectHandleRsrc = NULL;
     RSRC_NODE_T *objectHandleNode = NULL;

@@ -105,7 +105,7 @@ Esys_EncryptDecrypt(
     TPM2B_MAX_BUFFER **outData,
     TPM2B_IV **ivOut)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_EncryptDecrypt_async(esysContext,
                 keyHandle,
@@ -179,7 +179,7 @@ Esys_EncryptDecrypt_async(
     const TPM2B_IV *ivIn,
     const TPM2B_MAX_BUFFER *inData)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *keyHandleNode;
 
@@ -266,7 +266,7 @@ Esys_EncryptDecrypt_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (outData != NULL) {
         *outData = calloc(sizeof(TPM2B_MAX_BUFFER), 1);
         if (*outData == NULL) {

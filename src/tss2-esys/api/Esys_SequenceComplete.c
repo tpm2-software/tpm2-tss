@@ -91,7 +91,7 @@ Esys_SequenceComplete(
     TPM2B_DIGEST **result,
     TPMT_TK_HASHCHECK **validation)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_SequenceComplete_async(esysContext,
                 sequenceHandle,
@@ -159,7 +159,7 @@ Esys_SequenceComplete_async(
     const TPM2B_MAX_BUFFER *buffer,
     TPMI_RH_HIERARCHY hierarchy)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *sequenceHandleNode;
 
@@ -242,7 +242,7 @@ Esys_SequenceComplete_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (result != NULL) {
         *result = calloc(sizeof(TPM2B_DIGEST), 1);
         if (*result == NULL) {

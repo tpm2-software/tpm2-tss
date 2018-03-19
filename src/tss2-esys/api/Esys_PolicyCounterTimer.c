@@ -89,7 +89,7 @@ Esys_PolicyCounterTimer(
     UINT16 offset,
     TPM2_EO operation)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_PolicyCounterTimer_async(esysContext,
                 policySession,
@@ -158,7 +158,7 @@ Esys_PolicyCounterTimer_async(
     UINT16 offset,
     TPM2_EO operation)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *policySessionNode;
 
@@ -236,7 +236,7 @@ Esys_PolicyCounterTimer_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     r = Tss2_Sys_ExecuteFinish(esysContext->sys, esysContext->timeout);
     if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) {
         LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32, r);
