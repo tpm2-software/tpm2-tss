@@ -27,18 +27,9 @@
 #ifndef ESYS_CRYPTO_H
 #define ESYS_CRYPTO_H
 
-#include "tss2_common.h"
-#ifndef TSS2_API_VERSION_1_2_1_108
-#error Version missmatch among TSS2 header files !
-#endif  /* TSS2_API_VERSION_1_2_1_108 */
-
-#include <stdint.h>
 #include <stddef.h>
 #include "tss2_tpm2_types.h"
-
-#include <stdarg.h>
-
-#include "util/tpm2b.h"
+#include "tss2-sys/sysapi_util.h"
 
 #ifdef __cplusplus
 extern "C" {

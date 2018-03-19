@@ -28,13 +28,9 @@
 #define ESYS_MU_H
 
 #include "tss2_mu.h"
-#include "tss2_sys.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <inttypes.h>
-#include <stdbool.h>
+
 #include "esys_types.h"
-#include "tss2_mu.h"
+
 #ifndef FALSE
 #define FALSE 0
 #endif

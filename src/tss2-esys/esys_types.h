@@ -25,8 +25,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
 
-#ifndef IESYS_TYPES_H
-#define IESYS_TYPES_H
+#ifndef ESYS_TYPES_H
+#define ESYS_TYPES_H
+
+#include "tss2_tpm2_types.h"
 
 #define ESYS_MAX_SIZE_METADATA 3072
 
@@ -152,5 +154,5 @@ typedef struct {
     IESYS_METADATA                         esysMetadata;    /**< Meta data of the ESY_TR object */
 } IESYS_CONTEXT_DATA;
 /* @} */
-#endif /* IESYS_TYPES_H */
+#endif /* ESYS_TYPES_H */
 /* @} */

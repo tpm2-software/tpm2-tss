@@ -27,10 +27,12 @@
 #ifndef ESYS_IUTIL_H
 #define ESYS_IUTIL_H
 
-#include <inttypes.h>
 #include <stdbool.h>
+#include <inttypes.h>
 #include <string.h>
+
 #include "tss2_esys.h"
+
 #include "esys_int.h"
 #include "esys_crypto.h"
 

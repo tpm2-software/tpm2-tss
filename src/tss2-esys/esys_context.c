@@ -24,26 +24,15 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
-#include "tss2_mu.h"
-#include "tss2_sys.h"
-#ifndef TSS2_API_VERSION_1_2_1_108
-#error Version missmatch among TSS2 header files !
-#endif                          /* TSS2_API_VERSION_1_2_1_108 */
-#include "tss2_sys.h"
-#include "sysapi_util.h"
-#include <tss2_esys.h>
-#include "esys_types.h"
-#include "esys_crypto.h"
+
+#include <stdlib.h>
+
+#include "tss2_esys.h"
+
 #include "esys_iutil.h"
+#include "esys_tcti_default.h"
 #define LOGMODULE esys
 #include "util/log.h"
-#include "esys_crypto.h"
-#include <inttypes.h>
-#include <stdbool.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include "esys_tcti_default.h"
 
 /** Initialize an ESYS_CONTEXT for further use.
  *
