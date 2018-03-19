@@ -1008,6 +1008,7 @@ iesys_gen_auths(ESYS_CONTEXT * esys_context,
     HASH_TAB_ITEM cp_hash_tab[3];
     uint8_t cpHashNum = 0;
 
+    auths->count = 0;
     r = iesys_gen_caller_nonces(esys_context);
     return_if_error(r, "Error nonce generation caller");
     r = iesys_encrypt_param(esys_context, &decryptNonce, &decryptNonceIdx);
@@ -1026,6 +1027,8 @@ iesys_gen_auths(ESYS_CONTEXT * esys_context,
     return_if_error(r, "Error while computing cp hashes");
 
     for (int session_idx = 0; session_idx < 3; session_idx++) {
+        auths->auths[auths->count].nonce.size = 0;
+        auths->auths[auths->count].sessionAttributes = 0;
         if (esys_context->session_type[session_idx] == ESYS_TR_PASSWORD) {
             if (objects[session_idx] == NULL) {
                 auths->auths[auths->count].hmac.size = 0;
@@ -1041,6 +1044,7 @@ iesys_gen_auths(ESYS_CONTEXT * esys_context,
         if (session != NULL) {
             IESYS_SESSION *rsrc_session = &session->rsrc.misc.rsrc_session;
             if (rsrc_session->type_policy_session == POLICY_PASSWORD) {
+                auths->auths[auths->count].sessionHandle = session->rsrc.handle;
                 if (objects[session_idx] == NULL) {
                     auths->auths[auths->count].hmac.size = 0;
                     auths->count += 1;
@@ -1060,7 +1064,10 @@ iesys_gen_auths(ESYS_CONTEXT * esys_context,
                                 &auths->auths[session_idx]);
         return_if_error(r, "Error while computing hmacs");
         if (esys_context->session_tab[session_idx] != NULL)
+        if (esys_context->session_tab[session_idx] != NULL) {
+            auths->auths[auths->count].sessionHandle = session->rsrc.handle;
             auths->count++;
+        }
     }
 
     esys_context->encryptNonceIdx = encryptNonceIdx;

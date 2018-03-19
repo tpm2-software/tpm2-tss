@@ -195,7 +195,7 @@ Esys_PolicySecret_async(
     INT32 expiration)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *authHandleNode;
     RSRC_NODE_T *policySessionNode;
 

@@ -148,7 +148,7 @@ Esys_PCR_Read_async(
     const TPML_PCR_SELECTION *pcrSelectionIn)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
 
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");

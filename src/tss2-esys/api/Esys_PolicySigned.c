@@ -208,7 +208,7 @@ Esys_PolicySigned_async(
     const TPMT_SIGNATURE *auth)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *authObjectNode;
     RSRC_NODE_T *policySessionNode;
 

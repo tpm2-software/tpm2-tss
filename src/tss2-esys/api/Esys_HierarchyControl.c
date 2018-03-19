@@ -146,7 +146,7 @@ Esys_HierarchyControl_async(
     TPMI_YES_NO state)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *authHandleNode;
 
     if (esysContext == NULL) {

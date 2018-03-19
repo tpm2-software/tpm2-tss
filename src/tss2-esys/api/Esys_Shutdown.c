@@ -130,7 +130,7 @@ Esys_Shutdown_async(
     TPM2_SU shutdownType)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
 
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");

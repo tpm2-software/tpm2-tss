@@ -187,7 +187,7 @@ Esys_Commit_async(
     const TPM2B_ECC_PARAMETER *y2)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *signHandleNode;
 
     if (esysContext == NULL) {

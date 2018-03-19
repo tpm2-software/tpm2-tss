@@ -126,7 +126,7 @@ Esys_GetTestResult_async(
     ESYS_TR shandle3)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
 
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");

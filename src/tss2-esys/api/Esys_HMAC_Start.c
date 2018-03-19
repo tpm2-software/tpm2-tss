@@ -155,7 +155,7 @@ Esys_HMAC_Start_async(
     TPMI_ALG_HASH hashAlg)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *handleNode;
 
     if (esysContext == NULL) {

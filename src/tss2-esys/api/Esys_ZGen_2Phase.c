@@ -180,7 +180,7 @@ Esys_ZGen_2Phase_async(
     UINT16 counter)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *keyANode;
 
     if (esysContext == NULL) {

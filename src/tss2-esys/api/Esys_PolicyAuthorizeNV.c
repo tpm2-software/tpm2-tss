@@ -150,7 +150,7 @@ Esys_PolicyAuthorizeNV_async(
     ESYS_TR shandle3)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *authHandleNode;
     RSRC_NODE_T *nvIndexNode;
     RSRC_NODE_T *policySessionNode;

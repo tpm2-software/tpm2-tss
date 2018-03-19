@@ -160,7 +160,7 @@ Esys_SequenceComplete_async(
     TPMI_RH_HIERARCHY hierarchy)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *sequenceHandleNode;
 
     if (esysContext == NULL) {

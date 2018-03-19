@@ -139,7 +139,7 @@ Esys_ClearControl_async(
     TPMI_YES_NO disable)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *authNode;
 
     if (esysContext == NULL) {
