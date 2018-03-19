@@ -64,7 +64,7 @@ Esys_ReadClock(
     ESYS_TR shandle3,
     TPMS_TIME_INFO **currentTime)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_ReadClock_async(esysContext,
                 shandle1,
@@ -121,7 +121,7 @@ Esys_ReadClock_async(
     ESYS_TR shandle2,
     ESYS_TR shandle3)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
 
     if (esysContext == NULL) {
@@ -186,7 +186,7 @@ Esys_ReadClock_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (currentTime != NULL) {
         *currentTime = calloc(sizeof(TPMS_TIME_INFO), 1);
         if (*currentTime == NULL) {

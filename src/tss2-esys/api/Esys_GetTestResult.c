@@ -67,7 +67,7 @@ Esys_GetTestResult(
     TPM2B_MAX_BUFFER **outData,
     TPM2_RC *testResult)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_GetTestResult_async(esysContext,
                 shandle1,
@@ -125,7 +125,7 @@ Esys_GetTestResult_async(
     ESYS_TR shandle2,
     ESYS_TR shandle3)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
 
     if (esysContext == NULL) {
@@ -193,7 +193,7 @@ Esys_GetTestResult_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (outData != NULL) {
         *outData = calloc(sizeof(TPM2B_MAX_BUFFER), 1);
         if (*outData == NULL) {

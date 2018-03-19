@@ -68,7 +68,7 @@ Esys_ContextSave(
     ESYS_TR saveHandle,
     TPMS_CONTEXT **context)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_ContextSave_async(esysContext,
                 saveHandle);
@@ -120,7 +120,7 @@ Esys_ContextSave_async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR saveHandle)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     RSRC_NODE_T *saveHandleNode;
 
     if (esysContext == NULL) {
@@ -178,7 +178,7 @@ Esys_ContextSave_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     lcontext = calloc(sizeof(TPMS_CONTEXT), 1);
     if (lcontext == NULL) {
         return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");

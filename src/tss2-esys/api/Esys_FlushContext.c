@@ -65,7 +65,7 @@ Esys_FlushContext(
     ESYS_CONTEXT *esysContext,
     ESYS_TR flushHandle)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_FlushContext_async(esysContext,
                 flushHandle);
@@ -116,7 +116,7 @@ Esys_FlushContext_async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR flushHandle)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     RSRC_NODE_T *flushHandleNode;
 
     if (esysContext == NULL) {
@@ -170,7 +170,7 @@ Esys_FlushContext_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     r = Tss2_Sys_ExecuteFinish(esysContext->sys, esysContext->timeout);
     if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) {
         LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32, r);

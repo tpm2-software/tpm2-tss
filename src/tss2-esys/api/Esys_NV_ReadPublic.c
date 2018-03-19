@@ -77,7 +77,7 @@ Esys_NV_ReadPublic(
     TPM2B_NV_PUBLIC **nvPublic,
     TPM2B_NAME **nvName)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_NV_ReadPublic_async(esysContext,
                 nvIndex,
@@ -139,7 +139,7 @@ Esys_NV_ReadPublic_async(
     ESYS_TR shandle2,
     ESYS_TR shandle3)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *nvIndexNode;
 
@@ -217,7 +217,7 @@ Esys_NV_ReadPublic_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     lnvPublic = calloc(sizeof(TPM2B_NV_PUBLIC), 1);
     if (lnvPublic == NULL) {
         return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");

@@ -73,7 +73,7 @@ Esys_FirmwareRead(
     UINT32 sequenceNumber,
     TPM2B_MAX_BUFFER **fuData)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_FirmwareRead_async(esysContext,
                 shandle1,
@@ -133,7 +133,7 @@ Esys_FirmwareRead_async(
     ESYS_TR shandle3,
     UINT32 sequenceNumber)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
 
     if (esysContext == NULL) {
@@ -203,7 +203,7 @@ Esys_FirmwareRead_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (fuData != NULL) {
         *fuData = calloc(sizeof(TPM2B_MAX_BUFFER), 1);
         if (*fuData == NULL) {

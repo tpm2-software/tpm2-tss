@@ -89,7 +89,7 @@ Esys_ObjectChangeAuth(
     const TPM2B_AUTH *newAuth,
     TPM2B_PRIVATE **outPrivate)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_ObjectChangeAuth_async(esysContext,
                 objectHandle,
@@ -157,7 +157,7 @@ Esys_ObjectChangeAuth_async(
     ESYS_TR shandle3,
     const TPM2B_AUTH *newAuth)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *objectHandleNode;
     RSRC_NODE_T *parentHandleNode;
@@ -240,7 +240,7 @@ Esys_ObjectChangeAuth_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (outPrivate != NULL) {
         *outPrivate = calloc(sizeof(TPM2B_PRIVATE), 1);
         if (*outPrivate == NULL) {

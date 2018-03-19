@@ -74,7 +74,7 @@ Esys_Unseal(
     ESYS_TR shandle3,
     TPM2B_SENSITIVE_DATA **outData)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_Unseal_async(esysContext,
                 itemHandle,
@@ -135,7 +135,7 @@ Esys_Unseal_async(
     ESYS_TR shandle2,
     ESYS_TR shandle3)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *itemHandleNode;
 
@@ -209,7 +209,7 @@ Esys_Unseal_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (outData != NULL) {
         *outData = calloc(sizeof(TPM2B_SENSITIVE_DATA), 1);
         if (*outData == NULL) {

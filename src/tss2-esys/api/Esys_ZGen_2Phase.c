@@ -105,7 +105,7 @@ Esys_ZGen_2Phase(
     TPM2B_ECC_POINT **outZ1,
     TPM2B_ECC_POINT **outZ2)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_ZGen_2Phase_async(esysContext,
                 keyA,
@@ -179,7 +179,7 @@ Esys_ZGen_2Phase_async(
     TPMI_ECC_KEY_EXCHANGE inScheme,
     UINT16 counter)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *keyANode;
 
@@ -266,7 +266,7 @@ Esys_ZGen_2Phase_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (outZ1 != NULL) {
         *outZ1 = calloc(sizeof(TPM2B_ECC_POINT), 1);
         if (*outZ1 == NULL) {

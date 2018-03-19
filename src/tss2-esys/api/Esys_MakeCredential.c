@@ -97,7 +97,7 @@ Esys_MakeCredential(
     TPM2B_ID_OBJECT **credentialBlob,
     TPM2B_ENCRYPTED_SECRET **secret)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_MakeCredential_async(esysContext,
                 handle,
@@ -165,7 +165,7 @@ Esys_MakeCredential_async(
     const TPM2B_DIGEST *credential,
     const TPM2B_NAME *objectName)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *handleNode;
 
@@ -247,7 +247,7 @@ Esys_MakeCredential_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (credentialBlob != NULL) {
         *credentialBlob = calloc(sizeof(TPM2B_ID_OBJECT), 1);
         if (*credentialBlob == NULL) {

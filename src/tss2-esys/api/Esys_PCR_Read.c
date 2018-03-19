@@ -85,7 +85,7 @@ Esys_PCR_Read(
     TPML_PCR_SELECTION **pcrSelectionOut,
     TPML_DIGEST **pcrValues)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_PCR_Read_async(esysContext,
                 shandle1,
@@ -147,7 +147,7 @@ Esys_PCR_Read_async(
     ESYS_TR shandle3,
     const TPML_PCR_SELECTION *pcrSelectionIn)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
 
     if (esysContext == NULL) {
@@ -223,7 +223,7 @@ Esys_PCR_Read_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (pcrSelectionOut != NULL) {
         *pcrSelectionOut = calloc(sizeof(TPML_PCR_SELECTION), 1);
         if (*pcrSelectionOut == NULL) {

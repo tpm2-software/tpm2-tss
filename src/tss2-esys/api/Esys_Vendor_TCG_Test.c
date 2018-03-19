@@ -79,7 +79,7 @@ Esys_Vendor_TCG_Test(
     const TPM2B_DATA *inputData,
     TPM2B_DATA **outputData)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_Vendor_TCG_Test_async(esysContext,
                 shandle1,
@@ -139,7 +139,7 @@ Esys_Vendor_TCG_Test_async(
     ESYS_TR shandle3,
     const TPM2B_DATA *inputData)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
 
     if (esysContext == NULL) {
@@ -209,7 +209,7 @@ Esys_Vendor_TCG_Test_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (outputData != NULL) {
         *outputData = calloc(sizeof(TPM2B_DATA), 1);
         if (*outputData == NULL) {

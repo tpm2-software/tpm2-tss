@@ -72,7 +72,7 @@ Esys_ContextLoad(
     const TPMS_CONTEXT *context,
     ESYS_TR *loadedHandle)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_ContextLoad_async(esysContext,
                 context);
@@ -123,7 +123,7 @@ Esys_ContextLoad_async(
     ESYS_CONTEXT *esysContext,
     const TPMS_CONTEXT *context)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     IESYS_CONTEXT_DATA esyscontextData = {0};
     TPMS_CONTEXT tpmContext;
 
@@ -201,7 +201,7 @@ Esys_ContextLoad_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     IESYS_RESOURCE *loadedHandleRsrc = NULL;
     RSRC_NODE_T *loadedHandleNode = NULL;
 

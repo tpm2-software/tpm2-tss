@@ -84,7 +84,7 @@ Esys_ECDH_ZGen(
     const TPM2B_ECC_POINT *inPoint,
     TPM2B_ECC_POINT **outPoint)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_ECDH_ZGen_async(esysContext,
                 keyHandle,
@@ -148,7 +148,7 @@ Esys_ECDH_ZGen_async(
     ESYS_TR shandle3,
     const TPM2B_ECC_POINT *inPoint)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *keyHandleNode;
 
@@ -225,7 +225,7 @@ Esys_ECDH_ZGen_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (outPoint != NULL) {
         *outPoint = calloc(sizeof(TPM2B_ECC_POINT), 1);
         if (*outPoint == NULL) {

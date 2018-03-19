@@ -99,7 +99,7 @@ Esys_CreateLoaded(
     TPM2B_PRIVATE **outPrivate,
     TPM2B_PUBLIC **outPublic)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_CreateLoaded_async(esysContext,
                 parentHandle,
@@ -168,7 +168,7 @@ Esys_CreateLoaded_async(
     const TPM2B_SENSITIVE_CREATE *inSensitive,
     const TPM2B_TEMPLATE *inPublic)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *parentHandleNode;
 
@@ -254,7 +254,7 @@ Esys_CreateLoaded_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TPM2B_NAME name;
     IESYS_RESOURCE *objectHandleRsrc = NULL;
     RSRC_NODE_T *objectHandleNode = NULL;

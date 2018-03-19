@@ -73,7 +73,7 @@ Esys_ECC_Parameters(
     TPMI_ECC_CURVE curveID,
     TPMS_ALGORITHM_DETAIL_ECC **parameters)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_ECC_Parameters_async(esysContext,
                 shandle1,
@@ -133,7 +133,7 @@ Esys_ECC_Parameters_async(
     ESYS_TR shandle3,
     TPMI_ECC_CURVE curveID)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
 
     if (esysContext == NULL) {
@@ -203,7 +203,7 @@ Esys_ECC_Parameters_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (parameters != NULL) {
         *parameters = calloc(sizeof(TPMS_ALGORITHM_DETAIL_ECC), 1);
         if (*parameters == NULL) {

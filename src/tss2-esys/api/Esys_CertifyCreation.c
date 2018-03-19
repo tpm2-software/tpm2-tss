@@ -122,7 +122,7 @@ Esys_CertifyCreation(
     TPM2B_ATTEST **certifyInfo,
     TPMT_SIGNATURE **signature)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_CertifyCreation_async(esysContext,
                 signHandle,
@@ -200,7 +200,7 @@ Esys_CertifyCreation_async(
     const TPMT_SIG_SCHEME *inScheme,
     const TPMT_TK_CREATION *creationTicket)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *signHandleNode;
     RSRC_NODE_T *objectHandleNode;
@@ -292,7 +292,7 @@ Esys_CertifyCreation_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (certifyInfo != NULL) {
         *certifyInfo = calloc(sizeof(TPM2B_ATTEST), 1);
         if (*certifyInfo == NULL) {

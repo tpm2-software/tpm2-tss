@@ -84,7 +84,7 @@ Esys_PCR_Event(
     const TPM2B_EVENT *eventData,
     TPML_DIGEST_VALUES **digests)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_PCR_Event_async(esysContext,
                 pcrHandle,
@@ -148,7 +148,7 @@ Esys_PCR_Event_async(
     ESYS_TR shandle3,
     const TPM2B_EVENT *eventData)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *pcrHandleNode;
 
@@ -225,7 +225,7 @@ Esys_PCR_Event_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (digests != NULL) {
         *digests = calloc(sizeof(TPML_DIGEST_VALUES), 1);
         if (*digests == NULL) {

@@ -90,7 +90,7 @@ Esys_NV_Write(
     const TPM2B_MAX_NV_BUFFER *data,
     UINT16 offset)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_NV_Write_async(esysContext,
                 authHandle,
@@ -160,7 +160,7 @@ Esys_NV_Write_async(
     const TPM2B_MAX_NV_BUFFER *data,
     UINT16 offset)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *authHandleNode;
     RSRC_NODE_T *nvIndexNode;
@@ -242,7 +242,7 @@ Esys_NV_Write_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     r = Tss2_Sys_ExecuteFinish(esysContext->sys, esysContext->timeout);
     if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) {
         LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32, r);

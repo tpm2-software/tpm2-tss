@@ -126,7 +126,7 @@ Esys_Create(
     TPM2B_DIGEST **creationHash,
     TPMT_TK_CREATION **creationTicket)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
 
     r = Esys_Create_async(esysContext,
                 parentHandle,
@@ -203,7 +203,7 @@ Esys_Create_async(
     const TPM2B_DATA *outsideInfo,
     const TPML_PCR_SELECTION *creationPCR)
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths = { 0 };
     RSRC_NODE_T *parentHandleNode;
 
@@ -299,7 +299,7 @@ Esys_Create_finish(
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC r;
     if (outPrivate != NULL) {
         *outPrivate = calloc(sizeof(TPM2B_PRIVATE), 1);
         if (*outPrivate == NULL) {
