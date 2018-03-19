@@ -698,6 +698,14 @@ iesys_check_rp_hmacs(ESYS_CONTEXT * esys_context,
         RSRC_NODE_T *session = esys_context->session_tab[i];
         if (session != NULL) {
             IESYS_SESSION *rsrc_session = &session->rsrc.misc.rsrc_session;
+            if (rsrc_session->type_policy_session == POLICY_PASSWORD) {
+                if (rspAuths->auths[i].hmac.size  != 0) {
+                    LOG_ERROR("Error: hmac size not equal 0 in response.");
+                    return TSS2_ESYS_RC_BAD_VALUE;
+                }
+                return TSS2_RC_SUCCESS;
+            }
+
             int hi = 0;
             for (int j = 0; j < 3; j++) {
                 if (rsrc_session->authHash == rp_hash_tab[j].alg) {
