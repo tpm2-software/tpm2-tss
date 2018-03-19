@@ -24,23 +24,17 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
-#include "tss2_mu.h"
-#include "tss2_sys.h"
-#ifndef TSS2_API_VERSION_1_2_1_108
-#error Version missmatch among TSS2 header files !
-#endif                          /* TSS2_API_VERSION_1_2_1_108 */
-
-#include "tss2_sys.h"
-#include "sysapi_util.h"
-#define LOGMODULE sys
-#include "util/log.h"
-
-#include "esys_crypto.h"
-#include "esys_iutil.h"
 
 #include <gcrypt.h>
 
-#include <stdarg.h>
+#include "tss2_esys.h"
+#include "sysapi_util.h"
+
+#include "esys_crypto.h"
+#include "esys_iutil.h"
+#include "esys_mu.h"
+#define LOGMODULE esys
+#include "util/log.h"
 
 /** Context to hold temporary values for iesys_crypto */
 typedef struct _IESYS_CRYPTO_CONTEXT {

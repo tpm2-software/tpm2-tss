@@ -24,28 +24,15 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
+
+#include <inttypes.h>
+#include <stdlib.h>
 #include <string.h>
 
-#if defined __linux__ || defined __GNU__ || defined __GLIBC__
-#define _DEFAULT_SOURCE 1
-#else
-#define _BSD_SOURCE 1
-#define _SVID_SOURCE 1
-#endif
-
-#include "tss2_mu.h"
-#include "tss2_sys.h"
-#ifndef TSS2_API_VERSION_1_2_1_108
-#error Version missmatch among TSS2 header files !
-#endif /* TSS2_API_VERSION_1_2_1_108 */
-
-#include "sysapi_util.h"
-#include "tss2_mu.h"
-#include <inttypes.h>
-
 #include "tss2_esys.h"
+
 #include "esys_mu.h"
-#define LOGMODULE esys_types
+#define LOGMODULE esys
 #include "util/log.h"
 
 /**

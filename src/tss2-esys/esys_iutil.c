@@ -24,14 +24,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
-#include "tss2_mu.h"
-#include "tss2_sys.h"
-#include "esys_iutil.h"
+#include <inttypes.h>
+
 #include "tss2_esys.h"
 #include "esys_mu.h"
+
+#include "esys_iutil.h"
 #include "esys_int.h"
-#include <inttypes.h>
-#define LOGMODULE esys_iutil
+#define LOGMODULE esys
 #include "util/log.h"
 
 /**

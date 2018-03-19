@@ -27,12 +27,8 @@
 #ifndef ESYS_INT_H
 #define ESYS_INT_H
 
-#include "tss2_mu.h"
-#include "tss2_sys.h"
-#include <stdbool.h>
-#include <tss2_esys.h>
+#include <stdint.h>
 #include "esys_types.h"
-
 
 #ifdef __cplusplus
 extern "C" {
