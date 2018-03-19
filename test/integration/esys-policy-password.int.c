@@ -105,7 +105,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         .size = 0,
         .publicArea = {
             .type = TPM2_ALG_RSA,
-            .nameAlg = TPM2_ALG_SHA256,
+            .nameAlg = TPM2_ALG_SHA1,
             .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
                                  TPMA_OBJECT_RESTRICTED |
                                  TPMA_OBJECT_DECRYPT |
@@ -149,7 +149,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
              },
         },
     };
-    return 0;
 
     inSensitivePrimary.sensitive.userAuth = authValuePrimary;
 
@@ -233,7 +232,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         .size = 0,
         .publicArea = {
             .type = TPM2_ALG_RSA,
-            .nameAlg = TPM2_ALG_SHA256,
+            .nameAlg = TPM2_ALG_SHA1,
             .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
                                  TPMA_OBJECT_RESTRICTED |
                                  TPMA_OBJECT_DECRYPT |
