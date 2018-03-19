@@ -91,10 +91,6 @@ extern "C" {
         r_max = r; \
     }
 
-#define INIT_RSRC_NODE(node); \
-    node = malloc(sizeof(RSRC_NODE)); \
-    memset(var, 0, sizeof(RSRC_NODE));
-
 typedef    struct {
     TPM2_ALG_ID alg;
     size_t size;
