@@ -26,15 +26,20 @@
  */
 #include <errno.h>
 #include <inttypes.h>
+#include <limits.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdio.h>
 
 #include "tss2_tpm2_types.h"
 
 #include "io.h"
 #define LOGMODULE tcti
 #include "util/log.h"
+
+#define MAX_PORT_STR_LEN    sizeof("65535")
 
 ssize_t
 read_all (
@@ -146,32 +151,52 @@ socket_connect (
     uint16_t port,
     SOCKET *sock)
 {
+    static const struct addrinfo hints = { .ai_socktype = SOCK_STREAM,
+        .ai_family = AF_UNSPEC, .ai_protocol = IPPROTO_TCP};
+    struct addrinfo *retp = NULL;
+    struct addrinfo *p;
+    char port_str[MAX_PORT_STR_LEN];
     int ret = 0;
+    char host_buff[_POSIX_HOST_NAME_MAX] __attribute__((unused));
+    const char *h __attribute__((unused)) = hostname;
 
     if (hostname == NULL || sock == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
     }
 
-    LOG_DEBUG ("Creating AF_INET stream socket");
-    *sock = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (*sock == -1) {
-        LOG_WARNING ("Failed to create socket. errno %d: %s",
-                     errno, strerror (errno));
+    ret = snprintf(port_str, sizeof(port_str), "%u", port);
+    if (ret < 0)
+        return TSS2_TCTI_RC_BAD_VALUE;
+
+
+    LOG_DEBUG ("Resolving host %s", hostname);
+    ret = getaddrinfo (hostname, port_str, &hints, &retp);
+    if (ret != 0) {
+        LOG_WARNING ("Host %s does not resolve to a valid address: %d: %s",
+            hostname, ret, gai_strerror(ret));
         return TSS2_TCTI_RC_IO_ERROR;
     }
-    struct sockaddr_in sockaddr = {
-        .sin_family = AF_INET,
-        .sin_addr.s_addr = inet_addr (hostname),
-        .sin_port = htons (port),
-        .sin_zero = { 0, } };
 
-    LOG_DEBUG ("Connecting socket %d to hostname %s on port %" PRIu16,
-               *sock, hostname, port);
-    ret = connect (*sock, (struct sockaddr*)&sockaddr, sizeof (sockaddr));
-    if (ret == -1) {
-        LOG_WARNING ("Failed to connect to host %s on port %" PRIu16 ", errno "
-                     "%d: %s", hostname, port, errno, strerror (errno));
-        socket_close (sock);
+    for (p = retp; p != NULL; p = p->ai_next) {
+        *sock = socket (p->ai_family, SOCK_STREAM, 0);
+        if (*sock == -1)
+            continue;
+
+        h = inet_ntop(p->ai_family, p->ai_addr, &host_buff[0],
+            sizeof(host_buff));
+        if (h == NULL)
+            h = hostname;
+        LOG_DEBUG ("Attempting TCP connection to host %s, port %s",
+            h, port_str);
+        if (connect (*sock, p->ai_addr, p->ai_addrlen) != -1)
+            break; // socket connected OK
+        socket_close(sock);
+    }
+    freeaddrinfo (retp);
+    if (p == NULL) {
+        LOG_WARNING ("Failed to connect to host %s, port %s: errno %d: %s",
+            h, port_str, errno, strerror (errno));
+
         return TSS2_TCTI_RC_IO_ERROR;
     }
 

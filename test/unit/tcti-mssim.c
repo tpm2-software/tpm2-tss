@@ -48,7 +48,13 @@ conf_str_to_host_port (
     const char *conf,
     char *hostname,
     uint16_t *port);
-/* */
+
+/*
+ * This tests our ability to handle conf strings that have a port
+ * component. In this case the 'conf_str_to_host_port' function
+ * should set the 'port' parameter and so we check to be sure it's
+ * set.
+ */
 static void
 conf_str_to_host_port_success_test (void **state)
 {
@@ -62,6 +68,7 @@ conf_str_to_host_port_success_test (void **state)
     assert_int_equal (port, 2321);
     assert_string_equal (hostname, "127.0.0.1");
 }
+
 /*
  * This tests our ability to handle conf strings that don't have the port
  * component of the URI. In this case the 'conf_str_to_host_port' function
@@ -81,6 +88,46 @@ conf_str_to_host_port_no_port_test (void **state)
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (port, NO_PORT_VALUE);
 }
+
+/*
+ * This tests our ability to handle conf strings that have an IPv6 address
+ * and port component. In this case the 'conf_str_to_host_port' function
+ * should set the 'hostname' parameter and so we check to be sure it's
+ * set without the [] brackets.
+ */
+static void
+conf_str_to_host_ipv6_port_success_test (void **state)
+{
+    TSS2_RC rc;
+    char *conf = "tcp://[::1]:2321";
+    char hostname [HOST_NAME_MAX] = { 0 };
+    uint16_t port;
+
+    rc = conf_str_to_host_port (conf, hostname, &port);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (port, 2321);
+    assert_string_equal (hostname, "::1");
+}
+
+/*
+ * This tests our ability to handle conf strings that have an IPv6 address
+ * but no port component. In this case the 'conf_str_to_host_port' function
+ * should not touch the 'port' parameter and so we check to be sure it's
+ * unchanged.
+ */
+static void
+conf_str_to_host_ipv6_port_no_port_test (void **state)
+{
+    TSS2_RC rc;
+    char *conf = "tcp://[::1]";
+    char hostname [HOST_NAME_MAX] = { 0 };
+    uint16_t port = NO_PORT_VALUE;
+
+    rc = conf_str_to_host_port (conf, hostname, &port);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (port, NO_PORT_VALUE);
+}
+
 /*
  * The 'conf_str_to_host_port' function rejects ports over UINT16_MAX.
  */
@@ -378,6 +425,8 @@ main (int   argc,
     const struct CMUnitTest tests[] = {
         cmocka_unit_test (conf_str_to_host_port_success_test),
         cmocka_unit_test (conf_str_to_host_port_no_port_test),
+        cmocka_unit_test (conf_str_to_host_ipv6_port_success_test),
+        cmocka_unit_test (conf_str_to_host_ipv6_port_no_port_test),
         cmocka_unit_test (conf_str_to_host_port_invalid_port_large_test),
         cmocka_unit_test (conf_str_to_host_port_invalid_port_0_test),
         cmocka_unit_test (tcti_socket_init_all_null_test),
