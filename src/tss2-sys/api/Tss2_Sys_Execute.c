@@ -25,10 +25,14 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
+#include <inttypes.h>
+
 #include "tss2_tpm2_types.h"
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 #include "util/tss2_endian.h"
+#define LOGMODULE sys
+#include "util/log.h"
 
 TSS2_RC Tss2_Sys_ExecuteAsync(TSS2_SYS_CONTEXT *sysContext)
 {
@@ -80,16 +84,25 @@ TSS2_RC Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout)
      * the TPM20_Header_Out in the context structure. No need to
      * unmarshal this stuff again.
      */
-     ctx->nextData = 0;
+    ctx->nextData = 0;
 
-     rval = Tss2_MU_TPM2_ST_Unmarshal(ctx->cmdBuffer,
+    rval = Tss2_MU_TPM2_ST_Unmarshal(ctx->cmdBuffer,
                                      ctx->maxCmdSize,
                                      &ctx->nextData,
                                      &ctx->rsp_header.tag);
-    if (rval)
+    if (rval) {
+        LOG_ERROR("Unmarshalling response tag. RC=%" PRIx32, rval);
         return rval;
+    }
 
-     rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer,
+    if (ctx->rsp_header.tag != TPM2_ST_SESSIONS && 
+        ctx->rsp_header.tag != TPM2_ST_NO_SESSIONS) {
+        LOG_ERROR("Malformed reponse: Invalid tag in response header: %" PRIx32,
+                  ctx->rsp_header.tag);
+        return TSS2_SYS_RC_MALFORMED_RESPONSE;
+    }
+
+    rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer,
                                      ctx->maxCmdSize,
                                      &ctx->nextData,
                                      &ctx->rsp_header.responseSize);
