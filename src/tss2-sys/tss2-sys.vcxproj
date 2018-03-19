@@ -158,10 +158,6 @@
     <ClCompile Include="api\Tss2_Sys_VerifySignature.c" />
     <ClCompile Include="api\Tss2_Sys_ZGen_2Phase.c" />
     <ClCompile Include="sysapi_util.c" />
-    <ClCompile Include="CompareSizedByteBuffer.c" />
-    <ClCompile Include="ConcatSizedByteBuffer.c" />
-    <ClCompile Include="GetDigestSize.c" />
-    <ClCompile Include="GetNumHandles.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{10d9862f-0e36-4acc-af19-930b00a88a98}</ProjectGuid>
