@@ -175,7 +175,7 @@ Esys_Certify_async(
     const TPMT_SIG_SCHEME *inScheme)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *objectHandleNode;
     RSRC_NODE_T *signHandleNode;
 

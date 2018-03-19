@@ -140,7 +140,7 @@ Esys_Vendor_TCG_Test_async(
     const TPM2B_DATA *inputData)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
 
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");

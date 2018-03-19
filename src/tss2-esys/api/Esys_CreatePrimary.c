@@ -203,7 +203,7 @@ Esys_CreatePrimary_async(
     const TPML_PCR_SELECTION *creationPCR)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *primaryHandleNode;
 
     if (esysContext == NULL) {

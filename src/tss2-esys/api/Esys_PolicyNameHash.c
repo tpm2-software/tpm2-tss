@@ -143,7 +143,7 @@ Esys_PolicyNameHash_async(
     const TPM2B_DIGEST *nameHash)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
 
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");

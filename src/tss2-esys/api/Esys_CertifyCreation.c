@@ -201,7 +201,7 @@ Esys_CertifyCreation_async(
     const TPMT_TK_CREATION *creationTicket)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *signHandleNode;
     RSRC_NODE_T *objectHandleNode;
 

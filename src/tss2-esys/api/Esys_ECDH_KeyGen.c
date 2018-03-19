@@ -140,7 +140,7 @@ Esys_ECDH_KeyGen_async(
     ESYS_TR shandle3)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *keyHandleNode;
 
     if (esysContext == NULL) {

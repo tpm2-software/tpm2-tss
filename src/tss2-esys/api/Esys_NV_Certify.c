@@ -198,7 +198,7 @@ Esys_NV_Certify_async(
     UINT16 offset)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *signHandleNode;
     RSRC_NODE_T *authHandleNode;
     RSRC_NODE_T *nvIndexNode;

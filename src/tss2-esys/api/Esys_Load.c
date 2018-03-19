@@ -161,7 +161,7 @@ Esys_Load_async(
     const TPM2B_PUBLIC *inPublic)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *parentHandleNode;
 
     if (esysContext == NULL) {

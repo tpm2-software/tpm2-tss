@@ -179,7 +179,7 @@ Esys_Duplicate_async(
     const TPMT_SYM_DEF_OBJECT *symmetricAlg)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *objectHandleNode;
     RSRC_NODE_T *newParentHandleNode;
 

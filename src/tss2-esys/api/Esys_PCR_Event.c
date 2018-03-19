@@ -149,7 +149,7 @@ Esys_PCR_Event_async(
     const TPM2B_EVENT *eventData)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *pcrHandleNode;
 
     if (esysContext == NULL) {

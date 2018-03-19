@@ -140,7 +140,7 @@ Esys_IncrementalSelfTest_async(
     const TPML_ALG *toTest)
 {
     TSS2_RC r;
-    TSS2L_SYS_AUTH_COMMAND auths = { 0 };
+    TSS2L_SYS_AUTH_COMMAND auths;
 
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
