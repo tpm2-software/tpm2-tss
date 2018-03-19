@@ -382,6 +382,12 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                                 );
     goto_if_error(r, "Error: ActivateCredential", error);
 
+    r = Esys_FlushContext(esys_context, primaryHandle_handle);
+    goto_if_error(r, "Error during FlushContext", error);
+
+    r = Esys_FlushContext(esys_context, loadedKeyHandle);
+    goto_if_error(r, "Error esys flush context", error);
+
     return 0;
 
  error:
