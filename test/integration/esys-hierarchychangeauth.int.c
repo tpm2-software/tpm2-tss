@@ -27,10 +27,8 @@
 
 #include "tss2_esys.h"
 
-#include "esys_types.h"
 #include "esys_iutil.h"
-#include "esys_mu.h"
-#define LOGMODULE esys
+#define LOGMODULE test
 #include "util/log.h"
 
 /*

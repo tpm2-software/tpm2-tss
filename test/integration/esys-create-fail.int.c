@@ -25,23 +25,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
 
-#define _GNU_SOURCE
-#include <getopt.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <signal.h>
-#include <stdint.h>
-
 #include "tss2_esys.h"
 
+#include "test-esapi.h"
+#include "esys_iutil.h"
 #define LOGMODULE test
 #include "util/log.h"
-#include "test.h"
-#include "sysapi_util.h"
-#include "esys_types.h"
-#include "esys_iutil.h"
-#include "test-esapi.h"
 
 /*
  * This test is intended to test password authentication.
