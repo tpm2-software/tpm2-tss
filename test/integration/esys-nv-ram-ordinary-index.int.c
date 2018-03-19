@@ -286,6 +286,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                            ESYS_TR_NONE,
                            &nvPublic,
                            &nvName);
+    goto_if_error(r, "Error: NV_ReadPublic", error);
 
     r = esys_GetResourceObject(esys_context, nvHandle_handle, &nvHandleNode);
     goto_if_error(r, "Error: nv get resource object", error);

@@ -130,6 +130,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                            &inPublic, &outsideInfo, &creationPCR,
                            &primaryHandle, &outPublic, &creationData,
                            &creationHash, &creationTicket);
+    goto_if_error(r, "Error: CreatePrimary", error);
 
     r = Esys_TR_SetAuth(esys_context, primaryHandle, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
