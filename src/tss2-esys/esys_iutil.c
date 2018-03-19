@@ -484,7 +484,6 @@ iesys_compute_encrypted_salt(ESYS_CONTEXT * esys_context,
                              TPM2B_ENCRYPTED_SECRET * encryptedSalt)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    TPM2B_PUBLIC pub;
     size_t keyHash_size = 0;
     size_t cSize = 0;
     if (tpmKeyNode != NULL) {
@@ -545,7 +544,6 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
     const uint8_t *cpBuffer;
     size_t cpBuffer_size;
     TPM2B_NONCE *encryptNonce = NULL;
-    size_t authHash_size = 0;
     TSS2_RC r = Tss2_Sys_GetCommandCode(esys_context->sys, &ccBuffer[0]);
     return_if_error(r, "Error: get command code");
     *decryptNonceIdx = 0;
@@ -775,7 +773,6 @@ iesys_compute_session_value(RSRC_NODE_T * session,
                             const TPM2B_NAME * name,
                             const TPM2B_AUTH * auth_value)
 {
-    TPM2B_NAME bound_entity;
     if (session == NULL)
         return;
 
@@ -1080,7 +1077,6 @@ iesys_check_response(ESYS_CONTEXT * esys_context)
     size_t rpBuffer_size;
     TSS2L_SYS_AUTH_RESPONSE rspAuths = {0};
     HASH_TAB_ITEM rp_hash_tab[3];
-    HASH_TAB_ITEM rp_hash_tab2[3];
     uint8_t rpHashNum = 0;
     r = Tss2_Sys_GetRspAuths(esys_context->sys, &rspAuths);
     return_if_error(r, "Error: GetRspAuths");
