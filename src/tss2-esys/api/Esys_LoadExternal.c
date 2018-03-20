@@ -161,6 +161,7 @@ Esys_LoadExternal_async(
     TSS2_RC r;
     TSS2L_SYS_AUTH_COMMAND auths;
 
+    /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -168,38 +169,40 @@ Esys_LoadExternal_async(
     r = iesys_check_sequence_async(esysContext);
     if (r != TSS2_RC_SUCCESS)
         return r;
-    r = check_session_feasability(shandle1, shandle2, shandle3, 0);
-    return_if_error(r, "Check session usage");
+    esysContext->state = _ESYS_STATE_INTERNALERROR;
 
+    /* Check and store input parameters */
+    r = check_session_feasability(shandle1, shandle2, shandle3, 0);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
     store_input_parameters(esysContext,
                 inPrivate,
                 inPublic,
                 hierarchy);
+
+    /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_LoadExternal_Prepare(esysContext->sys,
                 inPrivate,
                 inPublic,
                 hierarchy);
-    if (r != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error async LoadExternal");
-        return r;
-    }
-    r = init_session_tab(esysContext, shandle1, shandle2, shandle3);
-    return_if_error(r, "Initialize session resources");
+    return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
+    /* Calculate the cpHash Values */
+    r = init_session_tab(esysContext, shandle1, shandle2, shandle3);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Initialize session resources");
     iesys_compute_session_value(esysContext->session_tab[0], NULL, NULL);
     iesys_compute_session_value(esysContext->session_tab[1], NULL, NULL);
     iesys_compute_session_value(esysContext->session_tab[2], NULL, NULL);
-    r = iesys_gen_auths(esysContext, NULL, NULL, NULL, &auths);
-    return_if_error(r, "Error in computation of auth values");
 
+    /* Generate the auth values and set them in the SAPI command buffer */
+    r = iesys_gen_auths(esysContext, NULL, NULL, NULL, &auths);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Error in computation of auth values");
     esysContext->authsCount = auths.count;
     r = Tss2_Sys_SetCmdAuths(esysContext->sys, &auths);
-    if (r != TSS2_RC_SUCCESS) {
-        return r;
-    }
+    return_state_if_error(r, _ESYS_STATE_INIT, "SAPI error on SetCmdAuths");
 
+    /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_if_error(r, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -225,19 +228,23 @@ Esys_LoadExternal_finish(
     ESYS_TR *objectHandle)
 {
     LOG_TRACE("complete");
+    TSS2_RC r;
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
     }
+
+    /* Check for correct sequence and set sequence to irregular for now */
     if (esysContext->state != _ESYS_STATE_SENT) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r;
+    esysContext->state = _ESYS_STATE_INTERNALERROR;
     TPM2B_NAME name;
-    IESYS_RESOURCE *objectHandleRsrc = NULL;
     RSRC_NODE_T *objectHandleNode = NULL;
 
+
+    /* Allocate memory for response parameters */
     if (objectHandle == NULL) {
         LOG_ERROR("Handle objectHandle may not be NULL");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -249,17 +256,22 @@ Esys_LoadExternal_finish(
 
     objectHandleNode->rsrc.rsrcType = IESYSC_KEY_RSRC;
     objectHandleNode->rsrc.misc.rsrc_key_pub = *esysContext->in.LoadExternal.inPublic;
+
+    /*Receive the TPM response and handle resubmissions if necessary. */
     r = Tss2_Sys_ExecuteFinish(esysContext->sys, esysContext->timeout);
     if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) {
         LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32, r);
+        esysContext->state = _ESYS_STATE_SENT;
         goto error_cleanup;
     }
+    /* This block handle the resubmission of TPM commands given a certain set of
+     * TPM response codes. */
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
             "resubmission: %" PRIx32, r);
         if (esysContext->submissionCount >= _ESYS_MAX_SUBMISSIONS) {
-            LOG_WARNING("Maximum number of resubmissions has been reached.");
-            esysContext->state = _ESYS_STATE_ERRORRESPONSE;
+            LOG_WARNING("Maximum number of (re)submissions has been reached.");
+            esysContext->state = _ESYS_STATE_INIT;
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
@@ -271,22 +283,32 @@ Esys_LoadExternal_finish(
                 esysContext->in.LoadExternal.inPublic,
                 esysContext->in.LoadExternal.hierarchy);
         if (r != TSS2_RC_SUCCESS) {
-            LOG_ERROR("Error attempting to resubmit");
+            LOG_WARNING("Error attempting to resubmit");
+            /* We do not set esysContext->state here but inherit the most recent
+             * state of the _async function. */
             goto error_cleanup;
         }
         r = TSS2_ESYS_RC_TRY_AGAIN;
+        LOG_DEBUG("Resubmission initiated and returning RC_TRY_AGAIN.");
         goto error_cleanup;
     }
-    if (r != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error finish (ExecuteFinish) LoadExternal");
+    /* The following is the "regular error" handling. */
+    if (r != TSS2_RC_SUCCESS && (r & TSS2_RC_LAYER_MASK) == 0) {
+        LOG_WARNING("Received TPM Error");
+        esysContext->state = _ESYS_STATE_INIT;
+        goto error_cleanup;
+    } else if (r != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Received a non-TPM Error");
+        esysContext->state = _ESYS_STATE_INTERNALERROR;
         goto error_cleanup;
     }
+
     /*
      * Now the verification of the response (hmac check) and if necessary the
-     * parameter decryption have to be done
+     * parameter decryption have to be done.
      */
     r = iesys_check_response(esysContext);
-    goto_if_error(r, "Error: check response",
+    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Error: check response",
                       error_cleanup);
     /*
      * After the verification of the response we call the complete function
@@ -295,22 +317,23 @@ Esys_LoadExternal_finish(
     r = Tss2_Sys_LoadExternal_Complete(esysContext->sys,
                 &objectHandleNode->rsrc.handle,
                 &name);
-    if (r != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error finish (ExecuteFinish) LoadExternal: %" PRIx32, r);
-        esysContext->state = _ESYS_STATE_ERRORRESPONSE;
-        goto error_cleanup;;
-    }
+    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
+                        " unmarshalling" ,error_cleanup);
 
-    if (!iesys_compare_name(esysContext->in.LoadExternal.inPublic, &name)) {
-        goto_error(r, TSS2_ESYS_RC_MALFORMED_RESPONSE,
-                      "in Public name not equal name in response", error_cleanup);
+     /* check name against inPublic */
+     if (!iesys_compare_name(esysContext->in.LoadExternal.inPublic, &name)) {
+         goto_error(r, TSS2_ESYS_RC_MALFORMED_RESPONSE,
+                       "in Public name not equal name in response", error_cleanup);
     }
     objectHandleNode->rsrc.name = name;
-    esysContext->state = _ESYS_STATE_FINISHED;
+    esysContext->state = _ESYS_STATE_INIT;
+    LOG_DEBUG("context=%p, objectHandle=%p",
+              esysContext, objectHandle);
 
-    return r;
+    return TSS2_RC_SUCCESS;
 
 error_cleanup:
     Esys_TR_Close(esysContext, objectHandle);
+
     return r;
 }
