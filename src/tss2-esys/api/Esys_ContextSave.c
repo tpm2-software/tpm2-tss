@@ -123,6 +123,7 @@ Esys_ContextSave_async(
     TSS2_RC r;
     RSRC_NODE_T *saveHandleNode;
 
+    /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -130,19 +131,20 @@ Esys_ContextSave_async(
     r = iesys_check_sequence_async(esysContext);
     if (r != TSS2_RC_SUCCESS)
         return r;
-
+    esysContext->state = _ESYS_STATE_INTERNALERROR;
     store_input_parameters(esysContext, saveHandle);
+
+    /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, saveHandle, &saveHandleNode);
-    if (r != TPM2_RC_SUCCESS)
-        return r;
+    return_state_if_error(r, _ESYS_STATE_INIT, "saveHandle unknown.");
+
+    /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_ContextSave_Prepare(esysContext->sys,
                 (saveHandleNode == NULL) ? TPM2_RH_NULL : saveHandleNode->rsrc.handle);
-    if (r != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error async ContextSave");
-        return r;
-    }
+    return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
+    /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_if_error(r, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -170,54 +172,71 @@ Esys_ContextSave_finish(
 {
     TPMS_CONTEXT *lcontext = NULL;
     LOG_TRACE("complete");
+    TSS2_RC r;
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
     }
+
+    /* Check for correct sequence and set sequence to irregular for now */
     if (esysContext->state != _ESYS_STATE_SENT) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r;
+    esysContext->state = _ESYS_STATE_INTERNALERROR;
+
+    /* Allocate memory for response parameters */
     lcontext = calloc(sizeof(TPMS_CONTEXT), 1);
     if (lcontext == NULL) {
         return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
     }
+
+    /*Receive the TPM response and handle resubmissions if necessary. */
     r = Tss2_Sys_ExecuteFinish(esysContext->sys, esysContext->timeout);
     if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) {
         LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32, r);
+        esysContext->state = _ESYS_STATE_SENT;
         goto error_cleanup;
     }
+    /* This block handle the resubmission of TPM commands given a certain set of
+     * TPM response codes. */
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
             "resubmission: %" PRIx32, r);
         if (esysContext->submissionCount >= _ESYS_MAX_SUBMISSIONS) {
-            LOG_WARNING("Maximum number of resubmissions has been reached.");
-            esysContext->state = _ESYS_STATE_ERRORRESPONSE;
+            LOG_WARNING("Maximum number of (re)submissions has been reached.");
+            esysContext->state = _ESYS_STATE_INIT;
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
         r = Esys_ContextSave_async(esysContext,
                 esysContext->in.ContextSave.saveHandle);
         if (r != TSS2_RC_SUCCESS) {
-            LOG_ERROR("Error attempting to resubmit");
+            LOG_WARNING("Error attempting to resubmit");
+            /* We do not set esysContext->state here but inherit the most recent
+             * state of the _async function. */
             goto error_cleanup;
         }
         r = TSS2_ESYS_RC_TRY_AGAIN;
+        LOG_DEBUG("Resubmission initiated and returning RC_TRY_AGAIN.");
         goto error_cleanup;
     }
-    if (r != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error finish (ExecuteFinish) ContextSave");
+    /* The following is the "regular error" handling. */
+    if (r != TSS2_RC_SUCCESS && (r & TSS2_RC_LAYER_MASK) == 0) {
+        LOG_WARNING("Received TPM Error");
+        esysContext->state = _ESYS_STATE_INIT;
+        goto error_cleanup;
+    } else if (r != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Received a non-TPM Error");
+        esysContext->state = _ESYS_STATE_INTERNALERROR;
         goto error_cleanup;
     }
     r = Tss2_Sys_ContextSave_Complete(esysContext->sys,
                 lcontext);
-    if (r != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error finish (ExecuteFinish) ContextSave: %" PRIx32, r);
-        esysContext->state = _ESYS_STATE_ERRORRESPONSE;
-        goto error_cleanup;;
-    }
+    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
+                        " unmarshalling" ,error_cleanup);
 
+    /* ESYS Special Handling Code: Extend the  context with metadata of the object */
     IESYS_CONTEXT_DATA esyscontextData;
     RSRC_NODE_T *esys_object;
     size_t offset = 0;
@@ -251,11 +270,14 @@ Esys_ContextSave_finish(
     else
         SAFE_FREE(lcontext);
 
-    esysContext->state = _ESYS_STATE_FINISHED;
+    esysContext->state = _ESYS_STATE_INIT;
+    LOG_DEBUG("context=%p, context=%p",
+              esysContext, context);
 
-    return r;
+    return TSS2_RC_SUCCESS;
 
 error_cleanup:
     SAFE_FREE(lcontext);
+
     return r;
 }

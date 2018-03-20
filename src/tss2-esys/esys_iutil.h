@@ -49,10 +49,24 @@ extern "C" {
         return r;  \
     }
 
+#define return_state_if_error(r,s,msg)      \
+    if (r != TSS2_RC_SUCCESS) { \
+        LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
+        esysContext->state = s; \
+        return r;  \
+    }
+
 #define return_error(r,msg) \
     { \
         LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
         return r;  \
+    }
+
+#define goto_state_if_error(r,s,msg,label) \
+    if (r != TSS2_RC_SUCCESS) { \
+        LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
+        esysContext->state = s; \
+        goto label;  \
     }
 
 #define goto_if_error(r,msg,label) \
@@ -62,7 +76,7 @@ extern "C" {
     }
 
 #define goto_error(r,v,msg,label) \
-    { r = v;                                                                \
+    { r = v;  \
       LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
       goto label; \
     }

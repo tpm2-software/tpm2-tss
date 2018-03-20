@@ -909,8 +909,6 @@ iesys_check_sequence_async(ESYS_CONTEXT * esys_context)
     }
 
     if (esys_context->state != _ESYS_STATE_INIT &&
-        esys_context->state != _ESYS_STATE_ERRORRESPONSE &&
-        esys_context->state != _ESYS_STATE_FINISHED &&
         esys_context->state != _ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;

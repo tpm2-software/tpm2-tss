@@ -164,6 +164,7 @@ Esys_NV_DefineSpace_async(
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *authHandleNode;
 
+    /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -171,51 +172,54 @@ Esys_NV_DefineSpace_async(
     r = iesys_check_sequence_async(esysContext);
     if (r != TSS2_RC_SUCCESS)
         return r;
+    esysContext->state = _ESYS_STATE_INTERNALERROR;
 
     /* Prevent creation of undeletable NV space */
     if (publicInfo != NULL &&
         (publicInfo->nvPublic.attributes & TPMA_NV_POLICY_DELETE) != 0 &&
         publicInfo->nvPublic.authPolicy.size == 0) {
         r = TSS2_ESYS_RC_BAD_VALUE;
-        LOG_ERROR("Preventing creation of undeletable NV index.");
+        LOG_ERROR("Error (async) NV_DefineSpace: %" PRIx32, r);
         esysContext->state = _ESYS_STATE_INIT;
         return r;
     }
-    r = check_session_feasability(shandle1, shandle2, shandle3, 1);
-    return_if_error(r, "Check session usage");
 
+    /* Check and store input parameters */
+    r = check_session_feasability(shandle1, shandle2, shandle3, 1);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
     store_input_parameters(esysContext, authHandle,
                 auth,
                 publicInfo);
+
+    /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, authHandle, &authHandleNode);
-    if (r != TPM2_RC_SUCCESS)
-        return r;
+    return_state_if_error(r, _ESYS_STATE_INIT, "authHandle unknown.");
+
+    /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_NV_DefineSpace_Prepare(esysContext->sys,
                 (authHandleNode == NULL) ? TPM2_RH_NULL : authHandleNode->rsrc.handle,
                 auth,
                 publicInfo);
-    if (r != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error async NV_DefineSpace");
-        return r;
-    }
-    r = init_session_tab(esysContext, shandle1, shandle2, shandle3);
-    return_if_error(r, "Initialize session resources");
+    return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
+    /* Calculate the cpHash Values */
+    r = init_session_tab(esysContext, shandle1, shandle2, shandle3);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Initialize session resources");
     iesys_compute_session_value(esysContext->session_tab[0],
                 &authHandleNode->rsrc.name, &authHandleNode->auth);
     iesys_compute_session_value(esysContext->session_tab[1], NULL, NULL);
     iesys_compute_session_value(esysContext->session_tab[2], NULL, NULL);
-    r = iesys_gen_auths(esysContext, authHandleNode, NULL, NULL, &auths);
-    return_if_error(r, "Error in computation of auth values");
 
+    /* Generate the auth values and set them in the SAPI command buffer */
+    r = iesys_gen_auths(esysContext, authHandleNode, NULL, NULL, &auths);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Error in computation of auth values");
     esysContext->authsCount = auths.count;
     r = Tss2_Sys_SetCmdAuths(esysContext->sys, &auths);
-    if (r != TSS2_RC_SUCCESS) {
-        return r;
-    }
+    return_state_if_error(r, _ESYS_STATE_INIT, "SAPI error on SetCmdAuths");
 
+    /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_if_error(r, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -241,18 +245,22 @@ Esys_NV_DefineSpace_finish(
     ESYS_TR *nvHandle)
 {
     LOG_TRACE("complete");
+    TSS2_RC r;
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
     }
+
+    /* Check for correct sequence and set sequence to irregular for now */
     if (esysContext->state != _ESYS_STATE_SENT) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r;
-    IESYS_RESOURCE *nvHandleRsrc = NULL;
+    esysContext->state = _ESYS_STATE_INTERNALERROR;
     RSRC_NODE_T *nvHandleNode = NULL;
 
+
+    /* Allocate memory for response parameters */
     if (nvHandle == NULL) {
         LOG_ERROR("Handle nvHandle may not be NULL");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -262,17 +270,22 @@ Esys_NV_DefineSpace_finish(
     if (r != TSS2_RC_SUCCESS)
         return r;
 
+
+    /*Receive the TPM response and handle resubmissions if necessary. */
     r = Tss2_Sys_ExecuteFinish(esysContext->sys, esysContext->timeout);
     if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) {
         LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32, r);
+        esysContext->state = _ESYS_STATE_SENT;
         goto error_cleanup;
     }
+    /* This block handle the resubmission of TPM commands given a certain set of
+     * TPM response codes. */
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
             "resubmission: %" PRIx32, r);
         if (esysContext->submissionCount >= _ESYS_MAX_SUBMISSIONS) {
-            LOG_WARNING("Maximum number of resubmissions has been reached.");
-            esysContext->state = _ESYS_STATE_ERRORRESPONSE;
+            LOG_WARNING("Maximum number of (re)submissions has been reached.");
+            esysContext->state = _ESYS_STATE_INIT;
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
@@ -284,39 +297,47 @@ Esys_NV_DefineSpace_finish(
                 esysContext->in.NV_DefineSpace.auth,
                 esysContext->in.NV_DefineSpace.publicInfo);
         if (r != TSS2_RC_SUCCESS) {
-            LOG_ERROR("Error attempting to resubmit");
+            LOG_WARNING("Error attempting to resubmit");
+            /* We do not set esysContext->state here but inherit the most recent
+             * state of the _async function. */
             goto error_cleanup;
         }
         r = TSS2_ESYS_RC_TRY_AGAIN;
+        LOG_DEBUG("Resubmission initiated and returning RC_TRY_AGAIN.");
         goto error_cleanup;
     }
-    if (r != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error finish (ExecuteFinish) NV_DefineSpace");
+    /* The following is the "regular error" handling. */
+    if (r != TSS2_RC_SUCCESS && (r & TSS2_RC_LAYER_MASK) == 0) {
+        LOG_WARNING("Received TPM Error");
+        esysContext->state = _ESYS_STATE_INIT;
+        goto error_cleanup;
+    } else if (r != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Received a non-TPM Error");
+        esysContext->state = _ESYS_STATE_INTERNALERROR;
         goto error_cleanup;
     }
+
     /*
      * Now the verification of the response (hmac check) and if necessary the
-     * parameter decryption have to be done
+     * parameter decryption have to be done.
      */
     r = iesys_check_response(esysContext);
-    goto_if_error(r, "Error: check response",
+    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Error: check response",
                       error_cleanup);
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
     r = Tss2_Sys_NV_DefineSpace_Complete(esysContext->sys);
-    if (r != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error finish (ExecuteFinish) NV_DefineSpace: %" PRIx32, r);
-        esysContext->state = _ESYS_STATE_ERRORRESPONSE;
-        goto error_cleanup;;
-    }
+    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
+                        " unmarshalling" ,error_cleanup);
+    /* Update the meta data of the ESYS_TR object */
     nvHandleNode->rsrc.rsrcType = IESYSC_NV_RSRC;
     r = iesys_nv_get_name(esysContext->in.NV_DefineSpace.publicInfo,
                           &nvHandleNode->rsrc.name);
     if (r != TSS2_RC_SUCCESS) {
         LOG_ERROR("Error finish (ExecuteFinish) NV_DefineSpace: %" PRIx32, r);
-        esysContext->state = _ESYS_STATE_ERRORRESPONSE;
+        esysContext->state = _ESYS_STATE_INTERNALERROR;
         goto error_cleanup;
     }
     nvHandleNode->rsrc.handle =
@@ -324,11 +345,14 @@ Esys_NV_DefineSpace_finish(
     nvHandleNode->rsrc.misc.rsrc_nv_pub =
         *esysContext->in.NV_DefineSpace.publicInfo;
     nvHandleNode->auth = *esysContext->in.NV_DefineSpace.auth;
-    esysContext->state = _ESYS_STATE_FINISHED;
+    esysContext->state = _ESYS_STATE_INIT;
+    LOG_DEBUG("context=%p, nvHandle=%p",
+              esysContext, nvHandle);
 
-    return r;
+    return TSS2_RC_SUCCESS;
 
 error_cleanup:
     Esys_TR_Close(esysContext, nvHandle);
+
     return r;
 }

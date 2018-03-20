@@ -116,6 +116,7 @@ Esys_Startup_async(
 {
     TSS2_RC r;
 
+    /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -123,17 +124,17 @@ Esys_Startup_async(
     r = iesys_check_sequence_async(esysContext);
     if (r != TSS2_RC_SUCCESS)
         return r;
-
+    esysContext->state = _ESYS_STATE_INTERNALERROR;
     store_input_parameters(esysContext,
                 startupType);
+
+    /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_Startup_Prepare(esysContext->sys,
                 startupType);
-    if (r != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error async Startup");
-        return r;
-    }
+    return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
+    /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_if_error(r, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -157,49 +158,65 @@ Esys_Startup_finish(
     ESYS_CONTEXT *esysContext)
 {
     LOG_TRACE("complete");
+    TSS2_RC r;
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
     }
+
+    /* Check for correct sequence and set sequence to irregular for now */
     if (esysContext->state != _ESYS_STATE_SENT) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    TSS2_RC r;
+    esysContext->state = _ESYS_STATE_INTERNALERROR;
+
+    /*Receive the TPM response and handle resubmissions if necessary. */
     r = Tss2_Sys_ExecuteFinish(esysContext->sys, esysContext->timeout);
     if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) {
         LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32, r);
+        esysContext->state = _ESYS_STATE_SENT;
         return r;
     }
+    /* This block handle the resubmission of TPM commands given a certain set of
+     * TPM response codes. */
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
             "resubmission: %" PRIx32, r);
         if (esysContext->submissionCount >= _ESYS_MAX_SUBMISSIONS) {
-            LOG_WARNING("Maximum number of resubmissions has been reached.");
-            esysContext->state = _ESYS_STATE_ERRORRESPONSE;
+            LOG_WARNING("Maximum number of (re)submissions has been reached.");
+            esysContext->state = _ESYS_STATE_INIT;
             return r;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
         r = Esys_Startup_async(esysContext,
                 esysContext->in.Startup.startupType);
         if (r != TSS2_RC_SUCCESS) {
-            LOG_ERROR("Error attempting to resubmit");
+            LOG_WARNING("Error attempting to resubmit");
+            /* We do not set esysContext->state here but inherit the most recent
+             * state of the _async function. */
             return r;
         }
         r = TSS2_ESYS_RC_TRY_AGAIN;
+        LOG_DEBUG("Resubmission initiated and returning RC_TRY_AGAIN.");
         return r;
     }
-    if (r != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error finish (ExecuteFinish) Startup");
+    /* The following is the "regular error" handling. */
+    if (r != TSS2_RC_SUCCESS && (r & TSS2_RC_LAYER_MASK) == 0) {
+        LOG_WARNING("Received TPM Error");
+        esysContext->state = _ESYS_STATE_INIT;
+        return r;
+    } else if (r != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Received a non-TPM Error");
+        esysContext->state = _ESYS_STATE_INTERNALERROR;
         return r;
     }
     r = Tss2_Sys_Startup_Complete(esysContext->sys);
-    if (r != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error finish (ExecuteFinish) Startup: %" PRIx32, r);
-        esysContext->state = _ESYS_STATE_ERRORRESPONSE;
-        return r;;
-    }
-    esysContext->state = _ESYS_STATE_FINISHED;
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
+                        " unmarshalling" );
+    esysContext->state = _ESYS_STATE_INIT;
+    LOG_DEBUG("context=%p",
+              esysContext);
 
-    return r;
+    return TSS2_RC_SUCCESS;
 }
