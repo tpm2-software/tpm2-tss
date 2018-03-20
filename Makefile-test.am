@@ -62,7 +62,8 @@ TESTS_UNIT  = \
 if ESAPI
 TESTS_UNIT += \
     test/unit/esys-context-null \
-    test/unit/esys-resubmissions
+    test/unit/esys-resubmissions \
+    test/unit/esys-sequence-finish
 endif ESAPI
 endif #UNIT
 
@@ -214,6 +215,11 @@ test_unit_esys_resubmissions_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_resubmissions_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_resubmissions_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_unit_esys_resubmissions_SOURCES = test/unit/esys-resubmissions.c
+
+test_unit_esys_sequence_finish_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_esys_sequence_finish_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_esys_sequence_finish_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_unit_esys_sequence_finish_SOURCES = test/unit/esys-sequence-finish.c
 endif # ESAPI
 endif # UNIT
 
