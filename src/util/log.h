@@ -38,6 +38,7 @@ typedef enum {
 
 static const char *log_strings[] COMPILER_ATTR(unused) = {
     "none",
+    "(unused)",
     "ERROR",
     "WARNING",
     "info",
