@@ -28,7 +28,6 @@
 #include <gcrypt.h>
 
 #include "tss2_esys.h"
-#include "sysapi_util.h"
 
 #include "esys_crypto.h"
 #include "esys_iutil.h"
