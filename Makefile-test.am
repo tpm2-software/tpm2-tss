@@ -62,6 +62,7 @@ TESTS_UNIT  = \
 if ESAPI
 TESTS_UNIT += \
     test/unit/esys-context-null \
+    test/unit/esys-default-tcti \
     test/unit/esys-resubmissions \
     test/unit/esys-sequence-finish
 endif ESAPI
@@ -210,6 +211,15 @@ test_unit_esys_context_null_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_context_null_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_context_null_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_unit_esys_context_null_SOURCES = test/unit/esys-context-null.c
+
+test_unit_esys_default_tcti_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_esys_default_tcti_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_esys_default_tcti_LDFLAGS = \
+        -Wl,--wrap=dlopen -Wl,-wrap=dlclose -Wl,-wrap=dlsym \
+        -Wl,--wrap=Tss2_Tcti_Device_Init \
+        -Wl,--wrap=Tss2_Tcti_Mssim_Init
+test_unit_esys_default_tcti_SOURCES = test/unit/esys-default-tcti.c \
+        src/tss2-esys/esys_tcti_default.c src/tss2-esys/esys_tcti_default.h
 
 test_unit_esys_resubmissions_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_resubmissions_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
