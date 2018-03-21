@@ -78,17 +78,20 @@ AM_CONDITIONAL([ESAPI], [test "x$enable_esapi" != xno])
 
 AC_ARG_WITH([tctidefaultmodule],
             [AS_HELP_STRING([--with-tctidefaultmodule],
-                            [The default tcti module for an Esys context.])],
-            [],
-            [with_tctidefaultmodule=Mssim])
-AC_SUBST([TCTI_DEFAULT_MODULE], [$with_tctidefaultmodule])
+[The default TCTI module for ESAPI. (Default: libtss2-tcti-default.so])],
+            [AC_DEFINE_UNQUOTED([ESYS_TCTI_DEFAULT_MODULE],
+                                [$with_tctidefaultmodule],
+                                ["The default TCTI library file"])],
+            [])
 
 AC_ARG_WITH([tctidefaultconfig],
             [AS_HELP_STRING([--with-tctidefaultconfig],
                             [The default tcti module's configuration.])],
-            [],
-            [with_tctidefaultconfig="tcp://127.0.0.1:2321"])
-AC_SUBST([TCTI_DEFAULT_CONFIG], [$with_tctidefaultconfig])
+            [AC_DEFINE_UNQUOTED([ESYS_TCTI_DEFAULT_CONFIG],
+                                [$with_tctidefaultconfig],
+                                ["The default TCTIs configuration string"])],
+            [])
+
 #
 # simulator binary
 #
