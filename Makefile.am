@@ -158,12 +158,10 @@ lib_LTLIBRARIES += $(libtss2_esys)
 nodist_pkgconfig_DATA += lib/tss2-esys.pc
 EXTRA_DIST += lib/tss2-esys.pc.in
 
-src_tss2_esys_libtss2_esys_la_CFLAGS  = $(AM_CFLAGS) -I$(srcdir)/src/tss2-esys \
-    -DESYS_TCTI_DEFAULT_MODULE=$(TCTI_DEFAULT_MODULE) \
-    -DESYS_TCTI_DEFAULT_CONFIG=$(TCTI_DEFAULT_CONFIG)
+src_tss2_esys_libtss2_esys_la_CFLAGS  = $(AM_CFLAGS) -I$(srcdir)/src/tss2-esys
 src_tss2_esys_libtss2_esys_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) \
     $(libtss2_tcti_device) $(libtss2_tcti_mssim) $(libutil)
-src_tss2_esys_libtss2_esys_la_LDFLAGS = $(AM_LDFLAGS)  -lgcrypt
+src_tss2_esys_libtss2_esys_la_LDFLAGS = $(AM_LDFLAGS) -ldl -lgcrypt
 src_tss2_esys_libtss2_esys_la_SOURCES = $(TSS2_ESYS_SRC)
 
 endif #ESAPI
