@@ -140,3 +140,38 @@ parse_header (
     }
     return rc;
 }
+
+TSS2_RC
+header_marshal (
+    const tpm_header_t *header,
+    uint8_t *buf)
+{
+    TSS2_RC rc;
+    size_t offset = 0;
+
+    LOG_TRACE ("Parsing header from buffer: 0x%" PRIxPTR, (uintptr_t)buf);
+    rc = Tss2_MU_TPM2_ST_Marshal (header->tag,
+                                  buf,
+                                  TPM_HEADER_SIZE,
+                                  &offset);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR ("Failed to marshal tag.");
+        return rc;
+    }
+    rc = Tss2_MU_UINT32_Marshal (header->size,
+                                 buf,
+                                 TPM_HEADER_SIZE,
+                                 &offset);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR ("Failed to marshal command size.");
+        return rc;
+    }
+    rc = Tss2_MU_UINT32_Marshal (header->code,
+                                 buf,
+                                 TPM_HEADER_SIZE,
+                                 &offset);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR ("Failed to marshal command code.");
+    }
+    return rc;
+}
