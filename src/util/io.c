@@ -149,6 +149,10 @@ socket_connect (
     struct sockaddr_in sockaddr = { 0 };
     int ret = 0;
 
+    if (hostname == NULL || sock == NULL) {
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+
     LOG_DEBUG ("Creating AF_INET stream socket");
     *sock = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (*sock == -1) {
