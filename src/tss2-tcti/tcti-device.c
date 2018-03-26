@@ -131,9 +131,13 @@ tcti_device_receive (
                      *response_size, tcti_intel->header.size);
         return TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
     }
+    rc = header_marshal (&tcti_intel->header, response_buffer);
+    if (rc != TSS2_RC_SUCCESS) {
+        return rc;
+    }
     /* Read the rest of the response, minus the header that we already jave. */
     size = read_all (tcti_intel->devFile,
-                     response_buffer,
+                     &response_buffer [TPM_HEADER_SIZE],
                      tcti_intel->header.size - TPM_HEADER_SIZE);
     if (size < 0) {
         LOG_WARNING ("Failed to read response body.");

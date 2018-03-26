@@ -10,6 +10,21 @@
 #include "tss2_tcti_device.h"
 #include "tss2-tcti/tcti.h"
 
+/*
+ * Size of the TPM2 buffer used in these tests. In some cases this will be
+ * the command sent (transmit tests) and in others it's used as the response
+ * buffer returned by the TCTI. The only field used by the TCTI is the size
+ * field.
+ */
+#define BUF_SIZE 20
+static uint8_t tpm2_buf [BUF_SIZE] = {
+    0x80, 0x02, /* TAG */
+    0x00, 0x00, 0x00, 0x14, /* size (BUF_SIZE) */
+    0x00, 0x00, 0x00, 0x00, /* rc (success) */
+    0xde, 0xad, 0xbe, 0xef, /* junk data */
+    0xca, 0xfe, 0xba, 0xbe,
+    0xfe, 0xef
+};
 /**
  * When passed all NULL values ensure that we get back the expected RC
  * indicating bad values.
@@ -48,14 +63,18 @@ __wrap_read (int fd, void *buf, size_t count)
 ssize_t
 __wrap_write (int fd, const void *buffer, size_t buffer_size)
 {
-    return mock_type (ssize_t);
+    ssize_t ret = mock_type (ssize_t);
+    uint8_t *buf_out = mock_type (uint8_t*);
+
+    memcpy (buf_out, buffer, ret);
+    return ret;
 }
 
 typedef struct {
     TSS2_TCTI_CONTEXT *ctx;
-    uint8_t *buffer;
     size_t   buffer_size;
     size_t   data_size;
+    uint8_t  buffer [TPM_HEADER_SIZE * 2];
 } data_t;
 /* Setup functions to create the context for the device TCTI */
 static int
@@ -77,30 +96,6 @@ tcti_device_setup (void **state)
 }
 
 static int
-tcti_device_setup_with_command (void **state)
-{
-    TSS2_RC rc;
-    data_t *data;
-    size_t index = 0;
-
-    data = malloc (sizeof (data_t));
-    assert_non_null (data);
-    tcti_device_setup ((void**)&data->ctx);
-    data->buffer_size = 1024;
-    data->data_size   = 512;
-    data->buffer = malloc (data->buffer_size);
-    rc = Tss2_MU_TPM2_ST_Marshal (TPM2_ST_NO_SESSIONS, data->buffer, data->buffer_size, &index);
-    assert_true (rc == TSS2_RC_SUCCESS);
-    rc = Tss2_MU_UINT32_Marshal (data->data_size, data->buffer, data->buffer_size, &index);
-    assert_true (rc == TSS2_RC_SUCCESS);
-    rc = Tss2_MU_TPM2_CC_Marshal (TPM2_CC_Create, data->buffer, data->buffer_size, &index);
-    assert_true (rc == TSS2_RC_SUCCESS);
-
-    *state = data;
-    return 0;
-}
-
-static int
 tcti_device_teardown (void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
@@ -110,15 +105,6 @@ tcti_device_teardown (void **state)
 
     return 0;
 
-}
-static int
-tcti_device_teardown_with_data (void **state)
-{
-    data_t *data = *state;
-
-    tcti_device_teardown ((void**)&data->ctx);
-    free (data);
-    return 0;
 }
 /*
  */
@@ -152,49 +138,57 @@ tcti_device_receive_null_size_test (void **state)
 static void
 tcti_device_receive_one_call_success (void **state)
 {
-    data_t *data = *state;
+    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (ctx);
     TSS2_RC rc;
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (data->ctx);
+    /* output buffer for response */
+    uint8_t buf_out [BUF_SIZE + 5] = { 0 };
+    size_t size = BUF_SIZE + 5;
 
     /* Keep state machine check in `receive` from returning error. */
     tcti_intel->state = TCTI_STATE_RECEIVE;
     will_return (__wrap_read, TPM_HEADER_SIZE);
-    will_return (__wrap_read, data->buffer);
-    will_return (__wrap_read, data->data_size - TPM_HEADER_SIZE);
-    will_return (__wrap_read, &data->buffer [TPM_HEADER_SIZE]);
-    rc = Tss2_Tcti_Receive (data->ctx,
-                            &data->buffer_size,
-                            data->buffer,
+    will_return (__wrap_read, tpm2_buf);
+    will_return (__wrap_read, BUF_SIZE - TPM_HEADER_SIZE);
+    will_return (__wrap_read, &tpm2_buf [TPM_HEADER_SIZE]);
+    rc = Tss2_Tcti_Receive (ctx,
+                            &size,
+                            buf_out,
                             TSS2_TCTI_TIMEOUT_BLOCK);
     assert_true (rc == TSS2_RC_SUCCESS);
-    assert_int_equal (data->data_size, data->buffer_size);
+    assert_int_equal (BUF_SIZE, size);
+    assert_memory_equal (tpm2_buf, buf_out, size);
 }
 static void
 tcti_device_receive_two_call_success (void **state)
 {
-    data_t *data = *state;
+    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (ctx);
     TSS2_RC rc;
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (data->ctx);
+    /* output buffer for response */
+    uint8_t buf_out [BUF_SIZE + 5] = { 0 };
     size_t size = 0;
 
     /* Keep state machine check in `receive` from returning error. */
     tcti_intel->state = TCTI_STATE_RECEIVE;
     will_return (__wrap_read, TPM_HEADER_SIZE);
-    will_return (__wrap_read, data->buffer);
-    will_return (__wrap_read, data->data_size - TPM_HEADER_SIZE);
-    will_return (__wrap_read, &data->buffer [TPM_HEADER_SIZE]);
-    rc = Tss2_Tcti_Receive (data->ctx,
+    will_return (__wrap_read, tpm2_buf);
+    will_return (__wrap_read, BUF_SIZE - TPM_HEADER_SIZE);
+    will_return (__wrap_read, &tpm2_buf [TPM_HEADER_SIZE]);
+    rc = Tss2_Tcti_Receive (ctx,
                             &size,
                             NULL,
                             TSS2_TCTI_TIMEOUT_BLOCK);
-    printf ("got size: %zd", size);
-    assert_int_equal (size, data->data_size);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    rc = Tss2_Tcti_Receive (data->ctx,
-                            &data->buffer_size,
-                            data->buffer,
+    assert_int_equal (size, BUF_SIZE);
+    assert_true (size < BUF_SIZE + 5);
+    rc = Tss2_Tcti_Receive (ctx,
+                            &size,
+                            buf_out,
                             TSS2_TCTI_TIMEOUT_BLOCK);
     assert_true (rc == TSS2_RC_SUCCESS);
+    assert_int_equal (size, BUF_SIZE);
+    assert_memory_equal (tpm2_buf, buf_out, size);
 }
 /*
  * A test case for a successful call to the transmit function. This requires
@@ -204,14 +198,18 @@ tcti_device_receive_two_call_success (void **state)
 static void
 tcti_device_transmit_success (void **state)
 {
-    data_t *data = *state;
+    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
     TSS2_RC rc;
+    /* output buffer for response */
+    uint8_t buf_out [BUF_SIZE] = { 0 };
 
-    will_return (__wrap_write, data->buffer_size);
-    rc = Tss2_Tcti_Transmit (data->ctx,
-                             data->buffer_size,
-                             data->buffer);
+    will_return (__wrap_write, BUF_SIZE);
+    will_return (__wrap_write, buf_out);
+    rc = Tss2_Tcti_Transmit (ctx,
+                             BUF_SIZE,
+                             tpm2_buf);
     assert_true (rc == TSS2_RC_SUCCESS);
+    assert_memory_equal (tpm2_buf, buf_out, BUF_SIZE);
 }
 
 int
@@ -224,14 +222,14 @@ main(int argc, char* argv[])
                                          tcti_device_setup,
                                          tcti_device_teardown),
         cmocka_unit_test_setup_teardown (tcti_device_receive_one_call_success,
-                                  tcti_device_setup_with_command,
-                                  tcti_device_teardown),
+                                         tcti_device_setup,
+                                         tcti_device_teardown),
         cmocka_unit_test_setup_teardown (tcti_device_receive_two_call_success,
-                                         tcti_device_setup_with_command,
-                                         tcti_device_teardown_with_data),
+                                         tcti_device_setup,
+                                         tcti_device_teardown),
         cmocka_unit_test_setup_teardown (tcti_device_transmit_success,
-                                  tcti_device_setup_with_command,
-                                  tcti_device_teardown_with_data),
+                                         tcti_device_setup,
+                                         tcti_device_teardown),
     };
     return cmocka_run_group_tests (tests, NULL, NULL);
 }

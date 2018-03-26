@@ -173,5 +173,11 @@ TSS2_RC
 parse_header (
     const uint8_t *buf,
     tpm_header_t *header);
+/*
+ */
+TSS2_RC
+header_marshal (
+    const tpm_header_t *header,
+    uint8_t *buf);
 
 #endif
