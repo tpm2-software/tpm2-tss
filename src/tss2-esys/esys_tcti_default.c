@@ -7,6 +7,9 @@
 #include <string.h>
 #include <inttypes.h>
 
+#define LOGMODULE esys
+#include "util/log.h"
+
 #ifndef ESYS_TCTI_DEFAULT_MODULE
 #define ESYS_TCTI_DEFAULT_MODULE Mssim
 #endif
@@ -35,19 +38,18 @@ get_tcti_default(TSS2_TCTI_CONTEXT ** tcticontext)
 
     rc = Tss2_Tcti_Default_Init(NULL, &size, _XSTR(ESYS_TCTI_DEFAULT_CONFIG));
     if (rc != TSS2_RC_SUCCESS) {
-        fprintf(stderr, "Faled to get allocation size for tcti context: "
-                "0x%x\n", rc);
+        LOG_ERROR("Failed to get allocation size for tcti context: 0x%x\n", rc);
         return rc;
     }
     tcti_ctx = (TSS2_TCTI_CONTEXT *) calloc(1, size);
     if (tcti_ctx == NULL) {
-        fprintf(stderr, "Allocation for tcti context failed: %s\n",
+        LOG_ERROR("Allocation for tcti context failed: %s\n",
                 strerror(errno));
-        return rc;
+        return TSS2_BASE_RC_MEMORY;
     }
     rc = Tss2_Tcti_Default_Init(tcti_ctx, &size, _XSTR(ESYS_TCTI_DEFAULT_CONFIG));
     if (rc != TSS2_RC_SUCCESS) {
-        fprintf(stderr, "Failed to initialize tcti context: 0x%x\n", rc);
+        LOG_ERROR("Failed to initialize tcti context: 0x%x\n", rc);
         free(tcti_ctx);
         return rc;
     }
