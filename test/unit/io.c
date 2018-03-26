@@ -119,6 +119,17 @@ socket_connect_connect_fail_test (void **state)
     rc = socket_connect ("127.0.0.1", 444, &sock);
     assert_int_equal (rc, TSS2_TCTI_RC_IO_ERROR);
 }
+
+static void
+socket_connect_null_test (void **state)
+{
+    TSS2_RC rc;
+    SOCKET sock;
+
+    rc = socket_connect (NULL, 444, &sock);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
+}
+
 int
 main (int   argc,
       char *argv[])
@@ -126,6 +137,7 @@ main (int   argc,
     const struct CMUnitTest tests[] = {
         cmocka_unit_test (write_all_simple_success_test),
         cmocka_unit_test (socket_connect_test),
+        cmocka_unit_test (socket_connect_null_test),
         cmocka_unit_test (socket_connect_socket_fail_test),
         cmocka_unit_test (socket_connect_connect_fail_test),
     };
