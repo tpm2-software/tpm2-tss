@@ -138,6 +138,8 @@ Esys_NV_UndefineSpaceSpecial_async(
     ESYS_TR shandle3)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, nvIndex=%"PRIx32 ", platform=%"PRIx32 "",
+              esysContext, nvIndex, platform);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *nvIndexNode;
     RSRC_NODE_T *platformNode;
@@ -210,8 +212,10 @@ TSS2_RC
 Esys_NV_UndefineSpaceSpecial_finish(
     ESYS_CONTEXT *esysContext)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p",
+              esysContext);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -283,8 +287,6 @@ Esys_NV_UndefineSpaceSpecial_finish(
     return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" );
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p",
-              esysContext);
 
     return TSS2_RC_SUCCESS;
 }

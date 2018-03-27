@@ -149,6 +149,9 @@ Esys_GetCapability_async(
     UINT32 propertyCount)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, capability=%"PRIx32 ", property=%"PRIx32 ","
+              "propertyCount=%"PRIx32 "",
+              esysContext, capability, property, propertyCount);
     TSS2L_SYS_AUTH_COMMAND auths;
 
     /* Check context, sequence correctness and set state to error for now */
@@ -221,8 +224,10 @@ Esys_GetCapability_finish(
     TPMI_YES_NO *moreData,
     TPMS_CAPABILITY_DATA **capabilityData)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, moreData=%p, capabilityData=%p",
+              esysContext, moreData, capabilityData);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -306,8 +311,6 @@ Esys_GetCapability_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, moreData=%p, capabilityData=%p",
-              esysContext, moreData, capabilityData);
 
     return TSS2_RC_SUCCESS;
 

@@ -148,6 +148,9 @@ Esys_EvictControl_async(
     TPMI_DH_PERSISTENT persistentHandle)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, auth=%"PRIx32 ", objectHandle=%"PRIx32 ","
+              "persistentHandle=%"PRIx32 "",
+              esysContext, auth, objectHandle, persistentHandle);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *authNode;
     RSRC_NODE_T *objectHandleNode;
@@ -228,8 +231,10 @@ Esys_EvictControl_finish(
     ESYS_CONTEXT *esysContext,
     ESYS_TR *newObjectHandle)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, newObjectHandle=%p",
+              esysContext, newObjectHandle);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -335,8 +340,6 @@ Esys_EvictControl_finish(
         newObjectHandleNode->rsrc.handle = esysContext->in.EvictControl.persistentHandle;
     }
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, newObjectHandle=%p",
-              esysContext, newObjectHandle);
 
     return TSS2_RC_SUCCESS;
 

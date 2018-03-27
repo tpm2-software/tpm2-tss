@@ -145,6 +145,8 @@ Esys_PCR_Read_async(
     const TPML_PCR_SELECTION *pcrSelectionIn)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, pcrSelectionIn=%p",
+              esysContext, pcrSelectionIn);
     TSS2L_SYS_AUTH_COMMAND auths;
 
     /* Check context, sequence correctness and set state to error for now */
@@ -216,8 +218,12 @@ Esys_PCR_Read_finish(
     TPML_PCR_SELECTION **pcrSelectionOut,
     TPML_DIGEST **pcrValues)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, pcrUpdateCounter=%p, pcrSelectionOut=%p,"
+              "pcrValues=%p",
+              esysContext, pcrUpdateCounter, pcrSelectionOut,
+              pcrValues);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -306,10 +312,6 @@ Esys_PCR_Read_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, pcrUpdateCounter=%p, pcrSelectionOut=%p,"
-              "pcrValues=%p",
-              esysContext, pcrUpdateCounter, pcrSelectionOut,
-              pcrValues);
 
     return TSS2_RC_SUCCESS;
 

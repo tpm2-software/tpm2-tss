@@ -159,6 +159,9 @@ Esys_VerifySignature_async(
     const TPMT_SIGNATURE *signature)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, keyHandle=%"PRIx32 ", digest=%p,"
+              "signature=%p",
+              esysContext, keyHandle, digest, signature);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *keyHandleNode;
 
@@ -232,8 +235,10 @@ Esys_VerifySignature_finish(
     ESYS_CONTEXT *esysContext,
     TPMT_TK_VERIFIED **validation)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, validation=%p",
+              esysContext, validation);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -316,8 +321,6 @@ Esys_VerifySignature_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, validation=%p",
-              esysContext, validation);
 
     return TSS2_RC_SUCCESS;
 

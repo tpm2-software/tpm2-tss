@@ -168,6 +168,9 @@ Esys_ActivateCredential_async(
     const TPM2B_ENCRYPTED_SECRET *secret)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, activateHandle=%"PRIx32 ", keyHandle=%"PRIx32 ","
+              "credentialBlob=%p, secret=%p",
+              esysContext, activateHandle, keyHandle, credentialBlob, secret);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *activateHandleNode;
     RSRC_NODE_T *keyHandleNode;
@@ -247,8 +250,10 @@ Esys_ActivateCredential_finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_DIGEST **certInfo)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, certInfo=%p",
+              esysContext, certInfo);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -332,8 +337,6 @@ Esys_ActivateCredential_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, certInfo=%p",
-              esysContext, certInfo);
 
     return TSS2_RC_SUCCESS;
 

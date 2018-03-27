@@ -156,6 +156,9 @@ Esys_NV_Read_async(
     UINT16 offset)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, authHandle=%"PRIx32 ", nvIndex=%"PRIx32 ","
+              "size=%04"PRIx16", offset=%04"PRIx16"",
+              esysContext, authHandle, nvIndex, size, offset);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *authHandleNode;
     RSRC_NODE_T *nvIndexNode;
@@ -234,8 +237,10 @@ Esys_NV_Read_finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_MAX_NV_BUFFER **data)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, data=%p",
+              esysContext, data);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -319,8 +324,6 @@ Esys_NV_Read_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, data=%p",
-              esysContext, data);
 
     return TSS2_RC_SUCCESS;
 

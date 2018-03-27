@@ -141,6 +141,8 @@ Esys_FieldUpgradeData_async(
     const TPM2B_MAX_BUFFER *fuData)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, fuData=%p",
+              esysContext, fuData);
     TSS2L_SYS_AUTH_COMMAND auths;
 
     /* Check context, sequence correctness and set state to error for now */
@@ -209,8 +211,10 @@ Esys_FieldUpgradeData_finish(
     TPMT_HA **nextDigest,
     TPMT_HA **firstDigest)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, nextDigest=%p, firstDigest=%p",
+              esysContext, nextDigest, firstDigest);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -298,8 +302,6 @@ Esys_FieldUpgradeData_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, nextDigest=%p, firstDigest=%p",
-              esysContext, nextDigest, firstDigest);
 
     return TSS2_RC_SUCCESS;
 

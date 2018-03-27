@@ -166,6 +166,9 @@ Esys_CreateLoaded_async(
     const TPM2B_TEMPLATE *inPublic)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, parentHandle=%"PRIx32 ", inSensitive=%p,"
+              "inPublic=%p",
+              esysContext, parentHandle, inSensitive, inPublic);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *parentHandleNode;
 
@@ -246,8 +249,12 @@ Esys_CreateLoaded_finish(
     TPM2B_PUBLIC **outPublic)
 {
     TPM2B_PUBLIC *loutPublic = NULL;
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, objectHandle=%p, outPrivate=%p,"
+              "outPublic=%p",
+              esysContext, objectHandle, outPrivate,
+              outPublic);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -371,10 +378,6 @@ Esys_CreateLoaded_finish(
         SAFE_FREE(loutPublic);
 
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, objectHandle=%p, outPrivate=%p,"
-              "outPublic=%p",
-              esysContext, objectHandle, outPrivate,
-              outPublic);
 
     return TSS2_RC_SUCCESS;
 

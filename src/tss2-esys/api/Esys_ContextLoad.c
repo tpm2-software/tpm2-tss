@@ -121,6 +121,8 @@ Esys_ContextLoad_async(
     const TPMS_CONTEXT *context)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, context=%p",
+              esysContext, context);
     IESYS_CONTEXT_DATA esyscontextData = {0};
     TPMS_CONTEXT tpmContext;
 
@@ -195,8 +197,10 @@ Esys_ContextLoad_finish(
     ESYS_CONTEXT *esysContext,
     ESYS_TR *loadedHandle)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, loadedHandle=%p",
+              esysContext, loadedHandle);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -275,8 +279,6 @@ Esys_ContextLoad_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, loadedHandle=%p",
-              esysContext, loadedHandle);
 
     return TSS2_RC_SUCCESS;
 

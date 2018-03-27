@@ -201,6 +201,10 @@ Esys_Create_async(
     const TPML_PCR_SELECTION *creationPCR)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, parentHandle=%"PRIx32 ", inSensitive=%p,"
+              "inPublic=%p, outsideInfo=%p, creationPCR=%p",
+              esysContext, parentHandle, inSensitive, inPublic, outsideInfo,
+              creationPCR);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *parentHandleNode;
 
@@ -291,8 +295,12 @@ Esys_Create_finish(
     TPM2B_DIGEST **creationHash,
     TPMT_TK_CREATION **creationTicket)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, outPrivate=%p, outPublic=%p,"
+              "creationData=%p, creationHash=%p, creationTicket=%p",
+              esysContext, outPrivate, outPublic,
+              creationData, creationHash, creationTicket);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -405,10 +413,6 @@ Esys_Create_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, outPrivate=%p, outPublic=%p,"
-              "creationData=%p, creationHash=%p, creationTicket=%p",
-              esysContext, outPrivate, outPublic,
-              creationData, creationHash, creationTicket);
 
     return TSS2_RC_SUCCESS;
 

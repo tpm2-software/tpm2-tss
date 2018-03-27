@@ -158,6 +158,9 @@ Esys_Load_async(
     const TPM2B_PUBLIC *inPublic)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, parentHandle=%"PRIx32 ", inPrivate=%p,"
+              "inPublic=%p",
+              esysContext, parentHandle, inPrivate, inPublic);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *parentHandleNode;
 
@@ -231,8 +234,10 @@ Esys_Load_finish(
     ESYS_CONTEXT *esysContext,
     ESYS_TR *objectHandle)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, objectHandle=%p",
+              esysContext, objectHandle);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -333,8 +338,6 @@ Esys_Load_finish(
     }
     objectHandleNode->rsrc.name = name;
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, objectHandle=%p",
-              esysContext, objectHandle);
 
     return TSS2_RC_SUCCESS;
 

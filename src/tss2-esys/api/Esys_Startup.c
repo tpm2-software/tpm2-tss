@@ -112,6 +112,8 @@ Esys_Startup_async(
     TPM2_SU startupType)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, startupType=%04"PRIx16"",
+              esysContext, startupType);
 
     /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
@@ -154,8 +156,10 @@ TSS2_RC
 Esys_Startup_finish(
     ESYS_CONTEXT *esysContext)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p",
+              esysContext);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -212,8 +216,6 @@ Esys_Startup_finish(
     return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" );
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p",
-              esysContext);
 
     return TSS2_RC_SUCCESS;
 }

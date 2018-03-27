@@ -118,6 +118,8 @@ Esys_ContextSave_async(
     ESYS_TR saveHandle)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, saveHandle=%"PRIx32 "",
+              esysContext, saveHandle);
     RSRC_NODE_T *saveHandleNode;
 
     /* Check context, sequence correctness and set state to error for now */
@@ -168,8 +170,10 @@ Esys_ContextSave_finish(
     TPMS_CONTEXT **context)
 {
     TPMS_CONTEXT *lcontext = NULL;
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, context=%p",
+              esysContext, context);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -268,8 +272,6 @@ Esys_ContextSave_finish(
         SAFE_FREE(lcontext);
 
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, context=%p",
-              esysContext, context);
 
     return TSS2_RC_SUCCESS;
 

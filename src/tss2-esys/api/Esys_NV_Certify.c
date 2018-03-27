@@ -195,6 +195,11 @@ Esys_NV_Certify_async(
     UINT16 offset)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, signHandle=%"PRIx32 ", authHandle=%"PRIx32 ","
+              "nvIndex=%"PRIx32 ", qualifyingData=%p, inScheme=%p,"
+              "size=%04"PRIx16", offset=%04"PRIx16"",
+              esysContext, signHandle, authHandle, nvIndex, qualifyingData,
+              inScheme, size, offset);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *signHandleNode;
     RSRC_NODE_T *authHandleNode;
@@ -285,8 +290,10 @@ Esys_NV_Certify_finish(
     TPM2B_ATTEST **certifyInfo,
     TPMT_SIGNATURE **signature)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, certifyInfo=%p, signature=%p",
+              esysContext, certifyInfo, signature);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -380,8 +387,6 @@ Esys_NV_Certify_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, certifyInfo=%p, signature=%p",
-              esysContext, certifyInfo, signature);
 
     return TSS2_RC_SUCCESS;
 

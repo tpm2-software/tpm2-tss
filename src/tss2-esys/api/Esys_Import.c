@@ -198,6 +198,11 @@ Esys_Import_async(
     const TPMT_SYM_DEF_OBJECT *symmetricAlg)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, parentHandle=%"PRIx32 ", encryptionKey=%p,"
+              "objectPublic=%p, duplicate=%p, inSymSeed=%p,"
+              "symmetricAlg=%p",
+              esysContext, parentHandle, encryptionKey, objectPublic, duplicate,
+              inSymSeed, symmetricAlg);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *parentHandleNode;
 
@@ -278,8 +283,10 @@ Esys_Import_finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_PRIVATE **outPrivate)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, outPrivate=%p",
+              esysContext, outPrivate);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -365,8 +372,6 @@ Esys_Import_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, outPrivate=%p",
-              esysContext, outPrivate);
 
     return TSS2_RC_SUCCESS;
 

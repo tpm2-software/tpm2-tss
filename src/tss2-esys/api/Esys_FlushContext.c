@@ -114,6 +114,8 @@ Esys_FlushContext_async(
     ESYS_TR flushHandle)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, flushHandle=%"PRIx32 "",
+              esysContext, flushHandle);
     RSRC_NODE_T *flushHandleNode;
 
     /* Check context, sequence correctness and set state to error for now */
@@ -160,8 +162,10 @@ TSS2_RC
 Esys_FlushContext_finish(
     ESYS_CONTEXT *esysContext)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p",
+              esysContext);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -222,8 +226,6 @@ Esys_FlushContext_finish(
     return_if_error(r, "invalidate object");
 
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p",
-              esysContext);
 
     return TSS2_RC_SUCCESS;
 }

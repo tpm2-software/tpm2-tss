@@ -133,6 +133,8 @@ Esys_PolicyGetDigest_async(
     ESYS_TR shandle3)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, policySession=%"PRIx32 "",
+              esysContext, policySession);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *policySessionNode;
 
@@ -202,8 +204,10 @@ Esys_PolicyGetDigest_finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_DIGEST **policyDigest)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, policyDigest=%p",
+              esysContext, policyDigest);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -284,8 +288,6 @@ Esys_PolicyGetDigest_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, policyDigest=%p",
-              esysContext, policyDigest);
 
     return TSS2_RC_SUCCESS;
 

@@ -198,6 +198,11 @@ Esys_CertifyCreation_async(
     const TPMT_TK_CREATION *creationTicket)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, signHandle=%"PRIx32 ", objectHandle=%"PRIx32 ","
+              "qualifyingData=%p, creationHash=%p, inScheme=%p,"
+              "creationTicket=%p",
+              esysContext, signHandle, objectHandle, qualifyingData, creationHash,
+              inScheme, creationTicket);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *signHandleNode;
     RSRC_NODE_T *objectHandleNode;
@@ -283,8 +288,10 @@ Esys_CertifyCreation_finish(
     TPM2B_ATTEST **certifyInfo,
     TPMT_SIGNATURE **signature)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, certifyInfo=%p, signature=%p",
+              esysContext, certifyInfo, signature);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -377,8 +384,6 @@ Esys_CertifyCreation_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, certifyInfo=%p, signature=%p",
-              esysContext, certifyInfo, signature);
 
     return TSS2_RC_SUCCESS;
 

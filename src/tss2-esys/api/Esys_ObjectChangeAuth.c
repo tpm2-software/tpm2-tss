@@ -155,6 +155,9 @@ Esys_ObjectChangeAuth_async(
     const TPM2B_AUTH *newAuth)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, objectHandle=%"PRIx32 ", parentHandle=%"PRIx32 ","
+              "newAuth=%p",
+              esysContext, objectHandle, parentHandle, newAuth);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *objectHandleNode;
     RSRC_NODE_T *parentHandleNode;
@@ -231,8 +234,10 @@ Esys_ObjectChangeAuth_finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_PRIVATE **outPrivate)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, outPrivate=%p",
+              esysContext, outPrivate);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -315,8 +320,6 @@ Esys_ObjectChangeAuth_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, outPrivate=%p",
-              esysContext, outPrivate);
 
     return TSS2_RC_SUCCESS;
 

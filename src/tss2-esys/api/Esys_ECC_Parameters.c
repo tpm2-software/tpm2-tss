@@ -131,6 +131,8 @@ Esys_ECC_Parameters_async(
     TPMI_ECC_CURVE curveID)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, curveID=%04"PRIx16"",
+              esysContext, curveID);
     TSS2L_SYS_AUTH_COMMAND auths;
 
     /* Check context, sequence correctness and set state to error for now */
@@ -196,8 +198,10 @@ Esys_ECC_Parameters_finish(
     ESYS_CONTEXT *esysContext,
     TPMS_ALGORITHM_DETAIL_ECC **parameters)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, parameters=%p",
+              esysContext, parameters);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -278,8 +282,6 @@ Esys_ECC_Parameters_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, parameters=%p",
-              esysContext, parameters);
 
     return TSS2_RC_SUCCESS;
 

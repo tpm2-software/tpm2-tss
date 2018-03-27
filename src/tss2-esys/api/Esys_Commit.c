@@ -184,6 +184,9 @@ Esys_Commit_async(
     const TPM2B_ECC_PARAMETER *y2)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, signHandle=%"PRIx32 ", P1=%p,"
+              "s2=%p, y2=%p",
+              esysContext, signHandle, P1, s2, y2);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *signHandleNode;
 
@@ -269,8 +272,12 @@ Esys_Commit_finish(
     TPM2B_ECC_POINT **E,
     UINT16 *counter)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, K=%p, L=%p,"
+              "E=%p, counter=%p",
+              esysContext, K, L,
+              E, counter);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -369,10 +376,6 @@ Esys_Commit_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, K=%p, L=%p,"
-              "E=%p, counter=%p",
-              esysContext, K, L,
-              E, counter);
 
     return TSS2_RC_SUCCESS;
 

@@ -192,6 +192,11 @@ Esys_PolicySecret_async(
     INT32 expiration)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, authHandle=%"PRIx32 ", policySession=%"PRIx32 ","
+              "nonceTPM=%p, cpHashA=%p, policyRef=%p,"
+              "expiration=%"PRIi32 "",
+              esysContext, authHandle, policySession, nonceTPM, cpHashA,
+              policyRef, expiration);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *authHandleNode;
     RSRC_NODE_T *policySessionNode;
@@ -277,8 +282,10 @@ Esys_PolicySecret_finish(
     TPM2B_TIMEOUT **timeout,
     TPMT_TK_AUTH **policyTicket)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, timeout=%p, policyTicket=%p",
+              esysContext, timeout, policyTicket);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -371,8 +378,6 @@ Esys_PolicySecret_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, timeout=%p, policyTicket=%p",
-              esysContext, timeout, policyTicket);
 
     return TSS2_RC_SUCCESS;
 

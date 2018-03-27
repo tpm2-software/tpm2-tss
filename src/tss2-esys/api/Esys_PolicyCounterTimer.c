@@ -156,6 +156,9 @@ Esys_PolicyCounterTimer_async(
     TPM2_EO operation)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, policySession=%"PRIx32 ", operandB=%p,"
+              "offset=%04"PRIx16", operation=%04"PRIx16"",
+              esysContext, policySession, operandB, offset, operation);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *policySessionNode;
 
@@ -228,8 +231,10 @@ TSS2_RC
 Esys_PolicyCounterTimer_finish(
     ESYS_CONTEXT *esysContext)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p",
+              esysContext);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -303,8 +308,6 @@ Esys_PolicyCounterTimer_finish(
     return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" );
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p",
-              esysContext);
 
     return TSS2_RC_SUCCESS;
 }

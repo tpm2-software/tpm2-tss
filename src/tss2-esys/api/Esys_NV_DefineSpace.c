@@ -158,6 +158,9 @@ Esys_NV_DefineSpace_async(
     const TPM2B_NV_PUBLIC *publicInfo)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, authHandle=%"PRIx32 ", auth=%p,"
+              "publicInfo=%p",
+              esysContext, authHandle, auth, publicInfo);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *authHandleNode;
 
@@ -241,8 +244,10 @@ Esys_NV_DefineSpace_finish(
     ESYS_CONTEXT *esysContext,
     ESYS_TR *nvHandle)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, nvHandle=%p",
+              esysContext, nvHandle);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -343,8 +348,6 @@ Esys_NV_DefineSpace_finish(
         *esysContext->in.NV_DefineSpace.publicInfo;
     nvHandleNode->auth = *esysContext->in.NV_DefineSpace.auth;
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, nvHandle=%p",
-              esysContext, nvHandle);
 
     return TSS2_RC_SUCCESS;
 

@@ -119,6 +119,8 @@ Esys_ReadClock_async(
     ESYS_TR shandle3)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p",
+              esysContext);
     TSS2L_SYS_AUTH_COMMAND auths;
 
     /* Check context, sequence correctness and set state to error for now */
@@ -181,8 +183,10 @@ Esys_ReadClock_finish(
     ESYS_CONTEXT *esysContext,
     TPMS_TIME_INFO **currentTime)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, currentTime=%p",
+              esysContext, currentTime);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -262,8 +266,6 @@ Esys_ReadClock_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, currentTime=%p",
-              esysContext, currentTime);
 
     return TSS2_RC_SUCCESS;
 
