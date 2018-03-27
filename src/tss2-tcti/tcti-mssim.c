@@ -164,7 +164,7 @@ tcti_mssim_transmit (
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
-    rc = parse_header (cmd_buf, &header);
+    rc = header_unmarshal (cmd_buf, &header);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }

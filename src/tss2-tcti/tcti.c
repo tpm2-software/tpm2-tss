@@ -107,7 +107,7 @@ tcti_make_sticky_not_implemented (
 }
 
 TSS2_RC
-parse_header (
+header_unmarshal (
     const uint8_t *buf,
     tpm_header_t *header)
 {
