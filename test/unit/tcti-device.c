@@ -191,6 +191,37 @@ tcti_device_receive_two_call_success (void **state)
     assert_memory_equal (tpm2_buf, buf_out, size);
 }
 /*
+ */
+static void
+tcti_device_receive_second_size_too_small_test (void **state)
+{
+    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
+    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (ctx);
+    TSS2_RC rc;
+    /* output buffer for response */
+    uint8_t buf_out [BUF_SIZE + 5] = { 0 };
+    size_t size = 0;
+
+    /* Keep state machine check in `receive` from returning error. */
+    tcti_intel->state = TCTI_STATE_RECEIVE;
+    will_return (__wrap_read, TPM_HEADER_SIZE);
+    will_return (__wrap_read, tpm2_buf);
+    /* get the size of the buffer required to hold the response */
+    rc = Tss2_Tcti_Receive (ctx,
+                            &size,
+                            NULL,
+                            TSS2_TCTI_TIMEOUT_BLOCK);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (size, BUF_SIZE);
+    /* set 'size' to be less than the required size for the response */
+    --size;
+    rc = Tss2_Tcti_Receive (ctx,
+                            &size,
+                            buf_out,
+                            TSS2_TCTI_TIMEOUT_BLOCK);
+    assert_true (rc == TSS2_TCTI_RC_INSUFFICIENT_BUFFER);
+}
+/*
  * A test case for a successful call to the transmit function. This requires
  * that the context and the cmmand buffer be valid. The only indication of
  * success is the RC.
@@ -228,6 +259,9 @@ main(int argc, char* argv[])
                                          tcti_device_setup,
                                          tcti_device_teardown),
         cmocka_unit_test_setup_teardown (tcti_device_transmit_success,
+                                         tcti_device_setup,
+                                         tcti_device_teardown),
+        cmocka_unit_test_setup_teardown (tcti_device_receive_second_size_too_small_test,
                                          tcti_device_setup,
                                          tcti_device_teardown),
     };

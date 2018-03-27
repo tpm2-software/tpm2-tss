@@ -120,8 +120,8 @@ tcti_device_receive (
                   tcti_intel->header.size);
     }
 
-    *response_size = tcti_intel->header.size;
     if (response_buffer == NULL) {
+        *response_size = tcti_intel->header.size;
         LOG_DEBUG ("response_buffer is null, returning size: %zd", *response_size);
         return TSS2_RC_SUCCESS;
     }
@@ -131,6 +131,8 @@ tcti_device_receive (
                      *response_size, tcti_intel->header.size);
         return TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
     }
+    *response_size = tcti_intel->header.size;
+
     rc = header_marshal (&tcti_intel->header, response_buffer);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
