@@ -113,7 +113,6 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     size_t  local_offset = 0; \
     UINT32 i, count = 0; \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
-    type local_dst; \
 \
     if (offset != NULL) { \
         LOG_TRACE("offset non-NULL, initial value: %zu", *offset); \
@@ -142,9 +141,6 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
          (uintptr_t)dest, \
          local_offset); \
 \
-    if (dest == NULL) \
-        dest = &local_dst; \
-\
     ret = Tss2_MU_UINT32_Unmarshal(buffer, buffer_size, &local_offset, &count); \
     if (ret) \
         return ret; \
@@ -154,11 +150,15 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
         return TSS2_SYS_RC_MALFORMED_RESPONSE; \
     } \
 \
-    dest->count = count; \
+    if (dest != NULL) { \
+        memset(dest, 0, sizeof(*dest)); \
+        dest->count = count; \
+    } \
 \
     for (i = 0; i < count; i++) \
     { \
-        ret = unmarshal_func(buffer, buffer_size, &local_offset, &dest->buf_name[i]); \
+        ret = unmarshal_func(buffer, buffer_size, &local_offset, \
+                             (dest == NULL)? NULL: &dest->buf_name[i]); \
         if (ret) \
             return ret; \
     } \
