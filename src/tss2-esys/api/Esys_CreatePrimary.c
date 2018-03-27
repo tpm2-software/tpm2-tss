@@ -423,6 +423,7 @@ Esys_CreatePrimary_finish(
             "in Public name not equal name in response", error_cleanup);
 
     /* Update the meta data of the ESYS_TR object */
+    objectHandleNode->auth = (*esysContext->in.CreatePrimary.inSensitive).sensitive.userAuth;
     objectHandleNode->rsrc.name = name;
     objectHandleNode->rsrc.rsrcType = IESYSC_KEY_RSRC;
     objectHandleNode->rsrc.misc.rsrc_key_pub = *loutPublic;
