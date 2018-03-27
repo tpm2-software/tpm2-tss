@@ -119,22 +119,21 @@ Tss2_MU_##type##_Unmarshal ( \
     if (buffer == NULL || (dest == NULL && offset == NULL)) { \
         LOG_ERROR("buffer or dest and offset parameter are NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
-    } else if (dest == NULL && offset != NULL) { \
+    } \
+    if (buffer_size < local_offset || \
+        sizeof (*dest) > buffer_size - local_offset) \
+    { \
+        LOG_WARNING(\
+             "buffer_size: %zu with offset: %zu are insufficient for object " \
+             "of size %zu", buffer_size, local_offset, sizeof (*dest)); \
+        return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
+    } \
+    if (dest == NULL && offset != NULL) { \
         *offset += sizeof (type); \
         LOG_TRACE(\
              "buffer NULL and offset non-NULL, updating offset to %zu", \
              *offset); \
         return TSS2_RC_SUCCESS; \
-    } else if (buffer_size < local_offset || \
-               sizeof (*dest) > buffer_size - local_offset) \
-    { \
-        LOG_WARNING(\
-             "buffer_size: %zu with offset: %zu are insufficient for object " \
-             "of size %zu", \
-             buffer_size, \
-             local_offset, \
-             sizeof (*dest)); \
-        return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
     } \
 \
     LOG_DEBUG(\
