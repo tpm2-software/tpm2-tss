@@ -112,7 +112,7 @@ tcti_device_receive (
             goto trans_state_out;
         }
         LOGBLOB_DEBUG (header_buf, TPM_HEADER_SIZE, "Response header received");
-        rc = parse_header (header_buf, &tcti_intel->header);
+        rc = header_unmarshal (header_buf, &tcti_intel->header);
         if (rc != TSS2_RC_SUCCESS) {
             return rc;
         }
