@@ -188,7 +188,8 @@ TSS2_RC iesys_crypto_KDFa(
     TPM2B_NONCE *contextV,
     uint32_t bitLength,
     uint32_t *counterInOut,
-    BYTE  *outKey);
+    BYTE *outKey,
+    BOOL use_digest_size);
 
 TSS2_RC iesys_cryptogcry_sym_aes_encrypt(
     uint8_t *key,
@@ -211,6 +212,15 @@ TSS2_RC iesys_cryptogcry_sym_aes_decrypt(
     size_t dst_size,
     uint8_t *iv,
     size_t iv_len);
+
+TSS2_RC iesys_xor_parameter_obfuscation(
+    TPM2_ALG_ID hash_alg,
+    uint8_t *key,
+    size_t key_size,
+    TPM2B_NONCE * contextU,
+    TPM2B_NONCE * contextV,
+    BYTE *data,
+    size_t data_size);
 
 
 #define iesys_crypto_sym_aes_encrypt iesys_cryptogcry_sym_aes_encrypt

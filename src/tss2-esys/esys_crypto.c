@@ -633,7 +633,7 @@ iesys_crypto_KDFa(TPM2_ALG_ID hashAlg,
                   const char *label,
                   TPM2B_NONCE * contextU,
                   TPM2B_NONCE * contextV,
-                  uint32_t bitLength, uint32_t * counterInOut, BYTE * outKey)
+                  uint32_t bitLength, uint32_t * counterInOut, BYTE * outKey, BOOL use_digest_size)
 {
     LOG_DEBUG("IESYS KDFa hmac key hashAlg: %i label: %s bitLength: %i",
               hashAlg, label, bitLength);
@@ -653,7 +653,7 @@ iesys_crypto_KDFa(TPM2_ALG_ID hashAlg,
     return_if_error(r, "Error");
     if (counterInOut != NULL)
         counter = *counterInOut;
-    bytes = (bitLength + 7) / 8;
+    bytes = use_digest_size ? hlen : (bitLength + 7) / 8;
     LOG_DEBUG("IESYS KDFa hmac key bytes: %i", bytes);
     for (; bytes > 0; subKey = &subKey[hlen], bytes = bytes - hlen) {
         LOG_TRACE("IESYS KDFa hmac key bytes: %i", bytes);
@@ -854,6 +854,7 @@ iesys_cryptogcry_pk_decrypt(TPM2B_PUBLIC * key,
                             BYTE * out_buffer,
                             size_t * out_size, const char *label)
 {
+    (void)label;
     gcry_mpi_t mpi_data;
     gcry_error_t err;
     // char *hash_alg;
@@ -1125,5 +1126,41 @@ iesys_cryptogcry_sym_aes_decrypt(uint8_t * key,
         return TSS2_SYS_RC_GENERAL_FAILURE;
     }
     gcry_cipher_close(cipher_hd);
+    return TSS2_RC_SUCCESS;
+}
+
+
+TSS2_RC
+iesys_xor_parameter_obfuscation(TPM2_ALG_ID hash_alg,
+                                uint8_t *key,
+                                size_t key_size,
+                                TPM2B_NONCE * contextU,
+                                TPM2B_NONCE * contextV,
+                                BYTE *data,
+                                size_t data_size)
+{
+    TSS2_RC r;
+    uint32_t counter = 0;
+    BYTE  kdfa_result[TPM2_MAX_DIGEST_BUFFER];
+    size_t digest_size;
+    size_t data_size_bits = data_size * 8;
+    size_t rest_size = data_size;
+    BYTE *kdfa_byte_ptr;
+    r = iesys_crypto_hash_get_digest_size(hash_alg, &digest_size);
+    return_if_error(r, "Hash alg not supported");
+    while(rest_size > 0) {
+        r = iesys_crypto_KDFa(hash_alg, key, key_size, "XOR",
+                              contextU, contextV, data_size_bits, &counter,
+                              kdfa_result, TRUE);
+        return_if_error(r, "iesys_crypto_KDFa failed");
+        /* XOR next data sub block with KDFa result  */
+        kdfa_byte_ptr = kdfa_result;
+        LOGBLOB_TRACE(data, data_size, "Parameter data before XOR");
+        for(size_t i = digest_size < rest_size ? digest_size : rest_size; i > 0;
+            i--)
+            *data++ ^= *kdfa_byte_ptr++;
+        LOGBLOB_TRACE(data, data_size, "Parameter data after XOR");
+        rest_size = rest_size < digest_size ? 0 : rest_size - digest_size;
+    }
     return TSS2_RC_SUCCESS;
 }
