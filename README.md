@@ -32,13 +32,13 @@ The latter implements the protocol exposed by the Microsoft software TPM2 simula
 Instructions to build and install tpm2-tss are available in the [INSTALL](INSTALL.md) file.
 
 # Getting in Touch:
-If you're looking to discuss the source code in this project or get some questions answered you should join the 01org TPM2 mailing list: https://lists.01.org/mailman/listinfo/tpm2.
-We've also got an IRC channel set up on [FreeNode](https://freenode.net/) called #tpm2.0-tss.
+If you're looking to discuss the source code in this project or get some questions answered you should join the 01.org TPM2 mailing list: https://lists.01.org/mailman/listinfo/tpm2.
+We also have an IRC channel set up on [FreeNode](https://freenode.net/) called #tpm2.0-tss.
 
 # Test Suite
 This repository contains a test suite intended to exercise the TCTI, SAPI and ESAPI code.
-This test suite is *not* intended to test a TPM implementation and so this test suite should only be run against a TPM simulator.
-If this test suite is executed against a TPM other than the software simulator it may cause damage to the TPM (NV storage wear out etc).
+This test suite is *not* intended to test a TPM implementation, so this test suite should only be run against a TPM simulator.
+If this test suite is executed against a TPM other than the software simulator it may cause damage to the TPM (NV storage wear out, etc.).
 You have been warned.
 
 ## Simulator
@@ -46,15 +46,15 @@ The TPM library specification contains reference code sufficient to construct a 
 This code was provided by Microsoft and they provide a binary download for Windows [here](https://www.microsoft.com/en-us/download/details.aspx?id=52507).
 IBM has repackaged this code with a few Makefiles so that the Microsoft code can be built and run on Linux systems.
 The Linux version of the Microsoft TPM 2.0 simulator can be obtained [here](https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm974.tar.gz).
-Once you've downloaded and successfully built and execute the simulator it will, by default, be accepting connections on the localhost, port 2321.
+Once you've downloaded and successfully built and execute the simulator it will, by default, be accepting connections on the localhost, TCP ports 2321 and 2322.
 
 Issues building or running the simulator should be reported to the IBM software TPM2 project.
 
-NOTE: The Intel TCG TSS is currently tested against the 974 version of the simulator.
+NOTE: The Intel TCG TSS is currently tested against version 974 of the simulator.
 Compatibility with later versions has not yet been tested.
 
 ## Testing
-To test the various TCTI, SAPI and ESAPI api calls, unit and integraion tests can
+To test the various TCTI, SAPI and ESAPI api calls, unit and integration tests can
 be run by configuring the build to enable unit testing and running the "check"
 build target. It is recommended to use a simulator for testing, and the
 simulator will be automatically launched by the tests. Please review the
@@ -70,8 +70,8 @@ directory.
 Please report failures in a Github 'issue' with a full log of the test run.
 
 NOTE: The unit and integration tests can be enabled independently.
-The --enable-unit option controls uint tests, and --with-simulatorbin controls
-the integration test.
+The --enable-unit option controls unit tests, and --with-simulatorbin controls
+the integration tests.
 
 # [Architecture/Block Diagram](doc/arch.md)
 SAPI library, TAB/RM, and Test Code Block Diagram:
