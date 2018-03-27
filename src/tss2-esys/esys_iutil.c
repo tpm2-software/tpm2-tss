@@ -575,6 +575,15 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
             if (key_len % hlen > 0)
                 key_len = key_len + hlen - (key_len % hlen);
             uint8_t symKey[key_len];
+            size_t paramSize = 0;
+            const uint8_t *paramBuffer;
+            r = Tss2_Sys_GetDecryptParam(esys_context->sys, &paramSize,
+                                         &paramBuffer);
+            return_if_error(r, "Encrypt parameter not possible");
+
+            BYTE encrypt_buffer[paramSize];
+            memcpy(&encrypt_buffer[0], paramBuffer, paramSize);
+            LOGBLOB_DEBUG(paramBuffer, paramSize, "param to encrypt");
             if (symDef->algorithm == TPM2_ALG_AES) {
                 if (symDef->mode.aes != TPM2_ALG_CFB) {
                     return_error(TSS2_ESYS_RC_BAD_VALUE,
@@ -586,16 +595,9 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
                                       &rsrc_session->nonceCaller,
                                       &rsrc_session->nonceTPM,
                                       symDef->keyBits.aes + AES_BLOCK_SIZE_IN_BYTES * 8,
-                                      NULL, &symKey[0]);
+                                      NULL, &symKey[0], FALSE);
                 return_if_error(r, "while computing KDFa");
-                const uint8_t *paramBuffer;
-                size_t paramSize = 0;
-                r = Tss2_Sys_GetDecryptParam(esys_context->sys, &paramSize,
-                                             &paramBuffer);
-                return_if_error(r, "Encrypt parameter not possible");
-                BYTE encrypt_buffer[paramSize];
-                memcpy(&encrypt_buffer[0], paramBuffer, paramSize);
-                LOGBLOB_DEBUG(paramBuffer, paramSize, "param to encrypt");
+
                 size_t aes_off = ( symDef->keyBits.aes + 7) / 8;
                 r = iesys_crypto_sym_aes_encrypt(&symKey[0],
                                                  symDef->algorithm,
@@ -611,8 +613,18 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
                 return_if_error(r, "Set encrypt parameter not possible");
 
             } else if (symDef->algorithm == TPM2_ALG_XOR) {
-                return_error(TSS2_ESYS_RC_NOT_IMPLEMENTED,
-                             "XOR obfuscation not implemented.");
+                r = iesys_xor_parameter_obfuscation(rsrc_session->authHash,
+                                                    &rsrc_session->sessionValue[0],
+                                                    rsrc_session->sizeSessionValue,
+                                                    &rsrc_session->nonceCaller,
+                                                    &rsrc_session->nonceTPM,
+                                                    &encrypt_buffer[0],
+                                                    paramSize);
+                return_if_error(r, "XOR obfuscation not possible.");
+                r = Tss2_Sys_SetDecryptParam(esys_context->sys, paramSize,
+                                             &encrypt_buffer[0]);
+                return_if_error(r, "Set encrypt parameter not possible");
+
             } else {
                 return_error(TSS2_ESYS_RC_BAD_VALUE,
                              "Invalid symmetric algorithm (should be XOR or AES)");
@@ -638,6 +650,15 @@ iesys_decrypt_param(ESYS_CONTEXT * esys_context,
     if (key_len % hlen > 0)
         key_len = key_len + hlen - (key_len % hlen);
     uint8_t symKey[key_len];
+    UINT16 p2BSize = 0;
+    size_t offset = 0;
+    r = Tss2_MU_UINT16_Unmarshal(rpBuffer, rpBuffer_size, &offset, &p2BSize);
+    return_if_error(r, "Unmarshal error");
+    if (p2BSize > rpBuffer_size) {
+        return_error(TSS2_ESYS_RC_BAD_VALUE,
+                     "Invalid length encrypted response.");
+    }
+    LOGBLOB_DEBUG(rpBuffer, p2BSize, "IESYS encrypt data");
     if (symDef->algorithm == TPM2_ALG_AES) {
         if (symDef->mode.aes != TPM2_ALG_CFB) {
             return_error(TSS2_ESYS_RC_BAD_VALUE,
@@ -654,21 +675,13 @@ iesys_decrypt_param(ESYS_CONTEXT * esys_context,
                               &rsrc_session->nonceCaller,
                               symDef->keyBits.aes
                               + AES_BLOCK_SIZE_IN_BYTES * 8, NULL,
-                              &symKey[0]);
+                              &symKey[0], FALSE);
         return_if_error(r, "KDFa error");
         LOGBLOB_DEBUG(&symKey[0],
                       ((symDef->keyBits.aes +
                         AES_BLOCK_SIZE_IN_BYTES * 8) + 7) / 8,
                       "IESYS encrypt KDFa key");
-        UINT16 p2BSize = 0;
-        size_t offset = 0;
-        r = Tss2_MU_UINT16_Unmarshal(rpBuffer, rpBuffer_size, &offset, &p2BSize);
-        return_if_error(r, "Unmarshal error");
-        if (p2BSize > rpBuffer_size) {
-            return_error(TSS2_ESYS_RC_BAD_VALUE,
-                         "Invalid length encrypted response.");
-        }
-        LOGBLOB_DEBUG(rpBuffer, p2BSize, "IESYS encrypt data");
+
         size_t aes_off = ( symDef->keyBits.aes + 7) / 8;
         r = iesys_crypto_sym_aes_decrypt(&symKey[0],
                                      symDef->algorithm,
@@ -679,9 +692,17 @@ iesys_decrypt_param(ESYS_CONTEXT * esys_context,
                                      &symKey[aes_off],
                                      AES_BLOCK_SIZE_IN_BYTES);
         return_if_error(r, "Decryption error");
+
     } else if (symDef->algorithm == TPM2_ALG_XOR) {
-        return_error(TSS2_ESYS_RC_NOT_IMPLEMENTED,
-                     "XOR obfuscation not implemented.");
+        r = iesys_xor_parameter_obfuscation(rsrc_session->authHash,
+                                            &rsrc_session->sessionValue[0],
+                                            rsrc_session->sizeSessionValue,
+                                            &rsrc_session->nonceTPM,
+                                            &rsrc_session->nonceCaller,
+                                            (uint8_t *) & rpBuffer[2],
+                                            p2BSize);
+        return_if_error(r, "XOR obfuscation not possible.");
+
     } else {
         return_error(TSS2_ESYS_RC_BAD_VALUE,
                      "Invalid symmetric algorithm (should be XOR or AES)");
