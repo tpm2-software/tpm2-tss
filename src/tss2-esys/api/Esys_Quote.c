@@ -176,6 +176,9 @@ Esys_Quote_async(
     const TPML_PCR_SELECTION *PCRselect)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, signHandle=%"PRIx32 ", qualifyingData=%p,"
+              "inScheme=%p, PCRselect=%p",
+              esysContext, signHandle, qualifyingData, inScheme, PCRselect);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *signHandleNode;
 
@@ -255,8 +258,10 @@ Esys_Quote_finish(
     TPM2B_ATTEST **quoted,
     TPMT_SIGNATURE **signature)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, quoted=%p, signature=%p",
+              esysContext, quoted, signature);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -347,8 +352,6 @@ Esys_Quote_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, quoted=%p, signature=%p",
-              esysContext, quoted, signature);
 
     return TSS2_RC_SUCCESS;
 

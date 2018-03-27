@@ -156,6 +156,9 @@ Esys_LoadExternal_async(
     TPMI_RH_HIERARCHY hierarchy)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, inPrivate=%p, inPublic=%p,"
+              "hierarchy=%"PRIx32 "",
+              esysContext, inPrivate, inPublic, hierarchy);
     TSS2L_SYS_AUTH_COMMAND auths;
 
     /* Check context, sequence correctness and set state to error for now */
@@ -224,8 +227,10 @@ Esys_LoadExternal_finish(
     ESYS_CONTEXT *esysContext,
     ESYS_TR *objectHandle)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, objectHandle=%p",
+              esysContext, objectHandle);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -324,8 +329,6 @@ Esys_LoadExternal_finish(
     }
     objectHandleNode->rsrc.name = name;
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, objectHandle=%p",
-              esysContext, objectHandle);
 
     return TSS2_RC_SUCCESS;
 

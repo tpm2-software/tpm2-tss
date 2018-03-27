@@ -200,6 +200,10 @@ Esys_CreatePrimary_async(
     const TPML_PCR_SELECTION *creationPCR)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, primaryHandle=%"PRIx32 ", inSensitive=%p,"
+              "inPublic=%p, outsideInfo=%p, creationPCR=%p",
+              esysContext, primaryHandle, inSensitive, inPublic, outsideInfo,
+              creationPCR);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *primaryHandleNode;
 
@@ -290,8 +294,12 @@ Esys_CreatePrimary_finish(
     TPMT_TK_CREATION **creationTicket)
 {
     TPM2B_PUBLIC *loutPublic = NULL;
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, objectHandle=%p, outPublic=%p,"
+              "creationData=%p, creationHash=%p, creationTicket=%p",
+              esysContext, objectHandle, outPublic,
+              creationData, creationHash, creationTicket);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -424,10 +432,6 @@ Esys_CreatePrimary_finish(
         SAFE_FREE(loutPublic);
 
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, objectHandle=%p, outPublic=%p,"
-              "creationData=%p, creationHash=%p, creationTicket=%p",
-              esysContext, objectHandle, outPublic,
-              creationData, creationHash, creationTicket);
 
     return TSS2_RC_SUCCESS;
 

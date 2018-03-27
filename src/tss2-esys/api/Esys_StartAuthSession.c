@@ -187,6 +187,11 @@ Esys_StartAuthSession_async(
     TPMI_ALG_HASH authHash)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, tpmKey=%"PRIx32 ", bind=%"PRIx32 ","
+              "nonceCaller=%p, sessionType=%02"PRIx8", symmetric=%p,"
+              "authHash=%04"PRIx16"",
+              esysContext, tpmKey, bind, nonceCaller, sessionType,
+              symmetric, authHash);
     TPM2B_ENCRYPTED_SECRET encryptedSaltAux = {0};
     const TPM2B_ENCRYPTED_SECRET *encryptedSalt = &encryptedSaltAux;
     TSS2L_SYS_AUTH_COMMAND auths;
@@ -298,8 +303,10 @@ Esys_StartAuthSession_finish(
     TPM2B_NONCE **nonceTPM)
 {
     TPM2B_NONCE *lnonceTPM = NULL;
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, sessionHandle=%p, nonceTPM=%p",
+              esysContext, sessionHandle, nonceTPM);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -467,7 +474,7 @@ Esys_StartAuthSession_finish(
                               secret_size, "ATH",
                                lnonceTPM, esysContext->in.StartAuthSession.nonceCaller,
                                authHash_size*8, NULL,
-                     &sessionHandleNode->rsrc.misc.rsrc_session.sessionKey.buffer[0]);
+                     &sessionHandleNode->rsrc.misc.rsrc_session.sessionKey.buffer[0], FALSE);
         free(secret);
         return_if_error(r, "Error in KDFa computation.");
 
@@ -486,8 +493,6 @@ Esys_StartAuthSession_finish(
         SAFE_FREE(lnonceTPM);
 
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, sessionHandle=%p, nonceTPM=%p",
-              esysContext, sessionHandle, nonceTPM);
 
     return TSS2_RC_SUCCESS;
 

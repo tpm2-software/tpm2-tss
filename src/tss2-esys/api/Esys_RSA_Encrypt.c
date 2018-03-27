@@ -172,6 +172,9 @@ Esys_RSA_Encrypt_async(
     const TPM2B_DATA *label)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, keyHandle=%"PRIx32 ", message=%p,"
+              "inScheme=%p, label=%p",
+              esysContext, keyHandle, message, inScheme, label);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *keyHandleNode;
 
@@ -247,8 +250,10 @@ Esys_RSA_Encrypt_finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_PUBLIC_KEY_RSA **outData)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, outData=%p",
+              esysContext, outData);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -332,8 +337,6 @@ Esys_RSA_Encrypt_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, outData=%p",
-              esysContext, outData);
 
     return TSS2_RC_SUCCESS;
 

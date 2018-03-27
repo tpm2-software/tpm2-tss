@@ -158,6 +158,8 @@ Esys_PCR_Allocate_async(
     const TPML_PCR_SELECTION *pcrAllocation)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, authHandle=%"PRIx32 ", pcrAllocation=%p",
+              esysContext, authHandle, pcrAllocation);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *authHandleNode;
 
@@ -239,8 +241,12 @@ Esys_PCR_Allocate_finish(
     UINT32 *sizeNeeded,
     UINT32 *sizeAvailable)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, allocationSuccess=%p, maxPCR=%p,"
+              "sizeNeeded=%p, sizeAvailable=%p",
+              esysContext, allocationSuccess, maxPCR,
+              sizeNeeded, sizeAvailable);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -316,10 +322,6 @@ Esys_PCR_Allocate_finish(
     return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" );
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, allocationSuccess=%p, maxPCR=%p,"
-              "sizeNeeded=%p, sizeAvailable=%p",
-              esysContext, allocationSuccess, maxPCR,
-              sizeNeeded, sizeAvailable);
 
     return TSS2_RC_SUCCESS;
 }

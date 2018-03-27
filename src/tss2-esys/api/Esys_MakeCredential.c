@@ -163,6 +163,9 @@ Esys_MakeCredential_async(
     const TPM2B_NAME *objectName)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, handle=%"PRIx32 ", credential=%p,"
+              "objectName=%p",
+              esysContext, handle, credential, objectName);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *handleNode;
 
@@ -239,8 +242,10 @@ Esys_MakeCredential_finish(
     TPM2B_ID_OBJECT **credentialBlob,
     TPM2B_ENCRYPTED_SECRET **secret)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, credentialBlob=%p, secret=%p",
+              esysContext, credentialBlob, secret);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -330,8 +335,6 @@ Esys_MakeCredential_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, credentialBlob=%p, secret=%p",
-              esysContext, credentialBlob, secret);
 
     return TSS2_RC_SUCCESS;
 

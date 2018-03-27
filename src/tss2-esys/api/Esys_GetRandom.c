@@ -131,6 +131,8 @@ Esys_GetRandom_async(
     UINT16 bytesRequested)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, bytesRequested=%04"PRIx16"",
+              esysContext, bytesRequested);
     TSS2L_SYS_AUTH_COMMAND auths;
 
     /* Check context, sequence correctness and set state to error for now */
@@ -196,8 +198,10 @@ Esys_GetRandom_finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_DIGEST **randomBytes)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, randomBytes=%p",
+              esysContext, randomBytes);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -278,8 +282,6 @@ Esys_GetRandom_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, randomBytes=%p",
-              esysContext, randomBytes);
 
     return TSS2_RC_SUCCESS;
 

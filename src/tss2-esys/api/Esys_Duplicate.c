@@ -176,6 +176,9 @@ Esys_Duplicate_async(
     const TPMT_SYM_DEF_OBJECT *symmetricAlg)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, objectHandle=%"PRIx32 ", newParentHandle=%"PRIx32 ","
+              "encryptionKeyIn=%p, symmetricAlg=%p",
+              esysContext, objectHandle, newParentHandle, encryptionKeyIn, symmetricAlg);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *objectHandleNode;
     RSRC_NODE_T *newParentHandleNode;
@@ -260,8 +263,12 @@ Esys_Duplicate_finish(
     TPM2B_PRIVATE **duplicate,
     TPM2B_ENCRYPTED_SECRET **outSymSeed)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, encryptionKeyOut=%p, duplicate=%p,"
+              "outSymSeed=%p",
+              esysContext, encryptionKeyOut, duplicate,
+              outSymSeed);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -359,10 +366,6 @@ Esys_Duplicate_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, encryptionKeyOut=%p, duplicate=%p,"
-              "outSymSeed=%p",
-              esysContext, encryptionKeyOut, duplicate,
-              outSymSeed);
 
     return TSS2_RC_SUCCESS;
 

@@ -137,6 +137,8 @@ Esys_IncrementalSelfTest_async(
     const TPML_ALG *toTest)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, toTest=%p",
+              esysContext, toTest);
     TSS2L_SYS_AUTH_COMMAND auths;
 
     /* Check context, sequence correctness and set state to error for now */
@@ -202,8 +204,10 @@ Esys_IncrementalSelfTest_finish(
     ESYS_CONTEXT *esysContext,
     TPML_ALG **toDoList)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, toDoList=%p",
+              esysContext, toDoList);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -284,8 +288,6 @@ Esys_IncrementalSelfTest_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, toDoList=%p",
-              esysContext, toDoList);
 
     return TSS2_RC_SUCCESS;
 

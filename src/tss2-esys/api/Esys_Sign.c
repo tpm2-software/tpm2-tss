@@ -172,6 +172,9 @@ Esys_Sign_async(
     const TPMT_TK_HASHCHECK *validation)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, keyHandle=%"PRIx32 ", digest=%p,"
+              "inScheme=%p, validation=%p",
+              esysContext, keyHandle, digest, inScheme, validation);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *keyHandleNode;
 
@@ -248,8 +251,10 @@ Esys_Sign_finish(
     ESYS_CONTEXT *esysContext,
     TPMT_SIGNATURE **signature)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, signature=%p",
+              esysContext, signature);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -333,8 +338,6 @@ Esys_Sign_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, signature=%p",
-              esysContext, signature);
 
     return TSS2_RC_SUCCESS;
 

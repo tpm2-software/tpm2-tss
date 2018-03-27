@@ -181,6 +181,10 @@ Esys_GetSessionAuditDigest_async(
     const TPMT_SIG_SCHEME *inScheme)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, privacyAdminHandle=%"PRIx32 ", signHandle=%"PRIx32 ","
+              "sessionHandle=%"PRIx32 ", qualifyingData=%p, inScheme=%p",
+              esysContext, privacyAdminHandle, signHandle, sessionHandle, qualifyingData,
+              inScheme);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *privacyAdminHandleNode;
     RSRC_NODE_T *signHandleNode;
@@ -267,8 +271,10 @@ Esys_GetSessionAuditDigest_finish(
     TPM2B_ATTEST **auditInfo,
     TPMT_SIGNATURE **signature)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, auditInfo=%p, signature=%p",
+              esysContext, auditInfo, signature);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -360,8 +366,6 @@ Esys_GetSessionAuditDigest_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, auditInfo=%p, signature=%p",
-              esysContext, auditInfo, signature);
 
     return TSS2_RC_SUCCESS;
 

@@ -146,6 +146,8 @@ Esys_ECDH_ZGen_async(
     const TPM2B_ECC_POINT *inPoint)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, keyHandle=%"PRIx32 ", inPoint=%p",
+              esysContext, keyHandle, inPoint);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *keyHandleNode;
 
@@ -218,8 +220,10 @@ Esys_ECDH_ZGen_finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ECC_POINT **outPoint)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, outPoint=%p",
+              esysContext, outPoint);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -301,8 +305,6 @@ Esys_ECDH_ZGen_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, outPoint=%p",
-              esysContext, outPoint);
 
     return TSS2_RC_SUCCESS;
 

@@ -153,6 +153,9 @@ Esys_HMAC_async(
     TPMI_ALG_HASH hashAlg)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, handle=%"PRIx32 ", buffer=%p,"
+              "hashAlg=%04"PRIx16"",
+              esysContext, handle, buffer, hashAlg);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *handleNode;
 
@@ -227,8 +230,10 @@ Esys_HMAC_finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_DIGEST **outHMAC)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, outHMAC=%p",
+              esysContext, outHMAC);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -311,8 +316,6 @@ Esys_HMAC_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, outHMAC=%p",
-              esysContext, outHMAC);
 
     return TSS2_RC_SUCCESS;
 

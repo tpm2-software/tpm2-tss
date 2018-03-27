@@ -157,6 +157,9 @@ Esys_SequenceComplete_async(
     TPMI_RH_HIERARCHY hierarchy)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, sequenceHandle=%"PRIx32 ", buffer=%p,"
+              "hierarchy=%"PRIx32 "",
+              esysContext, sequenceHandle, buffer, hierarchy);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *sequenceHandleNode;
 
@@ -234,8 +237,10 @@ Esys_SequenceComplete_finish(
     TPM2B_DIGEST **result,
     TPMT_TK_HASHCHECK **validation)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, result=%p, validation=%p",
+              esysContext, result, validation);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -329,8 +334,6 @@ Esys_SequenceComplete_finish(
     goto_if_error(r, "invalidate object", error_cleanup);
 
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, result=%p, validation=%p",
-              esysContext, result, validation);
 
     return TSS2_RC_SUCCESS;
 

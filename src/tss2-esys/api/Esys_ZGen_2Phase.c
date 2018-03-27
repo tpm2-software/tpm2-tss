@@ -177,6 +177,10 @@ Esys_ZGen_2Phase_async(
     UINT16 counter)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, keyA=%"PRIx32 ", inQsB=%p,"
+              "inQeB=%p, inScheme=%04"PRIx16", counter=%04"PRIx16"",
+              esysContext, keyA, inQsB, inQeB, inScheme,
+              counter);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *keyANode;
 
@@ -258,8 +262,10 @@ Esys_ZGen_2Phase_finish(
     TPM2B_ECC_POINT **outZ1,
     TPM2B_ECC_POINT **outZ2)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, outZ1=%p, outZ2=%p",
+              esysContext, outZ1, outZ2);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -351,8 +357,6 @@ Esys_ZGen_2Phase_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, outZ1=%p, outZ2=%p",
-              esysContext, outZ1, outZ2);
 
     return TSS2_RC_SUCCESS;
 

@@ -141,6 +141,8 @@ Esys_ReadPublic_async(
     ESYS_TR shandle3)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, objectHandle=%"PRIx32 "",
+              esysContext, objectHandle);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *objectHandleNode;
 
@@ -216,8 +218,12 @@ Esys_ReadPublic_finish(
     TPM2B_NAME **name,
     TPM2B_NAME **qualifiedName)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, outPublic=%p, name=%p,"
+              "qualifiedName=%p",
+              esysContext, outPublic, name,
+              qualifiedName);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -312,10 +318,6 @@ Esys_ReadPublic_finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, outPublic=%p, name=%p,"
-              "qualifiedName=%p",
-              esysContext, outPublic, name,
-              qualifiedName);
 
     return TSS2_RC_SUCCESS;
 

@@ -160,6 +160,9 @@ Esys_PolicyDuplicationSelect_async(
     TPMI_YES_NO includeObject)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, policySession=%"PRIx32 ", objectName=%p,"
+              "newParentName=%p, includeObject=%02"PRIx8"",
+              esysContext, policySession, objectName, newParentName, includeObject);
     TSS2L_SYS_AUTH_COMMAND auths;
 
     /* Check context, sequence correctness and set state to error for now */
@@ -228,8 +231,10 @@ TSS2_RC
 Esys_PolicyDuplicationSelect_finish(
     ESYS_CONTEXT *esysContext)
 {
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p",
+              esysContext);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -303,8 +308,6 @@ Esys_PolicyDuplicationSelect_finish(
     return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshalling" );
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p",
-              esysContext);
 
     return TSS2_RC_SUCCESS;
 }

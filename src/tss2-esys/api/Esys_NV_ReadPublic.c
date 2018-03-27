@@ -137,6 +137,8 @@ Esys_NV_ReadPublic_async(
     ESYS_TR shandle3)
 {
     TSS2_RC r;
+    LOG_TRACE("context=%p, nvIndex=%"PRIx32 "",
+              esysContext, nvIndex);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *nvIndexNode;
 
@@ -211,8 +213,10 @@ Esys_NV_ReadPublic_finish(
 {
     TPM2B_NV_PUBLIC *lnvPublic = NULL;
     TPM2B_NAME *lnvName = NULL;
-    LOG_TRACE("complete");
     TSS2_RC r;
+    LOG_TRACE("context=%p, nvPublic=%p, nvName=%p",
+              esysContext, nvPublic, nvName);
+
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
@@ -318,8 +322,6 @@ Esys_NV_ReadPublic_finish(
         SAFE_FREE(lnvName);
 
     esysContext->state = _ESYS_STATE_INIT;
-    LOG_DEBUG("context=%p, nvPublic=%p, nvName=%p",
-              esysContext, nvPublic, nvName);
 
     return TSS2_RC_SUCCESS;
 
