@@ -40,6 +40,8 @@
  * The session will be used to Create a second key by Eys_Create (with password)
  * This key will be Loaded to and a third key will be created with the second
  * key as parent key (Esys_Create).
+ * The type of encryptin can be selected by the compiler variables (-D option):
+ * TEST_XOR_OBFUSCATION or TEST_AES_ENCRYPTION.
  */
 
 int
@@ -184,10 +186,17 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: TR_SetAuth", error);
 
     ESYS_TR session;
-    TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,
-                              .keyBits = {.aes =
-                                          128},
+#if TEST_XOR_OBFUSCATION
+    TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_XOR,
+                              .keyBits = { .exclusiveOr = TPM2_ALG_SHA1 },
                               .mode = {.aes = TPM2_ALG_CFB}};
+#elif TEST_AES_ENCRYPTION
+    TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,
+                              .keyBits = {.aes = 128},
+                              .mode = {.aes = TPM2_ALG_CFB}};
+#else
+    #error "TEST_XOR_OBFUSCATION or TEST_PARAM_ENCRYPTION not set"
+#endif
 
     TPMA_SESSION sessionAttributes;
     memset(&sessionAttributes, 0, sizeof sessionAttributes);
