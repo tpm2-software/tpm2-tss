@@ -274,6 +274,9 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
+    if (dest) \
+        memset(dest, 0, sizeof(*dest)); \
+\
     ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : &tmp_dest.m1); \
     if (ret != TSS2_RC_SUCCESS) \
         return ret; \
@@ -336,6 +339,9 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } else if (!dest) { \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
+\
+    if (dest) \
+        memset(dest, 0, sizeof(*dest)); \
 \
     ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
     if (ret != TSS2_RC_SUCCESS) \
@@ -403,6 +409,9 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } else if (!dest) { \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
+\
+    if (dest) \
+        memset(dest, 0, sizeof(*dest)); \
 \
     ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
     if (ret != TSS2_RC_SUCCESS) \
@@ -474,6 +483,9 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } else if (!dest) { \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
+\
+    if (dest) \
+        memset(dest, 0, sizeof(*dest)); \
 \
     LOG_DEBUG(\
          "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
@@ -562,6 +574,9 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } else if (!dest) { \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
+\
+    if (dest) \
+        memset(dest, 0, sizeof(*dest)); \
 \
     ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
     if (ret != TSS2_RC_SUCCESS) \
@@ -658,6 +673,9 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } else if (!dest) { \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
+\
+    if (dest) \
+        memset(dest, 0, sizeof(*dest)); \
 \
     ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
     if (ret != TSS2_RC_SUCCESS) \
@@ -762,6 +780,9 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } else if (!dest) { \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
+\
+    if (dest) \
+        memset(dest, 0, sizeof(*dest)); \
 \
     ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
     if (ret != TSS2_RC_SUCCESS) \
@@ -884,6 +905,9 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } else if (!dest) { \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
+\
+    if (dest) \
+        memset(dest, 0, sizeof(*dest)); \
 \
     ret = fn1(buffer, buffer_size, &local_offset, dest ? &dest->m1 : NULL); \
     if (ret != TSS2_RC_SUCCESS) \
