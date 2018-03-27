@@ -8,7 +8,8 @@ dist: trusty
 
 env:
   global:
-  - secure: "isEwSgRODxm9JPZAhQUXP0yqPZmrD0PncBmi/y02RT0oq6Aewdag5f7CzrsJoPsaEsFcJJapIzdZLw1KXHkeAIHNhOtSE4y9tZGFBfB35pFIb0a/Im47djYrVlBXs7Ii/PllzW4xRMmhU16phwsU2N1nFyvfo9qma8R4ComL7GXTn4UqTjADg73YfPKr2NMt/6nilLKNLGE8FhjmPKhnlrBmKgCUU9BAyJ8cOR529bLOp4Wo5pGhopCHUKrYqRErISiFNcCRxjVyUEPUjMVT7/1QPGyAS2bpJa0rc2QYH9w+H0GkzliuGjzEUPaWcpDKjTimEym7F1XfmZxe1RPMH70KGsdlqe4UyWnWzsHDKnU/oCngKecx0g1beFSn/Mwfv58uDHZlegUZrstHDdkP4RZJEWyGkYDzuBCJ2UGAKJGnig/CE4w9fXFhCIltOW7/55KB53wwTec7bCXpoWV2LtC9L8TtdmmdwsBa4NHpZuLxAr3zlKt8O72mlVuo8C6iqwXCL32sahf4KGWNgc/X5GirbvsWvokGchB1p3vgwQdb/NZXKM77r7gMbnGhIOGzEmrCB3olaG+3RtF2+5KID/Z1LZHIlXDtrCa8dAmMvBIFvjFe9/L9T75d8GwiaOg2wEfNTb8bAsPsBdyKiYvWpKMIXJEcCTGKOpC9Nr0/+uk="
+  # COVERITY_SCAN_TOKEN
+  - secure: "ZD0KxBhO/CaSE/TOkW+H5nsBbaMolbIPv5DgctcjA1BlTckgc5lK4m+7BIR1Fft6gaeeLOoCY3qUm4kW++Bqk2bTsrx/HvrmVmrzMO572jA74x4E+5lynUnRVaAgBg7cVBcB0hZcUurx8FifNBbgnWlxT/nDWttVnglkz400GCE9/zy+VTJWqt4QAB+6qeKPiG3vRthQdWcHstBI8IIAbvp4rhSUajBBQeZ5ro5RPGNy+iHen+t6tyJmbjiP0Y4qjkKGbfwXHnsseEcuSJQuxSkQ9MWK6t93BFXFSPw5MjHIApMn+4CjRp2JMoVTVfe5fFeZEHxVUmAzy+e5eIeftrUtUlCI293UuxZnw/vpJczn3BWunlhhjqjsCwVeknzGHxlaT+ck8Et1Mdl/3nY/E9dt47/NOzXY2xrAz59GYsdKvvsPoCGgNlAub03Vl0W24I1kjppsmN/zFwazHGqoxIBTwrDOQUmZvPfXA3jAUozrfAdT3YjnRcCG7bbQmacFApqfUm/bqMgapAgozjjxpuBrO1wQSUjjH6NANZsP2Gpk0eAl7FOlBzbVgKPxCQozWCjpKOj3HMnXX458ZQWsboG5J00wwjw9DRNRCkeexLdi832L/BPhUY5JgRlTqqyKr9cr69DvogBF/pLytpSCciF6t9NqqGZYbBomXJLaG84="
   # COVERALLS_REPO_TOKEN
   - secure: "BJUO7GJjP+WgMgSwTTteuc2KKum7Na++92pCLDa3hAzwZZ2OA+MbR9Zd25Yp0kT1K7bIPGDVdg0RksMI9P+Lbun3pajqLWfJpXrAF5IywllQx7bT4x1KeJridJeDnHZVSobTn4oAaGl5JrtpGgXAOjzpgLl1ljP0STyZUF+kC4RSK4Wt2DdT2acj5B8PT6cqR3btfStWgWKlm8t2nOFDGxTCbI4YIwcfgFhOG/ATx7Uc/z08MBI3z7lezy0nBt1/o2gDPZVb4Pa5A390P6Gv0g6mFu1te+P2IFmrWR6mF2Jh5GiJFWR7935rX5d2HxCkCNO7uEmncM4WeDk5PE9+TIcg7T2d9G1JR762aLMvNtUcmlfa6JX/EvveZK47ThwAictwvlD3tgfDy1E7Wdb1O6PtLsUIXRx50UocqBMeSQvOfR1330FuF/td9VGNFqxKW0wDWVIyl8QMK+p7t0aE+2py2Hb3IYVQEk98aWnffvEFeYfNPBywOiVD7trsTFEXKusVypAWDF3kvOmNuetL6ADfPnIfzvPw6DxQzwsxPUo0ahM2C2pzY/MavSlDM8+Q/EZiLkw9g39IgxjDsExD2EEu8U9jyz8iSmbKsrK6Z4L3BWO6a0gFakBAfWR1Rsb15UfVPYlJgPwtAdbgQ65ElgVeyTdkDCuE64iby2nZeP4="
   # run coverity scan on gcc build to keep from DOSing coverity
@@ -30,11 +31,11 @@ addons:
     - libssl-dev
   coverity_scan:
     project:
-      name: "01org/tpm2-tss"
+      name: "01org/TPM2.0-TSS"
       description: Build submitted via Travis-CI
     notification_email: philip.b.tricca@intel.com
-    build_command_prepend: "make clean"
-    build_command: "make --jobs=$(($(nproc)*2))"
+    build_command_prepend: "./bootstrap && ./configure"
+    build_command: "make --jobs=$(nproc)"
     branch_pattern: coverity_scan
 
 install:
@@ -64,6 +65,12 @@ before_script:
   - ./bootstrap
 
 script:
+# short-circuit normal build if we've already done a coverity scan
+  - |
+    if [ "${COVERITY_SCAN_BRANCH}" == 1 ]; then
+        echo "COVERITY_SCAN_BRANCH set, not running normal build."
+        exit 0
+    fi
 # build with no tests enabled
   - mkdir ./build-no-tests
   - pushd ./build-no-tests
