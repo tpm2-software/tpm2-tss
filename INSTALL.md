@@ -21,6 +21,9 @@ The following are dependencies only required when building test suites.
 * OpenSSL development libraries and header files
 * Unit test suite (see ./configure option --enable-unit):
 * cmocka unit test framework, version >= 1.0
+* Code coverage analysis:
+* lcov
+* autoconf-archives
 
 Most users will not need to install these dependencies.
 
@@ -44,6 +47,7 @@ $ sudo apt -y install \
   libssl-dev \
   autoconf
 ```
+Note: In some Ubuntu versions, the lcov and autoconf-archive packages are incompatible with each other. Recommend downloading autoconf-archives directly from upstream and copy ax_code_coverage.m4.
 
 ### Fedora
 
