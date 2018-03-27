@@ -26,6 +26,7 @@
  *******************************************************************************/
 
 #include "tss2_esys.h"
+#include "tss2_mu.h"
 
 #include "esys_iutil.h"
 #define LOGMODULE test
@@ -104,24 +105,18 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         .buffer = {1, 2, 3, 4, 5}
     };
 
-   TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
-       .size = 4,
-       .sensitive = {
-           .userAuth = {
-                .size = 0,
-                .buffer = {0 },
-            },
-           .data = {
-                .size = 0,
-                .buffer = {0},
-            },
-       },
-   };
-    return 0;
+    TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
+        .size = 4,
+        .sensitive = {
+            .userAuth = authValuePrimary,
+            .data = {
+                 .size = 0,
+                 .buffer = {0},
+             },
+        },
+    };
 
-    inSensitivePrimary.sensitive.userAuth = authValuePrimary;
-
-   TPM2B_DATA outsideInfo = {
+    TPM2B_DATA outsideInfo = {
         .size = 0,
         .buffer = {},
     };
@@ -151,33 +146,73 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-   TPM2B_AUTH authValueObject = {
+    r = Esys_TR_SetAuth(esys_context, primaryHandle_handle, &authValuePrimary);
+    goto_if_error(r, "Setting the Primary's AuthValue", error);
+
+    TPM2B_AUTH authValueObject = {
         .size = 5,
         .buffer = {6, 7, 8, 9, 10}
     };
 
-   TPM2B_SENSITIVE_CREATE inSensitiveObject = {
-       .size = 4,
-       .sensitive = {
-           .userAuth = {
-                .size = 0,
-                .buffer = {0 },
-            },
-           .data = {
-                .size = 0,
-                .buffer = {0},
-            },
-       },
-   };
+    TPM2B_SENSITIVE_CREATE inSensitiveObject = {
+        .size = 4,
+        .sensitive = {
+            .userAuth = authValueObject,
+            .data = {
+                 .size = 0,
+                 .buffer = {0},
+             },
+        },
+    };
 
-   inSensitiveObject.sensitive.userAuth = authValueObject;
+    TPM2B_TEMPLATE inPublic_template = {0};
+    ESYS_TR objectHandle_handle;
+    TPM2B_PRIVATE *outPrivate2;
+    TPM2B_PUBLIC *outPublic2;
+    TPMT_PUBLIC  inPublic2 = {
+        .type = TPM2_ALG_ECC,
+        .nameAlg = TPM2_ALG_SHA256,
+        .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
+                             TPMA_OBJECT_RESTRICTED |
+                             TPMA_OBJECT_SIGN_ENCRYPT |
+                             TPMA_OBJECT_FIXEDTPM |
+                             TPMA_OBJECT_FIXEDPARENT |
+                             TPMA_OBJECT_SENSITIVEDATAORIGIN),
+        .authPolicy = {
+            .size = 0,
+        },
+        .parameters.eccDetail = {
+             .symmetric = {
+                 .algorithm = TPM2_ALG_NULL,
+                 .keyBits.aes = 128,
+                 .mode.aes = TPM2_ALG_ECB,
+             },
+             .scheme = {
+                  .scheme = TPM2_ALG_ECDSA,
+                  .details = {.ecdsa =
+                              {.hashAlg = TPM2_ALG_SHA1}
+                  }
+              },
+             .curveID = TPM2_ECC_NIST_P256,
+             .kdf = {.scheme =
+                     TPM2_ALG_NULL,.details = {}
+              }
+         },
+        .unique.ecc = {
+             .x = {.size = 0,.buffer = {}},
+             .y = {.size = 0,.buffer = {}}
+         },
+    };
 
-    TPM2B_TEMPLATE                 inPublic2;
-    ESYS_TR                        objectHandle_handle;
-    TPM2B_PRIVATE                  *outPrivate2;
-    TPM2B_PUBLIC                   *outPublic2;
+    size_t offset = 0;
 
-    r = Esys_CreateLoaded (
+    r = Tss2_MU_TPMT_PUBLIC_Marshal(&inPublic2, &inPublic_template.buffer[0],
+                                    sizeof(TPMT_PUBLIC), &offset);
+    goto_if_error(r, "Error Tss2_MU_TPMT_PUBLIC_Marshal", error);
+
+    inPublic_template.size = offset;
+
+    r = Esys_CreateLoaded(
         esys_context,
         primaryHandle_handle,
 #ifdef TEST_SESSION
@@ -188,27 +223,36 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         ESYS_TR_NONE,
         ESYS_TR_NONE,
         &inSensitiveObject,
-        &inPublic2,
+        &inPublic_template,
         &objectHandle_handle,
         &outPrivate2,
         &outPublic2
         );
-    goto_if_error(r, "Error: CreateLoaded", error);
+    if (r == TPM2_RC_COMMAND_CODE) {
+        LOG_INFO("Command TPM2_CreateLoaded not supported by TPM.");
 
-    r = Esys_FlushContext(esys_context, primaryHandle_handle);
-    goto_if_error(r, "Flushing context", error);
+        r = Esys_FlushContext(esys_context, primaryHandle_handle);
+        goto_if_error(r, "Flushing context", error);
 
-    r = Esys_FlushContext(esys_context, objectHandle_handle);
-    goto_if_error(r, "Flushing context", error);
+        r = 77; /* Skip */
+        goto error;
+    } else {
+        goto_if_error(r, "Error During CreateLoaded", error);
+
+        r = Esys_FlushContext(esys_context, primaryHandle_handle);
+        goto_if_error(r, "Flushing context", error);
+
+        r = Esys_FlushContext(esys_context, objectHandle_handle);
+        goto_if_error(r, "Flushing context", error);
+    }
 
 #ifdef TEST_SESSION
     r = Esys_FlushContext(esys_context, session);
     goto_if_error(r, "Error: FlushContext", error);
 #endif
 
-
     return 0;
 
-error:
-    return 1;
+ error:
+    return r;
 }
