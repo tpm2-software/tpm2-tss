@@ -39,210 +39,129 @@
 #define VAL
 #define TAB_SIZE(tab) (sizeof(tab) / sizeof(tab[0]))
 
-static TSS2_RC marshal_pcr_select(const UINT8 *ptr, uint8_t buffer[],
-                                  size_t buffer_size, size_t *offset)
-{
-    TPMS_PCR_SELECT *pcrSelect = (TPMS_PCR_SELECT *)ptr;
-    UINT32 i;
-    TSS2_RC ret;
-
-    if (!ptr) {
-        LOG_WARNING("src param is NULL");
-        return TSS2_MU_RC_BAD_REFERENCE;
-    }
-
-    ret = Tss2_MU_UINT8_Marshal(pcrSelect->sizeofSelect, buffer, buffer_size, offset);
-    if (ret)
-        return ret;
-
-    if (pcrSelect->sizeofSelect > TAB_SIZE(pcrSelect->pcrSelect)) {
-        LOG_ERROR("sizeofSelect value too big");
-        return TSS2_SYS_RC_BAD_VALUE;
-    }
-
-    for (i = 0; i < pcrSelect->sizeofSelect; i++)
-    {
-        ret = Tss2_MU_UINT8_Marshal(pcrSelect->pcrSelect[i], buffer, buffer_size, offset);
-        if (ret)
-            return ret;
-    }
-
-    return TSS2_RC_SUCCESS;
+#define TPMS_PCR_MARSHAL(type, firstFieldMarshal) \
+TSS2_RC \
+Tss2_MU_##type##_Marshal(const type *src, uint8_t buffer[], \
+                           size_t buffer_size, size_t *offset) \
+{ \
+    TSS2_RC ret = TSS2_RC_SUCCESS; \
+    size_t local_offset = 0; \
+    UINT8 i; \
+\
+    if (!src) { \
+        LOG_WARNING("src param is NULL"); \
+        return TSS2_MU_RC_BAD_REFERENCE; \
+    } \
+\
+    if (offset) { \
+        local_offset = *offset; \
+    } else if (!buffer) { \
+        return TSS2_MU_RC_BAD_REFERENCE; \
+    } \
+\
+    LOG_DEBUG( \
+         "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx", (uintptr_t)&src, (uintptr_t)buffer, \
+         offset?*offset:0xffff); \
+\
+    if (src->sizeofSelect > TAB_SIZE(src->pcrSelect)) { \
+        LOG_ERROR("sizeofSelect value %"PRIu8"/%zi too big", src->sizeofSelect, \
+                  TAB_SIZE(src->pcrSelect)); \
+        return TSS2_SYS_RC_BAD_VALUE; \
+    } \
+\
+    ret = firstFieldMarshal; \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = Tss2_MU_UINT8_Marshal(src->sizeofSelect, buffer, buffer_size, &local_offset); \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    for (i = 0; i < src->sizeofSelect; i++) { \
+        ret = Tss2_MU_BYTE_Marshal(src->pcrSelect[i], buffer, buffer_size, \
+                                    &local_offset); \
+        if (ret != TSS2_RC_SUCCESS) \
+            return ret; \
+    } \
+\
+    if (offset) { \
+        *offset = local_offset; \
+    } \
+\
+    return TSS2_RC_SUCCESS; \
 }
 
-static TSS2_RC unmarshal_pcr_select(uint8_t const buffer[], size_t buffer_size,
-                                    size_t *offset, UINT8 *ptr)
-{
-    TPMS_PCR_SELECT *pcrSelect = (TPMS_PCR_SELECT *)ptr;
-    UINT32 i;
-    TSS2_RC ret;
+TPMS_PCR_MARSHAL(TPMS_PCR_SELECT, TSS2_RC_SUCCESS)
 
-    if (!ptr) {
-        LOG_WARNING("dest param is NULL");
-        return TSS2_MU_RC_BAD_REFERENCE;
-    }
+TPMS_PCR_MARSHAL(TPMS_PCR_SELECTION, \
+    Tss2_MU_TPMI_ALG_HASH_Marshal(src->hash, buffer, buffer_size, &local_offset))
 
-    ret = Tss2_MU_UINT8_Unmarshal(buffer, buffer_size, offset, &pcrSelect->sizeofSelect);
-    if (ret)
-        return ret;
+TPMS_PCR_MARSHAL(TPMS_TAGGED_PCR_SELECT, \
+    Tss2_MU_UINT32_Marshal(src->tag, buffer, buffer_size, &local_offset))
 
-    if (pcrSelect->sizeofSelect > TAB_SIZE(pcrSelect->pcrSelect)) {
-        LOG_ERROR("sizeofSelect value too big");
-        return TSS2_SYS_RC_MALFORMED_RESPONSE;
-    }
-
-    for (i = 0; i < pcrSelect->sizeofSelect; i++)
-    {
-        ret = Tss2_MU_UINT8_Unmarshal(buffer, buffer_size, offset, &pcrSelect->pcrSelect[i]);
-
-        if (ret)
-            return ret;
-    }
-
-    return TSS2_RC_SUCCESS;
+#define TPMS_PCR_UNMARSHAL(type, firstFieldUnmarshal) \
+TSS2_RC \
+Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
+                                    size_t *offset, type *dest) \
+{ \
+    TSS2_RC ret = TSS2_RC_SUCCESS; \
+    size_t local_offset = 0; \
+    UINT8 i, tmp; \
+\
+    LOG_DEBUG( \
+         "Unmarshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx", (uintptr_t)dest, (uintptr_t)buffer, \
+         offset?*offset:0xffff); \
+\
+    if (offset) { \
+        local_offset = *offset; \
+    } else if (!dest) { \
+        return TSS2_MU_RC_BAD_REFERENCE; \
+    } \
+\
+    if (dest) \
+        memset(dest, 0, sizeof(*dest)); \
+\
+    ret = firstFieldUnmarshal; \
+    if (ret != TSS2_RC_SUCCESS) \
+        return ret; \
+\
+    ret = Tss2_MU_UINT8_Unmarshal(buffer, buffer_size, &local_offset, \
+                                  dest? &dest->sizeofSelect : &tmp); \
+    if (ret) \
+        return ret; \
+\
+    if ((dest? dest->sizeofSelect : tmp) > TAB_SIZE(dest->pcrSelect)) { \
+        LOG_ERROR("sizeofSelect value %"PRIu8" / %zi too big", \
+                  dest? dest->sizeofSelect : tmp, TAB_SIZE(dest->pcrSelect)); \
+        return TSS2_SYS_RC_MALFORMED_RESPONSE; \
+    } \
+\
+    for (i = 0; i < (dest? dest->sizeofSelect : tmp); i++) \
+    { \
+        ret = Tss2_MU_UINT8_Unmarshal(buffer, buffer_size, &local_offset, \
+                                      dest? &dest->pcrSelect[i] : NULL); \
+        if (ret != TSS2_RC_SUCCESS) \
+            return ret; \
+    } \
+\
+    if (offset) { \
+        *offset = local_offset; \
+    } \
+\
+    return TSS2_RC_SUCCESS; \
 }
 
-static TSS2_RC marshal_pcr_selection(const TPMI_ALG_HASH *ptr, uint8_t buffer[],
-                                     size_t buffer_size, size_t *offset)
-{
-    TPMS_PCR_SELECTION *pcrSelection = (TPMS_PCR_SELECTION *)ptr;
-    UINT32 i;
-    TSS2_RC ret;
+TPMS_PCR_UNMARSHAL(TPMS_PCR_SELECT, TSS2_RC_SUCCESS)
 
-    if (!ptr) {
-        LOG_WARNING("src param is NULL");
-        return TSS2_MU_RC_BAD_REFERENCE;
-    }
+TPMS_PCR_UNMARSHAL(TPMS_PCR_SELECTION, \
+    Tss2_MU_TPMI_ALG_HASH_Unmarshal(buffer, buffer_size, &local_offset, \
+                                    dest? &dest->hash : NULL))
 
-    if (pcrSelection->sizeofSelect > TAB_SIZE(pcrSelection->pcrSelect)) {
-        LOG_ERROR("sizeofSelect value too big");
-        return TSS2_SYS_RC_BAD_VALUE;
-    }
-
-    ret = Tss2_MU_UINT16_Marshal(pcrSelection->hash, buffer, buffer_size, offset);
-    if (ret)
-        return ret;
-
-    ret = Tss2_MU_UINT8_Marshal(pcrSelection->sizeofSelect, buffer, buffer_size, offset);
-    if (ret)
-        return ret;
-
-    for (i = 0; i < pcrSelection->sizeofSelect; i++)
-    {
-        ret = Tss2_MU_UINT8_Marshal(pcrSelection->pcrSelect[i], buffer, buffer_size, offset);
-
-        if (ret)
-            return ret;
-    }
-
-    return TSS2_RC_SUCCESS;
-}
-
-static TSS2_RC unmarshal_pcr_selection(uint8_t const buffer[], size_t buffer_size,
-                                       size_t *offset, TPMI_ALG_HASH *ptr)
-{
-    TPMS_PCR_SELECTION *pcrSelection = (TPMS_PCR_SELECTION *)ptr;
-    UINT32 i;
-    TSS2_RC ret;
-
-    if (!ptr) {
-        LOG_WARNING("dest param is NULL");
-        return TSS2_MU_RC_BAD_REFERENCE;
-    }
-
-    ret = Tss2_MU_UINT16_Unmarshal(buffer, buffer_size, offset, &pcrSelection->hash);
-    if (ret)
-        return ret;
-
-    ret = Tss2_MU_UINT8_Unmarshal(buffer, buffer_size, offset, &pcrSelection->sizeofSelect);
-    if (ret)
-        return ret;
-
-    if (pcrSelection->sizeofSelect > TAB_SIZE(pcrSelection->pcrSelect)) {
-        LOG_ERROR("sizeofSelect value too big");
-        return TSS2_SYS_RC_MALFORMED_RESPONSE;
-    }
-
-    for (i = 0; i < pcrSelection->sizeofSelect; i++)
-    {
-        ret = Tss2_MU_UINT8_Unmarshal(buffer, buffer_size, offset, &pcrSelection->pcrSelect[i]);
-
-        if (ret)
-            return ret;
-    }
-
-    return TSS2_RC_SUCCESS;
-}
-
-static TSS2_RC marshal_tagged_pcr_selection(const TPM2_PT_PCR *ptr, uint8_t buffer[],
-                                            size_t buffer_size, size_t *offset)
-{
-    TPMS_TAGGED_PCR_SELECT *taggedPcrSelect = (TPMS_TAGGED_PCR_SELECT *)ptr;
-    UINT32 i;
-    TSS2_RC ret;
-
-    if (!ptr) {
-        LOG_WARNING("src param is NULL");
-        return TSS2_MU_RC_BAD_REFERENCE;
-    }
-
-    if (taggedPcrSelect->sizeofSelect > TAB_SIZE(taggedPcrSelect->pcrSelect)) {
-        LOG_ERROR("sizeofSelect value too big");
-        return TSS2_SYS_RC_BAD_VALUE;
-    }
-
-    ret = Tss2_MU_UINT32_Marshal(taggedPcrSelect->tag, buffer, buffer_size, offset);
-    if (ret)
-        return ret;
-
-    ret = Tss2_MU_UINT8_Marshal(taggedPcrSelect->sizeofSelect, buffer, buffer_size, offset);
-    if (ret)
-        return ret;
-
-    for (i = 0; i < taggedPcrSelect->sizeofSelect; i++)
-    {
-        ret = Tss2_MU_UINT8_Marshal(taggedPcrSelect->pcrSelect[i], buffer, buffer_size, offset);
-        if (ret)
-            return ret;
-    }
-
-    return TSS2_RC_SUCCESS;
-}
-
-static TSS2_RC unmarshal_tagged_pcr_selection(uint8_t const buffer[], size_t buffer_size,
-                                              size_t *offset, TPM2_PT_PCR *ptr)
-{
-    TPMS_TAGGED_PCR_SELECT *taggedPcrSelect = (TPMS_TAGGED_PCR_SELECT *)ptr;
-    UINT32 i;
-    TSS2_RC ret;
-
-    if (!ptr) {
-        LOG_WARNING("dest param is NULL");
-        return TSS2_MU_RC_BAD_REFERENCE;
-    }
-
-    ret = Tss2_MU_UINT32_Unmarshal(buffer, buffer_size, offset, &taggedPcrSelect->tag);
-    if (ret)
-        return ret;
-
-    ret = Tss2_MU_UINT8_Unmarshal(buffer, buffer_size, offset, &taggedPcrSelect->sizeofSelect);
-    if (ret)
-        return ret;
-
-    if (taggedPcrSelect->sizeofSelect > TAB_SIZE(taggedPcrSelect->pcrSelect)) {
-        LOG_ERROR("sizeofSelect value too big");
-        return TSS2_SYS_RC_MALFORMED_RESPONSE;
-    }
-
-    for (i = 0; i < taggedPcrSelect->sizeofSelect; i++)
-    {
-        ret = Tss2_MU_UINT8_Unmarshal(buffer, buffer_size, offset, &taggedPcrSelect->pcrSelect[i]);
-        if (ret)
-            return ret;
-    }
-
-    return TSS2_RC_SUCCESS;
-}
+TPMS_PCR_UNMARSHAL(TPMS_TAGGED_PCR_SELECT, \
+    Tss2_MU_UINT32_Unmarshal(buffer, buffer_size, &local_offset, \
+                             dest? &dest->tag : NULL))
 
 #define TPMS_MARSHAL_0(type) \
 TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
@@ -1235,24 +1154,6 @@ TPMS_UNMARSHAL_4(TPMS_CONTEXT,
                  savedHandle, Tss2_MU_UINT32_Unmarshal,
                  hierarchy, Tss2_MU_UINT32_Unmarshal,
                  contextBlob, Tss2_MU_TPM2B_CONTEXT_DATA_Unmarshal)
-
-TPMS_MARSHAL_1(TPMS_PCR_SELECT,
-               sizeofSelect, ADDR, marshal_pcr_select)
-
-TPMS_UNMARSHAL_1(TPMS_PCR_SELECT,
-                 sizeofSelect, unmarshal_pcr_select)
-
-TPMS_MARSHAL_1(TPMS_PCR_SELECTION,
-               hash, ADDR, marshal_pcr_selection)
-
-TPMS_UNMARSHAL_1(TPMS_PCR_SELECTION,
-                 hash, unmarshal_pcr_selection)
-
-TPMS_MARSHAL_1(TPMS_TAGGED_PCR_SELECT,
-               tag, ADDR, marshal_tagged_pcr_selection)
-
-TPMS_UNMARSHAL_1(TPMS_TAGGED_PCR_SELECT,
-                 tag, unmarshal_tagged_pcr_selection)
 
 TPMS_MARSHAL_2(TPMS_QUOTE_INFO,
                pcrSelect, ADDR, Tss2_MU_TPML_PCR_SELECTION_Marshal,
