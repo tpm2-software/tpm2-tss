@@ -17,7 +17,6 @@ int
 main (int   argc,
       char *argv[])
 {
-    TSS2_RC rc;
     TSS2_SYS_CONTEXT *sapi_context;
     int ret;
     test_opts_t opts = {
@@ -28,17 +27,19 @@ main (int   argc,
     };
 
     get_test_opts_from_env (&opts);
-    if (sanity_check_test_opts (&opts) != 0)
-        exit (1);
-    sapi_context = sapi_init_from_opts (&opts);
-    if (sapi_context == NULL)
-        exit (1);
-    rc = Tss2_Sys_Startup(sapi_context, TPM2_SU_CLEAR);
-    if (rc != TSS2_RC_SUCCESS && rc != TPM2_RC_INITIALIZE) {
-        LOG_ERROR("TPM Startup FAILED! Response Code : 0x%x", rc);
-        exit(1);
+    if (sanity_check_test_opts (&opts) != 0) {
+        LOG_ERROR("Checking test options");
+        return 99; /* fatal error */
     }
+    sapi_context = sapi_init_from_opts (&opts);
+    if (sapi_context == NULL) {
+        LOG_ERROR("SAPI context not initialized");
+        return 99; /* fatal error */
+    }
+
     ret = test_invoke (sapi_context);
+
     sapi_teardown_full (sapi_context);
+
     return ret;
 }

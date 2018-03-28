@@ -41,6 +41,14 @@ check-programs: $(check_PROGRAMS)
 check_PROGRAMS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
 TESTS = $(check_PROGRAMS)
 
+if SIMULATOR_BIN
+noinst_PROGRAMS += test/helper/tpm_startup
+test_helper_tpm_startup_CFLAGS = $(TESTS_CFLAGS) -I$(srcdir)/test/integration
+test_helper_tpm_startup_LDFLAGS = $(TESTS_LDFLAGS)
+test_helper_tpm_startup_LDADD = $(TESTS_LDADD)
+test_helper_tpm_startup_SOURCES = test/helper/tpm_startup.c
+endif #SIMULATOR_BIN
+
 if UNIT
 TESTS_UNIT  = \
     test/unit/CommonPreparePrologue \
