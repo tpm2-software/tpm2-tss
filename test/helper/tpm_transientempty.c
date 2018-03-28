@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 #include "tss2_sys.h"
 
@@ -7,6 +8,8 @@
 #include "util/log.h"
 #include "test-options.h"
 #include "context-util.h"
+
+#define TAB_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
 int
 main (int argc, char *argv[])
@@ -29,19 +32,26 @@ main (int argc, char *argv[])
     if (sapi_context == NULL)
         exit (1);
 
-    TPMI_YES_NO more;
+    TPMS_CAPABILITY_DATA caps;
+
     rc = Tss2_Sys_GetCapability(sapi_context, NULL, TPM2_CAP_HANDLES,
-                                TPM2_HR_TRANSIENT, 0, &more, NULL, NULL);
+                                TPM2_HR_TRANSIENT,
+                                TAB_SIZE(caps.data.handles.handle), NULL,
+                                &caps, NULL);
     if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("TPM GetCapabilities FAILED! Response Code : 0x%x", rc);
+        LOG_ERROR("TPM GetCapabilities FAILED! Response Code : 0x%"PRIx32, rc);
         exit(1);
     }
 
+
     sapi_teardown_full (sapi_context);
 
-    if (more) {
+    if (caps.data.handles.count) {
         LOG_ERROR("TPM contains transient entries");
+        for (int i = 0; i < caps.data.handles.count; i++)
+            LOG_ERROR("Handle %"PRIx32, caps.data.handles.handle[i]);
         return 1;
     }
+
     return 0;
 }
