@@ -263,6 +263,13 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     }
     /* CheckFailed(rc, TSS2_SYS_RC_BAD_SEQUENCE); */
 
+    /* Execute the command synchronously. */
+    rc = Tss2_Sys_ExecuteFinish(sapi_context, TSS2_TCTI_TIMEOUT_BLOCK);
+    if (rc != TPM2_RC_VALUE + TPM2_RC_1) {
+        LOG_ERROR("SAPI test FAILED! Response Code : 0x%x", rc);
+        exit(1);
+    }
+
     /* Test one-call for null sapi_context pointer. */
     rc = Tss2_Sys_Startup(0, TPM2_SU_CLEAR);
     if (rc != TSS2_SYS_RC_BAD_REFERENCE) {
