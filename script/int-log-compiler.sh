@@ -229,6 +229,16 @@ if [ $? -ne 0 ]; then
     break
 fi
 
+env TPM20TEST_TCTI_NAME="socket" \
+    TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
+    TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
+    G_MESSAGES_DEBUG=all ./test/helper/tpm_transientempty
+if [ $? -ne 0 ]; then
+    echo "TPM transient area not empty => skipping"
+    ret=77
+    break
+fi
+
 echo "Execute the test script"
 env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \

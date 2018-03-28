@@ -73,3 +73,4 @@ doc/man/
 tpm2-tss-2.0.0-dev.tar.gz
 tpm2-tss-2.0.0-dev/
 
+test/helper/tpm_startup
