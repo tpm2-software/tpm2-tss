@@ -281,6 +281,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                     &creationData2, &creationHash2, &creationTicket2);
     goto_if_error(r, "Error esys create ", error);
 
+    r = Esys_FlushContext(esys_context, primaryHandle_handle);
+    goto_if_error(r, "Error: FlushContext", error);
+
     return 0;
 
  error:

@@ -172,6 +172,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                    &attest, &signature);
     goto_if_error(r, "Error esys quiote", error);
 
+    r = Esys_FlushContext(esys_context, primaryHandle_handle);
+    goto_if_error(r, "Error: FlushContext", error);
+
     return 0;
 
  error:
