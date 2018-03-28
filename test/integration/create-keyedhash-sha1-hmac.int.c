@@ -40,7 +40,8 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     if (rc == TSS2_RC_SUCCESS) {
         LOG_INFO("primary created successfully: 0x%" PRIx32, parent_handle);
     } else {
-       return rc;
+        LOG_ERROR("CreatePrimary failed with 0x%" PRIx32, rc);
+        return 99; /* fatal error */
     }
 
     inPublic.publicArea.nameAlg = TPM2_ALG_SHA1;
@@ -68,8 +69,14 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
         LOG_INFO("success");
     } else {
         LOG_ERROR("Create FAILED! Response Code : 0x%x", rc);
-        exit(1);
+        return 1;
     }
 
-    return rc;
+    rc = Tss2_Sys_FlushContext(sapi_context, parent_handle);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Tss2_Sys_FlushContext failed with 0x%"PRIx32, rc);
+        return 99; /* fatal error */
+    }
+
+    return 0;
 }

@@ -183,6 +183,12 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
         exit(1);
     }
 
+    rc = Tss2_Sys_FlushContext(sapi_context, object_handle);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Tss2_Sys_FlushContext failed with 0x%"PRIx32, rc);
+        return 99; /* fatal error */
+    }
+
     object_handle = 0;
     TPM2B_DATA              outside_info2    = { 0 };
     TPML_PCR_SELECTION      creation_pcr2    = { 0 };

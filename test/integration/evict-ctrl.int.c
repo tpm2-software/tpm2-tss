@@ -24,7 +24,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     rc = create_primary_rsa_2048_aes_128_cfb (sapi_context, &primary_handle);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_INFO("failed to create primary: 0x%" PRIx32, rc);
-        return rc;
+        return 99; /* fatal error */
     }
 
     rc = Tss2_Sys_EvictControl (sapi_context,
@@ -36,7 +36,26 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     if (rc != TSS2_RC_SUCCESS) {
         LOG_INFO("failed to make key 0x%" PRIx32 " persistent: 0x%" PRIx32,
                    primary_handle, rc);
+        return 1;
     }
 
-    return rc;
+    rc = Tss2_Sys_EvictControl (sapi_context,
+                                TPM2_RH_OWNER,
+                                0x81000000,
+                                &sessions_cmd,
+                                0x81000000,
+                                &sessions_rsp);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_INFO("failed to make key 0x%" PRIx32 " unpersistent: 0x%" PRIx32,
+                   primary_handle, rc);
+        return 1;
+    }
+
+    rc = Tss2_Sys_FlushContext(sapi_context, primary_handle);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Tss2_Sys_FlushContext failed with 0x%"PRIx32, rc);
+        return 99; /* fatal error */
+    }
+
+    return 0;
 }

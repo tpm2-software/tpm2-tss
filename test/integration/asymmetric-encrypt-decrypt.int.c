@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 
 #include "tss2_tcti.h"
 #include "tss2_sys.h"
@@ -140,6 +141,17 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     LOG_INFO("Decrypt successed.");
 
     LOG_INFO("Asymmetric Encryption and Decryption Test Passed!");
+
+    rc = Tss2_Sys_FlushContext(sapi_context, sym_handle);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Tss2_Sys_FlushContext failed with 0x%"PRIx32, rc);
+        return 99; /* fatal error */
+    }
+    rc = Tss2_Sys_FlushContext(sapi_context, loaded_sym_handle);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Tss2_Sys_FlushContext failed with 0x%"PRIx32, rc);
+        return 99; /* fatal error */
+    }
     return 0;
 }
 
