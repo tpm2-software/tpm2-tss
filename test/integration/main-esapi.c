@@ -240,11 +240,7 @@ TSS_SAPI_FIRST_VERSION };
         LOG_ERROR("Esys_SetTimeout FAILED! Response Code : 0x%x", rc);
         return 1;
     }
-    rc = Tss2_Sys_Startup(esys_context->sys, TPM2_SU_CLEAR);
-    if (rc != TSS2_RC_SUCCESS && rc != TPM2_RC_INITIALIZE) {
-        LOG_ERROR("TPM Startup FAILED! Response Code : 0x%x", rc);
-        return 1;
-    }
+
     ret = test_invoke_esapi(esys_context);
 
     Esys_Finalize(&esys_context);

@@ -217,12 +217,28 @@ for i in $(seq ${BACKOFF_MAX}); do
     fi
 done
 
-# execute the test script
+while true; do
+
+env TPM20TEST_TCTI_NAME="socket" \
+    TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
+    TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
+    G_MESSAGES_DEBUG=all ./test/helper/tpm_startup
+if [ $? -ne 0 ]; then
+    echo "TPM_StartUp failed"
+    ret=99
+    break
+fi
+
+echo "Execute the test script"
 env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
     TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
     G_MESSAGES_DEBUG=all $@
 ret=$?
+echo "Script returned $ret"
+
+break
+done
 
 # This sleep is sadly necessary: If we kill the tabrmd w/o sleeping for a
 # second after the test finishes the simulator will die too. Bug in the

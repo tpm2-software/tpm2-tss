@@ -38,6 +38,7 @@ noinst_LTLIBRARIES =
 EXTRA_DIST =
 CLEANFILES =
 MOSTLYCLEANFILES =
+noinst_PROGRAMS =
 
 ### Add ax_* rules ###
 # ax_code_coverage
