@@ -3958,6 +3958,5 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     rval = Tss2_Sys_FlushContext( sysContext, loadedSha1KeyHandle );
     CheckPassed( rval );
 
-    tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_OFF );
     return 0;
 }
