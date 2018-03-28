@@ -181,6 +181,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         if (mode > 0 && !memcmp(&plain.buffer[0], &plain2->buffer[0], plain_size)) {
             LOG_ERROR("plain texts are not equal for mode %i", mode);
         }
+
+        r = Esys_FlushContext(esys_context, primaryHandle_handle);
+        goto_if_error(r, "Error: FlushContext", error);
     }
     return 0;
 

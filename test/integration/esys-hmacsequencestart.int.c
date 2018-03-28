@@ -179,6 +179,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                               );
     goto_if_error(r, "Error: SequenceComplete", error);
 
+    r = Esys_FlushContext(esys_context, primaryHandle);
+    goto_if_error(r, "Error: FlushContext", error);
+
 #ifdef TEST_SESSION
     r = Esys_FlushContext(esys_context, session);
     goto_if_error(r, "Error: FlushContext", error);
