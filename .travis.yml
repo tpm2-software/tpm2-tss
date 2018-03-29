@@ -3,8 +3,11 @@ compiler:
   - gcc
   - clang
 
-sudo: false
+sudo: true
 dist: trusty
+
+services:
+  - docker
 
 env:
   global:
@@ -19,15 +22,6 @@ env:
   - CMOCKA_LIBS="-L$(pwd)/cmocka/lib -lcmocka"
 
 addons:
-  apt:
-    packages:
-    - autoconf-archive
-    - cmake
-    - libgcrypt20-dev
-    - liburiparser-dev
-    - realpath
-    - lcov
-    - libssl-dev
   coverity_scan:
     project:
       name: "01org/tpm2-tss"
@@ -37,56 +31,20 @@ addons:
     build_command: "make --jobs=$(($(nproc)*2))"
     branch_pattern: coverity_scan
 
-install:
-  - wget http://mirror.twobit.us/tpm2-deps/ibmtpm974.tar.gz
-  - sha256sum ibmtpm974.tar.gz | grep -q ^8e45d86129a0adb95fee4cee51f4b1e5b2d81ed3e55af875df53f98f39eb7ad7
-  - mkdir ibmtpm
-  - tar axf ibmtpm974.tar.gz -C ibmtpm
-  - make -C ibmtpm/src -j$(nproc)
-  - wget http://mirror.twobit.us/tpm2-deps/cmocka-1.1.1.tar.xz
-  - sha256sum cmocka-1.1.1.tar.xz | grep -q f02ef48a7039aa77191d525c5b1aee3f13286b77a13615d11bc1148753fc0389
-  - tar -Jxvf cmocka-1.1.1.tar.xz
-  - mkdir cmocka
-  - cd cmocka-1.1.1
-  - mkdir build
-  - cd build
-  - cmake ../ -DCMAKE_INSTALL_PREFIX=../../cmocka -DCMAKE_BUILD_TYPE=Release
-  - make
-  - make install
-  - cd ../../
-  - wget http://mirror.twobit.us/tpm2-deps/autoconf-archive-2017.09.28.tar.xz
-  - sha256sum autoconf-archive-2017.09.28.tar.xz | grep -q 5c9fb5845b38b28982a3ef12836f76b35f46799ef4a2e46b48e2bd3c6182fa01
-  - tar xJf autoconf-archive-2017.09.28.tar.xz
-  - cp autoconf-archive-2017.09.28/m4/ax_code_coverage.m4 m4/
-  - pip install --user cpp-coveralls
-
-before_script:
-  - ./bootstrap
+before_install:
+- docker pull tpm2software/tpm2-tss
 
 script:
-  - mkdir ./build
-  - pushd ./build
-  - |
-    if [ "$CC" == "gcc" ]; then
-      export CONFIGURE_OPTIONS="--enable-code-coverage";
-    fi
-  - ../configure --enable-unit $CONFIGURE_OPTIONS --with-simulatorbin=$(pwd)/../ibmtpm/src/tpm_server
-  - make -j$(nproc) distcheck
-  - make -j$(nproc) check
-  - cat test-suite.log
-  - |
-    for LOG in $(ls -1 test/unit/*.log); do
-        echo "${LOG}"
-        cat ${LOG}
-    done
-  - |
-    for LOG in $(ls -1 test/integration/*.log); do
-        echo "${LOG}"
-        cat ${LOG}
-    done
-  - cat test/tpmclient/tpmclient.log
-  - popd
-  - |
-    if [ "$CC" == "gcc" -a -n "$COVERALLS_REPO_TOKEN" ]; then
-        coveralls --build-root=build --gcov-options '\-lp'
-    fi
+#
+# Docker starts you in a cloned repo of your project with the PR checkout out.
+# We want those changes IN the docker image, so use the -v option to mount the
+# project repo in the docker image.
+#
+# Also, pass in any env variables required for the build via .ci/docker.env file
+#
+# Execute the build and test procedure by running .ci/docker.run
+#
+- >
+  docker run --env-file .ci/docker.env \
+    -v `pwd`:/workspace/tpm2-tss tpm2software/tpm2-tss \
+    /bin/bash -c '/workspace/tpm2-tss/.ci/docker.run'
