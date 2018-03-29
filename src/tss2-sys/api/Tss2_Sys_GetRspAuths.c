@@ -48,9 +48,8 @@ TSS2_RC Tss2_Sys_GetRspAuths(
         ctx->authAllowed == 0)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-
     if (TPM2_ST_SESSIONS != ctx->rsp_header.tag)
-        return rval;
+        return TSS2_SYS_RC_BAD_SEQUENCE;
 
     offset += sizeof(TPM20_Header_Out);
     offset += ctx->numResponseHandles * sizeof(TPM2_HANDLE);

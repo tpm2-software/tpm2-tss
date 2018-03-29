@@ -1111,6 +1111,12 @@ iesys_check_response(ESYS_CONTEXT * esys_context)
     TSS2L_SYS_AUTH_RESPONSE rspAuths = {0};
     HASH_TAB_ITEM rp_hash_tab[3];
     uint8_t rpHashNum = 0;
+
+    if (esys_context->authsCount == 0) {
+        LOG_TRACE("No auths to verify");
+        return TSS2_RC_SUCCESS;
+    }
+
     r = Tss2_Sys_GetRspAuths(esys_context->sys, &rspAuths);
     return_if_error(r, "Error: GetRspAuths");
 
