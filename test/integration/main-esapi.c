@@ -180,10 +180,10 @@ tcti_proxy_initialize(
 /** Override the gcrypt random functions in order to not screw over valgrind. */
 TSS2_RC iesys_cryptogcry_random2b(TPM2B_NONCE *nonce, size_t num_bytes)
 {
-    static int j = 0;
+    static size_t j = 0;
     j++;
     nonce->size = num_bytes;
-    for (int i = 0; i < num_bytes; i++)
+    for (size_t i = 0; i < num_bytes; i++)
         nonce->buffer[i] = i+j % 256;
     return 0;
 }
