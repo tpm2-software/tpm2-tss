@@ -35,7 +35,7 @@ typedef struct {
 } test_opts_t;
 
 /* functions to get test options from the user and to print helpful stuff */
-char *const tcti_name_from_type(TCTI_TYPE tcti_type);
+const char *tcti_name_from_type(TCTI_TYPE tcti_type);
 TCTI_TYPE tcti_type_from_name(char const *tcti_str);
 int get_test_opts_from_env(test_opts_t * opts);
 int sanity_check_test_opts(test_opts_t * opts);
