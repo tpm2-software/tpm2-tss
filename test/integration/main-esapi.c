@@ -46,6 +46,11 @@
 #define TCTI_PROXY_MAGIC 0x5250584f0a000000ULL /* 'PROXY\0\0\0' */
 #define TCTI_PROXY_VERSION 0x1
 
+enum state {
+    forwarding,
+    intercepting
+};
+
 typedef struct {
     uint64_t magic;
     uint32_t version;
@@ -57,7 +62,7 @@ typedef struct {
               TSS2_TCTI_POLL_HANDLE *handles, size_t *num_handles);
     TSS2_RC (*setLocality) (TSS2_TCTI_CONTEXT *tctiContext, uint8_t locality);
     TSS2_TCTI_CONTEXT *tctiInner;
-    uint8_t count;
+    enum state state;
 } TSS2_TCTI_CONTEXT_PROXY;
 
 static TSS2_TCTI_CONTEXT_PROXY*
@@ -80,11 +85,10 @@ tcti_proxy_transmit(
 {
     TSS2_RC rval;
     TSS2_TCTI_CONTEXT_PROXY *tcti_proxy = tcti_proxy_cast(tctiContext);
-    if (tcti_proxy->count == 2) {
-        tcti_proxy->count = 1;
+
+    if (tcti_proxy->state == intercepting) {
         return TSS2_RC_SUCCESS;
     }
-    tcti_proxy->count++;
 
     rval = Tss2_Tcti_Transmit(tcti_proxy->tctiInner, command_size,
         command_buffer);
@@ -113,11 +117,12 @@ tcti_proxy_receive(
     TSS2_RC rval;
     TSS2_TCTI_CONTEXT_PROXY *tcti_proxy = tcti_proxy_cast(tctiContext);
 
-    if (tcti_proxy->count == 2) {
+    if (tcti_proxy->state == intercepting) {
         *response_size = sizeof(yielded_response);
         if (response_buffer != NULL)
             memcpy(response_buffer, &yielded_response[0], sizeof(yielded_response));
 
+        tcti_proxy->state = forwarding;
         return TSS2_RC_SUCCESS;
     }
 
@@ -127,6 +132,8 @@ tcti_proxy_receive(
         LOG_ERROR("Calling TCTI Transmit");
         return rval;
     }
+
+    tcti_proxy->state = intercepting;
 
     return rval;
 }
@@ -165,7 +172,7 @@ tcti_proxy_initialize(
     TSS2_TCTI_GET_POLL_HANDLES (tctiContext) = NULL;
     TSS2_TCTI_SET_LOCALITY (tctiContext) = NULL;
     tcti_proxy->tctiInner = tctiInner;
-    tcti_proxy->count = 0;
+    tcti_proxy->state = forwarding;
 
     return TSS2_RC_SUCCESS;
 }
@@ -173,9 +180,11 @@ tcti_proxy_initialize(
 /** Override the gcrypt random functions in order to not screw over valgrind. */
 TSS2_RC iesys_cryptogcry_random2b(TPM2B_NONCE *nonce, size_t num_bytes)
 {
+    static size_t j = 0;
+    j++;
     nonce->size = num_bytes;
-    for (int i = 0; i < num_bytes; i++)
-        nonce->buffer[i] = i % 256;
+    for (size_t i = 0; i < num_bytes; i++)
+        nonce->buffer[i] = i+j % 256;
     return 0;
 }
 

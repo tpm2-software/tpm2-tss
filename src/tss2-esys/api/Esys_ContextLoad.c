@@ -121,7 +121,7 @@ Esys_ContextLoad_async(
     const TPMS_CONTEXT *context)
 {
     TSS2_RC r;
-    IESYS_CONTEXT_DATA esyscontextData = {0};
+    IESYS_CONTEXT_DATA esyscontextData = { };
     TPMS_CONTEXT tpmContext;
 
     /* Check context, sequence correctness and set state to error for now */
@@ -221,7 +221,7 @@ Esys_ContextLoad_finish(
     if (r != TSS2_RC_SUCCESS)
         return r;
 
-    IESYS_CONTEXT_DATA esyscontextData = {0};
+    IESYS_CONTEXT_DATA esyscontextData = { };
     size_t offset = 0;
     r = Tss2_MU_IESYS_CONTEXT_DATA_Unmarshal(&esysContext->in.ContextLoad.context->contextBlob.buffer[0],
                                                  sizeof(IESYS_CONTEXT_DATA),

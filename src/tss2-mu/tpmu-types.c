@@ -139,6 +139,10 @@ static TSS2_RC marshal_keyedhash(BYTE const *src, uint8_t buffer[],
 static TSS2_RC marshal_null(void const *src, uint8_t buffer[],
                             size_t buffer_size, size_t *offset)
 {
+    (void)(src);
+    (void)(buffer);
+    (void)(buffer_size);
+    (void)(offset);
     return TSS2_RC_SUCCESS;
 }
 
@@ -237,6 +241,10 @@ static TSS2_RC unmarshal_keyedhash(uint8_t const buffer[], size_t buffer_size,
 static TSS2_RC unmarshal_null(uint8_t const buffer[], size_t buffer_size,
                               size_t *offset, void *dest)
 {
+    (void)(buffer);
+    (void)(buffer_size);
+    (void)(offset);
+    (void)(dest);
     return TSS2_RC_SUCCESS;
 }
 

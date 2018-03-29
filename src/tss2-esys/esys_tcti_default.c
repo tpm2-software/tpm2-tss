@@ -191,7 +191,7 @@ get_tcti_default(TSS2_TCTI_CONTEXT ** tcticontext)
 
     TSS2_RC r;
 
-    for (int i = 0; i < ARRAY_SIZE(tctis); i++) {
+    for (size_t i = 0; i < ARRAY_SIZE(tctis); i++) {
         LOG_DEBUG("Attempting to connect using standard TCTI: %s",
                   tctis[i].description);
 
@@ -199,13 +199,13 @@ get_tcti_default(TSS2_TCTI_CONTEXT ** tcticontext)
             r = tcti_from_init(tctis[i].init, tctis[i].conf, tcticontext);
             if (r == TSS2_RC_SUCCESS)
                 return TSS2_RC_SUCCESS;
-            LOG_DEBUG("Failed to load standard TCTI number %i", i);
+            LOG_DEBUG("Failed to load standard TCTI number %zu", i);
 #ifndef NO_DL
         } else if (tctis[i].file != NULL) {
             r = tcti_from_file(tctis[i].file, tctis[i].conf, tcticontext);
             if (r == TSS2_RC_SUCCESS)
                 return TSS2_RC_SUCCESS;
-            LOG_DEBUG("Failed to load standard TCTI number %i", i);
+            LOG_DEBUG("Failed to load standard TCTI number %zu", i);
 #endif /* NO_DL */
         } else {
             LOG_ERROR("Errorous entry in standard TCTIs");

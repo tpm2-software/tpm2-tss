@@ -66,14 +66,14 @@ TSS2_RC tcti_platform_command (
     LOGBLOB_DEBUG(buf, sizeof (cmd), "Sending %zu bytes to socket %" PRIu32
                   ":", sizeof (cmd), tcti_intel->otherSock);
     ret = write_all (tcti_intel->otherSock, buf, sizeof (cmd));
-    if (ret < sizeof (cmd)) {
+    if (ret < (ssize_t) sizeof (cmd)) {
         LOG_ERROR("Failed to send platform command %d with error: %d",
                   cmd, ret);
         return TSS2_TCTI_RC_IO_ERROR;
     }
 
     read_ret = read (tcti_intel->otherSock, buf, sizeof (buf));
-    if (read_ret < sizeof (buf)) {
+    if (read_ret < (ssize_t) sizeof (buf)) {
         LOG_ERROR("Failed to get response to platform command, errno %d: %s",
                   errno, strerror (errno));
         return TSS2_TCTI_RC_IO_ERROR;
@@ -156,7 +156,7 @@ tcti_mssim_transmit (
     size_t size,
     const uint8_t *cmd_buf)
 {
-    tpm_header_t header = { 0 };
+    tpm_header_t header = { };
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tcti_ctx);
     TSS2_RC rc;
 
@@ -243,6 +243,9 @@ tcti_mssim_get_poll_handles (
     TSS2_TCTI_POLL_HANDLE *handles,
     size_t *num_handles)
 {
+    (void)(tctiContext);
+    (void)(handles);
+    (void)(num_handles);
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
@@ -277,7 +280,7 @@ tcti_mssim_receive (
     TSS2_RC rc;
     int ret;
 
-    rc = tcti_receive_checks (tcti_intel, response_size, response_buffer);
+    rc = tcti_receive_checks (tcti_intel, response_size);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -552,7 +555,7 @@ fail_out:
 }
 
 /* public info structure */
-const static TSS2_TCTI_INFO tss2_tcti_info = {
+const TSS2_TCTI_INFO tss2_tcti_info = {
     .version = {
         .magic = TCTI_MAGIC,
         .version = TCTI_VERSION,
