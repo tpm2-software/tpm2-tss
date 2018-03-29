@@ -49,7 +49,7 @@ tcti_type_from_name(char const *tcti_str)
  * Convert from an element in the TCTI_TYPE enumeration to a string
  * representation.
  */
-char *const
+const char *
 tcti_name_from_type(TCTI_TYPE tcti_type)
 {
     int i;
