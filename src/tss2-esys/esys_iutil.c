@@ -1108,7 +1108,7 @@ iesys_check_response(ESYS_CONTEXT * esys_context)
     TSS2_RC r;
     const uint8_t *rpBuffer;
     size_t rpBuffer_size;
-    TSS2L_SYS_AUTH_RESPONSE rspAuths = {0};
+    TSS2L_SYS_AUTH_RESPONSE rspAuths;
     HASH_TAB_ITEM rp_hash_tab[3];
     uint8_t rpHashNum = 0;
 

@@ -156,7 +156,7 @@ tcti_mssim_transmit (
     size_t size,
     const uint8_t *cmd_buf)
 {
-    tpm_header_t header = { 0 };
+    tpm_header_t header;
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tcti_ctx);
     TSS2_RC rc;
 

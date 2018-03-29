@@ -231,7 +231,7 @@ COMMAND_HANDLES commandArray[] =
     { TPM2_CC_Startup, 0, 0 },
     { TPM2_CC_Shutdown, 0, 0 },
     { TPM2_CC_SelfTest, 0, 0 },
-    { TPM2_CC_IncrementalSelfTest, 0,  },
+    { TPM2_CC_IncrementalSelfTest, 0, 0 },
     { TPM2_CC_GetTestResult, 0, 0 },
     { TPM2_CC_StartAuthSession, 2, 1 },
     { TPM2_CC_PolicyRestart, 1, 0 },

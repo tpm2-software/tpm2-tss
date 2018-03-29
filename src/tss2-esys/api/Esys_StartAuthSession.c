@@ -192,7 +192,7 @@ Esys_StartAuthSession_async(
               "authHash=%04"PRIx16"",
               esysContext, tpmKey, bind, nonceCaller, sessionType,
               symmetric, authHash);
-    TPM2B_ENCRYPTED_SECRET encryptedSaltAux = {0};
+    TPM2B_ENCRYPTED_SECRET encryptedSaltAux;
     const TPM2B_ENCRYPTED_SECRET *encryptedSalt = &encryptedSaltAux;
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *tpmKeyNode;
