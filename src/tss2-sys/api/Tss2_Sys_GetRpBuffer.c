@@ -40,10 +40,7 @@ TSS2_RC Tss2_Sys_GetRpBuffer(
     if (!ctx || !rpBufferUsedSize || !rpBuffer)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    /* NOTE: should this depend on the status of previous
-     * API call? i.e. ctx->rval != TSS2_RC_SUCCESS */
-    if (ctx->previousStage != CMD_STAGE_RECEIVE_RESPONSE ||
-        ctx->rval != TSS2_RC_SUCCESS)
+    if (ctx->previousStage != CMD_STAGE_RECEIVE_RESPONSE)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
     /* Calculate the position of the response parameter section within the TPM

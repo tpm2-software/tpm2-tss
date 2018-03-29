@@ -40,7 +40,6 @@ void InitSysContextFields(_TSS2_SYS_CONTEXT_BLOB *ctx)
     ctx->decryptNull = 0;
     ctx->authAllowed = 0;
     ctx->nextData = 0;
-    ctx->rval = TSS2_RC_SUCCESS;
 }
 
 void InitSysContextPtrs(
@@ -64,7 +63,6 @@ TSS2_RC CopyCommandHeader(_TSS2_SYS_CONTEXT_BLOB *ctx, TPM2_CC commandCode)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
     ctx->nextData = 0;
-    ctx->rval = TSS2_RC_SUCCESS;
 
     rval = Tss2_MU_TPM2_ST_Marshal(TPM2_ST_NO_SESSIONS, ctx->cmdBuffer,
                                   ctx->maxCmdSize,
@@ -132,7 +130,6 @@ TSS2_RC CommonComplete(_TSS2_SYS_CONTEXT_BLOB *ctx)
     rspSize = BE_TO_HOST_32(resp_header_from_cxt(ctx)->responseSize);
 
     if(rspSize > ctx->maxCmdSize) {
-        ctx->rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
         return TSS2_SYS_RC_MALFORMED_RESPONSE;
     }
 
@@ -140,8 +137,7 @@ TSS2_RC CommonComplete(_TSS2_SYS_CONTEXT_BLOB *ctx)
      * NOTE: should this depend on the status of previous
      * API call? i.e. ctx->rval != TSS2_RC_SUCCESS
      */
-    if (ctx->previousStage != CMD_STAGE_RECEIVE_RESPONSE ||
-        ctx->rval != TSS2_RC_SUCCESS)
+    if (ctx->previousStage != CMD_STAGE_RECEIVE_RESPONSE)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
     ctx->nextData = (UINT8 *)ctx->rspParamsSize - ctx->cmdBuffer;
@@ -168,9 +164,6 @@ TSS2_RC CommonOneCall(
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     TSS2_RC rval;
-
-    if (ctx->rval != TSS2_RC_SUCCESS)
-        return ctx->rval;
 
     if (cmdAuthsArray) {
         rval = Tss2_Sys_SetCmdAuths((TSS2_SYS_CONTEXT *)ctx, cmdAuthsArray);

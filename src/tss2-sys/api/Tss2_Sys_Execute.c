@@ -110,7 +110,6 @@ TSS2_RC Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout)
         return rval;
 
     if (ctx->rsp_header.responseSize > ctx->maxCmdSize) {
-        ctx->rval = TSS2_SYS_RC_MALFORMED_RESPONSE;
         return TSS2_SYS_RC_MALFORMED_RESPONSE;
     }
 
@@ -122,11 +121,6 @@ TSS2_RC Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout)
         return rval;
 
     rval = ctx->rsp_header.responseCode;
-    /*
-     * NOTE: this is only to maintain state between API calls
-     * It should be eventually removed.
-     */
-    ctx->rval = rval;
 
     /* If we received a TPM error other than CANCELED or if we didn't
      * receive enough response bytes, reset SAPI state machine to

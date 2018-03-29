@@ -81,9 +81,6 @@ typedef struct {
         UINT16 authAllowed:1;
     };
 
-    /* This doesn't belong here and should be removed*/
-    TSS2_RC rval;
-
     /* Offset to next data in command/response buffer. */
     size_t nextData;
 } _TSS2_SYS_CONTEXT_BLOB;
