@@ -112,11 +112,16 @@ AS_IF([test "x$with_simulatorbin_set" == xyes],
 
 gl_LD_VERSION_SCRIPT
 
-AX_ADD_COMPILER_FLAG([-Wall])
-AX_ADD_COMPILER_FLAG([-Werror])
 AX_ADD_COMPILER_FLAG([-std=c99])
-AX_ADD_COMPILER_FLAG([-Wformat])
+AX_ADD_COMPILER_FLAG([-Wall])
+AX_ADD_COMPILER_FLAG([-Wextra])
 AX_ADD_COMPILER_FLAG([-Wformat-security])
+AX_ADD_COMPILER_FLAG([-Werror])
+AX_ADD_COMPILER_FLAG([-Wno-unused-parameter])
+AX_ADD_COMPILER_FLAG([-Wno-sign-compare])
+AX_ADD_COMPILER_FLAG([-Wno-old-style-declaration])
+AX_ADD_COMPILER_FLAG([-Wno-missing-field-initializers])
+AX_ADD_COMPILER_FLAG([-Wno-ignored-qualifiers])
 AX_ADD_COMPILER_FLAG([-fstack-protector-all])
 AX_ADD_COMPILER_FLAG([-fpic])
 AX_ADD_COMPILER_FLAG([-fPIC])
