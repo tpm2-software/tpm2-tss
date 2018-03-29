@@ -146,7 +146,6 @@ socket_connect (
     uint16_t port,
     SOCKET *sock)
 {
-    struct sockaddr_in sockaddr = { 0 };
     int ret = 0;
 
     if (hostname == NULL || sock == NULL) {
@@ -160,9 +159,11 @@ socket_connect (
                      errno, strerror (errno));
         return TSS2_TCTI_RC_IO_ERROR;
     }
-    sockaddr.sin_family = AF_INET;
-    sockaddr.sin_addr.s_addr = inet_addr (hostname);
-    sockaddr.sin_port = htons (port);
+    struct sockaddr_in sockaddr = {
+        .sin_family = AF_INET,
+        .sin_addr.s_addr = inet_addr (hostname),
+        .sin_port = htons (port),
+        .sin_zero = { 0, } };
 
     LOG_DEBUG ("Connecting socket %d to hostname %s on port %" PRIu16,
                *sock, hostname, port);
