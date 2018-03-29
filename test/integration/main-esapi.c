@@ -240,12 +240,18 @@ TSS_SAPI_FIRST_VERSION };
         return 1;
     }
     rc = Esys_Initialize(&esys_context, tcti_context, &abiVersion);
-    if (rc != TSS2_RC_SUCCESS && rc != TPM2_RC_INITIALIZE) {
+    if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Esys_Initialize FAILED! Response Code : 0x%x", rc);
         return 1;
     }
-    rc = Esys_SetTimeout(esys_context, TSS2_TCTI_TIMEOUT_BLOCK);
+    rc = Esys_Startup(esys_context, TPM2_SU_CLEAR);
     if (rc != TSS2_RC_SUCCESS && rc != TPM2_RC_INITIALIZE) {
+        LOG_ERROR("Esys_Startup FAILED! Response Code : 0x%x", rc);
+        return 1;
+    }
+
+    rc = Esys_SetTimeout(esys_context, TSS2_TCTI_TIMEOUT_BLOCK);
+    if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Esys_SetTimeout FAILED! Response Code : 0x%x", rc);
         return 1;
     }
