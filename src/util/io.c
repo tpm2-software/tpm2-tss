@@ -146,7 +146,7 @@ socket_connect (
     uint16_t port,
     SOCKET *sock)
 {
-    struct sockaddr_in sockaddr = { 0 };
+    struct sockaddr_in sockaddr = { };
     int ret = 0;
 
     if (hostname == NULL || sock == NULL) {

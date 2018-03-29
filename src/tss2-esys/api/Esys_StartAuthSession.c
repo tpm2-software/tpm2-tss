@@ -187,7 +187,7 @@ Esys_StartAuthSession_async(
     TPMI_ALG_HASH authHash)
 {
     TSS2_RC r;
-    TPM2B_ENCRYPTED_SECRET encryptedSaltAux = {0};
+    TPM2B_ENCRYPTED_SECRET encryptedSaltAux = { };
     const TPM2B_ENCRYPTED_SECRET *encryptedSalt = &encryptedSaltAux;
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *tpmKeyNode;

@@ -28,7 +28,7 @@
 
 TESTS_CFLAGS = $(AM_CFLAGS) $(LIBCRYPTO_CFLAGS) -I$(srcdir)/src/tss2-mu \
     -I$(srcdir)/src/tss2-sys -I$(srcdir)/src/tss2-esys \
-    -Wno-unused-parameter
+    -Wno-unused-parameter -Wno-missing-field-initializers
 TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES) $(LIBCRYPTO_LIBS) $(libutil)
 
 # test harness configuration
@@ -249,6 +249,7 @@ test_tpmclient_tpmclient_int_SOURCES  = \
     test/tpmclient/tpmclient.int.c test/tpmclient/tpmclient.h \
     test/tpmclient/TpmHandleToName.c test/tpmclient/TpmHash.c
 
+test_integration_libtest_utils_la_CFLAGS = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_libtest_utils_la_SOURCES = \
     test/integration/context-util.c test/integration/context-util.h \
     test/integration/sapi-util.c    test/integration/sapi-util.h \
