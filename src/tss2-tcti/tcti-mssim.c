@@ -66,14 +66,14 @@ TSS2_RC tcti_platform_command (
     LOGBLOB_DEBUG(buf, sizeof (cmd), "Sending %zu bytes to socket %" PRIu32
                   ":", sizeof (cmd), tcti_intel->otherSock);
     ret = write_all (tcti_intel->otherSock, buf, sizeof (cmd));
-    if (ret < sizeof (cmd)) {
+    if (ret < (ssize_t) sizeof (cmd)) {
         LOG_ERROR("Failed to send platform command %d with error: %d",
                   cmd, ret);
         return TSS2_TCTI_RC_IO_ERROR;
     }
 
     read_ret = read (tcti_intel->otherSock, buf, sizeof (buf));
-    if (read_ret < sizeof (buf)) {
+    if (read_ret < (ssize_t) sizeof (buf)) {
         LOG_ERROR("Failed to get response to platform command, errno %d: %s",
                   errno, strerror (errno));
         return TSS2_TCTI_RC_IO_ERROR;
