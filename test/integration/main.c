@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #define LOGMODULE test
+#include "tss2_sys.h"
 #include "util/log.h"
 #include "test.h"
 #include "test-options.h"
@@ -35,6 +36,12 @@ main (int   argc,
     if (sapi_context == NULL) {
         LOG_ERROR("SAPI context not initialized");
         return 99; /* fatal error */
+    }
+
+    ret = Tss2_Sys_Startup(sapi_context, TPM2_SU_CLEAR);
+    if (ret != TSS2_RC_SUCCESS && ret != TPM2_RC_INITIALIZE) {
+        LOG_ERROR("TPM Startup FAILED! Response Code : 0x%x", ret);
+        exit(1);
     }
 
     ret = test_invoke (sapi_context);
