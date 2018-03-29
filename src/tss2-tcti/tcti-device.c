@@ -89,7 +89,7 @@ tcti_device_receive (
     TSS2_RC rc = TSS2_RC_SUCCESS;
     ssize_t  size;
 
-    rc = tcti_receive_checks (tcti_intel, response_size, response_buffer);
+    rc = tcti_receive_checks (tcti_intel, response_size);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -181,6 +181,7 @@ tcti_device_cancel (
     TSS2_TCTI_CONTEXT *tctiContext)
 {
     /* Linux driver doesn't expose a mechanism to cancel commands. */
+    (void)(tctiContext);
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
@@ -191,6 +192,9 @@ tcti_device_get_poll_handles (
     size_t *num_handles)
 {
     /* Linux driver doesn't support polling. */
+    (void)(tctiContext);
+    (void)(handles);
+    (void)(num_handles);
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
@@ -203,6 +207,8 @@ tcti_device_set_locality (
      * Linux driver doesn't expose a mechanism for user space applications
      * to set locality.
      */
+    (void)(tctiContext);
+    (void)(locality);
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 

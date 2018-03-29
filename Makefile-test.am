@@ -27,7 +27,8 @@
 #;**********************************************************************;
 
 TESTS_CFLAGS = $(AM_CFLAGS) $(LIBCRYPTO_CFLAGS) -I$(srcdir)/src/tss2-mu \
-    -I$(srcdir)/src/tss2-sys -I$(srcdir)/src/tss2-esys
+    -I$(srcdir)/src/tss2-sys -I$(srcdir)/src/tss2-esys \
+    -Wno-unused-parameter
 TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES) $(LIBCRYPTO_LIBS) $(libutil)
 
 # test harness configuration

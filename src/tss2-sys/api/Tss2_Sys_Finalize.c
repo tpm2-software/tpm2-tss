@@ -43,5 +43,6 @@ TSS2_RC Tss2_Sys_Finalize_Complete (
 TSS2_RC Tss2_Sys_Finalize(
     TSS2_SYS_CONTEXT *sysContext)
 {
+    (void)(sysContext);
     return TSS2_RC_SUCCESS;
 }

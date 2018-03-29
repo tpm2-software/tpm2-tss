@@ -153,8 +153,7 @@ tcti_transmit_checks (
 TSS2_RC
 tcti_receive_checks (
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel,
-    size_t *response_size,
-    unsigned char *response_buffer);
+    size_t *response_size);
 /*
  * Just a function with the right prototype that returns the not implemented
  * RC for the TCTI layer.
