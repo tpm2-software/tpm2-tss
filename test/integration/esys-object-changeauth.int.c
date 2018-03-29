@@ -237,6 +237,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                               );
     goto_if_error(r, "Error: ObjectChangeAuth", error);
 
+    r = Esys_FlushContext(esys_context, loadedKeyHandle);
+    goto_if_error(r, "Error during FlushContext", error);
+
     r = Esys_FlushContext(esys_context, primaryHandle_handle);
     goto_if_error(r, "Error during FlushContext", error);
 
