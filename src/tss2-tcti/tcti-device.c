@@ -252,7 +252,7 @@ Tss2_Tcti_Device_Init (
     return TSS2_RC_SUCCESS;
 }
 
-const static TSS2_TCTI_INFO tss2_tcti_info = {
+const TSS2_TCTI_INFO tss2_tcti_info = {
     .version = {
         .magic = TCTI_MAGIC,
         .version = TCTI_VERSION,
