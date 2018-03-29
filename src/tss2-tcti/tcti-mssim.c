@@ -243,6 +243,9 @@ tcti_mssim_get_poll_handles (
     TSS2_TCTI_POLL_HANDLE *handles,
     size_t *num_handles)
 {
+    (void)(tctiContext);
+    (void)(handles);
+    (void)(num_handles);
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
@@ -277,7 +280,7 @@ tcti_mssim_receive (
     TSS2_RC rc;
     int ret;
 
-    rc = tcti_receive_checks (tcti_intel, response_size, response_buffer);
+    rc = tcti_receive_checks (tcti_intel, response_size);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }

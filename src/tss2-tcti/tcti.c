@@ -77,8 +77,7 @@ tcti_transmit_checks (
 TSS2_RC
 tcti_receive_checks (
     TSS2_TCTI_CONTEXT_INTEL *tcti_intel,
-    size_t *response_size,
-    unsigned char *response_buffer)
+    size_t *response_size)
 {
     TSS2_RC rc;
 
@@ -103,6 +102,9 @@ tcti_make_sticky_not_implemented (
     TPM2_HANDLE *handle,
     uint8_t sticky)
 {
+    (void)(tctiContext);
+    (void)(handle);
+    (void)(sticky);
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
