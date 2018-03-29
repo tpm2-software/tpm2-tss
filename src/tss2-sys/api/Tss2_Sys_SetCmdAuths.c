@@ -55,7 +55,6 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
     if (!ctx->authAllowed)
         return rval;
 
-    ctx->rval = TSS2_RC_SUCCESS;
     ctx->authsCount = 0;
 
     if (!cmdAuthsArray->count)
