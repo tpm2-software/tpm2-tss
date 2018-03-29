@@ -48,6 +48,12 @@ TSS2_RC Tss2_Sys_SetDecryptParam(
     if (!decryptParamBuffer || !ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
+    if (ctx->previousStage != CMD_STAGE_PREPARE)
+        return TSS2_SYS_RC_BAD_SEQUENCE;
+
+    if (ctx->decryptAllowed == 0)
+        return TSS2_SYS_RC_NO_DECRYPT_PARAM;
+
     if (BE_TO_HOST_32(req_header_from_cxt(ctx)->commandSize) +
         decryptParamSize > ctx->maxCmdSize)
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
