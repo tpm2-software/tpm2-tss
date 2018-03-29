@@ -110,7 +110,7 @@ socket_xmit_buf (
 
     LOGBLOB_DEBUG (buf, size, "Writing %zu bytes to socket %d:", size, sock);
     ret = write_all (sock, buf, size);
-    if (ret < size) {
+    if (ret < (ssize_t) size) {
         LOG_ERROR("write to fd %d failed, errno %d: %s", sock, errno, strerror (errno));
         return TSS2_TCTI_RC_IO_ERROR;
     }

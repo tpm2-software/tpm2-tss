@@ -48,7 +48,7 @@ main (int argc, char *argv[])
 
     if (caps.data.handles.count) {
         LOG_ERROR("TPM contains transient entries");
-        for (int i = 0; i < caps.data.handles.count; i++)
+        for (UINT32 i = 0; i < caps.data.handles.count; i++)
             LOG_ERROR("Handle %"PRIx32, caps.data.handles.handle[i]);
         return 1;
     }
