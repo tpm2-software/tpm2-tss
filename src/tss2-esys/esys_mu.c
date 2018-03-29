@@ -598,6 +598,8 @@ Tss2_MU_IESYS_SESSION_Unmarshal(
     }
     TSS2_RC ret;
     size_t offset_loc = (offset != NULL)? *offset : 0;
+    if (dst != NULL)
+        memset(dst, 0, sizeof(*dst));
     ret = Tss2_MU_TPM2B_NAME_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? NULL : &dst->bound_entity);
     if (ret != TSS2_RC_SUCCESS) {
@@ -957,6 +959,8 @@ Tss2_MU_IESYS_RESOURCE_Unmarshal(
     TSS2_RC ret;
     size_t offset_loc = (offset != NULL)? *offset : 0;
     TPM2_HANDLE out_handle;
+    if (dst != NULL)
+        memset(dst, 0, sizeof(*dst));
     ret = Tss2_MU_TPM2_HANDLE_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_handle : &dst->handle);
     if (ret != TSS2_RC_SUCCESS) {
@@ -1063,6 +1067,8 @@ Tss2_MU_IESYS_METADATA_Unmarshal(
     TSS2_RC ret;
     size_t offset_loc = (offset != NULL)? *offset : 0;
     UINT16 out_size;
+    if (dst != NULL)
+        memset(dst, 0, sizeof(*dst));
     ret = Tss2_MU_UINT16_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_size : &dst->size);
     if (ret != TSS2_RC_SUCCESS) {
@@ -1154,6 +1160,8 @@ Tss2_MU_IESYS_CONTEXT_DATA_Unmarshal(
     TSS2_RC ret;
     size_t offset_loc = (offset != NULL)? *offset : 0;
     UINT32 out_reserved;
+    if (dst != NULL)
+        memset(dst, 0, sizeof(*dst));
     ret = Tss2_MU_UINT32_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_reserved : &dst->reserved);
     if (ret != TSS2_RC_SUCCESS) {
