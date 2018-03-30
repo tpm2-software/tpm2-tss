@@ -48,13 +48,13 @@ test_helper_tpm_startup_CFLAGS = $(TESTS_CFLAGS) -I$(srcdir)/test/integration
 test_helper_tpm_startup_LDFLAGS = $(TESTS_LDFLAGS)
 test_helper_tpm_startup_LDADD = $(TESTS_LDADD)
 test_helper_tpm_startup_SOURCES = test/helper/tpm_startup.c
-endif #SIMULATOR_BIN
 
 noinst_PROGRAMS += test/helper/tpm_transientempty
 test_helper_tpm_transientempty_CFLAGS = $(TESTS_CFLAGS) -I$(srcdir)/test/integration
 test_helper_tpm_transientempty_LDFLAGS = $(TESTS_LDFLAGS)
 test_helper_tpm_transientempty_LDADD = $(TESTS_LDADD)
 test_helper_tpm_transientempty_SOURCES = test/helper/tpm_transientempty.c
+endif #SIMULATOR_BIN
 
 if UNIT
 TESTS_UNIT  = \
