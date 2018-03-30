@@ -64,6 +64,13 @@ before_script:
   - ./bootstrap
 
 script:
+# build with no tests enabled
+  - mkdir ./build-no-tests
+  - pushd ./build-no-tests
+  - ../configure
+  - make -j$(nproc)
+  - popd
+# build with all tests enabled
   - mkdir ./build
   - pushd ./build
   - |
