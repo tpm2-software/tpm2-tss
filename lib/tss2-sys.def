@@ -87,7 +87,6 @@ EXPORTS
     Tss2_Sys_FieldUpgradeStart_Prepare
     Tss2_Sys_FieldUpgradeStart_Complete
     Tss2_Sys_FieldUpgradeStart
-    Tss2_Sys_Finalize_Complete
     Tss2_Sys_Finalize
     Tss2_Sys_FirmwareRead_Prepare
     Tss2_Sys_FirmwareRead_Complete
