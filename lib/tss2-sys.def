@@ -1,4 +1,4 @@
-LIBRARY tss2-sapi
+LIBRARY tss2-sys
 EXPORTS
     Tss2_Sys_ActivateCredential_Prepare
     Tss2_Sys_ActivateCredential_Complete
