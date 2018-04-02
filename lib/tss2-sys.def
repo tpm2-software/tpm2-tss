@@ -101,6 +101,7 @@ EXPORTS
     Tss2_Sys_GetCommandAuditDigest_Prepare
     Tss2_Sys_GetCommandAuditDigest_Complete
     Tss2_Sys_GetCommandAuditDigest
+    Tss2_Sys_GetContextSize
     Tss2_Sys_GetRandom_Prepare
     Tss2_Sys_GetRandom_Complete
     Tss2_Sys_GetRandom
@@ -137,6 +138,7 @@ EXPORTS
     Tss2_Sys_IncrementalSelfTest_Prepare
     Tss2_Sys_IncrementalSelfTest_Complete
     Tss2_Sys_IncrementalSelfTest
+    Tss2_Sys_Initialize
     Tss2_Sys_Load_Prepare
     Tss2_Sys_Load_Complete
     Tss2_Sys_Load
