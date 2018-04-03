@@ -24,33 +24,15 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  ***********************************************************************/
-
-/*
- * The context for TCTI implementations is on opaque
- * structure. There shall never be a definition of its content.
- * Implementation provide the size information to
- * applications via the initialize call.
- * This makes use of a compiler trick that allows type
- * checking of the pointer even though the type isn't
- * defined.
- *
- * The first field of a Context must be the common part
- * (see below).
- */
-#ifndef TSS2_TCTI_UTIL_H
-#define TSS2_TCTI_UTIL_H
+#ifndef TCTI_COMMON_H
+#define TCTI_COMMON_H
 
 #include <errno.h>
 #include <stdbool.h>
 
 #include "tss2_tcti.h"
 
-#include "util/io.h"
-
-#define TCTI_MAGIC   0x7e18e9defa8bc9e2ULL
 #define TCTI_VERSION 0x2
-
-#define TCTI_CONTEXT ((TSS2_TCTI_CONTEXT_COMMON_CURRENT *)(SYS_CONTEXT->tctiContext))
 
 #define TPM_HEADER_SIZE (sizeof (TPM2_ST) + sizeof (UINT32) + sizeof (UINT32))
 
@@ -91,69 +73,53 @@ typedef enum {
     TCTI_STATE_RECEIVE,
 } tcti_state_t;
 
-/* current Intel version */
 typedef struct {
     TSS2_TCTI_CONTEXT_COMMON_V2 v2;
     tcti_state_t state;
     tpm_header_t header;
     uint8_t locality;
-
-    /* Flag indicating if a command has been cancelled.
-     * This is a temporary flag, which will be changed into
-     * a tcti state when support for asynch operation will be added */
-    bool cancel;
-
-    /* Sockets if socket interface is being used. */
-    SOCKET otherSock;
-    SOCKET tpmSock;
-
-    /* File descriptor for device file if real TPM is being used. */
-    int devFile;
-} TSS2_TCTI_CONTEXT_INTEL;
+} TSS2_TCTI_COMMON_CONTEXT;
 
 /*
- * This function is used to "up cast" the common TCTI interface type to the
- * private type used in the implementation. This is how we control access to
- * the data below the 'setLocality' function.
  */
-static inline TSS2_TCTI_CONTEXT_INTEL*
-tcti_context_intel_cast (TSS2_TCTI_CONTEXT *ctx)
-{
-    return (TSS2_TCTI_CONTEXT_INTEL*)ctx;
-}
+TSS2_TCTI_COMMON_CONTEXT*
+tcti_common_context_cast (TSS2_TCTI_CONTEXT *ctx);
 /*
  * This function is used to "down cast" the Intel TCTI context to the opaque
  * context type.
  */
-static inline TSS2_TCTI_CONTEXT*
-tcti_context_base_cast (TSS2_TCTI_CONTEXT_INTEL *ctx)
-{
-    return (TSS2_TCTI_CONTEXT*)ctx;
-}
+TSS2_TCTI_CONTEXT*
+tcti_common_down_cast (TSS2_TCTI_COMMON_CONTEXT *ctx);
 /*
- * This funciton performs common checks on the context structure. It should
- * be used by all externally facing TCTI functions before the context is used
- * as any of the private types.
+ * This function performs checks on the common context structure passed to a
+ * TCTI 'cancel' function.
  */
 TSS2_RC
-tcti_common_checks (
-    TSS2_TCTI_CONTEXT *tcti_context);
+tcti_common_cancel_checks (
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common);
 /*
  * This function performs common checks on the context structure and the
  * buffer passed into TCTI 'transmit' functions.
  */
 TSS2_RC
-tcti_transmit_checks (
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel,
+tcti_common_transmit_checks (
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common,
     const uint8_t *command_buffer);
 /*
  * This function performs common checks on the context structure, buffer and
  * size parameter passed to the TCTI 'receive' functions.
  */
 TSS2_RC
-tcti_receive_checks (
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel,
+tcti_common_receive_checks (
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common,
     size_t *response_size);
+/*
+ * This function performs checks on the common context structure passed to a
+ * TCTI 'set_locality' function.
+ */
+TSS2_RC
+tcti_common_set_locality_checks (
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common);
 /*
  * Just a function with the right prototype that returns the not implemented
  * RC for the TCTI layer.

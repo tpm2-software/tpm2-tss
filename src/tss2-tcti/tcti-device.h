@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018, Intel Corporation
+ * Copyright (c) 2018 Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,22 +24,16 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef TSS2_TCTI_DEVICE_H
-#define TSS2_TCTI_DEVICE_H
+#ifndef TCTI_DEVICE_H
+#define TCTI_DEVICE_H
 
-#include "tss2_tcti.h"
+#include "tcti-common.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#define TCTI_DEVICE_MAGIC 0x89205e72e319e5bbULL
 
-TSS2_RC Tss2_Tcti_Device_Init (
-    TSS2_TCTI_CONTEXT *tctiContext,
-    size_t *size,
-    const char *conf);
+typedef struct {
+    TSS2_TCTI_COMMON_CONTEXT common;
+    int fd;
+} TSS2_TCTI_DEVICE_CONTEXT;
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* TSS2_TCTI_DEVICE_H */
+#endif /* TCTI_DEVICE_H */

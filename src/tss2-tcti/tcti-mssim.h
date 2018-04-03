@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018, Intel Corporation
+ * Copyright (c) 2018 Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,22 +24,23 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef TSS2_TCTI_DEVICE_H
-#define TSS2_TCTI_DEVICE_H
 
-#include "tss2_tcti.h"
+#ifndef TCTI_MSSIM_H
+#define TCTI_MSSIM_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "tcti-common.h"
+#include "util/io.h"
 
-TSS2_RC Tss2_Tcti_Device_Init (
-    TSS2_TCTI_CONTEXT *tctiContext,
-    size_t *size,
-    const char *conf);
+#define TCTI_MSSIM_MAGIC 0xf05b04cd9f02728dULL
 
-#ifdef __cplusplus
-}
-#endif
+typedef struct {
+    TSS2_TCTI_COMMON_CONTEXT common;
+    SOCKET platform_sock;
+    SOCKET tpm_sock;
+/* Flag indicating if a command has been cancelled.
+ * This is a temporary flag, which will be changed into
+ * a tcti state when support for asynch operation will be added */
+    bool cancel;
+} TSS2_TCTI_MSSIM_CONTEXT;
 
-#endif /* TSS2_TCTI_DEVICE_H */
+#endif /* TCTI_MSSIM_H */

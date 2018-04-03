@@ -37,7 +37,9 @@
 
 #include "tss2_tcti.h"
 #include "tss2_tcti_mssim.h"
-#include "tss2-tcti/tcti.h"
+
+#include "tss2-tcti/tcti-common.h"
+#include "tss2-tcti/tcti-mssim.h"
 
 /*
  * This function is implemented in the socket TCTI module but not exposed
@@ -177,7 +179,7 @@ tcti_socket_init_size_test (void **state)
 
     ret = Tss2_Tcti_Mssim_Init (NULL, &tcti_size, NULL);
     assert_int_equal (ret, TSS2_RC_SUCCESS);
-    assert_int_equal (tcti_size, sizeof (TSS2_TCTI_CONTEXT_INTEL));
+    assert_int_equal (tcti_size, sizeof (TSS2_TCTI_MSSIM_CONTEXT));
 }
 /*
  * Wrap the 'connect' system call. The mock queue for this function must have
@@ -232,6 +234,7 @@ tcti_socket_init_from_conf (const char *conf)
     TSS2_RC ret = TSS2_RC_SUCCESS;
     TSS2_TCTI_CONTEXT *ctx = NULL;
 
+    printf ("%s: before first init\n", __func__);
     ret = Tss2_Tcti_Mssim_Init (NULL, &tcti_size, NULL);
     assert_true (ret == TSS2_RC_SUCCESS);
     ctx = calloc (1, tcti_size);
@@ -252,7 +255,9 @@ tcti_socket_init_from_conf (const char *conf)
     will_return (__wrap_write, 4);
     will_return (__wrap_read, 4);
     will_return (__wrap_read, recv_buf);
+    printf ("%s: before second_init\n", __func__);
     ret = Tss2_Tcti_Mssim_Init (ctx, &tcti_size, conf);
+    printf ("%s: after second init\n", __func__);
     assert_int_equal (ret, TSS2_RC_SUCCESS);
     return ctx;
 }
@@ -263,8 +268,9 @@ tcti_socket_init_from_conf (const char *conf)
 static int
 tcti_socket_setup (void **state)
 {
+    printf ("%s: before tcti_socket_init_from_conf\n", __func__);
     *state = tcti_socket_init_from_conf ("tcp://127.0.0.1:666");
-
+    printf ("%s: done\n", __func__);
     return 0;
 }
 static void
@@ -293,11 +299,11 @@ static void
 tcti_socket_receive_null_size_test (void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (ctx);
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_common_context_cast (ctx);
     TSS2_RC rc;
 
     /* Keep state machine check in `receive` from returning error. */
-    tcti_intel->state = TCTI_STATE_RECEIVE;
+    tcti_common->state = TCTI_STATE_RECEIVE;
     rc = Tss2_Tcti_Receive (ctx,
                             NULL, /* NULL 'size' parameter */
                             NULL,
@@ -316,7 +322,7 @@ static void
 tcti_socket_receive_success_test (void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (ctx);
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_common_context_cast (ctx);
     TSS2_RC rc = TSS2_RC_SUCCESS;
     size_t response_size = 0xc;
     uint8_t response_in [] = { 0x80, 0x02,
@@ -328,7 +334,7 @@ tcti_socket_receive_success_test (void **state)
     uint8_t response_out [12] = { 0 };
 
     /* Keep state machine check in `receive` from returning error. */
-    tcti_intel->state = TCTI_STATE_RECEIVE;
+    tcti_common->state = TCTI_STATE_RECEIVE;
     /* receive response size */
     will_return (__wrap_read, 4);
     will_return (__wrap_read, &response_in [2]);
@@ -355,7 +361,7 @@ static void
 tcti_socket_receive_size_success_test (void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (ctx);
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_common_context_cast (ctx);
     TSS2_RC rc = TSS2_RC_SUCCESS;
     size_t response_size = 0;
     uint8_t response_in [] = { 0x80, 0x02,
@@ -367,7 +373,7 @@ tcti_socket_receive_size_success_test (void **state)
     uint8_t response_out [12] = { 0 };
 
     /* Keep state machine check in `receive` from returning error. */
-    tcti_intel->state = TCTI_STATE_RECEIVE;
+    tcti_common->state = TCTI_STATE_RECEIVE;
     /* receive response size */
     will_return (__wrap_read, 4);
     will_return (__wrap_read, &response_in [2]);
