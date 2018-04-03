@@ -133,10 +133,6 @@ TSS2_RC CommonComplete(_TSS2_SYS_CONTEXT_BLOB *ctx)
         return TSS2_SYS_RC_MALFORMED_RESPONSE;
     }
 
-    /*
-     * NOTE: should this depend on the status of previous
-     * API call? i.e. ctx->rval != TSS2_RC_SUCCESS
-     */
     if (ctx->previousStage != CMD_STAGE_RECEIVE_RESPONSE)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
