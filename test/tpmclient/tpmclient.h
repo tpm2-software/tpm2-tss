@@ -43,7 +43,6 @@ extern "C" {
 #define YES 1
 #define NO  0
 
-void InitSysContextFailure();
 UINT32 TpmHash( TPMI_ALG_HASH hashAlg, UINT16 size, BYTE *data, TPM2B_DIGEST *result );
 UINT32 TpmHandleToName( TPM2_HANDLE handle, TPM2B_NAME *name );
 TSS2_RC CompareSizedByteBuffer( TPM2B *buffer1, TPM2B *buffer2 );
