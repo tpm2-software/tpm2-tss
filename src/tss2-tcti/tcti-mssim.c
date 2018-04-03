@@ -36,26 +36,61 @@
 #include <uriparser/Uri.h>
 
 #include "tss2_mu.h"
-
 #include "tss2_tcti_mssim.h"
-#include "tcti.h"
+
+#include "tcti-mssim.h"
+#include "tcti-common.h"
 #define LOGMODULE tcti
 #include "util/log.h"
 
 #define TCTI_SOCKET_DEFAULT_CONF "tcp://127.0.0.1:2321"
 #define TCTI_SOCKET_DEFAULT_PORT 2321
 
+/*
+ * This function wraps the "up-cast" of the opaque TCTI context type to the
+ * type for the mssim TCTI context. The only safeguard we have to ensure this
+ * operation is possivle is the magic number in the mssim TCTI context.
+ * If passed a NULL context, or the magic number check fails, this function
+ * will retrun NULL.
+ */
+TSS2_TCTI_MSSIM_CONTEXT*
+tcti_mssim_context_cast (TSS2_TCTI_CONTEXT *tcti_ctx)
+{
+    if (tcti_ctx != NULL && TSS2_TCTI_MAGIC (tcti_ctx) == TCTI_MSSIM_MAGIC) {
+        return (TSS2_TCTI_MSSIM_CONTEXT*)tcti_ctx;
+    }
+    return NULL;
+}
+/*
+ * This function down-casts the mssim TCTI context to the common context
+ * defined in the tcti-common module.
+ */
+TSS2_TCTI_COMMON_CONTEXT*
+tcti_mssim_down_cast (TSS2_TCTI_MSSIM_CONTEXT *tcti_mssim)
+{
+    if (tcti_mssim == NULL) {
+        return NULL;
+    }
+    return &tcti_mssim->common;
+}
+/*
+ * This function is for sending one of the MS_SIM_* platform commands to the
+ * microsoft simulator. These are sent over the platform socket.
+ */
 TSS2_RC tcti_platform_command (
     TSS2_TCTI_CONTEXT *tctiContext,
     UINT32 cmd)
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
+    TSS2_TCTI_MSSIM_CONTEXT *tcti_mssim = tcti_mssim_context_cast (tctiContext);
     uint8_t buf [sizeof (cmd)] = { 0 };
     UINT32 rsp = 0;
     TSS2_RC rc = TSS2_RC_SUCCESS;
     int ret;
     ssize_t read_ret;
 
+    if (tcti_mssim == NULL) {
+        return TSS2_TCTI_RC_BAD_CONTEXT;
+    }
     rc = Tss2_MU_UINT32_Marshal (cmd, buf, sizeof (cmd), NULL);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR ("Failed to marshal platform command %" PRIu32 ", rc: 0x%"
@@ -64,15 +99,15 @@ TSS2_RC tcti_platform_command (
     }
 
     LOGBLOB_DEBUG(buf, sizeof (cmd), "Sending %zu bytes to socket %" PRIu32
-                  ":", sizeof (cmd), tcti_intel->otherSock);
-    ret = write_all (tcti_intel->otherSock, buf, sizeof (cmd));
+                  ":", sizeof (cmd), tcti_mssim->platform_sock);
+    ret = write_all (tcti_mssim->platform_sock, buf, sizeof (cmd));
     if (ret < (ssize_t) sizeof (cmd)) {
         LOG_ERROR("Failed to send platform command %d with error: %d",
                   cmd, ret);
         return TSS2_TCTI_RC_IO_ERROR;
     }
 
-    read_ret = read (tcti_intel->otherSock, buf, sizeof (buf));
+    read_ret = read (tcti_mssim->platform_sock, buf, sizeof (buf));
     if (read_ret < (ssize_t) sizeof (buf)) {
         LOG_ERROR("Failed to get response to platform command, errno %d: %s",
                   errno, strerror (errno));
@@ -80,7 +115,7 @@ TSS2_RC tcti_platform_command (
     }
 
     LOGBLOB_DEBUG (buf, sizeof (buf), "Received %zu bytes from socket 0x%"
-                   PRIx32 ":", read_ret, tcti_intel->otherSock);
+                   PRIx32 ":", read_ret, tcti_mssim->platform_sock);
     rc = Tss2_MU_UINT32_Unmarshal (buf, sizeof (rsp), NULL, &rsp);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR ("Failed to unmarshal response to platform command. rc: 0x%"
@@ -93,7 +128,10 @@ TSS2_RC tcti_platform_command (
     }
     return rc;
 }
-
+/*
+ * This function sends the special TPM_SESSION_END message over the provided
+ * socket.
+ */
 TSS2_RC
 send_sim_session_end (
     SOCKET sock)
@@ -119,9 +157,10 @@ send_sim_session_end (
 #define SIM_CMD_SIZE (sizeof (UINT32) + sizeof (UINT8) + sizeof (UINT32))
 TSS2_RC
 send_sim_cmd_setup (
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel,
+    TSS2_TCTI_MSSIM_CONTEXT *tcti_mssim,
     UINT32 size)
 {
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_mssim_down_cast (tcti_mssim);
     uint8_t buf [SIM_CMD_SIZE] = { 0 };
     size_t offset = 0;
     TSS2_RC rc;
@@ -134,7 +173,7 @@ send_sim_cmd_setup (
         return rc;
     }
 
-    rc = Tss2_MU_UINT8_Marshal (tcti_intel->locality,
+    rc = Tss2_MU_UINT8_Marshal (tcti_common->locality,
                                 buf,
                                 sizeof (buf),
                                 &offset);
@@ -147,7 +186,7 @@ send_sim_cmd_setup (
         return rc;
     }
 
-    return socket_xmit_buf (tcti_intel->tpmSock, buf, sizeof (buf));
+    return socket_xmit_buf (tcti_mssim->tpm_sock, buf, sizeof (buf));
 }
 
 TSS2_RC
@@ -156,11 +195,15 @@ tcti_mssim_transmit (
     size_t size,
     const uint8_t *cmd_buf)
 {
+    TSS2_TCTI_MSSIM_CONTEXT *tcti_mssim = tcti_mssim_context_cast (tcti_ctx);
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_mssim_down_cast (tcti_mssim);
     tpm_header_t header;
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tcti_ctx);
     TSS2_RC rc;
 
-    rc = tcti_transmit_checks (tcti_intel, cmd_buf);
+    if (tcti_mssim == NULL) {
+        return TSS2_TCTI_RC_BAD_CONTEXT;
+    }
+    rc = tcti_common_transmit_checks (tcti_common, cmd_buf);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -176,16 +219,16 @@ tcti_mssim_transmit (
 
     LOG_DEBUG ("Sending command with TPM_CC 0x%" PRIx32 " and size %" PRIu32,
                header.code, header.size);
-    rc = send_sim_cmd_setup (tcti_intel, header.size);
+    rc = send_sim_cmd_setup (tcti_mssim, header.size);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
-    rc = socket_xmit_buf (tcti_intel->tpmSock, cmd_buf, size);
+    rc = socket_xmit_buf (tcti_mssim->tpm_sock, cmd_buf, size);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
 
-    tcti_intel->state = TCTI_STATE_RECEIVE;
+    tcti_common->state = TCTI_STATE_RECEIVE;
 
     return rc;
 }
@@ -194,25 +237,24 @@ TSS2_RC
 tcti_mssim_cancel (
     TSS2_TCTI_CONTEXT *tctiContext)
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
+    TSS2_TCTI_MSSIM_CONTEXT *tcti_mssim = tcti_mssim_context_cast (tctiContext);
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_mssim_down_cast (tcti_mssim);
     TSS2_RC rc;
 
-    /* the TCTI must have executed the transmit function successfully */
-    rc = tcti_common_checks (tctiContext);
+    if (tcti_mssim == NULL) {
+        return TSS2_TCTI_RC_BAD_CONTEXT;
+    }
+    rc = tcti_common_cancel_checks (tcti_common);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
-    if (tcti_intel->state != TCTI_STATE_RECEIVE) {
-        return TSS2_TCTI_RC_BAD_SEQUENCE;
-    }
-
     rc = tcti_platform_command (tctiContext, MS_SIM_CANCEL_ON);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
 
-    tcti_intel->state = TCTI_STATE_TRANSMIT;
-    tcti_intel->cancel = 1;
+    tcti_common->state = TCTI_STATE_TRANSMIT;
+    tcti_mssim->cancel = 1;
 
     return rc;
 }
@@ -222,18 +264,19 @@ tcti_mssim_set_locality (
     TSS2_TCTI_CONTEXT *tctiContext,
     uint8_t locality)
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
+    TSS2_TCTI_MSSIM_CONTEXT *tcti_mssim = tcti_mssim_context_cast (tctiContext);
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_mssim_down_cast (tcti_mssim);
     TSS2_RC rc;
 
-    rc = tcti_common_checks (tctiContext);
+    if (tcti_mssim == NULL) {
+        return TSS2_TCTI_RC_BAD_CONTEXT;
+    }
+    rc = tcti_common_set_locality_checks (tcti_common);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
-    if (tcti_intel->state != TCTI_STATE_TRANSMIT) {
-        return TSS2_TCTI_RC_BAD_SEQUENCE;
-    }
 
-    tcti_intel->locality = locality;
+    tcti_common->locality = locality;
     return TSS2_RC_SUCCESS;
 }
 
@@ -253,19 +296,15 @@ void
 tcti_mssim_finalize(
     TSS2_TCTI_CONTEXT *tctiContext)
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
-    TSS2_RC rc;
+    TSS2_TCTI_MSSIM_CONTEXT *tcti_mssim = tcti_mssim_context_cast (tctiContext);
 
-    rc = tcti_common_checks (tctiContext);
-    if (rc != TSS2_RC_SUCCESS) {
+    if (tcti_mssim == NULL) {
         return;
     }
-
-    send_sim_session_end (tcti_intel->otherSock);
-    send_sim_session_end (tcti_intel->tpmSock);
-
-    socket_close (&tcti_intel->otherSock);
-    socket_close (&tcti_intel->tpmSock);
+    send_sim_session_end (tcti_mssim->platform_sock);
+    send_sim_session_end (tcti_mssim->tpm_sock);
+    socket_close (&tcti_mssim->platform_sock);
+    socket_close (&tcti_mssim->tpm_sock);
 }
 
 TSS2_RC
@@ -275,12 +314,16 @@ tcti_mssim_receive (
     unsigned char *response_buffer,
     int32_t timeout)
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
-    UINT32 trash;
+    TSS2_TCTI_MSSIM_CONTEXT *tcti_mssim = tcti_mssim_context_cast (tctiContext);
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_mssim_down_cast (tcti_mssim);
     TSS2_RC rc;
+    UINT32 trash;
     int ret;
 
-    rc = tcti_receive_checks (tcti_intel, response_size);
+    if (tcti_mssim == NULL) {
+        return TSS2_TCTI_RC_BAD_CONTEXT;
+    }
+    rc = tcti_common_receive_checks (tcti_common, response_size);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -291,71 +334,71 @@ tcti_mssim_receive (
         return TSS2_TCTI_RC_BAD_VALUE;
     }
 
-    if (tcti_intel->header.size == 0) {
+    if (tcti_common->header.size == 0) {
         /* Receive the size of the response. */
         uint8_t size_buf [sizeof (UINT32)];
-        ret = socket_recv_buf (tcti_intel->tpmSock, size_buf, sizeof (UINT32));
+        ret = socket_recv_buf (tcti_mssim->tpm_sock, size_buf, sizeof (UINT32));
         if (ret != sizeof (UINT32)) {
             rc = TSS2_TCTI_RC_IO_ERROR;
-            goto trans_state_out;
+            goto out;
         }
 
         rc = Tss2_MU_UINT32_Unmarshal (size_buf,
                                        sizeof (size_buf),
                                        0,
-                                       &tcti_intel->header.size);
+                                       &tcti_common->header.size);
         if (rc != TSS2_RC_SUCCESS) {
             LOG_WARNING ("Failed to unmarshal size from tpm2 simulator "
                          "protocol: 0x%" PRIu32, rc);
-            goto trans_state_out;
+            goto out;
         }
 
-        LOG_DEBUG ("response size: %" PRIu32, tcti_intel->header.size);
+        LOG_DEBUG ("response size: %" PRIu32, tcti_common->header.size);
     }
 
-    *response_size = tcti_intel->header.size;
+    *response_size = tcti_common->header.size;
     if (response_buffer == NULL) {
         return TSS2_RC_SUCCESS;
     }
 
-    if (*response_size < tcti_intel->header.size) {
-        *response_size = tcti_intel->header.size;
+    if (*response_size < tcti_common->header.size) {
+        *response_size = tcti_common->header.size;
         return TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
     }
 
     /* Receive the TPM response. */
-    LOG_DEBUG ("Reading response of size %" PRIu32, tcti_intel->header.size);
-    ret = socket_recv_buf (tcti_intel->tpmSock,
+    LOG_DEBUG ("Reading response of size %" PRIu32, tcti_common->header.size);
+    ret = socket_recv_buf (tcti_mssim->tpm_sock,
                            (unsigned char *)response_buffer,
-                           tcti_intel->header.size);
+                           tcti_common->header.size);
     if (ret < 0) {
         rc = TSS2_TCTI_RC_IO_ERROR;
-        goto trans_state_out;
+        goto out;
     }
-    LOGBLOB_DEBUG(response_buffer, tcti_intel->header.size,
+    LOGBLOB_DEBUG(response_buffer, tcti_common->header.size,
                   "Response buffer received:");
 
     /* Receive the appended four bytes of 0's */
-    ret = socket_recv_buf (tcti_intel->tpmSock,
+    ret = socket_recv_buf (tcti_mssim->tpm_sock,
                            (unsigned char *)&trash,
                            4);
     if (ret != 4) {
         rc = TSS2_TCTI_RC_IO_ERROR;
-        goto trans_state_out;
+        goto out;
     }
 
-    if (tcti_intel->cancel) {
+    if (tcti_mssim->cancel) {
         rc = tcti_platform_command (tctiContext, MS_SIM_CANCEL_OFF);
-        tcti_intel->cancel = 0;
+        tcti_mssim->cancel = 0;
     }
     /*
      * Executing code beyond this point transitions the state machine to
      * TRANSMIT. Another call to this function will not be possible until
      * another command is sent to the TPM.
      */
-trans_state_out:
-    tcti_intel->header.size = 0;
-    tcti_intel->state = TCTI_STATE_TRANSMIT;
+out:
+    tcti_common->header.size = 0;
+    tcti_common->state = TCTI_STATE_TRANSMIT;
 
     return rc;
 }
@@ -477,22 +520,20 @@ out:
 
 void
 tcti_mssim_init_context_data (
-    TSS2_TCTI_CONTEXT *tcti_ctx)
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common)
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tcti_ctx);
-
-    TSS2_TCTI_MAGIC (tcti_ctx) = TCTI_MAGIC;
-    TSS2_TCTI_VERSION (tcti_ctx) = TCTI_VERSION;
-    TSS2_TCTI_TRANSMIT (tcti_ctx) = tcti_mssim_transmit;
-    TSS2_TCTI_RECEIVE (tcti_ctx) = tcti_mssim_receive;
-    TSS2_TCTI_FINALIZE (tcti_ctx) = tcti_mssim_finalize;
-    TSS2_TCTI_CANCEL (tcti_ctx) = tcti_mssim_cancel;
-    TSS2_TCTI_GET_POLL_HANDLES (tcti_ctx) = tcti_mssim_get_poll_handles;
-    TSS2_TCTI_SET_LOCALITY (tcti_ctx) = tcti_mssim_set_locality;
-    TSS2_TCTI_MAKE_STICKY (tcti_ctx) = tcti_make_sticky_not_implemented;
-    tcti_intel->state = TCTI_STATE_TRANSMIT;
-    tcti_intel->locality = 3;
-    memset (&tcti_intel->header, 0, sizeof (tcti_intel->header));
+    TSS2_TCTI_MAGIC (tcti_common) = TCTI_MSSIM_MAGIC;
+    TSS2_TCTI_VERSION (tcti_common) = TCTI_VERSION;
+    TSS2_TCTI_TRANSMIT (tcti_common) = tcti_mssim_transmit;
+    TSS2_TCTI_RECEIVE (tcti_common) = tcti_mssim_receive;
+    TSS2_TCTI_FINALIZE (tcti_common) = tcti_mssim_finalize;
+    TSS2_TCTI_CANCEL (tcti_common) = tcti_mssim_cancel;
+    TSS2_TCTI_GET_POLL_HANDLES (tcti_common) = tcti_mssim_get_poll_handles;
+    TSS2_TCTI_SET_LOCALITY (tcti_common) = tcti_mssim_set_locality;
+    TSS2_TCTI_MAKE_STICKY (tcti_common) = tcti_make_sticky_not_implemented;
+    tcti_common->state = TCTI_STATE_TRANSMIT;
+    tcti_common->locality = 3;
+    memset (&tcti_common->header, 0, sizeof (tcti_common->header));
 }
 /*
  * This is an implementation of the standard TCTI initialization function for
@@ -504,19 +545,20 @@ Tss2_Tcti_Mssim_Init (
     size_t *size,
     const char *conf)
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
+    TSS2_TCTI_MSSIM_CONTEXT *tcti_mssim = (TSS2_TCTI_MSSIM_CONTEXT*)tctiContext;
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_mssim_down_cast (tcti_mssim);
     TSS2_RC rc;
-    SOCKET *tpmSock, *otherSock = NULL;
     const char *uri_str = conf != NULL ? conf : TCTI_SOCKET_DEFAULT_CONF;
     char hostname[HOST_NAME_MAX + 1] = { 0 };
     uint16_t port = TCTI_SOCKET_DEFAULT_PORT;
 
     LOG_TRACE ("tctiContext: 0x%" PRIxPTR ", size: 0x%" PRIxPTR ", conf: %s",
                (uintptr_t)tctiContext, (uintptr_t)size, uri_str);
-    if (tctiContext == NULL && size == NULL) {
+    if (size == NULL) {
         return TSS2_TCTI_RC_BAD_VALUE;
-    } else if (tctiContext == NULL) {
-        *size = sizeof (TSS2_TCTI_CONTEXT_INTEL);
+    }
+    if (tctiContext == NULL) {
+        *size = sizeof (TSS2_TCTI_MSSIM_CONTEXT);
         return TSS2_RC_SUCCESS;
     }
 
@@ -525,31 +567,27 @@ Tss2_Tcti_Mssim_Init (
         return rc;
     }
 
-    tpmSock = &tcti_intel->tpmSock;
-    otherSock = &tcti_intel->otherSock;
-
-    rc = socket_connect (hostname, port, tpmSock);
+    rc = socket_connect (hostname, port, &tcti_mssim->tpm_sock);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
 
-    rc = socket_connect (hostname, port + 1, otherSock);
+    rc = socket_connect (hostname, port + 1, &tcti_mssim->platform_sock);
     if (rc != TSS2_RC_SUCCESS) {
         goto fail_out;
     }
 
+    tcti_mssim_init_context_data (tcti_common);
     rc = simulator_setup (tctiContext);
     if (rc != TSS2_RC_SUCCESS) {
         goto fail_out;
     }
 
-    tcti_mssim_init_context_data (tctiContext);
-
     return TSS2_RC_SUCCESS;
 
 fail_out:
-    socket_close (tpmSock);
-    socket_close (otherSock);
+    socket_close (&tcti_mssim->tpm_sock);
+    socket_close (&tcti_mssim->platform_sock);
 
     return TSS2_TCTI_RC_IO_ERROR;
 }
@@ -557,7 +595,7 @@ fail_out:
 /* public info structure */
 const TSS2_TCTI_INFO tss2_tcti_info = {
     .version = {
-        .magic = TCTI_MAGIC,
+        .magic = TCTI_MSSIM_MAGIC,
         .version = TCTI_VERSION,
     },
     .name = "tcti-socket",

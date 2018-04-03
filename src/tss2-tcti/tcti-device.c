@@ -36,13 +36,42 @@
 #include <unistd.h>
 
 #include "tss2_tcti.h"
-
-#include "tcti.h"
 #include "tss2_tcti_device.h"
+
+#include "tcti-common.h"
+#include "tcti-device.h"
+#include "util/io.h"
 #define LOGMODULE tcti
 #include "util/log.h"
 
 #define TCTI_DEVICE_DEFAULT "/dev/tpm0"
+/*
+ * This function wraps the "up-cast" of the opaque TCTI context type to the
+ * type for the device TCTI context. The only safe-guard we have to ensure
+ * this operation is possible is the magic number for the device TCTI context.
+ * If passed a NULL context, or the magic number check fails, this function
+ * will return NULL.
+ */
+TSS2_TCTI_DEVICE_CONTEXT*
+tcti_device_context_cast (TSS2_TCTI_CONTEXT *tcti_ctx)
+{
+    if (tcti_ctx != NULL && TSS2_TCTI_MAGIC (tcti_ctx) == TCTI_DEVICE_MAGIC) {
+        return (TSS2_TCTI_DEVICE_CONTEXT*)tcti_ctx;
+    }
+    return NULL;
+}
+/*
+ * This function down-casts the device TCTI context to the common context
+ * defined in the tcti-common module.
+ */
+TSS2_TCTI_COMMON_CONTEXT*
+tcti_device_down_cast (TSS2_TCTI_DEVICE_CONTEXT *tcti_dev)
+{
+    if (tcti_dev == NULL) {
+        return NULL;
+    }
+    return &tcti_dev->common;
+}
 
 TSS2_RC
 tcti_device_transmit (
@@ -50,11 +79,15 @@ tcti_device_transmit (
     size_t command_size,
     const uint8_t *command_buffer)
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
+    TSS2_TCTI_DEVICE_CONTEXT *tcti_dev = tcti_device_context_cast (tctiContext);
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_device_down_cast (tcti_dev);
     TSS2_RC rc = TSS2_RC_SUCCESS;
     ssize_t size;
 
-    rc = tcti_transmit_checks (tcti_intel, command_buffer);
+    if (tcti_dev == NULL) {
+        return TSS2_TCTI_RC_BAD_CONTEXT;
+    }
+    rc = tcti_common_transmit_checks (tcti_common, command_buffer);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -62,7 +95,7 @@ tcti_device_transmit (
                    command_size,
                    "sending %zu byte command buffer:",
                    command_size);
-    size = write_all (tcti_intel->devFile,
+    size = write_all (tcti_dev->fd,
                       command_buffer,
                       command_size);
     if (size < 0) {
@@ -74,7 +107,7 @@ tcti_device_transmit (
         return TSS2_TCTI_RC_IO_ERROR;
     }
 
-    tcti_intel->state = TCTI_STATE_RECEIVE;
+    tcti_common->state = TCTI_STATE_RECEIVE;
     return TSS2_RC_SUCCESS;
 }
 
@@ -85,11 +118,15 @@ tcti_device_receive (
     uint8_t *response_buffer,
     int32_t timeout)
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
+    TSS2_TCTI_DEVICE_CONTEXT *tcti_dev = tcti_device_context_cast (tctiContext);
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_device_down_cast (tcti_dev);
     TSS2_RC rc = TSS2_RC_SUCCESS;
     ssize_t  size;
 
-    rc = tcti_receive_checks (tcti_intel, response_size);
+    if (tcti_dev == NULL) {
+        return TSS2_TCTI_RC_BAD_CONTEXT;
+    }
+    rc = tcti_common_receive_checks (tcti_common, response_size);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -101,62 +138,62 @@ tcti_device_receive (
     }
 
     /* Read header first to get size of response. */
-    if (tcti_intel->header.size == 0) {
+    if (tcti_common->header.size == 0) {
         uint8_t header_buf [TPM_HEADER_SIZE];
         LOG_INFO ("Header not yet received, reading %zd byte header from fd %d",
-                  sizeof (header_buf), tcti_intel->devFile);
-        size = read_all (tcti_intel->devFile, header_buf, sizeof (header_buf));
+                  sizeof (header_buf), tcti_dev->fd);
+        size = read_all (tcti_dev->fd, header_buf, sizeof (header_buf));
         if (size < 0) {
             LOG_WARNING ("Failed to read response header.");
             rc = TSS2_TCTI_RC_IO_ERROR;
-            goto trans_state_out;
+            goto out;
         }
         LOGBLOB_DEBUG (header_buf, TPM_HEADER_SIZE, "Response header received");
-        rc = header_unmarshal (header_buf, &tcti_intel->header);
+        rc = header_unmarshal (header_buf, &tcti_common->header);
         if (rc != TSS2_RC_SUCCESS) {
             return rc;
         }
         LOG_INFO ("Received response header with size: %" PRIu32,
-                  tcti_intel->header.size);
+                  tcti_common->header.size);
     }
 
     if (response_buffer == NULL) {
-        *response_size = tcti_intel->header.size;
+        *response_size = tcti_common->header.size;
         LOG_DEBUG ("response_buffer is null, returning size: %zd", *response_size);
         return TSS2_RC_SUCCESS;
     }
-    if (*response_size < tcti_intel->header.size) {
+    if (*response_size < tcti_common->header.size) {
         LOG_WARNING ("Size of user supplied response buffer %zd is less than "
                      "the size of the response buffer: %" PRIu32,
-                     *response_size, tcti_intel->header.size);
+                     *response_size, tcti_common->header.size);
         return TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
     }
-    *response_size = tcti_intel->header.size;
+    *response_size = tcti_common->header.size;
 
-    rc = header_marshal (&tcti_intel->header, response_buffer);
+    rc = header_marshal (&tcti_common->header, response_buffer);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
     /* Read the rest of the response, minus the header that we already jave. */
-    size = read_all (tcti_intel->devFile,
+    size = read_all (tcti_dev->fd,
                      &response_buffer [TPM_HEADER_SIZE],
-                     tcti_intel->header.size - TPM_HEADER_SIZE);
+                     tcti_common->header.size - TPM_HEADER_SIZE);
     if (size < 0) {
         LOG_WARNING ("Failed to read response body.");
         rc = TSS2_TCTI_RC_IO_ERROR;
-        goto trans_state_out;
+        goto out;
     }
 
-    LOGBLOB_DEBUG(response_buffer, tcti_intel->header.size, "Response Received");
+    LOGBLOB_DEBUG(response_buffer, tcti_common->header.size, "Response Received");
 
     /*
      * Executing code beyond this point transitions the state machine to
      * TRANSMIT. Another call to this function will not be possible until
      * another command is sent to the TPM.
      */
-trans_state_out:
-    tcti_intel->header.size = 0;
-    tcti_intel->state = TCTI_STATE_TRANSMIT;
+out:
+    tcti_common->header.size = 0;
+    tcti_common->state = TCTI_STATE_TRANSMIT;
 
     return rc;
 }
@@ -165,15 +202,14 @@ void
 tcti_device_finalize (
     TSS2_TCTI_CONTEXT *tctiContext)
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
-    TSS2_RC rc;
+    TSS2_TCTI_DEVICE_CONTEXT *tcti_dev = tcti_device_context_cast (tctiContext);
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_device_down_cast (tcti_dev);
 
-    rc = tcti_common_checks (tctiContext);
-    if (rc != TSS2_RC_SUCCESS) {
+    if (tcti_dev == NULL) {
         return;
     }
-    close (tcti_intel->devFile);
-    tcti_intel->state = TCTI_STATE_FINAL;
+    close (tcti_dev->fd);
+    tcti_common->state = TCTI_STATE_FINAL;
 }
 
 TSS2_RC
@@ -218,18 +254,19 @@ Tss2_Tcti_Device_Init (
     size_t *size,
     const char *conf)
 {
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (tctiContext);
+    TSS2_TCTI_DEVICE_CONTEXT *tcti_dev;
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common;
     const char *dev_path = conf != NULL ? conf : TCTI_DEVICE_DEFAULT;
 
     if (tctiContext == NULL && size == NULL) {
         return TSS2_TCTI_RC_BAD_VALUE;
     } else if (tctiContext == NULL) {
-        *size = sizeof (TSS2_TCTI_CONTEXT_INTEL);
+        *size = sizeof (TSS2_TCTI_DEVICE_CONTEXT);
         return TSS2_RC_SUCCESS;
     }
 
     /* Init TCTI context */
-    TSS2_TCTI_MAGIC (tctiContext) = TCTI_MAGIC;
+    TSS2_TCTI_MAGIC (tctiContext) = TCTI_DEVICE_MAGIC;
     TSS2_TCTI_VERSION (tctiContext) = TCTI_VERSION;
     TSS2_TCTI_TRANSMIT (tctiContext) = tcti_device_transmit;
     TSS2_TCTI_RECEIVE (tctiContext) = tcti_device_receive;
@@ -238,12 +275,14 @@ Tss2_Tcti_Device_Init (
     TSS2_TCTI_GET_POLL_HANDLES (tctiContext) = tcti_device_get_poll_handles;
     TSS2_TCTI_SET_LOCALITY (tctiContext) = tcti_device_set_locality;
     TSS2_TCTI_MAKE_STICKY (tctiContext) = tcti_make_sticky_not_implemented;
-    tcti_intel->state = TCTI_STATE_TRANSMIT;
-    memset (&tcti_intel->header, 0, sizeof (tcti_intel->header));
-    tcti_intel->locality = 3;
+    tcti_dev = tcti_device_context_cast (tctiContext);
+    tcti_common = tcti_device_down_cast (tcti_dev);
+    tcti_common->state = TCTI_STATE_TRANSMIT;
+    memset (&tcti_common->header, 0, sizeof (tcti_common->header));
+    tcti_common->locality = 3;
 
-    tcti_intel->devFile = open (dev_path, O_RDWR);
-    if (tcti_intel->devFile < 0) {
+    tcti_dev->fd = open (dev_path, O_RDWR);
+    if (tcti_dev->fd < 0) {
         LOG_ERROR ("Failed to open device file %s: %s",
                    dev_path, strerror (errno));
         return TSS2_TCTI_RC_IO_ERROR;
@@ -254,7 +293,7 @@ Tss2_Tcti_Device_Init (
 
 const TSS2_TCTI_INFO tss2_tcti_info = {
     .version = {
-        .magic = TCTI_MAGIC,
+        .magic = TCTI_DEVICE_MAGIC,
         .version = TCTI_VERSION,
     },
     .name = "tcti-device",

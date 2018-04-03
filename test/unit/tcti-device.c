@@ -8,7 +8,9 @@
 
 #include "tss2_mu.h"
 #include "tss2_tcti_device.h"
-#include "tss2-tcti/tcti.h"
+
+#include "tss2-tcti/tcti-common.h"
+#include "tss2-tcti/tcti-device.h"
 
 /*
  * Size of the TPM2 buffer used in these tests. In some cases this will be
@@ -70,12 +72,6 @@ __wrap_write (int fd, const void *buffer, size_t buffer_size)
     return ret;
 }
 
-typedef struct {
-    TSS2_TCTI_CONTEXT *ctx;
-    size_t   buffer_size;
-    size_t   data_size;
-    uint8_t  buffer [TPM_HEADER_SIZE * 2];
-} data_t;
 /* Setup functions to create the context for the device TCTI */
 static int
 tcti_device_setup (void **state)
@@ -88,7 +84,7 @@ tcti_device_setup (void **state)
     assert_true (ret == TSS2_RC_SUCCESS);
     ctx = calloc (1, tcti_size);
     assert_non_null (ctx);
-    ret = Tss2_Tcti_Device_Init (ctx, 0, "/dev/null");
+    ret = Tss2_Tcti_Device_Init (ctx, &tcti_size, "/dev/null");
     assert_true (ret == TSS2_RC_SUCCESS);
 
     *state = ctx;
@@ -112,11 +108,11 @@ static void
 tcti_device_receive_null_size_test (void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (ctx);
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_common_context_cast (ctx);
     TSS2_RC rc;
 
     /* Keep state machine check in `receive` from returning error. */
-    tcti_intel->state = TCTI_STATE_RECEIVE;
+    tcti_common->state = TCTI_STATE_RECEIVE;
     rc = Tss2_Tcti_Receive (ctx,
                             NULL, /* NULL 'size' parameter */
                             NULL,
@@ -139,14 +135,14 @@ static void
 tcti_device_receive_one_call_success (void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (ctx);
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_common_context_cast (ctx);
     TSS2_RC rc;
     /* output buffer for response */
     uint8_t buf_out [BUF_SIZE + 5] = { 0 };
     size_t size = BUF_SIZE + 5;
 
     /* Keep state machine check in `receive` from returning error. */
-    tcti_intel->state = TCTI_STATE_RECEIVE;
+    tcti_common->state = TCTI_STATE_RECEIVE;
     will_return (__wrap_read, TPM_HEADER_SIZE);
     will_return (__wrap_read, tpm2_buf);
     will_return (__wrap_read, BUF_SIZE - TPM_HEADER_SIZE);
@@ -163,14 +159,14 @@ static void
 tcti_device_receive_two_call_success (void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (ctx);
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_common_context_cast (ctx);
     TSS2_RC rc;
     /* output buffer for response */
     uint8_t buf_out [BUF_SIZE + 5] = { 0 };
     size_t size = 0;
 
     /* Keep state machine check in `receive` from returning error. */
-    tcti_intel->state = TCTI_STATE_RECEIVE;
+    tcti_common->state = TCTI_STATE_RECEIVE;
     will_return (__wrap_read, TPM_HEADER_SIZE);
     will_return (__wrap_read, tpm2_buf);
     will_return (__wrap_read, BUF_SIZE - TPM_HEADER_SIZE);
@@ -196,14 +192,14 @@ static void
 tcti_device_receive_second_size_too_small_test (void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel = tcti_context_intel_cast (ctx);
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_common_context_cast (ctx);
     TSS2_RC rc;
     /* output buffer for response */
     uint8_t buf_out [BUF_SIZE + 5] = { 0 };
     size_t size = 0;
 
     /* Keep state machine check in `receive` from returning error. */
-    tcti_intel->state = TCTI_STATE_RECEIVE;
+    tcti_common->state = TCTI_STATE_RECEIVE;
     will_return (__wrap_read, TPM_HEADER_SIZE);
     will_return (__wrap_read, tpm2_buf);
     /* get the size of the buffer required to hold the response */

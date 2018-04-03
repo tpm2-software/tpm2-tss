@@ -122,8 +122,9 @@ if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-device.map
 endif # HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_device_la_LIBADD   = $(libtss2_mu) $(libutil)
-src_tss2_tcti_libtss2_tcti_device_la_SOURCES  = src/tss2-tcti/tcti-device.c \
-    src/tss2-tcti/tcti.c src/tss2-tcti/tcti.h
+src_tss2_tcti_libtss2_tcti_device_la_SOURCES  = \
+    src/tss2-tcti/tcti-common.c src/tss2-tcti/tcti-common.h \
+    src/tss2-tcti/tcti-device.c src/tss2-tcti/tcti-device.h
 
 # tcti library for microsoft simulator
 libtss2_tcti_mssim = src/tss2-tcti/libtss2-tcti-mssim.la
@@ -137,8 +138,9 @@ if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_mssim_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-mssim.map
 endif # HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_mssim_la_LIBADD   = $(libtss2_mu) $(URIPARSER_LIBS) $(libutil)
-src_tss2_tcti_libtss2_tcti_mssim_la_SOURCES  = src/tss2-tcti/tcti-mssim.c \
-    src/tss2-tcti/tcti.c src/tss2-tcti/tcti.h
+src_tss2_tcti_libtss2_tcti_mssim_la_SOURCES  = \
+    src/tss2-tcti/tcti-common.c src/tss2-tcti/tcti-common.h \
+    src/tss2-tcti/tcti-mssim.c src/tss2-tcti/tcti-mssim.h
 
 ### TCG TSS SAPI spec library ###
 libtss2_sys = src/tss2-sys/libtss2-sys.la

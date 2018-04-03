@@ -3,7 +3,6 @@
 
 #include "tss2_sys.h"
 
-#include "tss2-tcti/tcti.h"
 #include "tss2-sys/sysapi_util.h"
 
 #define LOGMODULE test
@@ -18,7 +17,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 
     // NOTE: this should never be done in real applications.
     // It is only done here for test purposes.
-    TSS2_TCTI_CONTEXT_INTEL tctiContextIntel;
+    TSS2_TCTI_CONTEXT_COMMON_V2 tctiContext;
 
     LOG_INFO("Sys_Initialize tests started.");
 
@@ -41,20 +40,20 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     }
 
     // NOTE: don't do this in real applications.
-    TSS2_TCTI_RECEIVE (&tctiContextIntel) = (TSS2_TCTI_RECEIVE_FCN)1;
-    TSS2_TCTI_TRANSMIT (&tctiContextIntel) = (TSS2_TCTI_TRANSMIT_FCN)0;
+    TSS2_TCTI_RECEIVE (&tctiContext) = (TSS2_TCTI_RECEIVE_FCN)1;
+    TSS2_TCTI_TRANSMIT (&tctiContext) = (TSS2_TCTI_TRANSMIT_FCN)0;
 
-    rc = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, sizeof( _TSS2_SYS_CONTEXT_BLOB ), (TSS2_TCTI_CONTEXT *)&tctiContextIntel, (TSS2_ABI_VERSION *)1 );
+    rc = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, sizeof( _TSS2_SYS_CONTEXT_BLOB ), (TSS2_TCTI_CONTEXT *)&tctiContext, (TSS2_ABI_VERSION *)1 );
     if( rc != TSS2_SYS_RC_BAD_TCTI_STRUCTURE ) {
         LOG_ERROR("Sys_Initialize FAILED! Response Code : %x", rc);
         exit(1);
     }
 
     // NOTE: don't do this in real applications.
-    TSS2_TCTI_RECEIVE (&tctiContextIntel) = (TSS2_TCTI_RECEIVE_FCN)0;
-    TSS2_TCTI_TRANSMIT (&tctiContextIntel) = (TSS2_TCTI_TRANSMIT_FCN)1;
+    TSS2_TCTI_RECEIVE (&tctiContext) = (TSS2_TCTI_RECEIVE_FCN)0;
+    TSS2_TCTI_TRANSMIT (&tctiContext) = (TSS2_TCTI_TRANSMIT_FCN)1;
 
-    rc = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, sizeof( _TSS2_SYS_CONTEXT_BLOB ), (TSS2_TCTI_CONTEXT *)&tctiContextIntel, (TSS2_ABI_VERSION *)1 );
+    rc = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, sizeof( _TSS2_SYS_CONTEXT_BLOB ), (TSS2_TCTI_CONTEXT *)&tctiContext, (TSS2_ABI_VERSION *)1 );
     if( rc != TSS2_SYS_RC_BAD_TCTI_STRUCTURE ) {
         LOG_ERROR("Sys_Initialize FAILED! Response Code : %x", rc);
         exit(1);

@@ -34,37 +34,38 @@
 #include "tss2_tpm2_types.h"
 #include "tss2_mu.h"
 
-#include "tcti.h"
+#include "tcti-common.h"
 #define LOGMODULE tcti
 #include "util/log.h"
 
-TSS2_RC
-tcti_common_checks (
-    TSS2_TCTI_CONTEXT *tcti_context)
+TSS2_TCTI_COMMON_CONTEXT*
+tcti_common_context_cast (TSS2_TCTI_CONTEXT *ctx)
 {
-    if (tcti_context == NULL) {
-        return TSS2_TCTI_RC_BAD_REFERENCE;
-    }
-    if (TSS2_TCTI_MAGIC (tcti_context) != TCTI_MAGIC ||
-        TSS2_TCTI_VERSION (tcti_context) != TCTI_VERSION) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
-    }
+    return (TSS2_TCTI_COMMON_CONTEXT*)ctx;
+}
 
+TSS2_TCTI_CONTEXT*
+tcti_common_down_cast (TSS2_TCTI_COMMON_CONTEXT *ctx)
+{
+    return (TSS2_TCTI_CONTEXT*)&ctx->v2;
+}
+
+TSS2_RC
+tcti_common_cancel_checks (
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common)
+{
+    if (tcti_common->state != TCTI_STATE_RECEIVE) {
+        return TSS2_TCTI_RC_BAD_SEQUENCE;
+    }
     return TSS2_RC_SUCCESS;
 }
 
 TSS2_RC
-tcti_transmit_checks (
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel,
+tcti_common_transmit_checks (
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common,
     const uint8_t *command_buffer)
 {
-    TSS2_RC rc;
-
-    rc = tcti_common_checks (tcti_context_base_cast (tcti_intel));
-    if (rc != TSS2_RC_SUCCESS) {
-        return rc;
-    }
-    if (tcti_intel->state != TCTI_STATE_TRANSMIT) {
+    if (tcti_common->state != TCTI_STATE_TRANSMIT) {
         return TSS2_TCTI_RC_BAD_SEQUENCE;
     }
     if (command_buffer == NULL) {
@@ -75,17 +76,11 @@ tcti_transmit_checks (
 }
 
 TSS2_RC
-tcti_receive_checks (
-    TSS2_TCTI_CONTEXT_INTEL *tcti_intel,
+tcti_common_receive_checks (
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common,
     size_t *response_size)
 {
-    TSS2_RC rc;
-
-    rc = tcti_common_checks (tcti_context_base_cast (tcti_intel));
-    if (rc != TSS2_RC_SUCCESS) {
-        return rc;
-    }
-    if (tcti_intel->state != TCTI_STATE_RECEIVE) {
+    if (tcti_common->state != TCTI_STATE_RECEIVE) {
         return TSS2_TCTI_RC_BAD_SEQUENCE;
     }
     if (response_size == NULL) {
@@ -95,6 +90,15 @@ tcti_receive_checks (
     return TSS2_RC_SUCCESS;
 }
 
+TSS2_RC
+tcti_common_set_locality_checks (
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common)
+{
+    if (tcti_common->state != TCTI_STATE_TRANSMIT) {
+        return TSS2_TCTI_RC_BAD_SEQUENCE;
+    }
+    return TSS2_RC_SUCCESS;
+}
 
 TSS2_RC
 tcti_make_sticky_not_implemented (
