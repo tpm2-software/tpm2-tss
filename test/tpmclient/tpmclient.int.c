@@ -92,10 +92,7 @@ UINT8 resMgrInitialized = 0;
 UINT8 pcrAfterExtend[20];
 TPM2_HANDLE loadedRsaKeyHandle;
 TPM2_HANDLE loadedSha1KeyHandle;
-
 TPM2B_AUTH loadedSha1KeyAuth;
-
-TPM2_HANDLE handle1024, handle2048sha1, handle2048rsa;
 
 UINT8 indent = 0;
 
@@ -106,18 +103,6 @@ TSS2_ABI_VERSION abiVersion = { TSSWG_INTEROP, TSS_SAPI_FIRST_FAMILY, TSS_SAPI_F
 
 #define MSFT_MANUFACTURER_ID 0x4d534654
 #define IBM_MANUFACTURER_ID 0x49424d20
-
-static TSS2_RC CompareTPM2B(TPM2B *buffer1, TPM2B *buffer2)
-{
-    if (buffer1->size != buffer2->size)
-        return TPM2_RC_FAILURE;
-
-    if (memcmp(buffer1->buffer, buffer2->buffer, buffer1->size))
-            return TPM2_RC_FAILURE;
-
-    return TPM2_RC_SUCCESS;
-}
-
 #define LEVEL_STRING_SIZE 50
 
 static void ErrorHandler( UINT32 rval )
@@ -957,156 +942,6 @@ static void TestHierarchyControl()
     CheckPassed( rval );
 }
 
-TPM2B_PUBLIC    inPublic = {sizeof( TPM2B_PUBLIC ) - 2,};
-
-static void TestCreate(){
-    UINT32 rval;
-    TPM2B_SENSITIVE_CREATE  inSensitive = {sizeof( TPM2B_SENSITIVE_CREATE ) - 2,};
-    TPM2B_DATA              outsideInfo = {sizeof( TPM2B_DATA ) - 2,};
-    TPML_PCR_SELECTION      creationPCR;
-    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
-	TPM2B_NAME name = {sizeof( TPM2B_NAME ) - 2,};
-	TPM2B_NAME name1 = {sizeof( TPM2B_NAME ) - 2,};
-    TPM2B_PRIVATE outPrivate = {sizeof( TPM2B_PRIVATE ) - 2,};
-    TPM2B_PUBLIC outPublic = {sizeof( TPM2B_PUBLIC ) - 2,};
-    TPM2B_CREATION_DATA creationData =  {sizeof( TPM2B_CREATION_DATA ) - 2,};
-	TPM2B_DIGEST creationHash = {sizeof( TPM2B_DIGEST ) - 2,};
-	TPMT_TK_CREATION creationTicket = { 0, 0, {sizeof( TPM2B_DIGEST ) - 2,} };
-
-    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths = {{
-        .sessionHandle = TPM2_RS_PW,
-        .sessionAttributes = 0,
-        .nonce = {.size = 0},
-        .hmac = {.size = 0}}}};
-
-    LOG_INFO("CREATE, CREATE PRIMARY, and LOAD TESTS:" );
-
-    inSensitive.sensitive.userAuth = loadedSha1KeyAuth;
-    inSensitive.sensitive.userAuth = loadedSha1KeyAuth;
-    inSensitive.sensitive.data.size = 0;
-    inSensitive.size = loadedSha1KeyAuth.size + 2;
-
-    inPublic.publicArea.type = TPM2_ALG_RSA;
-    inPublic.publicArea.nameAlg = TPM2_ALG_SHA1;
-
-    // First clear attributes bit field.
-    *(UINT32 *)&( inPublic.publicArea.objectAttributes) = 0;
-    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_RESTRICTED;
-    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_USERWITHAUTH;
-    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_DECRYPT;
-    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_FIXEDTPM;
-    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_FIXEDPARENT;
-    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
-
-    inPublic.publicArea.authPolicy.size = 0;
-
-    inPublic.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM2_ALG_AES;
-    inPublic.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-    inPublic.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM2_ALG_ECB;
-    inPublic.publicArea.parameters.rsaDetail.scheme.scheme = TPM2_ALG_NULL;
-    inPublic.publicArea.parameters.rsaDetail.keyBits = 2048;
-    inPublic.publicArea.parameters.rsaDetail.exponent = 0;
-
-    inPublic.publicArea.unique.rsa.size = 0;
-
-    outsideInfo.size = 0;
-    creationPCR.count = 0;
-
-    // Do SAPI test for non-zero sized outPublic
-    outPublic.size = 0xff;
-    creationData.size = 0;
-    INIT_SIMPLE_TPM2B_SIZE( creationHash );
-    INIT_SIMPLE_TPM2B_SIZE( name );
-    rval = Tss2_Sys_CreatePrimary( sysContext, TPM2_RH_PLATFORM, &sessionsData, &inSensitive, &inPublic,
-            &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
-            &creationTicket, &name, &sessionsDataOut );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_VALUE );
-
-    rval = Tss2_Sys_FlushContext( sysContext, handle2048rsa );
-    CheckPassed( rval );
-
-    outPublic.size = 0;
-    INIT_SIMPLE_TPM2B_SIZE( creationData );
-    INIT_SIMPLE_TPM2B_SIZE( creationHash );
-    INIT_SIMPLE_TPM2B_SIZE( name );
-    rval = Tss2_Sys_CreatePrimary( sysContext, TPM2_RH_PLATFORM, &sessionsData, &inSensitive, &inPublic,
-            &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
-            &creationTicket, &name, &sessionsDataOut );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_VALUE );
-
-    rval = Tss2_Sys_FlushContext( sysContext, handle2048rsa );
-    CheckPassed( rval );
-
-    outPublic.size = 0;
-    creationData.size = 0;
-    INIT_SIMPLE_TPM2B_SIZE( creationHash );
-    INIT_SIMPLE_TPM2B_SIZE( name );
-    rval = Tss2_Sys_CreatePrimary( sysContext, TPM2_RH_PLATFORM, &sessionsData, &inSensitive, &inPublic,
-            &outsideInfo, &creationPCR, &handle2048rsa, &outPublic, &creationData, &creationHash,
-            &creationTicket, &name, &sessionsDataOut );
-    CheckPassed( rval );
-
-    LOG_INFO("New key successfully created in platform hierarchy (RSA 2048).  Handle: 0x%8.8x",
-            handle2048rsa );
-
-    sessionsData.auths[0].hmac.size = 2;
-    sessionsData.auths[0].hmac.buffer[0] = 0x00;
-    sessionsData.auths[0].hmac.buffer[1] = 0xff;
-
-    inPublic.publicArea.type = TPM2_ALG_KEYEDHASH;
-    inPublic.publicArea.objectAttributes &= ~TPMA_OBJECT_DECRYPT;
-    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_SIGN_ENCRYPT;
-
-    inPublic.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM2_ALG_HMAC;
-    inPublic.publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM2_ALG_SHA1;
-
-    inPublic.publicArea.unique.keyedHash.size = 0;
-
-    outsideInfo.size = 0;
-    outPublic.size = 0;
-    creationData.size = 0;
-    INIT_SIMPLE_TPM2B_SIZE( outPrivate );
-    INIT_SIMPLE_TPM2B_SIZE( creationHash );
-    rval = TSS2_RETRY_EXP( Tss2_Sys_Create( sysContext, handle2048rsa, &sessionsData, &inSensitive, &inPublic,
-            &outsideInfo, &creationPCR,
-            &outPrivate, &outPublic, &creationData,
-            &creationHash, &creationTicket, &sessionsDataOut ));
-    CheckPassed( rval );
-
-    INIT_SIMPLE_TPM2B_SIZE( name );
-    rval = Tss2_Sys_Load ( sysContext, handle2048rsa, &sessionsData, &outPrivate, &outPublic,
-            &loadedSha1KeyHandle, &name, &sessionsDataOut);
-    CheckPassed( rval );
-
-    rval = TpmHandleToName( loadedSha1KeyHandle, &name1 );
-    CheckPassed( rval );
-    LOGBLOB_INFO(&name1.name[0], name1.size, "Name of loaded key:");
-    rval = CompareTPM2B((TPM2B *)&name, (TPM2B *)&name1);
-    CheckPassed( rval );
-
-    LOG_INFO("Loaded key handle:  %8.8x", loadedSha1KeyHandle );
-}
-
-static void TestEvict()
-{
-    TSS2_RC rval = TPM2_RC_SUCCESS;
-    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
-    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths = {{
-        .sessionHandle = TPM2_RS_PW,
-        .sessionAttributes = 0,
-        .nonce = {.size = 0},
-        .hmac = {.size = 0}}}};
-
-    LOG_INFO("EVICT CONTROL TESTS:" );
-
-    rval = Tss2_Sys_EvictControl( sysContext, TPM2_RH_PLATFORM, handle2048rsa, &sessionsData, 0x81800000, &sessionsDataOut );
-    CheckPassed( rval );
-
-    // Reset persistent key to be transitent.
-    sessionsData.auths[0].hmac.size = 0;
-    rval = Tss2_Sys_EvictControl( sysContext, TPM2_RH_PLATFORM, 0x81800000, &sessionsData, 0x81800000, &sessionsDataOut );
-    CheckPassed( rval );
-}
 static TSS2_RC DefineNvIndex( TPMI_RH_PROVISION authHandle, TPMI_SH_AUTH_SESSION sessionAuthHandle, TPM2B_AUTH *auth, TPM2B_DIGEST *authPolicy,
     TPMI_RH_NV_INDEX nvIndex, TPMI_ALG_HASH nameAlg, TPMA_NV attributes, UINT16 size  )
 {
@@ -1647,11 +1482,15 @@ static void TestQuote()
     TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
     TPM2B_ATTEST quoted;
     TPMT_SIGNATURE signature;
-    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths= {{
-        .sessionHandle = TPM2_RS_PW,
-        .sessionAttributes = 0,
-        .nonce={.size=0},
-        .hmac={.size=2, .buffer={0x00,0xff}}}}};
+    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1,
+        .auths = {{
+            .sessionHandle = TPM2_RS_PW,
+            .sessionAttributes = 0,
+            .nonce = { .size = 0 },
+            .hmac = { .size = 0, .buffer={0x00} },
+        }},
+    };
+    TPM2_HANDLE handle, handle_parent;
 
     LOG_INFO("QUOTE CONTROL TESTS:" );
 
@@ -1672,10 +1511,22 @@ static void TestQuote()
     // Now set the PCR you want
     pcrSelection.pcrSelections[0].pcrSelect[( PCR_17/8 )] = ( 1 << ( PCR_18 % 8) );
 
+    rval = create_primary_rsa_2048_aes_128_cfb(sysContext, &handle_parent);
+    CheckPassed( rval );
+
+    rval = create_keyedhash_key (sysContext, handle_parent, &handle);
+    CheckPassed( rval );
+
     // Test with wrong type of key.
     INIT_SIMPLE_TPM2B_SIZE( quoted );
-    rval = Tss2_Sys_Quote ( sysContext, loadedSha1KeyHandle, &sessionsData, &qualifyingData, &inScheme,
+    rval = Tss2_Sys_Quote ( sysContext, handle, &sessionsData, &qualifyingData, &inScheme,
             &pcrSelection,  &quoted, &signature, &sessionsDataOut );
+    CheckPassed( rval );
+
+    rval = Tss2_Sys_FlushContext(sysContext, handle);
+    CheckPassed( rval );
+
+    rval = Tss2_Sys_FlushContext(sysContext, handle_parent);
     CheckPassed( rval );
 }
 
@@ -2039,13 +1890,16 @@ static void TestUnseal()
     TPML_PCR_SELECTION      creationPCR;
     TPM2B_DATA              outsideInfo;
     TPM2B_PUBLIC            inPublic;
-    TPM2_HANDLE loadedObjectHandle;
+    TPM2_HANDLE loadedObjectHandle, handle_parent;
 
-    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths= {{
-        .sessionHandle = TPM2_RS_PW,
-        .sessionAttributes = 0,
-        .nonce={.size=0},
-        .hmac={.size=2, .buffer={0x00,0xff}}}}};
+    TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1,
+        .auths= {{
+            .sessionHandle = TPM2_RS_PW,
+            .sessionAttributes = 0,
+            .nonce={.size=0},
+            .hmac={.size=0, .buffer={0x00}}
+        }},
+    };
 
     TPM2B_PRIVATE outPrivate;
     TPM2B_PUBLIC outPublic;
@@ -2087,9 +1941,13 @@ static void TestUnseal()
 
     outPublic.size = 0;
     creationData.size = 0;
+
+    rval = create_primary_rsa_2048_aes_128_cfb(sysContext, &handle_parent);
+    CheckPassed( rval );
+
     INIT_SIMPLE_TPM2B_SIZE( creationHash );
     INIT_SIMPLE_TPM2B_SIZE( outPrivate );
-    rval = Tss2_Sys_Create( sysContext, handle2048rsa, &sessionsData, &inSensitive, &inPublic,
+    rval = Tss2_Sys_Create( sysContext, handle_parent, &sessionsData, &inSensitive, &inPublic,
             &outsideInfo, &creationPCR,
             &outPrivate, &outPublic, &creationData,
             &creationHash, &creationTicket, &sessionsDataOut );
@@ -2104,20 +1962,22 @@ static void TestUnseal()
     CheckPassed( rval );
 
     INIT_SIMPLE_TPM2B_SIZE( name );
-    rval = Tss2_Sys_Load ( sysContext, handle2048rsa, &sessionsData, &outPrivate, &outPublic,
+    rval = Tss2_Sys_Load (sysContext, handle_parent, &sessionsData, &outPrivate, &outPublic,
             &loadedObjectHandle, &name, &sessionsDataOut);
-    CheckPassed( rval );
+    CheckPassed(rval);
 
     sessionsData.auths[0].hmac.size = sizeof( authStr ) - 1;
     memcpy( &( sessionsData.auths[0].hmac.buffer[0] ), authStr, sizeof( authStr ) - 1 );
 
     INIT_SIMPLE_TPM2B_SIZE( outData );
     rval = Tss2_Sys_Unseal( sysContext, loadedObjectHandle, &sessionsData, &outData, &sessionsDataOut );
-    CheckPassed( rval );
+    CheckPassed(rval);
 
-    rval = Tss2_Sys_FlushContext( sysContext, loadedObjectHandle );
+    rval = Tss2_Sys_FlushContext(sysContext, loadedObjectHandle);
+    CheckPassed(rval);
 
-    CheckPassed( rval );
+    rval = Tss2_Sys_FlushContext(sysContext, handle_parent);
+    CheckPassed(rval);
 }
 
 
@@ -3304,7 +3164,6 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     // Clear DA lockout.
     TestDictionaryAttackLockReset();
     TestDictionaryAttackLockReset();
-    TestCreate();
     TestHierarchyControl();
     NvIndexProto();
     GetSetEncryptParamTests();
@@ -3320,8 +3179,6 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     TestHierarchyChangeAuth();
     TestShutdown();
     TestNV();
-    TestCreate();
-    TestEvict();
     NvIndexProto();
     PasswordTest();
     TestQuote();
@@ -3329,11 +3186,5 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     TestPcrAllocate();
     TestUnseal();
     EcEphemeralTest();
-    // Clear out RM entries for objects.
-    rval = Tss2_Sys_FlushContext( sysContext, handle2048rsa );
-    CheckPassed( rval );
-    rval = Tss2_Sys_FlushContext( sysContext, loadedSha1KeyHandle );
-    CheckPassed( rval );
-
     return 0;
 }
