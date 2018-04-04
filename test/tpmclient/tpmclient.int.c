@@ -1083,6 +1083,7 @@ static TSS2_RC TestLocality( TSS2_SYS_CONTEXT *sysContext, SESSION *policySessio
     TSS2_RC rval = TPM2_RC_SUCCESS;
     TPM2B_MAX_NV_BUFFER nvWriteData;
     TSS2L_SYS_AUTH_RESPONSE sessionsDataOut = { 1, };
+    TSS2_TCTI_CONTEXT *tctiContext;
     TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths = {{
         .sessionHandle = policySession->sessionHandle,
         .sessionAttributes = TPMA_SESSION_CONTINUESESSION,
@@ -1093,8 +1094,11 @@ static TSS2_RC TestLocality( TSS2_SYS_CONTEXT *sysContext, SESSION *policySessio
     // Init write data.
     nvWriteData.size = 0;
 
-    rval = SetLocality( sysContext, 2 );
-    CheckPassed( rval );
+    rval = Tss2_Sys_GetTctiContext(sysContext, &tctiContext);
+    CheckPassed(rval);
+
+    rval = Tss2_Tcti_SetLocality(tctiContext, 2);
+    CheckPassed(rval);
 
     // Do NV write using open session's policy.
     rval = Tss2_Sys_NV_Write( sysContext, TPM20_INDEX_PASSWORD_TEST,
@@ -1102,7 +1106,7 @@ static TSS2_RC TestLocality( TSS2_SYS_CONTEXT *sysContext, SESSION *policySessio
             &sessionsData, &nvWriteData, 0, &sessionsDataOut );
     CheckFailed( rval, TPM2_RC_LOCALITY );
 
-    rval = SetLocality( sysContext, 3 );
+    rval = Tss2_Tcti_SetLocality(tctiContext, 3);
     CheckPassed( rval );
 
     // Do NV write using open session's policy.
@@ -1698,6 +1702,7 @@ static void TpmAuxWrite( int locality)
     int i;
     TPMI_SH_AUTH_SESSION nvAuxPolicyAuthHandle;
     TPM2B_MAX_NV_BUFFER nvWriteData;
+    TSS2_TCTI_CONTEXT *tctiContext;
 
     rval = InitNvAuxPolicySession( &nvAuxPolicyAuthHandle );
     CheckPassed( rval );
@@ -1712,8 +1717,11 @@ static void TpmAuxWrite( int locality)
     // Make sure that session terminates after NVWrite completes.
     nullSessionsData.auths[0].sessionAttributes &= ~TPMA_SESSION_CONTINUESESSION;
 
-    rval = SetLocality( sysContext, locality );
-    CheckPassed( rval );
+    rval = Tss2_Sys_GetTctiContext(sysContext, &tctiContext);
+    CheckPassed(rval);
+
+    rval = Tss2_Tcti_SetLocality(tctiContext, locality);
+    CheckPassed(rval);
 
     nullSessionsData.count = 1;
 
@@ -1721,7 +1729,7 @@ static void TpmAuxWrite( int locality)
 
     {
         TSS2_RC setLocalityRval;
-        setLocalityRval = SetLocality( sysContext, 3 );
+        setLocalityRval = Tss2_Tcti_SetLocality(tctiContext, 3);
         CheckPassed( setLocalityRval );
     }
 
@@ -1747,6 +1755,7 @@ static void TpmAuxReadWriteTest()
     UINT32 rval;
     int testLocality;
     TPM2B_MAX_NV_BUFFER nvData;
+    TSS2_TCTI_CONTEXT *tctiContext;
 
     LOG_INFO("TPM AUX READ/WRITE TEST" );
 
@@ -1759,18 +1768,20 @@ static void TpmAuxReadWriteTest()
     }
 
     nullSessionsData.auths[0].sessionHandle = TPM2_RS_PW;
+    rval = Tss2_Sys_GetTctiContext(sysContext, &tctiContext);
+    CheckPassed(rval);
 
     // Try reading it from all localities.  They all should work.
     for( testLocality = 0; testLocality < 5; testLocality++ )
     {
-        rval = SetLocality( sysContext, testLocality );
+        rval = Tss2_Tcti_SetLocality(tctiContext, testLocality);
         CheckPassed( rval );
 
         INIT_SIMPLE_TPM2B_SIZE( nvData );
         rval = TSS2_RETRY_EXP( Tss2_Sys_NV_Read( sysContext, INDEX_AUX, INDEX_AUX, &nullSessionsData, 4, 0, &nvData, &nullSessionsDataOut ));
         CheckPassed( rval );
 
-        rval = SetLocality( sysContext, 3 );
+        rval = Tss2_Tcti_SetLocality(tctiContext, 3);
         CheckPassed( rval );
     }
 }
