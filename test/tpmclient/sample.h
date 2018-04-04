@@ -88,7 +88,6 @@ enum TSS2_APP_RC_CODE
 #define TPM2_RC_NO_RESPONSE 0xffffffff
 
 #define MAX_NUM_SESSIONS MAX_ACTIVE_SESSIONS
-#define MAX_NUM_ENTITIES 100
 
 #define APPLICATION_ERROR( errCode ) \
     ( TSS2_APP_RC_LAYER + errCode )
@@ -187,16 +186,6 @@ extern TSS2_RC CheckResponseHMACs( TSS2_SYS_CONTEXT *sysContext,
 TSS2_RC StartAuthSessionWithParams( SESSION **session, TPMI_DH_OBJECT tpmKey, TPM2B_MAX_BUFFER *salt,
     TPMI_DH_ENTITY bind, TPM2B_AUTH *bindAuth, TPM2B_NONCE *nonceCaller, TPM2B_ENCRYPTED_SECRET *encryptedSalt,
     TPM2_SE sessionType, TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH algId, TSS2_TCTI_CONTEXT *tctiContext );
-
-//
-// Used by upper layer code to save and update entity data
-// (authValue, specifically) at creation and use time.
-//
-// NOTE: this really needs to be turned into a linked list
-// with add, find, and remove entries, instead of a fixed
-// length array.
-//
-ENTITY entities[MAX_NUM_ENTITIES+1];
 
 //
 // This function calculates the session HMAC

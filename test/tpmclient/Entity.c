@@ -30,6 +30,9 @@
 #include "sample.h"
 #include "sysapi_util.h"
 
+#define MAX_NUM_ENTITIES 100
+static ENTITY entities[MAX_NUM_ENTITIES + 1];
+
 void InitEntities()
 {
     int i;
