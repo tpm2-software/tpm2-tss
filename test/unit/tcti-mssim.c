@@ -288,6 +288,23 @@ tcti_socket_teardown (void **state)
     return 0;
 }
 /*
+ * This test ensures that the GetPollHandles function in the device TCTI
+ * returns the expected value. Since this TCTI does not support async I/O
+ * on account of limitations in the kernel it just returns the
+ * NOT_IMPLEMENTED response code.
+ */
+static void
+tcti_mssim_get_poll_handles_test (void **state)
+{
+    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
+    size_t num_handles = 5;
+    TSS2_TCTI_POLL_HANDLE handles [5] = { 0 };
+    TSS2_RC rc;
+
+    rc = Tss2_Tcti_GetPollHandles (ctx, handles, &num_handles);
+    assert_int_equal (rc, TSS2_TCTI_RC_NOT_IMPLEMENTED);
+}
+/*
  */
 static void
 tcti_socket_receive_null_size_test (void **state)
@@ -432,6 +449,9 @@ main (int   argc,
         cmocka_unit_test (tcti_socket_init_all_null_test),
         cmocka_unit_test (tcti_socket_init_size_test),
         cmocka_unit_test (tcti_socket_init_null_conf_test),
+        cmocka_unit_test_setup_teardown (tcti_mssim_get_poll_handles_test,
+                                         tcti_socket_setup,
+                                         tcti_socket_teardown),
         cmocka_unit_test_setup_teardown (tcti_socket_receive_null_size_test,
                                          tcti_socket_setup,
                                          tcti_socket_teardown),
