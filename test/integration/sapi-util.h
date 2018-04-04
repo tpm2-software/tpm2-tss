@@ -79,6 +79,16 @@ create_aes_128_cfb (
     TSS2_SYS_CONTEXT *sapi_context,
     TPM2_HANDLE        handle_parent,
     TPM2_HANDLE       *handle);
+
+/*
+ * This function creates a RSA key of KEYEDHASH type.
+ */
+TSS2_RC
+create_keyedhash_key (
+    TSS2_SYS_CONTEXT *sapi_context,
+    TPM2_HANDLE       handle_parent,
+    TPM2_HANDLE      *handle);
+
 /*
  * This function will decrypt or encrypt the 'data_in' buffer and return the
  * results in the 'data_out' parameter. Decrypt or encrypt is selected using
