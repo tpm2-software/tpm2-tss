@@ -165,4 +165,17 @@ hash (
     int size,
     TPM2B_DIGEST *out);
 
+/*
+ * This is a helper function for calculating HMAC.
+ * alg can be TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPM2_ALG_SHA384,
+ * and TPM2_ALG_SHA512
+ */
+TSS2_RC
+hmac(
+    TPM2_ALG_ID alg,
+    const void *key,
+    int key_len,
+    TPM2B_DIGEST **buffer_list,
+    TPM2B_DIGEST *out);
+
 #endif /* TEST_INTEGRATION_SAPI_UTIL_H */
