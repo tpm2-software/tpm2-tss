@@ -30,6 +30,7 @@
 
 #include "tss2_sys.h"
 
+#include "../integration/sapi-util.h"
 #include "sample.h"
 #include "sysapi_util.h"
 #include "util/tss2_endian.h"
@@ -55,7 +56,7 @@ UINT32 TpmComputeSessionHmac(
     )
 {
     TPM2B_MAX_BUFFER hmacKey;
-    TPM2B *bufferList[7];
+    TPM2B_DIGEST *bufferList[7];
     TPM2B_DIGEST pHash;
     SESSION *pSession = 0;
     TPM2B_AUTH authValue;
@@ -123,28 +124,29 @@ UINT32 TpmComputeSessionHmac(
 
     // Create buffer list
     i = 0;
-    bufferList[i++] = (TPM2B *)&pHash;
-    bufferList[i++] = (TPM2B *)&pSession->nonceNewer;
-    bufferList[i++] = (TPM2B *)&pSession->nonceOlder;
-    bufferList[i++] = (TPM2B *)&pSession->nonceTpmDecrypt;
-    bufferList[i++] = (TPM2B *)&pSession->nonceTpmEncrypt;
+    bufferList[i++] = (TPM2B_DIGEST *)&pHash;
+    bufferList[i++] = (TPM2B_DIGEST *)&pSession->nonceNewer;
+    bufferList[i++] = (TPM2B_DIGEST *)&pSession->nonceOlder;
+    bufferList[i++] = (TPM2B_DIGEST *)&pSession->nonceTpmDecrypt;
+    bufferList[i++] = (TPM2B_DIGEST *)&pSession->nonceTpmEncrypt;
     sessionAttributesByteBuffer.size = 1;
     sessionAttributesByteBuffer.buffer[0] = *(UINT8 *)&sessionAttributes;
-    bufferList[i++] = &sessionAttributesByteBuffer;
+    bufferList[i++] = (TPM2B_DIGEST *)&sessionAttributesByteBuffer;
     bufferList[i++] = 0;
 
 #if LOGLEVEL == LOGLEVEL_DEBUG || \
     LOGLEVEL == LOGLEVEL_TRACE
-        for(int j = 0; bufferList[j] != 0; j++ )
-        {
-            LOGBLOB_DEBUG(&bufferList[j]->buffer[0], bufferList[j]->size, 
-                "bufferlist[%d]:", j);
-        }
+        for (int j = 0; bufferList[j] != 0; j++)
+            LOGBLOB_DEBUG(&bufferList[j]->buffer[0], bufferList[j]->size, "bufferlist[%d]:", j);
 #endif
 
-    rval = TpmHmac(pSession->authHash, (TPM2B *)&hmacKey, bufferList, result);
-    if( rval != TPM2_RC_SUCCESS )
+    rval = hmac(pSession->authHash, hmacKey.buffer, hmacKey.size, bufferList, result);
+    if (rval != TPM2_RC_SUCCESS) {
+        LOGBLOB_ERROR(result->buffer, result->size, "HMAC Failed rval = %d !!!", rval);
         return rval;
+    }
+
+
 
     if( ( responseCode != TPM2_RC_NO_RESPONSE ) &&
             ( cmdCode == TPM2_CC_NV_Write ||

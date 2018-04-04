@@ -2335,7 +2335,7 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
             TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST,
             &nvCmdAuths, &nvWriteData, 0, &nvRspAuths );
-    CheckPassed( sessionCmdRval );
+    CheckPassed(sessionCmdRval);
 
     // Roll nonces for response
     RollNonces( nvSession, &nvRspAuths.auths[0].nonce );
@@ -2441,8 +2441,6 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
 
 }
 
-UINT32 writeDataString = 0xdeadbeef;
-
 static void TestEncryptDecryptSession()
 {
     TSS2_RC             rval = TSS2_RC_SUCCESS;
@@ -2460,6 +2458,7 @@ static void TestEncryptDecryptSession()
     TPMA_NV             nvAttributes;
     int                 i;
     TPM2B_NONCE         nonceCaller;
+    UINT32 writeDataString = 0xdeadbeef;
 
     nonceCaller.size = 0;
 
@@ -2606,7 +2605,7 @@ static void TestEncryptDecryptSession()
         rval = Tss2_Sys_ExecuteFinish( sysContext, TSS2_TCTI_TIMEOUT_BLOCK );
         CheckPassed( rval );
 
-        rval = Tss2_Sys_GetRspAuths( sysContext, &nvRdWrRspAuths );
+        rval = Tss2_Sys_GetRspAuths(sysContext, &nvRdWrRspAuths);
         CheckPassed( rval );
 
         // Roll the nonces for response
@@ -2639,10 +2638,12 @@ static void TestEncryptDecryptSession()
         // verifies that the decrypt session was setup correctly.
         // If it wasn't, the data stored in the TPM would still
         // be encrypted, and this test would fail.
-        if( memcmp( (void *)&readData.buffer[0],
-                (void *)&writeData.buffer[0], readData.size ) )
+        if (memcmp((void *)readData.buffer,
+                (void *)writeData.buffer, readData.size))
         {
             LOG_ERROR("ERROR!! read data not equal to written data" );
+            LOGBLOB_ERROR(writeData.buffer, writeData.size, "written");
+            LOGBLOB_ERROR(readData.buffer, readData.size, "read");
             Cleanup();
         }
 

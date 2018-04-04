@@ -29,18 +29,24 @@
 #include <stdlib.h>
 
 #include "tss2_tpm2_types.h"
+#include "../integration/sapi-util.h"
 
 #include "sample.h"
 #include "sysapi_util.h"
 #include "util/tss2_endian.h"
 #define LOGMODULE test
 #include "util/log.h"
-//
-//
-TSS2_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
-    TPM2B *contextU, TPM2B *contextV, UINT16 bits, TPM2B_MAX_BUFFER  *resultKey )
+
+TSS2_RC KDFa(
+    TPMI_ALG_HASH hashAlg,
+    TPM2B *key,
+    char *label,
+    TPM2B *contextU,
+    TPM2B *contextV,
+    UINT16 bits,
+    TPM2B_MAX_BUFFER *resultKey)
 {
-    TPM2B_DIGEST tmpResult;
+    TPM2B_DIGEST digest;
     TPM2B_DIGEST tpm2bLabel, tpm2bBits, tpm2b_i_2;
     UINT8 *tpm2bBitsPtr = &tpm2bBits.buffer[0];
     UINT8 *tpm2b_i_2Ptr = &tpm2b_i_2.buffer[0];
@@ -79,8 +85,6 @@ TSS2_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
 
     while(resultKey->size < bytes)
     {
-        // Inner loop
-
         i_Swizzled = BE_TO_HOST_32(i++);
         *(UINT32 *)tpm2b_i_2Ptr = i_Swizzled;
 
@@ -93,25 +97,21 @@ TSS2_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label,
         bufferList[j++] = (TPM2B_DIGEST *)0;
 #if LOGLEVEL == LOGLEVEL_DEBUG || \
     LOGLEVEL == LOGLEVEL_TRACE
-        for( j = 0; bufferList[j] != 0; j++ )
-        {
-            LOGBLOB_DEBUG(&bufferList[j]->buffer[0], bufferList[j]->size, 
-                "bufferlist[%d]:", j);
-        }
+        for (j = 0; bufferList[j] != 0; j++)
+            LOGBLOB_DEBUG(&bufferList[j]->buffer[0], bufferList[j]->size, "bufferlist[%d]:", j);
+
 #endif
-        rval = TpmHmac(hashAlg, key, (TPM2B **)&( bufferList[0] ), &tmpResult);
-        if( rval != TPM2_RC_SUCCESS )
-        {
-            return( rval );
+        rval = hmac(hashAlg, key->buffer, key->size, bufferList, &digest);
+        if (rval != TPM2_RC_SUCCESS) {
+            LOGBLOB_ERROR(digest.buffer, digest.size, "HMAC Failed rval = %d !!!", rval);
+            return rval;
         }
 
-        ConcatSizedByteBuffer(resultKey, (TPM2B *)&tmpResult);
+        ConcatSizedByteBuffer(resultKey, (TPM2B *)&digest);
     }
 
     // Truncate the result to the desired size.
     resultKey->size = bytes;
-
     LOGBLOB_DEBUG(&resultKey->buffer[0], resultKey->size, "KDFA, resultKey = ");
-
     return TPM2_RC_SUCCESS;
 }
