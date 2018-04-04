@@ -263,7 +263,7 @@ test_tpmclient_tpmclient_int_SOURCES  = \
     test/tpmclient/Entity.c test/tpmclient/kdfa.c \
     test/tpmclient/LoadExternalHMACKey.c test/integration/main.c \
     test/tpmclient/sample.h test/tpmclient/TpmHmac.c \
-    test/tpmclient/SessionHmac.c test/tpmclient/SetLocality.c \
+    test/tpmclient/SessionHmac.c \
     test/tpmclient/StartAuthSession.c test/tpmclient/syscontext.c \
     test/tpmclient/syscontext.h test/tpmclient/TpmCalcPHash.c \
     test/tpmclient/tpmclient.int.c test/tpmclient/tpmclient.h \

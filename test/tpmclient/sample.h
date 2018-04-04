@@ -243,8 +243,6 @@ static inline UINT16 CopySizedByteBuffer(TPM2B *dest, TPM2B *src)
 
 void RollNonces( SESSION *session, TPM2B_NONCE *newNonce  );
 
-TSS2_RC SetLocality( TSS2_SYS_CONTEXT *sysContext, UINT8 locality );
-
 TSS2_RC TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key,TPM2B **bufferList, TPM2B_DIGEST *result );
 
 UINT32 TpmHash( TPMI_ALG_HASH hashAlg, UINT16 size, BYTE *data, TPM2B_DIGEST *result );
