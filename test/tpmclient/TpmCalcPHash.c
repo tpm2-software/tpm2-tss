@@ -29,6 +29,7 @@
 
 #include "tss2_tpm2_types.h"
 
+#include "../integration/sapi-util.h"
 #include "sample.h"
 #include "sysapi_util.h"
 #include "util/tss2_endian.h"
@@ -151,8 +152,8 @@ TSS2_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM2_HANDLE handle1, TPM2_HA
     }
     else
     {
-        rval = TpmHash( authHash, hashInput.size, &( hashInput.buffer[0] ), pHash );
-        if( rval != TPM2_RC_SUCCESS )
+        rval = hash(authHash, hashInput.buffer, hashInput.size, pHash);
+        if (rval != TPM2_RC_SUCCESS)
             return rval;
         LOGBLOB_DEBUG(&pHash->buffer[0], pHash->size, "PHASH =");
     }

@@ -217,8 +217,6 @@ TSS2_RC DecryptResponseParam( SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM
 TSS2_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label, TPM2B *contextU, TPM2B *contextV,
     UINT16 bits, TPM2B_MAX_BUFFER *resultKey );
 
-UINT32 TpmHashSequence( TPMI_ALG_HASH hashAlg, UINT8 numBuffers, TPM2B_DIGEST *bufferList, TPM2B_DIGEST *result );
-
 static inline void CatSizedByteBuffer(TPM2B *dest, TPM2B *src)
 {
     if (!dest || !src)
@@ -244,8 +242,6 @@ static inline UINT16 CopySizedByteBuffer(TPM2B *dest, TPM2B *src)
 void RollNonces( SESSION *session, TPM2B_NONCE *newNonce  );
 
 TSS2_RC TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key,TPM2B **bufferList, TPM2B_DIGEST *result );
-
-UINT32 TpmHash( TPMI_ALG_HASH hashAlg, UINT16 size, BYTE *data, TPM2B_DIGEST *result );
 
 UINT32 TpmHandleToName( TPM2_HANDLE handle, TPM2B_NAME *name );
 
