@@ -179,6 +179,77 @@ create_aes_128_cfb (
 }
 
 TSS2_RC
+create_keyedhash_key (
+    TSS2_SYS_CONTEXT *sapi_context,
+    TPM2_HANDLE       handle_parent,
+    TPM2_HANDLE      *handle)
+{
+    TSS2_RC                 rc              = TSS2_RC_SUCCESS;
+    TPM2B_SENSITIVE_CREATE  in_sensitive    = { 0 };
+    /* template defining key type */
+    TPM2B_PUBLIC            in_public       = {
+            .publicArea.type = TPM2_ALG_KEYEDHASH,
+            .publicArea.nameAlg = TPM2_ALG_SHA256,
+            .publicArea.objectAttributes = TPMA_OBJECT_RESTRICTED |
+                                           TPMA_OBJECT_SIGN_ENCRYPT |
+                                           TPMA_OBJECT_FIXEDTPM |
+                                           TPMA_OBJECT_FIXEDPARENT |
+                                           TPMA_OBJECT_SENSITIVEDATAORIGIN |
+                                           TPMA_OBJECT_USERWITHAUTH,
+            .publicArea.parameters.keyedHashDetail.scheme.scheme = TPM2_ALG_HMAC,
+            .publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM2_ALG_SHA1,
+            .publicArea.unique.keyedHash.size = 0,
+    };
+
+    TPM2B_DATA              outside_info    = { 0 };
+    TPML_PCR_SELECTION      creation_pcr    = { 0 };
+    TPM2B_PRIVATE           out_private     = TPM2B_PRIVATE_INIT;
+    TPM2B_PUBLIC            out_public      = { 0 };
+    TPM2B_CREATION_DATA     creation_data   = { 0 };
+    TPM2B_DIGEST            creation_hash   = TPM2B_DIGEST_INIT;
+    TPMT_TK_CREATION        creation_ticket = { 0 };
+    TPM2B_NAME              name            = TPM2B_NAME_INIT;
+    /* session parameters */
+    /* command session info */
+    TSS2L_SYS_AUTH_COMMAND  sessions_cmd = {
+        .auths = {{ .sessionHandle = TPM2_RS_PW }},
+        .count = 1
+    };
+    /* response session info */
+    TSS2L_SYS_AUTH_RESPONSE  sessions_rsp     = {
+        .auths = { 0 },
+        .count = 0
+    };
+
+    rc = TSS2_RETRY_EXP (Tss2_Sys_Create (sapi_context,
+                                          handle_parent,
+                                          &sessions_cmd,
+                                          &in_sensitive,
+                                          &in_public,
+                                          &outside_info,
+                                          &creation_pcr,
+                                          &out_private,
+                                          &out_public,
+                                          &creation_data,
+                                          &creation_hash,
+                                          &creation_ticket,
+                                          &sessions_rsp));
+    if (rc != TPM2_RC_SUCCESS) {
+        return rc;
+    }
+
+    return Tss2_Sys_Load (sapi_context,
+                          handle_parent,
+                          &sessions_cmd,
+                          &out_private,
+                          &out_public,
+                          handle,
+                          &name,
+                          &sessions_rsp);
+}
+
+
+TSS2_RC
 encrypt_decrypt_cfb (
     TSS2_SYS_CONTEXT *sapi_context,
     TPMI_DH_OBJECT    handle,
