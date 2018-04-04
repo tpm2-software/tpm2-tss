@@ -32,7 +32,6 @@
 extern "C" {
 #endif
 
-
 #include "tss2_tpm2_types.h"
 #include "tpmclient.h"
 #include <stdio.h>
@@ -208,8 +207,6 @@ UINT32 TpmComputeSessionHmac(
 
 TSS2_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM2_HANDLE handle1,
     TPM2_HANDLE handle2, TPMI_ALG_HASH authHash, TSS2_RC responseCode, TPM2B_DIGEST *pHash );
-
-void InitNullSession( TPMS_AUTH_COMMAND *nullSessionData );
 
 TSS2_RC LoadExternalHMACKey( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2_HANDLE *keyHandle, TPM2B_NAME *keyName );
 

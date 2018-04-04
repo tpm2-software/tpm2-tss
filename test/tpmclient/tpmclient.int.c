@@ -3131,6 +3131,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
         return 1;
     }
 
+    nullSessionsData.auths[0].sessionHandle = TPM2_RS_PW;
     nullSessionsDataOut.count = 1;
     nullSessionsDataOut.auths[0].nonce = nullSessionNonceOut;
     nullSessionsDataOut.auths[0].hmac = nullSessionHmac;
@@ -3145,8 +3146,6 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     CheckPassed( rval );
 
     InitEntities();
-
-    InitNullSession( &nullSessionsData.auths[0]);
 
     SysFinalizeTests();
 
