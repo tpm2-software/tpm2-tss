@@ -25,8 +25,12 @@
  */
 #include <inttypes.h>
 #include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 
 #include <openssl/sha.h>
+#include <openssl/hmac.h>
+#include <openssl/opensslv.h>
 
 #define LOGMODULE testintegration
 #include "util/log.h"
@@ -391,4 +395,97 @@ hash (
         return TSS2_SYS_RC_BAD_VALUE;
     }
     return TPM2_RC_SUCCESS;
+}
+
+TSS2_RC
+hmac(
+    TPM2_ALG_ID alg,
+    const void *key,
+    int key_len,
+    TPM2B_DIGEST **buffer_list,
+    TPM2B_DIGEST *out)
+{
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    HMAC_CTX *ctx;
+#else
+    HMAC_CTX _ctx;
+    HMAC_CTX *ctx = &_ctx;
+#endif
+    EVP_MD *evp;
+    int rc = 1, i;
+    unsigned int *buf = NULL, size;
+    uint8_t *buf_ptr;
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    /* HMAC_CTX_new and HMAC_CTX_free are new in openSSL 1.1.0 */
+    ctx = HMAC_CTX_new();
+#else
+    HMAC_CTX_init(ctx);
+#endif
+
+    if (!ctx)
+        return TSS2_SYS_RC_GENERAL_FAILURE;
+
+    switch (alg) {
+    case TPM2_ALG_SHA1:
+        evp = (EVP_MD *) EVP_sha1();
+        out->size = TPM2_SHA1_DIGEST_SIZE;
+        break;
+    case TPM2_ALG_SHA256:
+        evp = (EVP_MD *) EVP_sha256();
+        out->size = TPM2_SHA256_DIGEST_SIZE;
+        break;
+    case TPM2_ALG_SHA384:
+        evp = (EVP_MD *) EVP_sha384();
+        out->size = TPM2_SHA384_DIGEST_SIZE;
+        break;
+    case TPM2_ALG_SHA512:
+        evp = (EVP_MD *) EVP_sha512();
+        out->size = TPM2_SHA512_DIGEST_SIZE;
+        break;
+    default:
+        rc = TSS2_SYS_RC_BAD_VALUE;
+        goto out;
+    }
+    rc = 0;
+    buf = calloc(1, out->size);
+    if (!buf)
+            goto out;
+
+    buf_ptr = (uint8_t *)buf;
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    rc = HMAC_Init_ex(ctx, key, key_len, evp, NULL);
+#else
+    rc = HMAC_Init(ctx, key, key_len, evp);
+#endif
+
+    if (rc != 1)
+        goto out;
+    for (i = 0; buffer_list[i] != 0; i++) {
+        rc = HMAC_Update(ctx, buffer_list[i]->buffer, buffer_list[i]->size);
+        if (rc != 1)
+            goto out;
+    }
+    /* buf_ptr has to be 4 bytes alligned for whatever reason */
+    rc = HMAC_Final(ctx, buf_ptr, &size);
+    if (rc != 1)
+        goto out;
+
+    assert(size == out->size);
+
+    memcpy(out->buffer, buf, out->size);
+
+out:
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    HMAC_CTX_free(ctx);
+#else
+    HMAC_CTX_cleanup(ctx);
+#endif
+
+    if (buf)
+        free(buf);
+
+    /* In openSSL 1 means success 0 error */
+    return rc == 1 ? TPM2_RC_SUCCESS : TSS2_SYS_RC_GENERAL_FAILURE;
 }
