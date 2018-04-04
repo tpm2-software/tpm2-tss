@@ -31,6 +31,7 @@ AC_INIT([tpm2-tss],
         [],
         [https://github.com/tpm2-software/tpm2-tss])
 AC_CONFIG_MACRO_DIR([m4])
+${CFLAGS=""}
 AC_PROG_CC
 LT_INIT()
 AM_INIT_AUTOMAKE([foreign
@@ -149,9 +150,10 @@ AC_ARG_ENABLE([debug],
                             [build with debug info (default is no)])],
             [enable_debug=$enableval],
             [enable_debug=no])
-AS_IF([test "x$enable_debug" = "xyes"], AX_ADD_COMPILER_FLAG([-ggdb3 -O0]))
+AS_IF([test "x$enable_debug" = "xyes"], AX_ADD_COMPILER_FLAG([-ggdb3 -Og]))
 AS_IF([test "x$enable_debug" = "xno"], [AX_ADD_PREPROC_FLAG([-U_FORTIFY_SOURCE])
-                                        AX_ADD_PREPROC_FLAG([-D_FORTIFY_SOURCE=2])])
+                                        AX_ADD_PREPROC_FLAG([-D_FORTIFY_SOURCE=2])
+                                        AX_ADD_COMPILER_FLAG([-g -O2])])
 AX_ADD_LINK_FLAG([-Wl,--no-undefined])
 AX_ADD_LINK_FLAG([-Wl,-z,noexecstack])
 AX_ADD_LINK_FLAG([-Wl,-z,now])
