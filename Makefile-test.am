@@ -259,7 +259,6 @@ if SIMULATOR_BIN
 test_tpmclient_tpmclient_int_CFLAGS   = $(AM_CFLAGS) -U_FORTIFY_SOURCE  $(TESTS_CFLAGS)
 test_tpmclient_tpmclient_int_LDADD    = $(TESTS_LDADD)
 test_tpmclient_tpmclient_int_SOURCES  = \
-    test/tpmclient/CatSizedByteBuffer.c test/tpmclient/CopySizedBuffer.c \
     test/tpmclient/CreateNullSession.c test/tpmclient/DecryptEncrypt.c \
     test/tpmclient/Entity.c test/tpmclient/kdfa.c \
     test/tpmclient/LoadExternalHMACKey.c test/integration/main.c \

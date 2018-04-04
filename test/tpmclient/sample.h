@@ -37,6 +37,7 @@ extern "C" {
 #include "tpmclient.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "syscontext.h"
 
 extern TSS2_TCTI_CONTEXT *resMgrTctiContext;
@@ -212,8 +213,6 @@ void InitNullSession( TPMS_AUTH_COMMAND *nullSessionData );
 
 TSS2_RC LoadExternalHMACKey( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2_HANDLE *keyHandle, TPM2B_NAME *keyName );
 
-UINT16 CopySizedByteBuffer( TPM2B *dest, TPM2B *src );
-
 TSS2_RC EncryptCommandParam( SESSION *session, TPM2B_MAX_BUFFER *encryptedData, TPM2B_MAX_BUFFER *clearData, TPM2B_AUTH *authValue );
 
 TSS2_RC DecryptResponseParam( SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM2B_MAX_BUFFER *encryptedData, TPM2B_AUTH *authValue );
@@ -223,7 +222,27 @@ TSS2_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label, TPM2B *contextU, T
 
 UINT32 TpmHashSequence( TPMI_ALG_HASH hashAlg, UINT8 numBuffers, TPM2B_DIGEST *bufferList, TPM2B_DIGEST *result );
 
-void CatSizedByteBuffer( TPM2B *dest, TPM2B *src );
+static inline void CatSizedByteBuffer(TPM2B *dest, TPM2B *src)
+{
+    if (!dest || !src)
+        return;
+    memcpy(dest->buffer + dest->size, src->buffer, src->size);
+    dest->size += src->size;
+}
+static inline UINT16 CopySizedByteBuffer(TPM2B *dest, TPM2B *src)
+{
+    if (!dest)
+        return 0;
+
+    if (!src) {
+        dest->size = 0;
+        return 0;
+    }
+
+    memcpy(dest->buffer, src->buffer, src->size);
+    dest->size = src->size;
+    return src->size + 2;
+}
 
 void RollNonces( SESSION *session, TPM2B_NONCE *newNonce  );
 
