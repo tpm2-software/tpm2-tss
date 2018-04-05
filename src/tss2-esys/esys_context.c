@@ -38,6 +38,12 @@
  *
  * Initialize an ESYS_CONTEXT that holds all the state and metadata information
  * during an interaction with the TPM.
+ * If not specified, load a TCTI in this order:
+ *       Library libtss2-tcti-default.so (link to the preferred TCTI)
+ *       Library libtss2-tcti-tabrmd.so (tabrmd)
+ *       Device /dev/tpmrm0 (kernel resident resource manager)
+ *       Device /dev/tpm0 (hardware TPM)
+ *       TCP socket localhost:2321 (TPM simulator)
  * @param esys_context [OUT] The ESYS_CONTEXT.
  * @param tcti [IN] The TCTI context used to connect to the TPM (may be NULL).
  * @param abiVersion [INOUT] The abi version to check and the abi version
