@@ -208,8 +208,6 @@ UINT32 TpmComputeSessionHmac(
 TSS2_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM2_HANDLE handle1,
     TPM2_HANDLE handle2, TPMI_ALG_HASH authHash, TSS2_RC responseCode, TPM2B_DIGEST *pHash );
 
-TSS2_RC LoadExternalHMACKey( TPMI_ALG_HASH hashAlg, TPM2B *key, TPM2_HANDLE *keyHandle, TPM2B_NAME *keyName );
-
 TSS2_RC EncryptCommandParam( SESSION *session, TPM2B_MAX_BUFFER *encryptedData, TPM2B_MAX_BUFFER *clearData, TPM2B_AUTH *authValue );
 
 TSS2_RC DecryptResponseParam( SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM2B_MAX_BUFFER *encryptedData, TPM2B_AUTH *authValue );
@@ -240,8 +238,6 @@ static inline UINT16 CopySizedByteBuffer(TPM2B *dest, TPM2B *src)
 }
 
 void RollNonces( SESSION *session, TPM2B_NONCE *newNonce  );
-
-TSS2_RC TpmHmac( TPMI_ALG_HASH hashAlg, TPM2B *key,TPM2B **bufferList, TPM2B_DIGEST *result );
 
 UINT32 TpmHandleToName( TPM2_HANDLE handle, TPM2B_NAME *name );
 
