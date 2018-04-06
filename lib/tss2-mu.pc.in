@@ -1,5 +1,5 @@
 Name: tss2-mu
-Description: TPM2 type marshalling and unmarshalling library.
+Description: TPM2 type marshaling and unmarshaling library.
 URL: https://github.com/tpm2-software/tpm2-tss
 Version: @VERSION@
 Cflags: -I@includedir@
