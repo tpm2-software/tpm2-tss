@@ -214,7 +214,7 @@ Esys_Startup_finish(
     }
     r = Tss2_Sys_Startup_Complete(esysContext->sys);
     return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshalling" );
+                        " unmarshaling" );
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;

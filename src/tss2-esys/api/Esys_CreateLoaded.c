@@ -183,7 +183,7 @@ Esys_CreateLoaded_async(
     esysContext->state = _ESYS_STATE_INTERNALERROR;
 
     /* Check and store input parameters */
-    r = check_session_feasability(shandle1, shandle2, shandle3, 1);
+    r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
     store_input_parameters(esysContext, parentHandle,
                 inSensitive,
@@ -362,7 +362,7 @@ Esys_CreateLoaded_finish(
                 loutPublic,
                 &name);
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshalling" ,error_cleanup);
+                        " unmarshaling" ,error_cleanup);
 
     /* Check name and outPublic for consistency */
     if (!iesys_compare_name(loutPublic, &name))

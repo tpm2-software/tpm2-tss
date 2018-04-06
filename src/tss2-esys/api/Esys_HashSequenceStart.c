@@ -158,7 +158,7 @@ Esys_HashSequenceStart_async(
     esysContext->state = _ESYS_STATE_INTERNALERROR;
 
     /* Check and store input parameters */
-    r = check_session_feasability(shandle1, shandle2, shandle3, 0);
+    r = check_session_feasibility(shandle1, shandle2, shandle3, 0);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
     store_input_parameters(esysContext,
                 auth,
@@ -299,7 +299,7 @@ Esys_HashSequenceStart_finish(
     r = Tss2_Sys_HashSequenceStart_Complete(esysContext->sys,
                 &sequenceHandleNode->rsrc.handle);
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshalling" ,error_cleanup);
+                        " unmarshaling" ,error_cleanup);
 
     sequenceHandleNode->rsrc.name.size = 0;
     esysContext->state = _ESYS_STATE_INIT;

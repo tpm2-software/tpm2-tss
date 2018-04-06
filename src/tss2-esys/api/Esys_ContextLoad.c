@@ -277,7 +277,7 @@ Esys_ContextLoad_finish(
     r = Tss2_Sys_ContextLoad_Complete(esysContext->sys,
                 &loadedHandleNode->rsrc.handle);
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshalling" ,error_cleanup);
+                        " unmarshaling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;

@@ -174,7 +174,7 @@ Esys_SequenceComplete_async(
     esysContext->state = _ESYS_STATE_INTERNALERROR;
 
     /* Check and store input parameters */
-    r = check_session_feasability(shandle1, shandle2, shandle3, 1);
+    r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
     store_input_parameters(esysContext, sequenceHandle,
                 buffer,
@@ -328,7 +328,7 @@ Esys_SequenceComplete_finish(
                 (result != NULL) ? *result : NULL,
                 (validation != NULL) ? *validation : NULL);
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshalling" ,error_cleanup);
+                        " unmarshaling" ,error_cleanup);
     /* The ESYS_TR sequence object has to be invalidated */
     r = Esys_TR_Close(esysContext, &esysContext->in.SequenceComplete.sequenceHandle);
     goto_if_error(r, "invalidate object", error_cleanup);
