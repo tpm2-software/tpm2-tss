@@ -229,7 +229,7 @@ void iesys_compute_bound_entity(
 TSS2_RC iesys_check_sequence_async(
     ESYS_CONTEXT *esysContext);
 
-TSS2_RC check_session_feasability(
+TSS2_RC check_session_feasibility(
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,

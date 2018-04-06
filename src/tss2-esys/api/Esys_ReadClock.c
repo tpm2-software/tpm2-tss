@@ -134,7 +134,7 @@ Esys_ReadClock_async(
     esysContext->state = _ESYS_STATE_INTERNALERROR;
 
     /* Check and store input parameters */
-    r = check_session_feasability(shandle1, shandle2, shandle3, 0);
+    r = check_session_feasibility(shandle1, shandle2, shandle3, 0);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
@@ -264,7 +264,7 @@ Esys_ReadClock_finish(
     r = Tss2_Sys_ReadClock_Complete(esysContext->sys,
                 (currentTime != NULL) ? *currentTime : NULL);
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshalling" ,error_cleanup);
+                        " unmarshaling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;

@@ -868,7 +868,7 @@ esys_GetResourceObject(ESYS_CONTEXT * esys_context,
     /* The typical case is that we have a resource object already within the
        esys context's linked list. We iterate through the list and search
        for the corresponding object and return it if found.
-       If no object is found, this can be an erronous handle number or it
+       If no object is found, this can be an erroneous handle number or it
        can be because of a reference "global" object that does not require
        previous initialization. */
     for (esys_object_aux = esys_context->rsrc_list; esys_object_aux != NULL;
@@ -880,7 +880,7 @@ esys_GetResourceObject(ESYS_CONTEXT * esys_context,
     }
 
     /* All objects with a TR-handle larger than ESYS_TR_MIN_OBJECT must have
-       been initialized previously. Therefore the TR handle was erronous. */
+       been initialized previously. Therefore the TR handle was erroneous. */
     if (esys_handle >= ESYS_TR_MIN_OBJECT) {
         LOG_ERROR("Error: Esys handle does not exist (%x).",
                   TSS2_ESYS_RC_BAD_TR);
@@ -946,7 +946,7 @@ iesys_check_sequence_async(ESYS_CONTEXT * esys_context)
 }
 
 TSS2_RC
-check_session_feasability(ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3,
+check_session_feasibility(ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3,
                           int mandatory)
 {
     ESYS_TR handle_tab[3] = { shandle1, shandle2, shandle3 };
@@ -1185,7 +1185,7 @@ iesys_nv_get_name(TPM2B_NV_PUBLIC * publicInfo, TPM2B_NAME * name)
     r = Tss2_MU_TPMI_ALG_HASH_Marshal(publicInfo->nvPublic.nameAlg,
                                   &name->name[0], sizeof(TPMI_ALG_HASH),
                                   &offset);
-    return_if_error(r, "Marhsaling TPMI_ALG_HASH");
+    return_if_error(r, "Marshaling TPMI_ALG_HASH");
 
     name->size = size + len_alg_id;
     return TSS2_RC_SUCCESS;

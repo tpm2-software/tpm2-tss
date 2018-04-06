@@ -40,7 +40,7 @@ typedef struct _IESYS_CRYPTO_CONTEXT {
     enum {
         IESYS_CRYPTOGCRY_TYPE_HASH = 1,
         IESYS_CRYPTOGCRY_TYPE_HMAC,
-    } type; /**< The type of hontext to hold; hash or hmac */
+    } type; /**< The type of context to hold; hash or hmac */
     union {
         struct {
             gcry_md_hd_t gcry_context;

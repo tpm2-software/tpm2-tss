@@ -52,7 +52,7 @@ typedef UINT32 IESYSC_RESOURCE_TYPE_CONSTANT;
 #define IESYSC_KEY_RSRC                1    /**< Tag for key resource */
 #define IESYSC_NV_RSRC                 2    /**< Tag for NV Ram resource */
 #define IESYSC_SESSION_RSRC            3    /**< Tag for session resources */
-#define IESYSC_WITHOUT_MISC_RSRC       0    /**< Tag for other recources e.g. PCR register, hierarchies */
+#define IESYSC_WITHOUT_MISC_RSRC       0    /**< Tag for other resources, e.g. PCR register, hierarchies */
 
 /* Type to indicate parameter encryption (by TPM) */
 typedef UINT32 IESYSC_PARAM_ENCRYPT;
@@ -113,7 +113,7 @@ typedef union {
     TPM2B_PUBLIC                           rsrc_key_pub;    /**< Public info for key objects */
     TPM2B_NV_PUBLIC                         rsrc_nv_pub;    /**< Public info for NV ram objects */
     IESYS_SESSION                          rsrc_session;    /**< Internal esapi session information */
-    TPMS_EMPTY                               rsrc_empty;    /**< no specialiced date for resource */
+    TPMS_EMPTY                               rsrc_empty;    /**< no specialized date for resource */
 } IESYS_RSRC_UNION;
 /* @} */
 /**

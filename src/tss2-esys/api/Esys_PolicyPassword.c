@@ -145,7 +145,7 @@ Esys_PolicyPassword_async(
     esysContext->state = _ESYS_STATE_INTERNALERROR;
 
     /* Check and store input parameters */
-    r = check_session_feasability(shandle1, shandle2, shandle3, 0);
+    r = check_session_feasibility(shandle1, shandle2, shandle3, 0);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
     store_input_parameters(esysContext, policySession);
 
@@ -269,7 +269,7 @@ Esys_PolicyPassword_finish(
      */
     r = Tss2_Sys_PolicyPassword_Complete(esysContext->sys);
     return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshalling" );
+                        " unmarshaling" );
     ESYS_TR policySession = esysContext->in.PolicyPassword.policySession;
     RSRC_NODE_T *policySessionNode;
     r = esys_GetResourceObject(esysContext, policySession, &policySessionNode);

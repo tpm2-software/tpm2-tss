@@ -37,12 +37,12 @@
 
 /**
  * Marshal an array of BYTE structures into a byte buffer.
- * @param[in] in Structures to be marshalled.
- * @param[in] count Number of structures to be marshalled.
+ * @param[in] in Structures to be marshaled.
+ * @param[in] count Number of structures to be marshaled.
  * @param[in,out] buffer Buffer to write result into.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
- *                (being updated during marshalling).
+ *                (being updated during marshaling).
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if src==NULL.
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
@@ -83,8 +83,8 @@ iesys_MU_BYTE_array_Marshal(
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
- *                (being updated during marshalling).
- * @param[in] count Number of structures to be unmarshalled.
+ *                (being updated during marshaling).
+ * @param[in] count Number of structures to be unmarshaled.
  * @param[out] out Structures to store the result in.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if buffer==NULL.
@@ -123,7 +123,7 @@ iesys_MU_BYTE_array_Unmarshal(
 
 /**
  * Marshal a constant of type IESYSC_RESOURCE_TYPE_CONSTANT into a byte buffer.
- * @param[in] src constant to be marshalled.
+ * @param[in] src constant to be marshaled.
  * @param[in,out] buffer Buffer to write result into (may be NULL)
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer (may be NULL.
@@ -148,7 +148,7 @@ Tss2_MU_IESYSC_RESOURCE_TYPE_CONSTANT_Marshal(
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
- *                (being updated during marshalling).
+ *                (being updated during marshaling).
  * @param[out] dst variable to store the result in.
  * @retval TSS2_RC_SUCCESS on success.
  */
@@ -210,7 +210,7 @@ Tss2_MU_IESYSC_RESOURCE_TYPE_CONSTANT_check(
 }
 /**
  * Marshal a constant of type IESYSC_PARAM_ENCRYPT into a byte buffer.
- * @param[in] src constant to be marshalled.
+ * @param[in] src constant to be marshaled.
  * @param[in,out] buffer Buffer to write result into (may be NULL)
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer (may be NULL.
@@ -235,7 +235,7 @@ Tss2_MU_IESYSC_PARAM_ENCRYPT_Marshal(
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
- *                (being updated during marshalling).
+ *                (being updated during marshaling).
  * @param[out] dst variable to store the result in.
  * @retval TSS2_RC_SUCCESS on success.
  */
@@ -295,7 +295,7 @@ Tss2_MU_IESYSC_PARAM_ENCRYPT_check(
 }
 /**
  * Marshal a constant of type IESYSC_PARAM_DECRYPT into a byte buffer.
- * @param[in] src constant to be marshalled.
+ * @param[in] src constant to be marshaled.
  * @param[in,out] buffer Buffer to write result into (may be NULL)
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer (may be NULL.
@@ -320,7 +320,7 @@ Tss2_MU_IESYSC_PARAM_DECRYPT_Marshal(
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
- *                (being updated during marshalling).
+ *                (being updated during marshaling).
  * @param[out] dst variable to store the result in.
  * @retval TSS2_RC_SUCCESS on success.
  */
@@ -380,7 +380,7 @@ Tss2_MU_IESYSC_PARAM_DECRYPT_check(
 }
 /**
  * Marshal a constant of type IESYSC_TYPE_POLICY_AUTH into a byte buffer.
- * @param[in] src constant to be marshalled.
+ * @param[in] src constant to be marshaled.
  * @param[in,out] buffer Buffer to write result into (may be NULL)
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer (may be NULL.
@@ -405,7 +405,7 @@ Tss2_MU_IESYSC_TYPE_POLICY_AUTH_Marshal(
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
- *                (being updated during marshalling).
+ *                (being updated during marshaling).
  * @param[out] dst variable to store the result in.
  * @retval TSS2_RC_SUCCESS on success.
  */
@@ -467,11 +467,11 @@ Tss2_MU_IESYSC_TYPE_POLICY_AUTH_check(
 
 /**
  * Marshal a IESYS_SESSION structure into a byte buffer.
- * @param[in] src variable to be marshalled.
+ * @param[in] src variable to be marshaled.
  * @param[in,out] buffer Buffer to write result into.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
- *                (being updated during marshalling).
+ *                (being updated during marshaling).
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if src==NULL.
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
@@ -493,78 +493,78 @@ Tss2_MU_IESYS_SESSION_Marshal(
     size_t offset_loc = (offset != NULL)? *offset : 0;
     ret = Tss2_MU_TPM2B_NAME_Marshal(&src->bound_entity, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield bound_entity");
+        LOG_ERROR("Error marshaling subfield bound_entity");
         return ret;
     }
     ret = Tss2_MU_TPM2B_ENCRYPTED_SECRET_Marshal(&src->encryptedSalt, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield encryptedSalt");
+        LOG_ERROR("Error marshaling subfield encryptedSalt");
         return ret;
     }
     ret = Tss2_MU_TPM2B_DATA_Marshal(&src->salt, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield salt");
+        LOG_ERROR("Error marshaling subfield salt");
         return ret;
     }
     ret = Tss2_MU_TPMT_SYM_DEF_Marshal(&src->symmetric, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield symmetric");
+        LOG_ERROR("Error marshaling subfield symmetric");
         return ret;
     }
     ret = Tss2_MU_TPMI_ALG_HASH_Marshal(src->authHash, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield authHash");
+        LOG_ERROR("Error marshaling subfield authHash");
         return ret;
     }
     ret = Tss2_MU_TPM2B_DIGEST_Marshal(&src->sessionKey, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield sessionKey");
+        LOG_ERROR("Error marshaling subfield sessionKey");
         return ret;
     }
     ret = Tss2_MU_TPM2_SE_Marshal(src->sessionType, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield sessionType");
+        LOG_ERROR("Error marshaling subfield sessionType");
         return ret;
     }
     ret = Tss2_MU_TPMA_SESSION_Marshal(src->sessionAttributes, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield sessionAttributes");
+        LOG_ERROR("Error marshaling subfield sessionAttributes");
         return ret;
     }
     ret = Tss2_MU_TPM2B_NONCE_Marshal(&src->nonceCaller, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield nonceCaller");
+        LOG_ERROR("Error marshaling subfield nonceCaller");
         return ret;
     }
     ret = Tss2_MU_TPM2B_NONCE_Marshal(&src->nonceTPM, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield nonceTPM");
+        LOG_ERROR("Error marshaling subfield nonceTPM");
         return ret;
     }
     ret = Tss2_MU_IESYSC_PARAM_ENCRYPT_Marshal(src->encrypt, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield encrypt");
+        LOG_ERROR("Error marshaling subfield encrypt");
         return ret;
     }
     ret = Tss2_MU_IESYSC_PARAM_ENCRYPT_Marshal(src->decrypt, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield decrypt");
+        LOG_ERROR("Error marshaling subfield decrypt");
         return ret;
     }
     ret = Tss2_MU_IESYSC_TYPE_POLICY_AUTH_Marshal(src->type_policy_session, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield type_policy_session");
+        LOG_ERROR("Error marshaling subfield type_policy_session");
         return ret;
     }
     ret = Tss2_MU_UINT16_Marshal(src->sizeSessionValue, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield sizeSessionValue");
+        LOG_ERROR("Error marshaling subfield sizeSessionValue");
         return ret;
     }
     ret = iesys_MU_BYTE_array_Marshal(&src->sessionValue[0], src->sizeSessionValue,
         buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield sessionValue");
+        LOG_ERROR("Error marshaling subfield sessionValue");
         return ret;
     }
     if (offset != NULL)
@@ -577,7 +577,7 @@ Tss2_MU_IESYS_SESSION_Marshal(
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
- *                (being updated during marshalling).
+ *                (being updated during marshaling).
  * @param[out] out variable to store the result in.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if buffer==NULL.
@@ -603,99 +603,99 @@ Tss2_MU_IESYS_SESSION_Unmarshal(
     ret = Tss2_MU_TPM2B_NAME_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? NULL : &dst->bound_entity);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield bound_entity");
+        LOG_ERROR("Error unmarshaling subfield bound_entity");
         return ret;
     }
     ret = Tss2_MU_TPM2B_ENCRYPTED_SECRET_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? NULL : &dst->encryptedSalt);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield encryptedSalt");
+        LOG_ERROR("Error unmarshaling subfield encryptedSalt");
         return ret;
     }
     ret = Tss2_MU_TPM2B_DATA_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? NULL : &dst->salt);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield salt");
+        LOG_ERROR("Error unmarshaling subfield salt");
         return ret;
     }
     ret = Tss2_MU_TPMT_SYM_DEF_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? NULL : &dst->symmetric);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield symmetric");
+        LOG_ERROR("Error unmarshaling subfield symmetric");
         return ret;
     }
     TPMI_ALG_HASH out_authHash;
     ret = Tss2_MU_TPMI_ALG_HASH_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_authHash : &dst->authHash);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield authHash");
+        LOG_ERROR("Error unmarshaling subfield authHash");
         return ret;
     }
     ret = Tss2_MU_TPM2B_DIGEST_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? NULL : &dst->sessionKey);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield sessionKey");
+        LOG_ERROR("Error unmarshaling subfield sessionKey");
         return ret;
     }
     TPM2_SE out_sessionType;
     ret = Tss2_MU_TPM2_SE_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_sessionType : &dst->sessionType);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield sessionType");
+        LOG_ERROR("Error unmarshaling subfield sessionType");
         return ret;
     }
     TPMA_SESSION out_sessionAttributes;
     ret = Tss2_MU_TPMA_SESSION_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_sessionAttributes : &dst->sessionAttributes);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield sessionAttributes");
+        LOG_ERROR("Error unmarshaling subfield sessionAttributes");
         return ret;
     }
     ret = Tss2_MU_TPM2B_NONCE_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? NULL : &dst->nonceCaller);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield nonceCaller");
+        LOG_ERROR("Error unmarshaling subfield nonceCaller");
         return ret;
     }
     ret = Tss2_MU_TPM2B_NONCE_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? NULL : &dst->nonceTPM);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield nonceTPM");
+        LOG_ERROR("Error unmarshaling subfield nonceTPM");
         return ret;
     }
     IESYSC_PARAM_ENCRYPT out_encrypt;
     ret = Tss2_MU_IESYSC_PARAM_ENCRYPT_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_encrypt : &dst->encrypt);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield encrypt");
+        LOG_ERROR("Error unmarshaling subfield encrypt");
         return ret;
     }
     IESYSC_PARAM_ENCRYPT out_decrypt;
     ret = Tss2_MU_IESYSC_PARAM_ENCRYPT_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_decrypt : &dst->decrypt);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield decrypt");
+        LOG_ERROR("Error unmarshaling subfield decrypt");
         return ret;
     }
     IESYSC_TYPE_POLICY_AUTH out_type_policy_session;
     ret = Tss2_MU_IESYSC_TYPE_POLICY_AUTH_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_type_policy_session : &dst->type_policy_session);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield type_policy_session");
+        LOG_ERROR("Error unmarshaling subfield type_policy_session");
         return ret;
     }
     UINT16 out_sizeSessionValue;
     ret = Tss2_MU_UINT16_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_sizeSessionValue : &dst->sizeSessionValue);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield sizeSessionValue");
+        LOG_ERROR("Error unmarshaling subfield sizeSessionValue");
         return ret;
     }
     ret = iesys_MU_BYTE_array_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? out_sizeSessionValue : dst->sizeSessionValue,
             (dst == NULL)? NULL : &dst->sessionValue[0]);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield sessionValue");
+        LOG_ERROR("Error unmarshaling subfield sessionValue");
         return ret;
     }
     if (offset != NULL)
@@ -705,7 +705,7 @@ Tss2_MU_IESYS_SESSION_Unmarshal(
 
 /**
  * Marshal a IESYSC_RESOURCE_TYPE type into a byte buffer.
- * @param[in] src constant to be marshalled.
+ * @param[in] src constant to be marshaled.
  * @param[in,out] buffer Buffer to write result into (may be NULL)
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer (may be NULL.
@@ -730,7 +730,7 @@ Tss2_MU_IESYSC_RESOURCE_TYPE_Marshal(
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
- *                (being updated during marshalling).
+ *                (being updated during marshaling).
  * @param[out] dst variable to store the result in.
  * @retval TSS2_RC_SUCCESS on success.
  */
@@ -791,12 +791,12 @@ Tss2_MU_IESYSC_RESOURCE_TYPE_check(
 
 /**
  * Marshal a IESYS_RSRC_UNION union into a byte buffer.
- * @param[in] src variable to be marshalled.
+ * @param[in] src variable to be marshaled.
  * @param[in] selector the selector value.
  * @param[in,out] buffer Buffer to write result into.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
- *                (being updated during marshalling).
+ *                (being updated during marshaling).
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if src==NULL.
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
@@ -877,11 +877,11 @@ Tss2_MU_IESYS_RSRC_UNION_Unmarshal(
 
 /**
  * Marshal a IESYS_RESOURCE structure into a byte buffer.
- * @param[in] src variable to be marshalled.
+ * @param[in] src variable to be marshaled.
  * @param[in,out] buffer Buffer to write result into.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
- *                (being updated during marshalling).
+ *                (being updated during marshaling).
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if src==NULL.
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
@@ -903,28 +903,28 @@ Tss2_MU_IESYS_RESOURCE_Marshal(
     size_t offset_loc = (offset != NULL)? *offset : 0;
     ret = Tss2_MU_TPM2_HANDLE_Marshal(src->handle, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield handle");
+        LOG_ERROR("Error marshaling subfield handle");
         return ret;
     }
     ret = Tss2_MU_TPM2B_NAME_Marshal(&src->name, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield name");
+        LOG_ERROR("Error marshaling subfield name");
         return ret;
     }
     ret = Tss2_MU_BYTE_Marshal(src->authValueSet, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield authValueSet");
+        LOG_ERROR("Error marshaling subfield authValueSet");
         return ret;
     }
     ret = Tss2_MU_IESYSC_RESOURCE_TYPE_Marshal(src->rsrcType, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield rsrcType");
+        LOG_ERROR("Error marshaling subfield rsrcType");
         return ret;
     }
     ret = Tss2_MU_IESYS_RSRC_UNION_Marshal(&src->misc, src->rsrcType,
         buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield misc");
+        LOG_ERROR("Error marshaling subfield misc");
         return ret;
     }
     if (offset != NULL)
@@ -937,7 +937,7 @@ Tss2_MU_IESYS_RESOURCE_Marshal(
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
- *                (being updated during marshalling).
+ *                (being updated during marshaling).
  * @param[out] out variable to store the result in.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if buffer==NULL.
@@ -964,34 +964,34 @@ Tss2_MU_IESYS_RESOURCE_Unmarshal(
     ret = Tss2_MU_TPM2_HANDLE_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_handle : &dst->handle);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield handle");
+        LOG_ERROR("Error unmarshaling subfield handle");
         return ret;
     }
     ret = Tss2_MU_TPM2B_NAME_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? NULL : &dst->name);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield name");
+        LOG_ERROR("Error unmarshaling subfield name");
         return ret;
     }
     BYTE out_authValueSet;
     ret = Tss2_MU_BYTE_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_authValueSet : &dst->authValueSet);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield authValueSet");
+        LOG_ERROR("Error unmarshaling subfield authValueSet");
         return ret;
     }
     IESYSC_RESOURCE_TYPE out_rsrcType;
     ret = Tss2_MU_IESYSC_RESOURCE_TYPE_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_rsrcType : &dst->rsrcType);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield rsrcType");
+        LOG_ERROR("Error unmarshaling subfield rsrcType");
         return ret;
     }
     ret = Tss2_MU_IESYS_RSRC_UNION_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? out_rsrcType : dst->rsrcType,
             (dst == NULL)? NULL : &dst->misc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield misc");
+        LOG_ERROR("Error unmarshaling subfield misc");
         return ret;
     }
     if (offset != NULL)
@@ -1001,11 +1001,11 @@ Tss2_MU_IESYS_RESOURCE_Unmarshal(
 
 /**
  * Marshal a IESYS_METADATA structure into a byte buffer.
- * @param[in] src variable to be marshalled.
+ * @param[in] src variable to be marshaled.
  * @param[in,out] buffer Buffer to write result into.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
- *                (being updated during marshalling).
+ *                (being updated during marshaling).
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if src==NULL.
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
@@ -1027,12 +1027,12 @@ Tss2_MU_IESYS_METADATA_Marshal(
     size_t offset_loc = (offset != NULL)? *offset : 0;
     ret = Tss2_MU_UINT16_Marshal(src->size, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield size");
+        LOG_ERROR("Error marshaling subfield size");
         return ret;
     }
     ret = Tss2_MU_IESYS_RESOURCE_Marshal(&src->data, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield data");
+        LOG_ERROR("Error marshaling subfield data");
         return ret;
     }
     if (offset != NULL)
@@ -1045,7 +1045,7 @@ Tss2_MU_IESYS_METADATA_Marshal(
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
- *                (being updated during marshalling).
+ *                (being updated during marshaling).
  * @param[out] out variable to store the result in.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if buffer==NULL.
@@ -1072,14 +1072,14 @@ Tss2_MU_IESYS_METADATA_Unmarshal(
     ret = Tss2_MU_UINT16_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_size : &dst->size);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield size");
+        LOG_ERROR("Error unmarshaling subfield size");
         return ret;
     }
     IESYS_RESOURCE out_data;
     ret = Tss2_MU_IESYS_RESOURCE_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_data : &dst->data);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield data");
+        LOG_ERROR("Error unmarshaling subfield data");
         return ret;
     }
     if (offset != NULL)
@@ -1089,11 +1089,11 @@ Tss2_MU_IESYS_METADATA_Unmarshal(
 
 /**
  * Marshal a IESYS_CONTEXT_DATA structure into a byte buffer.
- * @param[in] src variable to be marshalled.
+ * @param[in] src variable to be marshaled.
  * @param[in,out] buffer Buffer to write result into.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
- *                (being updated during marshalling).
+ *                (being updated during marshaling).
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if src==NULL.
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
@@ -1115,17 +1115,17 @@ Tss2_MU_IESYS_CONTEXT_DATA_Marshal(
     size_t offset_loc = (offset != NULL)? *offset : 0;
     ret = Tss2_MU_UINT32_Marshal(src->reserved, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield reserved");
+        LOG_ERROR("Error marshaling subfield reserved");
         return ret;
     }
     ret = Tss2_MU_TPM2B_CONTEXT_DATA_Marshal(&src->tpmContext, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield tpmContext");
+        LOG_ERROR("Error marshaling subfield tpmContext");
         return ret;
     }
     ret = Tss2_MU_IESYS_METADATA_Marshal(&src->esysMetadata, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshalling subfield esysMetadata");
+        LOG_ERROR("Error marshaling subfield esysMetadata");
         return ret;
     }
     if (offset != NULL)
@@ -1138,7 +1138,7 @@ Tss2_MU_IESYS_CONTEXT_DATA_Marshal(
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
- *                (being updated during marshalling).
+ *                (being updated during marshaling).
  * @param[out] out variable to store the result in.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if buffer==NULL.
@@ -1165,20 +1165,20 @@ Tss2_MU_IESYS_CONTEXT_DATA_Unmarshal(
     ret = Tss2_MU_UINT32_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_reserved : &dst->reserved);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield reserved");
+        LOG_ERROR("Error unmarshaling subfield reserved");
         return ret;
     }
     ret = Tss2_MU_TPM2B_CONTEXT_DATA_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? NULL : &dst->tpmContext);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield tpmContext");
+        LOG_ERROR("Error unmarshaling subfield tpmContext");
         return ret;
     }
     IESYS_METADATA out_esysMetadata;
     ret = Tss2_MU_IESYS_METADATA_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_esysMetadata : &dst->esysMetadata);
     if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshalling subfield esysMetadata");
+        LOG_ERROR("Error unmarshaling subfield esysMetadata");
         return ret;
     }
     if (offset != NULL)
