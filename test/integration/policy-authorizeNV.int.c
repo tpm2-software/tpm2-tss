@@ -146,7 +146,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     TPM2B_NAME              name            = TPM2B_NAME_INIT;
     TPM2_HANDLE             object_handle   = 0;
 
-    /* Use precomputed authPolicy for simplicty */
+    /* Use precomputed authPolicy for simplicity */
     char auth[] = {0x06, 0x3a, 0x24, 0xdc, 0x2f, 0xc9, 0x32, 0xc3,
                    0xb8, 0xa0, 0x85, 0xca, 0x67, 0x27, 0x3c, 0x03,
                    0xa6, 0x7c, 0x11, 0x39, 0x8f, 0x2a, 0x4a, 0x13,
@@ -209,7 +209,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     }
 
     /* Call encrypt using the key object using the password session */
-    LOG_INFO("Calling EncryptDecrypt using paswd session 0x%x", TPM2_RS_PW);
+    LOG_INFO("Calling EncryptDecrypt using password session 0x%x", TPM2_RS_PW);
     LOGBLOB_DEBUG(data_in.buffer, 32, "%s", "First 32 bytes of plain text:");
     rc = TSS2_RETRY_EXP(Tss2_Sys_EncryptDecrypt (sapi_context,
                                                  object_handle,
@@ -256,7 +256,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     cmd_auth.auths[0].sessionHandle = TPM2_RS_PW;
     cmd_auth.auths[0].hmac.size = 0;
 
-    /* Kill the NV index - this should invalidete the policy */
+    /* Kill the NV index - this should invalidate the policy */
     rc = Tss2_Sys_NV_UndefineSpace(sapi_context,
                                    TPM2_RH_OWNER,
                                    nv_index,
@@ -273,7 +273,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
      * This should fail because the NV index is destroyed */
     cmd_auth.auths[0].sessionHandle = session_handle;
     memset(data_out.buffer, '\0', TPM2_MAX_DIGEST_BUFFER);
-    LOG_INFO("Calling EncryptDecrypt again with policy session after destroing"
+    LOG_INFO("Calling EncryptDecrypt again with policy session after destroying"
              " the NV index This should fail with RC_POLICY_FAIL");
     rc = TSS2_RETRY_EXP(Tss2_Sys_EncryptDecrypt(sapi_context,
                                                 object_handle,

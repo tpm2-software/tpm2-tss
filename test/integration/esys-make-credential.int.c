@@ -292,7 +292,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                           outPublic2,
                           TPM2_RH_OWNER,
                           &loadedKeyHandle);
-    goto_if_error(r, "Error esys load exernal", error);
+    goto_if_error(r, "Error esys load external", error);
 
     TPM2B_PUBLIC *primaryKeyPublic;
     TPM2B_NAME *primaryKeyName;

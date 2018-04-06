@@ -170,7 +170,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                    ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                    &qualifyingData, &sig_scheme, &pcr_selection,
                    &attest, &signature);
-    goto_if_error(r, "Error esys quiote", error);
+    goto_if_error(r, "Error Esys Quote", error);
 
     r = Esys_FlushContext(esys_context, primaryHandle_handle);
     goto_if_error(r, "Error: FlushContext", error);

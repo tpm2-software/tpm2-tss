@@ -12,7 +12,7 @@
 /**
  * This program contains integration test for SAPI Tss2_Sys_PCR_Read
  * and Tss2_Sys_PCR_Extend. This is an use case scenario on PCR extend.
- * First, we will get the list of PCR avaliable through getcapability
+ * First, we will get the list of PCR available through getcapability
  * SAPI. Then, PCR_Read SAPI is called to list out the PCR value and
  * PCR_Extend SAPI is called next to update the PCR value. Last,
  * PCR_Read SAPI is called again to check the PCR values are changed.

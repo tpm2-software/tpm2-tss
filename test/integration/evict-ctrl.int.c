@@ -46,7 +46,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
                                 0x81000000,
                                 &sessions_rsp);
     if (rc != TSS2_RC_SUCCESS) {
-        LOG_INFO("failed to make key 0x%" PRIx32 " unpersistent: 0x%" PRIx32,
+        LOG_INFO("failed to make key 0x%" PRIx32 " nonpersistent: 0x%" PRIx32,
                    primary_handle, rc);
         return 1;
     }

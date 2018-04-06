@@ -33,9 +33,9 @@
 
 /*
  * This test is intended to test then change of an authorization value of
- * a hiearachy.
+ * a hierarchy.
  * To check whether the change was successful a primary key is created
- * with the handle of this hierarchie and the new authorization.
+ * with the handle of this hierarchy and the new authorization.
  * Also second primary is created after a call of Esys_TR_SetAuth with
  * the new auth value.
  */

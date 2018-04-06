@@ -34,7 +34,7 @@
 /*
  * This test is intended to test the ESAPI commands PolicyAuthValue,
  * PolicyCommandCode, Esys_PolicyGetDigest, and NV_ChangeAuth.
- * First in a trial session the policy value to ensure tha auth value
+ * First in a trial session the policy value to ensure that the auth value
  * is included in the policy session used for NV_ChangeAuth is
  * computed.
  * A NV ram space with this policy is defined afterwards.

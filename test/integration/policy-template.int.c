@@ -111,7 +111,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     LOGBLOB_DEBUG(tmp_buff + 2, template_size - 2, "%s", "in_public:");
     LOGBLOB_DEBUG(templ_dgst.buffer, templ_dgst.size, "%s", "template digest:");
 
-    /* Set the tempalte digest on the session.
+    /* Set the template digest on the session.
      * After that all objects created for this session will be limited
      * to this particular template
      */

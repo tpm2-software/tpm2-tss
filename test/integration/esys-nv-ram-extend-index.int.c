@@ -133,7 +133,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
    if (nvName->size != nvHandleNode->rsrc.name.size ||
        memcmp(&nvName->name, &nvHandleNode->rsrc.name.name, nvName->size) != 0) {
-       LOG_ERROR("Error: define space name not equalt");
+       LOG_ERROR("Error: define space name not equal");
        goto error;
    }
    r = Esys_NV_Extend (
