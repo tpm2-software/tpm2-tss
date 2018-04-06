@@ -160,7 +160,7 @@ Esys_PCR_Read_async(
     esysContext->state = _ESYS_STATE_INTERNALERROR;
 
     /* Check and store input parameters */
-    r = check_session_feasability(shandle1, shandle2, shandle3, 0);
+    r = check_session_feasibility(shandle1, shandle2, shandle3, 0);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
     store_input_parameters(esysContext,
                 pcrSelectionIn);
@@ -310,7 +310,7 @@ Esys_PCR_Read_finish(
                 (pcrSelectionOut != NULL) ? *pcrSelectionOut : NULL,
                 (pcrValues != NULL) ? *pcrValues : NULL);
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshalling" ,error_cleanup);
+                        " unmarshaling" ,error_cleanup);
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;

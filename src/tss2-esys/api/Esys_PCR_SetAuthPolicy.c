@@ -173,7 +173,7 @@ Esys_PCR_SetAuthPolicy_async(
     esysContext->state = _ESYS_STATE_INTERNALERROR;
 
     /* Check and store input parameters */
-    r = check_session_feasability(shandle1, shandle2, shandle3, 1);
+    r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
     store_input_parameters(esysContext, authHandle,
                 authPolicy,
@@ -307,7 +307,7 @@ Esys_PCR_SetAuthPolicy_finish(
      */
     r = Tss2_Sys_PCR_SetAuthPolicy_Complete(esysContext->sys);
     return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshalling" );
+                        " unmarshaling" );
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;
