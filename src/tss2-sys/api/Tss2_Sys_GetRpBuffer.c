@@ -44,7 +44,7 @@ TSS2_RC Tss2_Sys_GetRpBuffer(
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
     /* Calculate the position of the response parameter section within the TPM
-     * repsponse as well as its size. Structure is:
+     * response as well as its size. Structure is:
      * Header (tag, responseSize, responseCode)
      * handle(if Command has handles)
      * parameterSize (if TPM_ST_SESSIONS), size of rpArea

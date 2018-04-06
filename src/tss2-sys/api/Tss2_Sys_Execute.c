@@ -91,7 +91,7 @@ TSS2_RC Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout)
                                      &ctx->nextData,
                                      &ctx->rsp_header.tag);
     if (rval) {
-        LOG_ERROR("Unmarshalling response tag. RC=%" PRIx32, rval);
+        LOG_ERROR("Unmarshaling response tag. RC=%" PRIx32, rval);
         return rval;
     }
 

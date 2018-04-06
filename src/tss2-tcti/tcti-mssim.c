@@ -49,9 +49,9 @@
 /*
  * This function wraps the "up-cast" of the opaque TCTI context type to the
  * type for the mssim TCTI context. The only safeguard we have to ensure this
- * operation is possivle is the magic number in the mssim TCTI context.
+ * operation is possible is the magic number in the mssim TCTI context.
  * If passed a NULL context, or the magic number check fails, this function
- * will retrun NULL.
+ * will return NULL.
  */
 TSS2_TCTI_MSSIM_CONTEXT*
 tcti_mssim_context_cast (TSS2_TCTI_CONTEXT *tcti_ctx)
@@ -75,7 +75,7 @@ tcti_mssim_down_cast (TSS2_TCTI_MSSIM_CONTEXT *tcti_mssim)
 }
 /*
  * This function is for sending one of the MS_SIM_* platform commands to the
- * microsoft simulator. These are sent over the platform socket.
+ * Microsoft TPM2 simulator. These are sent over the platform socket.
  */
 TSS2_RC tcti_platform_command (
     TSS2_TCTI_CONTEXT *tctiContext,
@@ -147,7 +147,7 @@ send_sim_session_end (
 }
 
 /*
- * This fucntion is used to send the simulator a sort of command message
+ * This function is used to send the simulator a sort of command message
  * that tells it we're about to send it a TPM command. This requires that
  * we first send it a 4 byte code that's defined by the simulator. Then
  * another byte identifying the locality and finally the size of the TPM
@@ -407,7 +407,7 @@ out:
  * This function sends the Microsoft simulator the MS_SIM_POWER_ON and
  * MS_SIM_NV_ON commands using the platform command mechanism. Without
  * these the simulator will respond with zero sized buffer which causes
- * the TSS to freak out. Sending this command more than once is harmelss
+ * the TSS to freak out. Sending this command more than once is harmless,
  * so it's advisable to call this function as part of the TCTI context
  * initialization just to be sure.
  *

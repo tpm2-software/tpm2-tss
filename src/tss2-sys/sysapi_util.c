@@ -144,7 +144,7 @@ TSS2_RC CommonComplete(_TSS2_SYS_CONTEXT_BLOB *ctx)
     if (rval)
         return rval;
 
-    /* Skiping over response params size field */
+    /* Skipping over response params size field */
     if (tag == TPM2_ST_SESSIONS)
         rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer,
                                         ctx->maxCmdSize,
