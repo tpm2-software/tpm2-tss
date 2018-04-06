@@ -186,7 +186,7 @@ Esys_GetTcti(ESYS_CONTEXT * esys_context, TSS2_TCTI_CONTEXT ** tcti)
 /** Return the poll handles of the used TCTI.
  *
  * The connection to the TPM is held using a TCTI. These may optionally provide
- * handles that can be used to poll for incoming data. This is usedful when
+ * handles that can be used to poll for incoming data. This is useful when
  * using the asynchronous function of ESAPI in an event-loop model.
  * @param esys_context [IN] The ESYS_CONTEXT.
  * @param handles [OUT] The poll handles (callee-allocated, use free())
@@ -226,9 +226,9 @@ Esys_GetPollHandles(ESYS_CONTEXT * esys_context,
     return r;
 }
 
-/** Set the timout of Esys asynchronous functions.
+/** Set the timeout of Esys asynchronous functions.
  *
- * Sets the timout for the _finish() functions in the ansychronous versions of
+ * Sets the timeout for the _finish() functions in the asynchronous versions of
  * the Esys commands.
  * @param esys_context [IN] The ESYS_CONTEXT.
  * @param timeout [IN] The timeout in ms or -1 to block indefinately.

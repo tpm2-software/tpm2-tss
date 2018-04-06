@@ -107,7 +107,7 @@ tcti_from_info(TSS2_TCTI_INFO_FUNC infof,
                TSS2_TCTI_CONTEXT **tcti)
 {
     TSS2_RC r;
-    LOG_TRACE("Attemting to load TCTI info");
+    LOG_TRACE("Attempting to load TCTI info");
 
     const TSS2_TCTI_INFO* info = infof();
     if (info == NULL) {
@@ -139,7 +139,7 @@ tcti_from_file(const char *file,
     void *handle;
     TSS2_TCTI_INFO_FUNC infof;
 
-    LOG_TRACE("Attemting to load TCTI file: %s", file);
+    LOG_TRACE("Attempting to load TCTI file: %s", file);
 
     handle = dlopen(file, RTLD_NOW);
     if (handle == NULL) {
@@ -208,7 +208,7 @@ get_tcti_default(TSS2_TCTI_CONTEXT ** tcticontext)
             LOG_DEBUG("Failed to load standard TCTI number %zu", i);
 #endif /* NO_DL */
         } else {
-            LOG_ERROR("Errorous entry in standard TCTIs");
+            LOG_ERROR("Erroneous entry in standard TCTIs");
             return TSS2_ESYS_RC_GENERAL_FAILURE;
         }
 

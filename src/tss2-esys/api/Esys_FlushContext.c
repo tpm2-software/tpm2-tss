@@ -220,7 +220,7 @@ Esys_FlushContext_finish(
     }
     r = Tss2_Sys_FlushContext_Complete(esysContext->sys);
     return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshalling" );
+                        " unmarshaling" );
     /* The ESYS_TR object has to be invalidated */
     r = Esys_TR_Close(esysContext, &esysContext->in.FlushContext.flushHandle);
     return_if_error(r, "invalidate object");

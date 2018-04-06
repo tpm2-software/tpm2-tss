@@ -39,7 +39,7 @@
  * The serialized object can be deserialized suing Esys_TR_Deserialize.
  * @param esys_context [INOUT] The ESYS_CONTEXT.
  * @param esys_handle [IN] The ESYS_TR object to serialize.
- * @param buffer [OUT] The buffer containing the serialized metadata. (caller-callocated) Shall be free'd using free().
+ * @param buffer [OUT] The buffer containing the serialized metadata. (caller-callocated) Shall be freed using free().
  * @param buffer_size [OUT] The size of the buffer parameter.
  * @retval TSS2_RC_SUCCESS on Success.
  * @retval TSS2_RC_ESYS_GENERAL_FAILURE On Failure.
@@ -78,7 +78,7 @@ Esys_TR_Serialize(ESYS_CONTEXT * esys_context,
  * An object can be serialized suing Esys_TR_Serialize.
  * @param esys_context [INOUT] The ESYS_CONTEXT.
  * @param esys_handle [IN] The ESYS_TR object to serialize.
- * @param buffer [OUT] The buffer containing the serialized metadata. (caller-callocated) Shall be free'd using free().
+ * @param buffer [OUT] The buffer containing the serialized metadata. (caller-callocated) Shall be freed using free().
  * @param buffer_size [OUT] The size of the buffer parameter.
  * @retval TSS2_RC_SUCCESS on Success \todo Add error RCs.
  * @retval TSS2_RC_ESYS_GENERAL_FAILURE On Failure.
@@ -102,11 +102,11 @@ Esys_TR_Deserialize(ESYS_CONTEXT * esys_context,
     return TSS2_RC_SUCCESS;
 }
 
-/** Start syncrounous creation of an ESYS_TR object from TPM metadata.
+/** Start synchronous creation of an ESYS_TR object from TPM metadata.
  *
  * This function starts the asynchronous retrieval of metadata from the TPM in
  * order to create a new ESYS_TR object.
- * @see Esys_TR_FromTPMPublic for more infomration
+ * @see Esys_TR_FromTPMPublic for more information
  */
 TSS2_RC
 Esys_TR_FromTPMPublic_Async(ESYS_CONTEXT * esys_context,
@@ -141,10 +141,10 @@ Esys_TR_FromTPMPublic_Async(ESYS_CONTEXT * esys_context,
     return r;
 }
 
-/** Finish asyncrounous creation of an ESYS_TR object from TPM metadata.
+/** Finish asynchronous creation of an ESYS_TR object from TPM metadata.
  * This function finishes the asynchronous retrieval of metadata from the TPM in
  * order to create a new ESYS_TR object.
- * @see Esys_TR_FromTPMPublic for more infomration
+ * @see Esys_TR_FromTPMPublic for more information
  */
 TSS2_RC
 Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * esys_handle)
@@ -193,7 +193,7 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * esys_handle)
 
 /** Creation of an ESYS_TR object from TPM metadata.
  *
- * This function can be used to create ESYS_TR object for Tpm Resouces that are
+ * This function can be used to create ESYS_TR object for Tpm Resources that are
  * not created or loaded (e.g. using ESys_CreatePrimary or ESys_Load) but
  * pre-exist inside the TPM. Examples are NV-Indices or persistent object.
  *
@@ -360,7 +360,7 @@ Esys_TRSess_GetAttributes(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
 
 /** Set session attributes
  *
- * Set or unset a session's attributes according to the provieded flags and mask.
+ * Set or unset a session's attributes according to the provided flags and mask.
  * @verbatim new_attributes = old_attributes & ~mask | flags & mask @endverbatim
  * Note: this function only applies to ESYS_TR objects that represent sessions.
  * @param esys_context [INOUT] The ESYS_CONTEXT.
