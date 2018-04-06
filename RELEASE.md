@@ -44,7 +44,7 @@ We do not however encourage users to build from git unless they intend to modify
 For the end user we provide release "tarballs" following the GNU conventions as closely as possible.
 
 To make a release tarball use the `distcheck` make target.
-This target incldues a number of sanity checks that are extremely helpful.
+This target includes a number of sanity checks that are extremely helpful.
 For more information on `automake` and release tarballs see: https://www.gnu.org/software/automake/manual/html_node/Dist.html#Dist
 
 ## Hosting Releases on Github
