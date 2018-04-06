@@ -2524,7 +2524,7 @@ static void TestEncryptDecryptSession()
         // this tests different cases for SetDecryptParam function.
         //
 
-        // Prepare the input parameters, using unencypted
+        // Prepare the input parameters, using unencrypted
         // write data.  This will be encrypted before the
         // command is sent to the TPM.
         rval = Tss2_Sys_NV_Write_Prepare( sysContext,
@@ -2997,7 +2997,7 @@ static void GetSetEncryptParamTests()
             TPM20_INDEX_PASSWORD_TEST, &nvWriteData, 0 );
     CheckPassed( rval ); // #5
 
-    // NOTE: add GetCpBuffer tests here, just because its easier.
+    // NOTE: add GetCpBuffer tests here, just because it's easier.
     rval = Tss2_Sys_GetCpBuffer( 0, (size_t *)4, (const uint8_t **)4 );
 	CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); // #6
 

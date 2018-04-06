@@ -43,7 +43,7 @@ UINT32 TpmComputeSessionHmac(
     TSS2_SYS_CONTEXT *sysContext,
     TPMS_AUTH_COMMAND *pSessionDataIn, // Pointer to session input struct
     TPM2_HANDLE entityHandle,             // Used to determine if we're accessing a different
-                                         // resource than the bound resoure.
+                                         // resource than the bound resource.
     TSS2_RC responseCode,                 // Response code for the command, 0xffff for "none" is
                                          // used to indicate that no response code is present
                                          // (used for calculating command HMACs vs response HMACs).
@@ -103,7 +103,7 @@ UINT32 TpmComputeSessionHmac(
     if( ( entityHandle >> TPM2_HR_SHIFT ) == TPM2_HT_NV_INDEX )
     {
         // If NV index, get status wrt to name change.  If name has changed,
-        // we have to treat it as if its not the bound entity, even if it was
+        // we have to treat it as if it's not the bound entity, even if it was
         // the bound entity.
         nvNameChanged = pSession->nvNameChanged;
     }

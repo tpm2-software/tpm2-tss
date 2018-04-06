@@ -167,7 +167,7 @@ extern UINT32 ( *ComputeSessionHmacPtr )(
     TSS2_SYS_CONTEXT *sysContext,
     TPMS_AUTH_COMMAND *cmdAuth,          // Pointer to session input struct
     TPM2_HANDLE entityHandle,             // Used to determine if we're accessing a different
-                                         // resource than the bound resoure.
+                                         // resource than the bound resource.
     TSS2_RC responseCode,                 // Response code for the command, 0xffff for "none" is
                                          // used to indicate that no response code is present
                                          // (used for calculating command HMACs vs response HMACs).
@@ -205,7 +205,7 @@ UINT32 TpmComputeSessionHmac(
     TSS2_SYS_CONTEXT *sysContext,
     TPMS_AUTH_COMMAND *pSessionDataIn, // Pointer to session input struct
     TPM2_HANDLE entityHandle,             // Used to determine if we're accessing a different
-                                         // resource than the bound resoure.
+                                         // resource than the bound resource.
     TSS2_RC responseCode,                 // Response code for the command, 0xffff for "none" is
                                          // used to indicate that no response code is present
                                          // (used for calculating command HMACs vs response HMACs).

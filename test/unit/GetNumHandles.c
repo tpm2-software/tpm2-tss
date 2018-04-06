@@ -38,7 +38,7 @@ GetNumResponseHandles_HMAC_Start_unit (void **state)
  * Tests to ensure that GetNumCommandHandles and GetNumResponseHandles
  * returns 0 for unknown command codes.
  * Since 0 is a valid number here it may make more sense to return something
- * to indicate an error condition. Probaly best to catch unknown command
+ * to indicate an error condition. It is probably best to catch unknown command
  * codes as early as possible?
  */
 static void
