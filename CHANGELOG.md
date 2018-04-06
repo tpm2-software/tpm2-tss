@@ -47,7 +47,7 @@ reproducible builds.
 ### Fixed
 - NULL dereference bugs in TCTI modules.
 - Cleanup & structure initialization to keep coverity scans happy.
-- Fixed memory leak in integraton test harness.
+- Fixed memory leak in integration test harness.
 
 ## [1.1.0] - 2017-05-10
 ### Changed
@@ -160,7 +160,7 @@ parameters.
 - Added code to RM and simDriver to support timeout on receive calls.
 - Added code to properly handle TPM errors in ExecuteFinish. Previously it was
 ignoring these errors, which meant that the rest of the _Complete call would
-try to unmarshall non-existent response data. Added test case for this.
+try to unmarshal non-existent response data. Added test case for this.
 - Added support for cancel commands and tests for this.
 - Added help text for command line options.
 - Added code to reset dictionary attacks to start of tpmclient tests: this
@@ -217,7 +217,7 @@ that hadn't been received. Caused seg faults under Linux.
 - Fixed timeout for async Startup test.
 - Fixed SocketReceiveTpmResponse for blocking case.
 - Fixed bug in ExecuteFinish: BAD_SEQUENCE error generated early in function
-was getting overwritten by INSUFFICENT_RESPONSE error.
+was getting overwritten by INSUFFICIENT_RESPONSE error.
 - Fixed bug in ExecuteFinish: it was always setting timeout to 0 instead of
 TSS2_TCTI_TIMEOUT_BLOCK.
 - Fixed bug in resource manager: error level for non-TPM errors was getting
@@ -306,8 +306,8 @@ command).
 - Replaced the fixed length arrays of RM structures with linked list
 structures and appropriate functions.
 - Fixed some cases of using pointers before checking that they're not NULL.
-- Fixed bugs in marshalling/unmarshalling routines and added some missing
-unmarshalling functions.
+- Fixed bugs in marshaling/unmarshaling routines and added some missing
+unmarshaling functions.
 - Fixed hash sequence test.
 - Fixed bugs in CopyCapabilityDataOut function for algorithms.
 - Fixed bug with ExecuteAsync: passed in BE size to transmit call. Needs to be
@@ -347,7 +347,7 @@ systems.
 inherently rolled in preparation for first command. Now the RollNonces routine
 will need to be called before the first command. This makes handling of the
 nonces consistent for all code that needs to roll them.
-- Fixed bug in StartAuthSession: wasn't marshalling symmetric parameter
+- Fixed bug in StartAuthSession: wasn't marshaling symmetric parameter
 properly if algorithm was TPM_ALG_XOR.
 - Fixed bug in SetDecryptParam: when inserting a decrypt param, the code
 wasn't updating the command size field.

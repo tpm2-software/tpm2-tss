@@ -61,7 +61,7 @@ $ sudo dnf builddep tpm2-tss
 ## Windows
 Windows dlls built using the Clang/LLVM "Platform Toolset" are currently
 prototypes. We have only tested using Visual Studio 2017 with the Universal
-C Runtime (UCRT) version 10.0.16299.0. Building the type marshalling library
+C Runtime (UCRT) version 10.0.16299.0. Building the type marshaling library
 (tss2-mu.dll) and the system API (tss2-sapi.dll) should be as simple as
 loading the tpm2-tss solution (tpm2-tss.sln) with a compatible and properly
 configured version of Visual Studio 2017 and pressing the 'build' button.

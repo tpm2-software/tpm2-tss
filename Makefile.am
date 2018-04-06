@@ -55,7 +55,7 @@ include src_vars.mk
 # Add test definitions
 include Makefile-test.am
 
-### Distributiuon files ###
+### Distribution files ###
 # Adding user and developer information
 EXTRA_DIST += \
     CHANGELOG.md \
@@ -96,7 +96,7 @@ noinst_LTLIBRARIES += $(libutil)
 libutil_la_CFLAGS = $(AM_CFLAGS)
 libutil_la_SOURCES = $(UTIL_SRC)
 
-### TCG TSS Marshaling/Unmarshalling spec library ###
+### TCG TSS Marshaling/Unmarshaling spec library ###
 libtss2_mu = src/tss2-mu/libtss2-mu.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_mu.h
 lib_LTLIBRARIES += $(libtss2_mu)
@@ -126,7 +126,7 @@ src_tss2_tcti_libtss2_tcti_device_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c src/tss2-tcti/tcti-common.h \
     src/tss2-tcti/tcti-device.c src/tss2-tcti/tcti-device.h
 
-# tcti library for microsoft simulator
+# tcti library for Microsoft TPM2 simulator
 libtss2_tcti_mssim = src/tss2-tcti/libtss2-tcti-mssim.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_mssim.h
 lib_LTLIBRARIES += $(libtss2_tcti_mssim)
