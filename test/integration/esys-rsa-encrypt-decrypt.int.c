@@ -35,7 +35,7 @@
  * This test is intended to test RSA encryption / decryption. with password
  * authentication.
  * We create a RSA primary key (Esys_CreatePrimary) for every crypto action
- * This key will be used for encrytion/decryption in with the schemes:
+ * This key will be used for encryption/decryption in with the schemes:
  * TPM2_ALG_NULL, TPM2_ALG_RSAES, and TPM2_ALG_OAEP
  */
 

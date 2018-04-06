@@ -15,7 +15,7 @@
  * Second, the SAPI is called twice to make sure the return randomBytes
  * are different by comparing the two randomBytes through memcmp.
  * It might not be the best test for random bytes generator but
- * at least this test shows the return randomBytes are differen.
+ * at least this test shows the return randomBytes are different.
  */
 int
 test_invoke (TSS2_SYS_CONTEXT *sapi_context)

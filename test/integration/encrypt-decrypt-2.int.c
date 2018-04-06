@@ -10,7 +10,7 @@
 #define ENC_STR "test-data-test-data-test-data"
 
 /*
- * This test is inteded to exercise the EncryptDecrypt2 command.
+ * This test is intended to exercise the EncryptDecrypt2 command.
  */
 int
 test_invoke (TSS2_SYS_CONTEXT *sapi_context)

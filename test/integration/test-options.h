@@ -10,7 +10,7 @@
 /* Defaults for Device TCTI */
 #define DEVICE_PATH_DEFAULT "/dev/tpm0"
 
-/* Deafults for Socket TCTI connections */
+/* Defaults for Socket TCTI connections */
 #define HOSTNAME_DEFAULT "127.0.0.1"
 #define PORT_DEFAULT     2321
 

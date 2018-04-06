@@ -33,7 +33,7 @@ tcti_map_entry_t tcti_map_table[] = {
 
 /*
  * Convert from a string to an element in the TCTI_TYPE enumeration.
- * An unkonwn name / string will map to UNKNOWN_TCTI.
+ * An unknown name / string will map to UNKNOWN_TCTI.
  */
 TCTI_TYPE
 tcti_type_from_name(char const *tcti_str)

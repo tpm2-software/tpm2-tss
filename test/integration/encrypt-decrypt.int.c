@@ -10,7 +10,7 @@
 #define ENC_STR "test-data-test-data-test-data"
 
 /*
- * This test is inteded to exercise the EncryptDecrypt2 command. We start by
+ * This test is intended to exercise the EncryptDecrypt2 command. We start by
  * creating a primary key, then a 128 bit AES key in CFB mode under it. We
  * then encrypt a well known string with this key, and then decrypt that same
  * string. The test is successful if the original string and the decrypted

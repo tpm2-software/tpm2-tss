@@ -11,7 +11,7 @@
 #include "test.h"
 #include "sapi-util.h"
 /**
- * This program contains integration test for asymetric encrypt and
+ * This program contains integration test for asymmetric encrypt and
  * decrypt use case that has SAPIs Tss2_Sys_CreatePrimary,
  * Tss2_Sys_Create, Tss2_Sys_Load, Tss2_Sys_RSA_Encrypt and
  * Tss2_Sys_RSA_Decrypt. First, the program creates the object and load
@@ -131,14 +131,14 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
         LOG_ERROR("RSA_Encrypt FAILED! Response Code : 0x%x", rc);
         exit(1);
     }
-    LOG_INFO("Encrypt successed.");
+    LOG_INFO("Encrypt successful.");
 
     rc = Tss2_Sys_RSA_Decrypt(sapi_context, loaded_sym_handle, &sessions_data, &output_data, &in_scheme, &outside_info, &output_message, &sessions_data_out);
     if(rc != TPM2_RC_SUCCESS) {
         LOG_ERROR("RSA_Decrypt FAILED! Response Code : 0x%x", rc);
         exit(1);
     }
-    LOG_INFO("Decrypt successed.");
+    LOG_INFO("Decrypt successful.");
 
     LOG_INFO("Asymmetric Encryption and Decryption Test Passed!");
 

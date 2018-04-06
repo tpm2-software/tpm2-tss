@@ -205,7 +205,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                            &creationData2, &creationHash2, &creationTicket2);
 
     goto_error_if_not_failed(
-        r, "Error esys create finish wiht NULL context did not fail",
+        r, "Error esys create finish with NULL context did not fail",
         error);
 
     r = Esys_FlushContext(esys_context, primaryHandle_handle);

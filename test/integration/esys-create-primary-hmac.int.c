@@ -33,7 +33,7 @@
 
 /*
  * This test is intended to test Esys_CreatePrimary with hmac verification.
- * The test can be executed wiht RSA or ECC keys. ECC will bei used if
+ * The test can be executed with RSA or ECC keys. ECC will be used if
  * ECC is defined.
  */
 
