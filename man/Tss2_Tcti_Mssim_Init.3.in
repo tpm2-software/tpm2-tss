@@ -43,7 +43,7 @@ again providing the newly allocated
 .I tcti_context
 and the size of this context in the
 .I size
-parameter. This patterm is common to all TCTI initialization functions. We
+parameter. This pattern is common to all TCTI initialization functions. We
 provide an example of this pattern using the
 .BR Tss2_Tcti_Mssim_Init ()
 function in the section titled
@@ -66,8 +66,8 @@ of 2321 is used.
 Once initialized, the TCTI context returned exposes the Trusted Computing
 Group (TCG) defined API for the lowest level communication with the TPM.
 Using this API the caller can exchange (send / receive) TPM2 command and
-respons buffers with the Microsoft TPM simulator. In nearly all cases however,
-the caller will initialize a context using this funnction before passing the
+response buffers with the Microsoft TPM simulator. In nearly all cases however,
+the caller will initialize a context using this function before passing the
 context to a higher level API like the System API (SAPI), and then never touch
 it again.
 .sp
