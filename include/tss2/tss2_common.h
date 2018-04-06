@@ -90,7 +90,7 @@ typedef uint32_t TSS2_RC;
  * These base codes indicate the error that occurred. They are
  * logical-ORed with a layer code to produce the TSS2 return value.
  */
-#define TSS2_BASE_RC_GENERAL_FAILURE            1U /* Catch all for all errors not otherwise specifed */
+#define TSS2_BASE_RC_GENERAL_FAILURE            1U /* Catch all for all errors not otherwise specified */
 #define TSS2_BASE_RC_NOT_IMPLEMENTED            2U /* If called functionality isn't implemented */
 #define TSS2_BASE_RC_BAD_CONTEXT                3U /* A context structure is bad */
 #define TSS2_BASE_RC_ABI_MISMATCH               4U /* Passed in ABI version doesn't match called module's ABI version */
