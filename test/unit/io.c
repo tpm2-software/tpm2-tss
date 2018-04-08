@@ -56,6 +56,19 @@ __wrap_connect (
     return mock_type (int);
 }
 
+/*
+ * Wrap the 'recv' system call. The mock queue for this function must have an
+ * integer return value (the number of byts recv'd), as well as a pointer to
+ * a buffer to copy data from to return to the caller.
+ */
+ssize_t
+__wrap_read (int fd, void *buffer, size_t count)
+{
+    LOG_DEBUG ("%s: reading %zu bytes from fd: %d to buffer at 0x%" PRIxPTR,
+               __func__, count, fd, (uintptr_t)buffer);
+    return mock_type (ssize_t);
+}
+
 ssize_t
 __wrap_write (int fd, const void *buffer, size_t buffer_size)
 {
@@ -80,6 +93,35 @@ write_all_simple_success_test (void **state)
     will_return (__wrap_write, sizeof (buf));
     ret = write_all (99, buf, sizeof (buf));
     assert_int_equal(ret, sizeof (buf));
+}
+/*
+ * This test causes the underlying 'read' operation to return '0' bytes
+ * indicating EOF.
+ */
+static void
+read_all_eof_test (void **state)
+{
+    ssize_t ret;
+    uint8_t buf [10];
+
+    will_return (__wrap_read, 0);
+    ret = read_all (10, buf, sizeof (buf));
+    assert_int_equal (ret, 0);
+}
+/*
+ * This test is a minor variation on the 'read_all_eof_test'. We still get
+ * an EOF from the underlying read but only after we get a good read, but one
+ * that's less than what was requested.
+ */
+static void
+read_all_twice_eof (void **state)
+{
+    ssize_t ret;
+
+    will_return (__wrap_read, 5);
+    will_return (__wrap_read, 0);
+    ret = read_all (10, NULL, 10);
+    assert_int_equal (ret, 5);
 }
 /* When passed all NULL values ensure that we get back the expected RC. */
 static void
@@ -175,6 +217,8 @@ main (int   argc,
 {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test (write_all_simple_success_test),
+        cmocka_unit_test (read_all_eof_test),
+        cmocka_unit_test (read_all_twice_eof),
         cmocka_unit_test (socket_connect_test),
         cmocka_unit_test (socket_connect_null_test),
         cmocka_unit_test (socket_connect_socket_fail_test),
