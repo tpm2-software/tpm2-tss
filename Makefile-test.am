@@ -170,8 +170,8 @@ test_unit_tcti_mssim_SOURCES = test/unit/tcti-mssim.c \
     src/tss2-tcti/tcti-mssim.c src/tss2-tcti/tcti-mssim.h
 
 test_unit_io_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_io_LDADD   = $(CMOCKA_LIBS) $(libutil) $(libtss2_mu)
-test_unit_io_LDFLAGS = -Wl,--wrap=connect,--wrap=socket,--wrap=write
+test_unit_io_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
+test_unit_io_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=socket,--wrap=write
 test_unit_io_SOURCES = test/unit/io.c
 
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)

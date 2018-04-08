@@ -40,7 +40,13 @@
 #include "util/log.h"
 
 #define MAX_PORT_STR_LEN    sizeof("65535")
-
+/*
+ * The 'read_all' function attempts to read all of the 'size' bytes requested
+ * from the 'fd' provided into the buffer 'data'. This function will continue
+ * to retry after temporary failures and "short reads". It will only stop
+ * once all of the requested data has been read, an error occurs, or EOF.
+ * On error or EOF, the number of bytes read (if any) will be returned.
+ */
 ssize_t
 read_all (
     int fd,
@@ -57,6 +63,11 @@ read_all (
         if (recvd < 0) {
             LOG_WARNING ("read on fd %d failed with errno %d: %s",
                          fd, errno, strerror (errno));
+            return recvd_total;
+        }
+        if (recvd == 0) {
+            LOG_WARNING ("Attempted read %zu bytes from fd %d, but EOF "
+                         "returned", size, fd);
             return recvd_total;
         }
         LOGBLOB_DEBUG (&data [recvd_total], recvd, "read %zd bytes from fd %d:", recvd, fd);

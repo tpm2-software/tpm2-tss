@@ -416,6 +416,67 @@ tcti_socket_receive_size_success_test (void **state)
     assert_memory_equal (response_in, response_out, response_size);
 }
 /*
+ * This test causes the underlying 'read' call to return 0 / EOF when we
+ * call the TCTI 'receive' function. In this case the TCTI should return an
+ * IO error.
+ */
+static void
+tcti_mssim_receive_eof_first_read_test (void **state)
+{
+    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_common_context_cast (ctx);
+    TSS2_RC rc;
+    /* output buffer for response */
+    uint8_t buf [TPM_HEADER_SIZE] = { 0 };
+    size_t size = sizeof (buf);
+
+    /* Keep state machine check in `receive` from returning error. */
+    tcti_common->state = TCTI_STATE_RECEIVE;
+    will_return (__wrap_read, 0);
+    will_return (__wrap_read, buf);
+    rc = Tss2_Tcti_Receive (ctx,
+                            &size,
+                            buf,
+                            TSS2_TCTI_TIMEOUT_BLOCK);
+    assert_true (rc == TSS2_TCTI_RC_IO_ERROR);
+}
+/*
+ * This test causes the underlying 'read' call to return EOF but only after
+ * a successful read that gets us the response size. This results in the
+ * an IO_ERROR RC being returned.
+ */
+static void
+tcti_mssim_receive_eof_second_read_test (void **state)
+{
+    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_common_context_cast (ctx);
+    TSS2_RC rc;
+    /* input response buffer */
+    uint8_t response_in [] = { 0x80, 0x02,
+                               0x00, 0x00, 0x00, 0x0c,
+                               0x00, 0x00, 0x00, 0x00,
+                               0x01, 0x02,
+    /* simulator appends 4 bytes of 0's to every response */
+                               0x00, 0x00, 0x00, 0x00 };
+    /* output response buffer */
+    uint8_t response_out [12] = { 0 };
+    size_t size = sizeof (response_out);
+
+    /* Keep state machine check in `receive` from returning error. */
+    tcti_common->state = TCTI_STATE_RECEIVE;
+    /* setup response size for first read */
+    will_return (__wrap_read, 4);
+    will_return (__wrap_read, &response_in [2]);
+    /* setup 0 for EOF on second read */
+    will_return (__wrap_read, 0);
+    will_return (__wrap_read, response_in);
+    rc = Tss2_Tcti_Receive (ctx,
+                            &size,
+                            response_out,
+                            TSS2_TCTI_TIMEOUT_BLOCK);
+    assert_true (rc == TSS2_TCTI_RC_IO_ERROR);
+}
+/*
  * This test exercises the successful code path through the transmit function.
  */
 static void
@@ -467,6 +528,12 @@ main (int   argc,
         cmocka_unit_test_setup_teardown (tcti_socket_receive_size_success_test,
                                   tcti_socket_setup,
                                   tcti_socket_teardown),
+        cmocka_unit_test_setup_teardown (tcti_mssim_receive_eof_first_read_test,
+                                         tcti_socket_setup,
+                                         tcti_socket_teardown),
+        cmocka_unit_test_setup_teardown (tcti_mssim_receive_eof_second_read_test,
+                                         tcti_socket_setup,
+                                         tcti_socket_teardown),
         cmocka_unit_test_setup_teardown (tcti_socket_transmit_success_test,
                                   tcti_socket_setup,
                                   tcti_socket_teardown)

@@ -194,7 +194,7 @@ tcti_device_receive (
     if ((size_t)size != tcti_common->header.size) {
         LOG_WARNING ("TPM2 header size disagrees with number of bytes read "
                      "from fd %d. Header says %u but we read %zu bytes.",
-                     tcti_dev->fd, tcti_common->header.size, *response_size);
+                     tcti_dev->fd, tcti_common->header.size, size);
     }
     if (*response_size < tcti_common->header.size) {
         LOG_WARNING ("TPM2 response header size is larger than the provided "

@@ -269,6 +269,9 @@ main(int argc, char* argv[])
         cmocka_unit_test_setup_teardown (tcti_device_transmit_success,
                                          tcti_device_setup,
                                          tcti_device_teardown),
+        cmocka_unit_test_setup_teardown (tcti_device_transmit_success,
+                                         tcti_device_setup,
+                                         tcti_device_teardown),
     };
     return cmocka_run_group_tests (tests, NULL, NULL);
 }

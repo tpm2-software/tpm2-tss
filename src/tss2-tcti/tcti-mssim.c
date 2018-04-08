@@ -371,7 +371,7 @@ tcti_mssim_receive (
     ret = socket_recv_buf (tcti_mssim->tpm_sock,
                            (unsigned char *)response_buffer,
                            tcti_common->header.size);
-    if (ret < 0) {
+    if (ret < (ssize_t)tcti_common->header.size) {
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto out;
     }
