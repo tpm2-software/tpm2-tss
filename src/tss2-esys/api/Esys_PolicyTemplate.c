@@ -38,7 +38,7 @@
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
-    TPMI_SH_POLICY policySession,
+    ESYS_TR policySession,
     const TPM2B_DIGEST *templateHash)
 {
     esysContext->in.PolicyTemplate.policySession = policySession;
@@ -59,10 +59,11 @@ static void store_input_parameters (
  * parameters is allocated by the function implementation.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
+ * @param[in] policySession Input handle of type ESYS_TR for
+ *     object with handle type TPMI_SH_POLICY.
  * @param[in] shandle1 First session handle.
  * @param[in] shandle2 Second session handle.
  * @param[in] shandle3 Third session handle.
- * @param[in] policySession Input parameter of type TPMI_SH_POLICY.
  * @param[in] templateHash Input parameter of type TPM2B_DIGEST.
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_RC_BAD_SEQUENCE if context is not ready for this function
@@ -71,19 +72,19 @@ static void store_input_parameters (
 TSS2_RC
 Esys_PolicyTemplate(
     ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_SH_POLICY policySession,
     const TPM2B_DIGEST *templateHash)
 {
     TSS2_RC r;
 
     r = Esys_PolicyTemplate_Async(esysContext,
+                policySession,
                 shandle1,
                 shandle2,
                 shandle3,
-                policySession,
                 templateHash);
     return_if_error(r, "Error in async function");
 
@@ -121,10 +122,11 @@ Esys_PolicyTemplate(
  * In order to retrieve the TPM's response call Esys_PolicyTemplate_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
+ * @param[in] policySession Input handle of type ESYS_TR for
+ *     object with handle type TPMI_SH_POLICY.
  * @param[in] shandle1 First session handle.
  * @param[in] shandle2 Second session handle.
  * @param[in] shandle3 Third session handle.
- * @param[in] policySession Input parameter of type TPMI_SH_POLICY.
  * @param[in] templateHash Input parameter of type TPM2B_DIGEST.
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_RC_BAD_SEQUENCE if context is not ready for this function
@@ -133,16 +135,17 @@ Esys_PolicyTemplate(
 TSS2_RC
 Esys_PolicyTemplate_Async(
     ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_SH_POLICY policySession,
     const TPM2B_DIGEST *templateHash)
 {
     TSS2_RC r;
     LOG_TRACE("context=%p, policySession=%"PRIx32 ", templateHash=%p",
               esysContext, policySession, templateHash);
     TSS2L_SYS_AUTH_COMMAND auths;
+    RSRC_NODE_T *policySessionNode;
 
     /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
@@ -157,13 +160,16 @@ Esys_PolicyTemplate_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 0);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
-    store_input_parameters(esysContext,
-                policySession,
+    store_input_parameters(esysContext, policySession,
                 templateHash);
+
+    /* Retrieve the metadata objects for provided handles */
+    r = esys_GetResourceObject(esysContext, policySession, &policySessionNode);
+    return_state_if_error(r, _ESYS_STATE_INIT, "policySession unknown.");
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_PolicyTemplate_Prepare(esysContext->sys,
-                policySession,
+                (policySessionNode == NULL) ? TPM2_RH_NULL : policySessionNode->rsrc.handle,
                 templateHash);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
@@ -175,7 +181,7 @@ Esys_PolicyTemplate_Async(
     iesys_compute_session_value(esysContext->session_tab[2], NULL, NULL);
 
     /* Generate the auth values and set them in the SAPI command buffer */
-    r = iesys_gen_auths(esysContext, NULL, NULL, NULL, &auths);
+    r = iesys_gen_auths(esysContext, policySessionNode, NULL, NULL, &auths);
     return_state_if_error(r, _ESYS_STATE_INIT, "Error in computation of auth values");
     esysContext->authsCount = auths.count;
     r = Tss2_Sys_SetCmdAuths(esysContext->sys, &auths);
@@ -241,10 +247,10 @@ Esys_PolicyTemplate_Finish(
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
         r = Esys_PolicyTemplate_Async(esysContext,
+                esysContext->in.PolicyTemplate.policySession,
                 esysContext->session_type[0],
                 esysContext->session_type[1],
                 esysContext->session_type[2],
-                esysContext->in.PolicyTemplate.policySession,
                 esysContext->in.PolicyTemplate.templateHash);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
