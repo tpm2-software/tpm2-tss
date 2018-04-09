@@ -149,7 +149,7 @@ tcti_device_receive_null_size_test (void **state)
  * data received.
  */
 static void
-tcti_device_receive_one_call_success (void **state)
+tcti_device_receive_success (void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
     TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_common_context_cast (ctx);
@@ -160,10 +160,8 @@ tcti_device_receive_one_call_success (void **state)
 
     /* Keep state machine check in `receive` from returning error. */
     tcti_common->state = TCTI_STATE_RECEIVE;
-    will_return (__wrap_read, TPM_HEADER_SIZE);
+    will_return (__wrap_read, BUF_SIZE);
     will_return (__wrap_read, tpm2_buf);
-    will_return (__wrap_read, BUF_SIZE - TPM_HEADER_SIZE);
-    will_return (__wrap_read, &tpm2_buf [TPM_HEADER_SIZE]);
     rc = Tss2_Tcti_Receive (ctx,
                             &size,
                             buf_out,
@@ -172,67 +170,58 @@ tcti_device_receive_one_call_success (void **state)
     assert_int_equal (BUF_SIZE, size);
     assert_memory_equal (tpm2_buf, buf_out, size);
 }
-static void
-tcti_device_receive_two_call_success (void **state)
-{
-    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_common_context_cast (ctx);
-    TSS2_RC rc;
-    /* output buffer for response */
-    uint8_t buf_out [BUF_SIZE + 5] = { 0 };
-    size_t size = 0;
-
-    /* Keep state machine check in `receive` from returning error. */
-    tcti_common->state = TCTI_STATE_RECEIVE;
-    will_return (__wrap_read, TPM_HEADER_SIZE);
-    will_return (__wrap_read, tpm2_buf);
-    will_return (__wrap_read, BUF_SIZE - TPM_HEADER_SIZE);
-    will_return (__wrap_read, &tpm2_buf [TPM_HEADER_SIZE]);
-    rc = Tss2_Tcti_Receive (ctx,
-                            &size,
-                            NULL,
-                            TSS2_TCTI_TIMEOUT_BLOCK);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (size, BUF_SIZE);
-    assert_true (size < BUF_SIZE + 5);
-    rc = Tss2_Tcti_Receive (ctx,
-                            &size,
-                            buf_out,
-                            TSS2_TCTI_TIMEOUT_BLOCK);
-    assert_true (rc == TSS2_RC_SUCCESS);
-    assert_int_equal (size, BUF_SIZE);
-    assert_memory_equal (tpm2_buf, buf_out, size);
-}
 /*
+ * Ensure that when the 'read' results in an EOF, we get a response code
+ * indicating as much. EOF happens if / when the device driver kills our
+ * connection.
  */
 static void
-tcti_device_receive_second_size_too_small_test (void **state)
+tcti_device_receive_eof_test (void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
     TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_common_context_cast (ctx);
     TSS2_RC rc;
     /* output buffer for response */
     uint8_t buf_out [BUF_SIZE + 5] = { 0 };
-    size_t size = 0;
+    size_t size = BUF_SIZE + 5;
 
     /* Keep state machine check in `receive` from returning error. */
     tcti_common->state = TCTI_STATE_RECEIVE;
-    will_return (__wrap_read, TPM_HEADER_SIZE);
+    will_return (__wrap_read, 0);
     will_return (__wrap_read, tpm2_buf);
-    /* get the size of the buffer required to hold the response */
-    rc = Tss2_Tcti_Receive (ctx,
-                            &size,
-                            NULL,
-                            TSS2_TCTI_TIMEOUT_BLOCK);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (size, BUF_SIZE);
-    /* set 'size' to be less than the required size for the response */
-    --size;
     rc = Tss2_Tcti_Receive (ctx,
                             &size,
                             buf_out,
                             TSS2_TCTI_TIMEOUT_BLOCK);
-    assert_true (rc == TSS2_TCTI_RC_INSUFFICIENT_BUFFER);
+    assert_int_equal (rc, TSS2_TCTI_RC_NO_CONNECTION);
+}
+/*
+ * This is a weird test: The device TCTI can't read the header for the
+ * response buffer separately from the body. This means it can't know the size
+ * of the response before reading the whole thing. In the event that the caller
+ * provides a buffer that isn't large enough to hold the full response the TCTI
+ * will just read as much data as the buffer will hold. Subsequent interactions
+ * with the kernel driver will likely result in an error.
+ */
+static void
+tcti_device_receive_buffer_lt_response (void **state)
+{
+    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_common_context_cast (ctx);
+    TSS2_RC rc;
+    uint8_t buf_out [BUF_SIZE] = { 0 };
+    /* set size to lt the size in the header of the TPM2 response buffer */
+    size_t size = BUF_SIZE - 1;
+
+    /* Keep state machine check in `receive` from returning error. */
+    tcti_common->state = TCTI_STATE_RECEIVE;
+    will_return (__wrap_read, size);
+    will_return (__wrap_read, tpm2_buf);
+    rc = Tss2_Tcti_Receive (ctx,
+                            &size,
+                            buf_out,
+                            TSS2_TCTI_TIMEOUT_BLOCK);
+    assert_int_equal (rc, TSS2_TCTI_RC_GENERAL_FAILURE);
 }
 /*
  * A test case for a successful call to the transmit function. This requires
@@ -268,16 +257,16 @@ main(int argc, char* argv[])
         cmocka_unit_test_setup_teardown (tcti_device_receive_null_size_test,
                                          tcti_device_setup,
                                          tcti_device_teardown),
-        cmocka_unit_test_setup_teardown (tcti_device_receive_one_call_success,
+        cmocka_unit_test_setup_teardown (tcti_device_receive_success,
                                          tcti_device_setup,
                                          tcti_device_teardown),
-        cmocka_unit_test_setup_teardown (tcti_device_receive_two_call_success,
+        cmocka_unit_test_setup_teardown (tcti_device_receive_eof_test,
+                                         tcti_device_setup,
+                                         tcti_device_teardown),
+        cmocka_unit_test_setup_teardown (tcti_device_receive_buffer_lt_response,
                                          tcti_device_setup,
                                          tcti_device_teardown),
         cmocka_unit_test_setup_teardown (tcti_device_transmit_success,
-                                         tcti_device_setup,
-                                         tcti_device_teardown),
-        cmocka_unit_test_setup_teardown (tcti_device_receive_second_size_too_small_test,
                                          tcti_device_setup,
                                          tcti_device_teardown),
     };

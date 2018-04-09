@@ -110,7 +110,25 @@ tcti_device_transmit (
     tcti_common->state = TCTI_STATE_RECEIVE;
     return TSS2_RC_SUCCESS;
 }
-
+/*
+ * This receive function deviates from the spec a bit. Calling this function
+ * with a NULL 'tctiContext' parameter *should* result in the required size for
+ * the response buffer being returned to the caller. We would typically do this
+ * by reading the response's header and then returning the size to the caller.
+ * We can't do that on account of the TPM2 kernel driver closing any connection
+ * that doesn't read the whole response buffer in one 'read' call.
+ *
+ * Instead, if the caller queries the size, we return 4k just to be on the
+ * safe side. We do *not* however verify that the provided buffer is large
+ * enough to hold the full response (we can't). If the caller provides us with
+ * a buffer less than 4k we'll read as much of the response as we can given
+ * the size of the buffer. If we get enough of the response to read the size
+ * field, we check to see if the buffer was large enough to get the full
+ * response. If the response header claims it's larger than the provided
+ * buffer we print a warning. This allows "expert applications" to
+ * precalculate the required response buffer size for whatever commands they
+ * may send.
+ */
 TSS2_RC
 tcti_device_receive (
     TSS2_TCTI_CONTEXT *tctiContext,
@@ -136,63 +154,60 @@ tcti_device_receive (
                      "TSS2_TCTI_TIMEOUT_BLOCK");
         return TSS2_TCTI_RC_BAD_VALUE;
     }
-
-    /* Read header first to get size of response. */
-    if (tcti_common->header.size == 0) {
-        uint8_t header_buf [TPM_HEADER_SIZE];
-        LOG_INFO ("Header not yet received, reading %zd byte header from fd %d",
-                  sizeof (header_buf), tcti_dev->fd);
-        size = read_all (tcti_dev->fd, header_buf, sizeof (header_buf));
-        if (size < 0) {
-            LOG_WARNING ("Failed to read response header.");
-            rc = TSS2_TCTI_RC_IO_ERROR;
-            goto out;
-        }
-        LOGBLOB_DEBUG (header_buf, TPM_HEADER_SIZE, "Response header received");
-        rc = header_unmarshal (header_buf, &tcti_common->header);
-        if (rc != TSS2_RC_SUCCESS) {
-            return rc;
-        }
-        LOG_INFO ("Received response header with size: %" PRIu32,
-                  tcti_common->header.size);
-    }
-
     if (response_buffer == NULL) {
-        *response_size = tcti_common->header.size;
-        LOG_DEBUG ("response_buffer is null, returning size: %zd", *response_size);
+        LOG_DEBUG ("Caller queried for size but linux kernel doesn't allow this. "
+                   "Returning 4k which is the max size for a response buffer.");
+        *response_size = 4096;
         return TSS2_RC_SUCCESS;
     }
-    if (*response_size < tcti_common->header.size) {
-        LOG_WARNING ("Size of user supplied response buffer %zd is less than "
-                     "the size of the response buffer: %" PRIu32,
-                     *response_size, tcti_common->header.size);
-        return TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
+    if (*response_size < 4096) {
+        LOG_INFO ("Caller provided buffer that *may* not be large enough to "
+                  "hold the response buffer.");
     }
-    *response_size = tcti_common->header.size;
-
-    rc = header_marshal (&tcti_common->header, response_buffer);
-    if (rc != TSS2_RC_SUCCESS) {
-        return rc;
-    }
-    /* Read the rest of the response, minus the header that we already jave. */
-    size = read_all (tcti_dev->fd,
-                     &response_buffer [TPM_HEADER_SIZE],
-                     tcti_common->header.size - TPM_HEADER_SIZE);
+    /*
+     * The kernel driver will only return a response buffer in a single read
+     * operation. If we try to read again before sending another command
+     * the kernel will close the file descriptor and we'll get an EOF.
+     */
+    size = TEMP_RETRY (read (tcti_dev->fd, response_buffer, *response_size));
     if (size < 0) {
-        LOG_WARNING ("Failed to read response body.");
-        rc = TSS2_TCTI_RC_IO_ERROR;
+        LOG_ERROR ("Failed to read response from fd %d, got errno %d: %s",
+                   tcti_dev->fd, errno, strerror (errno));
+        return TSS2_TCTI_RC_IO_ERROR;
+    }
+    if (size == 0) {
+        LOG_WARNING ("Got EOF instead of response.");
+        rc = TSS2_TCTI_RC_NO_CONNECTION;
         goto out;
     }
-
-    LOGBLOB_DEBUG(response_buffer, tcti_common->header.size, "Response Received");
-
+    LOGBLOB_DEBUG(response_buffer, size, "Response Received");
+    if (size < (ssize_t)TPM_HEADER_SIZE) {
+        LOG_ERROR ("Received %zu bytes, not enough to hold a TPM2 response "
+                   "header.", size);
+        rc = TSS2_TCTI_RC_GENERAL_FAILURE;
+        goto out;
+    }
+    rc = header_unmarshal (response_buffer, &tcti_common->header);
+    if (rc != TSS2_RC_SUCCESS) {
+        goto out;
+    }
+    if ((size_t)size != tcti_common->header.size) {
+        LOG_WARNING ("TPM2 header size disagrees with number of bytes read "
+                     "from fd %d. Header says %u but we read %zu bytes.",
+                     tcti_dev->fd, tcti_common->header.size, *response_size);
+    }
+    if (*response_size < tcti_common->header.size) {
+        LOG_WARNING ("TPM2 response header size is larger than the provided "
+                     "buffer: future use of this TCTI will likely fail.");
+        rc = TSS2_TCTI_RC_GENERAL_FAILURE;
+    }
+    *response_size = size;
     /*
      * Executing code beyond this point transitions the state machine to
      * TRANSMIT. Another call to this function will not be possible until
      * another command is sent to the TPM.
      */
 out:
-    tcti_common->header.size = 0;
     tcti_common->state = TCTI_STATE_TRANSMIT;
 
     return rc;
