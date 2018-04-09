@@ -199,7 +199,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     goto_error_if_not_failed(r, "Error esys create did not fail with NULL parameters",
                              error);
 
-    r = Esys_Create_finish(NULL,
+    r = Esys_Create_Finish(NULL,
                            &outPrivate2,
                            &outPublic2,
                            &creationData2, &creationHash2, &creationTicket2);

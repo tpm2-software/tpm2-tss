@@ -125,13 +125,13 @@ Esys_TR_FromTPMPublic_Async(ESYS_CONTEXT * esys_context,
 
     if (tpm_handle >= TPM2_NV_INDEX_FIRST && tpm_handle <= TPM2_NV_INDEX_LAST) {
         esys_context->in.NV_ReadPublic.nvIndex = esys_handle;
-        r = Esys_NV_ReadPublic_async(esys_context, esys_handle, shandle1,
+        r = Esys_NV_ReadPublic_Async(esys_context, esys_handle, shandle1,
                                      shandle2, shandle3);
         goto_if_error(r, "Error NV_ReadPublic", error_cleanup);
 
     } else {
         esys_context->in.ReadPublic.objectHandle = esys_handle;
-        r = Esys_ReadPublic_async(esys_context, esys_handle, shandle1, shandle2,
+        r = Esys_ReadPublic_Async(esys_context, esys_handle, shandle1, shandle2,
                                   shandle3);
         goto_if_error(r, "Error ReadPublic", error_cleanup);
     }
@@ -160,7 +160,7 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * esys_handle)
         && objectHandleNode->rsrc.handle <= TPM2_NV_INDEX_LAST) {
         TPM2B_NV_PUBLIC *nvPublic;
         TPM2B_NAME *nvName;
-        r = Esys_NV_ReadPublic_finish(esys_context, &nvPublic, &nvName);
+        r = Esys_NV_ReadPublic_Finish(esys_context, &nvPublic, &nvName);
         goto_if_error(r, "Error NV_ReadPublic", error_cleanup);
 
         objectHandleNode->rsrc.rsrcType = IESYSC_NV_RSRC;
@@ -172,7 +172,7 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * esys_handle)
         TPM2B_PUBLIC *public;
         TPM2B_NAME *name = NULL;
         TPM2B_NAME *qualifiedName = NULL;
-        r = Esys_ReadPublic_finish(esys_context, &public, &name,
+        r = Esys_ReadPublic_Finish(esys_context, &public, &name,
                                    &qualifiedName);
         goto_if_error(r, "Error ReadPublic", error_cleanup);
 

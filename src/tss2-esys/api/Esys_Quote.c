@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     ESYS_TR signHandle,
@@ -106,7 +106,7 @@ Esys_Quote(
 {
     TSS2_RC r;
 
-    r = Esys_Quote_async(esysContext,
+    r = Esys_Quote_Async(esysContext,
                 signHandle,
                 shandle1,
                 shandle2,
@@ -116,7 +116,7 @@ Esys_Quote(
                 PCRselect);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -127,7 +127,7 @@ Esys_Quote(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_Quote_finish(esysContext,
+        r = Esys_Quote_Finish(esysContext,
                 quoted,
                 signature);
         /* This is just debug information about the reattempt to finish the
@@ -149,7 +149,7 @@ Esys_Quote(
  * This function invokes the TPM2_Quote command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_Quote_finish.
+ * In order to retrieve the TPM's response call Esys_Quote_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] signHandle Input handle of type ESYS_TR for
@@ -165,7 +165,7 @@ Esys_Quote(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_Quote_async(
+Esys_Quote_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR signHandle,
     ESYS_TR shandle1,
@@ -239,7 +239,7 @@ Esys_Quote_async(
 /** Asynchronous finish function for TPM2_Quote
  *
  * This function returns the results of a TPM2_Quote command
- * invoked via Esys_Quote_finish. All non-simple output parameters
+ * invoked via Esys_Quote_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -253,7 +253,7 @@ Esys_Quote_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_Quote_finish(
+Esys_Quote_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ATTEST **quoted,
     TPMT_SIGNATURE **signature)
@@ -306,7 +306,7 @@ Esys_Quote_finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_Quote_async(esysContext,
+        r = Esys_Quote_Async(esysContext,
                 esysContext->in.Quote.signHandle,
                 esysContext->session_type[0],
                 esysContext->session_type[1],

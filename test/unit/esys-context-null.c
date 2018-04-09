@@ -53,10 +53,10 @@ check_Startup(void **state)
     r = Esys_Startup(NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Startup_async(NULL, 0);
+    r = Esys_Startup_Async(NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Startup_finish(NULL);
+    r = Esys_Startup_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -68,10 +68,10 @@ check_Shutdown(void **state)
     r = Esys_Shutdown(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Shutdown_async(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
+    r = Esys_Shutdown_Async(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Shutdown_finish(NULL);
+    r = Esys_Shutdown_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -83,10 +83,10 @@ check_SelfTest(void **state)
     r = Esys_SelfTest(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_SelfTest_async(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
+    r = Esys_SelfTest_Async(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_SelfTest_finish(NULL);
+    r = Esys_SelfTest_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -100,12 +100,12 @@ check_IncrementalSelfTest(void **state)
                                  ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_IncrementalSelfTest_async(NULL,
+    r = Esys_IncrementalSelfTest_Async(NULL,
                                        ESYS_TR_NONE,
                                        ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_IncrementalSelfTest_finish(NULL, NULL);
+    r = Esys_IncrementalSelfTest_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -119,11 +119,11 @@ check_GetTestResult(void **state)
                            ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_GetTestResult_async(NULL,
+    r = Esys_GetTestResult_Async(NULL,
                                  ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_GetTestResult_finish(NULL, NULL, NULL);
+    r = Esys_GetTestResult_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -140,7 +140,7 @@ check_StartAuthSession(void **state)
                               ESYS_TR_NONE, NULL, 0, NULL, 0, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_StartAuthSession_async(NULL,
+    r = Esys_StartAuthSession_Async(NULL,
                                     0,
                                     0,
                                     ESYS_TR_NONE,
@@ -148,7 +148,7 @@ check_StartAuthSession(void **state)
                                     ESYS_TR_NONE, NULL, 0, NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_StartAuthSession_finish(NULL, NULL, NULL);
+    r = Esys_StartAuthSession_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -160,11 +160,11 @@ check_PolicyRestart(void **state)
     r = Esys_PolicyRestart(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyRestart_async(NULL,
+    r = Esys_PolicyRestart_Async(NULL,
                                  0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyRestart_finish(NULL);
+    r = Esys_PolicyRestart_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -181,13 +181,13 @@ check_Create(void **state)
                     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Create_async(NULL,
+    r = Esys_Create_Async(NULL,
                           0,
                           ESYS_TR_PASSWORD,
                           ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Create_finish(NULL, NULL, NULL, NULL, NULL, NULL);
+    r = Esys_Create_Finish(NULL, NULL, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -202,13 +202,13 @@ check_Load(void **state)
                   ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Load_async(NULL,
+    r = Esys_Load_Async(NULL,
                         0,
                         ESYS_TR_PASSWORD,
                         ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Load_finish(NULL, NULL);
+    r = Esys_Load_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -222,12 +222,12 @@ check_LoadExternal(void **state)
                           ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_LoadExternal_async(NULL,
+    r = Esys_LoadExternal_Async(NULL,
                                 ESYS_TR_NONE,
                                 ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_LoadExternal_finish(NULL, NULL);
+    r = Esys_LoadExternal_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -242,11 +242,11 @@ check_ReadPublic(void **state)
                         ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ReadPublic_async(NULL,
+    r = Esys_ReadPublic_Async(NULL,
                               0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ReadPublic_finish(NULL, NULL, NULL, NULL);
+    r = Esys_ReadPublic_Finish(NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -263,7 +263,7 @@ check_ActivateCredential(void **state)
                                 ESYS_TR_NONE, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ActivateCredential_async(NULL,
+    r = Esys_ActivateCredential_Async(NULL,
                                       0,
                                       0,
                                       ESYS_TR_PASSWORD,
@@ -271,7 +271,7 @@ check_ActivateCredential(void **state)
                                       ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ActivateCredential_finish(NULL, NULL);
+    r = Esys_ActivateCredential_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -286,13 +286,13 @@ check_MakeCredential(void **state)
                             ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_MakeCredential_async(NULL,
+    r = Esys_MakeCredential_Async(NULL,
                                   0,
                                   ESYS_TR_NONE,
                                   ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_MakeCredential_finish(NULL, NULL, NULL);
+    r = Esys_MakeCredential_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -305,11 +305,11 @@ check_Unseal(void **state)
                     0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Unseal_async(NULL,
+    r = Esys_Unseal_Async(NULL,
                           0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Unseal_finish(NULL, NULL);
+    r = Esys_Unseal_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -325,14 +325,14 @@ check_ObjectChangeAuth(void **state)
                               ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ObjectChangeAuth_async(NULL,
+    r = Esys_ObjectChangeAuth_Async(NULL,
                                     0,
                                     0,
                                     ESYS_TR_PASSWORD,
                                     ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ObjectChangeAuth_finish(NULL, NULL);
+    r = Esys_ObjectChangeAuth_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -348,13 +348,13 @@ check_CreateLoaded(void **state)
                           ESYS_TR_NONE, NULL, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_CreateLoaded_async(NULL,
+    r = Esys_CreateLoaded_Async(NULL,
                                 0,
                                 ESYS_TR_PASSWORD,
                                 ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_CreateLoaded_finish(NULL, NULL, NULL, NULL);
+    r = Esys_CreateLoaded_Finish(NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -371,14 +371,14 @@ check_Duplicate(void **state)
                        ESYS_TR_NONE, NULL, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Duplicate_async(NULL,
+    r = Esys_Duplicate_Async(NULL,
                              0,
                              0,
                              ESYS_TR_PASSWORD,
                              ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Duplicate_finish(NULL, NULL, NULL, NULL);
+    r = Esys_Duplicate_Finish(NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -394,14 +394,14 @@ check_Rewrap(void **state)
                     ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Rewrap_async(NULL,
+    r = Esys_Rewrap_Async(NULL,
                           0,
                           0,
                           ESYS_TR_PASSWORD,
                           ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Rewrap_finish(NULL, NULL, NULL);
+    r = Esys_Rewrap_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -417,14 +417,14 @@ check_Import(void **state)
                     ESYS_TR_NONE, NULL, NULL, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Import_async(NULL,
+    r = Esys_Import_Async(NULL,
                           0,
                           ESYS_TR_PASSWORD,
                           ESYS_TR_NONE,
                           ESYS_TR_NONE, NULL, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Import_finish(NULL, NULL);
+    r = Esys_Import_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -439,13 +439,13 @@ check_RSA_Encrypt(void **state)
                          ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_RSA_Encrypt_async(NULL,
+    r = Esys_RSA_Encrypt_Async(NULL,
                                0,
                                ESYS_TR_NONE,
                                ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_RSA_Encrypt_finish(NULL, NULL);
+    r = Esys_RSA_Encrypt_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -460,13 +460,13 @@ check_RSA_Decrypt(void **state)
                          ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_RSA_Decrypt_async(NULL,
+    r = Esys_RSA_Decrypt_Async(NULL,
                                0,
                                ESYS_TR_PASSWORD,
                                ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_RSA_Decrypt_finish(NULL, NULL);
+    r = Esys_RSA_Decrypt_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -480,11 +480,11 @@ check_ECDH_KeyGen(void **state)
                          ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ECDH_KeyGen_async(NULL,
+    r = Esys_ECDH_KeyGen_Async(NULL,
                                0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ECDH_KeyGen_finish(NULL, NULL, NULL);
+    r = Esys_ECDH_KeyGen_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -499,13 +499,13 @@ check_ECDH_ZGen(void **state)
                        ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ECDH_ZGen_async(NULL,
+    r = Esys_ECDH_ZGen_Async(NULL,
                              0,
                              ESYS_TR_PASSWORD,
                              ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ECDH_ZGen_finish(NULL, NULL);
+    r = Esys_ECDH_ZGen_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -518,11 +518,11 @@ check_ECC_Parameters(void **state)
                             ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ECC_Parameters_async(NULL,
+    r = Esys_ECC_Parameters_Async(NULL,
                                   ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ECC_Parameters_finish(NULL, NULL);
+    r = Esys_ECC_Parameters_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -538,13 +538,13 @@ check_ZGen_2Phase(void **state)
                          ESYS_TR_NONE, NULL, NULL, 0, 0, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ZGen_2Phase_async(NULL,
+    r = Esys_ZGen_2Phase_Async(NULL,
                                0,
                                ESYS_TR_PASSWORD,
                                ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, 0, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ZGen_2Phase_finish(NULL, NULL, NULL);
+    r = Esys_ZGen_2Phase_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -560,13 +560,13 @@ check_EncryptDecrypt(void **state)
                             ESYS_TR_NONE, 0, 0, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_EncryptDecrypt_async(NULL,
+    r = Esys_EncryptDecrypt_Async(NULL,
                                   0,
                                   ESYS_TR_PASSWORD,
                                   ESYS_TR_NONE, ESYS_TR_NONE, 0, 0, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_EncryptDecrypt_finish(NULL, NULL, NULL);
+    r = Esys_EncryptDecrypt_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -582,14 +582,14 @@ check_EncryptDecrypt2(void **state)
                              ESYS_TR_NONE, NULL, 0, 0, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_EncryptDecrypt2_async(NULL,
+    r = Esys_EncryptDecrypt2_Async(NULL,
                                    0,
                                    ESYS_TR_PASSWORD,
                                    ESYS_TR_NONE,
                                    ESYS_TR_NONE, NULL, 0, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_EncryptDecrypt2_finish(NULL, NULL, NULL);
+    r = Esys_EncryptDecrypt2_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -603,11 +603,11 @@ check_Hash(void **state)
                   ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0, 0, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Hash_async(NULL,
+    r = Esys_Hash_Async(NULL,
                         ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Hash_finish(NULL, NULL, NULL);
+    r = Esys_Hash_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -621,12 +621,12 @@ check_HMAC(void **state)
                   ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_HMAC_async(NULL,
+    r = Esys_HMAC_Async(NULL,
                         0,
                         ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_HMAC_finish(NULL, NULL);
+    r = Esys_HMAC_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -638,10 +638,10 @@ check_GetRandom(void **state)
     r = Esys_GetRandom(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_GetRandom_async(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
+    r = Esys_GetRandom_Async(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_GetRandom_finish(NULL, NULL);
+    r = Esys_GetRandom_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -653,11 +653,11 @@ check_StirRandom(void **state)
     r = Esys_StirRandom(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_StirRandom_async(NULL,
+    r = Esys_StirRandom_Async(NULL,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_StirRandom_finish(NULL);
+    r = Esys_StirRandom_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -672,13 +672,13 @@ check_HMAC_Start(void **state)
                         ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_HMAC_Start_async(NULL,
+    r = Esys_HMAC_Start_Async(NULL,
                               0,
                               ESYS_TR_PASSWORD,
                               ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_HMAC_Start_finish(NULL, NULL);
+    r = Esys_HMAC_Start_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -692,12 +692,12 @@ check_HashSequenceStart(void **state)
                                ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_HashSequenceStart_async(NULL,
+    r = Esys_HashSequenceStart_Async(NULL,
                                      ESYS_TR_NONE,
                                      ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_HashSequenceStart_finish(NULL, NULL);
+    r = Esys_HashSequenceStart_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -711,13 +711,13 @@ check_SequenceUpdate(void **state)
                             ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_SequenceUpdate_async(NULL,
+    r = Esys_SequenceUpdate_Async(NULL,
                                   0,
                                   ESYS_TR_PASSWORD,
                                   ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_SequenceUpdate_finish(NULL);
+    r = Esys_SequenceUpdate_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -732,13 +732,13 @@ check_SequenceComplete(void **state)
                               ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_SequenceComplete_async(NULL,
+    r = Esys_SequenceComplete_Async(NULL,
                                     0,
                                     ESYS_TR_PASSWORD,
                                     ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_SequenceComplete_finish(NULL, NULL, NULL);
+    r = Esys_SequenceComplete_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -754,14 +754,14 @@ check_EventSequenceComplete(void **state)
                                    ESYS_TR_PASSWORD, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_EventSequenceComplete_async(NULL,
+    r = Esys_EventSequenceComplete_Async(NULL,
                                          0,
                                          0,
                                          ESYS_TR_PASSWORD,
                                          ESYS_TR_PASSWORD, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_EventSequenceComplete_finish(NULL, NULL);
+    r = Esys_EventSequenceComplete_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -777,14 +777,14 @@ check_Certify(void **state)
                      ESYS_TR_PASSWORD, ESYS_TR_NONE, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Certify_async(NULL,
+    r = Esys_Certify_Async(NULL,
                            0,
                            0,
                            ESYS_TR_PASSWORD,
                            ESYS_TR_PASSWORD, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Certify_finish(NULL, NULL, NULL);
+    r = Esys_Certify_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -801,7 +801,7 @@ check_CertifyCreation(void **state)
                              ESYS_TR_NONE, NULL, NULL, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_CertifyCreation_async(NULL,
+    r = Esys_CertifyCreation_Async(NULL,
                                    0,
                                    0,
                                    ESYS_TR_PASSWORD,
@@ -809,7 +809,7 @@ check_CertifyCreation(void **state)
                                    ESYS_TR_NONE, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_CertifyCreation_finish(NULL, NULL, NULL);
+    r = Esys_CertifyCreation_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -824,13 +824,13 @@ check_Quote(void **state)
                    ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Quote_async(NULL,
+    r = Esys_Quote_Async(NULL,
                          0,
                          ESYS_TR_PASSWORD,
                          ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Quote_finish(NULL, NULL, NULL);
+    r = Esys_Quote_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -848,7 +848,7 @@ check_GetSessionAuditDigest(void **state)
                                    ESYS_TR_NONE, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_GetSessionAuditDigest_async(NULL,
+    r = Esys_GetSessionAuditDigest_Async(NULL,
                                          0,
                                          0,
                                          0,
@@ -857,7 +857,7 @@ check_GetSessionAuditDigest(void **state)
                                          ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_GetSessionAuditDigest_finish(NULL, NULL, NULL);
+    r = Esys_GetSessionAuditDigest_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -874,7 +874,7 @@ check_GetCommandAuditDigest(void **state)
                                    ESYS_TR_NONE, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_GetCommandAuditDigest_async(NULL,
+    r = Esys_GetCommandAuditDigest_Async(NULL,
                                          0,
                                          0,
                                          ESYS_TR_PASSWORD,
@@ -882,7 +882,7 @@ check_GetCommandAuditDigest(void **state)
                                          ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_GetCommandAuditDigest_finish(NULL, NULL, NULL);
+    r = Esys_GetCommandAuditDigest_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -898,14 +898,14 @@ check_GetTime(void **state)
                      ESYS_TR_PASSWORD, ESYS_TR_NONE, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_GetTime_async(NULL,
+    r = Esys_GetTime_Async(NULL,
                            0,
                            0,
                            ESYS_TR_PASSWORD,
                            ESYS_TR_PASSWORD, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_GetTime_finish(NULL, NULL, NULL);
+    r = Esys_GetTime_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -921,13 +921,13 @@ check_Commit(void **state)
                     ESYS_TR_NONE, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Commit_async(NULL,
+    r = Esys_Commit_Async(NULL,
                           0,
                           ESYS_TR_PASSWORD,
                           ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Commit_finish(NULL, NULL, NULL, NULL, NULL);
+    r = Esys_Commit_Finish(NULL, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -941,11 +941,11 @@ check_EC_Ephemeral(void **state)
                           ESYS_TR_NONE, ESYS_TR_NONE, 0, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_EC_Ephemeral_async(NULL,
+    r = Esys_EC_Ephemeral_Async(NULL,
                                 ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_EC_Ephemeral_finish(NULL, NULL, NULL);
+    r = Esys_EC_Ephemeral_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -960,13 +960,13 @@ check_VerifySignature(void **state)
                              ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_VerifySignature_async(NULL,
+    r = Esys_VerifySignature_Async(NULL,
                                    0,
                                    ESYS_TR_NONE,
                                    ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_VerifySignature_finish(NULL, NULL);
+    r = Esys_VerifySignature_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -981,13 +981,13 @@ check_Sign(void **state)
                   ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Sign_async(NULL,
+    r = Esys_Sign_Async(NULL,
                         0,
                         ESYS_TR_PASSWORD,
                         ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Sign_finish(NULL, NULL);
+    r = Esys_Sign_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1003,14 +1003,14 @@ check_SetCommandCodeAuditStatus(void **state)
                                        ESYS_TR_NONE, 0, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_SetCommandCodeAuditStatus_async(NULL,
+    r = Esys_SetCommandCodeAuditStatus_Async(NULL,
                                              0,
                                              ESYS_TR_PASSWORD,
                                              ESYS_TR_NONE,
                                              ESYS_TR_NONE, 0, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_SetCommandCodeAuditStatus_finish(NULL);
+    r = Esys_SetCommandCodeAuditStatus_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1023,13 +1023,13 @@ check_PCR_Extend(void **state)
                         0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PCR_Extend_async(NULL,
+    r = Esys_PCR_Extend_Async(NULL,
                               0,
                               ESYS_TR_PASSWORD,
                               ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PCR_Extend_finish(NULL);
+    r = Esys_PCR_Extend_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1044,13 +1044,13 @@ check_PCR_Event(void **state)
                        ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PCR_Event_async(NULL,
+    r = Esys_PCR_Event_Async(NULL,
                              0,
                              ESYS_TR_PASSWORD,
                              ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PCR_Event_finish(NULL, NULL);
+    r = Esys_PCR_Event_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1064,11 +1064,11 @@ check_PCR_Read(void **state)
                       ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PCR_Read_async(NULL,
+    r = Esys_PCR_Read_Async(NULL,
                             ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PCR_Read_finish(NULL, NULL, NULL, NULL);
+    r = Esys_PCR_Read_Finish(NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1084,13 +1084,13 @@ check_PCR_Allocate(void **state)
                           ESYS_TR_NONE, NULL, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PCR_Allocate_async(NULL,
+    r = Esys_PCR_Allocate_Async(NULL,
                                 0,
                                 ESYS_TR_PASSWORD,
                                 ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PCR_Allocate_finish(NULL, NULL, NULL, NULL, NULL);
+    r = Esys_PCR_Allocate_Finish(NULL, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1105,13 +1105,13 @@ check_PCR_SetAuthPolicy(void **state)
                                ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PCR_SetAuthPolicy_async(NULL,
+    r = Esys_PCR_SetAuthPolicy_Async(NULL,
                                      0,
                                      ESYS_TR_PASSWORD,
                                      ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PCR_SetAuthPolicy_finish(NULL);
+    r = Esys_PCR_SetAuthPolicy_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1126,13 +1126,13 @@ check_PCR_SetAuthValue(void **state)
                               ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PCR_SetAuthValue_async(NULL,
+    r = Esys_PCR_SetAuthValue_Async(NULL,
                                     0,
                                     ESYS_TR_PASSWORD,
                                     ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PCR_SetAuthValue_finish(NULL);
+    r = Esys_PCR_SetAuthValue_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1144,11 +1144,11 @@ check_PCR_Reset(void **state)
     r = Esys_PCR_Reset(NULL, 0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PCR_Reset_async(NULL,
+    r = Esys_PCR_Reset_Async(NULL,
                              0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PCR_Reset_finish(NULL);
+    r = Esys_PCR_Reset_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1165,7 +1165,7 @@ check_PolicySigned(void **state)
                           ESYS_TR_NONE, NULL, NULL, NULL, 0, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicySigned_async(NULL,
+    r = Esys_PolicySigned_Async(NULL,
                                 0,
                                 0,
                                 ESYS_TR_NONE,
@@ -1173,7 +1173,7 @@ check_PolicySigned(void **state)
                                 ESYS_TR_NONE, NULL, NULL, NULL, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicySigned_finish(NULL, NULL, NULL);
+    r = Esys_PolicySigned_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1190,7 +1190,7 @@ check_PolicySecret(void **state)
                           ESYS_TR_NONE, NULL, NULL, NULL, 0, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicySecret_async(NULL,
+    r = Esys_PolicySecret_Async(NULL,
                                 0,
                                 0,
                                 ESYS_TR_PASSWORD,
@@ -1198,7 +1198,7 @@ check_PolicySecret(void **state)
                                 ESYS_TR_NONE, NULL, NULL, NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicySecret_finish(NULL, NULL, NULL);
+    r = Esys_PolicySecret_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1214,14 +1214,14 @@ check_PolicyTicket(void **state)
                           ESYS_TR_NONE, NULL, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyTicket_async(NULL,
+    r = Esys_PolicyTicket_Async(NULL,
                                 0,
                                 ESYS_TR_NONE,
                                 ESYS_TR_NONE,
                                 ESYS_TR_NONE, NULL, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyTicket_finish(NULL);
+    r = Esys_PolicyTicket_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1233,11 +1233,11 @@ check_PolicyOR(void **state)
     r = Esys_PolicyOR(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyOR_async(NULL,
+    r = Esys_PolicyOR_Async(NULL,
                             0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyOR_finish(NULL);
+    r = Esys_PolicyOR_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1250,13 +1250,13 @@ check_PolicyPCR(void **state)
                        0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyPCR_async(NULL,
+    r = Esys_PolicyPCR_Async(NULL,
                              0,
                              ESYS_TR_NONE,
                              ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyPCR_finish(NULL);
+    r = Esys_PolicyPCR_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1269,12 +1269,12 @@ check_PolicyLocality(void **state)
                             ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyLocality_async(NULL,
+    r = Esys_PolicyLocality_Async(NULL,
                                   ESYS_TR_NONE,
                                   ESYS_TR_NONE, ESYS_TR_NONE, 0, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyLocality_finish(NULL);
+    r = Esys_PolicyLocality_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1290,7 +1290,7 @@ check_PolicyNV(void **state)
                       ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyNV_async(NULL,
+    r = Esys_PolicyNV_Async(NULL,
                             0,
                             0,
                             0,
@@ -1298,7 +1298,7 @@ check_PolicyNV(void **state)
                             ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyNV_finish(NULL);
+    r = Esys_PolicyNV_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1313,13 +1313,13 @@ check_PolicyCounterTimer(void **state)
                                 ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyCounterTimer_async(NULL,
+    r = Esys_PolicyCounterTimer_Async(NULL,
                                       0,
                                       ESYS_TR_NONE,
                                       ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyCounterTimer_finish(NULL);
+    r = Esys_PolicyCounterTimer_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1332,13 +1332,13 @@ check_PolicyCommandCode(void **state)
                                0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyCommandCode_async(NULL,
+    r = Esys_PolicyCommandCode_Async(NULL,
                                      0,
                                      ESYS_TR_NONE,
                                      ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyCommandCode_finish(NULL);
+    r = Esys_PolicyCommandCode_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1352,13 +1352,13 @@ check_PolicyPhysicalPresence(void **state)
                                     ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyPhysicalPresence_async(NULL,
+    r = Esys_PolicyPhysicalPresence_Async(NULL,
                                           0,
                                           ESYS_TR_NONE,
                                           ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyPhysicalPresence_finish(NULL);
+    r = Esys_PolicyPhysicalPresence_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1371,12 +1371,12 @@ check_PolicyCpHash(void **state)
                           ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyCpHash_async(NULL,
+    r = Esys_PolicyCpHash_Async(NULL,
                                 ESYS_TR_NONE,
                                 ESYS_TR_NONE, ESYS_TR_NONE, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyCpHash_finish(NULL);
+    r = Esys_PolicyCpHash_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1389,12 +1389,12 @@ check_PolicyNameHash(void **state)
                             ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyNameHash_async(NULL,
+    r = Esys_PolicyNameHash_Async(NULL,
                                   ESYS_TR_NONE,
                                   ESYS_TR_NONE, ESYS_TR_NONE, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyNameHash_finish(NULL);
+    r = Esys_PolicyNameHash_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1409,13 +1409,13 @@ check_PolicyDuplicationSelect(void **state)
                                      ESYS_TR_NONE, 0, NULL, NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyDuplicationSelect_async(NULL,
+    r = Esys_PolicyDuplicationSelect_Async(NULL,
                                            ESYS_TR_NONE,
                                            ESYS_TR_NONE,
                                            ESYS_TR_NONE, 0, NULL, NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyDuplicationSelect_finish(NULL);
+    r = Esys_PolicyDuplicationSelect_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1431,14 +1431,14 @@ check_PolicyAuthorize(void **state)
                              ESYS_TR_NONE, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyAuthorize_async(NULL,
+    r = Esys_PolicyAuthorize_Async(NULL,
                                    0,
                                    ESYS_TR_NONE,
                                    ESYS_TR_NONE,
                                    ESYS_TR_NONE, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyAuthorize_finish(NULL);
+    r = Esys_PolicyAuthorize_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1450,11 +1450,11 @@ check_PolicyAuthValue(void **state)
     r = Esys_PolicyAuthValue(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyAuthValue_async(NULL,
+    r = Esys_PolicyAuthValue_Async(NULL,
                                    0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyAuthValue_finish(NULL);
+    r = Esys_PolicyAuthValue_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1466,11 +1466,11 @@ check_PolicyPassword(void **state)
     r = Esys_PolicyPassword(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyPassword_async(NULL,
+    r = Esys_PolicyPassword_Async(NULL,
                                   0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyPassword_finish(NULL);
+    r = Esys_PolicyPassword_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1483,11 +1483,11 @@ check_PolicyGetDigest(void **state)
                              0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyGetDigest_async(NULL,
+    r = Esys_PolicyGetDigest_Async(NULL,
                                    0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyGetDigest_finish(NULL, NULL);
+    r = Esys_PolicyGetDigest_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1500,12 +1500,12 @@ check_PolicyNvWritten(void **state)
                              0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyNvWritten_async(NULL,
+    r = Esys_PolicyNvWritten_Async(NULL,
                                    0,
                                    ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyNvWritten_finish(NULL);
+    r = Esys_PolicyNvWritten_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1518,12 +1518,12 @@ check_PolicyTemplate(void **state)
                             ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyTemplate_async(NULL,
+    r = Esys_PolicyTemplate_Async(NULL,
                                   ESYS_TR_NONE,
                                   ESYS_TR_NONE, ESYS_TR_NONE, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyTemplate_finish(NULL);
+    r = Esys_PolicyTemplate_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1538,7 +1538,7 @@ check_PolicyAuthorizeNV(void **state)
                                0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyAuthorizeNV_async(NULL,
+    r = Esys_PolicyAuthorizeNV_Async(NULL,
                                      0,
                                      0,
                                      0,
@@ -1546,7 +1546,7 @@ check_PolicyAuthorizeNV(void **state)
                                      ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PolicyAuthorizeNV_finish(NULL);
+    r = Esys_PolicyAuthorizeNV_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1564,14 +1564,14 @@ check_CreatePrimary(void **state)
                            NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_CreatePrimary_async(NULL,
+    r = Esys_CreatePrimary_Async(NULL,
                                  0,
                                  ESYS_TR_PASSWORD,
                                  ESYS_TR_NONE,
                                  ESYS_TR_NONE, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_CreatePrimary_finish(NULL, NULL, NULL, NULL, NULL, NULL);
+    r = Esys_CreatePrimary_Finish(NULL, NULL, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1586,13 +1586,13 @@ check_HierarchyControl(void **state)
                               ESYS_TR_NONE, ESYS_TR_NONE, 0, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_HierarchyControl_async(NULL,
+    r = Esys_HierarchyControl_Async(NULL,
                                     0,
                                     ESYS_TR_PASSWORD,
                                     ESYS_TR_NONE, ESYS_TR_NONE, 0, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_HierarchyControl_finish(NULL);
+    r = Esys_HierarchyControl_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1607,13 +1607,13 @@ check_SetPrimaryPolicy(void **state)
                               ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_SetPrimaryPolicy_async(NULL,
+    r = Esys_SetPrimaryPolicy_Async(NULL,
                                     0,
                                     ESYS_TR_PASSWORD,
                                     ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_SetPrimaryPolicy_finish(NULL);
+    r = Esys_SetPrimaryPolicy_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1625,11 +1625,11 @@ check_ChangePPS(void **state)
     r = Esys_ChangePPS(NULL, 0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ChangePPS_async(NULL,
+    r = Esys_ChangePPS_Async(NULL,
                              0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ChangePPS_finish(NULL);
+    r = Esys_ChangePPS_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1641,11 +1641,11 @@ check_ChangeEPS(void **state)
     r = Esys_ChangeEPS(NULL, 0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ChangeEPS_async(NULL,
+    r = Esys_ChangeEPS_Async(NULL,
                              0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ChangeEPS_finish(NULL);
+    r = Esys_ChangeEPS_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1657,10 +1657,10 @@ check_Clear(void **state)
     r = Esys_Clear(NULL, 0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Clear_async(NULL, 0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
+    r = Esys_Clear_Async(NULL, 0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Clear_finish(NULL);
+    r = Esys_Clear_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1673,13 +1673,13 @@ check_ClearControl(void **state)
                           0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ClearControl_async(NULL,
+    r = Esys_ClearControl_Async(NULL,
                                 0,
                                 ESYS_TR_PASSWORD,
                                 ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ClearControl_finish(NULL);
+    r = Esys_ClearControl_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1694,13 +1694,13 @@ check_HierarchyChangeAuth(void **state)
                                  ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_HierarchyChangeAuth_async(NULL,
+    r = Esys_HierarchyChangeAuth_Async(NULL,
                                        0,
                                        ESYS_TR_PASSWORD,
                                        ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_HierarchyChangeAuth_finish(NULL);
+    r = Esys_HierarchyChangeAuth_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1715,13 +1715,13 @@ check_DictionaryAttackLockReset(void **state)
                                        ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_DictionaryAttackLockReset_async(NULL,
+    r = Esys_DictionaryAttackLockReset_Async(NULL,
                                              0,
                                              ESYS_TR_PASSWORD,
                                              ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_DictionaryAttackLockReset_finish(NULL);
+    r = Esys_DictionaryAttackLockReset_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1736,14 +1736,14 @@ check_DictionaryAttackParameters(void **state)
                                         ESYS_TR_NONE, ESYS_TR_NONE, 0, 0, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_DictionaryAttackParameters_async(NULL,
+    r = Esys_DictionaryAttackParameters_Async(NULL,
                                               0,
                                               ESYS_TR_PASSWORD,
                                               ESYS_TR_NONE,
                                               ESYS_TR_NONE, 0, 0, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_DictionaryAttackParameters_finish(NULL);
+    r = Esys_DictionaryAttackParameters_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1758,13 +1758,13 @@ check_PP_Commands(void **state)
                          ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PP_Commands_async(NULL,
+    r = Esys_PP_Commands_Async(NULL,
                                0,
                                ESYS_TR_PASSWORD,
                                ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_PP_Commands_finish(NULL);
+    r = Esys_PP_Commands_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1778,13 +1778,13 @@ check_SetAlgorithmSet(void **state)
                              ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_SetAlgorithmSet_async(NULL,
+    r = Esys_SetAlgorithmSet_Async(NULL,
                                    0,
                                    ESYS_TR_PASSWORD,
                                    ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_SetAlgorithmSet_finish(NULL);
+    r = Esys_SetAlgorithmSet_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1800,14 +1800,14 @@ check_FieldUpgradeStart(void **state)
                                ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_FieldUpgradeStart_async(NULL,
+    r = Esys_FieldUpgradeStart_Async(NULL,
                                      0,
                                      0,
                                      ESYS_TR_PASSWORD,
                                      ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_FieldUpgradeStart_finish(NULL);
+    r = Esys_FieldUpgradeStart_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1821,12 +1821,12 @@ check_FieldUpgradeData(void **state)
                               ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_FieldUpgradeData_async(NULL,
+    r = Esys_FieldUpgradeData_Async(NULL,
                                     ESYS_TR_NONE,
                                     ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_FieldUpgradeData_finish(NULL, NULL, NULL);
+    r = Esys_FieldUpgradeData_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1839,11 +1839,11 @@ check_FirmwareRead(void **state)
                           ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_FirmwareRead_async(NULL,
+    r = Esys_FirmwareRead_Async(NULL,
                                 ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_FirmwareRead_finish(NULL, NULL);
+    r = Esys_FirmwareRead_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1855,10 +1855,10 @@ check_ContextSave(void **state)
     r = Esys_ContextSave(NULL, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ContextSave_async(NULL, 0);
+    r = Esys_ContextSave_Async(NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ContextSave_finish(NULL, NULL);
+    r = Esys_ContextSave_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1870,10 +1870,10 @@ check_ContextLoad(void **state)
     r = Esys_ContextLoad(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ContextLoad_async(NULL, NULL);
+    r = Esys_ContextLoad_Async(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ContextLoad_finish(NULL, NULL);
+    r = Esys_ContextLoad_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1885,10 +1885,10 @@ check_FlushContext(void **state)
     r = Esys_FlushContext(NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_FlushContext_async(NULL, 0);
+    r = Esys_FlushContext_Async(NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_FlushContext_finish(NULL);
+    r = Esys_FlushContext_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1904,14 +1904,14 @@ check_EvictControl(void **state)
                           ESYS_TR_NONE, ESYS_TR_NONE, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_EvictControl_async(NULL,
+    r = Esys_EvictControl_Async(NULL,
                                 0,
                                 0,
                                 ESYS_TR_PASSWORD,
                                 ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_EvictControl_finish(NULL, NULL);
+    r = Esys_EvictControl_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1923,10 +1923,10 @@ check_ReadClock(void **state)
     r = Esys_ReadClock(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ReadClock_async(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
+    r = Esys_ReadClock_Async(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ReadClock_finish(NULL, NULL);
+    r = Esys_ReadClock_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1938,11 +1938,11 @@ check_ClockSet(void **state)
     r = Esys_ClockSet(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ClockSet_async(NULL,
+    r = Esys_ClockSet_Async(NULL,
                             0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ClockSet_finish(NULL);
+    r = Esys_ClockSet_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1956,13 +1956,13 @@ check_ClockRateAdjust(void **state)
                              ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ClockRateAdjust_async(NULL,
+    r = Esys_ClockRateAdjust_Async(NULL,
                                    0,
                                    ESYS_TR_PASSWORD,
                                    ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_ClockRateAdjust_finish(NULL);
+    r = Esys_ClockRateAdjust_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1976,12 +1976,12 @@ check_GetCapability(void **state)
                            ESYS_TR_NONE, ESYS_TR_NONE, 0, 0, 0, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_GetCapability_async(NULL,
+    r = Esys_GetCapability_Async(NULL,
                                  ESYS_TR_NONE,
                                  ESYS_TR_NONE, ESYS_TR_NONE, 0, 0, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_GetCapability_finish(NULL, NULL, NULL);
+    r = Esys_GetCapability_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -1993,11 +1993,11 @@ check_TestParms(void **state)
     r = Esys_TestParms(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_TestParms_async(NULL,
+    r = Esys_TestParms_Async(NULL,
                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_TestParms_finish(NULL);
+    r = Esys_TestParms_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -2012,13 +2012,13 @@ check_NV_DefineSpace(void **state)
                             ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_DefineSpace_async(NULL,
+    r = Esys_NV_DefineSpace_Async(NULL,
                                   0,
                                   ESYS_TR_PASSWORD,
                                   ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_DefineSpace_finish(NULL, NULL);
+    r = Esys_NV_DefineSpace_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -2032,14 +2032,14 @@ check_NV_UndefineSpace(void **state)
                               0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_UndefineSpace_async(NULL,
+    r = Esys_NV_UndefineSpace_Async(NULL,
                                     0,
                                     0,
                                     ESYS_TR_PASSWORD,
                                     ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_UndefineSpace_finish(NULL);
+    r = Esys_NV_UndefineSpace_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -2055,14 +2055,14 @@ check_NV_UndefineSpaceSpecial(void **state)
                                      ESYS_TR_PASSWORD, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_UndefineSpaceSpecial_async(NULL,
+    r = Esys_NV_UndefineSpaceSpecial_Async(NULL,
                                            0,
                                            0,
                                            ESYS_TR_PASSWORD,
                                            ESYS_TR_PASSWORD, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_UndefineSpaceSpecial_finish(NULL);
+    r = Esys_NV_UndefineSpaceSpecial_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -2077,11 +2077,11 @@ check_NV_ReadPublic(void **state)
                            ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_ReadPublic_async(NULL,
+    r = Esys_NV_ReadPublic_Async(NULL,
                                  0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_ReadPublic_finish(NULL, NULL, NULL);
+    r = Esys_NV_ReadPublic_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -2095,14 +2095,14 @@ check_NV_Write(void **state)
                       0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_Write_async(NULL,
+    r = Esys_NV_Write_Async(NULL,
                             0,
                             0,
                             ESYS_TR_PASSWORD,
                             ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_Write_finish(NULL);
+    r = Esys_NV_Write_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -2115,13 +2115,13 @@ check_NV_Increment(void **state)
                           0, 0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_Increment_async(NULL,
+    r = Esys_NV_Increment_Async(NULL,
                                 0,
                                 0,
                                 ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_Increment_finish(NULL);
+    r = Esys_NV_Increment_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -2135,14 +2135,14 @@ check_NV_Extend(void **state)
                        0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_Extend_async(NULL,
+    r = Esys_NV_Extend_Async(NULL,
                              0,
                              0,
                              ESYS_TR_PASSWORD,
                              ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_Extend_finish(NULL);
+    r = Esys_NV_Extend_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -2155,13 +2155,13 @@ check_NV_SetBits(void **state)
                         0, 0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_SetBits_async(NULL,
+    r = Esys_NV_SetBits_Async(NULL,
                               0,
                               0,
                               ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_SetBits_finish(NULL);
+    r = Esys_NV_SetBits_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -2174,13 +2174,13 @@ check_NV_WriteLock(void **state)
                           0, 0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_WriteLock_async(NULL,
+    r = Esys_NV_WriteLock_Async(NULL,
                                 0,
                                 0,
                                 ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_WriteLock_finish(NULL);
+    r = Esys_NV_WriteLock_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -2194,13 +2194,13 @@ check_NV_GlobalWriteLock(void **state)
                                 ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_GlobalWriteLock_async(NULL,
+    r = Esys_NV_GlobalWriteLock_Async(NULL,
                                       0,
                                       ESYS_TR_PASSWORD,
                                       ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_GlobalWriteLock_finish(NULL);
+    r = Esys_NV_GlobalWriteLock_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -2215,13 +2215,13 @@ check_NV_Read(void **state)
                      ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, 0, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_Read_async(NULL,
+    r = Esys_NV_Read_Async(NULL,
                            0,
                            0,
                            ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, 0, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_Read_finish(NULL, NULL);
+    r = Esys_NV_Read_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -2234,12 +2234,12 @@ check_NV_ReadLock(void **state)
                          0, 0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_ReadLock_async(NULL,
+    r = Esys_NV_ReadLock_Async(NULL,
                                0,
                                0, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_ReadLock_finish(NULL);
+    r = Esys_NV_ReadLock_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -2253,13 +2253,13 @@ check_NV_ChangeAuth(void **state)
                            ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_ChangeAuth_async(NULL,
+    r = Esys_NV_ChangeAuth_Async(NULL,
                                  0,
                                  ESYS_TR_PASSWORD,
                                  ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_ChangeAuth_finish(NULL);
+    r = Esys_NV_ChangeAuth_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -2277,7 +2277,7 @@ check_NV_Certify(void **state)
                         ESYS_TR_NONE, NULL, NULL, 0, 0, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_Certify_async(NULL,
+    r = Esys_NV_Certify_Async(NULL,
                               0,
                               0,
                               0,
@@ -2285,7 +2285,7 @@ check_NV_Certify(void **state)
                               ESYS_TR_PASSWORD, ESYS_TR_NONE, NULL, NULL, 0, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_NV_Certify_finish(NULL, NULL, NULL);
+    r = Esys_NV_Certify_Finish(NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -2299,12 +2299,12 @@ check_Vendor_TCG_Test(void **state)
                              ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Vendor_TCG_Test_async(NULL,
+    r = Esys_Vendor_TCG_Test_Async(NULL,
                                    ESYS_TR_NONE,
                                    ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_Vendor_TCG_Test_finish(NULL, NULL);
+    r = Esys_Vendor_TCG_Test_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 

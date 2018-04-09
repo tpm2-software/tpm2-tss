@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     ESYS_TR parentHandle,
@@ -98,7 +98,7 @@ Esys_CreateLoaded(
 {
     TSS2_RC r;
 
-    r = Esys_CreateLoaded_async(esysContext,
+    r = Esys_CreateLoaded_Async(esysContext,
                 parentHandle,
                 shandle1,
                 shandle2,
@@ -107,7 +107,7 @@ Esys_CreateLoaded(
                 inPublic);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -118,7 +118,7 @@ Esys_CreateLoaded(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_CreateLoaded_finish(esysContext,
+        r = Esys_CreateLoaded_Finish(esysContext,
                 objectHandle,
                 outPrivate,
                 outPublic);
@@ -141,7 +141,7 @@ Esys_CreateLoaded(
  * This function invokes the TPM2_CreateLoaded command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_CreateLoaded_finish.
+ * In order to retrieve the TPM's response call Esys_CreateLoaded_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] parentHandle Input handle of type ESYS_TR for
@@ -156,7 +156,7 @@ Esys_CreateLoaded(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_CreateLoaded_async(
+Esys_CreateLoaded_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR parentHandle,
     ESYS_TR shandle1,
@@ -227,7 +227,7 @@ Esys_CreateLoaded_async(
 /** Asynchronous finish function for TPM2_CreateLoaded
  *
  * This function returns the results of a TPM2_CreateLoaded command
- * invoked via Esys_CreateLoaded_finish. All non-simple output parameters
+ * invoked via Esys_CreateLoaded_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -242,7 +242,7 @@ Esys_CreateLoaded_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_CreateLoaded_finish(
+Esys_CreateLoaded_Finish(
     ESYS_CONTEXT *esysContext,
     ESYS_TR *objectHandle,
     TPM2B_PRIVATE **outPrivate,
@@ -317,7 +317,7 @@ Esys_CreateLoaded_finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_CreateLoaded_async(esysContext,
+        r = Esys_CreateLoaded_Async(esysContext,
                 esysContext->in.CreateLoaded.parentHandle,
                 esysContext->session_type[0],
                 esysContext->session_type[1],

@@ -123,7 +123,7 @@ check_Startup(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_Startup_finish(esys_context);
+        r = Esys_Startup_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -140,7 +140,7 @@ check_Shutdown(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_Shutdown_finish(esys_context);
+        r = Esys_Shutdown_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -157,7 +157,7 @@ check_SelfTest(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_SelfTest_finish(esys_context);
+        r = Esys_SelfTest_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -175,7 +175,7 @@ check_IncrementalSelfTest(void **state)
     TPML_ALG *toDoList;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_IncrementalSelfTest_finish(esys_context, &toDoList);
+        r = Esys_IncrementalSelfTest_Finish(esys_context, &toDoList);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -194,7 +194,7 @@ check_GetTestResult(void **state)
     TPM2_RC testResult;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_GetTestResult_finish(esys_context, &outData, &testResult);
+        r = Esys_GetTestResult_Finish(esys_context, &outData, &testResult);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -213,7 +213,7 @@ check_StartAuthSession(void **state)
     TPM2B_NONCE *nonceTPM;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_StartAuthSession_finish(esys_context,
+        r = Esys_StartAuthSession_Finish(esys_context,
                                          &sessionHandle_handle, &nonceTPM);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
@@ -231,7 +231,7 @@ check_PolicyRestart(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicyRestart_finish(esys_context);
+        r = Esys_PolicyRestart_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -253,7 +253,7 @@ check_Create(void **state)
     TPMT_TK_CREATION *creationTicket;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_Create_finish(esys_context,
+        r = Esys_Create_Finish(esys_context,
                                &outPrivate,
                                &outPublic,
                                &creationData, &creationHash, &creationTicket);
@@ -274,7 +274,7 @@ check_Load(void **state)
     ESYS_TR objectHandle_handle;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_Load_finish(esys_context, &objectHandle_handle);
+        r = Esys_Load_Finish(esys_context, &objectHandle_handle);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -292,7 +292,7 @@ check_LoadExternal(void **state)
     ESYS_TR objectHandle_handle;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_LoadExternal_finish(esys_context, &objectHandle_handle);
+        r = Esys_LoadExternal_Finish(esys_context, &objectHandle_handle);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -312,7 +312,7 @@ check_ReadPublic(void **state)
     TPM2B_NAME *qualifiedName;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_ReadPublic_finish(esys_context,
+        r = Esys_ReadPublic_Finish(esys_context,
                                    &outPublic, &name, &qualifiedName);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
@@ -331,7 +331,7 @@ check_ActivateCredential(void **state)
     TPM2B_DIGEST *certInfo;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_ActivateCredential_finish(esys_context, &certInfo);
+        r = Esys_ActivateCredential_Finish(esys_context, &certInfo);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -350,7 +350,7 @@ check_MakeCredential(void **state)
     TPM2B_ENCRYPTED_SECRET *secret;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_MakeCredential_finish(esys_context, &credentialBlob, &secret);
+        r = Esys_MakeCredential_Finish(esys_context, &credentialBlob, &secret);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -368,7 +368,7 @@ check_Unseal(void **state)
     TPM2B_SENSITIVE_DATA *outData;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_Unseal_finish(esys_context, &outData);
+        r = Esys_Unseal_Finish(esys_context, &outData);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -386,7 +386,7 @@ check_ObjectChangeAuth(void **state)
     TPM2B_PRIVATE *outPrivate;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_ObjectChangeAuth_finish(esys_context, &outPrivate);
+        r = Esys_ObjectChangeAuth_Finish(esys_context, &outPrivate);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -406,7 +406,7 @@ check_CreateLoaded(void **state)
     TPM2B_PUBLIC *outPublic;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_CreateLoaded_finish(esys_context,
+        r = Esys_CreateLoaded_Finish(esys_context,
                                      &objectHandle_handle,
                                      &outPrivate, &outPublic);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
@@ -428,7 +428,7 @@ check_Duplicate(void **state)
     TPM2B_ENCRYPTED_SECRET *outSymSeed;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_Duplicate_finish(esys_context,
+        r = Esys_Duplicate_Finish(esys_context,
                                   &encryptionKeyOut, &duplicate, &outSymSeed);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
@@ -448,7 +448,7 @@ check_Rewrap(void **state)
     TPM2B_ENCRYPTED_SECRET *outSymSeed;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_Rewrap_finish(esys_context, &outDuplicate, &outSymSeed);
+        r = Esys_Rewrap_Finish(esys_context, &outDuplicate, &outSymSeed);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -466,7 +466,7 @@ check_Import(void **state)
     TPM2B_PRIVATE *outPrivate;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_Import_finish(esys_context, &outPrivate);
+        r = Esys_Import_Finish(esys_context, &outPrivate);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -484,7 +484,7 @@ check_RSA_Encrypt(void **state)
     TPM2B_PUBLIC_KEY_RSA *outData;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_RSA_Encrypt_finish(esys_context, &outData);
+        r = Esys_RSA_Encrypt_Finish(esys_context, &outData);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -502,7 +502,7 @@ check_RSA_Decrypt(void **state)
     TPM2B_PUBLIC_KEY_RSA *message;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_RSA_Decrypt_finish(esys_context, &message);
+        r = Esys_RSA_Decrypt_Finish(esys_context, &message);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -521,7 +521,7 @@ check_ECDH_KeyGen(void **state)
     TPM2B_ECC_POINT *pubPoint;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_ECDH_KeyGen_finish(esys_context, &zPoint, &pubPoint);
+        r = Esys_ECDH_KeyGen_Finish(esys_context, &zPoint, &pubPoint);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -539,7 +539,7 @@ check_ECDH_ZGen(void **state)
     TPM2B_ECC_POINT *outPoint;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_ECDH_ZGen_finish(esys_context, &outPoint);
+        r = Esys_ECDH_ZGen_Finish(esys_context, &outPoint);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -557,7 +557,7 @@ check_ECC_Parameters(void **state)
     TPMS_ALGORITHM_DETAIL_ECC *parameters;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_ECC_Parameters_finish(esys_context, &parameters);
+        r = Esys_ECC_Parameters_Finish(esys_context, &parameters);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -576,7 +576,7 @@ check_ZGen_2Phase(void **state)
     TPM2B_ECC_POINT *outZ2;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_ZGen_2Phase_finish(esys_context, &outZ1, &outZ2);
+        r = Esys_ZGen_2Phase_Finish(esys_context, &outZ1, &outZ2);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -595,7 +595,7 @@ check_EncryptDecrypt(void **state)
     TPM2B_IV *ivOut;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_EncryptDecrypt_finish(esys_context, &outData, &ivOut);
+        r = Esys_EncryptDecrypt_Finish(esys_context, &outData, &ivOut);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -614,7 +614,7 @@ check_EncryptDecrypt2(void **state)
     TPM2B_IV *ivOut;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_EncryptDecrypt2_finish(esys_context, &outData, &ivOut);
+        r = Esys_EncryptDecrypt2_Finish(esys_context, &outData, &ivOut);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -633,7 +633,7 @@ check_Hash(void **state)
     TPMT_TK_HASHCHECK *validation;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_Hash_finish(esys_context, &outHash, &validation);
+        r = Esys_Hash_Finish(esys_context, &outHash, &validation);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -651,7 +651,7 @@ check_HMAC(void **state)
     TPM2B_DIGEST *outHMAC;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_HMAC_finish(esys_context, &outHMAC);
+        r = Esys_HMAC_Finish(esys_context, &outHMAC);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -669,7 +669,7 @@ check_GetRandom(void **state)
     TPM2B_DIGEST *randomBytes;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_GetRandom_finish(esys_context, &randomBytes);
+        r = Esys_GetRandom_Finish(esys_context, &randomBytes);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -686,7 +686,7 @@ check_StirRandom(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_StirRandom_finish(esys_context);
+        r = Esys_StirRandom_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -704,7 +704,7 @@ check_HMAC_Start(void **state)
     ESYS_TR sequenceHandle_handle;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_HMAC_Start_finish(esys_context, &sequenceHandle_handle);
+        r = Esys_HMAC_Start_Finish(esys_context, &sequenceHandle_handle);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -722,7 +722,7 @@ check_HashSequenceStart(void **state)
     ESYS_TR sequenceHandle_handle;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_HashSequenceStart_finish(esys_context, &sequenceHandle_handle);
+        r = Esys_HashSequenceStart_Finish(esys_context, &sequenceHandle_handle);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -739,7 +739,7 @@ check_SequenceUpdate(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_SequenceUpdate_finish(esys_context);
+        r = Esys_SequenceUpdate_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -758,7 +758,7 @@ check_SequenceComplete(void **state)
     TPMT_TK_HASHCHECK *validation;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_SequenceComplete_finish(esys_context, &result, &validation);
+        r = Esys_SequenceComplete_Finish(esys_context, &result, &validation);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -776,7 +776,7 @@ check_EventSequenceComplete(void **state)
     TPML_DIGEST_VALUES *results;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_EventSequenceComplete_finish(esys_context, &results);
+        r = Esys_EventSequenceComplete_Finish(esys_context, &results);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -795,7 +795,7 @@ check_Certify(void **state)
     TPMT_SIGNATURE *signature;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_Certify_finish(esys_context, &certifyInfo, &signature);
+        r = Esys_Certify_Finish(esys_context, &certifyInfo, &signature);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -814,7 +814,7 @@ check_CertifyCreation(void **state)
     TPMT_SIGNATURE *signature;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_CertifyCreation_finish(esys_context, &certifyInfo, &signature);
+        r = Esys_CertifyCreation_Finish(esys_context, &certifyInfo, &signature);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -833,7 +833,7 @@ check_Quote(void **state)
     TPMT_SIGNATURE *signature;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_Quote_finish(esys_context, &quoted, &signature);
+        r = Esys_Quote_Finish(esys_context, &quoted, &signature);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -852,7 +852,7 @@ check_GetSessionAuditDigest(void **state)
     TPMT_SIGNATURE *signature;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_GetSessionAuditDigest_finish(esys_context,
+        r = Esys_GetSessionAuditDigest_Finish(esys_context,
                                               &auditInfo, &signature);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
@@ -872,7 +872,7 @@ check_GetCommandAuditDigest(void **state)
     TPMT_SIGNATURE *signature;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_GetCommandAuditDigest_finish(esys_context,
+        r = Esys_GetCommandAuditDigest_Finish(esys_context,
                                               &auditInfo, &signature);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
@@ -892,7 +892,7 @@ check_GetTime(void **state)
     TPMT_SIGNATURE *signature;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_GetTime_finish(esys_context, &timeInfo, &signature);
+        r = Esys_GetTime_Finish(esys_context, &timeInfo, &signature);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -913,7 +913,7 @@ check_Commit(void **state)
     UINT16 counter;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_Commit_finish(esys_context, &K, &L, &E, &counter);
+        r = Esys_Commit_Finish(esys_context, &K, &L, &E, &counter);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -932,7 +932,7 @@ check_EC_Ephemeral(void **state)
     UINT16 counter;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_EC_Ephemeral_finish(esys_context, &Q, &counter);
+        r = Esys_EC_Ephemeral_Finish(esys_context, &Q, &counter);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -950,7 +950,7 @@ check_VerifySignature(void **state)
     TPMT_TK_VERIFIED *validation;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_VerifySignature_finish(esys_context, &validation);
+        r = Esys_VerifySignature_Finish(esys_context, &validation);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -968,7 +968,7 @@ check_Sign(void **state)
     TPMT_SIGNATURE *signature;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_Sign_finish(esys_context, &signature);
+        r = Esys_Sign_Finish(esys_context, &signature);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -985,7 +985,7 @@ check_SetCommandCodeAuditStatus(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_SetCommandCodeAuditStatus_finish(esys_context);
+        r = Esys_SetCommandCodeAuditStatus_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1002,7 +1002,7 @@ check_PCR_Extend(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PCR_Extend_finish(esys_context);
+        r = Esys_PCR_Extend_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1020,7 +1020,7 @@ check_PCR_Event(void **state)
     TPML_DIGEST_VALUES *digests;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PCR_Event_finish(esys_context, &digests);
+        r = Esys_PCR_Event_Finish(esys_context, &digests);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1040,7 +1040,7 @@ check_PCR_Read(void **state)
     UINT32 pcrUpdateCounter;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PCR_Read_finish(esys_context,
+        r = Esys_PCR_Read_Finish(esys_context,
                                  &pcrUpdateCounter,
                                  &pcrSelectionOut, &pcrValues);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
@@ -1063,7 +1063,7 @@ check_PCR_Allocate(void **state)
     UINT32 sizeAvailable;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PCR_Allocate_finish(esys_context,
+        r = Esys_PCR_Allocate_Finish(esys_context,
                                      &allocationSuccess,
                                      &maxPCR, &sizeNeeded, &sizeAvailable);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
@@ -1082,7 +1082,7 @@ check_PCR_SetAuthPolicy(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PCR_SetAuthPolicy_finish(esys_context);
+        r = Esys_PCR_SetAuthPolicy_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1099,7 +1099,7 @@ check_PCR_SetAuthValue(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PCR_SetAuthValue_finish(esys_context);
+        r = Esys_PCR_SetAuthValue_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1116,7 +1116,7 @@ check_PCR_Reset(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PCR_Reset_finish(esys_context);
+        r = Esys_PCR_Reset_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1135,7 +1135,7 @@ check_PolicySigned(void **state)
     TPMT_TK_AUTH *policyTicket;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicySigned_finish(esys_context, &timeout, &policyTicket);
+        r = Esys_PolicySigned_Finish(esys_context, &timeout, &policyTicket);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1154,7 +1154,7 @@ check_PolicySecret(void **state)
     TPMT_TK_AUTH *policyTicket;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicySecret_finish(esys_context, &timeout, &policyTicket);
+        r = Esys_PolicySecret_Finish(esys_context, &timeout, &policyTicket);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1171,7 +1171,7 @@ check_PolicyTicket(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicyTicket_finish(esys_context);
+        r = Esys_PolicyTicket_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1188,7 +1188,7 @@ check_PolicyOR(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicyOR_finish(esys_context);
+        r = Esys_PolicyOR_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1205,7 +1205,7 @@ check_PolicyPCR(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicyPCR_finish(esys_context);
+        r = Esys_PolicyPCR_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1222,7 +1222,7 @@ check_PolicyLocality(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicyLocality_finish(esys_context);
+        r = Esys_PolicyLocality_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1239,7 +1239,7 @@ check_PolicyNV(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicyNV_finish(esys_context);
+        r = Esys_PolicyNV_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1256,7 +1256,7 @@ check_PolicyCounterTimer(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicyCounterTimer_finish(esys_context);
+        r = Esys_PolicyCounterTimer_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1273,7 +1273,7 @@ check_PolicyCommandCode(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicyCommandCode_finish(esys_context);
+        r = Esys_PolicyCommandCode_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1290,7 +1290,7 @@ check_PolicyPhysicalPresence(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicyPhysicalPresence_finish(esys_context);
+        r = Esys_PolicyPhysicalPresence_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1307,7 +1307,7 @@ check_PolicyCpHash(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicyCpHash_finish(esys_context);
+        r = Esys_PolicyCpHash_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1324,7 +1324,7 @@ check_PolicyNameHash(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicyNameHash_finish(esys_context);
+        r = Esys_PolicyNameHash_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1341,7 +1341,7 @@ check_PolicyDuplicationSelect(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicyDuplicationSelect_finish(esys_context);
+        r = Esys_PolicyDuplicationSelect_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1358,7 +1358,7 @@ check_PolicyAuthorize(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicyAuthorize_finish(esys_context);
+        r = Esys_PolicyAuthorize_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1375,7 +1375,7 @@ check_PolicyAuthValue(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicyAuthValue_finish(esys_context);
+        r = Esys_PolicyAuthValue_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1392,7 +1392,7 @@ check_PolicyPassword(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicyPassword_finish(esys_context);
+        r = Esys_PolicyPassword_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1410,7 +1410,7 @@ check_PolicyGetDigest(void **state)
     TPM2B_DIGEST *policyDigest;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicyGetDigest_finish(esys_context, &policyDigest);
+        r = Esys_PolicyGetDigest_Finish(esys_context, &policyDigest);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1427,7 +1427,7 @@ check_PolicyNvWritten(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicyNvWritten_finish(esys_context);
+        r = Esys_PolicyNvWritten_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1444,7 +1444,7 @@ check_PolicyTemplate(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicyTemplate_finish(esys_context);
+        r = Esys_PolicyTemplate_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1461,7 +1461,7 @@ check_PolicyAuthorizeNV(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PolicyAuthorizeNV_finish(esys_context);
+        r = Esys_PolicyAuthorizeNV_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1483,7 +1483,7 @@ check_CreatePrimary(void **state)
     TPMT_TK_CREATION *creationTicket;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_CreatePrimary_finish(esys_context,
+        r = Esys_CreatePrimary_Finish(esys_context,
                                       &objectHandle_handle,
                                       &outPublic,
                                       &creationData,
@@ -1504,7 +1504,7 @@ check_HierarchyControl(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_HierarchyControl_finish(esys_context);
+        r = Esys_HierarchyControl_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1521,7 +1521,7 @@ check_SetPrimaryPolicy(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_SetPrimaryPolicy_finish(esys_context);
+        r = Esys_SetPrimaryPolicy_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1538,7 +1538,7 @@ check_ChangePPS(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_ChangePPS_finish(esys_context);
+        r = Esys_ChangePPS_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1555,7 +1555,7 @@ check_ChangeEPS(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_ChangeEPS_finish(esys_context);
+        r = Esys_ChangeEPS_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1572,7 +1572,7 @@ check_Clear(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_Clear_finish(esys_context);
+        r = Esys_Clear_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1589,7 +1589,7 @@ check_ClearControl(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_ClearControl_finish(esys_context);
+        r = Esys_ClearControl_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1606,7 +1606,7 @@ check_HierarchyChangeAuth(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_HierarchyChangeAuth_finish(esys_context);
+        r = Esys_HierarchyChangeAuth_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1623,7 +1623,7 @@ check_DictionaryAttackLockReset(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_DictionaryAttackLockReset_finish(esys_context);
+        r = Esys_DictionaryAttackLockReset_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1640,7 +1640,7 @@ check_DictionaryAttackParameters(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_DictionaryAttackParameters_finish(esys_context);
+        r = Esys_DictionaryAttackParameters_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1657,7 +1657,7 @@ check_PP_Commands(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_PP_Commands_finish(esys_context);
+        r = Esys_PP_Commands_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1674,7 +1674,7 @@ check_SetAlgorithmSet(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_SetAlgorithmSet_finish(esys_context);
+        r = Esys_SetAlgorithmSet_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1691,7 +1691,7 @@ check_FieldUpgradeStart(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_FieldUpgradeStart_finish(esys_context);
+        r = Esys_FieldUpgradeStart_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1710,7 +1710,7 @@ check_FieldUpgradeData(void **state)
     TPMT_HA *firstDigest;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_FieldUpgradeData_finish(esys_context,
+        r = Esys_FieldUpgradeData_Finish(esys_context,
                                          &nextDigest, &firstDigest);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
@@ -1729,7 +1729,7 @@ check_FirmwareRead(void **state)
     TPM2B_MAX_BUFFER *fuData;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_FirmwareRead_finish(esys_context, &fuData);
+        r = Esys_FirmwareRead_Finish(esys_context, &fuData);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1747,7 +1747,7 @@ check_ContextSave(void **state)
     TPMS_CONTEXT *context;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_ContextSave_finish(esys_context, &context);
+        r = Esys_ContextSave_Finish(esys_context, &context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1765,7 +1765,7 @@ check_ContextLoad(void **state)
     ESYS_TR loadedHandle_handle;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_ContextLoad_finish(esys_context, &loadedHandle_handle);
+        r = Esys_ContextLoad_Finish(esys_context, &loadedHandle_handle);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1782,7 +1782,7 @@ check_FlushContext(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_FlushContext_finish(esys_context);
+        r = Esys_FlushContext_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1800,7 +1800,7 @@ check_EvictControl(void **state)
     ESYS_TR newObjectHandle_handle;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_EvictControl_finish(esys_context, &newObjectHandle_handle);
+        r = Esys_EvictControl_Finish(esys_context, &newObjectHandle_handle);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1818,7 +1818,7 @@ check_ReadClock(void **state)
     TPMS_TIME_INFO *currentTime;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_ReadClock_finish(esys_context, &currentTime);
+        r = Esys_ReadClock_Finish(esys_context, &currentTime);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1835,7 +1835,7 @@ check_ClockSet(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_ClockSet_finish(esys_context);
+        r = Esys_ClockSet_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1852,7 +1852,7 @@ check_ClockRateAdjust(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_ClockRateAdjust_finish(esys_context);
+        r = Esys_ClockRateAdjust_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1871,7 +1871,7 @@ check_GetCapability(void **state)
     TPMI_YES_NO moreData;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_GetCapability_finish(esys_context, &moreData, &capabilityData);
+        r = Esys_GetCapability_Finish(esys_context, &moreData, &capabilityData);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1888,7 +1888,7 @@ check_TestParms(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_TestParms_finish(esys_context);
+        r = Esys_TestParms_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1906,7 +1906,7 @@ check_NV_DefineSpace(void **state)
     ESYS_TR nvHandle_handle;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_NV_DefineSpace_finish(esys_context, &nvHandle_handle);
+        r = Esys_NV_DefineSpace_Finish(esys_context, &nvHandle_handle);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1923,7 +1923,7 @@ check_NV_UndefineSpace(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_NV_UndefineSpace_finish(esys_context);
+        r = Esys_NV_UndefineSpace_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1940,7 +1940,7 @@ check_NV_UndefineSpaceSpecial(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_NV_UndefineSpaceSpecial_finish(esys_context);
+        r = Esys_NV_UndefineSpaceSpecial_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1959,7 +1959,7 @@ check_NV_ReadPublic(void **state)
     TPM2B_NAME *nvName;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_NV_ReadPublic_finish(esys_context, &nvPublic, &nvName);
+        r = Esys_NV_ReadPublic_Finish(esys_context, &nvPublic, &nvName);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1976,7 +1976,7 @@ check_NV_Write(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_NV_Write_finish(esys_context);
+        r = Esys_NV_Write_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -1993,7 +1993,7 @@ check_NV_Increment(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_NV_Increment_finish(esys_context);
+        r = Esys_NV_Increment_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -2010,7 +2010,7 @@ check_NV_Extend(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_NV_Extend_finish(esys_context);
+        r = Esys_NV_Extend_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -2027,7 +2027,7 @@ check_NV_SetBits(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_NV_SetBits_finish(esys_context);
+        r = Esys_NV_SetBits_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -2044,7 +2044,7 @@ check_NV_WriteLock(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_NV_WriteLock_finish(esys_context);
+        r = Esys_NV_WriteLock_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -2061,7 +2061,7 @@ check_NV_GlobalWriteLock(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_NV_GlobalWriteLock_finish(esys_context);
+        r = Esys_NV_GlobalWriteLock_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -2079,7 +2079,7 @@ check_NV_Read(void **state)
     TPM2B_MAX_NV_BUFFER *data;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_NV_Read_finish(esys_context, &data);
+        r = Esys_NV_Read_Finish(esys_context, &data);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -2096,7 +2096,7 @@ check_NV_ReadLock(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_NV_ReadLock_finish(esys_context);
+        r = Esys_NV_ReadLock_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -2113,7 +2113,7 @@ check_NV_ChangeAuth(void **state)
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_NV_ChangeAuth_finish(esys_context);
+        r = Esys_NV_ChangeAuth_Finish(esys_context);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -2132,7 +2132,7 @@ check_NV_Certify(void **state)
     TPMT_SIGNATURE *signature;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_NV_Certify_finish(esys_context, &certifyInfo, &signature);
+        r = Esys_NV_Certify_Finish(esys_context, &certifyInfo, &signature);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -2150,7 +2150,7 @@ check_Vendor_TCG_Test(void **state)
     TPM2B_DATA *outputData;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
-        r = Esys_Vendor_TCG_Test_finish(esys_context, &outputData);
+        r = Esys_Vendor_TCG_Test_Finish(esys_context, &outputData);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }

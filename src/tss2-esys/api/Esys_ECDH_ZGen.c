@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     ESYS_TR keyHandle,
@@ -83,7 +83,7 @@ Esys_ECDH_ZGen(
 {
     TSS2_RC r;
 
-    r = Esys_ECDH_ZGen_async(esysContext,
+    r = Esys_ECDH_ZGen_Async(esysContext,
                 keyHandle,
                 shandle1,
                 shandle2,
@@ -91,7 +91,7 @@ Esys_ECDH_ZGen(
                 inPoint);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -102,7 +102,7 @@ Esys_ECDH_ZGen(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_ECDH_ZGen_finish(esysContext,
+        r = Esys_ECDH_ZGen_Finish(esysContext,
                 outPoint);
         /* This is just debug information about the reattempt to finish the
            command */
@@ -123,7 +123,7 @@ Esys_ECDH_ZGen(
  * This function invokes the TPM2_ECDH_ZGen command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_ECDH_ZGen_finish.
+ * In order to retrieve the TPM's response call Esys_ECDH_ZGen_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] keyHandle Input handle of type ESYS_TR for
@@ -137,7 +137,7 @@ Esys_ECDH_ZGen(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_ECDH_ZGen_async(
+Esys_ECDH_ZGen_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR keyHandle,
     ESYS_TR shandle1,
@@ -204,7 +204,7 @@ Esys_ECDH_ZGen_async(
 /** Asynchronous finish function for TPM2_ECDH_ZGen
  *
  * This function returns the results of a TPM2_ECDH_ZGen command
- * invoked via Esys_ECDH_ZGen_finish. All non-simple output parameters
+ * invoked via Esys_ECDH_ZGen_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -216,7 +216,7 @@ Esys_ECDH_ZGen_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_ECDH_ZGen_finish(
+Esys_ECDH_ZGen_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ECC_POINT **outPoint)
 {
@@ -262,7 +262,7 @@ Esys_ECDH_ZGen_finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_ECDH_ZGen_async(esysContext,
+        r = Esys_ECDH_ZGen_Async(esysContext,
                 esysContext->in.ECDH_ZGen.keyHandle,
                 esysContext->session_type[0],
                 esysContext->session_type[1],

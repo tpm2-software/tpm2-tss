@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     UINT16 bytesRequested)
@@ -72,14 +72,14 @@ Esys_GetRandom(
 {
     TSS2_RC r;
 
-    r = Esys_GetRandom_async(esysContext,
+    r = Esys_GetRandom_Async(esysContext,
                 shandle1,
                 shandle2,
                 shandle3,
                 bytesRequested);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -90,7 +90,7 @@ Esys_GetRandom(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_GetRandom_finish(esysContext,
+        r = Esys_GetRandom_Finish(esysContext,
                 randomBytes);
         /* This is just debug information about the reattempt to finish the
            command */
@@ -111,7 +111,7 @@ Esys_GetRandom(
  * This function invokes the TPM2_GetRandom command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_GetRandom_finish.
+ * In order to retrieve the TPM's response call Esys_GetRandom_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] shandle1 First session handle.
@@ -123,7 +123,7 @@ Esys_GetRandom(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_GetRandom_async(
+Esys_GetRandom_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -182,7 +182,7 @@ Esys_GetRandom_async(
 /** Asynchronous finish function for TPM2_GetRandom
  *
  * This function returns the results of a TPM2_GetRandom command
- * invoked via Esys_GetRandom_finish. All non-simple output parameters
+ * invoked via Esys_GetRandom_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -194,7 +194,7 @@ Esys_GetRandom_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_GetRandom_finish(
+Esys_GetRandom_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_DIGEST **randomBytes)
 {
@@ -240,7 +240,7 @@ Esys_GetRandom_finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_GetRandom_async(esysContext,
+        r = Esys_GetRandom_Async(esysContext,
                 esysContext->session_type[0],
                 esysContext->session_type[1],
                 esysContext->session_type[2],

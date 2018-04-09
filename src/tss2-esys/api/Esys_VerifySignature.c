@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     ESYS_TR keyHandle,
@@ -93,7 +93,7 @@ Esys_VerifySignature(
 {
     TSS2_RC r;
 
-    r = Esys_VerifySignature_async(esysContext,
+    r = Esys_VerifySignature_Async(esysContext,
                 keyHandle,
                 shandle1,
                 shandle2,
@@ -102,7 +102,7 @@ Esys_VerifySignature(
                 signature);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -113,7 +113,7 @@ Esys_VerifySignature(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_VerifySignature_finish(esysContext,
+        r = Esys_VerifySignature_Finish(esysContext,
                 validation);
         /* This is just debug information about the reattempt to finish the
            command */
@@ -134,7 +134,7 @@ Esys_VerifySignature(
  * This function invokes the TPM2_VerifySignature command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_VerifySignature_finish.
+ * In order to retrieve the TPM's response call Esys_VerifySignature_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] keyHandle Input handle of type ESYS_TR for
@@ -149,7 +149,7 @@ Esys_VerifySignature(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_VerifySignature_async(
+Esys_VerifySignature_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR keyHandle,
     ESYS_TR shandle1,
@@ -219,7 +219,7 @@ Esys_VerifySignature_async(
 /** Asynchronous finish function for TPM2_VerifySignature
  *
  * This function returns the results of a TPM2_VerifySignature command
- * invoked via Esys_VerifySignature_finish. All non-simple output parameters
+ * invoked via Esys_VerifySignature_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -231,7 +231,7 @@ Esys_VerifySignature_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_VerifySignature_finish(
+Esys_VerifySignature_Finish(
     ESYS_CONTEXT *esysContext,
     TPMT_TK_VERIFIED **validation)
 {
@@ -277,7 +277,7 @@ Esys_VerifySignature_finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_VerifySignature_async(esysContext,
+        r = Esys_VerifySignature_Async(esysContext,
                 esysContext->in.VerifySignature.keyHandle,
                 esysContext->session_type[0],
                 esysContext->session_type[1],

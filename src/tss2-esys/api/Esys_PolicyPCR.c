@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     ESYS_TR policySession,
@@ -90,7 +90,7 @@ Esys_PolicyPCR(
 {
     TSS2_RC r;
 
-    r = Esys_PolicyPCR_async(esysContext,
+    r = Esys_PolicyPCR_Async(esysContext,
                 policySession,
                 shandle1,
                 shandle2,
@@ -99,7 +99,7 @@ Esys_PolicyPCR(
                 pcrs);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -110,7 +110,7 @@ Esys_PolicyPCR(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_PolicyPCR_finish(esysContext);
+        r = Esys_PolicyPCR_Finish(esysContext);
         /* This is just debug information about the reattempt to finish the
            command */
         if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
@@ -130,7 +130,7 @@ Esys_PolicyPCR(
  * This function invokes the TPM2_PolicyPCR command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_PolicyPCR_finish.
+ * In order to retrieve the TPM's response call Esys_PolicyPCR_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] policySession Input handle of type ESYS_TR for
@@ -145,7 +145,7 @@ Esys_PolicyPCR(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_PolicyPCR_async(
+Esys_PolicyPCR_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR policySession,
     ESYS_TR shandle1,
@@ -215,7 +215,7 @@ Esys_PolicyPCR_async(
 /** Asynchronous finish function for TPM2_PolicyPCR
  *
  * This function returns the results of a TPM2_PolicyPCR command
- * invoked via Esys_PolicyPCR_finish. All non-simple output parameters
+ * invoked via Esys_PolicyPCR_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -225,7 +225,7 @@ Esys_PolicyPCR_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_PolicyPCR_finish(
+Esys_PolicyPCR_Finish(
     ESYS_CONTEXT *esysContext)
 {
     TSS2_RC r;
@@ -262,7 +262,7 @@ Esys_PolicyPCR_finish(
             return r;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_PolicyPCR_async(esysContext,
+        r = Esys_PolicyPCR_Async(esysContext,
                 esysContext->in.PolicyPCR.policySession,
                 esysContext->session_type[0],
                 esysContext->session_type[1],

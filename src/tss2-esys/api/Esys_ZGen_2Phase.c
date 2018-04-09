@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     ESYS_TR keyA,
@@ -104,7 +104,7 @@ Esys_ZGen_2Phase(
 {
     TSS2_RC r;
 
-    r = Esys_ZGen_2Phase_async(esysContext,
+    r = Esys_ZGen_2Phase_Async(esysContext,
                 keyA,
                 shandle1,
                 shandle2,
@@ -115,7 +115,7 @@ Esys_ZGen_2Phase(
                 counter);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -126,7 +126,7 @@ Esys_ZGen_2Phase(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_ZGen_2Phase_finish(esysContext,
+        r = Esys_ZGen_2Phase_Finish(esysContext,
                 outZ1,
                 outZ2);
         /* This is just debug information about the reattempt to finish the
@@ -148,7 +148,7 @@ Esys_ZGen_2Phase(
  * This function invokes the TPM2_ZGen_2Phase command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_ZGen_2Phase_finish.
+ * In order to retrieve the TPM's response call Esys_ZGen_2Phase_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] keyA Input handle of type ESYS_TR for
@@ -165,7 +165,7 @@ Esys_ZGen_2Phase(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_ZGen_2Phase_async(
+Esys_ZGen_2Phase_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR keyA,
     ESYS_TR shandle1,
@@ -243,7 +243,7 @@ Esys_ZGen_2Phase_async(
 /** Asynchronous finish function for TPM2_ZGen_2Phase
  *
  * This function returns the results of a TPM2_ZGen_2Phase command
- * invoked via Esys_ZGen_2Phase_finish. All non-simple output parameters
+ * invoked via Esys_ZGen_2Phase_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -257,7 +257,7 @@ Esys_ZGen_2Phase_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_ZGen_2Phase_finish(
+Esys_ZGen_2Phase_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ECC_POINT **outZ1,
     TPM2B_ECC_POINT **outZ2)
@@ -310,7 +310,7 @@ Esys_ZGen_2Phase_finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_ZGen_2Phase_async(esysContext,
+        r = Esys_ZGen_2Phase_Async(esysContext,
                 esysContext->in.ZGen_2Phase.keyA,
                 esysContext->session_type[0],
                 esysContext->session_type[1],

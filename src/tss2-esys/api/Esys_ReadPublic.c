@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     ESYS_TR objectHandle)
@@ -79,14 +79,14 @@ Esys_ReadPublic(
 {
     TSS2_RC r;
 
-    r = Esys_ReadPublic_async(esysContext,
+    r = Esys_ReadPublic_Async(esysContext,
                 objectHandle,
                 shandle1,
                 shandle2,
                 shandle3);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -97,7 +97,7 @@ Esys_ReadPublic(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_ReadPublic_finish(esysContext,
+        r = Esys_ReadPublic_Finish(esysContext,
                 outPublic,
                 name,
                 qualifiedName);
@@ -120,7 +120,7 @@ Esys_ReadPublic(
  * This function invokes the TPM2_ReadPublic command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_ReadPublic_finish.
+ * In order to retrieve the TPM's response call Esys_ReadPublic_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] objectHandle Input handle of type ESYS_TR for
@@ -133,7 +133,7 @@ Esys_ReadPublic(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_ReadPublic_async(
+Esys_ReadPublic_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR objectHandle,
     ESYS_TR shandle1,
@@ -196,7 +196,7 @@ Esys_ReadPublic_async(
 /** Asynchronous finish function for TPM2_ReadPublic
  *
  * This function returns the results of a TPM2_ReadPublic command
- * invoked via Esys_ReadPublic_finish. All non-simple output parameters
+ * invoked via Esys_ReadPublic_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -212,7 +212,7 @@ Esys_ReadPublic_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_ReadPublic_finish(
+Esys_ReadPublic_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_PUBLIC **outPublic,
     TPM2B_NAME **name,
@@ -274,7 +274,7 @@ Esys_ReadPublic_finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_ReadPublic_async(esysContext,
+        r = Esys_ReadPublic_Async(esysContext,
                 esysContext->in.ReadPublic.objectHandle,
                 esysContext->session_type[0],
                 esysContext->session_type[1],

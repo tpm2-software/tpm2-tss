@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     ESYS_TR privacyHandle,
@@ -101,7 +101,7 @@ Esys_GetCommandAuditDigest(
 {
     TSS2_RC r;
 
-    r = Esys_GetCommandAuditDigest_async(esysContext,
+    r = Esys_GetCommandAuditDigest_Async(esysContext,
                 privacyHandle,
                 signHandle,
                 shandle1,
@@ -111,7 +111,7 @@ Esys_GetCommandAuditDigest(
                 inScheme);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -122,7 +122,7 @@ Esys_GetCommandAuditDigest(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_GetCommandAuditDigest_finish(esysContext,
+        r = Esys_GetCommandAuditDigest_Finish(esysContext,
                 auditInfo,
                 signature);
         /* This is just debug information about the reattempt to finish the
@@ -144,7 +144,7 @@ Esys_GetCommandAuditDigest(
  * This function invokes the TPM2_GetCommandAuditDigest command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_GetCommandAuditDigest_finish.
+ * In order to retrieve the TPM's response call Esys_GetCommandAuditDigest_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] privacyHandle Input handle of type ESYS_TR for
@@ -161,7 +161,7 @@ Esys_GetCommandAuditDigest(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_GetCommandAuditDigest_async(
+Esys_GetCommandAuditDigest_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR privacyHandle,
     ESYS_TR signHandle,
@@ -238,7 +238,7 @@ Esys_GetCommandAuditDigest_async(
 /** Asynchronous finish function for TPM2_GetCommandAuditDigest
  *
  * This function returns the results of a TPM2_GetCommandAuditDigest command
- * invoked via Esys_GetCommandAuditDigest_finish. All non-simple output parameters
+ * invoked via Esys_GetCommandAuditDigest_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -252,7 +252,7 @@ Esys_GetCommandAuditDigest_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_GetCommandAuditDigest_finish(
+Esys_GetCommandAuditDigest_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ATTEST **auditInfo,
     TPMT_SIGNATURE **signature)
@@ -305,7 +305,7 @@ Esys_GetCommandAuditDigest_finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_GetCommandAuditDigest_async(esysContext,
+        r = Esys_GetCommandAuditDigest_Async(esysContext,
                 esysContext->in.GetCommandAuditDigest.privacyHandle,
                 esysContext->in.GetCommandAuditDigest.signHandle,
                 esysContext->session_type[0],

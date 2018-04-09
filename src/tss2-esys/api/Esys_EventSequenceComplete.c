@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     ESYS_TR pcrHandle,
@@ -88,7 +88,7 @@ Esys_EventSequenceComplete(
 {
     TSS2_RC r;
 
-    r = Esys_EventSequenceComplete_async(esysContext,
+    r = Esys_EventSequenceComplete_Async(esysContext,
                 pcrHandle,
                 sequenceHandle,
                 shandle1,
@@ -97,7 +97,7 @@ Esys_EventSequenceComplete(
                 buffer);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -108,7 +108,7 @@ Esys_EventSequenceComplete(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_EventSequenceComplete_finish(esysContext,
+        r = Esys_EventSequenceComplete_Finish(esysContext,
                 results);
         /* This is just debug information about the reattempt to finish the
            command */
@@ -129,7 +129,7 @@ Esys_EventSequenceComplete(
  * This function invokes the TPM2_EventSequenceComplete command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_EventSequenceComplete_finish.
+ * In order to retrieve the TPM's response call Esys_EventSequenceComplete_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] pcrHandle Input handle of type ESYS_TR for
@@ -145,7 +145,7 @@ Esys_EventSequenceComplete(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_EventSequenceComplete_async(
+Esys_EventSequenceComplete_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR pcrHandle,
     ESYS_TR sequenceHandle,
@@ -219,7 +219,7 @@ Esys_EventSequenceComplete_async(
 /** Asynchronous finish function for TPM2_EventSequenceComplete
  *
  * This function returns the results of a TPM2_EventSequenceComplete command
- * invoked via Esys_EventSequenceComplete_finish. All non-simple output parameters
+ * invoked via Esys_EventSequenceComplete_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -231,7 +231,7 @@ Esys_EventSequenceComplete_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_EventSequenceComplete_finish(
+Esys_EventSequenceComplete_Finish(
     ESYS_CONTEXT *esysContext,
     TPML_DIGEST_VALUES **results)
 {
@@ -277,7 +277,7 @@ Esys_EventSequenceComplete_finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_EventSequenceComplete_async(esysContext,
+        r = Esys_EventSequenceComplete_Async(esysContext,
                 esysContext->in.EventSequenceComplete.pcrHandle,
                 esysContext->in.EventSequenceComplete.sequenceHandle,
                 esysContext->session_type[0],
