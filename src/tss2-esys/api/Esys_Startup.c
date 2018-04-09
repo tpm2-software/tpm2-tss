@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     TPM2_SU startupType)
@@ -63,11 +63,11 @@ Esys_Startup(
 {
     TSS2_RC r;
 
-    r = Esys_Startup_async(esysContext,
+    r = Esys_Startup_Async(esysContext,
                 startupType);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -78,7 +78,7 @@ Esys_Startup(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_Startup_finish(esysContext);
+        r = Esys_Startup_Finish(esysContext);
         /* This is just debug information about the reattempt to finish the
            command */
         if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
@@ -98,7 +98,7 @@ Esys_Startup(
  * This function invokes the TPM2_Startup command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_Startup_finish.
+ * In order to retrieve the TPM's response call Esys_Startup_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] startupType Input parameter of type TPM2_SU.
@@ -107,7 +107,7 @@ Esys_Startup(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_Startup_async(
+Esys_Startup_Async(
     ESYS_CONTEXT *esysContext,
     TPM2_SU startupType)
 {
@@ -143,7 +143,7 @@ Esys_Startup_async(
 /** Asynchronous finish function for TPM2_Startup
  *
  * This function returns the results of a TPM2_Startup command
- * invoked via Esys_Startup_finish. All non-simple output parameters
+ * invoked via Esys_Startup_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -153,7 +153,7 @@ Esys_Startup_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_Startup_finish(
+Esys_Startup_Finish(
     ESYS_CONTEXT *esysContext)
 {
     TSS2_RC r;
@@ -190,7 +190,7 @@ Esys_Startup_finish(
             return r;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_Startup_async(esysContext,
+        r = Esys_Startup_Async(esysContext,
                 esysContext->in.Startup.startupType);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");

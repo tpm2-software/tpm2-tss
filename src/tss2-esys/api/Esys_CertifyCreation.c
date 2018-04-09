@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     ESYS_TR signHandle,
@@ -121,7 +121,7 @@ Esys_CertifyCreation(
 {
     TSS2_RC r;
 
-    r = Esys_CertifyCreation_async(esysContext,
+    r = Esys_CertifyCreation_Async(esysContext,
                 signHandle,
                 objectHandle,
                 shandle1,
@@ -133,7 +133,7 @@ Esys_CertifyCreation(
                 creationTicket);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -144,7 +144,7 @@ Esys_CertifyCreation(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_CertifyCreation_finish(esysContext,
+        r = Esys_CertifyCreation_Finish(esysContext,
                 certifyInfo,
                 signature);
         /* This is just debug information about the reattempt to finish the
@@ -166,7 +166,7 @@ Esys_CertifyCreation(
  * This function invokes the TPM2_CertifyCreation command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_CertifyCreation_finish.
+ * In order to retrieve the TPM's response call Esys_CertifyCreation_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] signHandle Input handle of type ESYS_TR for
@@ -185,7 +185,7 @@ Esys_CertifyCreation(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_CertifyCreation_async(
+Esys_CertifyCreation_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR signHandle,
     ESYS_TR objectHandle,
@@ -269,7 +269,7 @@ Esys_CertifyCreation_async(
 /** Asynchronous finish function for TPM2_CertifyCreation
  *
  * This function returns the results of a TPM2_CertifyCreation command
- * invoked via Esys_CertifyCreation_finish. All non-simple output parameters
+ * invoked via Esys_CertifyCreation_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -283,7 +283,7 @@ Esys_CertifyCreation_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_CertifyCreation_finish(
+Esys_CertifyCreation_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ATTEST **certifyInfo,
     TPMT_SIGNATURE **signature)
@@ -336,7 +336,7 @@ Esys_CertifyCreation_finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_CertifyCreation_async(esysContext,
+        r = Esys_CertifyCreation_Async(esysContext,
                 esysContext->in.CertifyCreation.signHandle,
                 esysContext->in.CertifyCreation.objectHandle,
                 esysContext->session_type[0],

@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
@@ -86,7 +86,7 @@ Esys_NV_Read(
 {
     TSS2_RC r;
 
-    r = Esys_NV_Read_async(esysContext,
+    r = Esys_NV_Read_Async(esysContext,
                 authHandle,
                 nvIndex,
                 shandle1,
@@ -96,7 +96,7 @@ Esys_NV_Read(
                 offset);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -107,7 +107,7 @@ Esys_NV_Read(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_NV_Read_finish(esysContext,
+        r = Esys_NV_Read_Finish(esysContext,
                 data);
         /* This is just debug information about the reattempt to finish the
            command */
@@ -128,7 +128,7 @@ Esys_NV_Read(
  * This function invokes the TPM2_NV_Read command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_NV_Read_finish.
+ * In order to retrieve the TPM's response call Esys_NV_Read_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] authHandle Input handle of type ESYS_TR for
@@ -145,7 +145,7 @@ Esys_NV_Read(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_NV_Read_async(
+Esys_NV_Read_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR nvIndex,
@@ -221,7 +221,7 @@ Esys_NV_Read_async(
 /** Asynchronous finish function for TPM2_NV_Read
  *
  * This function returns the results of a TPM2_NV_Read command
- * invoked via Esys_NV_Read_finish. All non-simple output parameters
+ * invoked via Esys_NV_Read_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -233,7 +233,7 @@ Esys_NV_Read_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_NV_Read_finish(
+Esys_NV_Read_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_MAX_NV_BUFFER **data)
 {
@@ -279,7 +279,7 @@ Esys_NV_Read_finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_NV_Read_async(esysContext,
+        r = Esys_NV_Read_Async(esysContext,
                 esysContext->in.NV_Read.authHandle,
                 esysContext->in.NV_Read.nvIndex,
                 esysContext->session_type[0],

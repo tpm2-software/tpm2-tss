@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     ESYS_TR signHandle,
@@ -114,7 +114,7 @@ Esys_NV_Certify(
 {
     TSS2_RC r;
 
-    r = Esys_NV_Certify_async(esysContext,
+    r = Esys_NV_Certify_Async(esysContext,
                 signHandle,
                 authHandle,
                 nvIndex,
@@ -127,7 +127,7 @@ Esys_NV_Certify(
                 offset);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -138,7 +138,7 @@ Esys_NV_Certify(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_NV_Certify_finish(esysContext,
+        r = Esys_NV_Certify_Finish(esysContext,
                 certifyInfo,
                 signature);
         /* This is just debug information about the reattempt to finish the
@@ -160,7 +160,7 @@ Esys_NV_Certify(
  * This function invokes the TPM2_NV_Certify command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_NV_Certify_finish.
+ * In order to retrieve the TPM's response call Esys_NV_Certify_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] signHandle Input handle of type ESYS_TR for
@@ -181,7 +181,7 @@ Esys_NV_Certify(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_NV_Certify_async(
+Esys_NV_Certify_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR signHandle,
     ESYS_TR authHandle,
@@ -271,7 +271,7 @@ Esys_NV_Certify_async(
 /** Asynchronous finish function for TPM2_NV_Certify
  *
  * This function returns the results of a TPM2_NV_Certify command
- * invoked via Esys_NV_Certify_finish. All non-simple output parameters
+ * invoked via Esys_NV_Certify_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -285,7 +285,7 @@ Esys_NV_Certify_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_NV_Certify_finish(
+Esys_NV_Certify_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ATTEST **certifyInfo,
     TPMT_SIGNATURE **signature)
@@ -338,7 +338,7 @@ Esys_NV_Certify_finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_NV_Certify_async(esysContext,
+        r = Esys_NV_Certify_Async(esysContext,
                 esysContext->in.NV_Certify.signHandle,
                 esysContext->in.NV_Certify.authHandle,
                 esysContext->in.NV_Certify.nvIndex,

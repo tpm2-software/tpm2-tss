@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     ESYS_TR auth,
@@ -74,7 +74,7 @@ Esys_ClockRateAdjust(
 {
     TSS2_RC r;
 
-    r = Esys_ClockRateAdjust_async(esysContext,
+    r = Esys_ClockRateAdjust_Async(esysContext,
                 auth,
                 shandle1,
                 shandle2,
@@ -82,7 +82,7 @@ Esys_ClockRateAdjust(
                 rateAdjust);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -93,7 +93,7 @@ Esys_ClockRateAdjust(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_ClockRateAdjust_finish(esysContext);
+        r = Esys_ClockRateAdjust_Finish(esysContext);
         /* This is just debug information about the reattempt to finish the
            command */
         if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
@@ -113,7 +113,7 @@ Esys_ClockRateAdjust(
  * This function invokes the TPM2_ClockRateAdjust command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_ClockRateAdjust_finish.
+ * In order to retrieve the TPM's response call Esys_ClockRateAdjust_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] auth Input handle of type ESYS_TR for
@@ -127,7 +127,7 @@ Esys_ClockRateAdjust(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_ClockRateAdjust_async(
+Esys_ClockRateAdjust_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR auth,
     ESYS_TR shandle1,
@@ -194,7 +194,7 @@ Esys_ClockRateAdjust_async(
 /** Asynchronous finish function for TPM2_ClockRateAdjust
  *
  * This function returns the results of a TPM2_ClockRateAdjust command
- * invoked via Esys_ClockRateAdjust_finish. All non-simple output parameters
+ * invoked via Esys_ClockRateAdjust_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -204,7 +204,7 @@ Esys_ClockRateAdjust_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_ClockRateAdjust_finish(
+Esys_ClockRateAdjust_Finish(
     ESYS_CONTEXT *esysContext)
 {
     TSS2_RC r;
@@ -241,7 +241,7 @@ Esys_ClockRateAdjust_finish(
             return r;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_ClockRateAdjust_async(esysContext,
+        r = Esys_ClockRateAdjust_Async(esysContext,
                 esysContext->in.ClockRateAdjust.auth,
                 esysContext->session_type[0],
                 esysContext->session_type[1],

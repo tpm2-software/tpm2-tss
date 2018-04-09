@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     const TPML_PCR_SELECTION *pcrSelectionIn)
@@ -84,14 +84,14 @@ Esys_PCR_Read(
 {
     TSS2_RC r;
 
-    r = Esys_PCR_Read_async(esysContext,
+    r = Esys_PCR_Read_Async(esysContext,
                 shandle1,
                 shandle2,
                 shandle3,
                 pcrSelectionIn);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -102,7 +102,7 @@ Esys_PCR_Read(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_PCR_Read_finish(esysContext,
+        r = Esys_PCR_Read_Finish(esysContext,
                 pcrUpdateCounter,
                 pcrSelectionOut,
                 pcrValues);
@@ -125,7 +125,7 @@ Esys_PCR_Read(
  * This function invokes the TPM2_PCR_Read command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_PCR_Read_finish.
+ * In order to retrieve the TPM's response call Esys_PCR_Read_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] shandle1 First session handle.
@@ -137,7 +137,7 @@ Esys_PCR_Read(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_PCR_Read_async(
+Esys_PCR_Read_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -196,7 +196,7 @@ Esys_PCR_Read_async(
 /** Asynchronous finish function for TPM2_PCR_Read
  *
  * This function returns the results of a TPM2_PCR_Read command
- * invoked via Esys_PCR_Read_finish. All non-simple output parameters
+ * invoked via Esys_PCR_Read_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -212,7 +212,7 @@ Esys_PCR_Read_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_PCR_Read_finish(
+Esys_PCR_Read_Finish(
     ESYS_CONTEXT *esysContext,
     UINT32 *pcrUpdateCounter,
     TPML_PCR_SELECTION **pcrSelectionOut,
@@ -268,7 +268,7 @@ Esys_PCR_Read_finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_PCR_Read_async(esysContext,
+        r = Esys_PCR_Read_Async(esysContext,
                 esysContext->session_type[0],
                 esysContext->session_type[1],
                 esysContext->session_type[2],

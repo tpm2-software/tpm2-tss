@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     const TPM2B_MAX_BUFFER *data,
@@ -89,7 +89,7 @@ Esys_Hash(
 {
     TSS2_RC r;
 
-    r = Esys_Hash_async(esysContext,
+    r = Esys_Hash_Async(esysContext,
                 shandle1,
                 shandle2,
                 shandle3,
@@ -98,7 +98,7 @@ Esys_Hash(
                 hierarchy);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -109,7 +109,7 @@ Esys_Hash(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_Hash_finish(esysContext,
+        r = Esys_Hash_Finish(esysContext,
                 outHash,
                 validation);
         /* This is just debug information about the reattempt to finish the
@@ -131,7 +131,7 @@ Esys_Hash(
  * This function invokes the TPM2_Hash command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_Hash_finish.
+ * In order to retrieve the TPM's response call Esys_Hash_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] shandle1 First session handle.
@@ -145,7 +145,7 @@ Esys_Hash(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_Hash_async(
+Esys_Hash_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -211,7 +211,7 @@ Esys_Hash_async(
 /** Asynchronous finish function for TPM2_Hash
  *
  * This function returns the results of a TPM2_Hash command
- * invoked via Esys_Hash_finish. All non-simple output parameters
+ * invoked via Esys_Hash_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -225,7 +225,7 @@ Esys_Hash_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_Hash_finish(
+Esys_Hash_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_DIGEST **outHash,
     TPMT_TK_HASHCHECK **validation)
@@ -278,7 +278,7 @@ Esys_Hash_finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_Hash_async(esysContext,
+        r = Esys_Hash_Async(esysContext,
                 esysContext->session_type[0],
                 esysContext->session_type[1],
                 esysContext->session_type[2],

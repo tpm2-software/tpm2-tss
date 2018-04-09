@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     const TPMS_CONTEXT *context)
@@ -71,11 +71,11 @@ Esys_ContextLoad(
 {
     TSS2_RC r;
 
-    r = Esys_ContextLoad_async(esysContext,
+    r = Esys_ContextLoad_Async(esysContext,
                 context);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -86,7 +86,7 @@ Esys_ContextLoad(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_ContextLoad_finish(esysContext,
+        r = Esys_ContextLoad_Finish(esysContext,
                 loadedHandle);
         /* This is just debug information about the reattempt to finish the
            command */
@@ -107,7 +107,7 @@ Esys_ContextLoad(
  * This function invokes the TPM2_ContextLoad command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_ContextLoad_finish.
+ * In order to retrieve the TPM's response call Esys_ContextLoad_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] context Input parameter of type TPMS_CONTEXT.
@@ -116,7 +116,7 @@ Esys_ContextLoad(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_ContextLoad_async(
+Esys_ContextLoad_Async(
     ESYS_CONTEXT *esysContext,
     const TPMS_CONTEXT *context)
 {
@@ -182,7 +182,7 @@ Esys_ContextLoad_async(
 /** Asynchronous finish function for TPM2_ContextLoad
  *
  * This function returns the results of a TPM2_ContextLoad command
- * invoked via Esys_ContextLoad_finish. All non-simple output parameters
+ * invoked via Esys_ContextLoad_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -193,7 +193,7 @@ Esys_ContextLoad_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_ContextLoad_finish(
+Esys_ContextLoad_Finish(
     ESYS_CONTEXT *esysContext,
     ESYS_TR *loadedHandle)
 {
@@ -252,7 +252,7 @@ Esys_ContextLoad_finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_ContextLoad_async(esysContext,
+        r = Esys_ContextLoad_Async(esysContext,
                 esysContext->in.ContextLoad.context);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");

@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     ESYS_TR pcrHandle,
@@ -83,7 +83,7 @@ Esys_PCR_Event(
 {
     TSS2_RC r;
 
-    r = Esys_PCR_Event_async(esysContext,
+    r = Esys_PCR_Event_Async(esysContext,
                 pcrHandle,
                 shandle1,
                 shandle2,
@@ -91,7 +91,7 @@ Esys_PCR_Event(
                 eventData);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -102,7 +102,7 @@ Esys_PCR_Event(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_PCR_Event_finish(esysContext,
+        r = Esys_PCR_Event_Finish(esysContext,
                 digests);
         /* This is just debug information about the reattempt to finish the
            command */
@@ -123,7 +123,7 @@ Esys_PCR_Event(
  * This function invokes the TPM2_PCR_Event command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_PCR_Event_finish.
+ * In order to retrieve the TPM's response call Esys_PCR_Event_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] pcrHandle Input handle of type ESYS_TR for
@@ -137,7 +137,7 @@ Esys_PCR_Event(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_PCR_Event_async(
+Esys_PCR_Event_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR pcrHandle,
     ESYS_TR shandle1,
@@ -204,7 +204,7 @@ Esys_PCR_Event_async(
 /** Asynchronous finish function for TPM2_PCR_Event
  *
  * This function returns the results of a TPM2_PCR_Event command
- * invoked via Esys_PCR_Event_finish. All non-simple output parameters
+ * invoked via Esys_PCR_Event_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -216,7 +216,7 @@ Esys_PCR_Event_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_PCR_Event_finish(
+Esys_PCR_Event_Finish(
     ESYS_CONTEXT *esysContext,
     TPML_DIGEST_VALUES **digests)
 {
@@ -262,7 +262,7 @@ Esys_PCR_Event_finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_PCR_Event_async(esysContext,
+        r = Esys_PCR_Event_Async(esysContext,
                 esysContext->in.PCR_Event.pcrHandle,
                 esysContext->session_type[0],
                 esysContext->session_type[1],

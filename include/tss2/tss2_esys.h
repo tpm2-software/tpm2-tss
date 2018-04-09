@@ -201,12 +201,12 @@ Esys_Startup(
     TPM2_SU startupType);
 
 TSS2_RC
-Esys_Startup_async(
+Esys_Startup_Async(
     ESYS_CONTEXT *esysContext,
     TPM2_SU startupType);
 
 TSS2_RC
-Esys_Startup_finish(
+Esys_Startup_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 7 - TPM2_Shutdown Command */
@@ -220,7 +220,7 @@ Esys_Shutdown(
     TPM2_SU shutdownType);
 
 TSS2_RC
-Esys_Shutdown_async(
+Esys_Shutdown_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -228,7 +228,7 @@ Esys_Shutdown_async(
     TPM2_SU shutdownType);
 
 TSS2_RC
-Esys_Shutdown_finish(
+Esys_Shutdown_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 9 - TPM2_SelfTest Command */
@@ -242,7 +242,7 @@ Esys_SelfTest(
     TPMI_YES_NO fullTest);
 
 TSS2_RC
-Esys_SelfTest_async(
+Esys_SelfTest_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -250,7 +250,7 @@ Esys_SelfTest_async(
     TPMI_YES_NO fullTest);
 
 TSS2_RC
-Esys_SelfTest_finish(
+Esys_SelfTest_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 11 - TPM2_IncrementalSelfTest Command */
@@ -265,7 +265,7 @@ Esys_IncrementalSelfTest(
     TPML_ALG **toDoList);
 
 TSS2_RC
-Esys_IncrementalSelfTest_async(
+Esys_IncrementalSelfTest_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -273,7 +273,7 @@ Esys_IncrementalSelfTest_async(
     const TPML_ALG *toTest);
 
 TSS2_RC
-Esys_IncrementalSelfTest_finish(
+Esys_IncrementalSelfTest_Finish(
     ESYS_CONTEXT *esysContext,
     TPML_ALG **toDoList);
 
@@ -289,14 +289,14 @@ Esys_GetTestResult(
     TPM2_RC *testResult);
 
 TSS2_RC
-Esys_GetTestResult_async(
+Esys_GetTestResult_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_GetTestResult_finish(
+Esys_GetTestResult_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_MAX_BUFFER **outData,
     TPM2_RC *testResult);
@@ -319,7 +319,7 @@ Esys_StartAuthSession(
     TPM2B_NONCE **nonceTPM);
 
 TSS2_RC
-Esys_StartAuthSession_async(
+Esys_StartAuthSession_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR tpmKey,
     ESYS_TR bind,
@@ -332,7 +332,7 @@ Esys_StartAuthSession_async(
     TPMI_ALG_HASH authHash);
 
 TSS2_RC
-Esys_StartAuthSession_finish(
+Esys_StartAuthSession_Finish(
     ESYS_CONTEXT *esysContext,
     ESYS_TR *sessionHandle,
     TPM2B_NONCE **nonceTPM);
@@ -348,7 +348,7 @@ Esys_PolicyRestart(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_PolicyRestart_async(
+Esys_PolicyRestart_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR sessionHandle,
     ESYS_TR shandle1,
@@ -356,7 +356,7 @@ Esys_PolicyRestart_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_PolicyRestart_finish(
+Esys_PolicyRestart_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 19 - TPM2_Create Command */
@@ -379,7 +379,7 @@ Esys_Create(
     TPMT_TK_CREATION **creationTicket);
 
 TSS2_RC
-Esys_Create_async(
+Esys_Create_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR parentHandle,
     ESYS_TR shandle1,
@@ -391,7 +391,7 @@ Esys_Create_async(
     const TPML_PCR_SELECTION *creationPCR);
 
 TSS2_RC
-Esys_Create_finish(
+Esys_Create_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_PRIVATE **outPrivate,
     TPM2B_PUBLIC **outPublic,
@@ -413,7 +413,7 @@ Esys_Load(
     ESYS_TR *objectHandle);
 
 TSS2_RC
-Esys_Load_async(
+Esys_Load_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR parentHandle,
     ESYS_TR shandle1,
@@ -423,7 +423,7 @@ Esys_Load_async(
     const TPM2B_PUBLIC *inPublic);
 
 TSS2_RC
-Esys_Load_finish(
+Esys_Load_Finish(
     ESYS_CONTEXT *esysContext,
     ESYS_TR *objectHandle);
 
@@ -441,7 +441,7 @@ Esys_LoadExternal(
     ESYS_TR *objectHandle);
 
 TSS2_RC
-Esys_LoadExternal_async(
+Esys_LoadExternal_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -451,7 +451,7 @@ Esys_LoadExternal_async(
     TPMI_RH_HIERARCHY hierarchy);
 
 TSS2_RC
-Esys_LoadExternal_finish(
+Esys_LoadExternal_Finish(
     ESYS_CONTEXT *esysContext,
     ESYS_TR *objectHandle);
 
@@ -469,7 +469,7 @@ Esys_ReadPublic(
     TPM2B_NAME **qualifiedName);
 
 TSS2_RC
-Esys_ReadPublic_async(
+Esys_ReadPublic_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR objectHandle,
     ESYS_TR shandle1,
@@ -477,7 +477,7 @@ Esys_ReadPublic_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_ReadPublic_finish(
+Esys_ReadPublic_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_PUBLIC **outPublic,
     TPM2B_NAME **name,
@@ -498,7 +498,7 @@ Esys_ActivateCredential(
     TPM2B_DIGEST **certInfo);
 
 TSS2_RC
-Esys_ActivateCredential_async(
+Esys_ActivateCredential_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR activateHandle,
     ESYS_TR keyHandle,
@@ -509,7 +509,7 @@ Esys_ActivateCredential_async(
     const TPM2B_ENCRYPTED_SECRET *secret);
 
 TSS2_RC
-Esys_ActivateCredential_finish(
+Esys_ActivateCredential_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_DIGEST **certInfo);
 
@@ -528,7 +528,7 @@ Esys_MakeCredential(
     TPM2B_ENCRYPTED_SECRET **secret);
 
 TSS2_RC
-Esys_MakeCredential_async(
+Esys_MakeCredential_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR handle,
     ESYS_TR shandle1,
@@ -538,7 +538,7 @@ Esys_MakeCredential_async(
     const TPM2B_NAME *objectName);
 
 TSS2_RC
-Esys_MakeCredential_finish(
+Esys_MakeCredential_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ID_OBJECT **credentialBlob,
     TPM2B_ENCRYPTED_SECRET **secret);
@@ -555,7 +555,7 @@ Esys_Unseal(
     TPM2B_SENSITIVE_DATA **outData);
 
 TSS2_RC
-Esys_Unseal_async(
+Esys_Unseal_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR itemHandle,
     ESYS_TR shandle1,
@@ -563,7 +563,7 @@ Esys_Unseal_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_Unseal_finish(
+Esys_Unseal_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_SENSITIVE_DATA **outData);
 
@@ -581,7 +581,7 @@ Esys_ObjectChangeAuth(
     TPM2B_PRIVATE **outPrivate);
 
 TSS2_RC
-Esys_ObjectChangeAuth_async(
+Esys_ObjectChangeAuth_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR objectHandle,
     ESYS_TR parentHandle,
@@ -591,7 +591,7 @@ Esys_ObjectChangeAuth_async(
     const TPM2B_AUTH *newAuth);
 
 TSS2_RC
-Esys_ObjectChangeAuth_finish(
+Esys_ObjectChangeAuth_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_PRIVATE **outPrivate);
 
@@ -611,7 +611,7 @@ Esys_CreateLoaded(
     TPM2B_PUBLIC **outPublic);
 
 TSS2_RC
-Esys_CreateLoaded_async(
+Esys_CreateLoaded_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR parentHandle,
     ESYS_TR shandle1,
@@ -621,7 +621,7 @@ Esys_CreateLoaded_async(
     const TPM2B_TEMPLATE *inPublic);
 
 TSS2_RC
-Esys_CreateLoaded_finish(
+Esys_CreateLoaded_Finish(
     ESYS_CONTEXT *esysContext,
     ESYS_TR *objectHandle,
     TPM2B_PRIVATE **outPrivate,
@@ -644,7 +644,7 @@ Esys_Duplicate(
     TPM2B_ENCRYPTED_SECRET **outSymSeed);
 
 TSS2_RC
-Esys_Duplicate_async(
+Esys_Duplicate_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR objectHandle,
     ESYS_TR newParentHandle,
@@ -655,7 +655,7 @@ Esys_Duplicate_async(
     const TPMT_SYM_DEF_OBJECT *symmetricAlg);
 
 TSS2_RC
-Esys_Duplicate_finish(
+Esys_Duplicate_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_DATA **encryptionKeyOut,
     TPM2B_PRIVATE **duplicate,
@@ -678,7 +678,7 @@ Esys_Rewrap(
     TPM2B_ENCRYPTED_SECRET **outSymSeed);
 
 TSS2_RC
-Esys_Rewrap_async(
+Esys_Rewrap_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR oldParent,
     ESYS_TR newParent,
@@ -690,7 +690,7 @@ Esys_Rewrap_async(
     const TPM2B_ENCRYPTED_SECRET *inSymSeed);
 
 TSS2_RC
-Esys_Rewrap_finish(
+Esys_Rewrap_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_PRIVATE **outDuplicate,
     TPM2B_ENCRYPTED_SECRET **outSymSeed);
@@ -712,7 +712,7 @@ Esys_Import(
     TPM2B_PRIVATE **outPrivate);
 
 TSS2_RC
-Esys_Import_async(
+Esys_Import_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR parentHandle,
     ESYS_TR shandle1,
@@ -725,7 +725,7 @@ Esys_Import_async(
     const TPMT_SYM_DEF_OBJECT *symmetricAlg);
 
 TSS2_RC
-Esys_Import_finish(
+Esys_Import_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_PRIVATE **outPrivate);
 
@@ -744,7 +744,7 @@ Esys_RSA_Encrypt(
     TPM2B_PUBLIC_KEY_RSA **outData);
 
 TSS2_RC
-Esys_RSA_Encrypt_async(
+Esys_RSA_Encrypt_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR keyHandle,
     ESYS_TR shandle1,
@@ -755,7 +755,7 @@ Esys_RSA_Encrypt_async(
     const TPM2B_DATA *label);
 
 TSS2_RC
-Esys_RSA_Encrypt_finish(
+Esys_RSA_Encrypt_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_PUBLIC_KEY_RSA **outData);
 
@@ -774,7 +774,7 @@ Esys_RSA_Decrypt(
     TPM2B_PUBLIC_KEY_RSA **message);
 
 TSS2_RC
-Esys_RSA_Decrypt_async(
+Esys_RSA_Decrypt_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR keyHandle,
     ESYS_TR shandle1,
@@ -785,7 +785,7 @@ Esys_RSA_Decrypt_async(
     const TPM2B_DATA *label);
 
 TSS2_RC
-Esys_RSA_Decrypt_finish(
+Esys_RSA_Decrypt_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_PUBLIC_KEY_RSA **message);
 
@@ -802,7 +802,7 @@ Esys_ECDH_KeyGen(
     TPM2B_ECC_POINT **pubPoint);
 
 TSS2_RC
-Esys_ECDH_KeyGen_async(
+Esys_ECDH_KeyGen_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR keyHandle,
     ESYS_TR shandle1,
@@ -810,7 +810,7 @@ Esys_ECDH_KeyGen_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_ECDH_KeyGen_finish(
+Esys_ECDH_KeyGen_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ECC_POINT **zPoint,
     TPM2B_ECC_POINT **pubPoint);
@@ -828,7 +828,7 @@ Esys_ECDH_ZGen(
     TPM2B_ECC_POINT **outPoint);
 
 TSS2_RC
-Esys_ECDH_ZGen_async(
+Esys_ECDH_ZGen_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR keyHandle,
     ESYS_TR shandle1,
@@ -837,7 +837,7 @@ Esys_ECDH_ZGen_async(
     const TPM2B_ECC_POINT *inPoint);
 
 TSS2_RC
-Esys_ECDH_ZGen_finish(
+Esys_ECDH_ZGen_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ECC_POINT **outPoint);
 
@@ -853,7 +853,7 @@ Esys_ECC_Parameters(
     TPMS_ALGORITHM_DETAIL_ECC **parameters);
 
 TSS2_RC
-Esys_ECC_Parameters_async(
+Esys_ECC_Parameters_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -861,7 +861,7 @@ Esys_ECC_Parameters_async(
     TPMI_ECC_CURVE curveID);
 
 TSS2_RC
-Esys_ECC_Parameters_finish(
+Esys_ECC_Parameters_Finish(
     ESYS_CONTEXT *esysContext,
     TPMS_ALGORITHM_DETAIL_ECC **parameters);
 
@@ -882,7 +882,7 @@ Esys_ZGen_2Phase(
     TPM2B_ECC_POINT **outZ2);
 
 TSS2_RC
-Esys_ZGen_2Phase_async(
+Esys_ZGen_2Phase_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR keyA,
     ESYS_TR shandle1,
@@ -894,7 +894,7 @@ Esys_ZGen_2Phase_async(
     UINT16 counter);
 
 TSS2_RC
-Esys_ZGen_2Phase_finish(
+Esys_ZGen_2Phase_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ECC_POINT **outZ1,
     TPM2B_ECC_POINT **outZ2);
@@ -916,7 +916,7 @@ Esys_EncryptDecrypt(
     TPM2B_IV **ivOut);
 
 TSS2_RC
-Esys_EncryptDecrypt_async(
+Esys_EncryptDecrypt_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR keyHandle,
     ESYS_TR shandle1,
@@ -928,7 +928,7 @@ Esys_EncryptDecrypt_async(
     const TPM2B_MAX_BUFFER *inData);
 
 TSS2_RC
-Esys_EncryptDecrypt_finish(
+Esys_EncryptDecrypt_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_MAX_BUFFER **outData,
     TPM2B_IV **ivOut);
@@ -950,7 +950,7 @@ Esys_EncryptDecrypt2(
     TPM2B_IV **ivOut);
 
 TSS2_RC
-Esys_EncryptDecrypt2_async(
+Esys_EncryptDecrypt2_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR keyHandle,
     ESYS_TR shandle1,
@@ -962,7 +962,7 @@ Esys_EncryptDecrypt2_async(
     const TPM2B_IV *ivIn);
 
 TSS2_RC
-Esys_EncryptDecrypt2_finish(
+Esys_EncryptDecrypt2_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_MAX_BUFFER **outData,
     TPM2B_IV **ivOut);
@@ -982,7 +982,7 @@ Esys_Hash(
     TPMT_TK_HASHCHECK **validation);
 
 TSS2_RC
-Esys_Hash_async(
+Esys_Hash_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -992,7 +992,7 @@ Esys_Hash_async(
     TPMI_RH_HIERARCHY hierarchy);
 
 TSS2_RC
-Esys_Hash_finish(
+Esys_Hash_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_DIGEST **outHash,
     TPMT_TK_HASHCHECK **validation);
@@ -1011,7 +1011,7 @@ Esys_HMAC(
     TPM2B_DIGEST **outHMAC);
 
 TSS2_RC
-Esys_HMAC_async(
+Esys_HMAC_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR handle,
     ESYS_TR shandle1,
@@ -1021,7 +1021,7 @@ Esys_HMAC_async(
     TPMI_ALG_HASH hashAlg);
 
 TSS2_RC
-Esys_HMAC_finish(
+Esys_HMAC_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_DIGEST **outHMAC);
 
@@ -1037,7 +1037,7 @@ Esys_GetRandom(
     TPM2B_DIGEST **randomBytes);
 
 TSS2_RC
-Esys_GetRandom_async(
+Esys_GetRandom_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -1045,7 +1045,7 @@ Esys_GetRandom_async(
     UINT16 bytesRequested);
 
 TSS2_RC
-Esys_GetRandom_finish(
+Esys_GetRandom_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_DIGEST **randomBytes);
 
@@ -1060,7 +1060,7 @@ Esys_StirRandom(
     const TPM2B_SENSITIVE_DATA *inData);
 
 TSS2_RC
-Esys_StirRandom_async(
+Esys_StirRandom_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -1068,7 +1068,7 @@ Esys_StirRandom_async(
     const TPM2B_SENSITIVE_DATA *inData);
 
 TSS2_RC
-Esys_StirRandom_finish(
+Esys_StirRandom_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 71 - TPM2_HMAC_Start Command */
@@ -1085,7 +1085,7 @@ Esys_HMAC_Start(
     ESYS_TR *sequenceHandle);
 
 TSS2_RC
-Esys_HMAC_Start_async(
+Esys_HMAC_Start_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR handle,
     ESYS_TR shandle1,
@@ -1095,7 +1095,7 @@ Esys_HMAC_Start_async(
     TPMI_ALG_HASH hashAlg);
 
 TSS2_RC
-Esys_HMAC_Start_finish(
+Esys_HMAC_Start_Finish(
     ESYS_CONTEXT *esysContext,
     ESYS_TR *sequenceHandle);
 
@@ -1112,7 +1112,7 @@ Esys_HashSequenceStart(
     ESYS_TR *sequenceHandle);
 
 TSS2_RC
-Esys_HashSequenceStart_async(
+Esys_HashSequenceStart_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -1121,7 +1121,7 @@ Esys_HashSequenceStart_async(
     TPMI_ALG_HASH hashAlg);
 
 TSS2_RC
-Esys_HashSequenceStart_finish(
+Esys_HashSequenceStart_Finish(
     ESYS_CONTEXT *esysContext,
     ESYS_TR *sequenceHandle);
 
@@ -1137,7 +1137,7 @@ Esys_SequenceUpdate(
     const TPM2B_MAX_BUFFER *buffer);
 
 TSS2_RC
-Esys_SequenceUpdate_async(
+Esys_SequenceUpdate_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR sequenceHandle,
     ESYS_TR shandle1,
@@ -1146,7 +1146,7 @@ Esys_SequenceUpdate_async(
     const TPM2B_MAX_BUFFER *buffer);
 
 TSS2_RC
-Esys_SequenceUpdate_finish(
+Esys_SequenceUpdate_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 77 - TPM2_SequenceComplete Command */
@@ -1164,7 +1164,7 @@ Esys_SequenceComplete(
     TPMT_TK_HASHCHECK **validation);
 
 TSS2_RC
-Esys_SequenceComplete_async(
+Esys_SequenceComplete_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR sequenceHandle,
     ESYS_TR shandle1,
@@ -1174,7 +1174,7 @@ Esys_SequenceComplete_async(
     TPMI_RH_HIERARCHY hierarchy);
 
 TSS2_RC
-Esys_SequenceComplete_finish(
+Esys_SequenceComplete_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_DIGEST **result,
     TPMT_TK_HASHCHECK **validation);
@@ -1193,7 +1193,7 @@ Esys_EventSequenceComplete(
     TPML_DIGEST_VALUES **results);
 
 TSS2_RC
-Esys_EventSequenceComplete_async(
+Esys_EventSequenceComplete_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR pcrHandle,
     ESYS_TR sequenceHandle,
@@ -1203,7 +1203,7 @@ Esys_EventSequenceComplete_async(
     const TPM2B_MAX_BUFFER *buffer);
 
 TSS2_RC
-Esys_EventSequenceComplete_finish(
+Esys_EventSequenceComplete_Finish(
     ESYS_CONTEXT *esysContext,
     TPML_DIGEST_VALUES **results);
 
@@ -1223,7 +1223,7 @@ Esys_Certify(
     TPMT_SIGNATURE **signature);
 
 TSS2_RC
-Esys_Certify_async(
+Esys_Certify_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR objectHandle,
     ESYS_TR signHandle,
@@ -1234,7 +1234,7 @@ Esys_Certify_async(
     const TPMT_SIG_SCHEME *inScheme);
 
 TSS2_RC
-Esys_Certify_finish(
+Esys_Certify_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ATTEST **certifyInfo,
     TPMT_SIGNATURE **signature);
@@ -1257,7 +1257,7 @@ Esys_CertifyCreation(
     TPMT_SIGNATURE **signature);
 
 TSS2_RC
-Esys_CertifyCreation_async(
+Esys_CertifyCreation_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR signHandle,
     ESYS_TR objectHandle,
@@ -1270,7 +1270,7 @@ Esys_CertifyCreation_async(
     const TPMT_TK_CREATION *creationTicket);
 
 TSS2_RC
-Esys_CertifyCreation_finish(
+Esys_CertifyCreation_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ATTEST **certifyInfo,
     TPMT_SIGNATURE **signature);
@@ -1291,7 +1291,7 @@ Esys_Quote(
     TPMT_SIGNATURE **signature);
 
 TSS2_RC
-Esys_Quote_async(
+Esys_Quote_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR signHandle,
     ESYS_TR shandle1,
@@ -1302,7 +1302,7 @@ Esys_Quote_async(
     const TPML_PCR_SELECTION *PCRselect);
 
 TSS2_RC
-Esys_Quote_finish(
+Esys_Quote_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ATTEST **quoted,
     TPMT_SIGNATURE **signature);
@@ -1324,7 +1324,7 @@ Esys_GetSessionAuditDigest(
     TPMT_SIGNATURE **signature);
 
 TSS2_RC
-Esys_GetSessionAuditDigest_async(
+Esys_GetSessionAuditDigest_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR privacyAdminHandle,
     ESYS_TR signHandle,
@@ -1336,7 +1336,7 @@ Esys_GetSessionAuditDigest_async(
     const TPMT_SIG_SCHEME *inScheme);
 
 TSS2_RC
-Esys_GetSessionAuditDigest_finish(
+Esys_GetSessionAuditDigest_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ATTEST **auditInfo,
     TPMT_SIGNATURE **signature);
@@ -1357,7 +1357,7 @@ Esys_GetCommandAuditDigest(
     TPMT_SIGNATURE **signature);
 
 TSS2_RC
-Esys_GetCommandAuditDigest_async(
+Esys_GetCommandAuditDigest_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR privacyHandle,
     ESYS_TR signHandle,
@@ -1368,7 +1368,7 @@ Esys_GetCommandAuditDigest_async(
     const TPMT_SIG_SCHEME *inScheme);
 
 TSS2_RC
-Esys_GetCommandAuditDigest_finish(
+Esys_GetCommandAuditDigest_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ATTEST **auditInfo,
     TPMT_SIGNATURE **signature);
@@ -1389,7 +1389,7 @@ Esys_GetTime(
     TPMT_SIGNATURE **signature);
 
 TSS2_RC
-Esys_GetTime_async(
+Esys_GetTime_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR privacyAdminHandle,
     ESYS_TR signHandle,
@@ -1400,7 +1400,7 @@ Esys_GetTime_async(
     const TPMT_SIG_SCHEME *inScheme);
 
 TSS2_RC
-Esys_GetTime_finish(
+Esys_GetTime_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ATTEST **timeInfo,
     TPMT_SIGNATURE **signature);
@@ -1423,7 +1423,7 @@ Esys_Commit(
     UINT16 *counter);
 
 TSS2_RC
-Esys_Commit_async(
+Esys_Commit_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR signHandle,
     ESYS_TR shandle1,
@@ -1434,7 +1434,7 @@ Esys_Commit_async(
     const TPM2B_ECC_PARAMETER *y2);
 
 TSS2_RC
-Esys_Commit_finish(
+Esys_Commit_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ECC_POINT **K,
     TPM2B_ECC_POINT **L,
@@ -1454,7 +1454,7 @@ Esys_EC_Ephemeral(
     UINT16 *counter);
 
 TSS2_RC
-Esys_EC_Ephemeral_async(
+Esys_EC_Ephemeral_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -1462,7 +1462,7 @@ Esys_EC_Ephemeral_async(
     TPMI_ECC_CURVE curveID);
 
 TSS2_RC
-Esys_EC_Ephemeral_finish(
+Esys_EC_Ephemeral_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ECC_POINT **Q,
     UINT16 *counter);
@@ -1481,7 +1481,7 @@ Esys_VerifySignature(
     TPMT_TK_VERIFIED **validation);
 
 TSS2_RC
-Esys_VerifySignature_async(
+Esys_VerifySignature_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR keyHandle,
     ESYS_TR shandle1,
@@ -1491,7 +1491,7 @@ Esys_VerifySignature_async(
     const TPMT_SIGNATURE *signature);
 
 TSS2_RC
-Esys_VerifySignature_finish(
+Esys_VerifySignature_Finish(
     ESYS_CONTEXT *esysContext,
     TPMT_TK_VERIFIED **validation);
 
@@ -1510,7 +1510,7 @@ Esys_Sign(
     TPMT_SIGNATURE **signature);
 
 TSS2_RC
-Esys_Sign_async(
+Esys_Sign_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR keyHandle,
     ESYS_TR shandle1,
@@ -1521,7 +1521,7 @@ Esys_Sign_async(
     const TPMT_TK_HASHCHECK *validation);
 
 TSS2_RC
-Esys_Sign_finish(
+Esys_Sign_Finish(
     ESYS_CONTEXT *esysContext,
     TPMT_SIGNATURE **signature);
 
@@ -1539,7 +1539,7 @@ Esys_SetCommandCodeAuditStatus(
     const TPML_CC *clearList);
 
 TSS2_RC
-Esys_SetCommandCodeAuditStatus_async(
+Esys_SetCommandCodeAuditStatus_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR auth,
     ESYS_TR shandle1,
@@ -1550,7 +1550,7 @@ Esys_SetCommandCodeAuditStatus_async(
     const TPML_CC *clearList);
 
 TSS2_RC
-Esys_SetCommandCodeAuditStatus_finish(
+Esys_SetCommandCodeAuditStatus_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 103 - TPM2_PCR_Extend Command */
@@ -1565,7 +1565,7 @@ Esys_PCR_Extend(
     const TPML_DIGEST_VALUES *digests);
 
 TSS2_RC
-Esys_PCR_Extend_async(
+Esys_PCR_Extend_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR pcrHandle,
     ESYS_TR shandle1,
@@ -1574,7 +1574,7 @@ Esys_PCR_Extend_async(
     const TPML_DIGEST_VALUES *digests);
 
 TSS2_RC
-Esys_PCR_Extend_finish(
+Esys_PCR_Extend_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 105 - TPM2_PCR_Event Command */
@@ -1590,7 +1590,7 @@ Esys_PCR_Event(
     TPML_DIGEST_VALUES **digests);
 
 TSS2_RC
-Esys_PCR_Event_async(
+Esys_PCR_Event_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR pcrHandle,
     ESYS_TR shandle1,
@@ -1599,7 +1599,7 @@ Esys_PCR_Event_async(
     const TPM2B_EVENT *eventData);
 
 TSS2_RC
-Esys_PCR_Event_finish(
+Esys_PCR_Event_Finish(
     ESYS_CONTEXT *esysContext,
     TPML_DIGEST_VALUES **digests);
 
@@ -1617,7 +1617,7 @@ Esys_PCR_Read(
     TPML_DIGEST **pcrValues);
 
 TSS2_RC
-Esys_PCR_Read_async(
+Esys_PCR_Read_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -1625,7 +1625,7 @@ Esys_PCR_Read_async(
     const TPML_PCR_SELECTION *pcrSelectionIn);
 
 TSS2_RC
-Esys_PCR_Read_finish(
+Esys_PCR_Read_Finish(
     ESYS_CONTEXT *esysContext,
     UINT32 *pcrUpdateCounter,
     TPML_PCR_SELECTION **pcrSelectionOut,
@@ -1647,7 +1647,7 @@ Esys_PCR_Allocate(
     UINT32 *sizeAvailable);
 
 TSS2_RC
-Esys_PCR_Allocate_async(
+Esys_PCR_Allocate_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR shandle1,
@@ -1656,7 +1656,7 @@ Esys_PCR_Allocate_async(
     const TPML_PCR_SELECTION *pcrAllocation);
 
 TSS2_RC
-Esys_PCR_Allocate_finish(
+Esys_PCR_Allocate_Finish(
     ESYS_CONTEXT *esysContext,
     TPMI_YES_NO *allocationSuccess,
     UINT32 *maxPCR,
@@ -1677,7 +1677,7 @@ Esys_PCR_SetAuthPolicy(
     TPMI_DH_PCR pcrNum);
 
 TSS2_RC
-Esys_PCR_SetAuthPolicy_async(
+Esys_PCR_SetAuthPolicy_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR shandle1,
@@ -1688,7 +1688,7 @@ Esys_PCR_SetAuthPolicy_async(
     TPMI_DH_PCR pcrNum);
 
 TSS2_RC
-Esys_PCR_SetAuthPolicy_finish(
+Esys_PCR_SetAuthPolicy_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 113 - TPM2_PCR_SetAuthValue Command */
@@ -1703,7 +1703,7 @@ Esys_PCR_SetAuthValue(
     const TPM2B_DIGEST *auth);
 
 TSS2_RC
-Esys_PCR_SetAuthValue_async(
+Esys_PCR_SetAuthValue_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR pcrHandle,
     ESYS_TR shandle1,
@@ -1712,7 +1712,7 @@ Esys_PCR_SetAuthValue_async(
     const TPM2B_DIGEST *auth);
 
 TSS2_RC
-Esys_PCR_SetAuthValue_finish(
+Esys_PCR_SetAuthValue_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 115 - TPM2_PCR_Reset Command */
@@ -1726,7 +1726,7 @@ Esys_PCR_Reset(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_PCR_Reset_async(
+Esys_PCR_Reset_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR pcrHandle,
     ESYS_TR shandle1,
@@ -1734,7 +1734,7 @@ Esys_PCR_Reset_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_PCR_Reset_finish(
+Esys_PCR_Reset_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 117 - TPM2_PolicySigned Command */
@@ -1756,7 +1756,7 @@ Esys_PolicySigned(
     TPMT_TK_AUTH **policyTicket);
 
 TSS2_RC
-Esys_PolicySigned_async(
+Esys_PolicySigned_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authObject,
     ESYS_TR policySession,
@@ -1770,7 +1770,7 @@ Esys_PolicySigned_async(
     const TPMT_SIGNATURE *auth);
 
 TSS2_RC
-Esys_PolicySigned_finish(
+Esys_PolicySigned_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_TIMEOUT **timeout,
     TPMT_TK_AUTH **policyTicket);
@@ -1793,7 +1793,7 @@ Esys_PolicySecret(
     TPMT_TK_AUTH **policyTicket);
 
 TSS2_RC
-Esys_PolicySecret_async(
+Esys_PolicySecret_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR policySession,
@@ -1806,7 +1806,7 @@ Esys_PolicySecret_async(
     INT32 expiration);
 
 TSS2_RC
-Esys_PolicySecret_finish(
+Esys_PolicySecret_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_TIMEOUT **timeout,
     TPMT_TK_AUTH **policyTicket);
@@ -1827,7 +1827,7 @@ Esys_PolicyTicket(
     const TPMT_TK_AUTH *ticket);
 
 TSS2_RC
-Esys_PolicyTicket_async(
+Esys_PolicyTicket_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR policySession,
     ESYS_TR shandle1,
@@ -1840,7 +1840,7 @@ Esys_PolicyTicket_async(
     const TPMT_TK_AUTH *ticket);
 
 TSS2_RC
-Esys_PolicyTicket_finish(
+Esys_PolicyTicket_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 123 - TPM2_PolicyOR Command */
@@ -1855,7 +1855,7 @@ Esys_PolicyOR(
     const TPML_DIGEST *pHashList);
 
 TSS2_RC
-Esys_PolicyOR_async(
+Esys_PolicyOR_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR policySession,
     ESYS_TR shandle1,
@@ -1864,7 +1864,7 @@ Esys_PolicyOR_async(
     const TPML_DIGEST *pHashList);
 
 TSS2_RC
-Esys_PolicyOR_finish(
+Esys_PolicyOR_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 125 - TPM2_PolicyPCR Command */
@@ -1880,7 +1880,7 @@ Esys_PolicyPCR(
     const TPML_PCR_SELECTION *pcrs);
 
 TSS2_RC
-Esys_PolicyPCR_async(
+Esys_PolicyPCR_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR policySession,
     ESYS_TR shandle1,
@@ -1890,7 +1890,7 @@ Esys_PolicyPCR_async(
     const TPML_PCR_SELECTION *pcrs);
 
 TSS2_RC
-Esys_PolicyPCR_finish(
+Esys_PolicyPCR_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 127 - TPM2_PolicyLocality Command */
@@ -1905,7 +1905,7 @@ Esys_PolicyLocality(
     TPMA_LOCALITY locality);
 
 TSS2_RC
-Esys_PolicyLocality_async(
+Esys_PolicyLocality_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -1914,7 +1914,7 @@ Esys_PolicyLocality_async(
     TPMA_LOCALITY locality);
 
 TSS2_RC
-Esys_PolicyLocality_finish(
+Esys_PolicyLocality_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 129 - TPM2_PolicyNV Command */
@@ -1933,7 +1933,7 @@ Esys_PolicyNV(
     TPM2_EO operation);
 
 TSS2_RC
-Esys_PolicyNV_async(
+Esys_PolicyNV_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR nvIndex,
@@ -1946,7 +1946,7 @@ Esys_PolicyNV_async(
     TPM2_EO operation);
 
 TSS2_RC
-Esys_PolicyNV_finish(
+Esys_PolicyNV_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 131 - TPM2_PolicyCounterTimer Command */
@@ -1963,7 +1963,7 @@ Esys_PolicyCounterTimer(
     TPM2_EO operation);
 
 TSS2_RC
-Esys_PolicyCounterTimer_async(
+Esys_PolicyCounterTimer_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR policySession,
     ESYS_TR shandle1,
@@ -1974,7 +1974,7 @@ Esys_PolicyCounterTimer_async(
     TPM2_EO operation);
 
 TSS2_RC
-Esys_PolicyCounterTimer_finish(
+Esys_PolicyCounterTimer_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 133 - TPM2_PolicyCommandCode Command */
@@ -1989,7 +1989,7 @@ Esys_PolicyCommandCode(
     TPM2_CC code);
 
 TSS2_RC
-Esys_PolicyCommandCode_async(
+Esys_PolicyCommandCode_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR policySession,
     ESYS_TR shandle1,
@@ -1998,7 +1998,7 @@ Esys_PolicyCommandCode_async(
     TPM2_CC code);
 
 TSS2_RC
-Esys_PolicyCommandCode_finish(
+Esys_PolicyCommandCode_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 135 - TPM2_PolicyPhysicalPresence Command */
@@ -2012,7 +2012,7 @@ Esys_PolicyPhysicalPresence(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_PolicyPhysicalPresence_async(
+Esys_PolicyPhysicalPresence_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR policySession,
     ESYS_TR shandle1,
@@ -2020,7 +2020,7 @@ Esys_PolicyPhysicalPresence_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_PolicyPhysicalPresence_finish(
+Esys_PolicyPhysicalPresence_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 137 - TPM2_PolicyCpHash Command */
@@ -2035,7 +2035,7 @@ Esys_PolicyCpHash(
     const TPM2B_DIGEST *cpHashA);
 
 TSS2_RC
-Esys_PolicyCpHash_async(
+Esys_PolicyCpHash_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -2044,7 +2044,7 @@ Esys_PolicyCpHash_async(
     const TPM2B_DIGEST *cpHashA);
 
 TSS2_RC
-Esys_PolicyCpHash_finish(
+Esys_PolicyCpHash_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 139 - TPM2_PolicyNameHash Command */
@@ -2059,7 +2059,7 @@ Esys_PolicyNameHash(
     const TPM2B_DIGEST *nameHash);
 
 TSS2_RC
-Esys_PolicyNameHash_async(
+Esys_PolicyNameHash_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -2068,7 +2068,7 @@ Esys_PolicyNameHash_async(
     const TPM2B_DIGEST *nameHash);
 
 TSS2_RC
-Esys_PolicyNameHash_finish(
+Esys_PolicyNameHash_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 141 - TPM2_PolicyDuplicationSelect Command */
@@ -2085,7 +2085,7 @@ Esys_PolicyDuplicationSelect(
     TPMI_YES_NO includeObject);
 
 TSS2_RC
-Esys_PolicyDuplicationSelect_async(
+Esys_PolicyDuplicationSelect_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -2096,7 +2096,7 @@ Esys_PolicyDuplicationSelect_async(
     TPMI_YES_NO includeObject);
 
 TSS2_RC
-Esys_PolicyDuplicationSelect_finish(
+Esys_PolicyDuplicationSelect_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 143 - TPM2_PolicyAuthorize Command */
@@ -2114,7 +2114,7 @@ Esys_PolicyAuthorize(
     const TPMT_TK_VERIFIED *checkTicket);
 
 TSS2_RC
-Esys_PolicyAuthorize_async(
+Esys_PolicyAuthorize_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR policySession,
     ESYS_TR shandle1,
@@ -2126,7 +2126,7 @@ Esys_PolicyAuthorize_async(
     const TPMT_TK_VERIFIED *checkTicket);
 
 TSS2_RC
-Esys_PolicyAuthorize_finish(
+Esys_PolicyAuthorize_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 145 - TPM2_PolicyAuthValue Command */
@@ -2140,7 +2140,7 @@ Esys_PolicyAuthValue(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_PolicyAuthValue_async(
+Esys_PolicyAuthValue_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR policySession,
     ESYS_TR shandle1,
@@ -2148,7 +2148,7 @@ Esys_PolicyAuthValue_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_PolicyAuthValue_finish(
+Esys_PolicyAuthValue_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 147 - TPM2_PolicyPassword Command */
@@ -2162,7 +2162,7 @@ Esys_PolicyPassword(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_PolicyPassword_async(
+Esys_PolicyPassword_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR policySession,
     ESYS_TR shandle1,
@@ -2170,7 +2170,7 @@ Esys_PolicyPassword_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_PolicyPassword_finish(
+Esys_PolicyPassword_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 149 - TPM2_PolicyGetDigest Command */
@@ -2185,7 +2185,7 @@ Esys_PolicyGetDigest(
     TPM2B_DIGEST **policyDigest);
 
 TSS2_RC
-Esys_PolicyGetDigest_async(
+Esys_PolicyGetDigest_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR policySession,
     ESYS_TR shandle1,
@@ -2193,7 +2193,7 @@ Esys_PolicyGetDigest_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_PolicyGetDigest_finish(
+Esys_PolicyGetDigest_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_DIGEST **policyDigest);
 
@@ -2209,7 +2209,7 @@ Esys_PolicyNvWritten(
     TPMI_YES_NO writtenSet);
 
 TSS2_RC
-Esys_PolicyNvWritten_async(
+Esys_PolicyNvWritten_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR policySession,
     ESYS_TR shandle1,
@@ -2218,7 +2218,7 @@ Esys_PolicyNvWritten_async(
     TPMI_YES_NO writtenSet);
 
 TSS2_RC
-Esys_PolicyNvWritten_finish(
+Esys_PolicyNvWritten_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 153 - TPM2_PolicyTemplate Command */
@@ -2233,7 +2233,7 @@ Esys_PolicyTemplate(
     const TPM2B_DIGEST *templateHash);
 
 TSS2_RC
-Esys_PolicyTemplate_async(
+Esys_PolicyTemplate_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -2242,7 +2242,7 @@ Esys_PolicyTemplate_async(
     const TPM2B_DIGEST *templateHash);
 
 TSS2_RC
-Esys_PolicyTemplate_finish(
+Esys_PolicyTemplate_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 155 - TPM2_PolicyAuthorizeNV Command */
@@ -2258,7 +2258,7 @@ Esys_PolicyAuthorizeNV(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_PolicyAuthorizeNV_async(
+Esys_PolicyAuthorizeNV_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR nvIndex,
@@ -2268,7 +2268,7 @@ Esys_PolicyAuthorizeNV_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_PolicyAuthorizeNV_finish(
+Esys_PolicyAuthorizeNV_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 157 - TPM2_CreatePrimary Command */
@@ -2291,7 +2291,7 @@ Esys_CreatePrimary(
     TPMT_TK_CREATION **creationTicket);
 
 TSS2_RC
-Esys_CreatePrimary_async(
+Esys_CreatePrimary_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR primaryHandle,
     ESYS_TR shandle1,
@@ -2303,7 +2303,7 @@ Esys_CreatePrimary_async(
     const TPML_PCR_SELECTION *creationPCR);
 
 TSS2_RC
-Esys_CreatePrimary_finish(
+Esys_CreatePrimary_Finish(
     ESYS_CONTEXT *esysContext,
     ESYS_TR *objectHandle,
     TPM2B_PUBLIC **outPublic,
@@ -2324,7 +2324,7 @@ Esys_HierarchyControl(
     TPMI_YES_NO state);
 
 TSS2_RC
-Esys_HierarchyControl_async(
+Esys_HierarchyControl_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR shandle1,
@@ -2334,7 +2334,7 @@ Esys_HierarchyControl_async(
     TPMI_YES_NO state);
 
 TSS2_RC
-Esys_HierarchyControl_finish(
+Esys_HierarchyControl_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 161 - TPM2_SetPrimaryPolicy Command */
@@ -2350,7 +2350,7 @@ Esys_SetPrimaryPolicy(
     TPMI_ALG_HASH hashAlg);
 
 TSS2_RC
-Esys_SetPrimaryPolicy_async(
+Esys_SetPrimaryPolicy_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR shandle1,
@@ -2360,7 +2360,7 @@ Esys_SetPrimaryPolicy_async(
     TPMI_ALG_HASH hashAlg);
 
 TSS2_RC
-Esys_SetPrimaryPolicy_finish(
+Esys_SetPrimaryPolicy_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 163 - TPM2_ChangePPS Command */
@@ -2374,7 +2374,7 @@ Esys_ChangePPS(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_ChangePPS_async(
+Esys_ChangePPS_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR shandle1,
@@ -2382,7 +2382,7 @@ Esys_ChangePPS_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_ChangePPS_finish(
+Esys_ChangePPS_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 165 - TPM2_ChangeEPS Command */
@@ -2396,7 +2396,7 @@ Esys_ChangeEPS(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_ChangeEPS_async(
+Esys_ChangeEPS_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR shandle1,
@@ -2404,7 +2404,7 @@ Esys_ChangeEPS_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_ChangeEPS_finish(
+Esys_ChangeEPS_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 167 - TPM2_Clear Command */
@@ -2418,7 +2418,7 @@ Esys_Clear(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_Clear_async(
+Esys_Clear_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR shandle1,
@@ -2426,7 +2426,7 @@ Esys_Clear_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_Clear_finish(
+Esys_Clear_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 169 - TPM2_ClearControl Command */
@@ -2441,7 +2441,7 @@ Esys_ClearControl(
     TPMI_YES_NO disable);
 
 TSS2_RC
-Esys_ClearControl_async(
+Esys_ClearControl_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR auth,
     ESYS_TR shandle1,
@@ -2450,7 +2450,7 @@ Esys_ClearControl_async(
     TPMI_YES_NO disable);
 
 TSS2_RC
-Esys_ClearControl_finish(
+Esys_ClearControl_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 171 - TPM2_HierarchyChangeAuth Command */
@@ -2465,7 +2465,7 @@ Esys_HierarchyChangeAuth(
     const TPM2B_AUTH *newAuth);
 
 TSS2_RC
-Esys_HierarchyChangeAuth_async(
+Esys_HierarchyChangeAuth_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR shandle1,
@@ -2474,7 +2474,7 @@ Esys_HierarchyChangeAuth_async(
     const TPM2B_AUTH *newAuth);
 
 TSS2_RC
-Esys_HierarchyChangeAuth_finish(
+Esys_HierarchyChangeAuth_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 173 - TPM2_DictionaryAttackLockReset Command */
@@ -2488,7 +2488,7 @@ Esys_DictionaryAttackLockReset(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_DictionaryAttackLockReset_async(
+Esys_DictionaryAttackLockReset_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR lockHandle,
     ESYS_TR shandle1,
@@ -2496,7 +2496,7 @@ Esys_DictionaryAttackLockReset_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_DictionaryAttackLockReset_finish(
+Esys_DictionaryAttackLockReset_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 175 - TPM2_DictionaryAttackParameters Command */
@@ -2513,7 +2513,7 @@ Esys_DictionaryAttackParameters(
     UINT32 lockoutRecovery);
 
 TSS2_RC
-Esys_DictionaryAttackParameters_async(
+Esys_DictionaryAttackParameters_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR lockHandle,
     ESYS_TR shandle1,
@@ -2524,7 +2524,7 @@ Esys_DictionaryAttackParameters_async(
     UINT32 lockoutRecovery);
 
 TSS2_RC
-Esys_DictionaryAttackParameters_finish(
+Esys_DictionaryAttackParameters_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 177 - TPM2_PP_Commands Command */
@@ -2540,7 +2540,7 @@ Esys_PP_Commands(
     const TPML_CC *clearList);
 
 TSS2_RC
-Esys_PP_Commands_async(
+Esys_PP_Commands_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR auth,
     ESYS_TR shandle1,
@@ -2550,7 +2550,7 @@ Esys_PP_Commands_async(
     const TPML_CC *clearList);
 
 TSS2_RC
-Esys_PP_Commands_finish(
+Esys_PP_Commands_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 179 - TPM2_SetAlgorithmSet Command */
@@ -2565,7 +2565,7 @@ Esys_SetAlgorithmSet(
     UINT32 algorithmSet);
 
 TSS2_RC
-Esys_SetAlgorithmSet_async(
+Esys_SetAlgorithmSet_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR shandle1,
@@ -2574,7 +2574,7 @@ Esys_SetAlgorithmSet_async(
     UINT32 algorithmSet);
 
 TSS2_RC
-Esys_SetAlgorithmSet_finish(
+Esys_SetAlgorithmSet_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 181 - TPM2_FieldUpgradeStart Command */
@@ -2591,7 +2591,7 @@ Esys_FieldUpgradeStart(
     const TPMT_SIGNATURE *manifestSignature);
 
 TSS2_RC
-Esys_FieldUpgradeStart_async(
+Esys_FieldUpgradeStart_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authorization,
     ESYS_TR keyHandle,
@@ -2602,7 +2602,7 @@ Esys_FieldUpgradeStart_async(
     const TPMT_SIGNATURE *manifestSignature);
 
 TSS2_RC
-Esys_FieldUpgradeStart_finish(
+Esys_FieldUpgradeStart_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 183 - TPM2_FieldUpgradeData Command */
@@ -2618,7 +2618,7 @@ Esys_FieldUpgradeData(
     TPMT_HA **firstDigest);
 
 TSS2_RC
-Esys_FieldUpgradeData_async(
+Esys_FieldUpgradeData_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -2626,7 +2626,7 @@ Esys_FieldUpgradeData_async(
     const TPM2B_MAX_BUFFER *fuData);
 
 TSS2_RC
-Esys_FieldUpgradeData_finish(
+Esys_FieldUpgradeData_Finish(
     ESYS_CONTEXT *esysContext,
     TPMT_HA **nextDigest,
     TPMT_HA **firstDigest);
@@ -2643,7 +2643,7 @@ Esys_FirmwareRead(
     TPM2B_MAX_BUFFER **fuData);
 
 TSS2_RC
-Esys_FirmwareRead_async(
+Esys_FirmwareRead_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -2651,7 +2651,7 @@ Esys_FirmwareRead_async(
     UINT32 sequenceNumber);
 
 TSS2_RC
-Esys_FirmwareRead_finish(
+Esys_FirmwareRead_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_MAX_BUFFER **fuData);
 
@@ -2664,12 +2664,12 @@ Esys_ContextSave(
     TPMS_CONTEXT **context);
 
 TSS2_RC
-Esys_ContextSave_async(
+Esys_ContextSave_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR saveHandle);
 
 TSS2_RC
-Esys_ContextSave_finish(
+Esys_ContextSave_Finish(
     ESYS_CONTEXT *esysContext,
     TPMS_CONTEXT **context);
 
@@ -2682,12 +2682,12 @@ Esys_ContextLoad(
     ESYS_TR *loadedHandle);
 
 TSS2_RC
-Esys_ContextLoad_async(
+Esys_ContextLoad_Async(
     ESYS_CONTEXT *esysContext,
     const TPMS_CONTEXT *context);
 
 TSS2_RC
-Esys_ContextLoad_finish(
+Esys_ContextLoad_Finish(
     ESYS_CONTEXT *esysContext,
     ESYS_TR *loadedHandle);
 
@@ -2699,12 +2699,12 @@ Esys_FlushContext(
     ESYS_TR flushHandle);
 
 TSS2_RC
-Esys_FlushContext_async(
+Esys_FlushContext_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR flushHandle);
 
 TSS2_RC
-Esys_FlushContext_finish(
+Esys_FlushContext_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 193 - TPM2_EvictControl Command */
@@ -2721,7 +2721,7 @@ Esys_EvictControl(
     ESYS_TR *newObjectHandle);
 
 TSS2_RC
-Esys_EvictControl_async(
+Esys_EvictControl_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR auth,
     ESYS_TR objectHandle,
@@ -2731,7 +2731,7 @@ Esys_EvictControl_async(
     TPMI_DH_PERSISTENT persistentHandle);
 
 TSS2_RC
-Esys_EvictControl_finish(
+Esys_EvictControl_Finish(
     ESYS_CONTEXT *esysContext,
     ESYS_TR *newObjectHandle);
 
@@ -2746,14 +2746,14 @@ Esys_ReadClock(
     TPMS_TIME_INFO **currentTime);
 
 TSS2_RC
-Esys_ReadClock_async(
+Esys_ReadClock_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_ReadClock_finish(
+Esys_ReadClock_Finish(
     ESYS_CONTEXT *esysContext,
     TPMS_TIME_INFO **currentTime);
 
@@ -2769,7 +2769,7 @@ Esys_ClockSet(
     UINT64 newTime);
 
 TSS2_RC
-Esys_ClockSet_async(
+Esys_ClockSet_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR auth,
     ESYS_TR shandle1,
@@ -2778,7 +2778,7 @@ Esys_ClockSet_async(
     UINT64 newTime);
 
 TSS2_RC
-Esys_ClockSet_finish(
+Esys_ClockSet_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 199 - TPM2_ClockRateAdjust Command */
@@ -2793,7 +2793,7 @@ Esys_ClockRateAdjust(
     TPM2_CLOCK_ADJUST rateAdjust);
 
 TSS2_RC
-Esys_ClockRateAdjust_async(
+Esys_ClockRateAdjust_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR auth,
     ESYS_TR shandle1,
@@ -2802,7 +2802,7 @@ Esys_ClockRateAdjust_async(
     TPM2_CLOCK_ADJUST rateAdjust);
 
 TSS2_RC
-Esys_ClockRateAdjust_finish(
+Esys_ClockRateAdjust_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 201 - TPM2_GetCapability Command */
@@ -2820,7 +2820,7 @@ Esys_GetCapability(
     TPMS_CAPABILITY_DATA **capabilityData);
 
 TSS2_RC
-Esys_GetCapability_async(
+Esys_GetCapability_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -2830,7 +2830,7 @@ Esys_GetCapability_async(
     UINT32 propertyCount);
 
 TSS2_RC
-Esys_GetCapability_finish(
+Esys_GetCapability_Finish(
     ESYS_CONTEXT *esysContext,
     TPMI_YES_NO *moreData,
     TPMS_CAPABILITY_DATA **capabilityData);
@@ -2846,7 +2846,7 @@ Esys_TestParms(
     const TPMT_PUBLIC_PARMS *parameters);
 
 TSS2_RC
-Esys_TestParms_async(
+Esys_TestParms_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -2854,7 +2854,7 @@ Esys_TestParms_async(
     const TPMT_PUBLIC_PARMS *parameters);
 
 TSS2_RC
-Esys_TestParms_finish(
+Esys_TestParms_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 205 - TPM2_NV_DefineSpace Command */
@@ -2871,7 +2871,7 @@ Esys_NV_DefineSpace(
     ESYS_TR *nvHandle);
 
 TSS2_RC
-Esys_NV_DefineSpace_async(
+Esys_NV_DefineSpace_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR shandle1,
@@ -2881,7 +2881,7 @@ Esys_NV_DefineSpace_async(
     const TPM2B_NV_PUBLIC *publicInfo);
 
 TSS2_RC
-Esys_NV_DefineSpace_finish(
+Esys_NV_DefineSpace_Finish(
     ESYS_CONTEXT *esysContext,
     ESYS_TR *nvHandle);
 
@@ -2897,7 +2897,7 @@ Esys_NV_UndefineSpace(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_NV_UndefineSpace_async(
+Esys_NV_UndefineSpace_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR nvIndex,
@@ -2906,7 +2906,7 @@ Esys_NV_UndefineSpace_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_NV_UndefineSpace_finish(
+Esys_NV_UndefineSpace_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 209 - TPM2_NV_UndefineSpaceSpecial Command */
@@ -2921,7 +2921,7 @@ Esys_NV_UndefineSpaceSpecial(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_NV_UndefineSpaceSpecial_async(
+Esys_NV_UndefineSpaceSpecial_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR nvIndex,
     ESYS_TR platform,
@@ -2930,7 +2930,7 @@ Esys_NV_UndefineSpaceSpecial_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_NV_UndefineSpaceSpecial_finish(
+Esys_NV_UndefineSpaceSpecial_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 211 - TPM2_NV_ReadPublic Command */
@@ -2946,7 +2946,7 @@ Esys_NV_ReadPublic(
     TPM2B_NAME **nvName);
 
 TSS2_RC
-Esys_NV_ReadPublic_async(
+Esys_NV_ReadPublic_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR nvIndex,
     ESYS_TR shandle1,
@@ -2954,7 +2954,7 @@ Esys_NV_ReadPublic_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_NV_ReadPublic_finish(
+Esys_NV_ReadPublic_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_NV_PUBLIC **nvPublic,
     TPM2B_NAME **nvName);
@@ -2973,7 +2973,7 @@ Esys_NV_Write(
     UINT16 offset);
 
 TSS2_RC
-Esys_NV_Write_async(
+Esys_NV_Write_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR nvIndex,
@@ -2984,7 +2984,7 @@ Esys_NV_Write_async(
     UINT16 offset);
 
 TSS2_RC
-Esys_NV_Write_finish(
+Esys_NV_Write_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 215 - TPM2_NV_Increment Command */
@@ -2999,7 +2999,7 @@ Esys_NV_Increment(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_NV_Increment_async(
+Esys_NV_Increment_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR nvIndex,
@@ -3008,7 +3008,7 @@ Esys_NV_Increment_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_NV_Increment_finish(
+Esys_NV_Increment_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 217 - TPM2_NV_Extend Command */
@@ -3024,7 +3024,7 @@ Esys_NV_Extend(
     const TPM2B_MAX_NV_BUFFER *data);
 
 TSS2_RC
-Esys_NV_Extend_async(
+Esys_NV_Extend_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR nvIndex,
@@ -3034,7 +3034,7 @@ Esys_NV_Extend_async(
     const TPM2B_MAX_NV_BUFFER *data);
 
 TSS2_RC
-Esys_NV_Extend_finish(
+Esys_NV_Extend_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 219 - TPM2_NV_SetBits Command */
@@ -3050,7 +3050,7 @@ Esys_NV_SetBits(
     UINT64 bits);
 
 TSS2_RC
-Esys_NV_SetBits_async(
+Esys_NV_SetBits_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR nvIndex,
@@ -3060,7 +3060,7 @@ Esys_NV_SetBits_async(
     UINT64 bits);
 
 TSS2_RC
-Esys_NV_SetBits_finish(
+Esys_NV_SetBits_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 221 - TPM2_NV_WriteLock Command */
@@ -3075,7 +3075,7 @@ Esys_NV_WriteLock(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_NV_WriteLock_async(
+Esys_NV_WriteLock_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR nvIndex,
@@ -3084,7 +3084,7 @@ Esys_NV_WriteLock_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_NV_WriteLock_finish(
+Esys_NV_WriteLock_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 223 - TPM2_NV_GlobalWriteLock Command */
@@ -3098,7 +3098,7 @@ Esys_NV_GlobalWriteLock(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_NV_GlobalWriteLock_async(
+Esys_NV_GlobalWriteLock_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR shandle1,
@@ -3106,7 +3106,7 @@ Esys_NV_GlobalWriteLock_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_NV_GlobalWriteLock_finish(
+Esys_NV_GlobalWriteLock_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 225 - TPM2_NV_Read Command */
@@ -3124,7 +3124,7 @@ Esys_NV_Read(
     TPM2B_MAX_NV_BUFFER **data);
 
 TSS2_RC
-Esys_NV_Read_async(
+Esys_NV_Read_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR nvIndex,
@@ -3135,7 +3135,7 @@ Esys_NV_Read_async(
     UINT16 offset);
 
 TSS2_RC
-Esys_NV_Read_finish(
+Esys_NV_Read_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_MAX_NV_BUFFER **data);
 
@@ -3151,7 +3151,7 @@ Esys_NV_ReadLock(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_NV_ReadLock_async(
+Esys_NV_ReadLock_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR nvIndex,
@@ -3160,7 +3160,7 @@ Esys_NV_ReadLock_async(
     ESYS_TR shandle3);
 
 TSS2_RC
-Esys_NV_ReadLock_finish(
+Esys_NV_ReadLock_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 229 - TPM2_NV_ChangeAuth Command */
@@ -3175,7 +3175,7 @@ Esys_NV_ChangeAuth(
     const TPM2B_AUTH *newAuth);
 
 TSS2_RC
-Esys_NV_ChangeAuth_async(
+Esys_NV_ChangeAuth_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR nvIndex,
     ESYS_TR shandle1,
@@ -3184,7 +3184,7 @@ Esys_NV_ChangeAuth_async(
     const TPM2B_AUTH *newAuth);
 
 TSS2_RC
-Esys_NV_ChangeAuth_finish(
+Esys_NV_ChangeAuth_Finish(
     ESYS_CONTEXT *esysContext);
 
 /* Table 231 - TPM2_NV_Certify Command */
@@ -3206,7 +3206,7 @@ Esys_NV_Certify(
     TPMT_SIGNATURE **signature);
 
 TSS2_RC
-Esys_NV_Certify_async(
+Esys_NV_Certify_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR signHandle,
     ESYS_TR authHandle,
@@ -3220,7 +3220,7 @@ Esys_NV_Certify_async(
     UINT16 offset);
 
 TSS2_RC
-Esys_NV_Certify_finish(
+Esys_NV_Certify_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_ATTEST **certifyInfo,
     TPMT_SIGNATURE **signature);
@@ -3237,7 +3237,7 @@ Esys_Vendor_TCG_Test(
     TPM2B_DATA **outputData);
 
 TSS2_RC
-Esys_Vendor_TCG_Test_async(
+Esys_Vendor_TCG_Test_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -3245,7 +3245,7 @@ Esys_Vendor_TCG_Test_async(
     const TPM2B_DATA *inputData);
 
 TSS2_RC
-Esys_Vendor_TCG_Test_finish(
+Esys_Vendor_TCG_Test_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_DATA **outputData);
 

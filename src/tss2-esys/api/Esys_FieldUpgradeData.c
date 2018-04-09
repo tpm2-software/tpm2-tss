@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     const TPM2B_MAX_BUFFER *fuData)
@@ -81,14 +81,14 @@ Esys_FieldUpgradeData(
 {
     TSS2_RC r;
 
-    r = Esys_FieldUpgradeData_async(esysContext,
+    r = Esys_FieldUpgradeData_Async(esysContext,
                 shandle1,
                 shandle2,
                 shandle3,
                 fuData);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -99,7 +99,7 @@ Esys_FieldUpgradeData(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_FieldUpgradeData_finish(esysContext,
+        r = Esys_FieldUpgradeData_Finish(esysContext,
                 nextDigest,
                 firstDigest);
         /* This is just debug information about the reattempt to finish the
@@ -121,7 +121,7 @@ Esys_FieldUpgradeData(
  * This function invokes the TPM2_FieldUpgradeData command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_FieldUpgradeData_finish.
+ * In order to retrieve the TPM's response call Esys_FieldUpgradeData_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] shandle1 First session handle.
@@ -133,7 +133,7 @@ Esys_FieldUpgradeData(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_FieldUpgradeData_async(
+Esys_FieldUpgradeData_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
@@ -192,7 +192,7 @@ Esys_FieldUpgradeData_async(
 /** Asynchronous finish function for TPM2_FieldUpgradeData
  *
  * This function returns the results of a TPM2_FieldUpgradeData command
- * invoked via Esys_FieldUpgradeData_finish. All non-simple output parameters
+ * invoked via Esys_FieldUpgradeData_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -206,7 +206,7 @@ Esys_FieldUpgradeData_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_FieldUpgradeData_finish(
+Esys_FieldUpgradeData_Finish(
     ESYS_CONTEXT *esysContext,
     TPMT_HA **nextDigest,
     TPMT_HA **firstDigest)
@@ -259,7 +259,7 @@ Esys_FieldUpgradeData_finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_FieldUpgradeData_async(esysContext,
+        r = Esys_FieldUpgradeData_Async(esysContext,
                 esysContext->session_type[0],
                 esysContext->session_type[1],
                 esysContext->session_type[2],

@@ -35,7 +35,7 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _finish */
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle)
@@ -70,14 +70,14 @@ Esys_NV_GlobalWriteLock(
 {
     TSS2_RC r;
 
-    r = Esys_NV_GlobalWriteLock_async(esysContext,
+    r = Esys_NV_GlobalWriteLock_Async(esysContext,
                 authHandle,
                 shandle1,
                 shandle2,
                 shandle3);
     return_if_error(r, "Error in async function");
 
-    /* Set the timeout to indefinite for now, since we want _finish to block */
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
     int32_t timeouttmp = esysContext->timeout;
     esysContext->timeout = -1;
     /*
@@ -88,7 +88,7 @@ Esys_NV_GlobalWriteLock(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_NV_GlobalWriteLock_finish(esysContext);
+        r = Esys_NV_GlobalWriteLock_Finish(esysContext);
         /* This is just debug information about the reattempt to finish the
            command */
         if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
@@ -108,7 +108,7 @@ Esys_NV_GlobalWriteLock(
  * This function invokes the TPM2_NV_GlobalWriteLock command in a asynchronous
  * variant. This means the function will return as soon as the command has been
  * sent downwards the stack to the TPM. All input parameters are const.
- * In order to retrieve the TPM's response call Esys_NV_GlobalWriteLock_finish.
+ * In order to retrieve the TPM's response call Esys_NV_GlobalWriteLock_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[in] authHandle Input handle of type ESYS_TR for
@@ -121,7 +121,7 @@ Esys_NV_GlobalWriteLock(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_NV_GlobalWriteLock_async(
+Esys_NV_GlobalWriteLock_Async(
     ESYS_CONTEXT *esysContext,
     ESYS_TR authHandle,
     ESYS_TR shandle1,
@@ -185,7 +185,7 @@ Esys_NV_GlobalWriteLock_async(
 /** Asynchronous finish function for TPM2_NV_GlobalWriteLock
  *
  * This function returns the results of a TPM2_NV_GlobalWriteLock command
- * invoked via Esys_NV_GlobalWriteLock_finish. All non-simple output parameters
+ * invoked via Esys_NV_GlobalWriteLock_Finish. All non-simple output parameters
  * are allocated by the function's implementation. NULL can be passed for every
  * output parameter if the value is not required.
  *
@@ -195,7 +195,7 @@ Esys_NV_GlobalWriteLock_async(
  * \todo add further error RCs to documentation
  */
 TSS2_RC
-Esys_NV_GlobalWriteLock_finish(
+Esys_NV_GlobalWriteLock_Finish(
     ESYS_CONTEXT *esysContext)
 {
     TSS2_RC r;
@@ -232,7 +232,7 @@ Esys_NV_GlobalWriteLock_finish(
             return r;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_NV_GlobalWriteLock_async(esysContext,
+        r = Esys_NV_GlobalWriteLock_Async(esysContext,
                 esysContext->in.NV_GlobalWriteLock.authHandle,
                 esysContext->session_type[0],
                 esysContext->session_type[1],
