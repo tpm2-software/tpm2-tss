@@ -212,6 +212,9 @@ TSS2_RC
 Esys_NV_UndefineSpaceSpecial_Finish(
     ESYS_CONTEXT *esysContext)
 {
+    ESYS_TR nvIndex;
+    RSRC_NODE_T *nvIndexNode;
+    RSRC_NODE_T *session;
     TSS2_RC r;
     LOG_TRACE("context=%p",
               esysContext);
@@ -272,6 +275,23 @@ Esys_NV_UndefineSpaceSpecial_Finish(
         esysContext->state = _ESYS_STATE_INTERNALERROR;
         return r;
     }
+    /*
+     * Session value has to be updated before checking the response to ensure
+     * correct computation of HMAC. The size of the session value is
+     * decreased because the auth value is not used for the response HMAC.
+     */
+    nvIndex = esysContext->in.NV_UndefineSpaceSpecial.nvIndex;
+    r = esys_GetResourceObject(esysContext, nvIndex, &nvIndexNode);
+    return_if_error(r, "get resource");
+
+    r = esys_GetResourceObject(esysContext, esysContext->session_type[0], &session);
+    return_if_error(r, "get resource");
+
+    session->rsrc.misc.rsrc_session.sizeSessionValue -= nvIndexNode->auth.size;
+
+    /* The ESYS_TR object (nvIndex) has to be invalidated */
+    r = Esys_TR_Close(esysContext, &esysContext->in.NV_UndefineSpaceSpecial.nvIndex);
+    return_if_error(r, "TR_Close");
 
     /*
      * Now the verification of the response (hmac check) and if necessary the
