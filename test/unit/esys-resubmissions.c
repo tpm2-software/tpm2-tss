@@ -55,7 +55,7 @@
  * Esys handles for dummy session and key objects, and initialization values for
  * other objects, which can be used in ESAPI test calls
  */
-#define DUMMY_TR_HANDLE_SESSION  ESYS_TR_MIN_OBJECT
+#define DUMMY_TR_HANDLE_POLICY_SESSION  ESYS_TR_MIN_OBJECT
 #define DUMMY_TR_HANDLE_KEY ESYS_TR_MIN_OBJECT+1
 #define DUMMY_TR_HANDLE_NV_INDEX ESYS_TR_MIN_OBJECT+2
 #define DUMMY_TR_HANDLE_HIERARCHY_OWNER ESYS_TR_MIN_OBJECT+3
@@ -63,7 +63,6 @@
 #define DUMMY_TR_HANDLE_PRIVACY_ADMIN ESYS_TR_MIN_OBJECT+5
 #define DUMMY_TR_HANDLE_HMAC_SESSION  ESYS_TR_MIN_OBJECT+6
 #define DUMMY_TR_HANDLE_LOCKOUT ESYS_TR_MIN_OBJECT+7
-#define DUMMY_
 #define DUMMY_IN_PUBLIC_DATA { \
         .size = 0, \
         .publicArea = { \
@@ -294,7 +293,7 @@ setup(void **state)
         return (int)r;
 
     /* Create dummy object to enable usage of SAPI prepare functions in the tests */
-    objectHandle = DUMMY_TR_HANDLE_SESSION;
+    objectHandle = DUMMY_TR_HANDLE_POLICY_SESSION;
     r = esys_CreateResourceObject(ectx, objectHandle, &objectHandleNode);
     if (r)
         return (int)r;
@@ -421,8 +420,8 @@ test_IncrementalSelfTest(void **state)
     Esys_GetTcti(esys_context, &tcti);
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
-    TPML_ALG toTest;
-    TPML_ALG *toDoList;
+    TPML_ALG toTest = {0};
+    TPML_ALG *toDoList = {0} ;
     r = Esys_IncrementalSelfTest(esys_context,
                                  ESYS_TR_NONE,
                                  ESYS_TR_NONE,
@@ -497,7 +496,7 @@ test_PolicyRestart(void **state)
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
     r = Esys_PolicyRestart(esys_context,
-                           DUMMY_TR_HANDLE_SESSION,
+                           DUMMY_TR_HANDLE_POLICY_SESSION,
                            ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
 
     assert_int_equal(r, TPM2_RC_YIELDED);
@@ -1627,7 +1626,7 @@ test_PolicySigned(void **state)
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
     ESYS_TR authObject_handle = DUMMY_TR_HANDLE_KEY;
-    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_SESSION;
+    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_POLICY_SESSION;
     TPM2B_NONCE nonceTPM = DUMMY_2B_DATA(.buffer);
     TPM2B_DIGEST cpHashA = DUMMY_2B_DATA(.buffer);
     TPM2B_NONCE policyRef = DUMMY_2B_DATA(.buffer);
@@ -1660,7 +1659,7 @@ test_PolicySecret(void **state)
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
     ESYS_TR authHandle_handle = DUMMY_TR_HANDLE_HIERARCHY_PLATFORM;
-    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_SESSION;
+    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_POLICY_SESSION;
     TPM2B_NONCE nonceTPM = DUMMY_2B_DATA(.buffer);
     TPM2B_DIGEST cpHashA = DUMMY_2B_DATA(.buffer);
     TPM2B_NONCE policyRef = DUMMY_2B_DATA(.buffer);
@@ -1690,7 +1689,7 @@ test_PolicyTicket(void **state)
     Esys_GetTcti(esys_context, &tcti);
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
-    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_SESSION;
+    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_POLICY_SESSION;
     TPM2B_TIMEOUT timeout = DUMMY_2B_DATA(.buffer);
     TPM2B_DIGEST cpHashA = DUMMY_2B_DATA(.buffer);
     TPM2B_NONCE policyRef = DUMMY_2B_DATA(.buffer);
@@ -1716,7 +1715,7 @@ test_PolicyOR(void **state)
     Esys_GetTcti(esys_context, &tcti);
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
-    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_SESSION;
+    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_POLICY_SESSION;
     TPML_DIGEST pHashList = { 0 };
     r = Esys_PolicyOR(esys_context,
                       policySession_handle,
@@ -1735,7 +1734,7 @@ test_PolicyPCR(void **state)
     Esys_GetTcti(esys_context, &tcti);
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
-    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_SESSION;
+    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_POLICY_SESSION;
     TPM2B_DIGEST pcrDigest = DUMMY_2B_DATA(.buffer);
     TPML_PCR_SELECTION pcrs = { 0 };
     r = Esys_PolicyPCR(esys_context,
@@ -1778,7 +1777,7 @@ test_PolicyNV(void **state)
 
     ESYS_TR authHandle_handle = DUMMY_TR_HANDLE_HIERARCHY_PLATFORM;
     ESYS_TR nvIndex_handle = DUMMY_TR_HANDLE_NV_INDEX;
-    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_SESSION;
+    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_POLICY_SESSION;
     TPM2B_OPERAND operandB = DUMMY_2B_DATA(.buffer);
     UINT16 offset = 0;
     TPM2_EO operation = 0;
@@ -1802,7 +1801,7 @@ test_PolicyCounterTimer(void **state)
     Esys_GetTcti(esys_context, &tcti);
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
-    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_SESSION;
+    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_POLICY_SESSION;
     TPM2B_OPERAND operandB = DUMMY_2B_DATA(.buffer);
     UINT16 offset = 0;
     TPM2_EO operation = 0;
@@ -1825,7 +1824,7 @@ test_PolicyCommandCode(void **state)
     Esys_GetTcti(esys_context, &tcti);
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
-    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_SESSION;
+    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_POLICY_SESSION;
     TPM2_CC code = TPM2_CC_FIRST;
     r = Esys_PolicyCommandCode(esys_context,
                                policySession_handle,
@@ -1844,7 +1843,7 @@ test_PolicyPhysicalPresence(void **state)
     Esys_GetTcti(esys_context, &tcti);
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
-    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_SESSION;
+    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_POLICY_SESSION;
     r = Esys_PolicyPhysicalPresence(esys_context,
                                     policySession_handle,
                                     ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
@@ -1862,11 +1861,12 @@ test_PolicyCpHash(void **state)
     Esys_GetTcti(esys_context, &tcti);
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
-    TPMI_SH_POLICY policySession = TPM2_POLICY_SESSION_FIRST;
+    ESYS_TR policySession = DUMMY_TR_HANDLE_POLICY_SESSION;
     TPM2B_DIGEST cpHashA = DUMMY_2B_DATA(.buffer);
     r = Esys_PolicyCpHash(esys_context,
+                          policySession,
                           ESYS_TR_NONE,
-                          ESYS_TR_NONE, ESYS_TR_NONE, policySession, &cpHashA);
+                          ESYS_TR_NONE, ESYS_TR_NONE, &cpHashA);
 
     assert_int_equal(r, TPM2_RC_YIELDED);
     assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */ );
@@ -1881,12 +1881,13 @@ test_PolicyNameHash(void **state)
     Esys_GetTcti(esys_context, &tcti);
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
-    TPMI_SH_POLICY policySession = TPM2_POLICY_SESSION_FIRST;
+    ESYS_TR policySession = DUMMY_TR_HANDLE_POLICY_SESSION;
     TPM2B_DIGEST nameHash = DUMMY_2B_DATA(.buffer);
     r = Esys_PolicyNameHash(esys_context,
+                            policySession,
                             ESYS_TR_NONE,
                             ESYS_TR_NONE,
-                            ESYS_TR_NONE, policySession, &nameHash);
+                            ESYS_TR_NONE, &nameHash);
 
     assert_int_equal(r, TPM2_RC_YIELDED);
     assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */ );
@@ -1901,15 +1902,15 @@ test_PolicyDuplicationSelect(void **state)
     Esys_GetTcti(esys_context, &tcti);
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
-    TPMI_SH_POLICY policySession = TPM2_POLICY_SESSION_FIRST;
+    ESYS_TR policySession = DUMMY_TR_HANDLE_POLICY_SESSION;
     TPM2B_NAME objectName = DUMMY_2B_DATA(.name);
     TPM2B_NAME newParentName = DUMMY_2B_DATA(.name);
     TPMI_YES_NO includeObject = 0;
     r = Esys_PolicyDuplicationSelect(esys_context,
-                                     ESYS_TR_NONE,
-                                     ESYS_TR_NONE,
-                                     ESYS_TR_NONE,
                                      policySession,
+                                     ESYS_TR_NONE,
+                                     ESYS_TR_NONE,
+                                     ESYS_TR_NONE,
                                      &objectName,
                                      &newParentName, includeObject);
 
@@ -1926,7 +1927,7 @@ test_PolicyAuthorize(void **state)
     Esys_GetTcti(esys_context, &tcti);
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
-    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_SESSION;
+    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_POLICY_SESSION;
     TPM2B_DIGEST approvedPolicy = DUMMY_2B_DATA(.buffer);
     TPM2B_NONCE policyRef = DUMMY_2B_DATA(.buffer);
     TPM2B_NAME keySign = DUMMY_2B_DATA(.name);
@@ -1952,7 +1953,7 @@ test_PolicyAuthValue(void **state)
     Esys_GetTcti(esys_context, &tcti);
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
-    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_SESSION;
+    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_POLICY_SESSION;
     r = Esys_PolicyAuthValue(esys_context,
                              policySession_handle,
                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
@@ -1970,7 +1971,7 @@ test_PolicyPassword(void **state)
     Esys_GetTcti(esys_context, &tcti);
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
-    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_SESSION;
+    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_POLICY_SESSION;
     r = Esys_PolicyPassword(esys_context,
                             policySession_handle,
                             ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
@@ -1988,7 +1989,7 @@ test_PolicyGetDigest(void **state)
     Esys_GetTcti(esys_context, &tcti);
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
-    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_SESSION;
+    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_POLICY_SESSION;
     TPM2B_DIGEST *policyDigest;
     r = Esys_PolicyGetDigest(esys_context,
                              policySession_handle,
@@ -2008,7 +2009,7 @@ test_PolicyNvWritten(void **state)
     Esys_GetTcti(esys_context, &tcti);
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
-    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_SESSION;
+    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_POLICY_SESSION;
     TPMI_YES_NO writtenSet = 0;
     r = Esys_PolicyNvWritten(esys_context,
                              policySession_handle,
@@ -2028,12 +2029,13 @@ test_PolicyTemplate(void **state)
     Esys_GetTcti(esys_context, &tcti);
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
-    TPMI_SH_POLICY policySession = TPM2_POLICY_SESSION_FIRST;
+    ESYS_TR policySession = DUMMY_TR_HANDLE_POLICY_SESSION;
     TPM2B_DIGEST templateHash = DUMMY_2B_DATA(.buffer);
     r = Esys_PolicyTemplate(esys_context,
+                            policySession,
                             ESYS_TR_NONE,
                             ESYS_TR_NONE,
-                            ESYS_TR_NONE, policySession, &templateHash);
+                            ESYS_TR_NONE, &templateHash);
 
     assert_int_equal(r, TPM2_RC_YIELDED);
     assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */ );
@@ -2050,7 +2052,7 @@ test_PolicyAuthorizeNV(void **state)
 
     ESYS_TR authHandle_handle = DUMMY_TR_HANDLE_HIERARCHY_PLATFORM;
     ESYS_TR nvIndex_handle = DUMMY_TR_HANDLE_NV_INDEX;
-    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_SESSION;
+    ESYS_TR policySession_handle = DUMMY_TR_HANDLE_POLICY_SESSION;
     r = Esys_PolicyAuthorizeNV(esys_context,
                                authHandle_handle,
                                nvIndex_handle,

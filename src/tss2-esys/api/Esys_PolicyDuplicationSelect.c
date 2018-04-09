@@ -38,7 +38,7 @@
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
-    TPMI_SH_POLICY policySession,
+    ESYS_TR policySession,
     const TPM2B_NAME *objectName,
     const TPM2B_NAME *newParentName,
     TPMI_YES_NO includeObject)
@@ -69,10 +69,11 @@ static void store_input_parameters (
  * parameters is allocated by the function implementation.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
+ * @param[in] policySession Input handle of type ESYS_TR for
+ *     object with handle type TPMI_SH_POLICY.
  * @param[in] shandle1 First session handle.
  * @param[in] shandle2 Second session handle.
  * @param[in] shandle3 Third session handle.
- * @param[in] policySession Input parameter of type TPMI_SH_POLICY.
  * @param[in] objectName Input parameter of type TPM2B_NAME.
  * @param[in] newParentName Input parameter of type TPM2B_NAME.
  * @param[in] includeObject Input parameter of type TPMI_YES_NO.
@@ -83,10 +84,10 @@ static void store_input_parameters (
 TSS2_RC
 Esys_PolicyDuplicationSelect(
     ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_SH_POLICY policySession,
     const TPM2B_NAME *objectName,
     const TPM2B_NAME *newParentName,
     TPMI_YES_NO includeObject)
@@ -94,10 +95,10 @@ Esys_PolicyDuplicationSelect(
     TSS2_RC r;
 
     r = Esys_PolicyDuplicationSelect_Async(esysContext,
+                policySession,
                 shandle1,
                 shandle2,
                 shandle3,
-                policySession,
                 objectName,
                 newParentName,
                 includeObject);
@@ -137,10 +138,11 @@ Esys_PolicyDuplicationSelect(
  * In order to retrieve the TPM's response call Esys_PolicyDuplicationSelect_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
+ * @param[in] policySession Input handle of type ESYS_TR for
+ *     object with handle type TPMI_SH_POLICY.
  * @param[in] shandle1 First session handle.
  * @param[in] shandle2 Second session handle.
  * @param[in] shandle3 Third session handle.
- * @param[in] policySession Input parameter of type TPMI_SH_POLICY.
  * @param[in] objectName Input parameter of type TPM2B_NAME.
  * @param[in] newParentName Input parameter of type TPM2B_NAME.
  * @param[in] includeObject Input parameter of type TPMI_YES_NO.
@@ -151,10 +153,10 @@ Esys_PolicyDuplicationSelect(
 TSS2_RC
 Esys_PolicyDuplicationSelect_Async(
     ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_SH_POLICY policySession,
     const TPM2B_NAME *objectName,
     const TPM2B_NAME *newParentName,
     TPMI_YES_NO includeObject)
@@ -164,6 +166,7 @@ Esys_PolicyDuplicationSelect_Async(
               "newParentName=%p, includeObject=%02"PRIx8"",
               esysContext, policySession, objectName, newParentName, includeObject);
     TSS2L_SYS_AUTH_COMMAND auths;
+    RSRC_NODE_T *policySessionNode;
 
     /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
@@ -178,15 +181,18 @@ Esys_PolicyDuplicationSelect_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 0);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
-    store_input_parameters(esysContext,
-                policySession,
+    store_input_parameters(esysContext, policySession,
                 objectName,
                 newParentName,
                 includeObject);
 
+    /* Retrieve the metadata objects for provided handles */
+    r = esys_GetResourceObject(esysContext, policySession, &policySessionNode);
+    return_state_if_error(r, _ESYS_STATE_INIT, "policySession unknown.");
+
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_PolicyDuplicationSelect_Prepare(esysContext->sys,
-                policySession,
+                (policySessionNode == NULL) ? TPM2_RH_NULL : policySessionNode->rsrc.handle,
                 objectName,
                 newParentName,
                 includeObject);
@@ -200,7 +206,7 @@ Esys_PolicyDuplicationSelect_Async(
     iesys_compute_session_value(esysContext->session_tab[2], NULL, NULL);
 
     /* Generate the auth values and set them in the SAPI command buffer */
-    r = iesys_gen_auths(esysContext, NULL, NULL, NULL, &auths);
+    r = iesys_gen_auths(esysContext, policySessionNode, NULL, NULL, &auths);
     return_state_if_error(r, _ESYS_STATE_INIT, "Error in computation of auth values");
     esysContext->authsCount = auths.count;
     r = Tss2_Sys_SetCmdAuths(esysContext->sys, &auths);
@@ -266,10 +272,10 @@ Esys_PolicyDuplicationSelect_Finish(
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
         r = Esys_PolicyDuplicationSelect_Async(esysContext,
+                esysContext->in.PolicyDuplicationSelect.policySession,
                 esysContext->session_type[0],
                 esysContext->session_type[1],
                 esysContext->session_type[2],
-                esysContext->in.PolicyDuplicationSelect.policySession,
                 esysContext->in.PolicyDuplicationSelect.objectName,
                 esysContext->in.PolicyDuplicationSelect.newParentName,
                 esysContext->in.PolicyDuplicationSelect.includeObject);

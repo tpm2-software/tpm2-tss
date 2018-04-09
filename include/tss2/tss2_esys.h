@@ -2028,19 +2028,19 @@ Esys_PolicyPhysicalPresence_Finish(
 TSS2_RC
 Esys_PolicyCpHash(
     ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_SH_POLICY policySession,
     const TPM2B_DIGEST *cpHashA);
 
 TSS2_RC
 Esys_PolicyCpHash_Async(
     ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_SH_POLICY policySession,
     const TPM2B_DIGEST *cpHashA);
 
 TSS2_RC
@@ -2052,19 +2052,19 @@ Esys_PolicyCpHash_Finish(
 TSS2_RC
 Esys_PolicyNameHash(
     ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_SH_POLICY policySession,
     const TPM2B_DIGEST *nameHash);
 
 TSS2_RC
 Esys_PolicyNameHash_Async(
     ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_SH_POLICY policySession,
     const TPM2B_DIGEST *nameHash);
 
 TSS2_RC
@@ -2076,10 +2076,10 @@ Esys_PolicyNameHash_Finish(
 TSS2_RC
 Esys_PolicyDuplicationSelect(
     ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_SH_POLICY policySession,
     const TPM2B_NAME *objectName,
     const TPM2B_NAME *newParentName,
     TPMI_YES_NO includeObject);
@@ -2087,10 +2087,10 @@ Esys_PolicyDuplicationSelect(
 TSS2_RC
 Esys_PolicyDuplicationSelect_Async(
     ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_SH_POLICY policySession,
     const TPM2B_NAME *objectName,
     const TPM2B_NAME *newParentName,
     TPMI_YES_NO includeObject);
@@ -2226,19 +2226,19 @@ Esys_PolicyNvWritten_Finish(
 TSS2_RC
 Esys_PolicyTemplate(
     ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_SH_POLICY policySession,
     const TPM2B_DIGEST *templateHash);
 
 TSS2_RC
 Esys_PolicyTemplate_Async(
     ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_SH_POLICY policySession,
     const TPM2B_DIGEST *templateHash);
 
 TSS2_RC

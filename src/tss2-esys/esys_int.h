@@ -598,21 +598,21 @@ typedef struct {
 
 
 typedef struct {
-    TPMI_SH_POLICY policySession;
+    ESYS_TR policySession;
     TPM2B_DIGEST *cpHashA;
     TPM2B_DIGEST cpHashAData;
 } PolicyCpHash_IN;
 
 
 typedef struct {
-    TPMI_SH_POLICY policySession;
+    ESYS_TR policySession;
     TPM2B_DIGEST *nameHash;
     TPM2B_DIGEST nameHashData;
 } PolicyNameHash_IN;
 
 
 typedef struct {
-    TPMI_SH_POLICY policySession;
+    ESYS_TR policySession;
     TPMI_YES_NO includeObject;
     TPM2B_NAME *objectName;
     TPM2B_NAME objectNameData;
@@ -656,7 +656,7 @@ typedef struct {
 
 
 typedef struct {
-    TPMI_SH_POLICY policySession;
+    ESYS_TR policySession;
     TPM2B_DIGEST *templateHash;
     TPM2B_DIGEST templateHashData;
 } PolicyTemplate_IN;
