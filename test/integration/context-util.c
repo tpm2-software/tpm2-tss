@@ -83,7 +83,7 @@ tcti_socket_init(char const *address, uint16_t port)
  * This function allocates memory for the SAPI context and returns it to the
  * caller. This memory must be freed by the caller.
  */
-static TSS2_SYS_CONTEXT *
+TSS2_SYS_CONTEXT *
 sapi_init_from_tcti_ctx(TSS2_TCTI_CONTEXT * tcti_ctx)
 {
     TSS2_SYS_CONTEXT *sapi_ctx;
@@ -163,6 +163,16 @@ tcti_teardown(TSS2_TCTI_CONTEXT * tcti_context)
 
 /*
  * Teardown and free the resources associated with a SAPI context structure.
+ */
+void
+sapi_teardown(TSS2_SYS_CONTEXT * sapi_context)
+{
+    Tss2_Sys_Finalize(sapi_context);
+    free(sapi_context);
+}
+
+/*
+ * Teardown and free the resources associated with a SAPI context structure.
  * This includes tearing down the TCTI as well.
  */
 void
@@ -174,7 +184,7 @@ sapi_teardown_full(TSS2_SYS_CONTEXT * sapi_context)
     rc = Tss2_Sys_GetTctiContext(sapi_context, &tcti_context);
     if (rc != TSS2_RC_SUCCESS)
         return;
-    Tss2_Sys_Finalize(sapi_context);
-    free(sapi_context);
+
+    sapi_teardown(sapi_context);
     tcti_teardown(tcti_context);
 }
