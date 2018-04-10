@@ -84,8 +84,6 @@ char errorString[errorStringSize];
 
 UINT8 simulator = 1;
 
-UINT32 tpmMaxResponseLen = TPMBUF_LEN;
-
 UINT8 resMgrInitialized = 0;
 
 UINT8 pcrAfterExtend[20];
