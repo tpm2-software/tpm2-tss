@@ -122,3 +122,17 @@ $ docker rm temp
 ```
 
 tpm2-tss is now in your working directory and contains all the built files.
+
+## Doxygen Documentation
+
+To build Doxygen documentation files, first install package Doxygen.
+Then generate the documentation with:
+
+```
+$ ./configure --enable-doxygen-doc
+$ make doxygen-doc
+```
+
+The generated documentation will appear here:
+* doc/html HTML format (start with file doc/html/index.html)
+* doc/rtf/refman.rtf RTF format
