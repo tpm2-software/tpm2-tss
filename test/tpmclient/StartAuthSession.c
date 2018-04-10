@@ -32,6 +32,7 @@
 
 #include "tpmclient.int.h"
 #include "../integration/context-util.h"
+#include "../integration/sapi-util.h"
 #define LOGMODULE testtpmclient
 #include "util/log.h"
 

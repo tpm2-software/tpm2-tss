@@ -181,47 +181,6 @@ TSS2_RC CommonOneCall(
     return rval;
 }
 
-TSS2_RC ConcatSizedByteBuffer(TPM2B_MAX_BUFFER *result, TPM2B *addBuffer)
-{
-    if (result->size + addBuffer->size > TPM2_MAX_DIGEST_BUFFER)
-        return TSS2_SYS_RC_BAD_VALUE;
-
-    memmove(result->buffer + result->size,
-            addBuffer->buffer, addBuffer->size);
-
-    result->size += addBuffer->size;
-    return TPM2_RC_SUCCESS;
-}
-
-TSS2_RC CompareSizedByteBuffer(TPM2B *buffer1, TPM2B *buffer2)
-{
-    if (buffer1->size != buffer2->size)
-        return TPM2_RC_FAILURE;
-
-    if (memcmp(buffer1->buffer, buffer2->buffer, buffer1->size))
-        return TPM2_RC_FAILURE;
-
-    return TPM2_RC_SUCCESS;
-}
-
-UINT16 GetDigestSize(TPM2_ALG_ID auth_hash)
-{
-    switch (auth_hash) {
-        case TPM2_ALG_SHA1:
-            return TPM2_SHA1_DIGEST_SIZE;
-        case TPM2_ALG_SHA256:
-            return TPM2_SHA256_DIGEST_SIZE;
-        case TPM2_ALG_SHA384:
-            return TPM2_SHA384_DIGEST_SIZE;
-        case TPM2_ALG_SHA512:
-            return TPM2_SHA512_DIGEST_SIZE;
-        case TPM2_ALG_SM3_256:
-            return TPM2_SM3_256_DIGEST_SIZE;
-        default:
-            return 0;
-    }
-}
-
 COMMAND_HANDLES commandArray[] =
 {
     { TPM2_CC_Startup, 0, 0 },

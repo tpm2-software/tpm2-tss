@@ -29,6 +29,7 @@
 
 #include "tpmclient.int.h"
 #include "sysapi_util.h"
+#include "../integration/sapi-util.h"
 
 #define MAX_NUM_ENTITIES 100
 static ENTITY entities[MAX_NUM_ENTITIES + 1];

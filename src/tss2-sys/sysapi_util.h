@@ -116,9 +116,7 @@ extern "C" {
 #endif
 
 TSS2_RC CopyCommandHeader(_TSS2_SYS_CONTEXT_BLOB *ctx, TPM2_CC commandCode);
-UINT16 GetDigestSize(TPM2_ALG_ID authHash);
 UINT32 GetCommandSize(_TSS2_SYS_CONTEXT_BLOB *ctx);
-TSS2_RC ConcatSizedByteBuffer(TPM2B_MAX_BUFFER *result, TPM2B *addBuffer);
 void InitSysContextFields(_TSS2_SYS_CONTEXT_BLOB *ctx);
 void InitSysContextPtrs(_TSS2_SYS_CONTEXT_BLOB *ctx, size_t contextSize);
 TSS2_RC CompleteChecks(_TSS2_SYS_CONTEXT_BLOB *ctx);
