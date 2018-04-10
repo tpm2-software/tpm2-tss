@@ -37,10 +37,8 @@ extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "syscontext.h"
 
 extern TSS2_TCTI_CONTEXT *resMgrTctiContext;
-extern TSS2_ABI_VERSION abiVersion;
 
 enum TSS2_APP_RC_CODE
 {

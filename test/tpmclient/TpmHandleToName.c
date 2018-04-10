@@ -29,10 +29,9 @@
 
 #include "sample.h"
 #include "sysapi_util.h"
+#include "../integration/context-util.h"
 #include "util/tss2_endian.h"
 
-//
-//
 UINT32 TpmHandleToName( TPM2_HANDLE handle, TPM2B_NAME *name )
 {
     TSS2_RC rval;
@@ -56,24 +55,24 @@ UINT32 TpmHandleToName( TPM2_HANDLE handle, TPM2B_NAME *name )
         switch( handle >> TPM2_HR_SHIFT )
         {
             case TPM2_HT_NV_INDEX:
-                sysContext = InitSysContext( 1000, resMgrTctiContext, &abiVersion );
-                if( sysContext == 0 )
+                sysContext = sapi_init_from_tcti_ctx(resMgrTctiContext);
+                if (sysContext == NULL)
                     return TSS2_APP_RC_INIT_SYS_CONTEXT_FAILED;
 
                 nvPublic.size = 0;
                 rval = Tss2_Sys_NV_ReadPublic( sysContext, handle, 0, &nvPublic, name, 0 );
-                TeardownSysContext( &sysContext );
+                sapi_teardown(sysContext);
                 break;
 
             case TPM2_HT_TRANSIENT:
             case TPM2_HT_PERSISTENT:
-                sysContext = InitSysContext( 1000, resMgrTctiContext, &abiVersion );
-                if( sysContext == 0 )
+                sysContext = sapi_init_from_tcti_ctx(resMgrTctiContext);
+                if (sysContext == NULL)
                     return TSS2_APP_RC_INIT_SYS_CONTEXT_FAILED;
 
                 public.size = 0;
 				rval = Tss2_Sys_ReadPublic( sysContext, handle, 0, &public, name, &qualifiedName, 0 );
-                TeardownSysContext( &sysContext );
+                sapi_teardown(sysContext);
                 break;
 
             default:

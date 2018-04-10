@@ -28,9 +28,10 @@
 #include <stdlib.h>
 
 #include "tss2_sys.h"
+#include "sysapi_util.h"
 
 #include "sample.h"
-#include "../integration/sapi-util.h"
+#include "../integration/context-util.h"
 #define LOGMODULE testtpmclient
 #include "util/log.h"
 
@@ -171,8 +172,8 @@ TSS2_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
 
     key.size = 0;
 
-    tmpSysContext = InitSysContext( 1000, tctiContext, &abiVersion );
-    if( tmpSysContext == 0 )
+    tmpSysContext = sapi_init_from_tcti_ctx(tctiContext);
+    if (tmpSysContext == NULL)
         return TSS2_APP_RC_INIT_SYS_CONTEXT_FAILED;
 
     if( session->nonceOlder.size == 0 )
@@ -203,17 +204,15 @@ TSS2_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
         {
             // Generate the key used as input to the KDF.
             rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&key, (TPM2B *)&session->authValueBind);
-            if( rval != TPM2_RC_SUCCESS )
-            {
-                TeardownSysContext( &tmpSysContext );
-                return(  rval );
+            if (rval != TPM2_RC_SUCCESS) {
+                sapi_teardown(tmpSysContext);
+                return rval;
             }
 
             rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&key, (TPM2B *)&session->salt);
-            if( rval != TPM2_RC_SUCCESS )
-            {
-                TeardownSysContext( &tmpSysContext );
-                return( rval );
+            if (rval != TPM2_RC_SUCCESS) {
+                sapi_teardown(tmpSysContext);
+                return rval;
             }
 
             bytes = GetDigestSize( session->authHash );
@@ -228,10 +227,9 @@ TSS2_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
                             (TPM2B *)&session->nonceOlder, bytes * 8, (TPM2B_MAX_BUFFER *)&session->sessionKey);
             }
 
-            if( rval != TPM2_RC_SUCCESS )
-            {
-                TeardownSysContext( &tmpSysContext );
-                return( TSS2_APP_RC_CREATE_SESSION_KEY_FAILED );
+            if (rval != TPM2_RC_SUCCESS) {
+                sapi_teardown(tmpSysContext);
+                return TSS2_APP_RC_CREATE_SESSION_KEY_FAILED;
             }
         }
 
@@ -240,8 +238,7 @@ TSS2_RC StartAuthSession( SESSION *session, TSS2_TCTI_CONTEXT *tctiContext )
         session->nvNameChanged = 0;
     }
 
-    TeardownSysContext( &tmpSysContext );
-
+    sapi_teardown(tmpSysContext);
     return rval;
 }
 

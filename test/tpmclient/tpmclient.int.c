@@ -41,7 +41,6 @@
 #include "tpmclient.h"
 #include "util/tss2_endian.h"
 #include "sysapi_util.h"
-#include "syscontext.h"
 #define LOGMODULE testtpmclient
 #include "util/log.h"
 
@@ -99,7 +98,6 @@ UINT8 indent = 0;
 TSS2_SYS_CONTEXT *sysContext;
 
 TSS2_TCTI_CONTEXT *resMgrTctiContext = 0;
-TSS2_ABI_VERSION abiVersion = { TSSWG_INTEROP, TSS_SAPI_FIRST_FAMILY, TSS_SAPI_FIRST_LEVEL, TSS_SAPI_FIRST_VERSION };
 
 #define MSFT_MANUFACTURER_ID 0x4d534654
 #define IBM_MANUFACTURER_ID 0x49424d20
@@ -146,12 +144,9 @@ static void ErrorHandler( UINT32 rval )
 
 static void Cleanup()
 {
-    fflush( stdout );
-
-    if( resMgrTctiContext != 0 )
-    {
-        tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_OFF );
-        tcti_teardown (resMgrTctiContext);
+    if (resMgrTctiContext != NULL) {
+        tcti_platform_command(resMgrTctiContext, MS_SIM_POWER_OFF);
+        tcti_teardown(resMgrTctiContext);
         resMgrTctiContext = NULL;
     }
 
@@ -160,7 +155,7 @@ static void Cleanup()
 
 static void InitSysContextFailure()
 {
-    LOG_ERROR("InitSysContext failed, exiting..." );
+    LOG_ERROR("InitSysContext failed, exiting...");
     Cleanup();
 }
 
@@ -2149,11 +2144,9 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
     (void)(testString);
 
     // Create sysContext structure.
-    simpleTestContext = InitSysContext( 1000, resMgrTctiContext, &abiVersion );
-    if( simpleTestContext == 0 )
-    {
+    simpleTestContext = sapi_init_from_tcti_ctx(resMgrTctiContext);
+    if (simpleTestContext == NULL)
         InitSysContextFailure();
-    }
 
     // Setup the NV index's authorization value.
     nvAuth.size = strlen( sharedSecret );
@@ -2434,11 +2427,9 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
 
     // Remove the real session from sessions table.
     rval = EndAuthSession( nvSession );
+    CheckPassed(rval);
 
-    CheckPassed( rval );
-
-    TeardownSysContext( &simpleTestContext );
-
+    sapi_teardown(simpleTestContext);
 }
 
 static void TestEncryptDecryptSession()
@@ -2749,11 +2740,9 @@ static void GetSetDecryptParamTests()
     LOG_INFO("GET/SET DECRYPT PARAM TESTS:" );
 
     // Create two sysContext structures.
-    decryptParamTestSysContext = InitSysContext( TPM2_MAX_NV_BUFFER_SIZE, resMgrTctiContext, &abiVersion );
-    if( decryptParamTestSysContext == 0 )
-    {
+    decryptParamTestSysContext = sapi_init_from_tcti_ctx(resMgrTctiContext);
+    if (decryptParamTestSysContext == NULL)
         InitSysContextFailure();
-    }
 
     // Test for bad sequence:  Tss2_Sys_GetDecryptParam
     rval = Tss2_Sys_GetDecryptParam( decryptParamTestSysContext, &decryptParamSize, &decryptParamBuffer );
@@ -2844,19 +2833,18 @@ static void GetSetDecryptParamTests()
     }
 
     // Test for insufficient size.
-    rval = Tss2_Sys_GetCpBuffer( decryptParamTestSysContext, &cpBufferUsedSize2, &cpBuffer2 );
-    CheckPassed( rval );
-    nvWriteData.size = TPM2_MAX_NV_BUFFER_SIZE -
+    rval = Tss2_Sys_GetCpBuffer(decryptParamTestSysContext, &cpBufferUsedSize2, &cpBuffer2);
+    CheckPassed(rval);
+    nvWriteData.size = TPM2_MAX_COMMAND_SIZE -
             BE_TO_HOST_32(((TPM20_Header_In *)(((_TSS2_SYS_CONTEXT_BLOB *)decryptParamTestSysContext)->cmdBuffer))->commandSize) + 1;
 
-    rval = Tss2_Sys_SetDecryptParam( decryptParamTestSysContext, nvWriteData.size, &( nvWriteData.buffer[0] ) );
-    CheckFailed( rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT );
+    rval = Tss2_Sys_SetDecryptParam(decryptParamTestSysContext, nvWriteData.size, nvWriteData.buffer);
+    CheckFailed(rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT);
 
     // Test that one less will work.  This tests that we're checking the correct corner case.
     nvWriteData.size -= 1;
-    rval = Tss2_Sys_SetDecryptParam( decryptParamTestSysContext, nvWriteData.size, &( nvWriteData.buffer[0] ) );
-    CheckPassed( rval );
-
+    rval = Tss2_Sys_SetDecryptParam(decryptParamTestSysContext, nvWriteData.size, nvWriteData.buffer);
+    CheckPassed(rval);
 
     rval = Tss2_Sys_NV_Write_Prepare( decryptParamTestSysContext, TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST, 0, 0x55aa );
@@ -2896,7 +2884,7 @@ static void GetSetDecryptParamTests()
     rval = Tss2_Sys_SetDecryptParam( decryptParamTestSysContext, 1, &( nvWriteData.buffer[0] ) );
     CheckFailed( rval, TSS2_SYS_RC_BAD_SIZE );
 
-    TeardownSysContext( &decryptParamTestSysContext );
+    sapi_teardown(decryptParamTestSysContext);
 }
 
 static void SysFinalizeTests()
@@ -2915,21 +2903,17 @@ static void GetContextSizeTests()
 
     LOG_INFO("SYS GETCONTEXTSIZE TESTS:" );
 
-    testSysContext = InitSysContext( 9, resMgrTctiContext, &abiVersion );
-    if( testSysContext == 0 )
-    {
+    testSysContext = sapi_init_from_tcti_ctx(resMgrTctiContext);
+    if (testSysContext == NULL)
         InitSysContextFailure();
-    }
 
-    rval = Tss2_Sys_Startup( testSysContext, TPM2_SU_CLEAR );
-    CheckFailed( rval, TSS2_MU_RC_INSUFFICIENT_BUFFER );
+    rval = Tss2_Sys_Startup(testSysContext, TPM2_SU_CLEAR);
+    CheckPassed(rval);
 
-	rval = Tss2_Sys_GetTestResult_Prepare( testSysContext );
-	CheckPassed( rval );
+	rval = Tss2_Sys_GetTestResult_Prepare(testSysContext);
+	CheckPassed(rval);
 
-    // Note:  other cases tested by other tests.
-
-    TeardownSysContext( &testSysContext );
+    sapi_teardown(testSysContext);
 }
 
 static void GetTctiContextTests()
@@ -2940,19 +2924,17 @@ static void GetTctiContextTests()
 
     LOG_INFO("SYS GETTCTICONTEXT TESTS:" );
 
-    testSysContext = InitSysContext( 9, resMgrTctiContext, &abiVersion );
-    if( testSysContext == 0 )
-    {
+    testSysContext = sapi_init_from_tcti_ctx(resMgrTctiContext);
+    if (testSysContext == NULL)
         InitSysContextFailure();
-    }
 
-    rval = Tss2_Sys_GetTctiContext( testSysContext, 0 );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+    rval = Tss2_Sys_GetTctiContext(testSysContext, 0);
+    CheckFailed(rval, TSS2_SYS_RC_BAD_REFERENCE);
 
-    rval = Tss2_Sys_GetTctiContext( 0, &tctiContext );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE );
+    rval = Tss2_Sys_GetTctiContext(0, &tctiContext);
+    CheckFailed(rval, TSS2_SYS_RC_BAD_REFERENCE);
 
-    TeardownSysContext( &testSysContext );
+    sapi_teardown(testSysContext);
 }
 
 static void GetSetEncryptParamTests()
@@ -3155,7 +3137,10 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     loadedSha1KeyAuth.buffer[1] = 0xff;
 
     rval = tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_OFF );
-    CheckPassed( rval );
+    CheckPassed(rval);
+
+    rval = tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_ON );
+    CheckPassed(rval);
 
     InitEntities();
 
