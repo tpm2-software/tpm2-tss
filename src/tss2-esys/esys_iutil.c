@@ -281,19 +281,6 @@ iesys_compute_rp_hashtab(ESYS_CONTEXT * esys_context,
 }
 
 TSS2_RC
-GetTpmHandle(ESYS_CONTEXT * esys_context,
-             ESYS_TR esys_handle, TPM2_RH * tpm_handle)
-{
-    RSRC_NODE_T *esys_object;
-    TSS2_RC r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
-    return_if_error(r, "Getting Resource Object");
-    if (esys_object == NULL)
-        return_error(TSS2_ESYS_RC_BAD_TR, "Handle for bad TR requested.");
-    *tpm_handle = esys_object->rsrc.handle;
-    return TPM2_RC_SUCCESS;
-}
-
-TSS2_RC
 esys_CreateResourceObject(ESYS_CONTEXT * esys_context,
                           ESYS_TR esys_handle, RSRC_NODE_T ** esys_object)
 {
@@ -356,30 +343,6 @@ iesys_get_handle_type(TPM2_HANDLE handle)
 }
 
 bool
-esys_tpm_handle_with_context(TPM2_HANDLE handle)
-{
-    TPM2_HT ht = iesys_get_handle_type(handle);
-    switch (ht) {
-    case TPM2_HT_TRANSIENT:
-    case TPM2_HT_HMAC_SESSION:
-    case TPM2_HT_POLICY_SESSION:
-            return true;
-    default:
-            return false;
-    }
-}
-
-bool
-esys_handle_with_context(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle)
-{
-    TPM2_RH tpm_handle;
-    TSS2_RC r = GetTpmHandle(esys_context, esys_handle, &tpm_handle);
-    if (r != TSS2_RC_SUCCESS)
-        return false;
-    return (esys_tpm_handle_with_context(tpm_handle));
-}
-
-bool
 esys_flush_context(TPM2_HANDLE handle)
 {
     TPM2_HT ht = iesys_get_handle_type(handle);
@@ -416,51 +379,6 @@ iesys_get_nv_name(TPMS_NV_PUBLIC * nvPublic, TPM2B_NAME * name)
 
     name->size = (UINT16) offset + 2;
     return TSS2_RC_SUCCESS;
-}
-
-TSS2_RC
-iesys_get_object_name(TPM2B_PUBLIC * publicArea2B, TPM2B_NAME * name)
-{
-    BYTE buffer[sizeof(TPMT_PUBLIC)];
-    size_t offset = 0;
-    size_t max_size_hash = sizeof(TPMU_HA);
-    IESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
-    TSS2_RC r = Tss2_MU_TPMT_PUBLIC_Marshal(&publicArea2B->publicArea,
-                                            buffer, sizeof(TPMT_PUBLIC),
-                                            &offset);
-    return_if_error(r, "Error: During nv public marshal");
-
-    r = iesys_crypto_hash_start(&cryptoContext,
-                                publicArea2B->publicArea.nameAlg);
-    return_if_error(r, "Error: During hash start");
-
-    r = iesys_crypto_hash_update(cryptoContext, &buffer[0], offset);
-    return_if_error(r, "Error: During hash update");
-
-    r = iesys_crypto_hash_finish(&cryptoContext, &name->name[2],
-                                 &max_size_hash);
-    return_if_error(r, "Error: During hash finish");
-
-    name->size = (UINT16) offset + 2;
-    offset = 0;
-    r = Tss2_MU_UINT16_Marshal(publicArea2B->publicArea.nameAlg, &name->name[0], 2,
-                           &offset);
-    return_if_error(r, "Error: During UINT16 marshal");
-    return TSS2_RC_SUCCESS;
-}
-
-TSS2_RC
-iesys_create_NV_resource(TPMS_NV_PUBLIC * nvPublic,
-                         IESYS_RESOURCE ** nvResource)
-{
-    *nvResource = calloc(1, sizeof(IESYS_RESOURCE));
-    return_if_null(nvResource, "Out of Memory", TSS2_ESYS_RC_MEMORY);
-    (*nvResource)->rsrcType = IESYSC_NV_RSRC;
-    (*nvResource)->authValueSet = 0;
-    (*nvResource)->handle = nvPublic->nvIndex;
-    (*nvResource)->misc.rsrc_nv_pub.nvPublic = *nvPublic;
-    (*nvResource)->misc.rsrc_nv_pub.size = 0;
-    return iesys_get_nv_name(nvPublic, &(*nvResource)->name);
 }
 
 bool

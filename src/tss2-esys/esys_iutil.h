@@ -162,20 +162,8 @@ TSS2_RC esys_GetResourceObject(
     ESYS_TR rsrc_handle,
     RSRC_NODE_T **node);
 
-TSS2_RC GetTpmHandle(
-     ESYS_CONTEXT *esys_context,
-     ESYS_TR esys_handle,
-     TPM2_RH *tpm_handle);
-
 TPM2_HT iesys_get_handle_type(
     TPM2_HANDLE handle);
-
-bool esys_tpm_handle_with_context(
-    TPM2_HANDLE handle);
-
-bool esys_handle_with_context(
-    ESYS_CONTEXT *esys_context,
-    ESYS_TR esys_handle);
 
 bool esys_flush_context(
     TPM2_HANDLE handle);
@@ -183,14 +171,6 @@ bool esys_flush_context(
 TSS2_RC iesys_get_nv_name(
     TPMS_NV_PUBLIC *nvPublic,
     TPM2B_NAME *name);
-
-TSS2_RC iesys_get_object_name(
-    TPM2B_PUBLIC *publicArea2B,
-    TPM2B_NAME *name);
-
-TSS2_RC iesys_create_NV_resource(
-    TPMS_NV_PUBLIC *nvPublic,
-    IESYS_RESOURCE **nvResource);
 
 TSS2_RC iesys_finalize(ESYS_CONTEXT *context);
 
