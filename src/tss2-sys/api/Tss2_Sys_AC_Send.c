@@ -76,6 +76,8 @@ TSS2_RC Tss2_Sys_AC_Send_Prepare(
                                                 ctx->maxCmdSize,
                                                 &ctx->nextData);
     }
+    if (rval)
+        return rval;
 
     ctx->decryptAllowed = 1;
     ctx->encryptAllowed = 0;
