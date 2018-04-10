@@ -49,7 +49,7 @@ TSS2_RC Tss2_Sys_ClockRateAdjust_Prepare(
                                   &ctx->nextData);
     if (rval)
         return rval;
-    rval = Tss2_MU_UINT32_Marshal(rateAdjust, ctx->cmdBuffer,
+    rval = Tss2_MU_UINT8_Marshal(rateAdjust, ctx->cmdBuffer,
                                   ctx->maxCmdSize,
                                   &ctx->nextData);
     if (rval)
