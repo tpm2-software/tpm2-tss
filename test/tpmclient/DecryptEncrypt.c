@@ -28,7 +28,7 @@
 
 #include "tss2_tpm2_types.h"
 #include "../integration/context-util.h"
-#include "sample.h"
+#include "tpmclient.int.h"
 
 TSS2_RC GetBlockSizeInBits( TPMI_ALG_SYM algorithm, UINT32 *blockSizeInBits )
 {

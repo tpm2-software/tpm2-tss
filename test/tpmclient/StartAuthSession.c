@@ -30,7 +30,7 @@
 #include "tss2_sys.h"
 #include "sysapi_util.h"
 
-#include "sample.h"
+#include "tpmclient.int.h"
 #include "../integration/context-util.h"
 #define LOGMODULE testtpmclient
 #include "util/log.h"

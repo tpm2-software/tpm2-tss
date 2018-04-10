@@ -37,8 +37,7 @@
 
 #include "../integration/context-util.h"
 #include "../integration/sapi-util.h"
-#include "sample.h"
-#include "tpmclient.h"
+#include "tpmclient.int.h"
 #include "util/tss2_endian.h"
 #include "sysapi_util.h"
 #define LOGMODULE testtpmclient

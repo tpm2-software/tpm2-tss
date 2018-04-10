@@ -25,18 +25,17 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //**********************************************************************;
 
-#ifndef SAMPLE_H
-#define SAMPLE_H
+#ifndef TPMCLIENT_INT_H
+#define TPMCLIENT_INT_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "tss2_tpm2_types.h"
-#include "tpmclient.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "tss2_tpm2_types.h"
+#include "tss2_mu.h"
+#include "tss2_sys.h"
+#include "util/tpm2b.h"
 
 extern TSS2_TCTI_CONTEXT *resMgrTctiContext;
 
@@ -241,9 +240,11 @@ UINT32 TpmHandleToName( TPM2_HANDLE handle, TPM2B_NAME *name );
 
 int TpmClientPrintf( UINT8 type, const char *format, ...);
 
-#ifdef __cplusplus
-}
-#endif
+#define INIT_SIMPLE_TPM2B_SIZE(type) (type).size = sizeof(type) - 2;
 
+TSS2_RC CompareSizedByteBuffer(TPM2B *buffer1, TPM2B *buffer2);
+
+#define YES 1
+#define NO 0
 
 #endif

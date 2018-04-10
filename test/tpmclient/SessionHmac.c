@@ -31,7 +31,7 @@
 #include "tss2_sys.h"
 
 #include "../integration/sapi-util.h"
-#include "sample.h"
+#include "tpmclient.int.h"
 #include "sysapi_util.h"
 #include "util/tss2_endian.h"
 #define LOGMODULE test

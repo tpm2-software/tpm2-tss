@@ -27,7 +27,7 @@
 
 #include "tss2_tpm2_types.h"
 
-#include "sample.h"
+#include "tpmclient.int.h"
 #include "sysapi_util.h"
 
 #define MAX_NUM_ENTITIES 100
