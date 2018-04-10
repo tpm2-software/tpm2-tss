@@ -28,6 +28,7 @@
 
 #include "tss2_tpm2_types.h"
 #include "tss2_sys.h"
+#include "util/tpm2b.h"
 
 /*
  * This macro is like the GNU TEMP_FAILURE_RETRY macro for the
@@ -177,5 +178,31 @@ hmac(
     int key_len,
     TPM2B_DIGEST **buffer_list,
     TPM2B_DIGEST *out);
+
+/*
+ * Returns digest size for a give hash alg
+ */
+UINT16
+GetDigestSize(TPM2_ALG_ID hash);
+
+TSS2_RC
+CompareSizedByteBuffer(
+        TPM2B *buffer1,
+        TPM2B *buffer2);
+
+TSS2_RC
+ConcatSizedByteBuffer(
+        TPM2B_MAX_BUFFER *result,
+        TPM2B *buf);
+
+void
+CatSizedByteBuffer(
+        TPM2B *dest,
+        TPM2B *src);
+
+UINT16
+CopySizedByteBuffer(
+        TPM2B *dest,
+        TPM2B *src);
 
 #endif /* TEST_INTEGRATION_SAPI_UTIL_H */

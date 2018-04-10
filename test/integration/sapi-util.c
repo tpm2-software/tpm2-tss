@@ -489,3 +489,81 @@ out:
     /* In openSSL 1 means success 0 error */
     return rc == 1 ? TPM2_RC_SUCCESS : TSS2_SYS_RC_GENERAL_FAILURE;
 }
+
+TSS2_RC
+ConcatSizedByteBuffer(
+        TPM2B_MAX_BUFFER *result,
+        TPM2B *buf)
+{
+    if (result->size + buf->size > TPM2_MAX_DIGEST_BUFFER)
+        return TSS2_SYS_RC_BAD_VALUE;
+
+    memmove(result->buffer + result->size,
+            buf->buffer, buf->size);
+
+    result->size += buf->size;
+    return TPM2_RC_SUCCESS;
+}
+
+TSS2_RC
+CompareSizedByteBuffer(
+        TPM2B *buffer1,
+        TPM2B *buffer2)
+{
+    if (buffer1->size != buffer2->size)
+        return TPM2_RC_FAILURE;
+
+    if (memcmp(buffer1->buffer, buffer2->buffer, buffer1->size))
+        return TPM2_RC_FAILURE;
+
+    return TPM2_RC_SUCCESS;
+}
+
+void
+CatSizedByteBuffer(
+        TPM2B *dest,
+        TPM2B *src)
+{
+    if (!dest || !src)
+        return;
+
+    memcpy(dest->buffer + dest->size, src->buffer, src->size);
+    dest->size += src->size;
+}
+
+UINT16
+CopySizedByteBuffer(
+        TPM2B *dest,
+        TPM2B *src)
+{
+    if (!dest)
+        return 0;
+
+    if (!src) {
+        dest->size = 0;
+        return 0;
+    }
+
+    memcpy(dest->buffer, src->buffer, src->size);
+    dest->size = src->size;
+    return src->size + 2;
+}
+
+UINT16
+GetDigestSize(TPM2_ALG_ID hash)
+{
+    switch (hash) {
+        case TPM2_ALG_SHA1:
+            return TPM2_SHA1_DIGEST_SIZE;
+        case TPM2_ALG_SHA256:
+            return TPM2_SHA256_DIGEST_SIZE;
+        case TPM2_ALG_SHA384:
+            return TPM2_SHA384_DIGEST_SIZE;
+        case TPM2_ALG_SHA512:
+            return TPM2_SHA512_DIGEST_SIZE;
+        case TPM2_ALG_SM3_256:
+            return TPM2_SM3_256_DIGEST_SIZE;
+        default:
+            return 0;
+    }
+}

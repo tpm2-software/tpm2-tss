@@ -212,28 +212,6 @@ TSS2_RC DecryptResponseParam( SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM
 TSS2_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label, TPM2B *contextU, TPM2B *contextV,
     UINT16 bits, TPM2B_MAX_BUFFER *resultKey );
 
-static inline void CatSizedByteBuffer(TPM2B *dest, TPM2B *src)
-{
-    if (!dest || !src)
-        return;
-    memcpy(dest->buffer + dest->size, src->buffer, src->size);
-    dest->size += src->size;
-}
-static inline UINT16 CopySizedByteBuffer(TPM2B *dest, TPM2B *src)
-{
-    if (!dest)
-        return 0;
-
-    if (!src) {
-        dest->size = 0;
-        return 0;
-    }
-
-    memcpy(dest->buffer, src->buffer, src->size);
-    dest->size = src->size;
-    return src->size + 2;
-}
-
 void RollNonces( SESSION *session, TPM2B_NONCE *newNonce  );
 
 UINT32 TpmHandleToName( TPM2_HANDLE handle, TPM2B_NAME *name );
@@ -241,8 +219,6 @@ UINT32 TpmHandleToName( TPM2_HANDLE handle, TPM2B_NAME *name );
 int TpmClientPrintf( UINT8 type, const char *format, ...);
 
 #define INIT_SIMPLE_TPM2B_SIZE(type) (type).size = sizeof(type) - 2;
-
-TSS2_RC CompareSizedByteBuffer(TPM2B *buffer1, TPM2B *buffer2);
 
 #define YES 1
 #define NO 0
