@@ -75,3 +75,5 @@ tpm2-tss-2.0.0-dev/
 
 test/helper/tpm_startup
 test/helper/tpm_transientempty
+Doxyfile
+doc/rtf

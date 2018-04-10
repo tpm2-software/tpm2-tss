@@ -38,7 +38,7 @@ AM_INIT_AUTOMAKE([foreign
                   subdir-objects])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])]) #Backward compatible setting of "silent-rules"
 
-AC_CONFIG_FILES([Makefile doc/Doxyfile])
+AC_CONFIG_FILES([Makefile Doxyfile])
 
 # propagate configure arguments to distcheck
 AC_SUBST([DISTCHECK_CONFIGURE_FLAGS],[$ac_configure_args])
@@ -164,7 +164,8 @@ AX_ADD_LINK_FLAG([-Wl,-z,relro])
 AX_ADD_COMPILER_FLAG([-Wno-missing-braces])
 
 dnl --------- Doxy Gen -----------------------
-DX_INIT_DOXYGEN($PACKAGE_NAME, [doc/Doxyfile], [doc/doxy])
+DX_DOXYGEN_FEATURE(ON)
+DX_DOT_FEATURE(OFF)
 DX_HTML_FEATURE(ON)
 DX_CHM_FEATURE(OFF)
 DX_CHI_FEATURE(OFF)
@@ -173,7 +174,7 @@ DX_RTF_FEATURE(OFF)
 DX_XML_FEATURE(OFF)
 DX_PDF_FEATURE(OFF)
 DX_PS_FEATURE(OFF)
-
+DX_INIT_DOXYGEN($PACKAGE_NAME, [Doxyfile], [doc/doxy])
 
 AX_CODE_COVERAGE
 
