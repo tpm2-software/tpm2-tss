@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,7 +26,6 @@
  *******************************************************************************/
 
 #include <inttypes.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "tss2_esys.h"
@@ -106,6 +105,8 @@ iesys_MU_BYTE_array_Unmarshal(
     }
 
     size_t offset_loc = (offset != NULL)? *offset : 0;
+    if (dst != NULL)
+        memset(dst, 0, sizeof(*dst));
 
     if (count > size || size - count < offset_loc) {
         LOG_ERROR("not enough space in target buffer");
@@ -162,6 +163,8 @@ Tss2_MU_IESYSC_RESOURCE_TYPE_CONSTANT_Unmarshal(
     LOG_TRACE("called: buffer=%p size=%zu offset=%p dst=%p",
         buffer, size, offset, dst);
     size_t offset_loc = (offset != NULL)? *offset : 0;
+    if (dst != NULL)
+        memset(dst, 0, sizeof(*dst));
     IESYSC_RESOURCE_TYPE_CONSTANT dst_loc;
     TSS2_RC ret = Tss2_MU_UINT32_Unmarshal(buffer, size,
         &offset_loc, &dst_loc);
@@ -249,6 +252,8 @@ Tss2_MU_IESYSC_PARAM_ENCRYPT_Unmarshal(
     LOG_TRACE("called: buffer=%p size=%zu offset=%p dst=%p",
         buffer, size, offset, dst);
     size_t offset_loc = (offset != NULL)? *offset : 0;
+    if (dst != NULL)
+        memset(dst, 0, sizeof(*dst));
     IESYSC_PARAM_ENCRYPT dst_loc;
     TSS2_RC ret = Tss2_MU_UINT32_Unmarshal(buffer, size,
         &offset_loc, &dst_loc);
@@ -334,6 +339,8 @@ Tss2_MU_IESYSC_PARAM_DECRYPT_Unmarshal(
     LOG_TRACE("called: buffer=%p size=%zu offset=%p dst=%p",
         buffer, size, offset, dst);
     size_t offset_loc = (offset != NULL)? *offset : 0;
+    if (dst != NULL)
+        memset(dst, 0, sizeof(*dst));
     IESYSC_PARAM_DECRYPT dst_loc;
     TSS2_RC ret = Tss2_MU_UINT32_Unmarshal(buffer, size,
         &offset_loc, &dst_loc);
@@ -419,6 +426,8 @@ Tss2_MU_IESYSC_TYPE_POLICY_AUTH_Unmarshal(
     LOG_TRACE("called: buffer=%p size=%zu offset=%p dst=%p",
         buffer, size, offset, dst);
     size_t offset_loc = (offset != NULL)? *offset : 0;
+    if (dst != NULL)
+        memset(dst, 0, sizeof(*dst));
     IESYSC_TYPE_POLICY_AUTH dst_loc;
     TSS2_RC ret = Tss2_MU_UINT32_Unmarshal(buffer, size,
         &offset_loc, &dst_loc);
@@ -958,9 +967,9 @@ Tss2_MU_IESYS_RESOURCE_Unmarshal(
     }
     TSS2_RC ret;
     size_t offset_loc = (offset != NULL)? *offset : 0;
-    TPM2_HANDLE out_handle;
     if (dst != NULL)
         memset(dst, 0, sizeof(*dst));
+    TPM2_HANDLE out_handle;
     ret = Tss2_MU_TPM2_HANDLE_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_handle : &dst->handle);
     if (ret != TSS2_RC_SUCCESS) {
@@ -1066,9 +1075,9 @@ Tss2_MU_IESYS_METADATA_Unmarshal(
     }
     TSS2_RC ret;
     size_t offset_loc = (offset != NULL)? *offset : 0;
-    UINT16 out_size;
     if (dst != NULL)
         memset(dst, 0, sizeof(*dst));
+    UINT16 out_size;
     ret = Tss2_MU_UINT16_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_size : &dst->size);
     if (ret != TSS2_RC_SUCCESS) {
@@ -1159,9 +1168,9 @@ Tss2_MU_IESYS_CONTEXT_DATA_Unmarshal(
     }
     TSS2_RC ret;
     size_t offset_loc = (offset != NULL)? *offset : 0;
-    UINT32 out_reserved;
     if (dst != NULL)
         memset(dst, 0, sizeof(*dst));
+    UINT32 out_reserved;
     ret = Tss2_MU_UINT32_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_reserved : &dst->reserved);
     if (ret != TSS2_RC_SUCCESS) {
