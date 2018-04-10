@@ -27,7 +27,7 @@
 
 #include "tss2_tpm2_types.h"
 
-#include "sample.h"
+#include "tpmclient.int.h"
 #include "sysapi_util.h"
 #include "../integration/context-util.h"
 #include "util/tss2_endian.h"
