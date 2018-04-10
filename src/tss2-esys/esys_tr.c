@@ -320,9 +320,10 @@ Esys_TR_GetName(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
 
         } else {
             size_t offset = 0;
-            Tss2_MU_TPM2_HANDLE_Marshal(esys_object->rsrc.handle,
-                                        &(*name)->name[0], sizeof(TPM2_HANDLE),
-                                        &offset);
+            r = Tss2_MU_TPM2_HANDLE_Marshal(esys_object->rsrc.handle,
+                                            &(*name)->name[0], sizeof(TPM2_HANDLE),
+                                            &offset);
+            goto_if_error(r, "Error get name", error_cleanup);
             (*name)->size = offset;
         }
     }
