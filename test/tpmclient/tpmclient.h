@@ -32,39 +32,11 @@
 #include "tss2_sys.h"
 #include "util/tpm2b.h"
 
-#define TPMBUF_LEN 0x8000
-#define GLOBAL_SYS_CONTEXT_SIZE 4096
 #define INIT_SIMPLE_TPM2B_SIZE(type) (type).size = sizeof(type) - 2;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+TSS2_RC CompareSizedByteBuffer(TPM2B *buffer1, TPM2B *buffer2);
 
 #define YES 1
-#define NO  0
-
-UINT32 TpmHash( TPMI_ALG_HASH hashAlg, UINT16 size, BYTE *data, TPM2B_DIGEST *result );
-UINT32 TpmHandleToName( TPM2_HANDLE handle, TPM2B_NAME *name );
-TSS2_RC CompareSizedByteBuffer( TPM2B *buffer1, TPM2B *buffer2 );
+#define NO 0
 
 extern TSS2_TCTI_CONTEXT *resMgrTctiContext;
-
-TSS2_RC SocketSendTpmCommand(
-    TSS2_TCTI_CONTEXT *tctiContext,       /* in */
-    size_t             command_size,      /* in */
-    uint8_t           *command_buffer     /* in */
-    );
-
-TSS2_RC SocketReceiveTpmResponse(
-    TSS2_TCTI_CONTEXT *tctiContext,     /* in */
-    size_t          *response_size,     /* out */
-    unsigned char   *response_buffer,    /* in */
-    int32_t         timeout
-    );
-
-#ifdef __cplusplus
-}
 #endif
-
-#endif
-
