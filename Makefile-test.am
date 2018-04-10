@@ -263,15 +263,15 @@ test_tpmclient_tpmclient_int_LDADD    = $(TESTS_LDADD)
 test_tpmclient_tpmclient_int_SOURCES  = \
     test/tpmclient/DecryptEncrypt.c \
     test/tpmclient/Entity.c test/tpmclient/kdfa.c \
-    test/integration/main.c test/tpmclient/sample.h \
-    test/tpmclient/StartAuthSession.c test/tpmclient/TpmCalcPHash.c \
-    test/tpmclient/tpmclient.int.c test/tpmclient/tpmclient.h \
-    test/tpmclient/TpmHandleToName.c test/tpmclient/SessionHmac.c
+    test/tpmclient/StartAuthSession.c test/tpmclient/SessionHmac.c \
+    test/tpmclient/tpmclient.int.c test/tpmclient/tpmclient.int.h \
+    test/integration/main.c
 
 test_integration_libtest_utils_la_CFLAGS = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_libtest_utils_la_SOURCES = \
     test/integration/context-util.c test/integration/context-util.h \
     test/integration/sapi-util.c    test/integration/sapi-util.h \
+    test/integration/session-util.c test/integration/session-util.h \
     test/integration/test-options.c test/integration/test-options.h \
     test/integration/test.h
 

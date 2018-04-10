@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "tss2_tpm2_types.h"
 #include "tss2_mu.h"
@@ -151,59 +152,32 @@ TSS2_RC GetEntity( TPM2_HANDLE entityHandle, ENTITY **entity );
 TSS2_RC GetSessionStruct( TPMI_SH_AUTH_SESSION authHandle, SESSION **pSession );
 TSS2_RC GetSessionAlgId( TPMI_SH_AUTH_SESSION authHandle, TPMI_ALG_HASH *sessionAlgId );
 TSS2_RC EndAuthSession( SESSION *session );
-TSS2_RC ComputeCommandHmacs( TSS2_SYS_CONTEXT *sysContext, TPM2_HANDLE handle1,
-    TPM2_HANDLE handle2, TSS2L_SYS_AUTH_COMMAND *pSessionsData,
-    TSS2_RC sessionCmdRval );
-
-extern INT16 sessionEntriesUsed;
-
-extern void InitSessionsTable();
-
-extern UINT32 ( *ComputeSessionHmacPtr )(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMS_AUTH_COMMAND *cmdAuth,          // Pointer to session input struct
-    TPM2_HANDLE entityHandle,             // Used to determine if we're accessing a different
-                                         // resource than the bound resource.
-    TSS2_RC responseCode,                 // Response code for the command, 0xffff for "none" is
-                                         // used to indicate that no response code is present
-                                         // (used for calculating command HMACs vs response HMACs).
-    TPM2_HANDLE handle1,                  // First handle == 0xff000000 indicates no handle
-    TPM2_HANDLE handle2,                  // Second handle == 0xff000000 indicates no handle
-    TPMA_SESSION sessionAttributes,      // Current session attributes
-    TPM2B_DIGEST *result,                // Where the result hash is saved.
-    TSS2_RC sessionCmdRval
-    );
-
-
-extern TSS2_RC CheckResponseHMACs( TSS2_SYS_CONTEXT *sysContext,
-    TSS2_RC responseCode,
-    TSS2L_SYS_AUTH_COMMAND *pSessionsDataIn, TPM2_HANDLE handle1, TPM2_HANDLE handle2,
-    TSS2L_SYS_AUTH_RESPONSE *pSessionsDataOut );
+TSS2_RC ComputeCommandHmacs(
+        TSS2_SYS_CONTEXT *sysContext,
+        TPM2_HANDLE handle1,
+        TPM2_HANDLE handle2,
+        TSS2L_SYS_AUTH_COMMAND *pSessionsData);
 
 TSS2_RC StartAuthSessionWithParams( SESSION **session, TPMI_DH_OBJECT tpmKey, TPM2B_MAX_BUFFER *salt,
     TPMI_DH_ENTITY bind, TPM2B_AUTH *bindAuth, TPM2B_NONCE *nonceCaller, TPM2B_ENCRYPTED_SECRET *encryptedSalt,
     TPM2_SE sessionType, TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH algId, TSS2_TCTI_CONTEXT *tctiContext );
 
-//
-// This function calculates the session HMAC
-//
 UINT32 TpmComputeSessionHmac(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMS_AUTH_COMMAND *pSessionDataIn, // Pointer to session input struct
-    TPM2_HANDLE entityHandle,             // Used to determine if we're accessing a different
-                                         // resource than the bound resource.
-    TSS2_RC responseCode,                 // Response code for the command, 0xffff for "none" is
-                                         // used to indicate that no response code is present
-                                         // (used for calculating command HMACs vs response HMACs).
-    TPM2_HANDLE handle1,                  // First handle == 0xff000000 indicates no handle
-    TPM2_HANDLE handle2,                  // Second handle == 0xff000000 indicates no handle
-    TPMA_SESSION sessionAttributes,      // Current session attributes
-    TPM2B_DIGEST *result,                // Where the result hash is saved.
-    TSS2_RC sessionCmdRval
-    );
+    TPMS_AUTH_COMMAND *pSessionDataIn,
+    TPM2_HANDLE entityHandle,
+    bool command,
+    TPM2_HANDLE handle1,
+    TPM2_HANDLE handle2,
+    TPMA_SESSION sessionAttributes,
+    TPM2B_DIGEST *result);
 
-TSS2_RC TpmCalcPHash( TSS2_SYS_CONTEXT *sysContext, TPM2_HANDLE handle1,
-    TPM2_HANDLE handle2, TPMI_ALG_HASH authHash, TSS2_RC responseCode, TPM2B_DIGEST *pHash );
+TSS2_RC CheckResponseHMACs(
+        TSS2_SYS_CONTEXT *sysContext,
+        TSS2L_SYS_AUTH_COMMAND *pSessionsDataIn,
+        TPM2_HANDLE handle1,
+        TPM2_HANDLE handle2,
+        TSS2L_SYS_AUTH_RESPONSE *pSessionsDataOut);
 
 TSS2_RC EncryptCommandParam( SESSION *session, TPM2B_MAX_BUFFER *encryptedData, TPM2B_MAX_BUFFER *clearData, TPM2B_AUTH *authValue );
 
@@ -213,10 +187,6 @@ TSS2_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label, TPM2B *contextU, T
     UINT16 bits, TPM2B_MAX_BUFFER *resultKey );
 
 void RollNonces( SESSION *session, TPM2B_NONCE *newNonce  );
-
-UINT32 TpmHandleToName( TPM2_HANDLE handle, TPM2B_NAME *name );
-
-int TpmClientPrintf( UINT8 type, const char *format, ...);
 
 #define INIT_SIMPLE_TPM2B_SIZE(type) (type).size = sizeof(type) - 2;
 

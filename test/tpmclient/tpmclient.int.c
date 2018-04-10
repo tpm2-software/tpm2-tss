@@ -37,6 +37,7 @@
 
 #include "../integration/context-util.h"
 #include "../integration/sapi-util.h"
+#include "../integration/session-util.h"
 #include "tpmclient.int.h"
 #include "util/tss2_endian.h"
 #include "sysapi_util.h"
@@ -2237,8 +2238,9 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
 
     // Get the name of the NV index.
     rval = TpmHandleToName(
+            resMgrTctiContext,
             TPM20_INDEX_PASSWORD_TEST,
-            &nvName );
+            &nvName);
     CheckPassed( rval );
 
 
@@ -2272,7 +2274,9 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
 
     // Get the name of the session and save it in
     // the nvSession structure.
-    rval = TpmHandleToName( nvSession->sessionHandle,
+    rval = TpmHandleToName(
+            resMgrTctiContext,
+            nvSession->sessionHandle,
             &(nvSession->name) );
     CheckPassed( rval );
 
@@ -2313,32 +2317,35 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
 
     // Complete command authorization area, by computing
     // HMAC and setting it in nvCmdAuths.
-    rval = ComputeCommandHmacs( simpleTestContext,
+    rval = ComputeCommandHmacs(
+            simpleTestContext,
             TPM20_INDEX_PASSWORD_TEST,
-            TPM20_INDEX_PASSWORD_TEST, &nvCmdAuths,
-            TPM2_RC_FAILURE );
-    CheckPassed( rval );
+            TPM20_INDEX_PASSWORD_TEST,
+            &nvCmdAuths);
+    CheckPassed(rval);
     // Finally!!  Write the data to the NV index.
     // If the command is successful, the command
     // HMAC was correct.
-    sessionCmdRval = Tss2_Sys_NV_Write( simpleTestContext,
+    sessionCmdRval = Tss2_Sys_NV_Write(simpleTestContext,
             TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST,
-            &nvCmdAuths, &nvWriteData, 0, &nvRspAuths );
+            &nvCmdAuths, &nvWriteData, 0, &nvRspAuths);
     CheckPassed(sessionCmdRval);
 
     // Roll nonces for response
     RollNonces( nvSession, &nvRspAuths.auths[0].nonce );
 
-    if( sessionCmdRval == TPM2_RC_SUCCESS )
-    {
+    if (sessionCmdRval == TPM2_RC_SUCCESS) {
         // If the command was successful, check the
         // response HMAC to make sure that the
         // response was received correctly.
-        rval = CheckResponseHMACs( simpleTestContext, sessionCmdRval,
-                &nvCmdAuths, TPM20_INDEX_PASSWORD_TEST,
-                TPM20_INDEX_PASSWORD_TEST, &nvRspAuths );
-        CheckPassed( rval );
+        rval = CheckResponseHMACs(
+                simpleTestContext,
+                &nvCmdAuths,
+                TPM20_INDEX_PASSWORD_TEST,
+                TPM20_INDEX_PASSWORD_TEST,
+                &nvRspAuths);
+        CheckPassed(rval);
     }
 
     if( !hmacTest )
@@ -2363,11 +2370,12 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
 
     // Complete command authorization area, by computing
     // HMAC and setting it in nvCmdAuths.
-    rval = ComputeCommandHmacs( simpleTestContext,
+    rval = ComputeCommandHmacs(
+            simpleTestContext,
             TPM20_INDEX_PASSWORD_TEST,
-            TPM20_INDEX_PASSWORD_TEST, &nvCmdAuths,
-            TPM2_RC_FAILURE );
-    CheckPassed( rval );
+            TPM20_INDEX_PASSWORD_TEST,
+            &nvCmdAuths);
+    CheckPassed(rval);
 
     // And now read the data back.
     // If the command is successful, the command
@@ -2383,15 +2391,17 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
     // Roll nonces for response
     RollNonces( nvSession, &nvRspAuths.auths[0].nonce );
 
-    if( sessionCmdRval == TPM2_RC_SUCCESS )
-    {
+    if (sessionCmdRval == TPM2_RC_SUCCESS) {
         // If the command was successful, check the
         // response HMAC to make sure that the
         // response was received correctly.
-        rval = CheckResponseHMACs( simpleTestContext, sessionCmdRval,
-                &nvCmdAuths, TPM20_INDEX_PASSWORD_TEST,
-                TPM20_INDEX_PASSWORD_TEST, &nvRspAuths );
-        CheckPassed( rval );
+        rval = CheckResponseHMACs(
+                simpleTestContext,
+                &nvCmdAuths,
+                TPM20_INDEX_PASSWORD_TEST,
+                TPM20_INDEX_PASSWORD_TEST,
+                &nvRspAuths );
+        CheckPassed(rval);
     }
 
     // Check that write and read data are equal.
