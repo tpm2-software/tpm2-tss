@@ -27,7 +27,7 @@
 #include <string.h>
 
 #include "tss2_tpm2_types.h"
-
+#include "../integration/context-util.h"
 #include "sample.h"
 
 TSS2_RC GetBlockSizeInBits( TPMI_ALG_SYM algorithm, UINT32 *blockSizeInBits )
@@ -119,17 +119,14 @@ UINT32 LoadSessionEncryptDecryptKey( TPMT_SYM_DEF *symmetric, TPM2B_MAX_BUFFER *
     inPublic.publicArea.parameters.symDetail.sym.mode = symmetric->mode;
     inPublic.publicArea.unique.sym.size = 0;
 
-    sysContext = InitSysContext( 1000, resMgrTctiContext, &abiVersion );
-    if( sysContext == 0 )
-    {
+    sysContext = sapi_init_from_tcti_ctx(resMgrTctiContext);
+    if (sysContext == NULL)
         return TSS2_APP_RC_INIT_SYS_CONTEXT_FAILED;
-    }
 
     INIT_SIMPLE_TPM2B_SIZE( *keyName );
-    rval = Tss2_Sys_LoadExternal( sysContext, 0, &inPrivate, &inPublic, TPM2_RH_NULL, keyHandle, keyName, 0 );
+    rval = Tss2_Sys_LoadExternal(sysContext, 0, &inPrivate, &inPublic, TPM2_RH_NULL, keyHandle, keyName, 0);
 
-    TeardownSysContext( &sysContext );
-
+    sapi_teardown(sysContext);
     return rval;
 }
 
@@ -147,10 +144,9 @@ TSS2_RC EncryptCFB( SESSION *session, TPM2B_MAX_BUFFER *encryptedData, TPM2B_MAX
         .count = 1,
         .auths = { 0 }};
 
-    sysContext = InitSysContext( 1000, resMgrTctiContext, &abiVersion );
-    if( sysContext == 0 )
-    {
-        TeardownSysContext( &sysContext );
+    sysContext = sapi_init_from_tcti_ctx(resMgrTctiContext);
+    if (sysContext == NULL) {
+        sapi_teardown(sysContext);
         return TSS2_APP_RC_TEARDOWN_SYS_CONTEXT_FAILED;
     }
 
@@ -176,7 +172,7 @@ TSS2_RC EncryptCFB( SESSION *session, TPM2B_MAX_BUFFER *encryptedData, TPM2B_MAX
             }
         }
     }
-    TeardownSysContext( &sysContext );
+    sapi_teardown(sysContext);
 
     return rval;
 }
@@ -194,10 +190,9 @@ TSS2_RC DecryptCFB( SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM2B_MAX_BUF
         .count = 1,
         .auths = { 0 }};
 
-    sysContext = InitSysContext( 1000, resMgrTctiContext, &abiVersion );
-    if( sysContext == 0 )
-    {
-        TeardownSysContext( &sysContext );
+    sysContext = sapi_init_from_tcti_ctx(resMgrTctiContext);
+    if (sysContext == NULL) {
+        sapi_teardown(sysContext);
         return TSS2_APP_RC_TEARDOWN_SYS_CONTEXT_FAILED;
     }
 
@@ -223,8 +218,7 @@ TSS2_RC DecryptCFB( SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM2B_MAX_BUF
             }
         }
     }
-    TeardownSysContext( &sysContext );
-
+    sapi_teardown(sysContext);
     return rval;
 }
 
