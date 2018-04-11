@@ -6,8 +6,14 @@
 #define LOGMODULE log
 #include "log.h"
 
+#if !defined(_MSC_VER) || defined(__INTEL_COMPILER)
 #define likely(x)       __builtin_expect(!!(x), 1)
 #define unlikely(x)     __builtin_expect(!!(x), 0)
+#else
+/* Microsoft Visual Studio gives internal error C1001 with _builtin_expect */
+#define likely(x)       (x)
+#define unlikely(x)     (x)
+#endif
 
 log_level
 getLogLevel(const char *module, log_level logdefault);
