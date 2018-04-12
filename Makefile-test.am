@@ -109,6 +109,7 @@ TESTS_INTEGRATION = \
 if ESAPI
 TESTS_INTEGRATION += \
     test/integration/esys-audit.int \
+    test/integration/esys-certify-creation.int \
     test/integration/esys-clear.int \
     test/integration/esys-clear-session.int \
     test/integration/esys-clockset.int \
@@ -358,6 +359,13 @@ test_integration_esys_audit_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_audit_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_integration_esys_audit_int_SOURCES = \
     test/integration/esys-audit.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_certify_creation_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_certify_creation_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_certify_creation_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_certify_creation_int_SOURCES = \
+    test/integration/esys-certify-creation.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_clear_int_CFLAGS  = $(TESTS_CFLAGS)
