@@ -113,6 +113,7 @@ TESTS_INTEGRATION += \
     test/integration/esys-certify.int \
     test/integration/esys-change-eps.int \
     test/integration/esys-clear.int \
+    test/integration/esys-clear-control.int \
     test/integration/esys-clear-session.int \
     test/integration/esys-clockset.int \
     test/integration/esys-clockset-session.int \
@@ -391,8 +392,14 @@ test_integration_esys_clear_int_SOURCES = \
     test/integration/esys-clear.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
-test_integration_esys_clear_session_int_CFLAGS  = $(TESTS_CFLAGS) \
-    -DTEST_SESSION
+test_integration_esys_clear_control_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_clear_control_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_clear_control_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_clear_control_int_SOURCES = \
+    test/integration/esys-clear-control.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_clear_session_int_CFLAGS  = $(TESTS_CFLAGS) -DTEST_SESSION
 test_integration_esys_clear_session_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_clear_session_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_integration_esys_clear_session_int_SOURCES = \
