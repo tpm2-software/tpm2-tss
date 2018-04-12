@@ -126,6 +126,7 @@ TESTS_INTEGRATION += \
     test/integration/esys-create-session-auth.int \
     test/integration/esys-create-session-auth-xor.int \
     test/integration/esys-duplicate.int \
+    test/integration/esys-ecc-parameters.int \
     test/integration/esys-evict-control-serialization.int \
     test/integration/esys-get-capability.int \
     test/integration/esys-get-random.int \
@@ -484,6 +485,13 @@ test_integration_esys_duplicate_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_duplicate_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_integration_esys_duplicate_int_SOURCES = \
     test/integration/esys-duplicate.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_ecc_parameters_int_CFLAGS = $(TESTS_CFLAGS)
+test_integration_esys_ecc_parameters_int_LDADD = $(TESTS_LDADD)
+test_integration_esys_ecc_parameters_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_ecc_parameters_int_SOURCES = \
+    test/integration/esys-ecc-parameters.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_evict_control_serialization_int_CFLAGS  = $(TESTS_CFLAGS)
