@@ -151,29 +151,34 @@ TSS2_RC GetEntityAuth( TPM2_HANDLE entityHandle, TPM2B_AUTH *auth );
 TSS2_RC GetEntity( TPM2_HANDLE entityHandle, ENTITY **entity );
 TSS2_RC GetSessionStruct( TPMI_SH_AUTH_SESSION authHandle, SESSION **pSession );
 TSS2_RC GetSessionAlgId( TPMI_SH_AUTH_SESSION authHandle, TPMI_ALG_HASH *sessionAlgId );
-TSS2_RC EndAuthSession( SESSION *session );
-TSS2_RC ComputeCommandHmacs(
-        TSS2_SYS_CONTEXT *sysContext,
-        TPM2_HANDLE handle1,
-        TPM2_HANDLE handle2,
-        TSS2L_SYS_AUTH_COMMAND *pSessionsData);
+void
+EndAuthSession(SESSION *session);
 
-TSS2_RC StartAuthSessionWithParams( SESSION **session, TPMI_DH_OBJECT tpmKey, TPM2B_MAX_BUFFER *salt,
-    TPMI_DH_ENTITY bind, TPM2B_AUTH *bindAuth, TPM2B_NONCE *nonceCaller, TPM2B_ENCRYPTED_SECRET *encryptedSalt,
-    TPM2_SE sessionType, TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH algId, TSS2_TCTI_CONTEXT *tctiContext );
-
-UINT32 TpmComputeSessionHmac(
+TSS2_RC
+ComputeCommandHmacs(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMS_AUTH_COMMAND *pSessionDataIn,
-    TPM2_HANDLE entityHandle,
-    bool command,
+    SESSION *session,
     TPM2_HANDLE handle1,
     TPM2_HANDLE handle2,
-    TPMA_SESSION sessionAttributes,
-    TPM2B_DIGEST *result);
+    TSS2L_SYS_AUTH_COMMAND *pSessionsData);
+
+TSS2_RC
+StartAuthSessionWithParams(
+    SESSION **session,
+    TPMI_DH_OBJECT tpmKey,
+    TPM2B_MAX_BUFFER *salt,
+    TPMI_DH_ENTITY bind,
+    TPM2B_AUTH *bindAuth,
+    TPM2B_NONCE *nonceCaller,
+    TPM2B_ENCRYPTED_SECRET *encryptedSalt,
+    TPM2_SE sessionType,
+    TPMT_SYM_DEF *symmetric,
+    TPMI_ALG_HASH algId,
+    TSS2_TCTI_CONTEXT *tctiContext);
 
 TSS2_RC CheckResponseHMACs(
         TSS2_SYS_CONTEXT *sysContext,
+        SESSION *session,
         TSS2L_SYS_AUTH_COMMAND *pSessionsDataIn,
         TPM2_HANDLE handle1,
         TPM2_HANDLE handle2,

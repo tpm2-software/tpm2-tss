@@ -476,8 +476,7 @@ static void TestStartAuthSession()
         rval = Tss2_Sys_FlushContext( sysContext, sessions[i]->sessionHandle );
         CheckPassed( rval );
 
-        rval = EndAuthSession( sessions[i] );
-        CheckPassed( rval );
+        EndAuthSession(sessions[i]);
     }
 
     // Now do some gap tests.
@@ -492,8 +491,7 @@ static void TestStartAuthSession()
         rval = Tss2_Sys_FlushContext( sysContext, sessions[i]->sessionHandle );
         CheckPassed( rval );
 
-        rval = EndAuthSession( sessions[i] );
-        CheckPassed( rval );
+        EndAuthSession(sessions[i]);
     }
 
     for( i = 0; i < ( sizeof(sessions) / sizeof (SESSION *) ); i++ )
@@ -504,9 +502,7 @@ static void TestStartAuthSession()
         rval = Tss2_Sys_FlushContext( sysContext, sessions[i]->sessionHandle );
         CheckPassed( rval );
 
-        rval = EndAuthSession( sessions[i] );
-        CheckPassed( rval );
-
+        EndAuthSession(sessions[i]);
     }
 }
 
@@ -1010,8 +1006,7 @@ static TSS2_RC BuildPolicy( TSS2_SYS_CONTEXT *sysContext, SESSION **policySessio
         CheckPassed( rval );
 
         // And remove the session from sessions table.
-        rval = EndAuthSession( *policySession );
-        CheckPassed( rval );
+        EndAuthSession( *policySession );
     }
 
     return rval;
@@ -1340,14 +1335,12 @@ static void TestPolicy()
             CheckPassed( rval );
 
             // And remove the session from test app session table.
-            rval = EndAuthSession( policySession );
+            EndAuthSession( policySession );
         }
         else
         {
             CheckFailed( rval, 0xffffffff );
         }
-
-        CheckPassed( rval );
     }
 }
 
@@ -2205,8 +2198,7 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
 
         // And remove the trial policy session from
         // sessions table.
-        rval = EndAuthSession( trialPolicySession );
-        CheckPassed( rval );
+        EndAuthSession( trialPolicySession );
     }
 
     // Now set the NV index's attributes:
@@ -2305,8 +2297,7 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
     CheckPassed( rval );
 
     // Configure command authorization area, except for HMAC.
-    nvCmdAuths.auths[0].sessionHandle =
-            nvSession->sessionHandle;
+    nvCmdAuths.auths[0].sessionHandle = nvSession->sessionHandle;
     nvCmdAuths.auths[0].nonce.size = 1;
     nvCmdAuths.auths[0].nonce.buffer[0] = 0xa5;
     nvCmdAuths.auths[0].sessionAttributes = 0;
@@ -2319,6 +2310,7 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
     // HMAC and setting it in nvCmdAuths.
     rval = ComputeCommandHmacs(
             simpleTestContext,
+            nvSession,
             TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST,
             &nvCmdAuths);
@@ -2341,6 +2333,7 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
         // response was received correctly.
         rval = CheckResponseHMACs(
                 simpleTestContext,
+                nvSession,
                 &nvCmdAuths,
                 TPM20_INDEX_PASSWORD_TEST,
                 TPM20_INDEX_PASSWORD_TEST,
@@ -2372,6 +2365,7 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
     // HMAC and setting it in nvCmdAuths.
     rval = ComputeCommandHmacs(
             simpleTestContext,
+            nvSession,
             TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST,
             &nvCmdAuths);
@@ -2397,6 +2391,7 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
         // response was received correctly.
         rval = CheckResponseHMACs(
                 simpleTestContext,
+                nvSession,
                 &nvCmdAuths,
                 TPM20_INDEX_PASSWORD_TEST,
                 TPM20_INDEX_PASSWORD_TEST,
@@ -2433,8 +2428,7 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
     CheckPassed( rval );
 
     // Remove the real session from sessions table.
-    rval = EndAuthSession( nvSession );
-    CheckPassed(rval);
+    EndAuthSession( nvSession );
 
     sapi_teardown(simpleTestContext);
 }
@@ -2722,8 +2716,7 @@ static void TestEncryptDecryptSession()
                 encryptDecryptSession->sessionHandle );
         CheckPassed( rval );
 
-        rval = EndAuthSession( encryptDecryptSession );
-        CheckPassed( rval );
+        EndAuthSession( encryptDecryptSession );
     }
 
     // Undefine NV index.
