@@ -31,7 +31,7 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/* Test the ESAPI function Esys_ClockSet */
+/* Test the ESAPI function Esys_ClockSet and Esys_ReadClock */
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
@@ -80,11 +80,34 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                       );
     goto_if_error(r, "Error: ClockSet", error);
 
+    TPM2_CLOCK_ADJUST rateAdjust = TPM2_CLOCK_MEDIUM_FASTER;
+
+    r = Esys_ClockRateAdjust(esys_context,
+                             auth_handle,
+#ifdef TEST_SESSION
+                             session,
+#else
+                             ESYS_TR_PASSWORD,
+#endif
+                             ESYS_TR_NONE,
+                             ESYS_TR_NONE,
+                             rateAdjust);
+    goto_if_error(r, "Error: ClockRateAdjust", error);
+
+
+    TPMS_TIME_INFO *currentTime;
+
+    r = Esys_ReadClock(esys_context,
+                       ESYS_TR_NONE,
+                       ESYS_TR_NONE,
+                       ESYS_TR_NONE,
+                       &currentTime);
+    goto_if_error(r, "Error: ReadClock", error);
+
 #ifdef TEST_SESSION
     r = Esys_FlushContext(esys_context, session);
     goto_if_error(r, "Error: FlushContext", error);
 #endif
-
     return 0;
 
  error:
