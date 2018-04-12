@@ -147,6 +147,7 @@ TESTS_INTEGRATION += \
     test/integration/esys-lock.int \
     test/integration/esys-make-credential.int \
     test/integration/esys-make-credential-session.int \
+    test/integration/esys-nv-certify.int \
     test/integration/esys-nv-ram-counter.int \
     test/integration/esys-nv-ram-counter-session.int \
     test/integration/esys-nv-ram-extend-index.int \
@@ -643,6 +644,13 @@ test_integration_esys_make_credential_session_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_make_credential_session_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_integration_esys_make_credential_session_int_SOURCES = \
     test/integration/esys-make-credential.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_nv_certify_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_nv_certify_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_nv_certify_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_nv_certify_int_SOURCES = \
+    test/integration/esys-nv-certify.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_nv_ram_counter_int_CFLAGS  = $(TESTS_CFLAGS)
