@@ -177,17 +177,6 @@ tcti_proxy_initialize(
     return TSS2_RC_SUCCESS;
 }
 
-/** Override the gcrypt random functions in order to not screw over valgrind. */
-TSS2_RC iesys_cryptogcry_random2b(TPM2B_NONCE *nonce, size_t num_bytes)
-{
-    static size_t j = 0;
-    j++;
-    nonce->size = num_bytes;
-    for (size_t i = 0; i < num_bytes; i++)
-        nonce->buffer[i] = i+j % 256;
-    return 0;
-}
-
 /**
  * This program is a template for integration tests (ones that use the TCTI
  * and the ESAPI contexts / API directly). It does nothing more than parsing
