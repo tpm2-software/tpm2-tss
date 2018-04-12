@@ -152,8 +152,10 @@ TESTS_INTEGRATION += \
     test/integration/esys-nv-ram-counter-session.int \
     test/integration/esys-nv-ram-extend-index.int \
     test/integration/esys-nv-ram-extend-index-session.int \
-    test/integration/esys-nv-ram-ordinary-index.int \
-    test/integration/esys-nv-ram-ordinary-index-session.int \
+    test/integration/esys-nv-ram-ordinary-index-rlock.int \
+    test/integration/esys-nv-ram-ordinary-index-rlock-session.int \
+    test/integration/esys-nv-ram-ordinary-index-wlock.int \
+    test/integration/esys-nv-ram-ordinary-index-wlock-session.int \
     test/integration/esys-nv-ram-set-bits.int \
     test/integration/esys-nv-ram-set-bits-session.int \
     test/integration/esys-quote.int \
@@ -683,18 +685,39 @@ test_integration_esys_nv_ram_extend_index_session_int_SOURCES = \
     test/integration/esys-nv-ram-extend-index.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
-test_integration_esys_nv_ram_ordinary_index_int_CFLAGS  = $(TESTS_CFLAGS)
-test_integration_esys_nv_ram_ordinary_index_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_nv_ram_ordinary_index_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_nv_ram_ordinary_index_int_SOURCES = \
+test_integration_esys_nv_ram_ordinary_index_rlock_int_CFLAGS  = $(TESTS_CFLAGS) \
+    -I. -I$(srcdir)/src/esapi/esapi -I$(srcdir)/include/esapi -I$(srcdir)/test/integration/ \
+    -I$(srcdir)/src/esapi/esapi_util -DTEST_READ_LOCK
+test_integration_esys_nv_ram_ordinary_index_rlock_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_nv_ram_ordinary_index_rlock_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_nv_ram_ordinary_index_rlock_int_SOURCES = \
     test/integration/esys-nv-ram-ordinary-index.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
-test_integration_esys_nv_ram_ordinary_index_session_int_CFLAGS  = $(TESTS_CFLAGS) \
-    -DTEST_SESSION
-test_integration_esys_nv_ram_ordinary_index_session_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_nv_ram_ordinary_index_session_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_nv_ram_ordinary_index_session_int_SOURCES = \
+test_integration_esys_nv_ram_ordinary_index_rlock_session_int_CFLAGS  = $(TESTS_CFLAGS) \
+    -I. -I$(srcdir)/src/esapi/esapi -I$(srcdir)/include/esapi -I$(srcdir)/include/esapi \
+    -I$(srcdir)/src/esapi/esapi_util -DTEST_SESSION -DTEST_READ_LOCK
+test_integration_esys_nv_ram_ordinary_index_rlock_session_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_nv_ram_ordinary_index_rlock_session_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_nv_ram_ordinary_index_rlock_session_int_SOURCES = \
+    test/integration/esys-nv-ram-ordinary-index.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_nv_ram_ordinary_index_wlock_int_CFLAGS  = $(TESTS_CFLAGS) \
+    -I. -I$(srcdir)/src/esapi/esapi -I$(srcdir)/include/esapi -I$(srcdir)/include/esapi \
+    -I$(srcdir)/src/esapi/esapi_util  -DTEST_WRITE_LOCK
+test_integration_esys_nv_ram_ordinary_index_wlock_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_nv_ram_ordinary_index_wlock_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_nv_ram_ordinary_index_wlock_int_SOURCES = \
+    test/integration/esys-nv-ram-ordinary-index.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_nv_ram_ordinary_index_wlock_session_int_CFLAGS  = $(TESTS_CFLAGS) \
+    -I. -I$(srcdir)/src/esapi/esapi -I$(srcdir)/include/esapi -I$(srcdir)/include/esapi \
+    -I$(srcdir)/src/esapi/esapi_util -DTEST_SESSION -DTEST_WRITE_LOCK
+test_integration_esys_nv_ram_ordinary_index_wlock_session_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_nv_ram_ordinary_index_wlock_session_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_nv_ram_ordinary_index_wlock_session_int_SOURCES = \
     test/integration/esys-nv-ram-ordinary-index.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
