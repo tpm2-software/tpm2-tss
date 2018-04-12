@@ -31,39 +31,17 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/* Test the basic commands for PCR processing: Esys_PCR_Extend */
+/*
+ * Test the basic commands for PCR processing: Esys_PCR_Extend, Esys_PCR_Read,
+ * Esys_PCR_Reset, Esys_PCR_Event, and Esys_PCR_Allocate
+ */
 
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     uint32_t r = 0;
 
-#ifdef TEST_SESSION
-    ESYS_TR session;
-    TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,
-                              .keyBits = {.aes = 128},
-                              .mode = {.aes = TPM2_ALG_CFB}
-    };
-    TPMA_SESSION sessionAttributes;
-    TPM2B_NONCE *nonceTpm;
-    TPM2B_NONCE nonceCaller = {
-        .size = 20,
-        .buffer = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                   11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
-    };
-
-    memset(&sessionAttributes, 0, sizeof sessionAttributes);
-
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              &nonceCaller,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1, &session,
-                              &nonceTpm);
-
-    goto_if_error(r, "Error: During initialization of session", error);
-#endif /* TEST_SESSION */
-
-    ESYS_TR  pcrHandle_handle = 1;
+    ESYS_TR  pcrHandle_handle = 16;
     TPML_DIGEST_VALUES digests
         = {
         .count = 1,
@@ -71,24 +49,93 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
             {
                 .hashAlg = TPM2_ALG_SHA1,
                 .digest = {
-                    .sha1 = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19}
+                    .sha1 = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+                              11, 12, 13, 14, 15, 16, 17, 18, 19}
                 }
             },
         }};
 
-    r = Esys_PCR_Extend (
+    r = Esys_PCR_Extend(
         esys_context,
         pcrHandle_handle,
-#ifdef TEST_SESSION
-        session,
-#else
         ESYS_TR_PASSWORD,
-#endif
         ESYS_TR_NONE,
         ESYS_TR_NONE,
         &digests
         );
     goto_if_error(r, "Error: PCR_Extend", error);
+
+    TPML_PCR_SELECTION pcrSelectionIn = {
+        .count = 2,
+        .pcrSelections = {
+            { .hash = TPM2_ALG_SHA1,
+              .sizeofSelect = 3,
+              .pcrSelect = { 00, 00, 01},
+            },
+            { .hash = TPM2_ALG_SHA256,
+              .sizeofSelect = 3,
+              .pcrSelect = { 00, 00, 01}
+            },
+        }
+    };
+    UINT32 pcrUpdateCounter;
+    TPML_PCR_SELECTION *pcrSelectionOut;
+    TPML_DIGEST *pcrValues;
+
+    r = Esys_PCR_Read(
+        esys_context,
+        ESYS_TR_NONE,
+        ESYS_TR_NONE,
+        ESYS_TR_NONE,
+        &pcrSelectionIn,
+        &pcrUpdateCounter,
+        &pcrSelectionOut,
+        &pcrValues);
+    goto_if_error(r, "Error: PCR_Read", error);
+
+    r = Esys_PCR_Reset(
+        esys_context,
+        pcrHandle_handle,
+        ESYS_TR_PASSWORD,
+        ESYS_TR_NONE,
+        ESYS_TR_NONE);
+
+    goto_if_error(r, "Error: PCR_Reset", error);
+
+    TPM2B_EVENT eventData = { .size = 20,
+                              .buffer={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
+                                       1, 2, 3, 4, 5, 6, 7, 8, 9}};
+    TPML_DIGEST_VALUES *digestsEvent;
+
+    r = Esys_PCR_Event(
+        esys_context,
+        pcrHandle_handle,
+        ESYS_TR_PASSWORD,
+        ESYS_TR_NONE,
+        ESYS_TR_NONE,
+        &eventData,
+        &digestsEvent);
+
+    goto_if_error(r, "Error: PCR_Reset", error);
+
+    TPMI_YES_NO allocationSuccess;
+    UINT32 maxPCR;
+    UINT32 sizeNeeded;
+    UINT32 sizeAvailable;
+
+    r = Esys_PCR_Allocate(
+        esys_context,
+        ESYS_TR_RH_PLATFORM,
+        ESYS_TR_PASSWORD,
+        ESYS_TR_NONE,
+        ESYS_TR_NONE,
+        &pcrSelectionIn,
+        &allocationSuccess,
+        &maxPCR,
+        &sizeNeeded,
+        &sizeAvailable);
+
+    goto_if_error(r, "Error: PCR_Allocate", error);
 
     return 0;
 
