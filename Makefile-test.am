@@ -170,7 +170,8 @@ TESTS_INTEGRATION += \
     test/integration/esys-quote.int \
     test/integration/esys-rsa-encrypt-decrypt.int \
     test/integration/esys-save-and-load-context.int \
-    test/integration/esys-unseal-password-auth.int
+    test/integration/esys-set-algorithm-set.int \
+    test/integration/esys-unseal-password-auth.int \
 endif #ESAPI
 endif #SIMULATOR_BIN
 
@@ -824,6 +825,13 @@ test_integration_esys_save_and_load_context_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_save_and_load_context_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_integration_esys_save_and_load_context_int_SOURCES = \
     test/integration/esys-save-and-load-context.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_set_algorithm_set_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_set_algorithm_set_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_set_algorithm_set_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_set_algorithm_set_int_SOURCES = \
+    test/integration/esys-set-algorithm-set.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_unseal_password_auth_int_CFLAGS  = $(TESTS_CFLAGS)
