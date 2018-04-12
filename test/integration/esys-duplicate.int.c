@@ -33,11 +33,12 @@
 #include "util/log.h"
 
 /*
- * This test is intended to test the ESAPI command Duplicate.
+ * This test is intended to test the ESAPI commands Duplicate and Rewrap.
  * We start by creating a primary key (Esys_CreatePrimary).
  * This primary key will be used as parent key for the Duplicate
  * command. A second primary key will be the parent key of the
- * duplicated key.
+ * duplicated key. In the last step the key is rewrapped with the
+ * first primary key as parent key.
  */
 
 int
@@ -45,8 +46,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     uint32_t r = 0;
 
-  /*
-     * Firth the policy value to be able to use Esys_Duplicate for an object has to be
+    /*
+     * First the policy value to be able to use Esys_Duplicate for an object has to be
      * determined with a policy trial session.
      */
     ESYS_TR sessionTrial;
@@ -116,7 +117,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     inSensitivePrimary.sensitive.userAuth = authValuePrimary;
 
-   TPM2B_PUBLIC inPublic = {
+    TPM2B_PUBLIC inPublic = {
         .size = 0,
         .publicArea = {
             .type = TPM2_ALG_RSA,
@@ -148,7 +149,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         },
     };
     LOG_INFO("\nRSA key will be created.");
-   TPM2B_DATA outsideInfo = {
+    TPM2B_DATA outsideInfo = {
         .size = 0,
         .buffer = {},
     };
@@ -181,7 +182,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-   r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE,
                            &inSensitivePrimary, &inPublic,
                            &outsideInfo, &creationPCR, &primaryHandle_handle2,
@@ -300,6 +301,21 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, loadedKeyHandle, &authKey2);
     goto_if_error(r, "Error esys TR_SetAuth ", error);
 
+    TPM2B_PUBLIC *keyPublic;
+    TPM2B_NAME *keyName;
+    TPM2B_NAME *keyQualifiedName;
+
+    r = Esys_ReadPublic(esys_context,
+                        loadedKeyHandle,
+                        ESYS_TR_NONE,
+                        ESYS_TR_NONE,
+                        ESYS_TR_NONE,
+                        &keyPublic,
+                        &keyName,
+                        &keyQualifiedName);
+
+    goto_if_error(r, "Error esys ReadPublic", error);
+
     ESYS_TR policySession;
     TPMT_SYM_DEF policySymmetric = {.algorithm = TPM2_ALG_AES,
                                     .keyBits = {.aes = 128},
@@ -364,22 +380,31 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         &duplicate,
         &outSymSeed);
 
-   goto_if_error(r, "Error: PolicyCommandCode", error);
+    goto_if_error(r, "Error: Duplicate", error);
 
-   r = Esys_FlushContext(esys_context, primaryHandle_handle);
-   goto_if_error(r, "Flushing context", error);
+    TPM2B_PRIVATE *outDuplicate;
+    TPM2B_ENCRYPTED_SECRET *outSymSeed2;
 
-   r = Esys_FlushContext(esys_context, primaryHandle_handle2);
-   goto_if_error(r, "Flushing context", error);
+    r = Esys_Rewrap(esys_context,
+                    primaryHandle_handle2,
+                    primaryHandle_handle,
+                    ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                    duplicate,
+                    keyName,
+                    outSymSeed,
+                    &outDuplicate,
+                    &outSymSeed2);
 
-   r = Esys_FlushContext(esys_context, loadedKeyHandle);
-   goto_if_error(r, "Flushing context", error);
+    goto_if_error(r, "Error: Rewrap", error);
 
+    r = Esys_FlushContext(esys_context, primaryHandle_handle);
+    goto_if_error(r, "Flushing context", error);
 
-#ifdef TEST_SESSION
-    r = Esys_FlushContext(esys_context, session);
-    goto_if_error(r, "Error: FlushContext", error);
-#endif
+    r = Esys_FlushContext(esys_context, primaryHandle_handle2);
+    goto_if_error(r, "Flushing context", error);
+
+    r = Esys_FlushContext(esys_context, loadedKeyHandle);
+    goto_if_error(r, "Flushing context", error);
 
     return 0;
 
