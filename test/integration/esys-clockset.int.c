@@ -38,42 +38,12 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     uint32_t r = 0;
 
-#ifdef TEST_SESSION
-    ESYS_TR session;
-    TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,
-                              .keyBits = {.aes = 128},
-                              .mode = {.aes = TPM2_ALG_CFB}
-    };
-    TPMA_SESSION sessionAttributes;
-    TPM2B_NONCE *nonceTpm;
-    TPM2B_NONCE nonceCaller = {
-        .size = 20,
-        .buffer = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                   11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
-    };
-
-    memset(&sessionAttributes, 0, sizeof sessionAttributes);
-
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              &nonceCaller,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
-                              &session,
-                              &nonceTpm);
-
-    goto_if_error(r, "Error: During initialization of session", error);
-#endif /* TEST_SESSION */
-
     ESYS_TR auth_handle = ESYS_TR_RH_OWNER;
     UINT64 newTime = 0xffffff;
 
     r = Esys_ClockSet(esys_context,
                       auth_handle,
-#ifdef TEST_SESSION
-                      session,
-#else
                       ESYS_TR_PASSWORD,
-#endif
                       ESYS_TR_NONE,
                       ESYS_TR_NONE,
                       newTime
@@ -84,11 +54,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     r = Esys_ClockRateAdjust(esys_context,
                              auth_handle,
-#ifdef TEST_SESSION
-                             session,
-#else
                              ESYS_TR_PASSWORD,
-#endif
                              ESYS_TR_NONE,
                              ESYS_TR_NONE,
                              rateAdjust);
@@ -104,10 +70,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                        &currentTime);
     goto_if_error(r, "Error: ReadClock", error);
 
-#ifdef TEST_SESSION
-    r = Esys_FlushContext(esys_context, session);
-    goto_if_error(r, "Error: FlushContext", error);
-#endif
     return 0;
 
  error:
