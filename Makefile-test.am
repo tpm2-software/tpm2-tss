@@ -116,7 +116,6 @@ TESTS_INTEGRATION += \
     test/integration/esys-clear-control.int \
     test/integration/esys-clear-session.int \
     test/integration/esys-clockset.int \
-    test/integration/esys-clockset-session.int \
     test/integration/esys-commit.int \
     test/integration/esys-create-fail.int \
     test/integration/esys-createloaded.int \
@@ -409,13 +408,6 @@ test_integration_esys_clockset_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_clockset_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_clockset_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_integration_esys_clockset_int_SOURCES = \
-    test/integration/esys-clockset.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
-
-test_integration_esys_clockset_session_int_CFLAGS  = $(TESTS_CFLAGS)
-test_integration_esys_clockset_session_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_clockset_session_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_clockset_session_int_SOURCES = \
     test/integration/esys-clockset.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
