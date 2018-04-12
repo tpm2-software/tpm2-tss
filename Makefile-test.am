@@ -162,6 +162,7 @@ TESTS_INTEGRATION += \
     test/integration/esys-pcr-basic.int \
     test/integration/esys-pcr-auth-value.int \
     test/integration/esys-policy-authorize.int \
+    test/integration/esys-policy-regression.int \
     test/integration/esys-policy-ticket.int \
     test/integration/esys-policy-nv-changeauth.int \
     test/integration/esys-policy-nv-undefine-special.int \
@@ -759,6 +760,13 @@ test_integration_esys_policy_authorize_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_integration_esys_policy_authorize_int_SOURCES = \
     test/integration/esys-policy-authorize.int.c \
     src/tss2-esys/esys_crypto.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_policy_regression_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_policy_regression_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_policy_regression_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_policy_regression_int_SOURCES = \
+    test/integration/esys-policy-regression.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_policy_ticket_int_CFLAGS  = $(TESTS_CFLAGS)
