@@ -144,6 +144,7 @@ TESTS_INTEGRATION += \
     test/integration/esys-hmacsequencestart.int \
     test/integration/esys-hmacsequencestart-session.int \
     test/integration/esys-import.int \
+    test/integration/esys-lock.int \
     test/integration/esys-make-credential.int \
     test/integration/esys-make-credential-session.int \
     test/integration/esys-nv-ram-counter.int \
@@ -622,6 +623,13 @@ test_integration_esys_import_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_import_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_integration_esys_import_int_SOURCES = \
     test/integration/esys-import.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_lock_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_lock_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_lock_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_lock_int_SOURCES = \
+    test/integration/esys-lock.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_make_credential_int_CFLAGS  = $(TESTS_CFLAGS)
