@@ -163,6 +163,7 @@ TESTS_INTEGRATION += \
     test/integration/esys-pcr-basic.int \
     test/integration/esys-pcr-auth-value.int \
     test/integration/esys-policy-authorize.int \
+    test/integration/esys-policy-ticket.int \
     test/integration/esys-policy-nv-changeauth.int \
     test/integration/esys-policy-password.int \
     test/integration/esys-rsa-encrypt-decrypt.int \
@@ -754,11 +755,12 @@ test_integration_esys_policy_authorize_int_SOURCES = \
     src/tss2-esys/esys_crypto.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
-test_integration_esys_pcr_auth_value_int_CFLAGS  = $(TESTS_CFLAGS)
-test_integration_esys_pcr_auth_value_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_pcr_auth_value_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
-test_integration_esys_pcr_auth_value_int_SOURCES = \
-    test/integration/esys-pcr-auth-value.int.c \
+test_integration_esys_policy_ticket_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_policy_ticket_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_policy_ticket_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_policy_ticket_int_SOURCES = \
+    test/integration/esys-policy-ticket.int.c \
+    src/tss2-esys/esys_crypto.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_policy_nv_changeauth_int_CFLAGS  = $(TESTS_CFLAGS)
@@ -780,6 +782,13 @@ test_integration_esys_pcr_basic_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_pcr_basic_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_integration_esys_pcr_basic_int_SOURCES = \
     test/integration/esys-pcr-basic.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_pcr_auth_value_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_pcr_auth_value_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_pcr_auth_value_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_pcr_auth_value_int_SOURCES = \
+    test/integration/esys-pcr-auth-value.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_quote_int_CFLAGS  = $(TESTS_CFLAGS)
