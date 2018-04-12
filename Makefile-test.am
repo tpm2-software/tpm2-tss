@@ -165,6 +165,7 @@ TESTS_INTEGRATION += \
     test/integration/esys-policy-authorize.int \
     test/integration/esys-policy-ticket.int \
     test/integration/esys-policy-nv-changeauth.int \
+    test/integration/esys-policy-nv-undefine-special.int \
     test/integration/esys-policy-password.int \
     test/integration/esys-rsa-encrypt-decrypt.int \
     test/integration/esys-save-and-load-context.int \
@@ -768,6 +769,13 @@ test_integration_esys_policy_nv_changeauth_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_policy_nv_changeauth_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_integration_esys_policy_nv_changeauth_int_SOURCES = \
     test/integration/esys-policy-nv-changeauth.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_policy_nv_undefine_special_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_policy_nv_undefine_special_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_policy_nv_undefine_special_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_policy_nv_undefine_special_int_SOURCES = \
+    test/integration/esys-policy-nv-undefine-special.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_policy_password_int_CFLAGS  = $(TESTS_CFLAGS)
