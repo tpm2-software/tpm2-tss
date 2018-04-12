@@ -108,6 +108,7 @@ TESTS_INTEGRATION = \
     test/tpmclient/tpmclient.int
 if ESAPI
 TESTS_INTEGRATION += \
+    test/integration/esys-audit.int \
     test/integration/esys-clear.int \
     test/integration/esys-clear-session.int \
     test/integration/esys-clockset.int \
@@ -352,6 +353,13 @@ test_integration_system_api_int_SOURCES = test/integration/main.c \
     test/integration/system-api.int.c
 
 if ESAPI
+test_integration_esys_audit_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_audit_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_audit_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_audit_int_SOURCES = \
+    test/integration/esys-audit.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
 test_integration_esys_clear_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_clear_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_clear_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
