@@ -80,7 +80,8 @@ TESTS_UNIT += \
     test/unit/esys-default-tcti \
     test/unit/esys-resubmissions \
     test/unit/esys-sequence-finish \
-    test/unit/esys-tcti-rcs
+    test/unit/esys-tcti-rcs \
+    test/unit/esys-tpm-rcs
 endif ESAPI
 endif #UNIT
 
@@ -293,6 +294,11 @@ test_unit_esys_tcti_rcs_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_tcti_rcs_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_tcti_rcs_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_unit_esys_tcti_rcs_SOURCES = test/unit/esys-tcti-rcs.c
+
+test_unit_esys_tpm_rcs_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_esys_tpm_rcs_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_esys_tpm_rcs_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_unit_esys_tpm_rcs_SOURCES = test/unit/esys-tpm-rcs.c
 endif # ESAPI
 endif # UNIT
 
