@@ -158,7 +158,6 @@ TESTS_INTEGRATION += \
     test/integration/esys-nv-ram-ordinary-index-wlock-session.int \
     test/integration/esys-nv-ram-set-bits.int \
     test/integration/esys-nv-ram-set-bits-session.int \
-    test/integration/esys-quote.int \
     test/integration/esys-object-changeauth.int \
     test/integration/esys-pcr-basic.int \
     test/integration/esys-pcr-auth-value.int \
@@ -167,6 +166,8 @@ TESTS_INTEGRATION += \
     test/integration/esys-policy-nv-changeauth.int \
     test/integration/esys-policy-nv-undefine-special.int \
     test/integration/esys-policy-password.int \
+    test/integration/esys-pp-commands.int \
+    test/integration/esys-quote.int \
     test/integration/esys-rsa-encrypt-decrypt.int \
     test/integration/esys-save-and-load-context.int \
     test/integration/esys-unseal-password-auth.int
@@ -795,6 +796,13 @@ test_integration_esys_pcr_auth_value_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_pcr_auth_value_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_integration_esys_pcr_auth_value_int_SOURCES = \
     test/integration/esys-pcr-auth-value.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_pp_commands_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_pp_commands_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_pp_commands_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_pp_commands_int_SOURCES = \
+    test/integration/esys-pp-commands.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_quote_int_CFLAGS  = $(TESTS_CFLAGS)
