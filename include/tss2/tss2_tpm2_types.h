@@ -787,6 +787,8 @@ typedef uint32_t TPMA_MODES;
 
 /* Definition of BYTE TPMI_YES_NO Type */
 typedef BYTE TPMI_YES_NO;
+#define TPM2_NO  0 /* a value of 0 */
+#define TPM2_YES 1 /* a value of 1 */
 
 /* Definition of TPM2_HANDLE TPMI_DH_OBJECT Type */
 typedef TPM2_HANDLE TPMI_DH_OBJECT;
