@@ -136,6 +136,7 @@ TESTS_INTEGRATION += \
     test/integration/esys-firmware-read.int \
     test/integration/esys-get-capability.int \
     test/integration/esys-get-random.int \
+    test/integration/esys-get-time.int \
     test/integration/esys-hashsequencestart.int \
     test/integration/esys-hashsequencestart-session.int \
     test/integration/esys-hierarchychangeauth.int \
@@ -559,6 +560,13 @@ test_integration_esys_get_random_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_get_random_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_integration_esys_get_random_int_SOURCES = \
     test/integration/esys-get-random.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_get_time_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_get_time_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_get_time_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_get_time_int_SOURCES = \
+    test/integration/esys-get-time.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_hashsequencestart_int_CFLAGS  = $(TESTS_CFLAGS)
