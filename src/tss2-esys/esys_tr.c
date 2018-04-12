@@ -161,6 +161,11 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * esys_handle)
         TPM2B_NV_PUBLIC *nvPublic;
         TPM2B_NAME *nvName;
         r = Esys_NV_ReadPublic_Finish(esys_context, &nvPublic, &nvName);
+        if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) {
+            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32
+                      " => resubmitting command", r);
+            return r;
+        }
         goto_if_error(r, "Error NV_ReadPublic", error_cleanup);
 
         objectHandleNode->rsrc.rsrcType = IESYSC_NV_RSRC;
@@ -174,6 +179,11 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * esys_handle)
         TPM2B_NAME *qualifiedName = NULL;
         r = Esys_ReadPublic_Finish(esys_context, &public, &name,
                                    &qualifiedName);
+        if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) {
+            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32
+                      " => resubmitting command", r);
+            return r;
+        }
         goto_if_error(r, "Error ReadPublic", error_cleanup);
 
         objectHandleNode->rsrc.rsrcType = IESYSC_KEY_RSRC;
@@ -219,15 +229,31 @@ Esys_TR_FromTPMPublic(ESYS_CONTEXT * esys_context,
                       ESYS_TR shandle2, ESYS_TR shandle3, ESYS_TR * object)
 {
     TSS2_RC r;
-    r = Esys_TR_FromTPMPublic_Async(esys_context, shandle1, shandle2, shandle3,
-                                    tpm_handle);
-    goto_if_error(r, "Error TR FromTPMPublic", error_cleanup);
+    r = Esys_TR_FromTPMPublic_Async(esys_context, tpm_handle,
+                                    shandle1, shandle2, shandle3);
+    return_if_error(r, "Error TR FromTPMPublic");
 
-    r = Esys_TR_FromTPMPublic_Finish(esys_context, object);
-    goto_if_error(r, "Error TR FromTPMPublic", error_cleanup);
+    /* Set the timeout to indefinite for now, since we want _Finish to block */
+    int32_t timeouttmp = esys_context->timeout;
+    esys_context->timeout = -1;
+    /*
+     * Now we call the finish function, until return code is not equal to
+     * from TSS2_BASE_RC_TRY_AGAIN.
+     * Note that the finish function may return TSS2_RC_TRY_AGAIN, even if we
+     * have set the timeout to -1. This occurs for example if the TPM requests
+     * a retransmission of the command via TPM2_RC_YIELDED.
+     */
+    do {
+        r = Esys_TR_FromTPMPublic_Finish(esys_context, object);
+        if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
+            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32
+                      " => resubmitting command", r);
+    } while ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN);
 
-    return r;
- error_cleanup:
+    /* Restore the timeout value to the original value */
+    esys_context->timeout = timeouttmp;
+    return_if_error(r, "Error TR FromTPMPublic");
+
     return r;
 }
 
