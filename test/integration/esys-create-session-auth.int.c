@@ -199,6 +199,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 #endif
 
     TPMA_SESSION sessionAttributes;
+    TPMA_SESSION sessionAttributes2;
     memset(&sessionAttributes, 0, sizeof sessionAttributes);
     sessionAttributes |= TPMA_SESSION_DECRYPT;
     sessionAttributes |= TPMA_SESSION_ENCRYPT;
@@ -217,6 +218,15 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TRSess_SetAttributes(esys_context, session, sessionAttributes,
                                   0xff);
     goto_if_error(r, "Error Esys_TRSess_SetAttributes", error);
+
+    r = Esys_TRSess_GetAttributes(esys_context, session, &sessionAttributes2);
+    goto_if_error(r, "Error Esys_TRSess_SetAttributes", error);
+
+    if (sessionAttributes != sessionAttributes2) {
+        LOG_ERROR("Session Attributes differ");
+        r = 1;
+        goto error;
+    }
 
     TPM2B_AUTH authKey2 = {
         .size = 6,
