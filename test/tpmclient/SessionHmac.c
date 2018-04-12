@@ -38,8 +38,10 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-UINT32 TpmComputeSessionHmac(
+static UINT32
+TpmComputeSessionHmac(
     TSS2_SYS_CONTEXT *sysContext,
+    SESSION *session,
     TPMS_AUTH_COMMAND *pSessionDataIn,
     TPM2_HANDLE entityHandle,
     bool command,
@@ -51,7 +53,6 @@ UINT32 TpmComputeSessionHmac(
     TPM2B_MAX_BUFFER hmacKey;
     TPM2B_DIGEST *bufferList[7];
     TPM2B_DIGEST pHash;
-    SESSION *pSession = 0;
     TPM2B_AUTH authValue;
     TPM2B sessionAttributesByteBuffer;
     UINT16 i;
@@ -62,22 +63,18 @@ UINT32 TpmComputeSessionHmac(
 
     hmacKey.size = 0;
 
-    rval = GetSessionStruct(pSessionDataIn->sessionHandle, &pSession);
-    if (rval != TPM2_RC_SUCCESS)
-        return rval;
-
     INIT_SIMPLE_TPM2B_SIZE(pHash);
     rval = TpmCalcPHash(sysContext, handle1, handle2,
-                        pSession->authHash, command, &pHash);
+                        session->authHash, command, &pHash);
     if (rval != TPM2_RC_SUCCESS)
         return rval;
 
     // Use entityHandle to get authValue, if any.
-    if( ( pSession->bind == TPM2_RH_NULL ) ||
-        ( ( pSession->bind != TPM2_RH_NULL ) && ( pSession->bind == entityHandle ) ) )
+    if (session->bind == TPM2_RH_NULL ||
+        (session->bind != TPM2_RH_NULL && session->bind == entityHandle))
     {
-        rval = GetEntityAuth( entityHandle, &authValue );
-        if( rval != TPM2_RC_SUCCESS )
+        rval = GetEntityAuth(entityHandle, &authValue);
+        if(rval != TPM2_RC_SUCCESS)
             authValue.size = 0;
     }
     else
@@ -85,30 +82,30 @@ UINT32 TpmComputeSessionHmac(
         authValue.size = 0;
     }
 
-    rval = Tss2_Sys_GetCommandCode( sysContext, (UINT8 *)&cmdCode );
-    if( rval != TPM2_RC_SUCCESS )
+    rval = Tss2_Sys_GetCommandCode(sysContext, (UINT8 *)&cmdCode);
+    if(rval != TPM2_RC_SUCCESS)
         return rval;
 
     // cmdCode comes back as BigEndian; not suited for comparisons below.
     cmdCode = BE_TO_HOST_32(cmdCode);
 
-    if( ( entityHandle >> TPM2_HR_SHIFT ) == TPM2_HT_NV_INDEX )
+    if((entityHandle >> TPM2_HR_SHIFT) == TPM2_HT_NV_INDEX)
     {
         // If NV index, get status wrt to name change.  If name has changed,
         // we have to treat it as if it's not the bound entity, even if it was
         // the bound entity.
-        nvNameChanged = pSession->nvNameChanged;
+        nvNameChanged = session->nvNameChanged;
     }
 
-    rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&hmacKey, (TPM2B *)&pSession->sessionKey);
-    if( rval != TPM2_RC_SUCCESS )
+    rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&hmacKey, (TPM2B *)&session->sessionKey);
+    if(rval != TPM2_RC_SUCCESS)
         return rval;
 
-    if( ( pSession->bind == TPM2_RH_NULL ) || ( pSession->bind != entityHandle )
-            || nvNameChanged )
+    if((session->bind == TPM2_RH_NULL) || (session->bind != entityHandle)
+            || nvNameChanged)
     {
         rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&hmacKey, (TPM2B *)&authValue);
-        if( rval != TPM2_RC_SUCCESS )
+        if(rval != TPM2_RC_SUCCESS)
             return rval;
     }
     LOGBLOB_DEBUG(&hmacKey.buffer[0], hmacKey.size, "hmacKey=");
@@ -116,10 +113,10 @@ UINT32 TpmComputeSessionHmac(
     // Create buffer list
     i = 0;
     bufferList[i++] = (TPM2B_DIGEST *)&pHash;
-    bufferList[i++] = (TPM2B_DIGEST *)&pSession->nonceNewer;
-    bufferList[i++] = (TPM2B_DIGEST *)&pSession->nonceOlder;
-    bufferList[i++] = (TPM2B_DIGEST *)&pSession->nonceTpmDecrypt;
-    bufferList[i++] = (TPM2B_DIGEST *)&pSession->nonceTpmEncrypt;
+    bufferList[i++] = (TPM2B_DIGEST *)&session->nonceNewer;
+    bufferList[i++] = (TPM2B_DIGEST *)&session->nonceOlder;
+    bufferList[i++] = (TPM2B_DIGEST *)&session->nonceTpmDecrypt;
+    bufferList[i++] = (TPM2B_DIGEST *)&session->nonceTpmEncrypt;
     sessionAttributesByteBuffer.size = 1;
     sessionAttributesByteBuffer.buffer[0] = *(UINT8 *)&sessionAttributes;
     bufferList[i++] = (TPM2B_DIGEST *)&sessionAttributesByteBuffer;
@@ -131,7 +128,7 @@ UINT32 TpmComputeSessionHmac(
             LOGBLOB_DEBUG(&bufferList[j]->buffer[0], bufferList[j]->size, "bufferlist[%d]:", j);
 #endif
 
-    rval = hmac(pSession->authHash, hmacKey.buffer, hmacKey.size, bufferList, result);
+    rval = hmac(session->authHash, hmacKey.buffer, hmacKey.size, bufferList, result);
     if (rval != TPM2_RC_SUCCESS) {
         LOGBLOB_ERROR(result->buffer, result->size, "HMAC Failed rval = %d !!!", rval);
         return rval;
@@ -142,14 +139,14 @@ UINT32 TpmComputeSessionHmac(
     if (command && (cmdCode == TPM2_CC_NV_Write ||
                     cmdCode == TPM2_CC_NV_Increment ||
                     cmdCode == TPM2_CC_NV_SetBits)) {
-        rval = GetEntity( entityHandle, &nvEntity );
+        rval = GetEntity(entityHandle, &nvEntity);
 
-        if(rval != TPM2_RC_SUCCESS)
+        if (rval != TPM2_RC_SUCCESS)
             return rval;
         // Only change session's nvNameChanged parameter when
         // the NV index's name changes due to a write.
         if (nvEntity->nvNameChanged == 0) {
-            pSession->nvNameChanged = 1;
+            session->nvNameChanged = 1;
             nvEntity->nvNameChanged = 1;
         }
     }
@@ -160,6 +157,7 @@ UINT32 TpmComputeSessionHmac(
 
 TSS2_RC ComputeCommandHmacs(
         TSS2_SYS_CONTEXT *sysContext,
+        SESSION *session,
         TPM2_HANDLE handle1,
         TPM2_HANDLE handle2,
         TSS2L_SYS_AUTH_COMMAND *pSessionsDataIn)
@@ -179,6 +177,7 @@ TSS2_RC ComputeCommandHmacs(
             break;
 
         rval = TpmComputeSessionHmac(sysContext,
+                session,
                 &pSessionsDataIn->auths[i],
                 entityHandle,
                 true,
@@ -194,6 +193,7 @@ TSS2_RC ComputeCommandHmacs(
 
 TSS2_RC CheckResponseHMACs(
         TSS2_SYS_CONTEXT *sysContext,
+        SESSION *session,
         TSS2L_SYS_AUTH_COMMAND *pSessionsDataIn,
         TPM2_HANDLE handle1,
         TPM2_HANDLE handle2,
@@ -210,6 +210,7 @@ TSS2_RC CheckResponseHMACs(
         if ((pSessionsDataIn->auths[i].sessionHandle >> TPM2_HR_SHIFT) == TPM2_HT_HMAC_SESSION)
         {
             rval = TpmComputeSessionHmac(sysContext,
+                        session,
                         &pSessionsDataIn->auths[i],
                         entityHandle,
                         false,
