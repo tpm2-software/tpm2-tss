@@ -172,6 +172,7 @@ TESTS_INTEGRATION += \
     test/integration/esys-save-and-load-context.int \
     test/integration/esys-set-algorithm-set.int \
     test/integration/esys-stir-random.int \
+    test/integration/esys-testparms.int \
     test/integration/esys-unseal-password-auth.int \
 endif #ESAPI
 endif #SIMULATOR_BIN
@@ -842,6 +843,13 @@ test_integration_esys_stir_random_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_stir_random_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_integration_esys_stir_random_int_SOURCES = \
     test/integration/esys-stir-random.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_testparms_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_testparms_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_testparms_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_testparms_int_SOURCES = \
+    test/integration/esys-testparms.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_unseal_password_auth_int_CFLAGS  = $(TESTS_CFLAGS)
