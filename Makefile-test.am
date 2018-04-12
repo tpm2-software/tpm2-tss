@@ -133,6 +133,7 @@ TESTS_INTEGRATION += \
     test/integration/esys-event-sequence-complete.int \
     test/integration/esys-evict-control-serialization.int \
     test/integration/esys-field-upgrade.int \
+    test/integration/esys-firmware-read.int \
     test/integration/esys-get-capability.int \
     test/integration/esys-get-random.int \
     test/integration/esys-hashsequencestart.int \
@@ -537,6 +538,13 @@ test_integration_esys_field_upgrade_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_field_upgrade_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_integration_esys_field_upgrade_int_SOURCES = \
     test/integration/esys-field-upgrade.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_firmware_read_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_firmware_read_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_firmware_read_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_firmware_read_int_SOURCES = \
+    test/integration/esys-firmware-read.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_get_capability_int_CFLAGS  = $(TESTS_CFLAGS)
