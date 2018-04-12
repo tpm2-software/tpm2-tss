@@ -140,6 +140,7 @@ TESTS_INTEGRATION += \
     test/integration/esys-hashsequencestart.int \
     test/integration/esys-hashsequencestart-session.int \
     test/integration/esys-hierarchychangeauth.int \
+    test/integration/esys-hierarchy-control.int \
     test/integration/esys-hmacsequencestart.int \
     test/integration/esys-hmacsequencestart-session.int \
     test/integration/esys-make-credential.int \
@@ -584,6 +585,13 @@ test_integration_esys_hashsequencestart_session_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_hashsequencestart_session_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_integration_esys_hashsequencestart_session_int_SOURCES = \
     test/integration/esys-hashsequencestart.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_hierarchy_control_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_hierarchy_control_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_hierarchy_control_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_hierarchy_control_int_SOURCES = \
+    test/integration/esys-hierarchy-control.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_hmacsequencestart_int_CFLAGS  = $(TESTS_CFLAGS)
