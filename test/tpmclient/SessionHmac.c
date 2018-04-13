@@ -47,14 +47,16 @@ TpmComputeSessionHmac(
     bool command,
     TPM2_HANDLE handle1,
     TPM2_HANDLE handle2,
-    TPMA_SESSION sessionAttributes,
     TPM2B_DIGEST *result)
 {
     TPM2B_MAX_BUFFER hmacKey;
     TPM2B_DIGEST *bufferList[7];
     TPM2B_DIGEST pHash;
     TPM2B_AUTH authValue;
-    TPM2B sessionAttributesByteBuffer;
+    TPM2B sessionAttributesByteBuffer = {
+        .size = 1,
+        .buffer = pSessionDataIn->sessionAttributes
+    };
     UINT16 i;
     TSS2_RC rval;
     UINT8 nvNameChanged = 0;
@@ -71,25 +73,22 @@ TpmComputeSessionHmac(
 
     // Use entityHandle to get authValue, if any.
     if (session->bind == TPM2_RH_NULL ||
-        (session->bind != TPM2_RH_NULL && session->bind == entityHandle))
-    {
+        (session->bind != TPM2_RH_NULL && session->bind == entityHandle)) {
         rval = GetEntityAuth(entityHandle, &authValue);
         if(rval != TPM2_RC_SUCCESS)
             authValue.size = 0;
-    }
-    else
-    {
+    } else {
         authValue.size = 0;
     }
 
     rval = Tss2_Sys_GetCommandCode(sysContext, (UINT8 *)&cmdCode);
-    if(rval != TPM2_RC_SUCCESS)
+    if (rval != TPM2_RC_SUCCESS)
         return rval;
 
     // cmdCode comes back as BigEndian; not suited for comparisons below.
     cmdCode = BE_TO_HOST_32(cmdCode);
 
-    if((entityHandle >> TPM2_HR_SHIFT) == TPM2_HT_NV_INDEX)
+    if ((entityHandle >> TPM2_HR_SHIFT) == TPM2_HT_NV_INDEX)
     {
         // If NV index, get status wrt to name change.  If name has changed,
         // we have to treat it as if it's not the bound entity, even if it was
@@ -110,15 +109,12 @@ TpmComputeSessionHmac(
     }
     LOGBLOB_DEBUG(&hmacKey.buffer[0], hmacKey.size, "hmacKey=");
 
-    // Create buffer list
     i = 0;
     bufferList[i++] = (TPM2B_DIGEST *)&pHash;
     bufferList[i++] = (TPM2B_DIGEST *)&session->nonceNewer;
     bufferList[i++] = (TPM2B_DIGEST *)&session->nonceOlder;
     bufferList[i++] = (TPM2B_DIGEST *)&session->nonceTpmDecrypt;
     bufferList[i++] = (TPM2B_DIGEST *)&session->nonceTpmEncrypt;
-    sessionAttributesByteBuffer.size = 1;
-    sessionAttributesByteBuffer.buffer[0] = *(UINT8 *)&sessionAttributes;
     bufferList[i++] = (TPM2B_DIGEST *)&sessionAttributesByteBuffer;
     bufferList[i++] = 0;
 
@@ -133,8 +129,6 @@ TpmComputeSessionHmac(
         LOGBLOB_ERROR(result->buffer, result->size, "HMAC Failed rval = %d !!!", rval);
         return rval;
     }
-
-
 
     if (command && (cmdCode == TPM2_CC_NV_Write ||
                     cmdCode == TPM2_CC_NV_Increment ||
@@ -183,7 +177,6 @@ TSS2_RC ComputeCommandHmacs(
                 true,
                 handle1,
                 handle2,
-                pSessionsDataIn->auths[i].sessionAttributes,
                 authPtr);
         if (rval != TPM2_RC_SUCCESS)
             break;
@@ -216,7 +209,6 @@ TSS2_RC CheckResponseHMACs(
                         false,
                         handle1,
                         handle2,
-                        pSessionsDataOut->auths[i].sessionAttributes,
                         &auth);
             if (rval != TPM2_RC_SUCCESS)
                 return rval;
