@@ -85,6 +85,44 @@ Then run the configure script, which generates the makefiles:
 $ ./configure
 ```
 
+### Custom `./configure` Options
+In many cases you'll need to provide the `./configure` script with additional
+information about your environment. Typically you'll either be telling the
+script about some location to install a component, or you'll be instructing
+the script to enable some additional feature or function. We'll cover each
+in turn.
+
+Invoking the configure script with the `--help` option will display
+all supported options.
+
+The default values for GNU installation directories are documented here:
+https://www.gnu.org/prep/standards/html_node/Directory-Variables.html
+
+### udev Rules
+The typical operation for the `tpm2-abrmd` is for it to communicate directly
+with the Linux TPM driver using `libtcti-device` from the TPM2.0-TSS project.
+This requires that the user account that's running the `tpm2-abrmd` have both
+read and write access to the TPM device node `/dev/tpm[0-9]`. But users could
+also access the TPM directly so the udev rule is installed by `tpm2-tss`.
+
+#### `--with-udevrulesdir`
+This requires that `udev` be instructed to set the owner and group for this
+device node when its created. We provide such a udev rule that is installed to
+`${libdir}/udev/rules.d`. If your distro stores these rules elsewhere you will
+need to tell the build about this location.
+
+Using Debian as an example we can instruct the build to install the udev
+rules in the right location with the following configure option:
+```
+--with-udevrulesdir=/etc/udev/rules.d
+```
+
+#### `--with-udevrulesprefix`
+It is common for Linux distros to prefix udev rules files with a numeric
+string (e.g. "70-"). This allows for the rules to be applied in a predictable
+order. This option allows for the name of the installed udev rules file to
+have a string prepended to the file name when it is installed.
+
 ## Compiling the Libraries
 Then compile the code using make:
 ```
@@ -103,7 +141,22 @@ won't need to do much more than provide an alternative --prefix option at
 configure time, and maybe DESTDIR at install time if you're packaging for a
 distro.
 
-**NOTE**: It may be necessary to run ldconfig (as root) to update the run-time
+# Post-install
+
+## udev
+Once you have this udev rule installed in the right place for your distro
+you'll need to instruct udev to reload its rules and apply the new rule.
+Typically this can be accomplished with the following command:
+```
+$ sudo udevadm control --reload-rules && sudo udevadm trigger
+```
+
+If this doesn't work on your distro please consult your distro's
+documentation for UDEVADM(8).
+
+## ldconfig
+
+It may be necessary to run ldconfig (as root) to update the run-time
 bindings before executing a program that links against libsapi or a TCTI
 library:
 ```
