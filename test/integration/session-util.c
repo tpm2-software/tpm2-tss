@@ -126,10 +126,12 @@ UINT32 TpmHandleToName(
     TPM2B_PUBLIC public;
     TPM2B_NV_PUBLIC nvPublic;
     TSS2_SYS_CONTEXT *sysContext;
-    UINT8 *namePtr = name->name;
+    UINT8 *namePtr;
 
     if (!tcti_context || !name)
         return TSS2_SYS_RC_BAD_VALUE;
+
+    namePtr = name->name;
 
     switch(handle >> TPM2_HR_SHIFT)
     {
