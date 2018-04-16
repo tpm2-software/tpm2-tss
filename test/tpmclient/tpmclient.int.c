@@ -2310,9 +2310,9 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
     // HMAC and setting it in nvCmdAuths.
     rval = ComputeCommandHmacs(
             simpleTestContext,
-            nvSession,
             TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST,
+            TPM2_RH_NULL,
             &nvCmdAuths);
     CheckPassed(rval);
     // Finally!!  Write the data to the NV index.
@@ -2333,10 +2333,10 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
         // response was received correctly.
         rval = CheckResponseHMACs(
                 simpleTestContext,
-                nvSession,
                 &nvCmdAuths,
                 TPM20_INDEX_PASSWORD_TEST,
                 TPM20_INDEX_PASSWORD_TEST,
+                TPM2_RH_NULL,
                 &nvRspAuths);
         CheckPassed(rval);
     }
@@ -2365,9 +2365,9 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
     // HMAC and setting it in nvCmdAuths.
     rval = ComputeCommandHmacs(
             simpleTestContext,
-            nvSession,
             TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST,
+            TPM2_RH_NULL,
             &nvCmdAuths);
     CheckPassed(rval);
 
@@ -2391,11 +2391,11 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
         // response was received correctly.
         rval = CheckResponseHMACs(
                 simpleTestContext,
-                nvSession,
                 &nvCmdAuths,
                 TPM20_INDEX_PASSWORD_TEST,
                 TPM20_INDEX_PASSWORD_TEST,
-                &nvRspAuths );
+                TPM2_RH_NULL,
+                &nvRspAuths);
         CheckPassed(rval);
     }
 
