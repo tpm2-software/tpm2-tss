@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <uthash.h>
 
 #include "tss2_tpm2_types.h"
 #include "tss2_mu.h"
@@ -132,6 +133,7 @@ typedef struct {
                                     //
     UINT8 nvNameChanged;            // Used for some special case code
                                     // dealing with the NV written state.
+    UT_hash_handle hh;
 } SESSION;
 
 //
@@ -153,6 +155,9 @@ TSS2_RC GetSessionStruct( TPMI_SH_AUTH_SESSION authHandle, SESSION **pSession );
 TSS2_RC GetSessionAlgId( TPMI_SH_AUTH_SESSION authHandle, TPMI_ALG_HASH *sessionAlgId );
 void
 EndAuthSession(SESSION *session);
+
+SESSION *
+get_session(TPMI_SH_AUTH_SESSION hndl);
 
 TSS2_RC
 ComputeCommandHmacs(
