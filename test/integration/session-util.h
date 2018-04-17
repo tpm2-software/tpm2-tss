@@ -28,8 +28,37 @@
 #define _SESSION_UTIL_H_
 
 #include <stdbool.h>
+#include <uthash.h>
 #include "tss2_tpm2_types.h"
 #include "tss2_sys.h"
+#include "util/tpm2b.h"
+
+typedef struct {
+    TPMI_DH_OBJECT tpmKey;
+    TPMI_DH_ENTITY bind;
+    TPM2B_ENCRYPTED_SECRET encryptedSalt;
+    TPM2B_MAX_BUFFER salt;
+    TPM2_SE sessionType;
+    TPMT_SYM_DEF symmetric;
+    TPMI_ALG_HASH authHash;
+    TPMI_SH_AUTH_SESSION sessionHandle;
+    TPM2B_NONCE nonceTPM;
+    TPM2B_DIGEST sessionKey;
+    TPM2B_DIGEST authValueBind;
+    TPM2B_NONCE nonceNewer;
+    TPM2B_NONCE nonceOlder;
+    TPM2B_NONCE nonceTpmDecrypt;
+    TPM2B_NONCE nonceTpmEncrypt;
+    TPM2B_NAME name;
+    void *hmacPtr;
+    UT_hash_handle hh;
+} SESSION;
+
+typedef struct{
+    TPM2_HANDLE entityHandle;
+    TPM2B_AUTH entityAuth;
+    UT_hash_handle hh;
+} ENTITY;
 
 /*
  * Helper function used to calculate cpHash and rpHash
@@ -51,4 +80,68 @@ TpmHandleToName(
     TSS2_TCTI_CONTEXT *tcti_context,
     TPM2_HANDLE handle,
     TPM2B_NAME *name);
+
+void
+RollNonces(
+    SESSION *session,
+    TPM2B_NONCE *new_nonce);
+
+TSS2_RC
+KDFa(TPMI_ALG_HASH hash,
+     TPM2B *key,
+     const char *label,
+     TPM2B *contextU,
+     TPM2B *contextV,
+     UINT16 bits,
+     TPM2B_MAX_BUFFER *resultKey );
+
+SESSION *
+get_session(TPMI_SH_AUTH_SESSION hndl);
+
+TSS2_RC StartAuthSessionWithParams(
+    SESSION **psession,
+    TPMI_DH_OBJECT tpmKey,
+    TPM2B_MAX_BUFFER *salt,
+    TPMI_DH_ENTITY bind,
+    TPM2B_AUTH *bindAuth,
+    TPM2B_NONCE *nonceCaller,
+    TPM2B_ENCRYPTED_SECRET *encryptedSalt,
+    TPM2_SE sessionType,
+    TPMT_SYM_DEF *symmetric,
+    TPMI_ALG_HASH algId,
+    TSS2_TCTI_CONTEXT *tctiContext);
+
+TSS2_RC
+ComputeCommandHmacs(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPM2_HANDLE handle1,
+    TPM2_HANDLE handle2,
+    TPM2_HANDLE handle3,
+    TSS2L_SYS_AUTH_COMMAND *pSessionsDataIn);
+
+TSS2_RC
+CheckResponseHMACs(
+    TSS2_SYS_CONTEXT *sysContext,
+    TSS2L_SYS_AUTH_COMMAND *pSessionsDataIn,
+    TPM2_HANDLE handle1,
+    TPM2_HANDLE handle2,
+    TPM2_HANDLE handle3,
+    TSS2L_SYS_AUTH_RESPONSE *pSessionsDataOut);
+
+void
+EndAuthSession(SESSION *session);
+
+int
+AddEntity(TPM2_HANDLE handle, TPM2B_AUTH *auth);
+
+void
+DeleteEntity(TPM2_HANDLE handle);
+
+int
+GetEntityAuth(TPM2_HANDLE handle, TPM2B_AUTH *auth);
+
+ENTITY *
+GetEntity(TPM2_HANDLE handle);
+
+
 #endif

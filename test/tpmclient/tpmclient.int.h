@@ -38,6 +38,7 @@
 #include "tss2_mu.h"
 #include "tss2_sys.h"
 #include "util/tpm2b.h"
+#include "../integration/session-util.h"
 
 extern TSS2_TCTI_CONTEXT *resMgrTctiContext;
 
@@ -94,102 +95,9 @@ enum TSS2_APP_RC_CODE
 #define APPLICATION_HMAC_ERROR(i) \
     ( TSS2_APP_RC_LAYER + TPM2_RC_S + TPM2_RC_AUTH_FAIL + ( (i ) << 8 ) )
 
-typedef struct {
-    // Inputs to StartAuthSession; these need to be saved
-    // so that HMACs can be calculated.
-    TPMI_DH_OBJECT tpmKey;
-    TPMI_DH_ENTITY bind;
-    TPM2B_ENCRYPTED_SECRET encryptedSalt;
-    TPM2B_MAX_BUFFER salt;
-    TPM2_SE sessionType;
-    TPMT_SYM_DEF symmetric;
-    TPMI_ALG_HASH authHash;
+TSS2_RC EncryptCommandParam(SESSION *session, TPM2B_MAX_BUFFER *encryptedData, TPM2B_MAX_BUFFER *clearData, TPM2B_AUTH *authValue );
 
-    // Outputs from StartAuthSession; these also need
-    // to be saved for calculating HMACs and
-    // other session related functions.
-    TPMI_SH_AUTH_SESSION sessionHandle;
-    TPM2B_NONCE nonceTPM;
-
-    // Internal state for the session
-    TPM2B_DIGEST sessionKey;
-    TPM2B_DIGEST authValueBind;     // authValue of bind object
-    TPM2B_NONCE nonceNewer;
-    TPM2B_NONCE nonceOlder;
-    TPM2B_NONCE nonceTpmDecrypt;
-    TPM2B_NONCE nonceTpmEncrypt;
-    TPM2B_NAME name;                // Name of the object the session handle
-                                    // points to.  Used for computing HMAC for
-                                    // any HMAC sessions present.
-                                    //
-    void *hmacPtr;                  // Pointer to HMAC field in the marshalled
-                                    // data stream for the session.
-                                    // This allows the function to calculate
-                                    // and fill in the HMAC after marshalling
-                                    // of all the inputs.
-                                    //
-                                    // This is only used if the session is an
-                                    // HMAC session.
-                                    //
-    UINT8 nvNameChanged;            // Used for some special case code
-                                    // dealing with the NV written state.
-    UT_hash_handle hh;
-} SESSION;
-
-typedef struct{
-    TPM2_HANDLE entityHandle;
-    TPM2B_AUTH entityAuth;
-    UT_hash_handle hh;
-} ENTITY;
-
-int AddEntity(TPM2_HANDLE entityHandle, TPM2B_AUTH *auth);
-void DeleteEntity(TPM2_HANDLE entityHandle);
-int GetEntityAuth(TPM2_HANDLE entityHandle, TPM2B_AUTH *auth);
-ENTITY *GetEntity(TPM2_HANDLE entityHandle);
-
-void
-EndAuthSession(SESSION *session);
-
-SESSION *
-get_session(TPMI_SH_AUTH_SESSION hndl);
-
-TSS2_RC ComputeCommandHmacs(
-        TSS2_SYS_CONTEXT *sysContext,
-        TPM2_HANDLE handle1,
-        TPM2_HANDLE handle2,
-        TPM2_HANDLE handle3,
-        TSS2L_SYS_AUTH_COMMAND *pSessionsDataIn);
-
-TSS2_RC CheckResponseHMACs(
-        TSS2_SYS_CONTEXT *sysContext,
-        TSS2L_SYS_AUTH_COMMAND *pSessionsDataIn,
-        TPM2_HANDLE handle1,
-        TPM2_HANDLE handle2,
-        TPM2_HANDLE handle3,
-        TSS2L_SYS_AUTH_RESPONSE *pSessionsDataOut);
-
-TSS2_RC
-StartAuthSessionWithParams(
-    SESSION **session,
-    TPMI_DH_OBJECT tpmKey,
-    TPM2B_MAX_BUFFER *salt,
-    TPMI_DH_ENTITY bind,
-    TPM2B_AUTH *bindAuth,
-    TPM2B_NONCE *nonceCaller,
-    TPM2B_ENCRYPTED_SECRET *encryptedSalt,
-    TPM2_SE sessionType,
-    TPMT_SYM_DEF *symmetric,
-    TPMI_ALG_HASH algId,
-    TSS2_TCTI_CONTEXT *tctiContext);
-
-TSS2_RC EncryptCommandParam( SESSION *session, TPM2B_MAX_BUFFER *encryptedData, TPM2B_MAX_BUFFER *clearData, TPM2B_AUTH *authValue );
-
-TSS2_RC DecryptResponseParam( SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM2B_MAX_BUFFER *encryptedData, TPM2B_AUTH *authValue );
-
-TSS2_RC KDFa( TPMI_ALG_HASH hashAlg, TPM2B *key, char *label, TPM2B *contextU, TPM2B *contextV,
-    UINT16 bits, TPM2B_MAX_BUFFER *resultKey );
-
-void RollNonces( SESSION *session, TPM2B_NONCE *newNonce  );
+TSS2_RC DecryptResponseParam(SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM2B_MAX_BUFFER *encryptedData, TPM2B_AUTH *authValue );
 
 #define INIT_SIMPLE_TPM2B_SIZE(type) (type).size = sizeof(type) - 2;
 
