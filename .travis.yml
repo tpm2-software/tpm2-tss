@@ -29,6 +29,7 @@ addons:
     - realpath
     - lcov
     - libssl-dev
+    - uthash-dev
   coverity_scan:
     project:
       name: "01org/TPM2.0-TSS"
