@@ -1059,8 +1059,8 @@ static TSS2_RC CreateNVIndex( TSS2_SYS_CONTEXT *sysContext, SESSION **policySess
             TPM20_INDEX_PASSWORD_TEST, TPM2_ALG_SHA256, nvAttributes, 32  );
     CheckPassed( rval );
 
-    AddEntity( TPM20_INDEX_PASSWORD_TEST, &nvAuth );
-    CheckPassed( rval );
+    rval = AddEntity(TPM20_INDEX_PASSWORD_TEST, &nvAuth);
+    CheckPassed(rval);
 
     return rval;
 }
@@ -1120,8 +1120,7 @@ static TSS2_RC TestLocality( TSS2_SYS_CONTEXT *sysContext, SESSION *policySessio
             TPM20_INDEX_PASSWORD_TEST, &sessionsData, 0 );
     CheckPassed( rval );
 
-    rval = DeleteEntity( TPM20_INDEX_PASSWORD_TEST );
-    CheckPassed( rval );
+    DeleteEntity(TPM20_INDEX_PASSWORD_TEST);
 
     return rval;
 }
@@ -2225,8 +2224,8 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
     // Add index and associated authorization value to
     // entity table.  This helps when we need
     // to calculate HMACs.
-    AddEntity( TPM20_INDEX_PASSWORD_TEST, &nvAuth );
-    CheckPassed( rval );
+    rval = AddEntity(TPM20_INDEX_PASSWORD_TEST, &nvAuth);
+    CheckPassed(rval);
 
     // Get the name of the NV index.
     rval = TpmHandleToName(
@@ -2424,8 +2423,7 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
     CheckPassed( rval );
 
     // Delete the NV index's entry in the entity table.
-    rval = DeleteEntity( TPM20_INDEX_PASSWORD_TEST );
-    CheckPassed( rval );
+    DeleteEntity(TPM20_INDEX_PASSWORD_TEST);
 
     // Remove the real session from sessions table.
     EndAuthSession( nvSession );
@@ -3141,8 +3139,6 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 
     rval = tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_ON );
     CheckPassed(rval);
-
-    InitEntities();
 
     SysFinalizeTests();
 

@@ -136,21 +136,16 @@ typedef struct {
     UT_hash_handle hh;
 } SESSION;
 
-//
-// Structure used to maintain entity data.  Right now it just
-// consists of handles/authValue pairs.
-//
 typedef struct{
     TPM2_HANDLE entityHandle;
     TPM2B_AUTH entityAuth;
-    UINT8 nvNameChanged;
+    UT_hash_handle hh;
 } ENTITY;
 
-void InitEntities();
-TSS2_RC AddEntity( TPM2_HANDLE entityHandle, TPM2B_AUTH *auth );
-TSS2_RC DeleteEntity( TPM2_HANDLE entityHandle );
-TSS2_RC GetEntityAuth( TPM2_HANDLE entityHandle, TPM2B_AUTH *auth );
-TSS2_RC GetEntity( TPM2_HANDLE entityHandle, ENTITY **entity );
+int AddEntity(TPM2_HANDLE entityHandle, TPM2B_AUTH *auth);
+void DeleteEntity(TPM2_HANDLE entityHandle);
+int GetEntityAuth(TPM2_HANDLE entityHandle, TPM2B_AUTH *auth);
+ENTITY *GetEntity(TPM2_HANDLE entityHandle);
 
 void
 EndAuthSession(SESSION *session);
