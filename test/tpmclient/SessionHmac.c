@@ -60,7 +60,7 @@ TpmComputeSessionHmac(
     TPM2_CC cmdCode;
 
     INIT_SIMPLE_TPM2B_SIZE(pHash);
-    rval = TpmCalcPHash(sysContext, handle1, handle2,
+    rval = TpmCalcPHash(sysContext, handle1, handle2, handle3,
                         session->authHash, command, &pHash);
     if (rval != TPM2_RC_SUCCESS)
         return rval;
