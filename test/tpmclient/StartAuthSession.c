@@ -42,6 +42,17 @@ void RollNonces(SESSION *session, TPM2B_NONCE *newNonce)
     session->nonceNewer = *newNonce;
 }
 
+static SESSION *sessions = NULL;
+
+SESSION *
+get_session(TPMI_SH_AUTH_SESSION hndl)
+{
+    SESSION *s;
+
+    HASH_FIND_INT(sessions, &hndl, s);
+    return s;
+}
+
 static TSS2_RC
 StartAuthSession(
     SESSION *session,
@@ -127,7 +138,7 @@ TSS2_RC StartAuthSessionWithParams(
     TSS2_TCTI_CONTEXT *tctiContext)
 {
     TSS2_RC rval;
-    SESSION *session;
+    SESSION *session, *tmp;
 
     if (psession == NULL)
         return TSS2_APP_RC_BAD_REFERENCE;
@@ -157,12 +168,18 @@ TSS2_RC StartAuthSessionWithParams(
         free(session);
         return rval;
     }
+    /* Make sure this session handle is not already in the table */
+    HASH_FIND_INT(sessions, &session->sessionHandle, tmp);
+    if (tmp)
+        HASH_DEL(sessions, tmp);
 
+    HASH_ADD_INT(sessions, sessionHandle, session);
     *psession = session;
     return TSS2_RC_SUCCESS;
 }
 
 void EndAuthSession(SESSION *session)
 {
+    HASH_DEL(sessions, session);
     free(session);
 }
