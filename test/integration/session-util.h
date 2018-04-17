@@ -41,6 +41,7 @@ TpmCalcPHash(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2_HANDLE handle1,
     TPM2_HANDLE handle2,
+    TPM2_HANDLE handle3,
     TPMI_ALG_HASH auth_hash,
     bool command,
     TPM2B_DIGEST *result);

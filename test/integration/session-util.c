@@ -36,6 +36,7 @@ TpmCalcPHash(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2_HANDLE handle1,
     TPM2_HANDLE handle2,
+    TPM2_HANDLE handle3,
     TPMI_ALG_HASH authHash,
     bool command,
     TPM2B_DIGEST *pHash)
@@ -43,16 +44,18 @@ TpmCalcPHash(
     TSS2_RC rval = TPM2_RC_SUCCESS;
     TSS2_TCTI_CONTEXT *tcti_context;
     UINT32 i;
-    TPM2B_NAME name1;
-    TPM2B_NAME name2;
+    TPM2B_NAME name1, name2, name3;
     TPM2B_MAX_BUFFER hashInput;
     UINT8 *hashInputPtr;
     size_t parametersSize;
     const uint8_t *startParams;
     TPM2_CC cmdCode;
 
-    name1.size = name2.size = 0;
+    name1.size = 0;
+    name2.size = 0;
+    name3.size = 0;
     hashInput.size = 0;
+
     rval = Tss2_Sys_GetTctiContext(sysContext, &tcti_context);
     if (rval != TPM2_RC_SUCCESS)
         return rval;
@@ -62,11 +65,15 @@ TpmCalcPHash(
         if (rval != TPM2_RC_SUCCESS)
                 return rval;
 
-        rval = Tss2_Sys_GetCpBuffer(sysContext, &parametersSize, &startParams);
+        rval = TpmHandleToName(tcti_context, handle2, &name2);
         if (rval != TPM2_RC_SUCCESS)
             return rval;
 
-        rval = TpmHandleToName(tcti_context, handle2, &name2);
+        rval = TpmHandleToName(tcti_context, handle3, &name3);
+        if (rval != TPM2_RC_SUCCESS)
+            return rval;
+
+        rval = Tss2_Sys_GetCpBuffer(sysContext, &parametersSize, &startParams);
         if (rval != TPM2_RC_SUCCESS)
             return rval;
     } else {
@@ -93,6 +100,10 @@ TpmCalcPHash(
         return rval;
 
     rval = ConcatSizedByteBuffer(&hashInput, (TPM2B *)&name2);
+    if (rval != TPM2_RC_SUCCESS)
+        return rval;
+
+    rval = ConcatSizedByteBuffer(&hashInput, (TPM2B *)&name3);
     if (rval != TPM2_RC_SUCCESS)
         return rval;
 
@@ -132,6 +143,11 @@ UINT32 TpmHandleToName(
         return TSS2_SYS_RC_BAD_VALUE;
 
     namePtr = name->name;
+
+    if (handle == TPM2_RH_NULL) {
+        name->size = 0;
+        return TSS2_RC_SUCCESS;
+    }
 
     switch(handle >> TPM2_HR_SHIFT)
     {
