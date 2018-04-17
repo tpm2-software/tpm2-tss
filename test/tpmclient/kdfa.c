@@ -47,70 +47,52 @@ TSS2_RC KDFa(
     TPM2B_MAX_BUFFER *resultKey)
 {
     TPM2B_DIGEST digest;
-    TPM2B_DIGEST tpm2bLabel, tpm2bBits, tpm2b_i_2;
-    UINT8 *tpm2bBitsPtr = &tpm2bBits.buffer[0];
-    UINT8 *tpm2b_i_2Ptr = &tpm2b_i_2.buffer[0];
+    TPM2B_DIGEST tpm2bLabel, tpm2bBits, tpm2bi;
     TPM2B_DIGEST *bufferList[8];
-    UINT32 bitsSwizzled, i_Swizzled;
+    UINT32 val;
     TSS2_RC rval;
     int i, j;
     UINT16 bytes = bits / 8;
 
+    resultKey->size = 0;
+    tpm2bi.size = 4;
+    tpm2bBits.size = 4;
+    val = BE_TO_HOST_32(bits);
+    memcpy(tpm2bBits.buffer, &val, 4);
+    tpm2bLabel.size = strlen(label) + 1;
+    memcpy(tpm2bLabel.buffer, label, tpm2bLabel.size);
+
     LOG_DEBUG("KDFA, hashAlg = %4.4x", hashAlg);
     LOGBLOB_DEBUG(&key->buffer[0], key->size, "KDFA, key =");
-
-    resultKey->size = 0;
-
-    tpm2b_i_2.size = 4;
-
-    tpm2bBits.size = 4;
-    bitsSwizzled = BE_TO_HOST_32(bits);
-    *(UINT32 *)tpm2bBitsPtr = bitsSwizzled;
-
-    for(i = 0; label[i] != 0 ;i++ );
-
-    tpm2bLabel.size = i+1;
-    for( i = 0; i < tpm2bLabel.size; i++ )
-    {
-        tpm2bLabel.buffer[i] = label[i];
-    }
-
     LOGBLOB_DEBUG(&tpm2bLabel.buffer[0], tpm2bLabel.size, "KDFA, tpm2bLabel =");
     LOGBLOB_DEBUG(&contextU->buffer[0], contextU->size, "KDFA, contextU =");
     LOGBLOB_DEBUG(&contextV->buffer[0], contextV->size, "KDFA, contextV =");
 
-    resultKey->size = 0;
-
-    i = 1;
-
-    while(resultKey->size < bytes)
-    {
-        i_Swizzled = BE_TO_HOST_32(i++);
-        *(UINT32 *)tpm2b_i_2Ptr = i_Swizzled;
-
-        j = 0;
-        bufferList[j++] = (TPM2B_DIGEST *)&(tpm2b_i_2);
-        bufferList[j++] = (TPM2B_DIGEST *)&(tpm2bLabel);
+    for (i = 1, j = 0; resultKey->size < bytes; j = 0) {
+        val = BE_TO_HOST_32(i++);
+        memcpy(tpm2bi.buffer, &val, 4);
+        bufferList[j++] = (TPM2B_DIGEST *)&tpm2bi;
+        bufferList[j++] = (TPM2B_DIGEST *)&tpm2bLabel;
         bufferList[j++] = (TPM2B_DIGEST *)contextU;
         bufferList[j++] = (TPM2B_DIGEST *)contextV;
-        bufferList[j++] = (TPM2B_DIGEST *)&(tpm2bBits);
-        bufferList[j++] = (TPM2B_DIGEST *)0;
-#if LOGLEVEL == LOGLEVEL_DEBUG || \
-    LOGLEVEL == LOGLEVEL_TRACE
-        for (j = 0; bufferList[j] != 0; j++)
-            LOGBLOB_DEBUG(&bufferList[j]->buffer[0], bufferList[j]->size, "bufferlist[%d]:", j);
+        bufferList[j++] = (TPM2B_DIGEST *)&tpm2bBits;
+        bufferList[j++] = NULL;
 
-#endif
+        for (j = 0; bufferList[j] != NULL; j++) {
+            LOGBLOB_DEBUG(&bufferList[j]->buffer[0], bufferList[j]->size, "bufferlist[%d]:", j);
+            ;
+        }
+
         rval = hmac(hashAlg, key->buffer, key->size, bufferList, &digest);
         if (rval != TPM2_RC_SUCCESS) {
-            LOGBLOB_ERROR(digest.buffer, digest.size, "HMAC Failed rval = %d !!!", rval);
+            LOGBLOB_ERROR(digest.buffer, digest.size, "HMAC Failed rval = %d", rval);
             return rval;
         }
 
         ConcatSizedByteBuffer(resultKey, (TPM2B *)&digest);
     }
 
-    // Truncate the result to the desired size.
+    /* Truncate the result to the desired size. */
     resultKey->size = bytes;
     LOGBLOB_DEBUG(&resultKey->buffer[0], resultKey->size, "KDFA, resultKey = ");
     return TPM2_RC_SUCCESS;
