@@ -26,95 +26,62 @@
 //**********************************************************************;
 
 #include "tss2_tpm2_types.h"
-
 #include "tpmclient.int.h"
 #include "sysapi_util.h"
 #include "../integration/sapi-util.h"
 
-#define MAX_NUM_ENTITIES 100
-static ENTITY entities[MAX_NUM_ENTITIES + 1];
+static ENTITY *entities = NULL;
 
-void InitEntities()
+int
+AddEntity(TPM2_HANDLE handle, TPM2B_AUTH *auth)
 {
-    int i;
-    for( i = 0; i < MAX_NUM_ENTITIES; i++ )
-    {
-        entities[i].entityHandle = TPM2_HT_NO_HANDLE;
+    ENTITY *e;
+
+    HASH_FIND_INT(entities, &handle, e);
+
+    if (!e) {
+        e = calloc(1, sizeof(*e));
+        if (!e)
+            return -1;
+
+        e->entityHandle = handle;
+        HASH_ADD_INT(entities, entityHandle, e);
     }
+    CopySizedByteBuffer((TPM2B *)&e->entityAuth, (TPM2B *)auth);
+    return 0;
 }
 
-TSS2_RC AddEntity( TPM2_HANDLE entityHandle, TPM2B_AUTH *auth )
+void
+DeleteEntity(TPM2_HANDLE handle)
 {
-    int i;
-    TSS2_RC rval = TPM2_RC_FAILURE;
+    ENTITY *e;
 
-    for( i = 0; i < MAX_NUM_ENTITIES; i++ )
-    {
-        if( entities[i].entityHandle == TPM2_HT_NO_HANDLE )
-        {
-            entities[i].entityHandle = entityHandle;
-            CopySizedByteBuffer((TPM2B *)&entities[i].entityAuth, (TPM2B *)auth);
+    HASH_FIND_INT(entities, &handle, e);
+    if (!e)
+        return;
 
-            if( ( entityHandle >> TPM2_HR_SHIFT ) == TPM2_HT_NV_INDEX )
-            {
-                entities[i].nvNameChanged = 0;
-            }
-
-            rval = TPM2_RC_SUCCESS;
-            break;
-        }
-    }
-    return rval;
+    HASH_DEL(entities, e);
+    free(e);
 }
 
-TSS2_RC DeleteEntity( TPM2_HANDLE entityHandle )
+int
+GetEntityAuth(TPM2_HANDLE handle, TPM2B_AUTH *auth)
 {
-    int i;
-    TSS2_RC rval = TPM2_RC_FAILURE;
+    ENTITY *e;
 
-    for( i = 0; i < MAX_NUM_ENTITIES; i++ )
-    {
-        if( entities[i].entityHandle == entityHandle )
-        {
-            entities[i].entityHandle = TPM2_HT_NO_HANDLE;
-            rval = TPM2_RC_SUCCESS;
-            break;
-        }
-    }
-    return rval;
+    HASH_FIND_INT(entities, &handle, e);
+    if (!e)
+        return -1;
+
+    CopySizedByteBuffer((TPM2B *)auth, (TPM2B *)&e->entityAuth);
+    return 0;
 }
 
-TSS2_RC GetEntityAuth( TPM2_HANDLE entityHandle, TPM2B_AUTH *auth )
+ENTITY *
+GetEntity(TPM2_HANDLE handle)
 {
-    int i;
-    TSS2_RC rval = TPM2_RC_FAILURE;
+    ENTITY *e;
 
-    for( i = 0; i < MAX_NUM_ENTITIES; i++ )
-    {
-        if( entities[i].entityHandle == entityHandle )
-        {
-            CopySizedByteBuffer((TPM2B *)auth, (TPM2B *)&entities[i].entityAuth);
-            rval = TPM2_RC_SUCCESS;
-            break;
-        }
-    }
-    return rval;
+    HASH_FIND_INT(entities, &handle, e);
+    return e;
 }
-
-
-TSS2_RC GetEntity( TPM2_HANDLE entityHandle, ENTITY **entity )
-{
-    int i;
-    TSS2_RC rval = TPM2_RC_FAILURE;
-
-    for( i = 0; i < MAX_NUM_ENTITIES; i++ )
-    {
-        if( entities[i].entityHandle == entityHandle )
-        {
-            *entity = &( entities[i] );
-            rval = TPM2_RC_SUCCESS;
-        }
-    }
-    return rval;
-}
-

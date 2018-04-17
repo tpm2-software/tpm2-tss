@@ -119,9 +119,9 @@ TSS2_RC ComputeCommandHmacs(
         if (handles[i] == TPM2_RH_NULL)
             break;
 
-        rval = GetEntity(handles[i], &entity);
-        if (rval)
-            return rval;
+        entity = GetEntity(handles[i]);
+        if (!entity)
+            return APPLICATION_HMAC_ERROR(i+1);
 
         session = get_session(pSessionsDataIn->auths[i].sessionHandle);
         if (!session)
@@ -165,9 +165,9 @@ TSS2_RC CheckResponseHMACs(
         if (handles[i] == TPM2_RH_NULL)
             break;
 
-        rval = GetEntity(handles[i], &entity);
-        if (rval)
-            return rval;
+        entity = GetEntity(handles[i]);
+        if (!entity)
+            return APPLICATION_HMAC_ERROR(i+1);
 
         session = get_session(pSessionsDataIn->auths[i].sessionHandle);
         if (!session)
