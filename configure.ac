@@ -124,6 +124,9 @@ AM_CONDITIONAL([SIMULATOR_BIN],[test "x$with_simulatorbin_set" = "xyes"])
 AS_IF([test "x$with_simulatorbin_set" == xyes],
       [PKG_CHECK_MODULES([LIBCRYPTO],[libcrypto])])
 
+AS_IF([test "x$with_simulatorbin_set" == xyes],
+      [AC_CHECK_HEADER(uthash.h, [], [AC_MSG_ERROR([Can not find uthash.h. Please install uthash-dev])])])
+
 gl_LD_VERSION_SCRIPT
 
 AX_ADD_COMPILER_FLAG([-std=c99])
