@@ -8,6 +8,7 @@
 #include "tss2_tcti_mssim.h"
 
 #include "context-util.h"
+#include "tss2-tcti/tcti-mssim.h"
 
 /*
  * Initialize a TSS2_TCTI_CONTEXT for the device TCTI.
@@ -49,14 +50,14 @@ tcti_device_init(char const *device_path)
  * function. This structure must be freed by the caller.
  */
 TSS2_TCTI_CONTEXT *
-tcti_socket_init(char const *address, uint16_t port)
+tcti_socket_init(char const *host, uint16_t port)
 {
     size_t size;
     TSS2_RC rc;
     TSS2_TCTI_CONTEXT *tcti_ctx;
-    char conf_str[256] = { 0 };
+    char conf_str[TCTI_MSSIM_CONF_MAX] = { 0 };
 
-    snprintf(conf_str, 256, "tcp://%s:%" PRIu16, address, port);
+    snprintf(conf_str, TCTI_MSSIM_CONF_MAX, "host=%s,port=%" PRIu16, host, port);
     rc = Tss2_Tcti_Mssim_Init(NULL, &size, conf_str);
     if (rc != TSS2_RC_SUCCESS) {
         fprintf(stderr, "Faled to get allocation size for tcti context: "

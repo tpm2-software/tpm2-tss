@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Intel Corporation
+ * Copyright (c) 2018, Intel Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,42 +24,26 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <stdlib.h>
 
-#ifndef TCTI_MSSIM_H
-#define TCTI_MSSIM_H
+#include "tss2_tpm2_types.h"
 
-#include <limits.h>
-
-#include "tcti-common.h"
-#include "util/io.h"
-
-/*
- * longest possible conf string:
- * HOST_NAME_MAX + max char uint16 (5) + strlen ("host=,port=") (11)
- */
-#define TCTI_MSSIM_CONF_MAX (HOST_NAME_MAX + 16)
-#define TCTI_MSSIM_DEFAULT_HOST "localhost"
-#define TCTI_MSSIM_DEFAULT_PORT 2321
-#define MSSIM_CONF_DEFAULT_INIT { \
-    .host = TCTI_MSSIM_DEFAULT_HOST, \
-    .port = TCTI_MSSIM_DEFAULT_PORT, \
+#define KEY_VALUE_INIT { \
+    .key = NULL, \
+    .value = NULL, \
 }
 
-#define TCTI_MSSIM_MAGIC 0xf05b04cd9f02728dULL
-
 typedef struct {
-    char *host;
-    uint16_t port;
-} mssim_conf_t;
+    char *key;
+    char *value;
+} key_value_t;
 
-typedef struct {
-    TSS2_TCTI_COMMON_CONTEXT common;
-    SOCKET platform_sock;
-    SOCKET tpm_sock;
-/* Flag indicating if a command has been cancelled.
- * This is a temporary flag, which will be changed into
- * a tcti state when support for asynch operation will be added */
-    bool cancel;
-} TSS2_TCTI_MSSIM_CONTEXT;
-
-#endif /* TCTI_MSSIM_H */
+typedef TSS2_RC (*KeyValueFunc) (const key_value_t* key_value,
+                                 void *user_data);
+bool
+parse_key_value (char *key_value_str,
+                 key_value_t *key_value);
+TSS2_RC
+parse_key_value_string (char *kv_str,
+                        KeyValueFunc callback,
+                        void *user_data);

@@ -58,9 +58,6 @@ AS_IF([test "x$enable_unit" != xno],
                          [AC_MSG_ERROR([cmocka_err])])])
 AM_CONDITIONAL([UNIT], [test "x$enable_unit" != xno])
 
-# Uriparser library required by simulator TCTI library.
-PKG_CHECK_MODULES([URIPARSER],[liburiparser])
-
 AC_ARG_ENABLE([esapi],
             [AS_HELP_STRING([--enable-esapi],
                             [build the esapi layer (default is yes)])],
