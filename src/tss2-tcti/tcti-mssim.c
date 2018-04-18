@@ -33,18 +33,14 @@
 #include <inttypes.h>
 #include <unistd.h>
 
-#include <uriparser/Uri.h>
-
 #include "tss2_mu.h"
 #include "tss2_tcti_mssim.h"
 
 #include "tcti-mssim.h"
 #include "tcti-common.h"
+#include "util/key-value-parse.h"
 #define LOGMODULE tcti
 #include "util/log.h"
-
-#define TCTI_SOCKET_DEFAULT_CONF "tcp://127.0.0.1:2321"
-#define TCTI_SOCKET_DEFAULT_PORT 2321
 
 /*
  * This function wraps the "up-cast" of the opaque TCTI context type to the
@@ -453,71 +449,38 @@ string_to_port (char port_str[6])
     return port;
 }
 /*
- * This function extracts the hostname and port part of the provided conf
- * string (which is really just a URI). The hostname parameter is an output
- * buffer that must be large enough to hold the hostname. HOST_NAME_MAX is
- * probably a good size. The 'port' parameter is an output parameter where
- * we store the port from the URI after we convert it to a uint16.
- * If the URI does not contain a port number then the contents of the 'port'
- * parameter will not be changed.
- * This function returns TSS2_RC_SUCCESS when the 'hostname' and 'port' have
- * been populated successfully. On failure it will return
- * TSS2_TCTI_RC_BAD_VALUE to indicate that the provided conf string contains
- * values that we can't parse or are invalid.
+ * This function is a callback conforming to the KeyValueFunc prototype. It
+ * is called by the key-value-parse module for each key / value pair extracted
+ * from the configuration string. Its sole purpose is to identify valid keys
+ * from the conf string and to store their corresponding values in the
+ * mssim_conf_t structure which is passed through the 'user_data' parameter.
  */
 TSS2_RC
-conf_str_to_host_port (
-    const char *conf,
-    char *hostname,
-    uint16_t *port)
+mssim_kv_callback (const key_value_t *key_value,
+                   void *user_data)
 {
-    UriParserStateA state;
-    UriUriA uri;
-    /* maximum 5 digits in uint16_t + 1 for \0 */
-    char port_str[6] = { 0 };
-    size_t range;
-    TSS2_RC rc = TSS2_RC_SUCCESS;
+    mssim_conf_t *mssim_conf = (mssim_conf_t*)user_data;
 
-    state.uri = &uri;
-    if (uriParseUriA (&state, conf) != URI_SUCCESS) {
-        LOG_WARNING ("Failed to parse provided conf string: %s", conf);
-        rc = TSS2_TCTI_RC_BAD_VALUE;
-        goto out;
+    LOG_TRACE ("key_value: 0x%" PRIxPTR " and user_data: 0x%" PRIxPTR,
+               (uintptr_t)key_value, (uintptr_t)user_data);
+    if (key_value == NULL || user_data == NULL) {
+        LOG_WARNING ("%s passed NULL parameter", __func__);
+        return TSS2_TCTI_RC_GENERAL_FAILURE;
     }
-
-    /* extract host & domain name / fqdn */
-    range = uri.hostText.afterLast - uri.hostText.first;
-    if (range > HOST_NAME_MAX) {
-        LOG_WARNING ("Provided conf string has hostname that exceeds "
-                     "HOST_NAME_MAX.");
-        rc = TSS2_TCTI_RC_BAD_VALUE;
-        goto out;
+    LOG_DEBUG ("key: %s / value: %s\n", key_value->key, key_value->value);
+    if (strcmp (key_value->key, "host") == 0) {
+        mssim_conf->host = key_value->value;
+        return TSS2_RC_SUCCESS;
+    } else if (strcmp (key_value->key, "port") == 0) {
+        mssim_conf->port = string_to_port (key_value->value);
+        if (mssim_conf->port == 0) {
+            return TSS2_TCTI_RC_BAD_VALUE;
+        }
+        return TSS2_RC_SUCCESS;
+    } else {
+        return TSS2_TCTI_RC_BAD_VALUE;
     }
-    strncpy (hostname, uri.hostText.first, range);
-
-    /* extract port number */
-    range = uri.portText.afterLast - uri.portText.first;
-    if (range > 5) {
-        LOG_WARNING ("conf string contains invalid port.");
-        rc = TSS2_TCTI_RC_BAD_VALUE;
-        goto out;
-    } else if (range == 0) {
-        LOG_INFO ("conf string does not contain a port.");
-        goto out;
-    }
-
-    strncpy (port_str, uri.portText.first, range);
-    *port = string_to_port (port_str);
-    if (*port == 0) {
-        LOG_WARNING ("Provided conf string contains invalid port: 0");
-        rc = TSS2_TCTI_RC_BAD_VALUE;
-        goto out;
-    }
-out:
-    uriFreeUriMembersA (&uri);
-    return rc;
 }
-
 void
 tcti_mssim_init_context_data (
     TSS2_TCTI_COMMON_CONTEXT *tcti_common)
@@ -548,12 +511,11 @@ Tss2_Tcti_Mssim_Init (
     TSS2_TCTI_MSSIM_CONTEXT *tcti_mssim = (TSS2_TCTI_MSSIM_CONTEXT*)tctiContext;
     TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_mssim_down_cast (tcti_mssim);
     TSS2_RC rc;
-    const char *uri_str = conf != NULL ? conf : TCTI_SOCKET_DEFAULT_CONF;
-    char hostname[HOST_NAME_MAX + 1] = { 0 };
-    uint16_t port = TCTI_SOCKET_DEFAULT_PORT;
+    char *conf_copy = NULL;
+    mssim_conf_t mssim_conf = MSSIM_CONF_DEFAULT_INIT;
 
     LOG_TRACE ("tctiContext: 0x%" PRIxPTR ", size: 0x%" PRIxPTR ", conf: %s",
-               (uintptr_t)tctiContext, (uintptr_t)size, uri_str);
+               (uintptr_t)tctiContext, (uintptr_t)size, conf);
     if (size == NULL) {
         return TSS2_TCTI_RC_BAD_VALUE;
     }
@@ -562,17 +524,41 @@ Tss2_Tcti_Mssim_Init (
         return TSS2_RC_SUCCESS;
     }
 
-    rc = conf_str_to_host_port (uri_str, hostname, &port);
+    if (conf != NULL) {
+        LOG_TRACE ("conf is not NULL");
+        if (strlen (conf) > TCTI_MSSIM_CONF_MAX) {
+            LOG_WARNING ("Provided conf string exceeds maximum of %u",
+                         TCTI_MSSIM_CONF_MAX);
+            return TSS2_TCTI_RC_BAD_VALUE;
+        }
+        conf_copy = strdup (conf);
+        if (conf_copy == NULL) {
+            LOG_ERROR ("Failed to allocate buffer: %s", strerror (errno));
+            rc = TSS2_TCTI_RC_GENERAL_FAILURE;
+            goto fail_out;
+        }
+        LOG_DEBUG ("Dup'd conf string to: 0x%" PRIxPTR,
+                   (uintptr_t)conf_copy);
+        rc = parse_key_value_string (conf_copy,
+                                     mssim_kv_callback,
+                                     &mssim_conf);
+        if (rc != TSS2_RC_SUCCESS) {
+            goto fail_out;
+        }
+    }
+    LOG_DEBUG ("Initializing mssim TCTI with host: %s, port: %" PRIu16,
+               mssim_conf.host, mssim_conf.port);
+
+    rc = socket_connect (mssim_conf.host,
+                         mssim_conf.port,
+                         &tcti_mssim->tpm_sock);
     if (rc != TSS2_RC_SUCCESS) {
-        return rc;
+        goto fail_out;
     }
 
-    rc = socket_connect (hostname, port, &tcti_mssim->tpm_sock);
-    if (rc != TSS2_RC_SUCCESS) {
-        return rc;
-    }
-
-    rc = socket_connect (hostname, port + 1, &tcti_mssim->platform_sock);
+    rc = socket_connect (mssim_conf.host,
+                         mssim_conf.port + 1,
+                         &tcti_mssim->platform_sock);
     if (rc != TSS2_RC_SUCCESS) {
         goto fail_out;
     }
@@ -583,13 +569,19 @@ Tss2_Tcti_Mssim_Init (
         goto fail_out;
     }
 
+    if (conf_copy != NULL) {
+        free (conf_copy);
+    }
     return TSS2_RC_SUCCESS;
 
 fail_out:
+    if (conf_copy != NULL) {
+        free (conf_copy);
+    }
     socket_close (&tcti_mssim->tpm_sock);
     socket_close (&tcti_mssim->platform_sock);
 
-    return TSS2_TCTI_RC_IO_ERROR;
+    return rc;
 }
 
 /* public info structure */
@@ -597,8 +589,7 @@ const TSS2_TCTI_INFO tss2_tcti_info = {
     .version = TCTI_VERSION,
     .name = "tcti-socket",
     .description = "TCTI module for communication with the Microsoft TPM2 Simulator.",
-    .config_help = "Connection URI in the form tcp://ip_address[:port]. " \
-        "Default is: TCTI_SOCKET_DEFAULT.",
+    .config_help = "Key / value string in the form \"host=localhost,port=2321\".",
     .init = Tss2_Tcti_Mssim_Init,
 };
 

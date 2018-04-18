@@ -62,6 +62,7 @@ TESTS_UNIT  = \
     test/unit/CopyCommandHeader \
     test/unit/GetNumHandles \
     test/unit/io \
+    test/unit/key-value-parse \
     test/unit/tcti-device \
     test/unit/tcti-mssim \
     test/unit/UINT8-marshal \
@@ -210,6 +211,10 @@ test_unit_io_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_io_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
 test_unit_io_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=socket,--wrap=write
 test_unit_io_SOURCES = test/unit/io.c
+
+test_unit_key_value_parse_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_key_value_parse_LDADD   = $(CMOCKA_LIBS) $(libutil)
+test_unit_key_value_parse_SOURCES = test/unit/key-value-parse.c
 
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_CommonPreparePrologue_LDFLAGS = -Wl,--unresolved-symbols=ignore-all

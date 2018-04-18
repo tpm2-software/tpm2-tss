@@ -52,16 +52,26 @@ function in the section titled
 The
 .I conf
 parameter is a C string used to configure the TCTI context. This
-configuration string is a URI with the IP address and port used to connect
-to an instance of the Microsoft TPM2 simulator. The URI scheme used is the
-non-standard
-.I tcp
-scheme. If a NULL
+configuration string is a series of key / value pairs that specify the host
+and port used to connect to an instance of the Microsoft TPM2 simulator. The
+keys and values are separated by the '=' character, while each key / value
+pair is separated by the ',' character.
+
+The only keys supported in the
 .I conf
-string is provided then the default of
-.I tcp://127.0.0.1:2321/
-is used. If the URI provided omits the port component then the default port
-of 2321 is used.
+string are
+.B host
+and
+.B port.
+The host may be an IPv4 address, an IPv6 address, or a host name. The port
+must be a valid uint16_t in string form. If a NULL
+.I conf
+string is provided by the caller then the default of
+"host=localhost,port=2321" is used. If either
+.B host
+or
+.B port
+are omitted then their respective default value will be used.
 .sp
 Once initialized, the TCTI context returned exposes the Trusted Computing
 Group (TCG) defined API for the lowest level communication with the TPM.
@@ -104,7 +114,7 @@ TCTI initialization fragment:
 TSS2_RC rc;
 TSS2_TCTI_CONTEXT *tcti_context;
 size_t size;
-const char *conf = "tcp://127.0.0.1:2321/"
+const char *conf = "host=localhost,port=2321"
 
 rc = Tss2_Tcti_Mssim_Init (NULL, &size, NULL);
 if (rc != TSS2_RC_SUCCESS) {

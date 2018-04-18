@@ -363,13 +363,13 @@ test_tcti_mssim(void **state)
      */
     expect_value(__wrap_Tss2_Tcti_Mssim_Init, tctiContext, NULL);
     expect_any(__wrap_Tss2_Tcti_Mssim_Init, size);
-    expect_string(__wrap_Tss2_Tcti_Mssim_Init, config, "tcp://127.0.0.1:2321");
+    expect_string(__wrap_Tss2_Tcti_Mssim_Init, config, "host=localhost,port=2321");
     will_return(__wrap_Tss2_Tcti_Mssim_Init, lsize);
     will_return(__wrap_Tss2_Tcti_Mssim_Init, TSS2_RC_SUCCESS);
 
     expect_any(__wrap_Tss2_Tcti_Mssim_Init, tctiContext);
     expect_memory(__wrap_Tss2_Tcti_Mssim_Init, size, &lsize, sizeof(lsize));
-    expect_string(__wrap_Tss2_Tcti_Mssim_Init, config, "tcp://127.0.0.1:2321");
+    expect_string(__wrap_Tss2_Tcti_Mssim_Init, config, "host=localhost,port=2321");
     will_return(__wrap_Tss2_Tcti_Mssim_Init, lsize);
     will_return(__wrap_Tss2_Tcti_Mssim_Init, TSS2_RC_SUCCESS);
 

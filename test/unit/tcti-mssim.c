@@ -40,17 +40,15 @@
 
 #include "tss2-tcti/tcti-common.h"
 #include "tss2-tcti/tcti-mssim.h"
+#include "util/key-value-parse.h"
 
 /*
- * This function is implemented in the socket TCTI module but not exposed
- * through the public headers.
+ * This function is defined in the tcti-mssim module but not exposed through
+ * the header.
  */
 TSS2_RC
-conf_str_to_host_port (
-    const char *conf,
-    char *hostname,
-    uint16_t *port);
-
+mssim_kv_callback (const key_value_t *key_value,
+                   void *user_data);
 /*
  * This tests our ability to handle conf strings that have a port
  * component. In this case the 'conf_str_to_host_port' function
@@ -61,14 +59,13 @@ static void
 conf_str_to_host_port_success_test (void **state)
 {
     TSS2_RC rc;
-    char *conf = "tcp://127.0.0.1:2321";
-    char hostname [HOST_NAME_MAX] = { 0 };
-    uint16_t port;
+    char conf[] = "host=127.0.0.1,port=2321";
+    mssim_conf_t mssim_conf = { 0 };
 
-    rc = conf_str_to_host_port (conf, hostname, &port);
+    rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (port, 2321);
-    assert_string_equal (hostname, "127.0.0.1");
+    assert_int_equal (mssim_conf.port, 2321);
+    assert_string_equal (mssim_conf.host, "127.0.0.1");
 }
 
 /*
@@ -82,13 +79,16 @@ static void
 conf_str_to_host_port_no_port_test (void **state)
 {
     TSS2_RC rc;
-    char *conf = "tcp://127.0.0.1";
-    char hostname [HOST_NAME_MAX] = { 0 };
-    uint16_t port = NO_PORT_VALUE;
+    char conf[] = "host=127.0.0.1";
+    mssim_conf_t mssim_conf = {
+        .host = "foo",
+        .port = NO_PORT_VALUE,
+    };
 
-    rc = conf_str_to_host_port (conf, hostname, &port);
+    rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (port, NO_PORT_VALUE);
+    assert_string_equal (mssim_conf.host, "127.0.0.1");
+    assert_int_equal (mssim_conf.port, NO_PORT_VALUE);
 }
 
 /*
@@ -101,14 +101,13 @@ static void
 conf_str_to_host_ipv6_port_success_test (void **state)
 {
     TSS2_RC rc;
-    char *conf = "tcp://[::1]:2321";
-    char hostname [HOST_NAME_MAX] = { 0 };
-    uint16_t port;
+    char conf[] = "host=::1,port=2321";
+    mssim_conf_t mssim_conf = { 0 };
 
-    rc = conf_str_to_host_port (conf, hostname, &port);
+    rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (port, 2321);
-    assert_string_equal (hostname, "::1");
+    assert_int_equal (mssim_conf.port, 2321);
+    assert_string_equal (mssim_conf.host, "::1");
 }
 
 /*
@@ -121,13 +120,13 @@ static void
 conf_str_to_host_ipv6_port_no_port_test (void **state)
 {
     TSS2_RC rc;
-    char *conf = "tcp://[::1]";
-    char hostname [HOST_NAME_MAX] = { 0 };
-    uint16_t port = NO_PORT_VALUE;
+    char conf[] = "host=::1";
+    mssim_conf_t mssim_conf = { .port = NO_PORT_VALUE };
 
-    rc = conf_str_to_host_port (conf, hostname, &port);
+    rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    assert_int_equal (port, NO_PORT_VALUE);
+    assert_int_equal (mssim_conf.port, NO_PORT_VALUE);
+    assert_string_equal (mssim_conf.host, "::1");
 }
 
 /*
@@ -137,11 +136,10 @@ static void
 conf_str_to_host_port_invalid_port_large_test (void **state)
 {
     TSS2_RC rc;
-    char *conf = "tcp://127.0.0.1:99999";
-    char hostname [HOST_NAME_MAX] = { 0 };
-    uint16_t port;
+    char conf[] = "host=127.0.0.1,port=99999";
+    mssim_conf_t mssim_conf = { 0 };
 
-    rc = conf_str_to_host_port (conf, hostname, &port);
+    rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
 }
 /* The 'conf_str_to_host_port' function rejects URIs with port == 0 */
@@ -149,11 +147,10 @@ static void
 conf_str_to_host_port_invalid_port_0_test (void **state)
 {
     TSS2_RC rc;
-    char *conf = "tcp://127.0.0.1:0";
-    char hostname [HOST_NAME_MAX] = { 0 };
-    uint16_t port;
+    char conf[] = "host=127.0.0.1,port=0";
+    mssim_conf_t mssim_conf = { 0 };
 
-    rc = conf_str_to_host_port (conf, hostname, &port);
+    rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
 }
 
@@ -269,7 +266,7 @@ static int
 tcti_socket_setup (void **state)
 {
     printf ("%s: before tcti_socket_init_from_conf\n", __func__);
-    *state = tcti_socket_init_from_conf ("tcp://127.0.0.1:666");
+    *state = tcti_socket_init_from_conf ("host=127.0.0.1,port=666");
     printf ("%s: done\n", __func__);
     return 0;
 }

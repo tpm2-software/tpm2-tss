@@ -61,7 +61,7 @@ struct {
       .description = "Access to /dev/tpmrm0" },
     { .init = Tss2_Tcti_Device_Init, .conf = "/dev/tpm0",
       .description = "Access to /dev/tpm0" },
-    { .init = Tss2_Tcti_Mssim_Init, .conf = "tcp://127.0.0.1:2321",
+    { .init = Tss2_Tcti_Mssim_Init, .conf = "host=localhost,port=2321",
       .description = "Access to Mssim-simulator for tcp://localhost:2321" },
 };
 
