@@ -24,6 +24,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <inttypes.h>
+
 #include "session-util.h"
 #include "sapi-util.h"
 #include "context-util.h"
@@ -187,8 +189,14 @@ TSS2_RC ComputeCommandHmacs(
     TPM2B_MAX_BUFFER hmac_key;
     TSS2_RC rval = TPM2_RC_SUCCESS;
     unsigned int i;
+    unsigned int count = pSessionsDataIn->count;
 
-    for (i = 0; i < pSessionsDataIn->count; i++) {
+    if (count > 3) {
+        LOG_ERROR("Bad value for session count: %" PRIu16, count);
+        return TSS2_SYS_RC_GENERAL_FAILURE;
+    }
+
+    for (i = 0; i < count; i++) {
         if (handles[i] == TPM2_RH_NULL)
             break;
 
@@ -233,8 +241,14 @@ TSS2_RC CheckResponseHMACs(
     TPM2B_MAX_BUFFER hmac_key;
     TSS2_RC rval = TPM2_RC_SUCCESS;
     unsigned int i;
+    unsigned int count = pSessionsDataIn->count;
 
-    for (i = 0; i < pSessionsDataIn->count; i++) {
+    if (count > 3) {
+        LOG_ERROR("Bad value for session count: %" PRIu16, count);
+        return TSS2_SYS_RC_GENERAL_FAILURE;
+    }
+
+    for (i = 0; i < count; i++) {
         if (handles[i] == TPM2_RH_NULL)
             break;
 
