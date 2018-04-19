@@ -24,6 +24,7 @@ The following are dependencies only required when building test suites.
 * Code coverage analysis:
 * lcov
 * autoconf-archives
+* uthash development libraries and header files
 
 Most users will not need to install these dependencies.
 
