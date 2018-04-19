@@ -186,10 +186,14 @@ tcti_device_setup_with_command (void **state)
 static int
 tcti_device_teardown (void **state)
 {
-    TSS2_TCTI_CONTEXT *ctx = *state;
+    data_t *data;
+    data = (data_t *)(*state);
+    TSS2_TCTI_CONTEXT *ctx = data->ctx;
 
     tss2_tcti_finalize (ctx);
     free (ctx);
+    free (*state);
+    *state = NULL;
     return 0;
 }
 /*
