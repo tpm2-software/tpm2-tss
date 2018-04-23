@@ -100,7 +100,7 @@ create_keyedhash_key (
  * buffer.
  */
 TSS2_RC
-encrypt_decrypt_cfb (
+tpm_encrypt_decrypt_cfb (
     TSS2_SYS_CONTEXT *sapi_context,
     TPMI_DH_OBJECT    handle,
     TPMI_YES_NO       decrypt,
@@ -110,7 +110,7 @@ encrypt_decrypt_cfb (
  * This is a convenience wrapper around the encrypt_decrypt_cfb function.
  */
 TSS2_RC
-encrypt_cfb (
+tpm_encrypt_cfb (
     TSS2_SYS_CONTEXT *sapi_context,
     TPMI_DH_OBJECT    handle,
     TPM2B_MAX_BUFFER *data_in,
@@ -119,7 +119,7 @@ encrypt_cfb (
  * This is a convenience wrapper around the encrypt_decrypt_cfb function.
  */
 TSS2_RC
-decrypt_cfb (
+tpm_decrypt_cfb (
     TSS2_SYS_CONTEXT *sapi_context,
     TPMI_DH_OBJECT    handle,
     TPM2B_MAX_BUFFER *data_in,
@@ -129,7 +129,7 @@ decrypt_cfb (
  * the covers it uses the EncryptDecrypt2 function instead of EncryptDecrypt.
  */
 TSS2_RC
-encrypt_decrypt_2_cfb (
+tpm_encrypt_decrypt_2_cfb (
     TSS2_SYS_CONTEXT *sapi_context,
     TPMI_DH_OBJECT    handle,
     TPMI_YES_NO       decrypt,
@@ -139,7 +139,7 @@ encrypt_decrypt_2_cfb (
  * This is a convenience wrapper around the encrypt_decrypt_2_cfb function.
  */
 TSS2_RC
-encrypt_2_cfb (
+tpm_encrypt_2_cfb (
     TSS2_SYS_CONTEXT *sapi_context,
     TPMI_DH_OBJECT    handle,
     TPM2B_MAX_BUFFER *data_in,
@@ -148,7 +148,7 @@ encrypt_2_cfb (
  * This is a convenience wrapper around the encrypt_decrypt_2_cfb function.
  */
 TSS2_RC
-decrypt_2_cfb (
+tpm_decrypt_2_cfb (
     TSS2_SYS_CONTEXT *sapi_context,
     TPMI_DH_OBJECT    handle,
     TPM2B_MAX_BUFFER *data_in,

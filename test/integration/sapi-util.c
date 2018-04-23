@@ -254,7 +254,7 @@ create_keyedhash_key (
 
 
 TSS2_RC
-encrypt_decrypt_cfb (
+tpm_encrypt_decrypt_cfb (
     TSS2_SYS_CONTEXT *sapi_context,
     TPMI_DH_OBJECT    handle,
     TPMI_YES_NO       decrypt,
@@ -291,27 +291,27 @@ encrypt_decrypt_cfb (
 }
 
 TSS2_RC
-decrypt_cfb (
+tpm_decrypt_cfb (
     TSS2_SYS_CONTEXT *sapi_context,
     TPMI_DH_OBJECT    handle,
     TPM2B_MAX_BUFFER *data_in,
     TPM2B_MAX_BUFFER *data_out)
 {
-    return encrypt_decrypt_cfb (sapi_context, handle, YES, data_in, data_out);
+    return tpm_encrypt_decrypt_cfb (sapi_context, handle, YES, data_in, data_out);
 }
 
 TSS2_RC
-encrypt_cfb (
+tpm_encrypt_cfb (
     TSS2_SYS_CONTEXT *sapi_context,
     TPMI_DH_OBJECT    handle,
     TPM2B_MAX_BUFFER *data_in,
     TPM2B_MAX_BUFFER *data_out)
 {
-    return encrypt_decrypt_cfb (sapi_context, handle, NO, data_in, data_out);
+    return tpm_encrypt_decrypt_cfb (sapi_context, handle, NO, data_in, data_out);
 }
 
 TSS2_RC
-encrypt_decrypt_2_cfb (
+tpm_encrypt_decrypt_2_cfb (
     TSS2_SYS_CONTEXT *sapi_context,
     TPMI_DH_OBJECT    handle,
     TPMI_YES_NO       decrypt,
@@ -348,23 +348,23 @@ encrypt_decrypt_2_cfb (
 }
 
 TSS2_RC
-decrypt_2_cfb (
+tpm_decrypt_2_cfb (
     TSS2_SYS_CONTEXT *sapi_context,
     TPMI_DH_OBJECT    handle,
     TPM2B_MAX_BUFFER *data_in,
     TPM2B_MAX_BUFFER *data_out)
 {
-    return encrypt_decrypt_2_cfb (sapi_context, handle, YES, data_in, data_out);
+    return tpm_encrypt_decrypt_2_cfb (sapi_context, handle, YES, data_in, data_out);
 }
 
 TSS2_RC
-encrypt_2_cfb (
+tpm_encrypt_2_cfb (
     TSS2_SYS_CONTEXT *sapi_context,
     TPMI_DH_OBJECT    handle,
     TPM2B_MAX_BUFFER *data_in,
     TPM2B_MAX_BUFFER *data_out)
 {
-    return encrypt_decrypt_2_cfb (sapi_context, handle, NO, data_in, data_out);
+    return tpm_encrypt_decrypt_2_cfb (sapi_context, handle, NO, data_in, data_out);
 }
 
 TSS2_RC

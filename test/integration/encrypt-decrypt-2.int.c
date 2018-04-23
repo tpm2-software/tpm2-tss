@@ -39,7 +39,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 
     LOG_INFO("Encrypting data: \"%s\" with key handle: 0x%08" PRIx32,
                data_in.buffer, handle);
-    rc = encrypt_2_cfb (sapi_context, handle, &data_in, &data_encrypted);
+    rc = tpm_encrypt_2_cfb (sapi_context, handle, &data_in, &data_encrypted);
 
     if (rc == TPM2_RC_COMMAND_CODE) {
         LOG_WARNING("Encrypt/Decrypt 2 not supported by TPM");
@@ -61,7 +61,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
         exit(1);
     }
 
-    rc = decrypt_2_cfb (sapi_context, handle, &data_encrypted, &data_decrypted);
+    rc = tpm_decrypt_2_cfb (sapi_context, handle, &data_encrypted, &data_decrypted);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed to encrypt buffer: 0x%" PRIx32 "", rc);
         exit(1);
