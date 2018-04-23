@@ -133,7 +133,7 @@ test_tcti_default(void **state)
     will_return(__wrap_dlsym, &__wrap_Tss2_Tcti_Fake_Info);
 
     TSS2_TCTI_INFO fakeInfo = {
-        .version = { 0x123123, 2 },
+        .version = 2,
         .name = "FakeTCTI",
         .description = "FakeDesc",
         .config_help = "FakeHelp",
@@ -188,7 +188,7 @@ test_tcti_tabrmd(void **state)
     will_return(__wrap_dlsym, &__wrap_Tss2_Tcti_Fake_Info);
 
     TSS2_TCTI_INFO fakeInfo = {
-        .version = { 0x123123, 2 },
+        .version = 2,
         .name = "FakeTCTI",
         .description = "FakeDesc",
         .config_help = "FakeHelp",

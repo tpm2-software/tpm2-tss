@@ -307,10 +307,7 @@ Tss2_Tcti_Device_Init (
 }
 
 const TSS2_TCTI_INFO tss2_tcti_info = {
-    .version = {
-        .magic = TCTI_DEVICE_MAGIC,
-        .version = TCTI_VERSION,
-    },
+    .version = TCTI_VERSION,
     .name = "tcti-device",
     .description = "TCTI module for communication with Linux kernel interface.",
     .config_help = "Path to TPM character device. Default value is: "

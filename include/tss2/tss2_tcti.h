@@ -58,9 +58,9 @@ typedef void TSS2_TCTI_POLL_HANDLE;
 
 /* Macros to simplify access to values in common TCTI structure */
 #define TSS2_TCTI_MAGIC(tctiContext) \
-    ((TSS2_TCTI_CONTEXT_VERSION*)tctiContext)->magic
+    ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->magic
 #define TSS2_TCTI_VERSION(tctiContext) \
-    ((TSS2_TCTI_CONTEXT_VERSION*)tctiContext)->version
+    ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->version
 #define TSS2_TCTI_TRANSMIT(tctiContext) \
     ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->transmit
 #define TSS2_TCTI_RECEIVE(tctiContext) \
@@ -164,14 +164,6 @@ typedef TSS2_RC (*TSS2_TCTI_INIT_FUNC) (
     size_t *size,
     const char *config);
 
-/* superclass to get the version */
-typedef struct {
-    uint64_t magic;
-    uint32_t version;
-} TSS2_TCTI_VERSION ;
-
-typedef TSS2_TCTI_VERSION TSS2_TCTI_CONTEXT_VERSION;
-
 /* current version #1 known to this implementation */
 typedef struct {
     uint64_t magic;
@@ -194,7 +186,7 @@ typedef TSS2_TCTI_CONTEXT_COMMON_V2 TSS2_TCTI_CONTEXT_COMMON_CURRENT;
 #define TSS2_TCTI_INFO_SYMBOL "Tss2_Tcti_Info"
 
 typedef struct {
-    TSS2_TCTI_VERSION version;
+    uint32_t version;
     const char *name;
     const char *description;
     const char *config_help;
