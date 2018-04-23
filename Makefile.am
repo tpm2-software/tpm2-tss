@@ -57,9 +57,7 @@ include Makefile-test.am
 
 ### Distribution files ###
 # Add udev rule
-if WITH_UDEVRULESPREFIX
 udevrules_DATA   = dist/tpm-udev.rules
-endif
 
 # Adding user and developer information
 EXTRA_DIST += \
