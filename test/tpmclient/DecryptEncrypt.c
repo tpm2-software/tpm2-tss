@@ -94,135 +94,39 @@ GenerateSessionEncryptDecryptKey (
     return rval;
 }
 
-UINT32 LoadSessionEncryptDecryptKey( TPMT_SYM_DEF *symmetric, TPM2B_MAX_BUFFER *key, TPM2_HANDLE *keyHandle, TPM2B_NAME *keyName )
-{
-    TPM2B keyAuth = { 0 };
-    TPM2B_SENSITIVE inPrivate;
-    TPM2B_PUBLIC inPublic;
-    UINT32 rval;
-    TSS2_SYS_CONTEXT *sysContext;
-
-    inPrivate.sensitiveArea.sensitiveType = TPM2_ALG_SYMCIPHER;
-    inPrivate.size = CopySizedByteBuffer((TPM2B *)&inPrivate.sensitiveArea.authValue, (TPM2B *)&keyAuth);
-    inPrivate.sensitiveArea.seedValue.size = 0;
-    inPrivate.size += CopySizedByteBuffer((TPM2B *)&inPrivate.sensitiveArea.sensitive.bits, (TPM2B *)key);
-    inPrivate.size += 2 * sizeof( UINT16 );
-
-    inPublic.publicArea.type = TPM2_ALG_SYMCIPHER;
-    inPublic.publicArea.nameAlg = TPM2_ALG_NULL;
-    *( UINT32 *)&( inPublic.publicArea.objectAttributes )= 0;
-    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_DECRYPT;
-    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_SIGN_ENCRYPT;
-    inPublic.publicArea.objectAttributes |= TPMA_OBJECT_USERWITHAUTH;
-    inPublic.publicArea.authPolicy.size = 0;
-    inPublic.publicArea.parameters.symDetail.sym.algorithm = symmetric->algorithm;
-    inPublic.publicArea.parameters.symDetail.sym.keyBits = symmetric->keyBits;
-    inPublic.publicArea.parameters.symDetail.sym.mode = symmetric->mode;
-    inPublic.publicArea.unique.sym.size = 0;
-
-    sysContext = sapi_init_from_tcti_ctx(resMgrTctiContext);
-    if (sysContext == NULL)
-        return TSS2_APP_RC_INIT_SYS_CONTEXT_FAILED;
-
-    INIT_SIMPLE_TPM2B_SIZE( *keyName );
-    rval = Tss2_Sys_LoadExternal(sysContext, 0, &inPrivate, &inPublic, TPM2_RH_NULL, keyHandle, keyName, 0);
-
-    sapi_teardown(sysContext);
-    return rval;
-}
-
-TSS2_RC EncryptCFB( SESSION *session, TPM2B_MAX_BUFFER *encryptedData, TPM2B_MAX_BUFFER *clearData, TPM2B_AUTH *authValue )
+TSS2_RC EncryptCFB(
+    SESSION *session,
+    TPM2B_MAX_BUFFER *encryptedData,
+    TPM2B_MAX_BUFFER *clearData,
+    TPM2B_AUTH *authValue)
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
     TPM2B_MAX_BUFFER encryptKey;
-    TPM2B_IV ivIn, ivOut;
-    TPM2_HANDLE keyHandle;
-    TPM2B_NAME keyName;
-    TSS2_SYS_CONTEXT *sysContext;
+    TPM2B_IV iv;
 
-    // Authorization array for command (only has one auth structure).
-    TSS2L_SYS_AUTH_COMMAND sessionsData = {
-        .count = 1,
-        .auths = { 0 }};
+    rval = GenerateSessionEncryptDecryptKey(session, &encryptKey, &iv, authValue);
+    if (rval)
+        return rval;
 
-    sysContext = sapi_init_from_tcti_ctx(resMgrTctiContext);
-    if (sysContext == NULL) {
-        sapi_teardown(sysContext);
-        return TSS2_APP_RC_TEARDOWN_SYS_CONTEXT_FAILED;
-    }
-
-    rval = GenerateSessionEncryptDecryptKey( session, &encryptKey, &ivIn, authValue );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = LoadSessionEncryptDecryptKey( &session->symmetric, &encryptKey, &keyHandle, &keyName );
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            // Encrypt the data.
-            sessionsData.auths[0].sessionHandle = TPM2_RS_PW;
-            sessionsData.auths[0].nonce.size = 0;
-            sessionsData.auths[0].sessionAttributes = 0;
-            sessionsData.auths[0].hmac.size = 0;
-            encryptedData->size = sizeof( *encryptedData ) - 1;
-            INIT_SIMPLE_TPM2B_SIZE( ivOut );
-            rval = Tss2_Sys_EncryptDecrypt( sysContext, keyHandle, &sessionsData, NO, TPM2_ALG_CFB, &ivIn,
-                    clearData, encryptedData, &ivOut, 0 );
-            if( rval == TSS2_RC_SUCCESS )
-            {
-                rval = Tss2_Sys_FlushContext( sysContext, keyHandle );
-            }
-        }
-    }
-    sapi_teardown(sysContext);
-
-    return rval;
+    return encrypt_cfb(encryptedData, clearData, &encryptKey, &iv);
 }
 
-TSS2_RC DecryptCFB( SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM2B_MAX_BUFFER *encryptedData, TPM2B_AUTH *authValue )
+TSS2_RC DecryptCFB(
+    SESSION *session,
+    TPM2B_MAX_BUFFER *clearData,
+    TPM2B_MAX_BUFFER *encryptedData,
+    TPM2B_AUTH *authValue)
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
     TPM2B_MAX_BUFFER encryptKey;
-    TPM2B_IV ivIn, ivOut;
-    TPM2_HANDLE keyHandle;
-    TPM2B_NAME keyName;
-    TSS2_SYS_CONTEXT *sysContext;
-   // Authorization array for command (only has one auth structure).
-     TSS2L_SYS_AUTH_COMMAND sessionsData = {
-        .count = 1,
-        .auths = { 0 }};
+    TPM2B_IV iv;
 
-    sysContext = sapi_init_from_tcti_ctx(resMgrTctiContext);
-    if (sysContext == NULL) {
-        sapi_teardown(sysContext);
-        return TSS2_APP_RC_TEARDOWN_SYS_CONTEXT_FAILED;
-    }
+    rval = GenerateSessionEncryptDecryptKey(session, &encryptKey, &iv, authValue);
+    if (rval)
+        return rval;
 
-    rval = GenerateSessionEncryptDecryptKey( session, &encryptKey, &ivIn, authValue );
-
-    if( rval == TSS2_RC_SUCCESS )
-    {
-        rval = LoadSessionEncryptDecryptKey( &session->symmetric, &encryptKey, &keyHandle, &keyName );
-        if( rval == TSS2_RC_SUCCESS )
-        {
-            // Decrypt the data.
-            sessionsData.auths[0].sessionHandle = TPM2_RS_PW;
-            sessionsData.auths[0].nonce.size = 0;
-            sessionsData.auths[0].sessionAttributes = 0;
-            sessionsData.auths[0].hmac.size = 0;
-
-            INIT_SIMPLE_TPM2B_SIZE( ivOut );
-            rval = Tss2_Sys_EncryptDecrypt( sysContext, keyHandle, &sessionsData, YES, TPM2_ALG_CFB, &ivIn,
-                    encryptedData, clearData, &ivOut, 0 );
-            if( rval == TSS2_RC_SUCCESS )
-            {
-                rval = Tss2_Sys_FlushContext( sysContext, keyHandle );
-            }
-        }
-    }
-    sapi_teardown(sysContext);
-    return rval;
+    return decrypt_cfb(clearData, encryptedData, &encryptKey, &iv);
 }
-
 
 TSS2_RC EncryptDecryptXOR( SESSION *session, TPM2B_MAX_BUFFER *outputData, TPM2B_MAX_BUFFER *inputData, TPM2B_AUTH *authValue )
 {
