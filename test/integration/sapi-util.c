@@ -30,6 +30,7 @@
 
 #include <openssl/sha.h>
 #include <openssl/hmac.h>
+#include <openssl/evp.h>
 #include <openssl/opensslv.h>
 
 #define LOGMODULE testintegration
@@ -365,6 +366,102 @@ tpm_encrypt_2_cfb (
     TPM2B_MAX_BUFFER *data_out)
 {
     return tpm_encrypt_decrypt_2_cfb (sapi_context, handle, NO, data_in, data_out);
+}
+
+static TSS2_RC
+encrypt_decrypt_cfb (
+    TPM2B_MAX_BUFFER *data_out,
+    TPM2B_MAX_BUFFER *data_in,
+    TPMI_YES_NO decrypt,
+    TPM2B_MAX_BUFFER *key,
+    TPM2B_IV *iv)
+{
+    EVP_CIPHER_CTX *ctx;
+    const EVP_CIPHER *type;
+    TSS2_RC rc = TSS2_SYS_RC_BAD_VALUE;
+    int len = 0, sll_rc;
+
+    ctx = EVP_CIPHER_CTX_new();
+    if (!ctx)
+        return TSS2_SYS_RC_GENERAL_FAILURE;
+
+    switch (key->size) {
+        case 16:
+            type = EVP_aes_128_cfb();
+            break;
+        case 24:
+            type = EVP_aes_192_cfb();
+            break;
+        case 32:
+            type = EVP_aes_256_cfb();
+            break;
+        default:
+            goto clean;
+    }
+
+    rc = TSS2_SYS_RC_GENERAL_FAILURE;
+
+    if (decrypt) {
+        sll_rc = EVP_DecryptInit_ex(ctx, type, NULL, key->buffer, iv->buffer);
+        if (sll_rc != 1)
+            goto clean;
+
+        sll_rc = EVP_DecryptUpdate(ctx, data_out->buffer, &len,
+                            data_in->buffer, data_in->size);
+        if (sll_rc != 1)
+            goto clean;
+
+        data_out->size = len;
+
+        sll_rc = EVP_DecryptFinal_ex(ctx, data_out->buffer + len, &len);
+        if (sll_rc != 1)
+            goto clean;
+
+    } else {
+
+        sll_rc = EVP_EncryptInit_ex(ctx, type, NULL, key->buffer, iv->buffer);
+        if (sll_rc != 1)
+            goto clean;
+
+        sll_rc = EVP_EncryptUpdate(ctx, data_out->buffer, &len,
+                            data_in->buffer, data_in->size);
+        if (sll_rc != 1)
+            goto clean;
+
+        data_out->size = len;
+
+        sll_rc = EVP_EncryptFinal_ex(ctx, data_out->buffer + len, &len);
+        if (sll_rc != 1)
+            goto clean;
+    }
+
+    data_out->size += len;
+    rc = TPM2_RC_SUCCESS;
+
+clean:
+    EVP_CIPHER_CTX_free(ctx);
+
+    return rc;
+}
+
+TSS2_RC
+decrypt_cfb (
+    TPM2B_MAX_BUFFER *data_out,
+    TPM2B_MAX_BUFFER *data_in,
+    TPM2B_MAX_BUFFER *key,
+    TPM2B_IV *iv)
+{
+    return encrypt_decrypt_cfb(data_out, data_in, YES, key, iv);
+}
+
+TSS2_RC
+encrypt_cfb (
+    TPM2B_MAX_BUFFER *data_out,
+    TPM2B_MAX_BUFFER *data_in,
+    TPM2B_MAX_BUFFER *key,
+    TPM2B_IV *iv)
+{
+    return encrypt_decrypt_cfb(data_out, data_in, NO, key, iv);
 }
 
 TSS2_RC

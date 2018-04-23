@@ -154,6 +154,20 @@ tpm_decrypt_2_cfb (
     TPM2B_MAX_BUFFER *data_in,
     TPM2B_MAX_BUFFER *data_out);
 
+TSS2_RC
+decrypt_cfb (
+    TPM2B_MAX_BUFFER *data_out,
+    TPM2B_MAX_BUFFER *data_in,
+    TPM2B_MAX_BUFFER *key,
+    TPM2B_IV *iv);
+
+TSS2_RC
+encrypt_cfb (
+    TPM2B_MAX_BUFFER *data_out,
+    TPM2B_MAX_BUFFER *data_in,
+    TPM2B_MAX_BUFFER *key,
+    TPM2B_IV *iv);
+
 /*
  * This is a helper function for digest calculation.
  * alg can be TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPM2_ALG_SHA384,
