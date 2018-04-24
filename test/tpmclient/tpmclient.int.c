@@ -38,7 +38,6 @@
 #include "../integration/context-util.h"
 #include "../integration/sapi-util.h"
 #include "../integration/session-util.h"
-#include "tpmclient.int.h"
 #include "util/tss2_endian.h"
 #include "sysapi_util.h"
 #define LOGMODULE testtpmclient
@@ -97,6 +96,10 @@ TSS2_SYS_CONTEXT *sysContext;
 
 TSS2_TCTI_CONTEXT *resMgrTctiContext = 0;
 
+#define INIT_SIMPLE_TPM2B_SIZE(type) (type).size = sizeof(type) - 2;
+#define YES 1
+#define NO 0
+
 #define MSFT_MANUFACTURER_ID 0x4d534654
 #define IBM_MANUFACTURER_ID 0x49424d20
 #define LEVEL_STRING_SIZE 50
@@ -110,9 +113,6 @@ static void ErrorHandler( UINT32 rval )
     {
         case TSS2_TPM_RC_LAYER:
             strncpy( levelString, "TPM", LEVEL_STRING_SIZE );
-            break;
-        case TSS2_APP_RC_LAYER:
-            strncpy( levelString, "Application", LEVEL_STRING_SIZE );
             break;
         case TSS2_SYS_RC_LAYER:
             strncpy( levelString, "System API", LEVEL_STRING_SIZE );
