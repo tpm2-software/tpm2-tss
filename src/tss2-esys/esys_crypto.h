@@ -208,8 +208,7 @@ TSS2_RC iesys_cryptogcry_sym_aes_encrypt(
     size_t blk_len,
     uint8_t *dst,
     size_t dst_size,
-    uint8_t *iv,
-    size_t iv_len);
+    uint8_t *iv);
 
 TSS2_RC iesys_cryptogcry_sym_aes_decrypt(
     uint8_t *key,
@@ -219,8 +218,7 @@ TSS2_RC iesys_cryptogcry_sym_aes_decrypt(
     size_t blk_len,
     uint8_t *dst,
     size_t dst_size,
-    uint8_t *iv,
-    size_t iv_len);
+    uint8_t *iv);
 
 TSS2_RC iesys_xor_parameter_obfuscation(
     TPM2_ALG_ID hash_alg,
