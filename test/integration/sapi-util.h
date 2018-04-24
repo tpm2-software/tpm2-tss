@@ -97,7 +97,7 @@ create_keyedhash_key (
  * provided in the 'handle' parameter.
  * Under the covers this function uses an IV of all zeros and so it can not
  * be used for streaming. It can only be used to encrypt or decrypt a single
- * buffer.
+ * buffer. This function uses tpm to perform encryption.
  */
 TSS2_RC
 tpm_encrypt_decrypt_cfb (
@@ -108,6 +108,7 @@ tpm_encrypt_decrypt_cfb (
     TPM2B_MAX_BUFFER *data_out);
 /*
  * This is a convenience wrapper around the encrypt_decrypt_cfb function.
+ * This function uses tpm to perform encryption.
  */
 TSS2_RC
 tpm_encrypt_cfb (
@@ -117,6 +118,7 @@ tpm_encrypt_cfb (
     TPM2B_MAX_BUFFER *data_out);
 /*
  * This is a convenience wrapper around the encrypt_decrypt_cfb function.
+ * This function uses tpm to perform encryption.
  */
 TSS2_RC
 tpm_decrypt_cfb (
@@ -127,6 +129,7 @@ tpm_decrypt_cfb (
 /*
  * This function is identical to the encrypt_decrypt_cfb function but under
  * the covers it uses the EncryptDecrypt2 function instead of EncryptDecrypt.
+ * This function uses tpm to perform encryption.
  */
 TSS2_RC
 tpm_encrypt_decrypt_2_cfb (
@@ -137,6 +140,7 @@ tpm_encrypt_decrypt_2_cfb (
     TPM2B_MAX_BUFFER *data_out);
 /*
  * This is a convenience wrapper around the encrypt_decrypt_2_cfb function.
+ * This function uses tpm to perform encryption.
  */
 TSS2_RC
 tpm_encrypt_2_cfb (
@@ -146,6 +150,7 @@ tpm_encrypt_2_cfb (
     TPM2B_MAX_BUFFER *data_out);
 /*
  * This is a convenience wrapper around the encrypt_decrypt_2_cfb function.
+ * This function uses tpm to perform encryption.
  */
 TSS2_RC
 tpm_decrypt_2_cfb (
@@ -153,14 +158,18 @@ tpm_decrypt_2_cfb (
     TPMI_DH_OBJECT    handle,
     TPM2B_MAX_BUFFER *data_in,
     TPM2B_MAX_BUFFER *data_out);
-
+/*
+ * This helper function uses software to perform decryption.
+ */
 TSS2_RC
 decrypt_cfb (
     TPM2B_MAX_BUFFER *data_out,
     TPM2B_MAX_BUFFER *data_in,
     TPM2B_MAX_BUFFER *key,
     TPM2B_IV *iv);
-
+/*
+ * This helper function uses software to perform encryption.
+ */
 TSS2_RC
 encrypt_cfb (
     TPM2B_MAX_BUFFER *data_out,
