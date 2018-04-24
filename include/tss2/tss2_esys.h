@@ -1898,19 +1898,19 @@ Esys_PolicyPCR_Finish(
 TSS2_RC
 Esys_PolicyLocality(
     ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_SH_POLICY policySession,
     TPMA_LOCALITY locality);
 
 TSS2_RC
 Esys_PolicyLocality_Async(
     ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession,
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_SH_POLICY policySession,
     TPMA_LOCALITY locality);
 
 TSS2_RC

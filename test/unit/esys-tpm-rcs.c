@@ -1618,12 +1618,10 @@ test_PolicyLocality(void **state)
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
     Esys_GetTcti(esys_context, &tcti);
 
-    TPMI_SH_POLICY policySession = TPM2_POLICY_SESSION_FIRST;
+    ESYS_TR policySession = DUMMY_TR_HANDLE_POLICY_SESSION;
     TPMA_LOCALITY locality = TPMA_LOCALITY_TPM2_LOC_ZERO;
-    r = Esys_PolicyLocality(esys_context,
-                            ESYS_TR_NONE,
-                            ESYS_TR_NONE,
-                            ESYS_TR_NONE, policySession, locality);
+    r = Esys_PolicyLocality(esys_context, policySession,
+                            ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, locality);
 
     assert_int_equal(r, 0x0FFF);
 }
