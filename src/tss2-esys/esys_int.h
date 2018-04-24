@@ -561,7 +561,7 @@ typedef struct {
 
 
 typedef struct {
-    TPMI_SH_POLICY policySession;
+    ESYS_TR policySession;
     TPMA_LOCALITY locality;
 } PolicyLocality_IN;
 
