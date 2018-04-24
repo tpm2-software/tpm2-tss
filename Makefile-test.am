@@ -306,7 +306,6 @@ if SIMULATOR_BIN
 test_tpmclient_tpmclient_int_CFLAGS   = $(AM_CFLAGS) -U_FORTIFY_SOURCE  $(TESTS_CFLAGS)
 test_tpmclient_tpmclient_int_LDADD    = $(TESTS_LDADD)
 test_tpmclient_tpmclient_int_SOURCES  = \
-    test/tpmclient/DecryptEncrypt.c \
     test/tpmclient/tpmclient.int.c test/tpmclient/tpmclient.int.h \
     test/integration/main.c
 
