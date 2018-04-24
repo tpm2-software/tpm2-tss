@@ -1097,13 +1097,12 @@ iesys_cryptogcry_sym_aes_init(gcry_cipher_hd_t * cipher_hd,
                               TPM2_ALG_ID tpm_sym_alg,
                               TPMI_AES_KEY_BITS key_bits,
                               TPM2_ALG_ID tpm_mode,
-                              size_t blk_len, size_t iv_len, uint8_t * iv)
+                              size_t iv_len, uint8_t * iv)
 {
 
     LOGBLOB_TRACE(key, (key_bits + 7) / 8, "IESYS AES key");
     LOGBLOB_TRACE(iv, iv_len, "IESYS AES iv");
     int algo, mode, len;
-    //int blk_len = 16;
     size_t key_len = 0;
     gcry_error_t err;
     switch (tpm_sym_alg) {
@@ -1148,7 +1147,7 @@ iesys_cryptogcry_sym_aes_init(gcry_cipher_hd_t * cipher_hd,
         return TSS2_ESYS_RC_GENERAL_FAILURE;
     }
     if (iv_len != 0) {
-        err = gcry_cipher_setiv(*cipher_hd, &iv[0], blk_len);
+        err = gcry_cipher_setiv(*cipher_hd, &iv[0], iv_len);
         if (err != GPG_ERR_NO_ERROR) {
             LOG_ERROR("Function gcry_cipher_setiv");
             return TSS2_ESYS_RC_GENERAL_FAILURE;
@@ -1170,14 +1169,19 @@ iesys_cryptogcry_sym_aes_encrypt(uint8_t * key,
                                  size_t blk_len,
                                  uint8_t * buffer,
                                  size_t buffer_size,
-                                 uint8_t * iv, size_t iv_len)
+                                 uint8_t * iv)
 {
     gcry_cipher_hd_t cipher_hd;
-    //int blk_len = 16;
     gcry_error_t err;
     TSS2_RC r;
+
+    if (key == NULL || buffer == NULL) {
+        LOG_ERROR("Bad reference");
+        return TSS2_ESYS_RC_BAD_REFERENCE;
+    }
+
     r = iesys_cryptogcry_sym_aes_init(&cipher_hd, key, tpm_sym_alg,
-                                      key_bits, tpm_mode, blk_len, iv_len, iv);
+                                      key_bits, tpm_mode, blk_len, iv);
     if (r != TSS2_RC_SUCCESS)
         return r;
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS AES input");
@@ -1197,8 +1201,9 @@ iesys_cryptogcry_sym_aes_decrypt(uint8_t * key,
                                  TPMI_AES_KEY_BITS key_bits,
                                  TPM2_ALG_ID tpm_mode,
                                  size_t blk_len,
-                                 uint8_t * buffer, size_t buffer_size,
-                                 uint8_t * iv, size_t iv_len)
+                                 uint8_t * buffer,
+                                 size_t buffer_size,
+                                 uint8_t * iv)
 {
     gcry_cipher_hd_t cipher_hd;
     gcry_error_t err;
@@ -1215,7 +1220,7 @@ iesys_cryptogcry_sym_aes_decrypt(uint8_t * key,
     }
 
     r = iesys_cryptogcry_sym_aes_init(&cipher_hd, key, tpm_sym_alg,
-                                      key_bits, tpm_mode, blk_len, iv_len, iv);
+                                      key_bits, tpm_mode, blk_len, iv);
     if (r != TSS2_RC_SUCCESS)
         return r;
     err = gcry_cipher_decrypt(cipher_hd, buffer, buffer_size, NULL, 0);

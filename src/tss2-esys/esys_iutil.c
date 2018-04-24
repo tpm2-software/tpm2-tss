@@ -556,8 +556,7 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
                                                  symDef->mode.aes,
                                                  AES_BLOCK_SIZE_IN_BYTES,
                                                  &encrypt_buffer[0], paramSize,
-                                                 &symKey[aes_off],
-                                                 AES_BLOCK_SIZE_IN_BYTES);
+                                                 &symKey[aes_off]);
                 return_if_error(r, "AES encryption not possible");
                 r = Tss2_Sys_SetDecryptParam(esys_context->sys, paramSize,
                                              &encrypt_buffer[0]);
@@ -640,8 +639,7 @@ iesys_decrypt_param(ESYS_CONTEXT * esys_context,
                                      symDef->mode.aes,
                                      AES_BLOCK_SIZE_IN_BYTES,
                                      (uint8_t *) & rpBuffer[2], p2BSize,
-                                     &symKey[aes_off],
-                                     AES_BLOCK_SIZE_IN_BYTES);
+                                     &symKey[aes_off]);
         return_if_error(r, "Decryption error");
 
     } else if (symDef->algorithm == TPM2_ALG_XOR) {
