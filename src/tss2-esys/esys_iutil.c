@@ -245,7 +245,6 @@ iesys_compute_cp_hashtab(ESYS_CONTEXT * esys_context,
 
 TSS2_RC
 iesys_compute_rp_hashtab(ESYS_CONTEXT * esys_context,
-                         TSS2L_SYS_AUTH_RESPONSE * rspAuths,
                          const uint8_t * rpBuffer,
                          size_t rpBuffer_size,
                          HASH_TAB_ITEM rp_hash_tab[3], uint8_t * rpHashNum)
@@ -255,16 +254,19 @@ iesys_compute_rp_hashtab(ESYS_CONTEXT * esys_context,
     TSS2_RC r = Tss2_Sys_GetCommandCode(esys_context->sys, &ccBuffer[0]);
     return_if_error(r, "Error: get command code");
 
-    for (int i = 0; i < rspAuths->count; i++) {
+    for (int i = 0; i < esys_context->authsCount; i++) {
         RSRC_NODE_T *session = esys_context->session_tab[i];
         if (session == NULL)
             continue;
         bool rpHashFound = false;
+        /* We do not want to compute cpHashes multiple times for the same
+           algorithm to save time and space */
         for (int j = 0; j < *rpHashNum; j++)
             if (rp_hash_tab[j].alg == session->rsrc.misc.rsrc_session.authHash) {
                 rpHashFound = true;
                 break;
             }
+        /* If not, we compute it and append it to the list */
         if (!rpHashFound) {
             rp_hash_tab[*rpHashNum].size = sizeof(TPMU_HA);
             r = iesys_crypto_rpHash(session->rsrc.misc.rsrc_session.authHash,
@@ -662,50 +664,58 @@ iesys_decrypt_param(ESYS_CONTEXT * esys_context,
 TSS2_RC
 iesys_check_rp_hmacs(ESYS_CONTEXT * esys_context,
                      TSS2L_SYS_AUTH_RESPONSE * rspAuths,
-                     HASH_TAB_ITEM rp_hash_tab[3])
+                     HASH_TAB_ITEM rp_hash_tab[3], uint8_t rpHashNum)
 {
+    TSS2_RC r;
+
     for (int i = 0; i < rspAuths->count; i++) {
         RSRC_NODE_T *session = esys_context->session_tab[i];
-        if (session != NULL) {
-            IESYS_SESSION *rsrc_session = &session->rsrc.misc.rsrc_session;
-            if (rsrc_session->type_policy_session == POLICY_PASSWORD) {
-                if (rspAuths->auths[i].hmac.size  != 0) {
-                    LOG_ERROR("Error: hmac size not equal 0 in response.");
-                    return TSS2_ESYS_RC_BAD_VALUE;
-                }
-                return TSS2_RC_SUCCESS;
-            }
+        if (session == NULL)
+            continue;
 
-            int hi = 0;
-            for (int j = 0; j < 3; j++) {
-                if (rsrc_session->authHash == rp_hash_tab[j].alg) {
-                    hi = j;
-                    break;
-                }
+        IESYS_SESSION *rsrc_session = &session->rsrc.misc.rsrc_session;
+        if (rsrc_session->type_policy_session == POLICY_PASSWORD) {
+            /* A policy password session has no auth value */
+            if (rspAuths->auths[i].hmac.size != 0) {
+                LOG_ERROR("PolicyPassword session's HMAC must be 0-length.");
+                return TSS2_ESYS_RC_RSP_AUTH_FAILED;
             }
-            TPM2B_AUTH rp_hmac;
-            rp_hmac.size = sizeof(TPMU_HA);
-            rsrc_session->nonceTPM = rspAuths->auths[i].nonce;
-            rsrc_session->sessionAttributes =
-                rspAuths->auths[i].sessionAttributes;
-            // TODO check: auths.auths[i].hmac.size =  sizeof(TPMU_HA);
-            TSS2_RC r =
-                iesys_crypto_authHmac(rsrc_session->authHash,
-                                      &rsrc_session->sessionValue[0],
-                                      rsrc_session->sizeSessionValue,
-                                      &rp_hash_tab[hi].digest[0],
-                                      rp_hash_tab[hi].size,
-                                      &rsrc_session->nonceTPM,
-                                      &rsrc_session->nonceCaller, NULL, NULL,
-                                      rspAuths->auths[i].sessionAttributes,
-                                      &rp_hmac);
-            return_if_error(r, "HMAC error");
-            if (!cmp_TPM2B_AUTH(&rspAuths->auths[i].hmac, &rp_hmac)) {
-                LOG_ERROR("Error: Invalid hmac response.");
-                return TSS2_ESYS_RC_BAD_VALUE;
-            }
+            continue;
         }
 
+        /* Find the rpHash for the hash algorithm used by this session */
+        int hi;
+        for (hi = 0; hi < rpHashNum; hi++) {
+            if (rsrc_session->authHash == rp_hash_tab[hi].alg) {
+                break;
+            }
+        }
+        if (hi == rpHashNum) {
+            LOG_ERROR("rpHash for alg %"PRIx16 " not found.",
+                      rsrc_session->authHash);
+            return TSS2_ESYS_RC_GENERAL_FAILURE;
+        }
+
+        TPM2B_AUTH rp_hmac;
+        rp_hmac.size = sizeof(TPMU_HA);
+        rsrc_session->nonceTPM = rspAuths->auths[i].nonce;
+        rsrc_session->sessionAttributes =
+            rspAuths->auths[i].sessionAttributes;
+        r = iesys_crypto_authHmac(rsrc_session->authHash,
+                                  &rsrc_session->sessionValue[0],
+                                  rsrc_session->sizeSessionValue,
+                                  &rp_hash_tab[hi].digest[0],
+                                  rp_hash_tab[hi].size,
+                                  &rsrc_session->nonceTPM,
+                                  &rsrc_session->nonceCaller, NULL, NULL,
+                                  rspAuths->auths[i].sessionAttributes,
+                                  &rp_hmac);
+        return_if_error(r, "HMAC error");
+
+        if (!cmp_TPM2B_AUTH(&rspAuths->auths[i].hmac, &rp_hmac)) {
+            LOG_ERROR("TPM's response auth is invalid for session %i", i);
+            return TSS2_ESYS_RC_RSP_AUTH_FAILED;
+        }
     }
     return TSS2_RC_SUCCESS;
 }
@@ -727,11 +737,14 @@ iesys_compute_bound_entity(const TPM2B_NAME * name,
 
 bool
 iesys_is_object_bound(const TPM2B_NAME * name,
-                      const TPM2B_AUTH * auth, const TPM2B_NAME * bound_entity)
+                      const TPM2B_AUTH * auth, RSRC_NODE_T * session)
 {
     TPM2B_NAME tmp;
+    if (session->rsrc.misc.rsrc_session.bound_entity.size == 0)
+        /* No bind session */
+        return false;
     iesys_compute_bound_entity(name, auth, &tmp);
-    return cmp_TPM2B_NAME(bound_entity, &tmp);
+    return cmp_TPM2B_NAME(&session->rsrc.misc.rsrc_session.bound_entity, &tmp);
 }
 
 /**
@@ -770,7 +783,7 @@ iesys_compute_session_value(RSRC_NODE_T * session,
         session->rsrc.misc.rsrc_session.sessionType != TPM2_SE_POLICY)
         return;
     if (iesys_is_object_bound(name, auth_value,
-                              &session->rsrc.misc.rsrc_session.bound_entity) &&
+                              session) &&
         /* type_policy_session set to POLICY_AUTH by command PolicyAuthValue */
         (session->rsrc.misc.rsrc_session.type_policy_session != POLICY_AUTH))
         return;
@@ -1086,11 +1099,12 @@ iesys_check_response(ESYS_CONTEXT * esys_context)
         return_if_error(r, "Error: get rp buffer");
 
         r = iesys_compute_rp_hashtab(esys_context,
-                                     &rspAuths, rpBuffer, rpBuffer_size,
+                                     rpBuffer, rpBuffer_size,
                                      &rp_hash_tab[0], &rpHashNum);
         return_if_error(r, "Error: while computing response hashes");
 
-        r = iesys_check_rp_hmacs(esys_context, &rspAuths, &rp_hash_tab[0]);
+        r = iesys_check_rp_hmacs(esys_context, &rspAuths, &rp_hash_tab[0],
+                                 rpHashNum);
         return_if_error(r, "Error: response hmac check");
 
         if (esys_context->encryptNonce != NULL) {
