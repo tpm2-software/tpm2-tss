@@ -203,6 +203,8 @@ typedef uint32_t TSS2_RC;
 /* ESAPI Error Codes */
 #define TSS2_ESYS_RC_GENERAL_FAILURE             ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
                                                       TSS2_BASE_RC_GENERAL_FAILURE))
+#define TSS2_ESYS_RC_NOT_IMPLEMENTED             ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                      TSS2_BASE_RC_NOT_IMPLEMENTED))
 #define TSS2_ESYS_RC_ABI_MISMATCH                ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
                                                       TSS2_BASE_RC_ABI_MISMATCH))
 #define TSS2_ESYS_RC_BAD_REFERENCE               ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
@@ -242,13 +244,8 @@ typedef uint32_t TSS2_RC;
 #define TSS2_ESYS_RC_MULTIPLE_DECRYPT_SESSIONS   ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
                                                         TSS2_BASE_RC_MULTIPLE_DECRYPT_SESSIONS))
 #define TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS   ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
-                                                         TSS2_BASE_RC_MULTIPLE_ENCRYPT_SESSIONS))
-#define TSS2_ESYS_RC_AUTH_MISSING                ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
-                                                      TSS2_BASE_RC_AUTH_MISSING))
-#define TSS2_ESYS_RC_NOT_IMPLEMENTED             ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
-                                                      TSS2_BASE_RC_NOT_IMPLEMENTED))
-#define TSS2_ESYS_RC_BAD_CONTEXT                 ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
-                                                        TSS2_BASE_RC_BAD_CONTEXT))
-#define TSS2_ESYS_RC_FILE_ERROR                  ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
-                                                      STSS2_BASE_RC_FILE_ERROR))
+                                                        TSS2_BASE_RC_MULTIPLE_ENCRYPT_SESSIONS))
+#define TSS2_ESYS_RC_RSP_AUTH_FAILED             ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                        TSS2_BASE_RC_RSP_AUTH_FAILED))
+
 #endif /* TSS2_COMMON_H */

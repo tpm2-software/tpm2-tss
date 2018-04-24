@@ -71,6 +71,10 @@ TSS2_RC
 iesys_crypto_hash_get_digest_size(TPM2_ALG_ID hashAlg, size_t * size)
 {
     LOG_TRACE("call: hashAlg=%"PRIu16" size=%p", hashAlg, size);
+    if (size == NULL) {
+        LOG_ERROR("Null-Pointer passed");
+        return TSS2_ESYS_RC_BAD_REFERENCE;
+    }
     switch (hashAlg) {
     case TPM2_ALG_SHA1:
         *size = TPM2_SHA1_DIGEST_SIZE;
@@ -89,7 +93,7 @@ iesys_crypto_hash_get_digest_size(TPM2_ALG_ID hashAlg, size_t * size)
         break;
     default:
         LOG_ERROR("Unsupported hash algorithm (%"PRIu16")", hashAlg);
-        return TSS2_SYS_RC_BAD_VALUE;
+        return TSS2_ESYS_RC_BAD_VALUE;
     }
     LOG_TRACE("return: *size=%zu", *size);
     return TSS2_RC_SUCCESS;
@@ -101,10 +105,10 @@ iesys_cryptogcry_hash_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
                             TPM2_ALG_ID hashAlg)
 {
     LOG_TRACE("call: context=%p hashAlg=%"PRIu16, context, hashAlg);
-    return_if_null(context, "Context is NULL", TSS2_SYS_RC_BAD_REFERENCE);
+    return_if_null(context, "Context is NULL", TSS2_ESYS_RC_BAD_REFERENCE);
     IESYS_CRYPTOGCRY_CONTEXT *mycontext;
     mycontext = calloc(1, sizeof(IESYS_CRYPTOGCRY_CONTEXT));
-    return_if_null(mycontext, "Out of Memory", TSS2_SYS_RC_GENERAL_FAILURE);
+    return_if_null(mycontext, "Out of Memory", TSS2_ESYS_RC_MEMORY);
     mycontext->type = IESYS_CRYPTOGCRY_TYPE_HASH;
 
     switch (hashAlg) {
@@ -120,13 +124,13 @@ iesys_cryptogcry_hash_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     default:
         LOG_ERROR("Unsupported hash algorithm (%"PRIu16")", hashAlg);
         free(mycontext);
-        return TSS2_SYS_RC_GENERAL_FAILURE;
+        return TSS2_ESYS_RC_NOT_IMPLEMENTED;
     }
     int hash_len = gcry_md_get_algo_dlen(mycontext->hash.gcry_hash_alg);
     if (hash_len <= 0) {
         LOG_ERROR("Unsupported hash algorithm (%"PRIu16")", hashAlg);
         free(mycontext);
-        return TSS2_SYS_RC_GENERAL_FAILURE;
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
     }
     mycontext->hash.hash_len = hash_len;
 
@@ -135,7 +139,12 @@ iesys_cryptogcry_hash_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     if (r != 0) {
         LOG_ERROR("GCry error.");
         free(mycontext);
-        return TSS2_SYS_RC_GENERAL_FAILURE;
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
+    }
+
+    if (context == NULL) {
+        LOG_ERROR("Null-Pointer passed");
+        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
 
     *context = (IESYS_CRYPTO_CONTEXT_BLOB *) mycontext;
@@ -151,12 +160,12 @@ iesys_cryptogcry_hash_update(IESYS_CRYPTO_CONTEXT_BLOB * context,
               size);
     if (context == NULL || buffer == NULL) {
         LOG_ERROR("Null-Pointer passed");
-        return TSS2_SYS_RC_BAD_REFERENCE;
+        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
     IESYS_CRYPTOGCRY_CONTEXT *mycontext = (IESYS_CRYPTOGCRY_CONTEXT *) context;
     if (mycontext->type != IESYS_CRYPTOGCRY_TYPE_HASH) {
         LOG_ERROR("bad context");
-        return TSS2_SYS_RC_BAD_REFERENCE;
+        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
 
     LOGBLOB_TRACE(buffer, size, "Updating hash with");
@@ -172,7 +181,7 @@ iesys_cryptogcry_hash_update2b(IESYS_CRYPTO_CONTEXT_BLOB * context, TPM2B * b)
     LOG_TRACE("called for context-pointer %p and 2b-pointer %p", context, b);
     if (context == NULL || b == NULL) {
         LOG_ERROR("Null-Pointer passed");
-        return TSS2_SYS_RC_BAD_REFERENCE;
+        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
     TSS2_RC ret = iesys_cryptogcry_hash_update(context, &b->buffer[0], b->size);
     return ret;
@@ -186,24 +195,24 @@ iesys_cryptogcry_hash_finish(IESYS_CRYPTO_CONTEXT_BLOB ** context,
               context, buffer, size);
     if (context == NULL || *context == NULL || buffer == NULL || size == NULL) {
         LOG_ERROR("Null-Pointer passed");
-        return TSS2_SYS_RC_BAD_REFERENCE;
+        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
     IESYS_CRYPTOGCRY_CONTEXT *mycontext = * context;
     if (mycontext->type != IESYS_CRYPTOGCRY_TYPE_HASH) {
         LOG_ERROR("bad context");
-        return TSS2_SYS_RC_BAD_REFERENCE;
+        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
 
     if (*size < mycontext->hash.hash_len) {
         LOG_ERROR("Buffer too small");
-        return TSS2_SYS_RC_BAD_REFERENCE;
+        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
 
     uint8_t *cpHash = gcry_md_read(mycontext->hash.gcry_context,
                                    mycontext->hash.gcry_hash_alg);
     if (cpHash == NULL) {
         LOG_ERROR("GCry error.");
-        return TSS2_SYS_RC_GENERAL_FAILURE;
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
     }
 
     LOGBLOB_TRACE(cpHash, mycontext->hash.hash_len, "read hash result");
@@ -225,7 +234,7 @@ iesys_cryptogcry_hash_finish2b(IESYS_CRYPTO_CONTEXT_BLOB ** context, TPM2B * b)
     LOG_TRACE("called for context-pointer %p and 2b-pointer %p", context, b);
     if (context == NULL || *context == NULL || b == NULL) {
         LOG_ERROR("Null-Pointer passed");
-        return TSS2_SYS_RC_BAD_REFERENCE;
+        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
     size_t s = b->size;
     TSS2_RC ret = iesys_cryptogcry_hash_finish(context, &b->buffer[0], &s);
@@ -266,13 +275,13 @@ iesys_cryptogcry_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     LOGBLOB_TRACE(key, size, "Starting  hmac with");
     if (context == NULL || key == NULL) {
         LOG_ERROR("Null-Pointer passed in for context");
-        return TSS2_SYS_RC_BAD_REFERENCE;
+        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
     IESYS_CRYPTOGCRY_CONTEXT *mycontext =
         calloc(1, sizeof(IESYS_CRYPTOGCRY_CONTEXT));
     if (mycontext == NULL) {
         LOG_ERROR("Out of Memory");
-        return TSS2_SYS_RC_GENERAL_FAILURE;
+        return TSS2_ESYS_RC_MEMORY;
     }
 
     switch (hmacAlg) {
@@ -285,14 +294,14 @@ iesys_cryptogcry_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     default:
         LOG_ERROR("Unsupported hmac algo.");
         free(mycontext);
-        return TSS2_SYS_RC_GENERAL_FAILURE;
+        return TSS2_ESYS_RC_NOT_IMPLEMENTED;
     }
 
     int hmac_len = gcry_mac_get_algo_maclen(mycontext->hmac.gcry_hmac_alg);
     if (hmac_len <= 0) {
         LOG_ERROR("GCry error.");
         free(mycontext);
-        return TSS2_SYS_RC_GENERAL_FAILURE;
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
     }
 
     mycontext->type = IESYS_CRYPTOGCRY_TYPE_HMAC;
@@ -303,7 +312,7 @@ iesys_cryptogcry_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     if (r != 0) {
         LOG_ERROR("GCry error.");
         free(mycontext);
-        return TSS2_SYS_RC_GENERAL_FAILURE;
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
     }
 
     r = gcry_mac_setkey(mycontext->hmac.gcry_context, key, size);
@@ -311,7 +320,7 @@ iesys_cryptogcry_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
         LOG_ERROR("GCry error.");
         gcry_mac_close(mycontext->hmac.gcry_context);
         free(mycontext);
-        return TSS2_SYS_RC_GENERAL_FAILURE;
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
     }
 
     *context = (IESYS_CRYPTO_CONTEXT_BLOB *) mycontext;
@@ -326,7 +335,7 @@ iesys_cryptogcry_hmac_start2b(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     LOG_TRACE("called for context-pointer %p and 2b-pointer %p", context, b);
     if (context == NULL || b == NULL) {
         LOG_ERROR("Null-Pointer passed");
-        return TSS2_SYS_RC_BAD_REFERENCE;
+        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
     TSS2_RC ret = iesys_cryptogcry_hmac_start(context, hmacAlg, &b->buffer[0],
                                               b->size);
@@ -341,12 +350,12 @@ iesys_cryptogcry_hmac_update(IESYS_CRYPTO_CONTEXT_BLOB * context,
               context, buffer, size);
     if (context == NULL || buffer == NULL) {
         LOG_ERROR("Null-Pointer passed");
-        return TSS2_SYS_RC_BAD_REFERENCE;
+        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
     IESYS_CRYPTOGCRY_CONTEXT *mycontext = (IESYS_CRYPTOGCRY_CONTEXT *) context;
     if (mycontext->type != IESYS_CRYPTOGCRY_TYPE_HMAC) {
         LOG_ERROR("bad context");
-        return TSS2_SYS_RC_BAD_REFERENCE;
+        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
 
     LOGBLOB_TRACE(buffer, size, "Updating hmac with");
@@ -362,7 +371,7 @@ iesys_cryptogcry_hmac_update2b(IESYS_CRYPTO_CONTEXT_BLOB * context, TPM2B * b)
     LOG_TRACE("called for context-pointer %p and 2b-pointer %p", context, b);
     if (context == NULL || b == NULL) {
         LOG_ERROR("Null-Pointer passed");
-        return TSS2_SYS_RC_BAD_REFERENCE;
+        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
     TSS2_RC ret = iesys_cryptogcry_hmac_update(context, &b->buffer[0], b->size);
     return ret;
@@ -376,24 +385,24 @@ iesys_cryptogcry_hmac_finish(IESYS_CRYPTO_CONTEXT_BLOB ** context,
               context, buffer, size);
     if (context == NULL || *context == NULL || buffer == NULL || size == NULL) {
         LOG_ERROR("Null-Pointer passed");
-        return TSS2_SYS_RC_BAD_REFERENCE;
+        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
     IESYS_CRYPTOGCRY_CONTEXT *mycontext =
         (IESYS_CRYPTOGCRY_CONTEXT *) * context;
     if (mycontext->type != IESYS_CRYPTOGCRY_TYPE_HMAC) {
         LOG_ERROR("bad context");
-        return TSS2_SYS_RC_BAD_REFERENCE;
+        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
 
     if (*size < mycontext->hmac.hmac_len) {
         LOG_ERROR("Buffer too small");
-        return TSS2_SYS_RC_BAD_SIZE;
+        return TSS2_ESYS_RC_BAD_SIZE;
     }
 
     TSS2_RC r = gcry_mac_read(mycontext->hmac.gcry_context, buffer, size);
     if (r != 0) {
         LOG_ERROR("GCry error.");
-        return TSS2_SYS_RC_GENERAL_FAILURE;
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
     }
 
     LOGBLOB_TRACE(buffer, *size, "read hmac result");
@@ -412,7 +421,7 @@ iesys_cryptogcry_hmac_finish2b(IESYS_CRYPTO_CONTEXT_BLOB ** context, TPM2B * b)
     LOG_TRACE("called for context-pointer %p and 2b-pointer %p", context, b);
     if (context == NULL || *context == NULL || b == NULL) {
         LOG_ERROR("Null-Pointer passed");
-        return TSS2_SYS_RC_BAD_REFERENCE;
+        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
     size_t s = b->size;
     TSS2_RC ret = iesys_cryptogcry_hmac_finish(context, &b->buffer[0], &s);
@@ -457,7 +466,7 @@ iesys_crypto_pHash(TPM2_ALG_ID alg,
     if (ccBuffer == NULL || pBuffer == NULL || pHash == NULL
         || pHash_size == NULL) {
         LOG_ERROR("Null-Pointer passed");
-        return TSS2_SYS_RC_BAD_REFERENCE;
+        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
 
     IESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
@@ -516,7 +525,7 @@ iesys_crypto_authHmac(TPM2_ALG_ID alg,
     if (hmacKey == NULL || pHash == NULL || nonceNewer == NULL ||
         nonceOlder == NULL || hmac == NULL) {
         LOG_ERROR("Null-Pointer passed");
-        return TSS2_SYS_RC_BAD_REFERENCE;
+        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
 
     uint8_t sessionAttribs[sizeof(sessionAttributes)];
@@ -581,7 +590,7 @@ iesys_crypto_KDFaHmac(TPM2_ALG_ID alg,
     LOG_TRACE("called");
     if (hmacKey == NULL || contextU == NULL || contextV == NULL) {
         LOG_ERROR("Null-Pointer passed");
-        return TSS2_SYS_RC_BAD_REFERENCE;
+        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
 
     uint8_t buffer32[sizeof(uint32_t)];
@@ -594,8 +603,8 @@ iesys_crypto_KDFaHmac(TPM2_ALG_ID alg,
     return_if_error(r, "Error");
 
     r = Tss2_MU_UINT32_Marshal(counter, &buffer32[0], sizeof(UINT32),
-                           &buffer32_size);
-    goto_if_error(r, "Marshalling", error);
+                               &buffer32_size);
+    goto_if_error(r, "Marsahling", error);
     r = iesys_crypto_hmac_update(cryptoContext, &buffer32[0], buffer32_size);
     goto_if_error(r, "HMAC-Update", error);
 
@@ -614,7 +623,7 @@ iesys_crypto_KDFaHmac(TPM2_ALG_ID alg,
     buffer32_size = 0;
     r = Tss2_MU_UINT32_Marshal(bitlength, &buffer32[0], sizeof(UINT32),
                                &buffer32_size);
-    goto_if_error(r, "Marshalling", error);
+    goto_if_error(r, "Marsahling", error);
     r = iesys_crypto_hmac_update(cryptoContext, &buffer32[0], buffer32_size);
     goto_if_error(r, "Error", error);
 
@@ -766,7 +775,7 @@ iesys_cryptogcry_KDFe(TPM2_ALG_ID hashAlg,
 
             if (partyVInfo != NULL) {
                 r = iesys_crypto_hash_update2b(cryptoContext,  (TPM2B *) partyVInfo);
-                goto_if_error(r, "Error hash update2b", error);
+               goto_if_error(r, "Error hash update2b", error);
             }
             r = iesys_crypto_hash_finish(&cryptoContext, (uint8_t *) stream, &hash_len);
             goto_if_error(r, "Error", error);
@@ -808,7 +817,7 @@ iesys_cryptogcry_pk_encrypt(TPM2B_PUBLIC * key,
         break;
     default:
         LOG_ERROR("Hash alg not implemented");
-        return TSS2_SYS_RC_BAD_VALUE;
+        return TSS2_ESYS_RC_BAD_VALUE;
     }
     switch (key->publicArea.parameters.rsaDetail.scheme.scheme) {
     case TPM2_ALG_NULL:
@@ -852,7 +861,7 @@ iesys_cryptogcry_pk_encrypt(TPM2B_PUBLIC * key,
                  gcry_strsource (err),
                  gcry_strerror (err));
         LOG_ERROR("Function gcry_pk_encrypt");
-        return TSS2_SYS_RC_GENERAL_FAILURE;
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
     }
     sexp_cipher_a = gcry_sexp_find_token(sexp_cipher, "a", 0);
     gcry_mpi_t mpi_cipher =
@@ -861,7 +870,7 @@ iesys_cryptogcry_pk_encrypt(TPM2B_PUBLIC * key,
                          out_size, mpi_cipher);
     if (err != GPG_ERR_NO_ERROR) {
         LOG_ERROR("Function gcry_mpi_print");
-        return TSS2_SYS_RC_GENERAL_FAILURE;
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
     }
     free(sexp_data);
     free(sexp_key);
@@ -1114,7 +1123,7 @@ iesys_cryptogcry_sym_aes_init(gcry_cipher_hd_t * cipher_hd,
             break;
         default:
             LOG_ERROR("Illegal key length.");
-            return TSS2_SYS_RC_BAD_VALUE;
+            return TSS2_ESYS_RC_BAD_VALUE;
         }
         switch (tpm_mode) {
         case TPM2_ALG_CBC:
@@ -1125,30 +1134,30 @@ iesys_cryptogcry_sym_aes_init(gcry_cipher_hd_t * cipher_hd,
             break;
         default:
             LOG_ERROR("Illegal symmetric algorithm.");
-            return TSS2_SYS_RC_BAD_VALUE;
+            return TSS2_ESYS_RC_BAD_VALUE;
         }
         break;
     default:
         LOG_ERROR("Illegal symmetric algorithm.");
-        return TSS2_SYS_RC_BAD_VALUE;
+        return TSS2_ESYS_RC_BAD_VALUE;
     }
     key_len = (len + 7) / 8;
     err = gcry_cipher_open(cipher_hd, algo, mode, 0);
     if (err != GPG_ERR_NO_ERROR) {
         LOG_ERROR("Opening gcrypt context");
-        return TSS2_SYS_RC_GENERAL_FAILURE;
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
     }
     if (iv_len != 0) {
         err = gcry_cipher_setiv(*cipher_hd, &iv[0], blk_len);
         if (err != GPG_ERR_NO_ERROR) {
             LOG_ERROR("Function gcry_cipher_setiv");
-            return TSS2_SYS_RC_GENERAL_FAILURE;
+            return TSS2_ESYS_RC_GENERAL_FAILURE;
         }
     }
     err = gcry_cipher_setkey(*cipher_hd, key, key_len);
     if (err != GPG_ERR_NO_ERROR) {
         LOG_ERROR("Function gcry_cipher_setkey");
-        return TSS2_SYS_RC_GENERAL_FAILURE;
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
     }
     return TSS2_RC_SUCCESS;
 }
@@ -1176,7 +1185,7 @@ iesys_cryptogcry_sym_aes_encrypt(uint8_t * key,
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS AES output");
     if (err != GPG_ERR_NO_ERROR) {
         LOG_ERROR("Function gcry_cipher_encrypt");
-        return TSS2_SYS_RC_GENERAL_FAILURE;
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
     }
     gcry_cipher_close(cipher_hd);
     return TSS2_RC_SUCCESS;
@@ -1192,9 +1201,19 @@ iesys_cryptogcry_sym_aes_decrypt(uint8_t * key,
                                  uint8_t * iv, size_t iv_len)
 {
     gcry_cipher_hd_t cipher_hd;
-    //int blk_len = 16;
     gcry_error_t err;
     TSS2_RC r;
+
+    if (tpm_sym_alg != TPM2_ALG_AES) {
+        LOG_ERROR("AES expected");
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
+    }
+
+    if (key == NULL || buffer == NULL) {
+        LOG_ERROR("Bad reference");
+        return TSS2_ESYS_RC_BAD_REFERENCE;
+    }
+
     r = iesys_cryptogcry_sym_aes_init(&cipher_hd, key, tpm_sym_alg,
                                       key_bits, tpm_mode, blk_len, iv_len, iv);
     if (r != TSS2_RC_SUCCESS)
@@ -1202,7 +1221,7 @@ iesys_cryptogcry_sym_aes_decrypt(uint8_t * key,
     err = gcry_cipher_decrypt(cipher_hd, buffer, buffer_size, NULL, 0);
     if (err != GPG_ERR_NO_ERROR) {
         LOG_ERROR("Function gcry_cipher_decrypt");
-        return TSS2_SYS_RC_GENERAL_FAILURE;
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
     }
     gcry_cipher_close(cipher_hd);
     return TSS2_RC_SUCCESS;
@@ -1225,6 +1244,12 @@ iesys_xor_parameter_obfuscation(TPM2_ALG_ID hash_alg,
     size_t data_size_bits = data_size * 8;
     size_t rest_size = data_size;
     BYTE *kdfa_byte_ptr;
+
+    if (key == NULL || data == NULL) {
+        LOG_ERROR("Bad reference");
+        return TSS2_ESYS_RC_BAD_REFERENCE;
+    }
+
     r = iesys_crypto_hash_get_digest_size(hash_alg, &digest_size);
     return_if_error(r, "Hash alg not supported");
     while(rest_size > 0) {
