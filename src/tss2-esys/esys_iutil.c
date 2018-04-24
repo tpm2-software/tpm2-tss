@@ -404,22 +404,33 @@ iesys_compute_encrypted_salt(ESYS_CONTEXT * esys_context,
     TSS2_RC r = TSS2_RC_SUCCESS;
     size_t keyHash_size = 0;
     size_t cSize = 0;
-    if (tpmKeyNode != NULL) {
-        if (tpmKeyNode->rsrc.rsrcType != IESYSC_KEY_RSRC) {
-            LOG_TRACE("Public info needed.");
-            return TSS2_ESYS_RC_BAD_VALUE;
-        }
-        r = iesys_crypto_hash_get_digest_size(tpmKeyNode->rsrc.misc.
-                                              rsrc_key_pub.publicArea.nameAlg,
-                                              &keyHash_size);
-        return_if_error(r, "Hash algorithm not supported.");
-        iesys_crypto_random2b((TPM2B_NONCE *) & esys_context->salt, keyHash_size);
+    TPM2B_ECC_PARAMETER Z; /* X coordinate of privKey*publicKey */
+    TPMS_ECC_POINT Q; /* Public point of ephemeral key */
+
+    if (tpmKeyNode == 0) {
+        encryptedSalt->size = 0;
+        return TSS2_RC_SUCCESS;
+    }
+
+    TPM2B_PUBLIC *pub = &tpmKeyNode->rsrc.misc.rsrc_key_pub;
+    if (tpmKeyNode->rsrc.rsrcType != IESYSC_KEY_RSRC) {
+        LOG_TRACE("Public info needed.");
+        return TSS2_ESYS_RC_BAD_VALUE;
+    }
+    r = iesys_crypto_hash_get_digest_size(tpmKeyNode->rsrc.misc.
+                                          rsrc_key_pub.publicArea.nameAlg,
+                                          &keyHash_size);
+    return_if_error(r, "Hash algorithm not supported.");
+
+    switch (pub->publicArea.type) {
+    case TPM2_ALG_RSA:
+        iesys_crypto_random2b((TPM2B_NONCE *) & esys_context->salt, 
+                              keyHash_size);
 
         /* When encrypting salts, the encryption scheme of a key is ignored and
            TPM2_ALG_OAEP is always used. */
-        TPM2B_PUBLIC pub = tpmKeyNode->rsrc.misc.rsrc_key_pub;
-        pub.publicArea.parameters.rsaDetail.scheme.scheme = TPM2_ALG_OAEP;
-        r = iesys_crypto_pk_encrypt(&pub,
+        pub->publicArea.parameters.rsaDetail.scheme.scheme = TPM2_ALG_OAEP;
+        r = iesys_crypto_pk_encrypt(pub,
                                     keyHash_size, &esys_context->salt.buffer[0],
                                     sizeof(TPMU_ENCRYPTED_SECRET),
                                     (BYTE *) &encryptedSalt->secret[0], &cSize,
@@ -427,8 +438,30 @@ iesys_compute_encrypted_salt(ESYS_CONTEXT * esys_context,
         return_if_error(r, "During encryption.");
         LOGBLOB_DEBUG(&encryptedSalt->secret[0], cSize, "IESYS encrypted salt");
         encryptedSalt->size = cSize;
-    } else {
-        encryptedSalt->size = 0;
+        break;
+    case TPM2_ALG_ECC:
+        r = iesys_crypto_get_ecdh_point(pub, sizeof(TPMU_ENCRYPTED_SECRET),
+                                        &Z, &Q,
+                                        (BYTE *) &encryptedSalt->secret[0], 
+                                        &cSize);
+
+        return_if_error(r, "During computation of ECC public key.");
+        encryptedSalt->size = cSize;
+
+        /* Compute salt from Z with KDFe */
+        r = iesys_cryptogcry_KDFe(tpmKeyNode->rsrc.misc.
+                                  rsrc_key_pub.publicArea.nameAlg,
+                                  &Z, "SECRET", &Q.x,
+                                  &pub->publicArea.unique.ecc.x,
+                                  keyHash_size*8,
+                                  &esys_context->salt.buffer[0]);
+        return_if_error(r, "During KDFe computation.");
+        esys_context->salt.size = keyHash_size;
+        break;
+    default:
+        LOG_ERROR("Not implemented");
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
+        break;
     }
     return r;
 }

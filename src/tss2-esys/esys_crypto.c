@@ -25,7 +25,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
 
+#define _GNU_SOURCE
+
 #include <gcrypt.h>
+#include <stdio.h>
 
 #include "tss2_esys.h"
 
@@ -688,6 +691,96 @@ iesys_cryptogcry_random2b(TPM2B_NONCE * nonce, size_t num_bytes)
     return TSS2_RC_SUCCESS;
 }
 
+/** Compute KDFe as described in tpm spec part 1 C 6.1
+ *
+ * @possible
+ * @parm hashAlg [IN] The nameAlg of the recipient key.
+ * @parm Z [IN] the x coordinate (xP) of the product (P) of a public point and a
+ *       private key.
+ * @parm label [IN] KDF label.
+ * @parm partyUInfo [IN] The x-coordinate of the secret exchange value (Qe,U).
+ * @parm partyVInfo [IN] The x-coordinate of a public key (Qs,V).
+ * @parm bit_size [IN] Bit size of generated key.
+ * @parm key [OUT] Key buffer.
+ * @returnval TSS2_RC_SUCCESS or TODO
+ */
+TSS2_RC
+iesys_cryptogcry_KDFe(TPM2_ALG_ID hashAlg,
+                      TPM2B_ECC_PARAMETER *Z,
+                      const char *label,
+                      TPM2B_ECC_PARAMETER *partyUInfo,
+                      TPM2B_ECC_PARAMETER *partyVInfo,
+                      UINT32 bit_size,
+                      BYTE *key)
+{
+    TSS2_RC r = TSS2_RC_SUCCESS;
+    size_t hash_len;
+    INT16 byte_size = (INT16)((bit_size +7) / 8);
+    BYTE *stream = key;
+    IESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    BYTE counter_buffer[4];
+    UINT32 counter = 0;
+    size_t offset;
+
+    LOG_DEBUG("IESYS KDFe hashAlg: %i label: %s bitLength: %i",
+              hashAlg, label, bit_size);
+    LOGBLOB_DEBUG(&partyUInfo->buffer[0], partyUInfo->size, "partyUInfo");
+    LOGBLOB_DEBUG(&partyVInfo->buffer[0], partyVInfo->size, "partyVInfo");
+    r = iesys_crypto_hash_get_digest_size(hashAlg, &hash_len);
+    return_if_error(r, "Hash algorithm not supported.");
+
+    if(hashAlg == TPM2_ALG_NULL || byte_size == 0) {
+        LOG_DEBUG("Bad parameters for KDFe");
+        return TSS2_ESYS_RC_BAD_VALUE;
+    }
+
+    /* Fill seed key with hash of counter, Z, label, partyUInfo, and partyVInfo */
+    for (; byte_size > 0; stream = &stream[hash_len], byte_size = byte_size - hash_len)
+        {
+            counter ++;
+            r = iesys_crypto_hash_start(&cryptoContext, hashAlg);
+            return_if_error(r, "Error hash start");
+
+            offset = 0;
+            r = Tss2_MU_UINT32_Marshal(counter, &counter_buffer[0], 4, &offset);
+            goto_if_error(r, "Error Tss2_MU_UINT32_Marshal", error);
+
+            r = iesys_crypto_hash_update(cryptoContext, &counter_buffer[0], 4);
+            goto_if_error(r, "Error hash update", error);
+
+            if (Z != NULL) {
+                r = iesys_crypto_hash_update2b(cryptoContext, (TPM2B *) Z);
+                goto_if_error(r, "Error hash update2b", error);
+            }
+
+            if (label != NULL) {
+                size_t lsize = strlen(label) + 1;
+                r = iesys_crypto_hash_update(cryptoContext, (uint8_t *) label, lsize);
+                goto_if_error(r, "Error hash update", error);
+            }
+
+            if (partyUInfo != NULL) {
+                r = iesys_crypto_hash_update2b(cryptoContext, (TPM2B *) partyUInfo);
+                goto_if_error(r, "Error hash update2b", error);
+            }
+
+            if (partyVInfo != NULL) {
+                r = iesys_crypto_hash_update2b(cryptoContext,  (TPM2B *) partyVInfo);
+                goto_if_error(r, "Error hash update2b", error);
+            }
+            r = iesys_crypto_hash_finish(&cryptoContext, (uint8_t *) stream, &hash_len);
+            goto_if_error(r, "Error", error);
+        }
+    LOGBLOB_DEBUG(key, bit_size/8, "Result KDFe");
+    if((bit_size % 8) != 0)
+        key[0] &= ((1 << (bit_size % 8)) - 1);
+    return r;
+
+ error:
+    iesys_crypto_hmac_abort(&cryptoContext);
+    return r;
+}
+
 TSS2_RC
 iesys_cryptogcry_pk_encrypt(TPM2B_PUBLIC * key,
                             size_t in_size,
@@ -697,14 +790,12 @@ iesys_cryptogcry_pk_encrypt(TPM2B_PUBLIC * key,
                             size_t * out_size, const char *label)
 {
     TSS2_RC r;
-    gcry_mpi_t mpi_data;
     gcry_error_t err;
     char *hash_alg;
     size_t lsize = 0;
     BYTE exponent[4] = { 0x00, 0x01, 0x00, 0x01 };
     //gcry_mpi_t mpi_exp;
     char *padding;
-    char *curveId;
     gcry_sexp_t sexp_data, sexp_key, sexp_cipher, sexp_cipher_a;
     if (label != NULL)
         lsize = strlen(label) + 1;
@@ -719,120 +810,53 @@ iesys_cryptogcry_pk_encrypt(TPM2B_PUBLIC * key,
         LOG_ERROR("Hash alg not implemented");
         return TSS2_SYS_RC_BAD_VALUE;
     }
-    switch (key->publicArea.type) {
-    case TPM2_ALG_RSA:
-        switch (key->publicArea.parameters.rsaDetail.scheme.scheme) {
-        case TPM2_ALG_NULL:
-            padding = "raw";
-            break;
-        case TPM2_ALG_RSAES:
-            padding = "pkcs1";
-            break;
-        case TPM2_ALG_OAEP:
-            padding = "oaep";
-            break;
-        default:
-            LOG_ERROR("Illegal RSA scheme");
-            return TSS2_SYS_RC_BAD_VALUE;
-        }
-        size_t offset = 0;
-        r = Tss2_MU_UINT32_Marshal(key->publicArea.parameters.rsaDetail.exponent,
-                                   &exponent[0], sizeof(UINT32), &offset);
-        if (r != TSS2_RC_SUCCESS) {
-            LOG_ERROR("Marshalling");
-            return r;
-        }
-        err = gcry_sexp_build(&sexp_data, NULL,
-                              "(data (flags %s) (hash-algo %s) (label %b) (value %b) )",
-                              padding, hash_alg, lsize, label, (int)in_size,
-                              in_buffer);
-        if (err != GPG_ERR_NO_ERROR) {
-            LOG_ERROR("Function gcry_sexp_build");
-            return TSS2_SYS_RC_GENERAL_FAILURE;
-        }
-        err =
-            gcry_sexp_build(&sexp_key, NULL, "(public-key (rsa (n %b) (e %b)))",
-                            (int)key->publicArea.unique.rsa.size,
-                            &key->publicArea.unique.rsa.buffer[0], 4, exponent);
-        if (err != GPG_ERR_NO_ERROR) {
-            LOG_ERROR("Function gcry_sexp_build");
-            return TSS2_SYS_RC_GENERAL_FAILURE;
-        }
+    switch (key->publicArea.parameters.rsaDetail.scheme.scheme) {
+    case TPM2_ALG_NULL:
+        padding = "raw";
         break;
-    case TPM2_ALG_ECC:
-        switch (key->publicArea.parameters.eccDetail.curveID) {
-        case TPM2_ECC_NIST_P192:
-            curveId = "nistp192";
-            break;
-        case TPM2_ECC_NIST_P224:
-            curveId = "nistp224";
-            break;
-        case TPM2_ECC_NIST_P256:
-            curveId = "nistp265";
-            break;
-        case TPM2_ECC_NIST_P384:
-            curveId = "nistp384";
-            break;
-        case TPM2_ECC_NIST_P521:
-            curveId = "nistp521";
-            break;
-        default:
-            LOG_ERROR("Illegal ECC curve ID");
-            return TSS2_SYS_RC_BAD_VALUE;
-        }
-        gcry_mpi_point_t mpi_q = gcry_mpi_point_new(0);
-        gcry_mpi_t mpi_x, mpi_y;
-        err = gcry_mpi_scan(&mpi_x, GCRYMPI_FMT_USG,
-                            &key->publicArea.unique.ecc.x.buffer[0],
-                            key->publicArea.unique.ecc.x.size, NULL);
-        if (err != GPG_ERR_NO_ERROR) {
-            LOG_ERROR("Function gcry_mpi_scan");
-            return TSS2_SYS_RC_GENERAL_FAILURE;
-        }
-        err = gcry_mpi_scan(&mpi_y, GCRYMPI_FMT_USG,
-                            &key->publicArea.unique.ecc.y.buffer[0],
-                            key->publicArea.unique.ecc.y.size, NULL);
-        if (err != GPG_ERR_NO_ERROR) {
-            LOG_ERROR("Function gcry_mpi_scan");
-            return TSS2_SYS_RC_GENERAL_FAILURE;
-        }
-        gcry_mpi_point_get(mpi_x, mpi_y, NULL, mpi_q);
-        err =
-            gcry_mpi_scan(&mpi_data, GCRYMPI_FMT_USG, in_buffer, in_size, NULL);
-        if (err != GPG_ERR_NO_ERROR) {
-            LOG_ERROR("Function gcry_mpi_scan");
-            return TSS2_SYS_RC_GENERAL_FAILURE;
-        }
-        err = gcry_sexp_build(&sexp_data, NULL, "(data (value %m))", mpi_data);
-        if (err != GPG_ERR_NO_ERROR) {
-            LOG_ERROR("Function gcry_sexp_build");
-            return TSS2_SYS_RC_GENERAL_FAILURE;
-        }
-        err = gcry_sexp_build(&sexp_key, NULL,
-                              "(public-key (ecc (curve %s) (e %m)))", curveId,
-                              mpi_q);
-        if (err != GPG_ERR_NO_ERROR) {
-            LOG_ERROR("Function gcry_sexp_build");
-            return TSS2_SYS_RC_GENERAL_FAILURE;
-        }
+    case TPM2_ALG_RSAES:
+        padding = "pkcs1";
+        break;
+    case TPM2_ALG_OAEP:
+        padding = "oaep";
         break;
     default:
-        LOG_ERROR("Not implemented");
-        return TSS2_SYS_RC_GENERAL_FAILURE;
+        LOG_ERROR("Illegal RSA scheme");
+        return TSS2_ESYS_RC_BAD_VALUE;
+    }
+    size_t offset = 0;
+    r = Tss2_MU_UINT32_Marshal(key->publicArea.parameters.rsaDetail.exponent,
+                               &exponent[0], sizeof(UINT32), &offset);
+    if (r != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Marsahling");
+        return r;
+    }
+    err = gcry_sexp_build(&sexp_data, NULL,
+                          "(data (flags %s) (hash-algo %s) (label %b) (value %b) )",
+                          padding, hash_alg, lsize, label, (int)in_size,
+                          in_buffer);
+    if (err != GPG_ERR_NO_ERROR) {
+        LOG_ERROR("Function gcry_sexp_build");
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
+    }
+    err = gcry_sexp_build(&sexp_key, NULL, "(public-key (rsa (n %b) (e %b)))",
+                          (int)key->publicArea.unique.rsa.size,
+                          &key->publicArea.unique.rsa.buffer[0], 4, exponent);
+    if (err != GPG_ERR_NO_ERROR) {
+        LOG_ERROR("Function gcry_sexp_build");
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
     }
     err = gcry_pk_encrypt(&sexp_cipher, sexp_data, sexp_key);
     if (err != GPG_ERR_NO_ERROR) {
+        fprintf (stderr, "Failure: %s/%s\n",
+                 gcry_strsource (err),
+                 gcry_strerror (err));
         LOG_ERROR("Function gcry_pk_encrypt");
         return TSS2_SYS_RC_GENERAL_FAILURE;
     }
     sexp_cipher_a = gcry_sexp_find_token(sexp_cipher, "a", 0);
     gcry_mpi_t mpi_cipher =
         gcry_sexp_nth_mpi(sexp_cipher_a, 1, GCRYMPI_FMT_USG);
-    size_t alen;
-    const void *a;
-    a = gcry_sexp_nth_data(sexp_cipher_a, 1, &alen);
-    (void)a;
-    (void)alen;
     err = gcry_mpi_print(GCRYMPI_FMT_USG, &out_buffer[0], max_out_size,
                          out_size, mpi_cipher);
     if (err != GPG_ERR_NO_ERROR) {
@@ -844,6 +868,218 @@ iesys_cryptogcry_pk_encrypt(TPM2B_PUBLIC * key,
     free(sexp_cipher);
     free(sexp_cipher_a);
     return TSS2_RC_SUCCESS;
+}
+
+/** Computation of ephemeral ECC key and shared secret Z.
+ *
+ * According to the description in  TPM spec part 1 C 6.1 a shared secret
+ * between application and TPM is computed (ECDH). An ephemeral ECC key and a
+ * TPM keyare used for the ECDH key exchange.
+ * @param[in] key The TPM key which will bu used for ECDH key exchange.
+ * @param[in] max_out_size the max size for the output of the public key of the
+ *            computed ephemeral key.
+ * @param[out] Z The computed shared secret.
+ * @param[out] Q The public part of the ephemeral key in TPM format.
+ * @param[out] out_buffer The public part of the ephemeral key will be marshaled
+ *             to this buffer.
+ * @param[out] out_size The size of the marshaled output.
+ */
+
+/*
+ * Format strings for some gcrypt sexps have to be created with sprintf due to
+ * a bug in libgcrypt. %s does not work in libgcypt with these sexps.
+ */
+#define SEXP_GENKEY_ECC  "(genkey (ecc (curve %s)))"
+#define SEXP_ECC_POINT "(ecc (curve %s) (q.x  %sb) (q.y %sb))"
+
+TSS2_RC
+iesys_cryptogcry_get_ecdh_point(TPM2B_PUBLIC *key,
+                                size_t max_out_size,
+                                TPM2B_ECC_PARAMETER *Z,
+                                TPMS_ECC_POINT *Q,
+                                BYTE * out_buffer,
+                                size_t * out_size)
+{
+    TSS2_RC r;
+    gcry_error_t err;
+    char *curveId;
+    gcry_sexp_t mpi_tpm_sq = NULL;     /* sexp for public part of TPM  key*/
+    gcry_sexp_t mpi_sd = NULL;         /* sexp for private part of ephemeral key */
+    gcry_sexp_t mpi_s_pub_q = NULL;    /* sexp for public part of ephemeral key */
+    gcry_mpi_point_t mpi_q = NULL;     /* public point of ephemeral key */
+    gcry_mpi_point_t mpi_tpm_q = NULL; /* public point of TPM key */
+    gcry_mpi_t mpi_d = NULL;           /* private part of ephemeral key */
+    gcry_mpi_point_t mpi_qd = NULL;    /* result of mpi_tpm_q * mpi_d */
+    gcry_ctx_t ctx = NULL;             /* context for ec curves */
+    size_t size_x, size_y;
+    size_t offset = 0;
+    gcry_mpi_t mpi_x = gcry_mpi_new(521);  /* big number for x coordinate */
+    gcry_mpi_t mpi_y = gcry_mpi_new(521);  /* big number for y coordinate */
+
+    /* Set libcrypt constant fo curve type */
+    switch (key->publicArea.parameters.eccDetail.curveID) {
+    case TPM2_ECC_NIST_P192:
+        curveId = "\"NIST P-192\"";
+        break;
+    case TPM2_ECC_NIST_P224:
+        curveId = "\"NIST P-224\"";
+        break;
+    case TPM2_ECC_NIST_P256:
+        curveId = "\"NIST P-256\"";
+        break;
+    case TPM2_ECC_NIST_P384:
+        curveId = "\"NIST P-384\"";
+        break;
+    case TPM2_ECC_NIST_P521:
+        curveId = "\"NIST P-521\"";
+        break;
+    default:
+        LOG_ERROR("Illegal ECC curve ID");
+        return TSS2_ESYS_RC_BAD_VALUE;
+    }
+
+    /* compute ephemeral ecc key */
+    gcry_sexp_t ekey_spec = NULL, ekey_pair = NULL;
+    { /* scope for sexp_ecc_key */
+        char sexp_ecc_key [sizeof(SEXP_GENKEY_ECC)+strlen(curveId)
+                           -1];  // -1 = (-2 for %s +1 for \0)
+
+        if (sprintf(&sexp_ecc_key[0], SEXP_GENKEY_ECC, curveId) < 1) {
+            goto_error(r, TSS2_ESYS_RC_MEMORY, "asprintf", cleanup);
+        }
+
+        if (gcry_sexp_build(&ekey_spec, NULL,
+                            sexp_ecc_key) != GPG_ERR_NO_ERROR) {
+            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "gcry_sexp_build",
+                       cleanup);
+        }
+    }
+
+    if (gcry_pk_genkey (&ekey_pair, ekey_spec) != GPG_ERR_NO_ERROR) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Create ephemeral ecc key",
+                   cleanup);
+    }
+
+    /* Get private ephemeral key d  */
+    mpi_sd = gcry_sexp_find_token(ekey_pair, "d", 0);
+    if (mpi_sd == NULL) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                   "Get private part of ecc key", cleanup);
+    }
+    mpi_d = gcry_sexp_nth_mpi(mpi_sd, 1, GCRYMPI_FMT_USG);
+    if (mpi_d == NULL) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                   "Get private part of ecc key from sexp", cleanup);
+    }
+
+    /* Construct ephemeral public key */
+    mpi_s_pub_q = gcry_sexp_find_token(ekey_pair, "public-key", 0);
+    if (mpi_s_pub_q == NULL) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Get public part ecc key",
+                   cleanup);
+    }
+
+    if (gcry_mpi_ec_new (&ctx, mpi_s_pub_q, curveId) != GPG_ERR_NO_ERROR) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Create ec", cleanup);
+    }
+    mpi_q =  gcry_mpi_ec_get_point ("q", ctx, 1);
+    if (mpi_q == NULL) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Get ecc point", cleanup);
+    }
+
+    /* Check whether point is on curve */
+    if (!gcry_mpi_ec_curve_point(mpi_q, ctx)) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Point not on curve",
+                   cleanup);
+    }
+
+    /* Store ephemeral public key in Q */
+    if (gcry_mpi_ec_get_affine (mpi_x, mpi_y, mpi_q, ctx)) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Point is at infinity",
+                   cleanup);
+    }
+
+    if (gcry_mpi_print(GCRYMPI_FMT_USG, &Q->x.buffer[0], max_out_size,
+                       &size_x, mpi_x) != GPG_ERR_NO_ERROR) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Get x part of point",
+                   cleanup);
+    }
+
+    if (gcry_mpi_print(GCRYMPI_FMT_USG, &Q->y.buffer[0], max_out_size,
+                       &size_y, mpi_y) != GPG_ERR_NO_ERROR) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Get y part of point",
+                   cleanup);
+    }
+    Q->x.size = size_x;
+    Q->y.size = size_y;
+    SAFE_FREE(ctx);
+    { /* scope for sexp_point */
+
+        /* Get public point from TPM key */
+        char sexp_point [sizeof(SEXP_ECC_POINT) + strlen(curveId)
+                         + key->publicArea.unique.ecc.x.size
+                         + key->publicArea.unique.ecc.y.size
+                         - 5];  /* -1 = (-4 for 2*%sb -2 for %s +1 for \0) */
+
+        if (sprintf(&sexp_point[0], SEXP_ECC_POINT,
+                    curveId, "%", "%") <1 ) {
+            goto_error(r, TSS2_ESYS_RC_MEMORY, "asprintf", cleanup);
+        }
+
+        err = gcry_sexp_build(&mpi_tpm_sq, NULL,
+                              sexp_point,
+                              key->publicArea.unique.ecc.x.size,
+                              &key->publicArea.unique.ecc.x.buffer[0],
+                              key->publicArea.unique.ecc.y.size,
+                              &key->publicArea.unique.ecc.y.buffer[0]);
+        if (err != GPG_ERR_NO_ERROR) {
+            LOG_ERROR("Function gcry_mpi_scan");
+            return TSS2_ESYS_RC_GENERAL_FAILURE;
+        }
+    }
+    offset = 0;
+    r = Tss2_MU_TPMS_ECC_POINT_Marshal(Q,  &out_buffer[0], max_out_size,
+                                       &offset);
+    return_if_error(r, "Error marshaling");
+    *out_size = offset;
+
+    /* Multiply d and Q */
+    if (gcry_mpi_ec_new (&ctx, mpi_tpm_sq, curveId) != GPG_ERR_NO_ERROR) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "gcry_mpi_ec_new",
+                   cleanup);
+    }
+    mpi_tpm_q =  gcry_mpi_ec_get_point ("q", ctx, 1);
+    mpi_qd = gcry_mpi_point_new(256);
+    gcry_mpi_ec_mul(mpi_qd , mpi_d, mpi_tpm_q, ctx);
+
+    /* Store the x coordinate of d*Q in Z which will be used for KDFe */
+    if (gcry_mpi_ec_get_affine (mpi_x, mpi_y, mpi_qd, ctx)) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Point is at infinity",
+                   cleanup);
+    }
+
+    if (gcry_mpi_print(GCRYMPI_FMT_USG, &Z->buffer[0], TPM2_MAX_ECC_KEY_BYTES,
+                       &size_x, mpi_x)) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                   "Get x coordinate d*Q", cleanup);
+    }
+
+    Z->size = size_x;
+    LOGBLOB_DEBUG(&Z->buffer[0], size_x, "Z (Q*d)");
+
+ cleanup:
+    SAFE_FREE(ctx);
+    SAFE_FREE(mpi_x);
+    SAFE_FREE(mpi_y);
+    SAFE_FREE(mpi_tpm_q);
+    SAFE_FREE(mpi_qd);
+    SAFE_FREE(mpi_q);
+    SAFE_FREE(mpi_tpm_q);
+    SAFE_FREE(mpi_tpm_sq);
+    SAFE_FREE(ekey_spec);
+    SAFE_FREE(mpi_s_pub_q);
+
+    return r;
 }
 
 TSS2_RC
