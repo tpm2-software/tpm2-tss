@@ -127,6 +127,7 @@ TESTS_INTEGRATION += \
     test/integration/esys-create-primary-ecc-hmac.int \
     test/integration/esys-create-primary-hmac.int \
     test/integration/esys-create-session-auth.int \
+    test/integration/esys-create-session-auth-ecc.int \
     test/integration/esys-create-session-auth-xor.int \
     test/integration/esys-duplicate.int \
     test/integration/esys-ecc-parameters.int \
@@ -509,6 +510,14 @@ test_integration_esys_create_session_auth_int_CFLAGS  = $(TESTS_CFLAGS) \
 test_integration_esys_create_session_auth_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_create_session_auth_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_integration_esys_create_session_auth_int_SOURCES = \
+    test/integration/esys-create-session-auth.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_create_session_auth_ecc_int_CFLAGS  = $(TESTS_CFLAGS) \
+    -DTEST_AES_ENCRYPTION -DTEST_ECC
+test_integration_esys_create_session_auth_ecc_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_create_session_auth_ecc_int_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_integration_esys_create_session_auth_ecc_int_SOURCES = \
     test/integration/esys-create-session-auth.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 

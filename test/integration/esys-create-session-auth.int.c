@@ -42,6 +42,8 @@
  * key as parent key (Esys_Create).
  * The type of encryptin can be selected by the compiler variables (-D option):
  * TEST_XOR_OBFUSCATION or TEST_AES_ENCRYPTION.
+ * Secret exchange with a ECC key can be activated with the compiler variable
+ * -D TEST_ECC.
  */
 
 int
@@ -71,15 +73,13 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     inSensitivePrimary.sensitive.userAuth = authValuePrimary;
 
 #ifdef TEST_ECC
-    TPM2B_PUBLIC inPublic = {
+    TPM2B_PUBLIC inPublicEcc = {
         .size = 0,
         .publicArea = {
             .type = TPM2_ALG_ECC,
             .nameAlg = TPM2_ALG_SHA256,
             .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
-                                 TPMA_OBJECT_USERWITHAUTH |
-                                 TPMA_OBJECT_RESTRICTED |
-                                 TPMA_OBJECT_SIGN_ENCRYPT |
+                                 TPMA_OBJECT_DECRYPT |
                                  TPMA_OBJECT_FIXEDTPM |
                                  TPMA_OBJECT_FIXEDPARENT |
                                  TPMA_OBJECT_SENSITIVEDATAORIGIN),
@@ -93,9 +93,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                      .mode.aes = TPM2_ALG_ECB,
                  },
                  .scheme = {
-                      .scheme = TPM2_ALG_ECDSA,
+                      .scheme = TPM2_ALG_ECDH,
                       .details = {
-                          .ecdsa = {.hashAlg  = TPM2_ALG_SHA256}},
+                          .ecdh = {.hashAlg  = TPM2_ALG_SHA1}},
                   },
                  .curveID = TPM2_ECC_NIST_P256,
                  .kdf = {
@@ -109,7 +109,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         },
     };
     LOG_INFO("\nECC key will be created.");
-#else
+#endif
     TPM2B_PUBLIC inPublic = {
         .size = 0,
         .publicArea = {
@@ -141,8 +141,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
              },
         },
     };
-    LOG_INFO("\nRSA key will be created.");
-#endif // TEST_ECC
 
     TPM2B_DATA outsideInfo = {
         .size = 0,
@@ -157,6 +155,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         .size = 0,
         .buffer = {}
     };
+
+    ESYS_TR primaryHandle_AuthSession;
 
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
@@ -175,7 +175,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-    r = esys_GetResourceObject(esys_context, primaryHandle_handle,
+   r = esys_GetResourceObject(esys_context, primaryHandle_handle,
                                &primaryHandle_node);
     goto_if_error(r, "Error Esys GetResourceObject", error);
 
@@ -184,6 +184,26 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     r = Esys_TR_SetAuth(esys_context, primaryHandle_handle, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
+
+
+#ifdef TEST_ECC
+    TPM2B_PUBLIC *outPublicEcc;
+    TPM2B_CREATION_DATA *creationDataEcc;
+    TPM2B_DIGEST *creationHashEcc;
+    TPMT_TK_CREATION *creationTicketEcc;
+
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
+                           ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary, &inPublicEcc,
+                           &outsideInfo, &creationPCR, &primaryHandle_AuthSession,
+                           &outPublicEcc, &creationDataEcc, &creationHashEcc,
+                           &creationTicketEcc);
+    goto_if_error(r, "Error esys create primary", error);
+
+    r = Esys_TR_SetAuth(esys_context, primaryHandle_AuthSession, &authValuePrimary);
+    goto_if_error(r, "Error: TR_SetAuth", error);
+#else
+    primaryHandle_AuthSession = primaryHandle_handle;
+#endif /* TEST_ECC */
 
     ESYS_TR session;
 #if TEST_XOR_OBFUSCATION
@@ -208,11 +228,20 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TPMI_ALG_HASH authHash = TPM2_ALG_SHA256;
     TPM2B_NONCE *nonceTpm;
 
-    r = Esys_StartAuthSession(esys_context, primaryHandle_handle, ESYS_TR_NONE,
+
+    r = Esys_StartAuthSession(esys_context,
+                              primaryHandle_AuthSession,
+                              ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
                               sessionType, &symmetric, authHash, &session,
                               &nonceTpm);
+    goto_if_error(r, "Error during Esys_StartAuthSession", error);
+
+#ifdef TEST_ECC
+    r = Esys_FlushContext(esys_context, primaryHandle_AuthSession);
+    goto_if_error(r, "Error during FlushContext", error);
+#endif
 
     goto_if_error(r, "Error Esys_StartAuthSessiony", error);
     r = Esys_TRSess_SetAttributes(esys_context, session, sessionAttributes,
@@ -224,7 +253,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     if (sessionAttributes != sessionAttributes2) {
         LOG_ERROR("Session Attributes differ");
-        r = 1;
         goto error;
     }
 
