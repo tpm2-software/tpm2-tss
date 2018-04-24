@@ -142,7 +142,6 @@ TSS2_RC iesys_compute_cp_hashtab(
 
 TSS2_RC iesys_compute_rp_hashtab(
     ESYS_CONTEXT *esysContext,
-    TSS2L_SYS_AUTH_RESPONSE *rspAuths,
     const uint8_t *rpBuffer,
     size_t rpBuffer_size,
     HASH_TAB_ITEM rp_hash_tab[3],
@@ -199,12 +198,18 @@ TSS2_RC iesys_decrypt_param(
 TSS2_RC iesys_check_rp_hmacs(
     ESYS_CONTEXT *esysContext,
     TSS2L_SYS_AUTH_RESPONSE *rspAuths,
-    HASH_TAB_ITEM rp_hash_tab[3]);
+    HASH_TAB_ITEM rp_hash_tab[3],
+    uint8_t rpHashNum);
 
 void iesys_compute_bound_entity(
     const TPM2B_NAME *name,
     const TPM2B_AUTH *auth,
     TPM2B_NAME *bound_entity);
+
+bool iesys_is_object_bound(
+    const TPM2B_NAME * name,
+    const TPM2B_AUTH * auth,
+    RSRC_NODE_T * session);
 
 TSS2_RC iesys_check_sequence_async(
     ESYS_CONTEXT *esysContext);
