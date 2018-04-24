@@ -563,3 +563,136 @@ KDFa(
     LOGBLOB_DEBUG(&resultKey->buffer[0], resultKey->size, "KDFA, resultKey = ");
     return TPM2_RC_SUCCESS;
 }
+
+static TSS2_RC
+GenerateSessionEncryptDecryptKey (
+    SESSION *session,
+    TPM2B_MAX_BUFFER *cfbKey,
+    TPM2B_IV *ivIn,
+    TPM2B_AUTH *authValue)
+{
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+    UINT32 aes_block_size = 16;
+    TPM2B_MAX_BUFFER key, sessionValue;
+
+    if (ivIn == NULL || cfbKey == NULL)
+        return TSS2_SYS_RC_BAD_VALUE;
+
+    CopySizedByteBuffer((TPM2B *)&sessionValue, (TPM2B *)&session->sessionKey);
+    CatSizedByteBuffer((TPM2B *)&sessionValue, (TPM2B *)authValue);
+
+    rval = KDFa (session->authHash,
+                 (TPM2B *)&sessionValue,
+                 "CFB",
+                 (TPM2B *)&session->nonceNewer,
+                 (TPM2B *)&session->nonceOlder,
+                 session->symmetric.keyBits.sym + aes_block_size * 8,
+                 &key);
+    if (rval != TSS2_RC_SUCCESS)
+        return rval;
+
+    if (key.size != (session->symmetric.keyBits.sym / 8) + aes_block_size)
+        return TSS2_SYS_RC_GENERAL_FAILURE;
+
+    ivIn->size = aes_block_size;
+    cfbKey->size = (session->symmetric.keyBits.sym) / 8;
+    if (ivIn->size > sizeof (ivIn->buffer) ||
+        (cfbKey->size + ivIn->size) > TPM2_MAX_DIGEST_BUFFER)
+        return TSS2_SYS_RC_GENERAL_FAILURE;
+
+    memcpy (ivIn->buffer, &key.buffer[cfbKey->size], ivIn->size);
+    memcpy (cfbKey->buffer, key.buffer, cfbKey->size);
+    return rval;
+}
+
+static TSS2_RC
+EncryptCFB(
+    SESSION *session,
+    TPM2B_MAX_BUFFER *encryptedData,
+    TPM2B_MAX_BUFFER *clearData,
+    TPM2B_AUTH *authValue)
+{
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+    TPM2B_MAX_BUFFER encryptKey = TPM2B_MAX_BUFFER_INIT;
+    TPM2B_IV iv = TPM2B_IV_INIT;
+
+    rval = GenerateSessionEncryptDecryptKey(session, &encryptKey, &iv, authValue);
+    if (rval)
+        return rval;
+
+    return encrypt_cfb(encryptedData, clearData, &encryptKey, &iv);
+}
+
+static TSS2_RC
+DecryptCFB(
+    SESSION *session,
+    TPM2B_MAX_BUFFER *clearData,
+    TPM2B_MAX_BUFFER *encryptedData,
+    TPM2B_AUTH *authValue)
+{
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+    TPM2B_MAX_BUFFER encryptKey = TPM2B_MAX_BUFFER_INIT;
+    TPM2B_IV iv = TPM2B_IV_INIT;
+
+    rval = GenerateSessionEncryptDecryptKey(session, &encryptKey, &iv, authValue);
+    if (rval)
+        return rval;
+
+    return decrypt_cfb(clearData, encryptedData, &encryptKey, &iv);
+}
+
+static TSS2_RC
+EncryptDecryptXOR(
+    SESSION *session,
+    TPM2B_MAX_BUFFER *outputData,
+    TPM2B_MAX_BUFFER *inputData,
+    TPM2B_AUTH *authValue)
+{
+    TSS2_RC rval = TSS2_RC_SUCCESS;
+    TPM2B_MAX_BUFFER key, mask;
+    int i;
+
+    CopySizedByteBuffer((TPM2B *)&key, (TPM2B *)&session->sessionKey);
+    CatSizedByteBuffer((TPM2B *)&key, (TPM2B *)authValue);
+
+    rval = KDFa(session->authHash,
+            (TPM2B *)&key,
+            "XOR",
+            (TPM2B *)&session->nonceNewer,
+            (TPM2B *)&session->nonceOlder,
+            inputData->size * 8, &mask);
+
+    if (rval)
+        return rval;
+
+    for (i = 0; i < inputData->size; i++)
+        outputData->buffer[i] = inputData->buffer[i] ^ mask.buffer[i];
+
+    outputData->size = inputData->size;
+
+    return rval;
+}
+
+TSS2_RC
+EncryptCommandParam(
+    SESSION *session,
+    TPM2B_MAX_BUFFER *encryptedData,
+    TPM2B_MAX_BUFFER *clearData,
+    TPM2B_AUTH *authValue)
+{
+    return session->symmetric.algorithm == TPM2_ALG_AES ?
+        EncryptCFB(session, encryptedData, clearData, authValue) :
+        EncryptDecryptXOR(session, encryptedData, clearData, authValue);
+}
+
+TSS2_RC
+DecryptResponseParam(
+    SESSION *session,
+    TPM2B_MAX_BUFFER *clearData,
+    TPM2B_MAX_BUFFER *encryptedData,
+    TPM2B_AUTH *authValue)
+{
+    return session->symmetric.algorithm == TPM2_ALG_AES ?
+        DecryptCFB(session, clearData, encryptedData, authValue) :
+        EncryptDecryptXOR(session, clearData, encryptedData, authValue);
+}

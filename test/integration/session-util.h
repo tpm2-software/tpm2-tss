@@ -143,5 +143,18 @@ GetEntityAuth(TPM2_HANDLE handle, TPM2B_AUTH *auth);
 ENTITY *
 GetEntity(TPM2_HANDLE handle);
 
+TSS2_RC
+EncryptCommandParam(
+    SESSION *session,
+    TPM2B_MAX_BUFFER *encryptedData,
+    TPM2B_MAX_BUFFER *clearData,
+    TPM2B_AUTH *authValue);
+
+TSS2_RC
+DecryptResponseParam(
+    SESSION *session,
+    TPM2B_MAX_BUFFER *clearData,
+    TPM2B_MAX_BUFFER *encryptedData,
+    TPM2B_AUTH *authValue);
 
 #endif

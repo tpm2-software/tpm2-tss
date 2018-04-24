@@ -95,10 +95,6 @@ enum TSS2_APP_RC_CODE
 #define APPLICATION_HMAC_ERROR(i) \
     ( TSS2_APP_RC_LAYER + TPM2_RC_S + TPM2_RC_AUTH_FAIL + ( (i ) << 8 ) )
 
-TSS2_RC EncryptCommandParam(SESSION *session, TPM2B_MAX_BUFFER *encryptedData, TPM2B_MAX_BUFFER *clearData, TPM2B_AUTH *authValue );
-
-TSS2_RC DecryptResponseParam(SESSION *session, TPM2B_MAX_BUFFER *clearData, TPM2B_MAX_BUFFER *encryptedData, TPM2B_AUTH *authValue );
-
 #define INIT_SIMPLE_TPM2B_SIZE(type) (type).size = sizeof(type) - 2;
 
 #define YES 1
