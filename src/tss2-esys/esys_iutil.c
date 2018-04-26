@@ -200,7 +200,8 @@ iesys_compute_encrypt_nonce(ESYS_CONTEXT * esys_context,
             if (session->rsrc.misc.rsrc_session.
                 sessionAttributes & TPMA_SESSION_ENCRYPT) {
                 if (*encryptNonce != NULL) {
-                    return_error(TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS,
+		    /* Encrypt nonce already found */
+		    return_error(TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS,
                                  "More than one encrypt session");
                 }
                 *encryptNonceIdx = i;
@@ -357,9 +358,11 @@ esys_CreateResourceObject(ESYS_CONTEXT * esys_context,
     if (new_esys_object == NULL)
         return_error(TSS2_ESYS_RC_MEMORY, "Out of memory.");
     if (esys_context->rsrc_list == NULL) {
+        /* The first object of the list will be added */
         esys_context->rsrc_list = new_esys_object;
         new_esys_object->next = NULL;
     } else {
+        /* The new object will become the first element of the list */
         new_esys_object->next = esys_context->rsrc_list;
         esys_context->rsrc_list = new_esys_object;
     }
@@ -489,7 +492,8 @@ iesys_compute_encrypted_salt(ESYS_CONTEXT * esys_context,
 
     switch (pub->publicArea.type) {
     case TPM2_ALG_RSA:
-        iesys_crypto_random2b((TPM2B_NONCE *) & esys_context->salt, 
+
+        iesys_crypto_random2b((TPM2B_NONCE *) & esys_context->salt,
                               keyHash_size);
 
         /* When encrypting salts, the encryption scheme of a key is ignored and
@@ -507,9 +511,8 @@ iesys_compute_encrypted_salt(ESYS_CONTEXT * esys_context,
     case TPM2_ALG_ECC:
         r = iesys_crypto_get_ecdh_point(pub, sizeof(TPMU_ENCRYPTED_SECRET),
                                         &Z, &Q,
-                                        (BYTE *) &encryptedSalt->secret[0], 
+                                        (BYTE *) &encryptedSalt->secret[0],
                                         &cSize);
-
         return_if_error(r, "During computation of ECC public key.");
         encryptedSalt->size = cSize;
 
@@ -602,6 +605,8 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
             encryptNonce = &rsrc_session->nonceTPM;
             esys_context->encryptNonce = encryptNonce;
         }
+
+        /* Session for encryption found */
         if (rsrc_session->sessionAttributes & TPMA_SESSION_DECRYPT) {
             return_if_notnull(*decryptNonce, "More than one decrypt session",
                                TSS2_ESYS_RC_MULTIPLE_DECRYPT_SESSIONS);
@@ -618,11 +623,15 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
             const uint8_t *paramBuffer;
             r = Tss2_Sys_GetDecryptParam(esys_context->sys, &paramSize,
                                          &paramBuffer);
-            return_if_error(r, "Encrypt parameter not possible");
+            if (r != TSS2_RC_SUCCESS) {
+                return_error(TSS2_ESYS_RC_NO_DECRYPT_PARAM, "Encryption not possible");
+            }
 
             BYTE encrypt_buffer[paramSize];
             memcpy(&encrypt_buffer[0], paramBuffer, paramSize);
             LOGBLOB_DEBUG(paramBuffer, paramSize, "param to encrypt");
+
+            /* AES encryption with key derived with KDFa */
             if (symDef->algorithm == TPM2_ALG_AES) {
                 if (symDef->mode.aes != TPM2_ALG_CFB) {
                     return_error(TSS2_ESYS_RC_BAD_VALUE,
@@ -649,8 +658,9 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
                 r = Tss2_Sys_SetDecryptParam(esys_context->sys, paramSize,
                                              &encrypt_buffer[0]);
                 return_if_error(r, "Set encrypt parameter not possible");
-
-            } else if (symDef->algorithm == TPM2_ALG_XOR) {
+            }
+            /* XOR obfuscation of parameter */
+            else if (symDef->algorithm == TPM2_ALG_XOR) {
                 r = iesys_xor_parameter_obfuscation(rsrc_session->authHash,
                                                     &rsrc_session->sessionValue[0],
                                                     rsrc_session->sizeSessionValue,
@@ -712,7 +722,10 @@ iesys_decrypt_param(ESYS_CONTEXT * esys_context,
                      "Invalid length encrypted response.");
     }
     LOGBLOB_DEBUG(rpBuffer, p2BSize, "IESYS encrypt data");
+
     if (symDef->algorithm == TPM2_ALG_AES) {
+
+        /* Parameter decryption with a symmetric AES key derived by KDFa */
         if (symDef->mode.aes != TPM2_ALG_CFB) {
             return_error(TSS2_ESYS_RC_BAD_VALUE,
                          "Invalid symmetric mode (must be CFB)");
@@ -746,6 +759,8 @@ iesys_decrypt_param(ESYS_CONTEXT * esys_context,
         return_if_error(r, "Decryption error");
 
     } else if (symDef->algorithm == TPM2_ALG_XOR) {
+
+        /* Parameter decryption with XOR obfuscation */
         r = iesys_xor_parameter_obfuscation(rsrc_session->authHash,
                                             &rsrc_session->sessionValue[0],
                                             rsrc_session->sizeSessionValue,
@@ -997,7 +1012,7 @@ esys_GetResourceObject(ESYS_CONTEXT * esys_context,
                                 &esys_object_aux->rsrc.name.name[0],
                                 sizeof(esys_object_aux->rsrc.name.name),
                                 &offset);
-    return_if_error(r, "Marshalling TPM handle.");
+    return_if_error(r, "Marshaling TPM handle.");
 
     esys_object_aux->rsrc.name.size = offset;
     *esys_object = esys_object_aux;
