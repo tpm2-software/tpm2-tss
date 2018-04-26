@@ -59,17 +59,35 @@ static void store_input_parameters (
  * parameters is allocated by the function implementation.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
- * @param[in] keyHandle Input handle of type ESYS_TR for
- *     object with handle type TPMI_DH_OBJECT.
- * @param[in] shandle1 First session handle.
- * @param[in] shandle2 Second session handle.
- * @param[in] shandle3 Third session handle.
- * @param[in] inPoint Input parameter of type TPM2B_ECC_POINT.
- * @param[out] outPoint (callee-allocated) Output parameter
- *    of type TPM2B_ECC_POINT. May be NULL if this value is not required.
+ * @param[in]  keyHandle Handle of a loaded ECC key.
+ * @param[in]  shandle1 Session handle for authorization of keyHandle
+ * @param[in]  shandle2 Second session handle.
+ * @param[in]  shandle3 Third session handle.
+ * @param[in]  inPoint A public key.
+ * @param[out] outPoint X and Y coordinates of the product of the multiplication Z
+ *             = (xZ , yZ) := [hdS]QB.
+ *             (callee-allocated)
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_RC_BAD_SEQUENCE if context is not ready for this function
- * \todo add further error RCs to documentation
+ * @retval ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
+ *         pointers or required output handle references are NULL.
+ * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
+ * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ * @retval TSS2_ESYS_RC_BAD_SEQUENCE: if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_INSUFFICIENT_RESPONSE: if the TPM's response does not
+ *          at least contain the tag, response length, and response code.
+ * @retval TSS2_ESYS_RC_MALFORMED_RESPONSE: if the TPM's response is corrupted.
+ * @retval TSS2_ESYS_RC_MULTIPLE_DECRYPT_SESSIONS: if more than one session has
+ *         the 'decrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
+ *         the 'encrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
+ *         ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
+ *         are ESYS_TR_NONE.
+ * @retval TSS2_RCs produced by lower layers of the software stack may be
+ *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
 Esys_ECDH_ZGen(
@@ -126,15 +144,26 @@ Esys_ECDH_ZGen(
  * In order to retrieve the TPM's response call Esys_ECDH_ZGen_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
- * @param[in] keyHandle Input handle of type ESYS_TR for
- *     object with handle type TPMI_DH_OBJECT.
- * @param[in] shandle1 First session handle.
- * @param[in] shandle2 Second session handle.
- * @param[in] shandle3 Third session handle.
- * @param[in] inPoint Input parameter of type TPM2B_ECC_POINT.
- * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_RC_BAD_SEQUENCE if context is not ready for this function
- * \todo add further error RCs to documentation
+ * @param[in]  keyHandle Handle of a loaded ECC key.
+ * @param[in]  shandle1 Session handle for authorization of keyHandle
+ * @param[in]  shandle2 Second session handle.
+ * @param[in]  shandle3 Third session handle.
+ * @param[in]  inPoint A public key.
+ * @retval ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
+ *         pointers or required output handle references are NULL.
+ * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
+ * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ * @retval TSS2_RCs produced by lower layers of the software stack may be
+           returned to the caller unaltered unless handled internally.
+ * @retval TSS2_ESYS_RC_MULTIPLE_DECRYPT_SESSIONS: if more than one session has
+ *         the 'decrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
+ *         the 'encrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
+           ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
+           are ESYS_TR_NONE.
  */
 TSS2_RC
 Esys_ECDH_ZGen_Async(
@@ -209,11 +238,25 @@ Esys_ECDH_ZGen_Async(
  * output parameter if the value is not required.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
- * @param[out] outPoint (callee-allocated) Output parameter
- *    of type TPM2B_ECC_POINT. May be NULL if this value is not required.
+ * @param[out] outPoint X and Y coordinates of the product of the multiplication Z
+ *             = (xZ , yZ) := [hdS]QB.
+ *             (callee-allocated)
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_RC_BAD_SEQUENCE if context is not ready for this function.
- * \todo add further error RCs to documentation
+ * @retval ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
+ *         pointers or required output handle references are NULL.
+ * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
+ * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ * @retval TSS2_ESYS_RC_BAD_SEQUENCE: if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_TRY_AGAIN: if the timeout counter expires before the
+ *         TPM response is received.
+ * @retval TSS2_ESYS_RC_INSUFFICIENT_RESPONSE: if the TPM's response does not
+ *          at least contain the tag, response length, and response code.
+ * @retval TSS2_ESYS_RC_MALFORMED_RESPONSE: if the TPM's response is corrupted.
+ * @retval TSS2_RCs produced by lower layers of the software stack may be
+ *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
 Esys_ECDH_ZGen_Finish(
