@@ -313,6 +313,14 @@ Esys_Create_Finish(
     }
     esysContext->state = _ESYS_STATE_INTERNALERROR;
 
+    /* Initialize parameter to avoid unitialized usage */
+    if (creationData != NULL)
+        *creationData = NULL;
+    if (creationHash != NULL)
+        *creationHash = NULL;
+    if (creationTicket != NULL)
+        *creationTicket = NULL;
+
     /* Allocate memory for response parameters */
     if (outPrivate != NULL) {
         *outPrivate = calloc(sizeof(TPM2B_PRIVATE), 1);

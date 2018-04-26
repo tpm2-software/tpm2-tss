@@ -281,6 +281,10 @@ Esys_Duplicate_Finish(
     }
     esysContext->state = _ESYS_STATE_INTERNALERROR;
 
+    /* Initialize parameter to avoid unitialized usage */
+    if (outSymSeed != NULL)
+        *outSymSeed = NULL;
+
     /* Allocate memory for response parameters */
     if (encryptionKeyOut != NULL) {
         *encryptionKeyOut = calloc(sizeof(TPM2B_DATA), 1);
