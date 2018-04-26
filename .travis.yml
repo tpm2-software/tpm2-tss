@@ -18,6 +18,7 @@ env:
   - LD_LIBRARY_PATH="$(pwd)/cmocka/lib:/usr/lib"
   - CMOCKA_CFLAGS="-I$(pwd)/cmocka/include -I/usr/include"
   - CMOCKA_LIBS="-L$(pwd)/cmocka/lib -lcmocka"
+  - PATH="$(pwd)/ibmtpm/src:${PATH}"
 
 addons:
   apt:
@@ -84,7 +85,7 @@ script:
     if [ "$CC" == "gcc" ]; then
       export CONFIGURE_OPTIONS="--enable-code-coverage";
     fi
-  - ../configure --enable-unit $CONFIGURE_OPTIONS --with-simulatorbin=$(pwd)/../ibmtpm/src/tpm_server
+  - ../configure --enable-unit --enable-integration $CONFIGURE_OPTIONS
   - make -j$(nproc) distcheck
   - make -j$(nproc) check
   - cat test-suite.log

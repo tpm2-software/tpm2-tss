@@ -61,7 +61,7 @@ simulator will be automatically launched by the tests. Please review the
 dependency list in [INSTALL](INSTALL.md) for dependencies when building
 the test suite.
 ```
-$ ./configure --enable-unit --with-simulatorbin=$HOME/ibmtpm/src/tpm_server
+$ ./configure --enable-unit --enable-integration
 $ make -j$(nproc) check
 ```
 This will generate a file called "test-suite.log" in the root of the build
@@ -70,8 +70,8 @@ directory.
 Please report failures in a Github 'issue' with a full log of the test run.
 
 NOTE: The unit and integration tests can be enabled independently.
-The --enable-unit option controls unit tests, and --with-simulatorbin controls
-the integration tests.
+The --enable-unit option controls unit tests, and --enable-integration
+controls the integration tests.
 
 # [Architecture/Block Diagram](doc/arch.md)
 SAPI library, TAB/RM, and Test Code Block Diagram:
