@@ -1,10 +1,14 @@
 /*!
  \defgroup esys Enhanced System API
- \todo Description
+ Enhanced System API (ESAPI) as described in the [TSS 2.0 Enhanced System API (ESAPI) Specification](https://trustedcomputinggroup.org/wp-content/uploads/TSS_ESAPI_Version-0.9_Revision-04_reviewEND030918.pdf).
+This API is a 1-to-1 mapping of the TPM2 commands documented in Part 3 of the TPM2 specification.
+Additionally there are asynchronous versions of each command.
+In addition to SAPI, the ESAPI performs tracking of meta data for TPM object and automatic calculation of session based authorization and encryption values.
+Both the synchronous and asynchronous API are exposed through a single library: libtss2-esys.
 */
 
 /*!
- \defgroup esys_context Esys Context ESYS_CONTEXT
+ \defgroup ESYS_CONTEXT Esys Context ESYS_CONTEXT
  \ingroup esys
  \todo Description
  \{
@@ -21,7 +25,7 @@
 */
 
 /*!
- \defgroup esys_tr Esys Tpm Resource ESYS_TR
+ \defgroup ESYS_TR Esys Tpm Resource ESYS_TR
  \ingroup esys
  Virtual objects with meta data for Tpm Resources.
  The Esys TPM Resources are the virtual objects inside the ESYSCONTEXT that hold
@@ -49,8 +53,8 @@
 */
 
 /*!
- \defgroup esys_tr_defines Global ESYS_TR objects
- \ingroup esys_tr
+ \defgroup ESYS_TR_defines Global ESYS_TR objects
+ \ingroup ESYS_TR
  A set of defines for global virtual objects that are always present in every
  ESYS_CONTEXT.
  \{
@@ -107,40 +111,54 @@
  commands.
  \{
  \defgroup Esys_ActivateCredential The ESAPI function for the TPM2_ActivateCredential command.
+ * ESAPI function to invoke the TPM2_ActivateCredential command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_ActivateCredential_Async(ESYS_CONTEXT *esysContext, ESYS_TR activateHandle, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_ID_OBJECT *credentialBlob, const TPM2B_ENCRYPTED_SECRET *secret)
  \fn TSS2_RC Esys_ActivateCredential(ESYS_CONTEXT *esysContext, ESYS_TR activateHandle, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_ID_OBJECT *credentialBlob, const TPM2B_ENCRYPTED_SECRET *secret, TPM2B_DIGEST **certInfo)
  \fn TSS2_RC Esys_ActivateCredential_Finish(ESYS_CONTEXT *esysContext, TPM2B_DIGEST **certInfo)
  \}
  \defgroup Esys_Certify The ESAPI function for the TPM2_Certify command.
+ * ESAPI function to invoke the TPM2_Certify command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_Certify_Async(ESYS_CONTEXT *esysContext, ESYS_TR objectHandle, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme)
  \fn TSS2_RC Esys_Certify(ESYS_CONTEXT *esysContext, ESYS_TR objectHandle, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme, TPM2B_ATTEST **certifyInfo, TPMT_SIGNATURE **signature)
  \fn TSS2_RC Esys_Certify_Finish(ESYS_CONTEXT *esysContext, TPM2B_ATTEST **certifyInfo, TPMT_SIGNATURE **signature)
  \}
  \defgroup Esys_CertifyCreation The ESAPI function for the TPM2_CertifyCreation command.
+ * ESAPI function to invoke the TPM2_CertifyCreation command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_CertifyCreation_Async(ESYS_CONTEXT *esysContext, ESYS_TR signHandle, ESYS_TR objectHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPM2B_DIGEST *creationHash, const TPMT_SIG_SCHEME *inScheme, const TPMT_TK_CREATION *creationTicket)
  \fn TSS2_RC Esys_CertifyCreation(ESYS_CONTEXT *esysContext, ESYS_TR signHandle, ESYS_TR objectHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPM2B_DIGEST *creationHash, const TPMT_SIG_SCHEME *inScheme, const TPMT_TK_CREATION *creationTicket, TPM2B_ATTEST **certifyInfo, TPMT_SIGNATURE **signature)
  \fn TSS2_RC Esys_CertifyCreation_Finish(ESYS_CONTEXT *esysContext, TPM2B_ATTEST **certifyInfo, TPMT_SIGNATURE **signature)
  \}
  \defgroup Esys_ChangeEPS The ESAPI function for the TPM2_ChangeEPS command.
+ * ESAPI function to invoke the TPM2_ChangeEPS command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_ChangeEPS_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_ChangeEPS(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_ChangeEPS_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_ChangePPS The ESAPI function for the TPM2_ChangePPS command.
+ * ESAPI function to invoke the TPM2_ChangePPS command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_ChangePPS_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_ChangePPS(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_ChangePPS_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_Clear The ESAPI function for the TPM2_Clear command.
+ * ESAPI function to invoke the TPM2_Clear command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_Clear_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \}
  \defgroup Esys_ClearControl The ESAPI function for the TPM2_ClearControl command.
+ * ESAPI function to invoke the TPM2_ClearControl command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_ClearControl_Async(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO disable)
  \fn TSS2_RC Esys_ClearControl(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO disable)
@@ -149,203 +167,271 @@
  \fn TSS2_RC Esys_Clear_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_ClockRateAdjust The ESAPI function for the TPM2_ClockRateAdjust command.
+ * ESAPI function to invoke the TPM2_ClockRateAdjust command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_ClockRateAdjust_Async(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2_CLOCK_ADJUST rateAdjust)
  \fn TSS2_RC Esys_ClockRateAdjust(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2_CLOCK_ADJUST rateAdjust)
  \fn TSS2_RC Esys_ClockRateAdjust_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_ClockSet The ESAPI function for the TPM2_ClockSet command.
+ * ESAPI function to invoke the TPM2_ClockSet command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_ClockSet_Async(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT64 newTime)
  \fn TSS2_RC Esys_ClockSet(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT64 newTime)
  \fn TSS2_RC Esys_ClockSet_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_Commit The ESAPI function for the TPM2_Commit command.
+ * ESAPI function to invoke the TPM2_Commit command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_Commit_Async(ESYS_CONTEXT *esysContext, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_ECC_POINT *P1, const TPM2B_SENSITIVE_DATA *s2, const TPM2B_ECC_PARAMETER *y2)
  \fn TSS2_RC Esys_Commit(ESYS_CONTEXT *esysContext, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_ECC_POINT *P1, const TPM2B_SENSITIVE_DATA *s2, const TPM2B_ECC_PARAMETER *y2, TPM2B_ECC_POINT **K, TPM2B_ECC_POINT **L, TPM2B_ECC_POINT **E, UINT16 *counter)
  \fn TSS2_RC Esys_Commit_Finish(ESYS_CONTEXT *esysContext, TPM2B_ECC_POINT **K, TPM2B_ECC_POINT **L, TPM2B_ECC_POINT **E, UINT16 *counter)
  \}
  \defgroup Esys_ContextLoad The ESAPI function for the TPM2_ContextLoad command.
+ * ESAPI function to invoke the TPM2_ContextLoad command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_ContextLoad_Async(ESYS_CONTEXT *esysContext, const TPMS_CONTEXT *context)
  \fn TSS2_RC Esys_ContextLoad(ESYS_CONTEXT *esysContext, const TPMS_CONTEXT *context, ESYS_TR *loadedHandle)
  \fn TSS2_RC Esys_ContextLoad_Finish(ESYS_CONTEXT *esysContext, ESYS_TR *loadedHandle)
  \}
  \defgroup Esys_ContextSave The ESAPI function for the TPM2_ContextSave command.
+ * ESAPI function to invoke the TPM2_ContextSave command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_ContextSave_Async(ESYS_CONTEXT *esysContext, ESYS_TR saveHandle)
  \fn TSS2_RC Esys_ContextSave(ESYS_CONTEXT *esysContext, ESYS_TR saveHandle, TPMS_CONTEXT **context)
  \fn TSS2_RC Esys_ContextSave_Finish(ESYS_CONTEXT *esysContext, TPMS_CONTEXT **context)
  \}
  \defgroup Esys_Create The ESAPI function for the TPM2_Create command.
+ * ESAPI function to invoke the TPM2_Create command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_Create_Async(ESYS_CONTEXT *esysContext, ESYS_TR parentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_SENSITIVE_CREATE *inSensitive, const TPM2B_PUBLIC *inPublic, const TPM2B_DATA *outsideInfo, const TPML_PCR_SELECTION *creationPCR)
  \fn TSS2_RC Esys_Create(ESYS_CONTEXT *esysContext, ESYS_TR parentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_SENSITIVE_CREATE *inSensitive, const TPM2B_PUBLIC *inPublic, const TPM2B_DATA *outsideInfo, const TPML_PCR_SELECTION *creationPCR, TPM2B_PRIVATE **outPrivate, TPM2B_PUBLIC **outPublic, TPM2B_CREATION_DATA **creationData, TPM2B_DIGEST **creationHash, TPMT_TK_CREATION **creationTicket)
  \fn TSS2_RC Esys_Create_Finish(ESYS_CONTEXT *esysContext, TPM2B_PRIVATE **outPrivate, TPM2B_PUBLIC **outPublic, TPM2B_CREATION_DATA **creationData, TPM2B_DIGEST **creationHash, TPMT_TK_CREATION **creationTicket)
  \}
  \defgroup Esys_CreatePrimary The ESAPI function for the TPM2_CreatePrimary command.
+ * ESAPI function to invoke the TPM2_CreatePrimary command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_CreatePrimary_Async(ESYS_CONTEXT *esysContext, ESYS_TR primaryHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_SENSITIVE_CREATE *inSensitive, const TPM2B_PUBLIC *inPublic, const TPM2B_DATA *outsideInfo, const TPML_PCR_SELECTION *creationPCR)
  \fn TSS2_RC Esys_CreatePrimary(ESYS_CONTEXT *esysContext, ESYS_TR primaryHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_SENSITIVE_CREATE *inSensitive, const TPM2B_PUBLIC *inPublic, const TPM2B_DATA *outsideInfo, const TPML_PCR_SELECTION *creationPCR, ESYS_TR *objectHandle, TPM2B_PUBLIC **outPublic, TPM2B_CREATION_DATA **creationData, TPM2B_DIGEST **creationHash, TPMT_TK_CREATION **creationTicket)
  \fn TSS2_RC Esys_CreatePrimary_Finish(ESYS_CONTEXT *esysContext, ESYS_TR *objectHandle, TPM2B_PUBLIC **outPublic, TPM2B_CREATION_DATA **creationData, TPM2B_DIGEST **creationHash, TPMT_TK_CREATION **creationTicket)
  \}
  \defgroup Esys_DictionaryAttackLockReset The ESAPI function for the TPM2_DictionaryAttackLockReset command.
+ * ESAPI function to invoke the TPM2_DictionaryAttackLockReset command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_DictionaryAttackLockReset_Async(ESYS_CONTEXT *esysContext, ESYS_TR lockHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_DictionaryAttackLockReset(ESYS_CONTEXT *esysContext, ESYS_TR lockHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_DictionaryAttackLockReset_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_DictionaryAttackParameters The ESAPI function for the TPM2_DictionaryAttackParameters command.
+ * ESAPI function to invoke the TPM2_DictionaryAttackParameters command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_DictionaryAttackParameters_Async(ESYS_CONTEXT *esysContext, ESYS_TR lockHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT32 newMaxTries, UINT32 newRecoveryTime, UINT32 lockoutRecovery)
  \fn TSS2_RC Esys_DictionaryAttackParameters(ESYS_CONTEXT *esysContext, ESYS_TR lockHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT32 newMaxTries, UINT32 newRecoveryTime, UINT32 lockoutRecovery)
  \fn TSS2_RC Esys_DictionaryAttackParameters_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_Duplicate The ESAPI function for the TPM2_Duplicate command.
+ * ESAPI function to invoke the TPM2_Duplicate command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_Duplicate_Async(ESYS_CONTEXT *esysContext, ESYS_TR objectHandle, ESYS_TR newParentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *encryptionKeyIn, const TPMT_SYM_DEF_OBJECT *symmetricAlg)
  \fn TSS2_RC Esys_Duplicate(ESYS_CONTEXT *esysContext, ESYS_TR objectHandle, ESYS_TR newParentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *encryptionKeyIn, const TPMT_SYM_DEF_OBJECT *symmetricAlg, TPM2B_DATA **encryptionKeyOut, TPM2B_PRIVATE **duplicate, TPM2B_ENCRYPTED_SECRET **outSymSeed)
  \fn TSS2_RC Esys_Duplicate_Finish(ESYS_CONTEXT *esysContext, TPM2B_DATA **encryptionKeyOut, TPM2B_PRIVATE **duplicate, TPM2B_ENCRYPTED_SECRET **outSymSeed)
  \}
  \defgroup Esys_ECC_Parameters The ESAPI function for the TPM2_ECC_Parameters command.
+ * ESAPI function to invoke the TPM2_ECC_Parameters command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_ECC_Parameters_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_ECC_CURVE curveID)
  \fn TSS2_RC Esys_ECC_Parameters(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_ECC_CURVE curveID, TPMS_ALGORITHM_DETAIL_ECC **parameters)
  \fn TSS2_RC Esys_ECC_Parameters_Finish(ESYS_CONTEXT *esysContext, TPMS_ALGORITHM_DETAIL_ECC **parameters)
  \}
  \defgroup Esys_ECDH_KeyGen The ESAPI function for the TPM2_ECDH_KeyGen command.
+ * ESAPI function to invoke the TPM2_ECDH_KeyGen command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_ECDH_KeyGen_Async(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_ECDH_KeyGen(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2B_ECC_POINT **zPoint, TPM2B_ECC_POINT **pubPoint)
  \fn TSS2_RC Esys_ECDH_KeyGen_Finish(ESYS_CONTEXT *esysContext, TPM2B_ECC_POINT **zPoint, TPM2B_ECC_POINT **pubPoint)
  \}
  \defgroup Esys_ECDH_ZGen The ESAPI function for the TPM2_ECDH_ZGen command.
+ * ESAPI function to invoke the TPM2_ECDH_ZGen command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_ECDH_ZGen_Async(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_ECC_POINT *inPoint)
  \fn TSS2_RC Esys_ECDH_ZGen(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_ECC_POINT *inPoint, TPM2B_ECC_POINT **outPoint)
  \fn TSS2_RC Esys_ECDH_ZGen_Finish(ESYS_CONTEXT *esysContext, TPM2B_ECC_POINT **outPoint)
  \}
  \defgroup Esys_EC_Ephemeral The ESAPI function for the TPM2_EC_Ephemeral command.
+ * ESAPI function to invoke the TPM2_EC_Ephemeral command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_EC_Ephemeral_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_ECC_CURVE curveID)
  \fn TSS2_RC Esys_EC_Ephemeral(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_ECC_CURVE curveID, TPM2B_ECC_POINT **Q, UINT16 *counter)
  \fn TSS2_RC Esys_EC_Ephemeral_Finish(ESYS_CONTEXT *esysContext, TPM2B_ECC_POINT **Q, UINT16 *counter)
  \}
  \defgroup Esys_EncryptDecrypt The ESAPI function for the TPM2_EncryptDecrypt command.
+ * ESAPI function to invoke the TPM2_EncryptDecrypt command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_EncryptDecrypt_Async(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO decrypt, TPMI_ALG_SYM_MODE mode, const TPM2B_IV *ivIn, const TPM2B_MAX_BUFFER *inData)
  \fn TSS2_RC Esys_EncryptDecrypt(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO decrypt, TPMI_ALG_SYM_MODE mode, const TPM2B_IV *ivIn, const TPM2B_MAX_BUFFER *inData, TPM2B_MAX_BUFFER **outData, TPM2B_IV **ivOut)
  \fn TSS2_RC Esys_EncryptDecrypt_Finish(ESYS_CONTEXT *esysContext, TPM2B_MAX_BUFFER **outData, TPM2B_IV **ivOut)
  \}
  \defgroup Esys_EventSequenceComplete The ESAPI function for the TPM2_EventSequenceComplete command.
+ * ESAPI function to invoke the TPM2_EventSequenceComplete command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_EventSequenceComplete_Async(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR sequenceHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *buffer)
  \fn TSS2_RC Esys_EventSequenceComplete(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR sequenceHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *buffer, TPML_DIGEST_VALUES **results)
  \fn TSS2_RC Esys_EventSequenceComplete_Finish(ESYS_CONTEXT *esysContext, TPML_DIGEST_VALUES **results)
  \}
  \defgroup Esys_EvictControl The ESAPI function for the TPM2_EvictControl command.
+ * ESAPI function to invoke the TPM2_EvictControl command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_EvictControl_Async(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR objectHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_DH_PERSISTENT persistentHandle)
  \fn TSS2_RC Esys_EvictControl(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR objectHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_DH_PERSISTENT persistentHandle, ESYS_TR *newObjectHandle)
  \fn TSS2_RC Esys_EvictControl_Finish(ESYS_CONTEXT *esysContext, ESYS_TR *newObjectHandle)
  \}
  \defgroup Esys_FlushContext The ESAPI function for the TPM2_FlushContext command.
+ * ESAPI function to invoke the TPM2_FlushContext command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_FlushContext_Async(ESYS_CONTEXT *esysContext, TPMI_DH_CONTEXT flushHandle)
  \fn TSS2_RC Esys_FlushContext(ESYS_CONTEXT *esysContext, TPMI_DH_CONTEXT flushHandle)
  \fn TSS2_RC Esys_FlushContext_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_GetCapability The ESAPI function for the TPM2_GetCapability command.
+ * ESAPI function to invoke the TPM2_GetCapability command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_GetCapability_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2_CAP capability, UINT32 property, UINT32 propertyCount)
  \fn TSS2_RC Esys_GetCapability(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2_CAP capability, UINT32 property, UINT32 propertyCount, TPMI_YES_NO *moreData, TPMS_CAPABILITY_DATA **capabilityData)
  \fn TSS2_RC Esys_GetCapability_Finish(ESYS_CONTEXT *esysContext, TPMI_YES_NO *moreData, TPMS_CAPABILITY_DATA **capabilityData)
  \}
  \defgroup Esys_GetCommandAuditDigest The ESAPI function for the TPM2_GetCommandAuditDigest command.
+ * ESAPI function to invoke the TPM2_GetCommandAuditDigest command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_GetCommandAuditDigest_Async(ESYS_CONTEXT *esysContext, ESYS_TR privacyHandle, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme)
  \fn TSS2_RC Esys_GetCommandAuditDigest(ESYS_CONTEXT *esysContext, ESYS_TR privacyHandle, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme, TPM2B_ATTEST **auditInfo, TPMT_SIGNATURE **signature)
  \fn TSS2_RC Esys_GetCommandAuditDigest_Finish(ESYS_CONTEXT *esysContext, TPM2B_ATTEST **auditInfo, TPMT_SIGNATURE **signature)
  \}
  \defgroup Esys_GetRandom The ESAPI function for the TPM2_GetRandom command.
+ * ESAPI function to invoke the TPM2_GetRandom command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_GetRandom_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT16 bytesRequested)
  \fn TSS2_RC Esys_GetRandom(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT16 bytesRequested, TPM2B_DIGEST **randomBytes)
  \fn TSS2_RC Esys_GetRandom_Finish(ESYS_CONTEXT *esysContext, TPM2B_DIGEST **randomBytes)
  \}
  \defgroup Esys_GetSessionAuditDigest The ESAPI function for the TPM2_GetSessionAuditDigest command.
+ * ESAPI function to invoke the TPM2_GetSessionAuditDigest command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_GetSessionAuditDigest_Async(ESYS_CONTEXT *esysContext, ESYS_TR privacyAdminHandle, ESYS_TR signHandle, ESYS_TR sessionHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme)
  \fn TSS2_RC Esys_GetSessionAuditDigest(ESYS_CONTEXT *esysContext, ESYS_TR privacyAdminHandle, ESYS_TR signHandle, ESYS_TR sessionHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme, TPM2B_ATTEST **auditInfo, TPMT_SIGNATURE **signature)
  \fn TSS2_RC Esys_GetSessionAuditDigest_Finish(ESYS_CONTEXT *esysContext, TPM2B_ATTEST **auditInfo, TPMT_SIGNATURE **signature)
  \}
  \defgroup Esys_GetTestResult The ESAPI function for the TPM2_GetTestResult command.
+ * ESAPI function to invoke the TPM2_GetTestResult command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_GetTestResult_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_GetTestResult(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2B_MAX_BUFFER **outData, TPM2_RC *testResult)
  \fn TSS2_RC Esys_GetTestResult_Finish(ESYS_CONTEXT *esysContext, TPM2B_MAX_BUFFER **outData, TPM2_RC *testResult)
  \}
  \defgroup Esys_GetTime The ESAPI function for the TPM2_GetTime command.
+ * ESAPI function to invoke the TPM2_GetTime command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_GetTime_Async(ESYS_CONTEXT *esysContext, ESYS_TR privacyAdminHandle, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme)
  \fn TSS2_RC Esys_GetTime(ESYS_CONTEXT *esysContext, ESYS_TR privacyAdminHandle, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme, TPM2B_ATTEST **timeInfo, TPMT_SIGNATURE **signature)
  \fn TSS2_RC Esys_GetTime_Finish(ESYS_CONTEXT *esysContext, TPM2B_ATTEST **timeInfo, TPMT_SIGNATURE **signature)
  \}
  \defgroup Esys_Hash The ESAPI function for the TPM2_Hash command.
+ * ESAPI function to invoke the TPM2_Hash command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_Hash_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *data, TPMI_ALG_HASH hashAlg, TPMI_RH_HIERARCHY hierarchy)
  \fn TSS2_RC Esys_Hash(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *data, TPMI_ALG_HASH hashAlg, TPMI_RH_HIERARCHY hierarchy, TPM2B_DIGEST **outHash, TPMT_TK_HASHCHECK **validation)
  \fn TSS2_RC Esys_Hash_Finish(ESYS_CONTEXT *esysContext, TPM2B_DIGEST **outHash, TPMT_TK_HASHCHECK **validation)
  \}
  \defgroup Esys_HashSequenceStart The ESAPI function for the TPM2_HashSequenceStart command.
+ * ESAPI function to invoke the TPM2_HashSequenceStart command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_HashSequenceStart_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *auth, TPMI_ALG_HASH hashAlg)
  \fn TSS2_RC Esys_HashSequenceStart(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *auth, TPMI_ALG_HASH hashAlg, ESYS_TR *sequenceHandle)
  \fn TSS2_RC Esys_HashSequenceStart_Finish(ESYS_CONTEXT *esysContext, ESYS_TR *sequenceHandle)
  \}
  \defgroup Esys_HierarchyChangeAuth The ESAPI function for the TPM2_HierarchyChangeAuth command.
+ * ESAPI function to invoke the TPM2_HierarchyChangeAuth command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_HierarchyChangeAuth_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *newAuth)
  \fn TSS2_RC Esys_HierarchyChangeAuth(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *newAuth)
  \fn TSS2_RC Esys_HierarchyChangeAuth_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_HierarchyControl The ESAPI function for the TPM2_HierarchyControl command.
+ * ESAPI function to invoke the TPM2_HierarchyControl command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_HierarchyControl_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_RH_ENABLES enable, TPMI_YES_NO state)
  \fn TSS2_RC Esys_HierarchyControl(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_RH_ENABLES enable, TPMI_YES_NO state)
  \fn TSS2_RC Esys_HierarchyControl_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_HMAC The ESAPI function for the TPM2_HMAC command.
+ * ESAPI function to invoke the TPM2_HMAC command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_HMAC_Async(ESYS_CONTEXT *esysContext, ESYS_TR handle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *buffer, TPMI_ALG_HASH hashAlg)
  \fn TSS2_RC Esys_HMAC(ESYS_CONTEXT *esysContext, ESYS_TR handle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *buffer, TPMI_ALG_HASH hashAlg, TPM2B_DIGEST **outHMAC)
  \fn TSS2_RC Esys_HMAC_Finish(ESYS_CONTEXT *esysContext, TPM2B_DIGEST **outHMAC)
  \}
  \defgroup Esys_HMAC_Start The ESAPI function for the TPM2_HMAC_Start command.
+ * ESAPI function to invoke the TPM2_HMAC_Start command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_HMAC_Start_Async(ESYS_CONTEXT *esysContext, ESYS_TR handle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *auth, TPMI_ALG_HASH hashAlg)
  \fn TSS2_RC Esys_HMAC_Start(ESYS_CONTEXT *esysContext, ESYS_TR handle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *auth, TPMI_ALG_HASH hashAlg, ESYS_TR *sequenceHandle)
  \fn TSS2_RC Esys_HMAC_Start_Finish(ESYS_CONTEXT *esysContext, ESYS_TR *sequenceHandle)
  \}
  \defgroup Esys_Import The ESAPI function for the TPM2_Import command.
+ * ESAPI function to invoke the TPM2_Import command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_Import_Async(ESYS_CONTEXT *esysContext, ESYS_TR parentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *encryptionKey, const TPM2B_PUBLIC *objectPublic, const TPM2B_PRIVATE *duplicate, const TPM2B_ENCRYPTED_SECRET *inSymSeed, const TPMT_SYM_DEF_OBJECT *symmetricAlg)
  \fn TSS2_RC Esys_Import(ESYS_CONTEXT *esysContext, ESYS_TR parentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *encryptionKey, const TPM2B_PUBLIC *objectPublic, const TPM2B_PRIVATE *duplicate, const TPM2B_ENCRYPTED_SECRET *inSymSeed, const TPMT_SYM_DEF_OBJECT *symmetricAlg, TPM2B_PRIVATE **outPrivate)
  \fn TSS2_RC Esys_Import_Finish(ESYS_CONTEXT *esysContext, TPM2B_PRIVATE **outPrivate)
  \}
  \defgroup Esys_IncrementalSelfTest The ESAPI function for the TPM2_IncrementalSelfTest command.
+ * ESAPI function to invoke the TPM2_IncrementalSelfTest command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_IncrementalSelfTest_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_ALG *toTest)
  \fn TSS2_RC Esys_IncrementalSelfTest(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_ALG *toTest, TPML_ALG **toDoList)
  \fn TSS2_RC Esys_IncrementalSelfTest_Finish(ESYS_CONTEXT *esysContext, TPML_ALG **toDoList)
  \}
  \defgroup Esys_Load The ESAPI function for the TPM2_Load command.
+ * ESAPI function to invoke the TPM2_Load command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_Load_Async(ESYS_CONTEXT *esysContext, ESYS_TR parentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_PRIVATE *inPrivate, const TPM2B_PUBLIC *inPublic)
  \fn TSS2_RC Esys_Load(ESYS_CONTEXT *esysContext, ESYS_TR parentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_PRIVATE *inPrivate, const TPM2B_PUBLIC *inPublic, ESYS_TR *objectHandle)
  \}
  \defgroup Esys_LoadExternal The ESAPI function for the TPM2_LoadExternal command.
+ * ESAPI function to invoke the TPM2_LoadExternal command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_LoadExternal_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_SENSITIVE *inPrivate, const TPM2B_PUBLIC *inPublic, TPMI_RH_HIERARCHY hierarchy)
  \fn TSS2_RC Esys_LoadExternal(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_SENSITIVE *inPrivate, const TPM2B_PUBLIC *inPublic, TPMI_RH_HIERARCHY hierarchy, ESYS_TR *objectHandle)
@@ -353,390 +439,520 @@
  \fn TSS2_RC Esys_Load_Finish(ESYS_CONTEXT *esysContext, ESYS_TR *objectHandle)
  \}
  \defgroup Esys_MakeCredential The ESAPI function for the TPM2_MakeCredential command.
+ * ESAPI function to invoke the TPM2_MakeCredential command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_MakeCredential_Async(ESYS_CONTEXT *esysContext, ESYS_TR handle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *credential, const TPM2B_NAME *objectName)
  \fn TSS2_RC Esys_MakeCredential(ESYS_CONTEXT *esysContext, ESYS_TR handle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *credential, const TPM2B_NAME *objectName, TPM2B_ID_OBJECT **credentialBlob, TPM2B_ENCRYPTED_SECRET **secret)
  \fn TSS2_RC Esys_MakeCredential_Finish(ESYS_CONTEXT *esysContext, TPM2B_ID_OBJECT **credentialBlob, TPM2B_ENCRYPTED_SECRET **secret)
  \}
  \defgroup Esys_NV_Certify The ESAPI function for the TPM2_NV_Certify command.
+ * ESAPI function to invoke the TPM2_NV_Certify command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_NV_Certify_Async(ESYS_CONTEXT *esysContext, ESYS_TR signHandle, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme, UINT16 size, UINT16 offset)
  \fn TSS2_RC Esys_NV_Certify(ESYS_CONTEXT *esysContext, ESYS_TR signHandle, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme, UINT16 size, UINT16 offset, TPM2B_ATTEST **certifyInfo, TPMT_SIGNATURE **signature)
  \fn TSS2_RC Esys_NV_Certify_Finish(ESYS_CONTEXT *esysContext, TPM2B_ATTEST **certifyInfo, TPMT_SIGNATURE **signature)
  \}
  \defgroup Esys_NV_ChangeAuth The ESAPI function for the TPM2_NV_ChangeAuth command.
+ * ESAPI function to invoke the TPM2_NV_ChangeAuth command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_NV_ChangeAuth_Async(ESYS_CONTEXT *esysContext, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *newAuth)
  \fn TSS2_RC Esys_NV_ChangeAuth(ESYS_CONTEXT *esysContext, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *newAuth)
  \fn TSS2_RC Esys_NV_ChangeAuth_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_NV_DefineSpace The ESAPI function for the TPM2_NV_DefineSpace command.
+ * ESAPI function to invoke the TPM2_NV_DefineSpace command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_NV_DefineSpace_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *auth, const TPM2B_NV_PUBLIC *publicInfo)
  \fn TSS2_RC Esys_NV_DefineSpace(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *auth, const TPM2B_NV_PUBLIC *publicInfo, ESYS_TR *nvHandle)
  \fn TSS2_RC Esys_NV_DefineSpace_Finish(ESYS_CONTEXT *esysContext, ESYS_TR *nvHandle)
  \}
  \defgroup Esys_NV_Extend The ESAPI function for the TPM2_NV_Extend command.
+ * ESAPI function to invoke the TPM2_NV_Extend command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_NV_Extend_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_NV_BUFFER *data)
  \fn TSS2_RC Esys_NV_Extend(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_NV_BUFFER *data)
  \fn TSS2_RC Esys_NV_Extend_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_NV_GlobalWriteLock The ESAPI function for the TPM2_NV_GlobalWriteLock command.
+ * ESAPI function to invoke the TPM2_NV_GlobalWriteLock command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_NV_GlobalWriteLock_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_NV_GlobalWriteLock(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_NV_GlobalWriteLock_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_NV_Increment The ESAPI function for the TPM2_NV_Increment command.
+ * ESAPI function to invoke the TPM2_NV_Increment command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_NV_Increment_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_NV_Increment(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_NV_Increment_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_NV_Read The ESAPI function for the TPM2_NV_Read command.
+ * ESAPI function to invoke the TPM2_NV_Read command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_NV_Read_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT16 size, UINT16 offset)
  \fn TSS2_RC Esys_NV_Read(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT16 size, UINT16 offset, TPM2B_MAX_NV_BUFFER **data)
  \fn TSS2_RC Esys_NV_Read_Finish(ESYS_CONTEXT *esysContext, TPM2B_MAX_NV_BUFFER **data)
  \}
  \defgroup Esys_NV_ReadLock The ESAPI function for the TPM2_NV_ReadLock command.
+ * ESAPI function to invoke the TPM2_NV_ReadLock command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_NV_ReadLock_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_NV_ReadLock(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_NV_ReadLock_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_NV_ReadPublic The ESAPI function for the TPM2_NV_ReadPublic command.
+ * ESAPI function to invoke the TPM2_NV_ReadPublic command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_NV_ReadPublic_Async(ESYS_CONTEXT *esysContext, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_NV_ReadPublic(ESYS_CONTEXT *esysContext, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2B_NV_PUBLIC **nvPublic, TPM2B_NAME **nvName)
  \fn TSS2_RC Esys_NV_ReadPublic_Finish(ESYS_CONTEXT *esysContext, TPM2B_NV_PUBLIC **nvPublic, TPM2B_NAME **nvName)
  \}
  \defgroup Esys_NV_SetBits The ESAPI function for the TPM2_NV_SetBits command.
+ * ESAPI function to invoke the TPM2_NV_SetBits command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_NV_SetBits_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT64 bits)
  \fn TSS2_RC Esys_NV_SetBits(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT64 bits)
  \fn TSS2_RC Esys_NV_SetBits_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_NV_UndefineSpace The ESAPI function for the TPM2_NV_UndefineSpace command.
+ * ESAPI function to invoke the TPM2_NV_UndefineSpace command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_NV_UndefineSpace_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_NV_UndefineSpace(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_NV_UndefineSpace_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_NV_UndefineSpaceSpecial The ESAPI function for the TPM2_NV_UndefineSpaceSpecial command.
+ * ESAPI function to invoke the TPM2_NV_UndefineSpaceSpecial command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_NV_UndefineSpaceSpecial_Async(ESYS_CONTEXT *esysContext, ESYS_TR nvIndex, ESYS_TR platform, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_NV_UndefineSpaceSpecial(ESYS_CONTEXT *esysContext, ESYS_TR nvIndex, ESYS_TR platform, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_NV_UndefineSpaceSpecial_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_NV_Write The ESAPI function for the TPM2_NV_Write command.
+ * ESAPI function to invoke the TPM2_NV_Write command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_NV_Write_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_NV_BUFFER *data, UINT16 offset)
  \fn TSS2_RC Esys_NV_Write(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_NV_BUFFER *data, UINT16 offset)
  \fn TSS2_RC Esys_NV_Write_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_NV_WriteLock The ESAPI function for the TPM2_NV_WriteLock command.
+ * ESAPI function to invoke the TPM2_NV_WriteLock command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_NV_WriteLock_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_NV_WriteLock(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_NV_WriteLock_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_ObjectChangeAuth The ESAPI function for the TPM2_ObjectChangeAuth command.
+ * ESAPI function to invoke the TPM2_ObjectChangeAuth command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_ObjectChangeAuth_Async(ESYS_CONTEXT *esysContext, ESYS_TR objectHandle, ESYS_TR parentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *newAuth)
  \fn TSS2_RC Esys_ObjectChangeAuth(ESYS_CONTEXT *esysContext, ESYS_TR objectHandle, ESYS_TR parentHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_AUTH *newAuth, TPM2B_PRIVATE **outPrivate)
  \fn TSS2_RC Esys_ObjectChangeAuth_Finish(ESYS_CONTEXT *esysContext, TPM2B_PRIVATE **outPrivate)
  \}
  \defgroup Esys_PCR_Allocate The ESAPI function for the TPM2_PCR_Allocate command.
+ * ESAPI function to invoke the TPM2_PCR_Allocate command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PCR_Allocate_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_PCR_SELECTION *pcrAllocation)
  \fn TSS2_RC Esys_PCR_Allocate(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_PCR_SELECTION *pcrAllocation, TPMI_YES_NO *allocationSuccess, UINT32 *maxPCR, UINT32 *sizeNeeded, UINT32 *sizeAvailable)
  \fn TSS2_RC Esys_PCR_Allocate_Finish(ESYS_CONTEXT *esysContext, TPMI_YES_NO *allocationSuccess, UINT32 *maxPCR, UINT32 *sizeNeeded, UINT32 *sizeAvailable)
  \}
  \defgroup Esys_PCR_Event The ESAPI function for the TPM2_PCR_Event command.
+ * ESAPI function to invoke the TPM2_PCR_Event command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PCR_Event_Async(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_EVENT *eventData)
  \fn TSS2_RC Esys_PCR_Event(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_EVENT *eventData, TPML_DIGEST_VALUES **digests)
  \fn TSS2_RC Esys_PCR_Event_Finish(ESYS_CONTEXT *esysContext, TPML_DIGEST_VALUES **digests)
  \}
  \defgroup Esys_PCR_Extend The ESAPI function for the TPM2_PCR_Extend command.
+ * ESAPI function to invoke the TPM2_PCR_Extend command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PCR_Extend_Async(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_DIGEST_VALUES *digests)
  \fn TSS2_RC Esys_PCR_Extend(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_DIGEST_VALUES *digests)
  \fn TSS2_RC Esys_PCR_Extend_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PCR_Read The ESAPI function for the TPM2_PCR_Read command.
+ * ESAPI function to invoke the TPM2_PCR_Read command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PCR_Read_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_PCR_SELECTION *pcrSelectionIn)
  \fn TSS2_RC Esys_PCR_Read(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_PCR_SELECTION *pcrSelectionIn, UINT32 *pcrUpdateCounter, TPML_PCR_SELECTION **pcrSelectionOut, TPML_DIGEST **pcrValues)
  \fn TSS2_RC Esys_PCR_Read_Finish(ESYS_CONTEXT *esysContext, UINT32 *pcrUpdateCounter, TPML_PCR_SELECTION **pcrSelectionOut, TPML_DIGEST **pcrValues)
  \}
  \defgroup Esys_PCR_Reset The ESAPI function for the TPM2_PCR_Reset command.
+ * ESAPI function to invoke the TPM2_PCR_Reset command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PCR_Reset_Async(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_PCR_Reset(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_PCR_Reset_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PCR_SetAuthPolicy The ESAPI function for the TPM2_PCR_SetAuthPolicy command.
+ * ESAPI function to invoke the TPM2_PCR_SetAuthPolicy command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PCR_SetAuthPolicy_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *authPolicy, TPMI_ALG_HASH hashAlg, TPMI_DH_PCR pcrNum)
  \fn TSS2_RC Esys_PCR_SetAuthPolicy(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *authPolicy, TPMI_ALG_HASH hashAlg, TPMI_DH_PCR pcrNum)
  \fn TSS2_RC Esys_PCR_SetAuthPolicy_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PCR_SetAuthValue The ESAPI function for the TPM2_PCR_SetAuthValue command.
+ * ESAPI function to invoke the TPM2_PCR_SetAuthValue command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PCR_SetAuthValue_Async(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *auth)
  \fn TSS2_RC Esys_PCR_SetAuthValue(ESYS_CONTEXT *esysContext, ESYS_TR pcrHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *auth)
  \fn TSS2_RC Esys_PCR_SetAuthValue_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyAuthorize The ESAPI function for the TPM2_PolicyAuthorize command.
+ * ESAPI function to invoke the TPM2_PolicyAuthorize command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PolicyAuthorize_Async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *approvedPolicy, const TPM2B_NONCE *policyRef, const TPM2B_NAME *keySign, const TPMT_TK_VERIFIED *checkTicket)
  \fn TSS2_RC Esys_PolicyAuthorize(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *approvedPolicy, const TPM2B_NONCE *policyRef, const TPM2B_NAME *keySign, const TPMT_TK_VERIFIED *checkTicket)
  \fn TSS2_RC Esys_PolicyAuthorize_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyAuthValue The ESAPI function for the TPM2_PolicyAuthValue command.
+ * ESAPI function to invoke the TPM2_PolicyAuthValue command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PolicyAuthValue_Async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_PolicyAuthValue(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_PolicyAuthValue_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyCommandCode The ESAPI function for the TPM2_PolicyCommandCode command.
+ * ESAPI function to invoke the TPM2_PolicyCommandCode command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PolicyCommandCode_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, TPM2_CC code)
  \fn TSS2_RC Esys_PolicyCommandCode(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, TPM2_CC code)
  \fn TSS2_RC Esys_PolicyCommandCode_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyCounterTimer The ESAPI function for the TPM2_PolicyCounterTimer command.
+ * ESAPI function to invoke the TPM2_PolicyCounterTimer command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PolicyCounterTimer_Async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_OPERAND *operandB, UINT16 offset, TPM2_EO operation)
  \fn TSS2_RC Esys_PolicyCounterTimer(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_OPERAND *operandB, UINT16 offset, TPM2_EO operation)
  \fn TSS2_RC Esys_PolicyCounterTimer_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyCpHash The ESAPI function for the TPM2_PolicyCpHash command.
+ * ESAPI function to invoke the TPM2_PolicyCpHash command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PolicyCpHash_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, const TPM2B_DIGEST *cpHashA)
  \fn TSS2_RC Esys_PolicyCpHash(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, const TPM2B_DIGEST *cpHashA)
  \fn TSS2_RC Esys_PolicyCpHash_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyDuplicationSelect The ESAPI function for the TPM2_PolicyDuplicationSelect command.
+ * ESAPI function to invoke the TPM2_PolicyDuplicationSelect command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PolicyDuplicationSelect_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, const TPM2B_NAME *objectName, const TPM2B_NAME *newParentName, TPMI_YES_NO includeObject)
  \fn TSS2_RC Esys_PolicyDuplicationSelect(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, const TPM2B_NAME *objectName, const TPM2B_NAME *newParentName, TPMI_YES_NO includeObject)
  \fn TSS2_RC Esys_PolicyDuplicationSelect_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyGetDigest The ESAPI function for the TPM2_PolicyGetDigest command.
+ * ESAPI function to invoke the TPM2_PolicyGetDigest command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PolicyGetDigest_Async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_PolicyGetDigest(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2B_DIGEST **policyDigest)
  \fn TSS2_RC Esys_PolicyGetDigest_Finish(ESYS_CONTEXT *esysContext, TPM2B_DIGEST **policyDigest)
  \}
  \defgroup Esys_PolicyLocality The ESAPI function for the TPM2_PolicyLocality command.
+ * ESAPI function to invoke the TPM2_PolicyLocality command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PolicyLocality_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, TPMA_LOCALITY locality)
  \fn TSS2_RC Esys_PolicyLocality(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, TPMA_LOCALITY locality)
  \fn TSS2_RC Esys_PolicyLocality_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyNameHash The ESAPI function for the TPM2_PolicyNameHash command.
+ * ESAPI function to invoke the TPM2_PolicyNameHash command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PolicyNameHash_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, const TPM2B_DIGEST *nameHash)
  \fn TSS2_RC Esys_PolicyNameHash(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, const TPM2B_DIGEST *nameHash)
  \fn TSS2_RC Esys_PolicyNameHash_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyNV The ESAPI function for the TPM2_PolicyNV command.
+ * ESAPI function to invoke the TPM2_PolicyNV command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PolicyNV_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_OPERAND *operandB, UINT16 offset, TPM2_EO operation)
  \fn TSS2_RC Esys_PolicyNV(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR nvIndex, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_OPERAND *operandB, UINT16 offset, TPM2_EO operation)
  \fn TSS2_RC Esys_PolicyNV_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyNvWritten The ESAPI function for the TPM2_PolicyNvWritten command.
+ * ESAPI function to invoke the TPM2_PolicyNvWritten command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PolicyNvWritten_Async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO writtenSet)
  \fn TSS2_RC Esys_PolicyNvWritten(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO writtenSet)
  \fn TSS2_RC Esys_PolicyNvWritten_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyOR The ESAPI function for the TPM2_PolicyOR command.
+ * ESAPI function to invoke the TPM2_PolicyOR command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PolicyOR_Async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_DIGEST *pHashList)
  \fn TSS2_RC Esys_PolicyOR(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_DIGEST *pHashList)
  \fn TSS2_RC Esys_PolicyOR_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyPassword The ESAPI function for the TPM2_PolicyPassword command.
+ * ESAPI function to invoke the TPM2_PolicyPassword command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PolicyPassword_Async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_PolicyPassword(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_PolicyPassword_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyPCR The ESAPI function for the TPM2_PolicyPCR command.
+ * ESAPI function to invoke the TPM2_PolicyPCR command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PolicyPCR_Async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *pcrDigest, const TPML_PCR_SELECTION *pcrs)
  \fn TSS2_RC Esys_PolicyPCR(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *pcrDigest, const TPML_PCR_SELECTION *pcrs)
  \fn TSS2_RC Esys_PolicyPCR_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyPhysicalPresence The ESAPI function for the TPM2_PolicyPhysicalPresence command.
+ * ESAPI function to invoke the TPM2_PolicyPhysicalPresence command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PolicyPhysicalPresence_Async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_PolicyPhysicalPresence(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_PolicyPhysicalPresence_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyRestart The ESAPI function for the TPM2_PolicyRestart command.
+ * ESAPI function to invoke the TPM2_PolicyRestart command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PolicyRestart_Async(ESYS_CONTEXT *esysContext, ESYS_TR sessionHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_PolicyRestart(ESYS_CONTEXT *esysContext, ESYS_TR sessionHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_PolicyRestart_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicySecret The ESAPI function for the TPM2_PolicySecret command.
+ * ESAPI function to invoke the TPM2_PolicySecret command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PolicySecret_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NONCE *nonceTPM, const TPM2B_DIGEST *cpHashA, const TPM2B_NONCE *policyRef, INT32 expiration)
  \fn TSS2_RC Esys_PolicySecret(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NONCE *nonceTPM, const TPM2B_DIGEST *cpHashA, const TPM2B_NONCE *policyRef, INT32 expiration, TPM2B_TIMEOUT **timeout, TPMT_TK_AUTH **policyTicket)
  \fn TSS2_RC Esys_PolicySecret_Finish(ESYS_CONTEXT *esysContext, TPM2B_TIMEOUT **timeout, TPMT_TK_AUTH **policyTicket)
  \}
  \defgroup Esys_PolicySigned The ESAPI function for the TPM2_PolicySigned command.
+ * ESAPI function to invoke the TPM2_PolicySigned command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PolicySigned_Async(ESYS_CONTEXT *esysContext, ESYS_TR authObject, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NONCE *nonceTPM, const TPM2B_DIGEST *cpHashA, const TPM2B_NONCE *policyRef, INT32 expiration, const TPMT_SIGNATURE *auth)
  \fn TSS2_RC Esys_PolicySigned(ESYS_CONTEXT *esysContext, ESYS_TR authObject, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NONCE *nonceTPM, const TPM2B_DIGEST *cpHashA, const TPM2B_NONCE *policyRef, INT32 expiration, const TPMT_SIGNATURE *auth, TPM2B_TIMEOUT **timeout, TPMT_TK_AUTH **policyTicket)
  \fn TSS2_RC Esys_PolicySigned_Finish(ESYS_CONTEXT *esysContext, TPM2B_TIMEOUT **timeout, TPMT_TK_AUTH **policyTicket)
  \}
  \defgroup Esys_PolicyTicket The ESAPI function for the TPM2_PolicyTicket command.
+ * ESAPI function to invoke the TPM2_PolicyTicket command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PolicyTicket_Async(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_TIMEOUT *timeout, const TPM2B_DIGEST *cpHashA, const TPM2B_NONCE *policyRef, const TPM2B_NAME *authName, const TPMT_TK_AUTH *ticket)
  \fn TSS2_RC Esys_PolicyTicket(ESYS_CONTEXT *esysContext, ESYS_TR policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_TIMEOUT *timeout, const TPM2B_DIGEST *cpHashA, const TPM2B_NONCE *policyRef, const TPM2B_NAME *authName, const TPMT_TK_AUTH *ticket)
  \fn TSS2_RC Esys_PolicyTicket_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PP_Commands The ESAPI function for the TPM2_PP_Commands command.
+ * ESAPI function to invoke the TPM2_PP_Commands command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_PP_Commands_Async(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_CC *setList, const TPML_CC *clearList)
  \fn TSS2_RC Esys_PP_Commands(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPML_CC *setList, const TPML_CC *clearList)
  \fn TSS2_RC Esys_PP_Commands_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_Quote The ESAPI function for the TPM2_Quote command.
+ * ESAPI function to invoke the TPM2_Quote command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_Quote_Async(ESYS_CONTEXT *esysContext, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme, const TPML_PCR_SELECTION *PCRselect)
  \fn TSS2_RC Esys_Quote(ESYS_CONTEXT *esysContext, ESYS_TR signHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *qualifyingData, const TPMT_SIG_SCHEME *inScheme, const TPML_PCR_SELECTION *PCRselect, TPM2B_ATTEST **quoted, TPMT_SIGNATURE **signature)
  \fn TSS2_RC Esys_Quote_Finish(ESYS_CONTEXT *esysContext, TPM2B_ATTEST **quoted, TPMT_SIGNATURE **signature)
  \}
  \defgroup Esys_ReadClock The ESAPI function for the TPM2_ReadClock command.
+ * ESAPI function to invoke the TPM2_ReadClock command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_ReadClock_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_ReadClock(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMS_TIME_INFO **currentTime)
  \fn TSS2_RC Esys_ReadClock_Finish(ESYS_CONTEXT *esysContext, TPMS_TIME_INFO **currentTime)
  \}
  \defgroup Esys_ReadPublic The ESAPI function for the TPM2_ReadPublic command.
+ * ESAPI function to invoke the TPM2_ReadPublic command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_ReadPublic_Async(ESYS_CONTEXT *esysContext, ESYS_TR objectHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_ReadPublic(ESYS_CONTEXT *esysContext, ESYS_TR objectHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2B_PUBLIC **outPublic, TPM2B_NAME **name, TPM2B_NAME **qualifiedName)
  \fn TSS2_RC Esys_ReadPublic_Finish(ESYS_CONTEXT *esysContext, TPM2B_PUBLIC **outPublic, TPM2B_NAME **name, TPM2B_NAME **qualifiedName)
  \}
  \defgroup Esys_Rewrap The ESAPI function for the TPM2_Rewrap command.
+ * ESAPI function to invoke the TPM2_Rewrap command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_Rewrap_Async(ESYS_CONTEXT *esysContext, ESYS_TR oldParent, ESYS_TR newParent, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_PRIVATE *inDuplicate, const TPM2B_NAME *name, const TPM2B_ENCRYPTED_SECRET *inSymSeed)
  \fn TSS2_RC Esys_Rewrap(ESYS_CONTEXT *esysContext, ESYS_TR oldParent, ESYS_TR newParent, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_PRIVATE *inDuplicate, const TPM2B_NAME *name, const TPM2B_ENCRYPTED_SECRET *inSymSeed, TPM2B_PRIVATE **outDuplicate, TPM2B_ENCRYPTED_SECRET **outSymSeed)
  \fn TSS2_RC Esys_Rewrap_Finish(ESYS_CONTEXT *esysContext, TPM2B_PRIVATE **outDuplicate, TPM2B_ENCRYPTED_SECRET **outSymSeed)
  \}
  \defgroup Esys_RSA_Decrypt The ESAPI function for the TPM2_RSA_Decrypt command.
+ * ESAPI function to invoke the TPM2_RSA_Decrypt command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_RSA_Decrypt_Async(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_PUBLIC_KEY_RSA *cipherText, const TPMT_RSA_DECRYPT *inScheme, const TPM2B_DATA *label)
  \fn TSS2_RC Esys_RSA_Decrypt(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_PUBLIC_KEY_RSA *cipherText, const TPMT_RSA_DECRYPT *inScheme, const TPM2B_DATA *label, TPM2B_PUBLIC_KEY_RSA **message)
  \fn TSS2_RC Esys_RSA_Decrypt_Finish(ESYS_CONTEXT *esysContext, TPM2B_PUBLIC_KEY_RSA **message)
  \}
  \defgroup Esys_RSA_Encrypt The ESAPI function for the TPM2_RSA_Encrypt command.
+ * ESAPI function to invoke the TPM2_RSA_Encrypt command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_RSA_Encrypt_Async(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_PUBLIC_KEY_RSA *message, const TPMT_RSA_DECRYPT *inScheme, const TPM2B_DATA *label)
  \fn TSS2_RC Esys_RSA_Encrypt(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_PUBLIC_KEY_RSA *message, const TPMT_RSA_DECRYPT *inScheme, const TPM2B_DATA *label, TPM2B_PUBLIC_KEY_RSA **outData)
  \fn TSS2_RC Esys_RSA_Encrypt_Finish(ESYS_CONTEXT *esysContext, TPM2B_PUBLIC_KEY_RSA **outData)
  \}
  \defgroup Esys_SelfTest The ESAPI function for the TPM2_SelfTest command.
+ * ESAPI function to invoke the TPM2_SelfTest command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_SelfTest_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO fullTest)
  \fn TSS2_RC Esys_SelfTest(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO fullTest)
  \fn TSS2_RC Esys_SelfTest_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_SequenceComplete The ESAPI function for the TPM2_SequenceComplete command.
+ * ESAPI function to invoke the TPM2_SequenceComplete command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_SequenceComplete_Async(ESYS_CONTEXT *esysContext, ESYS_TR sequenceHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *buffer, TPMI_RH_HIERARCHY hierarchy)
  \fn TSS2_RC Esys_SequenceComplete(ESYS_CONTEXT *esysContext, ESYS_TR sequenceHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *buffer, TPMI_RH_HIERARCHY hierarchy, TPM2B_DIGEST **result, TPMT_TK_HASHCHECK **validation)
  \fn TSS2_RC Esys_SequenceComplete_Finish(ESYS_CONTEXT *esysContext, TPM2B_DIGEST **result, TPMT_TK_HASHCHECK **validation)
  \}
  \defgroup Esys_SequenceUpdate The ESAPI function for the TPM2_SequenceUpdate command.
+ * ESAPI function to invoke the TPM2_SequenceUpdate command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_SequenceUpdate_Async(ESYS_CONTEXT *esysContext, ESYS_TR sequenceHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *buffer)
  \fn TSS2_RC Esys_SequenceUpdate(ESYS_CONTEXT *esysContext, ESYS_TR sequenceHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_MAX_BUFFER *buffer)
  \fn TSS2_RC Esys_SequenceUpdate_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_SetAlgorithmSet The ESAPI function for the TPM2_SetAlgorithmSet command.
+ * ESAPI function to invoke the TPM2_SetAlgorithmSet command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_SetAlgorithmSet_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT32 algorithmSet)
  \fn TSS2_RC Esys_SetAlgorithmSet(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, UINT32 algorithmSet)
  \fn TSS2_RC Esys_SetAlgorithmSet_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_SetCommandCodeAuditStatus The ESAPI function for the TPM2_SetCommandCodeAuditStatus command.
+ * ESAPI function to invoke the TPM2_SetCommandCodeAuditStatus command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_SetCommandCodeAuditStatus_Async(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_ALG_HASH auditAlg, const TPML_CC *setList, const TPML_CC *clearList)
  \fn TSS2_RC Esys_SetCommandCodeAuditStatus(ESYS_CONTEXT *esysContext, ESYS_TR auth, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_ALG_HASH auditAlg, const TPML_CC *setList, const TPML_CC *clearList)
  \fn TSS2_RC Esys_SetCommandCodeAuditStatus_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_SetPrimaryPolicy The ESAPI function for the TPM2_SetPrimaryPolicy command.
+ * ESAPI function to invoke the TPM2_SetPrimaryPolicy command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_SetPrimaryPolicy_Async(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *authPolicy, TPMI_ALG_HASH hashAlg)
  \fn TSS2_RC Esys_SetPrimaryPolicy(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *authPolicy, TPMI_ALG_HASH hashAlg)
  \fn TSS2_RC Esys_SetPrimaryPolicy_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_Shutdown The ESAPI function for the TPM2_Shutdown command.
+ * ESAPI function to invoke the TPM2_Shutdown command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_Shutdown_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2_SU shutdownType)
  \fn TSS2_RC Esys_Shutdown(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2_SU shutdownType)
  \fn TSS2_RC Esys_Shutdown_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_Sign The ESAPI function for the TPM2_Sign command.
+ * ESAPI function to invoke the TPM2_Sign command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_Sign_Async(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *digest, const TPMT_SIG_SCHEME *inScheme, const TPMT_TK_HASHCHECK *validation)
  \fn TSS2_RC Esys_Sign(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *digest, const TPMT_SIG_SCHEME *inScheme, const TPMT_TK_HASHCHECK *validation, TPMT_SIGNATURE **signature)
  \fn TSS2_RC Esys_Sign_Finish(ESYS_CONTEXT *esysContext, TPMT_SIGNATURE **signature)
  \}
  \defgroup Esys_StartAuthSession The ESAPI function for the TPM2_StartAuthSession command.
+ * ESAPI function to invoke the TPM2_StartAuthSession command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_StartAuthSession_Async(ESYS_CONTEXT *esysContext, ESYS_TR tpmKey, ESYS_TR bind, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NONCE *nonceCaller, const TPM2B_ENCRYPTED_SECRET *encryptedSalt, TPM2_SE sessionType, const TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH authHash)
  \fn TSS2_RC Esys_StartAuthSession(ESYS_CONTEXT *esysContext, ESYS_TR tpmKey, ESYS_TR bind, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NONCE *nonceCaller, const TPM2B_ENCRYPTED_SECRET *encryptedSalt, TPM2_SE sessionType, const TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH authHash, ESYS_TR *sessionHandle, TPM2B_NONCE **nonceTPM)
  \fn TSS2_RC Esys_StartAuthSession_Finish(ESYS_CONTEXT *esysContext, ESYS_TR *sessionHandle, TPM2B_NONCE **nonceTPM)
  \}
  \defgroup Esys_Startup The ESAPI function for the TPM2_Startup command.
+ * ESAPI function to invoke the TPM2_Startup command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_Startup_Async(ESYS_CONTEXT *esysContext, TPM2_SU startupType)
  \fn TSS2_RC Esys_Startup(ESYS_CONTEXT *esysContext, TPM2_SU startupType)
  \fn TSS2_RC Esys_Startup_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_StirRandom The ESAPI function for the TPM2_StirRandom command.
+ * ESAPI function to invoke the TPM2_StirRandom command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_StirRandom_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_SENSITIVE_DATA *inData)
  \fn TSS2_RC Esys_StirRandom(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_SENSITIVE_DATA *inData)
  \fn TSS2_RC Esys_StirRandom_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_TestParms The ESAPI function for the TPM2_TestParms command.
+ * ESAPI function to invoke the TPM2_TestParms command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_TestParms_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPMT_PUBLIC_PARMS *parameters)
  \fn TSS2_RC Esys_TestParms(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPMT_PUBLIC_PARMS *parameters)
  \fn TSS2_RC Esys_TestParms_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_Unseal The ESAPI function for the TPM2_Unseal command.
+ * ESAPI function to invoke the TPM2_Unseal command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_Unseal_Async(ESYS_CONTEXT *esysContext, ESYS_TR itemHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3)
  \fn TSS2_RC Esys_Unseal(ESYS_CONTEXT *esysContext, ESYS_TR itemHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2B_SENSITIVE_DATA **outData)
  \fn TSS2_RC Esys_Unseal_Finish(ESYS_CONTEXT *esysContext, TPM2B_SENSITIVE_DATA **outData)
  \}
  \defgroup Esys_Vendor_TCG_Test The ESAPI function for the TPM2_Vendor_TCG_Test command.
+ * ESAPI function to invoke the TPM2_Vendor_TCG_Test command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_Vendor_TCG_Test_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *inputData)
  \fn TSS2_RC Esys_Vendor_TCG_Test(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DATA *inputData, TPM2B_DATA **outputData)
  \fn TSS2_RC Esys_Vendor_TCG_Test_Finish(ESYS_CONTEXT *esysContext, TPM2B_DATA **outputData)
  \}
  \defgroup Esys_VerifySignature The ESAPI function for the TPM2_VerifySignature command.
+ * ESAPI function to invoke the TPM2_VerifySignature command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_VerifySignature_Async(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *digest, const TPMT_SIGNATURE *signature)
  \fn TSS2_RC Esys_VerifySignature(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *digest, const TPMT_SIGNATURE *signature, TPMT_TK_VERIFIED **validation)
  \fn TSS2_RC Esys_VerifySignature_Finish(ESYS_CONTEXT *esysContext, TPMT_TK_VERIFIED **validation)
  \}
  \defgroup Esys_ZGen_2Phase The ESAPI function for the TPM2_ZGen_2Phase command.
+ * ESAPI function to invoke the TPM2_ZGen_2Phase command
+ * either as a one-call or in an asynchronous manner.
  \{
  \fn TSS2_RC Esys_ZGen_2Phase_Async(ESYS_CONTEXT *esysContext, ESYS_TR keyA, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_ECC_POINT *inQsB, const TPM2B_ECC_POINT *inQeB, TPMI_ECC_KEY_EXCHANGE inScheme, UINT16 counter)
  \fn TSS2_RC Esys_ZGen_2Phase(ESYS_CONTEXT *esysContext, ESYS_TR keyA, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_ECC_POINT *inQsB, const TPM2B_ECC_POINT *inQeB, TPMI_ECC_KEY_EXCHANGE inScheme, UINT16 counter, TPM2B_ECC_POINT **outZ1, TPM2B_ECC_POINT **outZ2)
@@ -753,9 +969,41 @@
  \}
 */
 
+/*!
+ \defgroup esys_types ESAPI Types
+ \ingroup iesys
+ \todo Description
+ \{
+ \def IESYSC_RESOURCE_TYPE_CONSTANT
+ \def IESYSC_PARAM_ENCRYPT
+ \def IESYSC_PARAM_DECRYPT
+ \def IESYSC_TYPE_POLICY_AUTH
+ \def IESYS_SESSION
+ \def IESYSC_RESOURCE_TYPE
+ \def IESYS_RSRC_UNION
+ \def IESYS_RESOURCE
+ \def IESYS_METADATA
+ \def IESYS_CONTEXT_DATA
+ \}
+*/
+
+/* Note: all *_IN and the union IESYS_CMD_IN_PARAM are excluded from documentation */
+/*!
+ \defgroup esys_int ESAPI internal Types
+ \ingroup iesys
+ \todo Description
+ \{
+ \struct RSRC_NODE_T
+ \typedef RSRC_NODE_T
+ \enum _ESYS_STATE
+ \struct ESYS_CONTEXT
+ \def _ESYS_MAX_SUBMISSIONS
+ \def _ESYS_ASSERT_NON_NULL
+ \}
+*/
 
 /*!
- \defgroup Internal Cryptographic Backend
+ \defgroup iesys_crypto Internal Cryptographic Backend
  \ingroup iesys
  \todo Description
  \{
@@ -786,6 +1034,15 @@
  \fn TSS2_RC iesys_xor_parameter_obfuscation( TPM2_ALG_ID hash_alg, uint8_t *key, size_t key_size, TPM2B_NONCE * contextU, TPM2B_NONCE * contextV, BYTE *data, size_t data_size)
  \fn TSS2_RC iesys_cryptogcry_get_ecdh_point( TPM2B_PUBLIC * key, size_t max_out_size, TPM2B_ECC_PARAMETER *Z, TPMS_ECC_POINT *Q, BYTE * out_buffer, size_t * out_size)
   \}
+*/
+
+/*!
+ \defgroup iesys_util Internal ESAPI utility functions.
+ \ingroup iesys
+ \todo Description
+ \{
+ \struct HASH_TAB_ITEM
+ \}
 */
 
 /*!
