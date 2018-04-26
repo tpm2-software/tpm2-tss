@@ -35,18 +35,12 @@
 extern "C" {
 #endif
 
-/**
- * @addtogroup iesys
- * @{
- */
-
 #define AES_BLOCK_SIZE_IN_BYTES 16
 
 typedef struct _IESYS_CRYPTO_CONTEXT IESYS_CRYPTO_CONTEXT_BLOB;
 
 TSS2_RC iesys_crypto_hash_get_digest_size(TPM2_ALG_ID hashAlg, size_t *size);
 
-TSS2_RC iesys_crypto_hash_get_block_size(TPM2_ALG_ID hashAlg, size_t *size);
 
 TSS2_RC iesys_cryptogcry_hash_start(
     IESYS_CRYPTO_CONTEXT_BLOB **context,
@@ -240,8 +234,6 @@ TSS2_RC iesys_cryptogcry_get_ecdh_point(
 #define iesys_crypto_get_ecdh_point iesys_cryptogcry_get_ecdh_point
 #define iesys_crypto_sym_aes_encrypt iesys_cryptogcry_sym_aes_encrypt
 #define iesys_crypto_sym_aes_decrypt iesys_cryptogcry_sym_aes_decrypt
-
-/* @} */
 
 #ifdef __cplusplus
 } /* extern "C" */
