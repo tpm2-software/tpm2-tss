@@ -69,18 +69,40 @@ static void store_input_parameters (
  * parameters is allocated by the function implementation.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
- * @param[in] authorization Input handle of type ESYS_TR for
- *     object with handle type TPMI_RH_PLATFORM.
- * @param[in] keyHandle Input handle of type ESYS_TR for
- *     object with handle type TPMI_DH_OBJECT.
- * @param[in] shandle1 First session handle.
- * @param[in] shandle2 Second session handle.
- * @param[in] shandle3 Third session handle.
- * @param[in] fuDigest Input parameter of type TPM2B_DIGEST.
- * @param[in] manifestSignature Input parameter of type TPMT_SIGNATURE.
+ * @param[in]  authorization TPM2_RH_PLATFORM+{PP}.
+ * @param[in]  keyHandle Handle of a public area that contains the TPM Vendor
+ *             Authorization Key that will be used to validate
+ *             manifestSignature.
+ * @param[in]  shandle1 Session handle for authorization of authorization
+ * @param[in]  shandle2 Second session handle.
+ * @param[in]  shandle3 Third session handle.
+ * @param[in]  fuDigest Digest of the first block in the field upgrade sequence.
+ * @param[in]  manifestSignature Signature over fuDigest using the key associated
+ *             with keyHandle (not optional).
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_RC_BAD_SEQUENCE if context is not ready for this function
- * \todo add further error RCs to documentation
+ * @retval ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
+ *         pointers or required output handle references are NULL.
+ * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
+ * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ * @retval TSS2_ESYS_RC_BAD_SEQUENCE: if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_INSUFFICIENT_RESPONSE: if the TPM's response does not
+ *          at least contain the tag, response length, and response code.
+ * @retval TSS2_ESYS_RC_MALFORMED_RESPONSE: if the TPM's response is corrupted.
+ * @retval TSS2_ESYS_RC_MULTIPLE_DECRYPT_SESSIONS: if more than one session has
+ *         the 'decrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
+ *         the 'encrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
+ *         ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
+ *         are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_NO_ENCRYPT_PARAM: if one of the sessions has the
+ *         'encrypt' attribute set and the command does not support encryption
+ *          of the first response parameter.
+ * @retval TSS2_RCs produced by lower layers of the software stack may be
+ *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
 Esys_FieldUpgradeStart(
@@ -139,18 +161,34 @@ Esys_FieldUpgradeStart(
  * In order to retrieve the TPM's response call Esys_FieldUpgradeStart_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
- * @param[in] authorization Input handle of type ESYS_TR for
- *     object with handle type TPMI_RH_PLATFORM.
- * @param[in] keyHandle Input handle of type ESYS_TR for
- *     object with handle type TPMI_DH_OBJECT.
- * @param[in] shandle1 First session handle.
- * @param[in] shandle2 Second session handle.
- * @param[in] shandle3 Third session handle.
- * @param[in] fuDigest Input parameter of type TPM2B_DIGEST.
- * @param[in] manifestSignature Input parameter of type TPMT_SIGNATURE.
- * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_RC_BAD_SEQUENCE if context is not ready for this function
- * \todo add further error RCs to documentation
+ * @param[in]  authorization TPM2_RH_PLATFORM+{PP}.
+ * @param[in]  keyHandle Handle of a public area that contains the TPM Vendor
+ *             Authorization Key that will be used to validate
+ *             manifestSignature.
+ * @param[in]  shandle1 Session handle for authorization of authorization
+ * @param[in]  shandle2 Second session handle.
+ * @param[in]  shandle3 Third session handle.
+ * @param[in]  fuDigest Digest of the first block in the field upgrade sequence.
+ * @param[in]  manifestSignature Signature over fuDigest using the key associated
+ *             with keyHandle (not optional).
+ * @retval ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
+ *         pointers or required output handle references are NULL.
+ * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
+ * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ * @retval TSS2_RCs produced by lower layers of the software stack may be
+           returned to the caller unaltered unless handled internally.
+ * @retval TSS2_ESYS_RC_MULTIPLE_DECRYPT_SESSIONS: if more than one session has
+ *         the 'decrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
+ *         the 'encrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
+           ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
+           are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_NO_ENCRYPT_PARAM: if one of the sessions has the
+ *         'encrypt' attribute set and the command does not support encryption
+ *          of the first response parameter.
  */
 TSS2_RC
 Esys_FieldUpgradeStart_Async(
@@ -235,8 +273,21 @@ Esys_FieldUpgradeStart_Async(
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_RC_BAD_SEQUENCE if context is not ready for this function.
- * \todo add further error RCs to documentation
+ * @retval ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
+ *         pointers or required output handle references are NULL.
+ * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
+ * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ * @retval TSS2_ESYS_RC_BAD_SEQUENCE: if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_TRY_AGAIN: if the timeout counter expires before the
+ *         TPM response is received.
+ * @retval TSS2_ESYS_RC_INSUFFICIENT_RESPONSE: if the TPM's response does not
+ *          at least contain the tag, response length, and response code.
+ * @retval TSS2_ESYS_RC_MALFORMED_RESPONSE: if the TPM's response is corrupted.
+ * @retval TSS2_RCs produced by lower layers of the software stack may be
+ *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
 Esys_FieldUpgradeStart_Finish(

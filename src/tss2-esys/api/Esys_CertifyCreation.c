@@ -85,24 +85,43 @@ static void store_input_parameters (
  * parameters is allocated by the function implementation.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
- * @param[in] signHandle Input handle of type ESYS_TR for
- *     object with handle type TPMI_DH_OBJECT.
- * @param[in] objectHandle Input handle of type ESYS_TR for
- *     object with handle type TPMI_DH_OBJECT.
- * @param[in] shandle1 First session handle.
- * @param[in] shandle2 Second session handle.
- * @param[in] shandle3 Third session handle.
- * @param[in] qualifyingData Input parameter of type TPM2B_DATA.
- * @param[in] creationHash Input parameter of type TPM2B_DIGEST.
- * @param[in] inScheme Input parameter of type TPMT_SIG_SCHEME.
- * @param[in] creationTicket Input parameter of type TPMT_TK_CREATION.
- * @param[out] certifyInfo (callee-allocated) Output parameter
- *    of type TPM2B_ATTEST. May be NULL if this value is not required.
- * @param[out] signature (callee-allocated) Output parameter
- *    of type TPMT_SIGNATURE. May be NULL if this value is not required.
+ * @param[in]  signHandle Handle of the key that will sign the attestation block.
+ * @param[in]  objectHandle The object associated with the creation data.
+ * @param[in]  shandle1 Session handle for authorization of signHandle
+ * @param[in]  shandle2 Second session handle.
+ * @param[in]  shandle3 Third session handle.
+ * @param[in]  qualifyingData User-provided qualifying data.
+ * @param[in]  creationHash Hash of the creation data produced by TPM2_Create() or
+ *             TPM2_CreatePrimary().
+ * @param[in]  inScheme TPM2_Signing scheme to use if the scheme for signHandle is
+ *             TPM2_ALG_NULL.
+ * @param[in]  creationTicket Ticket produced by TPM2_Create() or
+ *             TPM2_CreatePrimary().
+ * @param[out] certifyInfo The structure that was signed.
+ *             (callee-allocated)
+ * @param[out] signature The signature over certifyInfo .
+ *             (callee-allocated)
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_RC_BAD_SEQUENCE if context is not ready for this function
- * \todo add further error RCs to documentation
+ * @retval ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
+ *         pointers or required output handle references are NULL.
+ * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
+ * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ * @retval TSS2_ESYS_RC_BAD_SEQUENCE: if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_INSUFFICIENT_RESPONSE: if the TPM's response does not
+ *          at least contain the tag, response length, and response code.
+ * @retval TSS2_ESYS_RC_MALFORMED_RESPONSE: if the TPM's response is corrupted.
+ * @retval TSS2_ESYS_RC_MULTIPLE_DECRYPT_SESSIONS: if more than one session has
+ *         the 'decrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
+ *         the 'encrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
+ *         ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
+ *         are ESYS_TR_NONE.
+ * @retval TSS2_RCs produced by lower layers of the software stack may be
+ *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
 Esys_CertifyCreation(
@@ -169,20 +188,33 @@ Esys_CertifyCreation(
  * In order to retrieve the TPM's response call Esys_CertifyCreation_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
- * @param[in] signHandle Input handle of type ESYS_TR for
- *     object with handle type TPMI_DH_OBJECT.
- * @param[in] objectHandle Input handle of type ESYS_TR for
- *     object with handle type TPMI_DH_OBJECT.
- * @param[in] shandle1 First session handle.
- * @param[in] shandle2 Second session handle.
- * @param[in] shandle3 Third session handle.
- * @param[in] qualifyingData Input parameter of type TPM2B_DATA.
- * @param[in] creationHash Input parameter of type TPM2B_DIGEST.
- * @param[in] inScheme Input parameter of type TPMT_SIG_SCHEME.
- * @param[in] creationTicket Input parameter of type TPMT_TK_CREATION.
- * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_RC_BAD_SEQUENCE if context is not ready for this function
- * \todo add further error RCs to documentation
+ * @param[in]  signHandle Handle of the key that will sign the attestation block.
+ * @param[in]  objectHandle The object associated with the creation data.
+ * @param[in]  shandle1 Session handle for authorization of signHandle
+ * @param[in]  shandle2 Second session handle.
+ * @param[in]  shandle3 Third session handle.
+ * @param[in]  qualifyingData User-provided qualifying data.
+ * @param[in]  creationHash Hash of the creation data produced by TPM2_Create() or
+ *             TPM2_CreatePrimary().
+ * @param[in]  inScheme TPM2_Signing scheme to use if the scheme for signHandle is
+ *             TPM2_ALG_NULL.
+ * @param[in]  creationTicket Ticket produced by TPM2_Create() or
+ *             TPM2_CreatePrimary().
+ * @retval ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
+ *         pointers or required output handle references are NULL.
+ * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
+ * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ * @retval TSS2_RCs produced by lower layers of the software stack may be
+           returned to the caller unaltered unless handled internally.
+ * @retval TSS2_ESYS_RC_MULTIPLE_DECRYPT_SESSIONS: if more than one session has
+ *         the 'decrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
+ *         the 'encrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
+           ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
+           are ESYS_TR_NONE.
  */
 TSS2_RC
 Esys_CertifyCreation_Async(
@@ -274,13 +306,26 @@ Esys_CertifyCreation_Async(
  * output parameter if the value is not required.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
- * @param[out] certifyInfo (callee-allocated) Output parameter
- *    of type TPM2B_ATTEST. May be NULL if this value is not required.
- * @param[out] signature (callee-allocated) Output parameter
- *    of type TPMT_SIGNATURE. May be NULL if this value is not required.
+ * @param[out] certifyInfo The structure that was signed.
+ *             (callee-allocated)
+ * @param[out] signature The signature over certifyInfo .
+ *             (callee-allocated)
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_RC_BAD_SEQUENCE if context is not ready for this function.
- * \todo add further error RCs to documentation
+ * @retval ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
+ *         pointers or required output handle references are NULL.
+ * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
+ * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ * @retval TSS2_ESYS_RC_BAD_SEQUENCE: if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_TRY_AGAIN: if the timeout counter expires before the
+ *         TPM response is received.
+ * @retval TSS2_ESYS_RC_INSUFFICIENT_RESPONSE: if the TPM's response does not
+ *          at least contain the tag, response length, and response code.
+ * @retval TSS2_ESYS_RC_MALFORMED_RESPONSE: if the TPM's response is corrupted.
+ * @retval TSS2_RCs produced by lower layers of the software stack may be
+ *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
 Esys_CertifyCreation_Finish(
