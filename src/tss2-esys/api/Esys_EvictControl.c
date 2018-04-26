@@ -387,7 +387,6 @@ Esys_EvictControl_Finish(
         r = esys_CreateResourceObject(esysContext, *newObjectHandle, &newObjectHandleNode);
         if (r != TSS2_RC_SUCCESS)
             return r;
-        newObjectHandleNode->authValueSet = 1;
         newObjectHandleNode->rsrc = objectHandleNode->rsrc;
         newObjectHandleNode->rsrc.handle = esysContext->in.EvictControl.persistentHandle;
     }

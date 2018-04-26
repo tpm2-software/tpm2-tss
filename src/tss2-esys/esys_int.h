@@ -40,7 +40,6 @@ typedef struct RSRC_NODE_T {
     TPM2B_AUTH auth;
     IESYS_RESOURCE rsrc;
     struct RSRC_NODE_T * next;
-    BYTE authValueSet;
 } RSRC_NODE_T;
 
 /*
