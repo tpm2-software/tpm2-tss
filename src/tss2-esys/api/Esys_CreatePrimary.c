@@ -314,6 +314,11 @@ Esys_CreatePrimary_Finish(
     TPM2B_NAME name;
     RSRC_NODE_T *objectHandleNode = NULL;
 
+    /* Initialize parameter to avoid unitialized usage */
+    if (creationHash != NULL)
+        *creationHash = NULL;
+    if (creationTicket != NULL)
+        *creationTicket = NULL;
 
     /* Allocate memory for response parameters */
     if (objectHandle == NULL) {

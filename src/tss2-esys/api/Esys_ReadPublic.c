@@ -236,6 +236,10 @@ Esys_ReadPublic_Finish(
     }
     esysContext->state = _ESYS_STATE_INTERNALERROR;
 
+    /* Initialize parameter to avoid unitialized usage */
+    if (qualifiedName != NULL)
+        *qualifiedName = NULL;
+
     /* Allocate memory for response parameters */
     if (outPublic != NULL) {
         *outPublic = calloc(sizeof(TPM2B_PUBLIC), 1);

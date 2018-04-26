@@ -290,6 +290,10 @@ Esys_Commit_Finish(
     }
     esysContext->state = _ESYS_STATE_INTERNALERROR;
 
+    /* Initialize parameter to avoid unitialized usage */
+    if (E != NULL)
+        *E = NULL;
+
     /* Allocate memory for response parameters */
     if (K != NULL) {
         *K = calloc(sizeof(TPM2B_ECC_POINT), 1);
