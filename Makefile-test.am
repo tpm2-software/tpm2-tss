@@ -34,15 +34,15 @@ TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES) $(LIBCRYPTO_LIBS) $(libut
 # test harness configuration
 TEST_EXTENSIONS = .int
 INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler.sh
-INT_LOG_FLAGS = --simulator-bin=$(SIMULATOR_BIN)
 EXTRA_DIST += $(INT_LOG_COMPILER)
+AM_TESTS_ENVIRONMENT = PATH="$(PATH)"
 
 check-programs: $(check_PROGRAMS)
 
 check_PROGRAMS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
 TESTS = $(check_PROGRAMS)
 
-if SIMULATOR_BIN
+if ENABLE_INTEGRATION
 noinst_PROGRAMS += test/helper/tpm_startup
 test_helper_tpm_startup_CFLAGS = $(TESTS_CFLAGS) -I$(srcdir)/test/integration
 test_helper_tpm_startup_LDFLAGS = $(TESTS_LDFLAGS)
@@ -54,7 +54,7 @@ test_helper_tpm_transientempty_CFLAGS = $(TESTS_CFLAGS) -I$(srcdir)/test/integra
 test_helper_tpm_transientempty_LDFLAGS = $(TESTS_LDFLAGS)
 test_helper_tpm_transientempty_LDADD = $(TESTS_LDADD)
 test_helper_tpm_transientempty_SOURCES = test/helper/tpm_transientempty.c
-endif #SIMULATOR_BIN
+endif #ENABLE_INTEGRATION
 
 if UNIT
 TESTS_UNIT  = \
@@ -87,7 +87,7 @@ TESTS_UNIT += \
 endif ESAPI
 endif #UNIT
 
-if SIMULATOR_BIN
+if ENABLE_INTEGRATION
 noinst_LTLIBRARIES += test/integration/libtest_utils.la
 TESTS_INTEGRATION = \
     test/integration/sapi-asymmetric-encrypt-decrypt.int \
@@ -187,7 +187,7 @@ TESTS_INTEGRATION += \
     test/integration/esys-verify-signature.int \
     test/integration/esys-zgen-2phase.int
 endif #ESAPI
-endif #SIMULATOR_BIN
+endif #ENABLE_INTEGRATION
 
 CLEANFILES += \
     test/integration/*.log \
@@ -314,7 +314,7 @@ test_unit_esys_getpollhandles_SOURCES = test/unit/esys-getpollhandles.c
 endif # ESAPI
 endif # UNIT
 
-if SIMULATOR_BIN
+if ENABLE_INTEGRATION
 test_tpmclient_tpmclient_int_CFLAGS   = $(AM_CFLAGS) -U_FORTIFY_SOURCE  $(TESTS_CFLAGS)
 test_tpmclient_tpmclient_int_LDADD    = $(TESTS_LDADD)
 test_tpmclient_tpmclient_int_SOURCES  = \
@@ -963,4 +963,4 @@ test_integration_sapi_command_cancel_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_sapi_command_cancel_int_LDADD   = $(TESTS_LDADD)
 test_integration_sapi_command_cancel_int_SOURCES = test/integration/main-sapi.c \
     test/integration/sapi-command-cancel.int.c
-endif #SIMULATOR_BIN
+endif #ENABLE_INTEGRATION

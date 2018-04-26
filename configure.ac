@@ -104,25 +104,21 @@ AC_ARG_WITH([udevrulesprefix],
             [AC_SUBST([udevrulesprefix],[$with_udevrulesprefix])])
 AM_CONDITIONAL(WITH_UDEVRULESPREFIX, [test -n "$with_udevrulesprefix"])
 #
-# simulator binary
+# enable integration tests and check for simulator binary
 #
-AC_MSG_CHECKING([Checking for simulator binary: $with_simulatorbin])
-AC_ARG_WITH([simulatorbin],
-            [AS_HELP_STRING([--with-simulatorbin=tpm_server],[simulator executable])],
-            [AS_IF([test \( -f "$with_simulatorbin" \) -a \( -x "$with_simulatorbin" \)],
-                   [AC_MSG_RESULT([success])
-                    AC_SUBST([SIMULATOR_BIN],[$with_simulatorbin])
-                    AX_NORMALIZE_PATH([with_simulatorbin])
-                    with_simulatorbin_set=yes],
-                   [AC_MSG_ERROR([TPM simulator binary provided does not exist])])],
-            [with_simulatorbin_set=no])
-AM_CONDITIONAL([SIMULATOR_BIN],[test "x$with_simulatorbin_set" = "xyes"])
-
-AS_IF([test "x$with_simulatorbin_set" == xyes],
-      [PKG_CHECK_MODULES([LIBCRYPTO],[libcrypto])])
-
-AS_IF([test "x$with_simulatorbin_set" == xyes],
-      [AC_CHECK_HEADER(uthash.h, [], [AC_MSG_ERROR([Can not find uthash.h. Please install uthash-dev])])])
+AC_ARG_ENABLE([integration],
+    [AS_HELP_STRING([--enable-integration],
+        [build and execute integration tests (default is no)])],
+    [enable_integration=$enableval],
+    [enable_integration=no])
+AS_IF([test "x$enable_integration" = "xyes"],
+      [AC_CHECK_PROG([tpm_server], [tpm_server], [yes], [no])
+       AS_IF([test "x$tpm_server" != "xyes"],
+             [AC_MSG_ERROR([Integration tests enabled but tpm_server not found, try setting PATH])])
+       PKG_CHECK_MODULES([LIBCRYPTO],[libcrypto])
+       AC_CHECK_HEADER(uthash.h, [], [AC_MSG_ERROR([Can not find uthash.h. Please install uthash-dev])])
+       AC_SUBST([ENABLE_INTEGRATION], [$enable_integration])])
+AM_CONDITIONAL([ENABLE_INTEGRATION],[test "x$enable_integration" = "xyes"])
 
 gl_LD_VERSION_SCRIPT
 
@@ -171,6 +167,8 @@ AX_ADD_LINK_FLAG([-Wl,--no-undefined])
 AX_ADD_LINK_FLAG([-Wl,-z,noexecstack])
 AX_ADD_LINK_FLAG([-Wl,-z,now])
 AX_ADD_LINK_FLAG([-Wl,-z,relro])
+
+AC_SUBST([PATH])
 
 # work around GCC bug #53119
 #   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53119

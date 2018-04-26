@@ -37,16 +37,12 @@ print_usage ()
 {
     cat <<END
 Usage:
-    int-log-compiler.sh --simulator-bin=FILE
-                        TEST-SCRIPT [TEST-SCRIPT-ARGUMENTS]
-The '--simulator-bin' option is mandatory.
+    int-log-compiler.sh TEST-SCRIPT [TEST-SCRIPT-ARGUMENTS]
 END
 }
 while test $# -gt 0; do
     case $1 in
     --help) print_usage; exit $?;;
-    -s|--simulator-bin) SIM_BIN=$2; shift;;
-    -s=*|--simulator-bin=*) SIM_BIN="${1#*=}";;
     --) shift; break;;
     -*) usage_error "invalid option: '$1'";;
      *) break;;
@@ -67,6 +63,11 @@ sanity_test ()
     PS_LINES=$(ps -e 2>/dev/null | wc -l)
     if [ "$PS_LINES" -eq 0 ] ; then
         echo "Command ps not listing processes; exiting"
+        exit 1
+    fi
+
+    if [ -z "$(which tpm_server)" ]; then
+        echo "tpm_server not on PATH; exiting"
         exit 1
     fi
 }
@@ -188,7 +189,7 @@ for i in $(seq ${BACKOFF_MAX}); do
     fi
     SIM_PORT_CMD=$((${SIM_PORT_DATA}+1))
     echo "Starting simulator on port ${SIM_PORT_DATA}"
-    simulator_start ${SIM_BIN} ${SIM_PORT_DATA} ${SIM_LOG_FILE} ${SIM_PID_FILE} ${SIM_TMP_DIR}
+    simulator_start tpm_server ${SIM_PORT_DATA} ${SIM_LOG_FILE} ${SIM_PID_FILE} ${SIM_TMP_DIR}
     sleep 1 # give daemon time to bind to ports
     if [ ! -s ${SIM_PID_FILE} ] ; then
         echo "Simulator PID file is empty or missing. Giving up."
