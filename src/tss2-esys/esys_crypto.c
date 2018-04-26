@@ -144,7 +144,7 @@ iesys_cryptogcry_hash_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     mycontext->hash.hash_len = hash_len;
 
     gcry_error_t r = gcry_md_open(&mycontext->hash.gcry_context,
-                             mycontext->hash.gcry_hash_alg, 0);
+                                  mycontext->hash.gcry_hash_alg, 0);
     if (r != 0) {
         LOG_ERROR("GCry error.");
         free(mycontext);
@@ -410,15 +410,15 @@ iesys_cryptogcry_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
  */
 TSS2_RC
 iesys_cryptogcry_hmac_start2b(IESYS_CRYPTO_CONTEXT_BLOB ** context,
-                              TPM2_ALG_ID hmacAlg, TPM2B * b)
+                              TPM2_ALG_ID hmacAlg, TPM2B * key)
 {
-    LOG_TRACE("called for context-pointer %p and 2b-pointer %p", context, b);
-    if (context == NULL || b == NULL) {
+    LOG_TRACE("called for context-pointer %p and 2b-pointer %p", context, key);
+    if (context == NULL || key == NULL) {
         LOG_ERROR("Null-Pointer passed");
         return TSS2_ESYS_RC_BAD_REFERENCE;
     }
-    TSS2_RC ret = iesys_cryptogcry_hmac_start(context, hmacAlg, &b->buffer[0],
-                                              b->size);
+    TSS2_RC ret = iesys_cryptogcry_hmac_start(context, hmacAlg, &key->buffer[0],
+                                              key->size);
     return ret;
 }
 
@@ -538,16 +538,16 @@ iesys_cryptogcry_hmac_finish(IESYS_CRYPTO_CONTEXT_BLOB ** context,
  *         TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
  */
 TSS2_RC
-iesys_cryptogcry_hmac_finish2b(IESYS_CRYPTO_CONTEXT_BLOB ** context, TPM2B * b)
+iesys_cryptogcry_hmac_finish2b(IESYS_CRYPTO_CONTEXT_BLOB ** context, TPM2B * hmac)
 {
-    LOG_TRACE("called for context-pointer %p and 2b-pointer %p", context, b);
-    if (context == NULL || *context == NULL || b == NULL) {
+    LOG_TRACE("called for context-pointer %p and 2b-pointer %p", context, hmac);
+    if (context == NULL || *context == NULL || hmac == NULL) {
         LOG_ERROR("Null-Pointer passed");
         return TSS2_ESYS_RC_BAD_REFERENCE;
     }
-    size_t s = b->size;
-    TSS2_RC ret = iesys_cryptogcry_hmac_finish(context, &b->buffer[0], &s);
-    b->size = s;
+    size_t s = hmac->size;
+    TSS2_RC ret = iesys_cryptogcry_hmac_finish(context, &hmac->buffer[0], &s);
+    hmac->size = s;
     return ret;
 }
 
@@ -837,7 +837,10 @@ iesys_crypto_KDFa(TPM2_ALG_ID hashAlg,
                   const char *label,
                   TPM2B_NONCE * contextU,
                   TPM2B_NONCE * contextV,
-                  uint32_t bitLength, uint32_t * counterInOut, BYTE * outKey, BOOL use_digest_size)
+                  uint32_t bitLength,
+                  uint32_t * counterInOut,
+                  BYTE * outKey,
+                  BOOL use_digest_size)
 {
     LOG_DEBUG("IESYS KDFa hmac key hashAlg: %i label: %s bitLength: %i",
               hashAlg, label, bitLength);
@@ -859,6 +862,8 @@ iesys_crypto_KDFa(TPM2_ALG_ID hashAlg,
         counter = *counterInOut;
     bytes = use_digest_size ? hlen : (bitLength + 7) / 8;
     LOG_DEBUG("IESYS KDFa hmac key bytes: %i", bytes);
+
+     /* Fill outKey with results from KDFaHmac */
     for (; bytes > 0; subKey = &subKey[hlen], bytes = bytes - hlen) {
         LOG_TRACE("IESYS KDFa hmac key bytes: %i", bytes);
         //if(bytes < (INT32)hlen)
@@ -952,7 +957,7 @@ iesys_cryptogcry_KDFe(TPM2_ALG_ID hashAlg,
 
             offset = 0;
             r = Tss2_MU_UINT32_Marshal(counter, &counter_buffer[0], 4, &offset);
-            goto_if_error(r, "Error Tss2_MU_UINT32_Marshal", error);
+            goto_if_error(r, "Error marshaling counter", error);
 
             r = iesys_crypto_hash_update(cryptoContext, &counter_buffer[0], 4);
             goto_if_error(r, "Error hash update", error);
@@ -1110,7 +1115,6 @@ iesys_cryptogcry_get_ecdh_point(TPM2B_PUBLIC *key,
                                 size_t * out_size)
 {
     TSS2_RC r;
-    gcry_error_t err;
     char *curveId;
     gcry_sexp_t mpi_tpm_sq = NULL;     /* sexp for public part of TPM  key*/
     gcry_sexp_t mpi_sd = NULL;         /* sexp for private part of ephemeral key */
@@ -1159,8 +1163,7 @@ iesys_cryptogcry_get_ecdh_point(TPM2B_PUBLIC *key,
 
         if (gcry_sexp_build(&ekey_spec, NULL,
                             sexp_ecc_key) != GPG_ERR_NO_ERROR) {
-            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "gcry_sexp_build",
-                       cleanup);
+            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "gcry_sexp_build", cleanup);
         }
     }
 
@@ -1198,8 +1201,7 @@ iesys_cryptogcry_get_ecdh_point(TPM2B_PUBLIC *key,
 
     /* Check whether point is on curve */
     if (!gcry_mpi_ec_curve_point(mpi_q, ctx)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Point not on curve",
-                   cleanup);
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Point not on curve", cleanup);
     }
 
     /* Store ephemeral public key in Q */
@@ -1235,27 +1237,25 @@ iesys_cryptogcry_get_ecdh_point(TPM2B_PUBLIC *key,
             goto_error(r, TSS2_ESYS_RC_MEMORY, "asprintf", cleanup);
         }
 
-        err = gcry_sexp_build(&mpi_tpm_sq, NULL,
+        if ( gcry_sexp_build(&mpi_tpm_sq, NULL,
                               sexp_point,
                               key->publicArea.unique.ecc.x.size,
                               &key->publicArea.unique.ecc.x.buffer[0],
                               key->publicArea.unique.ecc.y.size,
-                              &key->publicArea.unique.ecc.y.buffer[0]);
-        if (err != GPG_ERR_NO_ERROR) {
-            LOG_ERROR("Function gcry_mpi_scan");
-            return TSS2_ESYS_RC_GENERAL_FAILURE;
+                             &key->publicArea.unique.ecc.y.buffer[0])) {
+            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                       "Function gcry_mpi_scan", cleanup);
+
         }
     }
     offset = 0;
-    r = Tss2_MU_TPMS_ECC_POINT_Marshal(Q,  &out_buffer[0], max_out_size,
-                                       &offset);
+    r = Tss2_MU_TPMS_ECC_POINT_Marshal(Q,  &out_buffer[0], max_out_size, &offset);
     return_if_error(r, "Error marshaling");
     *out_size = offset;
 
     /* Multiply d and Q */
-    if (gcry_mpi_ec_new (&ctx, mpi_tpm_sq, curveId) != GPG_ERR_NO_ERROR) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "gcry_mpi_ec_new",
-                   cleanup);
+    if (gcry_mpi_ec_new (&ctx, mpi_tpm_sq, curveId)) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "create ec curve", cleanup);
     }
     mpi_tpm_q =  gcry_mpi_ec_get_point ("q", ctx, 1);
     mpi_qd = gcry_mpi_point_new(256);
@@ -1263,8 +1263,8 @@ iesys_cryptogcry_get_ecdh_point(TPM2B_PUBLIC *key,
 
     /* Store the x coordinate of d*Q in Z which will be used for KDFe */
     if (gcry_mpi_ec_get_affine (mpi_x, mpi_y, mpi_qd, ctx)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Point is at infinity",
-                   cleanup);
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                   "Point is at infinity", cleanup);
     }
 
     if (gcry_mpi_print(GCRYMPI_FMT_USG, &Z->buffer[0], TPM2_MAX_ECC_KEY_BYTES,
