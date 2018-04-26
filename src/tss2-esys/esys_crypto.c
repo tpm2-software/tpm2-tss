@@ -62,10 +62,10 @@ typedef struct _IESYS_CRYPTO_CONTEXT {
  *
  * This function provides the size of the digest for a given hash algorithm
  *
- * @param hashAlg [in] The hash algorithm to get the size for
- * @param size [out] The side of a digest of the hash algorithm
- * @returnval TSS2_RC_SUCCESS on success
- * @returnval TSS2_SYS_RC_BAD_VALUE if hashAlg is unknown or unsupported
+ * @param[in]hashAlg The hash algorithm to get the size for
+ * @param[out] size The side of a digest of the hash algorithm
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval TSS2_ESYS_RC_BAD_VALUE if hashAlg is unknown or unsupported
  */
 TSS2_RC
 iesys_crypto_hash_get_digest_size(TPM2_ALG_ID hashAlg, size_t * size)
@@ -99,7 +99,16 @@ iesys_crypto_hash_get_digest_size(TPM2_ALG_ID hashAlg, size_t * size)
     return TSS2_RC_SUCCESS;
 }
 
-
+/** Provide the context for the computation of a hash digest.
+ *
+ * The context will be created and initialized according to the hash function.
+ * @param[out] context The created context (callee-allocated).
+ * @param[in] hashAlg The hash algorithm for the creation of the context.
+ * @retval TSS2_RC_SUCCESS on success.
+ *         TSS2_ESYS_RC_BAD_VALUE or TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
+ *         TSS2_ESYS_RC_MEMORY Memory can not be allocated.
+ *         TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
+ */
 TSS2_RC
 iesys_cryptogcry_hash_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
                             TPM2_ALG_ID hashAlg)
@@ -135,7 +144,7 @@ iesys_cryptogcry_hash_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     mycontext->hash.hash_len = hash_len;
 
     gcry_error_t r = gcry_md_open(&mycontext->hash.gcry_context,
-                             mycontext->hash.gcry_hash_alg, 0);
+                                  mycontext->hash.gcry_hash_alg, 0);
     if (r != 0) {
         LOG_ERROR("GCry error.");
         free(mycontext);
@@ -152,6 +161,16 @@ iesys_cryptogcry_hash_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     return TSS2_RC_SUCCESS;
 }
 
+/** Update the digest value of a digest object from a byte buffer.
+ *
+ * The context of a digest object will be updated according to the hash
+ * algorithm of the context.
+ * @param[in,out] context The context of the digest object which will be updated.
+ * @param[in] buffer The data for the update.
+ * @param[in] size The size of the data buffer.
+ * @retval TSS2_RC_SUCCESS on success.
+ *         TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
+ */
 TSS2_RC
 iesys_cryptogcry_hash_update(IESYS_CRYPTO_CONTEXT_BLOB * context,
                              const uint8_t * buffer, size_t size)
@@ -175,6 +194,15 @@ iesys_cryptogcry_hash_update(IESYS_CRYPTO_CONTEXT_BLOB * context,
     return TSS2_RC_SUCCESS;
 }
 
+/** Update the digest value of a digest object from a TPM2B object.
+ *
+ * The context of a digest object will be updated according to the hash
+ * algorithm of the context.
+ * @param[in,out] context The context of the digest object which will be updated.
+ * @param[in] b The TPM2B object for the update.
+ * @retval TSS2_RC_SUCCESS on success.
+ *         TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
+ */
 TSS2_RC
 iesys_cryptogcry_hash_update2b(IESYS_CRYPTO_CONTEXT_BLOB * context, TPM2B * b)
 {
@@ -187,6 +215,17 @@ iesys_cryptogcry_hash_update2b(IESYS_CRYPTO_CONTEXT_BLOB * context, TPM2B * b)
     return ret;
 }
 
+/** Get the digest value of a digest object and close the context.
+ *
+ * The digest value will written to a passed buffer and the resources of the
+ * digest object are released.
+ * @param[in,out] context The context of the digest object to be released
+ * @param[out] buffer The buffer for the digest value (caller-allocated).
+ * @param[out] size The size of the digest.
+ * @retval TSS2_RC_SUCCESS on success.
+ *         TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
+ *         TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
+ */
 TSS2_RC
 iesys_cryptogcry_hash_finish(IESYS_CRYPTO_CONTEXT_BLOB ** context,
                              uint8_t * buffer, size_t * size)
@@ -228,6 +267,16 @@ iesys_cryptogcry_hash_finish(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     return TSS2_RC_SUCCESS;
 }
 
+/** Get the digest value of a digest object and close the context.
+ *
+ * The digest value will written to a passed TPM2B object and the
+ * digest object are released.
+ * @param[in,out] context The context of the digest object to be released
+ * @param[out] buffer The TPM2B object for the  digest.
+ * @retval TSS2_RC_SUCCESS on success (caller-allocated).
+ *         TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
+ *         TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
+ */
 TSS2_RC
 iesys_cryptogcry_hash_finish2b(IESYS_CRYPTO_CONTEXT_BLOB ** context, TPM2B * b)
 {
@@ -242,6 +291,11 @@ iesys_cryptogcry_hash_finish2b(IESYS_CRYPTO_CONTEXT_BLOB ** context, TPM2B * b)
     return ret;
 }
 
+/** Release the resources of a digest object.
+ *
+ * The assigned resources will be released and the context will be set to NULL.
+ * @param[in,out] context The context of the digest object.
+ */
 void
 iesys_cryptogcry_hash_abort(IESYS_CRYPTO_CONTEXT_BLOB ** context)
 {
@@ -264,6 +318,19 @@ iesys_cryptogcry_hash_abort(IESYS_CRYPTO_CONTEXT_BLOB ** context)
 
 /* HMAC */
 
+/** Provide the context an HMAC digest object from a byte buffer key.
+ *
+ * The context will be created and initialized according to the hash function
+ * and the used HMAC key.
+ * @param[out] context The created context (callee-allocated).
+ * @param[in] hashAlg The hash algorithm for the HMAC computation.
+ * @param[in] key The byte buffer of the HMAC key.
+ * @param[in] size The size of the HMAC key.
+ * @retval TSS2_RC_SUCCESS on success.
+ *         TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
+ *         TSS2_ESYS_RC_MEMORY Memory can not be allocated.
+ *         TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
+ */
 TSS2_RC
 iesys_cryptogcry_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
                             TPM2_ALG_ID hmacAlg,
@@ -328,20 +395,43 @@ iesys_cryptogcry_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     return TSS2_RC_SUCCESS;
 }
 
+/** Provide the context an HMAC digest object from a byte TPM2B key.
+ *
+ * The context will be created and initialized according to the hash function
+ * and the used HMAC key.
+ * @param[out] context The created context.
+ * @param[in] hashAlg The hash algorithm for the HMAC computation.
+ * @param[in] key The TPM2B object of the HMAC key.
+ * @param[in] size The size of the HMAC key.
+ * @retval TSS2_RC_SUCCESS on success.
+ *         TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
+ *         TSS2_ESYS_RC_MEMORY Memory can not be allocated.
+ *         TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
+ */
 TSS2_RC
 iesys_cryptogcry_hmac_start2b(IESYS_CRYPTO_CONTEXT_BLOB ** context,
-                              TPM2_ALG_ID hmacAlg, TPM2B * b)
+                              TPM2_ALG_ID hmacAlg, TPM2B * key)
 {
-    LOG_TRACE("called for context-pointer %p and 2b-pointer %p", context, b);
-    if (context == NULL || b == NULL) {
+    LOG_TRACE("called for context-pointer %p and 2b-pointer %p", context, key);
+    if (context == NULL || key == NULL) {
         LOG_ERROR("Null-Pointer passed");
         return TSS2_ESYS_RC_BAD_REFERENCE;
     }
-    TSS2_RC ret = iesys_cryptogcry_hmac_start(context, hmacAlg, &b->buffer[0],
-                                              b->size);
+    TSS2_RC ret = iesys_cryptogcry_hmac_start(context, hmacAlg, &key->buffer[0],
+                                              key->size);
     return ret;
 }
 
+/** Update and HMAC digest value from a byte buffer.
+ *
+ * The context of a digest object will be updated according to the hash
+ * algorithm and the key of the context.
+ * @param[in,out] context The context of the digest object which will be updated.
+ * @param[in] buffer The data for the update.
+ * @param[in] size The size of the data buffer.
+ * @retval TSS2_RC_SUCCESS on success.
+ *         TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
+ */
 TSS2_RC
 iesys_cryptogcry_hmac_update(IESYS_CRYPTO_CONTEXT_BLOB * context,
                              const uint8_t * buffer, size_t size)
@@ -365,6 +455,15 @@ iesys_cryptogcry_hmac_update(IESYS_CRYPTO_CONTEXT_BLOB * context,
     return TSS2_RC_SUCCESS;
 }
 
+/** Update and HMAC digest value from a TPM2B object.
+ *
+ * The context of a digest object will be updated according to the hash
+ * algorithm and the key of the context.
+ * @param[in,out] context The context of the digest object which will be updated.
+ * @param[in] b The TPM2B object for the update.
+ * @retval TSS2_RC_SUCCESS on success.
+ *         TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
+ */
 TSS2_RC
 iesys_cryptogcry_hmac_update2b(IESYS_CRYPTO_CONTEXT_BLOB * context, TPM2B * b)
 {
@@ -377,6 +476,18 @@ iesys_cryptogcry_hmac_update2b(IESYS_CRYPTO_CONTEXT_BLOB * context, TPM2B * b)
     return ret;
 }
 
+/** Write the HMAC digest value to a byte buffer and close the context.
+ *
+ * The digest value will written to a passed buffer and the resources of the
+ * HMAC object are released.
+ * @param[in,out] context The context of the HMAC object.
+ * @param[out] buffer The buffer for the digest value (caller-allocated).
+ * @param[out] size The size of the digest.
+ * @retval TSS2_RC_SUCCESS on success.
+ *         TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
+ *         TSS2_ESYS_RC_BAD_SIZE If the size passed is lower than the HMAC length.
+ *         TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
+ */
 TSS2_RC
 iesys_cryptogcry_hmac_finish(IESYS_CRYPTO_CONTEXT_BLOB ** context,
                              uint8_t * buffer, size_t * size)
@@ -415,20 +526,36 @@ iesys_cryptogcry_hmac_finish(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     return TSS2_RC_SUCCESS;
 }
 
+/** Write the HMAC digest value to a TPM2B object and close the context.
+ *
+ * The digest value will written to a passed TPM2B object and the resources of
+ * the HMAC object are released.
+ * @param[in,out] context The context of the HMAC object.
+ * @param[out] hmac The buffer for the digest value (caller-allocated).
+ * @retval TSS2_RC_SUCCESS on success.
+ *         TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
+ *         TSS2_ESYS_RC_BAD_SIZE if the size passed is lower than the HMAC length.
+ *         TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
+ */
 TSS2_RC
-iesys_cryptogcry_hmac_finish2b(IESYS_CRYPTO_CONTEXT_BLOB ** context, TPM2B * b)
+iesys_cryptogcry_hmac_finish2b(IESYS_CRYPTO_CONTEXT_BLOB ** context, TPM2B * hmac)
 {
-    LOG_TRACE("called for context-pointer %p and 2b-pointer %p", context, b);
-    if (context == NULL || *context == NULL || b == NULL) {
+    LOG_TRACE("called for context-pointer %p and 2b-pointer %p", context, hmac);
+    if (context == NULL || *context == NULL || hmac == NULL) {
         LOG_ERROR("Null-Pointer passed");
         return TSS2_ESYS_RC_BAD_REFERENCE;
     }
-    size_t s = b->size;
-    TSS2_RC ret = iesys_cryptogcry_hmac_finish(context, &b->buffer[0], &s);
-    b->size = s;
+    size_t s = hmac->size;
+    TSS2_RC ret = iesys_cryptogcry_hmac_finish(context, &hmac->buffer[0], &s);
+    hmac->size = s;
     return ret;
 }
 
+/** Release the resources of an HAMC object.
+ *
+ * The assigned resources will be released and the context will be set to NULL.
+ * @param[in,out] context The context of the HMAC object.
+ */
 void
 iesys_cryptogcry_hmac_abort(IESYS_CRYPTO_CONTEXT_BLOB ** context)
 {
@@ -451,6 +578,22 @@ iesys_cryptogcry_hmac_abort(IESYS_CRYPTO_CONTEXT_BLOB ** context)
         *context = NULL;
     }
 }
+
+/** Compute the command or response parameter hash.
+ *
+ * These hashes are needed for the computation of the HMAC used for the
+ * authorization of commands, or for the HMAC used for checking the responses.
+ * The name parameters are only used for the command parameter hash (cp) and
+ * must be NULL for the computation of the response parameter rp hash (rp).
+ * @parram[in] rcBuffer
+ * @param[in] ccBuffer The command code in marshaled form.
+ * @param[in] name1-3 The identity associated with the corresponding handle.
+ *            Must be NULL if no handle is passed.
+ * @param[in] pBuffer The byte buffer or the command or the response.
+ * @param[in] pBuffer_size The size of the command or response.
+ * @param[out] pHash The result digest.
+ * @param[out] pHash_size The size of the result digest.
+ */
 
 TSS2_RC
 iesys_crypto_pHash(TPM2_ALG_ID alg,
@@ -510,6 +653,24 @@ iesys_crypto_pHash(TPM2_ALG_ID alg,
     return r;
 }
 
+/** Compute the HMAC for authorization.
+ *
+ * Based on the session nonces, caller nonce, TPM nonce, if used encryption and
+ * decryption nonce, the command parameter hash, and the session attributes the
+ * HMAC used for authorization is computed.
+ * @param[in] alg The hash algorithm used for HMAC computation.
+ * @param[in] hmacKey The HMAC key byte buffer.
+ * @param[in] hmacKeySize The size of the HMAC key byte buffer.
+ * @param[in] pHash The command parameter hash byte buffer.
+ * @param[in] pHash_size The size of the command parameter hash byte buffer.
+ * @param[in] nonceNewer The TPM nonce.
+ * @param[in] nonceOlder The caller nonce.
+ * @param[in] nonceDecrypt The decrypt nonce (NULL if not used).
+ * @param[in] nonceEncrypt The encrypt nonce (NULL if not used).
+ * @param[in] sessionAttributes The attributes used for the current
+ *            authentication.
+ * @param[out] hmac The computed HMAC.
+ */
 TSS2_RC
 iesys_crypto_authHmac(TPM2_ALG_ID alg,
                       uint8_t * hmacKey, size_t hmacKeySize,
@@ -577,6 +738,20 @@ iesys_crypto_authHmac(TPM2_ALG_ID alg,
 
 }
 
+/**
+ * HMAC computation for inner loop of KDFa key derivation.
+ *
+ * Except of ECDH this function is used for key derivation.
+ * @param[in] hmacKey The hmacKey used in KDFa.
+ * @param[in] hmacKeySize The size of the HMAC key.
+ * @param[in] counter The curren iteration step.
+ * @param[in] label Indicates the use of the produced key.
+ * @param[in] ContextU and ContextV are used for construction of a binary string
+ *            containing information related to the derived key.
+ * @param[in] bitLength The si ize of generated key in bits.
+ * @param[out] hmac Byte buffer for the generated HMAC key (caller-allocated).
+ * @param[out] hmacSize  Size of the generated HMAC key.
+ */
 TSS2_RC
 iesys_crypto_KDFaHmac(TPM2_ALG_ID alg,
                       uint8_t * hmacKey,
@@ -637,6 +812,24 @@ iesys_crypto_KDFaHmac(TPM2_ALG_ID alg,
     return r;
 }
 
+/**
+ * KDFa Key derivation.
+ *
+ * Except of ECDH this function is used for key derivation.
+ * @param[in] hmacKey The hmacKey used in KDFa.
+ * @param[in] hmacKeySize The size of the HMAC key.
+ * @param[in] label Indicates the use of the produced key.
+ * @param[in] ContextU and ContextV are used for construction of a binary string
+ *            containing information related to the derived key.
+ * @param[in] bitLength The size of generated key in bits.
+ * @param[in,out] counterInOut Counter for the KDFa iterations. If set, the
+ *                value will be used for the firt iteration step. The final
+ *                counter value will be written to  counterInOut.
+ * @param[out] outKey Byte buffer for the derived key (caller-allocated).
+ * @param[in] use_digest_size Indicate whether the digest size of hashAlg is
+ *            used as size of the generated key or the bitLength parameter is
+ *            used.
+ */
 TSS2_RC
 iesys_crypto_KDFa(TPM2_ALG_ID hashAlg,
                   uint8_t * hmacKey,
@@ -644,7 +837,10 @@ iesys_crypto_KDFa(TPM2_ALG_ID hashAlg,
                   const char *label,
                   TPM2B_NONCE * contextU,
                   TPM2B_NONCE * contextV,
-                  uint32_t bitLength, uint32_t * counterInOut, BYTE * outKey, BOOL use_digest_size)
+                  uint32_t bitLength,
+                  uint32_t * counterInOut,
+                  BYTE * outKey,
+                  BOOL use_digest_size)
 {
     LOG_DEBUG("IESYS KDFa hmac key hashAlg: %i label: %s bitLength: %i",
               hashAlg, label, bitLength);
@@ -666,6 +862,8 @@ iesys_crypto_KDFa(TPM2_ALG_ID hashAlg,
         counter = *counterInOut;
     bytes = use_digest_size ? hlen : (bitLength + 7) / 8;
     LOG_DEBUG("IESYS KDFa hmac key bytes: %i", bytes);
+
+     /* Fill outKey with results from KDFaHmac */
     for (; bytes > 0; subKey = &subKey[hlen], bytes = bytes - hlen) {
         LOG_TRACE("IESYS KDFa hmac key bytes: %i", bytes);
         //if(bytes < (INT32)hlen)
@@ -684,6 +882,12 @@ iesys_crypto_KDFa(TPM2_ALG_ID hashAlg,
     return TPM2_RC_SUCCESS;
 }
 
+/** Compute random TPM2B data.
+ *
+ * The random data will be generated and written to a passed TPM2B structure.
+ * @param[out] nonce The TPM2B structure for the random data (caller-allocated).
+ * @param[in] num_bytes The number of bytes to be generated.
+ */
 TSS2_RC
 iesys_cryptogcry_random2b(TPM2B_NONCE * nonce, size_t num_bytes)
 {
@@ -700,18 +904,19 @@ iesys_cryptogcry_random2b(TPM2B_NONCE * nonce, size_t num_bytes)
     return TSS2_RC_SUCCESS;
 }
 
-/** Compute KDFe as described in tpm spec part 1 C 6.1
+/** Compute KDFe as described in TPM spec part 1 C 6.1
  *
  * @possible
- * @parm hashAlg [IN] The nameAlg of the recipient key.
- * @parm Z [IN] the x coordinate (xP) of the product (P) of a public point and a
+ * @parm hashAlg [in] The nameAlg of the recipient key.
+ * @parm Z [in] the x coordinate (xP) of the product (P) of a public point and a
  *       private key.
- * @parm label [IN] KDF label.
- * @parm partyUInfo [IN] The x-coordinate of the secret exchange value (Qe,U).
- * @parm partyVInfo [IN] The x-coordinate of a public key (Qs,V).
- * @parm bit_size [IN] Bit size of generated key.
- * @parm key [OUT] Key buffer.
- * @returnval TSS2_RC_SUCCESS or TODO
+ * @parm label [in] KDF label.
+ * @parm partyUInfo [in] The x-coordinate of the secret exchange value (Qe,U).
+ * @parm partyVInfo [in] The x-coordinate of a public key (Qs,V).
+ * @parm bit_size [in] Bit size of generated key.
+ * @parm key [out] Key buffer.
+ * @retval TSS2_RC_SUCCESS on success,  TSS2_ESYS_RC_BAD_REFERENCE for invalid
+ *         parameters, TSS2_ESYS_RC_NOT_IMPLEMENTED, TSS2_ESYS_RC_MEMORY.
  */
 TSS2_RC
 iesys_cryptogcry_KDFe(TPM2_ALG_ID hashAlg,
@@ -752,7 +957,7 @@ iesys_cryptogcry_KDFe(TPM2_ALG_ID hashAlg,
 
             offset = 0;
             r = Tss2_MU_UINT32_Marshal(counter, &counter_buffer[0], 4, &offset);
-            goto_if_error(r, "Error Tss2_MU_UINT32_Marshal", error);
+            goto_if_error(r, "Error marshaling counter", error);
 
             r = iesys_crypto_hash_update(cryptoContext, &counter_buffer[0], 4);
             goto_if_error(r, "Error hash update", error);
@@ -910,7 +1115,6 @@ iesys_cryptogcry_get_ecdh_point(TPM2B_PUBLIC *key,
                                 size_t * out_size)
 {
     TSS2_RC r;
-    gcry_error_t err;
     char *curveId;
     gcry_sexp_t mpi_tpm_sq = NULL;     /* sexp for public part of TPM  key*/
     gcry_sexp_t mpi_sd = NULL;         /* sexp for private part of ephemeral key */
@@ -959,8 +1163,7 @@ iesys_cryptogcry_get_ecdh_point(TPM2B_PUBLIC *key,
 
         if (gcry_sexp_build(&ekey_spec, NULL,
                             sexp_ecc_key) != GPG_ERR_NO_ERROR) {
-            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "gcry_sexp_build",
-                       cleanup);
+            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "gcry_sexp_build", cleanup);
         }
     }
 
@@ -998,8 +1201,7 @@ iesys_cryptogcry_get_ecdh_point(TPM2B_PUBLIC *key,
 
     /* Check whether point is on curve */
     if (!gcry_mpi_ec_curve_point(mpi_q, ctx)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Point not on curve",
-                   cleanup);
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Point not on curve", cleanup);
     }
 
     /* Store ephemeral public key in Q */
@@ -1035,27 +1237,25 @@ iesys_cryptogcry_get_ecdh_point(TPM2B_PUBLIC *key,
             goto_error(r, TSS2_ESYS_RC_MEMORY, "asprintf", cleanup);
         }
 
-        err = gcry_sexp_build(&mpi_tpm_sq, NULL,
+        if ( gcry_sexp_build(&mpi_tpm_sq, NULL,
                               sexp_point,
                               key->publicArea.unique.ecc.x.size,
                               &key->publicArea.unique.ecc.x.buffer[0],
                               key->publicArea.unique.ecc.y.size,
-                              &key->publicArea.unique.ecc.y.buffer[0]);
-        if (err != GPG_ERR_NO_ERROR) {
-            LOG_ERROR("Function gcry_mpi_scan");
-            return TSS2_ESYS_RC_GENERAL_FAILURE;
+                             &key->publicArea.unique.ecc.y.buffer[0])) {
+            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                       "Function gcry_mpi_scan", cleanup);
+
         }
     }
     offset = 0;
-    r = Tss2_MU_TPMS_ECC_POINT_Marshal(Q,  &out_buffer[0], max_out_size,
-                                       &offset);
+    r = Tss2_MU_TPMS_ECC_POINT_Marshal(Q,  &out_buffer[0], max_out_size, &offset);
     return_if_error(r, "Error marshaling");
     *out_size = offset;
 
     /* Multiply d and Q */
-    if (gcry_mpi_ec_new (&ctx, mpi_tpm_sq, curveId) != GPG_ERR_NO_ERROR) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "gcry_mpi_ec_new",
-                   cleanup);
+    if (gcry_mpi_ec_new (&ctx, mpi_tpm_sq, curveId)) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "create ec curve", cleanup);
     }
     mpi_tpm_q =  gcry_mpi_ec_get_point ("q", ctx, 1);
     mpi_qd = gcry_mpi_point_new(256);
@@ -1063,8 +1263,8 @@ iesys_cryptogcry_get_ecdh_point(TPM2B_PUBLIC *key,
 
     /* Store the x coordinate of d*Q in Z which will be used for KDFe */
     if (gcry_mpi_ec_get_affine (mpi_x, mpi_y, mpi_qd, ctx)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Point is at infinity",
-                   cleanup);
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                   "Point is at infinity", cleanup);
     }
 
     if (gcry_mpi_print(GCRYMPI_FMT_USG, &Z->buffer[0], TPM2_MAX_ECC_KEY_BYTES,
@@ -1091,6 +1291,19 @@ iesys_cryptogcry_get_ecdh_point(TPM2B_PUBLIC *key,
     return r;
 }
 
+/** Initialize AES context for encryption / decryption.
+ *
+ * @param[out] handle for AES context
+ * @param[in] key key used for AES.
+ * @param[in] tpm_sym_alg AES type in TSS2 notation.
+ * @param[in] key_bits Key size in bits.
+ * @param[in] tpm_mode Block cipher mode of opertion in TSS2 notation (CBC or CFB).
+ * @param[in] iv_len Length of initialization vector (iv) in byte.
+ * @param[in] iv The initialization vector.
+ * @retval TSS2_RC_SUCCESS on success, or TSS2_ESYS_RC_BAD_VALUE for invalid
+ *         parameters, TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto
+ *         library.
+ */
 TSS2_RC
 iesys_cryptogcry_sym_aes_init(gcry_cipher_hd_t * cipher_hd,
                               uint8_t * key,
@@ -1161,6 +1374,21 @@ iesys_cryptogcry_sym_aes_init(gcry_cipher_hd_t * cipher_hd,
     return TSS2_RC_SUCCESS;
 }
 
+/** Encrypt data with AES.
+ *
+ * @param[in] key key used for AES.
+ * @param[in] tpm_sym_alg AES type in TSS2 notation (must be TPM2_ALG_AES).
+ * @param[in] key_bits Key size in bits.
+ * @param[in] tpm_mode Block cipher mode of opertion in TSS2 notation (CBC or CFB).
+ * @param[in] blk_len Length Block length of AES.
+ * @param[in,out] buffer Data to be encrypted. The encrypted date will be stored
+ *                in this buffer.
+ * @param[in] buffer_size size of data to be encrypted.
+ * @param[in] iv The initialization vector. The size is equal to blk_len.
+ * @retval TSS2_RC_SUCCESS on success, or TSS2_ESYS_RC_BAD_VALUE and
+ *         TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters,
+ *         TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
+ */
 TSS2_RC
 iesys_cryptogcry_sym_aes_encrypt(uint8_t * key,
                                  TPM2_ALG_ID tpm_sym_alg,
@@ -1195,6 +1423,21 @@ iesys_cryptogcry_sym_aes_encrypt(uint8_t * key,
     return TSS2_RC_SUCCESS;
 }
 
+/** Decrypt data with AES.
+ *
+ * @param[in] key key used for AES.
+ * @param[in] tpm_sym_alg AES type in TSS2 notation (must be TPM2_ALG_AES).
+ * @param[in] key_bits Key size in bits.
+ * @param[in] tpm_mode Block cipher mode of opertion in TSS2 notation (CBC or CFB).
+ * @param[in] blk_len Length Block length of AES.
+ * @param[in,out] buffer Data to be decrypted. The decrypted date will be stored
+ *                in this buffer.
+ * @param[in] buffer_size size of data to be encrypted.
+ * @param[in] iv The initialization vector. The size is equal to blk_len.
+ * @retval TSS2_RC_SUCCESS on success, or TSS2_ESYS_RC_BAD_VALUE and
+ *         TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters,
+ *         TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
+ */
 TSS2_RC
 iesys_cryptogcry_sym_aes_decrypt(uint8_t * key,
                                  TPM2_ALG_ID tpm_sym_alg,
@@ -1232,7 +1475,20 @@ iesys_cryptogcry_sym_aes_decrypt(uint8_t * key,
     return TSS2_RC_SUCCESS;
 }
 
-
+/** Encryption/Decryption using XOR obfuscation.
+ *
+ * The application of this function to data encrypted with this function will
+ * produce the origin data. The key for XOR obfuscation will be derived with
+ * KDFa form the passed key the session nonces, and the hash algorithm.
+ * @param[in] hash_alg The algorithm used for key derivation.
+ * @param[in] key key used for obfuscation
+ * @param[in] key_bits Key size in bits.
+ * @param[in,out] data Data to be encrypted/decrypted the result will be
+ *                will be stored in this buffer.
+ * @param[in] data_size size of data to be encrypted/decrypted.
+ * @retval TSS2_RC_SUCCESS on success, or TSS2_ESYS_RC_BAD_VALUE and
+ *         TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
+ */
 TSS2_RC
 iesys_xor_parameter_obfuscation(TPM2_ALG_ID hash_alg,
                                 uint8_t *key,

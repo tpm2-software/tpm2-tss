@@ -37,12 +37,18 @@
  * Serialize the metadata of an ESYS_TR object into a byte buffer such that it
  * can be stored on disk for later use by a different program or context.
  * The serialized object can be deserialized suing Esys_TR_Deserialize.
- * @param esys_context [INOUT] The ESYS_CONTEXT.
- * @param esys_handle [IN] The ESYS_TR object to serialize.
- * @param buffer [OUT] The buffer containing the serialized metadata. (caller-callocated) Shall be freed using free().
- * @param buffer_size [OUT] The size of the buffer parameter.
+ * @param esys_context [in,out] The ESYS_CONTEXT.
+ * @param esys_handle [in] The ESYS_TR object to serialize.
+ * @param buffer [out] The buffer containing the serialized metadata.
+ *        (caller-callocated) Shall be freed using free().
+ * @param buffer_size [out] The size of the buffer parameter.
  * @retval TSS2_RC_SUCCESS on Success.
- * @retval TSS2_RC_ESYS_GENERAL_FAILURE On Failure.
+ * @retval TSS2_ESYS_RC_BAD_TR if the ESYS_TR object is unknown to the
+ *         ESYS_CONTEXT.
+ * @retval TSS2_ESYS_RC_MEMORY if the buffer for marshaling the object can't
+ *         be allocated.
+ * @retval TSS2_ESYS_RC_BAD_VALUE For invalid ESYS data to be marshaled.
+ * @retval TSS2_RCs produced by lower layers of the software stack.
  */
 TSS2_RC
 Esys_TR_Serialize(ESYS_CONTEXT * esys_context,
@@ -76,12 +82,16 @@ Esys_TR_Serialize(ESYS_CONTEXT * esys_context,
  * Deserialize the metadata of an ESYS_TR object from a byte buffer that was
  * stored on disk for later use by a different program or context.
  * An object can be serialized suing Esys_TR_Serialize.
- * @param esys_context [INOUT] The ESYS_CONTEXT.
- * @param esys_handle [IN] The ESYS_TR object to serialize.
- * @param buffer [OUT] The buffer containing the serialized metadata. (caller-callocated) Shall be freed using free().
- * @param buffer_size [OUT] The size of the buffer parameter.
- * @retval TSS2_RC_SUCCESS on Success \todo Add error RCs.
- * @retval TSS2_RC_ESYS_GENERAL_FAILURE On Failure.
+ * @param esys_context [in,out] The ESYS_CONTEXT.
+ * @param esys_handle [in] The ESYS_TR object to serialize.
+ * @param buffer [out] The buffer containing the serialized metadata.
+ *        (caller-callocated) Shall be freed using free().
+ * @param buffer_size [out] The size of the buffer parameter.
+ * @retval TSS2_RC_SUCCESS on Success.
+ * @retval TSS2_ESYS_RC_MEMORY if the object can not be allocated.
+ * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if the buffer for unmarshaling.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext is NULL.
+ * @retval TSS2_RCs produced by lower layers of the software stack.
  */
 TSS2_RC
 Esys_TR_Deserialize(ESYS_CONTEXT * esys_context,
@@ -106,7 +116,27 @@ Esys_TR_Deserialize(ESYS_CONTEXT * esys_context,
  *
  * This function starts the asynchronous retrieval of metadata from the TPM in
  * order to create a new ESYS_TR object.
- * @see Esys_TR_FromTPMPublic for more information
+* @param esys_context [in,out] The ESYS_CONTEXT
+ * @param tpm_handle [in] The handle of the TPM object to represent as ESYS_TR.
+ * @param shandle1 [in,out] A session for securing the TPM command (optional).
+ * @param shandle2 [in,out] A session for securing the TPM command (optional).
+ * @param shandle3 [in,out] A session for securing the TPM command (optional).
+ * @param object [out] The newly created ESYS_TR metadata object.
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext is NULL.
+ * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
+ * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ * @retval TSS2_ESYS_RC_MULTIPLE_DECRYPT_SESSIONS: if more than one session has
+ *         the 'decrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
+ *         the 'encrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_NO_DECRYPT_PARAM: if one of the sessions has the
+ *         'decrypt' attribute set and the command does not support encryption
+ *         of the first command parameter.
+ * @retval TSS2_RCs produced by lower layers of the software stack may be
+ *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
 Esys_TR_FromTPMPublic_Async(ESYS_CONTEXT * esys_context,
@@ -144,7 +174,22 @@ Esys_TR_FromTPMPublic_Async(ESYS_CONTEXT * esys_context,
 /** Finish asynchronous creation of an ESYS_TR object from TPM metadata.
  * This function finishes the asynchronous retrieval of metadata from the TPM in
  * order to create a new ESYS_TR object.
- * @see Esys_TR_FromTPMPublic for more information
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
+ *         pointers or required output handle references are NULL.
+ * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
+ * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ * @retval TSS2_ESYS_RC_BAD_SEQUENCE: if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_TRY_AGAIN: if the timeout counter expires before the
+ *         TPM response is received.
+ * @retval TSS2_ESYS_RC_INSUFFICIENT_RESPONSE: if the TPM's response does not
+ *          at least contain the tag, response length, and response code.
+ * @retval TSS2_ESYS_RC_MALFORMED_RESPONSE: if the TPM's response is corrupted.
+ * @retval TSS2_RCs produced by lower layers of the software stack may be
+ *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
 Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * esys_handle)
@@ -214,13 +259,33 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * esys_handle)
  *
  * Since man in the middle attacks should be prevented as much as possible it is
  * recommended to pass a session.
- * @param esys_context [INOUT] The ESYS_CONTEXT
- * @param tpm_handle [IN] The handle of the TPM object to represent as ESYS_TR.
- * @param shandle1 [INOUT] A session for securing the TPM command (optional).
- * @param shandle2 [INOUT] A session for securing the TPM command (optional).
- * @param shandle3 [INOUT] A session for securing the TPM command (optional).
- * @param object [OUT] The newly created ESYS_TR metadata object.
- * @retval TSS2_RC_SUCCESS on Success \todo Add error RCs.
+ * @param esys_context [in,out] The ESYS_CONTEXT
+ * @param tpm_handle [in] The handle of the TPM object to represent as ESYS_TR.
+ * @param shandle1 [in,out] A session for securing the TPM command (optional).
+ * @param shandle2 [in,out] A session for securing the TPM command (optional).
+ * @param shandle3 [in,out] A session for securing the TPM command (optional).
+ * @param object [out] The newly created ESYS_TR metadata object.
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
+ *         pointers or required output handle references are NULL.
+ * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
+ * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ * @retval TSS2_ESYS_RC_BAD_SEQUENCE: if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_INSUFFICIENT_RESPONSE: if the TPM's response does not
+ *          at least contain the tag, response length, and response code.
+ * @retval TSS2_ESYS_RC_MALFORMED_RESPONSE: if the TPM's response is corrupted.
+ * @retval TSS2_ESYS_RC_MULTIPLE_DECRYPT_SESSIONS: if more than one session has
+ *         the 'decrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
+ *         the 'encrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_NO_DECRYPT_PARAM: if one of the sessions has the
+ *         'decrypt' attribute set and the command does not support encryption
+ *         of the first command parameter.
+ * @retval TSS2_RCs produced by lower layers of the software stack may be
+ *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
 Esys_TR_FromTPMPublic(ESYS_CONTEXT * esys_context,
@@ -263,9 +328,12 @@ Esys_TR_FromTPMPublic(ESYS_CONTEXT * esys_context,
  * it from the TPM. This is useful for NV-Indices or persistent keys, after
  * Esys_TR_Serialize has been called. Transient objects should be deleted using
  * Esys_FlushContext.
- * @param esys_context [INOUT] The ESYS_CONTEXT
- * @param object [OUT] ESYS_TR metadata object to be deleted from ESYS_CONTEXT.
- * @retval TSS2_RC_SUCCESS on Success \todo Add error RCs.
+ * @param esys_context [in,out] The ESYS_CONTEXT
+ * @param object [out] ESYS_TR metadata object to be deleted from ESYS_CONTEXT.
+ * @retval TSS2_RC_SUCCESS on Success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext is NULL.
+ * @retval TSS2_ESYS_RC_BAD_TR if the ESYS_TR object is unknown to the
+ *         ESYS_CONTEXT.
  */
 TSS2_RC
 Esys_TR_Close(ESYS_CONTEXT * esys_context, ESYS_TR * object)
@@ -295,10 +363,13 @@ Esys_TR_Close(ESYS_CONTEXT * esys_context, ESYS_TR * object)
  * Note: The authorization value is not stored in the metadata during
  * Esys_TR_Serialize. Therefor Esys_TR_SetAuth needs to be called again after
  * every Esys_TR_Deserialize.
- * @param esys_context [INOUT] The ESYS_CONTEXT.
- * @param esys_handle [INOUT] The ESYS_TR for which to set the auth value.
- * @param authValue [IN] The auth value to set for the ESYS_TR.
- * @retval TSS2_RC_SUCCESS on Success \todo Add error RCs.
+ * @param esys_context [in,out] The ESYS_CONTEXT.
+ * @param esys_handle [in,out] The ESYS_TR for which to set the auth value.
+ * @param authValue [in] The auth value to set for the ESYS_TR.
+ * @retval TSS2_RC_SUCCESS on Success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext is NULL.
+ * @retval TSS2_ESYS_RC_BAD_TR if the ESYS_TR object is unknown to the
+ *         ESYS_CONTEXT.
  */
 TSS2_RC
 Esys_TR_SetAuth(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
@@ -317,10 +388,14 @@ Esys_TR_SetAuth(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
  *
  * Some operations (i.e. Esys_PolicyNameHash) require the name of a TPM object
  * to be passed. Esys_TR_GetName provides this name to the caller.
- * @param esys_context [INOUT] The ESYS_CONTEXT.
- * @param esys_handle [INOUT] The ESYS_TR for which to retrieve the name.
- * @param name [OUT] The name of the object (caller-allocated; use free()).
- * @retval TSS2_RC_SUCCESS on Success \todo Add error RCs.
+ * @param esys_context [in,out] The ESYS_CONTEXT.
+ * @param esys_handle [in,out] The ESYS_TR for which to retrieve the name.
+ * @param name [out] The name of the object (caller-allocated; use free()).
+ * @retval TSS2_RC_SUCCESS on Success.
+ * @retval TSS2_ESYS_RC_MEMORY if needed memory can't be allocated.
+ * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext is NULL.
+ * @retval TSS2_SYS_RC_* for SAPI errors.
  */
 TSS2_RC
 Esys_TR_GetName(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
@@ -366,10 +441,12 @@ Esys_TR_GetName(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
  * flushed after the next command, or whether they are used to encrypt
  * parameters.
  * Note: this function only applies to ESYS_TR objects that represent sessions.
- * @param esys_context [INOUT] The ESYS_CONTEXT.
- * @param esys_handle [INOUT] The ESYS_TR of the session.
- * @param flags [OUT] The attributes of the session.
- * @retval TSS2_RC_SUCCESS on Success \todo Add error RCs.
+ * @param esys_context [in,out] The ESYS_CONTEXT.
+ * @param esys_handle [in,out] The ESYS_TR of the session.
+ * @param flags [out] The attributes of the session.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext is NULL.
+ * @retval TSS2_ESYS_RC_BAD_TR if the ESYS_TR object is unknown to the
+ *         ESYS_CONTEXT or ESYS_TR object is not a session object.
  */
 TSS2_RC
 Esys_TRSess_GetAttributes(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
@@ -390,11 +467,14 @@ Esys_TRSess_GetAttributes(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
  * Set or unset a session's attributes according to the provided flags and mask.
  * @verbatim new_attributes = old_attributes & ~mask | flags & mask @endverbatim
  * Note: this function only applies to ESYS_TR objects that represent sessions.
- * @param esys_context [INOUT] The ESYS_CONTEXT.
- * @param esys_handle [INOUT] The ESYS_TR of the session.
- * @param flags [IN] The flags to be set or unset for the session.
- * @param mask [IN] The mask for the flags to be set or unset.
- * @retval TSS2_RC_SUCCESS on Success \todo Add error RCs.
+ * @param esys_context [in,out] The ESYS_CONTEXT.
+ * @param esys_handle [in,out] The ESYS_TR of the session.
+ * @param flags [in] The flags to be set or unset for the session.
+ * @param mask [in] The mask for the flags to be set or unset.
+ * @retval TSS2_RC_SUCCESS on Success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext is NULL.
+ * @retval TSS2_ESYS_RC_BAD_TR if the ESYS_TR object is unknown to the
+ *         ESYS_CONTEXT or ESYS_TR object is not a session object.
  */
 TSS2_RC
 Esys_TRSess_SetAttributes(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,

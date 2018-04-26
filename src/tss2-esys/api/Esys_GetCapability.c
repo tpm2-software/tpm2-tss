@@ -55,19 +55,40 @@ static void store_input_parameters (
  * parameters is allocated by the function implementation.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
- * @param[in] shandle1 First session handle.
- * @param[in] shandle2 Second session handle.
- * @param[in] shandle3 Third session handle.
- * @param[in] capability Input parameter of type TPM2_CAP.
- * @param[in] property Input parameter of type UINT32.
- * @param[in] propertyCount Input parameter of type UINT32.
- * @param[out] moreData (callee-allocated) Output parameter
- *    of type TPMI_YES_NO. May be NULL if this value is not required.
- * @param[out] capabilityData (callee-allocated) Output parameter
- *    of type TPMS_CAPABILITY_DATA. May be NULL if this value is not required.
+ * @param[in]  shandle1 First session handle.
+ * @param[in]  shandle2 Second session handle.
+ * @param[in]  shandle3 Third session handle.
+ * @param[in]  capability Group selection; determines the format of the response.
+ * @param[in]  property Further definition of information.
+ * @param[in]  propertyCount Number of properties of the indicated type to return.
+ * @param[out] moreData Flag to indicate if there are more values of this type.
+ *             (callee-allocated)
+ * @param[out] capabilityData The capability data.
+ *             (callee-allocated)
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_RC_BAD_SEQUENCE if context is not ready for this function
- * \todo add further error RCs to documentation
+ * @retval ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
+ *         pointers or required output handle references are NULL.
+ * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
+ * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ * @retval TSS2_ESYS_RC_BAD_SEQUENCE: if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_INSUFFICIENT_RESPONSE: if the TPM's response does not
+ *          at least contain the tag, response length, and response code.
+ * @retval TSS2_ESYS_RC_MALFORMED_RESPONSE: if the TPM's response is corrupted.
+ * @retval TSS2_ESYS_RC_MULTIPLE_DECRYPT_SESSIONS: if more than one session has
+ *         the 'decrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
+ *         the 'encrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_NO_DECRYPT_PARAM: if one of the sessions has the
+ *         'decrypt' attribute set and the command does not support encryption
+ *         of the first command parameter.
+ * @retval TSS2_ESYS_RC_NO_ENCRYPT_PARAM: if one of the sessions has the
+ *         'encrypt' attribute set and the command does not support encryption
+ *          of the first response parameter.
+ * @retval TSS2_RCs produced by lower layers of the software stack may be
+ *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
 Esys_GetCapability(
@@ -128,15 +149,30 @@ Esys_GetCapability(
  * In order to retrieve the TPM's response call Esys_GetCapability_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
- * @param[in] shandle1 First session handle.
- * @param[in] shandle2 Second session handle.
- * @param[in] shandle3 Third session handle.
- * @param[in] capability Input parameter of type TPM2_CAP.
- * @param[in] property Input parameter of type UINT32.
- * @param[in] propertyCount Input parameter of type UINT32.
- * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_RC_BAD_SEQUENCE if context is not ready for this function
- * \todo add further error RCs to documentation
+ * @param[in]  shandle1 First session handle.
+ * @param[in]  shandle2 Second session handle.
+ * @param[in]  shandle3 Third session handle.
+ * @param[in]  capability Group selection; determines the format of the response.
+ * @param[in]  property Further definition of information.
+ * @param[in]  propertyCount Number of properties of the indicated type to return.
+ * @retval ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
+ *         pointers or required output handle references are NULL.
+ * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
+ * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ * @retval TSS2_RCs produced by lower layers of the software stack may be
+           returned to the caller unaltered unless handled internally.
+ * @retval TSS2_ESYS_RC_MULTIPLE_DECRYPT_SESSIONS: if more than one session has
+ *         the 'decrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
+ *         the 'encrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_NO_DECRYPT_PARAM: if one of the sessions has the
+ *         'decrypt' attribute set and the command does not support encryption
+ *         of the first command parameter.
+ * @retval TSS2_ESYS_RC_NO_ENCRYPT_PARAM: if one of the sessions has the
+ *         'encrypt' attribute set and the command does not support encryption
+ *          of the first response parameter.
  */
 TSS2_RC
 Esys_GetCapability_Async(
@@ -210,13 +246,26 @@ Esys_GetCapability_Async(
  * output parameter if the value is not required.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
- * @param[out] moreData (callee-allocated) Output parameter
- *    of type TPMI_YES_NO. May be NULL if this value is not required.
- * @param[out] capabilityData (callee-allocated) Output parameter
- *    of type TPMS_CAPABILITY_DATA. May be NULL if this value is not required.
+ * @param[out] moreData Flag to indicate if there are more values of this type.
+ *             (callee-allocated)
+ * @param[out] capabilityData The capability data.
+ *             (callee-allocated)
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_RC_BAD_SEQUENCE if context is not ready for this function.
- * \todo add further error RCs to documentation
+ * @retval ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
+ *         pointers or required output handle references are NULL.
+ * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
+ * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ * @retval TSS2_ESYS_RC_BAD_SEQUENCE: if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_TRY_AGAIN: if the timeout counter expires before the
+ *         TPM response is received.
+ * @retval TSS2_ESYS_RC_INSUFFICIENT_RESPONSE: if the TPM's response does not
+ *          at least contain the tag, response length, and response code.
+ * @retval TSS2_ESYS_RC_MALFORMED_RESPONSE: if the TPM's response is corrupted.
+ * @retval TSS2_RCs produced by lower layers of the software stack may be
+ *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
 Esys_GetCapability_Finish(
