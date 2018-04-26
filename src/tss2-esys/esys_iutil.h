@@ -107,10 +107,11 @@ extern "C" {
         r_max = r; \
     }
 
-typedef    struct {
-    TPM2_ALG_ID alg;
-    size_t size;
-    uint8_t digest[sizeof(TPMU_HA)];
+/** An entry in a cpHash or rpHash table. */
+typedef struct {
+    TPM2_ALG_ID alg;                 /**< The hash algorithm. */
+    size_t size;                     /**< The digest size. */
+    uint8_t digest[sizeof(TPMU_HA)]; /**< The digest. */
 } HASH_TAB_ITEM;
 
 bool cmp_UINT16 (const UINT16 *in1, const UINT16 *in2);

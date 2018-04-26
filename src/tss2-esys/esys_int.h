@@ -34,12 +34,17 @@
 extern "C" {
 #endif
 
-
+/** Linked list type for object meta data.
+ *
+ * This structure represents a linked list to store meta data information of
+ * type IESYS_RESOURCE.
+ */
 typedef struct RSRC_NODE_T {
-    ESYS_TR esys_handle;
-    TPM2B_AUTH auth;
-    IESYS_RESOURCE rsrc;
-    struct RSRC_NODE_T * next;
+    ESYS_TR esys_handle;        /**< The ESYS_TR handle used by the application
+                                     to reference this entry. */
+    TPM2B_AUTH auth;            /**< The authValue for this resource object. */
+    IESYS_RESOURCE rsrc;        /**< The meta data for this resource object. */
+    struct RSRC_NODE_T * next;  /**< The next object in the linked list. */
 } RSRC_NODE_T;
 
 /*
@@ -929,6 +934,11 @@ typedef struct {
     TPM2B_DATA inputDataData;
 } Vendor_TCG_Test_IN;
 
+/** Union for all input parameters.
+ *
+ * The input parameters of a command need to be stored in order to enable
+ * resubmission. This type provides the corresponding facilities.
+ */
 typedef union {
 
     Startup_IN Startup;
@@ -1046,33 +1056,66 @@ typedef union {
     Vendor_TCG_Test_IN Vendor_TCG_Test;
 } IESYS_CMD_IN_PARAM;
 
+/** The states for the ESAPI's internal state machine */
 enum _ESYS_STATE {
-    _ESYS_STATE_INIT = 0,
-    _ESYS_STATE_SENT,
-    _ESYS_STATE_RESUBMISSION,
-    _ESYS_STATE_INTERNALERROR
+    _ESYS_STATE_INIT = 0,     /**< The initial state after creation or after
+                                   finishing a command. A new command can only
+                                   be issued in this state. */
+    _ESYS_STATE_SENT,         /**< The state after sending a command to the TPM
+                                   before receiving a response. */
+    _ESYS_STATE_RESUBMISSION, /**< The state after receiving a response from the
+                                   TPM that requires resending of the command.*/
+    _ESYS_STATE_INTERNALERROR /**< A non-recoverable error occured within the
+                                   ESAPI code. */
 };
 
+/** The data structure holding internal state information.
+ *
+ * Each ESYS_CONTEXT respresents a logically independent connection to the TPM.
+ * It stores meta data information about object in order to calculate session
+ * auths and similar things.
+ */
 struct ESYS_CONTEXT {
-    enum _ESYS_STATE state;
-    TSS2_SYS_CONTEXT *sys;
-    int32_t timeout;
-    int submissionCount;
-    TPM2B_DATA salt;
-    ESYS_TR esys_handle_cnt;
-    RSRC_NODE_T *rsrc_list;
-    ESYS_TR session_type[3];
-    RSRC_NODE_T *session_tab[3];
-    int encryptNonceIdx;
-    int authsCount;
-    TPM2B_NONCE *encryptNonce;
-    ESYS_TR esys_handle;
-    IESYS_CMD_IN_PARAM in;
-    TSS2_TCTI_CONTEXT *tcti_app_param;
+    enum _ESYS_STATE state;      /**< The current state of the ESAPI context. */
+    TSS2_SYS_CONTEXT *sys;       /**< The SYS context used internally to talk to
+                                      the TPM. */
+    ESYS_TR esys_handle_cnt;     /**< The next free ESYS_TR number. */
+    RSRC_NODE_T *rsrc_list;      /**< The linked list of all ESYS_TR objects. */
+    int32_t timeout;             /**< The timeout to be used during
+                                      Tss2_Sys_ExecuteFinish. */
+    ESYS_TR session_type[3];     /**< The list of TPM session handles in the
+                                      current command execution. */
+    RSRC_NODE_T *session_tab[3]; /**< The list of TPM session meta data in the
+                                      current command execution. */
+    int encryptNonceIdx;         /**< The index of the encrypt session. */
+    TPM2B_NONCE *encryptNonce;   /**< The nonce of the encrypt session, or NULL
+                                      if no encrypt session exists. */
+    int authsCount;              /**< The number of session provided during the
+                                      command. */
+    int submissionCount;         /**< The current number of submissions of this
+                                      command to the TPM. */
+    TPM2B_DATA salt;             /**< The salt used during a StartAuthSession.*/
+    IESYS_CMD_IN_PARAM in;       /**< Temporary storage for Input parameters.
+                                      A union over all possible input parameters
+                                      for all Esys_*_async calls.
+                                      (Note that this field's type is not
+                                      included in the documentation.) */
+    ESYS_TR esys_handle;         /**< Temporary storage for the object's TPM
+                                      handle during Esys_TR_FromTPMPublic. */
+    TSS2_TCTI_CONTEXT *tcti_app_param;/**< The TCTI context provided by the
+                                           application during Esys_Initialize()
+                                           to be returned from Esys_GetTcti().*/
 };
 
+/** The number of authomatic resubmissions.
+ *
+ * The number of resubmissions before a TPM's TPM2_RC_YIELDED is forwarded to
+ * the application.
+ */
 #define _ESYS_MAX_SUBMISSIONS 5
 
+/** Makro testing parameters against null.
+ */
 #define _ESYS_ASSERT_NON_NULL(x)     if (x == NULL) {         LOG_ERROR(str(x) " == NULL.");         return TSS2_ESYS_RC_BAD_REFERENCE;     }
 
 #ifdef __cplusplus
