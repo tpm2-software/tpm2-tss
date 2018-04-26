@@ -164,13 +164,6 @@ TSS2_RC esys_GetResourceObject(
 TPM2_HT iesys_get_handle_type(
     TPM2_HANDLE handle);
 
-bool esys_flush_context(
-    TPM2_HANDLE handle);
-
-TSS2_RC iesys_get_nv_name(
-    TPMS_NV_PUBLIC *nvPublic,
-    TPM2B_NAME *name);
-
 TSS2_RC iesys_finalize(ESYS_CONTEXT *context);
 
 bool iesys_compare_name(

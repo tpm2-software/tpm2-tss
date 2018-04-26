@@ -345,45 +345,6 @@ iesys_get_handle_type(TPM2_HANDLE handle)
 }
 
 bool
-esys_flush_context(TPM2_HANDLE handle)
-{
-    TPM2_HT ht = iesys_get_handle_type(handle);
-    switch (ht) {
-    case TPM2_HT_TRANSIENT:
-            return true;
-    default:
-            return false;
-    }
-}
-
-TSS2_RC
-iesys_get_nv_name(TPMS_NV_PUBLIC * nvPublic, TPM2B_NAME * name)
-{
-    BYTE buffer[sizeof(TPMS_NV_PUBLIC)];
-    size_t max_size_hash = sizeof(TPMU_HA);
-    IESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
-    size_t offset = 0;
-    TSS2_RC r = Tss2_MU_TPMS_NV_PUBLIC_Marshal(nvPublic,
-                                               buffer,
-                                               sizeof(TPMS_NV_PUBLIC),
-                                               &offset);
-    return_if_error(r, "Error: During nv public marshal");
-
-    r = iesys_crypto_hash_start(&cryptoContext, nvPublic->nameAlg);
-    return_if_error(r, "Error: During hash start");
-
-    r = iesys_crypto_hash_update(cryptoContext, &buffer[0], offset);
-    return_if_error(r, "Error: During hash update");
-
-    r = iesys_crypto_hash_finish(&cryptoContext, &name->name[2],
-                                 &max_size_hash);
-    return_if_error(r, "Error: During hash finish");
-
-    name->size = (UINT16) offset + 2;
-    return TSS2_RC_SUCCESS;
-}
-
-bool
 iesys_compare_name(TPM2B_PUBLIC * publicInfo, TPM2B_NAME * name)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
