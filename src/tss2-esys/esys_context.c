@@ -44,11 +44,16 @@
  *       Device /dev/tpmrm0 (kernel resident resource manager)
  *       Device /dev/tpm0 (hardware TPM)
  *       TCP socket localhost:2321 (TPM simulator)
- * @param esys_context [OUT] The ESYS_CONTEXT.
- * @param tcti [IN] The TCTI context used to connect to the TPM (may be NULL).
- * @param abiVersion [INOUT] The abi version to check and the abi version
+ * @param esys_context [out] The ESYS_CONTEXT.
+ * @param tcti [in] The TCTI context used to connect to the TPM (may be NULL).
+ * @param abiVersion [in,out] The abi version to check and the abi version
  *        supported by this implementation (may be NULL).
- * @retval TSS2_RC_SUCCESS on Success \todo Add error RCs.
+ * @retval TSS2_ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if esysContext is NULL.
+ * @retval TSS2_ESYS_RC_MEMORY if the ESAPI cannot allocate enough memory to
+ *         create the context.
+ * @retval TSS2_RCs produced by lower layers of the software stack may be
+ *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
 Esys_Initialize(ESYS_CONTEXT ** esys_context, TSS2_TCTI_CONTEXT * tcti,
@@ -121,7 +126,7 @@ cleanup_return:
  * After interactions with the TPM the context holding the metadata needs to be
  * freed. Since additional internal memory allocations may have happened during
  * use of the context, it needs to be finalized correctly.
- * @param esys_context [INOUT] The ESYS_CONTEXT. (will be freed and set to NULL)
+ * @param esys_context [in,out] The ESYS_CONTEXT. (will be freed and set to NULL)
  */
 void
 Esys_Finalize(ESYS_CONTEXT ** esys_context)
@@ -170,9 +175,10 @@ Esys_Finalize(ESYS_CONTEXT ** esys_context)
  * return. If NULL was passed in, then NULL will be returned.
  * This function is useful before Esys_Finalize to retrieve the tcti context and
  * perform a clean Tss2_Tcti_Finalize.
- * @param esys_context [IN] The ESYS_CONTEXT.
- * @param tcti [OUT] The TCTI context used to connect to the TPM (may be NULL).
- * @retval TSS2_RC_SUCCESS on Success \todo Add error RCs.
+ * @param esys_context [in] The ESYS_CONTEXT.
+ * @param tcti [out] The TCTI context used to connect to the TPM (may be NULL).
+ * @retval TSS2_RC_SUCCESS on Success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if esysContext or tcti is NULL.
  */
 TSS2_RC
 Esys_GetTcti(ESYS_CONTEXT * esys_context, TSS2_TCTI_CONTEXT ** tcti)
@@ -188,10 +194,12 @@ Esys_GetTcti(ESYS_CONTEXT * esys_context, TSS2_TCTI_CONTEXT ** tcti)
  * The connection to the TPM is held using a TCTI. These may optionally provide
  * handles that can be used to poll for incoming data. This is useful when
  * using the asynchronous function of ESAPI in an event-loop model.
- * @param esys_context [IN] The ESYS_CONTEXT.
- * @param handles [OUT] The poll handles (callee-allocated, use free())
- * @param count [OUT] The number of poll handles.
- * @retval TSS2_RC_SUCCESS on Success \todo Add error RCs.
+ * @param esys_context [in] The ESYS_CONTEXT.
+ * @param handles [out] The poll handles (callee-allocated, use free())
+ * @param count [out] The number of poll handles.
+ * @retval TSS2_RC_SUCCESS on Success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if esysContext, handles or count is NULL.
+ * @retval TSS2_RCs produced by lower layers of the software stack.
  */
 TSS2_RC
 Esys_GetPollHandles(ESYS_CONTEXT * esys_context,
@@ -230,9 +238,10 @@ Esys_GetPollHandles(ESYS_CONTEXT * esys_context,
  *
  * Sets the timeout for the _finish() functions in the asynchronous versions of
  * the Esys commands.
- * @param esys_context [IN] The ESYS_CONTEXT.
- * @param timeout [IN] The timeout in ms or -1 to block indefinately.
- * @retval TSS2_RC_SUCCESS on Success \todo Add error RCs.
+ * @param esys_context [in] The ESYS_CONTEXT.
+ * @param timeout [in] The timeout in ms or -1 to block indefinately.
+ * @retval TSS2_RC_SUCCESS on Success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if esysContext is NULL.
  */
 TSS2_RC
 Esys_SetTimeout(ESYS_CONTEXT * esys_context, int32_t timeout)
