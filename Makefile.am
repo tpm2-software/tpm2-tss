@@ -48,6 +48,122 @@ noinst_PROGRAMS =
 @DX_RULES@
 MOSTLYCLEANFILES += $(DX_CLEANFILES)
 
+if DOXYMAN
+DOXYMAN3 = \
+    doc/man/ESYS_CONTEXT.3 \
+    doc/man/ESYS_TR.3 \
+    doc/man/ESYS_TR_defines.3 \
+    doc/man/Esys_ActivateCredential.3 \
+    doc/man/Esys_Certify.3 \
+    doc/man/Esys_CertifyCreation.3 \
+    doc/man/Esys_ChangeEPS.3 \
+    doc/man/Esys_ChangePPS.3 \
+    doc/man/Esys_Clear.3 \
+    doc/man/Esys_ClearControl.3 \
+    doc/man/Esys_ClockRateAdjust.3 \
+    doc/man/Esys_ClockSet.3 \
+    doc/man/Esys_Commit.3 \
+    doc/man/Esys_ContextLoad.3 \
+    doc/man/Esys_ContextSave.3 \
+    doc/man/Esys_Create.3 \
+    doc/man/Esys_CreatePrimary.3 \
+    doc/man/Esys_DictionaryAttackLockReset.3 \
+    doc/man/Esys_DictionaryAttackParameters.3 \
+    doc/man/Esys_Duplicate.3 \
+    doc/man/Esys_ECC_Parameters.3 \
+    doc/man/Esys_ECDH_KeyGen.3 \
+    doc/man/Esys_ECDH_ZGen.3 \
+    doc/man/Esys_EC_Ephemeral.3 \
+    doc/man/Esys_EncryptDecrypt.3 \
+    doc/man/Esys_EventSequenceComplete.3 \
+    doc/man/Esys_EvictControl.3 \
+    doc/man/Esys_FlushContext.3 \
+    doc/man/Esys_GetCapability.3 \
+    doc/man/Esys_GetCommandAuditDigest.3 \
+    doc/man/Esys_GetRandom.3 \
+    doc/man/Esys_GetSessionAuditDigest.3 \
+    doc/man/Esys_GetTestResult.3 \
+    doc/man/Esys_GetTime.3 \
+    doc/man/Esys_Hash.3 \
+    doc/man/Esys_HashSequenceStart.3 \
+    doc/man/Esys_HierarchyChangeAuth.3 \
+    doc/man/Esys_HierarchyControl.3 \
+    doc/man/Esys_HMAC.3 \
+    doc/man/Esys_HMAC_Start.3 \
+    doc/man/Esys_Import.3 \
+    doc/man/Esys_IncrementalSelfTest.3 \
+    doc/man/Esys_Load.3 \
+    doc/man/Esys_LoadExternal.3 \
+    doc/man/Esys_MakeCredential.3 \
+    doc/man/Esys_NV_Certify.3 \
+    doc/man/Esys_NV_ChangeAuth.3 \
+    doc/man/Esys_NV_DefineSpace.3 \
+    doc/man/Esys_NV_Extend.3 \
+    doc/man/Esys_NV_GlobalWriteLock.3 \
+    doc/man/Esys_NV_Increment.3 \
+    doc/man/Esys_NV_Read.3 \
+    doc/man/Esys_NV_ReadLock.3 \
+    doc/man/Esys_NV_ReadPublic.3 \
+    doc/man/Esys_NV_SetBits.3 \
+    doc/man/Esys_NV_UndefineSpace.3 \
+    doc/man/Esys_NV_UndefineSpaceSpecial.3 \
+    doc/man/Esys_NV_Write.3 \
+    doc/man/Esys_NV_WriteLock.3 \
+    doc/man/Esys_ObjectChangeAuth.3 \
+    doc/man/Esys_PCR_Allocate.3 \
+    doc/man/Esys_PCR_Event.3 \
+    doc/man/Esys_PCR_Extend.3 \
+    doc/man/Esys_PCR_Read.3 \
+    doc/man/Esys_PCR_Reset.3 \
+    doc/man/Esys_PCR_SetAuthPolicy.3 \
+    doc/man/Esys_PCR_SetAuthValue.3 \
+    doc/man/Esys_PolicyAuthorize.3 \
+    doc/man/Esys_PolicyAuthValue.3 \
+    doc/man/Esys_PolicyCommandCode.3 \
+    doc/man/Esys_PolicyCounterTimer.3 \
+    doc/man/Esys_PolicyCpHash.3 \
+    doc/man/Esys_PolicyDuplicationSelect.3 \
+    doc/man/Esys_PolicyGetDigest.3 \
+    doc/man/Esys_PolicyLocality.3 \
+    doc/man/Esys_PolicyNameHash.3 \
+    doc/man/Esys_PolicyNV.3 \
+    doc/man/Esys_PolicyNvWritten.3 \
+    doc/man/Esys_PolicyOR.3 \
+    doc/man/Esys_PolicyPassword.3 \
+    doc/man/Esys_PolicyPCR.3 \
+    doc/man/Esys_PolicyPhysicalPresence.3 \
+    doc/man/Esys_PolicyRestart.3 \
+    doc/man/Esys_PolicySecret.3 \
+    doc/man/Esys_PolicySigned.3 \
+    doc/man/Esys_PolicyTicket.3 \
+    doc/man/Esys_PP_Commands.3 \
+    doc/man/Esys_Quote.3 \
+    doc/man/Esys_ReadClock.3 \
+    doc/man/Esys_ReadPublic.3 \
+    doc/man/Esys_Rewrap.3 \
+    doc/man/Esys_RSA_Decrypt.3 \
+    doc/man/Esys_RSA_Encrypt.3 \
+    doc/man/Esys_SelfTest.3 \
+    doc/man/Esys_SequenceComplete.3 \
+    doc/man/Esys_SequenceUpdate.3 \
+    doc/man/Esys_SetAlgorithmSet.3 \
+    doc/man/Esys_SetCommandCodeAuditStatus.3 \
+    doc/man/Esys_SetPrimaryPolicy.3 \
+    doc/man/Esys_Shutdown.3 \
+    doc/man/Esys_Sign.3 \
+    doc/man/Esys_StartAuthSession.3 \
+    doc/man/Esys_Startup.3 \
+    doc/man/Esys_StirRandom.3 \
+    doc/man/Esys_TestParms.3 \
+    doc/man/Esys_Unseal.3 \
+    doc/man/Esys_Vendor_TCG_Test.3 \
+    doc/man/Esys_VerifySignature.3 \
+    doc/man/Esys_ZGen_2Phase.3
+$(DOXYMAN3): doxygen-doc
+else #DOXYMAN
+DOXYMAN3 =
+endif #DOXYMAN
+
 ### Include make files ###
 # Add source code files from bootstrap
 include src_vars.mk
@@ -173,7 +289,7 @@ src_tss2_esys_libtss2_esys_la_SOURCES = $(TSS2_ESYS_SRC)
 endif #ESAPI
 
 ### Man Pages
-man3_MANS = man/man3/Tss2_Tcti_Device_Init.3 man/man3/Tss2_Tcti_Mssim_Init.3
+man3_MANS = man/man3/Tss2_Tcti_Device_Init.3 man/man3/Tss2_Tcti_Mssim_Init.3 $(DOXYMAN3)
 man7_MANS = man/man7/tss2-tcti-device.7 man/man7/tss2-tcti-mssim.7
 
 man/man3/%.3 : man/%.3.in $(srcdir)/man/man-postlude.troff

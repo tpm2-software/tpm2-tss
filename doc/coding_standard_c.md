@@ -65,7 +65,7 @@ separated with the underscore character, "_".
 
 Variable and function names must be lowercase. Words in each name must be
 separated by an underscore character: "_". Macros and constants (anything
-declared with #define) must be in all-caps, again with words separated by
+declared with \#define) must be in all-caps, again with words separated by
 underscores.
 
 Objects created using the GObject system follow the GObject naming convention
@@ -156,9 +156,9 @@ the underscore character "_".
 
 Header files should never define functions or variables.
 
-Header files should only #include what is necessary to allow a file that
-includes it to compile.  Associated source files will always #include the
-header of the same name, but should #include files whose resources are used
+Header files should only \#include what is necessary to allow a file that
+includes it to compile.  Associated source files will always \#include the
+header of the same name, but should \#include files whose resources are used
 within the source even if they are already included in that header. This
 provides a complete context for readers of the source file... i.e., they
 don't have to search through headers to determine where a resource came from.
