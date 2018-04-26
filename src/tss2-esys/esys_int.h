@@ -1059,7 +1059,6 @@ struct ESYS_CONTEXT {
     int32_t timeout;
     int submissionCount;
     TPM2B_DATA salt;
-    TPM2B_ENCRYPTED_SECRET encryptedSalt;
     ESYS_TR esys_handle_cnt;
     RSRC_NODE_T *rsrc_list;
     ESYS_TR session_type[3];
