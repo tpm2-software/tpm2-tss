@@ -920,11 +920,6 @@ Tss2_MU_IESYS_RESOURCE_Marshal(
         LOG_ERROR("Error marshaling subfield name");
         return ret;
     }
-    ret = Tss2_MU_BYTE_Marshal(src->authValueSet, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield authValueSet");
-        return ret;
-    }
     ret = Tss2_MU_IESYSC_RESOURCE_TYPE_Marshal(src->rsrcType, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
         LOG_ERROR("Error marshaling subfield rsrcType");
@@ -980,13 +975,6 @@ Tss2_MU_IESYS_RESOURCE_Unmarshal(
             (dst == NULL)? NULL : &dst->name);
     if (ret != TSS2_RC_SUCCESS) {
         LOG_ERROR("Error unmarshaling subfield name");
-        return ret;
-    }
-    BYTE out_authValueSet;
-    ret = Tss2_MU_BYTE_Unmarshal(buffer, size, &offset_loc,
-            (dst == NULL)? &out_authValueSet : &dst->authValueSet);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield authValueSet");
         return ret;
     }
     IESYSC_RESOURCE_TYPE out_rsrcType;

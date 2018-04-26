@@ -10,11 +10,13 @@ Both the synchronous and asynchronous API are exposed through a single library: 
 /*!
  \defgroup ESYS_CONTEXT Esys Context ESYS_CONTEXT
  \ingroup esys
- \todo Description
+ An ESYS_CONTEXT holds tdata for the connection to the TPM as
+ well as the metadata for TPM Resource; such as Transient key, Persistent
+ objects, NV spaces, Sessions or PCRs.
  \{
  \typedef ESYS_CONTEXT
  Reference to the ESYS_CONTEXT that holds data for the connection to the TPM as
- well as the metadata for TPM Resource; such as Transient key, Persistent 
+ well as the metadata for TPM Resource; such as Transient key, Persistent
  objects, NV spaces, Sessions or PCRs.
  \fn TSS2_RC Esys_Initialize(ESYS_CONTEXT ** esys_context, TSS2_TCTI_CONTEXT * tcti, TSS2_ABI_VERSION * abiVersion)
  \fn void Esys_Finalize(ESYS_CONTEXT * esys_context)
@@ -31,13 +33,13 @@ Both the synchronous and asynchronous API are exposed through a single library: 
  The Esys TPM Resources are the virtual objects inside the ESYSCONTEXT that hold
  the metadata for corresponding TPM Resources.
 
- There are a set of global ESYS_TR objects such as ESYS_TR_NON or for the 
+ There are a set of global ESYS_TR objects such as ESYS_TR_NON or for the
  various PCRs and hierarchies. ESYS_TR_MIN_OBJECT denotes the first non-global
  ESYS_TR object.
  \{
  \typedef ESYS_TR
  Reference to the virtual object inside the ESYS_CONTEXT that holds the metadata
- for the corresponding TPM Resource. Such can be Transient key, Persistent 
+ for the corresponding TPM Resource. Such can be Transient key, Persistent
  objects, NV spaces, Sessions or PCRs.
  \fn TSS2_RC Esys_TR_SetAuth(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle, TPM2B_AUTH const *authValue)
  \fn TSS2_RC Esys_TR_GetName(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle, TPM2B_NAME ** name)
@@ -98,8 +100,8 @@ Both the synchronous and asynchronous API are exposed through a single library: 
  \def ESYS_TR_RH_ENDORSEMENT TPM Resource Endorsement Hierarchy
  \def ESYS_TR_RH_PLATFORM TPM Resource Platform Hierarchy
  \def ESYS_TR_RH_PLATFORM_NV Identifier for ESYS_TR used for phEnableNV
- \def ESYS_TR_RH_AUTH_00 Identifier for ESYS_TR for the start of a range of authorization values that are vendor-specific. 
- \def ESYS_TR_RH_AUTH_FF Identifier for ESYS_TR for the end of a range of authorization values that are vendor-specific. 
+ \def ESYS_TR_RH_AUTH_00 Identifier for ESYS_TR for the start of a range of authorization values that are vendor-specific.
+ \def ESYS_TR_RH_AUTH_FF Identifier for ESYS_TR for the end of a range of authorization values that are vendor-specific.
  \def ESYS_TR_MIN_OBJECT The first non-global ESYS_TR object identifier. These are assigned by ESAPI and beyond this value.
  \}
 */
@@ -969,29 +971,11 @@ Both the synchronous and asynchronous API are exposed through a single library: 
  \}
 */
 
-/*!
- \defgroup esys_types ESAPI Types
- \ingroup iesys
- \todo Description
- \{
- \def IESYSC_RESOURCE_TYPE_CONSTANT
- \def IESYSC_PARAM_ENCRYPT
- \def IESYSC_PARAM_DECRYPT
- \def IESYSC_TYPE_POLICY_AUTH
- \def IESYS_SESSION
- \def IESYSC_RESOURCE_TYPE
- \def IESYS_RSRC_UNION
- \def IESYS_RESOURCE
- \def IESYS_METADATA
- \def IESYS_CONTEXT_DATA
- \}
-*/
-
 /* Note: all *_IN and the union IESYS_CMD_IN_PARAM are excluded from documentation */
 /*!
- \defgroup esys_int ESAPI internal Types
+ \defgroup esys_int Internal ESAPI Types
  \ingroup iesys
- \todo Description
+ The ESAPI implementation requires a set of internal type definitions.
  \{
  \struct RSRC_NODE_T
  \typedef RSRC_NODE_T
@@ -999,13 +983,36 @@ Both the synchronous and asynchronous API are exposed through a single library: 
  \struct ESYS_CONTEXT
  \def _ESYS_MAX_SUBMISSIONS
  \def _ESYS_ASSERT_NON_NULL
+ \typedef IESYSC_RESOURCE_TYPE_CONSTANT
+ \def IESYSC_KEY_RSRC
+ \def IESYSC_NV_RSRC
+ \def IESYSC_SESSION_RSRC
+ \def IESYSC_WITHOUT_MISC_RSRC
+ \typedef IESYSC_PARAM_ENCRYPT
+ \def ENCRYPT
+ \def NO_ENCRYPT
+ \typedef IESYSC_PARAM_DECRYPT
+ \def DECRYPT
+ \def NO_DECRYPT
+ \typedef IESYSC_TYPE_POLICY_AUTH
+ \def POLICY_PASSWORD
+ \def POLICY_AUTH
+ \def NO_POLICY_AUTH
+ \struct IESYS_SESSION
+ \typedef IESYSC_RESOURCE_TYPE
+ \union IESYS_RSRC_UNION
+ \struct IESYS_RESOURCE
+ \struct IESYS_METADATA
+ \struct IESYS_CONTEXT_DATA
  \}
 */
 
 /*!
  \defgroup iesys_crypto Internal Cryptographic Backend
  \ingroup iesys
- \todo Description
+ The types and functions used internally be ESAPI for cryptographic operations.
+ There may exist multiple implementations of these functions for different
+ cryptographic backends.
  \{
  \def IESYS_CRYPTO_CONTEXT_BLOB
  \fn TSS2_RC iesys_crypto_hash_get_digest_size(TPM2_ALG_ID hashAlg, size_t *size)
@@ -1039,7 +1046,7 @@ Both the synchronous and asynchronous API are exposed through a single library: 
 /*!
  \defgroup iesys_util Internal ESAPI utility functions.
  \ingroup iesys
- \todo Description
+ \todo Description and Documentat of functions
  \{
  \struct HASH_TAB_ITEM
  \}
@@ -1047,8 +1054,7 @@ Both the synchronous and asynchronous API are exposed through a single library: 
 
 /*!
  \defgroup Testgroup Testing
- \todo description
- \{
+ \todo Description and Documentat of functions \{
 
  \}
 */
