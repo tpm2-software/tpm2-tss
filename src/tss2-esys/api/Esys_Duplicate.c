@@ -69,24 +69,47 @@ static void store_input_parameters (
  * parameters is allocated by the function implementation.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
- * @param[in] objectHandle Input handle of type ESYS_TR for
- *     object with handle type TPMI_DH_OBJECT.
- * @param[in] newParentHandle Input handle of type ESYS_TR for
- *     object with handle type TPMI_DH_OBJECT.
- * @param[in] shandle1 First session handle.
- * @param[in] shandle2 Second session handle.
- * @param[in] shandle3 Third session handle.
- * @param[in] encryptionKeyIn Input parameter of type TPM2B_DATA.
- * @param[in] symmetricAlg Input parameter of type TPMT_SYM_DEF_OBJECT.
- * @param[out] encryptionKeyOut (callee-allocated) Output parameter
- *    of type TPM2B_DATA. May be NULL if this value is not required.
- * @param[out] duplicate (callee-allocated) Output parameter
- *    of type TPM2B_PRIVATE. May be NULL if this value is not required.
- * @param[out] outSymSeed (callee-allocated) Output parameter
- *    of type TPM2B_ENCRYPTED_SECRET. May be NULL if this value is not required.
+ * @param[in]  objectHandle Loaded object to duplicate.
+ * @param[in]  newParentHandle Shall reference the public area of an asymmetric
+ *             key.
+ * @param[in]  shandle1 Session handle for authorization of objectHandle
+ * @param[in]  shandle2 Second session handle.
+ * @param[in]  shandle3 Third session handle.
+ * @param[in]  encryptionKeyIn Optional symmetric encryption key.
+ * @param[in]  symmetricAlg Definition for the symmetric algorithm to be used for
+ *             the inner wrapper.
+ * @param[out] encryptionKeyOut TPM2_If the caller provided an encryption key or if
+ *             symmetricAlg was TPM2_ALG_NULL, then this will be the TPM2_Empty
+ *             TPM2_Buffer; otherwise, it shall contain the TPM2_TPM-generated, symmetric
+ *             encryption key for the inner wrapper..
+ *             (callee-allocated)
+ * @param[out] duplicate Private area that may be encrypted by encryptionKeyIn;
+ *             and may be doubly encrypted.
+ *             (callee-allocated)
+ * @param[out] outSymSeed Seed protected by the asymmetric algorithms of new
+ *             parent (NP).
+ *             (callee-allocated)
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_RC_BAD_SEQUENCE if context is not ready for this function
- * \todo add further error RCs to documentation
+ * @retval ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
+ *         pointers or required output handle references are NULL.
+ * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
+ * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ * @retval TSS2_ESYS_RC_BAD_SEQUENCE: if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_INSUFFICIENT_RESPONSE: if the TPM's response does not
+ *          at least contain the tag, response length, and response code.
+ * @retval TSS2_ESYS_RC_MALFORMED_RESPONSE: if the TPM's response is corrupted.
+ * @retval TSS2_ESYS_RC_MULTIPLE_DECRYPT_SESSIONS: if more than one session has
+ *         the 'decrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
+ *         the 'encrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
+ *         ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
+ *         are ESYS_TR_NONE.
+ * @retval TSS2_RCs produced by lower layers of the software stack may be
+ *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
 Esys_Duplicate(
@@ -151,18 +174,30 @@ Esys_Duplicate(
  * In order to retrieve the TPM's response call Esys_Duplicate_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
- * @param[in] objectHandle Input handle of type ESYS_TR for
- *     object with handle type TPMI_DH_OBJECT.
- * @param[in] newParentHandle Input handle of type ESYS_TR for
- *     object with handle type TPMI_DH_OBJECT.
- * @param[in] shandle1 First session handle.
- * @param[in] shandle2 Second session handle.
- * @param[in] shandle3 Third session handle.
- * @param[in] encryptionKeyIn Input parameter of type TPM2B_DATA.
- * @param[in] symmetricAlg Input parameter of type TPMT_SYM_DEF_OBJECT.
- * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_RC_BAD_SEQUENCE if context is not ready for this function
- * \todo add further error RCs to documentation
+ * @param[in]  objectHandle Loaded object to duplicate.
+ * @param[in]  newParentHandle Shall reference the public area of an asymmetric
+ *             key.
+ * @param[in]  shandle1 Session handle for authorization of objectHandle
+ * @param[in]  shandle2 Second session handle.
+ * @param[in]  shandle3 Third session handle.
+ * @param[in]  encryptionKeyIn Optional symmetric encryption key.
+ * @param[in]  symmetricAlg Definition for the symmetric algorithm to be used for
+ *             the inner wrapper.
+ * @retval ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
+ *         pointers or required output handle references are NULL.
+ * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
+ * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ * @retval TSS2_RCs produced by lower layers of the software stack may be
+           returned to the caller unaltered unless handled internally.
+ * @retval TSS2_ESYS_RC_MULTIPLE_DECRYPT_SESSIONS: if more than one session has
+ *         the 'decrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
+ *         the 'encrypt' attribute bit set.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
+           ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
+           are ESYS_TR_NONE.
  */
 TSS2_RC
 Esys_Duplicate_Async(
@@ -246,15 +281,33 @@ Esys_Duplicate_Async(
  * output parameter if the value is not required.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
- * @param[out] encryptionKeyOut (callee-allocated) Output parameter
- *    of type TPM2B_DATA. May be NULL if this value is not required.
- * @param[out] duplicate (callee-allocated) Output parameter
- *    of type TPM2B_PRIVATE. May be NULL if this value is not required.
- * @param[out] outSymSeed (callee-allocated) Output parameter
- *    of type TPM2B_ENCRYPTED_SECRET. May be NULL if this value is not required.
+ * @param[out] encryptionKeyOut TPM2_If the caller provided an encryption key or if
+ *             symmetricAlg was TPM2_ALG_NULL, then this will be the TPM2_Empty
+ *             TPM2_Buffer; otherwise, it shall contain the TPM2_TPM-generated, symmetric
+ *             encryption key for the inner wrapper..
+ *             (callee-allocated)
+ * @param[out] duplicate Private area that may be encrypted by encryptionKeyIn;
+ *             and may be doubly encrypted.
+ *             (callee-allocated)
+ * @param[out] outSymSeed Seed protected by the asymmetric algorithms of new
+ *             parent (NP).
+ *             (callee-allocated)
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_RC_BAD_SEQUENCE if context is not ready for this function.
- * \todo add further error RCs to documentation
+ * @retval ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
+ *         pointers or required output handle references are NULL.
+ * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
+ * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ * @retval TSS2_ESYS_RC_BAD_SEQUENCE: if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_TRY_AGAIN: if the timeout counter expires before the
+ *         TPM response is received.
+ * @retval TSS2_ESYS_RC_INSUFFICIENT_RESPONSE: if the TPM's response does not
+ *          at least contain the tag, response length, and response code.
+ * @retval TSS2_ESYS_RC_MALFORMED_RESPONSE: if the TPM's response is corrupted.
+ * @retval TSS2_RCs produced by lower layers of the software stack may be
+ *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
 Esys_Duplicate_Finish(
