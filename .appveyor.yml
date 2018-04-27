@@ -5,6 +5,7 @@ skip_tags: true
 image: Visual Studio 2017
 configuration:
   - Debug
+  - Release
 platform:
   - x86
   - x64
