@@ -549,6 +549,9 @@ Tss2_Tcti_Mssim_Init (
     LOG_DEBUG ("Initializing mssim TCTI with host: %s, port: %" PRIu16,
                mssim_conf.host, mssim_conf.port);
 
+    tcti_mssim->tpm_sock = -1;
+    tcti_mssim->platform_sock = -1;
+
     rc = socket_connect (mssim_conf.host,
                          mssim_conf.port,
                          &tcti_mssim->tpm_sock);
