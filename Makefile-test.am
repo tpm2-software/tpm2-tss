@@ -90,25 +90,25 @@ endif #UNIT
 if SIMULATOR_BIN
 noinst_LTLIBRARIES += test/integration/libtest_utils.la
 TESTS_INTEGRATION = \
-    test/integration/asymmetric-encrypt-decrypt.int \
-    test/integration/create-primary-rsa-2048-aes-128-cfb.int \
-    test/integration/create-keyedhash-sha1-hmac.int \
-    test/integration/encrypt-decrypt.int \
-    test/integration/encrypt-decrypt-2.int \
-    test/integration/evict-ctrl.int \
-    test/integration/get-random.int \
-    test/integration/hierarchy-change-auth.int \
-    test/integration/abi-version.int \
-    test/integration/pcr-extension.int \
-    test/integration/self-test.int \
-    test/integration/start-auth-session.int \
-    test/integration/sys-initialize.int \
-    test/integration/tpm-properties.int \
-    test/integration/system-api.int \
-    test/integration/policy-template.int \
-    test/integration/create-loaded.int \
-    test/integration/policy-authorizeNV.int \
-    test/integration/command-cancel.int \
+    test/integration/sapi-asymmetric-encrypt-decrypt.int \
+    test/integration/sapi-create-primary-rsa-2048-aes-128-cfb.int \
+    test/integration/sapi-create-keyedhash-sha1-hmac.int \
+    test/integration/sapi-encrypt-decrypt.int \
+    test/integration/sapi-encrypt-decrypt-2.int \
+    test/integration/sapi-evict-ctrl.int \
+    test/integration/sapi-get-random.int \
+    test/integration/sapi-hierarchy-change-auth.int \
+    test/integration/sapi-abi-version.int \
+    test/integration/sapi-pcr-extension.int \
+    test/integration/sapi-self-test.int \
+    test/integration/sapi-start-auth-session.int \
+    test/integration/sapi-sys-initialize.int \
+    test/integration/sapi-tpm-properties.int \
+    test/integration/sapi-system-api.int \
+    test/integration/sapi-policy-template.int \
+    test/integration/sapi-create-loaded.int \
+    test/integration/sapi-policy-authorizeNV.int \
+    test/integration/sapi-command-cancel.int \
     test/tpmclient/tpmclient.int
 if ESAPI
 TESTS_INTEGRATION += \
@@ -318,91 +318,91 @@ if SIMULATOR_BIN
 test_tpmclient_tpmclient_int_CFLAGS   = $(AM_CFLAGS) -U_FORTIFY_SOURCE  $(TESTS_CFLAGS)
 test_tpmclient_tpmclient_int_LDADD    = $(TESTS_LDADD)
 test_tpmclient_tpmclient_int_SOURCES  = \
-    test/tpmclient/tpmclient.int.c test/integration/main.c
+    test/tpmclient/tpmclient.int.c test/integration/main-sapi.c
 
 test_integration_libtest_utils_la_CFLAGS = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_libtest_utils_la_SOURCES = \
-    test/integration/context-util.c test/integration/context-util.h \
+    test/integration/sapi-context-util.c test/integration/context-util.h \
     test/integration/sapi-util.c    test/integration/sapi-util.h \
-    test/integration/session-util.c test/integration/session-util.h \
-    test/integration/test-options.c test/integration/test-options.h \
-    test/integration/entity-util.c test/integration/test.h
+    test/integration/sapi-session-util.c test/integration/session-util.h \
+    test/integration/sapi-test-options.c test/integration/test-options.h \
+    test/integration/sapi-entity-util.c test/integration/test.h
 
-test_integration_asymmetric_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_asymmetric_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
-test_integration_asymmetric_encrypt_decrypt_int_SOURCES = \
-    test/integration/asymmetric-encrypt-decrypt.int.c test/integration/main.c
+test_integration_sapi_asymmetric_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sapi_asymmetric_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_asymmetric_encrypt_decrypt_int_SOURCES = \
+    test/integration/sapi-asymmetric-encrypt-decrypt.int.c test/integration/main-sapi.c
 
-test_integration_create_primary_rsa_2048_aes_128_cfb_int_CFLAGS = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_create_primary_rsa_2048_aes_128_cfb_int_LDADD  = $(TESTS_LDADD)
-test_integration_create_primary_rsa_2048_aes_128_cfb_int_SOURCES = \
-    test/integration/create-primary-rsa-2048-aes-128-cfb.int.c \
-    test/integration/main.c
+test_integration_sapi_create_primary_rsa_2048_aes_128_cfb_int_CFLAGS = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sapi_create_primary_rsa_2048_aes_128_cfb_int_LDADD  = $(TESTS_LDADD)
+test_integration_sapi_create_primary_rsa_2048_aes_128_cfb_int_SOURCES = \
+    test/integration/sapi-create-primary-rsa-2048-aes-128-cfb.int.c \
+    test/integration/main-sapi.c
 
-test_integration_create_keyedhash_sha1_hmac_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_create_keyedhash_sha1_hmac_int_LDADD   = $(TESTS_LDADD)
-test_integration_create_keyedhash_sha1_hmac_int_SOURCES = \
-    test/integration/create-keyedhash-sha1-hmac.int.c test/integration/main.c
+test_integration_sapi_create_keyedhash_sha1_hmac_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sapi_create_keyedhash_sha1_hmac_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_create_keyedhash_sha1_hmac_int_SOURCES = \
+    test/integration/sapi-create-keyedhash-sha1-hmac.int.c test/integration/main-sapi.c
 
-test_integration_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
-test_integration_encrypt_decrypt_int_SOURCES = \
-    test/integration/encrypt-decrypt.int.c test/integration/main.c
+test_integration_sapi_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sapi_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_encrypt_decrypt_int_SOURCES = \
+    test/integration/sapi-encrypt-decrypt.int.c test/integration/main-sapi.c
 
-test_integration_encrypt_decrypt_2_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_encrypt_decrypt_2_int_LDADD   = $(TESTS_LDADD)
-test_integration_encrypt_decrypt_2_int_SOURCES = \
-    test/integration/encrypt-decrypt-2.int.c test/integration/main.c
+test_integration_sapi_encrypt_decrypt_2_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sapi_encrypt_decrypt_2_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_encrypt_decrypt_2_int_SOURCES = \
+    test/integration/sapi-encrypt-decrypt-2.int.c test/integration/main-sapi.c
 
-test_integration_evict_ctrl_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_evict_ctrl_int_LDADD   = $(TESTS_LDADD)
-test_integration_evict_ctrl_int_SOURCES = \
-    test/integration/evict-ctrl.int.c test/integration/main.c
+test_integration_sapi_evict_ctrl_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sapi_evict_ctrl_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_evict_ctrl_int_SOURCES = \
+    test/integration/sapi-evict-ctrl.int.c test/integration/main-sapi.c
 
-test_integration_sys_initialize_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sys_initialize_int_LDADD   = $(TESTS_LDADD)
-test_integration_sys_initialize_int_SOURCES = test/integration/sys-initialize.int.c \
-    test/integration/main.c
+test_integration_sapi_sys_initialize_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sapi_sys_initialize_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_sys_initialize_int_SOURCES = test/integration/sapi-sys-initialize.int.c \
+    test/integration/main-sapi.c
 
-test_integration_get_random_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_get_random_int_LDADD   = $(TESTS_LDADD)
-test_integration_get_random_int_SOURCES = test/integration/get-random.int.c \
-    test/integration/main.c
+test_integration_sapi_get_random_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sapi_get_random_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_get_random_int_SOURCES = test/integration/sapi-get-random.int.c \
+    test/integration/main-sapi.c
 
-test_integration_abi_version_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_abi_version_int_LDADD   = $(TESTS_LDADD)
-test_integration_abi_version_int_SOURCES = test/integration/abi-version.int.c \
-    test/integration/main.c
+test_integration_sapi_abi_version_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sapi_abi_version_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_abi_version_int_SOURCES = test/integration/sapi-abi-version.int.c \
+    test/integration/main-sapi.c
 
-test_integration_pcr_extension_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_pcr_extension_int_LDADD   = $(TESTS_LDADD)
-test_integration_pcr_extension_int_SOURCES = test/integration/pcr-extension.int.c \
-    test/integration/main.c
+test_integration_sapi_pcr_extension_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sapi_pcr_extension_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_pcr_extension_int_SOURCES = test/integration/sapi-pcr-extension.int.c \
+    test/integration/main-sapi.c
 
-test_integration_self_test_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_self_test_int_LDADD   = $(TESTS_LDADD)
-test_integration_self_test_int_SOURCES = test/integration/self-test.int.c \
-    test/integration/main.c
+test_integration_sapi_self_test_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sapi_self_test_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_self_test_int_SOURCES = test/integration/sapi-self-test.int.c \
+    test/integration/main-sapi.c
 
-test_integration_hierarchy_change_auth_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_hierarchy_change_auth_int_LDADD   = $(TESTS_LDADD)
-test_integration_hierarchy_change_auth_int_SOURCES = \
-    test/integration/hierarchy-change-auth.int.c test/integration/main.c
+test_integration_sapi_hierarchy_change_auth_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sapi_hierarchy_change_auth_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_hierarchy_change_auth_int_SOURCES = \
+    test/integration/sapi-hierarchy-change-auth.int.c test/integration/main-sapi.c
 
-test_integration_start_auth_session_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_start_auth_session_int_LDADD   = $(TESTS_LDADD)
-test_integration_start_auth_session_int_SOURCES = test/integration/main.c \
-    test/integration/start-auth-session.int.c
+test_integration_sapi_start_auth_session_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sapi_start_auth_session_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_start_auth_session_int_SOURCES = test/integration/main-sapi.c \
+    test/integration/sapi-start-auth-session.int.c
 
-test_integration_tpm_properties_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_tpm_properties_int_LDADD   = $(TESTS_LDADD)
-test_integration_tpm_properties_int_SOURCES = test/integration/main.c \
-    test/integration/tpm-properties.int.c
+test_integration_sapi_tpm_properties_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sapi_tpm_properties_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_tpm_properties_int_SOURCES = test/integration/main-sapi.c \
+    test/integration/sapi-tpm-properties.int.c
 
-test_integration_system_api_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_system_api_int_LDADD   = $(TESTS_LDADD)
-test_integration_system_api_int_SOURCES = test/integration/main.c \
-    test/integration/system-api.int.c
+test_integration_sapi_system_api_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sapi_system_api_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_system_api_int_SOURCES = test/integration/main-sapi.c \
+    test/integration/sapi-system-api.int.c
 
 if ESAPI
 test_integration_esys_audit_int_CFLAGS  = $(TESTS_CFLAGS)
@@ -944,23 +944,23 @@ test_integration_esys_zgen_2phase_int_SOURCES = \
     test/integration/main-esapi.c test/integration/test-esapi.h
 endif #ESAPI
 
-test_integration_policy_template_int_CFLAGS  = $(TESTS_CFLAGS)
-test_integration_policy_template_int_LDADD   = $(TESTS_LDADD)
-test_integration_policy_template_int_SOURCES = test/integration/main.c \
-    test/integration/policy-template.int.c
+test_integration_sapi_policy_template_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_sapi_policy_template_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_policy_template_int_SOURCES = test/integration/main-sapi.c \
+    test/integration/sapi-policy-template.int.c
 
-test_integration_create_loaded_int_CFLAGS  = $(TESTS_CFLAGS)
-test_integration_create_loaded_int_LDADD   = $(TESTS_LDADD)
-test_integration_create_loaded_int_SOURCES = test/integration/main.c \
-    test/integration/create-loaded.int.c
+test_integration_sapi_create_loaded_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_sapi_create_loaded_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_create_loaded_int_SOURCES = test/integration/main-sapi.c \
+    test/integration/sapi-create-loaded.int.c
 
-test_integration_policy_authorizeNV_int_CFLAGS  = $(TESTS_CFLAGS)
-test_integration_policy_authorizeNV_int_LDADD   = $(TESTS_LDADD)
-test_integration_policy_authorizeNV_int_SOURCES = test/integration/main.c \
-    test/integration/policy-authorizeNV.int.c
+test_integration_sapi_policy_authorizeNV_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_sapi_policy_authorizeNV_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_policy_authorizeNV_int_SOURCES = test/integration/main-sapi.c \
+    test/integration/sapi-policy-authorizeNV.int.c
 
-test_integration_command_cancel_int_CFLAGS  = $(TESTS_CFLAGS)
-test_integration_command_cancel_int_LDADD   = $(TESTS_LDADD)
-test_integration_command_cancel_int_SOURCES = test/integration/main.c \
-    test/integration/command-cancel.int.c
+test_integration_sapi_command_cancel_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_sapi_command_cancel_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_command_cancel_int_SOURCES = test/integration/main-sapi.c \
+    test/integration/sapi-command-cancel.int.c
 endif #SIMULATOR_BIN
