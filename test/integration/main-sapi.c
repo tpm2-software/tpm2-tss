@@ -25,63 +25,55 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  ***********************************************************************/
-#include "tss2_tpm2_types.h"
-#include "sysapi_util.h"
-#include "sapi-util.h"
-#include "session-util.h"
+#include <stdbool.h>
+#include <stdlib.h>
 
-static ENTITY *entities = NULL;
+#define LOGMODULE test
+#include "tss2_sys.h"
+#include "util/log.h"
+#include "test.h"
+#include "test-options.h"
+#include "context-util.h"
 
+/**
+ * This program is a template for integration tests (ones that use the TCTI
+ * and the SAPI contexts / API directly). It does nothing more than parsing
+ * command line options that allow the caller (likely a script) to specify
+ * which TCTI to use for the test.
+ */
 int
-AddEntity(TPM2_HANDLE handle, TPM2B_AUTH *auth)
+main (int   argc,
+      char *argv[])
 {
-    ENTITY *e;
+    TSS2_SYS_CONTEXT *sapi_context;
+    int ret;
+    test_opts_t opts = {
+        .tcti_type      = TCTI_DEFAULT,
+        .device_file    = DEVICE_PATH_DEFAULT,
+        .socket_address = HOSTNAME_DEFAULT,
+        .socket_port    = PORT_DEFAULT,
+    };
 
-    HASH_FIND_INT(entities, &handle, e);
-
-    if (!e) {
-        e = calloc(1, sizeof(*e));
-        if (!e)
-            return -1;
-
-        e->entityHandle = handle;
-        HASH_ADD_INT(entities, entityHandle, e);
+    get_test_opts_from_env (&opts);
+    if (sanity_check_test_opts (&opts) != 0) {
+        LOG_ERROR("Checking test options");
+        return 99; /* fatal error */
     }
-    CopySizedByteBuffer((TPM2B *)&e->entityAuth, (TPM2B *)auth);
-    return 0;
-}
+    sapi_context = sapi_init_from_opts (&opts);
+    if (sapi_context == NULL) {
+        LOG_ERROR("SAPI context not initialized");
+        return 99; /* fatal error */
+    }
 
-void
-DeleteEntity(TPM2_HANDLE handle)
-{
-    ENTITY *e;
+    ret = Tss2_Sys_Startup(sapi_context, TPM2_SU_CLEAR);
+    if (ret != TSS2_RC_SUCCESS && ret != TPM2_RC_INITIALIZE) {
+        LOG_ERROR("TPM Startup FAILED! Response Code : 0x%x", ret);
+        exit(1);
+    }
 
-    HASH_FIND_INT(entities, &handle, e);
-    if (!e)
-        return;
+    ret = test_invoke (sapi_context);
 
-    HASH_DEL(entities, e);
-    free(e);
-}
+    sapi_teardown_full (sapi_context);
 
-int
-GetEntityAuth(TPM2_HANDLE handle, TPM2B_AUTH *auth)
-{
-    ENTITY *e;
-
-    HASH_FIND_INT(entities, &handle, e);
-    if (!e)
-        return -1;
-
-    CopySizedByteBuffer((TPM2B *)auth, (TPM2B *)&e->entityAuth);
-    return 0;
-}
-
-ENTITY *
-GetEntity(TPM2_HANDLE handle)
-{
-    ENTITY *e;
-
-    HASH_FIND_INT(entities, &handle, e);
-    return e;
+    return ret;
 }
