@@ -24,6 +24,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
+#include <stdlib.h>
 
 #include "tss2_esys.h"
 
@@ -247,6 +248,26 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TRSess_SetAttributes(esys_context, session, sessionAttributes,
                                   0xff);
     goto_if_error(r, "Error Esys_TRSess_SetAttributes", error);
+
+    r = Esys_TRSess_GetAttributes(esys_context, session, &sessionAttributes2);
+    goto_if_error(r, "Error Esys_TRSess_SetAttributes", error);
+
+    if (sessionAttributes != sessionAttributes2) {
+        LOG_ERROR("Session Attributes differ");
+        goto error;
+    }
+
+    /* Save and load the session and test if the attributes are still OK. */
+    TPMS_CONTEXT *contextBlob;
+    r = Esys_ContextSave(esys_context, session, &contextBlob);
+    goto_if_error(r, "Error during FlushContext", error);
+
+    session = ESYS_TR_NONE;
+
+    r = Esys_ContextLoad(esys_context, contextBlob, &session);
+    goto_if_error(r, "Error during FlushContext", error);
+
+    free(contextBlob);
 
     r = Esys_TRSess_GetAttributes(esys_context, session, &sessionAttributes2);
     goto_if_error(r, "Error Esys_TRSess_SetAttributes", error);
