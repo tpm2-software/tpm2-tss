@@ -177,6 +177,22 @@ $ docker rm temp
 
 tpm2-tss is now in your working directory and contains all the built files.
 
+## Building with meson
+
+The project now contains initial meson.build files. These are currently
+experimental but shall be actively supported in the future.
+To build using meson, please run
+```
+mkdir builddir installdir
+meson builddir -Dtests=true -Dsimulatorbin=$PWD/../tpm_server
+cd builddir
+meson configure
+ninja
+meson test --setup=sim
+ninja dist
+ninja install
+```
+
 ## Doxygen Documentation
 
 To build Doxygen documentation files, first install package Doxygen.

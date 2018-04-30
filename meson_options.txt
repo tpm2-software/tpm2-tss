@@ -1,0 +1,12 @@
+option('tctidefaultmodule', type : 'string', value : '',
+       description : 'The default TCTI module for ESAPI.')
+option('tctidefaultconfig', type : 'string', value : '',
+       description : 'The default tcti modules configuration.')
+option('maxloglevel', type : 'string', value : 'trace',
+       description : 'sets the maximum log level (trace, debug, info, warning, error or none).')
+option('tests', type : 'boolean', value : false,
+       description : 'Enable compilation of tests.')
+option('simulatorbin', type : 'string', value : '',
+       description : 'Set the simulator executable for tests (use meson test --setup=sim).')
+option('doxygen-docs', type : 'boolean', value : false,
+       description : 'Enable doxygen documentation.')
