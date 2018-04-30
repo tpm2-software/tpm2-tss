@@ -40,12 +40,12 @@ addons:
     branch_pattern: coverity_scan
 
 install:
-  - wget http://mirror.twobit.us/tpm2-deps/ibmtpm974.tar.gz
+  - wget https://download.01.org/tpm2/ibmtpm974.tar.gz
   - sha256sum ibmtpm974.tar.gz | grep -q ^8e45d86129a0adb95fee4cee51f4b1e5b2d81ed3e55af875df53f98f39eb7ad7
   - mkdir ibmtpm
   - tar axf ibmtpm974.tar.gz -C ibmtpm
   - make -C ibmtpm/src -j$(nproc)
-  - wget http://mirror.twobit.us/tpm2-deps/cmocka-1.1.1.tar.xz
+  - wget https://download.01.org/tpm2/cmocka-1.1.1.tar.xz
   - sha256sum cmocka-1.1.1.tar.xz | grep -q f02ef48a7039aa77191d525c5b1aee3f13286b77a13615d11bc1148753fc0389
   - tar -Jxvf cmocka-1.1.1.tar.xz
   - mkdir cmocka
@@ -56,7 +56,7 @@ install:
   - make
   - make install
   - cd ../../
-  - wget http://mirror.twobit.us/tpm2-deps/autoconf-archive-2017.09.28.tar.xz
+  - wget https://download.01.org/tpm2/autoconf-archive-2017.09.28.tar.xz
   - sha256sum autoconf-archive-2017.09.28.tar.xz | grep -q 5c9fb5845b38b28982a3ef12836f76b35f46799ef4a2e46b48e2bd3c6182fa01
   - tar xJf autoconf-archive-2017.09.28.tar.xz
   - cp autoconf-archive-2017.09.28/m4/ax_code_coverage.m4 m4/
