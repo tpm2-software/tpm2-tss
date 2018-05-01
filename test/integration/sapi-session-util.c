@@ -650,8 +650,15 @@ EncryptDecryptXOR(
     TPM2B_AUTH *authValue)
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
-    TPM2B_MAX_BUFFER key, mask;
-    int i;
+    TPM2B_MAX_BUFFER key;
+    TPM2B_MAX_BUFFER mask = { .size = 0, .buffer = 0 };
+    UINT16 i;
+    UINT16 size = inputData->size;
+
+    if (size > TPM2_MAX_DIGEST_BUFFER) {
+        LOG_ERROR("Bad value for inputData size: %" PRIu16, size);
+        return TSS2_SYS_RC_GENERAL_FAILURE;
+    }
 
     CopySizedByteBuffer((TPM2B *)&key, (TPM2B *)&session->sessionKey);
     CatSizedByteBuffer((TPM2B *)&key, (TPM2B *)authValue);
@@ -661,15 +668,15 @@ EncryptDecryptXOR(
             "XOR",
             (TPM2B *)&session->nonceNewer,
             (TPM2B *)&session->nonceOlder,
-            inputData->size * 8, &mask);
+            size * 8, &mask);
 
     if (rval)
         return rval;
 
-    for (i = 0; i < inputData->size; i++)
+    for (i = 0; i < size; i++)
         outputData->buffer[i] = inputData->buffer[i] ^ mask.buffer[i];
 
-    outputData->size = inputData->size;
+    outputData->size = size;
 
     return rval;
 }

@@ -85,9 +85,19 @@ script:
     if [ "$CC" == "gcc" ]; then
       export CONFIGURE_OPTIONS="--enable-code-coverage";
     fi
-  - ../configure --enable-unit --enable-integration $CONFIGURE_OPTIONS
+  - |
+    if [ "$CC" == "clang" ]; then
+      scan-build ../configure --enable-unit --enable-integration $CONFIGURE_OPTIONS
+    else
+      ../configure --enable-unit --enable-integration $CONFIGURE_OPTIONS
+    fi
   - make -j$(nproc) distcheck
-  - make -j$(nproc) check
+  - |
+    if [ "$CC" == "clang" ]; then
+      scan-build --status-bugs make -j$(nproc) check
+    else
+      make -j$(nproc) check
+    fi
   - cat test-suite.log
   - |
     for LOG in $(ls -1 test/unit/*.log); do
