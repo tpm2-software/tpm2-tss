@@ -109,6 +109,7 @@ TESTS_INTEGRATION = \
     test/integration/sapi-create-loaded.int \
     test/integration/sapi-policy-authorizeNV.int \
     test/integration/sapi-command-cancel.int \
+    test/integration/sapi-param-encrypt-decrypt.int \
     test/tpmclient/tpmclient.int
 if ESAPI
 TESTS_INTEGRATION += \
@@ -403,6 +404,11 @@ test_integration_sapi_system_api_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_sapi_system_api_int_LDADD   = $(TESTS_LDADD)
 test_integration_sapi_system_api_int_SOURCES = test/integration/main-sapi.c \
     test/integration/sapi-system-api.int.c
+
+test_integration_sapi_aram_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sapi_param_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_param_encrypt_decrypt_int_SOURCES = \
+    test/integration/sapi-param-encrypt-decrypt.int.c test/integration/main-sapi.c
 
 if ESAPI
 test_integration_esys_audit_int_CFLAGS  = $(TESTS_CFLAGS)
