@@ -48,7 +48,6 @@
 //
 #define NV_AUX_INDEX_SIZE     96
 #define NV_PS_INDEX_SIZE      34
-#define NV_PO_INDEX_SIZE      34
 
 #define INDEX_AUX                       0x01800003 // NV Storage
 #define INDEX_LCP_OWN                   0x01400001 // Launch Policy Owner
@@ -59,10 +58,6 @@
 
 #define SESSIONS_COUNT 1
 
-#define TSSWG_INTEROP 1
-#define TSS_SAPI_FIRST_FAMILY 2
-#define TSS_SAPI_FIRST_LEVEL 1
-#define TSS_SAPI_FIRST_VERSION 108
 
 #define SET_PCR_SELECT_BIT( pcrSelection, pcr ) \
                                                 (pcrSelection).pcrSelect[( (pcr)/8 )] |= ( 1 << ( (pcr) % 8) );
@@ -75,22 +70,6 @@
 #define SET_PCR_SELECT_SIZE( pcrSelection, size ) \
                                                   (pcrSelection).sizeofSelect = size;
 
-TPM2_CC currentCommandCode;
-TPM2_CC *currentCommandCodePtr = &currentCommandCode;
-
-#define errorStringSize 200
-char errorString[errorStringSize];
-
-UINT8 simulator = 1;
-
-UINT8 resMgrInitialized = 0;
-
-UINT8 pcrAfterExtend[20];
-TPM2_HANDLE loadedRsaKeyHandle;
-TPM2_HANDLE loadedSha1KeyHandle;
-TPM2B_AUTH loadedSha1KeyAuth;
-
-UINT8 indent = 0;
 
 TSS2_SYS_CONTEXT *sysContext;
 
@@ -100,40 +79,36 @@ TSS2_TCTI_CONTEXT *resMgrTctiContext = 0;
 #define YES 1
 #define NO 0
 
-#define MSFT_MANUFACTURER_ID 0x4d534654
-#define IBM_MANUFACTURER_ID 0x49424d20
-#define LEVEL_STRING_SIZE 50
-
-static void ErrorHandler( UINT32 rval )
+static void ErrorHandler(UINT32 rval, char *errorString, int errorStringSize)
 {
     UINT32 errorLevel = rval & TSS2_RC_LAYER_MASK;
-    char levelString[LEVEL_STRING_SIZE + 1];
+    char levelString[32];
 
-    switch( errorLevel )
+    switch (errorLevel)
     {
         case TSS2_TPM_RC_LAYER:
-            strncpy( levelString, "TPM", LEVEL_STRING_SIZE );
+            strcpy(levelString, "TPM");
             break;
         case TSS2_SYS_RC_LAYER:
-            strncpy( levelString, "System API", LEVEL_STRING_SIZE );
+            strcpy(levelString, "System API");
             break;
         case TSS2_MU_RC_LAYER:
-            strncpy( levelString, "System API TPM encoded", LEVEL_STRING_SIZE );
+            strcpy(levelString, "System API TPM encoded");
             break;
         case TSS2_TCTI_RC_LAYER:
-            strncpy( levelString, "TCTI", LEVEL_STRING_SIZE );
+            strcpy(levelString, "TCTI");
             break;
         case TSS2_RESMGR_TPM_RC_LAYER:
-            strncpy( levelString, "Resource Mgr TPM encoded", LEVEL_STRING_SIZE );
+            strcpy(levelString, "Resource Mgr TPM encoded");
             break;
         case TSS2_RESMGR_RC_LAYER:
-            strncpy( levelString, "Resource Mgr", LEVEL_STRING_SIZE );
+            strcpy(levelString, "Resource Mgr");
             break;
         case TSS2_DRIVER_RC_LAYER:
-            strncpy( levelString, "Driver", LEVEL_STRING_SIZE );
+            strcpy(levelString, "Driver");
             break;
         default:
-            strncpy( levelString, "Unknown Level", LEVEL_STRING_SIZE );
+            strcpy(errorStringSize, "Unknown Level");
             break;
 	}
 
@@ -157,50 +132,31 @@ static void InitSysContextFailure()
     Cleanup();
 }
 
-static void Delay( UINT16 delay)
-{
-    volatile UINT32 i, j;
-
-    for( j = 0; j < delay; j++ )
-    {
-        for( i = 0; i < 10000000; i++ )
-            ;
-    }
-}
-
-#define CheckPassed(rval) {				\
-    							\
-    if ( rval != TPM2_RC_SUCCESS) {					\
-      ErrorHandler( rval);						\
-      LOG_INFO("passing case: \tFAILED!  %s (%s@%u)",		\
-		   errorString, __FUNCTION__, __LINE__ );		\
-      Cleanup();							\
-    } else {								\
-      LOG_INFO("passing case: \tPASSED! (%s@%u)",			\
-		   __FUNCTION__, __LINE__);				\
-    }									\
-    									\
-    Delay(0);							\
+#define CheckPassed(rval) {             \
+    char error_string[200];         \
+    if ((rval) != TPM2_RC_SUCCESS) {      \
+      ErrorHandler((rval), error_string, strlen(error_string)); \
+      LOG_INFO("passing case: \tFAILED!  %s (%s@%u)",  \
+		       error_string, __FUNCTION__, __LINE__ ); \
+      Cleanup(); \
+    } else {     \
+      LOG_INFO("passing case: \tPASSED! (%s@%u)", \
+		       __FUNCTION__, __LINE__);	\
+    } \
   }
 
-TSS2L_SYS_AUTH_COMMAND nullSessionsData = { 1, { 0 } };
-TSS2L_SYS_AUTH_RESPONSE nullSessionsDataOut = { 0, { 0 } };
-TPM2B_NONCE nullSessionNonce, nullSessionNonceOut;
-TPM2B_AUTH nullSessionHmac;
-
-#define CheckFailed(rval, expectedTpmErrorCode) {			\
-    if ( rval != expectedTpmErrorCode) {				\
-      ErrorHandler( rval);						\
-      LOG_INFO("\tfailing case: FAILED!  Ret code s/b: 0x%x, but was: 0x%x (%s@%u)", \
-		   expectedTpmErrorCode, rval, __FUNCTION__, __LINE__ ); \
-      Cleanup();							\
-    }	else {								\
-      LOG_INFO("\tfailing case: PASSED! (%s@%u)",			\
-		   __FUNCTION__, __LINE__);				\
-    }									\
-    Delay(0);							\
+#define CheckFailed(rval, expected_rval) { \
+    char error_string[200];             \
+    if ((rval) != (expected_rval)) {	\
+      ErrorHandler((rval), error_string, strlen(error_string)); \
+      LOG_INFO("\tfailing case: FAILED! %s  Ret code s/b: 0x%x, but was: 0x%x (%s@%u)", \
+               error_string, (expected_rval), (rval), __FUNCTION__, __LINE__ ); \
+      Cleanup(); \
+    } else { \
+      LOG_INFO("\tfailing case: PASSED! (%s@%u)", \
+		   __FUNCTION__, __LINE__);	\
+    } \
   }
-
 
 static TSS2_RC TpmReset()
 {
@@ -602,7 +558,6 @@ static void TestHierarchyChangeAuth()
 #define PCR_16  16
 #define PCR_17  17
 #define PCR_18  18
-
 #define PCR_SIZE 20
 
 static void TestPcrExtend()
@@ -617,6 +572,7 @@ static void TestPcrExtend()
     TPML_DIGEST pcrValues;
     TPML_DIGEST_VALUES digests;
     TPML_PCR_SELECTION pcrSelectionOut;
+    UINT8 pcrAfterExtend[20];
 
     TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths = {{
         .sessionHandle = TPM2_RS_PW,
@@ -1681,7 +1637,12 @@ static void ProvisionNvAux()
     CheckPassed( rval );
 }
 
-static void TpmAuxWrite( int locality)
+TSS2L_SYS_AUTH_COMMAND nullSessionsData = { 1, { 0 } };
+TSS2L_SYS_AUTH_RESPONSE nullSessionsDataOut = { 0, { 0 } };
+TPM2B_NONCE nullSessionNonce, nullSessionNonceOut;
+TPM2B_AUTH nullSessionHmac;
+
+static void TpmAuxWrite(int locality)
 {
     TSS2_RC rval;
     int i;
@@ -2019,11 +1980,9 @@ static void CreatePasswordTestNV( TPMI_RH_NV_INDEX nvIndex, char * password )
     CheckPassed( rval );
 }
 
-// Password used to authorize access to the NV index.
-char password[] = "test password";
-
 static void PasswordTest()
 {
+    char *password = "test password";
     UINT32 rval;
     int i;
 
@@ -3129,10 +3088,6 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     nullSessionsDataOut.auths[0].hmac = nullSessionHmac;
     nullSessionNonceOut.size = 0;
     nullSessionNonce.size = 0;
-
-    loadedSha1KeyAuth.size = 2;
-    loadedSha1KeyAuth.buffer[0] = 0x00;
-    loadedSha1KeyAuth.buffer[1] = 0xff;
 
     rval = tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_OFF );
     CheckPassed(rval);
