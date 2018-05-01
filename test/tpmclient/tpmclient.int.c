@@ -108,7 +108,7 @@ static void ErrorHandler(UINT32 rval, char *errorString, int errorStringSize)
             strcpy(levelString, "Driver");
             break;
         default:
-            strcpy(errorStringSize, "Unknown Level");
+            strcpy(levelString, "Unknown Level");
             break;
 	}
 
@@ -406,22 +406,22 @@ static void TestStartAuthSession()
     encryptedSalt.size = 0;
 
      // Init session
-    rval = StartAuthSessionWithParams( &authSession, TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
+    rval = create_auth_session(&authSession, TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
     CheckPassed( rval );
 
     rval = Tss2_Sys_FlushContext( sysContext, authSession->sessionHandle );
     CheckPassed( rval );
-    EndAuthSession( authSession );
+    end_auth_session( authSession );
 
     // Init session
-    rval = StartAuthSessionWithParams( &authSession, TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, 0xff, &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
+    rval = create_auth_session(&authSession, TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, 0xff, &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
     CheckFailed( rval, TPM2_RC_VALUE + TPM2_RC_P + TPM2_RC_3 );
 
     // Try starting a bunch to see if resource manager handles this correctly.
     for( i = 0; i < ( sizeof(sessions) / sizeof (SESSION *) ); i++ )
     {
         // Init session struct
-        rval = StartAuthSessionWithParams( &sessions[i], TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
+        rval = create_auth_session(&sessions[i], TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
         CheckPassed( rval );
         LOG_INFO("Number of sessions created: %d", i+1 );
 
@@ -432,33 +432,33 @@ static void TestStartAuthSession()
         rval = Tss2_Sys_FlushContext( sysContext, sessions[i]->sessionHandle );
         CheckPassed( rval );
 
-        EndAuthSession(sessions[i]);
+        end_auth_session(sessions[i]);
     }
 
     // Now do some gap tests.
-    rval = StartAuthSessionWithParams( &sessions[0], TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
+    rval = create_auth_session(&sessions[0], TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
     CheckPassed( rval );
 
     for( i = 1; i < ( sizeof(sessions) / sizeof (SESSION *) ); i++ )
     {
-        rval = StartAuthSessionWithParams( &sessions[i], TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
+        rval = create_auth_session(&sessions[i], TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
         CheckPassed( rval );
 
         rval = Tss2_Sys_FlushContext( sysContext, sessions[i]->sessionHandle );
         CheckPassed( rval );
 
-        EndAuthSession(sessions[i]);
+        end_auth_session(sessions[i]);
     }
 
     for( i = 0; i < ( sizeof(sessions) / sizeof (SESSION *) ); i++ )
     {
-        rval = StartAuthSessionWithParams( &sessions[i], TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
+        rval = create_auth_session(&sessions[i], TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
         CheckPassed( rval );
 
         rval = Tss2_Sys_FlushContext( sysContext, sessions[i]->sessionHandle );
         CheckPassed( rval );
 
-        EndAuthSession(sessions[i]);
+        end_auth_session(sessions[i]);
     }
 }
 
@@ -941,7 +941,7 @@ static TSS2_RC BuildPolicy( TSS2_SYS_CONTEXT *sysContext, SESSION **policySessio
 
     // Start policy session.
     symmetric.algorithm = TPM2_ALG_NULL;
-    rval = StartAuthSessionWithParams( policySession, TPM2_RH_NULL, 0, TPM2_RH_NULL, 0, &nonceCaller, &encryptedSalt, trialSession ? TPM2_SE_TRIAL : TPM2_SE_POLICY , &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
+    rval = create_auth_session(policySession, TPM2_RH_NULL, 0, TPM2_RH_NULL, 0, &nonceCaller, &encryptedSalt, trialSession ? TPM2_SE_TRIAL : TPM2_SE_POLICY , &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
     if( rval != TPM2_RC_SUCCESS )
         return rval;
 
@@ -962,7 +962,7 @@ static TSS2_RC BuildPolicy( TSS2_SYS_CONTEXT *sysContext, SESSION **policySessio
         CheckPassed( rval );
 
         // And remove the session from sessions table.
-        EndAuthSession( *policySession );
+        end_auth_session( *policySession );
     }
 
     return rval;
@@ -985,7 +985,7 @@ static TSS2_RC CreateNVIndex( TSS2_SYS_CONTEXT *sysContext, SESSION **policySess
 
     // Start real policy session
     symmetric.algorithm = TPM2_ALG_NULL;
-    rval = StartAuthSessionWithParams( policySession, TPM2_RH_NULL,
+    rval = create_auth_session(policySession, TPM2_RH_NULL,
             0, TPM2_RH_NULL, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY,
             &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
     CheckPassed( rval );
@@ -1290,7 +1290,7 @@ static void TestPolicy()
             CheckPassed( rval );
 
             // And remove the session from test app session table.
-            EndAuthSession( policySession );
+            end_auth_session( policySession );
         }
         else
         {
@@ -2132,7 +2132,7 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
         // Create the NV index's authorization policy
         // using a trial policy session.
         //
-        rval = StartAuthSessionWithParams( &trialPolicySession,
+        rval = create_auth_session(&trialPolicySession,
                 TPM2_RH_NULL, 0, TPM2_RH_NULL, 0, &nonceCaller, &encryptedSalt,
                 TPM2_SE_TRIAL,
                 &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
@@ -2156,7 +2156,7 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
 
         // And remove the trial policy session from
         // sessions table.
-        EndAuthSession( trialPolicySession );
+        end_auth_session( trialPolicySession );
     }
 
     // Now set the NV index's attributes:
@@ -2187,7 +2187,7 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
     CheckPassed(rval);
 
     // Get the name of the NV index.
-    rval = TpmHandleToName(
+    rval = tpm_handle_to_name(
             resMgrTctiContext,
             TPM20_INDEX_PASSWORD_TEST,
             &nvName);
@@ -2217,14 +2217,14 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
     else
         tpmSe = TPM2_SE_POLICY;
 
-    rval = StartAuthSessionWithParams( &nvSession, TPM2_RH_NULL,
+    rval = create_auth_session(&nvSession, TPM2_RH_NULL,
             0, TPM2_RH_NULL, 0, &nonceCaller, &encryptedSalt, tpmSe,
             &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
     CheckPassed( rval );
 
     // Get the name of the session and save it in
     // the nvSession structure.
-    rval = TpmHandleToName(
+    rval = tpm_handle_to_name(
             resMgrTctiContext,
             nvSession->sessionHandle,
             &(nvSession->name) );
@@ -2262,11 +2262,11 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
     nvCmdAuths.auths[0].sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
 
     // Roll nonces for command
-    RollNonces( nvSession, &nvCmdAuths.auths[0].nonce );
+    roll_nonces(nvSession, &nvCmdAuths.auths[0].nonce );
 
     // Complete command authorization area, by computing
     // HMAC and setting it in nvCmdAuths.
-    rval = ComputeCommandHmacs(
+    rval = compute_command_hmac(
             simpleTestContext,
             TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST,
@@ -2283,13 +2283,13 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
     CheckPassed(sessionCmdRval);
 
     // Roll nonces for response
-    RollNonces( nvSession, &nvRspAuths.auths[0].nonce );
+    roll_nonces(nvSession, &nvRspAuths.auths[0].nonce );
 
     if (sessionCmdRval == TPM2_RC_SUCCESS) {
         // If the command was successful, check the
         // response HMAC to make sure that the
         // response was received correctly.
-        rval = CheckResponseHMACs(
+        rval = check_response_hmac(
                 simpleTestContext,
                 &nvCmdAuths,
                 TPM20_INDEX_PASSWORD_TEST,
@@ -2314,14 +2314,14 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
     CheckPassed( rval );
 
     // Roll nonces for command
-    RollNonces( nvSession, &nvCmdAuths.auths[0].nonce );
+    roll_nonces(nvSession, &nvCmdAuths.auths[0].nonce );
 
     // End the session after next command.
     nvCmdAuths.auths[0].sessionAttributes &= ~TPMA_SESSION_CONTINUESESSION;
 
     // Complete command authorization area, by computing
     // HMAC and setting it in nvCmdAuths.
-    rval = ComputeCommandHmacs(
+    rval = compute_command_hmac(
             simpleTestContext,
             TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST,
@@ -2341,13 +2341,13 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
     CheckPassed( sessionCmdRval );
 
     // Roll nonces for response
-    RollNonces( nvSession, &nvRspAuths.auths[0].nonce );
+    roll_nonces(nvSession, &nvRspAuths.auths[0].nonce );
 
     if (sessionCmdRval == TPM2_RC_SUCCESS) {
         // If the command was successful, check the
         // response HMAC to make sure that the
         // response was received correctly.
-        rval = CheckResponseHMACs(
+        rval = check_response_hmac(
                 simpleTestContext,
                 &nvCmdAuths,
                 TPM20_INDEX_PASSWORD_TEST,
@@ -2385,7 +2385,7 @@ static void SimpleHmacOrPolicyTest( bool hmacTest )
     DeleteEntity(TPM20_INDEX_PASSWORD_TEST);
 
     // Remove the real session from sessions table.
-    EndAuthSession( nvSession );
+    end_auth_session( nvSession );
 
     sapi_teardown(simpleTestContext);
 }
@@ -2469,7 +2469,7 @@ static void TestEncryptDecryptSession()
         }
 
         // Start policy session for decrypt/encrypt session.
-        rval = StartAuthSessionWithParams( &encryptDecryptSession,
+        rval = create_auth_session(&encryptDecryptSession,
                 TPM2_RH_NULL, 0, TPM2_RH_NULL, 0, &nonceCaller, 0, TPM2_SE_POLICY,
                 &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
         CheckPassed( rval );
@@ -2532,11 +2532,11 @@ static void TestEncryptDecryptSession()
         }
 
         // Roll nonces for command.
-        RollNonces( encryptDecryptSession,
+        roll_nonces(encryptDecryptSession,
                 &nvRdWrCmdAuths.auths[1].nonce );
 
         // Encrypt write data.
-        rval = EncryptCommandParam(encryptDecryptSession,
+        rval = encrypt_command_param(encryptDecryptSession,
                 (TPM2B_MAX_BUFFER *)&encryptedWriteData,
                 (TPM2B_MAX_BUFFER *)&writeData, &nvAuth);
         CheckPassed( rval );
@@ -2558,13 +2558,13 @@ static void TestEncryptDecryptSession()
         CheckPassed( rval );
 
         // Roll the nonces for response
-        RollNonces( encryptDecryptSession,
+        roll_nonces(encryptDecryptSession,
                 &nvRdWrRspAuths.auths[1].nonce );
 
 
         // Don't need nonces for anything else, so roll
         // the nonces for next command.
-        RollNonces( encryptDecryptSession,
+        roll_nonces(encryptDecryptSession,
                 &nvRdWrCmdAuths.auths[1].nonce );
 
         // Now read the data without encrypt set.
@@ -2580,7 +2580,7 @@ static void TestEncryptDecryptSession()
         nvRdWrRspAuths.count = 2;
 
         // Roll the nonces for response
-        RollNonces( encryptDecryptSession,
+        roll_nonces(encryptDecryptSession,
                 &nvRdWrRspAuths.auths[1].nonce );
 
         // Check that write and read data are equal.  This
@@ -2606,7 +2606,7 @@ static void TestEncryptDecryptSession()
         CheckPassed( rval );
 
         // Roll the nonces for next command.
-        RollNonces( encryptDecryptSession,
+        roll_nonces(encryptDecryptSession,
                 &nvRdWrCmdAuths.auths[1].nonce );
 
         nvRdWrCmdAuths.auths[1].sessionAttributes &= ~TPMA_SESSION_DECRYPT;
@@ -2631,7 +2631,7 @@ static void TestEncryptDecryptSession()
         CheckPassed( rval );
 
         // Roll the nonces for response
-        RollNonces( encryptDecryptSession,
+        roll_nonces(encryptDecryptSession,
                 &nvRdWrRspAuths.auths[1].nonce );
 
         // Decrypt read data.
@@ -2639,13 +2639,13 @@ static void TestEncryptDecryptSession()
         memcpy( (void *)&encryptedReadData.buffer[0],
                 (void *)encryptParamBuffer, encryptParamSize );
         INIT_SIMPLE_TPM2B_SIZE( decryptedReadData );
-        rval = DecryptResponseParam( encryptDecryptSession,
+        rval = decrypt_response_param(encryptDecryptSession,
                 (TPM2B_MAX_BUFFER *)&decryptedReadData,
                 (TPM2B_MAX_BUFFER *)&encryptedReadData, &nvAuth );
         CheckPassed( rval );
 
         // Roll the nonces.
-        RollNonces( encryptDecryptSession,
+        roll_nonces(encryptDecryptSession,
                 &nvRdWrRspAuths.auths[1].nonce );
 
         rval = Tss2_Sys_SetEncryptParam( sysContext,
@@ -2673,7 +2673,7 @@ static void TestEncryptDecryptSession()
                 encryptDecryptSession->sessionHandle );
         CheckPassed( rval );
 
-        EndAuthSession( encryptDecryptSession );
+        end_auth_session( encryptDecryptSession );
     }
 
     // Undefine NV index.
