@@ -44,24 +44,6 @@ extern "C" {
 #endif
 
 TSS2_RC
-Tss2_MU_IESYSC_RESOURCE_TYPE_CONSTANT_Marshal(
-    const IESYSC_RESOURCE_TYPE_CONSTANT in,
-    uint8_t *buffer,
-    size_t size,
-    size_t *offset);
-
-TSS2_RC
-Tss2_MU_IESYSC_RESOURCE_TYPE_CONSTANT_Unmarshal(
-    const uint8_t *buffer,
-    size_t size,
-    size_t *offset,
-    IESYSC_RESOURCE_TYPE_CONSTANT *out);
-
-TSS2_RC
-Tss2_MU_IESYSC_RESOURCE_TYPE_CONSTANT_check(
-    const IESYSC_RESOURCE_TYPE_CONSTANT *in);
-
-TSS2_RC
 Tss2_MU_IESYSC_PARAM_ENCRYPT_Marshal(
     const IESYSC_PARAM_ENCRYPT in,
     uint8_t *buffer,
