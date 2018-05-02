@@ -31,6 +31,7 @@
 #include "tss2_esys.h"
 
 #include "esys_mu.h"
+#include "esys_iutil.h"
 #define LOGMODULE esys
 #include "util/log.h"
 
@@ -576,6 +577,9 @@ Tss2_MU_IESYS_SESSION_Marshal(
         LOG_ERROR("Error marshaling subfield sessionValue");
         return ret;
     }
+    ret = Tss2_MU_UINT16_Marshal(src->sizeHmacValue, buffer, size, &offset_loc);
+    return_if_error(ret, "Error marshaling subfield sizeHmacValue");
+
     if (offset != NULL)
         *offset = offset_loc;
     return TSS2_RC_SUCCESS;
@@ -707,6 +711,11 @@ Tss2_MU_IESYS_SESSION_Unmarshal(
         LOG_ERROR("Error unmarshaling subfield sessionValue");
         return ret;
     }
+    UINT16 out_sizeHmacValue;
+    ret = Tss2_MU_UINT16_Unmarshal(buffer, size, &offset_loc,
+            (dst == NULL)? &out_sizeHmacValue : &dst->sizeHmacValue);
+    return_if_error(ret, "Error unmarshaling subfield sizeHmacValue");
+
     if (offset != NULL)
         *offset = offset_loc;
     return TSS2_RC_SUCCESS;

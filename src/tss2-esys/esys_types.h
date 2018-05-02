@@ -84,6 +84,7 @@ typedef struct {
     IESYSC_TYPE_POLICY_AUTH         type_policy_session;    /**< Field to store markers for policy sessions */
     UINT16                             sizeSessionValue;    /**< Size of sessionKey plus optionally authValue */
     BYTE                 sessionValue [2*sizeof(TPMU_HA)];    /**< sessionKey || AuthValue */
+    UINT16                                sizeHmacValue;    /**< Size of sessionKey plus optionally authValue */
 } IESYS_SESSION;
 
 /** Selector type for esys resources
