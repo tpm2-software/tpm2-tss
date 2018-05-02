@@ -42,24 +42,13 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     uint32_t r;
     ESYS_TR session;
-    TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,.keyBits = {.aes =
-                                                                    128},.mode =
-        {.aes = TPM2_ALG_CFB}
-    };
-    TPMA_SESSION sessionAttributes;
-    TPM2B_NONCE *nonceTpm;
-    TPM2B_NONCE nonceCaller = {
-        .size = 20,
-        .buffer = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
-    };
-
-    memset(&sessionAttributes, 0, sizeof sessionAttributes);
+    TPMT_SYM_DEF symmetric = { .algorithm = TPM2_ALG_NULL };
 
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              &nonceCaller,
+                              NULL,
                               TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1, &session,
-                              &nonceTpm);
+                              NULL);
 
     goto_if_error(r, "Error: During initialization of session", error);
 
