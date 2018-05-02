@@ -47,25 +47,18 @@ typedef struct RSRC_NODE_T {
     struct RSRC_NODE_T * next;  /**< The next object in the linked list. */
 } RSRC_NODE_T;
 
-/*
- * Declares of structs for storing ESAPI input parameters
- */
-
 
 typedef struct {
     TPM2_SU startupType;
 } Startup_IN;
 
-
 typedef struct {
     TPM2_SU shutdownType;
 } Shutdown_IN;
 
-
 typedef struct {
     TPMI_YES_NO fullTest;
 } SelfTest_IN;
-
 
 typedef struct {
     TPML_ALG *toTest;
@@ -73,7 +66,6 @@ typedef struct {
 } IncrementalSelfTest_IN;
 
 typedef TPMS_EMPTY  GetTestResult_IN;
-
 
 typedef struct {
     ESYS_TR tpmKey;
@@ -88,11 +80,9 @@ typedef struct {
     TPMT_SYM_DEF symmetricData;
 } StartAuthSession_IN;
 
-
 typedef struct {
     ESYS_TR sessionHandle;
 } PolicyRestart_IN;
-
 
 typedef struct {
     ESYS_TR parentHandle;
@@ -106,7 +96,6 @@ typedef struct {
     TPML_PCR_SELECTION creationPCRData;
 } Create_IN;
 
-
 typedef struct {
     ESYS_TR parentHandle;
     TPM2B_PRIVATE *inPrivate;
@@ -114,7 +103,6 @@ typedef struct {
     TPM2B_PUBLIC *inPublic;
     TPM2B_PUBLIC inPublicData;
 } Load_IN;
-
 
 typedef struct {
     TPMI_RH_HIERARCHY hierarchy;
@@ -124,11 +112,9 @@ typedef struct {
     TPM2B_PUBLIC inPublicData;
 } LoadExternal_IN;
 
-
 typedef struct {
     ESYS_TR objectHandle;
 } ReadPublic_IN;
-
 
 typedef struct {
     ESYS_TR activateHandle;
@@ -139,7 +125,6 @@ typedef struct {
     TPM2B_ENCRYPTED_SECRET secretData;
 } ActivateCredential_IN;
 
-
 typedef struct {
     ESYS_TR handle;
     TPM2B_DIGEST *credential;
@@ -148,11 +133,9 @@ typedef struct {
     TPM2B_NAME objectNameData;
 } MakeCredential_IN;
 
-
 typedef struct {
     ESYS_TR itemHandle;
 } Unseal_IN;
-
 
 typedef struct {
     ESYS_TR objectHandle;
@@ -160,7 +143,6 @@ typedef struct {
     TPM2B_AUTH *newAuth;
     TPM2B_AUTH newAuthData;
 } ObjectChangeAuth_IN;
-
 
 typedef struct {
     ESYS_TR parentHandle;
@@ -170,7 +152,6 @@ typedef struct {
     TPM2B_TEMPLATE inPublicData;
 } CreateLoaded_IN;
 
-
 typedef struct {
     ESYS_TR objectHandle;
     ESYS_TR newParentHandle;
@@ -179,7 +160,6 @@ typedef struct {
     TPMT_SYM_DEF_OBJECT *symmetricAlg;
     TPMT_SYM_DEF_OBJECT symmetricAlgData;
 } Duplicate_IN;
-
 
 typedef struct {
     ESYS_TR oldParent;
@@ -191,7 +171,6 @@ typedef struct {
     TPM2B_ENCRYPTED_SECRET *inSymSeed;
     TPM2B_ENCRYPTED_SECRET inSymSeedData;
 } Rewrap_IN;
-
 
 typedef struct {
     ESYS_TR parentHandle;
@@ -207,7 +186,6 @@ typedef struct {
     TPMT_SYM_DEF_OBJECT symmetricAlgData;
 } Import_IN;
 
-
 typedef struct {
     ESYS_TR keyHandle;
     TPM2B_PUBLIC_KEY_RSA *message;
@@ -217,7 +195,6 @@ typedef struct {
     TPM2B_DATA *label;
     TPM2B_DATA labelData;
 } RSA_Encrypt_IN;
-
 
 typedef struct {
     ESYS_TR keyHandle;
@@ -229,11 +206,9 @@ typedef struct {
     TPM2B_DATA labelData;
 } RSA_Decrypt_IN;
 
-
 typedef struct {
     ESYS_TR keyHandle;
 } ECDH_KeyGen_IN;
-
 
 typedef struct {
     ESYS_TR keyHandle;
@@ -241,11 +216,9 @@ typedef struct {
     TPM2B_ECC_POINT inPointData;
 } ECDH_ZGen_IN;
 
-
 typedef struct {
     TPMI_ECC_CURVE curveID;
 } ECC_Parameters_IN;
-
 
 typedef struct {
     ESYS_TR keyA;
@@ -257,7 +230,6 @@ typedef struct {
     TPM2B_ECC_POINT inQeBData;
 } ZGen_2Phase_IN;
 
-
 typedef struct {
     ESYS_TR keyHandle;
     TPMI_YES_NO decrypt;
@@ -267,7 +239,6 @@ typedef struct {
     TPM2B_MAX_BUFFER *inData;
     TPM2B_MAX_BUFFER inDataData;
 } EncryptDecrypt_IN;
-
 
 typedef struct {
     ESYS_TR keyHandle;
@@ -279,14 +250,12 @@ typedef struct {
     TPM2B_IV ivInData;
 } EncryptDecrypt2_IN;
 
-
 typedef struct {
     TPMI_ALG_HASH hashAlg;
     TPMI_RH_HIERARCHY hierarchy;
     TPM2B_MAX_BUFFER *data;
     TPM2B_MAX_BUFFER dataData;
 } Hash_IN;
-
 
 typedef struct {
     ESYS_TR handle;
@@ -295,17 +264,14 @@ typedef struct {
     TPM2B_MAX_BUFFER bufferData;
 } HMAC_IN;
 
-
 typedef struct {
     UINT16 bytesRequested;
 } GetRandom_IN;
-
 
 typedef struct {
     TPM2B_SENSITIVE_DATA *inData;
     TPM2B_SENSITIVE_DATA inDataData;
 } StirRandom_IN;
-
 
 typedef struct {
     ESYS_TR handle;
@@ -314,20 +280,17 @@ typedef struct {
     TPM2B_AUTH authData;
 } HMAC_Start_IN;
 
-
 typedef struct {
     TPMI_ALG_HASH hashAlg;
     TPM2B_AUTH *auth;
     TPM2B_AUTH authData;
 } HashSequenceStart_IN;
 
-
 typedef struct {
     ESYS_TR sequenceHandle;
     TPM2B_MAX_BUFFER *buffer;
     TPM2B_MAX_BUFFER bufferData;
 } SequenceUpdate_IN;
-
 
 typedef struct {
     ESYS_TR sequenceHandle;
@@ -336,14 +299,12 @@ typedef struct {
     TPM2B_MAX_BUFFER bufferData;
 } SequenceComplete_IN;
 
-
 typedef struct {
     ESYS_TR pcrHandle;
     ESYS_TR sequenceHandle;
     TPM2B_MAX_BUFFER *buffer;
     TPM2B_MAX_BUFFER bufferData;
 } EventSequenceComplete_IN;
-
 
 typedef struct {
     ESYS_TR objectHandle;
@@ -353,7 +314,6 @@ typedef struct {
     TPMT_SIG_SCHEME *inScheme;
     TPMT_SIG_SCHEME inSchemeData;
 } Certify_IN;
-
 
 typedef struct {
     ESYS_TR signHandle;
@@ -368,7 +328,6 @@ typedef struct {
     TPMT_TK_CREATION creationTicketData;
 } CertifyCreation_IN;
 
-
 typedef struct {
     ESYS_TR signHandle;
     TPM2B_DATA *qualifyingData;
@@ -378,7 +337,6 @@ typedef struct {
     TPML_PCR_SELECTION *PCRselect;
     TPML_PCR_SELECTION PCRselectData;
 } Quote_IN;
-
 
 typedef struct {
     ESYS_TR privacyAdminHandle;
@@ -390,7 +348,6 @@ typedef struct {
     TPMT_SIG_SCHEME inSchemeData;
 } GetSessionAuditDigest_IN;
 
-
 typedef struct {
     ESYS_TR privacyHandle;
     ESYS_TR signHandle;
@@ -400,7 +357,6 @@ typedef struct {
     TPMT_SIG_SCHEME inSchemeData;
 } GetCommandAuditDigest_IN;
 
-
 typedef struct {
     ESYS_TR privacyAdminHandle;
     ESYS_TR signHandle;
@@ -409,7 +365,6 @@ typedef struct {
     TPMT_SIG_SCHEME *inScheme;
     TPMT_SIG_SCHEME inSchemeData;
 } GetTime_IN;
-
 
 typedef struct {
     ESYS_TR signHandle;
@@ -421,11 +376,9 @@ typedef struct {
     TPM2B_ECC_PARAMETER y2Data;
 } Commit_IN;
 
-
 typedef struct {
     TPMI_ECC_CURVE curveID;
 } EC_Ephemeral_IN;
-
 
 typedef struct {
     ESYS_TR keyHandle;
@@ -434,7 +387,6 @@ typedef struct {
     TPMT_SIGNATURE *signature;
     TPMT_SIGNATURE signatureData;
 } VerifySignature_IN;
-
 
 typedef struct {
     ESYS_TR keyHandle;
@@ -446,7 +398,6 @@ typedef struct {
     TPMT_TK_HASHCHECK validationData;
 } Sign_IN;
 
-
 typedef struct {
     ESYS_TR auth;
     TPMI_ALG_HASH auditAlg;
@@ -456,13 +407,11 @@ typedef struct {
     TPML_CC clearListData;
 } SetCommandCodeAuditStatus_IN;
 
-
 typedef struct {
     ESYS_TR pcrHandle;
     TPML_DIGEST_VALUES *digests;
     TPML_DIGEST_VALUES digestsData;
 } PCR_Extend_IN;
-
 
 typedef struct {
     ESYS_TR pcrHandle;
@@ -470,19 +419,16 @@ typedef struct {
     TPM2B_EVENT eventDataData;
 } PCR_Event_IN;
 
-
 typedef struct {
     TPML_PCR_SELECTION *pcrSelectionIn;
     TPML_PCR_SELECTION pcrSelectionInData;
 } PCR_Read_IN;
-
 
 typedef struct {
     ESYS_TR authHandle;
     TPML_PCR_SELECTION *pcrAllocation;
     TPML_PCR_SELECTION pcrAllocationData;
 } PCR_Allocate_IN;
-
 
 typedef struct {
     ESYS_TR authHandle;
@@ -492,18 +438,15 @@ typedef struct {
     TPM2B_DIGEST authPolicyData;
 } PCR_SetAuthPolicy_IN;
 
-
 typedef struct {
     ESYS_TR pcrHandle;
     TPM2B_DIGEST *auth;
     TPM2B_DIGEST authData;
 } PCR_SetAuthValue_IN;
 
-
 typedef struct {
     ESYS_TR pcrHandle;
 } PCR_Reset_IN;
-
 
 typedef struct {
     ESYS_TR authObject;
@@ -519,7 +462,6 @@ typedef struct {
     TPMT_SIGNATURE authData;
 } PolicySigned_IN;
 
-
 typedef struct {
     ESYS_TR authHandle;
     ESYS_TR policySession;
@@ -531,7 +473,6 @@ typedef struct {
     TPM2B_NONCE *policyRef;
     TPM2B_NONCE policyRefData;
 } PolicySecret_IN;
-
 
 typedef struct {
     ESYS_TR policySession;
@@ -547,13 +488,11 @@ typedef struct {
     TPMT_TK_AUTH ticketData;
 } PolicyTicket_IN;
 
-
 typedef struct {
     ESYS_TR policySession;
     TPML_DIGEST *pHashList;
     TPML_DIGEST pHashListData;
 } PolicyOR_IN;
-
 
 typedef struct {
     ESYS_TR policySession;
@@ -563,12 +502,10 @@ typedef struct {
     TPML_PCR_SELECTION pcrsData;
 } PolicyPCR_IN;
 
-
 typedef struct {
     ESYS_TR policySession;
     TPMA_LOCALITY locality;
 } PolicyLocality_IN;
-
 
 typedef struct {
     ESYS_TR authHandle;
@@ -580,7 +517,6 @@ typedef struct {
     TPM2B_OPERAND operandBData;
 } PolicyNV_IN;
 
-
 typedef struct {
     ESYS_TR policySession;
     UINT16 offset;
@@ -589,17 +525,14 @@ typedef struct {
     TPM2B_OPERAND operandBData;
 } PolicyCounterTimer_IN;
 
-
 typedef struct {
     ESYS_TR policySession;
     TPM2_CC code;
 } PolicyCommandCode_IN;
 
-
 typedef struct {
     ESYS_TR policySession;
 } PolicyPhysicalPresence_IN;
-
 
 typedef struct {
     ESYS_TR policySession;
@@ -607,13 +540,11 @@ typedef struct {
     TPM2B_DIGEST cpHashAData;
 } PolicyCpHash_IN;
 
-
 typedef struct {
     ESYS_TR policySession;
     TPM2B_DIGEST *nameHash;
     TPM2B_DIGEST nameHashData;
 } PolicyNameHash_IN;
-
 
 typedef struct {
     ESYS_TR policySession;
@@ -623,7 +554,6 @@ typedef struct {
     TPM2B_NAME *newParentName;
     TPM2B_NAME newParentNameData;
 } PolicyDuplicationSelect_IN;
-
 
 typedef struct {
     ESYS_TR policySession;
@@ -637,27 +567,22 @@ typedef struct {
     TPMT_TK_VERIFIED checkTicketData;
 } PolicyAuthorize_IN;
 
-
 typedef struct {
     ESYS_TR policySession;
 } PolicyAuthValue_IN;
-
 
 typedef struct {
     ESYS_TR policySession;
 } PolicyPassword_IN;
 
-
 typedef struct {
     ESYS_TR policySession;
 } PolicyGetDigest_IN;
-
 
 typedef struct {
     ESYS_TR policySession;
     TPMI_YES_NO writtenSet;
 } PolicyNvWritten_IN;
-
 
 typedef struct {
     ESYS_TR policySession;
@@ -665,13 +590,11 @@ typedef struct {
     TPM2B_DIGEST templateHashData;
 } PolicyTemplate_IN;
 
-
 typedef struct {
     ESYS_TR authHandle;
     ESYS_TR nvIndex;
     ESYS_TR policySession;
 } PolicyAuthorizeNV_IN;
-
 
 typedef struct {
     ESYS_TR primaryHandle;
@@ -685,13 +608,11 @@ typedef struct {
     TPML_PCR_SELECTION creationPCRData;
 } CreatePrimary_IN;
 
-
 typedef struct {
     ESYS_TR authHandle;
     TPMI_RH_ENABLES enable;
     TPMI_YES_NO state;
 } HierarchyControl_IN;
-
 
 typedef struct {
     ESYS_TR authHandle;
@@ -700,27 +621,22 @@ typedef struct {
     TPM2B_DIGEST authPolicyData;
 } SetPrimaryPolicy_IN;
 
-
 typedef struct {
     ESYS_TR authHandle;
 } ChangePPS_IN;
-
 
 typedef struct {
     ESYS_TR authHandle;
 } ChangeEPS_IN;
 
-
 typedef struct {
     ESYS_TR authHandle;
 } Clear_IN;
-
 
 typedef struct {
     ESYS_TR auth;
     TPMI_YES_NO disable;
 } ClearControl_IN;
-
 
 typedef struct {
     ESYS_TR authHandle;
@@ -728,11 +644,9 @@ typedef struct {
     TPM2B_AUTH newAuthData;
 } HierarchyChangeAuth_IN;
 
-
 typedef struct {
     ESYS_TR lockHandle;
 } DictionaryAttackLockReset_IN;
-
 
 typedef struct {
     ESYS_TR lockHandle;
@@ -740,7 +654,6 @@ typedef struct {
     UINT32 newRecoveryTime;
     UINT32 lockoutRecovery;
 } DictionaryAttackParameters_IN;
-
 
 typedef struct {
     ESYS_TR auth;
@@ -750,12 +663,10 @@ typedef struct {
     TPML_CC clearListData;
 } PP_Commands_IN;
 
-
 typedef struct {
     ESYS_TR authHandle;
     UINT32 algorithmSet;
 } SetAlgorithmSet_IN;
-
 
 typedef struct {
     ESYS_TR authorization;
@@ -766,33 +677,27 @@ typedef struct {
     TPMT_SIGNATURE manifestSignatureData;
 } FieldUpgradeStart_IN;
 
-
 typedef struct {
     TPM2B_MAX_BUFFER *fuData;
     TPM2B_MAX_BUFFER fuDataData;
 } FieldUpgradeData_IN;
 
-
 typedef struct {
     UINT32 sequenceNumber;
 } FirmwareRead_IN;
 
-
 typedef struct {
     ESYS_TR saveHandle;
 } ContextSave_IN;
-
 
 typedef struct {
     TPMS_CONTEXT *context;
     TPMS_CONTEXT contextData;
 } ContextLoad_IN;
 
-
 typedef struct {
     ESYS_TR flushHandle;
 } FlushContext_IN;
-
 
 typedef struct {
     ESYS_TR auth;
@@ -802,18 +707,15 @@ typedef struct {
 
 typedef TPMS_EMPTY  ReadClock_IN;
 
-
 typedef struct {
     ESYS_TR auth;
     UINT64 newTime;
 } ClockSet_IN;
 
-
 typedef struct {
     ESYS_TR auth;
     TPM2_CLOCK_ADJUST rateAdjust;
 } ClockRateAdjust_IN;
-
 
 typedef struct {
     TPM2_CAP capability;
@@ -821,12 +723,10 @@ typedef struct {
     UINT32 propertyCount;
 } GetCapability_IN;
 
-
 typedef struct {
     TPMT_PUBLIC_PARMS *parameters;
     TPMT_PUBLIC_PARMS parametersData;
 } TestParms_IN;
-
 
 typedef struct {
     ESYS_TR authHandle;
@@ -836,23 +736,19 @@ typedef struct {
     TPM2B_NV_PUBLIC publicInfoData;
 } NV_DefineSpace_IN;
 
-
 typedef struct {
     ESYS_TR authHandle;
     ESYS_TR nvIndex;
 } NV_UndefineSpace_IN;
-
 
 typedef struct {
     ESYS_TR nvIndex;
     ESYS_TR platform;
 } NV_UndefineSpaceSpecial_IN;
 
-
 typedef struct {
     ESYS_TR nvIndex;
 } NV_ReadPublic_IN;
-
 
 typedef struct {
     ESYS_TR authHandle;
@@ -862,12 +758,10 @@ typedef struct {
     TPM2B_MAX_NV_BUFFER dataData;
 } NV_Write_IN;
 
-
 typedef struct {
     ESYS_TR authHandle;
     ESYS_TR nvIndex;
 } NV_Increment_IN;
-
 
 typedef struct {
     ESYS_TR authHandle;
@@ -876,24 +770,20 @@ typedef struct {
     TPM2B_MAX_NV_BUFFER dataData;
 } NV_Extend_IN;
 
-
 typedef struct {
     ESYS_TR authHandle;
     ESYS_TR nvIndex;
     UINT64 bits;
 } NV_SetBits_IN;
 
-
 typedef struct {
     ESYS_TR authHandle;
     ESYS_TR nvIndex;
 } NV_WriteLock_IN;
 
-
 typedef struct {
     ESYS_TR authHandle;
 } NV_GlobalWriteLock_IN;
-
 
 typedef struct {
     ESYS_TR authHandle;
@@ -902,19 +792,16 @@ typedef struct {
     UINT16 offset;
 } NV_Read_IN;
 
-
 typedef struct {
     ESYS_TR authHandle;
     ESYS_TR nvIndex;
 } NV_ReadLock_IN;
-
 
 typedef struct {
     ESYS_TR nvIndex;
     TPM2B_AUTH *newAuth;
     TPM2B_AUTH newAuthData;
 } NV_ChangeAuth_IN;
-
 
 typedef struct {
     ESYS_TR signHandle;
@@ -927,7 +814,6 @@ typedef struct {
     TPMT_SIG_SCHEME *inScheme;
     TPMT_SIG_SCHEME inSchemeData;
 } NV_Certify_IN;
-
 
 typedef struct {
     TPM2B_DATA *inputData;
