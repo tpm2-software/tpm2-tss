@@ -123,68 +123,6 @@ iesys_MU_BYTE_array_Unmarshal(
     return TSS2_RC_SUCCESS;
 }
 
-/**
- * Marshal a constant of type IESYSC_RESOURCE_TYPE_CONSTANT into a byte buffer.
- * @param[in] src constant to be marshaled.
- * @param[in,out] buffer Buffer to write result into (may be NULL)
- * @param[in] size Size of the buffer.
- * @param[in,out] offset Offset inside the buffer (may be NULL.
- * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_ESYS_RC_BAD_REFERENCE if src==NULL.
- * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
- */
-TSS2_RC
-Tss2_MU_IESYSC_RESOURCE_TYPE_CONSTANT_Marshal(
-    const IESYSC_RESOURCE_TYPE_CONSTANT src,
-    uint8_t *buffer,
-    size_t size,
-    size_t *offset)
-{
-    LOG_TRACE("called: src=%"PRIx32 " buffer=%p size=%zu offset=%p", src,
-        buffer, size, offset);
-    return Tss2_MU_UINT32_Marshal(src, buffer, size, offset);
-}
-
-/**
- * Unmarshal a constant of type IESYSC_RESOURCE_TYPE_CONSTANT from a byte buffer.
- * @param[in,out] buffer Buffer to read data from.
- * @param[in] size Size of the buffer.
- * @param[in,out] offset Offset inside the buffer
- *                (being updated during marshaling).
- * @param[out] dst variable to store the result in.
- * @retval TSS2_RC_SUCCESS on success.
- */
-TSS2_RC
-Tss2_MU_IESYSC_RESOURCE_TYPE_CONSTANT_Unmarshal(
-    const uint8_t *buffer,
-    size_t size,
-    size_t *offset,
-    IESYSC_RESOURCE_TYPE_CONSTANT *dst)
-{
-    LOG_TRACE("called: buffer=%p size=%zu offset=%p dst=%p",
-        buffer, size, offset, dst);
-    size_t offset_loc = (offset != NULL)? *offset : 0;
-    if (dst != NULL)
-        memset(dst, 0, sizeof(*dst));
-    IESYSC_RESOURCE_TYPE_CONSTANT dst_loc;
-    TSS2_RC ret = Tss2_MU_UINT32_Unmarshal(buffer, size,
-        &offset_loc, &dst_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Unmarshaling the base type");
-        return ret;
-    }
-    ret = Tss2_MU_IESYSC_RESOURCE_TYPE_CONSTANT_check(&dst_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Bad value %"PRIx32 "", dst_loc);
-        return ret;
-    }
-    if (offset != NULL)
-        *offset = offset_loc;
-    if (dst != NULL)
-        *dst = dst_loc;
-    LOG_TRACE("return: dst=%p value=%"PRIx32 "", dst, dst_loc);
-    return TSS2_RC_SUCCESS;
-}
 
 /** Check, if a variable has a possible value of type IESYSC_RESOURCE_TYPE_CONSTANT.
  *
