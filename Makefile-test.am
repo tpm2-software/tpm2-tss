@@ -83,7 +83,8 @@ TESTS_UNIT += \
     test/unit/esys-sequence-finish \
     test/unit/esys-tcti-rcs \
     test/unit/esys-tpm-rcs \
-    test/unit/esys-getpollhandles
+    test/unit/esys-getpollhandles \
+    test/unit/esys-nulltcti
 endif ESAPI
 endif #UNIT
 
@@ -313,6 +314,12 @@ test_unit_esys_getpollhandles_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_getpollhandles_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_getpollhandles_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
 test_unit_esys_getpollhandles_SOURCES = test/unit/esys-getpollhandles.c
+
+test_unit_esys_nulltcti_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_esys_nulltcti_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_esys_nulltcti_LDFLAGS = $(TESTS_LDFLAGS) -lgcrypt
+test_unit_esys_nulltcti_SOURCES = test/unit/esys-nulltcti.c \
+        src/tss2-esys/esys_context.c
 endif # ESAPI
 endif # UNIT
 
