@@ -90,6 +90,20 @@ AC_ARG_WITH([tctidefaultconfig],
                                 ["The default TCTIs configuration string"])],
             [])
 
+AC_ARG_ENABLE([tcti-device],
+            [AS_HELP_STRING([--enable-tcti-device],
+                            [build the tcti-device module (default is yes)])],
+            [enable_tcti_device=$enableval],
+            [enable_tcti_device=yes])
+AM_CONDITIONAL([ENABLE_TCTI_DEVICE], [test "x$enable_tcti_device" != xno])
+
+AC_ARG_ENABLE([tcti-mssim],
+            [AS_HELP_STRING([--enable-tcti-mssim],
+                            [build the tcti-mssim module (default is yes)])],
+            [enable_tcti_mssim=$enableval],
+            [enable_tcti_mssim=yes])
+AM_CONDITIONAL([ENABLE_TCTI_MSSIM], [test "x$enable_tcti_mssim" != xno])
+
 #
 # udev
 #
@@ -191,6 +205,10 @@ AM_CONDITIONAL(DOXYMAN, [test $DX_FLAG_man -eq 1])
 AX_CODE_COVERAGE
 
 AC_OUTPUT
+
+AM_COND_IF([ENABLE_TCTI_DEVICE], [],
+           [AM_COND_IF([ENABLE_TCTI_MSSIM], [],
+                       [AC_MSG_WARN("No build-in TCTI module enabled")])])
 
 AC_MSG_RESULT([
     $PACKAGE_NAME $VERSION

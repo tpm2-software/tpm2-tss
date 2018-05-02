@@ -230,6 +230,7 @@ src_tss2_mu_libtss2_mu_la_SOURCES = $(TSS2_MU_SRC)
 
 ### TCG TSS TCTI spec libraries ###
 # tcti device library
+if ENABLE_TCTI_DEVICE
 libtss2_tcti_device = src/tss2-tcti/libtss2-tcti-device.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_device.h
 lib_LTLIBRARIES += $(libtss2_tcti_device)
@@ -244,8 +245,10 @@ src_tss2_tcti_libtss2_tcti_device_la_LIBADD   = $(libtss2_mu) $(libutil)
 src_tss2_tcti_libtss2_tcti_device_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c src/tss2-tcti/tcti-common.h \
     src/tss2-tcti/tcti-device.c src/tss2-tcti/tcti-device.h
+endif # ENABLE_TCTI_DEVICE
 
 # tcti library for Microsoft TPM2 simulator
+if ENABLE_TCTI_MSSIM
 libtss2_tcti_mssim = src/tss2-tcti/libtss2-tcti-mssim.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_mssim.h
 lib_LTLIBRARIES += $(libtss2_tcti_mssim)
@@ -260,6 +263,7 @@ src_tss2_tcti_libtss2_tcti_mssim_la_LIBADD   = $(libtss2_mu) $(URIPARSER_LIBS) $
 src_tss2_tcti_libtss2_tcti_mssim_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c src/tss2-tcti/tcti-common.h \
     src/tss2-tcti/tcti-mssim.c src/tss2-tcti/tcti-mssim.h
+endif # ENABLE_TCTI_MSSIM
 
 ### TCG TSS SAPI spec library ###
 libtss2_sys = src/tss2-sys/libtss2-sys.la
