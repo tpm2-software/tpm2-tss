@@ -427,6 +427,14 @@ iesys_get_handle_type(TPM2_HANDLE handle)
     return ht;
 }
 
+/** Compute name derived from public info with a tpm name.
+ *
+ * A tpm name is computed from a public info structure and compared with a
+ * second tpm name.
+ * @param[in]  publicInfo The public info for name computation.
+ * @param[in] name The name used for comparison.
+ * @retval bool indicates whether the names are equal.
+ */
 bool
 iesys_compare_name(TPM2B_PUBLIC * publicInfo, TPM2B_NAME * name)
 {
