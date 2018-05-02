@@ -896,12 +896,20 @@ iesys_is_object_bound(const TPM2B_NAME * name,
  * Compute the session value
  *
  * This function derives the session value from the session key
- * and the auth value.
+ * and the auth value. The auth value is appended to the session key.
+ * The session value is used for key derivation for parameter encryption and
+ * HMAC computation. There is one exception for HMAC key derivation: If the
+ * session is bound to an object only the session key is used. The auth value
+ * is appended only for the key used for parameter encryption.
  * The auth value is only used if an authorization is necessary and the name
  * of the object is not equal to the name of an used bound entity
- * @param[in] session for which the session value will be computed
+ * @param[in,out] session for which the session value will be computed.
+ *       The value will be stored in sessionValue of the session object.
+ *       The length of the object will be stored in sizeHmacValue and
+ *       sizeSessionValue respectively to the purpose of usage (HMAC computation
+ *       or parameter encryption).
  * @param[in] name name of the object to be authorized (NULL if no authorization)
- * @param[in] auth-value auth value of the object to be authorized
+ * @param[in] auth_value auth value of the object to be authorized
  *             (NULL if no authorization)
  */
 void
@@ -919,8 +927,6 @@ iesys_compute_session_value(RSRC_NODE_T * session,
            &session->rsrc.misc.rsrc_session.sessionKey.buffer[0],
            session->rsrc.misc.rsrc_session.sessionKey.size);
 
-    /* Then if we are a bound session, the auth value is appended to the end
-       of the session value. */
     if (name == NULL)
         return;
     /* This requires an HMAC Session and not a password session */
@@ -933,6 +939,8 @@ iesys_compute_session_value(RSRC_NODE_T * session,
         (session->rsrc.misc.rsrc_session.type_policy_session != POLICY_AUTH))
         return;
 
+
+    /* The auth value is appended to the session key */
     memcpy(&session->rsrc.misc.rsrc_session.
            sessionValue[session->rsrc.misc.rsrc_session.sessionKey.size],
            &auth_value->buffer[0], auth_value->size);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,24 +38,28 @@ typedef UINT32 TSS2_ESYS_RC;
 #endif
 
 
-/** Type of resource */
+/** Type of resource
+ */
 typedef UINT32 IESYSC_RESOURCE_TYPE_CONSTANT;
 #define IESYSC_KEY_RSRC                1    /**< Tag for key resource */
 #define IESYSC_NV_RSRC                 2    /**< Tag for NV Ram resource */
 #define IESYSC_SESSION_RSRC            3    /**< Tag for session resources */
 #define IESYSC_WITHOUT_MISC_RSRC       0    /**< Tag for other resources, e.g. PCR register, hierarchies */
 
-/** Type to indicate parameter encryption (by TPM) */
+/** Type to indicate parameter encryption (by TPM)
+ */
 typedef UINT32 IESYSC_PARAM_ENCRYPT;
 #define ENCRYPT                        1    /**< Parameter encryption by TPM */
 #define NO_ENCRYPT                     0    /**< No parameter encryption by TPM */
 
-/** Type to indicate parameter decryption (by TPM) */
+/** Type to indicate parameter decryption (by TPM)
+ */
 typedef UINT32 IESYSC_PARAM_DECRYPT;
 #define DECRYPT                        1    /**< Parameter decryption by TPM */
 #define NO_DECRYPT                     0    /**< No parameter decryption by TPM */
 
-/** Type of policy authorization */
+/** Type of policy authorization
+ */
 typedef UINT32 IESYSC_TYPE_POLICY_AUTH;
 #define POLICY_PASSWORD                2    /**< Marker to include auth value of the authorized object */
 #define POLICY_AUTH                    1    /**< Marker to include the auth value in the HMAC key */

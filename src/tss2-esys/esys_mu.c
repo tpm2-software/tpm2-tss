@@ -34,8 +34,8 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-/**
- * Marshal an array of BYTE structures into a byte buffer.
+/** Marshal an array of BYTE structures into a byte buffer.
+ *
  * @param[in] in Structures to be marshaled.
  * @param[in] count Number of structures to be marshaled.
  * @param[in,out] buffer Buffer to write result into.
@@ -77,8 +77,8 @@ iesys_MU_BYTE_array_Marshal(
     return TSS2_RC_SUCCESS;
 }
 
-/**
- * Unmarshal an array of BYTE structures from a byte buffer.
+/** Unmarshal an array of BYTE structures from a byte buffer.
+ *
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
@@ -185,8 +185,8 @@ Tss2_MU_IESYSC_RESOURCE_TYPE_CONSTANT_Unmarshal(
     return TSS2_RC_SUCCESS;
 }
 
-/**
- * Check, if a variable has a possible value of type IESYSC_RESOURCE_TYPE_CONSTANT.
+/** Check, if a variable has a possible value of type IESYSC_RESOURCE_TYPE_CONSTANT.
+ *
  * @param[in] in variable to check.
  * @retval TSS2_RC_SUCCESS on success.
  */
@@ -211,8 +211,8 @@ Tss2_MU_IESYSC_RESOURCE_TYPE_CONSTANT_check(
     }
     return TSS2_RC_SUCCESS;
 }
-/**
- * Marshal a constant of type IESYSC_PARAM_ENCRYPT into a byte buffer.
+/** Marshal a constant of type IESYSC_PARAM_ENCRYPT into a byte buffer.
+ *
  * @param[in] src constant to be marshaled.
  * @param[in,out] buffer Buffer to write result into (may be NULL)
  * @param[in] size Size of the buffer.
@@ -233,8 +233,8 @@ Tss2_MU_IESYSC_PARAM_ENCRYPT_Marshal(
     return Tss2_MU_UINT32_Marshal(src, buffer, size, offset);
 }
 
-/**
- * Unmarshal a constant of type IESYSC_PARAM_ENCRYPT from a byte buffer.
+/** Unmarshal a constant of type IESYSC_PARAM_ENCRYPT from a byte buffer.
+ *
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
@@ -274,8 +274,8 @@ Tss2_MU_IESYSC_PARAM_ENCRYPT_Unmarshal(
     return TSS2_RC_SUCCESS;
 }
 
-/**
- * Check, if a variable has a possible value of type IESYSC_PARAM_ENCRYPT.
+/** Check, if a variable has a possible value of type IESYSC_PARAM_ENCRYPT.
+ *
  * @param[in] in variable to check.
  * @retval TSS2_RC_SUCCESS on success.
  */
@@ -298,8 +298,8 @@ Tss2_MU_IESYSC_PARAM_ENCRYPT_check(
     }
     return TSS2_RC_SUCCESS;
 }
-/**
- * Marshal a constant of type IESYSC_PARAM_DECRYPT into a byte buffer.
+/** Marshal a constant of type IESYSC_PARAM_DECRYPT into a byte buffer.
+ *
  * @param[in] src constant to be marshaled.
  * @param[in,out] buffer Buffer to write result into (may be NULL)
  * @param[in] size Size of the buffer.
@@ -320,8 +320,8 @@ Tss2_MU_IESYSC_PARAM_DECRYPT_Marshal(
     return Tss2_MU_UINT32_Marshal(src, buffer, size, offset);
 }
 
-/**
- * Unmarshal a constant of type IESYSC_PARAM_DECRYPT from a byte buffer.
+/** Unmarshal a constant of type IESYSC_PARAM_DECRYPT from a byte buffer.
+ *
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
@@ -361,8 +361,8 @@ Tss2_MU_IESYSC_PARAM_DECRYPT_Unmarshal(
     return TSS2_RC_SUCCESS;
 }
 
-/**
- * Check, if a variable has a possible value of type IESYSC_PARAM_DECRYPT.
+/** Check, if a variable has a possible value of type IESYSC_PARAM_DECRYPT.
+ *
  * @param[in] in variable to check.
  * @retval TSS2_RC_SUCCESS on success.
  */
@@ -385,8 +385,8 @@ Tss2_MU_IESYSC_PARAM_DECRYPT_check(
     }
     return TSS2_RC_SUCCESS;
 }
-/**
- * Marshal a constant of type IESYSC_TYPE_POLICY_AUTH into a byte buffer.
+/** Marshal a constant of type IESYSC_TYPE_POLICY_AUTH into a byte buffer.
+ *
  * @param[in] src constant to be marshaled.
  * @param[in,out] buffer Buffer to write result into (may be NULL)
  * @param[in] size Size of the buffer.
@@ -407,8 +407,8 @@ Tss2_MU_IESYSC_TYPE_POLICY_AUTH_Marshal(
     return Tss2_MU_UINT32_Marshal(src, buffer, size, offset);
 }
 
-/**
- * Unmarshal a constant of type IESYSC_TYPE_POLICY_AUTH from a byte buffer.
+/** Unmarshal a constant of type IESYSC_TYPE_POLICY_AUTH from a byte buffer.
+ *
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
@@ -448,8 +448,8 @@ Tss2_MU_IESYSC_TYPE_POLICY_AUTH_Unmarshal(
     return TSS2_RC_SUCCESS;
 }
 
-/**
- * Check, if a variable has a possible value of type IESYSC_TYPE_POLICY_AUTH.
+/** Check, if a variable has a possible value of type IESYSC_TYPE_POLICY_AUTH.
+ *
  * @param[in] in variable to check.
  * @retval TSS2_RC_SUCCESS on success.
  */
@@ -474,8 +474,8 @@ Tss2_MU_IESYSC_TYPE_POLICY_AUTH_check(
     return TSS2_RC_SUCCESS;
 }
 
-/**
- * Marshal a IESYS_SESSION structure into a byte buffer.
+/** Marshal a IESYS_SESSION structure into a byte buffer.
+ *
  * @param[in] src variable to be marshaled.
  * @param[in,out] buffer Buffer to write result into.
  * @param[in] size Size of the buffer.
@@ -581,8 +581,8 @@ Tss2_MU_IESYS_SESSION_Marshal(
     return TSS2_RC_SUCCESS;
 }
 
-/**
- * Unmarshal a IESYS_SESSION variable from a byte buffer.
+/** Unmarshal a IESYS_SESSION variable from a byte buffer.
+ *
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
@@ -712,8 +712,8 @@ Tss2_MU_IESYS_SESSION_Unmarshal(
     return TSS2_RC_SUCCESS;
 }
 
-/**
- * Marshal a IESYSC_RESOURCE_TYPE type into a byte buffer.
+/** Marshal a IESYSC_RESOURCE_TYPE type into a byte buffer.
+ *
  * @param[in] src constant to be marshaled.
  * @param[in,out] buffer Buffer to write result into (may be NULL)
  * @param[in] size Size of the buffer.
@@ -734,8 +734,8 @@ Tss2_MU_IESYSC_RESOURCE_TYPE_Marshal(
     return Tss2_MU_UINT32_Marshal(src, buffer, size, offset);
 }
 
-/**
- * Unmarshal a IESYSC_RESOURCE_TYPE type from a byte buffer.
+/** Unmarshal a IESYSC_RESOURCE_TYPE type from a byte buffer.
+ *
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
@@ -769,10 +769,8 @@ Tss2_MU_IESYSC_RESOURCE_TYPE_Unmarshal(
     LOG_TRACE("return: dst=%p value=%"PRIx32 "", dst, dst_loc);
     return TSS2_RC_SUCCESS;
 }
-
-
-/**
- * Check, if a variable has a possible value of type IESYSC_RESOURCE_TYPE.
+/** Check, if a variable has a possible value of type IESYSC_RESOURCE_TYPE.
+ *
  * @param[in] in variable to check.
  * @retval TSS2_RC_SUCCESS on success.
  */
@@ -798,8 +796,8 @@ Tss2_MU_IESYSC_RESOURCE_TYPE_check(
     return TSS2_RC_SUCCESS;
 }
 
-/**
- * Marshal a IESYS_RSRC_UNION union into a byte buffer.
+/** Marshal a IESYS_RSRC_UNION union into a byte buffer.
+ *
  * @param[in] src variable to be marshaled.
  * @param[in] selector the selector value.
  * @param[in,out] buffer Buffer to write result into.
@@ -840,8 +838,8 @@ Tss2_MU_IESYS_RSRC_UNION_Marshal(
     };
 }
 
-/**
- * Unmarshal a IESYS_RSRC_UNION union from a byte buffer.
+/** Unmarshal a IESYS_RSRC_UNION union from a byte buffer.
+ *
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer (may be NULL).
@@ -884,8 +882,8 @@ Tss2_MU_IESYS_RSRC_UNION_Unmarshal(
     };
 }
 
-/**
- * Marshal a IESYS_RESOURCE structure into a byte buffer.
+/** Marshal a IESYS_RESOURCE structure into a byte buffer.
+ *
  * @param[in] src variable to be marshaled.
  * @param[in,out] buffer Buffer to write result into.
  * @param[in] size Size of the buffer.
@@ -936,8 +934,8 @@ Tss2_MU_IESYS_RESOURCE_Marshal(
     return TSS2_RC_SUCCESS;
 }
 
-/**
- * Unmarshal a IESYS_RESOURCE variable from a byte buffer.
+/** Unmarshal a IESYS_RESOURCE variable from a byte buffer.
+ *
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
@@ -996,8 +994,8 @@ Tss2_MU_IESYS_RESOURCE_Unmarshal(
     return TSS2_RC_SUCCESS;
 }
 
-/**
- * Marshal a IESYS_METADATA structure into a byte buffer.
+/** Marshal a IESYS_METADATA structure into a byte buffer.
+ *
  * @param[in] src variable to be marshaled.
  * @param[in,out] buffer Buffer to write result into.
  * @param[in] size Size of the buffer.
@@ -1037,8 +1035,8 @@ Tss2_MU_IESYS_METADATA_Marshal(
     return TSS2_RC_SUCCESS;
 }
 
-/**
- * Unmarshal a IESYS_METADATA variable from a byte buffer.
+/** Unmarshal a IESYS_METADATA variable from a byte buffer.
+ *
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
@@ -1084,8 +1082,8 @@ Tss2_MU_IESYS_METADATA_Unmarshal(
     return TSS2_RC_SUCCESS;
 }
 
-/**
- * Marshal a IESYS_CONTEXT_DATA structure into a byte buffer.
+/** Marshal a IESYS_CONTEXT_DATA structure into a byte buffer.
+ *
  * @param[in] src variable to be marshaled.
  * @param[in,out] buffer Buffer to write result into.
  * @param[in] size Size of the buffer.
@@ -1130,8 +1128,8 @@ Tss2_MU_IESYS_CONTEXT_DATA_Marshal(
     return TSS2_RC_SUCCESS;
 }
 
-/**
- * Unmarshal a IESYS_CONTEXT_DATA variable from a byte buffer.
+/** Unmarshal a IESYS_CONTEXT_DATA variable from a byte buffer.
+ *
  * @param[in,out] buffer Buffer to read data from.
  * @param[in] size Size of the buffer.
  * @param[in,out] offset Offset inside the buffer
