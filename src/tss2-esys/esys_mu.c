@@ -555,7 +555,7 @@ Tss2_MU_IESYS_SESSION_Marshal(
         LOG_ERROR("Error marshaling subfield encrypt");
         return ret;
     }
-    ret = Tss2_MU_IESYSC_PARAM_ENCRYPT_Marshal(src->decrypt, buffer, size, &offset_loc);
+    ret = Tss2_MU_IESYSC_PARAM_DECRYPT_Marshal(src->decrypt, buffer, size, &offset_loc);
     if (ret != TSS2_RC_SUCCESS) {
         LOG_ERROR("Error marshaling subfield decrypt");
         return ret;
@@ -679,8 +679,8 @@ Tss2_MU_IESYS_SESSION_Unmarshal(
         LOG_ERROR("Error unmarshaling subfield encrypt");
         return ret;
     }
-    IESYSC_PARAM_ENCRYPT out_decrypt;
-    ret = Tss2_MU_IESYSC_PARAM_ENCRYPT_Unmarshal(buffer, size, &offset_loc,
+    IESYSC_PARAM_DECRYPT out_decrypt;
+    ret = Tss2_MU_IESYSC_PARAM_DECRYPT_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_decrypt : &dst->decrypt);
     if (ret != TSS2_RC_SUCCESS) {
         LOG_ERROR("Error unmarshaling subfield decrypt");

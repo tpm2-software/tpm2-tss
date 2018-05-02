@@ -80,7 +80,7 @@ typedef struct {
     TPM2B_NONCE                             nonceCaller;    /**< Nonce computed by the ESAPI for every session call */
     TPM2B_NONCE                                nonceTPM;    /**< Nonce which is returned by the TPM for every session call */
     IESYSC_PARAM_ENCRYPT                        encrypt;    /**< Indicate parameter encryption by the TPM */
-    IESYSC_PARAM_ENCRYPT                        decrypt;    /**< Indicate parameter decryption by the TPM */
+    IESYSC_PARAM_DECRYPT                        decrypt;    /**< Indicate parameter decryption by the TPM */
     IESYSC_TYPE_POLICY_AUTH         type_policy_session;    /**< Field to store markers for policy sessions */
     UINT16                             sizeSessionValue;    /**< Size of sessionKey plus optionally authValue */
     BYTE                 sessionValue [2*sizeof(TPMU_HA)];    /**< sessionKey || AuthValue */
