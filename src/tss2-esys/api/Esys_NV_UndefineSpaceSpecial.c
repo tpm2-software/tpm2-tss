@@ -338,7 +338,7 @@ Esys_NV_UndefineSpaceSpecial_Finish(
     r = esys_GetResourceObject(esysContext, esysContext->session_type[0], &session);
     return_if_error(r, "get resource");
 
-    session->rsrc.misc.rsrc_session.sizeSessionValue -= nvIndexNode->auth.size;
+    session->rsrc.misc.rsrc_session.sizeHmacValue -= nvIndexNode->auth.size;
 
     /* The ESYS_TR object (nvIndex) has to be invalidated */
     r = Esys_TR_Close(esysContext, &esysContext->in.NV_UndefineSpaceSpecial.nvIndex);

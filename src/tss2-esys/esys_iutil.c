@@ -480,7 +480,7 @@ iesys_compute_encrypted_salt(ESYS_CONTEXT * esys_context,
         return TSS2_RC_SUCCESS;
     }
 
-    TPM2B_PUBLIC *pub = &tpmKeyNode->rsrc.misc.rsrc_key_pub;
+    TPM2B_PUBLIC pub = tpmKeyNode->rsrc.misc.rsrc_key_pub;
     if (tpmKeyNode->rsrc.rsrcType != IESYSC_KEY_RSRC) {
         LOG_TRACE("Public info needed.");
         return TSS2_ESYS_RC_BAD_VALUE;
@@ -490,7 +490,7 @@ iesys_compute_encrypted_salt(ESYS_CONTEXT * esys_context,
                                           &keyHash_size);
     return_if_error(r, "Hash algorithm not supported.");
 
-    switch (pub->publicArea.type) {
+    switch (pub.publicArea.type) {
     case TPM2_ALG_RSA:
 
         iesys_crypto_random2b((TPM2B_NONCE *) & esys_context->salt,
@@ -498,8 +498,8 @@ iesys_compute_encrypted_salt(ESYS_CONTEXT * esys_context,
 
         /* When encrypting salts, the encryption scheme of a key is ignored and
            TPM2_ALG_OAEP is always used. */
-        pub->publicArea.parameters.rsaDetail.scheme.scheme = TPM2_ALG_OAEP;
-        r = iesys_crypto_pk_encrypt(pub,
+        pub.publicArea.parameters.rsaDetail.scheme.scheme = TPM2_ALG_OAEP;
+        r = iesys_crypto_pk_encrypt(&pub,
                                     keyHash_size, &esys_context->salt.buffer[0],
                                     sizeof(TPMU_ENCRYPTED_SECRET),
                                     (BYTE *) &encryptedSalt->secret[0], &cSize,
@@ -509,7 +509,7 @@ iesys_compute_encrypted_salt(ESYS_CONTEXT * esys_context,
         encryptedSalt->size = cSize;
         break;
     case TPM2_ALG_ECC:
-        r = iesys_crypto_get_ecdh_point(pub, sizeof(TPMU_ENCRYPTED_SECRET),
+        r = iesys_crypto_get_ecdh_point(&pub, sizeof(TPMU_ENCRYPTED_SECRET),
                                         &Z, &Q,
                                         (BYTE *) &encryptedSalt->secret[0],
                                         &cSize);
@@ -520,7 +520,7 @@ iesys_compute_encrypted_salt(ESYS_CONTEXT * esys_context,
         r = iesys_cryptogcry_KDFe(tpmKeyNode->rsrc.misc.
                                   rsrc_key_pub.publicArea.nameAlg,
                                   &Z, "SECRET", &Q.x,
-                                  &pub->publicArea.unique.ecc.x,
+                                  &pub.publicArea.unique.ecc.x,
                                   keyHash_size*8,
                                   &esys_context->salt.buffer[0]);
         return_if_error(r, "During KDFe computation.");
@@ -794,7 +794,8 @@ iesys_decrypt_param(ESYS_CONTEXT * esys_context,
 TSS2_RC
 iesys_check_rp_hmacs(ESYS_CONTEXT * esys_context,
                      TSS2L_SYS_AUTH_RESPONSE * rspAuths,
-                     HASH_TAB_ITEM rp_hash_tab[3], uint8_t rpHashNum)
+                     HASH_TAB_ITEM rp_hash_tab[3],
+                     uint8_t rpHashNum)
 {
     TSS2_RC r;
 
@@ -833,7 +834,7 @@ iesys_check_rp_hmacs(ESYS_CONTEXT * esys_context,
             rspAuths->auths[i].sessionAttributes;
         r = iesys_crypto_authHmac(rsrc_session->authHash,
                                   &rsrc_session->sessionValue[0],
-                                  rsrc_session->sizeSessionValue,
+                                  rsrc_session->sizeHmacValue,
                                   &rp_hash_tab[hi].digest[0],
                                   rp_hash_tab[hi].size,
                                   &rsrc_session->nonceTPM,
@@ -933,18 +934,24 @@ iesys_compute_session_value(RSRC_NODE_T * session,
     if (session->rsrc.misc.rsrc_session.sessionType != TPM2_SE_HMAC &&
         session->rsrc.misc.rsrc_session.sessionType != TPM2_SE_POLICY)
         return;
-    if (iesys_is_object_bound(name, auth_value,
-                              session) &&
-        /* type_policy_session set to POLICY_AUTH by command PolicyAuthValue */
-        (session->rsrc.misc.rsrc_session.type_policy_session != POLICY_AUTH))
-        return;
 
+    session->rsrc.misc.rsrc_session.sizeHmacValue = session->rsrc.misc.rsrc_session.sizeSessionValue;
 
     /* The auth value is appended to the session key */
     memcpy(&session->rsrc.misc.rsrc_session.
            sessionValue[session->rsrc.misc.rsrc_session.sessionKey.size],
            &auth_value->buffer[0], auth_value->size);
     session->rsrc.misc.rsrc_session.sizeSessionValue += auth_value->size;
+
+    /* Then if we are a bound session, the auth value is not appended to the end
+       of the session value for HMAC computation. The size of the key will not be
+       increased.*/
+   if (iesys_is_object_bound(name, auth_value,
+                              session) &&
+        /* type_policy_session set to POLICY_AUTH by command PolicyAuthValue */
+        (session->rsrc.misc.rsrc_session.type_policy_session != POLICY_AUTH))
+        return;
+   session->rsrc.misc.rsrc_session.sizeHmacValue += auth_value->size;
 }
 
 /**
@@ -1118,11 +1125,12 @@ check_session_feasibility(ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3,
  * @retval TSS2_SYS_RC_* for SAPI errors.
  */
 TSS2_RC
-iesys_compute_hmacs(RSRC_NODE_T * session,
-                    HASH_TAB_ITEM cp_hash_tab[3],
-                    uint8_t cpHashNum,
-                    TPM2B_NONCE * decryptNonce,
-                    TPM2B_NONCE * encryptNonce, TPMS_AUTH_COMMAND * auth)
+iesys_compute_hmac(RSRC_NODE_T * session,
+                   HASH_TAB_ITEM cp_hash_tab[3],
+                   uint8_t cpHashNum,
+                   TPM2B_NONCE * decryptNonce,
+                   TPM2B_NONCE * encryptNonce,
+                   TPMS_AUTH_COMMAND * auth)
 {
     TSS2_RC r;
     size_t authHash_size = 0;
@@ -1146,7 +1154,7 @@ iesys_compute_hmacs(RSRC_NODE_T * session,
            computation of the first session */
         r = iesys_crypto_authHmac(rsrc_session->authHash,
                                   &rsrc_session->sessionValue[0],
-                                  rsrc_session->sizeSessionValue,
+                                  rsrc_session->sizeHmacValue,
                                   &cp_hash_tab[hi].digest[0],
                                   cp_hash_tab[hi].size,
                                   &rsrc_session->nonceCaller,
@@ -1243,13 +1251,13 @@ iesys_gen_auths(ESYS_CONTEXT * esys_context,
                 continue;
             }
         }
-        r = iesys_compute_hmacs(esys_context->session_tab[session_idx],
-                                &cp_hash_tab[0], cpHashNum,
-                                (session_idx == 0
-                                 && decryptNonceIdx > 0) ? decryptNonce : NULL,
-                                (session_idx == 0
-                                 && encryptNonceIdx > 0) ? encryptNonce : NULL,
-                                &auths->auths[session_idx]);
+        r = iesys_compute_hmac(esys_context->session_tab[session_idx],
+                               &cp_hash_tab[0], cpHashNum,
+                               (session_idx == 0
+                                && decryptNonceIdx > 0) ? decryptNonce : NULL,
+                               (session_idx == 0
+                                && encryptNonceIdx > 0) ? encryptNonce : NULL,
+                               &auths->auths[session_idx]);
         return_if_error(r, "Error while computing hmacs");
         if (esys_context->session_tab[session_idx] != NULL) {
             auths->auths[auths->count].sessionHandle = session->rsrc.handle;

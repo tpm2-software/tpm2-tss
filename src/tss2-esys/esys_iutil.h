@@ -219,7 +219,7 @@ void iesys_compute_session_value(
     const TPM2B_NAME *name,
     const TPM2B_AUTH *auth_value);
 
-TSS2_RC iesys_compute_hmacs(
+TSS2_RC iesys_compute_hmac(
     RSRC_NODE_T *session,
     HASH_TAB_ITEM cp_hash_tab[3],
     uint8_t cpHashNum,
