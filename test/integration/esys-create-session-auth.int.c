@@ -232,7 +232,11 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     r = Esys_StartAuthSession(esys_context,
                               primaryHandle_AuthSession,
+#if TEST_BOUND_SESSIION
+                              primaryHandle_AuthSession,
+#else
                               ESYS_TR_NONE,
+#endif
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
                               sessionType, &symmetric, authHash, &session,
