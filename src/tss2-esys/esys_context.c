@@ -59,47 +59,35 @@ TSS2_RC
 Esys_Initialize(ESYS_CONTEXT ** esys_context, TSS2_TCTI_CONTEXT * tcti,
                 TSS2_ABI_VERSION * abiVersion)
 {
-    TSS2_RC rc;
+    TSS2_RC r;
     size_t syssize;
 
     _ESYS_ASSERT_NON_NULL(esys_context);
     *esys_context = NULL;
 
-    /* Allocate memory for the ESYS context; after that all errors must jump to
-       cleanup_return instead of returning ! */
+    /* Allocate memory for the ESYS context
+     * After this errors must jump to cleanup_return instead of returning. */
     *esys_context = calloc(1, sizeof(ESYS_CONTEXT));
-    if (esys_context == NULL) {
-        LOG_ERROR("Error: During malloc.");
-        return TSS2_ESYS_RC_MEMORY;
-    }
+    return_if_null(*esys_context, "Out of memory.", TSS2_ESYS_RC_MEMORY);
 
     /* Allocate memory for the SYS context */
     syssize = Tss2_Sys_GetContextSize(0);
-    (*esys_context)->sys = malloc(syssize);
-    if ((*esys_context)->sys == NULL) {
-        LOG_ERROR("Error: During malloc.");
-        rc = TSS2_ESYS_RC_MEMORY;
-        goto cleanup_return;
-    }
+    (*esys_context)->sys = calloc(1, syssize);
+    goto_if_null((*esys_context)->sys, "Error: During malloc.",
+                 TSS2_ESYS_RC_MEMORY, cleanup_return);
 
     /* Store the application provided tcti to be return on Esys_GetTcti(). */
     (*esys_context)->tcti_app_param = tcti;
 
     /* If no tcti was provided, initialize the default one. */
     if (tcti == NULL) {
-        rc = get_tcti_default(&tcti);
-        if (rc != TSS2_RC_SUCCESS) {
-            LOG_ERROR("Initialize default tcti (%x).", rc);
-            goto cleanup_return;
-        }
+        r = get_tcti_default(&tcti);
+        goto_if_error(r, "Initialize default tcti.", cleanup_return);
     }
 
     /* Initialize the ESAPI */
-    rc = Tss2_Sys_Initialize((*esys_context)->sys, syssize, tcti, abiVersion);
-    if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error: During syscontext initialization (%x).", rc);
-        goto cleanup_return;
-    }
+    r = Tss2_Sys_Initialize((*esys_context)->sys, syssize, tcti, abiVersion);
+    goto_if_error(r, "During syscontext initialization", cleanup_return);
 
     /* Use random number for initial esys handle value to provide pseudo
        namespace for handles */
@@ -118,7 +106,7 @@ cleanup_return:
     free((*esys_context)->sys);
     free(*esys_context);
     *esys_context = NULL;
-    return rc;
+    return r;
 }
 
 /** Finalize an ESYS_CONTEXT
@@ -131,7 +119,7 @@ cleanup_return:
 void
 Esys_Finalize(ESYS_CONTEXT ** esys_context)
 {
-    TSS2_RC rc;
+    TSS2_RC r;
     TSS2_TCTI_CONTEXT *tctcontext = NULL;
 
     if (esys_context == NULL || *esys_context == NULL) {
@@ -142,13 +130,13 @@ Esys_Finalize(ESYS_CONTEXT ** esys_context)
     /* Flush from TPM and free all resource objects first */
     iesys_DeleteAllResourceObjects(*esys_context);
 
-    /* If no tcti context was provided during initialization, then wen need to
-       finalize the tcti context */
+    /* If no tcti context was provided during initialization, then we need to
+       finalize the tcti context. So we retrieve here before finalizing the
+       SAPI context. */
     if ((*esys_context)->tcti_app_param == NULL) {
-        rc = Tss2_Sys_GetTctiContext((*esys_context)->sys, &tctcontext);
-        if (rc != TSS2_RC_SUCCESS) {
-            LOG_WARNING("Internal error in SAPI.");
-        } else {
+        r = Tss2_Sys_GetTctiContext((*esys_context)->sys, &tctcontext);
+        if (r != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Internal error in Tss2_Sys_GetTctiContext.");
             tctcontext = NULL;
         }
     }
@@ -157,8 +145,8 @@ Esys_Finalize(ESYS_CONTEXT ** esys_context)
     Tss2_Sys_Finalize((*esys_context)->sys);
     free((*esys_context)->sys);
 
-    /* If no tcti context was provided during initialization, then wen need to
-       finalize the tcti context */
+    /* If no tcti context was provided during initialization, then we need to
+       finalize the tcti context here. */
     if (tctcontext != NULL) {
         Tss2_Tcti_Finalize(tctcontext);
         free(tctcontext);
@@ -214,19 +202,13 @@ Esys_GetPollHandles(ESYS_CONTEXT * esys_context,
 
     /* Get the tcti-context to use */
     r = Tss2_Sys_GetTctiContext(esys_context->sys, &tcti_context);
-    if (r != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Invalid SAPI or TCTI context.");
-        return r;
-    }
+    return_if_error(r, "Invalid SAPI or TCTI context.");
 
     /* Allocate the memory to hold the poll handles */
     r = Tss2_Tcti_GetPollHandles(tcti_context, NULL, count);
     return_if_error(r, "Error getting poll handle count.");
-    *handles = malloc(sizeof(TSS2_TCTI_POLL_HANDLE) * (*count));
-    if (*handles == NULL) {
-        LOG_ERROR("Out of memory.");
-        return TSS2_ESYS_RC_MEMORY;
-    }
+    *handles = calloc(*count, sizeof(TSS2_TCTI_POLL_HANDLE));
+    return_if_null(*handles, "Out of memory.", TSS2_ESYS_RC_MEMORY);
 
     /* Retrieve the poll handles */
     r = Tss2_Tcti_GetPollHandles(tcti_context, *handles, count);

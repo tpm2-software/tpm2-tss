@@ -71,6 +71,13 @@ extern "C" {
         goto label;  \
     }
 
+#define goto_if_null(p,msg,ec,label) \
+    if ((p) == NULL) { \
+        LOG_ERROR("%s ", (msg)); \
+        r = (ec); \
+        goto label;  \
+    }
+
 #define goto_if_error(r,msg,label) \
     if (r != TSS2_RC_SUCCESS) { \
         LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
