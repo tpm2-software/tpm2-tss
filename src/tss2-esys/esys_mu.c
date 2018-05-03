@@ -56,11 +56,8 @@ iesys_MU_BYTE_array_Marshal(
     size_t *offset)
 {
     LOG_TRACE("called: src=%p count=%zu buffer=%p size=%zu offset=%p", src,
-        count, buffer, size, offset);
-    if (src == NULL) {
-        LOG_ERROR("src=NULL");
-        return TSS2_ESYS_RC_BAD_REFERENCE;
-    }
+              count, buffer, size, offset);
+    return_if_null(src, "src=NULL", TSS2_ESYS_RC_BAD_REFERENCE);
 
     size_t offset_loc = (offset != NULL)? *offset : 0;
 
@@ -100,10 +97,7 @@ iesys_MU_BYTE_array_Unmarshal(
 {
     LOG_TRACE("called: count=%zu buffer=%p size=%zu offset=%p dst=%p",
         count, buffer, size, offset, dst);
-    if (buffer == NULL) {
-        LOG_ERROR("buffer=NULL");
-        return TSS2_ESYS_RC_BAD_REFERENCE;
-    }
+    return_if_null(buffer, "src=NULL", TSS2_ESYS_RC_BAD_REFERENCE);
 
     size_t offset_loc = (offset != NULL)? *offset : 0;
     if (dst != NULL)
@@ -196,10 +190,8 @@ Tss2_MU_IESYSC_PARAM_ENCRYPT_Unmarshal(
     IESYSC_PARAM_ENCRYPT dst_loc;
     TSS2_RC ret = Tss2_MU_UINT32_Unmarshal(buffer, size,
         &offset_loc, &dst_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Unmarshaling the base type");
-        return ret;
-    }
+    return_if_error(ret, "Unmarshaling the base type");
+
     ret = Tss2_MU_IESYSC_PARAM_ENCRYPT_check(&dst_loc);
     if (ret != TSS2_RC_SUCCESS) {
         LOG_ERROR("Bad value %"PRIx32 "", dst_loc);
@@ -223,10 +215,8 @@ Tss2_MU_IESYSC_PARAM_ENCRYPT_check(
     const IESYSC_PARAM_ENCRYPT *in)
 {
     LOG_TRACE("called: in=%p", in);
-    if (in == NULL) {
-        LOG_ERROR("in==NULL");
-        return TSS2_SYS_RC_BAD_REFERENCE;
-    }
+    return_if_null(in, "in==NULL", TSS2_SYS_RC_BAD_REFERENCE);
+
     /* No Error-Messages, since this function may fail for a good reasons. */
     if (FALSE
         || (*in == ENCRYPT)
@@ -283,10 +273,8 @@ Tss2_MU_IESYSC_PARAM_DECRYPT_Unmarshal(
     IESYSC_PARAM_DECRYPT dst_loc;
     TSS2_RC ret = Tss2_MU_UINT32_Unmarshal(buffer, size,
         &offset_loc, &dst_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Unmarshaling the base type");
-        return ret;
-    }
+    return_if_error(ret, "Unmarshaling the base type");
+
     ret = Tss2_MU_IESYSC_PARAM_DECRYPT_check(&dst_loc);
     if (ret != TSS2_RC_SUCCESS) {
         LOG_ERROR("Bad value %"PRIx32 "", dst_loc);
@@ -310,10 +298,8 @@ Tss2_MU_IESYSC_PARAM_DECRYPT_check(
     const IESYSC_PARAM_DECRYPT *in)
 {
     LOG_TRACE("called: in=%p", in);
-    if (in == NULL) {
-        LOG_ERROR("in==NULL");
-        return TSS2_SYS_RC_BAD_REFERENCE;
-    }
+    return_if_null(in, "in==NULL", TSS2_SYS_RC_BAD_REFERENCE);
+
     /* No Error-Messages, since this function may fail for a good reasons. */
     if (FALSE
         || (*in == DECRYPT)
@@ -370,10 +356,8 @@ Tss2_MU_IESYSC_TYPE_POLICY_AUTH_Unmarshal(
     IESYSC_TYPE_POLICY_AUTH dst_loc;
     TSS2_RC ret = Tss2_MU_UINT32_Unmarshal(buffer, size,
         &offset_loc, &dst_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Unmarshaling the base type");
-        return ret;
-    }
+    return_if_error(ret, "Unmarshaling the base type");
+
     ret = Tss2_MU_IESYSC_TYPE_POLICY_AUTH_check(&dst_loc);
     if (ret != TSS2_RC_SUCCESS) {
         LOG_ERROR("Bad value %"PRIx32 "", dst_loc);
@@ -397,10 +381,8 @@ Tss2_MU_IESYSC_TYPE_POLICY_AUTH_check(
     const IESYSC_TYPE_POLICY_AUTH *in)
 {
     LOG_TRACE("called: in=%p", in);
-    if (in == NULL) {
-        LOG_ERROR("in==NULL");
-        return TSS2_SYS_RC_BAD_REFERENCE;
-    }
+    return_if_null(in, "in==NULL", TSS2_SYS_RC_BAD_REFERENCE);
+
     /* No Error-Messages, since this function may fail for a good reasons. */
     if (FALSE
         || (*in == POLICY_PASSWORD)
@@ -440,81 +422,51 @@ Tss2_MU_IESYS_SESSION_Marshal(
     TSS2_RC ret;
     size_t offset_loc = (offset != NULL)? *offset : 0;
     ret = Tss2_MU_TPM2B_NAME_Marshal(&src->bound_entity, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield bound_entity");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield bound_entity");
+
     ret = Tss2_MU_TPM2B_ENCRYPTED_SECRET_Marshal(&src->encryptedSalt, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield encryptedSalt");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield encryptedSalt");
+
     ret = Tss2_MU_TPM2B_DATA_Marshal(&src->salt, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield salt");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield salt");
+
     ret = Tss2_MU_TPMT_SYM_DEF_Marshal(&src->symmetric, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield symmetric");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield symmetric");
+
     ret = Tss2_MU_TPMI_ALG_HASH_Marshal(src->authHash, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield authHash");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield authHash");
+
     ret = Tss2_MU_TPM2B_DIGEST_Marshal(&src->sessionKey, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield sessionKey");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield sessionKey");
+
     ret = Tss2_MU_TPM2_SE_Marshal(src->sessionType, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield sessionType");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield sessionType");
+
     ret = Tss2_MU_TPMA_SESSION_Marshal(src->sessionAttributes, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield sessionAttributes");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield sessionAttributes");
+
     ret = Tss2_MU_TPM2B_NONCE_Marshal(&src->nonceCaller, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield nonceCaller");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield nonceCaller");
+
     ret = Tss2_MU_TPM2B_NONCE_Marshal(&src->nonceTPM, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield nonceTPM");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield nonceTPM");
+
     ret = Tss2_MU_IESYSC_PARAM_ENCRYPT_Marshal(src->encrypt, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield encrypt");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield encrypt");
+
     ret = Tss2_MU_IESYSC_PARAM_DECRYPT_Marshal(src->decrypt, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield decrypt");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield decrypt");
+
     ret = Tss2_MU_IESYSC_TYPE_POLICY_AUTH_Marshal(src->type_policy_session, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield type_policy_session");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield type_policy_session");
+
     ret = Tss2_MU_UINT16_Marshal(src->sizeSessionValue, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield sizeSessionValue");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield sizeSessionValue");
+
     ret = iesys_MU_BYTE_array_Marshal(&src->sessionValue[0], src->sizeSessionValue,
         buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield sessionValue");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield sessionValue");
+
     ret = Tss2_MU_UINT16_Marshal(src->sizeHmacValue, buffer, size, &offset_loc);
     return_if_error(ret, "Error marshaling subfield sizeHmacValue");
 
@@ -553,102 +505,72 @@ Tss2_MU_IESYS_SESSION_Unmarshal(
         memset(dst, 0, sizeof(*dst));
     ret = Tss2_MU_TPM2B_NAME_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? NULL : &dst->bound_entity);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield bound_entity");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield bound_entity");
+
     ret = Tss2_MU_TPM2B_ENCRYPTED_SECRET_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? NULL : &dst->encryptedSalt);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield encryptedSalt");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield encryptedSalt");
+
     ret = Tss2_MU_TPM2B_DATA_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? NULL : &dst->salt);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield salt");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield salt");
+
     ret = Tss2_MU_TPMT_SYM_DEF_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? NULL : &dst->symmetric);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield symmetric");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield symmetric");
+
     TPMI_ALG_HASH out_authHash;
     ret = Tss2_MU_TPMI_ALG_HASH_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_authHash : &dst->authHash);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield authHash");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield authHash");
+
     ret = Tss2_MU_TPM2B_DIGEST_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? NULL : &dst->sessionKey);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield sessionKey");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield sessionKey");
+
     TPM2_SE out_sessionType;
     ret = Tss2_MU_TPM2_SE_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_sessionType : &dst->sessionType);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield sessionType");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield sessionType");
+
     TPMA_SESSION out_sessionAttributes;
     ret = Tss2_MU_TPMA_SESSION_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_sessionAttributes : &dst->sessionAttributes);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield sessionAttributes");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield sessionAttributes");
+
     ret = Tss2_MU_TPM2B_NONCE_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? NULL : &dst->nonceCaller);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield nonceCaller");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield nonceCaller");
+
     ret = Tss2_MU_TPM2B_NONCE_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? NULL : &dst->nonceTPM);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield nonceTPM");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield nonceTPM");
+
     IESYSC_PARAM_ENCRYPT out_encrypt;
     ret = Tss2_MU_IESYSC_PARAM_ENCRYPT_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_encrypt : &dst->encrypt);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield encrypt");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield encrypt");
+
     IESYSC_PARAM_DECRYPT out_decrypt;
     ret = Tss2_MU_IESYSC_PARAM_DECRYPT_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_decrypt : &dst->decrypt);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield decrypt");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield decrypt");
+
     IESYSC_TYPE_POLICY_AUTH out_type_policy_session;
     ret = Tss2_MU_IESYSC_TYPE_POLICY_AUTH_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_type_policy_session : &dst->type_policy_session);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield type_policy_session");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield type_policy_session");
+
     UINT16 out_sizeSessionValue;
     ret = Tss2_MU_UINT16_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_sizeSessionValue : &dst->sizeSessionValue);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield sizeSessionValue");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield sizeSessionValue");
+
     ret = iesys_MU_BYTE_array_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? out_sizeSessionValue : dst->sizeSessionValue,
             (dst == NULL)? NULL : &dst->sessionValue[0]);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield sessionValue");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield sessionValue");
+
     UINT16 out_sizeHmacValue;
     ret = Tss2_MU_UINT16_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_sizeHmacValue : &dst->sizeHmacValue);
@@ -702,10 +624,8 @@ Tss2_MU_IESYSC_RESOURCE_TYPE_Unmarshal(
     IESYSC_RESOURCE_TYPE dst_loc;
     TSS2_RC ret = Tss2_MU_UINT32_Unmarshal(buffer, size,
         offset, &dst_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Unmarshaling the base type");
-        return ret;
-    }
+    return_if_error(ret, "Unmarshaling the base type");
+
     ret = Tss2_MU_IESYSC_RESOURCE_TYPE_check(&dst_loc);
     if (ret != TSS2_RC_SUCCESS) {
         LOG_ERROR("Bad value %"PRIx32 "", dst_loc);
@@ -726,10 +646,8 @@ Tss2_MU_IESYSC_RESOURCE_TYPE_check(
     const IESYSC_RESOURCE_TYPE *in)
 {
     LOG_TRACE("called: in=%p", in);
-    if (in == NULL) {
-        LOG_ERROR("in==NULL");
-        return TSS2_SYS_RC_BAD_REFERENCE;
-    }
+    return_if_null(in, "in==NULL", TSS2_SYS_RC_BAD_REFERENCE);
+
     /* No Error-Messages, since this function may fail for a good reasons. */
     if (FALSE
             || (*in == IESYSC_KEY_RSRC)
@@ -856,26 +774,18 @@ Tss2_MU_IESYS_RESOURCE_Marshal(
     TSS2_RC ret;
     size_t offset_loc = (offset != NULL)? *offset : 0;
     ret = Tss2_MU_TPM2_HANDLE_Marshal(src->handle, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield handle");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield handle");
+
     ret = Tss2_MU_TPM2B_NAME_Marshal(&src->name, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield name");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield name");
+
     ret = Tss2_MU_IESYSC_RESOURCE_TYPE_Marshal(src->rsrcType, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield rsrcType");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield rsrcType");
+
     ret = Tss2_MU_IESYS_RSRC_UNION_Marshal(&src->misc, src->rsrcType,
         buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield misc");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield misc");
+
     if (offset != NULL)
         *offset = offset_loc;
     return TSS2_RC_SUCCESS;
@@ -912,30 +822,22 @@ Tss2_MU_IESYS_RESOURCE_Unmarshal(
     TPM2_HANDLE out_handle;
     ret = Tss2_MU_TPM2_HANDLE_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_handle : &dst->handle);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield handle");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield handle");
+
     ret = Tss2_MU_TPM2B_NAME_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? NULL : &dst->name);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield name");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield name");
+
     IESYSC_RESOURCE_TYPE out_rsrcType;
     ret = Tss2_MU_IESYSC_RESOURCE_TYPE_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_rsrcType : &dst->rsrcType);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield rsrcType");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield rsrcType");
+
     ret = Tss2_MU_IESYS_RSRC_UNION_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? out_rsrcType : dst->rsrcType,
             (dst == NULL)? NULL : &dst->misc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield misc");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield misc");
+
     if (offset != NULL)
         *offset = offset_loc;
     return TSS2_RC_SUCCESS;
@@ -968,15 +870,11 @@ Tss2_MU_IESYS_METADATA_Marshal(
     TSS2_RC ret;
     size_t offset_loc = (offset != NULL)? *offset : 0;
     ret = Tss2_MU_UINT16_Marshal(src->size, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield size");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield size");
+
     ret = Tss2_MU_IESYS_RESOURCE_Marshal(&src->data, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield data");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield data");
+
     if (offset != NULL)
         *offset = offset_loc;
     return TSS2_RC_SUCCESS;
@@ -1013,17 +911,13 @@ Tss2_MU_IESYS_METADATA_Unmarshal(
     UINT16 out_size;
     ret = Tss2_MU_UINT16_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_size : &dst->size);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield size");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield size");
+
     IESYS_RESOURCE out_data;
     ret = Tss2_MU_IESYS_RESOURCE_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_data : &dst->data);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield data");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield data");
+
     if (offset != NULL)
         *offset = offset_loc;
     return TSS2_RC_SUCCESS;
@@ -1056,20 +950,14 @@ Tss2_MU_IESYS_CONTEXT_DATA_Marshal(
     TSS2_RC ret;
     size_t offset_loc = (offset != NULL)? *offset : 0;
     ret = Tss2_MU_UINT32_Marshal(src->reserved, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield reserved");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield reserved");
+
     ret = Tss2_MU_TPM2B_CONTEXT_DATA_Marshal(&src->tpmContext, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield tpmContext");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield tpmContext");
+
     ret = Tss2_MU_IESYS_METADATA_Marshal(&src->esysMetadata, buffer, size, &offset_loc);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error marshaling subfield esysMetadata");
-        return ret;
-    }
+    return_if_error(ret, "Error marshaling subfield esysMetadata");
+
     if (offset != NULL)
         *offset = offset_loc;
     return TSS2_RC_SUCCESS;
@@ -1106,23 +994,17 @@ Tss2_MU_IESYS_CONTEXT_DATA_Unmarshal(
     UINT32 out_reserved;
     ret = Tss2_MU_UINT32_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_reserved : &dst->reserved);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield reserved");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield reserved");
+
     ret = Tss2_MU_TPM2B_CONTEXT_DATA_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? NULL : &dst->tpmContext);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield tpmContext");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield tpmContext");
+
     IESYS_METADATA out_esysMetadata;
     ret = Tss2_MU_IESYS_METADATA_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_esysMetadata : &dst->esysMetadata);
-    if (ret != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error unmarshaling subfield esysMetadata");
-        return ret;
-    }
+    return_if_error(ret, "Error unmarshaling subfield esysMetadata");
+
     if (offset != NULL)
         *offset = offset_loc;
     return TSS2_RC_SUCCESS;
