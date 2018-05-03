@@ -163,9 +163,9 @@ Esys_ContextLoad_Async(
         LOG_ERROR("context is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
     }
-    r = Tss2_MU_IESYS_CONTEXT_DATA_Unmarshal (&context->contextBlob.buffer[0],
-                                              context->contextBlob.size,
-                                              &offset, &esyscontextData);
+    r = iesys_MU_IESYS_CONTEXT_DATA_Unmarshal (&context->contextBlob.buffer[0],
+                                               context->contextBlob.size,
+                                               &offset, &esyscontextData);
     return_if_error(r, "while unmarshaling context ");
 
     /* The actual contextBlob for the TPM is embedded inside the
@@ -255,9 +255,9 @@ Esys_ContextLoad_Finish(
 
     IESYS_CONTEXT_DATA esyscontextData;
     size_t offset = 0;
-    r = Tss2_MU_IESYS_CONTEXT_DATA_Unmarshal(&esysContext->in.ContextLoad.context->contextBlob.buffer[0],
-                                                 sizeof(IESYS_CONTEXT_DATA),
-                                                 &offset, &esyscontextData);
+    r = iesys_MU_IESYS_CONTEXT_DATA_Unmarshal(&esysContext->in.ContextLoad.context->contextBlob.buffer[0],
+                                              sizeof(IESYS_CONTEXT_DATA),
+                                              &offset, &esyscontextData);
     goto_if_error(r, "while unmarshaling context ", error_cleanup);
 
     loadedHandleNode->rsrc = esyscontextData.esysMetadata.data;
