@@ -155,7 +155,7 @@ Tss2_MU_IESYSC_RESOURCE_TYPE_CONSTANT_check(
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
  */
 TSS2_RC
-Tss2_MU_IESYSC_PARAM_ENCRYPT_Marshal(
+iesys_MU_IESYSC_PARAM_ENCRYPT_Marshal(
     const IESYSC_PARAM_ENCRYPT src,
     uint8_t *buffer,
     size_t size,
@@ -176,7 +176,7 @@ Tss2_MU_IESYSC_PARAM_ENCRYPT_Marshal(
  * @retval TSS2_RC_SUCCESS on success.
  */
 TSS2_RC
-Tss2_MU_IESYSC_PARAM_ENCRYPT_Unmarshal(
+iesys_MU_IESYSC_PARAM_ENCRYPT_Unmarshal(
     const uint8_t *buffer,
     size_t size,
     size_t *offset,
@@ -192,7 +192,7 @@ Tss2_MU_IESYSC_PARAM_ENCRYPT_Unmarshal(
         &offset_loc, &dst_loc);
     return_if_error(ret, "Unmarshaling the base type");
 
-    ret = Tss2_MU_IESYSC_PARAM_ENCRYPT_check(&dst_loc);
+    ret = iesys_MU_IESYSC_PARAM_ENCRYPT_check(&dst_loc);
     if (ret != TSS2_RC_SUCCESS) {
         LOG_ERROR("Bad value %"PRIx32 "", dst_loc);
         return ret;
@@ -211,7 +211,7 @@ Tss2_MU_IESYSC_PARAM_ENCRYPT_Unmarshal(
  * @retval TSS2_RC_SUCCESS on success.
  */
 TSS2_RC
-Tss2_MU_IESYSC_PARAM_ENCRYPT_check(
+iesys_MU_IESYSC_PARAM_ENCRYPT_check(
     const IESYSC_PARAM_ENCRYPT *in)
 {
     LOG_TRACE("called: in=%p", in);
@@ -238,7 +238,7 @@ Tss2_MU_IESYSC_PARAM_ENCRYPT_check(
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
  */
 TSS2_RC
-Tss2_MU_IESYSC_PARAM_DECRYPT_Marshal(
+iesys_MU_IESYSC_PARAM_DECRYPT_Marshal(
     const IESYSC_PARAM_DECRYPT src,
     uint8_t *buffer,
     size_t size,
@@ -259,7 +259,7 @@ Tss2_MU_IESYSC_PARAM_DECRYPT_Marshal(
  * @retval TSS2_RC_SUCCESS on success.
  */
 TSS2_RC
-Tss2_MU_IESYSC_PARAM_DECRYPT_Unmarshal(
+iesys_MU_IESYSC_PARAM_DECRYPT_Unmarshal(
     const uint8_t *buffer,
     size_t size,
     size_t *offset,
@@ -275,7 +275,7 @@ Tss2_MU_IESYSC_PARAM_DECRYPT_Unmarshal(
         &offset_loc, &dst_loc);
     return_if_error(ret, "Unmarshaling the base type");
 
-    ret = Tss2_MU_IESYSC_PARAM_DECRYPT_check(&dst_loc);
+    ret = iesys_MU_IESYSC_PARAM_DECRYPT_check(&dst_loc);
     if (ret != TSS2_RC_SUCCESS) {
         LOG_ERROR("Bad value %"PRIx32 "", dst_loc);
         return ret;
@@ -294,7 +294,7 @@ Tss2_MU_IESYSC_PARAM_DECRYPT_Unmarshal(
  * @retval TSS2_RC_SUCCESS on success.
  */
 TSS2_RC
-Tss2_MU_IESYSC_PARAM_DECRYPT_check(
+iesys_MU_IESYSC_PARAM_DECRYPT_check(
     const IESYSC_PARAM_DECRYPT *in)
 {
     LOG_TRACE("called: in=%p", in);
@@ -321,7 +321,7 @@ Tss2_MU_IESYSC_PARAM_DECRYPT_check(
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
  */
 TSS2_RC
-Tss2_MU_IESYSC_TYPE_POLICY_AUTH_Marshal(
+iesys_MU_IESYSC_TYPE_POLICY_AUTH_Marshal(
     const IESYSC_TYPE_POLICY_AUTH src,
     uint8_t *buffer,
     size_t size,
@@ -342,7 +342,7 @@ Tss2_MU_IESYSC_TYPE_POLICY_AUTH_Marshal(
  * @retval TSS2_RC_SUCCESS on success.
  */
 TSS2_RC
-Tss2_MU_IESYSC_TYPE_POLICY_AUTH_Unmarshal(
+iesys_MU_IESYSC_TYPE_POLICY_AUTH_Unmarshal(
     const uint8_t *buffer,
     size_t size,
     size_t *offset,
@@ -358,7 +358,7 @@ Tss2_MU_IESYSC_TYPE_POLICY_AUTH_Unmarshal(
         &offset_loc, &dst_loc);
     return_if_error(ret, "Unmarshaling the base type");
 
-    ret = Tss2_MU_IESYSC_TYPE_POLICY_AUTH_check(&dst_loc);
+    ret = iesys_MU_IESYSC_TYPE_POLICY_AUTH_check(&dst_loc);
     if (ret != TSS2_RC_SUCCESS) {
         LOG_ERROR("Bad value %"PRIx32 "", dst_loc);
         return ret;
@@ -377,7 +377,7 @@ Tss2_MU_IESYSC_TYPE_POLICY_AUTH_Unmarshal(
  * @retval TSS2_RC_SUCCESS on success.
  */
 TSS2_RC
-Tss2_MU_IESYSC_TYPE_POLICY_AUTH_check(
+iesys_MU_IESYSC_TYPE_POLICY_AUTH_check(
     const IESYSC_TYPE_POLICY_AUTH *in)
 {
     LOG_TRACE("called: in=%p", in);
@@ -407,7 +407,7 @@ Tss2_MU_IESYSC_TYPE_POLICY_AUTH_check(
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
  */
 TSS2_RC
-Tss2_MU_IESYS_SESSION_Marshal(
+iesys_MU_IESYS_SESSION_Marshal(
     const IESYS_SESSION *src,
     uint8_t *buffer,
     size_t size,
@@ -451,13 +451,13 @@ Tss2_MU_IESYS_SESSION_Marshal(
     ret = Tss2_MU_TPM2B_NONCE_Marshal(&src->nonceTPM, buffer, size, &offset_loc);
     return_if_error(ret, "Error marshaling subfield nonceTPM");
 
-    ret = Tss2_MU_IESYSC_PARAM_ENCRYPT_Marshal(src->encrypt, buffer, size, &offset_loc);
+    ret = iesys_MU_IESYSC_PARAM_ENCRYPT_Marshal(src->encrypt, buffer, size, &offset_loc);
     return_if_error(ret, "Error marshaling subfield encrypt");
 
-    ret = Tss2_MU_IESYSC_PARAM_DECRYPT_Marshal(src->decrypt, buffer, size, &offset_loc);
+    ret = iesys_MU_IESYSC_PARAM_DECRYPT_Marshal(src->decrypt, buffer, size, &offset_loc);
     return_if_error(ret, "Error marshaling subfield decrypt");
 
-    ret = Tss2_MU_IESYSC_TYPE_POLICY_AUTH_Marshal(src->type_policy_session, buffer, size, &offset_loc);
+    ret = iesys_MU_IESYSC_TYPE_POLICY_AUTH_Marshal(src->type_policy_session, buffer, size, &offset_loc);
     return_if_error(ret, "Error marshaling subfield type_policy_session");
 
     ret = Tss2_MU_UINT16_Marshal(src->sizeSessionValue, buffer, size, &offset_loc);
@@ -487,7 +487,7 @@ Tss2_MU_IESYS_SESSION_Marshal(
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
  */
 TSS2_RC
-Tss2_MU_IESYS_SESSION_Unmarshal(
+iesys_MU_IESYS_SESSION_Unmarshal(
     const uint8_t *buffer,
     size_t size,
     size_t *offset,
@@ -547,17 +547,17 @@ Tss2_MU_IESYS_SESSION_Unmarshal(
     return_if_error(ret, "Error unmarshaling subfield nonceTPM");
 
     IESYSC_PARAM_ENCRYPT out_encrypt;
-    ret = Tss2_MU_IESYSC_PARAM_ENCRYPT_Unmarshal(buffer, size, &offset_loc,
+    ret = iesys_MU_IESYSC_PARAM_ENCRYPT_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_encrypt : &dst->encrypt);
     return_if_error(ret, "Error unmarshaling subfield encrypt");
 
     IESYSC_PARAM_DECRYPT out_decrypt;
-    ret = Tss2_MU_IESYSC_PARAM_DECRYPT_Unmarshal(buffer, size, &offset_loc,
+    ret = iesys_MU_IESYSC_PARAM_DECRYPT_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_decrypt : &dst->decrypt);
     return_if_error(ret, "Error unmarshaling subfield decrypt");
 
     IESYSC_TYPE_POLICY_AUTH out_type_policy_session;
-    ret = Tss2_MU_IESYSC_TYPE_POLICY_AUTH_Unmarshal(buffer, size, &offset_loc,
+    ret = iesys_MU_IESYSC_TYPE_POLICY_AUTH_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_type_policy_session : &dst->type_policy_session);
     return_if_error(ret, "Error unmarshaling subfield type_policy_session");
 
@@ -592,7 +592,7 @@ Tss2_MU_IESYS_SESSION_Unmarshal(
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
  */
 TSS2_RC
-Tss2_MU_IESYSC_RESOURCE_TYPE_Marshal(
+iesys_MU_IESYSC_RESOURCE_TYPE_Marshal(
     const IESYSC_RESOURCE_TYPE src,
     uint8_t *buffer,
     size_t size,
@@ -613,7 +613,7 @@ Tss2_MU_IESYSC_RESOURCE_TYPE_Marshal(
  * @retval TSS2_RC_SUCCESS on success.
  */
 TSS2_RC
-Tss2_MU_IESYSC_RESOURCE_TYPE_Unmarshal(
+iesys_MU_IESYSC_RESOURCE_TYPE_Unmarshal(
     const uint8_t *buffer,
     size_t size,
     size_t *offset,
@@ -626,7 +626,7 @@ Tss2_MU_IESYSC_RESOURCE_TYPE_Unmarshal(
         offset, &dst_loc);
     return_if_error(ret, "Unmarshaling the base type");
 
-    ret = Tss2_MU_IESYSC_RESOURCE_TYPE_check(&dst_loc);
+    ret = iesys_MU_IESYSC_RESOURCE_TYPE_check(&dst_loc);
     if (ret != TSS2_RC_SUCCESS) {
         LOG_ERROR("Bad value %"PRIx32 "", dst_loc);
         return ret;
@@ -642,7 +642,7 @@ Tss2_MU_IESYSC_RESOURCE_TYPE_Unmarshal(
  * @retval TSS2_RC_SUCCESS on success.
  */
 TSS2_RC
-Tss2_MU_IESYSC_RESOURCE_TYPE_check(
+iesys_MU_IESYSC_RESOURCE_TYPE_check(
     const IESYSC_RESOURCE_TYPE *in)
 {
     LOG_TRACE("called: in=%p", in);
@@ -674,7 +674,7 @@ Tss2_MU_IESYSC_RESOURCE_TYPE_check(
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
  */
 TSS2_RC
-Tss2_MU_IESYS_RSRC_UNION_Marshal(
+iesys_MU_IESYS_RSRC_UNION_Marshal(
     const IESYS_RSRC_UNION *src,
     UINT32 selector,
     uint8_t *buffer,
@@ -694,7 +694,7 @@ Tss2_MU_IESYS_RSRC_UNION_Marshal(
     case IESYSC_NV_RSRC:
         return Tss2_MU_TPM2B_NV_PUBLIC_Marshal(&src->rsrc_nv_pub, buffer, size, offset);
     case IESYSC_SESSION_RSRC:
-        return Tss2_MU_IESYS_SESSION_Marshal(&src->rsrc_session, buffer, size, offset);
+        return iesys_MU_IESYS_SESSION_Marshal(&src->rsrc_session, buffer, size, offset);
     case IESYSC_WITHOUT_MISC_RSRC:
         return Tss2_MU_TPMS_EMPTY_Marshal(&src->rsrc_empty, buffer, size, offset);
     default:
@@ -715,7 +715,7 @@ Tss2_MU_IESYS_RSRC_UNION_Marshal(
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
  */
 TSS2_RC
-Tss2_MU_IESYS_RSRC_UNION_Unmarshal(
+iesys_MU_IESYS_RSRC_UNION_Unmarshal(
     const uint8_t *buffer,
     size_t size,
     size_t *offset,
@@ -736,7 +736,7 @@ Tss2_MU_IESYS_RSRC_UNION_Unmarshal(
         return Tss2_MU_TPM2B_NV_PUBLIC_Unmarshal(buffer, size, offset,
                    (dst != NULL)? &dst->rsrc_nv_pub : NULL);
     case IESYSC_SESSION_RSRC:
-        return Tss2_MU_IESYS_SESSION_Unmarshal(buffer, size, offset,
+        return iesys_MU_IESYS_SESSION_Unmarshal(buffer, size, offset,
                    (dst != NULL)? &dst->rsrc_session : NULL);
     case IESYSC_WITHOUT_MISC_RSRC:
         return Tss2_MU_TPMS_EMPTY_Unmarshal(buffer, size, offset,
@@ -759,7 +759,7 @@ Tss2_MU_IESYS_RSRC_UNION_Unmarshal(
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
  */
 TSS2_RC
-Tss2_MU_IESYS_RESOURCE_Marshal(
+iesys_MU_IESYS_RESOURCE_Marshal(
     const IESYS_RESOURCE *src,
     uint8_t *buffer,
     size_t size,
@@ -779,10 +779,10 @@ Tss2_MU_IESYS_RESOURCE_Marshal(
     ret = Tss2_MU_TPM2B_NAME_Marshal(&src->name, buffer, size, &offset_loc);
     return_if_error(ret, "Error marshaling subfield name");
 
-    ret = Tss2_MU_IESYSC_RESOURCE_TYPE_Marshal(src->rsrcType, buffer, size, &offset_loc);
+    ret = iesys_MU_IESYSC_RESOURCE_TYPE_Marshal(src->rsrcType, buffer, size, &offset_loc);
     return_if_error(ret, "Error marshaling subfield rsrcType");
 
-    ret = Tss2_MU_IESYS_RSRC_UNION_Marshal(&src->misc, src->rsrcType,
+    ret = iesys_MU_IESYS_RSRC_UNION_Marshal(&src->misc, src->rsrcType,
         buffer, size, &offset_loc);
     return_if_error(ret, "Error marshaling subfield misc");
 
@@ -803,7 +803,7 @@ Tss2_MU_IESYS_RESOURCE_Marshal(
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
  */
 TSS2_RC
-Tss2_MU_IESYS_RESOURCE_Unmarshal(
+iesys_MU_IESYS_RESOURCE_Unmarshal(
     const uint8_t *buffer,
     size_t size,
     size_t *offset,
@@ -829,11 +829,11 @@ Tss2_MU_IESYS_RESOURCE_Unmarshal(
     return_if_error(ret, "Error unmarshaling subfield name");
 
     IESYSC_RESOURCE_TYPE out_rsrcType;
-    ret = Tss2_MU_IESYSC_RESOURCE_TYPE_Unmarshal(buffer, size, &offset_loc,
+    ret = iesys_MU_IESYSC_RESOURCE_TYPE_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_rsrcType : &dst->rsrcType);
     return_if_error(ret, "Error unmarshaling subfield rsrcType");
 
-    ret = Tss2_MU_IESYS_RSRC_UNION_Unmarshal(buffer, size, &offset_loc,
+    ret = iesys_MU_IESYS_RSRC_UNION_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? out_rsrcType : dst->rsrcType,
             (dst == NULL)? NULL : &dst->misc);
     return_if_error(ret, "Error unmarshaling subfield misc");
@@ -855,7 +855,7 @@ Tss2_MU_IESYS_RESOURCE_Unmarshal(
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
  */
 TSS2_RC
-Tss2_MU_IESYS_METADATA_Marshal(
+iesys_MU_IESYS_METADATA_Marshal(
     const IESYS_METADATA *src,
     uint8_t *buffer,
     size_t size,
@@ -872,7 +872,7 @@ Tss2_MU_IESYS_METADATA_Marshal(
     ret = Tss2_MU_UINT16_Marshal(src->size, buffer, size, &offset_loc);
     return_if_error(ret, "Error marshaling subfield size");
 
-    ret = Tss2_MU_IESYS_RESOURCE_Marshal(&src->data, buffer, size, &offset_loc);
+    ret = iesys_MU_IESYS_RESOURCE_Marshal(&src->data, buffer, size, &offset_loc);
     return_if_error(ret, "Error marshaling subfield data");
 
     if (offset != NULL)
@@ -892,7 +892,7 @@ Tss2_MU_IESYS_METADATA_Marshal(
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
  */
 TSS2_RC
-Tss2_MU_IESYS_METADATA_Unmarshal(
+iesys_MU_IESYS_METADATA_Unmarshal(
     const uint8_t *buffer,
     size_t size,
     size_t *offset,
@@ -914,7 +914,7 @@ Tss2_MU_IESYS_METADATA_Unmarshal(
     return_if_error(ret, "Error unmarshaling subfield size");
 
     IESYS_RESOURCE out_data;
-    ret = Tss2_MU_IESYS_RESOURCE_Unmarshal(buffer, size, &offset_loc,
+    ret = iesys_MU_IESYS_RESOURCE_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_data : &dst->data);
     return_if_error(ret, "Error unmarshaling subfield data");
 
@@ -935,7 +935,7 @@ Tss2_MU_IESYS_METADATA_Unmarshal(
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
  */
 TSS2_RC
-Tss2_MU_IESYS_CONTEXT_DATA_Marshal(
+iesys_MU_IESYS_CONTEXT_DATA_Marshal(
     const IESYS_CONTEXT_DATA *src,
     uint8_t *buffer,
     size_t size,
@@ -955,7 +955,7 @@ Tss2_MU_IESYS_CONTEXT_DATA_Marshal(
     ret = Tss2_MU_TPM2B_CONTEXT_DATA_Marshal(&src->tpmContext, buffer, size, &offset_loc);
     return_if_error(ret, "Error marshaling subfield tpmContext");
 
-    ret = Tss2_MU_IESYS_METADATA_Marshal(&src->esysMetadata, buffer, size, &offset_loc);
+    ret = iesys_MU_IESYS_METADATA_Marshal(&src->esysMetadata, buffer, size, &offset_loc);
     return_if_error(ret, "Error marshaling subfield esysMetadata");
 
     if (offset != NULL)
@@ -975,7 +975,7 @@ Tss2_MU_IESYS_CONTEXT_DATA_Marshal(
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if remaining buffer is insufficient.
  */
 TSS2_RC
-Tss2_MU_IESYS_CONTEXT_DATA_Unmarshal(
+iesys_MU_IESYS_CONTEXT_DATA_Unmarshal(
     const uint8_t *buffer,
     size_t size,
     size_t *offset,
@@ -1001,7 +1001,7 @@ Tss2_MU_IESYS_CONTEXT_DATA_Unmarshal(
     return_if_error(ret, "Error unmarshaling subfield tpmContext");
 
     IESYS_METADATA out_esysMetadata;
-    ret = Tss2_MU_IESYS_METADATA_Unmarshal(buffer, size, &offset_loc,
+    ret = iesys_MU_IESYS_METADATA_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_esysMetadata : &dst->esysMetadata);
     return_if_error(ret, "Error unmarshaling subfield esysMetadata");
 

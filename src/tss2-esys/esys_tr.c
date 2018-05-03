@@ -62,16 +62,16 @@ Esys_TR_Serialize(ESYS_CONTEXT * esys_context,
     r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     return_if_error(r, "Get resource object");
 
-    r = Tss2_MU_IESYS_RESOURCE_Marshal(&esys_object->rsrc, NULL, SIZE_MAX,
-                                            buffer_size);
+    r = iesys_MU_IESYS_RESOURCE_Marshal(&esys_object->rsrc, NULL, SIZE_MAX,
+                                        buffer_size);
     return_if_error(r, "Marshal resource object");
 
     *buffer = malloc(*buffer_size);
     return_if_null(*buffer, "Buffer could not be allocated",
                    TSS2_ESYS_RC_MEMORY);
 
-    r = Tss2_MU_IESYS_RESOURCE_Marshal(&esys_object->rsrc, *buffer,
-                                            *buffer_size, &offset);
+    r = iesys_MU_IESYS_RESOURCE_Marshal(&esys_object->rsrc, *buffer,
+                                        *buffer_size, &offset);
     return_if_error(r, "Marshal resource object");
 
     return TSS2_RC_SUCCESS;
@@ -107,8 +107,8 @@ Esys_TR_Deserialize(ESYS_CONTEXT * esys_context,
     r = esys_CreateResourceObject(esys_context, *esys_handle, &esys_object);
     return_if_error(r, "Get resource object");
 
-    r = Tss2_MU_IESYS_RESOURCE_Unmarshal(buffer, buffer_size, &offset,
-                                              &esys_object->rsrc);
+    r = iesys_MU_IESYS_RESOURCE_Unmarshal(buffer, buffer_size, &offset,
+                                          &esys_object->rsrc);
     return_if_error(r, "Unmarshal resource object");
 
     return TSS2_RC_SUCCESS;

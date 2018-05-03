@@ -44,93 +44,93 @@ extern "C" {
 #endif
 
 TSS2_RC
-Tss2_MU_IESYSC_PARAM_ENCRYPT_Marshal(
+iesys_MU_IESYSC_PARAM_ENCRYPT_Marshal(
     const IESYSC_PARAM_ENCRYPT in,
     uint8_t *buffer,
     size_t size,
     size_t *offset);
 
 TSS2_RC
-Tss2_MU_IESYSC_PARAM_ENCRYPT_Unmarshal(
+iesys_MU_IESYSC_PARAM_ENCRYPT_Unmarshal(
     const uint8_t *buffer,
     size_t size,
     size_t *offset,
     IESYSC_PARAM_ENCRYPT *out);
 
 TSS2_RC
-Tss2_MU_IESYSC_PARAM_ENCRYPT_check(
+iesys_MU_IESYSC_PARAM_ENCRYPT_check(
     const IESYSC_PARAM_ENCRYPT *in);
 
 TSS2_RC
-Tss2_MU_IESYSC_PARAM_DECRYPT_Marshal(
+iesys_MU_IESYSC_PARAM_DECRYPT_Marshal(
     const IESYSC_PARAM_DECRYPT in,
     uint8_t *buffer,
     size_t size,
     size_t *offset);
 
 TSS2_RC
-Tss2_MU_IESYSC_PARAM_DECRYPT_Unmarshal(
+iesys_MU_IESYSC_PARAM_DECRYPT_Unmarshal(
     const uint8_t *buffer,
     size_t size,
     size_t *offset,
     IESYSC_PARAM_DECRYPT *out);
 
 TSS2_RC
-Tss2_MU_IESYSC_PARAM_DECRYPT_check(
+iesys_MU_IESYSC_PARAM_DECRYPT_check(
     const IESYSC_PARAM_DECRYPT *in);
 
 TSS2_RC
-Tss2_MU_IESYSC_TYPE_POLICY_AUTH_Marshal(
+iesys_MU_IESYSC_TYPE_POLICY_AUTH_Marshal(
     const IESYSC_TYPE_POLICY_AUTH in,
     uint8_t *buffer,
     size_t size,
     size_t *offset);
 
 TSS2_RC
-Tss2_MU_IESYSC_TYPE_POLICY_AUTH_Unmarshal(
+iesys_MU_IESYSC_TYPE_POLICY_AUTH_Unmarshal(
     const uint8_t *buffer,
     size_t size,
     size_t *offset,
     IESYSC_TYPE_POLICY_AUTH *out);
 
 TSS2_RC
-Tss2_MU_IESYSC_TYPE_POLICY_AUTH_check(
+iesys_MU_IESYSC_TYPE_POLICY_AUTH_check(
     const IESYSC_TYPE_POLICY_AUTH *in);
 
 TSS2_RC
-Tss2_MU_IESYS_SESSION_Marshal(
+iesys_MU_IESYS_SESSION_Marshal(
     const IESYS_SESSION *in,
     uint8_t *buffer,
     size_t size,
     size_t *offset);
 
 TSS2_RC
-Tss2_MU_IESYS_SESSION_Unmarshal(const uint8_t *buffer,
+iesys_MU_IESYS_SESSION_Unmarshal(const uint8_t *buffer,
     size_t size,
     size_t *offset,
     IESYS_SESSION *out);
 
 
 TSS2_RC
-Tss2_MU_IESYSC_RESOURCE_TYPE_Marshal(
+iesys_MU_IESYSC_RESOURCE_TYPE_Marshal(
     const IESYSC_RESOURCE_TYPE in,
     uint8_t *buffer,
     size_t size,
     size_t *offset);
 
 TSS2_RC
-Tss2_MU_IESYSC_RESOURCE_TYPE_Unmarshal(
+iesys_MU_IESYSC_RESOURCE_TYPE_Unmarshal(
     const uint8_t *buffer,
     size_t size,
     size_t *offset,
     IESYSC_RESOURCE_TYPE *out);
 
 TSS2_RC
-Tss2_MU_IESYSC_RESOURCE_TYPE_check(
+iesys_MU_IESYSC_RESOURCE_TYPE_check(
     const IESYSC_RESOURCE_TYPE *in);
 
 TSS2_RC
-Tss2_MU_IESYS_RSRC_UNION_Marshal(
+iesys_MU_IESYS_RSRC_UNION_Marshal(
     const IESYS_RSRC_UNION *in,
     UINT32 selector,
     uint8_t *buffer,
@@ -138,7 +138,7 @@ Tss2_MU_IESYS_RSRC_UNION_Marshal(
     size_t *offset);
 
 TSS2_RC
-Tss2_MU_IESYS_RSRC_UNION_Unmarshal(
+iesys_MU_IESYS_RSRC_UNION_Unmarshal(
     const uint8_t *buffer,
     size_t size,
     size_t *offset,
@@ -147,42 +147,42 @@ Tss2_MU_IESYS_RSRC_UNION_Unmarshal(
 
 
 TSS2_RC
-Tss2_MU_IESYS_RESOURCE_Marshal(
+iesys_MU_IESYS_RESOURCE_Marshal(
     const IESYS_RESOURCE *in,
     uint8_t *buffer,
     size_t size,
     size_t *offset);
 
 TSS2_RC
-Tss2_MU_IESYS_RESOURCE_Unmarshal(const uint8_t *buffer,
+iesys_MU_IESYS_RESOURCE_Unmarshal(const uint8_t *buffer,
     size_t size,
     size_t *offset,
     IESYS_RESOURCE *out);
 
 
 TSS2_RC
-Tss2_MU_IESYS_METADATA_Marshal(
+iesys_MU_IESYS_METADATA_Marshal(
     const IESYS_METADATA *in,
     uint8_t *buffer,
     size_t size,
     size_t *offset);
 
 TSS2_RC
-Tss2_MU_IESYS_METADATA_Unmarshal(const uint8_t *buffer,
+iesys_MU_IESYS_METADATA_Unmarshal(const uint8_t *buffer,
     size_t size,
     size_t *offset,
     IESYS_METADATA *out);
 
 
 TSS2_RC
-Tss2_MU_IESYS_CONTEXT_DATA_Marshal(
+iesys_MU_IESYS_CONTEXT_DATA_Marshal(
     const IESYS_CONTEXT_DATA *in,
     uint8_t *buffer,
     size_t size,
     size_t *offset);
 
 TSS2_RC
-Tss2_MU_IESYS_CONTEXT_DATA_Unmarshal(const uint8_t *buffer,
+iesys_MU_IESYS_CONTEXT_DATA_Unmarshal(const uint8_t *buffer,
     size_t size,
     size_t *offset,
     IESYS_CONTEXT_DATA *out);

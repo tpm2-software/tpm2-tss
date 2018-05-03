@@ -285,9 +285,9 @@ Esys_ContextSave_Finish(
     esyscontextData.esysMetadata.size = 0;
     esyscontextData.esysMetadata.data = esys_object->rsrc;
     offset = 0;
-    r = Tss2_MU_IESYS_CONTEXT_DATA_Marshal(&esyscontextData,
-                                              &(lcontext)->contextBlob.buffer[0],
-                                              sizeof(TPMS_CONTEXT_DATA), &offset);
+    r = iesys_MU_IESYS_CONTEXT_DATA_Marshal(&esyscontextData,
+                                            &(lcontext)->contextBlob.buffer[0],
+                                            sizeof(TPMS_CONTEXT_DATA), &offset);
     goto_if_error(r, "while marshaling context ", error_cleanup);
 
     (lcontext)->contextBlob.size = offset;
