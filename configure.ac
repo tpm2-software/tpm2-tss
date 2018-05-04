@@ -26,7 +26,7 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 #;**********************************************************************;
 AC_INIT([tpm2-tss],
-        [2.0.0-dev],
+        [2.0.0_rc0],
         [https://github.com/tpm2-software/tpm2-tss/issues],
         [],
         [https://github.com/tpm2-software/tpm2-tss])
