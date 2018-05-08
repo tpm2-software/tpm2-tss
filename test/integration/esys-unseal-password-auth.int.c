@@ -184,16 +184,16 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TPM2B_PUBLIC inPublic2 = {
         .size = 0,
         .publicArea = {
-            //.type = TPM2_ALG_RSA,
+            /* type = TPM2_ALG_RSA, */
             .type = TPM2_ALG_KEYEDHASH,
             .nameAlg = TPM2_ALG_SHA256,
             .objectAttributes = (
                 TPMA_OBJECT_USERWITHAUTH |
-                //TPMA_OBJECT_RESTRICTED |
-                //TPMA_OBJECT_DECRYPT |
+                /* TPMA_OBJECT_RESTRICTED | */
+                /* TPMA_OBJECT_DECRYPT | */
                 TPMA_OBJECT_FIXEDTPM |
                 TPMA_OBJECT_FIXEDPARENT
-                //TPMA_OBJECT_SENSITIVEDATAORIGIN
+                /* TPMA_OBJECT_SENSITIVEDATAORIGIN */
             ),
 
             .authPolicy = {

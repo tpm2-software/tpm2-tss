@@ -122,7 +122,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     in_public.publicArea.parameters.rsaDetail.exponent = 0;
     in_public.publicArea.unique.rsa.size = 0;
 
-    // First clear attributes bit field.
+    /* First clear attributes bit field. */
     *(UINT32 *)&(in_public.publicArea.objectAttributes) = 0;
     in_public.publicArea.objectAttributes &= ~TPMA_OBJECT_RESTRICTED;
     in_public.publicArea.objectAttributes |= TPMA_OBJECT_USERWITHAUTH;

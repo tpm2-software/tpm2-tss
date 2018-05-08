@@ -876,8 +876,7 @@ iesys_crypto_KDFa(TPM2_ALG_ID hashAlg,
      /* Fill outKey with results from KDFaHmac */
     for (; bytes > 0; subKey = &subKey[hlen], bytes = bytes - hlen) {
         LOG_TRACE("IESYS KDFa hmac key bytes: %i", bytes);
-        //if(bytes < (INT32)hlen)
-        //    hlen = bytes;
+        /* if (bytes < (INT32)hlen) hlen = bytes; */
         counter++;
         r = iesys_crypto_KDFaHmac(hashAlg, hmacKey,
                                   hmacKeySize, counter, label, contextU,
@@ -1182,7 +1181,7 @@ iesys_cryptogcry_get_ecdh_point(TPM2B_PUBLIC *key,
     gcry_sexp_t ekey_spec = NULL, ekey_pair = NULL;
     { /* scope for sexp_ecc_key */
         char sexp_ecc_key [sizeof(SEXP_GENKEY_ECC)+strlen(curveId)
-                           -1];  // -1 = (-2 for %s +1 for \0)
+                           -1];  /* -1 = (-2 for %s +1 for \0) */
 
         if (sprintf(&sexp_ecc_key[0], SEXP_GENKEY_ECC, curveId) < 1) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "asprintf", cleanup);

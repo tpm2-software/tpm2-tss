@@ -138,7 +138,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         },
     };
     LOG_INFO("\nRSA key will be created.");
-#endif // TEST_ECC
+#endif /* TEST_ECC */
 
     TPM2B_DATA outsideInfo = {
         .size = 0,

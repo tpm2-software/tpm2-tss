@@ -80,7 +80,7 @@ doLog(log_level loglevel, const char *module, log_level logdefault,
     va_list vaargs;
     va_start(vaargs, msg);
     vfprintf (stderr, fmt,
-        //log_strings[loglevel], module, file, func, line,
+        /* log_strings[loglevel], module, file, func, line, */
         vaargs);
     va_end(vaargs);
 }

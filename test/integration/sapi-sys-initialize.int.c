@@ -42,8 +42,9 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 {
     TSS2_RC rc;
 
-    // NOTE: this should never be done in real applications.
-    // It is only done here for test purposes.
+    /* NOTE: this should never be done in real applications.
+     * It is only done here for test purposes.
+     */
     TSS2_TCTI_CONTEXT_COMMON_V2 tctiContext;
 
     LOG_INFO("Sys_Initialize tests started.");
@@ -66,7 +67,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
         exit(1);
     }
 
-    // NOTE: don't do this in real applications.
+    /* NOTE: don't do this in real applications. */
     TSS2_TCTI_RECEIVE (&tctiContext) = (TSS2_TCTI_RECEIVE_FCN)1;
     TSS2_TCTI_TRANSMIT (&tctiContext) = (TSS2_TCTI_TRANSMIT_FCN)0;
 
@@ -76,7 +77,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
         exit(1);
     }
 
-    // NOTE: don't do this in real applications.
+    /* NOTE: don't do this in real applications. */
     TSS2_TCTI_RECEIVE (&tctiContext) = (TSS2_TCTI_RECEIVE_FCN)0;
     TSS2_TCTI_TRANSMIT (&tctiContext) = (TSS2_TCTI_TRANSMIT_FCN)1;
 
