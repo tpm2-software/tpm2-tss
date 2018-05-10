@@ -948,8 +948,13 @@ iesys_cryptogcry_KDFe(TPM2_ALG_ID hashAlg,
 
     LOG_DEBUG("IESYS KDFe hashAlg: %i label: %s bitLength: %i",
               hashAlg, label, bit_size);
-    LOGBLOB_DEBUG(&partyUInfo->buffer[0], partyUInfo->size, "partyUInfo");
-    LOGBLOB_DEBUG(&partyVInfo->buffer[0], partyVInfo->size, "partyVInfo");
+
+    if (partyUInfo != NULL)
+        LOGBLOB_DEBUG(&partyUInfo->buffer[0], partyUInfo->size, "partyUInfo");
+
+    if (partyVInfo != NULL)
+        LOGBLOB_DEBUG(&partyVInfo->buffer[0], partyVInfo->size, "partyVInfo");
+
     r = iesys_crypto_hash_get_digest_size(hashAlg, &hash_len);
     return_if_error(r, "Hash algorithm not supported.");
 
