@@ -70,6 +70,11 @@ sanity_test ()
         echo "tpm_server not on PATH; exiting"
         exit 1
     fi
+
+    if [ -z "$(which netstat)" ]; then
+        echo "netstat not on PATH; exiting"
+        exit 1
+    fi
 }
 
 # This function takes a PID as a parameter and determines whether or not the
