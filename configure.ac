@@ -129,6 +129,9 @@ AS_IF([test "x$enable_integration" = "xyes"],
       [AC_CHECK_PROG([tpm_server], [tpm_server], [yes], [no])
        AS_IF([test "x$tpm_server" != "xyes"],
              [AC_MSG_ERROR([Integration tests enabled but tpm_server not found, try setting PATH])])
+       AC_CHECK_PROG([netstat], [netstat], [yes], [no])
+       AS_IF([test "x$netstat" != "xyes"],
+             [AC_MSG_ERROR([Integration tests enabled but netstat executable not found.])])
        PKG_CHECK_MODULES([LIBCRYPTO],[libcrypto])
        AC_CHECK_HEADER(uthash.h, [], [AC_MSG_ERROR([Can not find uthash.h. Please install uthash-dev])])
        AC_SUBST([ENABLE_INTEGRATION], [$enable_integration])])
