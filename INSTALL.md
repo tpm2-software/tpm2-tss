@@ -43,7 +43,6 @@ $ sudo apt -y install \
   m4 \
   libtool \
   automake \
-  liburiparser-dev \
   libgcrypt20-dev \
   libssl-dev \
   autoconf
