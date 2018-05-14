@@ -627,9 +627,7 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
             const uint8_t *paramBuffer;
             r = Tss2_Sys_GetDecryptParam(esys_context->sys, &paramSize,
                                          &paramBuffer);
-            if (r != TSS2_RC_SUCCESS) {
-                return_error(TSS2_ESYS_RC_NO_DECRYPT_PARAM, "Encryption not possible");
-            }
+            return_if_error(r, "Encryption not possible");
 
             if (paramSize == 0)
                 continue;
