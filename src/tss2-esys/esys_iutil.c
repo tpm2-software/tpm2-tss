@@ -635,6 +635,9 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
                 return_error(TSS2_ESYS_RC_NO_DECRYPT_PARAM, "Encryption not possible");
             }
 
+            if (paramSize == 0)
+                continue;
+
             BYTE encrypt_buffer[paramSize];
             memcpy(&encrypt_buffer[0], paramBuffer, paramSize);
             LOGBLOB_DEBUG(paramBuffer, paramSize, "param to encrypt");
