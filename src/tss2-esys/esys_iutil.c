@@ -591,15 +591,11 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
                     TPM2B_NONCE ** decryptNonce, int *decryptNonceIdx)
 {
     uint8_t ccBuffer[4];
-    const uint8_t *cpBuffer;
-    size_t cpBuffer_size;
     TPM2B_NONCE *encryptNonce = NULL;
     TSS2_RC r = Tss2_Sys_GetCommandCode(esys_context->sys, &ccBuffer[0]);
     return_if_error(r, "Error: get command code");
     *decryptNonceIdx = 0;
     *decryptNonce = NULL;
-    r = Tss2_Sys_GetCpBuffer(esys_context->sys, &cpBuffer_size, &cpBuffer);
-    return_if_error(r, "Error: get cp buffer");
     for (int i = 0; i < 3; i++) {
         RSRC_NODE_T *session = esys_context->session_tab[i];
         if (session == NULL)
