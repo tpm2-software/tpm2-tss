@@ -660,9 +660,6 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
                                                  &encrypt_buffer[0], paramSize,
                                                  &symKey[aes_off]);
                 return_if_error(r, "AES encryption not possible");
-                r = Tss2_Sys_SetDecryptParam(esys_context->sys, paramSize,
-                                             &encrypt_buffer[0]);
-                return_if_error(r, "Set encrypt parameter not possible");
             }
             /* XOR obfuscation of parameter */
             else if (symDef->algorithm == TPM2_ALG_XOR) {
@@ -674,14 +671,13 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
                                                     &encrypt_buffer[0],
                                                     paramSize);
                 return_if_error(r, "XOR obfuscation not possible.");
-                r = Tss2_Sys_SetDecryptParam(esys_context->sys, paramSize,
-                                             &encrypt_buffer[0]);
-                return_if_error(r, "Set encrypt parameter not possible");
-
             } else {
                 return_error(TSS2_ESYS_RC_BAD_VALUE,
                              "Invalid symmetric algorithm (should be XOR or AES)");
             }
+            r = Tss2_Sys_SetDecryptParam(esys_context->sys, paramSize,
+                                         &encrypt_buffer[0]);
+            return_if_error(r, "Set encrypt parameter not possible");
         }
     }
     return r;
