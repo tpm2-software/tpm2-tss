@@ -6,12 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 ## Unreleased
 ### Added/removed
 - Implementation of the Marshal/Unmarshal library (libtss2-mu)
-- Implementation of the Enhanced System API (ESAPI)
-- New implemetation of the TPM Command Transmission Interface (TCTI), with two
-  TCTI modules tcti-device and tcti-mssim
+- Implementation of the Enhanced System API (libtss2-esys aka ESAPI)
+- New implemetation of the TPM Command Transmission Interface (TCTI) for:
+  - communication with Linux TPM2 device driver: libtss2-tcti-device
+  - communication with Microsoft software simulator: libtss2-tcti-mssim
 - New directory layout (API break)
 - Updated documentation with new doxygen and updated man pages
-- Support for Windows build with Visual Studio and clang
+- Support for Windows build with Visual Studio and clang, currently limited
+to libtss2-mu and libtss2-sys
 - Implementation of the new Attached Component (AC) commands
 - Implementation of the new TPM2_PolicyAuthorizeNV command
 - Implementation of the new TPM2_CreateLoaded command
@@ -19,14 +21,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Addition of _Complete functions to all TPM commands
 - New logging framework
 - Removed all sysapi/sysapi_utils/*arshal_TPM*.c files
-- Added const qualifiers to API input pointers
-- Cleaned up headers and remove implementation.h or tpm2.h (API break)
+- Added const qualifiers to API input pointers (API break)
+- Cleaned up headers and remove implementation.h and tpm2.h (API break)
 
 ### Changed
 - Converted all cpp files to c, removed dependency on C++ compiler.
-- Cleaned out a number of marshaling functions from the SAPI code. Things
-required by the resource manager were removed from libsapi and moved into
-the 'common directory.
+- Cleaned out a number of marshaling functions from the SAPI code.
 - Update Linux / Unix OS detection to use non-obsolete macros.
 - Changed TCTI macros to CamelCase (API break)
 - Changed TPMA_types to unsigned int with defines instead of bitfield structs (API/ABI break)
@@ -34,7 +34,8 @@ the 'common directory.
 
 ### Fixed
 - Updated invalid number of handles in TPM2_PolicyNvWritten and TPM2_TestParms
-- Updated PlatformCommand not to send CANCEL_OFF before every command
+- Updated PlatformCommand function from libtss2-tcti-mssim to no longer send
+CANCEL_OFF before every command.
 - Expanded TPM2B macros and removed TPM2B_TYPE1 and TPM2B_TYPE2 macros
 - Fixed wrong return type for Tss2_Sys_Finalize (API break).
 
