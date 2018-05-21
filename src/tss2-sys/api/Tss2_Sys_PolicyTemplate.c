@@ -76,8 +76,8 @@ TSS2_RC Tss2_Sys_PolicyTemplate_Complete(
 
 TSS2_RC Tss2_Sys_PolicyTemplate(
     TSS2_SYS_CONTEXT *sysContext,
-    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TPMI_SH_POLICY policySession,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     const TPM2B_DIGEST *templateHash,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {

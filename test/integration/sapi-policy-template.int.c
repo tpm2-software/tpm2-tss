@@ -144,8 +144,8 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
      */
     LOG_INFO("Calling Tss2_Sys_PolicyTemplate");
     rc = Tss2_Sys_PolicyTemplate (sapi_context,
-                                  NULL,
                                   session_handle,
+                                  NULL,
                                   &templ_dgst,
                                   NULL);
     if (rc != TSS2_RC_SUCCESS) {
