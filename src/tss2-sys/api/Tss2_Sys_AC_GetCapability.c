@@ -100,8 +100,8 @@ TSS2_RC Tss2_Sys_AC_GetCapability_Complete(
 
 TSS2_RC Tss2_Sys_AC_GetCapability(
     TSS2_SYS_CONTEXT *sysContext,
-    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TPMI_RH_AC ac,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TPM_AT capability,
     UINT32 count,
     TPMI_YES_NO *moreData,

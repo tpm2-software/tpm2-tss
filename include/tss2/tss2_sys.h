@@ -2147,8 +2147,8 @@ TSS2_RC Tss2_Sys_AC_GetCapability_Complete(
 
 TSS2_RC Tss2_Sys_AC_GetCapability(
     TSS2_SYS_CONTEXT *sysContext,
-    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TPMI_RH_AC ac,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TPM_AT capability,
     UINT32 count,
     TPMI_YES_NO *moreData,
@@ -2168,10 +2168,10 @@ TSS2_RC Tss2_Sys_AC_Send_Complete(
 
 TSS2_RC Tss2_Sys_AC_Send(
     TSS2_SYS_CONTEXT *sysContext,
-    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TPMI_DH_OBJECT sendObject,
     TPMI_RH_NV_AUTH authHandle,
     TPMI_RH_AC ac,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TPM2B_MAX_BUFFER *acDataIn,
     TPMS_AC_OUTPUT *acDataOut,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray);
@@ -2189,8 +2189,8 @@ TSS2_RC Tss2_Sys_Policy_AC_SendSelect_Complete(
 
 TSS2_RC Tss2_Sys_Policy_AC_SendSelect(
     TSS2_SYS_CONTEXT *sysContext,
-    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TPMI_SH_POLICY policySession,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TPM2B_NAME *objectName,
     TPM2B_NAME *authHandleName,
     TPM2B_NAME *acName,

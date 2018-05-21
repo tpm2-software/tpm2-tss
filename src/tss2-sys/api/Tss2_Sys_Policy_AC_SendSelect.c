@@ -105,8 +105,8 @@ TSS2_RC Tss2_Sys_Policy_AC_SendSelect_Complete(
 
 TSS2_RC Tss2_Sys_Policy_AC_SendSelect(
     TSS2_SYS_CONTEXT *sysContext,
-    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TPMI_SH_POLICY policySession,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TPM2B_NAME *objectName,
     TPM2B_NAME *authHandleName,
     TPM2B_NAME *acName,
