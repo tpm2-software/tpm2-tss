@@ -31,6 +31,8 @@ to libtss2-mu and libtss2-sys
 - Changed TCTI macros to CamelCase (API break)
 - Changed TPMA_types to unsigned int with defines instead of bitfield structs (API/ABI break)
 - Changed Get/SetCmd/RspAuths to new parameter types (API/ABI break)
+- Fixed order of parameters in AC commands: Input command authorizations
+now come after the input handles, but still before the command parameters.
 
 ### Fixed
 - Updated invalid number of handles in TPM2_PolicyNvWritten and TPM2_TestParms
