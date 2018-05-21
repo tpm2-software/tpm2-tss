@@ -108,10 +108,10 @@ TSS2_RC Tss2_Sys_AC_Send_Complete(
 
 TSS2_RC Tss2_Sys_AC_Send(
     TSS2_SYS_CONTEXT *sysContext,
-    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TPMI_DH_OBJECT sendObject,
     TPMI_RH_NV_AUTH authHandle,
     TPMI_RH_AC ac,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TPM2B_MAX_BUFFER *acDataIn,
     TPMS_AC_OUTPUT *acDataOut,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
