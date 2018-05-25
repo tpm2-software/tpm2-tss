@@ -55,7 +55,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                                    .keyBits = {.aes = 128},
                                    .mode = {.aes = TPM2_ALG_CFB}
     };
-    TPM2B_NONCE *nonceTpmTrial;
     TPM2B_NONCE nonceCallerTrial = {
         .size = 20,
         .buffer = {11, 12, 13, 14, 15, 16, 17, 18, 19, 11,
@@ -65,8 +64,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
-                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1, &sessionTrial,
-                              &nonceTpmTrial);
+                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
+                              &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session", error);
 
     r = Esys_PolicyAuthValue(esys_context,
@@ -321,7 +320,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                                     .keyBits = {.aes = 128},
                                     .mode = {.aes = TPM2_ALG_CFB}
     };
-    TPM2B_NONCE *policyNonceTpm;
     TPM2B_NONCE policyNonceCaller = {
         .size = 20,
         .buffer = {11, 12, 13, 14, 15, 16, 17, 18, 19, 11,
@@ -331,8 +329,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &policyNonceCaller,
-                              TPM2_SE_POLICY, &policySymmetric, TPM2_ALG_SHA1, &policySession,
-                              &policyNonceTpm);
+                              TPM2_SE_POLICY, &policySymmetric, TPM2_ALG_SHA1,
+                              &policySession);
     goto_if_error(r, "Error: During initialization of policy trial session", error);
 
 

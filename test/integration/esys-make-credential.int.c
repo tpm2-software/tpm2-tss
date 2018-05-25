@@ -53,7 +53,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                               .mode = {.aes = TPM2_ALG_CFB}
     };
     TPMA_SESSION sessionAttributes;
-    TPM2B_NONCE *nonceTpm;
     TPM2B_NONCE nonceCaller = {
         .size = 20,
         .buffer = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
@@ -67,9 +66,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCaller,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1, &session,
-                              &nonceTpm);
-
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              &session);
     goto_if_error(r, "Error: During initialization of session", error);
 
 
@@ -86,9 +84,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCaller,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1, &session2,
-                              &nonceTpm);
-
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              &session2);
     goto_if_error(r, "Error: During initialization of session", error);
 
     r = esys_GetResourceObject(esys_context, session2,

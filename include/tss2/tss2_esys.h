@@ -309,8 +309,7 @@ Esys_StartAuthSession(
     TPM2_SE sessionType,
     const TPMT_SYM_DEF *symmetric,
     TPMI_ALG_HASH authHash,
-    ESYS_TR *sessionHandle,
-    TPM2B_NONCE **nonceTPM);
+    ESYS_TR *sessionHandle);
 
 TSS2_RC
 Esys_StartAuthSession_Async(
@@ -328,8 +327,7 @@ Esys_StartAuthSession_Async(
 TSS2_RC
 Esys_StartAuthSession_Finish(
     ESYS_CONTEXT *esysContext,
-    ESYS_TR *sessionHandle,
-    TPM2B_NONCE **nonceTPM);
+    ESYS_TR *sessionHandle);
 
 /* Table 17 - TPM2_PolicyRestart Command */
 

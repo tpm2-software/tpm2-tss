@@ -227,8 +227,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
     TPM2_SE sessionType = TPM2_SE_HMAC;
     TPMI_ALG_HASH authHash = TPM2_ALG_SHA256;
-    TPM2B_NONCE *nonceTpm;
-
 
     r = Esys_StartAuthSession(esys_context,
                               primaryHandle_AuthSession,
@@ -239,8 +237,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 #endif
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
-                              sessionType, &symmetric, authHash, &session,
-                              &nonceTpm);
+                              sessionType, &symmetric, authHash, &session);
     goto_if_error(r, "Error during Esys_StartAuthSession", error);
 
 #ifdef TEST_ECC

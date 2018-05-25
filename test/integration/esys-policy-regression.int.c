@@ -95,7 +95,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         .keyBits = {.aes = 128},
         .mode = {.aes = TPM2_ALG_CFB}
     };
-    TPM2B_NONCE *nonceTpmTrial;
     TPM2B_NONCE nonceCallerTrial = {
         .size = 20,
         .buffer = {11, 12, 13, 14, 15, 16, 17, 18, 19, 11,
@@ -109,7 +108,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
                               TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
-                              &sessionTrial, &nonceTpmTrial);
+                              &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session",
                   error);
 
@@ -189,7 +188,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
                               TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
-                              &sessionTrial, &nonceTpmTrial);
+                              &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session",
                   error);
 
@@ -242,7 +241,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
                               TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
-                              &sessionTrial, &nonceTpmTrial);
+                              &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session",
                   error);
 
@@ -282,7 +281,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
                               TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
-                              &sessionTrial, &nonceTpmTrial);
+                              &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session",
                   error);
 
@@ -328,7 +327,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
                               TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
-                              &sessionTrial, &nonceTpmTrial);
+                              &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session",
                   error);
 
@@ -361,7 +360,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
                               TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
-                              &sessionTrial, &nonceTpmTrial);
+                              &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session",
                   error);
 
@@ -388,7 +387,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
                               TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
-                              &sessionTrial, &nonceTpmTrial);
+                              &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session",
                   error);
 
@@ -431,7 +430,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
                               TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
-                              &sessionTrial, &nonceTpmTrial);
+                              &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session",
                   error);
 
@@ -457,7 +456,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
                               TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
-                              &sessionTrial, &nonceTpmTrial);
+                              &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session",
                   error);
 

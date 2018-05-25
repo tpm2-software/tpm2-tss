@@ -210,11 +210,10 @@ check_StartAuthSession(void **state)
         _ESYS_STATE_INTERNALERROR
     };
     ESYS_TR sessionHandle_handle;
-    TPM2B_NONCE *nonceTPM;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
         r = Esys_StartAuthSession_Finish(esys_context,
-                                         &sessionHandle_handle, &nonceTPM);
+                                         &sessionHandle_handle);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }

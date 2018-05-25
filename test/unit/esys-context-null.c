@@ -137,7 +137,7 @@ check_StartAuthSession(void **state)
                               0,
                               ESYS_TR_NONE,
                               ESYS_TR_NONE,
-                              ESYS_TR_NONE, NULL, 0, NULL, 0, NULL, NULL);
+                              ESYS_TR_NONE, NULL, 0, NULL, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
     r = Esys_StartAuthSession_Async(NULL,
@@ -148,7 +148,7 @@ check_StartAuthSession(void **state)
                                     ESYS_TR_NONE, NULL, 0, NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_StartAuthSession_Finish(NULL, NULL, NULL);
+    r = Esys_StartAuthSession_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
