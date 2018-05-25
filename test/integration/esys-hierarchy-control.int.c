@@ -70,5 +70,5 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     return 0;
 
  error:
-    return r;
+    return 1;
 }
