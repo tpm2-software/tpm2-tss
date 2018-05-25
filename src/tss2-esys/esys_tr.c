@@ -509,3 +509,48 @@ Esys_TRSess_SetAttributes(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
          sessionAttributes & ~mask) | (flags & mask);
     return TSS2_RC_SUCCESS;
 }
+
+/** Retrieve the TPM nonce of an Esys_TR session object.
+ *
+ * Some operations (i.e. Esys_PolicySigned) require the nonce returned by the
+ * TPM during Esys_StartauthSession. This function provides this nonce to the
+ * caller.
+ * @param esys_context [in,out] The ESYS_CONTEXT.
+ * @param esys_handle [in,out] The ESYS_TRsess for which to retrieve the nonce.
+ * @param nonceTPM [out] The nonce of the object (callee-allocated; use free()).
+ * @retval TSS2_RC_SUCCESS on Success.
+ * @retval TSS2_ESYS_RC_MEMORY if needed memory can't be allocated.
+ * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext is NULL.
+ * @retval TSS2_SYS_RC_* for SAPI errors.
+ */
+TSS2_RC
+Esys_TRSess_GetNonceTPM(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
+                TPM2B_NONCE **nonceTPM)
+{
+    RSRC_NODE_T *esys_object;
+    TSS2_RC r;
+    _ESYS_ASSERT_NON_NULL(esys_context);
+    _ESYS_ASSERT_NON_NULL(nonceTPM);
+
+    r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
+    return_if_error(r, "Object not found");
+
+    *nonceTPM = calloc(1, sizeof(**nonceTPM));
+    if (*nonceTPM == NULL) {
+        LOG_ERROR("Error: out of memory");
+        return TSS2_ESYS_RC_MEMORY;
+    }
+    if (esys_object->rsrc.rsrcType != IESYSC_SESSION_RSRC) {
+        r = TSS2_ESYS_RC_BAD_TR;
+        goto_if_error(r, "NonceTPM for non-session object requested.",
+                      error_cleanup);
+
+    }
+    **nonceTPM = esys_object->rsrc.misc.rsrc_session.nonceTPM;
+
+    return r;
+ error_cleanup:
+    SAFE_FREE(*nonceTPM);
+    return r;
+}
