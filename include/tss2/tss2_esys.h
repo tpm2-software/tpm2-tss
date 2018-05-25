@@ -182,12 +182,6 @@ Esys_TRSess_SetAttributes(
     TPMA_SESSION mask);
 
 TSS2_RC
-Esys_TRSess_SetSessionKey(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR session,
-    TPM2B_AUTH const *key);
-
-TSS2_RC
 Esys_TRSess_GetNonceTPM(
     ESYS_CONTEXT *esysContext,
     ESYS_TR session,
