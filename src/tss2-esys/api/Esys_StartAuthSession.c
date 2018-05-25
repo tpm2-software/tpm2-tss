@@ -84,9 +84,6 @@ static void store_input_parameters (
  *             policy (including a trial policy).
  * @param[in]  symmetric The algorithm and key size for parameter encryption.
  * @param[in]  authHash Hash algorithm to use for the session.
- * @param[out] nonceTPM The initial nonce from the TPM, used in the computation of
- *             the sessionKey.
- *             (callee-allocated)
  * @param[out] sessionHandle  ESYS_TR handle of ESYS resource for TPMI_SH_AUTH_SESSION.
  * @retval TSS2_RC_SUCCESS on success
  * @retval ESYS_RC_SUCCESS if the function call was a success.
@@ -122,8 +119,7 @@ Esys_StartAuthSession(
     TPM2_SE sessionType,
     const TPMT_SYM_DEF *symmetric,
     TPMI_ALG_HASH authHash,
-    ESYS_TR *sessionHandle,
-    TPM2B_NONCE **nonceTPM)
+    ESYS_TR *sessionHandle)
 {
     TSS2_RC r;
 
@@ -151,8 +147,7 @@ Esys_StartAuthSession(
      */
     do {
         r = Esys_StartAuthSession_Finish(esysContext,
-                sessionHandle,
-                nonceTPM);
+                sessionHandle);
         /* This is just debug information about the reattempt to finish the
            command */
         if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
@@ -318,9 +313,6 @@ Esys_StartAuthSession_Async(
  * output parameter if the value is not required.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
- * @param[out] nonceTPM The initial nonce from the TPM, used in the computation of
- *             the sessionKey.
- *             (callee-allocated)
  * @param[out] sessionHandle  ESYS_TR handle of ESYS resource for TPMI_SH_AUTH_SESSION.
  * @retval TSS2_RC_SUCCESS on success
  * @retval ESYS_RC_SUCCESS if the function call was a success.
@@ -342,13 +334,12 @@ Esys_StartAuthSession_Async(
 TSS2_RC
 Esys_StartAuthSession_Finish(
     ESYS_CONTEXT *esysContext,
-    ESYS_TR *sessionHandle,
-    TPM2B_NONCE **nonceTPM)
+    ESYS_TR *sessionHandle)
 {
-    TPM2B_NONCE *lnonceTPM = NULL;
+    TPM2B_NONCE lnonceTPM;
     TSS2_RC r;
-    LOG_TRACE("context=%p, sessionHandle=%p, nonceTPM=%p",
-              esysContext, sessionHandle, nonceTPM);
+    LOG_TRACE("context=%p, sessionHandle=%p",
+              esysContext, sessionHandle);
 
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
@@ -373,10 +364,6 @@ Esys_StartAuthSession_Finish(
     if (r != TSS2_RC_SUCCESS)
         return r;
 
-    lnonceTPM = calloc(sizeof(TPM2B_NONCE), 1);
-    if (lnonceTPM == NULL) {
-        goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
-    }
     IESYS_RESOURCE *rsrc = &sessionHandleNode->rsrc;
     rsrc->misc.rsrc_session.sessionAttributes =
         TPMA_SESSION_CONTINUESESSION;
@@ -451,11 +438,11 @@ Esys_StartAuthSession_Finish(
      */
     r = Tss2_Sys_StartAuthSession_Complete(esysContext->sys,
                 &sessionHandleNode->rsrc.handle,
-                lnonceTPM);
+                &lnonceTPM);
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshaling" ,error_cleanup);
 
-    sessionHandleNode->rsrc.misc.rsrc_session.nonceTPM = *lnonceTPM;
+    sessionHandleNode->rsrc.misc.rsrc_session.nonceTPM = lnonceTPM;
     sessionHandleNode->rsrc.rsrcType = IESYSC_SESSION_RSRC;
     if (esysContext->in.StartAuthSession.bind != ESYS_TR_NONE || esysContext->salt.size > 0) {
         ESYS_TR bind = esysContext->in.StartAuthSession.bind;
@@ -514,7 +501,7 @@ Esys_StartAuthSession_Finish(
         LOGBLOB_DEBUG(secret, secret_size, "ESYS Session Secret");
         r = iesys_crypto_KDFa(esysContext->in.StartAuthSession.authHash, secret,
                               secret_size, "ATH",
-                               lnonceTPM, esysContext->in.StartAuthSession.nonceCaller,
+                               &lnonceTPM, esysContext->in.StartAuthSession.nonceCaller,
                                authHash_size*8, NULL,
                      &sessionHandleNode->rsrc.misc.rsrc_session.sessionKey.buffer[0], FALSE);
         free(secret);
@@ -529,18 +516,12 @@ Esys_StartAuthSession_Finish(
 
         sessionHandleNode->rsrc.misc.rsrc_session.sessionKey.size = authHash_size;
     }
-    if (nonceTPM != NULL)
-        *nonceTPM = lnonceTPM;
-    else
-        SAFE_FREE(lnonceTPM);
-
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
     Esys_TR_Close(esysContext, sessionHandle);
-    SAFE_FREE(lnonceTPM);
 
     return r;
 }

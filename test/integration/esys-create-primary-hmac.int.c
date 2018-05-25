@@ -47,8 +47,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1, &session,
-                              NULL);
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              &session);
 
     goto_if_error(r, "Error: During initialization of session", error);
 

@@ -139,15 +139,13 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                                      TPMA_SESSION_AUDIT;
     TPM2_SE sessionType = TPM2_SE_HMAC;
     TPMI_ALG_HASH authHash = TPM2_ALG_SHA256;
-    TPM2B_NONCE *nonceTpm;
     TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_NULL };
     ESYS_TR session;
 
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
-                              sessionType, &symmetric, authHash, &session,
-                              &nonceTpm);
+                              sessionType, &symmetric, authHash, &session);
 
     goto_if_error(r, "Error Esys_StartAuthSessiony", error);
     r = Esys_TRSess_SetAttributes(esys_context, session, sessionAttributes,

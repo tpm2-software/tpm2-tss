@@ -64,7 +64,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
                               TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
-                              &session, NULL);
+                              &session);
     if (r != TPM2_RC_SUCCESS) {
         LOG_ERROR("Esys_StartAuthSession FAILED! Response Code : 0x%x", r);
         goto error;

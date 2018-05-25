@@ -469,7 +469,6 @@ test_StartAuthSession(void **state)
     };
     TPMI_ALG_HASH authHash = TPM2_ALG_SHA1;
     ESYS_TR sessionHandle_handle;
-    TPM2B_NONCE *nonceTPM;
 
     r = Esys_StartAuthSession(esys_context,
                               tpmKey_handle,
@@ -480,7 +479,7 @@ test_StartAuthSession(void **state)
                               &nonceCaller,
                               sessionType,
                               &symmetric,
-                              authHash, &sessionHandle_handle, &nonceTPM);
+                              authHash, &sessionHandle_handle);
 
     assert_int_equal(r, TPM2_RC_YIELDED);
     assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */ );
