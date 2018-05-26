@@ -41,7 +41,7 @@
 #define TPM2_MAX_SESSION_NUM   3    /* this is the current maximum value */
 
 /* TPM constants for buffer sizes */
-#define TPM2_NUM_PCR_BANKS      3
+#define TPM2_NUM_PCR_BANKS      16
 #define TPM2_MAX_DIGEST_BUFFER  1024
 #define TPM2_MAX_NV_BUFFER_SIZE 2048
 #define TPM2_MAX_PCRS           32
