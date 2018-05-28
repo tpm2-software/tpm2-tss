@@ -70,11 +70,11 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         .pcrSelections = {
             { .hash = TPM2_ALG_SHA1,
               .sizeofSelect = 3,
-              .pcrSelect = { 00, 00, 01},
+              .pcrSelect = { 01, 00, 03},
             },
             { .hash = TPM2_ALG_SHA256,
               .sizeofSelect = 3,
-              .pcrSelect = { 00, 00, 01}
+              .pcrSelect = { 01, 00, 03}
             },
         }
     };
