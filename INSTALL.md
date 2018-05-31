@@ -15,6 +15,7 @@ following sections describe them for the supported platforms.
 * pkg-config
 * uriparser development libraries and header files
 * libgcrypt development libraries and header files
+* uthash development libraries and header files
 
 The following are dependencies only required when building test suites.
 * Integration test suite (see ./configure option --enable-integration):
@@ -47,6 +48,7 @@ $ sudo apt -y install \
   automake \
   libgcrypt20-dev \
   libssl-dev \
+  uthash-dev \
   autoconf
 ```
 Note: In some Ubuntu versions, the lcov and autoconf-archive packages are incompatible with each other. Recommend downloading autoconf-archives directly from upstream and copy ax_code_coverage.m4.
