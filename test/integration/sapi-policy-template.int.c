@@ -105,7 +105,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     in_public.publicArea.objectAttributes |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
     in_public.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM2_ALG_AES;
     in_public.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-    in_public.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM2_ALG_ECB;
+    in_public.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM2_ALG_CFB;
     in_public.publicArea.parameters.rsaDetail.scheme.scheme = TPM2_ALG_NULL;
     in_public.publicArea.parameters.rsaDetail.keyBits = 2048;
 
