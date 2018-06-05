@@ -97,7 +97,10 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     LOG_DEBUG("FlushContext SUCCESS!");
 
     rc = tcti_platform_command(tcti_context, MS_SIM_CANCEL_ON);
-    if (rc != TPM2_RC_SUCCESS) {
+    if (rc == TSS2_TCTI_RC_BAD_CONTEXT) {
+        LOG_DEBUG("tcti_context not suitable for command! Skipping test");
+        exit(77); /* Skip */
+    } else if (rc != TPM2_RC_SUCCESS) {
         LOG_ERROR("tcti_platform_command FAILED! Response Code : 0x%x", rc);
         exit(1);
     }
