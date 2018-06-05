@@ -26,7 +26,7 @@ It is expected that any number of libraries implementing the TCTI API will be im
 Currently this repository provides two TCTI implementations: libtss2-tcti-device and libtss2-tcti-mssim.
 The former should be used for direct access to the TPM through the Linux kernel driver.
 The latter implements the protocol exposed by the Microsoft software TPM2 simulator.
-* The [TCG TSS 2.0 Overview and Common Structures Specification](https://trustedcomputinggroup.org/wp-content/uploads/TSS_Overview_Common_Structures_Version-0.9_Revision-03_Review_030918.pdf) forms the basis for all implementations in this project.
+* The [TCG TSS 2.0 Overview and Common Structures Specification](https://trustedcomputinggroup.org/wp-content/uploads/TSS_Overview_Common_Structures_Version-0.9_Revision-03_Review_030918.pdf) forms the basis for all implementations in this project. NOTE: We deviate from this draft of the specification by increasing the value of TPM2_NUM_PCR_BANKS from 3 to 16 to ensure compatibility with TPM2 implementations that have enabled a lareger than typical number of PCR banks. This larger value for TPM2_NUM_PCR_BANKS is expected to be included in a future revision of the specification.
 
 # Build and Installation Instructions:
 Instructions to build and install tpm2-tss are available in the [INSTALL](INSTALL.md) file.
