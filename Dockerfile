@@ -1,38 +1,58 @@
-FROM ubuntu:trusty
-
-RUN apt -y update && \
-  apt -y install \
+FROM ubuntu:18.04
+RUN apt-get update
+RUN apt-get install -y \
+    autoconf \
     autoconf-archive \
-    libcmocka0 \
-    libcmocka-dev \
+    automake \
     build-essential \
-    wget \
+    g++ \
+    gcc \
     git \
     libssl-dev \
-    pkg-config \
-    gcc \
-    g++ \
-    m4 \
     libtool \
-    automake \
-    autoconf
+    m4 \
+    net-tools \
+    pkg-config \
+    wget
 
-RUN wget https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm532.tar && \
-  sha256sum ibmtpm532.tar | grep -q ^abc0b420257917ccb42a9750588565d5e84a2b4e99a6f9f46c3dad1f9912864f && \
-  mkdir ibmtpm532 && \
-  tar axf ibmtpm532.tar -C ibmtpm532 && \
-  make -C ibmtpm532/src -j$(nproc)
+# OpenSSL
+ARG openssl_name=openssl-1.1.0h
+WORKDIR /tmp
+ADD https://www.openssl.org/source/$openssl_name.tar.gz .
+RUN tar xvf $openssl_name.tar.gz
+WORKDIR $openssl_name
+RUN ./config --prefix=/usr/local/openssl --openssldir=/usr/local/openssl
+RUN make -j$(nproc)
+RUN make install
+RUN openssl version
 
-COPY . tpm2-tss
+# IBM's Software TPM 2.0
+ARG ibmtpm_name=ibmtpm1119
+WORKDIR /tmp
+RUN wget "https://downloads.sourceforge.net/project/ibmswtpm2/$ibmtpm_name.tar.gz"
+RUN sha256sum $ibmtpm_name.tar.gz | grep ^b9eef79904e276aeaed2a6b9e4021442ef4d7dfae4adde2473bef1a6a4cd10fb
+RUN mkdir -p $ibmtpm_name
+RUN tar xvf $ibmtpm_name.tar.gz -C $ibmtpm_name
+WORKDIR $ibmtpm_name/src
+RUN CFLAGS="-I/usr/local/openssl/include" make -j$(nproc)
+RUN cp tpm_server /usr/local/bin
 
-RUN cd tpm2-tss && \
-  ./bootstrap && \
-  rm -rf ./build && \
-  mkdir ./build && \
-  cd ./build && \
-  ../configure --enable-unit --with-simulatorbin=$(pwd)/../../ibmtpm532/src/tpm_server && \
-  make -j$(nproc)
+RUN apt-get install -y \
+    libcmocka0 \
+    libcmocka-dev \
+    libgcrypt20-dev \
+    libtool \
+    liburiparser-dev \
+    uthash-dev
 
-RUN cd tpm2-tss/build && \
-  make -j$(nproc) check && \
-  cat test/tpmclient/tpmclient.log
+# TPM2-TSS
+COPY . /tmp/tpm2-tss/
+WORKDIR /tmp/tpm2-tss
+RUN ./bootstrap
+RUN ./configure --enable-unit
+RUN make -j$(nproc) check
+RUN make install
+RUN ldconfig
+ENV LD_LIBRARY_PATH /usr/local/lib
+RUN cat test-suite.log
+
