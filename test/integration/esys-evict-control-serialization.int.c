@@ -251,6 +251,11 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, primaryHandle_handle);
     goto_if_error(r, "Error during FlushContext", error);
 
+    r = Esys_EvictControl(esys_context, ESYS_TR_RH_OWNER, new_primary_handle1,
+                          ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                          permanentHandle, &new_primary_handle1);
+    goto_if_error(r, "Error Esys EvictControl", error);
+
     return 0;
 
  error:
