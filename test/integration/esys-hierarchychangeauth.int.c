@@ -50,6 +50,11 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         .buffer = {1, 2, 3, 4, 5}
     };
 
+    TPM2B_AUTH emptyAuth = {
+        .size = 0,
+        .buffer = {}
+    };
+
     r = Esys_HierarchyChangeAuth(esys_context,
                                  authHandle_handle,
                                  ESYS_TR_PASSWORD,
@@ -144,6 +149,14 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     r = Esys_FlushContext(esys_context, primaryHandle_handle);
     goto_if_error(r, "Flushing context", error);
+
+    r = Esys_HierarchyChangeAuth(esys_context,
+                                 authHandle_handle,
+                                 ESYS_TR_PASSWORD,
+                                 ESYS_TR_NONE,
+                                 ESYS_TR_NONE,
+                                 &emptyAuth);
+    goto_if_error(r, "Error: HierarchyChangeAuth", error);
 
     return 0;
 
