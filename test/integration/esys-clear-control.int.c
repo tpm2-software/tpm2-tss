@@ -63,6 +63,18 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         ESYS_TR_NONE);
     goto_error_if_not_failed(r, "Error: ClockSet", error);
 
+    disable = TPM2_NO;
+
+    r = Esys_ClearControl(
+        esys_context,
+        auth_handle,
+        ESYS_TR_PASSWORD,
+        ESYS_TR_NONE,
+        ESYS_TR_NONE,
+        disable);
+
+    goto_if_error(r, "Error: ClearControl", error);
+
     return 0;
 
  error:

@@ -67,6 +67,18 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                       newTime);
     goto_error_if_not_failed(r, "Error: ClockSet", error);
 
+    state = TPM2_YES;
+
+    r = Esys_HierarchyControl(
+        esys_context,
+        authHandle_handle,
+        ESYS_TR_PASSWORD,
+        ESYS_TR_NONE,
+        ESYS_TR_NONE,
+        enable,
+        state);
+    goto_if_error(r, "Error: HierarchyControl", error);
+
     return 0;
 
  error:
