@@ -1,7 +1,6 @@
 [![Linux Build Status](https://travis-ci.org/tpm2-software/tpm2-tss.svg?branch=master)](https://travis-ci.org/tpm2-software/tpm2-tss)
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/2rdmyn1ndkiavngn?svg=true)](https://ci.appveyor.com/project/tpm2-software/tpm2-tss)
 [![Coverity Scan](https://img.shields.io/coverity/scan/3997.svg)](https://scan.coverity.com/projects/tpm2-tss)
-[![Coverage Status](https://coveralls.io/repos/github/01org/tpm2-tss/badge.svg?branch=master)](https://coveralls.io/github/01org/tpm2-tss?branch=master)
 
 # Overview
 This repository hosts source code implementing the Trusted Computing Group's (TCG) TPM2 Software Stack (TSS).
