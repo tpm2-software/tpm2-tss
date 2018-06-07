@@ -79,11 +79,9 @@ Esys_Initialize(ESYS_CONTEXT ** esys_context, TSS2_TCTI_CONTEXT * tcti,
     /* Store the application provided tcti to be return on Esys_GetTcti(). */
     (*esys_context)->tcti_app_param = tcti;
 
-    /* If no tcti was provided, initialize the default one. */
-    if (tcti == NULL) {
-        r = get_tcti_default(&tcti);
-        goto_if_error(r, "Initialize default tcti.", cleanup_return);
-    }
+    /* This function will initialize a default tcti if necessary. */
+    r = get_tcti_default(&tcti);
+    goto_if_error(r, "Initializing tcti.", cleanup_return);
 
     /* Initialize the ESAPI */
     r = Tss2_Sys_Initialize((*esys_context)->sys, syssize, tcti, abiVersion);

@@ -170,10 +170,37 @@ tcti_from_file(const char *file,
 TSS2_RC
 get_tcti_default(TSS2_TCTI_CONTEXT ** tcticontext)
 {
+    TSS2_RC r;
+
     if (tcticontext == NULL) {
         LOG_ERROR("tcticontext must not be NULL");
         return TSS2_TCTI_RC_BAD_REFERENCE;
     }
+
+    /* Check for an override env variable for tcti first */
+    const char *env_tcti = getenv("TSS2_TCTI");
+    if (env_tcti != NULL) {
+        char *tcti = strdup(env_tcti);
+        char *conf = index(env_tcti, ':');
+        if (conf != NULL) {
+            *conf = '\0';
+            conf++;
+        }
+        r = tcti_from_file(tcti, conf, tcticontext);
+        if (r != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Tcti from TSS2_TCTI environment variable coult not be "
+                      "loaded.");
+            free(tcti);
+            return TSS2_ESYS_RC_GENERAL_FAILURE;
+        }
+        free(tcti);
+        return TSS2_RC_SUCCESS;
+    }
+
+    /* Then use the application provided tcti */
+    if (*tcticontext)
+        return TSS2_RC_SUCCESS;
+
     *tcticontext = NULL;
 #ifdef ESYS_TCTI_DEFAULT_MODULE
 
@@ -188,8 +215,6 @@ get_tcti_default(TSS2_TCTI_CONTEXT ** tcticontext)
     return tcti_from_file(ESYS_TCTI_DEFAULT_MODULE, config, tcticontext);
 
 #else /* ESYS_TCTI_DEFAULT_MODULE */
-
-    TSS2_RC r;
 
     for (size_t i = 0; i < ARRAY_SIZE(tctis); i++) {
         LOG_DEBUG("Attempting to connect using standard TCTI: %s",
