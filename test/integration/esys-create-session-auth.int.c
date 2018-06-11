@@ -155,7 +155,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-   r = esys_GetResourceObject(esys_context, primaryHandle_handle,
+    r = esys_GetResourceObject(esys_context, primaryHandle_handle,
                                &primaryHandle_node);
     goto_if_error(r, "Error Esys GetResourceObject", error);
 

@@ -89,5 +89,5 @@ TSS2_RC Tss2_Sys_ObjectChangeAuth(
     if (rval)
         return rval;
 
-   return Tss2_Sys_ObjectChangeAuth_Complete(sysContext, outPrivate);
+    return Tss2_Sys_ObjectChangeAuth_Complete(sysContext, outPrivate);
 }

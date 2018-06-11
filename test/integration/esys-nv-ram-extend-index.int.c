@@ -86,68 +86,68 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     goto_if_error(r, "Error esys define nv space", error);
 
-   TPM2B_MAX_NV_BUFFER nv_test_data = { .size = 20,
-                                        .buffer={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
-                                                 1, 2, 3, 4, 5, 6, 7, 8, 9}};
+    TPM2B_MAX_NV_BUFFER nv_test_data = { .size = 20,
+                                         .buffer={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
+                                                  1, 2, 3, 4, 5, 6, 7, 8, 9}};
 
-   TPM2B_NV_PUBLIC *nvPublic;
-   TPM2B_NAME *nvName;
+    TPM2B_NV_PUBLIC *nvPublic;
+    TPM2B_NAME *nvName;
 
-   r = Esys_NV_ReadPublic(
-       esys_context,
-       nvHandle_handle,
-       ESYS_TR_NONE,
-       ESYS_TR_NONE,
-       ESYS_TR_NONE,
-       &nvPublic,
-       &nvName);
-   goto_if_error(r, "Error: nv read public", error);
+    r = Esys_NV_ReadPublic(
+        esys_context,
+        nvHandle_handle,
+        ESYS_TR_NONE,
+        ESYS_TR_NONE,
+        ESYS_TR_NONE,
+        &nvPublic,
+        &nvName);
+    goto_if_error(r, "Error: nv read public", error);
 
-   RSRC_NODE_T *nvHandleNode;
+    RSRC_NODE_T *nvHandleNode;
 
-   r = esys_GetResourceObject(esys_context, nvHandle_handle, &nvHandleNode);
-   goto_if_error(r, "Error: nv get resource object", error);
+    r = esys_GetResourceObject(esys_context, nvHandle_handle, &nvHandleNode);
+    goto_if_error(r, "Error: nv get resource object", error);
 
-   if (nvName->size != nvHandleNode->rsrc.name.size ||
-       memcmp(&nvName->name, &nvHandleNode->rsrc.name.name, nvName->size) != 0) {
-       LOG_ERROR("Error: define space name not equal");
-       goto error;
-   }
-   r = Esys_NV_Extend (
-       esys_context,
-       nvHandle_handle,
-       nvHandle_handle,
+    if (nvName->size != nvHandleNode->rsrc.name.size ||
+        memcmp(&nvName->name, &nvHandleNode->rsrc.name.name, nvName->size) != 0) {
+        LOG_ERROR("Error: define space name not equal");
+        goto error;
+    }
+    r = Esys_NV_Extend (
+        esys_context,
+        nvHandle_handle,
+        nvHandle_handle,
 #ifdef TEST_SESSION
-       session,
+        session,
 #else
-       ESYS_TR_PASSWORD,
+        ESYS_TR_PASSWORD,
 #endif
-       ESYS_TR_NONE,
-       ESYS_TR_NONE,
-       &nv_test_data);
+        ESYS_TR_NONE,
+        ESYS_TR_NONE,
+        &nv_test_data);
 
-   goto_if_error(r, "Error esys nv write", error);
+    goto_if_error(r, "Error esys nv write", error);
 
-   r = Esys_NV_ReadPublic(
-       esys_context,
-       nvHandle_handle,
-       ESYS_TR_NONE,
-       ESYS_TR_NONE,
-       ESYS_TR_NONE,
-       &nvPublic,
-       &nvName);
-   goto_if_error(r, "Error: nv read public", error);
+    r = Esys_NV_ReadPublic(
+        esys_context,
+        nvHandle_handle,
+        ESYS_TR_NONE,
+        ESYS_TR_NONE,
+        ESYS_TR_NONE,
+        &nvPublic,
+        &nvName);
+    goto_if_error(r, "Error: nv read public", error);
 
-   r = esys_GetResourceObject(esys_context, nvHandle_handle, &nvHandleNode);
-   goto_if_error(r, "Error: nv get resource object", error);
+    r = esys_GetResourceObject(esys_context, nvHandle_handle, &nvHandleNode);
+    goto_if_error(r, "Error: nv get resource object", error);
 
-   if (nvName->size != nvHandleNode->rsrc.name.size ||
-       memcmp(&nvName->name, &nvHandleNode->rsrc.name.name, nvName->size) != 0) {
-       LOG_ERROR("Error: nv write name not equal");
-       goto error;
-   }
+    if (nvName->size != nvHandleNode->rsrc.name.size ||
+        memcmp(&nvName->name, &nvHandleNode->rsrc.name.name, nvName->size) != 0) {
+        LOG_ERROR("Error: nv write name not equal");
+        goto error;
+    }
 
-   TPM2B_MAX_NV_BUFFER *nv_test_data2;
+    TPM2B_MAX_NV_BUFFER *nv_test_data2;
 
 r = Esys_NV_Read(
     esys_context,
@@ -164,26 +164,26 @@ r = Esys_NV_Read(
     0,
     &nv_test_data2);
 
-   goto_if_error(r, "Error esys nv read", error);
+    goto_if_error(r, "Error esys nv read", error);
 
-   r = Esys_NV_ReadPublic(
-       esys_context,
-       nvHandle_handle,
-       ESYS_TR_NONE,
-       ESYS_TR_NONE,
-       ESYS_TR_NONE,
-       &nvPublic,
-       &nvName);
-   goto_if_error(r, "Error: nv read public", error);
+    r = Esys_NV_ReadPublic(
+        esys_context,
+        nvHandle_handle,
+        ESYS_TR_NONE,
+        ESYS_TR_NONE,
+        ESYS_TR_NONE,
+        &nvPublic,
+        &nvName);
+    goto_if_error(r, "Error: nv read public", error);
 
-   r = esys_GetResourceObject(esys_context, nvHandle_handle, &nvHandleNode);
-   goto_if_error(r, "Error: nv get resource object", error);
+    r = esys_GetResourceObject(esys_context, nvHandle_handle, &nvHandleNode);
+    goto_if_error(r, "Error: nv get resource object", error);
 
-   if (nvName->size != nvHandleNode->rsrc.name.size ||
-       memcmp(&nvName->name, &nvHandleNode->rsrc.name.name, nvName->size) != 0) {
-       LOG_ERROR("Error: nv read name not equal");
-       goto error;
-   }
+    if (nvName->size != nvHandleNode->rsrc.name.size ||
+        memcmp(&nvName->name, &nvHandleNode->rsrc.name.name, nvName->size) != 0) {
+        LOG_ERROR("Error: nv read name not equal");
+        goto error;
+    }
 
     r = Esys_NV_UndefineSpace(
         esys_context,
@@ -200,8 +200,8 @@ r = Esys_NV_Read(
 
     goto_if_error(r, "Error esys undefine nv space", error);
 
-   return 0;
+    return 0;
 
  error:
-   return 1;
+    return 1;
 }

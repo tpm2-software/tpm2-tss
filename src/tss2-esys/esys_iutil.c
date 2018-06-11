@@ -179,8 +179,8 @@ iesys_compute_encrypt_nonce(ESYS_CONTEXT * esys_context,
             if (session->rsrc.misc.rsrc_session.
                 sessionAttributes & TPMA_SESSION_ENCRYPT) {
                 if (*encryptNonce != NULL) {
-            /* Encrypt nonce already found */
-            return_error(TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS,
+                    /* Encrypt nonce already found */
+                    return_error(TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS,
                                  "More than one encrypt session");
                 }
                 *encryptNonceIdx = i;
@@ -676,7 +676,7 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
  * @retval TSS2_ESYS_RC_NOT_IMPLEMENTED if hash algorithm is not implemented.
  * @retval TSS2_SYS_RC_* for SAPI errors.
  */
- TSS2_RC
+TSS2_RC
 iesys_decrypt_param(ESYS_CONTEXT * esys_context,
                     const uint8_t * rpBuffer, size_t rpBuffer_size)
 {
@@ -925,12 +925,12 @@ iesys_compute_session_value(RSRC_NODE_T * session,
     /* Then if we are a bound session, the auth value is not appended to the end
        of the session value for HMAC computation. The size of the key will not be
        increased.*/
-   if (iesys_is_object_bound(name, auth_value,
+    if (iesys_is_object_bound(name, auth_value,
                               session) &&
         /* type_policy_session set to POLICY_AUTH by command PolicyAuthValue */
         (session->rsrc.misc.rsrc_session.type_policy_session != POLICY_AUTH))
         return;
-   session->rsrc.misc.rsrc_session.sizeHmacValue += auth_value->size;
+    session->rsrc.misc.rsrc_session.sizeHmacValue += auth_value->size;
 }
 
 /**

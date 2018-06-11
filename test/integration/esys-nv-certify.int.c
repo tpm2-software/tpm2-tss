@@ -185,7 +185,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         &signature);
     goto_if_error(r, "Error: NV_Certify", error);
 
-   r = Esys_NV_UndefineSpace(esys_context,
+    r = Esys_NV_UndefineSpace(esys_context,
                               ESYS_TR_RH_OWNER,
                               nvHandle_handle,
                               ESYS_TR_PASSWORD,

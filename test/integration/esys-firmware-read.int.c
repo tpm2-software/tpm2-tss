@@ -26,7 +26,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         sequenceNumber,
         &fuData);
 
-   if (r == TPM2_RC_COMMAND_CODE) {
+    if (r == TPM2_RC_COMMAND_CODE) {
         LOG_INFO("Command TPM2_FieldUpgradeData not supported by TPM.");
         r = 77; /* Skip */
         goto error;

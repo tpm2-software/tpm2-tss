@@ -132,17 +132,17 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TPM2B_ATTEST *timeInfo;
     TPMT_SIGNATURE *signature;
 
-     r = Esys_GetTime (
-         esys_context,
-         privacyAdminHandle,
-         signHandle,
-         ESYS_TR_PASSWORD,
-         ESYS_TR_PASSWORD,
-         ESYS_TR_NONE,
-         &qualifyingData,
-         &inScheme,
-         &timeInfo,
-         &signature);
+    r = Esys_GetTime (
+        esys_context,
+        privacyAdminHandle,
+        signHandle,
+        ESYS_TR_PASSWORD,
+        ESYS_TR_PASSWORD,
+        ESYS_TR_NONE,
+        &qualifyingData,
+        &inScheme,
+        &timeInfo,
+        &signature);
     if (r == TPM2_RC_COMMAND_CODE) {
         LOG_INFO("Command TPM2_GetTime not supported by TPM.");
         r = Esys_FlushContext(esys_context, signHandle);
