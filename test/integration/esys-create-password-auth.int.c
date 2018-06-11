@@ -25,24 +25,24 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     uint32_t r = 0;
 
-   TPM2B_AUTH authValuePrimary = {
+    TPM2B_AUTH authValuePrimary = {
         .size = 5,
         .buffer = {1, 2, 3, 4, 5}
     };
 
-   TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
-       .size = 4,
-       .sensitive = {
-           .userAuth = {
+    TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
+        .size = 4,
+        .sensitive = {
+            .userAuth = {
                 .size = 0,
                 .buffer = {0 },
             },
-           .data = {
+            .data = {
                 .size = 0,
                 .buffer = {0},
             },
-       },
-   };
+        },
+    };
 
     inSensitivePrimary.sensitive.userAuth = authValuePrimary;
 

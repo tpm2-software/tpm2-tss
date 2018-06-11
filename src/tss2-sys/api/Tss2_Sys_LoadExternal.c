@@ -42,15 +42,15 @@ TSS2_RC Tss2_Sys_LoadExternal_Prepare(
     if (rval)
         return rval;
 
-   rval = Tss2_MU_TPM2B_PUBLIC_Marshal(inPublic, ctx->cmdBuffer,
-                                       ctx->maxCmdSize,
-                                       &ctx->nextData);
+    rval = Tss2_MU_TPM2B_PUBLIC_Marshal(inPublic, ctx->cmdBuffer,
+                                        ctx->maxCmdSize,
+                                        &ctx->nextData);
     if (rval)
         return rval;
 
-   rval = Tss2_MU_UINT32_Marshal(hierarchy, ctx->cmdBuffer,
-                                 ctx->maxCmdSize,
-                                 &ctx->nextData);
+    rval = Tss2_MU_UINT32_Marshal(hierarchy, ctx->cmdBuffer,
+                                  ctx->maxCmdSize,
+                                  &ctx->nextData);
     if (rval)
         return rval;
 

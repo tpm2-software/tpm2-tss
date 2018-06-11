@@ -78,7 +78,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         },
     };
 
-   TPM2B_AUTH authValuePrimary = {
+    TPM2B_AUTH authValuePrimary = {
         .size = 5,
         .buffer = {1, 2, 3, 4, 5}
     };

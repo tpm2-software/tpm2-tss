@@ -99,8 +99,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-   r = Esys_TR_SetAuth(esys_context, primaryHandle_handle, &authValuePrimary);
-   goto_if_error(r, "Error esys TR_SetAuth ", error);
+    r = Esys_TR_SetAuth(esys_context, primaryHandle_handle, &authValuePrimary);
+    goto_if_error(r, "Error esys TR_SetAuth ", error);
 
     TPM2B_AUTH authKey2 = {
         .size = 6,
@@ -187,7 +187,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                     &creationData2, &creationHash2, &creationTicket2);
     goto_if_error(r, "Error esys create ", error);
 
-   ESYS_TR loadedKeyHandle;
+    ESYS_TR loadedKeyHandle;
 
     r = Esys_Load(esys_context,
                   primaryHandle_handle,
