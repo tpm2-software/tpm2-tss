@@ -46,7 +46,7 @@ test_invoke_esapi(ESYS_CONTEXT * ectx)
 
     ESYS_TR primaryHandle;
     ESYS_TR keyHandle;
-    
+
     TPM2B_NAME *name1, *name2;
 
     TPM2B_AUTH authValuePrimary = {

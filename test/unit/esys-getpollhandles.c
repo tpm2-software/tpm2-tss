@@ -116,7 +116,7 @@ setup(void **state)
         return (int)r;
     r = Esys_Initialize(&ectx, tcti, NULL);
     *state = (void *)ectx;
-    return (int)r;    
+    return (int)r;
 }
 
 static int
