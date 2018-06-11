@@ -179,8 +179,8 @@ iesys_compute_encrypt_nonce(ESYS_CONTEXT * esys_context,
             if (session->rsrc.misc.rsrc_session.
                 sessionAttributes & TPMA_SESSION_ENCRYPT) {
                 if (*encryptNonce != NULL) {
-		    /* Encrypt nonce already found */
-		    return_error(TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS,
+            /* Encrypt nonce already found */
+            return_error(TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS,
                                  "More than one encrypt session");
                 }
                 *encryptNonceIdx = i;

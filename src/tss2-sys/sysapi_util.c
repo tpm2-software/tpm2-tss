@@ -58,7 +58,7 @@ TSS2_RC CommonPreparePrologue(
     _TSS2_SYS_CONTEXT_BLOB *ctx,
     TPM2_CC commandCode)
 {
-	int numCommandHandles;
+    int numCommandHandles;
     TSS2_RC rval;
 
     if (!ctx)
