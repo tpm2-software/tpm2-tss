@@ -13,9 +13,9 @@
 #define TSS_SAPI_FIRST_VERSION 108
 
 #define goto_error_if_not_failed(rc,msg,label)                          \
-	if (rc == TSS2_RC_SUCCESS) {                                        \
-		LOG_ERROR("Error %s (%x) in Line %i: \n", msg, __LINE__, rc);   \
-		goto label; }
+    if (rc == TSS2_RC_SUCCESS) {                                        \
+        LOG_ERROR("Error %s (%x) in Line %i: \n", msg, __LINE__, rc);   \
+        goto label; }
 
 /*
  * This is the prototype for all integration tests in the tpm2-tss

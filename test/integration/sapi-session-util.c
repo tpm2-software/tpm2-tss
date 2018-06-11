@@ -470,7 +470,7 @@ UINT32 tpm_handle_to_name(
                 return TSS2_SYS_RC_GENERAL_FAILURE;
 
             public.size = 0;
-			rval = Tss2_Sys_ReadPublic(sysContext, handle, 0,
+            rval = Tss2_Sys_ReadPublic(sysContext, handle, 0,
                                        &public, name, &qualified_name, 0);
             sapi_teardown(sysContext);
             break;

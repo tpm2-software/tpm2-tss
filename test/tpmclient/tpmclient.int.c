@@ -90,7 +90,7 @@ static void ErrorHandler(UINT32 rval, char *errorString, int errorStringSize)
         default:
             strcpy(levelString, "Unknown Level");
             break;
-	}
+    }
 
     snprintf(errorString, errorStringSize, "%s Error: 0x%x\n", levelString, rval);
 }
@@ -117,24 +117,24 @@ static void InitSysContextFailure()
     if ((rval) != TPM2_RC_SUCCESS) {      \
       ErrorHandler((rval), error_string, strlen(error_string)); \
       LOG_INFO("passing case: \tFAILED!  %s (%s@%u)",  \
-		       error_string, __FUNCTION__, __LINE__ ); \
+               error_string, __FUNCTION__, __LINE__ ); \
       Cleanup(); \
     } else {     \
       LOG_INFO("passing case: \tPASSED! (%s@%u)", \
-		       __FUNCTION__, __LINE__);	\
+               __FUNCTION__, __LINE__); \
     } \
   }
 
 #define CheckFailed(rval, expected_rval) { \
     char error_string[200];             \
-    if ((rval) != (expected_rval)) {	\
+    if ((rval) != (expected_rval)) {    \
       ErrorHandler((rval), error_string, strlen(error_string)); \
       LOG_INFO("\tfailing case: FAILED! %s  Ret code s/b: 0x%x, but was: 0x%x (%s@%u)", \
                error_string, (expected_rval), (rval), __FUNCTION__, __LINE__ ); \
       Cleanup(); \
     } else { \
       LOG_INFO("\tfailing case: PASSED! (%s@%u)", \
-		   __FUNCTION__, __LINE__);	\
+           __FUNCTION__, __LINE__); \
     } \
   }
 
@@ -1099,7 +1099,7 @@ static TSS2_RC CreateDataBlob( TSS2_SYS_CONTEXT *sysContext, SESSION **policySes
     TPM2B_DIGEST creationHash;
     TPMT_TK_CREATION creationTicket;
     TPM2B_NAME srkName, blobName;
-	TPM2B_DIGEST data;
+    TPM2B_DIGEST data;
     TPM2B_PRIVATE outPrivate;
 
     TSS2L_SYS_AUTH_COMMAND cmdAuthArray = { .count = 1, .auths = {{
@@ -2632,8 +2632,8 @@ static void GetContextSizeTests()
     rval = Tss2_Sys_Startup(testSysContext, TPM2_SU_CLEAR);
     CheckPassed(rval);
 
-	rval = Tss2_Sys_GetTestResult_Prepare(testSysContext);
-	CheckPassed(rval);
+    rval = Tss2_Sys_GetTestResult_Prepare(testSysContext);
+    CheckPassed(rval);
 
     sapi_teardown(testSysContext);
 }
@@ -2676,7 +2676,7 @@ static void GetSetEncryptParamTests()
         .sessionHandle = TPM2_RS_PW }}};
 
     TPM2B_MAX_NV_BUFFER nvReadData;
-    const uint8_t 		*cpBuffer;
+    const uint8_t       *cpBuffer;
 
     LOG_INFO("GET/SET ENCRYPT PARAM TESTS:" );
 
@@ -2715,13 +2715,13 @@ static void GetSetEncryptParamTests()
 
     /* NOTE: add GetCpBuffer tests here, just because it's easier. */
     rval = Tss2_Sys_GetCpBuffer( 0, (size_t *)4, (const uint8_t **)4 );
-	CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); /* #6 */
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); /* #6 */
 
     rval = Tss2_Sys_GetCpBuffer( sysContext, (size_t *)0, (const uint8_t **)4 );
-	CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); /* #7 */
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); /* #7 */
 
     rval = Tss2_Sys_GetCpBuffer( sysContext, (size_t *)4, (const uint8_t **)0 );
-	CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); /* #8 */
+    CheckFailed( rval, TSS2_SYS_RC_BAD_REFERENCE ); /* #8 */
 
 
     rval = Tss2_Sys_SetCmdAuths( sysContext, &sessionsData );
@@ -2745,7 +2745,7 @@ static void GetSetEncryptParamTests()
      * because it's easier to do this way.
      */
     rval = Tss2_Sys_GetCpBuffer( sysContext, (size_t *)4, &cpBuffer );
-	CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); /* #13 */
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); /* #13 */
 
     /*
      * Now finish the write command so that TPM isn't stuck trying
