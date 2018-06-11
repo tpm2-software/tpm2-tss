@@ -151,7 +151,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TPM2B_ECC_POINT *L;
     TPM2B_ECC_POINT *E;
     UINT16 counter;
-    r = Esys_Commit(esys_context, eccHandle, 
+    r = Esys_Commit(esys_context, eccHandle,
                     session, ESYS_TR_NONE, ESYS_TR_NONE,
                     &P1, &s2, &y2,
                     &K, &L, &E, &counter);

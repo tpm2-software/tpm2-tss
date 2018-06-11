@@ -82,7 +82,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
         }
         return 77; /* skip */
     }
-        
+
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed to encrypt buffer: 0x%" PRIx32 "", rc);
         exit(1);
