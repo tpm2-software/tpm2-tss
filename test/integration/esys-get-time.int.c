@@ -63,7 +63,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                     .symmetric = {
                         .algorithm = TPM2_ALG_NULL,
                         .keyBits.aes = 128,
-                        .mode.aes = TPM2_ALG_ECB,
+                        .mode.aes = TPM2_ALG_CFB,
                         },
                     .scheme = {
                          .scheme = TPM2_ALG_RSASSA,
