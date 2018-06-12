@@ -205,6 +205,22 @@ r = Esys_NV_Read(
        LOG_ERROR("Error: nv read name not equal");
        goto error;
    }
+
+    r = Esys_NV_UndefineSpace(
+        esys_context,
+        ESYS_TR_RH_OWNER,
+        nvHandle_handle,
+#ifdef TEST_SESSION
+        session,
+#else
+        ESYS_TR_PASSWORD,
+#endif
+        ESYS_TR_NONE,
+        ESYS_TR_NONE
+        );
+
+    goto_if_error(r, "Error esys undefine nv space", error);
+
    return 0;
 
  error:
