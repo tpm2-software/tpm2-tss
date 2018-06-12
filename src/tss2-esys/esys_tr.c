@@ -83,6 +83,7 @@ Esys_TR_Deserialize(ESYS_CONTEXT * esys_context,
     size_t offset = 0;
 
     _ESYS_ASSERT_NON_NULL(esys_context);
+    *esys_handle = esys_context->esys_handle_cnt++;
     r = esys_CreateResourceObject(esys_context, *esys_handle, &esys_object);
     return_if_error(r, "Get resource object");
 
