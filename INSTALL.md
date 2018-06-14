@@ -180,6 +180,13 @@ $ docker rm temp
 
 tpm2-tss is now in your working directory and contains all the built files.
 
+To rebuild using your local changes mount your tmp2-tss directory as a volume.
+
+```console
+$ docker run --rm -ti -v $PWD:/tmp/tpm2-tss tpm2-tss \
+  sh -c 'make clean && make -j$(nproc) check'
+```
+
 ## Doxygen Documentation
 
 To build Doxygen documentation files, first install package Doxygen.
