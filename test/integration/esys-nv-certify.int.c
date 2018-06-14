@@ -100,7 +100,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    ESYS_TR signHandle;
+    ESYS_TR signHandle = ESYS_TR_NONE;
     TPM2B_PUBLIC *outPublic;
     TPM2B_CREATION_DATA *creationData;
     TPM2B_DIGEST *creationHash;
@@ -113,7 +113,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                            &creationHash, &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-    ESYS_TR nvHandle_handle;
+    ESYS_TR nvHandle = ESYS_TR_NONE;
     TPM2B_AUTH auth = {.size = 20,
                        .buffer={10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
                                 20, 21, 22, 23, 24, 25, 26, 27, 28, 29}};
@@ -146,7 +146,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                             ESYS_TR_NONE,
                             &auth,
                             &publicInfo,
-                            &nvHandle_handle);
+                            &nvHandle);
     goto_if_error(r, "Error esys define nv space", error);
 
     UINT16 offset = 0;
@@ -155,8 +155,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                                                   1, 2, 3, 4, 5, 6, 7, 8, 9}};
 
     r = Esys_NV_Write(esys_context,
-                      nvHandle_handle,
-                      nvHandle_handle,
+                      nvHandle,
+                      nvHandle,
                       ESYS_TR_PASSWORD,
                       ESYS_TR_NONE,
                       ESYS_TR_NONE,
@@ -173,7 +173,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         esys_context,
         signHandle,
         ESYS_TR_RH_OWNER,
-        nvHandle_handle,
+        nvHandle,
         ESYS_TR_PASSWORD,
         ESYS_TR_PASSWORD,
         ESYS_TR_NONE,
@@ -187,7 +187,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     r = Esys_NV_UndefineSpace(esys_context,
                               ESYS_TR_RH_OWNER,
-                              nvHandle_handle,
+                              nvHandle,
                               ESYS_TR_PASSWORD,
                               ESYS_TR_NONE,
                               ESYS_TR_NONE
