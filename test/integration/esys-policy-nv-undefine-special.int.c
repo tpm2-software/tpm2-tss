@@ -71,7 +71,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                              );
     goto_if_error(r, "Error: PolicyGetDigest", error);
 
-    ESYS_TR nvHandle_handle;
+    ESYS_TR nvHandle;
     TPM2B_AUTH auth = {.size = 20,
                        .buffer={10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
                                 20, 21, 22, 23, 24, 25, 26, 27, 28, 29}};
@@ -103,7 +103,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                             ESYS_TR_NONE,
                             &auth,
                             &publicInfo,
-                            &nvHandle_handle);
+                            &nvHandle);
 
     goto_if_error(r, "Error esys define nv space", error);
 
@@ -143,7 +143,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: PolicyCommandCode", error);
 
     r = Esys_NV_UndefineSpaceSpecial(esys_context,
-                                     nvHandle_handle,
+                                     nvHandle,
                                      ESYS_TR_RH_PLATFORM,
                                      policySession,
                                      ESYS_TR_PASSWORD,

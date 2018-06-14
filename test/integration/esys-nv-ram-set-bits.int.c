@@ -42,7 +42,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: During initialization of session", error);
 #endif /* TEST_SESSION */
 
-    ESYS_TR nvHandle_handle;
+    ESYS_TR nvHandle = ESYS_TR_NONE;
     TPM2B_AUTH auth = {.size = 20,
                        .buffer={10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
                                 20, 21, 22, 23, 24, 25, 26, 27, 28, 29}};
@@ -79,7 +79,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                             ESYS_TR_NONE,
                             &auth,
                             &publicInfo,
-                            &nvHandle_handle);
+                            &nvHandle);
 
     goto_if_error(r, "Error esys define nv space", error);
 
@@ -87,7 +87,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TPM2B_NAME *nvName;
 
     r = Esys_NV_ReadPublic(esys_context,
-                           nvHandle_handle,
+                           nvHandle,
                            ESYS_TR_NONE,
                            ESYS_TR_NONE,
                            ESYS_TR_NONE,
@@ -97,7 +97,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     RSRC_NODE_T *nvHandleNode;
 
-    r = esys_GetResourceObject(esys_context, nvHandle_handle, &nvHandleNode);
+    r = esys_GetResourceObject(esys_context, nvHandle, &nvHandleNode);
     goto_if_error(r, "Error: nv get resource object", error);
 
     if (nvName->size != nvHandleNode->rsrc.name.size ||
@@ -109,8 +109,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     UINT64 bits = 0x0102030405060708;
 
     r = Esys_NV_SetBits(esys_context,
-                        nvHandle_handle,
-                        nvHandle_handle,
+                        nvHandle,
+                        nvHandle,
 #ifdef TEST_SESSION
                         session,
 #else
@@ -123,7 +123,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error esys nv write", error);
 
     r = Esys_NV_ReadPublic(esys_context,
-                           nvHandle_handle,
+                           nvHandle,
                            ESYS_TR_NONE,
                            ESYS_TR_NONE,
                            ESYS_TR_NONE,
@@ -131,7 +131,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                            &nvName);
     goto_if_error(r, "Error: nv read public", error);
 
-    r = esys_GetResourceObject(esys_context, nvHandle_handle, &nvHandleNode);
+    r = esys_GetResourceObject(esys_context, nvHandle, &nvHandleNode);
     goto_if_error(r, "Error: nv get resource object", error);
 
     if (nvName->size != nvHandleNode->rsrc.name.size ||
@@ -143,8 +143,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TPM2B_MAX_NV_BUFFER *nv_test_data;
 
     r = Esys_NV_Read(esys_context,
-                     nvHandle_handle,
-                     nvHandle_handle,
+                     nvHandle,
+                     nvHandle,
 #ifdef TEST_SESSION
                      session,
 #else
@@ -159,7 +159,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error esys nv read", error);
 
     r = Esys_NV_ReadPublic(esys_context,
-                           nvHandle_handle,
+                           nvHandle,
                            ESYS_TR_NONE,
                            ESYS_TR_NONE,
                            ESYS_TR_NONE,
@@ -167,7 +167,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                            &nvName);
     goto_if_error(r, "Error: nv read public", error);
 
-    r = esys_GetResourceObject(esys_context, nvHandle_handle, &nvHandleNode);
+    r = esys_GetResourceObject(esys_context, nvHandle, &nvHandleNode);
     goto_if_error(r, "Error: nv get resource object", error);
 
     if (nvName->size != nvHandleNode->rsrc.name.size ||
@@ -178,7 +178,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     r = Esys_NV_UndefineSpace(esys_context,
                               ESYS_TR_RH_OWNER,
-                              nvHandle_handle,
+                              nvHandle,
 #ifdef TEST_SESSION
                               session,
 #else
