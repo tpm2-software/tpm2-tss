@@ -4,9 +4,12 @@
  * All rights reserved.
  *******************************************************************************/
 
+#include <stdlib.h>
+
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
+#include "test-esapi.h"
 #define LOGMODULE test
 #include "util/log.h"
 
@@ -15,7 +18,8 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
-    uint32_t r = 0;
+    TSS2_RC r;
+    int failure_return = EXIT_FAILURE;
 
     UINT32 algorithmSet = 0;
 
@@ -26,10 +30,17 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         ESYS_TR_NONE,
         ESYS_TR_NONE,
         algorithmSet);
+
+    if (r == (TPM2_RC_BAD_AUTH | TPM2_RC_S | TPM2_RC_1)) {
+        /* Platform authorization not possible test will be skipped */
+        LOG_WARNING("Platform authorization not possible.");
+        failure_return = EXIT_SKIP;
+    }
+
     goto_if_error(r, "Error: SetAlgorithmSet", error);
 
-    return 0;
+    return EXIT_SUCCESS;
 
  error:
-    return r;
+    return failure_return;
 }

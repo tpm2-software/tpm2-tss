@@ -18,7 +18,7 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
-    uint32_t r;
+    TSS2_RC r;
     ESYS_TR session;
     TPMT_SYM_DEF symmetric = {
         .algorithm = TPM2_ALG_AES,

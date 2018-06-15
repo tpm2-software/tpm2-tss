@@ -31,7 +31,7 @@ cmp_policy_digest(ESYS_CONTEXT * esys_context,
                   char *comment, bool flush_session)
 {
 
-    uint32_t r = 0;
+    TSS2_RC r;
     TPM2B_DIGEST *policyDigest;
 
     r = Esys_PolicyGetDigest(esys_context,
@@ -66,7 +66,7 @@ cmp_policy_digest(ESYS_CONTEXT * esys_context,
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
-    uint32_t r = 0;
+    TSS2_RC r;
 
     /* Dummy parameters for trial sessoin  */
     ESYS_TR sessionTrial;

@@ -4,6 +4,8 @@
  * All rights reserved.
  *******************************************************************************/
 
+#include <stdlib.h>
+
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
@@ -19,7 +21,7 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
-    uint32_t r = 0;
+    TSS2_RC r;
 
     ESYS_TR auth_handle = ESYS_TR_RH_PLATFORM;
     TPMI_YES_NO disable = TPM2_YES;
@@ -54,8 +56,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     goto_if_error(r, "Error: ClearControl", error);
 
-    return 0;
+    return EXIT_SUCCESS;
 
  error:
-    return 1;
+    return EXIT_FAILURE;
 }

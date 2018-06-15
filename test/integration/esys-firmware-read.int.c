@@ -4,9 +4,12 @@
  * All rights reserved.
  *******************************************************************************/
 
+#include <stdlib.h>
+
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
+#include "test-esapi.h"
 #define LOGMODULE test
 #include "util/log.h"
 
@@ -14,7 +17,8 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
-    uint32_t r = 0;
+    TSS2_RC r;
+    int failure_return = EXIT_FAILURE;
 
     UINT32 sequenceNumber = 0;
     TPM2B_MAX_BUFFER *fuData;
@@ -28,13 +32,13 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     if (r == TPM2_RC_COMMAND_CODE) {
         LOG_INFO("Command TPM2_FieldUpgradeData not supported by TPM.");
-        r = 77; /* Skip */
+        failure_return = EXIT_SKIP;
         goto error;
     }
     goto_if_error(r, "Error: FirmwareRead", error);
 
-    return 0;
+    return EXIT_SUCCESS;
 
  error:
-    return r;
+    return failure_return;
 }

@@ -4,6 +4,8 @@
  * rights reserved.
  *******************************************************************************/
 
+#include <stdlib.h>
+
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
@@ -24,7 +26,7 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
-    uint32_t r = 0;
+    TSS2_RC r;
     /*
      * Firth the policy value for changing the auth value of an NV index has to be
      * determined with a policy trial session.
@@ -166,8 +168,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                               );
     goto_if_error(r, "Error: NV_UndefineSpace", error);
 
-    return 0;
+    return EXIT_SUCCESS;
 
  error:
-    return 1;
+    return EXIT_FAILURE;
 }

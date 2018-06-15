@@ -4,10 +4,13 @@
  * All rights reserved.
  *******************************************************************************/
 
+#include <stdlib.h>
+
 #include "tss2_esys.h"
 #include "tss2_mu.h"
 
 #include "esys_iutil.h"
+#include "test-esapi.h"
 #define LOGMODULE test
 #include "util/log.h"
 
@@ -20,7 +23,9 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
-    uint32_t r = 0;
+
+    TSS2_RC r;
+    int failure_return = EXIT_FAILURE;
 
 #ifdef TEST_SESSION
     ESYS_TR session;
@@ -207,30 +212,26 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         &outPublic2
         );
     if (r == TPM2_RC_COMMAND_CODE) {
-        LOG_INFO("Command TPM2_CreateLoaded not supported by TPM.");
-
-        r = Esys_FlushContext(esys_context, primaryHandle_handle);
-        goto_if_error(r, "Flushing context", error);
-
-        r = 77; /* Skip */
+        LOG_WARNING("Command TPM2_CreateLoaded not supported by TPM.");
+        failure_return = EXIT_SKIP;
         goto error;
-    } else {
-        goto_if_error(r, "Error During CreateLoaded", error);
-
-        r = Esys_FlushContext(esys_context, primaryHandle_handle);
-        goto_if_error(r, "Flushing context", error);
-
-        r = Esys_FlushContext(esys_context, objectHandle_handle);
-        goto_if_error(r, "Flushing context", error);
     }
+
+    goto_if_error(r, "Error During CreateLoaded", error);
+
+    r = Esys_FlushContext(esys_context, primaryHandle_handle);
+    goto_if_error(r, "Flushing context", error);
+
+    r = Esys_FlushContext(esys_context, objectHandle_handle);
+    goto_if_error(r, "Flushing context", error);
 
 #ifdef TEST_SESSION
     r = Esys_FlushContext(esys_context, session);
     goto_if_error(r, "Error: FlushContext", error);
 #endif
 
-    return 0;
+    return EXIT_SUCCESS;
 
  error:
-    return r;
+    return failure_return;
 }

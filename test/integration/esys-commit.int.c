@@ -4,6 +4,8 @@
  * All rights reserved.
  *******************************************************************************/
 
+#include <stdlib.h>
+
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
@@ -19,7 +21,7 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
-    uint32_t r;
+    TSS2_RC r;
     ESYS_TR session;
     TPMT_SYM_DEF symmetric = {
         .algorithm = TPM2_ALG_AES,
@@ -142,9 +144,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, session);
     goto_if_error(r, "Error: FlushContext", error);
 
-    return 0;
+    return EXIT_SUCCESS;
 
  error:
     LOG_ERROR("\nError Code: %x\n", r);
-    return 1;
+    return EXIT_FAILURE;
 }

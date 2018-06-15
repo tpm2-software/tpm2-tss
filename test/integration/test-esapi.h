@@ -11,6 +11,8 @@
 #define TSS_SAPI_FIRST_FAMILY 2
 #define TSS_SAPI_FIRST_LEVEL 1
 #define TSS_SAPI_FIRST_VERSION 108
+#define EXIT_SKIP 77
+#define EXIT_XFAIL 99
 
 #define goto_error_if_not_failed(rc,msg,label)                          \
     if (rc == TSS2_RC_SUCCESS) {                                        \

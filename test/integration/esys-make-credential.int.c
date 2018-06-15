@@ -4,6 +4,8 @@
  * rights reserved.
  *******************************************************************************/
 
+#include <stdlib.h>
+
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
@@ -23,7 +25,7 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
-    uint32_t r = 0;
+    TSS2_RC r;
 
 #ifdef TEST_SESSION
     ESYS_TR session;
@@ -353,8 +355,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, loadedKeyHandle);
     goto_if_error(r, "Error esys flush context", error);
 
-    return 0;
+    return EXIT_SUCCESS;
 
  error:
-    return 1;
+    return EXIT_FAILURE;
 }

@@ -4,9 +4,12 @@
  * All rights reserved.
  *******************************************************************************/
 
+#include <stdlib.h>
+
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
+#include "test-esapi.h"
 #define LOGMODULE test
 #include "util/log.h"
 
@@ -22,7 +25,8 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
-    uint32_t r = 0;
+    TSS2_RC r;
+    int failure_return = EXIT_FAILURE;
 
     /* Compute a signing key */
     TPM2B_AUTH authValuePrimary = {
@@ -163,6 +167,13 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         &inScheme,
         &auditInfo,
         &signature);
+
+    if (r == TPM2_RC_COMMAND_CODE) {
+        LOG_WARNING("Command TPM2_GetCommandAuditDigest not supported by TPM.");
+        failure_return = EXIT_SKIP;
+        goto error;
+    }
+
     goto_if_error(r, "Error: GetCommandAuditDigest", error);
 
     r = Esys_GetSessionAuditDigest(
@@ -192,6 +203,14 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         auditAlg,
         &setList,
         &clearList);
+
+    if (r == (TPM2_RC_BAD_AUTH | TPM2_RC_S | TPM2_RC_1)) {
+        /* Platform authorization not possible test will be skipped */
+        LOG_WARNING("Platform authorization not possible.");
+        failure_return =  EXIT_SKIP;
+        goto error;
+    }
+
     goto_if_error(r, "Error: SetCommandCodeAuditStatus", error);
 
     r = Esys_FlushContext(esys_context, signHandle);
@@ -200,8 +219,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, session);
     goto_if_error(r, "Error during FlushContext", error);
 
-    return 0;
+    return EXIT_SUCCESS;
 
  error:
-    return 1;
+    return failure_return;
 }

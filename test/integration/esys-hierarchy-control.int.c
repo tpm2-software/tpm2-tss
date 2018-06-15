@@ -4,6 +4,8 @@
  * All rights reserved.
  *******************************************************************************/
 
+#include <stdlib.h>
+
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
@@ -19,7 +21,7 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
-    uint32_t r = 0;
+    TSS2_RC r;
 
     ESYS_TR authHandle_handle = ESYS_TR_RH_PLATFORM;
     TPMI_RH_ENABLES enable = TPM2_RH_OWNER;
@@ -33,6 +35,13 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         ESYS_TR_NONE,
         enable,
         state);
+
+    if (r == (TPM2_RC_BAD_AUTH | TPM2_RC_S | TPM2_RC_1)) {
+        /* Platform authorization not possible test will be skipped */
+        LOG_WARNING("Platform authorization not possible.");
+        return EXIT_SKIP;
+    }
+
     goto_if_error(r, "Error: HierarchyControl", error);
 
     ESYS_TR auth_handle = ESYS_TR_RH_OWNER;
@@ -58,8 +67,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         state);
     goto_if_error(r, "Error: HierarchyControl", error);
 
-    return 0;
+    return EXIT_SUCCESS;
 
  error:
-    return 1;
+    return EXIT_FAILURE;
 }

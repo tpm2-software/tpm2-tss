@@ -4,6 +4,8 @@
  * rights reserved.
  *******************************************************************************/
 
+#include <stdlib.h>
+
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
@@ -17,7 +19,7 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
-    uint32_t r = 0;
+    TSS2_RC r;
     TPM2_CAP                       capability = TPM2_CAP_TPM_PROPERTIES;
     UINT32                         property = TPM2_PT_LOCKOUT_COUNTER;
     UINT32                         propertyCount = 1;
@@ -32,8 +34,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     goto_if_error(r, "Error esys get capability", error);
 
-    return 0;
+    return EXIT_SUCCESS;
 
  error:
-    return 1;
+    return EXIT_FAILURE;
 }

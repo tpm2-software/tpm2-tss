@@ -21,7 +21,7 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * ectx)
 {
-    uint32_t r = 0;
+    TSS2_RC r;
 
     ESYS_TR primaryHandle;
     ESYS_TR keyHandle;
@@ -137,12 +137,12 @@ test_invoke_esapi(ESYS_CONTEXT * ectx)
     free(name1);
     free(name2);
 
-    return 0;
+    return EXIT_SUCCESS;
 
 error_name2:
     free(name2);
 error_name1:
     free(name1);
 error:
-    return 1;
+    return EXIT_FAILURE;
 }

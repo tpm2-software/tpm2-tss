@@ -4,10 +4,13 @@
  * All rights reserved.
  *******************************************************************************/
 
+#include <stdlib.h>
+
 #include "tss2_esys.h"
 #include "tss2_mu.h"
 
 #include "esys_iutil.h"
+#include "test-esapi.h"
 #define LOGMODULE test
 #include "util/log.h"
 
@@ -23,7 +26,8 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
-    uint32_t r = 0;
+    TSS2_RC r;
+    int failure_return = EXIT_FAILURE;
 
     /*
      * First the policy value to be able to use Esys_Duplicate for an object has to be
@@ -372,6 +376,12 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                     &outDuplicate,
                     &outSymSeed2);
 
+    if (r == TPM2_RC_COMMAND_CODE) {
+        LOG_WARNING("Command TPM2_Rewrap not supported by TPM.");
+        failure_return = EXIT_SKIP;
+        goto error;
+    }
+
     goto_if_error(r, "Error: Rewrap", error);
 
     r = Esys_FlushContext(esys_context, primaryHandle_handle);
@@ -383,8 +393,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, loadedKeyHandle);
     goto_if_error(r, "Flushing context", error);
 
-    return 0;
+    return EXIT_SUCCESS;
 
  error:
-    return 1;
+    return failure_return;
 }

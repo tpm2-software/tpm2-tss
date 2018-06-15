@@ -4,6 +4,8 @@
  * All rights reserved.
  *******************************************************************************/
 
+#include <stdlib.h>
+
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
@@ -11,7 +13,7 @@
 #include "util/log.h"
 
 /*
- * This test is intended to test then change of an authorization value of
+ * This test is intended to test the change of an authorization value of
  * a hierarchy.
  * To check whether the change was successful a primary key is created
  * with the handle of this hierarchy and the new authorization.
@@ -22,7 +24,7 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
-    uint32_t r = 0;
+    TSS2_RC r;
     ESYS_TR authHandle_handle = ESYS_TR_RH_OWNER;
     TPM2B_AUTH newAuth = {
         .size = 5,
@@ -137,8 +139,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                                  &emptyAuth);
     goto_if_error(r, "Error: HierarchyChangeAuth", error);
 
-    return 0;
+    return EXIT_SUCCESS;
 
 error:
-    return 1;
+    return EXIT_FAILURE;
 }

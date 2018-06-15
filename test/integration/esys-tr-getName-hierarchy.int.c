@@ -22,7 +22,7 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * ectx)
 {
-    uint32_t r = 0;
+    TSS2_RC r;
 
     TPM2B_NAME name1, *name2;
     size_t offset = 0;
@@ -40,13 +40,13 @@ test_invoke_esapi(ESYS_CONTEXT * ectx)
     {
         free(name2);
         LOG_ERROR("Names mismatch between NV_GetPublic and TR_GetName");
-        return 1;
+        return EXIT_FAILURE;
     }
 
     free(name2);
 
-    return 0;
+    return EXIT_SUCCESS;
 
  error:
-    return 1;
+    return EXIT_FAILURE;
 }
