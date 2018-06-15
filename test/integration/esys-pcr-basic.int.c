@@ -4,6 +4,8 @@
  * All rights reserved.
  *******************************************************************************/
 
+#include <stdlib.h>
+
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
@@ -18,7 +20,7 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
-    uint32_t r = 0;
+    TSS2_RC r;
 
     ESYS_TR  pcrHandle_handle = 16;
     TPML_DIGEST_VALUES digests
@@ -114,11 +116,16 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         &sizeNeeded,
         &sizeAvailable);
 
+    if (r == (TPM2_RC_BAD_AUTH | TPM2_RC_S | TPM2_RC_1)) {
+        /* Platform authorization not possible test will be skipped */
+        LOG_WARNING("Platform authorization not possible.");
+    }
+
     goto_if_error(r, "Error: PCR_Allocate", error);
 
-    return 0;
+    return EXIT_SUCCESS;
 
  error:
-    return 1;
+    return EXIT_FAILURE;
 
 }

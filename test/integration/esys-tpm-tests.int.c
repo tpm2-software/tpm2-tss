@@ -15,7 +15,7 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
-    uint32_t r = 0;
+    TSS2_RC r;
 
     esys_context->state = _ESYS_STATE_INIT;
     r = Esys_SelfTest(esys_context,
@@ -42,8 +42,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error GetTestResult did fail", error);
     free(outData);
 
-    return 0;
+    return EXIT_SUCCESS;
 
  error:
-    return 1;
+    return EXIT_FAILURE;
 }

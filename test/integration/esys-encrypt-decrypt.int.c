@@ -4,9 +4,12 @@
  * rights reserved.
  *******************************************************************************/
 
+#include <stdlib.h>
+
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
+#include "test-esapi.h"
 #define LOGMODULE test
 #include "util/log.h"
 
@@ -20,7 +23,8 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
-    uint32_t r = 0;
+    TSS2_RC r;
+    int failure_return = EXIT_FAILURE;
 
     TPM2B_AUTH authValuePrimary = {
         .size = 5,
@@ -243,6 +247,13 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         outData,
         &outData2,
         &ivOut2);
+
+    if (r == TPM2_RC_COMMAND_CODE) {
+        LOG_WARNING("Command TPM2_EncryptDecrypt not supported by TPM.");
+        failure_return = EXIT_SKIP;
+        goto error;
+    }
+
     goto_if_error(r, "Error: EncryptDecrypt", error);
 
     LOGBLOB_DEBUG(&outData2->buffer[0], outData2->size, "** Decrypted data **");
@@ -259,8 +270,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, loadedKeyHandle);
     goto_if_error(r, "Error during FlushContext", error);
 
-    return 0;
+    return EXIT_SUCCESS;
 
  error:
-    return 1;
+    return failure_return;
 }

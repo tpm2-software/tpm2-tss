@@ -4,6 +4,8 @@
  * All rights reserved.
  *******************************************************************************/
 
+#include <stdlib.h>
+
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
@@ -14,7 +16,7 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
-    uint32_t r = 0;
+    TSS2_RC r;
 
     TPMT_PUBLIC_PARMS parameters = {
         .type = TPM2_ALG_RSA,
@@ -44,8 +46,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         );
     goto_if_error(r, "Error: TestParms", error);
 
-    return 0;
+    return EXIT_SUCCESS;
 
  error:
-    return 1;
+    return EXIT_FAILURE;
 }

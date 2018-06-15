@@ -4,9 +4,12 @@
  * rights reserved.
  *******************************************************************************/
 
+#include <stdlib.h>
+
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
+#include "test-esapi.h"
 #define LOGMODULE test
 #include "util/log.h"
 
@@ -21,7 +24,8 @@
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
-    uint32_t r = 0;
+    TSS2_RC r;
+    int failure_return = EXIT_FAILURE;
     /*
      * First the policy value for NV_UndefineSpaceSpecial has to be
      * determined with a policy trial session.
@@ -149,10 +153,18 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                                      ESYS_TR_PASSWORD,
                                      ESYS_TR_NONE
                                      );
+
+    if (r == (TPM2_RC_BAD_AUTH | TPM2_RC_S | TPM2_RC_1)) {
+        /* Platform authorization not possible test will be skipped */
+        LOG_WARNING("Platform authorization not possible.");
+        failure_return = EXIT_SKIP;
+        goto error;
+    }
+
     goto_if_error(r, "Error: NV_UndefineSpace", error);
 
-    return 0;
+    return EXIT_SUCCESS;
 
  error:
-    return 1;
+    return failure_return;
 }
