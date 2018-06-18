@@ -26,6 +26,9 @@ int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
+    ESYS_TR primaryHandle = ESYS_TR_NONE;
+    ESYS_TR loadedKeyHandle1 = ESYS_TR_NONE;
+    ESYS_TR loadedKeyHandle2 = ESYS_TR_NONE;
 
     TPM2B_AUTH authValuePrimary = {
         .size = 5,
@@ -138,7 +141,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    ESYS_TR primaryHandle_handle;
     RSRC_NODE_T *primaryHandle_node;
     TPM2B_PUBLIC *outPublic;
     TPM2B_CREATION_DATA *creationData;
@@ -147,19 +149,19 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary, &inPublic,
-                           &outsideInfo, &creationPCR, &primaryHandle_handle,
+                           &outsideInfo, &creationPCR, &primaryHandle,
                            &outPublic, &creationData, &creationHash,
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-    r = esys_GetResourceObject(esys_context, primaryHandle_handle,
+    r = esys_GetResourceObject(esys_context, primaryHandle,
                                &primaryHandle_node);
     goto_if_error(r, "Error Esys GetResourceObject", error);
 
     LOG_INFO("Created Primary with handle 0x%08x...",
              primaryHandle_node->rsrc.handle);
 
-    r = Esys_TR_SetAuth(esys_context, primaryHandle_handle, &authValuePrimary);
+    r = Esys_TR_SetAuth(esys_context, primaryHandle, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
     TPM2B_AUTH authKey2 = {
@@ -250,7 +252,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TPMT_TK_CREATION *creationTicket2;
 
     r = Esys_Create(esys_context,
-                    primaryHandle_handle,
+                    primaryHandle,
                     ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                     &inSensitive2,
                     &inPublic2,
@@ -263,11 +265,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     LOG_INFO("\nSecond key created.");
 
-    ESYS_TR loadedKeyHandle1;
-    ESYS_TR loadedKeyHandle2;
-
     r = Esys_Load(esys_context,
-                  primaryHandle_handle,
+                  primaryHandle,
                   ESYS_TR_PASSWORD,
                   ESYS_TR_NONE,
                   ESYS_TR_NONE, outPrivate2, outPublic2, &loadedKeyHandle1);
@@ -282,6 +281,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     r = Esys_FlushContext(esys_context, loadedKeyHandle1);
     goto_if_error(r, "Error esys flush context", error);
+
+    loadedKeyHandle1 = ESYS_TR_NONE;
 
     r = Esys_ContextLoad(esys_context, context, &loadedKeyHandle2);
     goto_if_error(r, "Error esys context load", error);
@@ -301,8 +302,10 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                     &creationData2, &creationHash2, &creationTicket2);
     goto_if_error(r, "Error esys second create ", error);
 
-    r = Esys_FlushContext(esys_context, primaryHandle_handle);
+    r = Esys_FlushContext(esys_context, primaryHandle);
     goto_if_error(r, "Error: FlushContext", error);
+
+    primaryHandle = ESYS_TR_NONE;
 
     r = Esys_FlushContext(esys_context, loadedKeyHandle2);
     goto_if_error(r, "Error: FlushContext", error);
@@ -310,5 +313,24 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     return EXIT_SUCCESS;
 
  error:
+
+    if (loadedKeyHandle1 != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, loadedKeyHandle1) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup loadedKeyHandle1 failed.");
+        }
+    }
+
+    if (loadedKeyHandle2 != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, loadedKeyHandle2) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup loadedKeyHandle2 failed.");
+        }
+    }
+
+    if (primaryHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, primaryHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup primaryHandle failed.");
+        }
+    }
+
     return EXIT_FAILURE;
 }

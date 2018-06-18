@@ -24,6 +24,7 @@ int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
+    ESYS_TR signHandle = ESYS_TR_NONE;
     int failure_return = EXIT_FAILURE;
 
     TPM2B_AUTH authValuePrimary = {
@@ -105,7 +106,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    ESYS_TR signHandle;
     RSRC_NODE_T *primaryHandle_node;
     TPM2B_PUBLIC *outPublic;
     TPM2B_CREATION_DATA *creationData;
@@ -136,21 +136,23 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TPM2B_ATTEST *timeInfo;
     TPMT_SIGNATURE *signature;
 
-    r = Esys_GetTime (
-        esys_context,
-        privacyAdminHandle,
-        signHandle,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_NONE,
-        &qualifyingData,
-        &inScheme,
-        &timeInfo,
-        &signature);
+     r = Esys_GetTime (
+         esys_context,
+         privacyAdminHandle,
+         signHandle,
+         ESYS_TR_PASSWORD,
+         ESYS_TR_PASSWORD,
+         ESYS_TR_NONE,
+         &qualifyingData,
+         &inScheme,
+         &timeInfo,
+         &signature);
     if (r == TPM2_RC_COMMAND_CODE) {
         LOG_WARNING("Command TPM2_GetTime not supported by TPM.");
         r = Esys_FlushContext(esys_context, signHandle);
         goto_if_error(r, "Flushing context", error);
+
+        signHandle = ESYS_TR_NONE;
         failure_return = EXIT_SKIP;
         goto error;
     }
@@ -162,5 +164,11 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     return EXIT_SUCCESS;
 
  error:
+
+    if (signHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, signHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup signHandle failed.");
+        }
+    }
     return failure_return;
 }

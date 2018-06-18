@@ -22,6 +22,7 @@ int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
+    ESYS_TR signHandle = ESYS_TR_NONE;
 
     TPM2B_AUTH authValuePrimary = {
         .size = 5,
@@ -102,7 +103,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    ESYS_TR signHandle;
     TPM2B_PUBLIC *outPublic;
     TPM2B_CREATION_DATA *creationData;
     TPM2B_DIGEST *creationHash;
@@ -141,5 +141,11 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     return EXIT_SUCCESS;
 
  error:
+
+    if (signHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, signHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup signHandle failed.");
+        }
+    }
     return EXIT_FAILURE;
 }

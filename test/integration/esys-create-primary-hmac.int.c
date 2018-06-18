@@ -22,7 +22,8 @@ int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
-    ESYS_TR session;
+    ESYS_TR objectHandle = ESYS_TR_NONE;
+    ESYS_TR session = ESYS_TR_NONE;
     TPMT_SYM_DEF symmetric = { .algorithm = TPM2_ALG_NULL };
 
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
@@ -146,7 +147,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    ESYS_TR objectHandle_handle;
     RSRC_NODE_T *objectHandle_node;
     TPM2B_PUBLIC *outPublic;
     TPM2B_CREATION_DATA *creationData;
@@ -155,24 +155,42 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, session,
                            ESYS_TR_NONE, ESYS_TR_NONE, &inSensitive, &inPublic,
-                           &outsideInfo, &creationPCR, &objectHandle_handle,
+                           &outsideInfo, &creationPCR, &objectHandle,
                            &outPublic, &creationData, &creationHash,
                            &creationTicket);
     goto_if_error(r, "Error esapi create primary", error);
 
-    r = esys_GetResourceObject(esys_context, objectHandle_handle,
+    r = esys_GetResourceObject(esys_context, objectHandle,
                                &objectHandle_node);
     goto_if_error(r, "Error Esys GetResourceObject", error);
     LOG_INFO("Created Primary with TPM handle 0x%08x...",
              objectHandle_node->rsrc.handle);
 
-    r = Esys_FlushContext(esys_context, objectHandle_handle);
+    r = Esys_FlushContext(esys_context, objectHandle);
     goto_if_error(r, "Error during FlushContext", error);
 
     LOG_INFO("Done with handle 0x%08x...", objectHandle_node->rsrc.handle);
+
+    r = Esys_FlushContext(esys_context, session);
+    goto_if_error(r, "Flushing context", error);
+
     return EXIT_SUCCESS;
 
  error:
     LOG_ERROR("\nError Code: %x\n", r);
+
+    if (session != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, session) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup session failed.");
+        }
+    }
+
+    if (objectHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, objectHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup objectHandle failed.");
+        }
+    }
+
+
     return EXIT_FAILURE;
 }

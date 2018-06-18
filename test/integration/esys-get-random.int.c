@@ -32,7 +32,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     LOG_INFO("GetRandom Test Passed!");
 
-    ESYS_TR session;
+    ESYS_TR session = ESYS_TR_NONE;
     const TPMT_SYM_DEF symmetric = {
         .algorithm = TPM2_ALG_AES,
         .keyBits = {.aes = 128},
@@ -69,7 +69,13 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     LOG_INFO("GetRandom with session Test Passed!");
 
-    return 0;
+    r = Esys_FlushContext(esys_context, session);
+    if (r != TPM2_RC_SUCCESS) {
+        LOG_ERROR("FlushContext with session FAILED! Response Code : 0x%x", r);
+        goto error_cleansession;
+    }
+
+    return EXIT_SUCCESS;
 
  error_cleansession:
     r = Esys_FlushContext(esys_context, session);
@@ -77,5 +83,5 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         LOG_ERROR("FlushContext FAILED! Response Code : 0x%x", r);
     }
  error:
-    return 1;
+    return EXIT_FAILURE;
 }

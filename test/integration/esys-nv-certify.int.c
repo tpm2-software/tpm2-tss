@@ -23,6 +23,8 @@ int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
+    ESYS_TR signHandle = ESYS_TR_NONE;
+    ESYS_TR nvHandle = ESYS_TR_NONE;
     int failure_return = EXIT_FAILURE;
 
     TPM2B_AUTH authValuePrimary = {
@@ -104,7 +106,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    ESYS_TR signHandle = ESYS_TR_NONE;
     TPM2B_PUBLIC *outPublic;
     TPM2B_CREATION_DATA *creationData;
     TPM2B_DIGEST *creationHash;
@@ -117,7 +118,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                            &creationHash, &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-    ESYS_TR nvHandle = ESYS_TR_NONE;
     TPM2B_AUTH auth = {.size = 20,
                        .buffer={10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
                                 20, 21, 22, 23, 24, 25, 26, 27, 28, 29}};
@@ -211,5 +211,23 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     return EXIT_SUCCESS;
 
  error:
+
+    if (signHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, signHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup signHandle failed.");
+        }
+    }
+
+    if (nvHandle != ESYS_TR_NONE) {
+        if (Esys_NV_UndefineSpace(esys_context,
+                                  ESYS_TR_RH_OWNER,
+                                  nvHandle,
+                                  ESYS_TR_PASSWORD,
+                                  ESYS_TR_NONE,
+                                  ESYS_TR_NONE) != TSS2_RC_SUCCESS) {
+             LOG_ERROR("Cleanup nvHandle failed.");
+        }
+    }
+
     return failure_return;
 }

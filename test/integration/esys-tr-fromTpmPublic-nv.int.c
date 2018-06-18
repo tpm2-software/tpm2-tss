@@ -22,8 +22,8 @@ int
 test_invoke_esapi(ESYS_CONTEXT * ectx)
 {
     TSS2_RC r;
+    ESYS_TR nvHandle = ESYS_TR_NONE;
 
-    ESYS_TR nvHandle;
     TPM2B_NAME *name1, *name2;
     TPM2B_AUTH auth = {.size = 20,
                        .buffer={10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
@@ -85,5 +85,18 @@ error_name2:
 error_name1:
     free(name1);
 error:
+
+    if (nvHandle != ESYS_TR_NONE) {
+        if (Esys_NV_UndefineSpace(ectx,
+                                  ESYS_TR_RH_OWNER,
+                                  nvHandle,
+                                  ESYS_TR_PASSWORD,
+                                  ESYS_TR_NONE,
+                                  ESYS_TR_NONE) != TSS2_RC_SUCCESS) {
+             LOG_ERROR("Cleanup nvHandle failed.");
+        }
+    }
+
+
     return EXIT_FAILURE;
 }

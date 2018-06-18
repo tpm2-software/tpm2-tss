@@ -22,7 +22,8 @@ int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
-    ESYS_TR session;
+    ESYS_TR eccHandle = ESYS_TR_NONE;
+    ESYS_TR session = ESYS_TR_NONE;
     TPMT_SYM_DEF symmetric = {
         .algorithm = TPM2_ALG_AES,
         .keyBits = { .aes = 128 },
@@ -112,7 +113,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    ESYS_TR eccHandle;
     TPM2B_PUBLIC *outPublic;
     TPM2B_CREATION_DATA *creationData;
     TPM2B_DIGEST *creationHash;
@@ -141,12 +141,29 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, eccHandle);
     goto_if_error(r, "Flushing context", error);
 
+    eccHandle = ESYS_TR_NONE;
+
     r = Esys_FlushContext(esys_context, session);
     goto_if_error(r, "Error: FlushContext", error);
+
+    session = ESYS_TR_NONE;
 
     return EXIT_SUCCESS;
 
  error:
     LOG_ERROR("\nError Code: %x\n", r);
+
+    if (eccHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, eccHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup eccHandle failed.");
+        }
+    }
+
+    if (session != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, session) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup session failed.");
+        }
+    }
+
     return EXIT_FAILURE;
 }

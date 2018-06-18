@@ -26,9 +26,12 @@ int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
+    ESYS_TR primaryHandle = ESYS_TR_NONE;
+    ESYS_TR loadedKeyHandle = ESYS_TR_NONE;
 
 #ifdef TEST_SESSION
-    ESYS_TR session;
+    ESYS_TR session = ESYS_TR_NONE;
+    ESYS_TR session2 = ESYS_TR_NONE;
     TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,
                               .keyBits = {.aes = 128},
                               .mode = {.aes = TPM2_ALG_CFB}
@@ -51,7 +54,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                               &session);
     goto_if_error(r, "Error: During initialization of session", error);
 
-
     r = esys_GetResourceObject(esys_context, session,
                                &session_node);
     goto_if_error(r, "Error Esys GetResourceObject", error);
@@ -59,7 +61,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     LOG_INFO("Created session with handle 0x%08x...",
              session_node->rsrc.handle);
 
-    ESYS_TR session2;
     RSRC_NODE_T *session2_node;
 
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
@@ -149,7 +150,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    ESYS_TR primaryHandle_handle;
     RSRC_NODE_T *primaryHandle_node;
     TPM2B_PUBLIC *outPublic;
     TPM2B_CREATION_DATA *creationData;
@@ -158,19 +158,19 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary, &inPublic,
-                           &outsideInfo, &creationPCR, &primaryHandle_handle,
+                           &outsideInfo, &creationPCR, &primaryHandle,
                            &outPublic, &creationData, &creationHash,
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-    r = esys_GetResourceObject(esys_context, primaryHandle_handle,
+    r = esys_GetResourceObject(esys_context, primaryHandle,
                                &primaryHandle_node);
     goto_if_error(r, "Error Esys GetResourceObject", error);
 
     LOG_INFO("Created Primary with handle 0x%08x...",
              primaryHandle_node->rsrc.handle);
 
-    r = Esys_TR_SetAuth(esys_context, primaryHandle_handle, &authValuePrimary);
+    r = Esys_TR_SetAuth(esys_context, primaryHandle, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
     TPM2B_AUTH authKey2 = {
@@ -247,7 +247,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TPMT_TK_CREATION *creationTicket2;
 
     r = Esys_Create(esys_context,
-                    primaryHandle_handle,
+                    primaryHandle,
                     ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                     &inSensitive2,
                     &inPublic2,
@@ -259,8 +259,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error esys create ", error);
 
     LOG_INFO("\nSecond key created.");
-
-    ESYS_TR loadedKeyHandle;
 
     r = Esys_LoadExternal(esys_context,
                           ESYS_TR_NONE,
@@ -277,7 +275,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TPM2B_NAME *primaryKeyQualifiedName;
 
     r = Esys_ReadPublic(esys_context,
-                        primaryHandle_handle,
+                        primaryHandle,
                         ESYS_TR_NONE,
                         ESYS_TR_NONE,
                         ESYS_TR_NONE,
@@ -313,7 +311,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TPM2B_DIGEST *certInfo;
 
     r = Esys_Load(esys_context,
-                  primaryHandle_handle,
+                  primaryHandle,
 #ifdef TEST_SESSION
                   session,
 #else
@@ -329,7 +327,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: TR_SetAuth", error);
 
     r = Esys_ActivateCredential(esys_context,
-                                primaryHandle_handle,
+                                primaryHandle,
                                 loadedKeyHandle,
 
 #ifdef TEST_SESSION
@@ -349,14 +347,49 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                                 );
     goto_if_error(r, "Error: ActivateCredential", error);
 
-    r = Esys_FlushContext(esys_context, primaryHandle_handle);
+    r = Esys_FlushContext(esys_context, primaryHandle);
     goto_if_error(r, "Error during FlushContext", error);
 
     r = Esys_FlushContext(esys_context, loadedKeyHandle);
     goto_if_error(r, "Error esys flush context", error);
 
+#ifdef TEST_SESSION
+    r = Esys_FlushContext(esys_context, session);
+    goto_if_error(r, "Flushing context", error);
+
+    r = Esys_FlushContext(esys_context, session2);
+    goto_if_error(r, "Flushing context", error);
+#endif
+
     return EXIT_SUCCESS;
 
  error:
+
+#ifdef TEST_SESSION
+    if (session != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, session) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup session failed.");
+        }
+    }
+
+   if (session2 != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, session2) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup session2 failed.");
+        }
+    }
+#endif
+
+    if (loadedKeyHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, loadedKeyHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup loadedKeyHandle failed.");
+        }
+    }
+
+    if (primaryHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, primaryHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup primaryHandle failed.");
+        }
+    }
+
     return EXIT_FAILURE;
 }
