@@ -26,6 +26,8 @@ int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
+    ESYS_TR primaryHandle = ESYS_TR_NONE;
+    ESYS_TR persistent_handle1 = ESYS_TR_NONE;
 
     TPM2B_AUTH authValuePrimary = {
         .size = 5,
@@ -98,7 +100,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    ESYS_TR primaryHandle_handle;
     RSRC_NODE_T *primaryHandle_node;
     TPM2B_PUBLIC *outPublic;
     TPM2B_CREATION_DATA *creationData;
@@ -107,37 +108,36 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary, &inPublic,
-                           &outsideInfo, &creationPCR, &primaryHandle_handle,
+                           &outsideInfo, &creationPCR, &primaryHandle,
                            &outPublic, &creationData, &creationHash,
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-    r = esys_GetResourceObject(esys_context, primaryHandle_handle,
+    r = esys_GetResourceObject(esys_context, primaryHandle,
                                &primaryHandle_node);
     goto_if_error(r, "Error Esys GetResourceObject", error);
 
     LOG_INFO("Created Primary with handle 0x%08x...",
              primaryHandle_node->rsrc.handle);
 
-    r = Esys_TR_SetAuth(esys_context, primaryHandle_handle, &authValuePrimary);
+    r = Esys_TR_SetAuth(esys_context, primaryHandle, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
     TPM2_HANDLE permanentHandle = TPM2_PERSISTENT_FIRST;
-    ESYS_TR new_primary_handle1;
-    ESYS_TR new_primary_handle2;
+    ESYS_TR persistent_handle2;
 
-    r = Esys_EvictControl(esys_context, ESYS_TR_RH_OWNER, primaryHandle_handle,
+    r = Esys_EvictControl(esys_context, ESYS_TR_RH_OWNER, primaryHandle,
                           ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                          permanentHandle, &new_primary_handle1);
+                          permanentHandle, &persistent_handle1);
     goto_if_error(r, "Error Esys EvictControl", error);
 
     size_t buffer_size;
     uint8_t *buffer;
 
-    r = Esys_TR_Serialize(esys_context, new_primary_handle1, &buffer, &buffer_size);
+    r = Esys_TR_Serialize(esys_context, persistent_handle1, &buffer, &buffer_size);
     goto_if_error(r, "Error Esys_TR_Serialize", error);
 
-    r = Esys_TR_Deserialize(esys_context, buffer, buffer_size, &new_primary_handle2);
+    r = Esys_TR_Deserialize(esys_context, buffer, buffer_size, &persistent_handle2);
     goto_if_error(r, "Error Esys_TR_Deserialize", error);
 
     TPM2B_AUTH authKey2 = {
@@ -213,11 +213,11 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TPM2B_DIGEST *creationHash2;
     TPMT_TK_CREATION *creationTicket2;
 
-    r = Esys_TR_SetAuth(esys_context, new_primary_handle2, &authValuePrimary);
+    r = Esys_TR_SetAuth(esys_context, persistent_handle2, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
     r = Esys_Create(esys_context,
-                    new_primary_handle2,
+                    persistent_handle2,
                     ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                     &inSensitive2,
                     &inPublic2,
@@ -229,16 +229,32 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error esys create with new handle from evict object",
                   error);
 
-    r = Esys_FlushContext(esys_context, primaryHandle_handle);
+    r = Esys_FlushContext(esys_context, primaryHandle);
     goto_if_error(r, "Error during FlushContext", error);
 
-    r = Esys_EvictControl(esys_context, ESYS_TR_RH_OWNER, new_primary_handle1,
+    r = Esys_EvictControl(esys_context, ESYS_TR_RH_OWNER, persistent_handle1,
                           ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                          permanentHandle, &new_primary_handle1);
+                          permanentHandle, &persistent_handle1);
     goto_if_error(r, "Error Esys EvictControl", error);
 
     return EXIT_SUCCESS;
 
  error:
+
+    if (persistent_handle1 != ESYS_TR_NONE) {
+        if (Esys_EvictControl(esys_context, ESYS_TR_RH_OWNER, persistent_handle1,
+                               ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                               permanentHandle, &persistent_handle1) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup EvictControl failed");
+
+        }
+    }
+
+    if (primaryHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, primaryHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup primaryHandle failed.");
+        }
+    }
+
     return EXIT_FAILURE;
 }

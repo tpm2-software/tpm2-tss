@@ -20,7 +20,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TSS2_RC r;
 
 #ifdef TEST_SESSION
-    ESYS_TR session;
+    ESYS_TR session = ESYS_TR_NONE;
     TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,
                               .keyBits = {.aes = 128},
                               .mode = {.aes = TPM2_ALG_CFB}
@@ -65,5 +65,14 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     return EXIT_SUCCESS;
 
  error:
+
+#ifdef TEST_SESSION
+    if (session != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, session) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup session failed.");
+        }
+    }
+#endif
+
     return EXIT_FAILURE;
 }

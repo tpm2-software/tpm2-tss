@@ -23,8 +23,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
 
     TSS2_RC r;
+    ESYS_TR nvHandle = ESYS_TR_NONE;
 #ifdef TEST_SESSION
-    ESYS_TR session;
+    ESYS_TR session = ESYS_TR_NONE;
     TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,
                               .keyBits = {.aes = 128},
                               .mode = {.aes = TPM2_ALG_CFB}
@@ -46,7 +47,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: During initialization of session", error);
 #endif /* TEST_SESSION */
 
-    ESYS_TR nvHandle = ESYS_TR_NONE;
     TPM2B_AUTH auth = {.size = 20,
                        .buffer={10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
                                 20, 21, 22, 23, 24, 25, 26, 27, 28, 29}};
@@ -200,9 +200,37 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                               );
     goto_if_error(r, "Error: NV_UndefineSpace", error);
 
+#ifdef TEST_SESSION
+    r = Esys_FlushContext(esys_context, session);
+    goto_if_error(r, "Flushing context", error);
+#endif
+
     return EXIT_SUCCESS;
 
  error:
+
+    if (nvHandle != ESYS_TR_NONE) {
+        if (Esys_NV_UndefineSpace(esys_context,
+                                  ESYS_TR_RH_OWNER,
+                                  nvHandle,
+#ifdef TEST_SESSION
+                                  session,
+#else
+                                  ESYS_TR_PASSWORD,
+#endif
+                                  ESYS_TR_NONE,
+                                  ESYS_TR_NONE) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup nvHandle failed.");
+        }
+    }
+
+#ifdef TEST_SESSION
+    if (session != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, session) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup session failed.");
+        }
+    }
+#endif
 
     return EXIT_FAILURE;
 }

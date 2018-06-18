@@ -21,9 +21,10 @@ int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
+    ESYS_TR primaryHandle = ESYS_TR_NONE;
 
 #ifdef TEST_SESSION
-    ESYS_TR session;
+    ESYS_TR session = ESYS_TR_NONE;
     TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,
                               .keyBits = {.aes = 128},
                               .mode = {.aes = TPM2_ALG_CFB}
@@ -75,7 +76,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         .count = 0,
     };
 
-    ESYS_TR primaryHandle;
     TPM2B_PUBLIC *outPublic;
     TPM2B_CREATION_DATA *creationData;
     TPM2B_DIGEST *creationHash;
@@ -170,5 +170,20 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     return EXIT_SUCCESS;
 
  error:
+
+    if (primaryHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, primaryHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup primaryHandle failed.");
+        }
+    }
+
+#ifdef TEST_SESSION
+    if (session != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, session) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup session failed.");
+        }
+    }
+#endif
+
     return EXIT_FAILURE;
 }

@@ -70,7 +70,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         TPM2_ALG_SHA1,
         pcrHandle_handle);
 
-    if (r == (TPM2_RC_BAD_AUTH | TPM2_RC_S | TPM2_RC_1)) {
+    if ((r & (~TPM2_RC_N_MASK & ~TPM2_RC_H & ~TPM2_RC_S & ~TPM2_RC_P)) == TPM2_RC_BAD_AUTH) {
         /* Platform authorization not possible test will be skipped */
         LOG_WARNING("Platform authorization not possible.");
         failure_return = EXIT_SKIP;

@@ -21,6 +21,7 @@ int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
+    ESYS_TR primaryHandle = ESYS_TR_NONE;
 
     /*
      * 1. Create Primary. This primary will be used as signing key.
@@ -94,7 +95,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    ESYS_TR primaryHandle_handle;
     TPM2B_PUBLIC *outPublic;
     TPM2B_CREATION_DATA *creationData;
     TPM2B_DIGEST *creationHash;
@@ -103,7 +103,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE,
                            &inSensitivePrimary, &inPublic,
-                           &outsideInfo, &creationPCR, &primaryHandle_handle,
+                           &outsideInfo, &creationPCR, &primaryHandle,
                            &outPublic, &creationData, &creationHash,
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
@@ -112,7 +112,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TPM2B_NAME *keyQualifiedName;
 
     r = Esys_ReadPublic(esys_context,
-                        primaryHandle_handle,
+                        primaryHandle,
                         ESYS_TR_NONE,
                         ESYS_TR_NONE,
                         ESYS_TR_NONE,
@@ -142,7 +142,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     r = Esys_Sign(
         esys_context,
-        primaryHandle_handle,
+        primaryHandle,
         ESYS_TR_PASSWORD,
         ESYS_TR_NONE,
         ESYS_TR_NONE,
@@ -156,7 +156,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     r = Esys_VerifySignature(
         esys_context,
-        primaryHandle_handle,
+        primaryHandle,
         ESYS_TR_NONE,
         ESYS_TR_NONE,
         ESYS_TR_NONE,
@@ -165,11 +165,18 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         &validation);
     goto_if_error(r, "Error: Sign", error);
 
-    r = Esys_FlushContext(esys_context, primaryHandle_handle);
+    r = Esys_FlushContext(esys_context, primaryHandle);
     goto_if_error(r, "Error: FlushContext", error);
 
     return EXIT_SUCCESS;
 
  error:
+
+    if (primaryHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, primaryHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup primaryHandle failed.");
+        }
+    }
+
     return EXIT_FAILURE;
 }

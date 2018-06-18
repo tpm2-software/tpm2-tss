@@ -31,7 +31,13 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         ESYS_TR_NONE,
         algorithmSet);
 
-    if (r == (TPM2_RC_BAD_AUTH | TPM2_RC_S | TPM2_RC_1)) {
+    if (r == TPM2_RC_COMMAND_CODE) {
+        LOG_WARNING("Command TPM2_SetAlgorithmSet not supported by TPM.");
+        failure_return = EXIT_SKIP;
+        goto error;
+    }
+
+    if ((r & (~TPM2_RC_N_MASK & ~TPM2_RC_H & ~TPM2_RC_S & ~TPM2_RC_P)) == TPM2_RC_BAD_AUTH) {
         /* Platform authorization not possible test will be skipped */
         LOG_WARNING("Platform authorization not possible.");
         failure_return = EXIT_SKIP;

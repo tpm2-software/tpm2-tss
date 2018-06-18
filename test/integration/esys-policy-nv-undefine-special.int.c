@@ -25,12 +25,14 @@ int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
+    ESYS_TR nvHandle = ESYS_TR_NONE;
+    ESYS_TR policySession = ESYS_TR_NONE;
     int failure_return = EXIT_FAILURE;
     /*
      * First the policy value for NV_UndefineSpaceSpecial has to be
      * determined with a policy trial session.
      */
-    ESYS_TR sessionTrial;
+    ESYS_TR sessionTrial = ESYS_TR_NONE;
     TPMT_SYM_DEF symmetricTrial = {.algorithm = TPM2_ALG_AES,
                                    .keyBits = {.aes = 128},
                                    .mode = {.aes = TPM2_ALG_CFB}
@@ -75,7 +77,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                              );
     goto_if_error(r, "Error: PolicyGetDigest", error);
 
-    ESYS_TR nvHandle;
     TPM2B_AUTH auth = {.size = 20,
                        .buffer={10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
                                 20, 21, 22, 23, 24, 25, 26, 27, 28, 29}};
@@ -109,9 +110,15 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                             &publicInfo,
                             &nvHandle);
 
+    if ((r & (~TPM2_RC_N_MASK & ~TPM2_RC_H & ~TPM2_RC_S & ~TPM2_RC_P)) == TPM2_RC_BAD_AUTH) {
+        /* Platform authorization not possible test will be skipped */
+        LOG_WARNING("Platform authorization not possible.");
+        failure_return = EXIT_SKIP;
+        goto error;
+    }
+
     goto_if_error(r, "Error esys define nv space", error);
 
-    ESYS_TR policySession;
     TPMT_SYM_DEF policySymmetric = {.algorithm = TPM2_ALG_AES,
                                     .keyBits = {.aes = 128},
                                     .mode = {.aes = TPM2_ALG_CFB}
@@ -154,7 +161,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                                      ESYS_TR_NONE
                                      );
 
-    if (r == (TPM2_RC_BAD_AUTH | TPM2_RC_S | TPM2_RC_1)) {
+    if ((r & (~TPM2_RC_N_MASK & ~TPM2_RC_H & ~TPM2_RC_S & ~TPM2_RC_P)) == TPM2_RC_BAD_AUTH) {
         /* Platform authorization not possible test will be skipped */
         LOG_WARNING("Platform authorization not possible.");
         failure_return = EXIT_SKIP;
@@ -163,8 +170,27 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     goto_if_error(r, "Error: NV_UndefineSpace", error);
 
+    r = Esys_FlushContext(esys_context, sessionTrial);
+    goto_if_error(r, "Flushing context", error);
+
+    r = Esys_FlushContext(esys_context, policySession);
+    goto_if_error(r, "Flushing context", error);
+
     return EXIT_SUCCESS;
 
  error:
+
+    if (sessionTrial != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, sessionTrial) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup policySession failed.");
+        }
+    }
+
+    if (policySession != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, policySession) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup policySession failed.");
+        }
+    }
+
     return failure_return;
 }

@@ -24,7 +24,10 @@ int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
+    ESYS_TR primaryHandle = ESYS_TR_NONE;
+    ESYS_TR loadedKeyHandle = ESYS_TR_NONE;
     int failure_return = EXIT_FAILURE;
+
 
     TPM2B_AUTH authValuePrimary = {
         .size = 5,
@@ -96,7 +99,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    ESYS_TR primaryHandle_handle;
     TPM2B_PUBLIC *outPublic;
     TPM2B_CREATION_DATA *creationData;
     TPM2B_DIGEST *creationHash;
@@ -105,12 +107,12 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE,
                            &inSensitivePrimary, &inPublic,
-                           &outsideInfo, &creationPCR, &primaryHandle_handle,
+                           &outsideInfo, &creationPCR, &primaryHandle,
                            &outPublic, &creationData, &creationHash,
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-    r = Esys_TR_SetAuth(esys_context, primaryHandle_handle, &authValuePrimary);
+    r = Esys_TR_SetAuth(esys_context, primaryHandle, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
     TPM2B_AUTH authKey2 = {
@@ -176,7 +178,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TPMT_TK_CREATION *creationTicket2;
 
     r = Esys_Create(esys_context,
-                    primaryHandle_handle,
+                    primaryHandle,
                     ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                     &inSensitive2,
                     &inPublic2,
@@ -189,10 +191,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     LOG_INFO("AES key created.");
 
-    ESYS_TR loadedKeyHandle;
-
     r = Esys_Load(esys_context,
-                  primaryHandle_handle,
+                  primaryHandle,
                   ESYS_TR_PASSWORD,
                   ESYS_TR_NONE,
                   ESYS_TR_NONE, outPrivate2, outPublic2, &loadedKeyHandle);
@@ -230,6 +230,13 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         &inData,
         &outData,
         &ivOut);
+
+    if (r == TPM2_RC_COMMAND_CODE) {
+        LOG_WARNING("Command TPM2_EncryptDecrypt not supported by TPM.");
+        failure_return = EXIT_SKIP;
+        goto error;
+    }
+
     goto_if_error(r, "Error: EncryptDecrypt", error);
 
     TPM2B_MAX_BUFFER *outData2;
@@ -264,8 +271,10 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         goto error;
     }
 
-    r = Esys_FlushContext(esys_context, primaryHandle_handle);
+    r = Esys_FlushContext(esys_context, primaryHandle);
     goto_if_error(r, "Error during FlushContext", error);
+
+    primaryHandle = ESYS_TR_NONE;
 
     r = Esys_FlushContext(esys_context, loadedKeyHandle);
     goto_if_error(r, "Error during FlushContext", error);
@@ -273,5 +282,17 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     return EXIT_SUCCESS;
 
  error:
+
+    if (primaryHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, primaryHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup primaryHandle failed.");
+        }
+    }
+
+    if (loadedKeyHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, loadedKeyHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup loadedKeyHandle failed.");
+        }
+    }
     return failure_return;
 }

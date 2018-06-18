@@ -26,12 +26,16 @@ int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
+    ESYS_TR primaryHandle = ESYS_TR_NONE;
+    ESYS_TR primaryHandle2 = ESYS_TR_NONE;
+    ESYS_TR loadedKeyHandle = ESYS_TR_NONE;
+    ESYS_TR policySession = ESYS_TR_NONE;
 
     /*
      * Firth the policy value to be able to use Esys_Duplicate for an object has to be
      * determined with a policy trial session.
      */
-    ESYS_TR sessionTrial;
+    ESYS_TR sessionTrial = ESYS_TR_NONE;
     TPMT_SYM_DEF symmetricTrial = {.algorithm = TPM2_ALG_AES,
                                    .keyBits = {.aes = 128},
                                    .mode = {.aes = TPM2_ALG_CFB}
@@ -146,8 +150,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    ESYS_TR primaryHandle_handle;
-    ESYS_TR primaryHandle_handle2;
     RSRC_NODE_T *primaryHandle_node;
     TPM2B_PUBLIC *outPublic;
     TPM2B_CREATION_DATA *creationData;
@@ -157,7 +159,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE,
                            &inSensitivePrimary, &inPublic,
-                           &outsideInfo, &creationPCR, &primaryHandle_handle,
+                           &outsideInfo, &creationPCR, &primaryHandle,
                            &outPublic, &creationData, &creationHash,
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
@@ -165,19 +167,19 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE,
                            &inSensitivePrimary, &inPublic,
-                           &outsideInfo, &creationPCR, &primaryHandle_handle2,
+                           &outsideInfo, &creationPCR, &primaryHandle2,
                            &outPublic, &creationData, &creationHash,
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-    r = esys_GetResourceObject(esys_context, primaryHandle_handle,
+    r = esys_GetResourceObject(esys_context, primaryHandle,
                                &primaryHandle_node);
     goto_if_error(r, "Error Esys GetResourceObject", error);
 
     LOG_INFO("Created Primary with handle 0x%08x...",
              primaryHandle_node->rsrc.handle);
 
-    r = Esys_TR_SetAuth(esys_context, primaryHandle_handle, &authValuePrimary);
+    r = Esys_TR_SetAuth(esys_context, primaryHandle, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
     TPM2B_AUTH authKey2 = {
@@ -254,7 +256,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     inPublic2.publicArea.authPolicy = *policyDigestTrial;
 
     r = Esys_Create(esys_context,
-                    primaryHandle_handle,
+                    primaryHandle,
                     ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                     &inSensitive2,
                     &inPublic2,
@@ -267,10 +269,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     LOG_INFO("\nSecond key created.");
 
-    ESYS_TR loadedKeyHandle;
-
     r = Esys_Load(esys_context,
-                  primaryHandle_handle,
+                  primaryHandle,
                   ESYS_TR_PASSWORD,
                   ESYS_TR_NONE,
                   ESYS_TR_NONE, outPrivate2, outPublic2, &loadedKeyHandle);
@@ -296,7 +296,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     goto_if_error(r, "Error esys ReadPublic", error);
 
-    ESYS_TR policySession;
     TPMT_SYM_DEF policySymmetric = {.algorithm = TPM2_ALG_AES,
                                     .keyBits = {.aes = 128},
                                     .mode = {.aes = TPM2_ALG_CFB}
@@ -345,7 +344,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_Duplicate(
         esys_context,
         loadedKeyHandle,
-        primaryHandle_handle2,
+        primaryHandle2,
         policySession,
         ESYS_TR_NONE,
         ESYS_TR_NONE,
@@ -370,9 +369,15 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                         &keyQualifiedName);
     goto_if_error(r, "Error: ReadPublic", error);
 
+    r = Esys_FlushContext(esys_context, loadedKeyHandle);
+    goto_if_error(r, "Flushing context", error);
+
+    loadedKeyHandle = ESYS_TR_NONE;
+
+
     r = Esys_Import(
         esys_context,
-        primaryHandle_handle,
+        primaryHandle,
         ESYS_TR_PASSWORD,
         ESYS_TR_NONE,
         ESYS_TR_NONE,
@@ -384,17 +389,56 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         &outPrivate);
     goto_if_error(r, "Error: Import", error);
 
-    r = Esys_FlushContext(esys_context, primaryHandle_handle);
+    r = Esys_FlushContext(esys_context, primaryHandle);
     goto_if_error(r, "Flushing context", error);
 
-    r = Esys_FlushContext(esys_context, primaryHandle_handle2);
+    primaryHandle = ESYS_TR_NONE;
+
+    r = Esys_FlushContext(esys_context, primaryHandle2);
     goto_if_error(r, "Flushing context", error);
 
-    r = Esys_FlushContext(esys_context, loadedKeyHandle);
+    primaryHandle2 = ESYS_TR_NONE;
+
+    r = Esys_FlushContext(esys_context, sessionTrial);
+    goto_if_error(r, "Flushing context", error);
+
+    sessionTrial = ESYS_TR_NONE;
+
+    r = Esys_FlushContext(esys_context, policySession);
     goto_if_error(r, "Flushing context", error);
 
     return EXIT_SUCCESS;
 
  error:
+
+   if (policySession != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, policySession) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup policySession failed.");
+        }
+    }
+
+    if (sessionTrial != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, sessionTrial) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup sessionTrial failed.");
+        }
+    }
+    if (loadedKeyHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, loadedKeyHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup loadedKeyHandle failed.");
+        }
+    }
+
+   if (primaryHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, primaryHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup primaryHandle failed.");
+        }
+    }
+
+   if (primaryHandle2 != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, primaryHandle2) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup primaryHandle2 failed.");
+        }
+    }
+
     return EXIT_FAILURE;
 }

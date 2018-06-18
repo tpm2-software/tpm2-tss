@@ -25,6 +25,8 @@ int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
+    ESYS_TR primaryHandle = ESYS_TR_NONE;
+    bool auth_changed = false;
     ESYS_TR authHandle_handle = ESYS_TR_RH_OWNER;
     TPM2B_AUTH newAuth = {
         .size = 5,
@@ -43,6 +45,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                                  ESYS_TR_NONE,
                                  &newAuth);
     goto_if_error(r, "Error: HierarchyChangeAuth", error);
+
+    auth_changed = true;
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
        .size = 4,
@@ -102,7 +106,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    ESYS_TR primaryHandle_handle;
     TPM2B_PUBLIC *outPublic;
     TPM2B_CREATION_DATA *creationData;
     TPM2B_DIGEST *creationHash;
@@ -110,25 +113,27 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary, &inPublic,
-                           &outsideInfo, &creationPCR, &primaryHandle_handle,
+                           &outsideInfo, &creationPCR, &primaryHandle,
                            &outPublic, &creationData, &creationHash,
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-    r = Esys_FlushContext(esys_context, primaryHandle_handle);
+    r = Esys_FlushContext(esys_context, primaryHandle);
     goto_if_error(r, "Flushing context", error);
+
+    primaryHandle = ESYS_TR_NONE;
 
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &newAuth);
     goto_if_error(r, "Error SetAuth", error);
 
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary, &inPublic,
-                           &outsideInfo, &creationPCR, &primaryHandle_handle,
+                           &outsideInfo, &creationPCR, &primaryHandle,
                            &outPublic, &creationData, &creationHash,
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-    r = Esys_FlushContext(esys_context, primaryHandle_handle);
+    r = Esys_FlushContext(esys_context, primaryHandle);
     goto_if_error(r, "Flushing context", error);
 
     r = Esys_HierarchyChangeAuth(esys_context,
@@ -142,5 +147,26 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     return EXIT_SUCCESS;
 
 error:
+
+    if (primaryHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, primaryHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup primaryHandle failed.");
+        }
+    }
+
+    if (auth_changed) {
+        if (Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &newAuth) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Error SetAuth");
+        }
+        if (Esys_HierarchyChangeAuth(esys_context,
+                                     authHandle_handle,
+                                     ESYS_TR_PASSWORD,
+                                     ESYS_TR_NONE,
+                                     ESYS_TR_NONE,
+                                     &emptyAuth) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Error: HierarchyChangeAuth");
+        }
+    }
+
     return EXIT_FAILURE;
 }

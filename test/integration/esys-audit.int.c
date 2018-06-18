@@ -26,6 +26,8 @@ int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
+    ESYS_TR signHandle = ESYS_TR_NONE;
+    ESYS_TR session = ESYS_TR_NONE;
     int failure_return = EXIT_FAILURE;
 
     /* Compute a signing key */
@@ -104,7 +106,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    ESYS_TR signHandle;
     TPM2B_PUBLIC *outPublic;
     TPM2B_CREATION_DATA *creationData;
     TPM2B_DIGEST *creationHash;
@@ -123,7 +124,6 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     TPM2_SE sessionType = TPM2_SE_HMAC;
     TPMI_ALG_HASH authHash = TPM2_ALG_SHA256;
     TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_NULL };
-    ESYS_TR session;
 
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
@@ -204,7 +204,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         &setList,
         &clearList);
 
-    if (r == (TPM2_RC_BAD_AUTH | TPM2_RC_S | TPM2_RC_1)) {
+    if ((r & (~TPM2_RC_N_MASK & ~TPM2_RC_H & ~TPM2_RC_S & ~TPM2_RC_P)) == TPM2_RC_BAD_AUTH) {
         /* Platform authorization not possible test will be skipped */
         LOG_WARNING("Platform authorization not possible.");
         failure_return =  EXIT_SKIP;
@@ -216,11 +216,25 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, signHandle);
     goto_if_error(r, "Error: FlushContext", error);
 
+    signHandle = ESYS_TR_NONE;
+
     r = Esys_FlushContext(esys_context, session);
     goto_if_error(r, "Error during FlushContext", error);
 
     return EXIT_SUCCESS;
 
  error:
+
+    if (session != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, session) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup session failed.");
+        }
+    }
+
+    if (signHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, signHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup signHandle failed.");
+        }
+    }
     return failure_return;
 }

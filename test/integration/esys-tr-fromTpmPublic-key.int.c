@@ -22,9 +22,8 @@ int
 test_invoke_esapi(ESYS_CONTEXT * ectx)
 {
     TSS2_RC r;
-
-    ESYS_TR primaryHandle;
-    ESYS_TR keyHandle;
+    ESYS_TR primaryHandle = ESYS_TR_NONE;
+    ESYS_TR keyHandle = ESYS_TR_NONE;
 
     TPM2B_NAME *name1, *name2;
 
@@ -144,5 +143,20 @@ error_name2:
 error_name1:
     free(name1);
 error:
+
+    if (keyHandle != ESYS_TR_NONE) {
+        if (Esys_EvictControl(ectx, ESYS_TR_RH_OWNER, keyHandle,
+                              ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                              TPM2_PERSISTENT_FIRST, &keyHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup: EvictControl delete");
+        }
+    }
+
+    if (primaryHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(ectx, primaryHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup primaryHandle failed.");
+        }
+    }
+
     return EXIT_FAILURE;
 }
