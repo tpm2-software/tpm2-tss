@@ -148,7 +148,7 @@ tcti_device_receive (
      * operation. If we try to read again before sending another command
      * the kernel will close the file descriptor and we'll get an EOF.
      */
-    size = TEMP_RETRY (read (tcti_dev->fd, response_buffer, *response_size));
+    TEMP_RETRY (size, read (tcti_dev->fd, response_buffer, *response_size));
     if (size < 0) {
         LOG_ERROR ("Failed to read response from fd %d, got errno %d: %s",
                    tcti_dev->fd, errno, strerror (errno));

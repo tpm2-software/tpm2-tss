@@ -6,11 +6,14 @@
 #include <errno.h>
 #include <inttypes.h>
 #include <limits.h>
+#include <string.h>
+#include <stdio.h>
+
+#ifndef _WIN32
 #include <netdb.h>
 #include <netinet/in.h>
-#include <string.h>
 #include <unistd.h>
-#include <stdio.h>
+#endif
 
 #include "tss2_tpm2_types.h"
 
@@ -28,7 +31,7 @@
  */
 ssize_t
 read_all (
-    int fd,
+    SOCKET fd,
     uint8_t *data,
     size_t size)
 {
@@ -38,12 +41,21 @@ read_all (
     LOG_DEBUG ("reading %zu bytes from fd %d to buffer at 0x%" PRIxPTR,
                size, fd, (uintptr_t)data);
     do {
-        recvd = TEMP_RETRY (read (fd, &data [recvd_total], size));
+#ifdef _WIN32
+        TEMP_RETRY (recvd, recv (fd, (char *) &data [recvd_total], size, 0));
+        if (recvd < 0) {
+            LOG_WARNING ("read on fd %d failed with errno %d: %s",
+                         fd, WSAGetLastError(), strerror (WSAGetLastError()));
+            return recvd_total;
+        }
+#else
+        TEMP_RETRY (recvd, read (fd, &data [recvd_total], size));
         if (recvd < 0) {
             LOG_WARNING ("read on fd %d failed with errno %d: %s",
                          fd, errno, strerror (errno));
             return recvd_total;
         }
+#endif
         if (recvd == 0) {
             LOG_WARNING ("Attempted read %zu bytes from fd %d, but EOF "
                          "returned", size, fd);
@@ -59,7 +71,7 @@ read_all (
 
 ssize_t
 write_all (
-    int fd,
+    SOCKET fd,
     const uint8_t *buf,
     size_t size)
 {
@@ -71,14 +83,24 @@ write_all (
                   size - written_total,
                   (uintptr_t)buf + written_total,
                   fd);
-        written = TEMP_RETRY (write (fd,
+#ifdef _WIN32
+        TEMP_RETRY (written, send (fd,
+                                   (const char*)&buf [written_total],
+                                   size - written_total, 0));
+#else
+         TEMP_RETRY (written, write (fd,
                                      (const char*)&buf [written_total],
                                      size - written_total));
+#endif
         if (written >= 0) {
             LOG_DEBUG ("wrote %zd bytes to fd %d", written, fd);
             written_total += (size_t)written;
         } else {
+#ifdef _WIN32
+            LOG_ERROR ("failed to write to fd %d: %s", fd, strerror (WSAGetLastError()));
+#else
             LOG_ERROR ("failed to write to fd %d: %s", fd, strerror (errno));
+#endif
             return written_total;
         }
     } while (written_total < size);
@@ -106,7 +128,11 @@ socket_xmit_buf (
     LOGBLOB_DEBUG (buf, size, "Writing %zu bytes to socket %d:", size, sock);
     ret = write_all (sock, buf, size);
     if (ret < (ssize_t) size) {
-        LOG_ERROR("write to fd %d failed, errno %d: %s", sock, errno, strerror (errno));
+#ifdef _WIN32
+        LOG_ERROR ("write to fd %d failed, errno %d: %s", sock, WSAGetLastError(), strerror (WSAGetLastError()));
+#else
+        LOG_ERROR ("write to fd %d failed, errno %d: %s", sock, errno, strerror (errno));
+#endif
         return TSS2_TCTI_RC_IO_ERROR;
     }
     return TSS2_RC_SUCCESS;
@@ -121,16 +147,26 @@ socket_close (
     if (socket == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
     }
-    if (*socket == -1) {
+    if (*socket == INVALID_SOCKET) {
         return TSS2_RC_SUCCESS;
     }
+#ifdef _WIN32
+    ret = closesocket (*socket);
+    WSACleanup();
+    if (ret == SOCKET_ERROR) {
+        LOG_WARNING ("Failed to close SOCKET %d. errno %d: %s",
+                     *socket, WSAGetLastError(), strerror (WSAGetLastError()));
+        return TSS2_TCTI_RC_IO_ERROR;
+    }
+#else
     ret = close (*socket);
-    if (ret == -1) {
+    if (ret == SOCKET_ERROR) {
         LOG_WARNING ("Failed to close SOCKET %d. errno %d: %s",
                      *socket, errno, strerror (errno));
         return TSS2_TCTI_RC_IO_ERROR;
     }
-    *socket = -1;
+#endif
+    *socket = INVALID_SOCKET;
 
     return TSS2_RC_SUCCESS;
 }
@@ -147,8 +183,20 @@ socket_connect (
     struct addrinfo *p;
     char port_str[MAX_PORT_STR_LEN];
     int ret = 0;
-    char host_buff[_POSIX_HOST_NAME_MAX] __attribute__((unused));
+#ifdef _WIN32
+    char host_buff[_HOST_NAME_MAX];
+    const char *h = hostname;
+    WSADATA wsaData;
+    int iResult;
+    iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (iResult != 0) {
+        LOG_WARNING("WSAStartup failed: %d", iResult);
+        return TSS2_TCTI_RC_IO_ERROR;
+    }
+#else
+    char host_buff[_HOST_NAME_MAX] __attribute__((unused));
     const char *h __attribute__((unused)) = hostname;
+#endif
 
     if (hostname == NULL || sock == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
@@ -169,7 +217,7 @@ socket_connect (
 
     for (p = retp; p != NULL; p = p->ai_next) {
         *sock = socket (p->ai_family, SOCK_STREAM, 0);
-        if (*sock == -1)
+        if (*sock == INVALID_SOCKET)
             continue;
 
         h = inet_ntop(p->ai_family, p->ai_addr, &host_buff[0],
@@ -178,14 +226,19 @@ socket_connect (
             h = hostname;
         LOG_DEBUG ("Attempting TCP connection to host %s, port %s",
             h, port_str);
-        if (connect (*sock, p->ai_addr, p->ai_addrlen) != -1)
+        if (connect (*sock, p->ai_addr, p->ai_addrlen) != SOCKET_ERROR)
             break; /* socket connected OK */
-        socket_close(sock);
+        socket_close (sock);
     }
     freeaddrinfo (retp);
     if (p == NULL) {
+#ifdef _WIN32
         LOG_WARNING ("Failed to connect to host %s, port %s: errno %d: %s",
-            h, port_str, errno, strerror (errno));
+                      h, port_str, WSAGetLastError(), strerror (WSAGetLastError()));
+#else
+        LOG_WARNING ("Failed to connect to host %s, port %s: errno %d: %s",
+                     h, port_str, errno, strerror (errno));
+#endif
 
         return TSS2_TCTI_RC_IO_ERROR;
     }
