@@ -5,20 +5,42 @@
  */
 #ifndef UTIL_IO_H
 #define UTIL_IO_H
+
+#ifdef _WIN32
+#include <BaseTsd.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+typedef SSIZE_T ssize_t;
+#define _HOST_NAME_MAX MAX_COMPUTERNAME_LENGTH
+
+#else
 #include <arpa/inet.h>
 #include <errno.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#define _HOST_NAME_MAX _POSIX_HOST_NAME_MAX
+#define SOCKET int
+#define INVALID_SOCKET - 1
+#define SOCKET_ERROR - 1
+#endif
 
 #include "tss2_tpm2_types.h"
 
-#define SOCKET int
-#define TEMP_RETRY(exp) \
-({  int __ret; \
+#ifdef _WIN32
+#define TEMP_RETRY(dest, exp) \
+{   int __ret; \
     do { \
         __ret = exp; \
-    } while (__ret == -1 && errno == EINTR); \
-    __ret; })
+    } while (__ret == SOCKET_ERROR && WSAGetLastError() == WSAEINTR); \
+    dest = __ret; }
+#else
+#define TEMP_RETRY(dest, exp) \
+{   int __ret; \
+    do { \
+        __ret = exp; \
+    } while (__ret == SOCKET_ERROR && errno == EINTR); \
+    dest =__ret; }
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,7 +54,7 @@ extern "C" {
  */
 ssize_t
 read_all (
-    int fd,
+    SOCKET fd,
     uint8_t *data,
     size_t size);
 /*
@@ -43,7 +65,7 @@ read_all (
  */
 ssize_t
 write_all (
-    int fd,
+    SOCKET fd,
     const uint8_t *buf,
     size_t size);
 TSS2_RC
@@ -57,7 +79,7 @@ socket_close (
 ssize_t
 socket_recv_buf (
     SOCKET sock,
-    unsigned char *data,
+    uint8_t *data,
     size_t size);
 TSS2_RC
 socket_xmit_buf (
