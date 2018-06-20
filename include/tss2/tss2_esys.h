@@ -15,52 +15,52 @@ extern "C" {
 
 typedef uint32_t ESYS_TR;
 
-#define ESYS_TR_NONE    0xfff
-#define ESYS_TR_PASSWORD 0x0ff
-#define ESYS_TR_PCR0    0
-#define ESYS_TR_PCR1    1
-#define ESYS_TR_PCR2    2
-#define ESYS_TR_PCR3    3
-#define ESYS_TR_PCR4    4
-#define ESYS_TR_PCR5    5
-#define ESYS_TR_PCR6    6
-#define ESYS_TR_PCR7    7
-#define ESYS_TR_PCR8    8
-#define ESYS_TR_PCR9    9
-#define ESYS_TR_PCR10    10
-#define ESYS_TR_PCR11    11
-#define ESYS_TR_PCR12    12
-#define ESYS_TR_PCR13    13
-#define ESYS_TR_PCR14    14
-#define ESYS_TR_PCR15    15
-#define ESYS_TR_PCR16    16
-#define ESYS_TR_PCR17    17
-#define ESYS_TR_PCR18    18
-#define ESYS_TR_PCR19    19
-#define ESYS_TR_PCR20    20
-#define ESYS_TR_PCR21    21
-#define ESYS_TR_PCR22    22
-#define ESYS_TR_PCR23    23
-#define ESYS_TR_PCR24    24
-#define ESYS_TR_PCR25    25
-#define ESYS_TR_PCR26    26
-#define ESYS_TR_PCR27    27
-#define ESYS_TR_PCR28    28
-#define ESYS_TR_PCR29    29
-#define ESYS_TR_PCR30    30
-#define ESYS_TR_PCR31    31
+#define ESYS_TR_NONE     0xfffU
+#define ESYS_TR_PASSWORD 0x0ffU
+#define ESYS_TR_PCR0      0U
+#define ESYS_TR_PCR1      1U
+#define ESYS_TR_PCR2      2U
+#define ESYS_TR_PCR3      3U
+#define ESYS_TR_PCR4      4U
+#define ESYS_TR_PCR5      5U
+#define ESYS_TR_PCR6      6U
+#define ESYS_TR_PCR7      7U
+#define ESYS_TR_PCR8      8U
+#define ESYS_TR_PCR9      9U
+#define ESYS_TR_PCR10    10U
+#define ESYS_TR_PCR11    11U
+#define ESYS_TR_PCR12    12U
+#define ESYS_TR_PCR13    13U
+#define ESYS_TR_PCR14    14U
+#define ESYS_TR_PCR15    15U
+#define ESYS_TR_PCR16    16U
+#define ESYS_TR_PCR17    17U
+#define ESYS_TR_PCR18    18U
+#define ESYS_TR_PCR19    19U
+#define ESYS_TR_PCR20    20U
+#define ESYS_TR_PCR21    21U
+#define ESYS_TR_PCR22    22U
+#define ESYS_TR_PCR23    23U
+#define ESYS_TR_PCR24    24U
+#define ESYS_TR_PCR25    25U
+#define ESYS_TR_PCR26    26U
+#define ESYS_TR_PCR27    27U
+#define ESYS_TR_PCR28    28U
+#define ESYS_TR_PCR29    29U
+#define ESYS_TR_PCR30    30U
+#define ESYS_TR_PCR31    31U
 
 /* From TPM_RH_CONSTANTS */
-#define ESYS_TR_RH_OWNER    0x101
-#define    ESYS_TR_RH_NULL        0x107
-#define    ESYS_TR_RH_LOCKOUT    0x10A
-#define    ESYS_TR_RH_ENDORSEMENT    0x10B
-#define    ESYS_TR_RH_PLATFORM    0x10C
-#define ESYS_TR_RH_PLATFORM_NV    0x10D
-#define ESYS_TR_RH_AUTH_00    0x110
-#define ESYS_TR_RH_AUTH_FF    0x20F
+#define ESYS_TR_RH_OWNER       0x101U
+#define ESYS_TR_RH_NULL        0x107U
+#define ESYS_TR_RH_LOCKOUT     0x10AU
+#define ESYS_TR_RH_ENDORSEMENT 0x10BU
+#define ESYS_TR_RH_PLATFORM    0x10CU
+#define ESYS_TR_RH_PLATFORM_NV 0x10DU
+#define ESYS_TR_RH_AUTH_00     0x110U
+#define ESYS_TR_RH_AUTH_FF     0x20FU
 
-#define ESYS_TR_MIN_OBJECT 0x1000
+#define ESYS_TR_MIN_OBJECT 0x1000U
 
 typedef struct ESYS_CONTEXT ESYS_CONTEXT;
 
