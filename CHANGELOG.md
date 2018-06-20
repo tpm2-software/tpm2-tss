@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## Unreleased
+## [2.0.0] - 2018-06-20
 ### Added/removed
 - Implementation of the Marshal/Unmarshal library (libtss2-mu)
 - Implementation of the Enhanced System API (libtss2-esys aka ESAPI)
