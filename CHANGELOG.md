@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ## [2.0.0] - 2018-06-20
-### Added/removed
+### Added
 - Implementation of the Marshal/Unmarshal library (libtss2-mu)
 - Implementation of the Enhanced System API (libtss2-esys aka ESAPI)
 - New implemetation of the TPM Command Transmission Interface (TCTI) for:
@@ -20,10 +20,8 @@ to libtss2-mu and libtss2-sys
 - Implementation of the new TPM2_PolicyTemplate command
 - Addition of _Complete functions to all TPM commands
 - New logging framework
-- Removed all sysapi/sysapi_utils/*arshal_TPM*.c files
 - Added const qualifiers to API input pointers (API break)
 - Cleaned up headers and remove implementation.h and tpm2.h (API break)
-
 ### Changed
 - Converted all cpp files to c, removed dependency on C++ compiler.
 - Cleaned out a number of marshaling functions from the SAPI code.
@@ -33,7 +31,8 @@ to libtss2-mu and libtss2-sys
 - Changed Get/SetCmd/RspAuths to new parameter types (API/ABI break)
 - Fixed order of parameters in AC commands: Input command authorizations
 now come after the input handles, but still before the command parameters.
-
+### Removed
+- Removed all sysapi/sysapi_utils/*arshal_TPM*.c files
 ### Fixed
 - Updated invalid number of handles in TPM2_PolicyNvWritten and TPM2_TestParms
 - Updated PlatformCommand function from libtss2-tcti-mssim to no longer send
