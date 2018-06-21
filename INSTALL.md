@@ -184,7 +184,7 @@ To rebuild using your local changes mount your tmp2-tss directory as a volume.
 
 ```console
 $ docker run --rm -ti -v $PWD:/tmp/tpm2-tss tpm2-tss \
-  sh -c 'make clean && make -j$(nproc) check'
+  sh -c 'make -j$(nproc) check'
 ```
 
 ## Doxygen Documentation
