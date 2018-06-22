@@ -1,14 +1,19 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
  * All rights reserved.
- *******************************************************************************/
+ ******************************************************************************/
 #ifndef ESYS_CRYPTO_H
 #define ESYS_CRYPTO_H
 
 #include <stddef.h>
 #include "tss2_tpm2_types.h"
 #include "tss2-sys/sysapi_util.h"
+#ifdef OSSL
+#include "esys_crypto_ossl.h"
+#else
+#include "esys_crypto_gcrypt.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,79 +21,7 @@ extern "C" {
 
 #define AES_BLOCK_SIZE_IN_BYTES 16
 
-typedef struct _IESYS_CRYPTO_CONTEXT IESYS_CRYPTO_CONTEXT_BLOB;
-
 TSS2_RC iesys_crypto_hash_get_digest_size(TPM2_ALG_ID hashAlg, size_t *size);
-
-
-TSS2_RC iesys_cryptogcry_hash_start(
-    IESYS_CRYPTO_CONTEXT_BLOB **context,
-    TPM2_ALG_ID hashAlg);
-
-TSS2_RC iesys_cryptogcry_hash_update(
-    IESYS_CRYPTO_CONTEXT_BLOB *context,
-    const uint8_t *buffer, size_t size);
-
-TSS2_RC iesys_cryptogcry_hash_update2b(
-    IESYS_CRYPTO_CONTEXT_BLOB *context,
-    TPM2B *b);
-
-TSS2_RC iesys_cryptogcry_hash_finish(
-    IESYS_CRYPTO_CONTEXT_BLOB **context,
-    uint8_t *buffer,
-    size_t *size);
-
-TSS2_RC iesys_cryptogcry_hash_finish2b(
-    IESYS_CRYPTO_CONTEXT_BLOB **context,
-    TPM2B *b);
-
-void iesys_cryptogcry_hash_abort(IESYS_CRYPTO_CONTEXT_BLOB **context);
-
-#define iesys_crypto_hash_start iesys_cryptogcry_hash_start
-#define iesys_crypto_hash_update iesys_cryptogcry_hash_update
-#define iesys_crypto_hash_update2b iesys_cryptogcry_hash_update2b
-#define iesys_crypto_hash_finish iesys_cryptogcry_hash_finish
-#define iesys_crypto_hash_finish2b iesys_cryptogcry_hash_finish2b
-#define iesys_crypto_hash_abort iesys_cryptogcry_hash_abort
-
-TSS2_RC iesys_cryptogcry_hmac_start(
-    IESYS_CRYPTO_CONTEXT_BLOB **context,
-    TPM2_ALG_ID hmacAlg,
-    const uint8_t *key,
-    size_t size);
-
-TSS2_RC iesys_cryptogcry_hmac_start2b(
-    IESYS_CRYPTO_CONTEXT_BLOB **context,
-    TPM2_ALG_ID hmacAlg,
-    TPM2B *b);
-
-TSS2_RC iesys_cryptogcry_hmac_update(
-    IESYS_CRYPTO_CONTEXT_BLOB *context,
-    const uint8_t *buffer,
-    size_t size);
-
-TSS2_RC iesys_cryptogcry_hmac_update2b(
-    IESYS_CRYPTO_CONTEXT_BLOB *context,
-    TPM2B *b);
-
-TSS2_RC iesys_cryptogcry_hmac_finish(
-    IESYS_CRYPTO_CONTEXT_BLOB **context,
-    uint8_t *buffer,
-    size_t *size);
-
-TSS2_RC iesys_cryptogcry_hmac_finish2b(
-    IESYS_CRYPTO_CONTEXT_BLOB **context,
-    TPM2B *b);
-
-void iesys_cryptogcry_hmac_abort(IESYS_CRYPTO_CONTEXT_BLOB **context);
-
-#define iesys_crypto_hmac_start iesys_cryptogcry_hmac_start
-#define iesys_crypto_hmac_start2b iesys_cryptogcry_hmac_start2b
-#define iesys_crypto_hmac_update iesys_cryptogcry_hmac_update
-#define iesys_crypto_hmac_update2b iesys_cryptogcry_hmac_update2b
-#define iesys_crypto_hmac_finish iesys_cryptogcry_hmac_finish
-#define iesys_crypto_hmac_finish2b iesys_cryptogcry_hmac_finish2b
-#define iesys_crypto_hmac_abort iesys_cryptogcry_hmac_abort
 
 TSS2_RC iesys_crypto_pHash(
     TPM2_ALG_ID alg,
@@ -125,21 +58,6 @@ TSS2_RC iesys_crypto_authHmac(
     TPMA_SESSION sessionAttributes,
     TPM2B_AUTH *hmac);
 
-TSS2_RC iesys_cryptogcry_random2b(TPM2B_NONCE *nonce, size_t num_bytes);
-#define iesys_crypto_random2b iesys_cryptogcry_random2b
-
-TSS2_RC iesys_cryptogcry_pk_encrypt(
-    TPM2B_PUBLIC *key,
-    size_t in_size,
-    BYTE *in_buffer,
-    size_t max_out_size,
-    BYTE *out_buffer,
-    size_t *out_size,
-    const char *label);
-
-#define iesys_crypto_pk_encrypt iesys_cryptogcry_pk_encrypt
-
-
 TSS2_RC iesys_crypto_KDFaHmac(
     TPM2_ALG_ID alg,
     uint8_t *hmacKey,
@@ -164,35 +82,6 @@ TSS2_RC iesys_crypto_KDFa(
     BYTE *outKey,
     BOOL use_digest_size);
 
-TSS2_RC iesys_cryptogcry_KDFe(
-    TPM2_ALG_ID hashAlg,
-    TPM2B_ECC_PARAMETER *Z,
-    const char *label,
-    TPM2B_ECC_PARAMETER *partyUInfo,
-    TPM2B_ECC_PARAMETER *partyVInfo,
-    UINT32 bit_size,
-    BYTE *key);
-
-TSS2_RC iesys_cryptogcry_sym_aes_encrypt(
-    uint8_t *key,
-    TPM2_ALG_ID tpm_sym_alg,
-    TPMI_AES_KEY_BITS key_bits,
-    TPM2_ALG_ID tpm_mode,
-    size_t blk_len,
-    uint8_t *dst,
-    size_t dst_size,
-    uint8_t *iv);
-
-TSS2_RC iesys_cryptogcry_sym_aes_decrypt(
-    uint8_t *key,
-    TPM2_ALG_ID tpm_sym_alg,
-    TPMI_AES_KEY_BITS key_bits,
-    TPM2_ALG_ID tpm_mode,
-    size_t blk_len,
-    uint8_t *dst,
-    size_t dst_size,
-    uint8_t *iv);
-
 TSS2_RC iesys_xor_parameter_obfuscation(
     TPM2_ALG_ID hash_alg,
     uint8_t *key,
@@ -202,17 +91,14 @@ TSS2_RC iesys_xor_parameter_obfuscation(
     BYTE *data,
     size_t data_size);
 
-TSS2_RC iesys_cryptogcry_get_ecdh_point(
-    TPM2B_PUBLIC * key,
-    size_t max_out_size,
+TSS2_RC iesys_crypto_KDFe(
+    TPM2_ALG_ID hashAlg,
     TPM2B_ECC_PARAMETER *Z,
-    TPMS_ECC_POINT *Q,
-    BYTE * out_buffer,
-    size_t * out_size);
-
-#define iesys_crypto_get_ecdh_point iesys_cryptogcry_get_ecdh_point
-#define iesys_crypto_sym_aes_encrypt iesys_cryptogcry_sym_aes_encrypt
-#define iesys_crypto_sym_aes_decrypt iesys_cryptogcry_sym_aes_decrypt
+    const char *label,
+    TPM2B_ECC_PARAMETER *partyUInfo,
+    TPM2B_ECC_PARAMETER *partyVInfo,
+    UINT32 bit_size,
+    BYTE *key);
 
 #ifdef __cplusplus
 } /* extern "C" */

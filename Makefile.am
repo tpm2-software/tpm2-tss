@@ -284,10 +284,21 @@ lib_LTLIBRARIES += $(libtss2_esys)
 nodist_pkgconfig_DATA += lib/tss2-esys.pc
 EXTRA_DIST += lib/tss2-esys.pc.in
 
-src_tss2_esys_libtss2_esys_la_CFLAGS  = $(AM_CFLAGS) -I$(srcdir)/src/tss2-esys
+
 src_tss2_esys_libtss2_esys_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) \
     $(libtss2_tcti_device) $(libtss2_tcti_mssim) $(libutil)
+
+if ESYS_OSSL
+TSS2_ESYS_SRC += src/tss2-esys/esys_crypto_ossl.h src/tss2-esys/esys_crypto_ossl.c
+src_tss2_esys_libtss2_esys_la_CFLAGS  = $(AM_CFLAGS) -I$(srcdir)/src/tss2-esys -DOSSL
+src_tss2_esys_libtss2_esys_la_LDFLAGS = $(AM_LDFLAGS) -ldl  -lssl -lcrypto
+else
+if ESYS_GCRYPT
+TSS2_ESYS_SRC += src/tss2-esys/esys_crypto_gcrypt.h src/tss2-esys/esys_crypto_gcrypt.c
+src_tss2_esys_libtss2_esys_la_CFLAGS  = $(AM_CFLAGS) -I$(srcdir)/src/tss2-esys
 src_tss2_esys_libtss2_esys_la_LDFLAGS = $(AM_LDFLAGS) -ldl -lgcrypt
+endif
+endif
 src_tss2_esys_libtss2_esys_la_SOURCES = $(TSS2_ESYS_SRC)
 
 endif #ESAPI

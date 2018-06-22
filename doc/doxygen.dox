@@ -1036,7 +1036,7 @@ Both the synchronous and asynchronous API are exposed through a single library: 
  \fn TSS2_RC iesys_cryptogcry_pk_encrypt( TPM2B_PUBLIC *key, size_t in_size, BYTE *in_buffer, size_t max_out_size, BYTE *out_buffer, size_t *out_size, const char *label)
  \fn TSS2_RC iesys_crypto_KDFaHmac( TPM2_ALG_ID alg, uint8_t *hmacKey, size_t hmacKeySize, uint32_t counter, const char *label, TPM2B_NONCE *contextU, TPM2B_NONCE *contextV, uint32_t bitlength, uint8_t *hmac, size_t *hmacSize)
  \fn TSS2_RC iesys_crypto_KDFa( TPM2_ALG_ID hashAlg, uint8_t *hmacKey, size_t hmacKeySize, const char *label, TPM2B_NONCE *contextU, TPM2B_NONCE *contextV, uint32_t bitLength, uint32_t *counterInOut, BYTE *outKey, BOOL use_digest_size)
- \fn TSS2_RC iesys_cryptogcry_KDFe( TPM2_ALG_ID hashAlg, TPM2B_ECC_PARAMETER *Z, const char *label, TPM2B_ECC_PARAMETER *partyUInfo, TPM2B_ECC_PARAMETER *partyVInfo, UINT32 bit_size, BYTE *key)
+ \fn TSS2_RC iesys_crypto_KDFe( TPM2_ALG_ID hashAlg, TPM2B_ECC_PARAMETER *Z, const char *label, TPM2B_ECC_PARAMETER *partyUInfo, TPM2B_ECC_PARAMETER *partyVInfo, UINT32 bit_size, BYTE *key)
  \fn TSS2_RC iesys_cryptogcry_sym_aes_encrypt( uint8_t *key, TPM2_ALG_ID tpm_sym_alg, TPMI_AES_KEY_BITS key_bits, TPM2_ALG_ID tpm_mode, size_t blk_len, uint8_t *dst, size_t dst_size, uint8_t *iv)
  \fn TSS2_RC iesys_cryptogcry_sym_aes_decrypt( uint8_t *key, TPM2_ALG_ID tpm_sym_alg, TPMI_AES_KEY_BITS key_bits, TPM2_ALG_ID tpm_mode, size_t blk_len, uint8_t *dst, size_t dst_size, uint8_t *iv)
  \fn TSS2_RC iesys_xor_parameter_obfuscation( TPM2_ALG_ID hash_alg, uint8_t *key, size_t key_size, TPM2B_NONCE * contextU, TPM2B_NONCE * contextV, BYTE *data, size_t data_size)
