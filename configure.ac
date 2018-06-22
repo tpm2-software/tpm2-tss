@@ -1,4 +1,4 @@
-#;**********************************************************************;
+;**********************************************************************;
 # Copyright (c) 2015 - 2018 Intel Corporation
 # Copyright (c) 2018 Fraunhofer SIT sponsored by Infineon Technologies AG
 # All rights reserved.
@@ -63,16 +63,48 @@ AC_ARG_ENABLE([esapi],
                             [build the esapi layer (default is yes)])],
             [enable_esapi=$enableval],
             [enable_esapi=yes])
-AS_IF([test "x$enable_esapi" != xno],
+
+
+AC_ARG_ENABLE([esapi], 
+    AS_HELP_STRING([--disable-esapi], [Enable TSS ESYS API library @<:@default=yes@:>@]),
+    [],
+    [enable_esapi="yes"])
+AM_CONDITIONAL(ESAPI, test "x$enable_esapi" = "xyes")
+
+AC_ARG_WITH([crypto],
+            [AS_HELP_STRING([--with-crypto={gcrypt,ossl}],
+                            [sets the ESAPI crypto backend (default is gcrypt)])],
+            [],
+            [with_crypto=gcrypt])
+
+AM_CONDITIONAL(ESYS_OSSL, test "x$with_crypto" = "xossl")
+AM_CONDITIONAL(ESYS_GCRYPT, test "x$with_crypto" = "xgcrypt")
+
+AS_IF([test "x$with_crypto" != "xgcrypt"],
+    AS_IF([test "x$with_crypto" != "xossl"],
+          AC_MSG_ERROR([Bad value for --with-crypto $with_crypto])))
+
+AS_IF([test "x$enable_esapi" != xno -a "x$with_crypto" = "xgcrypt"],
       [AC_CHECK_HEADER([gcrypt.h],
                        [],
                        [AC_MSG_ERROR([Missing required header: gcrypt.h.])])])
-AS_IF([test "x$enable_esapi" != xno],
+
+AS_IF([test "x$enable_esapi" != xno -a "x$with_cryptor" = "xgcrypt"],
       [AC_CHECK_LIB([gcrypt],
                     [gcry_mac_open],
                     [],
                     [AC_MSG_ERROR([Missing required library: gcrypt.])])])
-AM_CONDITIONAL([ESAPI], [test "x$enable_esapi" != xno])
+
+AS_IF([test "x$enable_esapi" != xno -a "x$with_crypto" = "xossl"],
+      [AC_CHECK_HEADER([openssl/ssl.h],
+                       [],
+                       [AC_MSG_ERROR([Missing required header: openssl/ssl.h.])])])
+
+AS_IF([test "x$enable_esapi" != xno -a "x$with_crypto" = "xossl"],
+    AC_CHECK_LIB(ssl, OPENSSL_init_ssl, [FOUND_SSL_LIB="yes"]))
+
+AS_IF([test "x$enable_esapi" != xno -a "x$with_crypto" = "xossl"],
+    AC_CHECK_LIB(crypto, CRYPTO_new_ex_data, [], [AC_MSG_ERROR([library 'crypto' is required for OpenSSL])]))
 
 AC_ARG_WITH([tctidefaultmodule],
             [AS_HELP_STRING([--with-tctidefaultmodule],

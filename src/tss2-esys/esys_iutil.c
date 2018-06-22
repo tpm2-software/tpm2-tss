@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
  * All rights reserved.
- *******************************************************************************/
+ ******************************************************************************/
 #include <inttypes.h>
 
 #include "tss2_esys.h"
@@ -504,12 +504,12 @@ iesys_compute_encrypted_salt(ESYS_CONTEXT * esys_context,
         encryptedSalt->size = cSize;
 
         /* Compute salt from Z with KDFe */
-        r = iesys_cryptogcry_KDFe(tpmKeyNode->rsrc.misc.
-                                  rsrc_key_pub.publicArea.nameAlg,
-                                  &Z, "SECRET", &Q.x,
-                                  &pub.publicArea.unique.ecc.x,
-                                  keyHash_size*8,
-                                  &esys_context->salt.buffer[0]);
+        r = iesys_crypto_KDFe(tpmKeyNode->rsrc.misc.
+                              rsrc_key_pub.publicArea.nameAlg,
+                              &Z, "SECRET", &Q.x,
+                              &pub.publicArea.unique.ecc.x,
+                              keyHash_size*8,
+                              &esys_context->salt.buffer[0]);
         return_if_error(r, "During KDFe computation.");
         esys_context->salt.size = keyHash_size;
         break;
@@ -649,6 +649,7 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
                                                     &encrypt_buffer[0],
                                                     paramSize);
                 return_if_error(r, "XOR obfuscation not possible.");
+
             } else {
                 return_error(TSS2_ESYS_RC_BAD_VALUE,
                              "Invalid symmetric algorithm (should be XOR or AES)");
@@ -656,6 +657,7 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
             r = Tss2_Sys_SetDecryptParam(esys_context->sys, paramSize,
                                          &encrypt_buffer[0]);
             return_if_error(r, "Set encrypt parameter not possible");
+
         }
     }
     return r;
@@ -676,7 +678,7 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
  * @retval TSS2_ESYS_RC_NOT_IMPLEMENTED if hash algorithm is not implemented.
  * @retval TSS2_SYS_RC_* for SAPI errors.
  */
-TSS2_RC
+ TSS2_RC
 iesys_decrypt_param(ESYS_CONTEXT * esys_context,
                     const uint8_t * rpBuffer, size_t rpBuffer_size)
 {
@@ -925,12 +927,12 @@ iesys_compute_session_value(RSRC_NODE_T * session,
     /* Then if we are a bound session, the auth value is not appended to the end
        of the session value for HMAC computation. The size of the key will not be
        increased.*/
-    if (iesys_is_object_bound(name, auth_value,
+   if (iesys_is_object_bound(name, auth_value,
                               session) &&
         /* type_policy_session set to POLICY_AUTH by command PolicyAuthValue */
         (session->rsrc.misc.rsrc_session.type_policy_session != POLICY_AUTH))
         return;
-    session->rsrc.misc.rsrc_session.sizeHmacValue += auth_value->size;
+   session->rsrc.misc.rsrc_session.sizeHmacValue += auth_value->size;
 }
 
 /**
@@ -1037,7 +1039,7 @@ iesys_check_sequence_async(ESYS_CONTEXT * esys_context)
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    /* TODO: Check if RESUBMISSION BELONGS HERE OR IN THE FINISH METHOD. */
+    /* TODO: Check if RESUBMISSION BELONGS HERE OR RATHER INTO THE FINISH METHOD. */
     if (esys_context->state == _ESYS_STATE_RESUBMISSION) {
         esys_context->submissionCount++;
         LOG_DEBUG("The command will be resubmitted for the %i time.",
@@ -1355,7 +1357,7 @@ iesys_nv_get_name(TPM2B_NV_PUBLIC * publicInfo, TPM2B_NAME * name)
     r = iesys_crypto_hash_update(cryptoContext, &buffer[0], offset);
     return_if_error(r, "crypto hash update");
 
-    r = iesys_cryptogcry_hash_finish(&cryptoContext, &name->name[len_alg_id],
+    r = iesys_crypto_hash_finish(&cryptoContext, &name->name[len_alg_id],
                                      &size);
     return_if_error(r, "crypto hash finish");
 
@@ -1403,7 +1405,7 @@ iesys_get_name(TPM2B_PUBLIC * publicInfo, TPM2B_NAME * name)
     r = iesys_crypto_hash_update(cryptoContext, &buffer[0], offset);
     return_if_error(r, "crypto hash update");
 
-    r = iesys_cryptogcry_hash_finish(&cryptoContext, &name->name[len_alg_id],
+    r = iesys_crypto_hash_finish(&cryptoContext, &name->name[len_alg_id],
                                      &size);
     return_if_error(r, "crypto hash finish");
 
