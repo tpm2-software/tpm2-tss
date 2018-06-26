@@ -308,8 +308,8 @@ Both the synchronous and asynchronous API are exposed through a single library: 
  * ESAPI function to invoke the TPM2_FlushContext command
  * either as a one-call or in an asynchronous manner.
  \{
- \fn TSS2_RC Esys_FlushContext_Async(ESYS_CONTEXT *esysContext, TPMI_DH_CONTEXT flushHandle)
- \fn TSS2_RC Esys_FlushContext(ESYS_CONTEXT *esysContext, TPMI_DH_CONTEXT flushHandle)
+ \fn TSS2_RC Esys_FlushContext_Async(ESYS_CONTEXT *esysContext, ESYS_TR flushHandle)
+ \fn TSS2_RC Esys_FlushContext(ESYS_CONTEXT *esysContext, ESYS_TR flushHandle)
  \fn TSS2_RC Esys_FlushContext_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_GetCapability The ESAPI function for the TPM2_GetCapability command.
@@ -644,8 +644,8 @@ Both the synchronous and asynchronous API are exposed through a single library: 
  * ESAPI function to invoke the TPM2_PolicyCommandCode command
  * either as a one-call or in an asynchronous manner.
  \{
- \fn TSS2_RC Esys_PolicyCommandCode_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, TPM2_CC code)
- \fn TSS2_RC Esys_PolicyCommandCode(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, TPM2_CC code)
+ \fn TSS2_RC Esys_PolicyCommandCode_Async(ESYS_CONTEXT *esysContext, ESYS_TR  policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2_CC code)
+ \fn TSS2_RC Esys_PolicyCommandCode(ESYS_CONTEXT *esysContext, ESYS_TR  policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPM2_CC code)
  \fn TSS2_RC Esys_PolicyCommandCode_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyCounterTimer The ESAPI function for the TPM2_PolicyCounterTimer command.
@@ -660,16 +660,16 @@ Both the synchronous and asynchronous API are exposed through a single library: 
  * ESAPI function to invoke the TPM2_PolicyCpHash command
  * either as a one-call or in an asynchronous manner.
  \{
- \fn TSS2_RC Esys_PolicyCpHash_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, const TPM2B_DIGEST *cpHashA)
- \fn TSS2_RC Esys_PolicyCpHash(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, const TPM2B_DIGEST *cpHashA)
+ \fn TSS2_RC Esys_PolicyCpHash_Async(ESYS_CONTEXT *esysContext, ESYS_TR  policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3,  const TPM2B_DIGEST *cpHashA)
+ \fn TSS2_RC Esys_PolicyCpHash(ESYS_CONTEXT *esysContext, ESYS_TR  policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *cpHashA)
  \fn TSS2_RC Esys_PolicyCpHash_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyDuplicationSelect The ESAPI function for the TPM2_PolicyDuplicationSelect command.
  * ESAPI function to invoke the TPM2_PolicyDuplicationSelect command
  * either as a one-call or in an asynchronous manner.
  \{
- \fn TSS2_RC Esys_PolicyDuplicationSelect_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, const TPM2B_NAME *objectName, const TPM2B_NAME *newParentName, TPMI_YES_NO includeObject)
- \fn TSS2_RC Esys_PolicyDuplicationSelect(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, const TPM2B_NAME *objectName, const TPM2B_NAME *newParentName, TPMI_YES_NO includeObject)
+ \fn TSS2_RC Esys_PolicyDuplicationSelect_Async(ESYS_CONTEXT *esysContext, ESYS_TR  policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NAME *objectName, const TPM2B_NAME *newParentName, TPMI_YES_NO includeObject)
+ \fn TSS2_RC Esys_PolicyDuplicationSelect(ESYS_CONTEXT *esysContext, ESYS_TR  policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NAME *objectName, const TPM2B_NAME *newParentName, TPMI_YES_NO includeObject)
  \fn TSS2_RC Esys_PolicyDuplicationSelect_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyGetDigest The ESAPI function for the TPM2_PolicyGetDigest command.
@@ -684,16 +684,16 @@ Both the synchronous and asynchronous API are exposed through a single library: 
  * ESAPI function to invoke the TPM2_PolicyLocality command
  * either as a one-call or in an asynchronous manner.
  \{
- \fn TSS2_RC Esys_PolicyLocality_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, TPMA_LOCALITY locality)
- \fn TSS2_RC Esys_PolicyLocality(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, TPMA_LOCALITY locality)
+ \fn TSS2_RC Esys_PolicyLocality_Async(ESYS_CONTEXT *esysContext, ESYS_TR  policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMA_LOCALITY locality)
+ \fn TSS2_RC Esys_PolicyLocality(ESYS_CONTEXT *esysContext, ESYS_TR  policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMA_LOCALITY locality)
  \fn TSS2_RC Esys_PolicyLocality_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyNameHash The ESAPI function for the TPM2_PolicyNameHash command.
  * ESAPI function to invoke the TPM2_PolicyNameHash command
  * either as a one-call or in an asynchronous manner.
  \{
- \fn TSS2_RC Esys_PolicyNameHash_Async(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, const TPM2B_DIGEST *nameHash)
- \fn TSS2_RC Esys_PolicyNameHash(ESYS_CONTEXT *esysContext, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_SH_POLICY policySession, const TPM2B_DIGEST *nameHash)
+ \fn TSS2_RC Esys_PolicyNameHash_Async(ESYS_CONTEXT *esysContext, ESYS_TR  policySession,  ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *nameHash)
+ \fn TSS2_RC Esys_PolicyNameHash(ESYS_CONTEXT *esysContext, ESYS_TR  policySession, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_DIGEST *nameHash)
  \fn TSS2_RC Esys_PolicyNameHash_Finish(ESYS_CONTEXT *esysContext)
  \}
  \defgroup Esys_PolicyNV The ESAPI function for the TPM2_PolicyNV command.
@@ -900,8 +900,9 @@ Both the synchronous and asynchronous API are exposed through a single library: 
  * ESAPI function to invoke the TPM2_StartAuthSession command
  * either as a one-call or in an asynchronous manner.
  \{
- \fn TSS2_RC Esys_StartAuthSession_Async(ESYS_CONTEXT *esysContext, ESYS_TR tpmKey, ESYS_TR bind, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NONCE *nonceCaller, const TPM2B_ENCRYPTED_SECRET *encryptedSalt, TPM2_SE sessionType, const TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH authHash)
- \fn TSS2_RC Esys_StartAuthSession(ESYS_CONTEXT *esysContext, ESYS_TR tpmKey, ESYS_TR bind, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NONCE *nonceCaller, const TPM2B_ENCRYPTED_SECRET *encryptedSalt, TPM2_SE sessionType, const TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH authHash, ESYS_TR *sessionHandle, TPM2B_NONCE **nonceTPM)
+ \fn TSS2_RC Esys_StartAuthSession_Async(ESYS_CONTEXT *esysContext, ESYS_TR tpmKey, ESYS_TR bind, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NONCE *nonceCaller, TPM2_SE sessionType, const TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH authHash)
+
+ \fn TSS2_RC Esys_StartAuthSession(ESYS_CONTEXT *esysContext, ESYS_TR tpmKey, ESYS_TR bind, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NONCE *nonceCaller, TPM2_SE sessionType, const TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH authHash, ESYS_TR *sessionHandle)
  \fn TSS2_RC Esys_StartAuthSession_Finish(ESYS_CONTEXT *esysContext, ESYS_TR *sessionHandle, TPM2B_NONCE **nonceTPM)
  \}
  \defgroup Esys_Startup The ESAPI function for the TPM2_Startup command.
