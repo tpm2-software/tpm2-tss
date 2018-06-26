@@ -62,8 +62,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
             .type = TPM2_ALG_ECC,
             .nameAlg = TPM2_ALG_SHA1,
             .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
-                                 TPMA_OBJECT_RESTRICTED |
-                                 TPMA_OBJECT_SIGN_ENCRYPT |
+                                 TPMA_OBJECT_DECRYPT |
                                  TPMA_OBJECT_FIXEDTPM |
                                  TPMA_OBJECT_FIXEDPARENT |
                                  TPMA_OBJECT_SENSITIVEDATAORIGIN),
@@ -73,18 +72,14 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
             .parameters.eccDetail = {
                  .symmetric = {
                      .algorithm = TPM2_ALG_NULL,
-                     .keyBits.aes = 128,
-                     .mode.aes = TPM2_ALG_CFB,
                  },
                  .scheme = {
-                      .scheme = TPM2_ALG_ECDSA,
-                      .details = {.ecdsa =
-                                  {.hashAlg = TPM2_ALG_SHA1}
-                      }
+                      .scheme = TPM2_ALG_NULL,
+                      .details = {}
                   },
                  .curveID = TPM2_ECC_NIST_P256,
-                 .kdf = {.scheme =
-                         TPM2_ALG_NULL,.details = {}
+                 .kdf = {.scheme = TPM2_ALG_NULL,
+                         .details = {}
                   }
              },
             .unique.ecc = {

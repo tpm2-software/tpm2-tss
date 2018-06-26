@@ -26,6 +26,8 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     ESYS_TR authHandle_handle = ESYS_TR_RH_PLATFORM;
     TPMI_RH_ENABLES enable = TPM2_RH_OWNER;
     TPMI_YES_NO state = TPM2_NO;
+    ESYS_TR primaryHandle = ESYS_TR_NONE;
+    int failure_return = EXIT_FAILURE;
 
     r = Esys_HierarchyControl(
         esys_context,
@@ -44,16 +46,76 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
     goto_if_error(r, "Error: HierarchyControl", error);
 
-    ESYS_TR auth_handle = ESYS_TR_RH_OWNER;
-    UINT64 newTime = 0xffffff;
+    TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
+       .size = 4,
+       .sensitive = {
+           .userAuth = {
+                .size = 0,
+                .buffer = {0 },
+            },
+           .data = {
+                .size = 0,
+                .buffer = {0},
+            },
+       },
+   };
 
-    r = Esys_ClockSet(esys_context,
-                      auth_handle,
-                      ESYS_TR_PASSWORD,
-                      ESYS_TR_NONE,
-                      ESYS_TR_NONE,
-                      newTime);
-    goto_error_if_not_failed(r, "Error: ClockSet", error);
+      TPM2B_PUBLIC inPublic = {
+        .size = 0,
+        .publicArea = {
+            .type = TPM2_ALG_RSA,
+            .nameAlg = TPM2_ALG_SHA256,
+            .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
+                                 TPMA_OBJECT_RESTRICTED |
+                                 TPMA_OBJECT_DECRYPT |
+                                 TPMA_OBJECT_FIXEDTPM |
+                                 TPMA_OBJECT_FIXEDPARENT |
+                                 TPMA_OBJECT_SENSITIVEDATAORIGIN),
+            .authPolicy = {
+                 .size = 0,
+             },
+            .parameters.rsaDetail = {
+                 .symmetric = {
+                     .algorithm = TPM2_ALG_AES,
+                     .keyBits.aes = 128,
+                     .mode.aes = TPM2_ALG_CFB},
+                 .scheme = {
+                      .scheme = TPM2_ALG_NULL
+                  },
+                 .keyBits = 2048,
+                 .exponent = 65537,
+             },
+            .unique.rsa = {
+                 .size = 0,
+                 .buffer = {},
+             },
+        },
+    };
+    LOG_INFO("\nRSA key will be created.");
+
+    TPM2B_DATA outsideInfo = {
+        .size = 0,
+        .buffer = {},
+    };
+
+    TPML_PCR_SELECTION creationPCR = {
+        .count = 0,
+    };
+
+    goto_if_error(r, "Error: TR_SetAuth", error);
+
+    TPM2B_PUBLIC *outPublic;
+    TPM2B_CREATION_DATA *creationData;
+    TPM2B_DIGEST *creationHash;
+    TPMT_TK_CREATION *creationTicket;
+
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
+                           ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary, &inPublic,
+                           &outsideInfo, &creationPCR, &primaryHandle,
+                           &outPublic, &creationData, &creationHash,
+                           &creationTicket);
+
+    goto_error_if_not_failed(r, "Error: Create Primary", error);
 
     state = TPM2_YES;
 
@@ -67,8 +129,25 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         state);
     goto_if_error(r, "Error: HierarchyControl", error);
 
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
+                           ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary, &inPublic,
+                           &outsideInfo, &creationPCR, &primaryHandle,
+                           &outPublic, &creationData, &creationHash,
+                           &creationTicket);
+    goto_if_error(r, "Error esys create primary", error);
+
+    r = Esys_FlushContext(esys_context, primaryHandle);
+    goto_if_error(r, "Error: FlushContext", error);
+
     return EXIT_SUCCESS;
 
  error:
-    return EXIT_FAILURE;
+
+    if (primaryHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, primaryHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup primaryHandle failed.");
+        }
+    }
+
+    return failure_return;
 }
