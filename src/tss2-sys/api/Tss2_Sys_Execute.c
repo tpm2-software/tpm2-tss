@@ -74,11 +74,16 @@ TSS2_RC Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout)
         return rval;
     }
 
-    if (ctx->rsp_header.tag != TPM2_ST_SESSIONS && 
+    if (ctx->rsp_header.tag != TPM2_ST_SESSIONS &&
         ctx->rsp_header.tag != TPM2_ST_NO_SESSIONS) {
-        LOG_ERROR("Malformed reponse: Invalid tag in response header: %" PRIx32,
-                  ctx->rsp_header.tag);
-        return TSS2_SYS_RC_MALFORMED_RESPONSE;
+        if (ctx->rsp_header.tag == TPM2_ST_RSP_COMMAND) {
+            LOG_ERROR("Unsupported device. The device is a TPM 1.2");
+            return TSS2_SYS_RC_GENERAL_FAILURE;
+        } else {
+            LOG_ERROR("Malformed reponse: Invalid tag in response header: %" PRIx32,
+                      ctx->rsp_header.tag);
+            return TSS2_SYS_RC_MALFORMED_RESPONSE;
+        }
     }
 
     rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer,
