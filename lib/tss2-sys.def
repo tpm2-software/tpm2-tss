@@ -45,6 +45,8 @@ EXPORTS
     Tss2_Sys_Create_Prepare
     Tss2_Sys_Create_Complete
     Tss2_Sys_Create
+    Tss2_Sys_CreateLoaded_Prepare
+    Tss2_Sys_CreateLoaded_Complete
     Tss2_Sys_CreatePrimary_Prepare
     Tss2_Sys_CreatePrimary_Complete
     Tss2_Sys_CreatePrimary
@@ -81,6 +83,8 @@ EXPORTS
     Tss2_Sys_EvictControl_Prepare
     Tss2_Sys_EvictControl_Complete
     Tss2_Sys_EvictControl
+    Tss2_Sys_ExecuteAsync
+    Tss2_Sys_ExecuteFinish
     Tss2_Sys_FieldUpgradeData_Prepare
     Tss2_Sys_FieldUpgradeData_Complete
     Tss2_Sys_FieldUpgradeData
@@ -100,13 +104,19 @@ EXPORTS
     Tss2_Sys_GetCommandAuditDigest_Prepare
     Tss2_Sys_GetCommandAuditDigest_Complete
     Tss2_Sys_GetCommandAuditDigest
+    Tss2_Sys_GetCommandCode
     Tss2_Sys_GetContextSize
+    Tss2_Sys_GetCpBuffer
+    Tss2_Sys_GetDecryptParam
     Tss2_Sys_GetRandom_Prepare
     Tss2_Sys_GetRandom_Complete
     Tss2_Sys_GetRandom
+    Tss2_Sys_GetRpBuffer
+    Tss2_Sys_GetRspAuths
     Tss2_Sys_GetSessionAuditDigest_Prepare
     Tss2_Sys_GetSessionAuditDigest_Complete
     Tss2_Sys_GetSessionAuditDigest
+    Tss2_Sys_GetTctiContext
     Tss2_Sys_GetTestResult_Prepare
     Tss2_Sys_GetTestResult_Complete
     Tss2_Sys_GetTestResult
@@ -216,6 +226,8 @@ EXPORTS
     Tss2_Sys_PolicyAuthorize_Prepare
     Tss2_Sys_PolicyAuthorize_Complete
     Tss2_Sys_PolicyAuthorize
+    Tss2_Sys_PolicyAuthorizeNV_Prepare
+    Tss2_Sys_PolicyAuthorizeNV_Complete
     Tss2_Sys_PolicyAuthValue_Prepare
     Tss2_Sys_PolicyAuthValue_Complete
     Tss2_Sys_PolicyAuthValue
@@ -267,6 +279,8 @@ EXPORTS
     Tss2_Sys_PolicySigned_Prepare
     Tss2_Sys_PolicySigned_Complete
     Tss2_Sys_PolicySigned
+    Tss2_Sys_PolicyTemplate_Prepare
+    Tss2_Sys_PolicyTemplate_Complete
     Tss2_Sys_PolicyTicket_Prepare
     Tss2_Sys_PolicyTicket_Complete
     Tss2_Sys_PolicyTicket
@@ -306,9 +320,11 @@ EXPORTS
     Tss2_Sys_SetAlgorithmSet_Prepare
     Tss2_Sys_SetAlgorithmSet_Complete
     Tss2_Sys_SetAlgorithmSet
+    Tss2_Sys_SetCmdAuths
     Tss2_Sys_SetCommandCodeAuditStatus_Prepare
     Tss2_Sys_SetCommandCodeAuditStatus_Complete
     Tss2_Sys_SetCommandCodeAuditStatus
+    Tss2_Sys_SetDecryptParam
     Tss2_Sys_SetPrimaryPolicy_Prepare
     Tss2_Sys_SetPrimaryPolicy_Complete
     Tss2_Sys_SetPrimaryPolicy
