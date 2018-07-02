@@ -13,8 +13,12 @@
 #endif /* NO_DL */
 
 #include "tss2_tcti.h"
-#include "tss2_tcti_device.h"
 #include "tss2_tcti_mssim.h"
+#ifdef _WIN32
+#include "tss2_tcti_tbs.h"
+#else /* _WIN32 */
+#include "tss2_tcti_device.h"
+#endif /* else */
 
 #define LOGMODULE esys
 #include "util/log.h"
@@ -36,12 +40,15 @@ struct {
     { "libtss2-tcti-default.so", NULL, "", "Access libtss2-tcti-default.so" },
     { "libtss2-tcti-tabrmd.so", NULL, "", "Access libtss2-tcti-tabrmd.so" },
 #endif /* NO_DL */
-#ifndef _WIN32
+#ifdef _WIN32
+    { .init = Tss2_Tcti_Tbs_Init, .conf = "",
+      .description = "Access to TBS" },
+#else /* _WIN32 */
     { .init = Tss2_Tcti_Device_Init, .conf = "/dev/tpmrm0",
       .description = "Access to /dev/tpmrm0" },
     { .init = Tss2_Tcti_Device_Init, .conf = "/dev/tpm0",
       .description = "Access to /dev/tpm0" },
-#endif /* _WIN32 */
+#endif /* else */
 #ifdef TCTI_MSSIM
     { .init = Tss2_Tcti_Mssim_Init, .conf = "host=localhost,port=2321",
       .description = "Access to Mssim-simulator for tcp://localhost:2321" },
