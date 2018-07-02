@@ -32,7 +32,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\util\log.c" />
+    <ClCompile Include="api\Tss2_Sys_CreateLoaded.c" />
     <ClCompile Include="api\Tss2_Sys_GetRspAuths.c" />
+    <ClCompile Include="api\Tss2_Sys_PolicyAuthorizeNV.c" />
+    <ClCompile Include="api\Tss2_Sys_PolicyTemplate.c" />
     <ClCompile Include="api\Tss2_Sys_SetCmdAuths.c" />
     <ClCompile Include="api\Tss2_Sys_Initialize.c" />
     <ClCompile Include="api\Tss2_Sys_GetContextSize.c" />

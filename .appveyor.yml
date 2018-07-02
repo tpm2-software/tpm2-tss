@@ -3,6 +3,14 @@ pull_requests:
   do_not_increment_build_number: true
 skip_tags: true
 image: Visual Studio 2017
+before_build:
+  - ps: wget "ftp://ftp.gnupg.org/gcrypt/binary/gnupg-w32-2.2.8_20180613.exe" -outfile gnupg-w32-2.2.8_20180613.exe
+  - ps: 7z.exe x gnupg-w32-2.2.8_20180613.exe -o"C:\Program Files (x86)\GnuPG"
+  - C:\msys64\usr\bin\bash.exe -lc "wget -q https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.31.tar.bz2 && tar xvf libgpg-error-1.31.tar.bz2"
+  - C:\msys64\usr\bin\bash.exe -lc "export PATH=$PATH\:/mingw64/bin:/usr/bin && cd libgpg-error-1.31 && ./configure --host=x86_64-w64-mingw32 --prefix=/tmp/GnuPG && make install"
+  - C:\msys64\usr\bin\bash.exe -lc "wget -q https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.3.tar.bz2 && tar xvf libgcrypt-1.8.3.tar.bz2"
+  - C:\msys64\usr\bin\bash.exe -lc "export PATH=$PATH\:/mingw64/bin:/usr/bin && cd libgcrypt-1.8.3 && ./configure --host=x86_64-w64-mingw32 --prefix=/tmp/GnuPG --with-gpg-error-prefix=/tmp/GnuPG --disable-asm && make install"
+  - C:\msys64\usr\bin\bash.exe -lc "mv /tmp/GnuPG /c/Program\ Files/"
 configuration:
   - Debug
   - Release

@@ -1,0 +1,402 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="esys_context.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="esys_crypto.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="esys_iutil.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="esys_mu.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="esys_tcti_default.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="esys_tr.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_ActivateCredential.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_Certify.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_CertifyCreation.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_ChangeEPS.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_ChangePPS.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_Clear.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_ClearControl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_ClockRateAdjust.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_ClockSet.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_Commit.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_ContextLoad.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_ContextSave.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_Create.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_CreateLoaded.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_CreatePrimary.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_DictionaryAttackLockReset.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_DictionaryAttackParameters.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_Duplicate.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_ECC_Parameters.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_ECDH_KeyGen.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_ECDH_ZGen.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_EC_Ephemeral.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_EncryptDecrypt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_EncryptDecrypt2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_EventSequenceComplete.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_EvictControl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_FieldUpgradeData.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_FieldUpgradeStart.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_FirmwareRead.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_FlushContext.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_GetCapability.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_GetCommandAuditDigest.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_GetRandom.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_GetSessionAuditDigest.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_GetTestResult.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_GetTime.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_Hash.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_HashSequenceStart.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_HierarchyChangeAuth.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_HierarchyControl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_HMAC.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_HMAC_Start.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_Import.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_IncrementalSelfTest.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_Load.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_LoadExternal.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_MakeCredential.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_NV_Certify.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_NV_ChangeAuth.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_NV_DefineSpace.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_NV_Extend.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_NV_GlobalWriteLock.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_NV_Increment.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_NV_Read.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_NV_ReadLock.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_NV_ReadPublic.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_NV_SetBits.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_NV_UndefineSpace.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_NV_UndefineSpaceSpecial.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_NV_Write.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_NV_WriteLock.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_ObjectChangeAuth.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PCR_Allocate.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PCR_Event.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PCR_Extend.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PCR_Read.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PCR_Reset.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PCR_SetAuthPolicy.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PCR_SetAuthValue.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicyAuthorize.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicyAuthorizeNV.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicyAuthValue.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicyCommandCode.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicyCounterTimer.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicyCpHash.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicyDuplicationSelect.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicyGetDigest.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicyLocality.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicyNameHash.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicyNV.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicyNvWritten.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicyOR.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicyPassword.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicyPCR.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicyPhysicalPresence.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicyRestart.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicySecret.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicySigned.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicyTemplate.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PolicyTicket.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_PP_Commands.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_Quote.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_ReadClock.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_ReadPublic.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_Rewrap.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_RSA_Decrypt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_RSA_Encrypt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_SelfTest.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_SequenceComplete.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_SequenceUpdate.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_SetAlgorithmSet.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_SetCommandCodeAuditStatus.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_SetPrimaryPolicy.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_Shutdown.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_Sign.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_StartAuthSession.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_Startup.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_StirRandom.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_TestParms.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_Unseal.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_Vendor_TCG_Test.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_VerifySignature.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api\Esys_ZGen_2Phase.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\util\log.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="esys_crypto.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="esys_int.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="esys_iutil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="esys_mu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="esys_tcti_default.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="esys_types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\util\log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
