@@ -255,6 +255,7 @@
     <ClCompile Include="api\Esys_ZGen_2Phase.c" />
     <ClCompile Include="esys_context.c" />
     <ClCompile Include="esys_crypto.c" />
+    <ClCompile Include="esys_crypto_gcrypt.c" />
     <ClCompile Include="esys_iutil.c" />
     <ClCompile Include="esys_mu.c" />
     <ClCompile Include="esys_tcti_default.c" />
@@ -263,6 +264,7 @@
   <ItemGroup>
     <ClInclude Include="..\util\log.h" />
     <ClInclude Include="esys_crypto.h" />
+    <ClInclude Include="esys_crypto_gcrypt.h" />
     <ClInclude Include="esys_int.h" />
     <ClInclude Include="esys_iutil.h" />
     <ClInclude Include="esys_mu.h" />
