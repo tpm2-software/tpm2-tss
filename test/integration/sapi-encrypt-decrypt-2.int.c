@@ -11,6 +11,7 @@
 #define LOGMODULE test
 #include "util/log.h"
 #include "sapi-util.h"
+#include "test-esapi.h"
 #include "test.h"
 
 #define ENC_STR "test-data-test-data-test-data"
@@ -59,7 +60,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
             LOG_ERROR("Tss2_Sys_FlushContext failed with 0x%"PRIx32, rc);
             return 99; /* fatal error */
         }
-        return 77; /* skip */
+        return EXIT_SKIP;
     }
 
     if (rc != TSS2_RC_SUCCESS) {
