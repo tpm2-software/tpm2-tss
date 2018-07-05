@@ -10,6 +10,7 @@
 #include "esys_iutil.h"
 #define LOGMODULE test
 #include "util/log.h"
+#include "test-esapi.h"
 
 #define FLUSH true
 #define NOT_FLUSH false
@@ -507,7 +508,7 @@ cleanup:
     if (r == TPM2_RC_SUCCESS) {
         return 0;
     } else if (r == TPM2_RC_COMMAND_CODE) {
-        return 77; /* Skip */
+        return EXIT_SKIP;
     } else {
         return 1;
     }

@@ -11,6 +11,7 @@
 #include "util/log.h"
 #include "sapi-util.h"
 #include "test.h"
+#include "test-esapi.h"
 
 
 /* Test copmmand cancel functionality.
@@ -78,7 +79,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     rc = tcti_platform_command(tcti_context, MS_SIM_CANCEL_ON);
     if (rc == TSS2_TCTI_RC_BAD_CONTEXT) {
         LOG_DEBUG("tcti_context not suitable for command! Skipping test");
-        exit(77); /* Skip */
+        exit(EXIT_SKIP);
     } else if (rc != TPM2_RC_SUCCESS) {
         LOG_ERROR("tcti_platform_command FAILED! Response Code : 0x%x", rc);
         exit(1);
