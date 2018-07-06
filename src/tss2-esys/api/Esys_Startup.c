@@ -211,11 +211,11 @@ Esys_Startup_Finish(
         return r;
     }
     /* The following is the "regular error" handling. */
-    if (r != TSS2_RC_SUCCESS && (r & TSS2_RC_LAYER_MASK) == 0) {
+    if (r != TSS2_RC_SUCCESS && r != TPM2_RC_INITIALIZE && (r & TSS2_RC_LAYER_MASK) == 0) {
         LOG_WARNING("Received TPM Error");
         esysContext->state = _ESYS_STATE_INIT;
         return r;
-    } else if (r != TSS2_RC_SUCCESS) {
+    } else if (r != TSS2_RC_SUCCESS && r != TPM2_RC_INITIALIZE) {
         LOG_ERROR("Received a non-TPM Error");
         esysContext->state = _ESYS_STATE_INTERNALERROR;
         return r;
