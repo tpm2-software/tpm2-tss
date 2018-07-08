@@ -101,5 +101,7 @@ script:
   - popd
   - |
     if [ "$CC" == "gcc" -a -n "$COVERALLS_REPO_TOKEN" ]; then
-        coveralls --build-root=build --gcov-options '\-lp'
+        coveralls --build-root=build --exclude=cmocka --exclude=cmocka-1.1.1 \
+            --exclude=ibmtpm --exclude=include --exclude=test \
+            --gcov-options '\-lp'
     fi
