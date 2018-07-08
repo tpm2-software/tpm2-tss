@@ -95,16 +95,4 @@ script:
     else
       make -j$(nproc) check
     fi
-  - cat test-suite.log
-  - |
-    for LOG in $(ls -1 test/unit/*.log); do
-        echo "${LOG}"
-        cat ${LOG}
-    done
-  - |
-    for LOG in $(ls -1 test/integration/*.log); do
-        echo "${LOG}"
-        cat ${LOG}
-    done
-  - cat test/tpmclient/tpmclient.log
   - popd
