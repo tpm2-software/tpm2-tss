@@ -273,7 +273,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         nameKeySign,
         policySignedTicket);
 
-    if (r == TPM2_RC_COMMAND_CODE) {
+    if ((r == TPM2_RC_COMMAND_CODE) || (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
         LOG_WARNING("Command TPM2_ChangePPS not supported by TPM.");
         failure_return = EXIT_SKIP;
         goto error;
