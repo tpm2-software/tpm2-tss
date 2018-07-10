@@ -22,6 +22,7 @@ int
 test_invoke_esapi(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
+    int failure_return = EXIT_FAILURE;
 
     ESYS_TR auth_handle = ESYS_TR_RH_PLATFORM;
     TPMI_YES_NO disable = TPM2_YES;
@@ -33,6 +34,13 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         ESYS_TR_NONE,
         ESYS_TR_NONE,
         disable);
+
+    if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH) {
+        /* Platform authorization not possible test will be skipped */
+        LOG_WARNING("Platform authorization not possible.");
+        failure_return =  EXIT_SKIP;
+        goto error;
+    }
 
     goto_if_error(r, "Error: ClearControl", error);
 
@@ -59,5 +67,5 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     return EXIT_SUCCESS;
 
  error:
-    return EXIT_FAILURE;
+    return failure_return;
 }
