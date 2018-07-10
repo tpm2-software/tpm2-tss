@@ -303,7 +303,7 @@ Esys_NV_SetBits_Finish(
         return r;
     }
     /* The following is the "regular error" handling. */
-    if (r != TSS2_RC_SUCCESS && (r & TSS2_RC_LAYER_MASK) == 0) {
+    if (iesys_tpm_error(r)) {
         LOG_WARNING("Received TPM Error");
         esysContext->state = _ESYS_STATE_INIT;
         return r;
@@ -338,7 +338,7 @@ Esys_NV_SetBits_Finish(
         r = iesys_nv_get_name(&nvIndexNode->rsrc.misc.rsrc_nv_pub,
                               &nvIndexNode->rsrc.name);
         return_if_error(r, "Error get nvname")
-     }
+    }
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;
