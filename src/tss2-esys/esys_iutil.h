@@ -231,6 +231,9 @@ TSS2_RC iesys_get_name(
     TPM2B_PUBLIC *publicInfo,
     TPM2B_NAME *name);
 
+bool iesys_tpm_error(
+    TSS2_RC r);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

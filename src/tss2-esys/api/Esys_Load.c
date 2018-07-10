@@ -285,9 +285,9 @@ Esys_Load_Finish(
         return r;
 
 
-     /* Update the meta data of the ESYS_TR object */
-     objectHandleNode->rsrc.rsrcType = IESYSC_KEY_RSRC;
-     objectHandleNode->rsrc.misc.rsrc_key_pub = *esysContext->in.Load.inPublic;
+    /* Update the meta data of the ESYS_TR object */
+    objectHandleNode->rsrc.rsrcType = IESYSC_KEY_RSRC;
+    objectHandleNode->rsrc.misc.rsrc_key_pub = *esysContext->in.Load.inPublic;
 
     /*Receive the TPM response and handle resubmissions if necessary. */
     r = Tss2_Sys_ExecuteFinish(esysContext->sys, esysContext->timeout);
@@ -325,7 +325,7 @@ Esys_Load_Finish(
         goto error_cleanup;
     }
     /* The following is the "regular error" handling. */
-    if (r != TSS2_RC_SUCCESS && (r & TSS2_RC_LAYER_MASK) == 0) {
+    if (iesys_tpm_error(r)) {
         LOG_WARNING("Received TPM Error");
         esysContext->state = _ESYS_STATE_INIT;
         goto error_cleanup;
@@ -352,10 +352,10 @@ Esys_Load_Finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshaling" ,error_cleanup);
 
-     /* Check name and inPublic for consistency */
-     if (!iesys_compare_name(esysContext->in.Load.inPublic, &name)) {
-         goto_error(r, TSS2_ESYS_RC_MALFORMED_RESPONSE,
-                    "in Public name not equal name in response", error_cleanup);
+    /* Check name and inPublic for consistency */
+    if (!iesys_compare_name(esysContext->in.Load.inPublic, &name)) {
+        goto_error(r, TSS2_ESYS_RC_MALFORMED_RESPONSE,
+                   "in Public name not equal name in response", error_cleanup);
     }
     objectHandleNode->rsrc.name = name;
     esysContext->state = _ESYS_STATE_INIT;
