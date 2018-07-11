@@ -599,8 +599,12 @@ iesys_cryptogcry_pk_encrypt(TPM2B_PUBLIC * key,
         return TSS2_ESYS_RC_BAD_VALUE;
     }
     size_t offset = 0;
-    r = Tss2_MU_UINT32_Marshal(key->publicArea.parameters.rsaDetail.exponent,
-                               &exponent[0], sizeof(UINT32), &offset);
+    UINT32 exp;
+    if (key->publicArea.parameters.rsaDetail.exponent == 0)
+        exp = 65537;
+    else
+        exp = key->publicArea.parameters.rsaDetail.exponent;
+    r = Tss2_MU_UINT32_Marshal(exp, &exponent[0], sizeof(UINT32), &offset);
     if (r != TSS2_RC_SUCCESS) {
         LOG_ERROR("Marshaling");
         return r;
