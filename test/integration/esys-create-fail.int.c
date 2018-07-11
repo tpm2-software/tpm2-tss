@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG All
- * rights reserved.
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * All rights reserved.
  *******************************************************************************/
 
 #include <stdlib.h>
@@ -13,15 +13,26 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test password authentication.
+/** This test is intended to test password authentication.
+ *
  * We start by creating a primary key (Esys_CreatePrimary).
  * Based in the primary several calls with NULL parameters,
  * which should not be allowed, will be tested.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_Create() (M)
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_FlushContext() (M)
+ *
+ * Used compiler defines: TEST_ECC
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_create_fail(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
@@ -202,4 +213,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         }
     }
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_create_fail(esys_context);
 }

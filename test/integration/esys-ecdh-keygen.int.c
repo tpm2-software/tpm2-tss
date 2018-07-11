@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
  * All rights reserved.
  *******************************************************************************/
 
@@ -12,13 +12,22 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test Esys_ECDH_KeyGen based on an ECC key
- * created with Esys_CreatePrimary.
+/** This test is intended to test Esys_ECDH_KeyGen based on an ECC key
+ *  created with Esys_CreatePrimary.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_ECDH_KeyGen() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_StartAuthSession() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_ecdh_keygen(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR eccHandle = ESYS_TR_NONE;
@@ -158,4 +167,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         }
     }
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_ecdh_keygen(esys_context);
 }

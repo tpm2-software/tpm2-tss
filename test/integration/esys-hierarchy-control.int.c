@@ -13,13 +13,25 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * Test the ESAPI function Esys_HierarchyControl.
- * The owner hierarchy will be disabled and with Esys_ClockSet it will
- * be checked whether the owner hierarchy is disabled
+/** Test the ESAPI function Esys_HierarchyControl.
+ *
+ * The owner hierarchy will be disabled and with Esys_CreatePrimary it will
+ * be checked whether the owner hierarchy is disabled.
+ *
+ *\b Note: platform authorization needed.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_HierarchyControl() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SKIP
+ * @retval EXIT_SUCCESS
  */
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_hierarchy_control(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
 
@@ -47,18 +59,18 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: HierarchyControl", error);
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
-       .size = 4,
-       .sensitive = {
-           .userAuth = {
-                .size = 0,
-                .buffer = {0 },
-            },
-           .data = {
-                .size = 0,
-                .buffer = {0},
-            },
-       },
-   };
+        .size = 4,
+        .sensitive = {
+            .userAuth = {
+                 .size = 0,
+                 .buffer = {0 },
+             },
+            .data = {
+                 .size = 0,
+                 .buffer = {0},
+             },
+        },
+    };
 
       TPM2B_PUBLIC inPublic = {
         .size = 0,
@@ -150,4 +162,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     }
 
     return failure_return;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_hierarchy_control(esys_context);
 }

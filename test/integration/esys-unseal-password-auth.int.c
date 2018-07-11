@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG All
- * rights reserved.
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * All rights reserved.
  *******************************************************************************/
 
 #define _GNU_SOURCE
@@ -21,18 +21,29 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test the unseal operation for the ESAPI command
- * Unseal.
+/** This test is intended to test the unseal operation for the ESAPI command
+ *  Unseal.
+ *
  * We start by creating a primary key (Esys_CreatePrimary).
  * Based on the primary key a second key with a password and the to be sealed
  * data defined in the sensitive area will be created (Esys_Create).
  * This key will be loaded and the unseal command (Esys_Unseal) will be used
  * to retrieve the sealed data.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_Create() (M)
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_Load() (M)
+ *  - Esys_Unseal() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_unseal_password_auth(ESYS_CONTEXT * esys_context)
 {
 
     /*
@@ -309,4 +320,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     }
 
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_unseal_password_auth(esys_context);
 }

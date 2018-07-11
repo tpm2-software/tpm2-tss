@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG All
- * rights reserved.
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * All rights reserved.
  *******************************************************************************/
 
 #include <stdlib.h>
@@ -13,15 +13,27 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test the ESAPI function Esys_EncryptDecrypt.
+/** This test is intended to test the ESAPI function Esys_EncryptDecrypt.
+ *
  * First a primary key is generated. This key will be uses as parent fo a
  * symmetric key, which will be used to encrypt and decrypt a tpm2b. The
  * result will be compared.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_Create() (M)
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_EncryptDecrypt() (O)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_Load() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SKIP
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_encrypt_decrypt(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
@@ -38,13 +50,13 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         .size = 4,
         .sensitive = {
             .userAuth = {
-                .size = 0,
-                .buffer = {0 },
-            },
+                 .size = 0,
+                 .buffer = {0 },
+             },
             .data = {
-                .size = 0,
-                .buffer = {0},
-            },
+                 .size = 0,
+                 .buffer = {0},
+             },
         },
     };
 
@@ -295,4 +307,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         }
     }
     return failure_return;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_encrypt_decrypt(esys_context);
 }

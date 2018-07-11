@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG All
- * rights reserved.
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * All rights reserved.
  *******************************************************************************/
 
 #include <stdlib.h>
@@ -12,18 +12,30 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test password authentication for the ESAPI command
- * Create.
+/** This test is intended to test password authentication for the ESAPI command
+ *  Create.
+ *
  * We start by creating a primary key (Esys_CreatePrimary).
  * Based in the primary a second key with an password define in the sensitive
  * area will be created.
  * This key will be loaded and will be used as parent to create a third key.
  * Password authentication  will be used to create this key.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_Create() (M)
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_Load() (M)
+ *
+ * Used compiler defines: TEST_ECC
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_create_password_auth(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
@@ -38,13 +50,13 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         .size = 4,
         .sensitive = {
             .userAuth = {
-                .size = 0,
-                .buffer = {0 },
-            },
+                 .size = 0,
+                 .buffer = {0 },
+             },
             .data = {
-                .size = 0,
-                .buffer = {0},
-            },
+                 .size = 0,
+                 .buffer = {0},
+             },
         },
     };
 
@@ -301,7 +313,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
  error:
 
-   if (loadedKeyHandle != ESYS_TR_NONE) {
+    if (loadedKeyHandle != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, loadedKeyHandle) != TSS2_RC_SUCCESS) {
             LOG_ERROR("Cleanup loadedKeyHandle failed.");
         }
@@ -314,4 +326,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     }
 
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_create_password_auth(esys_context);
 }

@@ -12,17 +12,26 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test the change of an authorization value of
- * a hierarchy.
+/** This test is intended to test the change of an authorization value of
+ *  a hierarchy.
+ *
  * To check whether the change was successful a primary key is created
  * with the handle of this hierarchy and the new authorization.
  * Also second primary is created after a call of Esys_TR_SetAuth with
  * the new auth value.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_HierarchyChangeAuth() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_hierarchychangeauth(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
@@ -49,18 +58,18 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     auth_changed = true;
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
-       .size = 4,
-       .sensitive = {
-           .userAuth = {
-                .size = 0,
+        .size = 4,
+        .sensitive = {
+            .userAuth = {
+                 .size = 0,
                 .buffer = {0 },
-            },
-           .data = {
-                .size = 0,
+             },
+            .data = {
+                 .size = 0,
                 .buffer = {0},
-            },
-       },
-   };
+             },
+        },
+    };
 
       TPM2B_PUBLIC inPublic = {
         .size = 0,
@@ -169,4 +178,9 @@ error:
     }
 
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_hierarchychangeauth(esys_context);
 }

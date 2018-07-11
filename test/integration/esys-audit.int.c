@@ -13,17 +13,34 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test the ESAPI audit commands.
+/** This test is intended to test the ESAPI audit commands.
+ *
  * First a key for signing the audit digest is computed.
  * A audit session is started, and for the command GetCapability the
  * command audit digest and the session audit digest is computed.
  * (Esys_GetCommandAuditDigest, Esys_GetSessionAuditDigest). In the
  * last test the audit hash alg is changed with Esys_SetCommandCodeAuditStatus.
+ *
+ *\b Note: platform authorization needed.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_GetCapability() (M)
+ *  - Esys_GetCommandAuditDigest() (O)
+ *  - Esys_GetSessionAuditDigest() (M)
+ *  - Esys_SetCommandCodeAuditStatus() (O)
+ *  - Esys_StartAuthSession() (M)
+ *  - Esys_StartAuthSession() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SKIP
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_audit(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR signHandle = ESYS_TR_NONE;
@@ -130,7 +147,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                               NULL,
                               sessionType, &symmetric, authHash, &session);
 
-    goto_if_error(r, "Error Esys_StartAuthSessiony", error);
+    goto_if_error(r, "Error Esys_StartAuthSession", error);
     r = Esys_TRSess_SetAttributes(esys_context, session, sessionAttributes,
                                   0xff);
     goto_if_error(r, "Error Esys_TRSess_SetAttributes", error);
@@ -237,4 +254,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         }
     }
     return failure_return;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_audit(esys_context);
 }

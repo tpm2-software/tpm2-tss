@@ -12,13 +12,21 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * Test the ESAPI commands HashSequenceStart, SequenceUpdate,
- * and EventSequenceComplete.
+/** Test the ESAPI commands HashSequenceStart, SequenceUpdate,
+ *  and EventSequenceComplete.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_EventSequenceComplete() (M)
+ *  - Esys_HashSequenceStart() (M)
+ *  - Esys_SequenceUpdate() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_event_sequence_complete(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
 
@@ -73,4 +81,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
  error:
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_event_sequence_complete(esys_context);
 }

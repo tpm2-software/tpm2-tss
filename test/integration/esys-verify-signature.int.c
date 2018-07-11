@@ -13,12 +13,22 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test the ESAPI signing and signature verification.
+/** This test is intended to test the ESAPI signing and signature verification.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_ReadPublic() (M)
+ *  - Esys_Sign() (M)
+ *  - Esys_VerifySignature() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_verify_signature(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
@@ -179,4 +189,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     }
 
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_verify_signature(esys_context);
 }

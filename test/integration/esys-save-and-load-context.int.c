@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG All
- * rights reserved.
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * All rights reserved.
  *******************************************************************************/
 
 #include <stdlib.h>
@@ -12,18 +12,32 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test context save and load.
+/** This test is intended to test context save and load.
+ *
  * We start by creating a primary key (Esys_CreatePrimary).
  * Based in the primary a second key with an password define in the sensitive
  * area will be created.
  * This key will be loaded and saved with the ContextSave command.
  * After the key is flushed the key will be loaded again with ContextLoad
  * and will be used to create a third key
+ *
+ * Tested ESAPI commands:
+ *  - Esys_ContextLoad() (M)
+ *  - Esys_ContextSave() (M)
+ *  - Esys_Create() (M)
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_Load() (M)
+ *
+ * Used compiler defines: TEST_ECC
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_save_and_load_context(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
@@ -36,18 +50,18 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     };
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
-       .size = 4,
-       .sensitive = {
-           .userAuth = {
-                .size = 0,
-                .buffer = {0 },
-            },
-           .data = {
-                .size = 0,
-                .buffer = {0},
-            },
-       },
-   };
+        .size = 4,
+        .sensitive = {
+            .userAuth = {
+                 .size = 0,
+                 .buffer = {0 },
+             },
+            .data = {
+                 .size = 0,
+                 .buffer = {0},
+             },
+        },
+    };
 
     inSensitivePrimary.sensitive.userAuth = authValuePrimary;
 
@@ -333,4 +347,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     }
 
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_save_and_load_context(esys_context);
 }

@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG All
- * rights reserved.
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * All rights reserved.
  *******************************************************************************/
 
 #include <stdlib.h>
@@ -13,14 +13,27 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test the command Esys_NV_Certify.
+/** This test is intended to test the command Esys_NV_Certify.
+ *
  * We create a RSA primary signing key which will be used as signing key
  * for the NV data.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_NV_Certify() (O)
+ *  - Esys_NV_DefineSpace() (M)
+ *  - Esys_NV_UndefineSpace() (M)
+ *  - Esys_NV_Write() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SKIP
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_nv_certify(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR signHandle = ESYS_TR_NONE;
@@ -230,4 +243,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     }
 
     return failure_return;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_nv_certify(esys_context);
 }

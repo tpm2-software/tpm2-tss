@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG All
- * rights reserved.
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * All rights reserved.
  *******************************************************************************/
 
 #include <stdlib.h>
@@ -13,18 +13,30 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test the ESAPI command PolicyPassword.
+/** This test is intended to test the ESAPI command PolicyPassword.
+ *
  * First in a trial session the policy value to ensure that auth value
  * is included in the policy session used for authorization is
  * computed.
  * We start by creating a primary key (Esys_CreatePrimary) with this
  * policy value and a certain authorization. Than a second key it created
  * with a PoliyPassword policy session.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_Create() (M)
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_PolicyGetDigest() (M)
+ *  - Esys_PolicyPassword() (M)
+ *  - Esys_StartAuthSession() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_policy_password(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
@@ -284,4 +296,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     }
 
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_policy_password(esys_context);
 }

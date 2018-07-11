@@ -8,18 +8,13 @@
 #include "tss2_mu.h"
 
 #include "esys_iutil.h"
+#include "test-esapi.h"
 #define LOGMODULE test
 #include "util/log.h"
 #include "test-esapi.h"
 
 #define FLUSH true
 #define NOT_FLUSH false
-
-/*
- * This test is intended to test the ESAPI policy commands, not tested
- * in other test cases. When possoble the commands are tested with a
- * trial session and the policy digest is compared with the expected digest.
- */
 
 /*
  * Function to compare policy digest with expected digest.
@@ -65,8 +60,37 @@ cmp_policy_digest(ESYS_CONTEXT * esys_context,
     return false;
 }
 
+/** This test is intended to test the ESAPI policy commands, not tested
+ *  in other test cases.
+ *  When possoble the commands are tested with a
+ * trial session and the policy digest is compared with the expected digest.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_FlushContext() (M)
+ *  - Esys_NV_DefineSpace() (M)
+ *  - Esys_NV_UndefineSpace() (M)
+ *  - Esys_PolicyAuthorizeNV() (F)
+ *  - Esys_PolicyCounterTimer() (M)
+ *  - Esys_PolicyDuplicationSelect() (M)
+ *  - Esys_PolicyGetDigest() (M)
+ *  - Esys_PolicyNV() (M)
+ *  - Esys_PolicyNameHash() (M)
+ *  - Esys_PolicyNvWritten() (M)
+ *  - Esys_PolicyOR() (M)
+ *  - Esys_PolicyPCR() (M)
+ *  - Esys_PolicyPhysicalPresence() (O)
+ *  - Esys_PolicyRestart() (M)
+ *  - Esys_PolicyTemplate() (F)
+ *  - Esys_SetPrimaryPolicy() (M)
+ *  - Esys_StartAuthSession() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SKIP
+ * @retval EXIT_SUCCESS
+ */
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_policy_regression(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     int failure_return = EXIT_FAILURE;
@@ -551,3 +575,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     return failure_return;
 }
 
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_policy_regression(esys_context);
+}

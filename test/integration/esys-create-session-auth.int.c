@@ -11,9 +11,9 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test parameter encryption/decryption, session management,
- * hmac computation, and session key generation.
+/** This test is intended to test parameter encryption/decryption, session management,
+ *  hmac computation, and session key generation.
+ *
  * We start by creating a primary key (Esys_CreatePrimary).
  * The primary key will be used as tpmKey for Esys_StartAuthSession. Parameter
  * encryption and decryption will be activated for the session.
@@ -24,10 +24,25 @@
  * TEST_XOR_OBFUSCATION or TEST_AES_ENCRYPTION.
  * Secret exchange with a ECC key can be activated with the compiler variable
  * -D TEST_ECC.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_ContextLoad() (M)
+ *  - Esys_ContextSave() (M)
+ *  - Esys_Create() (M)
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_Load() (M)
+ *  - Esys_StartAuthSession() (M)
+ *
+ * Used compiler defines: TEST_ECC
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
@@ -423,4 +438,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
 
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_create_session_auth(esys_context);
 }

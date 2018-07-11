@@ -12,13 +12,27 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * Test the ESAPI commands: HMAC_Start, SequenceUpdate, and SequenceComplete.
+/** Test the ESAPI commands: HMAC_Start, SequenceUpdate, and SequenceComplete.
+ *
  * The HMAC key is created by using Esys_CreatePrimary.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_HMAC_Start() (M)
+ *  - Esys_SequenceComplete() (M)
+ *  - Esys_SequenceUpdate() (M)
+ *  - Esys_StartAuthSession() (M)
+ *
+ * Used compiler defines: TEST_SESSION
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_hmacsequencestart(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
@@ -186,4 +200,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 #endif
 
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_hmacsequencestart(esys_context);
 }

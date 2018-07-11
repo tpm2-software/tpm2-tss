@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG All
- * rights reserved.
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * All rights reserved.
  *******************************************************************************/
 
 #include <stdlib.h>
@@ -12,18 +12,28 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test EvictControl and ESAPI Serialization.
+/** This test is intended to test EvictControl and ESAPI Serialization.
+ *
  * We start by creating a primary key (Esys_CreatePrimary). Based on this
  * key a persistent object is created (Esys_EvictControl). The resource of
  * this object will be serialized and deserialized with the corresponding
  * ESAPI functions (Esys_TR_Serialize, Esys_TR_Deserialize).
  * To check whether the deserialization was successful a new object will
  * be created with the handle returned by the deserialize function.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_Create() (M)
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_EvictControl() (M)
+ *  - Esys_FlushContext() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_evict_control_serialization(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
@@ -257,4 +267,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     }
 
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_evict_control_serialization(esys_context);
 }

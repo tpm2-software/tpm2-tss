@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG All
- * rights reserved.
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * All rights reserved.
  *******************************************************************************/
 
 #include <stdlib.h>
@@ -13,16 +13,32 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test the ESAPI command Esys_UndefineSpaceSpecial,
- * The NV space attributes TPMA_NV_PLATFORMCREATE and TPMA_NV_POLICY_DELETE
- * have to be set.
+/** This test is intended to test the ESAPI command Esys_NV_UndefineSpaceSpecial,
+ *  The NV space attributes TPMA_NV_PLATFORMCREATE and TPMA_NV_POLICY_DELETE
+ *  have to be set.
+ *
  * A policy has to be defined for the command UndefineSpaceSpecial.
  * The special handling whether the auth value is not used in the HMAC
  * response verification will be checked.
+ *
+ *\b Note: platform authorization needed.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_FlushContext() (M)
+ *  - Esys_NV_DefineSpace() (M)
+ *  - Esys_NV_UndefineSpaceSpecial() (M)
+ *  - Esys_PolicyAuthValue() (M)
+ *  - Esys_PolicyCommandCode() (M)
+ *  - Esys_PolicyGetDigest() (M)
+ *  - Esys_StartAuthSession() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SKIP
+ * @retval EXIT_SUCCESS
  */
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_policy_nv_undefine_special(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR nvHandle = ESYS_TR_NONE;
@@ -193,4 +209,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     }
 
     return failure_return;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_policy_nv_undefine_special(esys_context);
 }

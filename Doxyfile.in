@@ -781,8 +781,67 @@ INPUT                  = @top_srcdir@/doc/coding_standard_c.md \
                          @top_srcdir@/doc/doxygen.dox \
                          @top_srcdir@/README.md \
                          @top_srcdir@/include/tss2/tss2_esys.h \
-                         @top_srcdir@/src/tss2-esys
-
+                         @top_srcdir@/src/tss2-esys \
+                         @top_srcdir@/test/integration/esys-audit.int.c \
+                         @top_srcdir@/test/integration/esys-certify-creation.int.c \
+                         @top_srcdir@/test/integration/esys-certify.int.c \
+                         @top_srcdir@/test/integration/esys-change-eps.int.c \
+                         @top_srcdir@/test/integration/esys-clear-control.int.c \
+                         @top_srcdir@/test/integration/esys-clear.int.c \
+                         @top_srcdir@/test/integration/esys-clockset.int.c \
+                         @top_srcdir@/test/integration/esys-commit.int.c \
+                         @top_srcdir@/test/integration/esys-create-fail.int.c \
+                         @top_srcdir@/test/integration/esys-create-password-auth.int.c \
+                         @top_srcdir@/test/integration/esys-create-primary-hmac.int.c \
+                         @top_srcdir@/test/integration/esys-create-session-auth.int.c \
+                         @top_srcdir@/test/integration/esys-createloaded.int.c \
+                         @top_srcdir@/test/integration/esys-duplicate.int.c \
+                         @top_srcdir@/test/integration/esys-ecc-parameters.int.c \
+                         @top_srcdir@/test/integration/esys-ecdh-keygen.int.c \
+                         @top_srcdir@/test/integration/esys-ecdh-zgen.int.c \
+                         @top_srcdir@/test/integration/esys-encrypt-decrypt.int.c \
+                         @top_srcdir@/test/integration/esys-event-sequence-complete.int.c \
+                         @top_srcdir@/test/integration/esys-evict-control-serialization.int.c \
+                         @top_srcdir@/test/integration/esys-field-upgrade.int.c \
+                         @top_srcdir@/test/integration/esys-firmware-read.int.c \
+                         @top_srcdir@/test/integration/esys-get-capability.int.c \
+                         @top_srcdir@/test/integration/esys-get-random.int.c \
+                         @top_srcdir@/test/integration/esys-get-time.int.c \
+                         @top_srcdir@/test/integration/esys-hashsequencestart.int.c \
+                         @top_srcdir@/test/integration/esys-hierarchy-control.int.c \
+                         @top_srcdir@/test/integration/esys-hierarchychangeauth.int.c \
+                         @top_srcdir@/test/integration/esys-hmacsequencestart.int.c \
+                         @top_srcdir@/test/integration/esys-import.int.c \
+                         @top_srcdir@/test/integration/esys-lock.int.c \
+                         @top_srcdir@/test/integration/esys-make-credential.int.c \
+                         @top_srcdir@/test/integration/esys-nv-certify.int.c \
+                         @top_srcdir@/test/integration/esys-nv-ram-counter.int.c \
+                         @top_srcdir@/test/integration/esys-nv-ram-extend-index.int.c \
+                         @top_srcdir@/test/integration/esys-nv-ram-ordinary-index.int.c \
+                         @top_srcdir@/test/integration/esys-nv-ram-set-bits.int.c \
+                         @top_srcdir@/test/integration/esys-object-changeauth.int.c \
+                         @top_srcdir@/test/integration/esys-pcr-auth-value.int.c \
+                         @top_srcdir@/test/integration/esys-pcr-basic.int.c \
+                         @top_srcdir@/test/integration/esys-policy-authorize.int.c \
+                         @top_srcdir@/test/integration/esys-policy-nv-changeauth.int.c \
+                         @top_srcdir@/test/integration/esys-policy-nv-undefine-special.int.c \
+                         @top_srcdir@/test/integration/esys-policy-password.int.c \
+                         @top_srcdir@/test/integration/esys-policy-regression.int.c \
+                         @top_srcdir@/test/integration/esys-policy-ticket.int.c \
+                         @top_srcdir@/test/integration/esys-pp-commands.int.c \
+                         @top_srcdir@/test/integration/esys-quote.int.c \
+                         @top_srcdir@/test/integration/esys-rsa-encrypt-decrypt.int.c \
+                         @top_srcdir@/test/integration/esys-save-and-load-context.int.c \
+                         @top_srcdir@/test/integration/esys-set-algorithm-set.int.c \
+                         @top_srcdir@/test/integration/esys-stir-random.int.c \
+                         @top_srcdir@/test/integration/esys-testparms.int.c \
+                         @top_srcdir@/test/integration/esys-tpm-tests.int.c \
+                         @top_srcdir@/test/integration/esys-tr-fromTpmPublic-key.int.c \
+                         @top_srcdir@/test/integration/esys-tr-fromTpmPublic-nv.int.c \
+                         @top_srcdir@/test/integration/esys-tr-getName-hierarchy.int.c \
+                         @top_srcdir@/test/integration/esys-unseal-password-auth.int.c \
+                         @top_srcdir@/test/integration/esys-verify-signature.int.c \
+                         @top_srcdir@/test/integration/esys-zgen-2phase.int.c 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
 # libiconv (or the iconv built into libc) for the transcoding. See the libiconv
