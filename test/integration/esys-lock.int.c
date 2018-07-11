@@ -13,10 +13,23 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/* Test the ESAPI functions related to TPM locks  */
+/** Test the ESAPI functions related to TPM locks. 
+ *
+ *\b Note: platform authorization needed.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_DictionaryAttackLockReset() (M)
+ *  - Esys_DictionaryAttackParameters() (M)
+ *  - Esys_NV_GlobalWriteLock() (O)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SKIP
+ * @retval EXIT_SUCCESS
+ */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_lock(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     int failure_return = EXIT_FAILURE;
@@ -60,4 +73,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
   error:
     return failure_return;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_lock(esys_context);
 }

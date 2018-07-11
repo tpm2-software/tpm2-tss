@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
  * All rights reserved.
  *******************************************************************************/
 
@@ -13,13 +13,27 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test Esys_ECDH_ZGen.  based on an ECC key
- * created with Esys_CreatePrimary and data produce by the command Esys_Ephemeral.
+/** This test is intended to test Esys_ECDH_ZGen.
+ * 
+ * The test is based on an ECC key created with Esys_CreatePrimary
+ * and data produced by the command Esys_EC_Ephemeral.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_ECDH_ZGen() (M)
+ *  - Esys_EC_Ephemeral() (F)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_StartAuthSession() (M)
+ *  - Esys_ZGen_2Phase() (O)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SKIP
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_zgen_2phase(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR eccHandle = ESYS_TR_NONE;
@@ -194,11 +208,16 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         }
     }
 
-   if (session != ESYS_TR_NONE) {
+    if (session != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, session) != TSS2_RC_SUCCESS) {
             LOG_ERROR("Cleanup session failed.");
         }
     }
 
     return failure_return;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_zgen_2phase(esys_context);
 }

@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG All
- * rights reserved.
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * All rights reserved.
  *******************************************************************************/
 
 #include <stdlib.h>
@@ -13,17 +13,34 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test the ESAPI commands  nv define space, nv write,
- * nv read command, nv lock write and nv lock read, and nv undefine.
+/** This test is intended to test the ESAPI commands  nv define space, nv write,
+ *  nv read command, nv lock write and nv lock read, and nv undefine.
+ *
  * The names stored in the ESAPI resource are compared
  * with the names delivered from the TPM by the command ReadPublic.
  * only one of the tests NV_ReadLock and NV_WriteLock can be activated
  * by the defines TEST_READ_LOCK and TEST_WRITE_LOCK (-D option)
+ *
+ * Tested ESAPI commands:
+ *  - Esys_FlushContext() (M)
+ *  - Esys_NV_DefineSpace() (M)
+ *  - Esys_NV_Read() (M)
+ *  - Esys_NV_ReadLock() (M)
+ *  - Esys_NV_ReadPublic() (M)
+ *  - Esys_NV_UndefineSpace() (M)
+ *  - Esys_NV_Write() (M)
+ *  - Esys_NV_WriteLock() (M)
+ *  - Esys_StartAuthSession() (M)
+ *
+ * Used compiler defines: TEST_READ_LOCK TEST_SESSIONi TEST_WRITE_LOCK
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_nv_ram_ordinary_index(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR nvHandle = ESYS_TR_NONE;
@@ -326,4 +343,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     }
 #endif
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_nv_ram_ordinary_index(esys_context);
 }

@@ -14,14 +14,32 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test the ESAPI policy commands related to
- * signed authorization actions.
+/** This test is intended to test the ESAPI policy commands related to
+ *  signed authorization actions.
+ *
  * Esys_PolicySigned, Esys_PolicyTicket, and Esys_PolicySecret.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_HashSequenceStart() (M)
+ *  - Esys_PolicySecret() (M)
+ *  - Esys_PolicySigned() (M)
+ *  - Esys_PolicyTicket() (O)
+ *  - Esys_ReadPublic() (M)
+ *  - Esys_SequenceComplete() (M)
+ *  - Esys_SequenceUpdate() (M)
+ *  - Esys_Sign() (M)
+ *  - Esys_StartAuthSession() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SKIP
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
@@ -354,4 +372,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     }
 
     return failure_return;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_policy_ticket(esys_context);
 }

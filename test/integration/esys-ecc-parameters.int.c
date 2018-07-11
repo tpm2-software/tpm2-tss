@@ -13,9 +13,18 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/* Test the ESAPI function Esys_ECC_Parameters */
+/** Test the ESAPI function Esys_ECC_Parameters. 
+ *
+ * Tested ESAPI commands:
+ *  - Esys_ECC_Parameters() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SKIP
+ * @retval EXIT_SUCCESS
+ */
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_ecc_parameters(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     int failure_return = EXIT_FAILURE;
@@ -42,4 +51,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
  error:
     return failure_return;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_ecc_parameters(esys_context);
 }

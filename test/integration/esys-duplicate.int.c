@@ -14,17 +14,35 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test the ESAPI commands Duplicate and Rewrap.
+/** This test is intended to test the ESAPI commands Duplicate and Rewrap.
+ *
  * We start by creating a primary key (Esys_CreatePrimary).
  * This primary key will be used as parent key for the Duplicate
  * command. A second primary key will be the parent key of the
  * duplicated key. In the last step the key is rewrapped with the
  * first primary key as parent key.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_Create() (M)
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_Duplicate() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_Load() (M)
+ *  - Esys_PolicyAuthValue() (M)
+ *  - Esys_PolicyCommandCode() (M)
+ *  - Esys_PolicyGetDigest() (M)
+ *  - Esys_ReadPublic() (M)
+ *  - Esys_Rewrap() (O)
+ *  - Esys_StartAuthSession() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SKIP
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_duplicate(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
@@ -440,4 +458,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     }
 
     return failure_return;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_duplicate(esys_context);
 }

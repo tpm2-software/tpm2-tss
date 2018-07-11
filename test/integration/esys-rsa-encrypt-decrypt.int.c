@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG All
- * rights reserved.
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * All rights reserved.
  *******************************************************************************/
 
 #include <stdlib.h>
@@ -12,16 +12,26 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test RSA encryption / decryption. with password
+/** This test is intended to test RSA encryption / decryption.
+ *  with password
  * authentication.
  * We create a RSA primary key (Esys_CreatePrimary) for every crypto action
  * This key will be used for encryption/decryption in with the schemes:
  * TPM2_ALG_NULL, TPM2_ALG_RSAES, and TPM2_ALG_OAEP
+ *
+ * Tested ESAPI commands:
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_RSA_Decrypt() (M)
+ *  - Esys_RSA_Encrypt() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_rsa_encrypt_decrypt(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
@@ -178,4 +188,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     }
 
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_rsa_encrypt_decrypt(esys_context);
 }

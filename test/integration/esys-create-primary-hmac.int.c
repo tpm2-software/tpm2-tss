@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
  * All rights reserved.
  *******************************************************************************/
 
@@ -12,14 +12,25 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test Esys_CreatePrimary with hmac verification.
+/** This test is intended to test Esys_CreatePrimary with hmac verification.
+ *
  * The test can be executed with RSA or ECC keys. ECC will be used if
  * ECC is defined.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_StartAuthSession() (M)
+ *
+ * Used compiler defines: TEST_ECC
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_create_primary_hmac(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR objectHandle = ESYS_TR_NONE;
@@ -193,4 +204,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
 
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_create_primary_hmac(esys_context);
 }

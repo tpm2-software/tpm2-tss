@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG All
- * rights reserved.
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * All rights reserved.
  *******************************************************************************/
 
 #include <stdlib.h>
@@ -12,14 +12,29 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test the ESAPI nv define space, nv extend, and
- * nv read command. The names stored in the ESAPI resource are compared
+/** This test is intended to test the ESAPI nv define space, nv extend, and
+ *  nv read command.
+ *  The names stored in the ESAPI resource are compared
  * with the names delivered from the TPM by the command ReadPublic.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_FlushContext() (M)
+ *  - Esys_NV_DefineSpace() (M)
+ *  - Esys_NV_Extend() (M)
+ *  - Esys_NV_Read() (M)
+ *  - Esys_NV_ReadPublic() (M)
+ *  - Esys_NV_UndefineSpace() (M)
+ *  - Esys_StartAuthSession() (M)
+ *
+ * Used compiler defines: TEST_SESSION
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_nv_ram_extend_index(ESYS_CONTEXT * esys_context)
 {
 
     TSS2_RC r;
@@ -52,25 +67,25 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
                                 20, 21, 22, 23, 24, 25, 26, 27, 28, 29}};
 
     TPM2B_NV_PUBLIC publicInfo = {
-            .size = 0,
-            .nvPublic = {
-                .nvIndex =TPM2_NV_INDEX_FIRST,
-                .nameAlg = TPM2_ALG_SHA1,
-                .attributes = (
-                    TPMA_NV_OWNERWRITE |
-                    TPMA_NV_AUTHWRITE |
-                    TPMA_NV_WRITE_STCLEAR |
-                    TPMA_NV_AUTHREAD |
-                    TPMA_NV_OWNERREAD |
-                    TPM2_NT_EXTEND << TPMA_NV_TPM2_NT_SHIFT
-                 ),
-                .authPolicy = {
-                         .size = 0,
-                         .buffer = {},
-                     },
-                .dataSize = 20,
-            }
-        };
+        .size = 0,
+        .nvPublic = {
+            .nvIndex =TPM2_NV_INDEX_FIRST,
+            .nameAlg = TPM2_ALG_SHA1,
+            .attributes = (
+                TPMA_NV_OWNERWRITE |
+                TPMA_NV_AUTHWRITE |
+                TPMA_NV_WRITE_STCLEAR |
+                TPMA_NV_AUTHREAD |
+                TPMA_NV_OWNERREAD |
+                TPM2_NT_EXTEND << TPMA_NV_TPM2_NT_SHIFT
+                ),
+            .authPolicy = {
+                 .size = 0,
+                 .buffer = {},
+             },
+            .dataSize = 20,
+        }
+    };
 
     r = Esys_NV_DefineSpace (
         esys_context,
@@ -233,4 +248,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 #endif
 
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_nv_ram_extend_index(esys_context);
 }

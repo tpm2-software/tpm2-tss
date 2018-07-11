@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG All
- * rights reserved.
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * All rights reserved.
  *******************************************************************************/
 
 #include <stdlib.h>
@@ -12,19 +12,33 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test the ESAPI commands PolicyAuthValue,
- * PolicyCommandCode, Esys_PolicyGetDigest, and NV_ChangeAuth.
+/** This test is intended to test the ESAPI commands PolicyAuthValue,
+ *  PolicyCommandCode, Esys_PolicyGetDigest, and NV_ChangeAuth.
+ *
  * First in a trial session the policy value to ensure that the auth value
  * is included in the policy session used for NV_ChangeAuth is
  * computed.
  * A NV ram space with this policy is defined afterwards.
  * With a real policy session  the auth value of this NV ram space
  * will be changed.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_FlushContext() (M)
+ *  - Esys_NV_ChangeAuth() (M)
+ *  - Esys_NV_DefineSpace() (M)
+ *  - Esys_NV_UndefineSpace() (M)
+ *  - Esys_PolicyAuthValue() (M)
+ *  - Esys_PolicyCommandCode() (M)
+ *  - Esys_PolicyGetDigest() (M)
+ *  - Esys_StartAuthSession() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_policy_nv_changeauth(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR nvHandle = ESYS_TR_NONE;
@@ -203,4 +217,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     }
 
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_policy_nv_changeauth(esys_context);
 }

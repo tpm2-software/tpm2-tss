@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG All
- * rights reserved.
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * All rights reserved.
  *******************************************************************************/
 
 #include <stdlib.h>
@@ -12,18 +12,35 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test the function Esys_MakeCredential
- * We start by creating a primary key (Esys_CreatePrimary).
+/** This test is intended to test the function Esys_MakeCredential
+ *  We start by creating a primary key (Esys_CreatePrimary).
+ *
  * Based in the primary a second key will be created.
  * The public part of the key will be loaded by the function
  * Esys_LoadExternal. A credential will be encrypted with this
  * key with the command Esys_MakeCredential. The credential
  * will be activated with Esys_ActivateCredential.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_ActivateCredential() (M)
+ *  - Esys_Create() (M)
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_Load() (M)
+ *  - Esys_LoadExternal() (M)
+ *  - Esys_MakeCredential() (M)
+ *  - Esys_ReadPublic() (M)
+ *  - Esys_StartAuthSession() (M)
+ *
+ * Used compiler defines: TEST_SESSION
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_make_credential(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
@@ -372,7 +389,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         }
     }
 
-   if (session2 != ESYS_TR_NONE) {
+    if (session2 != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, session2) != TSS2_RC_SUCCESS) {
             LOG_ERROR("Cleanup session2 failed.");
         }
@@ -392,4 +409,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     }
 
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_make_credential(esys_context);
 }

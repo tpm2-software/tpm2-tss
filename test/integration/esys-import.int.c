@@ -13,17 +13,34 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test the ESAPI commands Duplicate and Import.
+/** This test is intended to test the ESAPI commands Duplicate and Import.
+ *
  * We start by creating a primary key (Esys_CreatePrimary).
  * This primary key will be used as parent key for the Duplicate
  * command. A second primary key will be the parent key of the
  * duplicated key. In the last step the key is imported with the
  * first primary key as parent key (Esys_Import).
+ *
+ * Tested ESAPI commands:
+ *  - Esys_Create() (M)
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_Duplicate() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_Import() (M)
+ *  - Esys_Load() (M)
+ *  - Esys_PolicyAuthValue() (M)
+ *  - Esys_PolicyCommandCode() (M)
+ *  - Esys_PolicyGetDigest() (M)
+ *  - Esys_ReadPublic() (M)
+ *  - Esys_StartAuthSession() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_import(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
@@ -411,7 +428,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
  error:
 
-   if (policySession != ESYS_TR_NONE) {
+    if (policySession != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, policySession) != TSS2_RC_SUCCESS) {
             LOG_ERROR("Cleanup policySession failed.");
         }
@@ -428,17 +445,22 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         }
     }
 
-   if (primaryHandle != ESYS_TR_NONE) {
+    if (primaryHandle != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, primaryHandle) != TSS2_RC_SUCCESS) {
             LOG_ERROR("Cleanup primaryHandle failed.");
         }
     }
 
-   if (primaryHandle2 != ESYS_TR_NONE) {
+    if (primaryHandle2 != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, primaryHandle2) != TSS2_RC_SUCCESS) {
             LOG_ERROR("Cleanup primaryHandle2 failed.");
         }
     }
 
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_import(esys_context);
 }

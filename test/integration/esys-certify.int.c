@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG All
- * rights reserved.
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * All rights reserved.
  *******************************************************************************/
 
 #include <stdlib.h>
@@ -12,14 +12,23 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test the command Esys_Certify.
+/** This test is intended to test the command Esys_Certify.
+ *
  * We create a RSA primary signing key which will be used as signing key
  * and as object for the certify command.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_Certify() (M)
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_FlushContext() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_certify(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR signHandle = ESYS_TR_NONE;
@@ -147,4 +156,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
         }
     }
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_certify(esys_context);
 }

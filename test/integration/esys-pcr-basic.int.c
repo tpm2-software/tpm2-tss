@@ -13,13 +13,25 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * Test the basic commands for PCR processing: Esys_PCR_Extend, Esys_PCR_Read,
- * Esys_PCR_Reset, Esys_PCR_Event, and Esys_PCR_Allocate
+/** Test the basic commands for PCR processing.
+ *
+ *\b Note: platform authorization needed.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_PCR_Allocate() (M)
+ *  - Esys_PCR_Event() (M)
+ *  - Esys_PCR_Extend() (M)
+ *  - Esys_PCR_Read() (M)
+ *  - Esys_PCR_Reset() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SKIP
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_pcr_basic(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     int failure_return = EXIT_FAILURE;
@@ -131,4 +143,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
  error:
     return failure_return;
 
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_pcr_basic(esys_context);
 }

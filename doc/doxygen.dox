@@ -1055,8 +1055,87 @@ Both the synchronous and asynchronous API are exposed through a single library: 
 
 /*!
  \defgroup Testgroup Testing
- \todo Description and Documentat of functions \{
+ \{
+ @brief \{
+ For every integration test a function with a name corresponding to the name of the source code
+file of the test is created:
+test_esys_<test_name>(ESYS_CONTEXT * esys_context).
+This function is called by the standard function test_invoke_esapi in every integration test. 
 
+For some tests different test cases can be created with compiler defines to avoid duplicate
+code in different test cases.The following defines are used and listed in the function's
+documentation if used:
+- TEST_ECC Create an ECC key instead of an RSA key.
+- TEST_SESSION Use session authentication instead of password authentication.
+- TEST_READ_LOCK Activate test of Esys_NV_ReadLock.
+- TEST_WRITE_LOCK Activate test of Esys_NV_WriteLock.
+
+The ESAPI command calls which are used in a test are listed in the function's documentation
+and are marked according to the PC Client Profile Revision 01.03 v22:
+- (M) Mandatory
+- (O) Optional
+- (F) Commands added after TPM Specification Rev. 1.16 is integrated. 
+\}
+\{
+\fn test_esys_evict_control_serialization(ESYS_CONTEXT * esys_context)
+ \fn test_esys_lock(ESYS_CONTEXT * esys_context)
+ \fn test_esys_get_capability(ESYS_CONTEXT * esys_context)
+ \fn test_esys_zgen_2phase(ESYS_CONTEXT * esys_context)
+ \fn test_esys_verify_signature(ESYS_CONTEXT * esys_context)
+ \fn test_esys_import(ESYS_CONTEXT * esys_context)
+ \fn test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
+ \fn test_esys_change_eps(ESYS_CONTEXT * esys_context)
+ \fn test_esys_policy_nv_undefine_special(ESYS_CONTEXT * esys_context)
+ \fn test_esys_create_fail(ESYS_CONTEXT * esys_context)
+ \fn test_esys_testparms(ESYS_CONTEXT * esys_context)
+ \fn test_esys_create_password_auth(ESYS_CONTEXT * esys_context)
+ \fn test_esys_stir_random(ESYS_CONTEXT * esys_context)
+ \fn test_esys_clockset(ESYS_CONTEXT * esys_context)
+ \fn test_esys_clear_control(ESYS_CONTEXT * esys_context)
+ \fn test_esys_nv_ram_extend_index(ESYS_CONTEXT * esys_context)
+ \fn test_esys_save_and_load_context(ESYS_CONTEXT * esys_context)
+ \fn test_esys_encrypt_decrypt(ESYS_CONTEXT * esys_context)
+ \fn test_esys_createloaded(ESYS_CONTEXT * esys_context)
+ \fn test_esys_audit(ESYS_CONTEXT * esys_context)
+ \fn test_esys_policy_password(ESYS_CONTEXT * esys_context)
+ \fn test_esys_hierarchy_control(ESYS_CONTEXT * esys_context)
+ \fn test_esys_tpm_tests(ESYS_CONTEXT * esys_context)
+ \fn test_esys_certify(ESYS_CONTEXT * esys_context)
+ \fn test_esys_pcr_basic(ESYS_CONTEXT * esys_context)
+ \fn test_esys_quote(ESYS_CONTEXT * esys_context)
+ \fn test_esys_tr_getName_hierarchy(ESYS_CONTEXT * ectx)
+ \fn test_esys_field_upgrade(ESYS_CONTEXT * esys_context)
+ \fn test_esys_unseal_password_auth(ESYS_CONTEXT * esys_context)
+ \fn test_esys_nv_ram_set_bits(ESYS_CONTEXT * esys_context)
+ \fn test_esys_nv_certify(ESYS_CONTEXT * esys_context)
+ \fn test_esys_ecdh_keygen(ESYS_CONTEXT * esys_context)
+ \fn test_esys_tr_fromTpmPublic_key(ESYS_CONTEXT * ectx)
+ \fn test_esys_ecdh_zgen(ESYS_CONTEXT * esys_context)
+ \fn test_esys_certify_creation(ESYS_CONTEXT * esys_context)
+ \fn test_esys_nv_ram_counter(ESYS_CONTEXT * esys_context)
+ \fn test_esys_event_sequence_complete(ESYS_CONTEXT * esys_context)
+ \fn test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
+ \fn test_esys_tr_fromTpmPublic_nv(ESYS_CONTEXT * ectx)
+ \fn test_esys_create_primary_hmac(ESYS_CONTEXT * esys_context)
+ \fn test_esys_firmware_read(ESYS_CONTEXT * esys_context)
+ \fn test_esys_hmacsequencestart(ESYS_CONTEXT * esys_context)
+ \fn test_esys_ecc_parameters(ESYS_CONTEXT * esys_context)
+ \fn test_esys_hierarchychangeauth(ESYS_CONTEXT * esys_context)
+ \fn test_esys_pcr_auth_value(ESYS_CONTEXT * esys_context)
+ \fn test_esys_nv_ram_ordinary_index(ESYS_CONTEXT * esys_context)
+ \fn test_esys_duplicate(ESYS_CONTEXT * esys_context)
+ \fn test_esys_rsa_encrypt_decrypt(ESYS_CONTEXT * esys_context)
+ \fn test_esys_set_algorithm_set(ESYS_CONTEXT * esys_context)
+ \fn test_esys_object_changeauth(ESYS_CONTEXT * esys_context)
+ \fn test_esys_pp_commands(ESYS_CONTEXT * esys_context)
+ \fn test_esys_hashsequencestart(ESYS_CONTEXT * esys_context)
+ \fn test_esys_clear(ESYS_CONTEXT * esys_context)
+ \fn test_esys_policy_authorize(ESYS_CONTEXT * esys_context)
+ \fn test_esys_get_time(ESYS_CONTEXT * esys_context)
+ \fn test_esys_make_credential(ESYS_CONTEXT * esys_context)
+ \fn test_esys_commit(ESYS_CONTEXT * esys_context)
+ \fn test_esys_policy_nv_changeauth(ESYS_CONTEXT * esys_context)
+ \}
  \}
 */
 

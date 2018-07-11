@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG All
- * rights reserved.
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * All rights reserved.
  *******************************************************************************/
 #include <stdlib.h>
 
@@ -11,15 +11,25 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This tests the Esys_TR_FromTPMPublic and Esys_TR_GetName functions by
- * creating an NV Index and then attempting to retrieve an ESYS_TR object for
- * it. Then we call Esys_TR_GetName to see if the correct public name has been
+/** This tests the Esys_TR_FromTPMPublic and Esys_TR_GetName functions by
+ *  creating an NV Index and then attempting to retrieve an ESYS_TR object for
+ *  it.
+ *  Then we call Esys_TR_GetName to see if the correct public name has been
  * retrieved.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_EvictControl() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_ReadPublic() (M)
+ *
+ * @param[in,out] ectx The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * ectx)
+test_esys_tr_fromTpmPublic_key(ESYS_CONTEXT * ectx)
 {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
@@ -159,4 +169,9 @@ error:
     }
 
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_tr_fromTpmPublic_key(esys_context);
 }

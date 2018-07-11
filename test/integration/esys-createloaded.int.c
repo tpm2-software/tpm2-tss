@@ -14,14 +14,27 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test the ESAPI command CreateLoaded.
+/** This test is intended to test the ESAPI command CreateLoaded.
+ *
  * We start by creating a primary key (Esys_CreatePrimary).
  * This primary key will be used as parent key for CreateLoaded.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_CreateLoaded() (F)
+ *  - Esys_CreatePrimary() (M)
+ *  - Esys_FlushContext() (M)
+ *  - Esys_StartAuthSession() (M)
+ *
+ * Used compiler defines: TEST_SESSION
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SKIP
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_createloaded(ESYS_CONTEXT * esys_context)
 {
 
     TSS2_RC r;
@@ -259,4 +272,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
     }
 
     return failure_return;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_createloaded(esys_context);
 }

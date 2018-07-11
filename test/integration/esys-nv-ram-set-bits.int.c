@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG All
- * rights reserved.
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * All rights reserved.
  *******************************************************************************/
 
 #include <stdlib.h>
@@ -12,13 +12,27 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/*
- * This test is intended to test the definition of a bit field in NV ram and to
- * test the ESAPI NV_SetBits function.
+/** This test is intended to test the definition of a bit field in NV ram and to
+ *  test the ESAPI NV_SetBits function.
+ *
+ * Tested ESAPI commands:
+ *  - Esys_FlushContext() (M)
+ *  - Esys_NV_DefineSpace() (M)
+ *  - Esys_NV_Read() (M)
+ *  - Esys_NV_ReadPublic() (M)
+ *  - Esys_NV_SetBits() (M)
+ *  - Esys_NV_UndefineSpace() (M)
+ *  - Esys_StartAuthSession() (M)
+ *
+ * Used compiler defines: TEST_SESSION
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
  */
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_nv_ram_set_bits(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR nvHandle = ESYS_TR_NONE;
@@ -200,7 +214,7 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
  error:
 
-   if (nvHandle != ESYS_TR_NONE) {
+    if (nvHandle != ESYS_TR_NONE) {
         if (Esys_NV_UndefineSpace(esys_context,
                                   ESYS_TR_RH_OWNER,
                                   nvHandle,
@@ -224,4 +238,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 #endif
 
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_nv_ram_set_bits(esys_context);
 }

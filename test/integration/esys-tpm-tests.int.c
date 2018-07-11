@@ -11,9 +11,19 @@
 #define LOGMODULE test
 #include "util/log.h"
 
-/* Test the ESAPI functions for TPM tests */
+/** Test the ESAPI functions for TPM tests. 
+ *
+ * Tested ESAPI commands:
+ *  - Esys_GetTestResult() (M)
+ *  - Esys_IncrementalSelfTest() (M)
+ *  - Esys_SelfTest() (M)
+ *
+ * @param[in,out] esys_context The ESYS_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
+ */
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context)
+test_esys_tpm_tests(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
 
@@ -46,4 +56,9 @@ test_invoke_esapi(ESYS_CONTEXT * esys_context)
 
  error:
     return EXIT_FAILURE;
+}
+
+int
+test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+    return test_esys_tpm_tests(esys_context);
 }
