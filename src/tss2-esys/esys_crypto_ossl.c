@@ -656,7 +656,12 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
         goto_error(r, TSS2_ESYS_RC_BAD_VALUE, "Illegal RSA scheme", cleanup);
     }
 
-    if(1 != BN_set_word(bne, pub_tpm_key->publicArea.parameters.rsaDetail.exponent)) {
+    UINT32 exp;
+    if (pub_tpm_key->publicArea.parameters.rsaDetail.exponent == 0)
+        exp = 65537;
+    else
+        exp = pub_tpm_key->publicArea.parameters.rsaDetail.exponent;
+    if (1 != BN_set_word(bne, exp)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Could not set exponent.", cleanup);
     }
 
