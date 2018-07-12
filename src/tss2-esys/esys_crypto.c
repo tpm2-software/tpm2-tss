@@ -6,7 +6,6 @@
 
 #define _GNU_SOURCE
 
-#include <gcrypt.h>
 #include <stdio.h>
 
 #include "tss2_esys.h"
