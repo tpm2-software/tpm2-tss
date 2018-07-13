@@ -85,28 +85,28 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;NO_DL;strtok_r=strtok_s;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;NO_DL;strtok_r=strtok_s;OSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\src;$(SolutionDir)\include\tss2;$(SolutionDir)\src\tss2-mu;$(SolutionDir)\src\tss2-sys;$(SolutionDir)\src\tss2-esys;C:\Program Files (x86)\GnuPG\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\src;$(SolutionDir)\include\tss2;$(SolutionDir)\src\tss2-mu;$(SolutionDir)\src\tss2-sys;$(SolutionDir)\src\tss2-esys;C:\OpenSSL-Win32\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tcti-mssim.lib;C:\Program Files (x86)\GnuPG\lib\libgcrypt.imp;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tcti-mssim.lib;C:\OpenSSL-Win32\lib\libeay32.lib;C:\OpenSSL-Win32\lib\libeay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>$(SolutionDir)\lib\tss2-esys.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;NO_DL;strtok_r=strtok_s;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;NO_DL;strtok_r=strtok_s;OSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\src;$(SolutionDir)\include\tss2;$(SolutionDir)\src\tss2-mu;$(SolutionDir)\src\tss2-sys;$(SolutionDir)\src\tss2-esys;C:\Program Files (x86)\GnuPG\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\src;$(SolutionDir)\include\tss2;$(SolutionDir)\src\tss2-mu;$(SolutionDir)\src\tss2-sys;$(SolutionDir)\src\tss2-esys;C:\OpenSSL-Win32\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -114,27 +114,27 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tcti-mssim.lib;C:\Program Files (x86)\GnuPG\lib\libgcrypt.imp;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tcti-mssim.lib;C:\OpenSSL-Win32\lib\libeay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>$(SolutionDir)\lib\tss2-esys.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\src;$(SolutionDir)\include\tss2;$(SolutionDir)\src\tss2-mu;$(SolutionDir)\src\tss2-sys;$(SolutionDir)\src\tss2-esys;C:\Program Files\GnuPG\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;NO_DL;strtok_r=strtok_s;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\src;$(SolutionDir)\include\tss2;$(SolutionDir)\src\tss2-mu;$(SolutionDir)\src\tss2-sys;$(SolutionDir)\src\tss2-esys;C:\OpenSSL-Win64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;NO_DL;strtok_r=strtok_s;OSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tcti-mssim.lib;C:\Program Files\GnuPG\lib\libgcrypt.dll.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tcti-mssim.lib;C:\OpenSSL-Win64\lib\libeay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>$(SolutionDir)\lib\tss2-esys.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\src;$(SolutionDir)\include\tss2;$(SolutionDir)\src\tss2-mu;$(SolutionDir)\src\tss2-sys;$(SolutionDir)\src\tss2-esys;C:\Program Files\GnuPG\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;NO_DL;strtok_r=strtok_s;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\src;$(SolutionDir)\include\tss2;$(SolutionDir)\src\tss2-mu;$(SolutionDir)\src\tss2-sys;$(SolutionDir)\src\tss2-esys;C:\OpenSSL-Win64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;NO_DL;strtok_r=strtok_s;OSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tcti-mssim.lib;C:\Program Files\GnuPG\lib\libgcrypt.dll.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tcti-mssim.lib;C:\OpenSSL-Win64\lib\libeay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>$(SolutionDir)\lib\tss2-esys.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -255,7 +255,7 @@
     <ClCompile Include="api\Esys_ZGen_2Phase.c" />
     <ClCompile Include="esys_context.c" />
     <ClCompile Include="esys_crypto.c" />
-    <ClCompile Include="esys_crypto_gcrypt.c" />
+    <ClCompile Include="esys_crypto_ossl.c" />
     <ClCompile Include="esys_iutil.c" />
     <ClCompile Include="esys_mu.c" />
     <ClCompile Include="esys_tcti_default.c" />
@@ -264,7 +264,7 @@
   <ItemGroup>
     <ClInclude Include="..\util\log.h" />
     <ClInclude Include="esys_crypto.h" />
-    <ClInclude Include="esys_crypto_gcrypt.h" />
+    <ClInclude Include="esys_crypto_ossl.h" />
     <ClInclude Include="esys_int.h" />
     <ClInclude Include="esys_iutil.h" />
     <ClInclude Include="esys_mu.h" />

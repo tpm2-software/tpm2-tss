@@ -375,7 +375,7 @@
     <ClCompile Include="..\util\log.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="esys_crypto_gcrypt.c">
+    <ClCompile Include="esys_crypto_ossl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -401,7 +401,7 @@
     <ClInclude Include="..\util\log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="esys_crypto_gcrypt.h">
+    <ClInclude Include="esys_crypto_ossl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
