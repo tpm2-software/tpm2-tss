@@ -174,7 +174,7 @@ build in a container.
 ```
 $ docker build -t tpm2 .
 $ docker run --name temp tpm2 /bin/true
-$ docker cp temp:/tpm2-tss tpm2-tss
+$ docker cp temp:/tmp/tpm2-tss tpm2-tss
 $ docker rm temp
 ```
 
