@@ -22,7 +22,7 @@ TSS2_RC Tss2_Sys_ECC_Parameters_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(curveID, ctx->cmdBuffer,
+    rval = Tss2_MU_UINT16_Marshal(curveID, ctx->cmdBuffer,
                                   ctx->maxCmdSize,
                                   &ctx->nextData);
     if (rval)
