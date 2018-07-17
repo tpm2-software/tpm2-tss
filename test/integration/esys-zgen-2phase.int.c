@@ -153,7 +153,9 @@ test_esys_zgen_2phase(ESYS_CONTEXT * esys_context)
         &Q,
         &counter);
 
-    if (r == TPM2_RC_COMMAND_CODE) {
+    if ((r == TPM2_RC_COMMAND_CODE) ||
+        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
+        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
         LOG_WARNING("Command TPM2_Ephemeral not supported by TPM.");
         failure_return = EXIT_SKIP;
         goto error;
@@ -183,7 +185,9 @@ test_esys_zgen_2phase(ESYS_CONTEXT * esys_context)
         &outZ1,
         &outZ2);
 
-    if (r == TPM2_RC_COMMAND_CODE) {
+    if ((r == TPM2_RC_COMMAND_CODE) ||
+        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
+        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
         LOG_WARNING("Command TPM2_ZGen_2Phase not supported by TPM.");
         failure_return = EXIT_SKIP;
         goto error;

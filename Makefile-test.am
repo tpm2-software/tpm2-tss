@@ -33,8 +33,13 @@ TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES) $(LIBCRYPTO_LIBS) $(libut
 
 # test harness configuration
 TEST_EXTENSIONS = .int
+if TESTPTPM
+INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler-ptpm.sh
+INT_LOG_FLAGS = --ptpm=$(PTPM)
+else
 INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler.sh
-EXTRA_DIST += $(INT_LOG_COMPILER)
+endif
+EXTRA_DIST += $(srcdir)/script/int-log-compiler.sh $(srcdir)/script/int-log-compiler-ptpm.sh
 AM_TESTS_ENVIRONMENT = PATH="$(PATH)"
 
 check-programs: $(check_PROGRAMS)
@@ -99,6 +104,11 @@ endif #UNIT
 
 if ENABLE_INTEGRATION
 noinst_LTLIBRARIES += test/integration/libtest_utils.la
+
+if TESTPTPM
+TESTS_INTEGRATION =
+endif
+if !TESTPTPM
 TESTS_INTEGRATION = \
     test/integration/sapi-asymmetric-encrypt-decrypt.int \
     test/integration/sapi-primary-rsa-2K-aes128cfb.int \
@@ -121,50 +131,45 @@ TESTS_INTEGRATION = \
     test/integration/sapi-command-cancel.int \
     test/integration/sapi-param-encrypt-decrypt.int \
     test/tpmclient/tpmclient.int
+endif # !TESTPTPM
+
 if ESAPI
-TESTS_INTEGRATION += \
-    test/integration/esys-audit.int \
-    test/integration/esys-certify-creation.int \
-    test/integration/esys-certify.int \
-    test/integration/esys-change-eps.int \
+ESYS_TESTS_INTEGRATION_DESTRUCTIVE = \
     test/integration/esys-clear.int \
-    test/integration/esys-clear-control.int \
     test/integration/esys-clear-session.int \
     test/integration/esys-clockset.int \
+    test/integration/esys-field-upgrade.int \
+    test/integration/esys-firmware-read.int \
+    test/integration/esys-lock.int \
+    test/integration/esys-set-algorithm-set.int
+
+ESYS_TESTS_INTEGRATION_MANDATORY = \
+    test/integration/esys-certify-creation.int \
+    test/integration/esys-certify.int \
+    test/integration/esys-clear-control.int \
     test/integration/esys-commit.int \
     test/integration/esys-create-fail.int \
-    test/integration/esys-createloaded.int \
-    test/integration/esys-createloaded-session.int \
     test/integration/esys-create-password-auth.int \
     test/integration/esys-create-primary-ecc-hmac.int \
     test/integration/esys-create-primary-hmac.int \
-    test/integration/esys-create-session-auth.int \
     test/integration/esys-create-session-auth-bound.int \
     test/integration/esys-create-session-auth-ecc.int \
+    test/integration/esys-create-session-auth.int \
     test/integration/esys-create-session-auth-xor.int \
-    test/integration/esys-duplicate.int \
     test/integration/esys-ecc-parameters.int \
-    test/integration/esys-ecdh-keygen.int \
     test/integration/esys-ecdh-zgen.int \
-    test/integration/esys-encrypt-decrypt.int \
     test/integration/esys-event-sequence-complete.int \
     test/integration/esys-evict-control-serialization.int \
-    test/integration/esys-field-upgrade.int \
-    test/integration/esys-firmware-read.int \
     test/integration/esys-get-capability.int \
     test/integration/esys-get-random.int \
-    test/integration/esys-get-time.int \
     test/integration/esys-hashsequencestart.int \
     test/integration/esys-hashsequencestart-session.int \
     test/integration/esys-hierarchychangeauth.int \
-    test/integration/esys-hierarchy-control.int \
     test/integration/esys-hmacsequencestart.int \
     test/integration/esys-hmacsequencestart-session.int \
     test/integration/esys-import.int \
-    test/integration/esys-lock.int \
     test/integration/esys-make-credential.int \
     test/integration/esys-make-credential-session.int \
-    test/integration/esys-nv-certify.int \
     test/integration/esys-nv-ram-counter.int \
     test/integration/esys-nv-ram-counter-session.int \
     test/integration/esys-nv-ram-extend-index.int \
@@ -176,19 +181,14 @@ TESTS_INTEGRATION += \
     test/integration/esys-nv-ram-set-bits.int \
     test/integration/esys-nv-ram-set-bits-session.int \
     test/integration/esys-object-changeauth.int \
-    test/integration/esys-pcr-basic.int \
-    test/integration/esys-pcr-auth-value.int \
     test/integration/esys-policy-authorize.int \
-    test/integration/esys-policy-regression.int \
-    test/integration/esys-policy-ticket.int \
     test/integration/esys-policy-nv-changeauth.int \
     test/integration/esys-policy-nv-undefine-special.int \
     test/integration/esys-policy-password.int \
-    test/integration/esys-pp-commands.int \
+    test/integration/esys-policy-regression.int \
     test/integration/esys-quote.int \
     test/integration/esys-rsa-encrypt-decrypt.int \
     test/integration/esys-save-and-load-context.int \
-    test/integration/esys-set-algorithm-set.int \
     test/integration/esys-stir-random.int \
     test/integration/esys-testparms.int \
     test/integration/esys-tpm-tests.int \
@@ -197,7 +197,45 @@ TESTS_INTEGRATION += \
     test/integration/esys-tr-getName-hierarchy.int \
     test/integration/esys-unseal-password-auth.int \
     test/integration/esys-verify-signature.int \
+    test/integration/esys-ecdh-keygen.int \
+    test/integration/esys-policy-ticket.int
+
+ESYS_TESTS_INTEGRATION_OPTIONAL = \
+    test/integration/esys-audit.int \
+    test/integration/esys-change-eps.int \
+    test/integration/esys-createloaded.int \
+    test/integration/esys-createloaded-session.int \
+    test/integration/esys-duplicate.int \
+    test/integration/esys-encrypt-decrypt.int \
+    test/integration/esys-get-time.int \
+    test/integration/esys-hierarchy-control.int \
+    test/integration/esys-nv-certify.int \
+    test/integration/esys-pcr-auth-value.int \
+    test/integration/esys-pcr-basic.int \
+    test/integration/esys-policy-regression-opt.int \
+    test/integration/esys-pp-commands.int \
     test/integration/esys-zgen-2phase.int
+
+if TESTPTPM
+
+if PTPMMANDATORY
+TESTS_INTEGRATION +=  $(ESYS_TESTS_INTEGRATION_MANDATORY)
+endif
+
+if PTPMOPTIONAL
+TESTS_INTEGRATION +=  $(ESYS_TESTS_INTEGRATION_OPTIONAL)
+endif
+
+if PTPMDESTRUCTIVE
+TESTS_INTEGRATION += $(ESYS_TESTS_INTEGRATION_DESTRUCTIVE)
+endif
+
+endif # TESTPTPM
+
+if !TESTPTPM
+TESTS_INTEGRATION += $(ESYS_TESTS_INTEGRATION_MANDATORY) $(ESYS_TESTS_INTEGRATION_OPTIONAL) $(ESYS_TESTS_INTEGRATION_DESTRUCTIVE)
+endif # !TESTPTPM
+
 endif #ESAPI
 endif #ENABLE_INTEGRATION
 
@@ -833,6 +871,13 @@ test_integration_esys_policy_regression_int_SOURCES = \
     test/integration/esys-policy-regression.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
+test_integration_esys_policy_regression_opt_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_policy_regression_opt_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_policy_regression_opt_int_LDFLAGS = $(TESTS_LDFLAGS) $(ESYSFLAGS)
+test_integration_esys_policy_regression_opt_int_SOURCES = \
+    test/integration/esys-policy-regression-opt.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
 test_integration_esys_policy_ticket_int_CFLAGS  = $(TESTS_CFLAGS) $(ESYSCFLAGS)
 test_integration_esys_policy_ticket_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_policy_ticket_int_LDFLAGS = $(TESTS_LDFLAGS) $(ESYSFLAGS)
@@ -995,3 +1040,6 @@ test_integration_sapi_command_cancel_int_LDADD   = $(TESTS_LDADD)
 test_integration_sapi_command_cancel_int_SOURCES = test/integration/main-sapi.c \
     test/integration/sapi-command-cancel.int.c
 endif #ENABLE_INTEGRATION
+
+check-ptpm:
+	$(MAKE) -j1 check

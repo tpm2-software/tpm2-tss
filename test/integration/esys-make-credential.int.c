@@ -140,7 +140,7 @@ test_esys_make_credential(ESYS_CONTEXT * esys_context)
                       .scheme = TPM2_ALG_NULL
                   },
                  .keyBits = 2048,
-                 .exponent = 65537,
+                 .exponent = 0,
              },
             .unique.rsa = {
                  .size = 0,
@@ -237,7 +237,7 @@ test_esys_make_credential(ESYS_CONTEXT * esys_context)
                       TPM2_ALG_NULL,
                   },
                  .keyBits = 2048,
-                 .exponent = 65537
+                 .exponent = 0
              },
             .unique.rsa = {
                  .size = 0,

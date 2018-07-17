@@ -185,7 +185,9 @@ test_esys_audit(ESYS_CONTEXT * esys_context)
         &auditInfo,
         &signature);
 
-    if (r == TPM2_RC_COMMAND_CODE) {
+    if ((r == TPM2_RC_COMMAND_CODE) ||
+        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
+        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
         LOG_WARNING("Command TPM2_GetCommandAuditDigest not supported by TPM.");
         failure_return = EXIT_SKIP;
         goto error;

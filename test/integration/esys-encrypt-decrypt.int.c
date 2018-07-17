@@ -85,7 +85,7 @@ test_esys_encrypt_decrypt(ESYS_CONTEXT * esys_context)
                       .scheme = TPM2_ALG_NULL
                   },
                  .keyBits = 2048,
-                 .exponent = 65537,
+                 .exponent = 0,
              },
             .unique.rsa = {
                  .size = 0,
@@ -243,7 +243,9 @@ test_esys_encrypt_decrypt(ESYS_CONTEXT * esys_context)
         &outData,
         &ivOut);
 
-    if (r == TPM2_RC_COMMAND_CODE) {
+    if ((r == TPM2_RC_COMMAND_CODE) ||
+        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
+        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
         LOG_WARNING("Command TPM2_EncryptDecrypt not supported by TPM.");
         failure_return = EXIT_SKIP;
         goto error;
@@ -267,7 +269,9 @@ test_esys_encrypt_decrypt(ESYS_CONTEXT * esys_context)
         &outData2,
         &ivOut2);
 
-    if (r == TPM2_RC_COMMAND_CODE) {
+    if ((r == TPM2_RC_COMMAND_CODE) ||
+        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
+        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
         LOG_WARNING("Command TPM2_EncryptDecrypt not supported by TPM.");
         failure_return = EXIT_SKIP;
         goto error;

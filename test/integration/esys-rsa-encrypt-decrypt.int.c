@@ -75,7 +75,7 @@ test_esys_rsa_encrypt_decrypt(ESYS_CONTEXT * esys_context)
                      .algorithm = TPM2_ALG_NULL},
                  .scheme = { .scheme = TPM2_ALG_RSAES },
                  .keyBits = 2048,
-                 .exponent = 65537,
+                 .exponent = 0,
              },
             .unique.rsa = {
                  .size = 0,
