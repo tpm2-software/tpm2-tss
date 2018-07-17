@@ -235,6 +235,44 @@ AC_SUBST([PATH])
 #   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53119
 AX_ADD_COMPILER_FLAG([-Wno-missing-braces])
 
+dnl ---------  Physical TPM device -----------------------
+
+AC_ARG_WITH([ptpm],
+            [AS_HELP_STRING([--with-ptpm=<device>,[TPM device]])],
+            [AS_IF([test \( -w "$with_ptpm" \)  -a \( -r "$with_ptpm" \)],
+                   [AC_MSG_RESULT([success])
+                    AC_SUBST([PTPM],[$with_ptpm])
+                    AX_NORMALIZE_PATH([with_ptpm])
+                    with_ptpm_set=yes],
+                   [AC_MSG_ERROR([TPM device provided does not exist or is not writable])])],
+            [with_ptpm_set=no])
+AM_CONDITIONAL([PTPM],[test "x$with_ptpm_set" = "xyes"])
+
+AC_ARG_WITH([ptpmtests],
+            [AS_HELP_STRING([--with-ptpmtests=<case>],[Comma-separated values of possible tests: destructive,mandatory,optional] default is mandatory)],
+            [AS_IF([test "x" ==  x$(echo $with_ptpmtests | sed 's/destructive//g'  | sed 's/mandatory//g'  | sed 's/optional//g' | sed 's/,//g') ],
+                   [AC_MSG_RESULT([success])
+                    with_ptpmtests_set=yes],
+                   [AC_MSG_ERROR([Illegal test type for pTPM tests.])])],
+            [with_ptpmtests="mandatory"])
+
+if echo $with_ptpmtests | grep destructive > /dev/null; then
+    enable_ptpm_destructive="yes"
+fi
+AM_CONDITIONAL([PTPMDESTRUCTIVE],[test "x$enable_ptpm_destructive" = "xyes"])
+
+if echo $with_ptpmtests | grep optional > /dev/null; then
+    enable_ptpm_optional="yes"
+fi
+AM_CONDITIONAL([PTPMOPTIONAL],[test "x$enable_ptpm_optional" = "xyes"])
+
+if echo $with_ptpmtests | grep mandatory > /dev/null; then
+    enable_ptpm_mandatory="yes"
+fi
+AM_CONDITIONAL([PTPMMANDATORY],[test "x$enable_ptpm_mandatory" = "xyes"])
+
+AM_CONDITIONAL([TESTPTPM],[test "x$with_ptpm_set" = "xyes" -a "x$with_ptpm_set" = "xyes"])
+
 dnl --------- Doxy Gen -----------------------
 DX_DOXYGEN_FEATURE(ON)
 DX_DOT_FEATURE(OFF)

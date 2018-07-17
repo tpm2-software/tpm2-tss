@@ -80,7 +80,7 @@ test_esys_policy_authorize(ESYS_CONTEXT * esys_context)
                       }
                   },
                  .keyBits = 2048,
-                 .exponent = 65537,
+                 .exponent = 0,
              },
             .unique.rsa = {
                  .size = 0,

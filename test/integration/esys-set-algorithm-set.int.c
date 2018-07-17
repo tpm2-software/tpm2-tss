@@ -42,7 +42,9 @@ test_esys_set_algorithm_set(ESYS_CONTEXT * esys_context)
         ESYS_TR_NONE,
         algorithmSet);
 
-    if (r == TPM2_RC_COMMAND_CODE) {
+    if ((r == TPM2_RC_COMMAND_CODE) ||
+        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
+        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
         LOG_WARNING("Command TPM2_SetAlgorithmSet not supported by TPM.");
         failure_return = EXIT_SKIP;
         goto error;

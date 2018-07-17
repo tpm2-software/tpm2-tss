@@ -40,7 +40,7 @@ test_esys_testparms(ESYS_CONTEXT * esys_context)
                       TPM2_ALG_NULL,
                   },
              .keyBits = 2048,
-                 .exponent = 65537,
+                 .exponent = 0,
              }
         }
     };

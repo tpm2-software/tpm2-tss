@@ -56,7 +56,9 @@ test_esys_lock(ESYS_CONTEXT * esys_context)
     r = Esys_NV_GlobalWriteLock(esys_context, ESYS_TR_RH_PLATFORM,
                                 ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
 
-    if (r == TPM2_RC_COMMAND_CODE) {
+    if ((r == TPM2_RC_COMMAND_CODE) ||
+        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
+        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
         LOG_WARNING("Command TPM2_NV_GlobalWriteLock not supported by TPM.");
         failure_return = EXIT_SKIP;
         goto error;

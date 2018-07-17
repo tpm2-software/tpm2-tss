@@ -78,7 +78,7 @@ test_esys_verify_signature(ESYS_CONTEXT * esys_context)
                       }
                   },
                  .keyBits = 2048,
-                 .exponent = 65537,
+                 .exponent = 0,
              },
             .unique.rsa = {
                  .size = 0,

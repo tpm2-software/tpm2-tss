@@ -34,7 +34,6 @@
  *
  * @param[in,out] esys_context The ESYS_CONTEXT.
  * @retval EXIT_FAILURE
- * @retval EXIT_SKIP
  * @retval EXIT_SUCCESS
  */
 
@@ -92,7 +91,7 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
                       }
                   },
                  .keyBits = 2048,
-                 .exponent = 65537,
+                 .exponent = 0,
              },
             .unique.rsa = {
                  .size = 0,
@@ -291,16 +290,20 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
         nameKeySign,
         policySignedTicket);
 
-    if (r == TPM2_RC_COMMAND_CODE) {
-        LOG_WARNING("Command TPM2_ChangePPS not supported by TPM.");
-        failure_return = EXIT_SKIP;
-        goto error;
+    if ((r == TPM2_RC_COMMAND_CODE) ||
+        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
+        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
+        LOG_WARNING("Command TPM2_PolicyTicket not supported by TPM all other tests PASSED.");
+        r = Esys_FlushContext(esys_context, session);
+        goto_if_error(r, "Error: FlushContext", error);
+    } else {
+        goto_if_error(r, "Error: PolicyTicket", error);
+
+        r = Esys_FlushContext(esys_context, session);
+        goto_if_error(r, "Error: FlushContext", error);
+
+        session = ESYS_TR_NONE;
     }
-
-    goto_if_error(r, "Error: PolicyTicket", error);
-
-    r = Esys_FlushContext(esys_context, session);
-    goto_if_error(r, "Error: FlushContext", error);
 
     /*
      * 3. A policy tial session will be created. With this trial policy the

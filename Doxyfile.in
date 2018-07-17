@@ -827,6 +827,7 @@ INPUT                  = @top_srcdir@/doc/coding_standard_c.md \
                          @top_srcdir@/test/integration/esys-policy-nv-undefine-special.int.c \
                          @top_srcdir@/test/integration/esys-policy-password.int.c \
                          @top_srcdir@/test/integration/esys-policy-regression.int.c \
+                         @top_srcdir@/test/integration/esys-policy-regression-opt.int.c \
                          @top_srcdir@/test/integration/esys-policy-ticket.int.c \
                          @top_srcdir@/test/integration/esys-pp-commands.int.c \
                          @top_srcdir@/test/integration/esys-quote.int.c \

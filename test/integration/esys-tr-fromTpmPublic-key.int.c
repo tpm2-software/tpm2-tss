@@ -81,7 +81,7 @@ test_esys_tr_fromTpmPublic_key(ESYS_CONTEXT * ectx)
                       .scheme = TPM2_ALG_NULL
                   },
                  .keyBits = 2048,
-                 .exponent = 65537,
+                 .exponent = 0,
              },
             .unique.rsa = {
                  .size = 0,

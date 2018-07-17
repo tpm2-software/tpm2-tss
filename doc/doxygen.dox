@@ -1083,6 +1083,8 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \fn test_esys_zgen_2phase(ESYS_CONTEXT * esys_context)
  \fn test_esys_verify_signature(ESYS_CONTEXT * esys_context)
  \fn test_esys_import(ESYS_CONTEXT * esys_context)
+ \fn test_esys_policy_regression(ESYS_CONTEXT * esys_context)
+ \fn test_esys_policy_regression_opt(ESYS_CONTEXT * esys_context)
  \fn test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
  \fn test_esys_change_eps(ESYS_CONTEXT * esys_context)
  \fn test_esys_policy_nv_undefine_special(ESYS_CONTEXT * esys_context)
