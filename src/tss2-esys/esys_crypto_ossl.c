@@ -38,7 +38,7 @@ int BN_bn2binpad(const BIGNUM *bn, unsigned char *bin, int bin_length)
     int len_bn = BN_num_bytes(bn);
     int offset = bin_length - len_bn;
     memset(bin,0,offset);
-    BN_bn2bin(bn, bin);
+    BN_bn2bin(bn, bin + offset);
     return 1;
 }
 
