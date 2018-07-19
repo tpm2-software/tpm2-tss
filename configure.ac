@@ -264,7 +264,6 @@ AC_MSG_RESULT([
     tctidefaultconfig:  $with_tctidefaultconfig
     unit:               $enable_unit
     debug:              $enable_debug
-    simulatorbin:       $with_simulatorbin
     maxloglevel:        $with_maxloglevel
     doxygen:            $DX_FLAG_doc $enable_doxygen_doc
 ])
