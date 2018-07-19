@@ -133,6 +133,10 @@ TSS2_RC iesys_cryptossl_get_ecdh_point(
 #define iesys_crypto_sym_aes_encrypt iesys_cryptossl_sym_aes_encrypt
 #define iesys_crypto_sym_aes_decrypt iesys_cryptossl_sym_aes_decrypt
 
+TSS2_RC iesys_cryptossl_init();
+
+#define iesys_crypto_init iesys_cryptossl_init
+
 #endif /* ESYS_CRYPTO_OSSL_H */
 
 #ifdef __cplusplus

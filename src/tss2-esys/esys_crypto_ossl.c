@@ -834,8 +834,6 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
     int curveId;
     size_t offset;
 
-    OpenSSL_add_all_algorithms();
-
     /* Set ossl constant for curve type and create group for curve */
     switch (key->publicArea.parameters.eccDetail.curveID) {
     case TPM2_ECC_NIST_P192:
@@ -1122,4 +1120,18 @@ iesys_cryptossl_sym_aes_decrypt(uint8_t * key,
 
     OSSL_FREE(ctx,EVP_CIPHER_CTX);
     return r;
+}
+
+
+/** Initialize OpenSSL crypto backend.
+ *
+ * Initialize OpenSSL internal tables.
+ *
+ * @retval TSS2_RC_SUCCESS always returned because OpenSSL_add_all_algorithms does not deliver
+ * a return code.
+ */
+TSS2_RC
+iesys_cryptossl_init() {
+    OpenSSL_add_all_algorithms();
+    return TSS2_RC_SUCCESS;
 }

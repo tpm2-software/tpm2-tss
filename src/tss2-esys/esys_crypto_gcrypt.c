@@ -1038,3 +1038,20 @@ iesys_cryptogcry_sym_aes_decrypt(uint8_t * key,
     gcry_cipher_close(cipher_hd);
     return TSS2_RC_SUCCESS;
 }
+
+/** Initialize gcrypt crypto backend.
+ *
+ * Initialize gcrypt internal tables.
+ *
+ * @retval TSS2_RC_SUCCESS ong success.
+ * @retval TSS2_ESYS_RC_GENERAL_FAILURE for version mismatch.
+ */
+TSS2_RC
+iesys_cryptogcry_init() {
+    if (!gcry_check_version (GCRYPT_VERSION))
+    {
+        LOG_ERROR("Version mismatch for gcrypt");
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
+    }
+    return TSS2_RC_SUCCESS;
+}
