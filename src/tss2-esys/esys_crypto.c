@@ -520,3 +520,16 @@ iesys_xor_parameter_obfuscation(TPM2_ALG_ID hash_alg,
     }
     return TSS2_RC_SUCCESS;
 }
+
+
+/** Initialize crypto backend.
+ *
+ * Initialize internal tables of crypto backend.
+ *
+ * @retval TSS2_RC_SUCCESS ong success.
+ * @retval TSS2_ESYS_RC_GENERAL_FAILURE if backend can't be initialized.
+ */
+TSS2_RC
+iesys_initialize_crypto() {
+    return iesys_crypto_init();
+}

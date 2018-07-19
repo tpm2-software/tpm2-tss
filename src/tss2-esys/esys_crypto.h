@@ -100,6 +100,8 @@ TSS2_RC iesys_crypto_KDFe(
     UINT32 bit_size,
     BYTE *key);
 
+TSS2_RC iesys_initialize_crypto();
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
