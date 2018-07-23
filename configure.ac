@@ -178,6 +178,8 @@ AS_IF([test "x$enable_integration" = "xyes"],
        ERROR_IF_NO_PROG([rm])
        PKG_CHECK_MODULES([LIBCRYPTO],[libcrypto])
        AC_CHECK_HEADER(uthash.h, [], [AC_MSG_ERROR([Can not find uthash.h. Please install uthash-dev])])
+       AS_IF([test "x$enable_tcti_mssim" = xno],
+              AC_MSG_ERROR([Integration tests can not be enabled without the TCTI_MSSIM module]))
        AC_SUBST([ENABLE_INTEGRATION], [$enable_integration])])
 AM_CONDITIONAL([ENABLE_INTEGRATION],[test "x$enable_integration" = "xyes"])
 
