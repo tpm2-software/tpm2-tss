@@ -44,7 +44,7 @@ test_esys_clockset(ESYS_CONTEXT * esys_context)
                        &currentTime);
     goto_if_error(r, "Error: ReadClock", error);
 
-    UINT64 newTime = currentTime->time + 01000;
+    UINT64 newTime = currentTime->clockInfo.clock + 010000;
 
     r = Esys_ClockSet(esys_context,
                       auth_handle,
@@ -53,7 +53,6 @@ test_esys_clockset(ESYS_CONTEXT * esys_context)
                       ESYS_TR_NONE,
                       newTime
                       );
-    goto_if_error(r, "Error: ClockSet", error);
 
     if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH) {
         /* Platform authorization not possible test will be skipped */
@@ -61,6 +60,8 @@ test_esys_clockset(ESYS_CONTEXT * esys_context)
         failure_return = EXIT_SKIP;
         goto error;
     }
+
+    goto_if_error(r, "Error: ClockSet", error);
 
     r = Esys_ClockRateAdjust(esys_context,
                              auth_handle,
