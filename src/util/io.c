@@ -217,13 +217,21 @@ socket_connect (
 
     for (p = retp; p != NULL; p = p->ai_next) {
         *sock = socket (p->ai_family, SOCK_STREAM, 0);
+        void *sockaddr;
+
         if (*sock == INVALID_SOCKET)
             continue;
 
-        h = inet_ntop(p->ai_family, p->ai_addr, &host_buff[0],
-            sizeof(host_buff));
+        if (p->ai_family == AF_INET)
+            sockaddr = &((struct sockaddr_in*)p->ai_addr)->sin_addr;
+        else
+            sockaddr = &((struct sockaddr_in6*)p->ai_addr)->sin6_addr;
+
+        h = inet_ntop(p->ai_family, sockaddr, host_buff, sizeof(host_buff));
+
         if (h == NULL)
             h = hostname;
+
         LOG_DEBUG ("Attempting TCP connection to host %s, port %s",
             h, port_str);
         if (connect (*sock, p->ai_addr, p->ai_addrlen) != SOCKET_ERROR)
