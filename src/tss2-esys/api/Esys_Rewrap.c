@@ -11,8 +11,29 @@
 #include "esys_types.h"
 #include "esys_iutil.h"
 #include "esys_mu.h"
+#include "tpm2_type_check.h"
 #define LOGMODULE esys
 #include "util/log.h"
+
+/** Check values of command parameters */
+static TSS2_RC 
+check_parameter (
+    const TPM2B_PRIVATE *inDuplicate,
+    const TPM2B_NAME *name,
+    const TPM2B_ENCRYPTED_SECRET *inSymSeed)
+{
+    TSS2_RC r;
+    r = iesys_TPM2B_PRIVATE_check(inDuplicate);
+    return_if_error(r,"Bad value for parameter inDuplicate "
+                    "of type type: TPM2B_PRIVATE.");
+    r = iesys_TPM2B_NAME_check(name);
+    return_if_error(r,"Bad value for parameter name "
+                    "of type type: TPM2B_NAME.");
+    r = iesys_TPM2B_ENCRYPTED_SECRET_check(inSymSeed);
+    return_if_error(r,"Bad value for parameter inSymSeed "
+                    "of type type: TPM2B_ENCRYPTED_SECRET.");
+    return TSS2_RC_SUCCESS;
+}
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
@@ -215,6 +236,11 @@ Esys_Rewrap_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
+    r = check_parameter(inDuplicate,
+                        name,
+                        inSymSeed);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Bad Value");
+
     store_input_parameters(esysContext, oldParent, newParent,
                 inDuplicate,
                 name,

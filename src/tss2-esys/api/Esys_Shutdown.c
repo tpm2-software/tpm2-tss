@@ -11,8 +11,21 @@
 #include "esys_types.h"
 #include "esys_iutil.h"
 #include "esys_mu.h"
+#include "tpm2_type_check.h"
 #define LOGMODULE esys
 #include "util/log.h"
+
+/** Check values of command parameters */
+static TSS2_RC 
+check_parameter (
+    TPM2_SU shutdownType)
+{
+    TSS2_RC r;
+    r = iesys_TPM2_SU_check(shutdownType);
+    return_if_error(r,"Bad value for parameter shutdownType "
+                    "of type type: TPM2_SU.");
+    return TSS2_RC_SUCCESS;
+}
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
@@ -159,6 +172,9 @@ Esys_Shutdown_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 0);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
+    r = check_parameter(shutdownType);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Bad Value");
+
     store_input_parameters(esysContext,
                 shutdownType);
 

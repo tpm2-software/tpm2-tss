@@ -11,8 +11,33 @@
 #include "esys_types.h"
 #include "esys_iutil.h"
 #include "esys_mu.h"
+#include "tpm2_type_check.h"
 #define LOGMODULE esys
 #include "util/log.h"
+
+/** Check values of command parameters */
+static TSS2_RC 
+check_parameter (
+    TPMI_YES_NO decrypt,
+    TPMI_ALG_SYM_MODE mode,
+    const TPM2B_IV *ivIn,
+    const TPM2B_MAX_BUFFER *inData)
+{
+    TSS2_RC r;
+    r = iesys_TPMI_YES_NO_check(decrypt);
+    return_if_error(r,"Bad value for parameter decrypt "
+                    "of type type: TPMI_YES_NO.");
+    r = iesys_TPMI_ALG_SYM_MODE_check(mode);
+    return_if_error(r,"Bad value for parameter mode "
+                    "of type type: TPMI_ALG_SYM_MODE.");
+    r = iesys_TPM2B_IV_check(ivIn);
+    return_if_error(r,"Bad value for parameter ivIn "
+                    "of type type: TPM2B_IV.");
+    r = iesys_TPM2B_MAX_BUFFER_check(inData);
+    return_if_error(r,"Bad value for parameter inData "
+                    "of type type: TPM2B_MAX_BUFFER.");
+    return TSS2_RC_SUCCESS;
+}
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
@@ -212,6 +237,12 @@ Esys_EncryptDecrypt_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
+    r = check_parameter(decrypt,
+                        mode,
+                        ivIn,
+                        inData);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Bad Value");
+
     store_input_parameters(esysContext, keyHandle,
                 decrypt,
                 mode,

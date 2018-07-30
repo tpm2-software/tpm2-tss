@@ -258,6 +258,7 @@
     <ClCompile Include="esys_crypto_ossl.c" />
     <ClCompile Include="esys_iutil.c" />
     <ClCompile Include="esys_mu.c" />
+    <ClCompile Include="tpm2_type_check.c" />
     <ClCompile Include="esys_tcti_default.c" />
     <ClCompile Include="esys_tr.c" />
   </ItemGroup>
@@ -268,6 +269,7 @@
     <ClInclude Include="esys_int.h" />
     <ClInclude Include="esys_iutil.h" />
     <ClInclude Include="esys_mu.h" />
+    <ClInclude Include="tpm2_type_check.h" />
     <ClInclude Include="esys_tcti_default.h" />
     <ClInclude Include="esys_types.h" />
   </ItemGroup>

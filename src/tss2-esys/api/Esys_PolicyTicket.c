@@ -11,8 +11,37 @@
 #include "esys_types.h"
 #include "esys_iutil.h"
 #include "esys_mu.h"
+#include "tpm2_type_check.h"
 #define LOGMODULE esys
 #include "util/log.h"
+
+/** Check values of command parameters */
+static TSS2_RC 
+check_parameter (
+    const TPM2B_TIMEOUT *timeout,
+    const TPM2B_DIGEST *cpHashA,
+    const TPM2B_NONCE *policyRef,
+    const TPM2B_NAME *authName,
+    const TPMT_TK_AUTH *ticket)
+{
+    TSS2_RC r;
+    r = iesys_TPM2B_TIMEOUT_check(timeout);
+    return_if_error(r,"Bad value for parameter timeout "
+                    "of type type: TPM2B_TIMEOUT.");
+    r = iesys_TPM2B_DIGEST_check(cpHashA);
+    return_if_error(r,"Bad value for parameter cpHashA "
+                    "of type type: TPM2B_DIGEST.");
+    r = iesys_TPM2B_NONCE_check(policyRef);
+    return_if_error(r,"Bad value for parameter policyRef "
+                    "of type type: TPM2B_NONCE.");
+    r = iesys_TPM2B_NAME_check(authName);
+    return_if_error(r,"Bad value for parameter authName "
+                    "of type type: TPM2B_NAME.");
+    r = iesys_TPMT_TK_AUTH_check(ticket);
+    return_if_error(r,"Bad value for parameter ticket "
+                    "of type type: TPMT_TK_AUTH.");
+    return TSS2_RC_SUCCESS;
+}
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
@@ -234,6 +263,13 @@ Esys_PolicyTicket_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 0);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
+    r = check_parameter(timeout,
+                        cpHashA,
+                        policyRef,
+                        authName,
+                        ticket);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Bad Value");
+
     store_input_parameters(esysContext, policySession,
                 timeout,
                 cpHashA,

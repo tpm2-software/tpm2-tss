@@ -11,8 +11,25 @@
 #include "esys_types.h"
 #include "esys_iutil.h"
 #include "esys_mu.h"
+#include "tpm2_type_check.h"
 #define LOGMODULE esys
 #include "util/log.h"
+
+/** Check values of command parameters */
+static TSS2_RC 
+check_parameter (
+    const TPM2B_DIGEST *fuDigest,
+    const TPMT_SIGNATURE *manifestSignature)
+{
+    TSS2_RC r;
+    r = iesys_TPM2B_DIGEST_check(fuDigest);
+    return_if_error(r,"Bad value for parameter fuDigest "
+                    "of type type: TPM2B_DIGEST.");
+    r = iesys_TPMT_SIGNATURE_check(manifestSignature);
+    return_if_error(r,"Bad value for parameter manifestSignature "
+                    "of type type: TPMT_SIGNATURE.");
+    return TSS2_RC_SUCCESS;
+}
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
@@ -201,6 +218,10 @@ Esys_FieldUpgradeStart_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
+    r = check_parameter(fuDigest,
+                        manifestSignature);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Bad Value");
+
     store_input_parameters(esysContext, authorization, keyHandle,
                 fuDigest,
                 manifestSignature);
