@@ -3,6 +3,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [2.0.x]
+### Fixed
+- Fixed an error in parsing socket address in MSSIM TCTI
+- Fixed compilation error with --disable-tcti-mssim
+- Added initialization function for gcrypt to suppress warning
+- Fixed invalid type base type while marshaling TPMI_ECC_CURVE in Tss2_Sys_ECC_Parameters
+- Fixed invalid RSA encryption with exponent equal to 0
+- Fixed checking of return codes in ESAPI commands
+- Added checks for programs required by the test harness @ configure time
+- Fixed warning on TPM2_RC_INITIALIZE rc after a Startup in Esys_Startup
+- Checked for 1.2 TPM type response
+- Changed constants values in esys header file to unsigned
+
 ## [2.0.0] - 2018-06-20
 ### Added
 - Implementation of the Marshal/Unmarshal library (libtss2-mu)
