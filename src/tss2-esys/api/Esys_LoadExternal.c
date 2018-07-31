@@ -310,7 +310,7 @@ Esys_LoadExternal_Finish(
         goto error_cleanup;
     }
     /* The following is the "regular error" handling. */
-    if (r != TSS2_RC_SUCCESS && (r & TSS2_RC_LAYER_MASK) == 0) {
+    if (iesys_tpm_error(r)) {
         LOG_WARNING("Received TPM Error");
         esysContext->state = _ESYS_STATE_INIT;
         goto error_cleanup;
@@ -337,10 +337,10 @@ Esys_LoadExternal_Finish(
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
                         " unmarshaling" ,error_cleanup);
 
-     /* check name against inPublic */
-     if (!iesys_compare_name(esysContext->in.LoadExternal.inPublic, &name)) {
-         goto_error(r, TSS2_ESYS_RC_MALFORMED_RESPONSE,
-                       "in Public name not equal name in response", error_cleanup);
+    /* check name against inPublic */
+    if (!iesys_compare_name(esysContext->in.LoadExternal.inPublic, &name)) {
+        goto_error(r, TSS2_ESYS_RC_MALFORMED_RESPONSE,
+                      "in Public name not equal name in response", error_cleanup);
     }
     objectHandleNode->rsrc.name = name;
     esysContext->state = _ESYS_STATE_INIT;

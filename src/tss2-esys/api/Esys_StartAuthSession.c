@@ -58,7 +58,6 @@ static void store_input_parameters (
  * @param[in]  shandle2 Second session handle.
  * @param[in]  shandle3 Third session handle.
  * @param[in]  nonceCaller Initial nonceCaller, sets nonceTPM size for the session.
- * @param[in]  encryptedSalt Value encrypted according to the type of tpmKey.
  * @param[in]  sessionType Indicates the type of the session; simple HMAC or
  *             policy (including a trial policy).
  * @param[in]  symmetric The algorithm and key size for parameter encryption.
@@ -155,7 +154,6 @@ Esys_StartAuthSession(
  * @param[in]  shandle2 Second session handle.
  * @param[in]  shandle3 Third session handle.
  * @param[in]  nonceCaller Initial nonceCaller, sets nonceTPM size for the session.
- * @param[in]  encryptedSalt Value encrypted according to the type of tpmKey.
  * @param[in]  sessionType Indicates the type of the session; simple HMAC or
  *             policy (including a trial policy).
  * @param[in]  symmetric The algorithm and key size for parameter encryption.
@@ -394,7 +392,7 @@ Esys_StartAuthSession_Finish(
         goto error_cleanup;
     }
     /* The following is the "regular error" handling. */
-    if (r != TSS2_RC_SUCCESS && (r & TSS2_RC_LAYER_MASK) == 0) {
+    if (iesys_tpm_error(r)) {
         LOG_WARNING("Received TPM Error");
         esysContext->state = _ESYS_STATE_INIT;
         goto error_cleanup;

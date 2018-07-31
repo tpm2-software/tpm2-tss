@@ -1416,3 +1416,20 @@ iesys_get_name(TPM2B_PUBLIC * publicInfo, TPM2B_NAME * name)
     name->size = size + len_alg_id;
     return TSS2_RC_SUCCESS;
 }
+
+/** Check whether the return code corresponds to an TPM error.
+ *
+ * if no layer is part of the return code or a layer from the resource manager
+ * is given the function will return true. 
+ * @param[in] r The return code to be checked.
+ * @retval true if r corresponds to an TPM error.
+ * @retval false in other cases.
+ */
+bool
+iesys_tpm_error(TSS2_RC r)
+{
+    return (r != TSS2_RC_SUCCESS &&
+            ((r & TSS2_RC_LAYER_MASK) == 0 ||
+             (r & TSS2_RC_LAYER_MASK) == TSS2_RESMGR_TPM_RC_LAYER ||
+             (r & TSS2_RC_LAYER_MASK) == TSS2_RESMGR_RC_LAYER));
+}

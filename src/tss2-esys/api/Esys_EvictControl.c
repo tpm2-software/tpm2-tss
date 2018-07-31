@@ -195,10 +195,10 @@ Esys_EvictControl_Async(
     return_state_if_error(r, _ESYS_STATE_INIT, "auth unknown.");
     r = esys_GetResourceObject(esysContext, objectHandle, &objectHandleNode);
     return_state_if_error(r, _ESYS_STATE_INIT, "objectHandle unknown.");
-     /* Use resource handle if object is already persistent */
-     if (objectHandleNode != NULL &&
-         iesys_get_handle_type(objectHandleNode->rsrc.handle) == TPM2_HT_PERSISTENT) {
-         persistentHandle = objectHandleNode->rsrc.handle;
+    /* Use resource handle if object is already persistent */
+    if (objectHandleNode != NULL &&
+        iesys_get_handle_type(objectHandleNode->rsrc.handle) == TPM2_HT_PERSISTENT) {
+        persistentHandle = objectHandleNode->rsrc.handle;
     }
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
@@ -327,7 +327,7 @@ Esys_EvictControl_Finish(
         goto error_cleanup;
     }
     /* The following is the "regular error" handling. */
-    if (r != TSS2_RC_SUCCESS && (r & TSS2_RC_LAYER_MASK) == 0) {
+    if (iesys_tpm_error(r)) {
         LOG_WARNING("Received TPM Error");
         esysContext->state = _ESYS_STATE_INIT;
         goto error_cleanup;
