@@ -72,6 +72,10 @@ Esys_Initialize(ESYS_CONTEXT ** esys_context, TSS2_TCTI_CONTEXT * tcti,
        namespace for handles */
     (*esys_context)->esys_handle_cnt = ESYS_TR_MIN_OBJECT + (rand() % 6000000);
 
+    /* Initialize crypto backend. */
+    r = iesys_initialize_crypto();
+    goto_if_error(r, "Initialize crypto backend.", cleanup_return);
+
     return TSS2_RC_SUCCESS;
 
 cleanup_return:

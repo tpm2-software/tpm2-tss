@@ -214,6 +214,8 @@ TSS2_RC iesys_cryptogcry_get_ecdh_point(
 #define iesys_crypto_sym_aes_encrypt iesys_cryptogcry_sym_aes_encrypt
 #define iesys_crypto_sym_aes_decrypt iesys_cryptogcry_sym_aes_decrypt
 
+TSS2_RC iesys_initialize_crypto();
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

@@ -1547,3 +1547,20 @@ iesys_xor_parameter_obfuscation(TPM2_ALG_ID hash_alg,
     }
     return TSS2_RC_SUCCESS;
 }
+
+/** Initialize crypto backend.
+ *
+ * Initialize gcrypt internal tables.
+ *
+ * @retval TSS2_RC_SUCCESS ong success.
+ * @retval TSS2_ESYS_RC_GENERAL_FAILURE if backend can't be initialized.
+ */
+TSS2_RC
+iesys_initialize_crypto() {
+    if (!gcry_check_version (GCRYPT_VERSION))
+    {
+        LOG_ERROR("Version mismatch for gcrypt");
+        return TSS2_ESYS_RC_GENERAL_FAILURE;
+    }
+    return TSS2_RC_SUCCESS;
+}
