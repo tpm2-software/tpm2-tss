@@ -46,6 +46,7 @@ noinst_PROGRAMS =
 
 # ax_doxygen
 @DX_RULES@
+DX_CLEANFILES = doc/doxygen
 MOSTLYCLEANFILES += $(DX_CLEANFILES)
 
 if DOXYMAN
@@ -160,6 +161,9 @@ DOXYMAN3 = \
     doc/man/Esys_VerifySignature.3 \
     doc/man/Esys_ZGen_2Phase.3
 $(DOXYMAN3): doxygen-doc
+EXTRA_DIST += $(DOXYMAN3)
+CLEANFILES += $(DOXYMAN3)
+CLEANFILES += doc/man/* doc/rtf/* doc/html/*
 else #DOXYMAN
 DOXYMAN3 =
 endif #DOXYMAN
