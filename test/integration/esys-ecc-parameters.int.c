@@ -41,7 +41,7 @@ test_esys_ecc_parameters(ESYS_CONTEXT * esys_context)
         &parameters);
 
     if (r == TPM2_RC_CURVE + TPM2_RC_P + TPM2_RC_1) {
-        LOG_WARNING("Curve TPM2_ECC_NIST_P256 supported by TPM.");
+        LOG_WARNING("Curve TPM2_ECC_NIST_P256 not supported by TPM.");
         failure_return = EXIT_SKIP;
         goto error;
     }

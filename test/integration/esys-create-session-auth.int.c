@@ -34,7 +34,8 @@
  *  - Esys_Load() (M)
  *  - Esys_StartAuthSession() (M)
  *
- * Used compiler defines: TEST_ECC
+ * Used compiler defines: TEST_ECC, TEST_AES_ENCRYPTION, TEST_BOUND_SESSION
+ *                        TEST_XOR_OBFUSCATION
  *
  * @param[in,out] esys_context The ESYS_CONTEXT.
  * @retval EXIT_FAILURE
@@ -224,7 +225,7 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
 
     r = Esys_StartAuthSession(esys_context,
                               primaryHandle_AuthSession,
-#if TEST_BOUND_SESSIION
+#if TEST_BOUND_SESSION
                               primaryHandle_AuthSession,
 #else
                               ESYS_TR_NONE,

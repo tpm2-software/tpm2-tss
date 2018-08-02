@@ -1069,6 +1069,9 @@ documentation if used:
 - TEST_SESSION Use session authentication instead of password authentication.
 - TEST_READ_LOCK Activate test of Esys_NV_ReadLock.
 - TEST_WRITE_LOCK Activate test of Esys_NV_WriteLock.
+- TEST_XOR_OBFUSCATION Use xor obfuscation for parameter encryption.
+- TEST_AES_ENCRYPTION Use AES for parameter encryption.
+- TEST_BOUND_SESSION Run test with a bound session.
 
 The ESAPI command calls which are used in a test are listed in the function's documentation
 and are marked according to the PC Client Profile Revision 01.03 v22:

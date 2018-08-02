@@ -32,7 +32,7 @@
  *  - Esys_NV_WriteLock() (M)
  *  - Esys_StartAuthSession() (M)
  *
- * Used compiler defines: TEST_READ_LOCK TEST_SESSIONi TEST_WRITE_LOCK
+ * Used compiler defines: TEST_READ_LOCK TEST_SESSION TEST_WRITE_LOCK
  *
  * @param[in,out] esys_context The ESYS_CONTEXT.
  * @retval EXIT_FAILURE
