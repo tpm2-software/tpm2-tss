@@ -37,6 +37,30 @@ typedef struct _IESYS_CRYPTO_CONTEXT {
     };
 } IESYS_CRYPTOGCRY_CONTEXT;
 
+/* Convert gcrypt mpi number to binary with fixed length */
+static gcry_error_t mpi2bin(gcry_mpi_t mpi, unsigned char *bin,
+                            size_t  bin_length, size_t max_out_size)
+{
+    gcry_error_t err;
+    size_t size;
+    size_t offset;
+
+    /* Determine size of mpi */
+    err = gcry_mpi_print(GCRYMPI_FMT_USG, NULL, max_out_size, &size, mpi);
+    if (err != GPG_ERR_NO_ERROR) {
+        LOG_ERROR("Function gcry_mpi_print");
+        return err;
+    }
+
+    offset = bin_length - size;
+    memset(&bin[0], 0, offset);
+    err = gcry_mpi_print(GCRYMPI_FMT_USG, &bin[offset], bin_length - offset, &size, mpi);
+    if (err != GPG_ERR_NO_ERROR) {
+        LOG_ERROR("Function gcry_mpi_print");
+    }
+    return err;
+}
+
 /** Provide the digest size for a given hash algorithm.
  *
  * This function provides the size of the digest for a given hash algorithm.
@@ -1085,12 +1109,13 @@ iesys_cryptogcry_pk_encrypt(TPM2B_PUBLIC * key,
     sexp_cipher_a = gcry_sexp_find_token(sexp_cipher, "a", 0);
     gcry_mpi_t mpi_cipher =
         gcry_sexp_nth_mpi(sexp_cipher_a, 1, GCRYMPI_FMT_USG);
-    err = gcry_mpi_print(GCRYMPI_FMT_USG, &out_buffer[0], max_out_size,
-                         out_size, mpi_cipher);
+    err = mpi2bin(mpi_cipher, &out_buffer[0], key->publicArea.unique.rsa.size, max_out_size);
     if (err != GPG_ERR_NO_ERROR) {
         LOG_ERROR("Function gcry_mpi_print");
         return TSS2_ESYS_RC_GENERAL_FAILURE;
     }
+
+    *out_size = key->publicArea.unique.rsa.size;
     free(sexp_data);
     free(sexp_key);
     free(sexp_cipher);
@@ -1140,27 +1165,32 @@ iesys_cryptogcry_get_ecdh_point(TPM2B_PUBLIC *key,
     gcry_mpi_t mpi_d = NULL;           /* private part of ephemeral key */
     gcry_mpi_point_t mpi_qd = NULL;    /* result of mpi_tpm_q * mpi_d */
     gcry_ctx_t ctx = NULL;             /* context for ec curves */
-    size_t size_x, size_y;
     size_t offset = 0;
     gcry_mpi_t mpi_x = gcry_mpi_new(521);  /* big number for x coordinate */
     gcry_mpi_t mpi_y = gcry_mpi_new(521);  /* big number for y coordinate */
+    size_t max_ecc_size;                   /* max size of ecc coordinate */
 
     /* Set libcrypt constant fo curve type */
     switch (key->publicArea.parameters.eccDetail.curveID) {
     case TPM2_ECC_NIST_P192:
         curveId = "\"NIST P-192\"";
+        max_ecc_size = (192+7)/8;
         break;
     case TPM2_ECC_NIST_P224:
         curveId = "\"NIST P-224\"";
+        max_ecc_size = (224+7)/8;
         break;
     case TPM2_ECC_NIST_P256:
         curveId = "\"NIST P-256\"";
+        max_ecc_size = (256+7)/8;
         break;
     case TPM2_ECC_NIST_P384:
         curveId = "\"NIST P-384\"";
+        max_ecc_size = (384+7)/8;
         break;
     case TPM2_ECC_NIST_P521:
         curveId = "\"NIST P-521\"";
+        max_ecc_size = (521+7)/8;
         break;
     default:
         LOG_ERROR("Illegal ECC curve ID");
@@ -1226,19 +1256,18 @@ iesys_cryptogcry_get_ecdh_point(TPM2B_PUBLIC *key,
                    cleanup);
     }
 
-    if (gcry_mpi_print(GCRYMPI_FMT_USG, &Q->x.buffer[0], max_out_size,
-                       &size_x, mpi_x) != GPG_ERR_NO_ERROR) {
+    if (mpi2bin(mpi_x, &Q->x.buffer[0], max_ecc_size, max_out_size)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Get x part of point",
                    cleanup);
     }
 
-    if (gcry_mpi_print(GCRYMPI_FMT_USG, &Q->y.buffer[0], max_out_size,
-                       &size_y, mpi_y) != GPG_ERR_NO_ERROR) {
+    if (mpi2bin(mpi_y, &Q->y.buffer[0], max_ecc_size, max_out_size)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Get y part of point",
                    cleanup);
     }
-    Q->x.size = size_x;
-    Q->y.size = size_y;
+
+    Q->x.size = max_ecc_size;
+    Q->y.size = max_ecc_size;
     SAFE_FREE(ctx);
     { /* scope for sexp_point */
 
@@ -1283,14 +1312,13 @@ iesys_cryptogcry_get_ecdh_point(TPM2B_PUBLIC *key,
                    "Point is at infinity", cleanup);
     }
 
-    if (gcry_mpi_print(GCRYMPI_FMT_USG, &Z->buffer[0], TPM2_MAX_ECC_KEY_BYTES,
-                       &size_x, mpi_x)) {
+    if (mpi2bin(mpi_x, &Z->buffer[0], max_ecc_size, TPM2_MAX_ECC_KEY_BYTES)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Get x coordinate d*Q", cleanup);
     }
 
-    Z->size = size_x;
-    LOGBLOB_DEBUG(&Z->buffer[0], size_x, "Z (Q*d)");
+    Z->size = max_ecc_size;
+    LOGBLOB_DEBUG(&Z->buffer[0], Z->size, "Z (Q*d)");
 
  cleanup:
     SAFE_FREE(ctx);
