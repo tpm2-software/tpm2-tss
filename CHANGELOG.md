@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ## [2.0.x]
 ### Fixed
+- Fixed problems with doxygan failing make distcheck
+- Fixed conversion of gcrypt mpi numbers to binary data
 - Fixed an error in parsing socket address in MSSIM TCTI
 - Fixed compilation error with --disable-tcti-mssim
 - Added initialization function for gcrypt to suppress warning
