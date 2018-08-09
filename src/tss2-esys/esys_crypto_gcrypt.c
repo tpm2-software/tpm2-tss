@@ -39,8 +39,8 @@ typedef struct _IESYS_CRYPTO_CONTEXT {
 
 
 /* Convert gcrypt mpi number to binary with fixed length */
-gcry_error_t mpi2bin(gcry_mpi_t mpi, unsigned char *bin, size_t  bin_length,
-                     size_t max_out_size)
+static gcry_error_t mpi2bin(gcry_mpi_t mpi, unsigned char *bin,
+		            size_t  bin_length, size_t max_out_size)
 {
     gcry_error_t err;
     size_t size;
