@@ -3220,6 +3220,13 @@ Esys_Vendor_TCG_Test_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_DATA **outputData);
 
+/*
+ * TPM 2.0 ESAPI Helper Functions
+ */
+void
+esys_free(
+    void *__ptr);
+
 #ifdef __cplusplus
 }
 #endif
