@@ -378,6 +378,9 @@
     <ClCompile Include="esys_crypto_ossl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="esys_free.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="esys_crypto.h">

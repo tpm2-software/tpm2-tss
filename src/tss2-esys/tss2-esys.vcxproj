@@ -256,6 +256,7 @@
     <ClCompile Include="esys_context.c" />
     <ClCompile Include="esys_crypto.c" />
     <ClCompile Include="esys_crypto_ossl.c" />
+    <ClCompile Include="esys_free.c" />
     <ClCompile Include="esys_iutil.c" />
     <ClCompile Include="esys_mu.c" />
     <ClCompile Include="esys_tcti_default.c" />

@@ -89,6 +89,7 @@ EXPORTS
     Esys_FirmwareRead_Async
     Esys_FirmwareRead_Finish
     Esys_FlushContext
+    esys_free
     Esys_FlushContext_Async
     Esys_FlushContext_Finish
     Esys_GetCapability
