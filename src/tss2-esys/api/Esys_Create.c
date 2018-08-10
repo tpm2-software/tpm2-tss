@@ -11,8 +11,33 @@
 #include "esys_types.h"
 #include "esys_iutil.h"
 #include "esys_mu.h"
+#include "tpm2_type_check.h"
 #define LOGMODULE esys
 #include "util/log.h"
+
+/** Check values of command parameters */
+static TSS2_RC 
+check_parameter (
+    const TPM2B_SENSITIVE_CREATE *inSensitive,
+    const TPM2B_PUBLIC *inPublic,
+    const TPM2B_DATA *outsideInfo,
+    const TPML_PCR_SELECTION *creationPCR)
+{
+    TSS2_RC r;
+    r = iesys_TPM2B_SENSITIVE_CREATE_check(inSensitive);
+    return_if_error(r,"Bad value for parameter inSensitive "
+                    "of type type: TPM2B_SENSITIVE_CREATE.");
+    r = iesys_TPM2B_PUBLIC_check(inPublic);
+    return_if_error(r,"Bad value for parameter inPublic "
+                    "of type type: TPM2B_PUBLIC.");
+    r = iesys_TPM2B_DATA_check(outsideInfo);
+    return_if_error(r,"Bad value for parameter outsideInfo "
+                    "of type type: TPM2B_DATA.");
+    r = iesys_TPML_PCR_SELECTION_check(creationPCR);
+    return_if_error(r,"Bad value for parameter creationPCR "
+                    "of type type: TPML_PCR_SELECTION.");
+    return TSS2_RC_SUCCESS;
+}
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
@@ -233,6 +258,12 @@ Esys_Create_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
+    r = check_parameter(inSensitive,
+                        inPublic,
+                        outsideInfo,
+                        creationPCR);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Bad Value");
+
     store_input_parameters(esysContext, parentHandle,
                 inSensitive,
                 inPublic,

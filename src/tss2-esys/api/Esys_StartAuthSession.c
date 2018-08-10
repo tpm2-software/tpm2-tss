@@ -11,8 +11,33 @@
 #include "esys_types.h"
 #include "esys_iutil.h"
 #include "esys_mu.h"
+#include "tpm2_type_check.h"
 #define LOGMODULE esys
 #include "util/log.h"
+
+/** Check values of command parameters */
+static TSS2_RC 
+check_parameter (
+    const TPM2B_NONCE *nonceCaller,
+    TPM2_SE sessionType,
+    const TPMT_SYM_DEF *symmetric,
+    TPMI_ALG_HASH authHash)
+{
+    TSS2_RC r;
+    r = iesys_TPM2B_NONCE_check(nonceCaller);
+    return_if_error(r,"Bad value for parameter nonceCaller "
+                    "of type type: TPM2B_NONCE.");
+    r = iesys_TPM2_SE_check(sessionType);
+    return_if_error(r,"Bad value for parameter sessionType "
+                    "of type type: TPM2_SE.");
+    r = iesys_TPMT_SYM_DEF_check(symmetric);
+    return_if_error(r,"Bad value for parameter symmetric "
+                    "of type type: TPMT_SYM_DEF.");
+    r = iesys_TPMI_ALG_HASH_check(authHash);
+    return_if_error(r,"Bad value for parameter authHash "
+                    "of type type: TPMI_ALG_HASH.");
+    return TSS2_RC_SUCCESS;
+}
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
@@ -212,6 +237,12 @@ Esys_StartAuthSession_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 0);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
+    r = check_parameter(nonceCaller,
+                        sessionType,
+                        symmetric,
+                        authHash);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Bad Value");
+
     store_input_parameters(esysContext, tpmKey, bind,
                 nonceCaller,
                 sessionType,

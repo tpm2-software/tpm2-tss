@@ -11,8 +11,25 @@
 #include "esys_types.h"
 #include "esys_iutil.h"
 #include "esys_mu.h"
+#include "tpm2_type_check.h"
 #define LOGMODULE esys
 #include "util/log.h"
+
+/** Check values of command parameters */
+static TSS2_RC 
+check_parameter (
+    const TPM2B_OPERAND *operandB,
+    TPM2_EO operation)
+{
+    TSS2_RC r;
+    r = iesys_TPM2B_OPERAND_check(operandB);
+    return_if_error(r,"Bad value for parameter operandB "
+                    "of type type: TPM2B_OPERAND.");
+    r = iesys_TPM2_EO_check(operation);
+    return_if_error(r,"Bad value for parameter operation "
+                    "of type type: TPM2_EO.");
+    return TSS2_RC_SUCCESS;
+}
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
@@ -190,6 +207,10 @@ Esys_PolicyCounterTimer_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 0);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
+    r = check_parameter(operandB,
+                        operation);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Bad Value");
+
     store_input_parameters(esysContext, policySession,
                 operandB,
                 offset,

@@ -11,8 +11,21 @@
 #include "esys_types.h"
 #include "esys_iutil.h"
 #include "esys_mu.h"
+#include "tpm2_type_check.h"
 #define LOGMODULE esys
 #include "util/log.h"
+
+/** Check values of command parameters */
+static TSS2_RC 
+check_parameter (
+    TPM2_SU startupType)
+{
+    TSS2_RC r;
+    r = iesys_TPM2_SU_check(startupType);
+    return_if_error(r,"Bad value for parameter startupType "
+                    "of type type: TPM2_SU.");
+    return TSS2_RC_SUCCESS;
+}
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
@@ -119,6 +132,9 @@ Esys_Startup_Async(
     if (r != TSS2_RC_SUCCESS)
         return r;
     esysContext->state = _ESYS_STATE_INTERNALERROR;
+    r = check_parameter(startupType);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Bad Value");
+
     store_input_parameters(esysContext,
                 startupType);
 

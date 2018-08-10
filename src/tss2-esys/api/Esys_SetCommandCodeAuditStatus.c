@@ -11,8 +11,29 @@
 #include "esys_types.h"
 #include "esys_iutil.h"
 #include "esys_mu.h"
+#include "tpm2_type_check.h"
 #define LOGMODULE esys
 #include "util/log.h"
+
+/** Check values of command parameters */
+static TSS2_RC 
+check_parameter (
+    TPMI_ALG_HASH auditAlg,
+    const TPML_CC *setList,
+    const TPML_CC *clearList)
+{
+    TSS2_RC r;
+    r = iesys_TPMI_ALG_HASH_check(auditAlg);
+    return_if_error(r,"Bad value for parameter auditAlg "
+                    "of type type: TPMI_ALG_HASH.");
+    r = iesys_TPML_CC_check(setList);
+    return_if_error(r,"Bad value for parameter setList "
+                    "of type type: TPML_CC.");
+    r = iesys_TPML_CC_check(clearList);
+    return_if_error(r,"Bad value for parameter clearList "
+                    "of type type: TPML_CC.");
+    return TSS2_RC_SUCCESS;
+}
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
@@ -204,6 +225,11 @@ Esys_SetCommandCodeAuditStatus_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
+    r = check_parameter(auditAlg,
+                        setList,
+                        clearList);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Bad Value");
+
     store_input_parameters(esysContext, auth,
                 auditAlg,
                 setList,

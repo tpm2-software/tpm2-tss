@@ -27,6 +27,9 @@
     <ClCompile Include="esys_mu.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tpm2_type_check.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="esys_tcti_default.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -393,6 +396,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="esys_mu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tpm2_type_check.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="esys_tcti_default.h">

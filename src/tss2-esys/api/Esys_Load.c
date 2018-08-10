@@ -11,8 +11,25 @@
 #include "esys_types.h"
 #include "esys_iutil.h"
 #include "esys_mu.h"
+#include "tpm2_type_check.h"
 #define LOGMODULE esys
 #include "util/log.h"
+
+/** Check values of command parameters */
+static TSS2_RC 
+check_parameter (
+    const TPM2B_PRIVATE *inPrivate,
+    const TPM2B_PUBLIC *inPublic)
+{
+    TSS2_RC r;
+    r = iesys_TPM2B_PRIVATE_check(inPrivate);
+    return_if_error(r,"Bad value for parameter inPrivate "
+                    "of type type: TPM2B_PRIVATE.");
+    r = iesys_TPM2B_PUBLIC_check(inPublic);
+    return_if_error(r,"Bad value for parameter inPublic "
+                    "of type type: TPM2B_PUBLIC.");
+    return TSS2_RC_SUCCESS;
+}
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
@@ -186,6 +203,10 @@ Esys_Load_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
+    r = check_parameter(inPrivate,
+                        inPublic);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Bad Value");
+
     store_input_parameters(esysContext, parentHandle,
                 inPrivate,
                 inPublic);

@@ -11,8 +11,25 @@
 #include "esys_types.h"
 #include "esys_iutil.h"
 #include "esys_mu.h"
+#include "tpm2_type_check.h"
 #define LOGMODULE esys
 #include "util/log.h"
+
+/** Check values of command parameters */
+static TSS2_RC 
+check_parameter (
+    const TPM2B_DATA *encryptionKeyIn,
+    const TPMT_SYM_DEF_OBJECT *symmetricAlg)
+{
+    TSS2_RC r;
+    r = iesys_TPM2B_DATA_check(encryptionKeyIn);
+    return_if_error(r,"Bad value for parameter encryptionKeyIn "
+                    "of type type: TPM2B_DATA.");
+    r = iesys_TPMT_SYM_DEF_OBJECT_check(symmetricAlg);
+    return_if_error(r,"Bad value for parameter symmetricAlg "
+                    "of type type: TPMT_SYM_DEF_OBJECT.");
+    return TSS2_RC_SUCCESS;
+}
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
@@ -210,6 +227,10 @@ Esys_Duplicate_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
+    r = check_parameter(encryptionKeyIn,
+                        symmetricAlg);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Bad Value");
+
     store_input_parameters(esysContext, objectHandle, newParentHandle,
                 encryptionKeyIn,
                 symmetricAlg);

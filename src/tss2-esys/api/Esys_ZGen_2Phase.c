@@ -11,8 +11,29 @@
 #include "esys_types.h"
 #include "esys_iutil.h"
 #include "esys_mu.h"
+#include "tpm2_type_check.h"
 #define LOGMODULE esys
 #include "util/log.h"
+
+/** Check values of command parameters */
+static TSS2_RC 
+check_parameter (
+    const TPM2B_ECC_POINT *inQsB,
+    const TPM2B_ECC_POINT *inQeB,
+    TPMI_ECC_KEY_EXCHANGE inScheme)
+{
+    TSS2_RC r;
+    r = iesys_TPM2B_ECC_POINT_check(inQsB);
+    return_if_error(r,"Bad value for parameter inQsB "
+                    "of type type: TPM2B_ECC_POINT.");
+    r = iesys_TPM2B_ECC_POINT_check(inQeB);
+    return_if_error(r,"Bad value for parameter inQeB "
+                    "of type type: TPM2B_ECC_POINT.");
+    r = iesys_TPMI_ECC_KEY_EXCHANGE_check(inScheme);
+    return_if_error(r,"Bad value for parameter inScheme "
+                    "of type type: TPMI_ECC_KEY_EXCHANGE.");
+    return TSS2_RC_SUCCESS;
+}
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
@@ -205,6 +226,11 @@ Esys_ZGen_2Phase_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
+    r = check_parameter(inQsB,
+                        inQeB,
+                        inScheme);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Bad Value");
+
     store_input_parameters(esysContext, keyA,
                 inQsB,
                 inQeB,
