@@ -81,7 +81,7 @@ write_all (
     do {
         LOG_DEBUG("writing %zu bytes starting at 0x%" PRIxPTR " to fd %d",
                   size - written_total,
-                  (uintptr_t)buf + written_total,
+                  (uintptr_t)(buf + written_total),
                   fd);
 #ifdef _WIN32
         TEMP_RETRY (written, send (fd,
