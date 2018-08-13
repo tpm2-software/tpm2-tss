@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
  * All rights reserved.
- *******************************************************************************/
+ ******************************************************************************/
 
 #include "tss2_esys.h"
 #include "esys_mu.h"
@@ -222,7 +222,7 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * object)
         objectHandleNode->rsrc.misc.rsrc_key_pub = *public;
         SAFE_FREE(public);
         SAFE_FREE(name);
-            SAFE_FREE(qualifiedName);
+        SAFE_FREE(qualifiedName);
     }
     *object = objectHandle;
     return TSS2_RC_SUCCESS;
@@ -522,9 +522,9 @@ Esys_TRSess_GetNonceTPM(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
         return TSS2_ESYS_RC_MEMORY;
     }
     if (esys_object->rsrc.rsrcType != IESYSC_SESSION_RSRC) {
-        r = TSS2_ESYS_RC_BAD_TR;
-        goto_if_error(r, "NonceTPM for non-session object requested.",
-                      error_cleanup);
+        goto_error(r, TSS2_ESYS_RC_BAD_TR,
+                   "NonceTPM for non-session object requested.",
+                   error_cleanup);
 
     }
     **nonceTPM = esys_object->rsrc.misc.rsrc_session.nonceTPM;
