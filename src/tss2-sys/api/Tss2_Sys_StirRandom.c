@@ -22,9 +22,18 @@ TSS2_RC Tss2_Sys_StirRandom_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_SENSITIVE_DATA_Marshal(inData, ctx->cmdBuffer,
-                                                ctx->maxCmdSize,
-                                                &ctx->nextData);
+    if (!inData) {
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData);
+
+    } else {
+
+        rval = Tss2_MU_TPM2B_SENSITIVE_DATA_Marshal(inData, ctx->cmdBuffer,
+                                                    ctx->maxCmdSize,
+                                                    &ctx->nextData);
+    }
+
     if (rval)
         return rval;
 

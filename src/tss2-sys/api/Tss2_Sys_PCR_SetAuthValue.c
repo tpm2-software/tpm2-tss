@@ -29,9 +29,18 @@ TSS2_RC Tss2_Sys_PCR_SetAuthValue_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_DIGEST_Marshal(auth, ctx->cmdBuffer,
-                                        ctx->maxCmdSize,
-                                        &ctx->nextData);
+    if (!auth) {
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData);
+
+    } else {
+
+        rval = Tss2_MU_TPM2B_DIGEST_Marshal(auth, ctx->cmdBuffer,
+                                            ctx->maxCmdSize,
+                                            &ctx->nextData);
+    }
+
     if (rval)
         return rval;
 

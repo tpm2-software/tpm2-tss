@@ -47,9 +47,18 @@ TSS2_RC Tss2_Sys_PolicyDuplicationSelect_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_NAME_Marshal(newParentName, ctx->cmdBuffer,
-                                  ctx->maxCmdSize,
-                                  &ctx->nextData);
+    if (!newParentName) {
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData);
+
+    } else {
+
+        rval = Tss2_MU_TPM2B_NAME_Marshal(newParentName, ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData);
+    }
+
     if (rval)
         return rval;
 
