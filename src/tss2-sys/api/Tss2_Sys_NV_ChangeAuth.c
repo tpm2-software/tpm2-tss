@@ -29,9 +29,18 @@ TSS2_RC Tss2_Sys_NV_ChangeAuth_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_AUTH_Marshal(newAuth, ctx->cmdBuffer,
+    if (!newAuth) {
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
                                       ctx->maxCmdSize,
                                       &ctx->nextData);
+
+    } else {
+
+        rval = Tss2_MU_TPM2B_AUTH_Marshal(newAuth, ctx->cmdBuffer,
+                                          ctx->maxCmdSize,
+                                          &ctx->nextData);
+    }
+
     if (rval)
         return rval;
 

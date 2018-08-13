@@ -22,9 +22,18 @@ TSS2_RC Tss2_Sys_Vendor_TCG_Test_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_DATA_Marshal(inputData, ctx->cmdBuffer,
+    if (!inputData) {
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
                                       ctx->maxCmdSize,
                                       &ctx->nextData);
+
+    } else {
+
+        rval = Tss2_MU_TPM2B_DATA_Marshal(inputData, ctx->cmdBuffer,
+                                          ctx->maxCmdSize,
+                                          &ctx->nextData);
+    }
+
     if (rval)
         return rval;
 

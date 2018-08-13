@@ -36,9 +36,18 @@ TSS2_RC Tss2_Sys_EventSequenceComplete_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_MAX_BUFFER_Marshal(buffer, ctx->cmdBuffer,
-                                            ctx->maxCmdSize,
-                                            &ctx->nextData);
+    if (!buffer) {
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData);
+
+    } else {
+
+        rval = Tss2_MU_TPM2B_MAX_BUFFER_Marshal(buffer, ctx->cmdBuffer,
+                                                ctx->maxCmdSize,
+                                                &ctx->nextData);
+    }
+
     if (rval)
         return rval;
 

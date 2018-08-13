@@ -49,22 +49,49 @@ TSS2_RC Tss2_Sys_Import_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_PUBLIC_Marshal(objectPublic, ctx->cmdBuffer,
-                                        ctx->maxCmdSize,
-                                        &ctx->nextData);
+    if (!objectPublic) {
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData);
+
+    } else {
+
+        rval = Tss2_MU_TPM2B_PUBLIC_Marshal(objectPublic, ctx->cmdBuffer,
+                                            ctx->maxCmdSize,
+                                            &ctx->nextData);
+    }
+
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_PRIVATE_Marshal(duplicate, ctx->cmdBuffer,
-                                         ctx->maxCmdSize,
-                                         &ctx->nextData);
+    if (!duplicate) {
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData);
+
+    } else {
+
+        rval = Tss2_MU_TPM2B_PRIVATE_Marshal(duplicate, ctx->cmdBuffer,
+                                             ctx->maxCmdSize,
+                                             &ctx->nextData);
+    }
+
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_ENCRYPTED_SECRET_Marshal(inSymSeed,
-                                                  ctx->cmdBuffer,
-                                                  ctx->maxCmdSize,
-                                                  &ctx->nextData);
+    if (!inSymSeed) {
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData);
+
+    } else {
+
+        rval = Tss2_MU_TPM2B_ENCRYPTED_SECRET_Marshal(inSymSeed,
+                                                      ctx->cmdBuffer,
+                                                      ctx->maxCmdSize,
+                                                      &ctx->nextData);
+    }
+
     if (rval)
         return rval;
 

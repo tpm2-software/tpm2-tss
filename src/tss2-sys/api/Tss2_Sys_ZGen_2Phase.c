@@ -48,9 +48,18 @@ TSS2_RC Tss2_Sys_ZGen_2Phase_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_ECC_POINT_Marshal(inQeB, ctx->cmdBuffer,
-                                           ctx->maxCmdSize,
-                                           &ctx->nextData);
+    if (!inQeB) {
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
+                                      ctx->maxCmdSize,
+                                      &ctx->nextData);
+
+    } else {
+
+        rval = Tss2_MU_TPM2B_ECC_POINT_Marshal(inQeB, ctx->cmdBuffer,
+                                               ctx->maxCmdSize,
+                                               &ctx->nextData);
+    }
+
     if (rval)
         return rval;
 

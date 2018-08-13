@@ -53,9 +53,18 @@ TSS2_RC Tss2_Sys_RSA_Encrypt_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_DATA_Marshal(label, ctx->cmdBuffer,
+    if (!label) {
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
                                       ctx->maxCmdSize,
                                       &ctx->nextData);
+
+    } else {
+
+        rval = Tss2_MU_TPM2B_DATA_Marshal(label, ctx->cmdBuffer,
+                                          ctx->maxCmdSize,
+                                          &ctx->nextData);
+    }
+
     if (rval)
         return rval;
 
