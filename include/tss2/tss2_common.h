@@ -63,7 +63,6 @@ typedef uint32_t TSS2_RC;
 #define TSS2_TCTI_RC_LAYER            TSS2_RC_LAYER(10)
 #define TSS2_RESMGR_RC_LAYER          TSS2_RC_LAYER(11)
 #define TSS2_RESMGR_TPM_RC_LAYER      TSS2_RC_LAYER(12)
-#define TSS2_DRIVER_RC_LAYER          TSS2_RC_LAYER(13)
 
 /* Base return codes.
  * These base codes indicate the error that occurred. They are

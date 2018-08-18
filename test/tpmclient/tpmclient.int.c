@@ -84,9 +84,6 @@ static void ErrorHandler(UINT32 rval, char *errorString, int errorStringSize)
         case TSS2_RESMGR_RC_LAYER:
             strcpy(levelString, "Resource Mgr");
             break;
-        case TSS2_DRIVER_RC_LAYER:
-            strcpy(levelString, "Driver");
-            break;
         default:
             strcpy(levelString, "Unknown Level");
             break;
