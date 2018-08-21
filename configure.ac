@@ -71,6 +71,17 @@ AC_ARG_ENABLE([esapi],
     [enable_esapi="yes"])
 AM_CONDITIONAL(ESAPI, test "x$enable_esapi" = "xyes")
 
+AC_ARG_ENABLE([tcti-partial-reads],
+    AS_HELP_STRING([--enable-tcti-partial-reads],
+	           [Enable partial reads for TCTI device
+		    (note: This needs to be
+		     supported by the kernel driver). default is no]),
+    [enable_tcti_partial_reads=$enableval],
+    [enable_tcti_partial_reads=no])
+AM_CONDITIONAL(TCTI_PARTIAL_READ, test "x$enable_tcti_partial_reads" = "xyes")
+AS_IF([test "x$enable_tcti_partial_reads" = "xyes"],
+	AC_DEFINE([TCTI_PARTIAL_READ],[1]))
+
 AC_ARG_WITH([crypto],
             [AS_HELP_STRING([--with-crypto={gcrypt,ossl}],
                             [sets the ESAPI crypto backend (default is gcrypt)])],
@@ -306,5 +317,5 @@ AC_MSG_RESULT([
     debug:              $enable_debug
     maxloglevel:        $with_maxloglevel
     doxygen:            $DX_FLAG_doc $enable_doxygen_doc
+    tcti-partial-read:  $enable_tcti_partial_reads
 ])
-    

@@ -47,8 +47,27 @@ TSS2_RC Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout)
     if (ctx->previousStage != CMD_STAGE_SEND_COMMAND)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    responseSize = ctx->maxCmdSize;
+    /*
+     * First call receive with NULL as the response buffer to
+     * get the size of the response
+     */
+    rval = Tss2_Tcti_Receive(ctx->tctiContext, &responseSize,
+                             NULL, timeout);
+    if (rval)
+        return rval;
 
+    if (responseSize < sizeof(TPM20_Header_Out)) {
+        ctx->previousStage = CMD_STAGE_PREPARE;
+        return TSS2_SYS_RC_INSUFFICIENT_RESPONSE;
+    }
+    if (responseSize > ctx->maxCmdSize) {
+        ctx->previousStage = CMD_STAGE_PREPARE;
+        return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+    }
+
+    /*
+     * Then call receive again with the response buffer to read the response
+     */
     rval = Tss2_Tcti_Receive(ctx->tctiContext, &responseSize,
                              ctx->cmdBuffer, timeout);
     if (rval == TSS2_TCTI_RC_INSUFFICIENT_BUFFER)
