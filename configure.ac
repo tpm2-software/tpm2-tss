@@ -64,8 +64,7 @@ AC_ARG_ENABLE([esapi],
             [enable_esapi=$enableval],
             [enable_esapi=yes])
 
-
-AC_ARG_ENABLE([esapi], 
+AC_ARG_ENABLE([esapi],
     AS_HELP_STRING([--disable-esapi], [Enable TSS ESYS API library @<:@default=yes@:>@]),
     [],
     [enable_esapi="yes"])
@@ -240,7 +239,7 @@ AX_ADD_COMPILER_FLAG([-Wno-missing-braces])
 dnl ---------  Physical TPM device -----------------------
 
 AC_ARG_WITH([ptpm],
-            [AS_HELP_STRING([--with-ptpm=<device>,[TPM device]])],
+            [AS_HELP_STRING([--with-ptpm=<device>],[TPM device])],
             [AS_IF([test \( -w "$with_ptpm" \)  -a \( -r "$with_ptpm" \)],
                    [AC_MSG_RESULT([success])
                     AC_SUBST([PTPM],[$with_ptpm])
@@ -307,4 +306,3 @@ AC_MSG_RESULT([
     maxloglevel:        $with_maxloglevel
     doxygen:            $DX_FLAG_doc $enable_doxygen_doc
 ])
-    
