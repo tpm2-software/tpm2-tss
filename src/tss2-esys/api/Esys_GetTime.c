@@ -62,8 +62,7 @@ static void store_input_parameters (
  *             (callee-allocated)
  * @param[out] signature The signature over timeInfo .
  *             (callee-allocated)
- * @retval TSS2_RC_SUCCESS on success
- * @retval ESYS_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
  *         pointers or required output handle references are NULL.
  * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
@@ -74,6 +73,8 @@ static void store_input_parameters (
  * @retval TSS2_ESYS_RC_INSUFFICIENT_RESPONSE: if the TPM's response does not
  *          at least contain the tag, response length, and response code.
  * @retval TSS2_ESYS_RC_MALFORMED_RESPONSE: if the TPM's response is corrupted.
+ * @retval TSS2_ESYS_RC_RSP_AUTH_FAILED: if the response HMAC from the TPM
+           did not verify.
  * @retval TSS2_ESYS_RC_MULTIPLE_DECRYPT_SESSIONS: if more than one session has
  *         the 'decrypt' attribute bit set.
  * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
@@ -270,7 +271,9 @@ Esys_GetTime_Async(
  * @retval TSS2_ESYS_RC_TRY_AGAIN: if the timeout counter expires before the
  *         TPM response is received.
  * @retval TSS2_ESYS_RC_INSUFFICIENT_RESPONSE: if the TPM's response does not
- *          at least contain the tag, response length, and response code.
+ *         at least contain the tag, response length, and response code.
+ * @retval TSS2_ESYS_RC_RSP_AUTH_FAILED: if the response HMAC from the TPM did
+ *         not verify.
  * @retval TSS2_ESYS_RC_MALFORMED_RESPONSE: if the TPM's response is corrupted.
  * @retval TSS2_RCs produced by lower layers of the software stack may be
  *         returned to the caller unaltered unless handled internally.
