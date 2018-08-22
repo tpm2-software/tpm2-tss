@@ -123,7 +123,12 @@ tcti_device_get_poll_handles_test (void **state)
     TSS2_RC rc;
 
     rc = Tss2_Tcti_GetPollHandles (ctx, handles, &num_handles);
+#ifdef TCTI_ASYNC
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (num_handles, 1);
+#else
     assert_int_equal (rc, TSS2_TCTI_RC_NOT_IMPLEMENTED);
+#endif
 }
 /*
  */

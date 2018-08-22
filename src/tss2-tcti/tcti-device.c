@@ -12,6 +12,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <poll.h>
 #include <unistd.h>
 
 #include "tss2_tcti.h"
@@ -118,7 +119,9 @@ tcti_device_receive (
     TSS2_TCTI_DEVICE_CONTEXT *tcti_dev = tcti_device_context_cast (tctiContext);
     TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_device_down_cast (tcti_dev);
     TSS2_RC rc = TSS2_RC_SUCCESS;
-    ssize_t  size;
+    ssize_t size = 0;
+    struct pollfd fds;
+    int rc_poll, nfds = 1;
 
     if (tcti_dev == NULL) {
         return TSS2_TCTI_RC_BAD_CONTEXT;
@@ -127,12 +130,19 @@ tcti_device_receive (
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
+#ifndef TCTI_ASYNC
+    /* For async the valid timeout values are -1 - block forever,
+     * 0 - nonblocking, and any positive value - the actual timeout
+     * value in millisec.
+     * For sync the only valid value is -1 - block forever.
+     */
     if (timeout != TSS2_TCTI_TIMEOUT_BLOCK) {
         LOG_WARNING ("The underlying IPC mechanism does not support "
                      "asynchronous I/O. The 'timeout' parameter must be "
                      "TSS2_TCTI_TIMEOUT_BLOCK");
         return TSS2_TCTI_RC_BAD_VALUE;
     }
+#endif
     if (response_buffer == NULL) {
         LOG_DEBUG ("Caller queried for size but linux kernel doesn't allow this. "
                    "Returning 4k which is the max size for a response buffer.");
@@ -148,11 +158,24 @@ tcti_device_receive (
      * operation. If we try to read again before sending another command
      * the kernel will close the file descriptor and we'll get an EOF.
      */
-    TEMP_RETRY (size, read (tcti_dev->fd, response_buffer, *response_size));
-    if (size < 0) {
-        LOG_ERROR ("Failed to read response from fd %d, got errno %d: %s",
+    fds.fd = tcti_dev->fd;
+    fds.events = POLLIN;
+
+    rc_poll = poll(&fds, nfds, timeout);
+    if (rc_poll < 0) {
+        LOG_ERROR ("Failed to poll for response from fd %d, got errno %d: %s",
                    tcti_dev->fd, errno, strerror (errno));
         return TSS2_TCTI_RC_IO_ERROR;
+    } else if (rc_poll == 0) {
+        LOG_INFO ("Poll timed out on fd %d.", tcti_dev->fd);
+        return TSS2_TCTI_RC_TRY_AGAIN;
+    } else if (fds.revents == POLLIN) {
+        TEMP_RETRY (size, read(tcti_dev->fd, response_buffer, *response_size));
+        if (size < 0) {
+            LOG_ERROR ("Failed to read response from fd %d, got errno %d: %s",
+               tcti_dev->fd, errno, strerror (errno));
+            return TSS2_TCTI_RC_IO_ERROR;
+        }
     }
     if (size == 0) {
         LOG_WARNING ("Got EOF instead of response.");
@@ -221,11 +244,26 @@ tcti_device_get_poll_handles (
     TSS2_TCTI_POLL_HANDLE *handles,
     size_t *num_handles)
 {
-    /* Linux driver doesn't support polling. */
+#ifdef TCTI_ASYNC
+    TSS2_TCTI_DEVICE_CONTEXT *tcti_dev = tcti_device_context_cast (tctiContext);
+
+    if (tcti_dev == NULL) {
+        return TSS2_TCTI_RC_BAD_CONTEXT;
+    }
+
+    if (handles == NULL || num_handles == NULL) {
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+
+    *num_handles = 1;
+    handles->fd = tcti_dev->fd;
+    return TSS2_RC_SUCCESS;
+#else
     (void)(tctiContext);
     (void)(handles);
     (void)(num_handles);
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
+#endif
 }
 
 TSS2_RC
@@ -275,7 +313,7 @@ Tss2_Tcti_Device_Init (
     memset (&tcti_common->header, 0, sizeof (tcti_common->header));
     tcti_common->locality = 3;
 
-    tcti_dev->fd = open (dev_path, O_RDWR);
+    tcti_dev->fd = open (dev_path, O_RDWR | O_NONBLOCK);
     if (tcti_dev->fd < 0) {
         LOG_ERROR ("Failed to open device file %s: %s",
                    dev_path, strerror (errno));
