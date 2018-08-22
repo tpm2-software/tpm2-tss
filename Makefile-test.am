@@ -250,7 +250,7 @@ CLEANFILES += \
 if UNIT
 test_unit_tcti_device_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tcti_device_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
-test_unit_tcti_device_LDFLAGS = -Wl,--wrap=read -Wl,-wrap=write
+test_unit_tcti_device_LDFLAGS = -Wl,--wrap=read -Wl,--wrap=write, -Wl,--wrap=poll
 test_unit_tcti_device_SOURCES = test/unit/tcti-device.c \
     src/tss2-tcti/tcti-common.c src/tss2-tcti/tcti-common.h \
     src/tss2-tcti/tcti-device.c src/tss2-tcti/tcti-device.h
