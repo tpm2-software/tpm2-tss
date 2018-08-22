@@ -70,6 +70,15 @@ AC_ARG_ENABLE([esapi],
     [enable_esapi="yes"])
 AM_CONDITIONAL(ESAPI, test "x$enable_esapi" = "xyes")
 
+AC_ARG_ENABLE([tcti-device-async],
+    AS_HELP_STRING([--enable-tcti-device-async],
+	           [Enable asynchronus operation on TCTI device
+		    (note: This needs to be supported by the kernel driver). default is no]),
+    [enable_tcti_device_async=$enableval],
+    [enable_tcti_device_async=no])
+AS_IF([test "x$enable_tcti_device_async" = "xyes"],
+	AC_DEFINE([TCTI_ASYNC],[1]))
+
 AC_ARG_WITH([crypto],
             [AS_HELP_STRING([--with-crypto={gcrypt,ossl}],
                             [sets the ESAPI crypto backend (default is gcrypt)])],
@@ -305,4 +314,5 @@ AC_MSG_RESULT([
     debug:              $enable_debug
     maxloglevel:        $with_maxloglevel
     doxygen:            $DX_FLAG_doc $enable_doxygen_doc
+    tcti-device-async:  $enable_tcti_device_async
 ])
