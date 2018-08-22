@@ -78,9 +78,11 @@ iesys_cryptogcry_hash_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
 {
     LOG_TRACE("call: context=%p hashAlg=%"PRIu16, context, hashAlg);
     return_if_null(context, "Context is NULL", TSS2_ESYS_RC_BAD_REFERENCE);
+
     IESYS_CRYPTOGCRY_CONTEXT *mycontext;
     mycontext = calloc(1, sizeof(IESYS_CRYPTOGCRY_CONTEXT));
     return_if_null(mycontext, "Out of Memory", TSS2_ESYS_RC_MEMORY);
+
     mycontext->type = IESYS_CRYPTOGCRY_TYPE_HASH;
 
     switch (hashAlg) {
@@ -112,11 +114,6 @@ iesys_cryptogcry_hash_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
         LOG_ERROR("GCry error.");
         free(mycontext);
         return TSS2_ESYS_RC_GENERAL_FAILURE;
-    }
-
-    if (context == NULL) {
-        LOG_ERROR("Null-Pointer passed");
-        return TSS2_ESYS_RC_BAD_REFERENCE;
     }
 
     *context = (IESYS_CRYPTO_CONTEXT_BLOB *) mycontext;
@@ -207,15 +204,12 @@ iesys_cryptogcry_hash_finish(IESYS_CRYPTO_CONTEXT_BLOB ** context,
 
     if (*size < mycontext->hash.hash_len) {
         LOG_ERROR("Buffer too small");
-        return TSS2_ESYS_RC_BAD_REFERENCE;
+        return TSS2_ESYS_RC_BAD_SIZE;
     }
 
     uint8_t *cpHash = gcry_md_read(mycontext->hash.gcry_context,
                                    mycontext->hash.gcry_hash_alg);
-    if (cpHash == NULL) {
-        LOG_ERROR("GCry error.");
-        return TSS2_ESYS_RC_GENERAL_FAILURE;
-    }
+    return_if_null(cpHash, "GCry error.", TSS2_ESYS_RC_GENERAL_FAILURE);
 
     LOGBLOB_TRACE(cpHash, mycontext->hash.hash_len, "read hash result");
 
@@ -228,30 +222,6 @@ iesys_cryptogcry_hash_finish(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     *context = NULL;
 
     return TSS2_RC_SUCCESS;
-}
-
-/** Get the digest value of a digest object and close the context.
- *
- * The digest value will written to a passed TPM2B object and the
- * digest object are released.
- * @param[in,out] context The context of the digest object to be released
- * @param[out] b The TPM2B object for the digest (caller-allocated).
- * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
- * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
- */
-TSS2_RC
-iesys_cryptogcry_hash_finish2b(IESYS_CRYPTO_CONTEXT_BLOB ** context, TPM2B * b)
-{
-    LOG_TRACE("called for context-pointer %p and 2b-pointer %p", context, b);
-    if (context == NULL || *context == NULL || b == NULL) {
-        LOG_ERROR("Null-Pointer passed");
-        return TSS2_ESYS_RC_BAD_REFERENCE;
-    }
-    size_t s = b->size;
-    TSS2_RC ret = iesys_cryptogcry_hash_finish(context, &b->buffer[0], &s);
-    b->size = s;
-    return ret;
 }
 
 /** Release the resources of a digest object.
@@ -309,10 +279,7 @@ iesys_cryptogcry_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     }
     IESYS_CRYPTOGCRY_CONTEXT *mycontext =
         calloc(1, sizeof(IESYS_CRYPTOGCRY_CONTEXT));
-    if (mycontext == NULL) {
-        LOG_ERROR("Out of Memory");
-        return TSS2_ESYS_RC_MEMORY;
-    }
+    return_if_null(mycontext, "Out of Memory", TSS2_ESYS_RC_MEMORY);
 
     switch (hmacAlg) {
     case TPM2_ALG_SHA1:
@@ -356,32 +323,6 @@ iesys_cryptogcry_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     *context = (IESYS_CRYPTO_CONTEXT_BLOB *) mycontext;
 
     return TSS2_RC_SUCCESS;
-}
-
-/** Provide the context an HMAC digest object from a byte TPM2B key.
- *
- * The context will be created and initialized according to the hash function
- * and the used HMAC key.
- * @param[out] context The created context.
- * @param[in] hmacAlg The hash algorithm for the HMAC computation.
- * @param[in] key The TPM2B object of the HMAC key.
- * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
- * @retval TSS2_ESYS_RC_MEMORY Memory cannot be allocated.
- * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
- */
-TSS2_RC
-iesys_cryptogcry_hmac_start2b(IESYS_CRYPTO_CONTEXT_BLOB ** context,
-                              TPM2_ALG_ID hmacAlg, TPM2B * key)
-{
-    LOG_TRACE("called for context-pointer %p and 2b-pointer %p", context, key);
-    if (context == NULL || key == NULL) {
-        LOG_ERROR("Null-Pointer passed");
-        return TSS2_ESYS_RC_BAD_REFERENCE;
-    }
-    TSS2_RC ret = iesys_cryptogcry_hmac_start(context, hmacAlg, &key->buffer[0],
-                                              key->size);
-    return ret;
 }
 
 /** Update and HMAC digest value from a byte buffer.
@@ -607,7 +548,7 @@ iesys_cryptogcry_pk_encrypt(TPM2B_PUBLIC * key,
         break;
     default:
         LOG_ERROR("Hash alg not implemented");
-        return TSS2_ESYS_RC_BAD_VALUE;
+        return TSS2_ESYS_RC_NOT_IMPLEMENTED;
     }
     switch (key->publicArea.parameters.rsaDetail.scheme.scheme) {
     case TPM2_ALG_NULL:
@@ -1045,14 +986,14 @@ iesys_cryptogcry_sym_aes_decrypt(uint8_t * key,
     gcry_error_t err;
     TSS2_RC r;
 
-    if (tpm_sym_alg != TPM2_ALG_AES) {
-        LOG_ERROR("AES expected");
-        return TSS2_ESYS_RC_GENERAL_FAILURE;
-    }
-
     if (key == NULL || buffer == NULL) {
         LOG_ERROR("Bad reference");
         return TSS2_ESYS_RC_BAD_REFERENCE;
+    }
+
+    if (tpm_sym_alg != TPM2_ALG_AES) {
+        LOG_ERROR("AES expected");
+        return TSS2_ESYS_RC_BAD_VALUE;
     }
 
     r = iesys_cryptogcry_sym_aes_init(&cipher_hd, key, tpm_sym_alg,
