@@ -229,7 +229,6 @@ Esys_StartAuthSession_Async(
                                       &encryptedSaltAux);
     return_if_error(r2, "Error in parameter encryption.");
 
-    esysContext->in.StartAuthSession.encryptedSalt = &encryptedSaltAux;
     if (nonceCaller == NULL) {
         r2 = iesys_crypto_hash_get_digest_size(authHash,&authHash_size);
         if (r2 != TSS2_RC_SUCCESS) {
