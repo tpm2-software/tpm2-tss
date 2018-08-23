@@ -53,8 +53,6 @@ typedef struct {
     TPMI_ALG_HASH authHash;
     TPM2B_NONCE *nonceCaller;
     TPM2B_NONCE nonceCallerData;
-    TPM2B_ENCRYPTED_SECRET *encryptedSalt;
-    TPM2B_ENCRYPTED_SECRET encryptedSaltData;
     TPMT_SYM_DEF *symmetric;
     TPMT_SYM_DEF symmetricData;
 } StartAuthSession_IN;
