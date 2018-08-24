@@ -1,7 +1,7 @@
-[![Linux Build Status](https://travis-ci.org/tpm2-software/tpm2-tss.svg?branch=master)](https://travis-ci.org/tpm2-software/tpm2-tss)
-[![Windows Build status](https://ci.appveyor.com/api/projects/status/2rdmyn1ndkiavngn?svg=true)](https://ci.appveyor.com/project/tpm2-software/tpm2-tss)
-[![Coverity Scan](https://img.shields.io/coverity/scan/3997.svg)](https://scan.coverity.com/projects/tpm2-tss)
-[![Coverage Status](https://coveralls.io/repos/github/tpm2-software/tpm2-tss/badge.svg?branch=master)](https://coveralls.io/github/tpm2-software/tpm2-tss?branch=master)
+['![Linux Build Status](https://travis-ci.org/tpm2-software/tpm2-tss.svg?branch=master)'](https://travis-ci.org/tpm2-software/tpm2-tss)
+['![Windows Build status](https://ci.appveyor.com/api/projects/status/2rdmyn1ndkiavngn?svg=true)'](https://ci.appveyor.com/project/tpm2-software/tpm2-tss)
+['![Coverity Scan](https://img.shields.io/coverity/scan/3997.svg)'](https://scan.coverity.com/projects/tpm2-tss)
+['![Coverage Status](https://coveralls.io/repos/github/tpm2-software/tpm2-tss/badge.svg?branch=master)'](https://coveralls.io/github/tpm2-software/tpm2-tss?branch=master)
 
 # Overview
 This repository hosts source code implementing the Trusted Computing Group's (TCG) TPM2 Software Stack (TSS).
@@ -58,7 +58,7 @@ To test the various TCTI, SAPI and ESAPI api calls, unit and integration tests c
 be run by configuring the build to enable unit testing and running the "check"
 build target. It is recommended to use a simulator for testing, and the
 simulator will be automatically launched by the tests. Please review the
-dependency list in [INSTALL](INSTALL.md) for dependencies when building
+dependency list in ![INSTALL](INSTALL.md) for dependencies when building
 the test suite.
 ```
 $ ./configure --enable-unit --enable-integration
@@ -73,8 +73,10 @@ NOTE: The unit and integration tests can be enabled independently.
 The --enable-unit option controls unit tests, and --enable-integration
 controls the integration tests.
 
-# [Architecture/Block Diagram](doc/arch.md)
-SAPI library, TAB/RM, and Test Code Block Diagram:
+# Project Code Block Diagram
+![Architecture/Block Diagram](doc/arch.md)
+
+## SAPI library, TAB/RM, and Test Code Block Diagram:
 ![Architecture Block Diagram](doc/TSS%20block%20diagram.png)
 
 # Project Layout
