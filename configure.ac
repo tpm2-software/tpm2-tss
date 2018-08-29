@@ -118,7 +118,7 @@ AC_ARG_WITH([tctidefaultmodule],
             [AS_HELP_STRING([--with-tctidefaultmodule],
 [The default TCTI module for ESAPI. (Default: libtss2-tcti-default.so])],
             [AC_DEFINE_UNQUOTED([ESYS_TCTI_DEFAULT_MODULE],
-                                [$with_tctidefaultmodule],
+                                ["$with_tctidefaultmodule"],
                                 ["The default TCTI library file"])],
             [])
 
@@ -126,7 +126,7 @@ AC_ARG_WITH([tctidefaultconfig],
             [AS_HELP_STRING([--with-tctidefaultconfig],
                             [The default tcti module's configuration.])],
             [AC_DEFINE_UNQUOTED([ESYS_TCTI_DEFAULT_CONFIG],
-                                [$with_tctidefaultconfig],
+                                ["$with_tctidefaultconfig"],
                                 ["The default TCTIs configuration string"])],
             [])
 
