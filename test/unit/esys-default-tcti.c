@@ -96,7 +96,7 @@ __wrap_Tss2_Tcti_Mssim_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size,
 static void
 test_fail_null(void **state)
 {
-    TSS2_RC r = get_tcti_default(NULL);
+    TSS2_RC r = get_tcti_default(NULL, NULL);
     assert_int_equal(r, TSS2_TCTI_RC_BAD_REFERENCE);
 }
 
@@ -141,7 +141,7 @@ test_tcti_default(void **state)
 
     TSS2_RC r;
     TSS2_TCTI_CONTEXT *tcti;
-    r = get_tcti_default(&tcti);
+    r = get_tcti_default(&tcti, NULL);
     assert_int_equal(r, TSS2_RC_SUCCESS);
     free(tcti);
 }
@@ -200,7 +200,7 @@ test_tcti_default_fail_sym(void **state)
 
     TSS2_RC r;
     TSS2_TCTI_CONTEXT *tcti;
-    r = get_tcti_default(&tcti);
+    r = get_tcti_default(&tcti, NULL);
     assert_int_equal(r, TSS2_RC_SUCCESS);
     free(tcti);
 }
@@ -264,7 +264,7 @@ test_tcti_default_fail_info(void **state)
 
     TSS2_RC r;
     TSS2_TCTI_CONTEXT *tcti;
-    r = get_tcti_default(&tcti);
+    r = get_tcti_default(&tcti, NULL);
     assert_int_equal(r, TSS2_RC_SUCCESS);
     free(tcti);
 }
@@ -340,7 +340,7 @@ test_tcti_default_fail_init(void **state)
 
     TSS2_RC r;
     TSS2_TCTI_CONTEXT *tcti;
-    r = get_tcti_default(&tcti);
+    r = get_tcti_default(&tcti, NULL);
     assert_int_equal(r, TSS2_RC_SUCCESS);
     free(tcti);
 }
@@ -395,7 +395,7 @@ test_tcti_tabrmd(void **state)
 
     TSS2_RC r;
     TSS2_TCTI_CONTEXT *tcti;
-    r = get_tcti_default(&tcti);
+    r = get_tcti_default(&tcti, NULL);
     assert_int_equal(r, TSS2_RC_SUCCESS);
     free(tcti);
 }
@@ -441,7 +441,7 @@ test_tcti_tpmrm0(void **state)
 
     TSS2_RC r;
     TSS2_TCTI_CONTEXT *tcti;
-    r = get_tcti_default(&tcti);
+    r = get_tcti_default(&tcti, NULL);
     assert_int_equal(r, TSS2_RC_SUCCESS);
     free(tcti);
 }
@@ -495,7 +495,7 @@ test_tcti_tpm0(void **state)
 
     TSS2_RC r;
     TSS2_TCTI_CONTEXT *tcti;
-    r = get_tcti_default(&tcti);
+    r = get_tcti_default(&tcti, NULL);
     assert_int_equal(r, TSS2_RC_SUCCESS);
     free(tcti);
 }
@@ -560,7 +560,7 @@ test_tcti_mssim(void **state)
 
     TSS2_RC r;
     TSS2_TCTI_CONTEXT *tcti;
-    r = get_tcti_default(&tcti);
+    r = get_tcti_default(&tcti, NULL);
     assert_int_equal(r, TSS2_RC_SUCCESS);
     free(tcti);
 }
@@ -618,7 +618,7 @@ test_tcti_fail_all(void **state)
 
     TSS2_RC r;
     TSS2_TCTI_CONTEXT *tcti;
-    r = get_tcti_default(&tcti);
+    r = get_tcti_default(&tcti, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_NOT_IMPLEMENTED);
     free(tcti);
 }

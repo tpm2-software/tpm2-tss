@@ -968,6 +968,8 @@ struct ESYS_CONTEXT {
     TSS2_TCTI_CONTEXT *tcti_app_param;/**< The TCTI context provided by the
                                            application during Esys_Initialize()
                                            to be returned from Esys_GetTcti().*/
+    void *dlhandle;              /**< The handle of dlopen if the tcti was
+                                      automatically loaded. */
 };
 
 /** The number of authomatic resubmissions.
