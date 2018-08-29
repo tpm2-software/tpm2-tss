@@ -331,7 +331,8 @@ test_unit_esys_context_null_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_context_null_LDFLAGS = $(TESTS_LDFLAGS) $(ESYSLDFLAGS)
 test_unit_esys_context_null_SOURCES = test/unit/esys-context-null.c
 
-test_unit_esys_default_tcti_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_esys_default_tcti_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) \
+        -UESYS_TCTI_DEFAULT_MODULE -UESYS_TCTI_DEFAUT_CONFIG
 test_unit_esys_default_tcti_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_default_tcti_LDFLAGS = \
         -Wl,--wrap=dlopen -Wl,-wrap=dlclose -Wl,-wrap=dlsym \
