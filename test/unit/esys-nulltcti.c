@@ -29,7 +29,7 @@ tcti_fake_finalize(TSS2_TCTI_CONTEXT *tctiContext)
 }
 
 TSS2_RC
-get_tcti_default(TSS2_TCTI_CONTEXT **tcti) {
+get_tcti_default(TSS2_TCTI_CONTEXT **tcti, void **dlhandle) {
     if (tcti == NULL)
         return TSS2_BASE_RC_GENERAL_FAILURE;
 
@@ -45,6 +45,7 @@ get_tcti_default(TSS2_TCTI_CONTEXT **tcti) {
     TSS2_TCTI_CANCEL(*faketcti) = NULL;
     TSS2_TCTI_GET_POLL_HANDLES(*faketcti) = NULL;
     TSS2_TCTI_SET_LOCALITY(*faketcti) = NULL;
+    *dlhandle = NULL;
 
     return TSS2_RC_SUCCESS;
 }

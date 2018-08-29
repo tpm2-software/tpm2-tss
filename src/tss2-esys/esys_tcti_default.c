@@ -123,7 +123,8 @@ tcti_from_info(TSS2_TCTI_INFO_FUNC infof,
 static TSS2_RC
 tcti_from_file(const char *file,
                const char* conf,
-               TSS2_TCTI_CONTEXT **tcti)
+               TSS2_TCTI_CONTEXT **tcti,
+               void **dlhandle)
 {
     TSS2_RC r;
     void *handle;
@@ -151,6 +152,9 @@ tcti_from_file(const char *file,
         return r;
     }
 
+    if (dlhandle)
+        *dlhandle = handle;
+
     LOG_DEBUG("Initialized TCTI file: %s", file);
 
     return TSS2_RC_SUCCESS;
@@ -158,7 +162,7 @@ tcti_from_file(const char *file,
 #endif /* NO_DL */
 
 TSS2_RC
-get_tcti_default(TSS2_TCTI_CONTEXT ** tcticontext)
+get_tcti_default(TSS2_TCTI_CONTEXT ** tcticontext, void **dlhandle)
 {
     if (tcticontext == NULL) {
         LOG_ERROR("tcticontext must not be NULL");
@@ -175,7 +179,8 @@ get_tcti_default(TSS2_TCTI_CONTEXT ** tcticontext)
 
     LOG_DEBUG("Attempting to initialize TCTI defined during compilation: %s:%s",
               ESYS_TCTI_DEFAULT_MODULE, config);
-    return tcti_from_file(ESYS_TCTI_DEFAULT_MODULE, config, tcticontext);
+    return tcti_from_file(ESYS_TCTI_DEFAULT_MODULE, config, tcticontext,
+                          dlhandle);
 
 #else /* ESYS_TCTI_DEFAULT_MODULE */
 
@@ -192,7 +197,8 @@ get_tcti_default(TSS2_TCTI_CONTEXT ** tcticontext)
             LOG_DEBUG("Failed to load standard TCTI number %zu", i);
 #ifndef NO_DL
         } else if (tctis[i].file != NULL) {
-            r = tcti_from_file(tctis[i].file, tctis[i].conf, tcticontext);
+            r = tcti_from_file(tctis[i].file, tctis[i].conf, tcticontext,
+                               dlhandle);
             if (r == TSS2_RC_SUCCESS)
                 return TSS2_RC_SUCCESS;
             LOG_DEBUG("Failed to load standard TCTI number %zu", i);

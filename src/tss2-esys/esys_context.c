@@ -4,6 +4,9 @@
  * All rights reserved.
  *******************************************************************************/
 
+#ifndef NO_DL
+#include <dlfcn.h>
+#endif /* NO_DL */
 #include <stdlib.h>
 
 #include "tss2_esys.h"
@@ -60,7 +63,7 @@ Esys_Initialize(ESYS_CONTEXT ** esys_context, TSS2_TCTI_CONTEXT * tcti,
 
     /* If no tcti was provided, initialize the default one. */
     if (tcti == NULL) {
-        r = get_tcti_default(&tcti);
+        r = get_tcti_default(&tcti, &(*esys_context)->dlhandle);
         goto_if_error(r, "Initialize default tcti.", cleanup_return);
     }
 
@@ -84,6 +87,11 @@ cleanup_return:
         Tss2_Tcti_Finalize(tcti);
         free(tcti);
     }
+#ifndef NO_DL
+    if ((*esys_context)->dlhandle)
+        dlclose((*esys_context)->dlhandle);
+#endif /* NO_DL */
+
     /* No need to finalize (*esys_context)->sys only free since
        it is the last goto in this function. */
     free((*esys_context)->sys);
@@ -134,6 +142,11 @@ Esys_Finalize(ESYS_CONTEXT ** esys_context)
         Tss2_Tcti_Finalize(tctcontext);
         free(tctcontext);
     }
+
+#ifndef NO_DL
+    if ((*esys_context)->dlhandle)
+        dlclose((*esys_context)->dlhandle);
+#endif /* NO_DL */
 
     /* Free esys_context */
     free(*esys_context);
