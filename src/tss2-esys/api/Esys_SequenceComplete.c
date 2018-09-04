@@ -68,9 +68,9 @@ static void store_input_parameters (
  *         the 'decrypt' attribute bit set.
  * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
  *         the 'encrypt' attribute bit set.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
- *         ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
- *         are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  * @retval TSS2_RCs produced by lower layers of the software stack may be
  *         returned to the caller unaltered unless handled internally.
  */
@@ -88,13 +88,8 @@ Esys_SequenceComplete(
 {
     TSS2_RC r;
 
-    r = Esys_SequenceComplete_Async(esysContext,
-                sequenceHandle,
-                shandle1,
-                shandle2,
-                shandle3,
-                buffer,
-                hierarchy);
+    r = Esys_SequenceComplete_Async(esysContext, sequenceHandle, shandle1,
+                                    shandle2, shandle3, buffer, hierarchy);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -108,9 +103,7 @@ Esys_SequenceComplete(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_SequenceComplete_Finish(esysContext,
-                result,
-                validation);
+        r = Esys_SequenceComplete_Finish(esysContext, result, validation);
         /* This is just debug information about the reattempt to finish the
            command */
         if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
@@ -151,9 +144,9 @@ Esys_SequenceComplete(
  *         the 'decrypt' attribute bit set.
  * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
  *         the 'encrypt' attribute bit set.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
-           ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
-           are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  */
 TSS2_RC
 Esys_SequenceComplete_Async(
@@ -185,9 +178,7 @@ Esys_SequenceComplete_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
-    store_input_parameters(esysContext, sequenceHandle,
-                buffer,
-                hierarchy);
+    store_input_parameters(esysContext, sequenceHandle, buffer, hierarchy);
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, sequenceHandle, &sequenceHandleNode);
@@ -195,9 +186,10 @@ Esys_SequenceComplete_Async(
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_SequenceComplete_Prepare(esysContext->sys,
-                (sequenceHandleNode == NULL) ? TPM2_RH_NULL : sequenceHandleNode->rsrc.handle,
-                buffer,
-                hierarchy);
+                                          (sequenceHandleNode == NULL)
+                                           ? TPM2_RH_NULL
+                                           : sequenceHandleNode->rsrc.handle,
+                                          buffer, hierarchy);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
@@ -210,14 +202,17 @@ Esys_SequenceComplete_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, sequenceHandleNode, NULL, NULL, &auths);
-    return_state_if_error(r, _ESYS_STATE_INIT, "Error in computation of auth values");
+    return_state_if_error(r, _ESYS_STATE_INIT,
+                          "Error in computation of auth values");
+
     esysContext->authsCount = auths.count;
     r = Tss2_Sys_SetCmdAuths(esysContext->sys, &auths);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI error on SetCmdAuths");
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -311,12 +306,12 @@ Esys_SequenceComplete_Finish(
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
         r = Esys_SequenceComplete_Async(esysContext,
-                esysContext->in.SequenceComplete.sequenceHandle,
-                esysContext->session_type[0],
-                esysContext->session_type[1],
-                esysContext->session_type[2],
-                esysContext->in.SequenceComplete.buffer,
-                esysContext->in.SequenceComplete.hierarchy);
+                                        esysContext->in.SequenceComplete.sequenceHandle,
+                                        esysContext->session_type[0],
+                                        esysContext->session_type[1],
+                                        esysContext->session_type[2],
+                                        esysContext->in.SequenceComplete.buffer,
+                                        esysContext->in.SequenceComplete.hierarchy);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent
@@ -344,18 +339,23 @@ Esys_SequenceComplete_Finish(
      */
     r = iesys_check_response(esysContext);
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Error: check response",
-                      error_cleanup);
+                        error_cleanup);
+
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
     r = Tss2_Sys_SequenceComplete_Complete(esysContext->sys,
-                (result != NULL) ? *result : NULL,
-                (validation != NULL) ? *validation : NULL);
-    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshaling" ,error_cleanup);
+                                           (result != NULL) ? *result : NULL,
+                                           (validation != NULL) ? *validation
+                                            : NULL);
+    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                        "Received error from SAPI unmarshaling" ,
+                        error_cleanup);
+
     /* The ESYS_TR sequence object has to be invalidated */
-    r = Esys_TR_Close(esysContext, &esysContext->in.SequenceComplete.sequenceHandle);
+    r = Esys_TR_Close(esysContext,
+                      &esysContext->in.SequenceComplete.sequenceHandle);
     goto_if_error(r, "invalidate object", error_cleanup);
 
     esysContext->state = _ESYS_STATE_INIT;

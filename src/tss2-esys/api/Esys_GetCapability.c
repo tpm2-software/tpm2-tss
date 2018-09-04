@@ -37,9 +37,11 @@ static void store_input_parameters (
  * @param[in]  shandle1 First session handle.
  * @param[in]  shandle2 Second session handle.
  * @param[in]  shandle3 Third session handle.
- * @param[in]  capability Group selection; determines the format of the response.
+ * @param[in]  capability Group selection; determines the format of the
+ *             response.
  * @param[in]  property Further definition of information.
- * @param[in]  propertyCount Number of properties of the indicated type to return.
+ * @param[in]  propertyCount Number of properties of the indicated type to
+ *             return.
  * @param[out] moreData Flag to indicate if there are more values of this type.
  *             (callee-allocated)
  * @param[out] capabilityData The capability data.
@@ -84,13 +86,8 @@ Esys_GetCapability(
 {
     TSS2_RC r;
 
-    r = Esys_GetCapability_Async(esysContext,
-                shandle1,
-                shandle2,
-                shandle3,
-                capability,
-                property,
-                propertyCount);
+    r = Esys_GetCapability_Async(esysContext, shandle1, shandle2, shandle3,
+                                 capability, property, propertyCount);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -104,9 +101,7 @@ Esys_GetCapability(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_GetCapability_Finish(esysContext,
-                moreData,
-                capabilityData);
+        r = Esys_GetCapability_Finish(esysContext, moreData, capabilityData);
         /* This is just debug information about the reattempt to finish the
            command */
         if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
@@ -132,9 +127,11 @@ Esys_GetCapability(
  * @param[in]  shandle1 First session handle.
  * @param[in]  shandle2 Second session handle.
  * @param[in]  shandle3 Third session handle.
- * @param[in]  capability Group selection; determines the format of the response.
+ * @param[in]  capability Group selection; determines the format of the
+ *             response.
  * @param[in]  property Further definition of information.
- * @param[in]  propertyCount Number of properties of the indicated type to return.
+ * @param[in]  propertyCount Number of properties of the indicated type to
+ *             return.
  * @retval ESYS_RC_SUCCESS if the function call was a success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
  *         pointers or required output handle references are NULL.
@@ -183,16 +180,11 @@ Esys_GetCapability_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 0);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
-    store_input_parameters(esysContext,
-                capability,
-                property,
-                propertyCount);
+    store_input_parameters(esysContext, capability, property, propertyCount);
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
-    r = Tss2_Sys_GetCapability_Prepare(esysContext->sys,
-                capability,
-                property,
-                propertyCount);
+    r = Tss2_Sys_GetCapability_Prepare(esysContext->sys, capability, property,
+                                       propertyCount);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
@@ -204,14 +196,17 @@ Esys_GetCapability_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, NULL, NULL, NULL, &auths);
-    return_state_if_error(r, _ESYS_STATE_INIT, "Error in computation of auth values");
+    return_state_if_error(r, _ESYS_STATE_INIT,
+                          "Error in computation of auth values");
+
     esysContext->authsCount = auths.count;
     r = Tss2_Sys_SetCmdAuths(esysContext->sys, &auths);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI error on SetCmdAuths");
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -297,13 +292,12 @@ Esys_GetCapability_Finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_GetCapability_Async(esysContext,
-                esysContext->session_type[0],
-                esysContext->session_type[1],
-                esysContext->session_type[2],
-                esysContext->in.GetCapability.capability,
-                esysContext->in.GetCapability.property,
-                esysContext->in.GetCapability.propertyCount);
+        r = Esys_GetCapability_Async(esysContext, esysContext->session_type[0],
+                                     esysContext->session_type[1],
+                                     esysContext->session_type[2],
+                                     esysContext->in.GetCapability.capability,
+                                     esysContext->in.GetCapability.property,
+                                     esysContext->in.GetCapability.propertyCount);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent
@@ -331,16 +325,19 @@ Esys_GetCapability_Finish(
      */
     r = iesys_check_response(esysContext);
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Error: check response",
-                      error_cleanup);
+                        error_cleanup);
+
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
-    r = Tss2_Sys_GetCapability_Complete(esysContext->sys,
-                moreData,
-                (capabilityData != NULL) ? *capabilityData : NULL);
-    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshaling" ,error_cleanup);
+    r = Tss2_Sys_GetCapability_Complete(esysContext->sys, moreData,
+                                        (capabilityData != NULL)
+                                         ? *capabilityData : NULL);
+    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                        "Received error from SAPI unmarshaling" ,
+                        error_cleanup);
+
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;

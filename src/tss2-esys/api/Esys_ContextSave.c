@@ -46,9 +46,9 @@ static void store_input_parameters (
  * @retval TSS2_ESYS_RC_MALFORMED_RESPONSE: if the TPM's response is corrupted.
  * @retval TSS2_ESYS_RC_RSP_AUTH_FAILED: if the response HMAC from the TPM
            did not verify.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
- *         ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
- *         are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  * @retval TSS2_RCs produced by lower layers of the software stack may be
  *         returned to the caller unaltered unless handled internally.
  */
@@ -60,8 +60,7 @@ Esys_ContextSave(
 {
     TSS2_RC r;
 
-    r = Esys_ContextSave_Async(esysContext,
-                saveHandle);
+    r = Esys_ContextSave_Async(esysContext, saveHandle);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -75,8 +74,7 @@ Esys_ContextSave(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_ContextSave_Finish(esysContext,
-                context);
+        r = Esys_ContextSave_Finish(esysContext, context);
         /* This is just debug information about the reattempt to finish the
            command */
         if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
@@ -108,9 +106,9 @@ Esys_ContextSave(
  *         internal operations or return parameters.
  * @retval TSS2_RCs produced by lower layers of the software stack may be
            returned to the caller unaltered unless handled internally.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
-           ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
-           are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  */
 TSS2_RC
 Esys_ContextSave_Async(
@@ -139,11 +137,13 @@ Esys_ContextSave_Async(
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_ContextSave_Prepare(esysContext->sys,
-                (saveHandleNode == NULL) ? TPM2_RH_NULL : saveHandleNode->rsrc.handle);
+                                     (saveHandleNode == NULL) ? TPM2_RH_NULL
+                                      : saveHandleNode->rsrc.handle);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -226,7 +226,7 @@ Esys_ContextSave_Finish(
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
         r = Esys_ContextSave_Async(esysContext,
-                esysContext->in.ContextSave.saveHandle);
+                                   esysContext->in.ContextSave.saveHandle);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent
@@ -247,10 +247,11 @@ Esys_ContextSave_Finish(
         esysContext->state = _ESYS_STATE_INTERNALERROR;
         goto error_cleanup;
     }
-    r = Tss2_Sys_ContextSave_Complete(esysContext->sys,
-                lcontext);
-    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshaling" ,error_cleanup);
+    r = Tss2_Sys_ContextSave_Complete(esysContext->sys, lcontext);
+    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                        "Received error from SAPI unmarshaling" ,
+                        error_cleanup);
+
 
     /* ESYS Special Handling Code: Extend the  context with metadata of the object */
     IESYS_CONTEXT_DATA esyscontextData;
@@ -278,7 +279,7 @@ Esys_ContextSave_Finish(
      * the ESYS_TR object is invalidated.
      */
     if (esys_object->rsrc.rsrcType == IESYSC_SESSION_RSRC) {
-        r = Esys_TR_Close(esysContext,  &esysContext->in.ContextSave.saveHandle);
+        r = Esys_TR_Close(esysContext, &esysContext->in.ContextSave.saveHandle);
         goto_if_error(r, "invalidate object", error_cleanup);
     }
     if (context != NULL)

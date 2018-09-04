@@ -42,7 +42,8 @@ static void store_input_parameters (
  * parameters is allocated by the function implementation.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
- * @param[in]  authHandle Handle indicating the source of the authorization value.
+ * @param[in]  authHandle Handle indicating the source of the authorization
+ *             value.
  * @param[in]  nvIndex The NV Index of the area to write.
  * @param[in]  shandle1 Session handle for authorization of authHandle
  * @param[in]  shandle2 Second session handle.
@@ -66,9 +67,9 @@ static void store_input_parameters (
  *         the 'decrypt' attribute bit set.
  * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
  *         the 'encrypt' attribute bit set.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
- *         ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
- *         are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  * @retval TSS2_ESYS_RC_NO_ENCRYPT_PARAM: if one of the sessions has the
  *         'encrypt' attribute set and the command does not support encryption
  *          of the first response parameter.
@@ -88,14 +89,8 @@ Esys_NV_Write(
 {
     TSS2_RC r;
 
-    r = Esys_NV_Write_Async(esysContext,
-                authHandle,
-                nvIndex,
-                shandle1,
-                shandle2,
-                shandle3,
-                data,
-                offset);
+    r = Esys_NV_Write_Async(esysContext, authHandle, nvIndex, shandle1, shandle2,
+                            shandle3, data, offset);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -132,7 +127,8 @@ Esys_NV_Write(
  * In order to retrieve the TPM's response call Esys_NV_Write_Finish.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
- * @param[in]  authHandle Handle indicating the source of the authorization value.
+ * @param[in]  authHandle Handle indicating the source of the authorization
+ *             value.
  * @param[in]  nvIndex The NV Index of the area to write.
  * @param[in]  shandle1 Session handle for authorization of authHandle
  * @param[in]  shandle2 Second session handle.
@@ -151,9 +147,9 @@ Esys_NV_Write(
  *         the 'decrypt' attribute bit set.
  * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
  *         the 'encrypt' attribute bit set.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
-           ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
-           are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  * @retval TSS2_ESYS_RC_NO_ENCRYPT_PARAM: if one of the sessions has the
  *         'encrypt' attribute set and the command does not support encryption
  *          of the first response parameter.
@@ -190,9 +186,7 @@ Esys_NV_Write_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
-    store_input_parameters(esysContext, authHandle, nvIndex,
-                data,
-                offset);
+    store_input_parameters(esysContext, authHandle, nvIndex, data, offset);
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, authHandle, &authHandleNode);
@@ -202,10 +196,10 @@ Esys_NV_Write_Async(
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_NV_Write_Prepare(esysContext->sys,
-                (authHandleNode == NULL) ? TPM2_RH_NULL : authHandleNode->rsrc.handle,
-                (nvIndexNode == NULL) ? TPM2_RH_NULL : nvIndexNode->rsrc.handle,
-                data,
-                offset);
+                                  (authHandleNode == NULL) ? TPM2_RH_NULL
+                                   : authHandleNode->rsrc.handle,
+                                  (nvIndexNode == NULL) ? TPM2_RH_NULL
+                                   : nvIndexNode->rsrc.handle, data, offset);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
@@ -218,14 +212,17 @@ Esys_NV_Write_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, authHandleNode, nvIndexNode, NULL, &auths);
-    return_state_if_error(r, _ESYS_STATE_INIT, "Error in computation of auth values");
+    return_state_if_error(r, _ESYS_STATE_INIT,
+                          "Error in computation of auth values");
+
     esysContext->authsCount = auths.count;
     r = Tss2_Sys_SetCmdAuths(esysContext->sys, &auths);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI error on SetCmdAuths");
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -297,14 +294,13 @@ Esys_NV_Write_Finish(
             return r;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_NV_Write_Async(esysContext,
-                esysContext->in.NV_Write.authHandle,
-                esysContext->in.NV_Write.nvIndex,
-                esysContext->session_type[0],
-                esysContext->session_type[1],
-                esysContext->session_type[2],
-                esysContext->in.NV_Write.data,
-                esysContext->in.NV_Write.offset);
+        r = Esys_NV_Write_Async(esysContext, esysContext->in.NV_Write.authHandle,
+                                esysContext->in.NV_Write.nvIndex,
+                                esysContext->session_type[0],
+                                esysContext->session_type[1],
+                                esysContext->session_type[2],
+                                esysContext->in.NV_Write.data,
+                                esysContext->in.NV_Write.offset);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent
@@ -331,14 +327,17 @@ Esys_NV_Write_Finish(
      * parameter decryption have to be done.
      */
     r = iesys_check_response(esysContext);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Error: check response");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Error: check response");
+
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
     r = Tss2_Sys_NV_Write_Complete(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshaling" );
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Received error from SAPI unmarshaling" );
+
 
     ESYS_TR nvIndex = esysContext->in.NV_Write.nvIndex;
     RSRC_NODE_T *nvIndexNode;

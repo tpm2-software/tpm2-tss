@@ -64,10 +64,7 @@ Esys_GetTestResult(
 {
     TSS2_RC r;
 
-    r = Esys_GetTestResult_Async(esysContext,
-                shandle1,
-                shandle2,
-                shandle3);
+    r = Esys_GetTestResult_Async(esysContext, shandle1, shandle2, shandle3);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -81,9 +78,7 @@ Esys_GetTestResult(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_GetTestResult_Finish(esysContext,
-                outData,
-                testResult);
+        r = Esys_GetTestResult_Finish(esysContext, outData, testResult);
         /* This is just debug information about the reattempt to finish the
            command */
         if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
@@ -164,14 +159,17 @@ Esys_GetTestResult_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, NULL, NULL, NULL, &auths);
-    return_state_if_error(r, _ESYS_STATE_INIT, "Error in computation of auth values");
+    return_state_if_error(r, _ESYS_STATE_INIT,
+                          "Error in computation of auth values");
+
     esysContext->authsCount = auths.count;
     r = Tss2_Sys_SetCmdAuths(esysContext->sys, &auths);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI error on SetCmdAuths");
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -257,10 +255,9 @@ Esys_GetTestResult_Finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_GetTestResult_Async(esysContext,
-                esysContext->session_type[0],
-                esysContext->session_type[1],
-                esysContext->session_type[2]);
+        r = Esys_GetTestResult_Async(esysContext, esysContext->session_type[0],
+                                     esysContext->session_type[1],
+                                     esysContext->session_type[2]);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent
@@ -288,16 +285,19 @@ Esys_GetTestResult_Finish(
      */
     r = iesys_check_response(esysContext);
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Error: check response",
-                      error_cleanup);
+                        error_cleanup);
+
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
     r = Tss2_Sys_GetTestResult_Complete(esysContext->sys,
-                (outData != NULL) ? *outData : NULL,
-                testResult);
-    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshaling" ,error_cleanup);
+                                        (outData != NULL) ? *outData : NULL,
+                                        testResult);
+    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                        "Received error from SAPI unmarshaling" ,
+                        error_cleanup);
+
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;

@@ -60,9 +60,9 @@ static void store_input_parameters (
  *         the 'decrypt' attribute bit set.
  * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
  *         the 'encrypt' attribute bit set.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
- *         ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
- *         are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  * @retval TSS2_ESYS_RC_NO_ENCRYPT_PARAM: if one of the sessions has the
  *         'encrypt' attribute set and the command does not support encryption
  *          of the first response parameter.
@@ -80,12 +80,8 @@ Esys_NV_ChangeAuth(
 {
     TSS2_RC r;
 
-    r = Esys_NV_ChangeAuth_Async(esysContext,
-                nvIndex,
-                shandle1,
-                shandle2,
-                shandle3,
-                newAuth);
+    r = Esys_NV_ChangeAuth_Async(esysContext, nvIndex, shandle1, shandle2,
+                                 shandle3, newAuth);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -139,9 +135,9 @@ Esys_NV_ChangeAuth(
  *         the 'decrypt' attribute bit set.
  * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
  *         the 'encrypt' attribute bit set.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
-           ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
-           are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  * @retval TSS2_ESYS_RC_NO_ENCRYPT_PARAM: if one of the sessions has the
  *         'encrypt' attribute set and the command does not support encryption
  *          of the first response parameter.
@@ -174,8 +170,7 @@ Esys_NV_ChangeAuth_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
-    store_input_parameters(esysContext, nvIndex,
-                newAuth);
+    store_input_parameters(esysContext, nvIndex, newAuth);
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, nvIndex, &nvIndexNode);
@@ -183,8 +178,8 @@ Esys_NV_ChangeAuth_Async(
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_NV_ChangeAuth_Prepare(esysContext->sys,
-                (nvIndexNode == NULL) ? TPM2_RH_NULL : nvIndexNode->rsrc.handle,
-                newAuth);
+                                       (nvIndexNode == NULL) ? TPM2_RH_NULL
+                                        : nvIndexNode->rsrc.handle, newAuth);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
@@ -197,14 +192,17 @@ Esys_NV_ChangeAuth_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, nvIndexNode, NULL, NULL, &auths);
-    return_state_if_error(r, _ESYS_STATE_INIT, "Error in computation of auth values");
+    return_state_if_error(r, _ESYS_STATE_INIT,
+                          "Error in computation of auth values");
+
     esysContext->authsCount = auths.count;
     r = Tss2_Sys_SetCmdAuths(esysContext->sys, &auths);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI error on SetCmdAuths");
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -280,11 +278,11 @@ Esys_NV_ChangeAuth_Finish(
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
         r = Esys_NV_ChangeAuth_Async(esysContext,
-                esysContext->in.NV_ChangeAuth.nvIndex,
-                esysContext->session_type[0],
-                esysContext->session_type[1],
-                esysContext->session_type[2],
-                esysContext->in.NV_ChangeAuth.newAuth);
+                                     esysContext->in.NV_ChangeAuth.nvIndex,
+                                     esysContext->session_type[0],
+                                     esysContext->session_type[1],
+                                     esysContext->session_type[2],
+                                     esysContext->in.NV_ChangeAuth.newAuth);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent
@@ -322,14 +320,17 @@ Esys_NV_ChangeAuth_Finish(
      * parameter decryption have to be done.
      */
     r = iesys_check_response(esysContext);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Error: check response");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Error: check response");
+
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
     r = Tss2_Sys_NV_ChangeAuth_Complete(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshaling" );
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Received error from SAPI unmarshaling" );
+
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;

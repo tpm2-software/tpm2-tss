@@ -74,16 +74,16 @@ static void store_input_parameters (
  * @param[in]  nonceTPM The policy nonce for the session.
  * @param[in]  cpHashA Digest of the command parameters to which this
  *             authorization is limited.
- * @param[in]  policyRef A reference to a policy relating to the authorization -
- *             may be the Empty Buffer.
- * @param[in]  expiration Time when authorization will expire, measured in seconds
- *             from the time that nonceTPM was generated.
+ * @param[in]  policyRef A reference to a policy relating to the authorization
+ *             - may be the Empty Buffer.
+ * @param[in]  expiration Time when authorization will expire, measured in
+ *             seconds from the time that nonceTPM was generated.
  * @param[in]  auth Signed authorization (not optional).
- * @param[out] timeout Implementation-specific time value, used to indicate to the
- *             TPM when the ticket expires.
+ * @param[out] timeout Implementation-specific time value, used to indicate to
+ *             the TPM when the ticket expires.
  *             (callee-allocated)
- * @param[out] policyTicket Produced if the command succeeds and expiration in the
- *             command was non-zero; this ticket will use the
+ * @param[out] policyTicket Produced if the command succeeds and expiration in
+ *             the command was non-zero; this ticket will use the
  *             TPMT_ST_AUTH_SIGNED structure tag. See 23.2.5.
  *             (callee-allocated)
  * @retval TSS2_RC_SUCCESS if the function call was a success.
@@ -103,9 +103,9 @@ static void store_input_parameters (
  *         the 'decrypt' attribute bit set.
  * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
  *         the 'encrypt' attribute bit set.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
- *         ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
- *         are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  * @retval TSS2_RCs produced by lower layers of the software stack may be
  *         returned to the caller unaltered unless handled internally.
  */
@@ -127,17 +127,9 @@ Esys_PolicySigned(
 {
     TSS2_RC r;
 
-    r = Esys_PolicySigned_Async(esysContext,
-                authObject,
-                policySession,
-                shandle1,
-                shandle2,
-                shandle3,
-                nonceTPM,
-                cpHashA,
-                policyRef,
-                expiration,
-                auth);
+    r = Esys_PolicySigned_Async(esysContext, authObject, policySession, shandle1,
+                                shandle2, shandle3, nonceTPM, cpHashA, policyRef,
+                                expiration, auth);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -151,9 +143,7 @@ Esys_PolicySigned(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_PolicySigned_Finish(esysContext,
-                timeout,
-                policyTicket);
+        r = Esys_PolicySigned_Finish(esysContext, timeout, policyTicket);
         /* This is just debug information about the reattempt to finish the
            command */
         if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
@@ -184,10 +174,10 @@ Esys_PolicySigned(
  * @param[in]  nonceTPM The policy nonce for the session.
  * @param[in]  cpHashA Digest of the command parameters to which this
  *             authorization is limited.
- * @param[in]  policyRef A reference to a policy relating to the authorization -
- *             may be the Empty Buffer.
- * @param[in]  expiration Time when authorization will expire, measured in seconds
- *             from the time that nonceTPM was generated.
+ * @param[in]  policyRef A reference to a policy relating to the authorization
+ *             - may be the Empty Buffer.
+ * @param[in]  expiration Time when authorization will expire, measured in
+ *             seconds from the time that nonceTPM was generated.
  * @param[in]  auth Signed authorization (not optional).
  * @retval ESYS_RC_SUCCESS if the function call was a success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
@@ -201,9 +191,9 @@ Esys_PolicySigned(
  *         the 'decrypt' attribute bit set.
  * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
  *         the 'encrypt' attribute bit set.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
-           ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
-           are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  */
 TSS2_RC
 Esys_PolicySigned_Async(
@@ -242,12 +232,8 @@ Esys_PolicySigned_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 0);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
-    store_input_parameters(esysContext, authObject, policySession,
-                nonceTPM,
-                cpHashA,
-                policyRef,
-                expiration,
-                auth);
+    store_input_parameters(esysContext, authObject, policySession, nonceTPM,
+                           cpHashA, policyRef, expiration, auth);
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, authObject, &authObjectNode);
@@ -257,13 +243,12 @@ Esys_PolicySigned_Async(
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_PolicySigned_Prepare(esysContext->sys,
-                (authObjectNode == NULL) ? TPM2_RH_NULL : authObjectNode->rsrc.handle,
-                (policySessionNode == NULL) ? TPM2_RH_NULL : policySessionNode->rsrc.handle,
-                nonceTPM,
-                cpHashA,
-                policyRef,
-                expiration,
-                auth);
+                                      (authObjectNode == NULL) ? TPM2_RH_NULL
+                                       : authObjectNode->rsrc.handle,
+                                      (policySessionNode == NULL) ? TPM2_RH_NULL
+                                       : policySessionNode->rsrc.handle,
+                                      nonceTPM, cpHashA, policyRef, expiration,
+                                      auth);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
@@ -275,14 +260,17 @@ Esys_PolicySigned_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, authObjectNode, policySessionNode, NULL, &auths);
-    return_state_if_error(r, _ESYS_STATE_INIT, "Error in computation of auth values");
+    return_state_if_error(r, _ESYS_STATE_INIT,
+                          "Error in computation of auth values");
+
     esysContext->authsCount = auths.count;
     r = Tss2_Sys_SetCmdAuths(esysContext->sys, &auths);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI error on SetCmdAuths");
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -297,11 +285,11 @@ Esys_PolicySigned_Async(
  * output parameter if the value is not required.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
- * @param[out] timeout Implementation-specific time value, used to indicate to the
- *             TPM when the ticket expires.
+ * @param[out] timeout Implementation-specific time value, used to indicate to
+ *             the TPM when the ticket expires.
  *             (callee-allocated)
- * @param[out] policyTicket Produced if the command succeeds and expiration in the
- *             command was non-zero; this ticket will use the
+ * @param[out] policyTicket Produced if the command succeeds and expiration in
+ *             the command was non-zero; this ticket will use the
  *             TPMT_ST_AUTH_SIGNED structure tag. See 23.2.5.
  *             (callee-allocated)
  * @retval TSS2_RC_SUCCESS on success
@@ -378,16 +366,16 @@ Esys_PolicySigned_Finish(
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
         r = Esys_PolicySigned_Async(esysContext,
-                esysContext->in.PolicySigned.authObject,
-                esysContext->in.PolicySigned.policySession,
-                esysContext->session_type[0],
-                esysContext->session_type[1],
-                esysContext->session_type[2],
-                esysContext->in.PolicySigned.nonceTPM,
-                esysContext->in.PolicySigned.cpHashA,
-                esysContext->in.PolicySigned.policyRef,
-                esysContext->in.PolicySigned.expiration,
-                esysContext->in.PolicySigned.auth);
+                                    esysContext->in.PolicySigned.authObject,
+                                    esysContext->in.PolicySigned.policySession,
+                                    esysContext->session_type[0],
+                                    esysContext->session_type[1],
+                                    esysContext->session_type[2],
+                                    esysContext->in.PolicySigned.nonceTPM,
+                                    esysContext->in.PolicySigned.cpHashA,
+                                    esysContext->in.PolicySigned.policyRef,
+                                    esysContext->in.PolicySigned.expiration,
+                                    esysContext->in.PolicySigned.auth);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent
@@ -415,16 +403,20 @@ Esys_PolicySigned_Finish(
      */
     r = iesys_check_response(esysContext);
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Error: check response",
-                      error_cleanup);
+                        error_cleanup);
+
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
     r = Tss2_Sys_PolicySigned_Complete(esysContext->sys,
-                (timeout != NULL) ? *timeout : NULL,
-                (policyTicket != NULL) ? *policyTicket : NULL);
-    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshaling" ,error_cleanup);
+                                       (timeout != NULL) ? *timeout : NULL,
+                                       (policyTicket != NULL) ? *policyTicket
+                                        : NULL);
+    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                        "Received error from SAPI unmarshaling" ,
+                        error_cleanup);
+
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;

@@ -39,8 +39,8 @@ static void store_input_parameters (
  * @param[in]  shandle1 Session handle for authorization of auth
  * @param[in]  shandle2 Second session handle.
  * @param[in]  shandle3 Third session handle.
- * @param[in]  persistentHandle If objectHandle is a transient object handle, then
- *             this is the persistent handle for the object.
+ * @param[in]  persistentHandle If objectHandle is a transient object handle,
+ *             then this is the persistent handle for the object.
  * @param[out] newObjectHandle  ESYS_TR handle of ESYS resource for TPM2_HANDLE.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
@@ -59,9 +59,9 @@ static void store_input_parameters (
  *         the 'decrypt' attribute bit set.
  * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
  *         the 'encrypt' attribute bit set.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
- *         ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
- *         are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  * @retval TSS2_ESYS_RC_NO_DECRYPT_PARAM: if one of the sessions has the
  *         'decrypt' attribute set and the command does not support encryption
  *         of the first command parameter.
@@ -79,18 +79,12 @@ Esys_EvictControl(
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_DH_PERSISTENT persistentHandle,
-    ESYS_TR *newObjectHandle)
+    TPMI_DH_PERSISTENT persistentHandle, ESYS_TR *newObjectHandle)
 {
     TSS2_RC r;
 
-    r = Esys_EvictControl_Async(esysContext,
-                auth,
-                objectHandle,
-                shandle1,
-                shandle2,
-                shandle3,
-                persistentHandle);
+    r = Esys_EvictControl_Async(esysContext, auth, objectHandle, shandle1,
+                                shandle2, shandle3, persistentHandle);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -104,8 +98,7 @@ Esys_EvictControl(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_EvictControl_Finish(esysContext,
-                newObjectHandle);
+        r = Esys_EvictControl_Finish(esysContext, newObjectHandle);
         /* This is just debug information about the reattempt to finish the
            command */
         if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
@@ -133,8 +126,8 @@ Esys_EvictControl(
  * @param[in]  shandle1 Session handle for authorization of auth
  * @param[in]  shandle2 Second session handle.
  * @param[in]  shandle3 Third session handle.
- * @param[in]  persistentHandle If objectHandle is a transient object handle, then
- *             this is the persistent handle for the object.
+ * @param[in]  persistentHandle If objectHandle is a transient object handle,
+ *             then this is the persistent handle for the object.
  * @retval ESYS_RC_SUCCESS if the function call was a success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
  *         pointers or required output handle references are NULL.
@@ -147,9 +140,9 @@ Esys_EvictControl(
  *         the 'decrypt' attribute bit set.
  * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
  *         the 'encrypt' attribute bit set.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
-           ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
-           are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  * @retval TSS2_ESYS_RC_NO_DECRYPT_PARAM: if one of the sessions has the
  *         'decrypt' attribute set and the command does not support encryption
  *         of the first command parameter.
@@ -188,8 +181,7 @@ Esys_EvictControl_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
-    store_input_parameters(esysContext, auth, objectHandle,
-                persistentHandle);
+    store_input_parameters(esysContext, auth, objectHandle, persistentHandle);
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, auth, &authNode);
@@ -204,9 +196,11 @@ Esys_EvictControl_Async(
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_EvictControl_Prepare(esysContext->sys,
-                (authNode == NULL) ? TPM2_RH_NULL : authNode->rsrc.handle,
-                (objectHandleNode == NULL) ? TPM2_RH_NULL : objectHandleNode->rsrc.handle,
-                persistentHandle);
+                                      (authNode == NULL) ? TPM2_RH_NULL
+                                       : authNode->rsrc.handle,
+                                      (objectHandleNode == NULL) ? TPM2_RH_NULL
+                                       : objectHandleNode->rsrc.handle,
+                                      persistentHandle);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
@@ -219,14 +213,17 @@ Esys_EvictControl_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, authNode, objectHandleNode, NULL, &auths);
-    return_state_if_error(r, _ESYS_STATE_INIT, "Error in computation of auth values");
+    return_state_if_error(r, _ESYS_STATE_INIT,
+                          "Error in computation of auth values");
+
     esysContext->authsCount = auths.count;
     r = Tss2_Sys_SetCmdAuths(esysContext->sys, &auths);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI error on SetCmdAuths");
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -263,8 +260,7 @@ Esys_EvictControl_Async(
  */
 TSS2_RC
 Esys_EvictControl_Finish(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR *newObjectHandle)
+    ESYS_CONTEXT *esysContext, ESYS_TR *newObjectHandle)
 {
     TSS2_RC r;
     LOG_TRACE("context=%p, newObjectHandle=%p",
@@ -313,12 +309,12 @@ Esys_EvictControl_Finish(
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
         r = Esys_EvictControl_Async(esysContext,
-                esysContext->in.EvictControl.auth,
-                esysContext->in.EvictControl.objectHandle,
-                esysContext->session_type[0],
-                esysContext->session_type[1],
-                esysContext->session_type[2],
-                esysContext->in.EvictControl.persistentHandle);
+                                    esysContext->in.EvictControl.auth,
+                                    esysContext->in.EvictControl.objectHandle,
+                                    esysContext->session_type[0],
+                                    esysContext->session_type[1],
+                                    esysContext->session_type[2],
+                                    esysContext->in.EvictControl.persistentHandle);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent
@@ -346,14 +342,17 @@ Esys_EvictControl_Finish(
      */
     r = iesys_check_response(esysContext);
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Error: check response",
-                      error_cleanup);
+                        error_cleanup);
+
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
     r = Tss2_Sys_EvictControl_Complete(esysContext->sys);
-    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshaling" ,error_cleanup);
+    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                        "Received error from SAPI unmarshaling" ,
+                        error_cleanup);
+
     ESYS_TR objectHandle = esysContext->in.EvictControl.objectHandle;
     RSRC_NODE_T *objectHandleNode;
     r = esys_GetResourceObject(esysContext, objectHandle, &objectHandleNode);

@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: BSD-2 */
 /*******************************************************************************
- * Copyright 2017, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
  * All rights reserved.
- *******************************************************************************/
+ ******************************************************************************/
 #ifndef ESYS_MU_H
 #define ESYS_MU_H
 

@@ -402,7 +402,8 @@ iesys_handle_to_tpm_handle(ESYS_TR esys_handle, TPM2_HANDLE * tpm_handle)
 TPM2_HT
 iesys_get_handle_type(TPM2_HANDLE handle)
 {
-    TPM2_HT ht = (TPM2_HT) ((handle & TPM2_HR_RANGE_MASK) >> TPM2_HR_SHIFT);    /* upper bytes of input data */
+    /* upper bytes of input data */
+    TPM2_HT ht = (TPM2_HT) ((handle & TPM2_HR_RANGE_MASK) >> TPM2_HR_SHIFT);
     return ht;
 }
 
@@ -1422,7 +1423,7 @@ iesys_get_name(TPM2B_PUBLIC * publicInfo, TPM2B_NAME * name)
 /** Check whether the return code corresponds to an TPM error.
  *
  * if no layer is part of the return code or a layer from the resource manager
- * is given the function will return true. 
+ * is given the function will return true.
  * @param[in] r The return code to be checked.
  * @retval true if r corresponds to an TPM error.
  * @retval false in other cases.

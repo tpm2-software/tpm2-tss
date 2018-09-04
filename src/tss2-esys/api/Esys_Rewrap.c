@@ -65,8 +65,8 @@ static void store_input_parameters (
  *             inSymSeed.
  * @param[in]  name The Name of the object being rewrapped.
  * @param[in]  inSymSeed The seed for the symmetric key and HMAC key.
- * @param[out] outDuplicate An object encrypted using symmetric key derived from
- *             outSymSeed.
+ * @param[out] outDuplicate An object encrypted using symmetric key derived
+ *             from outSymSeed.
  *             (callee-allocated)
  * @param[out] outSymSeed Seed for a symmetric key protected by newParent
  *             asymmetric key.
@@ -88,9 +88,9 @@ static void store_input_parameters (
  *         the 'decrypt' attribute bit set.
  * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
  *         the 'encrypt' attribute bit set.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
- *         ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
- *         are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  * @retval TSS2_RCs produced by lower layers of the software stack may be
  *         returned to the caller unaltered unless handled internally.
  */
@@ -110,15 +110,8 @@ Esys_Rewrap(
 {
     TSS2_RC r;
 
-    r = Esys_Rewrap_Async(esysContext,
-                oldParent,
-                newParent,
-                shandle1,
-                shandle2,
-                shandle3,
-                inDuplicate,
-                name,
-                inSymSeed);
+    r = Esys_Rewrap_Async(esysContext, oldParent, newParent, shandle1, shandle2,
+                          shandle3, inDuplicate, name, inSymSeed);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -132,9 +125,7 @@ Esys_Rewrap(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_Rewrap_Finish(esysContext,
-                outDuplicate,
-                outSymSeed);
+        r = Esys_Rewrap_Finish(esysContext, outDuplicate, outSymSeed);
         /* This is just debug information about the reattempt to finish the
            command */
         if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
@@ -178,9 +169,9 @@ Esys_Rewrap(
  *         the 'decrypt' attribute bit set.
  * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
  *         the 'encrypt' attribute bit set.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
-           ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
-           are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  */
 TSS2_RC
 Esys_Rewrap_Async(
@@ -216,10 +207,8 @@ Esys_Rewrap_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
-    store_input_parameters(esysContext, oldParent, newParent,
-                inDuplicate,
-                name,
-                inSymSeed);
+    store_input_parameters(esysContext, oldParent, newParent, inDuplicate, name,
+                           inSymSeed);
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, oldParent, &oldParentNode);
@@ -229,11 +218,11 @@ Esys_Rewrap_Async(
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_Rewrap_Prepare(esysContext->sys,
-                (oldParentNode == NULL) ? TPM2_RH_NULL : oldParentNode->rsrc.handle,
-                (newParentNode == NULL) ? TPM2_RH_NULL : newParentNode->rsrc.handle,
-                inDuplicate,
-                name,
-                inSymSeed);
+                                (oldParentNode == NULL) ? TPM2_RH_NULL
+                                 : oldParentNode->rsrc.handle,
+                                (newParentNode == NULL) ? TPM2_RH_NULL
+                                 : newParentNode->rsrc.handle, inDuplicate, name,
+                                inSymSeed);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
@@ -246,14 +235,17 @@ Esys_Rewrap_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, oldParentNode, newParentNode, NULL, &auths);
-    return_state_if_error(r, _ESYS_STATE_INIT, "Error in computation of auth values");
+    return_state_if_error(r, _ESYS_STATE_INIT,
+                          "Error in computation of auth values");
+
     esysContext->authsCount = auths.count;
     r = Tss2_Sys_SetCmdAuths(esysContext->sys, &auths);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI error on SetCmdAuths");
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -268,8 +260,8 @@ Esys_Rewrap_Async(
  * output parameter if the value is not required.
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
- * @param[out] outDuplicate An object encrypted using symmetric key derived from
- *             outSymSeed.
+ * @param[out] outDuplicate An object encrypted using symmetric key derived
+ *             from outSymSeed.
  *             (callee-allocated)
  * @param[out] outSymSeed Seed for a symmetric key protected by newParent
  *             asymmetric key.
@@ -347,15 +339,14 @@ Esys_Rewrap_Finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_Rewrap_Async(esysContext,
-                esysContext->in.Rewrap.oldParent,
-                esysContext->in.Rewrap.newParent,
-                esysContext->session_type[0],
-                esysContext->session_type[1],
-                esysContext->session_type[2],
-                esysContext->in.Rewrap.inDuplicate,
-                esysContext->in.Rewrap.name,
-                esysContext->in.Rewrap.inSymSeed);
+        r = Esys_Rewrap_Async(esysContext, esysContext->in.Rewrap.oldParent,
+                              esysContext->in.Rewrap.newParent,
+                              esysContext->session_type[0],
+                              esysContext->session_type[1],
+                              esysContext->session_type[2],
+                              esysContext->in.Rewrap.inDuplicate,
+                              esysContext->in.Rewrap.name,
+                              esysContext->in.Rewrap.inSymSeed);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent
@@ -383,16 +374,19 @@ Esys_Rewrap_Finish(
      */
     r = iesys_check_response(esysContext);
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Error: check response",
-                      error_cleanup);
+                        error_cleanup);
+
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
     r = Tss2_Sys_Rewrap_Complete(esysContext->sys,
-                (outDuplicate != NULL) ? *outDuplicate : NULL,
-                (outSymSeed != NULL) ? *outSymSeed : NULL);
-    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshaling" ,error_cleanup);
+                                 (outDuplicate != NULL) ? *outDuplicate : NULL,
+                                 (outSymSeed != NULL) ? *outSymSeed : NULL);
+    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                        "Received error from SAPI unmarshaling" ,
+                        error_cleanup);
+
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;

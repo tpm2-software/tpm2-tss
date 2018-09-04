@@ -81,18 +81,12 @@ Esys_LoadExternal(
     ESYS_TR shandle3,
     const TPM2B_SENSITIVE *inPrivate,
     const TPM2B_PUBLIC *inPublic,
-    TPMI_RH_HIERARCHY hierarchy,
-    ESYS_TR *objectHandle)
+    TPMI_RH_HIERARCHY hierarchy, ESYS_TR *objectHandle)
 {
     TSS2_RC r;
 
-    r = Esys_LoadExternal_Async(esysContext,
-                shandle1,
-                shandle2,
-                shandle3,
-                inPrivate,
-                inPublic,
-                hierarchy);
+    r = Esys_LoadExternal_Async(esysContext, shandle1, shandle2, shandle3,
+                                inPrivate, inPublic, hierarchy);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -106,8 +100,7 @@ Esys_LoadExternal(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_LoadExternal_Finish(esysContext,
-                objectHandle);
+        r = Esys_LoadExternal_Finish(esysContext, objectHandle);
         /* This is just debug information about the reattempt to finish the
            command */
         if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
@@ -178,16 +171,11 @@ Esys_LoadExternal_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 0);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
-    store_input_parameters(esysContext,
-                inPrivate,
-                inPublic,
-                hierarchy);
+    store_input_parameters(esysContext, inPrivate, inPublic, hierarchy);
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
-    r = Tss2_Sys_LoadExternal_Prepare(esysContext->sys,
-                inPrivate,
-                inPublic,
-                hierarchy);
+    r = Tss2_Sys_LoadExternal_Prepare(esysContext->sys, inPrivate, inPublic,
+                                      hierarchy);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
@@ -199,14 +187,17 @@ Esys_LoadExternal_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, NULL, NULL, NULL, &auths);
-    return_state_if_error(r, _ESYS_STATE_INIT, "Error in computation of auth values");
+    return_state_if_error(r, _ESYS_STATE_INIT,
+                          "Error in computation of auth values");
+
     esysContext->authsCount = auths.count;
     r = Tss2_Sys_SetCmdAuths(esysContext->sys, &auths);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI error on SetCmdAuths");
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -243,8 +234,7 @@ Esys_LoadExternal_Async(
  */
 TSS2_RC
 Esys_LoadExternal_Finish(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR *objectHandle)
+    ESYS_CONTEXT *esysContext, ESYS_TR *objectHandle)
 {
     TSS2_RC r;
     LOG_TRACE("context=%p, objectHandle=%p",
@@ -295,13 +285,12 @@ Esys_LoadExternal_Finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_LoadExternal_Async(esysContext,
-                esysContext->session_type[0],
-                esysContext->session_type[1],
-                esysContext->session_type[2],
-                esysContext->in.LoadExternal.inPrivate,
-                esysContext->in.LoadExternal.inPublic,
-                esysContext->in.LoadExternal.hierarchy);
+        r = Esys_LoadExternal_Async(esysContext, esysContext->session_type[0],
+                                    esysContext->session_type[1],
+                                    esysContext->session_type[2],
+                                    esysContext->in.LoadExternal.inPrivate,
+                                    esysContext->in.LoadExternal.inPublic,
+                                    esysContext->in.LoadExternal.hierarchy);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent
@@ -329,16 +318,18 @@ Esys_LoadExternal_Finish(
      */
     r = iesys_check_response(esysContext);
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Error: check response",
-                      error_cleanup);
+                        error_cleanup);
+
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
     r = Tss2_Sys_LoadExternal_Complete(esysContext->sys,
-                &objectHandleNode->rsrc.handle,
-                &name);
-    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshaling" ,error_cleanup);
+                                       &objectHandleNode->rsrc.handle, &name);
+    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                        "Received error from SAPI unmarshaling" ,
+                        error_cleanup);
+
 
     /* check name against inPublic */
     if (!iesys_compare_name(esysContext->in.LoadExternal.inPublic, &name)) {
