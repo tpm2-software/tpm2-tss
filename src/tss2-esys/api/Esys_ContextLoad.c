@@ -57,13 +57,11 @@ static void store_input_parameters (
 TSS2_RC
 Esys_ContextLoad(
     ESYS_CONTEXT *esysContext,
-    const TPMS_CONTEXT *context,
-    ESYS_TR *loadedHandle)
+    const TPMS_CONTEXT *context, ESYS_TR *loadedHandle)
 {
     TSS2_RC r;
 
-    r = Esys_ContextLoad_Async(esysContext,
-                context);
+    r = Esys_ContextLoad_Async(esysContext, context);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -77,8 +75,7 @@ Esys_ContextLoad(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_ContextLoad_Finish(esysContext,
-                loadedHandle);
+        r = Esys_ContextLoad_Finish(esysContext, loadedHandle);
         /* This is just debug information about the reattempt to finish the
            command */
         if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
@@ -131,8 +128,7 @@ Esys_ContextLoad_Async(
     if (r != TSS2_RC_SUCCESS)
         return r;
     esysContext->state = _ESYS_STATE_INTERNALERROR;
-    store_input_parameters(esysContext,
-                context);
+    store_input_parameters(esysContext, context);
     size_t offset = 0;
 
     /*
@@ -163,12 +159,12 @@ Esys_ContextLoad_Async(
 
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
-    r = Tss2_Sys_ContextLoad_Prepare(esysContext->sys,
-                context);
+    r = Tss2_Sys_ContextLoad_Prepare(esysContext->sys, context);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -205,8 +201,7 @@ Esys_ContextLoad_Async(
  */
 TSS2_RC
 Esys_ContextLoad_Finish(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR *loadedHandle)
+    ESYS_CONTEXT *esysContext, ESYS_TR *loadedHandle)
 {
     TSS2_RC r;
     LOG_TRACE("context=%p, loadedHandle=%p",
@@ -263,7 +258,7 @@ Esys_ContextLoad_Finish(
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
         r = Esys_ContextLoad_Async(esysContext,
-                esysContext->in.ContextLoad.context);
+                                   esysContext->in.ContextLoad.context);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent
@@ -285,9 +280,11 @@ Esys_ContextLoad_Finish(
         goto error_cleanup;
     }
     r = Tss2_Sys_ContextLoad_Complete(esysContext->sys,
-                &loadedHandleNode->rsrc.handle);
-    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshaling" ,error_cleanup);
+                                      &loadedHandleNode->rsrc.handle);
+    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                        "Received error from SAPI unmarshaling" ,
+                        error_cleanup);
+
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;

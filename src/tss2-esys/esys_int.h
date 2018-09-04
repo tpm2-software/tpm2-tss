@@ -979,7 +979,11 @@ struct ESYS_CONTEXT {
 
 /** Makro testing parameters against null.
  */
-#define _ESYS_ASSERT_NON_NULL(x)     if (x == NULL) {         LOG_ERROR(str(x) " == NULL.");         return TSS2_ESYS_RC_BAD_REFERENCE;     }
+#define _ESYS_ASSERT_NON_NULL(x) \
+    if (x == NULL) { \
+        LOG_ERROR(str(x) " == NULL."); \
+        return TSS2_ESYS_RC_BAD_REFERENCE; \
+    }
 
 #ifdef __cplusplus
 }

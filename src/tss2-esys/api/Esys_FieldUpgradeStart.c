@@ -56,8 +56,8 @@ static void store_input_parameters (
  * @param[in]  shandle2 Second session handle.
  * @param[in]  shandle3 Third session handle.
  * @param[in]  fuDigest Digest of the first block in the field upgrade sequence.
- * @param[in]  manifestSignature Signature over fuDigest using the key associated
- *             with keyHandle (not optional).
+ * @param[in]  manifestSignature Signature over fuDigest using the key
+ *             associated with keyHandle (not optional).
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
  *         pointers or required output handle references are NULL.
@@ -75,9 +75,9 @@ static void store_input_parameters (
  *         the 'decrypt' attribute bit set.
  * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
  *         the 'encrypt' attribute bit set.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
- *         ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
- *         are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  * @retval TSS2_ESYS_RC_NO_ENCRYPT_PARAM: if one of the sessions has the
  *         'encrypt' attribute set and the command does not support encryption
  *          of the first response parameter.
@@ -97,14 +97,9 @@ Esys_FieldUpgradeStart(
 {
     TSS2_RC r;
 
-    r = Esys_FieldUpgradeStart_Async(esysContext,
-                authorization,
-                keyHandle,
-                shandle1,
-                shandle2,
-                shandle3,
-                fuDigest,
-                manifestSignature);
+    r = Esys_FieldUpgradeStart_Async(esysContext, authorization, keyHandle,
+                                     shandle1, shandle2, shandle3, fuDigest,
+                                     manifestSignature);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -149,8 +144,8 @@ Esys_FieldUpgradeStart(
  * @param[in]  shandle2 Second session handle.
  * @param[in]  shandle3 Third session handle.
  * @param[in]  fuDigest Digest of the first block in the field upgrade sequence.
- * @param[in]  manifestSignature Signature over fuDigest using the key associated
- *             with keyHandle (not optional).
+ * @param[in]  manifestSignature Signature over fuDigest using the key
+ *             associated with keyHandle (not optional).
  * @retval ESYS_RC_SUCCESS if the function call was a success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
  *         pointers or required output handle references are NULL.
@@ -163,9 +158,9 @@ Esys_FieldUpgradeStart(
  *         the 'decrypt' attribute bit set.
  * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
  *         the 'encrypt' attribute bit set.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
-           ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
-           are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  * @retval TSS2_ESYS_RC_NO_ENCRYPT_PARAM: if one of the sessions has the
  *         'encrypt' attribute set and the command does not support encryption
  *          of the first response parameter.
@@ -202,9 +197,8 @@ Esys_FieldUpgradeStart_Async(
     /* Check and store input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
-    store_input_parameters(esysContext, authorization, keyHandle,
-                fuDigest,
-                manifestSignature);
+    store_input_parameters(esysContext, authorization, keyHandle, fuDigest,
+                           manifestSignature);
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, authorization, &authorizationNode);
@@ -214,10 +208,12 @@ Esys_FieldUpgradeStart_Async(
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_FieldUpgradeStart_Prepare(esysContext->sys,
-                (authorizationNode == NULL) ? TPM2_RH_NULL : authorizationNode->rsrc.handle,
-                (keyHandleNode == NULL) ? TPM2_RH_NULL : keyHandleNode->rsrc.handle,
-                fuDigest,
-                manifestSignature);
+                                           (authorizationNode == NULL)
+                                            ? TPM2_RH_NULL
+                                            : authorizationNode->rsrc.handle,
+                                           (keyHandleNode == NULL) ? TPM2_RH_NULL
+                                            : keyHandleNode->rsrc.handle,
+                                           fuDigest, manifestSignature);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
@@ -230,14 +226,17 @@ Esys_FieldUpgradeStart_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, authorizationNode, keyHandleNode, NULL, &auths);
-    return_state_if_error(r, _ESYS_STATE_INIT, "Error in computation of auth values");
+    return_state_if_error(r, _ESYS_STATE_INIT,
+                          "Error in computation of auth values");
+
     esysContext->authsCount = auths.count;
     r = Tss2_Sys_SetCmdAuths(esysContext->sys, &auths);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI error on SetCmdAuths");
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -310,13 +309,13 @@ Esys_FieldUpgradeStart_Finish(
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
         r = Esys_FieldUpgradeStart_Async(esysContext,
-                esysContext->in.FieldUpgradeStart.authorization,
-                esysContext->in.FieldUpgradeStart.keyHandle,
-                esysContext->session_type[0],
-                esysContext->session_type[1],
-                esysContext->session_type[2],
-                esysContext->in.FieldUpgradeStart.fuDigest,
-                esysContext->in.FieldUpgradeStart.manifestSignature);
+                                         esysContext->in.FieldUpgradeStart.authorization,
+                                         esysContext->in.FieldUpgradeStart.keyHandle,
+                                         esysContext->session_type[0],
+                                         esysContext->session_type[1],
+                                         esysContext->session_type[2],
+                                         esysContext->in.FieldUpgradeStart.fuDigest,
+                                         esysContext->in.FieldUpgradeStart.manifestSignature);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent
@@ -343,14 +342,17 @@ Esys_FieldUpgradeStart_Finish(
      * parameter decryption have to be done.
      */
     r = iesys_check_response(esysContext);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Error: check response");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Error: check response");
+
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
     r = Tss2_Sys_FieldUpgradeStart_Complete(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshaling" );
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Received error from SAPI unmarshaling" );
+
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;

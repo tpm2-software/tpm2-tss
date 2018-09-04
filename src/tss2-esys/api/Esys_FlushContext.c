@@ -44,9 +44,9 @@ static void store_input_parameters (
  * @retval TSS2_ESYS_RC_MALFORMED_RESPONSE: if the TPM's response is corrupted.
  * @retval TSS2_ESYS_RC_RSP_AUTH_FAILED: if the response HMAC from the TPM
            did not verify.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
- *         ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
- *         are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  * @retval TSS2_RCs produced by lower layers of the software stack may be
  *         returned to the caller unaltered unless handled internally.
  */
@@ -57,8 +57,7 @@ Esys_FlushContext(
 {
     TSS2_RC r;
 
-    r = Esys_FlushContext_Async(esysContext,
-                flushHandle);
+    r = Esys_FlushContext_Async(esysContext, flushHandle);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -104,9 +103,9 @@ Esys_FlushContext(
  *         internal operations or return parameters.
  * @retval TSS2_RCs produced by lower layers of the software stack may be
            returned to the caller unaltered unless handled internally.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
-           ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
-           are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  */
 TSS2_RC
 Esys_FlushContext_Async(
@@ -135,11 +134,13 @@ Esys_FlushContext_Async(
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_FlushContext_Prepare(esysContext->sys,
-                (flushHandleNode == NULL) ? TPM2_RH_NULL : flushHandleNode->rsrc.handle);
+                                      (flushHandleNode == NULL) ? TPM2_RH_NULL
+                                       : flushHandleNode->rsrc.handle);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -212,7 +213,7 @@ Esys_FlushContext_Finish(
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
         r = Esys_FlushContext_Async(esysContext,
-                esysContext->in.FlushContext.flushHandle);
+                                    esysContext->in.FlushContext.flushHandle);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent
@@ -234,8 +235,9 @@ Esys_FlushContext_Finish(
         return r;
     }
     r = Tss2_Sys_FlushContext_Complete(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshaling" );
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Received error from SAPI unmarshaling" );
+
     /* The ESYS_TR object has to be invalidated */
     r = Esys_TR_Close(esysContext, &esysContext->in.FlushContext.flushHandle);
     return_if_error(r, "invalidate object");

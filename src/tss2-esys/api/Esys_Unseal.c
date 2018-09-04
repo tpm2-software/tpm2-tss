@@ -53,9 +53,9 @@ static void store_input_parameters (
  *         the 'decrypt' attribute bit set.
  * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
  *         the 'encrypt' attribute bit set.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
- *         ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
- *         are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  * @retval TSS2_ESYS_RC_NO_DECRYPT_PARAM: if one of the sessions has the
  *         'decrypt' attribute set and the command does not support encryption
  *         of the first command parameter.
@@ -73,11 +73,8 @@ Esys_Unseal(
 {
     TSS2_RC r;
 
-    r = Esys_Unseal_Async(esysContext,
-                itemHandle,
-                shandle1,
-                shandle2,
-                shandle3);
+    r = Esys_Unseal_Async(esysContext, itemHandle, shandle1, shandle2,
+                          shandle3);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -91,8 +88,7 @@ Esys_Unseal(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_Unseal_Finish(esysContext,
-                outData);
+        r = Esys_Unseal_Finish(esysContext, outData);
         /* This is just debug information about the reattempt to finish the
            command */
         if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
@@ -131,9 +127,9 @@ Esys_Unseal(
  *         the 'decrypt' attribute bit set.
  * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
  *         the 'encrypt' attribute bit set.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
-           ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
-           are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  * @retval TSS2_ESYS_RC_NO_DECRYPT_PARAM: if one of the sessions has the
  *         'decrypt' attribute set and the command does not support encryption
  *         of the first command parameter.
@@ -173,7 +169,8 @@ Esys_Unseal_Async(
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_Unseal_Prepare(esysContext->sys,
-                (itemHandleNode == NULL) ? TPM2_RH_NULL : itemHandleNode->rsrc.handle);
+                                (itemHandleNode == NULL) ? TPM2_RH_NULL
+                                 : itemHandleNode->rsrc.handle);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
@@ -186,14 +183,17 @@ Esys_Unseal_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, itemHandleNode, NULL, NULL, &auths);
-    return_state_if_error(r, _ESYS_STATE_INIT, "Error in computation of auth values");
+    return_state_if_error(r, _ESYS_STATE_INIT,
+                          "Error in computation of auth values");
+
     esysContext->authsCount = auths.count;
     r = Tss2_Sys_SetCmdAuths(esysContext->sys, &auths);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI error on SetCmdAuths");
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -276,11 +276,10 @@ Esys_Unseal_Finish(
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_Unseal_Async(esysContext,
-                esysContext->in.Unseal.itemHandle,
-                esysContext->session_type[0],
-                esysContext->session_type[1],
-                esysContext->session_type[2]);
+        r = Esys_Unseal_Async(esysContext, esysContext->in.Unseal.itemHandle,
+                              esysContext->session_type[0],
+                              esysContext->session_type[1],
+                              esysContext->session_type[2]);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent
@@ -308,15 +307,18 @@ Esys_Unseal_Finish(
      */
     r = iesys_check_response(esysContext);
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Error: check response",
-                      error_cleanup);
+                        error_cleanup);
+
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
     r = Tss2_Sys_Unseal_Complete(esysContext->sys,
-                (outData != NULL) ? *outData : NULL);
-    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshaling" ,error_cleanup);
+                                 (outData != NULL) ? *outData : NULL);
+    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                        "Received error from SAPI unmarshaling" ,
+                        error_cleanup);
+
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;

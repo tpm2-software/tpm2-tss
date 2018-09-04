@@ -254,7 +254,7 @@ iesys_cryptossl_hash_finish(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     }
 
     if (digest_size != mycontext->hash.hash_len) {
-        return_error(TSS2_ESYS_RC_GENERAL_FAILURE, 
+        return_error(TSS2_ESYS_RC_GENERAL_FAILURE,
                      "Invalid size computed by EVP_DigestFinal_ex");
     }
 
@@ -320,7 +320,7 @@ iesys_cryptossl_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     LOG_TRACE("called for context-pointer %p and hmacAlg %d", context, hashAlg);
     LOGBLOB_TRACE(key, size, "Starting  hmac with");
     if (context == NULL || key == NULL) {
-        return_error(TSS2_ESYS_RC_BAD_REFERENCE, 
+        return_error(TSS2_ESYS_RC_BAD_REFERENCE,
                      "Null-Pointer passed in for context");
     }
     IESYS_CRYPTOSSL_CONTEXT *mycontext = calloc(1, sizeof(IESYS_CRYPTOSSL_CONTEXT));
@@ -448,7 +448,7 @@ iesys_cryptossl_hmac_finish(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     IESYS_CRYPTOSSL_CONTEXT *mycontext =
         (IESYS_CRYPTOSSL_CONTEXT *) * context;
     if (mycontext->type != IESYS_CRYPTOSSL_TYPE_HMAC) {
-        return_error(TSS2_ESYS_RC_BAD_REFERENCE, "bad context");
+        return_error(TSS2_ESYS_RC_BAD_VALUE, "bad context");
     }
 
     if (*size < mycontext->hmac.hmac_len) {
@@ -602,7 +602,7 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
     else
         exp = pub_tpm_key->publicArea.parameters.rsaDetail.exponent;
     if (1 != BN_set_word(bne, exp)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, 
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Could not set exponent.", cleanup);
     }
 
@@ -611,15 +611,15 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
                    "Could not allocate RSA key", cleanup);
     }
 
-    if (1 != RSA_generate_key_ex(rsa_key, 
-                                 pub_tpm_key->publicArea.parameters.rsaDetail.keyBits, 
+    if (1 != RSA_generate_key_ex(rsa_key,
+                                 pub_tpm_key->publicArea.parameters.rsaDetail.keyBits,
                                  bne, NULL)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Could not generate RSA key",
                    cleanup);
     }
 
     if (!(evp_rsa_key = EVP_PKEY_new())) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, 
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Could not create evp key.", cleanup);
     }
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
@@ -821,7 +821,7 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
         key_size = 66;
         break;
     default:
-        return_error(TSS2_ESYS_RC_NOT_IMPLEMENTED, 
+        return_error(TSS2_ESYS_RC_NOT_IMPLEMENTED,
                      "ECC curve not implemented.");
     }
 
@@ -898,7 +898,7 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Create point.", cleanup);
     }
 
-    if (1 != EC_POINT_mul(group, mul_eph_tpm, NULL, 
+    if (1 != EC_POINT_mul(group, mul_eph_tpm, NULL,
                           tpm_pub_key, eph_priv_key, bctx)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "ec point multiplication", cleanup);
@@ -1060,7 +1060,7 @@ iesys_cryptossl_sym_aes_decrypt(uint8_t * key,
     }
 
     if (tpm_sym_alg != TPM2_ALG_AES) {
-        goto_error(r, TSS2_ESYS_RC_BAD_VALUE, 
+        goto_error(r, TSS2_ESYS_RC_BAD_VALUE,
                    "AES encrypt called with wrong algorithm.", cleanup);
     }
 

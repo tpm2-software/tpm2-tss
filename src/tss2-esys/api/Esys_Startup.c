@@ -54,8 +54,7 @@ Esys_Startup(
 {
     TSS2_RC r;
 
-    r = Esys_Startup_Async(esysContext,
-                startupType);
+    r = Esys_Startup_Async(esysContext, startupType);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -120,16 +119,15 @@ Esys_Startup_Async(
     if (r != TSS2_RC_SUCCESS)
         return r;
     esysContext->state = _ESYS_STATE_INTERNALERROR;
-    store_input_parameters(esysContext,
-                startupType);
+    store_input_parameters(esysContext, startupType);
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
-    r = Tss2_Sys_Startup_Prepare(esysContext->sys,
-                startupType);
+    r = Tss2_Sys_Startup_Prepare(esysContext->sys, startupType);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -202,7 +200,7 @@ Esys_Startup_Finish(
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
         r = Esys_Startup_Async(esysContext,
-                esysContext->in.Startup.startupType);
+                               esysContext->in.Startup.startupType);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent
@@ -224,8 +222,9 @@ Esys_Startup_Finish(
         return r;
     }
     r = Tss2_Sys_Startup_Complete(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshaling" );
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Received error from SAPI unmarshaling" );
+
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;

@@ -55,8 +55,8 @@ static void store_input_parameters (
  * @param[in]  shandle2 Second session handle.
  * @param[in]  shandle3 Third session handle.
  * @param[in]  encryptionKeyIn Optional symmetric encryption key.
- * @param[in]  symmetricAlg Definition for the symmetric algorithm to be used for
- *             the inner wrapper.
+ * @param[in]  symmetricAlg Definition for the symmetric algorithm to be used
+ *             for the inner wrapper.
  * @param[out] encryptionKeyOut TPM2_If the caller provided an encryption key or if
  *             symmetricAlg was TPM2_ALG_NULL, then this will be the TPM2_Empty
  *             TPM2_Buffer; otherwise, it shall contain the TPM2_TPM-generated, symmetric
@@ -85,9 +85,9 @@ static void store_input_parameters (
  *         the 'decrypt' attribute bit set.
  * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
  *         the 'encrypt' attribute bit set.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
- *         ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
- *         are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  * @retval TSS2_RCs produced by lower layers of the software stack may be
  *         returned to the caller unaltered unless handled internally.
  */
@@ -107,14 +107,9 @@ Esys_Duplicate(
 {
     TSS2_RC r;
 
-    r = Esys_Duplicate_Async(esysContext,
-                objectHandle,
-                newParentHandle,
-                shandle1,
-                shandle2,
-                shandle3,
-                encryptionKeyIn,
-                symmetricAlg);
+    r = Esys_Duplicate_Async(esysContext, objectHandle, newParentHandle,
+                             shandle1, shandle2, shandle3, encryptionKeyIn,
+                             symmetricAlg);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -128,10 +123,8 @@ Esys_Duplicate(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_Duplicate_Finish(esysContext,
-                encryptionKeyOut,
-                duplicate,
-                outSymSeed);
+        r = Esys_Duplicate_Finish(esysContext, encryptionKeyOut, duplicate,
+                                  outSymSeed);
         /* This is just debug information about the reattempt to finish the
            command */
         if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
@@ -161,8 +154,8 @@ Esys_Duplicate(
  * @param[in]  shandle2 Second session handle.
  * @param[in]  shandle3 Third session handle.
  * @param[in]  encryptionKeyIn Optional symmetric encryption key.
- * @param[in]  symmetricAlg Definition for the symmetric algorithm to be used for
- *             the inner wrapper.
+ * @param[in]  symmetricAlg Definition for the symmetric algorithm to be used
+ *             for the inner wrapper.
  * @retval ESYS_RC_SUCCESS if the function call was a success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
  *         pointers or required output handle references are NULL.
@@ -175,9 +168,9 @@ Esys_Duplicate(
  *         the 'decrypt' attribute bit set.
  * @retval TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS: if more than one session has
  *         the 'encrypt' attribute bit set.
- * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown to the
-           ESYS_CONTEXT or are of the wrong type or if required ESYS_TR objects
-           are ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_TR: if any of the ESYS_TR objects are unknown
+ *         to the ESYS_CONTEXT or are of the wrong type or if required
+ *         ESYS_TR objects are ESYS_TR_NONE.
  */
 TSS2_RC
 Esys_Duplicate_Async(
@@ -212,8 +205,7 @@ Esys_Duplicate_Async(
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
     store_input_parameters(esysContext, objectHandle, newParentHandle,
-                encryptionKeyIn,
-                symmetricAlg);
+                           encryptionKeyIn, symmetricAlg);
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, objectHandle, &objectHandleNode);
@@ -223,10 +215,11 @@ Esys_Duplicate_Async(
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_Duplicate_Prepare(esysContext->sys,
-                (objectHandleNode == NULL) ? TPM2_RH_NULL : objectHandleNode->rsrc.handle,
-                (newParentHandleNode == NULL) ? TPM2_RH_NULL : newParentHandleNode->rsrc.handle,
-                encryptionKeyIn,
-                symmetricAlg);
+                                   (objectHandleNode == NULL) ? TPM2_RH_NULL
+                                    : objectHandleNode->rsrc.handle,
+                                   (newParentHandleNode == NULL) ? TPM2_RH_NULL
+                                    : newParentHandleNode->rsrc.handle,
+                                   encryptionKeyIn, symmetricAlg);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
@@ -239,14 +232,17 @@ Esys_Duplicate_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, objectHandleNode, newParentHandleNode, NULL, &auths);
-    return_state_if_error(r, _ESYS_STATE_INIT, "Error in computation of auth values");
+    return_state_if_error(r, _ESYS_STATE_INIT,
+                          "Error in computation of auth values");
+
     esysContext->authsCount = auths.count;
     r = Tss2_Sys_SetCmdAuths(esysContext->sys, &auths);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI error on SetCmdAuths");
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
+    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                          "Finish (Execute Async)");
 
     esysContext->state = _ESYS_STATE_SENT;
 
@@ -359,13 +355,13 @@ Esys_Duplicate_Finish(
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
         r = Esys_Duplicate_Async(esysContext,
-                esysContext->in.Duplicate.objectHandle,
-                esysContext->in.Duplicate.newParentHandle,
-                esysContext->session_type[0],
-                esysContext->session_type[1],
-                esysContext->session_type[2],
-                esysContext->in.Duplicate.encryptionKeyIn,
-                esysContext->in.Duplicate.symmetricAlg);
+                                 esysContext->in.Duplicate.objectHandle,
+                                 esysContext->in.Duplicate.newParentHandle,
+                                 esysContext->session_type[0],
+                                 esysContext->session_type[1],
+                                 esysContext->session_type[2],
+                                 esysContext->in.Duplicate.encryptionKeyIn,
+                                 esysContext->in.Duplicate.symmetricAlg);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent
@@ -393,17 +389,21 @@ Esys_Duplicate_Finish(
      */
     r = iesys_check_response(esysContext);
     goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Error: check response",
-                      error_cleanup);
+                        error_cleanup);
+
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
     r = Tss2_Sys_Duplicate_Complete(esysContext->sys,
-                (encryptionKeyOut != NULL) ? *encryptionKeyOut : NULL,
-                (duplicate != NULL) ? *duplicate : NULL,
-                (outSymSeed != NULL) ? *outSymSeed : NULL);
-    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Received error from SAPI"
-                        " unmarshaling" ,error_cleanup);
+                                    (encryptionKeyOut != NULL)
+                                     ? *encryptionKeyOut : NULL,
+                                    (duplicate != NULL) ? *duplicate : NULL,
+                                    (outSymSeed != NULL) ? *outSymSeed : NULL);
+    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+                        "Received error from SAPI unmarshaling" ,
+                        error_cleanup);
+
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;
