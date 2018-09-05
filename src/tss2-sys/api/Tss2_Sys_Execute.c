@@ -80,7 +80,7 @@ TSS2_RC Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout)
             LOG_ERROR("Unsupported device. The device is a TPM 1.2");
             return TSS2_SYS_RC_GENERAL_FAILURE;
         } else {
-            LOG_ERROR("Malformed reponse: Invalid tag in response header: %" PRIx32,
+            LOG_ERROR("Malformed reponse: Invalid tag in response header: %" PRIx16,
                       ctx->rsp_header.tag);
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
         }
