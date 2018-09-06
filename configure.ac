@@ -64,10 +64,6 @@ AC_ARG_ENABLE([esapi],
             [enable_esapi=$enableval],
             [enable_esapi=yes])
 
-AC_ARG_ENABLE([esapi],
-    AS_HELP_STRING([--disable-esapi], [Enable TSS ESYS API library @<:@default=yes@:>@]),
-    [],
-    [enable_esapi="yes"])
 AM_CONDITIONAL(ESAPI, test "x$enable_esapi" = "xyes")
 
 AC_ARG_ENABLE([tcti-device-async],
