@@ -505,8 +505,13 @@ Tss2_Tcti_Mssim_Init (
     char *conf_copy = NULL;
     mssim_conf_t mssim_conf = MSSIM_CONF_DEFAULT_INIT;
 
-    LOG_TRACE ("tctiContext: 0x%" PRIxPTR ", size: 0x%" PRIxPTR ", conf: %s",
-               (uintptr_t)tctiContext, (uintptr_t)size, conf);
+    if (conf == NULL)
+        LOG_TRACE ("tctiContext: 0x%" PRIxPTR ", size: 0x%" PRIxPTR ""
+                   " default configuration will be used.",
+                   (uintptr_t)tctiContext, (uintptr_t)size);
+    else
+        LOG_TRACE ("tctiContext: 0x%" PRIxPTR ", size: 0x%" PRIxPTR ", conf: %s",
+                   (uintptr_t)tctiContext, (uintptr_t)size, conf);
     if (size == NULL) {
         return TSS2_TCTI_RC_BAD_VALUE;
     }
