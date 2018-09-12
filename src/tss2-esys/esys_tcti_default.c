@@ -37,7 +37,7 @@ struct {
     char *description;
 } tctis[] = {
 #ifndef NO_DL
-    { "libtss2-tcti-default.so", NULL, "", "Access libtss2-tcti-default.so" },
+    { "libtss2-tcti-default.so", NULL, NULL, "Access libtss2-tcti-default.so" },
     { "libtss2-tcti-tabrmd.so", NULL, "", "Access libtss2-tcti-tabrmd.so" },
 #endif /* NO_DL */
 #ifdef _WIN32

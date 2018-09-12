@@ -51,6 +51,10 @@ TSS2_RC
 __wrap_Tss2_Tcti_Fake_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size,
                            const char *config)
 {
+    char* tcti_default = "";
+
+    if (config == NULL)
+        config = tcti_default;
     LOG_TRACE("Called with tctiContext %p, size %p and config %s", tctiContext,
               size, config);
     check_expected(tctiContext);
@@ -71,6 +75,10 @@ TSS2_RC
 __wrap_Tss2_Tcti_Device_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size,
                              const char *config)
 {
+    char* tcti_default = "/dev/tmp0";
+
+    if (config == NULL)
+        config = tcti_default;
     LOG_TRACE("Called with tctiContext %p, size %p and config %s", tctiContext,
               size, config);
     check_expected_ptr(tctiContext);
@@ -84,6 +92,10 @@ TSS2_RC
 __wrap_Tss2_Tcti_Mssim_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size,
                             const char *config)
 {
+    char* tcti_default = "host=localhost,port=2321";
+
+    if (config == NULL)
+        config = tcti_default;
     LOG_TRACE("Called with tctiContext %p, size %p and config %s", tctiContext,
               size, config);
     check_expected_ptr(tctiContext);
