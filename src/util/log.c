@@ -20,7 +20,7 @@
  * Compares two strings byte by byte and ignores the
  * character's case. Stops at the n-th byte of both
  * strings.
- * 
+ *
  * This is basically a replacement of the POSIX-function
  * _strncasecmp_. Since tpm2-tss is supposed to be compatible
  * with ISO C99 and not with POSIX, _strncasecmp_ had to be
@@ -37,8 +37,9 @@
  *  smaller than string2
  *
  */
-static int case_insensitive_strncmp(const char *string1, 
-        const char *string2, 
+static int
+case_insensitive_strncmp(const char *string1,
+        const char *string2,
         size_t n)
 {
     if ((string1 == NULL) && (string2 == NULL)) {
@@ -55,14 +56,13 @@ static int case_insensitive_strncmp(const char *string1,
     size_t string2_size = strlen (string2);
     unsigned char lower_string1 [string1_size];
     unsigned char lower_string2 [string2_size];
-    for (size_t i = 0; i < string1_size; i++) {
-        lower_string1[i] = 
-            tolower(string1[i]);
-    }
-    for (size_t i = 0; i < string2_size; i++) {
-        lower_string2[i] = 
-            tolower(string2[i]);
-    }
+
+    for (size_t i = 0; i < string1_size; i++)
+        lower_string1[i] = tolower(string1[i]);
+
+    for (size_t i = 0; i < string2_size; i++)
+        lower_string2[i] = tolower(string2[i]);
+
     return memcmp (lower_string1, lower_string2, n);
 }
 
@@ -156,8 +156,8 @@ getLogLevel(const char *module, log_level logdefault)
     if (envlevel == NULL)
         return loglevel;
     while ((i = strchr(i, '+')) != NULL) {
-        if ((envlevel <= i - strlen("all") && 
-							case_insensitive_strncmp(i - 3, "all", 3) == 0) ||
+        if ((envlevel <= i - strlen("all") &&
+	     case_insensitive_strncmp(i - 3, "all", 3) == 0) ||
             (envlevel <= i - strlen(module) &&
              case_insensitive_strncmp(i - strlen(module), module, strlen(module)) == 0)) {
             log_level tmp = log_stringlevel(i+1);
