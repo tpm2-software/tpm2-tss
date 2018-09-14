@@ -3,6 +3,44 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [2.1.x]
+### Fixed
+- Fixed handling of the default TCTI
+- Changed logging to be ISO-C99 compatible
+- Fixed leak of dlopen handle
+- Fixed logging of a response header tag in Tss2_Sys_Execute
+- Fixed marshaling of TPM2B parameters in SAPI commands
+- Fixed unnecessary warning in Esys_Startup
+- Fixed warnings in doxygen documentation
+
+### Added
+- Added Esys_Free wrapper function for systems using different C runtime libraries
+- Added Windows TBS TCTI
+- Added non-blocking mode of operation in tcti-device
+- Added tests for Esys_HMAC and Esys_Hash
+- Enabled integration tests on physical TPM device
+- Added openssl libcrypto backend
+- Added Doxygen documentation to integration tests
+
+### Changed
+- Refactored SetDecryptParam
+- Enabled OpenSSL crypto backend by default
+
+## [2.0.1] - 2018-08-10
+### Fixed
+- Fixed problems with doxygan failing make distcheck
+- Fixed conversion of gcrypt mpi numbers to binary data
+- Fixed an error in parsing socket address in MSSIM TCTI
+- Fixed compilation error with --disable-tcti-mssim
+- Added initialization function for gcrypt to suppress warning
+- Fixed invalid type base type while marshaling TPMI_ECC_CURVE in Tss2_Sys_ECC_Parameters
+- Fixed invalid RSA encryption with exponent equal to 0
+- Fixed checking of return codes in ESAPI commands
+- Added checks for programs required by the test harness @ configure time
+- Fixed warning on TPM2_RC_INITIALIZE rc after a Startup in Esys_Startup
+- Checked for 1.2 TPM type response
+- Changed constants values in esys header file to unsigned
+
 ## [2.0.0] - 2018-06-20
 ### Added
 - Implementation of the Marshal/Unmarshal library (libtss2-mu)
