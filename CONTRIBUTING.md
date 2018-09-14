@@ -25,7 +25,9 @@ here: https://chris.beams.io/posts/git-commit/ with the following exceptions.
  * We allow commit subject lines up to 80 characters.
  * Commit subject lines should be prefixed with a string identifying the
 effected subsystem. If the change is spread over a number of
-subsystems then the prefix may be omitted.
+subsystems then the prefix may be omitted. Recommended prefix for changes to
+files in src/tss2-sys is "sys: ", and for changes to files in src/tss2-esys
+is "esys: ".
 * All contributions must adhere to the Developers Certificate of Origin. The
 full text of the DCO is here: https://developercertificate.org/. Contributors
 must add a 'Signed-off-by' line to their commits. This indicates the
