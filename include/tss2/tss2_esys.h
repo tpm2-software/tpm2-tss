@@ -3225,7 +3225,7 @@ Esys_Vendor_TCG_Test_Finish(
  * TPM 2.0 ESAPI Helper Functions
  */
 void
-esys_free(
+Esys_Free(
     void *__ptr);
 
 #ifdef __cplusplus

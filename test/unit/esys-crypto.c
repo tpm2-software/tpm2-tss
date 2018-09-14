@@ -237,7 +237,7 @@ check_free(void **state)
     uint8_t *buffer;
 
     buffer = malloc(10);
-    esys_free(buffer);
+    Esys_Free(buffer);
 }
 
 
