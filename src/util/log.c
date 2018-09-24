@@ -54,14 +54,19 @@ case_insensitive_strncmp(const char *string1,
 
     size_t string1_size = strlen (string1);
     size_t string2_size = strlen (string2);
-    unsigned char lower_string1 [string1_size];
-    unsigned char lower_string2 [string2_size];
+    unsigned char lower_string1 [string1_size + 1];
+    unsigned char lower_string2 [string2_size + 1];
+    size_t i;
 
-    for (size_t i = 0; i < string1_size; i++)
+    for (i = 0; i < string1_size; i++)
         lower_string1[i] = tolower(string1[i]);
 
-    for (size_t i = 0; i < string2_size; i++)
+    lower_string1[i] = '\0';
+
+    for (i = 0; i < string2_size; i++)
         lower_string2[i] = tolower(string2[i]);
+
+    lower_string2[i] = '\0';
 
     return memcmp (lower_string1, lower_string2, n);
 }
