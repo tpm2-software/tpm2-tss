@@ -448,7 +448,7 @@ iesys_cryptossl_hmac_finish(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     IESYS_CRYPTOSSL_CONTEXT *mycontext =
         (IESYS_CRYPTOSSL_CONTEXT *) * context;
     if (mycontext->type != IESYS_CRYPTOSSL_TYPE_HMAC) {
-        return_error(TSS2_ESYS_RC_BAD_VALUE, "bad context");
+        return_error(TSS2_ESYS_RC_BAD_REFERENCE, "bad context");
     }
 
     if (*size < mycontext->hmac.hmac_len) {
