@@ -7,6 +7,10 @@ sudo: false
 dist: trusty
 
 env:
+  matrix:
+  - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_0_2-stable
+  - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_1_0-stable
+  - WITH_CRYPTO=gcrypt OPENSSL_BRANCH=OpenSSL_1_0_2-stable
   global:
   # COVERITY_SCAN_TOKEN
   - secure: "ZD0KxBhO/CaSE/TOkW+H5nsBbaMolbIPv5DgctcjA1BlTckgc5lK4m+7BIR1Fft6gaeeLOoCY3qUm4kW++Bqk2bTsrx/HvrmVmrzMO572jA74x4E+5lynUnRVaAgBg7cVBcB0hZcUurx8FifNBbgnWlxT/nDWttVnglkz400GCE9/zy+VTJWqt4QAB+6qeKPiG3vRthQdWcHstBI8IIAbvp4rhSUajBBQeZ5ro5RPGNy+iHen+t6tyJmbjiP0Y4qjkKGbfwXHnsseEcuSJQuxSkQ9MWK6t93BFXFSPw5MjHIApMn+4CjRp2JMoVTVfe5fFeZEHxVUmAzy+e5eIeftrUtUlCI293UuxZnw/vpJczn3BWunlhhjqjsCwVeknzGHxlaT+ck8Et1Mdl/3nY/E9dt47/NOzXY2xrAz59GYsdKvvsPoCGgNlAub03Vl0W24I1kjppsmN/zFwazHGqoxIBTwrDOQUmZvPfXA3jAUozrfAdT3YjnRcCG7bbQmacFApqfUm/bqMgapAgozjjxpuBrO1wQSUjjH6NANZsP2Gpk0eAl7FOlBzbVgKPxCQozWCjpKOj3HMnXX458ZQWsboG5J00wwjw9DRNRCkeexLdi832L/BPhUY5JgRlTqqyKr9cr69DvogBF/pLytpSCciF6t9NqqGZYbBomXJLaG84="
@@ -15,7 +19,7 @@ env:
   # run coverity scan on gcc build to keep from DOSing coverity
   - coverity_scan_run_condition='"$CC" = gcc'
   - PKG_CONFIG_PATH="$(pwd)/cmocka/lib/pkgconfig:/usr/lib/pkgconfig"
-  - LD_LIBRARY_PATH="$(pwd)/cmocka/lib:/usr/lib"
+  - LD_LIBRARY_PATH="$(pwd)/osslinstall/usr/local/lib:$(pwd)/cmocka/lib:/usr/lib"
   - CMOCKA_CFLAGS="-I$(pwd)/cmocka/include -I/usr/include"
   - CMOCKA_LIBS="-L$(pwd)/cmocka/lib -lcmocka"
   - PATH="$(pwd)/ibmtpm/src:${PATH}"
@@ -40,11 +44,7 @@ addons:
     branch_pattern: coverity_scan
 
 install:
-  - wget https://download.01.org/tpm2/ibmtpm974.tar.gz
-  - sha256sum ibmtpm974.tar.gz | grep -q ^8e45d86129a0adb95fee4cee51f4b1e5b2d81ed3e55af875df53f98f39eb7ad7 || travis_terminate 1
-  - mkdir ibmtpm
-  - tar axf ibmtpm974.tar.gz -C ibmtpm
-  - make -C ibmtpm/src -j$(nproc)
+# CMocka
   - wget https://download.01.org/tpm2/cmocka-1.1.1.tar.xz
   - sha256sum cmocka-1.1.1.tar.xz | grep -q f02ef48a7039aa77191d525c5b1aee3f13286b77a13615d11bc1148753fc0389 || travis_terminate 1
   - tar -Jxvf cmocka-1.1.1.tar.xz
@@ -56,11 +56,35 @@ install:
   - make
   - make install
   - cd ../../
+# Autoconf archive
   - wget https://download.01.org/tpm2/autoconf-archive-2017.09.28.tar.xz
   - sha256sum autoconf-archive-2017.09.28.tar.xz | grep -q 5c9fb5845b38b28982a3ef12836f76b35f46799ef4a2e46b48e2bd3c6182fa01 || travis_terminate 1
   - tar xJf autoconf-archive-2017.09.28.tar.xz
   - cp autoconf-archive-2017.09.28/m4/ax_code_coverage.m4 m4/
+# Coveralls
   - pip install --user cpp-coveralls
+# IBM-TPM
+  - wget https://download.01.org/tpm2/ibmtpm974.tar.gz
+# OpenSSL 1.0.2
+# (Must come after all wgets, since it overrides libcrypto.so for the test-environment)
+  - mkdir -p osslinstall/usr/local/bin
+  - git clone --branch $OPENSSL_BRANCH --depth=1 https://github.com/openssl/openssl.git
+  - pushd openssl
+  - ./config --prefix=/usr/local --openssldir=/usr/local/openssl shared
+  - make -j$(nproc)
+  - |
+    if [ "$OPENSSL_BRANCH" == "OpenSSL_1_0_2-stable" ]; then
+        make install INSTALL_PREFIX=${PWD}/../osslinstall
+    else
+        make install DESTDIR=${PWD}/../osslinstall
+    fi
+  - which openssl
+  - popd
+# IBM-TPM
+  - sha256sum ibmtpm974.tar.gz | grep -q ^8e45d86129a0adb95fee4cee51f4b1e5b2d81ed3e55af875df53f98f39eb7ad7 || travis_terminate 1
+  - mkdir ibmtpm
+  - tar axf ibmtpm974.tar.gz -C ibmtpm
+  - make -C ibmtpm/src -j$(nproc)
 
 before_script:
   - ./bootstrap
@@ -75,7 +99,7 @@ script:
 # build with no tests enabled
   - mkdir ./build-no-tests
   - pushd ./build-no-tests
-  - ../configure
+  - ../configure CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
   - make -j$(nproc)
   - popd
 # build with all tests enabled
@@ -87,9 +111,9 @@ script:
     fi
   - |
     if [ "$CC" == "clang" ]; then
-      scan-build ../configure --enable-unit --enable-integration $CONFIGURE_OPTIONS
+      scan-build ../configure --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
     else
-      ../configure --enable-unit --enable-integration $CONFIGURE_OPTIONS
+      ../configure --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
     fi
   - make -j$(nproc) distcheck
   - |
