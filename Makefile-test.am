@@ -119,6 +119,7 @@ TESTS_INTEGRATION = \
     test/integration/sapi-encrypt-decrypt-2.int \
     test/integration/sapi-evict-ctrl.int \
     test/integration/sapi-get-random.int \
+    test/integration/sapi-stir-random.int \
     test/integration/sapi-hierarchy-change-auth.int \
     test/integration/sapi-abi-version.int \
     test/integration/sapi-pcr-extension.int \
@@ -430,6 +431,11 @@ test_integration_sapi_evict_ctrl_int_SOURCES = \
 test_integration_sapi_sys_initialize_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_sapi_sys_initialize_int_LDADD   = $(TESTS_LDADD)
 test_integration_sapi_sys_initialize_int_SOURCES = test/integration/sapi-sys-initialize.int.c \
+    test/integration/main-sapi.c
+
+test_integration_sapi_stir_random_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sapi_stir_random_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_stir_random_int_SOURCES = test/integration/sapi-stir-random.int.c \
     test/integration/main-sapi.c
 
 test_integration_sapi_get_random_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
