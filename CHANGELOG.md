@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [2.1.x]
+## [2.1.0]
 ### Fixed
 - Fixed handling of the default TCTI
 - Changed logging to be ISO-C99 compatible
