@@ -534,3 +534,18 @@ Esys_TRSess_GetNonceTPM(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
     SAFE_FREE(*nonceTPM);
     return r;
 }
+
+/** Compute tpm handle for standard esys handles.
+ *
+ * The tpm handle is computed for esys handles representing pcr registers and
+ * hierarchies.
+ * @parm esys_handle [in] The esys handle.
+ * @parm tpm_handle [out] The corresponding tpm handle.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_ESYS_RC_BAD_VALUE if no standard handle is passed.
+ */
+TSS2_RC
+esys_handle_to_tpm_handle(ESYS_TR handle, TPM2_HANDLE *tpmHandle)
+{
+  return iesys_handle_to_tpm_handle(handle, tpmHandle);
+}

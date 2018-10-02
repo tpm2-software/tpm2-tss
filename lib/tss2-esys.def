@@ -341,6 +341,7 @@ EXPORTS
     Esys_TR_GetName
     Esys_TR_Serialize
     Esys_TR_SetAuth
+    esys_handle_to_tpm_handle
     Esys_TestParms
     Esys_TestParms_Async
     Esys_TestParms_Finish

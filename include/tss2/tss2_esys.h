@@ -3228,6 +3228,11 @@ void
 Esys_Free(
     void *__ptr);
 
+TSS2_RC
+esys_handle_to_tpm_handle(
+    ESYS_TR handle,
+    TPM2_HANDLE *tpmHandle);
+
 #ifdef __cplusplus
 }
 #endif
