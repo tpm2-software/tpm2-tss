@@ -535,6 +535,33 @@ Esys_TRSess_GetNonceTPM(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
     return r;
 }
 
+/** Get the tpm handle for an esys handle
+ *
+ * Get the underlying tpm handle which the esys object wraps.
+ * @param esys_context [in,out] The ESYS_CONTEXT.
+ * @param esys_handle [in,out] The ESYS_TR for which to retrieve the tpm handle.
+ * @param tpmHandle [out] The underlying tpm handle.
+ * @retval TSS2_RC_SUCCESS on Success.
+ * @retval TSS2_ESYS_RC_MEMORY if needed memory can't be allocated.
+ * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext is NULL.
+ * @retval TSS2_SYS_RC_* for SAPI errors.
+ */
+TSS2_RC
+esys_tr_get_tpm_handle(ESYS_CONTEXT *esysContext, ESYS_TR handle,
+		     TPM2_HANDLE *tpmHandle)
+{
+  RSRC_NODE_T *esys_object;
+  TSS2_RC r;
+  _ESYS_ASSERT_NON_NULL(esysContext);
+
+  r = esys_GetResourceObject(esysContext, handle, &esys_object);
+  return_if_error(r, "Object not found");
+  *tpmHandle = esys_object->rsrc.handle;
+
+  return r;
+}
+
 /** Compute tpm handle for standard esys handles.
  *
  * The tpm handle is computed for esys handles representing pcr registers and
