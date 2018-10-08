@@ -51,10 +51,12 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
 \
     LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", \
+         " at index 0x%zx, buffer size %zu, object size %u", \
          (uintptr_t)&src, \
          (uintptr_t)buffer, \
-         local_offset); \
+         local_offset, \
+         buffer_size, \
+         src->size); \
 \
     rc = Tss2_MU_UINT16_Marshal(src->size, buffer, buffer_size, &local_offset); \
     if (rc) \
@@ -101,16 +103,18 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
         return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
     } \
 \
-    LOG_DEBUG(\
-         "Unmarshaling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", \
-         (uintptr_t)buffer, \
-         (uintptr_t)dest, \
-         local_offset); \
-\
     rc = Tss2_MU_UINT16_Unmarshal(buffer, buffer_size, &local_offset, &size); \
     if (rc) \
         return rc; \
+\
+    LOG_DEBUG(\
+         "Unmarshaling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx, buffer size %zu, object size %u", \
+         (uintptr_t)buffer, \
+         (uintptr_t)dest, \
+         local_offset, \
+         buffer_size, \
+         size); \
 \
     if (size > buffer_size - local_offset) { \
         LOG_WARNING(\
@@ -181,10 +185,12 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
 \
     LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", \
+         " at index 0x%zx, buffer size %zu, object size %u", \
          (uintptr_t)&src, \
          (uintptr_t)buffer, \
-         local_offset); \
+         local_offset, \
+         buffer_size, \
+         src->size); \
 \
     rc = Tss2_MU_UINT16_Marshal(src->size, buffer, buffer_size, &local_offset); \
     if (rc) \
@@ -237,16 +243,17 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
         return TSS2_SYS_RC_BAD_VALUE; \
     } \
 \
-    LOG_DEBUG(\
-         "Unmarshaling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", \
-         (uintptr_t)buffer, \
-         (uintptr_t)dest, \
-         local_offset); \
-\
     rc = Tss2_MU_UINT16_Unmarshal(buffer, buffer_size, &local_offset, &size); \
     if (rc) \
         return rc; \
+    LOG_DEBUG(\
+         "Unmarshaling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
+         " at index 0x%zx, buffer size %zu, object size %u", \
+         (uintptr_t)buffer, \
+         (uintptr_t)dest, \
+         local_offset, \
+         buffer_size, \
+         size); \
 \
     if (size > buffer_size - local_offset) { \
         LOG_WARNING(\
