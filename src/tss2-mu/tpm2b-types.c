@@ -121,6 +121,12 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
              (size_t)size); \
         return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
     } \
+    if ((sizeof(*dest) - 2) < size) { \
+        LOG_ERROR("The dest field size of %zu is too small to unmarshal %d bytes", \
+                  sizeof(*dest), size); \
+        return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
+    } \
+\
     if (dest != NULL) { \
         dest->size = size; \
         memcpy(((TPM2B *)dest)->buffer, &buffer[local_offset], size); \
@@ -251,6 +257,12 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
              (size_t)size); \
         return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
     } \
+    if (sizeof(dest->member) < size) { \
+        LOG_ERROR("The dest field size of %zu is too small to unmarshal %d bytes", \
+                  sizeof(dest->member), size); \
+        return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
+    } \
+\
     if (dest != NULL) { \
         dest->size = size; \
         Tss2_MU_##subtype##_Unmarshal(buffer, buffer_size, &local_offset, &dest->member); \
