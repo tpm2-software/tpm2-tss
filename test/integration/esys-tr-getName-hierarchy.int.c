@@ -11,6 +11,7 @@
 #include "esys_iutil.h"
 #define LOGMODULE test
 #include "util/log.h"
+#include "util/aux_util.h"
 
 /** This tests the Esys_TR_FromTPMPublic and Esys_TR_GetName functions by
  *  creating an NV Index and then attempting to retrieve an ESYS_TR object for

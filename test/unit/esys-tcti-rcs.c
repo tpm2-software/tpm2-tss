@@ -17,6 +17,7 @@
 #include "tss2-esys/esys_iutil.h"
 #define LOGMODULE tests
 #include "util/log.h"
+#include "util/aux_util.h"
 
 /**
  * This unit test looks into a set of Esys_<cmd>() functions and tests the

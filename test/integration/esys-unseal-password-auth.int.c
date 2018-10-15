@@ -20,6 +20,7 @@
 
 #define LOGMODULE test
 #include "util/log.h"
+#include "util/aux_util.h"
 
 /** This test is intended to test the unseal operation for the ESAPI command
  *  Unseal.

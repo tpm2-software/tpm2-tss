@@ -11,6 +11,7 @@
 #include "esys_iutil.h"
 #define LOGMODULE test
 #include "util/log.h"
+#include "util/aux_util.h"
 
 /** Test the ESAPI commands HashSequenceStart, SequenceUpdate,
  *  and SequenceComplete.

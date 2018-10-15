@@ -15,6 +15,7 @@
 #include "esys_mu.h"
 #define LOGMODULE esys
 #include "util/log.h"
+#include "util/aux_util.h"
 
 /** Provide the digest size for a given hash algorithm.
  *
