@@ -12,6 +12,7 @@
 #include "esys_int.h"
 #define LOGMODULE esys
 #include "util/log.h"
+#include "util/aux_util.h"
 
 /**
  * Compare variables of type UINT16.

@@ -17,6 +17,7 @@
 #include "tss2-esys/esys_iutil.h"
 #define LOGMODULE tests
 #include "util/log.h"
+#include "util/aux_util.h"
 
 /*
  * Tests whether all ESAPI finish calls handle wrong internal states with the correct

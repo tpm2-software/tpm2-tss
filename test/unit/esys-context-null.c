@@ -11,6 +11,7 @@
 #include <stdint.h>
 #define LOGMODULE test
 #include "util/log.h"
+#include "util/aux_util.h"
 #include "tss2-sys/sysapi_util.h"
 #include <tss2_esys.h>
 #include "esys_types.h"

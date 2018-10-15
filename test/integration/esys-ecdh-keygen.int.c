@@ -11,6 +11,7 @@
 #include "esys_iutil.h"
 #define LOGMODULE test
 #include "util/log.h"
+#include "util/aux_util.h"
 
 /** This test is intended to test Esys_ECDH_KeyGen based on an ECC key
  *  created with Esys_CreatePrimary.

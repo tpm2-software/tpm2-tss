@@ -10,6 +10,7 @@
 #include "esys_iutil.h"
 #define LOGMODULE esys
 #include "util/log.h"
+#include "util/aux_util.h"
 
 /** Serialization of an ESYS_TR into a byte buffer.
  *

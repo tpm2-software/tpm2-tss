@@ -16,6 +16,7 @@
 #include "esys_mu.h"
 #define LOGMODULE esys
 #include "util/log.h"
+#include "util/aux_util.h"
 
 /** Context to hold temporary values for iesys_crypto */
 typedef struct _IESYS_CRYPTO_CONTEXT {

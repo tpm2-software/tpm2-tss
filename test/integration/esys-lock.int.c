@@ -12,6 +12,7 @@
 #include "test-esapi.h"
 #define LOGMODULE test
 #include "util/log.h"
+#include "util/aux_util.h"
 
 /** Test the ESAPI functions related to TPM locks. 
  *

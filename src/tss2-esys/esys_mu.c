@@ -13,6 +13,7 @@
 #include "esys_iutil.h"
 #define LOGMODULE esys
 #include "util/log.h"
+#include "util/aux_util.h"
 
 /** Marshal an array of BYTE structures into a byte buffer.
  *

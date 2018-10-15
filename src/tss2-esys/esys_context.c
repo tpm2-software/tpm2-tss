@@ -15,6 +15,7 @@
 #include "esys_tcti_default.h"
 #define LOGMODULE esys
 #include "util/log.h"
+#include "util/aux_util.h"
 
 /** Initialize an ESYS_CONTEXT for further use.
  *
