@@ -20,10 +20,10 @@ RUN wget --quiet --show-progress --progress=dot:giga https://www.openssl.org/sou
 	&& tar xvf $openssl_name.tar.gz \
 	&& rm /tmp/$openssl_name.tar.gz
 WORKDIR $openssl_name
-RUN ./config --prefix=/usr/local/openssl --openssldir=/usr/local/openssl
-RUN make -j$(nproc)
-RUN make install
-RUN openssl version
+RUN ./config --prefix=/usr/local/openssl --openssldir=/usr/local/openssl \
+	&& make -j$(nproc) \
+	&& make install \
+	&& openssl version
 
 # IBM's Software TPM 2.0
 ARG ibmtpm_name=ibmtpm1119
@@ -34,8 +34,8 @@ RUN wget --quiet --show-progress --progress=dot:giga "https://downloads.sourcefo
 	&& tar xvf $ibmtpm_name.tar.gz -C $ibmtpm_name \
 	&& rm $ibmtpm_name.tar.gz
 WORKDIR $ibmtpm_name/src
-RUN CFLAGS="-I/usr/local/openssl/include" make -j$(nproc)
-RUN cp tpm_server /usr/local/bin
+RUN CFLAGS="-I/usr/local/openssl/include" make -j$(nproc) \
+	&& cp tpm_server /usr/local/bin
 
 RUN apt-get install -y \
     libcmocka0 \
@@ -48,11 +48,11 @@ RUN apt-get install -y \
 # TPM2-TSS
 COPY . /tmp/tpm2-tss/
 WORKDIR /tmp/tpm2-tss
-RUN ./bootstrap
-RUN ./configure --enable-unit
-RUN make -j$(nproc) check
-RUN make install
-RUN ldconfig
+RUN ./bootstrap \
+	&& ./configure --enable-unit \
+	&& make -j$(nproc) check \
+	&& make install \
+	&& ldconfig
 ENV LD_LIBRARY_PATH /usr/local/lib
 RUN cat test-suite.log
 
