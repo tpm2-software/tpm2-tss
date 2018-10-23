@@ -77,9 +77,9 @@ AS_IF([test "x$enable_tcti_device_async" = "xyes"],
 
 AC_ARG_WITH([crypto],
             [AS_HELP_STRING([--with-crypto={gcrypt,ossl}],
-                            [sets the ESAPI crypto backend (default is gcrypt)])],
+                            [sets the ESAPI crypto backend (default is OpenSSL)])],
             [],
-            [with_crypto=gcrypt])
+            [with_crypto=ossl])
 
 AM_CONDITIONAL(ESYS_OSSL, test "x$with_crypto" = "xossl")
 AM_CONDITIONAL(ESYS_GCRYPT, test "x$with_crypto" = "xgcrypt")
@@ -311,4 +311,5 @@ AC_MSG_RESULT([
     maxloglevel:        $with_maxloglevel
     doxygen:            $DX_FLAG_doc $enable_doxygen_doc
     tcti-device-async:  $enable_tcti_device_async
+    crypto backend:     $with_crypto
 ])

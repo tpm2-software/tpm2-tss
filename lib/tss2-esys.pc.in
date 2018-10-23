@@ -4,4 +4,4 @@ URL: https://github.com/tpm2-software/tpm2-tss
 Version: @VERSION@
 Requires: tss2-mu tss2-sys
 Cflags: -I@includedir@
-Libs: -ltss2-esys -lgcrypt -L@libdir@
+Libs: -ltss2-esys -L@libdir@
