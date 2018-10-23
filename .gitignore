@@ -70,8 +70,9 @@ doc/Doxyfile
 doc/doxy/
 doc/html/
 doc/man/
-tpm2-tss-2.0.0-dev.tar.gz
-tpm2-tss-2.0.0-dev/
+tpm2-tss-*.tar.gz
+tpm2-tss-*.tar.gz.asc
+tpm2-tss-*/
 
 test/helper/tpm_startup
 test/helper/tpm_transientempty
