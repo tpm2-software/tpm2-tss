@@ -17,7 +17,7 @@
 
 #include "tss2_tcti.h"
 #include "tss2_tcti_device.h"
-
+#include "tss2_mu.h"
 #include "tcti-common.h"
 #include "tcti-device.h"
 #include "util/io.h"
@@ -122,6 +122,11 @@ tcti_device_receive (
     ssize_t size = 0;
     struct pollfd fds;
     int rc_poll, nfds = 1;
+#ifdef TCTI_PARTIAL_READ
+    uint8_t header[TPM_HEADER_SIZE];
+    size_t offset = 2;
+    UINT32 partial_size;
+#endif
 
     if (tcti_dev == NULL) {
         return TSS2_TCTI_RC_BAD_CONTEXT;
@@ -144,19 +149,84 @@ tcti_device_receive (
     }
 #endif
     if (response_buffer == NULL) {
+#ifndef TCTI_PARTIAL_READ
         LOG_DEBUG ("Caller queried for size but linux kernel doesn't allow this. "
                    "Returning 4k which is the max size for a response buffer.");
         *response_size = 4096;
         return TSS2_RC_SUCCESS;
     }
+#else
+        /* Read the header only and get the response size out of it */
+        LOG_DEBUG("Partial read - reading response size");
+        fds.fd = tcti_dev->fd;
+        fds.events = POLLIN;
+
+        rc_poll = poll(&fds, nfds, timeout);
+        if (rc_poll < 0) {
+            LOG_ERROR ("Failed to poll for response from fd %d, got errno %d: %s",
+                       tcti_dev->fd, errno, strerror (errno));
+        }
+        if (rc_poll < 0) {
+            LOG_ERROR ("Failed to poll for response from fd %d, got errno %d: %s",
+                       tcti_dev->fd, errno, strerror (errno));
+            return TSS2_TCTI_RC_IO_ERROR;
+        } else if (rc_poll == 0) {
+            LOG_INFO ("Poll timed out on fd %d.", tcti_dev->fd);
+            return TSS2_TCTI_RC_TRY_AGAIN;
+        } else if (fds.revents == POLLIN) {
+            TEMP_RETRY (size, read (tcti_dev->fd, header, TPM_HEADER_SIZE));
+            if (size < 0 || size != TPM_HEADER_SIZE) {
+                LOG_ERROR ("Failed to get response size fd %d, got errno %d: %s",
+                       tcti_dev->fd, errno, strerror (errno));
+                return TSS2_TCTI_RC_IO_ERROR;
+            }
+        }
+        LOG_DEBUG("Partial read - received header");
+            rc = Tss2_MU_UINT32_Unmarshal(header, TPM_HEADER_SIZE,
+                                          &offset, &partial_size);
+        if (rc != TSS2_RC_SUCCESS) {
+            LOG_ERROR ("Failed to unmarshal response size.");
+            return rc;
+        }
+        if (partial_size < TPM_HEADER_SIZE) {
+            LOG_ERROR ("Received %zu bytes, not enough to hold a TPM2 response "
+                       "header.", size);
+            return TSS2_TCTI_RC_GENERAL_FAILURE;
+        }
+
+        LOG_DEBUG("Partial read - received response size %d.", partial_size);
+        tcti_common->partial = true;
+        *response_size = partial_size;
+        memcpy(&tcti_common->header, header, TPM_HEADER_SIZE);
+        return rc;
+    }
+#endif
+
+#ifndef TCTI_PARTIAL_READ
     if (*response_size < 4096) {
+#else
+    if (*response_size < TPM_HEADER_SIZE) {
+#endif
         LOG_INFO ("Caller provided buffer that *may* not be large enough to "
                   "hold the response buffer.");
     }
+
+    /* In case when the whole response is just the 10 bytes header
+     * and we have read it already to get the size, we don't need
+     * to call poll and read again. Just copy what we have read
+     * and return.
+     */
+    if (tcti_common->partial == true && *response_size == TPM_HEADER_SIZE) {
+        memcpy(response_buffer, &tcti_common->header, TPM_HEADER_SIZE);
+        tcti_common->partial = false;
+        goto out;
+    }
+
     /*
-     * The kernel driver will only return a response buffer in a single read
-     * operation. If we try to read again before sending another command
+     * The older kernel driver will only return a response buffer in a single
+     * read operation. If we try to read again before sending another command
      * the kernel will close the file descriptor and we'll get an EOF.
+     * Newer kernels should have partial reads enabled.
      */
     fds.fd = tcti_dev->fd;
     fds.events = POLLIN;
@@ -170,7 +240,14 @@ tcti_device_receive (
         LOG_INFO ("Poll timed out on fd %d.", tcti_dev->fd);
         return TSS2_TCTI_RC_TRY_AGAIN;
     } else if (fds.revents == POLLIN) {
-        TEMP_RETRY (size, read(tcti_dev->fd, response_buffer, *response_size));
+        if (tcti_common->partial == true) {
+            memcpy(response_buffer, &tcti_common->header, TPM_HEADER_SIZE);
+            TEMP_RETRY (size, read (tcti_dev->fd, response_buffer +
+                        TPM_HEADER_SIZE, *response_size - TPM_HEADER_SIZE));
+        } else {
+            TEMP_RETRY (size, read (tcti_dev->fd, response_buffer,
+                        *response_size));
+        }
         if (size < 0) {
             LOG_ERROR ("Failed to read response from fd %d, got errno %d: %s",
                tcti_dev->fd, errno, strerror (errno));
@@ -182,24 +259,31 @@ tcti_device_receive (
         rc = TSS2_TCTI_RC_NO_CONNECTION;
         goto out;
     }
+
+    size += tcti_common->partial ? TPM_HEADER_SIZE : 0;
     LOGBLOB_DEBUG(response_buffer, size, "Response Received");
-    if (size < (ssize_t)TPM_HEADER_SIZE) {
+    tcti_common->partial = false;
+
+    if ((size_t)size < TPM_HEADER_SIZE) {
         LOG_ERROR ("Received %zu bytes, not enough to hold a TPM2 response "
                    "header.", size);
         rc = TSS2_TCTI_RC_GENERAL_FAILURE;
         goto out;
     }
+
     rc = header_unmarshal (response_buffer, &tcti_common->header);
-    if (rc != TSS2_RC_SUCCESS) {
+    if (rc != TSS2_RC_SUCCESS)
         goto out;
-    }
+
+    LOG_DEBUG("Size from header %u bytes read %zu", tcti_common->header.size, size);
+
     if ((size_t)size != tcti_common->header.size) {
-        LOG_WARNING ("TPM2 header size disagrees with number of bytes read "
+        LOG_WARNING ("TPM2 response size disagrees with number of bytes read "
                      "from fd %d. Header says %u but we read %zu bytes.",
                      tcti_dev->fd, tcti_common->header.size, size);
     }
     if (*response_size < tcti_common->header.size) {
-        LOG_WARNING ("TPM2 response header size is larger than the provided "
+        LOG_WARNING ("TPM2 response size is larger than the provided "
                      "buffer: future use of this TCTI will likely fail.");
         rc = TSS2_TCTI_RC_GENERAL_FAILURE;
     }

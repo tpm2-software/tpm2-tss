@@ -97,10 +97,11 @@ static void
 read_all_twice_eof (void **state)
 {
     ssize_t ret;
+    uint8_t buf [10];
 
     will_return (__wrap_read, 5);
     will_return (__wrap_read, 0);
-    ret = read_all (10, NULL, 10);
+    ret = read_all (10, buf, 10);
     assert_int_equal (ret, 5);
 }
 /* When passed all NULL values ensure that we get back the expected RC. */
