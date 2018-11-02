@@ -63,4 +63,4 @@ echo "Generating file lists: ${VARS_FILE}"
   printf "TSS2_MU_SRC = \$(TSS2_MU_C) \$(TSS2_MU_H)"
 ) > ${VARS_FILE}
 
-${AUTORECONF} --install --sym
+${AUTORECONF} --install --sym $@
