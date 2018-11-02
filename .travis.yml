@@ -23,6 +23,7 @@ env:
   - CMOCKA_CFLAGS="-I$(pwd)/cmocka/include -I/usr/include"
   - CMOCKA_LIBS="-L$(pwd)/cmocka/lib -lcmocka"
   - PATH="$(pwd)/ibmtpm/src:$(pwd)/doxygen/build/bin:${PATH}"
+  - GNULIB_M4="/usr/share/gnulib/m4"
 
 addons:
   apt:
@@ -39,7 +40,7 @@ addons:
       name: "01org/TPM2.0-TSS"
       description: Build submitted via Travis-CI
     notification_email: philip.b.tricca@intel.com
-    build_command_prepend: "./bootstrap && ./configure"
+    build_command_prepend: "./bootstrap -I ${GNULIB_M4} && ./configure"
     build_command: "make --jobs=$(nproc)"
     branch_pattern: coverity_scan
 
@@ -95,7 +96,7 @@ install:
   - popd
 
 before_script:
-  - ./bootstrap
+  - ./bootstrap -I ${GNULIB_M4}
 
 script:
 # short-circuit normal build if we've already done a coverity scan
