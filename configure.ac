@@ -43,6 +43,23 @@ AC_CONFIG_FILES([Makefile Doxyfile])
 # propagate configure arguments to distcheck
 AC_SUBST([DISTCHECK_CONFIGURE_FLAGS],[$ac_configure_args])
 
+AC_CANONICAL_HOST
+
+# Check OS and set library and compile flags accordingly
+case "${host_os}" in
+    *nto-qnx*)
+        ADD_COMPILER_FLAG([-D_QNX_SOURCE])
+        LIBDL_LDFLAGS=""
+        LIBSOCKET_LDFLAGS="-lsocket"
+        ;;
+    *)
+        LIBDL_LDFLAGS="-ldl"
+        LIBSOCKET_LDFLAGS=""
+        ;;
+esac
+AC_SUBST([LIBDL_LDFLAGS])
+AC_SUBST([LIBSOCKET_LDFLAGS])
+
 AC_ARG_ENABLE([unit],
             [AS_HELP_STRING([--enable-unit],
                             [build cmocka unit tests (default is no)])],

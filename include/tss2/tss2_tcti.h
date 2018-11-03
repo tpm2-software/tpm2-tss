@@ -18,7 +18,7 @@
 #error Version mismatch among TSS2 header files.
 #endif  /* TSS2_API_VERSION_1_2_1_108 */
 
-#if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
+#if defined(__linux__) || defined(__unix__) || defined(__APPLE__) || defined (__QNXNTO__)
 #include <poll.h>
 typedef struct pollfd TSS2_TCTI_POLL_HANDLE;
 #elif defined(_WIN32)
