@@ -35,6 +35,7 @@ addons:
     - lcov
     - libssl-dev
     - uthash-dev
+    - gnulib
   coverity_scan:
     project:
       name: "01org/TPM2.0-TSS"

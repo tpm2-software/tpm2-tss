@@ -49,7 +49,8 @@ $ sudo apt -y install \
   libgcrypt20-dev \
   libssl-dev \
   uthash-dev \
-  autoconf
+  autoconf \
+  gnulib
 ```
 Note: In some Ubuntu versions, the lcov and autoconf-archive packages are incompatible with each other. Recommend downloading autoconf-archives directly from upstream and copy ax_code_coverage.m4.
 
@@ -80,6 +81,12 @@ To configure the tpm2-tss source code first run the bootstrap script, which
 generates list of source files, and creates the configure script:
 ```
 $ ./bootstrap
+```
+
+Any options specified to the bootstrap command are passed to `autoreconf(1)`. This is typically
+useful for specifying 3rd party M4 include paths via the `-I` option. For example on Ubuntu 16.04:
+```
+$ ./bootstrap -I /usr/share/gnulib/m4
 ```
 
 ## Configuring the Build
