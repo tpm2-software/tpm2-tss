@@ -1,6 +1,6 @@
 # Guidelines for submitting bugs:
 All non security bugs should be filed on the Issues tracker:
-https://github.com/01org/tpm2-tss/issues
+https://github.com/tpm2-software/tpm2-tss/issues
 
 Security sensitive bugs should be emailed to a maintainer directly, or to Intel
 via the guidelines here:
