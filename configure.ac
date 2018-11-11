@@ -189,19 +189,6 @@ AM_CONDITIONAL([ENABLE_INTEGRATION],[test "x$enable_integration" = "xyes"])
 
 gl_LD_VERSION_SCRIPT
 
-ADD_COMPILER_FLAG([-std=c99])
-ADD_COMPILER_FLAG([-Wall])
-ADD_COMPILER_FLAG([-Wextra])
-ADD_COMPILER_FLAG([-Wformat-security])
-ADD_COMPILER_FLAG([-Werror])
-ADD_COMPILER_FLAG([-fstack-protector-all])
-ADD_COMPILER_FLAG([-fpic])
-ADD_COMPILER_FLAG([-fPIC])
-
-ADD_PREPROC_FLAG([-D_DEFAULT_SOURCE])
-ADD_PREPROC_FLAG([-D_BSD_SOURCE])
-ADD_PREPROC_FLAG([-D_POSIX_SOURCE])
-
 AC_ARG_WITH([maxloglevel],
             [AS_HELP_STRING([--with-maxloglevel={none,error,warning,info,debug,trace}],
                             [sets the maximum log level (default is trace)])],
@@ -228,19 +215,40 @@ AC_ARG_ENABLE([debug],
             [enable_debug=$enableval],
             [enable_debug=no])
 AS_IF([test "x$enable_debug" = "xyes"], ADD_COMPILER_FLAG([-ggdb3 -Og]))
-AS_IF([test "x$enable_debug" = "xno"], [ADD_PREPROC_FLAG([-U_FORTIFY_SOURCE])
-                                        ADD_PREPROC_FLAG([-D_FORTIFY_SOURCE=2])
-                                        ADD_COMPILER_FLAG([-g -O2])])
-ADD_LINK_FLAG([-Wl,--no-undefined])
-ADD_LINK_FLAG([-Wl,-z,noexecstack])
-ADD_LINK_FLAG([-Wl,-z,now])
-ADD_LINK_FLAG([-Wl,-z,relro])
+AC_ARG_ENABLE([defaultflags],
+              [AS_HELP_STRING([Use default preprocessor, compiler, and linker flags (default yes).])],
+              [enable_defaultflags=$enableval],
+              [enable_defaultflags=yes])
+AS_IF([test "x$enable_defaultflags" = "xyes"],
+      [
+      ADD_PREPROC_FLAG([-D_DEFAULT_SOURCE])
+      ADD_PREPROC_FLAG([-D_BSD_SOURCE])
+      ADD_PREPROC_FLAG([-D_POSIX_SOURCE])
+      AS_IF([test "x$enable_debug" = "xno"],
+            [
+            ADD_PREPROC_FLAG([-U_FORTIFY_SOURCE])
+            ADD_PREPROC_FLAG([-D_FORTIFY_SOURCE=2])
+            ADD_COMPILER_FLAG([-g -O2])
+            ])
+      ADD_COMPILER_FLAG([-std=c99])
+      ADD_COMPILER_FLAG([-Wall])
+      ADD_COMPILER_FLAG([-Wextra])
+      ADD_COMPILER_FLAG([-Wformat-security])
+      ADD_COMPILER_FLAG([-Werror])
+      ADD_COMPILER_FLAG([-fstack-protector-all])
+      ADD_COMPILER_FLAG([-fpic])
+      ADD_COMPILER_FLAG([-fPIC])
+      # work around GCC bug #53119
+      #   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53119
+      ADD_COMPILER_FLAG([-Wno-missing-braces])
+      ADD_LINK_FLAG([-Wl,--no-undefined])
+      ADD_LINK_FLAG([-Wl,-z,noexecstack])
+      ADD_LINK_FLAG([-Wl,-z,now])
+      ADD_LINK_FLAG([-Wl,-z,relro])
+      ])
 
 AC_SUBST([PATH])
 
-# work around GCC bug #53119
-#   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53119
-ADD_COMPILER_FLAG([-Wno-missing-braces])
 
 dnl ---------  Physical TPM device -----------------------
 
