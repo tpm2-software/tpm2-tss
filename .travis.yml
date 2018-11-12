@@ -116,13 +116,19 @@ script:
     else
       ../configure --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
     fi
-  - make -j$(nproc) distcheck
   - |
     if [ "$CC" == "clang" ]; then
       scan-build --status-bugs make -j$(nproc) check
     else
       make -j$(nproc) check
     fi
+  - |
+  - popd
+# make distcheck
+  - mkdir ./distcheck_build
+  - pushd ./distcheck_build
+  - ../configure --disable-doxygen-doc --enable-unit --enable-integration CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
+  - make -j$(nproc) distcheck
   - popd
   - |
     if [ "$CC" == "gcc" -a -n "$COVERALLS_REPO_TOKEN" ]; then
