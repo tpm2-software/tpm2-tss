@@ -62,6 +62,7 @@ install:
   - sha256sum autoconf-archive-2017.09.28.tar.xz | grep -q 5c9fb5845b38b28982a3ef12836f76b35f46799ef4a2e46b48e2bd3c6182fa01 || travis_terminate 1
   - tar xJf autoconf-archive-2017.09.28.tar.xz
   - cp autoconf-archive-2017.09.28/m4/ax_code_coverage.m4 m4/
+  - cp autoconf-archive-2017.09.28/m4/ax_prog_doxygen.m4 m4/
 # Coveralls
   - pip install --user cpp-coveralls
 # IBM-TPM
