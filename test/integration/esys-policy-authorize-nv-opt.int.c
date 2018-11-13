@@ -72,8 +72,6 @@ cmp_policy_digest(ESYS_CONTEXT * esys_context,
  *  - Esys_NV_DefineSpace() (M)
  *  - Esys_PolicyAuthorizeNV() (F)
  *  - Esys_PolicyNV() (M)
- *  - Esys_PolicyPhysicalPresence() (O)
- *  - Esys_PolicyTemplate() (F)
  *
  * @param[in,out] esys_context The ESYS_CONTEXT.
  * @retval EXIT_FAILURE
@@ -81,12 +79,11 @@ cmp_policy_digest(ESYS_CONTEXT * esys_context,
  * @retval EXIT_SUCCESS
  */
 int
-test_esys_policy_regression_opt(ESYS_CONTEXT * esys_context)
+test_esys_policy_authorize_nv_opt(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     int failure_return = EXIT_FAILURE;
     ESYS_TR nvHandle = ESYS_TR_NONE;
-    ESYS_TR sessionTrialPCR = ESYS_TR_NONE;
 
     /* Dummy parameters for trial sessoin  */
     ESYS_TR sessionTrial = ESYS_TR_NONE;
@@ -207,77 +204,6 @@ test_esys_policy_regression_opt(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: FlushContext", error);
     sessionTrial = ESYS_TR_NONE;
 
-
-    /*
-     * Test PolicyTemplate
-     */
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              &nonceCallerTrial,
-                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
-                              &sessionTrial);
-    goto_if_error(r, "Error: During initialization of policy trial session",
-                  error);
-
-    TPM2B_DIGEST templateHash = {
-        .size = 20,
-        .buffer = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                   11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
-    };
-
-    r = Esys_PolicyTemplate(esys_context,
-                            sessionTrial,
-                            ESYS_TR_NONE,
-                            ESYS_TR_NONE, ESYS_TR_NONE, &templateHash);
-    if ((r == TPM2_RC_COMMAND_CODE) ||
-        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
-        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
-        LOG_WARNING("Command TPM2_PolicyTemplate  not supported by TPM.");
-        failure_return = EXIT_SKIP;
-        goto error;
-    } else {
-        goto_if_error(r, "Error: PolicyTemplate", error);
-
-        TPM2B_DIGEST expectedPolicyTemplate = {
-            .size = 20,
-            .buffer =
-                {0xf6, 0x6d, 0x2a, 0x9c, 0x6e, 0xa8, 0xdf, 0x1a, 0x49, 0x3c,
-                 0x42, 0xcc, 0xac, 0x6e, 0x3d, 0x08, 0xc0, 0x84, 0xcf, 0x73}
-        };
-
-        if (!cmp_policy_digest
-            (esys_context, &sessionTrial, &expectedPolicyTemplate, "Template",
-             FLUSH))
-            goto error;
-    }
-
-    /*
-     * Test PolicyPhysicalPresence
-     */
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              &nonceCallerTrial,
-                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
-                              &sessionTrial);
-    goto_if_error(r, "Error: During initialization of policy trial session",
-                  error);
-
-    r = Esys_PolicyPhysicalPresence(esys_context,
-                                    sessionTrial,
-                                    ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
-    goto_if_error(r, "Error: PolicyPhysicalPresence", error);
-
-    TPM2B_DIGEST expectedPolicyPhysicalPresence = {
-        .size = 20,
-        .buffer = {0x9a, 0xcb, 0x06, 0x39, 0x5f, 0x83, 0x1f, 0x88, 0xe8, 0x9e,
-                   0xea, 0xc2, 0x94, 0x42, 0xcb, 0x0e, 0xbe, 0x94, 0x85, 0xab}
-    };
-
-    if (!cmp_policy_digest
-        (esys_context, &sessionTrial, &expectedPolicyPhysicalPresence,
-         "PhysicalPresence", FLUSH))
-        goto error;
-
     return EXIT_SUCCESS;
 
  error:
@@ -285,12 +211,6 @@ test_esys_policy_regression_opt(ESYS_CONTEXT * esys_context)
     if (sessionTrial != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, sessionTrial) != TSS2_RC_SUCCESS) {
             LOG_ERROR("Cleanup sessionTrial failed.");
-        }
-    }
-
-    if (sessionTrialPCR != ESYS_TR_NONE) {
-        if (Esys_FlushContext(esys_context, sessionTrialPCR) != TSS2_RC_SUCCESS) {
-            LOG_ERROR("Cleanup sessionTrialPCR failed.");
         }
     }
 
@@ -310,5 +230,5 @@ test_esys_policy_regression_opt(ESYS_CONTEXT * esys_context)
 
 int
 test_invoke_esapi(ESYS_CONTEXT * esys_context) {
-    return test_esys_policy_regression_opt(esys_context);
+    return test_esys_policy_authorize_nv_opt(esys_context);
 }

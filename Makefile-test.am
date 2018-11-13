@@ -194,7 +194,9 @@ ESYS_TESTS_INTEGRATION_OPTIONAL = \
     test/integration/esys-nv-certify.int \
     test/integration/esys-pcr-auth-value.int \
     test/integration/esys-pcr-basic.int \
-    test/integration/esys-policy-regression-opt.int \
+    test/integration/esys-policy-authorize-nv-opt.int \
+    test/integration/esys-policy-physical-presence-opt.int \
+    test/integration/esys-policy-template-opt.int \
     test/integration/esys-pp-commands.int \
     test/integration/esys-zgen-2phase.int
 
@@ -873,6 +875,13 @@ test_integration_esys_policy_authorize_int_SOURCES = \
     src/tss2-esys/esys_crypto.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
+test_integration_esys_policy_physical_presence_opt_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_policy_physical_presence_opt_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_policy_physical_presence_opt_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_policy_physical_presence_opt_int_SOURCES = \
+    test/integration/esys-policy-physical-presence-opt.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
 test_integration_esys_policy_regression_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_policy_regression_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_policy_regression_int_LDFLAGS = $(TESTS_LDFLAGS)
@@ -880,11 +889,18 @@ test_integration_esys_policy_regression_int_SOURCES = \
     test/integration/esys-policy-regression.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
-test_integration_esys_policy_regression_opt_int_CFLAGS  = $(TESTS_CFLAGS)
-test_integration_esys_policy_regression_opt_int_LDADD   = $(TESTS_LDADD)
-test_integration_esys_policy_regression_opt_int_LDFLAGS = $(TESTS_LDFLAGS)
-test_integration_esys_policy_regression_opt_int_SOURCES = \
-    test/integration/esys-policy-regression-opt.int.c \
+test_integration_esys_policy_authorize_nv_opt_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_policy_authorize_nv_opt_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_policy_authorize_nv_opt_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_policy_authorize_nv_opt_int_SOURCES = \
+    test/integration/esys-policy-authorize-nv-opt.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_policy_template_opt_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_policy_template_opt_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_policy_template_opt_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_policy_template_opt_int_SOURCES = \
+    test/integration/esys-policy-template-opt.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_policy_ticket_int_CFLAGS  = $(TESTS_CFLAGS) $(esyscryCFLAGS)
