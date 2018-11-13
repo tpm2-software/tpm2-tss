@@ -11,7 +11,8 @@ RUN apt-get update && apt-get install -y \
     libtool \
     m4 \
     net-tools \
-    pkg-config
+    pkg-config \
+    wget
 
 # OpenSSL
 ARG openssl_name=openssl-1.1.0h
