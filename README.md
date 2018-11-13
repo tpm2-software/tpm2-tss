@@ -35,7 +35,7 @@ Instructions to build and install tpm2-tss are available in the [INSTALL](INSTAL
 If you're looking to discuss the source code in this project or get some questions answered you should join the 01.org TPM2 mailing list: https://lists.01.org/mailman/listinfo/tpm2.
 We also have an IRC channel set up on [FreeNode](https://freenode.net/) called \#tpm2.0-tss.
 
-In case you want to contribute to the project, please also have a look at the [Contribution Guidelines](CONTRIBUTION.md).
+In case you want to contribute to the project, please also have a look at the [Contribution Guidelines](CONTRIBUTING.md).
 
 # Test Suite
 This repository contains a test suite intended to exercise the TCTI, SAPI and ESAPI code.
