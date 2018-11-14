@@ -198,5 +198,5 @@ $ make doxygen-doc
 ```
 
 The generated documentation will appear here:
-* doc/html HTML format (start with file doc/html/index.html)
-* doc/rtf/refman.rtf RTF format
+* doxygen-doc/html HTML format (start with file doxygen-doc/html/index.html)
+* doxygen-doc/rtf/refman.rtf RTF format
