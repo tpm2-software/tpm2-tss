@@ -10,6 +10,7 @@
 #include <openssl/aes.h>
 #include <openssl/rsa.h>
 #include <openssl/engine.h>
+#include <openssl/rand.h>
 #include <stdio.h>
 
 #include "tss2_esys.h"
@@ -660,6 +661,8 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
                    "Could not set RSA passing.", cleanup);
     }
 
+/* LibreSSL does not provide these OAEP functions */
+#ifdef EVP_PKEY_CTX_set0_rsa_oaep_label
     if (1 != EVP_PKEY_CTX_set0_rsa_oaep_label(ctx, label, strlen(label)+1)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Could not set RSA label.", cleanup);
@@ -669,6 +672,9 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Could not set hash algorithm.", cleanup);
     }
+#else
+    (void) label;
+#endif
 
     /* Determine out size */
     if (1 != EVP_PKEY_encrypt(ctx, NULL, out_size, in_buffer, in_size)) {
