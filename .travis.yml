@@ -22,7 +22,7 @@ env:
   - LD_LIBRARY_PATH="$(pwd)/osslinstall/usr/local/lib:$(pwd)/cmocka/lib:/usr/lib"
   - CMOCKA_CFLAGS="-I$(pwd)/cmocka/include -I/usr/include"
   - CMOCKA_LIBS="-L$(pwd)/cmocka/lib -lcmocka"
-  - PATH="$(pwd)/ibmtpm/src:${PATH}"
+  - PATH="$(pwd)/ibmtpm/src:$(pwd)/doxygen/build/bin:${PATH}"
 
 addons:
   apt:
@@ -34,7 +34,6 @@ addons:
     - lcov
     - libssl-dev
     - uthash-dev
-    - doxygen
   coverity_scan:
     project:
       name: "01org/TPM2.0-TSS"
@@ -86,6 +85,14 @@ install:
   - mkdir ibmtpm
   - tar axf ibmtpm974.tar.gz -C ibmtpm
   - make -C ibmtpm/src -j$(nproc)
+# doxygen
+  - git clone --depth=1 https://github.com/doxygen/doxygen.git
+  - pushd doxygen
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make
+  - popd
 
 before_script:
   - ./bootstrap
