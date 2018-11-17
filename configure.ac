@@ -297,7 +297,7 @@ DX_PS_FEATURE(OFF)
 DX_INIT_DOXYGEN($PACKAGE_NAME, [Doxyfile], [doxygen-doc])
 AM_CONDITIONAL(DOXYMAN, [test $DX_FLAG_man -eq 1])
 
-AS_IF([test "x$disable_doxygen_doc" != xyes],
+AS_IF([test "x$enable_doxygen_doc" != xno],
       [ERROR_IF_NO_PROG([doxygen])])
 
 AX_CODE_COVERAGE
