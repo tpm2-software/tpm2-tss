@@ -1651,6 +1651,8 @@ typedef uint32_t TPM2_NV_INDEX;
 #define TPM2_NV_INDEX_RH_NV_SHIFT (24)
 
 /* Definition of TPM2_NT Constants */
+typedef UINT8 TPM2_NT;
+
 #define TPM2_NT_ORDINARY (0x0) /* Ordinary contains data that is opaque to the TPM that can only be modified using TPM2_NV_Write. */
 #define TPM2_NT_COUNTER  (0x1) /* Counter contains an 8-octet value that is to be used as a counter and can only be modified with TPM2_NV_Increment */
 #define TPM2_NT_BITS     (0x2) /* Bit Field contains an 8-octet value to be used as a bit field and can only be modified with TPM2_NV_SetBits. */
