@@ -1630,16 +1630,16 @@ typedef struct {
     BYTE buffer[sizeof(_PRIVATE)];
 } TPM2B_PRIVATE;
 
-/* Definition of _ID_OBJECT Structure <> */
+/* Definition of TPMS_ID_OBJECT Structure <> */
 typedef struct {
     TPM2B_DIGEST integrityHMAC; /* HMAC using the nameAlg of the storage key on the target TPM */
     TPM2B_DIGEST encIdentity;   /* credential protector information returned if name matches the referenced objectAll of the encIdentity is encrypted including the size field. NOTE The TPM is not required to check that the size is not larger than the digest of the nameAlg. However if the size is larger the ID object may not be usable on a TPM that has no digest larger than produced by nameAlg. */
-} _ID_OBJECT;
+} TPMS_ID_OBJECT;
 
 /* Definition of TPM2B_ID_OBJECT Structure <INOUT> */
 typedef struct {
     UINT16 size;
-    BYTE credential[sizeof(_ID_OBJECT)];
+    BYTE credential[sizeof(TPMS_ID_OBJECT)];
 } TPM2B_ID_OBJECT;
 
 /* Definition of UINT32 TPM2_NV_INDEX Bits <> */
