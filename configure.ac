@@ -211,7 +211,8 @@ AC_ARG_ENABLE([debug],
             [enable_debug=no])
 AS_IF([test "x$enable_debug" = "xyes"], ADD_COMPILER_FLAG([-ggdb3 -Og]))
 AC_ARG_ENABLE([defaultflags],
-              [AS_HELP_STRING([Use default preprocessor, compiler, and linker flags (default yes).])],
+              [AS_HELP_STRING([--disable-defaultflags],
+                              [Disable default preprocessor, compiler, and linker flags.])],
               [enable_defaultflags=$enableval],
               [enable_defaultflags=yes])
 AS_IF([test "x$enable_defaultflags" = "xyes"],
