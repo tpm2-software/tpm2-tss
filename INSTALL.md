@@ -7,7 +7,7 @@ following sections describe them for the supported platforms.
 
 ## GNU/Linux:
 * GNU Autoconf
-* GNU Autoconf archive
+* GNU Autoconf Archive, version >= 2017.03.21
 * GNU Automake
 * GNU Libtool
 * C compiler
@@ -25,7 +25,6 @@ The following are dependencies only required when building test suites.
 * netstat executable (usually in the net-tools package)
 * Code coverage analysis:
 * lcov
-* autoconf-archives
 * uthash development libraries and header files
 
 Most users will not need to install these dependencies.
@@ -52,7 +51,7 @@ $ sudo apt -y install \
   autoconf \
   gnulib
 ```
-Note: In some Ubuntu versions, the lcov and autoconf-archive packages are incompatible with each other. Recommend downloading autoconf-archives directly from upstream and copy ax_code_coverage.m4.
+Note: In some Ubuntu versions, the lcov and autoconf-archive packages are incompatible with each other. It is recommended to download autoconf-archive directly from upstream and copy `ax_code_coverage.m4` and `ax_prog_doxygen.m4` to the `m4/` subdirectory of your tpm2-tss directory.
 
 ### Fedora
 
