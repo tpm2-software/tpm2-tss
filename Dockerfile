@@ -4,6 +4,7 @@ RUN apt-get update && apt-get install -y \
     autoconf-archive \
     automake \
     build-essential \
+    doxygen \
     g++ \
     gcc \
     git \
