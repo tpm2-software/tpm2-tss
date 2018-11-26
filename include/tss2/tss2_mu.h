@@ -1954,6 +1954,20 @@ Tss2_MU_TPM2_SE_Unmarshal(
     TPM2_SE         *out);
 
 TSS2_RC
+Tss2_MU_TPM2_NT_Marshal(
+    TPM2_NT         in,
+    uint8_t         *buffer,
+    size_t          size,
+    size_t          *offset);
+
+TSS2_RC
+Tss2_MU_TPM2_NT_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          size,
+    size_t          *offset,
+    TPM2_NT         *out);
+
+TSS2_RC
 Tss2_MU_TPMS_EMPTY_Marshal(
     TPMS_EMPTY const *in,
     uint8_t         *buffer,
