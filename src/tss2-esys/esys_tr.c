@@ -483,6 +483,8 @@ Esys_TRSess_SetAttributes(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
     TSS2_RC r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     return_if_error(r, "Object not found");
 
+    return_if_null(esys_context, "Object not found", TSS2_ESYS_RC_BAD_VALUE);
+
     if (esys_object->rsrc.rsrcType != IESYSC_SESSION_RSRC)
         return_error(TSS2_ESYS_RC_BAD_TR, "Object is not a session object");
     esys_object->rsrc.misc.rsrc_session.sessionAttributes =
