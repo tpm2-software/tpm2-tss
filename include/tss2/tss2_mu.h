@@ -1211,6 +1211,20 @@ Tss2_MU_TPMS_AC_OUTPUT_Unmarshal(
     TPMS_AC_OUTPUT *dest);
 
 TSS2_RC
+Tss2_MU_TPMS_ID_OBJECT_Marshal(
+    TPMS_ID_OBJECT  const *src,
+    uint8_t         buffer[],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPMS_ID_OBJECT_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_ID_OBJECT *dest);
+
+TSS2_RC
 Tss2_MU_TPML_CC_Marshal(
     TPML_CC const *src,
     uint8_t      buffer[],

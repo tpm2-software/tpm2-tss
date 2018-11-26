@@ -168,6 +168,8 @@ EXPORTS
     Tss2_MU_TPMS_SYMCIPHER_PARMS_Unmarshal
     Tss2_MU_TPMS_AC_OUTPUT_Marshal
     Tss2_MU_TPMS_AC_OUTPUT_Unmarshal
+    Tss2_MU_TPMS_ID_OBJECT_Marshal
+    Tss2_MU_TPMS_ID_OBJECT_Unmarshal
     Tss2_MU_TPML_CC_Marshal
     Tss2_MU_TPML_CC_Unmarshal
     Tss2_MU_TPML_CCA_Marshal
