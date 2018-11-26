@@ -268,6 +268,8 @@
         Tss2_MU_TPM2_HANDLE_Unmarshal;
         Tss2_MU_TPM2_SE_Marshal;
         Tss2_MU_TPM2_SE_Unmarshal;
+        Tss2_MU_TPM2_NT_Marshal;
+        Tss2_MU_TPM2_NT_Unmarshal;
         Tss2_MU_TPMI_ALG_HASH_Marshal;
         Tss2_MU_TPMI_ALG_HASH_Unmarshal;
         Tss2_MU_TPMI_BYTE_Marshal;
