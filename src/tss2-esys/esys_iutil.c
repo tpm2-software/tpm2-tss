@@ -911,14 +911,15 @@ iesys_compute_session_value(RSRC_NODE_T * session,
            &session->rsrc.misc.rsrc_session.sessionKey.buffer[0],
            session->rsrc.misc.rsrc_session.sessionKey.size);
 
-    if (name == NULL)
-        return;
-    /* This requires an HMAC Session and not a password session */
+     /* This requires an HMAC Session and not a password session */
     if (session->rsrc.misc.rsrc_session.sessionType != TPM2_SE_HMAC &&
         session->rsrc.misc.rsrc_session.sessionType != TPM2_SE_POLICY)
         return;
 
     session->rsrc.misc.rsrc_session.sizeHmacValue = session->rsrc.misc.rsrc_session.sizeSessionValue;
+
+    if (name == NULL)
+        return;
 
     /* The auth value is appended to the session key */
     memcpy(&session->rsrc.misc.rsrc_session.
