@@ -1291,3 +1291,11 @@ TPMS_MARSHAL_2(TPMS_AC_OUTPUT,
 TPMS_UNMARSHAL_2(TPMS_AC_OUTPUT,
                  tag, Tss2_MU_UINT32_Unmarshal,
                  data, Tss2_MU_UINT32_Unmarshal)
+
+TPMS_MARSHAL_2(TPMS_ID_OBJECT,
+               integrityHMAC, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal,
+               encIdentity, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal)
+
+TPMS_UNMARSHAL_2(TPMS_ID_OBJECT,
+                 integrityHMAC, Tss2_MU_TPM2B_DIGEST_Unmarshal,
+                 encIdentity, Tss2_MU_TPM2B_DIGEST_Unmarshal)
