@@ -450,11 +450,11 @@ Esys_StartAuthSession_Finish(
             secret_size += keyHash_size;
         if (bind != ESYS_TR_NONE && bindNode != NULL)
             secret_size += bindNode->auth.size;
-        if (secret_size == 0) {
-            return_error(TSS2_ESYS_RC_GENERAL_FAILURE,
-                         "Invalid secret size (0).");
-        }
-        uint8_t *secret = malloc(secret_size);
+        /* 
+         * A non null pointer for secret is required by the subsequent functions,
+         * hence a malloc is called with size 1 if secret_size is zero.
+         */
+        uint8_t *secret = malloc(secret_size ? secret_size : 1);
         if (secret == NULL) {
             LOG_ERROR("Out of memory.");
             return TSS2_ESYS_RC_MEMORY;
