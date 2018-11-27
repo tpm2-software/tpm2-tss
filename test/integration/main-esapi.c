@@ -98,10 +98,11 @@ tcti_proxy_receive(
 
     if (tcti_proxy->state == intercepting) {
         *response_size = sizeof(yielded_response);
-        if (response_buffer != NULL)
-            memcpy(response_buffer, &yielded_response[0], sizeof(yielded_response));
 
-        tcti_proxy->state = forwarding;
+        if (response_buffer != NULL) {
+            memcpy(response_buffer, &yielded_response[0], sizeof(yielded_response));
+            tcti_proxy->state = forwarding;
+        }
         return TSS2_RC_SUCCESS;
     }
 
@@ -112,7 +113,10 @@ tcti_proxy_receive(
         return rval;
     }
 
-    tcti_proxy->state = intercepting;
+    /* First read with response buffer == NULL is to get the size of the
+     * response. The subsequent read needs to be forwarded also */
+    if (response_buffer != NULL)
+        tcti_proxy->state = intercepting;
 
     return rval;
 }
