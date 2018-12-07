@@ -17,7 +17,7 @@ TSS2_RC Tss2_Sys_GetRspAuths(
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval = TSS2_RC_SUCCESS;
     size_t offset = 0, offset_tmp;
-    int i = 0;
+    unsigned i = 0;
 
     if (!ctx || !rspAuthsArray)
         return TSS2_SYS_RC_BAD_REFERENCE;
