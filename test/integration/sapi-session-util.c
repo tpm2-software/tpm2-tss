@@ -577,8 +577,9 @@ gen_session_key(
 
     iv->size = aes_block_size;
     session_key->size = (session->symmetric.keyBits.sym) / 8;
+    UINT16 total_size = session_key->size + iv->size;
     if (iv->size > sizeof (iv->buffer) ||
-        (session_key->size + iv->size) > TPM2_MAX_DIGEST_BUFFER)
+         (total_size) > TPM2_MAX_DIGEST_BUFFER)
         return TSS2_SYS_RC_GENERAL_FAILURE;
 
     memcpy (iv->buffer, &key.buffer[session_key->size], iv->size);
