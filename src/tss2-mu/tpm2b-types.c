@@ -165,11 +165,6 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     if (buffer == NULL && offset == NULL) { \
         LOG_WARNING("buffer and offset parameter are NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
-    } else if (buffer == NULL && offset != NULL) { \
-        *offset += sizeof(src->size) + src->size; \
-        LOG_TRACE("buffer NULL and offset non-NULL, updating offset to %zu", \
-             *offset); \
-        return TSS2_RC_SUCCESS; \
     } else if (buffer_size < local_offset || \
                buffer_size - local_offset < sizeof(src->size)) { \
         LOG_WARNING(\
@@ -181,7 +176,8 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
         return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
     } \
 \
-    ptr = &buffer[local_offset]; \
+    if (buffer) \
+        ptr = &buffer[local_offset];            \
 \
     LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
@@ -201,7 +197,8 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
         return rc; \
 \
     /* Update the size to the real value */ \
-    *(UINT16 *)ptr = HOST_TO_BE_16(buffer + local_offset - ptr - 2); \
+    if (buffer) \
+        *(UINT16 *)ptr = HOST_TO_BE_16(buffer + local_offset - ptr - 2); \
 \
     if (offset != NULL) { \
         *offset = local_offset; \
