@@ -16,6 +16,7 @@ EXTRA_DIST =
 CLEANFILES =
 MOSTLYCLEANFILES =
 noinst_PROGRAMS =
+BUILT_SOURCES =
 
 ### Add ax_* rules ###
 # ax_code_coverage
@@ -284,6 +285,35 @@ endif
 src_tss2_esys_libtss2_esys_la_SOURCES = $(TSS2_ESYS_SRC)
 
 endif #ESAPI
+
+### Python bindings ###
+if PYTPM2TSS
+pytpm2tssdir = $(pythondir)/pytpm2tss
+
+pytpm2tss_PYTHON = \
+    bindings/python/pytpm2tss/__init__.py \
+    bindings/python/pytpm2tss/_libesys.cpython-36m-x86_64-linux-gnu.so
+
+bindings/python/pytpm2tss/_libesys.cpython-36m-x86_64-linux-gnu.so: bindings/python/pytpm2tss/libesys_build.py
+	$(AM_V_GEN)(cd bindings/python; $(PYTHON) pytpm2tss/libesys_build.py)
+
+bindings/python/pytpm2tss/libesys.h: bindings/python/pytpm2tss/prepare-headers.py
+	$(AM_V_GEN)($< $(top_srcdir)/include $@)
+
+BUILT_SOURCES += \
+    bindings/python/pytpm2tss/libesys.h \
+    bindings/python/pytpm2tss/_libesys.cpython-36m-x86_64-linux-gnu.so
+
+CLEANFILES += \
+    bindings/python/pytpm2tss/libesys.h \
+    bindings/python/pytpm2tss/_libesys.c \
+    bindings/python/pytpm2tss/_libesys.cpython-36m-x86_64-linux-gnu.so
+
+EXTRA_DIST += \
+    bindings/python/pytpm2tss/prepare-headers.py \
+    bindings/python/pytpm2tss/libesys_build.py
+
+endif #PYTPM2TSS
 
 ### Man Pages
 man3_MANS = man/man3/Tss2_Tcti_Device_Init.3 man/man3/Tss2_Tcti_Mssim_Init.3 $(DOXYMAN3)

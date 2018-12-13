@@ -1,0 +1,79 @@
+#!/usr/bin/python3 -u
+"""
+SPDX-License-Identifier: BSD-2
+
+Copyright 2018, Fraunhofer SIT
+All rights reserved.
+"""
+
+import subprocess
+from time import sleep
+
+print("Testing pytpm2tss")
+
+def starttpm():
+    # We are setting up a simulator in here, because we require the standard ports.
+    # pytpm2tss does not yet support setting tctis and thus relies on esys to do so.
+    print("Setting up simulator: ", end='')
+    tpm = subprocess.Popen(['tpm_server', '-rm'])
+    sleep(2)
+    if tpm.poll() is not None:
+        print("tpm_server not started, retrying...")
+        sleep(5)
+        tpm = subprocess.Popen(['tpm_server'])
+        sleep(2)
+    if tpm.poll() is not None:
+        print("tpm_server not started, SKIPPING")
+        exit(77) #Skipped
+    print("OK")
+    return tpm
+
+tpm=None
+tpm = starttpm()
+
+from pytpm2tss import *
+
+print("Test context: ", end='')
+e = EsysContext()
+print("OK")
+
+print("Test startup: ", end='')
+e.Startup(TPM2_SU.CLEAR)
+print("OK")
+
+print("Test getRandom: ", end='')
+b = e.GetRandom(5)
+print("OK")
+
+print("Test createPrimary: ", end='')
+inSensitive = TPM2B_SENSITIVE_CREATE()
+inPublic = TPM2B_PUBLIC()
+outsideInfo = TPM2B_DATA()
+creationPCR = TPML_PCR_SELECTION()
+
+inPublic.publicArea.type = TPM2_ALG.ECC
+inPublic.publicArea.nameAlg = TPM2_ALG.SHA1
+inPublic.publicArea.objectAttributes = TPMA_OBJECT.USERWITHAUTH | \
+                                       TPMA_OBJECT.SIGN_ENCRYPT | \
+                                       TPMA_OBJECT.RESTRICTED | \
+                                       TPMA_OBJECT.FIXEDTPM | \
+                                       TPMA_OBJECT.FIXEDPARENT | \
+                                       TPMA_OBJECT.SENSITIVEDATAORIGIN
+inPublic.publicArea.parameters.eccDetail.scheme.scheme = TPM2_ALG.ECDSA
+inPublic.publicArea.parameters.eccDetail.scheme.details.ecdsa.hashAlg = TPM2_ALG.SHA256
+inPublic.publicArea.parameters.eccDetail.symmetric.algorithm = TPM2_ALG.NULL
+inPublic.publicArea.parameters.eccDetail.kdf.scheme = TPM2_ALG.NULL
+inPublic.publicArea.parameters.eccDetail.curveID = TPM2_ECC.NIST_P256
+
+e.tr.OWNER.setAuth("")
+
+x, _, _, _, _ = e.CreatePrimary(e.tr.OWNER, 
+                        inSensitive, inPublic, outsideInfo, creationPCR,
+                        session1=e.tr.PASSWORD)
+
+
+print("OK")
+
+if tpm: tpm.terminate()
+
+print("Success")

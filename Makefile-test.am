@@ -17,7 +17,7 @@ else
 INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler.sh
 endif
 EXTRA_DIST += $(srcdir)/script/int-log-compiler.sh $(srcdir)/script/int-log-compiler-ptpm.sh
-AM_TESTS_ENVIRONMENT = PATH="$(PATH)"
+AM_TESTS_ENVIRONMENT = PATH="$(PATH)" PYTHONPATH=$(srcdir)/bindings/python
 
 check-programs: $(check_PROGRAMS)
 
@@ -220,10 +220,18 @@ if !TESTPTPM
 TESTS_INTEGRATION += $(ESYS_TESTS_INTEGRATION_MANDATORY) $(ESYS_TESTS_INTEGRATION_OPTIONAL) $(ESYS_TESTS_INTEGRATION_DESTRUCTIVE)
 endif # !TESTPTPM
 
+
 endif #ESAPI
 endif #ENABLE_INTEGRATION
 
+if PYTPM2TSS
+TESTS += test/bindings/pytpm2tss
+
+test/bindings/pytpm2tss: $(pytpm2tss_PYTHON)
+endif #PYTPM2TSS
+
 CLEANFILES += \
+    test/bindings/*.log \
     test/integration/*.log \
     test/tpmclient/*.log \
     test/unit/*.log

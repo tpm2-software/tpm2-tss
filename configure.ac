@@ -114,6 +114,19 @@ AS_IF([test "x$enable_esapi" != xno -a "x$with_crypto" = "xossl"],
 AS_IF([test "x$enable_esapi" != xno -a "x$with_crypto" = "xossl"],
     AC_CHECK_LIB(crypto, CRYPTO_new_ex_data, [], [AC_MSG_ERROR([library 'crypto' is required for OpenSSL])]))
 
+AM_PATH_PYTHON([3])
+AC_ARG_ENABLE([python],
+            [AS_HELP_STRING([--enable-python],
+                            [build python3 esys bindings (default is yes)])],
+            [enable_python=$enableval],
+            [enable_python=no])
+AM_CONDITIONAL(PYTPM2TSS, test "x$enable_python" = "xyes")
+AS_IF([test "x$enable_esapi" = xno -a "x$enable_python" = "xyes"],
+    [AC_MSG_ERROR([Python bindings only for esapi available yet])])
+
+AS_IF([test "x$enable_python" = "xyes"],
+    [AC_MSG_WARN([Python bindings are only in preview])])
+
 AC_ARG_WITH([tctidefaultmodule],
             [AS_HELP_STRING([--with-tctidefaultmodule],
 [The default TCTI module for ESAPI. (Default: libtss2-tcti-default.so])],

@@ -70,11 +70,13 @@ doc/Doxyfile
 doc/doxy/
 doc/html/
 doc/man/
+doc/rtf
 tpm2-tss-*.tar.gz
 tpm2-tss-*.tar.gz.asc
 tpm2-tss-*/
-
 test/helper/tpm_startup
 test/helper/tpm_transientempty
 Doxyfile
-doc/rtf
+bindings/python/pytpm2tss/__pycache__/
+bindings/python/pytpm2tss/headers.py
+py-compile
