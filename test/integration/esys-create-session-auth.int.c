@@ -217,10 +217,9 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
 
     TPMA_SESSION sessionAttributes;
     TPMA_SESSION sessionAttributes2;
-    memset(&sessionAttributes, 0, sizeof sessionAttributes);
-    sessionAttributes |= TPMA_SESSION_DECRYPT;
-    sessionAttributes |= TPMA_SESSION_ENCRYPT;
-    sessionAttributes |= TPMA_SESSION_CONTINUESESSION;
+    sessionAttributes = (TPMA_SESSION_DECRYPT |
+                         TPMA_SESSION_ENCRYPT |
+                         TPMA_SESSION_CONTINUESESSION);
     TPM2_SE sessionType = TPM2_SE_HMAC;
     TPMI_ALG_HASH authHash = TPM2_ALG_SHA256;
 
