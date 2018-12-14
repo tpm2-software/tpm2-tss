@@ -139,7 +139,6 @@ DOXYMAN3 = \
     doxygen-doc/man/Esys_ZGen_2Phase.3
 $(DOXYMAN3): doxygen-doc
 EXTRA_DIST += $(DOXYMAN3)
-CLEANFILES += doxygen-doc
 else #DOXYMAN
 DOXYMAN3 =
 endif #DOXYMAN
