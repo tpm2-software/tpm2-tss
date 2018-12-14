@@ -3,8 +3,7 @@ compiler:
   - gcc
   - clang
 
-sudo: false
-dist: trusty
+dist: xenial
 
 env:
   matrix:
@@ -21,18 +20,17 @@ env:
   - secure: "OgC0wl8yIwZP1ppx7QgZrLvGbs/p8CutRWuHmutuuyta+InR73VsSL7E5vwGG9W8WJAcTu6nwQlkv2d8tx8l+DQXYXWYALH3m1KtlIV2QpP7ZPjsNYhh6tP/1ZUKh3MumsDU+H2BjfqV5910BSWa0DBcONT8CAAxXfTvvTaAPzIBf0Z7byy1dSV7oHKfVPPQMOxXwMSTAItOiMIhRk+20C0YQRxFqkXQ72h14B7/2eu3GXjiu+8ovdPPFWCajcg0sueIkNkBTUOc+PUeQ3r/uNCURwSUTFNOgvV/1jVOFx0ZfehtNo+U4vAh4KdmmOVGQScBlXplhzlUKfd8FmPfksn9rmZLjZBuHaGMEJJuDRqpUIUh/1ejOsGF26sXxjrT2wW6ovj+IJy1FTTIbIkiouYUlAnJ4n60R1PMcX75O7YSUhXBmyvDUGp5BQfcH7nZ/7kUq6+rdAjnpWqlUtZVTqMraAhcAkBrZaesc18d3eqSSdRDD7kiG9VnnBFlpPDppwaZGSSoVumAUy0ceGcqI8S659kHmf6ZA9msw9zD7bREoi6oif/UzhH1VoXksrNQkFfc78sGxD0VzLygdDJ7RmkZPeBiHfX1yilToi1yrlRzRDLo46LvSEEiawhTa1i9W3UGr3p4LNxOxJr9tR9AjUuIlP21VEooikAhRf35qK0="
   # run coverity scan on gcc build to keep from DOSing coverity
   - coverity_scan_run_condition='"$CC" = gcc'
-  - PKG_CONFIG_PATH="$(pwd)/cmocka/lib/pkgconfig:/usr/lib/pkgconfig"
-  - LD_LIBRARY_PATH="$(pwd)/osslinstall/usr/local/lib:$(pwd)/cmocka/lib:/usr/lib"
-  - CMOCKA_CFLAGS="-I$(pwd)/cmocka/include -I/usr/include"
-  - CMOCKA_LIBS="-L$(pwd)/cmocka/lib -lcmocka"
-  - PATH="$(pwd)/ibmtpm/src:$(pwd)/doxygen/build/bin:${PATH}"
+  - LD_LIBRARY_PATH="$(pwd)/osslinstall/usr/local/lib:/usr/lib"
+  - PATH="$(pwd)/ibmtpm/src:${PATH}"
   - GNULIB_M4="/usr/share/gnulib/m4"
 
 addons:
   apt:
     packages:
     - autoconf-archive
-    - cmake
+    - doxygen
+    - libcmocka-dev
+    - libcmocka0
     - libgcrypt20-dev
     - realpath
     - lcov
@@ -49,18 +47,6 @@ addons:
     branch_pattern: coverity_scan
 
 install:
-# CMocka
-  - wget https://download.01.org/tpm2/cmocka-1.1.1.tar.xz
-  - sha256sum cmocka-1.1.1.tar.xz | grep -q f02ef48a7039aa77191d525c5b1aee3f13286b77a13615d11bc1148753fc0389 || travis_terminate 1
-  - tar -Jxvf cmocka-1.1.1.tar.xz
-  - mkdir cmocka
-  - cd cmocka-1.1.1
-  - mkdir build
-  - cd build
-  - cmake ../ -DCMAKE_INSTALL_PREFIX=../../cmocka -DCMAKE_BUILD_TYPE=Release
-  - make
-  - make install
-  - cd ../../
 # Autoconf archive
   - wget https://download.01.org/tpm2/autoconf-archive-2017.09.28.tar.xz
   - sha256sum autoconf-archive-2017.09.28.tar.xz | grep -q 5c9fb5845b38b28982a3ef12836f76b35f46799ef4a2e46b48e2bd3c6182fa01 || travis_terminate 1
@@ -91,14 +77,6 @@ install:
   - mkdir ibmtpm
   - tar axf ibmtpm974.tar.gz -C ibmtpm
   - make -C ibmtpm/src -j$(nproc)
-# doxygen
-  - git clone --depth=1 https://github.com/doxygen/doxygen.git
-  - pushd doxygen
-  - mkdir build
-  - cd build
-  - cmake ..
-  - make
-  - popd
 
 before_script:
   - ./bootstrap -I ${GNULIB_M4}
@@ -145,7 +123,7 @@ script:
   - popd
   - |
     if [ "$CC" == "gcc" -a -n "$COVERALLS_REPO_TOKEN" ]; then
-        coveralls --build-root=build --exclude=cmocka --exclude=cmocka-1.1.1 \
+        coveralls --build-root=build \
             --exclude=ibmtpm --exclude=include --exclude=test \
             --gcov-options '\-lp'
     fi
