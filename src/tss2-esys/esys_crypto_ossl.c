@@ -1121,6 +1121,7 @@ iesys_cryptossl_sym_aes_decrypt(uint8_t * key,
  */
 TSS2_RC
 iesys_cryptossl_init() {
+    ENGINE_load_builtin_engines();
     OpenSSL_add_all_algorithms();
     return TSS2_RC_SUCCESS;
 }
