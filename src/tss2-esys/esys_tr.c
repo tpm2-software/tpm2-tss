@@ -356,7 +356,8 @@ Esys_TR_Close(ESYS_CONTEXT * esys_context, ESYS_TR * object)
  * every Esys_TR_Deserialize.
  * @param esys_context [in,out] The ESYS_CONTEXT.
  * @param esys_handle [in,out] The ESYS_TR for which to set the auth value.
- * @param authValue [in] The auth value to set for the ESYS_TR.
+ * @param authValue [in] The auth value to set for the ESYS_TR or NULL to zero
+ *        the auth.
  * @retval TSS2_RC_SUCCESS on Success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext is NULL.
  * @retval TSS2_ESYS_RC_BAD_TR if the ESYS_TR object is unknown to the
@@ -372,7 +373,12 @@ Esys_TR_SetAuth(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
     r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     if (r != TPM2_RC_SUCCESS)
         return r;
-    esys_object->auth = *authValue;
+
+    if (authValue == NULL)
+        esys_object->auth.size = 0;
+    else
+        esys_object->auth = *authValue;
+
     return TSS2_RC_SUCCESS;
 }
 
