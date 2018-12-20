@@ -917,7 +917,7 @@ iesys_compute_session_value(RSRC_NODE_T * session,
 
     session->rsrc.misc.rsrc_session.sizeHmacValue = session->rsrc.misc.rsrc_session.sizeSessionValue;
 
-    if (name == NULL)
+    if (name == NULL || auth_value == NULL)
         return;
 
     /* The auth value is appended to the session key */
