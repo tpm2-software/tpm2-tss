@@ -171,7 +171,7 @@ AS_IF([test "x$enable_integration" = "xyes"],
        ERROR_IF_NO_PROG([ps])
        ERROR_IF_NO_PROG([echo])
        ERROR_IF_NO_PROG([kill])
-       ERROR_IF_NO_PROG([nohup])
+       ERROR_IF_NO_PROG([stdbuf])
        ERROR_IF_NO_PROG([sleep])
        ERROR_IF_NO_PROG([cat])
        ERROR_IF_NO_PROG([realpath])
