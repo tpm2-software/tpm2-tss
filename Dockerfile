@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     libtool \
     m4 \
-    net-tools \
+    iproute2 \
     pkg-config \
     wget
 
