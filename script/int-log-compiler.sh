@@ -202,9 +202,9 @@ for i in $(seq ${BACKOFF_MAX}); do
     fi
     PID=$(cat ${SIM_PID_FILE})
     echo "simulator PID: ${PID}";
-    netstat -ltpn 2> /dev/null | grep "${PID}" | grep -q "${SIM_PORT_DATA}"
+    netstat -lt4pn 2> /dev/null | grep "${PID}" | grep -q "${SIM_PORT_DATA}"
     ret_data=$?
-    netstat -ltpn 2> /dev/null | grep "${PID}" | grep -q "${SIM_PORT_CMD}"
+    netstat -lt4pn 2> /dev/null | grep "${PID}" | grep -q "${SIM_PORT_CMD}"
     ret_cmd=$?
     if [ \( $ret_data -eq 0 \) -a \( $ret_cmd -eq 0 \) ]; then
         echo "Simulator with PID ${PID} bound to port ${SIM_PORT_DATA} and " \
