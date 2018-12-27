@@ -102,7 +102,7 @@ daemon_start ()
     local daemon_pid_file="$4"
     local daemon_env="$5"
 
-    env ${daemon_env} nohup ${daemon_bin} ${daemon_opts} > ${daemon_log_file} 2>&1 &
+    env ${daemon_env} stdbuf -o0 -e0 ${daemon_bin} ${daemon_opts} > ${daemon_log_file} 2>&1 &
     local ret=$?
     local pid=$!
     if [ ${ret} -ne 0 ]; then
