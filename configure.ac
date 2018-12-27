@@ -167,7 +167,7 @@ AC_ARG_ENABLE([integration],
     [enable_integration=no])
 AS_IF([test "x$enable_integration" = "xyes"],
       [ERROR_IF_NO_PROG([tpm_server])
-       ERROR_IF_NO_PROG([netstat])
+       ERROR_IF_NO_PROG([ss])
        ERROR_IF_NO_PROG([ps])
        ERROR_IF_NO_PROG([echo])
        ERROR_IF_NO_PROG([kill])

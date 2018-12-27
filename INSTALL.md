@@ -22,7 +22,7 @@ The following are dependencies only required when building test suites.
 * OpenSSL development libraries and header files
 * Unit test suite (see ./configure option --enable-unit):
 * cmocka unit test framework, version >= 1.0
-* netstat executable (usually in the net-tools package)
+* ss executable (usually in the iproute2 package)
 * Code coverage analysis:
 * lcov
 * uthash development libraries and header files
@@ -36,7 +36,7 @@ $ sudo apt -y install \
   autoconf-archive \
   libcmocka0 \
   libcmocka-dev \
-  net-tools \
+  iproute2 \
   build-essential \
   git \
   pkg-config \
