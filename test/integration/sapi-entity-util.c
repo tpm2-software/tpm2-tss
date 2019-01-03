@@ -24,14 +24,7 @@ AddEntity(TPM2_HANDLE handle, TPM2B_AUTH *auth)
             return -1;
 
         e->entityHandle = handle;
-
-        /*
-         * Exclude HASH_ADD_INT defined in uthash.h from Clang static analysis,
-         * see https://github.com/troydhanson/uthash/issues/166
-         */
-        #ifndef __clang_analyzer__
         HASH_ADD_INT(entities, entityHandle, e);
-        #endif
     }
     CopySizedByteBuffer((TPM2B *)&e->entityAuth, (TPM2B *)auth);
     return 0;

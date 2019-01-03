@@ -315,13 +315,7 @@ TSS2_RC create_auth_session(
     if (tmp)
         HASH_DEL(sessions, tmp);
 
-    /*
-     * Exclude HASH_ADD_INT defined in uthash.h from Clang static analysis, see
-     * https://github.com/troydhanson/uthash/issues/166
-     */
-    #ifndef __clang_analyzer__
     HASH_ADD_INT(sessions, sessionHandle, session);
-    #endif
     *psession = session;
     return TSS2_RC_SUCCESS;
 }
