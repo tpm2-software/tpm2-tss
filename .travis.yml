@@ -35,7 +35,6 @@ addons:
     - realpath
     - lcov
     - libssl-dev
-    - uthash-dev
     - gnulib
   coverity_scan:
     project:
@@ -77,6 +76,11 @@ install:
   - mkdir ibmtpm
   - tar axf ibmtpm974.tar.gz -C ibmtpm
   - make -C ibmtpm/src -j$(nproc)
+# 2.1.0 version of uthash
+  - wget --no-check-certificate https://github.com/troydhanson/uthash/archive/v2.1.0.tar.gz
+  - tar xzf v2.1.0.tar.gz
+  - mkdir -p $(pwd)/osslinstall/usr/local/include
+  - cp uthash-2.1.0/src/*.h $(pwd)/osslinstall/usr/local/include/
 
 before_script:
   - ./bootstrap -I ${GNULIB_M4}
