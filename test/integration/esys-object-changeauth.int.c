@@ -255,6 +255,31 @@ test_esys_object_changeauth(ESYS_CONTEXT * esys_context)
 }
 
 int
+test_esys_tr_setauth(ESYS_CONTEXT * esys_context)
+{
+    TSS2_RC r;
+    TPM2B_AUTH auth = {.size = 20,
+                       .buffer={30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+                                40, 41, 42, 43, 44, 45, 46, 47, 48, 49}};
+
+    r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &auth);
+    return_if_error(r, "Error in Esys_TR_SetAuth");
+
+    r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, NULL);
+    return_if_error(r, "Error in Esys_TR_SetAuth");
+
+    return EXIT_SUCCESS;
+}
+
+int
 test_invoke_esapi(ESYS_CONTEXT * esys_context) {
-    return test_esys_object_changeauth(esys_context);
+    TSS2_RC r;
+
+    r = test_esys_object_changeauth(esys_context);
+    return_if_error(r, "test_esys_object_changeauth");
+
+    r = test_esys_tr_setauth(esys_context);
+    return_if_error(r, "test_esys_tr_setauth");
+
+    return EXIT_SUCCESS;
 }
