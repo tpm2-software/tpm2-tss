@@ -26,6 +26,7 @@
 AUTHORS
 tags
 aclocal.m4
+aminclude_static.am
 autom4te.cache/
 [Bb]uild/
 [Dd]ebug/

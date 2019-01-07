@@ -47,11 +47,11 @@ addons:
 
 install:
 # Autoconf archive
-  - wget https://download.01.org/tpm2/autoconf-archive-2017.09.28.tar.xz
-  - sha256sum autoconf-archive-2017.09.28.tar.xz | grep -q 5c9fb5845b38b28982a3ef12836f76b35f46799ef4a2e46b48e2bd3c6182fa01 || travis_terminate 1
-  - tar xJf autoconf-archive-2017.09.28.tar.xz
-  - cp autoconf-archive-2017.09.28/m4/ax_code_coverage.m4 m4/
-  - cp autoconf-archive-2017.09.28/m4/ax_prog_doxygen.m4 m4/
+  - wget http://ftpmirror.gnu.org/autoconf-archive/autoconf-archive-2019.01.06.tar.xz
+  - sha256sum autoconf-archive-2019.01.06.tar.xz | grep -q 17195c833098da79de5778ee90948f4c5d90ed1a0cf8391b4ab348e2ec511e3f || travis_terminate 1
+  - tar xJf autoconf-archive-2019.01.06.tar.xz
+  - cp autoconf-archive-2019.01.06/m4/ax_code_coverage.m4 m4/
+  - cp autoconf-archive-2019.01.06/m4/ax_prog_doxygen.m4 m4/
 # Coveralls
   - pip install --user cpp-coveralls
 # IBM-TPM
