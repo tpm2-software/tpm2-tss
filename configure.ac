@@ -312,6 +312,9 @@ AS_IF([test "x$enable_doxygen_doc" != xno],
       [ERROR_IF_NO_PROG([doxygen])])
 
 AX_CODE_COVERAGE
+m4_ifdef([_AX_CODE_COVERAGE_RULES],
+         [AM_CONDITIONAL(AUTOCONF_CODE_COVERAGE_2019_01_06, [true])],
+         [AM_CONDITIONAL(AUTOCONF_CODE_COVERAGE_2019_01_06, [false])])
 
 AC_OUTPUT
 
