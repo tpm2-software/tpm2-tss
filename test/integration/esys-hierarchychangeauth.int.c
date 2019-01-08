@@ -136,6 +136,8 @@ test_esys_hierarchychangeauth(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &newAuth);
     goto_if_error(r, "Error SetAuth", error);
 
+    /* Check whether HierarchyChangeAuth with auth equal NULL works */
+
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary, &inPublic,
                            &outsideInfo, &creationPCR, &primaryHandle,
@@ -151,7 +153,7 @@ test_esys_hierarchychangeauth(ESYS_CONTEXT * esys_context)
                                  ESYS_TR_PASSWORD,
                                  ESYS_TR_NONE,
                                  ESYS_TR_NONE,
-                                 &emptyAuth);
+                                 NULL);
     goto_if_error(r, "Error: HierarchyChangeAuth", error);
 
     return EXIT_SUCCESS;
