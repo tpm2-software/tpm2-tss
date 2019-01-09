@@ -346,8 +346,11 @@ Esys_HMAC_Start_Finish(
 
     /*  The name of a sequence object is an empty buffer */
     sequenceHandleNode->rsrc.name.size = 0;
-    /* Store the auth value parameter in the object meta data */
-    sequenceHandleNode->auth = *esysContext->in.HMAC_Start.auth;
+    /* Store the auth value parameter in the object meta data if passed */
+    if (esysContext->in.HMAC_Start.auth == NULL)
+        sequenceHandleNode->auth.size = 0;
+    else
+        sequenceHandleNode->auth = *esysContext->in.HMAC_Start.auth;
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;
