@@ -23,7 +23,6 @@ noinst_PROGRAMS =
 
 # ax_doxygen
 @DX_RULES@
-DX_CLEANFILES = doxygen-doc
 MOSTLYCLEANFILES += $(DX_CLEANFILES)
 
 if DOXYMAN
@@ -138,7 +137,6 @@ DOXYMAN3 = \
     doxygen-doc/man/Esys_VerifySignature.3 \
     doxygen-doc/man/Esys_ZGen_2Phase.3
 $(DOXYMAN3): doxygen-doc
-EXTRA_DIST += $(DOXYMAN3)
 else #DOXYMAN
 DOXYMAN3 =
 endif #DOXYMAN
@@ -305,6 +303,7 @@ uninstall-local:
 endif
 
 EXTRA_DIST += \
+    doc/doxygen.dox \
     man/man-postlude.troff \
     man/Tss2_Tcti_Device_Init.3.in \
     man/Tss2_Tcti_Mssim_Init.3.in \
