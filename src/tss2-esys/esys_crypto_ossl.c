@@ -317,7 +317,6 @@ iesys_cryptossl_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     TSS2_RC r = TSS2_RC_SUCCESS;
     EVP_PKEY *hkey = NULL;
 
-
     LOG_TRACE("called for context-pointer %p and hmacAlg %d", context, hashAlg);
     LOGBLOB_TRACE(key, size, "Starting  hmac with");
     if (context == NULL || key == NULL) {
@@ -356,6 +355,8 @@ iesys_cryptossl_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     mycontext->type = IESYS_CRYPTOSSL_TYPE_HMAC;
 
     *context = (IESYS_CRYPTO_CONTEXT_BLOB *) mycontext;
+
+    EVP_PKEY_free(hkey);
 
     return TSS2_RC_SUCCESS;
 
