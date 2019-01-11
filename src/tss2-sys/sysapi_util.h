@@ -64,8 +64,6 @@ typedef struct {
     size_t nextData;
 } _TSS2_SYS_CONTEXT_BLOB;
 
-struct TSS2_SYS_CONTEXT;
-
 static inline _TSS2_SYS_CONTEXT_BLOB *
 syscontext_cast(TSS2_SYS_CONTEXT *ctx)
 {
