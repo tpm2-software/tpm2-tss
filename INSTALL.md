@@ -85,7 +85,7 @@ $ ./bootstrap
 Any options specified to the bootstrap command are passed to `autoreconf(1)`. This is typically
 useful for specifying 3rd party M4 include paths via the `-I` option. For example on Ubuntu 16.04:
 ```
-$ ./bootstrap -I /usr/share/gnulib/m4
+$ ACLOCAL_PATH="/usr/share/gnulib/m4" ./bootstrap
 ```
 
 ## Configuring the Build

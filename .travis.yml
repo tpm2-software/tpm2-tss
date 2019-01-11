@@ -22,7 +22,7 @@ env:
   - coverity_scan_run_condition='"$CC" = gcc'
   - LD_LIBRARY_PATH="$(pwd)/osslinstall/usr/local/lib:/usr/lib"
   - PATH="$(pwd)/ibmtpm/src:${PATH}"
-  - GNULIB_M4="/usr/share/gnulib/m4"
+  - ACLOCAL_PATH="/usr/share/gnulib/m4"
 
 addons:
   apt:
@@ -41,7 +41,7 @@ addons:
       name: "01org/TPM2.0-TSS"
       description: Build submitted via Travis-CI
     notification_email: philip.b.tricca@intel.com
-    build_command_prepend: "./bootstrap -I ${GNULIB_M4} && ./configure"
+    build_command_prepend: "./bootstrap && ./configure"
     build_command: "make --jobs=$(nproc)"
     branch_pattern: coverity_scan
 
@@ -83,7 +83,7 @@ install:
   - cp uthash-2.1.0/src/*.h $(pwd)/osslinstall/usr/local/include/
 
 before_script:
-  - ./bootstrap -I ${GNULIB_M4}
+  - ./bootstrap
 
 script:
 # short-circuit normal build if we've already done a coverity scan

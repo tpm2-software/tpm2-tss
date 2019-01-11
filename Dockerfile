@@ -46,11 +46,12 @@ RUN apt-get install -y \
 # TPM2-TSS
 COPY . /tmp/tpm2-tss/
 WORKDIR /tmp/tpm2-tss
-RUN ./bootstrap -I /usr/share/gnulib/m4 \
+ENV LD_LIBRARY_PATH /usr/local/lib
+ENV ACLOCAL_PATH /usr/share/gnulib/m4
+RUN ./bootstrap \
 	&& ./configure --enable-unit \
 	&& make -j$(nproc) check \
 	&& make install \
 	&& ldconfig
-ENV LD_LIBRARY_PATH /usr/local/lib
 RUN cat test-suite.log
 
