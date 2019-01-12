@@ -20,6 +20,8 @@ following sections describe them for the supported platforms.
 The following are dependencies only required when building test suites.
 * Integration test suite (see ./configure option --enable-integration):
 * OpenSSL development libraries and header files
+* ps executable (usually in the procps package)
+* netstat executable (usually in the net-tools package)
 * Unit test suite (see ./configure option --enable-unit):
 * cmocka unit test framework, version >= 1.0
 * ss executable (usually in the iproute2 package)
