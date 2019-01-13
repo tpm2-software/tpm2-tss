@@ -236,8 +236,8 @@ test_unit_tcti_device_SOURCES = test/unit/tcti-device.c \
     src/tss2-tcti/tcti-common.c src/tss2-tcti/tcti-common.h \
     src/tss2-tcti/tcti-device.c src/tss2-tcti/tcti-device.h
 
-test_unit_tcti_mssim_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(URIPARSER_CFLAGS)
-test_unit_tcti_mssim_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(URIPARSER_LIBS) $(libutil)
+test_unit_tcti_mssim_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_tcti_mssim_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
 test_unit_tcti_mssim_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=select,--wrap=write
 test_unit_tcti_mssim_SOURCES = test/unit/tcti-mssim.c \
     src/tss2-tcti/tcti-common.c src/tss2-tcti/tcti-common.h \
