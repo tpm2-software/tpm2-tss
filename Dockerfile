@@ -5,14 +5,11 @@ RUN apt-get update && apt-get install -y \
     automake \
     build-essential \
     doxygen \
-    g++ \
     gcc \
     git \
     gnulib \
     libssl-dev \
     libtool \
-    m4 \
-    iproute2 \
     pkg-config \
     wget
 
@@ -41,11 +38,9 @@ RUN CFLAGS="-I/usr/local/openssl/include" make -j$(nproc) \
 	&& cp tpm_server /usr/local/bin
 
 RUN apt-get install -y \
+    iproute2 \
     libcmocka0 \
     libcmocka-dev \
-    libgcrypt20-dev \
-    libtool \
-    liburiparser-dev \
     uthash-dev
 
 # TPM2-TSS
