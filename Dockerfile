@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:18.04 AS base
 RUN apt-get update && apt-get install -y \
     autoconf \
     autoconf-archive \
@@ -40,12 +40,32 @@ RUN apt-get install -y \
     iproute2 \
     libcmocka0 \
     libcmocka-dev \
-    uthash-dev
+    uthash-dev \
+    python3 \
+    clang
 
-# TPM2-TSS
 COPY . /tmp/tpm2-tss/
 WORKDIR /tmp/tpm2-tss
 ENV LD_LIBRARY_PATH /usr/local/lib
+
+# Fuzzing
+FROM base AS fuzzing
+RUN GEN_FUZZ=1 ./bootstrap \
+  && ./configure \
+     CC=clang \
+     CXX=clang++ \
+     --enable-debug \
+     --with-fuzzing=libfuzzer \
+     --enable-tcti-fuzzing \
+     --enable-tcti-device=no \
+     --enable-tcti-mssim=no \
+     --with-maxloglevel=none \
+     --disable-shared \
+  && make -j $(nproc) check
+RUN cat test-suite.log
+
+# TPM2-TSS
+FROM base
 RUN ./bootstrap \
 	&& ./configure --enable-unit \
 	&& make -j$(nproc) check \
