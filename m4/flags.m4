@@ -50,3 +50,10 @@ AC_DEFUN([ADD_LINK_FLAG],[
         )]
     )]
 )
+dnl ADD_FUZZING_FLAG:
+dnl   A macro to add a CFLAG to the EXTRA_CFLAGS variable.
+dnl $1: C++ linker flag to add to FUZZ_LDFLAGS.
+AC_DEFUN([ADD_FUZZING_FLAG],[
+    FUZZ_LDFLAGS="$FUZZ_LDFLAGS $1"
+    AC_SUBST([FUZZ_LDFLAGS])
+])

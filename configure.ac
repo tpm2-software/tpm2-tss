@@ -10,6 +10,7 @@ AC_INIT([tpm2-tss],
         [https://github.com/tpm2-software/tpm2-tss])
 AC_CONFIG_MACRO_DIR([m4])
 : ${CFLAGS=""}
+AC_PROG_CXX
 AC_PROG_CC
 LT_INIT()
 AM_INIT_AUTOMAKE([foreign
@@ -205,6 +206,29 @@ AS_IF([test "x$enable_integration" = "xyes"],
               AC_MSG_ERROR([Integration tests can not be enabled without the TCTI_MSSIM module]))
        AC_SUBST([ENABLE_INTEGRATION], [$enable_integration])])
 AM_CONDITIONAL([ENABLE_INTEGRATION],[test "x$enable_integration" = "xyes"])
+#
+# fuzz testing
+#
+AC_ARG_WITH([fuzzing],
+            [AS_HELP_STRING([--with-fuzzing={none,libfuzzer,ossfuzz}],
+                            [fuzzing to build with (default is none)])],
+            [],
+            [with_fuzzing=none])
+AS_CASE(["x$with_fuzzing"],
+        ["xnone"],
+        [],
+        ["xlibfuzzer"],
+        [ADD_FUZZING_FLAG([-fsanitize=fuzzer])],
+        ["xossfuzz"],
+        [AS_IF([test "x$LIB_FUZZING_ENGINE" = "x"],
+               AC_MSG_ERROR([OSS Fuzz testing requires LIB_FUZZING_ENGINE environment variable be set]))
+         ADD_FUZZING_FLAG([-lFuzzingEngine])],
+        [AC_MSG_ERROR([Bad value for --with-fuzzing])])
+AM_CONDITIONAL([ENABLE_FUZZING],[test "x$with_fuzzing" != "xnone"])
+AS_IF([test "x$with_fuzzing" != "xnone"],
+      [ADD_COMPILER_FLAG([-fsanitize=fuzzer-no-link], [required])
+       AS_IF([test "x$enable_tcti_fuzzng" = "xno"],
+             AC_MSG_ERROR([Fuzz tests can not be enabled without the TCTI_FUZZING module]))])
 
 AX_VALGRIND_CHECK
 
@@ -354,6 +378,7 @@ AC_MSG_RESULT([
     tctidefaultmodule:  $with_tctidefaultmodule
     tctidefaultconfig:  $with_tctidefaultconfig
     unit:               $enable_unit
+    fuzzing:            $with_fuzzing
     debug:              $enable_debug
     maxloglevel:        $with_maxloglevel
     doxygen:            $DX_FLAG_doc $enable_doxygen_doc
