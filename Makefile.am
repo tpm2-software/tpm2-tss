@@ -157,6 +157,9 @@ include src_vars.mk
 # Add test definitions
 include Makefile-test.am
 
+# Add fuzz definitions
+include Makefile-fuzz.am
+
 ### Distribution files ###
 # Add udev rule
 udevrules_DATA   = dist/tpm-udev.rules
