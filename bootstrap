@@ -63,4 +63,12 @@ echo "Generating file lists: ${VARS_FILE}"
   printf "TSS2_MU_SRC = \$(TSS2_MU_C) \$(TSS2_MU_H)"
 ) > ${VARS_FILE}
 
+# Do not generate fuzz tests unless environment variable GEN_FUZZ is set to 1
+if test "${GEN_FUZZ}0" -eq 10; then
+  echo "Generating fuzz tests"
+  script/gen_fuzz.py
+else
+  touch Makefile-fuzz-generated.am
+fi
+
 ${AUTORECONF} --install --sym $@

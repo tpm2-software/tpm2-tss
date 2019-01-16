@@ -60,12 +60,12 @@ fuzz_fill (
 {
     va_list ap;
     const uint8_t *data = NULL;
-    const uint8_t *curr = NULL;
+    const uint8_t *pointer_into_data = NULL;
     size_t size = 0U;
     size_t i = 0U;
-    void *dest;
-    size_t length = 0U;
-    size_t combined = 0U;
+    void *copy_into_type;
+    size_t copy_into_length = 0U;
+    size_t data_used = 0U;
     _TSS2_SYS_CONTEXT_BLOB *ctx = NULL;
     TSS2_TCTI_FUZZING_CONTEXT *tcti_fuzzing = NULL;
 
@@ -77,12 +77,12 @@ fuzz_fill (
     va_start (ap, count);
 
     for (i = 0U; i < (count / 2); ++i) {
-        length = va_arg (ap, size_t);
-        dest = va_arg (ap, void *);
-        if (size > (combined + length)) {
-            curr = &data[combined];
-            combined += length;
-            memcpy (dest, curr, length);
+        copy_into_length = va_arg (ap, size_t);
+        copy_into_type = va_arg (ap, void *);
+        if (size > (data_used + copy_into_length)) {
+            pointer_into_data = &data[data_used];
+            data_used += copy_into_length;
+            memcpy (copy_into_type, pointer_into_data, copy_into_length);
         }
     }
 
