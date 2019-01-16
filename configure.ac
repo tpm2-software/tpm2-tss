@@ -138,6 +138,8 @@ AC_ARG_ENABLE([tcti-device],
             [enable_tcti_device=$enableval],
             [enable_tcti_device=yes])
 AM_CONDITIONAL([ENABLE_TCTI_DEVICE], [test "x$enable_tcti_device" != xno])
+AS_IF([test "x$enable_tcti_device" = "xyes"],
+	AC_DEFINE([TCTI_DEVICE],[1], [TCTI FOR DEV TPM]))
 
 AC_ARG_ENABLE([tcti-mssim],
             [AS_HELP_STRING([--enable-tcti-mssim],
@@ -147,6 +149,15 @@ AC_ARG_ENABLE([tcti-mssim],
 AM_CONDITIONAL([ENABLE_TCTI_MSSIM], [test "x$enable_tcti_mssim" != xno])
 AS_IF([test "x$enable_tcti_mssim" = "xyes"],
 	AC_DEFINE([TCTI_MSSIM],[1], [TCTI FOR MS SIMULATOR]))
+
+AC_ARG_ENABLE([tcti-fuzzing],
+            [AS_HELP_STRING([--enable-tcti-fuzzing],
+                            [build the tcti-fuzzing module (default is no)])],
+            [enable_tcti_fuzzing=$enableval],
+            [enable_tcti_fuzzing=no])
+AM_CONDITIONAL([ENABLE_TCTI_FUZZING], [test "x$enable_tcti_fuzzing" != xno])
+AS_IF([test "x$enable_tcti_fuzzing" = "xyes"],
+	AC_DEFINE([TCTI_FUZZING],[1], [TCTI FOR FUZZING]))
 
 #
 # udev
@@ -327,7 +338,15 @@ AC_OUTPUT
 
 AM_COND_IF([ENABLE_TCTI_DEVICE], [],
            [AM_COND_IF([ENABLE_TCTI_MSSIM], [],
-                       [AC_MSG_WARN("No build-in TCTI module enabled")])])
+                       [AM_COND_IF([ENABLE_TCTI_FUZZING], [],
+                                   [AC_MSG_WARN("No build-in TCTI module enabled")])])])
+
+AM_COND_IF([ENABLE_TCTI_FUZZING], [
+            AM_COND_IF([ENABLE_TCTI_DEVICE],
+                       AC_MSG_ERROR("Fuzzing TCTI is meant to be built as the only TCTI"), [])
+            AM_COND_IF([ENABLE_TCTI_MSSIM],
+                       AC_MSG_ERROR("Fuzzing TCTI is meant to be built as the only TCTI"), [])
+            ], [])
 
 AC_MSG_RESULT([
     $PACKAGE_NAME $VERSION

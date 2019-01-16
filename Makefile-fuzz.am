@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: BSD-2
+# Copyright (c) 2019 Intel Corporation
+# All rights reserved.
+
+INCLUDE_DIRS += -I$(srcdir)/test/fuzz/tcti
+
+# tcti library used for fuzzing
+if ENABLE_TCTI_FUZZING
+libtss2_tcti_fuzzing = test/fuzz/tcti/libtss2-tcti-fuzzing.la
+noinst_LTLIBRARIES += $(libtss2_tcti_fuzzing)
+
+test_fuzz_tcti_libtss2_tcti_fuzzing_la_CFLAGS   = $(AM_CFLAGS)
+test_fuzz_tcti_libtss2_tcti_fuzzing_la_LIBADD   = $(libtss2_mu) $(libutil)
+test_fuzz_tcti_libtss2_tcti_fuzzing_la_SOURCES  = \
+    src/tss2-tcti/tcti-common.c src/tss2-tcti/tcti-common.h \
+    test/fuzz/tcti/tcti-fuzzing.c test/fuzz/tcti/tcti-fuzzing.h
+endif # ENABLE_TCTI_FUZZING

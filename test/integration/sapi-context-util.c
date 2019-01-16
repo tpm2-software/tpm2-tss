@@ -9,13 +9,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <config.h>
 
 #include "tss2_tcti_device.h"
 #include "tss2_tcti_mssim.h"
+#ifdef TCTI_FUZZING
+#include "tss2_tcti_fuzzing.h"
+#endif /* TCTI_FUZZING */
 
 #include "context-util.h"
 #include "tss2-tcti/tcti-mssim.h"
 
+#ifdef TCTI_DEVICE
 /*
  * Initialize a TSS2_TCTI_CONTEXT for the device TCTI.
  */
@@ -48,7 +53,9 @@ tcti_device_init(char const *device_path)
     }
     return tcti_ctx;
 }
+#endif /* TCTI_DEVICE */
 
+#ifdef TCTI_MSSIM
 /*
  * Initialize a socket TCTI instance using the provided options structure.
  * The hostname and port are the only configuration options used.
@@ -84,6 +91,43 @@ tcti_socket_init(char const *host, uint16_t port)
     }
     return tcti_ctx;
 }
+#endif /* TCTI_MSSIM */
+
+#ifdef TCTI_FUZZING
+/*
+ * Initialize a fuzzing TCTI instance using the provided options structure.
+ * The fuzzing_lengths.log file is the only configuration option used.
+ * The caller is returned a TCTI context structure that is allocated by this
+ * function. This structure must be freed by the caller.
+ */
+TSS2_TCTI_CONTEXT *
+tcti_fuzzing_init()
+{
+    size_t size;
+    TSS2_RC rc;
+    TSS2_TCTI_CONTEXT *tcti_ctx;
+
+    rc = Tss2_Tcti_Fuzzing_Init(NULL, &size, NULL);
+    if (rc != TSS2_RC_SUCCESS) {
+        fprintf(stderr, "Faled to get allocation size for tcti context: "
+                "0x%x\n", rc);
+        return NULL;
+    }
+    tcti_ctx = (TSS2_TCTI_CONTEXT *) calloc(1, size);
+    if (tcti_ctx == NULL) {
+        fprintf(stderr, "Allocation for tcti context failed: %s\n",
+                strerror(errno));
+        return NULL;
+    }
+    rc = Tss2_Tcti_Fuzzing_Init(tcti_ctx, &size, NULL);
+    if (rc != TSS2_RC_SUCCESS) {
+        fprintf(stderr, "Failed to initialize tcti context: 0x%x\n", rc);
+        free(tcti_ctx);
+        return NULL;
+    }
+    return tcti_ctx;
+}
+#endif /* TCTI_FUZZING */
 
 /*
  * Initialize a SAPI context using the TCTI context provided by the caller.
@@ -147,10 +191,18 @@ TSS2_TCTI_CONTEXT *
 tcti_init_from_opts(test_opts_t * options)
 {
     switch (options->tcti_type) {
+#ifdef TCTI_DEVICE
     case DEVICE_TCTI:
         return tcti_device_init(options->device_file);
+#endif /* TCTI_DEVICE */
+#ifdef TCTI_MSSIM
     case SOCKET_TCTI:
         return tcti_socket_init(options->socket_address, options->socket_port);
+#endif /* TCTI_MSSIM */
+#ifdef TCTI_FUZZING
+    case FUZZING_TCTI:
+        return tcti_fuzzing_init();
+#endif /* TCTI_FUZZING */
     default:
         return NULL;
     }

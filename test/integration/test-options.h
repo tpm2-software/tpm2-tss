@@ -30,6 +30,7 @@ typedef enum {
     UNKNOWN_TCTI,
     DEVICE_TCTI,
     SOCKET_TCTI,
+    FUZZING_TCTI,
     N_TCTI,
 } TCTI_TYPE;
 
