@@ -8,7 +8,6 @@ RUN apt-get update && apt-get install -y \
     g++ \
     gcc \
     git \
-    gnulib \
     libssl-dev \
     libtool \
     m4 \
@@ -51,7 +50,8 @@ RUN apt-get install -y \
 # TPM2-TSS
 COPY . /tmp/tpm2-tss/
 WORKDIR /tmp/tpm2-tss
-RUN ./bootstrap -I /usr/share/gnulib/m4 \
+ENV LD_LIBRARY_PATH /usr/local/lib
+RUN ./bootstrap \
 	&& ./configure --enable-unit \
 	&& make -j$(nproc) check \
 	&& make install \
