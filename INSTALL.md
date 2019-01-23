@@ -10,7 +10,6 @@ following sections describe them for the supported platforms.
 * GNU Autoconf Archive, version >= 2017.03.21
 * GNU Automake
 * GNU Libtool
-* Gnulib
 * C compiler
 * C library development libraries and header files
 * pkg-config
@@ -48,7 +47,6 @@ $ sudo apt -y install \
   libssl-dev \
   uthash-dev \
   autoconf \
-  gnulib \
   doxygen
 ```
 Note: In some Ubuntu versions, the lcov and autoconf-archive packages are incompatible with each other. It is recommended to download autoconf-archive directly from upstream and copy `ax_code_coverage.m4` and `ax_prog_doxygen.m4` to the `m4/` subdirectory of your tpm2-tss directory.
