@@ -7,7 +7,6 @@ RUN apt-get update && apt-get install -y \
     doxygen \
     gcc \
     git \
-    gnulib \
     libssl-dev \
     libtool \
     pkg-config \
@@ -47,7 +46,6 @@ RUN apt-get install -y \
 COPY . /tmp/tpm2-tss/
 WORKDIR /tmp/tpm2-tss
 ENV LD_LIBRARY_PATH /usr/local/lib
-ENV ACLOCAL_PATH /usr/share/gnulib/m4
 RUN ./bootstrap \
 	&& ./configure --enable-unit \
 	&& make -j$(nproc) check \
