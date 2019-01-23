@@ -22,7 +22,6 @@ env:
   - coverity_scan_run_condition='"$CC" = gcc'
   - LD_LIBRARY_PATH="$(pwd)/osslinstall/usr/local/lib:/usr/lib"
   - PATH="$(pwd)/ibmtpm/src:${PATH}"
-  - GNULIB_M4="/usr/share/gnulib/m4"
 
 addons:
   apt:
