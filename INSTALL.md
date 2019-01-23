@@ -80,11 +80,7 @@ generates list of source files, and creates the configure script:
 $ ./bootstrap
 ```
 
-Any options specified to the bootstrap command are passed to `autoreconf(1)`. This is typically
-useful for specifying 3rd party M4 include paths via the `-I` option. For example on Ubuntu 16.04:
-```
-$ ACLOCAL_PATH="/usr/share/gnulib/m4" ./bootstrap
-```
+Any options specified to the bootstrap command are passed to `autoreconf(1)`.
 
 ## Configuring the Build
 Then run the configure script, which generates the makefiles:
