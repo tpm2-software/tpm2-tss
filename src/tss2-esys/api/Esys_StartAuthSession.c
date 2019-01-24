@@ -335,6 +335,7 @@ Esys_StartAuthSession_Finish(
         return r;
 
     IESYS_RESOURCE *rsrc = &sessionHandleNode->rsrc;
+    rsrc->handle = ESYS_TR_NONE;
     rsrc->misc.rsrc_session.sessionAttributes =
         TPMA_SESSION_CONTINUESESSION;
     rsrc->misc.rsrc_session.sessionType =
@@ -493,6 +494,11 @@ Esys_StartAuthSession_Finish(
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
+    if (sessionHandleNode->rsrc.handle != ESYS_TR_NONE) {
+        r = Esys_FlushContext(esysContext, sessionHandleNode->rsrc.handle);
+        if (r != TSS2_RC_SUCCESS)
+            LOG_ERROR("FlushContext failed.");
+    }
     Esys_TR_Close(esysContext, sessionHandle);
 
     return r;
