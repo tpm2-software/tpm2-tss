@@ -22,7 +22,7 @@ noinst_PROGRAMS =
 if AUTOCONF_CODE_COVERAGE_2019_01_06
 include $(top_srcdir)/aminclude_static.am
 clean-local: code-coverage-clean
-dist-clean-local: code-coverage-dist-clean
+distclean-local: code-coverage-dist-clean
 else
 @CODE_COVERAGE_RULES@
 endif
