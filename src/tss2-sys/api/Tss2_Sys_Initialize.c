@@ -51,7 +51,7 @@ TSS2_RC Tss2_Sys_Initialize(
                   abiVersion->tssCreator, abiVersion->tssFamily,
                   abiVersion->tssLevel, abiVersion->tssVersion,
                   TSSWG_INTEROP, TSS_SAPI_FIRST_FAMILY,
-                  TSS_SAPI_FIRST_LEVEL, TSS_SAPI_FIRST_LEVEL);
+                  TSS_SAPI_FIRST_LEVEL, TSS_SAPI_FIRST_VERSION);
         return TSS2_SYS_RC_ABI_MISMATCH;
     }
 
