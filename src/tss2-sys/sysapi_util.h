@@ -30,12 +30,6 @@ typedef struct _TPM20_Header_Out {
   UINT32 responseSize;
   UINT32 responseCode;
 } TPM20_Header_Out;
-
-typedef struct _TPM20_ErrorResponse {
-  TPM2_ST tag;
-  UINT32 responseSize;
-  UINT32 responseCode;
-} TPM20_ErrorResponse;
 #pragma pack(pop)
 
 typedef struct {
