@@ -46,6 +46,7 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
     ESYS_TR session = ESYS_TR_NONE;
     ESYS_TR sessionTrial = ESYS_TR_NONE;
     int failure_return = EXIT_FAILURE;
+    TPM2B_NONCE *nonceTPM = NULL;
 
     /*
      * 1. Create Primary. This primary will be used as signing key.
@@ -179,7 +180,6 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: During initialization of policy trial session", error);
 
     TPM2B_NONCE policyRef = {0};
-    TPM2B_NONCE *nonceTPM;
     TPM2B_DIGEST cpHashA = {0};
     TPM2B_TIMEOUT *timeout;
     TPMT_TK_AUTH *policySignedTicket;
@@ -353,6 +353,7 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, primaryHandle);
     goto_if_error(r, "Error: FlushContext", error);
 
+    free(nonceTPM);
     return EXIT_SUCCESS;
 
  error:
@@ -374,6 +375,9 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
             LOG_ERROR("Cleanup primaryHandle failed.");
         }
     }
+
+    if (nonceTPM)
+        free(nonceTPM);
 
     return failure_return;
 }

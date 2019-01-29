@@ -151,6 +151,8 @@ test_esys_evict_control_serialization(ESYS_CONTEXT * esys_context)
     r = Esys_TR_Deserialize(esys_context, buffer, buffer_size, &persistent_handle2);
     goto_if_error(r, "Error Esys_TR_Deserialize", error);
 
+    free(buffer);
+
     TPM2B_AUTH authKey2 = {
         .size = 6,
         .buffer = {6, 7, 8, 9, 10, 11}
