@@ -76,7 +76,7 @@ NOTE: The unit and integration tests can be enabled independently.
 The --enable-unit option controls unit tests, and --enable-integration
 controls the integration tests.
 
-# [Architecture/Block Diagram](doc/arch.md)
+# Architecture/Block Diagram
 SAPI library, TAB/RM, and Test Code Block Diagram:
 ![Architecture Block Diagram](doc/TSS%20block%20diagram.png)
 
