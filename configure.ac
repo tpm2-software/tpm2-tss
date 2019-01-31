@@ -16,6 +16,8 @@ AM_INIT_AUTOMAKE([foreign
                   subdir-objects])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])]) #Backward compatible setting of "silent-rules"
 
+AC_CONFIG_HEADERS([config.h])
+
 AC_CONFIG_FILES([Makefile Doxyfile])
 
 # propagate configure arguments to distcheck
@@ -49,7 +51,7 @@ AS_IF([test "x$enable_unit" != xno],
       [PKG_CHECK_MODULES([CMOCKA],
                          [cmocka >= cmocka_min_version],
                          [AC_DEFINE([HAVE_CMOCKA],
-                                    [1])],
+                                    [1], [CMOCKA UNIT TEST LIBRARY])],
                          [AC_MSG_ERROR([cmocka_err])])])
 AM_CONDITIONAL([UNIT], [test "x$enable_unit" != xno])
 
@@ -68,7 +70,7 @@ AC_ARG_ENABLE([tcti-device-async],
     [enable_tcti_device_async=$enableval],
     [enable_tcti_device_async=no])
 AS_IF([test "x$enable_tcti_device_async" = "xyes"],
-	AC_DEFINE([TCTI_ASYNC],[1]))
+	AC_DEFINE([TCTI_ASYNC],[1], [TCTI ASYNC MODE]))
 
 AC_ARG_ENABLE([tcti-partial-reads],
     AS_HELP_STRING([--enable-tcti-partial-reads],
@@ -77,7 +79,7 @@ AC_ARG_ENABLE([tcti-partial-reads],
     [enable_tcti_partial_reads=$enableval],
     [enable_tcti_partial_reads=no])
 AS_IF([test "x$enable_tcti_partial_reads" = "xyes"],
-	AC_DEFINE([TCTI_PARTIAL_READ],[1]))
+	AC_DEFINE([TCTI_PARTIAL_READ],[1], [TCTI PARTIAL READ MODE]))
 
 AC_ARG_WITH([crypto],
             [AS_HELP_STRING([--with-crypto={gcrypt,ossl}],

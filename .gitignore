@@ -80,3 +80,4 @@ test/helper/tpm_transientempty
 Doxyfile
 doc/rtf
 m4/
+config.h*

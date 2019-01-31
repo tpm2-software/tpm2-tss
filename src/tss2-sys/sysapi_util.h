@@ -7,6 +7,8 @@
 #ifndef TSS2_SYSAPI_UTIL_H
 #define TSS2_SYSAPI_UTIL_H
 
+#include <config.h>
+
 #include "tss2_tpm2_types.h"
 #include "tss2_tcti.h"
 #include "tss2_sys.h"

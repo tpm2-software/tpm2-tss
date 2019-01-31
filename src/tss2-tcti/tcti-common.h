@@ -8,6 +8,7 @@
 
 #include <errno.h>
 #include <stdbool.h>
+#include <config.h>
 
 #include "tss2_tcti.h"
 

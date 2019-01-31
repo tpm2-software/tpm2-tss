@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <config.h>
 
 #ifndef LOGMODULE
 #error "LOGMODULE must be set before including log/log.h"

@@ -7,6 +7,7 @@
 
 #include <inttypes.h>
 #include <string.h>
+#include <config.h>
 
 #include "tss2_mu.h"
 
