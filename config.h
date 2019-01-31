@@ -1,0 +1,1 @@
+/* Empty config.h. for windows build */
