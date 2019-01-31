@@ -145,6 +145,8 @@ AC_ARG_ENABLE([tcti-mssim],
             [enable_tcti_mssim=$enableval],
             [enable_tcti_mssim=yes])
 AM_CONDITIONAL([ENABLE_TCTI_MSSIM], [test "x$enable_tcti_mssim" != xno])
+AS_IF([test "x$enable_tcti_mssim" = "xyes"],
+	AC_DEFINE([TCTI_MSSIM],[1], [TCTI FOR MS SIMULATOR]))
 
 #
 # udev
