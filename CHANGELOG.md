@@ -3,6 +3,52 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [2.2.0] - 2019-02-04
+### Fixed
+- Fixed leak of hkey on success in iesys_cryptossl_hmac_start
+- Fixed NULL ptr issues in Esys_HMAC_Start, Esys_HierarchyChangeAuth and Esys_NV_ChangeAuth
+- Fixed NULL ptr issue in sequenceHandleNode
+- Fixed NULL ptr auth handling in Esys_TR_SetAuth
+- Fixed NULL auth handling in iesys_compute_session_value
+- Fixed marshaling of TPM2Bs with sub types.
+- Fixed NULL ptr session handling in Esys_TRSess_SetAttributes
+- Fixed the way size of the hmac value of a session without authorization
+- Added missing MU functions for TPM2_NT type
+- Added missing MU functions for TPMA_ID_OBJECT type
+- Added missing type TPM2_NT into tss2_tpm2_types.h
+- Fixed wrong typename _ID_OBJECT in tss2_tpm2_types.h
+- Fixed build breakage when --with-maxloglevel is not 'trace'
+- Fixed build breakage in generated configure script when CFLAGS is set
+- Fixed configure scritp ERROR_IF_NO_PROG macro
+- Changed TPM2B type unmarshal to use sizeof of the dest buffer instead of dest
+- Fixed unmarshaling of the TPM2B type with invalid size
+- Removed dead code defect detected by coverity from Esys_TRSess_GetNonceTPM
+
+### Added
+- Added support for QNX build
+- Added support for partial reads in device TCTI
+
+## [2.1.1] - 2019-02-04
+### Fixed
+- Fixed leak of hkey on success in iesys_cryptossl_hmac_start
+- Fixed NULL ptr issues in Esys_HMAC_Start, Esys_HierarchyChangeAuth and Esys_NV_ChangeAuth
+- Fixed NULL ptr issue in sequenceHandleNode
+- Fixed NULL ptr auth handling in Esys_TR_SetAuth
+- Fixed NULL auth handling in iesys_compute_session_value
+- Fixed marshaling of TPM2Bs with sub types.
+- Fixed NULL ptr session handling in Esys_TRSess_SetAttributes
+- Fixed the way size of the hmac value of a session without authorization
+- Added missing MU functions for TPM2_NT type
+- Added missing MU functions for TPMA_ID_OBJECT type
+- Added missing type TPM2_NT into tss2_tpm2_types.h
+- Fixed wrong typename _ID_OBJECT in tss2_tpm2_types.h
+- Fixed build breakage when --with-maxloglevel is not 'trace'
+- Fixed build breakage in generated configure script when CFLAGS is set
+- Fixed configure scritp ERROR_IF_NO_PROG macro
+- Changed TPM2B type unmarshal to use sizeof of the dest buffer instead of dest
+- Fixed unmarshaling of the TPM2B type with invalid size
+- Removed dead code defect detected by coverity from Esys_TRSess_GetNonceTPM
+
 ## [2.1.0]
 ### Fixed
 - Fixed handling of the default TCTI
@@ -25,6 +71,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 ### Changed
 - Refactored SetDecryptParam
 - Enabled OpenSSL crypto backend by default
+
+## [2.0.2] - 2019-02-04
+### Fixed
+- Fixed NULL ptr issues in Esys_HMAC_Start, Esys_HierarchyChangeAuth and Esys_NV_ChangeAuth
+- Fixed NULL ptr issue in sequenceHandleNode
+- Fixed NULL ptr auth handling in Esys_TR_SetAuth
+- Fixed NULL auth handling in iesys_compute_session_value
+- Fixed marshaling of TPM2Bs with sub types.
+- Fixed NULL ptr session handling in Esys_TRSess_SetAttributes
+- Fixed the way size of the hmac value of a session without authorization
+- Added missing MU functions for TPM2_NT type
+- Added missing MU functions for TPMA_ID_OBJECT type
+- Added missing type TPM2_NT into tss2_tpm2_types.h
+- Fixed wrong typename _ID_OBJECT in tss2_tpm2_types.h
+- Fixed build breakage when --with-maxloglevel is not 'trace'
+- Fixed build breakage in generated configure script when CFLAGS is set
+- Fixed configure scritp ERROR_IF_NO_PROG macro
+- Changed TPM2B type unmarshal to use sizeof of the dest buffer instead of dest
+- Fixed unmarshaling of the TPM2B type with invalid size
+- Removed dead code defect detected by coverity from Esys_TRSess_GetNonceTPM
 
 ## [2.0.1] - 2018-08-10
 ### Fixed
