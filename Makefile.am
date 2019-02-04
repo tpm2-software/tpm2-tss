@@ -309,6 +309,8 @@ endif
 
 EXTRA_DIST += \
     doc/doxygen.dox \
+    doc/coding_standard_c.md \
+    doc/logging.md \
     man/man-postlude.troff \
     man/Tss2_Tcti_Device_Init.3.in \
     man/Tss2_Tcti_Mssim_Init.3.in \
