@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [2.2.0]
+## [2.2.0] - 2019-02-04
 ### Fixed
 - Fixed leak of hkey on success in iesys_cryptossl_hmac_start
 - Fixed NULL ptr issues in Esys_HMAC_Start, Esys_HierarchyChangeAuth and Esys_NV_ChangeAuth
