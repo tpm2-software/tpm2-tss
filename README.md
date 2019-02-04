@@ -76,6 +76,10 @@ NOTE: The unit and integration tests can be enabled independently.
 The --enable-unit option controls unit tests, and --enable-integration
 controls the integration tests.
 
+While investigating issues it might be helpful to enable extra debug/trace
+output. It can be enabled separately for different components.
+The description how to do this can be found in the [logging](doc/logging.md) file.
+
 # Architecture/Block Diagram
 SAPI library, TAB/RM, and Test Code Block Diagram:
 ![Architecture Block Diagram](doc/TSS%20block%20diagram.png)
