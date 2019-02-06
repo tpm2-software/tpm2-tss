@@ -8,7 +8,9 @@
 
 #include <errno.h>
 #include <stdbool.h>
+#ifndef _WIN32
 #include <config.h>
+#endif
 
 #include "tss2_tcti.h"
 
