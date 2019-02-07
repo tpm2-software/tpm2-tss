@@ -21,6 +21,10 @@ TSS2_RC Tss2_Sys_Quote_Prepare(
     if (!ctx || !inScheme || !PCRselect)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
+    rval = ValidateTPML_PCR_SELECTION(PCRselect);
+    if (rval)
+        return rval;
+
     rval = CommonPreparePrologue(ctx, TPM2_CC_Quote);
     if (rval)
         return rval;

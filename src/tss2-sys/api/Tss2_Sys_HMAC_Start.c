@@ -20,6 +20,8 @@ TSS2_RC Tss2_Sys_HMAC_Start_Prepare(
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
+    if (IsAlgorithmWeak(hashAlg, 0))
+        return TSS2_SYS_RC_BAD_VALUE;
 
     rval = CommonPreparePrologue(ctx, TPM2_CC_HMAC_Start);
     if (rval)

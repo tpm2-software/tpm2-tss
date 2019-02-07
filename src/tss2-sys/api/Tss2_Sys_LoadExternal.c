@@ -48,6 +48,10 @@ TSS2_RC Tss2_Sys_LoadExternal_Prepare(
                                       &ctx->nextData);
 
     } else {
+        rval = ValidatePublicTemplate(inPublic);
+
+        if (rval)
+            return rval;
 
         rval = Tss2_MU_TPM2B_PUBLIC_Marshal(inPublic, ctx->cmdBuffer,
                                             ctx->maxCmdSize,

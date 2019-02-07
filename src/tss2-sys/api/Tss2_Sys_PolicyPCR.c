@@ -20,6 +20,10 @@ TSS2_RC Tss2_Sys_PolicyPCR_Prepare(
     if (!ctx || !pcrs)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
+    rval = ValidateTPML_PCR_SELECTION(pcrs);
+    if (rval)
+        return rval;
+
     rval = CommonPreparePrologue(ctx, TPM2_CC_PolicyPCR);
     if (rval)
         return rval;

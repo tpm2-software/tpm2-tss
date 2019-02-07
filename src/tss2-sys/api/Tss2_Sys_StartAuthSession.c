@@ -24,6 +24,9 @@ TSS2_RC Tss2_Sys_StartAuthSession_Prepare(
     if (!ctx || !symmetric)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
+    if (IsAlgorithmWeak(authHash, 0))
+        return TSS2_SYS_RC_BAD_VALUE;
+
     rval = CommonPreparePrologue(ctx, TPM2_CC_StartAuthSession);
     if (rval)
         return rval;

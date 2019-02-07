@@ -55,7 +55,10 @@ TSS2_RC Tss2_Sys_Import_Prepare(
                                       &ctx->nextData);
 
     } else {
+        rval = ValidatePublicTemplate(objectPublic);
 
+        if (rval)
+            return rval;
         rval = Tss2_MU_TPM2B_PUBLIC_Marshal(objectPublic, ctx->cmdBuffer,
                                             ctx->maxCmdSize,
                                             &ctx->nextData);
