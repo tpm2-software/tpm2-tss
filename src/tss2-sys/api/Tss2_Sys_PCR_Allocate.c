@@ -19,6 +19,10 @@ TSS2_RC Tss2_Sys_PCR_Allocate_Prepare(
     if (!ctx || !pcrAllocation)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
+    rval = ValidateTPML_PCR_SELECTION(pcrAllocation);
+    if (rval)
+        return rval;
+
     rval = CommonPreparePrologue(ctx, TPM2_CC_PCR_Allocate);
     if (rval)
         return rval;

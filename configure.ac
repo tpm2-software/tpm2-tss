@@ -257,8 +257,15 @@ AS_IF([test "x$enable_defaultflags" = "xyes"],
       ADD_LINK_FLAG([-Wl,-z,relro])
       ])
 
-AC_SUBST([PATH])
+AC_ARG_ENABLE([weakcrypto],
+    [AS_HELP_STRING([--disable-weakcrypto],
+	           [Disable crypto algorithms considered weak])],
+    [enable_weakcrypto=yes],
+    [enable_weakcrypto=no])
+AS_IF([test "x$enable_weakcrypto" = "xyes"],
+	AC_DEFINE([DISABLE_WEAK_CRYPTO],[1],[DISABLE WEAK CRYPTO ALGORITHMS]))
 
+AC_SUBST([PATH])
 
 dnl ---------  Physical TPM device -----------------------
 

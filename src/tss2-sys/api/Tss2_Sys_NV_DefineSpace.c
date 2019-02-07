@@ -20,6 +20,10 @@ TSS2_RC Tss2_Sys_NV_DefineSpace_Prepare(
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
+    rval = ValidateNV_Public(publicInfo);
+    if (rval)
+        return rval;
+
     rval = CommonPreparePrologue(ctx, TPM2_CC_NV_DefineSpace);
     if (rval)
         return rval;
