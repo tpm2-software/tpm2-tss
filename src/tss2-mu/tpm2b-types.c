@@ -150,7 +150,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
                                  size_t buffer_size, size_t *offset) \
 { \
     size_t local_offset = 0; \
-    UINT8 *ptr; \
+    UINT8 *ptr = NULL; \
     TSS2_RC rc; \
 \
     if (src == NULL) { \
