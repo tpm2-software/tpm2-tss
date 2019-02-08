@@ -575,6 +575,7 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
     EVP_PKEY_CTX *ctx = NULL;
     BIGNUM* bne = NULL;
     int padding;
+    char *label_copy = NULL;
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
     BIGNUM *n = NULL;
 #endif
@@ -667,7 +668,14 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
                    "Could not set RSA passing.", cleanup);
     }
 
-    if (1 != EVP_PKEY_CTX_set0_rsa_oaep_label(ctx, label, strlen(label)+1)) {
+    label_copy = OPENSSL_strdup(label);
+    if (!label_copy) {
+        goto_error(r, TSS2_ESYS_RC_MEMORY,
+                   "Could not duplicate OAEP label", cleanup);
+    }
+
+    if (1 != EVP_PKEY_CTX_set0_rsa_oaep_label(ctx, label_copy, strlen(label_copy)+1)) {
+        OPENSSL_free(label_copy);
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Could not set RSA label.", cleanup);
     }
@@ -694,16 +702,13 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
                    "Could not encrypt data.", cleanup);
     }
 
-    return TSS2_RC_SUCCESS;
+    r = TSS2_RC_SUCCESS;
 
  cleanup:
     OSSL_FREE(ctx, EVP_PKEY_CTX);
-    OSSL_FREE(rsa_key, RSA);
     OSSL_FREE(evp_rsa_key, EVP_PKEY);
+    OSSL_FREE(rsa_key, RSA);
     OSSL_FREE(bne, BN);
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
-    OSSL_FREE(n, BN);
-#endif
     return r;
 }
 
