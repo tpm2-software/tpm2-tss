@@ -572,7 +572,7 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
     RSA * rsa_key = NULL;
     EVP_PKEY *evp_rsa_key = NULL;
     EVP_PKEY_CTX *ctx = NULL;
-    BIGNUM* bne = BN_new();
+    BIGNUM* bne = NULL;
     int padding;
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
     BIGNUM *n = NULL;
@@ -581,6 +581,11 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
         LOG_ERROR("Unsupported hash algorithm (%"PRIu16")",
                   pub_tpm_key->publicArea.nameAlg);
         return TSS2_ESYS_RC_NOT_IMPLEMENTED;
+    }
+
+    if (!(bne = BN_new())) {
+        goto_error(r, TSS2_ESYS_RC_MEMORY,
+                   "Could not allocate Big Number", cleanup);
     }
 
     switch (pub_tpm_key->publicArea.parameters.rsaDetail.scheme.scheme) {
