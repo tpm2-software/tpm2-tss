@@ -576,9 +576,7 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
     BIGNUM* bne = NULL;
     int padding;
     char *label_copy = NULL;
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
-    BIGNUM *n = NULL;
-#endif
+
     if (!(hashAlg = get_ossl_hash_md(pub_tpm_key->publicArea.nameAlg))) {
         LOG_ERROR("Unsupported hash algorithm (%"PRIu16")",
                   pub_tpm_key->publicArea.nameAlg);
@@ -631,10 +629,14 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
                    "Could not create evp key.", cleanup);
     }
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
-    rsa_key->n = BN_bin2bn(pub_tpm_key->publicArea.unique.rsa.buffer,
+    if (!BN_bin2bn(pub_tpm_key->publicArea.unique.rsa.buffer,
                            pub_tpm_key->publicArea.unique.rsa.size,
-                           NULL);
+                           rsa_key->n)) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                   "Could not create rsa n.", cleanup);
+    }
 #else
+    BIGNUM *n = NULL;
     if (!(n = BN_bin2bn(pub_tpm_key->publicArea.unique.rsa.buffer,
                         pub_tpm_key->publicArea.unique.rsa.size,
                         NULL))) {
