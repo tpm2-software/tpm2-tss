@@ -231,6 +231,7 @@ TSS_SAPI_FIRST_VERSION };
     ret = test_invoke_esapi(esys_context);
 
     Esys_Finalize(&esys_context);
+    tcti_teardown(tcti_inner);
     tcti_teardown(tcti_context);
     return ret;
 }
