@@ -536,7 +536,10 @@ iesys_cryptogcry_pk_encrypt(TPM2B_PUBLIC * key,
     size_t lsize = 0;
     BYTE exponent[4] = { 0x00, 0x01, 0x00, 0x01 };
     char *padding;
-    gcry_sexp_t sexp_data, sexp_key, sexp_cipher, sexp_cipher_a;
+    gcry_sexp_t sexp_data = NULL, sexp_key = NULL,
+                sexp_cipher = NULL, sexp_cipher_a = NULL;
+    gcry_mpi_t mpi_cipher = NULL;
+
     if (label != NULL)
         lsize = strlen(label) + 1;
     switch (key->publicArea.nameAlg) {
@@ -587,32 +590,54 @@ iesys_cryptogcry_pk_encrypt(TPM2B_PUBLIC * key,
                           (int)key->publicArea.unique.rsa.size,
                           &key->publicArea.unique.rsa.buffer[0], 4, exponent);
     if (err != GPG_ERR_NO_ERROR) {
-        LOG_ERROR("Function gcry_sexp_build");
-        return TSS2_ESYS_RC_GENERAL_FAILURE;
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                   "Function gcry_sexp_build", cleanup);
     }
     err = gcry_pk_encrypt(&sexp_cipher, sexp_data, sexp_key);
     if (err != GPG_ERR_NO_ERROR) {
         fprintf (stderr, "Failure: %s/%s\n",
                  gcry_strsource (err),
                  gcry_strerror (err));
-        LOG_ERROR("Function gcry_pk_encrypt");
-        return TSS2_ESYS_RC_GENERAL_FAILURE;
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                   "Function gcry_pk_encrypt", cleanup);
     }
     sexp_cipher_a = gcry_sexp_find_token(sexp_cipher, "a", 0);
-    gcry_mpi_t mpi_cipher =
-        gcry_sexp_nth_mpi(sexp_cipher_a, 1, GCRYMPI_FMT_USG);
+    mpi_cipher = gcry_sexp_nth_mpi(sexp_cipher_a, 1, GCRYMPI_FMT_USG);
+    if (!mpi_cipher) {
+        LOG_ERROR("Function gcry_sexp_nth_mpi");
+        return TSS2_ESYS_RC_MEMORY;
+    }
     err = mpi2bin(mpi_cipher, &out_buffer[0], key->publicArea.unique.rsa.size, max_out_size);
     if (err != GPG_ERR_NO_ERROR) {
-        LOG_ERROR("Function gcry_mpi_print");
-        return TSS2_ESYS_RC_GENERAL_FAILURE;
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                   "Function mpi2bin", cleanup);
     }
 
     *out_size = key->publicArea.unique.rsa.size;
-    free(sexp_data);
-    free(sexp_key);
-    free(sexp_cipher);
-    free(sexp_cipher_a);
+    gcry_mpi_release(mpi_cipher);
+    gcry_sexp_release(sexp_data);
+    gcry_sexp_release(sexp_key);
+    gcry_sexp_release(sexp_cipher);
+    gcry_sexp_release(sexp_cipher_a);
     return TSS2_RC_SUCCESS;
+
+cleanup:
+    if (mpi_cipher)
+        gcry_mpi_release(mpi_cipher);
+
+    if (mpi_cipher)
+        gcry_sexp_release(sexp_data);
+
+    if (mpi_cipher)
+        gcry_sexp_release(sexp_key);
+
+    if (mpi_cipher)
+        gcry_sexp_release(sexp_cipher);
+
+    if (mpi_cipher)
+        gcry_sexp_release(sexp_cipher_a);
+
+    return r;
 }
 
 /** Computation of ephemeral ECC key and shared secret Z.
@@ -760,7 +785,8 @@ iesys_cryptogcry_get_ecdh_point(TPM2B_PUBLIC *key,
 
     Q->x.size = max_ecc_size;
     Q->y.size = max_ecc_size;
-    SAFE_FREE(ctx);
+    gcry_ctx_release(ctx);
+
     { /* scope for sexp_point */
 
         /* Get public point from TPM key */
@@ -813,16 +839,41 @@ iesys_cryptogcry_get_ecdh_point(TPM2B_PUBLIC *key,
     LOGBLOB_DEBUG(&Z->buffer[0], Z->size, "Z (Q*d)");
 
  cleanup:
-    SAFE_FREE(ctx);
-    SAFE_FREE(mpi_x);
-    SAFE_FREE(mpi_y);
-    SAFE_FREE(mpi_tpm_q);
-    SAFE_FREE(mpi_qd);
-    SAFE_FREE(mpi_q);
-    SAFE_FREE(mpi_tpm_q);
-    SAFE_FREE(mpi_tpm_sq);
-    SAFE_FREE(ekey_spec);
-    SAFE_FREE(mpi_s_pub_q);
+    if (ctx)
+        gcry_ctx_release(ctx);
+
+    if (mpi_x)
+        gcry_mpi_release(mpi_x);
+
+    if (mpi_y)
+        gcry_mpi_release(mpi_y);
+
+    if (mpi_d)
+        gcry_mpi_release(mpi_d);
+
+    if (mpi_sd)
+        gcry_sexp_release(mpi_sd);
+
+    if (mpi_tpm_q)
+        gcry_mpi_point_release(mpi_tpm_q);
+
+    if (mpi_qd)
+        gcry_mpi_point_release(mpi_qd);
+
+    if (mpi_q)
+        gcry_mpi_point_release(mpi_q);
+
+    if (mpi_tpm_sq)
+        gcry_sexp_release(mpi_tpm_sq);
+
+    if (mpi_s_pub_q)
+        gcry_sexp_release(mpi_s_pub_q);
+
+    if (ekey_spec)
+        gcry_sexp_release(ekey_spec);
+
+    if (ekey_pair)
+        gcry_sexp_release(ekey_pair);
 
     return r;
 }
