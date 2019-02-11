@@ -805,6 +805,7 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
     EC_KEY *eph_ec_key = NULL;            /* Ephemeral ec key of application */
     const EC_POINT *eph_pub_key = NULL;   /* Public part of ephemeral key */
     EC_POINT *tpm_pub_key = NULL;         /* Public part of TPM key */
+    EC_POINT *mul_eph_tpm = NULL;
     BIGNUM *bn_x = NULL;
     BIGNUM *bn_y = NULL;
     size_t key_size;
@@ -904,7 +905,6 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
     goto_if_error(r, "Convert TPM pub point to ossl pub point", cleanup);
 
     /* Multiply the ephemeral private key with TPM public key */
-    EC_POINT *mul_eph_tpm = NULL;
     const BIGNUM * eph_priv_key = EC_KEY_get0_private_key(eph_ec_key);
 
     if (!(mul_eph_tpm = EC_POINT_new(group))) {
@@ -938,11 +938,14 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
     *out_size = offset;
 
  cleanup:
+    OSSL_FREE(mul_eph_tpm, EC_POINT);
+    OSSL_FREE(tpm_pub_key, EC_POINT);
     OSSL_FREE(group,EC_GROUP);
     OSSL_FREE(eph_ec_key, EC_KEY);
     /* Note: free of eph_pub_key already done by free of eph_ec_key */
     OSSL_FREE(bn_x, BN);
     OSSL_FREE(bn_y, BN);
+    OSSL_FREE(bctx, BN_CTX);
     return r;
 }
 
