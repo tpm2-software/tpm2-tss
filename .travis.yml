@@ -9,10 +9,10 @@ env:
   matrix:
   - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_0_2-stable
   - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_1_0-stable
-  - WITH_CRYPTO=gcrypt OPENSSL_BRANCH=OpenSSL_1_0_2-stable
-  - WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_0_2-stable
-  - WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=no WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_0_2-stable
-  - WITH_TCTI_ASYNC=no WITH_TCTI_PARTIAL=yes WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_0_2-stable
+  - WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE
+  - WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE
+  - WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=no WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE
+  - WITH_TCTI_ASYNC=no WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE
   global:
   # COVERITY_SCAN_TOKEN
   - secure: "ZD0KxBhO/CaSE/TOkW+H5nsBbaMolbIPv5DgctcjA1BlTckgc5lK4m+7BIR1Fft6gaeeLOoCY3qUm4kW++Bqk2bTsrx/HvrmVmrzMO572jA74x4E+5lynUnRVaAgBg7cVBcB0hZcUurx8FifNBbgnWlxT/nDWttVnglkz400GCE9/zy+VTJWqt4QAB+6qeKPiG3vRthQdWcHstBI8IIAbvp4rhSUajBBQeZ5ro5RPGNy+iHen+t6tyJmbjiP0Y4qjkKGbfwXHnsseEcuSJQuxSkQ9MWK6t93BFXFSPw5MjHIApMn+4CjRp2JMoVTVfe5fFeZEHxVUmAzy+e5eIeftrUtUlCI293UuxZnw/vpJczn3BWunlhhjqjsCwVeknzGHxlaT+ck8Et1Mdl/3nY/E9dt47/NOzXY2xrAz59GYsdKvvsPoCGgNlAub03Vl0W24I1kjppsmN/zFwazHGqoxIBTwrDOQUmZvPfXA3jAUozrfAdT3YjnRcCG7bbQmacFApqfUm/bqMgapAgozjjxpuBrO1wQSUjjH6NANZsP2Gpk0eAl7FOlBzbVgKPxCQozWCjpKOj3HMnXX458ZQWsboG5J00wwjw9DRNRCkeexLdi832L/BPhUY5JgRlTqqyKr9cr69DvogBF/pLytpSCciF6t9NqqGZYbBomXJLaG84="
@@ -55,31 +55,31 @@ install:
   - pip install --user cpp-coveralls
 # IBM-TPM
   - wget https://download.01.org/tpm2/ibmtpm974.tar.gz
-# OpenSSL 1.0.2
-# (Must come after all wgets, since it overrides libcrypto.so for the test-environment)
-  - mkdir -p osslinstall/usr/local/bin
-  - git clone --branch $OPENSSL_BRANCH --depth=1 https://github.com/openssl/openssl.git
-  - pushd openssl
-  - ./config --prefix=/usr/local --openssldir=/usr/local/openssl shared
-  - make -j$(nproc)
-  - |
-    if [ "$OPENSSL_BRANCH" == "OpenSSL_1_0_2-stable" ]; then
-        make install INSTALL_PREFIX=${PWD}/../osslinstall
-    else
-        make install DESTDIR=${PWD}/../osslinstall
-    fi
-  - which openssl
-  - popd
-# IBM-TPM
   - sha256sum ibmtpm974.tar.gz | grep -q ^8e45d86129a0adb95fee4cee51f4b1e5b2d81ed3e55af875df53f98f39eb7ad7 || travis_terminate 1
   - mkdir ibmtpm
   - tar axf ibmtpm974.tar.gz -C ibmtpm
   - make -C ibmtpm/src -j$(nproc)
 # 2.1.0 version of uthash
-  - wget --no-check-certificate https://github.com/troydhanson/uthash/archive/v2.1.0.tar.gz
+  - wget https://github.com/troydhanson/uthash/archive/v2.1.0.tar.gz
   - tar xzf v2.1.0.tar.gz
   - mkdir -p $(pwd)/osslinstall/usr/local/include
   - cp uthash-2.1.0/src/*.h $(pwd)/osslinstall/usr/local/include/
+# OpenSSL 1.0.2 (Must come after all wgets, since it overrides libcrypto.so for the test-environment)
+  - |
+    if [ "$OPENSSL_BRANCH" != "NONE" ]; then
+        mkdir -p osslinstall/usr/local/bin
+        git clone --branch $OPENSSL_BRANCH --depth=1 https://github.com/openssl/openssl.git
+        pushd openssl
+        ./config --prefix=/usr/local --openssldir=/usr/local/openssl shared
+        make -j$(nproc)
+        if [ "$OPENSSL_BRANCH" == "OpenSSL_1_0_2-stable" ]; then
+            make install INSTALL_PREFIX=${PWD}/../osslinstall
+        else
+            make install DESTDIR=${PWD}/../osslinstall
+        fi
+        which openssl
+        popd
+    fi
 
 before_script:
   - ./bootstrap
@@ -94,7 +94,7 @@ script:
 # build with no tests enabled
   - mkdir ./build-no-tests
   - pushd ./build-no-tests
-  - ../configure CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
+  - ../configure CFLAGS=-I${PWD}/../osslinstall/usr/local/include --with-crypto=$WITH_CRYPTO LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
   - make -j$(nproc)
   - popd
 # build with all tests enabled
@@ -121,7 +121,7 @@ script:
 # make distcheck
   - mkdir ./distcheck_build
   - pushd ./distcheck_build
-  - ../configure --enable-unit --enable-integration CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
+  - ../configure --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
   - make -j$(nproc) distcheck
   - popd
   - |
