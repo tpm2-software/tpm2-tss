@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [2.0.3]
+### Fixed
+- Fixed memory leaks related to using regular free on gcrypt allocated objects
+
 ## [2.0.2] - 2019-02-04
 ### Fixed
 - Fixed NULL ptr issues in Esys_HMAC_Start, Esys_HierarchyChangeAuth and Esys_NV_ChangeAuth
