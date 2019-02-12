@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [2.1.2]
+### Fixed
+ - Fixed leaks of local point variables and BN_ctx
+ - Fixed memory leaks related to using regular free on gcrypt allocated objects
+ - Fixed leak of rsa->n in iesys_cryptossl_pk_encrypt
+ - Fixed memory leaks in iesys_cryptossl_pk_encrypt
+ - Fixed possible NULL dereference of big number
+
 ## [2.1.1] - 2019-02-04
 ### Fixed
 - Fixed leak of hkey on success in iesys_cryptossl_hmac_start
