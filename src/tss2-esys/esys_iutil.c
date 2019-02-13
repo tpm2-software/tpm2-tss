@@ -552,6 +552,85 @@ iesys_gen_caller_nonces(ESYS_CONTEXT * esys_context)
     }
     return TSS2_RC_SUCCESS;
 }
+
+/** Update session attributes.
+ *
+ * In case where command does not support param encryption/decryption
+ * store the original session attributes and update them accordingly.
+ * Return true is command support param encryption.
+ *
+ * @retval TRUE if command support param encryption
+ * @retval FLASE if command does not support param encryption
+ */
+static bool
+iesys_update_session_flags(ESYS_CONTEXT * esys_context,
+                           IESYS_SESSION *rsrc_session)
+{
+    TSS2_RC r = TSS2_RC_SUCCESS;
+    size_t param_size;
+    const uint8_t *param_buffer;
+    bool encrypt = true;
+
+
+    rsrc_session->origSessionAttributes = rsrc_session->sessionAttributes;
+
+    LOG_DEBUG("Checking if command supports enc/dec");
+    LOG_DEBUG("Session Attrs 0x%x", rsrc_session->sessionAttributes);
+
+    r = Tss2_Sys_GetDecryptParam(esys_context->sys,
+                                 &param_size, &param_buffer);
+    if (r == TSS2_SYS_RC_NO_DECRYPT_PARAM) {
+        LOG_DEBUG("clear TPMA_SESSION_DECRYPT flag");
+        rsrc_session->sessionAttributes &= ~(TPMA_SESSION_DECRYPT);
+        encrypt = false;
+    }
+
+    r = Tss2_Sys_GetEncryptParam(esys_context->sys,
+                                 &param_size, &param_buffer);
+    if (r == TSS2_SYS_RC_NO_ENCRYPT_PARAM) {
+        LOG_DEBUG("Encrypt param - clear TPMA_SESSION_ENCRYPT flag");
+        rsrc_session->sessionAttributes &= ~(TPMA_SESSION_ENCRYPT);
+    }
+
+    if (!encrypt) {
+        LOG_DEBUG("Encrypt param - command does not allow encryption");
+        return false;
+    }
+    return true;
+}
+
+/** Restore session attributes.
+ *
+ * Restore original session attributes altered by iesys_update_session_flags()
+ * Return true is command support param decryption.
+ *
+ * @retval TRUE if command support param decryption
+ * @retval FLASE if command does not support param decryption
+ */
+static bool
+iesys_restore_session_flags(ESYS_CONTEXT * esys_context,
+                            IESYS_SESSION *rsrc_session)
+{
+    TSS2_RC r = TSS2_RC_SUCCESS;
+    size_t param_size;
+    const uint8_t *param_buffer;
+
+    LOG_DEBUG("Restoring session attribs");
+    LOG_DEBUG("Orig Session Attrs 0x%x, altered Attrs )x%x",
+              rsrc_session->origSessionAttributes,
+              rsrc_session->sessionAttributes);
+
+    rsrc_session->sessionAttributes = rsrc_session->origSessionAttributes;
+
+    r = Tss2_Sys_GetEncryptParam(esys_context->sys,
+                                 &param_size, &param_buffer);
+    if (r == TSS2_SYS_RC_NO_ENCRYPT_PARAM) {
+        LOG_DEBUG("Decrypt param - command does not allow decryption");
+        return false;
+    }
+    return true;
+}
+
 /** Parameter encryption with AES or XOR obfuscation.
  *
  * One parameter of a TPM command will be encrypted with the selected method.
@@ -611,6 +690,9 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
 
             if (paramSize == 0)
                 continue;
+
+            if (!iesys_update_session_flags(esys_context, rsrc_session))
+                return TSS2_RC_SUCCESS;
 
             BYTE encrypt_buffer[paramSize];
             memcpy(&encrypt_buffer[0], paramBuffer, paramSize);
@@ -705,6 +787,9 @@ iesys_decrypt_param(ESYS_CONTEXT * esys_context,
                      "Invalid length encrypted response.");
     }
     LOGBLOB_DEBUG(rpBuffer, p2BSize, "IESYS encrypt data");
+
+    if (!iesys_restore_session_flags(esys_context, rsrc_session))
+        return TSS2_RC_SUCCESS;
 
     if (symDef->algorithm == TPM2_ALG_AES) {
 
