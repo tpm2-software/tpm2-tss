@@ -2674,13 +2674,16 @@ static void GetSetEncryptParamTests()
 
     TPM2B_MAX_NV_BUFFER nvReadData;
     const uint8_t       *cpBuffer;
+    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     LOG_INFO("GET/SET ENCRYPT PARAM TESTS:" );
 
     /* Do Prepare. */
-    rval = Tss2_Sys_NV_Write_Prepare( sysContext, TPM20_INDEX_PASSWORD_TEST,
-            TPM20_INDEX_PASSWORD_TEST, &nvWriteData, 0 );
+    rval = Tss2_Sys_NV_Read_Prepare( sysContext, TPM20_INDEX_PASSWORD_TEST,
+            TPM20_INDEX_PASSWORD_TEST, 0, 0 );
     CheckPassed( rval ); /* #1 */
+
+    resp_header_from_cxt(ctx)->tag = TPM2_ST_SESSIONS;
 
     /* Test for bad sequence */
     rval = Tss2_Sys_GetEncryptParam( sysContext, &encryptParamSize, &encryptParamBuffer );
