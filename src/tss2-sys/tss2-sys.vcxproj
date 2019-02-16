@@ -41,6 +41,8 @@
     <ClCompile Include="api\Tss2_Sys_GetContextSize.c" />
     <ClCompile Include="api\Tss2_Sys_GetDecryptParam.c" />
     <ClCompile Include="api\Tss2_Sys_SetDecryptParam.c" />
+    <ClCompile Include="api\Tss2_Sys_GetEncryptParam.c" />
+    <ClCompile Include="api\Tss2_Sys_SetEncryptParam.c" />
     <ClCompile Include="api\Tss2_Sys_Execute.c" />
     <ClCompile Include="api\Tss2_Sys_GetCommandCode.c" />
     <ClCompile Include="api\Tss2_Sys_GetCpBuffer.c" />

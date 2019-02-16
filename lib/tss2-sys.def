@@ -108,6 +108,7 @@ EXPORTS
     Tss2_Sys_GetContextSize
     Tss2_Sys_GetCpBuffer
     Tss2_Sys_GetDecryptParam
+    Tss2_Sys_GetEncryptParam
     Tss2_Sys_GetRandom_Prepare
     Tss2_Sys_GetRandom_Complete
     Tss2_Sys_GetRandom
@@ -325,6 +326,7 @@ EXPORTS
     Tss2_Sys_SetCommandCodeAuditStatus_Complete
     Tss2_Sys_SetCommandCodeAuditStatus
     Tss2_Sys_SetDecryptParam
+    Tss2_Sys_SetEncryptParam
     Tss2_Sys_SetPrimaryPolicy_Prepare
     Tss2_Sys_SetPrimaryPolicy_Complete
     Tss2_Sys_SetPrimaryPolicy
