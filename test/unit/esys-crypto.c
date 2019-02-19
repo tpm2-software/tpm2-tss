@@ -72,6 +72,9 @@ check_hash_functions(void **state)
 
     rc = iesys_crypto_hash_finish(&context, &buffer[0], &size);
     assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    
+    /* cleanup */
+    iesys_crypto_hmac_abort(&context);
 } 
 
 static void
@@ -126,6 +129,9 @@ check_hmac_functions(void **state)
 
     rc = iesys_crypto_hmac_finish(&context, &buffer[0], &size);
     assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    
+    /* cleanup */
+    iesys_crypto_hash_abort(&context);
 }
 
 static void
