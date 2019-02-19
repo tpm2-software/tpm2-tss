@@ -195,6 +195,8 @@ AS_IF([test "x$enable_integration" = "xyes"],
        AC_SUBST([ENABLE_INTEGRATION], [$enable_integration])])
 AM_CONDITIONAL([ENABLE_INTEGRATION],[test "x$enable_integration" = "xyes"])
 
+AX_VALGRIND_CHECK
+
 gl_LD_VERSION_SCRIPT
 
 AC_ARG_WITH([maxloglevel],
