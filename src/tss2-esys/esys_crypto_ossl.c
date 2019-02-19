@@ -33,7 +33,8 @@ ENGINE *get_engine()
     return engine;
 }
 
-int BN_bn2binpad(const BIGNUM *bn, unsigned char *bin, int bin_length)
+static int
+iesys_bn2binpad(const BIGNUM *bn, unsigned char *bin, int bin_length)
 {
     int len_bn = BN_num_bytes(bn);
     int offset = bin_length - len_bn;
@@ -887,12 +888,12 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
                    "Get affine x coordinate", cleanup);
     }
 
-    if (1 != BN_bn2binpad(bn_x, &Q->x.buffer[0], key_size)) {
+    if (1 != iesys_bn2binpad(bn_x, &Q->x.buffer[0], key_size)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Write big num byte buffer", cleanup);
     }
 
-    if (1 != BN_bn2binpad(bn_y, &Q->y.buffer[0], key_size)) {
+    if (1 != iesys_bn2binpad(bn_y, &Q->y.buffer[0], key_size)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Write big num byte buffer", cleanup);
     }
@@ -924,7 +925,7 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
                    "Get affine x coordinate", cleanup);
     }
 
-    if (1 != BN_bn2binpad(bn_x, &Z->buffer[0], key_size)) {
+    if (1 != iesys_bn2binpad(bn_x, &Z->buffer[0], key_size)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Write big num byte buffer", cleanup);
     }
