@@ -25,8 +25,7 @@
  * _strncasecmp_. Since tpm2-tss is supposed to be compatible
  * with ISO C99 and not with POSIX, _strncasecmp_ had to be
  * replaced. This function creates lowercase representations
- * of the strings to compare and calls the function _strncmp_
- * on them.
+ * of the strings and compares them bytewise.
  *
  * @param string1 The first of the two strings to compare
  * @param string2 The second of the two strings to compare
@@ -51,24 +50,21 @@ case_insensitive_strncmp(const char *string1,
     if ((string1 != NULL) && (string2 == NULL)) {
         return 1;
     }
+    if (n == 0) { // Zero bytes are always equal
+        return 0;
+    }
+    if (string1 == string2) { // return equal if they point to same location
+        return 0;
+    }
 
-    size_t string1_size = strlen (string1);
-    size_t string2_size = strlen (string2);
-    unsigned char lower_string1 [string1_size + 1];
-    unsigned char lower_string2 [string2_size + 1];
-    size_t i;
-
-    for (i = 0; i < string1_size; i++)
-        lower_string1[i] = tolower(string1[i]);
-
-    lower_string1[i] = '\0';
-
-    for (i = 0; i < string2_size; i++)
-        lower_string2[i] = tolower(string2[i]);
-
-    lower_string2[i] = '\0';
-
-    return memcmp (lower_string1, lower_string2, n);
+    int result;
+    do {
+        result = tolower((unsigned char) *string1) - tolower((unsigned char) *string2);
+        if (result != 0) {
+                break;
+        }
+    } while (*string1++ != '\0' && *string2++ != '\0' && --n );
+    return result;
 }
 
 log_level
