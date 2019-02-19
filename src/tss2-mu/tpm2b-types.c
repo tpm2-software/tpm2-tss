@@ -47,6 +47,13 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
              local_offset, \
              sizeof(src->size) + src->size); \
         return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
+    } else if ((sizeof(type) - sizeof(src->size)) < src->size) { \
+        LOG_WARNING(\
+             "size: %u for buffer of " #type " is larger than max length" \
+             " of buffer: %zu", \
+             src->size, \
+             (sizeof(type) - sizeof(src->size))); \
+        return TSS2_MU_RC_BAD_SIZE; \
     } \
 \
     LOG_DEBUG(\
