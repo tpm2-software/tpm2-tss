@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ## [2.2.1]
 ### Fixed
+ - Forced RAND_bytes method to software implementation to avoid session spoofing
+ - Fixed OpenSSL symbolic naming conflict
  - Fixed leaks of local point variables and BN_ctx
  - Fixed memory leaks related to using regular free on gcrypt allocated objects
  - Fixed leak of rsa->n in iesys_cryptossl_pk_encrypt
