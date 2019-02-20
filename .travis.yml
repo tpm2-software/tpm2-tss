@@ -7,10 +7,10 @@ dist: xenial
 
 env:
   matrix:
-  - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_0_2-stable
-  - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_1_0-stable
+  - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_0_2-stable COVERALLS=send
+  - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_1_0-stable COVERALLS=send
   - WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE
-  - WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE
+  - WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE COVERALLS=send
   - WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=no WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE
   - WITH_TCTI_ASYNC=no WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE
   global:
@@ -124,7 +124,9 @@ script:
   - popd
   - |
     if [ "$CC" == "gcc" -a -n "$COVERALLS_REPO_TOKEN" ]; then
-        coveralls --build-root=build \
-            --exclude=ibmtpm --exclude=include --exclude=test \
-            --gcov-options '\-lp'
+        if [ "$COVERALLS" == "send" ]; then
+            coveralls --build-root=build \
+                --exclude=ibmtpm --exclude=include --exclude=test \
+                --gcov-options '\-lp'
+        fi
     fi
