@@ -684,15 +684,16 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
             uint8_t symKey[key_len];
             size_t paramSize = 0;
             const uint8_t *paramBuffer;
+
+             if (!iesys_update_session_flags(esys_context, rsrc_session))
+                  return TSS2_RC_SUCCESS;
+
             r = Tss2_Sys_GetDecryptParam(esys_context->sys, &paramSize,
                                          &paramBuffer);
             return_if_error(r, "Encryption not possible");
 
             if (paramSize == 0)
                 continue;
-
-            if (!iesys_update_session_flags(esys_context, rsrc_session))
-                return TSS2_RC_SUCCESS;
 
             BYTE encrypt_buffer[paramSize];
             memcpy(&encrypt_buffer[0], paramBuffer, paramSize);
