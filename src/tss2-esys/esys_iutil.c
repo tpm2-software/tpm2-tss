@@ -1400,11 +1400,11 @@ iesys_check_response(ESYS_CONTEXT * esys_context)
         return_if_error(r, "Error: response hmac check");
 
         r = Tss2_Sys_GetEncryptParam(esys_context->sys, &rpBuffer_size,
-			             &rpBuffer);
+                                     &rpBuffer);
 
-	if (r == TSS2_SYS_RC_NO_ENCRYPT_PARAM ||
+        if (r == TSS2_SYS_RC_NO_ENCRYPT_PARAM ||
             esys_context->encryptNonce == NULL)
-	    return TSS2_RC_SUCCESS;
+            return TSS2_RC_SUCCESS;
 
         return_if_error(r, "Error: GetEncryptParam");
 
