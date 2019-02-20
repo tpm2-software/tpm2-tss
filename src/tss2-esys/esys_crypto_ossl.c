@@ -528,20 +528,31 @@ iesys_cryptossl_hmac_abort(IESYS_CRYPTO_CONTEXT_BLOB ** context)
  * @param[out] nonce The TPM2B structure for the random data (caller-allocated).
  * @param[in] num_bytes The number of bytes to be generated.
  * @retval TSS2_RC_SUCCESS on success.
+ *
+ * NOTE: the TPM should not be used to obtain the random data
  */
 TSS2_RC
 iesys_cryptossl_random2b(TPM2B_NONCE * nonce, size_t num_bytes)
 {
+    const RAND_METHOD *rand_save = RAND_get_rand_method();
+
     if (num_bytes == 0) {
         nonce->size = sizeof(TPMU_HA);
     } else {
         nonce->size = num_bytes;
     }
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    RAND_set_rand_method(RAND_OpenSSL());
+#else
+    RAND_set_rand_method(RAND_SSLeay());
+#endif
     if (1 != RAND_bytes(&nonce->buffer[0], nonce->size)) {
+        RAND_set_rand_method(rand_save);
         return_error(TSS2_ESYS_RC_GENERAL_FAILURE,
                      "Failure in random number generator.");
     }
-
+    RAND_set_rand_method(rand_save);
     return TSS2_RC_SUCCESS;
 }
 
