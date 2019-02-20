@@ -198,7 +198,8 @@ ESYS_TESTS_INTEGRATION_OPTIONAL = \
     test/integration/esys-policy-physical-presence-opt.int \
     test/integration/esys-policy-template-opt.int \
     test/integration/esys-pp-commands.int \
-    test/integration/esys-zgen-2phase.int
+    test/integration/esys-zgen-2phase.int \
+    test/integration/esys-auto-session-flags.int
 
 if TESTPTPM
 
@@ -1043,6 +1044,14 @@ test_integration_esys_zgen_2phase_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_zgen_2phase_int_SOURCES = \
     test/integration/esys-zgen-2phase.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_auto_session_flags_int_CFLAGS = $(TESTS_CFLAGS)
+test_integration_esys_auto_session_flags_int_LDADD = $(TESTS_LDADD)
+test_integration_esys_auto_session_flags_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_auto_session_flags_int_SOURCES = \
+    test/integration/esys-auto-session-flags.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
 endif #ESAPI
 
 test_integration_sapi_policy_template_int_CFLAGS  = $(TESTS_CFLAGS)
