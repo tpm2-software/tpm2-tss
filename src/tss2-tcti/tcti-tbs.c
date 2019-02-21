@@ -111,7 +111,7 @@ tcti_tbs_receive (
     TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_tbs_down_cast (tcti_tbs);
     TSS2_RC rc = TSS2_RC_SUCCESS;
     TBS_RESULT tbs_rc;
-    int original_size = *response_size;
+    int original_size;
 
     if (tcti_tbs == NULL) {
         return TSS2_TCTI_RC_BAD_CONTEXT;
@@ -139,6 +139,8 @@ tcti_tbs_receive (
         LOG_INFO("Caller provided buffer that *may* not be large enough to "
             "hold the response buffer.");
     }
+
+    original_size = *response_size;
 
     tbs_rc = Tbsip_Submit_Command (tcti_tbs->hContext,
                                    TBS_COMMAND_LOCALITY_ZERO,
