@@ -970,6 +970,8 @@ struct ESYS_CONTEXT {
                                            to be returned from Esys_GetTcti().*/
     void *dlhandle;              /**< The handle of dlopen if the tcti was
                                       automatically loaded. */
+    IESYS_SESSION *enc_session;  /**< Ptr to the enc param session.
+                                      Used to restore session attributes */
 };
 
 /** The number of authomatic resubmissions.
