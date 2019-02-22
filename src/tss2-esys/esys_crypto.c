@@ -13,7 +13,7 @@
 #include "esys_crypto.h"
 #include "esys_iutil.h"
 #include "esys_mu.h"
-#define LOGMODULE esys
+#define LOGMODULE esys_crypto
 #include "util/log.h"
 #include "util/aux_util.h"
 
