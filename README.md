@@ -76,6 +76,87 @@ NOTE: The unit and integration tests can be enabled independently.
 The --enable-unit option controls unit tests, and --enable-integration
 controls the integration tests.
 
+### Running tests on physical TPM device
+To run integration tests on a physical TPM device, including a TPM hardware
+or a software TPM implemented in platform firmware the configure script
+provides two options.
+The first option is called --with-ptpm and it is used to point to the TPM
+device interface exposed by the OS, for example:
+
+```
+  $ ./configure  --with-ptpm=/dev/tpm0
+```
+The second option, --with-ptpmtests, enables a "class" of test.
+There are three classes:
+1. destructive - these tests can affect TPM capability or lifespan
+2. mandatory   - these tests check all the functionality that is mandatory
+                 per the TCG specification (default).
+3. optional    - these tests are for functionality that is optional per the
+                 TCG specification.
+
+For example to enable both mandatory and optional test cases during configure
+one needs to set this flag as follows:
+
+```
+  $ ./configure --with-ptpmtests="mandatory,optional"
+```
+Tht default value for the flag is "mandatory"
+Any combination of the three is valid.
+The two flags are only valid when the integration tests are enabled with
+--enable-integration flag.
+
+After that the following command is used to run the test on the configured
+TPM device:
+
+```
+  $ sudo make check-ptpm
+```
+  or
+```
+  $ sudo make check -j 1
+```
+
+Note: The tests can not be run in paralel.
+
+### Running valgrind check
+The unit and integration tests can be run under the valgrind tool, which
+performs additional checks on the library and test code, such as memory
+leak checks etc. The following command is used to run the tests under
+valgrind:
+
+  $ make check-valgrind
+
+This command will enable all valgrind "tools" and kick off as many test
+as many tools it supports. It is possible to enable different valgrind
+tools (checks) in more granularity. This can be controlled by invoking
+different tools separately using check-valgrind-&lt;tool&gt;, for instance:
+
+```
+  $ make check-valgrind-memcheck
+```
+  or
+```
+  $ make check-valgrind-drd
+```
+
+Currently the the following tools are supported:
+
+memcheck - Performs memory related checks. This is the default tool.
+helgrind - Performs synchronization errors checks.
+drd      - Performs thread related checks.
+sgcheck  - Performs stack overrun related checks.
+
+Note that the valgring tool can also be invoked manually using the standard
+libtool:
+
+```
+  $ libtool exec valgrind --tool=memcheck --leak-check=full \
+    test/integration/esys-auto-session-flags.int
+```
+
+This allows for more control on what checks are performed.
+
+### Logging
 While investigating issues it might be helpful to enable extra debug/trace
 output. It can be enabled separately for different components.
 The description how to do this can be found in the [logging](doc/logging.md) file.
