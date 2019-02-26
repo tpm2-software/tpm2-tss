@@ -333,6 +333,19 @@ Esys_NV_Extend_Finish(
     return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
                           "Received error from SAPI unmarshaling" );
 
+    ESYS_TR nvIndex = esysContext->in.NV_Write.nvIndex;
+    RSRC_NODE_T *nvIndexNode;
+    r = esys_GetResourceObject(esysContext, nvIndex, &nvIndexNode);
+    return_if_error(r, "get resource");
+
+    /* Update name in meta data because of possibly changed attributes */
+    if (nvIndexNode != NULL) {
+        nvIndexNode->rsrc.misc.rsrc_nv_pub.nvPublic.attributes |= TPMA_NV_WRITTEN;
+        r = iesys_nv_get_name(&nvIndexNode->rsrc.misc.rsrc_nv_pub,
+                              &nvIndexNode->rsrc.name);
+        return_if_error(r, "Error get nvname")
+    }
+
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;
