@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [2.2.1]
+## [2.2.1] - 2019-02-28
 ### Fixed
  - Forced RAND_bytes method to software implementation to avoid session spoofing
  - Fixed OpenSSL symbolic naming conflict
