@@ -281,10 +281,13 @@ Esys_Load_Finish(
     if (r != TSS2_RC_SUCCESS)
         return r;
 
-
-    /* Update the meta data of the ESYS_TR object */
-    objectHandleNode->rsrc.rsrcType = IESYSC_KEY_RSRC;
-    objectHandleNode->rsrc.misc.rsrc_key_pub = *esysContext->in.Load.inPublic;
+    if (esysContext->in.Load.inPublic) {
+        /* Update the meta data of the ESYS_TR object */
+        objectHandleNode->rsrc.rsrcType = IESYSC_KEY_RSRC;
+        objectHandleNode->rsrc.misc.rsrc_key_pub = *esysContext->in.Load.inPublic;
+    } else {
+        objectHandleNode->rsrc.misc.rsrc_key_pub.size = 0;
+    }
 
     /*Receive the TPM response and handle resubmissions if necessary. */
     r = Tss2_Sys_ExecuteFinish(esysContext->sys, esysContext->timeout);

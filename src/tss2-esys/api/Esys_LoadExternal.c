@@ -265,8 +265,13 @@ Esys_LoadExternal_Finish(
     if (r != TSS2_RC_SUCCESS)
         return r;
 
-    objectHandleNode->rsrc.rsrcType = IESYSC_KEY_RSRC;
-    objectHandleNode->rsrc.misc.rsrc_key_pub = *esysContext->in.LoadExternal.inPublic;
+    if (esysContext->in.LoadExternal.inPublic) {
+        objectHandleNode->rsrc.rsrcType = IESYSC_KEY_RSRC;
+        objectHandleNode->rsrc.misc.rsrc_key_pub =
+                                        *esysContext->in.LoadExternal.inPublic;
+    } else {
+        objectHandleNode->rsrc.misc.rsrc_key_pub.size = 0;
+    }
 
     /*Receive the TPM response and handle resubmissions if necessary. */
     r = Tss2_Sys_ExecuteFinish(esysContext->sys, esysContext->timeout);
