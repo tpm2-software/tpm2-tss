@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [2.0.3]
+## [2.0.3] - 2019-02-28
 ### Fixed
 - Fixed memory leaks related to using regular free on gcrypt allocated objects
 
