@@ -46,7 +46,10 @@ __wrap_read (int fd, void *buffer, size_t count)
 {
     LOG_DEBUG ("%s: reading %zu bytes from fd: %d to buffer at 0x%" PRIxPTR,
                __func__, count, fd, (uintptr_t)buffer);
-    return mock_type (ssize_t);
+    int r = mock_type (ssize_t);
+    if (r > 0)
+        memset(buffer, 0x66, r);
+    return r;
 }
 
 ssize_t

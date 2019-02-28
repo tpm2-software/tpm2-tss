@@ -295,7 +295,7 @@ tpm2b_unmarshal_buffer_null (void **state)
     TPM2B_DIGEST dgst = {0};
     TPM2B_ECC_POINT point = {0};
     TSS2_RC rc;
-    size_t offset;
+    size_t offset = 0;
 
     rc = Tss2_MU_TPM2B_DIGEST_Unmarshal (NULL, 1, NULL, NULL);
     assert_int_equal (rc, TSS2_MU_RC_BAD_REFERENCE);
