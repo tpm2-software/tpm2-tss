@@ -9,7 +9,7 @@ env:
   matrix:
   - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_0_2-stable COVERALLS=send
   - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_1_0-stable COVERALLS=send
-  - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_1_0-stable FUZZING=1
+  - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_1_0-stable GEN_FUZZ=1
   - WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE
   - WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE COVERALLS=send
   - WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=no WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE
@@ -117,11 +117,11 @@ script:
     fi
 # check fuzz targets
   - |
-    if [ "$CC" == "clang" ] && [ "x$FUZZING" == "x1" ]; then
+    if [ "$CC" == "clang" ] && [ "x$GEN_FUZZ" == "x1" ]; then
       ../configure --enable-tcti-partial-reads=$WITH_TCTI_PARTIAL --enable-tcti-device-async=$WITH_TCTI_ASYNC --with-fuzzing=libfuzzer --enable-tcti-fuzzing --enable-tcti-device=no --enable-tcti-mssim=no --disable-shared --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
     fi
   - |
-    if [ "$CC" == "clang" ] && [ "x$FUZZING" == "x1" ]; then
+    if [ "$CC" == "clang" ] && [ "x$GEN_FUZZ" == "x1" ]; then
       make -j$(nproc) check
     fi
   - |
