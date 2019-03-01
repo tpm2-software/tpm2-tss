@@ -20,7 +20,9 @@ noinst_PROGRAMS += test/fuzz/%s.fuzz
 test_fuzz_%s_fuzz_CPPFLAGS = $(FUZZ_CPPFLAGS)
 test_fuzz_%s_fuzz_LDADD    = $(FUZZ_LDADD)
 test_fuzz_%s_fuzz_SOURCES  = test/fuzz/main-sapi.cpp \\
-        test/fuzz/%s.fuzz.cpp'''
+        test/fuzz/%s.fuzz.cpp
+
+DISTCLEANFILES += test/fuzz/%s.fuzz.cpp'''
 # Common include definitions needed for fuzzing an SAPI call
 SAPI_TEMPLATE_HEADER = '''/* SPDX-License-Identifier: BSD-2 */
 /***********************************************************************
@@ -225,7 +227,7 @@ def main():
                               for function in functions])
     # Create the Makefile targets for each generated file
     targets = '\n'.join([MAKEFILE_FUZZ_TARGET % tuple(list(itertools.chain(\
-            ([function] * 5)))) for function in functions])
+            ([function] * 6)))) for function in functions])
     # Write out the Makefile-fuzz-generated.am file
     with open('Makefile-fuzz-generated.am', 'w') as makefile_fd:
         makefile_fd.write(MAKEFILE_FUZZ % (files, targets))
