@@ -161,6 +161,10 @@ While investigating issues it might be helpful to enable extra debug/trace
 output. It can be enabled separately for different components.
 The description how to do this can be found in the [logging](doc/logging.md) file.
 
+### Fuzzing
+All system API function calls can be tested using a fuzzing library.
+The description how to do this can be found in the [fuzzing](doc/fuzzing.md) file.
+
 # Architecture/Block Diagram
 SAPI library, TAB/RM, and Test Code Block Diagram:
 ![Architecture Block Diagram](doc/TSS%20block%20diagram.png)
