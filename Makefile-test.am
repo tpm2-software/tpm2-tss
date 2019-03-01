@@ -70,14 +70,18 @@ TESTS_UNIT  = \
 if ESAPI
 TESTS_UNIT += \
     test/unit/esys-context-null \
-    test/unit/esys-default-tcti \
     test/unit/esys-resubmissions \
     test/unit/esys-sequence-finish \
     test/unit/esys-tcti-rcs \
     test/unit/esys-tpm-rcs \
     test/unit/esys-getpollhandles \
     test/unit/esys-nulltcti \
-    test/unit/esys-crypto 
+    test/unit/esys-crypto
+
+if !ENABLE_FUZZING
+TESTS_UNIT += test/unit/esys-default-tcti
+endif
+
 endif ESAPI
 endif #UNIT
 
