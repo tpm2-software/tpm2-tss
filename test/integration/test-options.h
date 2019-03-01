@@ -36,8 +36,8 @@ typedef enum {
 
 typedef struct {
     TCTI_TYPE tcti_type;
-    char *device_file;
-    char *socket_address;
+    const char *device_file;
+    const char *socket_address;
     uint16_t socket_port;
 } test_opts_t;
 
