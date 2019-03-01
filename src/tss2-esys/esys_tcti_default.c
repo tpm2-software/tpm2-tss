@@ -44,10 +44,12 @@ struct {
     { .init = Tss2_Tcti_Tbs_Init, .conf = "",
       .description = "Access to TBS" },
 #else /* _WIN32 */
+#ifdef TCTI_DEVICE
     { .init = Tss2_Tcti_Device_Init, .conf = "/dev/tpmrm0",
       .description = "Access to /dev/tpmrm0" },
     { .init = Tss2_Tcti_Device_Init, .conf = "/dev/tpm0",
       .description = "Access to /dev/tpm0" },
+#endif
 #endif /* else */
 #ifdef TCTI_MSSIM
     { .init = Tss2_Tcti_Mssim_Init, .conf = "host=localhost,port=2321",
