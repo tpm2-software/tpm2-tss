@@ -334,9 +334,9 @@ bool IsAlgorithmWeak(TPM2_ALG_ID algorithm, TPM2_KEY_SIZE key_size)
     return false;
 }
 
-TSS2_RC ValidatePublicTemplate(const TPM2B_PUBLIC *public)
+TSS2_RC ValidatePublicTemplate(const TPM2B_PUBLIC *pub)
 {
-    const TPMT_PUBLIC *tmpl = &public->publicArea;
+    const TPMT_PUBLIC *tmpl = &pub->publicArea;
 
     switch (tmpl->type) {
         case TPM2_ALG_RSA:
@@ -410,9 +410,9 @@ TSS2_RC ValidateNV_Public(const TPM2B_NV_PUBLIC *nv_public_info)
     return TSS2_RC_SUCCESS;
 }
 
-TSS2_RC ValidatePublicTemplate(const TPM2B_PUBLIC *public)
+TSS2_RC ValidatePublicTemplate(const TPM2B_PUBLIC *pub)
 {
-    (void) public;
+    (void) pub;
 
     return TSS2_RC_SUCCESS;
 }
