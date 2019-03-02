@@ -110,7 +110,7 @@ TSS2_RC CommonPrepareEpilogue(_TSS2_SYS_CONTEXT_BLOB *ctx);
 int GetNumCommandHandles(TPM2_CC commandCode);
 int GetNumResponseHandles(TPM2_CC commandCode);
 bool IsAlgorithmWeak(TPM2_ALG_ID algorith, TPM2_KEY_SIZE key_size);
-TSS2_RC ValidatePublicTemplate(const TPM2B_PUBLIC *public);
+TSS2_RC ValidatePublicTemplate(const TPM2B_PUBLIC *pub);
 TSS2_RC ValidateNV_Public(const TPM2B_NV_PUBLIC *nv_public_info);
 TSS2_RC ValidateTPML_PCR_SELECTION(const TPML_PCR_SELECTION *pcr_selection);
 
