@@ -1,7 +1,8 @@
-['![Linux Build Status](https://travis-ci.org/tpm2-software/tpm2-tss.svg?branch=master)'](https://travis-ci.org/tpm2-software/tpm2-tss)
-['![Windows Build status](https://ci.appveyor.com/api/projects/status/2rdmyn1ndkiavngn?svg=true)'](https://ci.appveyor.com/project/tpm2-software/tpm2-tss)
-['![Coverity Scan](https://img.shields.io/coverity/scan/3997.svg)'](https://scan.coverity.com/projects/tpm2-tss)
-['![Coverage Status](https://coveralls.io/repos/github/tpm2-software/tpm2-tss/badge.svg?branch=master)'](https://coveralls.io/github/tpm2-software/tpm2-tss?branch=master)
+[![Linux Build Status](https://travis-ci.org/tpm2-software/tpm2-tss.svg?branch=master)](https://travis-ci.org/tpm2-software/tpm2-tss)
+[![Windows Build status](https://ci.appveyor.com/api/projects/status/2rdmyn1ndkiavngn?svg=true)](https://ci.appveyor.com/project/tpm2-software/tpm2-tss)
+[![Coverity Scan](https://img.shields.io/coverity/scan/3997.svg)](https://scan.coverity.com/projects/tpm2-tss)
+[![Coverage Status](https://codecov.io/gh/tpm2-software/tpm2-tss/branch/master/graph/badge.svg)](https://codecov.io/gh/tpm2-software/tpm2-tss)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/2332/badge)](https://bestpractices.coreinfrastructure.org/projects/2332)
 
 # Overview
 This repository hosts source code implementing the Trusted Computing Group's (TCG) TPM2 Software Stack (TSS).
