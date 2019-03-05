@@ -5,7 +5,6 @@
  * All rights reserved.
  ***********************************************************************/
 #include "tss2_tpm2_types.h"
-#include "sysapi_util.h"
 #include "sapi-util.h"
 #include "session-util.h"
 

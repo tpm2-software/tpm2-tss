@@ -12,7 +12,6 @@
 #include <stdint.h>
 
 #include <tss2_esys.h>
-#include "tss2-sys/sysapi_util.h"
 
 #include "test.h"
 #include "esys_types.h"
