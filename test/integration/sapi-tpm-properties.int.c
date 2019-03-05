@@ -12,7 +12,6 @@
 #define LOGMODULE test
 #include "util/log.h"
 #include "test.h"
-#include "sysapi_util.h"
 
 int
 test_invoke (TSS2_SYS_CONTEXT *sapi_context)

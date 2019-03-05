@@ -13,7 +13,6 @@
 #define LOGMODULE test
 #include "util/log.h"
 #include "test.h"
-#include "sysapi_util.h"
 #include "sapi-util.h"
 #define PCR_8   8
 /**
