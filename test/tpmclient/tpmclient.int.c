@@ -109,10 +109,11 @@ static void InitSysContextFailure()
     Cleanup();
 }
 
+#define ERROR_STR_LEN 200
 #define CheckPassed(rval) {             \
-    char error_string[200];         \
+    char error_string[ERROR_STR_LEN];         \
     if ((rval) != TPM2_RC_SUCCESS) {      \
-      ErrorHandler((rval), error_string, strlen(error_string)); \
+      ErrorHandler((rval), error_string, ERROR_STR_LEN); \
       LOG_INFO("passing case: \tFAILED!  %s (%s@%u)",  \
                error_string, __FUNCTION__, __LINE__ ); \
       Cleanup(); \
@@ -123,9 +124,9 @@ static void InitSysContextFailure()
   }
 
 #define CheckFailed(rval, expected_rval) { \
-    char error_string[200];             \
+    char error_string[ERROR_STR_LEN];             \
     if ((rval) != (expected_rval)) {    \
-      ErrorHandler((rval), error_string, strlen(error_string)); \
+      ErrorHandler((rval), error_string, ERROR_STR_LEN); \
       LOG_INFO("\tfailing case: FAILED! %s  Ret code s/b: 0x%x, but was: 0x%x (%s@%u)", \
                error_string, (expected_rval), (rval), __FUNCTION__, __LINE__ ); \
       Cleanup(); \
