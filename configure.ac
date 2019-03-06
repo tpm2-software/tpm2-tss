@@ -43,8 +43,7 @@ AC_SUBST([LIBSOCKET_LDFLAGS])
 
 AC_ARG_ENABLE([unit],
             [AS_HELP_STRING([--enable-unit],
-                            [build cmocka unit tests (default is no)])],
-            [enable_unit=$enableval],
+                            [build cmocka unit tests (default is no)])],,
             [enable_unit=no])
 m4_define([cmocka_min_version], [1.0])
 m4_define([cmocka_err], [Unit test enabled, but cmocka missing or version requirements not met. cmocka version must be >= cmocka_min_version])
@@ -58,8 +57,7 @@ AM_CONDITIONAL([UNIT], [test "x$enable_unit" != xno])
 
 AC_ARG_ENABLE([esapi],
             [AS_HELP_STRING([--disable-esapi],
-                            [don't build the esapi layer])],
-            [enable_esapi=$enableval],
+                            [don't build the esapi layer])],,
             [enable_esapi=yes])
 
 AM_CONDITIONAL(ESAPI, test "x$enable_esapi" = "xyes")
@@ -67,8 +65,7 @@ AM_CONDITIONAL(ESAPI, test "x$enable_esapi" = "xyes")
 AC_ARG_ENABLE([tcti-device-async],
     AS_HELP_STRING([--enable-tcti-device-async],
 	           [Enable asynchronus operation on TCTI device
-		    (note: This needs to be supported by the kernel driver). default is no]),
-    [enable_tcti_device_async=$enableval],
+		    (note: This needs to be supported by the kernel driver). default is no]),,
     [enable_tcti_device_async=no])
 AS_IF([test "x$enable_tcti_device_async" = "xyes"],
 	AC_DEFINE([TCTI_ASYNC],[1], [TCTI ASYNC MODE]))
@@ -76,16 +73,14 @@ AS_IF([test "x$enable_tcti_device_async" = "xyes"],
 AC_ARG_ENABLE([tcti-partial-reads],
     AS_HELP_STRING([--enable-tcti-partial-reads],
 	           [Enable partial reads for TCTI device
-		    (note: This needs to be supported by the kernel driver). default is no]),
-    [enable_tcti_partial_reads=$enableval],
+		    (note: This needs to be supported by the kernel driver). default is no]),,
     [enable_tcti_partial_reads=no])
 AS_IF([test "x$enable_tcti_partial_reads" = "xyes"],
 	AC_DEFINE([TCTI_PARTIAL_READ],[1], [TCTI PARTIAL READ MODE]))
 
 AC_ARG_WITH([crypto],
             [AS_HELP_STRING([--with-crypto={gcrypt,ossl}],
-                            [sets the ESAPI crypto backend (default is OpenSSL)])],
-            [],
+                            [sets the ESAPI crypto backend (default is OpenSSL)])],,
             [with_crypto=ossl])
 
 AM_CONDITIONAL(ESYS_OSSL, test "x$with_crypto" = "xossl")
@@ -135,8 +130,7 @@ AC_ARG_WITH([tctidefaultconfig],
 
 AC_ARG_ENABLE([tcti-device],
             [AS_HELP_STRING([--disable-tcti-device],
-                            [don't build the tcti-device module])],
-            [enable_tcti_device=$enableval],
+                            [don't build the tcti-device module])],,
             [enable_tcti_device=yes])
 AM_CONDITIONAL([ENABLE_TCTI_DEVICE], [test "x$enable_tcti_device" != xno])
 AS_IF([test "x$enable_tcti_device" = "xyes"],
@@ -153,8 +147,7 @@ AS_IF([test "x$enable_tcti_mssim" = "xyes"],
 
 AC_ARG_ENABLE([tcti-fuzzing],
             [AS_HELP_STRING([--enable-tcti-fuzzing],
-                            [build the tcti-fuzzing module (default is no)])],
-            [enable_tcti_fuzzing=$enableval],
+                            [build the tcti-fuzzing module (default is no)])],,
             [enable_tcti_fuzzing=no])
 AM_CONDITIONAL([ENABLE_TCTI_FUZZING], [test "x$enable_tcti_fuzzing" != xno])
 AS_IF([test "x$enable_tcti_fuzzing" = "xyes"],
@@ -164,8 +157,7 @@ AS_IF([test "x$enable_tcti_fuzzing" = "xyes"],
 # udev
 #
 AC_ARG_WITH([udevrulesdir],
-            [AS_HELP_STRING([--with-udevrulesdir=DIR],[udev rules directory])],
-            [],
+            [AS_HELP_STRING([--with-udevrulesdir=DIR],[udev rules directory])],,
             [with_udevrulesdir=${libdir}/udev/rules.d])
 AX_NORMALIZE_PATH([with_udevrulesdir])
 AC_SUBST([udevrulesdir], [$with_udevrulesdir])
@@ -178,8 +170,7 @@ AM_CONDITIONAL(WITH_UDEVRULESPREFIX, [test -n "$with_udevrulesprefix"])
 #
 AC_ARG_ENABLE([integration],
     [AS_HELP_STRING([--enable-integration],
-        [build and execute integration tests (default is no)])],
-    [enable_integration=$enableval],
+        [build and execute integration tests (default is no)])],,
     [enable_integration=no])
 AS_IF([test "x$enable_integration" = "xyes"],
       [ERROR_IF_NO_PROG([tpm_server])
@@ -211,8 +202,7 @@ AM_CONDITIONAL([ENABLE_INTEGRATION],[test "x$enable_integration" = "xyes"])
 #
 AC_ARG_WITH([fuzzing],
             [AS_HELP_STRING([--with-fuzzing={none,libfuzzer,ossfuzz}],
-                            [fuzzing to build with (default is none)])],
-            [],
+                            [fuzzing to build with (default is none)])],,
             [with_fuzzing=none])
 AS_CASE(["x$with_fuzzing"],
         ["xnone"],
@@ -237,8 +227,7 @@ gl_LD_VERSION_SCRIPT
 
 AC_ARG_WITH([maxloglevel],
             [AS_HELP_STRING([--with-maxloglevel={none,error,warning,info,debug,trace}],
-                            [sets the maximum log level (default is trace)])],
-            [],
+                            [sets the maximum log level (default is trace)])],,
             [with_maxloglevel=trace])
 AS_CASE(["x$with_maxloglevel"],
         ["xnone"],
@@ -257,8 +246,7 @@ AS_CASE(["x$with_maxloglevel"],
 
 AC_ARG_ENABLE([debug],
             [AS_HELP_STRING([--enable-debug],
-                            [build with debug info (default is no)])],
-            [enable_debug=$enableval],
+                            [build with debug info (default is no)])],,
             [enable_debug=no])
 AS_IF([test "x$enable_debug" = "xyes"], ADD_COMPILER_FLAG([-ggdb3 -Og]))
 AC_ARG_ENABLE([defaultflags],
@@ -297,8 +285,7 @@ AS_IF([test "x$enable_defaultflags" = "xyes"],
 
 AC_ARG_ENABLE([weakcrypto],
     [AS_HELP_STRING([--disable-weakcrypto],
-	           [Disable crypto algorithms considered weak])],
-    [enable_weakcrypto=yes],
+	           [Disable crypto algorithms considered weak])],,
     [enable_weakcrypto=no])
 AS_IF([test "x$enable_weakcrypto" = "xyes"],
 	AC_DEFINE([DISABLE_WEAK_CRYPTO],[1],[DISABLE WEAK CRYPTO ALGORITHMS]))
