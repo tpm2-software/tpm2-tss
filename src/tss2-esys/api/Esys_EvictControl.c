@@ -278,18 +278,13 @@ Esys_EvictControl_Finish(
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
     esysContext->state = _ESYS_STATE_INTERNALERROR;
-    RSRC_NODE_T *newObjectHandleNode = NULL;
 
     /* Allocate memory for response parameters */
     if (newObjectHandle == NULL) {
         LOG_ERROR("Handle newObjectHandle may not be NULL");
         return TSS2_ESYS_RC_BAD_REFERENCE;
     }
-    *newObjectHandle = esysContext->esys_handle_cnt++;
-    r = esys_CreateResourceObject(esysContext, *newObjectHandle, &newObjectHandleNode);
-    if (r != TSS2_RC_SUCCESS)
-        return r;
-
+    *newObjectHandle = ESYS_TR_NONE;
 
     /*Receive the TPM response and handle resubmissions if necessary. */
     r = Tss2_Sys_ExecuteFinish(esysContext->sys, esysContext->timeout);
@@ -298,6 +293,7 @@ Esys_EvictControl_Finish(
         esysContext->state = _ESYS_STATE_SENT;
         goto error_cleanup;
     }
+
     /* This block handle the resubmission of TPM commands given a certain set of
      * TPM response codes. */
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
@@ -377,7 +373,8 @@ Esys_EvictControl_Finish(
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
-    Esys_TR_Close(esysContext, newObjectHandle);
+    if (*newObjectHandle != ESYS_TR_NONE)
+        Esys_TR_Close(esysContext, newObjectHandle);
 
     return r;
 }
