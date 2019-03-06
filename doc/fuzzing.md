@@ -20,7 +20,9 @@ linking to the fuzzing TCTI.
 
 ```console
 export LD_LIBRARY_PATH=/usr/local/bin
-GEN_FUZZ=1 ./bootstrap
+export GEN_FUZZ=1
+
+./bootstrap
 ./configure \
   CC=clang \
   CXX=clang++ \
@@ -31,6 +33,7 @@ GEN_FUZZ=1 ./bootstrap
   --enable-tcti-mssim=no \
   --with-maxloglevel=none \
   --disable-shared
+
 make -j $(nproc) check
 ```
 
