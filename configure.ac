@@ -57,8 +57,8 @@ AS_IF([test "x$enable_unit" != xno],
 AM_CONDITIONAL([UNIT], [test "x$enable_unit" != xno])
 
 AC_ARG_ENABLE([esapi],
-            [AS_HELP_STRING([--enable-esapi],
-                            [build the esapi layer (default is yes)])],
+            [AS_HELP_STRING([--disable-esapi],
+                            [don't build the esapi layer])],
             [enable_esapi=$enableval],
             [enable_esapi=yes])
 
@@ -134,8 +134,8 @@ AC_ARG_WITH([tctidefaultconfig],
             [])
 
 AC_ARG_ENABLE([tcti-device],
-            [AS_HELP_STRING([--enable-tcti-device],
-                            [build the tcti-device module (default is yes)])],
+            [AS_HELP_STRING([--disable-tcti-device],
+                            [don't build the tcti-device module])],
             [enable_tcti_device=$enableval],
             [enable_tcti_device=yes])
 AM_CONDITIONAL([ENABLE_TCTI_DEVICE], [test "x$enable_tcti_device" != xno])
@@ -143,8 +143,8 @@ AS_IF([test "x$enable_tcti_device" = "xyes"],
 	AC_DEFINE([TCTI_DEVICE],[1], [TCTI FOR DEV TPM]))
 
 AC_ARG_ENABLE([tcti-mssim],
-            [AS_HELP_STRING([--enable-tcti-mssim],
-                            [build the tcti-mssim module (default is yes)])],
+            [AS_HELP_STRING([--disable-tcti-mssim],
+                            [don't build the tcti-mssim module])],
             [enable_tcti_mssim=$enableval],
             [enable_tcti_mssim=yes])
 AM_CONDITIONAL([ENABLE_TCTI_MSSIM], [test "x$enable_tcti_mssim" != xno])
