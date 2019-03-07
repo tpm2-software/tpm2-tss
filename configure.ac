@@ -9,7 +9,6 @@ AC_INIT([tpm2-tss],
         [],
         [https://github.com/tpm2-software/tpm2-tss])
 AC_CONFIG_MACRO_DIR([m4])
-: ${CFLAGS=""}
 AC_PROG_CXX([clang++ g++])
 AC_PROG_CC([clang gcc])
 LT_INIT()
@@ -259,7 +258,6 @@ AS_IF([test "x$enable_defaultflags" = "xyes"],
             [
             ADD_PREPROC_FLAG([-U_FORTIFY_SOURCE])
             ADD_PREPROC_FLAG([-D_FORTIFY_SOURCE=2])
-            ADD_COMPILER_FLAG([-g -O2])
             ])
       ADD_COMPILER_FLAG([-std=c99])
       ADD_COMPILER_FLAG([-Wall])
