@@ -43,7 +43,7 @@ AC_SUBST([LIBSOCKET_LDFLAGS])
 
 AC_ARG_ENABLE([unit],
             [AS_HELP_STRING([--enable-unit],
-                            [build cmocka unit tests (default is no)])],,
+                            [build cmocka unit tests])],,
             [enable_unit=no])
 m4_define([cmocka_min_version], [1.0])
 m4_define([cmocka_err], [Unit test enabled, but cmocka missing or version requirements not met. cmocka version must be >= cmocka_min_version])
@@ -65,7 +65,7 @@ AM_CONDITIONAL(ESAPI, test "x$enable_esapi" = "xyes")
 AC_ARG_ENABLE([tcti-device-async],
     AS_HELP_STRING([--enable-tcti-device-async],
 	           [Enable asynchronus operation on TCTI device
-		    (note: This needs to be supported by the kernel driver). default is no]),,
+		    (note: This needs to be supported by the kernel driver).]),,
     [enable_tcti_device_async=no])
 AS_IF([test "x$enable_tcti_device_async" = "xyes"],
 	AC_DEFINE([TCTI_ASYNC],[1], [TCTI ASYNC MODE]))
@@ -73,7 +73,7 @@ AS_IF([test "x$enable_tcti_device_async" = "xyes"],
 AC_ARG_ENABLE([tcti-partial-reads],
     AS_HELP_STRING([--enable-tcti-partial-reads],
 	           [Enable partial reads for TCTI device
-		    (note: This needs to be supported by the kernel driver). default is no]),,
+		    (note: This needs to be supported by the kernel driver).]),,
     [enable_tcti_partial_reads=no])
 AS_IF([test "x$enable_tcti_partial_reads" = "xyes"],
 	AC_DEFINE([TCTI_PARTIAL_READ],[1], [TCTI PARTIAL READ MODE]))
@@ -147,7 +147,7 @@ AS_IF([test "x$enable_tcti_mssim" = "xyes"],
 
 AC_ARG_ENABLE([tcti-fuzzing],
             [AS_HELP_STRING([--enable-tcti-fuzzing],
-                            [build the tcti-fuzzing module (default is no)])],,
+                            [build the tcti-fuzzing module])],,
             [enable_tcti_fuzzing=no])
 AM_CONDITIONAL([ENABLE_TCTI_FUZZING], [test "x$enable_tcti_fuzzing" != xno])
 AS_IF([test "x$enable_tcti_fuzzing" = "xyes"],
@@ -170,7 +170,7 @@ AM_CONDITIONAL(WITH_UDEVRULESPREFIX, [test -n "$with_udevrulesprefix"])
 #
 AC_ARG_ENABLE([integration],
     [AS_HELP_STRING([--enable-integration],
-        [build and execute integration tests (default is no)])],,
+        [build and execute integration tests])],,
     [enable_integration=no])
 AS_IF([test "x$enable_integration" = "xyes"],
       [ERROR_IF_NO_PROG([tpm_server])
@@ -246,7 +246,7 @@ AS_CASE(["x$with_maxloglevel"],
 
 AC_ARG_ENABLE([debug],
             [AS_HELP_STRING([--enable-debug],
-                            [build with debug info (default is no)])],,
+                            [build with debug info])],,
             [enable_debug=no])
 AS_IF([test "x$enable_debug" = "xyes"], ADD_COMPILER_FLAG([-ggdb3 -Og]))
 AC_ARG_ENABLE([defaultflags],
