@@ -303,7 +303,7 @@ AM_CONDITIONAL([PTPM],[test "x$with_ptpm_set" = "xyes"])
 
 AC_ARG_WITH([ptpmtests],
             [AS_HELP_STRING([--with-ptpmtests=<case>],[Comma-separated values of possible tests: destructive,mandatory,optional] default is mandatory)],
-            [AS_IF([test "x" ==  x$(echo $with_ptpmtests | sed 's/destructive//g'  | sed 's/mandatory//g'  | sed 's/optional//g' | sed 's/,//g') ],
+            [AS_IF([test "x" =  x$(echo $with_ptpmtests | sed 's/destructive//g'  | sed 's/mandatory//g'  | sed 's/optional//g' | sed 's/,//g') ],
                    [AC_MSG_RESULT([success])
                     with_ptpmtests_set=yes],
                    [AC_MSG_ERROR([Illegal test type for pTPM tests.])])],
