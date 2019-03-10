@@ -114,7 +114,7 @@ AS_IF([test "x$enable_esapi" != xno -a "x$with_crypto" = "xossl"],
 
 AC_ARG_WITH([tctidefaultmodule],
             [AS_HELP_STRING([--with-tctidefaultmodule],
-[The default TCTI module for ESAPI. (Default: libtss2-tcti-default.so])],
+[The default TCTI module for ESAPI. (Default: libtss2-tcti-default.so)])],
             [AC_DEFINE_UNQUOTED([ESYS_TCTI_DEFAULT_MODULE],
                                 ["$with_tctidefaultmodule"],
                                 ["The default TCTI library file"])],
