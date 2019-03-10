@@ -117,16 +117,14 @@ AC_ARG_WITH([tctidefaultmodule],
 [The default TCTI module for ESAPI. (Default: libtss2-tcti-default.so)])],
             [AC_DEFINE_UNQUOTED([ESYS_TCTI_DEFAULT_MODULE],
                                 ["$with_tctidefaultmodule"],
-                                ["The default TCTI library file"])],
-            [])
+                                ["The default TCTI library file"])])
 
 AC_ARG_WITH([tctidefaultconfig],
             [AS_HELP_STRING([--with-tctidefaultconfig],
                             [The default tcti module's configuration.])],
             [AC_DEFINE_UNQUOTED([ESYS_TCTI_DEFAULT_CONFIG],
                                 ["$with_tctidefaultconfig"],
-                                ["The default TCTIs configuration string"])],
-            [])
+                                ["The default TCTIs configuration string"])])
 
 AC_ARG_ENABLE([tcti-device],
             [AS_HELP_STRING([--disable-tcti-device],
@@ -138,8 +136,7 @@ AS_IF([test "x$enable_tcti_device" = "xyes"],
 
 AC_ARG_ENABLE([tcti-mssim],
             [AS_HELP_STRING([--disable-tcti-mssim],
-                            [don't build the tcti-mssim module])],
-            [enable_tcti_mssim=$enableval],
+                            [don't build the tcti-mssim module])],,
             [enable_tcti_mssim=yes])
 AM_CONDITIONAL([ENABLE_TCTI_MSSIM], [test "x$enable_tcti_mssim" != xno])
 AS_IF([test "x$enable_tcti_mssim" = "xyes"],
@@ -251,8 +248,7 @@ AC_ARG_ENABLE([debug],
 AS_IF([test "x$enable_debug" = "xyes"], ADD_COMPILER_FLAG([-ggdb3 -Og]))
 AC_ARG_ENABLE([defaultflags],
               [AS_HELP_STRING([--disable-defaultflags],
-                              [Disable default preprocessor, compiler, and linker flags.])],
-              [enable_defaultflags=$enableval],
+                              [Disable default preprocessor, compiler, and linker flags.])],,
               [enable_defaultflags=yes])
 AS_IF([test "x$enable_defaultflags" = "xyes"],
       [
