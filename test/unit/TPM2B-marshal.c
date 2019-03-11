@@ -376,6 +376,51 @@ tpm2b_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
     assert_int_equal (offset, sizeof(dgst) - 5);
 }
 
+/*
+ * Success case
+ */
+static void
+tpm2b_public_rsa_marshal_success(void **state) {
+    TPM2B_PUBLIC pub2b = {0};
+    TPMT_PUBLIC *pub = &pub2b.publicArea;
+    uint8_t buffer[sizeof(pub2b)] = { 0 };
+    size_t  buffer_size = sizeof(buffer);
+    TPM2B_PUBLIC *ptr1;
+    TSS2_RC rc;
+
+    pub->type = TPM2_ALG_RSA;
+    pub->parameters.rsaDetail.symmetric.algorithm = TPM2_ALG_AES;
+    pub->parameters.rsaDetail.symmetric.keyBits.aes = 128;
+    pub->parameters.rsaDetail.symmetric.mode.aes = TPM2_ALG_CBC;
+    rc = Tss2_MU_TPM2B_PUBLIC_Marshal(&pub2b, buffer, buffer_size, NULL);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    ptr1 = (TPM2B_PUBLIC *)buffer;
+    assert_int_equal (ptr1->size, HOST_TO_BE_16(0x1a));
+}
+
+/*
+ * Success case
+ */
+static void
+tpm2b_public_rsa_unique_size_marshal_success(void **state) {
+    TPM2B_PUBLIC pub2b = {0};
+    TPMT_PUBLIC *pub = &pub2b.publicArea;
+    uint8_t buffer[sizeof(pub2b)] = { 0 };
+    size_t  buffer_size = sizeof(buffer);
+    TPM2B_PUBLIC *ptr1;
+    TSS2_RC rc;
+
+    pub->type = TPM2_ALG_RSA;
+    pub->parameters.rsaDetail.symmetric.algorithm = TPM2_ALG_AES;
+    pub->parameters.rsaDetail.symmetric.keyBits.aes = 128;
+    pub->parameters.rsaDetail.symmetric.mode.aes = TPM2_ALG_CBC;
+    pub->unique.rsa.size = 0x100;
+    rc = Tss2_MU_TPM2B_PUBLIC_Marshal(&pub2b, buffer, buffer_size, NULL);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    ptr1 = (TPM2B_PUBLIC *)buffer;
+    assert_int_equal (ptr1->size, HOST_TO_BE_16(0x11a));
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(tpm2b_marshal_success),
@@ -389,6 +434,8 @@ int main(void) {
         cmocka_unit_test(tpm2b_unmarshal_dest_null),
         cmocka_unit_test(tpm2b_unmarshal_dest_null_offset_valid),
         cmocka_unit_test(tpm2b_unmarshal_buffer_size_lt_data_nad_lt_offset),
+        cmocka_unit_test(tpm2b_public_rsa_marshal_success),
+        cmocka_unit_test(tpm2b_public_rsa_unique_size_marshal_success),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
