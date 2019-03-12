@@ -9,6 +9,7 @@
 #include "tss2_tpm2_types.h"
 #include "tss2_mu.h"
 #include "sysapi_util.h"
+#include <string.h>
 
 TSS2_RC Tss2_Sys_GetRspAuths(
     TSS2_SYS_CONTEXT *sysContext,
@@ -42,8 +43,10 @@ TSS2_RC Tss2_Sys_GetRspAuths(
         if (offset_tmp > ctx->rsp_header.responseSize)
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
-        offset_tmp += sizeof(UINT16) +
-            BE_TO_HOST_16(*(UINT16 *)(ctx->cmdBuffer + offset_tmp));
+        UINT16 tmp;
+        memcpy(&tmp, ctx->cmdBuffer + offset_tmp, sizeof(UINT16));
+        offset_tmp += sizeof(UINT16);
+        offset_tmp += BE_TO_HOST_16(tmp);
 
         if (offset_tmp > ctx->rsp_header.responseSize)
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
@@ -53,8 +56,9 @@ TSS2_RC Tss2_Sys_GetRspAuths(
         if (offset_tmp > ctx->rsp_header.responseSize)
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
-        offset_tmp += sizeof(UINT16) +
-            BE_TO_HOST_16(*(UINT16 *)(ctx->cmdBuffer + offset_tmp));
+        memcpy(&tmp, ctx->cmdBuffer + offset_tmp, sizeof(UINT16));
+        offset_tmp += sizeof(UINT16);
+        offset_tmp += BE_TO_HOST_16(tmp);
 
         if (offset_tmp > ctx->rsp_header.responseSize)
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
