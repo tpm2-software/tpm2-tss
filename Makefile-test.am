@@ -175,6 +175,7 @@ ESYS_TESTS_INTEGRATION_MANDATORY = \
     test/integration/esys-quote.int \
     test/integration/esys-rsa-encrypt-decrypt.int \
     test/integration/esys-save-and-load-context.int \
+    test/integration/esys-session-attributes.int \
     test/integration/esys-stir-random.int \
     test/integration/esys-testparms.int \
     test/integration/esys-tpm-tests.int \
@@ -977,6 +978,13 @@ test_integration_esys_save_and_load_context_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_save_and_load_context_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_save_and_load_context_int_SOURCES = \
     test/integration/esys-save-and-load-context.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_session_attributes_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_session_attributes_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_session_attributes_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_session_attributes_int_SOURCES = \
+    test/integration/esys-session-attributes.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_set_algorithm_set_int_CFLAGS  = $(TESTS_CFLAGS)
