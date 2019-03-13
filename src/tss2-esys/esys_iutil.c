@@ -744,9 +744,7 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
  *
  * One parameter of a TPM response will be decrypted with the selected method.
  * @param[in]  esys_context The ESYS_CONTEXT.
- * @param[in,out] rpBuffer The buffer to be encrypted. The ecrypted data will be
- *                overridden by the result.
- * @param[in] rpBuffer_size The size of the encrypted data buffer.
+ *
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_MEMORY Memory can not be allocated.
  * @retval TSS2_ESYS_RC_BAD_VALUE for invalid parameters.
@@ -755,34 +753,36 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
  * @retval TSS2_ESYS_RC_NOT_IMPLEMENTED if hash algorithm is not implemented.
  * @retval TSS2_SYS_RC_* for SAPI errors.
  */
- TSS2_RC
-iesys_decrypt_param(ESYS_CONTEXT * esys_context,
-                    const uint8_t * rpBuffer, size_t rpBuffer_size)
+TSS2_RC
+iesys_decrypt_param(ESYS_CONTEXT * esys_context)
 {
+    TSS2_RC r;
+    const uint8_t *ciphertext;
+    size_t p2BSize;
     size_t hlen;
     RSRC_NODE_T *session;
-    session = esys_context->session_tab[esys_context->encryptNonceIdx];
-    IESYS_SESSION *rsrc_session = &session->rsrc.misc.rsrc_session;
-    TPMT_SYM_DEF *symDef = &rsrc_session->symmetric;
-    TSS2_RC r = iesys_crypto_hash_get_digest_size(rsrc_session->authHash, &hlen);
-    return_if_error(r, "Error");
+    IESYS_SESSION *rsrc_session;
+    TPMT_SYM_DEF *symDef;
     size_t key_len = TPM2_MAX_SYM_KEY_BYTES + TPM2_MAX_SYM_BLOCK_SIZE;
 
+    session = esys_context->session_tab[esys_context->encryptNonceIdx];
+    rsrc_session = &session->rsrc.misc.rsrc_session;
+    symDef = &rsrc_session->symmetric;
+
+    r = iesys_crypto_hash_get_digest_size(rsrc_session->authHash, &hlen);
+    return_if_error(r, "Error");
     if (key_len % hlen > 0)
         key_len = key_len + hlen - (key_len % hlen);
+
     uint8_t symKey[key_len];
-    UINT16 p2BSize = 0;
-    size_t offset = 0;
-    r = Tss2_MU_UINT16_Unmarshal(rpBuffer, rpBuffer_size, &offset, &p2BSize);
-    return_if_error(r, "Unmarshal error");
-    if (p2BSize > rpBuffer_size) {
-        return_error(TSS2_ESYS_RC_BAD_VALUE,
-                     "Invalid length encrypted response.");
-    }
-    LOGBLOB_DEBUG(rpBuffer, p2BSize, "IESYS encrypt data");
+
+    r = Tss2_Sys_GetEncryptParam(esys_context->sys, &p2BSize, &ciphertext);
+    return_if_error(r, "Getting encrypt param");
+
+    UINT8 plaintext[p2BSize];
+    memcpy(&plaintext[0], ciphertext, p2BSize);
 
     if (symDef->algorithm == TPM2_ALG_AES) {
-
         /* Parameter decryption with a symmetric AES key derived by KDFa */
         if (symDef->mode.aes != TPM2_ALG_CFB) {
             return_error(TSS2_ESYS_RC_BAD_VALUE,
@@ -812,22 +812,25 @@ iesys_decrypt_param(ESYS_CONTEXT * esys_context,
                                      symDef->keyBits.aes,
                                      symDef->mode.aes,
                                      AES_BLOCK_SIZE_IN_BYTES,
-                                     (uint8_t *) & rpBuffer[2], p2BSize,
+                                     &plaintext[0], p2BSize,
                                      &symKey[aes_off]);
         return_if_error(r, "Decryption error");
 
+        r = Tss2_Sys_SetEncryptParam(esys_context->sys, p2BSize, &plaintext[0]);
+        return_if_error(r, "Setting plaintext");
     } else if (symDef->algorithm == TPM2_ALG_XOR) {
-
         /* Parameter decryption with XOR obfuscation */
         r = iesys_xor_parameter_obfuscation(rsrc_session->authHash,
                                             &rsrc_session->sessionValue[0],
                                             rsrc_session->sizeSessionValue,
                                             &rsrc_session->nonceTPM,
                                             &rsrc_session->nonceCaller,
-                                            (uint8_t *) & rpBuffer[2],
+                                            &plaintext[0],
                                             p2BSize);
         return_if_error(r, "XOR obfuscation not possible.");
 
+        r = Tss2_Sys_SetEncryptParam(esys_context->sys, p2BSize, &plaintext[0]);
+        return_if_error(r, "Setting plaintext");
     } else {
         return_error(TSS2_ESYS_RC_BAD_VALUE,
                      "Invalid symmetric algorithm (should be XOR or AES)");
@@ -1391,15 +1394,10 @@ iesys_check_response(ESYS_CONTEXT * esys_context)
 
         iesys_restore_session_flags(esys_context);
 
-        r = Tss2_Sys_GetEncryptParam(esys_context->sys, &rpBuffer_size,
-                                     &rpBuffer);
-        if (r && r != TSS2_SYS_RC_NO_ENCRYPT_PARAM)
-            return_error(r, "Error: GetEncryptParam");
-
-	if (esys_context->encryptNonce == NULL)
+        if (esys_context->encryptNonce == NULL)
             return TSS2_RC_SUCCESS;
 
-        r = iesys_decrypt_param(esys_context, rpBuffer, rpBuffer_size);
+        r = iesys_decrypt_param(esys_context);
         return_if_error(r, "Error: while decrypting parameter.");
     }
     return TSS2_RC_SUCCESS;

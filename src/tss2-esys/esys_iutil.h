@@ -99,9 +99,7 @@ TSS2_RC iesys_encrypt_param(
     int *decryptNonceIdx);
 
 TSS2_RC iesys_decrypt_param(
-    ESYS_CONTEXT *esysContext,
-    const uint8_t *rpBuffer,
-    size_t rpBuffer_size);
+    ESYS_CONTEXT *esysContext);
 
 TSS2_RC iesys_check_rp_hmacs(
     ESYS_CONTEXT *esysContext,
