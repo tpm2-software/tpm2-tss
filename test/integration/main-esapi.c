@@ -22,6 +22,9 @@
  * The first invocation will be Tss2_Sys_StartUp.
  */
 
+TSS2_RC 
+(*transmit_hook) (const uint8_t *command_buffer, size_t command_size) = NULL;
+
 #define TCTI_PROXY_MAGIC 0x5250584f0a000000ULL /* 'PROXY\0\0\0' */
 #define TCTI_PROXY_VERSION 0x1
 
@@ -67,6 +70,14 @@ tcti_proxy_transmit(
 
     if (tcti_proxy->state == intercepting) {
         return TSS2_RC_SUCCESS;
+    }
+
+    if (transmit_hook != NULL) {
+        rval = transmit_hook(command_buffer, command_size);
+        if (rval != TSS2_RC_SUCCESS) {
+            LOG_ERROR("transmit hook requested error");
+            return rval;
+        }
     }
 
     rval = Tss2_Tcti_Transmit(tcti_proxy->tctiInner, command_size,
