@@ -347,8 +347,6 @@ m4_ifdef([_AX_CODE_COVERAGE_RULES],
          [AM_CONDITIONAL(AUTOCONF_CODE_COVERAGE_2019_01_06, [false])])
 AX_ADD_AM_MACRO_STATIC([])
 
-AC_OUTPUT
-
 AM_COND_IF([ENABLE_TCTI_DEVICE], [],
            [AM_COND_IF([ENABLE_TCTI_MSSIM], [],
                        [AM_COND_IF([ENABLE_TCTI_FUZZING], [],
@@ -360,6 +358,8 @@ AM_COND_IF([ENABLE_TCTI_FUZZING], [
             AM_COND_IF([ENABLE_TCTI_MSSIM],
                        AC_MSG_ERROR("Fuzzing TCTI is meant to be built as the only TCTI"), [])
             ], [])
+
+AC_OUTPUT
 
 AC_MSG_RESULT([
     $PACKAGE_NAME $VERSION
