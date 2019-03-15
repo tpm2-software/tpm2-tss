@@ -374,11 +374,14 @@ Esys_TR_SetAuth(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
     if (r != TPM2_RC_SUCCESS)
         return r;
 
-    if (authValue == NULL)
+    if (authValue == NULL) {
         esys_object->auth.size = 0;
-    else
+    } else {
+        if (authValue->size > sizeof(TPMU_HA)) {
+            return_error(TSS2_ESYS_RC_BAD_SIZE, "Bad size for auth value.");
+        }
         esys_object->auth = *authValue;
-
+    }
     return TSS2_RC_SUCCESS;
 }
 
