@@ -22,7 +22,6 @@
 #define LOGMODULE esys_crypto
 #include "util/log.h"
 #include "util/aux_util.h"
-#include "esys_crypto_ossl.h"
 
 static ENGINE *engine = NULL;
 
