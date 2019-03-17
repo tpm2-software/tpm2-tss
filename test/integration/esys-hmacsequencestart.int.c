@@ -181,7 +181,7 @@ test_esys_hmacsequencestart(ESYS_CONTEXT * esys_context)
 
     /* Check HMAC_Start with auth equal NULL */
 
- #ifdef TEST_SESSION
+#ifdef TEST_SESSION
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCaller,
