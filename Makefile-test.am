@@ -88,11 +88,9 @@ endif #UNIT
 if ENABLE_INTEGRATION
 noinst_LTLIBRARIES += test/integration/libtest_utils.la
 
-if TESTPTPM
 TESTS_INTEGRATION =
-endif
 if !TESTPTPM
-TESTS_INTEGRATION = \
+TESTS_INTEGRATION += \
     test/integration/sapi-asymmetric-encrypt-decrypt.int \
     test/integration/sapi-primary-rsa-2K-aes128cfb.int \
     test/integration/sapi-create-keyedhash-sha1-hmac.int \
@@ -220,11 +218,9 @@ if PTPMDESTRUCTIVE
 TESTS_INTEGRATION += $(ESYS_TESTS_INTEGRATION_DESTRUCTIVE)
 endif
 
-endif # TESTPTPM
-
-if !TESTPTPM
+else # TESTPTPM
 TESTS_INTEGRATION += $(ESYS_TESTS_INTEGRATION_MANDATORY) $(ESYS_TESTS_INTEGRATION_OPTIONAL) $(ESYS_TESTS_INTEGRATION_DESTRUCTIVE)
-endif # !TESTPTPM
+endif # TESTPTPM
 
 endif #ESAPI
 endif #ENABLE_INTEGRATION
