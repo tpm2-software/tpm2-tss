@@ -85,17 +85,14 @@ AC_ARG_WITH([crypto],
 AM_CONDITIONAL(ESYS_OSSL, test "x$with_crypto" = "xossl")
 AM_CONDITIONAL(ESYS_GCRYPT, test "x$with_crypto" = "xgcrypt")
 
-AS_IF([test "x$with_crypto" != "xgcrypt"],
-    AS_IF([test "x$with_crypto" != "xossl"],
-          AC_MSG_ERROR([Bad value for --with-crypto $with_crypto])))
+AS_IF([test "x$with_crypto" != xgcrypt -a "x$with_crypto" != xossl],
+          AC_MSG_ERROR([Bad value for --with-crypto $with_crypto]))
 
-AS_IF([test "x$enable_esapi" != xno -a "x$with_crypto" = "xgcrypt"],
+AS_IF([test "x$enable_esapi" != xno -a "x$with_crypto" = xgcrypt],
       [AC_CHECK_HEADER([gcrypt.h],
                        [],
-                       [AC_MSG_ERROR([Missing required header: gcrypt.h.])])])
-
-AS_IF([test "x$enable_esapi" != xno -a "x$with_cryptor" = "xgcrypt"],
-      [AC_CHECK_LIB([gcrypt],
+                       [AC_MSG_ERROR([Missing required header: gcrypt.h.])])
+       AC_CHECK_LIB([gcrypt],
                     [gcry_mac_open],
                     [],
                     [AC_MSG_ERROR([Missing required library: gcrypt.])])])
