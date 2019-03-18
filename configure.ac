@@ -9,8 +9,8 @@ AC_INIT([tpm2-tss],
         [],
         [https://github.com/tpm2-software/tpm2-tss])
 AC_CONFIG_MACRO_DIR([m4])
-AC_PROG_CXX([clang++ g++])
-AC_PROG_CC([clang gcc])
+AC_PROG_CXX
+AC_PROG_CC
 LT_INIT()
 AM_INIT_AUTOMAKE([foreign
                   subdir-objects])
