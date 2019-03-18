@@ -29,13 +29,11 @@ noinst_PROGRAMS += test/helper/tpm_startup
 test_helper_tpm_startup_CFLAGS = $(TESTS_CFLAGS) -I$(srcdir)/test/integration
 test_helper_tpm_startup_LDFLAGS = $(TESTS_LDFLAGS)
 test_helper_tpm_startup_LDADD = $(TESTS_LDADD)
-test_helper_tpm_startup_SOURCES = test/helper/tpm_startup.c
 
 noinst_PROGRAMS += test/helper/tpm_transientempty
 test_helper_tpm_transientempty_CFLAGS = $(TESTS_CFLAGS) -I$(srcdir)/test/integration
 test_helper_tpm_transientempty_LDFLAGS = $(TESTS_LDFLAGS)
 test_helper_tpm_transientempty_LDADD = $(TESTS_LDADD)
-test_helper_tpm_transientempty_SOURCES = test/helper/tpm_transientempty.c
 endif #ENABLE_INTEGRATION
 
 if ESYS_OSSL
@@ -252,71 +250,55 @@ test_unit_tcti_mssim_SOURCES = test/unit/tcti-mssim.c \
 test_unit_io_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_io_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
 test_unit_io_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=socket,--wrap=write
-test_unit_io_SOURCES = test/unit/io.c
 
 test_unit_key_value_parse_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_key_value_parse_LDADD   = $(CMOCKA_LIBS) $(libutil)
-test_unit_key_value_parse_SOURCES = test/unit/key-value-parse.c
 
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_CommonPreparePrologue_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
 test_unit_CommonPreparePrologue_LDADD = $(CMOCKA_LIBS) $(libtss2_sys)
-test_unit_CommonPreparePrologue_SOURCES = test/unit/CommonPreparePrologue.c
 
 test_unit_GetNumHandles_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_GetNumHandles_LDADD   = $(CMOCKA_LIBS) $(libtss2_sys)
-test_unit_GetNumHandles_SOURCES = test/unit/GetNumHandles.c
 
 test_unit_CopyCommandHeader_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_CopyCommandHeader_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
 test_unit_CopyCommandHeader_LDADD = $(CMOCKA_LIBS) $(libtss2_sys)
-test_unit_CopyCommandHeader_SOURCES = test/unit/CopyCommandHeader.c
 
 test_unit_UINT8_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_UINT8_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
-test_unit_UINT8_marshal_SOURCES = test/unit/UINT8-marshal.c
 
 test_unit_UINT16_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_UINT16_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
-test_unit_UINT16_marshal_SOURCES = test/unit/UINT16-marshal.c
 
 test_unit_UINT32_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_UINT32_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
-test_unit_UINT32_marshal_SOURCES = test/unit/UINT32-marshal.c
 
 test_unit_UINT64_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_UINT64_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
-test_unit_UINT64_marshal_SOURCES = test/unit/UINT64-marshal.c
 
 test_unit_TPMA_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_TPMA_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
-test_unit_TPMA_marshal_SOURCES = test/unit/TPMA-marshal.c
 
 test_unit_TPM2B_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_TPM2B_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
-test_unit_TPM2B_marshal_SOURCES = test/unit/TPM2B-marshal.c
 
 test_unit_TPMS_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_TPMS_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
-test_unit_TPMS_marshal_SOURCES = test/unit/TPMS-marshal.c
 
 test_unit_TPML_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_TPML_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
-test_unit_TPML_marshal_SOURCES = test/unit/TPML-marshal.c
 
 test_unit_TPMT_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_TPMT_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
-test_unit_TPMT_marshal_SOURCES = test/unit/TPMT-marshal.c
 
 test_unit_TPMU_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_TPMU_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
-test_unit_TPMU_marshal_SOURCES = test/unit/TPMU-marshal.c
 
 if ESAPI
 test_unit_esys_context_null_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_context_null_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_context_null_LDFLAGS = $(TESTS_LDFLAGS) $(esyscryLDFLAGS)
-test_unit_esys_context_null_SOURCES = test/unit/esys-context-null.c
 
 test_unit_esys_default_tcti_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) \
         -UESYS_TCTI_DEFAULT_MODULE -UESYS_TCTI_DEFAUT_CONFIG
@@ -331,27 +313,22 @@ test_unit_esys_default_tcti_SOURCES = test/unit/esys-default-tcti.c \
 test_unit_esys_resubmissions_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_resubmissions_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_resubmissions_LDFLAGS = $(TESTS_LDFLAGS)
-test_unit_esys_resubmissions_SOURCES = test/unit/esys-resubmissions.c
 
 test_unit_esys_sequence_finish_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_sequence_finish_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_sequence_finish_LDFLAGS = $(TESTS_LDFLAGS)
-test_unit_esys_sequence_finish_SOURCES = test/unit/esys-sequence-finish.c
 
 test_unit_esys_tcti_rcs_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_tcti_rcs_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_tcti_rcs_LDFLAGS = $(TESTS_LDFLAGS)
-test_unit_esys_tcti_rcs_SOURCES = test/unit/esys-tcti-rcs.c
 
 test_unit_esys_tpm_rcs_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_tpm_rcs_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_tpm_rcs_LDFLAGS = $(TESTS_LDFLAGS)
-test_unit_esys_tpm_rcs_SOURCES = test/unit/esys-tpm-rcs.c
 
 test_unit_esys_getpollhandles_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_getpollhandles_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_getpollhandles_LDFLAGS = $(TESTS_LDFLAGS)
-test_unit_esys_getpollhandles_SOURCES = test/unit/esys-getpollhandles.c
 
 test_unit_esys_nulltcti_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_nulltcti_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
