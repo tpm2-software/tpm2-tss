@@ -97,16 +97,12 @@ AS_IF([test "x$enable_esapi" != xno -a "x$with_crypto" = xgcrypt],
                     [],
                     [AC_MSG_ERROR([Missing required library: gcrypt.])])])
 
-AS_IF([test "x$enable_esapi" != xno -a "x$with_crypto" = "xossl"],
-      [AC_CHECK_HEADER([openssl/ssl.h],
-                       [],
-                       [AC_MSG_ERROR([Missing required header: openssl/ssl.h.])])])
-
-AS_IF([test "x$enable_esapi" != xno -a "x$with_crypto" = "xossl"],
-    AC_CHECK_LIB(ssl, OPENSSL_init_ssl, [FOUND_SSL_LIB="yes"]))
-
-AS_IF([test "x$enable_esapi" != xno -a "x$with_crypto" = "xossl"],
-    AC_CHECK_LIB(crypto, CRYPTO_new_ex_data, [], [AC_MSG_ERROR([library 'crypto' is required for OpenSSL])]))
+AS_IF([test "x$enable_esapi" != xno -a "x$with_crypto" = xossl],
+      [AC_CHECK_HEADER([openssl/ssl.h],,
+                       [AC_MSG_ERROR([Missing required header: openssl/ssl.h.])])
+       AC_CHECK_LIB(ssl, OPENSSL_init_ssl, [FOUND_SSL_LIB="yes"])
+       AC_CHECK_LIB(crypto, CRYPTO_new_ex_data,, [AC_MSG_ERROR([library 'crypto' is required for OpenSSL])])
+      ])
 
 AC_ARG_WITH([tctidefaultmodule],
             [AS_HELP_STRING([--with-tctidefaultmodule],
