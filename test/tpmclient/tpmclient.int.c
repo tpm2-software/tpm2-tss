@@ -1469,79 +1469,6 @@ static void TestQuote()
     CheckPassed( rval );
 }
 
-static void ProvisionOtherIndices()
-{
-    UINT32 rval;
-    TPMI_SH_AUTH_SESSION otherIndicesPolicyAuthHandle;
-    TPM2B_DIGEST  nvPolicyHash;
-    TPM2B_AUTH  nvAuth;
-    TSS2L_SYS_AUTH_RESPONSE otherIndicesSessionsDataOut;
-    TPM2B_NV_PUBLIC publicInfo;
-    TSS2L_SYS_AUTH_COMMAND otherIndicesSessionsData = { .count = 1, .auths= {{
-        .sessionHandle = TPM2_RS_PW,
-        .sessionAttributes = 0,
-        .nonce={.size=0},
-        .hmac={.size=0}}}};
-
-    LOG_INFO("PROVISION OTHER NV INDICES:" );
-
-    /*
-     * AUX index: Write is controlled by TPM2_PolicyLocality; Read is controlled by authValue and is unrestricted since authValue is set to emptyBuffer
-     * Do this by setting up two policies and ORing them together when creating AuxIndex:
-     * 1.  PolicyLocality(3) && PolicyCommand(NVWrite)
-     * 2.  EmptyAuth policy && PolicyCommand(NVRead)
-     * Page 126 of Part 1 describes how to do this.
-     */
-
-    /* Steps: */
-    rval = StartPolicySession( &otherIndicesPolicyAuthHandle );
-    CheckPassed( rval );
-
-    /* 3.  GetPolicyDigest and save it */
-    INIT_SIMPLE_TPM2B_SIZE( nvPolicyHash );
-    rval = Tss2_Sys_PolicyGetDigest( sysContext, otherIndicesPolicyAuthHandle, 0, &nvPolicyHash, 0 );
-    CheckPassed( rval );
-
-    /* Now save the policy digest from the first OR branch. */
-    LOGBLOB_INFO(&( nvPolicyHash.buffer[0] ), nvPolicyHash.size, "nvPolicyHash");
-
-    /* init nvAuth */
-    nvAuth.size = 0;
-
-    publicInfo.size = 0;
-    publicInfo.nvPublic.nvIndex = INDEX_LCP_SUP;
-    publicInfo.nvPublic.nameAlg = TPM2_ALG_SHA1;
-
-    /* First zero out attributes. */
-    publicInfo.nvPublic.attributes = 0;
-
-    /* Now set the attributes. */
-    publicInfo.nvPublic.attributes |= TPMA_NV_AUTHREAD;
-    publicInfo.nvPublic.attributes |= TPMA_NV_AUTHWRITE;
-    publicInfo.nvPublic.attributes |= TPMA_NV_PLATFORMCREATE;
-    /* Following commented out for convenience during development. */
-    /* publicInfo.nvPublic.attributes |= TPMA_NV_POLICY_DELETE; */
-    publicInfo.nvPublic.attributes |= TPMA_NV_WRITEDEFINE;
-    publicInfo.nvPublic.attributes |= TPMA_NV_ORDERLY;
-
-    publicInfo.nvPublic.authPolicy.size = 0;
-    publicInfo.nvPublic.dataSize = NV_PS_INDEX_SIZE;
-
-    rval = Tss2_Sys_NV_DefineSpace( sysContext, TPM2_RH_PLATFORM, &otherIndicesSessionsData,
-            &nvAuth, &publicInfo, &otherIndicesSessionsDataOut );
-    CheckPassed( rval );
-
-    publicInfo.nvPublic.nvIndex = INDEX_LCP_OWN;
-    rval = Tss2_Sys_NV_DefineSpace( sysContext, TPM2_RH_PLATFORM, &otherIndicesSessionsData,
-            &nvAuth, &publicInfo, &otherIndicesSessionsDataOut );
-    CheckPassed( rval );
-
-    /* Now teardown session */
-    rval = Tss2_Sys_FlushContext( sysContext, otherIndicesPolicyAuthHandle );
-    CheckPassed( rval );
-}
-
-
 static TSS2_RC InitNvAuxPolicySession( TPMI_SH_AUTH_SESSION *nvAuxPolicySessionHandle )
 {
     TPMA_LOCALITY locality;
@@ -1726,36 +1653,6 @@ static void TpmAuxReadWriteTest()
     }
 }
 
-static void TpmOtherIndicesReadWriteTest()
-{
-    UINT32 rval;
-    TPM2B_MAX_NV_BUFFER nvWriteData;
-    int i;
-    TPM2B_MAX_NV_BUFFER nvData;
-
-    nullSessionsData.auths[0].sessionHandle = TPM2_RS_PW;
-
-    LOG_INFO("TPM OTHER READ/WRITE TEST" );
-
-    nvWriteData.size = 4;
-    for( i = 0; i < nvWriteData.size; i++ )
-        nvWriteData.buffer[i] = 0xff - i;
-
-    rval = Tss2_Sys_NV_Write( sysContext, INDEX_LCP_SUP, INDEX_LCP_SUP, &nullSessionsData, &nvWriteData, 0, &nullSessionsDataOut );
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_NV_Write( sysContext, INDEX_LCP_OWN, INDEX_LCP_OWN, &nullSessionsData, &nvWriteData, 0, &nullSessionsDataOut );
-    CheckPassed( rval );
-
-    INIT_SIMPLE_TPM2B_SIZE( nvData );
-    rval = Tss2_Sys_NV_Read( sysContext, INDEX_LCP_SUP, INDEX_LCP_SUP, &nullSessionsData, 4, 0, &nvData, &nullSessionsDataOut );
-    CheckPassed( rval );
-
-    INIT_SIMPLE_TPM2B_SIZE( nvData );
-    rval = Tss2_Sys_NV_Read( sysContext, INDEX_LCP_OWN, INDEX_LCP_OWN, &nullSessionsData, 4, 0, &nvData, &nullSessionsDataOut );
-    CheckPassed( rval );
-}
-
 static void NvIndexProto()
 {
     UINT32 rval;
@@ -1776,23 +1673,10 @@ static void NvIndexProto()
     /* Now we need to configure NV indices */
     ProvisionNvAux();
 
-    ProvisionOtherIndices();
-
     TpmAuxReadWriteTest();
-
-    TpmOtherIndicesReadWriteTest();
 
     /* Now undefine the aux index, so that subsequent test passes will work. */
     rval = Tss2_Sys_NV_UndefineSpace( sysContext, TPM2_RH_PLATFORM, INDEX_AUX, &nullSessionsData, &nullSessionsDataOut );
-    CheckPassed( rval );
-
-    /*
-     * Now undefine the other indices, so that subsequent test passes will work.
-     */
-    rval = Tss2_Sys_NV_UndefineSpace( sysContext, TPM2_RH_PLATFORM, INDEX_LCP_SUP, &nullSessionsData, &nullSessionsDataOut );
-    CheckPassed( rval );
-
-    rval = Tss2_Sys_NV_UndefineSpace( sysContext, TPM2_RH_PLATFORM, INDEX_LCP_OWN, &nullSessionsData, &nullSessionsDataOut );
     CheckPassed( rval );
 }
 
