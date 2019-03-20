@@ -74,7 +74,7 @@ TSS2_RC Tss2_Sys_EncryptDecrypt_Prepare(
     if (rval)
         return rval;
 
-    ctx->decryptAllowed = 1;
+    ctx->decryptAllowed = 0;
     ctx->encryptAllowed = 1;
     ctx->authAllowed = 1;
 
