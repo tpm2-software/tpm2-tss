@@ -23,16 +23,6 @@
 #include "util/log.h"
 #include "esys_crypto_ossl.h"
 
-static ENGINE *engine = NULL;
-
-ENGINE *get_engine()
-{
-    if (engine)
-        return engine;
-    engine = ENGINE_by_id("openssl");
-    return engine;
-}
-
 static int
 iesys_bn2binpad(const BIGNUM *bn, unsigned char *bin, int bin_length)
 {
@@ -147,7 +137,7 @@ iesys_cryptossl_hash_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
 
     if (1 != EVP_DigestInit_ex(mycontext->hash.ossl_context,
                                mycontext->hash.ossl_hash_alg,
-                               get_engine())) {
+                               NULL)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Errror EVP_DigestInit_ex", cleanup);
     }
 
@@ -341,13 +331,13 @@ iesys_cryptossl_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
                    "Error EVP_MD_CTX_create", cleanup);
     }
 
-    if (!(hkey = EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, get_engine(), key, size))) {
+    if (!(hkey = EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, NULL, key, size))) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "EVP_PKEY_new_mac_key", cleanup);
     }
 
     if(1 != EVP_DigestSignInit(mycontext->hmac.ossl_context, NULL,
-                               mycontext->hmac.ossl_hash_alg, get_engine(), hkey)) {
+                               mycontext->hmac.ossl_hash_alg, NULL, hkey)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "DigestSignInit", cleanup);
     }
@@ -666,7 +656,7 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
                    "Could not set rsa key.", cleanup);
     }
 
-    if (!(ctx = EVP_PKEY_CTX_new(evp_rsa_key, get_engine()))) {
+    if (!(ctx = EVP_PKEY_CTX_new(evp_rsa_key, NULL))) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Could not create evp context.", cleanup);
     }
@@ -1024,11 +1014,11 @@ iesys_cryptossl_sym_aes_encrypt(uint8_t * key,
                    "Initialize cipher context", cleanup);
     }
 
-    if (1 != EVP_EncryptInit_ex(ctx, cipher_alg, get_engine(), key, iv)) {
+    if (1 != EVP_EncryptInit_ex(ctx, cipher_alg, NULL, key, iv)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Initialize cipher operation", cleanup);
     }
-    if (1 != EVP_EncryptInit_ex(ctx, NULL, get_engine(), key, iv)) {
+    if (1 != EVP_EncryptInit_ex(ctx, NULL, NULL, key, iv)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Set key and iv", cleanup);
     }
 
@@ -1112,12 +1102,12 @@ iesys_cryptossl_sym_aes_decrypt(uint8_t * key,
 
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS AES input");
 
-    if (1 != EVP_DecryptInit_ex(ctx, cipher_alg, get_engine(), key, iv)) {
+    if (1 != EVP_DecryptInit_ex(ctx, cipher_alg, NULL, key, iv)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Initialize cipher operation", cleanup);
     }
 
-    if (1 != EVP_DecryptInit_ex(ctx, NULL, get_engine(), key, iv)) {
+    if (1 != EVP_DecryptInit_ex(ctx, NULL, NULL, key, iv)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Set key and iv", cleanup);
     }
 
