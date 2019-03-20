@@ -201,7 +201,6 @@ tss2_HEADERS = \
 ### Internal utility library
 libutil = libutil.la
 noinst_LTLIBRARIES += $(libutil)
-libutil_la_CFLAGS = $(AM_CFLAGS)
 libutil_la_SOURCES = $(UTIL_SRC)
 
 ### TCG TSS Marshaling/Unmarshaling spec library ###
@@ -226,7 +225,6 @@ lib_LTLIBRARIES += $(libtss2_tcti_device)
 nodist_pkgconfig_DATA += lib/tss2-tcti-device.pc
 EXTRA_DIST += lib/tss2-tcti-device.map lib/tss2-tcti-device.pc.in
 
-src_tss2_tcti_libtss2_tcti_device_la_CFLAGS   = $(AM_CFLAGS)
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-device.map
 endif # HAVE_LD_VERSION_SCRIPT
@@ -244,7 +242,6 @@ lib_LTLIBRARIES += $(libtss2_tcti_mssim)
 nodist_pkgconfig_DATA += lib/tss2-tcti-mssim.pc
 EXTRA_DIST += lib/tss2-tcti-mssim.map lib/tss2-tcti-mssim.pc.in
 
-src_tss2_tcti_libtss2_tcti_mssim_la_CFLAGS   = $(AM_CFLAGS)
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_mssim_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-mssim.map
 endif # HAVE_LD_VERSION_SCRIPT

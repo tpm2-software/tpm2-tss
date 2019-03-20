@@ -12,7 +12,6 @@ if ENABLE_TCTI_FUZZING
 libtss2_tcti_fuzzing = test/fuzz/tcti/libtss2-tcti-fuzzing.la
 noinst_LTLIBRARIES += $(libtss2_tcti_fuzzing)
 
-test_fuzz_tcti_libtss2_tcti_fuzzing_la_CFLAGS   = $(AM_CFLAGS)
 test_fuzz_tcti_libtss2_tcti_fuzzing_la_LIBADD   = $(TESTS_LIBADD)
 test_fuzz_tcti_libtss2_tcti_fuzzing_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c src/tss2-tcti/tcti-common.h \
