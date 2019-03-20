@@ -292,7 +292,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 }
 
 /*
- * These macros expand to (un)marshal functions for each of the TPMA types
+ * These macros expand to (un)marshal functions for each of the TPM2B types
  * the specification part 2.
  */
 TPM2B_MARSHAL  (TPM2B_DIGEST);
