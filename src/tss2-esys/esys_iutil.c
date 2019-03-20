@@ -652,9 +652,17 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
             continue;
         IESYS_SESSION *rsrc_session = &session->rsrc.misc.rsrc_session;
         TPMT_SYM_DEF *symDef = &rsrc_session->symmetric;
-        if (rsrc_session->sessionAttributes & TPMA_SESSION_ENCRYPT) {
+        if (rsrc_session->sessionAttributes & TPMA_SESSION_ENCRYPT)
             return_if_notnull(encryptNonce, "More than one encrypt session",
                                TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS);
+        if (rsrc_session->sessionAttributes & TPMA_SESSION_DECRYPT)
+            return_if_notnull(*decryptNonce, "More than one decrypt session",
+                               TSS2_ESYS_RC_MULTIPLE_DECRYPT_SESSIONS);
+
+        if (!iesys_update_session_flags(esys_context, rsrc_session))
+            return TSS2_RC_SUCCESS;
+
+        if (rsrc_session->sessionAttributes & TPMA_SESSION_ENCRYPT) {
             esys_context->encryptNonceIdx = i;
             encryptNonce = &rsrc_session->nonceTPM;
             esys_context->encryptNonce = encryptNonce;
@@ -663,8 +671,6 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
 
         /* Session for encryption found */
         if (rsrc_session->sessionAttributes & TPMA_SESSION_DECRYPT) {
-            return_if_notnull(*decryptNonce, "More than one decrypt session",
-                               TSS2_ESYS_RC_MULTIPLE_DECRYPT_SESSIONS);
             *decryptNonceIdx = i;
             *decryptNonce = &rsrc_session->nonceTPM;
             size_t hlen;
@@ -676,9 +682,6 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
             uint8_t symKey[key_len];
             size_t paramSize = 0;
             const uint8_t *paramBuffer;
-
-             if (!iesys_update_session_flags(esys_context, rsrc_session))
-                  return TSS2_RC_SUCCESS;
 
             r = Tss2_Sys_GetDecryptParam(esys_context->sys, &paramSize,
                                          &paramBuffer);
