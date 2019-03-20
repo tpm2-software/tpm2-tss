@@ -10,6 +10,7 @@
 #include "tss2_mu.h"
 
 #include "esys_iutil.h"
+#define LOGDEFAULT LOGLEVEL_INFO
 #define LOGMODULE test
 #include "util/log.h"
 #include "util/aux_util.h"
@@ -102,6 +103,8 @@ test_esys_session_attributes(ESYS_CONTEXT * esys_context)
         .count = 0,
     };
 
+    TPM2B_DIGEST *rdata;
+
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
@@ -109,6 +112,7 @@ test_esys_session_attributes(ESYS_CONTEXT * esys_context)
                               &session);
     goto_if_error(r, "Error: During initialization of session", error);
 
+    /* Testing Encrypt and Decrypt, both set */
     r = Esys_TRSess_SetAttributes(esys_context, session,
                                   TPMA_SESSION_DECRYPT | TPMA_SESSION_ENCRYPT,
                                   TPMA_SESSION_DECRYPT | TPMA_SESSION_ENCRYPT);
@@ -129,6 +133,41 @@ test_esys_session_attributes(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, objectHandle);
     goto_if_error(r, "Error during FlushContext", error);
 
+    r = Esys_FlushContext(esys_context, session);
+    goto_if_error(r, "Flushing context", error);
+
+    /* Testing only Encrypt, i.e. responses, set */
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              NULL,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              &session);
+    goto_if_error(r, "Error: During initialization of session", error);
+
+    r = Esys_TRSess_SetAttributes(esys_context, session,
+                                  TPMA_SESSION_ENCRYPT,
+                                  TPMA_SESSION_DECRYPT | TPMA_SESSION_ENCRYPT);
+    goto_if_error(r, "Error: During initialization of attributes", error);
+
+    handles = 0;
+    session1_attributes = TPMA_SESSION_CONTINUESESSION | TPMA_SESSION_ENCRYPT;
+    transmit_hook = hookcheck_session1;
+
+    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, 
+                       10, &rdata);
+    transmit_hook = NULL;
+    goto_if_error(r, "Error esapi create primary", error);
+
+    transmit_hook = hookcheck_session1;
+
+    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, 
+                       10, &rdata);
+    transmit_hook = NULL;
+    goto_if_error(r, "Error esapi create primary", error);
+
+    LOGBLOB_INFO(&rdata->buffer[0], rdata->size, "rdata");
+
+    /* Cleanup */   
     r = Esys_FlushContext(esys_context, session);
     goto_if_error(r, "Flushing context", error);
 
@@ -166,7 +205,7 @@ hookcheck_session1 (const uint8_t *command_buffer, size_t command_size)
     TPM2_ST tag;
     TPMS_AUTH_COMMAND session1;
 
-    LOGBLOB_ERROR(command_buffer, command_size, "command");
+    LOGBLOB_INFO(command_buffer, command_size, "command");
 
     r = Tss2_MU_UINT16_Unmarshal(command_buffer, command_size, NULL, &tag);
     return_if_error(r, "Unmarshalling AuthSize failed");
