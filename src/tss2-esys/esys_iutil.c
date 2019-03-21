@@ -562,19 +562,15 @@ iesys_gen_caller_nonces(ESYS_CONTEXT * esys_context)
  * @retval TRUE if command support param encryption
  * @retval FLASE if command does not support param encryption
  */
-static bool
+static void
 iesys_update_session_flags(ESYS_CONTEXT * esys_context,
                            IESYS_SESSION *rsrc_session)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
     size_t param_size;
     const uint8_t *param_buffer;
-    bool encrypt = true;
 
     LOG_DEBUG("Checking if command supports enc/dec");
-    LOG_DEBUG("Session Attrs 0x%x orig 0x%x",
-	      rsrc_session->sessionAttributes,
-	      rsrc_session->origSessionAttributes);
 
     rsrc_session->origSessionAttributes = rsrc_session->sessionAttributes;
 
@@ -583,7 +579,6 @@ iesys_update_session_flags(ESYS_CONTEXT * esys_context,
     if (r == TSS2_SYS_RC_NO_DECRYPT_PARAM) {
         LOG_DEBUG("clear TPMA_SESSION_DECRYPT flag");
         rsrc_session->sessionAttributes &= ~(TPMA_SESSION_DECRYPT);
-        encrypt = false;
     }
 
     r = Tss2_Sys_GetEncryptParam(esys_context->sys,
@@ -593,11 +588,9 @@ iesys_update_session_flags(ESYS_CONTEXT * esys_context,
         rsrc_session->sessionAttributes &= ~(TPMA_SESSION_ENCRYPT);
     }
 
-    if (!encrypt) {
-        LOG_DEBUG("command does not allow encryption");
-        return false;
-    }
-    return true;
+    LOG_DEBUG("Session Attrs 0x%x orig 0x%x",
+	      rsrc_session->sessionAttributes,
+	      rsrc_session->origSessionAttributes);
 }
 
 /** Restore session attributes.
@@ -611,13 +604,16 @@ iesys_restore_session_flags(ESYS_CONTEXT *esys_context)
 {
     LOG_DEBUG("Restoring session attribs");
 
-    if (esys_context->enc_session) {
-        LOG_DEBUG("Orig Session Attrs 0x%x, altered Attrs x%x",
-                  esys_context->enc_session->origSessionAttributes,
-                  esys_context->enc_session->sessionAttributes);
+    for (int i = 0; i < 3; i++) {
+        RSRC_NODE_T *session = esys_context->session_tab[i];
+        if (session == NULL)
+            continue;
+        IESYS_SESSION *rsrc_session = &session->rsrc.misc.rsrc_session;
+        LOG_DEBUG("Orig Session %i Attrs 0x%x, altered Attrs x%x", i,
+                  rsrc_session->origSessionAttributes,
+                  rsrc_session->sessionAttributes);
 
-        esys_context->enc_session->sessionAttributes =
-            esys_context->enc_session->origSessionAttributes;
+        rsrc_session->sessionAttributes = rsrc_session->origSessionAttributes;
     }
 }
 
@@ -651,7 +647,6 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
         if (session == NULL)
             continue;
         IESYS_SESSION *rsrc_session = &session->rsrc.misc.rsrc_session;
-        TPMT_SYM_DEF *symDef = &rsrc_session->symmetric;
         if (rsrc_session->sessionAttributes & TPMA_SESSION_ENCRYPT)
             return_if_notnull(encryptNonce, "More than one encrypt session",
                                TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS);
@@ -659,8 +654,15 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
             return_if_notnull(*decryptNonce, "More than one decrypt session",
                                TSS2_ESYS_RC_MULTIPLE_DECRYPT_SESSIONS);
 
-        if (!iesys_update_session_flags(esys_context, rsrc_session))
-            return TSS2_RC_SUCCESS;
+        iesys_update_session_flags(esys_context, rsrc_session);
+    }
+
+    for (int i = 0; i < 3; i++) {
+        RSRC_NODE_T *session = esys_context->session_tab[i];
+        if (session == NULL)
+            continue;
+        IESYS_SESSION *rsrc_session = &session->rsrc.misc.rsrc_session;
+        TPMT_SYM_DEF *symDef = &rsrc_session->symmetric;
 
         if (rsrc_session->sessionAttributes & TPMA_SESSION_ENCRYPT) {
             esys_context->encryptNonceIdx = i;
@@ -1125,7 +1127,7 @@ iesys_check_sequence_async(ESYS_CONTEXT * esys_context)
     }
     /* TODO: Check if RESUBMISSION BELONGS HERE OR RATHER INTO THE FINISH METHOD. */
     if (esys_context->state == _ESYS_STATE_RESUBMISSION) {
-	iesys_restore_session_flags(esys_context);
+        iesys_restore_session_flags(esys_context);
         esys_context->submissionCount++;
         LOG_DEBUG("The command will be resubmitted for the %i time.",
                   esys_context->submissionCount);
@@ -1395,13 +1397,15 @@ iesys_check_response(ESYS_CONTEXT * esys_context)
                                  rpHashNum);
         return_if_error(r, "Error: response hmac check");
 
-        iesys_restore_session_flags(esys_context);
-
-        if (esys_context->encryptNonce == NULL)
+        if (esys_context->encryptNonce == NULL) {
+            iesys_restore_session_flags(esys_context);
             return TSS2_RC_SUCCESS;
+        }
 
         r = iesys_decrypt_param(esys_context);
         return_if_error(r, "Error: while decrypting parameter.");
+        iesys_restore_session_flags(esys_context);
+
     }
     return TSS2_RC_SUCCESS;
 }
