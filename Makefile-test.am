@@ -6,7 +6,8 @@
 TESTS_CFLAGS = $(AM_CFLAGS) $(LIBCRYPTO_CFLAGS) -I$(srcdir)/src/tss2-mu \
     -I$(srcdir)/src/tss2-sys -I$(srcdir)/src/tss2-esys \
     -Wno-unused-parameter -Wno-missing-field-initializers
-TESTS_LDADD = $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES) $(LIBCRYPTO_LIBS) $(libutil)
+TESTS_LDADD = $(check_LTLIBRARIES) $(noinst_LTLIBRARIES) $(lib_LTLIBRARIES) \
+    $(LIBCRYPTO_LIBS) $(libutil)
 
 # test harness configuration
 TEST_EXTENSIONS = .int
@@ -25,12 +26,12 @@ check_PROGRAMS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
 TESTS = $(check_PROGRAMS)
 
 if ENABLE_INTEGRATION
-noinst_PROGRAMS += test/helper/tpm_startup
+check_PROGRAMS += test/helper/tpm_startup
 test_helper_tpm_startup_CFLAGS = $(TESTS_CFLAGS) -I$(srcdir)/test/integration
 test_helper_tpm_startup_LDFLAGS = $(TESTS_LDFLAGS)
 test_helper_tpm_startup_LDADD = $(TESTS_LDADD)
 
-noinst_PROGRAMS += test/helper/tpm_transientempty
+check_PROGRAMS += test/helper/tpm_transientempty
 test_helper_tpm_transientempty_CFLAGS = $(TESTS_CFLAGS) -I$(srcdir)/test/integration
 test_helper_tpm_transientempty_LDFLAGS = $(TESTS_LDFLAGS)
 test_helper_tpm_transientempty_LDADD = $(TESTS_LDADD)
@@ -84,7 +85,7 @@ endif ESAPI
 endif #UNIT
 
 if ENABLE_INTEGRATION
-noinst_LTLIBRARIES += test/integration/libtest_utils.la
+check_LTLIBRARIES = test/integration/libtest_utils.la
 
 TESTS_INTEGRATION =
 if !TESTPTPM
