@@ -352,9 +352,9 @@ AM_COND_IF([ENABLE_TCTI_DEVICE], [],
 
 AM_COND_IF([ENABLE_TCTI_FUZZING], [
             AM_COND_IF([ENABLE_TCTI_DEVICE],
-                       AC_MSG_ERROR("Fuzzing TCTI is meant to be built as the only TCTI"), [])
+                       AC_MSG_ERROR([Fuzzing TCTI is meant to be built as the only TCTI: use --disable-tcti-device --disable-tcti-mssim]))
             AM_COND_IF([ENABLE_TCTI_MSSIM],
-                       AC_MSG_ERROR("Fuzzing TCTI is meant to be built as the only TCTI"), [])
+                       AC_MSG_ERROR([Fuzzing TCTI is meant to be built as the only TCTI: use --disable-tcti-device --disable-tcti-mssim]))
             AS_IF([test "x$CC" != "xclang"],
                        AC_MSG_ERROR("Fuzzing TCTI can only be used with clang"), [])
             ], [])
