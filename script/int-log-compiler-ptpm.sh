@@ -84,7 +84,7 @@ TEST_NAME=$(basename "${TEST_BIN}")
 while true; do
 
 env TPM20TEST_TCTI_NAME="device" \
-    TPM2OTEST_DEVICE_FILE=${PTPM} \
+    TPM20TEST_DEVICE_FILE=${PTPM} \
     G_MESSAGES_DEBUG=all ./test/helper/tpm_transientempty
 if [ $? -ne 0 ]; then
     echo "TPM transient area not empty => skipping"
@@ -94,13 +94,13 @@ fi
 
 echo "Execute the test script"
 env TPM20TEST_TCTI_NAME="device" \
-    TPM2OTEST_DEVICE_FILE=${PTPM} \
+    TPM20TEST_DEVICE_FILE=${PTPM} \
     G_MESSAGES_DEBUG=all $@
 ret=$?
 echo "Script returned $ret"
 
 env TPM20TEST_TCTI_NAME="device" \
-    TPM2OTEST_DEVICE_FILE=${PTPM} \
+    TPM20TEST_DEVICE_FILE=${PTPM} \
     G_MESSAGES_DEBUG=all ./test/helper/tpm_transientempty
 if [ $? -ne 0 ]; then
     echo "TPM transient area not empty or generally failed after test"
