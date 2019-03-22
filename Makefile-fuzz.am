@@ -7,6 +7,7 @@ FUZZ_LOG_COMPILER = $(srcdir)/script/fuzz-log-compiler.sh
 INCLUDE_DIRS += -I$(srcdir)/test/fuzz/tcti
 TESTS_LIBADD = $(lib_LTLIBRARIES) $(libtss2_mu) $(libtss2_sys) $(libutil)
 
+EXTRA_DIST += test/fuzz/main-sapi.cpp
 # tcti library used for fuzzing
 if ENABLE_TCTI_FUZZING
 libtss2_tcti_fuzzing = test/fuzz/tcti/libtss2-tcti-fuzzing.la
@@ -15,7 +16,8 @@ check_LTLIBRARIES += $(libtss2_tcti_fuzzing)
 test_fuzz_tcti_libtss2_tcti_fuzzing_la_LIBADD   = $(TESTS_LIBADD)
 test_fuzz_tcti_libtss2_tcti_fuzzing_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c src/tss2-tcti/tcti-common.h \
-    test/fuzz/tcti/tcti-fuzzing.c test/fuzz/tcti/tcti-fuzzing.h
+    test/fuzz/tcti/tcti-fuzzing.c test/fuzz/tcti/tcti-fuzzing.h \
+    test/fuzz/tcti/tss2_tcti_fuzzing.h
 endif # ENABLE_TCTI_FUZZING
 
 if ENABLE_FUZZING
