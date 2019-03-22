@@ -210,7 +210,7 @@ AS_CASE(["x$with_fuzzing"],
         [AC_MSG_ERROR([Bad value for --with-fuzzing])])
 AM_CONDITIONAL([ENABLE_FUZZING],[test "x$with_fuzzing" != "xnone"])
 AS_IF([test "x$with_fuzzing" != "xnone"],
-      [AS_IF([test "x$enable_tcti_fuzzng" = "xno"],
+      [AS_IF([test "x$enable_tcti_fuzzing" = xno],
              AC_MSG_ERROR([Fuzz tests can not be enabled without the TCTI_FUZZING module]))
        AS_IF([test "x$GEN_FUZZ" != "x1"],
              AC_MSG_ERROR([Fuzz tests can not be enabled without "GEN_FUZZ=1" variable]))])
