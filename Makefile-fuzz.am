@@ -30,8 +30,8 @@ test_fuzz_libfuzz_utils_la_LDFLAGS = $(TESTS_LDFLAGS)
 test_fuzz_libfuzz_utils_la_LIBADD = $(TESTS_LIBADD)
 test_fuzz_libfuzz_utils_la_CFLAGS = $(AM_CFLAGS) $(FUZZ_CFLAGS)
 test_fuzz_libfuzz_utils_la_SOURCES = \
-    test/integration/sapi-context-util.c test/integration/context-util.h \
-    test/integration/sapi-test-options.c test/integration/test-options.h
+    test/integration/sapi-context-util.c \
+    test/integration/sapi-test-options.c
 
 TESTS_LDADD += $(libtss2_utils_fuzzing)
 FUZZ_LDADD = $(TESTS_LDADD) $(TESTS_LDFLAGS) $(FUZZ_LDFLAGS)

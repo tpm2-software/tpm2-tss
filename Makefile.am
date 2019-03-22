@@ -230,8 +230,8 @@ src_tss2_tcti_libtss2_tcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/l
 endif # HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_device_la_LIBADD   = $(libtss2_mu) $(libutil)
 src_tss2_tcti_libtss2_tcti_device_la_SOURCES  = \
-    src/tss2-tcti/tcti-common.c src/tss2-tcti/tcti-common.h \
-    src/tss2-tcti/tcti-device.c src/tss2-tcti/tcti-device.h
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-device.c
 endif # ENABLE_TCTI_DEVICE
 
 # tcti library for Microsoft TPM2 simulator
@@ -247,8 +247,8 @@ src_tss2_tcti_libtss2_tcti_mssim_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/li
 endif # HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_mssim_la_LIBADD   = $(libtss2_mu) $(libutil)
 src_tss2_tcti_libtss2_tcti_mssim_la_SOURCES  = \
-    src/tss2-tcti/tcti-common.c src/tss2-tcti/tcti-common.h \
-    src/tss2-tcti/tcti-mssim.c src/tss2-tcti/tcti-mssim.h
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-mssim.c
 endif # ENABLE_TCTI_MSSIM
 
 ### TCG TSS SAPI spec library ###
