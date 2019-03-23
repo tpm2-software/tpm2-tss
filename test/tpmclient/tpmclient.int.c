@@ -2586,6 +2586,7 @@ static void GetSetEncryptParamTests()
     CheckPassed( rval ); /* #4 */
 
     /* Write the index. */
+retry:
     rval = Tss2_Sys_NV_Write_Prepare( sysContext, TPM20_INDEX_PASSWORD_TEST,
             TPM20_INDEX_PASSWORD_TEST, &nvWriteData, 0 );
     CheckPassed( rval ); /* #5 */
@@ -2629,6 +2630,10 @@ static void GetSetEncryptParamTests()
      * to send a response.
      */
     rval = Tss2_Sys_ExecuteFinish( sysContext, -1 );
+    if (rval == TPM2_RC_RETRY) {
+        LOG_INFO ("got TPM2_RC_RETRY, trying again");
+        goto retry;
+    }
     CheckPassed( rval ); /* #14 */
 
     /* Test GetEncryptParam for no encrypt param case. */
