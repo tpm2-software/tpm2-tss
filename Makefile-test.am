@@ -115,6 +115,7 @@ TESTS_INTEGRATION += \
     test/integration/sapi-asymmetric-encrypt-decrypt.int \
     test/integration/sapi-nv-policy-locality.int \
     test/integration/sapi-nv-readwrite.int \
+    test/integration/sapi-hmac-auth.int \
     test/integration/sapi-primary-rsa-2K-aes128cfb.int \
     test/integration/sapi-create-keyedhash-sha1-hmac.int \
     test/integration/sapi-encrypt-decrypt.int \
@@ -537,6 +538,11 @@ test_integration_sapi_nv_readwrite_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_sapi_nv_readwrite_int_LDADD   = $(TESTS_LDADD)
 test_integration_sapi_nv_readwrite_int_SOURCES = \
     test/integration/sapi-nv-readwrite.int.c test/integration/main-sapi.c
+
+test_integration_sapi_hmac_auth_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sapi_hmac_auth_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_hmac_auth_int_SOURCES = \
+    test/integration/sapi-hmac-auth.int.c test/integration/main-sapi.c
 
 test_integration_sapi_primary_rsa_2K_aes128cfb_int_CFLAGS = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_sapi_primary_rsa_2K_aes128cfb_int_LDADD  = $(TESTS_LDADD)

@@ -618,7 +618,7 @@ CatSizedByteBuffer(
 UINT16
 CopySizedByteBuffer(
         TPM2B *dest,
-        TPM2B *src)
+        const TPM2B *src)
 {
     if (!dest)
         return 0;
@@ -650,4 +650,49 @@ GetDigestSize(TPM2_ALG_ID hash)
         default:
             return 0;
     }
+}
+
+TSS2_RC
+DefineNvIndex (
+    TSS2_SYS_CONTEXT *sys_ctx,
+    TPMI_RH_PROVISION authHandle,
+    TPM2B_AUTH *auth,
+    const TPM2B_DIGEST *authPolicy,
+    TPMI_RH_NV_INDEX nvIndex,
+    TPMI_ALG_HASH nameAlg,
+    TPMA_NV attributes,
+    UINT16 size)
+{
+    TPM2B_NV_PUBLIC publicInfo = {
+        .nvPublic = {
+            .attributes = attributes | TPMA_NV_ORDERLY,
+            .dataSize = size,
+            .nameAlg = nameAlg,
+            .nvIndex = nvIndex,
+        },
+        .size = sizeof (TPMI_RH_NV_INDEX) + sizeof (TPMI_ALG_HASH) +
+            sizeof (TPMA_NV) + sizeof (UINT16) + sizeof (UINT16),
+    };
+    CopySizedByteBuffer ((TPM2B*)&publicInfo.nvPublic.authPolicy,
+                         (TPM2B*)authPolicy);
+
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
+    TSS2L_SYS_AUTH_COMMAND sessionsData = {
+        .count = 1,
+        .auths = {
+            {
+                .sessionHandle = TPM2_RS_PW,
+                .sessionAttributes = 0,
+                .nonce = { .size = 0 },
+                .hmac = { .size = 0 },
+            },
+        },
+    };
+
+    return Tss2_Sys_NV_DefineSpace (sys_ctx,
+                                    authHandle,
+                                    &sessionsData,
+                                    auth,
+                                    &publicInfo,
+                                    &sessionsDataOut);
 }

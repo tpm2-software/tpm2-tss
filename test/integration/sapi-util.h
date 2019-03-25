@@ -207,6 +207,17 @@ CatSizedByteBuffer(
 UINT16
 CopySizedByteBuffer(
         TPM2B *dest,
-        TPM2B *src);
+        const TPM2B *src);
+
+TSS2_RC
+DefineNvIndex (
+    TSS2_SYS_CONTEXT *sys_ctx,
+    TPMI_RH_PROVISION authHandle,
+    TPM2B_AUTH *auth,
+    const TPM2B_DIGEST *authPolicy,
+    TPMI_RH_NV_INDEX nvIndex,
+    TPMI_ALG_HASH nameAlg,
+    TPMA_NV attributes,
+    UINT16 size);
 
 #endif /* TEST_INTEGRATION_SAPI_UTIL_H */
