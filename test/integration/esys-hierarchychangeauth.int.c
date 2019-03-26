@@ -59,7 +59,7 @@ test_esys_hierarchychangeauth(ESYS_CONTEXT * esys_context)
     auth_changed = true;
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
-        .size = 4,
+        .size = 0,
         .sensitive = {
             .userAuth = {
                  .size = 0,

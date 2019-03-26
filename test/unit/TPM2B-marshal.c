@@ -18,7 +18,7 @@
 static void
 tpm2b_marshal_success(void **state) {
     TPM2B_DIGEST dgst = {4, {0}};
-    TPM2B_ECC_POINT point = {sizeof(TPMS_ECC_POINT), {0}};
+    TPM2B_ECC_POINT point = {0};
     uint8_t buffer[sizeof(dgst) + sizeof(point)] = {0};
     size_t  buffer_size = sizeof(buffer);
     uint16_t *size_ptr = (uint16_t *) buffer;
@@ -64,7 +64,7 @@ tpm2b_marshal_success(void **state) {
 static void
 tpm2b_marshal_success_offset(void **state) {
     TPM2B_DIGEST dgst = {4, {0}};
-    TPM2B_ECC_POINT point = {sizeof(TPMS_ECC_POINT), {0}};
+    TPM2B_ECC_POINT point = {0};
     size_t offset = 10;
     uint8_t buffer[sizeof(dgst) + sizeof(point) + 10] = {0};
     size_t  buffer_size = sizeof(buffer);
@@ -117,7 +117,7 @@ static void
 tpm2b_marshal_buffer_null_with_offset(void **state)
 {
     TPM2B_DIGEST dgst = {4, {0}};
-    TPM2B_ECC_POINT point = {sizeof(TPMS_ECC_POINT), {0}};
+    TPM2B_ECC_POINT point = {0};
     size_t offset = 10;
     size_t  buffer_size = sizeof(dgst) + sizeof(point) + 10;
     uint32_t value = 0xdeadbeef;
@@ -169,7 +169,7 @@ static void
 tpm2b_marshal_buffer_null_offset_null(void **state)
 {
     TPM2B_DIGEST dgst = {4, {0}};
-    TPM2B_ECC_POINT point = {sizeof(TPMS_ECC_POINT), {0}};
+    TPM2B_ECC_POINT point = {0};
     size_t buffer_size = 1024;
     TSS2_RC rc;
 
@@ -186,7 +186,7 @@ tpm2b_marshal_buffer_null_offset_null(void **state)
 static void
 tpm2b_marshal_buffer_size_lt_data_nad_lt_offset(void **state) {
     TPM2B_DIGEST dgst = {4, {0}};
-    TPM2B_ECC_POINT point = {sizeof(TPMS_ECC_POINT), {0}};
+    TPM2B_ECC_POINT point = {0};
     size_t offset = 10;
     uint8_t buffer[sizeof(dgst) + sizeof(point)] = {0};
     size_t  buffer_size = sizeof(buffer);
@@ -362,7 +362,7 @@ static void
 tpm2b_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
 {
     TPM2B_DIGEST dgst = {4, {0x00, 0x01, 0x02, 0x03}};
-    TPM2B_ECC_POINT point = {sizeof(TPMS_ECC_POINT), {0}};
+    TPM2B_ECC_POINT point = {0};
     uint8_t buffer[sizeof(dgst) + sizeof(point)] = { 0 };
     size_t offset = sizeof(dgst) - 5;
     TSS2_RC rc;

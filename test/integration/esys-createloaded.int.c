@@ -105,7 +105,7 @@ test_esys_createloaded(ESYS_CONTEXT * esys_context)
     };
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
-        .size = 4,
+        .size = 0,
         .sensitive = {
             .userAuth = authValuePrimary,
             .data = {
@@ -153,7 +153,7 @@ test_esys_createloaded(ESYS_CONTEXT * esys_context)
     };
 
     TPM2B_SENSITIVE_CREATE inSensitiveObject = {
-        .size = 4,
+        .size = 0,
         .sensitive = {
             .userAuth = authValueObject,
             .data = {

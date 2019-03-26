@@ -61,11 +61,10 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
         return rc;
     }
 
+    nv_public.size = 0;
     nv_public.nvPublic.attributes = nv_attribs;
     CopySizedByteBuffer((TPM2B *)&nv_public.nvPublic.authPolicy, (TPM2B *)&policy_auth);
     nv_public.nvPublic.dataSize = TEST_DATA_LEN;
-    nv_public.size = sizeof(TPMI_RH_NV_INDEX) + sizeof(TPMI_ALG_HASH) +
-                     sizeof(TPMA_NV) + sizeof(UINT16) + sizeof(UINT16);
     nv_public.nvPublic.nvIndex = nv_index;
     nv_public.nvPublic.nameAlg = TPM2_ALG_SHA256;
 

@@ -58,7 +58,7 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
     };
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
-        .size = 4,
+        .size = 0,
         .sensitive = {
             .userAuth = {
                  .size = 0,
@@ -279,7 +279,7 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
     };
 
     TPM2B_SENSITIVE_CREATE inSensitive2 = {
-        .size = 1,
+        .size = 0,
         .sensitive = {
             .userAuth = {
                  .size = 0,
@@ -295,7 +295,7 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
     inSensitive2.sensitive.userAuth = authKey2;
 
     TPM2B_SENSITIVE_CREATE inSensitive3 = {
-        .size = 1,
+        .size = 0,
         .sensitive = {
             .userAuth = {
                  .size = 0,

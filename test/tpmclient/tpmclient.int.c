@@ -671,9 +671,7 @@ static void TestNV()
         nvAuth.buffer[i] = (UINT8)i;
     }
 
-    publicInfo.size = sizeof( TPMI_RH_NV_INDEX ) +
-        sizeof( TPMI_ALG_HASH ) + sizeof( TPMA_NV ) + sizeof( UINT16) +
-        sizeof( UINT16 );
+    publicInfo.size = 0;
     publicInfo.nvPublic.nvIndex = TPM20_INDEX_TEST1;
     publicInfo.nvPublic.nameAlg = TPM2_ALG_SHA1;
 
@@ -811,9 +809,7 @@ static void TestHierarchyControl()
         nvAuth.buffer[i] = i;
     }
 
-    publicInfo.size = sizeof( TPMI_RH_NV_INDEX ) +
-        sizeof( TPMI_ALG_HASH ) + sizeof( TPMA_NV ) + sizeof( UINT16) +
-        sizeof( UINT16 );
+    publicInfo.size = 0;
     publicInfo.nvPublic.nvIndex = TPM20_INDEX_TEST1;
     publicInfo.nvPublic.nameAlg = TPM2_ALG_SHA1;
 
@@ -888,12 +884,10 @@ static TSS2_RC DefineNvIndex( TPMI_RH_PROVISION authHandle, TPMI_SH_AUTH_SESSION
     attributes |= TPMA_NV_ORDERLY;
 
     /* Init public info structure. */
+    publicInfo.size = 0;
     publicInfo.nvPublic.attributes = attributes;
     CopySizedByteBuffer((TPM2B *)&publicInfo.nvPublic.authPolicy, (TPM2B *)authPolicy);
     publicInfo.nvPublic.dataSize = size;
-    publicInfo.size = sizeof( TPMI_RH_NV_INDEX ) +
-            sizeof( TPMI_ALG_HASH ) + sizeof( TPMA_NV ) + sizeof( UINT16) +
-            sizeof( UINT16 );
     publicInfo.nvPublic.nvIndex = nvIndex;
     publicInfo.nvPublic.nameAlg = nameAlg;
 
@@ -1106,9 +1100,11 @@ static TSS2_RC CreateDataBlob( TSS2_SYS_CONTEXT *sysContext, SESSION **policySes
         .nonce = {.size = 0},
         .hmac = {.size = 0}}}};
 
+    inSensitive.size = 0;
     inSensitive.sensitive.userAuth.size = 0;
     inSensitive.sensitive.data.size = 0;
 
+    inPublic.size = 0;
     inPublic.publicArea.type = TPM2_ALG_RSA;
     inPublic.publicArea.nameAlg = TPM2_ALG_SHA1;
     *(UINT32 *)&( inPublic.publicArea.objectAttributes) = 0;
@@ -1512,9 +1508,7 @@ static void ProvisionOtherIndices()
     /* init nvAuth */
     nvAuth.size = 0;
 
-    publicInfo.size = sizeof( TPMI_RH_NV_INDEX ) +
-            sizeof( TPMI_ALG_HASH ) + sizeof( TPMA_NV ) + sizeof( UINT16) +
-            sizeof( UINT16 );
+    publicInfo.size = 0;
     publicInfo.nvPublic.nvIndex = INDEX_LCP_SUP;
     publicInfo.nvPublic.nameAlg = TPM2_ALG_SHA1;
 
@@ -1606,9 +1600,7 @@ static void ProvisionNvAux()
     /* init nvAuth */
     nvAuth.size = 0;
 
-    publicInfo.size = sizeof( TPMI_RH_NV_INDEX ) +
-            sizeof( TPMI_ALG_HASH ) + sizeof( TPMA_NV ) + sizeof( UINT16) +
-            sizeof( UINT16 );
+    publicInfo.size = 0;
     publicInfo.nvPublic.nvIndex = INDEX_AUX;
     publicInfo.nvPublic.nameAlg = TPM2_ALG_SHA1;
 
@@ -1882,11 +1874,13 @@ static void TestUnseal()
 
     LOG_INFO("UNSEAL TEST  :" );
 
+    inSensitive.size = 0;
     inSensitive.sensitive.userAuth.size = sizeof( authStr ) - 1;
     memcpy( &( inSensitive.sensitive.userAuth.buffer[0] ), authStr, sizeof( authStr ) - 1 );
     inSensitive.sensitive.data.size = sizeof( sensitiveData ) - 1;
     memcpy( &( inSensitive.sensitive.data.buffer[0] ), sensitiveData, sizeof( sensitiveData ) - 1 );
 
+    inPublic.size = 0;
     inPublic.publicArea.authPolicy.size = 0;
 
     inPublic.publicArea.unique.keyedHash.size = 0;
@@ -1968,9 +1962,7 @@ static void CreatePasswordTestNV( TPMI_RH_NV_INDEX nvIndex, char * password )
         nvAuth.buffer[i] = password[i];
     }
 
-    publicInfo.size = sizeof( TPMI_RH_NV_INDEX ) +
-        sizeof( TPMI_ALG_HASH ) + sizeof( TPMA_NV ) + sizeof( UINT16) +
-        sizeof( UINT16 );
+    publicInfo.size = 0;
     publicInfo.nvPublic.nvIndex = nvIndex;
     publicInfo.nvPublic.nameAlg = TPM2_ALG_SHA1;
 

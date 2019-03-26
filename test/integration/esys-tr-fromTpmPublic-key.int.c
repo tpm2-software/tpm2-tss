@@ -44,7 +44,7 @@ test_esys_tr_fromTpmPublic_key(ESYS_CONTEXT * ectx)
     };
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
-        .size = 4,
+        .size = 0,
         .sensitive = {
             .userAuth = {
                  .size = 0,
