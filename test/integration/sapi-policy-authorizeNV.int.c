@@ -74,9 +74,6 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     };
     TPMI_RH_NV_INDEX nv_index = TPM2_HR_NV_INDEX | 0x01;
 
-    nv_public.size = sizeof(TPMI_RH_NV_INDEX) +
-        sizeof(TPMI_ALG_HASH) + sizeof(TPMA_NV) + sizeof(UINT16) +
-        sizeof(UINT16);
     nv_public.nvPublic.nvIndex = nv_index;
     nv_public.nvPublic.nameAlg = TPM2_ALG_SHA256;
     nv_public.nvPublic.attributes = TPMA_NV_PPREAD;

@@ -15,7 +15,7 @@
 #include "util/aux_util.h"
 
 /** This test is intended to test Esys_ECDH_ZGen.
- * 
+ *
  * The test is based on an ECC key created with Esys_CreatePrimary
  * and data produced by the command Esys_EC_Ephemeral.
  *
@@ -62,7 +62,7 @@ test_esys_zgen_2phase(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: During initialization of session", error);
 
     TPM2B_SENSITIVE_CREATE inSensitive = {
-        .size = 4,
+        .size = 0,
         .sensitive = {
             .userAuth = {
                  .size = 0,

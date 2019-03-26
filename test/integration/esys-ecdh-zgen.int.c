@@ -55,7 +55,7 @@ test_esys_ecdh_zgen(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: During initialization of session", error);
 
     TPM2B_SENSITIVE_CREATE inSensitive = {
-        .size = 4,
+        .size = 0,
         .sensitive = {
             .userAuth = {
                  .size = 0,

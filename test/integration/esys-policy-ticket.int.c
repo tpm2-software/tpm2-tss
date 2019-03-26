@@ -58,7 +58,7 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
     };
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
-        .size = 4,
+        .size = 0,
         .sensitive = {
             .userAuth = authValuePrimary,
             .data = {

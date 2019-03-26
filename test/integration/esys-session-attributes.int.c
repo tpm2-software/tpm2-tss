@@ -15,7 +15,7 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-extern TSS2_RC 
+extern TSS2_RC
 (*transmit_hook) (const uint8_t *command_buffer, size_t command_size);
 
 size_t handles;
@@ -44,7 +44,7 @@ test_esys_session_attributes(ESYS_CONTEXT * esys_context)
                               .mode = {.aes = TPM2_ALG_CFB}};
 
     TPM2B_SENSITIVE_CREATE inSensitive = {
-        .size = 4,
+        .size = 0,
         .sensitive = {
             .userAuth = {
                  .size = 0,
@@ -153,21 +153,21 @@ test_esys_session_attributes(ESYS_CONTEXT * esys_context)
     session1_attributes = TPMA_SESSION_CONTINUESESSION | TPMA_SESSION_ENCRYPT;
     transmit_hook = hookcheck_session1;
 
-    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, 
+    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE,
                        10, &rdata);
     transmit_hook = NULL;
     goto_if_error(r, "Error esapi create primary", error);
 
     transmit_hook = hookcheck_session1;
 
-    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, 
+    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE,
                        10, &rdata);
     transmit_hook = NULL;
     goto_if_error(r, "Error esapi create primary", error);
 
     LOGBLOB_INFO(&rdata->buffer[0], rdata->size, "rdata");
 
-    /* Cleanup */   
+    /* Cleanup */
     r = Esys_FlushContext(esys_context, session);
     goto_if_error(r, "Flushing context", error);
 

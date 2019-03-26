@@ -102,6 +102,7 @@ create_aes_128_cfb (
     TPM2B_SENSITIVE_CREATE  in_sensitive    = { 0 };
     /* template defining key type */
     TPM2B_PUBLIC            in_public       = {
+            .size = 0,
             .publicArea.type = TPM2_ALG_SYMCIPHER,
             .publicArea.nameAlg = TPM2_ALG_SHA256,
             .publicArea.objectAttributes = TPMA_OBJECT_DECRYPT |
@@ -174,6 +175,7 @@ create_keyedhash_key (
     TPM2B_SENSITIVE_CREATE  in_sensitive    = { 0 };
     /* template defining key type */
     TPM2B_PUBLIC            in_public       = {
+            .size = 0,
             .publicArea.type = TPM2_ALG_KEYEDHASH,
             .publicArea.nameAlg = TPM2_ALG_SHA256,
             .publicArea.objectAttributes = TPMA_OBJECT_RESTRICTED |

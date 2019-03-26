@@ -32,7 +32,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 {
     TSS2_RC rc;
     TPM2B_SENSITIVE_CREATE  in_sensitive;
-    TPM2B_PUBLIC            in_public;
+    TPM2B_PUBLIC            in_public = {0};
     TPM2B_DATA              outside_info = {0,};
     TPML_PCR_SELECTION      creation_pcr;
     TPM2B_NAME name = {sizeof(TPM2B_NAME)-2,};
@@ -56,7 +56,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
             .nonce={.size=0},
             .hmac={.size=0}}}};
 
-    in_sensitive.size =0;
+    in_sensitive.size = 0;
     in_sensitive.sensitive.userAuth.size = 0;
     in_sensitive.sensitive.data.size = 0;
 

@@ -60,7 +60,7 @@ test_esys_hierarchy_control(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: HierarchyControl", error);
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
-        .size = 4,
+        .size = 0,
         .sensitive = {
             .userAuth = {
                  .size = 0,
