@@ -245,6 +245,19 @@ if [ $? -ne 0 ]; then
     break
 fi
 
+TPMSTATE_FILE1=${TEST_BIN}_state1
+TPMSTATE_FILE2=${TEST_BIN}_state2
+
+env TPM20TEST_TCTI_NAME="socket" \
+    TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
+    TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
+    G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>$TPMSTATE_FILE1
+if [ $? -ne 0 ]; then
+    echo "Error during dumpstate"
+    ret=99
+    break
+fi
+
 echo "Execute the test script"
 env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
@@ -253,13 +266,49 @@ env TPM20TEST_TCTI_NAME="socket" \
 ret=$?
 echo "Script returned $ret"
 
+#We check the state before a reboot to see if transients and NV were chagned.
 env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
     TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
-    G_MESSAGES_DEBUG=all ./test/helper/tpm_transientempty
+    G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>$TPMSTATE_FILE2
 if [ $? -ne 0 ]; then
-    echo "TPM transient area not empty or generally failed after test"
+    echo "Error during dumpstate"
     ret=99
+    break
+fi
+
+if [ "$(cat $TPMSTATE_FILE1)" != "$(cat $TPMSTATE_FILE2)" ]; then
+    echo "TPM changed state during test"
+    echo "State before ($TPMSTATE_FILE1):"
+    cat $TPMSTATE_FILE1
+    echo "State after ($TPMSTATE_FILE2):"
+    cat $TPMSTATE_FILE2
+    ret=1
+    break
+fi
+
+break
+
+#TODO: Add a tpm-restart/reboot here
+
+#We check the state again after a reboot to see if PCR allocations were chagned.
+env TPM20TEST_TCTI_NAME="socket" \
+    TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
+    TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
+    G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>$TPMSTATE_FILE2
+if [ $? -ne 0 ]; then
+    echo "Error during dumpstate"
+    ret=99
+    break
+fi
+
+if [ "$(cat $TPMSTATE_FILE1)" != "$(cat $TPMSTATE_FILE2)" ]; then
+    echo "TPM changed state during test"
+    echo "State before ($TPMSTATE_FILE1):"
+    cat $TPMSTATE_FILE1
+    echo "State after ($TPMSTATE_FILE2):"
+    cat $TPMSTATE_FILE2
+    ret=1
     break
 fi
 
