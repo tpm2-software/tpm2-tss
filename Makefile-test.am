@@ -36,6 +36,11 @@ check_PROGRAMS += test/helper/tpm_transientempty
 test_helper_tpm_transientempty_CFLAGS = $(TESTS_CFLAGS) -I$(srcdir)/test/integration
 test_helper_tpm_transientempty_LDFLAGS = $(TESTS_LDFLAGS)
 test_helper_tpm_transientempty_LDADD = $(TESTS_LDADD)
+
+check_PROGRAMS += test/helper/tpm_dumpstate
+test_helper_tpm_dumpstate_CFLAGS = $(TESTS_CFLAGS) -I$(srcdir)/test/integration
+test_helper_tpm_dumpstate_LDFLAGS = $(TESTS_LDFLAGS)
+test_helper_tpm_dumpstate_LDADD = $(TESTS_LDADD)
 endif #ENABLE_INTEGRATION
 
 if ESYS_OSSL
@@ -226,7 +231,9 @@ endif #ESAPI
 endif #ENABLE_INTEGRATION
 
 CLEANFILES += \
+    test/integration/*.int_state* \
     test/integration/*.log \
+    test/tpmclient/*.int_state* \
     test/tpmclient/*.log \
     test/unit/*.log
 

@@ -92,6 +92,18 @@ if [ $? -ne 0 ]; then
     break
 fi
 
+TPMSTATE_FILE1=${TEST_BIN}_state1
+TPMSTATE_FILE2=${TEST_BIN}_state2
+
+env TPM20TEST_TCTI_NAME="device" \
+    TPM20TEST_DEVICE_FILE=${PTPM} \
+    G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>$TPMSTATE_FILE1
+if [ $? -ne 0 ]; then
+    echo "Error during dumpstate"
+    ret=99
+    break
+fi
+
 echo "Execute the test script"
 env TPM20TEST_TCTI_NAME="device" \
     TPM20TEST_DEVICE_FILE=${PTPM} \
@@ -101,10 +113,20 @@ echo "Script returned $ret"
 
 env TPM20TEST_TCTI_NAME="device" \
     TPM20TEST_DEVICE_FILE=${PTPM} \
-    G_MESSAGES_DEBUG=all ./test/helper/tpm_transientempty
+    G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>$TPMSTATE_FILE2
 if [ $? -ne 0 ]; then
-    echo "TPM transient area not empty or generally failed after test"
+    echo "Error during dumpstate"
     ret=99
+    break
+fi
+
+if [ "$(cat $TPMSTATE_FILE1)" != "$(cat $TPMSTATE_FILE2)" ]; then
+    echo "TPM changed state during test"
+    echo "State before ($TPMSTATE_FILE1):"
+    cat $TPMSTATE_FILE1
+    echo "State after ($TPMSTATE_FILE2):"
+    cat $TPMSTATE_FILE2
+    ret=1
     break
 fi
 
