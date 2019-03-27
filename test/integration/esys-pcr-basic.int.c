@@ -37,6 +37,8 @@ test_esys_pcr_basic(ESYS_CONTEXT * esys_context)
     TSS2_RC r;
     int failure_return = EXIT_FAILURE;
 
+    TPMS_CAPABILITY_DATA *savedPCRs = NULL;
+
     ESYS_TR  pcrHandle_handle = 16;
     TPML_DIGEST_VALUES digests
         = {
@@ -119,6 +121,12 @@ test_esys_pcr_basic(ESYS_CONTEXT * esys_context)
     UINT32 sizeNeeded;
     UINT32 sizeAvailable;
 
+    r = Esys_GetCapability(esys_context,
+                           ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                           TPM2_CAP_PCRS, 0, 10, NULL, &savedPCRs);
+    goto_if_error(r, "Error: GetCapabilities", error);
+
+
     r = Esys_PCR_Allocate(
         esys_context,
         ESYS_TR_RH_PLATFORM,
@@ -139,9 +147,26 @@ test_esys_pcr_basic(ESYS_CONTEXT * esys_context)
 
     goto_if_error(r, "Error: PCR_Allocate", error);
 
+    r = Esys_PCR_Allocate(
+        esys_context,
+        ESYS_TR_RH_PLATFORM,
+        ESYS_TR_PASSWORD,
+        ESYS_TR_NONE,
+        ESYS_TR_NONE,
+        &savedPCRs->data.assignedPCR,
+        &allocationSuccess,
+        &maxPCR,
+        &sizeNeeded,
+        &sizeAvailable);
+
+    goto_if_error(r, "Error: PCR_Allocate", error);
+
+    Esys_Free(savedPCRs);
+
     return EXIT_SUCCESS;
 
  error:
+    if (savedPCRs) Esys_Free(savedPCRs);
     return failure_return;
 
 }
