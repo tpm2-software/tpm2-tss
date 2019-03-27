@@ -26,6 +26,7 @@ distclean-local: code-coverage-dist-clean
 else
 @CODE_COVERAGE_RULES@
 endif
+CODE_COVERAGE_DIRECTORY = $(top_builddir)/src
 
 # ax_valgrind_check
 @VALGRIND_CHECK_RULES@
