@@ -320,7 +320,7 @@ if echo $with_ptpmtests | grep mandatory > /dev/null; then
 fi
 AM_CONDITIONAL([PTPMMANDATORY],[test "x$enable_ptpm_mandatory" = "xyes"])
 
-AM_CONDITIONAL([TESTPTPM],[test "x$with_ptpm_set" = "xyes" -a "x$with_ptpm_set" = "xyes"])
+AM_CONDITIONAL([TESTPTPM],[test "x$with_ptpm_set" = xyes])
 
 dnl --------- Doxy Gen -----------------------
 DX_DOXYGEN_FEATURE(ON)
