@@ -39,8 +39,8 @@ test_helper_tpm_transientempty_LDADD = $(TESTS_LDADD)
 endif #ENABLE_INTEGRATION
 
 if ESYS_OSSL
-esyscryCFLAGS = -DOSSL
-esyscryLDFLAGS = -lssl -lcrypto -ldl
+esyscryCFLAGS = -DOSSL $(LIBSSL_CFLAGS) $(LIBCRYPTO_CFLAGS)
+esyscryLDFLAGS = $(LIBSSL_LIBS) $(LIBCRYPTO_LIBS) -ldl
 else
 if ESYS_GCRYPT
 esyscryCFLAGS =
