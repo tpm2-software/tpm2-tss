@@ -85,28 +85,17 @@ AC_ARG_WITH([crypto],
 AM_CONDITIONAL(ESYS_OSSL, test "x$with_crypto" = "xossl")
 AM_CONDITIONAL(ESYS_GCRYPT, test "x$with_crypto" = "xgcrypt")
 
-AS_IF([test "x$with_crypto" != xgcrypt -a "x$with_crypto" != xossl],
-          AC_MSG_ERROR([Bad value for --with-crypto $with_crypto]))
-
-AS_IF([test "x$enable_esapi" != xno -a "x$with_crypto" = xgcrypt],
-      [AC_CHECK_HEADER([gcrypt.h],
-                       [],
-                       [AC_MSG_ERROR([Missing required header: gcrypt.h.])])
-       AC_CHECK_LIB([gcrypt],
-                    [gcry_mac_open],
-                    [],
-                    [AC_MSG_ERROR([Missing required library: gcrypt.])])])
-
-AS_IF([test "x$enable_esapi" != xno -a "x$with_crypto" = "xossl"],
-      [AC_CHECK_HEADER([openssl/ssl.h],
-                       [],
-                       [AC_MSG_ERROR([Missing required header: openssl/ssl.h.])])])
-
-AS_IF([test "x$enable_esapi" != xno -a "x$with_crypto" = "xossl"],
-    AC_CHECK_LIB(ssl, OPENSSL_init_ssl, [FOUND_SSL_LIB="yes"]))
-
-AS_IF([test "x$enable_esapi" != xno -a "x$with_crypto" = "xossl"],
-    AC_CHECK_LIB(crypto, CRYPTO_new_ex_data, [], [AC_MSG_ERROR([library 'crypto' is required for OpenSSL])]))
+AS_IF([test "x$enable_esapi" = xyes],
+      [AS_IF([test "x$with_crypto" = xgcrypt], [
+           AC_CHECK_HEADER([gcrypt.h],,
+               [AC_MSG_ERROR([Missing required header: gcrypt.h.])])
+           AC_CHECK_LIB([gcrypt],
+               [gcry_mac_open],,
+               [AC_MSG_ERROR([Missing required library: gcrypt.])])
+       ], [test "x$with_crypto" = xossl], [
+           PKG_CHECK_MODULES([LIBSSL], [libssl])
+           PKG_CHECK_MODULES([LIBCRYPTO], [libcrypto])
+       ], AC_MSG_ERROR([Bad value for --with-crypto $with_crypto]))])
 
 AC_ARG_WITH([tctidefaultmodule],
             [AS_HELP_STRING([--with-tctidefaultmodule],
@@ -185,7 +174,8 @@ AS_IF([test "x$enable_integration" = "xyes"],
        ERROR_IF_NO_PROG([grep])
        ERROR_IF_NO_PROG([env])
        ERROR_IF_NO_PROG([rm])
-       PKG_CHECK_MODULES([LIBCRYPTO],[libcrypto])
+       AS_IF([test "x$with_crypto" != xossl -o "x$enable_esapi" != xyes],
+           PKG_CHECK_MODULES([LIBCRYPTO],[libcrypto]))
        AC_CHECK_HEADER(uthash.h, [], [AC_MSG_ERROR([Can not find uthash.h. Please install uthash-dev])])
        AS_IF([test "x$enable_tcti_mssim" = xno],
               AC_MSG_ERROR([Integration tests can not be enabled without the TCTI_MSSIM module]))
