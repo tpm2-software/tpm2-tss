@@ -730,9 +730,6 @@ tpm_pub_to_ossl_pub(EC_GROUP *group, TPM2B_PUBLIC *key, EC_POINT **tpm_pub_key)
     TSS2_RC r = TSS2_RC_SUCCESS;
     BIGNUM *bn_x = NULL;
     BIGNUM *bn_y = NULL;
-    BN_CTX *bctx = NULL;
-
-    bctx = BN_CTX_new();
 
     /* Create the big numbers for the coordinates of the point */
     if (!(bn_x = BN_bin2bn(&key->publicArea.unique.ecc.x.buffer[0],
@@ -757,13 +754,13 @@ tpm_pub_to_ossl_pub(EC_GROUP *group, TPM2B_PUBLIC *key, EC_POINT **tpm_pub_key)
 
     if (1 != EC_POINT_set_affine_coordinates_GFp(group,
                                                  *tpm_pub_key, bn_x,
-                                                 bn_y, bctx)) {
+                                                 bn_y, NULL)) {
         OSSL_FREE(*tpm_pub_key, EC_POINT);
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Set affine coordinates", cleanup);
     }
 
-    if (1 != EC_POINT_is_on_curve(group, *tpm_pub_key, bctx)) {
+    if (1 != EC_POINT_is_on_curve(group, *tpm_pub_key, NULL)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "The TPM point is not on the curve", cleanup);
     }
@@ -771,7 +768,6 @@ tpm_pub_to_ossl_pub(EC_GROUP *group, TPM2B_PUBLIC *key, EC_POINT **tpm_pub_key)
  cleanup:
     OSSL_FREE(bn_x, BN);
     OSSL_FREE(bn_y, BN);
-    OSSL_FREE(bctx, BN_CTX);
 
     return r;
 }
@@ -802,7 +798,6 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
                                size_t * out_size)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    BN_CTX *bctx = NULL;                  /* Context used for big number operations */
     EC_GROUP *group = NULL;               /* Group defines the used curve */
     EC_KEY *eph_ec_key = NULL;            /* Ephemeral ec key of application */
     const EC_POINT *eph_pub_key = NULL;   /* Public part of ephemeral key */
@@ -864,17 +859,12 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Get public key", cleanup);
     }
 
-    if (1 != EC_POINT_is_on_curve(group, eph_pub_key, bctx)) {
+    if (1 != EC_POINT_is_on_curve(group, eph_pub_key, NULL)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Ephemeral public key is on curve",cleanup);
     }
 
     /* Write affine coordinates of ephemeral pub key to TPM point Q */
-    if (!(bctx = BN_CTX_new())) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Create bignum context", cleanup);
-    }
-
     if (!(bn_x = BN_new())) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Create bignum", cleanup);
     }
@@ -884,7 +874,7 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
     }
 
     if (1 != EC_POINT_get_affine_coordinates_GFp(group, eph_pub_key, bn_x,
-                                                 bn_y, bctx)) {
+                                                 bn_y, NULL)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Get affine x coordinate", cleanup);
     }
@@ -914,14 +904,14 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
     }
 
     if (1 != EC_POINT_mul(group, mul_eph_tpm, NULL,
-                          tpm_pub_key, eph_priv_key, bctx)) {
+                          tpm_pub_key, eph_priv_key, NULL)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "ec point multiplication", cleanup);
     }
 
     /* Write the x-part of the affine coordinate to Z */
     if (1 != EC_POINT_get_affine_coordinates_GFp(group, mul_eph_tpm, bn_x,
-                                                 bn_y, bctx)) {
+                                                 bn_y, NULL)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Get affine x coordinate", cleanup);
     }
@@ -947,7 +937,6 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
     /* Note: free of eph_pub_key already done by free of eph_ec_key */
     OSSL_FREE(bn_x, BN);
     OSSL_FREE(bn_y, BN);
-    OSSL_FREE(bctx, BN_CTX);
     return r;
 }
 
