@@ -18,6 +18,10 @@ MOSTLYCLEANFILES =
 noinst_PROGRAMS =
 
 ### Add ax_* rules ###
+
+# set CODE_COVERAGE_DIRECTORY before CODE_COVERAGE_RULES is substituted
+CODE_COVERAGE_DIRECTORY = $(top_builddir)/src
+
 # ax_code_coverage
 if AUTOCONF_CODE_COVERAGE_2019_01_06
 include $(top_srcdir)/aminclude_static.am
@@ -26,7 +30,6 @@ distclean-local: code-coverage-dist-clean
 else
 @CODE_COVERAGE_RULES@
 endif
-CODE_COVERAGE_DIRECTORY = $(top_builddir)/src
 
 # ax_valgrind_check
 @VALGRIND_CHECK_RULES@
