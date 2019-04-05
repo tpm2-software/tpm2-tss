@@ -5,6 +5,7 @@
  ***********************************************************************/
 
 #include <inttypes.h>
+#include <string.h>
 
 #include "tss2_tpm2_types.h"
 #include "tss2_mu.h"
@@ -29,6 +30,11 @@ TSS2_RC Tss2_Sys_ExecuteAsync(TSS2_SYS_CONTEXT *sysContext)
                               ctx->cmdBuffer);
     if (rval)
         return rval;
+
+    /* Keep a copy of the cmd header to be able reissue the command
+     * after receiving a TPM error
+     */
+    memcpy(ctx->cmd_header, ctx->cmdBuffer, sizeof(ctx->cmd_header));
 
     ctx->previousStage = CMD_STAGE_SEND_COMMAND;
 
@@ -130,16 +136,21 @@ TSS2_RC Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout)
 
     rval = ctx->rsp_header.responseCode;
 
-    /* If we received a TPM error other than CANCELED or if we didn't
-     * receive enough response bytes, reset SAPI state machine to
+    /* If didn't receive enough response bytes, reset SAPI state machine to
      * CMD_STAGE_PREPARE. There's nothing else we can do for current command.
      */
     if (ctx->rsp_header.responseSize < sizeof(TPM20_Header_Out)) {
         ctx->previousStage = CMD_STAGE_PREPARE;
         return TSS2_SYS_RC_INSUFFICIENT_RESPONSE;
     }
-    if (rval == TPM2_RC_CANCELED) {
+
+    /* If we received a TPM error then reset SAPI state machine to
+     * CMD_STAGE_PREPARE, and restore the command header so the command
+     * can be reissued without going through the usual *_prepare stage.
+     */
+    if (rval && rval != TPM2_RC_INITIALIZE) {
         ctx->previousStage = CMD_STAGE_PREPARE;
+        memcpy(ctx->cmdBuffer, ctx->cmd_header, sizeof(ctx->cmd_header));
         return rval;
     }
 
