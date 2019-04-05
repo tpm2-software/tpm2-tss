@@ -25,8 +25,9 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
     if (!ctx || !cmdAuthsArray)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if (cmdAuthsArray->count > TSS2_SYS_MAX_SESSIONS)
-        return TSS2_SYS_RC_BAD_VALUE;
+    if (cmdAuthsArray->count > TSS2_SYS_MAX_SESSIONS ||
+        cmdAuthsArray->count == 0)
+        return TSS2_SYS_RC_BAD_SIZE;
 
     if (ctx->previousStage != CMD_STAGE_PREPARE)
         return TSS2_SYS_RC_BAD_SEQUENCE;
@@ -35,9 +36,6 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
         return rval;
 
     ctx->authsCount = 0;
-
-    if (!cmdAuthsArray->count)
-        return rval;
 
     req_header_from_cxt(ctx)->tag = HOST_TO_BE_16(TPM2_ST_SESSIONS);
 
