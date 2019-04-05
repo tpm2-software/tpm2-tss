@@ -25,7 +25,7 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
     if (!ctx || !cmdAuthsArray)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if (cmdAuthsArray->count > TPM2_MAX_SESSION_NUM)
+    if (cmdAuthsArray->count > TSS2_SYS_MAX_SESSIONS)
         return TSS2_SYS_RC_BAD_VALUE;
 
     if (ctx->previousStage != CMD_STAGE_PREPARE)
