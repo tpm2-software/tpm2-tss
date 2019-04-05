@@ -17,7 +17,6 @@
 
 #define TPM2_MAX_COMMAND_SIZE  4096 /* maximum size of a command */
 #define TPM2_MAX_RESPONSE_SIZE 4096 /* maximum size of a response */
-#define TPM2_MAX_SESSION_NUM   3    /* this is the current maximum value */
 
 /* TPM constants for buffer sizes */
 #define TPM2_NUM_PCR_BANKS      16

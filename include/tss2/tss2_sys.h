@@ -25,15 +25,17 @@ extern "C" {
 /* SAPI context blob */
 typedef struct _TSS2_SYS_OPAQUE_CONTEXT_BLOB TSS2_SYS_CONTEXT;
 
+#define TSS2_SYS_MAX_SESSIONS 3
+
 /* Input structure for authorization area(s). */
 typedef struct {
     uint16_t count;
-    TPMS_AUTH_COMMAND auths[3];
+    TPMS_AUTH_COMMAND auths[TSS2_SYS_MAX_SESSIONS];
 } TSS2L_SYS_AUTH_COMMAND;
 
 typedef struct {
     uint16_t count;
-    TPMS_AUTH_RESPONSE auths[3];
+    TPMS_AUTH_RESPONSE auths[TSS2_SYS_MAX_SESSIONS];
 } TSS2L_SYS_AUTH_RESPONSE;
 
 size_t  Tss2_Sys_GetContextSize(
