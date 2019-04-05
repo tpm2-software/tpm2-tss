@@ -40,6 +40,7 @@ typedef struct {
     TSS2_TCTI_CONTEXT *tctiContext;
     UINT8 *cmdBuffer;
     UINT32 maxCmdSize;
+    UINT8 cmd_header[sizeof(TPM20_Header_In)]; /* Copy of the cmd header to allow reissue */
     TPM20_Header_Out rsp_header;
 
     TPM2_CC commandCode;    /* In host endian */
