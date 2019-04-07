@@ -48,9 +48,7 @@ m4_define([cmocka_min_version], [1.0])
 m4_define([cmocka_err], [Unit test enabled, but cmocka missing or version requirements not met. cmocka version must be >= cmocka_min_version])
 AS_IF([test "x$enable_unit" != xno],
       [PKG_CHECK_MODULES([CMOCKA],
-                         [cmocka >= cmocka_min_version],
-                         [AC_DEFINE([HAVE_CMOCKA],
-                                    [1], [CMOCKA UNIT TEST LIBRARY])],
+                         [cmocka >= cmocka_min_version],,
                          [AC_MSG_ERROR([cmocka_err])])])
 AM_CONDITIONAL([UNIT], [test "x$enable_unit" != xno])
 
