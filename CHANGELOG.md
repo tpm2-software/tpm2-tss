@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [2.1.3]
+### Fixed
+ - Fixed openssl engine invocation in esye
+ - Fixed wrong encryption flag in EncryptDecrypt
+ - Removed hardcoded -lgcrypt from tss2-esys.pc.in
+
 ## [2.1.2] - 2019-02-28
 ### Fixed
  - Forced RAND_bytes method to software implementation to avoid session spoofing
