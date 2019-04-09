@@ -186,12 +186,6 @@ pkgconfigdir          = $(libdir)/pkgconfig
 pkgconfig_DATA =
 CLEANFILES += $(pkgconfig_DATA)
 
-%.pc : %.pc.in
-	$(AM_V_GEN)$(call make_parent_dir,$@) && \
-	sed -e "s,[@]VERSION[@],$(PACKAGE_VERSION),g; \
-	        s,[@]libdir[@],$(libdir),g; \
-	        s,[@]includedir[@],$(includedir),g;" $^ > $@
-
 # Base TSS2 headers
 tss2dir = $(includedir)/tss2
 tss2_HEADERS = \
@@ -209,7 +203,7 @@ libtss2_mu = src/tss2-mu/libtss2-mu.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_mu.h
 lib_LTLIBRARIES += $(libtss2_mu)
 pkgconfig_DATA += lib/tss2-mu.pc
-EXTRA_DIST += lib/tss2-mu.map lib/tss2-mu.pc.in
+EXTRA_DIST += lib/tss2-mu.map
 
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_mu_libtss2_mu_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/tss2-mu.map
@@ -224,7 +218,7 @@ libtss2_tcti_device = src/tss2-tcti/libtss2-tcti-device.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_device.h
 lib_LTLIBRARIES += $(libtss2_tcti_device)
 pkgconfig_DATA += lib/tss2-tcti-device.pc
-EXTRA_DIST += lib/tss2-tcti-device.map lib/tss2-tcti-device.pc.in
+EXTRA_DIST += lib/tss2-tcti-device.map
 
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-device.map
@@ -241,7 +235,7 @@ libtss2_tcti_mssim = src/tss2-tcti/libtss2-tcti-mssim.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_mssim.h
 lib_LTLIBRARIES += $(libtss2_tcti_mssim)
 pkgconfig_DATA += lib/tss2-tcti-mssim.pc
-EXTRA_DIST += lib/tss2-tcti-mssim.map lib/tss2-tcti-mssim.pc.in
+EXTRA_DIST += lib/tss2-tcti-mssim.map
 
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_mssim_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-mssim.map
@@ -257,7 +251,6 @@ libtss2_sys = src/tss2-sys/libtss2-sys.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_sys.h
 lib_LTLIBRARIES += $(libtss2_sys)
 pkgconfig_DATA += lib/tss2-sys.pc
-EXTRA_DIST += lib/tss2-sys.pc.in
 
 src_tss2_sys_libtss2_sys_la_CFLAGS = $(AM_CFLAGS) -I$(srcdir)/src/tss2-sys
 src_tss2_sys_libtss2_sys_la_LDFLAGS = $(AM_LDFLAGS) $(LIBSOCKET_LDFLAGS)
@@ -270,7 +263,6 @@ libtss2_esys = src/tss2-esys/libtss2-esys.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_esys.h
 lib_LTLIBRARIES += $(libtss2_esys)
 pkgconfig_DATA += lib/tss2-esys.pc
-EXTRA_DIST += lib/tss2-esys.pc.in
 
 
 src_tss2_esys_libtss2_esys_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) \
