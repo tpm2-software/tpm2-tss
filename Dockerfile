@@ -50,7 +50,8 @@ ENV LD_LIBRARY_PATH /usr/local/lib
 
 # Fuzzing
 FROM base AS fuzzing
-RUN GEN_FUZZ=1 ./bootstrap \
+ENV GEN_FUZZ 1
+RUN ./bootstrap \
   && ./configure \
      CC=clang \
      CXX=clang++ \
