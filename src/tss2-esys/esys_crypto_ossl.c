@@ -699,7 +699,7 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_GENERAL_FAILURE The internal crypto engine failed.
  */
-TSS2_RC
+static TSS2_RC
 tpm_pub_to_ossl_pub(EC_GROUP *group, TPM2B_PUBLIC *key, EC_POINT **tpm_pub_key)
 {
 

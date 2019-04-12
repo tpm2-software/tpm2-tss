@@ -55,6 +55,9 @@ TSS2_RC CopyCommandHeader(_TSS2_SYS_CONTEXT_BLOB *ctx, TPM2_CC commandCode)
     return rval;
 }
 
+static int GetNumCommandHandles(TPM2_CC commandCode);
+static int GetNumResponseHandles(TPM2_CC commandCode);
+
 TSS2_RC CommonPreparePrologue(
     _TSS2_SYS_CONTEXT_BLOB *ctx,
     TPM2_CC commandCode)
@@ -161,7 +164,7 @@ TSS2_RC CommonOneCall(
     return rval;
 }
 
-COMMAND_HANDLES commandArray[] =
+static const COMMAND_HANDLES commandArray[] =
 {
     { TPM2_CC_Startup, 0, 0 },
     { TPM2_CC_Shutdown, 0, 0 },
@@ -296,12 +299,12 @@ static int GetNumHandles(TPM2_CC commandCode, bool req)
     return 0;
 }
 
-int GetNumCommandHandles(TPM2_CC commandCode)
+static int GetNumCommandHandles(TPM2_CC commandCode)
 {
     return GetNumHandles(commandCode, 1);
 }
 
-int GetNumResponseHandles(TPM2_CC commandCode)
+static int GetNumResponseHandles(TPM2_CC commandCode)
 {
     return GetNumHandles(commandCode, 0);
 }

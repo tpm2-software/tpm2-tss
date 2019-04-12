@@ -28,13 +28,6 @@ typedef struct {
     uint8_t digest[sizeof(TPMU_HA)]; /**< The digest. */
 } HASH_TAB_ITEM;
 
-bool cmp_UINT16 (const UINT16 *in1, const UINT16 *in2);
-bool cmp_BYTE (const BYTE *in1, const BYTE *in2);
-bool cmp_BYTE_array(const BYTE *in1, size_t count1, const BYTE *in2, size_t count2);
-bool cmp_TPM2B_DIGEST (const TPM2B_DIGEST *in1, const TPM2B_DIGEST *in2);
-bool cmp_TPM2B_NAME (const TPM2B_NAME *in1, const TPM2B_NAME *in2);
-bool cmp_TPM2B_AUTH (const TPM2B_AUTH *in1, const TPM2B_AUTH *in2);
-
 TSS2_RC init_session_tab(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3);

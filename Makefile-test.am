@@ -57,7 +57,6 @@ if UNIT
 TESTS_UNIT  = \
     test/unit/CommonPreparePrologue \
     test/unit/CopyCommandHeader \
-    test/unit/GetNumHandles \
     test/unit/io \
     test/unit/key-value-parse \
     test/unit/tcti-device \
@@ -265,9 +264,6 @@ test_unit_key_value_parse_LDADD   = $(CMOCKA_LIBS) $(libutil)
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_CommonPreparePrologue_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
 test_unit_CommonPreparePrologue_LDADD = $(CMOCKA_LIBS) $(libtss2_sys)
-
-test_unit_GetNumHandles_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_GetNumHandles_LDADD   = $(CMOCKA_LIBS) $(libtss2_sys)
 
 test_unit_CopyCommandHeader_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_CopyCommandHeader_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
