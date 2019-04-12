@@ -893,7 +893,7 @@ iesys_cryptogcry_get_ecdh_point(TPM2B_PUBLIC *key,
  *         parameters, TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto
  *         library.
  */
-TSS2_RC
+static TSS2_RC
 iesys_cryptogcry_sym_aes_init(gcry_cipher_hd_t * cipher_hd,
                               uint8_t * key,
                               TPM2_ALG_ID tpm_sym_alg,

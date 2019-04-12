@@ -19,7 +19,7 @@
  * @param[in] in1 Variable to be compared with:
  * @param[in] in2
  */
-bool
+static bool
 cmp_UINT16(const UINT16 * in1, const UINT16 * in2)
 {
     LOG_TRACE("call");
@@ -36,7 +36,7 @@ cmp_UINT16(const UINT16 * in1, const UINT16 * in2)
  * @param[in] in1 Variable to be compared with:
  * @param[in] in2
  */
-bool
+static bool
 cmp_BYTE(const BYTE * in1, const BYTE * in2)
 {
     LOG_TRACE("call");
@@ -54,7 +54,7 @@ cmp_BYTE(const BYTE * in1, const BYTE * in2)
  * @param[in] in2
  */
 
-bool
+static bool
 cmp_BYTE_array(const BYTE * in1, size_t count1, const BYTE * in2, size_t count2)
 {
     if (count1 != count2) {
@@ -75,7 +75,7 @@ cmp_BYTE_array(const BYTE * in1, size_t count1, const BYTE * in2, size_t count2)
  * @param[in] in1 variable to be compared with:
  * @param[in] in2
  */
-bool
+static bool
 cmp_TPM2B_DIGEST(const TPM2B_DIGEST * in1, const TPM2B_DIGEST * in2)
 {
     LOG_TRACE("call");
@@ -96,7 +96,7 @@ cmp_TPM2B_DIGEST(const TPM2B_DIGEST * in1, const TPM2B_DIGEST * in2)
  * @param[in] in1 variable to be compared with:
  * @param[in] in2
  */
-bool
+static bool
 cmp_TPM2B_NAME(const TPM2B_NAME * in1, const TPM2B_NAME * in2)
 {
     LOG_TRACE("call");
@@ -117,7 +117,7 @@ cmp_TPM2B_NAME(const TPM2B_NAME * in1, const TPM2B_NAME * in2)
  * @param[in] in1 Structure to be compared with:
  * @param[in] in1
  */
-bool
+static bool
 cmp_TPM2B_AUTH(const TPM2B_AUTH * in1, const TPM2B_AUTH * in2)
 {
     LOG_TRACE("call");
