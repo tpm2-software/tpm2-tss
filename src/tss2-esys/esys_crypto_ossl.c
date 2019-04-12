@@ -53,30 +53,6 @@ typedef struct _IESYS_CRYPTO_CONTEXT {
     };
 } IESYS_CRYPTOSSL_CONTEXT;
 
-size_t
-hash_get_digest_size(TPM2_ALG_ID hashAlg)
-{
-    switch (hashAlg) {
-    case TPM2_ALG_SHA1:
-        return TPM2_SHA1_DIGEST_SIZE;
-        break;
-    case TPM2_ALG_SHA256:
-        return TPM2_SHA256_DIGEST_SIZE;
-        break;
-    case TPM2_ALG_SHA384:
-        return TPM2_SHA384_DIGEST_SIZE;
-        break;
-    case TPM2_ALG_SHA512:
-        return TPM2_SHA512_DIGEST_SIZE;
-        break;
-    case TPM2_ALG_SM3_256:
-        return TPM2_SM3_256_DIGEST_SIZE;
-        break;
-    default:
-        return 0;
-    }
-}
-
 const EVP_MD *
 get_ossl_hash_md(TPM2_ALG_ID hashAlg)
 {
@@ -126,7 +102,7 @@ iesys_cryptossl_hash_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
                    "Unsupported hash algorithm (%"PRIu16")", cleanup, hashAlg);
     }
 
-    if (!(mycontext->hash.hash_len = hash_get_digest_size(hashAlg))) {
+    if (iesys_crypto_hash_get_digest_size(hashAlg, &mycontext->hash.hash_len)) {
         goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
                    "Unsupported hash algorithm (%"PRIu16")", cleanup, hashAlg);
     }
@@ -321,7 +297,7 @@ iesys_cryptossl_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
                    "Unsupported hash algorithm (%"PRIu16")", cleanup, hashAlg);
     }
 
-    if (!(mycontext->hmac.hmac_len = hash_get_digest_size(hashAlg))) {
+    if (iesys_crypto_hash_get_digest_size(hashAlg, &mycontext->hmac.hmac_len)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Unsupported hash algorithm (%"PRIu16")", cleanup, hashAlg);
     }
