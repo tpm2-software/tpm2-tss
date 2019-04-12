@@ -253,9 +253,11 @@ lib_LTLIBRARIES += $(libtss2_sys)
 pkgconfig_DATA += lib/tss2-sys.pc
 
 src_tss2_sys_libtss2_sys_la_CFLAGS = $(AM_CFLAGS) -I$(srcdir)/src/tss2-sys
-src_tss2_sys_libtss2_sys_la_LDFLAGS = $(AM_LDFLAGS) $(LIBSOCKET_LDFLAGS)
+src_tss2_sys_libtss2_sys_la_LDFLAGS = $(AM_LDFLAGS) $(LIBSOCKET_LDFLAGS) \
+                                      -Wl,--version-script=$(srcdir)/lib/tss2-sys.map
 src_tss2_sys_libtss2_sys_la_LIBADD = $(libtss2_mu) $(libutil)
 src_tss2_sys_libtss2_sys_la_SOURCES = $(TSS2_SYS_SRC)
+EXTRA_DIST += lib/tss2-sys.map
 
 ### TCG TSS ESAPI spec library ###
 if ESAPI
