@@ -301,7 +301,8 @@ test_unit_TPMU_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
 
 test_unit_sys_execute_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_sys_execute_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libtss2_sys)
-test_unit_sys_execute_SOURCES = test/unit/sys-execute.c src/tss2-tcti/tcti-common.c
+test_unit_sys_execute_SOURCES = test/unit/sys-execute.c \
+                                src/tss2-tcti/tcti-common.c src/util/log.c
 
 if ESAPI
 test_unit_esys_context_null_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
@@ -348,7 +349,8 @@ test_unit_esys_crypto_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(esyscryCFLAGS)
 test_unit_esys_crypto_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_crypto_LDFLAGS = $(TESTS_LDFLAGS) $(esyscryLDFLAGS)
 test_unit_esys_crypto_SOURCES = test/unit/esys-crypto.c \
-        src/tss2-esys/esys_context.c
+        src/tss2-esys/esys_context.c src/tss2-esys/esys_crypto_ossl.c \
+        src/tss2-esys/esys_crypto.c
 
 endif # ESAPI
 endif # UNIT
@@ -365,7 +367,8 @@ test_integration_libtest_utils_la_SOURCES = \
     test/integration/sapi-util.c    test/integration/sapi-util.h \
     test/integration/sapi-session-util.c test/integration/session-util.h \
     test/integration/sapi-test-options.c test/integration/test-options.h \
-    test/integration/sapi-entity-util.c test/integration/test.h
+    test/integration/sapi-entity-util.c test/integration/test.h \
+    src/util/log.c
 
 test_integration_sapi_asymmetric_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_sapi_asymmetric_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
@@ -1079,7 +1082,7 @@ test_integration_sapi_policy_authorizeNV_int_SOURCES = test/integration/main-sap
 test_integration_sapi_command_cancel_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_sapi_command_cancel_int_LDADD   = $(TESTS_LDADD)
 test_integration_sapi_command_cancel_int_SOURCES = test/integration/main-sapi.c \
-    test/integration/sapi-command-cancel.int.c
+    test/integration/sapi-command-cancel.int.c src/util/log.c
 endif #ENABLE_INTEGRATION
 
 check-ptpm:
