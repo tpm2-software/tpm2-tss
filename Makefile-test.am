@@ -46,10 +46,12 @@ endif #ENABLE_INTEGRATION
 if ESYS_OSSL
 esyscryCFLAGS = -DOSSL $(LIBSSL_CFLAGS) $(LIBCRYPTO_CFLAGS)
 esyscryLDFLAGS = $(LIBSSL_LIBS) $(LIBCRYPTO_LIBS) -ldl
+esyscrySRC = src/tss2-esys/esys_crypto_ossl.c
 else
 if ESYS_GCRYPT
 esyscryCFLAGS =
 esyscryLDFLAGS = -lgcrypt -ldl
+esyscrySRC = src/tss2-esys/esys_crypto_gcrypt.c
 endif
 endif
 
@@ -262,12 +264,14 @@ test_unit_key_value_parse_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_key_value_parse_LDADD   = $(CMOCKA_LIBS) $(libutil)
 
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_CommonPreparePrologue_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
-test_unit_CommonPreparePrologue_LDADD = $(CMOCKA_LIBS) $(libtss2_sys)
+test_unit_CommonPreparePrologue_LDADD = $(CMOCKA_LIBS) $(libtss2_sys) $(libtss2_mu)
+test_unit_CommonPreparePrologue_SOURCES = test/unit/CommonPreparePrologue.c \
+    src/tss2-sys/sysapi_util.c
 
 test_unit_CopyCommandHeader_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_CopyCommandHeader_LDFLAGS = -Wl,--unresolved-symbols=ignore-all
-test_unit_CopyCommandHeader_LDADD = $(CMOCKA_LIBS) $(libtss2_sys)
+test_unit_CopyCommandHeader_LDADD = $(CMOCKA_LIBS) $(libtss2_sys) $(libtss2_mu)
+test_unit_CopyCommandHeader_SOURCES = test/unit/CopyCommandHeader.c \
+    src/tss2-sys/sysapi_util.c
 
 test_unit_UINT8_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_UINT8_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
@@ -319,39 +323,56 @@ test_unit_esys_default_tcti_LDFLAGS = \
 test_unit_esys_default_tcti_SOURCES = test/unit/esys-default-tcti.c \
         src/tss2-esys/esys_tcti_default.c src/tss2-esys/esys_tcti_default.h
 
-test_unit_esys_resubmissions_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_esys_resubmissions_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(esyscryCFLAGS)
 test_unit_esys_resubmissions_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
-test_unit_esys_resubmissions_LDFLAGS = $(TESTS_LDFLAGS)
+test_unit_esys_resubmissions_LDFLAGS = $(TESTS_LDFLAGS) $(esyscryLDFLAGS)
+test_unit_esys_resubmissions_SOURCES = test/unit/esys-resubmissions.c \
+                                       src/tss2-esys/esys_iutil.c \
+                                       src/tss2-esys/esys_crypto.c \
+                                       $(esyscrySRC)
 
 test_unit_esys_sequence_finish_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_sequence_finish_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_sequence_finish_LDFLAGS = $(TESTS_LDFLAGS)
 
-test_unit_esys_tcti_rcs_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_esys_tcti_rcs_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
-test_unit_esys_tcti_rcs_LDFLAGS = $(TESTS_LDFLAGS)
+test_unit_esys_tcti_rcs_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(esyscryCFLAGS)
+test_unit_esys_tcti_rcs_LDADD = $(CMOCKA_LIBS) $(TESTS_LDADD)
+test_unit_esys_tcti_rcs_LDFLAGS = $(TESTS_LDFLAGS) $(esyscryLDFLAGS)
+test_unit_esys_tcti_rcs_SOURCES = test/unit/esys-tcti-rcs.c \
+                                  src/tss2-esys/esys_iutil.c \
+                                  src/tss2-esys/esys_crypto.c \
+                                  $(esyscrySRC)
 
-test_unit_esys_tpm_rcs_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_esys_tpm_rcs_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
-test_unit_esys_tpm_rcs_LDFLAGS = $(TESTS_LDFLAGS)
+test_unit_esys_tpm_rcs_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(esyscryCFLAGS)
+test_unit_esys_tpm_rcs_LDADD = $(CMOCKA_LIBS) $(TESTS_LDADD)
+test_unit_esys_tpm_rcs_LDFLAGS = $(TESTS_LDFLAGS) $(esyscryLDFLAGS)
+test_unit_esys_tpm_rcs_SOURCES = test/unit/esys-tpm-rcs.c \
+                                 src/tss2-esys/esys_iutil.c \
+                                 src/tss2-esys/esys_crypto.c \
+                                 $(esyscrySRC)
 
 test_unit_esys_getpollhandles_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_getpollhandles_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_getpollhandles_LDFLAGS = $(TESTS_LDFLAGS)
 
-test_unit_esys_nulltcti_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_esys_nulltcti_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(esyscryCFLAGS)
 test_unit_esys_nulltcti_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
-test_unit_esys_nulltcti_LDFLAGS = $(TESTS_LDFLAGS) -ldl
+test_unit_esys_nulltcti_LDFLAGS = $(TESTS_LDFLAGS) $(esyscryLDFLAGS) -ldl
 test_unit_esys_nulltcti_SOURCES = test/unit/esys-nulltcti.c \
-        src/tss2-esys/esys_context.c
+                                  src/tss2-esys/esys_context.c \
+                                  src/tss2-esys/esys_iutil.c \
+                                  src/tss2-esys/esys_crypto.c \
+                                  $(esyscrySRC)
 
 test_unit_esys_crypto_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(esyscryCFLAGS)
 test_unit_esys_crypto_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_crypto_LDFLAGS = $(TESTS_LDFLAGS) $(esyscryLDFLAGS)
 test_unit_esys_crypto_SOURCES = test/unit/esys-crypto.c \
-        src/tss2-esys/esys_context.c src/tss2-esys/esys_crypto_ossl.c \
-        src/tss2-esys/esys_crypto.c
-
+                                src/tss2-esys/esys_context.c \
+                                src/tss2-esys/esys_iutil.c \
+                                src/tss2-esys/esys_tcti_default.c \
+                                src/tss2-esys/esys_crypto.c \
+                                $(esyscrySRC)
 endif # ESAPI
 endif # UNIT
 
