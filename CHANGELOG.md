@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [2.1.3]
+## [2.1.3] - 2019-04-16
 ### Fixed
  - Fixed openssl engine invocation in esye
  - Fixed wrong encryption flag in EncryptDecrypt
