@@ -67,7 +67,7 @@ case_insensitive_strncmp(const char *string1,
     return result;
 }
 
-log_level
+static log_level
 getLogLevel(const char *module, log_level logdefault);
 
 void
@@ -137,7 +137,7 @@ doLog(log_level loglevel, const char *module, log_level logdefault,
     va_end(vaargs);
 }
 
-log_level
+static log_level
 log_stringlevel(const char *n)
 {
     for(log_level i = 0; i < sizeof(log_strings)/sizeof(log_strings[0]); i++) {
@@ -148,7 +148,7 @@ log_stringlevel(const char *n)
     return LOGLEVEL_UNDEFINED;
 }
 
-log_level
+static log_level
 getLogLevel(const char *module, log_level logdefault)
 {
     log_level loglevel = logdefault;
