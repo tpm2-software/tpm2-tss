@@ -61,6 +61,7 @@ TESTS_UNIT  = \
     test/unit/CopyCommandHeader \
     test/unit/io \
     test/unit/key-value-parse \
+    test/unit/log \
     test/unit/tcti-device \
     test/unit/tcti-mssim \
     test/unit/UINT8-marshal \
@@ -262,6 +263,9 @@ test_unit_io_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=socket,--wrap=write
 
 test_unit_key_value_parse_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_key_value_parse_LDADD   = $(CMOCKA_LIBS) $(libutil)
+
+test_unit_log_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_log_LDADD   = $(CMOCKA_LIBS) $(libutil)
 
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_CommonPreparePrologue_LDADD = $(CMOCKA_LIBS) $(libtss2_sys) $(libtss2_mu)
