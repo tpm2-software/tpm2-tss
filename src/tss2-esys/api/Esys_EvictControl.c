@@ -18,11 +18,9 @@
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
-    ESYS_TR auth,
     ESYS_TR objectHandle,
     TPMI_DH_PERSISTENT persistentHandle)
 {
-    esysContext->in.EvictControl.auth = auth;
     esysContext->in.EvictControl.objectHandle = objectHandle;
     esysContext->in.EvictControl.persistentHandle = persistentHandle;
 }
@@ -179,10 +177,10 @@ Esys_EvictControl_Async(
         return r;
     esysContext->state = _ESYS_STATE_INTERNALERROR;
 
-    /* Check and store input parameters */
+    /* Check input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
-    store_input_parameters(esysContext, auth, objectHandle, persistentHandle);
+    store_input_parameters(esysContext, objectHandle, persistentHandle);
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, auth, &authNode);
@@ -275,7 +273,8 @@ Esys_EvictControl_Finish(
     }
 
     /* Check for correct sequence and set sequence to irregular for now */
-    if (esysContext->state != _ESYS_STATE_SENT) {
+    if (esysContext->state != _ESYS_STATE_SENT &&
+        esysContext->state != _ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
@@ -301,19 +300,13 @@ Esys_EvictControl_Finish(
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
             "resubmission: %" PRIx32, r);
-        if (esysContext->submissionCount >= _ESYS_MAX_SUBMISSIONS) {
+        if (esysContext->submissionCount++ >= _ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of (re)submissions has been reached.");
             esysContext->state = _ESYS_STATE_INIT;
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_EvictControl_Async(esysContext,
-                                    esysContext->in.EvictControl.auth,
-                                    esysContext->in.EvictControl.objectHandle,
-                                    esysContext->session_type[0],
-                                    esysContext->session_type[1],
-                                    esysContext->session_type[2],
-                                    esysContext->in.EvictControl.persistentHandle);
+        r = Tss2_Sys_ExecuteAsync(esysContext->sys);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent

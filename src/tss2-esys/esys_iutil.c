@@ -1125,15 +1125,7 @@ iesys_check_sequence_async(ESYS_CONTEXT * esys_context)
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    /* TODO: Check if RESUBMISSION BELONGS HERE OR RATHER INTO THE FINISH METHOD. */
-    if (esys_context->state == _ESYS_STATE_RESUBMISSION) {
-        iesys_restore_session_flags(esys_context);
-        esys_context->submissionCount++;
-        LOG_DEBUG("The command will be resubmitted for the %i time.",
-                  esys_context->submissionCount);
-    } else {
-        esys_context->submissionCount = 1;
-    }
+    esys_context->submissionCount = 1;
     return TSS2_RC_SUCCESS;
 }
 

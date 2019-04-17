@@ -17,41 +17,15 @@
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR primaryHandle,
-    const TPM2B_SENSITIVE_CREATE *inSensitive,
-    const TPM2B_PUBLIC *inPublic,
-    const TPM2B_DATA *outsideInfo,
-    const TPML_PCR_SELECTION *creationPCR)
+        ESYS_CONTEXT *esysContext,
+        const TPM2B_SENSITIVE_CREATE *inSensitive)
 {
-    esysContext->in.CreatePrimary.primaryHandle = primaryHandle;
     if (inSensitive == NULL) {
         esysContext->in.CreatePrimary.inSensitive = NULL;
     } else {
         esysContext->in.CreatePrimary.inSensitiveData = *inSensitive;
         esysContext->in.CreatePrimary.inSensitive =
             &esysContext->in.CreatePrimary.inSensitiveData;
-    }
-    if (inPublic == NULL) {
-        esysContext->in.CreatePrimary.inPublic = NULL;
-    } else {
-        esysContext->in.CreatePrimary.inPublicData = *inPublic;
-        esysContext->in.CreatePrimary.inPublic =
-            &esysContext->in.CreatePrimary.inPublicData;
-    }
-    if (outsideInfo == NULL) {
-        esysContext->in.CreatePrimary.outsideInfo = NULL;
-    } else {
-        esysContext->in.CreatePrimary.outsideInfoData = *outsideInfo;
-        esysContext->in.CreatePrimary.outsideInfo =
-            &esysContext->in.CreatePrimary.outsideInfoData;
-    }
-    if (creationPCR == NULL) {
-        esysContext->in.CreatePrimary.creationPCR = NULL;
-    } else {
-        esysContext->in.CreatePrimary.creationPCRData = *creationPCR;
-        esysContext->in.CreatePrimary.creationPCR =
-            &esysContext->in.CreatePrimary.creationPCRData;
     }
 }
 
@@ -225,11 +199,10 @@ Esys_CreatePrimary_Async(
         return r;
     esysContext->state = _ESYS_STATE_INTERNALERROR;
 
-    /* Check and store input parameters */
+    /* Check input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
-    store_input_parameters(esysContext, primaryHandle, inSensitive, inPublic,
-                           outsideInfo, creationPCR);
+    store_input_parameters (esysContext, inSensitive);
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, primaryHandle, &primaryHandleNode);
@@ -330,7 +303,8 @@ Esys_CreatePrimary_Finish(
     }
 
     /* Check for correct sequence and set sequence to irregular for now */
-    if (esysContext->state != _ESYS_STATE_SENT) {
+    if (esysContext->state != _ESYS_STATE_SENT &&
+        esysContext->state != _ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
@@ -389,21 +363,13 @@ Esys_CreatePrimary_Finish(
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
             "resubmission: %" PRIx32, r);
-        if (esysContext->submissionCount >= _ESYS_MAX_SUBMISSIONS) {
+        if (esysContext->submissionCount++ >= _ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of (re)submissions has been reached.");
             esysContext->state = _ESYS_STATE_INIT;
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_CreatePrimary_Async(esysContext,
-                                     esysContext->in.CreatePrimary.primaryHandle,
-                                     esysContext->session_type[0],
-                                     esysContext->session_type[1],
-                                     esysContext->session_type[2],
-                                     esysContext->in.CreatePrimary.inSensitive,
-                                     esysContext->in.CreatePrimary.inPublic,
-                                     esysContext->in.CreatePrimary.outsideInfo,
-                                     esysContext->in.CreatePrimary.creationPCR);
+        r = Tss2_Sys_ExecuteAsync(esysContext->sys);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent
