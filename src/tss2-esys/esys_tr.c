@@ -137,13 +137,11 @@ Esys_TR_FromTPMPublic_Async(ESYS_CONTEXT * esys_context,
     esys_context->esys_handle = esys_handle;
 
     if (tpm_handle >= TPM2_NV_INDEX_FIRST && tpm_handle <= TPM2_NV_INDEX_LAST) {
-        esys_context->in.NV_ReadPublic.nvIndex = esys_handle;
         r = Esys_NV_ReadPublic_Async(esys_context, esys_handle, shandle1,
                                      shandle2, shandle3);
         goto_if_error(r, "Error NV_ReadPublic", error_cleanup);
 
     } else {
-        esys_context->in.ReadPublic.objectHandle = esys_handle;
         r = Esys_ReadPublic_Async(esys_context, esys_handle, shandle1, shandle2,
                                   shandle3);
         goto_if_error(r, "Error ReadPublic", error_cleanup);

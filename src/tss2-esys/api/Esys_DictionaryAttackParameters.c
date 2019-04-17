@@ -15,20 +15,6 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
-static void store_input_parameters (
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR lockHandle,
-    UINT32 newMaxTries,
-    UINT32 newRecoveryTime,
-    UINT32 lockoutRecovery)
-{
-    esysContext->in.DictionaryAttackParameters.lockHandle = lockHandle;
-    esysContext->in.DictionaryAttackParameters.newMaxTries = newMaxTries;
-    esysContext->in.DictionaryAttackParameters.newRecoveryTime = newRecoveryTime;
-    esysContext->in.DictionaryAttackParameters.lockoutRecovery = lockoutRecovery;
-}
-
 /** One-Call function for TPM2_DictionaryAttackParameters
  *
  * This function invokes the TPM2_DictionaryAttackParameters command in a one-call
@@ -188,11 +174,9 @@ Esys_DictionaryAttackParameters_Async(
         return r;
     esysContext->state = _ESYS_STATE_INTERNALERROR;
 
-    /* Check and store input parameters */
+    /* Check input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
-    store_input_parameters(esysContext, lockHandle, newMaxTries, newRecoveryTime,
-                           lockoutRecovery);
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, lockHandle, &lockHandleNode);
@@ -277,7 +261,8 @@ Esys_DictionaryAttackParameters_Finish(
     }
 
     /* Check for correct sequence and set sequence to irregular for now */
-    if (esysContext->state != _ESYS_STATE_SENT) {
+    if (esysContext->state != _ESYS_STATE_SENT &&
+        esysContext->state != _ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
@@ -295,20 +280,13 @@ Esys_DictionaryAttackParameters_Finish(
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
             "resubmission: %" PRIx32, r);
-        if (esysContext->submissionCount >= _ESYS_MAX_SUBMISSIONS) {
+        if (esysContext->submissionCount++ >= _ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of (re)submissions has been reached.");
             esysContext->state = _ESYS_STATE_INIT;
             return r;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_DictionaryAttackParameters_Async(esysContext,
-                                                  esysContext->in.DictionaryAttackParameters.lockHandle,
-                                                  esysContext->session_type[0],
-                                                  esysContext->session_type[1],
-                                                  esysContext->session_type[2],
-                                                  esysContext->in.DictionaryAttackParameters.newMaxTries,
-                                                  esysContext->in.DictionaryAttackParameters.newRecoveryTime,
-                                                  esysContext->in.DictionaryAttackParameters.lockoutRecovery);
+        r = Tss2_Sys_ExecuteAsync(esysContext->sys);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent

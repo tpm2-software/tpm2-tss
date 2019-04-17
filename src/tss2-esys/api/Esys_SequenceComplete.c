@@ -18,19 +18,9 @@
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
-    ESYS_TR sequenceHandle,
-    const TPM2B_MAX_BUFFER *buffer,
-    TPMI_RH_HIERARCHY hierarchy)
+    ESYS_TR sequenceHandle)
 {
     esysContext->in.SequenceComplete.sequenceHandle = sequenceHandle;
-    esysContext->in.SequenceComplete.hierarchy = hierarchy;
-    if (buffer == NULL) {
-        esysContext->in.SequenceComplete.buffer = NULL;
-    } else {
-        esysContext->in.SequenceComplete.bufferData = *buffer;
-        esysContext->in.SequenceComplete.buffer =
-            &esysContext->in.SequenceComplete.bufferData;
-    }
 }
 
 /** One-Call function for TPM2_SequenceComplete
@@ -176,10 +166,10 @@ Esys_SequenceComplete_Async(
         return r;
     esysContext->state = _ESYS_STATE_INTERNALERROR;
 
-    /* Check and store input parameters */
+    /* Check input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
-    store_input_parameters(esysContext, sequenceHandle, buffer, hierarchy);
+    store_input_parameters(esysContext, sequenceHandle);
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, sequenceHandle, &sequenceHandleNode);
@@ -271,7 +261,8 @@ Esys_SequenceComplete_Finish(
     }
 
     /* Check for correct sequence and set sequence to irregular for now */
-    if (esysContext->state != _ESYS_STATE_SENT) {
+    if (esysContext->state != _ESYS_STATE_SENT &&
+        esysContext->state != _ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
@@ -303,19 +294,13 @@ Esys_SequenceComplete_Finish(
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
             "resubmission: %" PRIx32, r);
-        if (esysContext->submissionCount >= _ESYS_MAX_SUBMISSIONS) {
+        if (esysContext->submissionCount++ >= _ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of (re)submissions has been reached.");
             esysContext->state = _ESYS_STATE_INIT;
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_SequenceComplete_Async(esysContext,
-                                        esysContext->in.SequenceComplete.sequenceHandle,
-                                        esysContext->session_type[0],
-                                        esysContext->session_type[1],
-                                        esysContext->session_type[2],
-                                        esysContext->in.SequenceComplete.buffer,
-                                        esysContext->in.SequenceComplete.hierarchy);
+        r = Tss2_Sys_ExecuteAsync(esysContext->sys);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent

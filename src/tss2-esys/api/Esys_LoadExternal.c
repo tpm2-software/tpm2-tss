@@ -18,18 +18,8 @@
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
-    const TPM2B_SENSITIVE *inPrivate,
-    const TPM2B_PUBLIC *inPublic,
-    TPMI_RH_HIERARCHY hierarchy)
+    const TPM2B_PUBLIC *inPublic)
 {
-    esysContext->in.LoadExternal.hierarchy = hierarchy;
-    if (inPrivate == NULL) {
-        esysContext->in.LoadExternal.inPrivate = NULL;
-    } else {
-        esysContext->in.LoadExternal.inPrivateData = *inPrivate;
-        esysContext->in.LoadExternal.inPrivate =
-            &esysContext->in.LoadExternal.inPrivateData;
-    }
     if (inPublic == NULL) {
         esysContext->in.LoadExternal.inPublic = NULL;
     } else {
@@ -169,10 +159,10 @@ Esys_LoadExternal_Async(
         return r;
     esysContext->state = _ESYS_STATE_INTERNALERROR;
 
-    /* Check and store input parameters */
+    /* Check input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 0);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
-    store_input_parameters(esysContext, inPrivate, inPublic, hierarchy);
+    store_input_parameters(esysContext, inPublic);
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_LoadExternal_Prepare(esysContext->sys, inPrivate, inPublic,
@@ -249,7 +239,8 @@ Esys_LoadExternal_Finish(
     }
 
     /* Check for correct sequence and set sequence to irregular for now */
-    if (esysContext->state != _ESYS_STATE_SENT) {
+    if (esysContext->state != _ESYS_STATE_SENT &&
+        esysContext->state != _ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
@@ -287,18 +278,13 @@ Esys_LoadExternal_Finish(
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
             "resubmission: %" PRIx32, r);
-        if (esysContext->submissionCount >= _ESYS_MAX_SUBMISSIONS) {
+        if (esysContext->submissionCount++ >= _ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of (re)submissions has been reached.");
             esysContext->state = _ESYS_STATE_INIT;
             goto error_cleanup;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_LoadExternal_Async(esysContext, esysContext->session_type[0],
-                                    esysContext->session_type[1],
-                                    esysContext->session_type[2],
-                                    esysContext->in.LoadExternal.inPrivate,
-                                    esysContext->in.LoadExternal.inPublic,
-                                    esysContext->in.LoadExternal.hierarchy);
+        r = Tss2_Sys_ExecuteAsync(esysContext->sys);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent

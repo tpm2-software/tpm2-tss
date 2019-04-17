@@ -15,46 +15,6 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
-static void store_input_parameters (
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR policySession,
-    const TPM2B_DIGEST *approvedPolicy,
-    const TPM2B_NONCE *policyRef,
-    const TPM2B_NAME *keySign,
-    const TPMT_TK_VERIFIED *checkTicket)
-{
-    esysContext->in.PolicyAuthorize.policySession = policySession;
-    if (approvedPolicy == NULL) {
-        esysContext->in.PolicyAuthorize.approvedPolicy = NULL;
-    } else {
-        esysContext->in.PolicyAuthorize.approvedPolicyData = *approvedPolicy;
-        esysContext->in.PolicyAuthorize.approvedPolicy =
-            &esysContext->in.PolicyAuthorize.approvedPolicyData;
-    }
-    if (policyRef == NULL) {
-        esysContext->in.PolicyAuthorize.policyRef = NULL;
-    } else {
-        esysContext->in.PolicyAuthorize.policyRefData = *policyRef;
-        esysContext->in.PolicyAuthorize.policyRef =
-            &esysContext->in.PolicyAuthorize.policyRefData;
-    }
-    if (keySign == NULL) {
-        esysContext->in.PolicyAuthorize.keySign = NULL;
-    } else {
-        esysContext->in.PolicyAuthorize.keySignData = *keySign;
-        esysContext->in.PolicyAuthorize.keySign =
-            &esysContext->in.PolicyAuthorize.keySignData;
-    }
-    if (checkTicket == NULL) {
-        esysContext->in.PolicyAuthorize.checkTicket = NULL;
-    } else {
-        esysContext->in.PolicyAuthorize.checkTicketData = *checkTicket;
-        esysContext->in.PolicyAuthorize.checkTicket =
-            &esysContext->in.PolicyAuthorize.checkTicketData;
-    }
-}
-
 /** One-Call function for TPM2_PolicyAuthorize
  *
  * This function invokes the TPM2_PolicyAuthorize command in a one-call
@@ -215,11 +175,9 @@ Esys_PolicyAuthorize_Async(
         return r;
     esysContext->state = _ESYS_STATE_INTERNALERROR;
 
-    /* Check and store input parameters */
+    /* Check input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 0);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
-    store_input_parameters(esysContext, policySession, approvedPolicy, policyRef,
-                           keySign, checkTicket);
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, policySession, &policySessionNode);
@@ -303,7 +261,8 @@ Esys_PolicyAuthorize_Finish(
     }
 
     /* Check for correct sequence and set sequence to irregular for now */
-    if (esysContext->state != _ESYS_STATE_SENT) {
+    if (esysContext->state != _ESYS_STATE_SENT &&
+        esysContext->state != _ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
@@ -321,21 +280,13 @@ Esys_PolicyAuthorize_Finish(
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
             "resubmission: %" PRIx32, r);
-        if (esysContext->submissionCount >= _ESYS_MAX_SUBMISSIONS) {
+        if (esysContext->submissionCount++ >= _ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of (re)submissions has been reached.");
             esysContext->state = _ESYS_STATE_INIT;
             return r;
         }
         esysContext->state = _ESYS_STATE_RESUBMISSION;
-        r = Esys_PolicyAuthorize_Async(esysContext,
-                                       esysContext->in.PolicyAuthorize.policySession,
-                                       esysContext->session_type[0],
-                                       esysContext->session_type[1],
-                                       esysContext->session_type[2],
-                                       esysContext->in.PolicyAuthorize.approvedPolicy,
-                                       esysContext->in.PolicyAuthorize.policyRef,
-                                       esysContext->in.PolicyAuthorize.keySign,
-                                       esysContext->in.PolicyAuthorize.checkTicket);
+        r = Tss2_Sys_ExecuteAsync(esysContext->sys);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent
