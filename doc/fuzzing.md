@@ -19,7 +19,6 @@ Build the fuzz tests by setting `--with-fuzzing=libfuzzer` and statically
 linking to the fuzzing TCTI.
 
 ```console
-export LD_LIBRARY_PATH=/usr/local/bin
 export GEN_FUZZ=1
 
 ./bootstrap
