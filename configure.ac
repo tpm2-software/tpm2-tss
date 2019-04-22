@@ -12,6 +12,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CXX
 AC_PROG_CC
 LT_INIT()
+PKG_INSTALLDIR()
 AM_INIT_AUTOMAKE([foreign
                   subdir-objects])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])]) #Backward compatible setting of "silent-rules"

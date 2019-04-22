@@ -182,7 +182,6 @@ EXTRA_DIST += AUTHORS
 CLEANFILES += AUTHORS
 
 # pkg-config setup. pc-file declarations happen in the corresponding modules
-pkgconfigdir          = $(libdir)/pkgconfig
 pkgconfig_DATA =
 CLEANFILES += $(pkgconfig_DATA)
 
