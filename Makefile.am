@@ -13,6 +13,7 @@ AM_LDFLAGS      = $(EXTRA_LDFLAGS) $(CODE_COVERAGE_LIBS)
 lib_LTLIBRARIES =
 noinst_LTLIBRARIES =
 EXTRA_DIST =
+DISTCLEANFILES =
 CLEANFILES =
 MOSTLYCLEANFILES =
 noinst_PROGRAMS =
@@ -183,7 +184,7 @@ CLEANFILES += AUTHORS
 
 # pkg-config setup. pc-file declarations happen in the corresponding modules
 pkgconfig_DATA =
-CLEANFILES += $(pkgconfig_DATA)
+DISTCLEANFILES += $(pkgconfig_DATA)
 
 # Base TSS2 headers
 tss2dir = $(includedir)/tss2
