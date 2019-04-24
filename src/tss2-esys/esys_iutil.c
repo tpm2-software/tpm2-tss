@@ -535,18 +535,14 @@ TSS2_RC
 iesys_gen_caller_nonces(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
-    size_t authHash_size = 0;
 
     for (int i = 0; i < 3; i++) {
         RSRC_NODE_T *session = esys_context->session_tab[i];
         if (session == NULL)
             continue;
-        r = iesys_crypto_hash_get_digest_size(session->rsrc.misc.rsrc_session.
-                                              authHash, &authHash_size);
-        return_if_error(r, "Error: initialize auth session.");
 
         r = iesys_crypto_random2b(&session->rsrc.misc.rsrc_session.nonceCaller,
-                                authHash_size);
+                                  session->rsrc.misc.rsrc_session.nonceCaller.size);
         return_if_error(r, "Error: computing caller nonce (%x).");
     }
     return TSS2_RC_SUCCESS;
