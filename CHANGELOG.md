@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [2.2.3_rc0] - 2019-04-25
+### Fixed
+ - Fixed nonce size calculation in ESYS sessions
+
 ## [2.2.2] - 2019-03-28
 ### Fixed
  - Fixed wrong encryption flag in EncryptDecrypt
