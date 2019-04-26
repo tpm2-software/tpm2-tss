@@ -21,8 +21,6 @@ endif
 EXTRA_DIST += $(srcdir)/script/int-log-compiler.sh $(srcdir)/script/int-log-compiler-ptpm.sh
 AM_TESTS_ENVIRONMENT = PATH="$(PATH)"
 
-check-programs: $(check_PROGRAMS)
-
 check_PROGRAMS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
 TESTS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
 
