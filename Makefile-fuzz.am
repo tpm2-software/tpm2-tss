@@ -44,7 +44,7 @@ TESTS += $(TESTS_FUZZ)
 fuzz_PROGRAMS = $(TESTS_FUZZ)
 FUZZ = $(check_PROGRAMS)
 
-DISTCLEANFILES = Makefile-fuzz-generated.am
+DISTCLEANFILES += Makefile-fuzz-generated.am
 
 include Makefile-fuzz-generated.am
 endif # ENABLE_FUZZING
