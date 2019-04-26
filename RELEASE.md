@@ -75,3 +75,11 @@ Additionally they must:
 # Announcements
 Release candidates and proper releases should be announced on the 01.org TPM2 mailing list: https://lists.01.org/mailman/listinfo/tpm2.
 This announcement should be accompanied by a link to the release page on Github as well as a link to the CHANGELOG.md accompanying the release.
+
+# Maintainance
+The most recent minor releases will receive bug fixes and bug fix releases.
+Additionally the latest major release will receive bug fixes for another year after release.
+
+# Release schedule
+The project aims for 3 releases per year; early spring, summer, late fall.
+Whether a release is a major or minor release depends on whether an API/ABI break occurs (see [Semantic Versioning](http://semver.org/)).
