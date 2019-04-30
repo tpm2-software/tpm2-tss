@@ -188,6 +188,15 @@ EXTRA_DIST += \
     README.md \
     RELEASE.md
 
+# Windows code / core build files
+EXTRA_DIST += \
+    include/tss2/tss2_tcti_tbs.h \
+    lib/tss2-tcti-tbs.def \
+    src/tss2-tcti/tcti-tbs.c \
+    src/tss2-tcti/tcti-tbs.h \
+    src/tss2-tcti/tss2-tcti-tbs.vcxproj \
+    tpm2-tss.sln
+
 # Generate the AUTHORS file from git log
 AUTHORS :
 	$(AM_V_GEN)git log --format='%aN <%aE>' | grep -v 'users.noreply.github.com' | sort | \
@@ -224,7 +233,7 @@ libtss2_mu = src/tss2-mu/libtss2-mu.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_mu.h
 lib_LTLIBRARIES += $(libtss2_mu)
 nodist_pkgconfig_DATA += lib/tss2-mu.pc
-EXTRA_DIST += lib/tss2-mu.map lib/tss2-mu.pc.in
+EXTRA_DIST += lib/tss2-mu.map lib/tss2-mu.pc.in lib/tss2-mu.def src/tss2-mu/tss2-mu.vcxproj
 
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_mu_libtss2_mu_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/tss2-mu.map
@@ -257,7 +266,7 @@ libtss2_tcti_mssim = src/tss2-tcti/libtss2-tcti-mssim.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_mssim.h
 lib_LTLIBRARIES += $(libtss2_tcti_mssim)
 nodist_pkgconfig_DATA += lib/tss2-tcti-mssim.pc
-EXTRA_DIST += lib/tss2-tcti-mssim.map lib/tss2-tcti-mssim.pc.in
+EXTRA_DIST += lib/tss2-tcti-mssim.map lib/tss2-tcti-mssim.pc.in lib/tss2-tcti-mssim.def src/tss2-tcti/tss2-tcti-mssim.vcxproj
 
 AM_CFLAGS += -DTCTI_MSSIM
 src_tss2_tcti_libtss2_tcti_mssim_la_CFLAGS   = $(AM_CFLAGS) $(URIPARSER_CFLAGS)
@@ -275,7 +284,7 @@ libtss2_sys = src/tss2-sys/libtss2-sys.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_sys.h
 lib_LTLIBRARIES += $(libtss2_sys)
 nodist_pkgconfig_DATA += lib/tss2-sys.pc
-EXTRA_DIST += lib/tss2-sys.pc.in
+EXTRA_DIST += lib/tss2-sys.pc.in lib/tss2-sys.def src/tss2-sys/tss2-sys.vcxproj
 
 src_tss2_sys_libtss2_sys_la_CFLAGS = $(AM_CFLAGS) -I$(srcdir)/src/tss2-sys
 src_tss2_sys_libtss2_sys_la_LIBADD = $(libtss2_mu) $(libutil)
@@ -287,7 +296,7 @@ libtss2_esys = src/tss2-esys/libtss2-esys.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_esys.h
 lib_LTLIBRARIES += $(libtss2_esys)
 nodist_pkgconfig_DATA += lib/tss2-esys.pc
-EXTRA_DIST += lib/tss2-esys.pc.in
+EXTRA_DIST += lib/tss2-esys.pc.in lib/tss2-esys.def src/tss2-esys/tss2-esys.vcxproj
 
 
 src_tss2_esys_libtss2_esys_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) \
