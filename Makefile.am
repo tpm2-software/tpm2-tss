@@ -172,6 +172,7 @@ EXTRA_DIST += \
     CONTRIBUTING.md \
     INSTALL.md \
     LICENSE \
+    MAINTAINERS \
     README.md \
     RELEASE.md
 
