@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: BSD-2
+# SPDX-License-Identifier: BSD-2-Clause
 import os
 import argparse
 import itertools
 
 # Makefile-fuzz-generated.am is created from this template.
-MAKEFILE_FUZZ = '''# SPDX-License-Identifier: BSD-2
+MAKEFILE_FUZZ = '''# SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2018 Intel Corporation
 # All rights reserved.
 
@@ -24,7 +24,7 @@ nodist_test_fuzz_%s_fuzz_SOURCES  = test/fuzz/main-sapi.cpp \\
 
 DISTCLEANFILES += test/fuzz/%s.fuzz.cpp'''
 # Common include definitions needed for fuzzing an SAPI call
-SAPI_TEMPLATE_HEADER = '''/* SPDX-License-Identifier: BSD-2 */
+SAPI_TEMPLATE_HEADER = '''/* SPDX-License-Identifier: BSD-2-Clause */
 /***********************************************************************
  * Copyright (c) 2018, Intel Corporation
  *
