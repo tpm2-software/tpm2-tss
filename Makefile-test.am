@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: BSD-2
+# SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2015 - 2018 Intel Corporation
 # Copyright (c) 2018 Fraunhofer SIT sponsored by Infineon Technologies AG
 # All rights reserved.
