@@ -23,9 +23,6 @@
 #define LOGMODULE esys
 #include "util/log.h"
 
-#define _STR(A) #A
-#define _XSTR(A) _STR(A)
-
 #define ARRAY_SIZE(X) (sizeof(X)/sizeof(X[0]))
 
 struct {
@@ -174,7 +171,7 @@ get_tcti_default(TSS2_TCTI_CONTEXT ** tcticontext, void **dlhandle)
 #ifdef ESYS_TCTI_DEFAULT_MODULE
 
 #ifdef ESYS_TCTI_DEFAULT_CONFIG
-    const char *config = _XSTR(ESYS_TCTI_DEFAULT_CONFIG);
+    const char *config = ESYS_TCTI_DEFAULT_CONFIG;
 #else /* ESYS_TCTI_DEFAULT_CONFIG */
     const char *config = NULL;
 #endif /* ESYS_TCTI_DEFAULT_CONFIG */
