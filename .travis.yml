@@ -111,7 +111,7 @@ script:
     fi
   - |
     if [ "$CC" == "clang" ]; then
-      scan-build --status-bugs make -j$(nproc) check
+      scan-build --status-bugs make -j$(nproc) distcheck
     else
       make -j$(nproc) check
     fi
@@ -122,12 +122,6 @@ script:
       make -j$(nproc) check
     fi
   - |
-  - popd
-# make distcheck
-  - mkdir ./distcheck_build
-  - pushd ./distcheck_build
-  - ../configure --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
-  - make -j$(nproc) distcheck
   - popd
 
 after_success:
