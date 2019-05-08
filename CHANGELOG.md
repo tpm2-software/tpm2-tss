@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [2.2.3_rc1] - 2019-05-08
+### Fixed
+ - Fixed windows build from dist ball
+ - Fixed default tcti configure option
+
 ## [2.2.3_rc0] - 2019-04-25
 ### Fixed
  - Fixed nonce size calculation in ESYS sessions
