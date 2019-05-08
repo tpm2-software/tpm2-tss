@@ -5,6 +5,8 @@ compiler:
 
 dist: xenial
 
+cache: ccache
+
 env:
   matrix:
   - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_0_2-stable
