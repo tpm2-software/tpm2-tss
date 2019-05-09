@@ -197,10 +197,6 @@
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup>
-    <OutDir>$(SolutionDir)\$(Configuration)\$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)\$(Configuration)\$(Platform)\</IntDir>
-  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_USRDLL;tss2_sys_EXPORTS;MAXLOGLEVEL=6;%(PreprocessorDefinitions)</PreprocessorDefinitions>
