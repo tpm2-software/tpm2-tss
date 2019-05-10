@@ -11,7 +11,6 @@ env:
   matrix:
   - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_0_2-stable
   - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_1_0-stable
-  - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_1_0-stable GEN_FUZZ=1 CXX=clang++ CC=clang
   - WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE
   - WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE
   - WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=no WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE
@@ -115,17 +114,18 @@ script:
     else
       make -j$(nproc) check
     fi
-# check fuzz targets
-  - |
-    if [ "$CC" == "clang" ] && [ "x$GEN_FUZZ" == "x1" ]; then
-      ../configure --with-fuzzing=libfuzzer --enable-tcti-fuzzing --disable-tcti-device --disable-tcti-mssim --disable-shared --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
-      make -j$(nproc) check
-    fi
-  - |
-  - popd
 
 after_success:
   - |
     if [ "$CC" == "gcc" ]; then
         bash <(curl -s https://codecov.io/bash)
     fi
+
+# check fuzz targets
+matrix:
+  include:
+  - env: WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_1_0-stable GEN_FUZZ=1 CXX=clang++ CC=clang
+    compiler: clang
+    script:
+    - ./configure --with-fuzzing=libfuzzer --enable-tcti-fuzzing --disable-tcti-device --disable-tcti-mssim --disable-shared --with-crypto=$WITH_CRYPTO CFLAGS=-I${PWD}/osslinstall/usr/local/include LDFLAGS=-L${PWD}/osslinstall/usr/local/lib
+    - make -j$(nproc) check
