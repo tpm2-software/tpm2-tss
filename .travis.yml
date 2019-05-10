@@ -93,7 +93,7 @@ script:
 # build with no tests enabled
   - mkdir ./build-no-tests
   - pushd ./build-no-tests
-  - ../configure CFLAGS=-I${PWD}/../osslinstall/usr/local/include --with-crypto=$WITH_CRYPTO LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
+  - ../configure --enable-tcti-partial-reads=$WITH_TCTI_PARTIAL --enable-tcti-device-async=$WITH_TCTI_ASYNC --with-crypto=$WITH_CRYPTO CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
   - make -j$(nproc)
   - popd
 # build with all tests enabled
