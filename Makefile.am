@@ -29,6 +29,7 @@ MAINTAINERCLEANFILES = \
     m4/ax_ac_append_to_file.m4 \
     m4/ax_ac_print_to_file.m4 \
     m4/ax_add_am_macro_static.m4 \
+    m4/ax_add_fortify_source.m4 \
     m4/ax_am_macros_static.m4 \
     m4/ax_check_compile_flag.m4 \
     m4/ax_check_gnu_make.m4 \
