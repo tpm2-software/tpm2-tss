@@ -34,7 +34,7 @@ test_fuzz_libfuzz_utils_la_SOURCES = \
     test/integration/sapi-test-options.c
 
 TESTS_LDADD += $(libtss2_utils_fuzzing)
-FUZZ_LDADD = $(TESTS_LDADD) $(TESTS_LDFLAGS) $(FUZZ_LDFLAGS)
+FUZZLDADD = $(TESTS_LDADD) $(TESTS_LDFLAGS) $(FUZZ_LDFLAGS)
 
 fuzzdir = $(srcdir)
 fuzz-targets: $(fuzz_PROGRAMS)
