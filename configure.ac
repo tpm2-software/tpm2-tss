@@ -242,10 +242,7 @@ AS_IF([test "x$enable_defaultflags" = "xyes"],
       ADD_PREPROC_FLAG([-D_BSD_SOURCE])
       ADD_PREPROC_FLAG([-D_POSIX_SOURCE])
       AS_IF([test "x$enable_debug" = "xno"],
-            [
-            ADD_PREPROC_FLAG([-U_FORTIFY_SOURCE])
-            ADD_PREPROC_FLAG([-D_FORTIFY_SOURCE=2])
-            ])
+            [AX_ADD_FORTIFY_SOURCE])
       ADD_COMPILER_FLAG([-std=c99])
       ADD_COMPILER_FLAG([-Wall])
       ADD_COMPILER_FLAG([-Wextra])
