@@ -32,11 +32,13 @@ MAINTAINERCLEANFILES = \
     m4/ax_add_fortify_source.m4 \
     m4/ax_am_macros_static.m4 \
     m4/ax_check_compile_flag.m4 \
+    m4/ax_check_enable_debug.m4 \
     m4/ax_check_gnu_make.m4 \
     m4/ax_check_link_flag.m4 \
     m4/ax_check_preproc_flag.m4 \
     m4/ax_code_coverage.m4 \
     m4/ax_file_escapes.m4 \
+    m4/ax_is_release.m4 \
     m4/ax_normalize_path.m4 \
     m4/ax_prog_doxygen.m4 \
     m4/ax_valgrind_check.m4 \
