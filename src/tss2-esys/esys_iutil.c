@@ -1223,11 +1223,12 @@ iesys_gen_auths(ESYS_CONTEXT * esys_context,
                 auths->auths[auths->count].sessionHandle = session->rsrc.handle;
                 if (objects[session_idx] == NULL) {
                     auths->auths[auths->count].hmac.size = 0;
-                    auths->count += 1;
                 } else {
                     auths->auths[auths->count].hmac = objects[session_idx]->auth;
-                    auths->count += 1;
                 }
+                auths->auths[auths->count].sessionAttributes =
+                    session->rsrc.misc.rsrc_session.sessionAttributes;
+                auths->count += 1;
                 continue;
             }
         }
