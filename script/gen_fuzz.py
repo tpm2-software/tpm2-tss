@@ -18,7 +18,7 @@ endif # ENABLE_TCTI_FUZZING
 MAKEFILE_FUZZ_TARGET = '''
 noinst_PROGRAMS += test/fuzz/%s.fuzz
 test_fuzz_%s_fuzz_CPPFLAGS = $(FUZZ_CPPFLAGS)
-test_fuzz_%s_fuzz_LDADD    = $(FUZZ_LDADD)
+test_fuzz_%s_fuzz_LDADD    = $(FUZZLDADD)
 nodist_test_fuzz_%s_fuzz_SOURCES  = test/fuzz/main-sapi.cpp \\
         test/fuzz/%s.fuzz.cpp
 
