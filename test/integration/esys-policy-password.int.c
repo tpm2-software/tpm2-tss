@@ -279,6 +279,9 @@ test_esys_policy_password(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, sessionTrial);
     goto_if_error(r, "Flushing context", error);
 
+    r = Esys_FlushContext(esys_context, policySession);
+    goto_if_error(r, "Flushing context", error);
+
     return EXIT_SUCCESS;
 
  error:
