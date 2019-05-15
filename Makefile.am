@@ -3,6 +3,8 @@
 # Copyright (c) 2018 Fraunhofer SIT sponsored by Infineon Technologies AG
 # All rights reserved.
 
+-include $(top_srcdir)/git.mk
+
 ### Initialize global variables used throughout the file ###
 INCLUDE_DIRS    = -I$(srcdir)/src -I$(srcdir)/include/tss2
 ACLOCAL_AMFLAGS = -I m4 --install
@@ -17,6 +19,28 @@ DISTCLEANFILES =
 CLEANFILES =
 MOSTLYCLEANFILES =
 noinst_PROGRAMS =
+MAINTAINERCLEANFILES = \
+    $(GITIGNORE_MAINTAINERCLEANFILES_TOPLEVEL) \
+    $(GITIGNORE_MAINTAINERCLEANFILES_MAKEFILE_IN) \
+    $(GITIGNORE_MAINTAINERCLEANFILES_M4_LIBTOOL) \
+    src_vars.mk \
+    Makefile-fuzz-generated.am \
+    aminclude_static.am \
+    m4/ax_ac_append_to_file.m4 \
+    m4/ax_ac_print_to_file.m4 \
+    m4/ax_add_am_macro_static.m4 \
+    m4/ax_am_macros_static.m4 \
+    m4/ax_check_compile_flag.m4 \
+    m4/ax_check_gnu_make.m4 \
+    m4/ax_check_link_flag.m4 \
+    m4/ax_check_preproc_flag.m4 \
+    m4/ax_code_coverage.m4 \
+    m4/ax_file_escapes.m4 \
+    m4/ax_normalize_path.m4 \
+    m4/ax_prog_doxygen.m4 \
+    m4/ax_valgrind_check.m4 \
+    m4/pkg.m4 \
+    $(DIST_ARCHIVES)
 
 ### Add ax_* rules ###
 # ax_code_coverage
