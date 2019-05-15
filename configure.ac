@@ -9,10 +9,6 @@ AC_INIT([tpm2-tss],
         [],
         [https://github.com/tpm2-software/tpm2-tss])
 AC_CONFIG_MACRO_DIR([m4])
-AC_PROG_CXX
-AC_PROG_CC
-LT_INIT()
-PKG_INSTALLDIR()
 AM_INIT_AUTOMAKE([foreign
                   subdir-objects])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])]) #Backward compatible setting of "silent-rules"
@@ -25,6 +21,14 @@ AC_CONFIG_FILES([Makefile Doxyfile lib/tss2-sys.pc lib/tss2-esys.pc lib/tss2-mu.
 AC_SUBST([DISTCHECK_CONFIGURE_FLAGS],[$ac_configure_args])
 
 AC_CANONICAL_HOST
+
+AX_IS_RELEASE(dash-version)
+AX_CHECK_ENABLE_DEBUG([info])
+
+AC_PROG_CXX
+AC_PROG_CC
+LT_INIT()
+PKG_INSTALLDIR()
 
 # Check OS and set library and compile flags accordingly
 case "${host_os}" in
@@ -227,11 +231,6 @@ AS_CASE(["x$with_maxloglevel"],
         [AC_DEFINE_UNQUOTED([MAXLOGLEVEL], [6], ["Trace log level"])],
         [AC_MSG_ERROR([Bad value for --with-maxloglevel])])
 
-AC_ARG_ENABLE([debug],
-            [AS_HELP_STRING([--enable-debug],
-                            [build with debug info])],,
-            [enable_debug=no])
-AS_IF([test "x$enable_debug" = "xyes"], ADD_COMPILER_FLAG([-ggdb3 -Og]))
 AC_ARG_ENABLE([defaultflags],
               [AS_HELP_STRING([--disable-defaultflags],
                               [Disable default preprocessor, compiler, and linker flags.])],,
