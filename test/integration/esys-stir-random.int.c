@@ -13,7 +13,7 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Test the ESAPI function Esys_StirRandom. 
+/** Test the ESAPI function Esys_StirRandom.
  *
  * Tested ESAPI commands:
  *  - Esys_StirRandom() (M)

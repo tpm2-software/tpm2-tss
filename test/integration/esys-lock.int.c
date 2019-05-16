@@ -14,7 +14,7 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Test the ESAPI functions related to TPM locks. 
+/** Test the ESAPI functions related to TPM locks.
  *
  *\b Note: platform authorization needed.
  *

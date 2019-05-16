@@ -73,4 +73,3 @@ RUN ./bootstrap \
 	&& make install \
 	&& ldconfig
 RUN cat test-suite.log
-

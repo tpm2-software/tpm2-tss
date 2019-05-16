@@ -29,4 +29,3 @@ Optionally, the default log-level for this module can be set:
 #define LOGDEFAULT ERROR
 #include "log.h"
 ```
-

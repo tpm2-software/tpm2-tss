@@ -13,7 +13,7 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Test the ESAPI function Esys_TestParms. 
+/** Test the ESAPI function Esys_TestParms.
  *
  * Tested ESAPI commands:
  *  - Esys_TestParms() (M)

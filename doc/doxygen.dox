@@ -1060,7 +1060,7 @@ Both the synchronous and asynchronous API are exposed through a single library: 
  For every integration test a function with a name corresponding to the name of the source code
 file of the test is created:
 test_esys_<test_name>(ESYS_CONTEXT * esys_context).
-This function is called by the standard function test_invoke_esapi in every integration test. 
+This function is called by the standard function test_invoke_esapi in every integration test.
 
 For some tests different test cases can be created with compiler defines to avoid duplicate
 code in different test cases.The following defines are used and listed in the function's
@@ -1077,7 +1077,7 @@ The ESAPI command calls which are used in a test are listed in the function's do
 and are marked according to the PC Client Profile Revision 01.03 v22:
 - (M) Mandatory
 - (O) Optional
-- (F) Commands added after TPM Specification Rev. 1.16 is integrated. 
+- (F) Commands added after TPM Specification Rev. 1.16 is integrated.
 \}
 \{
 \fn test_esys_evict_control_serialization(ESYS_CONTEXT * esys_context)
@@ -1147,4 +1147,3 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \}
  \}
 */
-

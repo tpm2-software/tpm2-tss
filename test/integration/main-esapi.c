@@ -22,7 +22,7 @@
  * The first invocation will be Tss2_Sys_StartUp.
  */
 
-TSS2_RC 
+TSS2_RC
 (*transmit_hook) (const uint8_t *command_buffer, size_t command_size) = NULL;
 
 #define TCTI_PROXY_MAGIC 0x5250584f0a000000ULL /* 'PROXY\0\0\0' */

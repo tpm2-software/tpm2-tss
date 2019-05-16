@@ -160,5 +160,3 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     }
     return 0;
 }
-
-

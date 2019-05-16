@@ -63,7 +63,7 @@ UINT8_marshal_buffer_null_with_offset (void **state)
     assert_int_equal (offset, 100 + sizeof (src));
 }
 /*
- * Test case passing NULL buffer and NULL offset. This 
+ * Test case passing NULL buffer and NULL offset. This
  */
 void
 UINT8_marshal_buffer_null_offset_null (void **state)

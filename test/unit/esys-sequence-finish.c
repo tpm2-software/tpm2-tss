@@ -21,7 +21,7 @@
 
 /*
  * Tests whether all ESAPI finish calls handle wrong internal states with the correct
- * error response TSS2_ESYS_RC_BAD_SEQUENCE. 
+ * error response TSS2_ESYS_RC_BAD_SEQUENCE.
  */
 
 static TSS2_RC

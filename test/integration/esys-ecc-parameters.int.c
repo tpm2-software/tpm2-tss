@@ -14,7 +14,7 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Test the ESAPI function Esys_ECC_Parameters. 
+/** Test the ESAPI function Esys_ECC_Parameters.
  *
  * Tested ESAPI commands:
  *  - Esys_ECC_Parameters() (M)

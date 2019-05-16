@@ -14,7 +14,7 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Test the ESAPI function Esys_ClockSet and Esys_ReadClock. 
+/** Test the ESAPI function Esys_ClockSet and Esys_ReadClock.
  *
  *\b Note: platform authorization needed.
  *

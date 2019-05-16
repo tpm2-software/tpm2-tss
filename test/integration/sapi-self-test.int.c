@@ -15,9 +15,9 @@
 
 /*
  * This program contains integration test for SAPI Tss2_Sys_SelfTest
- * that perform test of its capabilities. This program is calling  
+ * that perform test of its capabilities. This program is calling
  * SelfTest SAPI and make sure the response code are success
- * when fullTest set as YES and when it is set as NO.  
+ * when fullTest set as YES and when it is set as NO.
  */
 int
 test_invoke (TSS2_SYS_CONTEXT *sapi_context)

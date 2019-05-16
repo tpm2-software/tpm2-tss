@@ -31,7 +31,7 @@ check_hash_functions(void **state)
     uint8_t buffer[10] = { 0 };
     TPM2B tpm2b;
     size_t size = 0;
-    
+
     rc = iesys_crypto_hash_start(NULL, TPM2_ALG_SHA384);
     assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
@@ -72,10 +72,10 @@ check_hash_functions(void **state)
 
     rc = iesys_crypto_hash_finish(&context, &buffer[0], &size);
     assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
-    
+
     /* cleanup */
     iesys_crypto_hmac_abort(&context);
-} 
+}
 
 static void
 check_hmac_functions(void **state)
@@ -85,7 +85,7 @@ check_hmac_functions(void **state)
     uint8_t buffer[10] = { 0 };
     TPM2B tpm2b;
     size_t size = 0;
-    
+
     rc = iesys_crypto_hmac_start(NULL, TPM2_ALG_SHA384, &buffer[0], 10);
     assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
@@ -129,7 +129,7 @@ check_hmac_functions(void **state)
 
     rc = iesys_crypto_hmac_finish(&context, &buffer[0], &size);
     assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
-    
+
     /* cleanup */
     iesys_crypto_hash_abort(&context);
 }
@@ -142,7 +142,7 @@ check_random(void **state)
     TPM2B_NONCE nonce;
     rc = iesys_crypto_random2b(&nonce, num_bytes);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-} 
+}
 
 static void
 check_pk_encrypt(void **state)
@@ -185,7 +185,7 @@ check_pk_encrypt(void **state)
              }
         }
     };
-   
+
     inPublicRSA.publicArea.nameAlg = 0;
     rc = iesys_crypto_pk_encrypt(&inPublicRSA, size, &in_buffer[0], size, &out_buffer[0], &size, "LABEL");
     assert_int_equal (rc, TSS2_ESYS_RC_NOT_IMPLEMENTED);
@@ -208,7 +208,7 @@ check_aes_encrypt(void **state)
     rc = iesys_crypto_sym_aes_encrypt(NULL, TPM2_ALG_AES, 192, TPM2_ALG_CFB, 16,
                                       &buffer[0], size, &key[0]);
     assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
-    
+
     rc = iesys_crypto_sym_aes_encrypt(&key[0], TPM2_ALG_AES, 192, TPM2_ALG_CFB, 16,
                                       &buffer[0], size, &key[0]);
     assert_int_equal (rc, TSS2_RC_SUCCESS);

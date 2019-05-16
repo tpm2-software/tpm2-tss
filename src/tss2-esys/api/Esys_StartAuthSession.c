@@ -440,7 +440,7 @@ Esys_StartAuthSession_Finish(
             secret_size += keyHash_size;
         if (bind != ESYS_TR_NONE && bindNode != NULL)
             secret_size += bindNode->auth.size;
-        /* 
+        /*
          * A non null pointer for secret is required by the subsequent functions,
          * hence a malloc is called with size 1 if secret_size is zero.
          */
