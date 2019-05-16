@@ -14,7 +14,7 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Test the ESAPI function Esys_SetAlgorithmSet. 
+/** Test the ESAPI function Esys_SetAlgorithmSet.
  *
  *\b Note: platform authorization needed.
  *

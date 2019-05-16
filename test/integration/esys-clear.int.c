@@ -13,7 +13,7 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Test of the ESAPI function Esys_Clear. 
+/** Test of the ESAPI function Esys_Clear.
  *
  * Tested ESAPI commands:
  *  - Esys_Clear() (M)

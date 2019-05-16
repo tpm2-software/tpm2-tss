@@ -169,4 +169,3 @@ getLogLevel(const char *module, log_level logdefault)
     }
     return loglevel;
 }
-

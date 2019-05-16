@@ -147,7 +147,7 @@ expose a separate set symbols to external consumers. In this case the internal
 version of the header should be suffixed with '-priv'.
 
 Files names are formatted in the same way as described above with the
-exception of hyphens "-" separating words. 
+exception of hyphens "-" separating words.
 
 The body of each header file must be surrounded by an include guard (aka
 "header guard"). These guards shall be given the same name as the file in
@@ -246,7 +246,7 @@ A space must separate a control flow statement or function and the opening
 parenthesis.
 
 Line length should not exceed 80 characters and should be split on the nearest
-whitespace or delimiter character. When splitting lines with 
+whitespace or delimiter character. When splitting lines with
 
 ### Example
 ```c

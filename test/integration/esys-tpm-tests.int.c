@@ -12,7 +12,7 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Test the ESAPI functions for TPM tests. 
+/** Test the ESAPI functions for TPM tests.
  *
  * Tested ESAPI commands:
  *  - Esys_GetTestResult() (M)

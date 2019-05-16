@@ -98,4 +98,3 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     LOG_INFO("PCR Extension Test Passed!");
     return 0;
 }
-

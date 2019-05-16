@@ -33,7 +33,7 @@ execute_doLog(char *env_log_level){
 
 static void
 doLog_test (void **state)
-{    
+{
     execute_doLog("ALL+none");
     execute_doLog("ALL+unused");
     execute_doLog("ALL+error");

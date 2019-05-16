@@ -14,7 +14,7 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Test the ESAPI function Esys_FieldUpgradeStart and   Esys_FieldUpgradeData. 
+/** Test the ESAPI function Esys_FieldUpgradeStart and   Esys_FieldUpgradeData.
  *
  * Tested ESAPI commands:
  *  - Esys_FieldUpgradeData() (O)

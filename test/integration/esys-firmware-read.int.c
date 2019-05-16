@@ -14,7 +14,7 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Test the ESAPI function Esys_FirmwareRead. 
+/** Test the ESAPI function Esys_FirmwareRead.
  *
  * Tested ESAPI commands:
  *  - Esys_FirmwareRead() (O)
