@@ -84,6 +84,8 @@ before_script:
   - ./bootstrap
 
 script:
+# Check for whitespace errors
+  - git diff --check $(git hash-object -t tree /dev/null)
 # short-circuit normal build if we've already done a coverity scan
   - |
     if [ "${COVERITY_SCAN_BRANCH}" == 1 ]; then
