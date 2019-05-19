@@ -10,3 +10,4 @@ Version: @VERSION@
 Requires.private: tss2-mu
 Cflags: -I${includedir}
 Libs: -ltss2-sys -L${libdir}
+Libs.private: @LIBSOCKET_LDFLAGS@
