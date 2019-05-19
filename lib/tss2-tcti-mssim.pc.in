@@ -7,6 +7,6 @@ Name: tss2-tcti-mssim
 Description: TCTI library for communicating with the Microsoft TPM2 simulator.
 URL: https://github.com/tpm2-software/tpm2-tss
 Version: @VERSION@
-Requires: tss2-mu
+Requires.private: tss2-mu
 Cflags: -I${includedir}
 Libs: -ltss2-tcti-mssim -L${libdir}
