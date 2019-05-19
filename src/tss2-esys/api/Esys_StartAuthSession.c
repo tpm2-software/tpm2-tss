@@ -487,6 +487,14 @@ Esys_StartAuthSession_Finish(
 
         sessionHandleNode->rsrc.misc.rsrc_session.sessionKey.size = authHash_size;
     }
+    size_t offset = 0;
+    r = Tss2_MU_TPM2_HANDLE_Marshal(sessionHandleNode->rsrc.handle,
+                                    &sessionHandleNode->rsrc.name.name[0],
+                                    sizeof(sessionHandleNode->rsrc.name.name),
+                                    &offset);
+    goto_if_error(r, "Marshal session name", error_cleanup);
+
+    sessionHandleNode->rsrc.name.size = offset;
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;
