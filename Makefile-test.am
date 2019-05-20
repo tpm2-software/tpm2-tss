@@ -44,8 +44,8 @@ test_helper_tpm_dumpstate_LDADD = $(TESTS_LDADD)
 endif #ENABLE_INTEGRATION
 
 if ESYS_OSSL
-esyscryCFLAGS = -DOSSL $(LIBSSL_CFLAGS) $(LIBCRYPTO_CFLAGS)
-esyscryLDFLAGS = $(LIBSSL_LIBS) $(LIBCRYPTO_LIBS) -ldl
+esyscryCFLAGS = -DOSSL $(LIBCRYPTO_CFLAGS)
+esyscryLDFLAGS = $(LIBCRYPTO_LIBS) -ldl
 esyscrySRC = src/tss2-esys/esys_crypto_ossl.c
 else
 if ESYS_GCRYPT

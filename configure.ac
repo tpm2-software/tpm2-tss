@@ -96,7 +96,6 @@ AS_IF([test "x$enable_esapi" = xyes],
                [gcry_mac_open],,
                [AC_MSG_ERROR([Missing required library: gcrypt.])])
        ], [test "x$with_crypto" = xossl], [
-           PKG_CHECK_MODULES([LIBSSL], [libssl])
            PKG_CHECK_MODULES([LIBCRYPTO], [libcrypto])
        ], AC_MSG_ERROR([Bad value for --with-crypto $with_crypto]))])
 
