@@ -310,9 +310,9 @@ src_tss2_esys_libtss2_esys_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) \
 if ESYS_OSSL
 TSS2_ESYS_SRC_CRYPTO = src/tss2-esys/esys_crypto_ossl.h src/tss2-esys/esys_crypto_ossl.c
 src_tss2_esys_libtss2_esys_la_CFLAGS  = $(AM_CFLAGS) -I$(srcdir)/src/tss2-esys -DOSSL \
-    $(LIBSSL_CFLAGS) $(LIBCRYPTO_CFLAGS)
+    $(LIBCRYPTO_CFLAGS)
 src_tss2_esys_libtss2_esys_la_LDFLAGS = $(AM_LDFLAGS) $(LIBDL_LDFLAGS) $(LIBSOCKET_LDFLAGS) \
-    $(LIBSSL_LIBS) $(LIBCRYPTO_LIBS) -Wl,--version-script=$(srcdir)/lib/tss2-esys.map
+    $(LIBCRYPTO_LIBS) -Wl,--version-script=$(srcdir)/lib/tss2-esys.map
 else
 if ESYS_GCRYPT
 TSS2_ESYS_SRC_CRYPTO = src/tss2-esys/esys_crypto_gcrypt.h src/tss2-esys/esys_crypto_gcrypt.c
