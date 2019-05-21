@@ -43,7 +43,8 @@ MAINTAINERCLEANFILES = \
     m4/ax_prog_doxygen.m4 \
     m4/ax_valgrind_check.m4 \
     m4/pkg.m4 \
-    $(DIST_ARCHIVES)
+    $(DIST_ARCHIVES) \
+    AUTHORS
 
 ### Add ax_* rules ###
 # ax_code_coverage
@@ -217,7 +218,6 @@ AUTHORS :
 	$(AM_V_GEN)git log --format='%aN <%aE>' | grep -v 'users.noreply.github.com' | sort | \
 	    uniq -c | sort -nr | sed 's/^\s*//' | cut -d" " -f2- > $@
 EXTRA_DIST += AUTHORS
-CLEANFILES += AUTHORS
 
 # pkg-config setup. pc-file declarations happen in the corresponding modules
 pkgconfig_DATA =
