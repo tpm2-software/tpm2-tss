@@ -354,6 +354,7 @@ EXTRA_DIST += \
     doc/coding_standard_c.md \
     doc/logging.md \
     doc/fuzzing.md \
+    doc/TSS_block_diagram.png \
     man/man-postlude.troff \
     man/Tss2_Tcti_Device_Init.3.in \
     man/Tss2_Tcti_Mssim_Init.3.in \

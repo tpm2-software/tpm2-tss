@@ -167,7 +167,7 @@ The description how to do this can be found in the [fuzzing](doc/fuzzing.md) fil
 
 # Architecture/Block Diagram
 SAPI library, TAB/RM, and Test Code Block Diagram:
-![Architecture Block Diagram](doc/TSS%20block%20diagram.png)
+![Architecture Block Diagram](doc/TSS_block_diagram.png)
 
 # Project Layout
 ├── doc     : various bits of documentation\
