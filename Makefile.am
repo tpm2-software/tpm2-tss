@@ -20,6 +20,10 @@ CLEANFILES =
 MOSTLYCLEANFILES =
 noinst_PROGRAMS =
 MAINTAINERCLEANFILES = \
+    $(DIST_ARCHIVES) \
+    AUTHORS
+
+GITIGNOREFILES = \
     $(GITIGNORE_MAINTAINERCLEANFILES_TOPLEVEL) \
     $(GITIGNORE_MAINTAINERCLEANFILES_MAKEFILE_IN) \
     $(GITIGNORE_MAINTAINERCLEANFILES_M4_LIBTOOL) \
@@ -42,9 +46,7 @@ MAINTAINERCLEANFILES = \
     m4/ax_normalize_path.m4 \
     m4/ax_prog_doxygen.m4 \
     m4/ax_valgrind_check.m4 \
-    m4/pkg.m4 \
-    $(DIST_ARCHIVES) \
-    AUTHORS
+    m4/pkg.m4
 
 ### Add ax_* rules ###
 # ax_code_coverage
