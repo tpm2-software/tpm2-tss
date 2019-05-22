@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [2.1.4_rc3] - 2019-05-22
+### Fixed
+ - Fix computation of session name
+
 ## [2.1.4_rc2] - 2019-05-16
 ### Fixed
  - Fixed PolicyPassword handling of session Attributes
