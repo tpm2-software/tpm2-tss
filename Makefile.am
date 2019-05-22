@@ -213,6 +213,7 @@ EXTRA_DIST += \
     src/tss2-tcti/tcti-tbs.c \
     src/tss2-tcti/tcti-tbs.h \
     src/tss2-tcti/tss2-tcti-tbs.vcxproj \
+    src/tss2-tcti/tss2-tcti-tbs.vcxproj.filters \
     tpm2-tss.sln
 
 # Generate the AUTHORS file from git log
@@ -274,7 +275,10 @@ libtss2_tcti_mssim = src/tss2-tcti/libtss2-tcti-mssim.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_mssim.h
 lib_LTLIBRARIES += $(libtss2_tcti_mssim)
 pkgconfig_DATA += lib/tss2-tcti-mssim.pc
-EXTRA_DIST += lib/tss2-tcti-mssim.map lib/tss2-tcti-mssim.def src/tss2-tcti/tss2-tcti-mssim.vcxproj
+EXTRA_DIST += lib/tss2-tcti-mssim.map \
+              lib/tss2-tcti-mssim.def \
+              src/tss2-tcti/tss2-tcti-mssim.vcxproj \
+              src/tss2-tcti/tss2-tcti-mssim.vcxproj.filters
 
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_mssim_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-mssim.map
@@ -328,7 +332,10 @@ if HAVE_LD_VERSION_SCRIPT
 src_tss2_esys_libtss2_esys_la_LDFLAGS += -Wl,--version-script=$(srcdir)/lib/tss2-esys.map
 endif # HAVE_LD_VERSION_SCRIPT
 src_tss2_esys_libtss2_esys_la_SOURCES = $(TSS2_ESYS_SRC) $(TSS2_ESYS_SRC_CRYPTO)
-EXTRA_DIST += lib/tss2-esys.map lib/tss2-esys.def src/tss2-esys/tss2-esys.vcxproj
+EXTRA_DIST += lib/tss2-esys.map \
+              lib/tss2-esys.def \
+              src/tss2-esys/tss2-esys.vcxproj \
+              src/tss2-esys/tss2-esys.vcxproj.filters
 endif #ESAPI
 
 ### Man Pages
