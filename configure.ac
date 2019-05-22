@@ -252,7 +252,8 @@ AS_IF([test "x$enable_defaultflags" = "xyes"],
       ADD_COMPILER_FLAG([-Wall])
       ADD_COMPILER_FLAG([-Wextra])
       ADD_COMPILER_FLAG([-Wformat-security])
-      ADD_COMPILER_FLAG([-Werror])
+      AS_IF([test "x$ax_is_release" = "xno"],
+          [ADD_COMPILER_FLAG([-Werror])])
       ADD_COMPILER_FLAG([-fstack-protector-all])
       ADD_COMPILER_FLAG([-fpic])
       ADD_COMPILER_FLAG([-fPIC])
