@@ -570,6 +570,13 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
                            BYTE * out_buffer,
                            size_t * out_size, const char *label)
 {
+    const RAND_METHOD *rand_save = RAND_get_rand_method();
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    RAND_set_rand_method(RAND_OpenSSL());
+#else
+    RAND_set_rand_method(RAND_SSLeay());
+#endif
+
     TSS2_RC r = TSS2_RC_SUCCESS;
     const EVP_MD * hashAlg = NULL;
     RSA * rsa_key = NULL;
@@ -582,6 +589,7 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
     if (!(hashAlg = get_ossl_hash_md(pub_tpm_key->publicArea.nameAlg))) {
         LOG_ERROR("Unsupported hash algorithm (%"PRIu16")",
                   pub_tpm_key->publicArea.nameAlg);
+        RAND_set_rand_method(rand_save);
         return TSS2_ESYS_RC_NOT_IMPLEMENTED;
     }
 
@@ -713,6 +721,7 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
     OSSL_FREE(evp_rsa_key, EVP_PKEY);
     OSSL_FREE(rsa_key, RSA);
     OSSL_FREE(bne, BN);
+    RAND_set_rand_method(rand_save);
     return r;
 }
 
