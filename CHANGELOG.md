@@ -3,21 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [2.1.4_rc3] - 2019-05-22
+## [2.1.4] - 2019-05-28
 ### Fixed
  - Fix computation of session name
-
-## [2.1.4_rc2] - 2019-05-16
-### Fixed
  - Fixed PolicyPassword handling of session Attributes
-
-## [2.1.4_rc1] - 2019-05-08
-### Fixed
  - Fixed windows build from dist ball
  - Fixed default tcti configure option
-
-## [2.1.4_rc0] - 2019-04-25
-### Fixed
  - Fixed nonce size calculation in ESYS sessions
 
 ## [2.1.3] - 2019-04-16
