@@ -27,6 +27,7 @@ AX_CHECK_ENABLE_DEBUG([info])
 
 AC_PROG_CXX
 AC_PROG_CC
+AC_USE_SYSTEM_EXTENSIONS
 LT_INIT()
 PKG_INSTALLDIR()
 
@@ -243,9 +244,6 @@ AC_ARG_ENABLE([defaultflags],
               [enable_defaultflags=yes])
 AS_IF([test "x$enable_defaultflags" = "xyes"],
       [
-      ADD_PREPROC_FLAG([-D_DEFAULT_SOURCE])
-      ADD_PREPROC_FLAG([-D_BSD_SOURCE])
-      ADD_PREPROC_FLAG([-D_POSIX_SOURCE])
       AS_IF([test "x$enable_debug" = "xno"],
             [AX_ADD_FORTIFY_SOURCE])
       ADD_COMPILER_FLAG([-std=c99])
