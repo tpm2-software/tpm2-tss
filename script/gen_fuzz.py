@@ -30,6 +30,10 @@ SAPI_TEMPLATE_HEADER = '''/* SPDX-License-Identifier: BSD-2-Clause */
  *
  * All rights reserved.
  ***********************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>

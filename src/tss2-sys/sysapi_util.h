@@ -6,9 +6,6 @@
 
 #ifndef TSS2_SYSAPI_UTIL_H
 #define TSS2_SYSAPI_UTIL_H
-#ifndef _WIN32
-#include <config.h>
-#endif
 #include <stdbool.h>
 
 #include "tss2_tpm2_types.h"

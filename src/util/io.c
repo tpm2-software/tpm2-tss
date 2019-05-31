@@ -3,6 +3,10 @@
  * Copyright (c) 2015 - 2018 Intel Corporation
  * All rights reserved.
  */
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <errno.h>
 #include <inttypes.h>
 #include <limits.h>

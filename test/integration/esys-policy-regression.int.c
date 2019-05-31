@@ -4,6 +4,10 @@
  * All rights reserved.
  *******************************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "tss2_esys.h"
 #include "tss2_mu.h"
 

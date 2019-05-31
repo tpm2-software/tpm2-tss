@@ -3,6 +3,10 @@
  * Copyright (c) 2019, Intel Corporation
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <assert.h>
 #include <inttypes.h>
 #include <stdbool.h>

@@ -3,9 +3,6 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#ifndef _WIN32
-#include <config.h>
-#endif
 
 #ifndef LOGMODULE
 #error "LOGMODULE must be set before including log/log.h"

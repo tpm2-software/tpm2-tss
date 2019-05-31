@@ -5,6 +5,10 @@
  */
  /* Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
