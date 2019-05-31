@@ -5,6 +5,10 @@
  * All rights reserved.
  ******************************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdarg.h>
 #include <inttypes.h>
 #include <string.h>

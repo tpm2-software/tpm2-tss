@@ -5,6 +5,10 @@
  * All rights reserved.
  ***********************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "util/tss2_endian.h"
 #include "tss2_tpm2_types.h"
 #include "tss2_mu.h"

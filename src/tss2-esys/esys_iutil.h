@@ -9,9 +9,6 @@
 #include <stdbool.h>
 #include <inttypes.h>
 #include <string.h>
-#ifndef _WIN32
-#include <config.h>
-#endif
 #include "tss2_esys.h"
 
 #include "esys_int.h"

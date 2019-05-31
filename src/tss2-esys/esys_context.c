@@ -5,6 +5,10 @@
  *******************************************************************************/
 
 #ifndef NO_DL
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <dlfcn.h>
 #endif /* NO_DL */
 #include <stdlib.h>

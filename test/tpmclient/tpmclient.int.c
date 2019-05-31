@@ -5,6 +5,10 @@
  ***********************************************************************;
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdbool.h>
 #include <inttypes.h>
 #include <stdio.h>
