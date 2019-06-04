@@ -100,6 +100,7 @@ typedef UINT16 TPM2_ALG_ID;
 #define TPM2_ALG_ECC                 ((TPM2_ALG_ID) 0x0023)
 #define TPM2_ALG_SYMCIPHER           ((TPM2_ALG_ID) 0x0025)
 #define TPM2_ALG_CAMELLIA            ((TPM2_ALG_ID) 0x0026)
+#define TPM2_ALG_CMAC                ((TPM2_ALG_ID) 0x003F)
 #define TPM2_ALG_CTR                 ((TPM2_ALG_ID) 0x0040)
 #define TPM2_ALG_SHA3_256            ((TPM2_ALG_ID) 0x0027)
 #define TPM2_ALG_SHA3_384            ((TPM2_ALG_ID) 0x0028)
