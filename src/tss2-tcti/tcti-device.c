@@ -422,7 +422,7 @@ Tss2_Tcti_Device_Init (
     tcti_common->locality = 3;
 
 #ifdef __VXWORKS__
-    tcti_dev->fd = open (dev_path, O_RDWR, 0666);
+    tcti_dev->fd = open (dev_path, O_RDWR, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
 #else
     tcti_dev->fd = open (dev_path, O_RDWR | O_NONBLOCK);
 #endif
