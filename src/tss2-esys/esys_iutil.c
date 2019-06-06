@@ -1198,7 +1198,7 @@ iesys_compute_hmac(RSRC_NODE_T * session,
         return_if_error(r, "Initializing auth session");
 
         int hi = 0;
-        for (int j = 0; cpHashNum < 3; j++) {
+        for (int j = 0; j < cpHashNum; j++) {
             if (rsrc_session->authHash == cp_hash_tab[j].alg) {
                 hi = j;
                 break;
