@@ -113,9 +113,9 @@ script:
     fi
   - |
     if [ "$CC" == "clang" ]; then
-      scan-build --status-bugs make -j$(nproc) distcheck
+      scan-build --status-bugs make -j distcheck
     else
-      make -j$(nproc) check
+      make -j check
     fi
 
 after_success:
