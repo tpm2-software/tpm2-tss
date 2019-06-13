@@ -141,6 +141,10 @@ Esys_TR_FromTPMPublic_Async(ESYS_CONTEXT * esys_context,
                                      shandle2, shandle3);
         goto_if_error(r, "Error NV_ReadPublic", error_cleanup);
 
+    } else if(tpm_handle >> TPM2_HR_SHIFT == TPM2_HT_LOADED_SESSION
+            || tpm_handle >> TPM2_HR_SHIFT == TPM2_HT_SAVED_SESSION) {
+        // no readpublic call for loaded or saved sessions.
+        r = TSS2_RC_SUCCESS;
     } else {
         r = Esys_ReadPublic_Async(esys_context, esys_handle, shandle1, shandle2,
                                   shandle3);
@@ -203,6 +207,9 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * object)
         objectHandleNode->rsrc.misc.rsrc_nv_pub = *nvPublic;
         SAFE_FREE(nvPublic);
         SAFE_FREE(nvName);
+    } else if(objectHandleNode->rsrc.handle >> TPM2_HR_SHIFT == TPM2_HT_LOADED_SESSION
+            || objectHandleNode->rsrc.handle >> TPM2_HR_SHIFT == TPM2_HT_SAVED_SESSION) {
+        objectHandleNode->rsrc.rsrcType = IESYSC_DEGRADED_SESSION_RSRC;
     } else {
         TPM2B_PUBLIC *public;
         TPM2B_NAME *name = NULL;
