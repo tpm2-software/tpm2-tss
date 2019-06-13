@@ -72,3 +72,9 @@ else
 fi
 
 ${AUTORECONF} --install --sym $@
+
+if grep "Invalid policy. Valid policies: git-directory, minor-version." configure >/dev/null; then
+    echo "ERROR: ax_is_release.m4 is outdated. ./configure will fail."
+    echo "Please download from http://ftpmirror.gnu.org/autoconf-archive/autoconf-archive-2019.01.06.tar.xz"
+    exit 1
+fi
