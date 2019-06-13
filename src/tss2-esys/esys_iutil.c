@@ -138,7 +138,13 @@ init_session_tab(ESYS_CONTEXT *esys_context,
             r = esys_GetResourceObject(esys_context, handle_tab[i],
                                        &esys_context->session_tab[i]);
             return_if_error(r, "Unknown resource.");
+
+            if (esys_context->session_tab[i]->rsrc.rsrcType != IESYSC_SESSION_RSRC) {
+                LOG_ERROR("Error: ESYS_TR is not a session resource.");
+                return TSS2_ESYS_RC_BAD_TR;
+            }
         }
+
     }
     return r;
 }
