@@ -9,6 +9,14 @@
 #include "tss2_tpm2_types.h"
 #include "tss2_tcti.h"
 
+#define TCTI_SUFFIX ".so"
+#define TCTI_SUFFIX_0 TCTI_SUFFIX".0"
+#define LIB_PREFIX "lib"
+#define TCTI_PREFIX LIB_PREFIX"tss2-tcti"
+#define TCTI_NAME_TEMPLATE TCTI_PREFIX"-%s"TCTI_SUFFIX
+#define TCTI_NAME_TEMPLATE_0 TCTI_PREFIX"-%s"TCTI_SUFFIX_0
+#define DEFAULT_TCTI_LIBRARY_NAME TCTI_PREFIX"-default"TCTI_SUFFIX
+
 #define TCTILDR_MAGIC 0xbc44a31ca74b4aafULL
 
 typedef void* TSS2_TCTI_LIBRARY_HANDLE;
