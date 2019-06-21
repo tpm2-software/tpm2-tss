@@ -14,6 +14,8 @@
 #include <string.h>
 #include <inttypes.h>
 #include <dlfcn.h>
+#include <limits.h>
+#include <stdio.h>
 
 #include "tss2_tcti.h"
 #include "tctildr.h"
@@ -32,25 +34,73 @@ struct {
         .description = "Access libtss2-tcti-default.so",
     },
     {
-        .file = "libtss2-tcti-tabrmd.so",
+        .file = "libtss2-tcti-tabrmd.so.0",
         .description = "Access libtss2-tcti-tabrmd.so",
     },
     {
-        .file = "libtss2-tcti-device.so",
+        .file = "libtss2-tcti-device.so.0",
         .conf = "/dev/tpmrm0",
         .description = "Access libtss2-tcti-device.s0 with /dev/tpmrm0",
     },
     {
-        .file = "libtss2-tcti-device.so",
+        .file = "libtss2-tcti-device.so.0",
         .conf = "/dev/tpm0",
         .description = "Access libtss2-tcti-device.s0 with /dev/tpmrm0",
     },
     {
-        .file = "libtss2-tcti-mssim.so",
+        .file = "libtss2-tcti-mssim.so.0",
         .description = "Access to libtss2-tcti-mssim.so",
     },
 };
 
+TSS2_RC
+handle_from_name(const char *file,
+                 void **handle)
+{
+    char file_xfrm [PATH_MAX] = { 0, };
+    size_t size;
+
+    if (handle == NULL) {
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+    *handle = dlopen(file, RTLD_NOW);
+    if (*handle != NULL) {
+        return TSS2_RC_SUCCESS;
+    } else {
+        LOG_DEBUG("Could not load TCTI file: \"%s\": %s", file, dlerror());
+    }
+    /* 'name' alone didn't work, try libtss2-tcti-<name>.so.0 */
+    size = snprintf(file_xfrm,
+                    sizeof (file_xfrm),
+                    TCTI_NAME_TEMPLATE_0,
+                    file);
+    if (size >= sizeof (file_xfrm)) {
+        LOG_ERROR("TCTI name truncated in transform.");
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
+    *handle = dlopen(file_xfrm, RTLD_NOW);
+    if (*handle != NULL) {
+        return TSS2_RC_SUCCESS;
+    } else {
+        LOG_DEBUG("Could not load TCTI file \"%s\": %s", file, dlerror());
+    }
+    /* libtss2-tcti-<name>.so.0 didn't work, try libtss2-tcti-<name>.so */
+    size = snprintf(file_xfrm,
+                    sizeof (file_xfrm),
+                    TCTI_NAME_TEMPLATE,
+                    file);
+    if (size >= sizeof (file_xfrm)) {
+        LOG_ERROR("TCTI name truncated in transform.");
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
+    *handle = dlopen(file_xfrm, RTLD_NOW);
+    if (*handle == NULL) {
+        LOG_ERROR("Failed to load TCTI for name \"%s\": %s", file, dlerror());
+        return TSS2_TCTI_RC_NOT_SUPPORTED;
+    }
+
+    return TSS2_RC_SUCCESS;
+}
 TSS2_RC
 tcti_from_file(const char *file,
                const char* conf,
@@ -62,11 +112,12 @@ tcti_from_file(const char *file,
     TSS2_TCTI_INFO_FUNC infof;
 
     LOG_TRACE("Attempting to load TCTI file: %s", file);
-
-    handle = dlopen(file, RTLD_NOW);
-    if (handle == NULL) {
-        LOG_WARNING("Could not load TCTI file: %s", file);
-        return TSS2_ESYS_RC_BAD_REFERENCE;
+    if (tcti == NULL) {
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+    r = handle_from_name(file, &handle);
+    if (r != TSS2_RC_SUCCESS) {
+        return r;
     }
 
     infof = (TSS2_TCTI_INFO_FUNC) dlsym(handle, TSS2_TCTI_INFO_SYMBOL);

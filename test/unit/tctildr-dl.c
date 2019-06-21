@@ -22,11 +22,18 @@
 
 #include "tss2-tcti/tctildr-interface.h"
 #include "tss2-tcti/tctildr-dl.h"
+#include "tss2-tcti/tctildr.h"
 #define LOGMODULE test
 #include "util/log.h"
 
 /* global TCTI object, use to return reference from */
 static TSS2_TCTI_CONTEXT_COMMON_V2 tcti_instance = { 0, };
+
+char *
+__wrap_dlerror(void)
+{
+    return (char*)__func__;
+}
 
 void *
 __wrap_dlopen(const char *filename, int flags)
@@ -89,21 +96,78 @@ test_fail_null(void **state)
     assert_int_equal(r, TSS2_TCTI_RC_BAD_REFERENCE);
 }
 
+static void
+test_handle_from_name_null_handle (void **state)
+{
+    TSS2_RC rc = handle_from_name (NULL, NULL);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
+}
 #define TEST_TCTI_NAME "test-tcti"
 #define TEST_TCTI_CONF "test-conf"
+#define TEST_HANDLE (void*)0xade0
 static void
-test_tcti_from_file_dlopen_fail (void **state)
+test_handle_from_name_first_dlopen_success (void **state)
 {
     TSS2_RC rc;
-    TSS2_TCTI_CONTEXT *tcti_ctx = NULL;
+    void *handle = NULL;
+
+    expect_string(__wrap_dlopen, filename, TEST_TCTI_NAME);
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, TEST_HANDLE);
+
+    rc = handle_from_name (TEST_TCTI_NAME, &handle);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (handle, TEST_HANDLE);
+}
+
+#define TEST_TCTI_NAME_SO_0 TCTI_PREFIX"-"TEST_TCTI_NAME""TCTI_SUFFIX_0
+static void
+test_handle_from_name_second_dlopen_success (void **state)
+{
+    TSS2_RC rc;
     void *handle = NULL;
 
     expect_string(__wrap_dlopen, filename, TEST_TCTI_NAME);
     expect_value(__wrap_dlopen, flags, RTLD_NOW);
     will_return(__wrap_dlopen, NULL);
 
-    rc = tcti_from_file (TEST_TCTI_NAME, TEST_TCTI_CONF, &tcti_ctx, &handle);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    expect_string(__wrap_dlopen, filename, TEST_TCTI_NAME_SO_0);
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, TEST_HANDLE);
+
+    rc = handle_from_name (TEST_TCTI_NAME, &handle);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (handle, TEST_HANDLE);
+}
+#define TEST_TCTI_NAME_SO TCTI_PREFIX"-"TEST_TCTI_NAME""TCTI_SUFFIX
+static void
+test_handle_from_name_third_dlopen_success (void **state)
+{
+    TSS2_RC rc;
+    void *handle = NULL;
+
+    expect_string(__wrap_dlopen, filename, TEST_TCTI_NAME);
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, NULL);
+
+    expect_string(__wrap_dlopen, filename, TEST_TCTI_NAME_SO_0);
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, NULL);
+
+    expect_string(__wrap_dlopen, filename, TEST_TCTI_NAME_SO);
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, TEST_HANDLE);
+
+    rc = handle_from_name (TEST_TCTI_NAME, &handle);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (handle, TEST_HANDLE);
+}
+
+static void
+test_tcti_from_file_null_tcti (void **state)
+{
+    TSS2_RC rc = tcti_from_file (NULL, NULL, NULL, NULL);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
 }
 
 #define HANDLE (void *)123321
@@ -160,7 +224,7 @@ test_tcti_default_fail_sym(void **state)
     /** Now test
      *{ "libtss2-tcti-tabrmd.so", NULL, "", "Access libtss2-tcti-tabrmd.so"},
      */
-    expect_string(__wrap_dlopen, filename, "libtss2-tcti-tabrmd.so");
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-tabrmd.so.0");
     expect_value(__wrap_dlopen, flags, RTLD_NOW);
     will_return(__wrap_dlopen, HANDLE);
 
@@ -212,7 +276,7 @@ test_tcti_default_fail_info(void **state)
     /** Now test
      *{ "libtss2-tcti-tabrmd.so", NULL, "", "Access libtss2-tcti-tabrmd.so"},
      */
-    expect_string(__wrap_dlopen, filename, "libtss2-tcti-tabrmd.so");
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-tabrmd.so.0");
     expect_value(__wrap_dlopen, flags, RTLD_NOW);
     will_return(__wrap_dlopen, HANDLE);
 
@@ -238,23 +302,54 @@ test_tcti_fail_all (void **state)
     expect_string(__wrap_dlopen, filename, "libtss2-tcti-default.so");
     expect_value(__wrap_dlopen, flags, RTLD_NOW);
     will_return(__wrap_dlopen, NULL);
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-libtss2-tcti-default.so.so.0");
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, NULL);
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-libtss2-tcti-default.so.so");
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, NULL);
 
     /* Skip over libtss2-tcti-tabrmd.so */
-    expect_string(__wrap_dlopen, filename, "libtss2-tcti-tabrmd.so");
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-tabrmd.so.0");
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, NULL);
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-libtss2-tcti-tabrmd.so.0.so.0");
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, NULL);
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-libtss2-tcti-tabrmd.so.0.so");
     expect_value(__wrap_dlopen, flags, RTLD_NOW);
     will_return(__wrap_dlopen, NULL);
 
     /* Skip over libtss2-tcti-device.so, /dev/tpmrm0 */
-    expect_string(__wrap_dlopen, filename, "libtss2-tcti-device.so");
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-device.so.0");
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, NULL);
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-libtss2-tcti-device.so.0.so.0");
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, NULL);
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-libtss2-tcti-device.so.0.so");
     expect_value(__wrap_dlopen, flags, RTLD_NOW);
     will_return(__wrap_dlopen, NULL);
 
     /* Skip over libtss2-tcti-device.so, /dev/tpm0 */
-    expect_string(__wrap_dlopen, filename, "libtss2-tcti-device.so");
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-device.so.0");
     expect_value(__wrap_dlopen, flags, RTLD_NOW);
     will_return(__wrap_dlopen, NULL);
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-libtss2-tcti-device.so.0.so.0");
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, NULL);
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-libtss2-tcti-device.so.0.so");
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, NULL);
+
     /* Skip over libtss2-tcti-mssim.so */
-    expect_string(__wrap_dlopen, filename, "libtss2-tcti-mssim.so");
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-mssim.so.0");
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, NULL);
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-libtss2-tcti-mssim.so.0.so.0");
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, NULL);
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-libtss2-tcti-mssim.so.0.so");
     expect_value(__wrap_dlopen, flags, RTLD_NOW);
     will_return(__wrap_dlopen, NULL);
 
@@ -332,8 +427,12 @@ int
 main(void)
 {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test(test_tcti_from_file_dlopen_fail),
+        cmocka_unit_test(test_handle_from_name_null_handle),
+        cmocka_unit_test(test_handle_from_name_first_dlopen_success),
+        cmocka_unit_test(test_handle_from_name_second_dlopen_success),
+        cmocka_unit_test(test_handle_from_name_third_dlopen_success),
         cmocka_unit_test(test_fail_null),
+        cmocka_unit_test(test_tcti_from_file_null_tcti),
 #ifndef ESYS_TCTI_DEFAULT_MODULE
         cmocka_unit_test(test_tcti_default),
         cmocka_unit_test(test_tcti_default_fail_sym),

@@ -9,6 +9,9 @@
 #include "tss2_tcti.h"
 
 TSS2_RC
+handle_from_name(const char *file,
+                 void **handle);
+TSS2_RC
 tcti_from_file(const char *file,
                const char* conf,
                TSS2_TCTI_CONTEXT **tcti,

@@ -258,7 +258,7 @@ test_unit_tctildr_dl_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) \
         -UESYS_TCTI_DEFAULT_MODULE -UESYS_TCTI_DEFAUT_CONFIG
 test_unit_tctildr_dl_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_tctildr_dl_LDFLAGS = -Wl,--wrap=dlopen,--wrap=dlclose,--wrap=dlsym \
-    -Wl,--wrap=tcti_from_init,--wrap=tcti_from_info
+    -Wl,--wrap=tcti_from_init,--wrap=tcti_from_info,--wrap=dlerror
 test_unit_tctildr_dl_SOURCES = test/unit/tctildr-dl.c \
         src/tss2-tcti/tctildr-dl.c
 
