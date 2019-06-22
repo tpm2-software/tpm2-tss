@@ -18,6 +18,7 @@
 #include <stdio.h>
 
 #include "tss2_tcti.h"
+#include "tctildr-interface.h"
 #include "tctildr.h"
 #define LOGMODULE tcti
 #include "util/log.h"
@@ -53,6 +54,23 @@ struct {
     },
 };
 
+const TSS2_TCTI_INFO*
+info_from_handle (void *dlhandle)
+{
+    TSS2_TCTI_INFO_FUNC info_func;
+
+    if (dlhandle == NULL)
+        return NULL;
+
+    info_func = dlsym  (dlhandle, TSS2_TCTI_INFO_SYMBOL);
+    if (info_func == NULL) {
+        LOG_ERROR ("Failed to get reference to TSS2_TCTI_INFO_SYMBOL: %s",
+                   dlerror());
+        return NULL;
+    }
+
+    return info_func ();
+}
 TSS2_RC
 handle_from_name(const char *file,
                  void **handle)
@@ -141,6 +159,56 @@ tcti_from_file(const char *file,
 
     return TSS2_RC_SUCCESS;
 }
+TSS2_RC
+get_info_default(const TSS2_TCTI_INFO **info,
+                 void **dlhandle)
+{
+    void *handle = NULL;
+    const TSS2_TCTI_INFO *info_src;
+    char *name = NULL;
+    TSS2_RC rc;
+
+    LOG_DEBUG("%s", __func__);
+    if (info == NULL || dlhandle == NULL) {
+        LOG_ERROR("parameters cannot be NULL");
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+#ifdef ESYS_TCTI_DEFAULT_MODULE
+    name = ESYS_TCTI_DEFAULT_MODULE;
+    LOG_DEBUG("name: %s", name);
+    rc = handle_from_name (name, &handle);
+    if (rc != TSS2_RC_SUCCESS)
+        return rc;
+    else if (handle == NULL)
+        return TSS2_TCTI_RC_IO_ERROR;
+#else
+    for (size_t i = 0; i < ARRAY_SIZE(tctis); i++) {
+        name = tctis[i].file;
+        LOG_DEBUG("name: %s", name);
+        if (name == NULL) {
+            continue;
+        }
+        rc = handle_from_name (name, &handle);
+        if (rc != TSS2_RC_SUCCESS || handle == NULL) {
+            LOG_DEBUG("Failed to get handle for TCTI with name: %s", name);
+            continue;
+        }
+
+        break;
+    }
+#endif /* ESYS_TCTI_DEFAULT_MODULE */
+
+    info_src = info_from_handle (handle);
+    if (info_src != NULL) {
+        *info = info_src;
+    } else {
+        tctildr_finalize_data (&handle);
+        rc = TSS2_TCTI_RC_GENERAL_FAILURE;
+    }
+    *dlhandle = handle;
+
+    return rc;
+}
 
 TSS2_RC
 tctildr_get_default(TSS2_TCTI_CONTEXT ** tcticontext, void **dlhandle)
@@ -181,6 +249,40 @@ tctildr_get_default(TSS2_TCTI_CONTEXT ** tcticontext, void **dlhandle)
     return TSS2_TCTI_RC_IO_ERROR;
 
 #endif /* ESYS_TCTI_DEFAULT_MODULE */
+}
+TSS2_RC
+info_from_name (const char *name,
+                const TSS2_TCTI_INFO **info,
+                void **data)
+{
+    TSS2_RC rc;
+
+    if (data == NULL || info == NULL)
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    rc = handle_from_name (name, data);
+    if (rc != TSS2_RC_SUCCESS)
+        return rc;
+    *info = (TSS2_TCTI_INFO*)info_from_handle (*data);
+    if (*info == NULL) {
+        tctildr_finalize_data (data);
+        return TSS2_TCTI_RC_IO_ERROR;
+    }
+    return rc;
+}
+TSS2_RC
+tctildr_get_info(const char *name,
+                 const TSS2_TCTI_INFO **info,
+                 void **data)
+{
+    if (info == NULL) {
+        LOG_ERROR("info must not be NULL");
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+    if (name != NULL) {
+        return info_from_name (name, info, data);
+    } else {
+        return get_info_default (info, data);
+    }
 }
 TSS2_RC
 tctildr_get_tcti(const char *name,

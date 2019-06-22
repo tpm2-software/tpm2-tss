@@ -23,6 +23,7 @@ typedef void* TSS2_TCTI_LIBRARY_HANDLE;
 typedef struct {
     TSS2_TCTI_CONTEXT_COMMON_V2 v2;
     TSS2_TCTI_LIBRARY_HANDLE library_handle;
+    TSS2_TCTI_INFO *info;
     TSS2_TCTI_CONTEXT *tcti;
 } TSS2_TCTILDR_CONTEXT;
 
@@ -69,5 +70,12 @@ tctildr_make_sticky (
     TSS2_TCTI_CONTEXT *tctiContext,
     TPM2_HANDLE *handle,
     uint8_t sticky);
+TSS2_RC
+tcti_from_info (TSS2_TCTI_INFO_FUNC infof,
+                const char *conf,
+                TSS2_TCTI_CONTEXT **context);
+TSS2_RC
+copy_info (const TSS2_TCTI_INFO *info_src,
+           TSS2_TCTI_INFO *info_dst);
 
 #endif /* TCTILDR_H */

@@ -67,6 +67,13 @@ __wrap_free (void *ptr)
     return;
 }
 TSS2_RC
+__wrap_tctildr_get_info (const char *name,
+                         const TSS2_TCTI_INFO **info,
+                         void **data)
+{
+    return TSS2_RC_SUCCESS;
+}
+TSS2_RC
 __wrap_tctildr_get_tcti (const char *name,
                   const char* conf,
                   TSS2_TCTI_CONTEXT **tcti,

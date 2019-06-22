@@ -45,6 +45,7 @@ case "${host_os}" in
 esac
 AC_SUBST([LIBSOCKET_LDFLAGS])
 
+AC_CHECK_FUNCS([strndup])
 AC_ARG_ENABLE([unit],
             [AS_HELP_STRING([--enable-unit],
                             [build cmocka unit tests])],,

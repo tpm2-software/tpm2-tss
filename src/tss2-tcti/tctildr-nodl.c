@@ -178,3 +178,14 @@ tctildr_finalize_data(void **data)
     (void)data;
     return;
 }
+
+TSS2_RC
+tctildr_get_info (const char *name,
+                  const TSS2_TCTI_INFO **info,
+                  void **data)
+{
+    (void)name;
+    (void)info;
+    (void)data;
+    return TSS2_TCTI_RC_NOT_SUPPORTED;
+}
