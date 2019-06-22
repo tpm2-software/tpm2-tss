@@ -374,6 +374,8 @@ man3_MANS = \
     man/man3/Tss2_Tcti_Device_Init.3 \
     man/man3/Tss2_Tcti_Mssim_Init.3 \
     man/man3/Tss2_TctiLdr_Finalize.3 \
+    man/man3/Tss2_TctiLdr_FreeInfo.3 \
+    man/man3/Tss2_TctiLdr_GetInfo.3 \
     man/man3/Tss2_TctiLdr_Initialize.3 \
     $(DOXYMAN3)
 
@@ -411,6 +413,8 @@ EXTRA_DIST += \
     man/Tss2_Tcti_Device_Init.3.in \
     man/Tss2_Tcti_Mssim_Init.3.in \
     man/Tss2_TctiLdr_Finalize.3.in \
+    man/Tss2_TctiLdr_FreeInfo.3.in \
+    man/Tss2_TctiLdr_GetInfo.3.in \
     man/Tss2_TctiLdr_Initialize.3.in \
     man/tss2-tcti-device.7.in \
     man/tss2-tcti-mssim.7.in \

@@ -118,6 +118,12 @@ test_finalize_data (void **state)
 {
     tctildr_finalize_data (NULL);
 }
+void
+test_get_info (void **state)
+{
+    TSS2_RC rc = tctildr_get_info (NULL, NULL, NULL);
+    assert_int_equal (rc, TSS2_TCTI_RC_NOT_SUPPORTED);
+}
 int
 main(void)
 {
@@ -129,6 +135,7 @@ main(void)
         cmocka_unit_test (test_get_tcti_match_second),
         cmocka_unit_test (test_get_tcti_match_none),
         cmocka_unit_test (test_finalize_data),
+        cmocka_unit_test (test_get_info),
     };
     return cmocka_run_group_tests (tests, NULL, NULL);
 }

@@ -57,6 +57,7 @@ TESTS_UNIT  = \
     test/unit/tctildr-nodl \
     test/unit/tctildr-init \
     test/unit/tctildr-tcti \
+    test/unit/tctildr-getinfo \
     test/unit/UINT8-marshal \
     test/unit/UINT16-marshal \
     test/unit/UINT32-marshal \
@@ -251,7 +252,7 @@ test_unit_tctildr_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tctildr_LDADD = $(CMOCKA_LIBS) $(libutil)
 test_unit_tctildr_LDFLAGS = -Wl,--wrap=calloc,--wrap=free \
     -Wl,--wrap=tctildr_finalize_data,--wrap=tctildr_get_tcti \
-    -Wl,--wrap=strlen,--wrap=strchr,--wrap=strcpy
+    -Wl,--wrap=tctildr_get_info,--wrap=strlen,--wrap=strchr,--wrap=strcpy
 test_unit_tctildr_SOURCES = test/unit/tctildr.c \
     src/tss2-tcti/tctildr.c
 
@@ -274,7 +275,7 @@ test_unit_tctildr_nodl_SOURCES = test/unit/tctildr-nodl.c \
 test_unit_tctildr_tcti_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tctildr_tcti_LDADD = $(CMOCKA_LIBS) $(libutil) \
     $(libtss2_tcti_device) $(libtss2_tcti_mssim)
-test_unit_tctildr_tcti_LDFLAGS = \
+test_unit_tctildr_tcti_LDFLAGS = -Wl,--wrap=tctildr_get_info \
     -Wl,--wrap=tctildr_get_tcti,--wrap=tctildr_finalize_data
 test_unit_tctildr_tcti_SOURCES = test/unit/tctildr-tcti.c \
     src/tss2-tcti/tctildr.c
@@ -283,8 +284,18 @@ test_unit_tctildr_init_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tctildr_init_LDADD = $(CMOCKA_LIBS) $(libutil) \
     $(libtss2_tcti_device) $(libtss2_tcti_mssim)
 test_unit_tctildr_init_LDFLAGS = -Wl,--wrap=calloc,--wrap=free \
-    -Wl,--wrap=tctildr_get_tcti,--wrap=tctildr_finalize_data,--wrap=strlen
+    -Wl,--wrap=tctildr_get_tcti,--wrap=tctildr_finalize_data \
+    -Wl,--wrap=tctildr_get_info,--wrap=strlen
 test_unit_tctildr_init_SOURCES = test/unit/tctildr-init.c \
+    src/tss2-tcti/tctildr.c
+
+test_unit_tctildr_getinfo_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_tctildr_getinfo_LDADD = $(CMOCKA_LIBS) $(libutil) \
+    $(libtss2_tcti_device) $(libtss2_tcti_mssim)
+test_unit_tctildr_getinfo_LDFLAGS = -Wl,--wrap=strndup,--wrap=free \
+    -Wl,--wrap=calloc,--wrap=tctildr_finalize_data \
+    -Wl,--wrap=tctildr_get_info,--wrap=tctildr_get_tcti
+test_unit_tctildr_getinfo_SOURCES = test/unit/tctildr-getinfo.c \
     src/tss2-tcti/tctildr.c
 
 test_unit_io_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)

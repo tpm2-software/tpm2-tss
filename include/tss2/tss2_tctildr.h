@@ -20,5 +20,10 @@ Tss2_TctiLdr_Initialize_Ex (const char *name,
 TSS2_RC
 Tss2_TctiLdr_Initialize (const char *nameConf,
                          TSS2_TCTI_CONTEXT **context);
+TSS2_RC
+Tss2_TctiLdr_GetInfo (const char *name,
+                      TSS2_TCTI_INFO **info);
+void
+Tss2_TctiLdr_FreeInfo (TSS2_TCTI_INFO **info);
 
 #endif /* TSS2_TCTILDR_H */

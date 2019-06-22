@@ -118,8 +118,8 @@ tctildr_conf_parse (const char *name_conf,
     size_t combined_length;
 
     LOG_DEBUG ("name_conf: \"%s\"", name_conf);
-    if (name == NULL || conf == NULL || name_conf == NULL) {
-        LOG_ERROR ("no params may be NULL");
+    if (name_conf == NULL) {
+        LOG_ERROR ("'name_conf' param may NOT be NULL");
         return TSS2_TCTI_RC_BAD_REFERENCE;
     }
     combined_length = strlen (name_conf);
@@ -130,13 +130,13 @@ tctildr_conf_parse (const char *name_conf,
     if (combined_length == 0)
         return TSS2_RC_SUCCESS;
     split = strchr (name_conf, ':');
-    if (split == NULL) {
+    if (name != NULL && split == NULL) {
         /* no ':' tcti name only */
         strcpy (name, name_conf);
         LOG_DEBUG ("TCTI name: \"%s\"", name);
         return TSS2_RC_SUCCESS;
     }
-    if (name_conf[0] != '\0' && name_conf[0] != ':') {
+    if (name != NULL && name_conf[0] != '\0' && name_conf[0] != ':') {
         /* name is more than empty string */
         size_t name_length = split - name_conf;
         if (name_length > PATH_MAX) {
@@ -146,7 +146,7 @@ tctildr_conf_parse (const char *name_conf,
         name [name_length] = '\0';
         LOG_DEBUG ("TCTI name: \"%s\"", name);
     }
-    if (split [1] != '\0') {
+    if (conf != NULL && split [1] != '\0') {
         /* conf is more than empty string */
         strcpy (conf, &split [1]);
         LOG_DEBUG ("TCTI conf: \"%s\"", conf);
@@ -268,6 +268,129 @@ Tss2_TctiLdr_Finalize (TSS2_TCTI_CONTEXT **tctiContext)
     *tctiContext = NULL;
 }
 
+#if !defined(HAVE_STRNDUP)
+char*
+strndup (const char* s,
+         size_t n)
+{
+    char* dst = NULL;
+
+    if (n + 1 < n) {
+        return NULL;
+    }
+    dst = calloc(1, n + 1);
+    if (dst == NULL) {
+        return NULL;
+    }
+    memcpy(dst, s, n);
+
+    return dst;
+}
+#endif /* HAVE_STRNDUP */
+
+TSS2_RC
+copy_info (const TSS2_TCTI_INFO *info_src,
+           TSS2_TCTI_INFO *info_dst)
+{
+    TSS2_RC rc = TSS2_RC_SUCCESS;
+    const char *tmp = NULL;
+
+    if (info_src == NULL || info_dst == NULL) {
+        LOG_ERROR("parameters cannot be NULL");
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+    tmp = strndup (info_src->name, PATH_MAX);
+    if (tmp != NULL) {
+        info_dst->name = tmp;
+    } else {
+        LOG_ERROR("strndup failed on name: %s", strerror(errno));
+        return TSS2_TCTI_RC_GENERAL_FAILURE;
+    }
+    tmp = strndup (info_src->description, PATH_MAX);
+    if (tmp != NULL) {
+        info_dst->description = tmp;
+    } else {
+        LOG_ERROR("strndup failed on description: %s", strerror(errno));
+        free ((char*)info_dst->name);
+        rc = TSS2_TCTI_RC_GENERAL_FAILURE;
+        goto out;
+    }
+    tmp = strndup (info_src->config_help, PATH_MAX);
+    if (tmp != NULL) {
+        info_dst->config_help = tmp;
+    } else {
+        LOG_ERROR("strndup failed on config_help: %s", strerror(errno));
+        free ((char*)info_dst->name);
+        free ((char*)info_dst->description);
+        rc = TSS2_TCTI_RC_GENERAL_FAILURE;
+        goto out;
+    }
+    info_dst->version = info_src->version;
+out:
+    return rc;
+}
+
+TSS2_RC
+Tss2_TctiLdr_GetInfo (const char *name,
+                      TSS2_TCTI_INFO **info)
+{
+    TSS2_RC rc;
+    const TSS2_TCTI_INFO *info_lib = NULL;
+    TSS2_TCTI_INFO *info_tmp = NULL;
+    void *data = NULL;
+    char name_buf [PATH_MAX] = { 0, }, *name_ptr = NULL;
+
+    if (info == NULL) {
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+    if (name != NULL) {
+        rc = tctildr_conf_parse (name, name_buf, NULL);
+        if (rc != TSS2_RC_SUCCESS)
+            return rc;
+        name_ptr = name_buf;
+    }
+    rc = tctildr_get_info (name_ptr, &info_lib, &data);
+    if (rc != TSS2_RC_SUCCESS)
+        return rc;
+    info_tmp = calloc (1, sizeof (*info_tmp));
+    if (info_tmp == NULL) {
+        LOG_ERROR("calloc failed: %s", strerror (errno));
+        rc = TSS2_TCTI_RC_GENERAL_FAILURE;
+        goto out;
+    }
+    rc = copy_info (info_lib, info_tmp);
+    if (rc != TSS2_RC_SUCCESS) {
+        free (info_tmp);
+        goto out;
+    }
+    info_tmp->init = NULL;
+out:
+    tctildr_finalize_data (&data);
+    *info = info_tmp;
+    return rc;
+}
+
+void
+Tss2_TctiLdr_FreeInfo (TSS2_TCTI_INFO **info)
+{
+    TSS2_TCTI_INFO *info_tmp;
+
+    if (info == NULL || *info == NULL) {
+        return;
+    }
+    info_tmp = *info;
+    if (info_tmp->name != NULL) {
+        free ((char*)info_tmp->name);
+    }
+    if (info_tmp->description != NULL) {
+        free ((char*)info_tmp->description);
+    }
+    if (info_tmp->config_help != NULL) {
+        free ((char*)info_tmp->config_help);
+    }
+    free (info_tmp);
+    *info = NULL;
+}
 TSS2_RC
 Tss2_TctiLdr_Initialize_Ex (const char *name,
                             const char *conf,

@@ -92,6 +92,18 @@ tctildr_init_conf_fail_test (void **state)
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
 }
 TSS2_RC
+__wrap_tctildr_get_info (const char *name,
+                         const TSS2_TCTI_INFO **info,
+                         void **data)
+{
+    TSS2_RC rc = mock_type (TSS2_RC);
+    if (rc == TSS2_RC_SUCCESS) {
+        *info = mock_type (TSS2_TCTI_INFO*);
+        *data = mock_type (void*);
+    }
+    return rc;
+}
+TSS2_RC
 __wrap_tctildr_get_tcti (const char *name,
                   const char* conf,
                   TSS2_TCTI_CONTEXT **tcti,
