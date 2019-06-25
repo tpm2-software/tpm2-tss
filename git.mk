@@ -346,8 +346,6 @@ $(srcdir)/.gitignore: Makefile.am $(top_srcdir)/git.mk $(top_srcdir)/configure.a
 			$(TEST_LOGS:.log=.trs) \
 			$(TEST_SUITE_LOG) \
 			$(TESTS:=.test) \
-			"*.gcda" \
-			"*.gcno" \
 			$(DISTCLEANFILES) \
 			$(am__CONFIG_DISTCLEAN_FILES) \
 			$(CONFIG_CLEAN_FILES) \
@@ -369,6 +367,8 @@ $(srcdir)/.gitignore: Makefile.am $(top_srcdir)/git.mk $(top_srcdir)/configure.a
 			".dirstamp" \
 		; do echo "/$$x"; done; \
 		for x in \
+			"*.gcda" \
+			"*.gcno" \
 			"*.$(OBJEXT)" \
 			$(DEPDIR) \
 		; do echo "$$x"; done; \
