@@ -52,6 +52,9 @@ TESTS_UNIT  = \
     test/unit/log \
     test/unit/tcti-device \
     test/unit/tcti-mssim \
+    test/unit/tctildr \
+    test/unit/tctildr-dl \
+    test/unit/tctildr-nodl \
     test/unit/UINT8-marshal \
     test/unit/UINT16-marshal \
     test/unit/UINT32-marshal \
@@ -73,10 +76,6 @@ TESTS_UNIT += \
     test/unit/esys-getpollhandles \
     test/unit/esys-nulltcti \
     test/unit/esys-crypto
-
-if !ENABLE_FUZZING
-TESTS_UNIT += test/unit/esys-default-tcti
-endif
 
 endif ESAPI
 endif #UNIT
@@ -246,6 +245,28 @@ test_unit_tcti_mssim_SOURCES = test/unit/tcti-mssim.c \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-mssim.c src/tss2-tcti/tcti-mssim.h
 
+test_unit_tctildr_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_tctildr_LDADD = $(CMOCKA_LIBS) $(libutil)
+test_unit_tctildr_LDFLAGS = -Wl,--wrap=calloc,--wrap=free
+test_unit_tctildr_SOURCES = test/unit/tctildr.c \
+    src/tss2-tcti/tctildr.c
+
+test_unit_tctildr_dl_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) \
+        -UESYS_TCTI_DEFAULT_MODULE -UESYS_TCTI_DEFAUT_CONFIG
+test_unit_tctildr_dl_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_tctildr_dl_LDFLAGS = -Wl,--wrap=dlopen,--wrap=dlclose,--wrap=dlsym \
+    -Wl,--wrap=tcti_from_init,--wrap=tcti_from_info
+test_unit_tctildr_dl_SOURCES = test/unit/tctildr-dl.c \
+        src/tss2-tcti/tctildr-dl.c src/tss2-tcti/tctildr-interface.h
+
+test_unit_tctildr_nodl_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) \
+        -UESYS_TCTI_DEFAULT_MODULE -UESYS_TCTI_DEFAUT_CONFIG
+test_unit_tctildr_nodl_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_tctildr_nodl_LDFLAGS = -Wl,--wrap=Tss2_Tcti_Device_Init \
+        -Wl,--wrap=Tss2_Tcti_Mssim_Init,--wrap=tcti_from_init
+test_unit_tctildr_nodl_SOURCES = test/unit/tctildr-nodl.c \
+        src/tss2-tcti/tctildr-nodl.c src/tss2-tcti/tctildr-interface.h
+
 test_unit_io_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_io_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
 test_unit_io_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=socket,--wrap=write
@@ -306,15 +327,6 @@ test_unit_esys_context_null_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESY
 test_unit_esys_context_null_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_context_null_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO) $(LIBDL_LDFLAGS)
 
-test_unit_esys_default_tcti_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) \
-        -UESYS_TCTI_DEFAULT_MODULE -UESYS_TCTI_DEFAUT_CONFIG
-test_unit_esys_default_tcti_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
-test_unit_esys_default_tcti_LDFLAGS = \
-        -Wl,--wrap=dlopen -Wl,-wrap=dlclose -Wl,-wrap=dlsym \
-        -Wl,--wrap=Tss2_Tcti_Device_Init \
-        -Wl,--wrap=Tss2_Tcti_Mssim_Init
-test_unit_esys_default_tcti_SOURCES = test/unit/esys-default-tcti.c \
-        src/tss2-esys/esys_tcti_default.c src/tss2-esys/esys_tcti_default.h
 
 test_unit_esys_resubmissions_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_unit_esys_resubmissions_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
@@ -355,6 +367,7 @@ test_unit_esys_nulltcti_SOURCES = test/unit/esys-nulltcti.c \
                                   src/tss2-esys/esys_context.c \
                                   src/tss2-esys/esys_iutil.c \
                                   src/tss2-esys/esys_crypto.c \
+                                  src/tss2-tcti/tctildr.c \
                                   $(TSS2_ESYS_SRC_CRYPTO)
 
 test_unit_esys_crypto_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
@@ -363,7 +376,8 @@ test_unit_esys_crypto_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO) $(L
 test_unit_esys_crypto_SOURCES = test/unit/esys-crypto.c \
                                 src/tss2-esys/esys_context.c \
                                 src/tss2-esys/esys_iutil.c \
-                                src/tss2-esys/esys_tcti_default.c \
+                                src/tss2-tcti/tctildr.c \
+                                src/tss2-tcti/tctildr-dl.c \
                                 src/tss2-esys/esys_crypto.c \
                                 $(TSS2_ESYS_SRC_CRYPTO)
 endif # ESAPI

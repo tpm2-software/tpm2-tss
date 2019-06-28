@@ -312,20 +312,6 @@ tss2_HEADERS += $(srcdir)/include/tss2/tss2_esys.h
 lib_LTLIBRARIES += $(libtss2_esys)
 pkgconfig_DATA += lib/tss2-esys.pc
 
-
-src_tss2_esys_libtss2_esys_la_CFLAGS  = $(AM_CFLAGS) -I$(srcdir)/src/tss2-esys \
-    $(TSS2_ESYS_CFLAGS_CRYPTO)
-src_tss2_esys_libtss2_esys_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) \
-    $(libtss2_tcti_device) $(libtss2_tcti_mssim) $(libutil)
-
-src_tss2_esys_libtss2_esys_la_LDFLAGS = $(AM_LDFLAGS) $(LIBSOCKET_LDFLAGS) \
-                                        $(TSS2_ESYS_LDFLAGS_CRYPTO)
-if !NO_DL
-src_tss2_esys_libtss2_esys_la_LIBADD += $(LIBADD_DL)
-endif
-if HAVE_LD_VERSION_SCRIPT
-src_tss2_esys_libtss2_esys_la_LDFLAGS += -Wl,--version-script=$(srcdir)/lib/tss2-esys.map
-endif # HAVE_LD_VERSION_SCRIPT
 if ESYS_OSSL
 TSS2_ESYS_SRC_CRYPTO = src/tss2-esys/esys_crypto_ossl.h src/tss2-esys/esys_crypto_ossl.c
 else
@@ -333,7 +319,25 @@ if ESYS_GCRYPT
 TSS2_ESYS_SRC_CRYPTO = src/tss2-esys/esys_crypto_gcrypt.h src/tss2-esys/esys_crypto_gcrypt.c
 endif
 endif
-src_tss2_esys_libtss2_esys_la_SOURCES = $(TSS2_ESYS_SRC) $(TSS2_ESYS_SRC_CRYPTO)
+
+src_tss2_esys_libtss2_esys_la_CFLAGS  = $(AM_CFLAGS) -I$(srcdir)/src/tss2-esys \
+    $(TSS2_ESYS_CFLAGS_CRYPTO)
+src_tss2_esys_libtss2_esys_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) $(libutil)
+
+src_tss2_esys_libtss2_esys_la_LDFLAGS = $(AM_LDFLAGS) $(LIBSOCKET_LDFLAGS) \
+                                        $(TSS2_ESYS_LDFLAGS_CRYPTO)
+if HAVE_LD_VERSION_SCRIPT
+src_tss2_esys_libtss2_esys_la_LDFLAGS += -Wl,--version-script=$(srcdir)/lib/tss2-esys.map
+endif # HAVE_LD_VERSION_SCRIPT
+src_tss2_esys_libtss2_esys_la_SOURCES = $(TSS2_ESYS_SRC) $(TSS2_ESYS_SRC_CRYPTO) \
+    src/tss2-tcti/tctildr.c
+if NO_DL
+src_tss2_esys_libtss2_esys_la_LIBADD += $(libtss2_tcti_device) $(libtss2_tcti_mssim)
+src_tss2_esys_libtss2_esys_la_SOURCES += src/tss2-tcti/tctildr-nodl.c
+else
+src_tss2_esys_libtss2_esys_la_LIBADD += $(LIBADD_DL)
+src_tss2_esys_libtss2_esys_la_SOURCES += src/tss2-tcti/tctildr-dl.c src/tss2-tcti/tctildr-dl.h
+endif
 EXTRA_DIST += lib/tss2-esys.map \
               lib/tss2-esys.def \
               src/tss2-esys/tss2-esys.vcxproj \
