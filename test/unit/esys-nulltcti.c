@@ -33,7 +33,7 @@ tcti_fake_finalize(TSS2_TCTI_CONTEXT *tctiContext)
 }
 
 TSS2_RC
-get_tcti_default(TSS2_TCTI_CONTEXT **tcti, void **dlhandle) {
+tctildr_get_default (TSS2_TCTI_CONTEXT **tcti, void **dlhandle) {
     if (tcti == NULL)
         return TSS2_BASE_RC_GENERAL_FAILURE;
 
@@ -52,6 +52,12 @@ get_tcti_default(TSS2_TCTI_CONTEXT **tcti, void **dlhandle) {
     *dlhandle = NULL;
 
     return TSS2_RC_SUCCESS;
+}
+
+void
+tctildr_finalize_data (void **data)
+{
+    return;
 }
 
 static void

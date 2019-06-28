@@ -3,9 +3,13 @@
  * Copyright 2017, Fraunhofer SIT sponsored by Infineon Technologies AG
  * All rights reserved.
  *******************************************************************************/
-#ifndef     TCTI_DEFAULT_H
-#define     TCTI_DEFAULT_H
+#ifndef     TCTI_INTERFACE_H
+#define     TCTI_INTERFACE_H
 
-TSS2_RC get_tcti_default(TSS2_TCTI_CONTEXT ** tcticontext, void **dlhandle);
+#include "tss2_tpm2_types.h"
+#include "tss2_tcti.h"
+
+TSS2_RC tctildr_get_default(TSS2_TCTI_CONTEXT ** tcticontext, void **data);
+void tctildr_finalize_data(void **data);
 
 #endif
