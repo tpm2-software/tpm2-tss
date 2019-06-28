@@ -349,7 +349,7 @@ test_unit_esys_getpollhandles_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_getpollhandles_LDFLAGS = $(TESTS_LDFLAGS)
 
 test_unit_esys_nulltcti_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
-test_unit_esys_nulltcti_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_esys_nulltcti_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD) $(LIBADD_DL)
 test_unit_esys_nulltcti_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO) $(LIBDL_LDFLAGS)
 test_unit_esys_nulltcti_SOURCES = test/unit/esys-nulltcti.c \
                                   src/tss2-esys/esys_context.c \
@@ -358,7 +358,7 @@ test_unit_esys_nulltcti_SOURCES = test/unit/esys-nulltcti.c \
                                   $(TSS2_ESYS_SRC_CRYPTO)
 
 test_unit_esys_crypto_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
-test_unit_esys_crypto_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_esys_crypto_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD) $(LIBADD_DL)
 test_unit_esys_crypto_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO) $(LIBDL_LDFLAGS)
 test_unit_esys_crypto_SOURCES = test/unit/esys-crypto.c \
                                 src/tss2-esys/esys_context.c \
