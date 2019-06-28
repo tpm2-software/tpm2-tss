@@ -976,6 +976,14 @@ TPMS_UNMARSHAL_2(TPMS_TAGGED_PROPERTY,
                  property, Tss2_MU_UINT32_Unmarshal,
                  value, Tss2_MU_UINT32_Unmarshal)
 
+TPMS_MARSHAL_2(TPMS_TAGGED_POLICY,
+               handle, VAL, Tss2_MU_UINT32_Marshal,
+               policyHash, ADDR, Tss2_MU_TPMT_HA_Marshal)
+
+TPMS_UNMARSHAL_2(TPMS_TAGGED_POLICY,
+                 handle, Tss2_MU_UINT32_Unmarshal,
+                 policyHash, Tss2_MU_TPMT_HA_Unmarshal)
+
 TPMS_MARSHAL_4(TPMS_CLOCK_INFO,
                clock, VAL, Tss2_MU_UINT64_Marshal,
                resetCount, VAL, Tss2_MU_UINT32_Marshal,

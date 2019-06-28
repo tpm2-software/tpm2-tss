@@ -110,6 +110,8 @@
         Tss2_MU_TPMS_ALGORITHM_DESCRIPTION_Unmarshal;
         Tss2_MU_TPMS_TAGGED_PROPERTY_Marshal;
         Tss2_MU_TPMS_TAGGED_PROPERTY_Unmarshal;
+        Tss2_MU_TPMS_TAGGED_POLICY_Marshal;
+        Tss2_MU_TPMS_TAGGED_POLICY_Unmarshal;
         Tss2_MU_TPMS_CLOCK_INFO_Marshal;
         Tss2_MU_TPMS_CLOCK_INFO_Unmarshal;
         Tss2_MU_TPMS_TIME_ATTEST_INFO_Marshal;
