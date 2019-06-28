@@ -115,6 +115,7 @@ GITIGNORE_MAINTAINERCLEANFILES_M4_LIBTOOL = \
 	 if test "x$$MACRO_DIR" != "x$(srcdir)/"; then \
 		for x in \
 			libtool.m4 \
+                        ltdl.m4 \
 			ltoptions.m4 \
 			ltsugar.m4 \
 			ltversion.m4 \

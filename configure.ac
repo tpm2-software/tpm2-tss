@@ -29,21 +29,19 @@ AC_PROG_CXX
 AC_PROG_CC
 AC_USE_SYSTEM_EXTENSIONS
 LT_INIT()
+LT_LIB_DLLOAD
 PKG_INSTALLDIR()
 
 # Check OS and set library and compile flags accordingly
 case "${host_os}" in
     *nto-qnx*)
         ADD_COMPILER_FLAG([-D_QNX_SOURCE])
-        LIBDL_LDFLAGS=""
         LIBSOCKET_LDFLAGS="-lsocket"
         ;;
     *)
-        LIBDL_LDFLAGS="-ldl"
         LIBSOCKET_LDFLAGS=""
         ;;
 esac
-AC_SUBST([LIBDL_LDFLAGS])
 AC_SUBST([LIBSOCKET_LDFLAGS])
 
 AC_ARG_ENABLE([unit],
@@ -145,6 +143,15 @@ AC_ARG_ENABLE([tcti-fuzzing],
 AM_CONDITIONAL([ENABLE_TCTI_FUZZING], [test "x$enable_tcti_fuzzing" != xno])
 AS_IF([test "x$enable_tcti_fuzzing" = "xyes"],
 	AC_DEFINE([TCTI_FUZZING],[1], [TCTI FOR FUZZING]))
+
+AC_ARG_ENABLE([nodl],
+              [AS_HELP_STRING([--enable-nodl],
+                              [link against TCTIs directly, do not use dlopen])],
+              [],
+              [enable_nodl=no])
+AM_CONDITIONAL([NO_DL], [test "x$enable_nodl" = "xyes"])
+AS_IF([test "x$enable_nodl" = "xyes"],
+      [AC_DEFINE([NO_DL],[1], [disable use of dlopen])])
 
 #
 # udev
