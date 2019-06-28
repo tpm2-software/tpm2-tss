@@ -94,6 +94,7 @@ tcti_from_init(TSS2_TCTI_INIT_FUNC init,
     return TSS2_RC_SUCCESS;
 }
 
+#ifndef NO_DL
 static TSS2_RC
 tcti_from_info(TSS2_TCTI_INFO_FUNC infof,
                const char* conf,
@@ -122,7 +123,6 @@ tcti_from_info(TSS2_TCTI_INFO_FUNC infof,
     return TSS2_RC_SUCCESS;
 }
 
-#ifndef NO_DL
 static TSS2_RC
 tcti_from_file(const char *file,
                const char* conf,
@@ -189,6 +189,7 @@ get_tcti_default(TSS2_TCTI_CONTEXT ** tcticontext, void **dlhandle)
 
     TSS2_RC r;
 
+    (void)dlhandle;
     for (size_t i = 0; i < ARRAY_SIZE(tctis); i++) {
         LOG_DEBUG("Attempting to connect using standard TCTI: %s",
                   tctis[i].description);
