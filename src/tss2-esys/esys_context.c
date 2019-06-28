@@ -4,19 +4,15 @@
  * All rights reserved.
  *******************************************************************************/
 
-#ifndef NO_DL
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-
-#include <dlfcn.h>
-#endif /* NO_DL */
 #include <stdlib.h>
 
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
-#include "esys_tcti_default.h"
+#include "tss2-tcti/tctildr-interface.h"
 #define LOGMODULE esys
 #include "util/log.h"
 #include "util/aux_util.h"
@@ -68,7 +64,7 @@ Esys_Initialize(ESYS_CONTEXT ** esys_context, TSS2_TCTI_CONTEXT * tcti,
 
     /* If no tcti was provided, initialize the default one. */
     if (tcti == NULL) {
-        r = get_tcti_default(&tcti, &(*esys_context)->dlhandle);
+        r = tctildr_get_default(&tcti, &(*esys_context)->dlhandle);
         goto_if_error(r, "Initialize default tcti.", cleanup_return);
     }
 
@@ -91,11 +87,8 @@ cleanup_return:
     if ((*esys_context)->tcti_app_param == NULL && tcti != NULL) {
         Tss2_Tcti_Finalize(tcti);
         free(tcti);
+        tctildr_finalize_data(&(*esys_context)->dlhandle);
     }
-#ifndef NO_DL
-    if ((*esys_context)->dlhandle)
-        dlclose((*esys_context)->dlhandle);
-#endif /* NO_DL */
 
     /* No need to finalize (*esys_context)->sys only free since
        it is the last goto in this function. */
@@ -146,12 +139,8 @@ Esys_Finalize(ESYS_CONTEXT ** esys_context)
     if (tctcontext != NULL) {
         Tss2_Tcti_Finalize(tctcontext);
         free(tctcontext);
+        tctildr_finalize_data(&(*esys_context)->dlhandle);
     }
-
-#ifndef NO_DL
-    if ((*esys_context)->dlhandle)
-        dlclose((*esys_context)->dlhandle);
-#endif /* NO_DL */
 
     /* Free esys_context */
     free(*esys_context);
