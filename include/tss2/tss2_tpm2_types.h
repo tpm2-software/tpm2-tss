@@ -999,6 +999,12 @@ typedef struct {
     BYTE pcrSelect[TPM2_PCR_SELECT_MAX]; /* the bit map of PCR with the identified property */
 } TPMS_TAGGED_PCR_SELECT;
 
+/* Definition of TPMS_TAGGED_POLICY Structure */
+typedef struct {
+    TPM2_HANDLE handle;
+    TPMT_HA policyHash;
+} TPMS_TAGGED_POLICY;
+
 /* Definition of TPML_CC Structure */
 typedef struct {
     UINT32 count; /* number of commands in the commandCode list may be 0 */
