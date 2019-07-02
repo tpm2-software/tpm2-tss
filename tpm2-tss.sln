@@ -32,6 +32,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tss2-tctildr", "src\tss2-tc
 		{6BA6146F-8B38-49A2-A156-769E0F2CC302} = {6BA6146F-8B38-49A2-A156-769E0F2CC302}
 		{89B6B774-2886-48CF-B1D0-534AC449E0FD} = {89B6B774-2886-48CF-B1D0-534AC449E0FD}
 	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tss2-rc", "src\tss2-rc\tss2-rc.vcxproj", "{0674A684-8945-4EDB-858F-1A2ECDEFFDC1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -89,6 +90,14 @@ Global
 		{40EC0A14-E90F-450F-B250-2071B05ED099}.Release|x64.Build.0 = Release|x64
 		{40EC0A14-E90F-450F-B250-2071B05ED099}.Release|x86.ActiveCfg = Release|Win32
 		{40EC0A14-E90F-450F-B250-2071B05ED099}.Release|x86.Build.0 = Release|Win32
+		{0674A684-8945-4EDB-858F-1A2ECDEFFDC1}.Debug|x64.ActiveCfg = Debug|x64
+		{0674A684-8945-4EDB-858F-1A2ECDEFFDC1}.Debug|x64.Build.0 = Debug|x64
+		{0674A684-8945-4EDB-858F-1A2ECDEFFDC1}.Debug|x86.ActiveCfg = Debug|Win32
+		{0674A684-8945-4EDB-858F-1A2ECDEFFDC1}.Debug|x86.Build.0 = Debug|Win32
+		{0674A684-8945-4EDB-858F-1A2ECDEFFDC1}.Release|x64.ActiveCfg = Release|x64
+		{0674A684-8945-4EDB-858F-1A2ECDEFFDC1}.Release|x64.Build.0 = Release|x64
+		{0674A684-8945-4EDB-858F-1A2ECDEFFDC1}.Release|x86.ActiveCfg = Release|Win32
+		{0674A684-8945-4EDB-858F-1A2ECDEFFDC1}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
