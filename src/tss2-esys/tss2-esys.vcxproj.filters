@@ -378,12 +378,6 @@
     <ClCompile Include="esys_free.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="../tss2-tcti/tctildr.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="../tss2-tcti/tctildr-nodl.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="esys_crypto.h">
@@ -411,9 +405,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../tss2-tcti/tctildr-interface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="../tss2-tcti/tctildr-nodl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

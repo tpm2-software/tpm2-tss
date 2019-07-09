@@ -65,6 +65,16 @@ __wrap_free (void *ptr)
         __real_free (ptr);
     return;
 }
+TSS2_RC
+__wrap_tctildr_get_tcti (const char *name,
+                  const char* conf,
+                  TSS2_TCTI_CONTEXT **tcti,
+                  void **dlhandle)
+{
+    return TSS2_RC_SUCCESS;
+}
+void __wrap_tctildr_finalize_data (void **data){}
+
 void
 tcti_from_init_calloc_fail (void **state)
 {

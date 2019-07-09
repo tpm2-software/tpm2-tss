@@ -49,19 +49,23 @@
 #include "util/log.h"
 
 #define ARRAY_SIZE(X) (sizeof(X)/sizeof(X[0]))
+#define NAME_ARRAY_SIZE 2
 
 struct {
+    const char *name;
     TSS2_TCTI_INIT_FUNC init;
     char *conf;
     char *description;
 } tctis [] = {
 #ifdef _WIN32
     {
+        .name = "libtss2-tcti-tbs.so",
         .init = Tss2_Tcti_Tbs_Init,
         .description = "Access to TBS",
     },
 #elif defined (__VXWORKS__)
     {
+        .name = "libtss2-tcti-device.so",
         .init = Tss2_Tcti_Device_Init,
         .conf = "/tpm0",
         .description = "Access to /tpm0",
@@ -69,11 +73,13 @@ struct {
 #else /* _WIN32 */
 #ifdef TCTI_DEVICE
     {
+        .name = "libtss2-tcti-device.so",
         .init = Tss2_Tcti_Device_Init,
         .conf = "/dev/tpmrm0",
         .description = "Access to /dev/tpmrm0",
     },
     {
+        .name = "libtss2-tcti-device.so",
         .init = Tss2_Tcti_Device_Init,
         .conf = "/dev/tpm0",
         .description = "Access to /dev/tpm0",
@@ -82,6 +88,7 @@ struct {
 #endif /* _WIN32 */
 #ifdef TCTI_MSSIM
     {
+        .name = "libtss2-tcti-mssim.so",
         .init = Tss2_Tcti_Mssim_Init,
         .description = "Access to simulator using MS protocol, default conf",
     },
@@ -113,6 +120,36 @@ tctildr_get_default(TSS2_TCTI_CONTEXT ** tcticontext, void **dlhandle)
     LOG_ERROR("No standard TCTI could be loaded");
     return TSS2_TCTI_RC_IO_ERROR;
 }
+TSS2_RC
+tctildr_get_tcti (const char *name,
+                  const char* conf,
+                  TSS2_TCTI_CONTEXT **tcti,
+                  void **data)
+{
+    TSS2_RC rc;
+
+    if (tcti == NULL) {
+        LOG_ERROR("tcticontext must not be NULL");
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+    *tcti = NULL;
+    if (name == NULL) {
+        return tctildr_get_default (tcti, data);
+    }
+
+    for (size_t i = 0; i < ARRAY_SIZE(tctis); ++i) {
+        if (strcmp (name, tctis[i].name))
+            continue;
+        LOG_DEBUG("initializing TCTI with name \"%s\"",
+                  tctis[i].name);
+        rc = tcti_from_init (tctis[i].init, conf, tcti);
+        if (rc == TSS2_RC_SUCCESS)
+            return TSS2_RC_SUCCESS;
+    }
+    LOG_ERROR("Unable to initialize TCTI with name: \"%s\"", name);
+    return TSS2_TCTI_RC_IO_ERROR;
+}
+
 void
 tctildr_finalize_data(void **data)
 {

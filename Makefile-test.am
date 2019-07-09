@@ -55,6 +55,8 @@ TESTS_UNIT  = \
     test/unit/tctildr \
     test/unit/tctildr-dl \
     test/unit/tctildr-nodl \
+    test/unit/tctildr-init \
+    test/unit/tctildr-tcti \
     test/unit/UINT8-marshal \
     test/unit/UINT16-marshal \
     test/unit/UINT32-marshal \
@@ -247,7 +249,8 @@ test_unit_tcti_mssim_SOURCES = test/unit/tcti-mssim.c \
 
 test_unit_tctildr_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tctildr_LDADD = $(CMOCKA_LIBS) $(libutil)
-test_unit_tctildr_LDFLAGS = -Wl,--wrap=calloc,--wrap=free
+test_unit_tctildr_LDFLAGS = -Wl,--wrap=calloc,--wrap=free \
+    -Wl,--wrap=tctildr_finalize_data,--wrap=tctildr_get_tcti
 test_unit_tctildr_SOURCES = test/unit/tctildr.c \
     src/tss2-tcti/tctildr.c
 
@@ -266,6 +269,22 @@ test_unit_tctildr_nodl_LDFLAGS = -Wl,--wrap=Tss2_Tcti_Device_Init \
         -Wl,--wrap=Tss2_Tcti_Mssim_Init,--wrap=tcti_from_init
 test_unit_tctildr_nodl_SOURCES = test/unit/tctildr-nodl.c \
         src/tss2-tcti/tctildr-nodl.c
+
+test_unit_tctildr_tcti_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_tctildr_tcti_LDADD = $(CMOCKA_LIBS) $(libutil) \
+    $(libtss2_tcti_device) $(libtss2_tcti_mssim)
+test_unit_tctildr_tcti_LDFLAGS = \
+    -Wl,--wrap=tctildr_get_tcti,--wrap=tctildr_finalize_data
+test_unit_tctildr_tcti_SOURCES = test/unit/tctildr-tcti.c \
+    src/tss2-tcti/tctildr.c
+
+test_unit_tctildr_init_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_tctildr_init_LDADD = $(CMOCKA_LIBS) $(libutil) \
+    $(libtss2_tcti_device) $(libtss2_tcti_mssim)
+test_unit_tctildr_init_LDFLAGS = -Wl,--wrap=calloc,--wrap=free \
+    -Wl,--wrap=tctildr_get_tcti,--wrap=tctildr_finalize_data
+test_unit_tctildr_init_SOURCES = test/unit/tctildr-init.c \
+    src/tss2-tcti/tctildr.c
 
 test_unit_io_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_io_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
@@ -325,7 +344,7 @@ test_unit_sys_execute_SOURCES = test/unit/sys-execute.c \
 if ESAPI
 test_unit_esys_context_null_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_unit_esys_context_null_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
-test_unit_esys_context_null_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO) $(LIBDL_LDFLAGS)
+test_unit_esys_context_null_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO) $(LIBDL_LDFLAGS) -Wl,--wrap=tctildr_finalize_data,--wrap=tctildr_get_tcti
 
 
 test_unit_esys_resubmissions_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
@@ -362,12 +381,12 @@ test_unit_esys_getpollhandles_LDFLAGS = $(TESTS_LDFLAGS)
 
 test_unit_esys_nulltcti_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_unit_esys_nulltcti_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD) $(LIBADD_DL)
-test_unit_esys_nulltcti_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO) $(LIBDL_LDFLAGS)
+test_unit_esys_nulltcti_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO) \
+    $(LIBDL_LDFLAGS) -Wl,--wrap=Tss2_TctiLdr_Initialize
 test_unit_esys_nulltcti_SOURCES = test/unit/esys-nulltcti.c \
                                   src/tss2-esys/esys_context.c \
                                   src/tss2-esys/esys_iutil.c \
                                   src/tss2-esys/esys_crypto.c \
-                                  src/tss2-tcti/tctildr.c \
                                   $(TSS2_ESYS_SRC_CRYPTO)
 
 test_unit_esys_crypto_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)

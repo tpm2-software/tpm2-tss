@@ -134,6 +134,8 @@ typedef uint32_t TSS2_RC;
                                                      TSS2_BASE_RC_MALFORMED_RESPONSE))
 #define TSS2_TCTI_RC_NOT_SUPPORTED              ((TSS2_RC)(TSS2_TCTI_RC_LAYER | \
                                                      TSS2_BASE_RC_NOT_SUPPORTED))
+#define TSS2_TCTI_RC_MEMORY                     ((TSS2_RC)(TSS2_TCTI_RC_LAYER | \
+                                                     TSS2_BASE_RC_MEMORY))
 /* SAPI error codes */
 #define TSS2_SYS_RC_GENERAL_FAILURE            ((TSS2_RC)(TSS2_SYS_RC_LAYER | \
                                                     TSS2_BASE_RC_GENERAL_FAILURE))

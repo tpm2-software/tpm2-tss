@@ -20,6 +20,7 @@
 #include "tss2_tcti.h"
 
 #include "tss2-tcti/tctildr-interface.h"
+#include "tss2-tcti/tctildr-nodl.h"
 #define LOGMODULE test
 #include "util/log.h"
 
@@ -71,17 +72,47 @@ test_tctildr_get_default_all_fail (void **state)
     assert_int_equal (rc, TSS2_TCTI_RC_IO_ERROR);
 
 }
+static TSS2_TCTI_CONTEXT_COMMON_V2 test_ctx = { 0, };
 void
-test_get_tcti_success (void **state)
+test_get_tcti_null_tcti (void **state)
+{
+    TSS2_RC rc = tctildr_get_tcti (NULL, NULL, NULL, NULL);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
+}
+
+void
+test_get_tcti_default_success (void **state)
 {
     TSS2_RC rc;
     TSS2_TCTI_CONTEXT *tcti_ctx = NULL;
 
-    will_return (__wrap_tcti_from_init, tcti_ctx);
+    will_return (__wrap_tcti_from_init, &test_ctx);
     will_return (__wrap_tcti_from_init, TSS2_RC_SUCCESS);
-    rc = tctildr_get_default (&tcti_ctx, NULL);
+    rc = tctildr_get_tcti (NULL, NULL, &tcti_ctx, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_ptr_equal (tcti_ctx, &test_ctx);
 }
+void
+test_get_tcti_match_second (void **state)
+{
+    TSS2_RC rc;
+    TSS2_TCTI_CONTEXT *tcti_ctx = NULL;
+
+    will_return (__wrap_tcti_from_init, &test_ctx);
+    will_return (__wrap_tcti_from_init, TSS2_RC_SUCCESS);
+    rc = tctildr_get_tcti ("libtss2-tcti-device.so", NULL, &tcti_ctx, NULL);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_ptr_equal (tcti_ctx, &test_ctx);
+}
+void
+test_get_tcti_match_none (void **state)
+{
+    TSS2_RC rc;
+    TSS2_TCTI_CONTEXT *tcti_ctx = NULL;
+
+    rc = tctildr_get_tcti ("foo", NULL, &tcti_ctx, NULL);
+    assert_int_equal (rc, TSS2_TCTI_RC_IO_ERROR);
+ }
 void
 test_finalize_data (void **state)
 {
@@ -93,7 +124,10 @@ main(void)
     const struct CMUnitTest tests[] = {
         cmocka_unit_test (test_tctildr_get_default_null_param),
         cmocka_unit_test (test_tctildr_get_default_all_fail),
-        cmocka_unit_test (test_get_tcti_success),
+        cmocka_unit_test (test_get_tcti_null_tcti),
+        cmocka_unit_test (test_get_tcti_default_success),
+        cmocka_unit_test (test_get_tcti_match_second),
+        cmocka_unit_test (test_get_tcti_match_none),
         cmocka_unit_test (test_finalize_data),
     };
     return cmocka_run_group_tests (tests, NULL, NULL);
