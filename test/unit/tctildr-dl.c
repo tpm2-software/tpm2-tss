@@ -25,6 +25,9 @@
 #define LOGMODULE test
 #include "util/log.h"
 
+/* global TCTI object, use to return reference from */
+static TSS2_TCTI_CONTEXT_COMMON_V2 tcti_instance = { 0, };
+
 void *
 __wrap_dlopen(const char *filename, int flags)
 {
@@ -105,9 +108,6 @@ test_tcti_from_file_dlopen_fail (void **state)
 
 #define HANDLE (void *)123321
 #ifndef ESYS_TCTI_DEFAULT_MODULE
-
-/* global TCTI object reference to be returned by __mock_tcti_from_info */
-static TSS2_TCTI_CONTEXT_COMMON_V2 tcti_instance = { 0, };
 
 /** Test for tcti
  * { "libtss2-tcti-default.so", NULL, "", "Access libtss2-tcti-default.so" }
@@ -264,6 +264,58 @@ test_tcti_fail_all (void **state)
     assert_int_equal(r, TSS2_TCTI_RC_IO_ERROR);
 }
 #endif
+void
+test_get_tcti_null (void **state)
+{
+    TSS2_RC rc = tctildr_get_tcti (NULL, NULL, NULL, NULL);
+    assert_int_equal(rc, TSS2_TCTI_RC_BAD_REFERENCE);
+}
+void
+test_get_tcti_default (void **state)
+{
+    TSS2_TCTI_CONTEXT *tcti;
+
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-default.so");
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, HANDLE);
+
+    expect_value(__wrap_dlsym, handle, HANDLE);
+    expect_string(__wrap_dlsym, symbol, TSS2_TCTI_INFO_SYMBOL);
+    will_return(__wrap_dlsym, &__wrap_Tss2_Tcti_Fake_Info);
+
+    expect_value(__wrap_tcti_from_info, infof, __wrap_Tss2_Tcti_Fake_Info);
+    expect_value(__wrap_tcti_from_info, conf, NULL);
+    expect_value(__wrap_tcti_from_info, tcti, &tcti);
+    will_return(__wrap_tcti_from_info, &tcti_instance);
+    will_return(__wrap_tcti_from_info, TSS2_RC_SUCCESS);
+
+    void *data;
+    TSS2_RC rc = tctildr_get_tcti (NULL, NULL, &tcti, &data);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+}
+void
+test_get_tcti_from_name (void **state)
+{
+    TSS2_TCTI_CONTEXT *tcti;
+
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-default.so");
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, HANDLE);
+
+    expect_value(__wrap_dlsym, handle, HANDLE);
+    expect_string(__wrap_dlsym, symbol, TSS2_TCTI_INFO_SYMBOL);
+    will_return(__wrap_dlsym, &__wrap_Tss2_Tcti_Fake_Info);
+
+    expect_value(__wrap_tcti_from_info, infof, __wrap_Tss2_Tcti_Fake_Info);
+    expect_value(__wrap_tcti_from_info, conf, NULL);
+    expect_value(__wrap_tcti_from_info, tcti, &tcti);
+    will_return(__wrap_tcti_from_info, &tcti_instance);
+    will_return(__wrap_tcti_from_info, TSS2_RC_SUCCESS);
+
+    void *data;
+    TSS2_RC rc = tctildr_get_tcti ("libtss2-tcti-default.so", NULL, &tcti, &data);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+}
 
 void
 test_finalize_data (void **state)
@@ -287,6 +339,9 @@ main(void)
         cmocka_unit_test(test_tcti_default_fail_sym),
         cmocka_unit_test(test_tcti_default_fail_info),
         cmocka_unit_test(test_tcti_fail_all),
+        cmocka_unit_test(test_get_tcti_null),
+        cmocka_unit_test(test_get_tcti_default),
+        cmocka_unit_test(test_get_tcti_from_name),
 #endif
         cmocka_unit_test(test_finalize_data),
     };

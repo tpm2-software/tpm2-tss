@@ -1,0 +1,4 @@
+LIBRARY tss2-tctildr
+EXPORTS
+    Tss2_TctiLdr_Finalize
+    Tss2_TctiLdr_Initialize

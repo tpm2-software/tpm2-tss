@@ -252,6 +252,30 @@ src_tss2_mu_libtss2_mu_la_LIBADD = $(libutil)
 src_tss2_mu_libtss2_mu_la_SOURCES = $(TSS2_MU_SRC)
 
 ### TCG TSS TCTI spec libraries ###
+# tcti loader library
+libtss2_tctildr = src/tss2-tcti/libtss2-tctildr.la
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_tctildr.h
+lib_LTLIBRARIES += $(libtss2_tctildr)
+pkgconfig_DATA += lib/tss2-tctildr.pc
+EXTRA_DIST += lib/tss2-tctildr.map
+
+src_tss2_tcti_libtss2_tctildr_la_CFLAGS = $(AM_CFLAGS)
+if HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tctildr_la_LDFLAGS = \
+    -Wl,--version-script=$(srcdir)/lib/tss2-tctildr.map
+endif # HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tctildr_la_LIBADD = $(libutil)
+src_tss2_tcti_libtss2_tctildr_la_SOURCES = \
+    src/tss2-tcti/tctildr.c src/tss2-tcti/tctildr.h \
+    src/tss2-tcti/tctildr-interface.h
+if NO_DL
+src_tss2_tcti_libtss2_tctildr_la_LIBADD += $(libtss2_tcti_device) $(libtss2_tcti_mssim)
+src_tss2_tcti_libtss2_tctildr_la_SOURCES += src/tss2-tcti/tctildr-nodl.c src/tss2-tcti/tctildr-nodl.h
+else
+src_tss2_tcti_libtss2_tctildr_la_LIBADD += $(LIBADD_DL)
+src_tss2_tcti_libtss2_tctildr_la_SOURCES += src/tss2-tcti/tctildr-dl.c src/tss2-tcti/tctildr-dl.h
+endif
+
 # tcti device library
 if ENABLE_TCTI_DEVICE
 libtss2_tcti_device = src/tss2-tcti/libtss2-tcti-device.la
@@ -334,7 +358,7 @@ src_tss2_esys_libtss2_esys_la_SOURCES = $(TSS2_ESYS_SRC) $(TSS2_ESYS_SRC_CRYPTO)
     src/tss2-tcti/tctildr-interface.h
 if NO_DL
 src_tss2_esys_libtss2_esys_la_LIBADD += $(libtss2_tcti_device) $(libtss2_tcti_mssim)
-src_tss2_esys_libtss2_esys_la_SOURCES += src/tss2-tcti/tctildr-nodl.c
+src_tss2_esys_libtss2_esys_la_SOURCES += src/tss2-tcti/tctildr-nodl.c src/tss2-tcti/tctildr-nodl.h
 else
 src_tss2_esys_libtss2_esys_la_LIBADD += $(LIBADD_DL)
 src_tss2_esys_libtss2_esys_la_SOURCES += src/tss2-tcti/tctildr-dl.c src/tss2-tcti/tctildr-dl.h
@@ -346,8 +370,17 @@ EXTRA_DIST += lib/tss2-esys.map \
 endif #ESAPI
 
 ### Man Pages
-man3_MANS = man/man3/Tss2_Tcti_Device_Init.3 man/man3/Tss2_Tcti_Mssim_Init.3 $(DOXYMAN3)
-man7_MANS = man/man7/tss2-tcti-device.7 man/man7/tss2-tcti-mssim.7
+man3_MANS = \
+    man/man3/Tss2_Tcti_Device_Init.3 \
+    man/man3/Tss2_Tcti_Mssim_Init.3 \
+    man/man3/Tss2_TctiLdr_Finalize.3 \
+    man/man3/Tss2_TctiLdr_Initialize.3 \
+    $(DOXYMAN3)
+
+man7_MANS = \
+    man/man7/tss2-tcti-device.7 \
+    man/man7/tss2-tcti-mssim.7 \
+    man/man7/tss2-tctildr.7
 
 man/man3/%.3 : man/%.3.in $(srcdir)/man/man-postlude.troff
 	$(AM_V_GEN)$(call make_man,$@,$<,$(srcdir)/man/man-postlude.troff)
@@ -374,8 +407,11 @@ EXTRA_DIST += \
     man/man-postlude.troff \
     man/Tss2_Tcti_Device_Init.3.in \
     man/Tss2_Tcti_Mssim_Init.3.in \
+    man/Tss2_TctiLdr_Finalize.3.in \
+    man/Tss2_TctiLdr_Initialize.3.in \
     man/tss2-tcti-device.7.in \
-    man/tss2-tcti-mssim.7.in
+    man/tss2-tcti-mssim.7.in \
+    man/tss2-tctildr.7.in
 
 CLEANFILES += \
     $(man3_MANS) \

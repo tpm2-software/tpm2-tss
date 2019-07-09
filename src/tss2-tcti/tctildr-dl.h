@@ -13,5 +13,8 @@ tcti_from_file(const char *file,
                const char* conf,
                TSS2_TCTI_CONTEXT **tcti,
                void **dlhandle);
+TSS2_RC
+tctildr_get_default (TSS2_TCTI_CONTEXT **tcticontext,
+                     void **dlhandle);
 
 #endif /* TCTILDR_DL_H */

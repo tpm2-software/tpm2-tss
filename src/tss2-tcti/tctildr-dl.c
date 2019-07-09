@@ -131,6 +131,24 @@ tctildr_get_default(TSS2_TCTI_CONTEXT ** tcticontext, void **dlhandle)
 
 #endif /* ESYS_TCTI_DEFAULT_MODULE */
 }
+TSS2_RC
+tctildr_get_tcti(const char *name,
+                 const char* conf,
+                 TSS2_TCTI_CONTEXT **tcti,
+                 void **data)
+{
+    if (tcti == NULL) {
+        LOG_ERROR("tcticontext must not be NULL");
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+    *tcti = NULL;
+    if (name == NULL) {
+        return tctildr_get_default (tcti, data);
+    }
+
+    return tcti_from_file (name, conf, tcti, data);
+}
+
 void
 tctildr_finalize_data (void **data)
 {
