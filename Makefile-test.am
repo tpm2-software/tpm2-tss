@@ -67,7 +67,8 @@ TESTS_UNIT  = \
     test/unit/TPML-marshal \
     test/unit/TPMT-marshal \
     test/unit/TPMU-marshal \
-    test/unit/sys-execute
+    test/unit/sys-execute \
+    test/unit/tss2_rc
 if ESAPI
 TESTS_UNIT += \
     test/unit/esys-context-null \
@@ -342,6 +343,10 @@ test_unit_sys_execute_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_sys_execute_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libtss2_sys)
 test_unit_sys_execute_SOURCES = test/unit/sys-execute.c \
                                 src/tss2-tcti/tcti-common.c src/util/log.c
+
+test_unit_tss2_rc_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_tss2_rc_LDADD   = $(CMOCKA_LIBS) $(libtss2_rc) $(libtss2_sys)
+test_unit_tss2_rc_SOURCES = test/unit/test_tss2_rc.c
 
 if ESAPI
 test_unit_esys_context_null_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
