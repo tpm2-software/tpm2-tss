@@ -60,7 +60,11 @@ echo "Generating file lists: ${VARS_FILE}"
 
   src_listvar "src/tss2-mu" "*.c" "TSS2_MU_C"
   src_listvar "src/tss2-mu" "*.h" "TSS2_MU_H"
-  printf "TSS2_MU_SRC = \$(TSS2_MU_C) \$(TSS2_MU_H)"
+  printf "TSS2_MU_SRC = \$(TSS2_MU_C) \$(TSS2_MU_H)\n"
+
+  src_listvar "src/tss2-rc" "*.c" "TSS2_RC_C"
+  src_listvar "src/tss2-rc" "*.h" "TSS2_RC_H"
+  printf "TSS2_RC_SRC = \$(TSS2_RC_C) \$(TSS2_RC_H)"
 ) > ${VARS_FILE}
 
 # Do not generate fuzz tests unless environment variable GEN_FUZZ is set to 1

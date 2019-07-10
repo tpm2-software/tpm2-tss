@@ -1,0 +1,7 @@
+{
+    global:
+        Tss2_RC_Decode;
+        Tss2_RC_SetHandler;
+    local:
+        *;
+};
