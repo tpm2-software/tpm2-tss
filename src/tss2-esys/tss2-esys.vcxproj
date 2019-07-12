@@ -66,7 +66,7 @@
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;NO_DL;strtok_r=strtok_s;OSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;strtok_r=strtok_s;OSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
@@ -82,7 +82,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;NO_DL;strtok_r=strtok_s;OSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;strtok_r=strtok_s;OSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\src;$(SolutionDir)\include\tss2;$(SolutionDir)\src\tss2-mu;$(SolutionDir)\src\tss2-sys;$(SolutionDir)\src\tss2-esys;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -100,7 +100,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\src;$(SolutionDir)\include\tss2;$(SolutionDir)\src\tss2-mu;$(SolutionDir)\src\tss2-sys;$(SolutionDir)\src\tss2-esys;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;NO_DL;strtok_r=strtok_s;OSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;strtok_r=strtok_s;OSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tcti-mssim.lib;$(OutDir)\tss2-tcti-tbs.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -110,7 +110,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\src;$(SolutionDir)\include\tss2;$(SolutionDir)\src\tss2-mu;$(SolutionDir)\src\tss2-sys;$(SolutionDir)\src\tss2-esys;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;NO_DL;strtok_r=strtok_s;OSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;strtok_r=strtok_s;OSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tcti-mssim.lib;$(OutDir)\tss2-tcti-tbs.lib;crypt32.lib%(AdditionalDependencies)</AdditionalDependencies>
@@ -238,8 +238,9 @@
     <ClCompile Include="esys_free.c" />
     <ClCompile Include="esys_iutil.c" />
     <ClCompile Include="esys_mu.c" />
-    <ClCompile Include="esys_tcti_default.c" />
     <ClCompile Include="esys_tr.c" />
+    <ClCompile Include="../tss2-tcti/tctildr.c" />
+    <ClCompile Include="../tss2-tcti/tctildr-nodl.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\util\log.h" />
@@ -248,8 +249,9 @@
     <ClInclude Include="esys_int.h" />
     <ClInclude Include="esys_iutil.h" />
     <ClInclude Include="esys_mu.h" />
-    <ClInclude Include="esys_tcti_default.h" />
     <ClInclude Include="esys_types.h" />
+    <ClInclude Include="../tss2-tcti/tctildr.h" />
+    <ClInclude Include="../tss2-tcti/tctildr-interface.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
