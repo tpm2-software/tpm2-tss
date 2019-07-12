@@ -535,6 +535,7 @@ static void TestPcrExtend()
     TPML_DIGEST_VALUES digests;
     TPML_PCR_SELECTION pcrSelectionOut;
     UINT8 pcrAfterExtend[20];
+    TSS2_TCTI_CONTEXT *tctiContext;
 
     TSS2L_SYS_AUTH_COMMAND sessionsData = { .count = 1, .auths = {{
         .sessionHandle = TPM2_RS_PW,
@@ -573,6 +574,13 @@ static void TestPcrExtend()
             pcrValues.digests[0].size <= sizeof( pcrValues.digests[0].buffer ) )
         memcpy( &( pcrBeforeExtend[0] ), &( pcrValues.digests[0].buffer[0] ), pcrValues.digests[0].size );
 
+    /* Set locality 3 to enable PCR extend with PCR 17 */
+    rval = Tss2_Sys_GetTctiContext(sysContext, &tctiContext);
+    CheckPassed(rval);
+
+    rval = Tss2_Tcti_SetLocality(tctiContext, 3);
+    CheckPassed(rval);
+
     rval = Tss2_Sys_PCR_Extend( sysContext, PCR_17, &sessionsData, &digests, 0  );
     CheckPassed( rval );
 
@@ -606,6 +614,13 @@ static void TestPcrExtend()
 
     rval = Tss2_Sys_PCR_Event( sysContext, PCR_18, &sessionsData, &eventData, &digests, 0  );
     CheckPassed( rval );
+
+    /* Reset locality and check whether extend PCR 17 is no possible */
+    rval = Tss2_Tcti_SetLocality(tctiContext, 0);
+    CheckPassed( rval );
+
+    rval = Tss2_Sys_PCR_Extend( sysContext, PCR_17, &sessionsData, &digests, 0  );
+    CheckFailed( rval, TPM2_RC_LOCALITY );
 }
 
 static void TestShutdown()
@@ -1039,6 +1054,10 @@ static TSS2_RC TestLocality( TSS2_SYS_CONTEXT *sysContext, SESSION *policySessio
     CheckPassed( rval );
 
     DeleteEntity(TPM20_INDEX_PASSWORD_TEST);
+
+    /* Reset locality */
+    rval = Tss2_Tcti_SetLocality(tctiContext, 0);
+    CheckPassed( rval );
 
     return rval;
 }
