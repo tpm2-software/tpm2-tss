@@ -103,6 +103,7 @@ test_tcti_from_file_dlopen_fail (void **state)
     assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
+#define HANDLE (void *)123321
 #ifndef ESYS_TCTI_DEFAULT_MODULE
 
 /* global TCTI object reference to be returned by __mock_tcti_from_info */
@@ -114,7 +115,6 @@ static TSS2_TCTI_CONTEXT_COMMON_V2 tcti_instance = { 0, };
 static void
 test_tcti_default(void **state)
 {
-#define HANDLE (void *)123321
     TSS2_TCTI_CONTEXT *tcti;
 
     expect_string(__wrap_dlopen, filename, "libtss2-tcti-default.so");
