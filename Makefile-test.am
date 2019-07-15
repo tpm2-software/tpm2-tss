@@ -257,7 +257,7 @@ test_unit_tctildr_dl_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_tctildr_dl_LDFLAGS = -Wl,--wrap=dlopen,--wrap=dlclose,--wrap=dlsym \
     -Wl,--wrap=tcti_from_init,--wrap=tcti_from_info
 test_unit_tctildr_dl_SOURCES = test/unit/tctildr-dl.c \
-        src/tss2-tcti/tctildr-dl.c src/tss2-tcti/tctildr-interface.h
+        src/tss2-tcti/tctildr-dl.c
 
 test_unit_tctildr_nodl_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) \
         -UESYS_TCTI_DEFAULT_MODULE -UESYS_TCTI_DEFAUT_CONFIG
@@ -265,7 +265,7 @@ test_unit_tctildr_nodl_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_tctildr_nodl_LDFLAGS = -Wl,--wrap=Tss2_Tcti_Device_Init \
         -Wl,--wrap=Tss2_Tcti_Mssim_Init,--wrap=tcti_from_init
 test_unit_tctildr_nodl_SOURCES = test/unit/tctildr-nodl.c \
-        src/tss2-tcti/tctildr-nodl.c src/tss2-tcti/tctildr-interface.h
+        src/tss2-tcti/tctildr-nodl.c
 
 test_unit_io_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_io_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
