@@ -47,7 +47,8 @@ $ sudo apt -y install \
   libssl-dev \
   uthash-dev \
   autoconf \
-  doxygen
+  doxygen \
+  libltdl-dev
 ```
 Note: In some Ubuntu versions, the lcov and autoconf-archive packages are incompatible with each other. It is recommended to download autoconf-archive directly from upstream and copy `ax_code_coverage.m4` and `ax_prog_doxygen.m4` to the `m4/` subdirectory of your tpm2-tss directory.
 
