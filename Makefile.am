@@ -330,7 +330,7 @@ if HAVE_LD_VERSION_SCRIPT
 src_tss2_esys_libtss2_esys_la_LDFLAGS += -Wl,--version-script=$(srcdir)/lib/tss2-esys.map
 endif # HAVE_LD_VERSION_SCRIPT
 src_tss2_esys_libtss2_esys_la_SOURCES = $(TSS2_ESYS_SRC) $(TSS2_ESYS_SRC_CRYPTO) \
-    src/tss2-tcti/tctildr.c
+    src/tss2-tcti/tctildr.c src/tss2-tcti/tctildr.h
 if NO_DL
 src_tss2_esys_libtss2_esys_la_LIBADD += $(libtss2_tcti_device) $(libtss2_tcti_mssim)
 src_tss2_esys_libtss2_esys_la_SOURCES += src/tss2-tcti/tctildr-nodl.c
