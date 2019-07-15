@@ -9,6 +9,7 @@ cache: ccache
 
 env:
   matrix:
+  - SCANBUILD=yes CC=clang WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_1_0-stable
   - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_0_2-stable
   - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_1_0-stable
   - WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE
@@ -106,14 +107,18 @@ script:
       export CONFIGURE_OPTIONS="--enable-code-coverage";
     fi
   - |
-    if [ "$CC" == "clang" ]; then
-      scan-build ../configure --enable-tcti-partial-reads=$WITH_TCTI_PARTIAL --enable-tcti-device-async=$WITH_TCTI_ASYNC --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
+    if [ "$SCANBUILD" == "yes" ]; then
+      scan-build --status-bugs ../configure --enable-tcti-partial-reads=$WITH_TCTI_PARTIAL --enable-tcti-device-async=$WITH_TCTI_ASYNC --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
+    elif [ "$CC" == "clang" ]; then
+      ../configure --enable-tcti-partial-reads=$WITH_TCTI_PARTIAL --enable-tcti-device-async=$WITH_TCTI_ASYNC --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
     else
       ../configure --enable-tcti-partial-reads=$WITH_TCTI_PARTIAL --enable-tcti-device-async=$WITH_TCTI_ASYNC --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
     fi
   - |
-    if [ "$CC" == "clang" ]; then
+    if [ "$SCANBUILD" == "yes" ]; then
       scan-build --status-bugs make -j distcheck
+    elif [ "$CC" == "clang" ]; then
+      make -j distcheck
     else
       make -j check
     fi
