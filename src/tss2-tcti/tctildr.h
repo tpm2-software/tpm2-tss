@@ -35,6 +35,10 @@ tcti_from_info(TSS2_TCTI_INFO_FUNC infof,
                const char* conf,
                TSS2_TCTI_CONTEXT **tcti);
 TSS2_RC
+tctildr_conf_parse (const char *name_conf,
+                    char *name,
+                    char *conf);
+TSS2_RC
 tctildr_transmit (
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t command_size,

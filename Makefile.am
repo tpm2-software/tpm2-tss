@@ -388,6 +388,9 @@ man/man3/%.3 : man/%.3.in $(srcdir)/man/man-postlude.troff
 man/man7/%.7 : man/%.7.in $(srcdir)/man/man-postlude.troff
 	$(AM_V_GEN)$(call make_man,$@,$<,$(srcdir)/man/man-postlude.troff)
 
+install-man: install-man3 install-man7
+	$(LN_S) Tss2_TctiLdr_Initialize.3 $(DESTDIR)$(man3dir)/Tss2_TctiLdr_Initialize_Ex.3
+
 EXTRA_DIST += dist/tpm-udev.rules
 
 if WITH_UDEVRULESPREFIX

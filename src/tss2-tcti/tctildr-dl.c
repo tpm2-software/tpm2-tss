@@ -188,6 +188,7 @@ tctildr_get_tcti(const char *name,
                  TSS2_TCTI_CONTEXT **tcti,
                  void **data)
 {
+    LOG_DEBUG("name: \"%s\", conf: \"%s\"", name, conf);
     if (tcti == NULL) {
         LOG_ERROR("tcticontext must not be NULL");
         return TSS2_TCTI_RC_BAD_REFERENCE;

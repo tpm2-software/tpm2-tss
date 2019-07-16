@@ -4,7 +4,11 @@
  */
 
 #include <inttypes.h>
+#if defined(__linux__)
+#include <linux/limits.h>
+#else
 #include <limits.h>
+#endif
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -54,11 +58,37 @@ __wrap_free (void *ptr)
 }
 #define TEST_INIT_SECOND_RC 0xdead555
 static void
-tctildr_init_null_context_test (void **state)
+tctildr_init_ex_null_test (void **state)
 {
     TSS2_RC rc;
 
-    rc = Tss2_TctiLdr_Initialize (NULL, NULL, NULL);
+    rc = Tss2_TctiLdr_Initialize_Ex (NULL, NULL, NULL);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
+}
+static void
+tctildr_init_null_test (void **state)
+{
+    TSS2_RC rc;
+
+    rc = Tss2_TctiLdr_Initialize (NULL, NULL);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
+}
+#define NAME_CONF_STR (char*)0xf100d
+size_t __real_strlen (const char *s);
+size_t
+__wrap_strlen (const char *s)
+{
+    if (s != NAME_CONF_STR)
+        return __real_strlen (s);
+    return mock_type (size_t);
+}
+static void
+tctildr_init_conf_fail_test (void **state)
+{
+    TSS2_RC rc;
+
+    will_return (__wrap_strlen, PATH_MAX);
+    rc = Tss2_TctiLdr_Initialize (NAME_CONF_STR, NULL);
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
 }
 TSS2_RC
@@ -77,28 +107,28 @@ __wrap_tctildr_get_tcti (const char *name,
 void __wrap_tctildr_finalize_data (void **data) {}
 
 static void
-tctildr_init_tcti_default_fail (void **state)
+tctildr_init_ex_default_fail (void **state)
 {
     TSS2_RC rc;
     TSS2_TCTI_CONTEXT *context;
 
     will_return (__wrap_tctildr_get_tcti, TSS2_TCTI_RC_BAD_REFERENCE);
-    rc = Tss2_TctiLdr_Initialize (NULL, NULL, &context);
+    rc = Tss2_TctiLdr_Initialize_Ex (NULL, NULL, &context);
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
 }
 static void
-tctildr_init_tcti_from_file_fail (void **state)
+tctildr_init_ex_from_file_fail (void **state)
 {
     TSS2_RC rc;
     TSS2_TCTI_CONTEXT *context;
 
     will_return (__wrap_tctildr_get_tcti, TSS2_TCTI_RC_BAD_REFERENCE);
-    rc = Tss2_TctiLdr_Initialize ("foo", NULL, &context);
+    rc = Tss2_TctiLdr_Initialize_Ex ("foo", NULL, &context);
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
 }
 
 static void
-tctildr_init_calloc_fail_test (void **state)
+tctildr_init_ex_calloc_fail_test (void **state)
 {
     TSS2_RC rc;
     TSS2_TCTI_CONTEXT *ctx;
@@ -108,11 +138,11 @@ tctildr_init_calloc_fail_test (void **state)
     will_return (__wrap_tctildr_get_tcti, TEST_TCTI_HANDLE);
     will_return (__wrap_calloc, NULL);
 
-    rc = Tss2_TctiLdr_Initialize (NULL, NULL, &ctx);
+    rc = Tss2_TctiLdr_Initialize_Ex (NULL, NULL, &ctx);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 }
 static void
-tctildr_init_success_test (void **state)
+tctildr_init_ex_success_test (void **state)
 {
     TSS2_RC rc;
     TSS2_TCTI_CONTEXT *ctx;
@@ -122,7 +152,7 @@ tctildr_init_success_test (void **state)
     will_return (__wrap_tctildr_get_tcti, TEST_TCTI_HANDLE);
     will_return (__wrap_calloc, &tctildr_ctx);
 
-    rc = Tss2_TctiLdr_Initialize (NULL, NULL, &ctx);
+    rc = Tss2_TctiLdr_Initialize_Ex (NULL, NULL, &ctx);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 }
 static void
@@ -154,11 +184,13 @@ int
 main (int argc, char* arvg[])
 {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test (tctildr_init_null_context_test),
-        cmocka_unit_test (tctildr_init_tcti_default_fail),
-        cmocka_unit_test (tctildr_init_tcti_from_file_fail),
-        cmocka_unit_test (tctildr_init_calloc_fail_test),
-        cmocka_unit_test (tctildr_init_success_test),
+        cmocka_unit_test (tctildr_init_ex_null_test),
+        cmocka_unit_test (tctildr_init_null_test),
+        cmocka_unit_test (tctildr_init_conf_fail_test),
+        cmocka_unit_test (tctildr_init_ex_default_fail),
+        cmocka_unit_test (tctildr_init_ex_from_file_fail),
+        cmocka_unit_test (tctildr_init_ex_calloc_fail_test),
+        cmocka_unit_test (tctildr_init_ex_success_test),
         cmocka_unit_test (tctildr_finalize_null_ref_test),
         cmocka_unit_test (tctildr_finalize_null_ctx_test),
         cmocka_unit_test (tctildr_finalize_test),

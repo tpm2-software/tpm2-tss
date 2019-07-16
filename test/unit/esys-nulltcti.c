@@ -33,8 +33,7 @@ tcti_fake_finalize(TSS2_TCTI_CONTEXT *tctiContext)
 }
 
 TSS2_RC
-__wrap_Tss2_TctiLdr_Initialize (const char *name,
-                                const char *conf,
+__wrap_Tss2_TctiLdr_Initialize (const char *nameConf,
                                 TSS2_TCTI_CONTEXT **tcti)
 {
     if (tcti == NULL)

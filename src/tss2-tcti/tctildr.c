@@ -11,6 +11,16 @@
 
 #include <errno.h>
 #include <inttypes.h>
+#if defined(__linux__)
+#include <linux/limits.h>
+#elif defined(_MSC_VER)
+#include <windows.h>
+#ifndef PATH_MAX
+#define PATH_MAX MAX_PATH
+#endif
+#else
+#include <limits.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 
@@ -84,6 +94,63 @@ tcti_from_info(TSS2_TCTI_INFO_FUNC infof,
     }
 
     LOG_DEBUG("Initialized TCTI named: %s", info->name);
+
+    return TSS2_RC_SUCCESS;
+}
+/*
+ * name_conf in the form "tcti-name:tcti-conf"
+ * copies 'tcti-name' component to 'name' buffer
+ * copies 'tcti-conf' component to 'conf' buffer
+ * handled name_conf forms:
+ * - "", ":" -> both name and conf are left unchanged
+ * - "tcti-name", "tcti-name:" -> tcti-name copied to 'name', 'conf'
+ *   unchanged
+ * - ":tcti-conf" -> tcti-conf copied to 'conf', 'name' unchanged
+ * - "tcti-name:tcti-conf" - "tcti-name" copied to 'name,', "tcti-conf"
+ *   copied to 'conf'
+ */
+TSS2_RC
+tctildr_conf_parse (const char *name_conf,
+                    char *name,
+                    char *conf)
+{
+    char *split;
+    size_t combined_length;
+
+    LOG_DEBUG ("name_conf: \"%s\"", name_conf);
+    if (name == NULL || conf == NULL || name_conf == NULL) {
+        LOG_ERROR ("no params may be NULL");
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+    combined_length = strlen (name_conf);
+    if (combined_length > PATH_MAX - 1) {
+        LOG_ERROR ("combined conf length must be between 0 and PATH_MAX");
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
+    if (combined_length == 0)
+        return TSS2_RC_SUCCESS;
+    split = strchr (name_conf, ':');
+    if (split == NULL) {
+        /* no ':' tcti name only */
+        strcpy (name, name_conf);
+        LOG_DEBUG ("TCTI name: \"%s\"", name);
+        return TSS2_RC_SUCCESS;
+    }
+    if (name_conf[0] != '\0' && name_conf[0] != ':') {
+        /* name is more than empty string */
+        size_t name_length = split - name_conf;
+        if (name_length > PATH_MAX) {
+            return TSS2_TCTI_RC_BAD_VALUE;
+        }
+        memcpy (name, name_conf, name_length);
+        name [name_length] = '\0';
+        LOG_DEBUG ("TCTI name: \"%s\"", name);
+    }
+    if (split [1] != '\0') {
+        /* conf is more than empty string */
+        strcpy (conf, &split [1]);
+        LOG_DEBUG ("TCTI conf: \"%s\"", conf);
+    }
 
     return TSS2_RC_SUCCESS;
 }
@@ -202,19 +269,27 @@ Tss2_TctiLdr_Finalize (TSS2_TCTI_CONTEXT **tctiContext)
 }
 
 TSS2_RC
-Tss2_TctiLdr_Initialize (const char *name,
-                         const char *conf,
-                         TSS2_TCTI_CONTEXT **tctiContext)
+Tss2_TctiLdr_Initialize_Ex (const char *name,
+                            const char *conf,
+                            TSS2_TCTI_CONTEXT **tctiContext)
 {
     TSS2_TCTILDR_CONTEXT *ldr_ctx = NULL;
     TSS2_RC rc;
     void *dl_handle = NULL;
+    const char *local_name = NULL, *local_conf = NULL;
 
     if (tctiContext == NULL) {
         return TSS2_TCTI_RC_BAD_VALUE;
     }
     *tctiContext = NULL;
-    rc = tctildr_get_tcti (name, conf, tctiContext, &dl_handle);
+    /* Ignore 'name' and 'conf' if they're NULL or empty string */
+    if (name != NULL && strcmp (name, "")) {
+        local_name = name;
+    }
+    if (conf != NULL && strcmp (conf, "")) {
+        local_conf = conf;
+    }
+    rc = tctildr_get_tcti (local_name, local_conf, tctiContext, &dl_handle);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR ("Failed to instantiate TCTI");
         goto err;
@@ -244,4 +319,20 @@ err:
     }
     tctildr_finalize_data (&dl_handle);
     return rc;
+}
+
+TSS2_RC
+Tss2_TctiLdr_Initialize (const char *nameConf,
+                         TSS2_TCTI_CONTEXT **tctiContext)
+{
+    char name [PATH_MAX] = { 0, }, conf [PATH_MAX] = { 0, };
+    TSS2_RC rc;
+
+    if (nameConf == NULL) {
+        return Tss2_TctiLdr_Initialize_Ex (NULL, NULL, tctiContext);
+    }
+    rc = tctildr_conf_parse (nameConf, name, conf);
+    if (rc != TSS2_RC_SUCCESS)
+        return rc;
+    return Tss2_TctiLdr_Initialize_Ex (name, conf, tctiContext);
 }

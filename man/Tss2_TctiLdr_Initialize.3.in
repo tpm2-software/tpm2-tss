@@ -9,26 +9,45 @@ initialize a TCTI context.
 .B #include <tss2/tss2_tctildr.h>
 .sp
 .sp
-.BI "TSS2_RC Tss2_TctiLdr_Initialize (const char " "*name" ", const char " "*conf" ", TSS2_TCTI_CONTEXT " "**context" ");"
+.BI "TSS2_RC Tss2_TctiLdr_Initialize (const char " "*nameConf" ", TSS2_TCTI_CONTEXT " "**context" ");"
+.sp
+.BI "TSS2_RC Tss2_TctiLdr_Initialize_Ex (const char " "*name" ", const char " "*conf" ", TSS2_TCTI_CONTEXT " "**context" ");"
 .sp
 .SH DESCRIPTION
 The
 .BR Tss2_TctiLdr_Initialize ()
-function initializes a TCTI context used to communicate with the TPM2 or
+and
+.BR Tss2_TctiLdr_Initialize_Ex ()
+functions initialize a TCTI context used to communicate with the TPM2 or
 some intermediate component in the TCG TPM2 software stack.
 .sp
 .BR Tss2_TctiLdr_Initialize ()
-takes two strings that encode name of the TCTI library the
-caller wishes to instantiate and the desired configuration in the
+takes a single string that encodes both the name of the TCTI library the
+caller wishes to instantiate and its desired configuration in the
+.I nameConf
+parameter.
+.I nameConf
+is a string comprised of two substrings:
 .I name
 and
 .I conf
 parameters respectively.
+These substrings are combined with
+.I name
+first, separated by a single ':' / colon character: 'name:conf'. Consult
+the section titled TCTI CONFIG for information about the encoding of these
+strings.
 The
 .I context
 parameter is used to return a reference to the TCTI context created by
 the function.
 .sp
+.BR Tss2_TctiLdr_Initialize_Ex ()
+behaves identically to the
+.BR Tss2_TctiLdr_Initialize ()
+function with the exception that the TCTI name and configuration are passed
+as separate strings. The encoding of these strings is described in section
+TCTI_CONFIG.
 .SH TCTI CONFIG
 If the
 .I name
@@ -69,6 +88,18 @@ The
 string is not interpreted by the TctiLdr init functions and is passed
 unaltered to the initialization function for the selected TCTI. The
 format for this string is TCTI specific.
+.sp
+The
+.BR Tss2_TctiLdr_Initialize
+function is passed the
+.I name
+and
+.I conf
+strings as a single parameter. In this case the
+.I name
+and
+.I conf
+strings are concatinated with a single ':' / colon character separating them.
 .sp
 For a more thorough discussion of the TCTILDR API see the \*(lqTCG TSS 2.0 TPM Command
 Transmission Interface (TCTI) API Specification\*(rq.

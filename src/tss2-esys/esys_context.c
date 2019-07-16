@@ -65,7 +65,7 @@ Esys_Initialize(ESYS_CONTEXT ** esys_context, TSS2_TCTI_CONTEXT * tcti,
 
     /* If no tcti was provided, initialize the default one. */
     if (tcti == NULL) {
-        r = Tss2_TctiLdr_Initialize (NULL, NULL, &tcti);
+        r = Tss2_TctiLdr_Initialize (NULL, &tcti);
         goto_if_error(r, "Initialize default tcti.", cleanup_return);
     }
 
