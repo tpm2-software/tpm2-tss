@@ -2,6 +2,7 @@
     global:
         Tss2_TctiLdr_Finalize;
         Tss2_TctiLdr_Initialize;
+        Tss2_TctiLdr_Initialize_Ex;
     local:
         *;
 };

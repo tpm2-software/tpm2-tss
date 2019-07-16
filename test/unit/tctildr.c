@@ -7,6 +7,7 @@
 #include <config.h>
 #endif
 
+#include <limits.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -150,7 +151,77 @@ tcti_from_info_success (void **state)
     TSS2_RC rc = tcti_from_info (local_info, NULL, &tcti_ctx_ptr);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 }
+void
+test_conf_parse_null (void **state)
+{
+    TSS2_RC rc = tctildr_conf_parse (NULL, NULL, NULL);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
+}
+#define NAME_CONF_STR (char*)0xf100d
+size_t __real_strlen (const char *s);
+size_t
+__wrap_strlen (const char *s)
+{
+    if (s != NAME_CONF_STR)
+        return __real_strlen (s);
+    return mock_type (size_t);
+}
+char* __real_strchr (const char *s, int c);
+char*
+__wrap_strchr (const char *s, int c)
+{
+    if (s != NAME_CONF_STR)
+        return __real_strchr (s, c);
+    return mock_type (char*);
+}
+char* __real_strcpy(char *dest, const char *src);
+char*
+__wrap_strcpy(char *dest, const char *src)
+{
+    if (src != NAME_CONF_STR)
+        return __real_strcpy (dest, src);
+    return mock_type (char*);
+}
 
+void
+test_conf_parse_bad_length (void **state)
+{
+    char name_buf[0], conf_buf[0];
+    will_return (__wrap_strlen, PATH_MAX);
+    TSS2_RC rc = tctildr_conf_parse (NAME_CONF_STR, name_buf, conf_buf);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
+}
+void
+test_conf_parse_empty_str (void **state)
+{
+    char name_buf[0], conf_buf[0];
+    TSS2_RC rc = tctildr_conf_parse ("", name_buf, conf_buf);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+}
+void
+test_conf_parse_no_colon (void **state)
+{
+    char name_buf[50] = { 0, }, conf_buf[50] = { 0, };
+    TSS2_RC rc = tctildr_conf_parse ("foo", name_buf, conf_buf);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+}
+void
+test_conf_parse_name_colon (void **state)
+{
+    char name_buf[50] = { 0, }, conf_buf[50] = { 0, };
+    TSS2_RC rc = tctildr_conf_parse ("foo:", name_buf, conf_buf);
+    assert_string_equal (name_buf, "foo");
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+}
+void
+test_conf_parse_name_colon_conf (void **state)
+{
+    char name_buf[50] = { 0, }, conf_buf[50] = { 0, };
+    TSS2_RC rc = tctildr_conf_parse ("foo:bar", name_buf, conf_buf);
+    assert_string_equal (name_buf, "foo");
+    assert_string_equal (conf_buf, "bar");
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+}
 int
 main(void)
 {
@@ -163,6 +234,12 @@ main(void)
         cmocka_unit_test(tcti_from_info_info_null),
         cmocka_unit_test(tcti_from_info_info_fail),
         cmocka_unit_test(tcti_from_info_success),
+        cmocka_unit_test(test_conf_parse_null),
+        cmocka_unit_test(test_conf_parse_bad_length),
+        cmocka_unit_test(test_conf_parse_empty_str),
+        cmocka_unit_test(test_conf_parse_no_colon),
+        cmocka_unit_test(test_conf_parse_name_colon),
+        cmocka_unit_test(test_conf_parse_name_colon_conf),
     };
     return cmocka_run_group_tests (tests, NULL, NULL);
 }

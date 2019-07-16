@@ -14,8 +14,11 @@
 void
 Tss2_TctiLdr_Finalize (TSS2_TCTI_CONTEXT **context);
 TSS2_RC
-Tss2_TctiLdr_Initialize (const char *name,
-                         const char *conf,
+Tss2_TctiLdr_Initialize_Ex (const char *name,
+                            const char *conf,
+                            TSS2_TCTI_CONTEXT **context);
+TSS2_RC
+Tss2_TctiLdr_Initialize (const char *nameConf,
                          TSS2_TCTI_CONTEXT **context);
 
 #endif /* TSS2_TCTILDR_H */

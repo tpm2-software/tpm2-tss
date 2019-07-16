@@ -250,7 +250,8 @@ test_unit_tcti_mssim_SOURCES = test/unit/tcti-mssim.c \
 test_unit_tctildr_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tctildr_LDADD = $(CMOCKA_LIBS) $(libutil)
 test_unit_tctildr_LDFLAGS = -Wl,--wrap=calloc,--wrap=free \
-    -Wl,--wrap=tctildr_finalize_data,--wrap=tctildr_get_tcti
+    -Wl,--wrap=tctildr_finalize_data,--wrap=tctildr_get_tcti \
+    -Wl,--wrap=strlen,--wrap=strchr,--wrap=strcpy
 test_unit_tctildr_SOURCES = test/unit/tctildr.c \
     src/tss2-tcti/tctildr.c
 
@@ -282,7 +283,7 @@ test_unit_tctildr_init_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tctildr_init_LDADD = $(CMOCKA_LIBS) $(libutil) \
     $(libtss2_tcti_device) $(libtss2_tcti_mssim)
 test_unit_tctildr_init_LDFLAGS = -Wl,--wrap=calloc,--wrap=free \
-    -Wl,--wrap=tctildr_get_tcti,--wrap=tctildr_finalize_data
+    -Wl,--wrap=tctildr_get_tcti,--wrap=tctildr_finalize_data,--wrap=strlen
 test_unit_tctildr_init_SOURCES = test/unit/tctildr-init.c \
     src/tss2-tcti/tctildr.c
 
