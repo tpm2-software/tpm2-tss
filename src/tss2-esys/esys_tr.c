@@ -187,10 +187,13 @@ TSS2_RC
 Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * object)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    ESYS_TR objectHandle = esys_context->esys_handle;
+    ESYS_TR objectHandle = ESYS_TR_NONE;
     RSRC_NODE_T *objectHandleNode;
 
     _ESYS_ASSERT_NON_NULL(esys_context);
+
+    objectHandle = esys_context->esys_handle;
+
     r = esys_GetResourceObject(esys_context, objectHandle, &objectHandleNode);
     goto_if_error(r, "get resource", error_cleanup);
 
