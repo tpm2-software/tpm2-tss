@@ -446,7 +446,7 @@ Esys_TR_GetName(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
     }
     return r;
  error_cleanup:
-    SAFE_FREE(name);
+    SAFE_FREE(*name);
     return r;
 }
 
