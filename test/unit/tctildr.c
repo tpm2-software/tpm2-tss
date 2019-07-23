@@ -15,10 +15,12 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
+#include "tss2_tctildr.h"
 #include "tss2_tcti.h"
 #include "tss2-tcti/tctildr.h"
 
-TSS2_TCTI_CONTEXT_COMMON_V2 tcti_ctx = { 0, };
+static TSS2_TCTI_CONTEXT_COMMON_V2 tcti_ctx = { 0, };
+static TSS2_TCTILDR_CONTEXT tctildr_ctx = { 0, };
 
 TSS2_RC
 local_init (
@@ -53,7 +55,7 @@ void* __real_calloc (size_t nmemb, size_t size);
 void*
 __wrap_calloc (size_t nmemb, size_t size)
 {
-    if (size == TEST_MAGIC_SIZE)
+    if (size == TEST_MAGIC_SIZE || size == sizeof (TSS2_TCTILDR_CONTEXT))
         return mock_type (void*);
     else
         return __real_calloc (nmemb, size);
@@ -62,7 +64,7 @@ void __real_free (void *ptr);
 void
 __wrap_free (void *ptr)
 {
-    if (ptr != &tcti_ctx)
+    if (ptr != &tcti_ctx && ptr != &tctildr_ctx)
         __real_free (ptr);
     return;
 }
@@ -77,9 +79,14 @@ TSS2_RC
 __wrap_tctildr_get_tcti (const char *name,
                   const char* conf,
                   TSS2_TCTI_CONTEXT **tcti,
-                  void **dlhandle)
+                  void **data)
 {
-    return TSS2_RC_SUCCESS;
+    TSS2_RC rc = mock_type (TSS2_RC);
+    if (rc == TSS2_RC_SUCCESS) {
+        *tcti= mock_type (TSS2_TCTI_CONTEXT*);
+        *data = mock_type (void*);
+    }
+    return rc;
 }
 void __wrap_tctildr_finalize_data (void **data){}
 
@@ -229,6 +236,107 @@ test_conf_parse_name_colon_conf (void **state)
     assert_string_equal (conf_buf, "bar");
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 }
+/* tctildr init begin */
+static void
+tctildr_init_ex_null_test (void **state)
+{
+    TSS2_RC rc;
+
+    rc = Tss2_TctiLdr_Initialize_Ex (NULL, NULL, NULL);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
+}
+static void
+tctildr_init_null_test (void **state)
+{
+    TSS2_RC rc;
+
+    rc = Tss2_TctiLdr_Initialize (NULL, NULL);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
+}
+static void
+tctildr_init_conf_fail_test (void **state)
+{
+    TSS2_RC rc;
+
+    will_return (__wrap_strlen, PATH_MAX);
+    rc = Tss2_TctiLdr_Initialize (NAME_CONF_STR, NULL);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
+}
+static void
+tctildr_init_ex_default_fail (void **state)
+{
+    TSS2_RC rc;
+    TSS2_TCTI_CONTEXT *context;
+
+    will_return (__wrap_tctildr_get_tcti, TSS2_TCTI_RC_BAD_REFERENCE);
+    rc = Tss2_TctiLdr_Initialize_Ex (NULL, NULL, &context);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
+}
+static void
+tctildr_init_ex_from_file_fail (void **state)
+{
+    TSS2_RC rc;
+    TSS2_TCTI_CONTEXT *context;
+
+    will_return (__wrap_tctildr_get_tcti, TSS2_TCTI_RC_BAD_REFERENCE);
+    rc = Tss2_TctiLdr_Initialize_Ex ("foo", NULL, &context);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
+}
+#define TEST_TCTI_HANDLE (TSS2_TCTI_LIBRARY_HANDLE)0x9827635
+static void
+tctildr_init_ex_calloc_fail_test (void **state)
+{
+    TSS2_RC rc;
+    TSS2_TCTI_CONTEXT *ctx;
+
+    will_return (__wrap_tctildr_get_tcti, TSS2_RC_SUCCESS);
+    will_return (__wrap_tctildr_get_tcti, &tcti_ctx);
+    will_return (__wrap_tctildr_get_tcti, TEST_TCTI_HANDLE);
+    will_return (__wrap_calloc, NULL);
+
+    rc = Tss2_TctiLdr_Initialize_Ex (NULL, NULL, &ctx);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+}
+static void
+tctildr_init_ex_success_test (void **state)
+{
+    TSS2_RC rc;
+    TSS2_TCTI_CONTEXT *ctx;
+
+    will_return (__wrap_tctildr_get_tcti, TSS2_RC_SUCCESS);
+    will_return (__wrap_tctildr_get_tcti, &tcti_ctx);
+    will_return (__wrap_tctildr_get_tcti, TEST_TCTI_HANDLE);
+    will_return (__wrap_calloc, &tctildr_ctx);
+
+    rc = Tss2_TctiLdr_Initialize_Ex (NULL, NULL, &ctx);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+}
+static void
+tctildr_finalize_null_ref_test (void **state)
+{
+    Tss2_TctiLdr_Finalize (NULL);
+    assert_int_equal (1, 1);
+}
+static void
+tctildr_finalize_null_ctx_test (void **state)
+{
+    TSS2_TCTI_CONTEXT *ctx = NULL;
+    Tss2_TctiLdr_Finalize (&ctx);
+    assert_int_equal (1, 1);
+}
+static void
+tctildr_finalize_test (void **state)
+{
+    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)&tctildr_ctx;
+
+    TSS2_TCTI_VERSION(&tctildr_ctx) = 3;
+    tctildr_ctx.library_handle = TEST_TCTI_HANDLE;
+    TSS2_TCTI_MAGIC(&tctildr_ctx) = TCTILDR_MAGIC;
+    tctildr_ctx.tcti = (TSS2_TCTI_CONTEXT*)&tcti_ctx;
+    Tss2_TctiLdr_Finalize (&ctx);
+    assert_null (ctx);
+}
+/* tctildr init end */
 int
 main(void)
 {
@@ -247,6 +355,16 @@ main(void)
         cmocka_unit_test(test_conf_parse_no_colon),
         cmocka_unit_test(test_conf_parse_name_colon),
         cmocka_unit_test(test_conf_parse_name_colon_conf),
+        cmocka_unit_test (tctildr_init_ex_null_test),
+        cmocka_unit_test (tctildr_init_null_test),
+        cmocka_unit_test (tctildr_init_conf_fail_test),
+        cmocka_unit_test (tctildr_init_ex_default_fail),
+        cmocka_unit_test (tctildr_init_ex_from_file_fail),
+        cmocka_unit_test (tctildr_init_ex_calloc_fail_test),
+        cmocka_unit_test (tctildr_init_ex_success_test),
+        cmocka_unit_test (tctildr_finalize_null_ref_test),
+        cmocka_unit_test (tctildr_finalize_null_ctx_test),
+        cmocka_unit_test (tctildr_finalize_test),
     };
     return cmocka_run_group_tests (tests, NULL, NULL);
 }
