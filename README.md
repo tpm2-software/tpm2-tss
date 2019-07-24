@@ -3,6 +3,8 @@
 [![Coverity Scan](https://img.shields.io/coverity/scan/3997.svg)](https://scan.coverity.com/projects/tpm2-tss)
 [![Coverage Status](https://codecov.io/gh/tpm2-software/tpm2-tss/branch/master/graph/badge.svg)](https://codecov.io/gh/tpm2-software/tpm2-tss)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/2332/badge)](https://bestpractices.coreinfrastructure.org/projects/2332)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/tpm2-software/tpm2-tss.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/tpm2-software/tpm2-tss/alerts/)
+[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/tpm2-software/tpm2-tss.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/tpm2-software/tpm2-tss/context:cpp)
 
 # Overview
 This repository hosts source code implementing the Trusted Computing Group's (TCG) TPM2 Software Stack (TSS).
