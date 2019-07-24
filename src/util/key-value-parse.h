@@ -3,6 +3,10 @@
  * Copyright (c) 2018, Intel Corporation
  * All rights reserved.
  */
+
+#ifndef KEY_VALUE_PARSE_H
+#define KEY_VALUE_PARSE_H
+
 #include <stdlib.h>
 
 #include "tss2_tpm2_types.h"
@@ -26,3 +30,5 @@ TSS2_RC
 parse_key_value_string (char *kv_str,
                         KeyValueFunc callback,
                         void *user_data);
+
+#endif /* KEY_VALUE_PARSE_H */

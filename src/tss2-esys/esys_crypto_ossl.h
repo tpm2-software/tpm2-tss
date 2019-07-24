@@ -137,8 +137,8 @@ TSS2_RC iesys_cryptossl_init();
 
 #define iesys_crypto_init iesys_cryptossl_init
 
-#endif /* ESYS_CRYPTO_OSSL_H */
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+#endif /* ESYS_CRYPTO_OSSL_H */
