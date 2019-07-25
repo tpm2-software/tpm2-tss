@@ -254,7 +254,8 @@ AC_ARG_ENABLE([defaultflags],
 AS_IF([test "x$enable_defaultflags" = "xyes"],
       [
       AS_IF([test "x$enable_debug" = "xno"],
-            [AX_ADD_FORTIFY_SOURCE])
+            [ADD_COMPILER_FLAG([-O2])
+             AX_ADD_FORTIFY_SOURCE])
       ADD_COMPILER_FLAG([-std=c99])
       ADD_COMPILER_FLAG([-Wall])
       ADD_COMPILER_FLAG([-Wextra])
