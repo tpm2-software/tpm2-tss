@@ -166,7 +166,7 @@ get_info_default(const TSS2_TCTI_INFO **info,
     void *handle = NULL;
     const TSS2_TCTI_INFO *info_src;
     char *name = NULL;
-    TSS2_RC rc;
+    TSS2_RC rc = TSS2_TCTI_RC_GENERAL_FAILURE;
 
     LOG_DEBUG("%s", __func__);
     if (info == NULL || dlhandle == NULL) {
