@@ -3,6 +3,62 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [2.3.0-rc0] - 2019-07-26
+### Added
+- tss2-tctildr: A new library that helps with tcti initialization
+  Recommend to use this in place of custom tcti loading code now !
+- tss2-rc: A new library that provides textual representations for return codes
+- Added release and maintainance info (~3 per year and latest 2 are supported)
+- Support for building on VxWorks.
+- Option to disable NIST-deprecated crypto (--disable-weak-crypto)
+- Support Esys_TR_FromTPMPublic on sessions (for use in Esys_FlushContext)
+- Better Windows/VS Support
+- Fuzz-Testing and Valgrind-Testing
+- map-files with correct symbol lists for tss2-sys and tss2-esys
+  This may lead to unresolved symbols in linked applications
+
+### Changed
+- Several further minor fixes and cleanups
+- Support to call Tss2_Sys_Execute repeatedly on certain errors
+- Reduced RAM consumption in Esys due to Tss2_Sys_Execute change
+- Automated session attribution clearing for esys (decrypt and encrypt) per cmd
+- Switched to git.mk, many ax_ makros and away from gnulib
+- Switched to config.h and autoheaders
+
+### Removed
+- Removed libtss2-mu from "Requires" field of libtss2-esys.pc
+  Needs to be added explicitely now
+
+### Fixed
+- All fixes from 2.2.1, 2.2.2 and 2.2.3
+- SPDX License Identifiers
+- Null-pointer problems in tcti-tbs
+- Default locality for tcti-mssim set to LOC_0
+- coverity and valgrind leaks detected in test programs (not library code)
+
+## [2.2.3] - 2019-05-28
+### Fixed
+ - Fix computation of session name
+ - Fixed PolicyPassword handling of session Attributes
+ - Fixed windows build from dist ball
+ - Fixed default tcti configure option
+ - Fixed nonce size calculation in ESYS sessions
+
+## [2.2.2] - 2019-03-28
+### Fixed
+ - Fixed wrong encryption flag in EncryptDecrypt
+ - Fixing openssl engine invocation
+
+## [2.2.1] - 2019-02-28
+### Fixed
+ - Forced RAND_bytes method to software implementation to avoid session spoofing
+ - Fixed OpenSSL symbolic naming conflict
+ - Fixed leaks of local point variables and BN_ctx
+ - Fixed memory leaks related to using regular free on gcrypt allocated objects
+ - Fixed leak of rsa->n in iesys_cryptossl_pk_encrypt
+ - Fixed memory leaks in iesys_cryptossl_pk_encrypt
+ - Fixed possible NULL dereference of big number
+
 ## [2.2.0] - 2019-02-04
 ### Fixed
 - Fixed leak of hkey on success in iesys_cryptossl_hmac_start
