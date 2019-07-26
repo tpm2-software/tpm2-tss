@@ -113,7 +113,7 @@ handle_from_name(const char *file,
     }
     *handle = dlopen(file_xfrm, RTLD_NOW);
     if (*handle == NULL) {
-        LOG_ERROR("Failed to load TCTI for name \"%s\": %s", file, dlerror());
+        LOG_DEBUG("Failed to load TCTI for name \"%s\": %s", file, dlerror());
         return TSS2_TCTI_RC_NOT_SUPPORTED;
     }
 
