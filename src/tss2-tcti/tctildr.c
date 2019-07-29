@@ -146,7 +146,7 @@ tctildr_conf_parse (const char *name_conf,
         name [name_length] = '\0';
         LOG_DEBUG ("TCTI name: \"%s\"", name);
     }
-    if (conf != NULL && split [1] != '\0') {
+    if (conf != NULL && split && split [1] != '\0') {
         /* conf is more than empty string */
         strcpy (conf, &split [1]);
         LOG_DEBUG ("TCTI conf: \"%s\"", conf);
@@ -361,12 +361,13 @@ Tss2_TctiLdr_GetInfo (const char *name,
     rc = copy_info (info_lib, info_tmp);
     if (rc != TSS2_RC_SUCCESS) {
         free (info_tmp);
+        info_tmp = NULL;
         goto out;
     }
     info_tmp->init = NULL;
 out:
     tctildr_finalize_data (&data);
-    *info = info_tmp;
+    *info = info_tmp ? info_tmp : NULL;
     return rc;
 }
 
