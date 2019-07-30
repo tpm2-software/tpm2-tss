@@ -50,7 +50,8 @@ test_esys_clear_control(ESYS_CONTEXT * esys_context)
         ESYS_TR_NONE,
         disable);
 
-    if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH) {
+    if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH ||
+        (r & ~TPM2_RC_N_MASK) == TPM2_RC_HIERARCHY) {
         /* Platform authorization not possible test will be skipped */
         LOG_WARNING("Platform authorization not possible.");
         failure_return =  EXIT_SKIP;

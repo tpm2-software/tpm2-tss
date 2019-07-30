@@ -132,7 +132,8 @@ test_esys_policy_nv_undefine_special(ESYS_CONTEXT * esys_context)
                             &publicInfo,
                             &nvHandle);
 
-    if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH) {
+    if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH  ||
+        (r & ~TPM2_RC_N_MASK) == TPM2_RC_HIERARCHY) {
         /* Platform authorization not possible test will be skipped */
         LOG_WARNING("Platform authorization not possible.");
         failure_return = EXIT_SKIP;
