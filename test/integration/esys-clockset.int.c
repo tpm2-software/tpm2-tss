@@ -39,7 +39,7 @@ test_esys_clockset(ESYS_CONTEXT * esys_context)
     TSS2_RC r;
     int failure_return = EXIT_FAILURE;
 
-    ESYS_TR auth_handle = ESYS_TR_RH_PLATFORM;
+    ESYS_TR auth_handle = ESYS_TR_RH_OWNER;
     TPMS_TIME_INFO *currentTime;
 
     r = Esys_ReadClock(esys_context,
