@@ -415,6 +415,15 @@ uninstall-local:
 	-rm $(DESTDIR)$(udevrulesdir)/$(udevrulesprefix)tpm-udev.rules
 endif
 
+install-exec-hook:
+	cd $(DESTDIR)$(libdir) && \
+		$(LN_S) -f libtss2-tcti-device.so libtss2-tcti-default.so
+
+uninstall-hook:
+	cd $(DESTDIR)$(libdir) && \
+		[ -L libtss2-tcti-default.so ] && \
+			rm -f libtss2-tcti-default.so || true
+
 EXTRA_DIST += \
     doc/doxygen.dox \
     doc/coding_standard_c.md \
