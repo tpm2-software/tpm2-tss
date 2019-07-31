@@ -20,6 +20,7 @@
 
 #define LOGMODULE test
 #include "util/log.h"
+#include "test-esapi.h"
 #include "test.h"
 #include "sapi-util.h"
 
@@ -228,6 +229,30 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
                                                  &data_out,
                                                  &iv_out,
                                                  &rsp_auth));
+    if (rc == TPM2_RC_COMMAND_CODE) {
+        LOG_WARNING("Encrypt/Decrypt not supported by TPM");
+        rc = Tss2_Sys_NV_UndefineSpace(sapi_context,
+                                       TPM2_RH_OWNER,
+                                       nv_index,
+                                       &cmd_auth,
+                                       &rsp_auth);
+        if (rc != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Tss2_Sys_NV_UndefineSpace failed: 0x%"PRIx32, rc);
+            return 99; /* fatal error */
+        }
+        rc = Tss2_Sys_FlushContext(sapi_context, object_handle);
+        if (rc != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Tss2_Sys_FlushContext failed with 0x%"PRIx32, rc);
+            return 99; /* fatal error */
+        }
+        rc = Tss2_Sys_FlushContext(sapi_context, session_handle);
+        if (rc != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Tss2_Sys_FlushContext failed with 0x%"PRIx32, rc);
+            return 99; /* fatal error */
+        }
+        return EXIT_SKIP;
+    }
+
     if (rc != TPM2_RC_SUCCESS) {
         LOG_ERROR("EncryptDecrypt FAILED! Response Code : 0x%x", rc);
         exit(1);
