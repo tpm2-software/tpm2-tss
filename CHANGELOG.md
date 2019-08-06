@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [2.3.0-rc0] - 2019-07-26
+## [2.3.0-rc1] - 2019-08-06
 ### Added
 - tss2-tctildr: A new library that helps with tcti initialization
   Recommend to use this in place of custom tcti loading code now !
