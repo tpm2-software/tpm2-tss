@@ -56,7 +56,10 @@ The Debian wiki has an excellent description of how to post a signed release to 
 **NOTE** release candidates must be taken down after a release with the corresponding version number is available.
 
 ## Signing Release Tarballs
-Signatures must be generated using the `--detach-sign` and `--armor` options to the `gpg` command.
+Signatures must be generated using the `--detach-sign` and `--armor` options to the `gpg` command:
+```
+$ gpg --detach-sign --armor tpm2-tss-X.Y.Z.tar.gz
+```
 
 ## Verifying Signatures
 Verifying the signature on a release tarball requires the project maintainers public keys be installed in the GPG keyring of the verifier.
