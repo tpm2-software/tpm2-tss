@@ -1019,11 +1019,14 @@ iesys_compute_session_value(RSRC_NODE_T * session,
     /* Then if we are a bound session, the auth value is not appended to the end
        of the session value for HMAC computation. The size of the key will not be
        increased.*/
-    if (iesys_is_object_bound(name, auth_value,
-                              session) &&
-        /* type_policy_session set to POLICY_AUTH by command PolicyAuthValue */
-        (session->rsrc.misc.rsrc_session.type_policy_session != POLICY_AUTH))
+    if (iesys_is_object_bound(name, auth_value, session))
         return;
+
+    /* type_policy_session set to POLICY_AUTH by command PolicyAuthValue */
+    if (session->rsrc.misc.rsrc_session.sessionType == TPM2_SE_POLICY &&
+        session->rsrc.misc.rsrc_session.type_policy_session != POLICY_AUTH)
+        return;
+
     session->rsrc.misc.rsrc_session.sizeHmacValue += auth_value->size;
 }
 
