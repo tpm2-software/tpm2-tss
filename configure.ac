@@ -201,6 +201,29 @@ AS_IF([test "x$enable_integration" = "xyes"],
        AC_SUBST([ENABLE_INTEGRATION], [$enable_integration])])
 AM_CONDITIONAL([ENABLE_INTEGRATION],[test "x$enable_integration" = "xyes"])
 #
+# sanitizer compiler flags
+#
+AC_ARG_WITH([sanitizer],
+            [AS_HELP_STRING([--with-sanitizer={none,address,undefined}],
+                            [build with the given sanitizer])],,
+            [with_sanitizer=none])
+AS_CASE(["x$with_sanitizer"],
+        ["xnone"],
+        [],
+        ["xaddress"],
+        [
+            SANITIZER_CFLAGS="-fsanitize=address -fno-omit-frame-pointer"
+            SANITIZER_LDFLAGS="-lasan"
+        ],
+        ["xundefined"],
+        [
+            SANITIZER_CFLAGS="-fsanitize=undefined"
+            SANITIZER_LDFLAGS="-lubsan"
+        ],
+        [AC_MSG_ERROR([Bad value for --with-sanitizer])])
+AC_SUBST([SANITIZER_CFLAGS])
+AC_SUBST([SANITIZER_LDFLAGS])
+#
 # fuzz testing
 #
 AC_ARG_WITH([fuzzing],
