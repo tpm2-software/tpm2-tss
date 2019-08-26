@@ -482,8 +482,20 @@ typedef UINT32 TPM2_PT;
 #define TPM2_PT_FIRMWARE_VERSION_1       ((TPM2_PT) (TPM2_PT_FIXED + 11)) /* the most significant 32 bits of a TPM vendor-specific value indicating the version number of the firmware. See 10.12.2 and 10.12.8. */
 #define TPM2_PT_FIRMWARE_VERSION_2       ((TPM2_PT) (TPM2_PT_FIXED + 12)) /* the least significant 32 bits of a TPM vendor-specific value indicating the version number of the firmware. See 10.12.2 and 10.12.8. */
 #define TPM2_PT_INPUT_BUFFER             ((TPM2_PT) (TPM2_PT_FIXED + 13)) /* the maximum size of a parameter typically a TPM2B_MAX_BUFFER */
-#define TPM2_PT_TPM2_HR_TRANSIENT_MIN    ((TPM2_PT) (TPM2_PT_FIXED + 14)) /* the minimum number of transient objects that can be held in TPM RAM. NOTE This minimum shall be no less than the minimum value required by the platforms-pecific specification to which the TPM is built. */
-#define TPM2_PT_TPM2_HR_PERSISTENT_MIN   ((TPM2_PT) (TPM2_PT_FIXED + 15)) /* the minimum number of persistent objects that can be held in TPM NV memory. NOTE This minimum shall be no less than the minimum value required by the platform-specific specification to which the TPM is built. */
+#define TPM2_PT_HR_TRANSIENT_MIN         ((TPM2_PT) (TPM2_PT_FIXED + 14)) /* the minimum number of transient objects that can be held in TPM RAM. NOTE This minimum shall be no less than the minimum value required by the platforms-pecific specification to which the TPM is built. */
+#if defined(__GNUC__) || defined(__clang__)
+typedef int TPM2_PT_TPM2_HR_TRANSIENT_MIN_TYPE __attribute__ ((deprecated("Use TPM2_PT_HR_TRANSIENT_MIN instead")));
+#define TPM2_PT_TPM2_HR_TRANSIENT_MIN    ({TPM2_PT_TPM2_HR_TRANSIENT_MIN_TYPE x = TPM2_PT_HR_TRANSIENT_MIN; x;})
+#else
+#define TPM2_PT_TPM2_HR_TRANSIENT_MIN    TPM2_PT_HR_TRANSIENT_MIN
+#endif
+#define TPM2_PT_HR_PERSISTENT_MIN        ((TPM2_PT) (TPM2_PT_FIXED + 15)) /* the minimum number of persistent objects that can be held in TPM NV memory. NOTE This minimum shall be no less than the minimum value required by the platform-specific specification to which the TPM is built. */
+#if defined(__GNUC__) || defined(__clang__)
+typedef int TPM2_PT_TPM2_HR_PERSISTENT_MIN_TYPE __attribute__ ((deprecated("Use TPM2_PT_HR_PERSISTENT_MIN instead")));
+#define TPM2_PT_TPM2_HR_PERSISTENT_MIN   ({TPM2_PT_TPM2_HR_PERSISTENT_MIN_TYPE x = TPM2_PT_HR_PERSISTENT_MIN; x;})
+#else
+#define TPM2_PT_TPM2_HR_PERSISTENT_MIN   TPM2_PT_HR_PERSISTENT_MIN
+#endif
 #define TPM2_PT_HR_LOADED_MIN            ((TPM2_PT) (TPM2_PT_FIXED + 16)) /* the minimum number of authorization sessions that can be held in TPM RAM . NOTE This minimum shall be no less than the minimum value required by the platform-specific specification to which the TPM is built. */
 #define TPM2_PT_ACTIVE_SESSIONS_MAX      ((TPM2_PT) (TPM2_PT_FIXED + 17)) /* the number of authorization sessions that may be active at a time. A session is active when it has a context associated with its handle. The context may either be in TPM RAM or be context saved. NOTE This value shall be no less than the minimum value required by the platform-specific specification to which the TPM is built. */
 #define TPM2_PT_PCR_COUNT                ((TPM2_PT) (TPM2_PT_FIXED + 18)) /* the number of PCR implemented. NOTE This number is determined by the defined attributes not the number of PCR that are populated. */
@@ -516,14 +528,32 @@ typedef UINT32 TPM2_PT;
 #define TPM2_PT_VAR                      ((TPM2_PT) (TPM2_PT_GROUP * 2)) /* the group of variable properties returned as TPMS_TAGGED_PROPERTY. The properties in this group change because of a Protected Capability other than a firmware update. The values are not necessarily persistent across all power transitions. */
 #define TPM2_PT_PERMANENT                ((TPM2_PT) (TPM2_PT_VAR + 0)) /* TPMA_PERMANENT */
 #define TPM2_PT_STARTUP_CLEAR            ((TPM2_PT) (TPM2_PT_VAR + 1)) /* TPMA_STARTUP_CLEAR */
-#define TPM2_PT_TPM2_HR_NV_INDEX         ((TPM2_PT) (TPM2_PT_VAR + 2)) /* the number of NV Indexes currently defined */
+#define TPM2_PT_HR_NV_INDEX              ((TPM2_PT) (TPM2_PT_VAR + 2)) /* the number of NV Indexes currently defined */
+#if defined(__GNUC__) || defined(__clang__)
+typedef int TPM2_PT_TPM2_HR_NV_INDEX_TYPE __attribute__ ((deprecated("Use TPM2_PT_HR_NV_INDEX instead")));
+#define TPM2_PT_TPM2_HR_NV_INDEX         ({TPM2_PT_TPM2_HR_NV_INDEX_TYPE x = TPM2_PT_HR_NV_INDEX; x;})a
+#else
+#define TPM2_PT_TPM2_HR_NV_INDEX         TPM2_PT_HR_NV_INDEX
+#endif
 #define TPM2_PT_HR_LOADED                ((TPM2_PT) (TPM2_PT_VAR + 3)) /* the number of authorization sessions currently loaded into TPM RAM */
 #define TPM2_PT_HR_LOADED_AVAIL          ((TPM2_PT) (TPM2_PT_VAR + 4)) /* the number of additional authorization sessions of any type that could be loaded into TPM RAM. This value is an estimate. If this value is at least 1 then at least one authorization session of any type may be loaded. Any command that changes the RAM memory allocation can make this estimate invalid. NOTE A valid implementation may return 1 even if more than one authorization session would fit into RAM. */
 #define TPM2_PT_HR_ACTIVE                ((TPM2_PT) (TPM2_PT_VAR + 5)) /* the number of active authorization sessions currently being tracked by the TPMThis is the sum of the loaded and saved sessions. */
 #define TPM2_PT_HR_ACTIVE_AVAIL          ((TPM2_PT) (TPM2_PT_VAR + 6)) /* the number of additional authorization sessions of any type that could be created. This value is an estimate. If this value is at least 1 then at least one authorization session of any type may be created. Any command that changes the RAM memory allocation can make this estimate invalid. NOTE A valid implementation may return 1 even if more than one authorization session could be created. */
-#define TPM2_PT_TPM2_HR_TRANSIENT_AVAIL  ((TPM2_PT) (TPM2_PT_VAR + 7)) /* estimate of the number of additional transient objects that could be loaded into TPM RAM. This value is an estimate. If this value is at least 1 then at least one object of any type may be loaded. Any command that changes the memory allocation can make this estimate invalid. NOTE A valid implementation may return 1 even if more than one transient object would fit into RAM. */
-#define TPM2_PT_TPM2_HR_PERSISTENT       ((TPM2_PT) (TPM2_PT_VAR + 8)) /* the number of persistent objects currently loaded into TPM NV memory */
-#define TPM2_PT_TPM2_HR_PERSISTENT_AVAIL ((TPM2_PT) (TPM2_PT_VAR + 9)) /* the number of additional persistent objects that could be loaded into NV memory. This value is an estimate. If this value is at least 1 then at least one object of any type may be made persistent. Any command that changes the NV memory allocation can make this estimate invalid. NOTE A valid implementation may return 1 even if more than one persistent object would fit into NV memory. */
+#define TPM2_PT_HR_TRANSIENT_AVAIL       ((TPM2_PT) (TPM2_PT_VAR + 7)) /* estimate of the number of additional transient objects that could be loaded into TPM RAM. This value is an estimate. If this value is at least 1 then at least one object of any type may be loaded. Any command that changes the memory allocation can make this estimate invalid. NOTE A valid implementation may return 1 even if more than one transient object would fit into RAM. */
+#define TPM2_PT_HR_PERSISTENT            ((TPM2_PT) (TPM2_PT_VAR + 8)) /* the number of persistent objects currently loaded into TPM NV memory */
+#define TPM2_PT_HR_PERSISTENT_AVAIL      ((TPM2_PT) (TPM2_PT_VAR + 9)) /* the number of additional persistent objects that could be loaded into NV memory. This value is an estimate. If this value is at least 1 then at least one object of any type may be made persistent. Any command that changes the NV memory allocation can make this estimate invalid. NOTE A valid implementation may return 1 even if more than one persistent object would fit into NV memory. */
+#if defined(__GNUC__) || defined(__clang__)
+typedef int TPM2_PT_TPM2_HR_TRANSIENT_AVAIL_TYPE __attribute__ ((deprecated("Use TPM2_PT_HR_TRANSIENT_AVAIL instead")));
+#define TPM2_PT_TPM2_HR_TRANSIENT_AVAIL  ({TPM2_PT_TPM2_HR_TRANSIENT_AVAIL_TYPE x = TPM2_PT_HR_TRANSIENT_AVAIL; x;})
+typedef int TPM2_PT_TPM2_HR_PERSISTENT_TYPE __attribute__ ((deprecated("Use TPM2_PT_HR_PERSISTENT instead")));
+#define TPM2_PT_TPM2_HR_PERSISTENT       ({TPM2_PT_TPM2_HR_PERSISTENT_TYPE x = TPM2_PT_HR_PERSISTENT; x;})
+typedef int TPM2_PT_TPM2_HR_PERSISTENT_AVAIL_TYPE __attribute__ ((deprecated("Use TPM2_PT_HR_PERSISTENT_AVAIL instead")));
+#define TPM2_PT_TPM2_HR_PERSISTENT_AVAIL ({TPM2_PT_TPM2_HR_PERSISTENT_AVAIL_TYPE x = TPM2_PT_HR_PERSISTENT_AVAIL; x;})
+#else
+#define TPM2_PT_TPM2_HR_TRANSIENT_AVAIL  TPM2_PT_HR_TRANSIENT_AVAIL
+#define TPM2_PT_TPM2_HR_PERSISTENT       TPM2_PT_HR_PERSISTENT
+#define TPM2_PT_TPM2_HR_PERSISTENT_AVAIL TPM2_PT_TPM2_HR_PERSISTENT_AVAIL
+#endif
 #define TPM2_PT_NV_COUNTERS              ((TPM2_PT) (TPM2_PT_VAR + 10)) /* the number of defined NV Indexes that have NV the TPM2_NT_COUNTER attribute */
 #define TPM2_PT_NV_COUNTERS_AVAIL        ((TPM2_PT) (TPM2_PT_VAR + 11)) /* the number of additional NV Indexes that can be defined with their TPM2_NT of TPM_NV_COUNTER and the TPMA_NV_ORDERLY attribute SET. This value is an estimate. If this value is at least 1 then at least one NV Index may be created with a TPM2_NT of TPM_NV_COUNTER and the TPMA_NV_ORDERLY attributes. Any command that changes the NV memory allocation can make this estimate invalid. NOTE A valid implementation may return 1 even if more than one NV counter could be defined. */
 #define TPM2_PT_ALGORITHM_SET            ((TPM2_PT) (TPM2_PT_VAR + 12)) /* code that limits the algorithms that may be used with the TPM */
@@ -538,7 +568,13 @@ typedef UINT32 TPM2_PT;
 
 /* Definition of UINT32 TPM2_PT_PCR Constants <INOUT S> */
 typedef UINT32 TPM2_PT_PCR;
-#define TPM2_PT_TPM2_PCR_FIRST   ((TPM2_PT_PCR) 0x00000000) /* bottom of the range of TPM2_PT_PCR properties */
+#define TPM2_PT_PCR_FIRST        ((TPM2_PT_PCR) 0x00000000) /* bottom of the range of TPM2_PT_PCR properties */
+#if defined(__GNUC__) || defined(__clang__)
+typedef int TPM2_PT_TPM2_PCR_FIRST_TYPE __attribute__ ((deprecated("Use TPM2_PT_PCR_FIRST instead")));
+#define TPM2_PT_TPM2_PCR_FIRST   ({TPM2_PT_TPM2_PCR_FIRST_TYPE x = TPM2_PT_PCR_FIRST; x;})
+#else
+#define TPM2_PT_TPM2_PCR_FIRST   TPM2_PT_PCR_FIRST
+#endif
 #define TPM2_PT_PCR_SAVE         ((TPM2_PT_PCR) 0x00000000) /* a SET bit in the TPMS_PCR_SELECT indicates that the PCR is saved and restored by TPM2_SU_STATE */
 #define TPM2_PT_PCR_EXTEND_L0    ((TPM2_PT_PCR) 0x00000001) /* a SET bit in the TPMS_PCR_SELECT indicates that the PCR may be extended from locality 0This property is only present if a locality other than 0 is implemented. */
 #define TPM2_PT_PCR_RESET_L0     ((TPM2_PT_PCR) 0x00000002) /* a SET bit in the TPMS_PCR_SELECT indicates that the PCR may be reset by TPM2_PCR_Reset from locality 0 */
@@ -560,7 +596,13 @@ typedef UINT32 TPM2_PT_PCR;
 #define TPM2_PT_PCR_DRTM_RESET   ((TPM2_PT_PCR) 0x00000012) /* a SET bit in the TPMS_PCR_SELECT indicates that the PCR is reset by a DRTM event. These PCR are reset to 1 on TPM2_Startup and reset to 0 on a _TPM_Hash_End event following a _TPM_Hash_Start event. */
 #define TPM2_PT_PCR_POLICY       ((TPM2_PT_PCR) 0x00000013) /* a SET bit in the TPMS_PCR_SELECT indicates that the PCR is controlled by policy. This property is only present if the TPM supports policy control of a PCR. */
 #define TPM2_PT_PCR_AUTH         ((TPM2_PT_PCR) 0x00000014) /* a SET bit in the TPMS_PCR_SELECT indicates that the PCR is controlled by an authorization value. This property is only present if the TPM supports authorization control of a PCR. */
-#define TPM2_PT_TPM2_PCR_LAST    ((TPM2_PT_PCR) 0x00000014) /* top of the range of TPM2_PT_PCR properties of the implementation. If the TPM receives a request for a PCR property with a value larger than this the TPM will return a zero length list and set the moreData parameter to NO. NOTE This is an implementation-specific value. The value shown reflects the reference code implementation. */
+#define TPM2_PT_PCR_LAST         ((TPM2_PT_PCR) 0x00000014) /* top of the range of TPM2_PT_PCR properties of the implementation. If the TPM receives a request for a PCR property with a value larger than this the TPM will return a zero length list and set the moreData parameter to NO. NOTE This is an implementation-specific value. The value shown reflects the reference code implementation. */
+#if defined(__GNUC__) || defined(__clang__)
+typedef int TPM2_PT_TPM2_PCR_LAST_TYPE __attribute__ ((deprecated("Use TPM2_PT_PCR_LAST instead")));
+#define TPM2_PT_TPM2_PCR_LAST    ({TPM2_PT_TPM2_PCR_LAST_TYPE x = TPM2_PT_PCR_LAST; x;})
+#else
+#define TPM2_PT_TPM2_PCR_LAST    TPM2_PT_PCR_LAST
+#endif
 /* NOTE: The following values are reserved:
  * 0x00000015 is reserved for the next 2nd TPM2_PT_PCR_POLICY set.
  * 0x00000016 is reserved for the next 2nd TPM2_PT_PCR_AUTH set.
