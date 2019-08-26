@@ -132,6 +132,7 @@ ESYS_TESTS_INTEGRATION_MANDATORY = \
     test/integration/esys-commit.int \
     test/integration/esys-create-fail.int \
     test/integration/esys-create-password-auth.int \
+    test/integration/esys-create-policy-auth.int \
     test/integration/esys-create-primary-ecc-hmac.int \
     test/integration/esys-create-primary-hmac.int \
     test/integration/esys-create-session-auth-bound.int \
@@ -617,6 +618,14 @@ test_integration_esys_create_password_auth_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2
 test_integration_esys_create_password_auth_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-create-password-auth.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_create_policy_auth_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
+test_integration_esys_create_policy_auth_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_create_policy_auth_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO) $(LIBDL_LDFLAGS)
+test_integration_esys_create_policy_auth_int_SOURCES = \
+    $(ESYS_SRC_UTIL_CRYPTO_SRC) \
+    test/integration/esys-create-policy-auth.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_create_primary_ecc_hmac_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
