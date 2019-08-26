@@ -792,6 +792,7 @@ INPUT                  = @top_srcdir@/doc/coding_standard_c.md \
                          @top_srcdir@/test/integration/esys-commit.int.c \
                          @top_srcdir@/test/integration/esys-create-fail.int.c \
                          @top_srcdir@/test/integration/esys-create-password-auth.int.c \
+                         @top_srcdir@/test/integration/esys-create-policy-auth.int.c \
                          @top_srcdir@/test/integration/esys-create-primary-hmac.int.c \
                          @top_srcdir@/test/integration/esys-create-session-auth.int.c \
                          @top_srcdir@/test/integration/esys-createloaded.int.c \
