@@ -132,6 +132,8 @@ tctildr_teardown (void **state)
 
     tctildr_finalize (context);
 
+    free (context);
+
     return 0;
 }
 static void
