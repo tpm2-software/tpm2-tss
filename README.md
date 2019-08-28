@@ -40,6 +40,10 @@ We also have an IRC channel set up on [FreeNode](https://freenode.net/) called \
 
 In case you want to contribute to the project, please also have a look at the [Contribution Guidelines](CONTRIBUTING.md).
 
+# Documentation
+
+The doxygen documentation can either be built by oneself (see the [INSTALL](INSTALL.md) file) or browsed directly on [tpm2-tss.readthedocs.io](https://tpm2-tss.readthedocs.io/).
+
 # Test Suite
 This repository contains a test suite intended to exercise the TCTI, SAPI and ESAPI code.
 This test suite is *not* intended to test a TPM implementation, so this test suite should only be run against a TPM simulator.
