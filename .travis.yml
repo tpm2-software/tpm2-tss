@@ -9,7 +9,6 @@ cache: ccache
 
 env:
   matrix:
-  - SCANBUILD=yes CC=clang WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_1_0-stable
   - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_0_2-stable
   - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_1_0-stable
   - WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE
@@ -132,6 +131,8 @@ after_success:
 # check fuzz targets
 matrix:
   include:
+  - env: SCANBUILD=yes WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_1_0-stable
+    compiler: clang
   - env: WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_1_0-stable GEN_FUZZ=1 CXX=clang++ CC=clang
     compiler: clang
     script:
