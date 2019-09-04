@@ -1,140 +1,53 @@
+sudo: required
 language: c
+services:
+- docker
 compiler:
-  - gcc
-  - clang
-
-dist: xenial
-
-cache: ccache
-
+- gcc
+- clang
 env:
   matrix:
-  - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_0_2-stable
-  - WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_1_0-stable
-  - WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE
-  - WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE
-  - WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=no WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE
-  - WITH_TCTI_ASYNC=no WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt OPENSSL_BRANCH=NONE
+   # ubuntu 16.04
+  - DOCKER_TAG=ubuntu-16.04 WITH_CRYPTO=gcrypt
+  - DOCKER_TAG=ubuntu-16.04 WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt
+  - DOCKER_TAG=ubuntu-16.04 WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=no WITH_CRYPTO=gcrypt
+  - DOCKER_TAG=ubuntu-16.04 WITH_TCTI_ASYNC=no WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt
+   # ubuntu 18.04
+  - DOCKER_TAG=ubuntu-18.04 WITH_CRYPTO=gcrypt
+  - DOCKER_TAG=ubuntu-18.04 WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt
+  - DOCKER_TAG=ubuntu-18.04 WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=no WITH_CRYPTO=gcrypt
+  - DOCKER_TAG=ubuntu-18.04 WITH_TCTI_ASYNC=no WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt
+    # fedora-30
+  - DOCKER_TAG=fedora-30 WITH_CRYPTO=gcrypt
+  - DOCKER_TAG=fedora-30 WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt
+  - DOCKER_TAG=fedora-30 WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=no WITH_CRYPTO=gcrypt
+  - DOCKER_TAG=fedora-30 WITH_TCTI_ASYNC=no WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt
+   # opensuse-leap
+  - DOCKER_TAG=opensuse-leap WITH_CRYPTO=gcrypt
+  - DOCKER_TAG=opensuse-leap WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt
+  - DOCKER_TAG=opensuse-leap WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=no WITH_CRYPTO=gcrypt
+  - DOCKER_TAG=opensuse-leap WITH_TCTI_ASYNC=no WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt
+
   global:
   # COVERITY_SCAN_TOKEN
   - secure: "ZD0KxBhO/CaSE/TOkW+H5nsBbaMolbIPv5DgctcjA1BlTckgc5lK4m+7BIR1Fft6gaeeLOoCY3qUm4kW++Bqk2bTsrx/HvrmVmrzMO572jA74x4E+5lynUnRVaAgBg7cVBcB0hZcUurx8FifNBbgnWlxT/nDWttVnglkz400GCE9/zy+VTJWqt4QAB+6qeKPiG3vRthQdWcHstBI8IIAbvp4rhSUajBBQeZ5ro5RPGNy+iHen+t6tyJmbjiP0Y4qjkKGbfwXHnsseEcuSJQuxSkQ9MWK6t93BFXFSPw5MjHIApMn+4CjRp2JMoVTVfe5fFeZEHxVUmAzy+e5eIeftrUtUlCI293UuxZnw/vpJczn3BWunlhhjqjsCwVeknzGHxlaT+ck8Et1Mdl/3nY/E9dt47/NOzXY2xrAz59GYsdKvvsPoCGgNlAub03Vl0W24I1kjppsmN/zFwazHGqoxIBTwrDOQUmZvPfXA3jAUozrfAdT3YjnRcCG7bbQmacFApqfUm/bqMgapAgozjjxpuBrO1wQSUjjH6NANZsP2Gpk0eAl7FOlBzbVgKPxCQozWCjpKOj3HMnXX458ZQWsboG5J00wwjw9DRNRCkeexLdi832L/BPhUY5JgRlTqqyKr9cr69DvogBF/pLytpSCciF6t9NqqGZYbBomXJLaG84="
   # run coverity scan on gcc build to keep from DOSing coverity
   - coverity_scan_run_condition='"$CC" = gcc'
-  - LD_LIBRARY_PATH="$(pwd)/osslinstall/usr/local/lib:/usr/lib"
-  - PATH="$(pwd)/ibmtpm/src:${PATH}"
 
-addons:
-  apt:
-    packages:
-    - autoconf-archive
-    - doxygen
-    - libcmocka-dev
-    - libcmocka0
-    - libgcrypt20-dev
-    - realpath
-    - lcov
-    - libssl-dev
-    - gnulib
-  coverity_scan:
-    project:
-      name: "01org/TPM2.0-TSS"
-      description: Build submitted via Travis-CI
-    notification_email: philip.b.tricca@intel.com
-    build_command_prepend: "./bootstrap && ./configure"
-    build_command: "make --jobs=$(nproc)"
-    branch_pattern: coverity_scan
-
-install:
-# Autoconf archive
-  - wget http://ftpmirror.gnu.org/autoconf-archive/autoconf-archive-2019.01.06.tar.xz
-  - sha256sum autoconf-archive-2019.01.06.tar.xz | grep -q 17195c833098da79de5778ee90948f4c5d90ed1a0cf8391b4ab348e2ec511e3f || travis_terminate 1
-  - tar xJf autoconf-archive-2019.01.06.tar.xz
-  - cp autoconf-archive-2019.01.06/m4/ax_code_coverage.m4 m4/
-  - cp autoconf-archive-2019.01.06/m4/ax_is_release.m4 m4/
-  - cp autoconf-archive-2019.01.06/m4/ax_prog_doxygen.m4 m4/
-# IBM-TPM
-  - wget https://download.01.org/tpm2/ibmtpm974.tar.gz
-  - sha256sum ibmtpm974.tar.gz | grep -q ^8e45d86129a0adb95fee4cee51f4b1e5b2d81ed3e55af875df53f98f39eb7ad7 || travis_terminate 1
-  - mkdir ibmtpm
-  - tar axf ibmtpm974.tar.gz -C ibmtpm
-  - make -C ibmtpm/src -j$(nproc)
-# 2.1.0 version of uthash
-  - wget https://github.com/troydhanson/uthash/archive/v2.1.0.tar.gz
-  - tar xzf v2.1.0.tar.gz
-  - mkdir -p $(pwd)/osslinstall/usr/local/include
-  - cp uthash-2.1.0/src/*.h $(pwd)/osslinstall/usr/local/include/
-# OpenSSL 1.0.2 (Must come after all wgets, since it overrides libcrypto.so for the test-environment)
-  - |
-    if [ "$OPENSSL_BRANCH" != "NONE" ]; then
-        mkdir -p osslinstall/usr/local/bin
-        git clone --branch $OPENSSL_BRANCH --depth=1 https://github.com/openssl/openssl.git
-        pushd openssl
-        ./config --prefix=/usr/local --openssldir=/usr/local/openssl shared
-        make -j$(nproc)
-        if [ "$OPENSSL_BRANCH" == "OpenSSL_1_0_2-stable" ]; then
-            make install INSTALL_PREFIX=${PWD}/../osslinstall
-        else
-            make install DESTDIR=${PWD}/../osslinstall
-        fi
-        which openssl
-        popd
-    fi
-
-before_script:
-  - ./bootstrap
-
-script:
-# Check for whitespace errors
-  - git diff --check $(git hash-object -t tree /dev/null)
-# short-circuit normal build if we've already done a coverity scan
-  - |
-    if [ "${COVERITY_SCAN_BRANCH}" == 1 ]; then
-        echo "COVERITY_SCAN_BRANCH set, not running normal build."
-        exit 0
-    fi
-# build with no tests enabled
-  - mkdir ./build-no-tests
-  - pushd ./build-no-tests
-  - ../configure --enable-tcti-partial-reads=$WITH_TCTI_PARTIAL --enable-tcti-device-async=$WITH_TCTI_ASYNC --with-crypto=$WITH_CRYPTO CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
-  - make -j$(nproc)
-  - popd
-# build with all tests enabled
-  - mkdir ./build
-  - pushd ./build
-  - |
-    if [ "$CC" == "gcc" ]; then
-      export CONFIGURE_OPTIONS="--enable-code-coverage";
-    fi
-  - |
-    if [ "$SCANBUILD" == "yes" ]; then
-      scan-build --status-bugs ../configure --enable-tcti-partial-reads=$WITH_TCTI_PARTIAL --enable-tcti-device-async=$WITH_TCTI_ASYNC --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
-    elif [ "$CC" == "clang" ]; then
-      ../configure --enable-tcti-partial-reads=$WITH_TCTI_PARTIAL --enable-tcti-device-async=$WITH_TCTI_ASYNC --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
-    else
-      ../configure --with-sanitizer=undefined --enable-tcti-partial-reads=$WITH_TCTI_PARTIAL --enable-tcti-device-async=$WITH_TCTI_ASYNC --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS CFLAGS=-I${PWD}/../osslinstall/usr/local/include LDFLAGS=-L${PWD}/../osslinstall/usr/local/lib
-    fi
-  - |
-    if [ "$SCANBUILD" == "yes" ]; then
-      scan-build --status-bugs make -j distcheck
-    elif [ "$CC" == "clang" ]; then
-      make -j distcheck
-    else
-      make -j check
-    fi
-
-after_success:
-  - |
-    if [ "$CC" == "gcc" ]; then
-        bash <(curl -s https://codecov.io/bash)
-    fi
-
-# check fuzz targets
 matrix:
   include:
-  - env: SCANBUILD=yes WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_1_0-stable
+  # coverage check
+  - env: DOCKER_TAG=ubuntu-18.04 ENABLE_COVERAGE=true
+    compiler: gcc
+  # scan build check
+  - env: DOCKER_TAG=fedora-30 SCANBUILD=yes WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes
     compiler: clang
-  - env: WITH_CRYPTO=ossl OPENSSL_BRANCH=OpenSSL_1_1_0-stable GEN_FUZZ=1 CXX=clang++ CC=clang
+  # check fuzz targets
+  - env: DOCKER_TAG=fedora-30 GEN_FUZZ=1 CXX=clang++ CC=clang
     compiler: clang
-    script:
-    - ./configure --with-fuzzing=libfuzzer --enable-tcti-fuzzing --disable-tcti-device --disable-tcti-mssim --disable-shared --with-crypto=$WITH_CRYPTO CFLAGS=-I${PWD}/osslinstall/usr/local/include LDFLAGS=-L${PWD}/osslinstall/usr/local/lib
-    - make -j$(nproc) check
+
+script:
+  - ./.ci/travis.run
+
+after_failure:
+  - cat build/test-suite.log
