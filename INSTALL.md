@@ -181,7 +181,7 @@ $ docker rm temp
 
 tpm2-tss is now in your working directory and contains all the built files.
 
-To rebuild using your local changes mount your tmp2-tss directory as a volume.
+To rebuild using your local changes mount your tpm2-tss directory as a volume.
 
 ```console
 $ docker run --rm -ti -v $PWD:/tmp/tpm2-tss tpm2-tss \
