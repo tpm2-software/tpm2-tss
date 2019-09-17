@@ -36,23 +36,6 @@ cmp_UINT16(const UINT16 * in1, const UINT16 * in2)
 }
 
 /**
- * Compare variables of type BYTE.
- * @param[in] in1 Variable to be compared with:
- * @param[in] in2
- */
-static bool
-cmp_BYTE(const BYTE * in1, const BYTE * in2)
-{
-    LOG_TRACE("call");
-    if (*in1 == *in2)
-        return true;
-    else {
-        LOG_TRACE("cmp false");
-        return false;
-    }
-}
-
-/**
  * Compare two arrays of type BYTE.
  * @param[in] in1 array to be compared with:.
  * @param[in] in2
@@ -65,12 +48,12 @@ cmp_BYTE_array(const BYTE * in1, size_t count1, const BYTE * in2, size_t count2)
         LOG_TRACE("cmp false");
         return false;
     }
-    for (size_t i = 0; i < count1; i++) {
-        if (!cmp_BYTE(&in1[i], &in2[i])) {
-            LOG_TRACE("cmp false");
-            return false;
-        }
+
+    if (memcmp(in1, in2, count2) != 0) {
+        LOG_TRACE("cmp false");
+        return false;
     }
+
     return true;
 }
 
