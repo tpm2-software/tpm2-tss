@@ -317,14 +317,6 @@ Esys_CreateLoaded_Finish(
         goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
     }
 
-    /* Update the meta data of the ESYS_TR object */
-    objectHandleNode->rsrc.rsrcType = IESYSC_KEY_RSRC;
-    size_t offset = 0;
-    r = Tss2_MU_TPMT_PUBLIC_Unmarshal(&esysContext->in.CreateLoaded.inPublic->buffer[0],
-                                      sizeof(TPMT_PUBLIC), &offset ,
-                                      &objectHandleNode->rsrc.misc.rsrc_key_pub.publicArea);
-    goto_if_error(r, "Unmarshal TPMT_PUBULIC", error_cleanup);
-
     /*Receive the TPM response and handle resubmissions if necessary. */
     r = Tss2_Sys_ExecuteFinish(esysContext->sys, esysContext->timeout);
     if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) {
@@ -386,8 +378,12 @@ Esys_CreateLoaded_Finish(
                         error_cleanup);
 
 
+    /* Update the meta data of the ESYS_TR object */
+    objectHandleNode->rsrc.rsrcType = IESYSC_KEY_RSRC;
+    objectHandleNode->rsrc.misc.rsrc_key_pub = *loutPublic;
+
     /* Check name and outPublic for consistency */
-    if (!iesys_compare_name(loutPublic, &name))
+    if (!iesys_compare_name(&objectHandleNode->rsrc.misc.rsrc_key_pub, &name))
         goto_error(r, TSS2_ESYS_RC_MALFORMED_RESPONSE,
             "in Public name not equal name in response", error_cleanup);
 

@@ -8,6 +8,7 @@
 #include <config.h>
 #endif
 
+#include <stdbool.h>
 #include <stdlib.h>
 
 #include "tss2_esys.h"
@@ -19,6 +20,35 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
+static bool check_name(ESYS_CONTEXT * esys_context, ESYS_TR object_handle)
+{
+    bool result = false;
+
+    TPM2B_NAME *read_name = NULL;
+    TPM2B_NAME *get_name = NULL;
+
+    TSS2_RC r = Esys_ReadPublic(esys_context, object_handle,
+                                ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                                NULL, &read_name, NULL);
+    goto_if_error(r, "Error esys readpublic", out);
+
+    r = Esys_TR_GetName(esys_context, object_handle, &get_name);
+    goto_if_error(r, "Error esys getname", out);
+
+    if (read_name->size != get_name->size) {
+        LOG_ERROR("name size mismatch %u != %u",
+                  read_name->size, get_name->size);
+        goto out;
+    }
+
+    result = memcmp(read_name->name, get_name->name, get_name->size) == 0;
+
+out:
+    free(read_name);
+    free(get_name);
+
+    return result;
+}
 /** This test is intended to test the ESAPI command CreateLoaded.
  *
  * We start by creating a primary key (Esys_CreatePrimary).
@@ -29,6 +59,8 @@
  *  - Esys_CreatePrimary() (M)
  *  - Esys_FlushContext() (M)
  *  - Esys_StartAuthSession() (M)
+ *  - Esys_TR_GetName() (M)
+ *  - Esys_TR_ReadPublic() (M)
  *
  * Used compiler defines: TEST_SESSION
  *
@@ -238,6 +270,11 @@ test_esys_createloaded(ESYS_CONTEXT * esys_context)
     }
 
     goto_if_error(r, "Error During CreateLoaded", error);
+
+    bool names_match = check_name(esys_context, objectHandle);
+    if (!names_match) {
+        goto error;
+    }
 
     r = Esys_FlushContext(esys_context, primaryHandle);
     goto_if_error(r, "Flushing context", error);
