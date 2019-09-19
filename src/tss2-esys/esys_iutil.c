@@ -8,6 +8,7 @@
 #endif
 
 #include <inttypes.h>
+#include <string.h>
 
 #include "tss2_esys.h"
 #include "esys_mu.h"
@@ -603,6 +604,115 @@ iesys_restore_session_flags(ESYS_CONTEXT *esys_context)
                   rsrc_session->sessionAttributes);
 
         rsrc_session->sessionAttributes = rsrc_session->origSessionAttributes;
+    }
+}
+
+TPM2_RC
+ecc_get_keysize(TPMI_ECC_CURVE curveID, size_t *keysize) {
+    switch (curveID) {
+    case TPM2_ECC_NIST_P192:
+        *keysize = 24;
+        break;
+    case TPM2_ECC_NIST_P224:
+        *keysize = 28;
+        break;
+    case TPM2_ECC_NIST_P256:
+        *keysize = 32;
+        break;
+    case TPM2_ECC_NIST_P384:
+        *keysize = 48;
+        break;
+    case TPM2_ECC_NIST_P521:
+        *keysize = 66;
+        break;
+    case TPM2_ECC_BN_P256:
+        *keysize = 32;
+        break;
+    case TPM2_ECC_BN_P638:
+        *keysize = 80;
+        break;
+    case TPM2_ECC_SM2_P256:
+        *keysize = 32;
+        break;
+    default:
+        *keysize = 0;
+        return TSS2_ESYS_RC_BAD_VALUE;
+    }
+
+    return TPM2_RC_SUCCESS;
+}
+
+void
+ecc_public_add_padding(
+    TPM2B_PUBLIC *public,
+    size_t keysize)
+{
+    if (!public) {
+        return;
+    }
+
+    int offset;
+
+    offset = keysize - public->publicArea.unique.ecc.x.size;
+
+    if (offset > 0 && public->publicArea.unique.ecc.x.size > 0) {
+        LOG_TRACE("Padding public ecc param x: 0x%02x%02x..%02x%02x. Size is %d but should be %zu.",
+                  public->publicArea.unique.ecc.x.buffer[0],
+                  public->publicArea.unique.ecc.x.buffer[1],
+                  public->publicArea.unique.ecc.x.buffer[public->publicArea.unique.ecc.x.size - 2],
+                  public->publicArea.unique.ecc.x.buffer[public->publicArea.unique.ecc.x.size - 1],
+                  public->publicArea.unique.ecc.x.size,
+                  keysize);
+        memmove(public->publicArea.unique.ecc.x.buffer + offset,
+                public->publicArea.unique.ecc.x.buffer,
+                public->publicArea.unique.ecc.x.size);
+        memset(public->publicArea.unique.ecc.x.buffer, 0x00, offset);
+        public->publicArea.unique.ecc.x.size = keysize;
+
+    }
+
+    offset = keysize - public->publicArea.unique.ecc.y.size;
+
+    if (offset > 0 && public->publicArea.unique.ecc.y.size > 0) {
+        LOG_TRACE("Padding public ecc param y: 0x%02x%02x..%02x%02x. Size is %d but should be %zu.",
+                  public->publicArea.unique.ecc.y.buffer[0],
+                  public->publicArea.unique.ecc.y.buffer[1],
+                  public->publicArea.unique.ecc.y.buffer[public->publicArea.unique.ecc.y.size - 2],
+                  public->publicArea.unique.ecc.y.buffer[public->publicArea.unique.ecc.y.size - 1],
+                  public->publicArea.unique.ecc.y.size,
+                  keysize);
+        memmove(public->publicArea.unique.ecc.y.buffer + offset,
+                public->publicArea.unique.ecc.y.buffer,
+                public->publicArea.unique.ecc.y.size);
+        memset(public->publicArea.unique.ecc.y.buffer, 0x00, offset);
+        public->publicArea.unique.ecc.y.size = keysize;
+    }
+}
+
+void
+ecc_sensitive_add_padding(
+    TPM2B_SENSITIVE *private,
+    size_t keysize)
+{
+    if (!private) {
+        return;
+    }
+
+    size_t offset = keysize - private->sensitiveArea.sensitive.ecc.size;
+
+    if (offset > 0 && private->sensitiveArea.sensitive.ecc.size > 0) {
+        LOG_TRACE("Padding sensitive ecc param: 0x%02x%02x..%02x%02x. Size is %d but should be %zu.",
+                  private->sensitiveArea.sensitive.ecc.buffer[0],
+                  private->sensitiveArea.sensitive.ecc.buffer[1],
+                  private->sensitiveArea.sensitive.ecc.buffer[private->sensitiveArea.sensitive.ecc.size - 2],
+                  private->sensitiveArea.sensitive.ecc.buffer[private->sensitiveArea.sensitive.ecc.size - 1],
+                  private->sensitiveArea.sensitive.ecc.size,
+                  keysize);
+        memmove(private->sensitiveArea.sensitive.ecc.buffer + offset,
+                private->sensitiveArea.sensitive.ecc.buffer,
+                private->sensitiveArea.sensitive.ecc.size);
+        memset(private->sensitiveArea.sensitive.ecc.buffer, 0x00, offset);
+        private->sensitiveArea.sensitive.ecc.size = keysize;
     }
 }
 

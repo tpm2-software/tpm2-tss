@@ -148,6 +148,10 @@ Esys_LoadExternal_Async(
     TPMI_RH_HIERARCHY hierarchy)
 {
     TSS2_RC r;
+    TPM2B_SENSITIVE inPrivate_padded;
+    TPM2B_PUBLIC inPublic_padded;
+    size_t keysize;
+
     LOG_TRACE("context=%p, inPrivate=%p, inPublic=%p,"
               "hierarchy=%"PRIx32 "",
               esysContext, inPrivate, inPublic, hierarchy);
@@ -162,6 +166,23 @@ Esys_LoadExternal_Async(
     if (r != TSS2_RC_SUCCESS)
         return r;
     esysContext->state = _ESYS_STATE_INTERNALERROR;
+
+    /* Pad ECC parameters */
+    if (inPublic && inPublic->publicArea.type == TPM2_ALG_ECC) {
+        r = ecc_get_keysize(inPublic->publicArea.parameters.eccDetail.curveID, &keysize);
+        if (r != TSS2_RC_SUCCESS)
+            return r;
+
+        inPublic_padded = *inPublic;
+        ecc_public_add_padding(&inPublic_padded, keysize);
+        inPublic = (const TPM2B_PUBLIC*) &inPublic_padded;
+
+        if (inPrivate) {
+            inPrivate_padded = *inPrivate;
+            ecc_sensitive_add_padding(&inPrivate_padded, keysize);
+            inPrivate = (const TPM2B_SENSITIVE*) &inPrivate_padded;
+        }
+    }
 
     /* Check input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 0);

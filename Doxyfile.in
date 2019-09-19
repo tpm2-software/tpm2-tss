@@ -815,6 +815,7 @@ INPUT                  = @top_srcdir@/doc/coding_standard_c.md \
                          @top_srcdir@/test/integration/esys-hmac.int.c \
                          @top_srcdir@/test/integration/esys-hmacsequencestart.int.c \
                          @top_srcdir@/test/integration/esys-import.int.c \
+                         @top_srcdir@/test/integration/esys-loadexternal.int.c \
                          @top_srcdir@/test/integration/esys-lock.int.c \
                          @top_srcdir@/test/integration/esys-make-credential.int.c \
                          @top_srcdir@/test/integration/esys-nv-certify.int.c \

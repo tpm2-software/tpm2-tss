@@ -153,6 +153,7 @@ ESYS_TESTS_INTEGRATION_MANDATORY = \
     test/integration/esys-hmacsequencestart.int \
     test/integration/esys-hmacsequencestart-session.int \
     test/integration/esys-import.int \
+    test/integration/esys-loadexternal.int \
     test/integration/esys-make-credential.int \
     test/integration/esys-make-credential-session.int \
     test/integration/esys-nv-ram-counter.int \
@@ -831,6 +832,14 @@ test_integration_esys_import_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_
 test_integration_esys_import_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-import.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_loadexternal_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_loadexternal_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_loadexternal_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_loadexternal_int_SOURCES = \
+    $(ESYS_SRC_UTIL_CRYPTO_SRC) \
+    test/integration/esys-loadexternal.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_lock_int_CFLAGS  = $(TESTS_CFLAGS)

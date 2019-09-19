@@ -83,6 +83,18 @@ TSS2_RC iesys_compute_encrypted_salt(
 TSS2_RC iesys_gen_caller_nonces(
     ESYS_CONTEXT *esysContext);
 
+TPM2_RC ecc_get_keysize(
+    TPMI_ECC_CURVE curveID,
+    size_t *keysize);
+
+void ecc_public_add_padding(
+    TPM2B_PUBLIC *public,
+    size_t keysize);
+
+void ecc_sensitive_add_padding(
+    TPM2B_SENSITIVE *private,
+    size_t keysize);
+
 TSS2_RC iesys_encrypt_param(
     ESYS_CONTEXT *esysContext,
     TPM2B_NONCE **decryptNonce,
