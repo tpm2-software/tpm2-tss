@@ -368,12 +368,19 @@ tcti_device_get_poll_handles (
         return TSS2_TCTI_RC_BAD_CONTEXT;
     }
 
-    if (handles == NULL || num_handles == NULL) {
+    if (num_handles == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
     }
 
+    if (handles != NULL && *num_handles < 1) {
+        return TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
+    }
+
     *num_handles = 1;
-    handles->fd = tcti_dev->fd;
+    if (handles != NULL) {
+        handles->fd = tcti_dev->fd;
+    }
+
     return TSS2_RC_SUCCESS;
 #else
     (void)(tctiContext);
