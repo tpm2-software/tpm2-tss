@@ -178,6 +178,7 @@ SAPI library, TAB/RM, and Test Code Block Diagram:
 ![Architecture Block Diagram](doc/TSS_block_diagram.png)
 
 # Project Layout
+```
 ├── doc     : various bits of documentation\
 ├── include : header files installed in $(includedir)\
 │   └── tss2      : all public headers for this project\
@@ -197,3 +198,4 @@ SAPI library, TAB/RM, and Test Code Block Diagram:
     ├── integration : integration test harness and test cases\
     ├── tpmclient   : monolithic, legacy test application\
     └── unit        : unit tests
+```
