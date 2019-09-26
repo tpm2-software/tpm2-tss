@@ -14,7 +14,7 @@ Possible levels are: NONE, ERROR, WARNING, INFO, DEBUG, TRACE
 The level can be set for all module using the `all` module name or individually
 per module. The environment variable is evaluated left to right.
 
-Example: `TSS2_LOG=all+ERROR,marshal+TRACE,tcti+DEBUG
+Example: `TSS2_LOG=all+ERROR,marshal+TRACE,tcti+DEBUG`
 
 # Implementation
 
