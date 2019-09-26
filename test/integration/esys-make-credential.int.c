@@ -298,7 +298,7 @@ test_esys_make_credential(ESYS_CONTEXT * esys_context)
                           ESYS_TR_NONE,
                           NULL,
                           outPublic2,
-                          TPM2_RH_OWNER,
+                          ESYS_TR_RH_OWNER,
                           &loadedKeyHandle);
     goto_if_error(r, "Error esys load external", error);
 

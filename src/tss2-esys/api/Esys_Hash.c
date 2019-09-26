@@ -67,7 +67,7 @@ Esys_Hash(
     ESYS_TR shandle3,
     const TPM2B_MAX_BUFFER *data,
     TPMI_ALG_HASH hashAlg,
-    TPMI_RH_HIERARCHY hierarchy,
+    ESYS_TR hierarchy,
     TPM2B_DIGEST **outHash,
     TPMT_TK_HASHCHECK **validation)
 {
@@ -139,19 +139,25 @@ Esys_Hash_Async(
     ESYS_TR shandle3,
     const TPM2B_MAX_BUFFER *data,
     TPMI_ALG_HASH hashAlg,
-    TPMI_RH_HIERARCHY hierarchy)
+    ESYS_TR hierarchy)
 {
     TSS2_RC r;
     LOG_TRACE("context=%p, data=%p, hashAlg=%04"PRIx16","
               "hierarchy=%"PRIx32 "",
               esysContext, data, hashAlg, hierarchy);
     TSS2L_SYS_AUTH_COMMAND auths;
+    TPMI_RH_HIERARCHY tpm_hierarchy;
 
     /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
     }
+
+    r = iesys_handle_to_tpm_handle(hierarchy, &tpm_hierarchy);
+    if (r != TSS2_RC_SUCCESS)
+        return r;
+
     r = iesys_check_sequence_async(esysContext);
     if (r != TSS2_RC_SUCCESS)
         return r;
@@ -162,7 +168,7 @@ Esys_Hash_Async(
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
-    r = Tss2_Sys_Hash_Prepare(esysContext->sys, data, hashAlg, hierarchy);
+    r = Tss2_Sys_Hash_Prepare(esysContext->sys, data, hashAlg, tpm_hierarchy);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */

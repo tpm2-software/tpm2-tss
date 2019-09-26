@@ -41,7 +41,7 @@ test_esys_hierarchy_control(ESYS_CONTEXT * esys_context)
     TSS2_RC r;
 
     ESYS_TR authHandle_handle = ESYS_TR_RH_PLATFORM;
-    TPMI_RH_ENABLES enable = TPM2_RH_OWNER;
+    ESYS_TR enable = ESYS_TR_RH_OWNER;
     TPMI_YES_NO state = TPM2_NO;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
     int failure_return = EXIT_FAILURE;
