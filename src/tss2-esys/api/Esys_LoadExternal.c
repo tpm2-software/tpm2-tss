@@ -76,7 +76,7 @@ Esys_LoadExternal(
     ESYS_TR shandle3,
     const TPM2B_SENSITIVE *inPrivate,
     const TPM2B_PUBLIC *inPublic,
-    TPMI_RH_HIERARCHY hierarchy, ESYS_TR *objectHandle)
+    ESYS_TR hierarchy, ESYS_TR *objectHandle)
 {
     TSS2_RC r;
 
@@ -145,19 +145,25 @@ Esys_LoadExternal_Async(
     ESYS_TR shandle3,
     const TPM2B_SENSITIVE *inPrivate,
     const TPM2B_PUBLIC *inPublic,
-    TPMI_RH_HIERARCHY hierarchy)
+    ESYS_TR hierarchy)
 {
     TSS2_RC r;
     LOG_TRACE("context=%p, inPrivate=%p, inPublic=%p,"
               "hierarchy=%"PRIx32 "",
               esysContext, inPrivate, inPublic, hierarchy);
     TSS2L_SYS_AUTH_COMMAND auths;
+    TPMI_RH_HIERARCHY tpm_hierarchy;
 
     /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
     }
+
+    r = iesys_handle_to_tpm_handle(hierarchy, &tpm_hierarchy);
+    if (r != TSS2_RC_SUCCESS)
+        return r;
+
     r = iesys_check_sequence_async(esysContext);
     if (r != TSS2_RC_SUCCESS)
         return r;
@@ -170,7 +176,7 @@ Esys_LoadExternal_Async(
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_LoadExternal_Prepare(esysContext->sys, inPrivate, inPublic,
-                                      hierarchy);
+                                      tpm_hierarchy);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */

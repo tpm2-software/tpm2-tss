@@ -37,7 +37,7 @@ test_esys_hash(ESYS_CONTEXT * esys_context)
                               .buffer={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
                                        1, 2, 3, 4, 5, 6, 7, 8, 9}};
     TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA1;
-    TPMI_RH_HIERARCHY hierarchy = TPM2_RH_OWNER;
+    ESYS_TR hierarchy = ESYS_TR_RH_OWNER;
     TPM2B_DIGEST *outHash = NULL;
     TPMT_TK_HASHCHECK *validation = NULL;
 

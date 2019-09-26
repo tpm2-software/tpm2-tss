@@ -231,7 +231,7 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
                               ESYS_TR_NONE,
                               ESYS_TR_NONE,
                               (const TPM2B_MAX_BUFFER *)&expiration2b,
-                              TPM2_RH_OWNER,
+                              ESYS_TR_RH_OWNER,
                               &signed_digest,
                               &validation
                               );

@@ -112,7 +112,7 @@ test_esys_hashsequencestart(ESYS_CONTEXT * esys_context)
                               ESYS_TR_NONE,
                               ESYS_TR_NONE,
                               &buffer,
-                              TPM2_RH_OWNER,
+                              ESYS_TR_RH_OWNER,
                               &result,
                               &validation
                               );

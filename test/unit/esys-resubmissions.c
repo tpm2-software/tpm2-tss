@@ -559,7 +559,7 @@ test_LoadExternal(void **state)
                           ESYS_TR_NONE,
                           ESYS_TR_NONE,
                           ESYS_TR_NONE,
-                          NULL, &inPublic, TPM2_RH_OWNER, &objectHandle_handle);
+                          NULL, &inPublic, ESYS_TR_RH_OWNER, &objectHandle_handle);
 
     assert_int_equal(r, TPM2_RC_YIELDED);
     assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */ );
@@ -972,7 +972,7 @@ test_Hash(void **state)
 
     TPM2B_MAX_BUFFER data = DUMMY_2B_DATA(.buffer);
     TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA1;
-    TPMI_RH_HIERARCHY hierarchy = TPM2_RH_OWNER;
+    ESYS_TR hierarchy = ESYS_TR_RH_OWNER;
     TPM2B_DIGEST *outHash;
     TPMT_TK_HASHCHECK *validation;
     r = Esys_Hash(esys_context,
@@ -1120,7 +1120,7 @@ test_SequenceComplete(void **state)
 
     ESYS_TR sequenceHandle_handle = DUMMY_TR_HANDLE_KEY;
     TPM2B_MAX_BUFFER buffer = DUMMY_2B_DATA(.buffer);
-    TPMI_RH_HIERARCHY hierarchy = TPM2_RH_OWNER;
+    ESYS_TR hierarchy = ESYS_TR_RH_OWNER;
     TPM2B_DIGEST *result;
     TPMT_TK_HASHCHECK *validation;
     r = Esys_SequenceComplete(esys_context,
@@ -2093,7 +2093,7 @@ test_HierarchyControl(void **state)
     TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
 
     ESYS_TR authHandle_handle = DUMMY_TR_HANDLE_HIERARCHY_PLATFORM;
-    TPMI_RH_ENABLES enable = TPM2_RH_OWNER;
+    ESYS_TR enable = ESYS_TR_RH_OWNER;
     TPMI_YES_NO state2 = 0;
     r = Esys_HierarchyControl(esys_context,
                               authHandle_handle,

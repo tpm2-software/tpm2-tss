@@ -461,7 +461,7 @@ execute_policy_signed(
         /* Prepare the loading of the external public key, user for verificaton. */
         r = Esys_LoadExternal_Async(esys_ctx,
                                     ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                    NULL, &inPublic, TPM2_RH_OWNER);
+                                    NULL, &inPublic, ESYS_TR_RH_OWNER);
         goto_if_error(r, "LoadExternal_Async", cleanup);
         fallthrough;
 
@@ -584,7 +584,7 @@ execute_policy_authorize(
         public2b.publicArea = policy->keyPublic;
         r = Esys_LoadExternal_Async(esys_ctx,
                                     ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                    NULL,  &public2b, TPM2_RH_OWNER);
+                                    NULL,  &public2b, ESYS_TR_RH_OWNER);
         goto_if_error(r, "LoadExternal_Async", cleanup);
         fallthrough;
 

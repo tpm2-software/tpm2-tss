@@ -357,7 +357,7 @@ Fapi_ExportKey_Finish(
             r = Esys_LoadExternal_Async(context->esys,
                                         ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                                         NULL,   &command->public_parent,
-                                        TPM2_RH_OWNER);
+                                        ESYS_TR_RH_OWNER);
             goto_if_error(r, "LoadExternal_Async", cleanup);
 
             fallthrough;

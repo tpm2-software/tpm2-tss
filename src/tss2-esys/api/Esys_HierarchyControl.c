@@ -71,7 +71,7 @@ Esys_HierarchyControl(
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_RH_ENABLES enable,
+    ESYS_TR enable,
     TPMI_YES_NO state)
 {
     TSS2_RC r;
@@ -151,7 +151,7 @@ Esys_HierarchyControl_Async(
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    TPMI_RH_ENABLES enable,
+    ESYS_TR enable,
     TPMI_YES_NO state)
 {
     TSS2_RC r;
@@ -160,12 +160,18 @@ Esys_HierarchyControl_Async(
               esysContext, authHandle, enable, state);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *authHandleNode;
+    TPMI_RH_ENABLES tpm_enable;
 
     /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
         return TSS2_ESYS_RC_BAD_REFERENCE;
     }
+
+    r = iesys_handle_to_tpm_handle(enable, &tpm_enable);
+    if (r != TSS2_RC_SUCCESS)
+        return r;
+
     r = iesys_check_sequence_async(esysContext);
     if (r != TSS2_RC_SUCCESS)
         return r;
@@ -182,8 +188,8 @@ Esys_HierarchyControl_Async(
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_HierarchyControl_Prepare(esysContext->sys,
                                           (authHandleNode == NULL) ? TPM2_RH_NULL
-                                           : authHandleNode->rsrc.handle, enable,
-                                          state);
+                                           : authHandleNode->rsrc.handle,
+                                           tpm_enable, state);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
