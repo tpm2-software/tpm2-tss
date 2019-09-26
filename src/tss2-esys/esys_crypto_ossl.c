@@ -804,7 +804,7 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
         break;
     case TPM2_ECC_NIST_P224:
         curveId = NID_secp224r1;
-        key_size = 38;
+        key_size = 28;
         break;
     case TPM2_ECC_NIST_P256:
         curveId = NID_X9_62_prime256v1;
