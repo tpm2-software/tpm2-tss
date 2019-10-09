@@ -3228,6 +3228,11 @@ void
 Esys_Free(
     void *__ptr);
 
+TSS2_RC
+Esys_GetSysContext(
+    ESYS_CONTEXT *esys_context,
+    TSS2_SYS_CONTEXT **sys_context);
+
 #ifdef __cplusplus
 }
 #endif
