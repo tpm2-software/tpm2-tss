@@ -219,3 +219,22 @@ Esys_SetTimeout(ESYS_CONTEXT * esys_context, int32_t timeout)
     esys_context->timeout = timeout;
     return TSS2_RC_SUCCESS;
 }
+
+/** Helper function that returns sys contest from the give esys context.
+ *
+ * Function returns sys contest from the give esys context.
+ * @param esys_context [in] ESYS context.
+ * @param sys_context [out] SYS context.
+ * @retval TSS2_RC_SUCCESS on Success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if esys_context of sys_context are NULL.
+ */
+TSS2_RC
+Esys_GetSysContext(ESYS_CONTEXT *esys_context, TSS2_SYS_CONTEXT **sys_context)
+{
+    if (esys_context == NULL || sys_context == NULL)
+        return TSS2_ESYS_RC_BAD_REFERENCE;
+
+    *sys_context = esys_context->sys;
+
+    return TSS2_RC_SUCCESS;
+}

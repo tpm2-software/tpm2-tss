@@ -110,6 +110,7 @@
         Esys_GetTime;
         Esys_GetTime_Async;
         Esys_GetTime_Finish;
+        Esys_GetSysContext;
         Esys_Hash;
         Esys_Hash_Async;
         Esys_Hash_Finish;

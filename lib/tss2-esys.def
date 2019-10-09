@@ -112,6 +112,7 @@ EXPORTS
     Esys_GetTime
     Esys_GetTime_Async
     Esys_GetTime_Finish
+    Esys_GetSysContext
     Esys_HMAC
     Esys_HMAC_Async
     Esys_HMAC_Finish
