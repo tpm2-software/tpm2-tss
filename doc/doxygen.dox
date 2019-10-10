@@ -23,6 +23,8 @@ Both the synchronous and asynchronous API are exposed through a single library: 
  \fn TSS2_RC Esys_GetTcti(ESYS_CONTEXT * esys_context, TSS2_TCTI_CONTEXT ** tcti)
  \fn TSS2_RC Esys_GetPollHandles(ESYS_CONTEXT * esys_context, TSS2_TCTI_POLL_HANDLE ** handles, size_t * count)
  \fn TSS2_RC Esys_SetTimeout(ESYS_CONTEXT *esys_context, int32_t timeout)
+ \fn TSS2_RC Esys_GetSysContext(ESYS_CONTEXT *esys_context, TSS2_SYS_CONTEXT **sys_context)
+ \fn void Esys_Free(void *__ptr)
  \}
 */
 
