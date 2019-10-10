@@ -38,6 +38,17 @@ test_esys_verify_signature(ESYS_CONTEXT * esys_context)
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
 
+    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_CREATION_DATA *creationData = NULL;
+    TPM2B_DIGEST *creationHash = NULL;
+    TPMT_TK_CREATION *creationTicket = NULL;
+
+    TPM2B_NAME *nameKeySign = NULL;
+    TPM2B_NAME *keyQualifiedName = NULL;
+    TPMT_SIGNATURE *signature = NULL;
+
+    TPMT_TK_VERIFIED *validation = NULL;
+
     /*
      * 1. Create Primary. This primary will be used as signing key.
      */
@@ -110,11 +121,6 @@ test_esys_verify_signature(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    TPM2B_PUBLIC *outPublic;
-    TPM2B_CREATION_DATA *creationData;
-    TPM2B_DIGEST *creationHash;
-    TPMT_TK_CREATION *creationTicket;
-
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE,
                            &inSensitivePrimary, &inPublic,
@@ -122,9 +128,10 @@ test_esys_verify_signature(ESYS_CONTEXT * esys_context)
                            &outPublic, &creationData, &creationHash,
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
-
-    TPM2B_NAME *nameKeySign;
-    TPM2B_NAME *keyQualifiedName;
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
 
     r = Esys_ReadPublic(esys_context,
                         primaryHandle,
@@ -143,7 +150,6 @@ test_esys_verify_signature(ESYS_CONTEXT * esys_context)
         .hierarchy = TPM2_RH_OWNER,
         .digest = {0}
     };
-    TPMT_SIGNATURE *signature;
     /* SHA1 digest for PCR register with zeros */
     TPM2B_DIGEST pcr_digest_zero = {
         .size = 20,
@@ -167,8 +173,6 @@ test_esys_verify_signature(ESYS_CONTEXT * esys_context)
         &signature);
     goto_if_error(r, "Error: Sign", error);
 
-    TPMT_TK_VERIFIED *validation;
-
     r = Esys_VerifySignature(
         esys_context,
         primaryHandle,
@@ -183,6 +187,12 @@ test_esys_verify_signature(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, primaryHandle);
     goto_if_error(r, "Error: FlushContext", error);
 
+    Esys_Free(outPublic);
+
+    Esys_Free(nameKeySign);
+    Esys_Free(keyQualifiedName);
+    Esys_Free(signature);
+    Esys_Free(validation);
     return EXIT_SUCCESS;
 
  error:
@@ -193,6 +203,15 @@ test_esys_verify_signature(ESYS_CONTEXT * esys_context)
         }
     }
 
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
+
+    Esys_Free(nameKeySign);
+    Esys_Free(keyQualifiedName);
+    Esys_Free(signature);
+    Esys_Free(validation);
     return EXIT_FAILURE;
 }
 

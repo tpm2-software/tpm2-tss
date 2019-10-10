@@ -51,6 +51,26 @@ test_esys_make_credential(ESYS_CONTEXT * esys_context)
     ESYS_TR primaryHandle = ESYS_TR_NONE;
     ESYS_TR loadedKeyHandle = ESYS_TR_NONE;
 
+    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_CREATION_DATA *creationData = NULL;
+    TPM2B_DIGEST *creationHash = NULL;
+    TPMT_TK_CREATION *creationTicket = NULL;
+
+    TPM2B_PUBLIC *outPublic2 = NULL;
+    TPM2B_PRIVATE *outPrivate2 = NULL;
+    TPM2B_CREATION_DATA *creationData2 = NULL;
+    TPM2B_DIGEST *creationHash2 = NULL;
+    TPMT_TK_CREATION *creationTicket2 = NULL;
+
+    TPM2B_PUBLIC *primaryKeyPublic = NULL;
+    TPM2B_NAME *primaryKeyName = NULL;
+    TPM2B_NAME *primaryKeyQualifiedName = NULL;
+
+    TPM2B_ID_OBJECT *credentialBlob = NULL;
+    TPM2B_ENCRYPTED_SECRET *secret = NULL;
+
+    TPM2B_DIGEST *certInfo = NULL;
+
 #ifdef TEST_SESSION
     ESYS_TR session = ESYS_TR_NONE;
     ESYS_TR session2 = ESYS_TR_NONE;
@@ -173,10 +193,6 @@ test_esys_make_credential(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: TR_SetAuth", error);
 
     RSRC_NODE_T *primaryHandle_node;
-    TPM2B_PUBLIC *outPublic;
-    TPM2B_CREATION_DATA *creationData;
-    TPM2B_DIGEST *creationHash;
-    TPMT_TK_CREATION *creationTicket;
 
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary, &inPublic,
@@ -262,12 +278,6 @@ test_esys_make_credential(ESYS_CONTEXT * esys_context)
         .count = 0,
     };
 
-    TPM2B_PUBLIC *outPublic2;
-    TPM2B_PRIVATE *outPrivate2;
-    TPM2B_CREATION_DATA *creationData2;
-    TPM2B_DIGEST *creationHash2;
-    TPMT_TK_CREATION *creationTicket2;
-
     r = Esys_Create(esys_context,
                     primaryHandle,
                     ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
@@ -292,10 +302,6 @@ test_esys_make_credential(ESYS_CONTEXT * esys_context)
                           &loadedKeyHandle);
     goto_if_error(r, "Error esys load external", error);
 
-    TPM2B_PUBLIC *primaryKeyPublic;
-    TPM2B_NAME *primaryKeyName;
-    TPM2B_NAME *primaryKeyQualifiedName;
-
     r = Esys_ReadPublic(esys_context,
                         primaryHandle,
                         ESYS_TR_NONE,
@@ -312,9 +318,6 @@ test_esys_make_credential(ESYS_CONTEXT * esys_context)
         .buffer = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
                    11, 12, 13, 14, 15, 16, 17, 18, 19, 20}};
 
-    TPM2B_ID_OBJECT                *credentialBlob;
-    TPM2B_ENCRYPTED_SECRET         *secret;
-
     r = Esys_MakeCredential(esys_context,
                             loadedKeyHandle,
                             ESYS_TR_NONE,
@@ -329,8 +332,6 @@ test_esys_make_credential(ESYS_CONTEXT * esys_context)
 
     r = Esys_FlushContext(esys_context, loadedKeyHandle);
     goto_if_error(r, "Error esys flush context", error);
-
-    TPM2B_DIGEST *certInfo;
 
     r = Esys_Load(esys_context,
                   primaryHandle,
@@ -383,6 +384,26 @@ test_esys_make_credential(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Flushing context", error);
 #endif
 
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
+
+    Esys_Free(outPublic2);
+    Esys_Free(outPrivate2);
+    Esys_Free(creationData2);
+    Esys_Free(creationHash2);
+    Esys_Free(creationTicket2);
+
+    Esys_Free(primaryKeyPublic);
+    Esys_Free(primaryKeyName);
+    Esys_Free(primaryKeyQualifiedName);
+
+    Esys_Free(credentialBlob);
+    Esys_Free(secret);
+
+    Esys_Free(certInfo);
+
     return EXIT_SUCCESS;
 
  error:
@@ -413,6 +434,25 @@ test_esys_make_credential(ESYS_CONTEXT * esys_context)
         }
     }
 
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
+
+    Esys_Free(outPublic2);
+    Esys_Free(outPrivate2);
+    Esys_Free(creationData2);
+    Esys_Free(creationHash2);
+    Esys_Free(creationTicket2);
+
+    Esys_Free(primaryKeyPublic);
+    Esys_Free(primaryKeyName);
+    Esys_Free(primaryKeyQualifiedName);
+
+    Esys_Free(credentialBlob);
+    Esys_Free(secret);
+
+    Esys_Free(certInfo);
     return EXIT_FAILURE;
 }
 

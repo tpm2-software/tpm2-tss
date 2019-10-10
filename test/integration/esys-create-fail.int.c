@@ -42,6 +42,16 @@ test_esys_create_fail(ESYS_CONTEXT * esys_context)
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
 
+    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_CREATION_DATA *creationData = NULL;
+    TPM2B_DIGEST *creationHash = NULL;
+    TPMT_TK_CREATION *creationTicket = NULL;
+    TPM2B_PUBLIC *outPublic2 = NULL;
+    TPM2B_PRIVATE *outPrivate2 = NULL;
+    TPM2B_CREATION_DATA *creationData2 = NULL;
+    TPM2B_DIGEST *creationHash2 = NULL;
+    TPMT_TK_CREATION *creationTicket2 = NULL;
+
     TPM2B_AUTH authValuePrimary = {
         .size = 5,
         .buffer = {1, 2, 3, 4, 5}
@@ -154,10 +164,6 @@ test_esys_create_fail(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: TR_SetAuth", error);
 
     RSRC_NODE_T *primaryHandle_node;
-    TPM2B_PUBLIC *outPublic;
-    TPM2B_CREATION_DATA *creationData;
-    TPM2B_DIGEST *creationHash;
-    TPMT_TK_CREATION *creationTicket;
 
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary,
@@ -176,12 +182,6 @@ test_esys_create_fail(ESYS_CONTEXT * esys_context)
 
     r = Esys_TR_SetAuth(esys_context, primaryHandle, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
-
-    TPM2B_PUBLIC *outPublic2;
-    TPM2B_PRIVATE *outPrivate2;
-    TPM2B_CREATION_DATA *creationData2;
-    TPM2B_DIGEST *creationHash2;
-    TPMT_TK_CREATION *creationTicket2;
 
     r = Esys_Create(esys_context,
                     primaryHandle,
@@ -208,6 +208,10 @@ test_esys_create_fail(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, primaryHandle);
     goto_if_error(r, "Error during FlushContext", error);
 
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
     return EXIT_SUCCESS;
 
  error:
@@ -217,6 +221,10 @@ test_esys_create_fail(ESYS_CONTEXT * esys_context)
             LOG_ERROR("Cleanup primaryHandle failed.");
         }
     }
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
     return EXIT_FAILURE;
 }
 

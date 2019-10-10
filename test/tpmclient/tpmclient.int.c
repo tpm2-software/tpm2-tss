@@ -411,6 +411,7 @@ static void TestStartAuthSession()
 
         end_auth_session(sessions[i]);
     }
+    end_auth_session(sessions[0]);
 
     for( i = 0; i < ( sizeof(sessions) / sizeof (SESSION *) ); i++ )
     {
@@ -2219,20 +2220,26 @@ static void GetSetDecryptParamTests()
     }
 
     /* Test for insufficient size. */
+    /* Create a buffer that is too large */
+    size_t testBufferSize = TPM2_MAX_COMMAND_SIZE -
+            BE_TO_HOST_32(((TPM20_Header_In *)(((_TSS2_SYS_CONTEXT_BLOB *)decryptParamTestSysContext)->cmdBuffer))->commandSize) + 1;
+    UINT8 testBuffer [testBufferSize];
+    memset(testBuffer, 0, testBufferSize);
+    memcpy(testBuffer, nvWriteData.buffer, nvWriteData.size);
+
     rval = Tss2_Sys_GetCpBuffer(decryptParamTestSysContext, &cpBufferUsedSize2, &cpBuffer2);
     CheckPassed(rval);
-    nvWriteData.size = TPM2_MAX_COMMAND_SIZE -
-            BE_TO_HOST_32(((TPM20_Header_In *)(((_TSS2_SYS_CONTEXT_BLOB *)decryptParamTestSysContext)->cmdBuffer))->commandSize) + 1;
-
-    rval = Tss2_Sys_SetDecryptParam(decryptParamTestSysContext, nvWriteData.size, nvWriteData.buffer);
+    rval = Tss2_Sys_SetDecryptParam(decryptParamTestSysContext, testBufferSize,
+            testBuffer);
     CheckFailed(rval, TSS2_SYS_RC_INSUFFICIENT_CONTEXT);
 
     /*
      * Test that one less will work.
      * This tests that we're checking the correct corner case.
      */
-    nvWriteData.size -= 1;
-    rval = Tss2_Sys_SetDecryptParam(decryptParamTestSysContext, nvWriteData.size, nvWriteData.buffer);
+    testBufferSize -= 1;
+    rval = Tss2_Sys_SetDecryptParam(decryptParamTestSysContext, testBufferSize,
+            testBuffer);
     CheckPassed(rval);
 
     rval = Tss2_Sys_NV_Write_Prepare( decryptParamTestSysContext, TPM20_INDEX_PASSWORD_TEST,

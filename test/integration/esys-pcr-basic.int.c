@@ -42,6 +42,9 @@ test_esys_pcr_basic(ESYS_CONTEXT * esys_context)
     int failure_return = EXIT_FAILURE;
 
     TPMS_CAPABILITY_DATA *savedPCRs = NULL;
+    TPML_PCR_SELECTION *pcrSelectionOut = NULL;
+    TPML_DIGEST *pcrValues = NULL;
+    TPML_DIGEST_VALUES *digestsEvent = NULL;
 
     ESYS_TR  pcrHandle_handle = 16;
     TPML_DIGEST_VALUES digests
@@ -81,8 +84,6 @@ test_esys_pcr_basic(ESYS_CONTEXT * esys_context)
         }
     };
     UINT32 pcrUpdateCounter;
-    TPML_PCR_SELECTION *pcrSelectionOut;
-    TPML_DIGEST *pcrValues;
 
     r = Esys_PCR_Read(
         esys_context,
@@ -107,8 +108,6 @@ test_esys_pcr_basic(ESYS_CONTEXT * esys_context)
     TPM2B_EVENT eventData = { .size = 20,
                               .buffer={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
                                        1, 2, 3, 4, 5, 6, 7, 8, 9}};
-    TPML_DIGEST_VALUES *digestsEvent;
-
     r = Esys_PCR_Event(
         esys_context,
         pcrHandle_handle,
@@ -166,11 +165,16 @@ test_esys_pcr_basic(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: PCR_Allocate", error);
 
     Esys_Free(savedPCRs);
-
+    Esys_Free(pcrSelectionOut);
+    Esys_Free(pcrValues);
+    Esys_Free(digestsEvent);
     return EXIT_SUCCESS;
 
  error:
-    if (savedPCRs) Esys_Free(savedPCRs);
+    Esys_Free(savedPCRs);
+    Esys_Free(pcrSelectionOut);
+    Esys_Free(pcrValues);
+    Esys_Free(digestsEvent);
     return failure_return;
 
 }

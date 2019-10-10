@@ -46,6 +46,11 @@ test_esys_hierarchy_control(ESYS_CONTEXT * esys_context)
     ESYS_TR primaryHandle = ESYS_TR_NONE;
     int failure_return = EXIT_FAILURE;
 
+    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_CREATION_DATA *creationData = NULL;
+    TPM2B_DIGEST *creationHash = NULL;
+    TPMT_TK_CREATION *creationTicket = NULL;
+
     r = Esys_HierarchyControl(
         esys_context,
         authHandle_handle,
@@ -121,11 +126,6 @@ test_esys_hierarchy_control(ESYS_CONTEXT * esys_context)
 
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    TPM2B_PUBLIC *outPublic;
-    TPM2B_CREATION_DATA *creationData;
-    TPM2B_DIGEST *creationHash;
-    TPMT_TK_CREATION *creationTicket;
-
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary, &inPublic,
                            &outsideInfo, &creationPCR, &primaryHandle,
@@ -156,6 +156,10 @@ test_esys_hierarchy_control(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, primaryHandle);
     goto_if_error(r, "Error: FlushContext", error);
 
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
     return EXIT_SUCCESS;
 
  error:
@@ -166,6 +170,10 @@ test_esys_hierarchy_control(ESYS_CONTEXT * esys_context)
         }
     }
 
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
     return failure_return;
 }
 

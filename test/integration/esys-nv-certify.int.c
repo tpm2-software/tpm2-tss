@@ -45,6 +45,13 @@ test_esys_nv_certify(ESYS_CONTEXT * esys_context)
     ESYS_TR nvHandle = ESYS_TR_NONE;
     int failure_return = EXIT_FAILURE;
 
+    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_CREATION_DATA *creationData = NULL;
+    TPM2B_DIGEST *creationHash = NULL;
+    TPMT_TK_CREATION *creationTicket = NULL;
+    TPM2B_ATTEST *certifyInfo = NULL;
+    TPMT_SIGNATURE *signature = NULL;
+
     TPM2B_AUTH authValuePrimary = {
         .size = 5,
         .buffer = {1, 2, 3, 4, 5}
@@ -124,11 +131,6 @@ test_esys_nv_certify(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    TPM2B_PUBLIC *outPublic;
-    TPM2B_CREATION_DATA *creationData;
-    TPM2B_DIGEST *creationHash;
-    TPMT_TK_CREATION *creationTicket;
-
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary,
                            &inPublic, &outsideInfo, &creationPCR,
@@ -186,8 +188,6 @@ test_esys_nv_certify(ESYS_CONTEXT * esys_context)
                       offset);
     goto_if_error(r, "Error esys nv write", error);
 
-    TPM2B_ATTEST *certifyInfo;
-    TPMT_SIGNATURE *signature;
     TPM2B_DATA qualifyingData = {0};
     TPMT_SIG_SCHEME inScheme = { .scheme = TPM2_ALG_NULL };
 
@@ -228,6 +228,12 @@ test_esys_nv_certify(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context,signHandle);
     goto_if_error(r, "Error: FlushContext", error);
 
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
+    Esys_Free(certifyInfo);
+    Esys_Free(signature);
     return EXIT_SUCCESS;
 
  error:
@@ -249,6 +255,12 @@ test_esys_nv_certify(ESYS_CONTEXT * esys_context)
         }
     }
 
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
+    Esys_Free(certifyInfo);
+    Esys_Free(signature);
     return failure_return;
 }
 

@@ -42,6 +42,13 @@ test_esys_get_time(ESYS_CONTEXT * esys_context)
     ESYS_TR signHandle = ESYS_TR_NONE;
     int failure_return = EXIT_FAILURE;
 
+    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_CREATION_DATA *creationData = NULL;
+    TPM2B_DIGEST *creationHash = NULL;
+    TPMT_TK_CREATION *creationTicket = NULL;
+    TPM2B_ATTEST *timeInfo = NULL;
+    TPMT_SIGNATURE *signature = NULL;
+
     TPM2B_AUTH authValuePrimary = {
         .size = 5,
         .buffer = {1, 2, 3, 4, 5}
@@ -122,10 +129,6 @@ test_esys_get_time(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: TR_SetAuth", error);
 
     RSRC_NODE_T *primaryHandle_node;
-    TPM2B_PUBLIC *outPublic;
-    TPM2B_CREATION_DATA *creationData;
-    TPM2B_DIGEST *creationHash;
-    TPMT_TK_CREATION *creationTicket;
 
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary,
@@ -148,8 +151,6 @@ test_esys_get_time(ESYS_CONTEXT * esys_context)
     ESYS_TR privacyAdminHandle= ESYS_TR_RH_ENDORSEMENT;
     TPMT_SIG_SCHEME inScheme = { .scheme = TPM2_ALG_NULL };
     TPM2B_DATA qualifyingData = {0};
-    TPM2B_ATTEST *timeInfo;
-    TPMT_SIGNATURE *signature;
 
     r = Esys_GetTime (
          esys_context,
@@ -178,6 +179,12 @@ test_esys_get_time(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, signHandle);
     goto_if_error(r, "Error: FlushContext", error);
 
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
+    Esys_Free(timeInfo);
+    Esys_Free(signature);
     return EXIT_SUCCESS;
 
  error:
@@ -187,6 +194,12 @@ test_esys_get_time(ESYS_CONTEXT * esys_context)
             LOG_ERROR("Cleanup signHandle failed.");
         }
     }
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
+    Esys_Free(timeInfo);
+    Esys_Free(signature);
     return failure_return;
 }
 

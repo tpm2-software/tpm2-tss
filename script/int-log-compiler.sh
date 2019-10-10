@@ -228,6 +228,7 @@ while true; do
 env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
     TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
+    TPM20TEST_TCTI="mssim:host=127.0.0.1,port=${SIM_PORT_DATA}" \
     G_MESSAGES_DEBUG=all ./test/helper/tpm_startup
 if [ $? -ne 0 ]; then
     echo "TPM_StartUp failed"
@@ -235,13 +236,81 @@ if [ $? -ne 0 ]; then
     break
 fi
 
+EKPUB_FILE=${TEST_BIN}_ekpub.pem
+EKCERT_FILE=${TEST_BIN}_ekcert.crt
+INTERMEDCA_FILE=${TEST_BIN}_intermed-ca.pem
+ROOTCA_FILE=${TEST_BIN}_root-ca.pem
+
 env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
     TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
+    TPM20TEST_TCTI="mssim:host=127.0.0.1,port=${SIM_PORT_DATA}" \
+    G_MESSAGES_DEBUG=all ./test/helper/tpm_getek>$EKPUB_FILE
+if [ $? -ne 0 ]; then
+    echo "TPM_getek failed"
+    ret=99
+    break
+fi
+
+EKECCPUB_FILE=${TEST_BIN}_ekeccpub.pem
+EKECCCERT_FILE=${TEST_BIN}_ekecccert.crt
+INTERMEDCA_FILE=${TEST_BIN}_intermedecc-ca.pem
+ROOTCA_FILE=${TEST_BIN}_root-ca.pem
+
+env TPM20TEST_TCTI_NAME="socket" \
+    TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
+    TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
+    TPM20TEST_TCTI="mssim:host=127.0.0.1,port=${SIM_PORT_DATA}" \
+    G_MESSAGES_DEBUG=all ./test/helper/tpm_getek_ecc>$EKECCPUB_FILE
+if [ $? -ne 0 ]; then
+    echo "TPM_getek_ecc failed"
+    ret=99
+    break
+fi
+
+SCRIPTDIR="$(dirname $(realpath $0))/"
+${SCRIPTDIR}/ekca/create_ca.sh "${EKPUB_FILE}" "${EKECCPUB_FILE}" "${EKCERT_FILE}" \
+                               "${EKECCCERT_FILE}" "${INTERMEDCA_FILE}" "${ROOTCA_FILE}" >${TEST_BIN}_ca.log 2>&1
+if [ $? -ne 0 ]; then
+    echo "ek-cert ca failed"
+    ret=99
+    break
+fi
+
+#hd $EKCERT_FILE
+#openssl x509 -in $EKCERT_FILE -inform DER -text -noout
+
+cat $EKCERT_FILE | \
+env TPM20TEST_TCTI_NAME="socket" \
+    TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
+    TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
+    TPM20TEST_TCTI="mssim:host=127.0.0.1,port=${SIM_PORT_DATA}" \
+    G_MESSAGES_DEBUG=all ./test/helper/tpm_writeekcert 1C00002
+if [ $? -ne 0 ]; then
+    echo "TPM_writeekcert failed"
+    ret=99
+    break
+fi
+
+cat $EKECCCERT_FILE | \
+env TPM20TEST_TCTI_NAME="socket" \
+    TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
+    TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
+    TPM20TEST_TCTI="mssim:host=127.0.0.1,port=${SIM_PORT_DATA}" \
+    G_MESSAGES_DEBUG=all ./test/helper/tpm_writeekcert 1C0000A
+if [ $? -ne 0 ]; then
+    echo "TPM_writeekcert failed"
+    ret=99
+fi
+
+env TPM20TEST_TCTI_NAME="socket" \
+    TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
+    TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
+    TPM20TEST_TCTI="mssim:host=127.0.0.1,port=${SIM_PORT_DATA}" \
     G_MESSAGES_DEBUG=all ./test/helper/tpm_transientempty
 if [ $? -ne 0 ]; then
     echo "TPM transient area not empty => skipping"
-    ret=77
+    ret=99
     break
 fi
 
@@ -251,6 +320,7 @@ TPMSTATE_FILE2=${TEST_BIN}_state2
 env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
     TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
+    TPM20TEST_TCTI="mssim:host=127.0.0.1,port=${SIM_PORT_DATA}" \
     G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>$TPMSTATE_FILE1
 if [ $? -ne 0 ]; then
     echo "Error during dumpstate"
@@ -262,6 +332,9 @@ echo "Execute the test script"
 env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
     TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
+    TPM20TEST_TCTI="mssim:host=127.0.0.1,port=${SIM_PORT_DATA}" \
+    INTERMEDCA=$INTERMEDCA_FILE \
+    ROOTCA=$ROOTCA_FILE \
     G_MESSAGES_DEBUG=all $@
 ret=$?
 echo "Script returned $ret"
@@ -270,6 +343,7 @@ echo "Script returned $ret"
 env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
     TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
+    TPM20TEST_TCTI="mssim:host=127.0.0.1,port=${SIM_PORT_DATA}" \
     G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>$TPMSTATE_FILE2
 if [ $? -ne 0 ]; then
     echo "Error during dumpstate"
@@ -295,6 +369,7 @@ break
 env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
     TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
+    TPM20TEST_TCTI="mssim:host=127.0.0.1,port=${SIM_PORT_DATA}" \
     G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>$TPMSTATE_FILE2
 if [ $? -ne 0 ]; then
     echo "Error during dumpstate"
@@ -322,4 +397,5 @@ sleep 1
 # teardown
 daemon_stop ${SIM_PID_FILE}
 rm -rf ${SIM_TMP_DIR} ${SIM_PID_FILE}
+
 exit $ret

@@ -50,6 +50,9 @@ test_esys_policy_nv_undefine_special(ESYS_CONTEXT * esys_context)
     ESYS_TR policySession = ESYS_TR_NONE;
     ESYS_TR session = ESYS_TR_NONE;
     int failure_return = EXIT_FAILURE;
+
+    TPM2B_DIGEST *policyDigestTrial = NULL;
+
     /*
      * First the policy value for NV_UndefineSpaceSpecial has to be
      * determined with a policy trial session.
@@ -89,7 +92,6 @@ test_esys_policy_nv_undefine_special(ESYS_CONTEXT * esys_context)
                                );
     goto_if_error(r, "Error: PolicyCommandCode", error);
 
-    TPM2B_DIGEST *policyDigestTrial;
     r = Esys_PolicyGetDigest(esys_context,
                              sessionTrial,
                              ESYS_TR_NONE,
@@ -216,6 +218,7 @@ test_esys_policy_nv_undefine_special(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, policySession);
     goto_if_error(r, "Flushing context", error);
 
+    Esys_Free(policyDigestTrial);
     return EXIT_SUCCESS;
 
  error:
@@ -238,6 +241,7 @@ test_esys_policy_nv_undefine_special(ESYS_CONTEXT * esys_context)
         }
     }
 
+    Esys_Free(policyDigestTrial);
     return failure_return;
 }
 

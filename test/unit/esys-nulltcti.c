@@ -56,9 +56,10 @@ __wrap_Tss2_TctiLdr_Initialize (const char *nameConf,
 }
 
 void
-tctildr_finalize_data (void **data)
+__wrap_Tss2_TctiLdr_Finalize (TSS2_TCTI_CONTEXT **tcti)
 {
-    return;
+    free(*tcti);
+    *tcti = NULL;
 }
 
 static void

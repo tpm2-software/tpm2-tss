@@ -41,6 +41,19 @@ test_esys_object_changeauth(ESYS_CONTEXT * esys_context)
     ESYS_TR primaryHandle = ESYS_TR_NONE;
     ESYS_TR loadedKeyHandle = ESYS_TR_NONE;
 
+    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_CREATION_DATA *creationData = NULL;
+    TPM2B_DIGEST *creationHash = NULL;
+    TPMT_TK_CREATION *creationTicket = NULL;
+
+    TPM2B_PUBLIC *outPublic2 = NULL;
+    TPM2B_PRIVATE *outPrivate2 = NULL;
+    TPM2B_CREATION_DATA *creationData2 = NULL;
+    TPM2B_DIGEST *creationHash2 = NULL;
+    TPMT_TK_CREATION *creationTicket2 = NULL;
+
+    TPM2B_PRIVATE *outPrivateChangeAuth = NULL;
+
     TPM2B_PUBLIC inPublic = {
         .size = 0,
         .publicArea = {
@@ -105,11 +118,6 @@ test_esys_object_changeauth(ESYS_CONTEXT * esys_context)
 
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
-
-    TPM2B_PUBLIC *outPublic;
-    TPM2B_CREATION_DATA *creationData;
-    TPM2B_DIGEST *creationHash;
-    TPMT_TK_CREATION *creationTicket;
 
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary, &inPublic,
@@ -188,12 +196,6 @@ test_esys_object_changeauth(ESYS_CONTEXT * esys_context)
         .count = 0,
     };
 
-    TPM2B_PUBLIC *outPublic2;
-    TPM2B_PRIVATE *outPrivate2;
-    TPM2B_CREATION_DATA *creationData2;
-    TPM2B_DIGEST *creationHash2;
-    TPMT_TK_CREATION *creationTicket2;
-
     r = Esys_Create(esys_context,
                     primaryHandle,
                     ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
@@ -220,8 +222,6 @@ test_esys_object_changeauth(ESYS_CONTEXT * esys_context)
                           .buffer={30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
                                    40, 41, 42, 43, 44, 45, 46, 47, 48, 49}};
 
-    TPM2B_PRIVATE *outPrivateChangeAuth;
-
     r = Esys_ObjectChangeAuth(esys_context,
                               loadedKeyHandle,
                               primaryHandle,
@@ -239,6 +239,18 @@ test_esys_object_changeauth(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, primaryHandle);
     goto_if_error(r, "Error during FlushContext", error);
 
+    SAFE_FREE(outPublic);
+    SAFE_FREE(creationData);
+    SAFE_FREE(creationHash);
+    SAFE_FREE(creationTicket);
+
+    SAFE_FREE(outPublic2);
+    SAFE_FREE(outPrivate2);
+    SAFE_FREE(creationData2);
+    SAFE_FREE(creationHash2);
+    SAFE_FREE(creationTicket2);
+
+    SAFE_FREE(outPrivateChangeAuth);
     return EXIT_SUCCESS;
 
  error:
@@ -255,6 +267,18 @@ test_esys_object_changeauth(ESYS_CONTEXT * esys_context)
         }
     }
 
+    SAFE_FREE(outPublic);
+    SAFE_FREE(creationData);
+    SAFE_FREE(creationHash);
+    SAFE_FREE(creationTicket);
+
+    SAFE_FREE(outPublic2);
+    SAFE_FREE(outPrivate2);
+    SAFE_FREE(creationData2);
+    SAFE_FREE(creationHash2);
+    SAFE_FREE(creationTicket2);
+
+    SAFE_FREE(outPrivateChangeAuth);
     return EXIT_FAILURE;
 }
 

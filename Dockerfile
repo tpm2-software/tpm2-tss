@@ -4,6 +4,11 @@ COPY . /tmp/tpm2-tss/
 WORKDIR /tmp/tpm2-tss
 ENV LD_LIBRARY_PATH /usr/local/lib
 
+# Install libjson-c
+RUN apt-get update && apt-get install -y --no-install-recommends \
+       libjson-c-dev \
+       && rm -rf /var/lib/apt/lists/*
+
 # Fuzzing
 FROM base AS fuzzing
 ENV GEN_FUZZ 1

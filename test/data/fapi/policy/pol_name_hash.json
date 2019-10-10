@@ -1,0 +1,9 @@
+{
+    "description":"Description pol_authorize",
+    "policy":[
+        {
+            "type": "POLICYNAMEHASH",
+			"namePaths":  [ "/HS/SRK/mySignKey" ]
+		}
+    ]
+}

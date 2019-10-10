@@ -1013,8 +1013,8 @@ Both the synchronous and asynchronous API are exposed through a single library: 
 /*!
  \defgroup iesys_crypto Internal Cryptographic Backend
  \ingroup iesys
- The types and functions used internally be ESAPI for cryptographic operations.
- There may exist multiple implementations of these functions for different
+ The types and functions used internally by ESAPI for cryptographic operations.
+ Multiple implementations of these functions may exist for different
  cryptographic backends.
  \{
  \def IESYS_CRYPTO_CONTEXT_BLOB
@@ -1057,6 +1057,12 @@ Both the synchronous and asynchronous API are exposed through a single library: 
 
 /*!
  \defgroup Testgroup Testing
+ Description of the test plan.
+*/
+
+/*!
+ \defgroup EsysTestgroup Esys-Testing
+ \ingroup Testgroup
  \{
  @brief \{
  For every integration test a function with a name corresponding to the name of the source code
@@ -1147,5 +1153,439 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \fn test_esys_commit(ESYS_CONTEXT * esys_context)
  \fn test_esys_policy_nv_changeauth(ESYS_CONTEXT * esys_context)
  \}
+ \}
+*/
+
+/*!
+ \defgroup fapi Feature API
+ Feature API (FAPI) as described in the [TSS 2.0 Feature API (FAPI) Specification](https://trustedcomputinggroup.org/wp-content/uploads/todo.pdf).
+ This API provides a very abstract view on TPM functionalities most suitable for 80 percent of applications. In mostly uses standard types in its parameter list. Policies are encoded in JSON, whereas most key material is encoded as PEM.
+ Both the synchronous and asynchronous API are exposed through a single library: libtss2-fapi.
+ In order to perform an asynchronous invocation of FAPI functions, the following code serves as a template:
+ do { r = Fapi_GetPollHandles(fc, &ph, &nph);
+      if (r == TSS2_RC_SUCCESS) { poll(ph, nph, -1); Fapi_Free(ph); }
+      r = Fapi_*_Finish(fc, ...); } while (r == TSS2_FAPI_RC_TRY_AGAIN);
+ \{
+ \typedef FAPI_CONTEXT
+ Reference to the FAPI_CONTEXT that holds data for the connection to the TPM as
+ well as the metadata for TPM Resource as well as links to the key- and policy
+ store or key material for encrypted sessions.
+ \defgroup Fapi_Initialize Fapi_Initialize
+ FAPI functions to invoke Initialize either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_Initialize(FAPI_CONTEXT **context, char const *uri)
+ \fn Fapi_Initialize_Async(FAPI_CONTEXT **context, char const *uri)
+ \fn Fapi_Initialize_Finish(FAPI_CONTEXT **context)
+ \}
+ \defgroup Fapi_Finalize Fapi_Finalize
+ FAPI function to invoke Finalize.
+ \{
+ \fn Fapi_Finalize(FAPI_CONTEXT **context)
+ \}
+ \defgroup Fapi_GetTcti Fapi_GetTcti
+ FAPI function to retrieve the TSS2_TCTI_CONTEXT currently used by the corresponding FAPI_CONTEXT.
+ \{
+ \fn Fapi_GetTcti(FAPI_CONTEXT *context, TSS2_TCTI_CONTEXT **tcti)
+ \}
+ \defgroup Fapi_GetPollHandles Fapi_GetPollHandles
+ FAPI function to retrieve the poll handles currently used by the corresponding FAPI_CONTEXT.
+ \{
+ \fn Fapi_GetPollHandles(FAPI_CONTEXT *context, FAPI_POLL_HANDLE **handles, size_t *num_handles)
+ \}
+ \defgroup Fapi_Free Fapi_Free
+ FAPI function to invoke Free.
+ \{
+ \fn Fapi_Free( \fn *ptr)
+ \}
+ \defgroup Fapi_GetInfo Fapi_GetInfo
+ FAPI functions to invoke GetInfo either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_GetInfo(FAPI_CONTEXT *context, char **info)
+ \fn Fapi_GetInfo_Async(FAPI_CONTEXT *context)
+ \fn Fapi_GetInfo_Finish(FAPI_CONTEXT *context, char **info)
+ \}
+ \defgroup Fapi_Provision Fapi_Provision
+ FAPI functions to invoke Provision either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_Provision(FAPI_CONTEXT *context, char const *policyPathEh, char const *authValueEh, char const *policyPathSh, char const *authValueSh, char const *authValueLockout)
+ \fn Fapi_Provision_Async(FAPI_CONTEXT *context, char const *policyPathEh, char const *authValueEh, char const *policyPathSh, char const *authValueSh, char const *authValueLockout)
+ \fn Fapi_Provision_Finish(FAPI_CONTEXT *context)
+ \}
+ \defgroup Fapi_GetPlatformCertificates Fapi_GetPlatformCertificates
+ FAPI functions to invoke GetPlatformCertificates either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_GetPlatformCertificates(FAPI_CONTEXT *context, uint8_t **certificates, size_t *certificatesSize)
+ \fn Fapi_GetPlatformCertificates_Async(FAPI_CONTEXT *context)
+ \fn Fapi_GetPlatformCertificates_Finish(FAPI_CONTEXT *context, uint8_t **certificates, size_t *certificatesSize)
+ \}
+ \defgroup Fapi_GetRandom Fapi_GetRandom
+ FAPI functions to invoke GetRandom either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_GetRandom(FAPI_CONTEXT *context, size_t numBytes, uint8_t **data)
+ \fn Fapi_GetRandom_Async(FAPI_CONTEXT *context, size_t numBytes)
+ \fn Fapi_GetRandom_Finish(FAPI_CONTEXT *context, uint8_t **data)
+ \}
+ \defgroup Fapi_Import Fapi_Import
+ FAPI functions to invoke Import either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_Import(FAPI_CONTEXT *context, char const *path, char const *importData)
+ \fn Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importData)
+ \fn Fapi_Import_Finish(FAPI_CONTEXT *context)
+ \}
+ \defgroup Fapi_List Fapi_List
+ FAPI functions to invoke List either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_List(FAPI_CONTEXT *context, char const *searchPath, char **pathList)
+ \fn Fapi_List_Async(FAPI_CONTEXT *context, char const *searchPath)
+ \fn Fapi_List_Finish(FAPI_CONTEXT *context, char **pathlist)
+ \}
+ \defgroup Fapi_Delete Fapi_Delete
+ FAPI functions to invoke Delete either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_Delete(FAPI_CONTEXT *context, char const *path)
+ \fn Fapi_Delete_Async(FAPI_CONTEXT *context, char const *path)
+ \fn Fapi_Delete_Finish(FAPI_CONTEXT *context)
+ \}
+ \defgroup Fapi_ChangeAuth Fapi_ChangeAuth
+ FAPI functions to invoke ChangeAuth either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_ChangeAuth(FAPI_CONTEXT *context, char const *entityPath, char const *authValue)
+ \fn Fapi_ChangeAuth_Async(FAPI_CONTEXT *context, char const *entityPath, char const *authValue)
+ \fn Fapi_ChangeAuth_Finish(FAPI_CONTEXT *context)
+ \}
+ \defgroup Fapi_SetDescription Fapi_SetDescription
+ FAPI functions to invoke SetDescription either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_SetDescription(FAPI_CONTEXT *context, char const *path, char const *description)
+ \fn Fapi_SetDescription_Async(FAPI_CONTEXT *context, char const *path, char const *description)
+ \fn Fapi_SetDescription_Finish(FAPI_CONTEXT *context)
+ \}
+ \defgroup Fapi_GetDescription Fapi_GetDescription
+ FAPI functions to invoke GetDescription either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_GetDescription(FAPI_CONTEXT *context, char const *path, char **description)
+ \fn Fapi_GetDescription_Async(FAPI_CONTEXT *context, char const *path)
+ \fn Fapi_GetDescription_Finish(FAPI_CONTEXT *context, char **description)
+ \}
+ \defgroup Fapi_SetAppData Fapi_SetAppData
+ FAPI functions to invoke SetAppData either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_SetAppData(FAPI_CONTEXT *context, char const *path, uint8_t const *appData, size_t appDataSize)
+ \fn Fapi_SetAppData_Async(FAPI_CONTEXT *context, char const *path, uint8_t const *appData, size_t appDataSize)
+ \fn Fapi_SetAppData_Finish(FAPI_CONTEXT *context)
+ \}
+ \defgroup Fapi_GetAppData Fapi_GetAppData
+ FAPI functions to invoke GetAppData either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_GetAppData(FAPI_CONTEXT *context, char const *path, uint8_t **appData, size_t *appDataSize)
+ \fn Fapi_GetAppData_Async(FAPI_CONTEXT *context, char const *path)
+ \fn Fapi_GetAppData_Finish(FAPI_CONTEXT *context, uint8_t **appData, size_t *appDataSize)
+ \}
+ \defgroup Fapi_GetTpmBlobs Fapi_GetTpmBlobs
+ FAPI functions to invoke GetTPMBlobs either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_GetTpmBlobs(FAPI_CONTEXT *context, char const *path, uint8_t **tpm2bPublic, size_t *tpm2bPublicSize, uint8_t **tpm2bPrivate, size_t *tpm2bPrivateSize, char **policy)
+ \fn Fapi_GetTpmBlobs_Async(FAPI_CONTEXT *context, char const *path)
+ \fn Fapi_GetTpmBlobs_Finish(FAPI_CONTEXT *context, uint8_t **tpm2bPublic, size_t *tpm2bPublicSize, uint8_t **tpm2bPrivate, size_t *tpm2bPrivateSize, char **policy)
+ \}
+ \defgroup Fapi_CreateKey Fapi_CreateKey
+ FAPI functions to invoke CreateKey either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_CreateKey(FAPI_CONTEXT *context, char const *path, char const *type, char const *policyPath, char const *authvalue)
+ \fn Fapi_CreateKey_Async(FAPI_CONTEXT *context, char const *keyPath, char const *type, char const *policyPath, char const *authvalue)
+ \fn Fapi_CreateKey_Finish(FAPI_CONTEXT *context)
+ \}
+ \defgroup Fapi_Sign Fapi_Sign
+ FAPI functions to invoke Sign either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_Sign(FAPI_CONTEXT *context, char const *keyPath, char const *padding, uint8_t const *digest, size_t digestSize, uint8_t **signature, size_t *signatureSize, char **publicKey, char **certificate)
+ \fn Fapi_Sign_Async(FAPI_CONTEXT *context, char const *keyPath, char const *padding, uint8_t const *digest, size_t digestSize)
+ \fn Fapi_Sign_Finish(FAPI_CONTEXT *context, uint8_t **signature, size_t *signatureSize, char **publicKey, char **certificate)
+ \}
+ \defgroup Fapi_VerifySignature Fapi_VerifySignature
+ FAPI functions to invoke VerifySignature either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_VerifySignature(FAPI_CONTEXT *context, char const *keyPath, uint8_t const *digest, size_t digestSize, uint8_t const *signature, size_t signatureSize)
+ \fn Fapi_VerifySignature_Async(FAPI_CONTEXT *context, char const *keyPath, uint8_t const *digest, size_t digestSize, uint8_t const *signature, size_t signatureSize)
+ \fn Fapi_VerifySignature_Finish(FAPI_CONTEXT *context)
+ \}
+ \defgroup Fapi_Encrypt Fapi_Encrypt
+ FAPI functions to invoke Encrypt either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_Encrypt(FAPI_CONTEXT *context, char const *keyPath, char const *policyPath, uint8_t const *plaintext, size_t plaintextSize, char **cipherText)
+ \fn Fapi_Encrypt_Async(FAPI_CONTEXT *context, char const *keyPath, char const *policyPath, uint8_t const *plaintext, size_t plaintextSize)
+ \fn Fapi_Encrypt_Finish(FAPI_CONTEXT *context, char **cipherText)
+ \}
+ \defgroup Fapi_Decrypt Fapi_Decrypt
+ FAPI functions to invoke Decrypt either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_Decrypt(FAPI_CONTEXT *context, char const *cipherText, uint8_t **plainText, size_t *plainTextSize)
+ \fn Fapi_Decrypt_Async(FAPI_CONTEXT *context, char const *cipherText)
+ \fn Fapi_Decrypt_Finish(FAPI_CONTEXT *context, uint8_t **plainText, size_t *plainTextSize)
+ \}
+ \defgroup Fapi_SetCertificate Fapi_SetCertificate
+ FAPI functions to invoke SetCertificate either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_SetCertificate(FAPI_CONTEXT *context, char const *path, char const *x509certData)
+ \fn Fapi_SetCertificate_Async(FAPI_CONTEXT *context, char const *path, char const *x509certData)
+ \fn Fapi_SetCertificate_Finish(FAPI_CONTEXT *context)
+ \}
+ \defgroup Fapi_GetCertificate Fapi_GetCertificate
+ FAPI functions to invoke GetCertificate either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_GetCertificate(FAPI_CONTEXT *context, char const *path, char **x509certData)
+ \fn Fapi_GetCertificate_Async(FAPI_CONTEXT *context, char const *path)
+ \fn Fapi_GetCertificate_Finish(FAPI_CONTEXT *context, char **x509certData)
+ \}
+ \defgroup Fapi_ExportKey Fapi_ExportKey
+ FAPI functions to invoke ExportKey either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_ExportKey(FAPI_CONTEXT *context, char const *pathOfKeyToDuplicate, char const *pathToPublicKeyOfNewParent, char **exportedData)
+ \fn Fapi_ExportKey_Async(FAPI_CONTEXT *context, char const *pathOfKeyToDuplicate, char const *pathToPublicKeyOfNewParent)
+ \fn Fapi_ExportKey_Finish(FAPI_CONTEXT *context, char **exportedData)
+ \}
+ \defgroup Fapi_CreateSeal Fapi_CreateSeal
+ FAPI functions to invoke CreateSeal either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_CreateSeal(FAPI_CONTEXT *context, char const *path, char const *type, size_t size, char const *policyPath, char const *authValue, uint8_t const *data)
+ \fn Fapi_CreateSeal_Async(FAPI_CONTEXT *context, char const *path, char const *type, size_t size, char const *policyPath, char const *authValue, uint8_t const *data)
+ \fn Fapi_CreateSeal_Finish(FAPI_CONTEXT *context)
+ \}
+ \defgroup Fapi_Unseal Fapi_Unseal
+ FAPI functions to invoke Unseal either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_Unseal(FAPI_CONTEXT *context, char const *path, uint8_t **data, size_t *size)
+ \fn Fapi_Unseal_Async(FAPI_CONTEXT *context, char const *path)
+ \fn Fapi_Unseal_Finish(FAPI_CONTEXT *context, uint8_t **data, size_t *size)
+ \}
+ \defgroup Fapi_ExportPolicy Fapi_ExportPolicy
+ FAPI functions to invoke ExportPolicy either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_ExportPolicy(FAPI_CONTEXT *context, char const *path, char **jsonPolicy)
+ \fn Fapi_ExportPolicy_Async(FAPI_CONTEXT *context, char const *path)
+ \fn Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy)
+ \}
+ \defgroup Fapi_AuthorizePolicy Fapi_AuthorizePolicy
+ FAPI functions to invoke AuthorizePolicy either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_AuthorizePolicy(FAPI_CONTEXT *context, char const *policyPath, char const *keyPath, uint8_t const *policyRef, size_t policyRefSize)
+ \fn Fapi_AuthorizePolicy_Async(FAPI_CONTEXT *context, char const *policyPath, char const *keyPath, uint8_t const *policyRef, size_t policyRefSize)
+ \fn Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context)
+ \}
+ \defgroup Fapi_WriteAuthorizeNv Fapi_WriteAuthorizeNv
+ FAPI functions to invoke WriteAuthorizeNv either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_WriteAuthorizeNv(FAPI_CONTEXT *context, char const *nvPath, char const *policyPath)
+ \fn Fapi_WriteAuthorizeNv_Async(FAPI_CONTEXT *context, char const *nvPath, char const *policyPath)
+ \fn Fapi_WriteAuthorizeNv_Finish(FAPI_CONTEXT *context)
+ \}
+ \defgroup Fapi_PcrRead Fapi_PcrRead
+ FAPI functions to invoke PcrRead either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_PcrRead(FAPI_CONTEXT *context, uint32_t pcrIndex, uint8_t **pcrValue, size_t *pcrValueSize, char **pcrLog)
+ \fn Fapi_PcrRead_Async(FAPI_CONTEXT *context, uint32_t pcrIndex)
+ \fn Fapi_PcrRead_Finish(FAPI_CONTEXT *context, uint8_t **pcrValue, size_t *pcrValueSize, char **pcrLog)
+ \}
+ \defgroup Fapi_PcrExtend Fapi_PcrExtend
+ FAPI functions to invoke PcrExtend either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_PcrExtend(FAPI_CONTEXT *context, uint32_t pcr, uint8_t const *data, size_t dataSize, char const *logData)
+ \fn Fapi_PcrExtend_Async(FAPI_CONTEXT *context, uint32_t pcr, uint8_t const *data, size_t dataSize, char const *logData)
+ \fn Fapi_PcrExtend_Finish(FAPI_CONTEXT *context)
+ \}
+ \defgroup Fapi_Quote Fapi_Quote
+ FAPI functions to invoke Quote either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_Quote(FAPI_CONTEXT *context, uint32_t *pcrList, size_t pcrListSize, char const *keyPath, char const *quoteType, uint8_t const *qualifyingData, size_t qualifyingDataSize, char **quoteInfo, uint8_t **signature, size_t *signatureSize, char **pcrLog, char **certificate)
+ \fn Fapi_Quote_Async(FAPI_CONTEXT *context, uint32_t *pcrList, size_t pcrListSize, char const *keyPath, char const *quoteType, uint8_t const *qualifyingData, size_t qualifyingDataSize)
+ \fn Fapi_Quote_Finish(FAPI_CONTEXT *context, char **quoteInfo, uint8_t **signature, size_t *signatureSize, char **pcrLog, char **certificate)
+ \}
+ \defgroup Fapi_VerifyQuote Fapi_VerifyQuote
+ FAPI functions to invoke VerifyQuote either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_VerifyQuote(FAPI_CONTEXT *context, char const *publicKeyPath, uint8_t const *qualifyingData, size_t qualifyingDataSize, char const *quoteInfo, uint8_t const *signature, size_t signatureSize, char const *pcrLog)
+ \fn Fapi_VerifyQuote_Async(FAPI_CONTEXT *context, char const *publicKeyPath, uint8_t const *qualifyingData, size_t qualifyingDataSize, char const *quoteInfo, uint8_t const *signature, size_t signatureSize, char const *pcrLog)
+ \fn Fapi_VerifyQuote_Finish(FAPI_CONTEXT *context)
+ \}
+ \defgroup Fapi_CreateNv Fapi_CreateNv
+ FAPI functions to invoke CreateNv either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_CreateNv(FAPI_CONTEXT *context, char const *path, char const *type, size_t size, char const *policyPath, char const *authValue)
+ \fn Fapi_CreateNv_Async(FAPI_CONTEXT *context, char const *path, char const *type, size_t size, char const *policyPath, char const *authValue)
+ \fn Fapi_CreateNv_Finish(FAPI_CONTEXT *context)
+ \}
+ \defgroup Fapi_NvRead Fapi_NvRead
+ FAPI functions to invoke NvRead either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_NvRead(FAPI_CONTEXT *context, char const *path, uint8_t **data, size_t *size)
+ \fn Fapi_NvRead_Async(FAPI_CONTEXT *context, char const *path)
+ \fn Fapi_NvRead_Finish(FAPI_CONTEXT *context, uint8_t **data, size_t *size)
+ \}
+ \defgroup Fapi_NvWrite Fapi_NvWrite
+ FAPI functions to invoke NvWrite either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_NvWrite(FAPI_CONTEXT *context, char const *path, uint8_t const *data, size_t size)
+ \fn Fapi_NvWrite_Async(FAPI_CONTEXT *context, char const *path, uint8_t const *data, size_t size)
+ \fn Fapi_NvWrite_Finish(FAPI_CONTEXT *context)
+ \}
+ \defgroup Fapi_NvExtend Fapi_NvExtend
+ FAPI functions to invoke NvExtend either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_NvExtend(FAPI_CONTEXT *context, char const *path, uint8_t const *data, size_t size)
+ \fn Fapi_NvExtend_Async(FAPI_CONTEXT *context, char const *path, uint8_t const *data, size_t size)
+ \fn Fapi_NvExtend_Finish(FAPI_CONTEXT *context)
+ \}
+ \defgroup Fapi_NvIncrement Fapi_NvIncrement
+ FAPI functions to invoke NvIncrement either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_NvIncrement(FAPI_CONTEXT *context, char const *path)
+ \fn Fapi_NvIncrement_Async(FAPI_CONTEXT *context, char const *path)
+ \fn Fapi_NvIncrement_Finish(FAPI_CONTEXT *context)
+ \}
+ \defgroup Fapi_NvSetBits Fapi_NvSetBits
+ FAPI functions to invoke NvSetBits either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_NvSetBits(FAPI_CONTEXT *context, char const *path, uint64_t bitmap)
+ \fn Fapi_NvSetBits_Async(FAPI_CONTEXT *context, char const *path, uint64_t bitmap)
+ \fn Fapi_NvSetBits_Finish(FAPI_CONTEXT *context)
+ \}
+ \defgroup Fapi_SetAuthCB Fapi_SetAuthCB
+ FAPI functions to invoke SetAuthCB.
+ \{
+ \fn Fapi_SetAuthCB(FAPI_CONTEXT *context, Fapi_CB_Auth callback,  \fn *userData)
+ \typedef (*Fapi_CB_Auth)(FAPI_CONTEXT *context, char const *description, char **auth,  \fn *userData)
+ \}
+ \defgroup Fapi_SetBranchCB Fapi_SetBranchCB
+ FAPI functions to invoke SetBranchCB.
+ \{
+ \fn Fapi_SetBranchCB(FAPI_CONTEXT *context, Fapi_CB_Branch callback,  \fn *userData)
+ \typedef (*Fapi_CB_Branch)(FAPI_CONTEXT *context, char const *description, char const **branchNames, size_t numBranches, size_t *selectedBranch,  \fn *userData)
+ \}
+ \defgroup Fapi_SetSignCB Fapi_SetSignCB
+ FAPI functions to invoke SetSignCB.
+ \{
+ \fn Fapi_SetSignCB(FAPI_CONTEXT *context, Fapi_CB_Sign callback,  \fn *userData)
+ \typedef (*Fapi_CB_Sign)(FAPI_CONTEXT *context, char const *description, char const *publicKey, char const *publicKeyHint, uint32_t hashAlg, uint8_t const *dataToSign, size_t dataToSignSize, uint8_t **signature, size_t *signatureSize,  \fn *userData)
+ \}
+ \}
+*/
+
+/*!
+ \defgroup ifapi Internals of Feature API
+ \ingroup fapi
+ This module holds internal APIs of the FAPI implementation.
+
+ Async programming style:
+
+ The tss2-fapi implementation uses an asynchronous programming style internally.
+ This means that whenever a piece of code performs a potentially blocking operation
+ it will instead return TSS2_FAPI_RC_TRY_AGAIN (similarly to ESAPI). Then this function
+ is called again once the Poll returns ok.
+ In order to carry the state of execution information over between the different invocation
+ of the same function, the current state is stored in a state variable and all variables
+ are stored in some kind of context variables.
+ On the next entry to the function the state is evaluated using a swtich() statement and
+ execution is resumed.
+
+ In order to understand the functional flow of code in FAPI, one can read the functions
+ continuously over all fallthrough; and statecase(); statements. The statecase
+ statements are the re-entry points of each function. The return_try_again() and FAPI_SYNC()
+ statements are the preempt statements.
+ \{
+ \}
+*/
+
+/*!
+ \defgroup fapi_crypto Internal Cryptographic Backend
+ \ingroup ifapi
+ The types and functions used internally by FAPI for cryptographic operations.
+ Multiple implementations of these functions for different
+ cryptographic backends may exist.
+ \{
+ \def IFAPI_CRYPTO_CONTEXT_BLOB
+ \fn TPMI_ALG_HASH ifapi_get_sig_hash_alg(const IFAPI_KEY_PROFILE *profile,
+    TPMT_PUBLIC *tpmPublic)
+ \fn TPMI_ALG_HASH ifapi_get_sig_hash_alg(const IFAPI_KEY_PROFILE *profile,
+    TPMT_PUBLIC *tpmPublic)
+ \fn TSS2_RC ifapi_get_profile_sig_scheme(const IFAPI_KEY_PROFILE *profile,
+    const TPMT_PUBLIC *tpmPublic, TPMT_SIG_SCHEME *signatureScheme)
+ \fn TSS2_RC ifapi_der_sig_to_tpm(const TPMT_PUBLIC *tpmPublic,
+    const unsigned char *signature, size_t signatureSize,
+    TPMI_ALG_HASH hashAlgorithm, TPMT_SIGNATURE *tpmSignature)
+ \fn TSS2_RC ifapi_tpm_ecc_sig_to_der(const TPMT_SIGNATURE *tpmSignature,
+    uint8_t **signature, size_t *signatureSize)
+ \fn TSS2_RC ifapi_pub_pem_key_from_tpm(const TPM2B_PUBLIC *tpmPublicKey,
+    char **pemKey, int *pemKeySize)
+ \fn TSS2_RC ifapi_verify_signature(const IFAPI_OBJECT *keyObject,
+    const uint8_t *signature, size_t signatureSize, const uint8_t *digest,
+    size_t digestSize)
+ \fn TSS2_RC ifapi_verify_signature_quote(const IFAPI_OBJECT *keyObject,
+    const uint8_t *signature, size_t signatureSize, const uint8_t *digest,
+    size_t digestSize, const TPMT_SIG_SCHEME *signatureScheme)
+ \fn TSS2_RC ifapi_crypto_hash_start(IFAPI_CRYPTO_CONTEXT_BLOB **context,
+    TPM2_ALG_ID hashAlgorithm)
+ \fn TSS2_RC ifapi_crypto_hash_update(IFAPI_CRYPTO_CONTEXT_BLOB *context,
+    const uint8_t *buffer, size_t size)
+ \fn TSS2_RC ifapi_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context,
+    uint8_t *digest, size_t *digestSize);
+ \fn void ifapi_crypto_hash_abort(IFAPI_CRYPTO_CONTEXT_BLOB **context)
+ \fn TSS2_RC ifapi_cert_to_pem(const uint8_t *certBuffer, size_t certBufferSize,
+    char **pemCert, TPM2_ALG_ID *certAlgorithmId)
+ \fn size_t ifapi_hash_get_digest_size(TPM2_ALG_ID hashAlgorithm)
+ \fn TSS2_RC ifapi_get_tpm2b_public_from_pem(const IFAPI_KEY_PROFILE *profile,
+    const char *pemKey, TPM2B_PUBLIC *tpmPublic)
+ \fn TSS2_RC ifapi_crypto_aes_encrypt(const uint8_t *key, size_t keySize,
+    const uint8_t *iv, uint8_t *buffer, size_t bufferSize)
+ \fn TSS2_RC ifapi_crypto_aes_decrypt(const uint8_t *key, size_t keySize,
+    const uint8_t *iv, uint8_t *buffer, size_t bufferSize)
+ \fn TSS2_RC ifapi_get_hash_alg_for_size(uint16_t size, TPMI_ALG_HASH *hashAlgorithm)
+ \fn TPM2_ALG_ID ifapi_get_signature_algorithm_from_pem(const char *pemKey)
+\}
+*/
+
+/*!
+ \defgroup ifapi_config FAPI configuration module
+ \ingroup ifapi
+ Provides functions and types for the FAPI configuration and its initialization
+ \{
+  \def IFAPI_CONFIG
+  \fn TSS2_RC ifapi_config_initialize_async(IFAPI_IO *io)
+  \fn TSS2_RC ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config)
+ \}
+*/
+
+/*!
+ \defgroup FapiTestgroup Fapi-Testing
+ Testing of FAPI functionality. The tested FAPI functions are listed in each
+ of the testcase functions' descriptions.
+ \ingroup Testgroup
+ \{
+ \fn test_fapi_info(FAPI_CONTEXT *context)
+ \fn test_fapi_data_crypt_rsa(FAPI_CONTEXT *context)
+ \fn test_fapi_duplicate(FAPI_CONTEXT *context)
+ \fn test_fapi_change_key_auth(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_policy_signed(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_sign_password_provision(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_ecc(FAPI_CONTEXT *context)
+ \fn test_fapi_nv_ordinary(FAPI_CONTEXT *context)
+ \fn test_fapi_quote(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
+ \fn test_fapi_policy_authorize_nv(FAPI_CONTEXT *context)
+ \fn test_fapi_nv_set_bits(FAPI_CONTEXT *context)
+ \fn test_fapi_policy_secret(FAPI_CONTEXT *context)
+ \fn test_fapi_nv_written(FAPI_CONTEXT *context)
+ \fn test_fapi_nv_increment(FAPI_CONTEXT *context)
+ \fn test_fapi_get_random(FAPI_CONTEXT *context)
+ \fn test_fapi_pcr_test(FAPI_CONTEXT *context)
+ \fn test_fapi_policy_password(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_policy_or_sign(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_policy_nv_sign(FAPI_CONTEXT *context)
+ \fn test_fapi_nv_extend(FAPI_CONTEXT *context)
+ \fn test_fapi_ext_public_key(FAPI_CONTEXT *context)
+ \fn test_fapi_get_platform_certificates(FAPI_CONTEXT *context)
+ \fn test_fapi_seal(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_sign_policy_provision(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
  \}
 */

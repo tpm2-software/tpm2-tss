@@ -1,0 +1,130 @@
+/* SPDX-License-Identifier: BSD-2-Clause */
+/*******************************************************************************
+ * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * All rights reserved.
+ *******************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+
+#include "tss2_fapi.h"
+
+#include "test-fapi.h"
+#define LOGMODULE test
+#include "util/log.h"
+#include "util/aux_util.h"
+
+/** Test the FAPI functions for key creation and usage.
+ *
+ * Tested FAPI commands:
+ *  - Fapi_Provision()
+ *  - Fapi_CreateKey()
+ *  - Fapi_Sign()
+ *  - Fapi_Delete()
+ *  - Fapi_List()
+ *
+ * @param[in,out] context The FAPI_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
+ */
+
+#define SIZE 2000
+
+int
+test_fapi_duplicate(FAPI_CONTEXT *context)
+{
+    TSS2_RC r;
+    char *policy_name = "/policy/pol_duplicate";
+    char *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_duplicate.json";
+    FILE *stream = NULL;
+    char *json_policy = NULL;
+    long policy_size;
+    char *json_duplicate = NULL;
+    char *json_string_pub_key = NULL;
+
+    r = Fapi_Provision(context, NULL, NULL, NULL);
+    goto_if_error(r, "Error Fapi_Provision", error);
+
+    r = pcr_reset(context, 16);
+    goto_if_error(r, "Error pcr_reset", error);
+
+    stream = fopen(policy_file, "r");
+    if (!stream) {
+        LOG_ERROR("File %s does not exist", policy_file);
+        goto error;
+    }
+    fseek(stream, 0L, SEEK_END);
+    policy_size = ftell(stream);
+    fclose(stream);
+    json_policy = malloc(policy_size + 1);
+    goto_if_null(json_policy,
+            "Could not allocate memory for the JSON policy",
+            TSS2_FAPI_RC_MEMORY, error);
+    stream = fopen(policy_file, "r");
+    ssize_t ret = read(fileno(stream), json_policy, policy_size);
+    if (ret != policy_size) {
+        LOG_ERROR("IO error %s.", policy_file);
+        goto error;
+    }
+    json_policy[policy_size] = '\0';
+
+    r = Fapi_Import(context, policy_name, json_policy);
+    goto_if_error(r, "Error Fapi_List", error);
+
+    r = Fapi_CreateKey(context, "HS/SRK/myRsaCryptKey", "restricted,decrypt,noDa",
+                       "", NULL);
+    goto_if_error(r, "Error Fapi_CreateKey", error);
+
+    r = Fapi_ExportKey(context, "HS/SRK/myRsaCryptKey", NULL, &json_string_pub_key);
+    goto_if_error(r, "Error Fapi_CreateKey", error);
+
+    r = Fapi_Import(context, "ext/myNewParent", json_string_pub_key);
+    goto_if_error(r, "Error Fapi_Import", error);
+
+    r = Fapi_CreateKey(context, "HS/SRK/myRsaCryptKey/myRsaCryptKey2",
+                       "exportable,decrypt,noDa", policy_name, NULL);
+    goto_if_error(r, "Error Fapi_CreateKey", error);
+
+    r = Fapi_ExportKey(context, "HS/SRK/myRsaCryptKey/myRsaCryptKey2",
+                       "ext/myNewParent", &json_duplicate);
+    goto_if_error(r, "Error Fapi_CreateKey", error);
+
+    fprintf(stderr, "\nExport Data:\n%s\n", json_duplicate);
+
+    r = Fapi_Import(context, "importedKey", json_duplicate);
+    goto_if_error(r, "Error Fapi_Import", error);
+
+    fprintf(stderr, "Duplicate:\n%s\n", json_duplicate);
+
+#ifdef EK_PERSISTENT
+    Fapi_Delete(context, "P_RSA_EK_persistent");
+#else
+    Fapi_Delete(context, "P_RSA");
+#endif
+    SAFE_FREE(json_string_pub_key);
+    SAFE_FREE(json_duplicate);
+    SAFE_FREE(json_policy);
+    return EXIT_SUCCESS;
+
+error:
+#ifdef EK_PERSISTENT
+    Fapi_Delete(context, "P_RSA_EK_persistent");
+#else
+    Fapi_Delete(context, "P_RSA");
+#endif
+    SAFE_FREE(json_string_pub_key);
+    SAFE_FREE(json_duplicate);
+    SAFE_FREE(json_policy);
+    return EXIT_FAILURE;
+}
+
+int
+test_invoke_fapi(FAPI_CONTEXT *fapi_context)
+{
+    return test_fapi_duplicate(fapi_context);
+}

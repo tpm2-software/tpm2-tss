@@ -3,5 +3,5 @@
 
 function get_deps() {
 
-    echo "no deps"
+	echo "no deps"
 }
