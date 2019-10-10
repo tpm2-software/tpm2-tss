@@ -250,7 +250,30 @@ check_free(void **state)
     Esys_Free(buffer);
 }
 
+static void
+check_get_sys_context(void **state)
+{
+    ESYS_CONTEXT *ctx;
+    TSS2_TCTI_CONTEXT_COMMON_V1 tcti = {0};
+    TSS2_SYS_CONTEXT *sys_ctx = NULL;
+    TSS2_RC rc;
 
+    rc = Esys_GetSysContext(NULL, NULL);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    tcti.version = 1;
+    tcti.transmit = (void*) 0xdeadbeef;
+    tcti.receive = (void*) 0xdeadbeef;
+
+    rc = Esys_Initialize(&ctx, (TSS2_TCTI_CONTEXT *) &tcti, NULL);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+
+    rc = Esys_GetSysContext(ctx, &sys_ctx);
+    assert_ptr_not_equal(sys_ctx, NULL);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+
+    Esys_Finalize(&ctx);
+}
 
 int
 main(int argc, char *argv[])
@@ -262,6 +285,7 @@ main(int argc, char *argv[])
         cmocka_unit_test(check_pk_encrypt),
         cmocka_unit_test(check_aes_encrypt),
         cmocka_unit_test(check_free),
+        cmocka_unit_test(check_get_sys_context),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
