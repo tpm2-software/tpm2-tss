@@ -306,6 +306,7 @@
         Esys_SetAlgorithmSet;
         Esys_SetAlgorithmSet_Async;
         Esys_SetAlgorithmSet_Finish;
+        Esys_TRSess_GetAuthRequired;
         Esys_SetCommandCodeAuditStatus;
         Esys_SetCommandCodeAuditStatus_Async;
         Esys_SetCommandCodeAuditStatus_Finish;
@@ -333,6 +334,7 @@
         Esys_TestParms_Finish;
         Esys_TRSess_GetAttributes;
         Esys_TRSess_SetAttributes;
+        Esys_TRSess_GetAuthRequired;
         Esys_TRSess_GetNonceTPM;
         Esys_TR_Close;
         Esys_TR_Deserialize;

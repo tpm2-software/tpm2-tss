@@ -332,6 +332,7 @@ EXPORTS
     Esys_StirRandom_Async
     Esys_StirRandom_Finish
     Esys_TRSess_GetAttributes
+    Esys_TRSess_GetAuthRequired
     Esys_TRSess_GetNonceTPM
     Esys_TRSess_SetAttributes
     Esys_TR_Close
