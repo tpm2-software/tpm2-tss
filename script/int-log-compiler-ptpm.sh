@@ -133,9 +133,4 @@ fi
 break
 done
 
-# This sleep is sadly necessary: If we kill the tabrmd w/o sleeping for a
-# second after the test finishes the simulator will die too. Bug in the
-# simulator?
-sleep 1
-# teardown
 exit $ret
