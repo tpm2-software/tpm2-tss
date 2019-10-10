@@ -173,6 +173,12 @@ Esys_TR_GetTpmHandle(
     ESYS_TR esys_handle,
     TPM2_HANDLE *tpm_handle);
 
+TSS2_RC
+Esys_TRSess_GetAuthRequired(
+    ESYS_CONTEXT *esys_context,
+    ESYS_TR esys_handle,
+    TPMI_YES_NO *auth_needed);
+
 /* Table 5 - TPM2_Startup Command */
 
 TSS2_RC
