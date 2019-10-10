@@ -480,6 +480,14 @@ Esys_StartAuthSession_Finish(
                       "Session Key");
         return_if_error(r,"Error KDFa");
 
+        size_t offset = 0;
+        r = Tss2_MU_TPM2_HANDLE_Marshal(sessionHandleNode->rsrc.handle,
+                                        &sessionHandleNode->rsrc.name.name[0],
+                                        sizeof(sessionHandleNode->rsrc.name.name),
+                                        &offset);
+        goto_if_error(r, "Marshal session name", error_cleanup);
+
+        sessionHandleNode->rsrc.name.size = offset;
         sessionHandleNode->rsrc.misc.rsrc_session.sessionKey.size = authHash_size;
     }
     size_t offset = 0;
