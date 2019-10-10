@@ -304,6 +304,9 @@ tcti_mssim_receive (
     unsigned char *response_buffer,
     int32_t timeout)
 {
+    /* Used for simulating a timeout. */
+    static int wait = 0;
+
     TSS2_TCTI_MSSIM_CONTEXT *tcti_mssim = tcti_mssim_context_cast (tctiContext);
     TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_mssim_down_cast (tcti_mssim);
     TSS2_RC rc;
@@ -319,9 +322,16 @@ tcti_mssim_receive (
     }
 
     if (timeout != TSS2_TCTI_TIMEOUT_BLOCK) {
-        LOG_WARNING ("Asynchronous I/O not implemented. The 'timeout' "
-                     "parameter must be TSS2_TCTI_TIMEOUT_BLOCK.");
-        return TSS2_TCTI_RC_BAD_VALUE;
+        LOG_TRACE ("Asynchronous I/O not actually implemented."
+            "A timeout is being simulated by requesting a second invocation.");
+        if (wait < 1) {
+            LOG_TRACE("Requesting another invocation.");
+            wait += 1;
+            return TSS2_TCTI_RC_TRY_AGAIN;
+        } else {
+            LOG_TRACE("Sending the actual result.");
+            wait = 0;
+        }
     }
 
     if (tcti_common->header.size == 0) {
