@@ -38,8 +38,8 @@ test_esys_hash(ESYS_CONTEXT * esys_context)
                                        1, 2, 3, 4, 5, 6, 7, 8, 9}};
     TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA1;
     TPMI_RH_HIERARCHY hierarchy = TPM2_RH_OWNER;
-    TPM2B_DIGEST *outHash;
-    TPMT_TK_HASHCHECK *validation;
+    TPM2B_DIGEST *outHash = NULL;
+    TPMT_TK_HASHCHECK *validation = NULL;
 
     r = Esys_Hash(
         esys_context,
@@ -53,9 +53,13 @@ test_esys_hash(ESYS_CONTEXT * esys_context)
         &validation);
     goto_if_error(r, "Error: Hash", error);
 
+    Esys_Free(outHash);
+    Esys_Free(validation);
     return EXIT_SUCCESS;
 
  error:
+    Esys_Free(outHash);
+    Esys_Free(validation);
     return EXIT_FAILURE;
 }
 

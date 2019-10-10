@@ -1,0 +1,42 @@
+{
+    "type": "TPM2_ALG_RSA",
+    "nameAlg":"TPM2_ALG_SHA256",
+    "srk_template": "system,restricted,decrypt",
+    "srk_persistent": 0,
+    "ek_template": "system,restricted,decrypt,0x81000000",
+    "ecc_signing_scheme": {
+        "scheme":"TPM2_ALG_ECDSA",
+        "details":{
+            "hashAlg":"TPM2_ALG_SHA1"
+        },
+    },
+    "rsa_signing_scheme": {
+        "scheme":"TPM2_ALG_RSAPSS",
+        "details":{
+            "hashAlg":"TPM2_ALG_SHA1"
+        }
+    },
+    "rsa_decrypt_scheme": {
+        "scheme":"TPM2_ALG_OAEP",
+        "details":{
+            "hashAlg":"TPM2_ALG_SHA1"
+        }
+    },
+    "sym_mode":"TPM2_ALG_CFB",
+    "sym_parameters": {
+        "algorithm":"TPM2_ALG_AES",
+        "keyBits":"128",
+        "mode":"TPM2_ALG_CFB"
+    },
+    "sym_block_size": 16,
+    "pcr_selection": [
+        { "hash": "TPM2_ALG_SHA1",
+          "pcrSelect": [ 9, 15 ]
+        },
+        { "hash": "TPM2_ALG_SHA256",
+          "pcrSelect": [ 8, 16 ]
+        }
+    ],
+    "exponent": 0,
+    "keyBits": 2048
+}

@@ -604,7 +604,7 @@ Esys_TR_GetTpmHandle(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
  * PlolicyAuthValue are used for a session.
  * @param esys_context [in,out] The ESYS_CONTEXT.
  * @param esys_handle [in,out] The ESYS_TRsess for which to retrieve the nonce.
- * @param auth_needed [out] The boolean indicating whether auth value will be 
+ * @param neeed [out] The boolean indicating whether auth value will be
  *                    needed.
  * @retval TSS2_RC_SUCCESS on Success.
  * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
@@ -626,7 +626,7 @@ Esys_TRSess_GetAuthRequired(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
         return_if_error(TSS2_ESYS_RC_BAD_TR,
                         "Auth value needed for non-session object requested.");
     }
-    
+
     if (esys_object->rsrc.misc.rsrc_session.type_policy_session == POLICY_AUTH ||
         esys_object->rsrc.misc.rsrc_session.type_policy_session == POLICY_PASSWORD)
         *auth_needed = TPM2_YES;

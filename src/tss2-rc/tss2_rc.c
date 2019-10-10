@@ -703,14 +703,14 @@ tpm2_ehandler(TSS2_RC rc)
 /**
  * The default system code handler. This handles codes
  * from the RM (itself and simulated tpm responses), the marshaling
- * library (mu), and the tcti layers.
+ * library (mu), the tcti layers, sapi, esys and fapi.
  * @param rc
  *  The rc to decode.
  * @return
  *  An error string.
  */
 static const char *
-sys_err_handler (TSS2_RC rc)
+tss_err_handler (TSS2_RC rc)
 {
     /*
      * subtract 1 from the error number
@@ -767,7 +767,65 @@ sys_err_handler (TSS2_RC rc)
         /* 21 - TSS2_BASE_RC_NOT_SUPPORTED */
         "Functionality not supported",
         /* 22 - TSS2_BASE_RC_BAD_TCTI_STRUCTURE */
-        "TCTI context is bad"
+        "TCTI context is bad",
+        /* 23 - TSS2_BASE_RC_MEMORY */
+        "Failed to allocate memory",
+        /* 24 - TSS2_BASE_RC_BAD_TR */
+        "The ESYS_TR resource object is bad",
+        /* 25 - TSS2_BASE_RC_MULTIPLE_DECRYPT_SESSIONS */
+        "Multiple sessions were marked with attribute decrypt",
+        /* 26 - TSS2_BASE_RC_MULTIPLE_ENCRYPT_SESSIONS */
+        "Multiple sessions were marked with attribute encrypt",
+        /* 27 - TSS2_BASE_RC_RSP_AUTH_FAILED */
+        "Authorizing the TPM response failed",
+        /* 28 - TSS2_BASE_RC_NO_CONFIG */
+        "No config is available",
+        /* 29 - TSS2_BASE_RC_BAD_PATH */
+        "The provided path is bad",
+        /* 30 - TSS2_BASE_RC_NOT_DELETABLE */
+        "The object is not deletable",
+        /* 31 - TSS2_BASE_RC_PATH_ALREADY_EXISTS */
+        "The provided path already exists",
+        /* 32 - TSS2_BASE_RC_KEY_NOT_FOUND */
+        "The key was not found",
+        /* 33 - TSS2_BASE_RC_SIGNATURE_VERIFICATION_FAILED */
+        "Signature verification failed",
+        /* 34 - TSS2_BASE_RC_HASH_MISMATCH */
+        "Hashes mismatch",
+        /* 35 - TSS2_BASE_RC_KEY_NOT_DUPLICABLE */
+        "Key is not duplicatable",
+        /* 36 - TSS2_BASE_RC_PATH_NOT_FOUND */
+        "The path was not found",
+        /* 37 - TSS2_BASE_RC_NO_CERT */
+        "No certificate",
+        /* 38 - TSS2_BASE_RC_NO_PCR */
+        "No PCR",
+        /* 39 - TSS2_BASE_RC_PCR_NOT_RESETTABLE */
+        "PCR not resettable",
+        /* 40 - TSS2_BASE_RC_BAD_TEMPLATE */
+        "The template is bad",
+        /* 41 - TSS2_BASE_RC_AUTHORIZATION_FAILED */
+        "Authorization failed",
+        /* 42 - TSS2_BASE_RC_AUTHORIZATION_UNKNOWN */
+        "Authorization is unknown",
+        /* 43 - TSS2_BASE_RC_NV_NOT_READABLE */
+        "NV is not readable",
+        /* 44 - TSS2_BASE_RC_NV_TOO_SMALL */
+        "NV is too small",
+        /* 45 - TSS2_BASE_RC_NV_NOT_WRITEABLE */
+        "NV is not writable",
+        /* 46 - TSS2_BASE_RC_POLICY_UNKNOWN */
+        "The policy is unknown",
+        /* 47 - TSS2_BASE_RC_NV_WRONG_TYPE */
+        "The NV type is wrong",
+        /* 48 - TSS2_BASE_RC_NAME_ALREADY_EXISTS */
+        "The name already exists",
+        /* 49 - TSS2_BASE_RC_NO_TPM */
+        "No TPM available",
+        /* 50 - TSS2_BASE_RC_BAD_KEY */
+        "The key is bad",
+        /* 51 - TSS2_BASE_RC_NO_HANDLE */
+        "No handle provided"
   };
 
     return (rc - 1u < ARRAY_LEN(errors)) ? errors[rc - 1u] : NULL;
@@ -784,12 +842,12 @@ static struct {
     ADD_NULL_HANDLER,                       /* layer 3  is unused */
     ADD_NULL_HANDLER,                       /* layer 4  is unused */
     ADD_NULL_HANDLER,                       /* layer 5  is unused */
-    ADD_HANDLER("fapi", NULL),              /* layer 6  is the fapi rc */
-    ADD_HANDLER("esapi", sys_err_handler),  /* layer 7  is the esapi rc */
-    ADD_HANDLER("sys", sys_err_handler),    /* layer 8  is the sys rc */
-    ADD_HANDLER("mu",  sys_err_handler),    /* layer 9  is the mu rc */
+    ADD_HANDLER("fapi", tss_err_handler),   /* layer 6  is the fapi rc */
+    ADD_HANDLER("esapi", tss_err_handler),  /* layer 7  is the esapi rc */
+    ADD_HANDLER("sys", tss_err_handler),    /* layer 8  is the sys rc */
+    ADD_HANDLER("mu",  tss_err_handler),    /* layer 9  is the mu rc */
                                             /* Defaults to the system handler */
-    ADD_HANDLER("tcti", sys_err_handler),   /* layer 10 is the tcti rc */
+    ADD_HANDLER("tcti", tss_err_handler),   /* layer 10 is the tcti rc */
                                             /* Defaults to the system handler */
     ADD_HANDLER("rmt", tpm2_ehandler),      /* layer 11 is the resource manager TPM RC */
                                             /* The RM usually duplicates TPM responses */

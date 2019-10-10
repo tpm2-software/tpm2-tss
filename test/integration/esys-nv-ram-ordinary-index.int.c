@@ -49,6 +49,11 @@ test_esys_nv_ram_ordinary_index(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR nvHandle = ESYS_TR_NONE;
+
+    TPM2B_NV_PUBLIC *nvPublic = NULL;
+    TPM2B_NAME *nvName = NULL;
+    TPM2B_MAX_NV_BUFFER *nv_test_data2 = NULL;
+
 #ifdef TEST_SESSION
     ESYS_TR session = ESYS_TR_NONE;
     TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,
@@ -118,9 +123,6 @@ test_esys_nv_ram_ordinary_index(ESYS_CONTEXT * esys_context)
                                          .buffer={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
                                                   1, 2, 3, 4, 5, 6, 7, 8, 9}};
 
-    TPM2B_NV_PUBLIC *nvPublic;
-    TPM2B_NAME *nvName;
-
     r = Esys_NV_ReadPublic(esys_context,
                            nvHandle,
                            ESYS_TR_NONE,
@@ -155,6 +157,9 @@ test_esys_nv_ram_ordinary_index(ESYS_CONTEXT * esys_context)
 
     goto_if_error(r, "Error esys nv write", error);
 
+    Esys_Free(nvPublic);
+    Esys_Free(nvName);
+
     r = Esys_NV_ReadPublic(esys_context,
                            nvHandle,
                            ESYS_TR_NONE,
@@ -173,8 +178,6 @@ test_esys_nv_ram_ordinary_index(ESYS_CONTEXT * esys_context)
         goto error;
     }
 
-    TPM2B_MAX_NV_BUFFER *nv_test_data2;
-
     r = Esys_NV_Read(esys_context,
                      nvHandle,
                      nvHandle,
@@ -190,6 +193,10 @@ test_esys_nv_ram_ordinary_index(ESYS_CONTEXT * esys_context)
                      &nv_test_data2);
 
     goto_if_error(r, "Error esys nv read", error);
+
+    Esys_Free(nvPublic);
+    Esys_Free(nvName);
+    Esys_Free(nv_test_data2);
 
     r = Esys_NV_ReadPublic(esys_context,
                            nvHandle,
@@ -222,6 +229,9 @@ test_esys_nv_ram_ordinary_index(ESYS_CONTEXT * esys_context)
                          ESYS_TR_NONE
                          );
     goto_if_error(r, "Error: NV_ReadLock", error);
+
+    Esys_Free(nvPublic);
+    Esys_Free(nvName);
 
     r = Esys_NV_ReadPublic(esys_context,
                            nvHandle,
@@ -270,6 +280,9 @@ test_esys_nv_ram_ordinary_index(ESYS_CONTEXT * esys_context)
                           ESYS_TR_NONE
                           );
     goto_if_error(r, "Error: NV_WriteLock", error);
+
+    Esys_Free(nvPublic);
+    Esys_Free(nvName);
 
     r = Esys_NV_ReadPublic(esys_context,
                            nvHandle,
@@ -321,6 +334,9 @@ test_esys_nv_ram_ordinary_index(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, session);
     goto_if_error(r, "Error: FlushContext", error);
 #endif
+
+    Esys_Free(nvPublic);
+    Esys_Free(nvName);
     return EXIT_SUCCESS;
 
  error:
@@ -347,6 +363,9 @@ test_esys_nv_ram_ordinary_index(ESYS_CONTEXT * esys_context)
         }
     }
 #endif
+    Esys_Free(nvPublic);
+    Esys_Free(nvName);
+    Esys_Free(nv_test_data2);
     return EXIT_FAILURE;
 }
 

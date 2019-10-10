@@ -39,6 +39,9 @@ test_esys_hashsequencestart(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
 
+    TPM2B_DIGEST *result = NULL;
+    TPMT_TK_HASHCHECK *validation = NULL;
+
 #ifdef TEST_SESSION
     ESYS_TR session = ESYS_TR_NONE;
     TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,
@@ -99,9 +102,6 @@ test_esys_hashsequencestart(ESYS_CONTEXT * esys_context)
                             );
     goto_if_error(r, "Error: SequenceUpdate", error);
 
-    TPM2B_DIGEST *result;
-    TPMT_TK_HASHCHECK *validation;
-
     r = Esys_SequenceComplete(esys_context,
                               sequenceHandle_handle,
 #ifdef TEST_SESSION
@@ -123,6 +123,8 @@ test_esys_hashsequencestart(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: FlushContext", error);
 #endif
 
+    Esys_Free(result);
+    Esys_Free(validation);
     return EXIT_SUCCESS;
 
  error:
@@ -134,6 +136,8 @@ test_esys_hashsequencestart(ESYS_CONTEXT * esys_context)
         }
     }
 #endif
+    Esys_Free(result);
+    Esys_Free(validation);
     return EXIT_FAILURE;
 }
 

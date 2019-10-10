@@ -42,7 +42,11 @@ test_esys_create_policy_auth(ESYS_CONTEXT * esys_context)
     ESYS_TR primaryHandle = ESYS_TR_NONE;
     ESYS_TR trialHandle = ESYS_TR_NONE;
     ESYS_TR policyHandle = ESYS_TR_NONE;
-    TPM2B_DIGEST *trialDigest;
+
+    TPM2B_DIGEST *trialDigest = NULL;
+    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_PUBLIC *outPublic2 = NULL;
+    TPM2B_PRIVATE *outPrivate2 = NULL;
 
     TPMT_SYM_DEF policyAlgo = {
         .algorithm = TPM2_ALG_AES,
@@ -166,8 +170,6 @@ test_esys_create_policy_auth(ESYS_CONTEXT * esys_context)
         .count = 0,
     };
 
-    TPM2B_PUBLIC *outPublic;
-
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE,
                            &inSensitivePrimary, &inPublic,
@@ -250,9 +252,6 @@ test_esys_create_policy_auth(ESYS_CONTEXT * esys_context)
         .count = 0,
     };
 
-    TPM2B_PUBLIC *outPublic2;
-    TPM2B_PRIVATE *outPrivate2;
-
     r = Esys_Create(esys_context, primaryHandle, policyHandle, ESYS_TR_NONE,
                     ESYS_TR_NONE, &inSensitive2, &inPublic2, &outsideInfo2,
                     &creationPCR2, &outPrivate2, &outPublic2, NULL, NULL, NULL);
@@ -268,6 +267,10 @@ test_esys_create_policy_auth(ESYS_CONTEXT * esys_context)
     primaryHandle = ESYS_TR_NONE;
     goto_if_error(r, "Error during FlushContext", error);
 
+    Esys_Free(trialDigest);
+    Esys_Free(outPublic);
+    Esys_Free(outPublic2);
+    Esys_Free(outPrivate2);
     return EXIT_SUCCESS;
 
 error:
@@ -290,6 +293,10 @@ error:
         }
     }
 
+    Esys_Free(trialDigest);
+    Esys_Free(outPublic);
+    Esys_Free(outPublic2);
+    Esys_Free(outPrivate2);
     return EXIT_FAILURE;
 }
 

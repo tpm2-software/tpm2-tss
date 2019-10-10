@@ -49,6 +49,19 @@ test_esys_save_and_load_context(ESYS_CONTEXT * esys_context)
     ESYS_TR loadedKeyHandle1 = ESYS_TR_NONE;
     ESYS_TR loadedKeyHandle2 = ESYS_TR_NONE;
 
+    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_CREATION_DATA *creationData = NULL;
+    TPM2B_DIGEST *creationHash = NULL;
+    TPMT_TK_CREATION *creationTicket = NULL;
+
+    TPM2B_PUBLIC *outPublic2 = NULL;
+    TPM2B_PRIVATE *outPrivate2 = NULL;
+    TPM2B_CREATION_DATA *creationData2 = NULL;
+    TPM2B_DIGEST *creationHash2 = NULL;
+    TPMT_TK_CREATION *creationTicket2 = NULL;
+
+    TPMS_CONTEXT *context = NULL;
+
     TPM2B_AUTH authValuePrimary = {
         .size = 5,
         .buffer = {1, 2, 3, 4, 5}
@@ -161,10 +174,6 @@ test_esys_save_and_load_context(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: TR_SetAuth", error);
 
     RSRC_NODE_T *primaryHandle_node;
-    TPM2B_PUBLIC *outPublic;
-    TPM2B_CREATION_DATA *creationData;
-    TPM2B_DIGEST *creationHash;
-    TPMT_TK_CREATION *creationTicket;
 
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary, &inPublic,
@@ -264,12 +273,6 @@ test_esys_save_and_load_context(ESYS_CONTEXT * esys_context)
         .count = 0,
     };
 
-    TPM2B_PUBLIC *outPublic2;
-    TPM2B_PRIVATE *outPrivate2;
-    TPM2B_CREATION_DATA *creationData2;
-    TPM2B_DIGEST *creationHash2;
-    TPMT_TK_CREATION *creationTicket2;
-
     r = Esys_Create(esys_context,
                     primaryHandle,
                     ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
@@ -291,9 +294,13 @@ test_esys_save_and_load_context(ESYS_CONTEXT * esys_context)
                   ESYS_TR_NONE, outPrivate2, outPublic2, &loadedKeyHandle1);
     goto_if_error(r, "Error esys load ", error);
 
-    LOG_INFO("\nSecond Key loaded.");
+    Esys_Free(outPublic2);
+    Esys_Free(outPrivate2);
+    Esys_Free(creationData2);
+    Esys_Free(creationHash2);
+    Esys_Free(creationTicket2);
 
-    TPMS_CONTEXT *context;
+    LOG_INFO("\nSecond Key loaded.");
 
     r = Esys_ContextSave(esys_context, loadedKeyHandle1, &context);
     goto_if_error(r, "Error esys context save", error);
@@ -329,6 +336,18 @@ test_esys_save_and_load_context(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, loadedKeyHandle2);
     goto_if_error(r, "Error: FlushContext", error);
 
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
+
+    Esys_Free(outPublic2);
+    Esys_Free(outPrivate2);
+    Esys_Free(creationData2);
+    Esys_Free(creationHash2);
+    Esys_Free(creationTicket2);
+
+    Esys_Free(context);
     return EXIT_SUCCESS;
 
  error:
@@ -351,6 +370,18 @@ test_esys_save_and_load_context(ESYS_CONTEXT * esys_context)
         }
     }
 
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
+
+    Esys_Free(outPublic2);
+    Esys_Free(outPrivate2);
+    Esys_Free(creationData2);
+    Esys_Free(creationHash2);
+    Esys_Free(creationTicket2);
+
+    Esys_Free(context);
     return EXIT_FAILURE;
 }
 

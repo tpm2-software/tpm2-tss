@@ -88,7 +88,7 @@ env TPM20TEST_TCTI_NAME="device" \
     G_MESSAGES_DEBUG=all ./test/helper/tpm_transientempty
 if [ $? -ne 0 ]; then
     echo "TPM transient area not empty => skipping"
-    ret=77
+    ret=99
     break
 fi
 
@@ -97,6 +97,7 @@ TPMSTATE_FILE2=${TEST_BIN}_state2
 
 env TPM20TEST_TCTI_NAME="device" \
     TPM20TEST_DEVICE_FILE=${PTPM} \
+    TPM20TEST_TCTI="device:${PTPM}" \
     G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>$TPMSTATE_FILE1
 if [ $? -ne 0 ]; then
     echo "Error during dumpstate"
@@ -107,12 +108,14 @@ fi
 echo "Execute the test script"
 env TPM20TEST_TCTI_NAME="device" \
     TPM20TEST_DEVICE_FILE=${PTPM} \
+    TPM20TEST_TCTI="device:${PTPM}" \
     G_MESSAGES_DEBUG=all $@
 ret=$?
 echo "Script returned $ret"
 
 env TPM20TEST_TCTI_NAME="device" \
     TPM20TEST_DEVICE_FILE=${PTPM} \
+    TPM20TEST_TCTI="device:${PTPM}" \
     G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>$TPMSTATE_FILE2
 if [ $? -ne 0 ]; then
     echo "Error during dumpstate"

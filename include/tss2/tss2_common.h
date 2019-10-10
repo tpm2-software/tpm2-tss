@@ -95,6 +95,30 @@ typedef uint32_t TSS2_RC;
 #define TSS2_BASE_RC_MULTIPLE_DECRYPT_SESSIONS 25U /* More than one session with TPMA_SESSION_DECRYPT bit set */
 #define TSS2_BASE_RC_MULTIPLE_ENCRYPT_SESSIONS 26U /* More than one session with TPMA_SESSION_ENCRYPT bit set */
 #define TSS2_BASE_RC_RSP_AUTH_FAILED           27U /* Response HMAC from TPM did not verify */
+#define TSS2_BASE_RC_NO_CONFIG                 28U
+#define TSS2_BASE_RC_BAD_PATH                  29U
+#define TSS2_BASE_RC_NOT_DELETABLE             30U
+#define TSS2_BASE_RC_PATH_ALREADY_EXISTS       31U
+#define TSS2_BASE_RC_KEY_NOT_FOUND             32U
+#define TSS2_BASE_RC_SIGNATURE_VERIFICATION_FAILED 33U
+#define TSS2_BASE_RC_HASH_MISMATCH             34U
+#define TSS2_BASE_RC_KEY_NOT_DUPLICABLE        35U
+#define TSS2_BASE_RC_PATH_NOT_FOUND            36U
+#define TSS2_BASE_RC_NO_CERT                   37U
+#define TSS2_BASE_RC_NO_PCR                    38U
+#define TSS2_BASE_RC_PCR_NOT_RESETTABLE        39U
+#define TSS2_BASE_RC_BAD_TEMPLATE              40U
+#define TSS2_BASE_RC_AUTHORIZATION_FAILED      41U
+#define TSS2_BASE_RC_AUTHORIZATION_UNKNOWN     42U
+#define TSS2_BASE_RC_NV_NOT_READABLE           43U
+#define TSS2_BASE_RC_NV_TOO_SMALL              44U
+#define TSS2_BASE_RC_NV_NOT_WRITEABLE          45U
+#define TSS2_BASE_RC_POLICY_UNKNOWN            46U
+#define TSS2_BASE_RC_NV_WRONG_TYPE             47U
+#define TSS2_BASE_RC_NAME_ALREADY_EXISTS       48U
+#define TSS2_BASE_RC_NO_TPM                    49U
+#define TSS2_BASE_RC_BAD_KEY                   50U
+#define TSS2_BASE_RC_NO_HANDLE                 51U
 
 /* Base return codes in the range 0xf800 - 0xffff are reserved for
  * implementation-specific purposes.
@@ -228,4 +252,76 @@ typedef uint32_t TSS2_RC;
 #define TSS2_ESYS_RC_RSP_AUTH_FAILED             ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
                                                         TSS2_BASE_RC_RSP_AUTH_FAILED))
 
+/* FAPI Error Codes */
+
+#define TSS2_FAPI_RC_GENERAL_FAILURE             ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                      TSS2_BASE_RC_GENERAL_FAILURE))
+#define TSS2_FAPI_RC_NOT_IMPLEMENTED             ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                      TSS2_BASE_RC_NOT_IMPLEMENTED))
+#define TSS2_FAPI_RC_BAD_REFERENCE               ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                      TSS2_BASE_RC_BAD_REFERENCE))
+#define TSS2_FAPI_RC_BAD_SEQUENCE                ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                      TSS2_BASE_RC_BAD_SEQUENCE))
+#define TSS2_FAPI_RC_IO_ERROR                    ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                      TSS2_BASE_RC_IO_ERROR))
+#define TSS2_FAPI_RC_BAD_VALUE                   ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                      TSS2_BASE_RC_BAD_VALUE))
+#define TSS2_FAPI_RC_NO_DECRYPT_PARAM            ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                      TSS2_BASE_RC_NO_DECRYPT_PARAM))
+#define TSS2_FAPI_RC_NO_ENCRYPT_PARAM            ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                      TSS2_BASE_RC_NO_ENCRYPT_PARAM))
+#define TSS2_FAPI_RC_MEMORY                      ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                      TSS2_BASE_RC_MEMORY))
+#define TSS2_FAPI_RC_BAD_CONTEXT                 ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_BAD_CONTEXT))
+#define TSS2_FAPI_RC_NO_CONFIG                   ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_NO_CONFIG))
+#define TSS2_FAPI_RC_BAD_PATH                    ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_BAD_PATH))
+#define TSS2_FAPI_RC_NOT_DELETABLE               ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_NOT_DELETABLE))
+#define TSS2_FAPI_RC_PATH_ALREADY_EXISTS         ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_PATH_ALREADY_EXISTS))
+#define TSS2_FAPI_RC_KEY_NOT_FOUND               ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_KEY_NOT_FOUND))
+#define TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_SIGNATURE_VERIFICATION_FAILED))
+#define TSS2_FAPI_RC_HASH_MISMATCH               ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_HASH_MISMATCH))
+#define TSS2_FAPI_RC_KEY_NOT_DUPLICABLE          ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_KEY_NOT_DUPLICABLE))
+#define TSS2_FAPI_RC_PATH_NOT_FOUND              ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_PATH_NOT_FOUND))
+#define TSS2_FAPI_RC_NO_CERT                     ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_NO_CERT))
+#define TSS2_FAPI_RC_NO_PCR                      ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_NO_PCR))
+#define TSS2_FAPI_RC_PCR_NOT_RESETTABLE          ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_PCR_NOT_RESETTABLE))
+#define TSS2_FAPI_RC_BAD_TEMPLATE                ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_BAD_TEMPLATE))
+#define TSS2_FAPI_RC_AUTHORIZATION_FAILED        ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_AUTHORIZATION_FAILED))
+#define TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN       ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_AUTHORIZATION_UNKNOWN))
+#define TSS2_FAPI_RC_NV_NOT_READABLE             ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_NV_NOT_READABLE))
+#define TSS2_FAPI_RC_NV_TOO_SMALL                ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_NV_TOO_SMALL))
+#define TSS2_FAPI_RC_NV_NOT_WRITEABLE            ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_NV_NOT_WRITEABLE))
+#define TSS2_FAPI_RC_POLICY_UNKNOWN              ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_POLICY_UNKNOWN))
+#define TSS2_FAPI_RC_NV_WRONG_TYPE               ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_NV_WRONG_TYPE))
+#define TSS2_FAPI_RC_NAME_ALREADY_EXISTS         ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_NAME_ALREADY_EXISTS))
+#define TSS2_FAPI_RC_NO_TPM                      ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_NO_TPM))
+#define TSS2_FAPI_RC_TRY_AGAIN                   ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_TRY_AGAIN))
+#define TSS2_FAPI_RC_BAD_KEY                     ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_BAD_KEY))
+#define TSS2_FAPI_RC_NO_HANDLE                   ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_NO_HANDLE))
 #endif /* TSS2_COMMON_H */

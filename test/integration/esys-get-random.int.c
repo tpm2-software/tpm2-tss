@@ -43,7 +43,7 @@ test_esys_get_random(ESYS_CONTEXT * esys_context)
 
     LOGBLOB_DEBUG(&randomBytes->buffer[0], randomBytes->size,
                   "Randoms (count=%i):", randomBytes->size);
-    free(randomBytes);
+    Esys_Free(randomBytes);
 
     LOG_INFO("GetRandom Test Passed!");
 
@@ -65,7 +65,119 @@ test_esys_get_random(ESYS_CONTEXT * esys_context)
     }
 
     r = Esys_TRSess_SetAttributes(esys_context, session, TPMA_SESSION_AUDIT,
-                                  TPMA_SESSION_AUDIT);
+                                  TPMA_SESSION_CONTINUESESSION | TPMA_SESSION_AUDIT);
+    if (r != TPM2_RC_SUCCESS) {
+        LOG_ERROR("SetAttributes on session FAILED! Response Code : 0x%x", r);
+        goto error_cleansession;
+    }
+
+    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, 48,
+                       &randomBytes);
+    if (r != TPM2_RC_SUCCESS) {
+        LOG_ERROR("GetRandom with session FAILED! Response Code : 0x%x", r);
+        goto error_cleansession;
+    }
+
+    LOGBLOB_DEBUG(&randomBytes->buffer[0], randomBytes->size,
+                  "Randoms (count=%i):", randomBytes->size);
+    free(randomBytes);
+
+      r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              NULL,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              &session);
+    if (r != TPM2_RC_SUCCESS) {
+        LOG_ERROR("Esys_StartAuthSession FAILED! Response Code : 0x%x", r);
+        goto error;
+    }
+
+    r = Esys_TRSess_SetAttributes(esys_context, session, TPMA_SESSION_AUDIT,
+                                  TPMA_SESSION_CONTINUESESSION | TPMA_SESSION_AUDIT);
+    if (r != TPM2_RC_SUCCESS) {
+        LOG_ERROR("SetAttributes on session FAILED! Response Code : 0x%x", r);
+        goto error_cleansession;
+    }
+
+    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, 48,
+                       &randomBytes);
+    if (r != TPM2_RC_SUCCESS) {
+        LOG_ERROR("GetRandom with session FAILED! Response Code : 0x%x", r);
+        goto error_cleansession;
+    }
+
+    LOGBLOB_DEBUG(&randomBytes->buffer[0], randomBytes->size,
+                  "Randoms (count=%i):", randomBytes->size);
+    free(randomBytes);
+
+      r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              NULL,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              &session);
+    if (r != TPM2_RC_SUCCESS) {
+        LOG_ERROR("Esys_StartAuthSession FAILED! Response Code : 0x%x", r);
+        goto error;
+    }
+
+    r = Esys_TRSess_SetAttributes(esys_context, session, TPMA_SESSION_AUDIT,
+                                  TPMA_SESSION_CONTINUESESSION | TPMA_SESSION_AUDIT);
+    if (r != TPM2_RC_SUCCESS) {
+        LOG_ERROR("SetAttributes on session FAILED! Response Code : 0x%x", r);
+        goto error_cleansession;
+    }
+
+    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, 48,
+                       &randomBytes);
+    if (r != TPM2_RC_SUCCESS) {
+        LOG_ERROR("GetRandom with session FAILED! Response Code : 0x%x", r);
+        goto error_cleansession;
+    }
+
+    LOGBLOB_DEBUG(&randomBytes->buffer[0], randomBytes->size,
+                  "Randoms (count=%i):", randomBytes->size);
+    free(randomBytes);
+
+      r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              NULL,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              &session);
+    if (r != TPM2_RC_SUCCESS) {
+        LOG_ERROR("Esys_StartAuthSession FAILED! Response Code : 0x%x", r);
+        goto error;
+    }
+
+    r = Esys_TRSess_SetAttributes(esys_context, session, TPMA_SESSION_AUDIT,
+                                  TPMA_SESSION_CONTINUESESSION | TPMA_SESSION_AUDIT);
+    if (r != TPM2_RC_SUCCESS) {
+        LOG_ERROR("SetAttributes on session FAILED! Response Code : 0x%x", r);
+        goto error_cleansession;
+    }
+
+    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, 48,
+                       &randomBytes);
+    if (r != TPM2_RC_SUCCESS) {
+        LOG_ERROR("GetRandom with session FAILED! Response Code : 0x%x", r);
+        goto error_cleansession;
+    }
+
+    LOGBLOB_DEBUG(&randomBytes->buffer[0], randomBytes->size,
+                  "Randoms (count=%i):", randomBytes->size);
+    free(randomBytes);
+
+      r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              NULL,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              &session);
+    if (r != TPM2_RC_SUCCESS) {
+        LOG_ERROR("Esys_StartAuthSession FAILED! Response Code : 0x%x", r);
+        goto error;
+    }
+
+    r = Esys_TRSess_SetAttributes(esys_context, session, TPMA_SESSION_AUDIT,
+                                  TPMA_SESSION_CONTINUESESSION | TPMA_SESSION_AUDIT);
     if (r != TPM2_RC_SUCCESS) {
         LOG_ERROR("SetAttributes on session FAILED! Response Code : 0x%x", r);
         goto error_cleansession;
@@ -84,7 +196,7 @@ test_esys_get_random(ESYS_CONTEXT * esys_context)
 
     LOG_INFO("GetRandom with session Test Passed!");
 
-    r = Esys_FlushContext(esys_context, session);
+    //r = Esys_FlushContext(esys_context, session);
     if (r != TPM2_RC_SUCCESS) {
         LOG_ERROR("FlushContext with session FAILED! Response Code : 0x%x", r);
         goto error_cleansession;

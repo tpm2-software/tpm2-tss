@@ -71,6 +71,7 @@ typedef UINT16 TPM2_ALG_ID;
 
 #define TPM2_ALG_ERROR               ((TPM2_ALG_ID) 0x0000)
 #define TPM2_ALG_RSA                 ((TPM2_ALG_ID) 0x0001)
+#define TPM2_ALG_TDES                ((TPM2_ALG_ID) 0x0003)
 #define TPM2_ALG_SHA                 ((TPM2_ALG_ID) 0x0004)
 #define TPM2_ALG_SHA1                ((TPM2_ALG_ID) 0x0004)
 #define TPM2_ALG_HMAC                ((TPM2_ALG_ID) 0x0005)
@@ -513,6 +514,7 @@ typedef UINT32 TPM2_PT;
 #define TPM2_PT_VENDOR_COMMANDS          ((TPM2_PT) (TPM2_PT_FIXED + 43)) /* number of vendor commands that are implemented */
 #define TPM2_PT_NV_BUFFER_MAX            ((TPM2_PT) (TPM2_PT_FIXED + 44)) /* the maximum data size in one NV write command */
 #define TPM2_PT_MODES                    ((TPM2_PT) (TPM2_PT_FIXED + 45)) /* a TPMA_MODES value indicating that the TPM is designed for these modes. */
+#define TPM2_PT_MAX_CAP_BUFFER           ((TPM2_PT) (TPM2_PT_FIXED + 46)) /* the maximum size of a TPMS_CAPABILITY_DATA structure returned in TPM2_GetCapability(). */
 #define TPM2_PT_VAR                      ((TPM2_PT) (TPM2_PT_GROUP * 2)) /* the group of variable properties returned as TPMS_TAGGED_PROPERTY. The properties in this group change because of a Protected Capability other than a firmware update. The values are not necessarily persistent across all power transitions. */
 #define TPM2_PT_PERMANENT                ((TPM2_PT) (TPM2_PT_VAR + 0)) /* TPMA_PERMANENT */
 #define TPM2_PT_STARTUP_CLEAR            ((TPM2_PT) (TPM2_PT_VAR + 1)) /* TPMA_STARTUP_CLEAR */
@@ -538,7 +540,7 @@ typedef UINT32 TPM2_PT;
 
 /* Definition of UINT32 TPM2_PT_PCR Constants <INOUT S> */
 typedef UINT32 TPM2_PT_PCR;
-#define TPM2_PT_TPM2_PCR_FIRST   ((TPM2_PT_PCR) 0x00000000) /* bottom of the range of TPM2_PT_PCR properties */
+#define TPM2_PT_TPM2_PCR_FIRST        ((TPM2_PT_PCR) 0x00000000) /* bottom of the range of TPM2_PT_PCR properties */
 #define TPM2_PT_PCR_SAVE         ((TPM2_PT_PCR) 0x00000000) /* a SET bit in the TPMS_PCR_SELECT indicates that the PCR is saved and restored by TPM2_SU_STATE */
 #define TPM2_PT_PCR_EXTEND_L0    ((TPM2_PT_PCR) 0x00000001) /* a SET bit in the TPMS_PCR_SELECT indicates that the PCR may be extended from locality 0This property is only present if a locality other than 0 is implemented. */
 #define TPM2_PT_PCR_RESET_L0     ((TPM2_PT_PCR) 0x00000002) /* a SET bit in the TPMS_PCR_SELECT indicates that the PCR may be reset by TPM2_PCR_Reset from locality 0 */
@@ -560,7 +562,7 @@ typedef UINT32 TPM2_PT_PCR;
 #define TPM2_PT_PCR_DRTM_RESET   ((TPM2_PT_PCR) 0x00000012) /* a SET bit in the TPMS_PCR_SELECT indicates that the PCR is reset by a DRTM event. These PCR are reset to 1 on TPM2_Startup and reset to 0 on a _TPM_Hash_End event following a _TPM_Hash_Start event. */
 #define TPM2_PT_PCR_POLICY       ((TPM2_PT_PCR) 0x00000013) /* a SET bit in the TPMS_PCR_SELECT indicates that the PCR is controlled by policy. This property is only present if the TPM supports policy control of a PCR. */
 #define TPM2_PT_PCR_AUTH         ((TPM2_PT_PCR) 0x00000014) /* a SET bit in the TPMS_PCR_SELECT indicates that the PCR is controlled by an authorization value. This property is only present if the TPM supports authorization control of a PCR. */
-#define TPM2_PT_TPM2_PCR_LAST    ((TPM2_PT_PCR) 0x00000014) /* top of the range of TPM2_PT_PCR properties of the implementation. If the TPM receives a request for a PCR property with a value larger than this the TPM will return a zero length list and set the moreData parameter to NO. NOTE This is an implementation-specific value. The value shown reflects the reference code implementation. */
+#define TPM2_PT_TPM2_PCR_LAST         ((TPM2_PT_PCR) 0x00000014) /* top of the range of TPM2_PT_PCR properties of the implementation. If the TPM receives a request for a PCR property with a value larger than this the TPM will return a zero length list and set the moreData parameter to NO. NOTE This is an implementation-specific value. The value shown reflects the reference code implementation. */
 /* NOTE: The following values are reserved:
  * 0x00000015 is reserved for the next 2nd TPM2_PT_PCR_POLICY set.
  * 0x00000016 is reserved for the next 2nd TPM2_PT_PCR_AUTH set.

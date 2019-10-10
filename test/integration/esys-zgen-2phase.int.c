@@ -56,6 +56,14 @@ test_esys_zgen_2phase(ESYS_CONTEXT * esys_context)
                    11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
     };
 
+    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_CREATION_DATA *creationData = NULL;
+    TPM2B_DIGEST *creationHash = NULL;
+    TPMT_TK_CREATION *creationTicket = NULL;
+    TPM2B_ECC_POINT *outZ1 = NULL;
+    TPM2B_ECC_POINT *outZ2 = NULL;
+    TPM2B_ECC_POINT *Q = NULL;
+
     memset(&sessionAttributes, 0, sizeof sessionAttributes);
 
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
@@ -133,11 +141,6 @@ test_esys_zgen_2phase(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    TPM2B_PUBLIC *outPublic;
-    TPM2B_CREATION_DATA *creationData;
-    TPM2B_DIGEST *creationHash;
-    TPMT_TK_CREATION *creationTicket;
-
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, session,
                            ESYS_TR_NONE, ESYS_TR_NONE, &inSensitive, &inPublic,
                            &outsideInfo, &creationPCR, &eccHandle,
@@ -146,7 +149,6 @@ test_esys_zgen_2phase(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error esapi create primary", error);
 
     TPMI_ECC_CURVE curveID = TPM2_ECC_NIST_P256;
-    TPM2B_ECC_POINT *Q;
     UINT16 counter;
 
     r = Esys_EC_Ephemeral(
@@ -172,10 +174,8 @@ test_esys_zgen_2phase(ESYS_CONTEXT * esys_context)
         .size = 0,
         .point = outPublic->publicArea.unique.ecc
     };
-    TPM2B_ECC_POINT inQeB = *Q;
     TPMI_ECC_KEY_EXCHANGE inScheme = TPM2_ALG_ECDH;
-    TPM2B_ECC_POINT *outZ1;
-    TPM2B_ECC_POINT *outZ2;
+    TPM2B_ECC_POINT inQeB = *Q;
 
     r = Esys_ZGen_2Phase(
         esys_context,
@@ -206,6 +206,13 @@ test_esys_zgen_2phase(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, session);
     goto_if_error(r, "Flushing context", error);
 
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
+    Esys_Free(outZ1);
+    Esys_Free(outZ2);
+    Esys_Free(Q);
     return EXIT_SUCCESS;
 
  error:
@@ -223,6 +230,13 @@ test_esys_zgen_2phase(ESYS_CONTEXT * esys_context)
         }
     }
 
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
+    Esys_Free(outZ1);
+    Esys_Free(outZ2);
+    Esys_Free(Q);
     return failure_return;
 }
 

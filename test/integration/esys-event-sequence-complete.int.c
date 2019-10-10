@@ -41,6 +41,7 @@ test_esys_event_sequence_complete(ESYS_CONTEXT * esys_context)
 
     TPMI_ALG_HASH hashAlg = TPM2_ALG_NULL;   /**< enforce event Sequence */
     ESYS_TR sequenceHandle_handle;
+    TPML_DIGEST_VALUES *results = NULL;
 
     r = Esys_HashSequenceStart(esys_context,
                                ESYS_TR_NONE,
@@ -70,7 +71,6 @@ test_esys_event_sequence_complete(ESYS_CONTEXT * esys_context)
 
     ESYS_TR pcrHandle_handle = 16;
 
-    TPML_DIGEST_VALUES *results;
     r = Esys_EventSequenceComplete (
         esys_context,
         pcrHandle_handle,
@@ -82,9 +82,11 @@ test_esys_event_sequence_complete(ESYS_CONTEXT * esys_context)
         &results);
     goto_if_error(r, "Error: EventSequenceComplete", error);
 
+    Esys_Free(results);
     return EXIT_SUCCESS;
 
  error:
+    Esys_Free(results);
     return EXIT_FAILURE;
 }
 

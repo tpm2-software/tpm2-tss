@@ -42,6 +42,14 @@ test_esys_hmacsequencestart(ESYS_CONTEXT * esys_context)
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
 
+    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_CREATION_DATA *creationData = NULL;
+    TPM2B_DIGEST *creationHash = NULL;
+    TPMT_TK_CREATION *creationTicket = NULL;
+
+    TPM2B_DIGEST *result = NULL;
+    TPMT_TK_HASHCHECK *validation = NULL;
+
 #ifdef TEST_SESSION
     ESYS_TR session = ESYS_TR_NONE;
     TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,
@@ -94,11 +102,6 @@ test_esys_hmacsequencestart(ESYS_CONTEXT * esys_context)
     TPML_PCR_SELECTION creationPCR = {
         .count = 0,
     };
-
-    TPM2B_PUBLIC *outPublic;
-    TPM2B_CREATION_DATA *creationData;
-    TPM2B_DIGEST *creationHash;
-    TPMT_TK_CREATION *creationTicket;
 
     inPublic.publicArea.nameAlg = TPM2_ALG_SHA1;
     inPublic.publicArea.type = TPM2_ALG_KEYEDHASH;
@@ -159,9 +162,6 @@ test_esys_hmacsequencestart(ESYS_CONTEXT * esys_context)
                             );
     goto_if_error(r, "Error: SequenceUpdate", error);
 
-    TPM2B_DIGEST *result;
-    TPMT_TK_HASHCHECK *validation;
-
     r = Esys_SequenceComplete(esys_context,
                               sequenceHandle,
 #ifdef TEST_SESSION
@@ -182,6 +182,9 @@ test_esys_hmacsequencestart(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, session);
     goto_if_error(r, "Error: FlushContext", error);
 #endif
+
+    Esys_Free(result);
+    Esys_Free(validation);
 
     /* Check HMAC_Start with auth equal NULL */
 
@@ -247,6 +250,12 @@ test_esys_hmacsequencestart(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: FlushContext", error);
 #endif
 
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
+    Esys_Free(result);
+    Esys_Free(validation);
     return EXIT_SUCCESS;
 
  error:
@@ -265,6 +274,12 @@ test_esys_hmacsequencestart(ESYS_CONTEXT * esys_context)
     }
 #endif
 
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
+    Esys_Free(result);
+    Esys_Free(validation);
     return EXIT_FAILURE;
 }
 

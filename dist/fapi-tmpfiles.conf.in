@@ -1,0 +1,2 @@
+#Type   Path                                    Mode User Group Age         Argument
+d       @runstatedir@/tpm2-tss/eventlog/        775  tss  tss   -           -

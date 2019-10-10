@@ -41,6 +41,12 @@ test_esys_nv_ram_counter(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR nvHandle = ESYS_TR_NONE;
+
+    TPM2B_NV_PUBLIC *nvPublic = NULL;
+    TPM2B_NAME *nvName = NULL;
+
+    TPM2B_MAX_NV_BUFFER *nv_test_data = NULL;
+
 #ifdef TEST_SESSION
     ESYS_TR session = ESYS_TR_NONE;
     TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,
@@ -104,9 +110,6 @@ test_esys_nv_ram_counter(ESYS_CONTEXT * esys_context)
 
     goto_if_error(r, "Error esys define nv space", error);
 
-    TPM2B_NV_PUBLIC *nvPublic;
-    TPM2B_NAME *nvName;
-
     r = Esys_NV_ReadPublic(esys_context,
                            nvHandle,
                            ESYS_TR_NONE,
@@ -139,6 +142,9 @@ test_esys_nv_ram_counter(ESYS_CONTEXT * esys_context)
 
     goto_if_error(r, "Error esys nv write", error);
 
+    Esys_Free(nvPublic);
+    Esys_Free(nvName);
+
     r = Esys_NV_ReadPublic(esys_context,
                            nvHandle,
                            ESYS_TR_NONE,
@@ -157,7 +163,8 @@ test_esys_nv_ram_counter(ESYS_CONTEXT * esys_context)
         goto error;
     }
 
-    TPM2B_MAX_NV_BUFFER *nv_test_data;
+    Esys_Free(nvPublic);
+    Esys_Free(nvName);
 
     r = Esys_NV_Read(esys_context,
                      nvHandle,
@@ -211,6 +218,10 @@ test_esys_nv_ram_counter(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, session);
     goto_if_error(r, "Error: FlushContext", error);
 #endif
+
+    Esys_Free(nvPublic);
+    Esys_Free(nvName);
+    Esys_Free(nv_test_data);
     return EXIT_SUCCESS;
 
  error:
@@ -238,6 +249,9 @@ test_esys_nv_ram_counter(ESYS_CONTEXT * esys_context)
     }
 #endif
 
+    Esys_Free(nvPublic);
+    Esys_Free(nvName);
+    Esys_Free(nv_test_data);
     return EXIT_FAILURE;
 }
 

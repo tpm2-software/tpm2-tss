@@ -43,6 +43,8 @@ test_esys_session_attributes(ESYS_CONTEXT * esys_context)
     TSS2_RC r;
     ESYS_TR objectHandle = ESYS_TR_NONE;
     ESYS_TR session = ESYS_TR_NONE;
+    TPM2B_DIGEST *rdata = NULL;
+
     TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_XOR,
                               .keyBits = { .exclusiveOr = TPM2_ALG_SHA1 },
                               .mode = {.aes = TPM2_ALG_CFB}};
@@ -107,8 +109,6 @@ test_esys_session_attributes(ESYS_CONTEXT * esys_context)
         .count = 0,
     };
 
-    TPM2B_DIGEST *rdata;
-
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
@@ -159,6 +159,7 @@ test_esys_session_attributes(ESYS_CONTEXT * esys_context)
 
     r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE,
                        10, &rdata);
+    Esys_Free(rdata);
     transmit_hook = NULL;
     goto_if_error(r, "Error esapi create primary", error);
 
@@ -175,6 +176,7 @@ test_esys_session_attributes(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, session);
     goto_if_error(r, "Flushing context", error);
 
+    Esys_Free(rdata);
     return EXIT_SUCCESS;
 
  error:
@@ -192,7 +194,7 @@ test_esys_session_attributes(ESYS_CONTEXT * esys_context)
         }
     }
 
-
+    Esys_Free(rdata);
     return EXIT_FAILURE;
 }
 

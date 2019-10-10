@@ -40,6 +40,12 @@ test_esys_hmac(ESYS_CONTEXT * esys_context)
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
 
+    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_CREATION_DATA *creationData = NULL;
+    TPM2B_DIGEST *creationHash = NULL;
+    TPMT_TK_CREATION *creationTicket = NULL;
+    TPM2B_DIGEST *outHMAC = NULL;
+
     TPM2B_AUTH authValuePrimary = {
         .size = 5,
         .buffer = {1, 2, 3, 4, 5}
@@ -69,11 +75,6 @@ test_esys_hmac(ESYS_CONTEXT * esys_context)
         .count = 0,
     };
 
-    TPM2B_PUBLIC *outPublic;
-    TPM2B_CREATION_DATA *creationData;
-    TPM2B_DIGEST *creationHash;
-    TPMT_TK_CREATION *creationTicket;
-
     inPublic.publicArea.nameAlg = TPM2_ALG_SHA1;
     inPublic.publicArea.type = TPM2_ALG_KEYEDHASH;
     inPublic.publicArea.objectAttributes |= TPMA_OBJECT_SIGN_ENCRYPT;
@@ -95,8 +96,6 @@ test_esys_hmac(ESYS_CONTEXT * esys_context)
     TPM2B_MAX_BUFFER test_buffer = { .size = 20,
                                      .buffer={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
                                               1, 2, 3, 4, 5, 6, 7, 8, 9}} ;
-    TPM2B_DIGEST *outHMAC;
-
     r = Esys_HMAC(
         esys_context,
         primaryHandle,
@@ -111,6 +110,11 @@ test_esys_hmac(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, primaryHandle);
     goto_if_error(r, "Error: FlushContext", error);
 
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
+    Esys_Free(outHMAC);
     return EXIT_SUCCESS;
 
  error:
@@ -121,6 +125,11 @@ test_esys_hmac(ESYS_CONTEXT * esys_context)
         }
     }
 
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
+    Esys_Free(outHMAC);
     return EXIT_FAILURE;
 }
 

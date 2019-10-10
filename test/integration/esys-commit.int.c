@@ -42,6 +42,16 @@ test_esys_commit(ESYS_CONTEXT * esys_context)
     ESYS_TR eccHandle = ESYS_TR_NONE;
     ESYS_TR session = ESYS_TR_NONE;
     int failure_return = EXIT_FAILURE;
+
+    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_CREATION_DATA *creationData = NULL;
+    TPM2B_DIGEST *creationHash = NULL;
+    TPMT_TK_CREATION *creationTicket = NULL;
+
+    TPM2B_ECC_POINT *K = NULL;
+    TPM2B_ECC_POINT *L = NULL;
+    TPM2B_ECC_POINT *E = NULL;
+
     TPMT_SYM_DEF symmetric = {
         .algorithm = TPM2_ALG_AES,
         .keyBits = { .aes = 128 },
@@ -131,11 +141,6 @@ test_esys_commit(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    TPM2B_PUBLIC *outPublic;
-    TPM2B_CREATION_DATA *creationData;
-    TPM2B_DIGEST *creationHash;
-    TPMT_TK_CREATION *creationTicket;
-
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, session,
                            ESYS_TR_NONE, ESYS_TR_NONE, &inSensitive, &inPublic,
                            &outsideInfo, &creationPCR, &eccHandle,
@@ -153,9 +158,6 @@ test_esys_commit(ESYS_CONTEXT * esys_context)
     TPM2B_ECC_POINT P1 = {0};
     TPM2B_SENSITIVE_DATA s2 = {0};
     TPM2B_ECC_PARAMETER y2 = {0};
-    TPM2B_ECC_POINT *K;
-    TPM2B_ECC_POINT *L;
-    TPM2B_ECC_POINT *E;
     UINT16 counter;
     r = Esys_Commit(esys_context, eccHandle,
                     session, ESYS_TR_NONE, ESYS_TR_NONE,
@@ -173,6 +175,13 @@ test_esys_commit(ESYS_CONTEXT * esys_context)
 
     session = ESYS_TR_NONE;
 
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
+    Esys_Free(K);
+    Esys_Free(L);
+    Esys_Free(E);
     return EXIT_SUCCESS;
 
  error:
@@ -190,6 +199,13 @@ test_esys_commit(ESYS_CONTEXT * esys_context)
         }
     }
 
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
+    Esys_Free(K);
+    Esys_Free(L);
+    Esys_Free(E);
     return failure_return;
 }
 

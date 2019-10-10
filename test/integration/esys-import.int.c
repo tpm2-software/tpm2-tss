@@ -53,6 +53,29 @@ test_esys_import(ESYS_CONTEXT * esys_context)
     ESYS_TR loadedKeyHandle = ESYS_TR_NONE;
     ESYS_TR policySession = ESYS_TR_NONE;
 
+    TPM2B_DIGEST *policyDigestTrial = NULL;
+    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_CREATION_DATA *creationData = NULL;
+    TPM2B_DIGEST *creationHash = NULL;
+    TPMT_TK_CREATION *creationTicket = NULL;
+
+    TPM2B_PUBLIC *outPublic2 = NULL;
+    TPM2B_PRIVATE *outPrivate2 = NULL;
+    TPM2B_CREATION_DATA *creationData2 = NULL;
+    TPM2B_DIGEST *creationHash2 = NULL;
+    TPMT_TK_CREATION *creationTicket2 = NULL;
+
+    TPM2B_DATA *encryptionKeyOut = NULL;
+    TPM2B_PRIVATE *duplicate = NULL;
+    TPM2B_ENCRYPTED_SECRET *outSymSeed = NULL;
+
+    TPM2B_PUBLIC *keyPublic = NULL;
+    TPM2B_NAME *keyName = NULL;
+    TPM2B_NAME *keyQualifiedName = NULL;
+
+    TPM2B_NAME *nameKeySign = NULL;
+    TPM2B_PRIVATE *outPrivate = NULL;
+
     /*
      * Firth the policy value to be able to use Esys_Duplicate for an object has to be
      * determined with a policy trial session.
@@ -92,7 +115,6 @@ test_esys_import(ESYS_CONTEXT * esys_context)
                                );
     goto_if_error(r, "Error: PolicyCommandCode", error);
 
-    TPM2B_DIGEST *policyDigestTrial;
     r = Esys_PolicyGetDigest(esys_context,
                              sessionTrial,
                              ESYS_TR_NONE,
@@ -173,10 +195,6 @@ test_esys_import(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: TR_SetAuth", error);
 
     RSRC_NODE_T *primaryHandle_node;
-    TPM2B_PUBLIC *outPublic;
-    TPM2B_CREATION_DATA *creationData;
-    TPM2B_DIGEST *creationHash;
-    TPMT_TK_CREATION *creationTicket;
 
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE,
@@ -185,6 +203,11 @@ test_esys_import(ESYS_CONTEXT * esys_context)
                            &outPublic, &creationData, &creationHash,
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
+
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
 
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE,
@@ -269,12 +292,6 @@ test_esys_import(ESYS_CONTEXT * esys_context)
         .count = 0,
     };
 
-    TPM2B_PUBLIC *outPublic2;
-    TPM2B_PRIVATE *outPrivate2;
-    TPM2B_CREATION_DATA *creationData2;
-    TPM2B_DIGEST *creationHash2;
-    TPMT_TK_CREATION *creationTicket2;
-
     inPublic2.publicArea.authPolicy = *policyDigestTrial;
 
     r = Esys_Create(esys_context,
@@ -303,10 +320,6 @@ test_esys_import(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, loadedKeyHandle, &authKey2);
     goto_if_error(r, "Error esys TR_SetAuth ", error);
 
-    TPM2B_PUBLIC *keyPublic;
-    TPM2B_NAME *keyName;
-    TPM2B_NAME *keyQualifiedName;
-
     r = Esys_ReadPublic(esys_context,
                         loadedKeyHandle,
                         ESYS_TR_NONE,
@@ -315,6 +328,10 @@ test_esys_import(ESYS_CONTEXT * esys_context)
                         &keyPublic,
                         &keyName,
                         &keyQualifiedName);
+
+    Esys_Free(keyPublic);
+    Esys_Free(keyName);
+    Esys_Free(keyQualifiedName);
 
     goto_if_error(r, "Error esys ReadPublic", error);
 
@@ -359,10 +376,6 @@ test_esys_import(ESYS_CONTEXT * esys_context)
                                      .keyBits = {.aes = 128},
                                      .mode = {.aes = TPM2_ALG_CFB}};
 
-    TPM2B_DATA *encryptionKeyOut;
-    TPM2B_PRIVATE *duplicate;
-    TPM2B_ENCRYPTED_SECRET *outSymSeed;
-
     r = Esys_Duplicate(
         esys_context,
         loadedKeyHandle,
@@ -377,9 +390,7 @@ test_esys_import(ESYS_CONTEXT * esys_context)
         &outSymSeed);
 
     goto_if_error(r, "Error: Duplicate", error);
-
-    TPM2B_NAME *nameKeySign;
-    TPM2B_PRIVATE *outPrivate;
+    Esys_Free(outPublic);
 
     r = Esys_ReadPublic(esys_context,
                         loadedKeyHandle,
@@ -429,6 +440,26 @@ test_esys_import(ESYS_CONTEXT * esys_context)
     r = Esys_FlushContext(esys_context, policySession);
     goto_if_error(r, "Flushing context", error);
 
+    Esys_Free(policyDigestTrial);
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
+
+    Esys_Free(outPublic2);
+    Esys_Free(outPrivate2);
+    Esys_Free(creationData2);
+    Esys_Free(creationHash2);
+    Esys_Free(creationTicket2);
+
+    Esys_Free(encryptionKeyOut);
+    Esys_Free(duplicate);
+    Esys_Free(outSymSeed);
+
+    Esys_Free(keyQualifiedName);
+
+    Esys_Free(nameKeySign);
+    Esys_Free(outPrivate);
     return EXIT_SUCCESS;
 
  error:
@@ -462,6 +493,28 @@ test_esys_import(ESYS_CONTEXT * esys_context)
         }
     }
 
+    Esys_Free(policyDigestTrial);
+    Esys_Free(outPublic);
+    Esys_Free(creationData);
+    Esys_Free(creationHash);
+    Esys_Free(creationTicket);
+
+    Esys_Free(outPublic2);
+    Esys_Free(outPrivate2);
+    Esys_Free(creationData2);
+    Esys_Free(creationHash2);
+    Esys_Free(creationTicket2);
+
+    Esys_Free(encryptionKeyOut);
+    Esys_Free(duplicate);
+    Esys_Free(outSymSeed);
+
+    Esys_Free(keyPublic);
+    Esys_Free(keyName);
+    Esys_Free(keyQualifiedName);
+
+    Esys_Free(nameKeySign);
+    Esys_Free(outPrivate);
     return EXIT_FAILURE;
 }
 
