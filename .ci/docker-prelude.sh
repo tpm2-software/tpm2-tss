@@ -13,7 +13,7 @@ source $TRAVIS_BUILD_DIR/.ci/download-deps.sh
 get_deps "$WORKSPACE"
 
 export LD_LIBRARY_PATH=/usr/local/lib/
-export PATH=/root/.local/bin/:/ibmtpm974/src:$PATH
+export PATH=/root/.local/bin/:$PATH
 
 echo "echo changing to $TRAVIS_BUILD_DIR"
 # Change to the the travis build dir

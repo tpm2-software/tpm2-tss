@@ -66,8 +66,8 @@ sanity_test ()
         exit 1
     fi
 
-    if [ -z "$(which tpm_server)" ]; then
-        echo "tpm_server not on PATH; exiting"
+    if [ -z "$(which tpm2-simulator)" ]; then
+        echo "tpm2-simulator not on PATH; exiting"
         exit 1
     fi
 
@@ -136,7 +136,7 @@ simulator_start ()
     # simulator port is a random port between 1024 and 65535
 
     cd ${sim_tmp_dir}
-    daemon_start "${sim_bin}" "-port ${sim_port}" "${sim_log_file}" \
+    daemon_start "${sim_bin}" "${sim_port}" "${sim_log_file}" \
         "${sim_pid_file}" ""
     local ret=$?
     cd -
@@ -181,7 +181,7 @@ TEST_NAME=$(basename "${TEST_BIN}")
 # start an instance of the simulator for the test, have it use a random port
 SIM_LOG_FILE=${TEST_BIN}_simulator.log
 SIM_PID_FILE=${TEST_BIN}_simulator.pid
-SIM_TMP_DIR=$(mktemp --directory --tmpdir=/tmp tpm_server_XXXXXX)
+SIM_TMP_DIR=$(mktemp --directory --tmpdir=/tmp tpm2-simulator_XXXXXX)
 PORT_MIN=1024
 PORT_MAX=65534
 BACKOFF_FACTOR=2
@@ -194,7 +194,7 @@ for i in $(seq ${BACKOFF_MAX}); do
     fi
     SIM_PORT_CMD=$((${SIM_PORT_DATA}+1))
     echo "Starting simulator on port ${SIM_PORT_DATA}"
-    simulator_start tpm_server ${SIM_PORT_DATA} ${SIM_LOG_FILE} ${SIM_PID_FILE} ${SIM_TMP_DIR}
+    simulator_start tpm2-simulator ${SIM_PORT_DATA} ${SIM_LOG_FILE} ${SIM_PID_FILE} ${SIM_TMP_DIR}
     sleep 1 # give daemon time to bind to ports
     if [ ! -s ${SIM_PID_FILE} ] ; then
         echo "Simulator PID file is empty or missing. Giving up."

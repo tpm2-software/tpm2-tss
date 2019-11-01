@@ -175,7 +175,7 @@ AC_ARG_ENABLE([integration],
         [build and execute integration tests])],,
     [enable_integration=no])
 AS_IF([test "x$enable_integration" = "xyes"],
-      [ERROR_IF_NO_PROG([tpm_server])
+      [ERROR_IF_NO_PROG([tpm2-simulator])
        ERROR_IF_NO_PROG([ss])
        ERROR_IF_NO_PROG([ps])
        ERROR_IF_NO_PROG([echo])

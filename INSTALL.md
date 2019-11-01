@@ -21,7 +21,7 @@ The following are dependencies only required when building test suites.
     - uthash development libraries and header files
     - ps executable (usually in the procps package)
     - ss executable (usually in the iproute2 package)
-    - tpm_server executable (from https://sourceforge.net/projects/ibmswtpm2/)
+    - tpm2-simulator executable (from https://github.com/microsoft/ms-tpm-20-ref)
 * Unit test suite (see ./configure option --enable-unit):
     - cmocka unit test framework, version >= 1.0
 * Code coverage analysis:
