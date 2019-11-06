@@ -16,11 +16,15 @@ if TESTPTPM
 INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler-ptpm.sh
 INT_LOG_FLAGS = --ptpm=$(PTPM)
 else
-INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler.sh
+INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler-swtpm.sh
 endif
-EXTRA_DIST += $(srcdir)/script/int-log-compiler.sh $(srcdir)/script/int-log-compiler-ptpm.sh \
-              $(srcdir)/script/ekca/create_ca.sh  $(srcdir)/script/ekca/ek.cnf \
-              $(srcdir)/script/ekca/intermed-ca.cnf $(srcdir)/script/ekca/root-ca.cnf
+EXTRA_DIST += $(srcdir)/script/int-log-compiler-swtpm.sh \
+              $(srcdir)/script/int-log-compiler-mssim.sh \
+              $(srcdir)/script/int-log-compiler-ptpm.sh \
+              $(srcdir)/script/ekca/create_ca.sh \
+              $(srcdir)/script/ekca/ek.cnf \
+              $(srcdir)/script/ekca/intermed-ca.cnf \
+              $(srcdir)/script/ekca/root-ca.cnf
 AM_TESTS_ENVIRONMENT = PATH="$(PATH)"
 
 check-programs: $(check_PROGRAMS)

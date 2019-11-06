@@ -72,6 +72,8 @@ Issues building or running the simulator should be reported to respective projec
 The Software TPM is an open-source TPM emulator with different front-end interfaces such as socket and character device. Its code is hosted [on GitHub](https://github.com/stefanberger/swtpm) and building is faciliated by the GNU Autotools.
 The TCTI module for using this simulator is called _swtpm_.
 
+This is the default simulator used by this project.
+
 ### IBM's Software Simulator
 
 IBM has also repackaged this code with a few Makefiles so that the Microsoft code can be built and run on Linux systems.

@@ -10,7 +10,7 @@
 #include <stdint.h>
 
 /* Default TCTI */
-#define TCTI_DEFAULT      SOCKET_TCTI
+#define TCTI_DEFAULT      SWTPM_TCTI
 #define TCTI_DEFAULT_STR  "socket"
 
 /* Defaults for Device TCTI */
