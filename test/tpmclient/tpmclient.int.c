@@ -17,7 +17,12 @@
 
 #include "tss2_sys.h"
 #include "tss2_tcti_device.h"
+#ifdef TCTI_MSSIM
 #include "tss2_tcti_mssim.h"
+#endif /* TCTI_MSSIM */
+#ifdef TCTI_SWTPM
+#include "tss2_tcti_swtpm.h"
+#endif /* TCTI_SWTPM */
 
 #include "../integration/context-util.h"
 #include "../integration/sapi-util.h"
@@ -99,7 +104,6 @@ static void ErrorHandler(UINT32 rval, char *errorString, int errorStringSize)
 static void Cleanup()
 {
     if (resMgrTctiContext != NULL) {
-        tcti_platform_command(resMgrTctiContext, MS_SIM_POWER_OFF);
         tcti_teardown(resMgrTctiContext);
         resMgrTctiContext = NULL;
     }
@@ -144,11 +148,23 @@ static TSS2_RC TpmReset()
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
+#ifdef TCTI_SWTPM
+    rval = Tss2_Tcti_Swtpm_Reset( resMgrTctiContext );
+
+    /* If TCTI is not swtpm, bad context is returned. */
+    if (rval != TSS2_TCTI_RC_BAD_CONTEXT) {
+        return rval;
+    }
+#endif /* TCTI_SWTPM */
+
+#ifdef TCTI_MSSIM
     rval = (TSS2_RC)tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_OFF );
     if( rval == TSS2_RC_SUCCESS )
     {
         rval = (TSS2_RC)tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_ON );
     }
+#endif /* TCTI_MSSIM */
+
     return rval;
 }
 
@@ -193,10 +209,8 @@ static void TestTpmStartup()
 
 
     /* Cycle power using simulator interface. */
-    rval = tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_OFF );
-    CheckPassed( rval );
-    rval = tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_ON );
-    CheckPassed( rval );
+    rval = TpmReset();
+    CheckPassed(rval);
 
 
     /*
@@ -210,10 +224,8 @@ static void TestTpmStartup()
     CheckPassed( rval );
 
     /* Cycle power using simulator interface. */
-    rval = tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_OFF );
-    CheckPassed( rval );
-    rval = tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_ON );
-    CheckPassed( rval );
+    rval = TpmReset();
+    CheckPassed(rval);
 
 
     /*
@@ -2128,6 +2140,11 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
+#if !defined(TCTI_SWTPM) && !defined(TCTI_MSSIM)
+    /* SKIP */
+    return 77;
+#endif
+
     sysContext = sapi_context;
     rval = Tss2_Sys_GetTctiContext (sapi_context, &resMgrTctiContext);
     if (rval != TSS2_RC_SUCCESS) {
@@ -2143,10 +2160,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     nullSessionNonceOut.size = 0;
     nullSessionNonce.size = 0;
 
-    rval = tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_OFF );
-    CheckPassed(rval);
-
-    rval = tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_ON );
+    rval = TpmReset();
     CheckPassed(rval);
 
     SysFinalizeTests();

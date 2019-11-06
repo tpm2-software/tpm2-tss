@@ -36,6 +36,10 @@ tcti_map_entry_t tcti_map_table[] = {
      .type = SOCKET_TCTI,
      },
     {
+     .name = "swtpm",
+     .type = SWTPM_TCTI,
+     },
+    {
      .name = "fuzzing",
      .type = FUZZING_TCTI,
      },
@@ -56,6 +60,7 @@ tcti_type_from_name(char const *tcti_str)
     for (i = 0; i < N_TCTI; ++i)
         if (strcmp(tcti_str, tcti_map_table[i].name) == 0)
             return tcti_map_table[i].type;
+    fprintf(stderr, "Unknown tcti %s.\n", tcti_str);
     return UNKNOWN_TCTI;
 }
 
@@ -88,6 +93,13 @@ sanity_check_test_opts(test_opts_t * opts)
         }
         break;
     case SOCKET_TCTI:
+        if (opts->socket_address == NULL || opts->socket_port == 0) {
+            fprintf(stderr,
+                    "socket_address or socket_port is NULL, check env\n");
+            return 1;
+        }
+        break;
+    case SWTPM_TCTI:
         if (opts->socket_address == NULL || opts->socket_port == 0) {
             fprintf(stderr,
                     "socket_address or socket_port is NULL, check env\n");

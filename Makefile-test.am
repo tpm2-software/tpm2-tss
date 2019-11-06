@@ -70,6 +70,7 @@ TESTS_UNIT  = \
     test/unit/log \
     test/unit/tcti-device \
     test/unit/tcti-mssim \
+    test/unit/tcti-swtpm \
     test/unit/tctildr \
     test/unit/tctildr-dl \
     test/unit/tctildr-nodl \
@@ -347,6 +348,13 @@ test_unit_tcti_mssim_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=select,--wr
 test_unit_tcti_mssim_SOURCES = test/unit/tcti-mssim.c \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-mssim.c src/tss2-tcti/tcti-mssim.h
+
+test_unit_tcti_swtpm_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_tcti_swtpm_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
+test_unit_tcti_swtpm_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=select,--wrap=write
+test_unit_tcti_swtpm_SOURCES = test/unit/tcti-swtpm.c \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-swtpm.c src/tss2-tcti/tcti-swtpm.h
 
 test_unit_tctildr_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tctildr_LDADD = $(CMOCKA_LIBS) $(libutil)

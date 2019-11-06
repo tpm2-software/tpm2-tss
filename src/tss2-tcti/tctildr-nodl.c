@@ -40,6 +40,7 @@
 
 #include "tctildr.h"
 #include "tss2_tcti_mssim.h"
+#include "tss2_tcti_swtpm.h"
 #ifdef _WIN32
 #include "tss2_tcti_tbs.h"
 #else /* _WIN32 */
@@ -102,6 +103,17 @@ struct {
     },
 #endif /* TCTI_DEVICE */
 #endif /* _WIN32 */
+#ifdef TCTI_SWTPM
+    {
+        .names = {
+            "libtss2-tcti-swtpm.so.0",
+            "libtss2-tcti-swtpm.so",
+            "swtpm",
+        },
+        .init = Tss2_Tcti_Swtpm_Init,
+        .description = "Access to TPM software simulator, default conf",
+    },
+#endif /* TCTI_SWTPM */
 #ifdef TCTI_MSSIM
     {
         .names = {

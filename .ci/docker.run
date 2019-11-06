@@ -34,7 +34,9 @@ fi
 
 # Is it a fuzz run, if so build the fuzz test and exit.
 if [ "$GEN_FUZZ" == "1" ]; then
-    ./configure --with-fuzzing=libfuzzer --enable-tcti-fuzzing --disable-tcti-device --disable-tcti-mssim --disable-shared --with-crypto="$WITH_CRYPTO"
+    ./configure --with-fuzzing=libfuzzer --enable-tcti-fuzzing \
+      --disable-tcti-device --disable-tcti-mssim --disable-tcti-swtpm \
+      --disable-shared --with-crypto="$WITH_CRYPTO"
     make -j$(nproc) check
     exit 0
 fi
