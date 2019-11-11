@@ -9,7 +9,7 @@
 #include "tss2_tcti.h"
 #include "tss2_sys.h"
 
-#ifdef __cplusplus
+#ifdef _cplusplus
 extern "C" {
 #endif
 
@@ -3221,19 +3221,103 @@ Esys_Vendor_TCG_Test_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_DATA **outputData);
 
+/* Attached Component (AC) commands */
+/*
+ * Compiles only and modeled after other commands.
+ *
+ * TODO:
+ * - Verify ESYS interface is sane, ie how do we get the sendObject as an
+ *   ESYS_TR? Is it via Esys_TR_FromTPMPublic or are they hardcodes?
+ * - TEST
+ */
+TSS2_RC Esys_AC_GetCapability_Async(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    TPMI_RH_AC ac,
+    TPM_AT capability,
+    UINT32 count);
+
+TSS2_RC Esys_AC_GetCapability_Finish(
+    ESYS_CONTEXT *esysContext,
+    TPMI_YES_NO *moreData,
+    TPML_AC_CAPABILITIES **capabilityData);
+
+TSS2_RC Esys_AC_GetCapability(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    TPMI_RH_AC ac,
+    TPM_AT capability,
+    UINT32 count,
+    TPMI_YES_NO *moreData,
+    TPML_AC_CAPABILITIES **capabilityData);
+
+TSS2_RC Esys_AC_Send_Async(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR authHandle,
+    ESYS_TR sendObject,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    TPMI_RH_AC ac,
+    TPM2B_MAX_BUFFER *acDataIn);
+
+TSS2_RC Esys_AC_Send_Finish(
+    ESYS_CONTEXT *esysContext,
+    TPMS_AC_OUTPUT **acDataOut);
+
+TSS2_RC Esys_AC_Send(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR authHandle,
+    ESYS_TR sendObject,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    TPMI_RH_AC ac,
+    TPM2B_MAX_BUFFER *acDataIn,
+    TPMS_AC_OUTPUT **acDataOut);
+
+TSS2_RC Esys_Policy_AC_SendSelect_Async(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    ESYS_TR policySession,
+    TPM2B_NAME *objectName,
+    TPM2B_NAME *authHandleName,
+    TPM2B_NAME *acName,
+    TPMI_YES_NO includeObject);
+
+TSS2_RC Esys_Policy_AC_SendSelect_Finish(
+    ESYS_CONTEXT *esysContext);
+
+TSS2_RC Esys_Policy_AC_SendSelect(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    ESYS_TR policySession,
+    TPM2B_NAME *objectName,
+    TPM2B_NAME *authHandleName,
+    TPM2B_NAME *acName,
+    TPMI_YES_NO includeObject);
+
 /*
  * TPM 2.0 ESAPI Helper Functions
  */
 void
 Esys_Free(
-    void *__ptr);
+    void *_ptr);
 
 TSS2_RC
 Esys_GetSysContext(
     ESYS_CONTEXT *esys_context,
     TSS2_SYS_CONTEXT **sys_context);
 
-#ifdef __cplusplus
+#ifdef _cplusplus
 }
 #endif
 
