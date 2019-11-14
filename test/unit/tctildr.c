@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <setjmp.h>
 #include <cmocka.h>
@@ -171,38 +172,15 @@ test_conf_parse_null (void **state)
     TSS2_RC rc = tctildr_conf_parse (NULL, NULL, NULL);
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
 }
-#define NAME_CONF_STR (char*)0xf100d
-size_t __real_strlen (const char *s);
-size_t
-__wrap_strlen (const char *s)
-{
-    if (s != NAME_CONF_STR)
-        return __real_strlen (s);
-    return mock_type (size_t);
-}
-char* __real_strchr (const char *s, int c);
-char*
-__wrap_strchr (const char *s, int c)
-{
-    if (s != NAME_CONF_STR)
-        return __real_strchr (s, c);
-    return mock_type (char*);
-}
-char* __real_strcpy(char *dest, const char *src);
-char*
-__wrap_strcpy(char *dest, const char *src)
-{
-    if (src != NAME_CONF_STR)
-        return __real_strcpy (dest, src);
-    return mock_type (char*);
-}
 
 void
 test_conf_parse_bad_length (void **state)
 {
     char name_buf[0], conf_buf[0];
-    will_return (__wrap_strlen, PATH_MAX);
-    TSS2_RC rc = tctildr_conf_parse (NAME_CONF_STR, name_buf, conf_buf);
+    char name[PATH_MAX+1];
+    memset(&name[0], 'a', sizeof(name));
+    name[PATH_MAX] = '\0';
+    TSS2_RC rc = tctildr_conf_parse (name, name_buf, conf_buf);
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
 }
 void
@@ -257,9 +235,10 @@ static void
 tctildr_init_conf_fail_test (void **state)
 {
     TSS2_RC rc;
-
-    will_return (__wrap_strlen, PATH_MAX);
-    rc = Tss2_TctiLdr_Initialize (NAME_CONF_STR, NULL);
+    char name[PATH_MAX+1];
+    memset(&name[0], 'a', sizeof(name));
+    name[PATH_MAX] = '\0';
+    rc = Tss2_TctiLdr_Initialize (name, NULL);
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
 }
 static void
