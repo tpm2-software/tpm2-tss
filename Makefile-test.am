@@ -253,7 +253,7 @@ test_unit_tctildr_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tctildr_LDADD = $(CMOCKA_LIBS) $(libutil)
 test_unit_tctildr_LDFLAGS = -Wl,--wrap=calloc,--wrap=free \
     -Wl,--wrap=tctildr_finalize_data,--wrap=tctildr_get_tcti \
-    -Wl,--wrap=tctildr_get_info,--wrap=strlen,--wrap=strchr,--wrap=strcpy
+    -Wl,--wrap=tctildr_get_info
 test_unit_tctildr_SOURCES = test/unit/tctildr.c \
     src/tss2-tcti/tctildr.c
 
