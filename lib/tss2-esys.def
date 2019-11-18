@@ -342,6 +342,7 @@ EXPORTS
     Esys_TR_GetName
     Esys_TR_Serialize
     Esys_TR_SetAuth
+    Esys_TR_GetTpmHandle;
     Esys_TestParms
     Esys_TestParms_Async
     Esys_TestParms_Finish

@@ -167,6 +167,12 @@ Esys_TRSess_GetNonceTPM(
     ESYS_TR session,
     TPM2B_NONCE **nonceTPM);
 
+TSS2_RC
+Esys_TR_GetTpmHandle(
+    ESYS_CONTEXT *esys_context,
+    ESYS_TR esys_handle,
+    TPM2_HANDLE *tpm_handle);
+
 /* Table 5 - TPM2_Startup Command */
 
 TSS2_RC

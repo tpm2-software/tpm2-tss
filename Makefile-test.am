@@ -182,6 +182,8 @@ ESYS_TESTS_INTEGRATION_MANDATORY = \
     test/integration/esys-tr-fromTpmPublic-nv.int \
     test/integration/esys-tr-fromTpmPublic-session.int \
     test/integration/esys-tr-getName-hierarchy.int \
+    test/integration/esys-tr-getTpmHandle-key.int \
+    test/integration/esys-tr-getTpmHandle-nv.int \
     test/integration/esys-unseal-password-auth.int \
     test/integration/esys-verify-signature.int \
     test/integration/esys-ecdh-keygen.int \
@@ -1135,6 +1137,20 @@ test_integration_esys_tr_getName_hierarchy_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_tr_getName_hierarchy_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_tr_getName_hierarchy_int_SOURCES = \
     test/integration/esys-tr-getName-hierarchy.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_tr_getTpmHandle_key_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_tr_getTpmHandle_key_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_tr_getTpmHandle_key_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_tr_getTpmHandle_key_int_SOURCES = \
+    test/integration/esys-tr-getTpmHandle-key.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_tr_getTpmHandle_nv_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_tr_getTpmHandle_nv_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_tr_getTpmHandle_nv_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_tr_getTpmHandle_nv_int_SOURCES = \
+    test/integration/esys-tr-getTpmHandle-nv.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_unseal_password_auth_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)

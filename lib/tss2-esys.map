@@ -342,6 +342,7 @@
         Esys_TR_GetName;
         Esys_TR_Serialize;
         Esys_TR_SetAuth;
+        Esys_TR_GetTpmHandle;
         Esys_Unseal;
         Esys_Unseal_Async;
         Esys_Unseal_Finish;
