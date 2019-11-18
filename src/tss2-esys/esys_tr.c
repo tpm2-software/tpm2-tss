@@ -558,3 +558,42 @@ Esys_TRSess_GetNonceTPM(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
     SAFE_FREE(*nonceTPM);
     return r;
 }
+
+/** Retrieves the associated TPM2_HANDLE from an ESYS_TR object.
+ *
+ * Retrieves the TPM2_HANDLE for an associated ESYS_TR object for use with the
+ * SAPI API or comparisons against raw TPM2_HANDLES from commands like
+ * TPM2_GetCapability or use of various handle bitwise comparisons. For example
+ * the mask TPM2_HR_NV_INDEX.
+ *
+ * @param esys_context [in,out] The ESYS_CONTEXT.
+ * @param esys_handle [in] The ESYS_TR object to retrieve the TPM2_HANDLE from.
+ * @param tpm_handle [out] The TPM2_HANDLE retrieved from the ESYS_TR object.
+ * @retval TSS2_RC_SUCCESS on Success.
+ * @retval TSS2_ESYS_RC_BAD_TR if the ESYS_TR object is unknown to the
+ *         ESYS_CONTEXT or is ESYS_TR_NONE.
+ * @retval TSS2_ESYS_RC_BAD_VALUE if an unknown handle < ESYS_TR_MIN_OBJECT is
+ *         passed.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE For invalid ESYS_CONTEXT.
+ */
+TSS2_RC
+Esys_TR_GetTpmHandle(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
+                  TPM2_HANDLE * tpm_handle)
+{
+    TSS2_RC r = TSS2_RC_SUCCESS;
+    RSRC_NODE_T *esys_object;
+
+    _ESYS_ASSERT_NON_NULL(esys_context);
+    _ESYS_ASSERT_NON_NULL(tpm_handle);
+
+    if (esys_handle == ESYS_TR_NONE) {
+        return TSS2_ESYS_RC_BAD_TR;
+    }
+
+    r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
+    return_if_error(r, "Get resource object");
+
+    *tpm_handle = esys_object->rsrc.handle;
+
+    return TSS2_RC_SUCCESS;
+};
