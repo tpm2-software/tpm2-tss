@@ -135,7 +135,6 @@ TESTS_INTEGRATION += \
     test/integration/sapi-policy-template.int \
     test/integration/sapi-create-loaded.int \
     test/integration/sapi-policy-authorizeNV.int \
-    test/integration/sapi-command-cancel.int \
     test/integration/sapi-param-encrypt-decrypt.int \
     test/tpmclient/tpmclient.int
 endif # !TESTDEVICE
@@ -1323,11 +1322,6 @@ test_integration_sapi_policy_authorizeNV_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_sapi_policy_authorizeNV_int_LDADD   = $(TESTS_LDADD)
 test_integration_sapi_policy_authorizeNV_int_SOURCES = test/integration/main-sapi.c \
     test/integration/sapi-policy-authorizeNV.int.c
-
-test_integration_sapi_command_cancel_int_CFLAGS  = $(TESTS_CFLAGS)
-test_integration_sapi_command_cancel_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_command_cancel_int_SOURCES = test/integration/main-sapi.c \
-    test/integration/sapi-command-cancel.int.c src/util/log.c
 
 if FAPI
 test_integration_fapi_get_random_int_CFLAGS  = $(TESTS_CFLAGS)
