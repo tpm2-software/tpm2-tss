@@ -12,12 +12,8 @@ TESTS_LDADD = $(check_LTLIBRARIES) $(lib_LTLIBRARIES) \
 check_LTLIBRARIES =
 # test harness configuration
 TEST_EXTENSIONS = .int
-if TESTDEVICE
-INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler-device.sh
-INT_LOG_FLAGS = --device=$(DEVICE)
-else
-INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler-swtpm.sh
-endif
+INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler-$(INTEGRATION_TCTI).sh
+INT_LOG_FLAGS = $(INTEGRATION_ARGS)
 EXTRA_DIST += $(srcdir)/script/int-log-compiler-swtpm.sh \
               $(srcdir)/script/int-log-compiler-mssim.sh \
               $(srcdir)/script/int-log-compiler-device.sh \
