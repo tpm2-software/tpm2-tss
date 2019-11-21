@@ -373,43 +373,44 @@ AS_IF([test "x$enable_weakcrypto" = "xyes"],
 
 AC_SUBST([PATH])
 
-dnl ---------  Physical TPM device -----------------------
+dnl ---------  Physical TPM device for testing -----------------------
 
-AC_ARG_WITH([ptpm],
-            [AS_HELP_STRING([--with-ptpm=<device>],[TPM device])],
-            [AS_IF([test \( -w "$with_ptpm" \)  -a \( -r "$with_ptpm" \)],
+AC_ARG_WITH([device],
+            [AS_HELP_STRING([--with-device=<device>],[TPM device for testing])],
+            [AS_IF([test \( -w "$with_device" \)  -a \( -r "$with_device" \)],
                    [AC_MSG_RESULT([success])
-                    AC_SUBST([PTPM],[$with_ptpm])
-                    AX_NORMALIZE_PATH([with_ptpm])
-                    with_ptpm_set=yes],
+                    AC_SUBST([DEVICE],[$with_device])
+                    AX_NORMALIZE_PATH([with_device])
+                    with_device_set=yes],
                    [AC_MSG_ERROR([TPM device provided does not exist or is not writable])])],
-            [with_ptpm_set=no])
-AM_CONDITIONAL([PTPM],[test "x$with_ptpm_set" = "xyes"])
+            [with_device_set=no])
+AM_CONDITIONAL([DEVICE],[test "x$with_device_set" = "xyes"])
 
-AC_ARG_WITH([ptpmtests],
-            [AS_HELP_STRING([--with-ptpmtests=<case>],[Comma-separated values of possible tests: destructive,mandatory,optional] default is mandatory)],
-            [AS_IF([test "x" =  x$(echo $with_ptpmtests | sed 's/destructive//g'  | sed 's/mandatory//g'  | sed 's/optional//g' | sed 's/,//g') ],
+AC_ARG_WITH([devicetests],
+            [AS_HELP_STRING([--with-devicetests=<case>],[Comma-separated values of possible tests: destructive,mandatory,optional] default is mandatory)],
+            [AS_IF([test "x" =  x$(echo $with_devicetests | sed 's/destructive//g'  | sed 's/mandatory//g'  | sed 's/optional//g' | sed 's/,//g') ],
                    [AC_MSG_RESULT([success])
-                    with_ptpmtests_set=yes],
-                   [AC_MSG_ERROR([Illegal test type for pTPM tests.])])],
-            [with_ptpmtests="mandatory"])
+                    with_devicetests_set=yes],
+                   [AC_MSG_ERROR([Illegal test type for device tests.])])],
+            [with_devicetests="mandatory"])
 
-if echo $with_ptpmtests | grep destructive > /dev/null; then
-    enable_ptpm_destructive="yes"
+if echo $with_devicetests | grep destructive > /dev/null; then
+    enable_device_destructive="yes"
 fi
-AM_CONDITIONAL([PTPMDESTRUCTIVE],[test "x$enable_ptpm_destructive" = "xyes"])
+AM_CONDITIONAL([DEVICEDESTRUCTIVE],[test "x$enable_device_destructive" = "xyes"])
 
-if echo $with_ptpmtests | grep optional > /dev/null; then
-    enable_ptpm_optional="yes"
+if echo $with_devicetests | grep optional > /dev/null; then
+    enable_device_optional="yes"
 fi
-AM_CONDITIONAL([PTPMOPTIONAL],[test "x$enable_ptpm_optional" = "xyes"])
+AM_CONDITIONAL([DEVICEOPTIONAL],[test "x$enable_device_optional" = "xyes"])
 
-if echo $with_ptpmtests | grep mandatory > /dev/null; then
-    enable_ptpm_mandatory="yes"
+if echo $with_devicetests | grep mandatory > /dev/null; then
+    enable_device_mandatory="yes"
 fi
-AM_CONDITIONAL([PTPMMANDATORY],[test "x$enable_ptpm_mandatory" = "xyes"])
+AM_CONDITIONAL([DEVICEMANDATORY],[test "x$enable_device_mandatory" = "xyes"])
 
-AM_CONDITIONAL([TESTPTPM],[test "x$with_ptpm_set" = xyes])
+AM_CONDITIONAL([TESTDEVICE],[test "x$with_device_set" = xyes])
+
 
 dnl --------- Doxy Gen -----------------------
 DX_DOXYGEN_FEATURE(ON)

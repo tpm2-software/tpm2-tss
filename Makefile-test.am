@@ -12,15 +12,15 @@ TESTS_LDADD = $(check_LTLIBRARIES) $(lib_LTLIBRARIES) \
 check_LTLIBRARIES =
 # test harness configuration
 TEST_EXTENSIONS = .int
-if TESTPTPM
-INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler-ptpm.sh
-INT_LOG_FLAGS = --ptpm=$(PTPM)
+if TESTDEVICE
+INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler-device.sh
+INT_LOG_FLAGS = --device=$(DEVICE)
 else
 INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler-swtpm.sh
 endif
 EXTRA_DIST += $(srcdir)/script/int-log-compiler-swtpm.sh \
               $(srcdir)/script/int-log-compiler-mssim.sh \
-              $(srcdir)/script/int-log-compiler-ptpm.sh \
+              $(srcdir)/script/int-log-compiler-device.sh \
               $(srcdir)/script/ekca/create_ca.sh \
               $(srcdir)/script/ekca/ek.cnf \
               $(srcdir)/script/ekca/intermed-ca.cnf \
@@ -115,7 +115,7 @@ if ENABLE_INTEGRATION
 check_LTLIBRARIES += test/integration/libtest_utils.la
 
 TESTS_INTEGRATION =
-if !TESTPTPM
+if !TESTDEVICE
 TESTS_INTEGRATION += \
     test/integration/sapi-asymmetric-encrypt-decrypt.int \
     test/integration/sapi-nv-policy-locality.int \
@@ -142,7 +142,7 @@ TESTS_INTEGRATION += \
     test/integration/sapi-command-cancel.int \
     test/integration/sapi-param-encrypt-decrypt.int \
     test/tpmclient/tpmclient.int
-endif # !TESTPTPM
+endif # !TESTDEVICE
 
 if ESAPI
 ESYS_TESTS_INTEGRATION_DESTRUCTIVE = \
@@ -237,24 +237,24 @@ ESYS_TESTS_INTEGRATION_OPTIONAL = \
     test/integration/esys-zgen-2phase.int \
     test/integration/esys-auto-session-flags.int
 
-if TESTPTPM
+if TESTDEVICE
 
-if PTPMMANDATORY
+if DEVICEMANDATORY
 TESTS_INTEGRATION +=  $(ESYS_TESTS_INTEGRATION_MANDATORY)
 endif
 
-if PTPMOPTIONAL
+if DEVICEOPTIONAL
 TESTS_INTEGRATION +=  $(ESYS_TESTS_INTEGRATION_OPTIONAL)
 endif
 
-if PTPMDESTRUCTIVE
+if DEVICEDESTRUCTIVE
 TESTS_INTEGRATION += $(ESYS_TESTS_INTEGRATION_DESTRUCTIVE)
 endif
 
-else # TESTPTPM
+else # TESTDEVICE
 TESTS_INTEGRATION += $(ESYS_TESTS_INTEGRATION_MANDATORY) $(ESYS_TESTS_INTEGRATION_OPTIONAL) $(ESYS_TESTS_INTEGRATION_DESTRUCTIVE)
 
-endif # TESTPTPM
+endif # TESTDEVICE
 
 endif #ESAPI
 
@@ -304,8 +304,8 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-info.int \
     test/integration/fapi-unseal.int
 
-if TESTPTPM
-if PTPMDESTRUCTIVE
+if TESTDEVICE
+if DEVICEDESTRUCTIVE
 FAPI_TESTS_INTEGRATION += test/integration/fapi-key-create-sign-policy-provision.int
 endif
 #else
@@ -314,7 +314,7 @@ FAPI_TESTS_INTEGRATION += \
     test/integration/fapi-provision-certificate.int \
     test/integration/fapi-provision-fingerprint_ecc.int \
     test/integration/fapi-provision-certificate_ecc.int
-endif #TESTPTM
+endif #TESTDEVICE
 
 TESTS_INTEGRATION += $(FAPI_TESTS_INTEGRATION)
 
@@ -1693,5 +1693,5 @@ endif #FAPI
 
 endif #ENABLE_INTEGRATION
 
-check-ptpm:
+check-device:
 	$(MAKE) -j1 check

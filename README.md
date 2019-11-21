@@ -109,13 +109,13 @@ controls the integration tests.
 To run integration tests on a physical TPM device, including a TPM hardware
 or a software TPM implemented in platform firmware the configure script
 provides two options.
-The first option is called --with-ptpm and it is used to point to the TPM
+The first option is called --with-device and it is used to point to the TPM
 device interface exposed by the OS, for example:
 
 ```
-  $ ./configure  --with-ptpm=/dev/tpm0
+  $ ./configure  --with-device=/dev/tpm0
 ```
-The second option, --with-ptpmtests, enables a "class" of test.
+The second option, --with-devicetests, enables a "class" of test.
 There are three classes:
 1. destructive - these tests can affect TPM capability or lifespan
 2. mandatory   - these tests check all the functionality that is mandatory
@@ -127,7 +127,7 @@ For example to enable both mandatory and optional test cases during configure
 one needs to set this flag as follows:
 
 ```
-  $ ./configure --with-ptpmtests="mandatory,optional"
+  $ ./configure --with-devicetests="mandatory,optional"
 ```
 Tht default value for the flag is "mandatory"
 Any combination of the three is valid.
@@ -138,7 +138,7 @@ After that the following command is used to run the test on the configured
 TPM device:
 
 ```
-  $ sudo make check-ptpm
+  $ sudo make check-device
 ```
   or
 ```
