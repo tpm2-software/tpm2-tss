@@ -274,7 +274,7 @@ tctildr_init_ex_calloc_fail_test (void **state)
     will_return (__wrap_calloc, NULL);
 
     rc = Tss2_TctiLdr_Initialize_Ex (NULL, NULL, &ctx);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (rc, TSS2_TCTI_RC_MEMORY);
 }
 static void
 tctildr_init_ex_success_test (void **state)
