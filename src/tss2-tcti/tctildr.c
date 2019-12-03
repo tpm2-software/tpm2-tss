@@ -421,6 +421,7 @@ Tss2_TctiLdr_Initialize_Ex (const char *name,
     }
     ldr_ctx = calloc (1, sizeof (TSS2_TCTILDR_CONTEXT));
     if (ldr_ctx == NULL) {
+        rc = TSS2_TCTI_RC_MEMORY;
         goto err;
     }
     TSS2_TCTI_MAGIC (ldr_ctx) = TCTILDR_MAGIC;
