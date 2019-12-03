@@ -346,8 +346,8 @@ tcti_mssim_receive (
         LOG_DEBUG ("response size: %" PRIu32, tcti_common->header.size);
     }
 
-    *response_size = tcti_common->header.size;
     if (response_buffer == NULL) {
+        *response_size = tcti_common->header.size;
         return TSS2_RC_SUCCESS;
     }
 
@@ -355,6 +355,7 @@ tcti_mssim_receive (
         *response_size = tcti_common->header.size;
         return TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
     }
+    *response_size = tcti_common->header.size;
 
     /* Receive the TPM response. */
     LOG_DEBUG ("Reading response of size %" PRIu32, tcti_common->header.size);
