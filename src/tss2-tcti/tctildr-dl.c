@@ -41,12 +41,12 @@ struct {
     {
         .file = "libtss2-tcti-device.so.0",
         .conf = "/dev/tpmrm0",
-        .description = "Access libtss2-tcti-device.s0 with /dev/tpmrm0",
+        .description = "Access libtss2-tcti-device.so.0 with /dev/tpmrm0",
     },
     {
         .file = "libtss2-tcti-device.so.0",
         .conf = "/dev/tpm0",
-        .description = "Access libtss2-tcti-device.s0 with /dev/tpmrm0",
+        .description = "Access libtss2-tcti-device.so.0 with /dev/tpm0",
     },
     {
         .file = "libtss2-tcti-mssim.so.0",
