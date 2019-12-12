@@ -4,7 +4,7 @@
 # All rights reserved.
 
 AC_INIT([tpm2-tss],
-        [2.3.2-rc0],
+        [2.3.2],
         [https://github.com/tpm2-software/tpm2-tss/issues],
         [],
         [https://github.com/tpm2-software/tpm2-tss])
