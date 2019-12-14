@@ -56,11 +56,16 @@
 #define LOGMODULE tcti
 #include "util/log.h"
 
+#define ARRAY_LEN(x) (sizeof(x)/sizeof(x[0]))
+
+static char *default_conf[] = {
 #ifdef __VXWORKS__
-#define TCTI_DEVICE_DEFAULT "/tpm0"
+    "/tpm0"
 #else
-#define TCTI_DEVICE_DEFAULT "/dev/tpm0"
-#endif
+    "/dev/tpmrm0",
+    "/dev/tpm0",
+#endif /* __VX_WORKS__ */
+};
 
 /*
  * This function wraps the "up-cast" of the opaque TCTI context type to the
@@ -404,6 +409,15 @@ tcti_device_set_locality (
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
+static int open_tpm (
+    const char* pathname) {
+#ifdef __VXWORKS__
+        return open (pathname, O_RDWR, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
+#else
+        return open (pathname, O_RDWR | O_NONBLOCK);
+#endif
+}
+
 TSS2_RC
 Tss2_Tcti_Device_Init (
     TSS2_TCTI_CONTEXT *tctiContext,
@@ -412,7 +426,6 @@ Tss2_Tcti_Device_Init (
 {
     TSS2_TCTI_DEVICE_CONTEXT *tcti_dev;
     TSS2_TCTI_COMMON_CONTEXT *tcti_common;
-    const char *dev_path = conf != NULL ? conf : TCTI_DEVICE_DEFAULT;
 
     if (tctiContext == NULL && size == NULL) {
         return TSS2_TCTI_RC_BAD_VALUE;
@@ -437,16 +450,38 @@ Tss2_Tcti_Device_Init (
     memset (&tcti_common->header, 0, sizeof (tcti_common->header));
     tcti_common->locality = 3;
 
-#ifdef __VXWORKS__
-    tcti_dev->fd = open (dev_path, O_RDWR, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
-#else
-    tcti_dev->fd = open (dev_path, O_RDWR | O_NONBLOCK);
-#endif
-    if (tcti_dev->fd < 0) {
-        LOG_ERROR ("Failed to open device file %s: %s",
-                   dev_path, strerror (errno));
-        return TSS2_TCTI_RC_IO_ERROR;
+    if (conf == NULL) {
+        LOG_TRACE ("No TCTI device file specified");
+
+        for (size_t i = 0; i < ARRAY_LEN(default_conf); i++) {
+            LOG_DEBUG ("Trying to open default TCTI device file %s",
+                       default_conf[i]);
+            tcti_dev->fd = open_tpm (default_conf[i]);
+            if (tcti_dev->fd >= 0) {
+                LOG_TRACE ("Successfully opened default TCTI device file %s",
+                           default_conf[i]);
+                    break;
+            } else {
+                    LOG_WARNING ("Failed to open default TCTI device file %s: %s",
+                                 default_conf[i], strerror (errno));
+                }
+            }
+            if (tcti_dev->fd < 0) {
+                LOG_ERROR ("Could not open any default TCTI device file");
+                return TSS2_TCTI_RC_IO_ERROR;
+            }
+    } else {
+        LOG_DEBUG ("Trying to open specified TCTI device file %s", conf);
+        tcti_dev->fd = open_tpm (conf);
+        if (tcti_dev->fd < 0) {
+            LOG_ERROR ("Failed to open specified TCTI device file %s: %s",
+                       conf, strerror (errno));
+            return TSS2_TCTI_RC_IO_ERROR;
+        } else {
+            LOG_TRACE ("Successfully opened specified TCTI device file %s", conf);
+        }
     }
+
 
     return TSS2_RC_SUCCESS;
 }
