@@ -182,7 +182,8 @@ get_info_default(const TSS2_TCTI_INFO **info,
     else if (handle == NULL)
         return TSS2_TCTI_RC_IO_ERROR;
 #else
-    for (size_t i = 0; i < ARRAY_SIZE(tctis); i++) {
+    size_t i;
+    for (i = 0; i < ARRAY_SIZE(tctis); i++) {
         name = tctis[i].file;
         LOG_DEBUG("name: %s", name);
         if (name == NULL) {
@@ -234,8 +235,9 @@ tctildr_get_default(TSS2_TCTI_CONTEXT ** tcticontext, void **dlhandle)
 #else /* ESYS_TCTI_DEFAULT_MODULE */
 
     TSS2_RC r;
+    size_t i;
 
-    for (size_t i = 0; i < ARRAY_SIZE(tctis); i++) {
+    for (i = 0; i < ARRAY_SIZE(tctis); i++) {
         LOG_DEBUG("Attempting to connect using standard TCTI: %s",
                   tctis[i].description);
         r = tcti_from_file(tctis[i].file, tctis[i].conf, tcticontext,

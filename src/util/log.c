@@ -86,11 +86,12 @@ doLogBlob(log_level loglevel, const char *module, log_level logdefault,
     if (loglevel > *status)
         return;
 
+    size_t i, off;
     size_t width = 8;
     size_t buffer_size = (size * 2) + (size / width) * 2 + 1;
     char buffer[buffer_size];
     buffer[0] = '\0';
-    for (size_t i = 0, off = 0; i < size && off < buffer_size; i++, off+=2) {
+    for (i = 0, off = 0; i < size && off < buffer_size; i++, off+=2) {
         if (width < buffer_size && i % width == 0) {
             *(&buffer[0] + off) = '\n';
             off += 1;
@@ -144,7 +145,8 @@ doLog(log_level loglevel, const char *module, log_level logdefault,
 static log_level
 log_stringlevel(const char *n)
 {
-    for(log_level i = 0; i < sizeof(log_strings)/sizeof(log_strings[0]); i++) {
+    log_level i;
+    for(i = 0; i < sizeof(log_strings)/sizeof(log_strings[0]); i++) {
         if (case_insensitive_strncmp(log_strings[i], n, strlen(log_strings[i])) == 0) {
             return i;
         }
