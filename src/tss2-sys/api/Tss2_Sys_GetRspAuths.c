@@ -23,6 +23,7 @@ TSS2_RC Tss2_Sys_GetRspAuths(
     TSS2_RC rval = TSS2_RC_SUCCESS;
     size_t offset = 0, offset_tmp;
     unsigned i = 0;
+    UINT32 rspParamsSize;
 
     if (!ctx || !rspAuthsArray)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -37,7 +38,8 @@ TSS2_RC Tss2_Sys_GetRspAuths(
 
     offset += sizeof(TPM20_Header_Out);
     offset += ctx->numResponseHandles * sizeof(TPM2_HANDLE);
-    offset += BE_TO_HOST_32(*ctx->rspParamsSize);
+    memcpy(&rspParamsSize, ctx->rspParamsSize, sizeof(rspParamsSize));
+    offset += BE_TO_HOST_32(rspParamsSize);
     offset += sizeof(UINT32);
     offset_tmp = offset;
 
