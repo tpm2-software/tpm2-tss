@@ -68,7 +68,7 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
             ctx->cpBuffer, ctx->cpBufferUsedSize);
 
     /* Reset the auth size field */
-    *(UINT32 *)ctx->cpBuffer = 0;
+    memset(ctx->cpBuffer, 0, sizeof(UINT32));
 
     /* Now copy in the authorization area. */
     authOffset = ctx->cpBuffer - ctx->cmdBuffer;
