@@ -894,8 +894,8 @@ ifapi_merge_profile_into_template(
 static void
 full_path_to_fapi_path(IFAPI_KEYSTORE *keystore, char *path)
 {
-    int start_pos, end_pos, i;
-    int path_length = strlen(path);
+    unsigned int start_pos, end_pos, i;
+    const unsigned int path_length = strlen(path);
     size_t keystore_length = strlen(keystore->userdir);
     char fapi_path_delim;
 
