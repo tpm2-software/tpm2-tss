@@ -1700,11 +1700,13 @@ static void PasswordTest()
      * Attempt write with the correct password.
      * It should pass.
      */
-    rval = Tss2_Sys_NV_Write( sysContext,
-            TPM20_INDEX_PASSWORD_TEST,
-            TPM20_INDEX_PASSWORD_TEST,
-            &sessionsData, &nvWriteData, 0,
-            &sessionsDataOut );
+    do {
+        rval = Tss2_Sys_NV_Write( sysContext,
+                TPM20_INDEX_PASSWORD_TEST,
+                TPM20_INDEX_PASSWORD_TEST,
+                &sessionsData, &nvWriteData, 0,
+                &sessionsDataOut );
+    } while (rval == TPM2_RC_RETRY);
     /*
      * Check that the function passed as
      * expected.  Otherwise, exit.
