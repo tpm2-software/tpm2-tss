@@ -404,14 +404,13 @@ fapi-config.json: dist/fapi-config.json.in
 		-e 's|[@]userstatedir@|$(userstatedir)|g' \
 		< "$<" > "$@"
 
-tmpfilesddir = @tmpfilesdir@
-tmpfilesd_DATA = fapi-tmpfiles.conf
+tmpfiles_DATA = tpm2-tss-fapi.conf
 
-EXTRA_DIST += dist/fapi-tmpfiles.conf.in
-CLEANFILES += fapi-tmpfiles.conf
+EXTRA_DIST += dist/tmpfiles.d/tpm2-tss-fapi.conf.in
+CLEANFILES += tpm2-tss-fapi.conf
 
 # We have to do this ourselves, in order to get absolute paths
-fapi-tmpfiles.conf: dist/fapi-tmpfiles.conf.in
+tpm2-tss-fapi.conf: dist/tmpfiles.d/tpm2-tss-fapi.conf.in
 	$(AM_V_GEN) $(SED) \
 		-e 's|[@]localstatedir@|$(localstatedir)|g' \
 		-e 's|[@]runstatedir@|$(runstatedir)|g' \
