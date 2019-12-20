@@ -45,6 +45,14 @@ case "${host_os}" in
 esac
 AC_SUBST([LIBSOCKET_LDFLAGS])
 
+# runstatedir is only defined in the yet unreleased Autoconf 2.70
+AC_ARG_WITH([runstatedir],
+            AS_HELP_STRING([--with-runstatedir=<dir>],
+                           [replacement for --runstatedir in Autoconf <2.70]),
+            [runstatedir="$withval"])
+AS_IF([test -z "$runstatedir"], [runstatedir="${localstatedir}/run"])
+AC_SUBST([runstatedir])
+
 AC_DEFINE_UNQUOTED([SYSCONFDIR], ["${sysconfdir}"], [System config dir])
 AC_SUBST(confdir, $sysconfdir/tpm2-tss)
 
