@@ -147,7 +147,7 @@ AS_IF([test "x$enable_fapi" != xno -a "x$with_crypto" != "xossl"],
     AC_MSG_ERROR([FAPI has to be compiled with OpenSSL]))
 
 AS_IF([test "x$enable_fapi" = xyes ],
-    AC_CHECK_HEADER([json-c/json.h], [], [AC_MSG_ERROR([libjson-c (header) not found])], []))
+    PKG_CHECK_MODULES([JSON_C], [json-c]))
 
 AS_IF([test "x$enable_fapi" = xyes ],
     PKG_CHECK_MODULES([CURL], [libcurl]))
