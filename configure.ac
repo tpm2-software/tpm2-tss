@@ -62,6 +62,12 @@ AC_ARG_WITH([userstatedir],
             [with_userstatedir=.local/share])
 AC_SUBST(userstatedir, $with_userstatedir)
 
+AC_ARG_WITH([sysusersdir],
+            [AS_HELP_STRING([--with-sysusersdir=<dir>],
+                            [sets the sysusers.d directory (default is "${sysconfdir}/sysusers.d")])],,
+            [with_sysusersdir="${sysconfdir}/sysusers.d"])
+AC_SUBST(sysusersdir, $with_sysusersdir)
+
 AC_ARG_WITH([tmpfilesdir],
             [AS_HELP_STRING([--with-tmpfilesdir=<dir>],
                             [sets the tmpfiles.d directory (default is "${sysconfdir}/tmpfiles.d")])],,
@@ -454,6 +460,7 @@ AC_MSG_RESULT([
     sysconfdir:         $sysconfdir
     localstatedir:      $localstatedir
     runstatedir:        $runstatedir
+    sysusersdir:        $sysusersdir
     tmpfilesdir:        $tmpfilesdir
     userstatedir:       [\$HOME/]$with_userstatedir
 ])

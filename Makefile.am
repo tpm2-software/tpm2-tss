@@ -404,9 +404,10 @@ fapi-config.json: dist/fapi-config.json.in
 		-e 's|[@]userstatedir@|$(userstatedir)|g' \
 		< "$<" > "$@"
 
+sysusers_DATA = dist/sysusers.d/tpm2-tss.conf
 tmpfiles_DATA = tpm2-tss-fapi.conf
 
-EXTRA_DIST += dist/tmpfiles.d/tpm2-tss-fapi.conf.in
+EXTRA_DIST += dist/sysusers.d/tpm2-tss.conf dist/tmpfiles.d/tpm2-tss-fapi.conf.in
 CLEANFILES += tpm2-tss-fapi.conf
 
 # We have to do this ourselves, in order to get absolute paths
