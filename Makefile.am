@@ -554,6 +554,10 @@ uninstall-local:
 	-rm $(DESTDIR)$(udevrulesdir)/$(udevrulesprefix)tpm-udev.rules
 endif
 
+# Create tss user and FAPI directories directly after installation (vs. after a reboot)
+install-exec-hook:
+	systemd-sysusers && systemd-tmpfiles --create || true
+
 uninstall-hook:
 	cd $(DESTDIR)$(man3dir) && \
 		[ -L Tss2_TctiLdr_Initialize_Ex.3 ] && \
