@@ -413,6 +413,7 @@ CLEANFILES += fapi-tmpfiles.conf
 # We have to do this ourselves, in order to get absolute paths
 fapi-tmpfiles.conf: dist/fapi-tmpfiles.conf.in
 	$(AM_V_GEN) $(SED) \
+		-e 's|[@]localstatedir@|$(localstatedir)|g' \
 		-e 's|[@]runstatedir@|$(runstatedir)|g' \
 		< "$<" > "$@"
 
@@ -422,14 +423,6 @@ EXTRA_DIST += dist/fapi-profiles/P_RSA2048SHA256.json \
 fapiprofilesdir = @sysconfdir@/tpm2-tss/fapi-profiles
 fapiprofiles_DATA = dist/fapi-profiles/P_RSA2048SHA256.json \
                     dist/fapi-profiles/P_ECCP256SHA256.json
-
-EXTRA_DIST += dist/keep
-
-fapikeystoredir = @localstatedir@/tpm2-tss/system/keystore
-fapikeystore_DATA = dist/keep
-
-fapieventlogdir = @runstatedir@/tpm2-tss/eventlog
-fapieventlog_DATA = dist/keep
 
 libtss2_fapi = src/tss2-fapi/libtss2-fapi.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_fapi.h
@@ -560,11 +553,6 @@ install-data-hook:
 uninstall-local:
 	-rm $(DESTDIR)$(udevrulesdir)/$(udevrulesprefix)tpm-udev.rules
 endif
-
-install-exec-hook:
-	[ -d "$(DESTDIR)$(fapikeystoredir)" ] && \
-		chown tss:tss "$(DESTDIR)$(fapikeystoredir)" && \
-		chmod 775 "$(DESTDIR)$(fapikeystoredir)" || true
 
 uninstall-hook:
 	cd $(DESTDIR)$(man3dir) && \

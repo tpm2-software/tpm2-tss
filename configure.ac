@@ -64,7 +64,7 @@ AC_SUBST(userstatedir, $with_userstatedir)
 
 AC_ARG_WITH([tmpfilesdir],
             [AS_HELP_STRING([--with-tmpfilesdir=<dir>],
-                            [sets the tpmfiles.d directory (default is "${sysconfdir}/tmpfiles.d")])],,
+                            [sets the tmpfiles.d directory (default is "${sysconfdir}/tmpfiles.d")])],,
             [with_tmpfilesdir="${sysconfdir}/tmpfiles.d"])
 AC_SUBST(tmpfilesdir, $with_tmpfilesdir)
 
