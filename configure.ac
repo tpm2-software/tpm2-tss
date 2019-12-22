@@ -52,8 +52,8 @@ AC_ARG_WITH([runstatedir],
 AS_IF([test -z "$runstatedir"], [runstatedir="${localstatedir}/run"])
 AC_SUBST([runstatedir])
 
-AC_DEFINE_UNQUOTED([SYSCONFDIR], ["${sysconfdir}"], [System config dir])
-AC_SUBST(confdir, $sysconfdir/tpm2-tss)
+AX_RECURSIVE_EVAL([$sysconfdir], [SYSCONFDIR])
+AC_DEFINE_UNQUOTED([SYSCONFDIR], ["$SYSCONFDIR"], [System config dir])
 
 AC_ARG_WITH([userstatedir],
             [AS_HELP_STRING([--with-userstatedir=<dir>],
