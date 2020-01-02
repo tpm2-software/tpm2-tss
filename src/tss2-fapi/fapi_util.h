@@ -245,7 +245,7 @@ ifapi_get_sig_scheme(
     IFAPI_OBJECT *object,
     char const *padding,
     TPM2B_DIGEST *digest,
-    TPMT_SIG_SCHEME **sig_scheme);
+    TPMT_SIG_SCHEME *sig_scheme);
 
 TSS2_RC
 ifapi_change_auth_hierarchy(
