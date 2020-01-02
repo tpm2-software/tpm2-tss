@@ -256,7 +256,8 @@ endif #ESAPI
 if FAPI
 TESTS_CFLAGS +=  -DTOP_SOURCEDIR"=\"$(top_srcdir)\""
 FAPI_TESTS_INTEGRATION = \
-    test/integration/fapi-data-crypt-rsa.int \
+    test/integration/fapi-data-crypt.int \
+    test/integration/fapi-data-crypt-ecc.int \
     test/integration/fapi-rsa-duplicate.int \
     test/integration/fapi-ext-public-key.int \
     test/integration/fapi-get-random.int \
@@ -1557,11 +1558,19 @@ test_integration_fapi_ext_public_key_int_SOURCES = \
     test/integration/fapi-ext-public-key.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_data_crypt_rsa_int_CFLAGS  = $(TESTS_CFLAGS)
-test_integration_fapi_data_crypt_rsa_int_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_data_crypt_rsa_int_LDFLAGS = $(TESTS_LDFLAGS)
-test_integration_fapi_data_crypt_rsa_int_SOURCES = \
-    test/integration/fapi-data-crypt-rsa.int.c \
+test_integration_fapi_data_crypt_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_data_crypt_int_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_data_crypt_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_data_crypt_int_SOURCES = \
+    test/integration/fapi-data-crypt.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_data_crypt_ecc_int_CFLAGS  = $(TESTS_CFLAGS) \
+ -DFAPI_PROFILE=\"P_ECC\"
+test_integration_fapi_data_crypt_ecc_int_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_data_crypt_ecc_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_data_crypt_ecc_int_SOURCES = \
+    test/integration/fapi-data-crypt.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_rsa_duplicate_int_CFLAGS  = $(TESTS_CFLAGS)

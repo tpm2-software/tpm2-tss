@@ -322,7 +322,8 @@ Fapi_Encrypt_Finish(
                 goto_if_error(r, "Symmetric encryption error.", error_cleanup);
                 context-> state = DATA_ENCRYPT_WAIT_FOR_SYM_ENCRYPTION;
                 return TSS2_FAPI_RC_TRY_AGAIN;
-            } else if (encKeyObject->misc.key.public.publicArea.type == TPM2_ALG_RSA) {
+            } else if (encKeyObject->misc.key.public.publicArea.type == TPM2_ALG_RSA ||
+                       encKeyObject->misc.key.public.publicArea.type == TPM2_ALG_ECC) {
 
                 TPM2B_PUBLIC_KEY_RSA *rsa_message = (TPM2B_PUBLIC_KEY_RSA *)&context->aux_data;
                 rsa_message->size =  command->in_dataSize;

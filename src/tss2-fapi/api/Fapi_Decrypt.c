@@ -289,7 +289,8 @@ Fapi_Decrypt_Finish(
 
             if (command->enc_data.type == IFAPI_ASYM_BULK_ENCRYPTION
                     &&
-                    encKeyObject->misc.key.public.publicArea.type == TPM2_ALG_RSA) {
+                (encKeyObject->misc.key.public.publicArea.type == TPM2_ALG_RSA ||
+                 encKeyObject->misc.key.public.publicArea.type == TPM2_ALG_ECC)) {
                 context-> state = DATA_DECRYPT_AUTHORIZE_KEY;
                 return TSS2_FAPI_RC_TRY_AGAIN;
             } else {
