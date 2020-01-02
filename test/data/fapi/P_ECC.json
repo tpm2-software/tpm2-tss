@@ -7,7 +7,7 @@
     "ecc_signing_scheme": {
         "scheme":"TPM2_ALG_ECDSA",
         "details":{
-            "hashAlg":"TPM2_ALG_SHA1"
+            "hashAlg":"TPM2_ALG_SHA256"
         },
     },
     "rsa_signing_scheme": {

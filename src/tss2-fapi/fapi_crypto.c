@@ -522,6 +522,8 @@ ossl_ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY *evpPublicKey)
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Assign ecc key",
                    error_cleanup);
     }
+    /* Needed for older OSSL versions. */
+    EC_KEY_set_asn1_flag(ecKey, OPENSSL_EC_NAMED_CURVE);
     OSSL_FREE(y, BN);
     OSSL_FREE(x, BN);
     return TSS2_RC_SUCCESS;

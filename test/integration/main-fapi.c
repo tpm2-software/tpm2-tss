@@ -25,7 +25,7 @@
 #include "util/aux_util.h"
 
 #ifndef FAPI_PROFILE
-#define FAPI_PROFILE "P_RSA"
+#define FAPI_PROFILE "P_ECC"
 #endif /* FAPI_PROFILE */
 
 char *fapi_profile = NULL;
