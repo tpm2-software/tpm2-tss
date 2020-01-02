@@ -257,14 +257,14 @@ if FAPI
 TESTS_CFLAGS +=  -DTOP_SOURCEDIR"=\"$(top_srcdir)\""
 FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-data-crypt.int \
-    test/integration/fapi-data-crypt-ecc.int \
+    test/integration/fapi-data-crypt-rsa.int \
     test/integration/fapi-rsa-duplicate.int \
     test/integration/fapi-ext-public-key.int \
     test/integration/fapi-get-random.int \
     test/integration/fapi-platform-certificates.int \
     test/integration/fapi-key-create-sign.int \
     test/integration/fapi-key-create-sign-password-provision.int \
-    test/integration/fapi-key-create-sign-ecc.int \
+    test/integration/fapi-key-create-sign-rsa.int \
     test/integration/fapi-key-create-policy-authorize-sign.int \
     test/integration/fapi-key-create-policy-authorize-nv-sign.int \
     test/integration/fapi-key-create-policy-secret-nv-sign.int \
@@ -278,13 +278,13 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-key-create-policy-locality-sign.int \
     test/integration/fapi-key-create-policy-command-code-sign.int \
     test/integration/fapi-key-create-policy-auth-value-sign.int \
-    test/integration/fapi-key-create-ecc-sign.int \
+    test/integration/fapi-key-create-ckda-sign.int \
     test/integration/fapi-key-change-auth.int \
     test/integration/fapi-key-create-sign-persistent.int \
     test/integration/fapi-key-create-sign-password.int \
-    test/integration/fapi-key-create-ecc-sign-password.int \
+    test/integration/fapi-key-create-ckda-sign-password.int \
     test/integration/fapi-key-create-sign-password-da.int \
-    test/integration/fapi-key-create-ecc-sign-password-da.int \
+    test/integration/fapi-key-create-ckda-sign-password-da.int \
     test/integration/fapi-nv-authorizenv-cphash.int \
     test/integration/fapi-nv-ordinary.int \
     test/integration/fapi-nv-written-policy.int \
@@ -1345,11 +1345,11 @@ test_integration_fapi_key_create_sign_policy_provision_int_SOURCES = \
     test/integration/fapi-key-create-sign-policy-provision.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_sign_ecc_int_CFLAGS  = $(TESTS_CFLAGS) \
- -DFAPI_PROFILE=\"P_ECC\"
-test_integration_fapi_key_create_sign_ecc_int_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_sign_ecc_int_LDFLAGS = $(TESTS_LDFLAGS)
-test_integration_fapi_key_create_sign_ecc_int_SOURCES = \
+test_integration_fapi_key_create_sign_rsa_int_CFLAGS  = $(TESTS_CFLAGS) \
+ -DFAPI_PROFILE=\"P_RSA\"
+test_integration_fapi_key_create_sign_rsa_int_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_key_create_sign_rsa_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_sign_rsa_int_SOURCES = \
     test/integration/fapi-key-create-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
@@ -1477,28 +1477,28 @@ test_integration_fapi_key_create_policy_auth_value_sign_int_SOURCES = \
     test/integration/fapi-key-create-policies-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_ecc_sign_int_CFLAGS  = $(TESTS_CFLAGS) \
- -DFAPI_PROFILE=\"P_ECC\"
-test_integration_fapi_key_create_ecc_sign_int_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_ecc_sign_int_LDFLAGS = $(TESTS_LDFLAGS)
-test_integration_fapi_key_create_ecc_sign_int_SOURCES = \
-    test/integration/fapi-key-create-ecc-sign.int.c \
+test_integration_fapi_key_create_ckda_sign_int_CFLAGS  = $(TESTS_CFLAGS) \
+ -DFAPI_PROFILE=\"P_RSA\"
+test_integration_fapi_key_create_ckda_sign_int_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_key_create_ckda_sign_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_ckda_sign_int_SOURCES = \
+    test/integration/fapi-key-create-ckda-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_ecc_sign_password_int_CFLAGS  = $(TESTS_CFLAGS) \
- -DFAPI_PASSWORD  -DFAPI_PROFILE=\"P_ECC\"
-test_integration_fapi_key_create_ecc_sign_password_int_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_ecc_sign_password_int_LDFLAGS = $(TESTS_LDFLAGS)
-test_integration_fapi_key_create_ecc_sign_password_int_SOURCES = \
-    test/integration/fapi-key-create-ecc-sign.int.c \
+test_integration_fapi_key_create_ckda_sign_password_int_CFLAGS  = $(TESTS_CFLAGS) \
+ -DFAPI_PASSWORD  -DFAPI_PROFILE=\"P_RSA\"
+test_integration_fapi_key_create_ckda_sign_password_int_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_key_create_ckda_sign_password_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_ckda_sign_password_int_SOURCES = \
+    test/integration/fapi-key-create-ckda-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_ecc_sign_password_da_int_CFLAGS  = $(TESTS_CFLAGS) \
- -DFAPI_PASSWORD -DFAPI_DA  -DFAPI_PROFILE=\"P_ECC\"
-test_integration_fapi_key_create_ecc_sign_password_da_int_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_ecc_sign_password_da_int_LDFLAGS = $(TESTS_LDFLAGS)
-test_integration_fapi_key_create_ecc_sign_password_da_int_SOURCES = \
-    test/integration/fapi-key-create-ecc-sign.int.c \
+test_integration_fapi_key_create_ckda_sign_password_da_int_CFLAGS  = $(TESTS_CFLAGS) \
+ -DFAPI_PASSWORD -DFAPI_DA  -DFAPI_PROFILE=\"P_RSA\"
+test_integration_fapi_key_create_ckda_sign_password_da_int_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_key_create_ckda_sign_password_da_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_ckda_sign_password_da_int_SOURCES = \
+    test/integration/fapi-key-create-ckda-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_key_change_auth_int_CFLAGS  = $(TESTS_CFLAGS)
@@ -1565,11 +1565,11 @@ test_integration_fapi_data_crypt_int_SOURCES = \
     test/integration/fapi-data-crypt.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_data_crypt_ecc_int_CFLAGS  = $(TESTS_CFLAGS) \
- -DFAPI_PROFILE=\"P_ECC\"
-test_integration_fapi_data_crypt_ecc_int_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_data_crypt_ecc_int_LDFLAGS = $(TESTS_LDFLAGS)
-test_integration_fapi_data_crypt_ecc_int_SOURCES = \
+test_integration_fapi_data_crypt_rsa_int_CFLAGS  = $(TESTS_CFLAGS) \
+ -DFAPI_PROFILE=\"P_RSA\"
+test_integration_fapi_data_crypt_rsa_int_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_data_crypt_rsa_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_data_crypt_rsa_int_SOURCES = \
     test/integration/fapi-data-crypt.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
