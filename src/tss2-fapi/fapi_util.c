@@ -2203,7 +2203,7 @@ ifapi_key_sign(
     char            **certificate)
 {
     TSS2_RC r;
-    TPMT_SIG_SCHEME *sig_scheme;
+    TPMT_SIG_SCHEME sig_scheme;
     ESYS_TR session;
 
     TPMT_TK_HASHCHECK hash_validation = {
@@ -2229,7 +2229,7 @@ ifapi_key_sign(
                             session,
                             ESYS_TR_NONE, ESYS_TR_NONE,
                             digest,
-                            sig_scheme,
+                            &sig_scheme,
                             &hash_validation);
         goto_if_error(r, "Error: Sign", cleanup);
         fallthrough;
@@ -2732,7 +2732,7 @@ ifapi_get_sig_scheme(
     IFAPI_OBJECT *object,
     char const *padding,
     TPM2B_DIGEST *digest,
-    TPMT_SIG_SCHEME **sig_scheme)
+    TPMT_SIG_SCHEME *sig_scheme)
 {
     TPMI_ALG_HASH hash_alg;
     TSS2_RC r;
@@ -2751,11 +2751,16 @@ ifapi_get_sig_scheme(
             context->Key_Sign.scheme.scheme = TPM2_ALG_RSAPSS;
             context->Key_Sign.scheme.details.rsapss.hashAlg = hash_alg;
         }
-        *sig_scheme =  &context->Key_Sign.scheme;
+        *sig_scheme =  context->Key_Sign.scheme;
         return TSS2_RC_SUCCESS;
     } else {
         /* Use scheme defined for object */
-        *sig_scheme =  &object->misc.key.signing_scheme;
+        *sig_scheme =  object->misc.key.signing_scheme;
+        /* Get hash algorithm from digest size */
+        r = ifapi_get_hash_alg_for_size(digest->size, &hash_alg);
+        return_if_error2(r, "Invalid digest size.");
+
+        sig_scheme->details.any.hashAlg = hash_alg;
         return TSS2_RC_SUCCESS;
     }
 }
