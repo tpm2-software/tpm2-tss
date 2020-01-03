@@ -3,6 +3,35 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [2.4.0]
+### Added
+- Added a new Feature API (FAPI) implementation
+- Added Esys_TRSess_GetAuthRequired() ESAPI function
+- Added Esys_TR_GetTpmHandle() SAPI function
+- Added Esys_GetSysContext() SAPI function
+- Added the with-sanitizer configure option
+
+### Changed
+- Changed MSSIM TCTI to be async capable
+- Removed TCTI loaders from ESYS dependencies in pkg-config
+- Changed getPollHandles to allow num_handles query
+- Improved CI builds
+- Converted builds to docker builds
+- Number of fixes and improvements in the test code
+
+### Fixed
+- Fixed setting C++ compiler for non-fuzzing builds at configure
+- Fixed setting the name of session objects
+- Fixed page alignment errors in Sys_Get/SetAuths functions
+- Fixed potential buffer overflow in tcti_mssim_receive
+- Fixed invalid memory alloc failure in Tss2_TctiLdr_Initialize
+- Fixed list of exported symbols map for libtss2-mu
+- Fixed resource name calculation in Esys_CreateLoaded
+- Fixed keysize of ECC curve TPM2_ECC_NISTP224
+- Fixed segmentation fault in tctildr if name_conf was too big
+- Fixed memory leak in tctildr-tcti tests
+- Fixed HMAC generation for policy sessions
+
 ## [2.3.0] - 2019-08-13
 ### Added
 - tss2-tctildr: A new library that helps with tcti initialization
