@@ -1157,20 +1157,8 @@ void ifapi_cleanup_ifapi_duplicate(IFAPI_DUPLICATE * duplicate) {
     }
 }
 
-void ifapi_cleanup_ifapi_key_search(IFAPI_KEY_SEARCH * key_search) {
-    if (key_search != NULL) {
-        if (key_search->pathlist) {
-            for (size_t i = 0; i < key_search->numPaths; i++) {
-                SAFE_FREE(key_search->pathlist[i]);
-            }
-            Fapi_Free(key_search->pathlist);
-        }
-    }
-}
-
 void ifapi_cleanup_ifapi_keystore(IFAPI_KEYSTORE * keystore) {
     if (keystore != NULL) {
-        ifapi_cleanup_ifapi_key_search(&keystore->key_search);
         SAFE_FREE(keystore->systemdir);
         SAFE_FREE(keystore->userdir);
         SAFE_FREE(keystore->defaultprofile);

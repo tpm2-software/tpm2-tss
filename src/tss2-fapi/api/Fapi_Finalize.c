@@ -58,11 +58,9 @@ Fapi_Finalize(
         }
     }
 
-    SAFE_FREE((*context)->pstore.policydir);
-    SAFE_FREE((*context)->keystore.systemdir);
-    SAFE_FREE((*context)->keystore.userdir);
-    SAFE_FREE((*context)->keystore.defaultprofile);
+    ifapi_cleanup_ifapi_keystore(&(*context)->keystore);
 
+    SAFE_FREE((*context)->pstore.policydir);
     SAFE_FREE((*context)->cmd.Provision.root_crt);
     SAFE_FREE((*context)->cmd.Provision.intermed_crt);
     SAFE_FREE((*context)->cmd.Provision.pem_cert);
