@@ -163,16 +163,6 @@ Fapi_Decrypt_Async(
     command->numBytes =
         encData->cipher.size;
 
-    /* No sub path in keystore will be used (first param == NULL */
-    r = ifapi_get_entities(&context->keystore, NULL,
-                           &command->pathlist,
-                           &command->numPaths);
-    goto_if_error(r, "get entities.", error_cleanup);
-
-    /* Start with the last path */
-    command->path_idx =
-        command->numPaths;
-
     r = ifapi_get_sessions_async(context,
                                  IFAPI_SESSION_GENEK | IFAPI_SESSION1,
                                  TPMA_SESSION_DECRYPT, 0);
@@ -267,25 +257,6 @@ Fapi_Decrypt_Finish(
             goto_if_error_reset_state(r, " Load key.", error_cleanup);
 
             encKeyObject = command->key_object;
-
-            /* Symmetric decryption */
-            if (command->enc_data.type == IFAPI_SYM_BULK_ENCRYPTION
-                    &&
-                    encKeyObject->misc.key.public.publicArea.type == TPM2_ALG_SYMCIPHER) {
-                r = Esys_TRSess_SetAttributes(context->esys, context->session1,
-                                              TPMA_SESSION_CONTINUESESSION,
-                                              0xff);
-
-                goto_if_error_reset_state(r, "Set session attributes.", error_cleanup);
-
-                r = ifapi_sym_encrypt_decrypt_async(context,
-                                                    command->in_data,
-                                                    command->in_dataSize,
-                                                    TPM2_YES); /**< decrypt (not encrypt) */
-                goto_if_error(r, "Symmetric decryption error.", error_cleanup);
-                context-> state = DATA_DECRYPT_WAIT_FOR_SYM_ENCRYPTION;
-                return TSS2_FAPI_RC_TRY_AGAIN;
-            }
 
             if (command->enc_data.type == IFAPI_ASYM_BULK_ENCRYPTION
                     &&
@@ -461,15 +432,6 @@ Fapi_Decrypt_Finish(
             SAFE_FREE(tpmPlainText);
             context-> state = DATA_DECRYPT_FLUSH_KEY;
             return TSS2_FAPI_RC_TRY_AGAIN;
-
-        statecase(context->state, DATA_DECRYPT_WAIT_FOR_SYM_ENCRYPTION);
-            r = ifapi_sym_encrypt_decrypt_finish(context, plainText, plainTextSize,
-                                                 TPM2_YES);
-            return_try_again(r);
-
-            goto_if_error_reset_state(r, "Symmetric encryption.", error_cleanup);
-
-            fallthrough;
 
         statecase(context->state, DATA_DECRYPT_CLEANUP)
             r = ifapi_cleanup_session(context);

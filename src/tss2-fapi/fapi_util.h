@@ -121,13 +121,6 @@ ifapi_load_keys_finish(
     IFAPI_OBJECT **key_object);
 
 TSS2_RC
-ifapi_get_entities(
-    IFAPI_KEYSTORE *keystore,
-    const char *searchPath,
-    char ***pathlist,
-    size_t *numPaths);
-
-TSS2_RC
 ifapi_nv_read(
     FAPI_CONTEXT *context,
     uint8_t     **data,
@@ -152,20 +145,6 @@ ifapi_get_random(
     FAPI_CONTEXT *context,
     size_t numBytes,
     uint8_t **data);
-
-TSS2_RC
-ifapi_sym_encrypt_decrypt_async(
-    FAPI_CONTEXT *context,
-    const uint8_t *in_data,
-    size_t       size,
-    TPMI_YES_NO decrypt);
-
-TSS2_RC
-ifapi_sym_encrypt_decrypt_finish(
-    FAPI_CONTEXT *context,
-    uint8_t     **data,
-    size_t       *size,
-    TPMI_YES_NO decrypt);
 
 TSS2_RC
 ifapi_load_key(
@@ -299,11 +278,5 @@ ifapi_get_description(IFAPI_OBJECT *object, char **description);
 
 void
 ifapi_set_description(IFAPI_OBJECT *object, char *description);
-
-TSS2_RC
-ifapi_expand_path(
-    IFAPI_KEYSTORE *keystore,
-    const char *path,
-    char **file_name);
 
 #endif /* FAPI_UTIL_H */
