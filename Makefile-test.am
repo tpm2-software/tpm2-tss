@@ -293,6 +293,7 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-nv-set-bits.int \
     test/integration/fapi-pcr-test.int \
     test/integration/fapi-quote.int \
+    test/integration/fapi-quote-rsa.int \
     test/integration/fapi-info.int \
     test/integration/fapi-unseal.int
 
@@ -1594,6 +1595,15 @@ test_integration_fapi_quote_int_LDFLAGS = $(TESTS_LDFLAGS) -ljson-c
 test_integration_fapi_quote_int_SOURCES = \
     test/integration/fapi-quote.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_quote_rsa_int_CFLAGS  = $(TESTS_CFLAGS) \
+ -DFAPI_PROFILE=\"P_RSA\"
+test_integration_fapi_quote_rsa_int_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_quote_rsa_int_LDFLAGS = $(TESTS_LDFLAGS) -ljson-c
+test_integration_fapi_quote_rsa_int_SOURCES = \
+    test/integration/fapi-quote.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
 
 test_integration_fapi_info_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_info_int_LDADD   = $(TESTS_LDADD)
