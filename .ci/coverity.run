@@ -24,7 +24,7 @@ echo "Collecting Coverity data for submission"
 rm -fr README
 export AUTHOR="$(git log -1 $TRAVIS_COMMIT --pretty="%aN")"
 echo "Name: $AUTHOR" >> README
-echo "Email: philip.b.tricca@intel.com" >> README
+echo "Email: tadeusz.struk@intel.com" >> README
 echo "Project: 01org/TPM2.0-TSS" >> README
 echo "Build-Version: $TRAVIS_COMMIT" >> README
 echo "Description: $TRAVIS_REPO_SLUG $TRAVIS_BRANCH" >> README

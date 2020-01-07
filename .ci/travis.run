@@ -60,7 +60,7 @@ test -f "$(pwd)/tpm2-tss-scan.tgz"
 
 echo "Submitting data to Coverity"
 curl --form token="$COVERITY_SCAN_TOKEN" \
-  --form email=philip.b.tricca@intel.com \
+  --form email=tadeusz.struk@intel.com \
   --form project=tpm2-software/tpm2.0-tss \
   --form file=@"$(pwd)/tpm2-tss-scan.tgz" \
   --form version="$TRAVIS_COMMIT" \
