@@ -266,6 +266,7 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-key-create-sign-password-provision.int \
     test/integration/fapi-key-create-sign-rsa.int \
     test/integration/fapi-key-create-policy-authorize-sign.int \
+    test/integration/fapi-key-create-policy-authorize-sign-rsa.int \
     test/integration/fapi-key-create-policy-authorize-nv-sign.int \
     test/integration/fapi-key-create-policy-secret-nv-sign.int \
     test/integration/fapi-key-create-policy-pcr-sign.int \
@@ -1379,11 +1380,18 @@ test_integration_fapi_key_create_sign_persistent_int_SOURCES = \
     test/integration/fapi-key-create-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_authorize_sign_int_CFLAGS  = $(TESTS_CFLAGS) \
-    -DFAPI_PROFILE=\"P_RSA256\"
+test_integration_fapi_key_create_policy_authorize_sign_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_key_create_policy_authorize_sign_int_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_authorize_sign_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_policy_authorize_sign_int_SOURCES = \
+    test/integration/fapi-key-create-policy-authorize-sign.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_key_create_policy_authorize_sign_rsa_int_CFLAGS  = $(TESTS_CFLAGS) \
+    -DFAPI_PROFILE=\"P_RSA256\"
+test_integration_fapi_key_create_policy_authorize_sign_rsa_int_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_key_create_policy_authorize_sign_rsa_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_authorize_sign_rsa_int_SOURCES = \
     test/integration/fapi-key-create-policy-authorize-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
