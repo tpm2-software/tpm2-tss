@@ -656,11 +656,13 @@ ifapi_ecc_der_sig_to_tpm(
     tpmSignature->sigAlg = TPM2_ALG_ECDSA; /**< only ECDSA is used by FAPI */
     ifapi_bn2binpad(bnr, &tpmSignature->signature.ecdsa.signatureR.buffer[0],
                        keySize);
+    tpmSignature->signature.ecdsa.signatureR.size = keySize;
     ifapi_bn2binpad(bns, &tpmSignature->signature.ecdsa.signatureS.buffer[0],
                        keySize);
+    tpmSignature->signature.ecdsa.signatureS.size = keySize;
     OSSL_FREE(ecdsaSignature, ECDSA_SIG);
-    OSSL_FREE(bnr, BN);
-    OSSL_FREE(bns, BN);
+    //OSSL_FREE(bnr, BN);
+    //OSSL_FREE(bns, BN);
     return TSS2_RC_SUCCESS;
 }
 

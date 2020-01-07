@@ -27,6 +27,20 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
+#ifdef TEST_ECC
+const char *priv_pem =
+    "-----BEGIN EC PRIVATE KEY-----\n"
+    "MHcCAQEEILE8jic/6w/lKoFTVblkNQ4Ls5IYibQNQ4Dk5B9R09ONoAoGCCqGSM49\n"
+    "AwEHoUQDQgAEoJTa3zftdAzHC96IjpqQ/dnLm+p7pEiLMi03Jd0oP0aYnnXFjolz\n"
+    "IB/dBZ/t+BLh0PwLM5aAM/jugeLkHgpIyQ==\n"
+    "-----END EC PRIVATE KEY-----\n";
+
+const char *pub_pem =
+   "-----BEGIN PUBLIC KEY-----\n"
+    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEoJTa3zftdAzHC96IjpqQ/dnLm+p7\n"
+    "pEiLMi03Jd0oP0aYnnXFjolzIB/dBZ/t+BLh0PwLM5aAM/jugeLkHgpIyQ==\n"
+    "-----END PUBLIC KEY-----\n";
+#else
 const char *priv_pem =
     "-----BEGIN PRIVATE KEY-----\n"
     "MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQCgYvoisJIDOeYg\n"
@@ -67,6 +81,7 @@ const char *pub_pem =
     "TfEw607vttBN0Y54LrVOKno1vRXd5sxyRlfB0WL42F4VG5TfcJo5u1Xq7k9m9K57\n"
     "8wIDAQAB\n"
     "-----END PUBLIC KEY-----\n";
+#endif /* TEST_ECC */
 
 #define RSA_SIG_SCHEME RSA_PKCS1_PSS_PADDING
 
@@ -181,8 +196,13 @@ int
 test_fapi_key_create_policy_signed(FAPI_CONTEXT *context)
 {
     TSS2_RC r;
+#ifdef TEST_ECC
+    char *policy_name = "/policy/pol_signed_ecc";
+    char *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_signed_ecc.json";
+#else
     char *policy_name = "/policy/pol_signed";
     char *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_signed.json";
+#endif
     FILE *stream = NULL;
     char *json_policy = NULL;
     long policy_size;
