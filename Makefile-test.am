@@ -270,6 +270,7 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-key-create-policy-secret-nv-sign.int \
     test/integration/fapi-key-create-policy-pcr-sign.int \
     test/integration/fapi-key-create-policy-signed.int \
+    test/integration/fapi-key-create-policy-signed-ecc.int \
     test/integration/fapi-key-create-policy-nv-sign.int \
     test/integration/fapi-key-create-policy-or-sign.int \
     test/integration/fapi-key-create-policy-password-sign.int \
@@ -1415,6 +1416,13 @@ test_integration_fapi_key_create_policy_signed_int_SOURCES = \
     test/integration/fapi-key-create-policy-signed.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
+test_integration_fapi_key_create_policy_signed_ecc_int_CFLAGS  = $(TESTS_CFLAGS) \
+ -DTEST_ECC
+test_integration_fapi_key_create_policy_signed_ecc_int_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_key_create_policy_signed_ecc_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_signed_ecc_int_SOURCES = \
+    test/integration/fapi-key-create-policy-signed.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_key_create_policy_nv_sign_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_key_create_policy_nv_sign_int_LDADD   = $(TESTS_LDADD)
