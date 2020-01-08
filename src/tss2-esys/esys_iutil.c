@@ -1429,23 +1429,28 @@ iesys_nv_get_name(TPM2B_NV_PUBLIC * publicInfo, TPM2B_NAME * name)
     r = Tss2_MU_TPMS_NV_PUBLIC_Marshal(&publicInfo->nvPublic,
                                        &buffer[0], sizeof(TPMS_NV_PUBLIC),
                                        &offset);
-    return_if_error(r, "Marshaling TPMS_NV_PUBLIC");
+    goto_if_error(r, "Marshaling TPMS_NV_PUBLIC", error_cleanup);
 
     r = iesys_crypto_hash_update(cryptoContext, &buffer[0], offset);
-    return_if_error(r, "crypto hash update");
+    goto_if_error(r, "crypto hash update", error_cleanup);
 
     r = iesys_crypto_hash_finish(&cryptoContext, &name->name[len_alg_id],
                                      &size);
-    return_if_error(r, "crypto hash finish");
+    goto_if_error(r, "crypto hash finish", error_cleanup);
 
     offset = 0;
     r = Tss2_MU_TPMI_ALG_HASH_Marshal(publicInfo->nvPublic.nameAlg,
                                   &name->name[0], sizeof(TPMI_ALG_HASH),
                                   &offset);
-    return_if_error(r, "Marshaling TPMI_ALG_HASH");
+    goto_if_error(r, "Marshaling TPMI_ALG_HASH", error_cleanup);
 
     name->size = size + len_alg_id;
     return TSS2_RC_SUCCESS;
+
+error_cleanup:
+    if (cryptoContext)
+        iesys_crypto_hash_abort(&cryptoContext);
+    return r;
 }
 
 /** Compute the name of a TPM transient or persistent object.
@@ -1477,23 +1482,28 @@ iesys_get_name(TPM2B_PUBLIC * publicInfo, TPM2B_NAME * name)
 
     r = Tss2_MU_TPMT_PUBLIC_Marshal(&publicInfo->publicArea,
                                     &buffer[0], sizeof(TPMT_PUBLIC), &offset);
-    return_if_error(r, "Marshaling TPMT_PUBLIC");
+    goto_if_error(r, "Marshaling TPMT_PUBLIC", error_cleanup);
 
     r = iesys_crypto_hash_update(cryptoContext, &buffer[0], offset);
-    return_if_error(r, "crypto hash update");
+    goto_if_error(r, "crypto hash update", error_cleanup);
 
     r = iesys_crypto_hash_finish(&cryptoContext, &name->name[len_alg_id],
                                      &size);
-    return_if_error(r, "crypto hash finish");
+    goto_if_error(r, "crypto hash finish", error_cleanup);
 
     offset = 0;
     r = Tss2_MU_TPMI_ALG_HASH_Marshal(publicInfo->publicArea.nameAlg,
                                   &name->name[0], sizeof(TPMI_ALG_HASH),
                                   &offset);
-    return_if_error(r, "Marshaling TPMI_ALG_HASH");
+    goto_if_error(r, "Marshaling TPMI_ALG_HASH", error_cleanup);
 
     name->size = size + len_alg_id;
     return TSS2_RC_SUCCESS;
+
+error_cleanup:
+    if (cryptoContext)
+        iesys_crypto_hash_abort(&cryptoContext);
+    return r;
 }
 
 /** Check whether the return code corresponds to an TPM error.
