@@ -875,7 +875,7 @@ ifapi_merge_profile_into_template(
                 template->public.publicArea.parameters.eccDetail.scheme.scheme =
                 profile->ecc_signing_scheme.scheme;
                 memcpy(&template->public.publicArea.parameters.eccDetail.scheme.details,
-                       &profile->rsa_signing_scheme.details, sizeof(TPMU_ASYM_SCHEME));
+                       &profile->ecc_signing_scheme.details, sizeof(TPMU_ASYM_SCHEME));
             } else {
                 template->public.publicArea.parameters.eccDetail.scheme.scheme = TPM2_ALG_NULL;
             }

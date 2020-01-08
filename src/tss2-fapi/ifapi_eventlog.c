@@ -177,6 +177,7 @@ loop:
         }
 
         eventlog->pcrListIdx += 1;
+        eventlog->state = IFAPI_EVENTLOG_STATE_INIT;
         goto loop;
 
     statecasedefault(eventlog->state);

@@ -234,7 +234,6 @@ Fapi_GetTpmBlobs_Finish(
                 memcpy(*tpm2bPrivate + offset, &object.misc.key.private.buffer[0], private_size);
             }
             if (object.policy_harness && policy) {
-                json_object *jso = NULL;
                 r = ifapi_json_TPMS_POLICY_HARNESS_serialize(
                         object.policy_harness, &jso);
                 goto_if_error(r, "Serialize policy", error_cleanup);
