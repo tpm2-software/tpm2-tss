@@ -3172,6 +3172,8 @@ ifapi_get_certificates(
         fallthrough;
 
     statecase(context->get_cert_state, GET_CERT_GET_CERT_NV);
+        goto_if_null(context->cmd.Provision.capabilityData,
+            "capabilityData is null", TSS2_FAPI_RC_MEMORY, error);
         context->cmd.Provision.cert_nv_idx
             = context->cmd.Provision.capabilityData
             ->data.handles.handle[context->cmd.Provision.cert_idx];
