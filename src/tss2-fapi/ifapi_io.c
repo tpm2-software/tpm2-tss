@@ -71,8 +71,12 @@ ifapi_io_read_async(
         return TSS2_FAPI_RC_MEMORY;
     }
 
-    int flags = fcntl(fileno(io->stream), F_GETFL, 0);
-    fcntl(fileno(io->stream), F_SETFL, flags | O_NONBLOCK);
+    int rc, flags = fcntl(fileno(io->stream), F_GETFL, 0);
+    rc = fcntl(fileno(io->stream), F_SETFL, flags | O_NONBLOCK);
+    if (rc < 0) {
+        LOG_ERROR("fcntl failed with %d", errno);
+        return TSS2_FAPI_RC_IO_ERROR;
+    }
 
     io->buffer_length = length;
     io->buffer_idx = 0;
@@ -182,9 +186,12 @@ ifapi_io_write_async(
     }
 
     /* Use non blocking IO, so asynchronous write will be needed */
-    int flags = fcntl(fileno(io->stream), F_GETFL, 0);
-    fcntl(fileno(io->stream), F_SETFL, flags | O_NONBLOCK);
-
+    int rc, flags = fcntl(fileno(io->stream), F_GETFL, 0);
+    rc = fcntl(fileno(io->stream), F_SETFL, flags | O_NONBLOCK);
+    if (rc < 0) {
+        LOG_ERROR("fcntl failed with %d", errno);
+        return TSS2_FAPI_RC_IO_ERROR;
+    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -590,6 +597,7 @@ ifapi_io_path_exists(const char *path)
 
 TSS2_RC
 ifapi_io_poll(IFAPI_IO * io) {
+    int rc;
     /* Check for NULL parameters */
     check_not_null(io);
 
@@ -598,7 +606,11 @@ ifapi_io_poll(IFAPI_IO * io) {
         fds.events = io->pollevents;
         fds.fd = fileno(io->stream);
         LOG_TRACE("Waiting for fd %i with event %i", fds.fd, fds.events);
-        poll(&fds, 1, -1);
+        rc = poll(&fds, 1, -1);
+        if (rc < 0) {
+            LOG_ERROR("Poll failed with %d", errno);
+            return TSS2_FAPI_RC_IO_ERROR;
+        }
     }
     return TSS2_RC_SUCCESS;
 }
