@@ -168,7 +168,7 @@ Fapi_List_Finish(
 
     r = ifapi_keystore_list_all(&context->keystore, command->searchPath,
                                 &pathArray, &numPaths);
-    return_if_error(r, "get entities.");
+    goto_if_error(r, "get entities.", cleanup);
 
     if (numPaths == 0)
         goto cleanup;
@@ -190,11 +190,13 @@ Fapi_List_Finish(
             strcat(*pathList, IFAPI_LIST_DELIM);
     }
 
+    LOG_TRACE("finished");
+
 cleanup:
     SAFE_FREE(command->searchPath);
     if (numPaths == 0 && (r == TSS2_RC_SUCCESS)) {
-        return_error2(TSS2_FAPI_RC_PATH_NOT_FOUND,
-                      "Path not found: %s", command->searchPath);
+        LOG_ERROR("Path not found: %s", command->searchPath);
+        r = TSS2_FAPI_RC_PATH_NOT_FOUND;
     }
     if (numPaths > 0) {
         for (size_t i = 0; i < numPaths; i++){
@@ -202,6 +204,5 @@ cleanup:
         }
     }
     SAFE_FREE(pathArray);
-    LOG_TRACE("finsihed");
     return r;
 }

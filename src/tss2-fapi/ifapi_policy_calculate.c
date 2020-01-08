@@ -49,7 +49,7 @@ ifapi_compute_policy_pcr(
     TPMI_ALG_HASH current_hash_alg)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     TPML_PCR_SELECTION pcr_selection;
     size_t digest_idx;
     TPM2B_DIGEST pcr_digest;
@@ -89,6 +89,8 @@ ifapi_compute_policy_pcr(
     return_if_error(r, "crypto hash finish");
 
 cleanup:
+    if (cryptoContext)
+        ifapi_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -102,7 +104,7 @@ calculate_policy_key_param(
     TPMU_HA *digest)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
 
     r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
     return_if_error(r, "crypto hash start");
@@ -134,6 +136,8 @@ calculate_policy_key_param(
     }
 
 cleanup:
+    if (cryptoContext)
+        ifapi_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -211,7 +215,7 @@ ifapi_calculate_policy_duplicate(
     TPMI_ALG_HASH current_hash_alg)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t digest_idx;
     size_t hash_size;
 
@@ -250,6 +254,8 @@ ifapi_calculate_policy_duplicate(
                   hash_size, "Policy Duplicate digest");
 
 cleanup:
+    if (cryptoContext)
+        ifapi_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -324,7 +330,7 @@ ifapi_calculate_policy_counter_timer(
     TPMI_ALG_HASH current_hash_alg)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t digest_idx;
     size_t hash_size;
     TPM2B_DIGEST counter_timer_hash;
@@ -365,6 +371,8 @@ ifapi_calculate_policy_counter_timer(
                                  (uint8_t *) &current_digest->digests[digest_idx].digest,
                                  &hash_size);
 cleanup:
+    if (cryptoContext)
+        ifapi_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -378,7 +386,7 @@ ifapi_calculate_simple_policy(
     TPMI_ALG_HASH current_hash_alg)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t digest_idx;
     size_t hash_size;
 
@@ -410,6 +418,8 @@ ifapi_calculate_simple_policy(
                                  &hash_size);
 
 cleanup:
+    if (cryptoContext)
+        ifapi_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -494,7 +504,7 @@ ifapi_calculate_policy_digest_hash(
     TPM2_CC command_code)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t digest_idx;
     size_t hash_size;
 
@@ -522,6 +532,8 @@ ifapi_calculate_policy_digest_hash(
                                  (uint8_t *) &current_digest->digests[digest_idx].digest,
                                  &hash_size);
 cleanup:
+    if (cryptoContext)
+        ifapi_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -532,7 +544,7 @@ ifapi_calculate_policy_name_hash(
     TPMI_ALG_HASH current_hash_alg)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t hash_size;
     size_t i;
 
@@ -564,7 +576,9 @@ ifapi_calculate_policy_name_hash(
                                            current_hash_alg, TPM2_CC_PolicyNameHash);
     return_if_error(r, "Calculate digest hash for policy");
 
- cleanup:
+cleanup:
+    if (cryptoContext)
+        ifapi_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -593,7 +607,7 @@ ifapi_calculate_policy_locality(
     TPMI_ALG_HASH current_hash_alg)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t digest_idx;
     size_t hash_size;
 
@@ -621,6 +635,8 @@ ifapi_calculate_policy_locality(
                                  digests[digest_idx].digest, &hash_size);
 
 cleanup:
+    if (cryptoContext)
+        ifapi_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -631,7 +647,7 @@ ifapi_calculate_policy_nv_written(
     TPMI_ALG_HASH current_hash_alg)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t digest_idx;
     size_t hash_size;
 
@@ -659,6 +675,8 @@ ifapi_calculate_policy_nv_written(
                                  digests[digest_idx].digest, &hash_size);
 
 cleanup:
+    if (cryptoContext)
+        ifapi_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -669,7 +687,7 @@ ifapi_calculate_policy_nv(
     TPMI_ALG_HASH current_hash_alg)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     TPM2B_NAME nv_name;
     size_t hash_size;
     TPM2B_DIGEST nv_hash;
@@ -715,6 +733,8 @@ ifapi_calculate_policy_nv(
     return_if_error(r, "crypto hash finish");
 
 cleanup:
+    if (cryptoContext)
+        ifapi_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -728,7 +748,7 @@ ifapi_calculate_policy_or(
 {
     size_t i;
     TSS2_RC r = TSS2_RC_SUCCESS;
-    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
 
     for (i = 0; i < policyOr->branches->count; i++) {
         copy_policy_digest(&policyOr->branches->authorizations[i].policyDigests,
@@ -751,17 +771,17 @@ ifapi_calculate_policy_or(
     r = ifapi_crypto_hash_update(cryptoContext, (const uint8_t *)
                                  &current_digest->digests[digest_idx].digest,
                                  hash_size);
-    return_if_error(r, "crypto hash update");
+    goto_if_error(r, "crypto hash update", cleanup);
 
     uint8_t buffer[sizeof(TPM2_CC)];
     size_t offset = 0;
     r = Tss2_MU_TPM2_CC_Marshal(TPM2_CC_PolicyOR,
                                 &buffer[0], sizeof(TPM2_CC), &offset);
-    return_if_error(r, "Marshal cc");
+    goto_if_error(r, "Marshal cc", cleanup);
 
     r = ifapi_crypto_hash_update(cryptoContext,
                                  (const uint8_t *)&buffer[0], sizeof(TPM2_CC));
-    return_if_error(r, "crypto hash update");
+    goto_if_error(r, "crypto hash update", cleanup);
 
     for (i = 0; i < policyOr->branches->count; i++) {
         r = ifapi_crypto_hash_update(cryptoContext, (const uint8_t *)
@@ -772,15 +792,18 @@ ifapi_calculate_policy_or(
                           digest_idx, hash_size, "Or branch");
         current_digest->count =
             policyOr->branches->authorizations[i].policyDigests.count;
-        return_if_error(r, "crypto hash update");
+        goto_if_error(r, "crypto hash update", cleanup);
     }
     current_digest->digests[digest_idx].hashAlg = hash_alg;
     r = ifapi_crypto_hash_finish(&cryptoContext,
                                  (uint8_t *) & current_digest->
                                  digests[digest_idx].digest, &hash_size);
     log_policy_digest(current_digest, digest_idx, hash_size, "Final or digest");
-    return_if_error(r, "crypto hash finish");
+    goto_if_error(r, "crypto hash finish", cleanup);
 
+cleanup:
+    if (cryptoContext)
+        ifapi_crypto_hash_abort(&cryptoContext);
     return r;
 }
 

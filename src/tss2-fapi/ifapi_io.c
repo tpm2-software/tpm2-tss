@@ -333,23 +333,26 @@ ifapi_io_remove_directories(
         /* If an entry is a directory then we call ourself recursively to remove those */
         if (entry->d_type == DT_DIR) {
             r = ifapi_asprintf(&path, "%s/%s", dirname, entry->d_name);
-            return_if_error(r, "Out of memory");
+            goto_if_error(r, "Out of memory", error_cleanup);
 
             r = ifapi_io_remove_directories(path);
-            return_if_error(r, "remove directories.");
-
             free(path);
+            goto_if_error(r, "remove directories.", error_cleanup);
+
             continue;
         }
 
         /* If an entry is a file or symlink or anything else, we remove it */
         r = ifapi_asprintf(&path, "%s/%s", dirname, entry->d_name);
-        return_if_error(r, "Out of memory");
+        goto_if_error(r, "Out of memory", error_cleanup);
 
         LOG_WARNING("Found a file in directory; removing: %s", path);
 
-        if (remove(path) != 0)
-            return_error2(TSS2_FAPI_RC_IO_ERROR, "Removing file: %s", path);
+        if (remove(path) != 0) {
+            free(path);
+            closedir(dir);
+            return_error2(TSS2_FAPI_RC_IO_ERROR, "Removing file");
+        }
 
         free(path);
     }
@@ -361,6 +364,10 @@ ifapi_io_remove_directories(
 
     LOG_TRACE("SUCCESS");
     return TSS2_RC_SUCCESS;
+
+error_cleanup:
+    closedir(dir);
+    return r;
 }
 
 /** Enumerate the list of files in a directory.
@@ -390,13 +397,14 @@ ifapi_io_dirfiles(
 
     LOG_TRACE("Removing directory: %s", dirname);
 
+    paths = calloc(10, sizeof(*paths));
+    check_oom(paths);
+
     if (!(dir = opendir(dirname))) {
+        free(paths);
         return_error2(TSS2_FAPI_RC_IO_ERROR, "Could not open directory: %s",
                       dirname);
     }
-
-    paths = calloc(10, sizeof(*paths));
-    check_oom(paths);
 
     /* Iterating through the list of entries inside the directory. */
     while ((entry = readdir(dir)) != NULL) {
@@ -410,6 +418,8 @@ ifapi_io_dirfiles(
 #else /* HAVE_REALLOCARRAY */
             paths = realloc(paths, (numpaths + 10) * sizeof(*paths));
 #endif /* HAVE_REALLOCARRAY */
+            if (!paths)
+                closedir(dir);
             check_oom(paths);
         }
 
@@ -428,6 +438,7 @@ ifapi_io_dirfiles(
     return TSS2_RC_SUCCESS;
 
 error_oom:
+    closedir(dir);
     LOG_ERROR("Out of memory");
     for (size_t i = 0; i < numpaths; i++)
         free(paths[i]);
@@ -456,24 +467,36 @@ dirfiles_all(const char *dir_name, NODE_OBJECT_T **list, size_t *n)
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
                 continue;
             r = ifapi_asprintf(&path, "%s/%s", dir_name, entry->d_name);
+            if (r)
+                closedir(dir);
             return_if_error(r, "Out of memory");
 
             LOG_TRACE("Directory: %s", path);
             r = dirfiles_all(path, list, n);
-            return_if_error(r, "get_entities");
             SAFE_FREE(path);
+            if (r)
+                closedir(dir);
+            return_if_error(r, "get_entities");
 
         } else {
             r = ifapi_asprintf(&path, "%s/%s", dir_name, entry->d_name);
+            if (r)
+                closedir(dir);
             return_if_error(r, "Out of memory");
 
             NODE_OBJECT_T *file_obj = calloc(sizeof(NODE_OBJECT_T), 1);
-            return_if_null(file_obj, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+            if (!file_obj) {
+                LOG_ERROR("Out of memory.");
+                SAFE_FREE(path);
+                closedir(dir);
+                return TSS2_FAPI_RC_MEMORY;
+            }
+
             *n += 1;
             /* Add file name to linked list */
             file_obj->object = strdup(path);
             if (file_obj->object == NULL) {
-                LOG_ERROR("%s", "Out of memory.");
+                LOG_ERROR("Out of memory.");
                 SAFE_FREE(file_obj);
                 SAFE_FREE(path);
                 closedir(dir);

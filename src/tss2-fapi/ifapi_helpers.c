@@ -1331,14 +1331,26 @@ ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name)
 
     r = Tss2_MU_TPMT_PUBLIC_Marshal(publicInfo,
                                     &buffer[0], sizeof(TPMT_PUBLIC), &offset);
-    return_if_error(r, "Marshaling TPMT_PUBLIC");
+    if (r) {
+        LOG_ERROR("Marshaling TPMT_PUBLIC");
+        ifapi_crypto_hash_abort(&cryptoContext);
+        return r;
+    }
 
     r = ifapi_crypto_hash_update(cryptoContext, &buffer[0], offset);
-    return_if_error(r, "crypto hash update");
+    if (r) {
+        LOG_ERROR("crypto hash update");
+        ifapi_crypto_hash_abort(&cryptoContext);
+        return r;
+    }
 
     r = ifapi_crypto_hash_finish(&cryptoContext, &name->name[len_alg_id],
                                  &size);
-    return_if_error(r, "crypto hash finish");
+    if (r) {
+        LOG_ERROR("crypto hash finish");
+        ifapi_crypto_hash_abort(&cryptoContext);
+        return r;
+    }
 
     offset = 0;
     r = Tss2_MU_TPMI_ALG_HASH_Marshal(publicInfo->nameAlg,
@@ -1384,14 +1396,26 @@ ifapi_nv_get_name(TPM2B_NV_PUBLIC *publicInfo, TPM2B_NAME *name)
     r = Tss2_MU_TPMS_NV_PUBLIC_Marshal(&publicInfo->nvPublic,
                                        &buffer[0], sizeof(TPMS_NV_PUBLIC),
                                        &offset);
-    return_if_error(r, "Marshaling TPMS_NV_PUBLIC");
+    if (r) {
+        LOG_ERROR("Marshaling TPMS_NV_PUBLIC");
+        ifapi_crypto_hash_abort(&cryptoContext);
+        return r;
+    }
 
     r = ifapi_crypto_hash_update(cryptoContext, &buffer[0], offset);
-    return_if_error(r, "crypto hash update");
+    if (r) {
+        LOG_ERROR("crypto hash update");
+        ifapi_crypto_hash_abort(&cryptoContext);
+        return r;
+    }
 
     r = ifapi_crypto_hash_finish(&cryptoContext, &name->name[len_alg_id],
                                  &size);
-    return_if_error(r, "crypto hash finish");
+    if (r) {
+        LOG_ERROR("crypto hash finish");
+        ifapi_crypto_hash_abort(&cryptoContext);
+        return r;
+    }
 
     offset = 0;
     r = Tss2_MU_TPMI_ALG_HASH_Marshal(publicInfo->nvPublic.nameAlg,
@@ -1737,7 +1761,7 @@ ifapi_calculate_pcr_digest(
     TPM2B_DIGEST *pcr_digest)
 {
     TSS2_RC r;
-    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
 
     struct {
         TPMI_ALG_HASH bank;
@@ -1825,6 +1849,8 @@ ifapi_calculate_pcr_digest(
     }
 
  error_cleanup:
+    if (cryptoContext)
+        ifapi_crypto_hash_abort(&cryptoContext);
     ifapi_cleanup_event(&event);
     return r;
 }
@@ -1953,7 +1979,7 @@ ifapi_compute_policy_digest(
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
     size_t i, j;
-    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t hash_size;
     UINT32 pcr;
     UINT32 max_pcr = 0;
@@ -2024,6 +2050,8 @@ ifapi_compute_policy_digest(
                                  (uint8_t *) & pcr_digest->buffer[0],
                                  &hash_size);
 cleanup:
+    if (cryptoContext)
+        ifapi_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
