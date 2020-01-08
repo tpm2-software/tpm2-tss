@@ -177,11 +177,11 @@ ifapi_set_auth(
             authValue.size = strlen(auth);
             memcpy(&authValue.buffer[0], auth, authValue.size);
         }
+        SAFE_FREE(auth);
         /* Store auth value in the ESYS object. */
         r = Esys_TR_SetAuth(context->esys, auth_object->handle, &authValue);
         return_if_error(r, "Set auth value.");
 
-        SAFE_FREE(auth);
         return TSS2_RC_SUCCESS;
     }
     SAFE_FREE(auth);
