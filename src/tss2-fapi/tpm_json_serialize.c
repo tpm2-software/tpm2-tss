@@ -69,9 +69,7 @@ ifapi_json_pcr_select_serialize(
         i2 = i1 + TPM2_PCR_FIRST;
         if (pcrSelect[i2 / 8] & (BYTE)(1 << (i2 % 8))) {
             jso2 = json_object_new_int(i2);
-            if (jso2 == NULL) {
-                return_if_null(jso2, "Out of memory.", TSS2_FAPI_RC_MEMORY);
-            }
+            return_if_null(jso2, "Out of memory.", TSS2_FAPI_RC_MEMORY);
             json_object_array_add(*jso, jso2);
         }
     }
