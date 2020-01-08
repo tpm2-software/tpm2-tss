@@ -157,10 +157,9 @@ ifapi_json_IFAPI_ENCRYPTED_DATA_deserialize(json_object *jso,
         return_if_error(r, "BAD VALUE");
 
         if (!ifapi_get_sub_object(jso, "policy", &jso2)) {
-            memset(&out->sym_policy_harness.policy, 0, sizeof(TPMS_POLICY_HARNESS));
+            out->sym_policy_harness.policy = NULL;
         } else {
-            r =  ifapi_json_TPMS_POLICY_HARNESS_deserialize(jso2, &out->sym_policy_harness);
-
+            r = ifapi_json_TPMS_POLICY_HARNESS_deserialize(jso2, &out->sym_policy_harness);
             return_if_error(r, "BAD VALUE");
         }
 
