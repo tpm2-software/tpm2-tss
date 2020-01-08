@@ -456,6 +456,8 @@ Fapi_Encrypt_Finish(
             memcpy(&encData->cipher.buffer[0], &tpmCipherText->buffer[0],
                    encData->cipher.size);
 
+            SAFE_FREE(tpmCipherText);
+
             r = ifapi_get_name(&context->loadKey.auth_object.misc.key.public.publicArea,
                                &encData->key_name);
             goto_if_error(r, "Compute key name.", error_cleanup);

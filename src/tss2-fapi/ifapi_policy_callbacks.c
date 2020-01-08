@@ -970,7 +970,7 @@ ifapi_exec_auth_policy(
                 r = fapi_ctx->callbacks.branch(fapi_ctx, "PolicyAuthorize",
                                                &names[0], n, &branch_idx,
                                                fapi_ctx->callbacks.branchData);
-                return_if_error(r, "policyBranchSelectionCallback");
+                goto_if_error(r, "policyBranchSelectionCallback", cleanup);
 
                 if (branch_idx > n) {
                     goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid branch number.",
@@ -1002,13 +1002,14 @@ ifapi_exec_auth_policy(
             r = ifapi_policyutil_execute_prepare(fapi_ctx, current_policy->hash_alg,
                                                  cb_ctx->harness);
             /* Next state will switch from prev context to next context. */
-            return_if_error(r, "Prepare policy execution.");
+            goto_if_error(r, "Prepare policy execution.", cleanup);
             fallthrough;
 
         statecase(cb_ctx->cb_state, POL_CB_EXECUTE_SUB_POLICY)
             ESYS_TR session = current_policy->session;
             r = ifapi_policyutil_execute(fapi_ctx, &session);
             if (r == TSS2_FAPI_RC_TRY_AGAIN){
+                SAFE_FREE(names);
                 return r;
             }
 

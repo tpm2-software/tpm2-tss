@@ -443,7 +443,7 @@ Fapi_Decrypt_Finish(
                                            &profile->rsa_decrypt_scheme,
                                            &null_data);
                 goto_if_error(r, "Error esys rsa decrypt", error_cleanup);
-
+                SAFE_FREE(tpmPlainText);
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
 
@@ -456,8 +456,8 @@ Fapi_Decrypt_Finish(
                 goto_if_null(*plainText, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
 
                 memcpy(*plainText, &tpmPlainText->buffer[0], tpmPlainText->size);
-                free(tpmPlainText);
             }
+            SAFE_FREE(tpmPlainText);
             context-> state = DATA_DECRYPT_FLUSH_KEY;
             return TSS2_FAPI_RC_TRY_AGAIN;
 
