@@ -202,7 +202,7 @@ Fapi_AuthorizePolicy_Finish(
 
     TSS2_RC r;
     TPMI_ALG_HASH hashAlg;
-    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t hashSize;
     size_t digestIdx;
     TPM2B_DIGEST aHash;
@@ -317,6 +317,8 @@ Fapi_AuthorizePolicy_Finish(
     }
 
 cleanup:
+    if (cryptoContext)
+        ifapi_crypto_hash_abort(&cryptoContext);
     ifapi_session_clean(context);
     ifapi_cleanup_policy_harness(policyHarness);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);

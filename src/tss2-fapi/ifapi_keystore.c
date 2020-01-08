@@ -603,7 +603,7 @@ keystore_list_all_abs
     /* Get the objects from system store */
     r = ifapi_asprintf(&full_search_path, "%s%s%s", keystore->systemdir, IFAPI_FILE_DELIM,
                        expanded_search_path?expanded_search_path:"");
-    return_if_error(r, "Out of memory.");
+    goto_if_error(r, "Out of memory.", cleanup);
 
     r = ifapi_io_dirfiles_all(full_search_path, &file_ary_system, &num_paths_system);
     goto_if_error(r, "Get all files in directory.", cleanup);
@@ -612,7 +612,7 @@ keystore_list_all_abs
     /* Get the objects from user store */
     r = ifapi_asprintf(&full_search_path, "%s%s%s", keystore->userdir, IFAPI_FILE_DELIM,
                        expanded_search_path?expanded_search_path:"");
-    return_if_error(r, "Out of memory.");
+    goto_if_error(r, "Out of memory.", cleanup);
 
     r = ifapi_io_dirfiles_all(full_search_path, &file_ary_user, &num_paths_user);
 
@@ -757,7 +757,7 @@ ifapi_keystore_remove_directories(IFAPI_KEYSTORE *keystore, const char *dir_name
     /* Cleanup user part of the store */
     r = ifapi_asprintf(&absolute_dir_path, "%s%s%s", keystore->userdir, IFAPI_FILE_DELIM,
                        exp_dir_name? exp_dir_name : "");
-    return_if_error(r, "Out of memory.");
+    goto_if_error(r, "Out of memory.", cleanup);
 
     if (stat(absolute_dir_path, &fbuffer) == 0) {
         r = ifapi_io_remove_directories(absolute_dir_path);
@@ -768,7 +768,7 @@ ifapi_keystore_remove_directories(IFAPI_KEYSTORE *keystore, const char *dir_name
     /* Cleanup system part of the store */
     r = ifapi_asprintf(&absolute_dir_path, "%s%s%s",  keystore->systemdir,
                        IFAPI_FILE_DELIM, exp_dir_name? exp_dir_name : "");
-    return_if_error(r, "Out of memory.");
+    goto_if_error(r, "Out of memory.", cleanup);
 
     if (stat(absolute_dir_path, &fbuffer) == 0) {
         r = ifapi_io_remove_directories(absolute_dir_path);

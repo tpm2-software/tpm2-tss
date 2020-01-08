@@ -317,7 +317,11 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
                                  context->profiles.default_profile.nameAlg,
                                  &context->cmd.Provision.digest_idx,
                                  &context->cmd.Provision.hash_size);
-        return_if_error(r, "Policy calculation");
+        if (r) {
+            LOG_ERROR("Policy calculation");
+            free(policy);
+            return r;
+        }
 
         context->cmd.Provision.public_templ.public.publicArea.authPolicy.size =
             context->cmd.Provision.hash_size;
@@ -1107,9 +1111,17 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
         IFAPI_OBJECT * copyToPush = malloc(sizeof(IFAPI_OBJECT));
         goto_if_null(copyToPush, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
         r = ifapi_copy_ifapi_key_object(copyToPush, context->loadKey.key_object);
-        goto_if_error(r, "Could not create a copy to push", error_cleanup);
+        if (r) {
+            free(copyToPush);
+            LOG_ERROR("Could not create a copy to push");
+            goto error_cleanup;
+        }
         r = push_object_to_list(copyToPush, &context->loadKey.key_list);
-        goto_if_error(r, "Out of memory", error_cleanup);
+        if (r) {
+            free(copyToPush);
+            LOG_ERROR("Out of memory");
+            goto error_cleanup;
+        }
 
         ifapi_cleanup_ifapi_object(context->loadKey.key_object);
 
@@ -1238,11 +1250,15 @@ get_entities(IFAPI_KEYSTORE *keystore, char *dir_name, NODE_OBJECT_T **list, siz
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
                 continue;
             r = ifapi_asprintf(&path, "%s/%s", dir_name, entry->d_name);
+            if (r)
+                closedir(dir);
             return_if_error(r, "Out of memory");
 
             LOG_TRACE("Directory: %s", path);
             r = get_entities(keystore, path, list, n);
             Fapi_Free(path);
+            if (r)
+                closedir(dir);
             return_if_error(r, "get_entities");
 
         } else {
@@ -1258,10 +1274,17 @@ get_entities(IFAPI_KEYSTORE *keystore, char *dir_name, NODE_OBJECT_T **list, siz
             if ((strncmp(dir_name, keystore->userdir, l_user_dir) == 0 && l_dir != l_user_dir) ||
                 (strncmp(dir_name, keystore->systemdir, l_system_dir) == 0 && l_dir != l_system_dir)) {
                 r = ifapi_asprintf(&path, "%s/%s", dir_name, entry->d_name);
+                if (r)
+                    closedir(dir);
                 return_if_error(r, "Out of memory");
 
                 NODE_OBJECT_T *file_obj = calloc(sizeof(NODE_OBJECT_T), 1);
-                return_if_null(file_obj, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+                if (file_obj == NULL) {
+                    LOG_ERROR("%s", "Out of memory.");
+                    SAFE_FREE(path);
+                    closedir(dir);
+                    return TSS2_FAPI_RC_MEMORY;
+                }
                 *n += 1;
                 file_obj->object = strdup(path);
                 if (file_obj->object == NULL) {
@@ -1331,7 +1354,7 @@ ifapi_get_entities(
     }
     r = ifapi_asprintf(&full_search_path, "%s%s%s", dir, IFAPI_FILE_DELIM,
                        expSearchPath?expSearchPath:"");
-    return_if_error(r, "Out of memory.");
+    goto_if_error(r, "Out of memory.", error_cleanup);
 
 
     *numPaths = 0;
@@ -1345,7 +1368,7 @@ ifapi_get_entities(
         if (searchPath) {
             r = ifapi_asprintf(&full_search_path, "%s%s%s", dir, IFAPI_FILE_DELIM,
                                expSearchPath?expSearchPath:"");
-            return_if_error(r, "Out of memory.");
+            goto_if_error(r, "Out of memory.", error_cleanup);
         } else {
             /* get entities for the complete data store */
             strdup_check(full_search_path, dir, r, error_cleanup);
@@ -1897,6 +1920,8 @@ ifapi_get_random(FAPI_CONTEXT *context, size_t numBytes, uint8_t **data)
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
+    if (aux_data)
+        Esys_Free(aux_data);
     context->get_random_state = GET_RANDOM_INIT;
     if (context->get_random.data != NULL)
         SAFE_FREE(context->get_random.data);
@@ -2062,9 +2087,9 @@ ifapi_sym_encrypt_decrypt_finish(
         free(tpm_iv);
 
         if (tpm_out_data->size < bytesRequested) {
+            free(tpm_out_data);
             goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Wrong encryption/decryption size",
                        error_cleanup);
-
         } else {
             numBytes -= tpm_out_data->size;
         }
@@ -2109,7 +2134,6 @@ ifapi_sym_encrypt_decrypt_finish(
         }
     statecasedefault(context->sym_encrypt_decrypt_state);
     }
-    return r;
 
 error_cleanup:
     return r;
@@ -3109,7 +3133,6 @@ ifapi_get_certificates(
     TPMI_YES_NO moreData;
     TPMS_CAPABILITY_DATA **capabilityData = &context->cmd.Provision.capabilityData;
     TPM2B_NV_PUBLIC *nvPublic;
-    TPM2B_NAME *nvName;
     uint8_t *cert_data;
     size_t cert_size;
 
@@ -3180,7 +3203,7 @@ ifapi_get_certificates(
     statecase(context->get_cert_state, GET_CERT_GET_CERT_READ_PUBLIC);
         r = Esys_NV_ReadPublic_Finish(context->esys,
                                       &nvPublic,
-                                      &nvName);
+                                      NULL);
         return_try_again(r);
         goto_if_error(r, "Error: nv read public", error);
 
@@ -3198,6 +3221,7 @@ ifapi_get_certificates(
         context->session2 = ESYS_TR_NONE;
         context->nv_cmd.nv_read_state = NV_READ_INIT;
         memset(&context->nv_cmd.nv_object, 0, sizeof(IFAPI_OBJECT));
+        Esys_Free(nvPublic);
         fallthrough;
 
     statecase(context->get_cert_state, GET_CERT_READ_CERT);
