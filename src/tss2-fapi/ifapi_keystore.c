@@ -45,10 +45,10 @@ initialize_explicit_key_path(
         profile = context_profile;
     }
     *result = init_string_list(profile);
-    if (result == NULL) {
+    if (*result == NULL) {
         free_string_list(*list_node1);
         LOG_ERROR("Out of memory");
-        return  TSS2_FAPI_RC_MEMORY;
+        return TSS2_FAPI_RC_MEMORY;
     }
     if (list_node == NULL) {
         hierarchy = "HS";

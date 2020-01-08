@@ -163,14 +163,14 @@ Fapi_ChangeAuth_Async(
                                  TPMA_SESSION_DECRYPT, 0);
     goto_if_error_reset_state(r, "Create sessions", error_cleanup);
 
-    if (strlen(command->authValue) > sizeof(TPMU_HA)) {
-        LOG_ERROR("authValue to big. (Should be <= %zu", sizeof(TPMU_HA));
-        r = TSS2_FAPI_RC_BAD_VALUE;
-        goto error_cleanup;
-    }
-
     /* Copy new auth value to appropriate structure in context */
     if (command->authValue) {
+        if (strlen(command->authValue) > sizeof(TPMU_HA)) {
+            LOG_ERROR("authValue to big. (Should be <= %zu", sizeof(TPMU_HA));
+            r = TSS2_FAPI_RC_BAD_VALUE;
+            goto error_cleanup;
+        }
+
         command->newAuthValue.size =
             strlen(command->authValue);
         memcpy(&command->newAuthValue.buffer[0],
