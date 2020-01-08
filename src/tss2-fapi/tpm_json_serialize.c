@@ -1227,7 +1227,7 @@ ifapi_json_TPM2B_DATA_serialize(const TPM2B_DATA *in, json_object **jso)
                   (size_t)in->size, (size_t)sizeof(TPMT_HA));
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    char hex_string[((size_t)in->size)*2+1];
+    char hex_string[sizeof(TPMT_HA)*2+1];
 
     for (size_t i = 0, off = 0; i < in->size; i++, off+=2)
         sprintf(&hex_string[off], "%02x", in->buffer[i]);

@@ -290,7 +290,7 @@ ifapi_read_pcr(
             /* Only one bank will be used. The hash alg from profile will be used */
             pcr_selection->count = 1;
             pcr_selection->pcrSelections[0].sizeofSelect = pcr_select->sizeofSelect;
-            for (i = 0; i < TPM2_PCR_SELECT_MAX; i++)
+            for (i = 0; i < pcr_select->sizeofSelect; i++)
                 pcr_selection->pcrSelections[0].pcrSelect[i] = pcr_select->pcrSelect[i];
         }
 
