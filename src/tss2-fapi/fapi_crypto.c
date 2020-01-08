@@ -307,10 +307,8 @@ ifapi_tpm_ecc_sig_to_der(
     /* Initialize an OpenSSL ECDSA signature which servers as an intermediate
      * between the TSS ECDSA signature and the DER byte buffer */
     ecdsaSignature = ECDSA_SIG_new();
-    if (ecdsaSignature == NULL) {
-        goto_if_null(ecdsaSignature, "Out of memory", TSS2_FAPI_RC_MEMORY,
-                      cleanup);
-    }
+    goto_if_null(ecdsaSignature, "Out of memory", TSS2_FAPI_RC_MEMORY,
+                 cleanup);
 
     bns = BN_bin2bn(&tpmSignature->signature.ecdsa.signatureS.buffer[0],
                     tpmSignature->signature.ecdsa.signatureS.size, NULL);

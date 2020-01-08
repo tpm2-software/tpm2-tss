@@ -2162,8 +2162,6 @@ ifapi_load_key(
         break;
 
     statecasedefault(context->Key_Sign.state);
-        context->state = _FAPI_STATE_INTERNALERROR;
-        return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid state for FAPI load key");
     }
 
 error_cleanup:

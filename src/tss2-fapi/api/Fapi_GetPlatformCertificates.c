@@ -197,10 +197,11 @@ Fapi_GetPlatformCertificates_Finish(
                 goto_if_null2(*certificates, "Out of memory.",
                         r, TSS2_FAPI_RC_MEMORY, error);
 
+                cert = cert_list;
                 size = 0;
                 while (cert) {
                     memcpy(&cert[size], cert->object, cert->size);
-                    size +=  cert->size;
+                    size += cert->size;
                     cert = cert->next;
                 }
             } else {
