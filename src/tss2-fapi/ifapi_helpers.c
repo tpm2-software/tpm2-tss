@@ -808,15 +808,12 @@ create_dirs(const char *supdir, NODE_STR_T *dir_list, mode_t mode)
     for (size_t i = 1; i <= ifapi_path_length(dir_list); i++) {
         TSS2_RC r =  ifapi_path_string_n(&new_dir, supdir, dir_list, NULL, i);
         return_if_error(r, "Create path string");
-        struct stat buffer;
         LOG_TRACE("Check file: %s", new_dir);
-        if (stat(new_dir, &buffer) != 0) {
-            int rc = mkdir(new_dir, mode);
-            if (rc != 0) {
-                LOG_ERROR("mkdir not possible: %i %s", rc, new_dir);
-                free(new_dir);
-                return TSS2_FAPI_RC_BAD_VALUE;
-            }
+        int rc = mkdir(new_dir, mode);
+        if (rc != 0 && errno != EEXIST) {
+            LOG_ERROR("mkdir not possible: %i %s", rc, new_dir);
+            free(new_dir);
+            return TSS2_FAPI_RC_BAD_VALUE;
         }
         free(new_dir);
     }
