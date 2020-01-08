@@ -734,7 +734,6 @@ search_policy(
             goto_error(r, TSS2_FAPI_RC_POLICY_UNKNOWN, "Policy not found.", cleanup);
         }
         context->fsearch.path_idx -= 1;
-        context->fsearch.path_idx = context->fsearch.path_idx;
         path =  context->fsearch.pathlist[context->fsearch.path_idx];
         context->fsearch.current_path = path;
         LOG_DEBUG("Check file: %s %zu", path, context->fsearch.path_idx);

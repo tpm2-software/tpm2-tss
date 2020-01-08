@@ -126,7 +126,7 @@ Fapi_Import_Async(
     json_object *jso = NULL;
     json_object *jso2;
     size_t pos = 0;
-    TPMS_POLICY_HARNESS policyHarness;
+    TPMS_POLICY_HARNESS policyHarness = { 0 };
 
     /* Check for NULL parameters */
     check_not_null(context);
