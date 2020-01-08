@@ -150,7 +150,7 @@ Fapi_GetInfo_Async(
 
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize GetInfo");
-    memset(command, 0, sizeof(IFAPI_INFO));
+    memset(command, 0, sizeof(IFAPI_GetInfo));
     r = ifapi_capability_init(context);
 
     return_if_error(r, "Capability init");
