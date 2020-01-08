@@ -1900,7 +1900,7 @@ ifapi_get_random(FAPI_CONTEXT *context, size_t numBytes, uint8_t **data)
         context->get_random.numBytes -= aux_data->size;
         context->get_random.idx += aux_data->size;
         Esys_Free(aux_data);
-
+        aux_data = NULL;
         if (context->get_random.numBytes > 0) {
             r = Esys_GetRandom_Async(context->esys, context->session1, ESYS_TR_NONE,
                                      ESYS_TR_NONE, min(context->get_random.numBytes, sizeof(TPMU_HA)));
