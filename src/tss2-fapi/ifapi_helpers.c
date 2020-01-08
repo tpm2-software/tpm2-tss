@@ -867,7 +867,7 @@ init_explicit_key_path(
         profile = context_profile;
     }
     *result = init_string_list(profile);
-    if (result == NULL) {
+    if (*result == NULL) {
         free_string_list(*list_node1);
         LOG_ERROR("Out of memory");
         return  TSS2_FAPI_RC_MEMORY;
@@ -1114,6 +1114,8 @@ copy_policy_branches(const TPML_POLICYBRANCHES *from_branches)
 
     to_branches = calloc(1, sizeof(TPML_POLICYBRANCHES) +
                          from_branches->count * sizeof(TPMS_POLICYBRANCH));
+    if (!to_branches)
+        return NULL;
     to_branches->count = from_branches->count;
     for (j = 0; j < from_branches->count; j++) {
         to_branches->authorizations[j].name = strdup(from_branches->authorizations[j].name);
@@ -1134,14 +1136,12 @@ copy_policy_branches(const TPML_POLICYBRANCHES *from_branches)
     return to_branches;
 
  error:
-    if (to_branches) {
-        for (j = 0; j < to_branches->count; j++) {
-            SAFE_FREE(to_branches->authorizations[j].name);
-            SAFE_FREE(to_branches->authorizations[j].description);
-            cleanup_policy_elements(to_branches->authorizations[j].policy);
-        }
-        SAFE_FREE(to_branches);
+    for (j = 0; j < to_branches->count; j++) {
+        SAFE_FREE(to_branches->authorizations[j].name);
+        SAFE_FREE(to_branches->authorizations[j].description);
+        cleanup_policy_elements(to_branches->authorizations[j].policy);
     }
+    SAFE_FREE(to_branches);
     return NULL;
 }
 
@@ -1258,8 +1258,7 @@ copy_policy_elements(const TPML_POLICYELEMENTS *from_policy)
             /* Policy with sub policies */
             TPML_POLICYBRANCHES *branches = from_policy->elements[i].element.PolicyOr.branches;
             to_policy->elements[i].element.PolicyOr.branches = copy_policy_branches(branches);
-            if(branches != NULL
-               && to_policy->elements[i].element.PolicyOr.branches == NULL) {
+            if(to_policy->elements[i].element.PolicyOr.branches == NULL) {
                     LOG_ERROR("Out of memory");
                     SAFE_FREE(to_policy);
                     return NULL;

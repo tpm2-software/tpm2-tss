@@ -3149,7 +3149,6 @@ ifapi_get_certificates(
         fallthrough;
 
     statecase(context->get_cert_state, GET_CERT_GET_CERT_NV);
-
         context->cmd.Provision.cert_nv_idx
             = context->cmd.Provision.capabilityData
             ->data.handles.handle[context->cmd.Provision.cert_idx];
