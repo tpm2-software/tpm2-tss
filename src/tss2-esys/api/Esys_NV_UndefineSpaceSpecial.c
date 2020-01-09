@@ -195,10 +195,18 @@ Esys_NV_UndefineSpaceSpecial_Async(
     /* Calculate the cpHash Values */
     r = init_session_tab(esysContext, shandle1, shandle2, shandle3);
     return_state_if_error(r, _ESYS_STATE_INIT, "Initialize session resources");
-    iesys_compute_session_value(esysContext->session_tab[0],
+    if (nvIndexNode != NULL)
+        iesys_compute_session_value(esysContext->session_tab[0],
                 &nvIndexNode->rsrc.name, &nvIndexNode->auth);
-    iesys_compute_session_value(esysContext->session_tab[1],
+    else
+        iesys_compute_session_value(esysContext->session_tab[0], NULL, NULL);
+
+    if (platformNode != NULL)
+        iesys_compute_session_value(esysContext->session_tab[1],
                 &platformNode->rsrc.name, &platformNode->auth);
+    else
+        iesys_compute_session_value(esysContext->session_tab[1], NULL, NULL);
+
     iesys_compute_session_value(esysContext->session_tab[2], NULL, NULL);
 
     /* Generate the auth values and set them in the SAPI command buffer */
