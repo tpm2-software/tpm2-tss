@@ -143,11 +143,11 @@ email                   = certmaster@example.net
 #
 # Certificate download addresses for the intermediate CA
 [ auth_info_access ]
-caIssuers;URI           = http://ca.example.net/certs/example.net_Intermediate_Certification_Authority.cert.pem
+caIssuers;URI           = INTERMEDCRT
 
 #
 # CRL Download address for the intermediate CA
 [ crl_dist ]
-fullname                = URI:http://ca.example.net/crl/example.net_Intermediate_Certification_Authority.crl
+fullname                = INTERMEDCRL
 
 # EOF

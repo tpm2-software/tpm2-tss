@@ -123,9 +123,9 @@ permitted;email.2       = example.org
 #
 # Certificate download addresses for the root CA
 [ auth_info_access ]
-caIssuers;URI           = http://ca.example.net/certs/example.net_Root_Certification_Authority.cert.pem
+caIssuers;URI           = ROOTCRT
 
 #
 # CRL Download address for the root CA
 [ crl_dist ]
-fullname                = URI:http://ca.example.net/crl/example.net_Root_Certification_Authority.crl
+fullname                = URI:ROOTCRL

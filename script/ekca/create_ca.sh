@@ -1,11 +1,17 @@
 #!/bin/bash
 
-# set -x
+set -x
 
-set -euf
+#set -euf
 
 echo "Creating ekcert for $1 => $3"
 echo "Creating ekcert for $2 => $4"
+
+ROOTCRT=$6.crt
+ROOTCRTPEM=$6.pem
+INTERMEDCRT=$5.crt
+ROOTCRL=$6.crl
+INTERMEDCRL=$5.crl
 
 EKCADIR="$(dirname $(realpath ${0}))/"
 
@@ -24,14 +30,15 @@ echo "123456" > pass.txt
 
 cp "${EKCADIR}/root-ca.cnf" ./
 export OPENSSL_CONF=./root-ca.cnf
-
+ROOT_URL="file:$ROOTCRT"
+sed -i "s|ROOTCRT|$ROOT_URL|g"  $OPENSSL_CONF
+ROOT_URL="file:$ROOTCRL"
+sed -i "s|ROOTCRL|$ROOT_URL|g"  $OPENSSL_CONF
 openssl req -new -out root-ca.req.pem -passout file:pass.txt
 
-#openssl req -verify -in root-ca.req.pem \
-#    -noout -text \
-#    -reqopt no_version,no_pubkey,no_sigdump \
-#    -nameopt multiline -passin file:pass.txt
-
+#
+# Create self signed root certificate
+#
 openssl ca -selfsign \
     -in root-ca.req.pem \
     -out root-ca.cert.pem \
@@ -40,16 +47,20 @@ openssl ca -selfsign \
     -enddate `date +%y%m%d000000Z -u -d +10years+1day` \
     -passin file:pass.txt -batch
 
-#openssl x509 -in ./root-ca.cert.pem \
-#    -noout -text \
-#    -certopt no_version,no_pubkey,no_sigdump \
-#    -nameopt multiline
+openssl x509 -outform der -in  root-ca.cert.pem -out root-ca.cert.crt
 
 openssl verify -verbose -CAfile root-ca.cert.pem \
-    root-ca.cert.pem
+        root-ca.cert.pem
+
+openssl ca -gencrl  -cert root-ca.cert.pem \
+        -out root-ca.cert.crl.pem -passin file:pass.txt
+openssl crl -in root-ca.cert.crl.pem -outform DER -out root-ca.cert.crl
 
 popd #root-ca
 
+#
+# Create intermediate certificate
+#
 mkdir intermed-ca
 pushd intermed-ca
 
@@ -62,6 +73,9 @@ echo "abcdef" > pass.txt
 cp "${EKCADIR}/intermed-ca.cnf" ./
 export OPENSSL_CONF=./intermed-ca.cnf
 
+# Adapt CRT URL to current test directory
+sed -i "s|ROOTCRT|$ROOT_URL|g"  $OPENSSL_CONF
+
 openssl req -new -out intermed-ca.req.pem -passout file:pass.txt
 
 openssl req -new \
@@ -69,13 +83,14 @@ openssl req -new \
     -out intermed-ca.req.pem \
     -passin file:pass.txt
 
-#openssl req  -verify -in intermed-ca.req.pem \
-#    -noout -text \
-#    -reqopt no_version,no_pubkey,no_sigdump \
-#    -nameopt multiline
+openssl rsa -inform PEM -in private/intermed-ca.key.pem \
+        -outform DER -out private/intermed-ca.key.der -passin file:pass.txt
 
 cp intermed-ca.req.pem  \
-    ../root-ca/certreqs/
+   ../root-ca/certreqs/
+
+INTERMED_URL="file:$INTERMEDCRT"
+sed -i "s|INTERMEDCRT|$INTERMED_URL|g"  $OPENSSL_CONF
 
 pushd ../root-ca
 export OPENSSL_CONF=./root-ca.cnf
@@ -88,21 +103,30 @@ openssl ca \
     -enddate `date +%y%m%d000000Z -u -d +5years+1day` \
     -passin file:pass.txt -batch
 
-#openssl x509 -in certs/intermed-ca.cert.pem \
-#    -noout -text \
-#    -certopt no_version,no_pubkey,no_sigdump \
-#    -nameopt multiline
+openssl x509 -outform der -in certs/intermed-ca.cert.pem \
+        -out certs/intermed-ca.cert.crt
 
 openssl verify -verbose -CAfile root-ca.cert.pem \
-    certs/intermed-ca.cert.pem
+        certs/intermed-ca.cert.pem
 
 cp certs/intermed-ca.cert.pem \
-    ../intermed-ca
+   ../intermed-ca
+
+cp certs/intermed-ca.cert.crt \
+   ../intermed-ca
 
 popd #root-ca
 
+export OPENSSL_CONF=./intermed-ca.cnf
+openssl ca -gencrl  -cert ../root-ca/certs/intermed-ca.cert.pem \
+        -out intermed-ca.crl.pem -passin file:pass.txt
+openssl crl -in intermed-ca.crl.pem -outform DER -out intermed-ca.crl
+
 popd #intermed-ca
 
+#
+# Create RSA EK certificate
+#
 mkdir ek
 pushd ek
 
@@ -110,14 +134,17 @@ cp "${EKCADIR}/ek.cnf" ./
 export OPENSSL_CONF=ek.cnf
 echo "abc123" > pass.txt
 
+# Adapt CRT and CRL URL to current test directory
+
+INTERMED_URL="file:$INTERMEDCRT"
+sed -i "s|INTERMEDCRT|$INTERMED_URL|g"  $OPENSSL_CONF
+
+INTERMED_URL="file:$INTERMEDCRL"
+sed -i "s|INTERMEDCRL|$INTERMED_URL|g"  $OPENSSL_CONF
+
 cp "$1" ../intermed-ca/certreqs/ek.pub.pem
 
 openssl req -new -nodes -newkey rsa:2048 -passin file:pass.txt -out ../intermed-ca/certreqs/nonsense.csr.pem
-
-#openssl req  -verify -in ../intermed-ca/certreqs/nonsense.csr.pem \
-#    -noout -text \
-#    -reqopt no_version,no_pubkey,no_sigdump \
-#    -nameopt multiline
 
 pushd ../intermed-ca
 export OPENSSL_CONF=./intermed-ca.cnf
@@ -126,20 +153,15 @@ openssl x509 -req -in certreqs/nonsense.csr.pem -force_pubkey certreqs/ek.pub.pe
     -outform DER -extfile ../ek/ek.cnf -extensions ek_ext -set_serial 12345 \
     -CA intermed-ca.cert.pem -CAkey private/intermed-ca.key.pem -passin file:pass.txt
 
-#openssl x509 -req -in csrs/oemProvCertTPM.csr -extfile configs/oemProvCertTPM.cnf -extensions ext -CA certs/oemSubCA2Cert.pem -CAkey privateKeys/oemSubCA2.key -passin file:passphrase.txt -set_serial 12345 -days $validity_oem_prov_cert -force_pubkey pc.pub.pem -out certs/oemProvCertTPM.pem
-
 cp certs/ek.cert.der ../ek
 
 popd #intermed-ca
 
-#openssl x509 -in ek.cert.der -inform DER -text -noout
-#openssl rsa -in ek.pub.pem -pubin -text -noout
-#openssl asn1parse -in ek.cert.der -inform DER
-
 popd #EK
 
-# ECC Certificate
-
+#
+# Create ECC EK Certificate
+#
 mkdir ekecc
 pushd ekecc
 
@@ -147,14 +169,17 @@ cp "${EKCADIR}/ek.cnf" ./
 export OPENSSL_CONF=ek.cnf
 echo "abc123" > pass.txt
 
+# Adapt CRT and CRL URL to current test directory
+
+INTERMED_URL="file:$INTERMEDCRT"
+sed -i "s|INTERMEDCRT|$INTERMED_URL|g"  $OPENSSL_CONF
+
+INTERMED_URL="file:$INTERMEDCRL"
+sed -i "s|INTERMEDCRL|$INTERMED_URL|g"  $OPENSSL_CONF
+
 cp "$2" ../intermed-ca/certreqs/ekecc.pub.pem
 
 openssl req -new -nodes -newkey rsa:2048 -passin file:pass.txt -out ../intermed-ca/certreqs/nonsense.csr.pem
-
-#openssl req  -verify -in ../intermed-ca/certreqs/nonsense.csr.pem \
-#    -noout -text \
-#    -reqopt no_version,no_pubkey,no_sigdump \
-#    -nameopt multiline
 
 pushd ../intermed-ca
 export OPENSSL_CONF=./intermed-ca.cnf
@@ -163,23 +188,22 @@ openssl x509 -req -in certreqs/nonsense.csr.pem -force_pubkey certreqs/ekecc.pub
     -outform DER -extfile ../ek/ek.cnf -extensions ek_ext -set_serial 12345 \
     -CA intermed-ca.cert.pem -CAkey private/intermed-ca.key.pem -passin file:pass.txt
 
-#openssl x509 -req -in csrs/oemProvCertTPM.csr -extfile configs/oemProvCertTPM.cnf -extensions ext -CA certs/oemSubCA2Cert.pem -CAkey privateKeys/oemSubCA2.key -passin file:passphrase.txt -set_serial 12345 -days $validity_oem_prov_cert -force_pubkey pc.pub.pem -out certs/oemProvCertTPM.pem
-
-cp certs/ekecc.cert.der ../ek
+cp certs/ekecc.cert.der ../ekecc
 
 popd #intermed-ca
-
-#openssl x509 -in ek.cert.der -inform DER -text -no out
-#openssl rsa -in ek.pub.pem -pubin -text -noout
-#openssl asn1parse -in ek.cert.der -inform DER
 
 popd #EK
 
 popd #CA_DIR
 
+# Copy used CRL and CRT files to test directory.
+
 cp "${CA_DIR}/ek/ek.cert.der" "$3"
-cp "${CA_DIR}/ek/ekecc.cert.der" "$4"
-cp "${CA_DIR}/intermed-ca/intermed-ca.cert.pem" "$5"
-cp "${CA_DIR}/root-ca/root-ca.cert.pem" "$6"
+cp "${CA_DIR}/ekecc/ekecc.cert.der" "$4"
+cp "${CA_DIR}/intermed-ca/intermed-ca.cert.crt" "$INTERMEDCRT"
+cp "${CA_DIR}/intermed-ca/intermed-ca.crl" "$INTERMEDCRL"
+cp "${CA_DIR}/root-ca/root-ca.cert.crt" "$ROOTCRT"
+cp "${CA_DIR}/root-ca/root-ca.cert.crl" "$ROOTCRL"
+cp "${CA_DIR}/root-ca/root-ca.cert.pem" "$ROOTCRTPEM"
 
 rm -rf $CA_DIR

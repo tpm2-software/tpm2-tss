@@ -312,10 +312,14 @@ endif #FAPI
 endif #ENABLE_INTEGRATION
 
 CLEANFILES += \
+    test/integration/*.crt \
+    test/integration/*.crl \
     test/integration/*.int_state* \
     test/integration/*.log \
     test/integration/*.int_ek* \
     test/integration/*.int_*-ca.pem \
+    test/tpmclient/*.crt \
+    test/tpmclient/*.crl \
     test/tpmclient/*.int_state* \
     test/tpmclient/*.log \
     test/tpmclient/*.int_ek* \
