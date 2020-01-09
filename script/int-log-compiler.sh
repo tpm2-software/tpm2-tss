@@ -238,8 +238,6 @@ fi
 
 EKPUB_FILE=${TEST_BIN}_ekpub.pem
 EKCERT_FILE=${TEST_BIN}_ekcert.crt
-INTERMEDCA_FILE=${TEST_BIN}_intermed-ca.pem
-ROOTCA_FILE=${TEST_BIN}_root-ca.pem
 
 env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
@@ -254,8 +252,6 @@ fi
 
 EKECCPUB_FILE=${TEST_BIN}_ekeccpub.pem
 EKECCCERT_FILE=${TEST_BIN}_ekecccert.crt
-INTERMEDCA_FILE=${TEST_BIN}_intermedecc-ca.pem
-ROOTCA_FILE=${TEST_BIN}_root-ca.pem
 
 env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
@@ -267,6 +263,9 @@ if [ $? -ne 0 ]; then
     ret=99
     break
 fi
+
+INTERMEDCA_FILE=${TEST_BIN}_intermedecc-ca
+ROOTCA_FILE=${TEST_BIN}_root-ca
 
 SCRIPTDIR="$(dirname $(realpath $0))/"
 ${SCRIPTDIR}/ekca/create_ca.sh "${EKPUB_FILE}" "${EKECCPUB_FILE}" "${EKCERT_FILE}" \
@@ -333,8 +332,7 @@ env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
     TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
     TPM20TEST_TCTI="mssim:host=127.0.0.1,port=${SIM_PORT_DATA}" \
-    INTERMEDCA=$INTERMEDCA_FILE \
-    ROOTCA=$ROOTCA_FILE \
+    FAPI_TEST_ROOT_CERT=${ROOTCA_FILE}.pem \
     G_MESSAGES_DEBUG=all $@
 ret=$?
 echo "Script returned $ret"
