@@ -190,8 +190,12 @@ Esys_ZGen_2Phase_Async(
     /* Calculate the cpHash Values */
     r = init_session_tab(esysContext, shandle1, shandle2, shandle3);
     return_state_if_error(r, _ESYS_STATE_INIT, "Initialize session resources");
-    iesys_compute_session_value(esysContext->session_tab[0],
+    if (keyANode != NULL)
+        iesys_compute_session_value(esysContext->session_tab[0],
                 &keyANode->rsrc.name, &keyANode->auth);
+    else
+        iesys_compute_session_value(esysContext->session_tab[0], NULL, NULL);
+
     iesys_compute_session_value(esysContext->session_tab[1], NULL, NULL);
     iesys_compute_session_value(esysContext->session_tab[2], NULL, NULL);
 
