@@ -310,20 +310,6 @@ typedef struct {
     bool skip_policy_computation; /**< switch whether policy needs to be computed */
 } IFAPI_NV_Cmds;
 
-
-/** Type for representing a FAPI encrypted data.
- */
-typedef struct {
-    UINT32                                         type;    /**< Tag for encryption type. */
-    TPM2B_NAME                                 key_name;    /**<  Path to the encryption key. */
-    UINT8_ARY                                    cipher;    /**< None */
-    UINT8_ARY                               sym_private;    /**< Private data of encrypted sym key */
-    TPM2B_PUBLIC                             sym_public;    /**< The public information of the sym key object */
-    UINT32                                 sym_key_size;
-    TPM2B_DIGEST                                 sym_iv;
-    struct TPMS_POLICY_HARNESS       sym_policy_harness;
-} IFAPI_ENCRYPTED_DATA;
-
 /** The data structure storing a pem cerrificate with tpm_public_key.
  */
 typedef struct {
@@ -447,34 +433,19 @@ typedef struct {
  */
 typedef struct {
     char const *keyPath;            /**< The implicit key path */
-    char const *policyPath;
     uint8_t const *in_data;
     size_t in_dataSize;
     IFAPI_OBJECT *key_object;       /**< The IPAPI object for the encryption key */
     uint8_t *out_data;               /**< The output of symmetric encrypt/decryption */
     ESYS_TR key_handle;                 /**< The ESYS handle of the encryption key */
-    TPM2B_IV iv;                    /**< The symmetric iv value */
     size_t numBytes;                /**< The number of bytes of a ESYS request */
     size_t decrypt;                 /**< Switch whether to encrypt or decrypt */
     UINT16 bytesRequested;          /**< Bytes currently requested from TPM */
-    size_t data_idx;                /**< Offset in the read buffer */
-    char **pathlist;                /**< The array of all objects  in the search path */
-    size_t path_idx;                /**< Index of array of objects to be searched */
-    size_t numPaths;                /**< Number of all objects in data store */
-    TPMI_ALG_SYM_MODE sym_mode;
     TPMT_RSA_DECRYPT rsa_scheme;
-    IFAPI_ENCRYPTED_DATA enc_data;
-    /* Fields uses for the sealed symmetric key */
-    uint8_t *sym_key;
-    IFAPI_KEY_TEMPLATE sym_template;
-    TPM2B_SENSITIVE_CREATE sym_sensitive;
-    TPM2B_DATA sym_outsideInfo;
-    TPML_PCR_SELECTION sym_creationPCR;
-    TPM2B_PRIVATE *outPrivate;
-    TPM2B_PUBLIC *outPublic;
     ESYS_TR object_handle;
     char *policy_path;
     ESYS_TR auth_session;
+    const IFAPI_PROFILE *profile;
 } IFAPI_Data_EncryptDecrypt;
 
 /** The states for signing  */

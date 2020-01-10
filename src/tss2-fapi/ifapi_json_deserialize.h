@@ -32,14 +32,6 @@ TSS2_RC
 ifapi_json_char_deserialize(json_object *jso, char **out);
 
 TSS2_RC
-ifapi_json_IFAPI_ENCRYPTED_DATA_deserialize(json_object *jso,
-        IFAPI_ENCRYPTED_DATA *out);
-
-TSS2_RC
-ifapi_json_IFAPI_OBJECT_TYPE_CONSTANT_deserialize(json_object *jso,
-        IFAPI_OBJECT_TYPE_CONSTANT *out);
-
-TSS2_RC
 ifapi_json_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out);
 
 TSS2_RC

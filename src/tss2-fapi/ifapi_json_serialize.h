@@ -21,10 +21,6 @@ TSS2_RC
 ifapi_json_UINT8_ARY_serialize(const UINT8_ARY *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_IFAPI_ENCRYPTED_DATA_serialize(const IFAPI_ENCRYPTED_DATA *in,
-        json_object **jso);
-
-TSS2_RC
 ifapi_json_IFAPI_OBJECT_TYPE_CONSTANT_serialize(const IFAPI_OBJECT_TYPE_CONSTANT
         in, json_object **jso);
 

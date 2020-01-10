@@ -344,68 +344,6 @@ check_bin(void **state)
 
     CHECK_BIN(TPML_PCR_SELECTION, pcr_selection);
 
-    IFAPI_ENCRYPTED_DATA encryptedData = {
-        .type = 0,
-        .key_name = {
-            .size = 1,
-            .name = {1}
-        },
-        .cipher = {
-            .size = 0,
-            .buffer = NULL
-        },
-        .sym_private = {
-            .size = 0,
-            .buffer = NULL
-        },
-        .sym_public = {
-            .size = 0,
-            .publicArea = {
-                .type = TPM2_ALG_RSA,
-                .nameAlg = TPM2_ALG_SHA1,
-                .objectAttributes =
-                (TPMA_OBJECT_USERWITHAUTH |
-                 TPMA_OBJECT_SIGN_ENCRYPT |
-                 TPMA_OBJECT_FIXEDTPM |
-                 TPMA_OBJECT_FIXEDPARENT |
-                 TPMA_OBJECT_SENSITIVEDATAORIGIN),
-                .authPolicy = {
-                    .size = 0,
-                    .buffer = { 0 }
-                },
-                .parameters.rsaDetail = {
-                    .symmetric = {.algorithm = TPM2_ALG_NULL, .keyBits.aes = 128, .mode.aes = TPM2_ALG_CFB},
-                    .scheme = {.scheme = TPM2_ALG_RSAPSS, .details = {.rsapss = {.hashAlg = TPM2_ALG_SHA1}}},
-                    .keyBits = 2048,
-                    .exponent = 0,
-                },
-                .unique.rsa = {
-                    .size = 0,
-                    .buffer = { 0 },
-                },
-            },
-        },
-        .sym_key_size = 0,
-        .sym_iv = {.size = 0, .buffer = {0}},
-        .sym_policy_harness = {
-            .description = "",
-            .policyDigests = {
-                .count = 1,
-                .digests = {
-                    {
-                        .hashAlg = TPM2_ALG_SHA256,
-                        .digest = {
-                            .sha256 = {0}
-                        }
-                    }
-                }
-            }
-        }
-    };
-
-    CHECK_BIN(IFAPI_ENCRYPTED_DATA, encryptedData);
-    free(encryptedData2.cipher.buffer);
-
     IFAPI_IMA_EVENT imaEvent = {
         .eventData = {
             .size = 0,
