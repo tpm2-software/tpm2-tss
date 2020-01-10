@@ -308,31 +308,35 @@ TSS2_RC Fapi_VerifySignature_Finish(
 TSS2_RC Fapi_Encrypt(
     FAPI_CONTEXT   *context,
     char     const *keyPath,
-    char     const *policyPath,
     uint8_t  const *plainText,
     size_t          plainTextSize,
-    char          **cipherText);
+    uint8_t       **cipherText,
+    size_t         *cipherTextSize);
 
 TSS2_RC Fapi_Encrypt_Async(
     FAPI_CONTEXT   *context,
     char     const *keyPath,
-    char     const *policyPath,
     uint8_t  const *plainText,
     size_t          plainTextSize);
 
 TSS2_RC Fapi_Encrypt_Finish(
     FAPI_CONTEXT   *context,
-    char          **cipherText);
+    uint8_t       **cipherText,
+    size_t         *cipherTextSize );
 
 TSS2_RC Fapi_Decrypt(
     FAPI_CONTEXT   *context,
-    char     const *cipherText,
+    char     const *keyPath,
+    uint8_t  const *cipherText,
+    size_t          cipherTextSize,
     uint8_t       **plainText,
     size_t         *plainTextSize);
 
 TSS2_RC Fapi_Decrypt_Async(
     FAPI_CONTEXT   *context,
-    char     const *cipherText);
+    char     const *keyPath,
+    uint8_t  const *cipherText,
+    size_t          cipherTextSize);
 
 TSS2_RC Fapi_Decrypt_Finish(
     FAPI_CONTEXT   *context,
