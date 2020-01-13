@@ -1691,6 +1691,7 @@ get_crl_from_cert(X509 *cert, X509_CRL **crl)
                 ASN1_IA5STRING *asn1_str = gen_name->d.uniformResourceIdentifier;
                 SAFE_FREE(url);
                 url = (unsigned char *)strdup((char *)asn1_str->data);
+                goto_if_null2(url, "Out of memory", r, TSS2_FAPI_RC_MEMORY, cleanup);
             }
         }
     }
@@ -2104,6 +2105,7 @@ ifapi_verify_ek_cert(
         OpenSSL_add_all_algorithms();
         intermed_cert = get_cert_from_buffer(cert_buffer, cert_buffer_size);
 
+        SAFE_FREE(cert_buffer);
         goto_if_null2(intermed_cert, "Failed to create intermediate certificate.",
                       r, TSS2_FAPI_RC_GENERAL_FAILURE, cleanup);
 
@@ -2165,6 +2167,7 @@ ifapi_verify_ek_cert(
             goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
                        "Failed to add root certificate", cleanup);
         }
+        OSSL_FREE(root_cert, X509);
     }
 
     /* Verify intermediate certificate */
@@ -2210,11 +2213,11 @@ ifapi_verify_ek_cert(
     }
     if (store)
         X509_STORE_free(store);
-    OSSL_FREE(uri, ASN1_IA5STRING)
     OSSL_FREE(root_cert, X509);
     OSSL_FREE(intermed_cert, X509);
     OSSL_FREE(ek_cert, X509);
     OSSL_FREE(crl_intermed, X509_CRL);
     OSSL_FREE(crl_ek, X509_CRL);
+    OSSL_FREE(info, AUTHORITY_INFO_ACCESS);
     return r;
 }
