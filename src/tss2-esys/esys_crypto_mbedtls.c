@@ -926,4 +926,3 @@ TSS2_RC
 iesys_cryptomtls_init() {
     return TSS2_RC_SUCCESS;
 }
-

@@ -22,6 +22,9 @@ env:
   # run coverity scan on gcc build to keep from DOSing coverity
   - coverity_scan_run_condition='"$CC" = gcc'
 
+before_install:
+  - sudo apt-get -y install libmbedtls-dev
+
 matrix:
   include:
   # gcrypt testing
@@ -32,6 +35,13 @@ matrix:
   - env: DOCKER_TAG=ubuntu-16.04 WITH_CRYPTO=gcrypt
     compiler: gcc
   - env: DOCKER_TAG=ubuntu-18.04 WITH_CRYPTO=gcrypt
+    compiler: clang
+  # mbedtls testing
+  - env: DOCKER_TAG=fedora-30 WITH_CRYPTO=mbedtls
+    compiler: gcc
+  - env: DOCKER_TAG=opensuse-leap WITH_CRYPTO=mbedtls
+    compiler: clang
+  - env: DOCKER_TAG=ubuntu-18.04 WITH_CRYPTO=mbedtls
     compiler: clang
   # tcti async and partial read testing
   - env: DOCKER_TAG=fedora-30 WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt
