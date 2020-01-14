@@ -342,6 +342,10 @@ TSS2_ESYS_SRC_CRYPTO = src/tss2-esys/esys_crypto_ossl.h src/tss2-esys/esys_crypt
 else
 if ESYS_GCRYPT
 TSS2_ESYS_SRC_CRYPTO = src/tss2-esys/esys_crypto_gcrypt.h src/tss2-esys/esys_crypto_gcrypt.c
+else
+if ESYS_MBEDTLS
+TSS2_ESYS_SRC_CRYPTO = src/tss2-esys/esys_crypto_mbedtls.h src/tss2-esys/esys_crypto_mbedtls.c
+endif
 endif
 endif
 

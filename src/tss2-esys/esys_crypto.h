@@ -11,6 +11,8 @@
 #include "tss2-sys/sysapi_util.h"
 #ifdef OSSL
 #include "esys_crypto_ossl.h"
+#elif defined MTLS
+#include "esys_crypto_mbedtls.h"
 #else
 #include "esys_crypto_gcrypt.h"
 #endif
