@@ -303,6 +303,12 @@ if TESTPTPM
 if PTPMDESTRUCTIVE
 FAPI_TESTS_INTEGRATION += test/integration/fapi-key-create-sign-policy-provision.int
 endif
+#else
+FAPI_TESTS_INTEGRATION += \
+    test/integration/fapi-provision-fingerprint.int \
+    test/integration/fapi-provision-certificate.int \
+    test/integration/fapi-provision-fingerprint_ecc.int \
+    test/integration/fapi-provision-certificate_ecc.int
 endif #TESTPTM
 
 TESTS_INTEGRATION += $(FAPI_TESTS_INTEGRATION)
@@ -1377,14 +1383,14 @@ test_integration_fapi_key_create_sign_password_da_int_SOURCES = \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_key_create_sign_persistent_int_CFLAGS  = $(TESTS_CFLAGS) \
-   -DFAPI_PROFILE=\"P_RSA_EK_persistent\"
+   -DFAPI_PROFILE=\"P_RSA_EK_persistent\" -DFAPI_TEST_EK_CERT_LESS
 test_integration_fapi_key_create_sign_persistent_int_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_sign_persistent_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_sign_persistent_int_SOURCES = \
     test/integration/fapi-key-create-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_authorize_sign_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_key_create_policy_authorize_sign_int_CFLAGS  = $(TESTS_CFLAGS) -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_key_create_policy_authorize_sign_int_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_authorize_sign_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_policy_authorize_sign_int_SOURCES = \
@@ -1392,7 +1398,7 @@ test_integration_fapi_key_create_policy_authorize_sign_int_SOURCES = \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_key_create_policy_authorize_sign_rsa_int_CFLAGS  = $(TESTS_CFLAGS) \
-    -DFAPI_PROFILE=\"P_RSA256\"
+    -DFAPI_PROFILE=\"P_RSA256\" -DFAPI_TEST_EK_CERT_LESS
 test_integration_fapi_key_create_policy_authorize_sign_rsa_int_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_authorize_sign_rsa_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_policy_authorize_sign_rsa_int_SOURCES = \
@@ -1407,7 +1413,7 @@ test_integration_fapi_key_create_policy_authorize_nv_sign_int_SOURCES = \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_key_create_policy_secret_nv_sign_int_CFLAGS  = $(TESTS_CFLAGS) \
-    -DFAPI_PROFILE=\"P_RSA256\"
+    -DFAPI_PROFILE=\"P_RSA256\" -DFAPI_TEST_EK_CERT_LESS
 test_integration_fapi_key_create_policy_secret_nv_sign_int_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_secret_nv_sign_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_policy_secret_nv_sign_int_SOURCES = \
@@ -1639,6 +1645,37 @@ test_integration_fapi_unseal_int_SOURCES = \
     test/integration/fapi-unseal.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
+test_integration_fapi_provision_fingerprint_int_CFLAGS  = $(TESTS_CFLAGS) \
+ -DFAPI_TEST_FINGERPRINT  -DFAPI_PROFILE=\"P_RSA\"
+test_integration_fapi_provision_fingerprint_int_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_provision_fingerprint_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_provision_fingerprint_int_SOURCES = \
+    test/integration/fapi-get-random.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_provision_certificate_int_CFLAGS  = $(TESTS_CFLAGS) \
+ -DFAPI_TEST_CERTIFICATE  -DFAPI_PROFILE=\"P_RSA\"
+test_integration_fapi_provision_certificate_int_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_provision_certificate_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_provision_certificate_int_SOURCES = \
+    test/integration/fapi-get-random.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_provision_fingerprint_ecc_int_CFLAGS  = $(TESTS_CFLAGS) \
+ -DFAPI_TEST_FINGERPRINT_ECC  -DFAPI_PROFILE=\"P_ECC\"
+test_integration_fapi_provision_fingerprint_ecc_int_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_provision_fingerprint_ecc_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_provision_fingerprint_ecc_int_SOURCES = \
+    test/integration/fapi-get-random.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_provision_certificate_ecc_int_CFLAGS  = $(TESTS_CFLAGS) \
+ -DFAPI_TEST_CERTIFICATE_ECC  -DFAPI_PROFILE=\"P_ECC\"
+test_integration_fapi_provision_certificate_ecc_int_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_provision_certificate_ecc_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_provision_certificate_ecc_int_SOURCES = \
+    test/integration/fapi-get-random.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
 
 endif #FAPI
 

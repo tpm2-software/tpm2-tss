@@ -70,6 +70,7 @@ main(int argc, char *argv[])
     char *config_env = NULL;
     char *remove_cmd = NULL;
     char *system_dir = NULL;
+    char *ek_cert_less = NULL;
 
     FILE *config_file;
 
@@ -83,8 +84,15 @@ main(int argc, char *argv[])
 
     fapi_profile = FAPI_PROFILE;
 
+#if defined(FAPI_TEST_EK_CERT_LESS)
+    ek_cert_less = "yes";
+#else
+    ek_cert_less = "no";
+#endif
+
+
     /* First we construct a fapi config file */
-#ifdef FAPI_NONTPM
+#if defined(FAPI_NONTPM)
     size = asprintf(&config, "{\n"
                     "     \"profile_name\": \"" FAPI_PROFILE "\",\n"
                     "     \"profile_dir\": \"" TOP_SOURCEDIR "/test/data/fapi/\",\n"
@@ -93,8 +101,73 @@ main(int argc, char *argv[])
                     "     \"system_pcrs\" : [],\n"
                     "     \"log_dir\" : \"%s\",\n"
                     "     \"tcti\": \"none\",\n"
+                    "     \"ek_cert_less\": \"%s\",\n"
                     "}\n",
-                    tmpdir, tmpdir, tmpdir);
+                    tmpdir, tmpdir, tmpdir, ek_cert_less);
+#elif defined(FAPI_TEST_FINGERPRINT)
+    size = asprintf(&config, "{\n"
+                    "     \"profile_name\": \"" FAPI_PROFILE "\",\n"
+                    "     \"profile_dir\": \"" TOP_SOURCEDIR "/test/data/fapi/\",\n"
+                    "     \"user_dir\": \"%s/user/dir\",\n"
+                    "     \"system_dir\": \"%s/system_dir\",\n"
+                    "     \"system_pcrs\" : [],\n"
+                    "     \"log_dir\" : \"%s\",\n"
+                    "     \"tcti\": \"%s\",\n"
+                    "     \"ek_fingerprint\": %s,\n"
+                    "     \"ek_cert_less\": \"%s\",\n"
+                    "}\n",
+                    tmpdir, tmpdir, tmpdir,
+                    getenv("TPM20TEST_TCTI"),
+                    getenv("FAPI_TEST_FINGERPRINT"),
+                    ek_cert_less);
+#elif defined(FAPI_TEST_CERTIFICATE)
+    size = asprintf(&config, "{\n"
+                    "     \"profile_name\": \"" FAPI_PROFILE "\",\n"
+                    "     \"profile_dir\": \"" TOP_SOURCEDIR "/test/data/fapi/\",\n"
+                    "     \"user_dir\": \"%s/user/dir\",\n"
+                    "     \"system_dir\": \"%s/system_dir\",\n"
+                    "     \"system_pcrs\" : [],\n"
+                    "     \"log_dir\" : \"%s\",\n"
+                    "     \"tcti\": \"%s\",\n"
+                    "     \"ek_cert_file\": \"%s\",\n"
+                    "     \"ek_cert_less\": \"%s\",\n"
+                    "}\n",
+                    tmpdir, tmpdir, tmpdir,
+                    getenv("TPM20TEST_TCTI"),
+                    getenv("FAPI_TEST_CERTIFICATE"),
+                    ek_cert_less);
+#elif defined(FAPI_TEST_FINGERPRINT_ECC)
+    size = asprintf(&config, "{\n"
+                    "     \"profile_name\": \"" FAPI_PROFILE "\",\n"
+                    "     \"profile_dir\": \"" TOP_SOURCEDIR "/test/data/fapi/\",\n"
+                    "     \"user_dir\": \"%s/user/dir\",\n"
+                    "     \"system_dir\": \"%s/system_dir\",\n"
+                    "     \"system_pcrs\" : [],\n"
+                    "     \"log_dir\" : \"%s\",\n"
+                    "     \"tcti\": \"%s\",\n"
+                    "     \"ek_fingerprint\": %s,\n"
+                    "     \"ek_cert_less\": \"%s\",\n"
+                    "}\n",
+                    tmpdir, tmpdir, tmpdir,
+                    getenv("TPM20TEST_TCTI"),
+                    getenv("FAPI_TEST_FINGERPRINT_ECC"),
+                    ek_cert_less);
+#elif defined(FAPI_TEST_CERTIFICATE_ECC)
+    size = asprintf(&config, "{\n"
+                    "     \"profile_name\": \"" FAPI_PROFILE "\",\n"
+                    "     \"profile_dir\": \"" TOP_SOURCEDIR "/test/data/fapi/\",\n"
+                    "     \"user_dir\": \"%s/user/dir\",\n"
+                    "     \"system_dir\": \"%s/system_dir\",\n"
+                    "     \"system_pcrs\" : [],\n"
+                    "     \"log_dir\" : \"%s\",\n"
+                    "     \"tcti\": \"%s\",\n"
+                    "     \"ek_cert_file\": \"%s\",\n"
+                    "     \"ek_cert_less\": \"%s\",\n"
+                    "}\n",
+                    tmpdir, tmpdir, tmpdir,
+                    getenv("TPM20TEST_TCTI"),
+                    getenv("FAPI_TEST_CERTIFICATE_ECC"),
+                    ek_cert_less);
 #else /* FAPI_NONTPM */
     size = asprintf(&config, "{\n"
                     "     \"profile_name\": \"" FAPI_PROFILE "\",\n"
@@ -104,11 +177,12 @@ main(int argc, char *argv[])
                     "     \"system_pcrs\" : [],\n"
                     "     \"log_dir\" : \"%s\",\n"
                     "     \"tcti\": \"%s\",\n"
+                    "     \"ek_cert_less\": \"%s\",\n"
                     "}\n",
                     tmpdir, tmpdir, tmpdir,
-                    getenv("TPM20TEST_TCTI"));
+                    getenv("TPM20TEST_TCTI"),
+                    ek_cert_less);
 #endif /* FAPI_NONTPM */
-
     if (size < 0) {
         LOG_ERROR("Out of memory");
         ret = EXIT_ERROR;

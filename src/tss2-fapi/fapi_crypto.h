@@ -115,6 +115,11 @@ ifapi_get_hash_alg_for_size(
     TPMI_ALG_HASH               *hashAlgorithm);
 
 TSS2_RC
+ifapi_get_public_from_pem_cert(
+    const char*                 pem_cert,
+    TPM2B_PUBLIC *tpm_public);
+
+TSS2_RC
 ifapi_initialize_sign_public(
     TPM2_ALG_ID                 signatureAlgorithm,
     TPM2B_PUBLIC                *template);
@@ -128,5 +133,11 @@ ifapi_verify_ek_cert(
     char* root_cert_pem,
     char* intermed_cert_pem,
     char* ek_cert_pem);
+
+TSS2_RC
+ifapi_get_tpm_key_fingerprint(
+    const TPM2B_PUBLIC *tpmPublicKey,
+    TPMI_ALG_HASH hashAlg,
+    TPM2B_DIGEST *fingerprint);
 
 #endif /* FAPI_CRYPTO_H */

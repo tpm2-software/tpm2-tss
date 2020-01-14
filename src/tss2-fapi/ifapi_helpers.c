@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <dirent.h>
+#include <curl/curl.h>
 
 #include "tss2_mu.h"
 #include "fapi_util.h"
@@ -2115,4 +2116,107 @@ ifapi_cmp_public_key(
     default:
         return false;
     }
+}
+
+struct CurlBufferStruct {
+  unsigned char *buffer;
+  size_t size;
+};
+
+static size_t
+write_curl_buffer_cb(void *contents, size_t size, size_t nmemb, void *userp)
+{
+  size_t realsize = size * nmemb;
+  struct CurlBufferStruct *curl_buf = (struct CurlBufferStruct *)userp;
+
+  unsigned char *tmp_ptr = realloc(curl_buf->buffer, curl_buf->size + realsize + 1);
+  if(tmp_ptr == NULL) {
+      LOG_ERROR("Can't allocate memory in CURL callback.");
+    return 0;
+  }
+  curl_buf->buffer = tmp_ptr;
+  memcpy(&(curl_buf->buffer[curl_buf->size]), contents, realsize);
+  curl_buf->size += realsize;
+  curl_buf->buffer[curl_buf->size] = 0;
+
+  return realsize;
+}
+
+/** Get byte buffer from file system or web  via curl.
+ *
+ * @param[in]  url The url of the resource.
+ * @param[out] buffer The buffer retrieved via the url.
+ * @param[out] buffer_size The size of the retrieved object.
+ *
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE if
+ * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE for curl errors:
+ */
+
+TSS2_RC
+ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer, size_t *buffer_size)
+{
+    TSS2_RC r = TSS2_RC_SUCCESS;
+    CURL *curl_handle = NULL;
+
+    struct CurlBufferStruct curl_buffer = { .size = 0, .buffer = NULL };
+
+    /* Init dummy buffer, will be enlarged depending on the size of
+       the received data. */
+    curl_buffer.buffer = malloc(1);
+    goto_if_null2(curl_buffer.buffer, "Out of memory.", r,
+                  TSS2_FAPI_RC_MEMORY, cleanup);
+
+    /* Prepare curl with URL and callback for copying data */
+    if (CURLE_OK != curl_global_init(CURL_GLOBAL_ALL)) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl global init",
+                   cleanup);
+    }
+
+    curl_handle = curl_easy_init();
+    if (!curl_handle) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy init",
+                   cleanup);
+
+    }
+    if (CURLE_OK != curl_easy_setopt(curl_handle, CURLOPT_URL, url)) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy setopt",
+                   cleanup);
+    }
+    if (CURLE_OK != curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION,
+                                     write_curl_buffer_cb)) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy setopt",
+                   cleanup);
+    }
+    if (CURLE_OK != curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA,
+                                     (void *)&curl_buffer)) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy setopt",
+                   cleanup);
+    }
+    if (CURLE_OK != curl_easy_setopt(curl_handle, CURLOPT_USERAGENT,
+                                     "libcurl-agent/1.0")) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy setopt",
+                   cleanup);
+    }
+    /* Receive the certificate */
+    if (CURLE_OK != curl_easy_perform(curl_handle)) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy setopt",
+                   cleanup);
+    }
+    LOG_TRACE("%zu bytes of certificate retrieved\n", curl_buffer.size);
+
+    *buffer = curl_buffer.buffer;
+    *buffer_size = curl_buffer.size;
+    if (curl_handle)
+        curl_easy_cleanup(curl_handle);
+     curl_global_cleanup();
+     return r;
+
+ cleanup:
+     if (curl_handle)
+        curl_easy_cleanup(curl_handle);
+     curl_global_cleanup();
+     free(curl_buffer.buffer);
+     return r;
 }

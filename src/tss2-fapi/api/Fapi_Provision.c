@@ -49,6 +49,10 @@
  *         a FAPI policy.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
+ * @retval TSS2_FAPI_RC_NO_CERT: if no certificate was found for the computed EK.
+ * @retval TSS2_FAPI_RC_BAD_KEY: if public key of the EK does not match the
+           configured certificate or the configured fingerprint does not match
+           the computed EK.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
@@ -183,6 +187,10 @@ end:
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
+ * @retval TSS2_FAPI_RC_NO_CERT: if no certificate was found for the computed EK.
+ * @retval TSS2_FAPI_RC_BAD_KEY: if public key of the EK does not match the
+           configured certificate or the configured fingerprint does not match
+           the computed EK.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
@@ -199,6 +207,9 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
     uint8_t *certData = NULL;
     size_t certSize;
     TPMI_YES_NO moreData;
+    size_t hash_size;
+    TPMI_ALG_HASH hash_alg;
+    TPM2B_DIGEST ek_fingerprint;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -354,6 +365,62 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             fallthrough;
 
         statecase(context->state, PROVISION_INIT_GET_CAP2);
+            if (context->config.ek_cert_less == TPM2_YES) {
+                /* Skip certificate validation. */
+                context->state = PROVISION_EK_WRITE_PREPARE;
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            }
+
+            /* Check whether fingerprint for EK is defined in config file. */
+            hash_alg = context->config.ek_fingerprint.hashAlg;
+            if (hash_alg) {
+                LOG_DEBUG("Only fingerprint check for EK.");
+                if (!(hash_size =ifapi_hash_get_digest_size(hash_alg))) {
+                    goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+                               "Unsupported hash algorithm (%" PRIu16 ")", error_cleanup,
+                               hash_alg);
+                }
+                r = ifapi_get_tpm_key_fingerprint(&pkeyObject->misc.key.public, hash_alg,
+                                                  &ek_fingerprint);
+                goto_if_error_reset_state(r, "Get fingerprint of EK", error_cleanup);
+
+                if (hash_size != ek_fingerprint.size ||
+                    memcmp(&context->config.ek_fingerprint.digest, &ek_fingerprint.buffer[0],
+                           hash_size) != 0) {
+                    goto_error(r, TSS2_FAPI_RC_BAD_KEY,
+                               "Fingerprint of EK not equal to fingerprint in config file.",
+                               error_cleanup);
+                }
+                /* The fingerprint was found no further certificate processing needed. */
+                context->state = PROVISION_EK_WRITE_PREPARE;
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            }
+
+            /* Check whether EK certificate has to be retrieved */
+            if (context->config.ek_cert_file) {
+                size_t cert_size;
+                TPM2B_PUBLIC public_key;
+
+                r = ifapi_get_curl_buffer((unsigned char *)context->config.ek_cert_file,
+                                          (unsigned char **)&command->pem_cert, &cert_size);
+                goto_if_error_reset_state(r, "Get certificate", error_cleanup);
+
+                /* Compare public key of certificate with public data of EK */
+
+                r = ifapi_get_public_from_pem_cert(command->pem_cert, &public_key);
+                goto_if_error_reset_state(r, "Get public key from pem certificate",
+                                          error_cleanup);
+
+                if (ifapi_cmp_public_key(&pkeyObject->misc.key.public, &public_key)) {
+                    /* The retrieved certificate will be written to keystore,
+                       no further certificate processing needed. */
+                    context->state = PROVISION_EK_WRITE_PREPARE;
+                    return TSS2_FAPI_RC_TRY_AGAIN;
+                }
+                goto_error(r, TSS2_FAPI_RC_BAD_KEY,
+                           "Public key of EK does not match certificate.",
+                           error_cleanup);
+            }
 
             r = Esys_GetCapability_Async(context->esys,
                     ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, TPM2_CAP_HANDLES,
@@ -481,10 +548,9 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                     return TSS2_FAPI_RC_TRY_AGAIN;
                 }
             }
-            LOG_ERROR("No EK certificate found.");
-            context->state = PROVISION_EK_WRITE_PREPARE;
-            return TSS2_FAPI_RC_TRY_AGAIN;
-            fallthrough;
+
+            goto_error(r, TSS2_FAPI_RC_NO_CERT, "No EK certificate found.",
+                       error_cleanup);
 
         statecase(context->state, PROVISION_PREPARE_READ_ROOT_CERT);
             /* Prepare reading of root certificate. */
