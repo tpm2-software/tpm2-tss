@@ -95,6 +95,28 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
     r =  ifapi_json_TPML_PCR_SELECTION_deserialize(jso2, &out->system_pcrs);
     return_if_error(r, "BAD VALUE");
 
+    if (!ifapi_get_sub_object(jso, "ek_cert_file", &jso2)) {
+        out->ek_cert_file = NULL;
+    } else {
+        r =  ifapi_json_char_deserialize(jso2, &out->ek_cert_file);
+        return_if_error(r, "BAD VALUE");
+    }
+
+    if (ifapi_get_sub_object(jso, "ek_cert_less", &jso2)) {
+        r =  ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->ek_cert_less);
+        return_if_error(r, "BAD VALUE");
+
+    } else {
+        out->ek_cert_less = TPM2_NO;
+    }
+
+    if (ifapi_get_sub_object(jso, "ek_fingerprint", &jso2)) {
+        r =  ifapi_json_TPMT_HA_deserialize(jso2, &out->ek_fingerprint);
+        return_if_error(r, "BAD VALUE");
+    } else {
+        out->ek_fingerprint.hashAlg = 0;
+    }
+
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }

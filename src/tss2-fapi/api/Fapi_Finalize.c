@@ -71,6 +71,7 @@ Fapi_Finalize(
     SAFE_FREE((*context)->config.profile_name);
     SAFE_FREE((*context)->config.tcti);
     SAFE_FREE((*context)->config.log_dir);
+    SAFE_FREE((*context)->config.ek_cert_file);
     ifapi_profiles_finalize(&(*context)->profiles);
 
     SAFE_FREE((*context)->eventlog.log_dir);

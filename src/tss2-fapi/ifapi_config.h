@@ -31,7 +31,14 @@ typedef struct {
     /** The directory for event logs */
     char                *log_dir;
     /** The PCRs used by IMA etc. */
-    TPML_PCR_SELECTION  system_pcrs;
+    TPML_PCR_SELECTION   system_pcrs;
+    /** Fingerprint of EK */
+    TPMT_HA              ek_fingerprint;
+    /* URL for EC certificate */
+    char                *ek_cert_file;
+     /* Switch whether certificate validation will done */
+    TPMI_YES_NO         ek_cert_less;
+
 } IFAPI_CONFIG;
 
 TSS2_RC

@@ -238,6 +238,8 @@ fi
 
 EKPUB_FILE=${TEST_BIN}_ekpub.pem
 EKCERT_FILE=${TEST_BIN}_ekcert.crt
+EKCERT_PEM_FILE=${TEST_BIN}_ekcert.pem
+
 
 env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
@@ -252,6 +254,7 @@ fi
 
 EKECCPUB_FILE=${TEST_BIN}_ekeccpub.pem
 EKECCCERT_FILE=${TEST_BIN}_ekecccert.crt
+EKECCCERT_PEM_FILE=${TEST_BIN}_ekecccert.pem
 
 env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
@@ -276,8 +279,17 @@ if [ $? -ne 0 ]; then
     break
 fi
 
-#hd $EKCERT_FILE
-#openssl x509 -in $EKCERT_FILE -inform DER -text -noout
+# Determine the fingerprint of the RSA EK public.
+FINGERPRINT=$(openssl pkey -pubin -inform PEM -in $EKPUB_FILE -outform DER | sha256sum  | cut -f 1 -d ' ')
+export FAPI_TEST_FINGERPRINT="  { \"hashAlg\" : \"sha256\", \"digest\" : \"$FINGERPRINT\" }"
+openssl x509 -inform DER -in $EKCERT_FILE -outform PEM -out $EKCERT_PEM_FILE
+export FAPI_TEST_CERTIFICATE="file:${EKCERT_PEM_FILE}"
+
+# Determine the fingerprint of the RSA EK public.
+FINGERPRINT_ECC=$(openssl pkey -pubin -inform PEM -in $EKECCPUB_FILE -outform DER | sha256sum  | cut -f 1 -d ' ')
+export FAPI_TEST_FINGERPRINT_ECC="  { \"hashAlg\" : \"sha256\", \"digest\" : \"$FINGERPRINT_ECC\" }"
+openssl x509 -inform DER -in $EKCERT_FILE -outform PEM -out $EKCERT_PEM_FILE
+export FAPI_TEST_CERTIFICATE_ECC="file:${EKECCCERT_PEM_FILE}"
 
 cat $EKCERT_FILE | \
 env TPM20TEST_TCTI_NAME="socket" \

@@ -1573,98 +1573,6 @@ ifapi_crypto_hash_abort(IFAPI_CRYPTO_CONTEXT_BLOB **context)
     *context = NULL;
 }
 
-struct CertificateStruct {
-  unsigned char *buffer;
-  size_t size;
-};
-
-static size_t
-write_certificate_cb(void *contents, size_t size, size_t nmemb, void *userp)
-{
-  size_t realsize = size * nmemb;
-  struct CertificateStruct *cert = (struct CertificateStruct *)userp;
-
-  unsigned char *tmp_ptr = realloc(cert->buffer, cert->size + realsize + 1);
-  if(tmp_ptr == NULL) {
-      LOG_ERROR("Can't allocate memory in CURL callback.");
-    return 0;
-  }
-  cert->buffer = tmp_ptr;
-  memcpy(&(cert->buffer[cert->size]), contents, realsize);
-  cert->size += realsize;
-  cert->buffer[cert->size] = 0;
-
-  return realsize;
-}
-
-/** Get DER encoded certificate via curl. */
-static TSS2_RC
-get_cert_buffer(unsigned char * url, unsigned char ** buffer, size_t *cert_size)
-{
-    TSS2_RC r = TSS2_RC_SUCCESS;
-    CURL *curl_handle = NULL;
-
-    struct CertificateStruct cert_buffer = { .size = 0, .buffer = NULL };
-
-    /* Init dummy buffer, will be enlarged depending on the size of
-       the received data. */
-    cert_buffer.buffer = malloc(1);
-    goto_if_null2(cert_buffer.buffer, "Out of memory.", r,
-                  TSS2_FAPI_RC_GENERAL_FAILURE, cleanup);
-
-    /* Prepare curl with URL and callback for copying data */
-    if (CURLE_OK != curl_global_init(CURL_GLOBAL_ALL)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl global init",
-                   cleanup);
-    }
-
-    curl_handle = curl_easy_init();
-    if (!curl_handle) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy init",
-                   cleanup);
-
-    }
-    if (CURLE_OK != curl_easy_setopt(curl_handle, CURLOPT_URL, url)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy setopt",
-                   cleanup);
-    }
-    if (CURLE_OK != curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION,
-                                     write_certificate_cb)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy setopt",
-                   cleanup);
-    }
-    if (CURLE_OK != curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA,
-                                     (void *)&cert_buffer)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy setopt",
-                   cleanup);
-    }
-    if (CURLE_OK != curl_easy_setopt(curl_handle, CURLOPT_USERAGENT,
-                                     "libcurl-agent/1.0")) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy setopt",
-                   cleanup);
-    }
-    /* Receive the certificate */
-    if (CURLE_OK != curl_easy_perform(curl_handle)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy setopt",
-                   cleanup);
-    }
-    LOG_TRACE("%zu bytes of certificate retrieved\n", cert_buffer.size);
-
-    *buffer = cert_buffer.buffer;
-    *cert_size = cert_buffer.size;
-    if (curl_handle)
-        curl_easy_cleanup(curl_handle);
-     curl_global_cleanup();
-     return r;
-
- cleanup:
-     if (curl_handle)
-        curl_easy_cleanup(curl_handle);
-     curl_global_cleanup();
-     free(cert_buffer.buffer);
-     return r;
-}
-
 /**
  * Get url to download crl from certificate.
  */
@@ -1696,7 +1604,7 @@ get_crl_from_cert(X509 *cert, X509_CRL **crl)
         }
     }
 
-    r = get_cert_buffer(url, &crl_buffer, &crl_buffer_size);
+    r = ifapi_get_curl_buffer(url, &crl_buffer, &crl_buffer_size);
     goto_if_error(r, "Get crl.", cleanup);
 
     OpenSSL_add_all_algorithms();
@@ -2008,7 +1916,7 @@ ifapi_get_hash_alg_for_size(uint16_t size, TPMI_ALG_HASH *hashAlgorithm)
     }
 }
 
-static X509 *get_X509_from_pem(char *pem_cert)
+static X509 *get_X509_from_pem(const char *pem_cert)
 {
     if (!pem_cert) {
         return NULL;
@@ -2025,6 +1933,47 @@ static X509 *get_X509_from_pem(char *pem_cert)
     cert = PEM_read_bio_X509(bufio, NULL, NULL, NULL);
     BIO_free(bufio);
     return cert;
+}
+
+/** Get public information for key of a pem certificate.
+ *
+ * @param [in]  pem_cert The pem certificate.
+ * @param [out] tpm_public The public information of the key in TPM format.
+ *
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the conversion fails.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if openssl errors occur.
+ */
+TSS2_RC
+ifapi_get_public_from_pem_cert(const char* pem_cert, TPM2B_PUBLIC *tpm_public)
+{
+    TSS2_RC r = TSS2_RC_SUCCESS;
+    X509 *cert = NULL;
+    EVP_PKEY *public_key = NULL;
+
+    cert = get_X509_from_pem(pem_cert);
+    return_if_null(cert, "Invalid certificate.", TSS2_FAPI_RC_BAD_VALUE);
+
+    public_key = X509_get_pubkey(cert);
+    goto_if_null(public_key, "No public key in certificate.",
+                 TSS2_FAPI_RC_GENERAL_FAILURE, cleanup);
+
+    if (EVP_PKEY_type(EVP_PKEY_id(public_key)) == EVP_PKEY_RSA) {
+        tpm_public->publicArea.type = TPM2_ALG_RSA;
+        r = get_rsa_tpm2b_public_from_evp(public_key, tpm_public);
+        goto_if_error(r, "Get public for RSA key.", cleanup);
+
+    } else if (EVP_PKEY_type(EVP_PKEY_id(public_key)) == EVP_PKEY_EC) {
+        tpm_public->publicArea.type = TPM2_ALG_ECC;
+        r = get_ecc_tpm2b_public_from_evp(public_key, tpm_public);
+        goto_if_error(r, "Get public for ECC key.", cleanup);
+    } else {
+        goto_error(r, TSS2_FAPI_RC_NOT_IMPLEMENTED, "Wrong key_type", cleanup);
+    }
+ cleanup:
+    OSSL_FREE(cert, X509);
+    OSSL_FREE(public_key, EVP_PKEY);
+    return r;
 }
 
 /** Convert buffer from web to X509 certificate.
@@ -2094,7 +2043,7 @@ ifapi_verify_ek_cert(
             }
             uri = ad->location->d.uniformResourceIdentifier;
             url = uri->data;
-            r = get_cert_buffer(url, &cert_buffer, &cert_buffer_size);
+            r = ifapi_get_curl_buffer(url, &cert_buffer, &cert_buffer_size);
             goto_if_error(r, "Failed to receive certificate", cleanup);
             goto_if_null2(cert_buffer, "No certificate downloaded", r,
                           TSS2_FAPI_RC_NO_CERT, cleanup);
@@ -2179,6 +2128,8 @@ ifapi_verify_ek_cert(
                    "Failed to initialize X509 context.", cleanup);
     }
     if (1 != X509_verify_cert(ctx)) {
+        int rc = X509_STORE_CTX_get_error(ctx);
+        LOG_ERROR("%s", X509_verify_cert_error_string(rc));
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
                    "Failed to verify EK certificate", cleanup);
     }
@@ -2219,5 +2170,77 @@ ifapi_verify_ek_cert(
     OSSL_FREE(crl_intermed, X509_CRL);
     OSSL_FREE(crl_ek, X509_CRL);
     OSSL_FREE(info, AUTHORITY_INFO_ACCESS);
+    return r;
+}
+
+/** Compute the fingerprint of a TPM public key.
+ *
+ * @param [in]  tpmPublicKey The public key created by the TPM
+ * @param [out] The fingerprint digest.
+ *
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
+ * @retval TSS2_FAPI_BAD_REFERENCE if tpmPublicKey or pemKeySize are NULL
+ */
+TSS2_RC
+ifapi_get_tpm_key_fingerprint(
+    const TPM2B_PUBLIC *tpmPublicKey,
+    TPMI_ALG_HASH hashAlg,
+    TPM2B_DIGEST *fingerprint)
+{
+    /* Check for NULL parameters */
+    return_if_null(tpmPublicKey, "tpmPublicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    EVP_PKEY *evpPublicKey = NULL;
+    TSS2_RC r = TPM2_RC_SUCCESS;
+    uint8_t *pubKeyDer = NULL;
+    int pubKeyDerSize;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
+    size_t hashSize;
+    size_t fingerPrintSize;
+
+    if (!(hashSize = ifapi_hash_get_digest_size(hashAlg))) {
+        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+                   "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+                   hashAlg);
+    }
+
+    evpPublicKey = EVP_PKEY_new();
+    goto_if_null2(evpPublicKey, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
+
+    if (tpmPublicKey->publicArea.type == TPM2_ALG_RSA) {
+        r = ossl_rsa_pub_from_tpm(tpmPublicKey, evpPublicKey);
+    } else if (tpmPublicKey->publicArea.type == TPM2_ALG_ECC)
+        r = ossl_ecc_pub_from_tpm(tpmPublicKey, evpPublicKey);
+    else {
+        goto_error(r,TSS2_FAPI_RC_BAD_VALUE, "Invalid alg id.", cleanup);
+    }
+    goto_if_error(r, "Get ossl public key.", cleanup);
+
+    /* Convert the OpenSSL EVP pub key into DEF format */
+    pubKeyDerSize = i2d_PUBKEY(evpPublicKey, &pubKeyDer);
+    if (pubKeyDerSize == -1) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "OSSL error", cleanup);
+    }
+
+    /* Compute the digest of the DER public key */
+    r = ifapi_crypto_hash_start(&cryptoContext, hashAlg);
+    goto_if_error(r, "crypto hash start", cleanup);
+
+    HASH_UPDATE_BUFFER(cryptoContext,
+                       pubKeyDer, pubKeyDerSize, r, cleanup);
+    r = ifapi_crypto_hash_finish(&cryptoContext,
+                                 &fingerprint->buffer[0], &fingerPrintSize);
+    goto_if_error(r, "crypto hash finish", cleanup);
+
+    fingerprint->size = fingerPrintSize;
+
+cleanup:
+    EVP_PKEY_free(evpPublicKey);
+    SAFE_FREE(pubKeyDer);
+    if (cryptoContext) {
+        ifapi_crypto_hash_abort(&cryptoContext);
+    }
     return r;
 }

@@ -199,4 +199,10 @@ ifapi_cmp_public_key(
     TPM2B_PUBLIC *key1,
     TPM2B_PUBLIC *key2);
 
+TSS2_RC
+ifapi_get_curl_buffer(
+    unsigned char * url,
+    unsigned char ** buffer,
+    size_t *cert_size);
+
 #endif /* IFAPI_HELPERS_H */
