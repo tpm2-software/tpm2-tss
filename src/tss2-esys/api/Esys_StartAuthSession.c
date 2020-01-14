@@ -260,7 +260,19 @@ Esys_StartAuthSession_Async(
     iesys_compute_session_value(esysContext->session_tab[2], NULL, NULL);
 
     /* Generate the auth values and set them in the SAPI command buffer */
-    r = iesys_gen_auths(esysContext, tpmKeyNode, bindNode, NULL, &auths);
+
+    RSRC_NODE_T none;
+    size_t offset = 0;
+    none.rsrc.handle = TPM2_RH_NULL;
+    none.rsrc.rsrcType = IESYSC_WITHOUT_MISC_RSRC;
+    r = Tss2_MU_TPM2_HANDLE_Marshal(TPM2_RH_NULL,
+                                none.rsrc.name.name,
+                                sizeof(none.rsrc.name.name),
+                                &offset);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Marshaling TPM handle.");
+    none.rsrc.name.size = offset;
+    r = iesys_gen_auths(esysContext, tpmKeyNode ? tpmKeyNode : &none,
+                                     bindNode ? bindNode : &none, NULL, &auths);
     return_state_if_error(r, _ESYS_STATE_INIT,
                           "Error in computation of auth values");
 
