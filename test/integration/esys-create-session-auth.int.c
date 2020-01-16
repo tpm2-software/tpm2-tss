@@ -55,6 +55,7 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
     ESYS_TR loadedKeyHandle = ESYS_TR_NONE;
     ESYS_TR primaryHandle_AuthSession = ESYS_TR_NONE;
     ESYS_TR session = ESYS_TR_NONE;
+    ESYS_TR outerSession = ESYS_TR_NONE;
 
     TPM2B_PUBLIC *outPublic = NULL;
     TPM2B_CREATION_DATA *creationData = NULL;
@@ -237,15 +238,28 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
     TPMI_ALG_HASH authHash = TPM2_ALG_SHA256;
 
     r = Esys_StartAuthSession(esys_context,
+                              ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              NULL,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
+                              &outerSession);
+    goto_if_error(r, "Error during Esys_StartAuthSession", error);
+
+    r = Esys_TRSess_SetAttributes(esys_context, outerSession, TPMA_SESSION_AUDIT,
+                                  TPMA_SESSION_AUDIT);
+    goto_if_error(r, "Error Esys_TRSess_SetAttributes", error);
+
+    r = Esys_StartAuthSession(esys_context,
                               primaryHandle_AuthSession,
 #if TEST_BOUND_SESSION
                               primaryHandle_AuthSession,
 #else
                               ESYS_TR_NONE,
 #endif
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              outerSession, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
                               sessionType, &symmetric, authHash, &session);
+    Esys_FlushContext(esys_context, outerSession);
     goto_if_error(r, "Error during Esys_StartAuthSession", error);
 
 #ifdef TEST_ECC
