@@ -223,20 +223,15 @@ Esys_StartAuthSession_Async(
     TSS2_RC r2;
     r2 = iesys_compute_encrypted_salt(esysContext, tpmKeyNode,
                                       &encryptedSaltAux);
-    return_if_error(r2, "Error in parameter encryption.");
+    return_state_if_error(r2, _ESYS_STATE_INIT, "Error in parameter encryption.");
 
     if (nonceCaller == NULL) {
         r2 = iesys_crypto_hash_get_digest_size(authHash,&authHash_size);
-        if (r2 != TSS2_RC_SUCCESS) {
-            LOG_ERROR("Error: initialize auth session (%x).", r2);
-            return r2;
-        }
+        return_state_if_error(r2, _ESYS_STATE_INIT, "Error in hash_get_digest_size.");
+
         r2 = iesys_crypto_random2b(&esysContext->in.StartAuthSession.nonceCallerData,
                                    authHash_size);
-        if (r2 != TSS2_RC_SUCCESS) {
-            LOG_ERROR("Error: initialize auth session (%x).", r2);
-            return r2;
-        }
+        return_state_if_error(r2, _ESYS_STATE_INIT, "Error in crypto_random2b.");
         esysContext->in.StartAuthSession.nonceCaller
            = &esysContext->in.StartAuthSession.nonceCallerData;
         nonceCaller = esysContext->in.StartAuthSession.nonceCaller;
