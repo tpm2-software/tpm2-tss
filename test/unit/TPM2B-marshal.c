@@ -228,24 +228,24 @@ tpm2b_unmarshal_success(void **state)
     size_t buffer_size = sizeof(buffer);
     uint32_t value = 0xdeadbeef;
     uint32_t value2 = 0x11223344;
-    uint32_t *ptr;
+    uint32_t val;
     TSS2_RC rc;
 
     rc = Tss2_MU_TPM2B_DIGEST_Unmarshal(buffer, buffer_size, &offset, &dgst);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (dgst.size, 4);
-    ptr = (uint32_t *)dgst.buffer;
-    assert_int_equal (le32toh(*ptr), value);
+    memcpy(&val, dgst.buffer, sizeof(val));
+    assert_int_equal (le32toh(val), value);
     assert_int_equal (offset, 6);
 
     rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(buffer, buffer_size, &offset, &point);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (point.point.x.size, 4);
-    ptr = (uint32_t *)point.point.x.buffer;
-    assert_int_equal (le32toh(*ptr), value);
+    memcpy(&val, point.point.x.buffer, sizeof(val));
+    assert_int_equal (le32toh(val), value);
     assert_int_equal (point.point.y.size, 4);
-    ptr = (uint32_t *)point.point.y.buffer;
-    assert_int_equal (le32toh(*ptr), value2);
+    memcpy(&val, point.point.y.buffer, sizeof(val));
+    assert_int_equal (le32toh(val), value2);
     assert_int_equal (offset, 20);
 }
 
@@ -268,25 +268,25 @@ tpm2b_unmarshal_success_offset(void **state)
     uint32_t value = 0xdeadbeef;
     uint64_t value2 = 0xdeadbeefdeadbeefULL;
     uint32_t value3 = 0x11223344;
-    uint32_t *ptr;
-    uint64_t *ptr2;
+    uint32_t val;
+    uint64_t val2;
     TSS2_RC rc;
 
     rc = Tss2_MU_TPM2B_DIGEST_Unmarshal(buffer, buffer_size, &offset, &dgst);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (dgst.size, 4);
-    ptr = (uint32_t *)dgst.buffer;
-    assert_int_equal (le32toh(*ptr), value);
+    memcpy(&val, dgst.buffer, sizeof(val));
+    assert_int_equal (le32toh(val), value);
     assert_int_equal (offset, 12);
 
     rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(buffer, buffer_size, &offset, &point);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (point.point.x.size, 8);
-    ptr2 = (uint64_t *)point.point.x.buffer;
-    assert_int_equal (le64toh(*ptr2), value2);
+    memcpy(&val2, point.point.x.buffer, sizeof(val2));
+    assert_int_equal (le64toh(val2), value2);
     assert_int_equal (point.point.y.size, 4);
-    ptr = (uint32_t *)point.point.y.buffer;
-    assert_int_equal (le32toh(*ptr), value3);
+    memcpy(&val, point.point.y.buffer, sizeof(val));
+    assert_int_equal (le32toh(val), value3);
     assert_int_equal (offset, 30);
 }
 
