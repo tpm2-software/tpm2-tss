@@ -110,13 +110,6 @@ TSS2_RC ValidatePublicTemplate(const TPM2B_PUBLIC *pub);
 TSS2_RC ValidateNV_Public(const TPM2B_NV_PUBLIC *nv_public_info);
 TSS2_RC ValidateTPML_PCR_SELECTION(const TPML_PCR_SELECTION *pcr_selection);
 
-TSS2_SYS_CONTEXT *InitSysContext(
-    UINT16 maxCommandSize,
-    TSS2_TCTI_CONTEXT *tctiContext,
-    TSS2_ABI_VERSION *abiVersion);
-
-void TeardownSysContext(TSS2_SYS_CONTEXT **ctx);
-
 #ifdef __cplusplus
 }
 #endif
