@@ -117,6 +117,7 @@ endif # !TESTPTPM
 
 if ESAPI
 ESYS_TESTS_INTEGRATION_DESTRUCTIVE = \
+    test/integration/esys-change-eps.int \
     test/integration/esys-clear.int \
     test/integration/esys-clear-session.int \
     test/integration/esys-field-upgrade.int \
@@ -189,7 +190,6 @@ ESYS_TESTS_INTEGRATION_MANDATORY = \
 
 ESYS_TESTS_INTEGRATION_OPTIONAL = \
     test/integration/esys-audit.int \
-    test/integration/esys-change-eps.int \
     test/integration/esys-createloaded.int \
     test/integration/esys-createloaded-session.int \
     test/integration/esys-duplicate.int \
