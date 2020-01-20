@@ -81,8 +81,8 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     size_t dest_size = NV_SIZE;
     char *description1 = "nvDescription";
     char *description2 = NULL;
-    char *policy_name = "/policy/pol_pcr16_0";
-    char *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_pcr16_0.json";
+    char *policy_name = "/policy/pol_action";
+    char *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_action.json";
     FILE *stream = NULL;
     char *json_policy = NULL;
     long policy_size;
