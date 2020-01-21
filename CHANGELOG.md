@@ -3,9 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [2.3.3] - 2020-10-01
+## [2.3.3-rc1] - 2020-01-21
 ### Fixed
-- Add a check for object node before calling compute_session_value()
+- Added check for object node before calling compute_session_value function
+- Fixed auth calculation in Esys_StartAuthSession called with optional parameters
+- Fixed compute_encrypted_salt error handling in Esys_StartAuthSession
+- Fixed exported symbols map for libtss2-mu
 
 ## [2.3.2] - 2019-12-12
 ### Fixed
