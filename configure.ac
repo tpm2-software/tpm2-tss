@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: BSD-2-Clause
-# Copyright (c) 2015 - 2018 Intel Corporation
-# Copyright (c) 2018 Fraunhofer SIT sponsored by Infineon Technologies AG
+# Copyright (c) 2015 - 2020 Intel Corporation
+# Copyright (c) 2018 - 2020 Fraunhofer SIT sponsored by Infineon Technologies AG
 # All rights reserved.
 
 AC_INIT([tpm2-tss],
-        [2.3.3],
+        [2.3.3-rc1],
         [https://github.com/tpm2-software/tpm2-tss/issues],
         [],
         [https://github.com/tpm2-software/tpm2-tss])
