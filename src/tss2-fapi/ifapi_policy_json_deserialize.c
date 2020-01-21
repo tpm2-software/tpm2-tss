@@ -894,6 +894,7 @@ ifapi_json_TPMS_POLICYACTION_deserialize(json_object *jso,
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    memset(out, 0, sizeof(*out));
 
     if (!ifapi_get_sub_object(jso, "action", &jso2)) {
         LOG_ERROR("Bad value");

@@ -978,6 +978,10 @@ cleanup_policy_element(TPMT_POLICYELEMENT *policy)
             for (size_t i = 0; i < 3; i++) {
                 SAFE_FREE(policy->element.PolicyNameHash.namePaths[i]);
             }
+            break;
+        case POLICYACTION:
+            SAFE_FREE(policy->element.PolicyAction.action);
+            break;
         }
 }
 
