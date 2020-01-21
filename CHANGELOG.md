@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [2.4.0]
+## [2.4.0-rc1] - 2020-01-21
 ### Added
 - Added a new Feature API (FAPI) implementation
 - Added Esys_TRSess_GetAuthRequired() ESAPI function
@@ -31,6 +31,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Fixed segmentation fault in tctildr if name_conf was too big
 - Fixed memory leak in tctildr-tcti tests
 - Fixed HMAC generation for policy sessions
+- Added check for object node before calling compute_session_value function
+- Fixed auth calculation in Esys_StartAuthSession called with optional parameters
+- Fixed compute_encrypted_salt error handling in Esys_StartAuthSession
+- Fixed exported symbols map for libtss2-mu
 
 ## [2.3.0] - 2019-08-13
 ### Added
