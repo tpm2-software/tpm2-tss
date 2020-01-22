@@ -129,8 +129,8 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, NULL);
     goto_if_error(r, "Error Fapi_NvRead", error);
 
-    if (dest_size != NV_SIZE &&
-            memcmp(data_src, data_dest, dest_size) != 0) {
+    if (dest_size != NV_SIZE ||
+        memcmp(data_src, data_dest, dest_size) != 0) {
         LOG_ERROR("Error: result of nv read is wrong.");
         goto error;
     }
@@ -149,8 +149,8 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, NULL);
     goto_if_error(r, "Error Fapi_NvRead", error);
 
-    if (dest_size != NV_SIZE &&
-            memcmp(data_src, data_dest, dest_size) != 0) {
+    if (dest_size != NV_SIZE ||
+        memcmp(data_src, data_dest, dest_size) != 0) {
         LOG_ERROR("Error: result of nv read is wrong.");
         goto error;
     }
@@ -176,8 +176,8 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, NULL);
     goto_if_error(r, "Error Fapi_NvRead", error);
 
-    if (dest_size != NV_SIZE &&
-            memcmp(data_src, data_dest, dest_size) != 0) {
+    if (dest_size != NV_SIZE ||
+        memcmp(data_src, data_dest, dest_size) != 0) {
         LOG_ERROR("Error: result of nv read is wrong.");
         goto error;
     }
@@ -207,8 +207,8 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, NULL);
     goto_if_error(r, "Error Fapi_NvRead", error);
 
-    if (dest_size != NV_SIZE &&
-            memcmp(data_src, data_dest, dest_size) != 0) {
+    if (dest_size != NV_SIZE ||
+        memcmp(data_src, data_dest, dest_size) != 0) {
         LOG_ERROR("Error: result of nv read is wrong.");
         goto error;
     }
@@ -231,8 +231,8 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, NULL);
     goto_if_error(r, "Error Fapi_NvRead", error);
 
-    if (dest_size != NV_SIZE &&
-            memcmp(data_src, data_dest, dest_size) != 0) {
+    if (dest_size != NV_SIZE ||
+        memcmp(data_src, data_dest, dest_size) != 0) {
         LOG_ERROR("Error: result of nv read is wrong.");
         goto error;
     }
