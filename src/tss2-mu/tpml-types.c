@@ -29,8 +29,6 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     size_t  local_offset = 0; \
     UINT32 i, count = 0; \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
-    uint8_t *buf_ptr = buffer; \
-    uint8_t local_buffer[buffer_size]; \
 \
     if (offset != NULL) { \
         LOG_TRACE("offset non-NULL, initial value: %zu", *offset); \
@@ -61,23 +59,20 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
         return TSS2_SYS_RC_BAD_VALUE; \
     } \
 \
-    if (buf_ptr == NULL) \
-        buf_ptr = local_buffer; \
-\
     LOG_DEBUG(\
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
          " at index 0x%zx", \
          (uintptr_t)&src, \
-         (uintptr_t)buf_ptr, \
+         (uintptr_t)buffer, \
          local_offset); \
 \
-    ret = Tss2_MU_UINT32_Marshal(src->count, buf_ptr, buffer_size, &local_offset); \
+    ret = Tss2_MU_UINT32_Marshal(src->count, buffer, buffer_size, &local_offset); \
     if (ret) \
         return ret; \
 \
     for (i = 0; i < src->count; i++) \
     { \
-        ret = marshal_func(op src->buf_name[i], buf_ptr, buffer_size, &local_offset); \
+        ret = marshal_func(op src->buf_name[i], buffer, buffer_size, &local_offset); \
         if (ret) \
             return ret; \
     } \
