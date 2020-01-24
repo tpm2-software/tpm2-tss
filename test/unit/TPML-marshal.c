@@ -131,7 +131,9 @@ tpml_marshal_buffer_null_with_offset(void **state)
 {
     TPML_HANDLE hndl = {0};
     TPML_PCR_SELECTION sel = {0};
-    size_t  buffer_size = sizeof(hndl) + sizeof(sel) + 99;
+    TPML_DIGEST dgst = {0};
+    TPML_DIGEST_VALUES dgst_vals = {0};
+    size_t  buffer_size = sizeof(hndl) + sizeof(sel) + sizeof(dgst) + 99;
     size_t offset = 99;
     TSS2_RC rc;
 
@@ -157,6 +159,24 @@ tpml_marshal_buffer_null_with_offset(void **state)
     rc = Tss2_MU_TPML_PCR_SELECTION_Marshal(&sel, NULL, buffer_size, &offset);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (offset, 99 + 4 + 4 + 4 + 4 + 2 + 1 + 1 + 1 + 1 + 2 + 1 + 1 + 1);
+
+    offset = 99;
+    dgst.count = 2;
+    dgst.digests[0].size = TPM2_SHA1_DIGEST_SIZE;
+    dgst.digests[1].size = TPM2_SHA512_DIGEST_SIZE;
+    rc = Tss2_MU_TPML_DIGEST_Marshal(&dgst, NULL, buffer_size, &offset);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (offset, 99 + sizeof(UINT32) + 2*sizeof(UINT16) +
+                      TPM2_SHA1_DIGEST_SIZE + TPM2_SHA512_DIGEST_SIZE);
+
+    offset = 99;
+    dgst_vals.count = 2;
+    dgst_vals.digests[0].hashAlg = TPM2_ALG_SHA1;
+    dgst_vals.digests[1].hashAlg = TPM2_ALG_SHA512;
+    rc = Tss2_MU_TPML_DIGEST_VALUES_Marshal(&dgst_vals, NULL, buffer_size, &offset);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (offset, 99 + sizeof(UINT32) + 2*sizeof(TPMI_ALG_HASH) +
+                      TPM2_SHA1_DIGEST_SIZE + TPM2_SHA512_DIGEST_SIZE);
 }
 
 /*
