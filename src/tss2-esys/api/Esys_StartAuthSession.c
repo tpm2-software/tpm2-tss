@@ -493,6 +493,7 @@ Esys_StartAuthSession_Finish(
     goto_if_error(r, "Marshal session name", error_cleanup);
 
     sessionHandleNode->rsrc.name.size = offset;
+    memset(&esysContext->salt, '\0', sizeof(esysContext->salt));
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;
