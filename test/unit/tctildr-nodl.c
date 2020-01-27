@@ -66,8 +66,10 @@ test_tctildr_get_default_all_fail (void **state)
     will_return (__wrap_tcti_from_init, TEST_RC);
     will_return (__wrap_tcti_from_init, tcti_ctx);
     will_return (__wrap_tcti_from_init, TEST_RC);
+#ifdef TCTI_MSSIM
     will_return (__wrap_tcti_from_init, tcti_ctx);
     will_return (__wrap_tcti_from_init, TEST_RC);
+#endif
     rc = tctildr_get_default (&tcti_ctx, NULL);
     assert_int_equal (rc, TSS2_TCTI_RC_IO_ERROR);
 
