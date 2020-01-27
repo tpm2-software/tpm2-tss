@@ -151,6 +151,7 @@ Fapi_NvWrite_Async(
     /* Helpful alias pointers */
     IFAPI_NV_Cmds * command = &context->nv_cmd;
 
+    /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize NV_Write");
 
@@ -159,6 +160,9 @@ Fapi_NvWrite_Async(
     memset(&context->nv_cmd, 0, sizeof(IFAPI_NV_Cmds));
     command->offset = 0;
     command->data = NULL;
+
+
+    /* Copy parameters to context for use during _Finish. */
     strdup_check(command->nvPath, nvPath, r, error_cleanup);
 
     commandData = malloc(size);
@@ -168,6 +172,7 @@ Fapi_NvWrite_Async(
     command->data = commandData;
 
     context->primary_state = PRIMARY_INIT;
+    /* Initialize a session used for authorization and parameter encryption. */
     r = ifapi_get_sessions_async(context,
                                  IFAPI_SESSION_GENEK | IFAPI_SESSION1,
                                  TPMA_SESSION_DECRYPT, 0);
@@ -177,11 +182,14 @@ Fapi_NvWrite_Async(
     command->numBytes = size;
     if (context->state == _FAPI_STATE_INIT)
         ifapi_session_init(context);
+
+    /* Initialize the context state for this operation. */
     context->state = NV_WRITE_WAIT_FOR_SESSION;
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
+    /* Cleanup duplicated input parameters that were copied before. */
     SAFE_FREE(command->nvPath);
     SAFE_FREE(command->data);
     return r;
@@ -234,11 +242,11 @@ Fapi_NvWrite_Finish(
         r = ifapi_keystore_check_writeable(&context->keystore, &context->io, command->nvPath);
         goto_if_error_reset_state(r, "Check whether update object store is possible.", error_cleanup);
 
+        /* Write to the NV index. */
         r = ifapi_nv_write(context, command->nvPath, command->offset,
                            command->data, command->numBytes);
 
         return_try_again(r);
-
         goto_if_error_reset_state(r, " FAPI NV Write", error_cleanup);
 
 
@@ -264,16 +272,18 @@ Fapi_NvWrite_Finish(
         fallthrough;
 
     statecase(context->state, NV_WRITE_CLEANUP)
+        /* Cleanup the authorization session. */
         r = ifapi_cleanup_session(context);
         try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
-        context->state =  _FAPI_STATE_INIT;
+        context->state = _FAPI_STATE_INIT;
         break;
 
     statecasedefault(context->state);
     }
 
 error_cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     ifapi_cleanup_ifapi_object(&command->nv_object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);

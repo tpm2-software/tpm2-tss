@@ -126,16 +126,21 @@ Fapi_GetRandom_Async(
     /* Helpful alias pointers */
     IFAPI_GetRandom * command = &context->get_random;
 
+    /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize GetRandom");
 
+    /* Copy parameters to context for use during _Finish. */
     command->numBytes = numBytes;
     command->data = NULL;
 
+    /* Start a session for integrity protection and encryption of random data. */
     r = ifapi_get_sessions_async(context,
                                  IFAPI_SESSION_GENEK | IFAPI_SESSION1,
                                  TPMA_SESSION_ENCRYPT | TPMA_SESSION_DECRYPT, 0);
     return_if_error_reset_state(r, "Create FAPI session");
+
+    /* Initialize the context state for this operation. */
     context->state = GET_RANDOM_WAIT_FOR_SESSION;
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
@@ -186,12 +191,15 @@ Fapi_GetRandom_Finish(
             fallthrough;
 
         statecase(context->state, GET_RANDOM_WAIT_FOR_RANDOM);
+            /* Retrieve the random data from the TPM.
+               This may involve several Esys_GetRandom calls. */
             r = ifapi_get_random(context, command->numBytes, data);
             return_try_again(r);
-            goto_if_error_reset_state(r, " FAPI GetRandom", error_cleanup);
+            goto_if_error_reset_state(r, "FAPI GetRandom", error_cleanup);
             fallthrough;
 
-            statecase(context->state, GET_RANDOM_CLEANUP)
+        statecase(context->state, GET_RANDOM_CLEANUP)
+            /* Cleanup the session. */
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
@@ -200,6 +208,7 @@ Fapi_GetRandom_Finish(
         statecasedefault(context->state);
     }
 
+    /* Cleanup any intermediate results and state stored in the context. */
     context->state = _FAPI_STATE_INIT;
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_session_clean(context);
@@ -207,6 +216,7 @@ Fapi_GetRandom_Finish(
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_session_clean(context);
     SAFE_FREE(context->get_random.data);

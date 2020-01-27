@@ -35,7 +35,6 @@
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
  * @retval TSS2_FAPI_RC_BAD_PATH: if path does not map to a FAPI entity.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: if the updated data cannot be saved.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -109,7 +108,6 @@ Fapi_SetDescription(
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
  * @retval TSS2_FAPI_RC_BAD_PATH: if path does not map to a FAPI entity.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: if the updated data cannot be saved.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -141,8 +139,10 @@ Fapi_SetDescription_Async(
     /* Helpful alias pointers */
     IFAPI_Path_SetDescription * command = &context->cmd.path_set_info;
 
+    /* Copy parameters to context for use during _Finish. */
     strdup_check(command->object_path, path, r, error_cleanup);
 
+    /* Load the object's current metadata from the keystore. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
     goto_if_error2(r, "Could not open: %s", error_cleanup, path);
 
@@ -151,11 +151,15 @@ Fapi_SetDescription_Async(
     } else {
         strdup_check(command->description, description, r, error_cleanup);
     }
-    context->state =  PATH_SET_DESCRIPTION_READ;
+
+
+    /* Initialize the context state for this operation. */
+    context->state = PATH_SET_DESCRIPTION_READ;
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
+    /* Cleanup duplicated input parameters that were copied before. */
     SAFE_FREE(command->object_path);
     SAFE_FREE(command->description);
     return r;
@@ -203,6 +207,7 @@ Fapi_SetDescription_Finish(
             /* Add new description to object and save object */
             ifapi_set_description(object, command->description);
 
+            /* Store the updated metadata back to the keystore. */
             r = ifapi_keystore_store_async(&context->keystore, &context->io,
                                            command->object_path, object);
             goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
@@ -224,6 +229,7 @@ Fapi_SetDescription_Finish(
     }
 
 error_cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     ifapi_cleanup_ifapi_object(object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);

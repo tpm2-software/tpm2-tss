@@ -133,20 +133,27 @@ Fapi_NvIncrement_Async(
     /* Helpful alias pointers */
     IFAPI_NV_Cmds * command = &context->nv_cmd;
 
+    /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize NV_Increment");
 
+    /* Copy parameters to context for use during _Finish. */
     memset(&context->nv_cmd, 0, sizeof(IFAPI_NV_Cmds));
     strdup_check(command->nvPath, nvPath, r, error_cleanup);
 
     command->rdata = NULL;
+
+    /* Load the NV index metadata from keystore. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, command->nvPath);
     goto_if_error2(r, "Could not open: %s", error_cleanup, command->nvPath);
 
+    /* Initialize the context state for this operation. */
     context->state = NV_INCREMENT_READ;
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
+
 error_cleanup:
+    /* Cleanup duplicated input parameters that were copied before. */
     SAFE_FREE(command->nvPath);
     return r;
 }
@@ -202,10 +209,11 @@ Fapi_NvIncrement_Finish(
             goto_error(r, TSS2_FAPI_RC_BAD_PATH, "%s is no NV object.", error_cleanup,
                        command->nvPath);
 
+        /* Initialize the NV index object for use with ESYS. */
         r = ifapi_initialize_object(context->esys, object);
         goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
 
-        nvIndex =  command->nv_object.handle;
+        nvIndex = command->nv_object.handle;
         command->esys_handle = context->nv_cmd.nv_object.handle;
         command->nv_obj = object->misc.nv;
 
@@ -225,7 +233,7 @@ Fapi_NvIncrement_Finish(
         command->auth_index = authIndex;
         context->primary_state = PRIMARY_INIT;
 
-        /* Prepare Session */
+        /* Prepare the session for authorization */
         r = ifapi_get_sessions_async(context,
             IFAPI_SESSION_GENEK | IFAPI_SESSION1,
             0, 0);
@@ -238,13 +246,13 @@ Fapi_NvIncrement_Finish(
 //TODO: Pass the namealg of the NV index into the session to be created
         r = ifapi_get_sessions_finish(context, &context->profiles.default_profile);
         return_try_again(r);
-
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
         context->state = NV_INCREMENT_AUTHORIZE;
         fallthrough;
 
     statecase(context->state, NV_INCREMENT_AUTHORIZE)
+        /* Authorize the session for accessing the NV-index. */
         r = ifapi_authorize_object(context, authObject, &auth_session);
         return_try_again(r);
         goto_if_error(r, "Authorize NV object.", error_cleanup);
@@ -254,7 +262,6 @@ Fapi_NvIncrement_Finish(
                                     nvIndex,
                                     auth_session,
                                     ESYS_TR_NONE, ESYS_TR_NONE);
-
         goto_if_error_reset_state(r, " Fapi_NvIncrement_Async", error_cleanup);
 
         context->state = NV_INCREMENT_AUTH_SENT;
@@ -263,7 +270,6 @@ Fapi_NvIncrement_Finish(
     statecase(context->state, NV_INCREMENT_AUTH_SENT)
         r = Esys_NV_Increment_Finish(context->esys);
         return_try_again(r);
-
         goto_if_error_reset_state(r, "FAPI NV_Increment_Finish", error_cleanup);
 
         /* Perform esys serialization if necessary */
@@ -288,17 +294,19 @@ Fapi_NvIncrement_Finish(
         fallthrough;
 
     statecase(context->state, NV_INCREMENT_CLEANUP)
+        /* Cleanup the authorization session. */
         r = ifapi_cleanup_session(context);
         try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
-        context->state =  _FAPI_STATE_INIT;
-        r =  TSS2_RC_SUCCESS;
+        context->state = _FAPI_STATE_INIT;
+        r = TSS2_RC_SUCCESS;
         break;
 
     statecasedefault(context->state);
     }
 
 error_cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     ifapi_cleanup_ifapi_object(&command->nv_object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);

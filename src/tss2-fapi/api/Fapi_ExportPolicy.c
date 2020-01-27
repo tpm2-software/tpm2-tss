@@ -125,20 +125,26 @@ Fapi_ExportPolicy_Async(
     /* Helpful alias pointers */
     IFAPI_ExportPolicy * command = &context->cmd.ExportPolicy;
 
+    /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize PolicyExport");
 
+    /* Initialize the context state for this operation. */
     if (ifapi_path_type_p(path, IFAPI_POLICY_PATH)) {
         context->state = POLICY_EXPORT_READ_POLICY;
     } else {
         context->state = POLICY_EXPORT_READ_OBJECT;
     }
+
+    /* Copy parameters to context for use during _Finish. */
     strdup_check(command->path, path, r ,error_cleanup);
     memset(&command->object, 0, sizeof(IFAPI_OBJECT));
 
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
+
 error_cleanup:
+    /* Cleanup duplicated input parameters that were copied before. */
     SAFE_FREE(command->path);
     return r;
 }
@@ -182,6 +188,9 @@ Fapi_ExportPolicy_Finish(
 
     switch (context->state) {
         statecase(context->state, POLICY_EXPORT_READ_POLICY);
+            /* This is the entry point if a policy from the policy store shall
+               be exported. */
+            /* Load the policy to be exported from the policy store. */
             r = ifapi_policy_store_load_async(&context->pstore, &context->io,
                                               command->path);
             goto_if_error2(r, "Can't open: %s", error_cleanup,
@@ -193,16 +202,21 @@ Fapi_ExportPolicy_Finish(
             return_try_again(r);
             return_if_error_reset_state(r, "read_finish failed");
 
+            /* Serialize the policy to JSON. */
             r = ifapi_json_TPMS_POLICY_HARNESS_serialize(&harness, &jso);
             goto_if_error(r, "Serialize policy", error_cleanup);
 
+            /* Duplicate the JSON string to be returned to the caller. */
             strdup_check(*jsonPolicy,
                     json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY),
                     r, error_cleanup);
 
             break;
         statecase(context->state, POLICY_EXPORT_READ_OBJECT);
+            /* This is the entry point if a policy for a key from the key store
+               shall be exported. */
             memset(&command->object, 0, sizeof(IFAPI_OBJECT));
+            /* Load the key meta data from the keystore. */
             r = ifapi_keystore_load_async(&context->keystore, &context->io,
                                           command->path);
             return_if_error2(r, "Could not open: %s", command->path);
@@ -218,10 +232,12 @@ Fapi_ExportPolicy_Finish(
                           "Object has no policy",
                           r, TSS2_FAPI_RC_BAD_PATH, error_cleanup);
 
+            /* Serialize the policy to JSON. */
             r = ifapi_json_TPMS_POLICY_HARNESS_serialize(context->
                 cmd.ExportPolicy.object.policy_harness, &jso);
             goto_if_error(r, "Serialize policy", error_cleanup);
 
+            /* Duplicate the JSON string to be returned to the caller. */
             strdup_check(*jsonPolicy,
                     json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY),
                     r, error_cleanup);
@@ -231,6 +247,7 @@ Fapi_ExportPolicy_Finish(
     }
     goto_if_null2(*jsonPolicy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
 
+    /* Cleanup any intermediate results and state stored in the context. */
     context->state = _FAPI_STATE_INIT;
     if (jso)
         json_object_put(jso);
@@ -244,6 +261,7 @@ Fapi_ExportPolicy_Finish(
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     if (command->object.objectType)
         ifapi_cleanup_ifapi_object(&command->object);
     if (jso)

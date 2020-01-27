@@ -123,6 +123,7 @@ Fapi_Initialize_Async(
     r = ifapi_config_initialize_async(&(*context)->io);
     goto_if_error(r, "Could not initialize FAPI context", cleanup_return);
 
+    /* Initialize the context state for this operation. */
     (*context)->state = INITIALIZE_READ;
 
 cleanup_return:
@@ -168,25 +169,27 @@ Fapi_Initialize_Finish(
 
     switch ((*context)->state) {
     statecase((*context)->state, INITIALIZE_READ);
+        /* This is the entry point; finishing the initialization of the config module. */
         r = ifapi_config_initialize_finish(&(*context)->io, &(*context)->config);
         return_try_again(r);
         goto_if_error(r, "Could not finish initialization", cleanup_return);
 
+        /* Initialize the event log module. */
         r = ifapi_eventlog_initialize(&((*context)->eventlog), (*context)->config.log_dir);
         goto_if_error(r, "Initializing evenlog module", cleanup_return);
 
+        /* Initialize the keystore. */
         r = ifapi_keystore_initialize(&((*context)->keystore),
                                       (*context)->config.keystore_dir,
                                       (*context)->config.user_dir,
                                       (*context)->config.profile_name);
         goto_if_error2(r, "Keystore could not be initialized.", cleanup_return);
 
+        /* Initialize the policy store. */
         /* Policy directory will be placed in keystore dir */
         r = ifapi_policy_store_initialize(&((*context)->pstore),
                                           (*context)->config.keystore_dir);
         goto_if_error2(r, "Keystore could not be initialized.", cleanup_return);
-
-//        (*context)->config.user_dir = (*context)->keystore.userdir;
 
         (*context)->state = INITIALIZE_INIT_TCTI;
         fallthrough;
@@ -199,11 +202,16 @@ Fapi_Initialize_Finish(
             return TSS2_FAPI_RC_TRY_AGAIN;
         }
 
+        /* Call for the TctiLdr to initialize a TCTI context given the config
+           from the FAPI config module. */
         r = Tss2_TctiLdr_Initialize((*context)->config.tcti, &fapi_tcti);
         goto_if_error(r, "Initializing TCTI.", cleanup_return);
+
+        /* Initialize an ESYS context using this Tcti. */
         r = Esys_Initialize(&((*context)->esys), fapi_tcti, NULL);
         goto_if_error(r, "Initialize esys context.", cleanup_return);
 
+        /* Call Startup on the TPM. */
         r = Esys_Startup((*context)->esys, TPM2_SU_CLEAR);
         if (r != TSS2_RC_SUCCESS && r != TPM2_RC_INITIALIZE) {
             LOG_ERROR("Esys_Startup FAILED! Response Code : 0x%x", r);
@@ -213,7 +221,7 @@ Fapi_Initialize_Finish(
         fallthrough;
 
     statecase((*context)->state, INITIALIZE_GET_CAP);
-        /* Determine the maximal value for transfer of nv data */
+        /* Retrieve the maximal value for transfer of nv data from the TPM. */
         r = Esys_GetCapability_Async((*context)->esys, ESYS_TR_NONE, ESYS_TR_NONE,
                                      ESYS_TR_NONE,
                                      TPM2_CAP_TPM_PROPERTIES, TPM2_PT_NV_BUFFER_MAX, 1);
@@ -227,18 +235,28 @@ Fapi_Initialize_Finish(
         return_try_again(r);
         goto_if_error(r, "Get capability data.", cleanup_return);
 
+        /* Check if the TPM returns the NV_BUFFER_MAX value. */
         if ((*capability)->data.tpmProperties.count == 1 &&
                 (*capability)->data.tpmProperties.tpmProperty[0].property ==
                 TPM2_PT_NV_BUFFER_MAX) {
             (*context)->nv_buffer_max = (*capability)->data.tpmProperties.tpmProperty[0].value;
+            /* FAPI also contains an upper limit on the NV_MAX_BUFFER size. This is
+               useful for vTPMs that could in theory allow for several Megabytes of
+               max transfer buffer sizes. */
             if ((*context)->nv_buffer_max > IFAPI_MAX_BUFFER_SIZE)
                 (*context)->nv_buffer_max = IFAPI_MAX_BUFFER_SIZE;
         } else {
+            /* Note that for some time it was legal for a TPM to not return this value.
+               in that case FAPI falls back to 64 bytes for NV_BUFFER_MAX that all TPMs
+               must support. This slows down communication for NV read and write but
+               ensures that data can be exchanged with the TPM. */
             (*context)->nv_buffer_max = 64;
         }
         fallthrough;
 
     statecase((*context)->state, INITIALIZE_READ_PROFILE_INIT);
+        /* Initialize the proviles module that loads cryptographic profiles.
+           The default profile is taken from config. */
         r = ifapi_profiles_initialize_async(&(*context)->profiles, &(*context)->io,
                                             (*context)->config.profile_dir,
                                             (*context)->config.profile_name);
@@ -263,6 +281,7 @@ Fapi_Initialize_Finish(
     return TSS2_RC_SUCCESS;
 
 cleanup_return:
+    /* Cleanup any intermediate results and state stored in the context. */
     if ((*context)->esys) {
         Esys_GetTcti((*context)->esys, &fapi_tcti);
         Esys_Finalize(&(*context)->esys);
@@ -270,6 +289,8 @@ cleanup_return:
     if (fapi_tcti) {
         Tss2_TctiLdr_Finalize(&fapi_tcti);
     }
+
+    /* Free the context memory in case of an error. */
     free(*context);
     *context = NULL;
 

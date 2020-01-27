@@ -154,17 +154,23 @@ Fapi_CreateKey_Async(
     check_not_null(context);
     check_not_null(path);
 
+    /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize CreateKey");
 
+    /* Prepare the key creation with the authValue.
+       This will also copy the input information for use during the finish call. */
     r = ifapi_key_create_prepare_auth(context, path, policyPath, authValue);
     return_if_error(r, "Key create.");
 
+    /* Set the flags of the key to be created. If no type is given the empty-string
+       default type flags are set. If no policy is given, userWithAuth flag is set. */
     r = ifapi_set_key_flags(type ? type : "",
                             (policyPath && strcmp(policyPath, "") != 0) ? true : false,
                             &context->cmd.Key_Create.public_templ);
     return_if_error(r, "Set key flags for key");
 
+    /* Initialize the context state for this operation. */
     context->state = KEY_CREATE;
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
@@ -204,10 +210,12 @@ Fapi_CreateKey_Finish(
     switch (context->state) {
         statecase(context->state, KEY_CREATE);
             LOG_TRACE("KEY_CREATE");
+            /* Finish the key creation inside the helper function. */
             r = ifapi_key_create(context, &command->public_templ);
             return_try_again(r);
             goto_if_error(r, "Key create", error_cleanup);
 
+            /* Cleanup any intermediate results and state stored in the context. */
             ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
             ifapi_cleanup_ifapi_object(context->loadKey.key_object);
             ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
@@ -219,6 +227,7 @@ Fapi_CreateKey_Finish(
     }
 
 error_cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     context->cmd.Key_Create.state = KEY_CREATE_INIT;
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);

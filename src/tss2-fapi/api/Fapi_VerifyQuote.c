@@ -172,7 +172,7 @@ Fapi_VerifyQuote_Async(
     r = ifapi_non_tpm_mode_init(context);
     return_if_error(r, "Initialize VerifyQuote");
 
-
+    /* Copy parameters to context for use during _Finish. */
     uint8_t * signatureBuffer = malloc(signatureSize);
     goto_if_null2(signatureBuffer, "Out of memory",
             r, TSS2_FAPI_RC_MEMORY, error_cleanup);
@@ -190,13 +190,17 @@ Fapi_VerifyQuote_Async(
                 qualifyingData, qualifyingDataSize);
     }
 
+    /* Load the key for verification from the keystore. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, publicKeyPath);
     return_if_error2(r, "Could not open: %s", publicKeyPath);
 
+    /* Initialize the context state for this operation. */
     context->state = VERIFY_QUOTE_READ;
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
+
 error_cleanup:
+    /* Cleanup duplicated input parameters that were copied before. */
     SAFE_FREE(command->keyPath);
     SAFE_FREE(signatureBuffer);
     command->signature = NULL;
@@ -250,10 +254,12 @@ Fapi_VerifyQuote_Finish(
             r = ifapi_initialize_object(context->esys, &key_object);
             goto_if_error_reset_state(r, "Initialize public key  object", error_cleanup);
 
+            /* Recalculate the quote-info and attest2b buffer. */
             r = ifapi_get_quote_info(command->quoteInfo, &attest2b,
                                      &command->fapi_quote_info);
             goto_if_error(r, "Get quote info.", error_cleanup);
 
+            /* Verify the signature over the attest2b structure. */
             r = ifapi_verify_signature_quote(&key_object,
                                              command->signature,
                                              command->signatureSize,
@@ -262,26 +268,33 @@ Fapi_VerifyQuote_Finish(
                                              &command->fapi_quote_info.sig_scheme);
             goto_if_error(r, "Verify signature.", error_cleanup);
 
+            /* If no logData was provided then the operation is done. */
             if (!command->logData) {
-                context->state =  _FAPI_STATE_INIT;
+                context->state = _FAPI_STATE_INIT;
                 break;
             }
 
+            /* If logData was provided then the pcr_digests need to be recalculated
+               and verified against the quote_info. */
+
+            /* Parse the logData JSON. */
             command->event_list = json_tokener_parse(context->cmd.pcr.logData);
             return_if_null(command->event_list, "Json error.", TSS2_FAPI_RC_BAD_VALUE);
 
-            r  = ifapi_calculate_pcr_digest(command->event_list,
-                                            &command->fapi_quote_info, &pcr_digest);
+            /* Recalculate and verify the PCR digests. */
+            r = ifapi_calculate_pcr_digest(command->event_list,
+                                           &command->fapi_quote_info, &pcr_digest);
 
             goto_if_error(r, "Verify event list.", error_cleanup);
 
-            context->state =  _FAPI_STATE_INIT;
+            context->state = _FAPI_STATE_INIT;
             break;
 
         statecasedefault(context->state);
     }
 
 error_cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     if (key_object.objectType)
         ifapi_cleanup_ifapi_object(&key_object);
     if (command->event_list)

@@ -157,6 +157,7 @@ Fapi_VerifySignature_Async(
     r = ifapi_non_tpm_mode_init(context);
     return_if_error(r, "Initialize VerifySignature");
 
+    /* Copy parameters to context for use during _Finish. */
     uint8_t * signatureBuffer = malloc(signatureSize);
     uint8_t * digestBuffer = malloc(digestSize);
     goto_if_null2(signatureBuffer, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
@@ -171,11 +172,16 @@ Fapi_VerifySignature_Async(
     command->digestSize = digestSize;
     memset(&command->key_object, 0, sizeof(IFAPI_OBJECT));
 
+    /* Load the key for verification from the keystore. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, keyPath);
     goto_if_error2(r, "Could not open: %s", error_cleanup, keyPath);
+
+    /* Initialize the context state for this operation. */
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
+
 error_cleanup:
+    /* Cleanup duplicated input parameters that were copied before. */
     SAFE_FREE(signatureBuffer);
     command->signature = NULL;
     SAFE_FREE(digestBuffer);
@@ -224,10 +230,13 @@ Fapi_VerifySignature_Finish(
     goto_if_error_reset_state(r, "Initialize key object", cleanup);
 
     goto_if_error(r, "Deserialize key.", cleanup);
+
+    /* Verify the signature using a helper that tests all known signature schemes. */
     r = ifapi_verify_signature(&command->key_object, command->signature,
            command->signatureSize, command->digest, command->digestSize);
 
 cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     if (command->key_object.objectType)
         ifapi_cleanup_ifapi_object(&command->key_object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);

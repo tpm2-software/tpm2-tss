@@ -151,6 +151,7 @@ Fapi_Decrypt_Async(
     /* Helpful alias pointers */
     IFAPI_Data_EncryptDecrypt * command = &(context->cmd.Data_EncryptDecrypt);
 
+    /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize Decrypt");
 
@@ -158,10 +159,12 @@ Fapi_Decrypt_Async(
 
     goto_if_error(r, "Invalid cipher object.", error_cleanup);
 
+    /* Copy parameters to context for use during _Finish. */
     command->in_data = cipherText;
     command->numBytes = cipherTextSize;
     strdup_check(command->keyPath, keyPath, r, error_cleanup);
 
+    /* Initialize the context state for this operation. */
     context->state = DATA_DECRYPT_WAIT_FOR_PROFILE;
 
     LOG_TRACE("finsihed");
@@ -213,11 +216,14 @@ Fapi_Decrypt_Finish(
 
     switch(context->state) {
         statecase(context->state, DATA_DECRYPT_WAIT_FOR_PROFILE);
+            /* Retrieve the profile for the provided key in order to get the
+               encryption scheme below. */
             r = ifapi_profiles_get(&context->profiles, command->keyPath,
                                    &command->profile);
             return_try_again(r);
             goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
+            /* Initialize a session used for authorization and parameter encryption. */
             r = ifapi_get_sessions_async(context,
                                          IFAPI_SESSION_GENEK | IFAPI_SESSION1,
                                          TPMA_SESSION_ENCRYPT | TPMA_SESSION_DECRYPT, 0);
@@ -230,6 +236,7 @@ Fapi_Decrypt_Finish(
             return_try_again(r);
             goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
+            /* Load the key used for decryption. */
             r = ifapi_load_keys_async(context, command->keyPath);
             return_try_again(r);
             goto_if_error(r, "Load keys.", error_cleanup);
@@ -253,6 +260,7 @@ Fapi_Decrypt_Finish(
             fallthrough;
 
         statecase(context->state, DATA_DECRYPT_AUTHORIZE_KEY);
+            /* Authorize for the key with password or policy. */
             r = ifapi_authorize_object(context, command->key_object, &command->auth_session);
             return_try_again(r);
             goto_if_error(r, "Authorize key.", error_cleanup);
@@ -264,6 +272,7 @@ Fapi_Decrypt_Finish(
             memcpy(&aux_data->buffer[0], context->cmd.Data_EncryptDecrypt.in_data,
                    aux_data->size);
 
+            /* Decrypt the actual data. */
             r = Esys_RSA_Decrypt_Async(context->esys,
                                        context->cmd.Data_EncryptDecrypt.key_handle,
                                        command->auth_session, ESYS_TR_NONE, ESYS_TR_NONE,
@@ -279,6 +288,7 @@ Fapi_Decrypt_Finish(
             return_try_again(r);
             goto_if_error_reset_state(r, "RSA decryption.", error_cleanup);
 
+            /* Duplicate the decrypted plaintext for returning to the user. */
             if (plainTextSize)
                 *plainTextSize = tpmPlainText->size;
             if (plainText) {
@@ -291,6 +301,7 @@ Fapi_Decrypt_Finish(
             fallthrough;
 
         statecase(context->state, DATA_DECRYPT_FLUSH_KEY);
+            /* Flush the used key. */
             r = Esys_FlushContext_Async(context->esys,
                                         command->key_handle);
             goto_if_error(r, "Error: FlushContext", error_cleanup);
@@ -306,6 +317,7 @@ Fapi_Decrypt_Finish(
             fallthrough;
 
         statecase(context->state, DATA_DECRYPT_CLEANUP)
+            /* Cleanup session. */
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
@@ -314,7 +326,7 @@ Fapi_Decrypt_Finish(
         statecasedefault(context->state);
     }
 
-    context->state =  _FAPI_STATE_INIT;
+    context->state = _FAPI_STATE_INIT;
 
     /* Cleanup of local objects */
     SAFE_FREE(tpmPlainText);

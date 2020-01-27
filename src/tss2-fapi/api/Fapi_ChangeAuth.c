@@ -41,8 +41,6 @@
  * @retval TSS2_FAPI_RC_BAD_PATH: if entityPath does not map to a FAPI entity.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: If the entity with the new password
- *         cannot be saved.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
@@ -119,8 +117,6 @@ Fapi_ChangeAuth(
  * @retval TSS2_FAPI_RC_BAD_PATH: if entityPath does not map to a FAPI entity.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: If the entity with the new password
- *         cannot be saved.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
@@ -141,12 +137,14 @@ Fapi_ChangeAuth_Async(
     check_not_null(context);
     check_not_null(entityPath);
 
-    /* Helpful pointers */
+    /* Helpful pointer aliases */
     IFAPI_Entity_ChangeAuth * command = &(context->cmd.Entity_ChangeAuth);
 
+    /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize Entity_ChangeAuth");
 
+    /* Copy parameters to context for use during _Finish. */
     context->loadKey.parent_handle = ESYS_TR_NONE;
     command->handle = ESYS_TR_NONE;
     memset(&command->object, 0, sizeof(IFAPI_OBJECT));
@@ -158,6 +156,8 @@ Fapi_ChangeAuth_Async(
     }
     command->handle = ESYS_TR_NONE;
 
+    /* Get a session for further authorizing and integrity checking the
+       subsequent ChangeAuth calls. */
     r = ifapi_get_sessions_async(context,
                                  IFAPI_SESSION_GENEK | IFAPI_SESSION1,
                                  TPMA_SESSION_DECRYPT, 0);
@@ -180,11 +180,14 @@ Fapi_ChangeAuth_Async(
         command->newAuthValue.size = 0;
     }
 
+    /* Initialize the context state for this operation. */
     context->state = ENTITY_CHANGE_AUTH_WAIT_FOR_SESSION;
+
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
+    /* Cleanup duplicated input parameters that were copied before. */
     SAFE_FREE(command->entityPath);
     SAFE_FREE(command->authValue);
     return r;
@@ -226,15 +229,19 @@ Fapi_ChangeAuth_Finish(
 
     switch (context->state) {
         statecase(context->state, ENTITY_CHANGE_AUTH_WAIT_FOR_SESSION)
+            /* Retrieve profile information for subsequent commands. */
             r = ifapi_profiles_get(&context->profiles, command->entityPath,
                     &profile);
             goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
+            /* Finish starting the session establishment. */
             r = ifapi_get_sessions_finish(context, profile);
             return_try_again(r);
 
             goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
+            /* If the referenced entity is an NV-Index, load its metadata from
+               the keystore. */
             if (ifapi_path_type_p(command->entityPath,
                     IFAPI_NV_PATH)) {
                 r = ifapi_keystore_load_async(&context->keystore, &context->io,
@@ -242,15 +249,19 @@ Fapi_ChangeAuth_Finish(
                 return_if_error_reset_state(r, "Could not open: %s",
                         command->entityPath);
 
+                /* Set the correct re-entry state for handling NV-index entities. */
                 context->state = ENTITY_CHANGE_AUTH_WAIT_FOR_NV_READ;
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
 
+            /* Check if the referenced entity is a hierarchy. */
             command->hierarchy_handle =
                 ifapi_get_hierary_handle(command->entityPath);
 
             if (command->hierarchy_handle) {
+                /* Set the correct re-entry state for handling hierarchies. */
                 context->state = ENTITY_CHANGE_AUTH_HIERARCHY_READ;
+                /* Load the hierarchy's metadata from the keystore. */
                 r = ifapi_keystore_load_async(&context->keystore, &context->io,
                         command->entityPath);
                 return_if_error_reset_state(r, "Could not open: %s",
@@ -259,6 +270,8 @@ Fapi_ChangeAuth_Finish(
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
 
+            /* At this point, the referenced entity must be a key.
+               Load the key's metadata from the keystore. */
             r = ifapi_load_keys_async(context, command->entityPath);
             goto_if_error(r, "Load keys.", error_cleanup);
 
@@ -278,10 +291,10 @@ Fapi_ChangeAuth_Finish(
             /* Authorize the object with the old authorization */
             object = command->key_object;
             r = ifapi_authorize_object(context, object, &auth_session);
-
             return_try_again(r);
             goto_if_error_reset_state(r, "Authorize key.", error_cleanup);
 
+            /* Call to change the Authorization of the key. */
             r = Esys_ObjectChangeAuth_Async(context->esys,
                     command->handle,
                     context->loadKey.parent_handle,
@@ -303,7 +316,8 @@ Fapi_ChangeAuth_Finish(
             object = command->key_object;
             object->misc.key.private.size = command->newPrivate->size;
 
-            /* Old private buffer will be overwritten*/
+            /* Store the new private key blob to the context to be stored to
+               the keystore. */
             free(object->misc.key.private.buffer);
             object->misc.key.private.buffer = malloc(object->misc.key.private.size);
             goto_if_null2(object->misc.key.private.buffer, "Out of memory.",
@@ -313,6 +327,8 @@ Fapi_ChangeAuth_Finish(
                     &command->newPrivate->buffer[0],
                     object->misc.key.private.size);
             free(command->newPrivate);
+
+            /* Flush the key with the old authorization form the TPM. */
             r = Esys_FlushContext_Async(context->esys,
                     command->handle);
             goto_if_error(r, "Error: FlushContext", error_cleanup);
@@ -327,7 +343,8 @@ Fapi_ChangeAuth_Finish(
 
             goto_if_error(r, "Error: ObjectChangeAuth", error_cleanup);
 
-            if (! context->loadKey.parent_handle_persistent
+            /* Flush the parent key as well. */
+            if (!context->loadKey.parent_handle_persistent
                     && context->loadKey.parent_handle != ESYS_TR_NONE) {
                 r = Esys_FlushContext_Async(context->esys, context->loadKey.parent_handle);
                 goto_if_error(r, "Flush parent", error_cleanup);
@@ -336,7 +353,8 @@ Fapi_ChangeAuth_Finish(
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
 
-            /* Serialize key with new private data */
+            /* Store information about whether the new authorization is an
+               empty authorization or an actual password. */
             object = command->key_object;
 
             if (strlen(command->authValue) > 0)
@@ -346,7 +364,7 @@ Fapi_ChangeAuth_Finish(
             fallthrough;
 
         statecase(context->state, ENTITY_CHANGE_AUTH_WRITE_PREPARE)
-            /* Perform esys serialization if necessary */
+            /* Perform serialization of the esys object if necessary */
             r = ifapi_esys_serialize_object(context->esys, object);
             goto_if_error(r, "Prepare serialization", error_cleanup);
 
@@ -367,6 +385,7 @@ Fapi_ChangeAuth_Finish(
             fallthrough;
 
         statecase(context->state, ENTITY_CHANGE_AUTH_CLEANUP)
+            /* Clean up the session information and reset the state and be done. */
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
@@ -376,12 +395,15 @@ Fapi_ChangeAuth_Finish(
             break;
 
         statecase(context->state, ENTITY_CHANGE_AUTH_WAIT_FOR_NV_READ)
-            /* Get object from file */
+            /* The is the re-entry in case of an NV-index as referenced object.
+               All code between the check for the entity type above and this
+               place was skiped in case of an NV-index. */
             r = ifapi_keystore_load_finish(&context->keystore, &context->io,
                     &command->object);
             return_try_again(r);
             return_if_error_reset_state(r, "read_finish failed");
 
+            /* Initialize the esys-object for the NV-index. */
             r = ifapi_initialize_object(context->esys, &command->object);
             goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
 
@@ -395,6 +417,7 @@ Fapi_ChangeAuth_Finish(
             return_try_again(r);
             goto_if_error(r, "Authorize NV object.", error_cleanup);
 
+            /* Change the NV index's AuthValue. */
             r = Esys_NV_ChangeAuth_Async(context->esys,
                     context->nv_cmd.nv_object.handle,
                     auth_session,
@@ -412,19 +435,27 @@ Fapi_ChangeAuth_Finish(
 
             goto_if_error(r, "Error: Entity ChangeAuth", error_cleanup);
 
+            /* Update the information about whether the new Auth is an empty
+               authorization or an actual password. */
             if (strlen(command->authValue) > 0)
                 object->misc.nv.with_auth = TPM2_YES;
             else
                 object->misc.nv.with_auth = TPM2_NO;
 
-            context->state =  ENTITY_CHANGE_AUTH_WRITE_PREPARE;
+            /* Jump over to the AUTH_WRITE_PREPARE state for storing the
+               new metadata to the keystore. */
+            context->state = ENTITY_CHANGE_AUTH_WRITE_PREPARE;
             return TSS2_FAPI_RC_TRY_AGAIN;
 
-            statecase(context->state, ENTITY_CHANGE_AUTH_HIERARCHY_READ)
-                r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
+        statecase(context->state, ENTITY_CHANGE_AUTH_HIERARCHY_READ)
+            /* This is the re-entry point if the referenced entity is a
+               hierarchy. All code between the check for the entity type
+               and this place is skiped in case of a hierarchy. */
+            r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
             return_try_again(r);
             return_if_error_reset_state(r, "read_finish failed");
 
+            /* Initialize the esys object for the hierarhcy. */
             r = ifapi_initialize_object(context->esys, &command->object);
             goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
 
@@ -435,6 +466,7 @@ Fapi_ChangeAuth_Finish(
             fallthrough;
 
         statecase(context->state, ENTITY_CHANGE_AUTH_HIERARCHY_AUTHORIZE)
+            /* Authorize against the hierarhcy. */
             r = ifapi_authorize_object(context, &command->object, &auth_session);
             return_try_again(r);
             goto_if_error(r, "Authorize hierarchy.", error_cleanup);
@@ -443,6 +475,7 @@ Fapi_ChangeAuth_Finish(
             fallthrough;
 
         statecase(context->state, ENTITY_CHANGE_AUTH_HIERARCHY_CHANGE_AUTH)
+            /* Change the hierarchy authorization. */
             r = ifapi_change_auth_hierarchy(context,
                     command->hierarchy_handle,
                     &command->object,
@@ -450,6 +483,8 @@ Fapi_ChangeAuth_Finish(
             return_try_again(r);
             goto_if_error(r, "Change auth hierarchy.", error_cleanup);
 
+            /* Jump over to the AUTH_WRITE_PREPARE state for storing the
+               new metadata to the keystore. */
             context->state = ENTITY_CHANGE_AUTH_WRITE_PREPARE;
             return TSS2_FAPI_RC_TRY_AGAIN;
 

@@ -37,7 +37,6 @@
  * @retval TSS2_FAPI_RC_BAD_PATH: if path does not map to a FAPI entity.
  * @retval TSS2_FAPI_RC_NOT_DELETABLE: if the entity is not deletable or the
  *         path is read-only.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: if the FAPI storage cannot be updated.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -91,7 +90,6 @@ Fapi_Delete(
  * @retval TSS2_FAPI_RC_BAD_PATH: if path does not map to a FAPI entity.
  * @retval TSS2_FAPI_RC_NOT_DELETABLE: if the entity is not deletable or the
  *         path is read-only.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: if the FAPI storage cannot be updated.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -117,8 +115,11 @@ Fapi_Delete_Async(
     IFAPI_OBJECT *object = &command->object;
     IFAPI_OBJECT *authObject = &command->auth_object;
 
+    /* Copy parameters to context for use during _Finish. */
     strdup_check(command->path, path, r, error_cleanup);
 
+    /* List all keystore elements in the path hierarchy of the provided
+       path. The last of these is the object to be deleted. */
     r = ifapi_keystore_list_all(&context->keystore, path, &command->pathlist,
                                &command->numPaths);
     return_if_error(r, "get entities.");
@@ -139,7 +140,7 @@ Fapi_Delete_Async(
         r = ifapi_non_tpm_mode_init(context);
         return_if_error(r, "Initialize Entity_Delete");
 
-        context->state =  ENTITY_DELETE_GET_FILE;
+        context->state = ENTITY_DELETE_GET_FILE;
     } else {
         /* Check whether TCTI and ESYS are initialized */
         return_if_null(context->esys, "Command can't be executed in none TPM mode.",
@@ -171,6 +172,7 @@ Fapi_Delete_Async(
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     SAFE_FREE(command->path);
     if (Esys_FlushContext(context->esys, context->session1) != TSS2_RC_SUCCESS) {
         LOG_ERROR("Cleanup session failed.");
@@ -217,6 +219,8 @@ Fapi_Delete_Finish(
 
     switch (context->state) {
         statecase(context->state, ENTITY_DELETE_WAIT_FOR_SESSION);
+            /* If a TPM object (e.g. a persistent key) was referenced, then this
+               is the entry point. */
             r = ifapi_get_sessions_finish(context, &context->profiles.default_profile);
             return_try_again(r);
             goto_if_error(r, "Create FAPI session.", error_cleanup);
@@ -224,23 +228,26 @@ Fapi_Delete_Finish(
             fallthrough;
 
         statecase(context->state, ENTITY_DELETE_GET_FILE);
+            /* If a non-TPM object (e.g. a policy) was referenced, then this is the
+               entry point. */
             /* Use last path in the path list */
             command->path_idx -= 1;
-            path =  command->pathlist[command->path_idx];
+            path = command->pathlist[command->path_idx];
             LOG_TRACE("Delete object: %s %zu", path, command->path_idx);
 
             if (ifapi_path_type_p(path, IFAPI_EXT_PATH)) {
-                /* External keyfile can be deleted directly */
+                /* External keyfile can be deleted directly without TPM operations. */
                 context->state = ENTITY_DELETE_FILE;
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
 
             if (ifapi_path_type_p(path, IFAPI_POLICY_PATH)) {
-                /* Policy file can be deleted directly */
+                /* Policy file can be deleted directly without TPM operations. */
                 context->state = ENTITY_DELETE_POLICY;
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
 
+            /* Load the object metadata from the keystore. */
             r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
             return_if_error2(r, "Could not open: %s", path);
 
@@ -248,19 +255,24 @@ Fapi_Delete_Finish(
             fallthrough;
 
         statecase(context->state, ENTITY_DELETE_READ);
+            /* We only end up in this path, if the referenced object requires
+               TPM operations; e.g. persistent key or NV index. */
             r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
             return_try_again(r);
             return_if_error_reset_state(r, "read_finish failed");
 
+            /* Initialize the ESYS object for the persistent key or NV Index. */
             r = ifapi_initialize_object(context->esys, object);
             goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
 
             if (object->objectType == IFAPI_KEY_OBJ) {
+                /* If the object is a key, we jump over to ENTITY_DELETE_KEY. */
                 command->is_key = true;
-                context->state =  ENTITY_DELETE_KEY;
+                context->state = ENTITY_DELETE_KEY;
                 return TSS2_FAPI_RC_TRY_AGAIN;
 
             } else  if (object->objectType == IFAPI_NV_OBJ) {
+                /* Prepare for the deletion of an NV index. */
                 command->is_key = false;
 
                 if (object->misc.nv.hierarchy == ESYS_TR_RH_OWNER) {
@@ -279,10 +291,12 @@ Fapi_Delete_Finish(
             fallthrough;
 
         statecase(context->state, ENTITY_DELETE_AUTHORIZE_NV);
+            /* Authorize with the storage hierarhcy / "owner" to delete the NV index. */
             r = ifapi_authorize_object(context, authObject, &auth_session);
             return_try_again(r);
             goto_if_error(r, "Authorize NV object.", error_cleanup);
 
+            /* Delete the NV index. */
             r = Esys_NV_UndefineSpace_Async(context->esys,
                                             command->auth_index,
                                             object->handle,
@@ -296,6 +310,7 @@ Fapi_Delete_Finish(
 
         statecase(context->state, ENTITY_DELETE_KEY);
             if (object->misc.key.persistent_handle) {
+                /* Delete the persistent handle from the TPM. */
                 r = Esys_EvictControl_Async(context->esys, ESYS_TR_RH_OWNER,
                                             object->handle,
                                             context->session1,
@@ -316,6 +331,8 @@ Fapi_Delete_Finish(
                                          &command->new_object_handle);
             return_try_again(r);
             if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH) {
+                /* If evict control failed, we know that an owner password was set
+                   and we need to re-issue the command with a password being set. */
                 if (context->state == ENTITY_DELETE_NULL_AUTH_SENT_FOR_KEY) {
                     ifapi_init_hierarchy_object(authObject,
                                                 TPM2_RH_OWNER);
@@ -340,6 +357,8 @@ Fapi_Delete_Finish(
             return_try_again(r);
 
             if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH) {
+                /* If undefine space failed, we know that an owner password was set
+                   and we need to re-issue the command with a password being set. */
                 if (context->state == ENTITY_DELETE_NULL_AUTH_SENT_FOR_NV) {
                     r = ifapi_set_auth(context, authObject, "Entity Delete object");
                     goto_if_error_reset_state(r, " Fapi_NV_UndefineSpace", error_cleanup);
@@ -364,6 +383,7 @@ Fapi_Delete_Finish(
             break;
 
         statecase(context->state, ENTITY_DELETE_POLICY);
+            /* This is the simple case of deleting a policy from the keystore. */
             path = command->pathlist[command->path_idx];
             LOG_TRACE("Delete: %s", path);
 
@@ -377,11 +397,15 @@ Fapi_Delete_Finish(
             return TSS2_FAPI_RC_TRY_AGAIN;
 
         statecase(context->state, ENTITY_DELETE_FILE);
+            /* This is the simple case of deleting an external (pub)key from the keystore
+               or we enter here after the TPM operation for the peristent key or NV index
+               deletion have been performed. */
             path = command->pathlist[command->path_idx];
             LOG_TRACE("Delete: %s", path);
             ifapi_cleanup_ifapi_object(object);
             ifapi_cleanup_ifapi_object(authObject);
 
+            /* Delete all the object's data from the keystore. */
             r = ifapi_keystore_delete(&context->keystore, path);
             goto_if_error_reset_state(r, "Could not delete: %s", error_cleanup, path);
 
@@ -393,10 +417,12 @@ Fapi_Delete_Finish(
             fallthrough;
 
         statecase(context->state, ENTITY_DELETE_REMOVE_DIRS);
+            /* For some cases, we need to remove the directory that contained the
+               meta data as well. */
             r = ifapi_keystore_remove_directories(&context->keystore, command->path);
             goto_if_error(r, "Error while removing directories", error_cleanup);
 
-            context->state =  _FAPI_STATE_INIT;
+            context->state = _FAPI_STATE_INIT;
 
             LOG_DEBUG("success");
             r = TSS2_RC_SUCCESS;
@@ -411,6 +437,7 @@ Fapi_Delete_Finish(
         goto_if_error(r, "Set Timeout to non-blocking", error_cleanup);
     }
 
+    /* Cleanup intermediate state stored in the context. */
     SAFE_FREE(command->path);
     ifapi_cleanup_ifapi_object(authObject);
     ifapi_cleanup_ifapi_object(object);
@@ -422,10 +449,12 @@ Fapi_Delete_Finish(
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
+
     LOG_TRACE("finsihed");
     return r;
 
 error_cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     Esys_SetTimeout(context->esys, 0);
     ifapi_cleanup_ifapi_object(object);
     SAFE_FREE(command->path);

@@ -121,10 +121,14 @@ Fapi_List_Async(
     r = ifapi_non_tpm_mode_init(context);
     return_if_error(r, "Initialize List");
 
+    /* Copy parameters to context for use during _Finish. */
     strdup_check(command->searchPath, searchPath, r, error_cleanup);
+
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
+
 error_cleanup:
+    /* Cleanup duplicated input parameters that were copied before. */
     SAFE_FREE(command->searchPath);
     return r;
 }
@@ -166,6 +170,7 @@ Fapi_List_Finish(
     /* Helpful alias pointers */
     IFAPI_Entities_List * command = &context->cmd.Entities_List;
 
+    /* Retrieve the objects along the search path. */
     r = ifapi_keystore_list_all(&context->keystore, command->searchPath,
                                 &pathArray, &numPaths);
     goto_if_error(r, "get entities.", cleanup);
@@ -184,6 +189,7 @@ Fapi_List_Finish(
     (*pathList)[0] = '\0';
     (*pathList)[sizePathList + numPaths - 1] = '\0';
 
+    /* Concatenate the path entries to the output string. */
     for (size_t i = 0; i < numPaths; i++) {
         strcat(*pathList, pathArray[i]);
         if (i < numPaths - 1)
@@ -193,6 +199,7 @@ Fapi_List_Finish(
     LOG_TRACE("finished");
 
 cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     SAFE_FREE(command->searchPath);
     if (numPaths == 0 && (r == TSS2_RC_SUCCESS)) {
         LOG_ERROR("Path not found: %s", command->searchPath);

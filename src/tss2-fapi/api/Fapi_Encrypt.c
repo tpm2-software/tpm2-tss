@@ -29,7 +29,9 @@
 
 /** One-Call function for Fapi_Encrypt
  *
- * Encrypt data with asymmetric key.
+ * Encrypt the provided data for the target key using the TPM encryption
+ * schemes as specified in the crypto profile.
+ * This function does not use the TPM; i.e. works in non-TPM mode.
  *
  * @param [in,out] context The FAPI_CONTEXT
  * @param [in] keyPath THe path to the encryption key
@@ -110,7 +112,10 @@ Fapi_Encrypt(
 
 /** Asynchronous function for Fapi_Encrypt
  *
- * TODO get text from FAPI spec.
+ * Encrypt the provided data for the target key using the TPM encryption
+ * schemes as specified in the crypto profile.
+ * This function does not use the TPM; i.e. works in non-TPM mode.
+ *
  * Call Fapi_Encrypt_Finish to finish the execution of this command.
  *
  * @param [in,out] context The FAPI_CONTEXT
@@ -159,7 +164,8 @@ Fapi_Encrypt_Async(
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize Encrypt");
 
-    uint8_t * inData = malloc(plainTextSize);
+    /* Copy parameters to context for use during _Finish. */
+    uint8_t *inData = malloc(plainTextSize);
     goto_if_null(inData, "Out of memory", r, error_cleanup);
     memcpy(inData, plainText, plainTextSize);
     command->in_data = inData;
@@ -169,9 +175,11 @@ Fapi_Encrypt_Async(
     command->in_dataSize = plainTextSize;
     command->key_handle = ESYS_TR_NONE;
 
+    /* Initialize the context state for this operation. */
     context->state = DATA_ENCRYPT_WAIT_FOR_PROFILE;
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
+
 error_cleanup:
     SAFE_FREE(inData);
     SAFE_FREE(command->keyPath);
@@ -184,7 +192,7 @@ error_cleanup:
  *
  * @param [in, out] context The FAPI_CONTEXT
  * @param [out] cipherText The JSON-encoded ciphertext
-  * @param [out] cipherText The encoded cipher text.
+ * @param [out] cipherText The encoded cipher text.
  * @param [out] cipherTextSize The size of the encoded cipher text.
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
@@ -219,11 +227,14 @@ Fapi_Encrypt_Finish(
 
     switch (context->state) {
         statecase(context->state, DATA_ENCRYPT_WAIT_FOR_PROFILE);
+            /* Retrieve the profile for the provided key in order to get the
+               encryption scheme below. */
             r = ifapi_profiles_get(&context->profiles, command->keyPath,
                                    &command->profile);
             return_try_again(r);
             goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
+            /* Initialize a session used for authorization and parameter encryption. */
             r = ifapi_get_sessions_async(context,
                                          IFAPI_SESSION_GENEK | IFAPI_SESSION1,
                                          TPMA_SESSION_ENCRYPT | TPMA_SESSION_DECRYPT, 0);
@@ -236,6 +247,7 @@ Fapi_Encrypt_Finish(
             return_try_again(r);
             goto_if_error(r, "Get session.", error_cleanup);
 
+            /* Load the reference key by loading all of its parents starting from the SRK. */
             r = ifapi_load_keys_async(context, command->keyPath);
             goto_if_error(r, "Load keys.", error_cleanup);
 
@@ -247,13 +259,12 @@ Fapi_Encrypt_Finish(
                                        &command->key_handle,
                                        &command->key_object);
             return_try_again(r);
-
             goto_if_error_reset_state(r, " Load key.", error_cleanup);
 
             encKeyObject = command->key_object;
 
             if (encKeyObject->misc.key.public.publicArea.type == TPM2_ALG_RSA) {
-                TPM2B_DATA null_data = {.size = 0, .buffer = {} };
+                TPM2B_DATA null_data = { .size = 0, .buffer = {} };
                 TPM2B_PUBLIC_KEY_RSA *rsa_message = (TPM2B_PUBLIC_KEY_RSA *)&context->aux_data;
                 rsa_message->size =  context->cmd.Data_EncryptDecrypt.in_dataSize;
                 size_t key_size =
@@ -288,14 +299,12 @@ Fapi_Encrypt_Finish(
             }
             fallthrough;
 
-
         statecase(context->state, DATA_ENCRYPT_WAIT_FOR_RSA_ENCRYPTION);
-            r =  Esys_RSA_Encrypt_Finish(context->esys, &tpmCipherText);
-
+            r = Esys_RSA_Encrypt_Finish(context->esys, &tpmCipherText);
             return_try_again(r);
-
             goto_if_error_reset_state(r, "RSA encryption.", error_cleanup);
 
+            /* Duplicate the outputs for handling off to the caller. */
             *cipherTextSize = tpmCipherText->size;
             *cipherText = malloc(*cipherTextSize);
             goto_if_null2(*cipherText, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
@@ -306,7 +315,7 @@ Fapi_Encrypt_Finish(
             fallthrough;
 
         statecase(context->state, DATA_ENCRYPT_FLUSH_KEY);
-
+            /* Flush the key from the TPM. */
             r = Esys_FlushContext_Async(context->esys,
                                         command->key_handle);
             goto_if_error(r, "Error: FlushContext", error_cleanup);
@@ -321,6 +330,7 @@ Fapi_Encrypt_Finish(
             fallthrough;
 
         statecase(context->state, DATA_ENCRYPT_CLEAN)
+            /* Cleanup the sessions. */
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
@@ -332,6 +342,7 @@ Fapi_Encrypt_Finish(
     context->state = _FAPI_STATE_INIT;
 
 error_cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     if (command->key_handle != ESYS_TR_NONE)
         Esys_FlushContext(context->esys,  command->key_handle);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);

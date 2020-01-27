@@ -129,14 +129,18 @@ Fapi_PcrRead_Async(
     /* Helpful alias pointers */
     IFAPI_PCR * command = &context->cmd.pcr;
 
+    /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize PcrRead");
 
+    /* Determine the banks to be used for the requested PCR based on
+       the default cryptographic profile. */
     pcr_selection = context->profiles.default_profile.pcr_selection;
 
     r = ifapi_filter_pcr_selection_by_index(&pcr_selection, &pcrIndex, 1);
     return_if_error(r, "PCR selection");
 
+    /* Perform the PCR read operation. */
     r = Esys_PCR_Read_Async(context->esys,
                             ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                             &pcr_selection);
@@ -145,6 +149,7 @@ Fapi_PcrRead_Async(
     /* Used for retrieving the eventlog during finish*/
     command->pcrIndex = pcrIndex;
 
+    /* Initialize the context state for this operation. */
     context->state = PCR_READ_READ_PCR;
 
     LOG_TRACE("finsihed");
@@ -201,6 +206,7 @@ Fapi_PcrRead_Finish(
             return_try_again(r);
             goto_if_error_reset_state(r, "PCR_ReadWithLog_Finish", cleanup);
 
+            /* Copy the return values to the output parameters. */
             if (pcrValueSize)
                 *pcrValueSize = command->pcrValues->digests[0].size;
             if (pcrValue) {
@@ -212,11 +218,14 @@ Fapi_PcrRead_Finish(
                        command->pcrValues->digests[0].size);
             }
             SAFE_FREE(command->pcrValues);
+
+            /* If no event log was requested the operation is now complete. */
             if (!pcrLog) {
                 context->state =  _FAPI_STATE_INIT;
                 break;
             }
 
+            /* Retrieve the eventlog for the requestion PCR. */
             r = ifapi_eventlog_get_async(&context->eventlog, &context->io,
                                          &command->pcrIndex, 1);
             goto_if_error(r, "Error getting event log", cleanup);
@@ -229,13 +238,14 @@ Fapi_PcrRead_Finish(
             return_try_again(r);
             goto_if_error(r, "Error getting event log", cleanup);
 
-            context->state =  _FAPI_STATE_INIT;
+            context->state = _FAPI_STATE_INIT;
             break;
 
         statecasedefault(context->state);
     }
 
 cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     SAFE_FREE(command->pcrValues);
     LOG_TRACE("finsihed");
     return r;

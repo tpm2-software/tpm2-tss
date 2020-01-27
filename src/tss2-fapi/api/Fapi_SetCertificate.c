@@ -40,7 +40,6 @@
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND: if path does not map to a FAPI entity.
  * @retval TSS2_FAPI_RC_BAD_KEY: if x509certData is invalid.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: if the FAPI storage cannot be updated.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -99,7 +98,6 @@ Fapi_SetCertificate(
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND: if path does not map to a FAPI entity.
  * @retval TSS2_FAPI_RC_BAD_KEY: if x509certData is invalid.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: if the FAPI storage cannot be updated.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -128,10 +126,13 @@ Fapi_SetCertificate_Async(
     r = ifapi_non_tpm_mode_init(context);
     goto_if_error(r, "Initialize SetCertificate", error_cleanup);
 
+    /* Copy parameters to context for use during _Finish. */
     command->pem_cert = x509certData;
     strdup_check(command->key_path, path, r, error_cleanup);
-    context->state =  KEY_SET_CERTIFICATE_READ;
+    context->state = KEY_SET_CERTIFICATE_READ;
     memset(&command->key_object, 0, sizeof(IFAPI_OBJECT));
+
+    /* Load the object's current metadata from the keystore. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
     goto_if_error2(r, "Could not open: %s", error_cleanup, path);
 
@@ -139,7 +140,9 @@ Fapi_SetCertificate_Async(
 
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
+
 error_cleanup:
+    /* Initialize the context state for this operation. */
     SAFE_FREE(command->key_path);
     return r;
 }
@@ -187,12 +190,12 @@ Fapi_SetCertificate_Finish(
             r = ifapi_initialize_object(context->esys, key_object);
             goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
 
+            /* Duplicate and store the certificate in the key object. */
             if (!*pem_cert) {
                 strdup_check(*pem_cert_dup, "", r, error_cleanup);
             } else {
                 strdup_check(*pem_cert_dup, *pem_cert, r, error_cleanup);
             }
-
             if (key_object->objectType == IFAPI_EXT_PUB_KEY_OBJ) {
                 SAFE_FREE(key_object->misc.ext_pub_key.certificate);
                 key_object->misc.ext_pub_key.certificate = *pem_cert_dup;
@@ -228,6 +231,7 @@ Fapi_SetCertificate_Finish(
     }
 
 error_cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     SAFE_FREE(command->key_path);
     if (key_object->objectType) {
         ifapi_cleanup_ifapi_object(key_object);

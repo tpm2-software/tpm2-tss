@@ -127,10 +127,13 @@ Fapi_GetCertificate_Async(
     return_if_error(r, "Initialize GetCertificate");
 
     command->key_path = path;
+
+    /* Load the object metadata from keystore. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
     return_if_error2(r, "Could not open: %s", path);
 
-    context->state =  KEY_GET_CERTIFICATE_READ;
+    /* Initialize the context state for this operation. */
+    context->state = KEY_GET_CERTIFICATE_READ;
 
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
@@ -180,11 +183,12 @@ Fapi_GetCertificate_Finish(
             r = ifapi_initialize_object(context->esys, keyObject);
             goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
 
+            /* Retrieve the appropriate field from the objects and duplicate its
+               content to be returned to the user. */
             if (keyObject->objectType == IFAPI_EXT_PUB_KEY_OBJ) {
                 strdup_check(*x509certData, keyObject->misc.ext_pub_key.certificate,
                         r, error_cleanup);
-            }
-            else if (x509certData) {
+            } else if (x509certData) {
                 strdup_check(*x509certData, keyObject->misc.key.certificate,
                         r, error_cleanup);
             }
@@ -197,6 +201,7 @@ Fapi_GetCertificate_Finish(
     }
 
 error_cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     if (keyObject->objectType) {
         ifapi_cleanup_ifapi_object(keyObject);
     }

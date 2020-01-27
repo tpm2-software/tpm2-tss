@@ -49,7 +49,6 @@
  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS: if a sealed object already exists
  *         at path.
  * @retval TSS2_FAPI_RC_BAD_VALUE: if the keyType is invalid.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: if the FAPI storage cannot be updated.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -141,7 +140,6 @@ Fapi_CreateSeal(
  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS: if a sealed object already exists
  *         at path.
  * @retval TSS2_FAPI_RC_BAD_VALUE: if the keyType is invalid.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: if the FAPI storage cannot be updated.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -171,15 +169,18 @@ Fapi_CreateSeal_Async(
     check_not_null(context);
     check_not_null(path);
 
+    /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize CreateSeal");
 
+    /* Copy parameters to context for use during _Finish. */
     memset(&context->cmd.Key_Create.public_templ, 0, sizeof(IFAPI_KEY_TEMPLATE));
-
     r = ifapi_key_create_prepare_sensitive(context, path, policyPath, size,
                                            authValue, data);
     return_if_error(r, "Key create.");
 
+    /* Set the flags of the NV index to be created. If no type is given the empty-string
+       default type flags are set. */
     r = ifapi_set_key_flags(type ? type : "",
                             (policyPath && strcmp(policyPath, "") != 0) ? true : false,
                             &context->cmd.Key_Create.public_templ);
@@ -188,6 +189,7 @@ Fapi_CreateSeal_Async(
     context->cmd.Key_Create.public_templ.public.publicArea.objectAttributes  &=
         ~TPMA_OBJECT_SENSITIVEDATAORIGIN;
 
+    /* Initialize the context state for this operation. */
     context->state = CREATE_SEAL;
 
     LOG_TRACE("finsihed");
@@ -224,6 +226,9 @@ Fapi_CreateSeal_Finish(
 
     switch (context->state) {
         statecase(context->state, CREATE_SEAL);
+            /* Create the seal object. A seal object internally is a so-called
+               KEYED_HASH object and created in the same way as a regular key.
+               Thus the function name ifapi_key_create(). */
             r = ifapi_key_create(context, &context->cmd.Key_Create.public_templ);
             return_try_again(r);
             goto_if_error(r, "Key create", error_cleanup);
@@ -233,6 +238,7 @@ Fapi_CreateSeal_Finish(
     }
 
 error_cleanup:
+   /* Cleanup any intermediate results and state stored in the context. */
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
