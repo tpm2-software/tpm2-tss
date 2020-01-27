@@ -34,7 +34,6 @@
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, path or description is NULL.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
  * @retval TSS2_FAPI_RC_BAD_PATH: if path does not map to a FAPI entity.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: if the updated data cannot be loaded.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -107,7 +106,6 @@ Fapi_GetDescription(
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
  * @retval TSS2_FAPI_RC_BAD_PATH: if path does not map to a FAPI entity.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: if the updated data cannot be loaded.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -131,10 +129,13 @@ Fapi_GetDescription_Async(
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize GetDescription");
 
+    /* Load the object metadata from keystore. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
     return_if_error2(r, "Could not open: %s", path);
 
-    context->state =  PATH_GET_DESCRIPTION_READ;
+    /* Initialize the context state for this operation. */
+    context->state = PATH_GET_DESCRIPTION_READ;
+
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
 }
@@ -177,9 +178,9 @@ Fapi_GetDescription_Finish(
             return_try_again(r);
             return_if_error_reset_state(r, "read_finish failed");
 
+            /* Retrieve the description from the metadata object. */
             r = ifapi_get_description(&object, description);
             ifapi_cleanup_ifapi_object(&object);
-
             return_if_error_reset_state(r, "Get description");
 
             context->state = _FAPI_STATE_INIT;
@@ -189,6 +190,7 @@ Fapi_GetDescription_Finish(
         statecasedefault(context->state);
     }
     LOG_TRACE("finsihed");
+    /* Cleanup any intermediate results and state stored in the context. */
     ifapi_cleanup_ifapi_object(&object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);

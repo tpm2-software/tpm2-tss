@@ -128,9 +128,11 @@ Fapi_GetPlatformCertificates_Async(
     /* Check for NULL parameters */
     check_not_null(context);
 
+    /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize Fapi_GetPlatformCertificates");
 
+    /* Initialize the context state for this operation. */
     context->state = GET_PLATFORM_CERTIFICATE;
 
     LOG_TRACE("finsihed");
@@ -176,6 +178,7 @@ Fapi_GetPlatformCertificates_Finish(
 
     switch (context->state) {
         statecase(context->state, GET_PLATFORM_CERTIFICATE);
+            /* Retrieve the certificates from the TPM's NV space. */
             r = ifapi_get_certificates(context, MIN_PLATFORM_CERT_HANDLE,
                                        MAX_PLATFORM_CERT_HANDLE,
                                        &cert_list);
@@ -183,7 +186,7 @@ Fapi_GetPlatformCertificates_Finish(
             goto_if_error(r, "Get certificates.", error);
 
             if (cert_list) {
-                /* Concatenate the founc certificates */
+                /* Concatenate the found certificates */
                 size_t size;
                 NODE_OBJECT_T *cert = cert_list;
                 size = 0;
@@ -213,13 +216,16 @@ Fapi_GetPlatformCertificates_Finish(
             break;
         statecasedefault(context->state);
     }
+
+    /* Cleanup any intermediate results and state stored in the context. */
     ifapi_free_object_list(cert_list);
     SAFE_FREE(context->cmd.Provision.capabilityData);
     context->state =  _FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
- error:
+error:
+    /* Cleanup any intermediate results and state stored in the context. */
     context->state =  _FAPI_STATE_INIT;
     ifapi_free_object_list(cert_list);
     SAFE_FREE(context->cmd.Provision.capabilityData);

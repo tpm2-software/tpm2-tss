@@ -54,6 +54,7 @@ Fapi_SetBranchCB(
     check_not_null(context);
     check_not_null(callback);
 
+    /* Store the callback and userdata pointer. */
     context->callbacks.branch = callback;
     context->callbacks.branchData = userData;
 
@@ -93,6 +94,7 @@ Fapi_SetAuthCB(
     check_not_null(context);
     check_not_null(callback);
 
+    /* Store the callback and userdata pointer. */
     context->callbacks.auth = callback;
     context->callbacks.authData = userData;
 
@@ -132,6 +134,7 @@ Fapi_SetSignCB(
     check_not_null(context);
     check_not_null(callback);
 
+    /* Store the callback and userdata pointer. */
     context->callbacks.sign = callback;
     context->callbacks.signData = userData;
 
@@ -172,6 +175,7 @@ Fapi_SetPolicyActionCB(
     check_not_null(context);
     check_not_null(callback);
 
+    /* Store the callback and userdata pointer. */
     context->callbacks.action = callback;
     context->callbacks.actionData = userData;
 

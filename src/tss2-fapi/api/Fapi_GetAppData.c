@@ -36,7 +36,6 @@
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
  * @retval TSS2_FAPI_RC_BAD_PATH: if path does not map to a FAPI entity.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: if the updated data cannot be loaded.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -110,7 +109,6 @@ Fapi_GetAppData(
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
  * @retval TSS2_FAPI_RC_BAD_PATH: if path does not map to a FAPI entity.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: if the updated data cannot be loaded.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -131,13 +129,15 @@ Fapi_GetAppData_Async(
     check_not_null(context);
     check_not_null(path);
 
+    /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize GetAppData");
 
+    /* Load the object metadata from keystore. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
     return_if_error2(r, "Could not open: %s", path);
 
-    context->state =  PATH_GET_DESCRIPTION_READ;
+    context->state = PATH_GET_DESCRIPTION_READ;
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
 }
@@ -182,6 +182,7 @@ Fapi_GetAppData_Finish(
             return_try_again(r);
             return_if_error_reset_state(r, "read_finish failed");
 
+            /* Get the application data from the metadata objects. */
             switch (object.objectType) {
                 case IFAPI_KEY_OBJ:
                     objAppData = &object.misc.key.appData;
@@ -194,6 +195,7 @@ Fapi_GetAppData_Finish(
             }
 
             if (appData) {
+                /* Duplicate the application data to be returned to the caller. */
                 if (objAppData->size) {
                     *appData = malloc(objAppData->size);
                     goto_if_null2(*appData, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
@@ -215,6 +217,7 @@ Fapi_GetAppData_Finish(
     }
 
 cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     ifapi_cleanup_ifapi_object(&object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);

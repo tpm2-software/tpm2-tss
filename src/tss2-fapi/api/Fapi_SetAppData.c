@@ -37,7 +37,6 @@
  *         is NULL and appDataSize is not 0.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
  * @retval TSS2_FAPI_RC_BAD_PATH: if path does not map to a FAPI entity.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: if the updated data cannot be saved.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -114,7 +113,6 @@ Fapi_SetAppData(
  *         is NULL and appDataSize is not 0.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
  * @retval TSS2_FAPI_RC_BAD_PATH: if path does not map to a FAPI entity.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: if the updated data cannot be saved.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -154,6 +152,7 @@ Fapi_SetAppData_Async(
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize SetAppData");
 
+    /* Copy parameters to context for use during _Finish. */
     strdup_check(command->object_path, path, r, error_cleanup);
 
     if (appDataSize > 0) {
@@ -167,14 +166,17 @@ Fapi_SetAppData_Async(
     }
     command->appData.size = appDataSize;
 
+    /* Load the current metadata for the object from keystore. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
     return_if_error2(r, "Could not open: %s", path);
 
+    /* Initialize the context state for this operation. */
     context->state = APP_DATA_SET_READ;
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
+    /* Cleanup duplicated input parameters that were copied before. */
     SAFE_FREE(command->object_path);
     SAFE_FREE(command->appData.buffer);
     return r;
@@ -219,6 +221,7 @@ Fapi_SetAppData_Finish(
             return_try_again(r);
             return_if_error_reset_state(r, "read_finish failed");
 
+            /* Depending on the object type get the correct appData pointer. */
             switch (object->objectType) {
             case IFAPI_KEY_OBJ:
                 objAppData = &object->misc.key.appData;
@@ -237,7 +240,7 @@ Fapi_SetAppData_Finish(
             objAppData->size = command->appData.size;
             objAppData->buffer = command->appData.buffer;
 
-            /* Prepare writing of object */
+            /* Prepare (over-)writing of object */
             r = ifapi_keystore_store_async(&context->keystore, &context->io,
                                            command->object_path, object);
             goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
@@ -261,6 +264,7 @@ Fapi_SetAppData_Finish(
     }
 
 error_cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     ifapi_cleanup_ifapi_object(object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);

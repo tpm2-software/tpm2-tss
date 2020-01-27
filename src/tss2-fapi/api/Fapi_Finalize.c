@@ -37,6 +37,7 @@ Fapi_Finalize(
 {
     LOG_TRACE("called for context:%p", context);
 
+    /* Check for NULL parameters */
     if (!context || !*context) {
         LOG_WARNING("Attempting to free NULL context");
         return;
@@ -45,8 +46,10 @@ Fapi_Finalize(
     LOG_DEBUG("called: context: %p, *context: %p", context,
               (context != NULL) ? *context : NULL);
 
+    /* Finalize the profiles module. */
     ifapi_profiles_finalize(&(*context)->profiles);
 
+    /* Finalize the TCTI and ESYS contexts. */
     TSS2_TCTI_CONTEXT *tcti = NULL;
 
     if ((*context)->esys) {
@@ -58,13 +61,18 @@ Fapi_Finalize(
         }
     }
 
+    /* Finalize the keystore module. */
     ifapi_cleanup_ifapi_keystore(&(*context)->keystore);
 
+    /* Finalize the policy module. */
     SAFE_FREE((*context)->pstore.policydir);
+
+    /* Finalize leftovers from provisioning. */
     SAFE_FREE((*context)->cmd.Provision.root_crt);
     SAFE_FREE((*context)->cmd.Provision.intermed_crt);
     SAFE_FREE((*context)->cmd.Provision.pem_cert);
 
+    /* Finalize the config module. */
     SAFE_FREE((*context)->config.profile_dir);
     SAFE_FREE((*context)->config.user_dir);
     SAFE_FREE((*context)->config.keystore_dir);
@@ -72,11 +80,16 @@ Fapi_Finalize(
     SAFE_FREE((*context)->config.tcti);
     SAFE_FREE((*context)->config.log_dir);
     SAFE_FREE((*context)->config.ek_cert_file);
+
     ifapi_profiles_finalize(&(*context)->profiles);
 
+    /* Finalize the eventlog module. */
     SAFE_FREE((*context)->eventlog.log_dir);
 
+    /* Finalize all remaining object of the context. */
     ifapi_free_objects(*context);
+
+    /* Free the context's memory. */
     free(*context);
     *context = NULL;
 

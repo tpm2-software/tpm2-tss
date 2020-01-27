@@ -157,6 +157,8 @@ Fapi_NvExtend_Async(
 
     memset(command, 0 ,sizeof(IFAPI_NV_Cmds));
     command->offset = 0;
+
+    /* Copy parameters to context for use during _Finish. */
     command->data = malloc(dataSize);
     goto_if_null2(command->data, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
             error_cleanup);
@@ -164,16 +166,22 @@ Fapi_NvExtend_Async(
     strdup_check(command->logData, logData, r, error_cleanup);
 
     command->numBytes = dataSize;
+
+    /* Reset all context-internal session state information. */
     if (context->state == _FAPI_STATE_INIT)
         ifapi_session_init(context);
 
+    /* Load the nv index metadata from the keystore. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, command->nvPath);
     goto_if_error2(r, "Could not open: %s", error_cleanup, command->nvPath);
 
+    /* Initialize the context state for this operation. */
     context->state = NV_EXTEND_READ;
     LOG_TRACE("finsihed");
     return r;
+
 error_cleanup:
+    /* Cleanup duplicated input parameters that were copied before. */
     SAFE_FREE(command->data);
     SAFE_FREE(command->nvPath);
     SAFE_FREE(command->logData);
@@ -238,6 +246,7 @@ Fapi_NvExtend_Finish(
             goto_error(r, TSS2_FAPI_RC_BAD_PATH, "%s is no NV object.", error_cleanup,
                        command->nvPath);
 
+        /* Initialize the NV index object for ESYS. */
         r = ifapi_initialize_object(context->esys, object);
         goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
 
@@ -246,6 +255,7 @@ Fapi_NvExtend_Finish(
         command->esys_handle =  context->nv_cmd.nv_object.handle;
         command->nv_obj = object->misc.nv;
 
+        /* Determine the kind of authorization to be used. */
         if (object->misc.nv.public.nvPublic.attributes & TPMA_NV_PPWRITE) {
             ifapi_init_hierarchy_object(authObject, ESYS_TR_RH_PLATFORM);
             authIndex = ESYS_TR_RH_PLATFORM;
@@ -260,11 +270,12 @@ Fapi_NvExtend_Finish(
         }
         command->auth_index = authIndex;
         context->primary_state = PRIMARY_INIT;
+
+        /* Start a session for authorization. */
         r = ifapi_get_sessions_async(context,
                                      IFAPI_SESSION_GENEK | IFAPI_SESSION1,
                                      TPMA_SESSION_DECRYPT, 0);
         goto_if_error_reset_state(r, "Create sessions", error_cleanup);
-
 
         context->state = NV_EXTEND_WAIT_FOR_SESSION;
         return TSS2_FAPI_RC_TRY_AGAIN;
@@ -273,7 +284,6 @@ Fapi_NvExtend_Finish(
 //TODO: Pass the namealg of the NV index into the session to be created
         r = ifapi_get_sessions_finish(context, &context->profiles.default_profile);
         return_try_again(r);
-
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
         if (command->numBytes > context->nv_buffer_max)
@@ -283,7 +293,7 @@ Fapi_NvExtend_Finish(
         memcpy(&auxData->buffer[0], &data[0], auxData->size);
         command->data_idx = auxData->size;
 
-        /* Authorization needed if NO_DA is not  set */
+        /* Authorization needed if NO_DA is not set */
         if (!(object->misc.nv.public.nvPublic.attributes & TPMA_NV_NO_DA)) {
             r = ifapi_set_auth(context, authObject, "NV Extend");
             goto_if_error_reset_state(r, "Fapi_NV_UndefineSpace", error_cleanup);
@@ -292,10 +302,12 @@ Fapi_NvExtend_Finish(
         fallthrough;
 
     statecase(context->state, NV_EXTEND_AUTHORIZE)
+        /* Prepare the authorization data for the NV index. */
         r = ifapi_authorize_object(context, authObject, &auth_session);
         return_try_again(r);
         goto_if_error(r, "Authorize NV object.", error_cleanup);
 
+        /* Extend the data into the NV index. */
         r = Esys_NV_Extend_Async(context->esys,
                                  command->auth_index,
                                  nvIndex,
@@ -312,7 +324,6 @@ Fapi_NvExtend_Finish(
         return TSS2_FAPI_RC_TRY_AGAIN;
 
     statecase(context->state, NV_EXTEND_AUTH_SENT)
-
         r = Esys_NV_Extend_Finish(context->esys);
         return_try_again(r);
 
@@ -421,6 +432,7 @@ Fapi_NvExtend_Finish(
         fallthrough;
 
     statecase(context->state, NV_EXTEND_CLEANUP)
+        /* Cleanup the session. */
         r = ifapi_cleanup_session(context);
         try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
@@ -433,6 +445,7 @@ Fapi_NvExtend_Finish(
     }
 
 error_cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     if (command->jso_event_log)
         json_object_put(command->jso_event_log);
     ifapi_cleanup_ifapi_object(object);

@@ -143,19 +143,26 @@ Fapi_NvRead_Async(
     /* Helpful alias pointers */
     IFAPI_NV_Cmds * command = &context->nv_cmd;
 
+    /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize NvRead");
 
     memset(command, 0, sizeof(IFAPI_NV_Cmds));
+
+    /* Copy parameters to context for use during _Finish. */
     strdup_check(command->nvPath, nvPath, r, error_cleanup);
 
+    /* Load the NV index metadata from keystore. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, command->nvPath);
     goto_if_error_reset_state(r, "Could not open: %s", error_cleanup, command->nvPath);
 
+    /* Initialize the context state for this operation. */
     context->state = NV_READ_READ;
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
+
 error_cleanup:
+    /* Cleanup duplicated input parameters that were copied before. */
     SAFE_FREE(command->nvPath);
     return r;
 }
@@ -199,7 +206,7 @@ Fapi_NvRead_Finish(
     check_not_null(data);
 
     /* Helpful alias pointers */
-    IFAPI_NV_Cmds * command = &context->nv_cmd;
+    IFAPI_NV_Cmds *command = &context->nv_cmd;
     IFAPI_OBJECT *object = &command->nv_object;
     IFAPI_OBJECT *authObject = &command->auth_object;
 
@@ -213,6 +220,7 @@ Fapi_NvRead_Finish(
             goto_error(r, TSS2_FAPI_RC_BAD_PATH, "%s is no NV object.", error_cleanup,
                        command->nvPath);
 
+        /* Initialize the NV index object for use with ESYS. */
         r = ifapi_initialize_object(context->esys, object);
         goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
 
@@ -239,7 +247,7 @@ Fapi_NvRead_Finish(
         command->auth_index = authIndex;
         context->primary_state = PRIMARY_INIT;
 
-        /* Prepare Session */
+        /* Prepare session for authorization and data encryption. */
         r = ifapi_get_sessions_async(context,
                                      IFAPI_SESSION_GENEK | IFAPI_SESSION1,
                                      TPMA_SESSION_ENCRYPT, 0);
@@ -261,6 +269,7 @@ Fapi_NvRead_Finish(
 
     statecase(context->state, NV_READ_WAIT)
         if (data) {
+            /* Read the data from the TPM. */
             r = ifapi_nv_read(context, data, &readSize);
             return_try_again(r);
 
@@ -268,21 +277,25 @@ Fapi_NvRead_Finish(
         }
 
         if (logData) {
+            /* Duplicate the logdata that may have been stored during a
+               NvExtend command. */
             strdup_check(*logData, object->misc.nv.event_log, r, error_cleanup);
         }
         fallthrough;
 
     statecase(context->state, NV_READ_CLEANUP)
+        /* Cleanup the session used for authorization. */
         r = ifapi_cleanup_session(context);
         try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
-        context->state =  _FAPI_STATE_INIT;
+        context->state = _FAPI_STATE_INIT;
         break;
 
     statecasedefault(context->state);
     }
 
 error_cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     ifapi_cleanup_ifapi_object(&command->nv_object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);

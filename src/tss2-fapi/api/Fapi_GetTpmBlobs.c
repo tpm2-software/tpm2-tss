@@ -43,7 +43,6 @@
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
  * @retval TSS2_FAPI_RC_BAD_PATH: if path does not map to a FAPI entity.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: If the updated data cannot be saved.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -121,7 +120,6 @@ Fapi_GetTpmBlobs(
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
  * @retval TSS2_FAPI_RC_BAD_PATH: if path does not map to a FAPI entity.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: If the updated data cannot be saved.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -145,9 +143,11 @@ Fapi_GetTpmBlobs_Async(
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize GetTPMBlobc");
 
+    /* Load the object from the key store. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
     return_if_error2(r, "Could not open: %s", path);
 
+    /* Initialize the context state for this operation. */
     context->state = ENTITY_GET_TPM_BLOBS_READ;
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
@@ -199,6 +199,7 @@ Fapi_GetTpmBlobs_Finish(
 
     switch (context->state) {
         statecase(context->state, ENTITY_GET_TPM_BLOBS_READ);
+            /* Finish readon the metadata from key store. */
             r = ifapi_keystore_load_finish(&context->keystore, &context->io, &object);
             return_try_again(r);
             return_if_error_reset_state(r, "read_finish failed");
@@ -207,6 +208,7 @@ Fapi_GetTpmBlobs_Finish(
                 goto_error(r, TSS2_FAPI_RC_BAD_PATH, "No key object.", error_cleanup);
             }
 
+            /* Marshal the public data to the output parameter. */
             if (tpm2bPublic && tpm2bPublicSize) {
                 *tpm2bPublic = malloc(sizeof(uint8_t) * sizeof(TPM2B_PUBLIC));
                 goto_if_null(*tpm2bPublic, "Out of memory.",
@@ -220,6 +222,8 @@ Fapi_GetTpmBlobs_Finish(
                 *tpm2bPublicSize = offset;
                 goto_if_error(r, "Marshaling TPM2B_PUBLIC", error_cleanup);
             }
+
+            /* Marshal the private data to the output parameter. */
             if (tpm2bPrivate && tpm2bPrivateSize) {
                 private_size = object.misc.key.private.size;
                 *tpm2bPrivateSize = private_size + sizeof(UINT16);
@@ -233,6 +237,8 @@ Fapi_GetTpmBlobs_Finish(
 
                 memcpy(*tpm2bPrivate + offset, &object.misc.key.private.buffer[0], private_size);
             }
+
+            /* Duplicate the policy to the output parameter. */
             if (object.policy_harness && policy) {
                 r = ifapi_json_TPMS_POLICY_HARNESS_serialize(
                         object.policy_harness, &jso);
@@ -243,6 +249,8 @@ Fapi_GetTpmBlobs_Finish(
                         r, error_cleanup);
                 json_object_put(jso);
             }
+
+            /* Cleanup any intermediate results and state stored in the context. */
             ifapi_cleanup_ifapi_object(&object);
             context->state = _FAPI_STATE_INIT;
             LOG_TRACE("finsihed");
@@ -251,6 +259,7 @@ Fapi_GetTpmBlobs_Finish(
         statecasedefault(context->state);
     }
 error_cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     if (jso)
         json_object_put(jso);
     ifapi_cleanup_ifapi_object(&object);

@@ -44,7 +44,6 @@
  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS: if a policy or key already exists
  *         at path.
  * @retval TSS2_FAPI_RC_BAD_VALUE: if importData contains invalid data.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: if the FAPI storage cannot be updated.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -105,7 +104,6 @@ Fapi_Import(
  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS: if a policy or key already exists
  *         at path.
  * @retval TSS2_FAPI_RC_BAD_VALUE: if importData contains invalid data.
- * @retval TSS2_FAPI_RC_STORAGE_ERROR: if the FAPI storage cannot be updated.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.

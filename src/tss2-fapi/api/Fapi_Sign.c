@@ -181,20 +181,26 @@ Fapi_Sign_Async(
     /* Helpful alias pointers */
     IFAPI_Key_Sign * command = &context->Key_Sign;
 
+    /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize Sign");
 
+    /* Copy parameters to context for use during _Finish. */
     FAPI_COPY_DIGEST(&command->digest.buffer[0],
                      command->digest.size, digest, digestSize);
+
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize Key_Sign");
-
     strdup_check(command->keyPath, keyPath, r, error_cleanup);
     strdup_check(command->padding, padding, r, error_cleanup);
+
+    /* Initialize the context state for this operation. */
     context->state = KEY_SIGN_WAIT_FOR_KEY;
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
+
 error_cleanup:
+    /* Cleanup duplicated input parameters that were copied before. */
     SAFE_FREE(command->keyPath);
     SAFE_FREE(command->padding);
     return r;
@@ -245,7 +251,8 @@ Fapi_Sign_Finish(
 
     switch (context->state) {
         statecase(context->state, KEY_SIGN_WAIT_FOR_KEY);
-            r = ifapi_load_key(context,  command->keyPath,
+            /* Load the key used for signing with a helper. */
+            r = ifapi_load_key(context, command->keyPath,
                                &command->key_object);
             return_try_again(r);
             goto_if_error(r, "Fapi load key.", error_cleanup);
@@ -254,13 +261,14 @@ Fapi_Sign_Finish(
             fallthrough;
 
         statecase(context->state, KEY_SIGN_WAIT_FOR_SIGN);
+            /* Perform the signing operation using a helper. */
             r = ifapi_key_sign(context, command->key_object,
                     command->padding, &command->digest, &command->tpm_signature,
                     publicKey, certificate);
             return_try_again(r);
             goto_if_error(r, "Fapi sign.", error_cleanup);
 
-
+            /* Convert the TPM datatype signature to something useful for the caller. */
             r = ifapi_tpm_to_fapi_signature(command->key_object,
                      command->tpm_signature, signature, &resultSignatureSize);
             goto_if_error(r, "Create FAPI signature.", error_cleanup);
@@ -270,6 +278,7 @@ Fapi_Sign_Finish(
             fallthrough;
 
         statecase(context->state, KEY_SIGN_CLEANUP)
+            /* Cleanup the session used for authorization. */
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
@@ -280,6 +289,7 @@ Fapi_Sign_Finish(
     }
 
 error_cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     SAFE_FREE(command->tpm_signature);
     SAFE_FREE(command->keyPath);
     SAFE_FREE(command->padding);

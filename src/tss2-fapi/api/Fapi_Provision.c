@@ -45,8 +45,6 @@
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
- * @retval TSS2_FAPI_RC_BAD_PATH: if policyPathEh or policyPathSh do not map to
- *         a FAPI policy.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_NO_CERT: if no certificate was found for the computed EK.
@@ -127,8 +125,6 @@ Fapi_Provision(
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
- * @retval TSS2_FAPI_RC_BAD_PATH: if policyPathEh or policyPathSh do not map to
- *         a FAPI policy.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -529,7 +525,6 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             return_try_again(r);
             goto_if_error_reset_state(r, " FAPI NV_Read", error_cleanup);
 
-            //TODO check even and not template
             r = ifapi_cert_to_pem(certData, certSize, &command->pem_cert,
                                   &command->cert_key_type, &public_key);
             SAFE_FREE(certData);
