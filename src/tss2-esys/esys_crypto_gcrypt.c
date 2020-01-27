@@ -909,6 +909,8 @@ iesys_cryptogcry_sym_aes_init(gcry_cipher_hd_t * cipher_hd,
     int algo, mode, len;
     size_t key_len = 0;
     gcry_error_t err;
+    TSS2_RC r = TSS2_RC_SUCCESS;
+
     switch (tpm_sym_alg) {
     case TPM2_ALG_AES:
         switch (key_bits) {
@@ -951,15 +953,19 @@ iesys_cryptogcry_sym_aes_init(gcry_cipher_hd_t * cipher_hd,
         err = gcry_cipher_setiv(*cipher_hd, &iv[0], iv_len);
         if (err != GPG_ERR_NO_ERROR) {
             LOG_ERROR("Function gcry_cipher_setiv");
-            return TSS2_ESYS_RC_GENERAL_FAILURE;
+            gcry_cipher_close(*cipher_hd);
+            r = TSS2_ESYS_RC_GENERAL_FAILURE;
         }
     }
-    err = gcry_cipher_setkey(*cipher_hd, key, key_len);
-    if (err != GPG_ERR_NO_ERROR) {
-        LOG_ERROR("Function gcry_cipher_setkey");
-        return TSS2_ESYS_RC_GENERAL_FAILURE;
+    if (r == TSS2_RC_SUCCESS) {
+        err = gcry_cipher_setkey(*cipher_hd, key, key_len);
+        if (err != GPG_ERR_NO_ERROR) {
+            LOG_ERROR("Function gcry_cipher_setkey");
+            gcry_cipher_close(*cipher_hd);
+            r = TSS2_ESYS_RC_GENERAL_FAILURE;
+        }
     }
-    return TSS2_RC_SUCCESS;
+    return r;
 }
 
 /** Encrypt data with AES.
@@ -1005,10 +1011,10 @@ iesys_cryptogcry_sym_aes_encrypt(uint8_t * key,
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS AES output");
     if (err != GPG_ERR_NO_ERROR) {
         LOG_ERROR("Function gcry_cipher_encrypt");
-        return TSS2_ESYS_RC_GENERAL_FAILURE;
+        r = TSS2_ESYS_RC_GENERAL_FAILURE;
     }
     gcry_cipher_close(cipher_hd);
-    return TSS2_RC_SUCCESS;
+    return r;
 }
 
 /** Decrypt data with AES.
@@ -1057,10 +1063,10 @@ iesys_cryptogcry_sym_aes_decrypt(uint8_t * key,
     err = gcry_cipher_decrypt(cipher_hd, buffer, buffer_size, NULL, 0);
     if (err != GPG_ERR_NO_ERROR) {
         LOG_ERROR("Function gcry_cipher_decrypt");
-        return TSS2_ESYS_RC_GENERAL_FAILURE;
+        r = TSS2_ESYS_RC_GENERAL_FAILURE;
     }
     gcry_cipher_close(cipher_hd);
-    return TSS2_RC_SUCCESS;
+    return r;
 }
 
 /** Initialize gcrypt crypto backend.
