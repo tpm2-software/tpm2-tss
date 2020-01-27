@@ -69,7 +69,6 @@ TESTS_UNIT  = \
     test/unit/key-value-parse \
     test/unit/log \
     test/unit/tcti-device \
-    test/unit/tcti-mssim \
     test/unit/tctildr \
     test/unit/tctildr-dl \
     test/unit/tctildr-nodl \
@@ -87,6 +86,9 @@ TESTS_UNIT  = \
     test/unit/TPMU-marshal \
     test/unit/sys-execute \
     test/unit/tss2_rc
+if ENABLE_TCTI_MSSIM
+TESTS_UNIT += test/unit/tcti-mssim
+endif
 if ESAPI
 TESTS_UNIT += \
     test/unit/esys-context-null \
@@ -341,12 +343,14 @@ test_unit_tcti_device_SOURCES = test/unit/tcti-device.c \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-device.c src/tss2-tcti/tcti-device.h
 
+if ENABLE_TCTI_MSSIM
 test_unit_tcti_mssim_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tcti_mssim_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
 test_unit_tcti_mssim_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=select,--wrap=write
 test_unit_tcti_mssim_SOURCES = test/unit/tcti-mssim.c \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-mssim.c src/tss2-tcti/tcti-mssim.h
+endif
 
 test_unit_tctildr_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tctildr_LDADD = $(CMOCKA_LIBS) $(libutil)
