@@ -73,8 +73,8 @@ ifapi_flush_object(FAPI_CONTEXT *context, ESYS_TR handle)
  * The corresponding async call be executed and a session secret for encryption
  * TPM2B parameters will be created.
  *
- * @param[in] context The FAPI_CONTEXT.
- * @param[in] tpmkey The key which will be used for the encryption of the sesssion
+ * @param[in] esys The ESYS_CONTEXT.
+ * @param[in] saltkey The key which will be used for the encryption of the sesssion
  *            secret.
  * @param[in] profile The FAPI profile will be used to adjust the sessions symmetric
  *            parameters.
@@ -101,7 +101,7 @@ ifapi_get_session_async(ESYS_CONTEXT *esys, ESYS_TR saltkey, const IFAPI_PROFILE
 
 /**  Call for getting a session handle and adjust session parameters.
  *
- * @param[in] context The FAPI_CONTEXT.
+ * @param[in] esys The ESYS_CONTEXT.
  * @param[out] session The session handle.
  * @param[in] flags The flags to adjust the session attributes.
  *
@@ -131,6 +131,10 @@ ifapi_get_session_finish(ESYS_CONTEXT *esys, ESYS_TR *session,
     return TSS2_RC_SUCCESS;
 }
 
+/** Free first object of a linked list.
+ *
+ * Note: Referenced objects of the list have to be freed before.
+ */
 TSS2_RC
 pop_object_from_list(FAPI_CONTEXT *context, NODE_OBJECT_T **object_list)
 {
@@ -146,7 +150,12 @@ pop_object_from_list(FAPI_CONTEXT *context, NODE_OBJECT_T **object_list)
 
 /** Set authorization value for a FAPI object.
  *
+ * The callback which provides the auth value must be defined.
+ *
  * @param[in,out] context The FAPI_CONTEXT.
+ * @param[in]     auth_object The auth value will be assigned to this object.
+ * @param[in]     description The description will be passed to the callback
+ *                which delivers the auth value.
  *
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN If the callback for getting
@@ -190,7 +199,7 @@ ifapi_set_auth(
 
 /** Preparation for getting a free handle after a start handle number.
  *
- * @param[in] context The FAPI_CONTEXT.
+ * @param[in] fctx The FAPI_CONTEXT.
  * @param[in] handle The start value for handle search.
  *
  * @retval TSS2_RC_SUCCESS on success.
@@ -211,7 +220,7 @@ ifapi_get_free_handle_async(FAPI_CONTEXT *fctx, TPM2_HANDLE *handle)
  * The get capability method is called until a free handle is found
  * or the max number of trials passe to the function is exeeded.
  *
- * @param[in] context The FAPI_CONTEXT.
+ * @param[in] fctx The FAPI_CONTEXT.
  * @param[out] handle The free handle.
  * @param[in] max The maximal number of trials.
  *
@@ -250,6 +259,20 @@ ifapi_get_free_handle_finish(FAPI_CONTEXT *fctx, TPM2_HANDLE *handle,
     return TSS2_FAPI_RC_TRY_AGAIN;
 }
 
+/** Create a linked list of directories in the key store.
+ *
+ * If the absolute path in key store is not defined the list will
+ * be extended if possible.
+ *
+ * @parm[out] keystore The used keystore.
+ * @param[in] ipath The implicit pathname, wich might be extended.
+ * @param[out] The linked list of directories in the explicit pathname.
+ *
+ * @retval TSS2_RC_SUCCESS If the keystore can be initialized.
+ * @retval TSS2_FAPI_RC_IO_ERROR If the user part of the keystore can't be
+ *         initialized.
+ * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated.
+ */
 static TSS2_RC
 get_explicit_key_path(
     IFAPI_KEYSTORE *keystore,
@@ -258,10 +281,13 @@ get_explicit_key_path(
 {
     NODE_STR_T *list_node1 = NULL;
     NODE_STR_T *list_node = NULL;
+
+    /* Extend the first part of the list if necessary. */
     TSS2_RC r = init_explicit_key_path(keystore->defaultprofile, ipath,
                                        &list_node1, &list_node, result);
     goto_if_error(r, "init_explicit_key_path", error);
 
+    /* Extend the list with the tail of the initial unmodified list. */
     while (list_node != NULL) {
         if (!add_string_to_list(*result, list_node->str)) {
             LOG_ERROR("Out of memory");
@@ -281,6 +307,18 @@ error:
     return r;
 }
 
+/** Prepare the creation of a primary key.
+ *
+ * Depending on the parameters the creation of an endorsement or storage root key
+ * will be prepared.
+ *
+ * @param[in] context The FAPI_CONTEXT.
+ * @param[in] ktype The type of key TSS2_EK or TSS2_SRK.
+ * @retval All possible error codes of ESAPI.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if a wrong type was passed.
+ * @retval All possible error codes of ESAPI.
+ */
 TSS2_RC
 ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
 {
@@ -290,7 +328,7 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
     TPMS_POLICY_HARNESS *policy;
 
     if (ktype == TSS2_EK) {
-        /* Value set according to EK credential profile. */
+        /* Values set according to EK credential profile. */
         if (context->cmd.Provision.public_templ.public.publicArea.type == TPM2_ALG_RSA) {
             context->cmd.Provision.public_templ.public.publicArea.unique.rsa.size = 256;
         } else if (context->cmd.Provision.public_templ.public.publicArea.type == TPM2_ALG_ECC) {
@@ -344,6 +382,20 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
     return r;
 }
 
+/** Finalize the creation of a primary key.
+ *
+ * Depending on the parameters the creation of an endorsement key or a storage root key
+ * will be finalized. The created object with the all information needed by FAPI will
+ * be stored in the FAPI context.
+ *
+ * @param[in] context The FAPI_CONTEXT.
+ * @param[in] ktype The type of key TSS2_EK or TSS2_SRK.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if the execution cannot be completed.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if a wrong type was passed.
+ * @retval All possible error codes of ESAPI.
+ */
 TSS2_RC
 ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
 {
@@ -389,7 +441,7 @@ ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
     } else {
         goto_if_error_reset_state(r, "FAPI Provision", error_cleanup);
     }
-
+    /* Set EK or SRK handle in context. */
     if (ktype == TSS2_EK) {
         context->ek_handle = primaryHandle;
     } else if (ktype == TSS2_SRK) {
@@ -398,6 +450,8 @@ ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
         return_error(TSS2_FAPI_RC_BAD_VALUE,
                      "Invalid key type. Only EK or SRK allowed");
     }
+
+    /* Prepare serialization of pkey to key store. */
 
     SAFE_FREE(pkey->serialization.buffer);
     r = Esys_TR_Serialize(context->esys, primaryHandle, &pkey->serialization.buffer,
@@ -414,6 +468,7 @@ ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
     pkey->description = NULL;
     pkey->certificate = NULL;
 
+    /* Cleanup unused information */
     SAFE_FREE(outPublic);
     SAFE_FREE(creationData);
     SAFE_FREE(creationHash);
@@ -435,6 +490,20 @@ error_cleanup:
     return r;
 }
 
+/** Prepare the loading of a primary key from key store.
+ *
+ * The asynchronous loading or the key from keystore will be prepared and
+ * the path will be stored in the FAPI context.
+ *
+ * @param[in] context The FAPI_CONTEXT.
+ * @param[in] path The FAPI path of the primary key.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if a wrong type was passed.
+ * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if the file does not exist.
+ * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated for path names.
+ */
 TSS2_RC
 ifapi_load_primary_async(FAPI_CONTEXT *context, char *path)
 {
@@ -450,6 +519,23 @@ ifapi_load_primary_async(FAPI_CONTEXT *context, char *path)
 
 }
 
+/** State machine to finalize the loading of a primary key from key store.
+ *
+ * The asynchronous loading or the key from keystore will be finalized.
+ * Afterwards the hierarchy object, which will be used for authorization will
+ * be loaded and the ESAPI functions for primary generation will be called
+ * if the primary is not persistent.
+ *
+ * @param[in] context The FAPI_CONTEXT.
+ * @param[in] path The FAPI path of the primary key.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if a wrong type was passed.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if the hierarchy file does not exist.
+ * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered.
+ * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated for path names.
+ * @retval All possible error codes of ESAPI.
+ */
 TSS2_RC
 ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
 {
@@ -460,7 +546,6 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
     TPM2B_CREATION_DATA *creationData = NULL;
     TPM2B_DIGEST *creationHash = NULL;
     TPMT_TK_CREATION *creationTicket = NULL;
-    //TPM2B_NAME *name;
     IFAPI_OBJECT *pkey_object =  &context->createPrimary.pkey_object;
     IFAPI_KEY *pkey = &context->createPrimary.pkey_object.misc.key;
     ESYS_TR auth_session;
@@ -469,6 +554,7 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
 
     switch (context->primary_state) {
     statecase(context->primary_state, PRIMARY_READ_KEY);
+        /* Read the primary key from keystore. */
         r = ifapi_keystore_load_finish(&context->keystore, &context->io,
                                        pkey_object);
         return_try_again(r);
@@ -477,12 +563,15 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
         r = ifapi_initialize_object(context->esys, pkey_object);
         goto_if_error_reset_state(r, "Initialize key object", error_cleanup);
 
+        /* Check whether a persistent key was loaded.
+           In this case the handle has already been set. */
         if (pkey_object->handle != ESYS_TR_NONE) {
             if (pkey->creationTicket.hierarchy == TPM2_RH_EK) {
                 context->ek_persistent = true;
             } else {
                 context->srk_persistent = true;
             }
+            /* Persistent handle will be used. */
             *handle = pkey_object->handle;
             break;
         } else {
@@ -495,6 +584,7 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
         fallthrough;
 
     statecase(context->primary_state, PRIMARY_READ_HIERARCHY);
+        /* The hierarchy object ussed for auth_session will be loaded from key store. */
         if (pkey->creationTicket.hierarchy == TPM2_RH_EK) {
             r = ifapi_keystore_load_async(&context->keystore, &context->io, "/HE");
             return_if_error2(r, "Could not open hierarchy /HE");
@@ -520,6 +610,7 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
         fallthrough;
 
     statecase(context->primary_state, PRIMARY_AUTHORIZE_HIERARCHY);
+        /* The asynchronous authorization of the hierarchy needed for primary. */
         r = ifapi_authorize_object(context, hierarchy, &auth_session);
         FAPI_SYNC(r, "Authorize hierarchy.", error_cleanup);
 
@@ -527,6 +618,7 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
         memset(&context->createPrimary.outsideInfo, 0, sizeof(TPM2B_DATA));
         memset(&context->createPrimary.creationPCR, 0, sizeof(TPML_PCR_SELECTION));
 
+        /* Prepare primary creation. */
         r = Esys_CreatePrimary_Async(context->esys, hierarchy->handle,
                                      auth_session, ESYS_TR_NONE, ESYS_TR_NONE,
                                      &context->createPrimary.inSensitive,
@@ -572,6 +664,19 @@ error_cleanup:
     return r;
 }
 
+/** Prepare session for FAPI command execution.
+ *
+ * It will be checked whether the context of FAPI and ESAPI is initialized
+ * and whether no other FAPI command session is running.
+ * Also some handle variables in the context are initialized.
+ *
+ * @param[in] context The FAPI_CONTEXT.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE if the context is not initialized.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE If a FAPI command session is active.
+ * @retval TSS2_FAPI_RC_NO_TPM: if the ESAPI context is not initialized.
+ */
 TSS2_RC
 ifapi_session_init(FAPI_CONTEXT *context)
 {
@@ -591,6 +696,18 @@ ifapi_session_init(FAPI_CONTEXT *context)
     return TSS2_RC_SUCCESS;
 }
 
+/** Prepare session for FAPI command execution without TPM.
+ *
+ * It will be checked whether the context of FAPI is initialized
+ * and whether no other FAPI command session is running.
+ * Also some handle variables in the context are initialized.
+ *
+ * @param[in] context The FAPI_CONTEXT.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE if the context is not initialized.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE If a FAPI command session is active.
+ */
 TSS2_RC
 ifapi_non_tpm_mode_init(FAPI_CONTEXT *context)
 {
@@ -608,6 +725,14 @@ ifapi_non_tpm_mode_init(FAPI_CONTEXT *context)
     return TSS2_RC_SUCCESS;
 }
 
+/** Cleanup FAPI sessions in error cases.
+ *
+ * The uses sessions and the SRK (if not persistent) will be flushed
+ * non asynchronous in error cases.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval All possible error codes of ESAPI.
+ */
 void
 ifapi_session_clean(FAPI_CONTEXT *context)
 {
@@ -632,7 +757,7 @@ ifapi_session_clean(FAPI_CONTEXT *context)
     context->srk_persistent = false;
 }
 
-/** State machine for cleanup of a FAPI session.
+/** State machine for asynchronous cleanup of a FAPI session.
  *
  * Used sessions and the SRK will be flushed.
  *
@@ -696,7 +821,12 @@ ifapi_cleanup_session(FAPI_CONTEXT *context)
 }
 
 /** Cleanup primary keys in error cases (non asynchronous).
-  */
+ *
+ * @param[in] context The FAPI_CONTEXT storing the used handles.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval All possible error codes of ESAPI.
+ */
 void
 ifapi_primary_clean(FAPI_CONTEXT *context)
 {
@@ -715,6 +845,28 @@ ifapi_primary_clean(FAPI_CONTEXT *context)
     context->srk_persistent = false;
 }
 
+/** Prepare the session creation of a FAPI command.
+ *
+ * The initial state of the state machine for session creation will be determined.
+ * Depending of the session_flags creation of a primary for the encryption of
+ * the session secret can be adjusted.
+ * The session passed session attributes will be used for the ESAPI command
+ * Esys_TRSess_SetAttributes.
+ *
+ * @param[in] context The FAPI_CONTEXT storing the used handles.
+ * @param[in] session_flags The flags to adjust used session and encryption
+ *            key. With IFAPI_SESSION1 and IFAPI_SESSION2 the session creation
+ *            for sesion1 and session2 can be activated, IFAPI_SESSION_GENEK
+ *            triggers the creation of the primary for session secret encryption.
+ * @param[in] attribute_flags1 The attributes used for session1.
+ * @param[in] attribute_flags2 The attributes used for session2.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if the hierarchy file or the primary key file
+ *         does not exist.
+ * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated for path names.
+ *         of the primary.
+ */
 TSS2_RC
 ifapi_get_sessions_async(FAPI_CONTEXT *context,
                          IFAPI_SESSION_TYPE session_flags,
@@ -752,6 +904,19 @@ error_cleanup:
     return r;
 }
 
+/** State machine for the session creation of a FAPI command.
+ *
+ * The sessions needed for a FAPI command will be created. If needed also the
+ * primary key for session encryption will be created.
+ *
+ * @param[in] context The FAPI_CONTEXT storing the used handles.
+ * @param[in] profile The FAPI profile will be used to adjust session parameters.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered.
+ * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated for path names.
+ * @retval All possible error codes of ESAPI.
+ */
 TSS2_RC
 ifapi_get_sessions_finish(FAPI_CONTEXT *context, const IFAPI_PROFILE *profile)
 {
@@ -772,6 +937,8 @@ ifapi_get_sessions_finish(FAPI_CONTEXT *context, const IFAPI_PROFILE *profile)
             return TSS2_RC_SUCCESS;
         }
 
+        /* Initializing the first session for the caller */
+
         r = ifapi_get_session_async(context->esys, context->srk_handle, profile);
         return_if_error_reset_state(r, "Create FAPI session async");
         fallthrough;
@@ -787,6 +954,8 @@ ifapi_get_sessions_finish(FAPI_CONTEXT *context, const IFAPI_PROFILE *profile)
             LOG_TRACE("finished");
             return TSS2_RC_SUCCESS;
         }
+
+        /* Initializing the second session for the caller */
 
         r = ifapi_get_session_async(context->esys, context->srk_handle, profile);
         return_if_error_reset_state(r, "Create FAPI session async");
@@ -807,7 +976,15 @@ ifapi_get_sessions_finish(FAPI_CONTEXT *context, const IFAPI_PROFILE *profile)
     return TSS2_RC_SUCCESS;
 }
 
-/** Merge profile already stored in FAPI context into a key template
+/** Merge profile already stored in FAPI context into a NV object template.
+ *
+ * The defaults for NV creation which are stored in the FAPI default profile
+ * will be merged in the passed templates default values.
+ *
+ * @param[in] context The FAPI_CONTEXT with the default profile.
+ * @param[in] template The template with the default values for the NV object.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
  */
 TSS2_RC
 ifapi_merge_profile_into_nv_template(
@@ -838,7 +1015,15 @@ ifapi_merge_profile_into_nv_template(
     return TSS2_RC_SUCCESS;
 }
 
-/** Merge profile already stored in FAPI context into a key template
+/** Merge profile already stored in FAPI context into a key template.
+ *
+ * The defaults for key creation which are stored in the FAPI default profile
+ * will be merged in the passed templates default values.
+ *
+ * @param[in] profile The profile which will be used to adjust the template.
+ * @param[in] template The template with the default values for the key object.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
  */
 TSS2_RC
 ifapi_merge_profile_into_template(
@@ -895,6 +1080,8 @@ ifapi_merge_profile_into_template(
     return TSS2_RC_SUCCESS;
 }
 
+/** Convert absolute path to FAPI path which can be used as parameter for FAPI commands.
+ */
 static void
 full_path_to_fapi_path(IFAPI_KEYSTORE *keystore, char *path)
 {
@@ -905,6 +1092,7 @@ full_path_to_fapi_path(IFAPI_KEYSTORE *keystore, char *path)
 
     start_pos = 0;
 
+    /* Check key store part of the path */
     if (strncmp(&path[0], keystore->userdir, keystore_length) == 0) {
         start_pos =  strlen(keystore->userdir);
     } else {
@@ -915,10 +1103,13 @@ full_path_to_fapi_path(IFAPI_KEYSTORE *keystore, char *path)
     if (!start_pos)
         return;
 
+    /* Shift FAPI path to the beginning. */
     end_pos = path_length - start_pos;
     memmove(&path[0], &path[start_pos], end_pos);
     size_t ip = 0;
     size_t lp = strlen(path);
+
+    /* Special handling for // */
     while (ip < lp) {
         if (strncmp(&path[ip], "//", 2) == 0) {
             memmove(&path[ip], &path[ip+1], lp-ip);
@@ -928,6 +1119,8 @@ full_path_to_fapi_path(IFAPI_KEYSTORE *keystore, char *path)
         }
     }
 
+    /* Special handling for policy path were the name of the object file
+       is part of the path. */
     if (ifapi_path_type_p(path, IFAPI_POLICY_PATH))
         fapi_path_delim = '.';
     else
@@ -941,14 +1134,18 @@ full_path_to_fapi_path(IFAPI_KEYSTORE *keystore, char *path)
     }
 }
 
-/** Asynchronous function for loading a key.
-  *
-  * @param[in,out] context The FAPI_CONTEXT.
-  * @param[in]     keyPath the key path without the parent directories storing
-  *                of the key store. (e.g. HE/EK, HS/SRK/mykey)
-  * @retval All possible error codes of FAPI
-  * @retval TSS2_RC_SUCCESS if the function call was a success.
-  */
+/** Asynchronous preparation for loading a key and parent keys.
+ *
+ * The key loading is prepared. The pathname will be extended if possible and
+ * a linked list with the directories will be created.
+ *
+ * @param[in,out] context The FAPI_CONTEXT.
+ * @param[in]     keyPath the key path without the parent directories
+ *                of the key store. (e.g. HE/EK, HS/SRK/mykey)
+ *
+ * @retval TSS2_RC_SUCCESS If the preparation is successful.
+ * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated for path names.
+ */
 TSS2_RC
 ifapi_load_keys_async(FAPI_CONTEXT *context, char const *keyPath)
 {
@@ -975,12 +1172,12 @@ ifapi_load_keys_async(FAPI_CONTEXT *context, char const *keyPath)
 
 /** Asynchronous finish function for loading a key.
   *
-  * @param[in,out] context The FAPI_CONTEXT.
-  * @param[in] flush_parent If false the parent of the key to be loaded
-  *            will not be flushed.
-  * @param[out]    handle The ESYS handle of the key.
-  * @retval All possible error codes of FAPI
-  * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @param[in,out] context The FAPI_CONTEXT.
+ * @param[in]     flush_parent If false the parent of the key to be loaded
+ *                will not be flushed.
+ * @param[out]    handle The ESYS handle of the key.
+ * @param[out]    key_object The object which will be used for the
+ *                authorization of the loaded key.
  */
 TSS2_RC
 ifapi_load_keys_finish(
@@ -1010,7 +1207,9 @@ ifapi_load_keys_finish(
  * @param[in,out] context for storing all state information.
  * @param[in] position the position of the key in path list stored in
  *            context->loadKey.path_list.
- * @retval TSS2_RC_SUCCESS If data can be read.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated for path names.
  */
 TSS2_RC
 ifapi_load_key_async(FAPI_CONTEXT *context, size_t position)
@@ -1032,7 +1231,25 @@ ifapi_load_key_async(FAPI_CONTEXT *context, size_t position)
  * context->loadKey.auth_object
  *
  * @param[in,out] context for storing all state information.
- * @retval TSS2_RC_SUCCESS If data can be read.
+ * @param[in]     flush_parent If flush_parent is false parent is
+                  only flushed if a new parent is available.
+ *
+ * @retval TSS2_RC_SUCCESS If the loading of the key was successful.
+ * @retval All possible error codes of ESAPI.
+ * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
+ *         not covered by other return codes.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during execution.
+ * @retval TSS2_FAPI_RC_IO_ERROR If an error occurs during access to the policy
+ *         store.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND If an object needed for loading or
+           authentication was not found..
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
+ *         not successful.
+ * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for loading
+ *         fails.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a needed authorization callback
+ *         is not defined.
  */
 TSS2_RC
 ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
@@ -1047,6 +1264,7 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
     switch (context->loadKey.state) {
     statecase(context->loadKey.state, LOAD_KEY_GET_PATH);
         context->loadKey.key_path = NULL;
+        /* Compute path name of key to be loaded. */
         r = ifapi_path_string_n(&context->loadKey.key_path, NULL, path_list, NULL,
                                 *position);
         return_if_error(r, "Compute key path.");
@@ -1059,6 +1277,7 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
                       TSS2_FAPI_RC_GENERAL_FAILURE,
                       error_cleanup); /**< to avoid scan-build errors. */
 
+        /* Prepare key loading. */
         r = ifapi_keystore_load_async(&context->keystore, &context->io,
                                       context->loadKey.key_path);
         return_if_error2(r, "Could not open: %s", context->loadKey.key_path);
@@ -1116,6 +1335,7 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
             LOG_ERROR("Could not create a copy to push");
             goto error_cleanup;
         }
+        /* Add object to the list of keys to be loaded. */
         r = push_object_to_list(copyToPush, &context->loadKey.key_list);
         if (r) {
             free(copyToPush);
@@ -1270,19 +1490,21 @@ ifapi_flush_policy_session(FAPI_CONTEXT *context, ESYS_TR session, TSS2_RC r)
 /** State machine to authorize a key, a NV object of a hierarchy.
  *
  * @param[in,out] context for storing all state information.
- * @param[in] The FAPI object.
- * @param[out] The session which can be used for object authorization.
- * @retval TSS2_RC_SUCCESS If data can be read.
+ * @param[in] object The FAPI object.
+ * @param[out] session The session which can be used for object authorization.
+ *
+ * @retval TSS2_RC_SUCCESS If the authorization is successful
  * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during execution.
  * @retval TSS2_FAPI_RC_IO_ERROR If an error occurs during access to the policy
  *         store.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND If a policy for a certain path was not found.
- * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy diges was
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
            not successful.
- * @retval TSS2_FAPI_RC_BAD_TEMPLATE In a invalid policy is loaded during execution.
- * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for policy
+ * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for the policy
  *         execution fails.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a needed authorization callback
+           is not defined.
  */
 TSS2_RC
 ifapi_authorize_object(FAPI_CONTEXT *context, IFAPI_OBJECT *object, ESYS_TR *session)
@@ -1352,16 +1574,38 @@ ifapi_authorize_object(FAPI_CONTEXT *context, IFAPI_OBJECT *object, ESYS_TR *ses
     return r;
 }
 
-/** State machine to write data to the TPM.
+/** State machine to write data to the NV ram of the TPM.
  *
- * Context nv_cmd has to be prepared:
+ * The NV object will be read from object store and the data will be
+ * written by one, or more than one if necessary, ESAPI calls to the NV ram of
+ * the TPM.
+ * The sub context nv_cmd will be prepared:
+ * - data The buffer for the data which has to be written
+ * - offset The current offset for writing
+ * - numBytes The number of bytes which have to be written.
  *
  * @param[in,out] context for storing all state information.
  * @param[in] nvPath The fapi path of the NV object.
  * @param[in] param_offset The offset in the NV memory (will be stored in context).
  * @param[in] data The pointer to the data to be written.
  * @param[in] size The number of bytes to be written.
- * @retval TSS2_RC_SUCCESS If data can be read.
+ *
+ * @retval TSS2_RC_SUCCESS If data can be written.
+ * @retval All possible error codes of ESAPI.
+ * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during execution.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
+ +         not covered by other return codes.
+ * @retval TSS2_FAPI_RC_IO_ERROR If an error occurs during access to the object
+ *         store.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND The nv object or an object needed for
+ *         authentication was not found.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
+ *          not successful.
+ * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for the
+ *         command execution fails.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a needed authorization callback
+ *         is not defined.
  */
 TSS2_RC
 ifapi_nv_write(
@@ -1406,6 +1650,7 @@ ifapi_nv_write(
                object->misc.nv.public.nvPublic.dataSize);
         memcpy(&aux_data->buffer[0], &context->nv_cmd.data[0], aux_data->size);
 
+        /* Prepare reading of the key from keystore. */
         r = ifapi_keystore_load_async(&context->keystore, &context->io,
                                       context->nv_cmd.nvPath);
         return_if_error2(r, "Could not open: %s", context->nv_cmd.nvPath);
@@ -1428,6 +1673,7 @@ ifapi_nv_write(
         context->nv_cmd.esys_handle = nv_index;
         context->nv_cmd.nv_obj = object->misc.nv;
 
+        /* Determine the object which will be uses for authorization. */
         if (object->misc.nv.public.nvPublic.attributes & TPMA_NV_PPWRITE) {
             ifapi_init_hierarchy_object(auth_object, ESYS_TR_RH_PLATFORM);
             auth_index = ESYS_TR_RH_PLATFORM;
@@ -1447,6 +1693,7 @@ ifapi_nv_write(
         r = ifapi_authorize_object(context, auth_object, &auth_session);
         FAPI_SYNC(r, "Authorize NV object.", error_cleanup);
 
+        /* Prepare the writing to NV ram. */
         r = Esys_NV_Write_Async(context->esys,
                                 context->nv_cmd.auth_index,
                                 nv_index,
@@ -1478,6 +1725,7 @@ ifapi_nv_write(
                 r = ifapi_set_auth(context, auth_object, "NV Write");
                 goto_if_error_reset_state(r, " Fapi_NvWrite_Finish", error_cleanup);
 
+                /* Prepare the writing to NV ram. */
                 r = Esys_NV_Write_Async(context->esys,
                                         context->nv_cmd.auth_index,
                                         nv_index,
@@ -1506,6 +1754,8 @@ ifapi_nv_write(
             memcpy(&aux_data->buffer[0], &context->nv_cmd.write_data[data_idx],
                    aux_data->size);
             offset += bytesRequested;
+
+            /* Prepare the writing to NV ram */
             r = Esys_NV_Write_Async(context->esys,
                                     context->nv_cmd.auth_index,
                                     nv_index,
@@ -1560,16 +1810,32 @@ error_cleanup:
     return r;
 }
 
-/** State machine to read data from TPM.
+/** State machine to read data from the NV ram of the TPM.
  *
- * Context nv_cmd has to be prepared:
- * - auth_index
- * - numBytes
- * - esys_handle
+ * Context nv_cmd has to be prepared befor the call of this function:
+ * - auth_index The ESAPI handle of the authorization object.
+ * - numBytes The number of bytes which should be read.
+ * - esys_handle The ESAPI handle of the NV object.
+ *
  * @param[in,out] context for storing all state information.
  * @param[out] data the data fetched from TPM.
- * @param[in,out] The number of bytes requested and fetched.
- * @retval TSS2_RC_SUCCESS If data can be read.
+ * @param[in,out] size The number of bytes requested and fetched.
+ *
+ * @retval TSS2_RC_SUCCESS If the data was read successfully.
+ * @retval All possible error codes of ESAPI.
+ * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during execution.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
+ +         not covered by other return codes.
+ * @retval TSS2_FAPI_RC_IO_ERROR If an error occurs during access to the object
+ *         store.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND If a policy for a certain path was not found.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
+ *         not successful.
+ * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for the
+ *         execution fails.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a needed authorization callback
+ *         is not defined.
  */
 TSS2_RC
 ifapi_nv_read(
@@ -1603,6 +1869,8 @@ ifapi_nv_read(
             aux_size = context->nv_buffer_max;
         else
             aux_size = context->nv_cmd.numBytes;
+
+        /* Prepare the reading from NV ram. */
         r = Esys_NV_Read_Async(context->esys,
                                context->nv_cmd.auth_index,
                                nv_index,
@@ -1621,6 +1889,7 @@ ifapi_nv_read(
     statecase(context->nv_cmd.nv_read_state, NV_READ_AUTH_SENT);
         LOG_TRACE("NV_READ_NULL_AUTH_SENT");
         if (context->nv_cmd.rdata == NULL) {
+            /* Allocate the data buffer if not already initialized. */
             LOG_TRACE("Allocate %zu bytes", context->nv_cmd.numBytes);
             context->nv_cmd.rdata = malloc(context->nv_cmd.numBytes);
         }
@@ -1642,6 +1911,8 @@ ifapi_nv_read(
         data_idx += aux_data->size;
         free(aux_data);
         if (numBytes > 0) {
+            /* The reading of the NV data is not completed. The next
+               reading will be prepared. */
             if (numBytes > context->nv_buffer_max)
                 aux_size = context->nv_buffer_max;
             else
@@ -1680,10 +1951,15 @@ error_cleanup:
 
 /** State machine to retrieve random data from TPM.
  *
+ * If the buffer size exceeds the maximum size, several ESAPI calls are made.
+ *
  * @param[in,out] context for storing all state information.
  * @param[in] numBytes Number of random bytes to be computed.
  * @param[out] data The random data.
+ *
  * @retval TSS2_RC_SUCCESS If random data can be computed.
+ * @retval All possible error codes of ESAPI.
+ * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_get_random(FAPI_CONTEXT *context, size_t numBytes, uint8_t **data)
@@ -1699,6 +1975,7 @@ ifapi_get_random(FAPI_CONTEXT *context, size_t numBytes, uint8_t **data)
         return_if_null(context->get_random.data, "FAPI out of memory.",
                        TSS2_FAPI_RC_MEMORY);
 
+        /* Prepare the creation of random data. */
         r = Esys_GetRandom_Async(context->esys,
                                  context->session1,
                                  ESYS_TR_NONE, ESYS_TR_NONE,
@@ -1716,6 +1993,7 @@ ifapi_get_random(FAPI_CONTEXT *context, size_t numBytes, uint8_t **data)
                        error_cleanup);
         }
 
+        /* Save created random data. */
         memcpy(context->get_random.data + context->get_random.idx, &aux_data->buffer[0],
                aux_data->size);
         context->get_random.numBytes -= aux_data->size;
@@ -1723,6 +2001,8 @@ ifapi_get_random(FAPI_CONTEXT *context, size_t numBytes, uint8_t **data)
         Esys_Free(aux_data);
         aux_data = NULL;
         if (context->get_random.numBytes > 0) {
+
+            /* Continue creaion of random data if needed. */
             r = Esys_GetRandom_Async(context->esys, context->session1, ESYS_TR_NONE,
                                      ESYS_TR_NONE, min(context->get_random.numBytes, sizeof(TPMU_HA)));
             goto_if_error_reset_state(r, "FAPI GetRandom", error_cleanup);
@@ -1749,7 +2029,32 @@ error_cleanup:
     return r;
 }
 
-/** Load a key and initialize profile and session for ESAPI commands
+/** Load a key and initialize profile and session for ESAPI execution.
+ *
+ * This state machine prepares the session for key loading. Some
+ * session related parameters will be taken from profile.
+ *
+ * @param[in,out] context The FAPI_CONTEXT.
+ * @param[in]     keyPath the key path without the parent directories
+ *                of the key store. (e.g. HE/EK, HS/SRK/mykey)
+ * @param[out]    key_object The callee allocated internal representation
+ *                of a key object.
+ *
+ * @retval TSS2_RC_SUCCESS If the key was loaded successfully.
+ * @retval All possible error codes of ESAPI.
+ * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
+ *         not covered by other return codes.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during execution.
+ * @retval TSS2_FAPI_RC_IO_ERROR If an error occurs during access to the object
+ *         store.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND If a policy or key was not found.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
+           not successful.
+ * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for policy
+ *         execution fails.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a needed authorization callback
+           is not defined.
  */
 TSS2_RC
 ifapi_load_key(
@@ -1767,6 +2072,7 @@ ifapi_load_key(
     statecase(context->Key_Sign.state, SIGN_INIT);
         context->Key_Sign.keyPath = keyPath;
 
+        /* Prepare the session creation. */
         r = ifapi_get_sessions_async(context,
                                      IFAPI_SESSION_GENEK | IFAPI_SESSION1,
                                      TPMA_SESSION_DECRYPT, 0);
@@ -1781,6 +2087,7 @@ ifapi_load_key(
         return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
+        /* Prepare the key loading. */
         r = ifapi_load_keys_async(context, context->Key_Sign.keyPath);
         goto_if_error(r, "Load keys.", error_cleanup);
         fallthrough;
@@ -1802,6 +2109,42 @@ error_cleanup:
     return r;
 }
 
+/** State machine for signing operation.
+ *
+ * The key used for signing will be authorized and the signing of the passed data
+ * will be executed.
+ *
+ * @param[in,out] context The FAPI_CONTEXT.
+ * @param[in]     sig_key_object The Fapi key object which will be used to
+ *                sign the passed digest.
+ * @param[in]     padding is the padding algorithm used. Possible values are RSA_SSA,
+ *                RSA_PPSS (case insensitive). padding MAY be NULL.
+ * @param[in]     digest is the data to be signed, already hashed.
+ *                digest MUST NOT be NULL.
+ * @param[out]    tpm_signature returns the signature in binary form (DER format).
+ *                tpm_signature MUST NOT be NULL (callee-allocated).
+ * @param[out]    publicKey is the public key of the signing key in PEM format.
+ *                publicKey is callee allocated and MAY be NULL.
+ * @param[out]    certificate is the certificate associated with the signing key
+ *                in PEM format. certificate MAY be NULL.
+ *
+ * @retval TSS2_RC_SUCCESS If the signing was successful.
+ * @retval All possible error codes of ESAPI.
+ * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
+ *         not covered by other return codes.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during execution.
+ * @retval TSS2_FAPI_RC_IO_ERROR If an error occurs during access to the policy
+ *         store.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND If a policy for a certain path was not found.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
+ *         not successful.
+ * @retval TSS2_FAPI_RC_BAD_TEMPLATE In a invalid policy is loaded during execution.
+ * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for policy
+ *         execution fails.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a needed authorization callback
+ *         is not defined.
+ */
 TSS2_RC
 ifapi_key_sign(
     FAPI_CONTEXT     *context,
@@ -1834,6 +2177,7 @@ ifapi_key_sign(
         r = ifapi_get_sig_scheme(context, sig_key_object, padding, digest, &sig_scheme);
         goto_if_error(r, "Get signature scheme", cleanup);
 
+        /* Prepare the signing operation. */
         r = Esys_Sign_Async(context->esys,
                             context->Key_Sign.handle,
                             session,
@@ -1852,6 +2196,7 @@ ifapi_key_sign(
         ifapi_flush_policy_session(context, context->policy.session, r);
         goto_if_error(r, "Error: Sign", cleanup);
 
+        /* Prepare the flushing of the signing key. */
         r = Esys_FlushContext_Async(context->esys, context->Key_Sign.handle);
         goto_if_error(r, "Error: FlushContext", cleanup);
         fallthrough;
@@ -1863,6 +2208,7 @@ ifapi_key_sign(
 
         int pem_size;
         if (publicKey) {
+            /* Convert internal key object to PEM format. */
             r = ifapi_pub_pem_key_from_tpm(&sig_key_object->misc.key.public,
                                                 publicKey,
                                                 &pem_size);
@@ -1890,7 +2236,22 @@ cleanup:
     return r;
 }
 
-/** Get json encoding for FAPI object
+/** Get json encoding for FAPI object.
+ *
+ * A json representation which can be used for exporting of a FAPI object will
+ * be created.
+ *
+ * @param[in]   context The FAPI_CONTEXT.
+ * @param[in]   object The object to be serialized.
+ * @param[out]  json_string The json string created by the deserialzation
+ *              function (callee-allocated).
+ *
+ * @retval TSS2_RC_SUCCESS If the serialization was successful.
+ * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during
+ *         serialization.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE If a NULL pointer was passed for
+ *         the object.
  */
 TSS2_RC
 ifapi_get_json(FAPI_CONTEXT *context, IFAPI_OBJECT *object, char **json_string)
@@ -1921,8 +2282,8 @@ cleanup:
  * NV objects and persistent keys will serialized via the ESYS API to
  * enable reconstruction durinng loading from keystore.
  *
- * @param[object] object  The nv object or the key.
- * @param[out] jso pointer to the json object.
+ * @param[in]     ectx The ESAPI context.
+ * @param[in,out] object  The nv object or the key.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval ESYS error code if the serialization fails.
  */
@@ -1937,6 +2298,7 @@ ifapi_esys_serialize_object(ESYS_CONTEXT *ectx, IFAPI_OBJECT *object)
     case IFAPI_NV_OBJ:
         nv_object = &object->misc.nv;
         if (nv_object->serialization.buffer != NULL) {
+            /* Cleanup old buffer */
             Fapi_Free(nv_object->serialization.buffer);
             nv_object->serialization.buffer = NULL;
         }
@@ -1950,6 +2312,7 @@ ifapi_esys_serialize_object(ESYS_CONTEXT *ectx, IFAPI_OBJECT *object)
         key_object = &object->misc.key;
         key_object->serialization.size = 0;
         if (key_object->serialization.buffer != NULL) {
+            /* Cleanup old buffer */
             Fapi_Free(key_object->serialization.buffer);
             key_object->serialization.buffer = NULL;
         }
@@ -1973,9 +2336,8 @@ ifapi_esys_serialize_object(ESYS_CONTEXT *ectx, IFAPI_OBJECT *object)
  *
  * For persistent objects the correspodning ESYS object will be created.
  *
- * @param[inout] ectx The ESYS context.
- * @param[in]  jso the json object to be deserialized.
- * @param[out] out the deserialzed binary object.
+ * @param[in,out] ectx The ESYS context.
+ * @param[out] object the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
  */
@@ -2024,7 +2386,22 @@ cleanup:
     return r;
 }
 
-/** Load a key and initialize profile and session for ESAPI commands
+/** Prepare key creation with an auth value.
+ *
+ * The auth value will be copied int the FAPI context for later use in key creation.
+ *
+ * @param[in,out] context The FAPI_CONTEXT.
+ * @param[in]     keyPath the key path without the parent directories
+ *                of the key store. (e.g. HE/EK, HS/SRK/mykey)
+ * @param[in]     policyPath identifies the policy to be associated with the new key.
+ *                policyPath MAY be NULL. If policyPath is NULL then no policy will
+ *                be associated with the key.
+ * @param[in]     authValue The authentication value of the key.
+ *
+ * @retval TSS2_RC_SUCCESS If the preparation was successful.
+ * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS If the object with does already exist in
+ *         keystore.
+ * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_key_create_prepare_auth(
@@ -2037,6 +2414,7 @@ ifapi_key_create_prepare_auth(
 
     memset(&context->cmd.Key_Create.inSensitive, 0, sizeof(TPM2B_SENSITIVE_CREATE));
     if (authValue) {
+        /* Copy the auth value */
         if (strlen(authValue) > sizeof(TPMU_HA)) {
             return_error(TSS2_FAPI_RC_BAD_VALUE, "Password too long.");
         }
@@ -2049,6 +2427,26 @@ ifapi_key_create_prepare_auth(
     return r;
 }
 
+/** Prepare key creation with an auth value and sensitive data.
+ *
+ * The auth value and the sensitive data will be copied int the FAPI context
+ * for later use in key creation.
+ *
+ * @param[in,out] context The FAPI_CONTEXT.
+ * @param[in]     keyPath the key path without the parent directories
+ *                of the key store. (e.g. HE/EK, HS/SRK/mykey)
+ * @param[in]     policyPath identifies the policy to be associated with the new key.
+ *                policyPath MAY be NULL. If policyPath is NULL then no policy will
+ *                be associated with the key.
+ * @param[in]     dataSize The size of the sensitive data.
+ * @param[in]     authValue The authentication value of the key.
+ * @param[in]     data The sensitive data.
+ *
+ * @retval TSS2_RC_SUCCESS If the preparation was successful.
+ * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS If the object with does already exist in
+ *         keystore.
+ * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ */
 TSS2_RC
 ifapi_key_create_prepare_sensitive(
     FAPI_CONTEXT  *context,
@@ -2065,10 +2463,12 @@ ifapi_key_create_prepare_sensitive(
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Data to big or equal zero.");
     }
     if (data)
+        /* Copy the sensitive data */
         memcpy(&context->cmd.Key_Create.inSensitive.sensitive.data.buffer,
                data, dataSize);
     context->cmd.Key_Create.inSensitive.sensitive.data.size = dataSize;
     if (authValue) {
+        /* Copy the auth value. */
         if (strlen(authValue) > sizeof(TPMU_HA)) {
             return_error(TSS2_FAPI_RC_BAD_VALUE, "Password too long.");
         }
@@ -2080,7 +2480,22 @@ ifapi_key_create_prepare_sensitive(
     return r;
 }
 
-/** Load a key and initialize profile and session for ESAPI commands
+/** Prepare key creation if possible.
+ *
+ * It will be checked whether the object already exists in key store and the FAPI context
+ * will be initialized appropriate for key creation.
+ *
+ * @param[in,out] context The FAPI_CONTEXT.
+ * @param[in]     keyPath the key path without the parent directories
+ *                of the key store. (e.g. HE/EK, HS/SRK/mykey)
+ * @param[in]     policyPath identifies the policy to be associated with the new key.
+ *                policyPath MAY be NULL. If policyPath is NULL then no policy will
+ *                be associated with the key.
+ *
+ * @retval TSS2_RC_SUCCESS If the preparation was successful.
+ * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS If the object with does already exist in
+ *         keystore.
+ * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_key_create_prepare(
@@ -2131,6 +2546,35 @@ error:
     return r;
 }
 
+/** State machine for key creation.
+ *
+ * The function for the preparation of the key have to called before the state machine can
+ * be activated. The linked list for the used directories must be available in the
+ * FAPI context.
+ * It will be checked whether the object already exists in key store and the FAPI context
+ * will be initialized appropriate for key creation.
+ *
+ * @param[in,out] context The FAPI_CONTEXT.
+ * @param[in] template The template which defines the key attributes and whether the
+ *            key will be persistent.
+ *
+ * @retval TSS2_RC_SUCCESS If the key could be generated.
+ * @retval All possible error codes of ESAPI.
+ * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
+ *         not covered by other return codes.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during execution.
+ * @retval TSS2_FAPI_RC_IO_ERROR If an error occurs during access to the policy
+ *         store.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND If an object needed for creation or
+           authentication was not found..
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
+ *         not successful.
+ * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for creation
+ *         fails.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a needed authorization callback
+ *         is not defined.
+ */
 TSS2_RC
 ifapi_key_create(
     FAPI_CONTEXT *context,
@@ -2301,6 +2745,7 @@ ifapi_key_create(
             r = TSS2_RC_SUCCESS;
             break;
         }
+        /* Prepare Flushing of key used for authorization */
         r = Esys_FlushContext_Async(context->esys, context->loadKey.auth_object.handle);
         goto_if_error(r, "Flush parent", error_cleanup);
         fallthrough;
@@ -2334,7 +2779,20 @@ error_cleanup:
     return r;
 }
 
-/** Get signature scheme for object of if padding compute scheme from padding.
+/** Get signature scheme for key.
+ *
+ * If padding is passed the scheme will be derived from paddint otherwise
+ * the scheme form object will be used.
+ *
+ * @param[in] context The FAPI_CONTEXT.
+ * @param[in] object The internal FAPI object of the key.
+ * @param[in] padding The strings RSA_SSA or RSA_PSS will be converted
+ *            into the TSS constants used for the signing scheme.
+ * @param[in] digest The digest size will be used to dermine the hashalg
+ *            for the signature scheme.
+ * @param[out] sig_scheme The computed signature scheme.
+ *
+ * @retval TSS2_FAPI_RC_BAD_VALUE If the digest size is not appropriate.
  */
 TSS2_RC
 ifapi_get_sig_scheme(
@@ -2375,7 +2833,23 @@ ifapi_get_sig_scheme(
     }
 }
 
-/** State machine for changing the hierarchy authorization
+/** State machine for changing the hierarchy authorization.
+ *
+ * First it will be tried to set the auth value of the hierarchy with a
+ * "null" authorization. If this trial is not successful it will be tried to
+ * authorize the hierarchy via a callback.
+ * If an not null auth value is passed with_auth is set to yes for the
+ * object otherwise to no. So for later authorizations it will be clear
+ * whether null authorization is possible or not.
+ *
+ * @param[in] context The FAPI_CONTEXT.
+ * @param[in] handle The ESAPI handle of the hierarchy.
+ * @param[in,out] hierarchy_object The internal FAPI representation of a
+ *                hierachy.
+ * @param[in] newAuthValue The new authorization for the hierachy.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval All possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_change_auth_hierarchy(
@@ -2441,6 +2915,35 @@ error:
     return r;
 }
 
+/** State machine for changing the policy of a hierarchy.
+ *
+ * Based on a passed policy harness the policy digest will be computed.
+ * First it will be tried to set the policy of the hierarchy with a
+ * "null" authorization. If this trial is not successful it will be tried to
+ * authorize the hierarchy via a callback.
+ * If an not null auth value is passed with_auth is set to yes for the
+ * object otherwise to no. So for later authorizations it will be clear
+ * whether null authorization is possible or not.
+ *
+ * @param[in] context The FAPI_CONTEXT.
+ * @param[in] handle The ESAPI handle of the hierarchy.
+ * @param[in,out] hierarchy_object The internal FAPI representation of a
+ *                hierachy.
+ * @param[in] policy_harness The new policy assigned to the hierarchy.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval All possible error codes of ESAPI.
+ * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
+ *         not covered by other return codes.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during policy calculation.
+ * @retval TSS2_FAPI_RC_IO_ERROR If an error occurs during access to the policy
+ *         store.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND If an object needed for policy calculation was
+ *         not found.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
+ *         not successful.
+ */
 TSS2_RC
 ifapi_change_policy_hierarchy(
     FAPI_CONTEXT *context,
@@ -2459,6 +2962,7 @@ ifapi_change_policy_hierarchy(
 
         context->policy.state = POLICY_CALCULATE;
 
+        /* Calculate the policy digest which will be used as hierachy policy. */
         r = ifapi_calculate_tree(context, NULL, /**< no path needed */
                                  policy_harness,
                                  context->profiles.default_profile.nameAlg,
@@ -2467,6 +2971,7 @@ ifapi_change_policy_hierarchy(
         goto_if_error(r, "Policy calculation", error);
 
 
+        /* Policy data will be stored in the provisioning context. */
         context->cmd.Provision.policy_digest.size = context->cmd.Provision.hash_size;
         memcpy(&context->cmd.Provision.policy_digest.buffer[0],
                &policy_harness
@@ -2476,6 +2981,7 @@ ifapi_change_policy_hierarchy(
         hierarchy_object->policy_harness = policy_harness;
         hierarchy_object->misc.hierarchy.authPolicy = context->cmd.Provision.policy_digest;
 
+        /* Prepare the setting of the policy. */
         r = Esys_SetPrimaryPolicy_Async(context->esys, handle,
                                         ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                                         &context->cmd.Provision.policy_digest,
@@ -2513,7 +3019,14 @@ error:
     return r;
 }
 
-/** Allocated ifapi objects will be recorede in the context.
+/** Allocate ifapi object and store the result in a linked list.
+ *
+ * Allocated ifapi objects will be recorded in the context.
+ *
+ * @param[in,out] context The FAPI_CONTEXT.
+ *
+ * @retval The allocated ifapi object.
+ * @retval NULL if the object cannot be allocated.
  */
 IFAPI_OBJECT
 *ifapi_allocate_object(FAPI_CONTEXT *context)
@@ -2532,7 +3045,9 @@ IFAPI_OBJECT
     return (IFAPI_OBJECT *) node->object;
 }
 
-/** Free an object stored in the context.
+/** Free all ifapi objects stored in the context.
+ *
+ * @param[in,out] context The FAPI_CONTEXT.
  */
 void
 ifapi_free_objects(FAPI_CONTEXT *context)
@@ -2547,7 +3062,11 @@ ifapi_free_objects(FAPI_CONTEXT *context)
     }
 }
 
-/** Free all objects stored in the context.
+/** Free ifapi a object stored in the context.
+ *
+ * @param[in,out] context The FAPI_CONTEXT.
+ * @param[in,out] object The object which should be removed from the
+ *                the linked list stored in context.
  */
 void
 ifapi_free_object(FAPI_CONTEXT *context, IFAPI_OBJECT **object)
@@ -2591,6 +3110,13 @@ ifapi_free_object(FAPI_CONTEXT *context, IFAPI_OBJECT **object)
         more_data = false; \
     }
 
+
+/** Prepare the receiving of capability data.
+ *
+ * @param[in,out] context The FAPI_CONTEXT.
+ *
+ * @retval TSS2_RC_SUCCESS.
+ */
 TPM2_RC
 ifapi_capability_init(FAPI_CONTEXT *context)
 {
@@ -2602,6 +3128,21 @@ ifapi_capability_init(FAPI_CONTEXT *context)
 
 }
 
+/** State machine for receiving TPM capability information.
+ *
+ * The state machine shares the state with the FAPI function Fapi_GetInfo.
+ * context->state == GET_INFO_GET_CAP_MORE singals that more capability data can
+ * be retrieved.
+ *
+ * @param[in,out] context The FAPI_CONTEXT.
+ * @param[in]     capability The capability to be retrieved.
+ * @param[in]     count The maximal number of items that should be retrieved.
+ * @param[out]    capability_data The retrieved capability information.
+ *
+ * @retval TSS2_RC_SUCCESS If all capability data is retrieved.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if more capability data is available.
+ * @retval All possible error codes of ESAPI.
+ */
 TPM2_RC
 ifapi_capability_get(FAPI_CONTEXT *context, TPM2_CAP capability,
                      UINT32 count, TPMS_CAPABILITY_DATA **capability_data) {
@@ -2737,6 +3278,23 @@ ifapi_capability_get(FAPI_CONTEXT *context, TPM2_CAP capability,
     return r;
 }
 
+/** Get certificates stored in NV ram.
+ *
+ * The NV handles in the certificate range are determined. The corresponding
+ * certificates are read out and stored in a linked list.
+ *
+ * @param[in,out] context The FAPI_CONTEXT. The sub context for NV reading
+ *                will be used.
+ * @param[in] min_handle The first possible handle in the handle range.
+ * @param[in] max_handle Maximal handle to filter out the handles not in the
+ *            handle range for certificates.
+ * @param[out] cert_list The callee allocates linked list of certificates.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval All possible error codes of ESAPI.
+ * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ *
+ */
 TSS2_RC
 ifapi_get_certificates(
     FAPI_CONTEXT *context,
@@ -2758,6 +3316,7 @@ ifapi_get_certificates(
     statecase(context->get_cert_state, GET_CERT_INIT);
         *cert_list = NULL;
         context->cmd.Provision.cert_idx = 0;
+        /* Prepare the reading of the capability handles in the certificate range */
         r = Esys_GetCapability_Async(context->esys,
                                      ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                                      TPM2_CAP_HANDLES, min_handle,
@@ -2872,9 +3431,12 @@ ifapi_get_certificates(
 
 /** Get description of an internal FAPI object.
  *
- * @parm[in] object The object with the descritpion.
- * @retval The char string of the description.
- * @retval NULL if no description exists.
+ * @param[in] object The object with the descritpion.
+ * @param[out] description The callee allocated description.
+ *
+ * @retval TSS2_RC_SUCCESS If a copy of the description can be returned
+ *         or if no description exists.
+ * @retval TSS2_FAPI_RC_MEMORY in the copy cannot be allocated.
  */
 TSS2_RC
 ifapi_get_description(IFAPI_OBJECT *object, char **description)
@@ -2906,8 +3468,8 @@ ifapi_get_description(IFAPI_OBJECT *object, char **description)
 
 /** Set description of an internal FAPI object.
  *
- * @parm[in,out] object The object with the descritpion.
- * @parm[in] descritpion The description char strint or NULL.
+ * @param[in,out] object The object with the description.
+ * @param[in] description The description char strint or NULL.
  */
 void
 ifapi_set_description(IFAPI_OBJECT *object, char *description)

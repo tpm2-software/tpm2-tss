@@ -259,6 +259,7 @@ expand_path_to_object(
  * @parm[in] config_systemdir The configured system directory.
  * @parm[in] config_userdir The configured user directory.
  * @parm[in] config_defaultprofile The configured profile.
+ *
  * @retval TSS2_RC_SUCCESS If the keystore can be initialized.
  * @retval TSS2_FAPI_RC_IO_ERROR If the user part of the keystore can't be
  *         initialized.

@@ -174,7 +174,7 @@ ifapi_get_object_name(
  * @parm[in] path The relative path of the NV object.
  * @parm[out] public The caller allocated public structure.
  * @parm[in,out] ctx The context to access io and keystore module and to store
-     *           the io state.
+ *           the io state.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be loaded.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
@@ -194,7 +194,7 @@ ifapi_get_nv_public(
 
     switch (context->io_state) {
     statecase(context->io_state, IO_INIT)
-        /* Prepare the loading of the object. */
+        /* Prepare the loading of the NV object. */
         r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
         return_if_error2(r, "Could not open: %s", path);
         fallthrough;

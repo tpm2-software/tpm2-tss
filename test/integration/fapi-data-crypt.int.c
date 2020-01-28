@@ -174,6 +174,19 @@ error_cleanup:
     return r;
 }
 
+/** Test the FAPI functions for encryption and decryption.
+ *
+ * Tested FAPI commands:
+ *  - Fapi_Provision()
+ *  - Fapi_CreateKey()
+ *  - Fapi_Import()
+ *  - Fapi_Encrypt()
+ *  - Fapi_Decrypt()
+ *
+ * @param[in,out] context The FAPI_CONTEXT.
+ * @retval EXIT_FAILURE
+ * @retval EXIT_SUCCESS
+ */
 int
 test_fapi_data_crypt_rsa(FAPI_CONTEXT *context)
 {
