@@ -3,8 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [2.3.3-rc1] - 2020-01-21
+## [2.3.3-rc2] - 2020-01-28
 ### Fixed
+- Fixed mixing salted and unsalted sessions in the same ESAPI context
+- Removed use of VLAs from TPML marshal code
 - Added check for object node before calling compute_session_value function
 - Fixed auth calculation in Esys_StartAuthSession called with optional parameters
 - Fixed compute_encrypted_salt error handling in Esys_StartAuthSession
