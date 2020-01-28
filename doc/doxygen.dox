@@ -1503,10 +1503,6 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  cryptographic backends may exist.
  \{
  \def IFAPI_CRYPTO_CONTEXT_BLOB
- \fn TPMI_ALG_HASH ifapi_get_sig_hash_alg(const IFAPI_KEY_PROFILE *profile,
-    TPMT_PUBLIC *tpmPublic)
- \fn TPMI_ALG_HASH ifapi_get_sig_hash_alg(const IFAPI_KEY_PROFILE *profile,
-    TPMT_PUBLIC *tpmPublic)
  \fn TSS2_RC ifapi_get_profile_sig_scheme(const IFAPI_KEY_PROFILE *profile,
     const TPMT_PUBLIC *tpmPublic, TPMT_SIG_SCHEME *signatureScheme)
  \fn TSS2_RC ifapi_der_sig_to_tpm(const TPMT_PUBLIC *tpmPublic,
@@ -1543,6 +1539,373 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
 \}
 */
 
+ /*!
+ \defgroup ifapi_policy FAPI policy calculation module
+ \ingroup ifapi
+ Provides functions for policy calculation (without TPM).
+ \{
+  \def IFAPI_POLICY
+  \fn TSS2_RC ifapi_calculate_tree(
+    FAPI_CONTEXT *context,
+    const char *policyPath,
+    TPMS_POLICY_HARNESS *harness,
+    TPMI_ALG_HASH hash_alg,
+    size_t *digest_idx,
+    size_t *hash_size)
+  \fn TSS2_RC ifapi_calculate_policy_for_key(
+    FAPI_CONTEXT *context,
+    const char *policyPath,
+    IFAPI_KEY_TEMPLATE *template,
+    TPMS_POLICY_HARNESS **policy_harness)
+ \}
+*/
+
+ /*!
+ \defgroup ifapi_helper FAPI helper functions module
+ \ingroup ifapi
+ Provides helper functions.
+ \{
+  \def IFAPI_HELPER
+    \fn TSS2_RC ifapi_create_dirs(const char *supdir, const char *path);
+
+\fn TSS2_RC ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template);
+
+\fn TSS2_RC ifapi_set_nv_flags(const char *type, IFAPI_NV_TEMPLATE *template,
+                   const char *policy);
+
+\fn bool ifapi_path_type_p(const char *path, const char *type);
+
+\fn ESYS_TR ifapi_get_hierary_handle(const char *path);
+
+\fn bool ifapi_hierarchy_path_p(const char *path);
+
+\fn bool ifapi_TPMT_PUBLIC_cmp(TPMT_PUBLIC *in1, TPMT_PUBLIC *in2);
+
+\fn void ifapi_init_hierarchy_object(
+    IFAPI_OBJECT *hierarchy,
+    ESYS_TR esys_handle);
+
+\fn char * get_description(IFAPI_OBJECT *object);
+
+\fn TSS2_RC create_dirs(const char *supdir, NODE_STR_T *dir_list, mode_t mode);
+
+\fn TSS2_RC init_explicit_key_path(
+    const char *context_profile,
+    const char *ipath,
+    NODE_STR_T **list_node1,
+    NODE_STR_T **current_list_node,
+    NODE_STR_T **result);
+
+\fn size_t ifapi_path_length(NODE_STR_T *node);
+
+\fn size_t path_str_length(NODE_STR_T *node, int delim_length);
+
+\fn void ifapi_free_object_list(NODE_OBJECT_T *node);
+
+\fn void ifapi_free_node_list(NODE_OBJECT_T *node);
+
+\fn TSS2_RC ifapi_path_string(char **dest, const char *supdir, NODE_STR_T *node, char *name);
+
+\fn TSS2_RC ifapi_path_string_n(
+    char **dest,
+    const char *supdir,
+    NODE_STR_T *node,
+    char *name,
+    size_t n);
+
+\fn TSS2_RC ifapi_asprintf(char **str, const char *fmt, ...);
+
+\fn NODE_STR_T * split_string(const char *string, char *delimiter);
+
+\fn NODE_STR_T * init_string_list(const char *string);
+
+\fn bool add_string_to_list(NODE_STR_T *str_list, char *string);
+
+\fn void free_string_list(NODE_STR_T *node);
+
+\fn void ifapi_cleanup_policy_harness(
+    TPMS_POLICY_HARNESS *harness);
+
+\fn TPMS_POLICY_HARNESS * ifapi_copy_policy_harness(
+    const TPMS_POLICY_HARNESS *from_harness);
+
+\fn TSS2_RC ifapi_get_name(
+    TPMT_PUBLIC *publicInfo,
+    TPM2B_NAME *name);
+
+\fn TSS2_RC ifapi_nv_get_name(
+    TPM2B_NV_PUBLIC *publicInfo,
+    TPM2B_NAME *name);
+
+\fn TSS2_RC ifapi_object_cmp_name(
+    IFAPI_OBJECT *object,
+    void *name,
+    bool *equal);
+
+\fn TSS2_RC ifapi_object_cmp_nv_public(
+    IFAPI_OBJECT *object,
+    void *nv_public,
+    bool *equal);
+
+\fn TSS2_RC ifapi_tpm_to_fapi_signature(
+    IFAPI_OBJECT *sig_key_object,
+    TPMT_SIGNATURE *tpm_signature,
+    uint8_t **signature,
+    size_t *signatureSize);
+
+\fn TSS2_RC ifapi_compute_quote_info(
+    IFAPI_OBJECT *sig_key_object,
+    TPM2B_ATTEST *tpm_quoted,
+    char **quoteInfo);
+
+\fn TSS2_RC ifapi_get_quote_info(
+    char const *quoteInfo,
+    TPM2B_ATTEST *tpm_quoted,
+    FAPI_QUOTE_INFO *fapi_quote_ingo);
+
+\fn TSS2_RC push_object_to_list(void *object, NODE_OBJECT_T **object_list);
+
+\fn TSS2_RC append_object_to_list(void *object, NODE_OBJECT_T **object_list);
+
+\fn TSS2_RC push_object_with_size_to_list(void *object, size_t size, NODE_OBJECT_T **object_list);
+
+\fn size_t policy_digest_size(
+    IFAPI_OBJECT *object);
+
+\fn TPM2B_DIGEST * get_policy(IFAPI_OBJECT *object);
+
+\fn bool object_with_auth(IFAPI_OBJECT *object);
+
+\fn TSS2_RC ifapi_get_nv_start_index(const char *path, TPM2_HANDLE *start_nv_index);
+
+\fn TSS2_RC ifapi_check_profile_pcr_selection(
+    const TPML_PCR_SELECTION *pcr_profile,
+    const TPML_PCR_SELECTION *pcr_capablity);
+
+\fn TSS2_RC ifapi_filter_pcr_selection_by_index(
+    TPML_PCR_SELECTION *pcr_selection,
+    const TPM2_HANDLE *pcr_index,
+    size_t pcr_count);
+
+TSS2_RC ifapi_calculate_pcr_digest(
+    json_object *jso_event_list,
+    const FAPI_QUOTE_INFO *quote_info,
+    TPM2B_DIGEST *pcr_digest);
+
+\fn TSS2_RC ifapi_compute_policy_digest(
+    TPML_PCRVALUES *pcrs,
+    TPML_PCR_SELECTION *pcr_selection,
+    TPMI_ALG_HASH hash_alg,
+    TPM2B_DIGEST *pcr_digest);
+
+\fn bool ifapi_cmp_public_key(
+    TPM2B_PUBLIC *key1,
+    TPM2B_PUBLIC *key2);
+
+\fn TSS2_RC ifapi_get_curl_buffer(
+    unsigned char * url,
+    unsigned char ** buffer,
+    size_t *cert_size);
+ \}
+*/
+
+ /*!
+ \defgroup ifapi_utility FAPI utility module
+ \ingroup ifapi
+ Provides internal utility functions.
+ \{
+  \def IFAPI_UTILITY
+ \fn TSS2_RC ifapi_flush_object(FAPI_CONTEXT *context, ESYS_TR session);
+
+\fn TSS2_RC ifapi_get_session_async(ESYS_CONTEXT *esys, ESYS_TR saltkey, const IFAPI_PROFILE *profile);
+
+\fn TSS2_RC ifapi_get_session_finish(ESYS_CONTEXT *esys, ESYS_TR *session,
+                         TPMA_SESSION flags);
+
+\fn TSS2_RC ifapi_set_auth(
+    FAPI_CONTEXT *context,
+    IFAPI_OBJECT *auth_object,
+    const char *description);
+
+\fn TSS2_RC ifapi_key_deserialize(
+    FAPI_CONTEXT *context,
+    json_object *jso,
+    ESYS_TR *kHandle,
+    IFAPI_OBJECT *object);
+
+\fn TSS2_RC ifapi_get_free_handle_async(FAPI_CONTEXT *fctx, TPM2_HANDLE *handle);
+
+\fn TSS2_RC ifapi_get_free_handle_finish(FAPI_CONTEXT *fctx, TPM2_HANDLE *handle,
+                             TPM2_HANDLE max);
+
+\fn TSS2_RC ifapi_init_primary_async(
+    FAPI_CONTEXT *context,
+    TSS2_KEY_TYPE ktype);
+
+\fn TSS2_RC ifapi_init_primary_finish(
+    FAPI_CONTEXT *context,
+    TSS2_KEY_TYPE ktype);
+
+\fn TSS2_RC ifapi_session_init(FAPI_CONTEXT *context);
+
+\fn TSS2_RC ifapi_non_tpm_mode_init(FAPI_CONTEXT *context);
+
+\fn void ifapi_session_clean(FAPI_CONTEXT *context);
+
+\fn TSS2_RC ifapi_cleanup_session(FAPI_CONTEXT *context);
+
+\fn void ifapi_primary_clean(FAPI_CONTEXT *context);
+
+\fn TSS2_RC ifapi_get_sessions_async(
+    FAPI_CONTEXT *context,
+    IFAPI_SESSION_TYPE session_flags,
+    TPMA_SESSION attribute_flags1,
+    TPMA_SESSION attribute_flags2);
+
+\fn TSS2_RC ifapi_get_sessions_finish(FAPI_CONTEXT *context, const IFAPI_PROFILE *profile);
+
+\fn TSS2_RC ifapi_merge_profile_into_nv_template(
+    FAPI_CONTEXT *context,
+    IFAPI_NV_TEMPLATE *template);
+
+\fn TSS2_RC ifapi_merge_profile_into_template(
+    const IFAPI_PROFILE *profile,
+    IFAPI_KEY_TEMPLATE *template);
+
+\fn TSS2_RC ifapi_load_key_async(FAPI_CONTEXT *context, size_t position);
+
+\fn TSS2_RC ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent);
+
+\fn TSS2_RC ifapi_load_keys_async(
+    FAPI_CONTEXT *context,
+    char const *keyPath);
+
+\fn TSS2_RC ifapi_load_keys_finish(
+    FAPI_CONTEXT *context,
+    bool flush_parent,
+    ESYS_TR *handle,
+    IFAPI_OBJECT **key_object);
+
+\fn TSS2_RC ifapi_nv_read(
+    FAPI_CONTEXT *context,
+    uint8_t     **data,
+    size_t       *size);
+
+\fn void ifapi_flush_policy_session(
+    FAPI_CONTEXT *context,
+    ESYS_TR session,
+    \fn TSS2_RC r);
+
+\fn TSS2_RC ifapi_nv_write(
+    FAPI_CONTEXT *context,
+    char         *nvPath,
+    size_t         param_offset,
+    uint8_t const *data,
+    size_t         size);
+
+\fn TSS2_RC ifapi_get_random(
+    FAPI_CONTEXT *context,
+    size_t numBytes,
+    uint8_t **data);
+
+\fn TSS2_RC ifapi_load_key(
+    FAPI_CONTEXT  *context,
+    char    const *keyPath,
+    IFAPI_OBJECT **key_object);
+
+\fn TSS2_RC ifapi_key_sign(
+    FAPI_CONTEXT    *context,
+    IFAPI_OBJECT    *sig_key_object,
+    char const      *padding,
+    TPM2B_DIGEST    *digest,
+    TPMT_SIGNATURE **tpm_signature,
+    char           **publicKey,
+    char           **certificate);
+
+\fn TSS2_RC ifapi_authorize_object(
+    FAPI_CONTEXT *context,
+    IFAPI_OBJECT *object,
+    ESYS_TR      *session);
+
+\fn TSS2_RC ifapi_get_json(
+    FAPI_CONTEXT *context,
+    IFAPI_OBJECT *object,
+    char **json_string);
+
+\fn TSS2_RC ifapi_key_create_prepare(
+    FAPI_CONTEXT  *context,
+    char   const *keyPath,
+    char   const *policyPath);
+
+\fn TSS2_RC ifapi_key_create_prepare_auth(
+    FAPI_CONTEXT  *context,
+    char   const *keyPath,
+    char   const *policyPath,
+    char   const *authValue);
+
+\fn TSS2_RC ifapi_key_create_prepare_sensitive(
+    FAPI_CONTEXT  *context,
+    char    const *keyPath,
+    char    const *policyPath,
+    size_t         dataSize,
+    char    const *authValue,
+    uint8_t const *data);
+
+\fn TSS2_RC ifapi_key_create(
+    FAPI_CONTEXT *context,
+    IFAPI_KEY_TEMPLATE *template);
+
+\fn TSS2_RC ifapi_get_sig_scheme(
+    FAPI_CONTEXT *context,
+    IFAPI_OBJECT *object,
+    char const *padding,
+    TPM2B_DIGEST *digest,
+    TPMT_SIG_SCHEME *sig_scheme);
+
+\fn TSS2_RC ifapi_change_auth_hierarchy(
+    FAPI_CONTEXT *context,
+    ESYS_TR handle,
+    IFAPI_OBJECT *hierarchy_object,
+    TPM2B_AUTH *newAuthValue);
+
+\fn TSS2_RC ifapi_change_policy_hierarchy(
+    FAPI_CONTEXT *context,
+    ESYS_TR handle,
+    IFAPI_OBJECT *hierarchy_object,
+    TPMS_POLICY_HARNESS *policy_harness);
+
+\fn IFAPI_OBJECT *ifapi_allocate_object(FAPI_CONTEXT *context);
+
+\fn void ifapi_free_objects(FAPI_CONTEXT *context);
+
+\fn void ifapi_free_object(FAPI_CONTEXT *context, IFAPI_OBJECT **object);
+
+\fn TPM2_RC ifapi_capability_init(FAPI_CONTEXT *context);
+
+\fn TPM2_RC ifapi_capability_get(FAPI_CONTEXT *context, TPM2_CAP capability,
+                     UINT32 count, TPMS_CAPABILITY_DATA **capability_data);
+
+\fn TSS2_RC ifapi_get_certificates(
+    FAPI_CONTEXT *context,
+    UINT32 min_handle,
+    UINT32 max_handle,
+    NODE_OBJECT_T **cert_list);
+
+\fn TSS2_RC ifapi_initialize_object(
+    ESYS_CONTEXT *ectx,
+    IFAPI_OBJECT *object);
+
+\fn TSS2_RC ifapi_esys_serialize_object(
+    ESYS_CONTEXT *ectx,
+    IFAPI_OBJECT *object);
+
+\fn TSS2_RC ifapi_get_description(IFAPI_OBJECT *object, char **description);
+
+\fn void ifapi_set_description(IFAPI_OBJECT *object, char *description);
+
+ \}
+*/
+
 /*!
  \defgroup ifapi_config FAPI configuration module
  \ingroup ifapi
@@ -1566,7 +1929,6 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \fn test_fapi_change_key_auth(FAPI_CONTEXT *context)
  \fn test_fapi_key_create_policy_signed(FAPI_CONTEXT *context)
  \fn test_fapi_key_create_sign_password_provision(FAPI_CONTEXT *context)
- \fn test_fapi_key_create_ecc(FAPI_CONTEXT *context)
  \fn test_fapi_nv_ordinary(FAPI_CONTEXT *context)
  \fn test_fapi_quote(FAPI_CONTEXT *context)
  \fn test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
