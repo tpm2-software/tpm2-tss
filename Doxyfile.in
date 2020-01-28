@@ -850,7 +850,7 @@ INPUT                  = @top_srcdir@/doc/coding_standard_c.md \
                          @top_srcdir@/test/integration/esys-unseal-password-auth.int.c \
                          @top_srcdir@/test/integration/esys-verify-signature.int.c \
                          @top_srcdir@/test/integration/esys-zgen-2phase.int.c \
-                         @top_srcdir@/test/integration/fapi-data-crypt-rsa.int.c \
+                         @top_srcdir@/test/integration/fapi-data-crypt.int.c \
                          @top_srcdir@/test/integration/fapi-key-change-auth.int.c \
                          @top_srcdir@/test/integration/fapi-key-create-policy-authorize-sign.int.c \
                          @top_srcdir@/test/integration/fapi-key-create-policy-secret-nv-sign.int.c \
@@ -858,7 +858,6 @@ INPUT                  = @top_srcdir@/doc/coding_standard_c.md \
                          @top_srcdir@/test/integration/fapi-nv-set-bits.int.c \
                          @top_srcdir@/test/integration/fapi-quote.int.c \
                          @top_srcdir@/test/integration/fapi-ext-public-key.int.c \
-                         @top_srcdir@/test/integration/fapi-key-create-ecc-sign.int.c \
                          @top_srcdir@/test/integration/fapi-key-create-policy-nv-sign.int.c \
                          @top_srcdir@/test/integration/fapi-key-create-policy-signed.int.c \
                          @top_srcdir@/test/integration/fapi-nv-extend.int.c \
