@@ -138,13 +138,9 @@ AM_CONDITIONAL(ESYS_GCRYPT, test "x$with_crypto" = "xgcrypt")
 
 AS_IF([test "x$enable_esapi" = xyes],
       [AS_IF([test "x$with_crypto" = xgcrypt], [
-           AC_CHECK_HEADER([gcrypt.h],,
-               [AC_MSG_ERROR([Missing required header: gcrypt.h.])])
-           AC_CHECK_LIB([gcrypt],
-               [gcry_mac_open],,
-               [AC_MSG_ERROR([Missing required library: gcrypt.])])
-           TSS2_ESYS_CFLAGS_CRYPTO=""
-           TSS2_ESYS_LDFLAGS_CRYPTO="-lgcrypt"
+           AM_PATH_LIBGCRYPT([1.6.0], [], [AC_MSG_ERROR([Missing required gcrypt library])])
+           TSS2_ESYS_CFLAGS_CRYPTO="$LIBGCRYPT_CFLAGS"
+           TSS2_ESYS_LDFLAGS_CRYPTO="$LIBGCRYPT_LIBS"
        ], [test "x$with_crypto" = xossl], [
            PKG_CHECK_MODULES([LIBCRYPTO], [libcrypto])
            AC_DEFINE([OSSL], [1], [OpenSSL cryptographic backend])
