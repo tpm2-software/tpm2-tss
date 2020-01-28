@@ -26,7 +26,31 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Compute policy digest for a json policy tree.
+/** Compute policy digest for a policy tree.
+ *
+ * A policy harness or a policy path can be passed. If a harness is passed the
+ * policy is computed directly from the harness otherwise the policy has to be
+ * retrieved from policy store to determine the policy harness.
+ *
+ * @param[in,out] context The FAPI_CONTEXT.
+ * @param[in]     policyPath The policy path for policy store.
+ * @param[in]     harness The result of policy deserialization.
+ * @param[in]     hash_alg The used hash alg for policy digest computations.
+ * @param[out]    digest_idx The index of the current digest. The policy digest can be
+ *                computed for several hash algorithms the digets index is a reverence
+ *                to the current digest values.
+ * @param[out]    hash_size The size of the current policy digest.
+ *
+ * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
+ *         not covered by other return codes.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during policy calculation.
+ * @retval TSS2_FAPI_RC_IO_ERROR If an error occurs during access to the policy
+ *         store.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND If an object needed for policy calculation was
+ *         not found.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
+ *         not successful.
  */
 TSS2_RC
 ifapi_calculate_tree(
@@ -121,9 +145,29 @@ cleanup:
     return r;
 }
 
-/** Calculate policy for a key object:.
+/** Calculate policy and store policy in key template.
  *
- * The intermediate information is stored in the policy field of the context.
+ * The policy tree is calculated based on the policy defined by the policy path.
+ * The intermediate information of this calculation is stored in the policy field
+ * of the context.
+ * The resulting policy digest is stored in the key template.
+ *
+ * @param[in,out] context The FAPI_CONTEXT.
+ * @param[in]     policyPath the path identifying the policy in policy store.
+ * @param[out]    policy_harness The result of policy deserialization.
+ * @param[in,out] template The template which will be used for key creation.
+ *                The policy digest will be stored in this template.
+ *
+ * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
+ *         not covered by other return codes.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during policy calculation.
+ * @retval TSS2_FAPI_RC_IO_ERROR If an error occurs during access to the policy
+ *         store.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND If an object needed for policy calculation was
+ *         not found.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
+ *         not successful.
  */
 TSS2_RC
 ifapi_calculate_policy_for_key(
