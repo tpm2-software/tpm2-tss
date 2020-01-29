@@ -137,7 +137,12 @@ loop:
                            eventlog->pcrList[eventlog->pcrListIdx]);
         return_if_error(r, "Out of memory.");
 
-        //TODO: Add file-exists check with goto loop instead of failed read_async
+        if (!ifapi_io_path_exists(event_log_file)) {
+            LOG_DEBUG("No event log for pcr %i", eventlog->pcrList[eventlog->pcrListIdx]);
+            SAFE_FREE(event_log_file);
+            eventlog->pcrListIdx += 1;
+            goto loop;
+        }
 
         /* Initiate the reading of the eventlog file */
         r = ifapi_io_read_async(io, event_log_file);
