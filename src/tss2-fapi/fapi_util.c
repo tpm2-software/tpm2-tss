@@ -271,7 +271,7 @@ ifapi_get_free_handle_finish(FAPI_CONTEXT *fctx, TPM2_HANDLE *handle,
  * @retval TSS2_RC_SUCCESS If the keystore can be initialized.
  * @retval TSS2_FAPI_RC_IO_ERROR If the user part of the keystore can't be
  *         initialized.
- * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated.
+ * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated.
  */
 static TSS2_RC
 get_explicit_key_path(
@@ -500,9 +500,9 @@ error_cleanup:
  *
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if a wrong type was passed.
- * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered.
+ * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error was encountered.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if the file does not exist.
- * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated for path names.
+ * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated for path names.
  */
 TSS2_RC
 ifapi_load_primary_async(FAPI_CONTEXT *context, char *path)
@@ -527,13 +527,13 @@ ifapi_load_primary_async(FAPI_CONTEXT *context, char *path)
  * if the primary is not persistent.
  *
  * @param[in] context The FAPI_CONTEXT.
- * @param[in] path The FAPI path of the primary key.
+ * @param[out] handle The object handle of the primary key.
  *
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if a wrong type was passed.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if the hierarchy file does not exist.
- * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered.
- * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated for path names.
+ * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error was encountered.
+ * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated for path names.
  * @retval All possible error codes of ESAPI.
  */
 TSS2_RC
@@ -675,7 +675,7 @@ error_cleanup:
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if the context is not initialized.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE If a FAPI command session is active.
- * @retval TSS2_FAPI_RC_NO_TPM: if the ESAPI context is not initialized.
+ * @retval TSS2_FAPI_RC_NO_TPM if the ESAPI context is not initialized.
  */
 TSS2_RC
 ifapi_session_init(FAPI_CONTEXT *context)
@@ -730,8 +730,7 @@ ifapi_non_tpm_mode_init(FAPI_CONTEXT *context)
  * The uses sessions and the SRK (if not persistent) will be flushed
  * non asynchronous in error cases.
  *
- * @retval TSS2_RC_SUCCESS on success.
- * @retval All possible error codes of ESAPI.
+ * @param[in,out] context The FAPI_CONTEXT.
  */
 void
 ifapi_session_clean(FAPI_CONTEXT *context)
@@ -864,7 +863,7 @@ ifapi_primary_clean(FAPI_CONTEXT *context)
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if the hierarchy file or the primary key file
  *         does not exist.
- * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated for path names.
+ * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated for path names.
  *         of the primary.
  */
 TSS2_RC
@@ -913,8 +912,8 @@ error_cleanup:
  * @param[in] profile The FAPI profile will be used to adjust session parameters.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered.
- * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated for path names.
+ * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error was encountered.
+ * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated for path names.
  * @retval All possible error codes of ESAPI.
  */
 TSS2_RC
@@ -1081,6 +1080,11 @@ ifapi_merge_profile_into_template(
 }
 
 /** Convert absolute path to FAPI path which can be used as parameter for FAPI commands.
+ *
+ * Function converts the absolute path to a FAPI path.
+ *
+ * @param[in] keystore The used keystore.
+ * @param[out] path FAPI key path.
  */
 static void
 full_path_to_fapi_path(IFAPI_KEYSTORE *keystore, char *path)
@@ -1144,7 +1148,7 @@ full_path_to_fapi_path(IFAPI_KEYSTORE *keystore, char *path)
  *                of the key store. (e.g. HE/EK, HS/SRK/mykey)
  *
  * @retval TSS2_RC_SUCCESS If the preparation is successful.
- * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated for path names.
+ * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated for path names.
  */
 TSS2_RC
 ifapi_load_keys_async(FAPI_CONTEXT *context, char const *keyPath)
@@ -1209,7 +1213,7 @@ ifapi_load_keys_finish(
  *            context->loadKey.path_list.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated for path names.
+ * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated for path names.
  */
 TSS2_RC
 ifapi_load_key_async(FAPI_CONTEXT *context, size_t position)
@@ -1236,7 +1240,7 @@ ifapi_load_key_async(FAPI_CONTEXT *context, size_t position)
  *
  * @retval TSS2_RC_SUCCESS If the loading of the key was successful.
  * @retval All possible error codes of ESAPI.
- * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
  *         not covered by other return codes.
  * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during execution.
@@ -1494,7 +1498,7 @@ ifapi_flush_policy_session(FAPI_CONTEXT *context, ESYS_TR session, TSS2_RC r)
  * @param[out] session The session which can be used for object authorization.
  *
  * @retval TSS2_RC_SUCCESS If the authorization is successful
- * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during execution.
  * @retval TSS2_FAPI_RC_IO_ERROR If an error occurs during access to the policy
  *         store.
@@ -1592,7 +1596,7 @@ ifapi_authorize_object(FAPI_CONTEXT *context, IFAPI_OBJECT *object, ESYS_TR *ses
  *
  * @retval TSS2_RC_SUCCESS If data can be written.
  * @retval All possible error codes of ESAPI.
- * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during execution.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
  +         not covered by other return codes.
@@ -1823,7 +1827,7 @@ error_cleanup:
  *
  * @retval TSS2_RC_SUCCESS If the data was read successfully.
  * @retval All possible error codes of ESAPI.
- * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during execution.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
  +         not covered by other return codes.
@@ -1959,7 +1963,7 @@ error_cleanup:
  *
  * @retval TSS2_RC_SUCCESS If random data can be computed.
  * @retval All possible error codes of ESAPI.
- * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_get_random(FAPI_CONTEXT *context, size_t numBytes, uint8_t **data)
@@ -2042,7 +2046,7 @@ error_cleanup:
  *
  * @retval TSS2_RC_SUCCESS If the key was loaded successfully.
  * @retval All possible error codes of ESAPI.
- * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
  *         not covered by other return codes.
  * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during execution.
@@ -2130,7 +2134,7 @@ error_cleanup:
  *
  * @retval TSS2_RC_SUCCESS If the signing was successful.
  * @retval All possible error codes of ESAPI.
- * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
  *         not covered by other return codes.
  * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during execution.
@@ -2247,7 +2251,7 @@ cleanup:
  *              function (callee-allocated).
  *
  * @retval TSS2_RC_SUCCESS If the serialization was successful.
- * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during
  *         serialization.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE If a NULL pointer was passed for
@@ -2401,7 +2405,7 @@ cleanup:
  * @retval TSS2_RC_SUCCESS If the preparation was successful.
  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS If the object with does already exist in
  *         keystore.
- * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_key_create_prepare_auth(
@@ -2445,7 +2449,7 @@ ifapi_key_create_prepare_auth(
  * @retval TSS2_RC_SUCCESS If the preparation was successful.
  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS If the object with does already exist in
  *         keystore.
- * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_key_create_prepare_sensitive(
@@ -2495,7 +2499,7 @@ ifapi_key_create_prepare_sensitive(
  * @retval TSS2_RC_SUCCESS If the preparation was successful.
  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS If the object with does already exist in
  *         keystore.
- * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_key_create_prepare(
@@ -2560,7 +2564,7 @@ error:
  *
  * @retval TSS2_RC_SUCCESS If the key could be generated.
  * @retval All possible error codes of ESAPI.
- * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
  *         not covered by other return codes.
  * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during execution.
@@ -2933,7 +2937,7 @@ error:
  *
  * @retval TSS2_RC_SUCCESS on success.
  * @retval All possible error codes of ESAPI.
- * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
  *         not covered by other return codes.
  * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during policy calculation.
@@ -3298,7 +3302,7 @@ ifapi_capability_get(FAPI_CONTEXT *context, TPM2_CAP capability,
  *
  * @retval TSS2_RC_SUCCESS on success.
  * @retval All possible error codes of ESAPI.
- * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  *
  */
 TSS2_RC
