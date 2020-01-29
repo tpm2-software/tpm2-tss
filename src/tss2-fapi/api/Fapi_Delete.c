@@ -224,7 +224,7 @@ Fapi_Delete_Finish(
             r = ifapi_get_sessions_finish(context, &context->profiles.default_profile);
             return_try_again(r);
             goto_if_error(r, "Create FAPI session.", error_cleanup);
-            context->state = ENTITY_DELETE_GET_FILE;
+
             fallthrough;
 
         statecase(context->state, ENTITY_DELETE_GET_FILE);
@@ -251,7 +251,6 @@ Fapi_Delete_Finish(
             r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
             return_if_error2(r, "Could not open: %s", path);
 
-            context->state = ENTITY_DELETE_READ;
             fallthrough;
 
         statecase(context->state, ENTITY_DELETE_READ);
@@ -413,7 +412,7 @@ Fapi_Delete_Finish(
                 context->state = ENTITY_DELETE_GET_FILE;
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
-            context->state = ENTITY_DELETE_REMOVE_DIRS;
+
             fallthrough;
 
         statecase(context->state, ENTITY_DELETE_REMOVE_DIRS);

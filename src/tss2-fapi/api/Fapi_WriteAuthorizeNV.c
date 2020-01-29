@@ -219,7 +219,6 @@ Fapi_WriteAuthorizeNv_Finish(
             r = ifapi_initialize_object(context->esys, object);
             goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
 
-            context->state = WRITE_AUTHORIZE_NV_CALCULATE_POLICY;
             fallthrough;
 
         statecase(context->state, WRITE_AUTHORIZE_NV_CALCULATE_POLICY)
@@ -239,7 +238,6 @@ Fapi_WriteAuthorizeNv_Finish(
                     TPMA_SESSION_DECRYPT, 0);
             goto_if_error_reset_state(r, "Create sessions", error_cleanup);
 
-            context->state = WRITE_AUTHORIZE_NV_WAIT_FOR_SESSION;
             fallthrough;
 
         statecase(context->state, WRITE_AUTHORIZE_NV_WAIT_FOR_SESSION)
@@ -248,7 +246,6 @@ Fapi_WriteAuthorizeNv_Finish(
             return_try_again(r);
             goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
-            context->state = WRITE_AUTHORIZE_NV_WRITE_NV_RAM;
             fallthrough;
 
         statecase(context->state, WRITE_AUTHORIZE_NV_WRITE_NV_RAM_PREPARE)
@@ -285,7 +282,6 @@ Fapi_WriteAuthorizeNv_Finish(
             goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
                     nvCmd->nvPath);
 
-            context->state = WRITE_AUTHORIZE_NV_WRITE_OBJCECT;
             fallthrough;
 
         statecase(context->state, WRITE_AUTHORIZE_NV_WRITE_OBJCECT)
@@ -294,7 +290,6 @@ Fapi_WriteAuthorizeNv_Finish(
             return_try_again(r);
             return_if_error_reset_state(r, "write_finish failed");
 
-            context->state = WRITE_AUTHORIZE_NV_WRITE_POLICY;
             fallthrough;
 
         statecase(context->state, WRITE_AUTHORIZE_NV_WRITE_POLICY_PREPARE)

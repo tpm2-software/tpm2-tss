@@ -275,7 +275,6 @@ Fapi_ChangeAuth_Finish(
             r = ifapi_load_keys_async(context, command->entityPath);
             goto_if_error(r, "Load keys.", error_cleanup);
 
-            context->state = ENTITY_CHANGE_AUTH_WAIT_FOR_KEY;
             fallthrough;
 
         statecase(context->state, ENTITY_CHANGE_AUTH_WAIT_FOR_KEY)
@@ -284,7 +283,6 @@ Fapi_ChangeAuth_Finish(
                     &command->key_object);
             return_try_again(r);
 
-            context->state = ENTITY_CHANGE_AUTH_WAIT_FOR_KEY_AUTH;
             fallthrough;
 
         statecase(context->state, ENTITY_CHANGE_AUTH_WAIT_FOR_KEY_AUTH)
@@ -303,7 +301,6 @@ Fapi_ChangeAuth_Finish(
                     &command->newAuthValue);
             goto_if_error(r, "Error: Sign", error_cleanup);
 
-            context->state = ENTITY_CHANGE_AUTH_AUTH_SENT;
             fallthrough;
 
         statecase(context->state, ENTITY_CHANGE_AUTH_AUTH_SENT)
@@ -334,8 +331,8 @@ Fapi_ChangeAuth_Finish(
             goto_if_error(r, "Error: FlushContext", error_cleanup);
 
             command->handle = ESYS_TR_NONE;
-            context->state = ENTITY_CHANGE_AUTH_WAIT_FOR_FLUSH;
-            return TSS2_FAPI_RC_TRY_AGAIN;
+
+            fallthrough;
 
         statecase(context->state, ENTITY_CHANGE_AUTH_WAIT_FOR_FLUSH)
             r = Esys_FlushContext_Finish(context->esys);
@@ -391,7 +388,6 @@ Fapi_ChangeAuth_Finish(
 
             context->state = _FAPI_STATE_INIT;
             LOG_TRACE("success");
-            r = TSS2_RC_SUCCESS;
             break;
 
         statecase(context->state, ENTITY_CHANGE_AUTH_WAIT_FOR_NV_READ)
@@ -407,7 +403,6 @@ Fapi_ChangeAuth_Finish(
             r = ifapi_initialize_object(context->esys, &command->object);
             goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
 
-            context->state = ENTITY_CHANGE_AUTH_WAIT_FOR_NV_AUTH;
             fallthrough;
 
         statecase(context->state, ENTITY_CHANGE_AUTH_WAIT_FOR_NV_AUTH)
@@ -426,7 +421,6 @@ Fapi_ChangeAuth_Finish(
                     &command->newAuthValue);
             goto_if_error(r, "Error: NV_ChangeAuth", error_cleanup);
 
-            context->state = ENTITY_CHANGE_AUTH_WAIT_FOR_NV_CHANGE_AUTH;
             fallthrough;
 
         statecase(context->state, ENTITY_CHANGE_AUTH_WAIT_FOR_NV_CHANGE_AUTH)
@@ -462,7 +456,6 @@ Fapi_ChangeAuth_Finish(
             command->object.handle
                 = command->hierarchy_handle;
 
-            context->state = ENTITY_CHANGE_AUTH_HIERARCHY_AUTHORIZE;
             fallthrough;
 
         statecase(context->state, ENTITY_CHANGE_AUTH_HIERARCHY_AUTHORIZE)
@@ -471,7 +464,6 @@ Fapi_ChangeAuth_Finish(
             return_try_again(r);
             goto_if_error(r, "Authorize hierarchy.", error_cleanup);
 
-            context->state = ENTITY_CHANGE_AUTH_HIERARCHY_CHANGE_AUTH;
             fallthrough;
 
         statecase(context->state, ENTITY_CHANGE_AUTH_HIERARCHY_CHANGE_AUTH)

@@ -247,7 +247,6 @@ Fapi_NvSetBits_Finish(
                                      0, 0);
         goto_if_error_reset_state(r, "Create sessions", error_cleanup);
 
-        context->state = NV_SET_BITS_WAIT_FOR_SESSION;
         fallthrough;
 
     statecase(context->state, NV_SET_BITS_WAIT_FOR_SESSION)
@@ -257,7 +256,6 @@ Fapi_NvSetBits_Finish(
 
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
-        context->state = NV_SET_BITS_AUTHORIZE;
         fallthrough;
 
     statecase(context->state, NV_SET_BITS_AUTHORIZE)
@@ -274,15 +272,12 @@ Fapi_NvSetBits_Finish(
 
         goto_if_error_reset_state(r, " Fapi_NvSetBits_Async", error_cleanup);
 
-        context->state = NV_SET_BITS_AUTH_SENT;
         fallthrough;
 
     statecase(context->state, NV_SET_BITS_AUTH_SENT)
         r = Esys_NV_SetBits_Finish(context->esys);
         return_try_again(r);
         goto_if_error_reset_state(r, "FAPI NV_SetBits_Finish", error_cleanup);
-
-        context->state = NV_SET_BITS_WRITE;
 
         /* Serialize the ESYS object for updating the metadata in the keystore. */
         r = ifapi_esys_serialize_object(context->esys, object);
@@ -301,6 +296,7 @@ Fapi_NvSetBits_Finish(
         r = ifapi_keystore_store_finish(&context->keystore, &context->io);
         return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
+
         fallthrough;
 
     statecase(context->state, NV_SET_BITS_CLEANUP)
@@ -310,7 +306,6 @@ Fapi_NvSetBits_Finish(
 
         context->state = _FAPI_STATE_INIT;
         LOG_DEBUG("success");
-        r =  TSS2_RC_SUCCESS;
 
         break;
 

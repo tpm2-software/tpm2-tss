@@ -149,9 +149,6 @@ Fapi_SetAppData_Async(
     /* Helpful alias pointers */
     IFAPI_Path_SetDescription * command = &context->cmd.path_set_info;
 
-    r = ifapi_session_init(context);
-    return_if_error(r, "Initialize SetAppData");
-
     /* Copy parameters to context for use during _Finish. */
     strdup_check(command->object_path, path, r, error_cleanup);
 
@@ -246,7 +243,6 @@ Fapi_SetAppData_Finish(
             goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
                                       command->object_path);
 
-            context->state = APP_DATA_SET_WRITE;
             fallthrough;
 
         statecase(context->state, APP_DATA_SET_WRITE);

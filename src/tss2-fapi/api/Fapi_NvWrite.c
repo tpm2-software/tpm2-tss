@@ -178,10 +178,7 @@ Fapi_NvWrite_Async(
                                  TPMA_SESSION_DECRYPT, 0);
     goto_if_error_reset_state(r, "Create sessions", error_cleanup);
 
-    context->state = NV_WRITE_WAIT_FOR_SESSION;
     command->numBytes = size;
-    if (context->state == _FAPI_STATE_INIT)
-        ifapi_session_init(context);
 
     /* Initialize the context state for this operation. */
     context->state = NV_WRITE_WAIT_FOR_SESSION;
@@ -234,7 +231,6 @@ Fapi_NvWrite_Finish(
         return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
-        context->state = NV_WRITE_READ;
         fallthrough;
 
     statecase(context->state, NV_WRITE_READ);
@@ -261,7 +257,6 @@ Fapi_NvWrite_Finish(
         goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
                                   command->nvPath);
 
-        context->state = NV_WRITE_WRITE;
         fallthrough;
 
     statecase(context->state, NV_WRITE_WRITE);
@@ -269,6 +264,7 @@ Fapi_NvWrite_Finish(
         r = ifapi_keystore_store_finish(&context->keystore, &context->io);
         return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
+
         fallthrough;
 
     statecase(context->state, NV_WRITE_CLEANUP)

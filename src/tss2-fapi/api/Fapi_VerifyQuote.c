@@ -251,9 +251,6 @@ Fapi_VerifyQuote_Finish(
             return_try_again(r);
             return_if_error_reset_state(r, "read_finish failed");
 
-            r = ifapi_initialize_object(context->esys, &key_object);
-            goto_if_error_reset_state(r, "Initialize public key  object", error_cleanup);
-
             /* Recalculate the quote-info and attest2b buffer. */
             r = ifapi_get_quote_info(command->quoteInfo, &attest2b,
                                      &command->fapi_quote_info);

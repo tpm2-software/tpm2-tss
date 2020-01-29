@@ -225,15 +225,10 @@ Fapi_VerifySignature_Finish(
     return_try_again(r);
     return_if_error_reset_state(r, "read_finish failed");
 
-    r = ifapi_initialize_object(context->esys,
-                                &command->key_object);
-    goto_if_error_reset_state(r, "Initialize key object", cleanup);
-
-    goto_if_error(r, "Deserialize key.", cleanup);
-
     /* Verify the signature using a helper that tests all known signature schemes. */
     r = ifapi_verify_signature(&command->key_object, command->signature,
            command->signatureSize, command->digest, command->digestSize);
+    goto_if_error(r, "Verify signature.", cleanup);
 
 cleanup:
     /* Cleanup any intermediate results and state stored in the context. */

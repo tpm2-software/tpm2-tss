@@ -239,7 +239,6 @@ Fapi_NvIncrement_Finish(
             0, 0);
         goto_if_error_reset_state(r, "Create sessions", error_cleanup);
 
-        context->state = NV_INCREMENT_WAIT_FOR_SESSION;
         fallthrough;
 
     statecase(context->state, NV_INCREMENT_WAIT_FOR_SESSION)
@@ -248,7 +247,6 @@ Fapi_NvIncrement_Finish(
         return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
-        context->state = NV_INCREMENT_AUTHORIZE;
         fallthrough;
 
     statecase(context->state, NV_INCREMENT_AUTHORIZE)
@@ -264,7 +262,6 @@ Fapi_NvIncrement_Finish(
                                     ESYS_TR_NONE, ESYS_TR_NONE);
         goto_if_error_reset_state(r, " Fapi_NvIncrement_Async", error_cleanup);
 
-        context->state = NV_INCREMENT_AUTH_SENT;
         fallthrough;
 
     statecase(context->state, NV_INCREMENT_AUTH_SENT)
@@ -283,7 +280,6 @@ Fapi_NvIncrement_Finish(
         goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
                                   command->nvPath);
 
-        context->state = NV_INCREMENT_WRITE;
         fallthrough;
 
     statecase(context->state, NV_INCREMENT_WRITE)
@@ -299,7 +295,6 @@ Fapi_NvIncrement_Finish(
         try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         context->state = _FAPI_STATE_INIT;
-        r = TSS2_RC_SUCCESS;
         break;
 
     statecasedefault(context->state);

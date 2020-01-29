@@ -187,7 +187,7 @@ Fapi_GetRandom_Finish(
             goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
             context->get_random_state = GET_RANDOM_INIT;
-            context->state = GET_RANDOM_WAIT_FOR_RANDOM;
+
             fallthrough;
 
         statecase(context->state, GET_RANDOM_WAIT_FOR_RANDOM);

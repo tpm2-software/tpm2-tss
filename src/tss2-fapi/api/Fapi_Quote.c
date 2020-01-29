@@ -204,9 +204,6 @@ Fapi_Quote_Async(
                      "Only quote type TPM-Quote is allowed");
     }
 
-    r = ifapi_session_init(context);
-    return_if_error(r, "Initialize PCR_Quote");
-
     /* Store parameters in context */
     strdup_check(command->keyPath, keyPath, r, error_cleanup);
 
@@ -300,7 +297,6 @@ Fapi_Quote_Finish(
                                          TPMA_SESSION_DECRYPT, 0);
             goto_if_error_reset_state(r, "Create sessions", error_cleanup);
 
-            context->state = PCR_QUOTE_WAIT_FOR_SESSION;
             fallthrough;
 
         statecase(context->state, PCR_QUOTE_WAIT_FOR_SESSION);
@@ -316,7 +312,6 @@ Fapi_Quote_Finish(
             r = ifapi_load_keys_async(context, command->keyPath);
             goto_if_error(r, "Load keys.", error_cleanup);
 
-            context->state = PCR_QUOTE_WAIT_FOR_KEY;
             fallthrough;
 
         statecase(context->state, PCR_QUOTE_WAIT_FOR_KEY);
@@ -326,7 +321,6 @@ Fapi_Quote_Finish(
             return_try_again(r);
             goto_if_error_reset_state(r, " Load key.", error_cleanup);
 
-            context->state = PCR_QUOTE_AUTHORIZE;
             fallthrough;
 
         statecase(context->state, PCR_QUOTE_AUTHORIZE);
@@ -343,7 +337,6 @@ Fapi_Quote_Finish(
                                  &command->pcr_selection);
             goto_if_error(r, "Error: PCR_Quote", error_cleanup);
 
-            context->state = PCR_QUOTE_AUTH_SENT;
             fallthrough;
 
         statecase(context->state, PCR_QUOTE_AUTH_SENT);
@@ -358,8 +351,7 @@ Fapi_Quote_Finish(
             r = Esys_FlushContext_Async(context->esys, command->handle);
             goto_if_error(r, "Error: FlushContext", error_cleanup);
 
-            context->state = PCR_QUOTE_WAIT_FOR_FLUSH;
-            return TSS2_FAPI_RC_TRY_AGAIN;
+            fallthrough;
 
         statecase(context->state, PCR_QUOTE_WAIT_FOR_FLUSH);
             r = Esys_FlushContext_Finish(context->esys);
@@ -398,7 +390,6 @@ Fapi_Quote_Finish(
                                          command->pcrListSize);
             goto_if_error(r, "Error getting event log", error_cleanup);
 
-            context->state = PCR_QUOTE_READ_EVENT_LIST;
             fallthrough;
 
         statecase(context->state, PCR_QUOTE_READ_EVENT_LIST);

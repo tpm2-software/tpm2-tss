@@ -67,10 +67,6 @@ Fapi_GetTpmBlobs(
     check_not_null(context);
     check_not_null(path);
 
-    /* Check whether TCTI and ESYS are initialized */
-    return_if_null(context->esys, "Command can't be executed in none TPM mode.",
-                   TSS2_FAPI_RC_NO_TPM);
-
     /* If the async state automata of FAPI shall be tested, then we must not set
        the timeouts of ESYS to blocking mode.
        During testing, the mssim tcti will ensure multiple re-invocations.
@@ -139,9 +135,6 @@ Fapi_GetTpmBlobs_Async(
     /* Check for NULL parameters */
     check_not_null(context);
     check_not_null(path);
-
-    r = ifapi_session_init(context);
-    return_if_error(r, "Initialize GetTPMBlobc");
 
     /* Load the object from the key store. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, path);

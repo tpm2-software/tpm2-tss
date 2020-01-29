@@ -245,7 +245,6 @@ Fapi_ExportPolicy_Finish(
 
         statecasedefault(context->state);
     }
-    goto_if_null2(*jsonPolicy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
 
     /* Cleanup any intermediate results and state stored in the context. */
     context->state = _FAPI_STATE_INIT;

@@ -126,9 +126,6 @@ Fapi_GetDescription_Async(
     check_not_null(context);
     check_not_null(path);
 
-    r = ifapi_session_init(context);
-    return_if_error(r, "Initialize GetDescription");
-
     /* Load the object metadata from keystore. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
     return_if_error2(r, "Could not open: %s", path);

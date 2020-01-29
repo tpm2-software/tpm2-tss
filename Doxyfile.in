@@ -862,7 +862,7 @@ INPUT                  = @top_srcdir@/doc/coding_standard_c.md \
                          @top_srcdir@/test/integration/fapi-key-create-policy-signed.int.c \
                          @top_srcdir@/test/integration/fapi-nv-extend.int.c \
                          @top_srcdir@/test/integration/fapi-nv-written-policy.int.c \
-                         @top_srcdir@/test/integration/fapi-rsa-duplicate.int.c \
+                         @top_srcdir@/test/integration/fapi-duplicate.int.c \
                          @top_srcdir@/test/integration/fapi-get-random.int.c \
                          @top_srcdir@/test/integration/fapi-key-create-policies-sign.int.c \
                          @top_srcdir@/test/integration/fapi-key-create-policy-or-sign.int.c \
