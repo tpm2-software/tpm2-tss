@@ -337,7 +337,7 @@ Fapi_CreateNv_Finish(
             r = ifapi_get_free_handle_async(context, &publicInfo->nvPublic.nvIndex);
             goto_if_error_reset_state(r, "FAPI get handle index.", error_cleanup);
             nvCmd->maxNvIndex = publicInfo->nvPublic.nvIndex + 100;
-            context->state = NV_CREATE_FIND_INDEX;
+
             fallthrough;
 
         statecase(context->state, NV_CREATE_FIND_INDEX)
@@ -359,7 +359,7 @@ Fapi_CreateNv_Finish(
             return_try_again(r);
             goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
-            context->state = NV_CREATE_AUTHORIZE_HIERARCHY;
+
             fallthrough;
 
         statecase(context->state, NV_CREATE_AUTHORIZE_HIERARCHY)
@@ -401,7 +401,7 @@ Fapi_CreateNv_Finish(
                                            &nvCmd->nv_object);
             goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
                                       nvCmd->nvPath);
-            context->state = NV_CREATE_WRITE;
+
             fallthrough;
 
         statecase(context->state, NV_CREATE_WRITE)
@@ -415,7 +415,7 @@ Fapi_CreateNv_Finish(
         statecasedefault(context->state);
     }
 
-    context->state =  _FAPI_STATE_INIT;
+    context->state = _FAPI_STATE_INIT;
     LOG_DEBUG("success");
     r = TSS2_RC_SUCCESS;
 

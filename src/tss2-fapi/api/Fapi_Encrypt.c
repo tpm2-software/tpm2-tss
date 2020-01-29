@@ -251,7 +251,6 @@ Fapi_Encrypt_Finish(
             r = ifapi_load_keys_async(context, command->keyPath);
             goto_if_error(r, "Load keys.", error_cleanup);
 
-            context->state = DATA_ENCRYPT_WAIT_FOR_KEY;
             fallthrough;
 
         statecase(context->state, DATA_ENCRYPT_WAIT_FOR_KEY);
@@ -312,9 +311,7 @@ Fapi_Encrypt_Finish(
 
             memcpy(*cipherText, &tpmCipherText->buffer[0], *cipherTextSize);
             SAFE_FREE(tpmCipherText);
-            fallthrough;
 
-        statecase(context->state, DATA_ENCRYPT_FLUSH_KEY);
             /* Flush the key from the TPM. */
             r = Esys_FlushContext_Async(context->esys,
                                         command->key_handle);

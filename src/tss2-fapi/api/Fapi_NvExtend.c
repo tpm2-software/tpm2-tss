@@ -156,7 +156,6 @@ Fapi_NvExtend_Async(
     IFAPI_NV_Cmds * command = &context->nv_cmd;
 
     memset(command, 0 ,sizeof(IFAPI_NV_Cmds));
-    command->offset = 0;
 
     /* Copy parameters to context for use during _Finish. */
     command->data = malloc(dataSize);
@@ -168,8 +167,8 @@ Fapi_NvExtend_Async(
     command->numBytes = dataSize;
 
     /* Reset all context-internal session state information. */
-    if (context->state == _FAPI_STATE_INIT)
-        ifapi_session_init(context);
+    r = ifapi_session_init(context);
+    return_if_error(r, "Initialize NV_Extend");
 
     /* Load the nv index metadata from the keystore. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, command->nvPath);
@@ -277,8 +276,7 @@ Fapi_NvExtend_Finish(
                                      TPMA_SESSION_DECRYPT, 0);
         goto_if_error_reset_state(r, "Create sessions", error_cleanup);
 
-        context->state = NV_EXTEND_WAIT_FOR_SESSION;
-        return TSS2_FAPI_RC_TRY_AGAIN;
+        fallthrough;
 
     statecase(context->state, NV_EXTEND_WAIT_FOR_SESSION)
 //TODO: Pass the namealg of the NV index into the session to be created
@@ -298,7 +296,7 @@ Fapi_NvExtend_Finish(
             r = ifapi_set_auth(context, authObject, "NV Extend");
             goto_if_error_reset_state(r, "Fapi_NV_UndefineSpace", error_cleanup);
         }
-        context->state = NV_EXTEND_AUTHORIZE;
+
         fallthrough;
 
     statecase(context->state, NV_EXTEND_AUTHORIZE)
@@ -320,8 +318,7 @@ Fapi_NvExtend_Finish(
         command->bytesRequested = auxData->size;
         command->data = (uint8_t *)data;
 
-        context->state = NV_EXTEND_AUTH_SENT;
-        return TSS2_FAPI_RC_TRY_AGAIN;
+        fallthrough;
 
     statecase(context->state, NV_EXTEND_AUTH_SENT)
         r = Esys_NV_Extend_Finish(context->esys);

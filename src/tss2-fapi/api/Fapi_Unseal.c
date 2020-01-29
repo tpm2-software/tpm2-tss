@@ -196,7 +196,6 @@ Fapi_Unseal_Finish(
             return_try_again(r);
             goto_if_error(r, "Fapi load key.", error_cleanup);
 
-            context->state = UNSEAL_AUTHORIZE_OBJECT;
             fallthrough;
 
         statecase(context->state, UNSEAL_AUTHORIZE_OBJECT);
@@ -211,7 +210,6 @@ Fapi_Unseal_Finish(
                     ESYS_TR_NONE, ESYS_TR_NONE);
             goto_if_error(r, "Error esys Unseal ", error_cleanup);
 
-            context->state = UNSEAL_WAIT_FOR_UNSEAL;
             fallthrough;
 
         statecase(context->state, UNSEAL_WAIT_FOR_UNSEAL);
@@ -223,7 +221,6 @@ Fapi_Unseal_Finish(
             r = Esys_FlushContext_Async(context->esys, command->object->handle);
             goto_if_error(r, "Error Esys Flush ", error_cleanup);
 
-            context->state = UNSEAL_WAIT_FOR_FLUSH;
             fallthrough;
 
         statecase(context->state, UNSEAL_WAIT_FOR_FLUSH);

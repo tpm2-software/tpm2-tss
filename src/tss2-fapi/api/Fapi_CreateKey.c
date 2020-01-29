@@ -209,7 +209,6 @@ Fapi_CreateKey_Finish(
 
     switch (context->state) {
         statecase(context->state, KEY_CREATE);
-            LOG_TRACE("KEY_CREATE");
             /* Finish the key creation inside the helper function. */
             r = ifapi_key_create(context, &command->public_templ);
             return_try_again(r);

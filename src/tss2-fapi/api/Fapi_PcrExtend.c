@@ -221,7 +221,6 @@ Fapi_PcrExtend_Finish(
                                          0, 0);
             goto_if_error_reset_state(r, "Create sessions", error_cleanup);
 
-            context->state = PCR_EXTEND_WAIT_FOR_SESSION;
             fallthrough;
 
         statecase(context->state, PCR_EXTEND_WAIT_FOR_SESSION);
@@ -236,7 +235,6 @@ Fapi_PcrExtend_Finish(
             return_if_error(r, "Esys_PCR_Event_Async");
             command->event_digests = NULL;
 
-            context->state = PCR_EXTEND_FINISH;
             fallthrough;
 
         statecase(context->state, PCR_EXTEND_FINISH);
@@ -261,7 +259,6 @@ Fapi_PcrExtend_Finish(
                                             &command->pcr_event);
             goto_if_error(r, "Error ifapi_eventlog_append_async", error_cleanup);
 
-            context->state = PCR_EXTEND_APPEND_EVENT_LOG;
             fallthrough;
 
         statecase(context->state, PCR_EXTEND_APPEND_EVENT_LOG);

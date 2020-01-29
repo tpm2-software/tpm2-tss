@@ -167,9 +167,6 @@ Fapi_AuthorizePolicy_Async(
         policy->policyRef.size = 0;
     }
 
-    r = ifapi_session_init(context);
-    goto_if_error(r, "Initialize PolicyAuthorizeNewPolicy", error_cleanup);
-
     /* Initialize the context state for this operation. */
     context->state = AUTHORIZE_NEW_LOAD_KEY;
 
@@ -233,7 +230,6 @@ Fapi_AuthorizePolicy_Finish(
             return_try_again(r);
             goto_if_error(r, "Fapi sign.", cleanup);
 
-            context->state = AUTHORIZE_NEW_CALCULATE_POLICY;
             fallthrough;
 
         statecase(context->state, AUTHORIZE_NEW_CALCULATE_POLICY);
@@ -276,7 +272,7 @@ Fapi_AuthorizePolicy_Finish(
             goto_if_error(r, "crypto hash finish", cleanup);
 
             aHash.size = hashSize;
-            context->state = AUTHORIZE_NEW_KEY_SIGN_POLICY;
+
             fallthrough;
 
         statecase(context->state, AUTHORIZE_NEW_KEY_SIGN_POLICY);
@@ -301,7 +297,7 @@ Fapi_AuthorizePolicy_Finish(
             ifapi_extend_authorization(policyHarness, authorization);
             goto_if_null(policyHarness->policyAuthorizations,
                          "Out of memory", TSS2_FAPI_RC_MEMORY, cleanup);
-            context->state = AUTHORIZE_NEW_WRITE_POLICY;
+
             fallthrough;
 
         statecase(context->state, AUTHORIZE_NEW_WRITE_POLICY_PREPARE);
@@ -310,12 +306,14 @@ Fapi_AuthorizePolicy_Finish(
                                                command->policyPath, policyHarness);
             goto_if_error_reset_state(r, "Could not open: %s", cleanup,
                     command->policyPath);
+
             fallthrough;
 
         statecase(context->state, AUTHORIZE_NEW_WRITE_POLICY);
             r = ifapi_policy_store_store_finish(&context->pstore, &context->io);
             return_try_again(r);
             return_if_error_reset_state(r, "write_finish failed");
+
             fallthrough;
 
         statecase(context->state, AUTHORIZE_NEW_CLEANUP)

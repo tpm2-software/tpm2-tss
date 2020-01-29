@@ -305,7 +305,6 @@ Fapi_ExportKey_Finish(
                                          TPMA_SESSION_DECRYPT, 0);
             goto_if_error_reset_state(r, "Create sessions", cleanup);
 
-            context->state = EXPORT_KEY_WAIT_FOR_KEY;
             fallthrough;
 
         statecase(context->state, EXPORT_KEY_WAIT_FOR_KEY);
@@ -324,7 +323,6 @@ Fapi_ExportKey_Finish(
                                         TPM2_RH_OWNER);
             goto_if_error(r, "LoadExternal_Async", cleanup);
 
-            context->state = EXPORT_KEY_WAIT_FOR_EXT_KEY;
             fallthrough;
 
         statecase(context->state, EXPORT_KEY_WAIT_FOR_EXT_KEY);
@@ -332,7 +330,6 @@ Fapi_ExportKey_Finish(
                                          &command->handle_ext_key);
             try_again_or_error_goto(r, "Load external key.", cleanup);
 
-            context->state = EXPORT_KEY_WAIT_FOR_AUTHORIZATON;
             fallthrough;
 
         statecase(context->state, EXPORT_KEY_WAIT_FOR_AUTHORIZATON);
@@ -357,7 +354,6 @@ Fapi_ExportKey_Finish(
                                      &encryptionKey, &symmetric);
             goto_if_error(r, "Duplicate", cleanup);
 
-            context->state = EXPORT_KEY_WAIT_FOR_DUPLICATE;
             fallthrough;
 
         statecase(context->state, EXPORT_KEY_WAIT_FOR_DUPLICATE);
@@ -381,7 +377,6 @@ Fapi_ExportKey_Finish(
             r = ifapi_get_json(context, exportTree, exportedData);
             goto_if_error2(r, "get JSON for exported data.", cleanup);
 
-            context->state = EXPORT_KEY_WAIT_FOR_FLUSH1;
             fallthrough;
 
         statecase(context->state, EXPORT_KEY_WAIT_FOR_FLUSH1);
@@ -390,7 +385,6 @@ Fapi_ExportKey_Finish(
             return_try_again(r);
             goto_if_error(r, "Flush key", cleanup);
 
-            context->state = EXPORT_KEY_WAIT_FOR_FLUSH2;
             fallthrough;
 
         statecase(context->state, EXPORT_KEY_WAIT_FOR_FLUSH2);
@@ -398,6 +392,7 @@ Fapi_ExportKey_Finish(
             r = ifapi_flush_object(context, command->handle_ext_key);
             return_try_again(r);
             goto_if_error(r, "Flush key", cleanup);
+
             fallthrough;
 
         statecase(context->state, EXPORT_KEY_CLEANUP)

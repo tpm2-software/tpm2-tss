@@ -221,7 +221,7 @@ Fapi_PcrRead_Finish(
 
             /* If no event log was requested the operation is now complete. */
             if (!pcrLog) {
-                context->state =  _FAPI_STATE_INIT;
+                context->state = _FAPI_STATE_INIT;
                 break;
             }
 
@@ -230,7 +230,6 @@ Fapi_PcrRead_Finish(
                                          &command->pcrIndex, 1);
             goto_if_error(r, "Error getting event log", cleanup);
 
-            context->state = PCR_READ_READ_EVENT_LIST;
             fallthrough;
 
         statecase(context->state, PCR_READ_READ_EVENT_LIST);

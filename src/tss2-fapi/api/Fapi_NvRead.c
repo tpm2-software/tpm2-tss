@@ -253,8 +253,7 @@ Fapi_NvRead_Finish(
                                      TPMA_SESSION_ENCRYPT, 0);
         goto_if_error_reset_state(r, "Create sessions", error_cleanup);
 
-        context->state = NV_READ_WAIT_FOR_SESSION;
-        return TSS2_FAPI_RC_TRY_AGAIN;
+        fallthrough;
 
     statecase(context->state, NV_READ_WAIT_FOR_SESSION)
 //TODO: Pass the namealg of the NV index into the session to be created
@@ -264,7 +263,6 @@ Fapi_NvRead_Finish(
 
         command->nv_read_state = NV_READ_INIT;
 
-        context->state = NV_READ_WAIT;
         fallthrough;
 
     statecase(context->state, NV_READ_WAIT)

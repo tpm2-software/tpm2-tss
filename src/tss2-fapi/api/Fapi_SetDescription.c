@@ -213,7 +213,6 @@ Fapi_SetDescription_Finish(
             goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
                                       command->object_path);
 
-            context->state = PATH_SET_DESCRIPTION_WRITE;
             fallthrough;
 
         statecase(context->state, PATH_SET_DESCRIPTION_WRITE);

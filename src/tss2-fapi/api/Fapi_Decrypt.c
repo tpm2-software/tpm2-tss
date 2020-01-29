@@ -241,7 +241,6 @@ Fapi_Decrypt_Finish(
             return_try_again(r);
             goto_if_error(r, "Load keys.", error_cleanup);
 
-            context->state = DATA_ENCRYPT_WAIT_FOR_KEY;
             fallthrough;
 
         statecase(context->state, DATA_DECRYPT_WAIT_FOR_KEY);
@@ -298,9 +297,7 @@ Fapi_Decrypt_Finish(
                 memcpy(*plainText, &tpmPlainText->buffer[0], tpmPlainText->size);
                 SAFE_FREE(tpmPlainText);
             }
-            fallthrough;
 
-        statecase(context->state, DATA_DECRYPT_FLUSH_KEY);
             /* Flush the used key. */
             r = Esys_FlushContext_Async(context->esys,
                                         command->key_handle);

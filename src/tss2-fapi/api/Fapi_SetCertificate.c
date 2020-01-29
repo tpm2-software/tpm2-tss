@@ -136,8 +136,6 @@ Fapi_SetCertificate_Async(
     r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
     goto_if_error2(r, "Could not open: %s", error_cleanup, path);
 
-    context->io_state = IO_INIT;
-
     LOG_TRACE("finsihed");
     return TSS2_RC_SUCCESS;
 
@@ -186,9 +184,6 @@ Fapi_SetCertificate_Finish(
             r = ifapi_keystore_load_finish(&context->keystore, &context->io, key_object);
             return_try_again(r);
             return_if_error_reset_state(r, "read_finish failed");
-
-            r = ifapi_initialize_object(context->esys, key_object);
-            goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
 
             /* Duplicate and store the certificate in the key object. */
             if (!*pem_cert) {

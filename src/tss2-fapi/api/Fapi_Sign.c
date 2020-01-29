@@ -188,9 +188,6 @@ Fapi_Sign_Async(
     /* Copy parameters to context for use during _Finish. */
     FAPI_COPY_DIGEST(&command->digest.buffer[0],
                      command->digest.size, digest, digestSize);
-
-    r = ifapi_session_init(context);
-    return_if_error(r, "Initialize Key_Sign");
     strdup_check(command->keyPath, keyPath, r, error_cleanup);
     strdup_check(command->padding, padding, r, error_cleanup);
 
@@ -257,7 +254,6 @@ Fapi_Sign_Finish(
             return_try_again(r);
             goto_if_error(r, "Fapi load key.", error_cleanup);
 
-            context->state = KEY_SIGN_WAIT_FOR_SIGN;
             fallthrough;
 
         statecase(context->state, KEY_SIGN_WAIT_FOR_SIGN);

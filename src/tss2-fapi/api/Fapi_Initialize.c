@@ -191,7 +191,6 @@ Fapi_Initialize_Finish(
                                           (*context)->config.keystore_dir);
         goto_if_error2(r, "Keystore could not be initialized.", cleanup_return);
 
-        (*context)->state = INITIALIZE_INIT_TCTI;
         fallthrough;
 
     statecase((*context)->state, INITIALIZE_INIT_TCTI);
@@ -217,7 +216,6 @@ Fapi_Initialize_Finish(
             LOG_ERROR("Esys_Startup FAILED! Response Code : 0x%x", r);
             return r;
         }
-        (*context)->state = INITIALIZE_GET_CAP;
         fallthrough;
 
     statecase((*context)->state, INITIALIZE_GET_CAP);
@@ -227,7 +225,6 @@ Fapi_Initialize_Finish(
                                      TPM2_CAP_TPM_PROPERTIES, TPM2_PT_NV_BUFFER_MAX, 1);
         goto_if_error(r, "Error json deserialize", cleanup_return);
 
-        (*context)->state = INITIALIZE_WAIT_FOR_CAP;
         fallthrough;
 
     statecase((*context)->state, INITIALIZE_WAIT_FOR_CAP);
@@ -262,7 +259,6 @@ Fapi_Initialize_Finish(
                                             (*context)->config.profile_name);
         return_if_error(r, "Read profile");
 
-        (*context)->state = INITIALIZE_READ_PROFILE;
         fallthrough;
 
     statecase((*context)->state, INITIALIZE_READ_PROFILE);

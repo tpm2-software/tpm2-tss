@@ -120,13 +120,8 @@ Fapi_GetCertificate_Async(
     check_not_null(context);
     check_not_null(path);
 
-    /* Helpful alias pointers */
-    IFAPI_Key_SetCertificate * command = &context->cmd.Key_SetCertificate;
-
     r = ifapi_non_tpm_mode_init(context);
     return_if_error(r, "Initialize GetCertificate");
-
-    command->key_path = path;
 
     /* Load the object metadata from keystore. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
@@ -171,17 +166,14 @@ Fapi_GetCertificate_Finish(
     check_not_null(x509certData);
 
     /* Helpful alias pointers */
-    IFAPI_Key_SetCertificate * command = &context->cmd.Key_SetCertificate;
-    IFAPI_OBJECT *keyObject =  &command->key_object;
+    IFAPI_Key_SetCertificate *command = &context->cmd.Key_SetCertificate;
+    IFAPI_OBJECT *keyObject = &command->key_object;
 
     switch (context->state) {
         statecase(context->state, KEY_GET_CERTIFICATE_READ)
             r = ifapi_keystore_load_finish(&context->keystore, &context->io, keyObject);
             return_try_again(r);
             return_if_error_reset_state(r, "read_finish failed");
-
-            r = ifapi_initialize_object(context->esys, keyObject);
-            goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
 
             /* Retrieve the appropriate field from the objects and duplicate its
                content to be returned to the user. */
