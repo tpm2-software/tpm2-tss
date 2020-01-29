@@ -3009,8 +3009,14 @@ ifapi_change_policy_hierarchy(
                                         context->profiles.default_profile.nameAlg);
         return_if_error(r, "Esys_SetPrimaryPolicy_Async");
 
-        context->hierarchy_policy_state = HIERARCHY_CHANGE_POLICY_AUTH_SENT;
-        return TSS2_FAPI_RC_TRY_AGAIN;
+        fallthrough;
+
+    statecase(context->hierarchy_policy_state, HIERARCHY_CHANGE_POLICY_AUTH_SENT);
+        r = Esys_SetPrimaryPolicy_Finish(context->esys);
+        return_try_again(r);
+        return_if_error(r, "SetPrimaryPolicy_Finish");
+
+        return TSS2_RC_SUCCESS;
 
     statecasedefault(context->hierarchy_policy_state);
     }
