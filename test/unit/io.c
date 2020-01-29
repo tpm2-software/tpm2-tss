@@ -11,6 +11,7 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <setjmp.h>
 #include <cmocka.h>

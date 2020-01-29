@@ -18,7 +18,9 @@
 #include <sys/types.h>
 #include <dirent.h>
 /* Need for some libc-versions */
+#ifndef __FreeBSD__
 #include <malloc.h>
+#endif
 
 #include "tss2_common.h"
 #include "ifapi_io.h"

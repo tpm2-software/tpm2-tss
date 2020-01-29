@@ -1,0 +1,26 @@
+task:
+  env:
+    CFLAGS: "-I/usr/local/include -I/usr/local/openssl/include"
+    LDFLAGS: -L/usr/local/lib
+    ibmtpm_name: ibmtpm1119
+  freebsd_instance:
+    matrix:
+      image: freebsd-12-1-release-amd64
+  install_script:
+    - pkg upgrade -y
+    - pkg install -y gmake coreutils libtool pkgconf autoconf autoconf-archive
+    - pkg install -y automake libgcrypt openssl json-c cmocka uthash wget
+    - wget --quiet --show-progress --progress=dot:giga "https://downloads.sourceforge.net/project/ibmswtpm2/$ibmtpm_name.tar.gz"
+    - shasum -a256 $ibmtpm_name.tar.gz | grep ^b9eef79904e276aeaed2a6b9e4021442ef4d7dfae4adde2473bef1a6a4cd10fb
+    - mkdir -p $ibmtpm_name
+    - tar xvf $ibmtpm_name.tar.gz -C $ibmtpm_name && cd $ibmtpm_name/src \
+      && sed -i -e 's/gcc/clang/g' makefile \
+      && sed -i -e 's/-Wall //g' makefile \
+      && sed -i -e 's/-Werror //g' makefile \
+      && gmake -j && cp tpm_server /usr/local/bin
+    - cd -
+    - rm -fr $ibmtpm_name $ibmtpm_name.tar.gz
+  script:
+    ./bootstrap &&
+    ./configure --enable-unit=yes --with-crypto=ossl --disable-doxygen-doc --disable-dependency-tracking &&
+    gmake -j check

@@ -36,14 +36,22 @@ PKG_INSTALLDIR()
 # Check OS and set library and compile flags accordingly
 case "${host_os}" in
     *nto-qnx*)
+        HOSTOS='QNX'
         ADD_COMPILER_FLAG([-D_QNX_SOURCE])
         LIBSOCKET_LDFLAGS="-lsocket"
         ;;
+    *bsd* | *BSD*)
+        HOSTOS='BSD'
+        LIBSOCKET_LDFLAGS=""
+        ;;
     *)
+        #Assume linux
+        HOSTOS='Linux'
         LIBSOCKET_LDFLAGS=""
         ;;
 esac
 AC_SUBST([LIBSOCKET_LDFLAGS])
+AC_SUBST([HOSTOS])
 
 # runstatedir is only defined in the yet unreleased Autoconf 2.70
 AC_ARG_WITH([runstatedir],
@@ -229,7 +237,7 @@ AC_ARG_ENABLE([integration],
     [AS_HELP_STRING([--enable-integration],
         [build and execute integration tests])],,
     [enable_integration=no])
-AS_IF([test "x$enable_integration" = "xyes"],
+AS_IF([test "x$enable_integration" = "xyes" -a "$HOSTOS" = "Linux"],
       [ERROR_IF_NO_PROG([tpm_server])
        ERROR_IF_NO_PROG([ss])
        ERROR_IF_NO_PROG([ps])
