@@ -45,7 +45,7 @@ strip_prefix(const char *in, ...)
     return in;
 }
 
-/* Deserialize accoring to the rules of parenttype and then filter against values
+/* Deserialize according to the rules of parenttype and then filter against values
    provided in the ... list. */
 #define SUBTYPE_FILTER(type, parenttype, ...) \
     TSS2_RC r; \
@@ -255,7 +255,7 @@ get_boolean_from_json(json_object *jso, TPMI_YES_NO *value)
  *
  * @param[in] in json array of pcr registers.
  * @param[out] sizeofSelect size of bit mask for used pcr registers.
- * @param[out] pcrSelect byte arrray with bit mask.
+ * @param[out] pcrSelect byte array with bit mask.
  */
 TSS2_RC
 ifapi_json_pcr_selection_deserialize(

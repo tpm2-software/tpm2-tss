@@ -280,7 +280,7 @@ out_memory:
  * @param[out] cert_buffer the der encoded certificate.
  * @param[out] cert_size The size of the certificate buffer.
  *
- * @retval TSS2_RC_SUCCESS on succes.
+ * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_NO_CERT If an error did occur during certificate downloading.
  */
 TSS2_RC
@@ -294,7 +294,7 @@ ifapi_get_intl_ek_certificate(TPM2B_PUBLIC *ek_public, unsigned char ** cert_buf
         LOG_ERROR("base64_encode returned null");
         goto out;
     }
-    // TODO check whether appropriate or store addess in profile and use value from profile
+    // TODO check whether appropriate or store address in profile and use value from profile
     ctx.ek_server_addr = "https://ekop.intel.com/ekcertservice/";
 
     LOG_INFO("%s", b64);

@@ -1088,7 +1088,7 @@ error:
 
 /** Compute execution order for policies based on branch selection.
  *
- * To simplifiy asynncronous policy executiion a linked list of the policy structures
+ * To simplify asynncronous policy executiion a linked list of the policy structures
  * needed for execution based on the result of the  branch selection callbacks
  * is computed.
  */

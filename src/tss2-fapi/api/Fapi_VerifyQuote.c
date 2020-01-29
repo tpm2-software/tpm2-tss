@@ -92,7 +92,7 @@ Fapi_VerifyQuote(
 
     return_if_error_reset_state(r, "Key_VerifyQuote");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -196,7 +196,7 @@ Fapi_VerifyQuote_Async(
 
     /* Initialize the context state for this operation. */
     context->state = VERIFY_QUOTE_READ;
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
@@ -303,6 +303,6 @@ error_cleanup:
     SAFE_FREE(command->signature);
     SAFE_FREE(command->quoteInfo);
     SAFE_FREE(command->logData);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

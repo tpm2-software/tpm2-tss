@@ -246,7 +246,7 @@ ifapi_io_write_finish(
  *
  * @param file  The name of the fileto be checked.
  * @retval TSS2_RC_SUCCESS if the directories existed or were successfully created
- * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error occured
+ * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error occurred
  */
 TSS2_RC
 ifapi_io_check_file_writeable(
@@ -263,7 +263,7 @@ ifapi_io_check_file_writeable(
  *
  * @param dirname The name of the directory to be checked / created
  * @retval TSS2_RC_SUCCESS if the directories existed or were successfully created
- * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error occured
+ * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error occurred
  */
 TSS2_RC
 ifapi_io_check_create_dir(
@@ -310,7 +310,7 @@ ifapi_io_remove_file(const char *file)
  *
  * @param dirname The directory to be removed
  * @retval TSS2_RC_SUCCESS if the directories were successfully removed
- * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error occured
+ * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error occurred
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
  */
 TSS2_RC
@@ -385,7 +385,7 @@ error_cleanup:
  * @param files [out] The list of file names.
  * @param numfiles [out] The size of files.
  * @retval TSS2_RC_SUCCESS if the directories were successfully removed
- * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error occured
+ * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error occurred
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
  */
 TSS2_RC
@@ -531,7 +531,7 @@ dirfiles_all(const char *dir_name, NODE_OBJECT_T **list, size_t *n)
  * @param files [out] The list of file names.
  * @param numfiles [out] The size of files.
  * @retval TSS2_RC_SUCCESS if the directories were successfully removed
- * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error occured
+ * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error occurred
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
  */
 TSS2_RC

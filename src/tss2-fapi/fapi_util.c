@@ -74,7 +74,7 @@ ifapi_flush_object(FAPI_CONTEXT *context, ESYS_TR handle)
  * TPM2B parameters will be created.
  *
  * @param[in] esys The ESYS_CONTEXT.
- * @param[in] saltkey The key which will be used for the encryption of the sesssion
+ * @param[in] saltkey The key which will be used for the encryption of the session
  *            secret.
  * @param[in] profile The FAPI profile will be used to adjust the sessions symmetric
  *            parameters.
@@ -265,7 +265,7 @@ ifapi_get_free_handle_finish(FAPI_CONTEXT *fctx, TPM2_HANDLE *handle,
  * be extended if possible.
  *
  * @parm[out] keystore The used keystore.
- * @param[in] ipath The implicit pathname, wich might be extended.
+ * @param[in] ipath The implicit pathname, which might be extended.
  * @param[out] The linked list of directories in the explicit pathname.
  *
  * @retval TSS2_RC_SUCCESS If the keystore can be initialized.
@@ -1473,7 +1473,7 @@ get_name_alg(FAPI_CONTEXT *context, IFAPI_OBJECT *object)
  * used the session will be flushed if the command was not executed successfully.
  *
  * @param[in,out] context for storing all state information.
- * @param[in] session the sessio to be checked wheter flush is needed.
+ * @param[in] session the session to be checked whether flush is needed.
  * @param[in] r The return code of the command using the session.
  */
 void
@@ -1812,7 +1812,7 @@ error_cleanup:
 
 /** State machine to read data from the NV ram of the TPM.
  *
- * Context nv_cmd has to be prepared befor the call of this function:
+ * Context nv_cmd has to be prepared before the call of this function:
  * - auth_index The ESAPI handle of the authorization object.
  * - numBytes The number of bytes which should be read.
  * - esys_handle The ESAPI handle of the NV object.
@@ -2788,7 +2788,7 @@ error_cleanup:
  * @param[in] object The internal FAPI object of the key.
  * @param[in] padding The strings RSA_SSA or RSA_PSS will be converted
  *            into the TSS constants used for the signing scheme.
- * @param[in] digest The digest size will be used to dermine the hashalg
+ * @param[in] digest The digest size will be used to determine the hashalg
  *            for the signature scheme.
  * @param[out] sig_scheme The computed signature scheme.
  *
@@ -2845,8 +2845,8 @@ ifapi_get_sig_scheme(
  * @param[in] context The FAPI_CONTEXT.
  * @param[in] handle The ESAPI handle of the hierarchy.
  * @param[in,out] hierarchy_object The internal FAPI representation of a
- *                hierachy.
- * @param[in] newAuthValue The new authorization for the hierachy.
+ *                hierarchy.
+ * @param[in] newAuthValue The new authorization for the hierarchy.
  *
  * @retval TSS2_RC_SUCCESS on success.
  * @retval All possible error codes of ESAPI.
@@ -2928,7 +2928,7 @@ error:
  * @param[in] context The FAPI_CONTEXT.
  * @param[in] handle The ESAPI handle of the hierarchy.
  * @param[in,out] hierarchy_object The internal FAPI representation of a
- *                hierachy.
+ *                hierarchy.
  * @param[in] policy_harness The new policy assigned to the hierarchy.
  *
  * @retval TSS2_RC_SUCCESS on success.
@@ -2962,7 +2962,7 @@ ifapi_change_policy_hierarchy(
 
         context->policy.state = POLICY_CALCULATE;
 
-        /* Calculate the policy digest which will be used as hierachy policy. */
+        /* Calculate the policy digest which will be used as hierarchy policy. */
         r = ifapi_calculate_tree(context, NULL, /**< no path needed */
                                  policy_harness,
                                  context->profiles.default_profile.nameAlg,
@@ -3137,7 +3137,7 @@ ifapi_capability_init(FAPI_CONTEXT *context)
 /** State machine for receiving TPM capability information.
  *
  * The state machine shares the state with the FAPI function Fapi_GetInfo.
- * context->state == GET_INFO_GET_CAP_MORE singals that more capability data can
+ * context->state == GET_INFO_GET_CAP_MORE signals that more capability data can
  * be retrieved.
  *
  * @param[in,out] context The FAPI_CONTEXT.
@@ -3437,7 +3437,7 @@ ifapi_get_certificates(
 
 /** Get description of an internal FAPI object.
  *
- * @param[in] object The object with the descritpion.
+ * @param[in] object The object with the description.
  * @param[out] description The callee allocated description.
  *
  * @retval TSS2_RC_SUCCESS If a copy of the description can be returned

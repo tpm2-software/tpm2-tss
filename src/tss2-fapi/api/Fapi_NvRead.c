@@ -98,7 +98,7 @@ Fapi_NvRead(
 
     return_if_error_reset_state(r, "NV_Read");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -158,7 +158,7 @@ Fapi_NvRead_Async(
 
     /* Initialize the context state for this operation. */
     context->state = NV_READ_READ;
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
@@ -301,6 +301,6 @@ error_cleanup:
     SAFE_FREE(command->nvPath);
     //SAFE_FREE(context->nv_cmd.tes);
     ifapi_session_clean(context);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

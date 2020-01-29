@@ -213,7 +213,7 @@ ifapi_profiles_initialize_finish(
 
 /** Return the profile data for a given profile name.
  *
- * Returns a (const, not to be free'd) pointer to the profile data for a reqeusted profile.
+ * Returns a (const, not to be free'd) pointer to the profile data for a requested profile.
  * If a NULL profile is requesten, then the default profile is returned.
  * If a keypath is passed in, then the prefix is analysed. If that keypath starts with a profile
  * then this profile is returned. Otherwise the default profile is returned.

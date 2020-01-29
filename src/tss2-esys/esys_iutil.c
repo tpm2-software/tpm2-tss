@@ -1228,7 +1228,7 @@ iesys_compute_hmac(RSRC_NODE_T * session,
  * the command authorization are computed.
  * @param[in] esys_context The esys context to issue the command on.
  * @param[in] h1-3 The esys session resource objects.
- * @param[out] The list if the authorizations with teh computed HMACs.
+ * @param[out] The list if the authorizations with the computed HMACs.
  * @param[out] auth The computed HMAC value.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_MEMORY Memory can not be allocated.

@@ -200,7 +200,7 @@ tcti_tryagainerror_transmit(TSS2_TCTI_CONTEXT * tctiContext,
         return TSS2_RC_SUCCESS;
 
     LOG_ERROR("Expected 2 receives before the next transmit, but %" PRIu32
-              "receives occured.", tcti->count);
+              "receives occurred.", tcti->count);
     return TSS2_TCTI_RC_GENERAL_FAILURE;
 }
 
@@ -226,7 +226,7 @@ tcti_tryagainerror_finalize(TSS2_TCTI_CONTEXT * tctiContext)
     TSS2_TCTI_CONTEXT_TRYAGAINERROR *tcti = tcti_tryagainerror_cast(tctiContext);
     if (tcti->count != 2) {
         LOG_ERROR("Expected 2 receives before the next transmit, but %" PRIu32
-                  "receives occured.", tcti->count);
+                  "receives occurred.", tcti->count);
         exit(1);
     }
 }

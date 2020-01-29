@@ -81,7 +81,7 @@ Fapi_Import(
 
     return_if_error_reset_state(r, "Entity_Import");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -254,7 +254,7 @@ Fapi_Import_Async(
         }
     }
     json_object_put(jso);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 
 cleanup_error:

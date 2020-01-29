@@ -87,7 +87,7 @@ Fapi_VerifySignature(
 
     return_if_error_reset_state(r, "Key_VerifySignature");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -177,7 +177,7 @@ Fapi_VerifySignature_Async(
     goto_if_error2(r, "Could not open: %s", error_cleanup, keyPath);
 
     /* Initialize the context state for this operation. */
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
@@ -239,6 +239,6 @@ cleanup:
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     SAFE_FREE(command->signature);
     SAFE_FREE(command->digest);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

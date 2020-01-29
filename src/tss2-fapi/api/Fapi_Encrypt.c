@@ -106,7 +106,7 @@ Fapi_Encrypt(
 
     return_if_error_reset_state(r, "Data_Encrypt");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -177,7 +177,7 @@ Fapi_Encrypt_Async(
 
     /* Initialize the context state for this operation. */
     context->state = DATA_ENCRYPT_WAIT_FOR_PROFILE;
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
@@ -354,6 +354,6 @@ error_cleanup:
     SAFE_FREE(command->in_data);
     SAFE_FREE(command->out_data);
     ifapi_session_clean(context);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

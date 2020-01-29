@@ -98,7 +98,7 @@ Fapi_NvExtend(
 
     return_if_error_reset_state(r, "NV_Extend");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -184,7 +184,7 @@ Fapi_NvExtend_Async(
 
     /* Initialize the context state for this operation. */
     context->state = NV_EXTEND_READ;
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 
 error_cleanup:
@@ -467,6 +467,6 @@ error_cleanup:
     SAFE_FREE(command->logData);
     SAFE_FREE(object->misc.nv.event_log);
     ifapi_session_clean(context);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

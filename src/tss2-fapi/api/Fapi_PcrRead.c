@@ -89,7 +89,7 @@ Fapi_PcrRead(
 
     return_if_error_reset_state(r, "NV_ReadWithLog");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -152,7 +152,7 @@ Fapi_PcrRead_Async(
     /* Initialize the context state for this operation. */
     context->state = PCR_READ_READ_PCR;
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -246,6 +246,6 @@ Fapi_PcrRead_Finish(
 cleanup:
     /* Cleanup any intermediate results and state stored in the context. */
     SAFE_FREE(command->pcrValues);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

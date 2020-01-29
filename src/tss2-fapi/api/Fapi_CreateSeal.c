@@ -108,7 +108,7 @@ Fapi_CreateSeal(
 
     return_if_error_reset_state(r, "CreateSeal");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -192,7 +192,7 @@ Fapi_CreateSeal_Async(
     /* Initialize the context state for this operation. */
     context->state = CREATE_SEAL;
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -243,6 +243,6 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     context->state = _FAPI_STATE_INIT;
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

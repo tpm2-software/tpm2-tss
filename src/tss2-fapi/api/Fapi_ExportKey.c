@@ -106,7 +106,7 @@ Fapi_ExportKey(
 
     return_if_error_reset_state(r, "ExportKey");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -187,7 +187,7 @@ Fapi_ExportKey_Async(
         /* Initialize the context state for this operation. */
         context->state = EXPORT_KEY_READ_PUB_KEY_PARENT;
     }
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 
 error_cleanup:
@@ -425,6 +425,6 @@ cleanup:
     SAFE_FREE(pubKey->misc.ext_pub_key.certificate);
     SAFE_FREE(command->pathOfKeyToDuplicate);
     SAFE_FREE(command->pathToPublicKeyOfNewParent);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

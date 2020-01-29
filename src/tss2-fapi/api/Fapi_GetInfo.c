@@ -112,7 +112,7 @@ Fapi_GetInfo(
 
     return_if_error_reset_state(r, "GetTPMInfo");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -160,7 +160,7 @@ Fapi_GetInfo_Async(
     command->idx_info_cap = 0;
     context->state = GET_INFO_GET_CAP;
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -204,7 +204,7 @@ Fapi_GetInfo_Finish(
 
     switch (context->state) {
     case GET_INFO_GET_CAP:
-        /* Initialize the propert for the first ESAPI call */
+        /* Initialize the property for the first ESAPI call */
         command->property
             = info_cap_tab[command->idx_info_cap].property;
         fallthrough;
@@ -229,7 +229,7 @@ Fapi_GetInfo_Finish(
         command->idx_info_cap += 1;
         if (command->idx_info_cap <  sizeof(info_cap_tab)
                 / sizeof(info_cap_tab[0])) {
-            /* Not all capablities have been collected */
+            /* Not all capabilities have been collected */
             context->state = GET_INFO_GET_CAP;
             return TSS2_FAPI_RC_TRY_AGAIN;
         }
@@ -241,7 +241,7 @@ Fapi_GetInfo_Finish(
         r = ifapi_json_IFAPI_INFO_serialize(infoObj, &jso);
         goto_if_error(r, "Error serialize info object", cleanup);
 
-        /* Duplicat the information to be returned to the caller. */
+        /* Duplicate the information to be returned to the caller. */
         *info = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY));
         goto_if_null2(*info, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
@@ -258,6 +258,6 @@ cleanup:
     for (capIdx = 0; capIdx < IFAPI_MAX_CAP_INFO; capIdx++) {
         SAFE_FREE(infoObj->cap[capIdx].capability);
     }
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

@@ -376,9 +376,9 @@ rel_path_to_abs_path(
         /* Check type of object which does not exist. */
         if (ifapi_path_type_p(rel_path, IFAPI_NV_PATH) ||
                 (ifapi_hierarchy_path_p(rel_path))) {
-            /* Hierachy which should be created during provisioning could not be loaded. */
+            /* Hierarchy which should be created during provisioning could not be loaded. */
             goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND,
-                    "Keystore not initialized. Hierachy file %s does not exist.",
+                    "Keystore not initialized. Hierarchy file %s does not exist.",
                     cleanup, rel_path);
         } else {
             /* Object file for key does not exist in keystore */
@@ -419,7 +419,7 @@ ifapi_keystore_load_async(
      /* Free old input buffer if buffer exists */
      SAFE_FREE(io->char_rbuffer);
 
-     /* Convert relative path to abolute path in keystore */
+     /* Convert relative path to absolute path in keystore */
      r = rel_path_to_abs_path(keystore, path, &abs_path);
      goto_if_error2(r, "Object %s not found.", cleanup, path);
 
@@ -562,7 +562,7 @@ ifapi_keystore_store_finish(
 {
     TSS2_RC r;
 
-    /* Keystore parameter is used to be prepared if transmission of state infomation
+    /* Keystore parameter is used to be prepared if transmission of state information
        between async and finish will be necessary in future extensions. */
     (void)keystore;
     /* Finish writing the object */
@@ -695,7 +695,7 @@ ifapi_keystore_delete(
     TSS2_RC r;
     char *abs_path = NULL;
 
-    /* Convert relative path to abolute path in keystore */
+    /* Convert relative path to absolute path in keystore */
     r = rel_path_to_abs_path(keystore, path, &abs_path);
     goto_if_error2(r, "Object %s not found.", cleanup, path);
 
@@ -946,7 +946,7 @@ ifapi_keystore_check_overwrite(
     TSS2_RC r;
     char *directory = NULL;
     char *file = NULL;
-    (void)io; /* Used to simplifiy future extensions */
+    (void)io; /* Used to simplify future extensions */
 
     /* Expand relative path */
     r = expand_path(keystore, path, &directory);
@@ -1004,7 +1004,7 @@ ifapi_keystore_check_writeable(
     TSS2_RC r;
     char *directory = NULL;
     char *file = NULL;
-    (void)io; /* Used to simplifiy future extensions */
+    (void)io; /* Used to simplify future extensions */
 
     /* Expand relative path */
     r = expand_path(keystore, path, &directory);

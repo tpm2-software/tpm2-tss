@@ -89,7 +89,7 @@ Fapi_GetDescription(
 
     return_if_error_reset_state(r, "Path_SetDescription");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -133,7 +133,7 @@ Fapi_GetDescription_Async(
     /* Initialize the context state for this operation. */
     context->state = PATH_GET_DESCRIPTION_READ;
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -186,7 +186,7 @@ Fapi_GetDescription_Finish(
 
         statecasedefault(context->state);
     }
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     /* Cleanup any intermediate results and state stored in the context. */
     ifapi_cleanup_ifapi_object(&object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);

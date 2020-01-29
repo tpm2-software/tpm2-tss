@@ -307,7 +307,7 @@ typedef struct {
     json_object *jso_event_log;  /**< logData in JSON format */
     TPMI_RH_NV_INDEX maxNvIndex; /**< Max index for search for free index  */
     IFAPI_EVENT pcr_event;       /**< Event to be added to log */
-    TPML_DIGEST_VALUES digests;  /**< Digest for teh event data of an extend */
+    TPML_DIGEST_VALUES digests;  /**< Digest for the event data of an extend */
     bool skip_policy_computation; /**< switch whether policy needs to be computed */
 } IFAPI_NV_Cmds;
 
@@ -1195,7 +1195,7 @@ struct FAPI_CONTEXT {
     IFAPI_GetRandom get_random;
     IFAPI_CreatePrimary createPrimary;
     IFAPI_LoadKey loadKey;
-    ESYS_TR session1;                /**< The firest session used by FAPI  */
+    ESYS_TR session1;                /**< The first session used by FAPI  */
     ESYS_TR session2;                /**< The second session used by FAPI  */
     ESYS_TR policy_session;          /**< The policy session used by FAPI  */
     ESYS_TR ek_handle;
