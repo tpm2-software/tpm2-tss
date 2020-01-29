@@ -38,6 +38,8 @@ typedef struct {
     char                *ek_cert_file;
      /* Switch whether certificate validation will done */
     TPMI_YES_NO         ek_cert_less;
+    /** Certificate service for Intel TPMs */
+    char                *intel_cert_service;
 
 } IFAPI_CONFIG;
 

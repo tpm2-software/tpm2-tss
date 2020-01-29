@@ -117,6 +117,13 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
         out->ek_fingerprint.hashAlg = 0;
     }
 
+    if (!ifapi_get_sub_object(jso, "intel_cert_service", &jso2)) {
+        out->intel_cert_service = NULL;
+    } else {
+        r =  ifapi_json_char_deserialize(jso2, &out->intel_cert_service);
+        return_if_error(r, "BAD VALUE");
+    }
+
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }

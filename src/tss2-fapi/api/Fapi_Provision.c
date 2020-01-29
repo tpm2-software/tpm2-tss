@@ -821,7 +821,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                 uint8_t *cert_buffer = NULL;
                 size_t cert_size;
                 TPM2B_PUBLIC public;
-                r = ifapi_get_intl_ek_certificate(&pkey->public, &cert_buffer,
+                r = ifapi_get_intl_ek_certificate(context, &pkey->public, &cert_buffer,
                                                   &cert_size);
                 goto_if_error_reset_state(r, "Get certificates", error_cleanup);
 

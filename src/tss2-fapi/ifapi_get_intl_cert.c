@@ -276,6 +276,7 @@ out_memory:
 /**
  * Get INTEL certificate for EK
  *
+ * @param[in] context The FAPI context with the configuration data.
  * @param[in] ek_public The out public data of the EK.
  * @param[out] cert_buffer the der encoded certificate.
  * @param[out] cert_size The size of the certificate buffer.
@@ -284,8 +285,8 @@ out_memory:
  * @retval TSS2_FAPI_RC_NO_CERT If an error did occur during certificate downloading.
  */
 TSS2_RC
-ifapi_get_intl_ek_certificate(TPM2B_PUBLIC *ek_public, unsigned char ** cert_buffer,
-                            size_t *cert_size)
+ifapi_get_intl_ek_certificate(FAPI_CONTEXT *context, TPM2B_PUBLIC *ek_public,
+                              unsigned char ** cert_buffer, size_t *cert_size)
 {
     int rc = 1;
     unsigned char *hash = hash_ek_public(ek_public);
@@ -294,8 +295,10 @@ ifapi_get_intl_ek_certificate(TPM2B_PUBLIC *ek_public, unsigned char ** cert_buf
         LOG_ERROR("base64_encode returned null");
         goto out;
     }
-    // TODO check whether appropriate or store address in profile and use value from profile
-    ctx.ek_server_addr = "https://ekop.intel.com/ekcertservice/";
+    if (context->config.intel_cert_service)
+        ctx.ek_server_addr = context->config.intel_cert_service;
+    else
+        ctx.ek_server_addr = "https://ekop.intel.com/ekcertservice/";
 
     LOG_INFO("%s", b64);
 
