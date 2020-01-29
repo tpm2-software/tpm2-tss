@@ -2442,7 +2442,6 @@ write_curl_buffer_cb(void *contents, size_t size, size_t nmemb, void *userp)
  * @param[out] buffer_size The size of the retrieved object.
  *
  * @retval TSS2_RC_SUCCESS on success
-* @retval TSS2_FAPI_RC_BAD_REFERENCE if
  * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE for curl errors:
  */
