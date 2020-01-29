@@ -83,6 +83,7 @@ typedef UINT8 IFAPI_SESSION_TYPE;
 #define IFAPI_JSON_TAG_CERTIFICATE "certificate"
 #define IFAPI_JSON_TAG_EXT_PUB_KEY "pem_ext_public"
 #define IFAPI_JSON_TAG_POLICY "policy"
+#define IFAPI_JSON_TAG_DUPLICATE "public_parent"
 #define IFAPI_JSON_TAG_POLICY_HARNESS "policy_harness"
 
 

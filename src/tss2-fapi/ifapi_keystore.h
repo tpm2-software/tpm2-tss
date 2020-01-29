@@ -80,6 +80,7 @@ typedef struct {
     TPM2B_PUBLIC                                 public; /**< The public information of the key to be duplicated */
     TPM2B_PUBLIC                          public_parent; /**< The public information of the new parent key */
     char                                   *certificate; /**< The certificate of the key to be duplicated */
+    TPMS_POLICY_HARNESS                         *policy; /**< The policy of the key to be duplicated */
 } IFAPI_DUPLICATE;
 
 /** type for representing public info of a TPM-Resource

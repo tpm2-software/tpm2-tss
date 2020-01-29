@@ -260,7 +260,7 @@ TESTS_CFLAGS +=  -DTOP_SOURCEDIR"=\"$(top_srcdir)\""
 FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-data-crypt.int \
     test/integration/fapi-data-crypt-rsa.int \
-    test/integration/fapi-rsa-duplicate.int \
+    test/integration/fapi-duplicate.int \
     test/integration/fapi-ext-public-key.int \
     test/integration/fapi-get-random.int \
     test/integration/fapi-platform-certificates.int \
@@ -1604,11 +1604,11 @@ test_integration_fapi_data_crypt_rsa_int_SOURCES = \
     test/integration/fapi-data-crypt.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_rsa_duplicate_int_CFLAGS  = $(TESTS_CFLAGS)
-test_integration_fapi_rsa_duplicate_int_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_rsa_duplicate_int_LDFLAGS = $(TESTS_LDFLAGS)
-test_integration_fapi_rsa_duplicate_int_SOURCES = \
-    test/integration/fapi-rsa-duplicate.int.c \
+test_integration_fapi_duplicate_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_duplicate_int_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_duplicate_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_duplicate_int_SOURCES = \
+    test/integration/fapi-duplicate.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 
