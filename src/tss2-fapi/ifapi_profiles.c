@@ -318,7 +318,6 @@ ifapi_profile_json_deserialize(
     json_object *jso,
     IFAPI_PROFILE *out)
 {
-//TODO: Cleanup
     json_object *jso2;
     TSS2_RC r;
 
@@ -353,25 +352,25 @@ ifapi_profile_json_deserialize(
     return_if_null(out->ek_template, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     if (!ifapi_get_sub_object(jso, "ecc_signing_scheme", &jso2)) {
-        LOG_ERROR("Bad value");
-        return  TSS2_FAPI_RC_BAD_VALUE;
+        memset(&out->ecc_signing_scheme, 0, sizeof(TPMT_SIG_SCHEME));
+    } else {
+        r =  ifapi_json_TPMT_SIG_SCHEME_deserialize(jso2, &out->ecc_signing_scheme);
+        return_if_error(r, "BAD VALUE");
     }
-    r =  ifapi_json_TPMT_SIG_SCHEME_deserialize(jso2, &out->ecc_signing_scheme);
-    return_if_error(r, "BAD VALUE");
 
     if (!ifapi_get_sub_object(jso, "rsa_signing_scheme", &jso2)) {
-        LOG_ERROR("Bad value");
-        return  TSS2_FAPI_RC_BAD_VALUE;
+        memset(&out->rsa_signing_scheme, 0, sizeof(TPMT_SIG_SCHEME));
+    } else {
+        r =  ifapi_json_TPMT_SIG_SCHEME_deserialize(jso2, &out->rsa_signing_scheme);
+        return_if_error(r, "BAD VALUE");
     }
-    r =  ifapi_json_TPMT_SIG_SCHEME_deserialize(jso2, &out->rsa_signing_scheme);
-    return_if_error(r, "BAD VALUE");
 
     if (!ifapi_get_sub_object(jso, "rsa_decrypt_scheme", &jso2)) {
-        LOG_ERROR("Bad value");
-        return  TSS2_FAPI_RC_BAD_VALUE;
+        memset(&out->rsa_decrypt_scheme, 0, sizeof(TPMT_RSA_DECRYPT));
+    } else {
+        r =  ifapi_json_TPMT_RSA_DECRYPT_deserialize(jso2, &out->rsa_decrypt_scheme);
+        return_if_error(r, "BAD VALUE");
     }
-    r =  ifapi_json_TPMT_RSA_DECRYPT_deserialize(jso2, &out->rsa_decrypt_scheme);
-    return_if_error(r, "BAD VALUE");
 
     if (!ifapi_get_sub_object(jso, "sym_mode", &jso2)) {
         LOG_ERROR("Bad value");
