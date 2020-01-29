@@ -119,6 +119,7 @@ Fapi_NvExtend(
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, nvPath, or data is NULL.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
+ * @retval TSS2_FAPI_RC_BAD_VALUE: if dataSize is larger than 1024
  * @retval TSS2_FAPI_RC_BAD_PATH: if nvPath is not found.
  * @retval TSS2_FAPI_RC_NV_WRONG_TYPE: if the NV is not an extendable index.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN: if the policy is unknown.
@@ -151,6 +152,12 @@ Fapi_NvExtend_Async(
     check_not_null(context);
     check_not_null(nvPath);
     check_not_null(data);
+
+    /* Check for maximum allowed dataSize. */
+    if (dataSize > 1024) {
+        LOG_ERROR("dataSize exceeds allowed maximum of 1024. dataSize = %zi", dataSize);
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
 
     /* Helpful alias pointers */
     IFAPI_NV_Cmds * command = &context->nv_cmd;
