@@ -7,6 +7,7 @@
 
 TSS2_RC
 ifapi_get_intl_ek_certificate(
+    FAPI_CONTEXT *context,
     TPM2B_PUBLIC *ek_public,
     unsigned char ** buffer,
     size_t *cert_size);
