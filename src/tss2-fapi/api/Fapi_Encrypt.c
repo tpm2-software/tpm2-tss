@@ -303,13 +303,16 @@ Fapi_Encrypt_Finish(
             return_try_again(r);
             goto_if_error_reset_state(r, "RSA encryption.", error_cleanup);
 
+            /* Return cipherTextSize if requested by the caller. */
+            if (cipherTextSize)
+                *cipherTextSize = tpmCipherText->size;
+
             /* Duplicate the outputs for handling off to the caller. */
-            *cipherTextSize = tpmCipherText->size;
-            *cipherText = malloc(*cipherTextSize);
+            *cipherText = malloc(tpmCipherText->size);
             goto_if_null2(*cipherText, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
                           error_cleanup);
 
-            memcpy(*cipherText, &tpmCipherText->buffer[0], *cipherTextSize);
+            memcpy(*cipherText, &tpmCipherText->buffer[0], tpmCipherText->size);
             SAFE_FREE(tpmCipherText);
 
             /* Flush the key from the TPM. */

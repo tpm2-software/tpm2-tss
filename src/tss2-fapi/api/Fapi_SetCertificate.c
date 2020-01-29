@@ -127,7 +127,11 @@ Fapi_SetCertificate_Async(
     goto_if_error(r, "Initialize SetCertificate", error_cleanup);
 
     /* Copy parameters to context for use during _Finish. */
-    command->pem_cert = x509certData;
+    if (x509certData) {
+        strdup_check(command->pem_cert, x509certData, r, error_cleanup);
+    } else {
+        command->pem_cert = NULL;
+    }
     strdup_check(command->key_path, path, r, error_cleanup);
     context->state = KEY_SET_CERTIFICATE_READ;
     memset(&command->key_object, 0, sizeof(IFAPI_OBJECT));
@@ -141,6 +145,7 @@ Fapi_SetCertificate_Async(
 
 error_cleanup:
     /* Initialize the context state for this operation. */
+    SAFE_FREE(command->pem_cert);
     SAFE_FREE(command->key_path);
     return r;
 }
@@ -227,6 +232,7 @@ Fapi_SetCertificate_Finish(
 
 error_cleanup:
     /* Cleanup any intermediate results and state stored in the context. */
+    SAFE_FREE(command->pem_cert);
     SAFE_FREE(command->key_path);
     if (key_object->objectType) {
         ifapi_cleanup_ifapi_object(key_object);

@@ -158,12 +158,13 @@ Fapi_NvExtend_Async(
     memset(command, 0 ,sizeof(IFAPI_NV_Cmds));
 
     /* Copy parameters to context for use during _Finish. */
-    command->data = malloc(dataSize);
-    goto_if_null2(command->data, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
+    uint8_t *in_data = malloc(dataSize);
+    goto_if_null2(in_data, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
             error_cleanup);
+    memcpy(in_data, data, dataSize);
+    command->data = in_data;
     strdup_check(command->nvPath, nvPath, r, error_cleanup);
     strdup_check(command->logData, logData, r, error_cleanup);
-
     command->numBytes = dataSize;
 
     /* Reset all context-internal session state information. */
