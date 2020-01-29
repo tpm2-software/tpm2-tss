@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [2.4.0-rc1] - 2020-01-21
+## [2.4.0-rc2] - 2020-01-29
 ### Added
 - Added a new Feature API (FAPI) implementation
 - Added Esys_TRSess_GetAuthRequired() ESAPI function
@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Number of fixes and improvements in the test code
 
 ### Fixed
+- Fixed mixing salted and unsalted sessions in the same ESAPI context
+- Removed use of VLAs from TPML marshal code
 - Fixed setting C++ compiler for non-fuzzing builds at configure
 - Fixed setting the name of session objects
 - Fixed page alignment errors in Sys_Get/SetAuths functions
