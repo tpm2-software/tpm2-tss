@@ -160,7 +160,10 @@ Fapi_Decrypt_Async(
     goto_if_error(r, "Invalid cipher object.", error_cleanup);
 
     /* Copy parameters to context for use during _Finish. */
-    command->in_data = cipherText;
+    uint8_t *inData = malloc(cipherTextSize);
+    goto_if_null(inData, "Out of memory", r, error_cleanup);
+    memcpy(inData, cipherText, cipherTextSize);
+    command->in_data = inData;
     command->numBytes = cipherTextSize;
     strdup_check(command->keyPath, keyPath, r, error_cleanup);
 
@@ -171,6 +174,7 @@ Fapi_Decrypt_Async(
     return r;
 
 error_cleanup:
+    SAFE_FREE(command->in_data);
     SAFE_FREE(command->keyPath);
     return r;
 }
@@ -331,6 +335,7 @@ Fapi_Decrypt_Finish(
     /* Cleanup of command related objects */
     ifapi_cleanup_ifapi_object(command->key_object);
     SAFE_FREE(command->keyPath);
+    SAFE_FREE(command->in_data);
 
     /* Cleanup of context related objects */
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
@@ -346,6 +351,7 @@ error_cleanup:
     /* Cleanup of command related objects */
     ifapi_cleanup_ifapi_object(command->key_object);
     SAFE_FREE(command->keyPath);
+    SAFE_FREE(command->in_data);
 
     /* Cleanup of context related objects */
     if (command->key_handle != ESYS_TR_NONE)
