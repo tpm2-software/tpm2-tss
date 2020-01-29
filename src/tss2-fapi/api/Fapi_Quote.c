@@ -117,7 +117,7 @@ Fapi_Quote(
 
     return_if_error_reset_state(r, "PCR_Quote");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -223,7 +223,7 @@ Fapi_Quote_Async(
 
     /* Initialize the context state for this operation. */
     context->state = PCR_QUOTE_WAIT_FOR_GET_CAP;
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
@@ -420,6 +420,6 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_ifapi_object(command->key_object);
     ifapi_session_clean(context);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

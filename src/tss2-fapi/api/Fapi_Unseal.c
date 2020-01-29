@@ -93,7 +93,7 @@ Fapi_Unseal(
 
     return_if_error_reset_state(r, "Unseal");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -143,7 +143,7 @@ Fapi_Unseal_Async(
 
     /* Initialize the context state for this operation. */
     context->state = UNSEAL_WAIT_FOR_KEY;
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
@@ -262,6 +262,6 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_session_clean(context);
     SAFE_FREE(command->keyPath);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

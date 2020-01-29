@@ -98,7 +98,7 @@ set_pem_key_param(
     TPM2B_PUBLIC public;
 
     if (!keyPEM ||  strlen(keyPEM) == 0) {
-        /* No PEM key used. Parmeters are already set in policy. */
+        /* No PEM key used. Parameters are already set in policy. */
         return TSS2_RC_SUCCESS;
     }
 

@@ -93,7 +93,7 @@ Fapi_ChangeAuth(
 
     return_if_error_reset_state(r, "Entity_ChangeAuth");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -183,7 +183,7 @@ Fapi_ChangeAuth_Async(
     /* Initialize the context state for this operation. */
     context->state = ENTITY_CHANGE_AUTH_WAIT_FOR_SESSION;
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
@@ -393,7 +393,7 @@ Fapi_ChangeAuth_Finish(
         statecase(context->state, ENTITY_CHANGE_AUTH_WAIT_FOR_NV_READ)
             /* The is the re-entry in case of an NV-index as referenced object.
                All code between the check for the entity type above and this
-               place was skiped in case of an NV-index. */
+               place was skipped in case of an NV-index. */
             r = ifapi_keystore_load_finish(&context->keystore, &context->io,
                     &command->object);
             return_try_again(r);
@@ -444,7 +444,7 @@ Fapi_ChangeAuth_Finish(
         statecase(context->state, ENTITY_CHANGE_AUTH_HIERARCHY_READ)
             /* This is the re-entry point if the referenced entity is a
                hierarchy. All code between the check for the entity type
-               and this place is skiped in case of a hierarchy. */
+               and this place is skipped in case of a hierarchy. */
             r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
             return_try_again(r);
             return_if_error_reset_state(r, "read_finish failed");
@@ -497,6 +497,6 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(command->key_object);
     SAFE_FREE(command->entityPath);
     SAFE_FREE(command->authValue);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

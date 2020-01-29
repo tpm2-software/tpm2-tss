@@ -110,7 +110,7 @@ test_fapi_policy_secret(FAPI_CONTEXT *context)
     r = Fapi_Import(context, policy_nv, json_policy);
     goto_if_error(r, "Error Fapi_Import", error);
 
-    /* Create NV Object with policy wich will be used for key authorization */
+    /* Create NV Object with policy which will be used for key authorization */
     r = Fapi_CreateNv(context, nv_path_auth_object, "noda", 34, policy_nv, PASSWORD);
     goto_if_error(r, "Error Fapi_CreateNv", error);
 

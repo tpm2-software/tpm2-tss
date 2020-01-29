@@ -168,7 +168,7 @@ Fapi_Delete_Async(
         context->state = ENTITY_DELETE_WAIT_FOR_SESSION;
     }
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
@@ -397,7 +397,7 @@ Fapi_Delete_Finish(
 
         statecase(context->state, ENTITY_DELETE_FILE);
             /* This is the simple case of deleting an external (pub)key from the keystore
-               or we enter here after the TPM operation for the peristent key or NV index
+               or we enter here after the TPM operation for the persistent key or NV index
                deletion have been performed. */
             path = command->pathlist[command->path_idx];
             LOG_TRACE("Delete: %s", path);
@@ -449,7 +449,7 @@ Fapi_Delete_Finish(
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 
 error_cleanup:

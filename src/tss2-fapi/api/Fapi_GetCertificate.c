@@ -78,7 +78,7 @@ Fapi_GetCertificate(
 
     return_if_error_reset_state(r, "Key_GetCertificate");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -130,7 +130,7 @@ Fapi_GetCertificate_Async(
     /* Initialize the context state for this operation. */
     context->state = KEY_GET_CERTIFICATE_READ;
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -201,6 +201,6 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

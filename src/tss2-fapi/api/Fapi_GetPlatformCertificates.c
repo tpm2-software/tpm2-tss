@@ -92,7 +92,7 @@ Fapi_GetPlatformCertificates(
 
     return_if_error_reset_state(r, "Path_PlatformGetCertificate");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -135,7 +135,7 @@ Fapi_GetPlatformCertificates_Async(
     /* Initialize the context state for this operation. */
     context->state = GET_PLATFORM_CERTIFICATE;
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 

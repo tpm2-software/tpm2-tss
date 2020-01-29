@@ -170,7 +170,7 @@ Fapi_AuthorizePolicy_Async(
     /* Initialize the context state for this operation. */
     context->state = AUTHORIZE_NEW_LOAD_KEY;
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
@@ -338,6 +338,6 @@ cleanup:
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     SAFE_FREE(command->policyPath);
     SAFE_FREE(command->signingKeyPath);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

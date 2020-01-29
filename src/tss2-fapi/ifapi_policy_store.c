@@ -58,7 +58,7 @@ ifapi_policy_delete(
     TSS2_RC r;
     char *abs_path = NULL;
 
-    /* Convert relative path to abolute path in policy store */
+    /* Convert relative path to absolute path in policy store */
     r = policy_rel_path_to_abs_path(pstore, path, &abs_path);
     goto_if_error2(r, "Path %s could not be created.", cleanup, path);
 
@@ -141,7 +141,7 @@ ifapi_policy_store_load_async(
     /* Free old input buffer if buffer exists */
     SAFE_FREE(io->char_rbuffer);
 
-    /* Convert relative path to abolute path in keystore */
+    /* Convert relative path to absolute path in keystore */
     r = policy_rel_path_to_abs_path(pstore, path, &abs_path);
     goto_if_error2(r, "Object %s not found.", cleanup, path);
 
@@ -226,7 +226,7 @@ ifapi_policy_store_store_async(
 
     LOG_TRACE("Store policy: %s", path);
 
-    /* Convert relative path to abolute path in the policy store */
+    /* Convert relative path to absolute path in the policy store */
     r = policy_rel_path_to_abs_path(pstore, path, &abs_path);
     goto_if_error2(r, "Path %s could not be created.", cleanup, path);
 
@@ -268,7 +268,7 @@ ifapi_policy_store_store_finish(
 {
     TSS2_RC r;
 
-    /* Pstore parameter is used to be prepared if transmission of state infomation
+    /* Pstore parameter is used to be prepared if transmission of state information
        between async and finish will be necessary in future extensions. */
     (void)pstore;
     /* Finish writing the policy */

@@ -96,7 +96,7 @@ Fapi_NvWrite(
 
     return_if_error_reset_state(r, "NV_Write");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -182,7 +182,7 @@ Fapi_NvWrite_Async(
 
     /* Initialize the context state for this operation. */
     context->state = NV_WRITE_WAIT_FOR_SESSION;
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
@@ -290,6 +290,6 @@ error_cleanup:
     SAFE_FREE(jso);
     ifapi_session_clean(context);
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

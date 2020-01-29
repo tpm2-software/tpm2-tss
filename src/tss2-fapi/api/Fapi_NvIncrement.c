@@ -89,7 +89,7 @@ Fapi_NvIncrement(
 
     return_if_error_reset_state(r, "NV_Increment");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -149,7 +149,7 @@ Fapi_NvIncrement_Async(
 
     /* Initialize the context state for this operation. */
     context->state = NV_INCREMENT_READ;
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
@@ -309,6 +309,6 @@ error_cleanup:
     SAFE_FREE(command->nvPath);
     SAFE_FREE(jso);
     ifapi_session_clean(context);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

@@ -103,7 +103,7 @@ Fapi_Provision(
 
     return_if_error_reset_state(r, "Provision");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -163,7 +163,7 @@ Fapi_Provision_Async(
     command->capabilityData = NULL;
 
     context->state = PROVISION_READ_PROFILE;
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 end:
     SAFE_FREE(command->authValueLockout);

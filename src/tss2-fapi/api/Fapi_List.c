@@ -75,7 +75,7 @@ Fapi_List(
 
     return_if_error_reset_state(r, "Entities_List");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -124,7 +124,7 @@ Fapi_List_Async(
     /* Copy parameters to context for use during _Finish. */
     strdup_check(command->searchPath, searchPath, r, error_cleanup);
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:

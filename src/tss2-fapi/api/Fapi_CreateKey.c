@@ -172,7 +172,7 @@ Fapi_CreateKey_Async(
 
     /* Initialize the context state for this operation. */
     context->state = KEY_CREATE;
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -219,7 +219,7 @@ Fapi_CreateKey_Finish(
             ifapi_cleanup_ifapi_object(context->loadKey.key_object);
             ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
             context->state = _FAPI_STATE_INIT;
-            LOG_TRACE("finsihed");
+            LOG_TRACE("finished");
             return TSS2_RC_SUCCESS;
 
         statecasedefault(context->state);

@@ -89,7 +89,7 @@ Fapi_PcrExtend(
 
     return_if_error_reset_state(r, "PcrExtend");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -165,7 +165,7 @@ Fapi_PcrExtend_Async(
 
     /* Initialize the context state for this operation. */
     context->state = PCR_EXTEND_WAIT_FOR_GET_CAP;
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
@@ -290,6 +290,6 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_event(pcrEvent);
     ifapi_session_clean(context);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

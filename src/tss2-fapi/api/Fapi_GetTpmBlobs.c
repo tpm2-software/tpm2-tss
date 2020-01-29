@@ -98,7 +98,7 @@ Fapi_GetTpmBlobs(
 
     return_if_error_reset_state(r, "Entity_GetTPMBlobs");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -142,7 +142,7 @@ Fapi_GetTpmBlobs_Async(
 
     /* Initialize the context state for this operation. */
     context->state = ENTITY_GET_TPM_BLOBS_READ;
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -246,7 +246,7 @@ Fapi_GetTpmBlobs_Finish(
             /* Cleanup any intermediate results and state stored in the context. */
             ifapi_cleanup_ifapi_object(&object);
             context->state = _FAPI_STATE_INIT;
-            LOG_TRACE("finsihed");
+            LOG_TRACE("finished");
             return TSS2_RC_SUCCESS;
 
         statecasedefault(context->state);
@@ -259,6 +259,6 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

@@ -199,7 +199,7 @@ Fapi_CreateNv_Async(
 
     /* Initialize the context state for this operation. */
     context->state = NV_CREATE_READ_PROFILE;
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
@@ -429,6 +429,6 @@ error_cleanup:
     SAFE_FREE(miscNv->policyInstance);
     SAFE_FREE(nvCmd->nvPath);
     ifapi_session_clean(context);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

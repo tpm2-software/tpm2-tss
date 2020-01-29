@@ -140,7 +140,7 @@ Fapi_ExportPolicy_Async(
     strdup_check(command->path, path, r ,error_cleanup);
     memset(&command->object, 0, sizeof(IFAPI_OBJECT));
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
@@ -256,7 +256,7 @@ Fapi_ExportPolicy_Finish(
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     SAFE_FREE(command->path);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:

@@ -90,7 +90,7 @@ typedef union {
     IFAPI_KEY                                       key;    /**< Public info for key objects */
     IFAPI_NV                                         nv;    /**< Public info for NV ram objects */
     IFAPI_DUPLICATE                            key_tree;    /**< Information for key duplication */
-    IFAPI_HIERARCHY                           hierarchy;    /**< Information related ot hierarchies */
+    IFAPI_HIERARCHY                           hierarchy;    /**< Information related to hierarchies */
 } IFAPI_OBJECT_UNION;
 
 /** The states for key searching */

@@ -76,7 +76,7 @@ Fapi_SetCertificate(
 
     return_if_error_reset_state(r, "Key_SetCertificate");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -140,7 +140,7 @@ Fapi_SetCertificate_Async(
     r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
     goto_if_error2(r, "Could not open: %s", error_cleanup, path);
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
@@ -240,6 +240,6 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }

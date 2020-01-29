@@ -73,7 +73,7 @@ Fapi_Initialize(
         r = Fapi_Initialize_Finish(context);
     } while ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN);
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }
 
@@ -129,7 +129,7 @@ Fapi_Initialize_Async(
 cleanup_return:
     if (r)
         SAFE_FREE(*context);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }
 
@@ -273,7 +273,7 @@ Fapi_Initialize_Finish(
 
     (*context)->state = _FAPI_STATE_INIT;
     SAFE_FREE(*capability);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 cleanup_return:

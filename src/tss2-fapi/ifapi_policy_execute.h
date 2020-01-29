@@ -166,7 +166,7 @@ struct IFAPI_POLICY_EXEC_CTX {
                                     /**< List of policies for authorization selection */
     ifapi_policyeval_EXEC_CB callbacks;
                                     /**< callbacks used for execution of sub
-                                         policies and actions wich require access
+                                         policies and actions which require access
                                          to the FAPI context. */
 };
 

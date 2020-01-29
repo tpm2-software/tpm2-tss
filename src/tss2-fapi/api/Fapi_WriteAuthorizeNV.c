@@ -90,7 +90,7 @@ Fapi_WriteAuthorizeNv(
 
     return_if_error_reset_state(r, "WriteAuthorizeNV");
 
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
 
@@ -153,7 +153,7 @@ Fapi_WriteAuthorizeNv_Async(
 
     /* Initialize the context state for this operation. */
     context->state = WRITE_AUTHORIZE_NV_READ_NV;
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
@@ -327,6 +327,6 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_ifapi_object(object);
-    LOG_TRACE("finsihed");
+    LOG_TRACE("finished");
     return r;
 }
