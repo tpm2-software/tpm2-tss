@@ -204,7 +204,9 @@ Fapi_Import_Async(
         jso = json_tokener_parse(importData);
         return_if_null(jso, "Json error.", TSS2_FAPI_RC_BAD_VALUE);
 
-        if (ifapi_get_sub_object(jso, IFAPI_JSON_TAG_POLICY, &jso2)) {
+        if (ifapi_get_sub_object(jso, IFAPI_JSON_TAG_POLICY, &jso2) &&
+            !(ifapi_get_sub_object(jso, IFAPI_JSON_TAG_DUPLICATE, &jso2))
+            ) {
             /* Create policy object */
             r = ifapi_json_TPMS_POLICY_HARNESS_deserialize(jso, &policyHarness);
             goto_if_error(r, "Serialize policy", cleanup_error);
@@ -375,6 +377,7 @@ Fapi_Import_Finish(
             memset(newObject, 0, sizeof(IFAPI_OBJECT));
             newObject->objectType = IFAPI_KEY_OBJ;
             newObject->misc.key.public = keyTree->public;
+            newObject->policy_harness = keyTree->policy;
             newObject->misc.key.private.size =  command->private->size;
             newObject->misc.key.private.buffer  = &command->private->buffer[0];
             newObject->misc.key.policyInstance = NULL;
@@ -426,6 +429,13 @@ Fapi_Import_Finish(
 
     context->state = _FAPI_STATE_INIT;
     SAFE_FREE(command->out_path);
+
+    /* Cleanup policy for key objects.*/
+    if (newObject->objectType == IFAPI_KEY_OBJ) {
+        if (newObject->policy_harness)
+            ifapi_cleanup_policy_harness(newObject->policy_harness);
+        SAFE_FREE(newObject->policy_harness);
+    }
     SAFE_FREE(command->parent_path);
     ifapi_cleanup_ifapi_object(&command->object);
     SAFE_FREE(command->private);
@@ -437,6 +447,8 @@ Fapi_Import_Finish(
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
+    if (newObject)
+        ifapi_cleanup_ifapi_object(newObject);
     SAFE_FREE(command->out_path);
     SAFE_FREE(command->parent_path);
     ifapi_cleanup_ifapi_object(&command->object);

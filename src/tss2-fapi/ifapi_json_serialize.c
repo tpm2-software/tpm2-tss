@@ -350,7 +350,7 @@ ifapi_json_FAPI_QUOTE_INFO_serialize(const FAPI_QUOTE_INFO *in,
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICY_HARNESS.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type IFAPI_DUPLICATE.
  */
 TSS2_RC
 ifapi_json_IFAPI_DUPLICATE_serialize(const IFAPI_DUPLICATE *in,
@@ -391,6 +391,13 @@ ifapi_json_IFAPI_DUPLICATE_serialize(const IFAPI_DUPLICATE *in,
     return_if_error(r, "Serialize TPM2B_PUBLIC");
 
     json_object_object_add(*jso, "public_parent", jso2);
+    if (in->policy) {
+        jso2 = NULL;
+        r = ifapi_json_TPMS_POLICY_HARNESS_serialize(in->policy, &jso2);
+        return_if_error(r, "Serialize policy");
+
+        json_object_object_add(*jso, "policy", jso2);
+    }
 
     return TSS2_RC_SUCCESS;
 }

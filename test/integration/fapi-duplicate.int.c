@@ -76,21 +76,21 @@ test_fapi_duplicate(FAPI_CONTEXT *context)
     r = Fapi_Import(context, policy_name, json_policy);
     goto_if_error(r, "Error Fapi_List", error);
 
-    r = Fapi_CreateKey(context, "HS/SRK/myRsaCryptKey", "restricted,decrypt,noDa",
+    r = Fapi_CreateKey(context, "HS/SRK/myCryptKey", "restricted,decrypt,noDa",
                        "", NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
-    r = Fapi_ExportKey(context, "HS/SRK/myRsaCryptKey", NULL, &json_string_pub_key);
+    r = Fapi_ExportKey(context, "HS/SRK/myCryptKey", NULL, &json_string_pub_key);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     r = Fapi_Import(context, "ext/myNewParent", json_string_pub_key);
     goto_if_error(r, "Error Fapi_Import", error);
 
-    r = Fapi_CreateKey(context, "HS/SRK/myRsaCryptKey/myRsaCryptKey2",
+    r = Fapi_CreateKey(context, "HS/SRK/myCryptKey/myCryptKey2",
                        "exportable,decrypt,noDa", policy_name, NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
-    r = Fapi_ExportKey(context, "HS/SRK/myRsaCryptKey/myRsaCryptKey2",
+    r = Fapi_ExportKey(context, "HS/SRK/myCryptKey/myCryptKey2",
                        "ext/myNewParent", &json_duplicate);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
@@ -101,22 +101,15 @@ test_fapi_duplicate(FAPI_CONTEXT *context)
 
     fprintf(stderr, "Duplicate:\n%s\n", json_duplicate);
 
-#ifdef EK_PERSISTENT
-    Fapi_Delete(context, "P_RSA_EK_persistent");
-#else
-    Fapi_Delete(context, "P_RSA");
-#endif
+    r = Fapi_Delete(context, "/");
+    goto_if_error(r, "Error Fapi_Delete", error);
+
     SAFE_FREE(json_string_pub_key);
     SAFE_FREE(json_duplicate);
     SAFE_FREE(json_policy);
     return EXIT_SUCCESS;
 
 error:
-#ifdef EK_PERSISTENT
-    Fapi_Delete(context, "P_RSA_EK_persistent");
-#else
-    Fapi_Delete(context, "P_RSA");
-#endif
     SAFE_FREE(json_string_pub_key);
     SAFE_FREE(json_duplicate);
     SAFE_FREE(json_policy);

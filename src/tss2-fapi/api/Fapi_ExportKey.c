@@ -340,7 +340,7 @@ Fapi_ExportKey_Finish(
             context->state = EXPORT_KEY_WAIT_FOR_DUPLICATE;
             fallthrough;
 
-        statecase(context->state,  EXPORT_KEY_WAIT_FOR_DUPLICATE);
+        statecase(context->state, EXPORT_KEY_WAIT_FOR_DUPLICATE);
             exportTree->objectType = IFAPI_DUPLICATE_OBJ;
             r = Esys_Duplicate_Finish(context->esys, NULL, &duplicate, &encryptedSeed);
             try_again_or_error_goto(r, "Duplicate", cleanup);
@@ -352,6 +352,10 @@ Fapi_ExportKey_Finish(
             keyTree->public =
                 command->key_object->misc.key.public;
             keyTree->public_parent = command->public_parent;
+
+            /* For the policy added no cleanup is needed. The cleanup will
+               be done with the object cleanup. */
+            keyTree->policy = command->key_object->policy_harness;
             r = ifapi_get_json(context, exportTree, exportedData);
             goto_if_error2(r, "get JSON for exported data.", cleanup);
 
