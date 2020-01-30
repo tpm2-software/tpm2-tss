@@ -304,15 +304,17 @@ FAPI_TESTS_INTEGRATION = \
 if TESTPTPM
 if PTPMDESTRUCTIVE
 FAPI_TESTS_INTEGRATION += test/integration/fapi-key-create-sign-policy-provision.int
-endif
-#else
+endif #PTPMDESTRUCTIVE
+endif #TESTPTPM
+
+if !TESTPTPM
 FAPI_TESTS_INTEGRATION += \
     test/integration/fapi-key-create-sign-policy-provision.int \
     test/integration/fapi-provision-fingerprint.int \
     test/integration/fapi-provision-certificate.int \
     test/integration/fapi-provision-fingerprint_ecc.int \
     test/integration/fapi-provision-certificate_ecc.int
-endif #TESTPTM
+endif #!TESTPTPM
 
 TESTS_INTEGRATION += $(FAPI_TESTS_INTEGRATION)
 
