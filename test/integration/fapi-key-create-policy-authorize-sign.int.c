@@ -8,8 +8,10 @@
 #include <config.h>
 #endif
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -21,6 +23,39 @@
 #define LOGMODULE test
 #include "util/log.h"
 #include "util/aux_util.h"
+
+static bool cb_called = false;
+
+static TSS2_RC
+branch_callback(
+    FAPI_CONTEXT *context,
+    char   const *description,
+    char  const **branchNames,
+    size_t        numBranches,
+    size_t       *selectedBranch,
+    void         *userData)
+{
+    (void) description;
+    (void) userData;
+
+    if (numBranches != 2) {
+        LOG_ERROR("Wrong number of branches");
+        return TSS2_FAPI_RC_GENERAL_FAILURE;
+    }
+
+    if (!strcmp(branchNames[0], "Policy NameHash"))
+        *selectedBranch = 1;
+    else if (!strcmp(branchNames[1], "Policy NameHash"))
+        *selectedBranch = 2;
+    else {
+        LOG_ERROR("BranchName not found");
+        return TSS2_FAPI_RC_GENERAL_FAILURE;
+    }
+
+    cb_called = true;
+
+    return TSS2_RC_SUCCESS;
+}
 
 /** Test the FAPI functions for key creation and usage.
  *
@@ -41,6 +76,11 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     TSS2_RC r;
     char *policy_name_hash = "/policy/pol_name_hash";
     char *policy_file_name_hash = TOP_SOURCEDIR "/test/data/fapi/policy/pol_name_hash.json";
+
+    /* This policy cannot succeed, but that's the intention. We authorize it but then choose
+       the other policy from branch selection. */
+    char *policy_cphash = "/policy/pol_cphash";
+    char *policy_file_cphash = TOP_SOURCEDIR "/test/data/fapi/policy/pol_cphash.json";
     char *policy_name_authorize = "/policy/pol_authorize";
     char *policy_file_authorize = TOP_SOURCEDIR "/test/data/fapi/policy/pol_authorize.json";
     FILE *stream = NULL;
@@ -57,6 +97,9 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
 
     r = pcr_reset(context, 16);
     goto_if_error(r, "Error pcr_reset", error);
+
+    r = Fapi_SetBranchCB(context, branch_callback, NULL);
+    goto_if_error(r, "Error SetPolicybranchselectioncallback", error);
 
     /* Read in the first policy */
     stream = fopen(policy_file_name_hash, "r");
@@ -84,6 +127,31 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_List", error);
 
     /* Read in the second policy */
+    stream = fopen(policy_file_cphash, "r");
+    if (!stream) {
+        LOG_ERROR("File %s does not exist", policy_file_name_hash);
+        goto error;
+    }
+    fseek(stream, 0L, SEEK_END);
+    policy_size = ftell(stream);
+    fclose(stream);
+    json_policy = malloc(policy_size + 1);
+    goto_if_null(json_policy,
+            "Could not allocate memory for the JSON policy",
+            TSS2_FAPI_RC_MEMORY, error);
+    stream = fopen(policy_file_cphash, "r");
+    ret = read(fileno(stream), json_policy, policy_size);
+    if (ret != policy_size) {
+        LOG_ERROR("IO error %s.", policy_file_name_hash);
+        goto error;
+    }
+    json_policy[policy_size] = '\0';
+
+    r = Fapi_Import(context, policy_cphash, json_policy);
+    SAFE_FREE(json_policy);
+    goto_if_error(r, "Error Fapi_List", error);
+
+    /* Read in the third policy */
     stream = fopen(policy_file_authorize, "r");
     if (!stream) {
         LOG_ERROR("File %s does not exist", policy_file_authorize);
@@ -119,6 +187,10 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     r = Fapi_AuthorizePolicy(context, policy_name_hash,
+                             "HS/SRK/myPolicySignKey", NULL, 0);
+    goto_if_error(r, "Authorize policy", error);
+
+    r = Fapi_AuthorizePolicy(context, policy_cphash,
                              "HS/SRK/myPolicySignKey", NULL, 0);
     goto_if_error(r, "Authorize policy", error);
 
@@ -179,6 +251,12 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
 
     SAFE_FREE(signature);
     SAFE_FREE(publicKey);
+
+    if (!cb_called) {
+        LOG_ERROR("Branch selection callback was not called.");
+        return EXIT_FAILURE;
+    }
+
     return EXIT_SUCCESS;
 
 error:
