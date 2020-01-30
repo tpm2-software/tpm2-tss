@@ -24,12 +24,13 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Test the FAPI functions to store and use an external public key.
+/** Test the FAPI functions to store and use an external public key and verify quote.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
  *  - Fapi_Import()
  *  - Fapi_Key_Verifysignature()
+ *  - Fapi_Key_VerifQuote()
  *  - Fapi_Delete()
  *  - Fapi_GetCertificate)
  *  - Fapi_SetCertificate)
@@ -47,6 +48,71 @@ test_fapi_ext_public_key(FAPI_CONTEXT *context)
 
     EVP_PKEY *evp_key = NULL;
     RSA *rsa_key = NULL;
+
+    /* Key will be used for non TPM signature verfication. */
+    char *pubkey_pem =
+        "-----BEGIN PUBLIC KEY-----\n"
+        "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEUymzBzI3LcxRpqJkiP0Ks7qp1UZH\n"
+        "93mYpmfUJBjK6anQawTyy8k87MteUdP5IPy47gzsO7sFcbWCoVZ8LvoQUw==\n"
+        "-----END PUBLIC KEY-----\n";
+
+    /* Quote info will be used for non TPM signature verfication. */
+    const char *quote_info =
+        "{\n"
+        "  \"sig_scheme\":{\n"
+        "    \"scheme\":\"ECDSA\",\n"
+        "    \"details\":{\n"
+        "      \"hashAlg\":\"SHA256\"\n"
+        "    }\n"
+        "  },\n"
+        "  \"attest\":{\n"
+        "    \"magic\":\"VALUE\",\n"
+        "    \"type\":\"ATTEST_QUOTE\",\n"
+        "    \"qualifiedSigner\":\"000b6f2f5ee244f7af20dbdfdf0a7dd21ef28afd9c3f377758f9ace6e29e64fc0ccf\",\n"
+        "    \"extraData\":\"6768033e216468247bd031a0a2d9876d79818f8f\",\n"
+        "    \"clockInfo\":{\n"
+        "      \"clock\":4607,\n"
+        "      \"resetCount\":2327013047,\n"
+        "      \"restartCount\":1164757112,\n"
+        "      \"safe\":\"YES\"\n"
+        "    },\n"
+        "    \"firmwareVersion\":[\n"
+        "      635916457,\n"
+        "      1185938286\n"
+        "    ],\n"
+        "    \"attested\":{\n"
+        "      \"pcrSelect\":[\n"
+        "        {\n"
+        "          \"hash\":\"SHA256\",\n"
+        "          \"pcrSelect\":[\n"
+        "            16\n"
+        "          ]\n"
+        "        }\n"
+        "      ],\n"
+        "      \"pcrDigest\":\"224eb2f4e5625ecb4a31cb7df43282ef6293c97a840a33415a3afe069535fa9b\"\n"
+        "    }\n"
+        "  }\n"
+        "}\n";
+
+    /* Test signature will be used for non TPM signature verfication. */
+    size_t test_signature_size = 71;
+    const uint8_t test_signature[71] = {
+      0x30, 0x45, 0x02, 0x21, 0x00, 0x8a, 0x00, 0x01,
+      0x6b, 0x79, 0xe2, 0x50, 0x84, 0x52, 0xc3, 0x40,
+      0xbb, 0x6c, 0xb4, 0xcb, 0x31, 0x42, 0xa2, 0xe5,
+      0x8b, 0x36, 0x35, 0x46, 0x8d, 0x8c, 0x3e, 0x59,
+      0xda, 0x0e, 0x83, 0x7e, 0x3b, 0x02, 0x20, 0x77,
+      0xb1, 0xe6, 0xa8, 0xab, 0x0e, 0x5f, 0x72, 0x28,
+      0x3e, 0x35, 0xe5, 0x91, 0x5b, 0x13, 0x35, 0xfe,
+      0x44, 0x54, 0xa4, 0x79, 0x63, 0x2a, 0x94, 0xd5,
+      0xaa, 0x07, 0xce, 0xba, 0xc6, 0x56, 0x85
+     };
+
+     /* Qualifying data will be used for non TPM signature verfication. */
+    uint8_t qualifying_data[20] = {
+        0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
+        0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f
+    };
 
     const char *pub_pem =
         "-----BEGIN PUBLIC KEY-----\n"
@@ -153,7 +219,16 @@ test_fapi_ext_public_key(FAPI_CONTEXT *context)
     }
 
     r = Fapi_List(context, "", &path_list);
-    goto_if_error(r, "Error Fapi_Delete", error);
+    goto_if_error(r, "Error Fapi_List", error);
+
+    /* Test VerfiyQuote in non TPM mode. */
+    r = Fapi_Import(context, "/ext/myExtPubKey", pubkey_pem);
+    goto_if_error(r, "Error Fapi_Import", error);
+
+    r = Fapi_VerifyQuote(context, "/ext/myExtPubKey",
+                         qualifying_data, 20,  quote_info,
+                         test_signature, test_signature_size, NULL);
+    goto_if_error(r, "Error Fapi_Verfiy_Quote", error);
 
     fprintf(stderr, "\nPathList:\n%s\n", path_list);
 

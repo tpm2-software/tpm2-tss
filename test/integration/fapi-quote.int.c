@@ -7,7 +7,7 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-
+#include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
@@ -122,22 +122,9 @@ test_fapi_quote(FAPI_CONTEXT *context)
     r = Fapi_Delete(context, "/HS/SRK");
     goto_if_error(r, "Error Fapi_Delete", error);
 
-//TODO: Move to context2 once we are able to signal non-tpm mode using setenv()
-//    r = Fapi_Initialize(&context2, NULL);
-//    goto_if_error(r, "Error Fapi_Initialize", error);
-
-    r = Fapi_VerifyQuote(context, "/ext/myExtPubKey",
-                         qualifyingData, 20,  quoteInfo,
-                         signature, signatureSize, log);
-    goto_if_error(r, "Error Fapi_Verfiy_Quote", error);
-
-    r = Fapi_Delete(context, "/ext/myExtPubKey");
-    goto_if_error(r, "Error Fapi_Delete", error);
-
     r = Fapi_List(context, "/", &pathlist);
     goto_if_error(r, "Pathlist", error);
 
-//    Fapi_Finalize(&context2);
     json_object_put(jso);
     SAFE_FREE(pubkey_pem);
     SAFE_FREE(signature);
