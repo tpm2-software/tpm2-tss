@@ -307,6 +307,7 @@ FAPI_TESTS_INTEGRATION += test/integration/fapi-key-create-sign-policy-provision
 endif
 #else
 FAPI_TESTS_INTEGRATION += \
+    test/integration/fapi-key-create-sign-policy-provision.int \
     test/integration/fapi-provision-fingerprint.int \
     test/integration/fapi-provision-certificate.int \
     test/integration/fapi-provision-fingerprint_ecc.int \
@@ -1355,7 +1356,7 @@ test_integration_fapi_key_create_sign_password_provision_int_SOURCES = \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_key_create_sign_policy_provision_int_CFLAGS  = $(TESTS_CFLAGS) \
- -DFAPI_PROFILE=\"P_RSA_sh_policy\"
+ -DFAPI_PROFILE=\"P_RSA_sh_policy\" -DFAPI_TEST_EK_CERT_LESS
 test_integration_fapi_key_create_sign_policy_provision_int_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_sign_policy_provision_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_sign_policy_provision_int_SOURCES = \

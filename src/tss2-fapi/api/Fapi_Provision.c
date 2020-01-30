@@ -649,8 +649,8 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             fallthrough;
 
         statecase(context->state, PROVISION_LOCKOUT_CHANGE_POLICY);
-            r = ifapi_change_policy_hierarchy(context, ESYS_TR_RH_OWNER,
-                    hierarchy, defaultProfile->sh_policy);
+            r = ifapi_change_policy_hierarchy(context, ESYS_TR_RH_LOCKOUT,
+                    hierarchy, defaultProfile->lockout_policy);
             return_try_again(r);
             goto_if_error(r, "Change policy LOCKOUT", error_cleanup);
 

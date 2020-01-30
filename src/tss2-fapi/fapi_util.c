@@ -2984,7 +2984,7 @@ ifapi_change_policy_hierarchy(
             return TSS2_RC_SUCCESS;
         }
 
-        context->policy.state = POLICY_CALCULATE;
+        context->policy.state = POLICY_INIT;
 
         /* Calculate the policy digest which will be used as hierarchy policy. */
         r = ifapi_calculate_tree(context, NULL, /**< no path needed */
