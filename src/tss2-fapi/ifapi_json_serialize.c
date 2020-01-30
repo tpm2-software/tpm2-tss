@@ -659,10 +659,14 @@ ifapi_json_IFAPI_TSS_EVENT_serialize(const IFAPI_TSS_EVENT *in,
     return_if_error(r, "Serialize TPM2B_EVENT");
 
     json_object_object_add(*jso, "data", jso2);
+
     if (in->event) {
-        jso2 = NULL;
-        r = ifapi_json_char_serialize(in->event, &jso2);
-        return_if_error(r, "Serialize char");
+        /* The in->event field is somewhat special. Its an arbitrary json
+           object that shall be serialized under the event field. Thus we
+           first have to deserialize the string before we can add it to
+           the data structure. */
+        jso2 = json_tokener_parse(in->event);
+        return_if_null(jso2, "Event is not valid JSON.", TSS2_FAPI_RC_BAD_VALUE);
 
         json_object_object_add(*jso, "event", jso2);
     }

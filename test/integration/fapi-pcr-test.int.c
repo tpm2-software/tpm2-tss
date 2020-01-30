@@ -22,7 +22,6 @@
 
 #define EVENT_SIZE 10
 
-//TODO: event should contain json directly, not a string with json inside
 /* This is a list of expected value from the test. Possible returns (for different PCR bank
    configurations) are concatenated into a long string and the test uses strstr() to find a match.*/
 const char *log_exp[] = {
@@ -51,7 +50,9 @@ const char *log_exp[] = {
     \"type\":\"tss2\",\n\
     \"sub_event\":{\n\
       \"data\":\"00010203040506070809\",\n\
-      \"event\":\"{ \\\"test\\\": \\\"myfile\\\" }\"\n\
+      \"event\":{\n\
+        \"test\":\"myfile\"\n\
+      }\n\
     }\n\
   }\n\
 ]",
@@ -76,7 +77,9 @@ const char *log_exp[] = {
     \"type\":\"tss2\",\n\
     \"sub_event\":{\n\
       \"data\":\"00010203040506070809\",\n\
-      \"event\":\"{ \\\"test\\\": \\\"myfile\\\" }\"\n\
+      \"event\":{\n\
+        \"test\":\"myfile\"\n\
+      }\n\
     }\n\
   }\n\
 ]",
@@ -97,7 +100,9 @@ const char *log_exp[] = {
     \"type\":\"tss2\",\n\
     \"sub_event\":{\n\
       \"data\":\"00010203040506070809\",\n\
-      \"event\":\"{ \\\"test\\\": \\\"myfile\\\" }\"\n\
+      \"event\":{\n\
+        \"test\":\"myfile\"\n\
+      }\n\
     }\n\
   }\n\
 ]",
@@ -114,7 +119,9 @@ const char *log_exp[] = {
     \"type\":\"tss2\",\n\
     \"sub_event\":{\n\
       \"data\":\"00010203040506070809\",\n\
-      \"event\":\"{ \\\"test\\\": \\\"myfile\\\" }\"\n\
+      \"event\":{\n\
+        \"test\":\"myfile\"\n\
+      }\n\
     }\n\
   }\n\
 ]",
@@ -131,7 +138,9 @@ const char *log_exp[] = {
     \"type\":\"tss2\",\n\
     \"sub_event\":{\n\
       \"data\":\"00010203040506070809\",\n\
-      \"event\":\"{ \\\"test\\\": \\\"myfile\\\" }\"\n\
+      \"event\":{\n\
+        \"test\":\"myfile\"\n\
+      }\n\
     }\n\
   }\n\
 ]" };

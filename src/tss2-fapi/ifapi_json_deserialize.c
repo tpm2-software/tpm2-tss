@@ -667,9 +667,12 @@ ifapi_json_IFAPI_TSS_EVENT_deserialize(json_object *jso,  IFAPI_TSS_EVENT *out)
     if (!ifapi_get_sub_object(jso, "event", &jso2)) {
         out->event = NULL;
     } else {
-        r =  ifapi_json_char_deserialize(jso2, &out->event);
-        return_if_error(r, "BAD VALUE");
-
+        /* out->event is a special case. It can be an arbitrary
+           JSON object. Since FAPI does not access its internals
+           we just store its string represenation here. */
+        out->event = strdup(json_object_to_json_string_ext(jso2,
+                                JSON_C_TO_STRING_PRETTY));
+        return_if_null(out->event, "OOM", TSS2_FAPI_RC_MEMORY);
     }
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
