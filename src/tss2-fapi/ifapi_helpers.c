@@ -1157,6 +1157,7 @@ cleanup_policy_element(TPMT_POLICYELEMENT *policy)
         case POLICYSIGNED:
             SAFE_FREE(policy->element.PolicySigned.keyPath);
             SAFE_FREE(policy->element.PolicySigned.keyPEM);
+            SAFE_FREE(policy->element.PolicySigned.publicKeyHint);
             break;
         case POLICYPCR:
             SAFE_FREE(policy->element.PolicyPCR.pcrs);
@@ -1409,6 +1410,8 @@ copy_policy_element(const TPMT_POLICYELEMENT *from_policy, TPMT_POLICYELEMENT *t
                      from_policy->element.PolicySigned.keyPath, r, error);
         strdup_check(to_policy->element.PolicySigned.keyPEM,
                      from_policy->element.PolicySigned.keyPEM, r, error);
+        strdup_check(to_policy->element.PolicySigned.publicKeyHint,
+                     from_policy->element.PolicySigned.publicKeyHint, r, error);
         break;
     case POLICYPCR:
         to_policy->element.PolicyPCR.pcrs =

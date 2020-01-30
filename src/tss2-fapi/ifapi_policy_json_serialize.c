@@ -159,6 +159,13 @@ ifapi_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in,
 
         json_object_object_add(*jso, "keyPEM", jso2);
     }
+    if ((in->publicKeyHint) && strcmp(in->publicKeyHint, "") != 0) {
+        jso2 = NULL;
+        r = ifapi_json_char_serialize(in->publicKeyHint, &jso2);
+        return_if_error(r, "Serialize char");
+
+        json_object_object_add(*jso, "publicKeyHint", jso2);
+    }
     if (in->keyPEMhashAlg != 0) {
         jso2 = NULL;
         r = ifapi_json_TPMI_ALG_HASH_serialize(in->keyPEMhashAlg, &jso2);

@@ -583,20 +583,22 @@ ifapi_policy_action(
 
 /** Callback for signing a byte buffer.
  *
- * @parm[in] key_pem The pem key used for signing operation.
- * @parm[in] key_pem_hash_alg The hash alg used for digest computation.
- * @parm[in] buffer the byte array to be signed.
- * @parm[in] buffer_size The size of the buffer to be signed.
- * @parm[out] signature The signature in DER format.
- * @parm[out] signature_size The size of the signature.
- * @parm[in] userdata The user context to retrieve the signing function.
+ * @param[in] key_pem The pem key used for signing operation.
+ * @param[in] A human readable hint to denote which public key to use.
+ * @param[in] key_pem_hash_alg The hash alg used for digest computation.
+ * @param[in] buffer the byte array to be signed.
+ * @param[in] buffer_size The size of the buffer to be signed.
+ * @param[out] signature The signature in DER format.
+ * @param[out] signature_size The size of the signature.
+ * @param[in] userdata The user context to retrieve the signing function.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_ESYS_RC_MEMORY: if it's not possible to allocate enough memory.
+ * @retval TSS2_ESYS_RC_MEMORY if it's not possible to allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE If no user data is passed.
  */
 TSS2_RC
 ifapi_sign_buffer(
     char *key_pem,
+    char *public_key_hint,
     TPMI_ALG_HASH key_pem_hash_alg,
     uint8_t *buffer,
     size_t buffer_size,
@@ -613,7 +615,8 @@ ifapi_sign_buffer(
         return_error2(TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN,
                       "No signature callback.");
     }
-    r = fapi_ctx->callbacks.sign(fapi_ctx, "PolicySigned", key_pem, "",       // TODO check publicKeyHint
+    r = fapi_ctx->callbacks.sign(fapi_ctx, "PolicySigned", key_pem,
+                                 public_key_hint ? public_key_hint : "",
                                  key_pem_hash_alg,
                                  buffer, buffer_size,
                                  signature, signature_size,

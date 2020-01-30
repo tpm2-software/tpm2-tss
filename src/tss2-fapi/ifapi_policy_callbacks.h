@@ -80,6 +80,7 @@ ifapi_branch_selection(
 TSS2_RC
 ifapi_sign_buffer(
     char *key_pem,
+    char *public_key_hint,
     TPMI_ALG_HASH key_pem_hash_alg,
     uint8_t *buffer,
     size_t buffer_size,

@@ -80,6 +80,7 @@ typedef TSS2_RC (*ifapi_policyexec_cbpolsel) (
 
 typedef TSS2_RC (*ifapi_policyexec_cbsign) (
     char *key_pem,
+    char *public_key_hint,
     TPMI_ALG_HASH key_pem_hash_alg,
     uint8_t *buffer,
     size_t buffer_size,

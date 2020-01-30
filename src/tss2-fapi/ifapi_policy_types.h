@@ -39,6 +39,7 @@ typedef struct {
     INT32                                    expiration;    /**< This value will be -1 by the FAPI */
     TPMT_SIGNATURE                                 auth;    /**< This value is generated from at runtime via a callback. */
     TPM2B_NAME                                publicKey;    /**< This will be automatically generated from keyPath, keyPublic */
+    char                                 *publicKeyHint;    /**< A human readable hint to denote which public key to use. */
     char                                       *keyPath;    /**< A reference to a key inside the FAPI keystore */
     TPMT_PUBLIC                               keyPublic;    /**< None */
     char                                        *keyPEM;    /**< <p>The TPM2B_NAME is constructed with a TPMT_PUBLIC from this */
