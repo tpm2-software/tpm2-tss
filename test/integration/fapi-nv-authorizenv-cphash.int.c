@@ -77,7 +77,7 @@ test_fapi_nv_authorizenv_cphash(FAPI_CONTEXT *context)
     char *policy1_name = "/policy/pol_authorize_nv";
     char *policy1_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_authorize_nv.json";
     char *policy2_name = "/policy/pol_cphash";
-    char *policy2_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_pcr16_0.json";
+    char *policy2_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_cphash.json";
     FILE *stream = NULL;
     char json[1024];
 
