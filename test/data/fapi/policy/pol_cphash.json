@@ -1,5 +1,5 @@
 {
-    "description":"The description",
+    "description":"Policy CpHash",
     "policy":[
         {
             "type": "POLICYCPHASH",
