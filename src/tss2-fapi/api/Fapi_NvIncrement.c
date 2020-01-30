@@ -242,8 +242,8 @@ Fapi_NvIncrement_Finish(
         fallthrough;
 
     statecase(context->state, NV_INCREMENT_WAIT_FOR_SESSION)
-//TODO: Pass the namealg of the NV index into the session to be created
-        r = ifapi_get_sessions_finish(context, &context->profiles.default_profile);
+        r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
+                                      object->misc.nv.public.nvPublic.nameAlg);
         return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 

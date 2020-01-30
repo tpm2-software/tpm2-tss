@@ -182,7 +182,8 @@ Fapi_GetRandom_Finish(
 
     switch (context->state) {
         statecase(context->state, GET_RANDOM_WAIT_FOR_SESSION);
-            r = ifapi_get_sessions_finish(context, &context->profiles.default_profile);
+        r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
+                                      context->profiles.default_profile.nameAlg);
             return_try_again(r);
             goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 

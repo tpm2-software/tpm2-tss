@@ -304,7 +304,7 @@ Fapi_Quote_Finish(
             r = ifapi_profiles_get(&context->profiles, command->keyPath, &profile);
             goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
-            r = ifapi_get_sessions_finish(context, profile);
+            r = ifapi_get_sessions_finish(context, profile, profile->nameAlg);
             return_try_again(r);
             goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 

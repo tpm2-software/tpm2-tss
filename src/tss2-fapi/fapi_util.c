@@ -83,7 +83,8 @@ ifapi_flush_object(FAPI_CONTEXT *context, ESYS_TR handle)
  * @retval All possible error codes of ESAPI.
  */
 TSS2_RC
-ifapi_get_session_async(ESYS_CONTEXT *esys, ESYS_TR saltkey, const IFAPI_PROFILE *profile)
+ifapi_get_session_async(ESYS_CONTEXT *esys, ESYS_TR saltkey, const IFAPI_PROFILE *profile,
+                        TPMI_ALG_HASH hashAlg)
 {
     TSS2_RC r;
 
@@ -92,8 +93,7 @@ ifapi_get_session_async(ESYS_CONTEXT *esys, ESYS_TR saltkey, const IFAPI_PROFILE
                                     ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                                     NULL,
                                     TPM2_SE_HMAC, &profile->session_symmetric,
-                                    profile->nameAlg);
-//TODO: Get the key objects's nameAlg that the session will be applied to for sessionHash
+                                    hashAlg);
     return_if_error(r, "Creating session.");
 
     return TSS2_RC_SUCCESS;
@@ -917,7 +917,10 @@ error_cleanup:
  * @retval All possible error codes of ESAPI.
  */
 TSS2_RC
-ifapi_get_sessions_finish(FAPI_CONTEXT *context, const IFAPI_PROFILE *profile)
+ifapi_get_sessions_finish(
+    FAPI_CONTEXT *context,
+    const IFAPI_PROFILE *profile,
+    TPMI_ALG_HASH hash_alg)
 {
     TSS2_RC r;
 
@@ -938,7 +941,8 @@ ifapi_get_sessions_finish(FAPI_CONTEXT *context, const IFAPI_PROFILE *profile)
 
         /* Initializing the first session for the caller */
 
-        r = ifapi_get_session_async(context->esys, context->srk_handle, profile);
+        r = ifapi_get_session_async(context->esys, context->srk_handle, profile,
+                                    hash_alg);
         return_if_error_reset_state(r, "Create FAPI session async");
         fallthrough;
 
@@ -956,7 +960,8 @@ ifapi_get_sessions_finish(FAPI_CONTEXT *context, const IFAPI_PROFILE *profile)
 
         /* Initializing the second session for the caller */
 
-        r = ifapi_get_session_async(context->esys, context->srk_handle, profile);
+        r = ifapi_get_session_async(context->esys, context->srk_handle, profile,
+                                    profile->nameAlg);
         return_if_error_reset_state(r, "Create FAPI session async");
         fallthrough;
 
@@ -1691,6 +1696,20 @@ ifapi_nv_write(
             *auth_object = *object;
         }
         context->nv_cmd.auth_index = auth_index;
+
+        /* Get A session for authorizing the NV write operation. */
+        r = ifapi_get_sessions_async(context, IFAPI_SESSION_GENEK | IFAPI_SESSION1,
+                                         TPMA_SESSION_DECRYPT, 0);
+        goto_if_error(r, "Create sessions", error_cleanup);
+
+        fallthrough;
+
+    statecase(context->nv_cmd.nv_write_state, NV2_WRITE_WAIT_FOR_SESSSION);
+        r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
+                                      object->misc.nv.public.nvPublic.nameAlg);
+        return_try_again(r);
+        goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
+
         fallthrough;
 
     statecase(context->nv_cmd.nv_write_state, NV2_WRITE_AUTHORIZE);
@@ -2087,7 +2106,7 @@ ifapi_load_key(
         r = ifapi_profiles_get(&context->profiles, context->Key_Sign.keyPath, &profile);
         goto_if_error_reset_state(r, "Reading profile data", error_cleanup);
 
-        r = ifapi_get_sessions_finish(context, profile);
+        r = ifapi_get_sessions_finish(context, profile, profile->nameAlg);
         return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
@@ -2656,7 +2675,8 @@ ifapi_key_create(
 
     statecase(context->cmd.Key_Create.state, KEY_CREATE_WAIT_FOR_SESSION);
         LOG_TRACE("KEY_CREATE_WAIT_FOR_SESSION");
-        r = ifapi_get_sessions_finish(context, context->cmd.Key_Create.profile);
+        r = ifapi_get_sessions_finish(context, context->cmd.Key_Create.profile,
+                                      context->cmd.Key_Create.profile->nameAlg);
         return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 

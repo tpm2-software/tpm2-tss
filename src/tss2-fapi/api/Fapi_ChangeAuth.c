@@ -235,7 +235,7 @@ Fapi_ChangeAuth_Finish(
             goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
             /* Finish starting the session establishment. */
-            r = ifapi_get_sessions_finish(context, profile);
+            r = ifapi_get_sessions_finish(context, profile, profile->nameAlg);
             return_try_again(r);
 
             goto_if_error_reset_state(r, " FAPI create session", error_cleanup);

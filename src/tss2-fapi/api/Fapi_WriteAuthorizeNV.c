@@ -233,19 +233,6 @@ Fapi_WriteAuthorizeNv_Finish(
             return_try_again(r);
             goto_if_error(r, "Fapi calculate tree.", error_cleanup);
 
-            /* Get A session for authorizing the NV write operation. */
-            r = ifapi_get_sessions_async(context, IFAPI_SESSION_GENEK | IFAPI_SESSION1,
-                    TPMA_SESSION_DECRYPT, 0);
-            goto_if_error_reset_state(r, "Create sessions", error_cleanup);
-
-            fallthrough;
-
-        statecase(context->state, WRITE_AUTHORIZE_NV_WAIT_FOR_SESSION)
-    //TODO: Pass the namealg of the NV index into the session to be created
-            r = ifapi_get_sessions_finish(context, &context->profiles.default_profile);
-            return_try_again(r);
-            goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
-
             fallthrough;
 
         statecase(context->state, WRITE_AUTHORIZE_NV_WRITE_NV_RAM_PREPARE)

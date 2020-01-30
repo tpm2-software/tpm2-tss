@@ -243,7 +243,8 @@ Fapi_Encrypt_Finish(
             fallthrough;
 
         statecase(context->state, DATA_ENCRYPT_WAIT_FOR_SESSION);
-            r = ifapi_get_sessions_finish(context, &context->profiles.default_profile);
+        r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
+                                      context->profiles.default_profile.nameAlg);
             return_try_again(r);
             goto_if_error(r, "Get session.", error_cleanup);
 
