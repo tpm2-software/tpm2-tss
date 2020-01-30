@@ -4,12 +4,6 @@
     "srk_template": "system,restricted,decrypt,0x81000001",
     "srk_persistent": 1,
     "ek_template":  "system,restricted,decrypt",
-    "ecc_signing_scheme": {
-        "scheme":"TPM2_ALG_ECDSA",
-        "details":{
-            "hashAlg":"TPM2_ALG_SHA1"
-        },
-    },
     "rsa_signing_scheme": {
         "scheme":"TPM2_ALG_RSAPSS",
         "details":{
@@ -45,9 +39,17 @@
         "keyBits":"128",
         "mode":"TPM2_ALG_CFB"
     },
+    "ek_policy": {
+        "description": "Endorsement hierarchy used for policy secret.",
+        "policy":[
+            {
+                "type":"POLICYSECRET",
+                "objectName": "4000000b",
+            }
+        ]
+    },
     "sh_policy": {
         "description":"Description pol_16_0",
-
         "policy":[
             {
                 "type":"POLICYPCR",
