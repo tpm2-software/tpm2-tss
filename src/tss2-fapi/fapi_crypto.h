@@ -93,23 +93,6 @@ ifapi_get_tpm2b_public_from_pem(
     TPM2B_PUBLIC                *tpmPublic);
 
 TSS2_RC
-ifapi_crypto_aes_encrypt(
-    const uint8_t               *key,
-    size_t                      keySize,
-    const uint8_t               *iv,
-    uint8_t                     *buffer,
-    size_t                      bufferSize);
-
-TSS2_RC
-ifapi_crypto_aes_decrypt(
-    const uint8_t               *key,
-    size_t                      keySize,
-    const uint8_t               *iv,
-    uint8_t                     *buffer,
-    size_t                      bufferSize
-    );
-
-TSS2_RC
 ifapi_get_hash_alg_for_size(
     uint16_t                    size,
     TPMI_ALG_HASH               *hashAlgorithm);

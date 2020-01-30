@@ -1878,49 +1878,6 @@ cleanup:
     return r;
 }
 
-TSS2_RC
-ifapi_load_sym_key_template(IFAPI_KEY_TEMPLATE *result_template)
-{
-    IFAPI_KEY_TEMPLATE template = {
-        .persistent = TPM2_NO,
-        .persistent_handle = 0,
-        .public = {
-            .size = 0,
-            .publicArea = {
-                .type = TPM2_ALG_KEYEDHASH,
-                .nameAlg = TPM2_ALG_SHA256,
-                .objectAttributes = (
-                    TPMA_OBJECT_NODA |
-                    TPMA_OBJECT_FIXEDTPM |
-                    TPMA_OBJECT_USERWITHAUTH |
-                    TPMA_OBJECT_FIXEDPARENT
-                ),
-                .authPolicy = {
-                    .size = 0,
-                },
-                .parameters.keyedHashDetail = {
-                    .scheme = {
-                        .scheme = TPM2_ALG_NULL,
-                        .details = {
-                            .hmac = {
-                                .hashAlg = TPM2_ALG_SHA256
-                            }
-                        }
-                    }
-                },
-                .unique.keyedHash = {
-                    .size = 0,
-                    .buffer = {},
-                },
-            }
-        }
-    };
-
-    *result_template = template;
-    return TSS2_RC_SUCCESS;
-}
-
-
 /* Determine start index for NV object depending on type.
  *
  * The value will be determined based on e TCG handle registry.

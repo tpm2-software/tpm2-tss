@@ -165,10 +165,6 @@ bool
 object_with_auth(IFAPI_OBJECT *object);
 
 TSS2_RC
-ifapi_load_sym_key_template(
-    IFAPI_KEY_TEMPLATE *template);
-
-TSS2_RC
 ifapi_get_nv_start_index(const char *path, TPM2_HANDLE *start_nv_index);
 
 TSS2_RC

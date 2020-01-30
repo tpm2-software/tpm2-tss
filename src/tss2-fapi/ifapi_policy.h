@@ -40,11 +40,4 @@ ifapi_calculate_tree(
     size_t *digest_idx,
     size_t *hash_size);
 
-TSS2_RC
-ifapi_calculate_policy_for_key(
-    FAPI_CONTEXT *context,
-    const char *policyPath,
-    IFAPI_KEY_TEMPLATE *template,
-    TPMS_POLICY_HARNESS **policy_harness);
-
 #endif /* IFAPI_POLICY_H */
