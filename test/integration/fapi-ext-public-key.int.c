@@ -29,11 +29,11 @@
  * Tested FAPI commands:
  *  - Fapi_Provision()
  *  - Fapi_Import()
- *  - Fapi_Key_Verifysignature()
- *  - Fapi_Key_VerifQuote()
+ *  - Fapi_VerifySignature()
+ *  - Fapi_VerifQuote()
  *  - Fapi_Delete()
- *  - Fapi_GetCertificate)
- *  - Fapi_SetCertificate)
+ *  - Fapi_GetCertificate()
+ *  - Fapi_SetCertificate()
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

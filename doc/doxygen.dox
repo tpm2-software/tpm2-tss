@@ -1207,8 +1207,8 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \defgroup Fapi_Provision Fapi_Provision
  FAPI functions to invoke Provision either as one-call or in an asynchronous manner.
  \{
- \fn Fapi_Provision(FAPI_CONTEXT *context, char const *policyPathEh, char const *authValueEh, char const *policyPathSh, char const *authValueSh, char const *authValueLockout)
- \fn Fapi_Provision_Async(FAPI_CONTEXT *context, char const *policyPathEh, char const *authValueEh, char const *policyPathSh, char const *authValueSh, char const *authValueLockout)
+ \fn Fapi_Provision(FAPI_CONTEXT *context, char const *authValueEh, char const *authValueSh, char const *authValueLockout)
+ \fn Fapi_Provision_Async(FAPI_CONTEXT *context, char const *authValueEh, char const *authValueSh, char const *authValueLockout)
  \fn Fapi_Provision_Finish(FAPI_CONTEXT *context)
  \}
  \defgroup Fapi_GetPlatformCertificates Fapi_GetPlatformCertificates
@@ -1312,30 +1312,79 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \defgroup Fapi_Encrypt Fapi_Encrypt
  FAPI functions to invoke Encrypt either as one-call or in an asynchronous manner.
  \{
- \fn Fapi_Encrypt(FAPI_CONTEXT *context, char const *keyPath, char const *policyPath, uint8_t const *plaintext, size_t plaintextSize, char **cipherText)
- \fn Fapi_Encrypt_Async(FAPI_CONTEXT *context, char const *keyPath, char const *policyPath, uint8_t const *plaintext, size_t plaintextSize)
- \fn Fapi_Encrypt_Finish(FAPI_CONTEXT *context, char **cipherText)
+\fn TSS2_RC Fapi_Encrypt(
+    FAPI_CONTEXT   *context,
+    char     const *keyPath,
+    uint8_t  const *plainText,
+    size_t          plainTextSize,
+    uint8_t       **cipherText,
+    size_t         *cipherTextSize)
+
+\fn TSS2_RC Fapi_Encrypt_Async(
+    FAPI_CONTEXT   *context,
+    char     const *keyPath,
+    uint8_t  const *plainText,
+    size_t          plainTextSize)
+
+\fn TSS2_RC Fapi_Encrypt_Finish(
+    FAPI_CONTEXT   *context,
+    uint8_t       **cipherText,
+    size_t         *cipherTextSize )
+
  \}
  \defgroup Fapi_Decrypt Fapi_Decrypt
  FAPI functions to invoke Decrypt either as one-call or in an asynchronous manner.
  \{
- \fn Fapi_Decrypt(FAPI_CONTEXT *context, char const *cipherText, uint8_t **plainText, size_t *plainTextSize)
- \fn Fapi_Decrypt_Async(FAPI_CONTEXT *context, char const *cipherText)
- \fn Fapi_Decrypt_Finish(FAPI_CONTEXT *context, uint8_t **plainText, size_t *plainTextSize)
+\fn TSS2_RC Fapi_Decrypt(
+    FAPI_CONTEXT   *context,
+    char     const *keyPath,
+    uint8_t  const *cipherText,
+    size_t          cipherTextSize,
+    uint8_t       **plainText,
+    size_t         *plainTextSize)
+
+\fn TSS2_RC Fapi_Decrypt_Async(
+    FAPI_CONTEXT   *context,
+    char     const *keyPath,
+    uint8_t  const *cipherText,
+    size_t          cipherTextSize);
+
+\fn TSS2_RC Fapi_Decrypt_Finish(
+    FAPI_CONTEXT   *context,
+    uint8_t       **plainText,
+    size_t         *plainTextSize)
  \}
  \defgroup Fapi_SetCertificate Fapi_SetCertificate
  FAPI functions to invoke SetCertificate either as one-call or in an asynchronous manner.
  \{
- \fn Fapi_SetCertificate(FAPI_CONTEXT *context, char const *path, char const *x509certData)
- \fn Fapi_SetCertificate_Async(FAPI_CONTEXT *context, char const *path, char const *x509certData)
- \fn Fapi_SetCertificate_Finish(FAPI_CONTEXT *context)
+\fn TSS2_RC Fapi_SetCertificate(
+    FAPI_CONTEXT   *context,
+    char     const *path,
+    char     const *x509certData)
+
+\fn TSS2_RC Fapi_SetCertificate_Async(
+    FAPI_CONTEXT   *context,
+    char     const *path,
+    char     const *x509certData)
+
+\fn TSS2_RC Fapi_SetCertificate_Finish(
+    FAPI_CONTEXT   *context)
  \}
  \defgroup Fapi_GetCertificate Fapi_GetCertificate
  FAPI functions to invoke GetCertificate either as one-call or in an asynchronous manner.
  \{
- \fn Fapi_GetCertificate(FAPI_CONTEXT *context, char const *path, char **x509certData)
- \fn Fapi_GetCertificate_Async(FAPI_CONTEXT *context, char const *path)
- \fn Fapi_GetCertificate_Finish(FAPI_CONTEXT *context, char **x509certData)
+\fn TSS2_RC Fapi_GetCertificate(
+    FAPI_CONTEXT   *context,
+    char     const *path,
+    char          **x509certData)
+
+\fn TSS2_RC Fapi_GetCertificate_Async(
+    FAPI_CONTEXT   *context,
+    char     const *path)
+
+\fn TSS2_RC Fapi_GetCertificate_Finish(
+    FAPI_CONTEXT   *context,
+    char          **x509certData)
  \}
  \defgroup Fapi_ExportKey Fapi_ExportKey
  FAPI functions to invoke ExportKey either as one-call or in an asynchronous manner.
@@ -1403,9 +1452,28 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \defgroup Fapi_VerifyQuote Fapi_VerifyQuote
  FAPI functions to invoke VerifyQuote either as one-call or in an asynchronous manner.
  \{
- \fn Fapi_VerifyQuote(FAPI_CONTEXT *context, char const *publicKeyPath, uint8_t const *qualifyingData, size_t qualifyingDataSize, char const *quoteInfo, uint8_t const *signature, size_t signatureSize, char const *pcrLog)
- \fn Fapi_VerifyQuote_Async(FAPI_CONTEXT *context, char const *publicKeyPath, uint8_t const *qualifyingData, size_t qualifyingDataSize, char const *quoteInfo, uint8_t const *signature, size_t signatureSize, char const *pcrLog)
- \fn Fapi_VerifyQuote_Finish(FAPI_CONTEXT *context)
+\fn TSS2_RC Fapi_VerifyQuote(
+    FAPI_CONTEXT   *context,
+    char     const *publicKeyPath,
+    uint8_t  const *qualifyingData,
+    size_t          qualifyingDataSize,
+    char     const *quoteInfo,
+    uint8_t  const *signature,
+    size_t          signatureSize,
+    char     const *pcrLog)
+
+\fn TSS2_RC Fapi_VerifyQuote_Async(
+    FAPI_CONTEXT   *context,
+    char     const *publicKeyPath,
+    uint8_t  const *qualifyingData,
+    size_t          qualifyingDataSize,
+    char     const *quoteInfo,
+    uint8_t  const *signature,
+    size_t          signatureSize,
+    char     const *pcrLog)
+
+\fn TSS2_RC Fapi_VerifyQuote_Finish(
+    FAPI_CONTEXT   *context)
  \}
  \defgroup Fapi_CreateNv Fapi_CreateNv
  FAPI functions to invoke CreateNv either as one-call or in an asynchronous manner.
@@ -1417,9 +1485,22 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \defgroup Fapi_NvRead Fapi_NvRead
  FAPI functions to invoke NvRead either as one-call or in an asynchronous manner.
  \{
- \fn Fapi_NvRead(FAPI_CONTEXT *context, char const *path, uint8_t **data, size_t *size)
- \fn Fapi_NvRead_Async(FAPI_CONTEXT *context, char const *path)
- \fn Fapi_NvRead_Finish(FAPI_CONTEXT *context, uint8_t **data, size_t *size)
+\fn TSS2_RC Fapi_NvRead(
+    FAPI_CONTEXT   *context,
+    char     const *path,
+    uint8_t      **data,
+    size_t        *size,
+    char         **logData)
+
+\fn TSS2_RC Fapi_NvRead_Async(
+    FAPI_CONTEXT   *context,
+    char     const *path)
+
+\fn TSS2_RC Fapi_NvRead_Finish(
+    FAPI_CONTEXT   *context,
+    uint8_t       **data,
+    size_t         *size,
+    char          **logData)
  \}
  \defgroup Fapi_NvWrite Fapi_NvWrite
  FAPI functions to invoke NvWrite either as one-call or in an asynchronous manner.
@@ -1431,9 +1512,22 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \defgroup Fapi_NvExtend Fapi_NvExtend
  FAPI functions to invoke NvExtend either as one-call or in an asynchronous manner.
  \{
- \fn Fapi_NvExtend(FAPI_CONTEXT *context, char const *path, uint8_t const *data, size_t size)
- \fn Fapi_NvExtend_Async(FAPI_CONTEXT *context, char const *path, uint8_t const *data, size_t size)
- \fn Fapi_NvExtend_Finish(FAPI_CONTEXT *context)
+ \fn TSS2_RC Fapi_NvExtend(
+    FAPI_CONTEXT  *context,
+    char    const *path,
+    uint8_t const *data,
+    size_t         size,
+    char    const *logData);
+ 
+ \fn TSS2_RC Fapi_NvExtend_Async(
+    FAPI_CONTEXT  *context,
+    char    const *path,
+    uint8_t const *data,
+    size_t         size,
+    char    const *logData);
+
+\fn TSS2_RC Fapi_NvExtend_Finish(
+    FAPI_CONTEXT  *context);
  \}
  \defgroup Fapi_NvIncrement Fapi_NvIncrement
  FAPI functions to invoke NvIncrement either as one-call or in an asynchronous manner.
@@ -1452,20 +1546,20 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \defgroup Fapi_SetAuthCB Fapi_SetAuthCB
  FAPI functions to invoke SetAuthCB.
  \{
- \fn Fapi_SetAuthCB(FAPI_CONTEXT *context, Fapi_CB_Auth callback,  \fn *userData)
- \typedef (*Fapi_CB_Auth)(FAPI_CONTEXT *context, char const *description, char **auth,  \fn *userData)
+ \fn Fapi_SetAuthCB(FAPI_CONTEXT *context, Fapi_CB_Auth callback,  void *userData)
+ \typedef (*Fapi_CB_Auth)(FAPI_CONTEXT *context, char const *description, char **auth,  void *userData)
  \}
  \defgroup Fapi_SetBranchCB Fapi_SetBranchCB
  FAPI functions to invoke SetBranchCB.
  \{
- \fn Fapi_SetBranchCB(FAPI_CONTEXT *context, Fapi_CB_Branch callback,  \fn *userData)
- \typedef (*Fapi_CB_Branch)(FAPI_CONTEXT *context, char const *description, char const **branchNames, size_t numBranches, size_t *selectedBranch,  \fn *userData)
+ \fn Fapi_SetBranchCB(FAPI_CONTEXT *context, Fapi_CB_Branch callback,  void *userData)
+ \typedef (*Fapi_CB_Branch)(FAPI_CONTEXT *context, char const *description, char const **branchNames, size_t numBranches, size_t *selectedBranch, void *userData)
  \}
  \defgroup Fapi_SetSignCB Fapi_SetSignCB
  FAPI functions to invoke SetSignCB.
  \{
- \fn Fapi_SetSignCB(FAPI_CONTEXT *context, Fapi_CB_Sign callback,  \fn *userData)
- \typedef (*Fapi_CB_Sign)(FAPI_CONTEXT *context, char const *description, char const *publicKey, char const *publicKeyHint, uint32_t hashAlg, uint8_t const *dataToSign, size_t dataToSignSize, uint8_t **signature, size_t *signatureSize,  \fn *userData)
+ \fn Fapi_SetSignCB(FAPI_CONTEXT *context, Fapi_CB_Sign callback, void *userData)
+ \typedef (*Fapi_CB_Sign)(FAPI_CONTEXT *context, char const *description, char const *publicKey, char const *publicKeyHint, uint32_t hashAlg, uint8_t const *dataToSign, size_t dataToSignSize, uint8_t **signature, size_t *signatureSize,  void *userData)
  \}
  \}
 */
@@ -1540,7 +1634,7 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
 */
 
  /*!
- \defgroup ifapi_policy FAPI policy calculation module
+ \defgroup ifapi_policy Policy calculation module
  \ingroup ifapi
  Provides functions for policy calculation (without TPM).
  \{
@@ -1560,8 +1654,89 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \}
 */
 
+/*!
+ \defgroup ifapi_policy_callbacks Policy callback and execution module
+ \ingroup ifapi
+ Provides internal callbacks for policy execution and policy execution functions.
+ \{
+\fn  TSS2_RC ifapi_policyeval_execute_prepare(
+    IFAPI_POLICY_EXEC_CTX *pol_ctx,
+    TPMI_ALG_HASH hash_alg,
+    TPMS_POLICY_HARNESS *harness)
+
+\fn TSS2_RC ifapi_policyeval_execute(
+    ESYS_CONTEXT *esys_ctx,
+    IFAPI_POLICY_EXEC_CTX *current_policy)
+
+\fn fn TSS2_RC ifapi_get_key_public(
+    const char *path,
+    TPMT_PUBLIC *public,
+    void *context)
+
+\fn TSS2_RC ifapi_get_object_name(
+    const char *path,
+    TPM2B_NAME *name,
+    void *context)
+
+\fn TSS2_RC ifapi_get_nv_public(
+    const char *path,
+    TPM2B_NV_PUBLIC *nv_public,
+    void *context)
+
+\fn TSS2_RC ifapi_read_pcr(
+    TPMS_PCR_SELECT *pcr_select,
+    TPML_PCR_SELECTION *pcr_selection,
+    TPML_PCRVALUES **pcr_values,
+    void *ctx)
+
+\fn TSS2_RC ifapi_policyeval_cbauth(
+    TPM2B_NAME *name,
+    ESYS_TR *object_handle,
+    ESYS_TR *auth_handle,
+    ESYS_TR *authSession,
+    void *userdata)
+
+\fn TSS2_RC ifapi_branch_selection(
+    TPML_POLICYBRANCHES *branches,
+    size_t *branch_idx,
+    void *userdata)
+
+\fn TSS2_RC ifapi_sign_buffer(
+    char *key_pem,
+    char *public_key_hint,
+    TPMI_ALG_HASH key_pem_hash_alg,
+    uint8_t *buffer,
+    size_t buffer_size,
+    uint8_t **signature,
+    size_t *signature_size,
+    void *userdata)
+
+\fn TSS2_RC ifapi_exec_auth_policy(
+    TPMT_PUBLIC *key_public,
+    TPMI_ALG_HASH hash_alg,
+    TPM2B_DIGEST *digest,
+    TPMT_SIGNATURE *signature,
+    void *userdata)
+
+\fn TSS2_RC ifapi_exec_auth_nv_policy(
+    TPM2B_NV_PUBLIC *nv_public,
+    TPMI_ALG_HASH hash_alg,
+    void *userdata)
+
+\fn TSS2_RC ifapi_get_duplicate_name(
+    TPM2B_NAME *name,
+    void *userdata)
+
+\fn TSS2_RC ifapi_policy_action(
+    const char *action,
+    void *userdata)
+
+ \}
+*/
+
+
  /*!
- \defgroup ifapi_helper FAPI helper functions module
+ \defgroup ifapi_helper Helper functions module
  \ingroup ifapi
  Provides helper functions.
  \{
@@ -1710,7 +1885,7 @@ TSS2_RC ifapi_calculate_pcr_digest(
 */
 
  /*!
- \defgroup ifapi_utility FAPI utility module
+ \defgroup ifapi_utility Utility module
  \ingroup ifapi
  Provides internal utility functions.
  \{

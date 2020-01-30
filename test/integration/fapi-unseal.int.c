@@ -23,7 +23,7 @@
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
- *  - Fapi_CreateKeySeal()
+ *  - Fapi_CreatSeal()
  *  - Fapi_Unseal()
  *  - Fapi_List()
  *

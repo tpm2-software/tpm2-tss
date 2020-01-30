@@ -20,7 +20,7 @@
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
- *  - Fapi_GetTPMInfo()
+ *  - Fapi_GetInfo()
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

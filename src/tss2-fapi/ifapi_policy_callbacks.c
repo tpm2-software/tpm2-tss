@@ -48,10 +48,10 @@ get_nv_auth_object(
 
 /** Get public data of a key from keystore.
  *
- * @parm[in] path The relative path of the key.
- * @parm[out] public The caller allocated public structure.
- * @parm[in,out] ctx The context to access io and keystore module and to store
-*                    the io state.
+ * @param[in] path The relative path of the key.
+ * @param[out] public The caller allocated public structure.
+ * @param[in,out] ctx The context to access io and keystore module and to store
+*                      the io state.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be loaded.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
@@ -107,10 +107,10 @@ ifapi_get_key_public(
 
 /** Get TPM name of an object from  key keystore.
  *
- * @parm[in] path The relative path of the object.
- * @parm[out] name The caller allocate public structure.
- * @parm[in,out] ctx The context to access io and keystore module and to store
- *               the io state.
+ * @param[in] path The relative path of the object.
+ * @param[out] name The caller allocate public structure.
+ * @param[in,out] ctx The context to access io and keystore module and to store
+ *                the io state.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be loaded.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
@@ -171,10 +171,10 @@ ifapi_get_object_name(
 
 /** Get public data of a NV object from keystore.
  *
- * @parm[in] path The relative path of the NV object.
- * @parm[out] public The caller allocated public structure.
- * @parm[in,out] ctx The context to access io and keystore module and to store
- *           the io state.
+ * @param[in] path The relative path of the NV object.
+ * @param[out] nv_public The caller allocated public structure.
+ * @param[in,out] ctx The context to access io and keystore module and to store
+ *                the io state.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be loaded.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
@@ -225,11 +225,11 @@ ifapi_get_nv_public(
 
 /** Read values of PCR registers and clear selection.
  *
- * @parm[in,out] pcr_select The registers to be read (bank selection from profile).
- * @parm[in,out] pcr_selection The registers to be read (with bank selection).
- * @parm[out] pcr_values The callee-allocated public structure.
- * @parm[in,out] ctx The context to access io and keystore module and to store
- *               the io state.
+ * @param[in,out] pcr_select The registers to be read (bank selection from profile).
+ * @param[in,out] pcr_selection The registers to be read (with bank selection).
+ * @param[out] pcr_values The callee-allocated public structure.
+ * @param[in,out] ctx The context to access io and keystore module and to store
+ *                the io state.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
  * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
@@ -359,14 +359,14 @@ ifapi_read_pcr(
 
 /** Callback for authorization of objects used by policy.
  *
- * @parm[in] name The name of the object to be authorized.
- * @parm[in] object_handle The ESYS handle of the used object.
- * @parm[in] auth_handle will be used for object authorization. For
-             keys it will we equal to the object handle.
- * @parm[out] authSession The session used for object authorization.
- * @parm[in,out] userdata The Fapi context which will be used for keystore
- *               access, and storing the policy execution state.
- *               the io state.
+ * @param[in] name The name of the object to be authorized.
+ * @param[in] object_handle The ESYS handle of the used object.
+ * @param[in] auth_handle will be used for object authorization. For
+              keys it will we equal to the object handle.
+ * @param[out] authSession The session used for object authorization.
+ * @param[in,out] userdata The Fapi context which will be used for keystore
+ *                access, and storing the policy execution state.
+ *                the io state.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_MEMORY: if it's not possible to allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE If no user data is passed.
@@ -492,14 +492,11 @@ ifapi_policyeval_cbauth(
 
 /** Callback for branch selection of policy or.
  *
- * @parm[in] name The name of the object to be authorized.
- * @parm[in] object_handle The ESYS handle of the used object.
- * @parm[in] auth_handle will be used for object authorization. For
-             keys it will we equal to the object handle.
- * @parm[out] authSession The session used for object authorization.
- * @parm[in,out] userdata The Fapi context which will be used for keystore
- *               access, and storing the policy execution state.
- *               the io state.
+ * @param[in]  branches The list of policy branches.
+ * @param[out] branch_idx The index of the selcted branch.
+ * @param[in,out] userdata The Fapi context which will be used for keystore
+ *                access, and storing the policy execution state.
+ *                the io state.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_MEMORY: if it's not possible to allocate enough memory.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN If the callback for branch selection is
@@ -542,16 +539,12 @@ ifapi_branch_selection(
     return TSS2_RC_SUCCESS;
 }
 
-/** Callback for policyaction.
+/** Callback for policy action.
  *
- * @parm[in] name The name of the object to be authorized.
- * @parm[in] object_handle The ESYS handle of the used object.
- * @parm[in] auth_handle will be used for object authorization. For
-             keys it will we equal to the object handle.
- * @parm[out] authSession The session used for object authorization.
- * @parm[in,out] userdata The Fapi context which will be used for keystore
- *               access, and storing the policy execution state.
- *               the io state.
+ * @param[in] action The name of the policy action.
+ * @param[in,out] userdata The Fapi context which will be used for keystore
+ *                access, and storing the policy execution state.
+ *                the io state.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_MEMORY: if it's not possible to allocate enough memory.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN If the callback for branch selection is
@@ -584,7 +577,8 @@ ifapi_policy_action(
 /** Callback for signing a byte buffer.
  *
  * @param[in] key_pem The pem key used for signing operation.
- * @param[in] A human readable hint to denote which public key to use.
+ * @param[in] public_key_hint A human readable hint to denote which public
+ *            key to use.
  * @param[in] key_pem_hash_alg The hash alg used for digest computation.
  * @param[in] buffer the byte array to be signed.
  * @param[in] buffer_size The size of the buffer to be signed.
@@ -883,12 +877,12 @@ static void cleanup_policy_list(struct POLICY_LIST * list) {
  * All policies authorized by a certain key will be retrieved and one policy
  * will be selected via a branch selection callback.
  *
- * @parm[in] key_public the public data of the key which was used for policy
- *           authorization.
- * @parm[in] hash_alg The hash algorithm used for policy computation.
- * @parm[out] digest The policy digest of the authorized policy.
- * @parm[out] signature The signature produced during policy authorization.
- * @parm[in] userdata The user context to retrieve the policy.
+ * @param[in] key_public the public data of the key which was used for policy
+ *            authorization.
+ * @param[in] hash_alg The hash algorithm used for policy computation.
+ * @param[out] digest The policy digest of the authorized policy.
+ * @param[out] signature The signature produced during policy authorization.
+ * @param[in] userdata The user context to retrieve the policy.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_MEMORY: if it's not possible to allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE If no user data id passed or context stack
@@ -1037,11 +1031,10 @@ ifapi_exec_auth_policy(
 
 /** Callback for executing a policy identified by a digest stored in a nv object.
  *
- * @parm[in] nv_public the public data of the nv object which stores the diges
- *           of the authorized policy.
- * @parm[in] hash_alg The hash algorithm used for policy computation.
- * @parm[out] The policy digest read from nv ram.
- * @parm[in] userdata The user context to retrieve the policy.
+ * @param[in] nv_public the public data of the nv object which stores the digest
+ *            of the authorized policy.
+ * @param[in] hash_alg The hash algorithm used for policy computation.
+ * @param[in] userdata The user context to retrieve the policy.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_MEMORY: if it's not possible to allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE If no user data id passed or context stack
@@ -1185,8 +1178,8 @@ ifapi_exec_auth_nv_policy(
 
 /** Callback for getting the name of a key to be duplicated.
  *
- * @parm[out] name the name of the object to be duplicated.
- * @parm[in] userdata The user context to retrieve the key.
+ * @param[out] name the name of the object to be duplicated.
+ * @param[in] userdata The user context to retrieve the key.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if the context is not passed or the
  *         object to be duplicated is not set.
