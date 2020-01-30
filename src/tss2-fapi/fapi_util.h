@@ -23,7 +23,11 @@ TSS2_RC
 ifapi_flush_object(FAPI_CONTEXT *context, ESYS_TR session);
 
 TSS2_RC
-ifapi_get_session_async(ESYS_CONTEXT *esys, ESYS_TR saltkey, const IFAPI_PROFILE *profile);
+ifapi_get_session_async(
+    ESYS_CONTEXT *esys,
+    ESYS_TR saltkey,
+    const IFAPI_PROFILE*profile,
+    TPMI_ALG_HASH hashAlg);
 
 TSS2_RC
 ifapi_get_session_finish(ESYS_CONTEXT *esys, ESYS_TR *session,
@@ -90,7 +94,10 @@ ifapi_get_sessions_async(
     TPMA_SESSION attribute_flags2);
 
 TSS2_RC
-ifapi_get_sessions_finish(FAPI_CONTEXT *context, const IFAPI_PROFILE *profile);
+ifapi_get_sessions_finish(
+    FAPI_CONTEXT *context,
+    const IFAPI_PROFILE *profile,
+    TPMI_ALG_HASH hash_alg);
 
 TSS2_RC
 ifapi_merge_profile_into_nv_template(

@@ -172,16 +172,10 @@ Fapi_NvWrite_Async(
     command->data = commandData;
 
     context->primary_state = PRIMARY_INIT;
-    /* Initialize a session used for authorization and parameter encryption. */
-    r = ifapi_get_sessions_async(context,
-                                 IFAPI_SESSION_GENEK | IFAPI_SESSION1,
-                                 TPMA_SESSION_DECRYPT, 0);
-    goto_if_error_reset_state(r, "Create sessions", error_cleanup);
-
     command->numBytes = size;
 
     /* Initialize the context state for this operation. */
-    context->state = NV_WRITE_WAIT_FOR_SESSION;
+    context->state = NV_WRITE_READ;
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
@@ -225,14 +219,6 @@ Fapi_NvWrite_Finish(
     IFAPI_NV_Cmds * command = &context->nv_cmd;
 
     switch (context->state) {
-    statecase(context->state, NV_WRITE_WAIT_FOR_SESSION);
-//TODO: Pass the namealg of the NV index into the session to be created
-        r = ifapi_get_sessions_finish(context, &context->profiles.default_profile);
-        return_try_again(r);
-        goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
-
-        fallthrough;
-
     statecase(context->state, NV_WRITE_READ);
         /* First check whether the file in object store can be updated. */
         r = ifapi_keystore_check_writeable(&context->keystore, &context->io, command->nvPath);

@@ -221,7 +221,8 @@ Fapi_Delete_Finish(
         statecase(context->state, ENTITY_DELETE_WAIT_FOR_SESSION);
             /* If a TPM object (e.g. a persistent key) was referenced, then this
                is the entry point. */
-            r = ifapi_get_sessions_finish(context, &context->profiles.default_profile);
+        r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
+                                      context->profiles.default_profile.nameAlg);
             return_try_again(r);
             goto_if_error(r, "Create FAPI session.", error_cleanup);
 
