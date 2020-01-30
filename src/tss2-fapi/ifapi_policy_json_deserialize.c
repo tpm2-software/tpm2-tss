@@ -213,6 +213,13 @@ ifapi_json_TPMS_POLICYSIGNED_deserialize(json_object *jso,
         return_if_error(r, "BAD VALUE");
     }
 
+    if (!ifapi_get_sub_object(jso, "publicKeyHint", &jso2)) {
+        out->publicKeyHint = NULL;
+    } else {
+        r =  ifapi_json_char_deserialize(jso2, &out->publicKeyHint);
+        return_if_error(r, "BAD VALUE");
+    }
+
     if (!ifapi_get_sub_object(jso, "keyPEMhashAlg", &jso2)) {
         out->keyPEMhashAlg = TPM2_ALG_SHA256;
     } else {

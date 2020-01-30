@@ -310,7 +310,8 @@ execute_policy_signed(
             return_if_error(r, "Convert TPM public key into PEM key.");
         }
 
-        r = cb->cbsign(current_policy->pem_key, policy->keyPEMhashAlg, current_policy->buffer,
+        r = cb->cbsign(current_policy->pem_key, policy->publicKeyHint,
+                       policy->keyPEMhashAlg, current_policy->buffer,
                        current_policy->buffer_size,
                        &signature_ossl, &signature_size,
                        cb->cbsign_userdata);
