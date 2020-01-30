@@ -31,6 +31,8 @@ test_fapi_get_random(FAPI_CONTEXT *context)
 {
 
     TSS2_RC r;
+    FAPI_POLL_HANDLE *handles;
+    size_t            num_handles;
     /* Ensure that more than one call of Esys_GetRandom is necessary */
     size_t  bytesRequested = sizeof(TPMU_HA) + 10;
     uint8_t *randomBytes;
@@ -38,12 +40,29 @@ test_fapi_get_random(FAPI_CONTEXT *context)
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
-    r = Fapi_GetRandom(context, bytesRequested, &randomBytes);
+    r = Fapi_GetRandom_Async(context, bytesRequested);
+    goto_if_error(r, "GetRandom_Async", error);
+
+    do {
+        r = Fapi_GetPollHandles(context, &handles, &num_handles);
+        if (r == TSS2_RC_SUCCESS) {
+            poll(handles, num_handles, -1);
+            Fapi_Free(handles);
+        } else if (r != TSS2_FAPI_RC_NO_HANDLE) {
+            LOG_ERROR("GetPollHandles failed");
+            goto error;
+        }
+
+        r = Fapi_GetRandom_Finish(context, &randomBytes);
+    } while (r == TSS2_FAPI_RC_TRY_AGAIN);
+    goto_if_error(r, "Error Fapi_GetRandom_Finish", error);
+
     Fapi_Free(randomBytes);
-    if (r != TPM2_RC_SUCCESS) {
-        LOG_ERROR("GetRandom FAILED! Response Code : 0x%x", r);
-        goto error;
-    }
+
+    r = Fapi_GetRandom(context, bytesRequested, &randomBytes);
+    goto_if_error(r, "Error Fapi_GetRandom", error);
+
+    Fapi_Free(randomBytes);
 
     /* Cleanup */
     r = Fapi_Delete(context, "/HS/SRK");
