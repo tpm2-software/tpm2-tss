@@ -19,6 +19,8 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
+#define SIZE 2000
+
 /** Test the FAPI functions for key creation and usage.
  *
  * Tested FAPI commands:
@@ -32,9 +34,6 @@
  * @retval EXIT_FAILURE
  * @retval EXIT_SUCCESS
  */
-
-#define SIZE 2000
-
 int
 test_fapi_duplicate(FAPI_CONTEXT *context)
 {

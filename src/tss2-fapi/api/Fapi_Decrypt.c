@@ -31,6 +31,7 @@
  * Decrypts data that was previously encrypted with Fapi_Encrypt.
  *
  * @param [in, out] context The FAPI_CONTEXT
+ * @param [in] keyPath The decryption key.
  * @param [in] cipherText The ciphertext to decrypt.
  * @param [in] cipherTextSize The size of the ciphertext to decrypt.
  * @param [out] plainText the decrypted ciphertext. May be NULL
@@ -114,6 +115,7 @@ Fapi_Decrypt(
  * Call Fapi_Decrypt_Finish to finish the execution of this command.
  *
  * @param [in, out] context The FAPI_CONTEXT
+ * @param [in] keyPath The decryption key.
  * @param [in] cipherText The ciphertext to decrypt
  * @param [in] cipherTextSize The size of the ciphertext to decrypt
  *
