@@ -83,6 +83,7 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     char *policy_file_cphash = TOP_SOURCEDIR "/test/data/fapi/policy/pol_cphash.json";
     char *policy_name_authorize = "/policy/pol_authorize";
     char *policy_file_authorize = TOP_SOURCEDIR "/test/data/fapi/policy/pol_authorize.json";
+    uint8_t policyRef[] = { 1, 2, 3, 4, 5 };
     FILE *stream = NULL;
     char *json_policy = NULL;
     long policy_size;
@@ -187,11 +188,11 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     r = Fapi_AuthorizePolicy(context, policy_name_hash,
-                             "HS/SRK/myPolicySignKey", NULL, 0);
+                             "HS/SRK/myPolicySignKey", policyRef, sizeof(policyRef));
     goto_if_error(r, "Authorize policy", error);
 
     r = Fapi_AuthorizePolicy(context, policy_cphash,
-                             "HS/SRK/myPolicySignKey", NULL, 0);
+                             "HS/SRK/myPolicySignKey", policyRef, sizeof(policyRef));
     goto_if_error(r, "Authorize policy", error);
 
     /* The policy is authorized twice with idfferent keys in order to test the code that
