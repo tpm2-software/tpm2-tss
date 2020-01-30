@@ -25,9 +25,6 @@ bool
 ifapi_get_sub_object(json_object *jso, char *name, json_object **sub_jso);
 
 TSS2_RC
-ifapi_json_BYTE_array_deserialize(size_t in_size, json_object *jso, BYTE *out);
-
-TSS2_RC
 ifapi_json_BYTE_deserialize(json_object *jso, BYTE *out);
 
 TSS2_RC

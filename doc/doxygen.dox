@@ -1624,10 +1624,6 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \fn size_t ifapi_hash_get_digest_size(TPM2_ALG_ID hashAlgorithm)
  \fn TSS2_RC ifapi_get_tpm2b_public_from_pem(const IFAPI_KEY_PROFILE *profile,
     const char *pemKey, TPM2B_PUBLIC *tpmPublic)
- \fn TSS2_RC ifapi_crypto_aes_encrypt(const uint8_t *key, size_t keySize,
-    const uint8_t *iv, uint8_t *buffer, size_t bufferSize)
- \fn TSS2_RC ifapi_crypto_aes_decrypt(const uint8_t *key, size_t keySize,
-    const uint8_t *iv, uint8_t *buffer, size_t bufferSize)
  \fn TSS2_RC ifapi_get_hash_alg_for_size(uint16_t size, TPMI_ALG_HASH *hashAlgorithm)
  \fn TPM2_ALG_ID ifapi_get_signature_algorithm_from_pem(const char *pemKey)
 \}
@@ -1646,11 +1642,6 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
     TPMI_ALG_HASH hash_alg,
     size_t *digest_idx,
     size_t *hash_size)
-  \fn TSS2_RC ifapi_calculate_policy_for_key(
-    FAPI_CONTEXT *context,
-    const char *policyPath,
-    IFAPI_KEY_TEMPLATE *template,
-    TPMS_POLICY_HARNESS **policy_harness)
  \}
 */
 
