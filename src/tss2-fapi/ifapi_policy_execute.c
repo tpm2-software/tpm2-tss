@@ -444,7 +444,10 @@ execute_policy_authorize(
                                      (uint8_t *) &aHash.buffer[0],
                                      &size);
         return_if_error(r, "crypto hash finish");
+
         aHash.size = size;
+        LOGBLOB_TRACE(&policy->policyRef.buffer[0], policy->policyRef.size, "policyRef");
+        LOGBLOB_TRACE(&aHash.buffer[0], aHash.size, "aHash");
 
         /* Verify the signature retrieved from the authorized policy against
            the computed ahash. */

@@ -272,6 +272,8 @@ Fapi_AuthorizePolicy_Finish(
             goto_if_error(r, "crypto hash finish", cleanup);
 
             aHash.size = hashSize;
+            LOGBLOB_TRACE(&command->policyRef.buffer[0], command->policyRef.size, "policyRef");
+            LOGBLOB_TRACE(&aHash.buffer[0], aHash.size, "aHash");
 
             fallthrough;
 
