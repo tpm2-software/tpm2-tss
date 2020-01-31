@@ -702,7 +702,7 @@ search_policy(
     char *path;
     TPMS_POLICY policy = { 0 };
     bool found;
-    struct POLICY_LIST *policy_object;
+    struct POLICY_LIST *policy_object = NULL;
     struct POLICY_LIST *second;
 
     switch (context->fsearch.state) {
@@ -771,7 +771,7 @@ search_policy(
         policy_object = calloc(sizeof(struct POLICY_LIST), 1);
         return_if_null(policy_object, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-        policy_object->path = context->fsearch.current_path;
+        strdup_check(policy_object->path, context->fsearch.current_path, r, cleanup);
         policy_object->policy = policy;
         if (*policy_found != NULL) {
             second = *policy_found;
@@ -806,6 +806,7 @@ search_policy(
     SAFE_FREE(context->fsearch.pathlist);
     return TSS2_RC_SUCCESS;
 cleanup:
+    SAFE_FREE(policy_object);
     ifapi_cleanup_policy(&policy);
     for (size_t i = 0; i < context->fsearch.numPaths; i++) {
         SAFE_FREE(context->fsearch.pathlist[i]);
@@ -866,6 +867,7 @@ static void cleanup_policy_list(struct POLICY_LIST * list) {
         while (branch) {
             struct POLICY_LIST *next = branch->next;
             ifapi_cleanup_policy(&branch->policy);
+            SAFE_FREE(branch->path);
             SAFE_FREE(branch);
             branch = next;
         }
@@ -958,7 +960,7 @@ ifapi_exec_auth_policy(
                 branch = current_policy->policy_list;
                 /* Compute name list for slectiion callback. */
                 do {
-                    names[i] = branch->policy.description;
+                    names[i] = branch->path;
                     i += 1;
                     branch = branch->next;
                 } while (branch);
@@ -969,12 +971,12 @@ ifapi_exec_auth_policy(
                                                fapi_ctx->callbacks.branchData);
                 goto_if_error(r, "policyBranchSelectionCallback", cleanup);
 
-                if (branch_idx > n) {
+                if (branch_idx >= n) {
                     goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid branch number.",
                                cleanup);
                 }
                 /* Get policy from policy list */
-                n = 1;
+                n = 0;
                 branch = current_policy->policy_list;
                 do {
                     if (n == branch_idx) {
@@ -1167,10 +1169,7 @@ ifapi_exec_auth_nv_policy(
         statecasedefault_error(cb_ctx->state, r, cleanup);
     }
 cleanup:
-    if (current_policy->policy_list) {
-        ifapi_cleanup_policy(&current_policy->policy_list->policy);
-        SAFE_FREE(current_policy->policy_list);
-    }
+    cleanup_policy_list(current_policy->policy_list);
     SAFE_FREE(nv_path);
     return r;
 
