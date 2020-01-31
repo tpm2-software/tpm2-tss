@@ -281,13 +281,13 @@ struct TPML_POLICYELEMENTS {
     TPMT_POLICYELEMENT                         elements[];    /**< Array of policy elements */
 };
 
-/** Policy type TPMS_POLICY_HARNESS
+/** Policy type TPMS_POLICY
  */
-typedef struct TPMS_POLICY_HARNESS {
+typedef struct TPMS_POLICY {
     char                                   *description;    /**< O */
     TPML_DIGEST_VALUES                    policyDigests;    /**< O */
     struct TPML_POLICYAUTHORIZATIONS     *policyAuthorizations;    /**< O */
     struct TPML_POLICYELEMENTS                   *policy;    /**< X */
-} TPMS_POLICY_HARNESS;
+} TPMS_POLICY;
 
 #endif /* IFAPI_POLICY_TYPES_H */

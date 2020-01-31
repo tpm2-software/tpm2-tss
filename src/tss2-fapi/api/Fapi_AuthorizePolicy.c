@@ -218,7 +218,7 @@ Fapi_AuthorizePolicy_Finish(
     IFAPI_Fapi_AuthorizePolicy * command =
         &context->cmd.Policy_AuthorizeNewPolicy;
     TPMS_POLICYAUTHORIZATION *authorization = &command->authorization;
-    TPMS_POLICY_HARNESS *policyHarness = &context->policy.harness;
+    TPMS_POLICY *policy = &context->policy.policy;
     TPMT_SIGNATURE *signature;
     IFAPI_OBJECT ** keyObject = &context->Key_Sign.key_object;
 
@@ -249,7 +249,7 @@ Fapi_AuthorizePolicy_Finish(
 
             /* Calculate the policy digest of the policy to be authorized. */
             r = ifapi_calculate_tree(context,
-                                     command->policyPath, policyHarness,
+                                     command->policyPath, policy,
                                      hashAlg, &digestIdx, &hashSize);
             return_try_again(r);
             goto_if_error(r, "Fapi calculate tree.", cleanup);
@@ -259,7 +259,7 @@ Fapi_AuthorizePolicy_Finish(
             goto_if_error(r, "crypto hash start", cleanup);
 
             HASH_UPDATE_BUFFER(cryptoContext,
-                               &policyHarness->
+                               &policy->
                                policyDigests.digests[digestIdx].digest, hashSize,
                                r, cleanup);
             if (command->policyRef.size > 0) {
@@ -296,8 +296,8 @@ Fapi_AuthorizePolicy_Finish(
             ifapi_cleanup_ifapi_object(*keyObject);
 
             /* Extend the authorization to the policy stored. */
-            ifapi_extend_authorization(policyHarness, authorization);
-            goto_if_null(policyHarness->policyAuthorizations,
+            ifapi_extend_authorization(policy, authorization);
+            goto_if_null(policy->policyAuthorizations,
                          "Out of memory", TSS2_FAPI_RC_MEMORY, cleanup);
 
             fallthrough;
@@ -305,7 +305,7 @@ Fapi_AuthorizePolicy_Finish(
         statecase(context->state, AUTHORIZE_NEW_WRITE_POLICY_PREPARE);
             /* Store the newly authorized policy in the policy store. */
             r = ifapi_policy_store_store_async(&context->pstore, &context->io,
-                                               command->policyPath, policyHarness);
+                                               command->policyPath, policy);
             goto_if_error_reset_state(r, "Could not open: %s", cleanup,
                     command->policyPath);
 
@@ -334,7 +334,7 @@ cleanup:
     if (cryptoContext)
         ifapi_crypto_hash_abort(&cryptoContext);
     ifapi_session_clean(context);
-    ifapi_cleanup_policy_harness(policyHarness);
+    ifapi_cleanup_policy(policy);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);

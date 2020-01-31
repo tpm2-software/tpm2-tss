@@ -627,7 +627,7 @@ ifapi_sign_buffer(
  */
 static TSS2_RC
 equal_policy_authorization(
-    TPMS_POLICY_HARNESS *policy,
+    TPMS_POLICY *policy,
     void *publicVoid,
     void *nameAlgVoid,
     bool *equal)
@@ -657,7 +657,7 @@ equal_policy_authorization(
  */
 static TSS2_RC
 compare_policy_digest(
-    TPMS_POLICY_HARNESS *policy,
+    TPMS_POLICY *policy,
     void *authPolicyVoid,
     void *nameAlgVoid,
     bool *equal)
@@ -700,7 +700,7 @@ search_policy(
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
     char *path;
-    TPMS_POLICY_HARNESS policy = { 0 };
+    TPMS_POLICY policy = { 0 };
     bool found;
     struct POLICY_LIST *policy_object;
     struct POLICY_LIST *second;
@@ -760,11 +760,11 @@ search_policy(
         if (!found) {
             if (!all_objects && context->fsearch.path_idx == 0) {
                 context->fsearch.state = FSEARCH_INIT;
-                ifapi_cleanup_policy_harness(&policy);
+                ifapi_cleanup_policy(&policy);
                 return TSS2_BASE_RC_POLICY_UNKNOWN;
             } else {
                 context->fsearch.state = FSEARCH_OBJECT;
-                ifapi_cleanup_policy_harness(&policy);
+                ifapi_cleanup_policy(&policy);
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
         }
@@ -806,7 +806,7 @@ search_policy(
     SAFE_FREE(context->fsearch.pathlist);
     return TSS2_RC_SUCCESS;
 cleanup:
-    ifapi_cleanup_policy_harness(&policy);
+    ifapi_cleanup_policy(&policy);
     for (size_t i = 0; i < context->fsearch.numPaths; i++) {
         SAFE_FREE(context->fsearch.pathlist[i]);
     }
@@ -818,7 +818,7 @@ cleanup:
 /** Get policy digeset  for a certain hash alg.
  */
 static TSS2_RC
-get_policy_digest(TPMS_POLICY_HARNESS *harness,
+get_policy_digest(TPMS_POLICY *policy,
                   TPMI_ALG_HASH hashAlg,
                   TPM2B_DIGEST *digest)
 {
@@ -829,10 +829,10 @@ get_policy_digest(TPMS_POLICY_HARNESS *harness,
                       "Unsupported hash algorithm (%" PRIu16 ")", hashAlg);
     }
 
-    for (i = 0; i < harness->policyDigests.count; i++) {
-        if (harness->policyDigests.digests[i].hashAlg == hashAlg) {
+    for (i = 0; i < policy->policyDigests.count; i++) {
+        if (policy->policyDigests.digests[i].hashAlg == hashAlg) {
             memcpy(&digest->buffer[0],
-                   &harness->policyDigests.digests[i].digest, digest->size);
+                   &policy->policyDigests.digests[i].digest, digest->size);
             return TSS2_RC_SUCCESS;
         }
     }
@@ -843,16 +843,16 @@ get_policy_digest(TPMS_POLICY_HARNESS *harness,
  */
 static TSS2_RC
 get_policy_signature(
-    TPMS_POLICY_HARNESS *harness,
+    TPMS_POLICY *policy,
     TPMT_PUBLIC *public,
     TPMT_SIGNATURE *signature)
 {
     size_t i;
 
-    for (i = 0; i < harness->policyAuthorizations->count; i++) {
+    for (i = 0; i < policy->policyAuthorizations->count; i++) {
         if (ifapi_TPMT_PUBLIC_cmp(public,
-                                  &harness->policyAuthorizations->authorizations[i].key)) {
-            *signature = harness->policyAuthorizations->authorizations[i].signature;
+                                  &policy->policyAuthorizations->authorizations[i].key)) {
+            *signature = policy->policyAuthorizations->authorizations[i].signature;
             return TSS2_RC_SUCCESS;
         }
     }
@@ -865,7 +865,7 @@ static void cleanup_policy_list(struct POLICY_LIST * list) {
         struct POLICY_LIST * branch = list;
         while (branch) {
             struct POLICY_LIST *next = branch->next;
-            ifapi_cleanup_policy_harness(&branch->policy);
+            ifapi_cleanup_policy(&branch->policy);
             SAFE_FREE(branch);
             branch = next;
         }
@@ -911,7 +911,7 @@ ifapi_exec_auth_policy(
     struct POLICY_LIST *branch;
     const char **names = NULL;
     size_t branch_idx;
-    bool harness_set = false;
+    bool policy_set = false;
 
     return_if_null(fapi_ctx, "Bad user data.", TSS2_FAPI_RC_BAD_REFERENCE);
     return_if_null(fapi_ctx->policy.policyutil_stack, "Policy not initialized.",
@@ -940,7 +940,7 @@ ifapi_exec_auth_policy(
             FAPI_SYNC(r, "Search policy", cleanup);
 
             if (current_policy->policy_list->next) {
-                /* More than one policy policy has to be selected via
+                /* More than one policy has to be selected via
                    callback */
                 if (!fapi_ctx->callbacks.branch) {
                     return_error(TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN,
@@ -973,13 +973,13 @@ ifapi_exec_auth_policy(
                     goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid branch number.",
                                cleanup);
                 }
-                /* Get harness from policy list */
+                /* Get policy from policy list */
                 n = 1;
                 branch = current_policy->policy_list;
                 do {
                     if (n == branch_idx) {
-                        cb_ctx->harness = &branch->policy;
-                        harness_set = true;
+                        cb_ctx->policy = &branch->policy;
+                        policy_set = true;
                         break;
                     }
                     n += 1;
@@ -988,16 +988,16 @@ ifapi_exec_auth_policy(
 
             } else {
                 /* Only one policy found. */
-                cb_ctx->harness = &current_policy->policy_list->policy;
-                harness_set = true;
+                cb_ctx->policy = &current_policy->policy_list->policy;
+                policy_set = true;
             }
-            if (!harness_set) {
+            if (!policy_set) {
                 goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Policy could not be set.",
                            cleanup);
             }
             /* Prepare policy execution */
             r = ifapi_policyutil_execute_prepare(fapi_ctx, current_policy->hash_alg,
-                                                 cb_ctx->harness);
+                                                 cb_ctx->policy);
             /* Next state will switch from prev context to next context. */
             goto_if_error(r, "Prepare policy execution.", cleanup);
             fallthrough;
@@ -1012,11 +1012,11 @@ ifapi_exec_auth_policy(
 
             goto_if_error(r, "Execute policy.", cleanup);
 
-            r = get_policy_signature(cb_ctx->harness, key_public,
+            r = get_policy_signature(cb_ctx->policy, key_public,
                                      signature);
             goto_if_error(r, "Get authorization", cleanup);
 
-            r = get_policy_digest(cb_ctx->harness, hash_alg, digest);
+            r = get_policy_digest(cb_ctx->policy, hash_alg, digest);
             goto_if_error(r, "Get authorization", cleanup);
             cb_ctx->cb_state = POL_CB_EXECUTE_INIT;
             break;
@@ -1168,7 +1168,7 @@ ifapi_exec_auth_nv_policy(
     }
 cleanup:
     if (current_policy->policy_list) {
-        ifapi_cleanup_policy_harness(&current_policy->policy_list->policy);
+        ifapi_cleanup_policy(&current_policy->policy_list->policy);
         SAFE_FREE(current_policy->policy_list);
     }
     SAFE_FREE(nv_path);

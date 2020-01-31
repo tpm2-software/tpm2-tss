@@ -373,7 +373,7 @@ Fapi_ExportKey_Finish(
 
             /* For the policy added no cleanup is needed. The cleanup will
                be done with the object cleanup. */
-            keyTree->policy = command->key_object->policy_harness;
+            keyTree->policy = command->key_object->policy;
             r = ifapi_get_json(context, exportTree, exportedData);
             goto_if_error2(r, "get JSON for exported data.", cleanup);
 

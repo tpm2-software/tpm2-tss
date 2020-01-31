@@ -124,7 +124,7 @@ Fapi_Import_Async(
     json_object *jso = NULL;
     json_object *jso2;
     size_t pos = 0;
-    TPMS_POLICY_HARNESS policyHarness = { 0 };
+    TPMS_POLICY policy = { 0 };
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -206,15 +206,15 @@ Fapi_Import_Async(
             !(ifapi_get_sub_object(jso, IFAPI_JSON_TAG_DUPLICATE, &jso2))
             ) {
             /* Create policy object */
-            r = ifapi_json_TPMS_POLICY_HARNESS_deserialize(jso, &policyHarness);
+            r = ifapi_json_TPMS_POLICY_deserialize(jso, &policy);
             goto_if_error(r, "Serialize policy", cleanup_error);
 
             r = ifapi_policy_store_store_async(&context->pstore, &context->io,
-                    command->out_path, &policyHarness);
+                    command->out_path, &policy);
             goto_if_error_reset_state(r, "Could not open: %s", cleanup_error,
                     command->out_path);
 
-            ifapi_cleanup_policy_harness(&policyHarness);
+            ifapi_cleanup_policy(&policy);
 
             context->state = IMPORT_KEY_WRITE_POLICY;
 
@@ -261,7 +261,7 @@ cleanup_error:
     if (jso)
         json_object_put(jso);
     context->state = _FAPI_STATE_INIT;
-    ifapi_cleanup_policy_harness(&policyHarness);
+    ifapi_cleanup_policy(&policy);
     SAFE_FREE(command->jso_string);
     SAFE_FREE(extPubKey->pem_ext_public);
     SAFE_FREE(command->out_path);
@@ -375,7 +375,7 @@ Fapi_Import_Finish(
             memset(newObject, 0, sizeof(IFAPI_OBJECT));
             newObject->objectType = IFAPI_KEY_OBJ;
             newObject->misc.key.public = keyTree->public;
-            newObject->policy_harness = keyTree->policy;
+            newObject->policy = keyTree->policy;
             newObject->misc.key.private.size = command->private->size;
             newObject->misc.key.private.buffer = &command->private->buffer[0];
             newObject->misc.key.policyInstance = NULL;
@@ -430,9 +430,9 @@ Fapi_Import_Finish(
 
     /* Cleanup policy for key objects.*/
     if (newObject->objectType == IFAPI_KEY_OBJ) {
-        if (newObject->policy_harness)
-            ifapi_cleanup_policy_harness(newObject->policy_harness);
-        SAFE_FREE(newObject->policy_harness);
+        if (newObject->policy)
+            ifapi_cleanup_policy(newObject->policy);
+        SAFE_FREE(newObject->policy);
     }
     SAFE_FREE(command->parent_path);
     ifapi_cleanup_ifapi_object(&command->object);

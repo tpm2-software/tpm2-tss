@@ -35,7 +35,7 @@ typedef struct {
     IFAPI_NV_Cmds nv_cmd_state_sav; /**< backup for state of fapi nv commands */
     TPM2B_DIGEST policy_digest;
     ESYS_TR session;
-    TPMS_POLICY_HARNESS *harness;
+    TPMS_POLICY *policy;
 } IFAPI_POLICY_EXEC_CB_CTX;
 
 TSS2_RC

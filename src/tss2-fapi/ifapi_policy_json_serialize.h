@@ -131,7 +131,7 @@ ifapi_json_TPML_POLICYELEMENTS_serialize(const TPML_POLICYELEMENTS *in,
         json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_POLICY_HARNESS_serialize(const TPMS_POLICY_HARNESS *in,
+ifapi_json_TPMS_POLICY_serialize(const TPMS_POLICY *in,
         json_object **jso);
 
 #endif /* IFAPI_POLICY_JSON_SERIALIZE_H */

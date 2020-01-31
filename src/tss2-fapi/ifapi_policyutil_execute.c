@@ -34,7 +34,7 @@
 static TSS2_RC
 new_policy(
     FAPI_CONTEXT *context,
-    TPMS_POLICY_HARNESS *harness,
+    TPMS_POLICY *policy,
     IFAPI_POLICYUTIL_STACK **current_policy)
 {
     LOG_DEBUG("ADD POLICY");
@@ -71,7 +71,7 @@ new_policy(
         return_error(TSS2_FAPI_RC_MEMORY, "Out of memory");
     }
     pol_exec_ctx->app_data = pol_exec_cb_ctx;
-    pol_exec_ctx->harness = harness;
+    pol_exec_ctx->policy = policy;
     if (!context->policy.policyutil_stack) {
         context->policy.policyutil_stack = *current_policy;
         context->policy.util_current_policy = *current_policy;
@@ -182,7 +182,7 @@ clear_all_policies(FAPI_CONTEXT *context)
  * to be executed will be computed.
  * @param[in,out] context The fapi context with the pointer to the policy stack.
  * @param[in] hash_alg The hash algorithm used for the policy computation.
- * @param[in,out] harness The policy to be executed. Some policy elements will
+ * @param[in,out] policy The policy to be executed. Some policy elements will
  *                be used to store computed parameters needed for policy
  *                execution.
  * @retval TSS2_RC_SUCCESS on success.
@@ -198,17 +198,17 @@ TSS2_RC
 ifapi_policyutil_execute_prepare(
     FAPI_CONTEXT *context,
     TPMI_ALG_HASH hash_alg,
-    TPMS_POLICY_HARNESS *harness)
+    TPMS_POLICY *policy)
 {
     TSS2_RC r;
     IFAPI_POLICYUTIL_STACK *current_policy;
 
     return_if_null(context, "Bad context.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    r = new_policy(context, harness, &current_policy);
+    r = new_policy(context, policy, &current_policy);
     goto_if_error(r, "Create new policy.", error);
 
-    r = ifapi_policyeval_execute_prepare(current_policy->pol_exec_ctx, hash_alg, harness);
+    r = ifapi_policyeval_execute_prepare(current_policy->pol_exec_ctx, hash_alg, policy);
     goto_if_error(r, "Prepare policy execution.", error);
 
     return r;

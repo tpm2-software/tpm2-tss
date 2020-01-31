@@ -1291,16 +1291,16 @@ ifapi_json_TPML_POLICYELEMENTS_serialize(const TPML_POLICYELEMENTS *in,
     return TSS2_RC_SUCCESS;
 }
 
-/** Serialize value of type TPMS_POLICY_HARNESS to json.
+/** Serialize value of type TPMS_POLICY to json.
  *
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICY_HARNESS.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICY.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICY_HARNESS_serialize(const TPMS_POLICY_HARNESS *in,
+ifapi_json_TPMS_POLICY_serialize(const TPMS_POLICY *in,
         json_object **jso)
 {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);

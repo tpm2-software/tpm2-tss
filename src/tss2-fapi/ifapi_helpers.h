@@ -97,12 +97,12 @@ void
 free_string_list(NODE_STR_T *node);
 
 void
-ifapi_cleanup_policy_harness(
-    TPMS_POLICY_HARNESS *harness);
+ifapi_cleanup_policy(
+    TPMS_POLICY *policy);
 
-TPMS_POLICY_HARNESS *
-ifapi_copy_policy_harness(
-    const TPMS_POLICY_HARNESS *from_harness);
+TPMS_POLICY *
+ifapi_copy_policy(
+    const TPMS_POLICY *from_policy);
 
 TSS2_RC
 ifapi_get_name(

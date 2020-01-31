@@ -84,7 +84,6 @@ typedef UINT8 IFAPI_SESSION_TYPE;
 #define IFAPI_JSON_TAG_EXT_PUB_KEY "pem_ext_public"
 #define IFAPI_JSON_TAG_POLICY "policy"
 #define IFAPI_JSON_TAG_DUPLICATE "public_parent"
-#define IFAPI_JSON_TAG_POLICY_HARNESS "policy_harness"
 
 
 #if TPM2_MAX_NV_BUFFER_SIZE > TPM2_MAX_DIGEST_BUFFER
@@ -222,9 +221,9 @@ typedef struct {
     UINT32                                     exponent;
     TPMI_ECC_CURVE                              curveID;
     TPMT_SYM_DEF                      session_symmetric;
-    TPMS_POLICY_HARNESS                      *eh_policy;
-    TPMS_POLICY_HARNESS                      *sh_policy;
-    TPMS_POLICY_HARNESS                 *lockout_policy;
+    TPMS_POLICY                              *eh_policy;
+    TPMS_POLICY                              *sh_policy;
+    TPMS_POLICY                         *lockout_policy;
     UINT32                                  newMaxTries;
     UINT32                              newRecoveryTime;
     UINT32                              lockoutRecovery;
@@ -543,7 +542,7 @@ typedef struct {
     const char *policyPath;            /**< Policy with Policy to be authorized */
     TPMI_ALG_HASH *hash_alg;           /**< The hash alg used for digest computation */
     size_t hash_size;                  /**< The digest size */
-    size_t digest_idx;                 /**< The index of the digest in the harness */
+    size_t digest_idx;                 /**< The index of the digest in the policy */
 } IFAPI_api_WriteAuthorizeNv;
 
 /** The data structure holding internal state of Provisioning.
@@ -635,7 +634,7 @@ enum FAPI_CREATE_SESSION_STATE {
  */
 typedef struct {
     enum IFAPI_STATE_POLICY state;
-    struct TPMS_POLICY_HARNESS harness;
+    struct TPMS_POLICY policy;
     size_t digest_idx;
     size_t hash_size;
     char **pathlist;                  /**< The array of all objects  in the search path */
@@ -693,7 +692,7 @@ typedef struct {
     IFAPI_OBJECT export_tree;                    /**< The complete tree to be exported */
     IFAPI_OBJECT pub_key;                        /**< The public part of the new parent */
     IFAPI_OBJECT dup_key;                        /**< The key to be duplicated or exported  */
-    struct TPMS_POLICY_HARNESS harness;
+    struct TPMS_POLICY policy;
     ESYS_TR handle_ext_key;
 } IFAPI_ExportKey;
 

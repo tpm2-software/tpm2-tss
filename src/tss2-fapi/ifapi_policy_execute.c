@@ -71,38 +71,38 @@ compute_or_digest_list(
 
 TSS2_RC
 ifapi_extend_authorization(
-    TPMS_POLICY_HARNESS *harness,
+    TPMS_POLICY *policy,
     TPMS_POLICYAUTHORIZATION *authorization)
 {
     TPML_POLICYAUTHORIZATIONS *save = NULL;
     size_t n = 0;
     size_t i;
 
-    if (harness->policyAuthorizations) {
+    if (policy->policyAuthorizations) {
         /* Extend old authorizations */
-        n = harness->policyAuthorizations->count;
-        save = harness->policyAuthorizations;
-        harness->policyAuthorizations =
+        n = policy->policyAuthorizations->count;
+        save = policy->policyAuthorizations;
+        policy->policyAuthorizations =
             malloc((n + 1) * sizeof(TPMS_POLICYAUTHORIZATION)
                    + sizeof(TPML_POLICYAUTHORIZATIONS));
-        return_if_null(harness->policyAuthorizations->authorizations,
+        return_if_null(policy->policyAuthorizations->authorizations,
                        "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
         for (i = 0; i < n; i++)
-            harness->policyAuthorizations->authorizations[i] =
+            policy->policyAuthorizations->authorizations[i] =
                 save->authorizations[i];
-        harness->policyAuthorizations->authorizations[n] = *authorization;
-        harness->policyAuthorizations->count = n + 1;
+        policy->policyAuthorizations->authorizations[n] = *authorization;
+        policy->policyAuthorizations->count = n + 1;
         SAFE_FREE(save);
     } else {
         /* No old authorizations exits */
-        harness->policyAuthorizations = malloc(sizeof(TPMS_POLICYAUTHORIZATION)
+        policy->policyAuthorizations = malloc(sizeof(TPMS_POLICYAUTHORIZATION)
                                                + sizeof(TPML_POLICYAUTHORIZATIONS));
-        return_if_null(harness->policyAuthorizations->authorizations,
+        return_if_null(policy->policyAuthorizations->authorizations,
                        "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-        harness->policyAuthorizations->count = 1;
-        harness->policyAuthorizations->authorizations[0] = *authorization;
+        policy->policyAuthorizations->count = 1;
+        policy->policyAuthorizations->authorizations[0] = *authorization;
     }
     return TSS2_RC_SUCCESS;
 }
@@ -1122,11 +1122,11 @@ compute_policy_list(
     return r;
 }
 
-/** Initialize policy element list to be executed and store harness in context.
+/** Initialize policy element list to be executed and store policy in context.
  *
  * @param[in] pol_ctx Context for execution of a list of policy elements.
  * @param[in] hash_alg The hash algorithm used for the policy computation.
- * @param[in,out] harness The policy to be executed. Some policy elements will
+ * @param[in,out] policy The policy to be executed. Some policy elements will
  *                be used to store computed parameters needed for policy
  *                execution.
  * @retval TSS2_RC_SUCCESS on success.
@@ -1140,13 +1140,13 @@ TSS2_RC
 ifapi_policyeval_execute_prepare(
     IFAPI_POLICY_EXEC_CTX *pol_ctx,
     TPMI_ALG_HASH hash_alg,
-    TPMS_POLICY_HARNESS *harness)
+    TPMS_POLICY *policy)
 {
     TSS2_RC r;
 
-    pol_ctx->harness = harness;
+    pol_ctx->policy = policy;
     pol_ctx->hash_alg = hash_alg;
-    r = compute_policy_list(pol_ctx, harness->policy);
+    r = compute_policy_list(pol_ctx, policy->policy);
     return_if_error(r, "Compute list of policy elements to be executed.");
 
     return TSS2_RC_SUCCESS;

@@ -199,7 +199,7 @@ Fapi_WriteAuthorizeNv_Finish(
     IFAPI_NV_Cmds * nvCmd = &context->nv_cmd;
     IFAPI_OBJECT *object = &nvCmd->nv_object;
     TPMI_ALG_HASH hashAlg;
-    TPMS_POLICY_HARNESS * policyHarness = &context->policy.harness;
+    TPMS_POLICY * policy = &context->policy.policy;
 
     switch (context->state) {
         statecase(context->state, WRITE_AUTHORIZE_NV_READ_NV)
@@ -225,7 +225,7 @@ Fapi_WriteAuthorizeNv_Finish(
             /* Calculate the policy digest for the referenced policy. */
             hashAlg = object->misc.nv.public.nvPublic.nameAlg;
             r = ifapi_calculate_tree(context, command->policyPath,
-                    policyHarness, hashAlg, &command->digest_idx,
+                    policy, hashAlg, &command->digest_idx,
                     &command->hash_size);
             if (r != TSS2_RC_SUCCESS) {
                 ifapi_cleanup_ifapi_object(object);
@@ -244,7 +244,7 @@ Fapi_WriteAuthorizeNv_Finish(
             goto_if_error_reset_state(r, "FAPI marshal hash alg", error_cleanup);
 
             void * currentDigest =
-                &policyHarness->policyDigests.digests[command->digest_idx].digest;
+                &policy->policyDigests.digests[command->digest_idx].digest;
             memcpy(&nvBuffer[offset], currentDigest, command->hash_size);
 
             /* Store these data in the context to be used for re-entry on nv_write. */
@@ -281,7 +281,7 @@ Fapi_WriteAuthorizeNv_Finish(
 
         statecase(context->state, WRITE_AUTHORIZE_NV_WRITE_POLICY_PREPARE)
             r = ifapi_policy_store_store_async(&context->pstore, &context->io,
-                                               command->policyPath, policyHarness);
+                                               command->policyPath, policy);
             goto_if_error_reset_state(r, "Could not open: %s", error_cleanup,
                     command->policyPath);
             fallthrough;
@@ -309,7 +309,7 @@ error_cleanup:
     SAFE_FREE(command->policyPath);
     SAFE_FREE(nvCmd->nvPath);
     ifapi_session_clean(context);
-    ifapi_cleanup_policy_harness(policyHarness);
+    ifapi_cleanup_policy(policy);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);

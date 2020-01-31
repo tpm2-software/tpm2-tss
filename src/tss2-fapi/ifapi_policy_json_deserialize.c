@@ -1362,7 +1362,7 @@ ifapi_json_TPML_POLICYELEMENTS_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
-/** Deserialize a TPMS_POLICY_HARNESS json object.
+/** Deserialize a TPMS_POLICY json object.
  *
  * @param[in]  jso the json object to be deserialized.
  * @param[out] out the deserialzed binary object.
@@ -1370,8 +1370,8 @@ ifapi_json_TPML_POLICYELEMENTS_deserialize(json_object *jso,
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICY_HARNESS_deserialize(json_object *jso,
-        TPMS_POLICY_HARNESS *out)
+ifapi_json_TPMS_POLICY_deserialize(json_object *jso,
+        TPMS_POLICY *out)
 {
     json_object *jso2;
     TSS2_RC r;

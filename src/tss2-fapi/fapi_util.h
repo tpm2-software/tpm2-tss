@@ -245,7 +245,7 @@ ifapi_change_policy_hierarchy(
     FAPI_CONTEXT *context,
     ESYS_TR handle,
     IFAPI_OBJECT *hierarchy_object,
-    TPMS_POLICY_HARNESS *policy_harness);
+    TPMS_POLICY *policy);
 
 IFAPI_OBJECT
 *ifapi_allocate_object(FAPI_CONTEXT *context);

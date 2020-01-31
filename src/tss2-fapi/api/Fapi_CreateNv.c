@@ -245,8 +245,8 @@ Fapi_CreateNv_Finish(
     IFAPI_NV * miscNv = &(nvCmd->nv_object.misc.nv);
     TPM2B_NV_PUBLIC *publicInfo = &miscNv->public;
     TPM2B_DIGEST * authPolicy = &(miscNv->public.nvPublic.authPolicy);
-    TPMS_POLICY_HARNESS * policyHarness = &(context->policy.harness);
-    TPMS_POLICY_HARNESS ** nvCmdPolicyHarness = &nvCmd->nv_object.policy_harness;
+    TPMS_POLICY * policy = &(context->policy.policy);
+    TPMS_POLICY ** nvCmdPolicy = &nvCmd->nv_object.policy;
     ESYS_TR auth_session;
 
     switch (context->state) {
@@ -301,7 +301,7 @@ Fapi_CreateNv_Finish(
                 /* Calculate the policy as read for the keystore. */
                 r = ifapi_calculate_tree(context,
                                          miscNv->policyInstance,
-                                         policyHarness,
+                                         policy,
                                          miscNv->public.nvPublic.nameAlg,
                                          &context->policy.digest_idx,
                                          &context->policy.hash_size);
@@ -311,16 +311,16 @@ Fapi_CreateNv_Finish(
                                context->cmd.Key_Create.policyPath);
 
                 /* Store the calculated policy in the NV object */
-                *nvCmdPolicyHarness = calloc(1,
-                        sizeof(TPMS_POLICY_HARNESS));
-                goto_if_null(*nvCmdPolicyHarness,
+                *nvCmdPolicy = calloc(1,
+                        sizeof(TPMS_POLICY));
+                goto_if_null(*nvCmdPolicy,
                         "Out of memory,", TSS2_FAPI_RC_MEMORY, error_cleanup);
-                **(nvCmdPolicyHarness) = *policyHarness;
+                **(nvCmdPolicy) = *policy;
 
                 authPolicy->size =
                     context->policy.hash_size;
                 memcpy(&authPolicy->buffer[0],
-                       &policyHarness->policyDigests.digests[context->policy.digest_idx].digest,
+                       &policy->policyDigests.digests[context->policy.digest_idx].digest,
                        context->policy.hash_size);
                 LOGBLOB_TRACE(
                     &authPolicy->buffer[0],
