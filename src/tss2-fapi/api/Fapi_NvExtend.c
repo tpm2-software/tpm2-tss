@@ -233,7 +233,7 @@ Fapi_NvExtend_Finish(
     IFAPI_NV_Cmds * command = &context->nv_cmd;
     TPM2B_MAX_NV_BUFFER *auxData = (TPM2B_MAX_NV_BUFFER *)&context->aux_data;
     size_t dataIdx = command->data_idx;
-    ESYS_TR nvIndex =  command->esys_handle;
+    ESYS_TR nvIndex = command->esys_handle;
     const uint8_t *data = command->data;
     IFAPI_OBJECT *object = &command->nv_object;
     IFAPI_OBJECT *authObject = &command->auth_object;
@@ -259,7 +259,7 @@ Fapi_NvExtend_Finish(
 
         /* Store object info in context */
         nvIndex = command->nv_object.handle;
-        command->esys_handle =  context->nv_cmd.nv_object.handle;
+        command->esys_handle = context->nv_cmd.nv_object.handle;
         command->nv_obj = object->misc.nv;
 
         /* Determine the kind of authorization to be used. */

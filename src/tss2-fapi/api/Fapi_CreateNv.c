@@ -286,7 +286,7 @@ Fapi_CreateNv_Finish(
             goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
 
             nvCmd->auth_object.handle
-                =  miscNv->hierarchy;
+                = miscNv->hierarchy;
 
             /* Check if a policy is set for the NV index to be created. */
             if (miscNv->policyInstance &&

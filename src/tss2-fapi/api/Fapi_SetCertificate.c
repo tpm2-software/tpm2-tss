@@ -181,7 +181,7 @@ Fapi_SetCertificate_Finish(
     /* Helpful alias pointers */
     IFAPI_Key_SetCertificate * command = &context->cmd.Key_SetCertificate;
     IFAPI_OBJECT *key_object = &command->key_object;
-    const char ** pem_cert =  &command->pem_cert;
+    const char ** pem_cert = &command->pem_cert;
     char ** pem_cert_dup = &command->pem_cert_dup;
 
     switch (context->state) {
@@ -214,7 +214,7 @@ Fapi_SetCertificate_Finish(
             goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
                     command->key_path);
 
-            context->state =  KEY_SET_CERTIFICATE_WRITE;
+            context->state = KEY_SET_CERTIFICATE_WRITE;
             fallthrough;
 
         statecase(context->state, KEY_SET_CERTIFICATE_WRITE)

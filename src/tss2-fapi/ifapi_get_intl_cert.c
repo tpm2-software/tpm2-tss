@@ -14,7 +14,6 @@
 #include <openssl/evp.h>
 #include <openssl/sha.h>
 
-
 #include "fapi_crypto.h"
 #define LOGMODULE fapi
 #include "util/log.h"
@@ -38,7 +37,7 @@ static tpm_getekcertificate_ctx ctx = {
 
 static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public) {
 
-    unsigned char *hash = (unsigned char*) malloc(SHA256_DIGEST_LENGTH);
+    unsigned char *hash = (unsigned char *)malloc(SHA256_DIGEST_LENGTH);
     if (!hash) {
         LOG_ERROR("OOM");
         return NULL;
@@ -54,8 +53,8 @@ static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public) {
     switch (ek_public->publicArea.type) {
     case TPM2_ALG_RSA:
         is_success = SHA256_Update(&sha256,
-                ek_public->publicArea.unique.rsa.buffer,
-                ek_public->publicArea.unique.rsa.size);
+                                   ek_public->publicArea.unique.rsa.buffer,
+                                   ek_public->publicArea.unique.rsa.size);
         if (!is_success) {
             LOG_ERROR("SHA256_Update failed");
             goto err;
@@ -75,16 +74,16 @@ static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public) {
 
     case TPM2_ALG_ECC:
         is_success = SHA256_Update(&sha256,
-                ek_public->publicArea.unique.ecc.x.buffer,
-                ek_public->publicArea.unique.ecc.x.size);
+                                   ek_public->publicArea.unique.ecc.x.buffer,
+                                   ek_public->publicArea.unique.ecc.x.size);
         if (!is_success) {
             LOG_ERROR("SHA256_Update failed");
             goto err;
         }
 
         is_success = SHA256_Update(&sha256,
-                ek_public->publicArea.unique.ecc.y.buffer,
-                ek_public->publicArea.unique.ecc.y.size);
+                                   ek_public->publicArea.unique.ecc.y.buffer,
+                                   ek_public->publicArea.unique.ecc.y.size);
         if (!is_success) {
             LOG_ERROR("SHA256_Update failed");
             goto err;
@@ -172,20 +171,20 @@ struct CertificateBuffer {
 static size_t
 get_certificate_buffer_cb(void *contents, size_t size, size_t nmemb, void *userp)
 {
-  size_t realsize = size * nmemb;
-  struct CertificateBuffer *cert = (struct CertificateBuffer *)userp;
+    size_t realsize = size * nmemb;
+    struct CertificateBuffer *cert = (struct CertificateBuffer *)userp;
 
-  unsigned char *tmp_ptr = realloc(cert->buffer, cert->size + realsize + 1);
-  if(tmp_ptr == NULL) {
-      LOG_ERROR("Can't allocate memory in CURL callback.");
-    return 0;
-  }
-  cert->buffer = tmp_ptr;
-  memcpy(&(cert->buffer[cert->size]), contents, realsize);
-  cert->size += realsize;
-  cert->buffer[cert->size] = 0;
+    unsigned char *tmp_ptr = realloc(cert->buffer, cert->size + realsize + 1);
+    if (tmp_ptr == NULL) {
+        LOG_ERROR("Can't allocate memory in CURL callback.");
+        return 0;
+    }
+    cert->buffer = tmp_ptr;
+    memcpy(&(cert->buffer[cert->size]), contents, realsize);
+    cert->size += realsize;
+    cert->buffer[cert->size] = 0;
 
-  return realsize;
+    return realsize;
 }
 
 int retrieve_endorsement_certificate(char *b64h, unsigned char ** buffer,
@@ -222,7 +221,7 @@ int retrieve_endorsement_certificate(char *b64h, unsigned char ** buffer,
         rc = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
         if (rc != CURLE_OK) {
             LOG_ERROR("curl_easy_setopt for CURLOPT_SSL_VERIFYPEER failed: %s",
-                    curl_easy_strerror(rc));
+                      curl_easy_strerror(rc));
             goto out_easy_cleanup;
         }
     }
@@ -234,7 +233,7 @@ int retrieve_endorsement_certificate(char *b64h, unsigned char ** buffer,
         goto out_easy_cleanup;
     }
 
-    rc =  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,
+    rc = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,
                            get_certificate_buffer_cb);
     if (rc != CURLE_OK) {
         LOG_ERROR("curl_easy_setopt for CURLOPT_URL failed: %s",
@@ -242,7 +241,7 @@ int retrieve_endorsement_certificate(char *b64h, unsigned char ** buffer,
         goto out_easy_cleanup;
     }
 
-    rc =  curl_easy_setopt(curl, CURLOPT_WRITEDATA,
+    rc = curl_easy_setopt(curl, CURLOPT_WRITEDATA,
                           (void *)&cert_buffer);
     if (rc != CURLE_OK) {
         LOG_ERROR("curl_easy_setopt for CURLOPT_URL failed: %s",

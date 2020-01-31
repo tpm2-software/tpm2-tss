@@ -607,7 +607,7 @@ execute_policy_secret(
     statecasedefault(current_policy->state);
     }
 
- cleanup:
+cleanup:
     return r;
 }
 
@@ -909,7 +909,7 @@ execute_policy_or(
 
     LOG_TRACE("call");
 
-    switch(current_policy->state) {
+    switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
         r = compute_or_digest_list(policy->branches, current_hash_alg,
                                       &current_policy->digest_list, names);
@@ -1190,7 +1190,7 @@ ifapi_policyeval_execute(
         }
         return_if_error(r, "Execute policy.");
 
-        current_policy_element =  current_policy->policy_elements;
+        current_policy_element = current_policy->policy_elements;
         current_policy->policy_elements = current_policy->policy_elements->next;
         SAFE_FREE(current_policy_element);
     }

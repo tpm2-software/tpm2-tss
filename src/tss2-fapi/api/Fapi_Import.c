@@ -157,7 +157,7 @@ Fapi_Import_Async(
         r = ifapi_initialize_sign_public(rsaOrEcc, &extPubKey->public);
         goto_if_error(r, "Could not initialize key template", cleanup_error);
 
-        r =  ifapi_get_tpm2b_public_from_pem(extPubKey->pem_ext_public,
+        r = ifapi_get_tpm2b_public_from_pem(extPubKey->pem_ext_public,
                                              &extPubKey->public);
         goto_if_error(r, "Convert PEM public key into TPM public key.", cleanup_error);
 
@@ -258,7 +258,7 @@ Fapi_Import_Async(
     return r;
 
 cleanup_error:
-    if(jso)
+    if (jso)
         json_object_put(jso);
     context->state = _FAPI_STATE_INIT;
     ifapi_cleanup_policy_harness(&policyHarness);
@@ -376,8 +376,8 @@ Fapi_Import_Finish(
             newObject->objectType = IFAPI_KEY_OBJ;
             newObject->misc.key.public = keyTree->public;
             newObject->policy_harness = keyTree->policy;
-            newObject->misc.key.private.size =  command->private->size;
-            newObject->misc.key.private.buffer  = &command->private->buffer[0];
+            newObject->misc.key.private.size = command->private->size;
+            newObject->misc.key.private.buffer = &command->private->buffer[0];
             newObject->misc.key.policyInstance = NULL;
             newObject->misc.key.description = NULL;
             newObject->misc.key.certificate = NULL;

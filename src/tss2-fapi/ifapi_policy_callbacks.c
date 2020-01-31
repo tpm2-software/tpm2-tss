@@ -83,7 +83,7 @@ ifapi_get_key_public(
         return_try_again(r);
         return_if_error(r, "read_finish failed");
 
-        switch(object.objectType) {
+        switch (object.objectType) {
         case IFAPI_KEY_OBJ:
             *public = object.misc.key.public.publicArea;
             break;
@@ -99,7 +99,7 @@ ifapi_get_key_public(
     statecasedefault_error(context->state, r, cleanup);
     }
 
- cleanup:
+cleanup:
     context->io_state = IO_INIT;
     ifapi_cleanup_ifapi_object(&object);
     return r;
@@ -142,7 +142,7 @@ ifapi_get_object_name(
         return_try_again(r);
         return_if_error(r, "read_finish failed");
 
-        switch(object.objectType) {
+        switch (object.objectType) {
         case IFAPI_KEY_OBJ:
             r = ifapi_get_name(&object.misc.key.public.publicArea,
                                (TPM2B_NAME *)name);
@@ -164,7 +164,7 @@ ifapi_get_object_name(
     statecasedefault(context->state);
     }
 
- cleanup:
+cleanup:
     ifapi_cleanup_ifapi_object(&object);
     return r;
 }
@@ -218,7 +218,7 @@ ifapi_get_nv_public(
     statecasedefault(context->state);
     }
 
- cleanup:
+cleanup:
     ifapi_cleanup_ifapi_object(&object);
     return r;
 }
@@ -340,7 +340,7 @@ ifapi_read_pcr(
                     memcpy(&(*pcr_values)->pcrs[i_pcr].digest,
                            &pcr_digests->digests[i_pcr].buffer[0],
                            pcr_digests->digests[i_pcr].size);
-                    i_pcr +=1;
+                    i_pcr += 1;
                 }
             }
         }
@@ -351,7 +351,7 @@ ifapi_read_pcr(
     statecasedefault(context->state);
     }
 
- cleanup:
+cleanup:
     SAFE_FREE(out_selection);
     SAFE_FREE(pcr_digests);
     return r;
@@ -400,7 +400,7 @@ ifapi_policyeval_cbauth(
 
     do {
         next_case = false;
-        switch(cb_ctx->cb_state) {
+        switch (cb_ctx->cb_state) {
         statecase(cb_ctx->cb_state, POL_CB_EXECUTE_INIT);
             cb_ctx->auth_index = ESYS_TR_NONE;
             r = ifapi_keystore_search_obj(&fapi_ctx->keystore, &fapi_ctx->io,
@@ -482,7 +482,7 @@ ifapi_policyeval_cbauth(
     if (current_policy->policySessionSav != ESYS_TR_NONE)
         fapi_ctx->policy.session = current_policy->policySessionSav;
 
- cleanup:
+cleanup:
     ifapi_cleanup_ifapi_object(&cb_ctx->object);
     if (current_policy->policySessionSav
         && current_policy->policySessionSav != ESYS_TR_NONE)
@@ -700,7 +700,7 @@ search_policy(
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
     char *path;
-    TPMS_POLICY_HARNESS policy = {0};
+    TPMS_POLICY_HARNESS policy = { 0 };
     bool found;
     struct POLICY_LIST *policy_object;
     struct POLICY_LIST *second;
@@ -731,7 +731,7 @@ search_policy(
             goto_error(r, TSS2_FAPI_RC_POLICY_UNKNOWN, "Policy not found.", cleanup);
         }
         context->fsearch.path_idx -= 1;
-        path =  context->fsearch.pathlist[context->fsearch.path_idx];
+        path = context->fsearch.pathlist[context->fsearch.path_idx];
         context->fsearch.current_path = path;
         LOG_DEBUG("Check file: %s %zu", path, context->fsearch.path_idx);
 
@@ -926,7 +926,7 @@ ifapi_exec_auth_policy(
     }
     cb_ctx = current_policy->app_data;
 
-    switch(cb_ctx->cb_state) {
+    switch (cb_ctx->cb_state) {
         statecase(cb_ctx->cb_state, POL_CB_EXECUTE_INIT)
             current_policy->object_handle = ESYS_TR_NONE;
             current_policy->policy_list = NULL;
@@ -1023,7 +1023,7 @@ ifapi_exec_auth_policy(
 
         statecasedefault_error(cb_ctx->state, r, cleanup);
     }
- cleanup:
+cleanup:
     SAFE_FREE(names);
     cleanup_policy_list(current_policy->policy_list);
     return r;
@@ -1082,7 +1082,7 @@ ifapi_exec_auth_nv_policy(
                       "Unsupported hash algorithm (%" PRIu16 ")", hash_alg);
     }
 
-    switch(cb_ctx->cb_state) {
+    switch (cb_ctx->cb_state) {
         statecase(cb_ctx->cb_state, POL_CB_EXECUTE_INIT)
             r = ifapi_keystore_search_nv_obj(&fapi_ctx->keystore, &fapi_ctx->io,
                                              nv_public, &nv_path);
@@ -1166,7 +1166,7 @@ ifapi_exec_auth_nv_policy(
 
         statecasedefault_error(cb_ctx->state, r, cleanup);
     }
- cleanup:
+cleanup:
     if (current_policy->policy_list) {
         ifapi_cleanup_policy_harness(&current_policy->policy_list->policy);
         SAFE_FREE(current_policy->policy_list);

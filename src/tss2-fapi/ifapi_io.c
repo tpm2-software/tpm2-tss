@@ -115,7 +115,7 @@ ifapi_io_read_finish(
                        &io->char_rbuffer[io->buffer_idx],
                        io->buffer_length - io->buffer_idx);
     if (ret < 0 && (errno == EINTR || errno == EAGAIN))
-            return TSS2_FAPI_RC_TRY_AGAIN;
+        return TSS2_FAPI_RC_TRY_AGAIN;
 
     if (ret < 0) {
         LOG_ERROR("Error reading from file: %i.", errno);
@@ -223,7 +223,7 @@ ifapi_io_write_finish(
                         &io->char_rbuffer[io->buffer_idx],
                         io->buffer_length - io->buffer_idx);
     if (ret < 0 && (errno == EINTR || errno == EAGAIN))
-            return TSS2_FAPI_RC_TRY_AGAIN;
+        return TSS2_FAPI_RC_TRY_AGAIN;
 
     if (ret < 0) {
         LOG_ERROR("Error writing to file: %i.", errno);
@@ -570,7 +570,7 @@ ifapi_io_dirfiles_all(
         }
         *pathlist = pathlist2;
     }
- cleanup:
+cleanup:
     /* Free linked list with file names */
     while (file_list) {
         head = file_list;
@@ -589,12 +589,12 @@ ifapi_io_dirfiles_all(
 bool
 ifapi_io_path_exists(const char *path)
 {
-     struct stat fbuffer;
+    struct stat fbuffer;
 
-     if (stat(path, &fbuffer) == 0)
-         return true;
-     else
-         return false;
+    if (stat(path, &fbuffer) == 0)
+        return true;
+    else
+        return false;
 }
 
 TSS2_RC
@@ -603,7 +603,7 @@ ifapi_io_poll(IFAPI_IO * io) {
     /* Check for NULL parameters */
     check_not_null(io);
 
-    if(io->pollevents) {
+    if (io->pollevents) {
         struct pollfd fds;
         fds.events = io->pollevents;
         fds.fd = fileno(io->stream);

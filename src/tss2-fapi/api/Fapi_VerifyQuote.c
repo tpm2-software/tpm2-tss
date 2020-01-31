@@ -245,7 +245,7 @@ Fapi_VerifyQuote_Finish(
 
     memset(&key_object, 0, sizeof(IFAPI_OBJECT));
 
-    switch(context->state) {
+    switch (context->state) {
         statecase(context->state, VERIFY_QUOTE_READ);
             r = ifapi_keystore_load_finish(&context->keystore, &context->io, &key_object);
             return_try_again(r);

@@ -49,61 +49,60 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
     if (!ifapi_get_sub_object(jso, "profile_dir", &jso2)) {
         out->profile_dir = NULL;
     } else {
-        r =  ifapi_json_char_deserialize(jso2, &out->profile_dir);
+        r = ifapi_json_char_deserialize(jso2, &out->profile_dir);
         return_if_error(r, "BAD VALUE");
     }
 
     if (!ifapi_get_sub_object(jso, "user_dir", &jso2)) {
         out->user_dir = NULL;
     } else {
-        r =  ifapi_json_char_deserialize(jso2, &out->user_dir);
+        r = ifapi_json_char_deserialize(jso2, &out->user_dir);
         return_if_error(r, "BAD VALUE");
     }
 
     if (!ifapi_get_sub_object(jso, "system_dir", &jso2)) {
         out->keystore_dir = NULL;
     } else {
-        r =  ifapi_json_char_deserialize(jso2, &out->keystore_dir);
+        r = ifapi_json_char_deserialize(jso2, &out->keystore_dir);
         return_if_error(r, "BAD VALUE");
     }
 
     if (!ifapi_get_sub_object(jso, "log_dir", &jso2)) {
         out->log_dir = DEFAULT_LOG_DIR;
     } else {
-        r =  ifapi_json_char_deserialize (jso2, &out->log_dir);
-        return_if_error(r,"BAD VALUE");
+        r = ifapi_json_char_deserialize(jso2, &out->log_dir);
+        return_if_error(r, "BAD VALUE");
     }
 
     if (!ifapi_get_sub_object(jso, "profile_name", &jso2)) {
         LOG_ERROR("Bad value");
-        return  TSS2_FAPI_RC_BAD_VALUE;
+        return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r =  ifapi_json_char_deserialize(jso2, &out->profile_name);
+    r = ifapi_json_char_deserialize(jso2, &out->profile_name);
     return_if_error(r, "BAD VALUE");
     if (!ifapi_get_sub_object(jso, "tcti", &jso2)) {
         LOG_ERROR("Bad value");
-        return  TSS2_FAPI_RC_BAD_VALUE;
+        return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r =  ifapi_json_char_deserialize(jso2, &out->tcti);
+    r = ifapi_json_char_deserialize(jso2, &out->tcti);
     return_if_error(r, "BAD VALUE");
-
 
     if (!ifapi_get_sub_object(jso, "system_pcrs", &jso2)) {
         LOG_ERROR("Bad value");
-        return  TSS2_FAPI_RC_BAD_VALUE;
+        return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r =  ifapi_json_TPML_PCR_SELECTION_deserialize(jso2, &out->system_pcrs);
+    r = ifapi_json_TPML_PCR_SELECTION_deserialize(jso2, &out->system_pcrs);
     return_if_error(r, "BAD VALUE");
 
     if (!ifapi_get_sub_object(jso, "ek_cert_file", &jso2)) {
         out->ek_cert_file = NULL;
     } else {
-        r =  ifapi_json_char_deserialize(jso2, &out->ek_cert_file);
+        r = ifapi_json_char_deserialize(jso2, &out->ek_cert_file);
         return_if_error(r, "BAD VALUE");
     }
 
     if (ifapi_get_sub_object(jso, "ek_cert_less", &jso2)) {
-        r =  ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->ek_cert_less);
+        r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->ek_cert_less);
         return_if_error(r, "BAD VALUE");
 
     } else {
@@ -111,7 +110,7 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
     }
 
     if (ifapi_get_sub_object(jso, "ek_fingerprint", &jso2)) {
-        r =  ifapi_json_TPMT_HA_deserialize(jso2, &out->ek_fingerprint);
+        r = ifapi_json_TPMT_HA_deserialize(jso2, &out->ek_fingerprint);
         return_if_error(r, "BAD VALUE");
     } else {
         out->ek_fingerprint.hashAlg = 0;
@@ -120,7 +119,7 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
     if (!ifapi_get_sub_object(jso, "intel_cert_service", &jso2)) {
         out->intel_cert_service = NULL;
     } else {
-        r =  ifapi_json_char_deserialize(jso2, &out->intel_cert_service);
+        r = ifapi_json_char_deserialize(jso2, &out->intel_cert_service);
         return_if_error(r, "BAD VALUE");
     }
 
@@ -175,11 +174,11 @@ ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config)
     return_if_null(io, "io is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
 
     /* Definitions that must be listed here for the cleanup to work */
-    char* homeDir = NULL;
+    char *homeDir = NULL;
     json_object *jso = NULL;
 
     /* Finish reading operation */
-    uint8_t * configFileContent = NULL;
+    uint8_t *configFileContent = NULL;
     size_t configFileContentSize = 0;
     TSS2_RC r = ifapi_io_read_finish(io, &configFileContent, &configFileContentSize);
     return_try_again(r);
@@ -199,11 +198,11 @@ ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config)
 
     /* Check, if the values of the configuration are valid */
     goto_if_null(config->profile_dir, "No profile directory defined in config file",
-            TSS2_FAPI_RC_BAD_VALUE, cleanup);
+                 TSS2_FAPI_RC_BAD_VALUE, cleanup);
     goto_if_null(config->user_dir, "No user directory defined in config file",
-            TSS2_FAPI_RC_BAD_VALUE, cleanup);
+                 TSS2_FAPI_RC_BAD_VALUE, cleanup);
     goto_if_null(config->profile_name, "No default profile defined in config file.",
-            TSS2_FAPI_RC_BAD_VALUE, cleanup);
+                 TSS2_FAPI_RC_BAD_VALUE, cleanup);
 
     /* Check whether usage of home directory is provided in config file */
     size_t startPos = 0;
@@ -214,15 +213,15 @@ ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config)
     }
 
     /* Replace home abbreviation in user path. */
-    char* homePath = NULL;
+    char *homePath = NULL;
     if (startPos != 0) {
         LOG_DEBUG("Expanding user directory %s to user's home", config->user_dir);
         homeDir = getenv("HOME");
         goto_if_null2(homeDir, "Home directory can't be determined.",
-                r, TSS2_FAPI_RC_BAD_PATH, cleanup);
+                      r, TSS2_FAPI_RC_BAD_PATH, cleanup);
 
         r = ifapi_asprintf(&homePath, "%s%s%s", homeDir, IFAPI_FILE_DELIM,
-                &config->user_dir[startPos]);
+                           &config->user_dir[startPos]);
         goto_if_error(r, "Out of memory.", cleanup);
 
         SAFE_FREE(config->user_dir);

@@ -149,7 +149,7 @@ Fapi_ChangeAuth_Async(
     command->handle = ESYS_TR_NONE;
     memset(&command->object, 0, sizeof(IFAPI_OBJECT));
     strdup_check(command->entityPath, entityPath, r, error_cleanup);
-    if(authValue != NULL) {
+    if (authValue != NULL) {
         strdup_check(command->authValue, authValue, r, error_cleanup);
     } else {
         strdup_check(command->authValue, "", r, error_cleanup);
