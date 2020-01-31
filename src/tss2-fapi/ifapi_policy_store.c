@@ -169,7 +169,7 @@ TSS2_RC
 ifapi_policy_store_load_finish(
     IFAPI_POLICY_STORE *pstore,
     IFAPI_IO *io,
-    TPMS_POLICY_HARNESS *policy)
+    TPMS_POLICY *policy)
 {
     TSS2_RC r;
     json_object *jso = NULL;
@@ -187,7 +187,7 @@ ifapi_policy_store_load_finish(
     SAFE_FREE(buffer);
     return_if_null(jso, "Policy store is corrupted (Json error).", TSS2_FAPI_RC_GENERAL_FAILURE);
 
-    r = ifapi_json_TPMS_POLICY_HARNESS_deserialize(jso, policy);
+    r = ifapi_json_TPMS_POLICY_deserialize(jso, policy);
     goto_if_error(r, "Deserialize policy", cleanup);
 
 cleanup:
@@ -217,7 +217,7 @@ ifapi_policy_store_store_async(
     IFAPI_POLICY_STORE *pstore,
     IFAPI_IO *io,
     const char *path,
-    const TPMS_POLICY_HARNESS *policy)
+    const TPMS_POLICY *policy)
 {
     TSS2_RC r;
     char *jso_string = NULL;
@@ -231,7 +231,7 @@ ifapi_policy_store_store_async(
     goto_if_error2(r, "Path %s could not be created.", cleanup, path);
 
     /* Generate JSON string to be written to store */
-    r = ifapi_json_TPMS_POLICY_HARNESS_serialize(policy, &jso);
+    r = ifapi_json_TPMS_POLICY_serialize(policy, &jso);
     goto_if_error2(r, "Policy %s could not be serialized.", cleanup, path);
 
     jso_string = strdup(json_object_to_json_string_ext(jso,

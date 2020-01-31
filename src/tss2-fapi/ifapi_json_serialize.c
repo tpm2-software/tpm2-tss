@@ -393,7 +393,7 @@ ifapi_json_IFAPI_DUPLICATE_serialize(const IFAPI_DUPLICATE *in,
     json_object_object_add(*jso, "public_parent", jso2);
     if (in->policy) {
         jso2 = NULL;
-        r = ifapi_json_TPMS_POLICY_HARNESS_serialize(in->policy, &jso2);
+        r = ifapi_json_TPMS_POLICY_serialize(in->policy, &jso2);
         return_if_error(r, "Serialize policy");
 
         json_object_object_add(*jso, "policy", jso2);
@@ -486,20 +486,20 @@ ifapi_json_IFAPI_OBJECT_serialize(const IFAPI_OBJECT *in,
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid call get_json");
     }
 
-    if (in->policy_harness) {
+    if (in->policy) {
         jso2 = NULL;
-        r = ifapi_json_TPMS_POLICY_HARNESS_serialize(in->policy_harness, &jso2);
+        r = ifapi_json_TPMS_POLICY_serialize(in->policy, &jso2);
         return_if_error(r, "Serialize policy");
 
-        json_object_object_add(*jso, "policy_harness", jso2);
+        json_object_object_add(*jso, "policy", jso2);
     }
 
-    if (in->policy_harness) {
+    if (in->policy) {
         jso2 = NULL;
-        r = ifapi_json_TPMS_POLICY_HARNESS_serialize(in->policy_harness, &jso2);
+        r = ifapi_json_TPMS_POLICY_serialize(in->policy, &jso2);
         return_if_error(r, "Serialize policy");
 
-        json_object_object_add(*jso, "policy_harness", jso2);
+        json_object_object_add(*jso, "policy", jso2);
     }
     return TSS2_RC_SUCCESS;
 }

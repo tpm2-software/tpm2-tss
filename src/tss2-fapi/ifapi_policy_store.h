@@ -38,14 +38,14 @@ TSS2_RC
 ifapi_policy_store_load_finish(
     IFAPI_POLICY_STORE *pstore,
     IFAPI_IO *io,
-    TPMS_POLICY_HARNESS *policy);
+    TPMS_POLICY *policy);
 
 TSS2_RC
 ifapi_policy_store_store_async(
     IFAPI_POLICY_STORE *pstore,
     IFAPI_IO *io,
     const char *path,
-    const TPMS_POLICY_HARNESS *policy);
+    const TPMS_POLICY *policy);
 
 TSS2_RC
 ifapi_policy_store_store_finish(

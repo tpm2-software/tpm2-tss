@@ -449,12 +449,12 @@ ifapi_json_IFAPI_DUPLICATE_deserialize(json_object *jso, IFAPI_DUPLICATE *out)
     return_if_error(r, "BAD VALUE");
 
     if (ifapi_get_sub_object(jso, "policy", &jso2)) {
-        out->policy = calloc(1, sizeof(TPMS_POLICY_HARNESS));
+        out->policy = calloc(1, sizeof(TPMS_POLICY));
         goto_if_null2(out->policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
                       error_cleanup);
 
-        r = ifapi_json_TPMS_POLICY_HARNESS_deserialize(jso2, out->policy);
-        goto_if_error(r, "Deserialize policy harness.", error_cleanup);
+        r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->policy);
+        goto_if_error(r, "Deserialize policy.", error_cleanup);
     } else {
         out->policy = NULL;
     }
@@ -558,21 +558,21 @@ ifapi_json_IFAPI_OBJECT_deserialize(json_object *jso, IFAPI_OBJECT *out)
         out->system = TPM2_NO;
     }
 
-    if (ifapi_get_sub_object(jso, "policy_harness", &jso2)) {
-        out->policy_harness = calloc(1, sizeof(TPMS_POLICY_HARNESS));
-        goto_if_null2(out->policy_harness, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
+    if (ifapi_get_sub_object(jso, "policy", &jso2)) {
+        out->policy = calloc(1, sizeof(TPMS_POLICY));
+        goto_if_null2(out->policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
                       cleanup);
 
-        r = ifapi_json_TPMS_POLICY_HARNESS_deserialize(jso2, out->policy_harness);
-        goto_if_error(r, "Deserialize policy harness.", cleanup);
+        r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->policy);
+        goto_if_error(r, "Deserialize policy.", cleanup);
     } else {
-        out->policy_harness = NULL;
+        out->policy = NULL;
     }
 
     return TSS2_RC_SUCCESS;
 
 cleanup:
-    SAFE_FREE(out->policy_harness);
+    SAFE_FREE(out->policy);
     return r;
 }
 

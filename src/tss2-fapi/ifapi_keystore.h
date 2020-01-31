@@ -80,7 +80,7 @@ typedef struct {
     TPM2B_PUBLIC                                 public; /**< The public information of the key to be duplicated */
     TPM2B_PUBLIC                          public_parent; /**< The public information of the new parent key */
     char                                   *certificate; /**< The certificate of the key to be duplicated */
-    TPMS_POLICY_HARNESS                         *policy; /**< The policy of the key to be duplicated */
+    TPMS_POLICY                                 *policy; /**< The policy of the key to be duplicated */
 } IFAPI_DUPLICATE;
 
 /** type for representing public info of a TPM-Resource
@@ -136,7 +136,7 @@ enum IFAPI_IO_STATE {
 /** Type for representing TPM-Resource
  */
 typedef struct _IFAPI_OBJECT {
-    TPMS_POLICY_HARNESS                 *policy_harness;
+    TPMS_POLICY                                 *policy;
     IFAPI_OBJECT_TYPE_CONSTANT               objectType;    /**< Selector for object type */
     IFAPI_OBJECT_UNION                             misc;    /**< Resource specific information */
     TPMI_YES_NO                                  system;    /**< Store the object in the system wide

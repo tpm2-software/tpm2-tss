@@ -28,13 +28,13 @@
 
 /** Compute policy digest for a policy tree.
  *
- * A policy harness or a policy path can be passed. If a harness is passed the
- * policy is computed directly from the harness otherwise the policy has to be
- * retrieved from policy store to determine the policy harness.
+ * A policy or a policy path can be passed. If a policy is passed the
+ * policy is computed directly from the policy otherwise the policy has to be
+ * retrieved from policy store to determine the policy.
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @param[in]     policyPath The policy path for policy store.
- * @param[in]     harness The result of policy deserialization.
+ * @param[in]     policy The result of policy deserialization.
  * @param[in]     hash_alg The used hash alg for policy digest computations.
  * @param[out]    digest_idx The index of the current digest. The policy digest can be
  *                computed for several hash algorithms the digets index is a reverence
@@ -56,7 +56,7 @@ TSS2_RC
 ifapi_calculate_tree(
     FAPI_CONTEXT *context,
     const char *policyPath,
-    TPMS_POLICY_HARNESS *harness,
+    TPMS_POLICY *policy,
     TPMI_ALG_HASH hash_alg,
     size_t *digest_idx,
     size_t *hash_size)
@@ -81,7 +81,7 @@ ifapi_calculate_tree(
         fallthrough;
 
     statecase(context->policy.state, POLICY_READ_FINISH);
-        r = ifapi_policy_store_load_finish(&context->pstore, &context->io, harness);
+        r = ifapi_policy_store_load_finish(&context->pstore, &context->io, policy);
         return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
         fallthrough;
@@ -98,7 +98,7 @@ ifapi_calculate_tree(
         callbacks->cbpcr = ifapi_read_pcr;
         callbacks->cbpcr_userdata = context;
 
-        r = ifapi_policyeval_instantiate_async(eval_ctx, harness, callbacks);
+        r = ifapi_policyeval_instantiate_async(eval_ctx, policy, callbacks);
         goto_if_error(r, "Instantiate policy.", cleanup);
         fallthrough;
 
@@ -112,8 +112,8 @@ ifapi_calculate_tree(
                        hash_alg);
         }
 
-        for (i = 0; i < harness->policyDigests.count; i++) {
-            if (harness->policyDigests.digests[i].hashAlg == hash_alg) {
+        for (i = 0; i < policy->policyDigests.count; i++) {
+            if (policy->policyDigests.digests[i].hashAlg == hash_alg) {
                 /* Digest already computed */
                 *digest_idx = i;
                 already_computed = true;
@@ -126,14 +126,14 @@ ifapi_calculate_tree(
             return_error(TSS2_FAPI_RC_BAD_VALUE, "Table overflow");
         }
         *digest_idx = i;
-        harness->policyDigests.count += 1;
-        harness->policyDigests.digests[i].hashAlg = hash_alg;
+        policy->policyDigests.count += 1;
+        policy->policyDigests.digests[i].hashAlg = hash_alg;
 
-        memset(&harness->policyDigests.digests[*digest_idx].digest, 0,
+        memset(&policy->policyDigests.digests[*digest_idx].digest, 0,
                sizeof(TPMU_HA));
 
-        r = ifapi_calculate_policy(harness->policy,
-                                   &harness->policyDigests, hash_alg,
+        r = ifapi_calculate_policy(policy->policy,
+                                   &policy->policyDigests, hash_alg,
                                    *hash_size, *digest_idx);
         goto_if_error(r, "Compute policy.", cleanup);
 

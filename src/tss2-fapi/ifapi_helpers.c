@@ -1210,27 +1210,27 @@ static void cleanup_policy_elements(TPML_POLICYELEMENTS *policy)
  *
  * The object will not be freed (might be declared on the stack).
  *
- * @param[in] harness The policy to be cleaned up.
+ * @param[in] policy The policy to be cleaned up.
  *
  */
-void ifapi_cleanup_policy_harness(TPMS_POLICY_HARNESS *harness)
+void ifapi_cleanup_policy(TPMS_POLICY *policy)
 {
-    if (harness) {
-        SAFE_FREE(harness->description);
-        if (harness->policyAuthorizations) {
-            for (size_t i = 0; i < harness->policyAuthorizations->count; i++) {
-                SAFE_FREE(harness->policyAuthorizations->authorizations[i].type);
+    if (policy) {
+        SAFE_FREE(policy->description);
+        if (policy->policyAuthorizations) {
+            for (size_t i = 0; i < policy->policyAuthorizations->count; i++) {
+                SAFE_FREE(policy->policyAuthorizations->authorizations[i].type);
             }
         }
-        SAFE_FREE(harness->policyAuthorizations);
-        cleanup_policy_elements(harness->policy);
+        SAFE_FREE(policy->policyAuthorizations);
+        cleanup_policy_elements(policy->policy);
     }
 }
 
 static void cleanup_policy_object(POLICY_OBJECT * object) {
     if (object != NULL) {
         SAFE_FREE(object->path);
-        ifapi_cleanup_policy_harness(&object->policy);
+        ifapi_cleanup_policy(&object->policy);
         cleanup_policy_object(object->next);
     }
 }
@@ -1238,8 +1238,8 @@ static void cleanup_policy_object(POLICY_OBJECT * object) {
 static TPML_POLICYELEMENTS *
 copy_policy_elements(const TPML_POLICYELEMENTS *from_policy);
 
-static TSS2_RC copy_policy_harness(TPMS_POLICY_HARNESS * dest,
-        const TPMS_POLICY_HARNESS * src) {
+static TSS2_RC copy_policy(TPMS_POLICY * dest,
+        const TPMS_POLICY * src) {
     /* Check for NULL references */
     if (dest == NULL || src == NULL) {
         return TSS2_FAPI_RC_MEMORY;
@@ -1254,7 +1254,7 @@ static TSS2_RC copy_policy_harness(TPMS_POLICY_HARNESS * dest,
 
     return r;
 error_cleanup:
-    ifapi_cleanup_policy_harness(dest);
+    ifapi_cleanup_policy(dest);
     return r;
 }
 
@@ -1270,8 +1270,8 @@ copy_policy_object(POLICY_OBJECT * dest, const POLICY_OBJECT * src) {
     dest->policy.policyAuthorizations = NULL;
     dest->policy.policy = NULL;
     strdup_check(dest->path, src->path, r, error_cleanup);
-    r = copy_policy_harness(&dest->policy, &src->policy);
-    goto_if_error(r, "Could not copy policy harness", error_cleanup);
+    r = copy_policy(&dest->policy, &src->policy);
+    goto_if_error(r, "Could not copy policy", error_cleanup);
     if (src->next != NULL) {
         dest->next = malloc(sizeof(POLICY_OBJECT));
         goto_if_null(dest->next, "Out of memory", r, error_cleanup);
@@ -1488,30 +1488,30 @@ copy_policy_elements(const TPML_POLICYELEMENTS *from_policy)
     return to_policy;
 }
 
-/** Copy policy harness.
+/** Copy policy.
  * The object will not be freed (might be declared on the stack).
  *
- * @param[in] from_harness the policy to be copied.
- * @retval The new harness or NULL if not enough memory was available.
+ * @param[in] from_policy the policy to be copied.
+ * @retval The new policy or NULL if not enough memory was available.
  */
-TPMS_POLICY_HARNESS *
-ifapi_copy_policy_harness(
-    const TPMS_POLICY_HARNESS *from_harness)
+TPMS_POLICY *
+ifapi_copy_policy(
+    const TPMS_POLICY *from_policy)
 {
-    if (from_harness == NULL) {
+    if (from_policy == NULL) {
         return NULL;
     }
-    TPMS_POLICY_HARNESS *to_harness = calloc(1, sizeof(TPMS_POLICY_HARNESS));
-    if (to_harness == NULL) {
+    TPMS_POLICY *to_policy = calloc(1, sizeof(TPMS_POLICY));
+    if (to_policy == NULL) {
         return NULL;
     }
-    to_harness->description = NULL;
-    TSS2_RC r = copy_policy_harness(to_harness, from_harness);
+    to_policy->description = NULL;
+    TSS2_RC r = copy_policy(to_policy, from_policy);
     if (r != TSS2_RC_SUCCESS) {
-        SAFE_FREE(to_harness);
+        SAFE_FREE(to_policy);
         return NULL;
     } else {
-        return to_harness;
+        return to_policy;
     }
 }
 

@@ -1181,7 +1181,7 @@ ifapi_copy_ifapi_key_object(IFAPI_OBJECT * dest, const IFAPI_OBJECT * src) {
     /* Initialize the object variables for a possible error cleanup */
 
     /* Create the copy */
-    dest->policy_harness = ifapi_copy_policy_harness(src->policy_harness);
+    dest->policy = ifapi_copy_policy(src->policy);
 
     ifapi_copy_ifapi_key(&dest->misc.key, &src->misc.key);
     goto_if_error(r, "Could not copy key", error_cleanup);
@@ -1223,8 +1223,8 @@ ifapi_cleanup_ifapi_object(
                 ifapi_cleanup_ifapi_hierarchy(&object->misc.hierarchy);
             }
 
-            ifapi_cleanup_policy_harness(object->policy_harness);
-            SAFE_FREE(object->policy_harness);
+            ifapi_cleanup_policy(object->policy);
+            SAFE_FREE(object->policy);
             object->objectType = IFAPI_OBJ_NONE;
         }
     }

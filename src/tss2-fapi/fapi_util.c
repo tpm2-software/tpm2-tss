@@ -325,7 +325,7 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
     TSS2_RC r;
     IFAPI_OBJECT *hierarchy;
     hierarchy = &context->cmd.Provision.hierarchy;
-    TPMS_POLICY_HARNESS *policy;
+    TPMS_POLICY *policy;
 
     if (ktype == TSS2_EK) {
         /* Values set according to EK credential profile. */
@@ -347,7 +347,7 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
 
     if (policy) {
         /* Duplicate policy to prevent profile policy from cleanup. */
-        policy = ifapi_copy_policy_harness(policy);
+        policy = ifapi_copy_policy(policy);
         return_if_null(policy, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
         r = ifapi_calculate_tree(context, NULL, /**< no path needed */
@@ -367,7 +367,7 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
                &policy->policyDigests.digests[context->policy.digest_idx].digest,
                context->cmd.Provision.hash_size);
     }
-    context->createPrimary.pkey_object.policy_harness = policy;
+    context->createPrimary.pkey_object.policy = policy;
 
     memset(&context->cmd.Provision.inSensitive, 0, sizeof(TPM2B_SENSITIVE_CREATE));
     memset(&context->cmd.Provision.outsideInfo, 0, sizeof(TPM2B_DATA));
@@ -1541,7 +1541,7 @@ ifapi_authorize_object(FAPI_CONTEXT *context, IFAPI_OBJECT *object, ESYS_TR *ses
                 break;
             }
             r = ifapi_policyutil_execute_prepare(context, get_name_alg(context, object)
-                                                 ,object->policy_harness);
+                                                 ,object->policy);
             return_if_error(r, "Prepare policy execution.");
 
             /* Next state will switch from prev context to next context. */
@@ -2405,7 +2405,7 @@ ifapi_initialize_object(
     return r;
 
 cleanup:
-    SAFE_FREE(object->policy_harness);
+    SAFE_FREE(object->policy);
     return r;
 }
 
@@ -2647,7 +2647,7 @@ ifapi_key_create(
     case KEY_CREATE_CALCULATE_POLICY:
         if (context->cmd.Key_Create.state == KEY_CREATE_CALCULATE_POLICY) {
             r = ifapi_calculate_tree(context, context->cmd.Key_Create.policyPath,
-                                     &context->policy.harness,
+                                     &context->policy.policy,
                                      context->cmd.Key_Create.public_templ.public.publicArea.nameAlg,
                                      &context->policy.digest_idx,
                                      &context->policy.hash_size);
@@ -2656,15 +2656,15 @@ ifapi_key_create(
                            context->cmd.Key_Create.policyPath);
 
             /* Store the calculated policy in the key object */
-            object->policy_harness = calloc(1, sizeof(TPMS_POLICY_HARNESS));
-            return_if_null(object->policy_harness, "Out of memory",
+            object->policy = calloc(1, sizeof(TPMS_POLICY));
+            return_if_null(object->policy, "Out of memory",
                     TSS2_FAPI_RC_MEMORY);
-            *(object->policy_harness) = context->policy.harness;
+            *(object->policy) = context->policy.policy;
 
             context->cmd.Key_Create.public_templ.public.publicArea.authPolicy.size =
                 context->policy.hash_size;
             memcpy(&context->cmd.Key_Create.public_templ.public.publicArea.authPolicy.buffer[0],
-                   &context->policy.harness.policyDigests.digests[context->policy.digest_idx].digest,
+                   &context->policy.policy.policyDigests.digests[context->policy.digest_idx].digest,
                    context->policy.hash_size);
         }
         r = ifapi_get_sessions_async(context,
@@ -2941,7 +2941,7 @@ error:
 
 /** State machine for changing the policy of a hierarchy.
  *
- * Based on a passed policy harness the policy digest will be computed.
+ * Based on a passed policy the policy digest will be computed.
  * First it will be tried to set the policy of the hierarchy with a
  * "null" authorization. If this trial is not successful it will be tried to
  * authorize the hierarchy via a callback.
@@ -2953,7 +2953,7 @@ error:
  * @param[in] handle The ESAPI handle of the hierarchy.
  * @param[in,out] hierarchy_object The internal FAPI representation of a
  *                hierarchy.
- * @param[in] policy_harness The new policy assigned to the hierarchy.
+ * @param[in] policy The new policy assigned to the hierarchy.
  *
  * @retval TSS2_RC_SUCCESS on success.
  * @retval All possible error codes of ESAPI.
@@ -2973,13 +2973,13 @@ ifapi_change_policy_hierarchy(
     FAPI_CONTEXT *context,
     ESYS_TR handle,
     IFAPI_OBJECT *hierarchy_object,
-    TPMS_POLICY_HARNESS *policy_harness)
+    TPMS_POLICY *policy)
 {
     TSS2_RC r;
 
     switch (context->hierarchy_policy_state) {
     statecase(context->hierarchy_policy_state, HIERARCHY_CHANGE_POLICY_INIT);
-        if (! policy_harness || ! policy_harness->policy) {
+        if (! policy || ! policy->policy) {
             /* No policy will be used for hierarchy */
             return TSS2_RC_SUCCESS;
         }
@@ -2988,7 +2988,7 @@ ifapi_change_policy_hierarchy(
 
         /* Calculate the policy digest which will be used as hierarchy policy. */
         r = ifapi_calculate_tree(context, NULL, /**< no path needed */
-                                 policy_harness,
+                                 policy,
                                  context->profiles.default_profile.nameAlg,
                                  &context->cmd.Provision.digest_idx,
                                  &context->cmd.Provision.hash_size);
@@ -2998,11 +2998,11 @@ ifapi_change_policy_hierarchy(
         /* Policy data will be stored in the provisioning context. */
         context->cmd.Provision.policy_digest.size = context->cmd.Provision.hash_size;
         memcpy(&context->cmd.Provision.policy_digest.buffer[0],
-               &policy_harness
+               &policy
                ->policyDigests.digests[context->cmd.Provision.digest_idx].digest,
                context->cmd.Provision.hash_size);
 
-        hierarchy_object->policy_harness = policy_harness;
+        hierarchy_object->policy = policy;
         hierarchy_object->misc.hierarchy.authPolicy = context->cmd.Provision.policy_digest;
 
         /* Prepare the setting of the policy. */

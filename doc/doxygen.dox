@@ -1638,7 +1638,7 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
   \fn TSS2_RC ifapi_calculate_tree(
     FAPI_CONTEXT *context,
     const char *policyPath,
-    TPMS_POLICY_HARNESS *harness,
+    TPMS_POLICY *policy,
     TPMI_ALG_HASH hash_alg,
     size_t *digest_idx,
     size_t *hash_size)
@@ -1653,7 +1653,7 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
 \fn  TSS2_RC ifapi_policyeval_execute_prepare(
     IFAPI_POLICY_EXEC_CTX *pol_ctx,
     TPMI_ALG_HASH hash_alg,
-    TPMS_POLICY_HARNESS *harness)
+    TPMS_POLICY *policy)
 
 \fn TSS2_RC ifapi_policyeval_execute(
     ESYS_CONTEXT *esys_ctx,
@@ -1789,11 +1789,11 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
 
 \fn void free_string_list(NODE_STR_T *node);
 
-\fn void ifapi_cleanup_policy_harness(
-    TPMS_POLICY_HARNESS *harness);
+\fn void ifapi_cleanup_policy(
+    TPMS_POLICY *policy);
 
-\fn TPMS_POLICY_HARNESS * ifapi_copy_policy_harness(
-    const TPMS_POLICY_HARNESS *from_harness);
+\fn TPMS_POLICY * ifapi_copy_policy(
+    const TPMS_POLICY *from_policy);
 
 \fn TSS2_RC ifapi_get_name(
     TPMT_PUBLIC *publicInfo,
@@ -2038,7 +2038,7 @@ TSS2_RC ifapi_calculate_pcr_digest(
     FAPI_CONTEXT *context,
     ESYS_TR handle,
     IFAPI_OBJECT *hierarchy_object,
-    TPMS_POLICY_HARNESS *policy_harness);
+    TPMS_POLICY *policy);
 
 \fn IFAPI_OBJECT *ifapi_allocate_object(FAPI_CONTEXT *context);
 

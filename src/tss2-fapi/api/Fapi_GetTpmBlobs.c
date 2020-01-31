@@ -232,9 +232,9 @@ Fapi_GetTpmBlobs_Finish(
             }
 
             /* Duplicate the policy to the output parameter. */
-            if (object.policy_harness && policy) {
-                r = ifapi_json_TPMS_POLICY_HARNESS_serialize(
-                        object.policy_harness, &jso);
+            if (object.policy && policy) {
+                r = ifapi_json_TPMS_POLICY_serialize(
+                        object.policy, &jso);
                 goto_if_error(r, "Serialize policy", error_cleanup);
 
                 strdup_check(*policy,

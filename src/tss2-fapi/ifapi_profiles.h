@@ -28,11 +28,11 @@ typedef struct IFAPI_PROFILE {
     UINT32                                     exponent;
     TPMI_ECC_CURVE                              curveID;
     TPMT_SYM_DEF                      session_symmetric;
-    TPMS_POLICY_HARNESS                      *eh_policy;
-    TPMS_POLICY_HARNESS                      *sh_policy;
-    TPMS_POLICY_HARNESS                      *ek_policy;
-    TPMS_POLICY_HARNESS                     *srk_policy;
-    TPMS_POLICY_HARNESS                 *lockout_policy;
+    TPMS_POLICY                              *eh_policy;
+    TPMS_POLICY                              *sh_policy;
+    TPMS_POLICY                              *ek_policy;
+    TPMS_POLICY                             *srk_policy;
+    TPMS_POLICY                         *lockout_policy;
     UINT32                                  newMaxTries;
     UINT32                              newRecoveryTime;
     UINT32                              lockoutRecovery;
