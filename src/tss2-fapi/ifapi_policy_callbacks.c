@@ -533,7 +533,7 @@ ifapi_branch_selection(
                                    fapi_ctx->callbacks.branchData);
     return_if_error(r, "policyBranchSelectionCallback");
 
-    if (*branch_idx > branches->count) {
+    if (*branch_idx >= branches->count) {
         return_error2(TSS2_FAPI_RC_BAD_VALUE, "Invalid branch number.");
     }
     return TSS2_RC_SUCCESS;
