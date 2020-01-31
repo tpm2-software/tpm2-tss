@@ -43,12 +43,13 @@ branch_callback(
         return TSS2_FAPI_RC_GENERAL_FAILURE;
     }
 
-    if (!strcmp(branchNames[0], "Policy NameHash"))
+    if (!strcmp(branchNames[0], "/policy/pol_name_hash"))
+        *selectedBranch = 0;
+    else if (!strcmp(branchNames[1], "/policy/pol_name_hash"))
         *selectedBranch = 1;
-    else if (!strcmp(branchNames[1], "Policy NameHash"))
-        *selectedBranch = 2;
     else {
-        LOG_ERROR("BranchName not found");
+        LOG_ERROR("BranchName not found. Got \"%s\" and \"%s\"",
+                  branchNames[0], branchNames[1]);
         return TSS2_FAPI_RC_GENERAL_FAILURE;
     }
 
