@@ -66,7 +66,7 @@ new_policy(
     pol_exec_ctx->callbacks.cbaction = ifapi_policy_action;
     pol_exec_ctx->callbacks.cbaction_userdata = context;
 
-    pol_exec_cb_ctx =  calloc(sizeof(IFAPI_POLICY_EXEC_CB_CTX), 1);
+    pol_exec_cb_ctx = calloc(sizeof(IFAPI_POLICY_EXEC_CB_CTX), 1);
     if (!pol_exec_cb_ctx) {
         return_error(TSS2_FAPI_RC_MEMORY, "Out of memory");
     }
@@ -213,7 +213,7 @@ ifapi_policyutil_execute_prepare(
 
     return r;
 
- error:
+error:
     while (context->policy.policyutil_stack) {
         clear_all_policies(context);
     }
@@ -305,7 +305,7 @@ ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session)
     LOG_TRACE("success");
     return r;
 
- error:
+error:
     while (context->policy.policyutil_stack) {
         clear_all_policies(context);
     }

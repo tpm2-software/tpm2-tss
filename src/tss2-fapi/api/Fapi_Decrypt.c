@@ -220,7 +220,7 @@ Fapi_Decrypt_Finish(
     IFAPI_OBJECT *encKeyObject = NULL;
     IFAPI_Data_EncryptDecrypt * command = &(context->cmd.Data_EncryptDecrypt);
 
-    switch(context->state) {
+    switch (context->state) {
         statecase(context->state, DATA_DECRYPT_WAIT_FOR_PROFILE);
             /* Retrieve the profile for the provided key in order to get the
                encryption scheme below. */

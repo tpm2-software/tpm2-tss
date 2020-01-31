@@ -36,7 +36,7 @@ initialize_explicit_key_path(
     if (list_node == NULL) {
         LOG_ERROR("Invalid path");
         free_string_list(*list_node1);
-        return  TSS2_FAPI_RC_BAD_VALUE;
+        return TSS2_FAPI_RC_BAD_VALUE;
     }
     if (strncmp("P_", list_node->str, 2) == 0) {
         profile = list_node->str;
@@ -204,15 +204,14 @@ expand_path(IFAPI_KEYSTORE *keystore, const char *path, char **file_name)
         } else {
             if (strncmp("/", path, 1) == 0)
                 pos = 1;
-            r  = ifapi_asprintf(file_name, "%s%s%s",  keystore->defaultprofile,
-                                IFAPI_FILE_DELIM, &path[pos]);
+            r = ifapi_asprintf(file_name, "%s%s%s", keystore->defaultprofile,
+                               IFAPI_FILE_DELIM, &path[pos]);
             return_if_error(r, "Out of memory.");
         }
     } else if (ifapi_path_type_p(path, IFAPI_NV_PATH)
-        || ifapi_path_type_p(path, IFAPI_POLICY_PATH)
-        || ifapi_path_type_p(path, IFAPI_EXT_PATH)
-        || strncmp(path, "/P_", 3) == 0
-        || strncmp(path, "P_", 2) == 0) {
+               || ifapi_path_type_p(path, IFAPI_POLICY_PATH)
+               || ifapi_path_type_p(path, IFAPI_EXT_PATH)
+               || strncmp(path, "/P_", 3) == 0 || strncmp(path, "P_", 2) == 0) {
         *file_name = strdup(path);
         return_if_null(*file_name, "Out of memory", TSS2_FAPI_RC_MEMORY);
 
@@ -321,7 +320,7 @@ ifapi_keystore_initialize(
     SAFE_FREE(home_path);
     return TSS2_RC_SUCCESS;
 
- error:
+error:
     SAFE_FREE(keystore->defaultprofile);
     SAFE_FREE(keystore->userdir);
     SAFE_FREE(keystore->systemdir);
@@ -412,23 +411,23 @@ ifapi_keystore_load_async(
     const char *path)
 {
     TSS2_RC r;
-     char *abs_path = NULL;
+    char *abs_path = NULL;
 
-     LOG_TRACE("Load object: %s", path);
+    LOG_TRACE("Load object: %s", path);
 
-     /* Free old input buffer if buffer exists */
-     SAFE_FREE(io->char_rbuffer);
+    /* Free old input buffer if buffer exists */
+    SAFE_FREE(io->char_rbuffer);
 
-     /* Convert relative path to absolute path in keystore */
-     r = rel_path_to_abs_path(keystore, path, &abs_path);
-     goto_if_error2(r, "Object %s not found.", cleanup, path);
+    /* Convert relative path to absolute path in keystore */
+    r = rel_path_to_abs_path(keystore, path, &abs_path);
+    goto_if_error2(r, "Object %s not found.", cleanup, path);
 
-     /* Prepare read operation */
-     r = ifapi_io_read_async(io, abs_path);
+    /* Prepare read operation */
+    r = ifapi_io_read_async(io, abs_path);
 
- cleanup:
-     SAFE_FREE(abs_path);
-     return r;
+cleanup:
+    SAFE_FREE(abs_path);
+    return r;
 }
 
 /** Finish loading FAPI object from key store.
@@ -450,7 +449,7 @@ ifapi_keystore_load_finish(
 {
     TSS2_RC r;
     json_object *jso = NULL;
-    uint8_t  *buffer = NULL;
+    uint8_t *buffer = NULL;
     /* Keystore parameter is used to be prepared if transmission of state information
        between async and finish will be necessary in future extensions. */
     (void)keystore;
@@ -537,7 +536,7 @@ ifapi_keystore_store_async(
     free(jso_string);
     goto_if_error(r, "write_async failed", cleanup);
 
- cleanup:
+cleanup:
     if (jso)
         json_object_put(jso);
     SAFE_FREE(directory);
@@ -592,18 +591,17 @@ keystore_list_all_abs
     file_ary_user = NULL;
     file_ary_system = NULL;
 
-    if (!searchpath || strcmp(searchpath,"") == 0 || strcmp(searchpath,"/") == 0) {
+    if (!searchpath || strcmp(searchpath, "") == 0 || strcmp(searchpath, "/") == 0) {
         /* The complete keystore will be listed, no path expansion */
         expanded_search_path = NULL;
-    }
-    else {
+    } else {
         r = expand_path(keystore, searchpath, &expanded_search_path);
         return_if_error(r, "Out of memory.");
     }
 
     /* Get the objects from system store */
     r = ifapi_asprintf(&full_search_path, "%s%s%s", keystore->systemdir, IFAPI_FILE_DELIM,
-                       expanded_search_path?expanded_search_path:"");
+                       expanded_search_path ? expanded_search_path : "");
     goto_if_error(r, "Out of memory.", cleanup);
 
     r = ifapi_io_dirfiles_all(full_search_path, &file_ary_system, &num_paths_system);
@@ -612,13 +610,13 @@ keystore_list_all_abs
 
     /* Get the objects from user store */
     r = ifapi_asprintf(&full_search_path, "%s%s%s", keystore->userdir, IFAPI_FILE_DELIM,
-                       expanded_search_path?expanded_search_path:"");
+                       expanded_search_path ? expanded_search_path : "");
     goto_if_error(r, "Out of memory.", cleanup);
 
     r = ifapi_io_dirfiles_all(full_search_path, &file_ary_user, &num_paths_user);
 
     *numresults = num_paths_system + num_paths_user;
-     SAFE_FREE(full_search_path);
+    SAFE_FREE(full_search_path);
 
     if (*numresults > 0) {
 
@@ -638,7 +636,7 @@ keystore_list_all_abs
         *results = file_ary;
     }
 
- cleanup:
+cleanup:
     SAFE_FREE(file_ary_system);
     SAFE_FREE(file_ary_user);
     SAFE_FREE(expanded_search_path);
@@ -689,8 +687,8 @@ ifapi_keystore_list_all(
  */
 TSS2_RC
 ifapi_keystore_delete(
-     IFAPI_KEYSTORE *keystore,
-     char *path)
+    IFAPI_KEYSTORE * keystore,
+    char *path)
 {
     TSS2_RC r;
     char *abs_path = NULL;
@@ -701,9 +699,9 @@ ifapi_keystore_delete(
 
     r = ifapi_io_remove_file(abs_path);
 
- cleanup:
-     SAFE_FREE(abs_path);
-     return r;
+cleanup:
+    SAFE_FREE(abs_path);
+    return r;
 }
 
 static TSS2_RC
@@ -711,7 +709,7 @@ expand_directory(IFAPI_KEYSTORE *keystore, const char *path, char **directory_na
 {
     TSS2_RC r;
 
-    if (path && strcmp(path,"") != 0 && strcmp(path,"/") != 0) {
+    if (path && strcmp(path, "") != 0 && strcmp(path, "/") != 0) {
         size_t start_pos = 0;
         if (path[0] == IFAPI_FILE_DELIM_CHAR)
             start_pos = 1;
@@ -757,7 +755,7 @@ ifapi_keystore_remove_directories(IFAPI_KEYSTORE *keystore, const char *dir_name
 
     /* Cleanup user part of the store */
     r = ifapi_asprintf(&absolute_dir_path, "%s%s%s", keystore->userdir, IFAPI_FILE_DELIM,
-                       exp_dir_name? exp_dir_name : "");
+                       exp_dir_name ? exp_dir_name : "");
     goto_if_error(r, "Out of memory.", cleanup);
 
     if (stat(absolute_dir_path, &fbuffer) == 0) {
@@ -767,8 +765,8 @@ ifapi_keystore_remove_directories(IFAPI_KEYSTORE *keystore, const char *dir_name
     SAFE_FREE(absolute_dir_path);
 
     /* Cleanup system part of the store */
-    r = ifapi_asprintf(&absolute_dir_path, "%s%s%s",  keystore->systemdir,
-                       IFAPI_FILE_DELIM, exp_dir_name? exp_dir_name : "");
+    r = ifapi_asprintf(&absolute_dir_path, "%s%s%s", keystore->systemdir,
+                       IFAPI_FILE_DELIM, exp_dir_name ? exp_dir_name : "");
     goto_if_error(r, "Out of memory.", cleanup);
 
     if (stat(absolute_dir_path, &fbuffer) == 0) {
@@ -972,7 +970,7 @@ ifapi_keystore_check_overwrite(
     }
     r = TSS2_RC_SUCCESS;
 
- cleanup:
+cleanup:
     SAFE_FREE(directory);
     SAFE_FREE(file);
     return r;
@@ -1036,7 +1034,7 @@ ifapi_keystore_check_writeable(
         }
     }
 
- cleanup:
+cleanup:
     SAFE_FREE(directory);
     SAFE_FREE(file);
     return r;
@@ -1047,7 +1045,7 @@ copy_uint8_ary(UINT8_ARY *dest, const UINT8_ARY * src) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     /* Check the parameters if they are valid */
-    if (src ==  NULL || dest == NULL) {
+    if (src == NULL || dest == NULL) {
         return TSS2_FAPI_RC_BAD_REFERENCE;
     }
 
@@ -1087,9 +1085,9 @@ ifapi_copy_ifapi_key(IFAPI_KEY * dest, const IFAPI_KEY * src) {
 
     r = copy_uint8_ary(&dest->private, &src->private);
     goto_if_error(r, "Could not copy private", error_cleanup);
-    r =copy_uint8_ary(&dest->serialization, &src->serialization);
+    r = copy_uint8_ary(&dest->serialization, &src->serialization);
     goto_if_error(r, "Could not copy serialization", error_cleanup);
-    r =copy_uint8_ary(&dest->appData, &src->appData);
+    r = copy_uint8_ary(&dest->appData, &src->appData);
     goto_if_error(r, "Could not copy appData", error_cleanup);
 
     strdup_check(dest->policyInstance, src->policyInstance, r, error_cleanup);
@@ -1153,7 +1151,7 @@ void ifapi_cleanup_ifapi_nv(IFAPI_NV * nv) {
 }
 
 void ifapi_cleanup_ifapi_duplicate(IFAPI_DUPLICATE * duplicate) {
-    if(duplicate != NULL) {
+    if (duplicate != NULL) {
         SAFE_FREE(duplicate->certificate);
     }
 }
@@ -1209,7 +1207,7 @@ error_cleanup:
  */
     void
 ifapi_cleanup_ifapi_object(
-        IFAPI_OBJECT *object)
+    IFAPI_OBJECT * object)
 {
     if (object != NULL) {
         if (object->objectType != IFAPI_OBJ_NONE) {

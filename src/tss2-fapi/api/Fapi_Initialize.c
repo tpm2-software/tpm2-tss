@@ -196,7 +196,7 @@ Fapi_Initialize_Finish(
     statecase((*context)->state, INITIALIZE_INIT_TCTI);
         if (strcasecmp((*context)->config.tcti, "none") == 0) {
             /* FAPI will be used in none TPM mode */
-            (*context)->esys =  NULL;
+            (*context)->esys = NULL;
             (*context)->state = INITIALIZE_READ_PROFILE_INIT;
             return TSS2_FAPI_RC_TRY_AGAIN;
         }

@@ -29,7 +29,7 @@
 /** Context to hold temporary values for ifapi_crypto */
 typedef struct _IFAPI_CRYPTO_CONTEXT {
     /** The hash engine's context */
-    EVP_MD_CTX  *osslContext;
+    EVP_MD_CTX *osslContext;
     /** The currently used hash algorithm */
     const EVP_MD *osslHashAlgorithm;
     /** The size of the hash's digest */
@@ -575,7 +575,7 @@ ifapi_pub_pem_key_from_tpm(
     } else if (tpmPublicKey->publicArea.type == TPM2_ALG_ECC)
         r = ossl_ecc_pub_from_tpm(tpmPublicKey, evpPublicKey);
     else {
-        goto_error(r,TSS2_FAPI_RC_BAD_VALUE, "Invalid alg id.", cleanup);
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid alg id.", cleanup);
     }
     goto_if_error(r, "Get ossl public key.", cleanup);
 
@@ -808,7 +808,7 @@ rsa_verify_signature(
             goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
                        "Verify set signature md.", cleanup);
         }
-        if (1 !=  EVP_PKEY_verify(ctx, signature, signatureSize, digest, digestSize)) {
+        if (1 != EVP_PKEY_verify(ctx, signature, signatureSize, digest, digestSize)) {
             /* padding scheme was not appropriate, next should be tried */
             EVP_PKEY_CTX_free(ctx);
         } else {
@@ -1253,7 +1253,7 @@ ifapi_verify_signature_quote(
                    "EVP_DigestSignFinal", error_cleanup);
     }
 
- error_cleanup:
+error_cleanup:
     if (mdctx != NULL) {
         EVP_MD_CTX_destroy(mdctx);
     }
@@ -1540,7 +1540,7 @@ ifapi_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context,
 
     LOGBLOB_DEBUG(digest, mycontext->hashSize, "finish hash");
 
-    if(digestSize != NULL) {
+    if (digestSize != NULL) {
         *digestSize = mycontext->hashSize;
     }
 
@@ -1616,7 +1616,7 @@ get_crl_from_cert(X509 *cert, X509_CRL **crl)
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Can't convert crl.", cleanup);
     }
 
- cleanup:
+cleanup:
     SAFE_FREE(crl_buffer);
     CRL_DIST_POINTS_free(dist_points);
     SAFE_FREE(url);
@@ -1671,7 +1671,7 @@ ifapi_cert_to_pem(
     }
     /* Determine the size of the data written */
     pemCertSize = BIO_get_mem_data(bio, pemCert);
-    *pemCert = malloc(pemCertSize+1);
+    *pemCert = malloc(pemCertSize + 1);
     goto_if_null(pemCert, "Out of memory.", TSS2_FAPI_RC_MEMORY, cleanup);
 
     /* Get the byte buffer written to the BIO object */
@@ -1809,7 +1809,7 @@ ifapi_get_public_from_pem_cert(const char* pem_cert, TPM2B_PUBLIC *tpm_public)
     } else {
         goto_error(r, TSS2_FAPI_RC_NOT_IMPLEMENTED, "Wrong key_type", cleanup);
     }
- cleanup:
+cleanup:
     OSSL_FREE(cert, X509);
     OSSL_FREE(public_key, EVP_PKEY);
     return r;
@@ -1996,7 +1996,7 @@ ifapi_verify_ek_cert(
                    "Failed to verify EK certificate", cleanup);
     }
 
- cleanup:
+cleanup:
     if (ctx) {
         X509_STORE_CTX_cleanup(ctx);
         X509_STORE_CTX_free(ctx);

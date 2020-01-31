@@ -270,7 +270,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             r = ifapi_init_primary_async(context, TSS2_SRK);
             goto_if_error(r, "Initialize primary", error_cleanup);
 
-            context->state =  PROVISION_AUTH_SRK_NO_AUTH_SENT;
+            context->state = PROVISION_AUTH_SRK_NO_AUTH_SENT;
             fallthrough;
 
         statecase(context->state, PROVISION_AUTH_SRK_AUTH_SENT);

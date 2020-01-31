@@ -266,7 +266,7 @@ Fapi_Encrypt_Finish(
             if (encKeyObject->misc.key.public.publicArea.type == TPM2_ALG_RSA) {
                 TPM2B_DATA null_data = { .size = 0, .buffer = {} };
                 TPM2B_PUBLIC_KEY_RSA *rsa_message = (TPM2B_PUBLIC_KEY_RSA *)&context->aux_data;
-                rsa_message->size =  context->cmd.Data_EncryptDecrypt.in_dataSize;
+                rsa_message->size = context->cmd.Data_EncryptDecrypt.in_dataSize;
                 size_t key_size =
                     encKeyObject->misc.key.public.publicArea.parameters.rsaDetail.keyBits / 8;
                 if (rsa_message->size <= key_size) {

@@ -200,7 +200,7 @@ Fapi_NvSetBits_Finish(
     /* Helpful alias pointers */
     IFAPI_NV_Cmds * command = &context->nv_cmd;
     IFAPI_OBJECT *object = &command->nv_object;
-    ESYS_TR nvIndex =  command->esys_handle;
+    ESYS_TR nvIndex = command->esys_handle;
     IFAPI_OBJECT *authObject = &command->auth_object;
 
     switch (context->state) {

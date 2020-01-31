@@ -52,8 +52,8 @@ policy_rel_path_to_abs_path(
  */
 TSS2_RC
 ifapi_policy_delete(
-     IFAPI_POLICY_STORE *pstore,
-     char *path)
+    IFAPI_POLICY_STORE * pstore,
+    char *path)
 {
     TSS2_RC r;
     char *abs_path = NULL;
@@ -71,9 +71,9 @@ ifapi_policy_delete(
         LOG_WARNING("File: %s can't be deleted.", abs_path);
     }
 
- cleanup:
-     SAFE_FREE(abs_path);
-     return r;
+cleanup:
+    SAFE_FREE(abs_path);
+    return r;
 }
 
 /** Store policy store parameters in the policy store context.
@@ -109,7 +109,7 @@ ifapi_policy_store_initialize(
     SAFE_FREE(policy_dir);
     return TSS2_RC_SUCCESS;
 
- error:
+error:
     SAFE_FREE(policy_dir);
     return r;
 }
@@ -148,9 +148,9 @@ ifapi_policy_store_load_async(
     /* Prepare read operation */
     r = ifapi_io_read_async(io, abs_path);
 
- cleanup:
-     SAFE_FREE(abs_path);
-     return r;
+cleanup:
+    SAFE_FREE(abs_path);
+    return r;
 }
 
 /** Finish loading FAPI policy from policy store.
@@ -173,7 +173,7 @@ ifapi_policy_store_load_finish(
 {
     TSS2_RC r;
     json_object *jso = NULL;
-    uint8_t  *buffer = NULL;
+    uint8_t *buffer = NULL;
     /* ptore parameter is used to be prepared if transmission of state information
        between async and finish will be necessary in future extensions. */
     (void)pstore;
@@ -244,7 +244,7 @@ ifapi_policy_store_store_async(
     free(jso_string);
     goto_if_error(r, "write_async failed", cleanup);
 
- cleanup:
+cleanup:
     if (jso)
         json_object_put(jso);
     SAFE_FREE(abs_path);

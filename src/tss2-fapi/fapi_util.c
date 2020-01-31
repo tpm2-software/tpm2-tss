@@ -169,7 +169,7 @@ ifapi_set_auth(
 {
     TSS2_RC r;
     char *auth = NULL;
-    TPM2B_AUTH authValue = { .size = 0, .buffer = {0} };
+    TPM2B_AUTH authValue = {.size = 0,.buffer = {0} };
     char *obj_description;
 
     obj_description = get_description(auth_object);
@@ -194,7 +194,7 @@ ifapi_set_auth(
         return TSS2_RC_SUCCESS;
     }
     SAFE_FREE(auth);
-    return  TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN;
+    return TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN;
 }
 
 /** Preparation for getting a free handle after a start handle number.
@@ -419,8 +419,8 @@ ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
 
     /* Retry with authorization callback after trial with null auth */
     if ((((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH))
-            && (context->state ==  PROVISION_AUTH_EK_NO_AUTH_SENT ||
-                context->state ==  PROVISION_AUTH_SRK_NO_AUTH_SENT)) {
+            && (context->state == PROVISION_AUTH_EK_NO_AUTH_SENT ||
+                context->state == PROVISION_AUTH_SRK_NO_AUTH_SENT)) {
         r = ifapi_set_auth(context, hierarchy, "CreatePrimary");
         goto_if_error_reset_state(r, "CreatePrimary", error_cleanup);
 
@@ -546,7 +546,7 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
     TPM2B_CREATION_DATA *creationData = NULL;
     TPM2B_DIGEST *creationHash = NULL;
     TPMT_TK_CREATION *creationTicket = NULL;
-    IFAPI_OBJECT *pkey_object =  &context->createPrimary.pkey_object;
+    IFAPI_OBJECT *pkey_object = &context->createPrimary.pkey_object;
     IFAPI_KEY *pkey = &context->createPrimary.pkey_object.misc.key;
     ESYS_TR auth_session;
 
@@ -575,7 +575,7 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
             *handle = pkey_object->handle;
             break;
         } else {
-             if (pkey->creationTicket.hierarchy == TPM2_RH_EK) {
+            if (pkey->creationTicket.hierarchy == TPM2_RH_EK) {
                 context->ek_persistent = false;
             } else {
                 context->srk_persistent = false;
@@ -652,7 +652,7 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
     SAFE_FREE(creationHash);
     SAFE_FREE(creationTicket);
     ifapi_cleanup_ifapi_object(&context->createPrimary.hierarchy);
-    return  TSS2_RC_SUCCESS;
+    return TSS2_RC_SUCCESS;
 
 error_cleanup:
     SAFE_FREE(outPublic);
@@ -1103,7 +1103,7 @@ full_path_to_fapi_path(IFAPI_KEYSTORE *keystore, char *path)
 
     /* Check key store part of the path */
     if (strncmp(&path[0], keystore->userdir, keystore_length) == 0) {
-        start_pos =  strlen(keystore->userdir);
+        start_pos = strlen(keystore->userdir);
     } else {
         keystore_length = strlen(keystore->systemdir);
         if (strncmp(&path[0], keystore->systemdir, keystore_length) == 0)
@@ -1121,7 +1121,7 @@ full_path_to_fapi_path(IFAPI_KEYSTORE *keystore, char *path)
     /* Special handling for // */
     while (ip < lp) {
         if (strncmp(&path[ip], "//", 2) == 0) {
-            memmove(&path[ip], &path[ip+1], lp-ip);
+            memmove(&path[ip], &path[ip + 1], lp - ip);
             lp -= 1;
         } else {
             ip += 1;
@@ -1265,7 +1265,7 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
 {
     TSS2_RC r;
     NODE_STR_T *path_list = context->loadKey.path_list;
-    size_t *position =  &context->loadKey.position;
+    size_t *position = &context->loadKey.position;
     IFAPI_OBJECT *key_object = NULL;
     IFAPI_KEY *key = NULL;
     ESYS_TR auth_session;
@@ -1379,7 +1379,7 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
         FAPI_SYNC(r, "Authorize key.", error_cleanup);
 
         /* Store parent handle in context for usage in ChangeAuth if not persistent */
-        context->loadKey.parent_handle =  context->loadKey.handle;
+        context->loadKey.parent_handle = context->loadKey.handle;
         if (context->loadKey.auth_object.misc.key.persistent_handle)
             context->loadKey.parent_handle_persistent = true;
         else
@@ -1414,7 +1414,7 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
         r = ifapi_copy_ifapi_key_object(&context->loadKey.auth_object,
                 context->loadKey.key_list->object);
         goto_if_error(r, "Could not copy loaded key", error_cleanup);
-        context->loadKey.auth_object.handle =  context->loadKey.handle;
+        context->loadKey.auth_object.handle = context->loadKey.handle;
         IFAPI_OBJECT *top_obj = context->loadKey.key_list->object;
         ifapi_cleanup_ifapi_object(top_obj);
         SAFE_FREE(context->loadKey.key_list->object);
@@ -1545,7 +1545,7 @@ ifapi_authorize_object(FAPI_CONTEXT *context, IFAPI_OBJECT *object, ESYS_TR *ses
             return_if_error(r, "Prepare policy execution.");
 
             /* Next state will switch from prev context to next context. */
-            context->policy.util_current_policy =  context->policy.util_current_policy->prev;
+            context->policy.util_current_policy = context->policy.util_current_policy->prev;
             object->authorization_state = AUTH_EXEC_POLICY;
             fallthrough;
 
@@ -1577,7 +1577,7 @@ ifapi_authorize_object(FAPI_CONTEXT *context, IFAPI_OBJECT *object, ESYS_TR *ses
     object->authorization_state = AUTH_INIT;
     return TSS2_RC_SUCCESS;
 
- error:
+error:
     /* No policy call was executed session can be flushed */
     Esys_FlushContext(context->esys, *session);
     return r;
@@ -1628,8 +1628,8 @@ ifapi_nv_write(
     ESYS_TR auth_index;
     size_t data_idx = context->nv_cmd.data_idx;
     UINT16 bytesRequested = context->nv_cmd.bytesRequested;
-    ESYS_TR  offset =  context->nv_cmd.offset;
-    ESYS_TR nv_index =  context->nv_cmd.esys_handle;
+    ESYS_TR  offset = context->nv_cmd.offset;
+    ESYS_TR nv_index = context->nv_cmd.esys_handle;
     IFAPI_OBJECT *object = &context->nv_cmd.nv_object;
     IFAPI_OBJECT *auth_object = &context->nv_cmd.auth_object;
     TPM2B_MAX_NV_BUFFER *aux_data = (TPM2B_MAX_NV_BUFFER *)&context->aux_data;
@@ -1730,7 +1730,7 @@ ifapi_nv_write(
         if (!(object->misc.nv.public.nvPublic.attributes & TPMA_NV_NO_DA))
             context->nv_cmd.nv_write_state = NV2_WRITE_AUTH_SENT;
         else
-            context->nv_cmd.nv_write_state =  NV2_WRITE_NULL_AUTH_SENT;
+            context->nv_cmd.nv_write_state = NV2_WRITE_NULL_AUTH_SENT;
 
         context->nv_cmd.bytesRequested = aux_data->size;
 
@@ -1743,7 +1743,7 @@ ifapi_nv_write(
         return_try_again(r);
 
         if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH) {
-            if (context->nv_cmd.nv_write_state ==  NV2_WRITE_NULL_AUTH_SENT) {
+            if (context->nv_cmd.nv_write_state == NV2_WRITE_NULL_AUTH_SENT) {
                 IFAPI_OBJECT *auth_object = &context->nv_cmd.auth_object;
                 r = ifapi_set_auth(context, auth_object, "NV Write");
                 goto_if_error_reset_state(r, " Fapi_NvWrite_Finish", error_cleanup);
@@ -1790,7 +1790,7 @@ ifapi_nv_write(
             goto_if_error_reset_state(r, "FAPI NV_Write", error_cleanup);
 
             context->nv_cmd.bytesRequested = aux_data->size;
-            //context->state =  NV_READ_AUTH_SENT;
+            //context->state = NV_READ_AUTH_SENT;
             return TSS2_FAPI_RC_TRY_AGAIN;
 
         }
@@ -1871,7 +1871,7 @@ ifapi_nv_read(
     TPM2B_MAX_NV_BUFFER *aux_data;
     UINT16 bytesRequested = context->nv_cmd.bytesRequested;
     size_t numBytes = context->nv_cmd.numBytes;
-    ESYS_TR nv_index =  context->nv_cmd.esys_handle;
+    ESYS_TR nv_index = context->nv_cmd.esys_handle;
     size_t data_idx = context->nv_cmd.data_idx;
     UINT16 offset = context->nv_cmd.offset;
     IFAPI_OBJECT *auth_object = &context->nv_cmd.auth_object;
@@ -1954,7 +1954,7 @@ ifapi_nv_read(
             context->nv_cmd.bytesRequested = aux_size;
             context->nv_cmd.data_idx = data_idx;
             context->nv_cmd.numBytes = numBytes;
-            context->nv_cmd.nv_read_state =  NV_READ_AUTH_SENT;
+            context->nv_cmd.nv_read_state = NV_READ_AUTH_SENT;
             return TSS2_FAPI_RC_TRY_AGAIN;
         } else {
             *size = data_idx;
@@ -2843,11 +2843,11 @@ ifapi_get_sig_scheme(
             context->Key_Sign.scheme.scheme = TPM2_ALG_RSAPSS;
             context->Key_Sign.scheme.details.rsapss.hashAlg = hash_alg;
         }
-        *sig_scheme =  context->Key_Sign.scheme;
+        *sig_scheme = context->Key_Sign.scheme;
         return TSS2_RC_SUCCESS;
     } else {
         /* Use scheme defined for object */
-        *sig_scheme =  object->misc.key.signing_scheme;
+        *sig_scheme = object->misc.key.signing_scheme;
         /* Get hash algorithm from digest size */
         r = ifapi_get_hash_alg_for_size(digest->size, &hash_alg);
         return_if_error2(r, "Invalid digest size.");
@@ -2886,7 +2886,7 @@ ifapi_change_auth_hierarchy(
 
     switch (context->hierarchy_state) {
     statecase(context->hierarchy_state, HIERARCHY_CHANGE_AUTH_INIT);
-        if (newAuthValue->size>0)
+        if (newAuthValue->size > 0)
             hierarchy_object->misc.hierarchy.with_auth = TPM2_YES;
         else
             hierarchy_object->misc.hierarchy.with_auth = TPM2_NO;
@@ -3301,7 +3301,7 @@ ifapi_capability_get(FAPI_CONTEXT *context, TPM2_CAP capability,
         return TSS2_RC_SUCCESS;
     }
 
- error_cleanup:
+error_cleanup:
     context->state = _FAPI_STATE_INIT;
     SAFE_FREE(context->cmd.GetInfo.capability_data);
     SAFE_FREE(context->cmd.GetInfo.fetched_data);
@@ -3400,9 +3400,7 @@ ifapi_get_certificates(
         /* Read public to get size of certificate */
         r = Esys_NV_ReadPublic_Async(context->esys,
                                      context->cmd.Provision.esys_nv_cert_handle,
-                                     ESYS_TR_NONE,
-                                     ESYS_TR_NONE,
-                                     ESYS_TR_NONE);
+                                     ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
         goto_if_error_reset_state(r, "Esys_NV_ReadPublic_Async", error);
         fallthrough;
 
@@ -3453,7 +3451,7 @@ ifapi_get_certificates(
     statecasedefault(context->get_cert_state);
     }
 
- error:
+error:
     ifapi_free_object_list(*cert_list);
     return r;
 }

@@ -129,7 +129,7 @@ loop:
         return TSS2_RC_SUCCESS;
     }
 
-    switch(eventlog->state) {
+    switch (eventlog->state) {
     statecase(eventlog->state, IFAPI_EVENTLOG_STATE_INIT)
         /* Construct the filename for the eventlog file */
         r = ifapi_asprintf(&event_log_file, "%s/%s%i",
@@ -265,7 +265,7 @@ ifapi_eventlog_append_finish(
     const char *logstr2 = NULL;
     json_object *log, *event = NULL;
 
-    switch(eventlog->state) {
+    switch (eventlog->state) {
     statecase(eventlog->state, IFAPI_EVENTLOG_STATE_READING)
         /* Finish the reading of the eventlog file and return it directly to the output parameter */
         r = ifapi_io_read_finish(io, (uint8_t **)&logstr, NULL);
@@ -336,8 +336,7 @@ void ifapi_cleanup_event(IFAPI_EVENT * event) {
     if (event != NULL) {
         if (event->type == IFAPI_IMA_EVENT_TAG) {
             SAFE_FREE(event->sub_event.ima_event.eventName);
-        }
-        else if (event->type == IFAPI_TSS_EVENT_TAG) {
+        } else if (event->type == IFAPI_TSS_EVENT_TAG) {
             SAFE_FREE(event->sub_event.tss_event.event);
         }
     }

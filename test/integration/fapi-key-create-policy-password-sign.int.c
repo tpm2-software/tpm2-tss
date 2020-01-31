@@ -132,7 +132,7 @@ test_fapi_key_create(FAPI_CONTEXT *context)
 
     return EXIT_SUCCESS;
 
- error:
+error:
     return EXIT_FAILURE;
 }
 

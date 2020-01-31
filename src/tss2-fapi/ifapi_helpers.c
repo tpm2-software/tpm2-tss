@@ -162,13 +162,13 @@ ifapi_set_nv_flags(const char *type, IFAPI_NV_TEMPLATE *template,
         if (strcasecmp(flag, "system") == 0) {
             template->system = TPM2_YES;
         } else if (strcasecmp(flag, "bitfield") == 0) {
-            attributes |=  TPM2_NT_BITS << TPMA_NV_TPM2_NT_SHIFT;
+            attributes |= TPM2_NT_BITS << TPMA_NV_TPM2_NT_SHIFT;
             type_count += 1;
         } else if (strcasecmp(flag, "counter") == 0) {
-            attributes |=  TPM2_NT_COUNTER << TPMA_NV_TPM2_NT_SHIFT;
+            attributes |= TPM2_NT_COUNTER << TPMA_NV_TPM2_NT_SHIFT;
             type_count += 1;
         } else if (strcasecmp(flag, "pcr") == 0) {
-            attributes |=  TPM2_NT_EXTEND << TPMA_NV_TPM2_NT_SHIFT;
+            attributes |= TPM2_NT_EXTEND << TPMA_NV_TPM2_NT_SHIFT;
             type_count += 1;
         } else if (strcasecmp(flag, "noda") == 0) {
             attributes |= TPMA_NV_NO_DA;
@@ -191,7 +191,7 @@ ifapi_set_nv_flags(const char *type, IFAPI_NV_TEMPLATE *template,
     }
     if (type_count == 0) {
         /* Normal NV space will be defined */
-        attributes |=  TPM2_NT_ORDINARY << TPMA_NV_TPM2_NT_SHIFT;
+        attributes |= TPM2_NT_ORDINARY << TPMA_NV_TPM2_NT_SHIFT;
         if (size == 0)
             size = 64;
     }
@@ -537,7 +537,7 @@ split_string(const char *string, char *delimiter)
         LOG_ERROR("%s", "Out of memory.");
         goto error_cleanup;
     }
-    char * stringdup_tokenized = strtok_r(stringdup, delimiter, &strtok_save);
+    char *stringdup_tokenized = strtok_r(stringdup, delimiter, &strtok_save);
     if (stringdup_tokenized != NULL) {
         substr = strdup(stringdup_tokenized);
     } else {
@@ -550,7 +550,7 @@ split_string(const char *string, char *delimiter)
     do {
         if (node == NULL) {
             node = malloc(sizeof(NODE_STR_T));
-            if(node == NULL) {
+            if (node == NULL) {
                 LOG_ERROR("%s", "Out of memory.");
                 goto error_cleanup;
             }
@@ -559,7 +559,7 @@ split_string(const char *string, char *delimiter)
             start_node = node;
         } else {
             node->next = malloc(sizeof(NODE_STR_T));
-            if(node->next == NULL) {
+            if (node->next == NULL) {
                 LOG_ERROR("%s", "Out of memory.");
                 goto error_cleanup;
             }
@@ -642,7 +642,6 @@ ifapi_free_node_list(NODE_OBJECT_T *node)
     }
 }
 
-
 /** Compute the number on nodes in a linked list.
  *
  * @param[in] node the first node of the linked list.
@@ -703,7 +702,7 @@ ifapi_path_string(char **dest, const char *supdir, NODE_STR_T *node, char *name)
     *dest = malloc(length);
     if (*dest == NULL) {
         LOG_ERROR("Out of memory");
-        return  TSS2_FAPI_RC_MEMORY;
+        return TSS2_FAPI_RC_MEMORY;
     }
     *dest[0] = '\0';
     if (supdir != NULL) {
@@ -746,7 +745,7 @@ ifapi_path_string_n(char **dest, const char *supdir, NODE_STR_T *node, char *nam
     size_t i;
     if (*dest == NULL) {
         LOG_ERROR("Out of memory");
-        return  TSS2_FAPI_RC_MEMORY;
+        return TSS2_FAPI_RC_MEMORY;
     }
     *dest[0] = '\0';
     if (supdir != NULL) {
@@ -938,7 +937,7 @@ create_dirs(const char *supdir, NODE_STR_T *dir_list, mode_t mode)
 {
     char *new_dir;
     for (size_t i = 1; i <= ifapi_path_length(dir_list); i++) {
-        TSS2_RC r =  ifapi_path_string_n(&new_dir, supdir, dir_list, NULL, i);
+        TSS2_RC r = ifapi_path_string_n(&new_dir, supdir, dir_list, NULL, i);
         return_if_error(r, "Create path string");
         LOG_TRACE("Check file: %s", new_dir);
         int rc = mkdir(new_dir, mode);
@@ -1017,7 +1016,7 @@ init_explicit_key_path(
     if (list_node == NULL) {
         LOG_ERROR("Invalid path");
         free_string_list(*list_node1);
-        return  TSS2_FAPI_RC_BAD_VALUE;
+        return TSS2_FAPI_RC_BAD_VALUE;
     }
 
     /* Processing of the profile. */
@@ -1031,7 +1030,7 @@ init_explicit_key_path(
     if (*result == NULL) {
         free_string_list(*list_node1);
         LOG_ERROR("Out of memory");
-        return  TSS2_FAPI_RC_MEMORY;
+        return TSS2_FAPI_RC_MEMORY;
     }
     if (list_node == NULL) {
         /* extend default hierarchy. */
@@ -1062,7 +1061,7 @@ init_explicit_key_path(
     /* Extend the current result. */
     if (!add_string_to_list(*result, hierarchy)) {
         LOG_ERROR("Out of memory");
-        r =  TSS2_FAPI_RC_MEMORY;
+        r = TSS2_FAPI_RC_MEMORY;
         goto error;
     }
     if (list_node == NULL) {
@@ -1190,7 +1189,7 @@ static void cleanup_policy_elements(TPML_POLICYELEMENTS *policy)
     size_t i, j;
     if (policy != NULL) {
         for (i = 0; i < policy->count; i++) {
-            if (policy->elements[i].type ==  POLICYOR) {
+            if (policy->elements[i].type == POLICYOR) {
                 /* Policy with sub policies */
                 TPML_POLICYBRANCHES *branches = policy->elements[i].element.PolicyOr.branches;
                 for (j = 0; j < branches->count; j++) {
@@ -1217,15 +1216,14 @@ static void cleanup_policy_elements(TPML_POLICYELEMENTS *policy)
 void ifapi_cleanup_policy_harness(TPMS_POLICY_HARNESS *harness)
 {
     if (harness) {
-       SAFE_FREE(harness->description);
-       if (harness->policyAuthorizations) {
-          for (size_t i = 0; i < harness->policyAuthorizations->count; i++) {
-              SAFE_FREE(harness->policyAuthorizations->
-                      authorizations[i].type);
-          }
-       }
-       SAFE_FREE(harness->policyAuthorizations);
-       cleanup_policy_elements(harness->policy);
+        SAFE_FREE(harness->description);
+        if (harness->policyAuthorizations) {
+            for (size_t i = 0; i < harness->policyAuthorizations->count; i++) {
+                SAFE_FREE(harness->policyAuthorizations->authorizations[i].type);
+            }
+        }
+        SAFE_FREE(harness->policyAuthorizations);
+        cleanup_policy_elements(harness->policy);
     }
 }
 
@@ -1249,7 +1247,7 @@ static TSS2_RC copy_policy_harness(TPMS_POLICY_HARNESS * dest,
 
     TSS2_RC r = TSS2_RC_SUCCESS;
     dest->description = NULL;
-    strdup_check(dest->description,src->description,r, error_cleanup);
+    strdup_check(dest->description, src->description, r, error_cleanup);
     dest->policy = copy_policy_elements(src->policy);
     goto_if_null2(dest->policy, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
             error_cleanup);
@@ -1322,12 +1320,14 @@ copy_policy_branches(const TPML_POLICYBRANCHES *from_branches)
         to_branches->authorizations[j].name = strdup(from_branches->authorizations[j].name);
         if (!to_branches->authorizations[j].name)
             goto error;
-        to_branches->authorizations[j].description = strdup(from_branches->authorizations[j].description);
+        to_branches->authorizations[j].description =
+            strdup(from_branches->authorizations[j].description);
         if (!to_branches->authorizations[j].description)
             goto error;
-        to_branches->authorizations[j].policy = copy_policy_elements(from_branches->authorizations[j].policy);
-        if (to_branches->authorizations[j].policy == NULL &&
-                from_branches->authorizations[j].policy != NULL) {
+        to_branches->authorizations[j].policy =
+            copy_policy_elements(from_branches->authorizations[j].policy);
+        if (to_branches->authorizations[j].policy == NULL
+            && from_branches->authorizations[j].policy != NULL) {
             LOG_ERROR("Out of memory.");
             goto error;
         }
@@ -1336,7 +1336,7 @@ copy_policy_branches(const TPML_POLICYBRANCHES *from_branches)
     }
     return to_branches;
 
- error:
+error:
     for (j = 0; j < to_branches->count; j++) {
         SAFE_FREE(to_branches->authorizations[j].name);
         SAFE_FREE(to_branches->authorizations[j].description);
@@ -1376,17 +1376,17 @@ copy_policy_element(const TPMT_POLICYELEMENT *from_policy, TPMT_POLICYELEMENT *t
         break;
     case POLICYAUTHORIZE:
         strdup_check(to_policy->element.PolicyAuthorize.keyPath,
-                from_policy->element.PolicyAuthorize.keyPath, r, error);
+                     from_policy->element.PolicyAuthorize.keyPath, r, error);
         strdup_check(to_policy->element.PolicyAuthorize.keyPEM,
-                from_policy->element.PolicyAuthorize.keyPEM, r, error);
+                     from_policy->element.PolicyAuthorize.keyPEM, r, error);
         if (from_policy->element.PolicyAuthorize.policy_list) {
             to_policy->element.PolicyAuthorize.policy_list =
                 malloc(sizeof(POLICY_OBJECT));
             goto_if_null2(to_policy->element.PolicyAuthorize.policy_list,
-                    "Out of memory", r, TSS2_FAPI_RC_MEMORY, error);
+                          "Out of memory", r, TSS2_FAPI_RC_MEMORY, error);
             to_policy->element.PolicyAuthorize.policy_list->next = NULL;
             r = copy_policy_object(to_policy->element.PolicyAuthorize.policy_list,
-                    from_policy->element.PolicyAuthorize.policy_list);
+                                   from_policy->element.PolicyAuthorize.policy_list);
             goto_if_error(r, "Could not copy policy list", error);
 
         }
@@ -1394,10 +1394,9 @@ copy_policy_element(const TPMT_POLICYELEMENT *from_policy, TPMT_POLICYELEMENT *t
             to_policy->element.PolicyAuthorize.authorization =
                 malloc(sizeof(TPMS_POLICYAUTHORIZATION));
             goto_if_null(to_policy->element.PolicyAuthorize.authorization,
-                    "Out of memory", r, error);
-            r = copy_policyauthorization(
-                    to_policy->element.PolicyAuthorize.authorization,
-                    from_policy->element.PolicyAuthorize.authorization);
+                         "Out of memory", r, error);
+            r = copy_policyauthorization(to_policy->element.PolicyAuthorize.authorization,
+                                         from_policy->element.PolicyAuthorize.authorization);
             goto_if_error(r, "Could not copy policy authorization", error);
         }
         break;
@@ -1445,12 +1444,12 @@ copy_policy_element(const TPMT_POLICYELEMENT *from_policy, TPMT_POLICYELEMENT *t
         to_policy->element.PolicyOr.branches =
             copy_policy_branches(from_policy->element.PolicyOr.branches);
         goto_if_null2(to_policy->element.PolicyOr.branches, "Out of memory",
-                r, TSS2_FAPI_RC_MEMORY, error);
+                      r, TSS2_FAPI_RC_MEMORY, error);
         break;
     }
     return TSS2_RC_SUCCESS;
 
- error:
+error:
     return r;
 }
 
@@ -1468,15 +1467,15 @@ copy_policy_elements(const TPML_POLICYELEMENTS *from_policy)
                        from_policy->count * sizeof(TPMT_POLICYELEMENT));
     to_policy->count = from_policy->count;
     for (i = 0; i < from_policy->count; i++) {
-        if (from_policy->elements[i].type ==  POLICYOR) {
+        if (from_policy->elements[i].type == POLICYOR) {
             to_policy->elements[i].type = POLICYOR;
             /* Policy with sub policies */
             TPML_POLICYBRANCHES *branches = from_policy->elements[i].element.PolicyOr.branches;
             to_policy->elements[i].element.PolicyOr.branches = copy_policy_branches(branches);
-            if(to_policy->elements[i].element.PolicyOr.branches == NULL) {
-                    LOG_ERROR("Out of memory");
-                    SAFE_FREE(to_policy);
-                    return NULL;
+            if (to_policy->elements[i].element.PolicyOr.branches == NULL) {
+                LOG_ERROR("Out of memory");
+                SAFE_FREE(to_policy);
+                return NULL;
             }
         } else {
             r = copy_policy_element(&from_policy->elements[i], &to_policy->elements[i]);
@@ -1577,7 +1576,7 @@ ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name)
 /** Compute the name from the public data of a NV index.
  *
  * The name of a NV index is computed as follows:
- *   name =  nameAlg||Hash(nameAlg,marshal(publicArea))
+ *   name = nameAlg||Hash(nameAlg,marshal(publicArea))
  * @param[in] publicInfo The public information of the NV index.
  * @param[out] name The computed name.
  * @retval TSS2_RC_SUCCESS on success.
@@ -1756,7 +1755,7 @@ ifapi_tpm_to_fapi_signature(
                    *signatureSize);
         }
     } else if (sig_key_object->misc.key.public.publicArea.type == TPM2_ALG_ECC &&
-            sig_scheme->scheme == TPM2_ALG_ECDSA) {
+               sig_scheme->scheme == TPM2_ALG_ECDSA) {
         /* For ECC signatures the TPM signaute has to be converted to DER. */
         r = ifapi_tpm_ecc_sig_to_der(tpm_signature,
                                      signature, signatureSize);
@@ -2046,7 +2045,7 @@ ifapi_calculate_pcr_digest(
                 pcrs[n_pcrs].bank = pcr_selection->pcrSelections[i].hash;
                 pcrs[n_pcrs].value.size = hash_size;
                 memset(&pcrs[n_pcrs].value.buffer[0], 0, hash_size);
-                n_pcrs +=1;
+                n_pcrs += 1;
             }
         }
     }
@@ -2088,7 +2087,7 @@ ifapi_calculate_pcr_digest(
                    error_cleanup);
     }
 
- error_cleanup:
+error_cleanup:
     if (cryptoContext)
         ifapi_crypto_hash_abort(&cryptoContext);
     ifapi_cleanup_event(&event);
@@ -2379,20 +2378,20 @@ struct CurlBufferStruct {
 static size_t
 write_curl_buffer_cb(void *contents, size_t size, size_t nmemb, void *userp)
 {
-  size_t realsize = size * nmemb;
-  struct CurlBufferStruct *curl_buf = (struct CurlBufferStruct *)userp;
+    size_t realsize = size * nmemb;
+    struct CurlBufferStruct *curl_buf = (struct CurlBufferStruct *)userp;
 
-  unsigned char *tmp_ptr = realloc(curl_buf->buffer, curl_buf->size + realsize + 1);
-  if(tmp_ptr == NULL) {
-      LOG_ERROR("Can't allocate memory in CURL callback.");
-    return 0;
-  }
-  curl_buf->buffer = tmp_ptr;
-  memcpy(&(curl_buf->buffer[curl_buf->size]), contents, realsize);
-  curl_buf->size += realsize;
-  curl_buf->buffer[curl_buf->size] = 0;
+    unsigned char *tmp_ptr = realloc(curl_buf->buffer, curl_buf->size + realsize + 1);
+    if (tmp_ptr == NULL) {
+        LOG_ERROR("Can't allocate memory in CURL callback.");
+        return 0;
+    }
+    curl_buf->buffer = tmp_ptr;
+    memcpy(&(curl_buf->buffer[curl_buf->size]), contents, realsize);
+    curl_buf->size += realsize;
+    curl_buf->buffer[curl_buf->size] = 0;
 
-  return realsize;
+    return realsize;
 }
 
 /** Get byte buffer from file system or web  via curl.
@@ -2462,13 +2461,13 @@ ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer, size_t *buff
     *buffer_size = curl_buffer.size;
     if (curl_handle)
         curl_easy_cleanup(curl_handle);
-     curl_global_cleanup();
-     return r;
+    curl_global_cleanup();
+    return r;
 
- cleanup:
-     if (curl_handle)
+cleanup:
+    if (curl_handle)
         curl_easy_cleanup(curl_handle);
-     curl_global_cleanup();
-     free(curl_buffer.buffer);
-     return r;
+    curl_global_cleanup();
+    free(curl_buffer.buffer);
+    return r;
 }

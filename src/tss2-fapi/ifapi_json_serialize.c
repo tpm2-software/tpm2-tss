@@ -537,7 +537,6 @@ ifapi_json_IFAPI_CAP_INFO_serialize(const IFAPI_CAP_INFO *in, json_object **jso)
     return TSS2_RC_SUCCESS;
 }
 
-
 /** Serialize value of type IFAPI_INFO to json.
  *
  * @param[in] in value to be serialized.

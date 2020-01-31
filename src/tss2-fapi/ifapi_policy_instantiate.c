@@ -35,7 +35,7 @@ get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_
     size_t i, j;
 
     for (i = 0; i < policy->count; i++) {
-        if (policy->elements[i].type ==  POLICYOR) {
+        if (policy->elements[i].type == POLICYOR) {
             /* Policy with sub policies */
             TPML_POLICYBRANCHES *branches = policy->elements[i].element.PolicyOr.branches;
             for (j = 0; j < branches->count; j++) {
@@ -50,7 +50,7 @@ get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_
     }
     return r;
 
- error_cleanup:
+error_cleanup:
     ifapi_free_node_list(*policy_element_list);
     return r;
 }
@@ -97,7 +97,7 @@ set_pem_key_param(
     TSS2_RC r;
     TPM2B_PUBLIC public;
 
-    if (!keyPEM ||  strlen(keyPEM) == 0) {
+    if (!keyPEM || strlen(keyPEM) == 0) {
         /* No PEM key used. Parameters are already set in policy. */
         return TSS2_RC_SUCCESS;
     }
@@ -119,7 +119,6 @@ set_pem_key_param(
 
     return TSS2_RC_SUCCESS;
 }
-
 
 #define CHECK_TEMPLATE_PATH(path, template) \
      if (!path) { \
@@ -179,7 +178,6 @@ ifapi_policyeval_instantiate_finish(
             return_if_error(r, "read_finish failed");
             /* Clear keypath, only public data will be needed */
             SAFE_FREE(pol_element->element.PolicySigned.keyPath);
-
 
             break;
 
@@ -259,7 +257,7 @@ ifapi_policyeval_instantiate_finish(
 
         case POLICYDUPLICATIONSELECT:
             if (pol_element->element.PolicyDuplicationSelect.newParentPublic.publicArea.type) {
-                 /* public data is already set in policy. Path will not be needed. */
+                /* public data is already set in policy. Path will not be needed. */
                 SAFE_FREE(pol_element->element.PolicyDuplicationSelect.newParentPath);
                 break;
             }
@@ -295,8 +293,8 @@ ifapi_policyeval_instantiate_finish(
                                 "PolicyAuthorizeNv");
             /* Object name will be added to policy. */
             r = context->callbacks.cbnvpublic(pol_element->element.PolicyAuthorizeNv.nvPath,
-                                               &pol_element->element.PolicyAuthorizeNv.nvPublic,
-                                               context->callbacks.cbnvpublic_userdata);
+                                              &pol_element->element.PolicyAuthorizeNv.nvPublic,
+                                              context->callbacks.cbnvpublic_userdata);
             return_try_again(r);
             return_if_error(r, "read_finish failed");
             /* Clear NV path, only public data will be needed */
@@ -317,10 +315,10 @@ ifapi_policyeval_instantiate_finish(
             if (pol_element->element.PolicyAuthorize.keyPEM &&
                 strlen(pol_element->element.PolicyAuthorize.keyPEM) > 0) {
                 /* Determine name and public info for PEM key. */
-                r =  set_pem_key_param(pol_element->element.PolicyAuthorize.keyPEM,
-                                       &pol_element->element.PolicyAuthorize.keyPublic,
-                                       &pol_element->element.PolicyAuthorize.keyName,
-                                       pol_element->element.PolicyAuthorize.keyPEMhashAlg);
+                r = set_pem_key_param(pol_element->element.PolicyAuthorize.keyPEM,
+                                      &pol_element->element.PolicyAuthorize.keyPublic,
+                                      &pol_element->element.PolicyAuthorize.keyName,
+                                      pol_element->element.PolicyAuthorize.keyPEMhashAlg);
                 return_if_error(r, "Set parameter of pem key.");
 
                 pol_element->element.PolicyAuthorize.keyPEM = NULL;

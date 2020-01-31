@@ -947,17 +947,17 @@ ifapi_json_TPMA_CC_serialize(const TPMA_CC in, json_object **jso)
 
         json_object_object_add(*jso, tab[i].name, jso_bit);
     }
-    jso_bit_idx =  json_object_new_int64((TPMA_CC_COMMANDINDEX_MASK & input) >> 0);
+    jso_bit_idx = json_object_new_int64((TPMA_CC_COMMANDINDEX_MASK & input) >> 0);
     return_if_null(jso_bit_idx, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     json_object_object_add(*jso, "commandIndex", jso_bit_idx);
 
-    jso_bit_idx =  json_object_new_int64((TPMA_CC_CHANDLES_MASK & input) >> 25);
+    jso_bit_idx = json_object_new_int64((TPMA_CC_CHANDLES_MASK & input) >> 25);
     return_if_null(jso_bit_idx, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     json_object_object_add(*jso, "cHandles", jso_bit_idx);
 
-    jso_bit_idx =  json_object_new_int64((TPMA_CC_RES_MASK & input) >> 30);
+    jso_bit_idx = json_object_new_int64((TPMA_CC_RES_MASK & input) >> 30);
     return_if_null(jso_bit_idx, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     json_object_object_add(*jso, "Res", jso_bit_idx);
@@ -1372,7 +1372,7 @@ ifapi_json_TPMT_TK_CREATION_serialize(const TPMT_TK_CREATION *in, json_object **
         *jso = json_object_new_object ();
     if (in != NULL && in->tag != TPM2_ST_CREATION) {
         LOG_ERROR("BAD VALUE %"PRIuPTR" != %"PRIuPTR,(size_t)in->tag,(size_t)TPM2_ST_CREATION);
-        return  TSS2_FAPI_RC_BAD_VALUE;
+        return TSS2_FAPI_RC_BAD_VALUE;
     }
     jso2 = NULL;
     r = ifapi_json_TPM2_ST_serialize(in->tag, &jso2);
