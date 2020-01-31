@@ -185,9 +185,9 @@ tcti_device_receive (
      */
     if (timeout != TSS2_TCTI_TIMEOUT_BLOCK) {
         LOG_WARNING ("The underlying IPC mechanism does not support "
-                     "asynchronous I/O. The 'timeout' parameter must be "
+                     "asynchronous I/O. The 'timeout' parameter is set to "
                      "TSS2_TCTI_TIMEOUT_BLOCK");
-        return TSS2_TCTI_RC_BAD_VALUE;
+        timeout = TSS2_TCTI_TIMEOUT_BLOCK;
     }
 #endif
     if (response_buffer == NULL) {
