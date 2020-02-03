@@ -84,6 +84,9 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     char *policy_file_cphash = TOP_SOURCEDIR "/test/data/fapi/policy/pol_cphash.json";
     char *policy_name_authorize = "/policy/pol_authorize";
     char *policy_file_authorize = TOP_SOURCEDIR "/test/data/fapi/policy/pol_authorize.json";
+    char *policy_name_authorize_outer = "/policy/pol_authorize_outer";
+    char *policy_file_authorize_outer = TOP_SOURCEDIR
+                                        "/test/data/fapi/policy/pol_authorize_outer.json";
     uint8_t policyRef[] = { 1, 2, 3, 4, 5 };
     FILE *stream = NULL;
     char *json_policy = NULL;
@@ -178,6 +181,36 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     SAFE_FREE(json_policy);
     goto_if_error(r, "Error Fapi_Import", error);
 
+    /* Read in the fourth policy */
+    stream = fopen(policy_file_authorize_outer, "r");
+    if (!stream) {
+        LOG_ERROR("File %s does not exist", policy_file_authorize_outer);
+        goto error;
+    }
+    fseek(stream, 0L, SEEK_END);
+    policy_size = ftell(stream);
+    fclose(stream);
+    json_policy = malloc(policy_size + 1);
+    goto_if_null(json_policy,
+            "Could not allocate memory for the JSON policy",
+            TSS2_FAPI_RC_MEMORY, error);
+    stream = fopen(policy_file_authorize_outer, "r");
+    ret = read(fileno(stream), json_policy, policy_size);
+    if (ret != policy_size) {
+        LOG_ERROR("IO error %s.", policy_file_authorize_outer);
+        goto error;
+    }
+    json_policy[policy_size] = '\0';
+
+    r = Fapi_Import(context, policy_name_authorize_outer, json_policy);
+    SAFE_FREE(json_policy);
+    goto_if_error(r, "Error Fapi_Import", error);
+
+    /* Create keys and use them to authorize the authorize policy */
+    r = Fapi_CreateKey(context, "HS/SRK/myPolicySignKeyOuter", "sign,noDa",
+                       "", NULL);
+    goto_if_error(r, "Error Fapi_CreateKey", error);
+
     /* Create keys and use them to authorize policies */
     r = Fapi_CreateKey(context, "HS/SRK/myPolicySignKey", "sign,noDa",
                        "", NULL);
@@ -185,8 +218,13 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
 
     /* Create the actual key */
     r = Fapi_CreateKey(context, "HS/SRK/mySignKey", "sign, noda",
-                       policy_name_authorize, NULL);
+                       policy_name_authorize_outer, NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
+
+    /* Authorize the policies in sequence. */
+    r = Fapi_AuthorizePolicy(context, policy_name_authorize,
+                             "HS/SRK/myPolicySignKeyOuter", NULL, 0);
+    goto_if_error(r, "Authorize policy", error);
 
     r = Fapi_AuthorizePolicy(context, policy_name_hash,
                              "HS/SRK/myPolicySignKey", policyRef, sizeof(policyRef));
