@@ -118,12 +118,12 @@ test_fapi_nv_authorizenv_cphash(FAPI_CONTEXT *context)
     r = Fapi_CreateNv(context, "/nv/Owner/myNV", "", 34, "", "");
     goto_if_error(r, "Error Fapi_CreateNv", error);
 
-//TODO: Starts failing if moved after CreateNV2
-    r = Fapi_WriteAuthorizeNv(context, "/nv/Owner/myNV", policy2_name);
-    goto_if_error(r, "Error Fapi_WriteAuthorizeNv", error);
 
     r = Fapi_CreateNv(context, "/nv/Owner/myNV2", "", sizeof(data), policy1_name, "");
     goto_if_error(r, "Error Fapi_CreateNv", error);
+
+    r = Fapi_WriteAuthorizeNv(context, "/nv/Owner/myNV", policy2_name);
+    goto_if_error(r, "Error Fapi_WriteAuthorizeNv", error);
 
     r = Fapi_NvWrite(context, "/nv/Owner/myNV2", &data[0], sizeof(data));
     goto_if_error(r, "Error Fapi_NvWrite", error);
