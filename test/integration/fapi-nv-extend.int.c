@@ -25,7 +25,7 @@
 
 static char *password;
 
-TSS2_RC
+static TSS2_RC
 auth_callback(
     FAPI_CONTEXT *context,
     char const *description,
@@ -46,6 +46,8 @@ auth_callback(
  *  - Fapi_Provision()
  *  - Fapi_CreateNv()
  *  - Fapi_NvExtend()
+ *  - Fapi_Delete()
+ *  - Fapi_SetAuthCB()
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

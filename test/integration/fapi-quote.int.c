@@ -31,10 +31,14 @@
  * Tested FAPI commands:
  *  - Fapi_Provision()
  *  - Fapi_CreateKey()
+ *  - Fapi_PcrExtend()
  *  - Fapi_Quote()
- *  - Fapi_Delete()
- *  - Fapi_List()
+ *  - Fapi_ExportKey()
+ *  - Fapi_Import()
+ *  - Fapi_PcrRead()
  *  - Fapi_VerifyQuote()
+ *  - Fapi_List()
+ *  - Fapi_Delete()
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

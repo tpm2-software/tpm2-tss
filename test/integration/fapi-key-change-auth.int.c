@@ -19,7 +19,7 @@
 
 #define PASSWORD "abc"
 
-TSS2_RC
+static TSS2_RC
 auth_callback(
     FAPI_CONTEXT *context,
     char const *description,
@@ -42,17 +42,17 @@ auth_callback(
  * Tested FAPI commands:
  *  - Fapi_Provision()
  *  - Fapi_CreateKey()
- *  - Fapi_Sign()
  *  - Fapi_ChangeAuth()
+ *  - Fapi_SetAuthCB()
+ *  - Fapi_Sign()
  *  - Fapi_Delete()
- *  - Fapi_List()
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_change_key_auth(FAPI_CONTEXT *context)
+test_fapi_key_change_auth(FAPI_CONTEXT *context)
 {
 
     TSS2_RC r;
@@ -103,5 +103,5 @@ error:
 int
 test_invoke_fapi(FAPI_CONTEXT *fapi_context)
 {
-    return test_fapi_change_key_auth(fapi_context);
+    return test_fapi_key_change_auth(fapi_context);
 }

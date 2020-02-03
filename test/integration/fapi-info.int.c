@@ -21,6 +21,7 @@
  * Tested FAPI commands:
  *  - Fapi_Provision()
  *  - Fapi_GetInfo()
+ *  - Fapi_Delete()
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

@@ -21,7 +21,7 @@
 
 #define PASSWORD "abc"
 
-TSS2_RC
+static TSS2_RC
 auth_callback(
     FAPI_CONTEXT *context,
     char const *description,
@@ -38,21 +38,23 @@ auth_callback(
 #define PROFILE_DIR  ""
 
 
-/** Test the FAPI functions for key creation and usage.
+/** Test the FAPI functions for PolicyImport and PolicyAuth callbacks.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
+ *  - Fapi_PolicyImport()
  *  - Fapi_Key_Create()
+ *  - Fapi_SetPolicyAuthCallback()
  *  - Fapi_Key_Sign()
  *  - Fapi_Entity_Delete()
  *  - Fapi_Entities_List()
  *
- * @param[in,out] esys_context The FAPI_CONTEXT.
+ * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_key_create(FAPI_CONTEXT *context)
+test_fapi_key_create_policy_password_sign(FAPI_CONTEXT *context)
 {
     TSS2_RC r;
     char* policy_name = "policies/pol_password";
@@ -138,5 +140,5 @@ error:
 
 int
 test_invoke_fapi(FAPI_CONTEXT * fapi_context) {
-    return test_fapi_key_create(fapi_context);
+    return test_fapi_key_create_policy_password_sign(fapi_context);
 }

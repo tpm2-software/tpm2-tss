@@ -29,7 +29,7 @@
 
 static bool cb_called = false;
 
-TSS2_RC
+static TSS2_RC
 branch_callback(
     FAPI_CONTEXT *context,
     char   const *description,
@@ -61,11 +61,13 @@ branch_callback(
 }
 
 
-/** Test the FAPI functions for key creation and usage.
+/** Test the FAPI for PolicyOr using signing.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
+ *  - Fapi_Import()
  *  - Fapi_CreateKey()
+ *  - Fapi_SetBranchCB()
  *  - Fapi_Sign()
  *  - Fapi_Delete()
  *

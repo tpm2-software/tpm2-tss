@@ -29,7 +29,7 @@
 #define PASSWORD "abc"
 #define SIGN_TEMPLATE "sign"
 
-TSS2_RC
+static TSS2_RC
 auth_callback(
     FAPI_CONTEXT *context,
     char const *description,
@@ -43,7 +43,7 @@ auth_callback(
     return TSS2_RC_SUCCESS;
 }
 
-char *
+static char *
 read_policy(FAPI_CONTEXT *context, char *policy_name)
 {
     FILE *stream = NULL;
@@ -76,19 +76,23 @@ read_policy(FAPI_CONTEXT *context, char *policy_name)
     return json_policy;
 }
 
-/** Test the FAPI key signing with PolicyAuthorizeNV.
+/** Test the FAPI PolicySecret handling.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
+ *  - Fapi_Import()
  *  - Fapi_CreateNv()
- *  - Fapi_NvWrite()
+ *  - Fapi_CreateKey()
+ *  - Fapi_Sign()
+ *  - Fapi_SetAuthCB()
+ *  - Fapi_Delete()
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_policy_secret(FAPI_CONTEXT *context)
+test_fapi_key_create_policy_secret_nv_sign(FAPI_CONTEXT *context)
 {
     TSS2_RC r;
     char *nv_path_auth_object = "/nv/Owner/myNV";
@@ -178,5 +182,5 @@ error:
 int
 test_invoke_fapi(FAPI_CONTEXT *context)
 {
-    return test_fapi_policy_secret(context);
+    return test_fapi_key_create_policy_secret_nv_sign(context);
 }

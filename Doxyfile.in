@@ -851,31 +851,34 @@ INPUT                  = @top_srcdir@/doc/coding_standard_c.md \
                          @top_srcdir@/test/integration/esys-verify-signature.int.c \
                          @top_srcdir@/test/integration/esys-zgen-2phase.int.c \
                          @top_srcdir@/test/integration/fapi-data-crypt.int.c \
-                         @top_srcdir@/test/integration/fapi-key-change-auth.int.c \
-                         @top_srcdir@/test/integration/fapi-key-create-policy-authorize-sign.int.c \
-                         @top_srcdir@/test/integration/fapi-key-create-policy-secret-nv-sign.int.c \
-                         @top_srcdir@/test/integration/fapi-key-create-sign-policy-provision.int.c \
-                         @top_srcdir@/test/integration/fapi-nv-set-bits.int.c \
-                         @top_srcdir@/test/integration/fapi-quote.int.c \
-                         @top_srcdir@/test/integration/fapi-ext-public-key.int.c \
-                         @top_srcdir@/test/integration/fapi-key-create-policy-nv-sign.int.c \
-                         @top_srcdir@/test/integration/fapi-key-create-policy-signed.int.c \
-                         @top_srcdir@/test/integration/fapi-nv-extend.int.c \
-                         @top_srcdir@/test/integration/fapi-nv-written-policy.int.c \
                          @top_srcdir@/test/integration/fapi-duplicate.int.c \
+                         @top_srcdir@/test/integration/fapi-ext-public-key.int.c \
                          @top_srcdir@/test/integration/fapi-get-random.int.c \
-                         @top_srcdir@/test/integration/fapi-key-create-policies-sign.int.c \
-                         @top_srcdir@/test/integration/fapi-key-create-policy-or-sign.int.c \
-                         @top_srcdir@/test/integration/fapi-key-create-sign.int.c \
-                         @top_srcdir@/test/integration/fapi-nv-increment.int.c \
-                         @top_srcdir@/test/integration/fapi-pcr-test.int.c \
-                         @top_srcdir@/test/integration/fapi-unseal.int.c \
                          @top_srcdir@/test/integration/fapi-info.int.c \
+                         @top_srcdir@/test/integration/fapi-key-change-auth.int.c \
+                         @top_srcdir@/test/integration/fapi-key-create-ckda-sign.int.c \
+                         @top_srcdir@/test/integration/fapi-key-create-policies-sign.int.c \
                          @top_srcdir@/test/integration/fapi-key-create-policy-authorize-nv-sign.int.c \
+                         @top_srcdir@/test/integration/fapi-key-create-policy-authorize-sign.int.c \
+                         @top_srcdir@/test/integration/fapi-key-create-policy-nv-sign.int.c \
+                         @top_srcdir@/test/integration/fapi-key-create-policy-or-sign.int.c \
+                         @top_srcdir@/test/integration/fapi-key-create-policy-password-sign.int.c \
                          @top_srcdir@/test/integration/fapi-key-create-policy-pcr-sign.int.c \
+                         @top_srcdir@/test/integration/fapi-key-create-policy-secret-nv-sign.int.c \
+                         @top_srcdir@/test/integration/fapi-key-create-policy-signed.int.c \
+                         @top_srcdir@/test/integration/fapi-key-create-sign.int.c \
                          @top_srcdir@/test/integration/fapi-key-create-sign-password-provision.int.c \
+                         @top_srcdir@/test/integration/fapi-key-create-sign-policy-provision.int.c \
+                         @top_srcdir@/test/integration/fapi-nv-authorizenv-cphash.int.c \
+                         @top_srcdir@/test/integration/fapi-nv-extend.int.c \
+                         @top_srcdir@/test/integration/fapi-nv-increment.int.c \
                          @top_srcdir@/test/integration/fapi-nv-ordinary.int.c \
-                         @top_srcdir@/test/integration/fapi-platform-certificates.int.c
+                         @top_srcdir@/test/integration/fapi-nv-set-bits.int.c \
+                         @top_srcdir@/test/integration/fapi-nv-written-policy.int.c \
+                         @top_srcdir@/test/integration/fapi-pcr-test.int.c \
+                         @top_srcdir@/test/integration/fapi-platform-certificates.int.c \
+                         @top_srcdir@/test/integration/fapi-quote.int.c \
+                         @top_srcdir@/test/integration/fapi-unseal.int.c
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses

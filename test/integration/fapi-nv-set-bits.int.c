@@ -21,7 +21,7 @@
 
 #define PASSWORD "abc"
 
-TSS2_RC
+static TSS2_RC
 auth_callback(
     FAPI_CONTEXT *context,
     char const *description,
@@ -35,12 +35,14 @@ auth_callback(
     return TSS2_RC_SUCCESS;
 }
 
-/** Test the FAPI function FAPI_Increment.
+/** Test the FAPI function Fapi_NvSetBits.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
  *  - Fapi_CreateNv()
- *  - Fapi_NvIncrement()
+ *  - Fapi_NvSetBits()
+ *  - Fapi_Delete()
+ *  - Fapi_SetAuthCB()
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

@@ -21,8 +21,7 @@
 #define PASSWORD NULL
 #define SIGN_TEMPLATE  "sign,noDa"
 
-
-TSS2_RC
+static TSS2_RC
 auth_callback(
     FAPI_CONTEXT *context,
     char const *description,
@@ -43,11 +42,13 @@ auth_callback(
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
+ *  - Fapi_SetAuthCB()
  *  - Fapi_CreateKey()
+ *  - Fapi_GetTpmBlobs()
  *  - Fapi_Sign()
- *  - Fapi_Delete()
- *  - Fapi_ChangeAuth()
  *  - Fapi_SetCertificate()
+ *  - Fapi_List()
+ *  - Fapi_Delete()
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

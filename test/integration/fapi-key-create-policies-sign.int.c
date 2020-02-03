@@ -28,7 +28,7 @@
 #define PASSWORD ""
 #endif
 
-TSS2_RC
+static TSS2_RC
 auth_callback(
     FAPI_CONTEXT *context,
     char const *description,
@@ -50,7 +50,9 @@ auth_callback(
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
+ *  - Fapi_Import()
  *  - Fapi_CreateKey()
+ *  - Fapi_SetAuthCB()
  *  - Fapi_Sign()
  *  - Fapi_Delete()
  *
@@ -59,7 +61,7 @@ auth_callback(
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_policy_password(FAPI_CONTEXT *context)
+test_fapi_key_create_policies_sign(FAPI_CONTEXT *context)
 {
     TSS2_RC r;
 
@@ -189,5 +191,5 @@ error:
 int
 test_invoke_fapi(FAPI_CONTEXT *fapi_context)
 {
-    return test_fapi_policy_password(fapi_context);
+    return test_fapi_key_create_policies_sign(fapi_context);
 }

@@ -26,19 +26,6 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Test the FAPI functions for key creation and usage.
- *
- * Tested FAPI commands:
- *  - Fapi_Provision()
- *  - Fapi_CreateKey()
- *  - Fapi_Sign(9
- *  - Fapi_Delete(9
- *
- * @param[in,out] context The FAPI_CONTEXT.
- * @retval EXIT_FAILURE
- * @retval EXIT_SUCCESS
- */
-
 #define SIZE 128
 
 const char *priv_pem =
@@ -90,7 +77,7 @@ char *userDataTest = "test";
                              r = TSS2_FAPI_RC_GENERAL_FAILURE; \
                              goto error_cleanup; }
 
-TSS2_RC
+static TSS2_RC
 signatureCallback(
     FAPI_CONTEXT  *context,
     char    const *description,
@@ -178,17 +165,19 @@ error_cleanup:
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
- *  - Fapi_CreateKey()
  *  - Fapi_Import()
+ *  - Fapi_CreateKey()
+ *  - Fapi_SetSignCB()
  *  - Fapi_Encrypt()
  *  - Fapi_Decrypt()
+ *  - Fapi_Free()
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_data_crypt_rsa(FAPI_CONTEXT *context)
+test_fapi_data_crypt(FAPI_CONTEXT *context)
 {
 
     TSS2_RC r;
@@ -289,5 +278,5 @@ error:
 int
 test_invoke_fapi(FAPI_CONTEXT *fapi_context)
 {
-    return test_fapi_data_crypt_rsa(fapi_context);
+    return test_fapi_data_crypt(fapi_context);
 }

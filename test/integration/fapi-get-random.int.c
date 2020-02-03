@@ -16,11 +16,15 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Test the FAPI function FAPI_GetRandom.
+/** Test the FAPI function FAPI_GetRandom and async invocations.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
+ *  - Fapi_GetRandom_Async()
+ *  - Fapi_GetRandom_Finish()
+ *  - Fapi_GetPollHandles()
  *  - Fapi_GetRandom()
+ *  - Fapi_Delete()
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

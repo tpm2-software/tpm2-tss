@@ -29,9 +29,13 @@
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
+ *  - Fapi_Import()
  *  - Fapi_CreateKey()
  *  - Fapi_Sign()
+ *  - Fapi_ExportPolicy()
  *  - Fapi_Delete()
+ *  - Fapi_Import()
+ *  - Fapi_List()
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE
