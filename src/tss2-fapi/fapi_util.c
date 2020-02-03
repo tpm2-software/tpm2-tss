@@ -1650,8 +1650,7 @@ ifapi_nv_write(
         context->nv_cmd.data_idx = aux_data->size;
 
         /* Use calloc to ensure zero padding for write buffer. */
-        context->nv_cmd.write_data = calloc(object->misc.nv.public.nvPublic.dataSize,
-                                            1);
+        context->nv_cmd.write_data = calloc(size, 1);
         goto_if_null2(context->nv_cmd.write_data, "Out of memory.", r,
                       TSS2_FAPI_RC_MEMORY,
                       error_cleanup);
