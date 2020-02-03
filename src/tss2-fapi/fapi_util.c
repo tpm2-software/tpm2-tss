@@ -1626,9 +1626,6 @@ ifapi_nv_write(
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
     ESYS_TR auth_index;
-    size_t data_idx = context->nv_cmd.data_idx;
-    UINT16 bytesRequested = context->nv_cmd.bytesRequested;
-    ESYS_TR  offset = context->nv_cmd.offset;
     ESYS_TR nv_index = context->nv_cmd.esys_handle;
     IFAPI_OBJECT *object = &context->nv_cmd.nv_object;
     IFAPI_OBJECT *auth_object = &context->nv_cmd.auth_object;
@@ -1647,15 +1644,14 @@ ifapi_nv_write(
             aux_data->size = context->nv_buffer_max;
         else
             aux_data->size = context->nv_cmd.numBytes;
-        context->nv_cmd.data_idx = aux_data->size;
+        context->nv_cmd.data_idx = 0;
 
         /* Use calloc to ensure zero padding for write buffer. */
         context->nv_cmd.write_data = calloc(size, 1);
         goto_if_null2(context->nv_cmd.write_data, "Out of memory.", r,
                       TSS2_FAPI_RC_MEMORY,
                       error_cleanup);
-        memcpy(context->nv_cmd.write_data, data,
-               object->misc.nv.public.nvPublic.dataSize);
+        memcpy(context->nv_cmd.write_data, data, size);
         memcpy(&aux_data->buffer[0], &context->nv_cmd.data[0], aux_data->size);
 
         /* Prepare reading of the key from keystore. */
@@ -1723,7 +1719,7 @@ ifapi_nv_write(
                                 context->session2,
                                 ESYS_TR_NONE,
                                 aux_data,
-                                offset);
+                                context->nv_cmd.data_idx);
         goto_if_error_reset_state(r, " Fapi_NvWrite_Async", error_cleanup);
 
         if (!(object->misc.nv.public.nvPublic.attributes & TPMA_NV_NO_DA))
@@ -1733,7 +1729,6 @@ ifapi_nv_write(
 
         context->nv_cmd.bytesRequested = aux_data->size;
 
-        context->nv_cmd.offset = offset;
         fallthrough;
 
     case NV2_WRITE_AUTH_SENT:
@@ -1757,7 +1752,7 @@ ifapi_nv_write(
                                         context->session2,
                                         ESYS_TR_NONE,
                                         aux_data,
-                                        offset);
+                                        context->nv_cmd.data_idx);
                 goto_if_error_reset_state(r, "FAPI NV_Write_Async", error_cleanup);
 
                 context->nv_cmd.nv_write_state = NV2_WRITE_AUTH_SENT;
@@ -1769,27 +1764,33 @@ ifapi_nv_write(
         context->nv_cmd.numBytes -= context->nv_cmd.bytesRequested;
 
         if (context->nv_cmd.numBytes > 0) {
+            /* Increment data idx with number of transmitted bytes. */
+            context->nv_cmd.data_idx += aux_data->size;
             if (context->nv_cmd.numBytes > context->nv_buffer_max)
                 aux_data->size = context->nv_buffer_max;
             else
                 aux_data->size = context->nv_cmd.numBytes;
-            memcpy(&aux_data->buffer[0], &context->nv_cmd.write_data[data_idx],
+            memcpy(&aux_data->buffer[0],
+                   &context->nv_cmd.write_data[context->nv_cmd.data_idx],
                    aux_data->size);
-            offset += bytesRequested;
+
+            statecase(context->nv_cmd.nv_write_state, NV2_WRITE_AUTHORIZE2);
+                r = ifapi_authorize_object(context, auth_object, &auth_session);
+                FAPI_SYNC(r, "Authorize NV object.", error_cleanup);
 
             /* Prepare the writing to NV ram */
             r = Esys_NV_Write_Async(context->esys,
                                     context->nv_cmd.auth_index,
                                     nv_index,
-                                    context->session1,
+                                    auth_session,
                                     context->session2,
                                     ESYS_TR_NONE,
                                     aux_data,
-                                    offset);
+                                    context->nv_cmd.data_idx);
             goto_if_error_reset_state(r, "FAPI NV_Write", error_cleanup);
 
             context->nv_cmd.bytesRequested = aux_data->size;
-            //context->state = NV_READ_AUTH_SENT;
+            context->nv_cmd.nv_write_state = NV2_WRITE_AUTH_SENT;
             return TSS2_FAPI_RC_TRY_AGAIN;
 
         }
@@ -1869,10 +1870,8 @@ ifapi_nv_read(
     UINT16 aux_size;
     TPM2B_MAX_NV_BUFFER *aux_data;
     UINT16 bytesRequested = context->nv_cmd.bytesRequested;
-    size_t numBytes = context->nv_cmd.numBytes;
+    size_t *numBytes = &context->nv_cmd.numBytes;
     ESYS_TR nv_index = context->nv_cmd.esys_handle;
-    size_t data_idx = context->nv_cmd.data_idx;
-    UINT16 offset = context->nv_cmd.offset;
     IFAPI_OBJECT *auth_object = &context->nv_cmd.auth_object;
     ESYS_TR session;
 
@@ -1887,10 +1886,10 @@ ifapi_nv_read(
         r = ifapi_authorize_object(context, auth_object, &session);
         FAPI_SYNC(r, "Authorize NV object.", error_cleanup);
 
-        if (context->nv_cmd.numBytes > context->nv_buffer_max)
+        if (*numBytes > context->nv_buffer_max)
             aux_size = context->nv_buffer_max;
         else
-            aux_size = context->nv_cmd.numBytes;
+            aux_size = *numBytes;
 
         /* Prepare the reading from NV ram. */
         r = Esys_NV_Read_Async(context->esys,
@@ -1900,7 +1899,7 @@ ifapi_nv_read(
                                ESYS_TR_NONE,
                                ESYS_TR_NONE,
                                aux_size,
-                               offset);
+                               0);
         goto_if_error_reset_state(r, " Fapi_NvRead_Async", error_cleanup);
 
         context->nv_cmd.nv_read_state = NV_READ_AUTH_SENT;
@@ -1912,8 +1911,8 @@ ifapi_nv_read(
         LOG_TRACE("NV_READ_NULL_AUTH_SENT");
         if (context->nv_cmd.rdata == NULL) {
             /* Allocate the data buffer if not already initialized. */
-            LOG_TRACE("Allocate %zu bytes", context->nv_cmd.numBytes);
-            context->nv_cmd.rdata = malloc(context->nv_cmd.numBytes);
+            LOG_TRACE("Allocate %zu bytes", *numBytes);
+            context->nv_cmd.rdata = malloc(*numBytes);
         }
         *data = context->nv_cmd.rdata;
         goto_if_null(*data, "Malloc failed", TSS2_FAPI_RC_MEMORY, error_cleanup);
@@ -1926,37 +1925,39 @@ ifapi_nv_read(
         goto_if_error_reset_state(r, "FAPI NV_Read_Finish", error_cleanup);
 
         if (aux_data->size < bytesRequested)
-            numBytes = 0;
+            *numBytes = 0;
         else
-            numBytes -= aux_data->size;
-        memcpy(*data + data_idx, &aux_data->buffer[0], aux_data->size);
-        data_idx += aux_data->size;
+            *numBytes -= aux_data->size;
+        memcpy(*data + context->nv_cmd.data_idx, &aux_data->buffer[0],
+               aux_data->size);
+        context->nv_cmd.data_idx += aux_data->size;
         free(aux_data);
-        if (numBytes > 0) {
+        if (*numBytes > 0) {
+            statecase(context->nv_cmd.nv_read_state, NV_READ_AUTHORIZE2);
+                r = ifapi_authorize_object(context, auth_object, &session);
+                FAPI_SYNC(r, "Authorize NV object.", error_cleanup);
+
             /* The reading of the NV data is not completed. The next
-               reading will be prepared. */
-            if (numBytes > context->nv_buffer_max)
+            reading will be prepared. */
+            if (*numBytes > context->nv_buffer_max)
                 aux_size = context->nv_buffer_max;
             else
-                aux_size = numBytes;
-            offset += bytesRequested;
+                aux_size = *numBytes;
 
             r = Esys_NV_Read_Async(context->esys,
                                    context->nv_cmd.auth_index,
                                    nv_index,
-                                   context->session1,
+                                   session,
                                    ESYS_TR_NONE,
                                    ESYS_TR_NONE,
                                    aux_size,
-                                   offset);
+                                   context->nv_cmd.data_idx);
             goto_if_error_reset_state(r, "FAPI NV_Read", error_cleanup);
             context->nv_cmd.bytesRequested = aux_size;
-            context->nv_cmd.data_idx = data_idx;
-            context->nv_cmd.numBytes = numBytes;
             context->nv_cmd.nv_read_state = NV_READ_AUTH_SENT;
             return TSS2_FAPI_RC_TRY_AGAIN;
         } else {
-            *size = data_idx;
+            *size = context->nv_cmd.data_idx;
             context->nv_cmd.nv_read_state = NV_READ_INIT;
             LOG_DEBUG("success");
             r = TSS2_RC_SUCCESS;
