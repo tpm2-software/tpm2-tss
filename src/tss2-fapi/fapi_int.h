@@ -235,6 +235,7 @@ typedef struct {
 enum _FAPI_STATE_NV_READ {
     NV_READ_INIT = 0,
     NV_READ_AUTHORIZE,
+    NV_READ_AUTHORIZE2,
     NV_READ_AUTH_SENT,
     NV_READ_WRITE
 };
@@ -249,7 +250,8 @@ enum _FAPI_STATE_NV_WRITE {
     NV2_WRITE_AUTH_SENT,
     NV2_WRITE_WRITE_PREPARE,
     NV2_WRITE_WRITE,
-    NV2_WRITE_AUTHORIZE
+    NV2_WRITE_AUTHORIZE,
+    NV2_WRITE_AUTHORIZE2
 };
 
 /** The data structure holding internal state of Fapi NV commands.
