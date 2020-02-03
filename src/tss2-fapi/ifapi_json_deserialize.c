@@ -185,12 +185,15 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso,  IFAPI_KEY *out)
     r = ifapi_json_char_deserialize(jso2, &out->certificate);
     return_if_error(r, "BAD VALUE");
 
-    if (!ifapi_get_sub_object(jso, "signing_scheme", &jso2)) {
-        LOG_ERROR("Bad value");
-        return TSS2_FAPI_RC_BAD_VALUE;
+    if (out->public.publicArea.type != TPM2_ALG_KEYEDHASH) {
+         /* Keyed hash objects to not need a signing scheme. */
+        if (!ifapi_get_sub_object(jso, "signing_scheme", &jso2)) {
+            LOG_ERROR("Bad value");
+            return TSS2_FAPI_RC_BAD_VALUE;
+        }
+        r = ifapi_json_TPMT_SIG_SCHEME_deserialize(jso2, &out->signing_scheme);
+        return_if_error(r, "BAD VALUE");
     }
-    r = ifapi_json_TPMT_SIG_SCHEME_deserialize(jso2, &out->signing_scheme);
-    return_if_error(r, "BAD VALUE");
 
     if (!ifapi_get_sub_object(jso, "name", &jso2)) {
         LOG_ERROR("Bad value");
