@@ -232,7 +232,6 @@ Fapi_NvExtend_Finish(
     /* Helpful alias pointers */
     IFAPI_NV_Cmds * command = &context->nv_cmd;
     TPM2B_MAX_NV_BUFFER *auxData = (TPM2B_MAX_NV_BUFFER *)&context->aux_data;
-    size_t dataIdx = command->data_idx;
     ESYS_TR nvIndex = command->esys_handle;
     const uint8_t *data = command->data;
     IFAPI_OBJECT *object = &command->nv_object;
@@ -292,19 +291,15 @@ Fapi_NvExtend_Finish(
         return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
-        if (command->numBytes > context->nv_buffer_max)
-            auxData->size = context->nv_buffer_max;
-        else
-            auxData->size = command->numBytes;
-        memcpy(&auxData->buffer[0], &data[0], auxData->size);
-        command->data_idx = auxData->size;
-
-        /* Authorization needed if NO_DA is not set */
-        if (!(object->misc.nv.public.nvPublic.attributes & TPMA_NV_NO_DA)) {
-            r = ifapi_set_auth(context, authObject, "NV Extend");
-            goto_if_error_reset_state(r, "Fapi_NV_UndefineSpace", error_cleanup);
+        if (command->numBytes > TPM2_MAX_NV_BUFFER_SIZE) {
+            goto_error_reset_state(r, TSS2_FAPI_RC_BAD_VALUE,
+                                   "Buffer for NvExtend is too large.",
+                                   error_cleanup);
         }
 
+        auxData->size = command->numBytes;
+        memcpy(&auxData->buffer[0], &data[0], auxData->size);
+        command->data_idx = auxData->size;
         fallthrough;
 
     statecase(context->state, NV_EXTEND_AUTHORIZE)
@@ -335,25 +330,6 @@ Fapi_NvExtend_Finish(
         goto_if_error_reset_state(r, "FAPI NV_Extend_Finish", error_cleanup);
 
         command->numBytes -= context->nv_cmd.bytesRequested;
-
-        if (command->numBytes > 0) {
-            if (command->numBytes > context->nv_buffer_max)
-                auxData->size = context->nv_buffer_max;
-            else
-                auxData->size = command->numBytes;
-            memcpy(&auxData->buffer[0], &data[dataIdx], auxData->size);
-            r = Esys_NV_Extend_Async(context->esys,
-                                     command->auth_index,
-                                     nvIndex,
-                                     context->session1,
-                                     ESYS_TR_NONE,
-                                     ESYS_TR_NONE,
-                                     auxData);
-            goto_if_error_reset_state(r, "FAPI NV_Extend", error_cleanup);
-
-            command->bytesRequested = auxData->size;
-            return TSS2_FAPI_RC_TRY_AGAIN;
-        }
 
         /* Compute Digest of the current event */
         hashAlg = object->misc.nv.public.nvPublic.nameAlg;
