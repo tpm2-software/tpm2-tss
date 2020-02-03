@@ -91,7 +91,7 @@ char *userDataTest = "test";
                              r = TSS2_FAPI_RC_GENERAL_FAILURE; \
                              goto error_cleanup; }
 
-TSS2_RC
+static TSS2_RC
 signatureCallback(
     FAPI_CONTEXT  *context,
     char    const *description,
@@ -183,7 +183,9 @@ error_cleanup:
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
+ *  - Fapi_Import()
  *  - Fapi_CreateKey()
+ *  - Fapi_SetSignCB()
  *  - Fapi_Sign()
  *  - Fapi_Delete()
  *  - Fapi_List()

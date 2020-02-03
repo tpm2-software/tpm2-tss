@@ -25,11 +25,13 @@
 
 #define NV_SIZE 4
 
-/** Test the FAPI functions for key creation and usage.
+/** Test the FAPI functions for NV writing and key usage.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
  *  - Fapi_CreateKey()
+ *  - Fapi_NvWrite()
+ *  - Fapi_Import()
  *  - Fapi_Sign()
  *  - Fapi_Delete()
  *

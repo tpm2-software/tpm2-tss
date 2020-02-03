@@ -27,7 +27,7 @@
 
 static char *password;
 
-TSS2_RC
+static TSS2_RC
 auth_callback(
     FAPI_CONTEXT *context,
     char const *description,
@@ -42,7 +42,7 @@ auth_callback(
     return TSS2_RC_SUCCESS;
 }
 
-TSS2_RC
+static TSS2_RC
 action_callback(
     FAPI_CONTEXT *context,
     const char *action,
@@ -61,11 +61,15 @@ action_callback(
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
+ *  - Fapi_Import()
+ *  - Fapi_SetPolicyActionCB()
  *  - Fapi_CreateNv()
  *  - Fapi_NvWrite()
  *  - Fapi_NvRead()
+ *  - Fapi_Delete()
  *  - Fapi_SetDescription()
  *  - Fapi_GetDescription()
+ *  - Fapi_SetAuthCB()
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

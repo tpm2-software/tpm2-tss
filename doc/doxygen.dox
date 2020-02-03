@@ -1195,7 +1195,7 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \defgroup Fapi_Free Fapi_Free
  FAPI function to invoke Free.
  \{
- \fn Fapi_Free( \fn *ptr)
+ \fn Fapi_Free(void *ptr)
  \}
  \defgroup Fapi_GetInfo Fapi_GetInfo
  FAPI functions to invoke GetInfo either as one-call or in an asynchronous manner.
@@ -2089,31 +2089,33 @@ TSS2_RC ifapi_calculate_pcr_digest(
  of the testcase functions' descriptions.
  \ingroup Testgroup
  \{
- \fn test_fapi_info(FAPI_CONTEXT *context)
- \fn test_fapi_data_crypt_rsa(FAPI_CONTEXT *context)
+ \fn test_fapi_data_crypt(FAPI_CONTEXT *context)
  \fn test_fapi_duplicate(FAPI_CONTEXT *context)
- \fn test_fapi_change_key_auth(FAPI_CONTEXT *context)
- \fn test_fapi_key_create_policy_signed(FAPI_CONTEXT *context)
- \fn test_fapi_key_create_sign_password_provision(FAPI_CONTEXT *context)
- \fn test_fapi_nv_ordinary(FAPI_CONTEXT *context)
- \fn test_fapi_quote(FAPI_CONTEXT *context)
- \fn test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
- \fn test_fapi_policy_authorize_nv(FAPI_CONTEXT *context)
- \fn test_fapi_nv_set_bits(FAPI_CONTEXT *context)
- \fn test_fapi_policy_secret(FAPI_CONTEXT *context)
- \fn test_fapi_nv_written(FAPI_CONTEXT *context)
- \fn test_fapi_nv_increment(FAPI_CONTEXT *context)
- \fn test_fapi_get_random(FAPI_CONTEXT *context)
- \fn test_fapi_pcr_test(FAPI_CONTEXT *context)
- \fn test_fapi_policy_password(FAPI_CONTEXT *context)
- \fn test_fapi_key_create_policy_or_sign(FAPI_CONTEXT *context)
- \fn test_fapi_key_create_policy_nv_sign(FAPI_CONTEXT *context)
- \fn test_fapi_nv_extend(FAPI_CONTEXT *context)
  \fn test_fapi_ext_public_key(FAPI_CONTEXT *context)
- \fn test_fapi_get_platform_certificates(FAPI_CONTEXT *context)
- \fn test_fapi_seal(FAPI_CONTEXT *context)
- \fn test_fapi_key_create_sign_policy_provision(FAPI_CONTEXT *context)
- \fn test_fapi_key_create(FAPI_CONTEXT *context)
+ \fn test_fapi_get_random(FAPI_CONTEXT *context)
+ \fn test_fapi_info(FAPI_CONTEXT *context)
+ \fn test_fapi_key_change_auth(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_ckda_sign(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_policies_sign(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_policy_authorize_nv(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_policy_nv_sign(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_policy_or_sign(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_policy_password_sign(FAPI_CONTEXT *context)
  \fn test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_policy_secret_nv_sign(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_policy_signed(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_sign(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_sign_password_provision(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_sign_policy_provision(FAPI_CONTEXT *context)
+ \fn test_fapi_nv_extend(FAPI_CONTEXT *context)
+ \fn test_fapi_nv_increment(FAPI_CONTEXT *context)
+ \fn test_fapi_nv_ordinary(FAPI_CONTEXT *context)
+ \fn test_fapi_nv_set_bits(FAPI_CONTEXT *context)
+ \fn test_fapi_nv_written_policy(FAPI_CONTEXT *context)
+ \fn test_fapi_pcr_test(FAPI_CONTEXT *context)
+ \fn test_fapi_platform_certificates(FAPI_CONTEXT *context)
+ \fn test_fapi_quote(FAPI_CONTEXT *context)
+ \fn test_fapi_unseal(FAPI_CONTEXT *context)
  \}
 */

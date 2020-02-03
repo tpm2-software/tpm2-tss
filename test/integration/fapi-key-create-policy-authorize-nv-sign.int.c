@@ -31,7 +31,7 @@
 #define PASSWORD ""
 #define SIGN_TEMPLATE  "sign"
 
-TSS2_RC
+static TSS2_RC
 check_tpm_cmd(FAPI_CONTEXT *context, TPM2_CC command_code)
 {
     TSS2_RC r;
@@ -64,21 +64,7 @@ error:
     return r;
 }
 
-TSS2_RC
-auth_callback(
-    FAPI_CONTEXT *context,
-    char const *description,
-    char **auth,
-    void *userData)
-{
-    (void)description;
-    (void)userData;
-    *auth = strdup(PASSWORD);
-    return_if_null(*auth, "Out of memory.", TSS2_FAPI_RC_MEMORY);
-    return TSS2_RC_SUCCESS;
-}
-
-char *
+static char *
 read_policy(FAPI_CONTEXT *context, char *policy_name)
 {
     FILE *stream = NULL;
@@ -111,16 +97,21 @@ read_policy(FAPI_CONTEXT *context, char *policy_name)
 /** Test the FAPI key signing with PolicyAuthorizeNV.
  *
  * Tested FAPI commands:
+ *  - Fapi_GetTcti()
  *  - Fapi_Provision()
  *  - Fapi_CreateNv()
- *  - Fapi_NvWrite()
+ *  - Fapi_Import()
+ *  - Fapi_WriteAuthorizeNv()
+ *  - Fapi_CreateKey()
+ *  - Fapi_Sign()
+ *  - Fapi_Delete()
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_policy_authorize_nv(FAPI_CONTEXT *context)
+test_fapi_key_create_policy_authorize_nv(FAPI_CONTEXT *context)
 {
     TSS2_RC r;
     char *nvPathPolicy = "/nv/Owner/myNV";
@@ -210,5 +201,5 @@ error:
 int
 test_invoke_fapi(FAPI_CONTEXT *context)
 {
-    return test_fapi_policy_authorize_nv(context);
+    return test_fapi_key_create_policy_authorize_nv(context);
 }

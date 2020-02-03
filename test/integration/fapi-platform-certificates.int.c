@@ -23,13 +23,14 @@
  * Tested FAPI commands:
  *  - Fapi_Provision()
  *  - Fapi_GetPlatformCertificates()
+ *  - Fapi_Delete()
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_get_platform_certificates(FAPI_CONTEXT *context)
+test_fapi_platform_certificates(FAPI_CONTEXT *context)
 {
     TSS2_RC r;
     uint8_t *certs = NULL;
@@ -63,5 +64,5 @@ error:
 int
 test_invoke_fapi(FAPI_CONTEXT *fapi_context)
 {
-    return test_fapi_get_platform_certificates(fapi_context);
+    return test_fapi_platform_certificates(fapi_context);
 }

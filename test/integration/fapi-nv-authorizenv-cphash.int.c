@@ -22,7 +22,7 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-TSS2_RC
+static TSS2_RC
 check_tpm_cmd(FAPI_CONTEXT *context, TPM2_CC command_code)
 {
     TSS2_RC r;
@@ -55,14 +55,15 @@ error:
     return r;
 }
 
-/** Test the FAPI NV functions.
+/** Test the FAPI PolicyCpHash but means of AuthorizeNv.
  *
  * Tested FAPI commands:
+ *  - Fapi_GetTcti()
  *  - Fapi_Provision()
+ *  - Fapi_Import()
  *  - Fapi_CreateNv()
+ *  - Fapi_WriteAuthorizeNv
  *  - Fapi_NvWrite()
- *  - Fapi_AuthorizeNv
- *  - PolicyCpHash
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

@@ -150,6 +150,8 @@ const char *log_exp[] = {
  * Tested FAPI commands:
  *  - Fapi_Provision()
  *  - Fapi_PcrExtend()
+ *  - Fapi_PcrRead()
+ *  - Fapi_Delete()
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

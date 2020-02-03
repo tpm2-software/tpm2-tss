@@ -27,13 +27,13 @@
 /** Test the FAPI functions to store and use an external public key and verify quote.
  *
  * Tested FAPI commands:
- *  - Fapi_Provision()
  *  - Fapi_Import()
  *  - Fapi_VerifySignature()
- *  - Fapi_VerifQuote()
- *  - Fapi_Delete()
- *  - Fapi_GetCertificate()
  *  - Fapi_SetCertificate()
+ *  - Fapi_GetCertificate()
+ *  - Fapi_List()
+ *  - Fapi_VerifyQuote()
+ *  - Fapi_Delete()
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

@@ -58,14 +58,17 @@ branch_callback(
     return TSS2_RC_SUCCESS;
 }
 
-/** Test the FAPI functions for key creation and usage.
+/** Test the FAPI functions for PolicyAuthoirze with signing.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
+ *  - Fapi_SetBranchCB()
+ *  - Fapi_Import()
  *  - Fapi_CreateKey()
+ *  - Fapi_AuthorizePolicy()
  *  - Fapi_Sign()
- *  - Fapi_Delete()
  *  - Fapi_List()
+ *  - Fapi_Delete()
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

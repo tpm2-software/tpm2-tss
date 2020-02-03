@@ -23,16 +23,16 @@
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
- *  - Fapi_CreatSeal()
+ *  - Fapi_CreateSeal()
  *  - Fapi_Unseal()
- *  - Fapi_List()
+ *  - Fapi_Delete()
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_seal(FAPI_CONTEXT *context)
+test_fapi_unseal(FAPI_CONTEXT *context)
 {
     TSS2_RC r;
     size_t resultSize;
@@ -81,5 +81,5 @@ error:
 int
 test_invoke_fapi(FAPI_CONTEXT *fapi_context)
 {
-    return test_fapi_seal(fapi_context);
+    return test_fapi_unseal(fapi_context);
 }
