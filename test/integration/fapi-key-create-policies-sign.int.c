@@ -43,10 +43,11 @@ auth_callback(
 }
 #define SIGN_TEMPLATE  "sign,noDa"
 
-/** Test the FAPI PolicyPassword and PolicyAuthValue by usage of signing key.
+/** Test several FAPI policies by usage of signing key.
  *
  * Which test case will be executed is determined by the compiler switches:
- *   TEST_POLICY_PASSWORD and TEST_POLICY_AUTH_VALUE.
+ *   TEST_POLICY_PASSWORD, TEST_POLICY_AUTH_VALUE, TEST_POLICY_LOCALITY
+ *   TEST_POLICY_PHYSICAL_PRESENCE, TEST_POLICY_COMMAND_CODE, TEST_POLICY_COUNTERTIMER.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
@@ -55,6 +56,14 @@ auth_callback(
  *  - Fapi_SetAuthCB()
  *  - Fapi_Sign()
  *  - Fapi_Delete()
+ *
+ * Tested Policies:
+ *  - PolicyPassword
+ *  - PolicyAuthValue
+ *  - PolicyLocality
+ *  - PolicyPhysicalPresence
+ *  - PolicyCommandCode
+ *  - PolicyCounterTimer
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

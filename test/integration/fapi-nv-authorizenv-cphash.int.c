@@ -65,6 +65,10 @@ error:
  *  - Fapi_WriteAuthorizeNv
  *  - Fapi_NvWrite()
  *
+ * Tested Policies:
+ *  - PolicyAuthorize
+ *  - PolicyCpHash
+ *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE
  * @retval EXIT_SUCCESS

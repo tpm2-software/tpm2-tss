@@ -70,6 +70,11 @@ branch_callback(
  *  - Fapi_List()
  *  - Fapi_Delete()
  *
+ * Tested Policies:
+ *  - PolicyNameHash
+ *  - PolicyAuthorize
+ *  - PolicyCpHash (Not entered, only as alternative branch)
+ *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE
  * @retval EXIT_SUCCESS

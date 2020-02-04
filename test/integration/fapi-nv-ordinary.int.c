@@ -71,6 +71,9 @@ action_callback(
  *  - Fapi_GetDescription()
  *  - Fapi_SetAuthCB()
  *
+ * Tested Policies:
+ *  - PolicyAction
+ *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE
  * @retval EXIT_SUCCESS

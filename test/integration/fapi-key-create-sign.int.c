@@ -39,7 +39,7 @@ auth_callback(
     return TSS2_RC_SUCCESS;
 }
 
-/** Test the FAPI functions for key creation and usage.
+/** Test the FAPI functions for TpmBlobs and certificates.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()

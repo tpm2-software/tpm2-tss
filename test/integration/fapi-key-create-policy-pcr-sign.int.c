@@ -25,7 +25,7 @@
 #define SIGN_TEMPLATE  "sign,noDa"
 
 
-/** Test the FAPI functions for key creation and usage.
+/** Test the FAPI functions for PolicyPCR with key creation and usage.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
@@ -36,6 +36,9 @@
  *  - Fapi_Delete()
  *  - Fapi_Import()
  *  - Fapi_List()
+ *
+ * Tested Policies:
+ *  - PolicyPcr (with currentPCRs set)
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

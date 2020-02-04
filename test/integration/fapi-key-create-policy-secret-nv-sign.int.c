@@ -76,7 +76,7 @@ read_policy(FAPI_CONTEXT *context, char *policy_name)
     return json_policy;
 }
 
-/** Test the FAPI PolicySecret handling.
+/** Test the FAPI PolicySecret and PolicyAuthValue handling.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
@@ -86,6 +86,10 @@ read_policy(FAPI_CONTEXT *context, char *policy_name)
  *  - Fapi_Sign()
  *  - Fapi_SetAuthCB()
  *  - Fapi_Delete()
+ *
+ * Tested Policies:
+ *  - PolicySecret
+ *  - PolicyAuthValue
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

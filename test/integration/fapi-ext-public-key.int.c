@@ -24,7 +24,7 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Test the FAPI functions to store and use an external public key and verify quote.
+/** Test the FAPI functions use an external public key for signature and quote verify without TPM.
  *
  * Tested FAPI commands:
  *  - Fapi_Import()
