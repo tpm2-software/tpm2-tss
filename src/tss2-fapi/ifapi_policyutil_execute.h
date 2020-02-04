@@ -32,12 +32,6 @@ struct IFAPI_POLICYUTIL_STACK {
 };
 
 TSS2_RC
-ifapi_new_policy(
-    FAPI_CONTEXT *context,
-    TPMS_POLICY *policy,
-    IFAPI_POLICY_EXEC_CTX **current_policy);
-
-TSS2_RC
 ifapi_policyutil_execute_prepare(
     FAPI_CONTEXT *context,
     TPMI_ALG_HASH hash_alg,

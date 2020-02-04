@@ -40,45 +40,22 @@ TSS2_RC
 ifapi_json_TPM2_GENERATED_deserialize(json_object *jso, TPM2_GENERATED *out);
 
 TSS2_RC
-ifapi_json_TPM2_GENERATED_deserialize_txt(json_object *jso,
-        TPM2_GENERATED *out);
-
-TSS2_RC
 ifapi_json_TPM2_ALG_ID_deserialize(json_object *jso, TPM2_ALG_ID *out);
-
-TSS2_RC
-ifapi_json_TPM2_ALG_ID_deserialize_txt(json_object *jso, TPM2_ALG_ID *out);
 
 TSS2_RC
 ifapi_json_TPM2_ECC_CURVE_deserialize(json_object *jso, TPM2_ECC_CURVE *out);
 
 TSS2_RC
-ifapi_json_TPM2_ECC_CURVE_deserialize_txt(json_object *jso,
-        TPM2_ECC_CURVE *out);
-
-TSS2_RC
 ifapi_json_TPM2_CC_deserialize(json_object *jso, TPM2_CC *out);
-
-TSS2_RC
-ifapi_json_TPM2_CC_deserialize_txt(json_object *jso, TPM2_CC *out);
 
 TSS2_RC
 ifapi_json_TPM2_EO_deserialize(json_object *jso, TPM2_EO *out);
 
 TSS2_RC
-ifapi_json_TPM2_EO_deserialize_txt(json_object *jso, TPM2_EO *out);
-
-TSS2_RC
 ifapi_json_TPM2_ST_deserialize(json_object *jso, TPM2_ST *out);
 
 TSS2_RC
-ifapi_json_TPM2_ST_deserialize_txt(json_object *jso, TPM2_ST *out);
-
-TSS2_RC
 ifapi_json_TPM2_PT_PCR_deserialize(json_object *jso, TPM2_PT_PCR *out);
-
-TSS2_RC
-ifapi_json_TPM2_PT_PCR_deserialize_txt(json_object *jso, TPM2_PT_PCR *out);
 
 TSS2_RC
 ifapi_json_TPM2_HANDLE_deserialize(json_object *jso, TPM2_HANDLE *out);
@@ -93,14 +70,7 @@ TSS2_RC
 ifapi_json_TPMI_YES_NO_deserialize(json_object *jso, TPMI_YES_NO *out);
 
 TSS2_RC
-ifapi_json_TPMI_YES_NO_deserialize_txt(json_object *jso, TPMI_YES_NO *out);
-
-TSS2_RC
 ifapi_json_TPMI_RH_HIERARCHY_deserialize(json_object *jso,
-        TPMI_RH_HIERARCHY *out);
-
-TSS2_RC
-ifapi_json_TPMI_RH_HIERARCHY_deserialize_txt(json_object *jso,
         TPMI_RH_HIERARCHY *out);
 
 TSS2_RC
@@ -108,27 +78,13 @@ ifapi_json_TPMI_RH_NV_INDEX_deserialize(json_object *jso,
                                         TPMI_RH_NV_INDEX *out);
 
 TSS2_RC
-ifapi_json_TPMI_RH_NV_INDEX_deserialize_txt(json_object *jso,
-        TPMI_RH_NV_INDEX *out);
-
-TSS2_RC
 ifapi_json_TPMI_ALG_HASH_deserialize(json_object *jso, TPMI_ALG_HASH *out);
-
-TSS2_RC
-ifapi_json_TPMI_ALG_HASH_deserialize_txt(json_object *jso, TPMI_ALG_HASH *out);
 
 TSS2_RC
 ifapi_json_TPMI_ALG_SYM_deserialize(json_object *jso, TPMI_ALG_SYM *out);
 
 TSS2_RC
-ifapi_json_TPMI_ALG_SYM_deserialize_txt(json_object *jso, TPMI_ALG_SYM *out);
-
-TSS2_RC
 ifapi_json_TPMI_ALG_SYM_OBJECT_deserialize(json_object *jso,
-        TPMI_ALG_SYM_OBJECT *out);
-
-TSS2_RC
-ifapi_json_TPMI_ALG_SYM_OBJECT_deserialize_txt(json_object *jso,
         TPMI_ALG_SYM_OBJECT *out);
 
 TSS2_RC
@@ -136,21 +92,10 @@ ifapi_json_TPMI_ALG_SYM_MODE_deserialize(json_object *jso,
         TPMI_ALG_SYM_MODE *out);
 
 TSS2_RC
-ifapi_json_TPMI_ALG_SYM_MODE_deserialize_txt(json_object *jso,
-        TPMI_ALG_SYM_MODE *out);
-
-TSS2_RC
 ifapi_json_TPMI_ALG_KDF_deserialize(json_object *jso, TPMI_ALG_KDF *out);
 
 TSS2_RC
-ifapi_json_TPMI_ALG_KDF_deserialize_txt(json_object *jso, TPMI_ALG_KDF *out);
-
-TSS2_RC
 ifapi_json_TPMI_ALG_SIG_SCHEME_deserialize(json_object *jso,
-        TPMI_ALG_SIG_SCHEME *out);
-
-TSS2_RC
-ifapi_json_TPMI_ALG_SIG_SCHEME_deserialize_txt(json_object *jso,
         TPMI_ALG_SIG_SCHEME *out);
 
 TSS2_RC
@@ -244,10 +189,6 @@ TSS2_RC
 ifapi_json_TPMI_ST_ATTEST_deserialize(json_object *jso, TPMI_ST_ATTEST *out);
 
 TSS2_RC
-ifapi_json_TPMI_ST_ATTEST_deserialize_txt(json_object *jso,
-        TPMI_ST_ATTEST *out);
-
-TSS2_RC
 ifapi_json_TPMU_ATTEST_deserialize(UINT32 selector, json_object *jso,
                                    TPMU_ATTEST *out);
 
@@ -256,10 +197,6 @@ ifapi_json_TPMS_ATTEST_deserialize(json_object *jso, TPMS_ATTEST *out);
 
 TSS2_RC
 ifapi_json_TPMI_AES_KEY_BITS_deserialize(json_object *jso,
-        TPMI_AES_KEY_BITS *out);
-
-TSS2_RC
-ifapi_json_TPMI_AES_KEY_BITS_deserialize_txt(json_object *jso,
         TPMI_AES_KEY_BITS *out);
 
 TSS2_RC
@@ -291,10 +228,6 @@ ifapi_json_TPMS_SCHEME_ECDAA_deserialize(json_object *jso,
 
 TSS2_RC
 ifapi_json_TPMI_ALG_KEYEDHASH_SCHEME_deserialize(json_object *jso,
-        TPMI_ALG_KEYEDHASH_SCHEME *out);
-
-TSS2_RC
-ifapi_json_TPMI_ALG_KEYEDHASH_SCHEME_deserialize_txt(json_object *jso,
         TPMI_ALG_KEYEDHASH_SCHEME *out);
 
 TSS2_RC
@@ -383,18 +316,10 @@ ifapi_json_TPMI_ALG_RSA_SCHEME_deserialize(json_object *jso,
         TPMI_ALG_RSA_SCHEME *out);
 
 TSS2_RC
-ifapi_json_TPMI_ALG_RSA_SCHEME_deserialize_txt(json_object *jso,
-        TPMI_ALG_RSA_SCHEME *out);
-
-TSS2_RC
 ifapi_json_TPMT_RSA_SCHEME_deserialize(json_object *jso, TPMT_RSA_SCHEME *out);
 
 TSS2_RC
 ifapi_json_TPMI_ALG_RSA_DECRYPT_deserialize(json_object *jso,
-        TPMI_ALG_RSA_DECRYPT *out);
-
-TSS2_RC
-ifapi_json_TPMI_ALG_RSA_DECRYPT_deserialize_txt(json_object *jso,
         TPMI_ALG_RSA_DECRYPT *out);
 
 TSS2_RC
@@ -410,10 +335,6 @@ ifapi_json_TPMI_RSA_KEY_BITS_deserialize(json_object *jso,
         TPMI_RSA_KEY_BITS *out);
 
 TSS2_RC
-ifapi_json_TPMI_RSA_KEY_BITS_deserialize_txt(json_object *jso,
-        TPMI_RSA_KEY_BITS *out);
-
-TSS2_RC
 ifapi_json_TPM2B_ECC_PARAMETER_deserialize(json_object *jso,
         TPM2B_ECC_PARAMETER *out);
 
@@ -425,15 +346,7 @@ ifapi_json_TPMI_ALG_ECC_SCHEME_deserialize(json_object *jso,
         TPMI_ALG_ECC_SCHEME *out);
 
 TSS2_RC
-ifapi_json_TPMI_ALG_ECC_SCHEME_deserialize_txt(json_object *jso,
-        TPMI_ALG_ECC_SCHEME *out);
-
-TSS2_RC
 ifapi_json_TPMI_ECC_CURVE_deserialize(json_object *jso, TPMI_ECC_CURVE *out);
-
-TSS2_RC
-ifapi_json_TPMI_ECC_CURVE_deserialize_txt(json_object *jso,
-        TPMI_ECC_CURVE *out);
 
 TSS2_RC
 ifapi_json_TPMT_ECC_SCHEME_deserialize(json_object *jso, TPMT_ECC_SCHEME *out);
@@ -485,10 +398,6 @@ TSS2_RC
 ifapi_json_TPMI_ALG_PUBLIC_deserialize(json_object *jso, TPMI_ALG_PUBLIC *out);
 
 TSS2_RC
-ifapi_json_TPMI_ALG_PUBLIC_deserialize_txt(json_object *jso,
-        TPMI_ALG_PUBLIC *out);
-
-TSS2_RC
 ifapi_json_TPMU_PUBLIC_ID_deserialize(UINT32 selector, json_object *jso,
                                       TPMU_PUBLIC_ID *out);
 
@@ -517,9 +426,6 @@ ifapi_json_TPM2B_PRIVATE_deserialize(json_object *jso, TPM2B_PRIVATE *out);
 
 TSS2_RC
 ifapi_json_TPM2_NT_deserialize(json_object *jso, TPM2_NT *out);
-
-TSS2_RC
-ifapi_json_TPM2_NT_deserialize_txt(json_object *jso, TPM2_NT *out);
 
 TSS2_RC
 ifapi_json_TPMA_NV_deserialize(json_object *jso, TPMA_NV *out);

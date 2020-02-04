@@ -203,32 +203,6 @@ typedef struct {
     IFAPI_CAP_INFO             cap[IFAPI_MAX_CAP_INFO];
 } IFAPI_INFO;
 
-/** Type for representing FAPI profile for keys
- */
-typedef struct {
-    TPMI_ALG_PUBLIC                                type;    /**< The algorithm used for key creation */
-    char                                  *srk_template;    /**< name of SRK template */
-    char                                   *ek_template;    /**< name of EK template */
-    TPMT_SIG_SCHEME                  ecc_signing_scheme;    /**< < Signing scheme for the ECC key. */
-    TPMT_SIG_SCHEME                  rsa_signing_scheme;    /**< < Signing scheme for the RSA key. */
-    TPMT_RSA_DECRYPT                 rsa_decrypt_scheme;    /**< < Decrypt scheme for the RSA key. */
-    TPMI_ALG_SYM_MODE                          sym_mode;    /**< < Mode for symmectric encryption. */
-    TPMT_SYM_DEF_OBJECT                  sym_parameters;    /**< < Parameters for symmectric encryption. */
-    UINT16                               sym_block_size;    /**< < Block size for symmectric encryption. */
-    TPML_PCR_SELECTION                    pcr_selection;    /**< < Parameters for symmectric encryption. */
-    TPMI_ALG_HASH                               nameAlg;
-    TPMI_RSA_KEY_BITS                           keyBits;
-    UINT32                                     exponent;
-    TPMI_ECC_CURVE                              curveID;
-    TPMT_SYM_DEF                      session_symmetric;
-    TPMS_POLICY                              *eh_policy;
-    TPMS_POLICY                              *sh_policy;
-    TPMS_POLICY                         *lockout_policy;
-    UINT32                                  newMaxTries;
-    UINT32                              newRecoveryTime;
-    UINT32                              lockoutRecovery;
-} IFAPI_KEY_PROFILE;
-
 /** Type for representing FAPI template for keys
  */
 typedef struct {
@@ -310,14 +284,6 @@ typedef struct {
     TPML_DIGEST_VALUES digests;  /**< Digest for the event data of an extend */
     bool skip_policy_computation; /**< switch whether policy needs to be computed */
 } IFAPI_NV_Cmds;
-
-/** The data structure storing a pem cerrificate with tpm_public_key.
- */
-typedef struct {
-    TPMU_PUBLIC_ID unique;
-    TPM2_ALG_ID alg;
-    char *pem_cert;
-} IFAPI_CERT_BUFFER;
 
 /** The data structure holding internal state of Fapi_Initialize command.
  */
@@ -809,24 +775,10 @@ enum _FAPI_STATE_GET_RANDOM {
     GET_RANDOM_SENT
 };
 
-/** The states for the FAPI's encrypt/decrypt state*/
-enum _FAPI_STATE_ENCRYPT_DECRYPT {
-    ENCRYPT_DECRYPT_INIT = 0,
-    ENCRYPT_DECRYPT_LOOP,
-    ENCRYPT_DECRYPT_AUTH_SENT,
-    ENCRYPT_DECRYPT_NULL_AUTH_SENT
-};
-
 /** The states for flushing objects */
 enum _FAPI_FLUSH_STATE {
     FLUSH_INIT = 0,
     WAIT_FOR_FLUSH
-};
-
-/** The states for writing objects */
-enum IFAPI_WRITE_STATE {
-    WRITE_INIT = 0,
-    WRITE_WAIT_FOR_FINISH
 };
 
 /** The states for the FAPI's internal state machine */
@@ -1176,8 +1128,6 @@ struct FAPI_CONTEXT {
     enum _FAPI_STATE_PRIMARY primary_state; /**< The current state of the primary regeneration */
     enum _FAPI_STATE_SESSION session_state; /**< The current state of the session creation */
     enum _FAPI_STATE_GET_RANDOM get_random_state; /**< The current state of get random */
-    enum _FAPI_STATE_ENCRYPT_DECRYPT sym_encrypt_decrypt_state; /**< The current state of symmetric
-                                                                      encryption */
     enum IFAPI_HIERACHY_AUTHORIZATION_STATE hierarchy_state;
     enum IFAPI_HIERACHY_POLICY_AUTHORIZATION_STATE hierarchy_policy_state;
     enum IFAPI_GET_CERT_STATE get_cert_state;
@@ -1185,12 +1135,9 @@ struct FAPI_CONTEXT {
     enum IFAPI_CLEANUP_STATE cleanup_state;     /**< The state of cleanup after command execution */
     IFAPI_CONFIG config;             /**< The profile independet configuration data */
     UINT32 nv_buffer_max;            /**< The maximal size for transfer of nv buffer content */
-    TPM2_CC cmd_tag;                 /**< The TPM cmd currently executed by FAPI */
     IFAPI_CMD_STATE cmd;             /**< The state information of the currently executed
                                           command */
     IFAPI_NV_Cmds nv_cmd;
-    IFAPI_NV_Cmds policy_nvCmdState;
-    IFAPI_NV_Cmds policy_nvCmdSav;
     IFAPI_GetRandom get_random;
     IFAPI_CreatePrimary createPrimary;
     IFAPI_LoadKey loadKey;
@@ -1208,7 +1155,6 @@ struct FAPI_CONTEXT {
     IFAPI_POLICY_CTX policy;  /**< The context of current policy. */
     IFAPI_FILE_SEARCH_CTX fsearch;  /**< The context for object search in key/policy store */
     IFAPI_Key_Sign Key_Sign; /**< State information for key signing */
-    enum IFAPI_WRITE_STATE write_state;
     enum IFAPI_IO_STATE io_state;
     NODE_OBJECT_T *object_list;
     IFAPI_OBJECT *duplicate_key; /**< Will be needed for policy execution */

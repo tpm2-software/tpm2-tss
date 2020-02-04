@@ -1893,12 +1893,6 @@ TSS2_RC ifapi_calculate_pcr_digest(
     IFAPI_OBJECT *auth_object,
     const char *description);
 
-\fn TSS2_RC ifapi_key_deserialize(
-    FAPI_CONTEXT *context,
-    json_object *jso,
-    ESYS_TR *kHandle,
-    IFAPI_OBJECT *object);
-
 \fn TSS2_RC ifapi_get_free_handle_async(FAPI_CONTEXT *fctx, TPM2_HANDLE *handle);
 
 \fn TSS2_RC ifapi_get_free_handle_finish(FAPI_CONTEXT *fctx, TPM2_HANDLE *handle,
