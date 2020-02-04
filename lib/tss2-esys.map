@@ -306,7 +306,6 @@
         Esys_SetAlgorithmSet;
         Esys_SetAlgorithmSet_Async;
         Esys_SetAlgorithmSet_Finish;
-        Esys_TRSess_GetAuthRequired;
         Esys_SetCommandCodeAuditStatus;
         Esys_SetCommandCodeAuditStatus_Async;
         Esys_SetCommandCodeAuditStatus_Finish;
