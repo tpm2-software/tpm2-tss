@@ -38,7 +38,7 @@ auth_callback(
 #define PROFILE_DIR  ""
 
 
-/** Test the FAPI functions for PolicyImport and PolicyAuth callbacks.
+/** Test the FAPI functions for PolicyImport and PolicyPassword callbacks.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
@@ -48,6 +48,9 @@ auth_callback(
  *  - Fapi_Key_Sign()
  *  - Fapi_Entity_Delete()
  *  - Fapi_Entities_List()
+ *
+ * Tested Policies:
+ *  - PolicyPassword
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

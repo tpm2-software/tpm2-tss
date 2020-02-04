@@ -145,7 +145,7 @@ const char *log_exp[] = {
   }\n\
 ]" };
 
-/** Test the FAPI function FAPI_PCR_Extend.
+/** Test the FAPI function FAPI_PcrExtend and Read.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()

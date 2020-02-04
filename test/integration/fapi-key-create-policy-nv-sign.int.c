@@ -35,6 +35,9 @@
  *  - Fapi_Sign()
  *  - Fapi_Delete()
  *
+ * Tested Policies:
+ *  - PolicyNv
+ *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE
  * @retval EXIT_SUCCESS

@@ -21,7 +21,7 @@
 
 #define SIZE 2000
 
-/** Test the FAPI functions for key creation and usage.
+/** Test the FAPI functions for key duplication.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
@@ -29,6 +29,9 @@
  *  - Fapi_CreateKey()
  *  - Fapi_ExportKey()
  *  - Fapi_Delete()
+ *
+ * Tested Policies:
+ *  - PolicyDuplicationSelect
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

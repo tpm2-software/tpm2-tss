@@ -40,7 +40,7 @@ auth_callback(
 }
 
 
-/** Test the FAPI function FAPI_NV_Extend.
+/** Test the FAPI function FAPI_NvExtend.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()

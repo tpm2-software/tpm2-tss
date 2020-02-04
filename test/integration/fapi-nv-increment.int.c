@@ -37,7 +37,7 @@ auth_callback(
     return TSS2_RC_SUCCESS;
 }
 
-/** Test the FAPI function FAPI_Increment.
+/** Test the FAPI function FAPI_NvIncrement.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
@@ -47,6 +47,10 @@ auth_callback(
  *  - Fapi_ChangeAuth()
  *  - Fapi_Delete()
  *  - Fapi_NvIncrement()
+ *
+ * Tested Policies:
+ *  - PolicyAuthValue
+ *  - PolicyCommandCode
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

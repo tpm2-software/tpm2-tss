@@ -179,7 +179,7 @@ error_cleanup:
 
 #define SIGN_TEMPLATE  "sign,noDa"
 
-/** Test the FAPI functions for key creation and usage with a signed policy.
+/** Test the FAPI functions for key creation and usage with a PolicySigned.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
@@ -189,6 +189,9 @@ error_cleanup:
  *  - Fapi_Sign()
  *  - Fapi_Delete()
  *  - Fapi_List()
+ *
+ * Tested Policies:
+ *  - PolicySigned
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

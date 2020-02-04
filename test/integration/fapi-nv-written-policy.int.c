@@ -22,7 +22,7 @@
 
 #define NV_SIZE 10
 
-/** Test the FAPI policy Policy_NvWritten.
+/** Test the FAPI policy PolicyNvWritten.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()
@@ -31,6 +31,9 @@
  *  - Fapi_GetAppData()
  *  - Fapi_NvWrite()
  *  - Fapi_Delete()
+ *
+ * Tested Policies:
+ *  - PolicyNvWritten
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE

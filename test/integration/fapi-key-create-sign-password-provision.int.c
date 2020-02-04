@@ -41,7 +41,7 @@ auth_callback(
     return TSS2_RC_SUCCESS;
 }
 
-/** Test the FAPI functions for key creation and usage with a SH password.
+/** Test the FAPI functions for key creation and usage with an SH password.
  *
  * Tested FAPI commands:
  *  - Fapi_Provision()

@@ -34,7 +34,7 @@ auth_callback(
 }
 
 
-/** Test the FAPI function for changing the key authorization.
+/** Test the FAPI function for changing key authorizations.
  *
  * The setting of the authorization callback and usage of the
  * key with Fapi_Sign afterwards is also tested.

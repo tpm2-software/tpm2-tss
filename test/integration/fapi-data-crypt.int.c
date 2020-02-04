@@ -172,6 +172,9 @@ error_cleanup:
  *  - Fapi_Decrypt()
  *  - Fapi_Free()
  *
+ * Tested Policies:
+ *  - PolicySigned
+ *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE
  * @retval EXIT_SUCCESS

@@ -106,6 +106,9 @@ read_policy(FAPI_CONTEXT *context, char *policy_name)
  *  - Fapi_Sign()
  *  - Fapi_Delete()
  *
+ * Tested Policies:
+ *  - PolicyAuthorizeNv
+ *
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE
  * @retval EXIT_SUCCESS
