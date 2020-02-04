@@ -21,21 +21,6 @@ ifapi_extend_authorization(
     TPMS_POLICY *policy,
     TPMS_POLICYAUTHORIZATION *authorization);
 
-TSS2_RC
-ifapi_execute_policy_or(
-    FAPI_CONTEXT *context,
-    TPMS_POLICYOR *policy,
-    TPMI_ALG_HASH current_hash_alg,
-    size_t digest_idx,
-    IFAPI_POLICY_EXEC_CTX *current_policy);
-
-TSS2_RC
-ifapi_execute_policy_element(
-    FAPI_CONTEXT *context,
-    TPML_POLICYELEMENTS *policy,
-    TPMI_ALG_HASH hash_alg,
-    IFAPI_POLICY_EXEC_CTX *current_policy);
-
 typedef TSS2_RC(*Policy_Compare_Object)(
     TPMS_POLICY *policy,
     void *object1,

@@ -40,21 +40,6 @@ ifapi_set_auth(
     const char *description);
 
 TSS2_RC
-ifapi_key_deserialize_keep_json(
-    FAPI_CONTEXT *context,
-    json_object *jso,
-    ESYS_TR *kHandle,
-    IFAPI_OBJECT *object);
-
-
-TSS2_RC
-ifapi_key_deserialize(
-    FAPI_CONTEXT *context,
-    json_object *jso,
-    ESYS_TR *kHandle,
-    IFAPI_OBJECT *object);
-
-TSS2_RC
 ifapi_get_free_handle_async(FAPI_CONTEXT *fctx, TPM2_HANDLE *handle);
 
 TSS2_RC
@@ -169,19 +154,8 @@ ifapi_key_sign(
     char           **publicKey,
     char           **certificate);
 
-void
-ifapi_full_path_to_fapi_path(
-    IFAPI_KEYSTORE *keystore,
-    char *path);
-
 TSS2_RC
 ifapi_authorize_object(
-    FAPI_CONTEXT *context,
-    IFAPI_OBJECT *object,
-    ESYS_TR      *session);
-
-TSS2_RC
-ifapi_authorize_objectPV2(
     FAPI_CONTEXT *context,
     IFAPI_OBJECT *object,
     ESYS_TR      *session);
@@ -191,12 +165,6 @@ ifapi_get_json(
     FAPI_CONTEXT *context,
     IFAPI_OBJECT *object,
     char **json_string);
-
-TSS2_RC
-ifapi_read_object(
-    FAPI_CONTEXT *context,
-    IFAPI_OBJECT *object,
-    const char *path);
 
 TSS2_RC
 ifapi_key_create_prepare(
