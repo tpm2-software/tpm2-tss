@@ -36,28 +36,16 @@
 #include "tss2_esys.h"
 #include "tss2_fapi.h"
 
-#define TPM2_YES_NO TPMI_YES_NO
-
-#define DEFAULT_KEY_PROFILE "P_RSA"
-#define ENV_LOG_DIR "FAPI_TEST_LOGDIR"
 #define DEFAULT_LOG_DIR "/run/tpm2_tss"
 #define IFAPI_PCR_LOG_FILE "pcr.log"
-#define DEFAULT_HIERARCHY "HS"
-#define DEFAULT_KEY_NAME "key"
-
 #define IFAPI_OBJECT_TYPE ".json"
 #define IFAPI_OBJECT_FILE "object.json"
-#define IFAPI_EK_KEY_PATH "HE/EK"
 #define IFAPI_SRK_KEY_PATH "HS/SRK"
 
 typedef UINT32 TSS2_KEY_TYPE;
-#define TSS2_ASYM_STORAGE_KEY 1
 #define TSS2_SRK 2
 #define TSS2_EK 3
-#define TSS2_ASYM_RESTRICTED_SIGNING_KEY 4
-#define TSS2_HMAC_KEY 5
 #define MIN_EK_CERT_HANDLE 0x1c00000
-#define MAX_EK_CERT_HANDLE 0x1c07fff
 #define MIN_PLATFORM_CERT_HANDLE 0x01C08000
 #define MAX_PLATFORM_CERT_HANDLE 0x01C0FFFF
 
@@ -75,13 +63,7 @@ typedef UINT8 IFAPI_SESSION_TYPE;
 #define IFAPI_PUB_KEY_DIR "ext"
 #define IFAPI_POLICY_DIR "policy"
 #define IFAPI_PEM_PUBLIC_STRING "-----BEGIN PUBLIC KEY-----"
-#define IFAPI_PEM_CERT_STRING "-----BEGIN CERTIFICATE-----"
 #define IFAPI_PEM_PRIVATE_KEY "-----PRIVATE KEY-----"
-#define IFAPI_JSON_TAG_FOR_KEY "persistent_handle"
-#define IFAPI_JSON_TAG_PUBLIC "public"
-#define IFAPI_JSON_TAG_FOR_NV_OBJECT "nv_object"
-#define IFAPI_JSON_TAG_CERTIFICATE "certificate"
-#define IFAPI_JSON_TAG_EXT_PUB_KEY "pem_ext_public"
 #define IFAPI_JSON_TAG_POLICY "policy"
 #define IFAPI_JSON_TAG_DUPLICATE "public_parent"
 
@@ -111,14 +93,6 @@ typedef struct {
     memcpy(dest_buffer, (src), (src_size));  \
     dest_size = src_size
 
-/** Macro testing parameters against null.
- */
-#define _FAPI_ASSERT_NON_NULL(x) \
-    if (x == NULL) { \
-        LOG_ERROR(str(x) " == NULL."); \
-        return TSS2_ESYS_RC_BAD_REFERENCE; \
-    }
-
 #define HASH_UPDATE(CONTEXT, TYPE, OBJECT, R, LABEL)    \
     { \
         uint8_t buffer[sizeof(TYPE)]; \
@@ -136,22 +110,6 @@ typedef struct {
                                  (const uint8_t *) BUFFER, SIZE) ; \
     goto_if_error(R, "crypto hash update", LABEL);
 
-#define MARSHAL_BUFFER(TYPE, OBJECT, BUFFER, SIZE, OFFSET, R, LABEL) \
-    R = Tss2_MU_ ## TYPE ## _Marshal(OBJECT, \
-                                     &BUFFER[OFFSET], SIZE, &OFFSET); \
-    goto_if_error(R, "Marshal buffer", LABEL);
-
-#define MARSHAL_OBJECT(TYPE, OBJECT, BUFFER, SIZE, OFFSET, R, LABEL) \
-    R = Tss2_MU_ ## TYPE ## _Marshal(OBJECT, \
-                                     &BUFFER[OFFSET], SIZE, &OFFSET); \
-    goto_if_error(R, "Marshal buffer", LABEL);
-
-
-#define HASH_UPDATE_2B(CONTEXT, OBJECT, R, LABEL) \
-    R = ifapi_crypto_hash_update(CONTEXT, \
-                                 (const uint8_t *) OBJECT.buffer, OBJECT->size) ; \
-    goto_if_error(R, "crypto hash update", LABEL); }
-
 #define FAPI_SYNC(r,msg,label, ...)             \
     if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) \
         return TSS2_FAPI_RC_TRY_AGAIN; \
@@ -159,18 +117,6 @@ typedef struct {
         LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ## __VA_ARGS__); \
         goto label;  \
     }
-
-/** Type of resource
- */
-typedef UINT32 IFAPI_ENCRYPTION_TYPE;
-#define IFAPI_SYM_BULK_ENCRYPTION      1    /**< Tag for key resource */
-#define IFAPI_ASYM_BULK_ENCRYPTION      1    /**< Tag for key resource */
-#define IFAPI_ASYM_ENCRYPTION          2    /**< Tag for key resource */
-#define IFAPI_SYSM_ENCRYPTON_WRAPPED   2    /**< Tag for NV Ram resource */
-
-/** Type of resource
- */
-
 
 /** The states for the FAPI's object authorization state*/
 enum IFAPI_GET_CERT_STATE {
@@ -236,8 +182,7 @@ enum _FAPI_STATE_NV_READ {
     NV_READ_INIT = 0,
     NV_READ_AUTHORIZE,
     NV_READ_AUTHORIZE2,
-    NV_READ_AUTH_SENT,
-    NV_READ_WRITE
+    NV_READ_AUTH_SENT
 };
 
 /** The states for the FAPI's NV write state */
@@ -245,7 +190,6 @@ enum _FAPI_STATE_NV_WRITE {
     NV2_WRITE_INIT = 0,
     NV2_WRITE_READ,
     NV2_WRITE_WAIT_FOR_SESSSION,
-    NV2_WRITE_EXEC_ESYS,
     NV2_WRITE_NULL_AUTH_SENT,
     NV2_WRITE_AUTH_SENT,
     NV2_WRITE_WRITE_PREPARE,
@@ -363,18 +307,13 @@ typedef struct {
 /** The states for the FAPI's key creation */
 enum IFAPI_KEY_CREATE_STATE {
     KEY_CREATE_INIT = 0,
-    KEY_CREATE_READ_PROFILE,
     KEY_CREATE_WAIT_FOR_SESSION,
     KEY_CREATE_WAIT_FOR_PARENT,
-    KEY_CREATE_NULL_AUTH_SENT,
     KEY_CREATE_AUTH_SENT,
-    KEY_CREATE_CREATED,
     KEY_CREATE_WRITE_PREPARE,
     KEY_CREATE_WRITE,
     KEY_CREATE_FLUSH,
-    KEY_CREATE_LOAD_POLICY,
     KEY_CREATE_CALCULATE_POLICY,
-    KEY_CREATE_WRITE_POLICY,
     KEY_CREATE_WAIT_FOR_AUTHORIZATION,
     KEY_CREATE_CLEANUP
 };
@@ -420,16 +359,10 @@ typedef struct {
 /** The states for signing  */
 enum FAPI_SIGN_STATE {
     SIGN_INIT = 0,
-    SIGN_WAIT_FOR_PROFILE,
     SIGN_WAIT_FOR_SESSION,
     SIGN_WAIT_FOR_KEY,
-    SIGN_KEY_LOADED,
-    SIGN_AUTHORIZE,
     SIGN_AUTH_SENT,
-    SIGN_NULL_AUTH_SENT,
-    SIGN_WAIT_FOR_FLUSH,
-    SIGN_CALL,
-    SIGN_EXEC_POLICY
+    SIGN_WAIT_FOR_FLUSH
 };
 
 /** The data structure holding internal state of Fapi_Sign.
@@ -575,16 +508,8 @@ enum IFAPI_STATE_POLICY {
     POLICY_READ_FINISH,
     POLICY_INSTANTIATE_PREPARE,
     POLICY_INSTANTIATE,
-    POLICY_INIT_CACHE,
-    POLICY_INIT_CACHE_READ,
-    POLICY_READ_CACHE,
-    POLICY_READ_CACHE_GET_JSON,
-    POLICY_WRITE,
-    POLICY_CALCULATE,
     POLICY_EXECUTE,
-    POLICY_SESSION,
-    POLICY_FLUSH,
-    POLICY_NEW
+    POLICY_FLUSH
 };
 
 typedef struct IFAPI_POLICY_EXEC_CTX IFAPI_POLICY_EXEC_CTX;
@@ -594,8 +519,7 @@ typedef struct IFAPI_POLICYUTIL_STACK IFAPI_POLICYUTIL_STACK;
 enum FAPI_CREATE_SESSION_STATE {
     CREATE_SESSION_INIT = 0,
     CREATE_SESSION,
-    WAIT_FOR_CREATE_SESSION,
-    CREATE_SESSION_WAIT_FOR_FLUSH
+    WAIT_FOR_CREATE_SESSION
 };
 
 /** The data structure holding internal policy state.
@@ -641,8 +565,7 @@ typedef struct {
 
 /** The states for the FAPI's key loading */
 enum _FAPI_STATE_LOAD_KEY {
-    LOAD_KEY_INIT = 0,
-    LOAD_KEY_GET_PATH,
+    LOAD_KEY_GET_PATH = 0,
     LOAD_KEY_READ_KEY,
     LOAD_KEY_WAIT_FOR_PRIMARY,
     LOAD_KEY_LOAD_KEY,
@@ -753,13 +676,11 @@ typedef union {
 enum _FAPI_STATE_PRIMARY {
     PRIMARY_INIT = 0,
     PRIMARY_READ_KEY,
-    PRIMARY_SEND_NULL_AUTH,
     PRIMARY_READ_HIERARCHY,
     PRIMARY_READ_HIERARCHY_FINISH,
     PRIMARY_AUTHORIZE_HIERARCHY,
     PRIMARY_HAUTH_SENT,
-    PRIMARY_CREATED,
-    PRIMARY_WAIT_FOR_SESSION
+    PRIMARY_CREATED
 };
 
 /** The states for the FAPI's primary key regeneration */
@@ -788,13 +709,6 @@ enum _FAPI_STATE {
     _FAPI_STATE_INIT = 0,         /**< The initial state after creation or after
                                      finishing a command. A new command can only
                                      be issued in this state. */
-    _FAPI_STATE_SENT,             /**< The state after sending a command to the TPM
-                                     withaout authorization before receiving a response. */
-    _FAPI_STATE_RESUBMISSION,     /**< The state after receiving a response from the
-                                     ESAPI that requires resending of the command or
-                                     a FAPI command which requires several ESAPI commands.*/
-    _FAPI_STATE_SENT_NO_AUTH,      /**< The state after sending a command to the TPM
-                                      withaout authorization before receiving a response. */
     _FAPI_STATE_INTERNALERROR,     /**< A non-recoverable error occurred within the
                                       ESAPI code. */
     INITIALIZE_READ,
@@ -815,21 +729,15 @@ enum _FAPI_STATE {
     PROVISION_READ_ROOT_CERT,
     PROVISION_READ_PROFILE,
     PROVISION_INIT_SRK,
-    PROVISION_READ_EK_TEMPLATE,
-    PROVISION_READ_SRK_TEMPLATE,
     PROVISION_AUTH_EK_NO_AUTH_SENT,
     PROVISION_AUTH_EK_AUTH_SENT,
     PROVISION_AUTH_SRK_NO_AUTH_SENT,
     PROVISION_AUTH_SRK_AUTH_SENT,
-    PROVISION_EK_CREATED,
-    PROVISION_SRK_CREATED,
     PROVISION_EK_WRITE_PREPARE,
     PROVISION_EK_WRITE,
     PROVISION_EK_CHECK_CERT,
     PROVISION_SRK_WRITE_PREPARE,
     PROVISION_SRK_WRITE,
-    PROVISION_INIT_EK_WRITE,
-    PROVISION_INIT_SRK_WRITE,
     PROVISION_WAIT_FOR_EK_PERSISTENT,
     PROVISION_WAIT_FOR_SRK_PERSISTENT,
     PROVISION_CHANGE_LOCKOUT_AUTH,
@@ -850,12 +758,10 @@ enum _FAPI_STATE {
     PROVISION_CHECK_FOR_VENDOR_CERT,
     PROVISION_GET_VENDOR,
 
-    KEY_CREATE_READ_TEMPLATE,
     KEY_CREATE,
 
     CREATE_SEAL,
 
-    KEY_SET_CERTIFICATE_READ_PROFILE,
     KEY_SET_CERTIFICATE_READ,
     KEY_SET_CERTIFICATE_WRITE,
 
@@ -870,28 +776,18 @@ enum _FAPI_STATE {
     NV_CREATE_AUTHORIZE_HIERARCHY,
     NV_CREATE_GET_INDEX,
     NV_CREATE_FIND_INDEX,
-    NV_CREATE_SESSION,
     NV_CREATE_WAIT_FOR_SESSION,
 
     NV_CREATE_AUTH_SENT,
     NV_CREATE_WRITE,
     NV_CREATE_CALCULATE_POLICY,
-    NV_WRITE_CALL,
 
     NV_WRITE_READ,
-    NV_WRITE_SESSION,
-    NV_WRITE_WAIT_FOR_SESSION,
-    NV_WRITE_WAIT_FOR_PROFILE,
-    NV_WRITE_NULL_AUTH_SENT,
-    NV_WRITE_AUTH_SENT,
     NV_WRITE_WRITE,
-    NV_WRITE_EXEC_POLICY,
     NV_WRITE_CLEANUP,
 
     NV_EXTEND_READ,
-    NV_EXTEND_SESSION,
     NV_EXTEND_WAIT_FOR_SESSION,
-    NV_EXTEND_WAIT_FOR_PROFILE,
     NV_EXTEND_AUTHORIZE,
     NV_EXTEND_AUTH_SENT,
     NV_EXTEND_WRITE,
@@ -913,9 +809,7 @@ enum _FAPI_STATE {
 
     NV_READ_READ,
     NV_READ_WAIT,
-    NV_READ_SESSION,
     NV_READ_WAIT_FOR_SESSION,
-    NV_READ_WAIT_FOR_PROFILE,
     NV_READ_CLEANUP,
 
     ENTITY_DELETE_GET_FILE,
@@ -930,19 +824,11 @@ enum _FAPI_STATE {
     ENTITY_DELETE_FILE,
     ENTITY_DELETE_POLICY,
     ENTITY_DELETE_REMOVE_DIRS,
-    ENTITY_DELETE_CLEANUP,
 
     ENTITY_GET_TPM_BLOBS_READ,
 
-    KEY_SIGN_WAIT_FOR_PROFILE,
-    KEY_SIGN_WAIT_FOR_SESSION,
     KEY_SIGN_WAIT_FOR_KEY,
     KEY_SIGN_WAIT_FOR_SIGN,
-    KEY_SIGN_AUTH_SENT,
-    KEY_SIGN_NULL_AUTH_SENT,
-    KEY_SIGN_WAIT_FOR_FLUSH,
-    KEY_SIGN_CALL,
-    KEY_SIGN_EXEC_POLICY,
     KEY_SIGN_CLEANUP,
 
     ENTITY_CHANGE_AUTH_WAIT_FOR_SESSION,
@@ -963,38 +849,16 @@ enum _FAPI_STATE {
     DATA_ENCRYPT_WAIT_FOR_PROFILE,
     DATA_ENCRYPT_WAIT_FOR_SESSION,
     DATA_ENCRYPT_WAIT_FOR_KEY,
-    DATA_ENCRYPT_AUTH_SENT,
-    DATA_ENCRYPT_NULL_AUTH_SENT,
-    DATA_ENCRYPT_FLUSH_KEY,
     DATA_ENCRYPT_WAIT_FOR_FLUSH,
-    DATA_ENCRYPT_WAIT_FOR_SYM_ENCRYPTION,
     DATA_ENCRYPT_WAIT_FOR_RSA_ENCRYPTION,
-    DATA_ENCRYPT_WAIT_FOR_WRAPPED_ENCRYPTION,
-    DATA_ENCRYPT_GEN_SYM_KEY,
-    DATA_ENCRYPT_AUTHORIZE,
-    DATA_ENCRYPT_WAIT_FOR_SEAL,
-    DATA_ENCRYPT_CALCULATE_POLICY,
     DATA_ENCRYPT_CLEAN,
 
     DATA_DECRYPT_WAIT_FOR_PROFILE,
     DATA_DECRYPT_WAIT_FOR_SESSION,
-    DATA_DECRYPT_SEARCH_KEY,
-    DATA_DECRYPT_READ,
     DATA_DECRYPT_WAIT_FOR_KEY,
-    DATA_DECRYPT_WAIT_FOR_SEAL_KEY,
-    DATA_DECRYPT_AUTH_SENT,
-    DATA_DECRYPT_NULL_AUTH_SENT,
-    DATA_DECRYPT_FLUSH_KEY,
-    DATA_DECRYPT_FLUSH_SYM_OBJECT,
     DATA_DECRYPT_WAIT_FOR_FLUSH,
-    DATA_DECRYPT_WAIT_FOR_SYM_ENCRYPTION,
     DATA_DECRYPT_WAIT_FOR_RSA_DECRYPTION,
-    DATA_DECRYPT_WAIT_FOR_WRAPPED_DECRYPTION,
     DATA_DECRYPT_AUTHORIZE_KEY,
-    DATA_DECRYPT_UNSEAL_OBJECT,
-    DATA_DECRYPT_EXEC_POLICY,
-    DATA_DECRYPT_WAIT_FOR_UNSEAL,
-    DATA_DECRYPT_FLUSH_POLICY,
     DATA_DECRYPT_CLEANUP,
 
     PCR_EXTEND_WAIT_FOR_SESSION,
@@ -1003,15 +867,10 @@ enum _FAPI_STATE {
     PCR_EXTEND_FINISH,
     PCR_EXTEND_CLEANUP,
 
-    PCR_RESET_WAIT_FOR_SESSION,
-    PCR_RESET_FINISH,
-
     PCR_READ_READ_PCR,
     PCR_READ_READ_EVENT_LIST,
 
-    PCR_QUOTE_WAIT_FOR_PROFILE,
     PCR_QUOTE_WAIT_FOR_GET_CAP,
-    PCR_QUOTE_FINISH,
     PCR_QUOTE_WAIT_FOR_SESSION,
     PCR_QUOTE_WAIT_FOR_KEY,
     PCR_QUOTE_AUTH_SENT,
@@ -1024,17 +883,10 @@ enum _FAPI_STATE {
     PATH_SET_DESCRIPTION_WRITE,
 
     PATH_GET_DESCRIPTION_READ,
-    PATH_GET_DESCRIPTION_WRITE,
 
     APP_DATA_SET_READ,
     APP_DATA_SET_WRITE,
 
-    APP_DATA_GET_READ,
-    APP_DATA_GET_WRITE,
-
-    GET_TPM_INFO_GETCAP,
-
-    AUTHORIZE_NEW_READ_POLICY,
     AUTHORIZE_NEW_CALCULATE_POLICY,
     AUTHORIZE_NEW_LOAD_KEY,
     AUTHORIZE_NEW_KEY_SIGN_POLICY,
@@ -1044,7 +896,7 @@ enum _FAPI_STATE {
 
     WRITE_AUTHORIZE_NV_READ_NV,
     WRITE_AUTHORIZE_NV_CALCULATE_POLICY,
-     WRITE_AUTHORIZE_NV_WRITE_NV_RAM_PREPARE,
+    WRITE_AUTHORIZE_NV_WRITE_NV_RAM_PREPARE,
     WRITE_AUTHORIZE_NV_WRITE_NV_RAM,
     WRITE_AUTHORIZE_NV_WRITE_OBJCECT,
     WRITE_AUTHORIZE_NV_WRITE_POLICY_PREPARE,
@@ -1053,7 +905,6 @@ enum _FAPI_STATE {
 
     EXPORT_KEY_READ_PUB_KEY,
     EXPORT_KEY_READ_PUB_KEY_PARENT,
-    EXPORT_KEY_WAIT_FOR_SESSION,
     EXPORT_KEY_WAIT_FOR_KEY,
     EXPORT_KEY_WAIT_FOR_DUPLICATE,
     EXPORT_KEY_WAIT_FOR_EXT_KEY,
