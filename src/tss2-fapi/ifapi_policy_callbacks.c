@@ -91,7 +91,7 @@ ifapi_get_key_public(
             *public = object.misc.ext_pub_key.public.publicArea;
             break;
         default:
-            goto_error(r, TSS2_FAPI_RC_BAD_TEMPLATE, "Object %s is not a key.",
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Object %s is not a key.",
                        cleanup, path);
         }
         break;
@@ -155,7 +155,7 @@ ifapi_get_object_name(
             r = ifapi_nv_get_name(&object.misc.nv.public, name);
             break;
         default:
-            goto_error(r, TSS2_FAPI_RC_BAD_TEMPLATE, "Invalid object %s.",
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid object %s.",
                        cleanup, path);
         }
         goto_if_error(r, "Get object name.", cleanup);
@@ -207,7 +207,7 @@ ifapi_get_nv_public(
         return_if_error(r, "read_finish failed");
 
         if (object.objectType != IFAPI_NV_OBJ) {
-            goto_error(r, TSS2_FAPI_RC_BAD_TEMPLATE, "Object %s is not a key.",
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Object %s is not a key.",
                        cleanup, path);
         }
 
@@ -231,20 +231,12 @@ cleanup:
  * @param[in,out] ctx The context to access io and keystore module and to store
  *                the io state.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_ESYS_RC_BAD_CONTEXT: if esysContext corruption is detected.
- * @retval TSS2_ESYS_RC_MEMORY: if the ESAPI cannot allocate enough memory for
- *         internal operations or return parameters.
- * @retval TSS2_ESYS_RC_BAD_SEQUENCE: if the context has an asynchronous
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the input parameters had inappropriate values.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet
+ *         complete. Call this function again later.
+ * @retval TSS2_FAPI_RC_MEMORY if memory allocation failed.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
- * @retval TSS2_ESYS_RC_TRY_AGAIN: if the timeout counter expires before the
- *         TPM response is received.
- * @retval TSS2_ESYS_RC_INSUFFICIENT_RESPONSE: if the TPM's response does not
- *         at least contain the tag, response length, and response code.
- * @retval TSS2_ESYS_RC_RSP_AUTH_FAILED: if the response HMAC from the TPM did
- *         not verify.
- * @retval TSS2_ESYS_RC_MALFORMED_RESPONSE: if the TPM's response is corrupted.
- *         internal operations or return parameters.
- *         appropriate for this operation.
  */
 TSS2_RC
 ifapi_read_pcr(
@@ -266,7 +258,7 @@ ifapi_read_pcr(
         if (pcr_select->sizeofSelect) {
             if (pcr_selection->count) {
                 /* If pcr_select is used pcr_selection can't be initialized */
-                return_error(TSS2_FAPI_RC_BAD_TEMPLATE,
+                return_error(TSS2_FAPI_RC_BAD_VALUE,
                              "Policy PCR: pcr_selection can't be used if pcr_selection is used.");
             }
             /* Determine hash alg */
@@ -284,7 +276,7 @@ ifapi_read_pcr(
             }
             if (!pcr_selection->pcrSelections[0].hash) {
                 /* hash for current pcr_select can't be determined */
-                return_error(TSS2_FAPI_RC_BAD_TEMPLATE,
+                return_error(TSS2_FAPI_RC_BAD_VALUE,
                              "Policy PCR: pcr_select does not match profile.");
             }
             /* Only one bank will be used. The hash alg from profile will be used */
@@ -368,8 +360,18 @@ cleanup:
  *                access, and storing the policy execution state.
  *                the io state.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_ESYS_RC_MEMORY: if it's not possible to allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE If no user data is passed.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or policy is NULL.
+ * @retval TSS2_FAPI_RC_MEMORY if memory allocation failed.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet
+ *         complete. Call this function again later.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND If a policy was not found.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND If a key was not found.
+ * @retval TSS2_FAPI_RC_IO_ERROR If an IO error occurred during reading
+ *         a policy or a key.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an error in an used library
+ *         occurred.
  */
 TSS2_RC
 ifapi_policyeval_cbauth(
@@ -498,13 +500,12 @@ cleanup:
  *                access, and storing the policy execution state.
  *                the io state.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_ESYS_RC_MEMORY: if it's not possible to allocate enough memory.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN If the callback for branch selection is
- *         not defined. This callback will be needed of or policies have to be
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if no branch selection callback is
+ *         defined. This callback will be needed of or policies which have to be
  *         executed.
- * @retval TSS2_FAPI_RC_BAD_VALUE If the computed branch index deliverd by the
- *         callback does not identify a branch.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE If no user data is passed.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the computed branch index
+ *         delivered by the callback does not identify a branch.
  */
 TSS2_RC
 ifapi_branch_selection(
@@ -534,7 +535,7 @@ ifapi_branch_selection(
     return_if_error(r, "policyBranchSelectionCallback");
 
     if (*branch_idx >= branches->count) {
-        return_error2(TSS2_FAPI_RC_BAD_VALUE, "Invalid branch number.");
+        return_error2(TSS2_FAPI_RC_AUTHORIZATION_FAILED, "Invalid branch number.");
     }
     return TSS2_RC_SUCCESS;
 }
@@ -546,12 +547,9 @@ ifapi_branch_selection(
  *                access, and storing the policy execution state.
  *                the io state.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_ESYS_RC_MEMORY: if it's not possible to allocate enough memory.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN If the callback for branch selection is
  *         not defined. This callback will be needed of or policies have to be
  *         executed.
- * @retval TSS2_FAPI_RC_BAD_VALUE If the computed branch index deliverd by the
- *         callback does not identify a branch.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE If no user data is passed.
  */
 TSS2_RC
@@ -586,8 +584,11 @@ ifapi_policy_action(
  * @param[out] signature_size The size of the signature.
  * @param[in] userdata The user context to retrieve the signing function.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_ESYS_RC_MEMORY if it's not possible to allocate enough memory.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN If the callback for signing is
+ *         not defined.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE If no user data is passed.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN: if the callback operation is not yet
+ *         complete. Call this function again later.
  */
 TSS2_RC
 ifapi_sign_buffer(
@@ -826,7 +827,7 @@ get_policy_digest(TPMS_POLICY *policy,
     size_t i;
 
     if (!(digest->size = ifapi_hash_get_digest_size(hashAlg))) {
-        return_error2(TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        return_error2(TSS2_FAPI_RC_BAD_VALUE,
                       "Unsupported hash algorithm (%" PRIu16 ")", hashAlg);
     }
 
@@ -886,14 +887,14 @@ static void cleanup_policy_list(struct POLICY_LIST * list) {
  * @param[out] signature The signature produced during policy authorization.
  * @param[in] userdata The user context to retrieve the policy.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_ESYS_RC_MEMORY: if it's not possible to allocate enough memory.
+ * @retval TSS2_FAPI_RC_MEMORY: if it's not possible to allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE If no user data id passed or context stack
  *         is not initialized.
  * @retval TSS2_FAPI_RC_IO_ERROR If an error occurs during access to the policy
  *         store.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND If a policy for a certain path was not found.
- * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy diges was
-           not successful.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest
+ *         was not successful.
  * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for policy
  *         execution fails.
  */
@@ -1038,14 +1039,14 @@ cleanup:
  * @param[in] hash_alg The hash algorithm used for policy computation.
  * @param[in] userdata The user context to retrieve the policy.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_ESYS_RC_MEMORY: if it's not possible to allocate enough memory.
+ * @retval TSS2_FAPI_RC_MEMORY: if it's not possible to allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE If no user data id passed or context stack
  *         is not initialized.
  * @retval TSS2_FAPI_RC_IO_ERROR If an error occurs during access to the policy
  *         store.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND If a policy for a certain path was not found.
- * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy diges was
-           not successful.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
+ *         not successful.
  * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for policy
  *         execution fails.
  */
@@ -1080,7 +1081,7 @@ ifapi_exec_auth_nv_policy(
     esys_ctx = fapi_ctx->esys;
 
     if (!(digest_size = ifapi_hash_get_digest_size(hash_alg))) {
-        return_error2(TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        return_error2(TSS2_FAPI_RC_BAD_VALUE,
                       "Unsupported hash algorithm (%" PRIu16 ")", hash_alg);
     }
 

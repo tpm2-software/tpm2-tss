@@ -487,7 +487,7 @@ ossl_ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY *evpPublicKey)
         curveId = NID_secp521r1;
         break;
     default:
-        return_error(TSS2_FAPI_RC_NOT_IMPLEMENTED,
+        return_error(TSS2_FAPI_RC_BAD_VALUE,
                      "ECC curve not implemented.");
     }
 
@@ -1017,7 +1017,7 @@ get_ecc_tpm2b_public_from_evp(
         tpmCurveId = TPM2_ECC_NIST_P521;
         break;
     default:
-        goto_error(r, TSS2_FAPI_RC_NOT_IMPLEMENTED,
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Curve %x not implemented", cleanup, curveId);
     }
     tpmPublic->publicArea.parameters.eccDetail.curveID = tpmCurveId;
@@ -1140,7 +1140,7 @@ ifapi_get_tpm2b_public_from_pem(
         r = get_ecc_tpm2b_public_from_evp(publicKey, tpmPublic);
         goto_if_error(r, "Get public for ECC key.", cleanup);
     } else {
-        goto_error(r, TSS2_FAPI_RC_NOT_IMPLEMENTED, "Wrong key_type", cleanup);
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Wrong key_type", cleanup);
     }
 cleanup:
     OSSL_FREE(publicKey, EVP_PKEY);
@@ -1417,7 +1417,7 @@ get_ossl_hash_md(TPM2_ALG_ID hashAlgorithm)
  *
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if hashAlgorithm is invalid
- * @retval TSS2_ESYS_RC_BAD_REFERENCE if context is NULL
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE if context is NULL
  * @retval TSS2_FAPI_RC_MEMORY if memory cannot be allocated
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
  */
@@ -1697,7 +1697,7 @@ ifapi_cert_to_pem(
         r = get_ecc_tpm2b_public_from_evp(publicKey, tpmPublic);
         goto_if_error(r, "Get public for ECC key.", cleanup);
     } else {
-        goto_error(r, TSS2_FAPI_RC_NOT_IMPLEMENTED, "Wrong key_type", cleanup);
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Wrong key_type", cleanup);
     }
 
     if (certAlgorithmId != NULL) {
@@ -1807,7 +1807,7 @@ ifapi_get_public_from_pem_cert(const char* pem_cert, TPM2B_PUBLIC *tpm_public)
         r = get_ecc_tpm2b_public_from_evp(public_key, tpm_public);
         goto_if_error(r, "Get public for ECC key.", cleanup);
     } else {
-        goto_error(r, TSS2_FAPI_RC_NOT_IMPLEMENTED, "Wrong key_type", cleanup);
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Wrong key_type", cleanup);
     }
 cleanup:
     OSSL_FREE(cert, X509);
@@ -2040,7 +2040,7 @@ ifapi_get_tpm_key_fingerprint(
     size_t fingerPrintSize;
 
     if (!(hashSize = ifapi_hash_get_digest_size(hashAlg))) {
-        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    hashAlg);
     }

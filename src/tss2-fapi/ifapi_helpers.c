@@ -1519,8 +1519,8 @@ ifapi_copy_policy(
  *
  * @param[in] publicInfo The public information of the TPM object.
  * @param[out] name The computed name.
- * @retval TPM2_RC_SUCCESS  or one of the possible errors TSS2_ESYS_RC_BAD_VALUE,
- * TSS2_ESYS_RC_MEMORY, TSS2_ESYS_RC_GENERAL_FAILURE, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+ * @retval TPM2_RC_SUCCESS  or one of the possible errors TSS2_FAPI_RC_BAD_VALUE,
+ * TSS2_FAPI_RC_MEMORY, TSS2_FAPI_RC_GENERAL_FAILURE.
  * or return codes of SAPI errors.
  */
 TSS2_RC
@@ -1580,11 +1580,10 @@ ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name)
  * @param[in] publicInfo The public information of the NV index.
  * @param[out] name The computed name.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_ESYS_RC_MEMORY Memory can not be allocated.
- * @retval TSS2_ESYS_RC_BAD_VALUE for invalid parameters.
- * @retval TSS2_ESYS_RC_BAD_REFERENCE for unexpected NULL pointer parameters.
- * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
- * @retval TSS2_ESYS_RC_NOT_IMPLEMENTED if hash algorithm is not implemented.
+ * @retval TSS2_FAPI_RC_MEMORY Memory can not be allocated.
+ * @retval TSS2_FAPI_RC_BAD_VALUE for invalid parameters.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE for unexpected NULL pointer parameters.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE for errors of the crypto library.
  * @retval TSS2_SYS_RC_* for SAPI errors.
  */
 TSS2_RC
@@ -2272,7 +2271,7 @@ ifapi_compute_policy_digest(
     return_if_error(r, "crypto hash start");
 
     if (!(pcr_digest->size = ifapi_hash_get_digest_size(hash_alg))) {
-        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    hash_alg);
     }
@@ -2281,7 +2280,7 @@ ifapi_compute_policy_digest(
         TPMS_PCR_SELECTION selection = pcr_selection->pcrSelections[i];
         TPMI_ALG_HASH hashAlg = selection.hash;
         if (!(hash_size = ifapi_hash_get_digest_size(hashAlg))) {
-            goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                        "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                        hashAlg);
         }

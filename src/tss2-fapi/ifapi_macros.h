@@ -125,6 +125,11 @@
         LOG_TRACE("State " str(VAR) " reached " str(STATE)); \
         VAR=STATE;
 
+#define general_failure(VAR) \
+    default: \
+        LOG_ERROR("Bad state for " str(VAR)); \
+        return TSS2_FAPI_RC_GENERAL_FAILURE;
+
 #define statecasedefault(VAR) \
     default: \
         LOG_ERROR("Bad state for " str(VAR)); \

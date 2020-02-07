@@ -47,7 +47,7 @@
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND: if keyPath does not map to a FAPI key.
  * @retval TSS2_FAPI_RC_BAD_KEY: if the key at keyPath is unsuitable for
  *         encryption.
- * @retval TSS2_RC_BAD_VALUE: if plainTextSize is 0.
+ * @retval TSS2_FAPI_RC_BAD_VALUE: if plainTextSize is 0.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
@@ -130,7 +130,7 @@ Fapi_Encrypt(
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND: if keyPath does not map to a FAPI key.
  * @retval TSS2_FAPI_RC_BAD_KEY: if the key at keyPath is unsuitable for
  *         encryption.
- * @retval TSS2_RC_BAD_VALUE: if plainTextSize is 0.
+ * @retval TSS2_FAPI_RC_BAD_VALUE: if plainTextSize is 0.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for

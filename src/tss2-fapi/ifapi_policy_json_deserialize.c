@@ -229,7 +229,7 @@ ifapi_json_TPMS_POLICYSIGNED_deserialize(json_object *jso,
 
     /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_TEMPLATE,
+        return_error(TSS2_FAPI_RC_BAD_VALUE,
                      "Exactly one conditional is allowed for policy signed.");
     }
 
@@ -286,7 +286,7 @@ ifapi_json_TPMS_POLICYSECRET_deserialize(json_object *jso,
         return_if_error(r, "BAD VALUE");
     }
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_TEMPLATE,
+        return_error(TSS2_FAPI_RC_BAD_VALUE,
                      "Exactly one conditional needed for policy secret .");
     }
     LOG_TRACE("true");
@@ -381,7 +381,7 @@ ifapi_json_TPMS_POLICYNV_deserialize(json_object *jso,  TPMS_POLICYNV *out)
     }
     /* Check whether only one conditional is used. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_TEMPLATE,
+        return_error(TSS2_FAPI_RC_BAD_VALUE,
                      "Exactly one conditional is allowed for policy NV.");
     }
 
@@ -536,7 +536,7 @@ ifapi_json_TPMS_POLICYNAMEHASH_deserialize(json_object *jso,
         if (jso_type == json_type_array) {
             n_paths = json_object_array_length(jso2);
             if (n_paths > 3) {
-                return_error(TSS2_FAPI_RC_BAD_TEMPLATE,
+                return_error(TSS2_FAPI_RC_BAD_VALUE,
                              "More than 3 path names in policy name hash.");
             }
             for (i = 0; i < n_paths; i++) {
@@ -547,7 +547,7 @@ ifapi_json_TPMS_POLICYNAMEHASH_deserialize(json_object *jso,
             out->count = n_paths;
         } else {
             LOG_ERROR("No list of name paths");
-            return TSS2_FAPI_RC_BAD_TEMPLATE;
+            return TSS2_FAPI_RC_BAD_VALUE;
         }
 
     }
@@ -556,12 +556,12 @@ ifapi_json_TPMS_POLICYNAMEHASH_deserialize(json_object *jso,
         if (jso_type == json_type_array) {
             n_names = json_object_array_length(jso2);
             if (n_paths > 0 && n_names > 0) {
-                return_error(TSS2_FAPI_RC_BAD_TEMPLATE,
+                return_error(TSS2_FAPI_RC_BAD_VALUE,
                              "Only pathname or only TPM names are allowed "
                              "for policy name hash.");
             }
             if (n_names > 3) {
-                return_error(TSS2_FAPI_RC_BAD_TEMPLATE,
+                return_error(TSS2_FAPI_RC_BAD_VALUE,
                              "More than 3 names in policy name hash.");
             }
             for (i = 0; i < n_names; i++) {
@@ -572,16 +572,16 @@ ifapi_json_TPMS_POLICYNAMEHASH_deserialize(json_object *jso,
             out->count = n_names;
         } else {
             LOG_ERROR("No list of object names");
-            return TSS2_FAPI_RC_BAD_TEMPLATE;
+            return TSS2_FAPI_RC_BAD_VALUE;
         }
     }
     if (out->count == 0) {
         LOG_ERROR("No list of object names or path names");
-        return TSS2_FAPI_RC_BAD_TEMPLATE;
+        return TSS2_FAPI_RC_BAD_VALUE;
     }
     /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_TEMPLATE,
+        return_error(TSS2_FAPI_RC_BAD_VALUE,
                      "Exactly one conditional is allowed for policy name hash.");
     }
     return TSS2_RC_SUCCESS;
@@ -631,7 +631,7 @@ ifapi_json_TPMS_POLICYDUPLICATIONSELECT_deserialize(json_object *jso,
     }
     /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_TEMPLATE,
+        return_error(TSS2_FAPI_RC_BAD_VALUE,
                      "Exactly one conditional is allowed for "
                      "policy duplication select.");
     }
@@ -717,7 +717,7 @@ ifapi_json_TPMS_POLICYAUTHORIZE_deserialize(json_object *jso,
     }
     /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_TEMPLATE,
+        return_error(TSS2_FAPI_RC_BAD_VALUE,
                      "Exactly one conditional is allowed for policy authorize.");
     }
     LOG_TRACE("true");
@@ -831,7 +831,7 @@ ifapi_json_TPMS_POLICYTEMPLATE_deserialize(json_object *jso,
 
     /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_TEMPLATE,
+        return_error(TSS2_FAPI_RC_BAD_VALUE,
                      "Exactly one conditional is allowed for policy template.");
     }
 
@@ -876,7 +876,7 @@ ifapi_json_TPMS_POLICYAUTHORIZENV_deserialize(json_object *jso,
     }
     /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_TEMPLATE,
+        return_error(TSS2_FAPI_RC_BAD_VALUE,
                      "Exactly one conditional is allowed for policy signed.");
     }
 
@@ -1028,7 +1028,7 @@ ifapi_json_TPMS_POLICYPCR_deserialize(json_object *jso,  TPMS_POLICYPCR *out)
 
     /* Check whether only one conditional is used. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_TEMPLATE,
+        return_error(TSS2_FAPI_RC_BAD_VALUE,
                      "Exactly one conditional is allowed for policy PCR.");
     }
 
