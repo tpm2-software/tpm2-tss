@@ -58,7 +58,7 @@ ifapi_compute_policy_pcr(
     LOG_TRACE("call");
 
     if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -154,7 +154,7 @@ ifapi_calculate_policy_signed(
     LOG_DEBUG("call");
 
     if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -194,7 +194,7 @@ ifapi_calculate_policy_authorize_nv(
     return_if_error(r, "Compute NV name");
 
     if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -226,7 +226,7 @@ ifapi_calculate_policy_duplicate(
     LOG_DEBUG("call");
 
     if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -276,7 +276,7 @@ ifapi_calculate_policy_authorize(
     LOG_DEBUG("call");
 
     if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -308,7 +308,7 @@ ifapi_calculate_policy_secret(
     LOG_DEBUG("call");
 
     if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -342,7 +342,7 @@ ifapi_calculate_policy_counter_timer(
     LOG_DEBUG("call");
 
     if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -380,7 +380,7 @@ cleanup:
     return r;
 }
 
-/** Update plolicy if only the command codes is used
+/** Update policy if only the command codes are used
  */
 TSS2_RC
 ifapi_calculate_simple_policy(
@@ -397,7 +397,7 @@ ifapi_calculate_simple_policy(
     LOG_DEBUG("call");
 
     if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -515,7 +515,7 @@ ifapi_calculate_policy_digest_hash(
     LOG_DEBUG("call");
 
     if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -555,7 +555,7 @@ ifapi_calculate_policy_name_hash(
     LOG_DEBUG("call");
 
     if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -618,7 +618,7 @@ ifapi_calculate_policy_locality(
     LOG_DEBUG("call");
 
     if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -658,7 +658,7 @@ ifapi_calculate_policy_nv_written(
     LOG_DEBUG("call");
 
     if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -961,7 +961,7 @@ ifapi_calculate_policy(
             break;
 
         default:
-            return_error(TSS2_ESYS_RC_NOT_IMPLEMENTED,
+            return_error(TSS2_FAPI_RC_BAD_VALUE,
                          "Policy not implemented");
         }
 

@@ -36,7 +36,7 @@ compute_or_digest_list(
     bool digest_found = false;
 
     if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
-        return_error2(TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        return_error2(TSS2_FAPI_RC_BAD_VALUE,
                       "Unsupported hash algorithm (%" PRIu16 ")",
                               current_hash_alg);
     }
@@ -400,7 +400,7 @@ execute_policy_authorize(
     LOG_TRACE("call");
     public2b.size = 0;
     if (!(hash_size = ifapi_hash_get_digest_size(hash_alg))) {
-        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    hash_alg);
     }
@@ -1079,7 +1079,7 @@ execute_policy_element(
         break;
 
     default:
-        return_error(TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE,
                      "Policy not implemented");
         }
     return r;
@@ -1159,8 +1159,8 @@ ifapi_policyeval_execute_prepare(
  * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during execution.
  * @retval TSS2_FAPI_RC_IO_ERROR If an error occurs during access to the policy
  *         store.
- * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy diges was
-           not successful.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
+ *         not successful.
  * @retval TSS2_FAPI_RC_BAD_TEMPLATE In a invalid policy is loaded during execution.
  */
 TSS2_RC

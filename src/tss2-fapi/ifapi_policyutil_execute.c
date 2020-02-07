@@ -117,7 +117,7 @@ create_session(
 
     default:
         context->state = _FAPI_STATE_INTERNALERROR;
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid state for create session.",
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid state for create session.",
                    cleanup);
     }
 
@@ -234,8 +234,8 @@ error:
  * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during execution.
  * @retval TSS2_FAPI_RC_IO_ERROR If an error occurs during access to the policy
  *         store.
- * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy diges was
-           not successful.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
+ *         not successful.
  * @retval TSS2_FAPI_RC_BAD_TEMPLATE In a invalid policy is loaded during execution.
  * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for policy
  *         execution fails.

@@ -178,7 +178,7 @@ Fapi_Import_Async(
         context->state = IMPORT_KEY_WRITE_OBJECT_PREPARE;
 
     } else if (strcmp(importData, IFAPI_PEM_PRIVATE_KEY) == 0) {
-          return_error(TSS2_FAPI_RC_NOT_IMPLEMENTED, "Invalid import data");
+          return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid import data");
 
     } else {
         /* Check whether TCTI and ESYS are initialized */

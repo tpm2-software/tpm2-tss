@@ -38,7 +38,7 @@
  * @param[in] handle of the object to be flushed.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_flush_object(FAPI_CONTEXT *context, ESYS_TR handle)
@@ -80,7 +80,7 @@ ifapi_flush_object(FAPI_CONTEXT *context, ESYS_TR handle)
  *            parameters.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_get_session_async(ESYS_CONTEXT *esys, ESYS_TR saltkey, const IFAPI_PROFILE *profile,
@@ -106,7 +106,7 @@ ifapi_get_session_async(ESYS_CONTEXT *esys, ESYS_TR saltkey, const IFAPI_PROFILE
  * @param[in] flags The flags to adjust the session attributes.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_get_session_finish(ESYS_CONTEXT *esys, ESYS_TR *session,
@@ -203,7 +203,7 @@ ifapi_set_auth(
  * @param[in] handle The start value for handle search.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_get_free_handle_async(FAPI_CONTEXT *fctx, TPM2_HANDLE *handle)
@@ -226,7 +226,7 @@ ifapi_get_free_handle_async(FAPI_CONTEXT *fctx, TPM2_HANDLE *handle)
  *
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_NV_TOO_SMALL if too many NV handles are defined.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_get_free_handle_finish(FAPI_CONTEXT *fctx, TPM2_HANDLE *handle,
@@ -314,10 +314,9 @@ error:
  *
  * @param[in] context The FAPI_CONTEXT.
  * @param[in] ktype The type of key TSS2_EK or TSS2_SRK.
- * @retval All possible error codes of ESAPI.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if a wrong type was passed.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
@@ -394,7 +393,7 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_TRY_AGAIN if the execution cannot be completed.
  * @retval TSS2_FAPI_RC_BAD_VALUE if a wrong type was passed.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
@@ -534,7 +533,7 @@ ifapi_load_primary_async(FAPI_CONTEXT *context, char *path)
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if the hierarchy file does not exist.
  * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error was encountered.
  * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated for path names.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
@@ -763,7 +762,7 @@ ifapi_session_clean(FAPI_CONTEXT *context)
  * @param[in] context The FAPI_CONTEXT storing the used handles.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_cleanup_session(FAPI_CONTEXT *context)
@@ -824,7 +823,7 @@ ifapi_cleanup_session(FAPI_CONTEXT *context)
  * @param[in] context The FAPI_CONTEXT storing the used handles.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 void
 ifapi_primary_clean(FAPI_CONTEXT *context)
@@ -914,7 +913,7 @@ error_cleanup:
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error was encountered.
  * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated for path names.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_get_sessions_finish(
@@ -1244,7 +1243,7 @@ ifapi_load_key_async(FAPI_CONTEXT *context, size_t position)
                   only flushed if a new parent is available.
  *
  * @retval TSS2_RC_SUCCESS If the loading of the key was successful.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
  *         not covered by other return codes.
@@ -1252,7 +1251,7 @@ ifapi_load_key_async(FAPI_CONTEXT *context, size_t position)
  * @retval TSS2_FAPI_RC_IO_ERROR If an error occurs during access to the policy
  *         store.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND If an object needed for loading or
-           authentication was not found..
+ *         authentication was not found.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
  *         not successful.
  * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for loading
@@ -1308,7 +1307,7 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
         return_if_error(r, "read_finish failed");
 
         if (context->loadKey.key_object->objectType != IFAPI_KEY_OBJ)
-            goto_error(r, TSS2_FAPI_RC_BAD_KEY, "%s is no key", error_cleanup,
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "%s is no key", error_cleanup,
                        context->loadKey.key_path);
 
         r = ifapi_initialize_object(context->esys, context->loadKey.key_object);
@@ -1321,8 +1320,7 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
             r = ifapi_copy_ifapi_key_object(&context->loadKey.auth_object,
                 context->loadKey.key_object);
             goto_if_error(r, "Could not copy key object", error_cleanup);
-            ifapi_cleanup_ifapi_object(context->loadKey.key_object);
-            context->loadKey.state = LOAD_KEY_LOAD_KEY;
+            ifapi_cleanup_ifapi_object(context->loadKey.key_object);            context->loadKey.state = LOAD_KEY_LOAD_KEY;
 
             return TSS2_FAPI_RC_TRY_AGAIN;
         }
@@ -1509,7 +1507,7 @@ ifapi_flush_policy_session(FAPI_CONTEXT *context, ESYS_TR session, TSS2_RC r)
  *         store.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND If a policy for a certain path was not found.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
-           not successful.
+ *         not successful.
  * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for the policy
  *         execution fails.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a needed authorization callback
@@ -1571,7 +1569,7 @@ ifapi_authorize_object(FAPI_CONTEXT *context, IFAPI_OBJECT *object, ESYS_TR *ses
             goto_if_error(r, "Esys_TRSess_SetAttributes", error);
             break;
 
-        statecasedefault(object->authorization_state)
+        general_failure(object->authorization_state)
     }
 
     object->authorization_state = AUTH_INIT;
@@ -1600,7 +1598,7 @@ error:
  * @param[in] size The number of bytes to be written.
  *
  * @retval TSS2_RC_SUCCESS If data can be written.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during execution.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
@@ -1845,7 +1843,7 @@ error_cleanup:
  * @param[in,out] size The number of bytes requested and fetched.
  *
  * @retval TSS2_RC_SUCCESS If the data was read successfully.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during execution.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
@@ -1981,7 +1979,7 @@ error_cleanup:
  * @param[out] data The random data.
  *
  * @retval TSS2_RC_SUCCESS If random data can be computed.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
@@ -2064,7 +2062,7 @@ error_cleanup:
  *                of a key object.
  *
  * @retval TSS2_RC_SUCCESS If the key was loaded successfully.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
  *         not covered by other return codes.
@@ -2073,7 +2071,7 @@ error_cleanup:
  *         store.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND If a policy or key was not found.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
-           not successful.
+ *         not successful.
  * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for policy
  *         execution fails.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a needed authorization callback
@@ -2152,7 +2150,7 @@ error_cleanup:
  *                in PEM format. certificate MAY be NULL.
  *
  * @retval TSS2_RC_SUCCESS If the signing was successful.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
  *         not covered by other return codes.
@@ -2308,7 +2306,6 @@ cleanup:
  * @param[in]     ectx The ESAPI context.
  * @param[in,out] object  The nv object or the key.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval ESYS error code if the serialization fails.
  */
 TSS2_RC
 ifapi_esys_serialize_object(ESYS_CONTEXT *ectx, IFAPI_OBJECT *object)
@@ -2582,7 +2579,7 @@ error:
  *            key will be persistent.
  *
  * @retval TSS2_RC_SUCCESS If the key could be generated.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
  *         not covered by other return codes.
@@ -2590,7 +2587,7 @@ error:
  * @retval TSS2_FAPI_RC_IO_ERROR If an error occurs during access to the policy
  *         store.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND If an object needed for creation or
-           authentication was not found..
+           authentication was not found.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
  *         not successful.
  * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for creation
@@ -2873,7 +2870,7 @@ ifapi_get_sig_scheme(
  * @param[in] newAuthValue The new authorization for the hierarchy.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_change_auth_hierarchy(
@@ -2956,7 +2953,7 @@ error:
  * @param[in] policy The new policy assigned to the hierarchy.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
  *         not covered by other return codes.
@@ -3171,7 +3168,7 @@ ifapi_capability_init(FAPI_CONTEXT *context)
  *
  * @retval TSS2_RC_SUCCESS If all capability data is retrieved.
  * @retval TSS2_FAPI_RC_TRY_AGAIN if more capability data is available.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TPM2_RC
 ifapi_capability_get(FAPI_CONTEXT *context, TPM2_CAP capability,
@@ -3282,7 +3279,7 @@ ifapi_capability_get(FAPI_CONTEXT *context, TPM2_CAP capability,
             }
             free(context->cmd.GetInfo.capability_data);
             *capability_data = NULL;
-            return TSS2_FAPI_RC_NOT_IMPLEMENTED;
+            return TSS2_FAPI_RC_BAD_VALUE;
         }
 
         if (context->cmd.GetInfo.fetched_data != context->cmd.GetInfo.capability_data) {
@@ -3321,7 +3318,7 @@ error_cleanup:
  * @param[out] cert_list The callee allocates linked list of certificates.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval All possible error codes of ESAPI.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  *
  */

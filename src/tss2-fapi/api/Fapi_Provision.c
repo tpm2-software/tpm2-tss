@@ -49,8 +49,8 @@
  *         operation already pending.
  * @retval TSS2_FAPI_RC_NO_CERT: if no certificate was found for the computed EK.
  * @retval TSS2_FAPI_RC_BAD_KEY: if public key of the EK does not match the
-           configured certificate or the configured fingerprint does not match
-           the computed EK.
+ *         configured certificate or the configured fingerprint does not match
+ *          the computed EK.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
@@ -185,8 +185,8 @@ end:
  *         operation already pending.
  * @retval TSS2_FAPI_RC_NO_CERT: if no certificate was found for the computed EK.
  * @retval TSS2_FAPI_RC_BAD_KEY: if public key of the EK does not match the
-           configured certificate or the configured fingerprint does not match
-           the computed EK.
+ *         configured certificate or the configured fingerprint does not match
+ *         the computed EK.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
