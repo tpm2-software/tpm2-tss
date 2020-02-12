@@ -249,6 +249,12 @@ int retrieve_endorsement_certificate(char *b64h, unsigned char ** buffer,
         goto out_easy_cleanup;
     }
 
+    if (LOGMODULE_status == LOGLEVEL_TRACE) {
+        if (CURLE_OK != curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L)) {
+            LOG_WARNING("Curl easy setopt verbose failed");
+        }
+    }
+
     rc = curl_easy_perform(curl);
     if (rc != CURLE_OK) {
         LOG_ERROR("curl_easy_perform() failed: %s", curl_easy_strerror(rc));

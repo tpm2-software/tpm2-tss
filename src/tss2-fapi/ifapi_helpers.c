@@ -2450,6 +2450,12 @@ ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer, size_t *buff
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy setopt",
                    cleanup);
     }
+    if (LOGMODULE_status == LOGLEVEL_TRACE) {
+        if (CURLE_OK != curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 1L)) {
+            LOG_WARNING("Curl easy setopt verbose failed");
+        }
+    }
+
     /* Receive the certificate */
     if (CURLE_OK != curl_easy_perform(curl_handle)) {
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy setopt",
