@@ -48,26 +48,12 @@ Fapi_GetDescription(
 {
     LOG_TRACE("called for context:%p", context);
 
-    TSS2_RC r, r2;
+    TSS2_RC r;
 
     /* Check for NULL parameters */
     check_not_null(context);
     check_not_null(path);
     check_not_null(description);
-
-    /* Check whether TCTI and ESYS are initialized */
-    return_if_null(context->esys, "Command can't be executed in none TPM mode.",
-                   TSS2_FAPI_RC_NO_TPM);
-
-    /* If the async state automata of FAPI shall be tested, then we must not set
-       the timeouts of ESYS to blocking mode.
-       During testing, the mssim tcti will ensure multiple re-invocations.
-       Usually however the synchronous invocations of FAPI shall instruct ESYS
-       to block until a result is available. */
-#ifndef TEST_FAPI_ASYNC
-    r = Esys_SetTimeout(context->esys, TSS2_TCTI_TIMEOUT_BLOCK);
-    return_if_error_reset_state(r, "Set Timeout to blocking");
-#endif /* TEST_FAPI_ASYNC */
 
     r = Fapi_GetDescription_Async(context, path);
     return_if_error_reset_state(r, "Path_SetDescription");
@@ -82,10 +68,6 @@ Fapi_GetDescription(
            through all execution stages / states of this invocation. */
         r = Fapi_GetDescription_Finish(context, description);
     } while ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN);
-
-    /* Reset the ESYS timeout to non-blocking, immediate response. */
-    r2 = Esys_SetTimeout(context->esys, 0);
-    return_if_error(r2, "Set Timeout to non-blocking");
 
     return_if_error_reset_state(r, "Path_SetDescription");
 
