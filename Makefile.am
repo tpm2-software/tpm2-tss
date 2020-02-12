@@ -552,6 +552,36 @@ endif #DOXYMAN
 
 endif #FAPI
 
+### Helper Functions ###
+define make_parent_dir
+    if [ ! -d $(dir $1) ]; then mkdir -p $(dir $1); fi
+endef
+
+define make_tss_user_and_group
+    (id -g tss || groupadd -r tss) && \
+    (id -u tss || useradd -r -g tss tss)
+endef
+
+define make_tss_dir
+    ($(call make_parent_dir,$1))
+endef
+
+define set_tss_permissions
+    (chown -R tss:tss "$1") && \
+    (chmod -R 775 "$1")
+endef
+
+define make_fapi_dirs
+    ($(call make_tss_dir,$(DESTDIR)$(runstatedir)/tpm2-tss/eventlog/) || true) && \
+    ($(call make_tss_dir,$(DESTDIR)$(localstatedir)/lib/tpm2-tss/system/keystore/))
+endef
+
+define set_fapi_permissions
+    ($(call set_tss_permissions,$(DESTDIR)$(runstatedir)/tpm2-tss)
+    ($(call set_tss_permissions,$(DESTDIR)$(localstatedir)/lib/tpm2-tss)
+endef
+
+
 ### Man Pages
 man3_MANS = \
     man/man3/Tss2_Tcti_Device_Init.3 \
@@ -589,7 +619,8 @@ endif
 
 # Create tss user and FAPI directories directly after installation (vs. after a reboot)
 install-exec-hook:
-	systemd-sysusers && systemd-tmpfiles --create || true
+	(systemd-sysusers && systemd-tmpfiles --create) || \
+	($(call make_tss_user_and_group) && $(call make_fapi_dirs) && ($call set_fapi_permissions)) || true
 
 uninstall-hook:
 	cd $(DESTDIR)$(man3dir) && \
@@ -617,11 +648,6 @@ EXTRA_DIST += \
 CLEANFILES += \
     $(man3_MANS) \
     $(man7_MANS)
-
-### Helper Functions ###
-define make_parent_dir
-    if [ ! -d $(dir $1) ]; then mkdir -p $(dir $1); fi
-endef
 
 # function to transform man .in files to man pages
 # $1: target
