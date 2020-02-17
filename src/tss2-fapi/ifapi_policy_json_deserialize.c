@@ -162,6 +162,8 @@ ifapi_json_TPMI_POLICYTYPE_deserialize_txt(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPMS_POLICYSIGNED_deserialize(json_object *jso,
@@ -243,6 +245,8 @@ ifapi_json_TPMS_POLICYSIGNED_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPMS_POLICYSECRET_deserialize(json_object *jso,
@@ -299,6 +303,7 @@ ifapi_json_TPMS_POLICYSECRET_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_TPMS_POLICYLOCALITY_deserialize(json_object *jso,
@@ -325,6 +330,8 @@ ifapi_json_TPMS_POLICYLOCALITY_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPMS_POLICYNV_deserialize(json_object *jso,  TPMS_POLICYNV *out)
@@ -395,6 +402,7 @@ ifapi_json_TPMS_POLICYNV_deserialize(json_object *jso,  TPMS_POLICYNV *out)
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_TPMS_POLICYCOUNTERTIMER_deserialize(json_object *jso,
@@ -435,6 +443,7 @@ ifapi_json_TPMS_POLICYCOUNTERTIMER_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_TPMS_POLICYCOMMANDCODE_deserialize(json_object *jso,
@@ -480,6 +489,7 @@ ifapi_json_TPMS_POLICYPHYSICALPRESENCE_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_TPMS_POLICYCPHASH_deserialize(json_object *jso,
@@ -506,6 +516,8 @@ ifapi_json_TPMS_POLICYCPHASH_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPMS_POLICYNAMEHASH_deserialize(json_object *jso,
@@ -593,6 +605,8 @@ ifapi_json_TPMS_POLICYNAMEHASH_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPMS_POLICYDUPLICATIONSELECT_deserialize(json_object *jso,
@@ -645,6 +659,8 @@ ifapi_json_TPMS_POLICYDUPLICATIONSELECT_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPMS_POLICYAUTHORIZE_deserialize(json_object *jso,
@@ -768,6 +784,7 @@ ifapi_json_TPMS_POLICYPASSWORD_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_TPMS_POLICYNVWRITTEN_deserialize(json_object *jso,
@@ -794,6 +811,8 @@ ifapi_json_TPMS_POLICYNVWRITTEN_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPMS_POLICYTEMPLATE_deserialize(json_object *jso,
@@ -845,6 +864,8 @@ ifapi_json_TPMS_POLICYTEMPLATE_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPMS_POLICYAUTHORIZENV_deserialize(json_object *jso,
@@ -890,6 +911,8 @@ ifapi_json_TPMS_POLICYAUTHORIZENV_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPMS_POLICYACTION_deserialize(json_object *jso,
@@ -918,6 +941,7 @@ ifapi_json_TPMS_POLICYACTION_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_TPMS_PCRVALUE_deserialize(json_object *jso,  TPMS_PCRVALUE *out)
@@ -958,6 +982,8 @@ ifapi_json_TPMS_PCRVALUE_deserialize(json_object *jso,  TPMS_PCRVALUE *out)
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPML_PCRVALUES_deserialize(json_object *jso,  TPML_PCRVALUES **out)
@@ -991,6 +1017,8 @@ ifapi_json_TPML_PCRVALUES_deserialize(json_object *jso,  TPML_PCRVALUES **out)
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPMS_POLICYPCR_deserialize(json_object *jso,  TPMS_POLICYPCR *out)
@@ -1042,6 +1070,8 @@ ifapi_json_TPMS_POLICYPCR_deserialize(json_object *jso,  TPMS_POLICYPCR *out)
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPMS_POLICYAUTHORIZATION_deserialize(json_object *jso,
@@ -1089,6 +1119,8 @@ ifapi_json_TPMS_POLICYAUTHORIZATION_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPML_POLICYAUTHORIZATIONS_deserialize(json_object *jso,
@@ -1124,6 +1156,8 @@ ifapi_json_TPML_POLICYAUTHORIZATIONS_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPMS_POLICYBRANCH_deserialize(json_object *jso,
@@ -1173,6 +1207,8 @@ ifapi_json_TPMS_POLICYBRANCH_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPML_POLICYBRANCHES_deserialize(json_object *jso,
@@ -1207,6 +1243,8 @@ ifapi_json_TPML_POLICYBRANCHES_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPMS_POLICYOR_deserialize(json_object *jso,  TPMS_POLICYOR *out)
@@ -1229,10 +1267,13 @@ ifapi_json_TPMS_POLICYOR_deserialize(json_object *jso,  TPMS_POLICYOR *out)
 /** Deserialize a TPMU_POLICYELEMENT json object.
  *
  * This functions expects the Bitfield to be encoded as unsigned int in host-endianess.
+ * @param[in]  selector The type the policy element.
  * @param[in]  jso the json object to be deserialized.
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPMU_POLICYELEMENT_deserialize(
@@ -1297,6 +1338,8 @@ ifapi_json_TPMU_POLICYELEMENT_deserialize(
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPMT_POLICYELEMENT_deserialize(json_object *jso,
@@ -1334,6 +1377,8 @@ ifapi_json_TPMT_POLICYELEMENT_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPML_POLICYELEMENTS_deserialize(json_object *jso,
@@ -1368,6 +1413,8 @@ ifapi_json_TPML_POLICYELEMENTS_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_TPMS_POLICY_deserialize(json_object *jso,

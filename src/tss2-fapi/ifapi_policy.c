@@ -51,6 +51,13 @@
  *         not found.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
  *         not successful.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_calculate_tree(

@@ -48,9 +48,6 @@ char *
 get_description(IFAPI_OBJECT *object);
 
 TSS2_RC
-create_dirs(const char *supdir, NODE_STR_T *dir_list, mode_t mode);
-
-TSS2_RC
 init_explicit_key_path(
     const char *context_profile,
     const char *ipath,
@@ -157,9 +154,6 @@ push_object_with_size_to_list(void *object, size_t size, NODE_OBJECT_T **object_
 size_t
 policy_digest_size(
     IFAPI_OBJECT *object);
-
-TPM2B_DIGEST *
-get_policy(IFAPI_OBJECT *object);
 
 bool
 object_with_auth(IFAPI_OBJECT *object);

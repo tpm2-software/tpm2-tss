@@ -27,12 +27,12 @@
  * The FAPI will automatically do the multiple reads if the NV index is larger
  * than the TPM's TPM2_MAX_NV_BUFFER_SIZE.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] nvPath The path of the NV index to read
- * @param [out] data The data that was read from the NV index
- * @param [out] size The size of data in bytes. May be NULL
- * @param [out] logData The log data of the NV index if the index is of type
- * 							"extend". May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] nvPath The path of the NV index to read
+ * @param[out] data The data that was read from the NV index
+ * @param[out] size The size of data in bytes. May be NULL
+ * @param[out] logData The log data of the NV index if the index is of type
+ *             "extend". May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, nvPath or data is NULL.
@@ -46,6 +46,19 @@
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_NO_TPM if FAPI was initialized in no-TPM-mode via its
+ *         config file.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
+ *         was not successful.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 Fapi_NvRead(
@@ -110,8 +123,8 @@ Fapi_NvRead(
  *
  * Call Fapi_NvRead_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] nvPath The path of the NV index to read
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] nvPath The path of the NV index to read
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or nvPath is NULL. *
@@ -125,6 +138,13 @@ Fapi_NvRead(
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_NO_TPM if FAPI was initialized in no-TPM-mode via its
+ *         config file.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
  */
 TSS2_RC
 Fapi_NvRead_Async(
@@ -171,11 +191,11 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_NvRead_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] data The data that was read from the NV index
- * @param [out] size The size of data in bytes. May be NULL
- * @param [out] logData The log data of the NV index if the index is of type
- * 							"extend". May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] data The data that was read from the NV index
+ * @param[out] size The size of data in bytes. May be NULL
+ * @param[out] logData The log data of the NV index if the index is of type
+ *			   "extend". May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or data is NULL.
@@ -187,6 +207,19 @@ error_cleanup:
  *         internal operations or return parameters.
  * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet
  *         complete. Call this function again later.
+ * @retval TSS2_FAPI_RC_BAD_PATH if the used path in inappropriate-
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+*          is not set.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
+ *         was not successful.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 Fapi_NvRead_Finish(

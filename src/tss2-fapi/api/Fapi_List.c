@@ -29,9 +29,9 @@
  * in a list of complete paths from the root with the values separated by
  * colons.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] searchPath The path that identifies the root of the search
- * @param [out] pathList A colon-separated list of all objects in the root path
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] searchPath The path that identifies the root of the search
+ * @param[out] pathList A colon-separated list of all objects in the root path
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, searchPath, pathlist is
@@ -43,6 +43,8 @@
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
  */
 TSS2_RC
 Fapi_List(
@@ -88,8 +90,8 @@ Fapi_List(
  * Call Fapi_List_Finish to finish the execution of this command.
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] searchPath The path that identifies the root of the search
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] searchPath The path that identifies the root of the search
  *
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or searchPath is
  *         NULL.
@@ -137,8 +139,8 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_List_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] pathList A colon-separated list of all objects in the root path
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] pathList A colon-separated list of all objects in the root path
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or pathList is NULL.
@@ -150,6 +152,8 @@ error_cleanup:
  *         internal operations or return parameters.
  * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet
  *         complete. Call this function again later.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
  */
 TSS2_RC
 Fapi_List_Finish(

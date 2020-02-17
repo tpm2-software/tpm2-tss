@@ -24,9 +24,9 @@
  * Creates an array with a specified number of bytes. May execute the underlying
  * TPM command multiple times if the requested number of bytes is too big.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] numBytes The number of bytes requested from the TPM
- * @param [out] data The array of random bytes returned from the TPM
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] numBytes The number of bytes requested from the TPM
+ * @param[out] data The array of random bytes returned from the TPM
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or data is NULL.
@@ -37,6 +37,20 @@
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_NO_TPM if FAPI was initialized in no-TPM-mode via its
+ *         config file.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+*          is not set.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
+ *         was not successful.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 Fapi_GetRandom(
@@ -97,8 +111,8 @@ Fapi_GetRandom(
  *
  * Call Fapi_GetRandom_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] numBytes The number of bytes requested from the TPM
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] numBytes The number of bytes requested from the TPM
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.
@@ -109,6 +123,11 @@ Fapi_GetRandom(
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_NO_TPM if FAPI was initialized in no-TPM-mode via its
+ *         config file.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  */
 TSS2_RC
 Fapi_GetRandom_Async(
@@ -150,8 +169,8 @@ Fapi_GetRandom_Async(
  *
  * This function should be called after a previous Fapi_GetRandom_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] data The array of random bytes returned from the TPM
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] data The array of random bytes returned from the TPM
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or data is NULL.
@@ -163,6 +182,18 @@ Fapi_GetRandom_Async(
  *         internal operations or return parameters.
  * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet
  *         complete. Call this function again later.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+*          is not set.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
+ *         was not successful.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 Fapi_GetRandom_Finish(

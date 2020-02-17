@@ -29,7 +29,7 @@
  * Fapi_Finalize() finalizes a context by closing IPC/RPC connections and freeing
  * its consumed memory.
  *
- * @param [in] context The FAPI_CONTEXT
+ * @param[in] context The FAPI_CONTEXT
  */
 void
 Fapi_Finalize(

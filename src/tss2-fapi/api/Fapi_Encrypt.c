@@ -33,12 +33,12 @@
  * schemes as specified in the crypto profile.
  * This function does not use the TPM; i.e. works in non-TPM mode.
  *
- * @param [in,out] context The FAPI_CONTEXT
- * @param [in] keyPath THe path to the encryption key
- * @param [in] plainText The plaintext data to encrypt
- * @param [in] plainTextSize The size of the plainText in bytes
- * @param [out] cipherText The encoded cipher text.
- * @param [out] cipherTextSize The size of the encoded cipher text.
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] keyPath THe path to the encryption key
+ * @param[in] plainText The plaintext data to encrypt
+ * @param[in] plainTextSize The size of the plainText in bytes
+ * @param[out] cipherText The encoded cipher text.
+ * @param[out] cipherTextSize The size of the encoded cipher text.
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, keyPath, plainText, or
@@ -52,6 +52,22 @@
  *         operation already pending.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_NO_TPM if FAPI was initialized in no-TPM-mode via its
+ *         config file.
+ * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ *         object store.
+ * @retval TSS2_FAPI_RC_NOT_IMPLEMENTED if the encryption algorithm is not available.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+*          is not set.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
+ *         was not successful.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 Fapi_Encrypt(
@@ -118,10 +134,10 @@ Fapi_Encrypt(
  *
  * Call Fapi_Encrypt_Finish to finish the execution of this command.
  *
- * @param [in,out] context The FAPI_CONTEXT
- * @param [in] keyPath The path to the encryption key
- * @param [in] plainText The plainText data to encrypt
- * @param [in] plainTextSize The size of the plainText in bytes
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] keyPath The path to the encryption key
+ * @param[in] plainText The plainText data to encrypt
+ * @param[in] plainTextSize The size of the plainText in bytes
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, keyPath or plainText is
@@ -135,6 +151,8 @@ Fapi_Encrypt(
  *         operation already pending.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_NO_TPM if FAPI was initialized in no-TPM-mode via its
+ *         config file.
  */
 TSS2_RC
 Fapi_Encrypt_Async(
@@ -190,10 +208,10 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_Encrypt_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] cipherText The JSON-encoded ciphertext
- * @param [out] cipherText The encoded cipher text.
- * @param [out] cipherTextSize The size of the encoded cipher text.
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] cipherText The JSON-encoded ciphertext
+ * @param[out] cipherText The encoded cipher text.
+ * @param[out] cipherTextSize The size of the encoded cipher text.
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or ciphertext is NULL.
@@ -205,6 +223,19 @@ error_cleanup:
  *         internal operations or return parameters.
  * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet
  *         complete. Call this function again later.
+ * @retval TSS2_FAPI_RC_NOT_IMPLEMENTED if the encryption algorithm is not available.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+*          is not set.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
+ *         was not successful.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 Fapi_Encrypt_Finish(

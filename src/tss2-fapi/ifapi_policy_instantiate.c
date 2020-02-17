@@ -27,6 +27,7 @@ static TSS2_RC
 get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_list);
 
 /** Compute linked list with a list of policy elements which could be instantiated.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_list)
@@ -60,12 +61,13 @@ error_cleanup:
  * Parts of policies which are referenced by object paths will be replaced with
  * the appropriate values of the referenced objects.
  *
- * @parm[in] context The context storing information for re-entry after try again.
- * @parm[in] policy The policy to be instantiated.
- * @parm[in] callbacks The needed callback functions with the corresponding user data
+ * @param[in] context The context storing information for re-entry after try again.
+ * @param[in] policy The policy to be instantiated.
+ * @param[in] callbacks The needed callback functions with the corresponding user data
  *           which will be passed to the callback.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval FAPI error codes on failure
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_policyeval_instantiate_async(
@@ -130,10 +132,25 @@ set_pem_key_param(
  * All needed asyncroous callbacks will be executed for all policy elements offset
  * The policy.
  *
- * @parm[in] context The context storing information for re-entry after try again.
+ * @param[in] context The context storing information for re-entry after try again.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_BAD_TEMPLATE If the templayte is not complete for instantiation.
  * @retval FAPI error codes on failure
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ *         object store.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_policyeval_instantiate_finish(

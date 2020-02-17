@@ -15,9 +15,7 @@
 #include "ifapi_macros.h"
 #include "ifapi_keystore.h"
 #include "ifapi_policy_store.h"
-#include "ifapi_object.h"
 #include "ifapi_config.h"
-//#include "ifapi_policy_execute.h"
 
 #include <stdlib.h>
 #include <stdint.h>

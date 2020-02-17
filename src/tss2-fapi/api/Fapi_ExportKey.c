@@ -33,12 +33,12 @@
  * package up the duplicated key and all keys below it into a file ready to move to
  * a new TPM.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] pathOfKeyToDuplicate The path to the root of the subtree to
- *             export.
- * @param [in] pathToPublicKeyOfNewParent The path to the public key of the new
- *             parent. May be NULL
- * @param [out] exportedData The exported subtree
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] pathOfKeyToDuplicate The path to the root of the subtree to
+ *            export.
+ * @param[in] pathToPublicKeyOfNewParent The path to the public key of the new
+ *            parent. May be NULL
+ * @param[out] exportedData The exported subtree
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, pathOfKeyToDuplicate
@@ -54,6 +54,22 @@
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_NO_TPM if FAPI was initialized in no-TPM-mode via its
+ *         config file.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_BAD_PATH if the used path in inappropriate-
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+*          is not set.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
+ *         was not successful.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 Fapi_ExportKey(
@@ -118,11 +134,11 @@ Fapi_ExportKey(
  *
  * Call Fapi_ExportKey_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] pathOfKeyToDuplicate The path to the root of the subtree to
- *             export.
- * @param [in] pathToPublicKeyOfNewParent The path to the public key of the new
- *             parent
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] pathOfKeyToDuplicate The path to the root of the subtree to
+ *            export.
+ * @param[in] pathToPublicKeyOfNewParent The path to the public key of the new
+ *            parent
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or pathOfKeyToDuplicate
@@ -138,6 +154,12 @@ Fapi_ExportKey(
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_NO_TPM if FAPI was initialized in no-TPM-mode via its
+ *         config file.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
  */
 TSS2_RC
 Fapi_ExportKey_Async(
@@ -201,8 +223,8 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_ExportKey_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] exportedData The exported subtree
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] exportedData The exported subtree
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or exportedData is NULL.
@@ -214,6 +236,21 @@ error_cleanup:
  *         internal operations or return parameters.
  * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet
  *         complete. Call this function again later.
+ * @retval TSS2_FAPI_RC_BAD_PATH if the used path in inappropriate-
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+*          is not set.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
+ *         was not successful.
+ * @retval TSS2_FAPI_RC_NO_TPM if FAPI was initialized in no-TPM-mode via its
+ *         config file.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 Fapi_ExportKey_Finish(

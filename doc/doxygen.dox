@@ -1596,52 +1596,224 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  Multiple implementations of these functions for different
  cryptographic backends may exist.
  \{
- \def IFAPI_CRYPTO_CONTEXT_BLOB
- \fn TSS2_RC ifapi_get_profile_sig_scheme(const IFAPI_KEY_PROFILE *profile,
-    const TPMT_PUBLIC *tpmPublic, TPMT_SIG_SCHEME *signatureScheme)
- \fn TSS2_RC ifapi_der_sig_to_tpm(const TPMT_PUBLIC *tpmPublic,
-    const unsigned char *signature, size_t signatureSize,
-    TPMI_ALG_HASH hashAlgorithm, TPMT_SIGNATURE *tpmSignature)
- \fn TSS2_RC ifapi_tpm_ecc_sig_to_der(const TPMT_SIGNATURE *tpmSignature,
-    uint8_t **signature, size_t *signatureSize)
- \fn TSS2_RC ifapi_pub_pem_key_from_tpm(const TPM2B_PUBLIC *tpmPublicKey,
-    char **pemKey, int *pemKeySize)
- \fn TSS2_RC ifapi_verify_signature(const IFAPI_OBJECT *keyObject,
-    const uint8_t *signature, size_t signatureSize, const uint8_t *digest,
+ \fn static TSS2_RC ecdsa_verify_signature(
+    EVP_PKEY *publicKey,
+    const uint8_t *signature,
+    size_t signatureSize,
+    const uint8_t *digest,
     size_t digestSize)
- \fn TSS2_RC ifapi_verify_signature_quote(const IFAPI_OBJECT *keyObject,
-    const uint8_t *signature, size_t signatureSize, const uint8_t *digest,
-    size_t digestSize, const TPMT_SIG_SCHEME *signatureScheme)
- \fn TSS2_RC ifapi_crypto_hash_start(IFAPI_CRYPTO_CONTEXT_BLOB **context,
-    TPM2_ALG_ID hashAlgorithm)
- \fn TSS2_RC ifapi_crypto_hash_update(IFAPI_CRYPTO_CONTEXT_BLOB *context,
-    const uint8_t *buffer, size_t size)
- \fn TSS2_RC ifapi_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context,
-    uint8_t *digest, size_t *digestSize);
- \fn void ifapi_crypto_hash_abort(IFAPI_CRYPTO_CONTEXT_BLOB **context)
- \fn TSS2_RC ifapi_cert_to_pem(const uint8_t *certBuffer, size_t certBufferSize,
-    char **pemCert, TPM2_ALG_ID *certAlgorithmId)
- \fn size_t ifapi_hash_get_digest_size(TPM2_ALG_ID hashAlgorithm)
- \fn TSS2_RC ifapi_get_tpm2b_public_from_pem(const IFAPI_KEY_PROFILE *profile,
-    const char *pemKey, TPM2B_PUBLIC *tpmPublic)
- \fn TSS2_RC ifapi_get_hash_alg_for_size(uint16_t size, TPMI_ALG_HASH *hashAlgorithm)
- \fn TPM2_ALG_ID ifapi_get_signature_algorithm_from_pem(const char *pemKey)
+\fn TSS2_RC get_crl_from_cert(X509 *cert, X509_CRL **crl)
+\fn static TSS2_RC get_ecc_tpm2b_public_from_evp(
+    EVP_PKEY *publicKey,
+    TPM2B_PUBLIC *tpmPublic)
+\fn ENGINE * get_engine()
+\fn static const EVP_MD * get_hash_md(TPM2_ALG_ID hashAlgorithm)
+\fn static const EVP_MD * get_ossl_hash_md(TPM2_ALG_ID hashAlgorithm)
+\fn static TSS2_RC get_rsa_tpm2b_public_from_evp(
+    EVP_PKEY *publicKey,
+    TPM2B_PUBLIC *tpmPublic)
+\fn static int get_sig_scheme(TPM2_ALG_ID signatureScheme)
+\fn static int ifapi_bn2binpad(const BIGNUM *bn, unsigned char *bin, int binSize)
+\fn TSS2_RC ifapi_cert_to_pem(
+    const uint8_t *certBuffer,
+    size_t certBufferSize,
+    char **pemCert,
+    TPM2_ALG_ID *certAlgorithmId,
+    TPM2B_PUBLIC *tpmPublic)
+\fn void ifapi_crypto_hash_abort(IFAPI_CRYPTO_CONTEXT_BLOB **context)
+\fn TSS2_RC ifapi_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context,
+                         uint8_t *digest, size_t *digestSize)
+\fn TSS2_RC ifapi_crypto_hash_start(IFAPI_CRYPTO_CONTEXT_BLOB **context,
+                        TPM2_ALG_ID hashAlgorithm)
+\fn TSS2_RC ifapi_crypto_hash_update(IFAPI_CRYPTO_CONTEXT_BLOB *context,
+                         const uint8_t *buffer, size_t size)
+\fn TSS2_RC ifapi_der_sig_to_tpm(
+    const TPMT_PUBLIC *tpmPublic,
+    const unsigned char *signature,
+    size_t signatureSize,
+    TPMI_ALG_HASH hashAlgorithm,
+    TPMT_SIGNATURE *tpmSignature)
+\fn static TSS2_RC ifapi_ecc_der_sig_to_tpm(
+    const unsigned char *signature,
+    size_t signatureSize,
+    int keySize,
+    TPMI_ALG_HASH hashAlgorithm,
+    TPMT_SIGNATURE *tpmSignature)
+\fn static TSS2_RC ifapi_get_evp_from_pem(const char *pemKey, EVP_PKEY **publicKey)
+\fn TSS2_RC ifapi_get_hash_alg_for_size(uint16_t size, TPMI_ALG_HASH *hashAlgorithm)
+\fn TPM2_RC ifapi_get_profile_sig_scheme(
+    const IFAPI_PROFILE *profile,
+    const TPMT_PUBLIC *tpmPublic,
+    TPMT_SIG_SCHEME *signatureScheme)
+\fn TSS2_RC ifapi_get_public_from_pem_cert(const char* pem_cert, TPM2B_PUBLIC *tpm_public)
+\fn TPM2_ALG_ID ifapi_get_signature_algorithm_from_pem(const char *pemKey)
+\fn TSS2_RC ifapi_get_tpm2b_public_from_pem(
+    const char *pemKey,
+    TPM2B_PUBLIC *tpmPublic)
+\fn TSS2_RC ifapi_get_tpm_key_fingerprint(
+    const TPM2B_PUBLIC *tpmPublicKey,
+    TPMI_ALG_HASH hashAlg,
+    TPM2B_DIGEST *fingerprint)
+\fn size_t ifapi_hash_get_digest_size(TPM2_ALG_ID hashAlgorithm)
+\fn TSS2_RC ifapi_initialize_sign_public(TPM2_ALG_ID signatureAlgorithm,
+        TPM2B_PUBLIC *public)
+\fn TSS2_RC ifapi_pub_pem_key_from_tpm(
+    const TPM2B_PUBLIC *tpmPublicKey,
+    char **pemKey,
+    int *pemKeySize)
+\fn TSS2_RC ifapi_tpm_ecc_sig_to_der(
+    const TPMT_SIGNATURE *tpmSignature,
+    uint8_t **signature,
+    size_t *signatureSize)
+\fn TSS2_RC ifapi_verify_ek_cert(
+    char* root_cert_pem,
+    char* intermed_cert_pem,
+    char* ek_cert_pem)
+\fn TSS2_RC ifapi_verify_signature(
+    const IFAPI_OBJECT *keyObject,
+    const uint8_t *signature,
+    size_t signatureSize,
+    const uint8_t *digest,
+    size_t digestSize)
+\fn TSS2_RC ifapi_verify_signature_quote(
+    const IFAPI_OBJECT *keyObject,
+    const uint8_t *signature,
+    size_t signatureSize,
+    const uint8_t *digest,
+    size_t digestSize,
+    const TPMT_SIG_SCHEME *signatureScheme)
+\fn static TSS2_RC ossl_ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY *evpPublicKey)
+\fn static TSS2_RC ossl_rsa_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY *evpPublicKey)
+\fn static TSS2_RC rsa_verify_signature(
+    EVP_PKEY *publicKey,
+    const uint8_t *signature,
+    size_t signatureSize,
+    const uint8_t *digest,
+    size_t digestSize)
 \}
 */
+
+/*!
+ \defgroup ifapi_policy_intantiate Policy instantiation module
+ \ingroup ifapi
+ Provides functions for instantiation of the policies. The defaults will be initialized according to the given values.
+ \{
+\fn static TSS2_RC get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_list)
+\fn TSS2_RC ifapi_policyeval_instantiate_async(
+    IFAPI_POLICY_EVAL_INST_CTX *context,
+    TPMS_POLICY *policy,
+    ifapi_policyeval_INST_CB *callbacks)
+\fn TSS2_RC ifapi_policyeval_instantiate_finish(
+    IFAPI_POLICY_EVAL_INST_CTX *context)
+ \}
 
  /*!
  \defgroup ifapi_policy Policy calculation module
  \ingroup ifapi
  Provides functions for policy calculation (without TPM).
  \{
-  \def IFAPI_POLICY
-  \fn TSS2_RC ifapi_calculate_tree(
+ \fn TSS2_RC ifapi_calculate_tree(
     FAPI_CONTEXT *context,
     const char *policyPath,
     TPMS_POLICY *policy,
     TPMI_ALG_HASH hash_alg,
     size_t *digest_idx,
     size_t *hash_size)
+
+ \fn TSS2_RC calculate_policy_key_param(
+    TPM2_CC command_code,
+    TPM2B_NAME *name,
+    TPM2B_NONCE *policyRef,
+    size_t hash_size,
+    TPMI_ALG_HASH current_hash_alg,
+    TPMU_HA *digest)
+\fn TSS2_RC ifapi_calculate_policy(
+    TPML_POLICYELEMENTS *policy,
+    TPML_DIGEST_VALUES *policyDigests,
+    TPMI_ALG_HASH hash_alg,
+    size_t hash_size,
+    size_t digest_idx)
+\fn TSS2_RC ifapi_calculate_policy_auth_value(
+    TPMS_POLICYAUTHVALUE *policy,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH current_hash_alg)
+\fn TSS2_RC ifapi_calculate_policy_authorize(
+    TPMS_POLICYAUTHORIZE *policy,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH current_hash_alg)
+\fn TSS2_RC ifapi_calculate_policy_authorize_nv(
+    TPMS_POLICYAUTHORIZENV *policy,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH current_hash_alg)
+\fn TSS2_RC ifapi_calculate_policy_command_code(
+    TPMS_POLICYCOMMANDCODE *policy,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH current_hash_alg)
+\fn TSS2_RC ifapi_calculate_policy_counter_timer(
+    TPMS_POLICYCOUNTERTIMER *policy,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH current_hash_alg)
+\fn TSS2_RC ifapi_calculate_policy_cp_hash(
+    TPMS_POLICYCPHASH *policy,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH current_hash_alg)
+\fn TSS2_RC ifapi_calculate_policy_digest_hash(
+    TPM2B_DIGEST *digest,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH current_hash_alg,
+    TPM2_CC command_code)
+\fn TSS2_RC ifapi_calculate_policy_duplicate(
+    TPMS_POLICYDUPLICATIONSELECT *policy,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH current_hash_alg)
+\fn TSS2_RC ifapi_calculate_policy_locality(
+    TPMS_POLICYLOCALITY *policy,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH current_hash_alg)
+\fn TSS2_RC ifapi_calculate_policy_name_hash(
+    TPMS_POLICYNAMEHASH *policy,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH current_hash_alg)
+\fn TSS2_RC ifapi_calculate_policy_nv(
+    TPMS_POLICYNV *policy,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH current_hash_alg)
+\fn TSS2_RC ifapi_calculate_policy_nv_written(
+    TPMS_POLICYNVWRITTEN *policy,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH current_hash_alg)
+\fn TSS2_RC ifapi_calculate_policy_or(
+    TPMS_POLICYOR *policyOr,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH hash_alg,
+    size_t hash_size,
+    size_t digest_idx)
+\fn TSS2_RC ifapi_calculate_policy_password(
+    TPMS_POLICYPASSWORD *policy,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH current_hash_alg)
+\fn TSS2_RC ifapi_calculate_policy_physical_presence(
+    TPMS_POLICYPHYSICALPRESENCE *policy,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH current_hash_alg)
+\fn TSS2_RC ifapi_calculate_policy_secret(
+    TPMS_POLICYSECRET *policy,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH current_hash_alg)
+\fn TSS2_RC ifapi_calculate_policy_signed(
+    TPMS_POLICYSIGNED *policy,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH current_hash_alg)
+\fn TSS2_RC ifapi_calculate_simple_policy(
+    TPM2_CC command_code1,
+    TPM2_CC command_code2,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH current_hash_alg)
+\fn TSS2_RC ifapi_compute_policy_pcr(
+    TPMS_POLICYPCR *policy,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH current_hash_alg)
+
  \}
 */
 
@@ -1725,153 +1897,126 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \}
 */
 
+/*!
+ \defgroup ifapi_policy_util_exec Policy utilitiy module
+ \ingroup ifapi
+ Provides functions for the execution of policies for object authorization.
+\{
+
+\fn static void clear_all_policies(FAPI_CONTEXT *context)
+\fn static TSS2_RC clear_current_policy(FAPI_CONTEXT *context)
+\fn static TSS2_RC create_session(
+    FAPI_CONTEXT *context,
+    ESYS_TR *session,
+    TPMI_ALG_HASH hash_alg)
+\fn TSS2_RC ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session)
+\fn TSS2_RC ifapi_policyutil_execute_prepare(
+    FAPI_CONTEXT *context,
+    TPMI_ALG_HASH hash_alg,
+    TPMS_POLICY *policy)
+\fn static TSS2_RC new_policy(
+    FAPI_CONTEXT *context,
+    TPMS_POLICY *policy,
+    IFAPI_POLICYUTIL_STACK **current_policy)
+\}
+    */
 
  /*!
  \defgroup ifapi_helper Helper functions module
  \ingroup ifapi
  Provides helper functions.
  \{
-  \def IFAPI_HELPER
-    \fn TSS2_RC ifapi_create_dirs(const char *supdir, const char *path);
-
-\fn TSS2_RC ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template);
-
-\fn TSS2_RC ifapi_set_nv_flags(const char *type, IFAPI_NV_TEMPLATE *template,
-                   const char *policy);
-
-\fn bool ifapi_path_type_p(const char *path, const char *type);
-
-\fn ESYS_TR ifapi_get_hierary_handle(const char *path);
-
-\fn bool ifapi_hierarchy_path_p(const char *path);
-
-\fn bool ifapi_TPMT_PUBLIC_cmp(TPMT_PUBLIC *in1, TPMT_PUBLIC *in2);
-
+\fn bool add_string_to_list(NODE_STR_T *str_list, char *string)
+\fn TSS2_RC append_object_to_list(void *object, NODE_OBJECT_T **object_list)
+\fn static void cleanup_policy_element(TPMT_POLICYELEMENT *policy)
+\fn static void cleanup_policy_elements(TPML_POLICYELEMENTS *policy)
+\fn TSS2_RC copy_policy_element(const TPMT_POLICYELEMENT *from_policy, TPMT_POLICYELEMENT *to_policy)
+\fn void free_string_list(NODE_STR_T *node)
+\fn char * get_description(IFAPI_OBJECT *object)
+\fn bool ifapi_TPM2B_DIGEST_cmp(TPM2B_DIGEST *in1, TPM2B_DIGEST *in2)
+\fn bool ifapi_TPM2B_ECC_PARAMETER_cmp(TPM2B_ECC_PARAMETER *in1,
+                              TPM2B_ECC_PARAMETER *in2)
+\fn bool ifapi_TPM2B_PUBLIC_KEY_RSA_cmp(TPM2B_PUBLIC_KEY_RSA *in1,
+                               TPM2B_PUBLIC_KEY_RSA *in2)
+\fn bool ifapi_TPMS_ECC_POINT_cmp(TPMS_ECC_POINT *in1, TPMS_ECC_POINT *in2)
+\fn bool ifapi_TPMT_PUBLIC_cmp(TPMT_PUBLIC *in1, TPMT_PUBLIC *in2)
+\fn bool ifapi_TPMU_PUBLIC_ID_cmp(TPMU_PUBLIC_ID *in1, UINT32 selector1,
+                         TPMU_PUBLIC_ID *in2, UINT32 selector2)
+\fn TSS2_RC ifapi_asprintf(char **str, const char *fmt, ...)
+\fn TSS2_RC ifapi_calculate_pcr_digest(
+    json_object *jso_event_list,
+    const FAPI_QUOTE_INFO *quote_info,
+    TPM2B_DIGEST *pcr_digest)
+\fn TSS2_RC ifapi_check_profile_pcr_selection(
+    const TPML_PCR_SELECTION *pcr_profile,
+    const TPML_PCR_SELECTION *pcr_capablity)
+\fn void ifapi_cleanup_policy(TPMS_POLICY *policy)
+\fn bool ifapi_cmp_public_key(
+    TPM2B_PUBLIC *key1,
+    TPM2B_PUBLIC *key2)
+\fn TSS2_RC ifapi_compute_policy_digest(
+    TPML_PCRVALUES *pcrs,
+    TPML_PCR_SELECTION *pcr_selection,
+    TPMI_ALG_HASH hash_alg,
+    TPM2B_DIGEST *pcr_digest)
+\fn TSS2_RC ifapi_compute_quote_info(
+    IFAPI_OBJECT *sig_key_object,
+    TPM2B_ATTEST *tpm_quoted,
+    char **quoteInfo)
+\fn TPMS_POLICY * ifapi_copy_policy(
+    const TPMS_POLICY *from_policy)
+\fn TSS2_RC ifapi_create_dirs(const char *supdir, const char *path)
+\fn TSS2_RC ifapi_extend_vpcr(
+    TPM2B_DIGEST *vpcr,
+    TPMI_ALG_HASH bank,
+    const IFAPI_EVENT *event)
+\fn TSS2_RC ifapi_filter_pcr_selection_by_index(
+    TPML_PCR_SELECTION *pcr_selection,
+    const TPM2_HANDLE *pcr_index,
+    size_t pcr_count)
+\fn void ifapi_free_node_list(NODE_OBJECT_T *node)
+\fn void ifapi_free_object_list(NODE_OBJECT_T *node)
+\fn TSS2_RC ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer, size_t *buffer_size)
+\fn ESYS_TR ifapi_get_hierary_handle(const char *path)
+\fn TSS2_RC ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name)
+\fn TSS2_RC ifapi_get_nv_start_index(const char *path, TPM2_HANDLE *start_nv_index)
+\fn TSS2_RC ifapi_get_quote_info(
+    char const *quoteInfo,
+    TPM2B_ATTEST *tpm_quoted,
+    FAPI_QUOTE_INFO *fapi_quote_info)
+\fn bool ifapi_hierarchy_path_p(const char *path)
 \fn void ifapi_init_hierarchy_object(
     IFAPI_OBJECT *hierarchy,
-    ESYS_TR esys_handle);
-
-\fn char * get_description(IFAPI_OBJECT *object);
-
-\fn TSS2_RC create_dirs(const char *supdir, NODE_STR_T *dir_list, mode_t mode);
-
+    ESYS_TR esys_handle)
+\fn TSS2_RC ifapi_nv_get_name(TPM2B_NV_PUBLIC *publicInfo, TPM2B_NAME *name)
+\fn TSS2_RC ifapi_object_cmp_name(IFAPI_OBJECT *object, void *name, bool *equal)
+\fn TSS2_RC ifapi_object_cmp_nv_public(IFAPI_OBJECT *object, void *nv_public, bool *equal)
+\fn size_t ifapi_path_length(NODE_STR_T *node)
+\fn TSS2_RC ifapi_path_string(char **dest, const char *supdir, NODE_STR_T *node, char *name)
+\fn TSS2_RC ifapi_path_string_n(char **dest, const char *supdir, NODE_STR_T *node, char *name,
+                    size_t n)
+\fn bool ifapi_path_type_p(const char *path, const char *type)
+\fn TSS2_RC ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
+\fn TSS2_RC ifapi_set_nv_flags(const char *type, IFAPI_NV_TEMPLATE *template,
+                   const char *policy)
+\fn TSS2_RC ifapi_tpm_to_fapi_signature(
+    IFAPI_OBJECT *sig_key_object,
+    TPMT_SIGNATURE *tpm_signature,
+    uint8_t **signature,
+    size_t *signatureSize)
 \fn TSS2_RC init_explicit_key_path(
     const char *context_profile,
     const char *ipath,
     NODE_STR_T **list_node1,
     NODE_STR_T **current_list_node,
-    NODE_STR_T **result);
-
-\fn size_t ifapi_path_length(NODE_STR_T *node);
-
-\fn size_t path_str_length(NODE_STR_T *node, int delim_length);
-
-\fn void ifapi_free_object_list(NODE_OBJECT_T *node);
-
-\fn void ifapi_free_node_list(NODE_OBJECT_T *node);
-
-\fn TSS2_RC ifapi_path_string(char **dest, const char *supdir, NODE_STR_T *node, char *name);
-
-\fn TSS2_RC ifapi_path_string_n(
-    char **dest,
-    const char *supdir,
-    NODE_STR_T *node,
-    char *name,
-    size_t n);
-
-\fn TSS2_RC ifapi_asprintf(char **str, const char *fmt, ...);
-
-\fn NODE_STR_T * split_string(const char *string, char *delimiter);
-
-\fn NODE_STR_T * init_string_list(const char *string);
-
-\fn bool add_string_to_list(NODE_STR_T *str_list, char *string);
-
-\fn void free_string_list(NODE_STR_T *node);
-
-\fn void ifapi_cleanup_policy(
-    TPMS_POLICY *policy);
-
-\fn TPMS_POLICY * ifapi_copy_policy(
-    const TPMS_POLICY *from_policy);
-
-\fn TSS2_RC ifapi_get_name(
-    TPMT_PUBLIC *publicInfo,
-    TPM2B_NAME *name);
-
-\fn TSS2_RC ifapi_nv_get_name(
-    TPM2B_NV_PUBLIC *publicInfo,
-    TPM2B_NAME *name);
-
-\fn TSS2_RC ifapi_object_cmp_name(
-    IFAPI_OBJECT *object,
-    void *name,
-    bool *equal);
-
-\fn TSS2_RC ifapi_object_cmp_nv_public(
-    IFAPI_OBJECT *object,
-    void *nv_public,
-    bool *equal);
-
-\fn TSS2_RC ifapi_tpm_to_fapi_signature(
-    IFAPI_OBJECT *sig_key_object,
-    TPMT_SIGNATURE *tpm_signature,
-    uint8_t **signature,
-    size_t *signatureSize);
-
-\fn TSS2_RC ifapi_compute_quote_info(
-    IFAPI_OBJECT *sig_key_object,
-    TPM2B_ATTEST *tpm_quoted,
-    char **quoteInfo);
-
-\fn TSS2_RC ifapi_get_quote_info(
-    char const *quoteInfo,
-    TPM2B_ATTEST *tpm_quoted,
-    FAPI_QUOTE_INFO *fapi_quote_ingo);
-
-\fn TSS2_RC push_object_to_list(void *object, NODE_OBJECT_T **object_list);
-
-\fn TSS2_RC append_object_to_list(void *object, NODE_OBJECT_T **object_list);
-
-\fn TSS2_RC push_object_with_size_to_list(void *object, size_t size, NODE_OBJECT_T **object_list);
-
-\fn size_t policy_digest_size(
-    IFAPI_OBJECT *object);
-
-\fn TPM2B_DIGEST * get_policy(IFAPI_OBJECT *object);
-
-\fn bool object_with_auth(IFAPI_OBJECT *object);
-
-\fn TSS2_RC ifapi_get_nv_start_index(const char *path, TPM2_HANDLE *start_nv_index);
-
-\fn TSS2_RC ifapi_check_profile_pcr_selection(
-    const TPML_PCR_SELECTION *pcr_profile,
-    const TPML_PCR_SELECTION *pcr_capablity);
-
-\fn TSS2_RC ifapi_filter_pcr_selection_by_index(
-    TPML_PCR_SELECTION *pcr_selection,
-    const TPM2_HANDLE *pcr_index,
-    size_t pcr_count);
-
-TSS2_RC ifapi_calculate_pcr_digest(
-    json_object *jso_event_list,
-    const FAPI_QUOTE_INFO *quote_info,
-    TPM2B_DIGEST *pcr_digest);
-
-\fn TSS2_RC ifapi_compute_policy_digest(
-    TPML_PCRVALUES *pcrs,
-    TPML_PCR_SELECTION *pcr_selection,
-    TPMI_ALG_HASH hash_alg,
-    TPM2B_DIGEST *pcr_digest);
-
-\fn bool ifapi_cmp_public_key(
-    TPM2B_PUBLIC *key1,
-    TPM2B_PUBLIC *key2);
-
-\fn TSS2_RC ifapi_get_curl_buffer(
-    unsigned char * url,
-    unsigned char ** buffer,
-    size_t *cert_size);
+    NODE_STR_T **result)
+\fn NODE_STR_T * init_string_list(const char *string)
+\fn bool object_with_auth(IFAPI_OBJECT *object)
+\fn size_t path_str_length(NODE_STR_T *node, int delim_length)
+\fn size_t policy_digest_size(IFAPI_OBJECT *object)
+\fn TSS2_RC push_object_to_list(void *object, NODE_OBJECT_T **object_list)
+\fn TSS2_RC push_object_with_size_to_list(void *object, size_t size, NODE_OBJECT_T **object_list)
+\fn NODE_STR_T * split_string(const char *string, char *delimiter)
  \}
 */
 
@@ -1880,201 +2025,973 @@ TSS2_RC ifapi_calculate_pcr_digest(
  \ingroup ifapi
  Provides internal utility functions.
  \{
-  \def IFAPI_UTILITY
- \fn TSS2_RC ifapi_flush_object(FAPI_CONTEXT *context, ESYS_TR session);
-
-\fn TSS2_RC ifapi_get_session_async(ESYS_CONTEXT *esys, ESYS_TR saltkey, const IFAPI_PROFILE *profile);
-
-\fn TSS2_RC ifapi_get_session_finish(ESYS_CONTEXT *esys, ESYS_TR *session,
-                         TPMA_SESSION flags);
-
-\fn TSS2_RC ifapi_set_auth(
+\fn static void full_path_to_fapi_path(IFAPI_KEYSTORE *keystore, char *path)
+\fn static TSS2_RC get_explicit_key_path(
+    IFAPI_KEYSTORE *keystore,
+    const char *ipath,
+    NODE_STR_T **result)
+\fn TSS2_RC ifapi_authorize_object(FAPI_CONTEXT *context, IFAPI_OBJECT *object, ESYS_TR *session)
+\fn TPM2_RC ifapi_capability_get(FAPI_CONTEXT *context, TPM2_CAP capability,
+                     UINT32 count, TPMS_CAPABILITY_DATA **capability_data)
+\fn TPM2_RC ifapi_capability_init(FAPI_CONTEXT *context)
+\fn TSS2_RC ifapi_change_auth_hierarchy(
     FAPI_CONTEXT *context,
-    IFAPI_OBJECT *auth_object,
-    const char *description);
-
-\fn TSS2_RC ifapi_get_free_handle_async(FAPI_CONTEXT *fctx, TPM2_HANDLE *handle);
-
+    ESYS_TR handle,
+    IFAPI_OBJECT *hierarchy_object,
+    TPM2B_AUTH *newAuthValue)
+\fn TSS2_RC ifapi_change_policy_hierarchy(
+    FAPI_CONTEXT *context,
+    ESYS_TR handle,
+    IFAPI_OBJECT *hierarchy_object,
+    TPMS_POLICY *policy)
+\fn TSS2_RC ifapi_cleanup_session(FAPI_CONTEXT *context)
+\fn TSS2_RC ifapi_esys_serialize_object(ESYS_CONTEXT *ectx, IFAPI_OBJECT *object)
+\fn TSS2_RC ifapi_flush_object(FAPI_CONTEXT *context, ESYS_TR handle)
+\fn void ifapi_flush_policy_session(FAPI_CONTEXT *context, ESYS_TR session, TSS2_RC r)
+\fn void ifapi_free_object(FAPI_CONTEXT *context, IFAPI_OBJECT **object)
+\fn void ifapi_free_objects(FAPI_CONTEXT *context)
+\fn TSS2_RC ifapi_get_certificates(
+    FAPI_CONTEXT *context,
+    UINT32 min_handle,
+    UINT32 max_handle,
+    NODE_OBJECT_T **cert_list)
+\fn TSS2_RC ifapi_get_description(IFAPI_OBJECT *object, char **description)
+\fn TSS2_RC ifapi_get_free_handle_async(FAPI_CONTEXT *fctx, TPM2_HANDLE *handle)
 \fn TSS2_RC ifapi_get_free_handle_finish(FAPI_CONTEXT *fctx, TPM2_HANDLE *handle,
-                             TPM2_HANDLE max);
-
-\fn TSS2_RC ifapi_init_primary_async(
+                             TPM2_HANDLE max)
+\fn TSS2_RC ifapi_get_json(FAPI_CONTEXT *context, IFAPI_OBJECT *object, char **json_string)
+\fn TSS2_RC ifapi_get_random(FAPI_CONTEXT *context, size_t numBytes, uint8_t **data)
+\fn TSS2_RC ifapi_get_session_async(ESYS_CONTEXT *esys, ESYS_TR saltkey, const IFAPI_PROFILE *profile,
+                        TPMI_ALG_HASH hashAlg)
+\fn TSS2_RC ifapi_get_session_finish(ESYS_CONTEXT *esys, ESYS_TR *session,
+                         TPMA_SESSION flags)
+\fn TSS2_RC ifapi_get_sessions_async(FAPI_CONTEXT *context,
+                         IFAPI_SESSION_TYPE session_flags,
+                         TPMA_SESSION attribute_flags1,
+                         TPMA_SESSION attribute_flags2)
+\fn TSS2_RC ifapi_get_sessions_finish(
     FAPI_CONTEXT *context,
-    TSS2_KEY_TYPE ktype);
-
-\fn TSS2_RC ifapi_init_primary_finish(
-    FAPI_CONTEXT *context,
-    TSS2_KEY_TYPE ktype);
-
-\fn TSS2_RC ifapi_session_init(FAPI_CONTEXT *context);
-
-\fn TSS2_RC ifapi_non_tpm_mode_init(FAPI_CONTEXT *context);
-
-\fn void ifapi_session_clean(FAPI_CONTEXT *context);
-
-\fn TSS2_RC ifapi_cleanup_session(FAPI_CONTEXT *context);
-
-\fn void ifapi_primary_clean(FAPI_CONTEXT *context);
-
-\fn TSS2_RC ifapi_get_sessions_async(
-    FAPI_CONTEXT *context,
-    IFAPI_SESSION_TYPE session_flags,
-    TPMA_SESSION attribute_flags1,
-    TPMA_SESSION attribute_flags2);
-
-\fn TSS2_RC ifapi_get_sessions_finish(FAPI_CONTEXT *context, const IFAPI_PROFILE *profile);
-
-\fn TSS2_RC ifapi_merge_profile_into_nv_template(
-    FAPI_CONTEXT *context,
-    IFAPI_NV_TEMPLATE *template);
-
-\fn TSS2_RC ifapi_merge_profile_into_template(
     const IFAPI_PROFILE *profile,
-    IFAPI_KEY_TEMPLATE *template);
-
-\fn TSS2_RC ifapi_load_key_async(FAPI_CONTEXT *context, size_t position);
-
-\fn TSS2_RC ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent);
-
-\fn TSS2_RC ifapi_load_keys_async(
-    FAPI_CONTEXT *context,
-    char const *keyPath);
-
-\fn TSS2_RC ifapi_load_keys_finish(
-    FAPI_CONTEXT *context,
-    bool flush_parent,
-    ESYS_TR *handle,
-    IFAPI_OBJECT **key_object);
-
-\fn TSS2_RC ifapi_nv_read(
-    FAPI_CONTEXT *context,
-    uint8_t     **data,
-    size_t       *size);
-
-\fn void ifapi_flush_policy_session(
-    FAPI_CONTEXT *context,
-    ESYS_TR session,
-    \fn TSS2_RC r);
-
-\fn TSS2_RC ifapi_nv_write(
-    FAPI_CONTEXT *context,
-    char         *nvPath,
-    size_t         param_offset,
-    uint8_t const *data,
-    size_t         size);
-
-\fn TSS2_RC ifapi_get_random(
-    FAPI_CONTEXT *context,
-    size_t numBytes,
-    uint8_t **data);
-
-\fn TSS2_RC ifapi_load_key(
-    FAPI_CONTEXT  *context,
-    char    const *keyPath,
-    IFAPI_OBJECT **key_object);
-
-\fn TSS2_RC ifapi_key_sign(
-    FAPI_CONTEXT    *context,
-    IFAPI_OBJECT    *sig_key_object,
-    char const      *padding,
-    TPM2B_DIGEST    *digest,
-    TPMT_SIGNATURE **tpm_signature,
-    char           **publicKey,
-    char           **certificate);
-
-\fn TSS2_RC ifapi_authorize_object(
+    TPMI_ALG_HASH hash_alg)
+\fn TSS2_RC ifapi_get_sig_scheme(
     FAPI_CONTEXT *context,
     IFAPI_OBJECT *object,
-    ESYS_TR      *session);
-
-\fn TSS2_RC ifapi_get_json(
+    char const *padding,
+    TPM2B_DIGEST *digest,
+    TPMT_SIG_SCHEME *sig_scheme)
+\fn TSS2_RC ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
+\fn TSS2_RC ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
+\fn TSS2_RC ifapi_initialize_object(
+    ESYS_CONTEXT *ectx,
+    IFAPI_OBJECT *object)
+\fn TSS2_RC ifapi_key_create(
     FAPI_CONTEXT *context,
-    IFAPI_OBJECT *object,
-    char **json_string);
-
+    IFAPI_KEY_TEMPLATE *template)
 \fn TSS2_RC ifapi_key_create_prepare(
     FAPI_CONTEXT  *context,
     char   const *keyPath,
-    char   const *policyPath);
-
+    char   const *policyPath)
 \fn TSS2_RC ifapi_key_create_prepare_auth(
     FAPI_CONTEXT  *context,
     char   const *keyPath,
     char   const *policyPath,
-    char   const *authValue);
-
+    char   const *authValue)
 \fn TSS2_RC ifapi_key_create_prepare_sensitive(
     FAPI_CONTEXT  *context,
     char    const *keyPath,
     char    const *policyPath,
     size_t         dataSize,
     char    const *authValue,
-    uint8_t const *data);
-
-\fn TSS2_RC ifapi_key_create(
+    uint8_t const *data)
+\fn TSS2_RC ifapi_key_sign(
+    FAPI_CONTEXT     *context,
+    IFAPI_OBJECT     *sig_key_object,
+    char const       *padding,
+    TPM2B_DIGEST     *digest,
+    TPMT_SIGNATURE  **tpm_signature,
+    char            **publicKey,
+    char            **certificate)
+\fn TSS2_RC ifapi_load_key(
+    FAPI_CONTEXT  *context,
+    char    const *keyPath,
+    IFAPI_OBJECT **key_object)
+\fn TSS2_RC ifapi_load_key_async(FAPI_CONTEXT *context, size_t position)
+\fn TSS2_RC ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
+\fn TSS2_RC ifapi_load_keys_async(FAPI_CONTEXT *context, char const *keyPath)
+\fn TSS2_RC ifapi_load_keys_finish(
     FAPI_CONTEXT *context,
-    IFAPI_KEY_TEMPLATE *template);
-
-\fn TSS2_RC ifapi_get_sig_scheme(
+    bool flush_parent,
+    ESYS_TR *handle,
+    IFAPI_OBJECT **key_object)
+\fn TSS2_RC ifapi_load_primary_async(FAPI_CONTEXT *context, char *path)
+\fn TSS2_RC ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
+\fn TSS2_RC ifapi_merge_profile_into_nv_template(
     FAPI_CONTEXT *context,
-    IFAPI_OBJECT *object,
-    char const *padding,
-    TPM2B_DIGEST *digest,
-    TPMT_SIG_SCHEME *sig_scheme);
-
-\fn TSS2_RC ifapi_change_auth_hierarchy(
+    IFAPI_NV_TEMPLATE *template)
+\fn TSS2_RC ifapi_merge_profile_into_template(
+    const IFAPI_PROFILE *profile,
+    IFAPI_KEY_TEMPLATE *template)
+\fn TSS2_RC ifapi_non_tpm_mode_init(FAPI_CONTEXT *context)
+\fn TSS2_RC ifapi_nv_read(
     FAPI_CONTEXT *context,
-    ESYS_TR handle,
-    IFAPI_OBJECT *hierarchy_object,
-    TPM2B_AUTH *newAuthValue);
-
-\fn TSS2_RC ifapi_change_policy_hierarchy(
+    uint8_t     **data,
+    size_t       *size)
+\fn TSS2_RC ifapi_nv_write(
     FAPI_CONTEXT *context,
-    ESYS_TR handle,
-    IFAPI_OBJECT *hierarchy_object,
-    TPMS_POLICY *policy);
-
-\fn IFAPI_OBJECT *ifapi_allocate_object(FAPI_CONTEXT *context);
-
-\fn void ifapi_free_objects(FAPI_CONTEXT *context);
-
-\fn void ifapi_free_object(FAPI_CONTEXT *context, IFAPI_OBJECT **object);
-
-\fn TPM2_RC ifapi_capability_init(FAPI_CONTEXT *context);
-
-\fn TPM2_RC ifapi_capability_get(FAPI_CONTEXT *context, TPM2_CAP capability,
-                     UINT32 count, TPMS_CAPABILITY_DATA **capability_data);
-
-\fn TSS2_RC ifapi_get_certificates(
+    char         *nvPath,
+    size_t         param_offset,
+    uint8_t const *data,
+    size_t         size)
+\fn void ifapi_primary_clean(FAPI_CONTEXT *context)
+\fn void ifapi_session_clean(FAPI_CONTEXT *context)
+\fn TSS2_RC ifapi_session_init(FAPI_CONTEXT *context)
+\fn TSS2_RC ifapi_set_auth(
     FAPI_CONTEXT *context,
-    UINT32 min_handle,
-    UINT32 max_handle,
-    NODE_OBJECT_T **cert_list);
-
-\fn TSS2_RC ifapi_initialize_object(
-    ESYS_CONTEXT *ectx,
-    IFAPI_OBJECT *object);
-
-\fn TSS2_RC ifapi_esys_serialize_object(
-    ESYS_CONTEXT *ectx,
-    IFAPI_OBJECT *object);
-
-\fn TSS2_RC ifapi_get_description(IFAPI_OBJECT *object, char **description);
-
-\fn void ifapi_set_description(IFAPI_OBJECT *object, char *description);
+    IFAPI_OBJECT *auth_object,
+    const char *description)
+\fn void ifapi_set_description(IFAPI_OBJECT *object, char *description)
+\fn TSS2_RC pop_object_from_list(FAPI_CONTEXT *context, NODE_OBJECT_T **object_list)
 
  \}
 */
 
 /*!
- \defgroup ifapi_config FAPI configuration module
+ \defgroup ifapi_io Basic IO module
  \ingroup ifapi
- Provides functions and types for the FAPI configuration and its initialization
+ Provides internal basic IO functions for policy and key store module.
  \{
-  \def IFAPI_CONFIG
-  \fn TSS2_RC ifapi_config_initialize_async(IFAPI_IO *io)
-  \fn TSS2_RC ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config)
+\fn TSS2_RC ifapi_io_check_create_dir(
+    const char *dirname)
+\fn TSS2_RC ifapi_io_check_file_writeable(
+    const char *file)
+\fn TSS2_RC ifapi_io_check_create_dir(
+    const char *dirname)
+\fn TSS2_RC ifapi_io_dirfiles(
+    const char *dirname,
+    char ***files,
+    size_t *numfiles)
+\fn TSS2_RC ifapi_io_dirfiles_all(
+    const char *searchPath,
+    char ***pathlist,
+    size_t *numPaths)
+\fn bool ifapi_io_path_exists(const char *path)
+\fn TSS2_RC ifapi_io_poll(IFAPI_IO * io)
+\fn TSS2_RC ifapi_io_poll_handles(IFAPI_IO *io, FAPI_POLL_HANDLE **handles, size_t *num_handles)
+\fn TSS2_RC ifapi_io_read_async(
+    struct IFAPI_IO *io,
+    const char *filename)
+\fn TSS2_RC ifapi_io_read_finish(
+    struct IFAPI_IO *io,
+    uint8_t **buffer,
+    size_t *length)
+\fn TSS2_RC ifapi_io_remove_directories(
+    const char *dirname)
+\fn TSS2_RC ifapi_io_remove_file(const char *file)
+\fn TSS2_RC ifapi_io_write_async(
+    struct IFAPI_IO *io,
+    const char *filename,
+    const uint8_t *buffer,
+    size_t length)
+\fn TSS2_RC ifapi_io_write_finish(
+    struct IFAPI_IO *io)
  \}
+*/
+
+/*!
+ \defgroup ifapi_keystore Key store module
+ \ingroup ifapi
+ Provides internal fapi functions for reading and writing to the key store.
+ \{
+\fn void full_path_to_fapi_path(IFAPI_KEYSTORE *keystore, char *path)
+\fn void ifapi_cleanup_ifapi_duplicate(IFAPI_DUPLICATE * duplicate)
+\fn void ifapi_cleanup_ifapi_ext_pub_key(IFAPI_EXT_PUB_KEY * key)
+\fn void ifapi_cleanup_ifapi_hierarchy(IFAPI_HIERARCHY * hierarchy)
+\fn void ifapi_cleanup_ifapi_key(IFAPI_KEY * key)
+\fn void ifapi_cleanup_ifapi_keystore(IFAPI_KEYSTORE * keystore)
+\fn void ifapi_cleanup_ifapi_nv(IFAPI_NV * nv)
+\fn void ifapi_cleanup_ifapi_object(
+    IFAPI_OBJECT * object)
+\fn TSS2_RC ifapi_copy_ifapi_key(IFAPI_KEY * dest, const IFAPI_KEY * src)
+\fn TSS2_RC ifapi_copy_ifapi_key_object(IFAPI_OBJECT * dest, const IFAPI_OBJECT * src)
+\fn TSS2_RC ifapi_keystore_check_overwrite(
+    IFAPI_KEYSTORE *keystore,
+    IFAPI_IO *io,
+    const char *path)
+\fn TSS2_RC ifapi_keystore_check_writeable(
+    IFAPI_KEYSTORE *keystore,
+    IFAPI_IO *io,
+    const char *path)
+\fn TSS2_RC ifapi_keystore_delete(
+    IFAPI_KEYSTORE * keystore,
+    char *path)
+\fn TSS2_RC ifapi_keystore_initialize(
+    IFAPI_KEYSTORE *keystore,
+    const char *config_systemdir,
+    const char *config_userdir,
+    const char *config_defaultprofile)
+\fn TSS2_RC ifapi_keystore_list_all(
+    IFAPI_KEYSTORE *keystore,
+    const char *searchpath,
+    char ***results,
+    size_t *numresults)
+\fn TSS2_RC ifapi_keystore_load_async(
+    IFAPI_KEYSTORE *keystore,
+    IFAPI_IO *io,
+    const char *path)
+\fn TSS2_RC ifapi_keystore_load_finish(
+    IFAPI_KEYSTORE *keystore,
+    IFAPI_IO *io,
+    IFAPI_OBJECT *object)
+\fn TSS2_RC ifapi_keystore_remove_directories(IFAPI_KEYSTORE *keystore, const char *dir_name)
+\fn TSS2_RC ifapi_keystore_search_nv_obj(
+    IFAPI_KEYSTORE *keystore,
+    IFAPI_IO *io,
+    TPM2B_NV_PUBLIC *nv_public,
+    char **found_path)
+\fn TSS2_RC ifapi_keystore_search_obj(
+    IFAPI_KEYSTORE *keystore,
+    IFAPI_IO *io,
+    TPM2B_NAME *name,
+    char **found_path)
+\fn TSS2_RC ifapi_keystore_store_async(
+    IFAPI_KEYSTORE *keystore,
+    IFAPI_IO *io,
+    const char *path,
+    const IFAPI_OBJECT *object)
+\fn TSS2_RC ifapi_keystore_store_finish(
+    IFAPI_KEYSTORE *keystore,
+    IFAPI_IO *io)
+\fn static TSS2_RC keystore_search_obj(
+    IFAPI_KEYSTORE *keystore,
+    IFAPI_IO *io,
+    void *cmp_object,
+    ifapi_keystore_object_cmp cmp_function,
+    char **found_path)
+\fn     static TSS2_RC rel_path_to_abs_path(
+        IFAPI_KEYSTORE *keystore,
+        const char *rel_path,
+        char **abs_path)
+
+ \}
+*/
+
+/*!
+ \defgroup ifapi_policy_store Policy store module
+ \ingroup ifapi
+ Provides internal fapi functions for reading and writing to the policy store.
+ \{
+\fn TSS2_RC ifapi_policy_delete(
+    IFAPI_POLICY_STORE * pstore,
+    char *path)
+\fn TSS2_RC ifapi_policy_store_initialize(
+    IFAPI_POLICY_STORE *pstore,
+    const char *config_policydir)
+\fn TSS2_RC ifapi_policy_store_load_async(
+    IFAPI_POLICY_STORE *pstore,
+    IFAPI_IO *io,
+    const char *path)
+\fn TSS2_RC ifapi_policy_store_load_finish(
+    IFAPI_POLICY_STORE *pstore,
+    IFAPI_IO *io,
+    TPMS_POLICY *policy)
+\fn TSS2_RC ifapi_policy_store_store_async(
+    IFAPI_POLICY_STORE *pstore,
+    IFAPI_IO *io,
+    const char *path,
+    const TPMS_POLICY *policy)
+\fn TSS2_RC ifapi_policy_store_store_finish(
+    IFAPI_POLICY_STORE *pstore,
+    IFAPI_IO *io)
+\fn static TSS2_RC policy_rel_path_to_abs_path(
+    IFAPI_POLICY_STORE *pstore,
+    const char *rel_path,
+    char **abs_path)
+
+ \}
+*/
+
+/*!
+ \defgroup ifapi_policy_store Policy store module
+ \ingroup ifapi
+ Provides internal fapi functions for reading and writing to the policy store.
+ \{
+\fn TSS2_RC ifapi_policy_delete(
+    IFAPI_POLICY_STORE * pstore,
+    char *path)
+\fn TSS2_RC ifapi_policy_store_initialize(
+    IFAPI_POLICY_STORE *pstore,
+    const char *config_policydir)
+\fn TSS2_RC ifapi_policy_store_load_async(
+    IFAPI_POLICY_STORE *pstore,
+    IFAPI_IO *io,
+    const char *path)
+\fn TSS2_RC ifapi_policy_store_load_finish(
+    IFAPI_POLICY_STORE *pstore,
+    IFAPI_IO *io,
+    TPMS_POLICY *policy)
+\fn TSS2_RC ifapi_policy_store_store_async(
+    IFAPI_POLICY_STORE *pstore,
+    IFAPI_IO *io,
+    const char *path,
+    const TPMS_POLICY *policy)
+\fn TSS2_RC ifapi_policy_store_store_finish(
+    IFAPI_POLICY_STORE *pstore,
+    IFAPI_IO *io)
+\fn static TSS2_RC policy_rel_path_to_abs_path(
+    IFAPI_POLICY_STORE *pstore,
+    const char *rel_path,
+    char **abs_path)
+
+ \}
+*/
+
+/*!
+ \defgroup ifapi_configuration  Configuration utilities.
+ \ingroup ifapi
+ Provides internal fapi functions for deserialization of the configuration data and
+ the initialization of the configuration.
+ \{
+
+\fn static TSS2_RC ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
+\fn TSS2_RC ifapi_config_initialize_async(IFAPI_IO *io)
+\fn TSS2_RC ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config)
+\fn static TSS2_RC ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
+
+ \}
+*/
+
+/*!
+ \defgroup ifapi_eventlog  Event log utilities.
+ \ingroup ifapi
+ Provides internal fapi functions for the handling of event logs
+\{
+\fn void ifapi_cleanup_event(IFAPI_EVENT * event)
+\fn TSS2_RC ifapi_eventlog_append_async(
+    IFAPI_EVENTLOG *eventlog,
+    IFAPI_IO *io,
+    const IFAPI_EVENT *event)
+\fn TSS2_RC ifapi_eventlog_append_finish(
+    IFAPI_EVENTLOG *eventlog,
+    IFAPI_IO *io)
+\fn TSS2_RC ifapi_eventlog_get_async(
+    IFAPI_EVENTLOG *eventlog,
+    IFAPI_IO *io,
+    const TPM2_HANDLE *pcrList,
+    size_t pcrListSize)
+\fn TSS2_RC ifapi_eventlog_get_finish(
+    IFAPI_EVENTLOG *eventlog,
+    IFAPI_IO *io,
+    char **log)
+\fn TSS2_RC ifapi_eventlog_initialize(
+    IFAPI_EVENTLOG *eventlog,
+    const char *log_dir)
+ \}
+*/
+
+
+/*!
+ \defgroup ifapi_profile  Profile module
+ \ingroup ifapi
+ Provides functions for hanlding of profiles stored in the object store.
+\{
+
+\fn static TSS2_RC ifapi_profile_checkpcrs(const TPML_PCR_SELECTION *pcr_profile)
+\fn static TSS2_RC ifapi_profile_json_deserialize(
+    json_object *jso,
+    IFAPI_PROFILE *out)
+\fn void ifapi_profiles_finalize(
+    IFAPI_PROFILES *profiles)
+\fn TSS2_RC ifapi_profiles_get(
+    const IFAPI_PROFILES *profiles,
+    const char *name,
+    const IFAPI_PROFILE **profile)
+\fn TSS2_RC ifapi_profiles_initialize_async(
+    IFAPI_PROFILES *profiles,
+    IFAPI_IO *io,
+    const char *profilesdir,
+    const char *defaultprofile)
+\fn TSS2_RC ifapi_profiles_initialize_finish(
+    IFAPI_PROFILES *profiles,
+    IFAPI_IO *io)
+
+\}
+*/
+
+/*!
+ \defgroup ifapi_serialization FAPI object serialization module
+ \ingroup ifapi
+ Provides functions for the serialization of FAPI objects to JSON.
+ \{
+    \fn TSS2_RC ifapi_json_FAPI_QUOTE_INFO_serialize(const FAPI_QUOTE_INFO *in,
+                                     json_object **jso)
+\fn TSS2_RC ifapi_json_IFAPI_CAP_INFO_serialize(const IFAPI_CAP_INFO *in, json_object **jso)
+\fn TSS2_RC ifapi_json_IFAPI_DUPLICATE_serialize(const IFAPI_DUPLICATE *in,
+                                     json_object **jso)
+\fn TSS2_RC ifapi_json_IFAPI_EVENT_TYPE_serialize(const IFAPI_EVENT_TYPE in,
+                                      json_object **jso)
+\fn TSS2_RC ifapi_json_IFAPI_EVENT_TYPE_serialize_txt(
+    const IFAPI_EVENT_TYPE in,
+    json_object **str_jso)
+\fn TSS2_RC ifapi_json_IFAPI_EVENT_UNION_serialize(const IFAPI_EVENT_UNION *in,
+                                       UINT32 selector, json_object **jso)
+\fn TSS2_RC ifapi_json_IFAPI_EVENT_serialize(const IFAPI_EVENT *in, json_object **jso)
+\fn TSS2_RC ifapi_json_IFAPI_EXT_PUB_KEY_serialize(const IFAPI_EXT_PUB_KEY *in,
+                                       json_object **jso)
+\fn TSS2_RC ifapi_json_IFAPI_HIERARCHY_serialize(const IFAPI_HIERARCHY *in, json_object **jso)
+\fn TSS2_RC ifapi_json_IFAPI_IMA_EVENT_serialize(const IFAPI_IMA_EVENT *in,
+                                     json_object **jso)
+\fn TSS2_RC ifapi_json_IFAPI_INFO_serialize(const IFAPI_INFO *in, json_object **jso)
+\fn TSS2_RC ifapi_json_IFAPI_KEY_serialize(const IFAPI_KEY *in, json_object **jso)
+\fn TSS2_RC ifapi_json_IFAPI_NV_serialize(const IFAPI_NV *in, json_object **jso)
+\fn TSS2_RC ifapi_json_IFAPI_OBJECT_TYPE_CONSTANT_serialize(const IFAPI_OBJECT_TYPE_CONSTANT
+        in, json_object **jso)
+\fn TSS2_RC ifapi_json_IFAPI_OBJECT_serialize(const IFAPI_OBJECT *in,
+                                  json_object **jso)
+\fn TSS2_RC ifapi_json_IFAPI_TSS_EVENT_serialize(const IFAPI_TSS_EVENT *in,
+                                     json_object **jso)
+\fn TSS2_RC ifapi_json_UINT8_ARY_serialize(const UINT8_ARY *in, json_object **jso)
+\fn TSS2_RC ifapi_json_char_serialize(
+    const char *in,
+    json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_POLICYTYPE_serialize(const TPMI_POLICYTYPE in,
+                                     json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_POLICYTYPE_serialize_txt(
+    const TPMI_POLICYTYPE in,
+    json_object **str_jso)
+\fn TSS2_RC ifapi_json_TPML_PCRVALUES_serialize(const TPML_PCRVALUES *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPML_POLICYAUTHORIZATIONS_serialize(const TPML_POLICYAUTHORIZATIONS *in,
+        json_object **jso)
+\fn TSS2_RC ifapi_json_TPML_POLICYBRANCHES_serialize(const TPML_POLICYBRANCHES *in,
+        json_object **jso)
+\fn TSS2_RC ifapi_json_TPML_POLICYELEMENTS_serialize(const TPML_POLICYELEMENTS *in,
+        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_PCRVALUE_serialize(const TPMS_PCRVALUE *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYACTION_serialize(const TPMS_POLICYACTION *in,
+                                       json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *in,
+        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYAUTHORIZENV_serialize(const TPMS_POLICYAUTHORIZENV *in,
+        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in,
+        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYAUTHVALUE_serialize(const TPMS_POLICYAUTHVALUE *in,
+        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYBRANCH_serialize(const TPMS_POLICYBRANCH *in,
+                                       json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYCOMMANDCODE_serialize(const TPMS_POLICYCOMMANDCODE *in,
+        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYCOUNTERTIMER_serialize(const TPMS_POLICYCOUNTERTIMER *in,
+        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYCPHASH_serialize(const TPMS_POLICYCPHASH *in,
+                                       json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const
+        TPMS_POLICYDUPLICATIONSELECT *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYLOCALITY_serialize(const TPMS_POLICYLOCALITY *in,
+        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYNAMEHASH_serialize(const TPMS_POLICYNAMEHASH *in,
+        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYNVWRITTEN_serialize(const TPMS_POLICYNVWRITTEN *in,
+        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYOR_serialize(const TPMS_POLICYOR *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYPASSWORD_serialize(const TPMS_POLICYPASSWORD *in,
+        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYPCR_serialize(const TPMS_POLICYPCR *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYPHYSICALPRESENCE_serialize(const
+        TPMS_POLICYPHYSICALPRESENCE *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYSECRET_serialize(const TPMS_POLICYSECRET *in,
+                                       json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in,
+                                       json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICYTEMPLATE_serialize(const TPMS_POLICYTEMPLATE *in,
+        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_POLICY_serialize(const TPMS_POLICY *in,
+        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMT_POLICYELEMENT_serialize(const TPMT_POLICYELEMENT *in,
+                                        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMU_POLICYELEMENT_serialize(const TPMU_POLICYELEMENT *in,
+                                        UINT32 selector, json_object **jso)
+\fn static TSS2_RC ifapi_json_char_serialize(
+    const char *in,
+    json_object **jso)
+
+    \fn TSS2_RC ifapi_json_INT32_serialize(const INT32 in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2B_CREATION_DATA_serialize(const TPM2B_CREATION_DATA *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2B_DATA_serialize(const TPM2B_DATA *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2B_DIGEST_serialize(const TPM2B_DIGEST *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2B_ECC_PARAMETER_serialize(const TPM2B_ECC_PARAMETER *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2B_ENCRYPTED_SECRET_serialize(const TPM2B_ENCRYPTED_SECRET *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2B_EVENT_serialize(const TPM2B_EVENT *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2B_MAX_NV_BUFFER_serialize(const TPM2B_MAX_NV_BUFFER *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2B_NAME_serialize(const TPM2B_NAME *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2B_NONCE_serialize(const TPM2B_NONCE *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2B_NV_PUBLIC_serialize(const TPM2B_NV_PUBLIC *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2B_OPERAND_serialize(const TPM2B_OPERAND *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2B_PRIVATE_serialize(const TPM2B_PRIVATE *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2B_PUBLIC_KEY_RSA_serialize(const TPM2B_PUBLIC_KEY_RSA *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2B_PUBLIC_serialize(const TPM2B_PUBLIC *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2_ALG_ID_serialize(const TPM2_ALG_ID in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2_CAP_serialize(const TPM2_CAP in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2_CC_serialize(const TPM2_CC in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2_ECC_CURVE_serialize(const TPM2_ECC_CURVE in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2_EO_serialize(const TPM2_EO in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2_GENERATED_serialize(const TPM2_GENERATED in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2_HANDLE_serialize(const TPM2_HANDLE in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2_NT_serialize(const TPM2_NT in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2_PT_PCR_serialize(const TPM2_PT_PCR in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2_PT_serialize(const TPM2_PT in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPM2_ST_serialize(const TPM2_ST in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMA_ALGORITHM_serialize(const TPMA_ALGORITHM in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMA_CC_serialize(const TPMA_CC in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMA_LOCALITY_serialize(const TPMA_LOCALITY in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMA_NV_serialize(const TPMA_NV in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMA_OBJECT_serialize(const TPMA_OBJECT in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_AES_KEY_BITS_serialize(const TPMI_AES_KEY_BITS in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_ALG_ASYM_SCHEME_serialize(const TPMI_ALG_ASYM_SCHEME in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_ALG_ECC_SCHEME_serialize(const TPMI_ALG_ECC_SCHEME in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_ALG_HASH_serialize(const TPMI_ALG_HASH in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_ALG_KDF_serialize(const TPMI_ALG_KDF in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_ALG_KEYEDHASH_SCHEME_serialize(const TPMI_ALG_KEYEDHASH_SCHEME in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_ALG_PUBLIC_serialize(const TPMI_ALG_PUBLIC in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_ALG_RSA_SCHEME_serialize(const TPMI_ALG_RSA_SCHEME in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_ALG_SIG_SCHEME_serialize(const TPMI_ALG_SIG_SCHEME in,
+        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_ALG_SYM_MODE_serialize(const TPMI_ALG_SYM_MODE in,
+                                       json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_ALG_SYM_OBJECT_serialize(const TPMI_ALG_SYM_OBJECT in,
+        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_ECC_CURVE_serialize(const TPMI_ECC_CURVE in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_RH_HIERARCHY_serialize(const TPMI_RH_HIERARCHY in,
+                                       json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_RH_NV_INDEX_serialize(const TPMI_RH_NV_INDEX in,
+                                      json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_RSA_KEY_BITS_serialize(const TPMI_RSA_KEY_BITS in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_ST_ATTEST_serialize(const TPMI_ST_ATTEST in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_YES_NO_serialize(const TPMI_YES_NO in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPML_ALG_PROPERTY_serialize(const TPML_ALG_PROPERTY *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPML_CCA_serialize(const TPML_CCA *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPML_CC_serialize(const TPML_CC *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPML_DIGEST_VALUES_serialize(const TPML_DIGEST_VALUES *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPML_ECC_CURVE_serialize(const TPML_ECC_CURVE *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPML_HANDLE_serialize(const TPML_HANDLE *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPML_PCR_SELECTION_serialize(const TPML_PCR_SELECTION *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPML_TAGGED_PCR_PROPERTY_serialize(const TPML_TAGGED_PCR_PROPERTY *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPML_TAGGED_TPM_PROPERTY_serialize(const TPML_TAGGED_TPM_PROPERTY *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_ALG_PROPERTY_serialize(const TPMS_ALG_PROPERTY *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_ASYM_PARMS_serialize(const TPMS_ASYM_PARMS *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_ATTEST_serialize(const TPMS_ATTEST *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_CAPABILITY_DATA_serialize(const TPMS_CAPABILITY_DATA *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_CERTIFY_INFO_serialize(const TPMS_CERTIFY_INFO *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_CLOCK_INFO_serialize(const TPMS_CLOCK_INFO *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_COMMAND_AUDIT_INFO_serialize(const TPMS_COMMAND_AUDIT_INFO *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_CREATION_DATA_serialize(const TPMS_CREATION_DATA *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_CREATION_INFO_serialize(const TPMS_CREATION_INFO *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_ECC_PARMS_serialize(const TPMS_ECC_PARMS *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_ECC_POINT_serialize(const TPMS_ECC_POINT *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_EMPTY_serialize(const TPMS_EMPTY *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_ENC_SCHEME_OAEP_serialize(const TPMS_ENC_SCHEME_OAEP *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_ENC_SCHEME_RSAES_serialize(const TPMS_ENC_SCHEME_RSAES *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_KEYEDHASH_PARMS_serialize(const TPMS_KEYEDHASH_PARMS *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_KEY_SCHEME_ECDH_serialize(const TPMS_KEY_SCHEME_ECDH *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_NV_CERTIFY_INFO_serialize(const TPMS_NV_CERTIFY_INFO *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_NV_PUBLIC_serialize(const TPMS_NV_PUBLIC *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_PCR_SELECTION_serialize(const TPMS_PCR_SELECTION *in,
+                                        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_PCR_SELECT_serialize(const TPMS_PCR_SELECT *in,
+                                        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_QUOTE_INFO_serialize(const TPMS_QUOTE_INFO *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_RSA_PARMS_serialize(const TPMS_RSA_PARMS *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SCHEME_ECDAA_serialize(const TPMS_SCHEME_ECDAA *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SCHEME_HASH_serialize(const TPMS_SCHEME_HASH *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SCHEME_HMAC_serialize(const TPMS_SCHEME_HMAC *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SCHEME_KDF1_SP800_108_serialize(const TPMS_SCHEME_KDF1_SP800_108 *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SCHEME_KDF1_SP800_56A_serialize(const TPMS_SCHEME_KDF1_SP800_56A *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SCHEME_MGF1_serialize(const TPMS_SCHEME_MGF1 *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SCHEME_XOR_serialize(const TPMS_SCHEME_XOR *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SESSION_AUDIT_INFO_serialize(const TPMS_SESSION_AUDIT_INFO *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SIGNATURE_ECC_serialize(const TPMS_SIGNATURE_ECC *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SIGNATURE_ECDAA_serialize(const TPMS_SIGNATURE_ECDAA *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SIGNATURE_ECDSA_serialize(const TPMS_SIGNATURE_ECDSA *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SIGNATURE_ECSCHNORR_serialize(const TPMS_SIGNATURE_ECSCHNORR *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SIGNATURE_RSAPSS_serialize(const TPMS_SIGNATURE_RSAPSS *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SIGNATURE_RSASSA_serialize(const TPMS_SIGNATURE_RSASSA *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SIGNATURE_RSA_serialize(const TPMS_SIGNATURE_RSA *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SIGNATURE_SM2_serialize(const TPMS_SIGNATURE_SM2 *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SIG_SCHEME_ECDAA_serialize(const TPMS_SIG_SCHEME_ECDAA *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SIG_SCHEME_ECDSA_serialize(const TPMS_SIG_SCHEME_ECDSA *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SIG_SCHEME_ECSCHNORR_serialize(const TPMS_SIG_SCHEME_ECSCHNORR *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SIG_SCHEME_RSAPSS_serialize(const TPMS_SIG_SCHEME_RSAPSS *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SIG_SCHEME_RSASSA_serialize(const TPMS_SIG_SCHEME_RSASSA *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SIG_SCHEME_SM2_serialize(const TPMS_SIG_SCHEME_SM2 *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_SYMCIPHER_PARMS_serialize(const TPMS_SYMCIPHER_PARMS *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_TAGGED_PCR_SELECT_serialize(const TPMS_TAGGED_PCR_SELECT *in,
+        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_TAGGED_PROPERTY_serialize(const TPMS_TAGGED_PROPERTY *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_TIME_ATTEST_INFO_serialize(const TPMS_TIME_ATTEST_INFO *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMS_TIME_INFO_serialize(const TPMS_TIME_INFO *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMT_ASYM_SCHEME_serialize(const TPMT_ASYM_SCHEME *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMT_ECC_SCHEME_serialize(const TPMT_ECC_SCHEME *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMT_HA_serialize(const TPMT_HA *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMT_KDF_SCHEME_serialize(const TPMT_KDF_SCHEME *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMT_KEYEDHASH_SCHEME_serialize(const TPMT_KEYEDHASH_SCHEME *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMT_PUBLIC_serialize(const TPMT_PUBLIC *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMT_RSA_SCHEME_serialize(const TPMT_RSA_SCHEME *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMT_SIGNATURE_serialize(const TPMT_SIGNATURE *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMT_SIG_SCHEME_serialize(const TPMT_SIG_SCHEME *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMT_SYM_DEF_OBJECT_serialize(const TPMT_SYM_DEF_OBJECT *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMT_TK_CREATION_serialize(const TPMT_TK_CREATION *in, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMU_ASYM_SCHEME_serialize(const TPMU_ASYM_SCHEME *in, UINT32 selector, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMU_ATTEST_serialize(const TPMU_ATTEST *in, UINT32 selector, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMU_CAPABILITIES_serialize(const TPMU_CAPABILITIES *in, UINT32 selector, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMU_HA_serialize(const TPMU_HA *in, UINT32 selector,
+                             json_object **jso)
+\fn TSS2_RC ifapi_json_TPMU_KDF_SCHEME_serialize(const TPMU_KDF_SCHEME *in, UINT32 selector, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMU_PUBLIC_ID_serialize(const TPMU_PUBLIC_ID *in, UINT32 selector, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMU_PUBLIC_PARMS_serialize(const TPMU_PUBLIC_PARMS *in, UINT32 selector, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMU_SCHEME_KEYEDHASH_serialize(const TPMU_SCHEME_KEYEDHASH *in, UINT32 selector, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMU_SIGNATURE_serialize(const TPMU_SIGNATURE *in, UINT32 selector, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMU_SIG_SCHEME_serialize(const TPMU_SIG_SCHEME *in, UINT32 selector, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMU_SYM_KEY_BITS_serialize(const TPMU_SYM_KEY_BITS *in, UINT32 selector, json_object **jso)
+\fn TSS2_RC ifapi_json_TPMU_SYM_MODE_serialize(const TPMU_SYM_MODE *in, UINT32 selector, json_object **jso)
+\fn TSS2_RC ifapi_json_UINT16_serialize(const UINT16 in, json_object **jso)
+\fn TSS2_RC ifapi_json_UINT32_serialize(const UINT32 in, json_object **jso)
+\fn TSS2_RC ifapi_json_UINT64_serialize(UINT64 in, json_object **jso)
+\fn TSS2_RC ifapi_json_pcr_select_serialize(
+    const UINT8 sizeofSelect,
+    const BYTE pcrSelect[],
+    json_object **jso)
+
+ \}
+*/
+
+
+/*!
+ \defgroup ifapi_deserialization FAPI object deserialization module
+ \ingroup ifapi
+ Provides functions for the deserialization from JSON to FAPI objects.
+ \{
+    \fn static bool get_number(const char *token, int64_t *num)
+\fn static int get_token_start_idx(const char *token)
+\fn TSS2_RC ifapi_json_FAPI_QUOTE_INFO_deserialize(json_object *jso,  FAPI_QUOTE_INFO *out)
+\fn TSS2_RC ifapi_json_IFAPI_DUPLICATE_deserialize(json_object *jso, IFAPI_DUPLICATE *out)
+\fn TSS2_RC ifapi_json_IFAPI_EVENT_TYPE_deserialize(json_object *jso, IFAPI_EVENT_TYPE *out)
+\fn TSS2_RC ifapi_json_IFAPI_EVENT_TYPE_deserialize_txt(json_object *jso,
+        IFAPI_EVENT_TYPE *out)
+\fn TSS2_RC ifapi_json_IFAPI_EVENT_UNION_deserialize(
+    UINT32 selector,
+    json_object *jso,
+    IFAPI_EVENT_UNION *out)
+\fn TSS2_RC ifapi_json_IFAPI_EVENT_deserialize(json_object *jso,  IFAPI_EVENT *out)
+\fn TSS2_RC ifapi_json_IFAPI_EXT_PUB_KEY_deserialize(json_object *jso,
+        IFAPI_EXT_PUB_KEY *out)
+\fn TSS2_RC ifapi_json_IFAPI_HIERARCHY_deserialize(json_object *jso,  IFAPI_HIERARCHY *out)
+\fn TSS2_RC ifapi_json_IFAPI_IMA_EVENT_deserialize(json_object *jso,  IFAPI_IMA_EVENT *out)
+\fn TSS2_RC ifapi_json_IFAPI_KEY_deserialize(json_object *jso,  IFAPI_KEY *out)
+\fn TSS2_RC ifapi_json_IFAPI_NV_deserialize(json_object *jso,  IFAPI_NV *out)
+\fn TSS2_RC ifapi_json_IFAPI_OBJECT_TYPE_CONSTANT_deserialize(json_object *jso,
+        IFAPI_OBJECT_TYPE_CONSTANT *out)
+\fn TSS2_RC ifapi_json_IFAPI_OBJECT_deserialize(json_object *jso, IFAPI_OBJECT *out)
+\fn TSS2_RC ifapi_json_IFAPI_TSS_EVENT_deserialize(json_object *jso,  IFAPI_TSS_EVENT *out)
+\fn TSS2_RC ifapi_json_char_deserialize(
+    json_object *jso,
+    char **out)
+\fn static bool get_number(const char *token, int64_t *num)
+\fn TSS2_RC ifapi_json_TPMI_POLICYTYPE_deserialize(json_object *jso, TPMI_POLICYTYPE *out)
+\fn TSS2_RC ifapi_json_TPMI_POLICYTYPE_deserialize_txt(json_object *jso,
+        TPMI_POLICYTYPE *out)
+\fn TSS2_RC ifapi_json_TPML_PCRVALUES_deserialize(json_object *jso,  TPML_PCRVALUES **out)
+\fn TSS2_RC ifapi_json_TPML_POLICYAUTHORIZATIONS_deserialize(json_object *jso,
+        TPML_POLICYAUTHORIZATIONS **out)
+\fn TSS2_RC ifapi_json_TPML_POLICYBRANCHES_deserialize(json_object *jso,
+        TPML_POLICYBRANCHES **out)
+\fn TSS2_RC ifapi_json_TPML_POLICYELEMENTS_deserialize(json_object *jso,
+        TPML_POLICYELEMENTS **out)
+\fn TSS2_RC ifapi_json_TPMS_PCRVALUE_deserialize(json_object *jso,  TPMS_PCRVALUE *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYACTION_deserialize(json_object *jso,
+        TPMS_POLICYACTION *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYAUTHORIZATION_deserialize(json_object *jso,
+        TPMS_POLICYAUTHORIZATION *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYAUTHORIZENV_deserialize(json_object *jso,
+        TPMS_POLICYAUTHORIZENV *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYAUTHORIZE_deserialize(json_object *jso,
+        TPMS_POLICYAUTHORIZE *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYAUTHVALUE_deserialize(json_object *jso,
+        TPMS_POLICYAUTHVALUE *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYBRANCH_deserialize(json_object *jso,
+        TPMS_POLICYBRANCH *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYCOMMANDCODE_deserialize(json_object *jso,
+        TPMS_POLICYCOMMANDCODE *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYCOUNTERTIMER_deserialize(json_object *jso,
+        TPMS_POLICYCOUNTERTIMER *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYCPHASH_deserialize(json_object *jso,
+        TPMS_POLICYCPHASH *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYDUPLICATIONSELECT_deserialize(json_object *jso,
+        TPMS_POLICYDUPLICATIONSELECT *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYLOCALITY_deserialize(json_object *jso,
+        TPMS_POLICYLOCALITY *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYNAMEHASH_deserialize(json_object *jso,
+        TPMS_POLICYNAMEHASH *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYNVWRITTEN_deserialize(json_object *jso,
+        TPMS_POLICYNVWRITTEN *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYNV_deserialize(json_object *jso,  TPMS_POLICYNV *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYOR_deserialize(json_object *jso,  TPMS_POLICYOR *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYPASSWORD_deserialize(json_object *jso,
+        TPMS_POLICYPASSWORD *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYPCR_deserialize(json_object *jso,  TPMS_POLICYPCR *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYPHYSICALPRESENCE_deserialize(json_object *jso,
+        TPMS_POLICYPHYSICALPRESENCE *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYSECRET_deserialize(json_object *jso,
+        TPMS_POLICYSECRET *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYSIGNED_deserialize(json_object *jso,
+        TPMS_POLICYSIGNED *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICYTEMPLATE_deserialize(json_object *jso,
+        TPMS_POLICYTEMPLATE *out)
+\fn TSS2_RC ifapi_json_TPMS_POLICY_deserialize(json_object *jso,
+        TPMS_POLICY *out)
+\fn TSS2_RC ifapi_json_TPMT_POLICYELEMENT_deserialize(json_object *jso,
+        TPMT_POLICYELEMENT *out)
+\fn TSS2_RC ifapi_json_TPMU_POLICYELEMENT_deserialize(
+    UINT32 selector,
+    json_object *jso,
+    TPMU_POLICYELEMENT *out)
+    \fn static TSS2_RC get_boolean_from_json(json_object *jso, TPMI_YES_NO *value)
+\fn static bool get_number(const char *token, int64_t *num)
+\fn TSS2_RC get_number_from_json(json_object *jso, int64_t *num)
+\fn bool ifapi_get_sub_object(json_object *jso, char *name, json_object **sub_jso)
+\fn static TSS2_RC ifapi_hex_to_byte_ary(const char hex[], UINT32 vlen, BYTE val[])
+\fn TSS2_RC ifapi_json_BYTE_array_deserialize(size_t max, json_object *jso, BYTE *out)
+\fn TSS2_RC ifapi_json_BYTE_deserialize(json_object *jso, BYTE *out)
+\fn TSS2_RC ifapi_json_TPM2B_CREATION_DATA_deserialize(json_object *jso,
+        TPM2B_CREATION_DATA *out)
+\fn TSS2_RC ifapi_json_TPM2B_DATA_deserialize(json_object *jso,  TPM2B_DATA *out)
+\fn TSS2_RC ifapi_json_TPM2B_DIGEST_deserialize(json_object *jso,  TPM2B_DIGEST *out)
+\fn TSS2_RC ifapi_json_TPM2B_ECC_PARAMETER_deserialize(json_object *jso,
+        TPM2B_ECC_PARAMETER *out)
+\fn TSS2_RC ifapi_json_TPM2B_ENCRYPTED_SECRET_deserialize(json_object *jso,
+        TPM2B_ENCRYPTED_SECRET *out)
+\fn TSS2_RC ifapi_json_TPM2B_EVENT_deserialize(json_object *jso,  TPM2B_EVENT *out)
+\fn TSS2_RC ifapi_json_TPM2B_MAX_NV_BUFFER_deserialize(json_object *jso,
+        TPM2B_MAX_NV_BUFFER *out)
+\fn TSS2_RC ifapi_json_TPM2B_NAME_deserialize(json_object *jso,  TPM2B_NAME *out)
+\fn TSS2_RC ifapi_json_TPM2B_NONCE_deserialize(json_object *jso, TPM2B_NONCE *out)
+\fn TSS2_RC ifapi_json_TPM2B_NV_PUBLIC_deserialize(json_object *jso, TPM2B_NV_PUBLIC *out)
+\fn TSS2_RC ifapi_json_TPM2B_OPERAND_deserialize(json_object *jso, TPM2B_OPERAND *out)
+\fn TSS2_RC ifapi_json_TPM2B_PRIVATE_deserialize(json_object *jso,  TPM2B_PRIVATE *out)
+\fn TSS2_RC ifapi_json_TPM2B_PUBLIC_KEY_RSA_deserialize(json_object *jso,
+        TPM2B_PUBLIC_KEY_RSA *out)
+\fn TSS2_RC ifapi_json_TPM2B_PUBLIC_deserialize(json_object *jso, TPM2B_PUBLIC *out)
+\fn TSS2_RC ifapi_json_TPM2_ALG_ID_deserialize(json_object *jso, TPM2_ALG_ID *out)
+\fn TSS2_RC ifapi_json_TPM2_CC_deserialize(json_object *jso, TPM2_CC *out)
+\fn TSS2_RC ifapi_json_TPM2_ECC_CURVE_deserialize(json_object *jso, TPM2_ECC_CURVE *out)
+\fn TSS2_RC ifapi_json_TPM2_EO_deserialize(json_object *jso, TPM2_EO *out)
+\fn TSS2_RC ifapi_json_TPM2_GENERATED_deserialize(json_object *jso, TPM2_GENERATED *out)
+\fn TSS2_RC ifapi_json_TPM2_HANDLE_deserialize(json_object *jso, TPM2_HANDLE *out)
+\fn TSS2_RC ifapi_json_TPM2_NT_deserialize(json_object *jso, TPM2_NT *out)
+\fn TSS2_RC ifapi_json_TPM2_PT_PCR_deserialize(json_object *jso, TPM2_PT_PCR *out)
+\fn TSS2_RC ifapi_json_TPM2_ST_deserialize(json_object *jso, TPM2_ST *out)
+\fn TSS2_RC ifapi_json_TPMA_LOCALITY_deserialize(json_object *jso, TPMA_LOCALITY *out)
+\fn TSS2_RC ifapi_json_TPMA_NV_deserialize(json_object *jso, TPMA_NV *out)
+\fn TSS2_RC ifapi_json_TPMA_OBJECT_deserialize(json_object *jso, TPMA_OBJECT *out)
+\fn TSS2_RC ifapi_json_TPMI_AES_KEY_BITS_deserialize(json_object *jso, TPMI_AES_KEY_BITS *out)
+\fn TSS2_RC ifapi_json_TPMI_ALG_ECC_SCHEME_deserialize(json_object *jso,
+        TPMI_ALG_ECC_SCHEME *out)
+\fn TSS2_RC ifapi_json_TPMI_ALG_HASH_deserialize(json_object *jso, TPMI_ALG_HASH *out)
+\fn TSS2_RC ifapi_json_TPMI_ALG_KDF_deserialize(json_object *jso, TPMI_ALG_KDF *out)
+\fn TSS2_RC ifapi_json_TPMI_ALG_KEYEDHASH_SCHEME_deserialize(json_object *jso,
+        TPMI_ALG_KEYEDHASH_SCHEME *out)
+\fn TSS2_RC ifapi_json_TPMI_ALG_PUBLIC_deserialize(json_object *jso, TPMI_ALG_PUBLIC *out)
+\fn TSS2_RC ifapi_json_TPMI_ALG_RSA_DECRYPT_deserialize(json_object *jso,
+        TPMI_ALG_RSA_DECRYPT *out)
+\fn TSS2_RC ifapi_json_TPMI_ALG_RSA_SCHEME_deserialize(json_object *jso,
+        TPMI_ALG_RSA_SCHEME *out)
+\fn TSS2_RC ifapi_json_TPMI_ALG_SIG_SCHEME_deserialize(json_object *jso,
+        TPMI_ALG_SIG_SCHEME *out)
+\fn TSS2_RC ifapi_json_TPMI_ALG_SYM_MODE_deserialize(json_object *jso,
+        TPMI_ALG_SYM_MODE *out)
+\fn TSS2_RC ifapi_json_TPMI_ALG_SYM_OBJECT_deserialize(json_object *jso,
+        TPMI_ALG_SYM_OBJECT *out)
+\fn TSS2_RC ifapi_json_TPMI_ALG_SYM_deserialize(json_object *jso, TPMI_ALG_SYM *out)
+\fn TSS2_RC ifapi_json_TPMI_ECC_CURVE_deserialize(json_object *jso, TPMI_ECC_CURVE *out)
+\fn TSS2_RC ifapi_json_TPMI_RH_HIERARCHY_deserialize(json_object *jso,
+        TPMI_RH_HIERARCHY *out)
+\fn TSS2_RC ifapi_json_TPMI_RH_NV_INDEX_deserialize(json_object *jso, TPMI_RH_NV_INDEX *out)
+\fn TSS2_RC ifapi_json_TPMI_RSA_KEY_BITS_deserialize(json_object *jso,
+        TPMI_RSA_KEY_BITS *out)
+\fn TSS2_RC ifapi_json_TPMI_ST_ATTEST_deserialize(json_object *jso, TPMI_ST_ATTEST *out)
+\fn TSS2_RC ifapi_json_TPMI_YES_NO_deserialize(json_object *jso, TPMI_YES_NO *out)
+\fn TSS2_RC ifapi_json_TPML_DIGEST_VALUES_deserialize(json_object *jso,
+        TPML_DIGEST_VALUES *out)
+\fn TSS2_RC ifapi_json_TPML_PCR_SELECTION_deserialize(json_object *jso,
+        TPML_PCR_SELECTION *out)
+\fn TSS2_RC ifapi_json_TPMS_ATTEST_deserialize(json_object *jso,  TPMS_ATTEST *out)
+\fn TSS2_RC ifapi_json_TPMS_CERTIFY_INFO_deserialize(json_object *jso,
+        TPMS_CERTIFY_INFO *out)
+\fn TSS2_RC ifapi_json_TPMS_CLOCK_INFO_deserialize(json_object *jso,  TPMS_CLOCK_INFO *out)
+\fn TSS2_RC ifapi_json_TPMS_COMMAND_AUDIT_INFO_deserialize(json_object *jso,
+        TPMS_COMMAND_AUDIT_INFO *out)
+\fn TSS2_RC ifapi_json_TPMS_CREATION_DATA_deserialize(json_object *jso,
+        TPMS_CREATION_DATA *out)
+\fn TSS2_RC ifapi_json_TPMS_CREATION_INFO_deserialize(json_object *jso,
+        TPMS_CREATION_INFO *out)
+\fn TSS2_RC ifapi_json_TPMS_ECC_PARMS_deserialize(json_object *jso,  TPMS_ECC_PARMS *out)
+\fn TSS2_RC ifapi_json_TPMS_ECC_POINT_deserialize(json_object *jso,  TPMS_ECC_POINT *out)
+\fn TSS2_RC ifapi_json_TPMS_EMPTY_deserialize(json_object *jso, TPMS_EMPTY *out)
+\fn TSS2_RC ifapi_json_TPMS_ENC_SCHEME_OAEP_deserialize(json_object *jso,
+        TPMS_ENC_SCHEME_OAEP *out)
+\fn TSS2_RC ifapi_json_TPMS_ENC_SCHEME_RSAES_deserialize(json_object *jso,
+        TPMS_ENC_SCHEME_RSAES *out)
+\fn TSS2_RC ifapi_json_TPMS_KEYEDHASH_PARMS_deserialize(json_object *jso,
+        TPMS_KEYEDHASH_PARMS *out)
+\fn TSS2_RC ifapi_json_TPMS_KEY_SCHEME_ECDH_deserialize(json_object *jso,
+        TPMS_KEY_SCHEME_ECDH *out)
+\fn TSS2_RC ifapi_json_TPMS_NV_CERTIFY_INFO_deserialize(json_object *jso,
+        TPMS_NV_CERTIFY_INFO *out)
+\fn TSS2_RC ifapi_json_TPMS_NV_PUBLIC_deserialize(json_object *jso,  TPMS_NV_PUBLIC *out)
+\fn TSS2_RC ifapi_json_TPMS_PCR_SELECTION_deserialize(json_object *jso,
+        TPMS_PCR_SELECTION *out)
+\fn TSS2_RC ifapi_json_TPMS_PCR_SELECT_deserialize(json_object *jso,  TPMS_PCR_SELECT *out)
+\fn TSS2_RC ifapi_json_TPMS_QUOTE_INFO_deserialize(json_object *jso,  TPMS_QUOTE_INFO *out)
+\fn TSS2_RC ifapi_json_TPMS_RSA_PARMS_deserialize(json_object *jso,  TPMS_RSA_PARMS *out)
+\fn TSS2_RC ifapi_json_TPMS_SCHEME_ECDAA_deserialize(json_object *jso,
+        TPMS_SCHEME_ECDAA *out)
+\fn TSS2_RC ifapi_json_TPMS_SCHEME_HASH_deserialize(json_object *jso,
+                                        TPMS_SCHEME_HASH *out)
+\fn TSS2_RC ifapi_json_TPMS_SCHEME_HMAC_deserialize(json_object *jso, TPMS_SCHEME_HMAC *out)
+\fn TSS2_RC ifapi_json_TPMS_SCHEME_KDF1_SP800_108_deserialize(json_object *jso,
+        TPMS_SCHEME_KDF1_SP800_108 *out)
+\fn TSS2_RC ifapi_json_TPMS_SCHEME_KDF1_SP800_56A_deserialize(json_object *jso,
+        TPMS_SCHEME_KDF1_SP800_56A *out)
+\fn TSS2_RC ifapi_json_TPMS_SCHEME_MGF1_deserialize(json_object *jso, TPMS_SCHEME_MGF1 *out)
+\fn TSS2_RC ifapi_json_TPMS_SCHEME_XOR_deserialize(json_object *jso,  TPMS_SCHEME_XOR *out)
+\fn TSS2_RC ifapi_json_TPMS_SESSION_AUDIT_INFO_deserialize(json_object *jso,
+        TPMS_SESSION_AUDIT_INFO *out)
+\fn TSS2_RC ifapi_json_TPMS_SIGNATURE_ECC_deserialize(json_object *jso,
+        TPMS_SIGNATURE_ECC *out)
+\fn TSS2_RC ifapi_json_TPMS_SIGNATURE_ECDAA_deserialize(json_object *jso,
+        TPMS_SIGNATURE_ECDAA *out)
+\fn TSS2_RC ifapi_json_TPMS_SIGNATURE_ECDSA_deserialize(json_object *jso,
+        TPMS_SIGNATURE_ECDSA *out)
+\fn TSS2_RC ifapi_json_TPMS_SIGNATURE_ECSCHNORR_deserialize(json_object *jso,
+        TPMS_SIGNATURE_ECSCHNORR *out)
+\fn TSS2_RC ifapi_json_TPMS_SIGNATURE_RSAPSS_deserialize(json_object *jso,
+        TPMS_SIGNATURE_RSAPSS *out)
+\fn TSS2_RC ifapi_json_TPMS_SIGNATURE_RSASSA_deserialize(json_object *jso,
+        TPMS_SIGNATURE_RSASSA *out)
+\fn TSS2_RC ifapi_json_TPMS_SIGNATURE_RSA_deserialize(json_object *jso,
+        TPMS_SIGNATURE_RSA *out)
+\fn TSS2_RC ifapi_json_TPMS_SIGNATURE_SM2_deserialize(json_object *jso,
+        TPMS_SIGNATURE_SM2 *out)
+\fn TSS2_RC ifapi_json_TPMS_SIG_SCHEME_ECDAA_deserialize(json_object *jso,
+        TPMS_SIG_SCHEME_ECDAA *out)
+\fn TSS2_RC ifapi_json_TPMS_SIG_SCHEME_ECDSA_deserialize(json_object *jso,
+        TPMS_SIG_SCHEME_ECDSA *out)
+\fn TSS2_RC ifapi_json_TPMS_SIG_SCHEME_ECSCHNORR_deserialize(json_object *jso,
+        TPMS_SIG_SCHEME_ECSCHNORR *out)
+\fn TSS2_RC ifapi_json_TPMS_SIG_SCHEME_RSAPSS_deserialize(json_object *jso,
+        TPMS_SIG_SCHEME_RSAPSS *out)
+\fn TSS2_RC ifapi_json_TPMS_SIG_SCHEME_RSASSA_deserialize(json_object *jso,
+        TPMS_SIG_SCHEME_RSASSA *out)
+\fn TSS2_RC ifapi_json_TPMS_SIG_SCHEME_SM2_deserialize(json_object *jso,
+        TPMS_SIG_SCHEME_SM2 *out)
+\fn TSS2_RC ifapi_json_TPMS_SYMCIPHER_PARMS_deserialize(json_object *jso,
+        TPMS_SYMCIPHER_PARMS *out)
+\fn TSS2_RC ifapi_json_TPMS_TIME_ATTEST_INFO_deserialize(json_object *jso,
+        TPMS_TIME_ATTEST_INFO *out)
+\fn TSS2_RC ifapi_json_TPMS_TIME_INFO_deserialize(json_object *jso,  TPMS_TIME_INFO *out)
+\fn TSS2_RC ifapi_json_TPMT_ECC_SCHEME_deserialize(json_object *jso,  TPMT_ECC_SCHEME *out)
+\fn TSS2_RC ifapi_json_TPMT_HA_deserialize(json_object *jso,  TPMT_HA *out)
+\fn TSS2_RC ifapi_json_TPMT_KDF_SCHEME_deserialize(json_object *jso,  TPMT_KDF_SCHEME *out)
+\fn TSS2_RC ifapi_json_TPMT_KEYEDHASH_SCHEME_deserialize(json_object *jso,
+        TPMT_KEYEDHASH_SCHEME *out)
+\fn TSS2_RC ifapi_json_TPMT_PUBLIC_deserialize(json_object *jso,  TPMT_PUBLIC *out)
+\fn TSS2_RC ifapi_json_TPMT_RSA_DECRYPT_deserialize(json_object *jso,
+                                        TPMT_RSA_DECRYPT *out)
+\fn TSS2_RC ifapi_json_TPMT_RSA_SCHEME_deserialize(json_object *jso,  TPMT_RSA_SCHEME *out)
+\fn TSS2_RC ifapi_json_TPMT_SIGNATURE_deserialize(json_object *jso,  TPMT_SIGNATURE *out)
+\fn TSS2_RC ifapi_json_TPMT_SIG_SCHEME_deserialize(json_object *jso,  TPMT_SIG_SCHEME *out)
+\fn TSS2_RC ifapi_json_TPMT_SYM_DEF_OBJECT_deserialize(json_object *jso,
+        TPMT_SYM_DEF_OBJECT *out)
+\fn TSS2_RC ifapi_json_TPMT_SYM_DEF_deserialize(json_object *jso,  TPMT_SYM_DEF *out)
+\fn TSS2_RC ifapi_json_TPMT_TK_CREATION_deserialize(json_object *jso,
+                                        TPMT_TK_CREATION *out)
+\fn TSS2_RC ifapi_json_TPMT_TK_VERIFIED_deserialize(json_object *jso,
+                                        TPMT_TK_VERIFIED *out)
+\fn TSS2_RC ifapi_json_TPMU_ASYM_SCHEME_deserialize(
+    UINT32 selector,
+    json_object *jso,
+    TPMU_ASYM_SCHEME *out)
+\fn TSS2_RC ifapi_json_TPMU_ATTEST_deserialize(
+    UINT32 selector,
+    json_object *jso,
+    TPMU_ATTEST *out)
+\fn TSS2_RC ifapi_json_TPMU_HA_deserialize(
+    UINT32 selector,
+    json_object *jso,
+    TPMU_HA *out)
+\fn TSS2_RC ifapi_json_TPMU_KDF_SCHEME_deserialize(
+    UINT32 selector,
+    json_object *jso,
+    TPMU_KDF_SCHEME *out)
+\fn TSS2_RC ifapi_json_TPMU_PUBLIC_ID_deserialize(
+    UINT32 selector,
+    json_object *jso,
+    TPMU_PUBLIC_ID *out)
+\fn TSS2_RC ifapi_json_TPMU_PUBLIC_PARMS_deserialize(
+    UINT32 selector,
+    json_object *jso,
+    TPMU_PUBLIC_PARMS *out)
+\fn TSS2_RC ifapi_json_TPMU_SCHEME_KEYEDHASH_deserialize(
+    UINT32 selector,
+    json_object *jso,
+    TPMU_SCHEME_KEYEDHASH *out)
+\fn TSS2_RC ifapi_json_TPMU_SIGNATURE_deserialize(
+    UINT32 selector,
+    json_object *jso,
+    TPMU_SIGNATURE *out)
+\fn TSS2_RC ifapi_json_TPMU_SIG_SCHEME_deserialize(
+    UINT32 selector,
+    json_object *jso,
+    TPMU_SIG_SCHEME *out)
+\fn TSS2_RC ifapi_json_TPMU_SYM_KEY_BITS_deserialize(
+    UINT32 selector,
+    json_object *jso,
+    TPMU_SYM_KEY_BITS *out)
+\fn TSS2_RC ifapi_json_TPMU_SYM_MODE_deserialize(
+    UINT32 selector,
+    json_object *jso,
+    TPMU_SYM_MODE *out)
+\fn TSS2_RC ifapi_json_UINT16_deserialize(json_object *jso, UINT16 *out)
+\fn TSS2_RC ifapi_json_UINT32_deserialize(json_object *jso, UINT32 *out)
+\fn TSS2_RC ifapi_json_UINT64_deserialize(json_object *jso, UINT64 *out)
+\fn TSS2_RC ifapi_json_UINT8_ARY_deserialize(
+    json_object *jso,
+    UINT8_ARY *out)
+\fn TSS2_RC ifapi_json_UINT8_deserialize(json_object *jso, UINT8 *out)
+\fn TSS2_RC ifapi_json_byte_deserialize(
+    json_object *jso2,
+    UINT32 max,
+    BYTE *out,
+    UINT16 *out_size)
+\fn TSS2_RC ifapi_json_pcr_selection_deserialize(
+    json_object *jso,
+    UINT8 *sizeofSelect,
+    BYTE pcrSelect[])
+\fn static const char * strip_prefix(const char *in, ...)
+
+
+ \}
+*/
+
+/*!
+ \defgroup ifapi_vendor  Vendor specific module
+ \ingroup ifapi
+\{
+ Provides functions implementing vendor specific extensions.
+\fn TSS2_RC ifapi_get_intl_ek_certificate(FAPI_CONTEXT *context, TPM2B_PUBLIC *ek_public,
+                              unsigned char ** cert_buffer, size_t *cert_size)
+
+
+\}
 */
 
 /*!

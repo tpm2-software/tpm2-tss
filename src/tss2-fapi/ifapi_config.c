@@ -27,12 +27,13 @@
 
 /** Deserializes a configuration JSON object.
  *
- * @param [in]  jso The JSON object to be deserialized
- * @param [out] out The deserialized configuration object
+ * @param[in]  jso The JSON object to be deserialized
+ * @param[out] out The deserialized configuration object
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if jso or out is NULL
  * @retval TSS2_FAPI_RC_BAD_VALUE if the JSON object cannot be deserialized
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
@@ -130,10 +131,13 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
 /**
  * Starts the initialization of the FAPI configuration.
  *
- * @param [in] io An IO object for file system access
+ * @param[in] io An IO object for file system access
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if io is NULL
+ * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ *         object store.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_config_initialize_async(IFAPI_IO *io)
@@ -156,8 +160,8 @@ ifapi_config_initialize_async(IFAPI_IO *io)
 
 /**
  * Finishes the initialization of the FAPI configuration.
- * @param [in]  io An IO object for file system access
- * @param [out] config The configuration that is initialized
+ * @param[in]  io An IO object for file system access
+ * @param[out] config The configuration that is initialized
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if config or io is NULL
@@ -165,6 +169,11 @@ ifapi_config_initialize_async(IFAPI_IO *io)
  *         a valid configuration
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if JSON parsing fails
  * @retval TSS2_FAPI_RC_BAD_PATH if the configuration path is invalid
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ *         object store.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config)

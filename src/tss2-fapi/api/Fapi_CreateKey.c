@@ -29,12 +29,12 @@
  * policy and authValue. The key is then stored either in the FAPI metadata
  * store or the TPM.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path where the new key is stored
- * @param [in] type The type of the new key. May be NULL
- * @param [in] policyPath The path to the policy that is associated with the new
- *        key. May be NULL
- * @param [in] authValue The authorization value for the new key. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path where the new key is stored
+ * @param[in] type The type of the new key. May be NULL
+ * @param[in] policyPath The path to the policy that is associated with the new
+ *       key. May be NULL
+ * @param[in] authValue The authorization value for the new key. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -50,6 +50,13 @@
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_NO_TPM if FAPI was initialized in no-TPM-mode via its
+ *         config file.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+*          is not set.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 Fapi_CreateKey(
@@ -112,12 +119,12 @@ Fapi_CreateKey(
  *
  * Call Fapi_CreateKey_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path where the new key is stored
- * @param [in] type The type of the new key. May be NULL
- * @param [in] policyPath The path to the policy that is associated with the new
- *        key. May be NULL
- * @param [in] authValue The authorization value for the new key. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path where the new key is stored
+ * @param[in] type The type of the new key. May be NULL
+ * @param[in] policyPath The path to the policy that is associated with the new
+ *            key. May be NULL
+ * @param[in] authValue The authorization value for the new key. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -133,6 +140,8 @@ Fapi_CreateKey(
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_NO_TPM if FAPI was initialized in no-TPM-mode via its
+ *         config file.
  */
 TSS2_RC
 Fapi_CreateKey_Async(
@@ -180,7 +189,7 @@ Fapi_CreateKey_Async(
  *
  * This function should be called after a previous Fapi_CreateKey_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.
@@ -192,6 +201,11 @@ Fapi_CreateKey_Async(
  *         internal operations or return parameters.
  * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet
  *         complete. Call this function again later.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+*          is not set.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 Fapi_CreateKey_Finish(

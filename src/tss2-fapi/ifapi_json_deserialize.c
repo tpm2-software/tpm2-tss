@@ -30,7 +30,6 @@ static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "PO
  * @retval the position of the sub string after the prefix.
  * @retval 0 if no prefix is found.
  */
-
 static int
 get_token_start_idx(const char *token)
 {
@@ -77,8 +76,10 @@ get_number(const char *token, int64_t *num)
 
 /** Deserialize a character string.
  *
- * @param[in]in json string object.
+ * @param[in] jso json string object.
  * @param[out] out the pointer to the created string.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_char_deserialize(
@@ -96,6 +97,8 @@ ifapi_json_char_deserialize(
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_IFAPI_KEY_deserialize(json_object *jso,  IFAPI_KEY *out)
@@ -211,6 +214,8 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso,  IFAPI_KEY *out)
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_IFAPI_EXT_PUB_KEY_deserialize(json_object *jso,
@@ -253,6 +258,8 @@ ifapi_json_IFAPI_EXT_PUB_KEY_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_IFAPI_NV_deserialize(json_object *jso,  IFAPI_NV *out)
@@ -330,6 +337,8 @@ ifapi_json_IFAPI_NV_deserialize(json_object *jso,  IFAPI_NV *out)
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_IFAPI_HIERARCHY_deserialize(json_object *jso,  IFAPI_HIERARCHY *out)
@@ -371,6 +380,7 @@ ifapi_json_IFAPI_HIERARCHY_deserialize(json_object *jso,  IFAPI_HIERARCHY *out)
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_FAPI_QUOTE_INFO_deserialize(json_object *jso,  FAPI_QUOTE_INFO *out)
@@ -404,6 +414,8 @@ ifapi_json_FAPI_QUOTE_INFO_deserialize(json_object *jso,  FAPI_QUOTE_INFO *out)
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_IFAPI_DUPLICATE_deserialize(json_object *jso, IFAPI_DUPLICATE *out)
@@ -476,7 +488,6 @@ error_cleanup:
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
  */
-
 TSS2_RC
 ifapi_json_IFAPI_OBJECT_TYPE_CONSTANT_deserialize(json_object *jso,
         IFAPI_OBJECT_TYPE_CONSTANT *out)
@@ -503,6 +514,9 @@ ifapi_json_IFAPI_OBJECT_TYPE_CONSTANT_deserialize(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_IFAPI_OBJECT_deserialize(json_object *jso, IFAPI_OBJECT *out)
@@ -650,6 +664,8 @@ ifapi_json_IFAPI_EVENT_TYPE_deserialize_txt(json_object *jso,
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_IFAPI_TSS_EVENT_deserialize(json_object *jso,  IFAPI_TSS_EVENT *out)
@@ -686,6 +702,8 @@ ifapi_json_IFAPI_TSS_EVENT_deserialize(json_object *jso,  IFAPI_TSS_EVENT *out)
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_IFAPI_IMA_EVENT_deserialize(json_object *jso,  IFAPI_IMA_EVENT *out)
@@ -715,10 +733,13 @@ ifapi_json_IFAPI_IMA_EVENT_deserialize(json_object *jso,  IFAPI_IMA_EVENT *out)
 /** Deserialize a IFAPI_EVENT_UNION json object.
  *
  * This functions expects the Bitfield to be encoded as unsigned int in host-endianess.
- * @param[in]  jso the json object to be deserialized.
+ * @param[in] jso the json object to be deserialized.
+ * @param[in] selector the event type.
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_IFAPI_EVENT_UNION_deserialize(
@@ -744,6 +765,8 @@ ifapi_json_IFAPI_EVENT_UNION_deserialize(
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_IFAPI_EVENT_deserialize(json_object *jso,  IFAPI_EVENT *out)

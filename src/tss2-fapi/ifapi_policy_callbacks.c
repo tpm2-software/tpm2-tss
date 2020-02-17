@@ -58,6 +58,17 @@ get_nv_auth_object(
  *         internal operations or return parameters.
  * @retval TSS2_FAPI_RC_BAD_TEMPLATE If the loaded template is not
  *         appropriate for this operation.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_get_key_public(
@@ -117,6 +128,17 @@ cleanup:
  *         internal operations or return parameters.
  * @retval TSS2_FAPI_RC_BAD_TEMPLATE If the loaded template is not
  *         appropriate for this operation.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_get_object_name(
@@ -181,6 +203,17 @@ cleanup:
  *         internal operations or return parameters.
  * @retval TSS2_FAPI_RC_BAD_TEMPLATE If the loaded template is not
  *         appropriate for this operation.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_get_nv_public(
@@ -372,6 +405,14 @@ cleanup:
  *         a policy or a key.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an error in an used library
  *         occurred.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+*          is not set.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
+ *         was not successful.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_policyeval_cbauth(
@@ -689,6 +730,17 @@ compare_policy_digest(
 }
 
 /** Search a policy file which fulfills a certain predicate.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
+ *         was not successful.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ *         object store.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 static TSS2_RC
 search_policy(
@@ -818,6 +870,9 @@ cleanup:
 }
 
 /** Get policy digeset  for a certain hash alg.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
 get_policy_digest(TPMS_POLICY *policy,
@@ -842,6 +897,7 @@ get_policy_digest(TPMS_POLICY *policy,
 }
 
 /** Get policy authorization for a certain public key
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
 get_policy_signature(
@@ -897,6 +953,18 @@ static void cleanup_policy_list(struct POLICY_LIST * list) {
  *         was not successful.
  * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for policy
  *         execution fails.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+*          is not set.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_exec_auth_policy(
@@ -1049,6 +1117,18 @@ cleanup:
  *         not successful.
  * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for policy
  *         execution fails.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+*          is not set.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_exec_auth_nv_policy(

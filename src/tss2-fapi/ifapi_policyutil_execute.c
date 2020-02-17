@@ -30,6 +30,7 @@
  *
  * The structures for policy and callback execution are allocated
  * and the callbacks are assigned.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 new_policy(
@@ -83,6 +84,10 @@ new_policy(
 }
 
 /** Compute a new session which will be uses as policy session.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
 create_session(
@@ -126,6 +131,7 @@ cleanup:
 }
 
 /** Cleanup the current policy and adapt the policy stack.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
 clear_current_policy(FAPI_CONTEXT *context)
@@ -193,6 +199,9 @@ clear_all_policies(FAPI_CONTEXT *context)
  *         callback does not identify a branch.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE If no context is passed.
  *
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_policyutil_execute_prepare(
@@ -239,6 +248,19 @@ error:
  * @retval TSS2_FAPI_RC_BAD_TEMPLATE In a invalid policy is loaded during execution.
  * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for policy
  *         execution fails.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+*          is not set.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session)

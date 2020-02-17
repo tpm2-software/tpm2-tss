@@ -32,8 +32,8 @@
  * Initializes a FAPI_CONTEXT that holds all the state and metadata information
  * during an interaction with the TPM.
  *
- * @param context [out] The FAPI_CONTEXT
- * @param uri [in] Unused in this version of the FAPI. Must be NULL
+ * @param[out] context The FAPI_CONTEXT
+ * @param[in] uri Unused in this version of the FAPI. Must be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.
@@ -41,6 +41,13 @@
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_PATH if the used path in inappropriate-
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 Fapi_Initialize(
@@ -84,8 +91,8 @@ Fapi_Initialize(
  *
  * Call Fapi_Initialize to finish the execution of this command.
  *
- * @param context [out] The FAPI_CONTEXT
- * @param uri [in] Unused in this version of the FAPI. Must be NULL
+ * @param[out] context The FAPI_CONTEXT
+ * @param[in] uri Unused in this version of the FAPI. Must be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.
@@ -137,7 +144,7 @@ cleanup_return:
  *
  * This function should be called after a previous Fapi_Initialize_Async.
  *
- * @param [out] context The FAPI_CONTEXT
+ * @param[out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.
@@ -149,6 +156,11 @@ cleanup_return:
  *         internal operations or return parameters.
  * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet
  *         complete. Call this function again later.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_PATH if the used path in inappropriate-
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 Fapi_Initialize_Finish(

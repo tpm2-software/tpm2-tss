@@ -21,11 +21,14 @@
 
 /** Initialize the eventlog module of FAPI.
  *
- * @param eventlog [in, out] The context area for the eventlog.
- * @param log_dir [in] The directory where to put the eventlog data.
+ * @param[in,out] eventlog The context area for the eventlog.
+ * @param[in] log_dir The directory where to put the eventlog data.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_IO_ERROR if creation of log_dir failed or log_dir is not writable.
  * @retval TSS2_FAPI_RC_MEMORY if memory allocation failed.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
  */
 TSS2_RC
 ifapi_eventlog_initialize(
@@ -50,13 +53,16 @@ ifapi_eventlog_initialize(
  *
  * Call ifapi_eventlog_get_finish to retrieve the results.
  *
- * @param eventlog [in, out] The context area for the eventlog.
- * @param io [in, out] The context area for the asynchronous io module.
- * @param pcrList [in] The list of PCR indices to retrieve the log for.
- * @param pcrListSize The size of pcrList.
+ * @param[in,out] eventlog The context area for the eventlog.
+ * @param[in,out] io The context area for the asynchronous io module.
+ * @param[in] pcrList The list of PCR indices to retrieve the log for.
+ * @param[in] pcrListSize The size of pcrList.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_IO_ERROR if creation of log_dir failed or log_dir is not writable.
  * @retval TSS2_FAPI_RC_MEMORY if memory allocation failed.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_eventlog_get_async(
@@ -90,14 +96,19 @@ ifapi_eventlog_get_async(
  *
  * Call after ifapi_eventlog_get_async.
  *
- * @param eventlog [in, out] The context area for the eventlog.
- * @param io [in, out] The context area for the asynchronous io module.
- * @param log [out] The event log for the requested PCRs in JSON format
+ * @param[in,out] eventlog The context area for the eventlog.
+ * @param[in,out] io The context area for the asynchronous io module.
+ * @param[out] log The event log for the requested PCRs in JSON format
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_IO_ERROR if creation of log_dir failed or log_dir is not writable.
  * @retval TSS2_FAPI_RC_MEMORY if memory allocation failed.
  * @retval TSS2_FAPI_RC_TRY_AGAIN if the I/O operation is not finished yet and this function needs
  *         to be called again.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_eventlog_get_finish(
@@ -194,12 +205,15 @@ loop:
  *
  * Call ifapi_eventlog_append_finish to finalize this operation.
  *
- * @param eventlog [in, out] The context area for the eventlog.
- * @param io [in, out] The context area for the asynchronous io module.
- * @param event The event to be appended to the eventlog.
+ * @param[in,out] eventlog The context area for the eventlog.
+ * @param[in,out] io The context area for the asynchronous io module.
+ * @param[in] event The event to be appended to the eventlog.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_IO_ERROR if creation of log_dir failed or log_dir is not writable.
  * @retval TSS2_FAPI_RC_MEMORY if memory allocation failed.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_eventlog_append_async(
@@ -244,13 +258,19 @@ ifapi_eventlog_append_async(
  *
  * Call after ifapi_eventlog_get_async.
  *
- * @param eventlog [in, out] The context area for the eventlog.
- * @param io [in, out] The context area for the asynchronous io module.
+ * @param[in,out] eventlog The context area for the eventlog.
+ * @param[in,out] io The context area for the asynchronous io module.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_IO_ERROR if creation of log_dir failed or log_dir is not writable.
  * @retval TSS2_FAPI_RC_MEMORY if memory allocation failed.
  * @retval TSS2_FAPI_RC_TRY_AGAIN if the I/O operation is not finished yet and this function needs
  *         to be called again.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_eventlog_append_finish(
@@ -332,7 +352,13 @@ ifapi_eventlog_append_finish(
     return TSS2_RC_SUCCESS;
 }
 
-void ifapi_cleanup_event(IFAPI_EVENT * event) {
+
+/** Free allocated memory for an ifapi event.
+ *
+ * @param[in,out] event The structure to be cleaned up.
+ */
+void
+ifapi_cleanup_event(IFAPI_EVENT * event) {
     if (event != NULL) {
         if (event->type == IFAPI_IMA_EVENT_TAG) {
             SAFE_FREE(event->sub_event.ima_event.eventName);

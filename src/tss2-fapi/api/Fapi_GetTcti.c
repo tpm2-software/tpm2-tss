@@ -26,8 +26,8 @@
  * Note: The application must ensure that this TSS2_TCTI_CONTEXT is not being used in parallel to
  *       the processing of a FAPI command.
  *
- * @param [in,out] context The FAPI_CONTEXT
- * @param [out] tcti The TSS2_TCTI_CONTEXT used to talk to the current TPM.
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] tcti The TSS2_TCTI_CONTEXT used to talk to the current TPM.
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, tcti is NULL.

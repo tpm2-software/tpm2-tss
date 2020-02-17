@@ -26,10 +26,10 @@
  *
  * Associates a human readable description with an object in the metadata store.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path of the object in the metadata store
- * @param [in] description The description that is associated with the object.
- *             May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path of the object in the metadata store
+ * @param[in] description The description that is associated with the object.
+ *            May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -40,6 +40,14 @@
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 TSS2_RC
 Fapi_SetDescription(
@@ -81,10 +89,10 @@ Fapi_SetDescription(
  *
  * Call Fapi_SetDescription_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path of the object in the metadata store
- * @param [in] description The description that is associated with the object.
- *             May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path of the object in the metadata store
+ * @param[in] description The description that is associated with the object.
+ *            May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -95,6 +103,11 @@ Fapi_SetDescription(
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  */
 TSS2_RC
 Fapi_SetDescription_Async(
@@ -151,7 +164,7 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_SetDescription_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.
@@ -164,6 +177,9 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND If no file is found after pathname expansion.
  * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet
  *         complete. Call this function again later.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
  */
 TSS2_RC
 Fapi_SetDescription_Finish(

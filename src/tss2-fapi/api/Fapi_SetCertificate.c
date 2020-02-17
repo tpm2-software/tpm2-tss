@@ -28,12 +28,12 @@
  *
  * Sets an x509 cert into the path of a key.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path of the entity to be associated with the
- *             certificate
- * @param [in] x509certData The certificate that is associated with the entity.
- *             If this is NULL an existing certificate will be removed from
- *             the entity
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path of the entity to be associated with the
+ *            certificate
+ * @param[in] x509certData The certificate that is associated with the entity.
+ *            If this is NULL an existing certificate will be removed from
+ *            the entity
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -45,6 +45,14 @@
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 Fapi_SetCertificate(
@@ -86,12 +94,12 @@ Fapi_SetCertificate(
  *
  * Call Fapi_SetCertificate_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path of the entity to be associated with the
- *             certificate
- * @param [in] x509certData The certificate that is associated with the entity.
- *             If this is NULL an existing certificate will be removed from
- *             the entity
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path of the entity to be associated with the
+ *            certificate
+ * @param[in] x509certData The certificate that is associated with the entity.
+ *            If this is NULL an existing certificate will be removed from
+ *            the entity
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -103,6 +111,10 @@ Fapi_SetCertificate(
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
  */
 TSS2_RC
 Fapi_SetCertificate_Async(
@@ -154,7 +166,7 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_SetCertificate_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.
@@ -166,6 +178,10 @@ error_cleanup:
  *         internal operations or return parameters.
  * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet
  *         complete. Call this function again later.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 Fapi_SetCertificate_Finish(

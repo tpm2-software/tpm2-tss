@@ -29,18 +29,18 @@
  * Uses a key, identified by its path, to sign a digest and puts the result in a
  * TPM2B bytestream.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] keyPath The path of the signature key
- * @param [in] padding A padding algorithm. Must be either "RSA_SSA" or
- *             "RSA_PSS" or NULL
- * @param [in] digest The digest to sign. Must be already hashed
- * @param [in] digestSize The size of the digest in bytes
- * @param [out] signature The signature
- * @param [out] signatureSize The size of signature in bytes. May be NULL
- * @param [out] publicKey The public key that can be used to verify signature
- *             in PEM format. May be NULL
- * @param [out] certificate The certificate associated with the signing key in PEM
- *             format. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] keyPath The path of the signature key
+ * @param[in] padding A padding algorithm. Must be either "RSA_SSA" or
+ *            "RSA_PSS" or NULL
+ * @param[in] digest The digest to sign. Must be already hashed
+ * @param[in] digestSize The size of the digest in bytes
+ * @param[out] signature The signature
+ * @param[out] signatureSize The size of signature in bytes. May be NULL
+ * @param[out] publicKey The public key that can be used to verify signature
+ *            in PEM format. May be NULL
+ * @param[out] certificate The certificate associated with the signing key in PEM
+ *            format. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, keyPath, digest or signature
@@ -55,6 +55,19 @@
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_NO_TPM if FAPI was initialized in no-TPM-mode via its
+ *         config file.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+*          is not set.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
+ *         was not successful.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 Fapi_Sign(
@@ -124,12 +137,12 @@ Fapi_Sign(
  *
  * Call Fapi_Sign_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] keyPath The path of the signature key
- * @param [in] padding A padding algorithm. Must be either "RSA_SSA" or
- *             "RSA_PSS" or NULL
- * @param [in] digest The digest to sign. Must be already hashed
- * @param [in] digestSize The size of the digest in bytes
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] keyPath The path of the signature key
+ * @param[in] padding A padding algorithm. Must be either "RSA_SSA" or
+ *            "RSA_PSS" or NULL
+ * @param[in] digest The digest to sign. Must be already hashed
+ * @param[in] digestSize The size of the digest in bytes
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, keyPath or digest
@@ -144,6 +157,8 @@ Fapi_Sign(
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_NO_TPM if FAPI was initialized in no-TPM-mode via its
+ *         config file.
  */
 TSS2_RC
 Fapi_Sign_Async(
@@ -207,13 +222,13 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_Sign_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] signature The signature
- * @param [out] signatureSize The size of signature in bytes. May be NULL
- * @param [out] publicKey The public key that can be used to verify signature
- *             in PEM format. May be NULL
- * @param [out] certificate The certificate associated with the signing key in PEM
- *             format. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] signature The signature
+ * @param[out] signatureSize The size of signature in bytes. May be NULL
+ * @param[out] publicKey The public key that can be used to verify signature
+ *            in PEM format. May be NULL
+ * @param[out] certificate The certificate associated with the signing key in PEM
+ *            format. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or signature is NULL.
@@ -225,6 +240,18 @@ error_cleanup:
  *         internal operations or return parameters.
  * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet
  *         complete. Call this function again later.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+*          is not set.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
+ *         was not successful.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 Fapi_Sign_Finish(

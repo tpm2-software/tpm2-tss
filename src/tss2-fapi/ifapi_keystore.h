@@ -13,7 +13,6 @@
 #include "tss2_tpm2_types.h"
 #include "fapi_types.h"
 #include "ifapi_policy_types.h"
-#include "ifapi_object.h"
 #include "tss2_esys.h"
 
 typedef UINT32 IFAPI_OBJECT_TYPE_CONSTANT;

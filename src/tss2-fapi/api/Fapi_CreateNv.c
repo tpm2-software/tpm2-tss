@@ -27,15 +27,15 @@
  *
  * This command creates an NV index in the TPM using a given path and type.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path to the new NV index
- * @param [in] type The intended type of the new NV index. May be NULL
- * @param [in] size The size of the new NV index in bytes. May be 0 if the size
- *             is inferred from the type
- * @param [in] policyPath The path to the policy that is associated with the new
- *             NV index. May be NULL
- * @param [in] authValue The authorization value that is associated with the new
- *             NV index. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path to the new NV index
+ * @param[in] type The intended type of the new NV index. May be NULL
+ * @param[in] size The size of the new NV index in bytes. May be 0 if the size
+ *            is inferred from the type
+ * @param[in] policyPath The path to the policy that is associated with the new
+ *            NV index. May be NULL
+ * @param[in] authValue The authorization value that is associated with the new
+ *            NV index. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -51,6 +51,21 @@
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_NO_TPM if FAPI was initialized in no-TPM-mode via its
+ *         config file.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_NV_TOO_SMALL if too many NV handles are defined.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+*          is not set.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
+ *         was not successful.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 Fapi_CreateNv(
@@ -113,15 +128,15 @@ Fapi_CreateNv(
  *
  * Call Fapi_CreateNv_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path to the new NV index
- * @param [in] type The intended type of the new NV index. May be NULL
- * @param [in] size The size of the new NV index in bytes. May be 0 if the size
- *             is inferred from the type
- * @param [in] policyPath The path to the policy that is associated with the new
- *             NV index. May be NULL
- * @param [in] authValue The authorization value that is associated with the new
- *             NV index. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path to the new NV index
+ * @param[in] type The intended type of the new NV index. May be NULL
+ * @param[in] size The size of the new NV index in bytes. May be 0 if the size
+ *            is inferred from the type
+ * @param[in] policyPath The path to the policy that is associated with the new
+ *            NV index. May be NULL
+ * @param[in] authValue The authorization value that is associated with the new
+ *            NV index. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -137,6 +152,8 @@ Fapi_CreateNv(
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
+ * @retval TSS2_FAPI_RC_NO_TPM if FAPI was initialized in no-TPM-mode via its
+ *         config file.
  */
 TSS2_RC
 Fapi_CreateNv_Async(
@@ -213,7 +230,7 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_CreateNv_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.
@@ -225,6 +242,20 @@ error_cleanup:
  *         internal operations or return parameters.
  * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet
  *         complete. Call this function again later.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_PATH if the used path in inappropriate-
+ * @retval TSS2_FAPI_RC_NV_TOO_SMALL if too many NV handles are defined.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+*          is not set.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
+ *         was not successful.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 Fapi_CreateNv_Finish(
