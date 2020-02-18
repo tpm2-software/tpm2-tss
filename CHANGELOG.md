@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [2.3.3-rc2] - 2020-01-28
+## [2.3.3] - 2020-02-18
 ### Fixed
 - Fixed mixing salted and unsalted sessions in the same ESAPI context
 - Removed use of VLAs from TPML marshal code
