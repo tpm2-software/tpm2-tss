@@ -32,9 +32,9 @@
  * Imports a JSON encoded policy, policy template or key and stores it at the
  * given path.
  *
- * @param [in,out] context The FAPI_CONTEXT
- * @param [in] path the path to which the object is imported
- * @param [in] importData The data that is imported
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path the path to which the object is imported
+ * @param[in] importData The data that is imported
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, path or importData
@@ -92,9 +92,9 @@ Fapi_Import(
  *
  * Call Fapi_Import_Finish to finish the execution of this command.
  *
- * @param [in,out] context The FAPI_CONTEXT
- * @param [in] path the path to which the object is imported
- * @param [in] importData The data that is imported
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path the path to which the object is imported
+ * @param[in] importData The data that is imported
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, path or importData
@@ -272,7 +272,7 @@ cleanup_error:
  *
  * This function should be called after a previous Fapi_Import_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

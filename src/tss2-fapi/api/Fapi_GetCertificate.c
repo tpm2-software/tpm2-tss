@@ -28,9 +28,9 @@
  *
  * Gets an x.509 certificate for the key at a given path.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path to the key whose certificate is created
- * @param [out] x509certData The PEM-encoded certificate
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path to the key whose certificate is created
+ * @param[out] x509certData The PEM-encoded certificate
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, path or x509CertData is
@@ -88,8 +88,8 @@ Fapi_GetCertificate(
  *
  * Call Fapi_GetCertificate_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path to the key whose certificate is created
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path to the key whose certificate is created
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -138,8 +138,8 @@ Fapi_GetCertificate_Async(
  *
  * This function should be called after a previous Fapi_GetCertificate_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] x509certData The PEM-encoded certificate
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] x509certData The PEM-encoded certificate
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or x509certData is NULL.

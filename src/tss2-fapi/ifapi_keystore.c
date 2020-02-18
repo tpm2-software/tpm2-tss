@@ -132,8 +132,8 @@ error:
  *
  * The relative path will be copied directly into the passed object.
  *
- * @parm[in] keystore The key directories and default profile.
- * @parm[in,out] path The absolute path.
+ * @param[in] keystore The key directories and default profile.
+ * @param[in,out] path The absolute path.
  */
 void
 full_path_to_fapi_path(IFAPI_KEYSTORE *keystore, char *path)
@@ -254,10 +254,10 @@ expand_path_to_object(
  *
  * Also the user directory will be created if it does not exist.
  *
- * @parm[out] keystore The keystore to be initialized.
- * @parm[in] config_systemdir The configured system directory.
- * @parm[in] config_userdir The configured user directory.
- * @parm[in] config_defaultprofile The configured profile.
+ * @param[out] keystore The keystore to be initialized.
+ * @param[in] config_systemdir The configured system directory.
+ * @param[in] config_userdir The configured user directory.
+ * @param[in] config_defaultprofile The configured profile.
  *
  * @retval TSS2_RC_SUCCESS If the keystore can be initialized.
  * @retval TSS2_FAPI_RC_IO_ERROR If the user part of the keystore can't be
@@ -332,10 +332,10 @@ error:
  *  It will be checked whether object exists in user directory, if no
  *  the path in system directory will be returnde
  *
- * @parm[in] keystore The key directories and default profile.
- * @parm[in] rel_path The relative path of the object. For keys the path will
+ * @param[in] keystore The key directories and default profile.
+ * @param[in] rel_path The relative path of the object. For keys the path will
  *           expanded if possible.
- * @parm[out] abs_path The absolute path of the object.
+ * @param[out] abs_path The absolute path of the object.
  * @retval TSS2_RC_SUCCESS If the object can be read.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if the file does not exist (for key objects).
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if the file does not exist (for NV and hierarchy objects).
@@ -395,9 +395,9 @@ cleanup:
  *
  * Keys objects, NV objects, and hierarchies can be loaded.
  *
- * @parm[in] keystore The key directories and default profile.
- * @parm[in] io  The input/output context being used for file I/O.
- * @parm[in] path The relative path of the object. For keys the path will
+ * @param[in] keystore The key directories and default profile.
+ * @param[in] io  The input/output context being used for file I/O.
+ * @param[in] path The relative path of the object. For keys the path will
  *           expanded if possible.
  * @retval TSS2_RC_SUCCESS If the object can be read.
  * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered.
@@ -434,9 +434,9 @@ cleanup:
  *
  * This function needs to be called repeatedly until it does not return TSS2_FAPI_RC_TRY_AGAIN.
  *
- * @parm[in] keystore The key directories and default profile.
- * @param [in, out] io The input/output context being used for file I/O.
- * @parm[in] object The caller allocated object which will loaded from keystore.
+ * @param[in] keystore The key directories and default profile.
+ * @param[in,out] io The input/output context being used for file I/O.
+ * @param[in] object The caller allocated object which will loaded from keystore.
  * @retval TSS2_RC_SUCCESS After successfully loading the object.
  * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered; such as the file was not found.
  * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet complete.
@@ -479,11 +479,11 @@ cleanup:
  *
  *  Keys objects, NV objects, and hierarchies can be written.
  *
- * @parm[in] keystore The key directories and default profile.
- * @parm[in] io  The input/output context being used for file I/O.
- * @parm[in] path The relative path of the object. For keys the path will
+ * @param[in] keystore The key directories and default profile.
+ * @param[in] io  The input/output context being used for file I/O.
+ * @param[in] path The relative path of the object. For keys the path will
  *           expanded if possible.
- * @parm[in] object The object to be written to the keystore.
+ * @param[in] object The object to be written to the keystore.
  * @retval TSS2_RC_SUCCESS if the object is written successfully.
  * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered;
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the output data.
@@ -548,7 +548,8 @@ cleanup:
  *
  * This function needs to be called repeatedly until it does not return TSS2_FAPI_RC_TRY_AGAIN.
  *
- * @param [in, out] io The input/output context being used for file I/O.
+ * @param[in] keystore The key directories and default profile.
+ * @param[in,out] io The input/output context being used for file I/O.
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered; such as the file was not found.
  * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet complete.
@@ -648,10 +649,10 @@ cleanup:
  *
  * A vector of relative paths will be computed.
  *
- * @parm[in] keystore The key directories, the default profile.
- * @parm[in] searchpath The relative search path in key store.
- * @parm[out] results The array with pointers to the relative object paths.
- * @parm[out] numresults The number of found objects.
+ * @param[in] keystore The key directories, the default profile.
+ * @param[in] searchpath The relative search path in key store.
+ * @param[out] results The array with pointers to the relative object paths.
+ * @param[out] numresults The number of found objects.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated.
  */
@@ -679,8 +680,8 @@ ifapi_keystore_list_all(
 
 /** Remove file storing a keystore object.
  *
- * @parm[in] keystore The key directories, the default profile.
- * @parm[in] path The relative name of the object be removed.
+ * @param[in] keystore The key directories, the default profile.
+ * @param[in] path The relative name of the object be removed.
  * @retval TSS2_RC_SUCCESS On success.
  * @retval TSS2_FAPI_RC_MEMORY: If memory could not be allocated.
  * @retval TSS2_FAPI_RC_IO_ERROR If the file can't be removed.
@@ -736,8 +737,8 @@ expand_directory(IFAPI_KEYSTORE *keystore, const char *path, char **directory_na
  *
  * If the expanded directory exists in userdir and systemdir both will be deleted.
  *
- * @parm[in] keystore The key directories, the default profile.
- * @parm[in] dir_name The relative name of the directory to be removed.
+ * @param[in] keystore The key directories, the default profile.
+ * @param[in] dir_name The relative name of the directory to be removed.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_MEMORY: If memory could not be allocated.
  * @retval TSS2_FAPI_RC_IO_ERROR If directory can't be deleted.
@@ -780,7 +781,14 @@ cleanup:
     return r;
 }
 
-/* Predicate used as function parameter for object searching in keystore */
+/** Predicate used as function parameter for object searching in keystore.
+ *
+ * @param[in] object The object from keystore which has to be compared.
+ * @param[in] cmp_object The object which will used for the comparison,
+ *            by the function with this signature.
+ * @retval true if the comparison is successful.
+ * @retval true if the comparison is not successful.
+ */
 typedef TSS2_RC (*ifapi_keystore_object_cmp) (
     IFAPI_OBJECT *object,
     void *cmp_object,
@@ -788,10 +796,10 @@ typedef TSS2_RC (*ifapi_keystore_object_cmp) (
 
 /** Search object with a certain propoerty in keystore.
  *
- * @parm[in,out] keystore The key directories, the default profile, and the
+ * @param[in,out] keystore The key directories, the default profile, and the
  *               state information for the asynchronous search.
- * @parm[in] io The input/output context being used for file I/O.
- * @parm[in] name The name of the searched key.
+ * @param[in] io The input/output context being used for file I/O.
+ * @param[in] name The name of the searched key.
  * @param[out] found_path The relative path of the found key.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated.
@@ -877,10 +885,10 @@ cleanup:
 
 /** Search object with a certain name in keystore.
  *
- * @parm[in,out] keystore The key directories, the default profile, and the
+ * @param[in,out] keystore The key directories, the default profile, and the
  *               state information for the asynchronous search.
- * @parm[in] io The input/output context being used for file I/O.
- * @parm[in] name The name of the searched object.
+ * @param[in] io The input/output context being used for file I/O.
+ * @param[in] name The name of the searched object.
  * @param[out] found_path The relative path of the found key.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated.
@@ -899,10 +907,10 @@ ifapi_keystore_search_obj(
 
 /** Search nv object with a certain nv_index (from nv_public) in keystore.
  *
- * @parm[in,out] keystore The key directories, the default profile, and the
+ * @param[in,out] keystore The key directories, the default profile, and the
  *               state information for the asynchronous search.
- * @parm[in] io The input/output context being used for file I/O.
- * @parm[in] nv_public The public data of the searched nv object.
+ * @param[in] io The input/output context being used for file I/O.
+ * @param[in] nv_public The public data of the searched nv object.
  * @param[out] found_path The relative path of the found key.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated.
@@ -925,12 +933,10 @@ ifapi_keystore_search_nv_obj(
  *
  *  Keys objects, NV objects, and hierarchies can be written.
  *
- * @parm[in] keystore The key directories and default profile.
- * @parm[in] io  The input/output context being used for file I/O.
- * @parm[in] path The relative path of the object. For keys the path will
+ * @param[in] keystore The key directories and default profile.
+ * @param[in] io  The input/output context being used for file I/O.
+ * @param[in] path The relative path of the object. For keys the path will
  *           expanded if possible.
- * @parm[in] system Switch whether system directory will be checked. Otherwise
-             the user directory will be checked.
  * @retval TSS2_RC_SUCCESS if the object does not exist.
  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS if the file in objects exists.
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the output data.
@@ -983,12 +989,10 @@ cleanup:
  *
  *  Keys objects, NV objects, and hierarchies can be written.
  *
- * @parm[in] keystore The key directories and default profile.
- * @parm[in] io  The input/output context being used for file I/O.
- * @parm[in] path The relative path of the object. For keys the path will
+ * @param[in] keystore The key directories and default profile.
+ * @param[in] io  The input/output context being used for file I/O.
+ * @param[in] path The relative path of the object. For keys the path will
  *           expanded if possible.
- * @parm[in] system Switch whether system directory will be checked. Otherwise
-             the user directory will be checked.
  * @retval TSS2_RC_SUCCESS if the object does not exist.
  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS if the file in objects exists.
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the output data.
@@ -1065,6 +1069,15 @@ error_cleanup:
     return r;
 }
 
+/** Create a copy of a an ifapi key.
+ *
+ * @param[out] dest The caller allocated key object which will be the
+ *                  destination of the copy operation.
+ * @param[in]  src  The source key.
+ *
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if the source is not of type key.
+ */
 TSS2_RC
 ifapi_copy_ifapi_key(IFAPI_KEY * dest, const IFAPI_KEY * src) {
     TSS2_RC r = TSS2_RC_SUCCESS;
@@ -1116,7 +1129,8 @@ error_cleanup:
  * @param[in] key The key object to be cleaned up.
  *
  */
-void ifapi_cleanup_ifapi_key(IFAPI_KEY * key) {
+void
+ifapi_cleanup_ifapi_key(IFAPI_KEY * key) {
     if (key != NULL) {
         SAFE_FREE(key->policyInstance);
         SAFE_FREE(key->serialization.buffer);
@@ -1127,20 +1141,41 @@ void ifapi_cleanup_ifapi_key(IFAPI_KEY * key) {
     }
 }
 
-void ifapi_cleanup_ifapi_ext_pub_key(IFAPI_EXT_PUB_KEY * key) {
+/** Free memory allocated during deserialization of a pubkey object.
+ *
+ * The pubkey will not be freed (might be declared on the stack).
+ *
+ * @param[in] key The pubkey object to be cleaned up.
+ */
+void
+ifapi_cleanup_ifapi_ext_pub_key(IFAPI_EXT_PUB_KEY * key) {
     if (key != NULL) {
         SAFE_FREE(key->pem_ext_public);
         SAFE_FREE(key->certificate);
     }
 }
 
-void ifapi_cleanup_ifapi_hierarchy(IFAPI_HIERARCHY * hierarchy) {
+/** Free memory allocated during deserialization of a hierarchy object.
+ *
+ * The hierarchy object will not be freed (might be declared on the stack).
+ *
+ * @param[in] hierarchy The hierarchy object to be cleaned up.
+ */
+void
+ifapi_cleanup_ifapi_hierarchy(IFAPI_HIERARCHY * hierarchy) {
     if (hierarchy != NULL) {
         SAFE_FREE(hierarchy->description);
     }
 }
 
-void ifapi_cleanup_ifapi_nv(IFAPI_NV * nv) {
+/** Free memory allocated during deserialization of a nv object.
+ *
+ * The nv object will not be freed (might be declared on the stack).
+ *
+ * @param[in] nv The nv object to be cleaned up.
+ */
+void
+ifapi_cleanup_ifapi_nv(IFAPI_NV * nv) {
     if (nv != NULL) {
         SAFE_FREE(nv->serialization.buffer);
         SAFE_FREE(nv->appData.buffer);
@@ -1150,13 +1185,27 @@ void ifapi_cleanup_ifapi_nv(IFAPI_NV * nv) {
     }
 }
 
-void ifapi_cleanup_ifapi_duplicate(IFAPI_DUPLICATE * duplicate) {
+/** Free memory allocated during deserialization of a duplicate object.
+ *
+ * The duplicate object will not be freed (might be declared on the stack).
+ *
+ * @param[in] duplicate The duplicate object to be cleaned up.
+ */
+void
+ifapi_cleanup_ifapi_duplicate(IFAPI_DUPLICATE * duplicate) {
     if (duplicate != NULL) {
         SAFE_FREE(duplicate->certificate);
     }
 }
 
-void ifapi_cleanup_ifapi_keystore(IFAPI_KEYSTORE * keystore) {
+/** Free keystore related memory allocated during FAPI initialization.
+ *
+ * The keystore object will not be freed (might be declared on the stack).
+ *
+ * @param[in] keystore The kystore object to be cleaned up.
+ */
+void
+ifapi_cleanup_ifapi_keystore(IFAPI_KEYSTORE * keystore) {
     if (keystore != NULL) {
         SAFE_FREE(keystore->systemdir);
         SAFE_FREE(keystore->userdir);
@@ -1164,6 +1213,17 @@ void ifapi_cleanup_ifapi_keystore(IFAPI_KEYSTORE * keystore) {
     }
 }
 
+/** Create a copy of a an ifapi object storing a key.
+ *
+ * The key together with the policy of the key will be copied.
+ *
+ * @param[out] dest The caller allocated key object which will be the
+ *                  destination of the copy operation.
+ * @param[in]  src  The source key.
+ *
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if the source is not of type key.
+ */
 TSS2_RC
 ifapi_copy_ifapi_key_object(IFAPI_OBJECT * dest, const IFAPI_OBJECT * src) {
     TSS2_RC r = TSS2_RC_SUCCESS;
@@ -1205,7 +1265,7 @@ error_cleanup:
  * @param[in]  object The object to be cleaned up.
  *
  */
-    void
+void
 ifapi_cleanup_ifapi_object(
     IFAPI_OBJECT * object)
 {

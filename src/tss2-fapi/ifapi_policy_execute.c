@@ -69,6 +69,19 @@ compute_or_digest_list(
     return TSS2_RC_SUCCESS;
 }
 
+/** Add a new authorization to a policy.
+ *
+ * The the signed hash computed from the policy digest and the policyRef together with
+ * the public key of the key used for signing will be stored in the policy.
+ *
+ * @param[in,out] policy The policy to be authorized.
+ * @param[in] authorization The structure with the signature, the policyRef and
+ *                          the public key.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_MEMORY If the memory for the authorization list cannot be
+ *         allocated.
+ */
 TSS2_RC
 ifapi_extend_authorization(
     TPMS_POLICY *policy,

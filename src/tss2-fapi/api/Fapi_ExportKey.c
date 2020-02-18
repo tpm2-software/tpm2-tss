@@ -33,12 +33,12 @@
  * package up the duplicated key and all keys below it into a file ready to move to
  * a new TPM.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] pathOfKeyToDuplicate The path to the root of the subtree to
- *             export.
- * @param [in] pathToPublicKeyOfNewParent The path to the public key of the new
- *             parent. May be NULL
- * @param [out] exportedData The exported subtree
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] pathOfKeyToDuplicate The path to the root of the subtree to
+ *            export.
+ * @param[in] pathToPublicKeyOfNewParent The path to the public key of the new
+ *            parent. May be NULL
+ * @param[out] exportedData The exported subtree
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, pathOfKeyToDuplicate
@@ -118,11 +118,11 @@ Fapi_ExportKey(
  *
  * Call Fapi_ExportKey_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] pathOfKeyToDuplicate The path to the root of the subtree to
- *             export.
- * @param [in] pathToPublicKeyOfNewParent The path to the public key of the new
- *             parent
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] pathOfKeyToDuplicate The path to the root of the subtree to
+ *            export.
+ * @param[in] pathToPublicKeyOfNewParent The path to the public key of the new
+ *            parent
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or pathOfKeyToDuplicate
@@ -201,8 +201,8 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_ExportKey_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] exportedData The exported subtree
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] exportedData The exported subtree
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or exportedData is NULL.

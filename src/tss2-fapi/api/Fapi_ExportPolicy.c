@@ -21,10 +21,9 @@
  *
  * Exports a policy to a JSON encoded byte buffer.
  *
- * @param [in,out] context The FAPI_CONTEXT
- * @param [in] path The path to the policy that is to be exported
- * @param [out] jsonPolicy The byte buffer the JSON-encoded policy is exported
- *              to
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path to the policy that is to be exported
+ * @param[out] jsonPolicy The JSON-encoded policy. jsonPolicy MUST NOT be NULL.
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, path or jsonPolicy is NULL.
@@ -95,8 +94,8 @@ Fapi_ExportPolicy(
  *
  * Call Fapi_ExportPolicy_Finish to finish the execution of this command.
  *
- * @param [in,out] context The FAPI_CONTEXT
- * @param [in] path The path to the policy that is to be exported
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path to the policy that is to be exported
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -153,9 +152,8 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_ExportPolicy_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] jsonPolicy The byte buffer the JSON-encoded policy is exported
- *              to
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] jsonPolicy The JSON-encoded policy. jsonPolicy MUST NOT be NULL.
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or jsonPolicy is NULL.

@@ -28,7 +28,7 @@
  *
  * Deletes a given key, policy or NV index from the system.
  *
- * @param[in, out] context The ESAPI_CONTEXT
+ * @param[in,out] context The ESAPI_CONTEXT
  * @param[in] path The path to the entity that is to be deleted
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
@@ -81,7 +81,7 @@ Fapi_Delete(
 
  * Call Fapi_Delete_Finish to finish the execution of this command.
  *
- * @param[in, out] context The ESAPI_CONTEXT
+ * @param[in,out] context The ESAPI_CONTEXT
  * @param[in] path The path to the entity that is to be deleted
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
@@ -185,7 +185,7 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_Delete_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

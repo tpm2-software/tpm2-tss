@@ -27,10 +27,10 @@
  * Every object has a description field that can be retrieved in order to obtain
  * additional information in its “path” entry.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path to the object for which the appData is returned
- * @param [out] appData A copy of the appData. May be NULL (callee-allocated)
- * @param [out] appDataSize The size of the returned AppData. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path to the object for which the appData is returned
+ * @param[out] appData A copy of the appData. May be NULL (callee-allocated)
+ * @param[out] appDataSize The size of the returned AppData. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -84,8 +84,8 @@ Fapi_GetAppData(
  *
  * Call Fapi_GetAppData_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path to the object for which the appData is returned
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path to the object for which the appData is returned
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -128,9 +128,9 @@ Fapi_GetAppData_Async(
  *
  * This function should be called after a previous Fapi_GetAppData_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] appData A copy of the appData. May be Null (callee-allocated)
- * @param [out] appDataSize The size of the returned AppData. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] appData A copy of the appData. May be Null (callee-allocated)
+ * @param[out] appDataSize The size of the returned AppData. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

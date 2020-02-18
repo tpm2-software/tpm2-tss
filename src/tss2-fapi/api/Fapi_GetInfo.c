@@ -53,8 +53,8 @@ static IFAPI_INFO_CAP info_cap_tab[] = {
  * Returns a UTF-8 encoded string that identifies the versions of FAPI, TPM,
  * configurations and other relevant information.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] info The byte buffer for the information string
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] info The byte buffer for the information string
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or info is NULL.
@@ -123,7 +123,7 @@ Fapi_GetInfo(
  *
  * Call Fapi_GetInfo_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.
@@ -168,8 +168,8 @@ Fapi_GetInfo_Async(
  *
  * This function should be called after a previous Fapi_GetInfo_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] info The byte buffer for the information string
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] info The byte buffer for the information string
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or info is NULL.

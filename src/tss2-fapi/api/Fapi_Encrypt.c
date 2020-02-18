@@ -33,12 +33,12 @@
  * schemes as specified in the crypto profile.
  * This function does not use the TPM; i.e. works in non-TPM mode.
  *
- * @param [in,out] context The FAPI_CONTEXT
- * @param [in] keyPath THe path to the encryption key
- * @param [in] plainText The plaintext data to encrypt
- * @param [in] plainTextSize The size of the plainText in bytes
- * @param [out] cipherText The encoded cipher text.
- * @param [out] cipherTextSize The size of the encoded cipher text.
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] keyPath THe path to the encryption key
+ * @param[in] plainText The plaintext data to encrypt
+ * @param[in] plainTextSize The size of the plainText in bytes
+ * @param[out] cipherText The encoded cipher text.
+ * @param[out] cipherTextSize The size of the encoded cipher text.
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, keyPath, plainText, or
@@ -118,10 +118,10 @@ Fapi_Encrypt(
  *
  * Call Fapi_Encrypt_Finish to finish the execution of this command.
  *
- * @param [in,out] context The FAPI_CONTEXT
- * @param [in] keyPath The path to the encryption key
- * @param [in] plainText The plainText data to encrypt
- * @param [in] plainTextSize The size of the plainText in bytes
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] keyPath The path to the encryption key
+ * @param[in] plainText The plainText data to encrypt
+ * @param[in] plainTextSize The size of the plainText in bytes
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, keyPath or plainText is
@@ -190,10 +190,10 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_Encrypt_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] cipherText The JSON-encoded ciphertext
- * @param [out] cipherText The encoded cipher text.
- * @param [out] cipherTextSize The size of the encoded cipher text.
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] cipherText The JSON-encoded ciphertext
+ * @param[out] cipherText The encoded cipher text.
+ * @param[out] cipherTextSize The size of the encoded cipher text.
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or ciphertext is NULL.

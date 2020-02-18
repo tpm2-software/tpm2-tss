@@ -24,7 +24,7 @@
  * the user must first satisfy a policy authorized by a having been signed (and
  * made into a ticket) by an authorized party.
  *
- * @param[in, out] context The FAPI context
+ * @param[in,out] context The FAPI context
  * @param[in] policyPath The path to the policy file
  * @param[in] keyPath The path to the signing key
  * @param[in] policyRef A byte buffer that is included in the signature. May be
@@ -107,7 +107,7 @@ Fapi_AuthorizePolicy(
  *
  * Call Fapi_AuthorizePolicy_Finish to finish the execution of this command.
  *
- * @param[in, out] context The FAPI context
+ * @param[in,out] context The FAPI context
  * @param[in] policyPath The path to the policy file
  * @param[in] keyPath The path to the signing key
  * @param[in] policyRef A byte buffer that is included in the signature. May be
@@ -184,7 +184,7 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_AuthorizePolicy_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

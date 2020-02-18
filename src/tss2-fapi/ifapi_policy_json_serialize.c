@@ -17,6 +17,14 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
+
+/** Serialize a character string to json.
+ *
+ * @param[in]in the character string.
+ * @param[out] out the json object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
+ */
 static TSS2_RC
 ifapi_json_char_serialize(
     const char *in,
@@ -61,7 +69,7 @@ static TPMI_POLICYTYPE_ASSIGN serialize_TPMI_POLICYTYPE_tab[] = {
 /** Get json object for a constant, if a variable is actually of type TPMI_POLICYTYPE.
  *
  * @param[in] in binary value of constant.
- * @param[out] jso object with text representing the constant.
+ * @param[out] str_jso with text representing the constant.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPMI_POLICYTYPE.
@@ -987,8 +995,9 @@ ifapi_json_TPMS_POLICYPCR_serialize(const TPMS_POLICYPCR *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYAUTHORIZATION.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION
-        *in, json_object **jso)
+ifapi_json_TPMS_POLICYAUTHORIZATION_serialize(
+    const TPMS_POLICYAUTHORIZATION *in,
+    json_object **jso)
 {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
@@ -1159,6 +1168,7 @@ ifapi_json_TPMS_POLICYOR_serialize(const TPMS_POLICYOR *in, json_object **jso)
  *
  * This function expects the Bitfield to be encoded as unsigned int in host-endianess.
  * @param[in] in the value to be serialized.
+ * @param[in] selector the type of the policy element.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.

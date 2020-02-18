@@ -27,15 +27,15 @@
  *
  * This command creates an NV index in the TPM using a given path and type.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path to the new NV index
- * @param [in] type The intended type of the new NV index. May be NULL
- * @param [in] size The size of the new NV index in bytes. May be 0 if the size
- *             is inferred from the type
- * @param [in] policyPath The path to the policy that is associated with the new
- *             NV index. May be NULL
- * @param [in] authValue The authorization value that is associated with the new
- *             NV index. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path to the new NV index
+ * @param[in] type The intended type of the new NV index. May be NULL
+ * @param[in] size The size of the new NV index in bytes. May be 0 if the size
+ *            is inferred from the type
+ * @param[in] policyPath The path to the policy that is associated with the new
+ *            NV index. May be NULL
+ * @param[in] authValue The authorization value that is associated with the new
+ *            NV index. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -113,15 +113,15 @@ Fapi_CreateNv(
  *
  * Call Fapi_CreateNv_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path to the new NV index
- * @param [in] type The intended type of the new NV index. May be NULL
- * @param [in] size The size of the new NV index in bytes. May be 0 if the size
- *             is inferred from the type
- * @param [in] policyPath The path to the policy that is associated with the new
- *             NV index. May be NULL
- * @param [in] authValue The authorization value that is associated with the new
- *             NV index. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path to the new NV index
+ * @param[in] type The intended type of the new NV index. May be NULL
+ * @param[in] size The size of the new NV index in bytes. May be 0 if the size
+ *            is inferred from the type
+ * @param[in] policyPath The path to the policy that is associated with the new
+ *            NV index. May be NULL
+ * @param[in] authValue The authorization value that is associated with the new
+ *            NV index. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -213,7 +213,7 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_CreateNv_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

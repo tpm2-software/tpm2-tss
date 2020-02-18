@@ -26,11 +26,11 @@
  *
  * Associates an arbitrary data blob with a given object.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path to the object the blob is associated with
- * @param [in] appData The blob to associate with the object. May be NULL
- * @param [in] appDataSize The size of appData in bytes. Must be 0 if appData is
- *             NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path to the object the blob is associated with
+ * @param[in] appData The blob to associate with the object. May be NULL
+ * @param[in] appDataSize The size of appData in bytes. Must be 0 if appData is
+ *            NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL or if appData
@@ -84,11 +84,11 @@ Fapi_SetAppData(
  *
  * Call Fapi_SetAppData_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path to the object the blob is associated with
- * @param [in] appData The blob to associate with the object. May be NULL
- * @param [in] appDataSize The size of appData in bytes. Must be 0 if appData is
- *             NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path to the object the blob is associated with
+ * @param[in] appData The blob to associate with the object. May be NULL
+ * @param[in] appDataSize The size of appData in bytes. Must be 0 if appData is
+ *            NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL or if appData
@@ -165,7 +165,7 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_SetAppData_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

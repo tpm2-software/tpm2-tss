@@ -27,12 +27,12 @@
  *
  * Verifies a signature using a public key found in a keyPath.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] keyPath The path to the verification public key
- * @param [in] digest The that was signed. Must be already hashed
- * @param [in] digestSize the size of digest in bytes
- * @param [in] signature The signature to be verified
- * @param [in] signatureSize The size of signature in bytes
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] keyPath The path to the verification public key
+ * @param[in] digest The that was signed. Must be already hashed
+ * @param[in] digestSize the size of digest in bytes
+ * @param[in] signature The signature to be verified
+ * @param[in] signatureSize The size of signature in bytes
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, keyPath, signature, or
@@ -97,12 +97,12 @@ Fapi_VerifySignature(
  *
  * Call Fapi_VerifySignature_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] keyPath The path to the verification public key
- * @param [in] digest The that was signed. Must be already hashed
- * @param [in] digestSize the size of digest in bytes
- * @param [in] signature The signature to be verified
- * @param [in] signatureSize The size of signature in bytes
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] keyPath The path to the verification public key
+ * @param[in] digest The that was signed. Must be already hashed
+ * @param[in] digestSize the size of digest in bytes
+ * @param[in] signature The signature to be verified
+ * @param[in] signatureSize The size of signature in bytes
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, keyPath, signature, or
@@ -193,7 +193,7 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_VerifySignature_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

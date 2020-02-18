@@ -24,9 +24,9 @@
  * Write the policyDigest of a policy to an NV index so it can be used in policies
  * containing PolicyAuthorizeNV elements.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] nvPath The path of the NV index
- * @param [in] policyPath The path of the new policy
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] nvPath The path of the NV index
+ * @param[in] policyPath The path of the new policy
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -101,9 +101,9 @@ Fapi_WriteAuthorizeNv(
  *
  * Call Fapi_WriteAuthorizeNv_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] nvPath The path of the NV index
- * @param [in] policyPath The path of the new policy
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] nvPath The path of the NV index
+ * @param[in] policyPath The path of the new policy
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -167,7 +167,7 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_WriteAuthorizeNv_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

@@ -28,16 +28,16 @@
  * Creates a sealed object and stores it in the FAPI metadata store. If no data
  * is provided, the TPM generates random data to fill the sealed object.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path to the new sealed object
- * @param [in] type The type of the new sealed object. May be NULL
- * @param [in] size The size of the new sealed object. Must not be 0
- * @param [in] policyPath The path to the policy that is associated with the new
- *             sealed object. May be NULL
- * @param [in] authValue The authorization value for the new sealed object. May
- *             be NULL
- * @param [in] data The data that is to be sealed within the new object. May be
- *             NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path to the new sealed object
+ * @param[in] type The type of the new sealed object. May be NULL
+ * @param[in] size The size of the new sealed object. Must not be 0
+ * @param[in] policyPath The path to the policy that is associated with the new
+ *            sealed object. May be NULL
+ * @param[in] authValue The authorization value for the new sealed object. May
+ *            be NULL
+ * @param[in] data The data that is to be sealed within the new object. May be
+ *            NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, or path is NULL.
@@ -119,16 +119,16 @@ Fapi_CreateSeal(
  *
  * Call Fapi_CreateSeal_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path to the new sealed object
- * @param [in] type The type of the new sealed object. May be NULL
- * @param [in] size The size of the new sealed object. Must not be 0
- * @param [in] policyPath The path to the policy that is associated with the new
- *             sealed object. May be NULL
- * @param [in] authValue The authorization value for the new sealed object. May
- *             be NULL
- * @param [in] data The data that is to be sealed within the new object. May be
- *             NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path to the new sealed object
+ * @param[in] type The type of the new sealed object. May be NULL
+ * @param[in] size The size of the new sealed object. Must not be 0
+ * @param[in] policyPath The path to the policy that is associated with the new
+ *            sealed object. May be NULL
+ * @param[in] authValue The authorization value for the new sealed object. May
+ *            be NULL
+ * @param[in] data The data that is to be sealed within the new object. May be
+ *            NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, or path is NULL.
@@ -200,7 +200,7 @@ Fapi_CreateSeal_Async(
  *
  * This function should be called after a previous Fapi_CreateSeal.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

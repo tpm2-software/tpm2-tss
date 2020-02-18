@@ -43,9 +43,10 @@ ifapi_profile_checkpcrs(const TPML_PCR_SELECTION *pcr_profile);
  *
  * Call ifapi_profiles_initialize_finish to complete the operation.
  *
- * @param profiles [in, out] The context for the profiles information.
- * @param profilesdir [in] The directory to load profile information from.
- * @param defaultprofile [in] The name of the default profile to use.
+ * @param[in,out] profiles The context for the profiles information.
+ * @param[in,out] io The input/output context being used for file I/O.
+ * @param[in] profilesdir The directory to load profile information from.
+ * @param[in] defaultprofile The name of the default profile to use.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if NULL pointers were passed in.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the profilesdir does not exist or is empty.
@@ -139,7 +140,8 @@ ifapi_profiles_initialize_async(
  *
  * Call after ifapi_profiles_initialize_async to complete the operation.
  *
- * @param profiles [in, out] The context for the profiles information.
+ * @param[in,out] profiles The context for the profiles information.
+ * @param[in,out] io The input/output context being used for file I/O.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if NULL pointers were passed in.
  * @retval TSS2_FAPI_RC_BAD_VALUE if a profile could not be loaded.
@@ -217,9 +219,9 @@ ifapi_profiles_initialize_finish(
  * If a keypath is passed in, then the prefix is analysed. If that keypath starts with a profile
  * then this profile is returned. Otherwise the default profile is returned.
  *
- * @param profiles [in] The profiles context
- * @param name [in] The name of the profile or the keypath
- * @param profile [out] The pointer to the profile data.
+ * @param[in] profiles The profiles context
+ * @param[in] name The name of the profile or the keypath
+ * @param[out] profile The pointer to the profile data.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if NULL pointers were passed in.
  * @retval TSS2_FAPI_RC_BAD_VALUE if a profile is not found.
@@ -268,7 +270,7 @@ ifapi_profiles_get(
 
 /** Sanitizes and frees internal data structures of loaded profiles' information.
  *
- * @param profiles [in, out] The context for the profiles information.
+ * @param[in,out] profiles The context for the profiles information.
  */
 void
 ifapi_profiles_finalize(

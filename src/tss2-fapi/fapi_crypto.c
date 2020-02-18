@@ -42,11 +42,11 @@ static ENGINE *engine = NULL;
 /**
  * Returns the signature scheme that is currently used in the FAPI context.
  *
- * @param [in] profile The FAPI profile from which the signing scheme is
- *             retrieved
- * @param [in] tpmPublic The public key for which the signing key is fetched
- *             from the FAPI
- * @param [out] signatureScheme The currently used signature scheme
+ * @param[in] profile The FAPI profile from which the signing scheme is
+ *            retrieved
+ * @param[in] tpmPublic The public key for which the signing key is fetched
+ *            from the FAPI
+ * @param[out] signatureScheme The currently used signature scheme
  *
  * @retval TSS2_RC_SUCCESS if the signature scheme was successfully fetched
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if one of the parameters is NULL
@@ -152,9 +152,9 @@ static const TPM2B_PUBLIC templateEccSign = {
 /**
  * Initializes a FAPI key template for a given signature algorithm.
  *
- * @param [in]  signatureAlgorithm The signature algorithm to use. Must be
- *              TPM2_ALG_RSA or TPM2_ALG_ECC
- * @param [out] template The template to initialize
+ * @param[in]  signatureAlgorithm The signature algorithm to use. Must be
+ *             TPM2_ALG_RSA or TPM2_ALG_ECC
+ * @param[out] public The template to initialize
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if template is NULL
@@ -186,9 +186,9 @@ ifapi_initialize_sign_public(TPM2_ALG_ID signatureAlgorithm,
 /**
  * Converts an openSSL BIGNUM into a binary byte buffer using.
  *
- * @param [in]  bn The BIGNUM to convert
- * @param [out] bin The binary buffer to which the bignum is converted
- * @param [in]  binSize The size of bin in bytes
+ * @param[in]  bn The BIGNUM to convert
+ * @param[out] bin The binary buffer to which the bignum is converted
+ * @param[in]  binSize The size of bin in bytes
  *
  * @retval 1 if the conversion was successful
  * @retval 0 if one of the parameters is NULL
@@ -229,7 +229,7 @@ get_engine()
  * Returns a suitable openSSL hash algorithm identifier for a given TSS hash
  * algorithm identifier.
  *
- * @param [in] hashAlgorithm The TSS hash algorithm identifier
+ * @param[in] hashAlgorithm The TSS hash algorithm identifier
  *
  * @retval An openSSL hash algorithm identifier if one that is suitable to
  *         hashAlgorithm could be found
@@ -256,7 +256,7 @@ get_hash_md(TPM2_ALG_ID hashAlgorithm)
  * Returns a suitable openSSL RSA signature scheme identifiver for a given TSS
  * RSA signature scheme identifier.
  *
- * @param [in] signatureScheme The TSS RSA signature scheme identifier
+ * @param[in] signatureScheme The TSS RSA signature scheme identifier
  *
  * @retval RSA_PCKS1_PSS_PADDING if signatureScheme is TPM2_ALG_RSAPSS
  * @retval RSA_PKCS1_PADDING if signatureScheme is TPM2_ALG_RSASSA
@@ -279,10 +279,10 @@ get_sig_scheme(TPM2_ALG_ID signatureScheme)
  * Convert a TPM ECDSA signature into a DER formatted byte buffer. This can be
  * used by TLS libraries.
  *
- * @param [in]  tpmSignature The signature created by the TPM
- * @param [out] signature A byte buffer that will hold the DER representation of
- *              the signature  (callee allocated)
- * @param [out] signatureSize The size of signature in bytes. May be NULL
+ * @param[in]  tpmSignature The signature created by the TPM
+ * @param[out] signature A byte buffer that will hold the DER representation of
+ *             the signature  (callee allocated)
+ * @param[out] signatureSize The size of signature in bytes. May be NULL
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if tpmSignature is NULL
@@ -360,9 +360,9 @@ cleanup:
  * Converts a public RSA key created by the TPM into one that can be used by
  * OpenSSL.
  *
- * @param [in]  tpmPublicKey The public RSA key created by the TPM
- * @param [out] evpPublicKey The converted public RSA key that can be used by
- *              OpenSSL
+ * @param[in]  tpmPublicKey The public RSA key created by the TPM
+ * @param[out] evpPublicKey The converted public RSA key that can be used by
+ *             OpenSSL
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if one of the parameters is NULL
@@ -447,9 +447,9 @@ error_cleanup:
  * Converts a public ECC key created by the TPM into one that can be used by
  * OpenSSL.
  *
- * @param [in]  tpmPublicKey The public ECC key created by the TPM
- * @param [out] evpPublicKey The converted public ECC key that can be used by
- *              OpenSSL
+ * @param[in]  tpmPublicKey The public ECC key created by the TPM
+ * @param[out] evpPublicKey The converted public ECC key that can be used by
+ *             OpenSSL
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if one of the parameters is NULL
@@ -539,10 +539,10 @@ error_cleanup:
  * Convert a TPM public key into a PEM formatted byte buffer. This can be
  * used by TLS libraries.
  *
- * @param [in]  tpmPublicKey The public key created by the TPM
- * @param [out] pemKey A byte buffer that will hold the PEM representation of
- *              the public key  (callee allocated)
- * @param [out] pemKeySize The size of pemKey in bytes
+ * @param[in]  tpmPublicKey The public key created by the TPM
+ * @param[out] pemKey A byte buffer that will hold the PEM representation of
+ *             the public key  (callee allocated)
+ * @param[out] pemKeySize The size of pemKey in bytes
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
@@ -607,11 +607,11 @@ cleanup:
 /** Converts an ECDSA signature from a DER encoded byte buffer into the
  * TPM format. It can then be verified by the TPM.
  *
- * @param [in]  signature A DER encoded byte buffer holding the signature
- * @param [in]  signatureSize The size of signature in bytes
- * @param [in]  keySize The size of the verification key
- * @param [in]  hashAlgorithm The TSS identifier of the hash algorithm to use
- * @param [out] tpmSignature The signature in the TPM format
+ * @param[in]  signature A DER encoded byte buffer holding the signature
+ * @param[in]  signatureSize The size of signature in bytes
+ * @param[in]  keySize The size of the verification key
+ * @param[in]  hashAlgorithm The TSS identifier of the hash algorithm to use
+ * @param[out] tpmSignature The signature in the TPM format
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
@@ -671,12 +671,12 @@ ifapi_ecc_der_sig_to_tpm(
  * The signature in DER format is converted to TPM format to
  * enable verification by the TPM.
  *
- * @param [in] tpmPublic The public information of the signature key
- * @param [in] signature A byte buffer holding the DER encoded signature
- * @param [in] signatureSize The size of signature in bytes
- * @param [in] hashAlgorithm The TSS identifier for the hash algorithm used
- *             to compute the digest
- * @param [out] tpmSignature The signature in TPM format
+ * @param[in] tpmPublic The public information of the signature key
+ * @param[in] signature A byte buffer holding the DER encoded signature
+ * @param[in] signatureSize The size of signature in bytes
+ * @param[in] hashAlgorithm The TSS identifier for the hash algorithm used
+ *            to compute the digest
+ * @param[out] tpmSignature The signature in TPM format
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
@@ -738,13 +738,13 @@ static const int rsaPadding[N_PADDING] = { RSA_PKCS1_PADDING, RSA_PKCS1_PSS_PADD
 /**
  * Verifies an RSA signature given as a binary byte buffer.
  *
- * @param [in] publicKey The public key with which the signature is to be
- *             verified
- * @param [in] signature A byte buffer holding the signature to verify
- * @param [in] signatureSize The size of signature in bytes
- * @param [in] digest The digest of the signature to verify
- * @param [in] digestSize The size of digest in bytes. Required to determine the
- *             hash algorithm
+ * @param[in] publicKey The public key with which the signature is to be
+ *            verified
+ * @param[in] signature A byte buffer holding the signature to verify
+ * @param[in] signatureSize The size of signature in bytes
+ * @param[in] digest The digest of the signature to verify
+ * @param[in] digestSize The size of digest in bytes. Required to determine the
+ *            hash algorithm
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if publicKey, signature or digest is NULL
@@ -828,13 +828,13 @@ cleanup:
 /**
  * Verifies an ECDSA signature given as a binary byte buffer.
  *
- * @param [in] publicKey The public key with which the signature is to be
- *             verified
- * @param [in] signature A byte buffer holding the signature to verify
- * @param [in] signatureSize The size of signature in bytes
- * @param [in] digest The digest of the signature to verify
- * @param [in] digestSize The size of digest in bytes. Required to determine the
- *             hash algorithm
+ * @param[in] publicKey The public key with which the signature is to be
+ *            verified
+ * @param[in] signature A byte buffer holding the signature to verify
+ * @param[in] signatureSize The size of signature in bytes
+ * @param[in] digest The digest of the signature to verify
+ * @param[in] digestSize The size of digest in bytes. Required to determine the
+ *            hash algorithm
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if publicKey, signature or digest is NULL
@@ -884,10 +884,10 @@ error_cleanup:
  * Gets an object with the TPM-relevant public information of an OpenSSL
  * RSA public key.
  *
- * @param [in, out] profile The crypto profile from which parameters are retrieved
- * @param [in]  publicKey The public key for which the public information is
- *              retrieved
- * @param [out] tpmPublic The public information of publicKey
+ * @param[in,out] profile The crypto profile from which parameters are retrieved
+ * @param[in]  publicKey The public key for which the public information is
+ *             retrieved
+ * @param[out] tpmPublic The public information of publicKey
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if profile, publicKey or tpmPublic is NULL
@@ -934,10 +934,10 @@ cleanup:
  * Gets an object with the TPM-relevant public information of an OpenSSL
  * ECC public key.
  *
- * @param [in, out] profile The crypto profile to retrieve parameters from.
- * @param [in]  publicKey The public key for which the public information is
- *              retrieved
- * @param [out] tpmPublic The public information of publicKey
+ * @param[in,out] profile The crypto profile to retrieve parameters from.
+ * @param[in]  publicKey The public key for which the public information is
+ *             retrieved
+ * @param[out] tpmPublic The public information of publicKey
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if profile, publicKey or tpmPublic is NULL
@@ -1032,8 +1032,8 @@ cleanup:
 /**
  * Converts a given PEM key into an EVP public key object.
  *
- * @param [in] pemKey A byte buffer holding the PEM key to convert
- * @param [out] publicKey An EVP public key
+ * @param[in] pemKey A byte buffer holding the PEM key to convert
+ * @param[out] publicKey An EVP public key
  *
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if any of the parameters is NULL
  * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
@@ -1066,7 +1066,7 @@ cleanup:
  * Returns the TPM algorithm identifier that matches to the signature algorithm
  * of a given PEM key.
  *
- * @param [in] pemKey The public key from which the signature algorithm is retrieved
+ * @param[in] pemKey The public key from which the signature algorithm is retrieved
  *
  * @retval TPM2_ALG_RSA if pemKey holds an RSA key
  * @retval TPM2_ALG_ECC if pemKey holds an ECC key
@@ -1106,10 +1106,9 @@ cleanup:
  * public key. The information is gathered from the key itself and the currently
  * used FAPI profile.
  *
- * @param [in, out] profile The crypto profile to retrieve parameters from
- * @param [in]  pemKey A byte buffer holding the PEM encoded public key for
- *              which the public information is retrieved
- * @param [out] tpmPublic The public information of pemKey
+ * @param[in]  pemKey A byte buffer holding the PEM encoded public key for
+ *             which the public information is retrieved
+ * @param[out] tpmPublic The public information of pemKey
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if profile, pemKey or tpmPublic is NULL
@@ -1150,12 +1149,12 @@ cleanup:
 /**
  * Verifies the signature created by a Quote command.
  *
- * @param [in] keyObject A FAPI key with which the signature is verified
- * @param [in] signature A byte buffer holding the signature
- * @param [in] signatureSize The size of signature in bytes
- * @param [in] digest The digest of the signature
- * @param [in] digestSize The size of digest in bytes
- * @param [in] signatureScheme The signature scheme
+ * @param[in] keyObject A FAPI key with which the signature is verified
+ * @param[in] signature A byte buffer holding the signature
+ * @param[in] signatureSize The size of signature in bytes
+ * @param[in] digest The digest of the signature
+ * @param[in] digestSize The size of digest in bytes
+ * @param[in] signatureScheme The signature scheme
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if keyObject, signature, digest
@@ -1266,11 +1265,11 @@ error_cleanup:
 /**
  * Verifies a signature using a given FAPI public key.
  *
- * @param [in] keyObject The FAPI public key used for verification
- * @param [in] signature The signature to verify
- * @param [in] signatureSize The size of signature in bytes
- * @param [in] digest The digest of the signature
- * @param [in] digestSize The size of digest in bytes
+ * @param[in] keyObject The FAPI public key used for verification
+ * @param[in] signature The signature to verify
+ * @param[in] signatureSize The size of signature in bytes
+ * @param[in] digest The digest of the signature
+ * @param[in] digestSize The size of digest in bytes
  *
  * @retval TSS2_RC_SUCCESS In case of success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if keyObject, signature or digest is NULL
@@ -1349,7 +1348,7 @@ error_cleanup:
 /**
  * Returns the digest size of a given hash algorithm.
  *
- * @param [in] hashAlgorithm The TSS identifier of the hash algorithm
+ * @param[in] hashAlgorithm The TSS identifier of the hash algorithm
  *
  * @return The size of the digest produced by the hash algorithm if
  * hashAlgorithm is valid
@@ -1383,7 +1382,7 @@ ifapi_hash_get_digest_size(TPM2_ALG_ID hashAlgorithm)
  * Converts a TSS hash algorithm identifier into an OpenSSL hash algorithm
  * identifier object.
  *
- * @param [in] hashAlgorithm The TSS hash algorithm identifier to convert
+ * @param[in] hashAlgorithm The TSS hash algorithm identifier to convert
  *
  * @retval A suitable OpenSSL identifier object if one could be found
  * @retval NULL if no suitable identifier object could be found
@@ -1631,6 +1630,7 @@ cleanup:
  * @param[out] pemCert A byte buffer where the PEM-formatted certificate is
  *             stored
  * @param[out] certAlgorithmId The key type of the certified key
+ * @param[out] tpmPublic The public key of the certificate in TPM format.
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if certBuffer or pemCert is NULL
@@ -1723,8 +1723,8 @@ cleanup:
 /**
  * Returns a suitable hash algorithm for a given digest size.
  *
- * @param [in]  size The size of the digest
- * @param [out] hashAlgorithm A suitable hash algorithm for the digest size
+ * @param[in]  size The size of the digest
+ * @param[out] hashAlgorithm A suitable hash algorithm for the digest size
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if hashAlgorithm is NULL
@@ -1776,8 +1776,8 @@ static X509 *get_X509_from_pem(const char *pem_cert)
 
 /** Get public information for key of a pem certificate.
  *
- * @param [in]  pem_cert The pem certificate.
- * @param [out] tpm_public The public information of the key in TPM format.
+ * @param[in]  pem_cert The pem certificate.
+ * @param[out] tpm_public The public information of the key in TPM format.
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_VALUE if the conversion fails.
@@ -1833,9 +1833,9 @@ X509 * get_cert_from_buffer(unsigned char *cert_buffer, size_t cert_buffer_size)
 /**
  * Verify EK certificate read from TPM.
  *
- * @param [in] root_cert_pem The vendor root certificate.
- * @param [in] intermed_cert_pem The vendor intermediate certificate.
- * @parma [in] ek_cert_pem The ek certificate from TPM.
+ * @param[in] root_cert_pem The vendor root certificate.
+ * @param[in] intermed_cert_pem The vendor intermediate certificate.
+ * @param[in] ek_cert_pem The ek certificate from TPM.
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_VALUE if the verification was no successful.
@@ -2014,8 +2014,9 @@ cleanup:
 
 /** Compute the fingerprint of a TPM public key.
  *
- * @param [in]  tpmPublicKey The public key created by the TPM
- * @param [out] The fingerprint digest.
+ * @param[in] tpmPublicKey The public key created by the TPM
+ * @param[in] hashAlg The hash algorithm used for fingerprint computation.
+ * @param[out] fingerprint The fingerprint digest.
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library

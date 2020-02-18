@@ -27,13 +27,13 @@
  *
  * Performs an extend operation on an NV index with the type extend.
  *
- * @param [in, out] context the FAPI context
- * @param [in] nvPath The path to the NV index that is extended
- * @param [in] data The data to extend on the NV index
- * @param [in] dataSize The size of the data to extend. Must be smaller than
- *             1024
- * @param [in] logData A JSON representation of the data that is written to the
- *         event log. May be NULL
+ * @param[in,out] context the FAPI context
+ * @param[in] nvPath The path to the NV index that is extended
+ * @param[in] data The data to extend on the NV index
+ * @param[in] dataSize The size of the data to extend. Must be smaller than
+ *            1024
+ * @param[in] logData A JSON representation of the data that is written to the
+ *        event log. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, nvPath, or data is NULL.
@@ -108,13 +108,13 @@ Fapi_NvExtend(
  *
  * Call Fapi_NvExtend_Finish to finish the execution of this command.
  *
- * @param [in, out] context the FAPI context
- * @param [in] nvPath The path to the NV index that is extended
- * @param [in] data The data to extend on the NV index
- * @param [in] dataSize The size of the data to extend. Must be smaller than
- *             1024
- * @param [in] logData A JSON representation of the data that is written to the
- *         event log. May be NULL
+ * @param[in,out] context the FAPI context
+ * @param[in] nvPath The path to the NV index that is extended
+ * @param[in] data The data to extend on the NV index
+ * @param[in] dataSize The size of the data to extend. Must be smaller than
+ *            1024
+ * @param[in] logData A JSON representation of the data that is written to the
+ *            event log. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, nvPath, or data is NULL.
@@ -199,7 +199,7 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_NvExtend.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

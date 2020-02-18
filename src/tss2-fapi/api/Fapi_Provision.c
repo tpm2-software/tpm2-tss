@@ -35,12 +35,12 @@
  * and policy settings as well as the readout of the EK and its certificate and
  * the initialization of the system-wide keystore.
  *
- * @param [in,out] context The FAPI_CONTEXT.
- * @param [in] authValueEh The authorization value for the endorsement
- *             hierarchy. May be NULL
- * @param [in] authValueSh The authorization value for the storage hierarchy.
- *             Should be NULL
- * @param [in] authValueLockout The authorization value for lockout.
+ * @param[in,out] context The FAPI_CONTEXT.
+ * @param[in] authValueEh The authorization value for the endorsement
+ *            hierarchy. May be NULL
+ * @param[in] authValueSh The authorization value for the storage hierarchy.
+ *            Should be NULL
+ * @param[in] authValueLockout The authorization value for lockout.
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.
@@ -115,12 +115,12 @@ Fapi_Provision(
  *
  * Call Fapi_Provision_Finish to finish the execution of this command.
  *
- * @param [in,out] context The FAPI_CONTEXT.
- * @param [in] authValueEh The authorization value for the endorsement
- *             hierarchy. May be NULL
- * @param [in] authValueSh The authorization value for the storage hierarchy.
- *             Should be NULL
- * @param [in] authValueLockout The authorization value for lockout.
+ * @param[in,out] context The FAPI_CONTEXT.
+ * @param[in] authValueEh The authorization value for the endorsement
+ *            hierarchy. May be NULL
+ * @param[in] authValueSh The authorization value for the storage hierarchy.
+ *            Should be NULL
+ * @param[in] authValueLockout The authorization value for lockout.
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.
@@ -178,7 +178,7 @@ end:
  *
  * This function should be called after a previous Fapi_Provision_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

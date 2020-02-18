@@ -28,12 +28,12 @@
  *
  * Sets an x509 cert into the path of a key.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path of the entity to be associated with the
- *             certificate
- * @param [in] x509certData The certificate that is associated with the entity.
- *             If this is NULL an existing certificate will be removed from
- *             the entity
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path of the entity to be associated with the
+ *            certificate
+ * @param[in] x509certData The certificate that is associated with the entity.
+ *            If this is NULL an existing certificate will be removed from
+ *            the entity
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -86,12 +86,12 @@ Fapi_SetCertificate(
  *
  * Call Fapi_SetCertificate_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path of the entity to be associated with the
- *             certificate
- * @param [in] x509certData The certificate that is associated with the entity.
- *             If this is NULL an existing certificate will be removed from
- *             the entity
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path of the entity to be associated with the
+ *            certificate
+ * @param[in] x509certData The certificate that is associated with the entity.
+ *            If this is NULL an existing certificate will be removed from
+ *            the entity
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -154,7 +154,7 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_SetCertificate_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

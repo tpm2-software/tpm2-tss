@@ -29,9 +29,9 @@
         if (r == TSS2_RC_SUCCESS) { poll(ph, nph, -1); Fapi_Free(ph); }
  *      r = Fapi_*_Finish(fc, ...); } while (r == TSS2_FAPI_RC_TRY_AGAIN);
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] handles An array of poll handle entries
- * @param [out] num_handles The size of the array in handles
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] handles An array of poll handle entries
+ * @param[out] num_handles The size of the array in handles
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or data is NULL.

@@ -60,9 +60,9 @@ error_cleanup:
  * Parts of policies which are referenced by object paths will be replaced with
  * the appropriate values of the referenced objects.
  *
- * @parm[in] context The context storing information for re-entry after try again.
- * @parm[in] policy The policy to be instantiated.
- * @parm[in] callbacks The needed callback functions with the corresponding user data
+ * @param[in] context The context storing information for re-entry after try again.
+ * @param[in] policy The policy to be instantiated.
+ * @param[in] callbacks The needed callback functions with the corresponding user data
  *           which will be passed to the callback.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval FAPI error codes on failure
@@ -130,7 +130,7 @@ set_pem_key_param(
  * All needed asyncroous callbacks will be executed for all policy elements offset
  * The policy.
  *
- * @parm[in] context The context storing information for re-entry after try again.
+ * @param[in] context The context storing information for re-entry after try again.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_BAD_TEMPLATE If the templayte is not complete for instantiation.
  * @retval FAPI error codes on failure

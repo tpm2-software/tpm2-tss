@@ -29,12 +29,12 @@
  * policy and authValue. The key is then stored either in the FAPI metadata
  * store or the TPM.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path where the new key is stored
- * @param [in] type The type of the new key. May be NULL
- * @param [in] policyPath The path to the policy that is associated with the new
- *        key. May be NULL
- * @param [in] authValue The authorization value for the new key. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path where the new key is stored
+ * @param[in] type The type of the new key. May be NULL
+ * @param[in] policyPath The path to the policy that is associated with the new
+ *       key. May be NULL
+ * @param[in] authValue The authorization value for the new key. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -112,12 +112,12 @@ Fapi_CreateKey(
  *
  * Call Fapi_CreateKey_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path where the new key is stored
- * @param [in] type The type of the new key. May be NULL
- * @param [in] policyPath The path to the policy that is associated with the new
- *        key. May be NULL
- * @param [in] authValue The authorization value for the new key. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path where the new key is stored
+ * @param[in] type The type of the new key. May be NULL
+ * @param[in] policyPath The path to the policy that is associated with the new
+ *            key. May be NULL
+ * @param[in] authValue The authorization value for the new key. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -180,7 +180,7 @@ Fapi_CreateKey_Async(
  *
  * This function should be called after a previous Fapi_CreateKey_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

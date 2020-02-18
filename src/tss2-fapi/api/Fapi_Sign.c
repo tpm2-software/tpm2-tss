@@ -29,18 +29,18 @@
  * Uses a key, identified by its path, to sign a digest and puts the result in a
  * TPM2B bytestream.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] keyPath The path of the signature key
- * @param [in] padding A padding algorithm. Must be either "RSA_SSA" or
- *             "RSA_PSS" or NULL
- * @param [in] digest The digest to sign. Must be already hashed
- * @param [in] digestSize The size of the digest in bytes
- * @param [out] signature The signature
- * @param [out] signatureSize The size of signature in bytes. May be NULL
- * @param [out] publicKey The public key that can be used to verify signature
- *             in PEM format. May be NULL
- * @param [out] certificate The certificate associated with the signing key in PEM
- *             format. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] keyPath The path of the signature key
+ * @param[in] padding A padding algorithm. Must be either "RSA_SSA" or
+ *            "RSA_PSS" or NULL
+ * @param[in] digest The digest to sign. Must be already hashed
+ * @param[in] digestSize The size of the digest in bytes
+ * @param[out] signature The signature
+ * @param[out] signatureSize The size of signature in bytes. May be NULL
+ * @param[out] publicKey The public key that can be used to verify signature
+ *            in PEM format. May be NULL
+ * @param[out] certificate The certificate associated with the signing key in PEM
+ *            format. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, keyPath, digest or signature
@@ -124,12 +124,12 @@ Fapi_Sign(
  *
  * Call Fapi_Sign_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] keyPath The path of the signature key
- * @param [in] padding A padding algorithm. Must be either "RSA_SSA" or
- *             "RSA_PSS" or NULL
- * @param [in] digest The digest to sign. Must be already hashed
- * @param [in] digestSize The size of the digest in bytes
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] keyPath The path of the signature key
+ * @param[in] padding A padding algorithm. Must be either "RSA_SSA" or
+ *            "RSA_PSS" or NULL
+ * @param[in] digest The digest to sign. Must be already hashed
+ * @param[in] digestSize The size of the digest in bytes
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, keyPath or digest
@@ -207,13 +207,13 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_Sign_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] signature The signature
- * @param [out] signatureSize The size of signature in bytes. May be NULL
- * @param [out] publicKey The public key that can be used to verify signature
- *             in PEM format. May be NULL
- * @param [out] certificate The certificate associated with the signing key in PEM
- *             format. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] signature The signature
+ * @param[out] signatureSize The size of signature in bytes. May be NULL
+ * @param[out] publicKey The public key that can be used to verify signature
+ *            in PEM format. May be NULL
+ * @param[out] certificate The certificate associated with the signing key in PEM
+ *            format. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or signature is NULL.

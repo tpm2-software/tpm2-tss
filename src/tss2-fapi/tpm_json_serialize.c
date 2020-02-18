@@ -28,7 +28,8 @@
 
 /** Serialize a TPMS_EMPTY.
  *
- * @param[in] in Structure to be serialized.
+ * @param[in] in not used.
+ * @param[in] jso not used.
  * @retval TSS2_RC_SUCCESS is always returnde.
  */
 TSS2_RC
@@ -919,7 +920,6 @@ ifapi_json_TPMA_LOCALITY_serialize(const TPMA_LOCALITY in, json_object **jso)
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPMA_CC.
  */
-
 TSS2_RC
 ifapi_json_TPMA_CC_serialize(const TPMA_CC in, json_object **jso)
 {
@@ -1105,6 +1105,7 @@ ifapi_json_TPMI_ALG_SIG_SCHEME_serialize(const TPMI_ALG_SIG_SCHEME in,
  *
  * This function expects the Bitfield to be encoded as unsigned int in host-endianess.
  * @param[in] in the value to be serialized.
+ * @param[in] selector the type of the HA object.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
@@ -1744,6 +1745,7 @@ ifapi_json_TPML_ECC_CURVE_serialize(const TPML_ECC_CURVE *in, json_object **jso)
  *
  * This function expects the Bitfield to be encoded as unsigned int in host-endianess.
  * @param[in] in the value to be serialized.
+ * @param[in] selector the type of the capabilities.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
@@ -2121,6 +2123,7 @@ ifapi_json_TPMI_ST_ATTEST_serialize(const TPMI_ST_ATTEST in, json_object **jso)
  *
  * This function expects the Bitfield to be encoded as unsigned int in host-endianess.
  * @param[in] in the value to be serialized.
+ * @param[in] selector the type of the attest.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
@@ -2226,6 +2229,7 @@ ifapi_json_TPMI_AES_KEY_BITS_serialize(const TPMI_AES_KEY_BITS in, json_object *
  *
  * This function expects the Bitfield to be encoded as unsigned int in host-endianess.
  * @param[in] in the value to be serialized.
+ * @param[in] selector the type of the symmetric algorithm.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
@@ -2250,6 +2254,7 @@ ifapi_json_TPMU_SYM_KEY_BITS_serialize(const TPMU_SYM_KEY_BITS *in, UINT32 selec
  *
  * This function expects the Bitfield to be encoded as unsigned int in host-endianess.
  * @param[in] in the value to be serialized.
+ * @param[in] selector the type of the symmetric mode.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
@@ -2447,6 +2452,7 @@ ifapi_json_TPMS_SCHEME_XOR_serialize(const TPMS_SCHEME_XOR *in, json_object **js
  *
  * This function expects the Bitfield to be encoded as unsigned int in host-endianess.
  * @param[in] in the value to be serialized.
+ * @param[in] selector the type of the keyedhash scheme.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
@@ -2587,6 +2593,7 @@ ifapi_json_TPMS_SIG_SCHEME_ECDAA_serialize(const TPMS_SIG_SCHEME_ECDAA *in, json
  *
  * This function expects the Bitfield to be encoded as unsigned int in host-endianess.
  * @param[in] in the value to be serialized.
+ * @param[in] selector the type of the signature scheme.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
@@ -2737,6 +2744,7 @@ ifapi_json_TPMS_SCHEME_KDF1_SP800_108_serialize(const TPMS_SCHEME_KDF1_SP800_108
  *
  * This function expects the Bitfield to be encoded as unsigned int in host-endianess.
  * @param[in] in the value to be serialized.
+ * @param[in] selector the type of the KDF scheme.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
@@ -2809,6 +2817,7 @@ ifapi_json_TPMI_ALG_ASYM_SCHEME_serialize(const TPMI_ALG_ASYM_SCHEME in, json_ob
  *
  * This function expects the Bitfield to be encoded as unsigned int in host-endianess.
  * @param[in] in the value to be serialized.
+ * @param[in] selector the type of the scheme.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
@@ -3237,6 +3246,7 @@ ifapi_json_TPMS_SIGNATURE_ECSCHNORR_serialize(const TPMS_SIGNATURE_ECSCHNORR *in
  *
  * This function expects the Bitfield to be encoded as unsigned int in host-endianess.
  * @param[in] in the value to be serialized.
+ * @param[in] selector the type of the signature.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
@@ -3345,6 +3355,7 @@ ifapi_json_TPMI_ALG_PUBLIC_serialize(const TPMI_ALG_PUBLIC in, json_object **jso
  *
  * This function expects the Bitfield to be encoded as unsigned int in host-endianess.
  * @param[in] in the value to be serialized.
+ * @param[in] selector the type of the public ID.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
@@ -3508,6 +3519,7 @@ ifapi_json_TPMS_ECC_PARMS_serialize(const TPMS_ECC_PARMS *in, json_object **jso)
  *
  * This function expects the Bitfield to be encoded as unsigned int in host-endianess.
  * @param[in] in the value to be serialized.
+ * @param[in] selector the type of the public parameters.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
@@ -3683,8 +3695,8 @@ ifapi_json_TPM2_NT_serialize(const TPM2_NT in, json_object **jso)
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPMA_NV.
  */
-
-TSS2_RC ifapi_json_TPMA_NV_serialize(const TPMA_NV in, json_object **jso)
+TSS2_RC
+ifapi_json_TPMA_NV_serialize(const TPMA_NV in, json_object **jso)
 {
     struct { TPMA_NV in; char *name; } tab[] = {
         { TPMA_NV_PPWRITE, "PPWRITE" },

@@ -1229,6 +1229,7 @@ ifapi_json_TPMS_POLICYOR_deserialize(json_object *jso,  TPMS_POLICYOR *out)
 /** Deserialize a TPMU_POLICYELEMENT json object.
  *
  * This functions expects the Bitfield to be encoded as unsigned int in host-endianess.
+ * @param[in]  selector The type the policy element.
  * @param[in]  jso the json object to be deserialized.
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.

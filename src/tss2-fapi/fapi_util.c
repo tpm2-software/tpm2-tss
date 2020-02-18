@@ -78,6 +78,7 @@ ifapi_flush_object(FAPI_CONTEXT *context, ESYS_TR handle)
  *            secret.
  * @param[in] profile The FAPI profile will be used to adjust the sessions symmetric
  *            parameters.
+ * @param[in] hashAlg The hash algorithm used for the session.
  *
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
@@ -264,7 +265,7 @@ ifapi_get_free_handle_finish(FAPI_CONTEXT *fctx, TPM2_HANDLE *handle,
  * If the absolute path in key store is not defined the list will
  * be extended if possible.
  *
- * @parm[out] keystore The used keystore.
+ * @param[out] keystore The used keystore.
  * @param[in] ipath The implicit pathname, which might be extended.
  * @param[out] The linked list of directories in the explicit pathname.
  *
@@ -909,6 +910,7 @@ error_cleanup:
  *
  * @param[in] context The FAPI_CONTEXT storing the used handles.
  * @param[in] profile The FAPI profile will be used to adjust session parameters.
+ * @param[in] hash_alg The hash algorithm used for the session.
  *
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error was encountered.

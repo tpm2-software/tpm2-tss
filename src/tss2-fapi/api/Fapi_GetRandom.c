@@ -24,9 +24,9 @@
  * Creates an array with a specified number of bytes. May execute the underlying
  * TPM command multiple times if the requested number of bytes is too big.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] numBytes The number of bytes requested from the TPM
- * @param [out] data The array of random bytes returned from the TPM
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] numBytes The number of bytes requested from the TPM
+ * @param[out] data The array of random bytes returned from the TPM
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or data is NULL.
@@ -97,8 +97,8 @@ Fapi_GetRandom(
  *
  * Call Fapi_GetRandom_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] numBytes The number of bytes requested from the TPM
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] numBytes The number of bytes requested from the TPM
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.
@@ -150,8 +150,8 @@ Fapi_GetRandom_Async(
  *
  * This function should be called after a previous Fapi_GetRandom_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] data The array of random bytes returned from the TPM
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] data The array of random bytes returned from the TPM
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or data is NULL.

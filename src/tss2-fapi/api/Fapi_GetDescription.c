@@ -26,9 +26,9 @@
  *
  * Returns the description of a previously stored object.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path of the object for which the description is loaded
- * @param [out] description The description of the object
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path of the object for which the description is loaded
+ * @param[out] description The description of the object
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, path or description is NULL.
@@ -81,8 +81,8 @@ Fapi_GetDescription(
  *
  * Call Fapi_GetDescription_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path of the object for which the description is loaded
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path of the object for which the description is loaded
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -123,8 +123,8 @@ Fapi_GetDescription_Async(
  *
  * This function should be called after a previous Fapi_GetDescription_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] description The description of the object
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] description The description of the object
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or description is NULL.

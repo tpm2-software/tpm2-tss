@@ -27,15 +27,15 @@
  *
  * Verifies that the data returned by a quote is valid.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] publicKeyPath The path to the signing key
- * @param [in] qualifyingData The qualifying data nonce. May be NULL
- * @param [in] qualifyingDataSize The size of qualifyingData in bytes. Must be 0
- *             if qualifyingData is NULL
- * @param [in] quoteInfo The quote information
- * @param [in] signature The quote's signature
- * @param [in] signatureSize The size of signature in bytes
- * @param [in] pcrLog The PCR's log. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] publicKeyPath The path to the signing key
+ * @param[in] qualifyingData The qualifying data nonce. May be NULL
+ * @param[in] qualifyingDataSize The size of qualifyingData in bytes. Must be 0
+ *            if qualifyingData is NULL
+ * @param[in] quoteInfo The quote information
+ * @param[in] signature The quote's signature
+ * @param[in] signatureSize The size of signature in bytes
+ * @param[in] pcrLog The PCR's log. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, publicKeyPath, quoteInfo,
@@ -101,15 +101,15 @@ Fapi_VerifyQuote(
  * Verifies that the data returned by a quote is valid.
  * Call Fapi_VerifyQuote_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] publicKeyPath The path to the signing key
- * @param [in] qualifyingData The qualifying data nonce. May be NULL
- * @param [in] qualifyingDataSize The size of qualifyingData in bytes. Must be 0
- *             if qualifyingData is NULL
- * @param [in] quoteInfo The quote information
- * @param [in] signature The quote's signature
- * @param [in] signatureSize The size of signature in bytes
- * @param [in] pcrLog The PCR's log. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] publicKeyPath The path to the signing key
+ * @param[in] qualifyingData The qualifying data nonce. May be NULL
+ * @param[in] qualifyingDataSize The size of qualifyingData in bytes. Must be 0
+ *            if qualifyingData is NULL
+ * @param[in] quoteInfo The quote information
+ * @param[in] signature The quote's signature
+ * @param[in] signatureSize The size of signature in bytes
+ * @param[in] pcrLog The PCR's log. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, publicKeyPath, quoteInfo,
@@ -213,7 +213,7 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_VerifyQuote_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

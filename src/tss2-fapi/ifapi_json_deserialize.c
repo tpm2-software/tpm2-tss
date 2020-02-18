@@ -30,7 +30,6 @@ static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "PO
  * @retval the position of the sub string after the prefix.
  * @retval 0 if no prefix is found.
  */
-
 static int
 get_token_start_idx(const char *token)
 {
@@ -77,8 +76,9 @@ get_number(const char *token, int64_t *num)
 
 /** Deserialize a character string.
  *
- * @param[in]in json string object.
+ * @param[in] jso json string object.
  * @param[out] out the pointer to the created string.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
  */
 TSS2_RC
 ifapi_json_char_deserialize(
@@ -476,7 +476,6 @@ error_cleanup:
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
  */
-
 TSS2_RC
 ifapi_json_IFAPI_OBJECT_TYPE_CONSTANT_deserialize(json_object *jso,
         IFAPI_OBJECT_TYPE_CONSTANT *out)
@@ -715,7 +714,8 @@ ifapi_json_IFAPI_IMA_EVENT_deserialize(json_object *jso,  IFAPI_IMA_EVENT *out)
 /** Deserialize a IFAPI_EVENT_UNION json object.
  *
  * This functions expects the Bitfield to be encoded as unsigned int in host-endianess.
- * @param[in]  jso the json object to be deserialized.
+ * @param[in] jso the json object to be deserialized.
+ * @param[in] selector the event type.
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.

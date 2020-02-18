@@ -32,8 +32,8 @@
  * Initializes a FAPI_CONTEXT that holds all the state and metadata information
  * during an interaction with the TPM.
  *
- * @param context [out] The FAPI_CONTEXT
- * @param uri [in] Unused in this version of the FAPI. Must be NULL
+ * @param[out] context The FAPI_CONTEXT
+ * @param[in] uri Unused in this version of the FAPI. Must be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.
@@ -84,8 +84,8 @@ Fapi_Initialize(
  *
  * Call Fapi_Initialize to finish the execution of this command.
  *
- * @param context [out] The FAPI_CONTEXT
- * @param uri [in] Unused in this version of the FAPI. Must be NULL
+ * @param[out] context The FAPI_CONTEXT
+ * @param[in] uri Unused in this version of the FAPI. Must be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.
@@ -137,7 +137,7 @@ cleanup_return:
  *
  * This function should be called after a previous Fapi_Initialize_Async.
  *
- * @param [out] context The FAPI_CONTEXT
+ * @param[out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

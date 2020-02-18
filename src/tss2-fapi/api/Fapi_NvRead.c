@@ -27,12 +27,12 @@
  * The FAPI will automatically do the multiple reads if the NV index is larger
  * than the TPM's TPM2_MAX_NV_BUFFER_SIZE.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] nvPath The path of the NV index to read
- * @param [out] data The data that was read from the NV index
- * @param [out] size The size of data in bytes. May be NULL
- * @param [out] logData The log data of the NV index if the index is of type
- * 							"extend". May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] nvPath The path of the NV index to read
+ * @param[out] data The data that was read from the NV index
+ * @param[out] size The size of data in bytes. May be NULL
+ * @param[out] logData The log data of the NV index if the index is of type
+ *             "extend". May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, nvPath or data is NULL.
@@ -110,8 +110,8 @@ Fapi_NvRead(
  *
  * Call Fapi_NvRead_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] nvPath The path of the NV index to read
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] nvPath The path of the NV index to read
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or nvPath is NULL. *
@@ -171,11 +171,11 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_NvRead_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] data The data that was read from the NV index
- * @param [out] size The size of data in bytes. May be NULL
- * @param [out] logData The log data of the NV index if the index is of type
- * 							"extend". May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] data The data that was read from the NV index
+ * @param[out] size The size of data in bytes. May be NULL
+ * @param[out] logData The log data of the NV index if the index is of type
+ *			   "extend". May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or data is NULL.

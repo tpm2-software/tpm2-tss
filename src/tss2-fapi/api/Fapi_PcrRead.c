@@ -23,11 +23,11 @@
  *
  * Reads from a given PCR and returns the value and the event log.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] pcrIndex The index of the PCR to read
- * @param [out] pcrValue The value of the PCR. May be NULL
- * @param [out] pcrValueSize The size of value in bytes. May be NULL
- * @param [out] pcrLog The PCR log. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] pcrIndex The index of the PCR to read
+ * @param[out] pcrValue The value of the PCR. May be NULL
+ * @param[out] pcrValueSize The size of value in bytes. May be NULL
+ * @param[out] pcrLog The PCR log. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, pcrValue or pcrValueSize
@@ -99,8 +99,8 @@ Fapi_PcrRead(
  *
  * Call Fapi_PcrRead_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] pcrIndex The index of the PCR to read
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] pcrIndex The index of the PCR to read
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.
@@ -160,10 +160,10 @@ Fapi_PcrRead_Async(
  *
  * This function should be called after a previous Fapi_PcrRead_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] pcrValue The value of the PCR. May be NULL
- * @param [out] pcrValueSize The size of value in bytes. May be NULL
- * @param [out] pcrLog The PCR log. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] pcrValue The value of the PCR. May be NULL
+ * @param[out] pcrValueSize The size of value in bytes. May be NULL
+ * @param[out] pcrLog The PCR log. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, pcrValue or pcrValueSize

@@ -26,10 +26,10 @@
  *
  * Associates a human readable description with an object in the metadata store.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path of the object in the metadata store
- * @param [in] description The description that is associated with the object.
- *             May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path of the object in the metadata store
+ * @param[in] description The description that is associated with the object.
+ *            May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -81,10 +81,10 @@ Fapi_SetDescription(
  *
  * Call Fapi_SetDescription_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] path The path of the object in the metadata store
- * @param [in] description The description that is associated with the object.
- *             May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] path The path of the object in the metadata store
+ * @param[in] description The description that is associated with the object.
+ *            May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
@@ -151,7 +151,7 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_SetDescription_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

@@ -26,10 +26,10 @@
  *
  * Writes data to a "regular" (not pin, extend or counter) NV index.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] nvPath The path of the NV index to write
- * @param [in] data The data to write to the NV index
- * @param [in] size The size of data in bytes
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] nvPath The path of the NV index to write
+ * @param[in] data The data to write to the NV index
+ * @param[in] size The size of data in bytes
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, nvPath, or data is NULL.
@@ -106,10 +106,10 @@ Fapi_NvWrite(
  *
  * Call Fapi_NvWrite_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] nvPath The path of the NV index to write
- * @param [in] data The data to write to the NV index
- * @param [in] size The size of data in bytes
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] nvPath The path of the NV index to write
+ * @param[in] data The data to write to the NV index
+ * @param[in] size The size of data in bytes
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, nvPath, or data is NULL.
@@ -190,7 +190,7 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_NvWrite.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

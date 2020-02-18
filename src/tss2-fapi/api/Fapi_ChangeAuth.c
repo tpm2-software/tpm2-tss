@@ -30,10 +30,10 @@
  * If it is longer than the digest size of the entity's nameAlg, it will be
  * hashed according the the TPM specification part 1, rev 138, section 19.6.4.3.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] entityPath The path to the entity to modify
- * @param [in] authValue The new 0-terminated password to set for the entity.
- *             May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] entityPath The path to the entity to modify
+ * @param[in] authValue The new 0-terminated password to set for the entity.
+ *            May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or entityPath is NULL.
@@ -106,10 +106,10 @@ Fapi_ChangeAuth(
  *
  * Call Fapi_ChangeAuth_Finish to finish the execution of this command.
 
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] entityPath The path to the entity to modify
- * @param [in] authValue The new 0-terminated password to set for the entity.
- *         May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] entityPath The path to the entity to modify
+ * @param[in] authValue The new 0-terminated password to set for the entity.
+ *        May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or entityPath is NULL.
@@ -197,7 +197,7 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_ChangeAuth_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

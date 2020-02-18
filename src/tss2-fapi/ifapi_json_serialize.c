@@ -20,6 +20,14 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
+
+/** Serialize a character string to json.
+ *
+ * @param[in] in value to be serialized.
+ * @param[out] jso pointer to the json object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
+ */
 TSS2_RC
 ifapi_json_char_serialize(
     const char *in,
@@ -414,7 +422,6 @@ ifapi_json_IFAPI_DUPLICATE_serialize(const IFAPI_DUPLICATE *in,
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPM2_HANDLE.
  */
-
 TSS2_RC
 ifapi_json_IFAPI_OBJECT_TYPE_CONSTANT_serialize(const IFAPI_OBJECT_TYPE_CONSTANT
         in, json_object **jso)
@@ -614,7 +621,7 @@ static IFAPI_EVENT_TYPE_ASSIGN serialize_IFAPI_EVENT_TYPE_tab[] = {
 /** Get json object for a constant, if a variable is actually of type IFAPI_EVENT_TYPE.
  *
  * @param[in] in binary value of constant.
- * @param[out] jso object with text representing the constant.
+ * @param[out] str_jso object with text representing the constant.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type IFAPI_EVENT_TYPE.
@@ -712,6 +719,7 @@ ifapi_json_IFAPI_IMA_EVENT_serialize(const IFAPI_IMA_EVENT *in,
  *
  * This function expects the Bitfield to be encoded as unsigned int in host-endianess.
  * @param[in] in the value to be serialized.
+ * @param[in] selector the type of the event.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.

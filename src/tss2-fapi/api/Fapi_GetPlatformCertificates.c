@@ -29,10 +29,10 @@
  * This function returns the set of Platform certificates concatenated in
  * a continuous buffer.
  *
- * @param [in,out] context The FAPI_CONTEXT
- * @param [out] certificates The platform certificates
- * @param [out] certificatesSize The size of the buffer with the certificates.
- *              May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] certificates The platform certificates
+ * @param[out] certificatesSize The size of the buffer with the certificates.
+ *             May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or certificates is NULL.
@@ -106,7 +106,7 @@ Fapi_GetPlatformCertificates(
  * Call Fapi_GetPlatformCertificates_Finish to finish the execution of this
  * command.
  *
- * @param [in,out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.
@@ -144,10 +144,10 @@ Fapi_GetPlatformCertificates_Async(
  * This function should be called after a previous
  * Fapi_GetPlatformCertificates_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] certificates The platform certificates
- * @param [out] certificatesSize The size of the buffer with the certificates.
- *              May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] certificates The platform certificates
+ * @param[out] certificatesSize The size of the buffer with the certificates.
+ *             May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or certificates is NULL.

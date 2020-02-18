@@ -26,9 +26,9 @@
  * Sets bits in an NV index that was created as a bit field. Any number of bits
  * from 0 to 64 may be SET.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] nvPath The path to the NV index where bits are set
- * @param [in] bitmap The map of the bits to set
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] nvPath The path to the NV index where bits are set
+ * @param[in] bitmap The map of the bits to set
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or nvPath is NULL.
@@ -103,9 +103,9 @@ Fapi_NvSetBits(
  *
  * Call Fapi_NvSetBits_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] nvPath The path to the NV index where bits are set
- * @param [in] bitmap The map of the bits to set
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] nvPath The path to the NV index where bits are set
+ * @param[in] bitmap The map of the bits to set
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or nvPath is NULL.
@@ -170,7 +170,7 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_NvSetBIts_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

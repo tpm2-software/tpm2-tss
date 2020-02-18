@@ -27,8 +27,8 @@
 
 /** Deserializes a configuration JSON object.
  *
- * @param [in]  jso The JSON object to be deserialized
- * @param [out] out The deserialized configuration object
+ * @param[in]  jso The JSON object to be deserialized
+ * @param[out] out The deserialized configuration object
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if jso or out is NULL
@@ -130,7 +130,7 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
 /**
  * Starts the initialization of the FAPI configuration.
  *
- * @param [in] io An IO object for file system access
+ * @param[in] io An IO object for file system access
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if io is NULL
@@ -156,8 +156,8 @@ ifapi_config_initialize_async(IFAPI_IO *io)
 
 /**
  * Finishes the initialization of the FAPI configuration.
- * @param [in]  io An IO object for file system access
- * @param [out] config The configuration that is initialized
+ * @param[in]  io An IO object for file system access
+ * @param[out] config The configuration that is initialized
  *
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if config or io is NULL

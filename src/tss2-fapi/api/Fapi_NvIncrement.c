@@ -25,8 +25,8 @@
  *
  * Increments an NV index that is a counter by 1.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] nvPath The path to the NV index that is incremented.
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] nvPath The path to the NV index that is incremented.
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or nvPath is NULL.
@@ -99,8 +99,8 @@ Fapi_NvIncrement(
  *
  * Call Fapi_NvIncrement_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] nvPath The path to the NV index that is incremented.
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] nvPath The path to the NV index that is incremented.
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or nvPath is NULL.
@@ -162,7 +162,7 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_NvIncrement_Async.
  *
- * @param [in, out] context The FAPI_CONTEXT
+ * @param[in,out] context The FAPI_CONTEXT
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context is NULL.

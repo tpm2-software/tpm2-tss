@@ -30,13 +30,13 @@
  *
  * Decrypts data that was previously encrypted with Fapi_Encrypt.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] keyPath The decryption key.
- * @param [in] cipherText The ciphertext to decrypt.
- * @param [in] cipherTextSize The size of the ciphertext to decrypt.
- * @param [out] plainText the decrypted ciphertext. May be NULL
- *              (callee-allocated)
- * @param [out] plainTextSize The size of the ciphertext in bytes. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] keyPath The decryption key.
+ * @param[in] cipherText The ciphertext to decrypt.
+ * @param[in] cipherTextSize The size of the ciphertext to decrypt.
+ * @param[out] plainText the decrypted ciphertext. May be NULL
+ *             (callee-allocated)
+ * @param[out] plainTextSize The size of the ciphertext in bytes. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or cipherText is NULL.
@@ -114,10 +114,10 @@ Fapi_Decrypt(
  *
  * Call Fapi_Decrypt_Finish to finish the execution of this command.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [in] keyPath The decryption key.
- * @param [in] cipherText The ciphertext to decrypt
- * @param [in] cipherTextSize The size of the ciphertext to decrypt
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[in] keyPath The decryption key.
+ * @param[in] cipherText The ciphertext to decrypt
+ * @param[in] cipherTextSize The size of the ciphertext to decrypt
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or cipherText is NULL.
@@ -185,10 +185,10 @@ error_cleanup:
  *
  * This function should be called after a previous Fapi_Decrypt.
  *
- * @param [in, out] context The FAPI_CONTEXT
- * @param [out] plainText the decrypted ciphertext. May be NULL
- *              (callee-allocated)
- * @param [out] plainTextSize The size of the ciphertext in bytes. May be NULL
+ * @param[in,out] context The FAPI_CONTEXT
+ * @param[out] plainText the decrypted ciphertext. May be NULL
+ *             (callee-allocated)
+ * @param[out] plainTextSize The size of the ciphertext in bytes. May be NULL
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, plainText or plainTextSize
