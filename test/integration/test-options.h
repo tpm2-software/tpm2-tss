@@ -19,12 +19,14 @@
 /* Defaults for Socket TCTI connections */
 #define HOSTNAME_DEFAULT "127.0.0.1"
 #define PORT_DEFAULT     2321
+#define PPORT_DEFAULT     2322
 
 /* environment variables holding TCTI config */
 #define ENV_TCTI_NAME      "TPM20TEST_TCTI_NAME"
 #define ENV_DEVICE_FILE    "TPM20TEST_DEVICE_FILE"
 #define ENV_SOCKET_ADDRESS "TPM20TEST_SOCKET_ADDRESS"
 #define ENV_SOCKET_PORT    "TPM20TEST_SOCKET_PORT"
+#define ENV_SOCKET_PPORT   "TPM20TEST_SOCKET_PPORT"
 
 typedef enum {
     UNKNOWN_TCTI,
@@ -39,6 +41,7 @@ typedef struct {
     const char *device_file;
     const char *socket_address;
     uint16_t socket_port;
+    uint16_t socket_pport;
 } test_opts_t;
 
 /* functions to get test options from the user and to print helpful stuff */

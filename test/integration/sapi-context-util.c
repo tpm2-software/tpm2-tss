@@ -66,14 +66,14 @@ tcti_device_init(char const *device_path)
  * function. This structure must be freed by the caller.
  */
 TSS2_TCTI_CONTEXT *
-tcti_socket_init(char const *host, uint16_t port)
+tcti_socket_init(char const *host, uint16_t port, uint16_t pport)
 {
     size_t size;
     TSS2_RC rc;
     TSS2_TCTI_CONTEXT *tcti_ctx;
     char conf_str[TCTI_MSSIM_CONF_MAX] = { 0 };
 
-    snprintf(conf_str, TCTI_MSSIM_CONF_MAX, "host=%s,port=%" PRIu16, host, port);
+    snprintf(conf_str, TCTI_MSSIM_CONF_MAX, "host=%s,port=%,pport=%" PRIu16, host, port, pport);
     rc = Tss2_Tcti_Mssim_Init(NULL, &size, conf_str);
     if (rc != TSS2_RC_SUCCESS) {
         fprintf(stderr, "Faled to get allocation size for tcti context: "
@@ -200,7 +200,9 @@ tcti_init_from_opts(test_opts_t * options)
 #endif /* TCTI_DEVICE */
 #ifdef TCTI_MSSIM
     case SOCKET_TCTI:
-        return tcti_socket_init(options->socket_address, options->socket_port);
+        return tcti_socket_init(options->socket_address,
+                                options->socket_port,
+                                options->socket_pport);
 #endif /* TCTI_MSSIM */
 #ifdef TCTI_FUZZING
     case FUZZING_TCTI:

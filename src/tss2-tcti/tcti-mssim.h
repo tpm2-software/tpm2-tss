@@ -14,14 +14,16 @@
 
 /*
  * longest possible conf string:
- * HOST_NAME_MAX + max char uint16 (5) + strlen ("host=,port=") (11)
+ * HOST_NAME_MAX + max char uint16 (5) * 2 + strlen ("host=,port=,pport=") (18)
  */
-#define TCTI_MSSIM_CONF_MAX (_HOST_NAME_MAX + 16)
+#define TCTI_MSSIM_CONF_MAX (_HOST_NAME_MAX + 28)
 #define TCTI_MSSIM_DEFAULT_HOST "localhost"
 #define TCTI_MSSIM_DEFAULT_PORT 2321
+#define TCTI_MSSIM_DEFAULT_PPORT 2322
 #define MSSIM_CONF_DEFAULT_INIT { \
     .host = TCTI_MSSIM_DEFAULT_HOST, \
     .port = TCTI_MSSIM_DEFAULT_PORT, \
+    .pport = TCTI_MSSIM_DEFAULT_PPORT, \
 }
 
 #define TCTI_MSSIM_MAGIC 0xf05b04cd9f02728dULL
@@ -29,6 +31,7 @@
 typedef struct {
     char *host;
     uint16_t port;
+    uint16_t pport;
 } mssim_conf_t;
 
 typedef struct {

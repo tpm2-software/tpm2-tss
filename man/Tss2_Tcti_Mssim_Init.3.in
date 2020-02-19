@@ -67,10 +67,12 @@ The host may be an IPv4 address, an IPv6 address, or a host name. The port
 must be a valid uint16_t in string form. If a NULL
 .I conf
 string is provided by the caller then the default of
-"host=localhost,port=2321" is used. If either
+"host=localhost,port=2321,pport=2322" is used. If either
 .B host
 or
 .B port
+or
+.B pport
 are omitted then their respective default value will be used.
 .sp
 Once initialized, the TCTI context returned exposes the Trusted Computing
@@ -114,7 +116,7 @@ TCTI initialization fragment:
 TSS2_RC rc;
 TSS2_TCTI_CONTEXT *tcti_context;
 size_t size;
-const char *conf = "host=localhost,port=2321"
+const char *conf = "host=localhost,port=2321,pport=2322"
 
 rc = Tss2_Tcti_Mssim_Init (NULL, &size, NULL);
 if (rc != TSS2_RC_SUCCESS) {

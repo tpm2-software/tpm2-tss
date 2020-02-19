@@ -42,12 +42,13 @@ static void
 conf_str_to_host_port_success_test (void **state)
 {
     TSS2_RC rc;
-    char conf[] = "host=127.0.0.1,port=2321";
+    char conf[] = "host=127.0.0.1,port=2321,pport=2322";
     mssim_conf_t mssim_conf = { 0 };
 
     rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (mssim_conf.port, 2321);
+    assert_int_equal (mssim_conf.pport, 2322);
     assert_string_equal (mssim_conf.host, "127.0.0.1");
 }
 
@@ -58,6 +59,7 @@ conf_str_to_host_port_success_test (void **state)
  * unchanged.
  */
 #define NO_PORT_VALUE 646
+#define NO_PPORT_VALUE 647
 static void
 conf_str_to_host_port_no_port_test (void **state)
 {
@@ -66,12 +68,14 @@ conf_str_to_host_port_no_port_test (void **state)
     mssim_conf_t mssim_conf = {
         .host = "foo",
         .port = NO_PORT_VALUE,
+        .pport = NO_PPORT_VALUE,
     };
 
     rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_string_equal (mssim_conf.host, "127.0.0.1");
     assert_int_equal (mssim_conf.port, NO_PORT_VALUE);
+    assert_int_equal (mssim_conf.pport, NO_PPORT_VALUE);
 }
 
 /*
@@ -84,12 +88,13 @@ static void
 conf_str_to_host_ipv6_port_success_test (void **state)
 {
     TSS2_RC rc;
-    char conf[] = "host=::1,port=2321";
+    char conf[] = "host=::1,port=2321,pport=2322";
     mssim_conf_t mssim_conf = { 0 };
 
     rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (mssim_conf.port, 2321);
+    assert_int_equal (mssim_conf.pport, 2322);
     assert_string_equal (mssim_conf.host, "::1");
 }
 
@@ -104,11 +109,15 @@ conf_str_to_host_ipv6_port_no_port_test (void **state)
 {
     TSS2_RC rc;
     char conf[] = "host=::1";
-    mssim_conf_t mssim_conf = { .port = NO_PORT_VALUE };
+    mssim_conf_t mssim_conf = {
+        .port = NO_PORT_VALUE,
+        .pport = NO_PPORT_VALUE,
+    };
 
     rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (mssim_conf.port, NO_PORT_VALUE);
+    assert_int_equal (mssim_conf.pport, NO_PPORT_VALUE);
     assert_string_equal (mssim_conf.host, "::1");
 }
 
@@ -125,12 +134,32 @@ conf_str_to_host_port_invalid_port_large_test (void **state)
     rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
 }
+static void
+conf_str_to_host_port_invalid_pport_large_test (void **state)
+{
+    TSS2_RC rc;
+    char conf[] = "host=127.0.0.1,pport=99999";
+    mssim_conf_t mssim_conf = { 0 };
+
+    rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
+}
 /* The 'conf_str_to_host_port' function rejects URIs with port == 0 */
 static void
 conf_str_to_host_port_invalid_port_0_test (void **state)
 {
     TSS2_RC rc;
     char conf[] = "host=127.0.0.1,port=0";
+    mssim_conf_t mssim_conf = { 0 };
+
+    rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
+}
+static void
+conf_str_to_host_port_invalid_pport_0_test (void **state)
+{
+    TSS2_RC rc;
+    char conf[] = "host=127.0.0.1,pport=0";
     mssim_conf_t mssim_conf = { 0 };
 
     rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
@@ -249,7 +278,7 @@ static int
 tcti_socket_setup (void **state)
 {
     printf ("%s: before tcti_socket_init_from_conf\n", __func__);
-    *state = tcti_socket_init_from_conf ("host=127.0.0.1,port=666");
+    *state = tcti_socket_init_from_conf ("host=127.0.0.1,port=666,pport=667");
     printf ("%s: done\n", __func__);
     return 0;
 }
@@ -492,7 +521,9 @@ main (int   argc,
         cmocka_unit_test (conf_str_to_host_ipv6_port_success_test),
         cmocka_unit_test (conf_str_to_host_ipv6_port_no_port_test),
         cmocka_unit_test (conf_str_to_host_port_invalid_port_large_test),
+        cmocka_unit_test (conf_str_to_host_port_invalid_pport_large_test),
         cmocka_unit_test (conf_str_to_host_port_invalid_port_0_test),
+        cmocka_unit_test (conf_str_to_host_port_invalid_pport_0_test),
         cmocka_unit_test (tcti_socket_init_all_null_test),
         cmocka_unit_test (tcti_socket_init_size_test),
         cmocka_unit_test (tcti_socket_init_null_conf_test),

@@ -484,6 +484,12 @@ mssim_kv_callback (const key_value_t *key_value,
             return TSS2_TCTI_RC_BAD_VALUE;
         }
         return TSS2_RC_SUCCESS;
+    } else if (strcmp (key_value->key, "pport") == 0) {
+        mssim_conf->pport = string_to_port (key_value->value);
+        if (mssim_conf->pport == 0) {
+            return TSS2_TCTI_RC_BAD_VALUE;
+        }
+        return TSS2_RC_SUCCESS;
     } else {
         return TSS2_TCTI_RC_BAD_VALUE;
     }
@@ -559,8 +565,9 @@ Tss2_Tcti_Mssim_Init (
             goto fail_out;
         }
     }
-    LOG_DEBUG ("Initializing mssim TCTI with host: %s, port: %" PRIu16,
-               mssim_conf.host, mssim_conf.port);
+    LOG_DEBUG ("Initializing mssim TCTI with host: %s, port: %" PRIu16
+               " pport: %" PRIu16,
+               mssim_conf.host, mssim_conf.port, mssim_conf.pport);
 
     tcti_mssim->tpm_sock = -1;
     tcti_mssim->platform_sock = -1;
@@ -573,7 +580,7 @@ Tss2_Tcti_Mssim_Init (
     }
 
     rc = socket_connect (mssim_conf.host,
-                         mssim_conf.port + 1,
+                         mssim_conf.pport,
                          &tcti_mssim->platform_sock);
     if (rc != TSS2_RC_SUCCESS) {
         goto fail_out;
@@ -605,7 +612,7 @@ const TSS2_TCTI_INFO tss2_tcti_info = {
     .version = TCTI_VERSION,
     .name = "tcti-socket",
     .description = "TCTI module for communication with the Microsoft TPM2 Simulator.",
-    .config_help = "Key / value string in the form \"host=localhost,port=2321\".",
+    .config_help = "Key / value string in the form \"host=localhost,port=2321,pport=2322\".",
     .init = Tss2_Tcti_Mssim_Init,
 };
 
