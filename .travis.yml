@@ -116,11 +116,11 @@ script:
     fi
   - |
     if [ "$SCANBUILD" == "yes" ]; then
-      scan-build --status-bugs make -j distcheck
+      scan-build --status-bugs make -j distcheck || (cat `find ../ -name test-suite.log` && exit -1;)
     elif [ "$CC" == "clang" ]; then
-      make -j distcheck
+      make -j distcheck || (cat `find ../ -name test-suite.log` && exit -1;)
     else
-      make -j check
+      make -j check || (cat `find ../ -name test-suite.log` && exit -1;)
     fi
 
 after_success:
