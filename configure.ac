@@ -45,7 +45,6 @@ case "${host_os}" in
 esac
 AC_SUBST([LIBSOCKET_LDFLAGS])
 
-AC_CHECK_FUNCS([strndup])
 AC_ARG_ENABLE([unit],
             [AS_HELP_STRING([--enable-unit],
                             [build cmocka unit tests])],,
@@ -65,6 +64,7 @@ AC_ARG_ENABLE([esapi],
 
 AM_CONDITIONAL(ESAPI, test "x$enable_esapi" = "xyes")
 
+AC_CHECK_FUNC([strndup],[],[AC_MSG_ERROR([strndup function not found])])
 AC_ARG_ENABLE([tcti-device-async],
     AS_HELP_STRING([--enable-tcti-device-async],
 	           [Enable asynchronus operation on TCTI device
