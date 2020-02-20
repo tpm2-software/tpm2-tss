@@ -15,8 +15,25 @@
 #include <linux/limits.h>
 #elif defined(_MSC_VER)
 #include <windows.h>
+#include <limits.h>
 #ifndef PATH_MAX
 #define PATH_MAX MAX_PATH
+
+static char *strndup(const char* s, size_t n)
+{
+    char *dst = NULL;
+
+    if (n + 1 >= USHRT_MAX)
+        return NULL;
+
+    dst = calloc(1, n + 1);
+
+    if (dst == NULL)
+        return NULL;
+
+    memcpy(dst, s, n);
+    return dst;
+}
 #endif
 #else
 #include <limits.h>
@@ -268,26 +285,6 @@ Tss2_TctiLdr_Finalize (TSS2_TCTI_CONTEXT **tctiContext)
     free (ldr_ctx);
     *tctiContext = NULL;
 }
-
-#if !defined(HAVE_STRNDUP)
-char*
-strndup (const char* s,
-         size_t n)
-{
-    char* dst = NULL;
-
-    if (n + 1 < n) {
-        return NULL;
-    }
-    dst = calloc(1, n + 1);
-    if (dst == NULL) {
-        return NULL;
-    }
-    memcpy(dst, s, n);
-
-    return dst;
-}
-#endif /* HAVE_STRNDUP */
 
 TSS2_RC
 copy_info (const TSS2_TCTI_INFO *info_src,
