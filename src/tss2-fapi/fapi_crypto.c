@@ -1605,6 +1605,7 @@ get_crl_from_cert(X509 *cert, X509_CRL **crl)
     size_t crl_buffer_size;
     int nid = NID_crl_distribution_points;
     STACK_OF(DIST_POINT) * dist_points = (STACK_OF(DIST_POINT) *)X509_get_ext_d2i(cert, nid, NULL, NULL);
+    int curl_rc;
 
     *crl = NULL;
     for (int i = 0; i < sk_DIST_POINT_num(dist_points); i++)
@@ -1624,8 +1625,10 @@ get_crl_from_cert(X509 *cert, X509_CRL **crl)
         }
     }
 
-    r = ifapi_get_curl_buffer(url, &crl_buffer, &crl_buffer_size);
-    goto_if_error(r, "Get crl.", cleanup);
+    curl_rc = ifapi_get_curl_buffer(url, &crl_buffer, &crl_buffer_size);
+    if (curl_rc != 0) {
+        goto_error(r, TSS2_FAPI_RC_NO_CERT, "Get crl.", cleanup);
+    }
 
     OpenSSL_add_all_algorithms();
 
@@ -1889,6 +1892,7 @@ ifapi_verify_ek_cert(
     unsigned char * url;
     unsigned char *cert_buffer = NULL;
     size_t cert_buffer_size;
+    int curl_rc;
 
     ek_cert = get_X509_from_pem(ek_cert_pem);
     goto_if_null2(ek_cert, "Failed to convert PEM certificate to DER.",
@@ -1910,8 +1914,10 @@ ifapi_verify_ek_cert(
             }
             uri = ad->location->d.uniformResourceIdentifier;
             url = uri->data;
-            r = ifapi_get_curl_buffer(url, &cert_buffer, &cert_buffer_size);
-            goto_if_error(r, "Failed to receive certificate", cleanup);
+            curl_rc = ifapi_get_curl_buffer(url, &cert_buffer, &cert_buffer_size);
+            if (curl_rc != 0) {
+                goto_error(r, TSS2_FAPI_RC_NO_CERT, "Get certificate.", cleanup);
+            }
             goto_if_null2(cert_buffer, "No certificate downloaded", r,
                           TSS2_FAPI_RC_NO_CERT, cleanup);
         }
