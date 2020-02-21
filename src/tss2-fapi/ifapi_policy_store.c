@@ -21,6 +21,7 @@
 #include "ifapi_policy_json_serialize.h"
 
 /** Compute absolute path of policy for IO.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 policy_rel_path_to_abs_path(
@@ -86,6 +87,8 @@ cleanup:
  * @retval TSS2_FAPI_RC_IO_ERROR If the policy store can't be
  *         initialized.
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
  */
 TSS2_RC
 ifapi_policy_store_initialize(
@@ -163,6 +166,11 @@ cleanup:
  * @retval TSS2_RC_SUCCESS After successfully loading the object.
  * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered; such as the file was not found.
  * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet complete.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_policy_store_load_finish(
@@ -210,6 +218,9 @@ cleanup:
  * @retval TSS2_RC_SUCCESS If the policy is written successfully.
  * @retval TSS2_FAPI_RC_IO_ERROR: If an I/O error was encountered;
  * @retval TSS2_FAPI_RC_MEMORY: If memory could not be allocated to hold the output data.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
  */
 TSS2_RC
 ifapi_policy_store_store_async(

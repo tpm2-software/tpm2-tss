@@ -263,6 +263,9 @@ expand_path_to_object(
  * @retval TSS2_FAPI_RC_IO_ERROR If the user part of the keystore can't be
  *         initialized.
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated.
+ * @retval TSS2_FAPI_RC_BAD_PATH if the used path in inappropriate-
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
  */
 TSS2_RC
 ifapi_keystore_initialize(
@@ -341,6 +344,8 @@ error:
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if the file does not exist (for NV and hierarchy objects).
  * @retval TSS2_FAPI_RC_IO_ERROR: If the file could not be read by the IO module.
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
  */
     static TSS2_RC
 rel_path_to_abs_path(
@@ -403,6 +408,9 @@ cleanup:
  * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if the file does not exist.
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
  */
 TSS2_RC
 ifapi_keystore_load_async(
@@ -440,6 +448,11 @@ cleanup:
  * @retval TSS2_RC_SUCCESS After successfully loading the object.
  * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered; such as the file was not found.
  * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet complete.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_keystore_load_finish(
@@ -487,6 +500,10 @@ cleanup:
  * @retval TSS2_RC_SUCCESS if the object is written successfully.
  * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered;
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the output data.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_keystore_store_async(
@@ -685,6 +702,11 @@ ifapi_keystore_list_all(
  * @retval TSS2_RC_SUCCESS On success.
  * @retval TSS2_FAPI_RC_MEMORY: If memory could not be allocated.
  * @retval TSS2_FAPI_RC_IO_ERROR If the file can't be removed.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
  */
 TSS2_RC
 ifapi_keystore_delete(
@@ -742,6 +764,8 @@ expand_directory(IFAPI_KEYSTORE *keystore, const char *path, char **directory_na
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_MEMORY: If memory could not be allocated.
  * @retval TSS2_FAPI_RC_IO_ERROR If directory can't be deleted.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
  */
 TSS2_RC
 ifapi_keystore_remove_directories(IFAPI_KEYSTORE *keystore, const char *dir_name)
@@ -804,6 +828,18 @@ typedef TSS2_RC (*ifapi_keystore_object_cmp) (
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND If the key was not found in keystore.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ *         object store.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 static TSS2_RC
 keystore_search_obj(
@@ -893,6 +929,18 @@ cleanup:
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND If the key was not found in keystore.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ *         object store.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_keystore_search_obj(
@@ -915,6 +963,20 @@ ifapi_keystore_search_obj(
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND If the key was not found in keystore.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ *         object store.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_keystore_search_nv_obj(
@@ -996,6 +1058,10 @@ cleanup:
  * @retval TSS2_RC_SUCCESS if the object does not exist.
  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS if the file in objects exists.
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the output data.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ *         object store.
  */
 TSS2_RC
 ifapi_keystore_check_writeable(
@@ -1077,6 +1143,8 @@ error_cleanup:
  *
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if the source is not of type key.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_copy_ifapi_key(IFAPI_KEY * dest, const IFAPI_KEY * src) {
@@ -1223,6 +1291,8 @@ ifapi_cleanup_ifapi_keystore(IFAPI_KEYSTORE * keystore) {
  *
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if the source is not of type key.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_copy_ifapi_key_object(IFAPI_OBJECT * dest, const IFAPI_OBJECT * src) {

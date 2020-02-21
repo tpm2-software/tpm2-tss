@@ -49,6 +49,7 @@ ifapi_json_char_serialize(
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPM2B_DIGEST.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_UINT8_ARY_serialize(const UINT8_ARY *in, json_object **jso)
@@ -77,6 +78,7 @@ ifapi_json_UINT8_ARY_serialize(const UINT8_ARY *in, json_object **jso)
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type IFAPI_KEY.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_IFAPI_KEY_serialize(const IFAPI_KEY *in, json_object **jso)
@@ -178,6 +180,7 @@ ifapi_json_IFAPI_KEY_serialize(const IFAPI_KEY *in, json_object **jso)
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type IFAPI_EXT_PUB_KEY.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_IFAPI_EXT_PUB_KEY_serialize(const IFAPI_EXT_PUB_KEY *in,
@@ -220,6 +223,7 @@ ifapi_json_IFAPI_EXT_PUB_KEY_serialize(const IFAPI_EXT_PUB_KEY *in,
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type IFAPI_NV.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_IFAPI_NV_serialize(const IFAPI_NV *in, json_object **jso)
@@ -291,6 +295,7 @@ ifapi_json_IFAPI_NV_serialize(const IFAPI_NV *in, json_object **jso)
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type IFAPI_NV.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_IFAPI_HIERARCHY_serialize(const IFAPI_HIERARCHY *in, json_object **jso)
@@ -330,6 +335,7 @@ ifapi_json_IFAPI_HIERARCHY_serialize(const IFAPI_HIERARCHY *in, json_object **js
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type FAPI_QUOTE_INFO.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_FAPI_QUOTE_INFO_serialize(const FAPI_QUOTE_INFO *in,
@@ -363,6 +369,7 @@ ifapi_json_FAPI_QUOTE_INFO_serialize(const FAPI_QUOTE_INFO *in,
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type IFAPI_DUPLICATE.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_IFAPI_DUPLICATE_serialize(const IFAPI_DUPLICATE *in,
@@ -441,6 +448,8 @@ ifapi_json_IFAPI_OBJECT_TYPE_CONSTANT_serialize(const IFAPI_OBJECT_TYPE_CONSTANT
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type IFAPI_OBJECT.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_IFAPI_OBJECT_serialize(const IFAPI_OBJECT *in,
@@ -522,6 +531,7 @@ ifapi_json_IFAPI_OBJECT_serialize(const IFAPI_OBJECT *in,
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type IFAPI_INFO.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_IFAPI_CAP_INFO_serialize(const IFAPI_CAP_INFO *in, json_object **jso)
@@ -555,6 +565,7 @@ ifapi_json_IFAPI_CAP_INFO_serialize(const IFAPI_CAP_INFO *in, json_object **jso)
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type IFAPI_INFO.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_IFAPI_INFO_serialize(const IFAPI_INFO *in, json_object **jso)
@@ -652,6 +663,7 @@ ifapi_json_IFAPI_EVENT_TYPE_serialize_txt(
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type IFAPI_TSS_EVENT.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_IFAPI_TSS_EVENT_serialize(const IFAPI_TSS_EVENT *in,
@@ -690,6 +702,7 @@ ifapi_json_IFAPI_TSS_EVENT_serialize(const IFAPI_TSS_EVENT *in,
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type IFAPI_IMA_EVENT.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_IFAPI_IMA_EVENT_serialize(const IFAPI_IMA_EVENT *in,
@@ -724,6 +737,7 @@ ifapi_json_IFAPI_IMA_EVENT_serialize(const IFAPI_IMA_EVENT *in,
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type IFAPI_EVENT_UNION.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_IFAPI_EVENT_UNION_serialize(const IFAPI_EVENT_UNION *in,
@@ -752,6 +766,7 @@ ifapi_json_IFAPI_EVENT_UNION_serialize(const IFAPI_EVENT_UNION *in,
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type IFAPI_EVENT.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_IFAPI_EVENT_serialize(const IFAPI_EVENT *in, json_object **jso)

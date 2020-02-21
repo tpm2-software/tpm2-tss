@@ -266,6 +266,9 @@ ifapi_io_check_file_writeable(
  * @param[in] dirname The name of the directory to be checked / created
  * @retval TSS2_RC_SUCCESS if the directories existed or were successfully created
  * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error occurred
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
  */
 TSS2_RC
 ifapi_io_check_create_dir(
@@ -389,6 +392,7 @@ error_cleanup:
  * @retval TSS2_RC_SUCCESS if the directories were successfully removed
  * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error occurred
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_io_dirfiles(
@@ -606,6 +610,7 @@ ifapi_io_path_exists(const char *path)
  * @param[in] io The input/output context being used for file I/O.
  * @retval TSS2_RC_SUCCESS After the end of the wait.
  * @retval TSS2_FAPI_RC_IO_ERROR if the poll function returns an error.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_io_poll(IFAPI_IO * io) {
@@ -635,6 +640,7 @@ ifapi_io_poll(IFAPI_IO * io) {
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_NO_HANDLE In no poll events are stored in IO context.
  * @retval TSS2_FAPI_RC_MEMORY If the output data cannot be allocated.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_io_poll_handles(IFAPI_IO *io, FAPI_POLL_HANDLE **handles, size_t *num_handles) {

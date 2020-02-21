@@ -1108,6 +1108,11 @@ error:
  * To simplify asynncronous policy executiion a linked list of the policy structures
  * needed for execution based on the result of the  branch selection callbacks
  * is computed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+*          is not set.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  */
 static TSS2_RC
 compute_policy_list(
@@ -1148,6 +1153,9 @@ compute_policy_list(
  *         executed.
  * @retval TSS2_FAPI_RC_BAD_VALUE If the computed branch index deliverd by the
  *         callback does not identify a branch.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  */
 TSS2_RC
 ifapi_policyeval_execute_prepare(
@@ -1175,6 +1183,19 @@ ifapi_policyeval_execute_prepare(
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
  *         not successful.
  * @retval TSS2_FAPI_RC_BAD_TEMPLATE In a invalid policy is loaded during execution.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+*          is not set.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
 ifapi_policyeval_execute(

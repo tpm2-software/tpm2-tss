@@ -43,6 +43,7 @@
  *             be used for key creation.
  * @retval TSS2_RC_SUCCESS if the template can be generated.
  * @retval TSS2_FAPI_RC_BAD_VALUE If an invalid combination of flags was used.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
@@ -136,6 +137,7 @@ error:
  *             be used for nv object creation.
  * @retval TSS2_RC_SUCCESS if the template can be generated.
  * @retval TSS2_FAPI_RC_BAD_VALUE If an invalid combination of flags was used.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_set_nv_flags(const char *type, IFAPI_NV_TEMPLATE *template,
@@ -1496,6 +1498,8 @@ copy_policy_elements(const TPML_POLICYELEMENTS *from_policy)
  *
  * @param[in] from_policy the policy to be copied.
  * @retval The new policy or NULL if not enough memory was available.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TPMS_POLICY *
 ifapi_copy_policy(
@@ -1525,6 +1529,11 @@ ifapi_copy_policy(
  * @retval TPM2_RC_SUCCESS  or one of the possible errors TSS2_FAPI_RC_BAD_VALUE,
  * TSS2_FAPI_RC_MEMORY, TSS2_FAPI_RC_GENERAL_FAILURE.
  * or return codes of SAPI errors.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 TSS2_RC
 ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name)
@@ -1651,6 +1660,11 @@ ifapi_nv_get_name(TPM2B_NV_PUBLIC *publicInfo, TPM2B_NAME *name)
  * @param[in] name The name to be compared.
  * @param[out] equal If the two names are equal.
  * @retval TSS2_RC_SUCCESSS if name of object can be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 TSS2_RC
 ifapi_object_cmp_name(IFAPI_OBJECT *object, void *name, bool *equal)
@@ -1723,6 +1737,9 @@ ifapi_object_cmp_nv_public(IFAPI_OBJECT *object, void *nv_public, bool *equal)
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
  *         not covered by other return codes (e.g. a unexpected openssl
  *         error).
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+*          the function.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_tpm_to_fapi_signature(
@@ -1788,6 +1805,8 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_BAD_VALUE: If an invalid value is detected during
  *         serialisation.
  * @retval Possible error codes of the unmarshaling function.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_compute_quote_info(
@@ -1843,6 +1862,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_VALUE: If an invalid value is detected during
  *         deserialisation.
  * @retval Possible error codes of the marshaling function.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_get_quote_info(
@@ -1888,6 +1908,7 @@ cleanup:
  *
  * @retval TSS2_RC_SUCCESS If the index for the path can be determined.
  * @retval TSS2_FAPI_RC_BAD_PATH If no handle can be assigned.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_get_nv_start_index(const char *path, TPM2_HANDLE *start_nv_index)
@@ -1941,6 +1962,8 @@ ifapi_get_nv_start_index(const char *path, TPM2_HANDLE *start_nv_index)
  *                  for a certain bank.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the bank was not found in the event list.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_extend_vpcr(
@@ -2003,6 +2026,9 @@ error_cleanup:
  *         from event list does not match the attest
  * @retval TSS2_FAPI_RC_BAD_VALUE: If inappropriate values are detected in the
  *         input data.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_calculate_pcr_digest(
@@ -2234,6 +2260,9 @@ ifapi_filter_pcr_selection_by_index(
  * @retval TSS2_RC_SUCCESS if the PCR selection and the PCR digest could be computed..
  * @retval TSS2_FAPI_RC_BAD_VALUE: If inappropriate values are detected in the
  *         input data.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 TSS2_RC
 ifapi_compute_policy_digest(
