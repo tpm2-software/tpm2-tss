@@ -627,7 +627,10 @@ ifapi_json_TPMS_POLICYDUPLICATIONSELECT_deserialize(json_object *jso,
         r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->includeObject);
         return_if_error(r, "Yes or No expected.");
     } else {
-        out->includeObject = TPM2_NO;
+        if (out->objectName.size > 0)
+            out->includeObject = TPM2_YES;
+        else
+            out->includeObject = TPM2_NO;
     }
     GET_OPTIONAL(newParentPublic, "newParentPublic", TPM2B_PUBLIC);
     if (out->newParentPublic.size)
