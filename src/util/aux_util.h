@@ -15,15 +15,27 @@ extern "C" {
 #define TPM2_ERROR_FORMAT "%s%s (0x%08x)"
 #define TPM2_ERROR_TEXT(r) "Error", "Code", r
 
+#define PARAM_ERR (TPM2_RC_P | TPM2_RC_1)
+#define not_expected_param_err(r) ({ \
+    TSS2_RC _r = r; \
+    if ((_r & PARAM_ERR) == PARAM_ERR) { \
+        _r &= ~PARAM_ERR; \
+    } \
+    (_r != TPM2_RC_CURVE && _r != TPM2_RC_HASH && \
+     _r != TPM2_RC_ASYMMETRIC && _r != TPM2_RC_KEY_SIZE); \
+})
+
 #define return_if_error(r,msg) \
     if (r != TSS2_RC_SUCCESS) { \
-        LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
+        if (not_expected_param_err(r)) \
+            LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
         return r;  \
     }
 
 #define return_state_if_error(r,s,msg)      \
     if (r != TSS2_RC_SUCCESS) { \
-        LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
+        if (not_expected_param_err(r)) \
+            LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
         esysContext->state = s; \
         return r;  \
     }
@@ -36,7 +48,8 @@ extern "C" {
 
 #define goto_state_if_error(r,s,msg,label) \
     if (r != TSS2_RC_SUCCESS) { \
-        LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
+        if (not_expected_param_err(r)) \
+            LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
         esysContext->state = s; \
         goto label;  \
     }
@@ -50,7 +63,8 @@ extern "C" {
 
 #define goto_if_error(r,msg,label) \
     if (r != TSS2_RC_SUCCESS) { \
-        LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
+        if (not_expected_param_err(r)) \
+            LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
         goto label;  \
     }
 
@@ -74,7 +88,8 @@ extern "C" {
 
 #define exit_if_error(r,msg) \
     if (r != TSS2_RC_SUCCESS) { \
-        LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
+        if (not_expected_param_err(r)) \
+            LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
         exit(1);  \
     }
 
