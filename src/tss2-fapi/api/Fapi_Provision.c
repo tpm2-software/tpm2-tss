@@ -250,6 +250,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
     IFAPI_OBJECT * pkeyObject = &context->createPrimary.pkey_object;
     IFAPI_KEY * pkey = &pkeyObject->misc.key;
     IFAPI_PROFILE * defaultProfile = &context->profiles.default_profile;
+    int curl_rc;
 
     switch (context->state) {
         statecase(context->state, PROVISION_READ_PROFILE);
@@ -451,9 +452,12 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                 TPM2B_PUBLIC public_key;
 
                 /* Curl will be used to retrieve the certificate from a file or via HTTP. */
-                r = ifapi_get_curl_buffer((unsigned char *)context->config.ek_cert_file,
-                                          (unsigned char **)&command->pem_cert, &cert_size);
-                goto_if_error_reset_state(r, "Get certificate", error_cleanup);
+                curl_rc = ifapi_get_curl_buffer((unsigned char *)context->config.ek_cert_file,
+                                                (unsigned char **)&command->pem_cert, &cert_size);
+                if (curl_rc != 0) {
+                    goto_error_reset_state(r, TSS2_FAPI_RC_NO_CERT, "Get certificate.",
+                                           error_cleanup);
+                }
 
                 /* Get the public key from the certificate. */
                 r = ifapi_get_public_from_pem_cert(command->pem_cert, &public_key);

@@ -2434,85 +2434,78 @@ write_curl_buffer_cb(void *contents, size_t size, size_t nmemb, void *userp)
     return realsize;
 }
 
-/** Get byte buffer from file system or web  via curl.
+/** Get byte buffer from file system or web via curl.
  *
  * @param[in]  url The url of the resource.
  * @param[out] buffer The buffer retrieved via the url.
  * @param[out] buffer_size The size of the retrieved object.
  *
- * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE for curl errors:
+ * @retval 0 if buffer could be retrieved.
+ * @retval -1 if an error did occur
  */
-TSS2_RC
-ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer, size_t *buffer_size)
-{
-    TSS2_RC r = TSS2_RC_SUCCESS;
-    CURL *curl_handle = NULL;
-
+int ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
+                          size_t *buffer_size) {
+    int ret = -1;
     struct CurlBufferStruct curl_buffer = { .size = 0, .buffer = NULL };
 
-    /* Init dummy buffer, will be enlarged depending on the size of
-       the received data. */
-    curl_buffer.buffer = malloc(1);
-    goto_if_null2(curl_buffer.buffer, "Out of memory.", r,
-                  TSS2_FAPI_RC_MEMORY, cleanup);
-
-    /* Prepare curl with URL and callback for copying data */
-    if (CURLE_OK != curl_global_init(CURL_GLOBAL_ALL)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl global init",
-                   cleanup);
+    CURLcode rc = curl_global_init(CURL_GLOBAL_DEFAULT);
+    if (rc != CURLE_OK) {
+        LOG_ERROR("curl_global_init failed: %s", curl_easy_strerror(rc));
+        goto out_memory;
     }
 
-    curl_handle = curl_easy_init();
-    if (!curl_handle) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy init",
-                   cleanup);
+    CURL *curl = curl_easy_init();
+    if (!curl) {
+        LOG_ERROR("curl_easy_init failed");
+        goto out_global_cleanup;
+    }
 
+    rc = curl_easy_setopt(curl, CURLOPT_URL, url);
+    if (rc != CURLE_OK) {
+        LOG_ERROR("curl_easy_setopt for CURLOPT_URL failed: %s",
+                curl_easy_strerror(rc));
+        goto out_easy_cleanup;
     }
-    if (CURLE_OK != curl_easy_setopt(curl_handle, CURLOPT_URL, url)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy setopt",
-                   cleanup);
+
+    rc = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,
+                          write_curl_buffer_cb);
+    if (rc != CURLE_OK) {
+        LOG_ERROR("curl_easy_setopt for CURLOPT_URL failed: %s",
+                curl_easy_strerror(rc));
+        goto out_easy_cleanup;
     }
-    if (CURLE_OK != curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION,
-                                     write_curl_buffer_cb)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy setopt",
-                   cleanup);
+
+    rc = curl_easy_setopt(curl, CURLOPT_WRITEDATA,
+                          (void *)&curl_buffer);
+    if (rc != CURLE_OK) {
+        LOG_ERROR("curl_easy_setopt for CURLOPT_URL failed: %s",
+                curl_easy_strerror(rc));
+        goto out_easy_cleanup;
     }
-    if (CURLE_OK != curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA,
-                                     (void *)&curl_buffer)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy setopt",
-                   cleanup);
-    }
-    if (CURLE_OK != curl_easy_setopt(curl_handle, CURLOPT_USERAGENT,
-                                     "libcurl-agent/1.0")) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy setopt",
-                   cleanup);
-    }
+
     if (LOGMODULE_status == LOGLEVEL_TRACE) {
-        if (CURLE_OK != curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 1L)) {
+        if (CURLE_OK != curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L)) {
             LOG_WARNING("Curl easy setopt verbose failed");
         }
     }
 
-    /* Receive the certificate */
-    if (CURLE_OK != curl_easy_perform(curl_handle)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Curl easy setopt",
-                   cleanup);
+    rc = curl_easy_perform(curl);
+    if (rc != CURLE_OK) {
+        LOG_ERROR("curl_easy_perform() failed: %s", curl_easy_strerror(rc));
+        goto out_easy_cleanup;
     }
-    LOG_TRACE("%zu bytes of certificate retrieved\n", curl_buffer.size);
 
     *buffer = curl_buffer.buffer;
     *buffer_size = curl_buffer.size;
-    if (curl_handle)
-        curl_easy_cleanup(curl_handle);
-    curl_global_cleanup();
-    return r;
 
-cleanup:
-    if (curl_handle)
-        curl_easy_cleanup(curl_handle);
+    ret = 0;
+
+out_easy_cleanup:
+    if (ret != 0)
+        free(curl_buffer.buffer);
+    curl_easy_cleanup(curl);
+out_global_cleanup:
     curl_global_cleanup();
-    free(curl_buffer.buffer);
-    return r;
+out_memory:
+    return ret;
 }
