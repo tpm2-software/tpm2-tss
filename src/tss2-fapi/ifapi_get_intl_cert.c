@@ -15,6 +15,8 @@
 #include <openssl/sha.h>
 
 #include "fapi_crypto.h"
+#include "ifapi_helpers.h"
+
 #define LOGMODULE fapi
 #include "util/log.h"
 #include "util/aux_util.h"
@@ -163,36 +165,11 @@ char *base64_encode(const unsigned char* buffer)
     return final_string;
 }
 
-struct CertificateBuffer {
-  unsigned char *buffer;
-  size_t size;
-};
-
-static size_t
-get_certificate_buffer_cb(void *contents, size_t size, size_t nmemb, void *userp)
-{
-    size_t realsize = size * nmemb;
-    struct CertificateBuffer *cert = (struct CertificateBuffer *)userp;
-
-    unsigned char *tmp_ptr = realloc(cert->buffer, cert->size + realsize + 1);
-    if (tmp_ptr == NULL) {
-        LOG_ERROR("Can't allocate memory in CURL callback.");
-        return 0;
-    }
-    cert->buffer = tmp_ptr;
-    memcpy(&(cert->buffer[cert->size]), contents, realsize);
-    cert->size += realsize;
-    cert->buffer[cert->size] = 0;
-
-    return realsize;
-}
-
 int retrieve_endorsement_certificate(char *b64h, unsigned char ** buffer,
                                      size_t *cert_size) {
     int ret = -1;
 
     size_t len = 1 + strlen(b64h) + strlen(ctx.ek_server_addr);
-    struct CertificateBuffer cert_buffer = { .size = 0, .buffer = NULL };
     char *weblink = (char *) malloc(len);
 
     if (!weblink) {
@@ -202,80 +179,10 @@ int retrieve_endorsement_certificate(char *b64h, unsigned char ** buffer,
 
     snprintf(weblink, len, "%s%s", ctx.ek_server_addr, b64h);
 
-    CURLcode rc = curl_global_init(CURL_GLOBAL_DEFAULT);
-    if (rc != CURLE_OK) {
-        LOG_ERROR("curl_global_init failed: %s", curl_easy_strerror(rc));
-        goto out_memory;
-    }
-
-    CURL *curl = curl_easy_init();
-    if (!curl) {
-        LOG_ERROR("curl_easy_init failed");
-        goto out_global_cleanup;
-    }
-
-    /*
-     * should not be used - Used only on platforms with older CA certificates.
-     */
-    if (ctx.SSL_NO_VERIFY) {
-        rc = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
-        if (rc != CURLE_OK) {
-            LOG_ERROR("curl_easy_setopt for CURLOPT_SSL_VERIFYPEER failed: %s",
-                      curl_easy_strerror(rc));
-            goto out_easy_cleanup;
-        }
-    }
-
-    rc = curl_easy_setopt(curl, CURLOPT_URL, weblink);
-    if (rc != CURLE_OK) {
-        LOG_ERROR("curl_easy_setopt for CURLOPT_URL failed: %s",
-                curl_easy_strerror(rc));
-        goto out_easy_cleanup;
-    }
-
-    rc = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,
-                           get_certificate_buffer_cb);
-    if (rc != CURLE_OK) {
-        LOG_ERROR("curl_easy_setopt for CURLOPT_URL failed: %s",
-                curl_easy_strerror(rc));
-        goto out_easy_cleanup;
-    }
-
-    rc = curl_easy_setopt(curl, CURLOPT_WRITEDATA,
-                          (void *)&cert_buffer);
-    if (rc != CURLE_OK) {
-        LOG_ERROR("curl_easy_setopt for CURLOPT_URL failed: %s",
-                curl_easy_strerror(rc));
-        goto out_easy_cleanup;
-    }
-
-    if (LOGMODULE_status == LOGLEVEL_TRACE) {
-        if (CURLE_OK != curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L)) {
-            LOG_WARNING("Curl easy setopt verbose failed");
-        }
-    }
-
-    rc = curl_easy_perform(curl);
-    if (rc != CURLE_OK) {
-        LOG_ERROR("curl_easy_perform() failed: %s", curl_easy_strerror(rc));
-        goto out_easy_cleanup;
-    }
-
-    *buffer = cert_buffer.buffer;
-    *cert_size = cert_buffer.size;
-
-    ret = 0;
-
-out_easy_cleanup:
-    if (ret != 0)
-        free(cert_buffer.buffer);
-    curl_easy_cleanup(curl);
-out_global_cleanup:
-    curl_global_cleanup();
-out_memory:
+    CURLcode rc =  ifapi_get_curl_buffer((unsigned char *)weblink,
+                                         buffer, cert_size);
     free(weblink);
-
-    return ret;
+    return rc;
 }
 
 /**
