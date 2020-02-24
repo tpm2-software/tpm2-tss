@@ -3,13 +3,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [2.4.0-rc2] - 2020-01-29
+## [2.4.0-rc3] - 2020-02-24
 ### Added
 - Added a new Feature API (FAPI) implementation
 - Added Esys_TRSess_GetAuthRequired() ESAPI function
 - Added Esys_TR_GetTpmHandle() SAPI function
 - Added Esys_GetSysContext() SAPI function
 - Added the with-sanitizer configure option
+- Added CI for FreeBSD
 
 ### Changed
 - Changed MSSIM TCTI to be async capable
@@ -18,6 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Improved CI builds
 - Converted builds to docker builds
 - Number of fixes and improvements in the test code
+- Changed tcti-device in non-async mode to allways block
 
 ### Fixed
 - Fixed mixing salted and unsalted sessions in the same ESAPI context
@@ -37,6 +39,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Fixed auth calculation in Esys_StartAuthSession called with optional parameters
 - Fixed compute_encrypted_salt error handling in Esys_StartAuthSession
 - Fixed exported symbols map for libtss2-mu
+
+### Removed
+- Remove duplicate ESYS entries from map file
+- Removed the private implementation of strndup from tctildr
 
 ## [2.3.0] - 2019-08-13
 ### Added
