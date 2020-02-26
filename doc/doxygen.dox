@@ -1706,6 +1706,7 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
 \fn TSS2_RC ifapi_policyeval_instantiate_finish(
     IFAPI_POLICY_EVAL_INST_CTX *context)
  \}
+*/
 
  /*!
  \defgroup ifapi_policy Policy calculation module
