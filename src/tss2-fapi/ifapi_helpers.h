@@ -47,19 +47,8 @@ ifapi_init_hierarchy_object(
 char *
 get_description(IFAPI_OBJECT *object);
 
-TSS2_RC
-init_explicit_key_path(
-    const char *context_profile,
-    const char *ipath,
-    NODE_STR_T **list_node1,
-    NODE_STR_T **current_list_node,
-    NODE_STR_T **result);
-
 size_t
 ifapi_path_length(NODE_STR_T *node);
-
-size_t
-path_str_length(NODE_STR_T *node, int delim_length);
 
 void
 ifapi_free_object_list(NODE_OBJECT_T *node);
@@ -147,13 +136,6 @@ push_object_to_list(void *object, NODE_OBJECT_T **object_list);
 
 TSS2_RC
 append_object_to_list(void *object, NODE_OBJECT_T **object_list);
-
-TSS2_RC
-push_object_with_size_to_list(void *object, size_t size, NODE_OBJECT_T **object_list);
-
-size_t
-policy_digest_size(
-    IFAPI_OBJECT *object);
 
 bool
 object_with_auth(IFAPI_OBJECT *object);

@@ -24,7 +24,7 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-TSS2_RC
+static TSS2_RC
 compute_or_digest_list(
     TPML_POLICYBRANCHES *branches,
     TPMI_ALG_HASH current_hash_alg,
@@ -267,7 +267,7 @@ execute_policy_nv(
     return r;
 }
 
-TSS2_RC
+static TSS2_RC
 execute_policy_signed(
     ESYS_CONTEXT *esys_ctx,
     TPMS_POLICYSIGNED *policy,
@@ -879,7 +879,7 @@ execute_policy_locality(
     return r;
 }
 
-TSS2_RC
+static TSS2_RC
 execute_policy_nv_written(
     ESYS_CONTEXT *esys_ctx,
     TPMS_POLICYNVWRITTEN *policy,
@@ -945,7 +945,7 @@ execute_policy_or(
 }
 
 
-TSS2_RC
+static TSS2_RC
 execute_policy_action(
     ESYS_CONTEXT *esys_ctx,
     TPMS_POLICYACTION *policy,

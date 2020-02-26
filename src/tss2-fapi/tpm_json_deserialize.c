@@ -212,7 +212,7 @@ ifapi_get_sub_object(json_object *jso, char *name, json_object **sub_jso)
  * @retval TSS2_RC_SUCCESS if json object represents a number.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object does not represent a number.
  */
-TSS2_RC
+static TSS2_RC
 get_number_from_json(json_object *jso, int64_t *num)
 {
     const char *token = json_object_get_string(jso);
