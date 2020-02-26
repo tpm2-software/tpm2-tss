@@ -971,8 +971,6 @@ ifapi_keystore_search_obj(
  *         this function needs to be called again.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
  * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
  *         object store.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
