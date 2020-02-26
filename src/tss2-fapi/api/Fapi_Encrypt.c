@@ -63,7 +63,7 @@
  *         during authorization.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
-*          is not set.
+ *         is not set.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
  *         was not successful.
@@ -209,8 +209,7 @@ error_cleanup:
  * This function should be called after a previous Fapi_Encrypt_Async.
  *
  * @param[in,out] context The FAPI_CONTEXT
- * @param[out] cipherText The JSON-encoded ciphertext
- * @param[out] cipherText The encoded cipher text.
+ * @param[out] cipherText The encoded ciphertext
  * @param[out] cipherTextSize The size of the encoded cipher text.
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
@@ -225,13 +224,13 @@ error_cleanup:
  *         complete. Call this function again later.
  * @retval TSS2_FAPI_RC_NOT_IMPLEMENTED if the encryption algorithm is not available.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
  *         during authorization.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
-*          is not set.
+ *         is not set.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
  *         was not successful.
