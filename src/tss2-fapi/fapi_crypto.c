@@ -214,7 +214,7 @@ ifapi_bn2binpad(const BIGNUM *bn, unsigned char *bin, int binSize)
  *
  * @retval A singleton hash engine
  */
-ENGINE *
+static ENGINE *
 get_engine()
 {
     /* If an engine is present, it is returned */
@@ -1843,7 +1843,8 @@ cleanup:
 
 /** Convert buffer from web to X509 certificate.
   */
-X509 * get_cert_from_buffer(unsigned char *cert_buffer, size_t cert_buffer_size)
+static X509
+*get_cert_from_buffer(unsigned char *cert_buffer, size_t cert_buffer_size)
 {
     unsigned char *buffer = cert_buffer;
     X509 *cert = NULL;

@@ -136,12 +136,164 @@ ifapi_get_session_finish(ESYS_CONTEXT *esys, ESYS_TR *session,
     return TSS2_RC_SUCCESS;
 }
 
+/** Get the digest size of the policy of a FAPI object.
+ *
+ * @param[in] object The object with the correspodning policy.
+ *
+ * @retval The size of policy digest.
+ * @retval 0 if The object does not have a policy.
+ */
+static size_t
+policy_digest_size(IFAPI_OBJECT *object)
+{
+    switch (object->objectType) {
+    case IFAPI_KEY_OBJ:
+        return object->misc.key.public.publicArea.authPolicy.size;
+    case IFAPI_NV_OBJ:
+        return object->misc.nv.public.nvPublic.authPolicy.size;
+    case IFAPI_HIERARCHY_OBJ:
+        return object->misc.hierarchy.authPolicy.size;
+    default:
+        return 0;
+    }
+}
+
+/** Add a object together with size as first element to a linked list.
+ *
+ * This function can e.g. used to add byte arrays together with their size
+ * to a linked list.
+ *
+ * @param[in] object The object to be added.
+ * @param[in] size The size of the object to be added.
+ * @param[in,out] object_list The linked list to be extended.
+ *
+ * @retval TSS2_RC_SUCCESS if the object was added.
+ * @retval TSS2_FAPI_RC_MEMORY If memory for the list extension cannot
+ *         be allocated.
+ */
+static TSS2_RC
+push_object_with_size_to_list(void *object, size_t size, NODE_OBJECT_T **object_list)
+{
+    TSS2_RC r;
+    r = push_object_to_list(object, object_list);
+    return_if_error(r, "Push object with size.");
+
+    (*object_list)->size = size;
+    return TSS2_RC_SUCCESS;
+}
+
+/** Initialize and expand the linked list representing a FAPI key path.
+ *
+ * From a passed key path the explicit key path will be determined. The
+ * profile and the hierarchy will be added if necessary and the extension
+ * is possible.
+ *
+ * @param[in]  context_profile The profile used for extension of no profile is
+ *             part of the path.
+ * @param[in]  ipath The implicit pathname which has to be extended.
+ * @param[out] list_node1 The linked list for the passed key path without
+ *             extensions.
+ * @param[out] current_list_node The current node in the list list_node1,
+ *             which represent the tail not processed.
+ * @param[out] result The part of the new list which had been extended
+ *             without the tail not processed.
+ *
+ * @retval TSS2_RC_SUCCESS: If the initialization was successful.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If an invalid path was passed.
+ * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ */
+static TSS2_RC
+init_explicit_key_path(
+    const char *context_profile,
+    const char *ipath,
+    NODE_STR_T **list_node1,
+    NODE_STR_T **current_list_node,
+    NODE_STR_T **result)
+{
+    *list_node1 = split_string(ipath, IFAPI_FILE_DELIM);
+    NODE_STR_T *list_node = *list_node1;
+    char const *profile;
+    char *hierarchy;
+    TSS2_RC r = TSS2_RC_SUCCESS;
+
+    *result = NULL;
+    if (list_node == NULL) {
+        LOG_ERROR("Invalid path");
+        free_string_list(*list_node1);
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+
+    /* Processing of the profile. */
+    if (strncmp("P_", list_node->str, 2) == 0) {
+        profile = list_node->str;
+        list_node = list_node->next;
+    } else {
+        profile = context_profile;
+    }
+    *result = init_string_list(profile);
+    if (*result == NULL) {
+        free_string_list(*list_node1);
+        LOG_ERROR("Out of memory");
+        return TSS2_FAPI_RC_MEMORY;
+    }
+    if (list_node == NULL) {
+        /* extend default hierarchy. */
+        hierarchy = "HS";
+    } else {
+        if (strcmp(list_node->str, "HS") == 0 ||
+                strcmp(list_node->str, "HE") == 0 ||
+                strcmp(list_node->str, "HP") == 0 ||
+                strcmp(list_node->str, "HN") == 0 ||
+                strcmp(list_node->str, "HP") == 0) {
+            hierarchy = list_node->str;
+            list_node = list_node->next;
+        }
+        /* Extend hierarchy. */
+        else if (strcmp(list_node->str, "EK") == 0) {
+            hierarchy = "HE";
+        } else if (list_node->next != NULL &&
+                   (strcmp(list_node->str, "SRK") == 0 ||
+                    strcmp(list_node->str, "SDK") == 0 ||
+                    strcmp(list_node->str, "UNK") == 0 ||
+                    strcmp(list_node->str, "UDK") == 0)) {
+            hierarchy = "HS";
+        } else {
+            hierarchy = "HS";
+        }
+    }
+
+    /* Extend the current result. */
+    if (!add_string_to_list(*result, hierarchy)) {
+        LOG_ERROR("Out of memory");
+        r = TSS2_FAPI_RC_MEMORY;
+        goto error;
+    }
+    if (list_node == NULL) {
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Explicit path can't be determined.",
+                   error);
+    }
+    if (!add_string_to_list(*result, list_node->str)) {
+        LOG_ERROR("Out of memory");
+        r = TSS2_FAPI_RC_MEMORY;
+        goto error;
+    }
+    *current_list_node = list_node->next;
+    return TSS2_RC_SUCCESS;
+
+error:
+    free_string_list(*result);
+    *result = NULL;
+    free_string_list(*list_node1);
+    *list_node1 = NULL;
+    return r;
+}
+
 /** Free first object of a linked list.
  *
  * Note: Referenced objects of the list have to be freed before.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
-TSS2_RC
+static TSS2_RC
 pop_object_from_list(FAPI_CONTEXT *context, NODE_OBJECT_T **object_list)
 {
     return_if_null(*object_list, "Pop from list.", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -1553,7 +1705,7 @@ error_cleanup:
     return r;
 }
 
-size_t
+static size_t
 get_name_alg(FAPI_CONTEXT *context, IFAPI_OBJECT *object)
 {
     switch (object->objectType) {

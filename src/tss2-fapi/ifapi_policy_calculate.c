@@ -22,7 +22,7 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-void
+static void
 copy_policy_digest(TPML_DIGEST_VALUES *dest, TPML_DIGEST_VALUES *src,
                    size_t digest_idx, size_t hash_size, char *txt)
 {
@@ -34,7 +34,7 @@ copy_policy_digest(TPML_DIGEST_VALUES *dest, TPML_DIGEST_VALUES *src,
     dest->count = src->count;
 }
 
-void
+static void
 log_policy_digest(TPML_DIGEST_VALUES *dest, size_t digest_idx, size_t hash_size,
                   char *txt)
 {
@@ -137,7 +137,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
 *          the function.
  */
-TSS2_RC
+static TSS2_RC
 calculate_policy_key_param(
     TPM2_CC command_code,
     TPM2B_NAME *name,
