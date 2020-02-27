@@ -13,6 +13,7 @@
 #include <openssl/buffer.h>
 #include <openssl/evp.h>
 #include <openssl/sha.h>
+#include <json-c/json.h>
 
 #include "fapi_crypto.h"
 #include "ifapi_helpers.h"
@@ -112,7 +113,8 @@ err:
     return NULL;
 }
 
-char *base64_encode(const unsigned char* buffer)
+static char *
+base64_encode(const unsigned char* buffer)
 {
     BIO *bio, *b64;
     BUF_MEM *buffer_pointer;
@@ -165,6 +167,66 @@ char *base64_encode(const unsigned char* buffer)
     return final_string;
 }
 
+static char *
+base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
+{
+    size_t i, unescape_len, r;
+    char *binary_data = NULL, *unescaped_string = NULL;
+
+    LOG_INFO("Decoding the base64 encoded cert into binary form");
+
+    if (buffer == NULL) {
+        LOG_ERROR("Cert buffer is null");
+        return NULL;
+    }
+
+    for (i = 0; i < len; i++) {
+        if (buffer[i] == '-') {
+            buffer[i] = '+';
+        }
+        if (buffer[i] == '_') {
+            buffer[i] = '/';
+        }
+    }
+
+    CURL *curl = curl_easy_init();
+    if (curl) {
+        char *output = curl_easy_unescape(curl, (char *)buffer,
+                                          len, (int *)&unescape_len);
+        if (output) {
+            unescaped_string = strdup(output);
+            curl_free(output);
+        }
+    }
+    curl_easy_cleanup(curl);
+    curl_global_cleanup();
+    if (unescaped_string == NULL)
+        return NULL;
+
+    binary_data = calloc(1, unescape_len);
+    if (binary_data == NULL) {
+        free (unescaped_string);
+        return NULL;
+    }
+
+    BIO *bio, *b64;
+    bio = BIO_new_mem_buf(unescaped_string, -1);
+    b64 = BIO_new(BIO_f_base64());
+    bio = BIO_push(b64, bio);
+    BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+
+    if ((r = BIO_read(bio, binary_data, unescape_len)) <= 0) {
+        LOG_ERROR("BIO_read base64 encoded cert failed");
+        free(binary_data);
+        binary_data = NULL;
+    }
+    *new_len = r;
+
+    free (unescaped_string);
+    BIO_free_all(bio);
+    return binary_data;
+}
+
 int retrieve_endorsement_certificate(char *b64h, unsigned char ** buffer,
                                      size_t *cert_size) {
     int ret = -1;
@@ -202,7 +264,10 @@ ifapi_get_intl_ek_certificate(FAPI_CONTEXT *context, TPM2B_PUBLIC *ek_public,
 {
     int rc = 1;
     unsigned char *hash = hash_ek_public(ek_public);
+    char *cert_ptr;
+    char *cert_start = NULL, *cert_bin = NULL;
     char *b64 = base64_encode(hash);
+
     if (!b64) {
         LOG_ERROR("base64_encode returned null");
         goto out;
@@ -216,6 +281,49 @@ ifapi_get_intl_ek_certificate(FAPI_CONTEXT *context, TPM2B_PUBLIC *ek_public,
 
     rc = retrieve_endorsement_certificate(b64, cert_buffer, cert_size);
     free(b64);
+    goto_if_error(rc, "Retrieve endorsement certificate", out);
+    cert_ptr = (char *)*cert_buffer;
+    LOGBLOB_DEBUG((uint8_t *)cert_ptr, *cert_size, "%s", "Certificate");
+
+    /* Parse certificate data out of the json structure */
+    struct json_object *jso_cert, *jso = json_tokener_parse(cert_ptr);
+    if (jso == NULL)
+        goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
+                   "Failed to parse EK cert data", out_free_json);
+
+    if (!json_object_object_get_ex(jso, "certificate", &jso_cert))
+        goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
+                   "Could not find cert object", out_free_json);
+
+    if (!json_object_is_type(jso_cert, json_type_string))
+        goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
+                   "Invalid EK cert data", out_free_json);
+
+    cert_start = strdup(json_object_get_string(jso_cert));
+    if (!cert_start) {
+        SAFE_FREE(cert_ptr);
+        goto_error(rc, TSS2_FAPI_RC_MEMORY,
+                   "Failed to duplicate cert", out_free_json);
+    }
+
+    *cert_size = strlen(cert_start);
+
+    /* Base64 decode buffer into binary PEM format */
+    cert_bin = base64_decode((unsigned char *)cert_start,
+                             *cert_size, cert_size);
+    SAFE_FREE(cert_ptr);
+    SAFE_FREE(cert_start);
+
+    if (cert_bin == NULL) {
+        goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
+                   "Invalid EK cert data", out_free_json);
+    }
+    LOG_DEBUG("Bianry cert size %lu", *cert_size);
+    *cert_buffer = (unsigned char *)cert_bin;
+
+out_free_json:
+    json_object_put(jso);
+
 out:
     /* In some case this call was necessary after curl usage */
     OpenSSL_add_all_algorithms();
