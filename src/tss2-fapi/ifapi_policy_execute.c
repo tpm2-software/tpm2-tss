@@ -28,8 +28,7 @@ static TSS2_RC
 compute_or_digest_list(
     TPML_POLICYBRANCHES *branches,
     TPMI_ALG_HASH current_hash_alg,
-    TPML_DIGEST *digest_list,
-    const char *names[8])
+    TPML_DIGEST *digest_list)
 {
     size_t i;
     size_t digest_idx, hash_size;
@@ -58,7 +57,6 @@ compute_or_digest_list(
         if (i > 7) {
             return_error(TSS2_FAPI_RC_BAD_VALUE, "Too much or branches.");
         }
-        names[i] = branches->authorizations[i].name;
         digest_list->digests[i].size = hash_size;
         memcpy(&digest_list->digests[i].buffer[0],
                &branches->authorizations[i].policyDigests.
@@ -918,14 +916,13 @@ execute_policy_or(
     IFAPI_POLICY_EXEC_CTX *current_policy)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    const char *names[8];
 
     LOG_TRACE("call");
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
         r = compute_or_digest_list(policy->branches, current_hash_alg,
-                                      &current_policy->digest_list, names);
+                                      &current_policy->digest_list);
         return_if_error(r, "Compute policy or digest list.");
 
         r = Esys_PolicyOR_Async(esys_ctx,
