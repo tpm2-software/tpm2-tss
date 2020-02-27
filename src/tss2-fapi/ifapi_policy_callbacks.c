@@ -25,6 +25,16 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
+/** Determine the auth object of a NV index.
+ *
+ * The auth object is determined depending on the object flags.
+ *
+ * @param[in]  nv_object The internal FAPI object representing the NV index.
+ * @param[out] nv_index The ESYS handle of the NV index.
+ * @param[out] auth_object The internal FAPI auth object.
+ * @param[out] auth_index The ESYS handle of the auth object.
+ * @retval TSS2_RC_SUCCESS on success.
+ */
 static void
 get_nv_auth_object(
     IFAPI_OBJECT *nv_object,
@@ -51,7 +61,7 @@ get_nv_auth_object(
  * @param[in] path The relative path of the key.
  * @param[out] public The caller allocated public structure.
  * @param[in,out] ctx The context to access io and keystore module and to store
-*                      the io state.
+ *                      the io state.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be loaded.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
@@ -59,7 +69,7 @@ get_nv_auth_object(
  * @retval TSS2_FAPI_RC_BAD_TEMPLATE If the loaded template is not
  *         appropriate for this operation.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
@@ -129,7 +139,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_TEMPLATE If the loaded template is not
  *         appropriate for this operation.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
@@ -204,7 +214,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_TEMPLATE If the loaded template is not
  *         appropriate for this operation.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
@@ -406,9 +416,9 @@ cleanup:
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an error in an used library
  *         occurred.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
-*          is not set.
+ *         is not set.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
  *         was not successful.
@@ -446,6 +456,7 @@ ifapi_policyeval_cbauth(
         switch (cb_ctx->cb_state) {
         statecase(cb_ctx->cb_state, POL_CB_EXECUTE_INIT);
             cb_ctx->auth_index = ESYS_TR_NONE;
+            /* Search object with name in keystore. */
             r = ifapi_keystore_search_obj(&fapi_ctx->keystore, &fapi_ctx->io,
                                           name,
                                           &cb_ctx->object_path);
@@ -472,6 +483,7 @@ ifapi_policyeval_cbauth(
 
                 cb_ctx->nv_index = cb_ctx->object.handle;
 
+                /* Determine the object used for authorization. */
                 get_nv_auth_object(&cb_ctx->object,
                                    cb_ctx->object.handle,
                                    &cb_ctx->auth_object,
@@ -664,8 +676,13 @@ ifapi_sign_buffer(
 
 /**  Check whether public data of key is assigned to policy.
  *
- * It will be checked whether policy was authorized with key with public
+ * It will be checked whether policy was authorized by abort key with public
  * data of type TPMT_PUBLIC.
+ *
+ * @param[in] policy The policy to be checked.
+ * @param[in] publicVoid The public information of the key.
+ * @param[in] nameAlgVoid Not used for this compare function.
+ * @param[out] equal Switch whether check was successful.
  */
 static TSS2_RC
 equal_policy_authorization(
@@ -694,8 +711,13 @@ equal_policy_authorization(
 
 /** Check whether policy digest can be found in policy.
  *
- * It will be testes whether the policy has been instatiated with the
+ * It will be tested whether the policy has been instatiated with the
  * passed digest.
+ *
+ * @param[in] policy The policy to be checked.
+ * @param[in] authPolicyVoid The digest to be searched.
+ * @param[in] nameAlgVoid The hash algorithm used for the digest computation.
+ * @param[out] equal Switch whether check was successful.
  */
 static TSS2_RC
 compare_policy_digest(
@@ -730,13 +752,24 @@ compare_policy_digest(
 }
 
 /** Search a policy file which fulfills a certain predicate.
+ *
+ * @param[in] context The context for storing the state information of the search
+              process and the keystore paths.
+ * @param[in] compare The function which will be used for comparison.
+ * @param[in] all_objects Switch which determines wheter all policies fulfilling the
+ *            the condition will be returned or only the first policy.
+ * @param[in] object1 The first object used for comparison.
+ * @param[in] object2 The second object used for comparison.
+ * @param[out] policy_found The linked list with the policies fulfilling the condition.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
  *         was not successful.
  * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
  *         object store.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
@@ -762,6 +795,7 @@ search_policy(
     case FSEARCH_INIT:
         LOG_DEBUG("** STATE ** FSEARCH_INIT");
         memset(&context->fsearch, 0, sizeof(IFAPI_FILE_SEARCH_CTX));
+        /* Get the list of all files. */
         r = ifapi_keystore_list_all(&context->keystore, IFAPI_POLICY_DIR, &context->fsearch.pathlist,
                                     &context->fsearch.numPaths);
         return_if_error(r, "get entities.");
@@ -772,6 +806,8 @@ search_policy(
 
     case FSEARCH_OBJECT:
         LOG_DEBUG("** STATE ** FSEARCH_OBJECT");
+
+        /* Test whether all files have been checked. */
         if (context->fsearch.path_idx == 0) {
             if (*policy_found) {
                 context->fsearch.state = FSEARCH_INIT;
@@ -788,6 +824,7 @@ search_policy(
         context->fsearch.current_path = path;
         LOG_DEBUG("Check file: %s %zu", path, context->fsearch.path_idx);
 
+        /* Prepare policy loading. */
         r = ifapi_policy_store_load_async(&context->pstore, &context->io, path);
         goto_if_error2(r, "Can't open: %s", cleanup, path);
 
@@ -796,10 +833,12 @@ search_policy(
 
     case FSEARCH_READ:
         LOG_DEBUG("** STATE ** FSEARCH_READ");
+        /* Finalize policy loading if possible. */
         r = ifapi_policy_store_load_finish(&context->pstore, &context->io, &policy);
         return_try_again(r);
         goto_if_error(r, "read_finish failed", cleanup);
 
+        /* Call the passed compare function. */
         r = compare(&policy, object1, object2, &found);
         if (found) {
             LOG_DEBUG("compare true  %s",
@@ -812,15 +851,18 @@ search_policy(
 
         if (!found) {
             if (!all_objects && context->fsearch.path_idx == 0) {
+                /* All files checked, but no policy found. */
                 context->fsearch.state = FSEARCH_INIT;
                 ifapi_cleanup_policy(&policy);
                 return TSS2_BASE_RC_POLICY_UNKNOWN;
             } else {
+                /* Continue search. */
                 context->fsearch.state = FSEARCH_OBJECT;
                 ifapi_cleanup_policy(&policy);
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
         }
+        /* Extend linked list.*/
         policy_object = calloc(sizeof(struct POLICY_LIST), 1);
         return_if_null(policy_object, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
@@ -834,6 +876,7 @@ search_policy(
 
         if (context->fsearch.path_idx == 0) {
             context->fsearch.state = FSEARCH_INIT;
+            /* Cleanup list of all paths. */
             for (size_t i = 0; i < context->fsearch.numPaths; i++) {
                 SAFE_FREE(context->fsearch.pathlist[i]);
             }
@@ -869,9 +912,14 @@ cleanup:
     return r;
 }
 
-/** Get policy digeset  for a certain hash alg.
+/** Get policy digest for a certain hash alg.
+ *
+ * @param[in]  policy The policy with the digest list.
+ * @param[in]  hashAlg The hash algorithm used for the digest computation.
+ * @param[out] digest The digest matching hashAlg.
+ * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
@@ -897,6 +945,11 @@ get_policy_digest(TPMS_POLICY *policy,
 }
 
 /** Get policy authorization for a certain public key
+ *
+ * @param[in]  policy The policy with the authorization.
+ * @param[in]  public The public data of the key.
+ * @param[out] signature The signature found in the authorization list.
+ * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
@@ -918,11 +971,17 @@ get_policy_signature(
     return TSS2_FAPI_RC_GENERAL_FAILURE;
 }
 
-static void cleanup_policy_list(struct POLICY_LIST * list) {
+/** Cleanup a linked list of policies.
+ *
+ * @param[in] The linked list.
+ */
+static void
+cleanup_policy_list(struct POLICY_LIST * list) {
     if (list) {
         struct POLICY_LIST * branch = list;
         while (branch) {
             struct POLICY_LIST *next = branch->next;
+            /* Cleanup the policy stored in the list. */
             ifapi_cleanup_policy(&branch->policy);
             SAFE_FREE(branch->path);
             SAFE_FREE(branch);
@@ -954,9 +1013,9 @@ static void cleanup_policy_list(struct POLICY_LIST * list) {
  * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for policy
  *         execution fails.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
-*          is not set.
+ *         is not set.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
@@ -1118,7 +1177,7 @@ cleanup:
  * @retval TPM2_RC_BAD_AUTH If the authentication for an object needed for policy
  *         execution fails.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
@@ -1126,7 +1185,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
-*          is not set.
+ *         is not set.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
@@ -1167,6 +1226,7 @@ ifapi_exec_auth_nv_policy(
 
     switch (cb_ctx->cb_state) {
         statecase(cb_ctx->cb_state, POL_CB_EXECUTE_INIT)
+            /* Search a NV object with a certain NV indext stored in nv_public. */
             r = ifapi_keystore_search_nv_obj(&fapi_ctx->keystore, &fapi_ctx->io,
                                              nv_public, &nv_path);
             FAPI_SYNC(r, "Search Object", cleanup);
@@ -1196,10 +1256,12 @@ ifapi_exec_auth_nv_policy(
             fallthrough;
 
         statecase(cb_ctx->cb_state, POL_CB_AUTHORIZE_OBJECT)
+            /* Authorize the NV object with the corresponding auth object. */
             r = ifapi_authorize_object(fapi_ctx, &cb_ctx->auth_object, &cb_ctx->session);
             return_try_again(r);
             goto_if_error(r, "Authorize  object.", cleanup);
 
+            /* Prepare the reading of the NV index from TPM. */
             r = Esys_NV_Read_Async(esys_ctx,
                             current_policy->auth_handle, current_policy->nv_index,
                             cb_ctx->session, ESYS_TR_NONE, ESYS_TR_NONE,
@@ -1208,6 +1270,7 @@ ifapi_exec_auth_nv_policy(
             fallthrough;
 
         statecase(cb_ctx->cb_state, POL_CB_READ_NV_POLICY)
+            /* Finalize the reading. */
             r = Esys_NV_Read_Finish(esys_ctx, &aux_data);
             try_again_or_error_goto(r, "NV read", cleanup);
 

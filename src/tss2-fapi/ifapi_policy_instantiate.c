@@ -89,6 +89,14 @@ ifapi_policyeval_instantiate_async(
     return r;
 }
 
+/** Compute name and public information format a PEM key.
+ *
+ * @param[in]  keyPEM The key in PEM format.
+ * @param[out] keyPublic The public information of the PEM key.
+ * @param[out] name the name computed from the public information.
+ * @param[in]  hash_alg The name alg of the key has to passed.
+ * @retval TSS2_RC_SUCCESS on success.
+ */
 static TSS2_RC
 set_pem_key_param(
     const char *keyPEM,
@@ -141,7 +149,7 @@ set_pem_key_param(
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
