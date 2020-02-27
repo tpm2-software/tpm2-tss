@@ -433,7 +433,7 @@ ifapi_get_free_handle_finish(FAPI_CONTEXT *fctx, TPM2_HANDLE *handle,
  *         initialized.
  * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 static TSS2_RC
 get_explicit_key_path(
@@ -569,7 +569,7 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
  * @retval TSS2_FAPI_RC_BAD_VALUE if a wrong type was passed.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
-*          is not set.
+ *         is not set.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
@@ -722,7 +722,7 @@ ifapi_load_primary_async(FAPI_CONTEXT *context, char *path)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
-*          is not set.
+ *         is not set.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
  *         was not successful.
@@ -1062,7 +1062,7 @@ ifapi_primary_clean(FAPI_CONTEXT *context)
  *         of the primary.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
  *         object store.
  */
@@ -1123,12 +1123,12 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
  *         during authorization.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
-*          is not set.
+ *         is not set.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
  *         was not successful.
@@ -1372,7 +1372,7 @@ full_path_to_fapi_path(IFAPI_KEYSTORE *keystore, char *path)
  * @retval TSS2_RC_SUCCESS If the preparation is successful.
  * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated for path names.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_load_keys_async(FAPI_CONTEXT *context, char const *keyPath)
@@ -1411,7 +1411,7 @@ ifapi_load_keys_async(FAPI_CONTEXT *context, char const *keyPath)
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
@@ -1421,7 +1421,7 @@ ifapi_load_keys_async(FAPI_CONTEXT *context, char const *keyPath)
  *         object store.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
-*          is not set.
+ *         is not set.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
  *         was not successful.
@@ -1705,6 +1705,13 @@ error_cleanup:
     return r;
 }
 
+/** Get the name alg corresponding to a FAPI object.
+ *
+ * @param[in] context The context with the default profile.
+ * @param[in] object The object to be checked.
+ * @retval TPMI_ALG_HASH The hash algorithm.
+ * @retval 0 If no name alg can be assigned to the object.
+ */
 static size_t
 get_name_alg(FAPI_CONTEXT *context, IFAPI_OBJECT *object)
 {
@@ -1764,6 +1771,7 @@ ifapi_flush_policy_session(FAPI_CONTEXT *context, ESYS_TR session, TSS2_RC r)
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  */
 TSS2_RC
 ifapi_authorize_object(FAPI_CONTEXT *context, IFAPI_OBJECT *object, ESYS_TR *session)
@@ -2247,7 +2255,7 @@ error_cleanup:
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
@@ -2639,14 +2647,14 @@ ifapi_esys_serialize_object(ESYS_CONTEXT *ectx, IFAPI_OBJECT *object)
 }
 
  /** Initialize the part of an IFAPI_OBJECT  which is not serialized.
- *
- * For persistent objects the correspodning ESYS object will be created.
- *
- * @param[in,out] ectx The ESYS context.
- * @param[out] object the deserialzed binary object.
- * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
- */
+  *
+  * For persistent objects the correspodning ESYS object will be created.
+  *
+  * @param[in,out] ectx The ESYS context.
+  * @param[out] object the deserialzed binary object.
+  * @retval TSS2_RC_SUCCESS if the function call was a success.
+  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+  */
 TSS2_RC
 ifapi_initialize_object(
     ESYS_CONTEXT *ectx,
@@ -2709,7 +2717,7 @@ cleanup:
  *         keystore.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_NO_TPM if FAPI was initialized in no-TPM-mode via its
  *         config file.
@@ -2760,7 +2768,7 @@ ifapi_key_create_prepare_auth(
  *         keystore.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_NO_TPM if FAPI was initialized in no-TPM-mode via its
  *         config file.
@@ -2822,7 +2830,7 @@ ifapi_key_create_prepare_sensitive(
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_key_create_prepare(
@@ -3189,7 +3197,7 @@ ifapi_get_sig_scheme(
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
-*          is not set.
+ *         is not set.
  */
 TSS2_RC
 ifapi_change_auth_hierarchy(
@@ -3290,7 +3298,7 @@ error:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
-*          is not set.
+ *         is not set.
  */
 TSS2_RC
 ifapi_change_policy_hierarchy(
@@ -3498,7 +3506,7 @@ ifapi_capability_init(FAPI_CONTEXT *context)
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  */
@@ -3658,7 +3666,7 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
-*          is not set.
+ *         is not set.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the

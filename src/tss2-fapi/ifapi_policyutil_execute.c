@@ -258,7 +258,7 @@ error:
  *         during authorization.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
-*          is not set.
+ *         is not set.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */

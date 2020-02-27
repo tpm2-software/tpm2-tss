@@ -18,6 +18,24 @@
 #include "ifapi_json_deserialize.h"
 #include "ifapi_json_serialize.h"
 
+/** Initialize the linked list for an explicit key path.
+ *
+ * An implicit key path will be expanded to a key path starting with the profile
+ * directory. Missing parts will be added if possible.
+ * A linked list of the directories of the explicit path will be returned.
+ *
+ * @param[in] context_profile  The profile name used for expansion of the
+ *            implicit key path.
+ * @param[in] ipath the implicit key path which has to be expanded.
+ * @param[out] list_node1 The first directory of the implicit list.
+ * @param[out] current_list_node The tail of the path list after the path
+ *             which was expanded.
+ * @param[out] result The list of directories as linked list.
+ * @retval TSS2_RC_SUCCESS If the explicit path was created.
+ * @retval TSS2_FAPI_RC_MEMORY: If memory for the path list could not be allocated.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If no explicit path can be derived from the
+ *         implicit path.
+ */
 static TSS2_RC
 initialize_explicit_key_path(
     const char *context_profile,
@@ -38,12 +56,14 @@ initialize_explicit_key_path(
         free_string_list(*list_node1);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
+    /* Check whether profile is part of the implicit path. */
     if (strncmp("P_", list_node->str, 2) == 0) {
         profile = list_node->str;
         list_node = list_node->next;
     } else {
         profile = context_profile;
     }
+    /* Create the initial node of the linked list. */
     *result = init_string_list(profile);
     if (*result == NULL) {
         free_string_list(*list_node1);
@@ -51,6 +71,7 @@ initialize_explicit_key_path(
         return TSS2_FAPI_RC_MEMORY;
     }
     if (list_node == NULL) {
+        /* Storage hierarchy will be used as default. */
         hierarchy = "HS";
     } else {
         if (strcmp(list_node->str, "HS") == 0 ||
@@ -61,17 +82,20 @@ initialize_explicit_key_path(
             hierarchy = list_node->str;
             list_node = list_node->next;
         } else if (strcmp(list_node->str, "EK") == 0) {
+            /* The hierarchy for an endorsement key will be added. */
             hierarchy = "HE";
         } else if (list_node->next != NULL &&
                    (strcmp(list_node->str, "SRK") == 0 ||
                     strcmp(list_node->str, "SDK") == 0 ||
                     strcmp(list_node->str, "UNK") == 0 ||
                     strcmp(list_node->str, "UDK") == 0)) {
+            /* The storage hierachy will be added. */
             hierarchy = "HS";
         } else {
             hierarchy = "HS";
         }
     }
+    /* Add the used hierarcy to the linked list. */
     if (!add_string_to_list(*result, hierarchy)) {
         LOG_ERROR("Out of memory");
         r = TSS2_FAPI_RC_MEMORY;
@@ -81,11 +105,13 @@ initialize_explicit_key_path(
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Explicit path can't be determined.",
                    error);
     }
+    /* Add the primary directory to the linked list. */
     if (!add_string_to_list(*result, list_node->str)) {
         LOG_ERROR("Out of memory");
         r = TSS2_FAPI_RC_MEMORY;
         goto error;
     }
+    /* Return the rest of the path. */
     *current_list_node = list_node->next;
     return TSS2_RC_SUCCESS;
 
@@ -97,6 +123,19 @@ error:
     return r;
 }
 
+/** Get explicit key path as linked list.
+ *
+ * An implicit key path will be expanded to a key path starting with the profile
+ * directory. Missing parts will be added if possible.
+ * A linked list of the directories of the explicit path will be returned.
+ * @param[in] keystore The key directories and default profile.
+ * @param[in] ipath the implicit key path which has to be expanded.
+ * @param[out] result The list of directories as linked list.
+ * @retval TSS2_RC_SUCCESS If the explicit path was created.
+ * @retval TSS2_FAPI_RC_MEMORY: If memory for the path list could not be allocated.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If no explicit path can be derived from the
+ *         implicit path.
+ */
 static TSS2_RC
 get_explicit_key_path(
     IFAPI_KEYSTORE *keystore,
@@ -110,6 +149,7 @@ get_explicit_key_path(
     goto_if_error(r, "init_explicit_key_path", error);
 
     while (list_node != NULL) {
+        /* Add tail of path list to expanded head of the path list. */
         if (!add_string_to_list(*result, list_node->str)) {
             LOG_ERROR("Out of memory");
             r = TSS2_FAPI_RC_MEMORY;
@@ -190,6 +230,19 @@ full_path_to_fapi_path(IFAPI_KEYSTORE *keystore, char *path)
     }
 }
 
+/** Expand key store path.
+ *
+ * Depending on the type of the passed path the path will be expanded. For hierarchies
+ * the profile directory  will be added. For keys the implicit path will
+ * be expanded to an explicit path with all directories.
+ * @param[in] keystore The key directories and default profile.
+ * @param[in] path the implicit  path which has to be expanded if possible.
+ * @param[out] file_name The explicit path (callee-allocated)
+ * @retval TSS2_RC_SUCCESS If the explicit path was created.
+ * @retval TSS2_FAPI_RC_MEMORY: If memory for the path list could not be allocated.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If no explicit path can be derived from the
+ *         implicit path.
+ */
 static TSS2_RC
 expand_path(IFAPI_KEYSTORE *keystore, const char *path, char **file_name)
 {
@@ -230,7 +283,18 @@ error:
     free_string_list(node_list);
     return r;
 }
-
+/** Expand FAPI path to object path.
+ *
+ * The object file name will be appended and the implicit path will be expanded
+ * if possible.
+ * FAPI object path names correspond to directories of the key store. The
+ * objects are stored in a certain file in this directory. This function
+ * appends the name of the object file  to the FAPI directory to prepare file IO.
+ * @retval TSS2_RC_SUCCESS If the object file path can be created.
+ * @retval TSS2_FAPI_RC_MEMORY: If memory for the path name cannot allocated.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If no explicit path can be derived from the
+ *         implicit path.
+ */
 static TSS2_RC
 expand_path_to_object(
     IFAPI_KEYSTORE *keystore,
@@ -242,9 +306,11 @@ expand_path_to_object(
     TSS2_RC r;
     char *expanded_path = NULL;
 
+    /* Expand implicit path to explicit path. */
     r = expand_path(keystore, path, &expanded_path);
     return_if_error(r, "Expand path");
 
+    /* Append object file. */
     r = ifapi_asprintf(file_name, "%s/%s/%s", dir, expanded_path, IFAPI_OBJECT_FILE);
     SAFE_FREE(expanded_path);
     return r;
@@ -265,7 +331,7 @@ expand_path_to_object(
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated.
  * @retval TSS2_FAPI_RC_BAD_PATH if the used path in inappropriate-
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_keystore_initialize(
@@ -345,7 +411,7 @@ error:
  * @retval TSS2_FAPI_RC_IO_ERROR: If the file could not be read by the IO module.
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
     static TSS2_RC
 rel_path_to_abs_path(
@@ -410,7 +476,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_keystore_load_async(
@@ -451,7 +517,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
@@ -501,7 +567,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered;
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the output data.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
@@ -570,7 +636,7 @@ cleanup:
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered; such as the file was not found.
  * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet complete.
-           Call this function again later.
+ *         Call this function again later.
  */
 TSS2_RC
 ifapi_keystore_store_finish(
@@ -592,9 +658,19 @@ ifapi_keystore_store_finish(
     return TSS2_RC_SUCCESS;
 }
 
+/** Create a list of all files in a certain directory.
+ *
+ * The list will be created in form of absolute pathnames.
+ *
+ * @param[in] keystore The key directories and default profile.
+ * @param[in] searchpath The sub directory in key store used for the
+ *            creation of the file list.
+ * @param[out] results The array of all absolute pathnames.
+ * @param[out] numresults The number of files.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ */
 static TSS2_RC
-keystore_list_all_abs
-(
+keystore_list_all_abs(
     IFAPI_KEYSTORE *keystore,
     const char *searchpath,
     char ***results,
@@ -706,7 +782,7 @@ ifapi_keystore_list_all(
  *         during authorization.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_keystore_delete(
@@ -727,6 +803,19 @@ cleanup:
     return r;
 }
 
+/** Expand directory name.
+ *
+ * Depending on the directory type the path will be expanded. For hierarchies
+ * the profile directory  will be added. For keys the implicit path will
+ * be expanded to an explicit path with all directories.
+ * @param[in] keystore The key directories and default profile.
+ * @param[in] path the implicit  path which has to be expanded if possible.
+ * @param[out] directory_name The explicit path (callee-allocated)
+ * @retval TSS2_RC_SUCCESS If the explicit path was created.
+ * @retval TSS2_FAPI_RC_MEMORY: If memory for the path list could not be allocated.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If no explicit path can be derived from the
+ *         implicit path.
+ */
 static TSS2_RC
 expand_directory(IFAPI_KEYSTORE *keystore, const char *path, char **directory_name)
 {
@@ -765,7 +854,7 @@ expand_directory(IFAPI_KEYSTORE *keystore, const char *path, char **directory_na
  * @retval TSS2_FAPI_RC_MEMORY: If memory could not be allocated.
  * @retval TSS2_FAPI_RC_IO_ERROR If directory can't be deleted.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_keystore_remove_directories(IFAPI_KEYSTORE *keystore, const char *dir_name)
@@ -835,7 +924,7 @@ typedef TSS2_RC (*ifapi_keystore_object_cmp) (
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
  *         object store.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
@@ -936,7 +1025,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
  *         object store.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
@@ -964,7 +1053,7 @@ ifapi_keystore_search_obj(
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND If the key was not found in keystore.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
  *         during authorization.
  * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
@@ -975,6 +1064,7 @@ ifapi_keystore_search_obj(
  *         object store.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS if the object already exists in object store.
  */
 TSS2_RC
 ifapi_keystore_search_nv_obj(
@@ -990,17 +1080,17 @@ ifapi_keystore_search_nv_obj(
  /** Check whether keystore object already exists.
   *
   * The passed relative path will be expanded for user store and system store.
- *
- *  Keys objects, NV objects, and hierarchies can be written.
- *
- * @param[in] keystore The key directories and default profile.
- * @param[in] io  The input/output context being used for file I/O.
- * @param[in] path The relative path of the object. For keys the path will
- *           expanded if possible.
- * @retval TSS2_RC_SUCCESS if the object does not exist.
- * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS if the file in objects exists.
- * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the output data.
- */
+  *
+  *  Keys objects, NV objects, and hierarchies can be written.
+  *
+  * @param[in] keystore The key directories and default profile.
+  * @param[in] io  The input/output context being used for file I/O.
+  * @param[in] path The relative path of the object. For keys the path will
+  *           expanded if possible.
+  * @retval TSS2_RC_SUCCESS if the object does not exist.
+  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS if the file in objects exists.
+  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the output data.
+  */
 TSS2_RC
 ifapi_keystore_check_overwrite(
     IFAPI_KEYSTORE *keystore,
@@ -1057,7 +1147,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS if the file in objects exists.
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the output data.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
  *         object store.
  */
@@ -1108,6 +1198,15 @@ cleanup:
     return r;
 }
 
+/** Create a copy of a an UINT8 array..
+ *
+ * @param[out] dest The caller allocated array which will be the
+ *                  destination of the copy operation.
+ * @param[in]  src  The source array.
+ *
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
 static TSS2_RC
 copy_uint8_ary(UINT8_ARY *dest, const UINT8_ARY * src) {
     TSS2_RC r = TSS2_RC_SUCCESS;
@@ -1140,7 +1239,6 @@ error_cleanup:
  * @param[in]  src  The source key.
  *
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if the source is not of type key.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */

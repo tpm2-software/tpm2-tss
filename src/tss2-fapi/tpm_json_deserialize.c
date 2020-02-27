@@ -259,7 +259,7 @@ get_boolean_from_json(json_object *jso, TPMI_YES_NO *value)
  * @param[out] sizeofSelect size of bit mask for used pcr registers.
  * @param[out] pcrSelect byte array with bit mask.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_json_pcr_selection_deserialize(
@@ -296,7 +296,7 @@ ifapi_json_pcr_selection_deserialize(
  * @param[out] out the deserialized object.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_json_UINT8_ARY_deserialize(
@@ -321,7 +321,7 @@ ifapi_json_UINT8_ARY_deserialize(
  * @param[in]  jso  json object to be deserialized.
  * @param[out] out the deserialized object.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_json_TPMS_PCR_SELECT_deserialize(json_object *jso,  TPMS_PCR_SELECT *out)
@@ -338,7 +338,7 @@ ifapi_json_TPMS_PCR_SELECT_deserialize(json_object *jso,  TPMS_PCR_SELECT *out)
  * @param[in]  jso json object to be deserialized.
  * @param[out] out the deserialized object.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_json_TPMS_PCR_SELECTION_deserialize(json_object *jso,
@@ -370,7 +370,7 @@ ifapi_json_TPMS_PCR_SELECTION_deserialize(json_object *jso,
  * @param[in] jso the JSON object with the byte array.
  * @param[in] out the byte array for deserialization.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_json_BYTE_array_deserialize(size_t max, json_object *jso, BYTE *out)
@@ -1233,7 +1233,7 @@ ifapi_json_TPMI_RH_HIERARCHY_deserialize(json_object *jso,
 /** Deserialize a TPMI_RH_NV_INDEX json object.
  *
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_json_TPMI_RH_NV_INDEX_deserialize(json_object *jso, TPMI_RH_NV_INDEX *out)
@@ -2217,7 +2217,7 @@ ifapi_json_TPMS_ATTEST_deserialize(json_object *jso,  TPMS_ATTEST *out)
 /** Deserialize a TPMI_AES_KEY_BITS json object.
  *
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_json_TPMI_AES_KEY_BITS_deserialize(json_object *jso, TPMI_AES_KEY_BITS *out)
@@ -3124,7 +3124,7 @@ ifapi_json_TPM2B_PUBLIC_KEY_RSA_deserialize(json_object *jso,
 /** Deserialize a TPMI_RSA_KEY_BITS json object.
  *
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_json_TPMI_RSA_KEY_BITS_deserialize(json_object *jso,
@@ -3213,7 +3213,7 @@ ifapi_json_TPMI_ALG_ECC_SCHEME_deserialize(json_object *jso,
 /** Deserialize a TPMI_ECC_CURVE json object.
  *
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_json_TPMI_ECC_CURVE_deserialize(json_object *jso, TPMI_ECC_CURVE *out)

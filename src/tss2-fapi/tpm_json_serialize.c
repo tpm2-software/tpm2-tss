@@ -970,7 +970,7 @@ ifapi_json_TPMA_CC_serialize(const TPMA_CC in, json_object **jso)
  * @param[in] in variable to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
@@ -992,7 +992,7 @@ ifapi_json_TPMI_YES_NO_serialize(const TPMI_YES_NO in, json_object **jso)
  * @param[in] in variable to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
@@ -1044,7 +1044,7 @@ ifapi_json_TPMI_RH_NV_INDEX_serialize(const TPMI_RH_NV_INDEX in,
  * @param[in] in variable to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
@@ -1060,7 +1060,7 @@ ifapi_json_TPMI_ALG_HASH_serialize(const TPMI_ALG_HASH in, json_object **jso)
  * @param[in] in variable to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
@@ -1076,7 +1076,7 @@ ifapi_json_TPMI_ALG_SYM_OBJECT_serialize(const TPMI_ALG_SYM_OBJECT in,
  * @param[in] in variable to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
@@ -1093,7 +1093,7 @@ ifapi_json_TPMI_ALG_SYM_MODE_serialize(const TPMI_ALG_SYM_MODE in,
  * @param[in] in variable to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
@@ -1109,7 +1109,7 @@ ifapi_json_TPMI_ALG_KDF_serialize(const TPMI_ALG_KDF in, json_object **jso)
  * @param[in] in variable to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
@@ -2162,7 +2162,7 @@ ifapi_json_TPMS_NV_CERTIFY_INFO_serialize(const TPMS_NV_CERTIFY_INFO *in, json_o
  * @param[in] in variable to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
@@ -2458,7 +2458,7 @@ ifapi_json_TPMS_SCHEME_ECDAA_serialize(const TPMS_SCHEME_ECDAA *in, json_object 
  * @param[in] in variable to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
@@ -2887,7 +2887,7 @@ ifapi_json_TPMT_KDF_SCHEME_serialize(const TPMT_KDF_SCHEME *in, json_object **js
  * @param[in] in variable to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
@@ -2977,7 +2977,7 @@ ifapi_json_TPMT_ASYM_SCHEME_serialize(const TPMT_ASYM_SCHEME *in, json_object **
  * @param[in] in variable to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
@@ -3133,7 +3133,7 @@ ifapi_json_TPMS_ECC_POINT_serialize(const TPMS_ECC_POINT *in, json_object **jso)
  * @param[in] in variable to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
@@ -3453,7 +3453,7 @@ ifapi_json_TPM2B_ENCRYPTED_SECRET_serialize(const TPM2B_ENCRYPTED_SECRET *in, js
  * @param[in] in variable to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC

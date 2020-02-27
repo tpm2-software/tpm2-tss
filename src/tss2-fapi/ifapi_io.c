@@ -97,7 +97,7 @@ ifapi_io_read_async(
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered; such as the file was not found.
  * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet complete.
-           Call this function again later.
+ *         Call this function again later.
  */
 TSS2_RC
 ifapi_io_read_finish(
@@ -207,7 +207,7 @@ ifapi_io_write_async(
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered; such as the file was not found.
  * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet complete.
-           Call this function again later.
+ *         Call this function again later.
  */
 TSS2_RC
 ifapi_io_write_finish(
@@ -268,7 +268,7 @@ ifapi_io_check_file_writeable(
  * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error occurred
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_io_check_create_dir(
@@ -459,6 +459,16 @@ error_oom:
     return TSS2_FAPI_RC_MEMORY;
 }
 
+/** Get a linked list of files in a directory and all sub directories.
+ *
+ * Enumerage the regular files (no directories, symlinks etc) from a given directory.
+ *
+ * @param[in]  dir_name The directory to list files from.
+ * @param[out] list  The linked list with the file names.
+ * @param[out] n The number of filesl
+ * @retval TSS2_RC_SUCCESS if the directories were successfully removed
+ * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
+ */
 static TSS2_RC
 dirfiles_all(const char *dir_name, NODE_OBJECT_T **list, size_t *n)
 {

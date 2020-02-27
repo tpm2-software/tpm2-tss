@@ -457,7 +457,7 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 static TSS2_RC
 ossl_ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY *evpPublicKey)
@@ -554,7 +554,7 @@ error_cleanup:
  * @retval TSS2_FAPI_BAD_REFERENCE if tpmPublicKey or pemKeySize are NULL
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_pub_pem_key_from_tpm(
@@ -690,7 +690,7 @@ ifapi_ecc_der_sig_to_tpm(
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if tpmPublic, signature or tpmSignature is NULL
  * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_der_sig_to_tpm(
@@ -953,7 +953,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 static TSS2_RC
 get_ecc_tpm2b_public_from_evp(
@@ -1085,7 +1085,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TPM2_ALG_ID
 ifapi_get_signature_algorithm_from_pem(const char *pemKey) {
@@ -1130,7 +1130,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_get_tpm2b_public_from_pem(
@@ -1593,8 +1593,9 @@ ifapi_crypto_hash_abort(IFAPI_CRYPTO_CONTEXT_BLOB **context)
  * Get url to download crl from certificate.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_NO_CERT if an error did occur during certificate downloading.
  */
 TSS2_RC
 get_crl_from_cert(X509 *cert, X509_CRL **crl)
@@ -1661,6 +1662,8 @@ cleanup:
  * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
  * @retval TSS2_FAPI_RC_BAD_VALUE, if the certificate is invalid
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
  */
 TSS2_RC
 ifapi_cert_to_pem(
@@ -1779,7 +1782,14 @@ ifapi_get_hash_alg_for_size(uint16_t size, TPMI_ALG_HASH *hashAlgorithm)
     }
 }
 
-static X509 *get_X509_from_pem(const char *pem_cert)
+/** Convert PEM certificate to OSSL format.
+ *
+ * @param[in] pem_cert Certificate in PEM format.
+ * @retval X509 OSSL certificate object.
+ * @retval NULL If the conversion fails.
+ */
+static X509
+*get_X509_from_pem(const char *pem_cert)
 {
     if (!pem_cert) {
         return NULL;
@@ -1841,8 +1851,13 @@ cleanup:
     return r;
 }
 
-/** Convert buffer from web to X509 certificate.
-  */
+/** Convert buffer from DER format to X509 certificate.
+ *
+ * @param[in] cert_buffer Certificate in DER format.
+ * @aparm[in] cert_buffer_size Size of DER certificate.
+ * @retval X509 OSSL certificate object.
+ * @retval NULL If the conversion fails.
+ */
 static X509
 *get_cert_from_buffer(unsigned char *cert_buffer, size_t cert_buffer_size)
 {
@@ -2057,7 +2072,7 @@ cleanup:
  * @retval TSS2_FAPI_BAD_REFERENCE if tpmPublicKey or pemKeySize are NULL
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_get_tpm_key_fingerprint(

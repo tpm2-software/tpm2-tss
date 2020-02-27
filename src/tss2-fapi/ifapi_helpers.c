@@ -470,6 +470,18 @@ ifapi_TPMT_PUBLIC_cmp(TPMT_PUBLIC *in1, TPMT_PUBLIC *in2)
     return true;
 }
 
+/** Print to allocated string.
+ *
+ * A list of parameters will be printed to an allocated string according to the
+ * format description in the first parameter.
+ *
+ * @param[out] str The allocated output string.
+ * @param[in] fmt The format string (printf formats can be used.)
+ * @param[in] args The list of objects to be printed.
+ *
+ * @retval int The size of the string ff the printing was successful.
+ * @retval -1 if not enough memory can be allocated.
+ */
 int
 vasprintf(char **str, const char *fmt, va_list args)
 {
@@ -492,7 +504,7 @@ vasprintf(char **str, const char *fmt, va_list args)
 
 /** Print to allocated string.
  *
- * A list of parameters will be printed to an allocates string according to the
+ * A list of parameters will be printed to an allocated string according to the
  * format description in the first parameter.
  *
  * @param[out] str The allocated output string.
@@ -500,7 +512,7 @@ vasprintf(char **str, const char *fmt, va_list args)
  * @param[in] ... The list of objects to be printed.
  *
  * @retval TSS2_RC_SUCCESS If the printing was successful.
- * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_asprintf(char **str, const char *fmt, ...)
@@ -910,6 +922,16 @@ get_description(IFAPI_OBJECT *object)
     }
 }
 
+/** Create a directory and all sub directories.
+ *
+ * @param[in] supdir The sup directory were the directories will be created.
+ * @param[in] dir_list A linked list with the directory strings.
+ * @param[in] mode The creation mode for the directory which will be used
+ *            for the mkdir function.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ */
 static TSS2_RC
 create_dirs(const char *supdir, NODE_STR_T *dir_list, mode_t mode)
 {
@@ -1079,7 +1101,16 @@ ifapi_cleanup_policy(TPMS_POLICY *policy)
     }
 }
 
-static void cleanup_policy_object(POLICY_OBJECT * object) {
+/** Free memory of a policy object.
+ *
+ * The memory allocated during deserialization of the policy will
+ * also be freed.
+ *
+ * @param[in] object The policy object to be cleaned up.
+ *
+ */
+static void
+cleanup_policy_object(POLICY_OBJECT * object) {
     if (object != NULL) {
         SAFE_FREE(object->path);
         ifapi_cleanup_policy(&object->policy);
@@ -1090,7 +1121,15 @@ static void cleanup_policy_object(POLICY_OBJECT * object) {
 static TPML_POLICYELEMENTS *
 copy_policy_elements(const TPML_POLICYELEMENTS *from_policy);
 
-static TSS2_RC copy_policy(TPMS_POLICY * dest,
+/** Copy policy structure.
+ *
+ * @param[in] src The policy structure to be copied.
+ * @param[out] dest The destination policy structure.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ */
+static TSS2_RC
+copy_policy(TPMS_POLICY * dest,
         const TPMS_POLICY * src) {
     /* Check for NULL references */
     if (dest == NULL || src == NULL) {
@@ -1110,6 +1149,13 @@ error_cleanup:
     return r;
 }
 
+/** Copy policy object.
+ *
+ * @param[in] src The policy object to be copied.
+ * @param[out] dest The destination policy object.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ */
 static TSS2_RC
 copy_policy_object(POLICY_OBJECT * dest, const POLICY_OBJECT * src) {
     /* Check for NULL references */
@@ -1138,6 +1184,14 @@ error_cleanup:
     return r;
 }
 
+/** Copy policy authorization.
+ *
+ * @param[in] src The policy authorization to be copied.
+ * @param[out] dest The destination policy authorization.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ */
 static TSS2_RC
 copy_policyauthorization(TPMS_POLICYAUTHORIZATION * dest,
         const TPMS_POLICYAUTHORIZATION * src) {
@@ -1157,6 +1211,12 @@ error_cleanup:
     return r;
 }
 
+/** Copy policy branches.
+ *
+ * @param[in] src The policy branches to be copied.
+ * @param[out] dest The destination policy branches.
+ * @retval TSS2_RC_SUCCESS on success.
+ */
 static TPML_POLICYBRANCHES *
 copy_policy_branches(const TPML_POLICYBRANCHES *from_branches)
 {
@@ -1305,6 +1365,13 @@ error:
     return r;
 }
 
+/** Copy a list of policy elements
+ *
+ * @param[in] form_policy The policy list to be copied.
+ * @retval NULL If the policy cannot be copied.
+ * @retval TPML_POLICYELEMENTS The copy of the policy list.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ */
 static TPML_POLICYELEMENTS *
 copy_policy_elements(const TPML_POLICYELEMENTS *from_policy)
 {
@@ -1342,8 +1409,6 @@ copy_policy_elements(const TPML_POLICYELEMENTS *from_policy)
 
 /** Copy policy.
  *
- * The object will not be freed (might be declared on the stack).
- *
  * @param[in] from_policy the policy to be copied.
  * @retval The new policy or NULL if not enough memory was available.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
@@ -1380,7 +1445,7 @@ ifapi_copy_policy(
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 TSS2_RC
@@ -1511,7 +1576,7 @@ ifapi_nv_get_name(TPM2B_NV_PUBLIC *publicInfo, TPM2B_NAME *name)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 TSS2_RC
@@ -1586,7 +1651,7 @@ ifapi_object_cmp_nv_public(IFAPI_OBJECT *object, void *nv_public, bool *equal)
  *         not covered by other return codes (e.g. a unexpected openssl
  *         error).
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
@@ -2263,6 +2328,15 @@ struct CurlBufferStruct {
   size_t size;
 };
 
+/** Callback for copying received curl data to a buffer.
+ *
+ * The buffer will be reallocated according to the size of retrieved data.
+ *
+ * @param[in]  contents The retrieved content.
+ * @param[in]  size the block size in the content.
+ * @param[in]  nmemb The number of blocks.
+ * @retval realsize The byte size of the data.
+ */
 static size_t
 write_curl_buffer_cb(void *contents, size_t size, size_t nmemb, void *userp)
 {
@@ -2291,7 +2365,8 @@ write_curl_buffer_cb(void *contents, size_t size, size_t nmemb, void *userp)
  * @retval 0 if buffer could be retrieved.
  * @retval -1 if an error did occur
  */
-int ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
+int
+ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
                           size_t *buffer_size) {
     int ret = -1;
     struct CurlBufferStruct curl_buffer = { .size = 0, .buffer = NULL };

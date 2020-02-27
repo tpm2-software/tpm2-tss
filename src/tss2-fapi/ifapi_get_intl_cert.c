@@ -38,6 +38,12 @@ static tpm_getekcertificate_ctx ctx = {
     .is_tpm2_device_active = true,
 };
 
+/** Compute the SHA256 hash from the public key of an EK.
+ *
+ * @param[in]  ek_public The public information of the EK.
+ * @retval unsigned_char* The hash value.
+ * @retval NULL If the computation of the hash fails.
+ */
 static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public) {
 
     unsigned char *hash = (unsigned char *)malloc(SHA256_DIGEST_LENGTH);
@@ -55,6 +61,7 @@ static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public) {
 
     switch (ek_public->publicArea.type) {
     case TPM2_ALG_RSA:
+        /* Add public key to the hash. */
         is_success = SHA256_Update(&sha256,
                                    ek_public->publicArea.unique.rsa.buffer,
                                    ek_public->publicArea.unique.rsa.size);
@@ -63,11 +70,13 @@ static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public) {
             goto err;
         }
 
+        /* Add exponent to the hash. */
         if (ek_public->publicArea.parameters.rsaDetail.exponent != 0) {
             LOG_ERROR("non-default exponents unsupported");
             goto err;
         }
-        BYTE buf[3] = { 0x1, 0x00, 0x01 }; // Exponent
+        /* Exponent 65537 will be added. */
+        BYTE buf[3] = { 0x1, 0x00, 0x01 };
         is_success = SHA256_Update(&sha256, buf, sizeof(buf));
         if (!is_success) {
             LOG_ERROR("SHA256_Update failed");
@@ -84,6 +93,7 @@ static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public) {
             goto err;
         }
 
+        /* Add public key to the hash. */
         is_success = SHA256_Update(&sha256,
                                    ek_public->publicArea.unique.ecc.y.buffer,
                                    ek_public->publicArea.unique.ecc.y.size);
@@ -113,6 +123,12 @@ err:
     return NULL;
 }
 
+/** Calculate the base64 encoding of the hash of the Endorsement Public Key.
+ *
+ * @param[in] buffer The hash of the endorsement public key.
+ * @retval char* The base64 encoded string.
+ * @retval NULL if the encoding fails.
+ */
 static char *
 base64_encode(const unsigned char* buffer)
 {
@@ -167,6 +183,14 @@ base64_encode(const unsigned char* buffer)
     return final_string;
 }
 
+/** Decode a base64 encoded certificate into binary form.
+ *
+ * @param[in]  buffer The base64 encoded certificate.
+ * @param[in]  len The length of the encoded certificate.
+ * @param[out] new_len The lenght of the binary certificate.
+ * @retval char* The binary data of the certificate.
+ * @retval NULL if the decoding fails.
+ */
 static char *
 base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
 {
@@ -191,6 +215,7 @@ base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
 
     CURL *curl = curl_easy_init();
     if (curl) {
+        /* Convert URL encoded string to a "plain string" */
         char *output = curl_easy_unescape(curl, (char *)buffer,
                                           len, (int *)&unescape_len);
         if (output) {
@@ -227,6 +252,16 @@ base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
     return binary_data;
 }
 
+/** Get endorsement certificate from the WEB.
+ *
+ * The base64 encoded public endorsement key will be added to the INTEL
+ * server address and used as URL to retrieve the certificate.
+ * The certificate will be retrieved via curl.
+ *
+ * @param[in]  b64h The base64 encoded public key.
+ * @param[out] buffer The json encoded certificate.
+ * @param[out] cert_size The size of the certificate.
+ */
 int retrieve_endorsement_certificate(char *b64h, unsigned char ** buffer,
                                      size_t *cert_size) {
     int ret = -1;
@@ -247,8 +282,13 @@ int retrieve_endorsement_certificate(char *b64h, unsigned char ** buffer,
     return rc;
 }
 
-/**
- * Get INTEL certificate for EK
+/** Get INTEL certificate for EK
+ *
+ * Using the base64 encoded public endorsement key the JSON encoded certificate
+ * will be downloaded.
+ * The JSON certificate will be parsed and the base64 encoded certificate
+ * will be converted into binary format.
+ *
  *
  * @param[in] context The FAPI context with the configuration data.
  * @param[in] ek_public The out public data of the EK.
@@ -257,6 +297,8 @@ int retrieve_endorsement_certificate(char *b64h, unsigned char ** buffer,
  *
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_NO_CERT If an error did occur during certificate downloading.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occured.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_get_intl_ek_certificate(FAPI_CONTEXT *context, TPM2B_PUBLIC *ek_public,
@@ -279,6 +321,7 @@ ifapi_get_intl_ek_certificate(FAPI_CONTEXT *context, TPM2B_PUBLIC *ek_public,
 
     LOG_INFO("%s", b64);
 
+    /* Download the JSON encoded certificate. */
     rc = retrieve_endorsement_certificate(b64, cert_buffer, cert_size);
     free(b64);
     goto_if_error(rc, "Retrieve endorsement certificate", out);

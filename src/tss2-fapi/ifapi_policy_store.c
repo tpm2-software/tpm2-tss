@@ -88,7 +88,7 @@ cleanup:
  *         initialized.
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_policy_store_initialize(
@@ -169,7 +169,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
@@ -220,7 +220,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_MEMORY: If memory could not be allocated to hold the output data.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
-*          the function.
+ *         the function.
  */
 TSS2_RC
 ifapi_policy_store_store_async(

@@ -24,6 +24,15 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
+/** Copy the policy digests from a branch list to a digest list.
+ *
+ * @param[in] branches The list of policy branches.
+ * @param[in] current_hash_alg The hash algorithm used for computation.
+ * @param[out] digest_list The list of policies computed for every branch.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If no appropriate digest was found in
+ *         the branch list.
+ */
 static TSS2_RC
 compute_or_digest_list(
     TPML_POLICYBRANCHES *branches,
@@ -117,13 +126,26 @@ ifapi_extend_authorization(
     }
     return TSS2_RC_SUCCESS;
 }
-
+/** Compute the index for the current digest list and clear the digest.
+ *
+ * The list entry with the appropriate hash algorithm will be searched.
+ * The found digest will be set to zero.
+ *
+ * @param[in,out] digest_values The list of policy digests and corresponding
+ *                hash algorithms.
+ * @param[in] hashAlg The hash algorithm to be searched.
+ * @param[out] idx The index of the found digest.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If no appropriate digest was found in
+ *         the digest list.
+ */
 TSS2_RC
 get_policy_digest_idx(TPML_DIGEST_VALUES *digest_values, TPMI_ALG_HASH hashAlg,
                       size_t *idx)
 {
     size_t i;
     for (i = 0; i < digest_values->count; i++) {
+        /* Check whether current hashAlg is appropriate. */
         if (digest_values->digests[i].hashAlg == hashAlg) {
             *idx = i;
             return TSS2_RC_SUCCESS;
@@ -140,6 +162,25 @@ get_policy_digest_idx(TPML_DIGEST_VALUES *digest_values, TPMI_ALG_HASH hashAlg,
     return TSS2_RC_SUCCESS;
 }
 
+/** Execute policy PCR.
+ *
+ * This command is used to cause conditional gating of a policy based on PCR.
+ *
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The PCR policy which will be executed. The policy
+ *                digest will be added to the policy.
+ * @param[in]     current_hash_alg The hash algorithm wich will be used for
+ *                policy computation.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ */
 static TSS2_RC
 execute_policy_pcr(
     ESYS_CONTEXT *esys_ctx,
@@ -161,6 +202,8 @@ execute_policy_pcr(
         return_if_error(r, "Compute policy digest and selection.");
 
         LOGBLOB_DEBUG(&pcr_digest.buffer[0], pcr_digest.size, "PCR Digest");
+
+        /* Prepare the policy execution. */
         r = Esys_PolicyPCR_Async(esys_ctx,
                                  current_policy->session,
                                  ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
@@ -169,6 +212,7 @@ execute_policy_pcr(
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
+        /* Finalize the policy execution if possible. */
         r = Esys_PolicyPCR_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyPCR_Finish.");
 
@@ -180,6 +224,24 @@ execute_policy_pcr(
     return r;
 }
 
+/** Execute policy duplicate.
+ *
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The duplicate policy which will be executed. The policy
+ *                digest will be added to the policy.
+ * @param[in]     current_hash_alg The hash algorithm wich will be used for
+ *                policy computation.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ */
 static TSS2_RC
 execute_policy_duplicate(
     ESYS_CONTEXT *esys_ctx,
@@ -196,6 +258,7 @@ execute_policy_duplicate(
         r = cb->cbdup(&policy->objectName, cb->cbdup_userdata);
         return_if_error(r, "Get name for policy duplicate select.");
 
+        /* Prepare the policy execution. */
         r = Esys_PolicyDuplicationSelect_Async(esys_ctx,
                                                current_policy->session,
                                                ESYS_TR_NONE, ESYS_TR_NONE,
@@ -207,6 +270,7 @@ execute_policy_duplicate(
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
+        /* Finalize the policy execution if possible. */
         r = Esys_PolicyDuplicationSelect_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyDuplicationselect_Finish.");
 
@@ -218,6 +282,28 @@ execute_policy_duplicate(
     return r;
 }
 
+/** Execute policy NV.
+ *
+ * A policy based on the contents of an NV Index will be executed. The
+ * NV authorization is done by a callback. For an example callback
+ * implementation see ifapi_policyeval_cbauth()
+ *
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The NV policy which will be executed. The policy
+ *                digest will be added to the policy.
+ * @param[in]     current_hash_alg The hash algorithm wich will be used for
+ *                policy computation.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ */
 static TSS2_RC
 execute_policy_nv(
     ESYS_CONTEXT *esys_ctx,
@@ -236,6 +322,8 @@ execute_policy_nv(
 
     statecase(current_policy->state, POLICY_AUTH_CALLBACK)
         ifapi_policyeval_EXEC_CB *cb = &current_policy->callbacks;
+
+        /* Authorize NV object. */
         r = cb->cbauth(&current_policy->name,
                        &current_policy->object_handle,
                        &current_policy->auth_handle,
@@ -243,6 +331,7 @@ execute_policy_nv(
         return_try_again(r);
         return_if_error(r, "Execute authorized policy.");
 
+        /* Prepare the policy execution. */
         r = Esys_PolicyNV_Async(esys_ctx,
                                 current_policy->object_handle,
                                 current_policy->auth_handle,
@@ -254,6 +343,7 @@ execute_policy_nv(
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
+        /* Finalize the policy execution if possible. */
         r = Esys_PolicyNV_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyNV_Finish.");
 
@@ -265,6 +355,31 @@ execute_policy_nv(
     return r;
 }
 
+/** Execute policy for signature based authorization.
+ *
+ * A signed authorization is included in this policy. The authorization hash
+ * of the policy data will be signed via a callback. For an example callback
+ * implementation see ifapi_sign_buffer()
+ *
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The policy to be signed which will be executed. The policy
+ *                digest will be added to the policy.
+ * @param[in]     current_hash_alg The hash algorithm wich will be used for
+ *                policy computation.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+ *         is not set.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ */
 static TSS2_RC
 execute_policy_signed(
     ESYS_CONTEXT *esys_ctx,
@@ -312,7 +427,7 @@ execute_policy_signed(
         int pem_key_size;
         TPM2B_PUBLIC tpm_public;
 
-        /* RECREATE pem key from tpm public key */
+        /* Recreate pem key from tpm public key */
         if (!current_policy->pem_key) {
             tpm_public.publicArea = policy->keyPublic;
             tpm_public.size = 0;
@@ -321,6 +436,7 @@ execute_policy_signed(
             return_if_error(r, "Convert TPM public key into PEM key.");
         }
 
+        /* Callback for signing the autorization hash. */
         r = cb->cbsign(current_policy->pem_key, policy->publicKeyHint,
                        policy->keyPEMhashAlg, current_policy->buffer,
                        current_policy->buffer_size,
@@ -342,6 +458,7 @@ execute_policy_signed(
         inPublic.size = 0;
         inPublic.publicArea = policy->keyPublic;
 
+        /* Prepare the loading of the external public key, user for verificaton. */
         r = Esys_LoadExternal_Async(esys_ctx,
                                     ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                                     NULL, &inPublic, TPM2_RH_OWNER);
@@ -352,6 +469,7 @@ execute_policy_signed(
         r = Esys_LoadExternal_Finish(esys_ctx, &current_policy->object_handle);
         try_again_or_error(r, "Load external key.");
 
+        /* Prepare the policy execution. */
         r = Esys_PolicySigned_Async(esys_ctx,
                                     current_policy->object_handle,
                                     current_policy->session,
@@ -364,6 +482,7 @@ execute_policy_signed(
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH);
+        /* Finalize the policy execution if possible. */
         r = Esys_PolicySigned_Finish(esys_ctx, NULL, NULL);
         try_again_or_error(r, "Execute PolicySigned_Finish.");
 
@@ -392,6 +511,42 @@ cleanup:
     return r;
 }
 
+/** Execute a policy that was signed by a certain key.
+ *
+ * All policies authorized by the key stored in the policy will be
+ * retrieved and one policy will be selected via a branch selection callback
+ * (see Fapi_SetBranchCB()) if more then one policy was found.
+ * The selected policy will be executed via a callback. For an example callback
+ * implementation see ifapi_exec_auth_policy().
+ *
+ * For an example callback implementation to executie of an authorized policy
+ * ifapi_exec_auth_policy()
+ *
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The policy which defines the signing key and several
+ *                additional parameters (nonce, policyRef ...). The policy
+ *                digest will be added to the policy.
+ * @param[in]     current_hash_alg The hash algorithm wich will be used for
+ *                policy computation.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occured.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
+ *         was not successful.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+ *         is not set.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ */
 static TSS2_RC
 execute_policy_authorize(
     ESYS_CONTEXT *esys_ctx,
@@ -513,6 +668,35 @@ cleanup:
     return r;
 }
 
+/** Execute a policy whose digest is stored in the NV ram.
+ *
+ * The policy will be retrieved from policy store based on the policy digest
+ * stored in NV ram.
+ * The authorization for the NV object, the policy retrieval, and the execution
+ * is done via a callback. For an example callback implementation see
+ * ifapi_exec_auth_nv_policy().
+ *
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The policy which defines the policy to be authorized
+ *                and the used NV object.
+ *                The policy digest will be added to the policy.
+ * @param[in]     current_hash_alg The hash algorithm wich will be used for
+ *                policy computation.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
+ *         was not successful.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ */
 static TSS2_RC
 execute_policy_authorize_nv(
     ESYS_CONTEXT *esys_ctx,
@@ -528,6 +712,7 @@ execute_policy_authorize_nv(
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
+        /* Execute the policy stored in the NV object. */
         r = cb->cbauthnv(&policy->nvPublic, hash_alg, cb->cbauthpol_userdata);
         try_again_or_error(r, "Execute policy authorize nv callback.");
 
@@ -536,6 +721,7 @@ execute_policy_authorize_nv(
         fallthrough;
 
     statecase(current_policy->state, POLICY_AUTH_CALLBACK)
+        /* Authorize the NV object for policy execution. */
         r = cb->cbauth(&current_policy->name,
                        &current_policy->object_handle,
                        &current_policy->auth_handle,
@@ -546,6 +732,7 @@ execute_policy_authorize_nv(
 
     statecase(current_policy->state, POLICY_EXEC_ESYS)
         LOG_DEBUG("**STATE** POLICY_EXEC_ESYS");
+        /* Prepare the policy execution. */
         r = Esys_PolicyAuthorizeNV_Async(esys_ctx,
                                          current_policy->auth_handle,
                                          current_policy->object_handle,
@@ -556,6 +743,7 @@ execute_policy_authorize_nv(
         fallthrough;
 
     statecase(current_policy->state, POLICY_AUTH_SENT)
+        /* Finalize the policy execution if possible. */
         r = Esys_PolicyAuthorizeNV_Finish(esys_ctx);
         return_try_again(r);
         goto_if_error(r, "FAPI PolicyAuthorizeNV_Finish", cleanup);
@@ -567,6 +755,29 @@ cleanup:
     return r;
 }
 
+/** Execute  a policy based on a secret-based authorization.
+ *
+ * The policy defines an object whose secret is needed for policy execution.
+ * The authorization of the object is done via a callback.
+ * For an example callback implementation see ifapi_policyeval_cbauth;().
+ *
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The policy which defines the object whose secret
+ *                is needed for policy execution.
+ *                The policy digest will be added to the policy.
+ * @param[in]     current_hash_alg The hash algorithm wich will be used for
+ *                policy computation.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ */
 static TSS2_RC
 execute_policy_secret(
     ESYS_CONTEXT *esys_ctx,
@@ -582,6 +793,7 @@ execute_policy_secret(
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
         ifapi_policyeval_EXEC_CB *cb = &current_policy->callbacks;
+        /* Callback for the object authorization. */
         r = cb->cbauth(&policy->objectName,
                        &current_policy->object_handle,
                        &current_policy->auth_handle,
@@ -598,6 +810,7 @@ execute_policy_secret(
         policy->nonceTPM = *(current_policy->nonceTPM);
         SAFE_FREE(current_policy->nonceTPM);
 
+        /* Prepare the policy execution. */
         r = Esys_PolicySecret_Async(esys_ctx,
                                     current_policy->auth_handle,
                                     current_policy->session,
@@ -609,6 +822,7 @@ execute_policy_secret(
         fallthrough;
 
     statecase(current_policy->state, POLICY_AUTH_SENT)
+        /* Finalize the policy execution if possible. */
         r = Esys_PolicySecret_Finish(esys_ctx, NULL,
                                      NULL);
         return_try_again(r);
@@ -622,6 +836,24 @@ cleanup:
     return r;
 }
 
+/** Execute a policy depending on the TPM timers.
+ *
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The policy which defines the values for the comparision
+ *                with the TPM timers and the comparision operation.
+ *                The policy digest will be added to the policy.
+ * @param[in]     current_hash_alg The hash algorithm wich will be used for
+ *                policy computation.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ */
 static TSS2_RC
 execute_policy_counter_timer(
     ESYS_CONTEXT *esys_ctx,
@@ -634,6 +866,7 @@ execute_policy_counter_timer(
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
+        /* Prepare the policy execution. */
         r = Esys_PolicyCounterTimer_Async(esys_ctx,
                                           current_policy->session,
                                           ESYS_TR_NONE, ESYS_TR_NONE,
@@ -645,6 +878,7 @@ execute_policy_counter_timer(
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
+        /* Finalize the policy execution if possible. */
         r = Esys_PolicyCounterTimer_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyCounterTImer_Finish.");
 
@@ -656,6 +890,20 @@ execute_policy_counter_timer(
     return r;
 }
 
+/** Execute a policy depending on physical presence.
+ *
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The policy indicating that physical presence is needed.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ */
 static TSS2_RC
 execute_policy_physical_presence(
     ESYS_CONTEXT *esys_ctx,
@@ -669,6 +917,7 @@ execute_policy_physical_presence(
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
+        /* Prepare the policy execution. */
         r = Esys_PolicyPhysicalPresence_Async(esys_ctx,
                                               current_policy->session,
                                               ESYS_TR_NONE, ESYS_TR_NONE,
@@ -677,6 +926,7 @@ execute_policy_physical_presence(
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
+        /* Finalize the policy execution if possible. */
         r = Esys_PolicyPhysicalPresence_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyPhysicalPresence_Finish.");
 
@@ -688,6 +938,22 @@ execute_policy_physical_presence(
     return r;
 }
 
+/** Execute a policy for binding a authorization value of the authorized entity.
+ *
+ * The authValue will be included in hmacKey of the session.
+
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The policy indicating that a auth value is needed.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ */
 static TSS2_RC
 execute_policy_auth_value(
     ESYS_CONTEXT *esys_ctx,
@@ -701,6 +967,7 @@ execute_policy_auth_value(
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
+        /* Prepare the policy execution. */
         r = Esys_PolicyAuthValue_Async(esys_ctx,
                                        current_policy->session,
                                        ESYS_TR_NONE, ESYS_TR_NONE,
@@ -709,6 +976,7 @@ execute_policy_auth_value(
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
+        /* Finalize the policy execution if possible. */
         r = Esys_PolicyAuthValue_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyAuthValue_Finish.");
 
@@ -720,6 +988,23 @@ execute_policy_auth_value(
     return r;
 }
 
+/** Execute a policy for binding a authorization value of the authorized object.
+ *
+ * The authValue of the authorized object will be checked when the session is used
+ * for authorization..
+ *
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The policy indicating that a auth value is needed.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ */
 static TSS2_RC
 execute_policy_password(
     ESYS_CONTEXT *esys_ctx,
@@ -733,6 +1018,7 @@ execute_policy_password(
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
+        /* Prepare the policy execution. */
         r = Esys_PolicyPassword_Async(esys_ctx,
                                       current_policy->session,
                                       ESYS_TR_NONE, ESYS_TR_NONE,
@@ -741,6 +1027,7 @@ execute_policy_password(
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
+        /* Finalize the policy execution if possible. */
         r = Esys_PolicyPassword_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyPassword_Finish.");
 
@@ -752,6 +1039,20 @@ execute_policy_password(
     return r;
 }
 
+/** Execute a policy to limit an authorization to a specific command code.
+ *
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The policy with the command code used fo limitting.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ */
 static TSS2_RC
 execute_policy_command_code(
     ESYS_CONTEXT *esys_ctx,
@@ -764,6 +1065,7 @@ execute_policy_command_code(
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
+        /* Prepare the policy execution. */
         r = Esys_PolicyCommandCode_Async(esys_ctx,
                                          current_policy->session,
                                          ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
@@ -772,6 +1074,7 @@ execute_policy_command_code(
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
+        /* Finalize the policy execution if possible. */
         r = Esys_PolicyCommandCode_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyCommandCode_Finish.");
 
@@ -783,6 +1086,22 @@ execute_policy_command_code(
     return r;
 }
 
+/** Execute a policy for binding the policy to a specific set of TPM entities.
+ *
+ * Up to three entity names can be defined in the policy.
+ *
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The policy with the entity names.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ */
 static TSS2_RC
 execute_policy_name_hash(
     ESYS_CONTEXT *esys_ctx,
@@ -795,6 +1114,7 @@ execute_policy_name_hash(
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
+        /* Prepare the policy execution. */
         r = Esys_PolicyNameHash_Async(esys_ctx,
                                       current_policy->session,
                                       ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
@@ -803,6 +1123,7 @@ execute_policy_name_hash(
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
+        /* Finalize the policy execution if possible. */
         r = Esys_PolicyNameHash_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyNameHash_Finish.");
 
@@ -814,6 +1135,20 @@ execute_policy_name_hash(
     return r;
 }
 
+/** Execute a policy for binding the policy to command parameters.
+ *
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The policy with the cp hash.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ */
 static TSS2_RC
 execute_policy_cp_hash(
     ESYS_CONTEXT *esys_ctx,
@@ -826,6 +1161,7 @@ execute_policy_cp_hash(
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
+        /* Prepare the policy execution. */
         r = Esys_PolicyCpHash_Async(esys_ctx,
                                     current_policy->session,
                                     ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
@@ -835,6 +1171,7 @@ execute_policy_cp_hash(
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
+        /* Finalize the policy execution if possible. */
         r = Esys_PolicyCpHash_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyCpHash_Finish.");
 
@@ -846,6 +1183,20 @@ execute_policy_cp_hash(
     return r;
 }
 
+/** Execute a policy for binding the policy to a certain locality.
+ *
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The policy with the locality.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ */
 static TSS2_RC
 execute_policy_locality(
     ESYS_CONTEXT *esys_ctx,
@@ -858,6 +1209,7 @@ execute_policy_locality(
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
+        /* Prepare the policy execution. */
         r = Esys_PolicyLocality_Async(esys_ctx,
                                       current_policy->session,
                                       ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
@@ -866,6 +1218,7 @@ execute_policy_locality(
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
+        /* Finalize the policy execution if possible. */
         r = Esys_PolicyLocality_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyNV_Finish.");
 
@@ -877,6 +1230,22 @@ execute_policy_locality(
     return r;
 }
 
+/** Execute a policy for binding the policy to the NV written state.
+ *
+ * The state NV written yes or NV written no can be defined in the policy.
+ *
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The policy with the NV written switch YES or NO.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ */
 static TSS2_RC
 execute_policy_nv_written(
     ESYS_CONTEXT *esys_ctx,
@@ -889,6 +1258,7 @@ execute_policy_nv_written(
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
+        /* Prepare the policy execution. */
         r = Esys_PolicyNvWritten_Async(esys_ctx,
                                        current_policy->session,
                                        ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
@@ -897,6 +1267,7 @@ execute_policy_nv_written(
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
+        /* Finalize the policy execution if possible. */
         r = Esys_PolicyNvWritten_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyNV_Finish.");
 
@@ -908,6 +1279,22 @@ execute_policy_nv_written(
     return r;
 }
 
+/** Execute a policy for binding the policy to the NV written state.
+ *
+ * The state NV written yes or NV written no can be defined in the policy.
+ *
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The policy with the NV written switch YES or NO.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ */
 static TSS2_RC
 execute_policy_or(
     ESYS_CONTEXT *esys_ctx,
@@ -921,6 +1308,7 @@ execute_policy_or(
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
+        /* Prepare the policy execution. */
         r = compute_or_digest_list(policy->branches, current_hash_alg,
                                       &current_policy->digest_list);
         return_if_error(r, "Compute policy or digest list.");
@@ -932,6 +1320,7 @@ execute_policy_or(
         return_if_error(r, "Execute PolicyPCR.");
         fallthrough;
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
+        /* Finalize the policy execution if possible. */
         r = Esys_PolicyOR_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyPCR_Finish.");
 
@@ -941,7 +1330,26 @@ execute_policy_or(
     }
 }
 
-
+/** Execute a policy for executing a callback during policy execution.
+ *
+ * The action name stored in the policy name will be passed do the callback
+ * function. The policy action callback has to be set with the function:
+ * Fapi_SetPolicyActionCB().
+ *
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The policy with action name.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+ *         is not set.
+ */
 static TSS2_RC
 execute_policy_action(
     ESYS_CONTEXT *esys_ctx,
@@ -956,6 +1364,7 @@ execute_policy_action(
     statecase(current_policy->state, POLICY_EXECUTE_INIT);
         ifapi_policyeval_EXEC_CB *cb = &current_policy->callbacks;
 
+        /* Execute the callback and try it again if the callback is not finished. */
         r = cb->cbaction(policy->action, cb->cbaction_userdata);
         try_again_or_error(r, "Execute policy action callback.");
         return r;
@@ -964,6 +1373,19 @@ execute_policy_action(
     }
 }
 
+/** Execute a policy element depending on the type.
+ *
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The policy element with the policy to be executed and
+ *                the type of the policy.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occured.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ */
 static TSS2_RC
 execute_policy_element(
     ESYS_CONTEXT *esys_ctx,
@@ -1108,7 +1530,7 @@ error:
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
-*          is not set.
+ *         is not set.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  */
 static TSS2_RC
@@ -1190,7 +1612,7 @@ ifapi_policyeval_execute_prepare(
  *         during authorization.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
-*          is not set.
+ *         is not set.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
