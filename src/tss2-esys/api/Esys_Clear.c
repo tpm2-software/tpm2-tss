@@ -199,6 +199,11 @@ Esys_Clear_Async(
     return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
                           "Finish (Execute Async)");
 
+    /* If the command authorization is LOCKOUT we need to
+     * recompute session value with an empty auth */
+    if (authHandle == ESYS_TR_RH_LOCKOUT)
+        iesys_compute_session_value(esysContext->session_tab[0], NULL, NULL);
+
     esysContext->state = _ESYS_STATE_SENT;
 
     return r;
