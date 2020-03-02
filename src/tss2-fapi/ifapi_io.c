@@ -62,7 +62,7 @@ ifapi_io_read_async(
 
     fseek(io->stream, 0L, SEEK_END);
     long length = ftell(io->stream);
-    rewind(io->stream);
+    fclose(io->stream);
 
     io->stream = fopen(filename, "rt");
     io->char_rbuffer = malloc (length + 1);
