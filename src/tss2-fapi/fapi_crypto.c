@@ -867,25 +867,18 @@ ecdsa_verify_signature(
     return_if_null(digest, "digest is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
 
     TSS2_RC r = TSS2_RC_SUCCESS;
-    ECDSA_SIG *ecdsaSignature = NULL;
     EC_KEY *eccKey = NULL;
-
-    /* Try to verify the signature using ECDSA */
-    if (!d2i_ECDSA_SIG(&ecdsaSignature, &signature, signatureSize)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
-                     "Invalid ECDSA DER signature", error_cleanup);
-    }
 
     eccKey = EVP_PKEY_get1_EC_KEY(publicKey);
 
-    if (!ECDSA_do_verify(digest, digestSize, ecdsaSignature, eccKey)) {
+    /* Try to verify the signature using ECDSA, note that param 0 is unused */
+    if (!ECDSA_verify(0, digest, digestSize, signature, signatureSize, eccKey)) {
         goto_error(r, TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED,
                    "ECDSA signature verification failed.", error_cleanup);
     }
 
 error_cleanup:
     OSSL_FREE(eccKey, EC_KEY);
-    OSSL_FREE(ecdsaSignature, ECDSA_SIG);
     return r;
 }
 
