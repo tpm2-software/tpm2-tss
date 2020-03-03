@@ -872,8 +872,12 @@ ecdsa_verify_signature(
     eccKey = EVP_PKEY_get1_EC_KEY(publicKey);
 
     /* Try to verify the signature using ECDSA, note that param 0 is unused */
-    if (!ECDSA_verify(0, digest, digestSize, signature, signatureSize, eccKey)) {
+    int rc = ECDSA_verify(0, digest, digestSize, signature, signatureSize, eccKey);
+    if (rc == 0) {
         goto_error(r, TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED,
+                   "ECDSA signature verification failed.", error_cleanup);
+    } else if (rc < 0) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
                    "ECDSA signature verification failed.", error_cleanup);
     }
 
