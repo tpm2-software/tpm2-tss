@@ -151,6 +151,7 @@ iesys_DeleteAllResourceObjects(ESYS_CONTEXT * esys_context)
         next_node_rsrc = node_rsrc->next;
         SAFE_FREE(node_rsrc);
     }
+    esys_context->rsrc_list = NULL;
 }
 /**  Compute the TPM nonce of the session used for parameter encryption.
  *
