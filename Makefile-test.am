@@ -145,6 +145,7 @@ if ESAPI
 ESYS_TESTS_INTEGRATION_DESTRUCTIVE = \
     test/integration/esys-change-eps.int \
     test/integration/esys-clear.int \
+    test/integration/esys-tpm-clear-auth.int \
     test/integration/esys-clear-session.int \
     test/integration/esys-field-upgrade.int \
     test/integration/esys-firmware-read.int \
@@ -1304,6 +1305,13 @@ test_integration_esys_auto_session_flags_int_LDADD = $(TESTS_LDADD)
 test_integration_esys_auto_session_flags_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_auto_session_flags_int_SOURCES = \
     test/integration/esys-auto-session-flags.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_tpm_clear_auth_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_tpm_clear_auth_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_tpm_clear_auth_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_tpm_clear_auth_int_SOURCES = \
+    test/integration/esys-tpm-clear-auth.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 endif #ESAPI
