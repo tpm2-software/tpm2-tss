@@ -361,7 +361,7 @@ ifapi_get_intl_ek_certificate(FAPI_CONTEXT *context, TPM2B_PUBLIC *ek_public,
         goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
                    "Invalid EK cert data", out_free_json);
     }
-    LOG_DEBUG("Bianry cert size %lu", *cert_size);
+    LOG_DEBUG("Binary cert size %zu", *cert_size);
     *cert_buffer = (unsigned char *)cert_bin;
 
 out_free_json:
