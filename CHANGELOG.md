@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Changed tcti-device in non-async mode to allways block
 
 ### Fixed
+- Fixed hmac calculation for tpm2_clear command in ESAPI
 - Fixed mixing salted and unsalted sessions in the same ESAPI context
 - Removed use of VLAs from TPML marshal code
 - Fixed setting C++ compiler for non-fuzzing builds at configure
