@@ -5,5 +5,5 @@
      "system_dir": "@localstatedir@/lib/tpm2-tss/system/keystore",
      "tcti": "",
      "system_pcrs" : [],
-     "log_dir" : "@runstatedir@/tpm2-tss/eventlog/",
+     "log_dir" : "@runstatedir@/tpm2-tss/eventlog/"
 }
