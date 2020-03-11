@@ -204,6 +204,12 @@ test_esys_encrypt_decrypt(ESYS_CONTEXT * esys_context)
                     &outPrivate2,
                     &outPublic2,
                     &creationData2, &creationHash2, &creationTicket2);
+
+    if (r == 0x2c2) { /*<< tpm:parameter(2):inconsistent attributes */
+        LOG_WARNING("Unsupported symmetric cipher.");
+        failure_return = EXIT_SKIP;
+        goto error;
+    }
     goto_if_error(r, "Error esys create ", error);
 
     LOG_INFO("AES key created.");
