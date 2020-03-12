@@ -12,15 +12,15 @@ TESTS_LDADD = $(check_LTLIBRARIES) $(lib_LTLIBRARIES) \
 check_LTLIBRARIES =
 # test harness configuration
 TEST_EXTENSIONS = .int
-if TESTPTPM
-INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler-ptpm.sh
-INT_LOG_FLAGS = --ptpm=$(PTPM)
-else
-INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler.sh
-endif
-EXTRA_DIST += $(srcdir)/script/int-log-compiler.sh $(srcdir)/script/int-log-compiler-ptpm.sh \
-              $(srcdir)/script/ekca/create_ca.sh  $(srcdir)/script/ekca/ek.cnf \
-              $(srcdir)/script/ekca/intermed-ca.cnf $(srcdir)/script/ekca/root-ca.cnf
+INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler-$(INTEGRATION_TCTI).sh
+INT_LOG_FLAGS = $(INTEGRATION_ARGS)
+EXTRA_DIST += $(srcdir)/script/int-log-compiler-swtpm.sh \
+              $(srcdir)/script/int-log-compiler-mssim.sh \
+              $(srcdir)/script/int-log-compiler-device.sh \
+              $(srcdir)/script/ekca/create_ca.sh \
+              $(srcdir)/script/ekca/ek.cnf \
+              $(srcdir)/script/ekca/intermed-ca.cnf \
+              $(srcdir)/script/ekca/root-ca.cnf
 AM_TESTS_ENVIRONMENT = PATH="$(PATH)"
 
 check-programs: $(check_PROGRAMS)
@@ -69,6 +69,8 @@ TESTS_UNIT  = \
     test/unit/key-value-parse \
     test/unit/log \
     test/unit/tcti-device \
+    test/unit/tcti-mssim \
+    test/unit/tcti-swtpm \
     test/unit/tctildr \
     test/unit/tctildr-dl \
     test/unit/tctildr-nodl \
@@ -112,7 +114,7 @@ if ENABLE_INTEGRATION
 check_LTLIBRARIES += test/integration/libtest_utils.la
 
 TESTS_INTEGRATION =
-if !TESTPTPM
+if !TESTDEVICE
 TESTS_INTEGRATION += \
     test/integration/sapi-asymmetric-encrypt-decrypt.int \
     test/integration/sapi-nv-policy-locality.int \
@@ -136,10 +138,9 @@ TESTS_INTEGRATION += \
     test/integration/sapi-policy-template.int \
     test/integration/sapi-create-loaded.int \
     test/integration/sapi-policy-authorizeNV.int \
-    test/integration/sapi-command-cancel.int \
     test/integration/sapi-param-encrypt-decrypt.int \
     test/tpmclient/tpmclient.int
-endif # !TESTPTPM
+endif # !TESTDEVICE
 
 if ESAPI
 ESYS_TESTS_INTEGRATION_DESTRUCTIVE = \
@@ -235,24 +236,24 @@ ESYS_TESTS_INTEGRATION_OPTIONAL = \
     test/integration/esys-zgen-2phase.int \
     test/integration/esys-auto-session-flags.int
 
-if TESTPTPM
+if TESTDEVICE
 
-if PTPMMANDATORY
+if DEVICEMANDATORY
 TESTS_INTEGRATION +=  $(ESYS_TESTS_INTEGRATION_MANDATORY)
 endif
 
-if PTPMOPTIONAL
+if DEVICEOPTIONAL
 TESTS_INTEGRATION +=  $(ESYS_TESTS_INTEGRATION_OPTIONAL)
 endif
 
-if PTPMDESTRUCTIVE
+if DEVICEDESTRUCTIVE
 TESTS_INTEGRATION += $(ESYS_TESTS_INTEGRATION_DESTRUCTIVE)
 endif
 
-else # TESTPTPM
+else # TESTDEVICE
 TESTS_INTEGRATION += $(ESYS_TESTS_INTEGRATION_MANDATORY) $(ESYS_TESTS_INTEGRATION_OPTIONAL) $(ESYS_TESTS_INTEGRATION_DESTRUCTIVE)
 
-endif # TESTPTPM
+endif # TESTDEVICE
 
 endif #ESAPI
 
@@ -302,20 +303,20 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-info.int \
     test/integration/fapi-unseal.int
 
-if TESTPTPM
-if PTPMDESTRUCTIVE
+if TESTDEVICE
+if DEVICEDESTRUCTIVE
 FAPI_TESTS_INTEGRATION += test/integration/fapi-key-create-sign-policy-provision.int
 endif #PTPMDESTRUCTIVE
-endif #TESTPTPM
+endif TESTDEVICE
 
-if !TESTPTPM
+if !TESTDEVICE
 FAPI_TESTS_INTEGRATION += \
     test/integration/fapi-key-create-sign-policy-provision.int \
     test/integration/fapi-provision-fingerprint.int \
     test/integration/fapi-provision-certificate.int \
     test/integration/fapi-provision-fingerprint_ecc.int \
     test/integration/fapi-provision-certificate_ecc.int
-endif #!TESTPTPM
+endif #!TESTDEVICE
 
 TESTS_INTEGRATION += $(FAPI_TESTS_INTEGRATION)
 
@@ -355,6 +356,13 @@ test_unit_tcti_mssim_SOURCES = test/unit/tcti-mssim.c \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-mssim.c src/tss2-tcti/tcti-mssim.h
 endif
+
+test_unit_tcti_swtpm_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_tcti_swtpm_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
+test_unit_tcti_swtpm_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=select,--wrap=write
+test_unit_tcti_swtpm_SOURCES = test/unit/tcti-swtpm.c \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-swtpm.c src/tss2-tcti/tcti-swtpm.h
 
 test_unit_tctildr_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tctildr_LDADD = $(CMOCKA_LIBS) $(libutil)
@@ -1331,11 +1339,6 @@ test_integration_sapi_policy_authorizeNV_int_LDADD   = $(TESTS_LDADD)
 test_integration_sapi_policy_authorizeNV_int_SOURCES = test/integration/main-sapi.c \
     test/integration/sapi-policy-authorizeNV.int.c
 
-test_integration_sapi_command_cancel_int_CFLAGS  = $(TESTS_CFLAGS)
-test_integration_sapi_command_cancel_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_command_cancel_int_SOURCES = test/integration/main-sapi.c \
-    test/integration/sapi-command-cancel.int.c src/util/log.c
-
 if FAPI
 test_integration_fapi_get_random_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_get_random_int_LDADD   = $(TESTS_LDADD)
@@ -1696,5 +1699,5 @@ endif #FAPI
 
 endif #ENABLE_INTEGRATION
 
-check-ptpm:
+check-device:
 	$(MAKE) -j1 check

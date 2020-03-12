@@ -62,11 +62,17 @@ test_tctildr_get_default_all_fail (void **state)
     TSS2_TCTI_CONTEXT *tcti_ctx = NULL;
 
 #define TEST_RC 0x65203563
+    /* device:/dev/tpm0 */
     will_return (__wrap_tcti_from_init, tcti_ctx);
     will_return (__wrap_tcti_from_init, TEST_RC);
+    /* device:/dev/tpmrm0 */
     will_return (__wrap_tcti_from_init, tcti_ctx);
     will_return (__wrap_tcti_from_init, TEST_RC);
-#ifdef TCTI_MSSIM
+    /* swtpm */
+    will_return (__wrap_tcti_from_init, tcti_ctx);
+    will_return (__wrap_tcti_from_init, TEST_RC);
+#if defined (TCTI_MSSIM) && defined (TCTI_SWTPM)
+    /* second swtpm if enabled */
     will_return (__wrap_tcti_from_init, tcti_ctx);
     will_return (__wrap_tcti_from_init, TEST_RC);
 #endif

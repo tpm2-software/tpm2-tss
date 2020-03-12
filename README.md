@@ -34,7 +34,8 @@ The Marshaling/Unmarshaling API is exposed through a library called libtss2-mu.
 * TPM Command Transmission Interface (TCTI) that is described in the same specification.
 This API provides a standard interface to transmit / receive TPM command / response buffers.
 It is expected that any number of libraries implementing the TCTI API will be implemented as a way to abstract various platform specific IPC mechanisms.
-Currently this repository provides two TCTI implementations: libtss2-tcti-device and libtss2-tcti-mssim.
+Currently this repository provides four TCTI implementations: libtss2-tcti-device,
+libtss2-tcti-tbs (for Windows), libtss2-tcti-swtpm and libtss2-tcti-mssim.
 The former should be used for direct access to the TPM through the Linux kernel driver.
 The latter implements the protocol exposed by the Microsoft software TPM2 simulator.
 * The [TCG TSS 2.0 Overview and Common Structures Specification](https://trustedcomputinggroup.org/wp-content/uploads/TSS_Overview_Common_Structures_Version-0.9_Revision-03_Review_030918.pdf) forms the basis for all implementations in this project. NOTE: We deviate from this draft of the specification by increasing the value of TPM2_NUM_PCR_BANKS from 3 to 16 to ensure compatibility with TPM2 implementations that have enabled a larger than typical number of PCR banks. This larger value for TPM2_NUM_PCR_BANKS is expected to be included in a future revision of the specification.
@@ -62,11 +63,24 @@ You have been warned.
 ## Simulator
 The TPM library specification contains reference code sufficient to construct a software TPM 2.0 simulator.
 This code was provided by Microsoft and they provide a binary download for Windows [here](https://www.microsoft.com/en-us/download/details.aspx?id=52507).
-IBM has repackaged this code with a few Makefiles so that the Microsoft code can be built and run on Linux systems.
-The Linux version of the Microsoft TPM 2.0 simulator can be obtained [here](https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm974.tar.gz).
-Once you've downloaded and successfully built and execute the simulator it will, by default, be accepting connections on the localhost, TCP ports 2321 and 2322.
 
-Issues building or running the simulator should be reported to the IBM software TPM2 project.
+There are two implementations that enable building and running this code on Linux.
+Issues building or running the simulator should be reported to respective project.
+
+### Software TPM
+
+The Software TPM is an open-source TPM emulator with different front-end interfaces such as socket and character device. Its code is hosted [on GitHub](https://github.com/stefanberger/swtpm) and building is faciliated by the GNU Autotools.
+The TCTI module for using this simulator is called _swtpm_.
+
+This is the default simulator used by this project.
+
+### IBM's Software Simulator
+
+IBM has also repackaged this code with a few Makefiles so that the Microsoft code can be built and run on Linux systems.
+The Linux version of the Microsoft TPM 2.0 simulator can be obtained
+[on SourceForge](https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm974.tar.gz).
+Once you've downloaded and successfully built and execute the simulator it will, by default, be accepting connections on the localhost, TCP ports 2321 and 2322.
+The TCTI module for using this simulator is called _mssim_.
 
 NOTE: The Intel TCG TSS is currently tested against version 974 of the simulator.
 Compatibility with later versions has not yet been tested.
@@ -95,13 +109,13 @@ controls the integration tests.
 To run integration tests on a physical TPM device, including a TPM hardware
 or a software TPM implemented in platform firmware the configure script
 provides two options.
-The first option is called --with-ptpm and it is used to point to the TPM
+The first option is called --with-device and it is used to point to the TPM
 device interface exposed by the OS, for example:
 
 ```
-  $ ./configure  --with-ptpm=/dev/tpm0
+  $ ./configure  --with-device=/dev/tpm0
 ```
-The second option, --with-ptpmtests, enables a "class" of test.
+The second option, --with-devicetests, enables a "class" of test.
 There are three classes:
 1. destructive - these tests can affect TPM capability or lifespan
 2. mandatory   - these tests check all the functionality that is mandatory
@@ -113,7 +127,7 @@ For example to enable both mandatory and optional test cases during configure
 one needs to set this flag as follows:
 
 ```
-  $ ./configure --with-ptpmtests="mandatory,optional"
+  $ ./configure --with-devicetests="mandatory,optional"
 ```
 Tht default value for the flag is "mandatory"
 Any combination of the three is valid.
@@ -124,7 +138,7 @@ After that the following command is used to run the test on the configured
 TPM device:
 
 ```
-  $ sudo make check-ptpm
+  $ sudo make check-device
 ```
   or
 ```

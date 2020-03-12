@@ -39,7 +39,7 @@ print_usage ()
 {
     cat <<END
 Usage:
-    int-log-compiler.sh --ptpm=DEVICE
+    int-log-compiler.sh --device=DEVICE
                         TEST-SCRIPT [TEST-SCRIPT-ARGUMENTS]
 The '--simulator-bin' option is mandatory.
 END
@@ -47,8 +47,8 @@ END
 while test $# -gt 0; do
     case $1 in
     --help) print_usage; exit $?;;
-    -d|--ptpm) PTPM=$2; shift;;
-    -d=*|--ptpm=*) PTPM="${1#*=}";;
+    -d|--device) DEVICE=$2; shift;;
+    -d=*|--device=*) DEVICE="${1#*=}";;
     --) shift; break;;
     -*) usage_error "invalid option: '$1'";;
      *) break;;
@@ -84,7 +84,7 @@ TEST_NAME=$(basename "${TEST_BIN}")
 while true; do
 
 env TPM20TEST_TCTI_NAME="device" \
-    TPM20TEST_DEVICE_FILE=${PTPM} \
+    TPM20TEST_DEVICE_FILE=${DEVICE} \
     G_MESSAGES_DEBUG=all ./test/helper/tpm_transientempty
 if [ $? -ne 0 ]; then
     echo "TPM transient area not empty => skipping"
@@ -96,8 +96,8 @@ TPMSTATE_FILE1=${TEST_BIN}_state1
 TPMSTATE_FILE2=${TEST_BIN}_state2
 
 env TPM20TEST_TCTI_NAME="device" \
-    TPM20TEST_DEVICE_FILE=${PTPM} \
-    TPM20TEST_TCTI="device:${PTPM}" \
+    TPM20TEST_DEVICE_FILE=${DEVICE} \
+    TPM20TEST_TCTI="device:${DEVICE}" \
     G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>$TPMSTATE_FILE1
 if [ $? -ne 0 ]; then
     echo "Error during dumpstate"
@@ -107,15 +107,15 @@ fi
 
 echo "Execute the test script"
 env TPM20TEST_TCTI_NAME="device" \
-    TPM20TEST_DEVICE_FILE=${PTPM} \
-    TPM20TEST_TCTI="device:${PTPM}" \
+    TPM20TEST_DEVICE_FILE=${DEVICE} \
+    TPM20TEST_TCTI="device:${DEVICE}" \
     G_MESSAGES_DEBUG=all $@
 ret=$?
 echo "Script returned $ret"
 
 env TPM20TEST_TCTI_NAME="device" \
-    TPM20TEST_DEVICE_FILE=${PTPM} \
-    TPM20TEST_TCTI="device:${PTPM}" \
+    TPM20TEST_DEVICE_FILE=${DEVICE} \
+    TPM20TEST_TCTI="device:${DEVICE}" \
     G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>$TPMSTATE_FILE2
 if [ $? -ne 0 ]; then
     echo "Error during dumpstate"

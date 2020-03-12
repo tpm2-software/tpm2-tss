@@ -15,7 +15,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])]) #Backward compatible setti
 
 AC_CONFIG_HEADERS([config.h])
 
-AC_CONFIG_FILES([Makefile Doxyfile lib/tss2-sys.pc lib/tss2-esys.pc lib/tss2-mu.pc lib/tss2-tcti-device.pc lib/tss2-tcti-mssim.pc lib/tss2-rc.pc lib/tss2-tctildr.pc lib/tss2-fapi.pc])
+AC_CONFIG_FILES([Makefile Doxyfile lib/tss2-sys.pc lib/tss2-esys.pc lib/tss2-mu.pc lib/tss2-tcti-device.pc lib/tss2-tcti-mssim.pc lib/tss2-tcti-swtpm.pc lib/tss2-rc.pc lib/tss2-tctildr.pc lib/tss2-fapi.pc])
 
 # propagate configure arguments to distcheck
 AC_SUBST([DISTCHECK_CONFIGURE_FLAGS],[$ac_configure_args])
@@ -201,6 +201,13 @@ AM_CONDITIONAL([ENABLE_TCTI_MSSIM], [test "x$enable_tcti_mssim" != xno])
 AS_IF([test "x$enable_tcti_mssim" = "xyes"],
 	AC_DEFINE([TCTI_MSSIM],[1], [TCTI FOR MS SIMULATOR]))
 
+AC_ARG_ENABLE([tcti-swtpm],
+            [AS_HELP_STRING([--disable-tcti-swtpm],
+                            [don't build the tcti-swtpm module])],,
+            [enable_tcti_swtpm=yes])
+AM_CONDITIONAL([ENABLE_TCTI_SWTPM], [test "x$enable_tcti_swtpm" != xno])
+AS_IF([test "x$enable_tcti_swtpm" = "xyes"], AC_DEFINE([TCTI_SWTPM],[1], [TCTI FOR SWTPM]))
+
 AC_ARG_ENABLE([tcti-fuzzing],
             [AS_HELP_STRING([--enable-tcti-fuzzing],
                             [build the tcti-fuzzing module])],,
@@ -230,6 +237,42 @@ AC_ARG_WITH([udevrulesprefix],
             [AS_HELP_STRING([--with-udevrulesprefix=XY],[prefix for udev rules file])],
             [AC_SUBST([udevrulesprefix],[$with_udevrulesprefix])])
 AM_CONDITIONAL(WITH_UDEVRULESPREFIX, [test -n "$with_udevrulesprefix"])
+
+dnl ---------  Physical TPM device for testing -----------------------
+
+AC_ARG_WITH([device],
+            [AS_HELP_STRING([--with-device=<device>],[TPM device for testing])],
+            [AS_IF([test \( -w "$with_device" \)  -a \( -r "$with_device" \)],
+                   [AC_MSG_RESULT([success])
+                    AX_NORMALIZE_PATH([with_device])
+                    with_device_set=yes],
+                   [AC_MSG_ERROR([TPM device provided does not exist or is not writable])])],
+            [with_device_set=no])
+AM_CONDITIONAL([TESTDEVICE],[test "x$with_device_set" = xyes])
+
+AC_ARG_WITH([devicetests],
+            [AS_HELP_STRING([--with-devicetests=<case>],[Comma-separated values of possible tests: destructive,mandatory,optional] default is mandatory)],
+            [AS_IF([test "x" =  x$(echo $with_devicetests | sed 's/destructive//g'  | sed 's/mandatory//g'  | sed 's/optional//g' | sed 's/,//g') ],
+                   [AC_MSG_RESULT([success])
+                    with_devicetests_set=yes],
+                   [AC_MSG_ERROR([Illegal test type for device tests.])])],
+            [with_devicetests="mandatory"])
+
+if echo $with_devicetests | grep destructive > /dev/null; then
+    enable_device_destructive="yes"
+fi
+AM_CONDITIONAL([DEVICEDESTRUCTIVE],[test "x$enable_device_destructive" = "xyes"])
+
+if echo $with_devicetests | grep optional > /dev/null; then
+    enable_device_optional="yes"
+fi
+AM_CONDITIONAL([DEVICEOPTIONAL],[test "x$enable_device_optional" = "xyes"])
+
+if echo $with_devicetests | grep mandatory > /dev/null; then
+    enable_device_mandatory="yes"
+fi
+AM_CONDITIONAL([DEVICEMANDATORY],[test "x$enable_device_mandatory" = "xyes"])
+
 #
 # enable integration tests and check for simulator binary
 #
@@ -238,7 +281,6 @@ AC_ARG_ENABLE([integration],
         [build and execute integration tests])],,
     [enable_integration=no])
 AS_IF([test "x$enable_integration" = "xyes" -a "$HOSTOS" = "Linux"],
-      [ERROR_IF_NO_PROG([tpm_server])
        ERROR_IF_NO_PROG([ss])
        ERROR_IF_NO_PROG([ps])
        ERROR_IF_NO_PROG([echo])
@@ -259,8 +301,34 @@ AS_IF([test "x$enable_integration" = "xyes" -a "$HOSTOS" = "Linux"],
        AS_IF([test "x$with_crypto" != xossl -o "x$enable_esapi" != xyes],
            PKG_CHECK_MODULES([LIBCRYPTO],[libcrypto]))
        AC_CHECK_HEADER(uthash.h, [], [AC_MSG_ERROR([Can not find uthash.h. Please install uthash-dev])])
-       AS_IF([test "x$enable_tcti_mssim" = xno],
-              AC_MSG_ERROR([Integration tests can not be enabled without the TCTI_MSSIM module]))
+
+       # choose tcti for testing and look for TPM simulator binary
+       integration_tcti="none"
+       integration_args=""
+       AS_IF([test "x$with_device_set" = xyes],
+             [# use device if --with-device was passed
+              integration_tcti=device
+              integration_args="--device=$with_device"
+              AC_MSG_WARN([Using physical TPM for integration testing])])
+       AS_IF([test "x$integration_tcti" = "xnone" && test "x$enable_tcti_swtpm" != xyes && test "x$enable_tcti_mssim" != xyes],
+             [AC_MSG_ERROR([No suitable TCTI for testing enabled. Please use option --enable-tcti-swtpm (recommended) or --enable-tcti-mssim (fallback) to enable a suitable TCTI or disable testing with --disable-integration.])])
+       AS_IF([test "x$integration_tcti" = "xnone" && test "x$enable_tcti_swtpm" = "xyes"],
+             [# check for swtpm binary
+              AC_CHECK_PROG([result_swtpm], [swtpm], [yes], [no])
+              AS_IF([test "x$result_swtpm" = "xyes"],
+                    [integration_tcti=swtpm],
+                    [AC_MSG_WARN([Executable swtpm not found in PATH.])])])
+       AS_IF([test "x$integration_tcti" = "xnone" && test "x$enable_tcti_mssim" = "xyes"],
+             [# check for mssim binary
+              AC_MSG_WARN([Falling back to testing with tcti-mssim.])
+              AC_CHECK_PROG([result_tpm_server], [tpm_server], [yes], [no])
+              AS_IF([test "x$result_tpm_server" = "xyes"],
+                    [integration_tcti=mssim],
+                    [AC_MSG_WARN([Executable tpm_server not found in PATH (fallback)])])])
+       AS_IF([test "x$integration_tcti" = "xnone"],
+             [AC_MSG_ERROR([No simulator executable found in PATH for testing TCTI.])])
+       AC_SUBST([INTEGRATION_TCTI], [$integration_tcti])
+       AC_SUBST([INTEGRATION_ARGS], [$integration_args])
        AC_SUBST([ENABLE_INTEGRATION], [$enable_integration])])
 AM_CONDITIONAL([ENABLE_INTEGRATION],[test "x$enable_integration" = "xyes"])
 #
@@ -370,44 +438,6 @@ AS_IF([test "x$enable_weakcrypto" = "xyes"],
 
 AC_SUBST([PATH])
 
-dnl ---------  Physical TPM device -----------------------
-
-AC_ARG_WITH([ptpm],
-            [AS_HELP_STRING([--with-ptpm=<device>],[TPM device])],
-            [AS_IF([test \( -w "$with_ptpm" \)  -a \( -r "$with_ptpm" \)],
-                   [AC_MSG_RESULT([success])
-                    AC_SUBST([PTPM],[$with_ptpm])
-                    AX_NORMALIZE_PATH([with_ptpm])
-                    with_ptpm_set=yes],
-                   [AC_MSG_ERROR([TPM device provided does not exist or is not writable])])],
-            [with_ptpm_set=no])
-AM_CONDITIONAL([PTPM],[test "x$with_ptpm_set" = "xyes"])
-
-AC_ARG_WITH([ptpmtests],
-            [AS_HELP_STRING([--with-ptpmtests=<case>],[Comma-separated values of possible tests: destructive,mandatory,optional] default is mandatory)],
-            [AS_IF([test "x" =  x$(echo $with_ptpmtests | sed 's/destructive//g'  | sed 's/mandatory//g'  | sed 's/optional//g' | sed 's/,//g') ],
-                   [AC_MSG_RESULT([success])
-                    with_ptpmtests_set=yes],
-                   [AC_MSG_ERROR([Illegal test type for pTPM tests.])])],
-            [with_ptpmtests="mandatory"])
-
-if echo $with_ptpmtests | grep destructive > /dev/null; then
-    enable_ptpm_destructive="yes"
-fi
-AM_CONDITIONAL([PTPMDESTRUCTIVE],[test "x$enable_ptpm_destructive" = "xyes"])
-
-if echo $with_ptpmtests | grep optional > /dev/null; then
-    enable_ptpm_optional="yes"
-fi
-AM_CONDITIONAL([PTPMOPTIONAL],[test "x$enable_ptpm_optional" = "xyes"])
-
-if echo $with_ptpmtests | grep mandatory > /dev/null; then
-    enable_ptpm_mandatory="yes"
-fi
-AM_CONDITIONAL([PTPMMANDATORY],[test "x$enable_ptpm_mandatory" = "xyes"])
-
-AM_CONDITIONAL([TESTPTPM],[test "x$with_ptpm_set" = xyes])
-
 dnl --------- Doxy Gen -----------------------
 DX_DOXYGEN_FEATURE(ON)
 DX_DOT_FEATURE(OFF)
@@ -433,14 +463,17 @@ AX_ADD_AM_MACRO_STATIC([])
 
 AM_COND_IF([ENABLE_TCTI_DEVICE], [],
            [AM_COND_IF([ENABLE_TCTI_MSSIM], [],
-                       [AM_COND_IF([ENABLE_TCTI_FUZZING], [],
-                                   [AC_MSG_WARN("No build-in TCTI module enabled")])])])
+                       [AM_COND_IF([ENABLE_TCTI_SWTPM], [],
+                                   [AM_COND_IF([ENABLE_TCTI_FUZZING], [],
+                                               [AC_MSG_WARN("No build-in TCTI module enabled")])])])])
 
 AM_COND_IF([ENABLE_TCTI_FUZZING], [
             AM_COND_IF([ENABLE_TCTI_DEVICE],
-                       AC_MSG_ERROR([Fuzzing TCTI is meant to be built as the only TCTI: use --disable-tcti-device --disable-tcti-mssim]))
+                       AC_MSG_ERROR([Fuzzing TCTI is meant to be built as the only TCTI: use --disable-tcti-device --disable-tcti-mssim --disable-tcti-swtpm]))
             AM_COND_IF([ENABLE_TCTI_MSSIM],
-                       AC_MSG_ERROR([Fuzzing TCTI is meant to be built as the only TCTI: use --disable-tcti-device --disable-tcti-mssim]))
+                       AC_MSG_ERROR([Fuzzing TCTI is meant to be built as the only TCTI: use --disable-tcti-device --disable-tcti-mssim --disable-tcti-swtpm]))
+            AM_COND_IF([ENABLE_TCTI_SWTPM],
+                       AC_MSG_ERROR([Fuzzing TCTI is meant to be built as the only TCTI: use --disable-tcti-device --disable-tcti-mssim --disable-tcti-swtpm]))
             AS_IF([test "x$CC" != "xclang"],
                        AC_MSG_ERROR("Fuzzing TCTI can only be used with clang"), [])
             ], [])
@@ -454,6 +487,8 @@ AC_MSG_RESULT([
     tctidefaultmodule:  $with_tctidefaultmodule
     tctidefaultconfig:  $with_tctidefaultconfig
     unit:               $enable_unit
+    integration:        $enable_integration
+    testing backend:    $integration_tcti
     fuzzing:            $with_fuzzing
     debug:              $enable_debug
     maxloglevel:        $with_maxloglevel

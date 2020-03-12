@@ -447,6 +447,17 @@ test_tcti_fail_all (void **state)
     expect_value(__wrap_dlopen, flags, RTLD_NOW);
     will_return(__wrap_dlopen, NULL);
 
+    /* Skip over libtss2-tcti-swtpm.so */
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-swtpm.so.0");
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, NULL);
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-libtss2-tcti-swtpm.so.0.so.0");
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, NULL);
+    expect_string(__wrap_dlopen, filename, "libtss2-tcti-libtss2-tcti-swtpm.so.0.so");
+    expect_value(__wrap_dlopen, flags, RTLD_NOW);
+    will_return(__wrap_dlopen, NULL);
+
     /* Skip over libtss2-tcti-mssim.so */
     expect_string(__wrap_dlopen, filename, "libtss2-tcti-mssim.so.0");
     expect_value(__wrap_dlopen, flags, RTLD_NOW);
