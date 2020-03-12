@@ -257,7 +257,7 @@ env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
     TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
     TPM20TEST_TCTI="mssim:host=127.0.0.1,port=${SIM_PORT_DATA}" \
-    G_MESSAGES_DEBUG=all ./test/helper/tpm_getek>$EKPUB_FILE
+    G_MESSAGES_DEBUG=all ./test/helper/tpm_getek>${EKPUB_FILE}
 if [ $? -ne 0 ]; then
     echo "TPM_getek failed"
     ret=99
@@ -272,7 +272,7 @@ env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
     TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
     TPM20TEST_TCTI="mssim:host=127.0.0.1,port=${SIM_PORT_DATA}" \
-    G_MESSAGES_DEBUG=all ./test/helper/tpm_getek_ecc>$EKECCPUB_FILE
+    G_MESSAGES_DEBUG=all ./test/helper/tpm_getek_ecc>${EKECCPUB_FILE}
 if [ $? -ne 0 ]; then
     echo "TPM_getek_ecc failed"
     ret=99
@@ -294,15 +294,15 @@ if [ "$OS" == "Linux" ]; then
 fi
 
 # Determine the fingerprint of the RSA EK public.
-FINGERPRINT=$(openssl pkey -pubin -inform PEM -in $EKPUB_FILE -outform DER | sha256sum  | cut -f 1 -d ' ')
-export FAPI_TEST_FINGERPRINT="  { \"hashAlg\" : \"sha256\", \"digest\" : \"$FINGERPRINT\" }"
-openssl x509 -inform DER -in $EKCERT_FILE -outform PEM -out $EKCERT_PEM_FILE
+FINGERPRINT=$(openssl pkey -pubin -inform PEM -in ${EKPUB_FILE} -outform DER | shasum -a 256  | cut -f 1 -d ' ')
+export FAPI_TEST_FINGERPRINT=" { \"hashAlg\" : \"sha256\", \"digest\" : \"${FINGERPRINT}\" }"
+openssl x509 -inform DER -in ${EKCERT_FILE} -outform PEM -out ${EKCERT_PEM_FILE}
 export FAPI_TEST_CERTIFICATE="file:${EKCERT_PEM_FILE}"
 
 # Determine the fingerprint of the RSA EK public.
-FINGERPRINT_ECC=$(openssl pkey -pubin -inform PEM -in $EKECCPUB_FILE -outform DER | sha256sum  | cut -f 1 -d ' ')
-export FAPI_TEST_FINGERPRINT_ECC="  { \"hashAlg\" : \"sha256\", \"digest\" : \"$FINGERPRINT_ECC\" }"
-openssl x509 -inform DER -in $EKECCCERT_FILE -outform PEM -out $EKECCCERT_PEM_FILE
+FINGERPRINT_ECC=$(openssl pkey -pubin -inform PEM -in ${EKECCPUB_FILE} -outform DER | shasum -a 256  | cut -f 1 -d ' ')
+export FAPI_TEST_FINGERPRINT_ECC=" { \"hashAlg\" : \"sha256\", \"digest\" : \"${FINGERPRINT_ECC}\" }"
+openssl x509 -inform DER -in ${EKECCCERT_FILE} -outform PEM -out ${EKECCCERT_PEM_FILE}
 export FAPI_TEST_CERTIFICATE_ECC="file:${EKECCCERT_PEM_FILE}"
 
 cat $EKCERT_FILE | \
@@ -346,7 +346,7 @@ env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
     TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
     TPM20TEST_TCTI="mssim:host=127.0.0.1,port=${SIM_PORT_DATA}" \
-    G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>$TPMSTATE_FILE1
+    G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>${TPMSTATE_FILE1}
 if [ $? -ne 0 ]; then
     echo "Error during dumpstate"
     ret=99
@@ -368,19 +368,19 @@ env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
     TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
     TPM20TEST_TCTI="mssim:host=127.0.0.1,port=${SIM_PORT_DATA}" \
-    G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>$TPMSTATE_FILE2
+    G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>${TPMSTATE_FILE2}
 if [ $? -ne 0 ]; then
     echo "Error during dumpstate"
     ret=99
     break
 fi
 
-if [ "$(cat $TPMSTATE_FILE1)" != "$(cat $TPMSTATE_FILE2)" ]; then
+if [ "$(cat ${TPMSTATE_FILE1})" != "$(cat ${TPMSTATE_FILE2})" ]; then
     echo "TPM changed state during test"
     echo "State before ($TPMSTATE_FILE1):"
-    cat $TPMSTATE_FILE1
+    cat ${TPMSTATE_FILE1}
     echo "State after ($TPMSTATE_FILE2):"
-    cat $TPMSTATE_FILE2
+    cat ${TPMSTATE_FILE2}
     ret=1
     break
 fi
@@ -394,7 +394,7 @@ env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
     TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
     TPM20TEST_TCTI="mssim:host=127.0.0.1,port=${SIM_PORT_DATA}" \
-    G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>$TPMSTATE_FILE2
+    G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>${TPMSTATE_FILE2}
 if [ $? -ne 0 ]; then
     echo "Error during dumpstate"
     ret=99
@@ -404,9 +404,9 @@ fi
 if [ "$(cat $TPMSTATE_FILE1)" != "$(cat $TPMSTATE_FILE2)" ]; then
     echo "TPM changed state during test"
     echo "State before ($TPMSTATE_FILE1):"
-    cat $TPMSTATE_FILE1
+    cat ${TPMSTATE_FILE1}
     echo "State after ($TPMSTATE_FILE2):"
-    cat $TPMSTATE_FILE2
+    cat ${TPMSTATE_FILE2}
     ret=1
     break
 fi
