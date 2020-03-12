@@ -280,8 +280,10 @@ AC_ARG_ENABLE([integration],
     [AS_HELP_STRING([--enable-integration],
         [build and execute integration tests])],,
     [enable_integration=no])
-AS_IF([test "x$enable_integration" = "xyes" -a "$HOSTOS" = "Linux"],
-       ERROR_IF_NO_PROG([ss])
+AS_IF([test "x$enable_integration" = "xyes"],
+     AS_IF([test "$HOSTOS" = "Linux"],
+           [ERROR_IF_NO_PROG([ss])],
+           [ERROR_IF_NO_PROG([sockstat])])
        ERROR_IF_NO_PROG([ps])
        ERROR_IF_NO_PROG([echo])
        ERROR_IF_NO_PROG([kill])
