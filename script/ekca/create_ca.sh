@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -x
 
@@ -12,6 +12,21 @@ ROOTCRTPEM=$6.pem
 INTERMEDCRT=$5.crt
 ROOTCRL=$6.crl
 INTERMEDCRL=$5.crl
+
+OS=$(uname)
+DATE_FMT_BEFORE=""
+DATE_FMT_AFTER=""
+SED_CMD=""
+
+if [ "$OS" == "Linux" ]; then
+    DATE_FMT_BEFORE="+%y%m%d000000Z -u -d -1day"
+    DATE_FMT_AFTER="+%y%m%d000000Z -u -d +10years+1day"
+    SED_CMD="sed -i"
+elif [ "$OS" == "FreeBSD" ]; then
+    DATE_FMT_BEFORE="-u -v-1d +%y%m%d000000Z"
+    DATE_FMT_AFTER="-u -v+10y +%y%m%d000000Z"
+    SED_CMD="sed -i '' -e"
+fi
 
 EKCADIR="$(dirname $(realpath ${0}))/"
 
@@ -31,20 +46,21 @@ echo "123456" > pass.txt
 cp "${EKCADIR}/root-ca.cnf" ./
 export OPENSSL_CONF=./root-ca.cnf
 ROOT_URL="file:$ROOTCRT"
-sed -i "s|ROOTCRT|$ROOT_URL|g"  $OPENSSL_CONF
+${SED_CMD} "s|ROOTCRT|$ROOT_URL|g" $OPENSSL_CONF
 ROOT_URL="file:$ROOTCRL"
-sed -i "s|ROOTCRL|$ROOT_URL|g"  $OPENSSL_CONF
+${SED_CMD} "s|ROOTCRL|$ROOT_URL|g" $OPENSSL_CONF
 openssl req -new -out root-ca.req.pem -passout file:pass.txt
 
 #
 # Create self signed root certificate
 #
+
 openssl ca -selfsign \
     -in root-ca.req.pem \
     -out root-ca.cert.pem \
     -extensions root-ca_ext \
-    -startdate `date +%y%m%d000000Z -u -d -1day` \
-    -enddate `date +%y%m%d000000Z -u -d +10years+1day` \
+    -startdate `date ${DATE_FMT_BEFORE}` \
+    -enddate `date ${DATE_FMT_AFTER}` \
     -passin file:pass.txt -batch
 
 openssl x509 -outform der -in  root-ca.cert.pem -out root-ca.cert.crt
@@ -74,7 +90,7 @@ cp "${EKCADIR}/intermed-ca.cnf" ./
 export OPENSSL_CONF=./intermed-ca.cnf
 
 # Adapt CRT URL to current test directory
-sed -i "s|ROOTCRT|$ROOT_URL|g"  $OPENSSL_CONF
+${SED_CMD} "s|ROOTCRT|$ROOT_URL|g" $OPENSSL_CONF
 
 openssl req -new -out intermed-ca.req.pem -passout file:pass.txt
 
@@ -90,7 +106,7 @@ cp intermed-ca.req.pem  \
    ../root-ca/certreqs/
 
 INTERMED_URL="file:$INTERMEDCRT"
-sed -i "s|INTERMEDCRT|$INTERMED_URL|g"  $OPENSSL_CONF
+${SED_CMD} "s|INTERMEDCRT|$INTERMED_URL|g" $OPENSSL_CONF
 
 pushd ../root-ca
 export OPENSSL_CONF=./root-ca.cnf
@@ -99,8 +115,8 @@ openssl ca \
     -in certreqs/intermed-ca.req.pem \
     -out certs/intermed-ca.cert.pem \
     -extensions intermed-ca_ext \
-    -startdate `date +%y%m%d000000Z -u -d -1day` \
-    -enddate `date +%y%m%d000000Z -u -d +5years+1day` \
+    -startdate `date ${DATE_FMT_BEFORE}` \
+    -enddate `date ${DATE_FMT_AFTER}` \
     -passin file:pass.txt -batch
 
 openssl x509 -outform der -in certs/intermed-ca.cert.pem \
@@ -137,10 +153,10 @@ echo "abc123" > pass.txt
 # Adapt CRT and CRL URL to current test directory
 
 INTERMED_URL="file:$INTERMEDCRT"
-sed -i "s|INTERMEDCRT|$INTERMED_URL|g"  $OPENSSL_CONF
+${SED_CMD} "s|INTERMEDCRT|$INTERMED_URL|g" $OPENSSL_CONF
 
 INTERMED_URL="file:$INTERMEDCRL"
-sed -i "s|INTERMEDCRL|$INTERMED_URL|g"  $OPENSSL_CONF
+${SED_CMD} "s|INTERMEDCRL|$INTERMED_URL|g" $OPENSSL_CONF
 
 cp "$1" ../intermed-ca/certreqs/ek.pub.pem
 
@@ -172,10 +188,10 @@ echo "abc123" > pass.txt
 # Adapt CRT and CRL URL to current test directory
 
 INTERMED_URL="file:$INTERMEDCRT"
-sed -i "s|INTERMEDCRT|$INTERMED_URL|g"  $OPENSSL_CONF
+${SED_CMD} "s|INTERMEDCRT|$INTERMED_URL|g" $OPENSSL_CONF
 
 INTERMED_URL="file:$INTERMEDCRL"
-sed -i "s|INTERMEDCRL|$INTERMED_URL|g"  $OPENSSL_CONF
+${SED_CMD} "s|INTERMEDCRL|$INTERMED_URL|g" $OPENSSL_CONF
 
 cp "$2" ../intermed-ca/certreqs/ekecc.pub.pem
 

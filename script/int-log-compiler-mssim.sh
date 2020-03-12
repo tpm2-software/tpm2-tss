@@ -50,6 +50,15 @@ while test $# -gt 0; do
     shift
 done
 
+OS=$(uname)
+sock_tool="unknown"
+
+if [ "$OS" == "Linux" ]; then
+    sock_tool="ss -lntp4"
+elif [ "$OS" == "FreeBSD" ]; then
+    sock_tool="sockstat -l4"
+fi
+
 # Verify the running shell and OS environment is sufficient to run these tests.
 sanity_test ()
 {
@@ -71,7 +80,7 @@ sanity_test ()
         exit 1
     fi
 
-    if [ -z "$(which ss)" ]; then
+    if [ -z "$(which ${sock_tool})" ]; then
         echo "ss not on PATH; exiting"
         exit 1
     fi
@@ -170,11 +179,7 @@ daemon_stop ()
     return ${ret}
 }
 
-OS=$(uname)
-
-if [ "$OS" == "Linux" ]; then
-    sanity_test
-fi
+sanity_test
 
 # Once option processing is done, $@ should be the name of the test executable
 # followed by all of the options passed to the test executable.
@@ -191,14 +196,6 @@ PORT_MAX=65534
 BACKOFF_FACTOR=2
 BACKOFF_MAX=6
 BACKOFF=1
-
-sock_tool="unknown"
-
-if [ "$OS" == "Linux" ]; then
-    sock_tool="ss -lntp4"
-elif [ "$OS" == "FreeBSD" ]; then
-    sock_tool="sockstat -l4"
-fi
 
 for i in $(seq ${BACKOFF_MAX}); do
     SIM_PORT_DATA=$(od -A n -N 2 -t u2 /dev/urandom | awk -v min=${PORT_MIN} -v max=${PORT_MAX} '{print ($1 % (max - min)) + min}')
@@ -282,15 +279,13 @@ fi
 INTERMEDCA_FILE=${TEST_BIN}_intermedecc-ca
 ROOTCA_FILE=${TEST_BIN}_root-ca
 
-if [ "$OS" == "Linux" ]; then
-    SCRIPTDIR="$(dirname $(realpath $0))/"
-    ${SCRIPTDIR}/ekca/create_ca.sh "${EKPUB_FILE}" "${EKECCPUB_FILE}" "${EKCERT_FILE}" \
+SCRIPTDIR="$(dirname $(realpath $0))/"
+${SCRIPTDIR}/ekca/create_ca.sh "${EKPUB_FILE}" "${EKECCPUB_FILE}" "${EKCERT_FILE}" \
                                "${EKECCCERT_FILE}" "${INTERMEDCA_FILE}" "${ROOTCA_FILE}" >${TEST_BIN}_ca.log 2>&1
-    if [ $? -ne 0 ]; then
-        echo "ek-cert ca failed"
-        ret=99
-        break
-    fi
+if [ $? -ne 0 ]; then
+    echo "ek-cert ca failed"
+    ret=99
+    break
 fi
 
 # Determine the fingerprint of the RSA EK public.
