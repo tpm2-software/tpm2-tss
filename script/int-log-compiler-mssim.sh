@@ -257,7 +257,7 @@ env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
     TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
     TPM20TEST_TCTI="mssim:host=127.0.0.1,port=${SIM_PORT_DATA}" \
-    G_MESSAGES_DEBUG=all ./test/helper/tpm_getek>${EKPUB_FILE}
+    G_MESSAGES_DEBUG=all ./test/helper/tpm_getek ${EKPUB_FILE}
 if [ $? -ne 0 ]; then
     echo "TPM_getek failed"
     ret=99
@@ -272,7 +272,7 @@ env TPM20TEST_TCTI_NAME="socket" \
     TPM20TEST_SOCKET_ADDRESS="127.0.0.1" \
     TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}" \
     TPM20TEST_TCTI="mssim:host=127.0.0.1,port=${SIM_PORT_DATA}" \
-    G_MESSAGES_DEBUG=all ./test/helper/tpm_getek_ecc>${EKECCPUB_FILE}
+    G_MESSAGES_DEBUG=all ./test/helper/tpm_getek_ecc ${EKECCPUB_FILE}
 if [ $? -ne 0 ]; then
     echo "TPM_getek_ecc failed"
     ret=99

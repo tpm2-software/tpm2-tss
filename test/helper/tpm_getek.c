@@ -110,7 +110,20 @@ main (int argc, char *argv[])
     /* Convert the key from out_public to PEM */
 
     EVP_PKEY *evp = EVP_PKEY_new();
-    BIO *bio = BIO_new_fp(stdout, BIO_NOCLOSE);
+    BIO *bio;
+    FILE *out = NULL;
+
+    if (argc == 2) {
+	out = fopen(argv[1], "w");
+	if (!out) {
+	    LOG_ERROR("Can not open file %s", argv[1]);
+	    exit(1);
+	}
+        bio = BIO_new_fp(out, BIO_NOCLOSE);
+    }
+    else
+        bio = BIO_new_fp(stdout, BIO_NOCLOSE);
+
     RSA *rsa = RSA_new();
     BIGNUM *e = BN_new();
     BIGNUM *d = BN_new();
@@ -158,6 +171,7 @@ main (int argc, char *argv[])
 
     EVP_PKEY_free(evp);
     BIO_free(bio);
+    fclose(out);
 
     return 0;
 }
