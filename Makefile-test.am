@@ -158,6 +158,7 @@ ESYS_TESTS_INTEGRATION_MANDATORY = \
     test/integration/esys-certify.int \
     test/integration/esys-clear-control.int \
     test/integration/esys-clockset.int \
+    test/integration/esys-clockset-audit.int \
     test/integration/esys-commit.int \
     test/integration/esys-create-fail.int \
     test/integration/esys-create-password-auth.int \
@@ -714,6 +715,13 @@ test_integration_esys_clockset_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_clockset_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_clockset_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_clockset_int_SOURCES = \
+    test/integration/esys-clockset.int.c \
+    test/integration/main-esapi.c test/integration/test-esapi.h
+
+test_integration_esys_clockset_audit_int_CFLAGS  = $(TESTS_CFLAGS) -DTEST_SESSION
+test_integration_esys_clockset_audit_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_clockset_audit_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_clockset_audit_int_SOURCES = \
     test/integration/esys-clockset.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
