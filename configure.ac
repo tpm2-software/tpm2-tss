@@ -331,7 +331,7 @@ AS_IF([test "x$enable_integration" = "xyes"],
              [AC_MSG_ERROR([No simulator executable found in PATH for testing TCTI.])])
        AC_SUBST([INTEGRATION_TCTI], [$integration_tcti])
        AC_SUBST([INTEGRATION_ARGS], [$integration_args])
-       AC_SUBST([ENABLE_INTEGRATION], [$enable_integration])])
+       AC_SUBST([ENABLE_INTEGRATION], [$enable_integration]))
 AM_CONDITIONAL([ENABLE_INTEGRATION],[test "x$enable_integration" = "xyes"])
 #
 # sanitizer compiler flags
