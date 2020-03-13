@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-2-Clause */
 /***********************************************************************;
- * Copyright (c) 2015 - 2017, Intel Corporation
+ * Copyright (c) 2015 - 2020, Intel Corporation
  * All rights reserved.
  ***********************************************************************/
 
@@ -27,7 +27,7 @@ TSS2_RC Tss2_Sys_ReadClock_Prepare(
 
     ctx->decryptAllowed = 0;
     ctx->encryptAllowed = 0;
-    ctx->authAllowed = 0;
+    ctx->authAllowed = 1;
 
     return CommonPrepareEpilogue(ctx);
 }
