@@ -139,6 +139,7 @@ TESTS_INTEGRATION += \
     test/integration/sapi-create-loaded.int \
     test/integration/sapi-policy-authorizeNV.int \
     test/integration/sapi-param-encrypt-decrypt.int \
+    test/integration/sapi-read-clock.int \
     test/tpmclient/tpmclient.int
 endif # !TESTDEVICE
 
@@ -656,6 +657,11 @@ test_integration_sapi_aram_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CF
 test_integration_sapi_param_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
 test_integration_sapi_param_encrypt_decrypt_int_SOURCES = \
     test/integration/sapi-param-encrypt-decrypt.int.c test/integration/main-sapi.c
+
+test_integration_sapi_read_clock_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sapi_read_clock_int_LDADD   = $(TESTS_LDADD)
+test_integration_sapi_read_clock_int_SOURCES = test/integration/main-sapi.c \
+    test/integration/sapi-read-clock.int.c
 
 if ESAPI
 ESYS_SRC_UTIL_CRYPTO_SRC = src/tss2-esys/esys_iutil.c \
