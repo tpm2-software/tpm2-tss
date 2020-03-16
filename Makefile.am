@@ -374,6 +374,11 @@ src_tss2_esys_libtss2_esys_la_LDFLAGS = $(AM_LDFLAGS) $(LIBSOCKET_LDFLAGS) \
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_esys_libtss2_esys_la_LDFLAGS += -Wl,--version-script=$(srcdir)/lib/tss2-esys.map
 endif # HAVE_LD_VERSION_SCRIPT
+
+# Bump soname due to commit 9d48cc7922ad8dc3496444b04c94439c5bfbec8e breaking
+# the ABI of Esys_Hash(), Esys_HierarchyControl(), Esys_LoadExternal() and Esys_SequenceComplete()
+src_tss2_esys_libtss2_esys_la_LDFLAGS += -version-info 1:0:0
+
 src_tss2_esys_libtss2_esys_la_SOURCES = $(TSS2_ESYS_SRC) $(TSS2_ESYS_SRC_CRYPTO) \
     src/tss2-tcti/tctildr.c src/tss2-tcti/tctildr.h \
     src/tss2-tcti/tctildr-interface.h
