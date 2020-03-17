@@ -346,6 +346,11 @@ src_tss2_sys_libtss2_sys_la_LDFLAGS = $(AM_LDFLAGS) $(LIBSOCKET_LDFLAGS)
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_sys_libtss2_sys_la_LDFLAGS += -Wl,--version-script=$(srcdir)/lib/tss2-sys.map
 endif # HAVE_LD_VERSION_SCRIPT
+
+# Bump sys soname due to commit 1414f73902cd0c64e447522c64c8e439fa2074b7
+# breaking the backwards compatibility of Tss2_Sys_ReadClock call.
+src_tss2_sys_libtss2_sys_la_LDFLAGS += -version-info 1:0:0
+
 src_tss2_sys_libtss2_sys_la_LIBADD = $(libtss2_mu) $(libutil)
 src_tss2_sys_libtss2_sys_la_SOURCES = $(TSS2_SYS_SRC)
 EXTRA_DIST += lib/tss2-sys.map lib/tss2-sys.def src/tss2-sys/tss2-sys.vcxproj
