@@ -68,13 +68,6 @@ sanity_test ()
         exit 1
     fi
 
-    # Check ps
-    PS_LINES=$(ps -e 2>/dev/null | wc -l)
-    if [ "$PS_LINES" -eq 0 ] ; then
-        echo "Command ps not listing processes; exiting"
-        exit 1
-    fi
-
     if [ -z "$(which tpm_server)" ]; then
         echo "tpm_server not on PATH; exiting"
         exit 1

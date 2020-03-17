@@ -284,7 +284,6 @@ AS_IF([test "x$enable_integration" = "xyes"],
      AS_IF([test "$HOSTOS" = "Linux"],
            [ERROR_IF_NO_PROG([ss])],
            [ERROR_IF_NO_PROG([sockstat])])
-       ERROR_IF_NO_PROG([ps])
        ERROR_IF_NO_PROG([echo])
        ERROR_IF_NO_PROG([kill])
        ERROR_IF_NO_PROG([stdbuf])
