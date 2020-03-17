@@ -51,7 +51,6 @@ You can also try Gitter [![Gitter](https://badges.gitter.im/tpm2-software/commun
 In case you want to contribute to the project, please also have a look at the [Contribution Guidelines](CONTRIBUTING.md).
 
 # Documentation
-
 The doxygen documentation can either be built by oneself (see the [INSTALL](INSTALL.md) file) or browsed directly on [tpm2-tss.readthedocs.io](https://tpm2-tss.readthedocs.io/).
 
 # Test Suite
@@ -68,22 +67,17 @@ There are two implementations that enable building and running this code on Linu
 Issues building or running the simulator should be reported to respective project.
 
 ### Software TPM
-
 The Software TPM is an open-source TPM emulator with different front-end interfaces such as socket and character device. Its code is hosted [on GitHub](https://github.com/stefanberger/swtpm) and building is faciliated by the GNU Autotools.
 The TCTI module for using this simulator is called _swtpm_.
 
-This is the default simulator used by this project.
+Since tpm2-tss v3.0 swtpm is the default simulator used by this project.
 
 ### IBM's Software Simulator
-
 IBM has also repackaged this code with a few Makefiles so that the Microsoft code can be built and run on Linux systems.
 The Linux version of the Microsoft TPM 2.0 simulator can be obtained
 [on SourceForge](https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm974.tar.gz).
 Once you've downloaded and successfully built and execute the simulator it will, by default, be accepting connections on the localhost, TCP ports 2321 and 2322.
 The TCTI module for using this simulator is called _mssim_.
-
-NOTE: The Intel TCG TSS is currently tested against version 974 of the simulator.
-Compatibility with later versions has not yet been tested.
 
 ## Testing
 To test the various TCTI, SAPI and ESAPI api calls, unit and integration tests can
