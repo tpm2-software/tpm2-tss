@@ -260,16 +260,6 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
              */
             command->root_crt = NULL;
 
-            /* Generate template for SRK creation. */
-            r = ifapi_set_key_flags(defaultProfile->srk_template,
-                    context->profiles.default_profile.srk_policy ? true : false,
-                    &command->public_templ);
-            goto_if_error(r, "Set key flags for SRK", error_cleanup);
-
-            r = ifapi_merge_profile_into_template(&context->profiles.default_profile,
-                    &command->public_templ);
-            goto_if_error(r, "Merging profile and template", error_cleanup);
-
             /* Prepare the setting of the dictionary attack parameters. */
             r = Esys_DictionaryAttackParameters_Async(context->esys, ESYS_TR_RH_LOCKOUT,
                     ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
@@ -304,74 +294,8 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             goto_if_error(r, "Invalid PCR selection in profile.", error_cleanup);
 
             SAFE_FREE(*capabilityData);
-            fallthrough;
 
-        statecase(context->state, PROVISION_INIT_SRK);
-            /* Clear key object for the primary to be created */
-            memset(pkey, 0, sizeof(IFAPI_KEY));
-
-            /* Prepare the SRK generation. */
-            r = ifapi_init_primary_async(context, TSS2_SRK);
-            goto_if_error(r, "Initialize primary", error_cleanup);
-
-            context->state = PROVISION_AUTH_SRK_NO_AUTH_SENT;
-            fallthrough;
-
-        statecase(context->state, PROVISION_AUTH_SRK_AUTH_SENT);
-            fallthrough;
-
-        statecase(context->state, PROVISION_AUTH_SRK_NO_AUTH_SENT);
-            r = ifapi_init_primary_finish(context, TSS2_SRK);
-            return_try_again(r);
-            goto_if_error(r, "Init primary finish.", error_cleanup);
-
-            /* Check whether a persistent SRK handle was defined in profile. */
-            if (command->public_templ.persistent_handle) {
-                /* Assign found handle to object */
-                pkey->persistent_handle = command->public_templ.persistent_handle;
-
-                /* Initialize hierarchy object used for evict control. */
-                ifapi_init_hierarchy_object(hierarchy, ESYS_TR_RH_OWNER);
-
-                /* Prepare making the SRK permanent. */
-                r = Esys_EvictControl_Async(context->esys, hierarchy->handle,
-                    pkeyObject->handle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                    pkey->persistent_handle);
-                goto_if_error(r, "Error Esys EvictControl", error_cleanup);
-
-                context->state = PROVISION_WAIT_FOR_SRK_PERSISTENT;
-                return TSS2_FAPI_RC_TRY_AGAIN;
-            }
-            /* No further ESYS command is needed, the keystore object can be written. */
-            context->state = PROVISION_SRK_WRITE_PREPARE;
-            fallthrough;
-
-        statecase(context->state, PROVISION_SRK_WRITE_PREPARE);
-            pkeyObject->objectType = IFAPI_KEY_OBJ;
-            pkeyObject->system = command->public_templ.system;
-
-            /* Perform esys serialization if necessary */
-            r = ifapi_esys_serialize_object(context->esys, pkeyObject);
-            goto_if_error(r, "Prepare serialization", error_cleanup);
-
-            /* Start writing the SRK to the key store */
-            r = ifapi_keystore_store_async(&context->keystore, &context->io, "HS/SRK",
-                    pkeyObject);
-            goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup, "HS/SRK");
-            context->state = PROVISION_SRK_WRITE;
-            fallthrough;
-
-        statecase(context->state, PROVISION_SRK_WRITE);
-            /* Finish writing the SRK to the key store */
-            r = ifapi_keystore_store_finish(&context->keystore, &context->io);
-            return_try_again(r);
-            goto_if_error_reset_state(r, "write_finish failed", error_cleanup);
-
-            /* Clean objects used for SRK computation */
-            ifapi_cleanup_ifapi_object(pkeyObject);
-            memset(&command->public_templ, 0, sizeof(IFAPI_KEY_TEMPLATE));
-
-             /* Generate template for EK creation. */
+            /* Generate template for EK creation. */
             r = ifapi_set_key_flags(defaultProfile->ek_template,
                      context->profiles.default_profile.ek_policy ? true : false,
                      &command->public_templ);
@@ -672,6 +596,116 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             ifapi_cleanup_ifapi_object(pkeyObject);
             memset(&command->public_templ, 0, sizeof(IFAPI_KEY_TEMPLATE));
             SAFE_FREE(hierarchy->misc.hierarchy.description);
+            fallthrough;
+
+        statecase(context->state, PROVISION_INIT_SRK);
+            /* Create session which will be used for SRK generation. */
+            context->srk_handle = context->ek_handle;
+            r = ifapi_get_sessions_async(context, IFAPI_SESSION1, 0, 0);
+            goto_if_error_reset_state(r, "Create sessions", error_cleanup);
+
+            fallthrough;
+
+        statecase(context->state, PROVISION_WAIT_FOR_SRK_SESSION);
+            r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
+                                          context->profiles.default_profile.nameAlg);
+            return_try_again(r);
+
+            goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
+
+            /* Generate template for SRK creation. */
+            r = ifapi_set_key_flags(defaultProfile->srk_template,
+                    context->profiles.default_profile.srk_policy ? true : false,
+                    &command->public_templ);
+            goto_if_error(r, "Set key flags for SRK", error_cleanup);
+
+            r = ifapi_merge_profile_into_template(&context->profiles.default_profile,
+                    &command->public_templ);
+            goto_if_error(r, "Merging profile and template", error_cleanup);
+
+            /* Clear key object for the primary to be created */
+            memset(pkey, 0, sizeof(IFAPI_KEY));
+
+            /* Prepare the SRK generation. */
+            r = ifapi_init_primary_async(context, TSS2_SRK);
+            goto_if_error(r, "Initialize primary", error_cleanup);
+
+            context->state = PROVISION_AUTH_SRK_NO_AUTH_SENT;
+            fallthrough;
+
+        statecase(context->state, PROVISION_AUTH_SRK_AUTH_SENT);
+            fallthrough;
+
+        statecase(context->state, PROVISION_AUTH_SRK_NO_AUTH_SENT);
+            r = ifapi_init_primary_finish(context, TSS2_SRK);
+            return_try_again(r);
+            goto_if_error(r, "Init primary finish.", error_cleanup);
+
+            /* Check whether a persistent SRK handle was defined in profile. */
+            if (command->public_templ.persistent_handle) {
+                /* Assign found handle to object */
+                pkey->persistent_handle = command->public_templ.persistent_handle;
+
+                /* Initialize hierarchy object used for evict control. */
+                ifapi_init_hierarchy_object(hierarchy, ESYS_TR_RH_OWNER);
+
+                /* Prepare making the SRK permanent. */
+                r = Esys_EvictControl_Async(context->esys, hierarchy->handle,
+                    pkeyObject->handle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                    pkey->persistent_handle);
+                goto_if_error(r, "Error Esys EvictControl", error_cleanup);
+
+                context->state = PROVISION_WAIT_FOR_SRK_PERSISTENT;
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            }
+
+            /* No further ESYS command is needed, the keystore object can be written. */
+            context->state = PROVISION_SRK_WRITE_PREPARE;
+            fallthrough;
+
+        statecase(context->state, PROVISION_SRK_WRITE_PREPARE);
+            pkeyObject->objectType = IFAPI_KEY_OBJ;
+            pkeyObject->system = command->public_templ.system;
+
+            /* Perform esys serialization if necessary */
+            r = ifapi_esys_serialize_object(context->esys, pkeyObject);
+            goto_if_error(r, "Prepare serialization", error_cleanup);
+
+            /* Start writing the SRK to the key store */
+            r = ifapi_keystore_store_async(&context->keystore, &context->io, "HS/SRK",
+                    pkeyObject);
+            goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup, "HS/SRK");
+            context->state = PROVISION_SRK_WRITE;
+            fallthrough;
+
+        statecase(context->state, PROVISION_SRK_WRITE);
+            /* Finish writing the SRK to the key store */
+            r = ifapi_keystore_store_finish(&context->keystore, &context->io);
+            return_try_again(r);
+            goto_if_error_reset_state(r, "write_finish failed", error_cleanup);
+
+            /* Clean objects used for SRK computation */
+            ifapi_cleanup_ifapi_object(pkeyObject);
+            memset(&command->public_templ, 0, sizeof(IFAPI_KEY_TEMPLATE));
+            fallthrough;
+
+        statecase(context->state, PROVISION_CLEAN_EK_SESSION)
+            /* Cleanup the session used for SRK generation. */
+            r = ifapi_cleanup_session(context);
+            try_again_or_error_goto(r, "Cleanup", error_cleanup);
+
+            /* Create session which will be used for parameter encryption. */
+            r = ifapi_get_sessions_async(context, IFAPI_SESSION1, 0, 0);
+            goto_if_error_reset_state(r, "Create sessions", error_cleanup);
+
+            fallthrough;
+
+        statecase(context->state, PROVISION_WAIT_FOR_EK_SESSION);
+            r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
+                                          context->profiles.default_profile.nameAlg);
+            return_try_again(r);
+
+            goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
             /*
              * Adaption of the lockout hierarchy to the passed parameters
@@ -906,6 +940,12 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 
                 context->ek_handle = ESYS_TR_NONE;
             }
+            fallthrough;
+
+        statecase(context->state, PROVISION_CLEAN_SRK_SESSION)
+            /* Cleanup the session used for parameter encryption */
+            r = ifapi_cleanup_session(context);
+            try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
             context->state = _FAPI_STATE_INIT;
             break;

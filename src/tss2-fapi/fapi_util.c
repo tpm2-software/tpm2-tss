@@ -547,7 +547,9 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
     memset(&context->cmd.Provision.creationPCR, 0, sizeof(TPML_PCR_SELECTION));
 
     r = Esys_CreatePrimary_Async(context->esys, hierarchy->handle,
-                                 ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                                 (context->session1 == ESYS_TR_NONE) ?
+                                 ESYS_TR_PASSWORD : context->session1,
+                                 ESYS_TR_NONE, ESYS_TR_NONE,
                                  &context->cmd.Provision.inSensitive,
                                  &context->cmd.Provision.public_templ.public,
                                  &context->cmd.Provision.outsideInfo,
