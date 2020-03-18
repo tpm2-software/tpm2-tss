@@ -1794,7 +1794,9 @@ TSS2_RC Tss2_Sys_ReadClock_Complete(
 
 TSS2_RC Tss2_Sys_ReadClock(
     TSS2_SYS_CONTEXT *sysContext,
-    TPMS_TIME_INFO *currentTime);
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+    TPMS_TIME_INFO *currentTime,
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray);
 
 TSS2_RC Tss2_Sys_ClockSet_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
