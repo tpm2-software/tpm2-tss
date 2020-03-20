@@ -49,6 +49,9 @@ matrix:
   # check fuzz targets
   - env: DOCKER_TAG=fedora-30 GEN_FUZZ=1 CXX=clang++ CC=clang
     compiler: clang
+  # check config for different tcti targets
+  - env: DOCKER_TAG=fedora-30 TEST_TCTI_CONFIG=true
+    compiler: gcc
 
 script:
   - ./.ci/travis.run
