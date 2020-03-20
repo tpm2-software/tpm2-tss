@@ -120,6 +120,8 @@ GITIGNORE_MAINTAINERCLEANFILES_M4_LIBTOOL = \
 			ltsugar.m4 \
 			ltversion.m4 \
 			lt~obsolete.m4 \
+			ax_recursive_eval.m4 \
+			libgcrypt.m4 \
 		; do echo "$$MACRO_DIR/$$x"; done; \
 	 fi`
 #
@@ -372,6 +374,8 @@ $(srcdir)/.gitignore: Makefile.am $(top_srcdir)/git.mk $(top_srcdir)/configure.a
 			"*.gcno" \
 			"*.$(OBJEXT)" \
 			$(DEPDIR) \
+			"*.pem" \
+			"*_state[1|2]" \
 		; do echo "$$x"; done; \
 	} | \
 	sed "s@^/`echo "$(srcdir)" | sed 's/\(.\)/[\1]/g'`/@/@" | \
