@@ -6,6 +6,9 @@
 #ifndef AUX_UTIL_H
 #define AUX_UTIL_H
 
+#include <stdbool.h>
+
+#include "tss2_tpm2_types.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -83,6 +86,45 @@ extern "C" {
         LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
         r_max = r; \
     }
+
+static inline TSS2_RC
+tss2_fmt_p1_error_to_rc(UINT16 err)
+{
+    return TPM2_RC_1+TPM2_RC_P+err;
+}
+
+static inline bool
+tss2_is_expected_error(TSS2_RC rc)
+{
+    /* Success is always expected */
+    if (rc == TSS2_RC_SUCCESS) {
+        return true;
+    }
+
+    /*
+     * drop the layer, any part of the TSS stack can gripe about this error
+     * if it wants too.
+     */
+    rc &= ~TSS2_RC_LAYER_MASK;
+
+    /*
+     * Format 1, parameter 1 errors plus the below RC's
+     * contain everything we care about:
+     *   - TPM2_RC_CURVE
+     *   - TPM2_RC_HASH
+     *   - TPM2_RC_ASYMMETRIC
+     *   - TPM2_RC_KEY_SIZE
+     */
+    if (rc == tss2_fmt_p1_error_to_rc(TPM2_RC_CURVE)
+            || rc == tss2_fmt_p1_error_to_rc(TPM2_RC_VALUE)
+            || rc == tss2_fmt_p1_error_to_rc(TPM2_RC_HASH)
+            || rc == tss2_fmt_p1_error_to_rc(TPM2_RC_ASYMMETRIC)
+            || rc == tss2_fmt_p1_error_to_rc(TPM2_RC_KEY_SIZE)) {
+        return true;
+    }
+
+    return false;
+}
 
 #ifdef __cplusplus
 } /* extern "C" */
