@@ -92,9 +92,11 @@ Esys_TestParms(
 
     /* Restore the timeout value to the original value */
     esysContext->timeout = timeouttmp;
-    return_if_error(r, "Esys Finish");
+    if (!tss2_is_expected_error(r)) {
+        return_if_error(r, "Esys Finish");
+    }
 
-    return TSS2_RC_SUCCESS;
+    return r;
 }
 
 /** Asynchronous function for TPM2_TestParms
@@ -266,7 +268,9 @@ Esys_TestParms_Finish(
     }
     /* The following is the "regular error" handling. */
     if (iesys_tpm_error(r)) {
-        LOG_WARNING("Received TPM Error");
+        if (!tss2_is_expected_error(r)) {
+            LOG_WARNING("Received TPM Error");
+        }
         esysContext->state = _ESYS_STATE_INIT;
         return r;
     } else if (r != TSS2_RC_SUCCESS) {
