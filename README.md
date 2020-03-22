@@ -18,7 +18,7 @@ This stack consists of the following layers from top to bottom:
 along with [TSS 2.0 JSON Data Types and Policy Language Specification](https://trustedcomputinggroup.org/wp-content/uploads/TSS_JSON_Policy_v0.7_r04_pubrev.pdf)
 This API is designed to be very high-level API, intended to make programming with the TPM as simple as possible.
 The API functions are exposed through a single library: libtss2-fapi.
-* Enhanced System API (ESAPI) as described in the [TSS 2.0 Enhanced System API (ESAPI) Specification](https://trustedcomputinggroup.org/wp-content/uploads/TSS_ESAPI_Version-0.9_Revision-04_reviewEND030918.pdf).
+* Enhanced System API (ESAPI) as described in the [TSS 2.0 Enhanced System API (ESAPI) Specification](https://trustedcomputinggroup.org/wp-content/uploads/TSS_ESAPI_v1p00_r05_published.pdf).
 This API is a 1-to-1 mapping of the TPM2 commands documented in Part 3 of the TPM2 specification.
 Additionally there are asynchronous versions of each command.
 In addition to SAPI, the ESAPI performs tracking of meta data for TPM object and automatic calculation of session based authorization and encryption values.
