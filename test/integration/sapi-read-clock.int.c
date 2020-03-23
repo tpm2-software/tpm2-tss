@@ -17,6 +17,8 @@
 #define LOGMODULE test
 #include "util/log.h"
 #include "test.h"
+
+#define EXIT_SKIP 77
 /*
  * This is an incredibly simple test to create the most simple session
  * (which ends up being a trial policy) and then just tear it down.
@@ -80,6 +82,15 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     }
 
     rc = Tss2_Sys_Execute(sapi_context);
+    /* TPMs before Revision 1.38 might not support session usage*/
+    if ((rc == TPM2_RC_AUTH_CONTEXT ) ||
+        (rc == (TPM2_RC_AUTH_CONTEXT  | TSS2_RESMGR_RC_LAYER)) ||
+        (rc == (TPM2_RC_AUTH_CONTEXT  | TSS2_RESMGR_TPM_RC_LAYER))) {
+        LOG_WARNING("Session usage not supported by TPM.");
+        rc = EXIT_SKIP;
+        goto error;
+    }
+
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Tss2_Sys_ExecuteAsync failed: 0x%" PRIx32, rc);
 	goto error;
