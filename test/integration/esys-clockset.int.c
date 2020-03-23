@@ -73,6 +73,15 @@ test_esys_clockset(ESYS_CONTEXT * esys_context)
                        ESYS_TR_NONE,
                        &currentTime);
 
+    /* TPMs before Revision 1.38 might not support session usage*/
+    if ((r == TPM2_RC_AUTH_CONTEXT ) ||
+        (r == (TPM2_RC_AUTH_CONTEXT  | TSS2_RESMGR_RC_LAYER)) ||
+        (r == (TPM2_RC_AUTH_CONTEXT  | TSS2_RESMGR_TPM_RC_LAYER))) {
+        LOG_WARNING("Session usage not supported by TPM.");
+        failure_return = EXIT_SKIP;
+        goto error;
+    }
+
 #else
     r = Esys_ReadClock(esys_context,
                        ESYS_TR_NONE,
