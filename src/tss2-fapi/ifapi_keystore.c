@@ -627,6 +627,61 @@ cleanup:
     return r;
 }
 
+/**  Check whether the key path for a new object does not exist in key store.
+ *
+ * To prevent overwriting of objects the functions returns an error
+ * if the object is already stored in key store.
+ * The FAPI path will be expanded to absolute path appropriate for
+ * the object to be checked.
+ *
+ * @param[in] keystore The key directories and default profile.
+ * @param[in] path The relative path of the object. For keys the path will
+ *           expanded if possible.
+ * @param[in] object The object to be checked.
+ * @retval TSS2_RC_SUCCESS if the object does not exist and a new object
+ *         can be written.
+ * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS: if the object exists in key store.
+ * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the output data.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_keystore_object_does_not_exist(
+    IFAPI_KEYSTORE *keystore,
+    const char *path,
+    const IFAPI_OBJECT *object)
+{
+    TSS2_RC r;
+    char *directory = NULL;
+    char *file = NULL;
+
+    LOG_TRACE("Store object: %s", path);
+
+    /* Prepare write operation: Create directories and valid object path */
+    r = expand_path(keystore, path, &directory);
+    goto_if_error(r, "Expand path", cleanup);
+
+    if (object->system) {
+        r = expand_path_to_object(keystore, directory,
+                                  keystore->systemdir, &file);
+    } else {
+        r = expand_path_to_object(keystore, directory,
+                                  keystore->userdir, &file);
+    }
+
+    goto_if_error2(r, "Object path %s could not be created.", cleanup, directory);
+
+    if (ifapi_io_path_exists(file)) {
+        goto_error(r, TSS2_FAPI_RC_PATH_ALREADY_EXISTS, "File %s already exists.", cleanup, file);
+    }
+
+cleanup:
+    SAFE_FREE(directory);
+    SAFE_FREE(file);
+    return r;
+}
+
 /** Finish writing a FAPI object to the keystore.
  *
  * This function needs to be called repeatedly until it does not return TSS2_FAPI_RC_TRY_AGAIN.
