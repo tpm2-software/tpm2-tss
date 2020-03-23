@@ -629,6 +629,7 @@ endef
 # $3: man postlude file
 define make_man
     $(call make_parent_dir,$1) && \
-    cat $2 $3 > $1 && \
-    sed -i -e "s,[@]VERSION[@],$(PACKAGE_VERSION),g;" $1
+    cat $2 $3 > "$1_tmp" && \
+    $(SED) 's/[@]VERSION[@]/$(PACKAGE_VERSION)/g' "$1_tmp" > $1 && \
+    rm "$1_tmp"
 endef
