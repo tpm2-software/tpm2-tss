@@ -1409,7 +1409,7 @@ ifapi_copy_ifapi_key_object(IFAPI_OBJECT * dest, const IFAPI_OBJECT * src) {
     /* Create the copy */
     dest->policy = ifapi_copy_policy(src->policy);
 
-    ifapi_copy_ifapi_key(&dest->misc.key, &src->misc.key);
+    r = ifapi_copy_ifapi_key(&dest->misc.key, &src->misc.key);
     goto_if_error(r, "Could not copy key", error_cleanup);
 
     dest->objectType = src->objectType;
