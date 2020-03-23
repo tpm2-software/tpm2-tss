@@ -10,7 +10,7 @@ Philip Tricca <philip.b.tricca@intel.com>
 .BR tcti-tabrmd (7),
 .BR tpm2-abrmd (8)
 .SH COLOPHON
-This page is part of release @VERSION@ of Intel's implementation of the TCG
-TPM2 Software Stack (TSS2). A description of the project, information about
-reporting bugs, and the latest version of this page can be found at
+This page is part of release @VERSION@ of Open Source implementation of the
+TCG TPM2 Software Stack (TSS2). A description of the project, information
+about reporting bugs, and the latest version of this page can be found at
 \%https://github.com/tpm2-software/tpm2-tss/.
