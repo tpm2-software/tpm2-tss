@@ -1247,7 +1247,7 @@ ifapi_json_TPM2B_DATA_serialize(const TPM2B_DATA *in, json_object **jso)
 {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    if (in->size > sizeof(TPMT_HA)) {
+    if (in->size > sizeof(TPMU_HA)) {
         LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = sizeof(TPMT_HA))",
                   (size_t)in->size, (size_t)sizeof(TPMT_HA));
         return TSS2_FAPI_RC_BAD_VALUE;
