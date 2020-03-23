@@ -57,4 +57,4 @@ script:
   - ./.ci/travis.run
 
 after_failure:
-  - cat build/test-suite.log
+  - cat `find ../ -name test-suite.log`
