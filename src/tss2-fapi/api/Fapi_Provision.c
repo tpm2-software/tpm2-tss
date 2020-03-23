@@ -579,6 +579,10 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                     pkeyObject);
             goto_if_error(r, "Prepare serialization", error_cleanup);
 
+            /* Check whether object already exists in key store.*/
+            r = ifapi_keystore_object_does_not_exist(&context->keystore, "HE/EK", pkeyObject);
+            goto_if_error_reset_state(r, "Could not write: %sh", error_cleanup, "HE/EK");
+
             /* Start writing the EK to the key store */
             r = ifapi_keystore_store_async(&context->keystore, &context->io, "HE/EK",
                     pkeyObject);
@@ -670,6 +674,10 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             /* Perform esys serialization if necessary */
             r = ifapi_esys_serialize_object(context->esys, pkeyObject);
             goto_if_error(r, "Prepare serialization", error_cleanup);
+
+            /* Check whether object already exists in key store.*/
+            r = ifapi_keystore_object_does_not_exist(&context->keystore, "HS/SRK", pkeyObject);
+            goto_if_error_reset_state(r, "Could not write: %sh", error_cleanup, "HS/SRK");
 
             /* Start writing the SRK to the key store */
             r = ifapi_keystore_store_async(&context->keystore, &context->io, "HS/SRK",
@@ -770,6 +778,11 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             return_try_again(r);
             goto_if_error(r, "Change policy LOCKOUT", error_cleanup);
 
+            /* Check whether object already exists in key store.*/
+            r = ifapi_keystore_object_does_not_exist(&context->keystore, "/LOCKOUT",
+                                                     &command->hierarchy);
+            goto_if_error_reset_state(r, "Could not write: %sh", error_cleanup, "/LOCKOUT");
+
             /* Start writing the lockout hierarchy object to the key store */
             r = ifapi_keystore_store_async(&context->keystore, &context->io, "/LOCKOUT",
                     &command->hierarchy);
@@ -832,6 +845,11 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             return_try_again(r);
             goto_if_error(r, "Change policy EH", error_cleanup);
 
+            /* Check whether object already exists in key store.*/
+            r = ifapi_keystore_object_does_not_exist(&context->keystore, "/HE",
+                                                     &command->hierarchy);
+            goto_if_error_reset_state(r, "Could not write: %sh", error_cleanup, "/HE");
+
             /* Start writing the endorsement hierarchy object to the key store */
             r = ifapi_keystore_store_async(&context->keystore, &context->io, "/HE",
                     &command->hierarchy);
@@ -893,6 +911,11 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                     hierarchy, defaultProfile->sh_policy);
             return_try_again(r);
             goto_if_error(r, "Change policy SH", error_cleanup);
+
+            /* Check whether object already exists in key store.*/
+            r = ifapi_keystore_object_does_not_exist(&context->keystore, "/HS",
+                                                     &command->hierarchy);
+            goto_if_error_reset_state(r, "Could not write: %sh", error_cleanup, "/HS");
 
             /* Start writing the owner hierarchy object to the key store */
             r = ifapi_keystore_store_async(&context->keystore, &context->io, "/HS",
@@ -993,6 +1016,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 
 error_cleanup:
     /* Primaries might not have been flushed in error cases */
+    ifapi_cleanup_ifapi_object(pkeyObject);
     ifapi_primary_clean(context);
     SAFE_FREE(command->root_crt);
     SAFE_FREE(*capabilityData);
