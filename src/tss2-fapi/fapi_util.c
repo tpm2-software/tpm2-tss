@@ -3234,7 +3234,14 @@ ifapi_key_create(
         r = ifapi_esys_serialize_object(context->esys, object);
         goto_if_error(r, "Prepare serialization", error_cleanup);
 
-        /* Start writing the NV object to the key store */
+        /* Check whether object already exists in key store.*/
+        r = ifapi_keystore_object_does_not_exist(&context->keystore,
+                                                 context->cmd.Key_Create.keyPath,
+                                                 object);
+        goto_if_error_reset_state(r, "Could not write: %sh", error_cleanup,
+                                  context->cmd.Key_Create.keyPath);
+
+        /* Start writing the object to the key store */
         r = ifapi_keystore_store_async(&context->keystore, &context->io,
                                        context->cmd.Key_Create.keyPath, object);
         goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,

@@ -167,6 +167,12 @@ ifapi_keystore_load_finish(
     IFAPI_OBJECT *object);
 
 TSS2_RC
+ifapi_keystore_object_does_not_exist(
+    IFAPI_KEYSTORE *keystore,
+    const char *path,
+    const IFAPI_OBJECT *object);
+
+TSS2_RC
 ifapi_keystore_store_async(
     IFAPI_KEYSTORE *keystore,
     IFAPI_IO *io,

@@ -434,6 +434,13 @@ Fapi_CreateNv_Finish(
             r = ifapi_esys_serialize_object(context->esys, &nvCmd->nv_object);
             goto_if_error(r, "Prepare serialization", error_cleanup);
 
+            /* Check whether object already exists in key store.*/
+            r = ifapi_keystore_object_does_not_exist(&context->keystore,
+                                                     nvCmd->nvPath,
+                                                     &nvCmd->nv_object);
+            goto_if_error_reset_state(r, "Could not write: %sh", error_cleanup,
+                                      nvCmd->nvPath);
+
             /* Start writing the NV object to the key store */
             r = ifapi_keystore_store_async(&context->keystore, &context->io,
                                            nvCmd->nvPath,
