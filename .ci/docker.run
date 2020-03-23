@@ -134,8 +134,5 @@ fi # TEST_TCTI_CONFIG
 
 if [ "$ENABLE_COVERAGE" == "true" ]; then
     bash <(curl -s https://codecov.io/bash)
-else
-    echo "ENABLE_COVERAGE not true, got \"$ENABLE_COVERAGE\""
 fi
-
 exit 0
