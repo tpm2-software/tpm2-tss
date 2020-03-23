@@ -1,7 +1,7 @@
 .\" Process this file with
 .\" groff -man -Tascii foo.1
 .\"
-.TH TCTI-DEVICE 7 "JUNE 2017" Intel "TPM2 Software Stack"
+.TH TCTI-DEVICE 7 "JUNE 2017" "TPM2 Software Stack"
 .SH NAME
 tcti-device \- device driver TCTI library
 .SH SYNOPSIS

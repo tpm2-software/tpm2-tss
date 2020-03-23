@@ -1,7 +1,7 @@
 .\" Process this file with
 .\" groff -man -Tascii foo.1
 .\"
-.TH Tss2_Tcti_Device_Init 3 "MARCH 2018" Intel "TPM2 Software Stack"
+.TH Tss2_Tcti_Device_Init 3 "MARCH 2018" "TPM2 Software Stack"
 .SH NAME
 Tss2_Tcti_Device_init \- Initialization function for the device TCTI library.
 .SH SYNOPSIS
