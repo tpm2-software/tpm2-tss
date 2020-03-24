@@ -10,7 +10,7 @@ task:
   install_script:
     - pkg upgrade -y
     - pkg install -y bash gmake coreutils libtool pkgconf autoconf autoconf-archive
-    - pkg install -y automake libgcrypt openssl json-c cmocka uthash wget curl
+    - pkg install -y automake libgcrypt openssl json-c cmocka uthash wget curl git
     - wget --quiet --show-progress --progress=dot:giga "https://downloads.sourceforge.net/project/ibmswtpm2/$ibmtpm_name.tar.gz"
     - shasum -a256 $ibmtpm_name.tar.gz | grep ^b9eef79904e276aeaed2a6b9e4021442ef4d7dfae4adde2473bef1a6a4cd10fb
     - mkdir -p $ibmtpm_name
