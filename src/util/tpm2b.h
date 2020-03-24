@@ -10,7 +10,7 @@
 
 typedef struct {
     UINT16 size;
-    BYTE buffer[1];
+    BYTE buffer[];
 } TPM2B;
 
 #endif /* TPM2B_H */
