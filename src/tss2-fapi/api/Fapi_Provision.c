@@ -508,7 +508,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 
         statecase(context->state, PROVISION_READ_CERT);
             TPM2B_PUBLIC public_key;
-            char * root_ca_file;
+            const char * root_ca_file;
 
             /* The NV object of the certificate will be read asynchronous. */
             r = ifapi_nv_read(context, &certData, &certSize);

@@ -146,7 +146,7 @@ ifapi_config_initialize_async(IFAPI_IO *io)
     return_if_null(io, "io is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
 
     /* Determine the location of the configuration file */
-    char *configFile = getenv(ENV_FAPI_CONFIG);
+    const char *configFile = getenv(ENV_FAPI_CONFIG);
     if (!configFile) {
         /* No config file given, falling back to the default */
         configFile = DEFAULT_CONFIG_FILE;
@@ -183,7 +183,7 @@ ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config)
     return_if_null(io, "io is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
 
     /* Definitions that must be listed here for the cleanup to work */
-    char *homeDir = NULL;
+    const char *homeDir = NULL;
     json_object *jso = NULL;
 
     /* Finish reading operation */
