@@ -111,9 +111,9 @@ compute_session_auth(
 {
     TPM2B_DIGEST *buffer_list[7];
     TPM2B_DIGEST pHash = TPM2B_DIGEST_INIT;
-    TPM2B sessionAttributesByteBuffer = {
+    TPM2B_DIGEST sessionAttributesByteBuffer = {
         .size = 1,
-        .buffer = pSessionDataIn->sessionAttributes
+        .buffer = { pSessionDataIn->sessionAttributes, }
     };
     UINT16 i;
     TSS2_RC rval;
