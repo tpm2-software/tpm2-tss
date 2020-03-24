@@ -3159,5 +3159,6 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \fn test_fapi_platform_certificates(FAPI_CONTEXT *context)
  \fn test_fapi_quote(FAPI_CONTEXT *context)
  \fn test_fapi_unseal(FAPI_CONTEXT *context)
+ \fn test_fapi_key_create_policy_password_sign(FAPI_CONTEXT *context)
  \}
 */
