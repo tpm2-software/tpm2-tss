@@ -59,7 +59,8 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
     type_dup = strdup(type);
     return_if_null(type_dup, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-    char *flag = strtok(type_dup, ", ");
+    char *saveptr;
+    char *flag = strtok_r(type_dup, ", ", &saveptr);
 
     /* The default store will be the user directory */
     template->system = TPM2_NO;
@@ -92,7 +93,7 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid flag: %s",
                        error, flag);
         }
-        flag = strtok(NULL, " ,");
+        flag = strtok_r(NULL, " ,", &saveptr);
     }
     if (exportable) {
         /* Clear flags preventing duplication */
@@ -157,7 +158,8 @@ ifapi_set_nv_flags(const char *type, IFAPI_NV_TEMPLATE *template,
     /* The default store will be the user directory */
     template->system = TPM2_NO;
 
-    char *flag = strtok(type_dup, ", ");
+    char *saveptr;
+    char *flag = strtok_r(type_dup, ", ", &saveptr);
 
     /* Loop over all comma or space separated flags */
     while (flag != NULL) {
@@ -185,7 +187,7 @@ ifapi_set_nv_flags(const char *type, IFAPI_NV_TEMPLATE *template,
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid flag: %s",
                        error, flag);
         }
-        flag = strtok(NULL, " ,");
+        flag = strtok_r(NULL, " ,", &saveptr);
     }
     if (type_count > 1) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
