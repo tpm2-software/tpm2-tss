@@ -75,12 +75,6 @@ extern "C" {
         return ec; \
     }
 
-#define exit_if_error(r,msg) \
-    if (r != TSS2_RC_SUCCESS) { \
-        LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
-        exit(1);  \
-    }
-
 #define set_return_code(r_max, r, msg) \
     if (r != TSS2_RC_SUCCESS) { \
         LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
