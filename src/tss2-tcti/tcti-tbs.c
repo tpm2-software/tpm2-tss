@@ -65,9 +65,6 @@ tcti_tbs_transmit (
     TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_tbs_down_cast (tcti_tbs);
     TSS2_RC rc = TSS2_RC_SUCCESS;
 
-    if (tcti_tbs == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
-    }
     rc = tcti_common_transmit_checks (tcti_common, command_buffer);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
@@ -116,10 +113,6 @@ tcti_tbs_receive (
     TSS2_RC rc = TSS2_RC_SUCCESS;
     TBS_RESULT tbs_rc;
     int original_size;
-
-    if (tcti_tbs == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
-    }
 
     rc = tcti_common_receive_checks (tcti_common, response_size);
     if (rc != TSS2_RC_SUCCESS) {
@@ -216,6 +209,9 @@ tcti_tbs_cancel (
     TSS2_RC rc = TSS2_RC_SUCCESS;
     TSS2_TCTI_TBS_CONTEXT *tcti_tbs = tcti_tbs_context_cast (tctiContext);
 
+    if (tcti_tbs == NULL) {
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
     tbs_rc = Tbsip_Cancel_Commands (tcti_tbs->hContext);
     if (tbs_rc != TBS_SUCCESS) {
         LOG_WARNING ("Failed to cancel commands with TBS error: 0x%x", tbs_rc);

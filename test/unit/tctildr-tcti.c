@@ -156,7 +156,7 @@ tctildr_transmit_null_test (void **state)
     size_t size = sizeof (buffer);
 
     rc = tctildr_transmit (NULL, size, buffer);
-    assert_int_equal (rc, TSS2_TCTI_RC_BAD_CONTEXT);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
 }
 static void
 tctildr_receive_test (void **state)
@@ -180,7 +180,7 @@ tctildr_receive_null_test (void **state)
     int32_t timeout = TSS2_TCTI_TIMEOUT_BLOCK;
 
     rc = tctildr_receive (NULL, &size, buffer, timeout);
-    assert_int_equal (rc, TSS2_TCTI_RC_BAD_CONTEXT);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
 }
 static void
 tctildr_cancel_test (void **state)
@@ -199,7 +199,7 @@ tctildr_cancel_null_test (void **state)
     UNUSED (state);
 
     rc = tctildr_cancel (NULL);
-    assert_int_equal (rc, TSS2_TCTI_RC_BAD_CONTEXT);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
 }
 #define TEST_NUM_HANDLES 3
 static void
@@ -220,10 +220,9 @@ tctildr_get_poll_handles_null_test (void **state)
     TSS2_RC rc;
     TSS2_TCTI_POLL_HANDLE handles [TEST_NUM_HANDLES] = { 0 };
     size_t num_handles = sizeof (handles);
-    UNUSED (state);
 
     rc = tctildr_get_poll_handles (NULL, handles, &num_handles);
-    assert_int_equal (rc, TSS2_TCTI_RC_BAD_CONTEXT);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
 }
 static void
 tctildr_set_locality_test (void **state)
@@ -242,7 +241,7 @@ tctildr_set_locality_null_test (void **state)
     UNUSED (state);
 
     rc = tctildr_set_locality (NULL, 1);
-    assert_int_equal (rc, TSS2_TCTI_RC_BAD_CONTEXT);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
 }
 #define TEST_HANDLE 0x1
 static void
@@ -264,7 +263,7 @@ tctildr_make_sticky_null_test (void **state)
     UNUSED (state);
 
     rc = tctildr_make_sticky (NULL, &handle, TPM2_YES);
-    assert_int_equal (rc, TSS2_TCTI_RC_BAD_CONTEXT);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
 }
 /*
  * This test covers the 'sanity test' path in the tctildr finalize

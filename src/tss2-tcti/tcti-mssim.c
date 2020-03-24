@@ -71,7 +71,7 @@ TSS2_RC tcti_platform_command (
     ssize_t read_ret;
 
     if (tcti_mssim == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
+        return TSS2_TCTI_RC_BAD_REFERENCE;
     }
     rc = Tss2_MU_UINT32_Marshal (cmd, buf, sizeof (cmd), NULL);
     if (rc != TSS2_RC_SUCCESS) {
@@ -190,9 +190,6 @@ tcti_mssim_transmit (
     tpm_header_t header;
     TSS2_RC rc;
 
-    if (tcti_mssim == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
-    }
     rc = tcti_common_transmit_checks (tcti_common, cmd_buf);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
@@ -231,9 +228,6 @@ tcti_mssim_cancel (
     TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_mssim_down_cast (tcti_mssim);
     TSS2_RC rc;
 
-    if (tcti_mssim == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
-    }
     rc = tcti_common_cancel_checks (tcti_common);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
@@ -258,9 +252,6 @@ tcti_mssim_set_locality (
     TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_mssim_down_cast (tcti_mssim);
     TSS2_RC rc;
 
-    if (tcti_mssim == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
-    }
     rc = tcti_common_set_locality_checks (tcti_common);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
@@ -314,9 +305,6 @@ tcti_mssim_receive (
     UINT32 trash;
     int ret;
 
-    if (tcti_mssim == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
-    }
     rc = tcti_common_receive_checks (tcti_common, response_size);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;

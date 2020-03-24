@@ -188,7 +188,7 @@ tctildr_transmit (
 {
     TSS2_TCTILDR_CONTEXT *ldr_ctx = tctildr_context_cast (tctiContext);
     if (ldr_ctx == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
+        return TSS2_TCTI_RC_BAD_REFERENCE;
     }
     return Tss2_Tcti_Transmit (ldr_ctx->tcti, command_size, command_buffer);
 }
@@ -201,7 +201,7 @@ tctildr_receive (
 {
     TSS2_TCTILDR_CONTEXT *ldr_ctx = tctildr_context_cast (tctiContext);
     if (ldr_ctx == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
+        return TSS2_TCTI_RC_BAD_REFERENCE;
     }
     return Tss2_Tcti_Receive (ldr_ctx->tcti,
                               response_size,
@@ -214,7 +214,7 @@ tctildr_cancel (
 {
     TSS2_TCTILDR_CONTEXT *ldr_ctx = tctildr_context_cast (tctiContext);
     if (ldr_ctx == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
+        return TSS2_TCTI_RC_BAD_REFERENCE;
     }
     return Tss2_Tcti_Cancel (ldr_ctx->tcti);
 }
@@ -226,7 +226,7 @@ tctildr_get_poll_handles (
 {
     TSS2_TCTILDR_CONTEXT *ldr_ctx = tctildr_context_cast (tctiContext);
     if (ldr_ctx == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
+        return TSS2_TCTI_RC_BAD_REFERENCE;
     }
     return Tss2_Tcti_GetPollHandles (ldr_ctx->tcti, handles, num_handles);
 }
@@ -237,7 +237,7 @@ tctildr_set_locality (
 {
     TSS2_TCTILDR_CONTEXT *ldr_ctx = tctildr_context_cast (tctiContext);
     if (ldr_ctx == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
+        return TSS2_TCTI_RC_BAD_REFERENCE;
     }
     return Tss2_Tcti_SetLocality (ldr_ctx->tcti, locality);
 }
@@ -249,7 +249,7 @@ tctildr_make_sticky (
 {
     TSS2_TCTILDR_CONTEXT *ldr_ctx = tctildr_context_cast (tctiContext);
     if (ldr_ctx == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
+        return TSS2_TCTI_RC_BAD_REFERENCE;
     }
     return Tss2_Tcti_MakeSticky (ldr_ctx->tcti, handle, sticky);
 }

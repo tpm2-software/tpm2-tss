@@ -86,14 +86,14 @@ typedef void TSS2_TCTI_POLL_HANDLE;
 
 /* Macros to simplify invocation of functions from the common TCTI structure */
 #define Tss2_Tcti_Transmit(tctiContext, size, command) \
-    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_CONTEXT: \
+    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
     (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
         TSS2_TCTI_RC_ABI_MISMATCH: \
     (TSS2_TCTI_TRANSMIT(tctiContext) == NULL) ? \
         TSS2_TCTI_RC_NOT_IMPLEMENTED: \
     TSS2_TCTI_TRANSMIT(tctiContext)(tctiContext, size, command))
 #define Tss2_Tcti_Receive(tctiContext, size, response, timeout) \
-    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_CONTEXT: \
+    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
     (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
         TSS2_TCTI_RC_ABI_MISMATCH: \
     (TSS2_TCTI_RECEIVE(tctiContext) == NULL) ? \
@@ -109,28 +109,28 @@ typedef void TSS2_TCTI_POLL_HANDLE;
         } \
     } while (0)
 #define Tss2_Tcti_Cancel(tctiContext) \
-    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_CONTEXT: \
+    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
     (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
         TSS2_TCTI_RC_ABI_MISMATCH: \
     (TSS2_TCTI_CANCEL(tctiContext) == NULL) ? \
         TSS2_TCTI_RC_NOT_IMPLEMENTED: \
     TSS2_TCTI_CANCEL(tctiContext)(tctiContext))
 #define Tss2_Tcti_GetPollHandles(tctiContext, handles, num_handles) \
-    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_CONTEXT: \
+    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
     (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
         TSS2_TCTI_RC_ABI_MISMATCH: \
     (TSS2_TCTI_GET_POLL_HANDLES(tctiContext) == NULL) ? \
         TSS2_TCTI_RC_NOT_IMPLEMENTED: \
     TSS2_TCTI_GET_POLL_HANDLES(tctiContext)(tctiContext, handles, num_handles))
 #define Tss2_Tcti_SetLocality(tctiContext, locality) \
-    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_CONTEXT: \
+    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
     (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
         TSS2_TCTI_RC_ABI_MISMATCH: \
     (TSS2_TCTI_SET_LOCALITY(tctiContext) == NULL) ? \
         TSS2_TCTI_RC_NOT_IMPLEMENTED: \
     TSS2_TCTI_SET_LOCALITY(tctiContext)(tctiContext, locality))
 #define Tss2_Tcti_MakeSticky(tctiContext, handle, sticky) \
-    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_CONTEXT: \
+    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
     (TSS2_TCTI_VERSION(tctiContext) < 2) ? \
         TSS2_TCTI_RC_ABI_MISMATCH: \
     (TSS2_TCTI_MAKE_STICKY(tctiContext) == NULL) ? \
