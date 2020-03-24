@@ -165,10 +165,10 @@ AS_IF([test "x$enable_fapi" != xno -a "x$with_crypto" != "xossl"],
     AC_MSG_ERROR([FAPI has to be compiled with OpenSSL]))
 
 AS_IF([test "x$enable_fapi" = xyes ],
-    PKG_CHECK_MODULES([JSON_C], [json-c]))
+      [PKG_CHECK_MODULES([JSONC], [json-c])])
 
 AS_IF([test "x$enable_fapi" = xyes ],
-    PKG_CHECK_MODULES([CURL], [libcurl]))
+      [PKG_CHECK_MODULES([CURL], [libcurl])])
 
 AC_ARG_WITH([tctidefaultmodule],
             [AS_HELP_STRING([--with-tctidefaultmodule],
