@@ -119,7 +119,7 @@ TSS2_RC tcti_control_command (
     uint32_t response_code;
 
     if (tcti_swtpm == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
+        return TSS2_TCTI_RC_BAD_REFERENCE;
     }
 
     if (cmd_sdu == NULL && cmd_sdu_len != 0) {
@@ -255,9 +255,6 @@ tcti_swtpm_transmit (
     tpm_header_t header;
     TSS2_RC rc;
 
-    if (tcti_swtpm == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
-    }
     rc = tcti_common_transmit_checks (tcti_common, cmd_buf);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
@@ -319,9 +316,6 @@ tcti_swtpm_set_locality (
     TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_swtpm_down_cast (tcti_swtpm);
     TSS2_RC rc;
 
-    if (tcti_swtpm == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
-    }
     rc = tcti_common_set_locality_checks (tcti_common);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
@@ -382,9 +376,6 @@ tcti_swtpm_receive (
     TSS2_RC rc;
     int ret;
 
-    if (tcti_swtpm == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
-    }
     rc = tcti_common_receive_checks (tcti_common, response_size);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;

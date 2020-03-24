@@ -106,9 +106,6 @@ tcti_device_transmit (
     TSS2_RC rc = TSS2_RC_SUCCESS;
     ssize_t size;
 
-    if (tcti_dev == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
-    }
     rc = tcti_common_transmit_checks (tcti_common, command_buffer);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
@@ -170,9 +167,6 @@ tcti_device_receive (
     UINT32 partial_size;
 #endif
 
-    if (tcti_dev == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
-    }
     rc = tcti_common_receive_checks (tcti_common, response_size);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
@@ -369,11 +363,7 @@ tcti_device_get_poll_handles (
 #ifdef TCTI_ASYNC
     TSS2_TCTI_DEVICE_CONTEXT *tcti_dev = tcti_device_context_cast (tctiContext);
 
-    if (tcti_dev == NULL) {
-        return TSS2_TCTI_RC_BAD_CONTEXT;
-    }
-
-    if (num_handles == NULL) {
+    if (num_handles == NULL || tcti_dev == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
     }
 

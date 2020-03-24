@@ -335,7 +335,7 @@ tcti_swtpm_receive_null_test (void **state)
     TSS2_RC rc;
 
     rc = Tss2_Tcti_Receive (NULL, NULL, NULL, TSS2_TCTI_TIMEOUT_BLOCK);
-    assert_int_equal (rc, TSS2_TCTI_RC_BAD_CONTEXT);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
 }
 /*
  */
@@ -530,7 +530,7 @@ tcti_swtpm_transmit_null_test (void **state)
     TSS2_RC rc = TSS2_RC_SUCCESS;
 
     rc = Tss2_Tcti_Transmit (NULL, 0, NULL);
-    assert_int_equal (rc, TSS2_TCTI_RC_BAD_CONTEXT);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
 }
 /*
  * This test exercises the header check of the transmit function.
@@ -615,7 +615,7 @@ tcti_swtpm_control_command_null_test (void **state)
 
     /* tcti context NULL */
     rc = tcti_control_command (NULL, 0, NULL, 0, NULL, NULL, NULL);
-    assert_int_equal (rc, TSS2_TCTI_RC_BAD_CONTEXT);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
 
     /* cmd_sdu NULL with cmd_sdu_len not 0 */
     rc = tcti_control_command (ctx, 0, NULL, 4, NULL, NULL, NULL);
@@ -677,7 +677,7 @@ tcti_swtpm_locality_test (void **state)
 
     /* test NULL check */
     rc = Tss2_Tcti_SetLocality (NULL, 3);
-    assert_int_equal (rc, TSS2_TCTI_RC_BAD_CONTEXT);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
 
     /* fail due to non-success response code */
     response = 0xFFFFFFFF;

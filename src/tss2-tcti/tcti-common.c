@@ -40,6 +40,10 @@ TSS2_RC
 tcti_common_cancel_checks (
     TSS2_TCTI_COMMON_CONTEXT *tcti_common)
 {
+    if (tcti_common == NULL) {
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+
     if (tcti_common->state != TCTI_STATE_RECEIVE) {
         return TSS2_TCTI_RC_BAD_SEQUENCE;
     }
@@ -51,11 +55,12 @@ tcti_common_transmit_checks (
     TSS2_TCTI_COMMON_CONTEXT *tcti_common,
     const uint8_t *command_buffer)
 {
+    if (command_buffer == NULL || tcti_common == NULL) {
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+
     if (tcti_common->state != TCTI_STATE_TRANSMIT) {
         return TSS2_TCTI_RC_BAD_SEQUENCE;
-    }
-    if (command_buffer == NULL) {
-        return TSS2_TCTI_RC_BAD_REFERENCE;
     }
 
     return TSS2_RC_SUCCESS;
@@ -66,11 +71,12 @@ tcti_common_receive_checks (
     TSS2_TCTI_COMMON_CONTEXT *tcti_common,
     size_t *response_size)
 {
+    if (response_size == NULL || tcti_common == NULL) {
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+
     if (tcti_common->state != TCTI_STATE_RECEIVE) {
         return TSS2_TCTI_RC_BAD_SEQUENCE;
-    }
-    if (response_size == NULL) {
-        return TSS2_TCTI_RC_BAD_REFERENCE;
     }
 
     return TSS2_RC_SUCCESS;
@@ -80,6 +86,10 @@ TSS2_RC
 tcti_common_set_locality_checks (
     TSS2_TCTI_COMMON_CONTEXT *tcti_common)
 {
+    if (tcti_common == NULL) {
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+
     if (tcti_common->state != TCTI_STATE_TRANSMIT) {
         return TSS2_TCTI_RC_BAD_SEQUENCE;
     }
