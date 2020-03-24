@@ -189,8 +189,8 @@ static log_level
 getLogLevel(const char *module, log_level logdefault)
 {
     log_level loglevel = logdefault;
-    char *envlevel = getenv("TSS2_LOG");
-    char *i = envlevel;
+    const char *envlevel = getenv("TSS2_LOG");
+    const char *i = envlevel;
     if (envlevel == NULL)
         return loglevel;
     while ((i = strchr(i, '+')) != NULL) {

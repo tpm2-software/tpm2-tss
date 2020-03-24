@@ -341,7 +341,7 @@ ifapi_keystore_initialize(
     const char *config_defaultprofile)
 {
     TSS2_RC r;
-    char *home_dir;
+    const char *home_dir;
     char *home_path = NULL;
     size_t start_pos;
 
