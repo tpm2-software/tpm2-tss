@@ -105,10 +105,10 @@ fuzz_fill (
 TSS2_TCTI_FUZZING_CONTEXT*
 tcti_fuzzing_context_cast (TSS2_TCTI_CONTEXT *tcti_ctx)
 {
-    if (tcti_ctx != NULL && TSS2_TCTI_MAGIC (tcti_ctx) == TCTI_FUZZING_MAGIC) {
-        return (TSS2_TCTI_FUZZING_CONTEXT*)tcti_ctx;
-    }
-    return NULL;
+    if (tcti_ctx == NULL)
+        return NULL;
+
+    return (TSS2_TCTI_FUZZING_CONTEXT*)tcti_ctx;
 }
 
 /*
@@ -185,7 +185,9 @@ tcti_fuzzing_receive (
     TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_fuzzing_down_cast (tcti_fuzzing);
     TSS2_RC rc;
 
-    rc = tcti_common_receive_checks (tcti_common, response_size);
+    rc = tcti_common_receive_checks (tcti_common,
+                                     response_size,
+                                     TCTI_FUZZING_MAGIC);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
