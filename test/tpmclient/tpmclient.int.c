@@ -101,14 +101,20 @@ static void ErrorHandler(UINT32 rval, char *errorString, int errorStringSize)
     snprintf(errorString, errorStringSize, "%s Error: 0x%x\n", levelString, rval);
 }
 
-static void Cleanup()
+#define EXIT_SKIP 77
+
+static void Cleanup_exit(int rc)
 {
     if (resMgrTctiContext != NULL) {
         tcti_teardown(resMgrTctiContext);
         resMgrTctiContext = NULL;
     }
+    exit(rc == EXIT_SKIP ? EXIT_SKIP : 1);
+}
 
-    exit(1);
+static void Cleanup()
+{
+    Cleanup_exit(1);
 }
 
 static void InitSysContextFailure()
@@ -124,7 +130,7 @@ static void InitSysContextFailure()
       ErrorHandler((rval), error_string, ERROR_STR_LEN); \
       LOG_INFO("passing case: \tFAILED!  %s (%s@%u)",  \
                error_string, __FUNCTION__, __LINE__ ); \
-      Cleanup(); \
+      Cleanup_exit(rval); \
     } else {     \
       LOG_INFO("passing case: \tPASSED! (%s@%u)", \
                __FUNCTION__, __LINE__); \
@@ -137,7 +143,7 @@ static void InitSysContextFailure()
       ErrorHandler((rval), error_string, ERROR_STR_LEN); \
       LOG_INFO("\tfailing case: FAILED! %s  Ret code s/b: 0x%x, but was: 0x%x (%s@%u)", \
                error_string, (expected_rval), (rval), __FUNCTION__, __LINE__ ); \
-      Cleanup(); \
+      Cleanup_exit(rval); \
     } else { \
       LOG_INFO("\tfailing case: PASSED! (%s@%u)", \
            __FUNCTION__, __LINE__); \
@@ -149,21 +155,25 @@ static TSS2_RC TpmReset()
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
 #ifdef TCTI_SWTPM
-    rval = Tss2_Tcti_Swtpm_Reset( resMgrTctiContext );
+    rval = Tss2_Tcti_Swtpm_Reset(resMgrTctiContext);
 
     /* If TCTI is not swtpm, bad context is returned. */
     if (rval != TSS2_TCTI_RC_BAD_CONTEXT) {
         return rval;
+    } else {
+        LOG_WARNING("TPM Reset failed: wrong TCTI type retrying with mssim...");
     }
 #endif /* TCTI_SWTPM */
 
 #ifdef TCTI_MSSIM
     rval = (TSS2_RC)tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_OFF );
-    if( rval == TSS2_RC_SUCCESS )
-    {
+    if (rval == TSS2_RC_SUCCESS) {
         rval = (TSS2_RC)tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_ON );
     }
 #endif /* TCTI_MSSIM */
+    if (rval == TSS2_TCTI_RC_BAD_CONTEXT) {
+        rval = EXIT_SKIP;
+    }
 
     return rval;
 }
@@ -2142,7 +2152,7 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
 
 #if !defined(TCTI_SWTPM) && !defined(TCTI_MSSIM)
     /* SKIP */
-    return 77;
+    return EXIT_SKIP;
 #endif
 
     sysContext = sapi_context;
