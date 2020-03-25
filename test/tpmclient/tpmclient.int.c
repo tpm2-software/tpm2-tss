@@ -151,8 +151,8 @@ static TSS2_RC TpmReset()
 #ifdef TCTI_SWTPM
     rval = Tss2_Tcti_Swtpm_Reset( resMgrTctiContext );
 
-    /* If TCTI is not swtpm, bad context is returned. */
-    if (rval != TSS2_TCTI_RC_BAD_CONTEXT) {
+    /* If TCTI is not swtpm, bad reference is returned. */
+    if (rval != TSS2_TCTI_RC_BAD_REFERENCE) {
         return rval;
     }
 #endif /* TCTI_SWTPM */
