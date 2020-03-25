@@ -862,7 +862,6 @@ INPUT                  = @top_srcdir@/doc/coding_standard_c.md \
                          @top_srcdir@/test/integration/fapi-key-create-policy-authorize-sign.int.c \
                          @top_srcdir@/test/integration/fapi-key-create-policy-nv-sign.int.c \
                          @top_srcdir@/test/integration/fapi-key-create-policy-or-sign.int.c \
-                         @top_srcdir@/test/integration/fapi-key-create-policy-password-sign.int.c \
                          @top_srcdir@/test/integration/fapi-key-create-policy-pcr-sign.int.c \
                          @top_srcdir@/test/integration/fapi-key-create-policy-secret-nv-sign.int.c \
                          @top_srcdir@/test/integration/fapi-key-create-policy-signed.int.c \
