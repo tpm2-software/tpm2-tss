@@ -38,10 +38,15 @@ tcti_common_down_cast (TSS2_TCTI_COMMON_CONTEXT *ctx)
 
 TSS2_RC
 tcti_common_cancel_checks (
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common)
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common,
+    uint64_t magic)
 {
     if (tcti_common == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+
+    if (TSS2_TCTI_MAGIC(tcti_common) != magic) {
+        return TSS2_TCTI_RC_BAD_CONTEXT;
     }
 
     if (tcti_common->state != TCTI_STATE_RECEIVE) {
@@ -53,10 +58,15 @@ tcti_common_cancel_checks (
 TSS2_RC
 tcti_common_transmit_checks (
     TSS2_TCTI_COMMON_CONTEXT *tcti_common,
-    const uint8_t *command_buffer)
+    const uint8_t *command_buffer,
+    uint64_t magic)
 {
     if (command_buffer == NULL || tcti_common == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+
+    if (TSS2_TCTI_MAGIC(tcti_common) != magic) {
+        return TSS2_TCTI_RC_BAD_CONTEXT;
     }
 
     if (tcti_common->state != TCTI_STATE_TRANSMIT) {
@@ -69,10 +79,15 @@ tcti_common_transmit_checks (
 TSS2_RC
 tcti_common_receive_checks (
     TSS2_TCTI_COMMON_CONTEXT *tcti_common,
-    size_t *response_size)
+    size_t *response_size,
+    uint64_t magic)
 {
     if (response_size == NULL || tcti_common == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+
+    if (TSS2_TCTI_MAGIC(tcti_common) != magic) {
+        return TSS2_TCTI_RC_BAD_CONTEXT;
     }
 
     if (tcti_common->state != TCTI_STATE_RECEIVE) {
@@ -84,10 +99,15 @@ tcti_common_receive_checks (
 
 TSS2_RC
 tcti_common_set_locality_checks (
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common)
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common,
+    uint64_t magic)
 {
     if (tcti_common == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+
+    if (TSS2_TCTI_MAGIC(tcti_common) != magic) {
+        return TSS2_TCTI_RC_BAD_CONTEXT;
     }
 
     if (tcti_common->state != TCTI_STATE_TRANSMIT) {

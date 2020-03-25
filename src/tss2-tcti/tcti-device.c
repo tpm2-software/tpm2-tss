@@ -69,18 +69,17 @@ static char *default_conf[] = {
 
 /*
  * This function wraps the "up-cast" of the opaque TCTI context type to the
- * type for the device TCTI context. The only safe-guard we have to ensure
- * this operation is possible is the magic number for the device TCTI context.
- * If passed a NULL context, or the magic number check fails, this function
- * will return NULL.
+ * type for the mssim TCTI context. If passed a NULL context the function
+ * returns a NULL ptr. The function doesn't check magic number anymore
+ * It should checked by the appropriate tcti_common_checks.
  */
 TSS2_TCTI_DEVICE_CONTEXT*
 tcti_device_context_cast (TSS2_TCTI_CONTEXT *tcti_ctx)
 {
-    if (tcti_ctx != NULL && TSS2_TCTI_MAGIC (tcti_ctx) == TCTI_DEVICE_MAGIC) {
-        return (TSS2_TCTI_DEVICE_CONTEXT*)tcti_ctx;
-    }
-    return NULL;
+    if (tcti_ctx == NULL)
+        return NULL;
+
+    return (TSS2_TCTI_DEVICE_CONTEXT*)tcti_ctx;
 }
 /*
  * This function down-casts the device TCTI context to the common context
@@ -106,7 +105,9 @@ tcti_device_transmit (
     TSS2_RC rc = TSS2_RC_SUCCESS;
     ssize_t size;
 
-    rc = tcti_common_transmit_checks (tcti_common, command_buffer);
+    rc = tcti_common_transmit_checks (tcti_common,
+                                      command_buffer,
+                                      TCTI_DEVICE_MAGIC);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -167,7 +168,9 @@ tcti_device_receive (
     UINT32 partial_size;
 #endif
 
-    rc = tcti_common_receive_checks (tcti_common, response_size);
+    rc = tcti_common_receive_checks (tcti_common,
+                                     response_size,
+                                     TCTI_DEVICE_MAGIC);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }

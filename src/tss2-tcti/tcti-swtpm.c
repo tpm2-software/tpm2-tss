@@ -56,18 +56,17 @@
 
 /*
  * This function wraps the "up-cast" of the opaque TCTI context type to the
- * type for the swtpm TCTI context. The only safeguard we have to ensure this
- * operation is possible is the magic number in the swtpm TCTI context.
- * If passed a NULL context, or the magic number check fails, this function
- * will return NULL.
+ * type for the mssim TCTI context. If passed a NULL context the function
+ * returns a NULL ptr. The function doesn't check magic number anymore
+ * It should checked by the appropriate tcti_common_checks.
  */
 TSS2_TCTI_SWTPM_CONTEXT*
 tcti_swtpm_context_cast (TSS2_TCTI_CONTEXT *tcti_ctx)
 {
-    if (tcti_ctx != NULL && TSS2_TCTI_MAGIC (tcti_ctx) == TCTI_SWTPM_MAGIC) {
-        return (TSS2_TCTI_SWTPM_CONTEXT*)tcti_ctx;
-    }
-    return NULL;
+    if (tcti_ctx == NULL)
+        return NULL;
+
+    return (TSS2_TCTI_SWTPM_CONTEXT*)tcti_ctx;
 }
 /*
  * This function down-casts the swtpm TCTI context to the common context
@@ -120,6 +119,10 @@ TSS2_RC tcti_control_command (
 
     if (tcti_swtpm == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+
+    if (TSS2_TCTI_MAGIC (tcti_swtpm) != TCTI_SWTPM_MAGIC) {
+        return TSS2_TCTI_RC_BAD_CONTEXT;
     }
 
     if (cmd_sdu == NULL && cmd_sdu_len != 0) {
@@ -255,7 +258,7 @@ tcti_swtpm_transmit (
     tpm_header_t header;
     TSS2_RC rc;
 
-    rc = tcti_common_transmit_checks (tcti_common, cmd_buf);
+    rc = tcti_common_transmit_checks (tcti_common, cmd_buf, TCTI_SWTPM_MAGIC);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -316,7 +319,7 @@ tcti_swtpm_set_locality (
     TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_swtpm_down_cast (tcti_swtpm);
     TSS2_RC rc;
 
-    rc = tcti_common_set_locality_checks (tcti_common);
+    rc = tcti_common_set_locality_checks (tcti_common, TCTI_SWTPM_MAGIC);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -376,7 +379,7 @@ tcti_swtpm_receive (
     TSS2_RC rc;
     int ret;
 
-    rc = tcti_common_receive_checks (tcti_common, response_size);
+    rc = tcti_common_receive_checks (tcti_common, response_size, TCTI_SWTPM_MAGIC);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
