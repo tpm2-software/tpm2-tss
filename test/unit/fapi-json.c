@@ -273,8 +273,25 @@ check_bin(void **state)
             },
         };
 
-
     CHECK_BIN(TPM2B_PUBLIC, inPublicECC);
+
+    TPM2B_PUBLIC inPublicECC_MGF1 = inPublicECC;
+
+    inPublicECC_MGF1.publicArea.parameters.eccDetail.kdf.scheme = TPM2_ALG_MGF1;
+    inPublicECC_MGF1.publicArea.parameters.eccDetail.kdf.details.mgf1.hashAlg = TPM2_ALG_SHA256;
+    CHECK_BIN(TPM2B_PUBLIC, inPublicECC_MGF1);
+
+    TPM2B_PUBLIC inPublicECC_KDF12 = inPublicECC;
+
+    inPublicECC_KDF12.publicArea.parameters.eccDetail.kdf.scheme = TPM2_ALG_KDF1_SP800_56A;
+    inPublicECC_KDF12.publicArea.parameters.eccDetail.kdf.details.kdf1_sp800_56a.hashAlg = TPM2_ALG_SHA256;
+    CHECK_BIN(TPM2B_PUBLIC, inPublicECC_KDF12);
+
+    TPM2B_PUBLIC inPublicECC_KDF13 = inPublicECC;
+
+    inPublicECC_KDF13.publicArea.parameters.eccDetail.kdf.scheme = TPM2_ALG_KDF1_SP800_108;
+    inPublicECC_KDF13.publicArea.parameters.eccDetail.kdf.details.kdf1_sp800_108.hashAlg = TPM2_ALG_SHA256;
+    CHECK_BIN(TPM2B_PUBLIC, inPublicECC_KDF13);
 
     TPM2B_PUBLIC inPublicRSA2 = {
         .size = 0,
@@ -310,11 +327,59 @@ check_bin(void **state)
         },
     };
 
+    TPMS_SIGNATURE_ECC ecc_signature = {
+        .hash = TPM2_ALG_SHA1,
+        .signatureR = {
+            .size =  32,
+            .buffer = {
+                0x25, 0xdb, 0x1f, 0x8b, 0xbc, 0xfa, 0xbc, 0x31,
+                0xf8, 0x17, 0x6a, 0xcb, 0xb2, 0xf8, 0x40, 0xa3,
+                0xb6, 0xa5, 0xd3, 0x40, 0x65, 0x9d, 0x37, 0xee,
+                0xd9, 0xfd, 0x52, 0x47, 0xf5, 0x14, 0xd5, 0x98
+            },
+        },
+        .signatureS = {
+            .size = 32,
+            .buffer = {
+                0xed, 0x62, 0x3e, 0x3d, 0xd2, 0x09, 0x08, 0xcf,
+                0x58, 0x3c, 0x81, 0x4b, 0xbf, 0x65, 0x7e, 0x08,
+                0xab, 0x9f, 0x40, 0xff, 0xea, 0x51, 0xda, 0x21,
+                0x29, 0x8c, 0xe2, 0x4d, 0xeb, 0x34, 0x4c, 0xcc
+            }
+        }
+    };
+
+    CHECK_BIN(TPMS_SIGNATURE_ECC, ecc_signature);
+
     CHECK_BIN(TPM2B_PUBLIC, inPublicRSA2);
 
-    TPMT_SIG_SCHEME ecc_scheme = { .scheme = TPM2_ALG_ECDSA, .details.ecdsa = TPM2_ALG_SHA1 };
+    TPMT_SIG_SCHEME ecc_scheme_ecdsa = { .scheme = TPM2_ALG_ECDSA, .details.ecdsa = TPM2_ALG_SHA1 };
 
-    CHECK_BIN(TPMT_SIG_SCHEME, ecc_scheme);
+    CHECK_BIN(TPMT_SIG_SCHEME, ecc_scheme_ecdsa);
+
+    TPMT_SIG_SCHEME ecc_scheme_ecdaa = { .scheme = TPM2_ALG_ECDAA, .details.ecdaa = TPM2_ALG_SHA1 };
+
+    CHECK_BIN(TPMT_SIG_SCHEME, ecc_scheme_ecdaa);
+
+    TPMT_SIG_SCHEME rsa_scheme_rsapss = { .scheme = TPM2_ALG_RSAPSS, .details.rsapss = TPM2_ALG_SHA1 };
+
+    CHECK_BIN(TPMT_SIG_SCHEME, rsa_scheme_rsapss);
+
+    TPMT_SIG_SCHEME rsa_scheme_rsassa = { .scheme = TPM2_ALG_RSASSA, .details.rsassa = TPM2_ALG_SHA1 };
+
+    CHECK_BIN(TPMT_SIG_SCHEME, rsa_scheme_rsassa);
+
+    TPMT_SIG_SCHEME sm2_scheme = { .scheme = TPM2_ALG_SM2, .details.sm2 = TPM2_ALG_SHA1 };
+
+    CHECK_BIN(TPMT_SIG_SCHEME, sm2_scheme);
+
+    TPMT_SIG_SCHEME hmac_scheme = { .scheme = TPM2_ALG_HMAC, .details.hmac = TPM2_ALG_SHA1 };
+
+    CHECK_BIN(TPMT_SIG_SCHEME, hmac_scheme);
+
+    TPMT_SIG_SCHEME ecschnorr_scheme = { .scheme = TPM2_ALG_ECSCHNORR, .details.ecschnorr = TPM2_ALG_SHA1 };
+
+    CHECK_BIN(TPMT_SIG_SCHEME, ecschnorr_scheme);
 
     TPMT_SIG_SCHEME rsa_scheme = { .scheme = TPM2_ALG_NULL };
 
@@ -1001,7 +1066,7 @@ check_json_bits(void **state)
                     "  }"
                     "]";
 
-       const char *test_json_TPMA_NV_src_struct =\
+    const char *test_json_TPMA_NV_src_struct =  \
                     "{"
                     "  \"TPMA_NV_OWNERWRITE\":\"YES\","
                     "  \"TPMA_NV_AUTHWRITE\":\"yes\","
@@ -1017,8 +1082,35 @@ check_json_bits(void **state)
                     "  \"TPM2_NT\":1"
                     "  }";
 
+    const char *test_json_TPMA_NV_expected2 =    \
+                    "{"
+                    "  \"PPWRITE\":1,"
+                    "  \"OWNERWRITE\":0,"
+                    "  \"AUTHWRITE\":0,"
+                    "  \"POLICYWRITE\":0,"
+                    "  \"POLICY_DELETE\":0,"
+                    "  \"WRITELOCKED\":0,"
+                    "  \"WRITEALL\":0,"
+                    "  \"WRITEDEFINE\":0,"
+                    "  \"WRITE_STCLEAR\":0,"
+                    "  \"GLOBALLOCK\":0,"
+                    "  \"PPREAD\":0,"
+                    "  \"OWNERREAD\":0,"
+                    "  \"AUTHREAD\":0,"
+                    "  \"POLICYREAD\":0,"
+                    "  \"NO_DA\":0,"
+                    "  \"ORDERLY\":0,"
+                    "  \"CLEAR_STCLEAR\":0,"
+                    "  \"READLOCKED\":0,"
+                    "  \"WRITTEN\":0,"
+                    "  \"PLATFORMCREATE\":0,"
+                    "  \"READ_STCLEAR\":0,"
+                    "  \"TPM2_NT\":\"ORDINARY\""
+                    "}";
+
     CHECK_JSON_SIMPLE(TPMA_NV, test_json_TPMA_NV_src_array, test_json_TPMA_NV_expected);
     CHECK_JSON_SIMPLE(TPMA_NV, test_json_TPMA_NV_src_struct, test_json_TPMA_NV_expected);
+    CHECK_JSON_SIMPLE(TPMA_NV, "1", test_json_TPMA_NV_expected2);
 }
 
 static void
@@ -1221,6 +1313,524 @@ check_error(void **state)
     CHECK_ERROR(TPMI_ALG_HASH, "\"SHA9999\"", TSS2_FAPI_RC_BAD_VALUE);
     CHECK_ERROR(TPM2B_DIGEST, "\"xxxx\"", TSS2_FAPI_RC_BAD_VALUE);
     CHECK_ERROR(TPM2B_DIGEST, "\"0x010x\"", TSS2_FAPI_RC_BAD_VALUE);
+
+    /*
+     * Illegal keys
+     */
+    const char *test_json_key_err1 =
+        /* Without persistent handle */
+        "{"
+        "  \"objectType\":1,"
+        "  \"system\":\"YES\","
+        "}";
+    CHECK_ERROR(IFAPI_OBJECT, test_json_key_err1, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_key_err2 =
+        /* Without public */
+        "{"
+        "  \"objectType\":1,"
+        "  \"system\":\"YES\","
+        "  \"persistent_handle\":0,"
+        "}";
+    CHECK_ERROR(IFAPI_OBJECT, test_json_key_err2, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_key_err3 =
+        /* Without serialization */
+        "{"
+        "  \"objectType\":1,"
+        "  \"system\":\"YES\","
+        "  \"with_auth\":\"NO\","
+        "  \"persistent_handle\":0,"
+        "  \"public\":{"
+        "    \"size\":122,"
+        "    \"publicArea\":{"
+        "      \"type\":\"ECC\","
+        "      \"nameAlg\":\"SHA256\","
+        "      \"objectAttributes\":1,"
+        "      \"authPolicy\":\"837197674484b3f81a90cc8d46a5d724fd52d76e06520b64f2a1da1b331469aa\","
+        "      \"parameters\":{"
+        "        \"symmetric\":{"
+        "          \"algorithm\":\"AES\","
+        "          \"keyBits\":128,"
+        "          \"mode\":\"CFB\""
+        "        },"
+        "        \"scheme\":{"
+        "          \"scheme\":\"NULL\""
+        "        },"
+        "        \"curveID\":\"NIST_P256\","
+        "        \"kdf\":{"
+        "          \"scheme\":\"NULL\""
+        "        }"
+        "      },"
+        "      \"unique\":{"
+        "        \"x\":\"78d926c582566a70eedffcda4fe147e1b24fe624305441167fac483a3079b2e7\","
+        "        \"y\":\"8bdc62992c3382e29687114ea0a9e1ac69f91283ae1d018b6d37859731617c3a\""
+        "      }"
+        "    }"
+        "  },"
+        "}";
+    CHECK_ERROR(IFAPI_OBJECT, test_json_key_err3, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_key_err4 =
+        /* Without PolicyInstance */
+        "{"
+        "  \"objectType\":1,"
+        "  \"system\":\"YES\","
+        "  \"with_auth\":\"NO\","
+        "  \"persistent_handle\":0,"
+        "  \"public\":{"
+        "    \"size\":122,"
+        "    \"publicArea\":{"
+        "      \"type\":\"ECC\","
+        "      \"nameAlg\":\"SHA256\","
+        "      \"objectAttributes\":{"
+        "        \"fixedTPM\":1,"
+        "        \"stClear\":0,"
+        "        \"fixedParent\":1,"
+        "        \"sensitiveDataOrigin\":1,"
+        "        \"userWithAuth\":0,"
+        "        \"adminWithPolicy\":1,"
+        "        \"noDA\":0,"
+        "        \"encryptedDuplication\":0,"
+        "        \"restricted\":1,"
+        "        \"decrypt\":1,"
+        "        \"sign\":0"
+        "      },"
+        "      \"authPolicy\":\"837197674484b3f81a90cc8d46a5d724fd52d76e06520b64f2a1da1b331469aa\","
+        "      \"parameters\":{"
+        "        \"symmetric\":{"
+        "          \"algorithm\":\"AES\","
+        "          \"keyBits\":128,"
+        "          \"mode\":\"CFB\""
+        "        },"
+        "        \"scheme\":{"
+        "          \"scheme\":\"NULL\""
+        "        },"
+        "        \"curveID\":\"NIST_P256\","
+        "        \"kdf\":{"
+        "          \"scheme\":\"NULL\""
+        "        }"
+        "      },"
+        "      \"unique\":{"
+        "        \"x\":\"78d926c582566a70eedffcda4fe147e1b24fe624305441167fac483a3079b2e7\","
+        "        \"y\":\"8bdc62992c3382e29687114ea0a9e1ac69f91283ae1d018b6d37859731617c3a\""
+        "      }"
+        "    }"
+        "  },"
+        "  \"serialization\":\"\","
+        "}";
+    CHECK_ERROR(IFAPI_OBJECT, test_json_key_err4, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_key_err5 =
+        /* Without certificate */
+        "{"
+        "  \"objectType\":1,"
+        "  \"system\":\"YES\","
+        "  \"with_auth\":\"NO\","
+        "  \"persistent_handle\":0,"
+        "  \"public\":{"
+        "    \"size\":122,"
+        "    \"publicArea\":{"
+        "      \"type\":\"ECC\","
+        "      \"nameAlg\":\"SHA256\","
+        "      \"objectAttributes\":{"
+        "        \"fixedTPM\":1,"
+        "        \"stClear\":0,"
+        "        \"fixedParent\":1,"
+        "        \"sensitiveDataOrigin\":1,"
+        "        \"userWithAuth\":0,"
+        "        \"adminWithPolicy\":1,"
+        "        \"noDA\":0,"
+        "        \"encryptedDuplication\":0,"
+        "        \"restricted\":1,"
+        "        \"decrypt\":1,"
+        "        \"sign\":0"
+        "      },"
+        "      \"authPolicy\":\"837197674484b3f81a90cc8d46a5d724fd52d76e06520b64f2a1da1b331469aa\","
+        "      \"parameters\":{"
+        "        \"symmetric\":{"
+        "          \"algorithm\":\"AES\","
+        "          \"keyBits\":128,"
+        "          \"mode\":\"CFB\""
+        "        },"
+        "        \"scheme\":{"
+        "          \"scheme\":\"NULL\""
+        "        },"
+        "        \"curveID\":\"NIST_P256\","
+        "        \"kdf\":{"
+        "          \"scheme\":\"NULL\""
+        "        }"
+        "      },"
+        "      \"unique\":{"
+        "        \"x\":\"78d926c582566a70eedffcda4fe147e1b24fe624305441167fac483a3079b2e7\","
+        "        \"y\":\"8bdc62992c3382e29687114ea0a9e1ac69f91283ae1d018b6d37859731617c3a\""
+        "      }"
+        "    }"
+        "  },"
+        "  \"serialization\":\"\","
+        "  \"policyInstance\":\"\","
+        "  \"description\":\"\","
+        "}";
+    CHECK_ERROR(IFAPI_OBJECT, test_json_key_err5, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_key_err6 =
+        /* Without description */
+        "{"
+        "  \"objectType\":1,"
+        "  \"system\":\"YES\","
+        "  \"with_auth\":\"NO\","
+        "  \"persistent_handle\":0,"
+        "  \"public\":{"
+        "    \"size\":122,"
+        "    \"publicArea\":{"
+        "      \"type\":\"ECC\","
+        "      \"nameAlg\":\"SHA256\","
+        "      \"objectAttributes\":{"
+        "        \"fixedTPM\":1,"
+        "        \"stClear\":0,"
+        "        \"fixedParent\":1,"
+        "        \"sensitiveDataOrigin\":1,"
+        "        \"userWithAuth\":0,"
+        "        \"adminWithPolicy\":1,"
+        "        \"noDA\":0,"
+        "        \"encryptedDuplication\":0,"
+        "        \"restricted\":1,"
+        "        \"decrypt\":1,"
+        "        \"sign\":0"
+        "      },"
+        "      \"authPolicy\":\"837197674484b3f81a90cc8d46a5d724fd52d76e06520b64f2a1da1b331469aa\","
+        "      \"parameters\":{"
+        "        \"symmetric\":{"
+        "          \"algorithm\":\"AES\","
+        "          \"keyBits\":128,"
+        "          \"mode\":\"CFB\""
+        "        },"
+        "        \"scheme\":{"
+        "          \"scheme\":\"NULL\""
+        "        },"
+        "        \"curveID\":\"NIST_P256\","
+        "        \"kdf\":{"
+        "          \"scheme\":\"NULL\""
+        "        }"
+        "      },"
+        "      \"unique\":{"
+        "        \"x\":\"78d926c582566a70eedffcda4fe147e1b24fe624305441167fac483a3079b2e7\","
+        "        \"y\":\"8bdc62992c3382e29687114ea0a9e1ac69f91283ae1d018b6d37859731617c3a\""
+        "      }"
+        "    }"
+        "  },"
+        "  \"serialization\":\"\","
+        "  \"policyInstance\":\"\","
+        "  \"certificate\":\"\","
+        "}";
+    CHECK_ERROR(IFAPI_OBJECT, test_json_key_err6, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_key_err7 =
+        /* Without signing scheme */
+         "{"
+         "  \"objectType\":1,"
+         "  \"system\":\"YES\","
+         "  \"public\":{"
+        "    \"size\":122,"
+        "    \"publicArea\":{"
+        "      \"type\":\"ECC\","
+        "      \"nameAlg\":\"SHA256\","
+        "      \"objectAttributes\":{"
+        "        \"fixedTPM\":1,"
+        "        \"stClear\":0,"
+        "        \"fixedParent\":1,"
+        "        \"sensitiveDataOrigin\":1,"
+        "        \"userWithAuth\":0,"
+        "        \"adminWithPolicy\":1,"
+        "        \"noDA\":0,"
+        "        \"encryptedDuplication\":0,"
+        "        \"restricted\":1,"
+        "        \"decrypt\":1,"
+        "        \"sign\":0"
+        "      },"
+        "      \"authPolicy\":\"837197674484b3f81a90cc8d46a5d724fd52d76e06520b64f2a1da1b331469aa\","
+        "      \"parameters\":{"
+        "        \"symmetric\":{"
+        "          \"algorithm\":\"AES\","
+        "          \"keyBits\":128,"
+        "          \"mode\":\"CFB\""
+        "        },"
+        "        \"scheme\":{"
+        "          \"scheme\":\"NULL\""
+        "        },"
+        "        \"curveID\":\"NIST_P256\","
+        "        \"kdf\":{"
+        "          \"scheme\":\"NULL\""
+        "        }"
+        "      },"
+        "      \"unique\":{"
+        "        \"x\":\"78d926c582566a70eedffcda4fe147e1b24fe624305441167fac483a3079b2e7\","
+        "        \"y\":\"8bdc62992c3382e29687114ea0a9e1ac69f91283ae1d018b6d37859731617c3a\""
+        "      }"
+        "    }"
+        "  },"
+         "  \"with_auth\":\"NO\","
+         "  \"persistent_handle\":0,"
+          "  \"serialization\":\"\","
+         "  \"policyInstance\":\"\","
+         "  \"certificate\":\"\","
+         "  \"description\":\"\","
+         "}";
+    CHECK_ERROR(IFAPI_OBJECT, test_json_key_err7, TSS2_FAPI_RC_BAD_VALUE);
+
+      const char *test_json_key_err8 =
+        /* Without name */
+         "{"
+         "  \"objectType\":1,"
+         "  \"system\":\"YES\","
+         "  \"public\":{"
+        "    \"size\":122,"
+        "    \"publicArea\":{"
+        "      \"type\":\"ECC\","
+        "      \"nameAlg\":\"SHA256\","
+        "      \"objectAttributes\":{"
+        "        \"fixedTPM\":1,"
+        "        \"stClear\":0,"
+        "        \"fixedParent\":1,"
+        "        \"sensitiveDataOrigin\":1,"
+        "        \"userWithAuth\":0,"
+        "        \"adminWithPolicy\":1,"
+        "        \"noDA\":0,"
+        "        \"encryptedDuplication\":0,"
+        "        \"restricted\":1,"
+        "        \"decrypt\":1,"
+        "        \"sign\":0"
+        "      },"
+        "      \"authPolicy\":\"837197674484b3f81a90cc8d46a5d724fd52d76e06520b64f2a1da1b331469aa\","
+        "      \"parameters\":{"
+        "        \"symmetric\":{"
+        "          \"algorithm\":\"AES\","
+        "          \"keyBits\":128,"
+        "          \"mode\":\"CFB\""
+        "        },"
+        "        \"scheme\":{"
+        "          \"scheme\":\"NULL\""
+        "        },"
+        "        \"curveID\":\"NIST_P256\","
+        "        \"kdf\":{"
+        "          \"scheme\":\"NULL\""
+        "        }"
+        "      },"
+        "      \"unique\":{"
+        "        \"x\":\"78d926c582566a70eedffcda4fe147e1b24fe624305441167fac483a3079b2e7\","
+        "        \"y\":\"8bdc62992c3382e29687114ea0a9e1ac69f91283ae1d018b6d37859731617c3a\""
+        "      }"
+        "    }"
+        "  },"
+         "  \"with_auth\":\"NO\","
+         "  \"persistent_handle\":0,"
+          "  \"serialization\":\"\","
+         "  \"policyInstance\":\"\","
+         "  \"certificate\":\"\","
+         "  \"description\":\"\","
+          "  \"signing_scheme\":{"
+          "    \"scheme\":\"ECDSA\","
+          "    \"details\":{"
+          "      \"hashAlg\":\"SHA256\""
+          "    }"
+          "  },"
+         "}";
+    CHECK_ERROR(IFAPI_OBJECT, test_json_key_err8, TSS2_FAPI_RC_BAD_VALUE);
+
+
+    const char *test_json_nv_err1 =
+        "{"
+        "  \"objectType\":2,"
+        "  \"system\":\"NO\","
+        "  \"with_auth\":\"NO\","
+        "  \"nv_object\":true,"
+        "  \"hierarchy\":257,"
+        "  \"policyInstance\":\"\","
+        "  \"description\":\"\","
+        "}";
+
+    CHECK_ERROR(IFAPI_OBJECT, test_json_nv_err1, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_nv_err2 =
+        "{"
+        "  \"objectType\":2,"
+        "  \"system\":\"NO\","
+        "  \"with_auth\":\"NO\","
+        "  \"nv_object\":true,"
+        "  \"public\":{"
+        "    \"size\":0,"
+        "    \"nvPublic\":{"
+        "      \"nvIndex\":25165824,"
+        "      \"nameAlg\":\"SHA256\","
+        "      \"attributes\":{"
+        "        \"PPWRITE\":0,"
+        "        \"OWNERWRITE\":0,"
+        "        \"AUTHWRITE\":0,"
+        "        \"POLICYWRITE\":1,"
+        "        \"POLICY_DELETE\":0,"
+        "        \"WRITELOCKED\":0,"
+        "        \"WRITEALL\":0,"
+        "        \"WRITEDEFINE\":0,"
+        "        \"WRITE_STCLEAR\":1,"
+        "        \"GLOBALLOCK\":0,"
+        "        \"PPREAD\":0,"
+        "        \"OWNERREAD\":0,"
+        "        \"AUTHREAD\":0,"
+        "        \"POLICYREAD\":1,"
+        "        \"NO_DA\":1,"
+        "        \"ORDERLY\":0,"
+        "        \"CLEAR_STCLEAR\":0,"
+        "        \"READLOCKED\":0,"
+        "        \"WRITTEN\":0,"
+        "        \"PLATFORMCREATE\":0,"
+        "        \"READ_STCLEAR\":1,"
+        "        \"TPM2_NT\":\"ORDINARY\""
+        "      },"
+        "      \"authPolicy\":\"0000000000000000000000000000000000000000000000000000000000000000\","
+        "      \"dataSize\":1200"
+        "    }"
+        "  },"
+        "  \"serialization\":\"018000000022000b59323f518181d5e607ade494f3ecaf7ba552ddc57fde379b3cf8ca82c009257c00000002002e01800000000b820840080020000000000000000000000000000000000000000000000000000000000000000004b0\","
+        "  \"policyInstance\":\"\","
+        "  \"description\":\"\","
+        "}";
+
+    CHECK_ERROR(IFAPI_OBJECT, test_json_nv_err2, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_nv_err3 =
+        "{"
+        "  \"objectType\":2,"
+        "  \"system\":\"NO\","
+        "  \"with_auth\":\"NO\","
+        "  \"nv_object\":true,"
+        "  \"public\":{"
+        "    \"size\":0,"
+        "    \"nvPublic\":{"
+        "      \"nvIndex\":25165824,"
+        "      \"nameAlg\":\"SHA256\","
+        "      \"attributes\":{"
+        "        \"PPWRITE\":0,"
+        "        \"OWNERWRITE\":0,"
+        "        \"AUTHWRITE\":0,"
+        "        \"POLICYWRITE\":1,"
+        "        \"POLICY_DELETE\":0,"
+        "        \"WRITELOCKED\":0,"
+        "        \"WRITEALL\":0,"
+        "        \"WRITEDEFINE\":0,"
+        "        \"WRITE_STCLEAR\":1,"
+        "        \"GLOBALLOCK\":0,"
+        "        \"PPREAD\":0,"
+        "        \"OWNERREAD\":0,"
+        "        \"AUTHREAD\":0,"
+        "        \"POLICYREAD\":1,"
+        "        \"NO_DA\":1,"
+        "        \"ORDERLY\":0,"
+        "        \"CLEAR_STCLEAR\":0,"
+        "        \"READLOCKED\":0,"
+        "        \"WRITTEN\":0,"
+        "        \"PLATFORMCREATE\":0,"
+        "        \"READ_STCLEAR\":1,"
+        "        \"TPM2_NT\":\"ORDINARY\""
+        "      },"
+        "      \"authPolicy\":\"0000000000000000000000000000000000000000000000000000000000000000\","
+        "      \"dataSize\":1200"
+        "    }"
+        "  },"
+        "  \"serialization\":\"018000000022000b59323f518181d5e607ade494f3ecaf7ba552ddc57fde379b3cf8ca82c009257c00000002002e01800000000b820840080020000000000000000000000000000000000000000000000000000000000000000004b0\","
+        "  \"hierarchy\":257,"
+        "  \"description\":\"\","
+        "}";
+    CHECK_ERROR(IFAPI_OBJECT, test_json_nv_err3, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_nv_err4 =
+        "{"
+        "  \"objectType\":2,"
+        "  \"system\":\"NO\","
+        "  \"nv_object\":true,"
+        "  \"public\":{"
+        "    \"size\":0,"
+        "    \"nvPublic\":{"
+        "      \"nvIndex\":25165824,"
+        "      \"nameAlg\":\"SHA256\","
+        "      \"attributes\":{"
+        "        \"PPWRITE\":0,"
+        "        \"OWNERWRITE\":0,"
+        "        \"AUTHWRITE\":0,"
+        "        \"POLICYWRITE\":1,"
+        "        \"POLICY_DELETE\":0,"
+        "        \"WRITELOCKED\":0,"
+        "        \"WRITEALL\":0,"
+        "        \"WRITEDEFINE\":0,"
+        "        \"WRITE_STCLEAR\":1,"
+        "        \"GLOBALLOCK\":0,"
+        "        \"PPREAD\":0,"
+        "        \"OWNERREAD\":0,"
+        "        \"AUTHREAD\":0,"
+        "        \"POLICYREAD\":1,"
+        "        \"NO_DA\":1,"
+        "        \"ORDERLY\":0,"
+        "        \"CLEAR_STCLEAR\":0,"
+        "        \"READLOCKED\":0,"
+        "        \"WRITTEN\":0,"
+        "        \"PLATFORMCREATE\":0,"
+        "        \"READ_STCLEAR\":1,"
+        "        \"TPM2_NT\":\"ORDINARY\""
+        "      },"
+        "      \"authPolicy\":\"0000000000000000000000000000000000000000000000000000000000000000\","
+        "      \"dataSize\":1200"
+        "    }"
+        "  },"
+        "  \"serialization\":\"018000000022000b59323f518181d5e607ade494f3ecaf7ba552ddc57fde379b3cf8ca82c009257c00000002002e01800000000b820840080020000000000000000000000000000000000000000000000000000000000000000004b0\","
+        "  \"hierarchy\":257,"
+        "  \"policyInstance\":\"\","
+        "}";
+    CHECK_ERROR(IFAPI_OBJECT, test_json_nv_err4, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_nv_err5 =
+        "{"
+        "  \"objectType\":2,"
+        "  \"system\":\"NO\","
+        "  \"with_auth\":\"NO\","
+        "  \"nv_object\":true,"
+        "  \"public\":{"
+        "    \"size\":0,"
+        "    \"nvPublic\":{"
+        "      \"nvIndex\":25165824,"
+        "      \"nameAlg\":\"SHA256\","
+        "      \"attributes\":{"
+        "        \"PPWRITE\":0,"
+        "        \"OWNERWRITE\":0,"
+        "        \"AUTHWRITE\":0,"
+        "        \"POLICYWRITE\":1,"
+        "        \"POLICY_DELETE\":0,"
+        "        \"WRITELOCKED\":0,"
+        "        \"WRITEALL\":0,"
+        "        \"WRITEDEFINE\":0,"
+        "        \"WRITE_STCLEAR\":1,"
+        "        \"GLOBALLOCK\":0,"
+        "        \"PPREAD\":0,"
+        "        \"OWNERREAD\":0,"
+        "        \"AUTHREAD\":0,"
+        "        \"POLICYREAD\":1,"
+        "        \"NO_DA\":1,"
+        "        \"ORDERLY\":0,"
+        "        \"CLEAR_STCLEAR\":0,"
+        "        \"READLOCKED\":0,"
+        "        \"WRITTEN\":0,"
+        "        \"PLATFORMCREATE\":0,"
+        "        \"READ_STCLEAR\":1,"
+        "        \"TPM2_NT\":\"ORDINARY\""
+        "      },"
+        "      \"authPolicy\":\"0000000000000000000000000000000000000000000000000000000000000000\","
+        "      \"dataSize\":1200"
+        "    }"
+        "  },"
+        "  \"serialization\":\"018000000022000b59323f518181d5e607ade494f3ecaf7ba552ddc57fde379b3cf8ca82c009257c00000002002e01800000000b820840080020000000000000000000000000000000000000000000000000000000000000000004b0\","
+        "  \"hierarchy\":257,"
+        "  \"description\":\"\","
+        "}";
+    CHECK_ERROR(IFAPI_OBJECT, test_json_nv_err5, TSS2_FAPI_RC_BAD_VALUE);
+
 }
 
 
