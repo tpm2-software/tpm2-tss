@@ -650,13 +650,7 @@ ifapi_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in,
 
     json_object_object_add(*jso, "keyName", jso2);
     jso2 = NULL;
-    /*
-    r = ifapi_json_TPMT_TK_VERIFIED_serialize(&in->checkTicket, &jso2);
-    return_if_error(r, "Serialize TPMT_TK_VERIFIED");
 
-    json_object_object_add(*jso, "checkTicket", jso2);
-    jso2 = NULL;
-    */
     if (in->keyPath) {
         cond_cnt++;
         r = ifapi_json_char_serialize(in->keyPath, &jso2);

@@ -1628,50 +1628,6 @@ ifapi_json_TPMT_TK_CREATION_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
-/** Deserialize a TPMT_TK_VERIFIED json object.
- *
- * @param[in]  jso the json object to be deserialized.
- * @param[out] out the deserialzed binary object.
- * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- */
-TSS2_RC
-ifapi_json_TPMT_TK_VERIFIED_deserialize(json_object *jso,
-                                        TPMT_TK_VERIFIED *out)
-{
-    json_object *jso2;
-    TSS2_RC r;
-    LOG_TRACE("call");
-    return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
-
-    if (!ifapi_get_sub_object(jso, "tag", &jso2)) {
-        LOG_ERROR("Bad value");
-        return TSS2_FAPI_RC_BAD_VALUE;
-    }
-    r = ifapi_json_TPM2_ST_deserialize(jso2, &out->tag);
-    return_if_error(r, "BAD VALUE");
-    if (out != NULL && out->tag != TPM2_ST_VERIFIED) {
-        LOG_ERROR("BAD VALUE %zu != %zu", (size_t)out->tag, (size_t)TPM2_ST_VERIFIED);
-    }
-
-    if (!ifapi_get_sub_object(jso, "hierarchy", &jso2)) {
-        LOG_ERROR("Bad value");
-        return TSS2_FAPI_RC_BAD_VALUE;
-    }
-    r = ifapi_json_TPMI_RH_HIERARCHY_deserialize(jso2, &out->hierarchy);
-    return_if_error(r, "BAD VALUE");
-
-    if (!ifapi_get_sub_object(jso, "digest", &jso2)) {
-        LOG_ERROR("Bad value");
-        return TSS2_FAPI_RC_BAD_VALUE;
-    }
-    r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->digest);
-    return_if_error(r, "BAD VALUE");
-    LOG_TRACE("true");
-    return TSS2_RC_SUCCESS;
-}
-
 /** Deserialize a TPML_DIGEST_VALUES json object.
  *
  * @param[in]  jso the json object to be deserialized.

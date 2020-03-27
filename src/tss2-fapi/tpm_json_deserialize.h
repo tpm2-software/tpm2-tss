@@ -141,10 +141,6 @@ ifapi_json_TPMT_TK_CREATION_deserialize(json_object *jso,
                                         TPMT_TK_CREATION *out);
 
 TSS2_RC
-ifapi_json_TPMT_TK_VERIFIED_deserialize(json_object *jso,
-                                        TPMT_TK_VERIFIED *out);
-
-TSS2_RC
 ifapi_json_TPML_DIGEST_VALUES_deserialize(json_object *jso,
         TPML_DIGEST_VALUES *out);
 

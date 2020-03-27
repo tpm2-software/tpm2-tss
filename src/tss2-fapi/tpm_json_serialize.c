@@ -2939,39 +2939,6 @@ ifapi_json_TPMU_ASYM_SCHEME_serialize(const TPMU_ASYM_SCHEME *in, UINT32 selecto
     return TSS2_RC_SUCCESS;
 }
 
-/** Serialize value of type TPMT_ASYM_SCHEME to json.
- *
- * @param[in] in value to be serialized.
- * @param[out] jso pointer to the json object.
- * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMT_ASYM_SCHEME.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- */
-TSS2_RC
-ifapi_json_TPMT_ASYM_SCHEME_serialize(const TPMT_ASYM_SCHEME *in, json_object **jso)
-{
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
-
-    TSS2_RC r;
-    json_object *jso2;
-    if (*jso == NULL)
-        *jso = json_object_new_object ();
-    jso2 = NULL;
-    r = ifapi_json_TPMI_ALG_ASYM_SCHEME_serialize(in->scheme, &jso2);
-    return_if_error(r, "Serialize TPMI_ALG_ASYM_SCHEME");
-
-    json_object_object_add(*jso, "scheme", jso2);
-    if (in->scheme != TPM2_ALG_NULL) {
-        json_object *jso2 = NULL;
-        r = ifapi_json_TPMU_ASYM_SCHEME_serialize(&in->details, in->scheme, &jso2);
-        return_if_error(r,"Serialize TPMU_ASYM_SCHEME");
-
-        json_object_object_add(*jso, "details", jso2);
-    }
-    return TSS2_RC_SUCCESS;
-}
-
 /** Serialize TPMI_ALG_RSA_SCHEME to json.
  *
  * @param[in] in variable to be serialized.
@@ -3515,37 +3482,6 @@ ifapi_json_TPMS_KEYEDHASH_PARMS_serialize(const TPMS_KEYEDHASH_PARMS *in, json_o
     jso2 = NULL;
     r = ifapi_json_TPMT_KEYEDHASH_SCHEME_serialize(&in->scheme, &jso2);
     return_if_error(r, "Serialize TPMT_KEYEDHASH_SCHEME");
-
-    json_object_object_add(*jso, "scheme", jso2);
-    return TSS2_RC_SUCCESS;
-}
-
-/** Serialize value of type TPMS_ASYM_PARMS to json.
- *
- * @param[in] in value to be serialized.
- * @param[out] jso pointer to the json object.
- * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_ASYM_PARMS.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- */
-TSS2_RC
-ifapi_json_TPMS_ASYM_PARMS_serialize(const TPMS_ASYM_PARMS *in, json_object **jso)
-{
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
-
-    TSS2_RC r;
-    json_object *jso2;
-    if (*jso == NULL)
-        *jso = json_object_new_object ();
-    jso2 = NULL;
-    r = ifapi_json_TPMT_SYM_DEF_OBJECT_serialize(&in->symmetric, &jso2);
-    return_if_error(r, "Serialize TPMT_SYM_DEF_OBJECT");
-
-    json_object_object_add(*jso, "symmetric", jso2);
-    jso2 = NULL;
-    r = ifapi_json_TPMT_ASYM_SCHEME_serialize(&in->scheme, &jso2);
-    return_if_error(r, "Serialize TPMT_ASYM_SCHEME");
 
     json_object_object_add(*jso, "scheme", jso2);
     return TSS2_RC_SUCCESS;
