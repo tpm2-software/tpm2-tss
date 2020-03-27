@@ -696,13 +696,6 @@ ifapi_json_TPMS_POLICYAUTHORIZE_deserialize(json_object *jso,
         return_if_error(r, "BAD VALUE");
     }
 
-    if (!ifapi_get_sub_object(jso, "checkTicket", &jso2)) {
-        memset(&out->checkTicket, 0, sizeof(TPMT_TK_VERIFIED));
-    } else {
-        r = ifapi_json_TPMT_TK_VERIFIED_deserialize(jso2, &out->checkTicket);
-        return_if_error(r, "BAD VALUE");
-    }
-
     if (ifapi_get_sub_object(jso, "keyPath", &jso2)) {
         cond_cnt++;
         r = ifapi_json_char_deserialize(jso2, &out->keyPath);

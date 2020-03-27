@@ -458,10 +458,6 @@ ifapi_json_TPMS_KEYEDHASH_PARMS_serialize(const TPMS_KEYEDHASH_PARMS *in,
         json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_ASYM_PARMS_serialize(const TPMS_ASYM_PARMS *in,
-                                     json_object **jso);
-
-TSS2_RC
 ifapi_json_TPMS_RSA_PARMS_serialize(const TPMS_RSA_PARMS *in,
                                     json_object **jso);
 
