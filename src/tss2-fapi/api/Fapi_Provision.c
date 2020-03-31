@@ -983,7 +983,12 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                 SAFE_FREE(cert_buffer);
                 goto_if_error_reset_state(r, "Convert certificate buffer to PEM.",
                                           error_cleanup);
+            } else {
+                /* No certificate was stored in the TPM and ek_cert_less was not set.*/
+                goto_error(r, TSS2_FAPI_RC_NO_CERT,
+                           "No certifcate was stored in the TPM.", error_cleanup);
             }
+
             SAFE_FREE(*capabilityData);
             context->state = PROVISION_EK_WRITE_PREPARE;
             return TSS2_FAPI_RC_TRY_AGAIN;
