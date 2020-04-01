@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Changed Tss2_Sys_ReadClock to allow audit session to be consistent
   with the rev 1.38 version of the TPM2.0 architecture spec.
   Note: This change brakes ABI backwards compatibility.
+-Changed: Silence expected errors from Esys_TestParams.
 
 ## [2.4.0] - 2020-03-11
 ### Added
