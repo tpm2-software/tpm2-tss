@@ -1022,7 +1022,35 @@ check_json_numbers(void **state)
 static void
 check_json_bits(void **state)
 {
-      const char *test_json_TPMA_NV_expected =\
+    CHECK_JSON_SIMPLE(TPMA_NV, "{\"PPWRITE\":1,\"OWNERWRITE\":1}",
+                      "{\"PPWRITE\":1,\"OWNERWRITE\":1,\"AUTHWRITE\":0,\"POLICYWRITE\":0,\"POLICY_DELETE\":0,"
+                      "\"WRITELOCKED\":0,\"WRITEALL\":0,\"WRITEDEFINE\":0,\"WRITE_STCLEAR\":0,\"GLOBALLOCK\":0,\"PPREAD\":0,"
+                      "\"OWNERREAD\":0,\"AUTHREAD\":0,\"POLICYREAD\":0,\"NO_DA\":0,\"ORDERLY\":0,\"CLEAR_STCLEAR\":0,"
+                      "\"READLOCKED\":0,\"WRITTEN\":0,\"PLATFORMCREATE\":0,\"READ_STCLEAR\":0,\"TPM2_NT\":\"ORDINARY\"}");
+    CHECK_JSON_SIMPLE(TPMA_LOCALITY, "3", "{\"ZERO\":1,\"ONE\":1,\"TWO\":0,\"THREE\":0,\"FOUR\":0,\"Extended\":0}");
+    CHECK_JSON_SIMPLE(TPMA_LOCALITY,
+                      "[ \"ZERO\", \"ONE\" ]",
+                      "{\"ZERO\":1,\"ONE\":1,\"TWO\":0,\"THREE\":0,\"FOUR\":0,\"Extended\":0}");
+    CHECK_JSON_SIMPLE(TPMA_NV, "\"0xffffff0f\"",
+                      "{\"PPWRITE\":1,\"OWNERWRITE\":1,\"AUTHWRITE\":1,\"POLICYWRITE\":1,\"POLICY_DELETE\":1,"
+                      "\"WRITELOCKED\":1,\"WRITEALL\":1,\"WRITEDEFINE\":1,\"WRITE_STCLEAR\":1,\"GLOBALLOCK\":1,\"PPREAD\":1,"
+                      "\"OWNERREAD\":1,\"AUTHREAD\":1,\"POLICYREAD\":1,\"NO_DA\":1,\"ORDERLY\":1,\"CLEAR_STCLEAR\":1,"
+                      "\"READLOCKED\":1,\"WRITTEN\":1,\"PLATFORMCREATE\":1,\"READ_STCLEAR\":1,\"TPM2_NT\":\"ORDINARY\"}");
+    CHECK_JSON_SIMPLE(TPMA_LOCALITY, "3", "{\"ZERO\":1,\"ONE\":1,\"TWO\":0,\"THREE\":0,\"FOUR\":0,\"Extended\":0}");
+    CHECK_JSON_SIMPLE(TPMA_LOCALITY,
+                      "{\"ZERO\":1,\"ONE\":1,\"TWO\":0,\"THREE\":0,\"FOUR\":0,\"Extended\":0}",
+                      "{\"ZERO\":1,\"ONE\":1,\"TWO\":0,\"THREE\":0,\"FOUR\":0,\"Extended\":0}");
+    CHECK_JSON_SIMPLE(TPMA_OBJECT,
+                      "{\"fixedTPM\":1,\"stClear\":1,\"fixedParent\":0,\"sensitiveDataOrigin\":0,\"userWithAuth\":0,"
+                      "\"adminWithPolicy\":0,\"noDA\":0,\"encryptedDuplication\":0,\"restricted\":0,\"decrypt\":0,\"sign\":0}",
+                      "{\"fixedTPM\":1,\"stClear\":1,\"fixedParent\":0,\"sensitiveDataOrigin\":0,\"userWithAuth\":0,"
+                      "\"adminWithPolicy\":0,\"noDA\":0,\"encryptedDuplication\":0,\"restricted\":0,\"decrypt\":0,\"sign\":0}");
+    CHECK_JSON_SIMPLE(TPMA_OBJECT,
+                      "\"0\"",
+                      "{\"fixedTPM\":0,\"stClear\":0,\"fixedParent\":0,\"sensitiveDataOrigin\":0,\"userWithAuth\":0,"
+                      "\"adminWithPolicy\":0,\"noDA\":0,\"encryptedDuplication\":0,\"restricted\":0,\"decrypt\":0,\"sign\":0}");
+
+    const char *test_json_TPMA_NV_expected =\
                     "{"
                     "  \"PPWRITE\":0,"
                     "  \"OWNERWRITE\":1,"
@@ -1831,8 +1859,238 @@ check_error(void **state)
         "}";
     CHECK_ERROR(IFAPI_OBJECT, test_json_nv_err5, TSS2_FAPI_RC_BAD_VALUE);
 
-}
+        const char *test_json_attest_err1 =
+        "{"
+        "    \"magic\":\"VALUE\","
+        "    \"type\":\"ATTEST_QUOTE\","
+        "    \"qualifiedSigner\":\"000b5adea4e8b49b3f76db36b9442a29e515263e28bbd9e9263843675bb3cf750202\","
+        "    \"extraData\":\"6768033e216468247bd031a0a2d9876d79818f8f\","
+        "    \"clockInfo\":{"
+        "    \"clock\":8048,"
+        "    \"resetCount\":639972755,"
+        "    \"restartCount\":158941495,"
+        "    \"safe\":\"YES\" }"
+        "}";
+    CHECK_ERROR(TPMS_ATTEST, test_json_attest_err1, TSS2_FAPI_RC_BAD_VALUE);
 
+    const char *test_json_attest_err2 =
+        "{"
+        "    \"magic\":\"VALUE\","
+        "    \"type\":\"ATTEST_QUOTE\","
+        "    \"qualifiedSigner\":\"000b5adea4e8b49b3f76db36b9442a29e515263e28bbd9e9263843675bb3cf750202\","
+        "    \"extraData\":\"6768033e216468247bd031a0a2d9876d79818f8f\""
+        "}";
+    CHECK_ERROR(TPMS_ATTEST, test_json_attest_err2, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_attest_err3 =
+        "{"
+        "    \"magic\":\"VALUE\","
+        "    \"type\":\"ATTEST_QUOTE\","
+        "    \"qualifiedSigner\":\"000b5adea4e8b49b3f76db36b9442a29e515263e28bbd9e9263843675bb3cf750202\","
+        "}";
+    CHECK_ERROR(TPMS_ATTEST, test_json_attest_err3, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_attest_err4 =
+        "{"
+        "    \"magic\":\"VALUE\","
+        "    \"type\":\"ATTEST_QUOTE\","
+        "}";
+    CHECK_ERROR(TPMS_ATTEST, test_json_attest_err4, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_attest_err5 =
+        "{"
+        "    \"magic\":\"VALUE\","
+        "}";
+    CHECK_ERROR(TPMS_ATTEST, test_json_attest_err5, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_attest_err6 =
+        "{"
+        "}";
+    CHECK_ERROR(TPMS_ATTEST, test_json_attest_err6, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_clock_err1 =
+        "{"
+        "      \"clock\":8048,"
+        "      \"resetCount\":639972755,"
+        "      \"restartCount\":158941495,"
+        "}";
+
+    CHECK_ERROR(TPMS_CLOCK_INFO, test_json_clock_err1, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_clock_err2 =
+        "{"
+        "      \"clock\":8048,"
+        "      \"resetCount\":639972755,"
+        "}";
+
+    CHECK_ERROR(TPMS_CLOCK_INFO, test_json_clock_err2, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_clock_err3 =
+        "{"
+        "      \"clock\":8048,"
+        "}";
+
+    CHECK_ERROR(TPMS_CLOCK_INFO, test_json_clock_err3, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_clock_err4 =
+        "{"
+        "}";
+
+    CHECK_ERROR(TPMS_CLOCK_INFO, test_json_clock_err4, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_command_audit_err1 =
+        "{"
+        "      \"auditCounter\":8048,"
+        "      \"digestAlg\":\"sha1\","
+        "      \"auditDigest\":\"0102\","
+        "}";
+
+    CHECK_ERROR(TPMS_COMMAND_AUDIT_INFO, test_json_command_audit_err1, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_command_audit_err2 =
+        "{"
+        "      \"auditCounter\":8048,"
+        "      \"digestAlg\":\"sha1\","
+        "}";
+
+    CHECK_ERROR(TPMS_COMMAND_AUDIT_INFO, test_json_command_audit_err2, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_command_audit_err3 =
+        "{"
+        "      \"auditCounter\":8048,"
+        "}";
+
+    CHECK_ERROR(TPMS_COMMAND_AUDIT_INFO, test_json_command_audit_err3, TSS2_FAPI_RC_BAD_VALUE);
+      const char *test_json_command_audit_err4 =
+        "{"
+        "}";
+
+    CHECK_ERROR(TPMS_COMMAND_AUDIT_INFO, test_json_command_audit_err4, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_tk_creation_err1 =
+        "{"
+        "      \"tag\":\"NULL\","
+        "      \"hierarchy\":\"OWNER\","
+        "}";
+
+    CHECK_ERROR(TPMT_TK_CREATION, test_json_tk_creation_err1, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_tk_creation_err2 =
+        "{"
+        "      \"tag\":\"NULL\","
+        "}";
+
+    CHECK_ERROR(TPMT_TK_CREATION, test_json_tk_creation_err2, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_tk_creation_err3 =
+        "{"
+        "}";
+
+    CHECK_ERROR(TPMT_TK_CREATION, test_json_tk_creation_err3, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_nv_certify_info_err1 =
+        "{"
+        "      \"indexName\":\"0102\","
+        "      \"offset\":0,"
+        "}";
+
+    CHECK_ERROR(TPMS_NV_CERTIFY_INFO, test_json_nv_certify_info_err1, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_nv_certify_info_err2 =
+        "{"
+        "      \"indexName\":\"0102\","
+        "}";
+
+    CHECK_ERROR(TPMS_NV_CERTIFY_INFO, test_json_nv_certify_info_err2, TSS2_FAPI_RC_BAD_VALUE);
+    const char *test_json_nv_certify_info_err3 =
+        "{"
+        "}";
+
+    CHECK_ERROR(TPMS_NV_CERTIFY_INFO, test_json_nv_certify_info_err3, TSS2_FAPI_RC_BAD_VALUE);
+
+
+    const char *test_json_signature_ecc_err1 =
+        "{"
+        "      \"hash\":\"sha1\","
+        "      \"signatureR\":\"0102\","
+        "}";
+
+    CHECK_ERROR(TPMS_SIGNATURE_ECC, test_json_signature_ecc_err1, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_signature_ecc_err2 =
+        "{"
+        "      \"hash\":\"sha1\","
+        "}";
+
+    CHECK_ERROR(TPMS_SIGNATURE_ECC, test_json_signature_ecc_err2, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_signature_ecc_err4 =
+        "{"
+        "}";
+
+    CHECK_ERROR(TPMS_SIGNATURE_ECC, test_json_signature_ecc_err4, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_signature_err1 =
+        "{"
+        "      \"sigAlg\":\"HMAC\","
+        "      \"signature\":\"0102\","
+        "}";
+
+    CHECK_ERROR(TPMT_SIGNATURE, test_json_signature_err1, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_signature_err2 =
+        "{"
+        "      \"sigAlg\":\"ECDSA\","
+        "      \"signature\":\"0102\","
+        "}";
+
+    CHECK_ERROR(TPMT_SIGNATURE, test_json_signature_err2, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_signature_err3 =
+        "{"
+        "      \"sigAlg\":\"ECDAA\","
+        "      \"signature\":\"0102\","
+        "}";
+
+    CHECK_ERROR(TPMT_SIGNATURE, test_json_signature_err3, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_signature_err4 =
+        "{"
+        "      \"sigAlg\":\"SM2\","
+        "      \"signature\":\"0102\","
+        "}";
+
+    CHECK_ERROR(TPMT_SIGNATURE, test_json_signature_err4, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_signature_err5 =
+        "{"
+        "      \"sigAlg\":\"ECSCHNORR\","
+        "      \"signature\":\"0102\","
+        "}";
+
+    CHECK_ERROR(TPMT_SIGNATURE, test_json_signature_err5, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_signature_err6 =
+        "{"
+        "      \"sigAlg\":\"RSASSA\","
+        "      \"signature\":\"0102\","
+        "}";
+
+    CHECK_ERROR(TPMT_SIGNATURE, test_json_signature_err6, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_signature_err7 =
+        "{"
+        "}";
+
+    CHECK_ERROR(TPMT_SIGNATURE, test_json_signature_err7, TSS2_FAPI_RC_BAD_VALUE);
+
+    const char *test_json_signature_err8 =
+        "{"
+        "      \"sigAlg\":\"RSASSA\","
+        "}";
+
+    CHECK_ERROR(TPMT_SIGNATURE, test_json_signature_err8, TSS2_FAPI_RC_BAD_VALUE);
+}
 
 static void
 check_tpmjson_tofromtxt(void **state)
