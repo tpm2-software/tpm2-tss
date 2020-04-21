@@ -26,6 +26,21 @@
 #define LOGMODULE fapi
 #include "util/log.h"
 
+#if OPENSSL_VERSION_NUMBER >= 0x10101000L
+#define EC_POINT_set_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy) \
+        EC_POINT_set_affine_coordinates(group, tpm_pub_key, bn_x, bn_y, dmy)
+
+#define EC_POINT_get_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy) \
+        EC_POINT_get_affine_coordinates(group, tpm_pub_key, bn_x, bn_y, dmy)
+
+#else
+#define EC_POINT_set_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy) \
+        EC_POINT_set_affine_coordinates_GFp(group, tpm_pub_key, bn_x, bn_y, dmy)
+
+#define EC_POINT_get_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy) \
+        EC_POINT_get_affine_coordinates_GFp(group, tpm_pub_key, bn_x, bn_y, dmy)
+#endif /* OPENSSL_VERSION_NUMBER >= 0x10101000L */
+
 /** Context to hold temporary values for ifapi_crypto */
 typedef struct _IFAPI_CRYPTO_CONTEXT {
     /** The hash engine's context */
@@ -993,7 +1008,7 @@ get_ecc_tpm2b_public_from_evp(
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create bignum", cleanup);
     }
 
-    if (1 != EC_POINT_get_affine_coordinates_GFp(ecGroup, publicPoint,
+    if (1 != EC_POINT_get_affine_coordinates_tss(ecGroup, publicPoint,
                                                  bnX, bnY, NULL)) {
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
                    "Get affine coordinates", cleanup);

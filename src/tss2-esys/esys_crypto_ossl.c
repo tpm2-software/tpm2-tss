@@ -25,6 +25,21 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
+#if OPENSSL_VERSION_NUMBER >= 0x10101000L
+#define EC_POINT_set_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy) \
+        EC_POINT_set_affine_coordinates(group, tpm_pub_key, bn_x, bn_y, dmy)
+
+#define EC_POINT_get_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy) \
+        EC_POINT_get_affine_coordinates(group, tpm_pub_key, bn_x, bn_y, dmy)
+
+#else
+#define EC_POINT_set_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy) \
+        EC_POINT_set_affine_coordinates_GFp(group, tpm_pub_key, bn_x, bn_y, dmy)
+
+#define EC_POINT_get_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy) \
+        EC_POINT_get_affine_coordinates_GFp(group, tpm_pub_key, bn_x, bn_y, dmy)
+#endif /* OPENSSL_VERSION_NUMBER >= 0x10101000L */
+
 static int
 iesys_bn2binpad(const BIGNUM *bn, unsigned char *bin, int bin_length)
 {
@@ -739,7 +754,7 @@ tpm_pub_to_ossl_pub(EC_GROUP *group, TPM2B_PUBLIC *key, EC_POINT **tpm_pub_key)
                    "Create point.", cleanup);
     }
 
-    if (1 != EC_POINT_set_affine_coordinates_GFp(group,
+    if (1 != EC_POINT_set_affine_coordinates_tss(group,
                                                  *tpm_pub_key, bn_x,
                                                  bn_y, NULL)) {
         OSSL_FREE(*tpm_pub_key, EC_POINT);
@@ -860,7 +875,7 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Create bignum", cleanup);
     }
 
-    if (1 != EC_POINT_get_affine_coordinates_GFp(group, eph_pub_key, bn_x,
+    if (1 != EC_POINT_get_affine_coordinates_tss(group, eph_pub_key, bn_x,
                                                  bn_y, NULL)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Get affine x coordinate", cleanup);
@@ -897,7 +912,7 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
     }
 
     /* Write the x-part of the affine coordinate to Z */
-    if (1 != EC_POINT_get_affine_coordinates_GFp(group, mul_eph_tpm, bn_x,
+    if (1 != EC_POINT_get_affine_coordinates_tss(group, mul_eph_tpm, bn_x,
                                                  bn_y, NULL)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Get affine x coordinate", cleanup);
