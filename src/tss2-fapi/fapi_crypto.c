@@ -1657,10 +1657,8 @@ cleanup:
  * @retval TSS2_RC_SUCCESS on success
  * @retval TSS2_FAPI_RC_BAD_REFERENCE if certBuffer or pemCert is NULL
  * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
- * @retval TSS2_FAPI_RC_BAD_VALUE, if the certificate is invalid
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the certificate is invalid
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
- *         the function.
  */
 TSS2_RC
 ifapi_cert_to_pem(

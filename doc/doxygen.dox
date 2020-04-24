@@ -2645,7 +2645,6 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
 \fn TSS2_RC ifapi_json_TPML_TAGGED_PCR_PROPERTY_serialize(const TPML_TAGGED_PCR_PROPERTY *in, json_object **jso)
 \fn TSS2_RC ifapi_json_TPML_TAGGED_TPM_PROPERTY_serialize(const TPML_TAGGED_TPM_PROPERTY *in, json_object **jso)
 \fn TSS2_RC ifapi_json_TPMS_ALG_PROPERTY_serialize(const TPMS_ALG_PROPERTY *in, json_object **jso)
-\fn TSS2_RC ifapi_json_TPMS_ASYM_PARMS_serialize(const TPMS_ASYM_PARMS *in, json_object **jso)
 \fn TSS2_RC ifapi_json_TPMS_ATTEST_serialize(const TPMS_ATTEST *in, json_object **jso)
 \fn TSS2_RC ifapi_json_TPMS_CAPABILITY_DATA_serialize(const TPMS_CAPABILITY_DATA *in, json_object **jso)
 \fn TSS2_RC ifapi_json_TPMS_CERTIFY_INFO_serialize(const TPMS_CERTIFY_INFO *in, json_object **jso)
@@ -2985,8 +2984,6 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
 \fn TSS2_RC ifapi_json_TPMT_SYM_DEF_deserialize(json_object *jso,  TPMT_SYM_DEF *out)
 \fn TSS2_RC ifapi_json_TPMT_TK_CREATION_deserialize(json_object *jso,
                                         TPMT_TK_CREATION *out)
-\fn TSS2_RC ifapi_json_TPMT_TK_VERIFIED_deserialize(json_object *jso,
-                                        TPMT_TK_VERIFIED *out)
 \fn TSS2_RC ifapi_json_TPMU_ASYM_SCHEME_deserialize(
     UINT32 selector,
     json_object *jso,
@@ -3143,7 +3140,6 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \fn test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
  \fn test_fapi_key_create_policy_nv_sign(FAPI_CONTEXT *context)
  \fn test_fapi_key_create_policy_or_sign(FAPI_CONTEXT *context)
- \fn test_fapi_key_create_policy_password_sign(FAPI_CONTEXT *context)
  \fn test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
  \fn test_fapi_key_create_policy_secret_nv_sign(FAPI_CONTEXT *context)
  \fn test_fapi_key_create_policy_signed(FAPI_CONTEXT *context)
