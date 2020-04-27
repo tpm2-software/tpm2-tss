@@ -84,7 +84,8 @@ popd
 # so people can verify the rest of their patch works in CI before dying.
 # git diff --check fails with a non-zero return code causing the shell to die
 # as it has a set -e executed.
-[ -z "$TRAVIS_TAG" ] && git diff --check origin/${TRAVIS_BRANCH:-master}
+check_branch="origin/${TRAVIS_BRANCH:-master}"
+[ -z "$TRAVIS_TAG" ] && git fetch "$check_branch" && git diff --check "$check_branch"
 
 if [ "$ENABLE_COVERAGE" == "true" ]; then
     bash <(curl -s https://codecov.io/bash)
