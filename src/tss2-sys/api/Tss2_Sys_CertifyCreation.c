@@ -106,10 +106,10 @@ TSS2_RC Tss2_Sys_CertifyCreation_Complete(
     if (rval)
         return rval;
 
-    return rval = Tss2_MU_TPMT_SIGNATURE_Unmarshal(ctx->cmdBuffer,
-                                                   ctx->maxCmdSize,
-                                                   &ctx->nextData,
-                                                   signature);
+    return Tss2_MU_TPMT_SIGNATURE_Unmarshal(ctx->cmdBuffer,
+                                            ctx->maxCmdSize,
+                                            &ctx->nextData,
+                                            signature);
 }
 
 TSS2_RC Tss2_Sys_CertifyCreation(
