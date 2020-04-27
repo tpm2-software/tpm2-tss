@@ -18,6 +18,7 @@
 #define LOGMODULE fapijson
 #include "util/log.h"
 #include "util/aux_util.h"
+#include "tss2_mu.h"
 
 static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "POLICY", NULL };
 
@@ -207,6 +208,96 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso,  IFAPI_KEY *out)
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
+
+/** Deserialize a import data to create a IFAPI_KEY json object.
+ *
+ * @param[in]  jso the json object to be deserialized.
+ * @param[out] out the deserialzed binary object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ */
+TSS2_RC
+ifapi_json_import_IFAPI_KEY_deserialize(json_object *jso,  IFAPI_KEY *out)
+{
+    json_object *jso2;
+    TSS2_RC r;
+    UINT8_ARY public_blob = { .size = 0, .buffer = NULL };
+    UINT8_ARY private_blob = { .size = 0, .buffer = NULL };
+    TPM2B_PRIVATE private;
+    size_t offset = 0;
+    TPMI_YES_NO noauth;
+
+    LOG_TRACE("call");
+    return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    memset(out, 0, sizeof(IFAPI_KEY));
+
+    if (ifapi_get_sub_object(jso, "noauth", &jso2)) {
+        r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &noauth);
+        return_if_error(r, "BAD VALUE");
+
+        if (noauth == TPM2_YES)
+            out->with_auth = TPM2_NO;
+        else
+            out->with_auth = TPM2_YES;
+
+    } else {
+        out->with_auth = TPM2_YES;
+    }
+
+    if (!ifapi_get_sub_object(jso, "public", &jso2)) {
+        LOG_ERROR("Bad value");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    r = ifapi_json_UINT8_ARY_deserialize(jso2, &public_blob);
+    return_if_error(r, "BAD VALUE");
+
+    /* Get structure with public data from binary blob. */
+    r = Tss2_MU_TPM2B_PUBLIC_Unmarshal(public_blob.buffer, public_blob.size,
+                                       &offset, &out->public);
+    return_if_error(r, "Invalid public data.");
+
+    SAFE_FREE(public_blob.buffer);
+
+    if (!ifapi_get_sub_object(jso, "private", &jso2)) {
+        memset(&out->private, 0, sizeof(UINT8_ARY));
+    } else {
+        /* Deserialize complete binary blob. */
+        r = ifapi_json_UINT8_ARY_deserialize(jso2, &private_blob);
+        return_if_error(r, "BAD VALUE");
+        offset = 0;
+
+        /* Extract private data from blob with size. */
+        r = Tss2_MU_TPM2B_PRIVATE_Unmarshal(private_blob.buffer, private_blob.size,
+                                            &offset, &private);
+        goto_if_error(r, "BAD VALUE", error_cleanup);
+
+        SAFE_FREE(private_blob.buffer);
+
+        /* Copy private data into object structure. */
+        out->private.size = private.size;
+        out->private.buffer = malloc(private.size);
+        goto_if_null2(out->private.buffer, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
+                      error_cleanup);
+
+        memcpy(out->private.buffer, &private.buffer[0], private.size);
+    }
+
+    strdup_check(out->policyInstance, "", r, error_cleanup);
+    strdup_check(out->description, "", r, error_cleanup);
+    strdup_check(out->certificate, "", r, error_cleanup);
+
+    LOG_TRACE("true");
+    return TSS2_RC_SUCCESS;
+
+ error_cleanup:
+    SAFE_FREE(public_blob.buffer);
+    SAFE_FREE(private_blob.buffer);
+    return r;
+}
+
 
 /** Deserialize a IFAPI_EXT_PUB_KEY json object.
  *

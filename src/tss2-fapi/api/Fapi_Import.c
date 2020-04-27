@@ -176,7 +176,7 @@ Fapi_Import_Async(
         goto_if_error(r, "Could not initialize key template", cleanup_error);
 
         r = ifapi_get_tpm2b_public_from_pem(extPubKey->pem_ext_public,
-                                             &extPubKey->public);
+                                            &extPubKey->public);
         goto_if_error(r, "Convert PEM public key into TPM public key.", cleanup_error);
 
         command->new_object = *object;
@@ -237,7 +237,7 @@ Fapi_Import_Async(
             context->state = IMPORT_KEY_WRITE_POLICY;
 
             r = TSS2_RC_SUCCESS;
-        } else {
+        } else if (ifapi_get_sub_object(jso, IFAPI_JSON_TAG_OBJECT_TYPE, &jso2)) {
             /* Write key object */
             r = ifapi_json_IFAPI_OBJECT_deserialize(jso, object);
             goto_if_error(r, "Invalid object.", cleanup_error);
@@ -269,6 +269,26 @@ Fapi_Import_Async(
                 break;
             }
             command->parent_path = NULL;
+        } else {
+            /* A key in form of a json object with public binary blob and private binary
+               blob will be imported. */
+            object->objectType = IFAPI_KEY_OBJ;
+            r = ifapi_json_import_IFAPI_KEY_deserialize(jso, &object->misc.key);
+            goto_if_error(r, "Invalid import data for key.", cleanup_error);
+
+            /* Compute key name from public data. */
+            r = ifapi_get_name(&object->misc.key.public.publicArea,
+                               &object->misc.key.name);
+            goto_if_error2(r, "Get parent name", cleanup_error);
+
+
+            /* Create session for key loading. */
+            r = ifapi_get_sessions_async(context,
+                                         IFAPI_SESSION_GENEK | IFAPI_SESSION1,
+                                         TPMA_SESSION_DECRYPT, 0);
+            goto_if_error_reset_state(r, "Create sessions", cleanup_error);
+
+            context->state = IMPORT_WAIT_FOR_SESSION;
         }
     }
     json_object_put(jso);
@@ -280,13 +300,14 @@ cleanup_error:
         json_object_put(jso);
     context->state = _FAPI_STATE_INIT;
     ifapi_cleanup_policy(&policy);
+    ifapi_cleanup_ifapi_object(object);
     SAFE_FREE(command->jso_string);
     SAFE_FREE(extPubKey->pem_ext_public);
     SAFE_FREE(command->out_path);
     return r;
 }
 
-/** Asynchronous finish function for Fapi_Import_
+/** Asynchronous finish function for Fapi_Import
  *
  * This function should be called after a previous Fapi_Import_Async.
  *
@@ -332,14 +353,125 @@ Fapi_Import_Finish(
     IFAPI_OBJECT *newObject = &command->new_object;
     IFAPI_OBJECT *object = &command->object;
     IFAPI_DUPLICATE * keyTree = &object->misc.key_tree;
+    ESYS_TR auth_session;
 
     switch (context->state) {
+       statecase(context->state, IMPORT_WAIT_FOR_SESSION);
+           r = ifapi_get_sessions_finish(context, context->cmd.Key_Create.profile,
+                                         context->cmd.Key_Create.profile->nameAlg);
+           return_try_again(r);
+           goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
+
+           r = ifapi_load_parent_keys_async(context, command->out_path);
+           goto_if_error(r, "LoadKey async", error_cleanup);
+
+           /* Profile name is first element of the explicit path list */
+           char *profile_name = context->loadKey.path_list->str;
+           r = ifapi_profiles_get(&context->profiles, profile_name,
+                                  &context->cmd.ImportKey.profile);
+           goto_if_error_reset_state(r, "Retrieving profile data", error_cleanup);
+
+           if (object->misc.key.public.publicArea.type == TPM2_ALG_RSA)
+               object->misc.key.signing_scheme
+                   = context->profiles.default_profile.rsa_signing_scheme;
+           else
+               object->misc.key.signing_scheme
+                   = context->profiles.default_profile.ecc_signing_scheme;
+
+           fallthrough;
+
+        statecase(context->state, IMPORT_WAIT_FOR_PARENT);
+            IFAPI_OBJECT *auth_object;
+            r = ifapi_load_keys_finish(context, IFAPI_FLUSH_PARENT,
+                                   &context->loadKey.handle,
+                                   &auth_object);
+            return_try_again(r);
+            goto_if_error(r, "LoadKey finish", error_cleanup);
+
+            context->loadKey.auth_object = *auth_object;
+            fallthrough;
+
+        statecase(context->state, IMPORT_WAIT_FOR_AUTHORIZATION);
+            r = ifapi_authorize_object(context, &context->loadKey.auth_object,
+                                       &auth_session);
+            FAPI_SYNC(r, "Authorize key.", error_cleanup);
+
+            TPM2B_PRIVATE private;
+
+            private.size = object->misc.key.private.size;
+            memcpy(&private.buffer[0], object->misc.key.private.buffer, private.size);
+
+            r = Esys_Load_Async(context->esys, context->loadKey.handle,
+                                auth_session,
+                                ESYS_TR_NONE, ESYS_TR_NONE,
+                                &private, &object->misc.key.public);
+            goto_if_error(r, "Load async", error_cleanup);
+            fallthrough;
+
+        statecase(context->loadKey.state, IMPORT_WAIT_FOR_KEY);
+            r = Esys_Load_Finish(context->esys, &context->loadKey.handle);
+            return_try_again(r);
+            goto_if_error_reset_state(r, "Load", error_cleanup);
+
+            /* Check whether object already exists in key store. */
+            r = ifapi_keystore_object_does_not_exist(&context->keystore,
+                                                     command->out_path,
+                                                     object);
+            goto_if_error_reset_state(r, "Could not write: %sh", error_cleanup,
+                                      command->out_path);
+
+            /* Start writing the object to the key store */
+            r = ifapi_keystore_store_async(&context->keystore, &context->io,
+                                           command->out_path, object);
+            goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
+                                      command->out_path);
+            ifapi_cleanup_ifapi_object(object);
+            fallthrough;
+
+        statecase(context->state, IMPORT_WRITE);
+            /* Finish writing the key to the key store */
+            r = ifapi_keystore_store_finish(&context->keystore, &context->io);
+            return_try_again(r);
+            return_if_error_reset_state(r, "write_finish failed");
+
+            if (!context->loadKey.auth_object.misc.key.persistent_handle) {
+                /* Prepare Flushing of key used for authorization */
+                r = Esys_FlushContext_Async(context->esys, context->loadKey.auth_object.handle);
+                goto_if_error(r, "Flush parent", error_cleanup);
+            }
+            fallthrough;
+
+        statecase(context->state, IMPORT_FLUSH_PARENT);
+            if (!context->loadKey.auth_object.misc.key.persistent_handle) {
+                r = Esys_FlushContext_Finish(context->esys);
+                try_again_or_error_goto(r, "Flush context", error_cleanup);
+            }
+
+            /* Prepare Flushing of the loaded key */
+            r = Esys_FlushContext_Async(context->esys, context->loadKey.handle);
+            goto_if_error(r, "Flush key", error_cleanup);
+
+            fallthrough;
+
+        statecase(context->state, IMPORT_FLUSH_KEY);
+            r = Esys_FlushContext_Finish(context->esys);
+            try_again_or_error_goto(r, "Flush context", error_cleanup);
+
+            fallthrough;
+
+        statecase(context->state, IMPORT_CLEANUP);
+            r = ifapi_cleanup_session(context);
+            try_again_or_error_goto(r, "Cleanup", error_cleanup);
+
+            context->state = _FAPI_STATE_INIT;
+            break;
+
         statecase(context->state, IMPORT_KEY_WRITE_POLICY);
             r = ifapi_policy_store_store_finish(&context->pstore, &context->io);
             return_try_again(r);
             return_if_error_reset_state(r, "write_finish failed");
 
-            context->state =  _FAPI_STATE_INIT;
+            context->state = _FAPI_STATE_INIT;
             break;
 
         statecase(context->state, IMPORT_KEY_WRITE);
@@ -347,7 +479,7 @@ Fapi_Import_Finish(
             return_try_again(r);
             return_if_error_reset_state(r, "write_finish failed");
 
-            context->state =  _FAPI_STATE_INIT;
+            context->state = _FAPI_STATE_INIT;
             break;
 
         statecase(context->state, IMPORT_KEY_SEARCH);
