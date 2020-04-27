@@ -54,14 +54,14 @@ Esys_Initialize(ESYS_CONTEXT ** esys_context, TSS2_TCTI_CONTEXT * tcti,
     *esys_context = calloc(1, sizeof(ESYS_CONTEXT));
     return_if_null(*esys_context, "Out of memory.", TSS2_ESYS_RC_MEMORY);
 
+    /* Store the application provided tcti to be return on Esys_GetTcti(). */
+    (*esys_context)->tcti_app_param = tcti;
+
     /* Allocate memory for the SYS context */
     syssize = Tss2_Sys_GetContextSize(0);
     (*esys_context)->sys = calloc(1, syssize);
     goto_if_null((*esys_context)->sys, "Error: During malloc.",
                  TSS2_ESYS_RC_MEMORY, cleanup_return);
-
-    /* Store the application provided tcti to be return on Esys_GetTcti(). */
-    (*esys_context)->tcti_app_param = tcti;
 
     /* If no tcti was provided, initialize the default one. */
     if (tcti == NULL) {
