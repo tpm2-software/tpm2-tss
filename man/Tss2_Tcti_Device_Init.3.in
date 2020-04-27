@@ -86,7 +86,7 @@ is returned if any parameters contain unexpected values.
 is returned if any parameters are NULL when they should not be.
 .B TSS2_TCTI_RC_BAD_CONTEXT
 is returned if the size of the provided
-.i tctiContext
+.I tctiContext
 is insufficient.
 .SH EXAMPLE
 TCTI initialization fragment:

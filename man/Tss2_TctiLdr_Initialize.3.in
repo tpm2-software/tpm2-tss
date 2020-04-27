@@ -65,8 +65,7 @@ libtss2-tcti-tabrmd.so.0
 libtss2-tcti-device.so.0
 .IP \[bu]
 libtss2-tcti-mssim.so.0
-.RE
-.sp
+.LP
 When the
 .I name
 string is neither NULL nor the empty string the implementation will attempt
@@ -81,8 +80,7 @@ name with the following permutations:
 libtss2-tcti-<name>.so.0
 .IP \[bu]
 libtss2-tcti-<name>.so
-.RE
-.sp
+.LP
 The
 .I config
 string is not interpreted by the TctiLdr init functions and is passed

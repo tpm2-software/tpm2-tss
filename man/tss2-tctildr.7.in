@@ -10,13 +10,17 @@ instances.
 .SH DESCRIPTION
 The TCTI dynamic loading and initialization protocol requires a lot of
 boilerplate code. To reduce duplication the tss2-tctildr library adds the
-'Tss2_TctiLdr_Initialize', 'Tss2_TctiLdr_Initialize_Ex' and
-'Tss2_TctiLdr_Finalize' functions to abstract away the machinery required
+.BR Tss2_TctiLdr_Initialize (),
+.BR Tss2_TctiLdr_Initialize_Ex (),
+and
+.BR Tss2_TctiLdr_Finalize ()
+functions to abstract away the machinery required
 to load, initialize, and finalize a TCTI context.
 
 To assist in the discovery of TCTIs this library provides the
-'Tss2_TctiLdr_GetInfo' function. This function, paired with a 'free'
-function to free the memory allocated by 'GetInfo', provides a simple
+.BR Tss2_TctiLdr_GetInfo ()
+function. This function, paired with a \(oqfree\(cq
+function to free the memory allocated by \(oqGetInfo\(cq, provides a simple
 query interface for discovery of the available and default TCTIs
 available to the tss2-tctildr implementation
 
