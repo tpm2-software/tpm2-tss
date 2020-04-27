@@ -98,6 +98,9 @@ TSS2_RC
 ifapi_load_key_async(FAPI_CONTEXT *context, size_t position);
 
 TSS2_RC
+ifapi_load_parent_keys_async(FAPI_CONTEXT *context, char const *keyPath);
+
+TSS2_RC
 ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent);
 
 TSS2_RC

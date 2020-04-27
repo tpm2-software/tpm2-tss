@@ -35,6 +35,9 @@ TSS2_RC
 ifapi_json_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out);
 
 TSS2_RC
+ifapi_json_import_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out);
+
+TSS2_RC
 ifapi_json_IFAPI_EXT_PUB_KEY_deserialize(json_object *jso,
         IFAPI_EXT_PUB_KEY *out);
 

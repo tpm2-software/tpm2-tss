@@ -1400,6 +1400,44 @@ ifapi_load_keys_async(FAPI_CONTEXT *context, char const *keyPath)
     return TSS2_RC_SUCCESS;
 }
 
+/** Asynchronous preparation for loading of the parent keys.
+ *
+ * The key loading is prepared. The pathname will be extended if possible and
+ * a linked list with the directories will be created.
+ *
+ * @param[in,out] context The FAPI_CONTEXT.
+ * @param[in]     keyPath the key path without the parent directories
+ *                of the key store. (e.g. HE/EK, HS/SRK/mykey)
+ *
+ * @retval TSS2_RC_SUCCESS If the preparation is successful.
+ * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated for path names.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ */
+TSS2_RC
+ifapi_load_parent_keys_async(FAPI_CONTEXT *context, char const *keyPath)
+{
+    TSS2_RC r;
+    NODE_STR_T *path_list;
+    size_t path_length;
+    char *fapi_key_path = NULL;
+
+    LOG_TRACE("Load key: %s", keyPath);
+    fapi_key_path = strdup(keyPath);
+    check_oom(fapi_key_path);
+    full_path_to_fapi_path(&context->keystore, fapi_key_path);
+    r = get_explicit_key_path(&context->keystore, fapi_key_path, &path_list);
+    SAFE_FREE(fapi_key_path);
+    return_if_error(r, "Compute explicit path.");
+
+    context->loadKey.path_list = path_list;
+    path_length = ifapi_path_length(path_list);
+    r = ifapi_load_key_async(context, path_length - 1);
+    return_if_error(r, "Load key async.");
+
+    return TSS2_RC_SUCCESS;
+}
+
 /** Asynchronous finish function for loading a key.
   *
  * @param[in,out] context The FAPI_CONTEXT.
