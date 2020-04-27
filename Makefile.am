@@ -190,6 +190,7 @@ endif #DOXYMAN
 include src_vars.mk
 
 # Add test definitions
+AM_DISTCHECK_CONFIGURE_FLAGS="--enable-debug"
 include Makefile-test.am
 
 # Add fuzz definitions
