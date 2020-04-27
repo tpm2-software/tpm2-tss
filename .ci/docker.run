@@ -58,6 +58,8 @@ popd
 mkdir ./build
 pushd ./build
 
+export CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --enable-debug"
+
 if [ "$CC" == "gcc" ]; then
   export CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --enable-code-coverage";
 fi
