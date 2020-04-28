@@ -25,6 +25,20 @@
 #define SIGN_TEMPLATE  "sign,noDa"
 
 
+json_object *
+get_json_hex_string(const uint8_t *buffer, size_t size)
+{
+
+    char hex_string[size * 2 + 1];
+
+    for (size_t i = 0, off = 0; i < size; i++, off += 2) {
+        sprintf(&hex_string[off], "%02x", buffer[i]);
+    }
+    hex_string[(size) * 2] = '\0';
+    json_object *jso = json_object_new_string(hex_string);
+    return jso;
+}
+
 static TSS2_RC
 auth_callback(
     FAPI_CONTEXT *context,
@@ -84,13 +98,14 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
         "VrpSGMIFSu301A==\n"
         "-----END CERTIFICATE-----\n";
 
-    uint8_t *signature = NULL;
-    char    *publicKey = NULL;
+    uint8_t       *signature = NULL;
+    char          *publicKey = NULL;
     uint8_t       *publicblob = NULL;
     uint8_t       *privateblob = NULL;
-    char *path_list = NULL;
+    char          *path_list = NULL;
     size_t         publicsize;
     size_t         privatesize;
+    json_object   *jso = NULL;
 
     if (strcmp("P_ECC", fapi_profile) != 0)
         sigscheme = "RSA_PSS";
@@ -124,6 +139,7 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
                          &privateblob, &privatesize, NULL);
     goto_if_error(r, "Error Fapi_GetTpmBlobs", error);
 
+
     r = Fapi_Sign(context, "HS/SRK/mySignKey", sigscheme,
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
                   &publicKey, NULL);
@@ -133,9 +149,31 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
                   &digest.buffer[0], digest.size, signature, signatureSize);
     goto_if_error(r, "Error Fapi_VerifySignature", error);
 
-
     r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", cert);
     goto_if_error(r, "Error Fapi_SetCertificate", error);
+
+    /* Create json date to import binary public and private blobs under the same
+       parent key. */
+    json_object * publicblobHex_jso = get_json_hex_string(publicblob, publicsize);
+    goto_if_null2(publicblobHex_jso, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error);
+
+    json_object * privateblobHex_jso = get_json_hex_string(privateblob, privatesize);
+    goto_if_null2(privateblobHex_jso, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error);
+
+    jso = json_object_new_object();
+    goto_if_null2(jso, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error);
+
+    json_object_object_add(jso, "public", publicblobHex_jso);
+    json_object_object_add(jso, "private", privateblobHex_jso);
+
+    const char * jso_string = json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY);
+
+    r = Fapi_Import(context, "HS/SRK/mySignKey2", jso_string);
+    goto_if_error(r, "Error Fapi_Import", error);
+
+    r = Fapi_VerifySignature(context, "HS/SRK/mySignKey2",
+                  &digest.buffer[0], digest.size, signature, signatureSize);
+    goto_if_error(r, "Error Fapi_VerifySignature", error);
 
     r = Fapi_List(context, "/", &path_list);
     goto_if_error(r, "Error Fapi_Delete", error);
@@ -149,6 +187,7 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
+    json_object_put(jso);
     SAFE_FREE(path_list);
     SAFE_FREE(publicblob);
     SAFE_FREE(privateblob);
@@ -157,6 +196,8 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
+    if (jso)
+        json_object_put(jso);
     Fapi_Delete(context, "/HS/SRK");
     SAFE_FREE(path_list);
     SAFE_FREE(publicblob);

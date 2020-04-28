@@ -408,7 +408,7 @@ Fapi_Import_Finish(
             goto_if_error(r, "Load async", error_cleanup);
             fallthrough;
 
-        statecase(context->loadKey.state, IMPORT_WAIT_FOR_KEY);
+        statecase(context->state, IMPORT_WAIT_FOR_KEY);
             r = Esys_Load_Finish(context->esys, &context->loadKey.handle);
             return_try_again(r);
             goto_if_error_reset_state(r, "Load", error_cleanup);
