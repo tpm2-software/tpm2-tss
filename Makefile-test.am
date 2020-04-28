@@ -110,7 +110,6 @@ TESTS_UNIT += \
 
 endif ESAPI
 if FAPI
-fapiLDFLAGS = -ljson-c
 TESTS_UNIT += \
     test/unit/fapi-json
 endif FAPI
@@ -266,6 +265,7 @@ endif # TESTDEVICE
 endif #ESAPI
 
 if FAPI
+FAPI_LDFLAGS = -ljson-c
 TESTS_CFLAGS +=  -DTOP_SOURCEDIR"=\"$(top_srcdir)\""
 FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-data-crypt.fint \
@@ -1363,28 +1363,28 @@ test_integration_sapi_policy_authorizeNV_int_SOURCES = test/integration/main-sap
 if FAPI
 test_integration_fapi_get_random_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_get_random_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_get_random_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_get_random_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_get_random_fint_SOURCES = \
     test/integration/fapi-get-random.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_platform_certificates_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_platform_certificates_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_platform_certificates_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_platform_certificates_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_platform_certificates_fint_SOURCES = \
     test/integration/fapi-platform-certificates.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_key_create_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_key_create_sign_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_sign_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_sign_fint_SOURCES = \
     test/integration/fapi-key-create-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_key_create_sign_password_provision_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_key_create_sign_password_provision_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_sign_password_provision_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_sign_password_provision_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_sign_password_provision_fint_SOURCES = \
     test/integration/fapi-key-create-sign-password-provision.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1392,7 +1392,7 @@ test_integration_fapi_key_create_sign_password_provision_fint_SOURCES = \
 test_integration_fapi_key_create_sign_policy_provision_fint_CFLAGS  = $(TESTS_CFLAGS) \
  -DFAPI_PROFILE=\"P_RSA_sh_policy\" -DFAPI_TEST_EK_CERT_LESS
 test_integration_fapi_key_create_sign_policy_provision_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_sign_policy_provision_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_sign_policy_provision_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_sign_policy_provision_fint_SOURCES = \
     test/integration/fapi-key-create-sign-policy-provision.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1400,7 +1400,7 @@ test_integration_fapi_key_create_sign_policy_provision_fint_SOURCES = \
 test_integration_fapi_key_create_sign_rsa_fint_CFLAGS  = $(TESTS_CFLAGS) \
  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_key_create_sign_rsa_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_sign_rsa_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_sign_rsa_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_sign_rsa_fint_SOURCES = \
     test/integration/fapi-key-create-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1408,7 +1408,7 @@ test_integration_fapi_key_create_sign_rsa_fint_SOURCES = \
 test_integration_fapi_key_create_sign_password_fint_CFLAGS  = $(TESTS_CFLAGS) \
  -DFAPI_PASSWORD
 test_integration_fapi_key_create_sign_password_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_sign_password_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_sign_password_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_sign_password_fint_SOURCES = \
     test/integration/fapi-key-create-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1416,7 +1416,7 @@ test_integration_fapi_key_create_sign_password_fint_SOURCES = \
 test_integration_fapi_key_create_sign_password_da_fint_CFLAGS  = $(TESTS_CFLAGS) \
  -DFAPI_PASSWORD -DFAPI_DA
 test_integration_fapi_key_create_sign_password_da_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_sign_password_da_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_sign_password_da_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_sign_password_da_fint_SOURCES = \
     test/integration/fapi-key-create-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1424,14 +1424,14 @@ test_integration_fapi_key_create_sign_password_da_fint_SOURCES = \
 test_integration_fapi_key_create_sign_persistent_fint_CFLAGS  = $(TESTS_CFLAGS) \
    -DFAPI_PROFILE=\"P_RSA_EK_persistent\" -DFAPI_TEST_EK_CERT_LESS
 test_integration_fapi_key_create_sign_persistent_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_sign_persistent_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_sign_persistent_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_sign_persistent_fint_SOURCES = \
     test/integration/fapi-key-create-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_key_create_policy_authorize_sign_fint_CFLAGS  = $(TESTS_CFLAGS) -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_key_create_policy_authorize_sign_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_policy_authorize_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_authorize_sign_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_policy_authorize_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-authorize-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1439,14 +1439,14 @@ test_integration_fapi_key_create_policy_authorize_sign_fint_SOURCES = \
 test_integration_fapi_key_create_policy_authorize_sign_rsa_fint_CFLAGS  = $(TESTS_CFLAGS) \
     -DFAPI_PROFILE=\"P_RSA256\" -DFAPI_TEST_EK_CERT_LESS
 test_integration_fapi_key_create_policy_authorize_sign_rsa_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_policy_authorize_sign_rsa_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_authorize_sign_rsa_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_policy_authorize_sign_rsa_fint_SOURCES = \
     test/integration/fapi-key-create-policy-authorize-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_key_create_policy_authorize_nv_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_key_create_policy_authorize_nv_sign_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_policy_authorize_nv_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_authorize_nv_sign_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_policy_authorize_nv_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-authorize-nv-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1454,21 +1454,21 @@ test_integration_fapi_key_create_policy_authorize_nv_sign_fint_SOURCES = \
 test_integration_fapi_key_create_policy_secret_nv_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
     -DFAPI_PROFILE=\"P_RSA256\" -DFAPI_TEST_EK_CERT_LESS
 test_integration_fapi_key_create_policy_secret_nv_sign_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_policy_secret_nv_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_secret_nv_sign_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_policy_secret_nv_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-secret-nv-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_key_create_policy_pcr_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_key_create_policy_pcr_sign_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_policy_pcr_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_pcr_sign_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_policy_pcr_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-pcr-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_key_create_policy_signed_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_key_create_policy_signed_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_policy_signed_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_signed_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_policy_signed_fint_SOURCES = \
     test/integration/fapi-key-create-policy-signed.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1476,21 +1476,21 @@ test_integration_fapi_key_create_policy_signed_fint_SOURCES = \
 test_integration_fapi_key_create_policy_signed_ecc_fint_CFLAGS  = $(TESTS_CFLAGS) \
  -DTEST_ECC
 test_integration_fapi_key_create_policy_signed_ecc_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_policy_signed_ecc_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_signed_ecc_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_policy_signed_ecc_fint_SOURCES = \
     test/integration/fapi-key-create-policy-signed.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_key_create_policy_nv_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_key_create_policy_nv_sign_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_policy_nv_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_nv_sign_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_policy_nv_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-nv-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_key_create_policy_or_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_key_create_policy_or_sign_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_policy_or_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_or_sign_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_policy_or_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-or-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1498,7 +1498,7 @@ test_integration_fapi_key_create_policy_or_sign_fint_SOURCES = \
 test_integration_fapi_key_create_policy_password_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
     -DTEST_POLICY_PASSWORD -DTEST_PASSWORD
 test_integration_fapi_key_create_policy_password_sign_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_policy_password_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_password_sign_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_policy_password_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policies-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1506,7 +1506,7 @@ test_integration_fapi_key_create_policy_password_sign_fint_SOURCES = \
 test_integration_fapi_key_create_policy_countertimer_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
     -DTEST_POLICY_COUNTERTIMER
 test_integration_fapi_key_create_policy_countertimer_sign_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_policy_countertimer_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_countertimer_sign_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_policy_countertimer_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policies-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1514,7 +1514,7 @@ test_integration_fapi_key_create_policy_countertimer_sign_fint_SOURCES = \
 test_integration_fapi_key_create_policy_physical_presence_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
     -DTEST_POLICY_PHYSICAL_PRESENCE
 test_integration_fapi_key_create_policy_physical_presence_sign_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_policy_physical_presence_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_physical_presence_sign_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_policy_physical_presence_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policies-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1522,7 +1522,7 @@ test_integration_fapi_key_create_policy_physical_presence_sign_fint_SOURCES = \
 test_integration_fapi_key_create_policy_locality_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
     -DTEST_POLICY_LOCALITY
 test_integration_fapi_key_create_policy_locality_sign_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_policy_locality_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_locality_sign_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_policy_locality_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policies-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1530,7 +1530,7 @@ test_integration_fapi_key_create_policy_locality_sign_fint_SOURCES = \
 test_integration_fapi_key_create_policy_command_code_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
     -DTEST_POLICY_COMMAND_CODE
 test_integration_fapi_key_create_policy_command_code_sign_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_policy_command_code_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_command_code_sign_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_policy_command_code_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policies-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1538,7 +1538,7 @@ test_integration_fapi_key_create_policy_command_code_sign_fint_SOURCES = \
 test_integration_fapi_key_create_policy_auth_value_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
  -DTEST_POLICY_AUTH_VALUE -DTEST_PASSWORD
 test_integration_fapi_key_create_policy_auth_value_sign_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_policy_auth_value_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_auth_value_sign_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_policy_auth_value_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policies-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1546,7 +1546,7 @@ test_integration_fapi_key_create_policy_auth_value_sign_fint_SOURCES = \
 test_integration_fapi_key_create_ckda_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_key_create_ckda_sign_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_ckda_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_ckda_sign_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_ckda_sign_fint_SOURCES = \
     test/integration/fapi-key-create-ckda-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1554,7 +1554,7 @@ test_integration_fapi_key_create_ckda_sign_fint_SOURCES = \
 test_integration_fapi_key_create_ckda_sign_password_fint_CFLAGS  = $(TESTS_CFLAGS) \
  -DFAPI_PASSWORD  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_key_create_ckda_sign_password_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_ckda_sign_password_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_ckda_sign_password_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_ckda_sign_password_fint_SOURCES = \
     test/integration/fapi-key-create-ckda-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1562,56 +1562,56 @@ test_integration_fapi_key_create_ckda_sign_password_fint_SOURCES = \
 test_integration_fapi_key_create_ckda_sign_password_da_fint_CFLAGS  = $(TESTS_CFLAGS) \
  -DFAPI_PASSWORD -DFAPI_DA  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_key_create_ckda_sign_password_da_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_create_ckda_sign_password_da_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_ckda_sign_password_da_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_create_ckda_sign_password_da_fint_SOURCES = \
     test/integration/fapi-key-create-ckda-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_key_change_auth_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_key_change_auth_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_key_change_auth_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_change_auth_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_key_change_auth_fint_SOURCES = \
     test/integration/fapi-key-change-auth.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_nv_ordinary_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_nv_ordinary_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_nv_ordinary_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_nv_ordinary_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_nv_ordinary_fint_SOURCES = \
     test/integration/fapi-nv-ordinary.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_nv_authorizenv_cphash_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_nv_authorizenv_cphash_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_nv_authorizenv_cphash_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_nv_authorizenv_cphash_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_nv_authorizenv_cphash_fint_SOURCES = \
     test/integration/fapi-nv-authorizenv-cphash.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_nv_extend_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_nv_extend_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_nv_extend_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_nv_extend_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_nv_extend_fint_SOURCES = \
     test/integration/fapi-nv-extend.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_nv_increment_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_nv_increment_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_nv_increment_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_nv_increment_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_nv_increment_fint_SOURCES = \
     test/integration/fapi-nv-increment.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_nv_set_bits_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_nv_set_bits_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_nv_set_bits_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_nv_set_bits_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_nv_set_bits_fint_SOURCES = \
     test/integration/fapi-nv-set-bits.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_nv_written_policy_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_nv_written_policy_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_nv_written_policy_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_nv_written_policy_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_nv_written_policy_fint_SOURCES = \
     test/integration/fapi-nv-written-policy.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1619,14 +1619,14 @@ test_integration_fapi_nv_written_policy_fint_SOURCES = \
 test_integration_fapi_ext_public_key_fint_CFLAGS  = $(TESTS_CFLAGS) \
   -DFAPI_NONTPM
 test_integration_fapi_ext_public_key_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_ext_public_key_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_ext_public_key_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_ext_public_key_fint_SOURCES = \
     test/integration/fapi-ext-public-key.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_data_crypt_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_data_crypt_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_data_crypt_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_data_crypt_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_data_crypt_fint_SOURCES = \
     test/integration/fapi-data-crypt.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1634,28 +1634,28 @@ test_integration_fapi_data_crypt_fint_SOURCES = \
 test_integration_fapi_data_crypt_rsa_fint_CFLAGS  = $(TESTS_CFLAGS) \
  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_data_crypt_rsa_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_data_crypt_rsa_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_data_crypt_rsa_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_data_crypt_rsa_fint_SOURCES = \
     test/integration/fapi-data-crypt.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_duplicate_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_duplicate_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_duplicate_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_duplicate_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_duplicate_fint_SOURCES = \
     test/integration/fapi-duplicate.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_pcr_test_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_pcr_test_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_pcr_test_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_pcr_test_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_pcr_test_fint_SOURCES = \
     test/integration/fapi-pcr-test.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_quote_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_quote_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_quote_fint_LDFLAGS = $(TESTS_LDFLAGS) -ljson-c
+test_integration_fapi_quote_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_quote_fint_SOURCES = \
     test/integration/fapi-quote.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1663,21 +1663,21 @@ test_integration_fapi_quote_fint_SOURCES = \
 test_integration_fapi_quote_rsa_fint_CFLAGS  = $(TESTS_CFLAGS) \
  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_quote_rsa_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_quote_rsa_fint_LDFLAGS = $(TESTS_LDFLAGS) -ljson-c
+test_integration_fapi_quote_rsa_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_quote_rsa_fint_SOURCES = \
     test/integration/fapi-quote.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_info_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_info_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_info_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_info_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_info_fint_SOURCES = \
     test/integration/fapi-info.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_unseal_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_unseal_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_unseal_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_unseal_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_unseal_fint_SOURCES = \
     test/integration/fapi-unseal.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1685,7 +1685,7 @@ test_integration_fapi_unseal_fint_SOURCES = \
 test_integration_fapi_provision_fingerprint_fint_CFLAGS  = $(TESTS_CFLAGS) \
  -DFAPI_TEST_FINGERPRINT  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_provision_fingerprint_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_provision_fingerprint_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_provision_fingerprint_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_provision_fingerprint_fint_SOURCES = \
     test/integration/fapi-get-random.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1693,7 +1693,7 @@ test_integration_fapi_provision_fingerprint_fint_SOURCES = \
 test_integration_fapi_provision_certificate_fint_CFLAGS  = $(TESTS_CFLAGS) \
  -DFAPI_TEST_CERTIFICATE  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_provision_certificate_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_provision_certificate_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_provision_certificate_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_provision_certificate_fint_SOURCES = \
     test/integration/fapi-get-random.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1701,7 +1701,7 @@ test_integration_fapi_provision_certificate_fint_SOURCES = \
 test_integration_fapi_provision_fingerprint_ecc_fint_CFLAGS  = $(TESTS_CFLAGS) \
  -DFAPI_TEST_FINGERPRINT_ECC  -DFAPI_PROFILE=\"P_ECC\"
 test_integration_fapi_provision_fingerprint_ecc_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_provision_fingerprint_ecc_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_provision_fingerprint_ecc_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_provision_fingerprint_ecc_fint_SOURCES = \
     test/integration/fapi-get-random.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
@@ -1709,7 +1709,7 @@ test_integration_fapi_provision_fingerprint_ecc_fint_SOURCES = \
 test_integration_fapi_provision_certificate_ecc_fint_CFLAGS  = $(TESTS_CFLAGS) \
  -DFAPI_TEST_CERTIFICATE_ECC  -DFAPI_PROFILE=\"P_ECC\"
 test_integration_fapi_provision_certificate_ecc_fint_LDADD   = $(TESTS_LDADD)
-test_integration_fapi_provision_certificate_ecc_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_provision_certificate_ecc_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
 test_integration_fapi_provision_certificate_ecc_fint_SOURCES = \
     test/integration/fapi-get-random.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
