@@ -156,6 +156,9 @@ Fapi_ChangeAuth_Async(
 
     TSS2_RC r;
 
+    /* Cleanup command context. */
+    memset(&context->cmd.Entity_ChangeAuth, 0, sizeof(IFAPI_Entity_ChangeAuth));
+
     /* Check for NULL parameters */
     check_not_null(context);
     check_not_null(entityPath);
