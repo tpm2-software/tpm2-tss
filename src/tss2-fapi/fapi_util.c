@@ -306,6 +306,34 @@ pop_object_from_list(FAPI_CONTEXT *context, NODE_OBJECT_T **object_list)
     return TSS2_RC_SUCCESS;
 }
 
+/** Get relative path of a FAPI object.
+ *
+ * @param[in] object The internal FAPI object.
+ *
+ * @retval The relative path of the object.
+ * @retval NULL if no path is available.
+ */
+const char *
+ifapi_get_object_path(IFAPI_OBJECT *object)
+{
+    if (object->rel_path)
+        return object->rel_path;
+
+    /* For hierarchies the path might not be set during reading
+       from keystore. */
+    if (object->objectType == IFAPI_HIERARCHY_OBJ) {
+        switch (object->handle) {
+        case ESYS_TR_RH_OWNER:
+            return "/HS";
+        case ESYS_TR_RH_ENDORSEMENT:
+            return "/HE";
+        case ESYS_TR_RH_LOCKOUT:
+            return  "/LOCKOUT";
+        }
+    }
+    return NULL;
+}
+
 /** Set authorization value for a FAPI object.
  *
  * The callback which provides the auth value must be defined.
@@ -326,25 +354,27 @@ ifapi_set_auth(
     const char *description)
 {
     TSS2_RC r;
-    char *auth = NULL;
+    const char *auth = NULL;
     TPM2B_AUTH authValue = {.size = 0,.buffer = {0} };
     char *obj_description;
+    const char *obj_path;
 
     obj_description = get_description(auth_object);
+    obj_path = ifapi_get_object_path(auth_object);
 
     if (obj_description)
         description = obj_description;
 
     /* Check whether callback is defined. */
     if (context->callbacks.auth) {
-        r = context->callbacks.auth(context, description, &auth,
-                                        context->callbacks.authData);
+        r = context->callbacks.auth(obj_path, description, &auth,
+                                    context->callbacks.authData);
         return_if_error(r, "policyAuthCallback");
         if (auth != NULL) {
             authValue.size = strlen(auth);
             memcpy(&authValue.buffer[0], auth, authValue.size);
         }
-        SAFE_FREE(auth);
+
         /* Store auth value in the ESYS object. */
         r = Esys_TR_SetAuth(context->esys, auth_object->handle, &authValue);
         return_if_error(r, "Set auth value.");
@@ -1838,8 +1868,10 @@ ifapi_authorize_object(FAPI_CONTEXT *context, IFAPI_OBJECT *object, ESYS_TR *ses
                     *session = ESYS_TR_PASSWORD;
                 break;
             }
-            r = ifapi_policyutil_execute_prepare(context, get_name_alg(context, object)
-                                                 ,object->policy);
+            /* Save current object to be authorized in context. */
+            context->current_auth_object = object;
+            r = ifapi_policyutil_execute_prepare(context, get_name_alg(context, object),
+                                                 object->policy);
             return_if_error(r, "Prepare policy execution.");
 
             /* Next state will switch from prev context to next context. */

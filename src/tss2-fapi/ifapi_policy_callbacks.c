@@ -570,6 +570,8 @@ ifapi_branch_selection(
     FAPI_CONTEXT *fapi_ctx = userdata;
     size_t i;
     const char *names[8];
+    IFAPI_OBJECT *auth_object;
+    const char* object_path;
 
     return_if_null(fapi_ctx, "Bad user data.", TSS2_FAPI_RC_BAD_REFERENCE);
 
@@ -580,7 +582,13 @@ ifapi_branch_selection(
     for (i = 0; i < branches->count; i++)
         names[i] = branches->authorizations[i].name;
 
-    r = fapi_ctx->callbacks.branch(fapi_ctx, "PolicyOR",
+    /* Determine path of object to be authenticated. */
+    auth_object = fapi_ctx->policy.util_current_policy->pol_exec_ctx->auth_object;
+    return_if_null(auth_object, "No object passed.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    object_path = ifapi_get_object_path(auth_object);
+
+    r = fapi_ctx->callbacks.branch(object_path, "PolicyOR",
                                    &names[0],
                                    branches->count,
                                    branch_idx,
@@ -612,13 +620,22 @@ ifapi_policy_action(
 {
     TSS2_RC r;
     FAPI_CONTEXT *fapi_ctx = userdata;
+    IFAPI_OBJECT *auth_object;
+    const char* object_path;
+
     return_if_null(fapi_ctx, "Bad user data.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!fapi_ctx->callbacks.action) {
         return_error(TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN,
                      "No action callback");
     }
-    r = fapi_ctx->callbacks.action(fapi_ctx, action,
+
+    /* Determine path of object to be authenticated. */
+    auth_object = fapi_ctx->policy.util_current_policy->pol_exec_ctx->auth_object;
+    return_if_null(auth_object, "No object passed.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    object_path = ifapi_get_object_path(auth_object);
+    r = fapi_ctx->callbacks.action(object_path, action,
                                    fapi_ctx->callbacks.actionData);
     return_if_error(r, "ifapi_policy_action callback");
 
@@ -650,20 +667,28 @@ ifapi_sign_buffer(
     TPMI_ALG_HASH key_pem_hash_alg,
     uint8_t *buffer,
     size_t buffer_size,
-    uint8_t **signature,
+    const uint8_t **signature,
     size_t *signature_size,
     void *userdata)
 {
     TSS2_RC r;
     FAPI_CONTEXT *fapi_ctx = userdata;
+    IFAPI_OBJECT *auth_object;
+    const char* object_path;
 
     return_if_null(fapi_ctx, "Bad user data.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    /* Determine path of object to be authenticated. */
+    auth_object = fapi_ctx->policy.util_current_policy->pol_exec_ctx->auth_object;
+    return_if_null(auth_object, "No object passed.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    object_path = ifapi_get_object_path(auth_object);
 
     if (!fapi_ctx->callbacks.sign) {
         return_error2(TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN,
                       "No signature callback.");
     }
-    r = fapi_ctx->callbacks.sign(fapi_ctx, "PolicySigned", key_pem,
+    r = fapi_ctx->callbacks.sign(object_path, "PolicySigned", key_pem,
                                  public_key_hint ? public_key_hint : "",
                                  key_pem_hash_alg,
                                  buffer, buffer_size,
@@ -1042,6 +1067,9 @@ ifapi_exec_auth_policy(
     const char **names = NULL;
     size_t branch_idx;
     bool policy_set = false;
+    IFAPI_OBJECT *auth_object;
+    const char* object_path;
+
 
     return_if_null(fapi_ctx, "Bad user data.", TSS2_FAPI_RC_BAD_REFERENCE);
     return_if_null(fapi_ctx->policy.policyutil_stack, "Policy not initialized.",
@@ -1093,8 +1121,15 @@ ifapi_exec_auth_policy(
                     branch = branch->next;
                 } while (branch);
 
+                /* Determine path of object to be authenticated. */
+                auth_object = fapi_ctx->policy.util_current_policy->pol_exec_ctx->auth_object;
+                goto_if_null2(auth_object, "No object passed.", r, TSS2_FAPI_RC_BAD_REFERENCE,
+                              cleanup);
+
+                object_path = ifapi_get_object_path(auth_object);
+
                 /* Policy selection */
-                r = fapi_ctx->callbacks.branch(fapi_ctx, "PolicyAuthorize",
+                r = fapi_ctx->callbacks.branch(object_path, "PolicyAuthorize",
                                                &names[0], n, &branch_idx,
                                                fapi_ctx->callbacks.branchData);
                 goto_if_error(r, "policyBranchSelectionCallback", cleanup);
@@ -1251,7 +1286,7 @@ ifapi_exec_auth_nv_policy(
             ifapi_cleanup_ifapi_object(&cb_ctx->object);
             get_nv_auth_object(&cb_ctx->object,
                                current_policy->nv_index,
-                               &current_policy->auth_object,
+                               &current_policy->auth_objectNV,
                                &current_policy->auth_handle);
             fallthrough;
 

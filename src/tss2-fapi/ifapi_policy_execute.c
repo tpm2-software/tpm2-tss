@@ -390,7 +390,7 @@ execute_policy_signed(
     size_t offset = 0;
     //TPMT_SIGNATURE signature_tpm;
     size_t signature_size;
-    uint8_t *signature_ossl = NULL;
+    const uint8_t *signature_ossl = NULL;
 
     LOG_TRACE("call");
 
@@ -451,8 +451,6 @@ execute_policy_signed(
                                  signature_size, policy->keyPEMhashAlg,
                                  &policy->signature_tpm);
         goto_if_error2(r, "Convert der signature into TPM format", cleanup);
-
-        SAFE_FREE(signature_ossl);
 
         TPM2B_PUBLIC inPublic;
         inPublic.size = 0;

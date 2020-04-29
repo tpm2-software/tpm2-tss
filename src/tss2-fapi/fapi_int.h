@@ -1051,6 +1051,7 @@ struct FAPI_CONTEXT {
     enum IFAPI_IO_STATE io_state;
     NODE_OBJECT_T *object_list;
     IFAPI_OBJECT *duplicate_key; /**< Will be needed for policy execution */
+    IFAPI_OBJECT *current_auth_object;
 };
 
 #define VENDOR_IFX  0x49465800

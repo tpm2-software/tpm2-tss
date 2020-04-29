@@ -676,9 +676,9 @@ TSS2_RC Fapi_NvSetBits_Finish(
     FAPI_CONTEXT   *context);
 
 typedef TSS2_RC (*Fapi_CB_Auth)(
-    FAPI_CONTEXT   *context,
+    char     const *objectPath,
     char     const *description,
-    char          **auth,
+    char    const **auth,
     void           *userData);
 
 TSS2_RC Fapi_SetAuthCB(
@@ -687,7 +687,7 @@ TSS2_RC Fapi_SetAuthCB(
     void           *userData);
 
 typedef TSS2_RC (*Fapi_CB_Branch)(
-    FAPI_CONTEXT   *context,
+    char     const *objectPath,
     char     const *description,
     char    const **branchNames,
     size_t          numBranches,
@@ -700,14 +700,14 @@ TSS2_RC Fapi_SetBranchCB(
     void           *userData);
 
 typedef TSS2_RC (*Fapi_CB_Sign)(
-    FAPI_CONTEXT   *context,
+    char     const *objectPath,
     char     const *description,
     char     const *publicKey,
     char     const *publicKeyHint,
     uint32_t        hashAlg,
     uint8_t  const *dataToSign,
     size_t          dataToSignSize,
-    uint8_t       **signature,
+    uint8_t const **signature,
     size_t         *signatureSize,
     void           *userData);
 
@@ -717,7 +717,7 @@ TSS2_RC Fapi_SetSignCB(
     void           *userData);
 
 typedef TSS2_RC (*Fapi_CB_PolicyAction)(
-    FAPI_CONTEXT   *context,
+    char     const *objectPath,
     char     const *action,
     void           *userData);
 

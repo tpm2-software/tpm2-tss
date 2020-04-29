@@ -33,6 +33,9 @@ TSS2_RC
 ifapi_get_session_finish(ESYS_CONTEXT *esys, ESYS_TR *session,
                          TPMA_SESSION flags);
 
+const char *
+ifapi_get_object_path(IFAPI_OBJECT *object);
+
 TSS2_RC
 ifapi_set_auth(
     FAPI_CONTEXT *context,

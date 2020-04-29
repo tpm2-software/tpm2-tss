@@ -91,22 +91,29 @@ char *userDataTest = "test";
                              r = TSS2_FAPI_RC_GENERAL_FAILURE; \
                              goto error_cleanup; }
 
+static  uint8_t *global_signature = NULL;
+
 static TSS2_RC
 signatureCallback(
-    FAPI_CONTEXT  *context,
-    char    const *description,
-    char    const *publicKey,
-    char    const *publicKeyHint,
-    uint32_t       hashAlg,
-    uint8_t const *dataToSign,
-    size_t         dataToSignSize,
-    uint8_t      **signature,
-    size_t        *signatureSize,
-    void          *userData)
+    char    const  *objectPath,
+    char    const  *description,
+    char    const  *publicKey,
+    char    const  *publicKeyHint,
+    uint32_t        hashAlg,
+    uint8_t const  *dataToSign,
+    size_t          dataToSignSize,
+    uint8_t const **signature,
+    size_t         *signatureSize,
+    void           *userData)
 {
     (void)description;
     (void)publicKey;
     (void)publicKeyHint;
+    uint8_t *aux_signature = NULL;
+
+    if (!objectPath) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "No path.");
+    }
 
     if (userData != userDataTest) {
         LOG_ERROR("userData is not correct, %p != %p", userData, userDataTest);
@@ -159,13 +166,17 @@ signatureCallback(
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "OSSL sign final.",
                    error_cleanup);
     }
-    *signature = malloc(*signatureSize);
-    chknull(*signature);
-    if (1 != EVP_DigestSignFinal(mdctx, *signature, signatureSize)) {
+    aux_signature = malloc(*signatureSize);
+    global_signature = aux_signature;
+
+    chknull(aux_signature);
+    if (1 != EVP_DigestSignFinal(mdctx, aux_signature, signatureSize)) {
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "OSSL sign final.",
                    error_cleanup);
     }
-error_cleanup:
+    *signature = aux_signature;
+
+ error_cleanup:
     if (priv_key)
         EVP_PKEY_free(priv_key);
     if (bufio)
@@ -279,6 +290,7 @@ test_fapi_key_create_policy_signed(FAPI_CONTEXT *context)
     SAFE_FREE(signature);
     SAFE_FREE(publicKey);
     SAFE_FREE(pathList);
+    SAFE_FREE(global_signature);
     return EXIT_SUCCESS;
 
 error:
@@ -286,6 +298,7 @@ error:
     SAFE_FREE(signature);
     SAFE_FREE(publicKey);
     SAFE_FREE(pathList);
+    SAFE_FREE(global_signature);
     return EXIT_FAILURE;
 }
 

@@ -27,15 +27,19 @@ static char *password;
 
 static TSS2_RC
 auth_callback(
-    FAPI_CONTEXT *context,
+    char const *objectPath,
     char const *description,
-    char **auth,
+    const char **auth,
     void *userData)
 {
     (void)description;
     (void)userData;
-    *auth = strdup(password);
-    return_if_null(*auth, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+
+    if (!objectPath) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "No path.");
+    }
+
+    *auth = password;
     return TSS2_RC_SUCCESS;
 }
 

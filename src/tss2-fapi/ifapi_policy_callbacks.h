@@ -84,7 +84,7 @@ ifapi_sign_buffer(
     TPMI_ALG_HASH key_pem_hash_alg,
     uint8_t *buffer,
     size_t buffer_size,
-    uint8_t **signature,
+    const uint8_t **signature,
     size_t *signature_size,
     void *userdata);
 
