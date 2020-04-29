@@ -29,27 +29,34 @@ static char *password;
 
 static TSS2_RC
 auth_callback(
-    FAPI_CONTEXT *context,
+    char const *objectPath,
     char const *description,
-    char **auth,
+    const char **auth,
     void *userData)
 {
-    (void)(context);
     (void)description;
     (void)userData;
-    *auth = strdup(PASSWORD);
-    return_if_null(*auth, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+
+    if (!objectPath) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "No path.");
+    }
+
+    *auth = PASSWORD;
     return TSS2_RC_SUCCESS;
 }
 
 static TSS2_RC
 action_callback(
-    FAPI_CONTEXT *context,
+    const char *objectPath,
     const char *action,
     void *userData)
 {
-    (void)(context);
     (void)(userData);
+
+    if (strcmp(objectPath, "/nv/Owner/myNV") != 0) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Unexpected path");
+    }
+
     if (strcmp(action, "myaction")) {
         LOG_ERROR("Bad action: %s", action);
         return TSS2_FAPI_RC_GENERAL_FAILURE;

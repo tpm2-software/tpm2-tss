@@ -565,8 +565,6 @@ ifapi_keystore_load_finish(
     LOG_TRACE("Return %x", r);
     SAFE_FREE(keystore->rel_path);
     return r;
-
-
 }
 
 /**  Start writing FAPI object to the key store.

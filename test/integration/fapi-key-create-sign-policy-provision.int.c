@@ -23,18 +23,23 @@
 
 static TSS2_RC
 auth_callback(
-    FAPI_CONTEXT *context,
+    char const *objectPath,
     char const *description,
-    char **auth,
+    const char **auth,
     void *userData)
 {
     (void)description;
     (void)userData;
+
+    if (!objectPath) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "No path.");
+    }
+
     char *pw = PASSWORD;
     if (!pw)
         return TSS2_FAPI_RC_GENERAL_FAILURE;
 
-    *auth = strdup(pw);
+    *auth = pw;
     return TSS2_RC_SUCCESS;
 }
 

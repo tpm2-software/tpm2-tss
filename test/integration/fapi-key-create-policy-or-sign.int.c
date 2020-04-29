@@ -31,7 +31,7 @@ static bool cb_called = false;
 
 static TSS2_RC
 branch_callback(
-    FAPI_CONTEXT *context,
+    char   const *objectPath,
     char   const *description,
     char  const **branchNames,
     size_t        numBranches,
@@ -40,6 +40,10 @@ branch_callback(
 {
     (void) description;
     (void) userData;
+
+    if (strcmp(objectPath, "P_ECC/HS/SRK/mySignKey") != 0) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Unexpected path");
+    }
 
     if (numBranches != 2) {
         LOG_ERROR("Wrong number of branches");

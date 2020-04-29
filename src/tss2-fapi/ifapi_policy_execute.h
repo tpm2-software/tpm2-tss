@@ -69,7 +69,7 @@ typedef TSS2_RC (*ifapi_policyexec_cbsign) (
     TPMI_ALG_HASH key_pem_hash_alg,
     uint8_t *buffer,
     size_t buffer_size,
-    uint8_t **signature,
+    const uint8_t **signature,
     size_t *signature_size,
     void *userdata);
 
@@ -138,7 +138,8 @@ struct IFAPI_POLICY_EXEC_CTX {
     ESYS_TR object_handle;
     ESYS_TR nv_index;
     ESYS_TR auth_handle;
-    IFAPI_OBJECT auth_object;       /**< Object used for authentication */
+    IFAPI_OBJECT auth_objectNV;       /**< Object used for NV authentication */
+    IFAPI_OBJECT *auth_object;        /**< Object to be authorized */
     ESYS_TR auth_session;
     TPMI_ALG_HASH hash_alg;
     void  *app_data;                /**< Application data  for policy execution callbacks */

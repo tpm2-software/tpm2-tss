@@ -31,7 +31,7 @@
  * @param[in] userData A pointer that is provided to all callback invocations
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or callback is NULL.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE: if the context is NULL.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
@@ -52,7 +52,6 @@ Fapi_SetBranchCB(
 
     /* Check for NULL parameters */
     check_not_null(context);
-    check_not_null(callback);
 
     /* Store the callback and userdata pointer. */
     context->callbacks.branch = callback;
@@ -71,7 +70,7 @@ Fapi_SetBranchCB(
  * @param[in] userData A pointer that is provided to all callback invocations
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or callback is NULL.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE: if the context is NULL.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
@@ -92,7 +91,6 @@ Fapi_SetAuthCB(
 
     /* Check for NULL parameters */
     check_not_null(context);
-    check_not_null(callback);
 
     /* Store the callback and userdata pointer. */
     context->callbacks.auth = callback;
@@ -111,7 +109,7 @@ Fapi_SetAuthCB(
  * @param[in] userData A pointer that is provided to all callback invocations
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or callback is NULL.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE: if the context is NULL.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
@@ -132,7 +130,6 @@ Fapi_SetSignCB(
 
     /* Check for NULL parameters */
     check_not_null(context);
-    check_not_null(callback);
 
     /* Store the callback and userdata pointer. */
     context->callbacks.sign = callback;
@@ -152,7 +149,7 @@ Fapi_SetSignCB(
  * @param[in] userData A pointer that is provided to all callback invocations
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or callback is NULL.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE: if the context is NULL.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
@@ -173,7 +170,6 @@ Fapi_SetPolicyActionCB(
 
     /* Check for NULL parameters */
     check_not_null(context);
-    check_not_null(callback);
 
     /* Store the callback and userdata pointer. */
     context->callbacks.action = callback;

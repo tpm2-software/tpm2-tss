@@ -217,6 +217,8 @@ ifapi_policyutil_execute_prepare(
     r = new_policy(context, policy, &current_policy);
     goto_if_error(r, "Create new policy.", error);
 
+    current_policy->pol_exec_ctx->auth_object = context->current_auth_object;
+
     r = ifapi_policyeval_execute_prepare(current_policy->pol_exec_ctx, hash_alg, policy);
     goto_if_error(r, "Prepare policy execution.", error);
 
