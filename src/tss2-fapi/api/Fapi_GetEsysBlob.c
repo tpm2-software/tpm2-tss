@@ -104,7 +104,7 @@ Fapi_GetEsysBlob(
 
 /** Asynchronous function for Fapi_GetEsysBlob
  *
- * Prepares the reading of the blobs from keystore or TPM. 
+ * Prepares the reading of the blobs from keystore or TPM.
  * Call Fapi_GetEsysBlob_Finish to finish the execution of this command.
  *
  * @param[in,out] context The ESAPI_CONTEXT
