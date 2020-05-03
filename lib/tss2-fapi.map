@@ -37,6 +37,9 @@
         Fapi_GetDescription;
         Fapi_GetDescription_Async;
         Fapi_GetDescription_Finish;
+        Fapi_GetEsysBlob;
+        Fapi_GetEsysBlob_Async;
+        Fapi_GetEsysBlob_Finish;
         Fapi_SetAppData;
         Fapi_SetAppData_Async;
         Fapi_SetAppData_Finish;

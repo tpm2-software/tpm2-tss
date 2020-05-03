@@ -1218,6 +1218,13 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \fn Fapi_GetPlatformCertificates_Async(FAPI_CONTEXT *context)
  \fn Fapi_GetPlatformCertificates_Finish(FAPI_CONTEXT *context, uint8_t **certificates, size_t *certificatesSize)
  \}
+ \defgroup Fapi_GetEsysBlobs Fapi_GetEsysBlobs
+ FAPI functions to invoke GetEsysBlobs either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_GetEsysBlob(FAPI_CONTEXT *context, charconst *path, uint8_t *type, uint8_t **data, size_t *length)
+ \fn Fapi_GetEsysBlob_Async(FAPI_CONTEXT *context, char const *path)
+ \fn Fapi_GetEsysBlob_Finish(FAPI_CONTEXT *context, uint8_t *type, uint8_t **data, size_t *length)
+ \}
  \defgroup Fapi_GetRandom Fapi_GetRandom
  FAPI functions to invoke GetRandom either as one-call or in an asynchronous manner.
  \{

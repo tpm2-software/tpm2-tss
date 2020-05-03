@@ -16,6 +16,12 @@ extern "C" {
 
 typedef struct FAPI_CONTEXT FAPI_CONTEXT;
 
+
+/* Defines for blob type of Fapi_GetEsysBlob */
+
+#define FAPI_ESYSBLOB_CONTEXTLOAD 1
+#define FAPI_ESYSBLOB_DESERIALIZE 2
+
 /* Context functions */
 
 TSS2_RC Fapi_Initialize(
@@ -151,6 +157,23 @@ TSS2_RC Fapi_Delete_Async(
 
 TSS2_RC Fapi_Delete_Finish(
     FAPI_CONTEXT   *context);
+
+TSS2_RC Fapi_GetEsysBlob(
+    FAPI_CONTEXT   *context,
+    char     const *path,
+    uint8_t        *type,
+    uint8_t       **data,
+    size_t         *length);
+
+TSS2_RC Fapi_GetEsysBlob_Async(
+    FAPI_CONTEXT   *context,
+    char     const *path);
+
+TSS2_RC Fapi_GetEsysBlob_Finish(
+    FAPI_CONTEXT   *context,
+    uint8_t        *type,
+    uint8_t       **data,
+    size_t         *length);
 
 TSS2_RC Fapi_ChangeAuth(
     FAPI_CONTEXT   *context,

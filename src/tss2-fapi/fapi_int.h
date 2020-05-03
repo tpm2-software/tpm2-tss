@@ -639,6 +639,21 @@ typedef struct {
     size_t path_idx;                /**< Index of array with the object files to be deleted */
 } IFAPI_Entity_Delete;
 
+/** The data structure holding internal state of esys get blob.
+ */
+typedef struct {
+    uint8_t type;                   /**< type of blob to be returned */
+    bool is_key;                    /**< Object is a key */
+    bool is_persistent_key;         /**< Object is a persistent key */
+    ESYS_TR new_object_handle;
+    TPM2_HANDLE permanentHandle;    /**< The TPM permanent handle */
+    IFAPI_OBJECT auth_object;       /**< Object used for authentication */
+    ESYS_TR auth_index;             /**< The ESAPI handle of the nv authorization object */
+    char *path;                     /**< The path of the object */
+    IFAPI_OBJECT object;            /**< Deserialized object */
+    IFAPI_OBJECT *key_object;       /**< Loaded key object */
+} IFAPI_GetEsysBlob;
+
 /** The data structure holding internal state of list entities.
  */
 typedef struct {
@@ -656,6 +671,7 @@ typedef union {
     IFAPI_Key_SetCertificate Key_SetCertificate;
     IFAPI_Entity_ChangeAuth Entity_ChangeAuth;
     IFAPI_Entity_Delete Entity_Delete;
+    IFAPI_GetEsysBlob GetEsysBlob;
     IFAPI_Entities_List Entities_List;
     IFAPI_Key_VerifySignature Key_VerifySignature;
     IFAPI_Data_EncryptDecrypt Data_EncryptDecrypt;
@@ -827,6 +843,19 @@ enum _FAPI_STATE {
     ENTITY_DELETE_FILE,
     ENTITY_DELETE_POLICY,
     ENTITY_DELETE_REMOVE_DIRS,
+
+    GET_ESYS_BLOB_GET_FILE,
+    GET_ESYS_BLOB_READ,
+    GET_ESYS_BLOB_NULL_AUTH_SENT_FOR_KEY,
+    GET_ESYS_BLOB_AUTH_SENT_FOR_KEY,
+    GET_ESYS_BLOB_NULL_AUTH_SENT_FOR_NV,
+    GET_ESYS_BLOB_AUTH_SENT_FOR_NV,
+    GET_ESYS_BLOB_KEY,
+    GET_ESYS_BLOB_WAIT_FOR_KEY,
+    GET_ESYS_BLOB_SERIALIZE,
+    GET_ESYS_BLOB_FILE,
+    GET_ESYS_BLOB_WAIT_FOR_FLUSH,
+    GET_ESYS_BLOB_CLEANUP,
 
     ENTITY_GET_TPM_BLOBS_READ,
 
