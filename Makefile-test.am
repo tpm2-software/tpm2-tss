@@ -272,6 +272,7 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-data-crypt-rsa.fint \
     test/integration/fapi-duplicate.fint \
     test/integration/fapi-ext-public-key.fint \
+    test/integration/fapi-get-esys-blobs.fint \
     test/integration/fapi-get-random.fint \
     test/integration/fapi-platform-certificates.fint \
     test/integration/fapi-key-create-sign.fint \
@@ -1361,6 +1362,14 @@ test_integration_sapi_policy_authorizeNV_int_SOURCES = test/integration/main-sap
     test/integration/sapi-policy-authorizeNV.int.c
 
 if FAPI
+
+test_integration_fapi_get_esys_blobs_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_get_esys_blobs_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_get_esys_blobs_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
+test_integration_fapi_get_esys_blobs_fint_SOURCES = \
+    test/integration/fapi-get-esys-blobs.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
 test_integration_fapi_get_random_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_get_random_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_get_random_fint_LDFLAGS = $(TESTS_LDFLAGS) $(FAPI_LDFLAGS)
