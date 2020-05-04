@@ -622,6 +622,8 @@ ifapi_json_IFAPI_OBJECT_deserialize(json_object *jso, IFAPI_OBJECT *out)
         return TSS2_FAPI_RC_BAD_VALUE;
     }
 
+    out->rel_path = NULL;
+
     r = ifapi_json_IFAPI_OBJECT_TYPE_CONSTANT_deserialize(jso2, &out->objectType);
     return_if_error(r, "BAD VALUE");
 

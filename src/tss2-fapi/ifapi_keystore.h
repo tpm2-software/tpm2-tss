@@ -113,6 +113,7 @@ typedef struct IFAPI_KEYSTORE {
     char *userdir;
     char *defaultprofile;
     IFAPI_KEY_SEARCH key_search;
+    const char* rel_path;
 } IFAPI_KEYSTORE;
 
 
@@ -143,6 +144,7 @@ typedef struct _IFAPI_OBJECT {
     ESYS_TR                                      handle;    /**< Handle used by ESAPI */
     enum IFAPI_AUTHORIZATION_STATE  authorization_state;    /**< State of object authorization state machine */
     enum IFAPI_IO_STATE                           state;
+    const char                                *rel_path;    /**< The relative path in keystore. */
 
 } IFAPI_OBJECT;
 

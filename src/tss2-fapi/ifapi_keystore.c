@@ -492,15 +492,20 @@ ifapi_keystore_load_async(
     /* Free old input buffer if buffer exists */
     SAFE_FREE(io->char_rbuffer);
 
+    /* Save relative directory path for storing in the object. */
+    strdup_check(keystore->rel_path, path, r, error_cleanup);
+
     /* Convert relative path to absolute path in keystore */
     r = rel_path_to_abs_path(keystore, path, &abs_path);
-    goto_if_error2(r, "Object %s not found.", cleanup, path);
+    goto_if_error2(r, "Object %s not found.", error_cleanup, path);
 
     /* Prepare read operation */
     r = ifapi_io_read_async(io, abs_path);
-
-cleanup:
     SAFE_FREE(abs_path);
+    return r;
+
+ error_cleanup:
+    SAFE_FREE(keystore->rel_path);
     return r;
 }
 
@@ -540,17 +545,27 @@ ifapi_keystore_load_finish(
     /* If json objects can't be parse the object store is corrupted */
     jso = json_tokener_parse((char *)buffer);
     SAFE_FREE(buffer);
-    return_if_null(jso, "Keystore is corrupted (Json error).", TSS2_FAPI_RC_GENERAL_FAILURE);
+    goto_if_null2(jso, "Keystore is corrupted (Json error).", r, TSS2_FAPI_RC_GENERAL_FAILURE,
+                  error_cleanup);
 
     r = ifapi_json_IFAPI_OBJECT_deserialize(jso, object);
-    goto_if_error(r, "Deserialize object.", cleanup);
+    goto_if_error(r, "Deserialize object.", error_cleanup);
 
-cleanup:
+    object->rel_path = keystore->rel_path;
     SAFE_FREE(buffer);
     if (jso)
         json_object_put(jso);
     LOG_TRACE("Return %x", r);
     return r;
+
+ error_cleanup:
+    SAFE_FREE(buffer);
+    if (jso)
+        json_object_put(jso);
+    LOG_TRACE("Return %x", r);
+    SAFE_FREE(keystore->rel_path);
+    return r;
+
 
 }
 
@@ -1463,6 +1478,7 @@ ifapi_copy_ifapi_key_object(IFAPI_OBJECT * dest, const IFAPI_OBJECT * src) {
 
     /* Create the copy */
     dest->policy = ifapi_copy_policy(src->policy);
+    strdup_check(dest->rel_path, src->rel_path, r, error_cleanup);
 
     r = ifapi_copy_ifapi_key(&dest->misc.key, &src->misc.key);
     goto_if_error(r, "Could not copy key", error_cleanup);
@@ -1505,6 +1521,7 @@ ifapi_cleanup_ifapi_object(
             }
 
             ifapi_cleanup_policy(object->policy);
+            SAFE_FREE(object->rel_path);
             SAFE_FREE(object->policy);
             object->objectType = IFAPI_OBJ_NONE;
         }
