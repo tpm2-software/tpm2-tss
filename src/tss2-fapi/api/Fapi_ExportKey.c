@@ -336,12 +336,6 @@ Fapi_ExportKey_Finish(
             command->public_parent = parentKeyObject.misc.ext_pub_key.public;
             ifapi_cleanup_ifapi_object(&parentKeyObject);
 
-            /* Initialize a session used for authorization and parameter encryption. */
-            r = ifapi_get_sessions_async(context,
-                                         IFAPI_SESSION_GENEK | IFAPI_SESSION1,
-                                         TPMA_SESSION_DECRYPT, 0);
-            goto_if_error_reset_state(r, "Create sessions", cleanup);
-
             fallthrough;
 
         statecase(context->state, EXPORT_KEY_WAIT_FOR_KEY);
