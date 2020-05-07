@@ -2,8 +2,10 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
-## [2.4.1-RC0] - 2020-04-28
+## [2.4.1-rc1] - 2020-05-11
 ### Fixed
+- Removed expired coverity token from travis.yaml
+- Fix uninitialized context of FAPI command Fapi_ChangeAuth issue
 - Fix handling of tcti pointer in Esys\_Initialize
 - Fix usages of EC routines deprecated in OSSL 1.2 and greater
 - Fix FAPI handling of TPMs without stored certificates
