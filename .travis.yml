@@ -16,12 +16,6 @@ env:
    # opensuse-leap
   - DOCKER_TAG=opensuse-leap
 
-  global:
-  # COVERITY_SCAN_TOKEN
-  - secure: "ZD0KxBhO/CaSE/TOkW+H5nsBbaMolbIPv5DgctcjA1BlTckgc5lK4m+7BIR1Fft6gaeeLOoCY3qUm4kW++Bqk2bTsrx/HvrmVmrzMO572jA74x4E+5lynUnRVaAgBg7cVBcB0hZcUurx8FifNBbgnWlxT/nDWttVnglkz400GCE9/zy+VTJWqt4QAB+6qeKPiG3vRthQdWcHstBI8IIAbvp4rhSUajBBQeZ5ro5RPGNy+iHen+t6tyJmbjiP0Y4qjkKGbfwXHnsseEcuSJQuxSkQ9MWK6t93BFXFSPw5MjHIApMn+4CjRp2JMoVTVfe5fFeZEHxVUmAzy+e5eIeftrUtUlCI293UuxZnw/vpJczn3BWunlhhjqjsCwVeknzGHxlaT+ck8Et1Mdl/3nY/E9dt47/NOzXY2xrAz59GYsdKvvsPoCGgNlAub03Vl0W24I1kjppsmN/zFwazHGqoxIBTwrDOQUmZvPfXA3jAUozrfAdT3YjnRcCG7bbQmacFApqfUm/bqMgapAgozjjxpuBrO1wQSUjjH6NANZsP2Gpk0eAl7FOlBzbVgKPxCQozWCjpKOj3HMnXX458ZQWsboG5J00wwjw9DRNRCkeexLdi832L/BPhUY5JgRlTqqyKr9cr69DvogBF/pLytpSCciF6t9NqqGZYbBomXJLaG84="
-  # run coverity scan on gcc build to keep from DOSing coverity
-  - coverity_scan_run_condition='"$CC" = gcc'
-
 matrix:
   include:
   # gcrypt testing
