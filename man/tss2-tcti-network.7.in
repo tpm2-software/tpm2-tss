@@ -1,0 +1,15 @@
+.\" Process this file with
+.\" groff -man -Tascii foo.1
+.\"
+.TH TCTI-NETWORK 7 "MAY 2019" Intel "TPM2 Software Stack"
+.SH NAME
+tcti-network \- TPM2 Network TCTI library
+.SH SYNOPSIS
+A TPM Command Transmission Interface (TCTI) module for interaction with a network
+port.
+.SH DESCRIPTION
+tcti-network is a library that abstracts the details of direct communication
+with the interface and protocol exposed by a service that can recieve and transmit
+raw TPM2 command and response buffers. The interface exposed by this library is defined
+in the \*(lqTSS System Level API and TPM Command Transmission Interface
+Specification\*(rq specification.

@@ -176,10 +176,17 @@ socket_close (
     return TSS2_RC_SUCCESS;
 }
 
+typedef enum conn_t conn_t;
+enum conn_t {
+    CONN_T_BIND,
+    CONN_T_CONNECT,
+};
+
 TSS2_RC
-socket_connect (
+socket_bind_or_connect (
     const char *hostname,
     uint16_t port,
+	conn_t conn_type,
     SOCKET *sock)
 {
     static const struct addrinfo hints = { .ai_socktype = SOCK_STREAM,
@@ -239,7 +246,8 @@ socket_connect (
 
         LOG_DEBUG ("Attempting TCP connection to host %s, port %s",
             h, port_str);
-        if (connect (*sock, p->ai_addr, p->ai_addrlen) != SOCKET_ERROR)
+        if ((conn_type == CONN_T_CONNECT ? connect (*sock, p->ai_addr, p->ai_addrlen)
+                : bind (*sock, p->ai_addr, p->ai_addrlen)) != SOCKET_ERROR)
             break; /* socket connected OK */
         socket_close (sock);
     }
@@ -257,4 +265,22 @@ socket_connect (
     }
 
     return TSS2_RC_SUCCESS;
+}
+
+TSS2_RC
+socket_connect (
+    const char *hostname,
+    uint16_t port,
+    SOCKET *sock)
+{
+	return socket_bind_or_connect(hostname, port, CONN_T_CONNECT, sock);
+}
+
+TSS2_RC
+socket_bind (
+    const char *hostname,
+    uint16_t port,
+    SOCKET *sock)
+{
+	return socket_bind_or_connect(hostname, port, CONN_T_BIND, sock);
 }

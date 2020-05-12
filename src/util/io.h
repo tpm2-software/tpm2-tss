@@ -74,6 +74,11 @@ socket_connect (
     uint16_t port,
     SOCKET *socket);
 TSS2_RC
+socket_bind (
+    const char *hostname,
+    uint16_t port,
+    SOCKET *socket);
+TSS2_RC
 socket_close (
     SOCKET *socket);
 ssize_t
