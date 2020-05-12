@@ -248,7 +248,7 @@ Fapi_GetInfo_Finish(
             return TSS2_FAPI_RC_TRY_AGAIN;
         }
 
-        infoObj->fapi_version = "OSSTSS 2.2.x";
+        infoObj->fapi_version = PACKAGE_STRING;
         infoObj->fapi_config = "Properties of config have to specified by TCG";
 
         /* Serialize the information. */
