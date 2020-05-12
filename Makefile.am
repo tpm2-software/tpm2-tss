@@ -580,20 +580,13 @@ install-man: install-man3 install-man7
 
 EXTRA_DIST += dist/tpm-udev.rules
 
-if WITH_UDEVRULESPREFIX
 install-data-hook:
-	mv $(DESTDIR)$(udevrulesdir)/tpm-udev.rules $(DESTDIR)$(udevrulesdir)/$(udevrulesprefix)tpm-udev.rules
-
-uninstall-local:
-	-rm $(DESTDIR)$(udevrulesdir)/$(udevrulesprefix)tpm-udev.rules
-endif
-
-# Create tss user and FAPI directories directly after installation (vs. after a reboot)
-install-exec-hook:
+	-mv $(DESTDIR)$(udevrulesdir)/tpm-udev.rules $(DESTDIR)$(udevrulesdir)/$(udevrulesprefix)tpm-udev.rules
 	(systemd-sysusers && systemd-tmpfiles --create) || \
 	($(call make_tss_user_and_group) && $(call make_fapi_dirs) && ($call set_fapi_permissions)) || true
 
-uninstall-hook:
+uninstall-local:
+	-rm $(DESTDIR)$(udevrulesdir)/$(udevrulesprefix)tpm-udev.rules
 	cd $(DESTDIR)$(man3dir) && \
 		[ -L Tss2_TctiLdr_Initialize_Ex.3 ] && \
 			rm -f Tss2_TctiLdr_Initialize_Ex.3 || true
