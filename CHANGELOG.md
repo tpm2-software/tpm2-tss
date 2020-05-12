@@ -2,13 +2,15 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
-## [2.4.1-rc1] - 2020-05-11
+
+## [2.4.1] - 2020-05-12
 ### Fixed
+- Fixed systemd-sysusers/-tmpfiles creation without systemd
 - Removed expired coverity token from travis.yaml
-- Fix uninitialized context of FAPI command Fapi_ChangeAuth issue
-- Fix handling of tcti pointer in Esys\_Initialize
-- Fix usages of EC routines deprecated in OSSL 1.2 and greater
-- Fix FAPI handling of TPMs without stored certificates
+- Fixed uninitialized context of FAPI command Fapi_ChangeAuth issue
+- Fixed handling of tcti pointer in Esys_Initialize
+- Fixed usages of EC routines deprecated in OSSL 1.2 and greater
+- Fixed FAPI handling of TPMs without stored certificates
 
 ## [2.4.0] - 2020-03-11
 ### Added
