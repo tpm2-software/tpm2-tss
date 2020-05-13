@@ -110,10 +110,12 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
     else
         attributes |= TPMA_OBJECT_ADMINWITHPOLICY;
 
-    /* Check whether flags are appropriate */
+    /* Check whether flags are appropriate for restricted keys */
     if (attributes & TPMA_OBJECT_RESTRICTED &&
-            attributes & TPMA_OBJECT_SIGN_ENCRYPT &&
-            attributes & TPMA_OBJECT_DECRYPT) {
+        ((attributes & TPMA_OBJECT_SIGN_ENCRYPT &&
+          attributes & TPMA_OBJECT_DECRYPT)
+         || (!(attributes & TPMA_OBJECT_SIGN_ENCRYPT) &&
+             !(attributes & TPMA_OBJECT_DECRYPT)))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Exactly either sign or decrypt must be set.",
                    error);

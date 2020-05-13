@@ -158,10 +158,13 @@ Fapi_CreateKey_Async(
     LOG_TRACE("authValue: %s", authValue);
 
     TSS2_RC r;
+    TPMA_OBJECT *attributes;
 
     /* Check for NULL parameters */
     check_not_null(context);
     check_not_null(path);
+
+    attributes = &context->cmd.Key_Create.public_templ.public.publicArea.objectAttributes;
 
     /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
@@ -178,6 +181,14 @@ Fapi_CreateKey_Async(
                             (policyPath && strcmp(policyPath, "") != 0) ? true : false,
                             &context->cmd.Key_Create.public_templ);
     return_if_error(r, "Set key flags for key");
+
+    /* If neither sign nor decrypt is set both flags will
+       sign_encrypt and decrypt have to be set. */
+    if (!(*attributes & TPMA_OBJECT_SIGN_ENCRYPT) &&
+        !(*attributes & TPMA_OBJECT_DECRYPT)) {
+        *attributes |= TPMA_OBJECT_SIGN_ENCRYPT;
+        *attributes |= TPMA_OBJECT_DECRYPT;
+    }
 
     /* Initialize the context state for this operation. */
     context->state = KEY_CREATE;
