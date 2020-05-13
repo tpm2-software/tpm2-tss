@@ -675,7 +675,21 @@ ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
     pkey->policyInstance = NULL;
     pkey->creationData = *creationData;
     pkey->creationTicket = *creationTicket;
-    pkey->description = NULL;
+
+    /* Add description of primary stored in profile, if available. */
+    if (ktype == TSS2_EK) {
+        if (context->profiles.default_profile.ek_description) {
+            strdup_check(pkey->description,
+                         context->profiles.default_profile.ek_description, r,
+                         error_cleanup);
+        }
+    } else {
+        if (context->profiles.default_profile.srk_description) {
+            strdup_check(pkey->description,
+                         context->profiles.default_profile.srk_description, r,
+                         error_cleanup);
+        }
+    }
     pkey->certificate = NULL;
 
     /* Cleanup unused information */

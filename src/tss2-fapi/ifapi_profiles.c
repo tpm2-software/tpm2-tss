@@ -293,6 +293,9 @@ ifapi_profiles_finalize(
         SAFE_FREE(profile->srk_template);
         SAFE_FREE(profile->ek_template);
 
+        SAFE_FREE(profile->srk_description);
+        SAFE_FREE(profile->ek_description);
+
         ifapi_cleanup_policy(profile->eh_policy);
         SAFE_FREE(profile->eh_policy);
 
@@ -349,12 +352,26 @@ ifapi_profile_json_deserialize(
     out->srk_template = strdup(json_object_get_string(jso2));
     return_if_null(out->srk_template, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
+    if (!ifapi_get_sub_object(jso, "srk_description", &jso2)) {
+        out->srk_description = NULL;
+    } else {
+        out->srk_description = strdup(json_object_get_string(jso2));
+        return_if_null(out->srk_description, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    }
+
     if (!ifapi_get_sub_object(jso, "ek_template", &jso2)) {
         LOG_ERROR("Bad value");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     out->ek_template = strdup(json_object_get_string(jso2));
     return_if_null(out->ek_template, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+
+    if (!ifapi_get_sub_object(jso, "ek_description", &jso2)) {
+        out->ek_description = NULL;
+    } else {
+        out->ek_description = strdup(json_object_get_string(jso2));
+        return_if_null(out->ek_description, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    }
 
     if (!ifapi_get_sub_object(jso, "ecc_signing_scheme", &jso2)) {
         memset(&out->ecc_signing_scheme, 0, sizeof(TPMT_SIG_SCHEME));
