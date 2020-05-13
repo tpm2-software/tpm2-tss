@@ -110,6 +110,8 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
     size_t         publicsize;
     size_t         privatesize;
     json_object   *jso = NULL;
+    char           *description = NULL;
+
 
     if (strcmp("P_ECC", fapi_profile) != 0)
         sigscheme = "RSA_PSS";
@@ -193,6 +195,22 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
     r = Fapi_ChangeAuth(context, "/HS", NULL);
     goto_if_error(r, "Error Fapi_ChangeAuth", error);
 
+    r = Fapi_GetDescription(context, "/HS/SRK", &description);
+    goto_if_error(r, "Error GetDescription", error);
+
+    if (description) {
+        LOG_INFO("SRK description: %s", description);
+        SAFE_FREE(description);
+    }
+
+    r = Fapi_GetDescription(context, "/HE/EK", &description);
+    goto_if_error(r, "Error GetDescription", error);
+
+    if (description) {
+        LOG_INFO("EK description: %s", description);
+        SAFE_FREE(description);
+    }
+
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
@@ -213,6 +231,7 @@ error:
     SAFE_FREE(privateblob);
     SAFE_FREE(publicKey);
     SAFE_FREE(signature);
+    SAFE_FREE(description);
     return EXIT_FAILURE;
 }
 
