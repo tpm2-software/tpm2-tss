@@ -251,6 +251,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
     IFAPI_KEY * pkey = &pkeyObject->misc.key;
     IFAPI_PROFILE * defaultProfile = &context->profiles.default_profile;
     int curl_rc;
+    TPMA_OBJECT *attributes;
 
     switch (context->state) {
         statecase(context->state, PROVISION_READ_PROFILE);
@@ -300,6 +301,15 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                      context->profiles.default_profile.ek_policy ? true : false,
                      &command->public_templ);
             goto_if_error(r, "Set key flags for SRK", error_cleanup);
+
+            /* If neither sign nor decrypt is set both flags
+               sign_encrypt and decrypt have to be set. */
+            attributes =  &command->public_templ.public.publicArea.objectAttributes;
+            if ( !(*attributes & TPMA_OBJECT_SIGN_ENCRYPT) &&
+                 !(*attributes & TPMA_OBJECT_DECRYPT) ) {
+                *attributes |= TPMA_OBJECT_SIGN_ENCRYPT;
+                *attributes |= TPMA_OBJECT_DECRYPT;
+            }
 
             r = ifapi_merge_profile_into_template(&context->profiles.default_profile,
                     &command->public_templ);
@@ -618,6 +628,15 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                     context->profiles.default_profile.srk_policy ? true : false,
                     &command->public_templ);
             goto_if_error(r, "Set key flags for SRK", error_cleanup);
+
+            /* If neither sign nor decrypt is set both flags
+               sign_encrypt and decrypt have to be set. */
+            attributes =  &command->public_templ.public.publicArea.objectAttributes;
+            if ( !(*attributes & TPMA_OBJECT_SIGN_ENCRYPT) &&
+                 !(*attributes & TPMA_OBJECT_DECRYPT) ) {
+                *attributes |= TPMA_OBJECT_SIGN_ENCRYPT;
+                *attributes |= TPMA_OBJECT_DECRYPT;
+            }
 
             r = ifapi_merge_profile_into_template(&context->profiles.default_profile,
                     &command->public_templ);
