@@ -181,6 +181,7 @@ Fapi_ChangeAuth_Async(
         strdup_check(command->authValue, "", r, error_cleanup);
     }
     command->handle = ESYS_TR_NONE;
+    context->loadKey.parent_handle = ESYS_TR_NONE;
 
     /* Get a session for further authorizing and integrity checking the
        subsequent ChangeAuth calls. */
@@ -386,6 +387,9 @@ Fapi_ChangeAuth_Finish(
 
                 context->loadKey.parent_handle = ESYS_TR_NONE;
                 return TSS2_FAPI_RC_TRY_AGAIN;
+            } else {
+                /* No need to flush the parent key */
+                context->loadKey.parent_handle = ESYS_TR_NONE;
             }
 
             /* Store information about whether the new authorization is an
@@ -444,6 +448,13 @@ Fapi_ChangeAuth_Finish(
             fallthrough;
 
         statecase(context->state, ENTITY_CHANGE_AUTH_WAIT_FOR_NV_AUTH)
+            /* NV_ChangeAuth is only possible for objects with policy. */
+            if (!command->object.misc.nv.public.nvPublic.authPolicy.size) {
+                goto_error(r, TSS2_FAPI_RC_AUTHORIZATION_FAILED,
+                           "NV object has no policy. "
+                           "NV_ChangeAuth is not possible.", error_cleanup);
+            }
+
             /* Authorize the object with with the policies
                auth value and command code */
             r = ifapi_authorize_object(context, object, &auth_session);
@@ -452,7 +463,7 @@ Fapi_ChangeAuth_Finish(
 
             /* Change the NV index's AuthValue. */
             r = Esys_NV_ChangeAuth_Async(context->esys,
-                    context->nv_cmd.nv_object.handle,
+                    command->object.handle,
                     auth_session,
                     ESYS_TR_NONE,
                     ESYS_TR_NONE,
