@@ -10,4 +10,4 @@ Version: @VERSION@
 Requires.private: tss2-mu tss2-sys
 Cflags: -I${includedir}
 Libs: -ltss2-esys -L${libdir}
-Libs.private: @LIBDL_LDFLAGS@ @LIBSOCKET_LDFLAGS@ @TSS2_ESYS_LDFLAGS_CRYPTO@
+Libs.private: @LIBADD_DL@ @LIBSOCKET_LDFLAGS@ @TSS2_ESYS_LDFLAGS_CRYPTO@
