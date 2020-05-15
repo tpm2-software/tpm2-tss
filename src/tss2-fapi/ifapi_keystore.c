@@ -7,6 +7,7 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #include <dirent.h>
+#include <ctype.h>
 #endif
 
 #include "ifapi_io.h"
@@ -17,6 +18,31 @@
 #include "util/aux_util.h"
 #include "ifapi_json_deserialize.h"
 #include "ifapi_json_serialize.h"
+
+
+/** Check whether pathname is valid.
+ *
+ * Every key pathname will be checked whether the name contains only
+ * valid character.
+ * @param[in] path The pathname.
+ * @retval TSS2_RC_SUCCESS If the pathname is ok.
+ * @retval TSS2_FAPI_RC_BAD_PATH If not valid characters are detected.
+ */
+static TSS2_RC
+check_valid_path(
+    const char *path)
+{
+    for (size_t i = 1; i < strlen(path); i++) {
+        if (!(isalnum(path[i]) ||
+              path[i] == '_' ||
+              path[i] == '-' ||
+              path[i] == '/')) {
+            LOG_ERROR("Invalid character %c in path %s", path[i], path);
+            return TSS2_FAPI_RC_BAD_PATH;
+        }
+    }
+    return TSS2_RC_SUCCESS;
+}
 
 /** Initialize the linked list for an explicit key path.
  *
@@ -257,6 +283,10 @@ expand_path(IFAPI_KEYSTORE *keystore, const char *path, char **file_name)
     NODE_STR_T *node_list = NULL;
     size_t pos = 0;
     *file_name = NULL;
+
+    /* First it will be checked whether the only valid characters occur in the path. */
+    r = check_valid_path(path);
+    return_if_error(r, "Invalid path.");
 
     if (ifapi_hierarchy_path_p(path)) {
         if (strncmp(path, "P_", 2) == 0 || strncmp(path, "/P_", 3) == 0) {
