@@ -53,6 +53,8 @@ esac
 AC_SUBST([LIBSOCKET_LDFLAGS])
 AC_SUBST([HOSTOS])
 
+AM_CONDITIONAL(HOSTOS_LINUX, [test x"$HOSTOS" = xLinux])
+
 # runstatedir is only defined in the yet unreleased Autoconf 2.70
 AC_ARG_WITH([runstatedir],
             AS_HELP_STRING([--with-runstatedir=<dir>],

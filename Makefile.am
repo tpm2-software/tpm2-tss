@@ -584,7 +584,6 @@ define set_fapi_permissions
     ($(call set_tss_permissions,$(DESTDIR)$(localstatedir)/lib/tpm2-tss)
 endef
 
-
 ### Man Pages
 man3_MANS = \
     man/man3/Tss2_Tcti_Device_Init.3 \
@@ -612,10 +611,14 @@ install-man: install-man3 install-man7
 
 EXTRA_DIST += dist/tpm-udev.rules
 
-install-data-hook:
-	-mv $(DESTDIR)$(udevrulesdir)/tpm-udev.rules $(DESTDIR)$(udevrulesdir)/$(udevrulesprefix)tpm-udev.rules
+install-dirs:
+if HOSTOS_LINUX
 	(systemd-sysusers && systemd-tmpfiles --create) || \
 	($(call make_tss_user_and_group) && $(call make_fapi_dirs) && ($call set_fapi_permissions)) || true
+endif
+
+install-data-hook: install-dirs
+	-mv $(DESTDIR)$(udevrulesdir)/tpm-udev.rules $(DESTDIR)$(udevrulesdir)/$(udevrulesprefix)tpm-udev.rules
 
 uninstall-local:
 	-rm $(DESTDIR)$(udevrulesdir)/$(udevrulesprefix)tpm-udev.rules
