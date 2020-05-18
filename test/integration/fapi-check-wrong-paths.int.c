@@ -64,6 +64,17 @@ test_fapi_wrong_path(FAPI_CONTEXT *context)
         goto_if_error(r, "Error Fapi_CreateKey", error);
     }
 
+    r = Fapi_CreateNv(context, "myNv", "noda", 10, "", "");
+
+    if (r && r !=  TSS2_FAPI_RC_PATH_NOT_FOUND) {
+        goto_if_error(r, "Error Fapi_CreateNv", error);
+    }
+
+    r = Fapi_CreateNv(context, "/nv/Owner/myNv", "noda,0xff", 10, "", "");
+
+    if (r && r !=  TSS2_FAPI_RC_BAD_VALUE) {
+        goto_if_error(r, "Error Fapi_CreateNv", error);
+    }
 
     Fapi_Delete(context, "/");
 

@@ -144,6 +144,9 @@ TSS2_RC
 ifapi_get_nv_start_index(const char *path, TPM2_HANDLE *start_nv_index);
 
 TSS2_RC
+ifapi_check_nv_index(const char *path, TPM2_HANDLE nv_index);
+
+TSS2_RC
 ifapi_check_profile_pcr_selection(
     const TPML_PCR_SELECTION *pcr_profile,
     const TPML_PCR_SELECTION *pcr_capablity);
