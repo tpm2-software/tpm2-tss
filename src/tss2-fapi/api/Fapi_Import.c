@@ -525,6 +525,15 @@ Fapi_Import_Finish(
             r = Esys_Import_Finish(context->esys, &command->private);
             try_again_or_error_goto(r, "Import", error_cleanup);
 
+            /* Concatenate keyname and parent path */
+            char* ipath = NULL;
+            r = ifapi_asprintf(&ipath, "%s%s%s", command->parent_path,
+                               IFAPI_FILE_DELIM, command->out_path);
+            goto_if_error(r, "Out of memory.", error_cleanup);
+
+            SAFE_FREE(command->out_path);
+            command->out_path = ipath;
+
             context->state = IMPORT_KEY_WAIT_FOR_FLUSH;
             fallthrough;
 
@@ -554,12 +563,12 @@ Fapi_Import_Finish(
             r = ifapi_esys_serialize_object(context->esys, newObject);
             goto_if_error(r, "Prepare serialization", error_cleanup);
 
-            /* Start writing the NV object to the key store */
+            /* Start writing the object to the key store */
             r = ifapi_keystore_store_async(&context->keystore, &context->io,
                                            command->out_path,
                                            newObject);
-            goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
-                                      context->nv_cmd.nvPath);
+            goto_if_error_reset_state(r, "Could not open: %s", error_cleanup,
+                                      command->out_path);
 
             context->state = IMPORT_KEY_WRITE_OBJECT;
             fallthrough;
@@ -598,7 +607,12 @@ Fapi_Import_Finish(
     }
     SAFE_FREE(command->parent_path);
     ifapi_cleanup_ifapi_object(&command->object);
-    SAFE_FREE(command->private);
+    if (command->private) {
+        SAFE_FREE(command->private);
+        if (newObject)
+            /* Private buffer was already freed. */
+            newObject->misc.key.private.buffer = NULL;
+    }
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     if (context->loadKey.key_object){
         ifapi_cleanup_ifapi_object(context->loadKey.key_object);
@@ -607,12 +621,15 @@ Fapi_Import_Finish(
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
-    if (newObject)
+    SAFE_FREE(command->private);
+    if (newObject) {
+        /* Private buffer was already freed. */
+        newObject->misc.key.private.buffer = NULL;
         ifapi_cleanup_ifapi_object(newObject);
+    }
     SAFE_FREE(command->out_path);
     SAFE_FREE(command->parent_path);
     ifapi_cleanup_ifapi_object(&command->object);
-    SAFE_FREE(command->private);
     Esys_SetTimeout(context->esys, 0);
     ifapi_session_clean(context);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
