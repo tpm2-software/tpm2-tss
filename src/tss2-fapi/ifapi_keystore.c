@@ -95,21 +95,28 @@ initialize_explicit_key_path(
             hierarchy = "HS";
         }
     }
-    /* Add the used hierarcy to the linked list. */
+    /* Add the used hierarchy to the linked list. */
     if (!add_string_to_list(*result, hierarchy)) {
         LOG_ERROR("Out of memory");
         r = TSS2_FAPI_RC_MEMORY;
         goto error;
     }
     if (list_node == NULL) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Explicit path can't be determined.",
+        goto_error(r, TSS2_FAPI_RC_BAD_PATH, "Explicit path can't be determined.",
                    error);
     }
+
     /* Add the primary directory to the linked list. */
     if (!add_string_to_list(*result, list_node->str)) {
         LOG_ERROR("Out of memory");
         r = TSS2_FAPI_RC_MEMORY;
         goto error;
+    }
+    /* Check primary directory */
+    if (!((strcmp(hierarchy, "HS") == 0 && strcmp(list_node->str, "SRK") == 0) ||
+          (strcmp(hierarchy, "HE") == 0 && strcmp(list_node->str, "EK") == 0))) {
+        goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND, "Invalid path: %s",
+                   error, ipath);
     }
     /* Return the rest of the path. */
     *current_list_node = list_node->next;
@@ -270,7 +277,7 @@ expand_path(IFAPI_KEYSTORE *keystore, const char *path, char **file_name)
 
     } else {
         r = get_explicit_key_path(keystore, path, &node_list);
-        return_if_error(r, "Out of memory");
+        return_if_error(r, "Explicit key path cannot be determined.");
 
         r = ifapi_path_string(file_name, NULL, node_list, NULL);
         goto_if_error(r, "Out of memory", error);
