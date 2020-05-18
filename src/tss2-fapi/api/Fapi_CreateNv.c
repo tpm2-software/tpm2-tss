@@ -214,6 +214,13 @@ Fapi_CreateNv_Async(
                            policyPath);
     goto_if_error(r, "Set key flags for NV object", error_cleanup);
 
+    if (nvCmd->public_templ.public.nvIndex) {
+        /* NV index was defined by the user, has to be checked whether the selected index
+           is appropriate for the used path. */
+        r = ifapi_check_nv_index(path, nvCmd->public_templ.public.nvIndex);
+        goto_if_error(r, "Check NV path and NV index", error_cleanup);
+    }
+
     /* Initialize the context state for this operation. */
     context->state = NV_CREATE_READ_PROFILE;
     LOG_TRACE("finished");

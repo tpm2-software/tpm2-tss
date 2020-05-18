@@ -1843,7 +1843,7 @@ ifapi_get_nv_start_index(const char *path, TPM2_HANDLE *start_nv_index)
         else if (strcmp(dir_list->next->str, "Endorsement_Certificate") == 0)
             *start_nv_index = 0x01c00000;
         else if (strcmp(dir_list->next->str, "Platform_Certificate") == 0)
-            *start_nv_index = 0x01c80000;
+            *start_nv_index = 0x01c08000;
         else if (strcmp(dir_list->next->str, "Component_OEM") == 0)
             *start_nv_index = 0x01c10000;
         else if (strcmp(dir_list->next->str, "TPM_OEM") == 0)
@@ -1852,7 +1852,7 @@ ifapi_get_nv_start_index(const char *path, TPM2_HANDLE *start_nv_index)
             *start_nv_index = 0x01c30000;
         else if (strcmp(dir_list->next->str, "PC-Client") == 0)
             *start_nv_index = 0x01c40000;
-        else if (strcmp(dir_list->next->str, "Sever") == 0)
+        else if (strcmp(dir_list->next->str, "Server") == 0)
             *start_nv_index = 0x01c50000;
         else if (strcmp(dir_list->next->str, "Virtualized_Platform") == 0)
             *start_nv_index = 0x01c60000;
@@ -1866,6 +1866,115 @@ ifapi_get_nv_start_index(const char *path, TPM2_HANDLE *start_nv_index)
         return TSS2_RC_SUCCESS;
 
     return_error2(TSS2_FAPI_RC_BAD_PATH, "Invalid NV path: %s", path);
+}
+
+/** Check whether NV index is appropriate for NV path.
+ *
+ * The value will be checked  based on e TCG handle registry.
+ *
+ * @param[in]  path The path used for the NV object.
+ * @param[out] nv_index The NV index to be used.
+ *
+ * @retval TSS2_RC_SUCCESS If the index for the path can be determined.
+ * @retval TSS2_FAPI_RC_BAD_PATH If the path is not valid.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If the nv index is not appropriate for the path.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ */
+TSS2_RC
+ifapi_check_nv_index(const char *path, TPM2_HANDLE nv_index)
+{
+    TSS2_RC r;
+    NODE_STR_T *dir_list = split_string(path, IFAPI_FILE_DELIM);
+
+    return_if_null(dir_list, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    if (dir_list->next && strcmp(dir_list->str, "nv") == 0 && dir_list->next->str) {
+        if (strcmp(dir_list->next->str, "TPM") == 0) {
+            if (nv_index < 0x01000000 || nv_index > 0x013fffff)
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                           "NV TPM handle not in the range 0x01000000:0x013fffff",
+                           error_cleanup);
+        } else if (strcmp(dir_list->next->str, "Platform") == 0) {
+            if (nv_index < 0x01400000 || nv_index > 0x017fffff)
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                           "NV Platform handle not in the range 0x01400000:0x017fffff",
+                           error_cleanup);
+        } else if (strcmp(dir_list->next->str, "Owner") == 0) {
+            if (nv_index < 0x01800000 || nv_index > 0x01bfffff)
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                       "NV Owner handle not in the range 0x01800000:0x01bfffff",
+                       error_cleanup);
+        } else if (strcmp(dir_list->next->str, "Endorsement_Certificate") == 0) {
+            if (nv_index <  0x01c00000 || nv_index > 0x01c07fff)
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                       "NV Endorsement Certificate handle not in the range "
+                       "0x01c00000:0x01c07fff",
+                       error_cleanup);
+        } else if (strcmp(dir_list->next->str, "Platform_Certificate") == 0) {
+            if (nv_index <  0x01c08000 || nv_index > 0x01c0ffff)
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                       "NV  Platform Certificate handle not in the range "
+                       "0x01c08000:0x01c0ffff",
+                       error_cleanup);
+        } else if (strcmp(dir_list->next->str, "Component_OEM") == 0) {
+            if (nv_index <  0x01c10000 || nv_index > 0x01c1ffff)
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                       "NV Component OEM handle not in the range "
+                       "0x01c10000:0x01c1ffff",
+                       error_cleanup);
+        } else if (strcmp(dir_list->next->str, "TPM_OEM") == 0) {
+            if (nv_index < 0x01c20000 || nv_index > 0x01c2ffff)
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                       "NV TPM OEM handle not in the range "
+                       "0x01c20000:0x01c2ffff",
+                       error_cleanup);
+        } else if (strcmp(dir_list->next->str, "Platform_OEM") == 0) {
+            if (nv_index < 0x01c30000 || nv_index > 0x01c3ffff)
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                       "NV Platform OEM handle not in the range "
+                       "0x01c30000:0x01c3ffff",
+                       error_cleanup);
+        } else if (strcmp(dir_list->next->str, "PC-Client") == 0) {
+            if (nv_index < 0x01c40000 || nv_index > 0x01c4ffff)
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                       "NV PC-Client handle not in the range "
+                       "0x01c40000:0x01c4ffff",
+                       error_cleanup);
+        } else if (strcmp(dir_list->next->str, "Server") == 0) {
+            if (nv_index < 0x01c50000 || nv_index > 0x01c5ffff)
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                       "NV PC-Client handle not in the range "
+                       "0x01c50000:0x01c5ffff",
+                       error_cleanup);
+        } else if (strcmp(dir_list->next->str, "Virtualized_Platform") == 0) {
+            if (nv_index < 0x01c60000 || nv_index > 0x01c6ffff)
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                       "NV PC-Client handle not in the range "
+                       "0x01c60000:0x016cffff",
+                       error_cleanup);
+        } else if (strcmp(dir_list->next->str, "MPWG") == 0) {
+            if (nv_index < 0x01c70000 || nv_index > 0x01c7ffff)
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                       "NV PC-Client handle not in the range "
+                       "0x01c70000:0x017cffff",
+                       error_cleanup);
+        } else if (strcmp(dir_list->next->str, "Embedded") == 0) {
+            if (nv_index < 0x01c80000 || nv_index >  0x01c8ffff)
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                       "NV PC-Client handle not in the range "
+                       "0x01c80000:0x018cffff",
+                       error_cleanup);
+        } else {
+            goto_error(r, TSS2_FAPI_RC_BAD_PATH, "Invalid nv path: %s", error_cleanup, path);
+        }
+    } else {
+        goto_error(r, TSS2_FAPI_RC_BAD_PATH, "Invalid nv path: %s", error_cleanup, path);
+    }
+    free_string_list(dir_list);
+    return TSS2_RC_SUCCESS;;
+
+ error_cleanup:
+    free_string_list(dir_list);
+    return r;
 }
 
 /** Compute new PCR value from a part of an event list.
