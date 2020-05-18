@@ -1624,7 +1624,7 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
         return_if_error(r, "read_finish failed");
 
         if (context->loadKey.key_object->objectType != IFAPI_KEY_OBJ)
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "%s is no key", error_cleanup,
+            goto_error(r, TSS2_FAPI_RC_BAD_PATH, "%s is no key", error_cleanup,
                        context->loadKey.key_path);
 
         r = ifapi_initialize_object(context->esys, context->loadKey.key_object);
