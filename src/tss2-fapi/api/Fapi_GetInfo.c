@@ -249,7 +249,7 @@ Fapi_GetInfo_Finish(
         }
 
         infoObj->fapi_version = PACKAGE_STRING;
-        infoObj->fapi_config = "Properties of config have to specified by TCG";
+        infoObj->fapi_config = context->config;
 
         /* Serialize the information. */
         r = ifapi_json_IFAPI_INFO_serialize(infoObj, &jso);
