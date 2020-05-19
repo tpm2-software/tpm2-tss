@@ -15,6 +15,7 @@
 #include "tpm_json_serialize.h"
 #include "fapi_policy.h"
 #include "ifapi_policy_json_serialize.h"
+#include "ifapi_config.h"
 
 #define LOGMODULE fapijson
 #include "util/log.h"
@@ -585,7 +586,7 @@ ifapi_json_IFAPI_INFO_serialize(const IFAPI_INFO *in, json_object **jso)
 
     json_object_object_add(*jso, "version", jso2);
     jso2 = NULL;
-    r = ifapi_json_char_serialize(in->fapi_config, &jso2);
+    r = ifapi_json_IFAPI_CONFIG_serialize(&in->fapi_config, &jso2);
     return_if_error(r, "Serialize char");
 
     json_object_object_add(*jso, "fapi_config", jso2);
@@ -805,3 +806,94 @@ ifapi_json_IFAPI_EVENT_serialize(const IFAPI_EVENT *in, json_object **jso)
     json_object_object_add(*jso, "sub_event", jso2);
     return TSS2_RC_SUCCESS;
 }
+
+/** Serializes a configuration JSON object.
+ *
+ * @param[in] in value to be serialized.
+ * @param[out] jso pointer to the json object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type IFAPI_KEY.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_IFAPI_CONFIG_serialize(const IFAPI_CONFIG *in, json_object **jso)
+ {
+     TSS2_RC r;
+     json_object *jso2;
+
+     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+     if (*jso == NULL)
+         *jso = json_object_new_object();
+
+     jso2 = NULL;
+     r = ifapi_json_char_serialize(in->profile_dir, &jso2);
+     return_if_error(r, "Serialize char");
+
+     json_object_object_add(*jso, "profile_dir", jso2);
+
+     jso2 = NULL;
+     r = ifapi_json_char_serialize(in->user_dir, &jso2);
+     return_if_error(r, "Serialize char");
+
+     json_object_object_add(*jso, "user_dir", jso2);
+
+     jso2 = NULL;
+     r = ifapi_json_char_serialize(in->keystore_dir, &jso2);
+     return_if_error(r, "Serialize char");
+
+     json_object_object_add(*jso, "system_dir", jso2);
+
+     jso2 = NULL;
+     r = ifapi_json_char_serialize(in->log_dir, &jso2);
+     return_if_error(r, "Serialize char");
+
+     json_object_object_add(*jso, "log_dir", jso2);
+
+     jso2 = NULL;
+     r = ifapi_json_char_serialize(in->profile_name, &jso2);
+     return_if_error(r, "Serialize char");
+
+     json_object_object_add(*jso, "profile_name", jso2);
+
+     jso2 = NULL;
+     r = ifapi_json_char_serialize(in->tcti, &jso2);
+     return_if_error(r, "Serialize char");
+
+     json_object_object_add(*jso, "tcti", jso2);
+
+     jso2 = NULL;
+     r = ifapi_json_TPML_PCR_SELECTION_serialize(&in->system_pcrs, &jso2);
+     return_if_error(r, "Serialize char");
+
+     json_object_object_add(*jso, "system_pcrs", jso2);
+
+     jso2 = NULL;
+     r = ifapi_json_char_serialize(in->ek_cert_file, &jso2);
+     return_if_error(r, "Serialize char");
+
+     json_object_object_add(*jso, "ek_cert_file", jso2);
+
+     jso2 = NULL;
+     r = ifapi_json_TPMI_YES_NO_serialize(in->ek_cert_less, &jso2);
+     return_if_error(r, "Serialize yes no");
+
+     json_object_object_add(*jso, "ek_cert_less", jso2);
+
+     if (in->ek_fingerprint.hashAlg) {
+         jso2 = NULL;
+         ifapi_json_TPMT_HA_serialize(&in->ek_fingerprint, &jso2);
+         return_if_error(r, "Serialize char");
+
+         json_object_object_add(*jso, "ek_fingerprint", jso2);
+     }
+
+     jso2 = NULL;
+     r = ifapi_json_char_serialize(in->intel_cert_service, &jso2);
+     return_if_error(r, "Serialize char");
+
+     json_object_object_add(*jso, "intel_cert_service", jso2);
+
+     return TSS2_RC_SUCCESS;
+ }
