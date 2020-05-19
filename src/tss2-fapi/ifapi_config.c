@@ -15,6 +15,8 @@
 #include "ifapi_config.h"
 #include "ifapi_json_deserialize.h"
 #include "tpm_json_deserialize.h"
+#include "ifapi_json_serialize.h"
+#include "tpm_json_serialize.h"
 #include "ifapi_helpers.h"
 
 #define LOGMODULE fapi

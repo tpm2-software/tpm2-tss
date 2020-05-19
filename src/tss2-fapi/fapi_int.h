@@ -143,7 +143,7 @@ typedef struct {
 
 typedef struct {
     char                                 *fapi_version;    /**< The version string of FAPI */
-    char                                  *fapi_config;    /**< The configuration information */
+    IFAPI_CONFIG                           fapi_config;    /**< The configuration information */
     IFAPI_CAP_INFO             cap[IFAPI_MAX_CAP_INFO];
 } IFAPI_INFO;
 
@@ -988,7 +988,7 @@ struct FAPI_CONTEXT {
     enum IFAPI_GET_CERT_STATE get_cert_state;
     enum _FAPI_FLUSH_STATE flush_object_state;  /**< The current state of a flush operation */
     enum IFAPI_CLEANUP_STATE cleanup_state;     /**< The state of cleanup after command execution */
-    IFAPI_CONFIG config;             /**< The profile independet configuration data */
+    IFAPI_CONFIG config;             /**< The profile independent configuration data */
     UINT32 nv_buffer_max;            /**< The maximal size for transfer of nv buffer content */
     IFAPI_CMD_STATE cmd;             /**< The state information of the currently executed
                                           command */
