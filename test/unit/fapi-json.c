@@ -101,6 +101,79 @@ static void ifapi_cleanup_policy(TPMS_POLICY *policy)
     }
 }
 
+/* 6 copies of cleanup functions from ifapi_keystore.c */
+
+void
+cleanup_ifapi_duplicate(IFAPI_DUPLICATE * duplicate) {
+    if (duplicate != NULL) {
+        SAFE_FREE(duplicate->certificate);
+    }
+}
+
+void
+cleanup_ifapi_hierarchy(IFAPI_HIERARCHY * hierarchy) {
+    if (hierarchy != NULL) {
+        SAFE_FREE(hierarchy->description);
+    }
+}
+
+void
+cleanup_ifapi_ext_pub_key(IFAPI_EXT_PUB_KEY * key) {
+    if (key != NULL) {
+        SAFE_FREE(key->pem_ext_public);
+        SAFE_FREE(key->certificate);
+    }
+}
+
+void
+cleanup_ifapi_key(IFAPI_KEY * key) {
+    if (key != NULL) {
+        SAFE_FREE(key->policyInstance);
+        SAFE_FREE(key->serialization.buffer);
+        SAFE_FREE(key->private.buffer);
+        SAFE_FREE(key->description);
+        SAFE_FREE(key->certificate);
+        SAFE_FREE(key->appData.buffer);
+    }
+}
+
+void
+cleanup_ifapi_nv(IFAPI_NV * nv) {
+    if (nv != NULL) {
+        SAFE_FREE(nv->serialization.buffer);
+        SAFE_FREE(nv->appData.buffer);
+        SAFE_FREE(nv->policyInstance);
+        SAFE_FREE(nv->description);
+        SAFE_FREE(nv->event_log);
+    }
+}
+
+void
+cleanup_ifapi_object(
+    IFAPI_OBJECT * object)
+{
+    if (object != NULL) {
+        if (object->objectType != IFAPI_OBJ_NONE) {
+            if (object->objectType == IFAPI_KEY_OBJ) {
+                cleanup_ifapi_key(&object->misc.key);
+            } else if (object->objectType == IFAPI_NV_OBJ) {
+                cleanup_ifapi_nv(&object->misc.nv);
+            } else if (object->objectType == IFAPI_DUPLICATE_OBJ) {
+                cleanup_ifapi_duplicate(&object->misc.key_tree);
+            } else if (object->objectType == IFAPI_EXT_PUB_KEY_OBJ) {
+                cleanup_ifapi_ext_pub_key(&object->misc.ext_pub_key);
+            } else if (object->objectType == IFAPI_HIERARCHY_OBJ) {
+                cleanup_ifapi_hierarchy(&object->misc.hierarchy);
+            }
+
+            ifapi_cleanup_policy(object->policy);
+            SAFE_FREE(object->rel_path);
+            SAFE_FREE(object->policy);
+            object->objectType = IFAPI_OBJ_NONE;
+        }
+    }
+}
+
 char * normalize(const char *string) {
     char *string2 = malloc(strlen(string)+1);
     int i;
@@ -124,6 +197,19 @@ char * normalize(const char *string) {
             rc = ifapi_json_ ## TYPE ## _deserialize (jso, &out); \
             assert_int_equal (rc, RC); \
             json_object_put(jso); \
+        }
+
+#define CHECK_ERROR_CLEANUP(TYPE, SRC, RC)     \
+        { \
+            TYPE out; \
+            TSS2_RC rc; \
+            json_object *jso = json_tokener_parse((SRC)); \
+            memset(&out, 0, sizeof(TYPE));                \
+            assert_non_null(jso); \
+            rc = ifapi_json_ ## TYPE ## _deserialize (jso, &out); \
+            assert_int_equal (rc, RC); \
+            json_object_put(jso); \
+            cleanup_ifapi_object(&out); \
         }
 
 
@@ -1351,7 +1437,7 @@ check_error(void **state)
         "  \"objectType\":1,"
         "  \"system\":\"YES\","
         "}";
-    CHECK_ERROR(IFAPI_OBJECT, test_json_key_err1, TSS2_FAPI_RC_BAD_VALUE);
+    CHECK_ERROR_CLEANUP(IFAPI_OBJECT, test_json_key_err1, TSS2_FAPI_RC_BAD_VALUE);
 
     const char *test_json_key_err2 =
         /* Without public */
@@ -1360,7 +1446,7 @@ check_error(void **state)
         "  \"system\":\"YES\","
         "  \"persistent_handle\":0,"
         "}";
-    CHECK_ERROR(IFAPI_OBJECT, test_json_key_err2, TSS2_FAPI_RC_BAD_VALUE);
+    CHECK_ERROR_CLEANUP(IFAPI_OBJECT, test_json_key_err2, TSS2_FAPI_RC_BAD_VALUE);
 
     const char *test_json_key_err3 =
         /* Without serialization */
@@ -1397,7 +1483,7 @@ check_error(void **state)
         "    }"
         "  },"
         "}";
-    CHECK_ERROR(IFAPI_OBJECT, test_json_key_err3, TSS2_FAPI_RC_BAD_VALUE);
+    CHECK_ERROR_CLEANUP(IFAPI_OBJECT, test_json_key_err3, TSS2_FAPI_RC_BAD_VALUE);
 
     const char *test_json_key_err4 =
         /* Without PolicyInstance */
@@ -1447,7 +1533,7 @@ check_error(void **state)
         "  },"
         "  \"serialization\":\"\","
         "}";
-    CHECK_ERROR(IFAPI_OBJECT, test_json_key_err4, TSS2_FAPI_RC_BAD_VALUE);
+    CHECK_ERROR_CLEANUP(IFAPI_OBJECT, test_json_key_err4, TSS2_FAPI_RC_BAD_VALUE);
 
     const char *test_json_key_err5 =
         /* Without certificate */
@@ -1499,7 +1585,7 @@ check_error(void **state)
         "  \"policyInstance\":\"\","
         "  \"description\":\"\","
         "}";
-    CHECK_ERROR(IFAPI_OBJECT, test_json_key_err5, TSS2_FAPI_RC_BAD_VALUE);
+    CHECK_ERROR_CLEANUP(IFAPI_OBJECT, test_json_key_err5, TSS2_FAPI_RC_BAD_VALUE);
 
     const char *test_json_key_err6 =
         /* Without description */
@@ -1551,7 +1637,7 @@ check_error(void **state)
         "  \"policyInstance\":\"\","
         "  \"certificate\":\"\","
         "}";
-    CHECK_ERROR(IFAPI_OBJECT, test_json_key_err6, TSS2_FAPI_RC_BAD_VALUE);
+    CHECK_ERROR_CLEANUP(IFAPI_OBJECT, test_json_key_err6, TSS2_FAPI_RC_BAD_VALUE);
 
     const char *test_json_key_err7 =
         /* Without signing scheme */
@@ -1604,7 +1690,7 @@ check_error(void **state)
          "  \"certificate\":\"\","
          "  \"description\":\"\","
          "}";
-    CHECK_ERROR(IFAPI_OBJECT, test_json_key_err7, TSS2_FAPI_RC_BAD_VALUE);
+    CHECK_ERROR_CLEANUP(IFAPI_OBJECT, test_json_key_err7, TSS2_FAPI_RC_BAD_VALUE);
 
       const char *test_json_key_err8 =
         /* Without name */
@@ -1663,7 +1749,7 @@ check_error(void **state)
           "    }"
           "  },"
          "}";
-    CHECK_ERROR(IFAPI_OBJECT, test_json_key_err8, TSS2_FAPI_RC_BAD_VALUE);
+    CHECK_ERROR_CLEANUP(IFAPI_OBJECT, test_json_key_err8, TSS2_FAPI_RC_BAD_VALUE);
 
 
     const char *test_json_nv_err1 =
@@ -1677,7 +1763,7 @@ check_error(void **state)
         "  \"description\":\"\","
         "}";
 
-    CHECK_ERROR(IFAPI_OBJECT, test_json_nv_err1, TSS2_FAPI_RC_BAD_VALUE);
+    CHECK_ERROR_CLEANUP(IFAPI_OBJECT, test_json_nv_err1, TSS2_FAPI_RC_BAD_VALUE);
 
     const char *test_json_nv_err2 =
         "{"
@@ -1723,7 +1809,7 @@ check_error(void **state)
         "  \"description\":\"\","
         "}";
 
-    CHECK_ERROR(IFAPI_OBJECT, test_json_nv_err2, TSS2_FAPI_RC_BAD_VALUE);
+    CHECK_ERROR_CLEANUP(IFAPI_OBJECT, test_json_nv_err2, TSS2_FAPI_RC_BAD_VALUE);
 
     const char *test_json_nv_err3 =
         "{"
@@ -1768,8 +1854,7 @@ check_error(void **state)
         "  \"hierarchy\":257,"
         "  \"description\":\"\","
         "}";
-    CHECK_ERROR(IFAPI_OBJECT, test_json_nv_err3, TSS2_FAPI_RC_BAD_VALUE);
-
+    CHECK_ERROR_CLEANUP(IFAPI_OBJECT, test_json_nv_err3, TSS2_FAPI_RC_BAD_VALUE);
     const char *test_json_nv_err4 =
         "{"
         "  \"objectType\":2,"
@@ -1812,7 +1897,7 @@ check_error(void **state)
         "  \"hierarchy\":257,"
         "  \"policyInstance\":\"\","
         "}";
-    CHECK_ERROR(IFAPI_OBJECT, test_json_nv_err4, TSS2_FAPI_RC_BAD_VALUE);
+    CHECK_ERROR_CLEANUP(IFAPI_OBJECT, test_json_nv_err4, TSS2_FAPI_RC_BAD_VALUE);
 
     const char *test_json_nv_err5 =
         "{"
@@ -1857,7 +1942,7 @@ check_error(void **state)
         "  \"hierarchy\":257,"
         "  \"description\":\"\","
         "}";
-    CHECK_ERROR(IFAPI_OBJECT, test_json_nv_err5, TSS2_FAPI_RC_BAD_VALUE);
+    CHECK_ERROR_CLEANUP(IFAPI_OBJECT, test_json_nv_err5, TSS2_FAPI_RC_BAD_VALUE);
 
         const char *test_json_attest_err1 =
         "{"
