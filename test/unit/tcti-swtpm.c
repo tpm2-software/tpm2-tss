@@ -308,6 +308,9 @@ tcti_swtpm_init_fail_connect_test (void **state)
     will_return (__wrap_connect, -1);
     ret = Tss2_Tcti_Swtpm_Init (ctx, &tcti_size, "host=127.0.0.1,port=666");
     assert_int_equal (ret, TSS2_TCTI_RC_IO_ERROR);
+
+    free(((TSS2_TCTI_SWTPM_CONTEXT*)ctx)->conf_copy);
+    free(ctx);
 }
 /*
  * This test ensures that the GetPollHandles function in the device TCTI
