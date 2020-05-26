@@ -319,7 +319,7 @@ ifapi_eventlog_append_finish(
         if (r) {
             json_object_put(log);
             LOG_ERROR("Error serializing event data");
-            return TSS2_FAPI_RC_GENERAL_FAILURE;
+            return TSS2_FAPI_RC_BAD_VALUE;
         }
 
         json_object_array_add(log, event);
