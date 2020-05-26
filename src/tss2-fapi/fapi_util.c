@@ -2745,6 +2745,7 @@ ifapi_key_create_prepare_auth(
                authValue, strlen(authValue));
         context->cmd.Key_Create.inSensitive.sensitive.userAuth.size = strlen(authValue);
     }
+    context->cmd.Key_Create.gen_sensitive_random = false;
     context->cmd.Key_Create.inSensitive.sensitive.data.size = 0;
     r = ifapi_key_create_prepare(context, keyPath, policyPath);
     return r;
@@ -2789,13 +2790,18 @@ ifapi_key_create_prepare_sensitive(
     TSS2_RC r;
 
     memset(&context->cmd.Key_Create.inSensitive, 0, sizeof(TPM2B_SENSITIVE_CREATE));
-    if (dataSize > sizeof(TPMU_HA) || dataSize == 0) {
+    if (dataSize > sizeof(context->cmd.Key_Create.inSensitive.sensitive.data.buffer)
+        || dataSize == 0) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Data to big or equal zero.");
     }
-    if (data)
+    if (data) {
         /* Copy the sensitive data */
+        context->cmd.Key_Create.gen_sensitive_random = false;
         memcpy(&context->cmd.Key_Create.inSensitive.sensitive.data.buffer,
                data, dataSize);
+    } else {
+        context->cmd.Key_Create.gen_sensitive_random = true;
+    }
     context->cmd.Key_Create.inSensitive.sensitive.data.size = dataSize;
     if (authValue) {
         /* Copy the auth value. */
@@ -2932,6 +2938,7 @@ ifapi_key_create(
     TPMT_TK_CREATION *creationTicket = NULL;
     IFAPI_OBJECT *object = &context->cmd.Key_Create.object;
     ESYS_TR auth_session;
+    uint8_t *random_data = NULL;
 
     LOG_TRACE("call");
 
@@ -2988,7 +2995,7 @@ ifapi_key_create(
         }
         r = ifapi_get_sessions_async(context,
                                      IFAPI_SESSION_GENEK | IFAPI_SESSION1,
-                                     TPMA_SESSION_DECRYPT, 0);
+                                     TPMA_SESSION_ENCRYPT | TPMA_SESSION_DECRYPT, 0);
         goto_if_error_reset_state(r, "Create sessions", error_cleanup);
         fallthrough;
 
@@ -2998,7 +3005,22 @@ ifapi_key_create(
                                       context->cmd.Key_Create.profile->nameAlg);
         return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
+        fallthrough;
 
+    statecase(context->cmd.Key_Create.state, KEY_CREATE_WAIT_FOR_RANDOM);
+        if (context->cmd.Key_Create.gen_sensitive_random) {
+            r = ifapi_get_random(context,
+                                 context->cmd.Key_Create.inSensitive.sensitive.data.size,
+                                 &random_data);
+            return_try_again(r);
+            goto_if_error_reset_state(r, "FAPI GetRandom", error_cleanup);
+
+            /* Copy the sensitive data */
+            memcpy(&context->cmd.Key_Create.inSensitive.sensitive.data.buffer,
+                   random_data,
+                   context->cmd.Key_Create.inSensitive.sensitive.data.size);
+            SAFE_FREE(random_data);
+        }
         path_length = ifapi_path_length(path_list);
         r = ifapi_load_key_async(context, path_length - 1);
         goto_if_error(r, "LoadKey async", error_cleanup);
@@ -3117,6 +3139,7 @@ error_cleanup:
     SAFE_FREE(creationTicket);
     SAFE_FREE(context->cmd.Key_Create.policyPath);
     SAFE_FREE(context->cmd.Key_Create.keyPath);
+    SAFE_FREE(random_data);
     ifapi_cleanup_ifapi_object(object);
     ifapi_session_clean(context);
     return r;
