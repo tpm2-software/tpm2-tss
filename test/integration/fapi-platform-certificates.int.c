@@ -47,17 +47,17 @@ test_fapi_platform_certificates(FAPI_CONTEXT *context)
     Fapi_Free(certs);
 
     /* Cleanup */
-    r = Fapi_Delete(context, "/HS/SRK");
+    r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
     return EXIT_SUCCESS;
 
 error:
-    Fapi_Delete(context, "/HS/SRK");
+    Fapi_Delete(context, "/");
     return EXIT_FAILURE;
 
  skip:
-    Fapi_Delete(context, "/HS/SRK");
+    Fapi_Delete(context, "/");
     return EXIT_SKIP;
 }
 

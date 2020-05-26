@@ -113,6 +113,7 @@ test_fapi_nv_written_policy(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
+    Fapi_Delete(context, "/");
     SAFE_FREE(json_policy);
     SAFE_FREE(appData);
 

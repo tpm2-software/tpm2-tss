@@ -266,6 +266,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
+    Fapi_Delete(context, "/");
     SAFE_FREE(data_dest);
     SAFE_FREE(description2);
     SAFE_FREE(json_policy);

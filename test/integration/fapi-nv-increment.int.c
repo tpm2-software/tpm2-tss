@@ -167,6 +167,7 @@ test_fapi_nv_increment(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
+    Fapi_Delete(context, "/");
     SAFE_FREE(json_policy);
     return EXIT_FAILURE;
 }

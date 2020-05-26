@@ -169,7 +169,7 @@ test_fapi_key_create_policies_sign(FAPI_CONTEXT *context)
     r = Fapi_Delete(context, "/HS/SRK/mySignKey");
     goto_if_error(r, "Error Fapi_Delete", error);
 
-    r = Fapi_Delete(context, "/HS/SRK");
+    r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
     SAFE_FREE(json_policy);
@@ -181,11 +181,11 @@ test_fapi_key_create_policies_sign(FAPI_CONTEXT *context)
     r = Fapi_Delete(context, "/HS/SRK/mySignKey");
     goto_if_error(r, "Error Fapi_Delete", error);
 
-    r = Fapi_Delete(context, "/HS/SRK");
+    r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
 skip:
-    Fapi_Delete(context, "/HS/SRK");
+    Fapi_Delete(context, "/");
     SAFE_FREE(json_policy);
     SAFE_FREE(signature);
     SAFE_FREE(publicKey);
@@ -193,7 +193,7 @@ skip:
 #endif /* TEST_POLICY_PHYSICAL_PRESENCE */
 
 error:
-    Fapi_Delete(context, "/HS/SRK");
+    Fapi_Delete(context, "/");
 
     SAFE_FREE(json_policy);
     SAFE_FREE(signature);

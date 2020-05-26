@@ -202,7 +202,7 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
 error:
     if (jso)
         json_object_put(jso);
-    Fapi_Delete(context, "/HS/SRK");
+    Fapi_Delete(context, "/");
     SAFE_FREE(path_list);
     SAFE_FREE(publicblob);
     SAFE_FREE(privateblob);

@@ -291,7 +291,7 @@ error:
     if (jso)
         json_object_put(jso);
     SAFE_FREE(data);
-    Fapi_Delete(context, "/HS/SRK");
+    Fapi_Delete(context, "/");
     SAFE_FREE(path_list);
     SAFE_FREE(publicblob);
     SAFE_FREE(privateblob);
