@@ -58,12 +58,6 @@ test_fapi_unseal(FAPI_CONTEXT *context)
                     &resultSize);
     goto_if_error(r, "Error Fapi_CreateSeal", error);
 
-    r = Fapi_Delete(context, "/HS/SRK/mySealObject");
-    goto_if_error(r, "Error Fapi_Delete", error);
-
-    r = Fapi_Delete(context, "/HS/SRK");
-    goto_if_error(r, "Error Fapi_Delete", error);
-
     if (resultSize != digest.size ||
             memcmp(result, &digest.buffer[0], resultSize) != 0) {
         LOG_ERROR("Error: unealed data not  equal to origin");
@@ -71,9 +65,36 @@ test_fapi_unseal(FAPI_CONTEXT *context)
     }
 
     SAFE_FREE(result);
+    r = Fapi_Delete(context, "/HS/SRK/mySealObject");
+    goto_if_error(r, "Error Fapi_Delete", error);
+
+    r = Fapi_CreateSeal(context, "/HS/SRK/myRandomSealObject", "noDa",
+                        128,
+                        "", "",  NULL);
+    goto_if_error(r, "Error Fapi_CreateSeal", error);
+
+    r = Fapi_Unseal(context, "/HS/SRK/myRandomSealObject", &result,
+                    &resultSize);
+    goto_if_error(r, "Error Fapi_CreateSeal", error);
+
+    LOGBLOB_INFO(result, resultSize, "Unsealed random data");
+
+    if (resultSize != 128) {
+        LOG_ERROR("Error: Random data has wrong size.");
+        goto error;
+    }
+
+    r = Fapi_Delete(context, "/HS/SRK/myRandomSealObject");
+    goto_if_error(r, "Error Fapi_Delete", error);
+
+    r = Fapi_Delete(context, "/HS/SRK");
+    goto_if_error(r, "Error Fapi_Delete", error);
+
+    SAFE_FREE(result);
     return EXIT_SUCCESS;
 
 error:
+    Fapi_Delete(context, "/HS/SRK");
     SAFE_FREE(result);
     return EXIT_FAILURE;
 }
