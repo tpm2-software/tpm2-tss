@@ -70,17 +70,35 @@ test_fapi_wrong_path(FAPI_CONTEXT *context)
         goto_if_error(r, "Error Fapi_CreateNv", error);
     }
 
-    r = Fapi_CreateNv(context, "/nv/Owner/myNv", "noda,0xff", 10, "", "");
+    r = Fapi_CreateNv(context, "/nv/../Owner/myNv", "noda,0xff", 10, "", "");
+    if (r == TSS2_RC_SUCCESS) {
+        goto_if_error(r, "Bad character in path was not detected.", error);
+    }
+    if (r != TSS2_FAPI_RC_BAD_PATH) {
+        goto_if_error(r, "Wrong return code for bad characters in path.", error);
+    }
 
-    if (r && r !=  TSS2_FAPI_RC_BAD_VALUE) {
-        goto_if_error(r, "Error Fapi_CreateNv", error);
+    r = Fapi_CreateKey(context, "/HS/../EK/Key", "sign,noDa", "", NULL);
+    if (r == TSS2_RC_SUCCESS) {
+        goto_if_error(r, "Bad character in path was not detected.", error);
+    }
+    if (r != TSS2_FAPI_RC_BAD_PATH) {
+        goto_if_error(r, "Wrong return code for bad characters in path.", error);
+    }
+
+    r = Fapi_Delete(context, "/HS/../EK/Key");
+    if (r == TSS2_RC_SUCCESS) {
+        goto_if_error(r, "Bad character in path was not detected.", error);
+    }
+    if (r != TSS2_FAPI_RC_BAD_PATH) {
+        goto_if_error(r, "Wrong return code for bad characters in path.", error);
     }
 
     Fapi_Delete(context, "/");
 
     return EXIT_SUCCESS;
 
-error:
+ error:
     Fapi_Delete(context, "/");
     return EXIT_FAILURE;
 }
