@@ -256,6 +256,7 @@ expand_path(IFAPI_KEYSTORE *keystore, const char *path, char **file_name)
     TSS2_RC r;
     NODE_STR_T *node_list = NULL;
     size_t pos = 0;
+    *file_name = NULL;
 
     if (ifapi_hierarchy_path_p(path)) {
         if (strncmp(path, "P_", 2) == 0 || strncmp(path, "/P_", 3) == 0) {
@@ -264,7 +265,7 @@ expand_path(IFAPI_KEYSTORE *keystore, const char *path, char **file_name)
         } else {
             if (strncmp("/", path, 1) == 0)
                 pos = 1;
-            r = ifapi_asprintf(file_name, "%s%s%s", keystore->defaultprofile,
+            r = ifapi_asprintf(file_name, "/%s%s%s", keystore->defaultprofile,
                                IFAPI_FILE_DELIM, &path[pos]);
             return_if_error(r, "Out of memory.");
         }
@@ -284,9 +285,25 @@ expand_path(IFAPI_KEYSTORE *keystore, const char *path, char **file_name)
 
         free_string_list(node_list);
     }
+
+    /* Normalize the pathname. '/' at the beginning no '/' at the end. */
+    if (strncmp(&(*file_name)[strlen(*file_name) - 1], "/", 1) == 0)
+        (*file_name)[strlen(*file_name) - 1] = '\0';
+    if (strncmp(&(*file_name)[0], "/", 1) != 0) {
+        char *aux_str = NULL;
+        aux_str = malloc(strlen(*file_name) + 2);
+        goto_if_null(aux_str, "Out of memory", TSS2_FAPI_RC_MEMORY, error);
+
+        aux_str[0] = '/';
+        memcpy(&aux_str[1], &(*file_name)[0], strlen(*file_name)+1);
+        SAFE_FREE(*file_name);
+        *file_name = aux_str;
+    }
+
     return TSS2_RC_SUCCESS;
 
 error:
+    SAFE_FREE(*file_name);
     free_string_list(node_list);
     return r;
 }
@@ -769,7 +786,7 @@ keystore_list_all_abs(
     }
 
     /* Get the objects from system store */
-    r = ifapi_asprintf(&full_search_path, "%s%s%s", keystore->systemdir, IFAPI_FILE_DELIM,
+    r = ifapi_asprintf(&full_search_path, "%s%s", keystore->systemdir,
                        expanded_search_path ? expanded_search_path : "");
     goto_if_error(r, "Out of memory.", cleanup);
 
@@ -778,7 +795,7 @@ keystore_list_all_abs(
     SAFE_FREE(full_search_path);
 
     /* Get the objects from user store */
-    r = ifapi_asprintf(&full_search_path, "%s%s%s", keystore->userdir, IFAPI_FILE_DELIM,
+    r = ifapi_asprintf(&full_search_path, "%s%s", keystore->userdir,
                        expanded_search_path ? expanded_search_path : "");
     goto_if_error(r, "Out of memory.", cleanup);
 
@@ -904,8 +921,8 @@ expand_directory(IFAPI_KEYSTORE *keystore, const char *path, char **directory_na
              strncmp(&path[start_pos], "HE", 2) == 0) &&
             strlen(&path[start_pos]) <= 3) {
             /* Root directory is hierarchy */
-            r = ifapi_asprintf(directory_name, "%s/", keystore->defaultprofile,
-                               path[start_pos]);
+            r = ifapi_asprintf(directory_name, "%s/%s/", keystore->defaultprofile,
+                               &path[start_pos]);
             return_if_error(r, "Out of memory.");
 
         } else {
