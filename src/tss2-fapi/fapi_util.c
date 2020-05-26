@@ -1119,7 +1119,7 @@ ifapi_get_sessions_async(FAPI_CONTEXT *context,
     }
 
     context->primary_state = PRIMARY_INIT;
-    r = ifapi_asprintf(&file, "%s/%s", context->config.profile_name,
+    r = ifapi_asprintf(&file, "%s%s", context->config.profile_name,
                        IFAPI_SRK_KEY_PATH);
     goto_if_error(r, "Error ifapi_asprintf", error_cleanup);
 

@@ -23,6 +23,226 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
+/** Move a certain path to the beginning of a path array.
+ *
+ * A certain path starting with the profile passed will be moved.
+ *
+ * The pass will only be moved if current profile of the FAPI context
+ * is the first element of the path in the file list.
+ *
+ * @param[in] path The part of the path without profile to be moved.
+ * @param[in] profile_name The profile_name must be the firt part of
+ *            the path to be moved.
+ * @param[in,out] file_ary The path array.
+ * @param[in] n The size of the array.
+ */
+static void
+move_path_to_top(
+    const char* path,
+    const char* profile_name,
+    char **file_ary,
+    size_t n)
+{
+    size_t i, pos, size_path, size_file;
+    char* current_file;
+    size_t shift_pos = 0;
+    size_t prof_size = strlen(profile_name);
+
+    for (i = 1; i < n; i++) {
+        size_path = strlen(path);
+        size_file = strlen(file_ary[i]);
+        if (size_path < size_file) {
+            /* Compare last part of the array item with path. */
+            pos = size_file - size_path;
+            current_file = file_ary[i];
+            if (strncmp(profile_name, &current_file[1], prof_size) == 0 &&
+                strncmp(&current_file[pos], path, size_path) == 0) {
+                shift_pos = i;
+                break;
+            }
+        }
+    }
+    /* Path was found behind the first item of the array. */
+    if (shift_pos) {
+        for (i = shift_pos; i > 0; i--)
+            file_ary[i] = file_ary[i - 1];
+        file_ary[0] = current_file;
+    }
+}
+
+/** Search a path for a certain profile in the path list.
+ *
+ * @param[in] profile_name The profile_name must be the firt part of
+ *            the path to be moved.
+ * @param[in] path The part of the path without profile to be moved.
+ * @param[in,out] file_ary The path array.
+ * @param[in] n The size of the array.
+ * @retval true if the path was found.
+ * @retval false if the path was not found.
+ */
+static bool
+find_path_for_profile(
+    char *profile_name,
+    char *path,
+    char **file_ary,
+    size_t n)
+{
+    size_t size_profile = strlen(profile_name);
+    size_t pos_path = size_profile + 1;
+    size_t i;
+    char *current_path;
+
+    for (i = 0; i < n; i++) {
+        current_path = file_ary[i];
+        if (strncmp(profile_name, &current_path[1], size_profile) == 0 &&
+            strcmp(path, &current_path[pos_path]) == 0)
+            return true;
+    }
+    return false;
+}
+
+/** Check whether a hierarchy remains in keystore after deleting the SRK.
+ *
+ * @param[in] context The FAPI context.
+ * @param[in] profile_name Profile of the SRK.
+ * @param[in] hierarchy The hierarchy in the passed profile to be checked.
+ * @param[in,out] file_ary The path array.
+ * @param[in] n The size of the array.
+ * @retval TSS2_RC_SUCCESS: if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_PATH: if path can't be used for deleting.
+ * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ */
+static TSS2_RC
+check_hierarchy(
+    FAPI_CONTEXT *context,
+    char *profile_name,
+    char *hierarchy,
+    char **file_ary,
+    size_t n)
+{
+    TSS2_RC r = TSS2_RC_SUCCESS;
+    size_t i, n_all;
+    char** file_all_ary;
+
+    if (find_path_for_profile(profile_name, hierarchy,
+                              file_ary, n)) {
+        /* HE hierarchy will also be deleted. */
+        return TSS2_RC_SUCCESS;
+    }
+
+    r = ifapi_keystore_list_all(&context->keystore, profile_name, &file_all_ary, &n_all);
+    goto_if_error(r, "get entities.", cleanup);
+
+    if (find_path_for_profile(profile_name, hierarchy, file_all_ary, n_all)) {
+        /* Hierarchy would remain in keystore. */
+        goto_error(r, TSS2_FAPI_RC_BAD_PATH,
+                   "Hierarchy %s would remain in keystore"
+                   " after deleting the SRK.", cleanup, hierarchy);
+    }
+
+ cleanup:
+    for (i = 0; i < n_all; i++)
+        free(file_all_ary[i]);
+    SAFE_FREE(file_all_ary);
+    return r;
+}
+
+/** Check whether deletion is possible and normalize the file list.
+ *
+ * The file list will be reordered to assure that the SRK used as TPM key
+ * for a session will be deleted last.
+ * It will be checked whether there are remaining object for a certain profile
+ * after deleting a  SRK of the list.
+ *
+ * @param[in,out] context The FAPI context.
+ * @param[in,out] file_ary The path array.
+ * @param[in] n The size of the array.
+ * @retval TSS2_RC_SUCCESS: if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_PATH: if path can't be used for deleting.
+ * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
+ *         internal operations or return parameters.
+ */
+static TSS2_RC
+normalize_and_check_path_list(
+    FAPI_CONTEXT *context,
+    char **file_ary,
+    size_t n)
+{
+    TSS2_RC r;
+    char *profile_name = NULL;
+    char *current_file, *slash;
+
+    /* Move SRK and HS to the top of list. The objects will be deleted in
+       reverse order thus these objects are deleted last.
+       The SRK can still be used as tpm key for session. */
+    move_path_to_top(IFAPI_SRK_KEY_PATH, context->config.profile_name,
+                     file_ary, n);
+    move_path_to_top(IFAPI_HS_PATH, context->config.profile_name,
+                     file_ary, n);
+    if (find_path_for_profile(context->config.profile_name, IFAPI_SRK_KEY_PATH,
+                             file_ary, n)) {
+        /* The HS has to be delteed with SRK checked */
+        if (!find_path_for_profile(context->config.profile_name, IFAPI_HS_PATH,
+                                  file_ary, n))
+            return_error(TSS2_FAPI_RC_BAD_PATH,
+                         "SRK has to be delted together with SRK");
+
+        r = check_hierarchy(context, context->config.profile_name, IFAPI_HE_PATH,
+                            file_ary, n);
+        return_if_error(r, "Check hierarchy" IFAPI_HE_PATH);
+
+        r = check_hierarchy(context, context->config.profile_name, IFAPI_LOCKOUT_PATH,
+                            file_ary, n);
+        return_if_error(r, "Check hiearchy" IFAPI_HE_PATH);
+
+        return TSS2_RC_SUCCESS;
+    } else {
+        /* Check whether another SRK is in the list. */
+        current_file = file_ary[0];
+        if (strncmp(&current_file[1], "P_", 2) == 0) {
+            size_t prof_size;
+            slash = strchr(&current_file[1], IFAPI_FILE_DELIM_CHAR);
+
+            /* Determine profile name. */
+            if (slash)
+                prof_size = (size_t)(slash - current_file) - 1;
+            else
+                /* This case should not occur. */
+                return_error2(TSS2_FAPI_RC_GENERAL_FAILURE,
+                              "Invalid object path to be deleted.");
+
+            profile_name = malloc(prof_size + 1);
+            return_if_null(profile_name, "FAPI out of memory.",
+                           TSS2_FAPI_RC_MEMORY);
+            memcpy(&profile_name[0], &current_file[1], prof_size);
+            profile_name[prof_size] = '\0';
+
+            /* Search SRK in the list. */
+            if (!find_path_for_profile(profile_name, IFAPI_SRK_KEY_PATH, file_ary, n)) {
+                /* No SRK found, no further check needed. */
+                SAFE_FREE(profile_name);
+                return TSS2_RC_SUCCESS;
+            }
+            r = check_hierarchy(context, profile_name, IFAPI_HE_PATH,
+                                file_ary, n);
+            goto_if_error2(r, "Check hierarchy: %s", error_cleanup, IFAPI_HE_PATH);
+
+            r = check_hierarchy(context, profile_name, IFAPI_LOCKOUT_PATH,
+                                file_ary, n);
+            goto_if_error2(r, "Check hiearchy: %s", error_cleanup, IFAPI_HE_PATH);
+
+            SAFE_FREE(profile_name);
+            return TSS2_RC_SUCCESS;
+        } else {
+            /* No profile used in path. */
+            return TSS2_RC_SUCCESS;
+        }
+    }
+ error_cleanup:
+    SAFE_FREE(profile_name);
+    return r;
+}
 
 /** One-Call function for Fapi_Delete
  *
@@ -34,7 +254,7 @@
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or path is NULL.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
- * @retval TSS2_FAPI_RC_BAD_PATH: if path does not map to a FAPI entity.
+ * @retval TSS2_FAPI_RC_BAD_PATH: if path cannot be deleted.
  * @retval TSS2_FAPI_RC_NOT_DELETABLE: if the entity is not deletable or the
  *         path is read-only.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
@@ -129,6 +349,7 @@ Fapi_Delete_Async(
     LOG_TRACE("path: %s", path);
 
     TSS2_RC r;
+    size_t i;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -139,20 +360,27 @@ Fapi_Delete_Async(
     IFAPI_OBJECT *object = &command->object;
     IFAPI_OBJECT *authObject = &command->auth_object;
 
+    command->pathlist = NULL;
+    context->session1 = ESYS_TR_NONE;
+
     /* Copy parameters to context for use during _Finish. */
     strdup_check(command->path, path, r, error_cleanup);
 
     /* List all keystore elements in the path hierarchy of the provided
        path. The last of these is the object to be deleted. */
     r = ifapi_keystore_list_all(&context->keystore, path, &command->pathlist,
-                               &command->numPaths);
-    return_if_error(r, "get entities.");
+                                &command->numPaths);
+    goto_if_error(r, "get entities.", error_cleanup);
 
     command->path_idx = command->numPaths;
 
     if (command->numPaths == 0) {
         goto_error(r, TSS2_FAPI_RC_BAD_PATH, "No objects found.", error_cleanup);
     }
+
+    r = normalize_and_check_path_list(context,command->pathlist, command->numPaths);
+    goto_if_error_reset_state(r, "Check whether delete is possible.", error_cleanup);
+
 
     object->objectType = IFAPI_OBJ_NONE;
     authObject->objectType = IFAPI_OBJ_NONE;
@@ -163,6 +391,7 @@ Fapi_Delete_Async(
            interaction with the TPM */
         r = ifapi_non_tpm_mode_init(context);
         return_if_error(r, "Initialize Entity_Delete");
+        context->session1 = ESYS_TR_NONE;
 
         context->state = ENTITY_DELETE_GET_FILE;
     } else {
@@ -197,13 +426,17 @@ Fapi_Delete_Async(
 
 error_cleanup:
     /* Cleanup any intermediate results and state stored in the context. */
+    if (command->pathlist)
+        for (i = 0; i < command->numPaths; i++)
+            SAFE_FREE(command->pathlist[i]);
+    SAFE_FREE(command->pathlist);
     SAFE_FREE(command->path);
-    if (Esys_FlushContext(context->esys, context->session1) != TSS2_RC_SUCCESS) {
+    if (context->session1 != ESYS_TR_NONE &&
+        Esys_FlushContext(context->esys, context->session1) != TSS2_RC_SUCCESS) {
         LOG_ERROR("Cleanup session failed.");
     }
     return r;
 }
-
 
 /** Asynchronous finish function for Fapi_Delete
  *
@@ -458,6 +691,13 @@ Fapi_Delete_Finish(
             r = ifapi_keystore_remove_directories(&context->keystore, command->path);
             goto_if_error(r, "Error while removing directories", error_cleanup);
 
+            fallthrough;
+
+        statecase(context->state, ENTITY_DELETE_CLEANUP);
+            /* Cleanup the session. */
+            r = ifapi_cleanup_session(context);
+            try_again_or_error_goto(r, "Cleanup", error_cleanup);
+
             context->state = _FAPI_STATE_INIT;
 
             LOG_DEBUG("success");
@@ -494,8 +734,10 @@ error_cleanup:
     Esys_SetTimeout(context->esys, 0);
     ifapi_cleanup_ifapi_object(object);
     SAFE_FREE(command->path);
-    for (size_t i = 0; i < command->numPaths; i++) {
-        SAFE_FREE(command->pathlist[i]);
+    if (command->pathlist) {
+        for (size_t i = 0; i < command->numPaths; i++) {
+            SAFE_FREE(command->pathlist[i]);
+        }
     }
     SAFE_FREE(command->pathlist);
     ifapi_session_clean(context);
