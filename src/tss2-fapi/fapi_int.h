@@ -313,7 +313,8 @@ enum IFAPI_KEY_CREATE_STATE {
     KEY_CREATE_FLUSH,
     KEY_CREATE_CALCULATE_POLICY,
     KEY_CREATE_WAIT_FOR_AUTHORIZATION,
-    KEY_CREATE_CLEANUP
+    KEY_CREATE_CLEANUP,
+    KEY_CREATE_WAIT_FOR_RANDOM
 };
 
 /** The data structure holding internal state of Fapi_CreateKey.
@@ -333,6 +334,8 @@ typedef struct {
     const char *authValue;
     const char *policyPath;
     const IFAPI_PROFILE *profile;
+    bool gen_sensitive_random;   /**< Switch whether sensitive ransom data
+                                      has to be created. */
 } IFAPI_Key_Create;
 
 /** The data structure holding internal state of Fapi_EncryptDecrypt.
