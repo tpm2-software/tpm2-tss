@@ -268,6 +268,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                     defaultProfile->lockoutRecovery);
             goto_if_error(r, "Error Esys_DictionaryAttackParameters",
                           error_cleanup);
+
             fallthrough;
 
         statecase(context->state, PROVISION_WRITE_LOCKOUT_PARAM);
@@ -275,6 +276,38 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             return_try_again(r);
             goto_if_error_reset_state(r, "DictionaryAttackParameters_Finish",
                     error_cleanup);
+
+            /* Generate template for checking whether persistent SRK handle
+               already exists. */
+            r = ifapi_set_key_flags(defaultProfile->srk_template,
+                                    false, &command->public_templ);
+            goto_if_error(r, "Set key flags for SRK", error_cleanup);
+
+            /* Check the TPM capabilities for the persistent handle. */
+            if (command->public_templ.persistent_handle) {
+                r = Esys_GetCapability_Async(context->esys,
+                        ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, TPM2_CAP_HANDLES,
+                        command->public_templ.persistent_handle, 1);
+                goto_if_error(r, "Esys_GetCapability_Async", error_cleanup);
+            }
+            fallthrough;
+
+        statecase(context->state, PROVISION_WAIT_FOR_GET_CAP0);
+            if (command->public_templ.persistent_handle) {
+                 r = Esys_GetCapability_Finish(context->esys, &moreData, capabilityData);
+                 return_try_again(r);
+                 goto_if_error_reset_state(r, "GetCapablity_Finish", error_cleanup);
+
+                 /* Check whether the handle already exists. */
+                 if ((*capabilityData)->data.handles.count != 0 &&
+                     (*capabilityData)->data.handles.handle[0] ==
+                     command->public_templ.persistent_handle) {
+                     SAFE_FREE(*capabilityData);
+                     goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                                "SRK persistent handle already defined", error_cleanup);
+                 }
+                 SAFE_FREE(*capabilityData);
+            }
 
             /* Prepare the command for reading the TPMs PCR capabilities. */
             r = Esys_GetCapability_Async(context->esys,
