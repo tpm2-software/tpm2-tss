@@ -112,6 +112,7 @@ test_fapi_duplicate(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
+    Fapi_Delete(context, "/");
     SAFE_FREE(json_string_pub_key);
     SAFE_FREE(json_duplicate);
     SAFE_FREE(json_policy);

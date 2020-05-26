@@ -123,11 +123,11 @@ test_fapi_quote(FAPI_CONTEXT *context)
                          signature, signatureSize, log);
     goto_if_error(r, "Error Fapi_Verfiy_Quote", error);
 
-    r = Fapi_Delete(context, "/HS/SRK");
-    goto_if_error(r, "Error Fapi_Delete", error);
-
     r = Fapi_List(context, "/", &pathlist);
     goto_if_error(r, "Pathlist", error);
+
+    r = Fapi_Delete(context, "/");
+    goto_if_error(r, "Error Fapi_Delete", error);
 
     json_object_put(jso);
     SAFE_FREE(pubkey_pem);
@@ -142,6 +142,7 @@ test_fapi_quote(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
+    Fapi_Delete(context, "/");
     if (jso)
         json_object_put(jso);
     SAFE_FREE(pubkey_pem);

@@ -88,14 +88,14 @@ test_fapi_key_change_auth(FAPI_CONTEXT *context)
 
     Fapi_Free(publicKey);
 
-    r = Fapi_Delete(context, "/HS/SRK");
+    r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
     SAFE_FREE(signature);
     return EXIT_SUCCESS;
 
 error:
-    Fapi_Delete(context, "/HS/SRK");
+    Fapi_Delete(context, "/");
     SAFE_FREE(signature);
     return EXIT_FAILURE;
 }

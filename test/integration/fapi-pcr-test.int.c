@@ -199,7 +199,7 @@ test_fapi_pcr_test(FAPI_CONTEXT *context)
                      &pcr_digest_size, &log);
     goto_if_error(r, "Error Fapi_PcrRead", error);
 
-    r = Fapi_Delete(context, "/HS/SRK");
+    r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
     SAFE_FREE(pcr_digest);
@@ -207,7 +207,7 @@ test_fapi_pcr_test(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
-    Fapi_Delete(context, "/HS/SRK");
+    Fapi_Delete(context, "/");
     SAFE_FREE(pcr_digest);
     SAFE_FREE(log);
     return EXIT_FAILURE;

@@ -147,6 +147,7 @@ test_fapi_nv_authorizenv_cphash(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
+    Fapi_Delete(context, "/");
     return EXIT_FAILURE;
 }
 

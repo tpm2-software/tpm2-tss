@@ -57,6 +57,13 @@ test_fapi_nv_set_bits(FAPI_CONTEXT *context)
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
+    r = Fapi_Provision(context, NULL, NULL, NULL);
+    if (!(r == TSS2_FAPI_RC_PATH_ALREADY_EXISTS || r == TSS2_FAPI_RC_BAD_VALUE)) {
+        /* File exists or persistent key exists. */
+        LOG_ERROR("Check whether provisioning directory exists failed.");
+        goto error;
+    }
+
     /* Test no password, noda set */
     r = Fapi_CreateNv(context, nvPathBitMap, "bitfield, noda", 0, "", "");
     goto_if_error(r, "Error Fapi_CreateNv", error);
@@ -81,13 +88,6 @@ test_fapi_nv_set_bits(FAPI_CONTEXT *context)
 
     r = Fapi_Delete(context, nvPathBitMap);
     goto_if_error(r, "Error Fapi_Delete", error);
-
-    /* Cleanup */
-    r = Fapi_Delete(context, "/HS/SRK");
-    goto_if_error(r, "Error Fapi_Delete", error);
-
-    r = Fapi_Provision(context, NULL, NULL, NULL);
-    goto_if_error(r, "Error Fapi_Provision", error);
 
     /* Test no password, noda set */
     r = Fapi_CreateNv(context, nvPathBitMap, "bitfield, noda", 0, "", "");
@@ -120,7 +120,7 @@ test_fapi_nv_set_bits(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
-    Fapi_Delete(context, "/HS/SRK");
+    Fapi_Delete(context, "/");
     return EXIT_FAILURE;
 }
 

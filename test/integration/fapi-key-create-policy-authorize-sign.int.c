@@ -294,7 +294,7 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     SAFE_FREE(pathList);
 
     /* Cleanup */
-    r = Fapi_Delete(context, "/HS/SRK");
+    r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
     SAFE_FREE(signature);
@@ -308,11 +308,12 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
+    Fapi_Delete(context, "/");
     SAFE_FREE(json_policy);
     SAFE_FREE(signature);
     SAFE_FREE(publicKey);
     SAFE_FREE(pathList);
-    Fapi_Delete(context, "/HS/SRK");
+    Fapi_Delete(context, "/");
     return EXIT_FAILURE;
 }
 

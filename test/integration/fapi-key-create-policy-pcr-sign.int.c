@@ -174,10 +174,10 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_ExportPolicy", error);
     fprintf(stderr, "\nPolicy from policy file:\n%s\n", policy);
 
-    r = Fapi_Delete(context, "/HS/SRK");
+    r = Fapi_List(context, "", &path_list);
     goto_if_error(r, "Error Fapi_Delete", error);
 
-    r = Fapi_List(context, "", &path_list);
+    r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
     fprintf(stderr, "\nPathList:\n%s\n", path_list);
@@ -190,6 +190,7 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
+    Fapi_Delete(context, "/");
     SAFE_FREE(json_policy);
     SAFE_FREE(signature);
     SAFE_FREE(publicKey);

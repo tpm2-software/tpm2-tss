@@ -69,13 +69,13 @@ test_fapi_get_random(FAPI_CONTEXT *context)
     Fapi_Free(randomBytes);
 
     /* Cleanup */
-    r = Fapi_Delete(context, "/HS/SRK");
+    r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
     return TSS2_RC_SUCCESS;
 
 error:
-    Fapi_Delete(context, "/HS/SRK");
+    Fapi_Delete(context, "/");
     return EXIT_FAILURE;
 }
 

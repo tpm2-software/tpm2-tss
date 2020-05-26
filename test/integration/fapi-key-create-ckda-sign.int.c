@@ -91,7 +91,7 @@ test_fapi_key_create_ckda_sign(FAPI_CONTEXT *context)
                   &publicKey, NULL);
     goto_if_error(r, "Error Fapi_Sign", error);
 
-    r = Fapi_Delete(context, "/HS/SRK");
+    r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
     SAFE_FREE(signature);
@@ -100,6 +100,7 @@ test_fapi_key_create_ckda_sign(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
+    Fapi_Delete(context, "/");
     SAFE_FREE(signature);
     SAFE_FREE(publicKey);
     return EXIT_FAILURE;

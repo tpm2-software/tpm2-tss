@@ -143,7 +143,7 @@ test_fapi_key_create_sign_policy_provision(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
-    Fapi_Delete(context, "/HS/SRK");
+    Fapi_Delete(context, "/");
     SAFE_FREE(publicblob);
     SAFE_FREE(privateblob);
     SAFE_FREE(signature);
