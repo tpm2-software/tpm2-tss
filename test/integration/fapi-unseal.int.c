@@ -84,17 +84,28 @@ test_fapi_unseal(FAPI_CONTEXT *context)
         goto error;
     }
 
+    /* Check the tests related to SRK deleting. */
+    r = Fapi_Delete(context, "/HS");
+    if (r != TSS2_FAPI_RC_BAD_PATH)
+        goto_if_error(r, "Error Fapi_Delete", error);
+
+    r = Fapi_Delete(context, "/HE");
+    goto_if_error(r, "Error Fapi_Delete", error);
+
+    r = Fapi_Delete(context, "/LOCKOUT");
+    goto_if_error(r, "Error Fapi_Delete", error);
+
     r = Fapi_Delete(context, "/HS/SRK/myRandomSealObject");
     goto_if_error(r, "Error Fapi_Delete", error);
 
-    r = Fapi_Delete(context, "/HS/SRK");
+    r = Fapi_Delete(context, "/HS");
     goto_if_error(r, "Error Fapi_Delete", error);
 
     SAFE_FREE(result);
     return EXIT_SUCCESS;
 
 error:
-    Fapi_Delete(context, "/HS/SRK");
+    Fapi_Delete(context, "/");
     SAFE_FREE(result);
     return EXIT_FAILURE;
 }

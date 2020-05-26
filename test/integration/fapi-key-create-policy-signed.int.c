@@ -277,13 +277,13 @@ test_fapi_key_create_policy_signed(FAPI_CONTEXT *context)
                   &publicKey, NULL);
     goto_if_error(r, "Error Fapi_Sign", error);
 
-    r = Fapi_Delete(context, "/HS/SRK");
-    goto_if_error(r, "Error Fapi_Delete", error);
-
     r = Fapi_List(context, "/", &pathList);
     goto_if_error(r, "Error Fapi_List", error);
 
     fprintf(stderr, "\n%s\n", pathList);
+
+    r = Fapi_Delete(context, "/");
+    goto_if_error(r, "Error Fapi_Delete", error);
 
     fclose(stream);
     SAFE_FREE(json_policy);
@@ -294,6 +294,7 @@ test_fapi_key_create_policy_signed(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
+    Fapi_Delete(context, "/");
     SAFE_FREE(json_policy);
     SAFE_FREE(signature);
     SAFE_FREE(publicKey);

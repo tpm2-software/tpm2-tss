@@ -43,14 +43,14 @@ test_fapi_info(FAPI_CONTEXT *context)
     LOG_INFO("%s", info);
 
     /* Cleanup */
-    r = Fapi_Delete(context, "/HS/SRK");
+    r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
     SAFE_FREE(info);
     return EXIT_SUCCESS;
 
 error:
-    Fapi_Delete(context, "/HS/SRK");
+    Fapi_Delete(context, "/");
     SAFE_FREE(info);
     return EXIT_FAILURE;
 }

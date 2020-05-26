@@ -285,6 +285,7 @@ test_fapi_data_crypt(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
+    Fapi_Delete(context, "/");
     Fapi_Free(cipherText);
     Fapi_Free(json_policy);
     Fapi_Delete(context, "/");
@@ -293,6 +294,7 @@ error:
     return EXIT_FAILURE;
 
  skip:
+    Fapi_Delete(context, "/");
     Fapi_Free(json_policy);
     Fapi_Delete(context, "/");
     SAFE_FREE(global_signature);
