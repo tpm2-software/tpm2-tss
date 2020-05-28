@@ -1087,8 +1087,7 @@ test_integration_esys_nv_ram_extend_index_session_int_SOURCES = \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_nv_ram_ordinary_index_rlock_int_CFLAGS  = $(TESTS_CFLAGS) \
-    -I. -I$(srcdir)/src/esapi/esapi -I$(srcdir)/include/esapi -I$(srcdir)/test/integration/ \
-    -I$(srcdir)/src/esapi/esapi_util -DTEST_READ_LOCK $(TSS2_ESYS_CFLAGS_CRYPTO)
+    -I. -I$(srcdir)/test/integration/ -DTEST_READ_LOCK $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_nv_ram_ordinary_index_rlock_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_nv_ram_ordinary_index_rlock_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO)
 test_integration_esys_nv_ram_ordinary_index_rlock_int_SOURCES = \
@@ -1097,8 +1096,7 @@ test_integration_esys_nv_ram_ordinary_index_rlock_int_SOURCES = \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_nv_ram_ordinary_index_rlock_session_int_CFLAGS  = $(TESTS_CFLAGS) \
-    -I. -I$(srcdir)/src/esapi/esapi -I$(srcdir)/include/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/src/esapi/esapi_util -DTEST_SESSION -DTEST_READ_LOCK $(TSS2_ESYS_CFLAGS_CRYPTO)
+    -I. -I$(srcdir)/include/esapi -DTEST_SESSION -DTEST_READ_LOCK $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_nv_ram_ordinary_index_rlock_session_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_nv_ram_ordinary_index_rlock_session_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO)
 test_integration_esys_nv_ram_ordinary_index_rlock_session_int_SOURCES = \
@@ -1107,8 +1105,7 @@ test_integration_esys_nv_ram_ordinary_index_rlock_session_int_SOURCES = \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_nv_ram_ordinary_index_wlock_int_CFLAGS  = $(TESTS_CFLAGS) \
-    -I. -I$(srcdir)/src/esapi/esapi -I$(srcdir)/include/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/src/esapi/esapi_util  -DTEST_WRITE_LOCK $(TSS2_ESYS_CFLAGS_CRYPTO)
+    -I. -DTEST_WRITE_LOCK $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_nv_ram_ordinary_index_wlock_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_nv_ram_ordinary_index_wlock_int_LDFLAGS = $(TESTS_LDFLAGS) \
                                                                 $(TSS2_ESYS_LDFLAGS_CRYPTO)
@@ -1118,8 +1115,7 @@ test_integration_esys_nv_ram_ordinary_index_wlock_int_SOURCES = \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
 test_integration_esys_nv_ram_ordinary_index_wlock_session_int_CFLAGS  = $(TESTS_CFLAGS) \
-    -I. -I$(srcdir)/src/esapi/esapi -I$(srcdir)/include/esapi -I$(srcdir)/include/esapi \
-    -I$(srcdir)/src/esapi/esapi_util -DTEST_SESSION -DTEST_WRITE_LOCK $(TSS2_ESYS_CFLAGS_CRYPTO)
+    -I. -DTEST_SESSION -DTEST_WRITE_LOCK $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_nv_ram_ordinary_index_wlock_session_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_nv_ram_ordinary_index_wlock_session_int_LDFLAGS = $(TESTS_LDFLAGS) \
                                                                         $(TSS2_ESYS_LDFLAGS_CRYPTO)
