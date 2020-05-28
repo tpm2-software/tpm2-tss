@@ -112,7 +112,7 @@ if ENABLE_TCTI_CMD
 TESTS_UNIT += test/unit/tcti-cmd
 endif
 
-if ESAPI
+if ESYS
 TESTS_UNIT += \
     test/unit/esys-context-null \
     test/unit/esys-resubmissions \
@@ -123,7 +123,7 @@ TESTS_UNIT += \
     test/unit/esys-nulltcti \
     test/unit/esys-crypto
 
-endif ESAPI
+endif ESYS
 if FAPI
 TESTS_UNIT += \
     test/unit/fapi-json
@@ -163,7 +163,7 @@ TESTS_INTEGRATION += \
     test/tpmclient/tpmclient.int
 endif # !TESTDEVICE
 
-if ESAPI
+if ESYS
 ESYS_TESTS_INTEGRATION_DESTRUCTIVE = \
     test/integration/esys-change-eps.int \
     test/integration/esys-clear.int \
@@ -277,7 +277,7 @@ TESTS_INTEGRATION += $(ESYS_TESTS_INTEGRATION_MANDATORY) $(ESYS_TESTS_INTEGRATIO
 
 endif # TESTDEVICE
 
-endif #ESAPI
+endif #ESYS
 
 if FAPI
 TESTS_LDADD += $(JSONC_LIBS)
@@ -502,7 +502,7 @@ test_unit_tss2_rc_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tss2_rc_LDADD   = $(CMOCKA_LIBS) $(libtss2_rc) $(libtss2_sys)
 test_unit_tss2_rc_SOURCES = test/unit/test_tss2_rc.c
 
-if ESAPI
+if ESYS
 test_unit_esys_context_null_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_unit_esys_context_null_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_context_null_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO) -Wl,--wrap=tctildr_finalize_data,--wrap=tctildr_get_tcti
@@ -563,7 +563,7 @@ test_unit_esys_crypto_SOURCES = test/unit/esys-crypto.c \
                                 src/tss2-tcti/tctildr-dl.c \
                                 src/tss2-esys/esys_crypto.c \
                                 $(TSS2_ESYS_SRC_CRYPTO)
-endif # ESAPI
+endif # ESYS
 
 if FAPI
 
@@ -702,7 +702,7 @@ test_integration_sapi_read_clock_int_LDADD   = $(TESTS_LDADD)
 test_integration_sapi_read_clock_int_SOURCES = test/integration/main-sapi.c \
     test/integration/sapi-read-clock.int.c
 
-if ESAPI
+if ESYS
 ESYS_SRC_UTIL_CRYPTO_SRC = src/tss2-esys/esys_iutil.c \
                            src/tss2-esys/esys_crypto.c \
                            $(TSS2_ESYS_SRC_CRYPTO)
@@ -1371,7 +1371,7 @@ test_integration_esys_tpm_clear_auth_int_SOURCES = \
     test/integration/esys-tpm-clear-auth.int.c \
     test/integration/main-esapi.c test/integration/test-esapi.h
 
-endif #ESAPI
+endif #ESYS
 
 test_integration_sapi_policy_template_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_sapi_policy_template_int_LDADD   = $(TESTS_LDADD)
