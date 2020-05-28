@@ -579,10 +579,33 @@ Fapi_Delete_Finish(
 
         statecase(context->state, ENTITY_DELETE_KEY);
             if (object->misc.key.persistent_handle) {
+                r = ifapi_keystore_load_async(&context->keystore, &context->io, "/HS");
+                return_if_error2(r, "Could not open hierarchy /HS");
+            }
+            fallthrough;
+
+        statecase(context->state, ENTITY_DELETE_KEY_WAIT_FOR_HIERARCHY);
+            if (object->misc.key.persistent_handle) {
+                r = ifapi_keystore_load_finish(&context->keystore, &context->io, authObject);
+                return_try_again(r);
+                return_if_error(r, "read_finish failed");
+
+                r = ifapi_initialize_object(context->esys, authObject);
+                goto_if_error_reset_state(r, "Initialize hierarchy object", error_cleanup);
+
+                authObject->handle = ESYS_TR_RH_OWNER;
+            }
+            fallthrough;
+
+        statecase(context->state, ENTITY_DELETE_KEY_WAIT_FOR_AUTHORIZATION);
+            if (object->misc.key.persistent_handle) {
+                r = ifapi_authorize_object(context, authObject, &auth_session);
+                FAPI_SYNC(r, "Authorize hierarchy.", error_cleanup);
+
                 /* Delete the persistent handle from the TPM. */
                 r = Esys_EvictControl_Async(context->esys, ESYS_TR_RH_OWNER,
                                             object->handle,
-                                            context->session1,
+                                            auth_session,
                                             ESYS_TR_NONE, ESYS_TR_NONE,
                                             object->misc.key.persistent_handle);
                 goto_if_error(r, "Evict Control", error_cleanup);
