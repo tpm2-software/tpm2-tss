@@ -2691,7 +2691,7 @@ ifapi_initialize_object(
         break;
 
     default:
-        /* Nothing to be done */
+        object->authorization_state = AUTH_INIT;
         break;
     }
 
