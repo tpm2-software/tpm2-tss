@@ -355,7 +355,7 @@ src_tss2_tcti_libtss2_tcti_cmd_la_SOURCES  = \
     src/tss2-tcti/tcti-cmd.h
 endif # ENABLE_TCTI_CMD
 
-### TCG TSS SAPI spec library ###
+### TCG TSS SYS spec library ###
 libtss2_sys = src/tss2-sys/libtss2-sys.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_sys.h
 lib_LTLIBRARIES += $(libtss2_sys)
@@ -376,8 +376,8 @@ src_tss2_sys_libtss2_sys_la_LIBADD = $(libtss2_mu) $(libutil)
 src_tss2_sys_libtss2_sys_la_SOURCES = $(TSS2_SYS_SRC)
 EXTRA_DIST += lib/tss2-sys.map lib/tss2-sys.def src/tss2-sys/tss2-sys.vcxproj
 
-### TCG TSS ESAPI spec library ###
-if ESAPI
+### TCG TSS ESYS spec library ###
+if ESYS
 libtss2_esys = src/tss2-esys/libtss2-esys.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_esys.h
 lib_LTLIBRARIES += $(libtss2_esys)
@@ -419,7 +419,7 @@ EXTRA_DIST += lib/tss2-esys.map \
               lib/tss2-esys.def \
               src/tss2-esys/tss2-esys.vcxproj \
               src/tss2-esys/tss2-esys.vcxproj.filters
-endif #ESAPI
+endif #ESYS
 
 ### TCG TSS error decoding spec library ###
 libtss2_rc = src/tss2-rc/libtss2-rc.la
