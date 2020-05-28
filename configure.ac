@@ -98,12 +98,12 @@ AM_CONDITIONAL([UNIT], [test "x$enable_unit" != xno])
 AS_IF([test "x$enable_unit" != xno],
     [AC_DEFINE(UNIT, 1, [Enable for UNIT testing])])
 
-AC_ARG_ENABLE([esapi],
-            [AS_HELP_STRING([--disable-esapi],
-                            [don't build the esapi layer])],,
-            [enable_esapi=yes])
+AC_ARG_ENABLE([esys],
+            [AS_HELP_STRING([--disable-esys],
+                            [don't build the esys layer])],,
+            [enable_esys=yes])
 
-AM_CONDITIONAL(ESAPI, test "x$enable_esapi" = "xyes")
+AM_CONDITIONAL(ESYS, test "x$enable_esys" = "xyes")
 
 AC_CHECK_FUNC([strndup],[],[AC_MSG_ERROR([strndup function not found])])
 AC_CHECK_FUNCS([reallocarray])
@@ -142,13 +142,13 @@ AS_IF([test "x$enable_tcti_partial_reads" = "xyes"],
 
 AC_ARG_WITH([crypto],
             [AS_HELP_STRING([--with-crypto={gcrypt,ossl}],
-                            [sets the ESAPI crypto backend (default is OpenSSL)])],,
+                            [sets the ESYS crypto backend (default is OpenSSL)])],,
             [with_crypto=ossl])
 
 AM_CONDITIONAL(ESYS_OSSL, test "x$with_crypto" = "xossl")
 AM_CONDITIONAL(ESYS_GCRYPT, test "x$with_crypto" = "xgcrypt")
 
-AS_IF([test "x$enable_esapi" = xyes],
+AS_IF([test "x$enable_esys" = xyes],
       [AS_IF([test "x$with_crypto" = xgcrypt], [
            AM_PATH_LIBGCRYPT([1.6.0], [], [AC_MSG_ERROR([Missing required gcrypt library])])
            TSS2_ESYS_CFLAGS_CRYPTO="$LIBGCRYPT_CFLAGS"
@@ -162,8 +162,8 @@ AS_IF([test "x$enable_esapi" = xyes],
 AC_SUBST([TSS2_ESYS_CFLAGS_CRYPTO])
 AC_SUBST([TSS2_ESYS_LDFLAGS_CRYPTO])
 
-AS_IF([test "x$enable_fapi" != xno -a "x$enable_esapi" = "xno"],
-    AC_MSG_ERROR([ESAPI has to be enabled to compile FAPI.]))
+AS_IF([test "x$enable_fapi" != xno -a "x$enable_esys" = "xno"],
+    AC_MSG_ERROR([ESYS has to be enabled to compile FAPI.]))
 
 AS_IF([test "x$enable_fapi" != xno -a "x$with_crypto" != "xossl"],
     AC_MSG_ERROR([FAPI has to be compiled with OpenSSL]))
@@ -176,7 +176,7 @@ AS_IF([test "x$enable_fapi" = xyes ],
 
 AC_ARG_WITH([tctidefaultmodule],
             [AS_HELP_STRING([--with-tctidefaultmodule],
-[The default TCTI module for ESAPI. (Default: libtss2-tcti-default.so)])],
+[The default TCTI module for ESYS. (Default: libtss2-tcti-default.so)])],
             [AC_DEFINE_UNQUOTED([ESYS_TCTI_DEFAULT_MODULE],
                                 ["$with_tctidefaultmodule"],
                                 ["The default TCTI library file"])],
@@ -312,7 +312,7 @@ AS_IF([test "x$enable_integration" = "xyes"],
        ERROR_IF_NO_PROG([grep])
        ERROR_IF_NO_PROG([env])
        ERROR_IF_NO_PROG([rm])
-       AS_IF([test "x$with_crypto" != xossl -o "x$enable_esapi" != xyes],
+       AS_IF([test "x$with_crypto" != xossl -o "x$enable_esys" != xyes],
            PKG_CHECK_MODULES([LIBCRYPTO],[libcrypto]))
        AC_CHECK_HEADER(uthash.h, [], [AC_MSG_ERROR([Can not find uthash.h. Please install uthash-dev])])
 
@@ -497,7 +497,7 @@ AC_OUTPUT
 
 AC_MSG_RESULT([
     $PACKAGE_NAME $VERSION
-    esapi:              $enable_esapi
+    esys:               $enable_esys
     fapi:               $enable_fapi
     tctidefaultmodule:  $with_tctidefaultmodule
     tctidefaultconfig:  $with_tctidefaultconfig
