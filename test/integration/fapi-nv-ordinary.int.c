@@ -64,6 +64,39 @@ action_callback(
     return TSS2_RC_SUCCESS;
 }
 
+static char *
+read_policy(FAPI_CONTEXT *context, char *policy_name)
+{
+    FILE *stream = NULL;
+    long policy_size;
+    char *json_policy = NULL;
+    char policy_file[1024];
+
+    if (snprintf(&policy_file[0], 1023, TOP_SOURCEDIR "/test/data/fapi/%s.json", policy_name) < 0)
+        return NULL;
+
+    stream = fopen(policy_file, "r");
+    if (!stream) {
+        LOG_ERROR("File %s does not exist", policy_file);
+        return NULL;
+    }
+    fseek(stream, 0L, SEEK_END);
+    policy_size = ftell(stream);
+    fclose(stream);
+    json_policy = malloc(policy_size + 1);
+    return_if_null(json_policy,
+            "Could not allocate memory for the JSON policy",
+            NULL);
+    stream = fopen(policy_file, "r");
+    ssize_t ret = read(fileno(stream), json_policy, policy_size);
+    if (ret != policy_size) {
+        LOG_ERROR("IO error %s.", policy_file);
+        return NULL;
+    }
+    json_policy[policy_size] = '\0';
+    return json_policy;
+}
+
 /** Test the FAPI NV functions.
  *
  * Tested FAPI commands:
@@ -95,11 +128,9 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     size_t dest_size = NV_SIZE;
     char *description1 = "nvDescription";
     char *description2 = NULL;
-    char *policy_name = "/policy/pol_action";
-    char *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_action.json";
-    FILE *stream = NULL;
+    char *policy_action = "/policy/pol_action";
+    char *policy_pcr8_0 = "/policy/pol_pcr8_0";
     char *json_policy = NULL;
-    long policy_size;
 
     for (int i = 0; i < NV_SIZE; i++) {
         data_src[i] = (i % 10) + 1;
@@ -111,34 +142,18 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     r = pcr_reset(context, 16);
     goto_if_error(r, "Error pcr_reset", error);
 
-    stream = fopen(policy_file, "r");
-    if (!stream) {
-        LOG_ERROR("File %s does not exist", policy_file);
-        goto error;
-    }
-    fseek(stream, 0L, SEEK_END);
-    policy_size = ftell(stream);
-    fclose(stream);
-    json_policy = malloc(policy_size + 1);
-    goto_if_null(json_policy,
-            "Could not allocate memory for the JSON policy",
-            TSS2_FAPI_RC_MEMORY, error);
-    stream = fopen(policy_file, "r");
-    ssize_t ret = read(fileno(stream), json_policy, policy_size);
-    if (ret != policy_size) {
-        LOG_ERROR("IO error %s.", policy_file);
-        goto error;
-    }
-    json_policy[policy_size] = '\0';
+    json_policy = read_policy(context, policy_action);
 
-    r = Fapi_Import(context, policy_name, json_policy);
+    r = Fapi_Import(context, policy_action, json_policy);
     goto_if_error(r, "Error Fapi_Import", error);
+
+    SAFE_FREE(json_policy);
 
     r = Fapi_SetPolicyActionCB(context, action_callback, "");
     goto_if_error(r, "Error Fapi_SetPolicyActionCB", error);
 
-    /* Test with policy */
-    r = Fapi_CreateNv(context, nvPathOrdinary, "noda", NV_SIZE, policy_name, "");
+    /* Test with policy action */
+    r = Fapi_CreateNv(context, nvPathOrdinary, "noda", NV_SIZE, policy_action, "");
     goto_if_error(r, "Error Fapi_CreateNv", error);
 
     r = Fapi_NvWrite(context, nvPathOrdinary, &data_src[0], NV_SIZE);
@@ -153,9 +168,53 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
         goto error;
     }
 
-     r = Fapi_Delete(context, nvPathOrdinary);
+    r = Fapi_Delete(context, nvPathOrdinary);
     goto_if_error(r, "Error Fapi_NV_Undefine", error);
     SAFE_FREE(data_dest);
+
+    /* Test with pcr policy with pcr 8. */
+
+    uint8_t *pcr_digest = NULL;
+    size_t pcr_digest_size = 0;
+    uint8_t zero_digest[32];
+    memset(&zero_digest[0], 0, 32);
+
+    r = Fapi_PcrRead(context, 8, &pcr_digest,
+                     &pcr_digest_size, NULL);
+    goto_if_error(r, "Error Fapi_PcrRead", error);
+
+    if (memcmp(&pcr_digest[0], &zero_digest, pcr_digest_size) != 0) {
+        SAFE_FREE(pcr_digest);
+        LOG_WARNING("PCR 8 is not zero. Test with pcr policy not executed.");
+    } else {
+        SAFE_FREE(pcr_digest);
+        json_policy = read_policy(context, policy_pcr8_0);
+
+        r = Fapi_Import(context, policy_pcr8_0, json_policy);
+        goto_if_error(r, "Error Fapi_Import", error);
+
+        SAFE_FREE(json_policy);
+
+        /* Test with policy action */
+        r = Fapi_CreateNv(context, nvPathOrdinary, "noda", NV_SIZE, policy_pcr8_0, "");
+        goto_if_error(r, "Error Fapi_CreateNv", error);
+
+        r = Fapi_NvWrite(context, nvPathOrdinary, &data_src[0], NV_SIZE);
+        goto_if_error(r, "Error Fapi_NvWrite", error);
+
+        r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, NULL);
+        goto_if_error(r, "Error Fapi_NvRead", error);
+
+        if (dest_size != NV_SIZE ||
+            memcmp(data_src, data_dest, dest_size) != 0) {
+            LOG_ERROR("Error: result of nv read is wrong.");
+            goto error;
+        }
+
+        r = Fapi_Delete(context, nvPathOrdinary);
+        goto_if_error(r, "Error Fapi_NV_Undefine", error);
+        SAFE_FREE(data_dest);
+    }
 
     /* Empty auth noda set */
     r = Fapi_CreateNv(context, nvPathOrdinary, "noda", NV_SIZE, "", "");
