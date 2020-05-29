@@ -2322,6 +2322,7 @@ ifapi_compute_policy_digest(
             }
             pcr_selection->pcrSelections[j].hash =
                 pcrs->pcrs[i].hashAlg;
+            pcr_selection->pcrSelections[j].sizeofSelect = 3;
         }
         UINT32 pcrIndex = pcrs->pcrs[i].pcr;
         if (pcrIndex + 1 > max_pcr)
