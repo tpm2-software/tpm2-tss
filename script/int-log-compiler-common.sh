@@ -34,11 +34,14 @@ done
 
 OS=$(uname)
 sock_tool="unknown"
+sock_tool_params=""
 
 if [ "$OS" == "Linux" ]; then
-    sock_tool="ss -lntp4"
+    sock_tool="ss"
+    sock_tool_params="-lntp4"
 elif [ "$OS" == "FreeBSD" ]; then
-    sock_tool="sockstat -l4"
+    sock_tool="sockstat"
+    sock_tool_params="-l4"
 fi
 
 simulator_bin=""
@@ -230,9 +233,9 @@ try_simulator_start ()
         fi
         PID=$(cat ${SIM_PID_FILE})
         echo "simulator PID: ${PID}";
-        ${sock_tool} 2> /dev/null | grep "${PID}" | grep "${SIM_PORT_DATA}"
+        ${sock_tool} ${sock_tool_params} 2> /dev/null | grep "${PID}" | grep "${SIM_PORT_DATA}"
         ret_data=$?
-        ${sock_tool} 2> /dev/null | grep "${PID}" | grep "${SIM_PORT_CMD}"
+        ${sock_tool} ${sock_tool_params} 2> /dev/null | grep "${PID}" | grep "${SIM_PORT_CMD}"
         ret_cmd=$?
         if [ \( $ret_data -eq 0 \) -a \( $ret_cmd -eq 0 \) ]; then
             echo "Simulator with PID ${PID} bound to port ${SIM_PORT_DATA} and " \
