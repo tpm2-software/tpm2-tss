@@ -56,6 +56,9 @@ tpmt_marshal_success(void **state)
     assert_int_equal (ptr3->buffer[3], 0xef);
 
     pub.type = TPM2_ALG_RSA;
+    pub.nameAlg = TPM2_ALG_SHA1;
+    pub.parameters.symDetail.sym.algorithm = TPM2_ALG_NULL;
+    pub.parameters.rsaDetail.scheme.scheme = TPM2_ALG_NULL;
     pub.parameters.rsaDetail.symmetric.algorithm = TPM2_ALG_AES;
     pub.parameters.rsaDetail.symmetric.keyBits.aes = 128;
     pub.parameters.rsaDetail.symmetric.mode.aes = TPM2_ALG_CBC;
@@ -386,6 +389,28 @@ tpmt_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
     assert_int_equal (offset, 5);
 }
 
+static void
+tpmt_marshal_unmarshal_sig_invalid_selector(void **state)
+{
+    TPMT_SIGNATURE sig = {0};
+    uint8_t buf[256] = {0};
+    size_t size = 256, offset = 0;
+    TPM2_ALG_ID invalid_id = HOST_TO_BE_16(0xbeef);
+    TPM2_RC rc;
+
+    sig.sigAlg = invalid_id;
+
+    /* Marshal with invalid selector case */
+    rc = Tss2_MU_TPMT_SIGNATURE_Marshal(&sig, buf, sizeof(sig), &offset);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_VALUE);
+    assert_int_equal (offset, 0);
+
+    /* Unarshal with invalid selector case */
+    rc = Tss2_MU_TPMT_SIGNATURE_Unmarshal(buf, size, &offset, &sig);
+    assert_int_equal (rc, TSS2_MU_RC_BAD_VALUE);
+    assert_int_equal (offset, 0);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test (tpmt_marshal_success),
@@ -393,6 +418,7 @@ int main(void) {
         cmocka_unit_test (tpmt_marshal_buffer_null_with_offset),
         cmocka_unit_test (tpmt_marshal_buffer_null_offset_null),
         cmocka_unit_test (tpmt_marshal_buffer_size_lt_data_nad_lt_offset),
+        cmocka_unit_test (tpmt_marshal_unmarshal_sig_invalid_selector),
         cmocka_unit_test (tpmt_unmarshal_success),
         cmocka_unit_test (tpmt_unmarshal_dest_null_buff_null),
         cmocka_unit_test (tpmt_unmarshal_buffer_null_offset_null),
