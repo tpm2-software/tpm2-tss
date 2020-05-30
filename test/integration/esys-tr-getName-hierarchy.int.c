@@ -23,7 +23,7 @@
  *  Then we call Esys_TR_GetName to see if the correct public name has been
  * retrieved.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *
  * @param[in,out] ectx The ESYS_CONTEXT.
  * @retval EXIT_FAILURE
@@ -63,6 +63,6 @@ test_esys_tr_getName_hierarchy(ESYS_CONTEXT * ectx)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_tr_getName_hierarchy(esys_context);
 }

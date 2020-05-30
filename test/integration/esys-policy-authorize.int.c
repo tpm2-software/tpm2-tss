@@ -18,9 +18,9 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** This test is intended to test the ESAPI policy authorization.
+/** This test is intended to test the ESYS policy authorization.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_CreatePrimary() (M)
  *  - Esys_FlushContext() (M)
  *  - Esys_PolicyAuthorize() (M)
@@ -235,6 +235,6 @@ test_esys_policy_authorize(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_policy_authorize(esys_context);
 }

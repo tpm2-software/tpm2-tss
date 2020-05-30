@@ -17,16 +17,16 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** This test is intended to test EvictControl and ESAPI Serialization.
+/** This test is intended to test EvictControl and ESYS Serialization.
  *
  * We start by creating a primary key (Esys_CreatePrimary). Based on this
  * key a persistent object is created (Esys_EvictControl). The resource of
  * this object will be serialized and deserialized with the corresponding
- * ESAPI functions (Esys_TR_Serialize, Esys_TR_Deserialize).
+ * ESYS functions (Esys_TR_Serialize, Esys_TR_Deserialize).
  * To check whether the deserialization was successful a new object will
  * be created with the handle returned by the deserialize function.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_Create() (M)
  *  - Esys_CreatePrimary() (M)
  *  - Esys_EvictControl() (M)
@@ -295,6 +295,6 @@ test_esys_evict_control_serialization(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_evict_control_serialization(esys_context);
 }

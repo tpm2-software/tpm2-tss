@@ -26,7 +26,7 @@
  * key with the command Esys_MakeCredential. The credential
  * will be activated with Esys_ActivateCredential.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_ActivateCredential() (M)
  *  - Esys_Create() (M)
  *  - Esys_CreatePrimary() (M)
@@ -457,6 +457,6 @@ test_esys_make_credential(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_make_credential(esys_context);
 }

@@ -17,9 +17,9 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Test of the ESAPI function Esys_Clear.
+/** Test of the ESYS function Esys_Clear.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_Clear() (M)
  *  - Esys_FlushContext() (M)
  *  - Esys_StartAuthSession() (M)
@@ -95,6 +95,6 @@ test_esys_clear(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_clear(esys_context);
 }

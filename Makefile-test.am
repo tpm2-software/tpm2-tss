@@ -136,30 +136,30 @@ check_LTLIBRARIES += test/integration/libtest_utils.la
 TESTS_INTEGRATION =
 if !TESTDEVICE
 TESTS_INTEGRATION += \
-    test/integration/sapi-asymmetric-encrypt-decrypt.int \
-    test/integration/sapi-nv-policy-locality.int \
-    test/integration/sapi-nv-readwrite.int \
-    test/integration/sapi-hmac-auth.int \
-    test/integration/sapi-primary-rsa-2K-aes128cfb.int \
-    test/integration/sapi-create-keyedhash-sha1-hmac.int \
-    test/integration/sapi-encrypt-decrypt.int \
-    test/integration/sapi-encrypt-decrypt-2.int \
-    test/integration/sapi-evict-ctrl.int \
-    test/integration/sapi-get-random.int \
-    test/integration/sapi-stir-random.int \
-    test/integration/sapi-hierarchy-change-auth.int \
-    test/integration/sapi-abi-version.int \
-    test/integration/sapi-pcr-extension.int \
-    test/integration/sapi-self-test.int \
-    test/integration/sapi-start-auth-session.int \
-    test/integration/sapi-sys-initialize.int \
-    test/integration/sapi-tpm-properties.int \
-    test/integration/sapi-system-api.int \
-    test/integration/sapi-policy-template.int \
-    test/integration/sapi-create-loaded.int \
-    test/integration/sapi-policy-authorizeNV.int \
-    test/integration/sapi-param-encrypt-decrypt.int \
-    test/integration/sapi-read-clock.int \
+    test/integration/sys-asymmetric-encrypt-decrypt.int \
+    test/integration/sys-nv-policy-locality.int \
+    test/integration/sys-nv-readwrite.int \
+    test/integration/sys-hmac-auth.int \
+    test/integration/sys-primary-rsa-2K-aes128cfb.int \
+    test/integration/sys-create-keyedhash-sha1-hmac.int \
+    test/integration/sys-encrypt-decrypt.int \
+    test/integration/sys-encrypt-decrypt-2.int \
+    test/integration/sys-evict-ctrl.int \
+    test/integration/sys-get-random.int \
+    test/integration/sys-stir-random.int \
+    test/integration/sys-hierarchy-change-auth.int \
+    test/integration/sys-abi-version.int \
+    test/integration/sys-pcr-extension.int \
+    test/integration/sys-self-test.int \
+    test/integration/sys-start-auth-session.int \
+    test/integration/sys-sys-initialize.int \
+    test/integration/sys-tpm-properties.int \
+    test/integration/sys-system-api.int \
+    test/integration/sys-policy-template.int \
+    test/integration/sys-create-loaded.int \
+    test/integration/sys-policy-authorizeNV.int \
+    test/integration/sys-param-encrypt-decrypt.int \
+    test/integration/sys-read-clock.int \
     test/tpmclient/tpmclient.int
 endif # !TESTDEVICE
 
@@ -585,122 +585,122 @@ if ENABLE_INTEGRATION
 test_tpmclient_tpmclient_int_CFLAGS   = $(AM_CFLAGS) -U_FORTIFY_SOURCE  $(TESTS_CFLAGS)
 test_tpmclient_tpmclient_int_LDADD    = $(TESTS_LDADD)
 test_tpmclient_tpmclient_int_SOURCES  = \
-    test/tpmclient/tpmclient.int.c test/integration/main-sapi.c
+    test/tpmclient/tpmclient.int.c test/integration/main-sys.c
 
 test_integration_libtest_utils_la_CFLAGS = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_libtest_utils_la_SOURCES = \
-    test/integration/sapi-context-util.c test/integration/context-util.h \
-    test/integration/sapi-util.c    test/integration/sapi-util.h \
-    test/integration/sapi-session-util.c test/integration/session-util.h \
-    test/integration/sapi-test-options.c test/integration/test-options.h \
-    test/integration/sapi-entity-util.c test/integration/test.h \
+    test/integration/sys-context-util.c test/integration/context-util.h \
+    test/integration/sys-util.c    test/integration/sys-util.h \
+    test/integration/sys-session-util.c test/integration/session-util.h \
+    test/integration/sys-test-options.c test/integration/test-options.h \
+    test/integration/sys-entity-util.c test/integration/test.h \
     src/util/log.c
 
-test_integration_sapi_asymmetric_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_asymmetric_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_asymmetric_encrypt_decrypt_int_SOURCES = \
-    test/integration/sapi-asymmetric-encrypt-decrypt.int.c test/integration/main-sapi.c
+test_integration_sys_asymmetric_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_asymmetric_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_asymmetric_encrypt_decrypt_int_SOURCES = \
+    test/integration/sys-asymmetric-encrypt-decrypt.int.c test/integration/main-sys.c
 
-test_integration_sapi_nv_policy_locality_int_CFLAGS = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_nv_policy_locality_int_LDADD = $(TESTS_LDADD)
-test_integration_sapi_nv_policy_locality_int_SOURCES = \
-    test/integration/sapi-nv-policy-locality.int.c test/integration/main-sapi.c
+test_integration_sys_nv_policy_locality_int_CFLAGS = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_nv_policy_locality_int_LDADD = $(TESTS_LDADD)
+test_integration_sys_nv_policy_locality_int_SOURCES = \
+    test/integration/sys-nv-policy-locality.int.c test/integration/main-sys.c
 
-test_integration_sapi_nv_readwrite_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_nv_readwrite_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_nv_readwrite_int_SOURCES = \
-    test/integration/sapi-nv-readwrite.int.c test/integration/main-sapi.c
+test_integration_sys_nv_readwrite_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_nv_readwrite_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_nv_readwrite_int_SOURCES = \
+    test/integration/sys-nv-readwrite.int.c test/integration/main-sys.c
 
-test_integration_sapi_hmac_auth_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_hmac_auth_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_hmac_auth_int_SOURCES = \
-    test/integration/sapi-hmac-auth.int.c test/integration/main-sapi.c
+test_integration_sys_hmac_auth_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_hmac_auth_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_hmac_auth_int_SOURCES = \
+    test/integration/sys-hmac-auth.int.c test/integration/main-sys.c
 
-test_integration_sapi_primary_rsa_2K_aes128cfb_int_CFLAGS = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_primary_rsa_2K_aes128cfb_int_LDADD  = $(TESTS_LDADD)
-test_integration_sapi_primary_rsa_2K_aes128cfb_int_SOURCES = \
-    test/integration/sapi-primary-rsa-2K-aes128cfb.int.c \
-    test/integration/main-sapi.c
+test_integration_sys_primary_rsa_2K_aes128cfb_int_CFLAGS = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_primary_rsa_2K_aes128cfb_int_LDADD  = $(TESTS_LDADD)
+test_integration_sys_primary_rsa_2K_aes128cfb_int_SOURCES = \
+    test/integration/sys-primary-rsa-2K-aes128cfb.int.c \
+    test/integration/main-sys.c
 
-test_integration_sapi_create_keyedhash_sha1_hmac_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_create_keyedhash_sha1_hmac_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_create_keyedhash_sha1_hmac_int_SOURCES = \
-    test/integration/sapi-create-keyedhash-sha1-hmac.int.c test/integration/main-sapi.c
+test_integration_sys_create_keyedhash_sha1_hmac_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_create_keyedhash_sha1_hmac_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_create_keyedhash_sha1_hmac_int_SOURCES = \
+    test/integration/sys-create-keyedhash-sha1-hmac.int.c test/integration/main-sys.c
 
-test_integration_sapi_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_encrypt_decrypt_int_SOURCES = \
-    test/integration/sapi-encrypt-decrypt.int.c test/integration/main-sapi.c
+test_integration_sys_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_encrypt_decrypt_int_SOURCES = \
+    test/integration/sys-encrypt-decrypt.int.c test/integration/main-sys.c
 
-test_integration_sapi_encrypt_decrypt_2_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_encrypt_decrypt_2_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_encrypt_decrypt_2_int_SOURCES = \
-    test/integration/sapi-encrypt-decrypt-2.int.c test/integration/main-sapi.c
+test_integration_sys_encrypt_decrypt_2_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_encrypt_decrypt_2_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_encrypt_decrypt_2_int_SOURCES = \
+    test/integration/sys-encrypt-decrypt-2.int.c test/integration/main-sys.c
 
-test_integration_sapi_evict_ctrl_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_evict_ctrl_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_evict_ctrl_int_SOURCES = \
-    test/integration/sapi-evict-ctrl.int.c test/integration/main-sapi.c
+test_integration_sys_evict_ctrl_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_evict_ctrl_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_evict_ctrl_int_SOURCES = \
+    test/integration/sys-evict-ctrl.int.c test/integration/main-sys.c
 
-test_integration_sapi_sys_initialize_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_sys_initialize_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_sys_initialize_int_SOURCES = test/integration/sapi-sys-initialize.int.c \
-    test/integration/main-sapi.c
+test_integration_sys_sys_initialize_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_sys_initialize_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_sys_initialize_int_SOURCES = test/integration/sys-sys-initialize.int.c \
+    test/integration/main-sys.c
 
-test_integration_sapi_stir_random_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_stir_random_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_stir_random_int_SOURCES = test/integration/sapi-stir-random.int.c \
-    test/integration/main-sapi.c
+test_integration_sys_stir_random_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_stir_random_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_stir_random_int_SOURCES = test/integration/sys-stir-random.int.c \
+    test/integration/main-sys.c
 
-test_integration_sapi_get_random_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_get_random_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_get_random_int_SOURCES = test/integration/sapi-get-random.int.c \
-    test/integration/main-sapi.c
+test_integration_sys_get_random_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_get_random_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_get_random_int_SOURCES = test/integration/sys-get-random.int.c \
+    test/integration/main-sys.c
 
-test_integration_sapi_abi_version_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_abi_version_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_abi_version_int_SOURCES = test/integration/sapi-abi-version.int.c \
-    test/integration/main-sapi.c
+test_integration_sys_abi_version_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_abi_version_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_abi_version_int_SOURCES = test/integration/sys-abi-version.int.c \
+    test/integration/main-sys.c
 
-test_integration_sapi_pcr_extension_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_pcr_extension_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_pcr_extension_int_SOURCES = test/integration/sapi-pcr-extension.int.c \
-    test/integration/main-sapi.c
+test_integration_sys_pcr_extension_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_pcr_extension_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_pcr_extension_int_SOURCES = test/integration/sys-pcr-extension.int.c \
+    test/integration/main-sys.c
 
-test_integration_sapi_self_test_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_self_test_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_self_test_int_SOURCES = test/integration/sapi-self-test.int.c \
-    test/integration/main-sapi.c
+test_integration_sys_self_test_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_self_test_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_self_test_int_SOURCES = test/integration/sys-self-test.int.c \
+    test/integration/main-sys.c
 
-test_integration_sapi_hierarchy_change_auth_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_hierarchy_change_auth_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_hierarchy_change_auth_int_SOURCES = \
-    test/integration/sapi-hierarchy-change-auth.int.c test/integration/main-sapi.c
+test_integration_sys_hierarchy_change_auth_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_hierarchy_change_auth_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_hierarchy_change_auth_int_SOURCES = \
+    test/integration/sys-hierarchy-change-auth.int.c test/integration/main-sys.c
 
-test_integration_sapi_start_auth_session_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_start_auth_session_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_start_auth_session_int_SOURCES = test/integration/main-sapi.c \
-    test/integration/sapi-start-auth-session.int.c
+test_integration_sys_start_auth_session_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_start_auth_session_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_start_auth_session_int_SOURCES = test/integration/main-sys.c \
+    test/integration/sys-start-auth-session.int.c
 
-test_integration_sapi_tpm_properties_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_tpm_properties_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_tpm_properties_int_SOURCES = test/integration/main-sapi.c \
-    test/integration/sapi-tpm-properties.int.c
+test_integration_sys_tpm_properties_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_tpm_properties_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_tpm_properties_int_SOURCES = test/integration/main-sys.c \
+    test/integration/sys-tpm-properties.int.c
 
-test_integration_sapi_system_api_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_system_api_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_system_api_int_SOURCES = test/integration/main-sapi.c \
-    test/integration/sapi-system-api.int.c
+test_integration_sys_system_api_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_system_api_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_system_api_int_SOURCES = test/integration/main-sys.c \
+    test/integration/sys-system-api.int.c
 
-test_integration_sapi_aram_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_param_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_param_encrypt_decrypt_int_SOURCES = \
-    test/integration/sapi-param-encrypt-decrypt.int.c test/integration/main-sapi.c
+test_integration_sys_aram_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_param_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_param_encrypt_decrypt_int_SOURCES = \
+    test/integration/sys-param-encrypt-decrypt.int.c test/integration/main-sys.c
 
-test_integration_sapi_read_clock_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
-test_integration_sapi_read_clock_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_read_clock_int_SOURCES = test/integration/main-sapi.c \
-    test/integration/sapi-read-clock.int.c
+test_integration_sys_read_clock_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_read_clock_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_read_clock_int_SOURCES = test/integration/main-sys.c \
+    test/integration/sys-read-clock.int.c
 
 if ESYS
 ESYS_SRC_UTIL_CRYPTO_SRC = src/tss2-esys/esys_iutil.c \
@@ -712,70 +712,70 @@ test_integration_esys_audit_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_audit_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_audit_int_SOURCES = \
     test/integration/esys-audit.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_certify_creation_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_certify_creation_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_certify_creation_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_certify_creation_int_SOURCES = \
     test/integration/esys-certify-creation.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_certify_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_certify_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_certify_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_certify_int_SOURCES = \
     test/integration/esys-certify.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_change_eps_int_CFLAGS = $(TESTS_CFLAGS)
 test_integration_esys_change_eps_int_LDADD = $(TESTS_LDADD)
 test_integration_esys_change_eps_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_change_eps_int_SOURCES = \
     test/integration/esys-change-eps.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_clear_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_clear_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_clear_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_clear_int_SOURCES = \
     test/integration/esys-clear.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_clear_control_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_clear_control_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_clear_control_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_clear_control_int_SOURCES = \
     test/integration/esys-clear-control.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_clear_session_int_CFLAGS  = $(TESTS_CFLAGS) -DTEST_SESSION
 test_integration_esys_clear_session_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_clear_session_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_clear_session_int_SOURCES = \
     test/integration/esys-clear.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_clockset_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_clockset_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_clockset_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_clockset_int_SOURCES = \
     test/integration/esys-clockset.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_clockset_audit_int_CFLAGS  = $(TESTS_CFLAGS) -DTEST_SESSION
 test_integration_esys_clockset_audit_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_clockset_audit_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_clockset_audit_int_SOURCES = \
     test/integration/esys-clockset.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_commit_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_commit_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_commit_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_commit_int_SOURCES = \
     test/integration/esys-commit.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_create_fail_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_create_fail_int_LDADD   = $(TESTS_LDADD)
@@ -783,14 +783,14 @@ test_integration_esys_create_fail_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDF
 test_integration_esys_create_fail_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-create-fail.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_createloaded_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_createloaded_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_createloaded_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_createloaded_int_SOURCES = \
     test/integration/esys-createloaded.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_createloaded_session_int_CFLAGS  = $(TESTS_CFLAGS) \
     -DTEST_SESSION
@@ -798,7 +798,7 @@ test_integration_esys_createloaded_session_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_createloaded_session_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_createloaded_session_int_SOURCES = \
     test/integration/esys-createloaded.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_create_password_auth_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_create_password_auth_int_LDADD   = $(TESTS_LDADD)
@@ -806,7 +806,7 @@ test_integration_esys_create_password_auth_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2
 test_integration_esys_create_password_auth_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-create-password-auth.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_create_policy_auth_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_create_policy_auth_int_LDADD   = $(TESTS_LDADD)
@@ -814,7 +814,7 @@ test_integration_esys_create_policy_auth_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_E
 test_integration_esys_create_policy_auth_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-create-policy-auth.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_create_primary_ecc_hmac_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_create_primary_ecc_hmac_int_LDADD   = $(TESTS_LDADD)
@@ -822,7 +822,7 @@ test_integration_esys_create_primary_ecc_hmac_int_LDFLAGS = $(TESTS_LDFLAGS) $(T
 test_integration_esys_create_primary_ecc_hmac_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-create-primary-hmac.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_create_primary_hmac_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_create_primary_hmac_int_LDADD   = $(TESTS_LDADD)
@@ -830,7 +830,7 @@ test_integration_esys_create_primary_hmac_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_
 test_integration_esys_create_primary_hmac_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-create-primary-hmac.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_create_session_auth_int_CFLAGS  = $(TESTS_CFLAGS) \
     -DTEST_AES_ENCRYPTION $(TSS2_ESYS_CFLAGS_CRYPTO)
@@ -839,7 +839,7 @@ test_integration_esys_create_session_auth_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_
 test_integration_esys_create_session_auth_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-create-session-auth.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_create_session_auth_bound_int_CFLAGS  = $(TESTS_CFLAGS) \
     -DTEST_AES_ENCRYPTION -DTEST_BOUND_SESSION $(TSS2_ESYS_CFLAGS_CRYPTO)
@@ -848,7 +848,7 @@ test_integration_esys_create_session_auth_bound_int_LDFLAGS = $(TESTS_LDFLAGS) $
 test_integration_esys_create_session_auth_bound_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-create-session-auth.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_create_session_auth_ecc_int_CFLAGS  = $(TESTS_CFLAGS) \
     -DTEST_AES_ENCRYPTION -DTEST_ECC $(TSS2_ESYS_CFLAGS_CRYPTO)
@@ -857,7 +857,7 @@ test_integration_esys_create_session_auth_ecc_int_LDFLAGS = $(TESTS_LDFLAGS) $(T
 test_integration_esys_create_session_auth_ecc_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-create-session-auth.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_create_session_auth_xor_int_CFLAGS  = $(TESTS_CFLAGS) \
     -DTEST_XOR_OBFUSCATION $(TSS2_ESYS_CFLAGS_CRYPTO)
@@ -866,7 +866,7 @@ test_integration_esys_create_session_auth_xor_int_LDFLAGS = $(TESTS_LDFLAGS) $(T
 test_integration_esys_create_session_auth_xor_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-create-session-auth.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_duplicate_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_duplicate_int_LDADD   = $(TESTS_LDADD)
@@ -874,42 +874,42 @@ test_integration_esys_duplicate_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLA
 test_integration_esys_duplicate_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-duplicate.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_ecc_parameters_int_CFLAGS = $(TESTS_CFLAGS)
 test_integration_esys_ecc_parameters_int_LDADD = $(TESTS_LDADD)
 test_integration_esys_ecc_parameters_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_ecc_parameters_int_SOURCES = \
     test/integration/esys-ecc-parameters.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_ecdh_keygen_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_ecdh_keygen_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_ecdh_keygen_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_ecdh_keygen_int_SOURCES = \
     test/integration/esys-ecdh-keygen.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_ecdh_zgen_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_ecdh_zgen_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_ecdh_zgen_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_ecdh_zgen_int_SOURCES = \
     test/integration/esys-ecdh-zgen.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_encrypt_decrypt_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_encrypt_decrypt_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_encrypt_decrypt_int_SOURCES = \
     test/integration/esys-encrypt-decrypt.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_event_sequence_complete_int_CFLAGS = $(TESTS_CFLAGS)
 test_integration_esys_event_sequence_complete_int_LDADD = $(TESTS_LDADD)
 test_integration_esys_event_sequence_complete_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_event_sequence_complete_int_SOURCES = \
     test/integration/esys-event-sequence-complete.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_evict_control_serialization_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_evict_control_serialization_int_LDADD   = $(TESTS_LDADD)
@@ -917,35 +917,35 @@ test_integration_esys_evict_control_serialization_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_evict_control_serialization_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-evict-control-serialization.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_field_upgrade_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_field_upgrade_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_field_upgrade_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_field_upgrade_int_SOURCES = \
     test/integration/esys-field-upgrade.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_firmware_read_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_firmware_read_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_firmware_read_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_firmware_read_int_SOURCES = \
     test/integration/esys-firmware-read.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_get_capability_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_get_capability_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_get_capability_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_get_capability_int_SOURCES = \
     test/integration/esys-get-capability.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_get_random_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_get_random_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_get_random_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_get_random_int_SOURCES = \
     test/integration/esys-get-random.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_get_time_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_get_time_int_LDADD   = $(TESTS_LDADD)
@@ -953,21 +953,21 @@ test_integration_esys_get_time_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAG
 test_integration_esys_get_time_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-get-time.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_hash_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_hash_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_hash_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_hash_int_SOURCES = \
     test/integration/esys-hash.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_hashsequencestart_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_hashsequencestart_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_hashsequencestart_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_hashsequencestart_int_SOURCES = \
     test/integration/esys-hashsequencestart.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_hashsequencestart_session_int_CFLAGS  = $(TESTS_CFLAGS) \
     -DTEST_SESSION
@@ -975,28 +975,28 @@ test_integration_esys_hashsequencestart_session_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_hashsequencestart_session_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_hashsequencestart_session_int_SOURCES = \
     test/integration/esys-hashsequencestart.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_hierarchy_control_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_hierarchy_control_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_hierarchy_control_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_hierarchy_control_int_SOURCES = \
     test/integration/esys-hierarchy-control.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_hmac_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_hmac_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_hmac_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_hmac_int_SOURCES = \
     test/integration/esys-hmac.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_hmacsequencestart_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_hmacsequencestart_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_hmacsequencestart_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_hmacsequencestart_int_SOURCES = \
     test/integration/esys-hmacsequencestart.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_hmacsequencestart_session_int_CFLAGS  = $(TESTS_CFLAGS) \
     -DTEST_SESSION
@@ -1004,14 +1004,14 @@ test_integration_esys_hmacsequencestart_session_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_hmacsequencestart_session_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_hmacsequencestart_session_int_SOURCES = \
     test/integration/esys-hmacsequencestart.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_hierarchychangeauth_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_hierarchychangeauth_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_hierarchychangeauth_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_hierarchychangeauth_int_SOURCES = \
     test/integration/esys-hierarchychangeauth.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_import_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_import_int_LDADD   = $(TESTS_LDADD)
@@ -1019,14 +1019,14 @@ test_integration_esys_import_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_
 test_integration_esys_import_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-import.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_lock_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_lock_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_lock_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_lock_int_SOURCES = \
     test/integration/esys-lock.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_make_credential_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_make_credential_int_LDADD   = $(TESTS_LDADD)
@@ -1034,7 +1034,7 @@ test_integration_esys_make_credential_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS
 test_integration_esys_make_credential_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-make-credential.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_make_credential_session_int_CFLAGS  = $(TESTS_CFLAGS) \
     -DTEST_SESSION $(TSS2_ESYS_CFLAGS_CRYPTO)
@@ -1043,14 +1043,14 @@ test_integration_esys_make_credential_session_int_LDFLAGS = $(TESTS_LDFLAGS) $(T
 test_integration_esys_make_credential_session_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-make-credential.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_nv_certify_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_nv_certify_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_nv_certify_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_nv_certify_int_SOURCES = \
     test/integration/esys-nv-certify.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_nv_ram_counter_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_nv_ram_counter_int_LDADD   = $(TESTS_LDADD)
@@ -1058,7 +1058,7 @@ test_integration_esys_nv_ram_counter_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_
 test_integration_esys_nv_ram_counter_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-nv-ram-counter.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_nv_ram_counter_session_int_CFLAGS  = $(TESTS_CFLAGS) \
     -DTEST_SESSION $(TSS2_ESYS_CFLAGS_CRYPTO)
@@ -1067,7 +1067,7 @@ test_integration_esys_nv_ram_counter_session_int_LDFLAGS = $(TESTS_LDFLAGS) $(TS
 test_integration_esys_nv_ram_counter_session_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-nv-ram-counter.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_nv_ram_extend_index_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_nv_ram_extend_index_int_LDADD   = $(TESTS_LDADD)
@@ -1075,7 +1075,7 @@ test_integration_esys_nv_ram_extend_index_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_
 test_integration_esys_nv_ram_extend_index_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-nv-ram-extend-index.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_nv_ram_extend_index_session_int_CFLAGS  = $(TESTS_CFLAGS) \
     -DTEST_SESSION $(TSS2_ESYS_CFLAGS_CRYPTO)
@@ -1084,7 +1084,7 @@ test_integration_esys_nv_ram_extend_index_session_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_nv_ram_extend_index_session_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-nv-ram-extend-index.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_nv_ram_ordinary_index_rlock_int_CFLAGS  = $(TESTS_CFLAGS) \
     -I. -I$(srcdir)/test/integration/ -DTEST_READ_LOCK $(TSS2_ESYS_CFLAGS_CRYPTO)
@@ -1093,16 +1093,16 @@ test_integration_esys_nv_ram_ordinary_index_rlock_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_nv_ram_ordinary_index_rlock_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-nv-ram-ordinary-index.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_nv_ram_ordinary_index_rlock_session_int_CFLAGS  = $(TESTS_CFLAGS) \
-    -I. -I$(srcdir)/include/esapi -DTEST_SESSION -DTEST_READ_LOCK $(TSS2_ESYS_CFLAGS_CRYPTO)
+    -I. -I$(srcdir)/include/esys -DTEST_SESSION -DTEST_READ_LOCK $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_nv_ram_ordinary_index_rlock_session_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_nv_ram_ordinary_index_rlock_session_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO)
 test_integration_esys_nv_ram_ordinary_index_rlock_session_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-nv-ram-ordinary-index.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_nv_ram_ordinary_index_wlock_int_CFLAGS  = $(TESTS_CFLAGS) \
     -I. -DTEST_WRITE_LOCK $(TSS2_ESYS_CFLAGS_CRYPTO)
@@ -1112,7 +1112,7 @@ test_integration_esys_nv_ram_ordinary_index_wlock_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_nv_ram_ordinary_index_wlock_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-nv-ram-ordinary-index.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_nv_ram_ordinary_index_wlock_session_int_CFLAGS  = $(TESTS_CFLAGS) \
     -I. -DTEST_SESSION -DTEST_WRITE_LOCK $(TSS2_ESYS_CFLAGS_CRYPTO)
@@ -1122,7 +1122,7 @@ test_integration_esys_nv_ram_ordinary_index_wlock_session_int_LDFLAGS = $(TESTS_
 test_integration_esys_nv_ram_ordinary_index_wlock_session_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-nv-ram-ordinary-index.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_nv_ram_set_bits_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_nv_ram_set_bits_int_LDADD   = $(TESTS_LDADD)
@@ -1130,7 +1130,7 @@ test_integration_esys_nv_ram_set_bits_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS
 test_integration_esys_nv_ram_set_bits_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-nv-ram-set-bits.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_nv_ram_set_bits_session_int_CFLAGS  = $(TESTS_CFLAGS) \
     -DTEST_SESSION $(TSS2_ESYS_CFLAGS_CRYPTO)
@@ -1139,14 +1139,14 @@ test_integration_esys_nv_ram_set_bits_session_int_LDFLAGS = $(TESTS_LDFLAGS) $(T
 test_integration_esys_nv_ram_set_bits_session_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-nv-ram-set-bits.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_object_changeauth_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_object_changeauth_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_object_changeauth_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_object_changeauth_int_SOURCES = \
     test/integration/esys-object-changeauth.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_policy_authorize_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_policy_authorize_int_LDADD   = $(TESTS_LDADD)
@@ -1154,35 +1154,35 @@ test_integration_esys_policy_authorize_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESY
 test_integration_esys_policy_authorize_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-policy-authorize.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_policy_physical_presence_opt_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_policy_physical_presence_opt_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_policy_physical_presence_opt_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_policy_physical_presence_opt_int_SOURCES = \
     test/integration/esys-policy-physical-presence-opt.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_policy_regression_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_policy_regression_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_policy_regression_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_policy_regression_int_SOURCES = \
     test/integration/esys-policy-regression.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_policy_authorize_nv_opt_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_policy_authorize_nv_opt_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_policy_authorize_nv_opt_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_policy_authorize_nv_opt_int_SOURCES = \
     test/integration/esys-policy-authorize-nv-opt.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_policy_template_opt_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_policy_template_opt_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_policy_template_opt_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_policy_template_opt_int_SOURCES = \
     test/integration/esys-policy-template-opt.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_policy_ticket_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_policy_ticket_int_LDADD   = $(TESTS_LDADD)
@@ -1190,49 +1190,49 @@ test_integration_esys_policy_ticket_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_L
 test_integration_esys_policy_ticket_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-policy-ticket.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_policy_nv_changeauth_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_policy_nv_changeauth_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_policy_nv_changeauth_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_policy_nv_changeauth_int_SOURCES = \
     test/integration/esys-policy-nv-changeauth.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_policy_nv_undefine_special_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_policy_nv_undefine_special_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_policy_nv_undefine_special_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_policy_nv_undefine_special_int_SOURCES = \
     test/integration/esys-policy-nv-undefine-special.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_policy_password_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_policy_password_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_policy_password_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_policy_password_int_SOURCES = \
     test/integration/esys-policy-password.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_pcr_basic_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_pcr_basic_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_pcr_basic_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_pcr_basic_int_SOURCES = \
     test/integration/esys-pcr-basic.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_pcr_auth_value_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_pcr_auth_value_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_pcr_auth_value_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_pcr_auth_value_int_SOURCES = \
     test/integration/esys-pcr-auth-value.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_pp_commands_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_pp_commands_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_pp_commands_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_pp_commands_int_SOURCES = \
     test/integration/esys-pp-commands.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_quote_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_quote_int_LDADD   = $(TESTS_LDADD)
@@ -1240,7 +1240,7 @@ test_integration_esys_quote_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_C
 test_integration_esys_quote_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-quote.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_rsa_encrypt_decrypt_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_rsa_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
@@ -1248,7 +1248,7 @@ test_integration_esys_rsa_encrypt_decrypt_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_
 test_integration_esys_rsa_encrypt_decrypt_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-rsa-encrypt-decrypt.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_save_and_load_context_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_save_and_load_context_int_LDADD   = $(TESTS_LDADD)
@@ -1256,84 +1256,84 @@ test_integration_esys_save_and_load_context_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS
 test_integration_esys_save_and_load_context_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-save-and-load-context.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_session_attributes_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_session_attributes_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_session_attributes_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_session_attributes_int_SOURCES = \
     test/integration/esys-session-attributes.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_set_algorithm_set_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_set_algorithm_set_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_set_algorithm_set_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_set_algorithm_set_int_SOURCES = \
     test/integration/esys-set-algorithm-set.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_stir_random_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_stir_random_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_stir_random_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_stir_random_int_SOURCES = \
     test/integration/esys-stir-random.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_testparms_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_testparms_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_testparms_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_testparms_int_SOURCES = \
     test/integration/esys-testparms.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_tpm_tests_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_tpm_tests_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_tpm_tests_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_tpm_tests_int_SOURCES = \
     test/integration/esys-tpm-tests.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_tr_fromTpmPublic_key_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_tr_fromTpmPublic_key_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_tr_fromTpmPublic_key_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_tr_fromTpmPublic_key_int_SOURCES = \
     test/integration/esys-tr-fromTpmPublic-key.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_tr_fromTpmPublic_nv_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_tr_fromTpmPublic_nv_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_tr_fromTpmPublic_nv_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_tr_fromTpmPublic_nv_int_SOURCES = \
     test/integration/esys-tr-fromTpmPublic-nv.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_tr_fromTpmPublic_session_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_tr_fromTpmPublic_session_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_tr_fromTpmPublic_session_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_tr_fromTpmPublic_session_int_SOURCES = \
     test/integration/esys-tr-fromTpmPublic-session.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_tr_getName_hierarchy_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_tr_getName_hierarchy_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_tr_getName_hierarchy_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_tr_getName_hierarchy_int_SOURCES = \
     test/integration/esys-tr-getName-hierarchy.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_tr_getTpmHandle_key_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_tr_getTpmHandle_key_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_tr_getTpmHandle_key_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_tr_getTpmHandle_key_int_SOURCES = \
     test/integration/esys-tr-getTpmHandle-key.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_tr_getTpmHandle_nv_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_tr_getTpmHandle_nv_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_tr_getTpmHandle_nv_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_tr_getTpmHandle_nv_int_SOURCES = \
     test/integration/esys-tr-getTpmHandle-nv.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_unseal_password_auth_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_unseal_password_auth_int_LDADD   = $(TESTS_LDADD)
@@ -1341,52 +1341,52 @@ test_integration_esys_unseal_password_auth_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2
 test_integration_esys_unseal_password_auth_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-unseal-password-auth.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_verify_signature_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_verify_signature_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_verify_signature_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_verify_signature_int_SOURCES = \
     test/integration/esys-verify-signature.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_zgen_2phase_int_CFLAGS = $(TESTS_CFLAGS)
 test_integration_esys_zgen_2phase_int_LDADD = $(TESTS_LDADD)
 test_integration_esys_zgen_2phase_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_zgen_2phase_int_SOURCES = \
     test/integration/esys-zgen-2phase.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_auto_session_flags_int_CFLAGS = $(TESTS_CFLAGS)
 test_integration_esys_auto_session_flags_int_LDADD = $(TESTS_LDADD)
 test_integration_esys_auto_session_flags_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_auto_session_flags_int_SOURCES = \
     test/integration/esys-auto-session-flags.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_tpm_clear_auth_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_tpm_clear_auth_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_tpm_clear_auth_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_tpm_clear_auth_int_SOURCES = \
     test/integration/esys-tpm-clear-auth.int.c \
-    test/integration/main-esapi.c test/integration/test-esapi.h
+    test/integration/main-esys.c test/integration/test-esys.h
 
 endif #ESYS
 
-test_integration_sapi_policy_template_int_CFLAGS  = $(TESTS_CFLAGS)
-test_integration_sapi_policy_template_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_policy_template_int_SOURCES = test/integration/main-sapi.c \
-    test/integration/sapi-policy-template.int.c
+test_integration_sys_policy_template_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_sys_policy_template_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_policy_template_int_SOURCES = test/integration/main-sys.c \
+    test/integration/sys-policy-template.int.c
 
-test_integration_sapi_create_loaded_int_CFLAGS  = $(TESTS_CFLAGS)
-test_integration_sapi_create_loaded_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_create_loaded_int_SOURCES = test/integration/main-sapi.c \
-    test/integration/sapi-create-loaded.int.c
+test_integration_sys_create_loaded_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_sys_create_loaded_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_create_loaded_int_SOURCES = test/integration/main-sys.c \
+    test/integration/sys-create-loaded.int.c
 
-test_integration_sapi_policy_authorizeNV_int_CFLAGS  = $(TESTS_CFLAGS)
-test_integration_sapi_policy_authorizeNV_int_LDADD   = $(TESTS_LDADD)
-test_integration_sapi_policy_authorizeNV_int_SOURCES = test/integration/main-sapi.c \
-    test/integration/sapi-policy-authorizeNV.int.c
+test_integration_sys_policy_authorizeNV_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_sys_policy_authorizeNV_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_policy_authorizeNV_int_SOURCES = test/integration/main-sys.c \
+    test/integration/sys-policy-authorizeNV.int.c
 
 if FAPI
 

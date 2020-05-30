@@ -21,7 +21,7 @@
  *   based on an ECC key
  * created with Esys_CreatePrimary and a dummy ECC point.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_CreatePrimary() (M)
  *  - Esys_ECDH_ZGen() (M)
  *  - Esys_FlushContext() (M)
@@ -137,7 +137,7 @@ test_esys_ecdh_zgen(ESYS_CONTEXT * esys_context)
                            &outsideInfo, &creationPCR, &eccHandle,
                            &outPublic, &creationData, &creationHash,
                            &creationTicket);
-    goto_if_error(r, "Error esapi create primary", error);
+    goto_if_error(r, "Error esys create primary", error);
 
     TPM2B_ECC_POINT inPoint= {
         .size = 0,
@@ -210,6 +210,6 @@ test_esys_ecdh_zgen(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_ecdh_zgen(esys_context);
 }

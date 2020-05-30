@@ -37,7 +37,7 @@ int
 main (int argc, char *argv[])
 {
     TSS2_RC rc;
-    TSS2_SYS_CONTEXT *sapi_context;
+    TSS2_SYS_CONTEXT *sys_context;
     TSS2L_SYS_AUTH_COMMAND auth_cmd = {
         .auths = {{ .sessionHandle = TPM2_RS_PW }},
         .count = 1
@@ -84,8 +84,8 @@ main (int argc, char *argv[])
     if (sanity_check_test_opts (&opts) != 0)
         exit (1);
 
-    sapi_context = sapi_init_from_opts (&opts);
-    if (sapi_context == NULL)
+    sys_context = sys_init_from_opts (&opts);
+    if (sys_context == NULL)
         exit (1);
 
     /* First make sure that not EK certificate is currently loaded */
@@ -94,7 +94,7 @@ main (int argc, char *argv[])
 
     LOG_WARNING("Define NV cert with nv index: %x", public_info.nvPublic.nvIndex);
 
-    rc = Tss2_Sys_NV_DefineSpace(sapi_context, TPM2_RH_PLATFORM, &auth_cmd,
+    rc = Tss2_Sys_NV_DefineSpace(sys_context, TPM2_RH_PLATFORM, &auth_cmd,
                                  &nv_auth, &public_info, &auth_rsp);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("TPM NV DefineSpace FAILED: 0x%"PRIx32, rc);
@@ -107,21 +107,21 @@ main (int argc, char *argv[])
     buf2.size -= buf1.size;
     memcpy(&buf2.buffer[0], &buf1.buffer[buf1.size], buf2.size);
 
-    rc = Tss2_Sys_NV_Write(sapi_context, TPM2_RH_PLATFORM, nvIndex, &auth_cmd,
+    rc = Tss2_Sys_NV_Write(sys_context, TPM2_RH_PLATFORM, nvIndex, &auth_cmd,
                            &buf1, 0, &auth_rsp);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("TPM NV Write FAILED: 0x%"PRIx32, rc);
         exit(1);
     }
 
-    rc = Tss2_Sys_NV_Write(sapi_context, TPM2_RH_PLATFORM, nvIndex, &auth_cmd,
+    rc = Tss2_Sys_NV_Write(sys_context, TPM2_RH_PLATFORM, nvIndex, &auth_cmd,
                            &buf2, buf1.size, &auth_rsp);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("TPM NV Write FAILED: 0x%"PRIx32, rc);
         exit(1);
     }
 
-    sapi_teardown_full (sapi_context);
+    sys_teardown_full (sys_context);
 
     return 0;
 }

@@ -17,12 +17,12 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** This test is intended to test the ESAPI command ObjectChangeAuth.
+/** This test is intended to test the ESYS command ObjectChangeAuth.
  *
  * We start by creating a primary key (Esys_CreatePrimary).
  * The auth value for this primary will be changed.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_Create() (M)
  *  - Esys_CreatePrimary() (M)
  *  - Esys_FlushContext() (M)
@@ -300,7 +300,7 @@ test_esys_tr_setauth(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     TSS2_RC r;
 
     r = test_esys_object_changeauth(esys_context);

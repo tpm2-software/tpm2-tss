@@ -22,7 +22,7 @@
  * We create a RSA primary signing key which will be used as signing key
  * and as object for the certify creation.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_CertifyCreation() (M)
  *  - Esys_CreatePrimary() (M)
  *  - Esys_FlushContext() (M)
@@ -177,6 +177,6 @@ test_esys_certify_creation(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_certify_creation(esys_context);
 }

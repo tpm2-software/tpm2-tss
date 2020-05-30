@@ -26,7 +26,7 @@
  * After the key is flushed the key will be loaded again with ContextLoad
  * and will be used to create a third key
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_ContextLoad() (M)
  *  - Esys_ContextSave() (M)
  *  - Esys_Create() (M)
@@ -386,6 +386,6 @@ test_esys_save_and_load_context(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_save_and_load_context(esys_context);
 }

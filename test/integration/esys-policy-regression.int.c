@@ -12,7 +12,7 @@
 #include "tss2_mu.h"
 
 #include "esys_iutil.h"
-#include "test-esapi.h"
+#include "test-esys.h"
 #define LOGMODULE test
 #include "util/log.h"
 #include "util/aux_util.h"
@@ -64,12 +64,12 @@ cmp_policy_digest(ESYS_CONTEXT * esys_context,
     return false;
 }
 
-/** This test is intended to test the ESAPI policy commands, not tested
+/** This test is intended to test the ESYS policy commands, not tested
  *  in other test cases.
  *  When possoble the commands are tested with a
  * trial session and the policy digest is compared with the expected digest.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_FlushContext() (M)
  *  - Esys_NV_DefineSpace() (M)
  *  - Esys_NV_UndefineSpace() (M)
@@ -489,6 +489,6 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_policy_regression(esys_context);
 }

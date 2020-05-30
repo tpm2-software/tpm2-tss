@@ -14,12 +14,12 @@
 #include "tss2_mu.h"
 
 #include "esys_iutil.h"
-#include "test-esapi.h"
+#include "test-esys.h"
 #define LOGMODULE test
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** This test is intended to test the ESAPI commands Duplicate and Rewrap.
+/** This test is intended to test the ESYS commands Duplicate and Rewrap.
  *
  * We start by creating a primary key (Esys_CreatePrimary).
  * This primary key will be used as parent key for the Duplicate
@@ -27,7 +27,7 @@
  * duplicated key. In the last step the key is rewrapped with the
  * first primary key as parent key.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_Create() (M)
  *  - Esys_CreatePrimary() (M)
  *  - Esys_Duplicate() (M)
@@ -509,6 +509,6 @@ test_esys_duplicate(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_duplicate(esys_context);
 }

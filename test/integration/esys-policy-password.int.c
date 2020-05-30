@@ -13,12 +13,12 @@
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
-#include "test-esapi.h"
+#include "test-esys.h"
 #define LOGMODULE test
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** This test is intended to test the ESAPI command PolicyPassword.
+/** This test is intended to test the ESYS command PolicyPassword.
  *
  * First in a trial session the policy value to ensure that auth value
  * is included in the policy session used for authorization is
@@ -27,7 +27,7 @@
  * policy value and a certain authorization. Than a second key it created
  * with a PoliyPassword policy session.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_Create() (M)
  *  - Esys_CreatePrimary() (M)
  *  - Esys_FlushContext() (M)
@@ -332,6 +332,6 @@ test_esys_policy_password(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_policy_password(esys_context);
 }

@@ -17,7 +17,7 @@
  *  the TPM2_HANDLE for it and validating that the handle is correct for the
  *  expected object type.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_CreatePrimary() (M)
  *  - Esys_EvictControl() (M)
  *  - Esys_FlushContext() (M)
@@ -155,6 +155,6 @@ out:
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_tr_toTpmPublic_key(esys_context);
 }

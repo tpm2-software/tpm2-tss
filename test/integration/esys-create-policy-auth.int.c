@@ -13,14 +13,14 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** This test is intended to test policy authentication for the ESAPI command
+/** This test is intended to test policy authentication for the ESYS command
  *  Create.
  *
  * We start by creating a primary key with a password and policy.
  * Based in the primary a second key will be created using the prinary key's
  * policy for authorization.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_StartAuthSession() (M)
  *  - Esys_PolicyCommandCode() (M)
  *  - Esys_PolicyGetDigest() (M)
@@ -301,6 +301,6 @@ error:
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_create_policy_auth(esys_context);
 }

@@ -22,7 +22,7 @@
  *  Then we call Esys_TR_GetName to see if the correct public name has been
  * retrieved.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_CreatePrimary() (M)
  *  - Esys_EvictControl() (M)
  *  - Esys_FlushContext() (M)
@@ -177,6 +177,6 @@ error:
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_tr_fromTpmPublic_key(esys_context);
 }

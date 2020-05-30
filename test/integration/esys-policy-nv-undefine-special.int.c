@@ -13,12 +13,12 @@
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
-#include "test-esapi.h"
+#include "test-esys.h"
 #define LOGMODULE test
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** This test is intended to test the ESAPI command Esys_NV_UndefineSpaceSpecial,
+/** This test is intended to test the ESYS command Esys_NV_UndefineSpaceSpecial,
  *  The NV space attributes TPMA_NV_PLATFORMCREATE and TPMA_NV_POLICY_DELETE
  *  have to be set.
  *
@@ -28,7 +28,7 @@
  *
  *\b Note: platform authorization needed.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_FlushContext() (M)
  *  - Esys_NV_DefineSpace() (M)
  *  - Esys_NV_UndefineSpaceSpecial() (M)
@@ -246,6 +246,6 @@ test_esys_policy_nv_undefine_special(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_policy_nv_undefine_special(esys_context);
 }

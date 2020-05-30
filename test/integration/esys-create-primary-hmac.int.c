@@ -22,7 +22,7 @@
  * The test can be executed with RSA or ECC keys. ECC will be used if
  * ECC is defined.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_CreatePrimary() (M)
  *  - Esys_FlushContext() (M)
  *  - Esys_StartAuthSession() (M)
@@ -175,7 +175,7 @@ test_esys_create_primary_hmac(ESYS_CONTEXT * esys_context)
                            &outsideInfo, &creationPCR, &objectHandle,
                            &outPublic, &creationData, &creationHash,
                            &creationTicket);
-    goto_if_error(r, "Error esapi create primary", error);
+    goto_if_error(r, "Error esys create primary", error);
 
     r = esys_GetResourceObject(esys_context, objectHandle,
                                &objectHandle_node);
@@ -220,6 +220,6 @@ test_esys_create_primary_hmac(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_create_primary_hmac(esys_context);
 }

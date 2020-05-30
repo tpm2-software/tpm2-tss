@@ -25,7 +25,7 @@
  * Also second primary is created after a call of Esys_TR_SetAuth with
  * the new auth value.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_CreatePrimary() (M)
  *  - Esys_FlushContext() (M)
  *  - Esys_HierarchyChangeAuth() (M)
@@ -202,6 +202,6 @@ error:
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_hierarchychangeauth(esys_context);
 }

@@ -17,11 +17,11 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Test the ESAPI commands: HMAC_Start, SequenceUpdate, and SequenceComplete.
+/** Test the ESYS commands: HMAC_Start, SequenceUpdate, and SequenceComplete.
  *
  * The HMAC key is created by using Esys_CreatePrimary.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_CreatePrimary() (M)
  *  - Esys_FlushContext() (M)
  *  - Esys_HMAC_Start() (M)
@@ -284,6 +284,6 @@ test_esys_hmacsequencestart(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_hmacsequencestart(esys_context);
 }
