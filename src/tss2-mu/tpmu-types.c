@@ -277,13 +277,14 @@ static TSS2_RC unmarshal_null(uint8_t const buffer[], size_t buffer_size,
 TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buffer[], \
                                  size_t buffer_size, size_t *offset) \
 { \
-    TSS2_RC ret = TSS2_RC_SUCCESS; \
+    TSS2_RC ret = TSS2_MU_RC_BAD_VALUE; \
 \
     if (src == NULL) { \
         LOG_WARNING("src param is NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
+    LOG_DEBUG("Marshalling " #type ", selector %x", selector); \
     switch (selector) { \
     case sel: \
     ret = fn(op src->m, buffer, buffer_size, offset); \
@@ -318,7 +319,12 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buf
     case sel11: \
     ret = fn11(op11 src->m11, buffer, buffer_size, offset); \
     break; \
+    case TPM2_ALG_NULL: \
+    LOG_DEBUG("ALG_NULL selector skipping"); \
+    ret = TSS2_RC_SUCCESS; \
+    break; \
     default: \
+    LOG_DEBUG("wrong selector %x return error", selector); \
     break; \
     } \
     return ret; \
@@ -368,8 +374,9 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buf
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, uint32_t selector, type *dest) \
 { \
-    TSS2_RC ret = TSS2_RC_SUCCESS; \
+    TSS2_RC ret = TSS2_MU_RC_BAD_VALUE; \
 \
+    LOG_DEBUG("Unmarshalling " #type ", selector %x", selector); \
     switch (selector) { \
     case sel: \
     ret = fn(buffer, buffer_size, offset, dest ? &dest->m : NULL); \
@@ -404,7 +411,12 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     case sel11: \
     ret = fn11(buffer, buffer_size, offset, dest ? &dest->m11 : NULL); \
     break; \
+    case TPM2_ALG_NULL: \
+    LOG_DEBUG("ALG_NULL selector skipping"); \
+    ret = TSS2_RC_SUCCESS; \
+    break; \
     default: \
+    LOG_DEBUG("wrong selector %x return error", selector); \
     break; \
     } \
     return ret; \
