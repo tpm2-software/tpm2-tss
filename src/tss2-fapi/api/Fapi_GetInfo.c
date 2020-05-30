@@ -256,7 +256,11 @@ Fapi_GetInfo_Finish(
         goto_if_error(r, "Error serialize info object", cleanup);
 
         /* Duplicate the information to be returned to the caller. */
-        *info = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY));
+#ifdef JSON_C_TO_STRING_NOSLASHESCAPE
+        *info = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY | JSON_C_TO_STRING_NOSLASHESCAPE));
+#else
+         *info = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY));
+#endif
         goto_if_null2(*info, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
         context->state = _FAPI_STATE_INIT;
