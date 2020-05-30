@@ -15,7 +15,7 @@
 #include "tss2_mu.h"
 
 #include "esys_iutil.h"
-#include "test-esapi.h"
+#include "test-esys.h"
 #define LOGMODULE test
 #include "util/log.h"
 #include "util/aux_util.h"
@@ -49,12 +49,12 @@ out:
 
     return result;
 }
-/** This test is intended to test the ESAPI command CreateLoaded.
+/** This test is intended to test the ESYS command CreateLoaded.
  *
  * We start by creating a primary key (Esys_CreatePrimary).
  * This primary key will be used as parent key for CreateLoaded.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_CreateLoaded() (F)
  *  - Esys_CreatePrimary() (M)
  *  - Esys_FlushContext() (M)
@@ -331,6 +331,6 @@ test_esys_createloaded(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_createloaded(esys_context);
 }

@@ -132,7 +132,7 @@ test_esys_session_attributes(ESYS_CONTEXT * esys_context)
                            &outsideInfo, &creationPCR, &objectHandle,
                            NULL, NULL, NULL, NULL);
     transmit_hook = NULL;
-    goto_if_error(r, "Error esapi create primary", error);
+    goto_if_error(r, "Error esys create primary", error);
 
     r = Esys_FlushContext(esys_context, objectHandle);
     goto_if_error(r, "Error during FlushContext", error);
@@ -161,14 +161,14 @@ test_esys_session_attributes(ESYS_CONTEXT * esys_context)
                        10, &rdata);
     Esys_Free(rdata);
     transmit_hook = NULL;
-    goto_if_error(r, "Error esapi create primary", error);
+    goto_if_error(r, "Error esys create primary", error);
 
     transmit_hook = hookcheck_session1;
 
     r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE,
                        10, &rdata);
     transmit_hook = NULL;
-    goto_if_error(r, "Error esapi create primary", error);
+    goto_if_error(r, "Error esys create primary", error);
 
     LOGBLOB_INFO(&rdata->buffer[0], rdata->size, "rdata");
 
@@ -199,7 +199,7 @@ test_esys_session_attributes(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_session_attributes(esys_context);
 }
 

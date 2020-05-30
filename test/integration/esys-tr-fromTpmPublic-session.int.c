@@ -15,7 +15,7 @@
 /** This tests the ability to create an ESYS_TR object via Esys_TR_FromTPMPublic
  *  given a TPM2_HANDLE representing a session handle.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_StartAuthSession() (M)
  *  - Esys_GetCapability() (M)
  *  - Esys_FlushContext() (M)
@@ -117,6 +117,6 @@ out:
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_tr_fromTpmPublic_session(esys_context);
 }

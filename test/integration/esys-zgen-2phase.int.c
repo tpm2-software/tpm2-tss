@@ -13,7 +13,7 @@
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
-#include "test-esapi.h"
+#include "test-esys.h"
 #define LOGMODULE test
 #include "util/log.h"
 #include "util/aux_util.h"
@@ -23,7 +23,7 @@
  * The test is based on an ECC key created with Esys_CreatePrimary
  * and data produced by the command Esys_EC_Ephemeral.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_CreatePrimary() (M)
  *  - Esys_ECDH_ZGen() (M)
  *  - Esys_EC_Ephemeral() (F)
@@ -146,7 +146,7 @@ test_esys_zgen_2phase(ESYS_CONTEXT * esys_context)
                            &outsideInfo, &creationPCR, &eccHandle,
                            &outPublic, &creationData, &creationHash,
                            &creationTicket);
-    goto_if_error(r, "Error esapi create primary", error);
+    goto_if_error(r, "Error esys create primary", error);
 
     TPMI_ECC_CURVE curveID = TPM2_ECC_NIST_P256;
     UINT16 counter;
@@ -241,6 +241,6 @@ test_esys_zgen_2phase(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_zgen_2phase(esys_context);
 }

@@ -26,7 +26,7 @@
 
 /**
  * This unit test checks whether all  Esys_<cmd>() functions (one call, async,
- * and finish check the NULL pointer ESAPI context.
+ * and finish check the NULL pointer ESYS context.
  */
 
 void

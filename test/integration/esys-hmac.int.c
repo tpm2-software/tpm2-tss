@@ -17,14 +17,14 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** This test is intended to test the ESAPI command  Esys_HMAC with password
+/** This test is intended to test the ESYS command  Esys_HMAC with password
  *  authentication.
  *
  * We create a symmetric HMAC key signing key which will be used
  * for signing. This key will be used to create the HMAC for a test
  * buffer.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_CreatePrimary() (M)
  *  - Esys_FlushContext() (M)
  *  - Esys_HMAC() (O)
@@ -134,6 +134,6 @@ test_esys_hmac(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_hmac(esys_context);
 }

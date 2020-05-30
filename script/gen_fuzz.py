@@ -19,12 +19,12 @@ MAKEFILE_FUZZ_TARGET = '''
 noinst_PROGRAMS += test/fuzz/%s.fuzz
 test_fuzz_%s_fuzz_CPPFLAGS = $(FUZZ_CPPFLAGS)
 test_fuzz_%s_fuzz_LDADD    = $(FUZZLDADD)
-nodist_test_fuzz_%s_fuzz_SOURCES  = test/fuzz/main-sapi.cpp \\
+nodist_test_fuzz_%s_fuzz_SOURCES  = test/fuzz/main-sys.cpp \\
         test/fuzz/%s.fuzz.cpp
 
 DISTCLEANFILES += test/fuzz/%s.fuzz.cpp'''
-# Common include definitions needed for fuzzing an SAPI call
-SAPI_TEMPLATE_HEADER = '''/* SPDX-License-Identifier: BSD-2-Clause */
+# Common include definitions needed for fuzzing an SYS call
+SYS_TEMPLATE_HEADER = '''/* SPDX-License-Identifier: BSD-2-Clause */
 /***********************************************************************
  * Copyright (c) 2018, Intel Corporation
  *
@@ -65,16 +65,16 @@ extern "C"
 int
 test_invoke (
         TSS2_SYS_CONTEXT *sysContext)'''
-# Template to call a SAPI _Complete function which takes no arguments
-SAPI_COMPLETE_TEMPLATE_NO_ARGS = SAPI_TEMPLATE_HEADER + '''
+# Template to call a SYS _Complete function which takes no arguments
+SYS_COMPLETE_TEMPLATE_NO_ARGS = SYS_TEMPLATE_HEADER + '''
 {
     %s (sysContext);
 
     return EXIT_SUCCESS;
 }
 '''
-# Template to call a SAPI _Complete function which takes arguments
-SAPI_COMPLETE_TEMPLATE_HAS_ARGS = SAPI_TEMPLATE_HEADER + '''
+# Template to call a SYS _Complete function which takes arguments
+SYS_COMPLETE_TEMPLATE_HAS_ARGS = SYS_TEMPLATE_HEADER + '''
 {
     %s
 
@@ -86,8 +86,8 @@ SAPI_COMPLETE_TEMPLATE_HAS_ARGS = SAPI_TEMPLATE_HEADER + '''
     return EXIT_SUCCESS;
 }
 '''
-# Template to call a SAPI _Prepare function
-SAPI_PREPARE_TEMPLATE_HAS_ARGS = SAPI_TEMPLATE_HEADER + '''
+# Template to call a SYS _Prepare function
+SYS_PREPARE_TEMPLATE_HAS_ARGS = SYS_TEMPLATE_HEADER + '''
 {
     int ret;
     %s
@@ -136,11 +136,11 @@ def gen_file(function):
 
 def gen_complete(function, function_name, args):
     '''
-    Generate the cpp fuzz target for a SAPI _Complete call
+    Generate the cpp fuzz target for a SYS _Complete call
     '''
     if not args:
         # Fill in the no args template. Simple case.
-        return function_name, SAPI_COMPLETE_TEMPLATE_NO_ARGS % (function_name)
+        return function_name, SYS_COMPLETE_TEMPLATE_NO_ARGS % (function_name)
     # Generate the cpp variable definitions.
     arg_definitions = (';\n' + ' ' * 4).join([
         arg.replace('*', '') for arg in args]) + ';'
@@ -150,13 +150,13 @@ def gen_complete(function, function_name, args):
     arg_call = (',\n' + ' ' * 8).join([
         arg.replace('*', '&').split()[-1] for arg in args])
     # Fill in the template
-    return function_name, SAPI_COMPLETE_TEMPLATE_HAS_ARGS % (arg_definitions,
+    return function_name, SYS_COMPLETE_TEMPLATE_HAS_ARGS % (arg_definitions,
                                                              function_name,
                                                              arg_call)
 
 def gen_prepare(function, function_name, args):
     '''
-    Generate the cpp fuzz target for a SAPI _Prepare call
+    Generate the cpp fuzz target for a SYS _Prepare call
     '''
     if not args:
         return function_name, None
@@ -178,7 +178,7 @@ def gen_prepare(function, function_name, args):
                 tuple([arg.replace('*', '').split()[-1]] * 2)) \
         for arg in args])
     # Fill in the template
-    return function_name, SAPI_PREPARE_TEMPLATE_HAS_ARGS % (arg_definitions,
+    return function_name, SYS_PREPARE_TEMPLATE_HAS_ARGS % (arg_definitions,
                                                             len(args) * 2,
                                                             fill_fuzz_args,
                                                             function_name,
@@ -214,7 +214,7 @@ def gen_files(header):
         yield function_name, contents
 
 def main():
-    parser = argparse.ArgumentParser(description='Generate libfuzzer for sapi')
+    parser = argparse.ArgumentParser(description='Generate libfuzzer for sys')
     parser.add_argument('--header', default='include/tss2/tss2_sys.h',
             help='Header file to look in (default include/tss2/tss2_sys.h)')
     args = parser.parse_args()

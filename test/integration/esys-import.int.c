@@ -18,7 +18,7 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** This test is intended to test the ESAPI commands Duplicate and Import.
+/** This test is intended to test the ESYS commands Duplicate and Import.
  *
  * We start by creating a primary key (Esys_CreatePrimary).
  * This primary key will be used as parent key for the Duplicate
@@ -26,7 +26,7 @@
  * duplicated key. In the last step the key is imported with the
  * first primary key as parent key (Esys_Import).
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_Create() (M)
  *  - Esys_CreatePrimary() (M)
  *  - Esys_Duplicate() (M)
@@ -519,6 +519,6 @@ test_esys_import(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_import(esys_context);
 }

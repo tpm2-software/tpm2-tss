@@ -23,7 +23,7 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** This test is intended to test the unseal operation for the ESAPI command
+/** This test is intended to test the unseal operation for the ESYS command
  *  Unseal.
  *
  * We start by creating a primary key (Esys_CreatePrimary).
@@ -32,7 +32,7 @@
  * This key will be loaded and the unseal command (Esys_Unseal) will be used
  * to retrieve the sealed data.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_Create() (M)
  *  - Esys_CreatePrimary() (M)
  *  - Esys_FlushContext() (M)
@@ -343,6 +343,6 @@ test_esys_unseal_password_auth(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_unseal_password_auth(esys_context);
 }

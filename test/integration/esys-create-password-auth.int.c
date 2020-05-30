@@ -17,7 +17,7 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** This test is intended to test password authentication for the ESAPI command
+/** This test is intended to test password authentication for the ESYS command
  *  Create.
  *
  * We start by creating a primary key (Esys_CreatePrimary).
@@ -26,7 +26,7 @@
  * This key will be loaded and will be used as parent to create a third key.
  * Password authentication  will be used to create this key.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_Create() (M)
  *  - Esys_CreatePrimary() (M)
  *  - Esys_FlushContext() (M)
@@ -358,6 +358,6 @@ test_esys_create_password_auth(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_create_password_auth(esys_context);
 }

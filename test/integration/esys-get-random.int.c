@@ -17,9 +17,9 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** Test the ESAPI function Esys_GetRandom.
+/** Test the ESYS function Esys_GetRandom.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_GetRandom() (M)
  *  - Esys_StartAuthSession() (M)
  *
@@ -214,6 +214,6 @@ test_esys_get_random(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_get_random(esys_context);
 }

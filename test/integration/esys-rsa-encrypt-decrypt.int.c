@@ -24,7 +24,7 @@
  * This key will be used for encryption/decryption in with the schemes:
  * TPM2_ALG_NULL, TPM2_ALG_RSAES, and TPM2_ALG_OAEP
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_CreatePrimary() (M)
  *  - Esys_FlushContext() (M)
  *  - Esys_RSA_Decrypt() (M)
@@ -214,6 +214,6 @@ test_esys_rsa_encrypt_decrypt(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_rsa_encrypt_decrypt(esys_context);
 }

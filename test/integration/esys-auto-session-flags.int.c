@@ -15,9 +15,9 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** This test is intended to test auto adjust and restore session flags in ESAPI
+/** This test is intended to test auto adjust and restore session flags in ESYS
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_FlushContext() (M)
  *  - Esys_NV_DefineSpace() (M)
  *  - Esys_NV_Read() (M)
@@ -197,6 +197,6 @@ test_esys_auto_flags(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_auto_flags(esys_context);
 }

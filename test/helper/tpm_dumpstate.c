@@ -37,7 +37,7 @@ int
 main (int argc, char *argv[])
 {
     TSS2_RC rc;
-    TSS2_SYS_CONTEXT *sapi_context;
+    TSS2_SYS_CONTEXT *sys_context;
 
     test_opts_t opts = {
         .tcti_type      = TCTI_DEFAULT,
@@ -50,8 +50,8 @@ main (int argc, char *argv[])
     if (sanity_check_test_opts (&opts) != 0)
         exit (1);
 
-    sapi_context = sapi_init_from_opts (&opts);
-    if (sapi_context == NULL)
+    sys_context = sys_init_from_opts (&opts);
+    if (sys_context == NULL)
         exit (1);
 
     for (size_t i = 0; i < TAB_SIZE(capabilities); i++) {
@@ -59,7 +59,7 @@ main (int argc, char *argv[])
         uint8_t buffer[sizeof(caps)];
         size_t off = 0;
 
-        rc = Tss2_Sys_GetCapability(sapi_context, NULL, capabilities[i].cap,
+        rc = Tss2_Sys_GetCapability(sys_context, NULL, capabilities[i].cap,
                                     capabilities[i].prop,
                                     capabilities[i].count, NULL,
                                     &caps, NULL);
@@ -84,7 +84,7 @@ main (int argc, char *argv[])
         printf("\n");
     }
 
-    sapi_teardown_full (sapi_context);
+    sys_teardown_full (sys_context);
 
     return 0;
 }

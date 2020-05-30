@@ -22,7 +22,7 @@
  *  Then we call Esys_TR_GetName to see if the correct public name has been
  * retrieved.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_NV_DefineSpace() (M)
  *  - Esys_NV_ReadPublic() (M)
  *  - Esys_NV_UndefineSpace() (M)
@@ -116,6 +116,6 @@ error:
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_tr_fromTpmPublic_nv(esys_context);
 }

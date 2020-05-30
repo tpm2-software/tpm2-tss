@@ -25,7 +25,7 @@
 #endif /* TCTI_SWTPM */
 
 #include "../integration/context-util.h"
-#include "../integration/sapi-util.h"
+#include "../integration/sys-util.h"
 #include "../integration/session-util.h"
 #include "util/tss2_endian.h"
 #include "sysapi_util.h"
@@ -847,7 +847,7 @@ static void TestHierarchyControl()
     rval = Tss2_Sys_NV_DefineSpace( sysContext, TPM2_RH_PLATFORM, &sessionsData, &nvAuth, &publicInfo, 0 );
     CheckPassed( rval );
 
-    /* Test SAPI for case where nvPublic.size != 0 */
+    /* Test SYS for case where nvPublic.size != 0 */
     nvPublic.size = 0xff;
     INIT_SIMPLE_TPM2B_SIZE( nvName );
     rval = Tss2_Sys_NV_ReadPublic( sysContext, TPM20_INDEX_TEST1, 0, &nvPublic, &nvName, 0 );
@@ -1747,7 +1747,7 @@ static void GetSetDecryptParamTests()
     LOG_INFO("GET/SET DECRYPT PARAM TESTS:" );
 
     /* Create two sysContext structures. */
-    decryptParamTestSysContext = sapi_init_from_tcti_ctx(resMgrTctiContext);
+    decryptParamTestSysContext = sys_init_from_tcti_ctx(resMgrTctiContext);
     if (decryptParamTestSysContext == NULL)
         InitSysContextFailure();
 
@@ -1903,7 +1903,7 @@ static void GetSetDecryptParamTests()
     rval = Tss2_Sys_SetDecryptParam( decryptParamTestSysContext, 1, &( nvWriteData.buffer[0] ) );
     CheckFailed( rval, TSS2_SYS_RC_BAD_SIZE );
 
-    sapi_teardown(decryptParamTestSysContext);
+    sys_teardown(decryptParamTestSysContext);
 }
 
 static void SysFinalizeTests()
@@ -1922,7 +1922,7 @@ static void GetContextSizeTests()
 
     LOG_INFO("SYS GETCONTEXTSIZE TESTS:" );
 
-    testSysContext = sapi_init_from_tcti_ctx(resMgrTctiContext);
+    testSysContext = sys_init_from_tcti_ctx(resMgrTctiContext);
     if (testSysContext == NULL)
         InitSysContextFailure();
 
@@ -1932,7 +1932,7 @@ static void GetContextSizeTests()
     rval = Tss2_Sys_GetTestResult_Prepare(testSysContext);
     CheckPassed(rval);
 
-    sapi_teardown(testSysContext);
+    sys_teardown(testSysContext);
 }
 
 static void GetTctiContextTests()
@@ -1943,7 +1943,7 @@ static void GetTctiContextTests()
 
     LOG_INFO("SYS GETTCTICONTEXT TESTS:" );
 
-    testSysContext = sapi_init_from_tcti_ctx(resMgrTctiContext);
+    testSysContext = sys_init_from_tcti_ctx(resMgrTctiContext);
     if (testSysContext == NULL)
         InitSysContextFailure();
 
@@ -1953,7 +1953,7 @@ static void GetTctiContextTests()
     rval = Tss2_Sys_GetTctiContext(0, &tctiContext);
     CheckFailed(rval, TSS2_SYS_RC_BAD_REFERENCE);
 
-    sapi_teardown(testSysContext);
+    sys_teardown(testSysContext);
 }
 
 static void GetSetEncryptParamTests()
@@ -2135,7 +2135,7 @@ static void EcEphemeralTest()
 
     LOG_INFO("EC Ephemeral TESTS:" );
 
-    /* Test SAPI for case of Q size field not being set to 0. */
+    /* Test SYS for case of Q size field not being set to 0. */
     INIT_SIMPLE_TPM2B_SIZE( Q );
     rval = Tss2_Sys_EC_Ephemeral( sysContext, 0, TPM2_ECC_BN_P256, &Q, &counter, 0 );
     CheckFailed( rval, TSS2_SYS_RC_BAD_VALUE );
@@ -2146,7 +2146,7 @@ static void EcEphemeralTest()
 }
 
 int
-test_invoke (TSS2_SYS_CONTEXT *sapi_context)
+test_invoke (TSS2_SYS_CONTEXT *sys_context)
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
 
@@ -2155,10 +2155,10 @@ test_invoke (TSS2_SYS_CONTEXT *sapi_context)
     return EXIT_SKIP;
 #endif
 
-    sysContext = sapi_context;
-    rval = Tss2_Sys_GetTctiContext (sapi_context, &resMgrTctiContext);
+    sysContext = sys_context;
+    rval = Tss2_Sys_GetTctiContext (sys_context, &resMgrTctiContext);
     if (rval != TSS2_RC_SUCCESS) {
-        printf ("Failed to get TCTI context from sapi_context: 0x%" PRIx32
+        printf ("Failed to get TCTI context from sys_context: 0x%" PRIx32
                 "\n", rval);
         return 1;
     }

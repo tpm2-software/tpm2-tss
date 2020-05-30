@@ -20,7 +20,7 @@
 /** This test is intended to test Esys_ECDH_KeyGen based on an ECC key
  *  created with Esys_CreatePrimary.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_CreatePrimary() (M)
  *  - Esys_ECDH_KeyGen() (M)
  *  - Esys_FlushContext() (M)
@@ -137,7 +137,7 @@ test_esys_ecdh_keygen(ESYS_CONTEXT * esys_context)
                            &outsideInfo, &creationPCR, &eccHandle,
                            &outPublic, &creationData, &creationHash,
                            &creationTicket);
-    goto_if_error(r, "Error esapi create primary", error);
+    goto_if_error(r, "Error esys create primary", error);
 
     r = Esys_ECDH_KeyGen(
         esys_context,
@@ -189,6 +189,6 @@ test_esys_ecdh_keygen(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_ecdh_keygen(esys_context);
 }

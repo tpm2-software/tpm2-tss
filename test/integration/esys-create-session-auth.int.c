@@ -30,7 +30,7 @@
  * Secret exchange with a ECC key can be activated with the compiler variable
  * -D TEST_ECC.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_ContextLoad() (M)
  *  - Esys_ContextSave() (M)
  *  - Esys_Create() (M)
@@ -502,6 +502,6 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_create_session_auth(esys_context);
 }

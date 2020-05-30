@@ -13,20 +13,20 @@
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
-#include "test-esapi.h"
+#include "test-esys.h"
 #define LOGMODULE test
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** This test is intended to test the ESAPI commands  nv define space, nv write,
+/** This test is intended to test the ESYS commands  nv define space, nv write,
  *  nv read command, nv lock write and nv lock read, and nv undefine.
  *
- * The names stored in the ESAPI resource are compared
+ * The names stored in the ESYS resource are compared
  * with the names delivered from the TPM by the command ReadPublic.
  * only one of the tests NV_ReadLock and NV_WriteLock can be activated
  * by the defines TEST_READ_LOCK and TEST_WRITE_LOCK (-D option)
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_FlushContext() (M)
  *  - Esys_NV_DefineSpace() (M)
  *  - Esys_NV_Read() (M)
@@ -370,6 +370,6 @@ test_esys_nv_ram_ordinary_index(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_nv_ram_ordinary_index(esys_context);
 }

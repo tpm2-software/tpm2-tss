@@ -13,7 +13,7 @@
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
-#include "test-esapi.h"
+#include "test-esys.h"
 #define LOGMODULE test
 #include "util/log.h"
 #include "util/aux_util.h"
@@ -23,7 +23,7 @@
  * created with Esys_CreatePrimary Esys_Commit is called with a point
  * from the primary key.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_Commit() (M)
  *  - Esys_CreatePrimary() (M)
  *  - Esys_FlushContext() (M)
@@ -153,7 +153,7 @@ test_esys_commit(ESYS_CONTEXT * esys_context)
         goto error;
     }
 
-    goto_if_error(r, "Error esapi create primary", error);
+    goto_if_error(r, "Error esys create primary", error);
 
     TPM2B_ECC_POINT P1 = {0};
     TPM2B_SENSITIVE_DATA s2 = {0};
@@ -210,6 +210,6 @@ test_esys_commit(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_commit(esys_context);
 }

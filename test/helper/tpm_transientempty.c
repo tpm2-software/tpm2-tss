@@ -19,7 +19,7 @@ int
 main (int argc, char *argv[])
 {
     TSS2_RC rc;
-    TSS2_SYS_CONTEXT *sapi_context;
+    TSS2_SYS_CONTEXT *sys_context;
 
     test_opts_t opts = {
         .tcti_type      = TCTI_DEFAULT,
@@ -32,13 +32,13 @@ main (int argc, char *argv[])
     if (sanity_check_test_opts (&opts) != 0)
         exit (1);
 
-    sapi_context = sapi_init_from_opts (&opts);
-    if (sapi_context == NULL)
+    sys_context = sys_init_from_opts (&opts);
+    if (sys_context == NULL)
         exit (1);
 
     TPMS_CAPABILITY_DATA caps;
 
-    rc = Tss2_Sys_GetCapability(sapi_context, NULL, TPM2_CAP_HANDLES,
+    rc = Tss2_Sys_GetCapability(sys_context, NULL, TPM2_CAP_HANDLES,
                                 TPM2_HR_TRANSIENT,
                                 TAB_SIZE(caps.data.handles.handle), NULL,
                                 &caps, NULL);
@@ -48,7 +48,7 @@ main (int argc, char *argv[])
     }
 
 
-    sapi_teardown_full (sapi_context);
+    sys_teardown_full (sys_context);
 
     if (caps.data.handles.count) {
         LOG_ERROR("TPM contains transient entries");

@@ -12,7 +12,7 @@
 
 #include "tss2_esys.h"
 
-#include "test-esapi.h"
+#include "test-esys.h"
 #include "esys_iutil.h"
 #define LOGMODULE test
 #include "util/log.h"
@@ -24,7 +24,7 @@
  * Based in the primary several calls with NULL parameters,
  * which should not be allowed, will be tested.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_Create() (M)
  *  - Esys_CreatePrimary() (M)
  *  - Esys_FlushContext() (M)
@@ -301,6 +301,6 @@ test_esys_create_fail(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_create_fail(esys_context);
 }

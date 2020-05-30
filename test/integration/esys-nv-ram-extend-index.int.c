@@ -17,12 +17,12 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** This test is intended to test the ESAPI nv define space, nv extend, and
+/** This test is intended to test the ESYS nv define space, nv extend, and
  *  nv read command.
- *  The names stored in the ESAPI resource are compared
+ *  The names stored in the ESYS resource are compared
  * with the names delivered from the TPM by the command ReadPublic.
  *
- * Tested ESAPI commands:
+ * Tested ESYS commands:
  *  - Esys_FlushContext() (M)
  *  - Esys_NV_DefineSpace() (M)
  *  - Esys_NV_Extend() (M)
@@ -267,6 +267,6 @@ test_esys_nv_ram_extend_index(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esapi(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT * esys_context) {
     return test_esys_nv_ram_extend_index(esys_context);
 }
