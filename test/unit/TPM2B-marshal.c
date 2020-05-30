@@ -393,6 +393,9 @@ tpm2b_public_rsa_marshal_success(void **state) {
     TSS2_RC rc;
 
     pub->type = TPM2_ALG_RSA;
+    pub->nameAlg = TPM2_ALG_SHA1;
+    pub->parameters.symDetail.sym.algorithm = TPM2_ALG_NULL;
+    pub->parameters.rsaDetail.scheme.scheme = TPM2_ALG_NULL;
     pub->parameters.rsaDetail.symmetric.algorithm = TPM2_ALG_AES;
     pub->parameters.rsaDetail.symmetric.keyBits.aes = 128;
     pub->parameters.rsaDetail.symmetric.mode.aes = TPM2_ALG_CBC;
@@ -415,6 +418,9 @@ tpm2b_public_rsa_unique_size_marshal_success(void **state) {
     TSS2_RC rc;
 
     pub->type = TPM2_ALG_RSA;
+    pub->nameAlg = TPM2_ALG_SHA1;
+    pub->parameters.symDetail.sym.algorithm = TPM2_ALG_NULL;
+    pub->parameters.rsaDetail.scheme.scheme = TPM2_ALG_NULL;
     pub->parameters.rsaDetail.symmetric.algorithm = TPM2_ALG_AES;
     pub->parameters.rsaDetail.symmetric.keyBits.aes = 128;
     pub->parameters.rsaDetail.symmetric.mode.aes = TPM2_ALG_CBC;
