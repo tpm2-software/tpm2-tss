@@ -498,21 +498,27 @@ TPMU_MARSHAL2(TPMU_SYM_KEY_BITS,
     TPM2_ALG_AES, VAL, aes, Tss2_MU_UINT16_Marshal,
     TPM2_ALG_SM4, VAL, sm4, Tss2_MU_UINT16_Marshal,
     TPM2_ALG_CAMELLIA, VAL, camellia, Tss2_MU_UINT16_Marshal,
-    TPM2_ALG_XOR, VAL, exclusiveOr, Tss2_MU_UINT16_Marshal)
+    TPM2_ALG_XOR, VAL, exclusiveOr, Tss2_MU_UINT16_Marshal,
+    TPM2_ALG_SYMCIPHER, VAL, sym, Tss2_MU_UINT16_Marshal)
 TPMU_UNMARSHAL2(TPMU_SYM_KEY_BITS,
     TPM2_ALG_AES, aes, Tss2_MU_UINT16_Unmarshal,
     TPM2_ALG_SM4, sm4, Tss2_MU_UINT16_Unmarshal,
     TPM2_ALG_CAMELLIA, camellia, Tss2_MU_UINT16_Unmarshal,
-    TPM2_ALG_XOR, exclusiveOr, Tss2_MU_UINT16_Unmarshal)
+    TPM2_ALG_XOR, exclusiveOr, Tss2_MU_UINT16_Unmarshal,
+    TPM2_ALG_SYMCIPHER, sym, Tss2_MU_UINT16_Unmarshal)
 
 TPMU_MARSHAL2(TPMU_SYM_MODE,
     TPM2_ALG_AES, VAL, aes, Tss2_MU_UINT16_Marshal,
     TPM2_ALG_SM4, VAL, sm4, Tss2_MU_UINT16_Marshal,
-    TPM2_ALG_CAMELLIA, VAL, camellia, Tss2_MU_UINT16_Marshal)
+    TPM2_ALG_CAMELLIA, VAL, camellia, Tss2_MU_UINT16_Marshal,
+    TPM2_ALG_XOR, ADDR, sym, marshal_null,
+    TPM2_ALG_SYMCIPHER, VAL, sym, Tss2_MU_UINT16_Marshal)
 TPMU_UNMARSHAL2(TPMU_SYM_MODE,
     TPM2_ALG_AES, aes, Tss2_MU_UINT16_Unmarshal,
     TPM2_ALG_SM4, sm4, Tss2_MU_UINT16_Unmarshal,
-    TPM2_ALG_CAMELLIA, camellia, Tss2_MU_UINT16_Unmarshal)
+    TPM2_ALG_CAMELLIA, camellia, Tss2_MU_UINT16_Unmarshal,
+    TPM2_ALG_XOR, sym, unmarshal_null,
+    TPM2_ALG_SYMCIPHER, sym, Tss2_MU_UINT16_Unmarshal)
 
 TPMU_MARSHAL2(TPMU_SIG_SCHEME,
     TPM2_ALG_RSASSA, ADDR, rsassa, Tss2_MU_TPMS_SCHEME_HASH_Marshal,
@@ -549,6 +555,7 @@ TPMU_MARSHAL2(TPMU_ASYM_SCHEME,
     TPM2_ALG_ECDAA, ADDR, ecdaa, Tss2_MU_TPMS_SCHEME_ECDAA_Marshal,
     TPM2_ALG_SM2, ADDR, sm2, Tss2_MU_TPMS_SCHEME_HASH_Marshal,
     TPM2_ALG_ECSCHNORR, ADDR, ecschnorr, Tss2_MU_TPMS_SCHEME_HASH_Marshal,
+    TPM2_ALG_RSAES, ADDR, rsaes, marshal_null,
     TPM2_ALG_OAEP, ADDR, oaep, Tss2_MU_TPMS_SCHEME_HASH_Marshal)
 TPMU_UNMARSHAL2(TPMU_ASYM_SCHEME,
     TPM2_ALG_ECDH, ecdh, Tss2_MU_TPMS_SCHEME_HASH_Unmarshal,
@@ -559,6 +566,7 @@ TPMU_UNMARSHAL2(TPMU_ASYM_SCHEME,
     TPM2_ALG_ECDAA, ecdaa, Tss2_MU_TPMS_SCHEME_ECDAA_Unmarshal,
     TPM2_ALG_SM2, sm2, Tss2_MU_TPMS_SCHEME_HASH_Unmarshal,
     TPM2_ALG_ECSCHNORR, ecschnorr, Tss2_MU_TPMS_SCHEME_HASH_Unmarshal,
+    TPM2_ALG_RSAES, rsaes, unmarshal_null,
     TPM2_ALG_OAEP, oaep, Tss2_MU_TPMS_SCHEME_HASH_Unmarshal)
 
 TPMU_MARSHAL2(TPMU_SCHEME_KEYEDHASH,
