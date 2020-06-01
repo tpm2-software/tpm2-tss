@@ -511,6 +511,8 @@ Esys_TRSess_SetAttributes(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
     esys_object->rsrc.misc.rsrc_session.sessionAttributes =
         (esys_object->rsrc.misc.rsrc_session.
          sessionAttributes & ~mask) | (flags & mask);
+    if (esys_object->rsrc.misc.rsrc_session.sessionAttributes & TPMA_SESSION_AUDIT)
+        esys_object->rsrc.misc.rsrc_session.bound_entity.size = 0;
     return TSS2_RC_SUCCESS;
 }
 
