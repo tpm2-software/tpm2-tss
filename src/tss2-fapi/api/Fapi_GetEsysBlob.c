@@ -323,15 +323,19 @@ Fapi_GetEsysBlob_Finish(
             goto_if_error(r, "Cleanup policy session", error_cleanup);
 
             /* Flush current object used for blob computation. */
-            r = Esys_FlushContext_Async(context->esys, key_object->handle);
-            goto_if_error(r, "Flush Context", error_cleanup);
+            if (!key_object->misc.key.persistent_handle) {
+                r = Esys_FlushContext_Async(context->esys, key_object->handle);
+                goto_if_error(r, "Flush Context", error_cleanup);
+            }
 
             fallthrough;
 
         statecase(context->state, GET_ESYS_BLOB_WAIT_FOR_FLUSH);
-            r = Esys_FlushContext_Finish(context->esys);
-            return_try_again(r);
-            goto_if_error(r, "Flush Context", error_cleanup);
+            if (!key_object->misc.key.persistent_handle) {
+                r = Esys_FlushContext_Finish(context->esys);
+                return_try_again(r);
+                goto_if_error(r, "Flush Context", error_cleanup);
+            }
 
             fallthrough;
 

@@ -1536,7 +1536,6 @@ ifapi_load_key_async(FAPI_CONTEXT *context, size_t position)
     context->loadKey.position = position;
     context->loadKey.key_list = NULL;
     context->loadKey.parent_handle = ESYS_TR_NONE;
-    // context->loadKey.auth_object = NULL;
 
     return TSS2_RC_SUCCESS;
 }
@@ -1592,6 +1591,7 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
         /* Compute path name of key to be loaded. */
         r = ifapi_path_string_n(&context->loadKey.key_path, NULL, path_list, NULL,
                                 *position);
+        LOG_TRACE("Load path %s", context->loadKey.key_path);
         return_if_error(r, "Compute key path.");
 
         context->loadKey.key_object = ifapi_allocate_object(context);
@@ -1637,7 +1637,8 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
             r = ifapi_copy_ifapi_key_object(&context->loadKey.auth_object,
                 context->loadKey.key_object);
             goto_if_error(r, "Could not copy key object", error_cleanup);
-            ifapi_cleanup_ifapi_object(context->loadKey.key_object);            context->loadKey.state = LOAD_KEY_LOAD_KEY;
+            ifapi_cleanup_ifapi_object(context->loadKey.key_object);
+            context->loadKey.state = LOAD_KEY_LOAD_KEY;
 
             return TSS2_FAPI_RC_TRY_AGAIN;
         }
@@ -2582,14 +2583,18 @@ ifapi_key_sign(
         goto_if_error(r, "Error: Sign", cleanup);
 
         /* Prepare the flushing of the signing key. */
-        r = Esys_FlushContext_Async(context->esys, context->Key_Sign.handle);
-        goto_if_error(r, "Error: FlushContext", cleanup);
+        if (!sig_key_object->misc.key.persistent_handle) {
+            r = Esys_FlushContext_Async(context->esys, context->Key_Sign.handle);
+            goto_if_error(r, "Error: FlushContext", cleanup);
+        }
         fallthrough;
 
     statecase(context->Key_Sign.state, SIGN_WAIT_FOR_FLUSH);
-        r = Esys_FlushContext_Finish(context->esys);
-        return_try_again(r);
-        goto_if_error(r, "Error: Sign", cleanup);
+        if (!sig_key_object->misc.key.persistent_handle) {
+            r = Esys_FlushContext_Finish(context->esys);
+            return_try_again(r);
+            goto_if_error(r, "Error: Sign", cleanup);
+        }
 
         int pem_size;
         if (publicKey) {
@@ -3007,6 +3012,7 @@ ifapi_key_create(
     TPM2B_DIGEST *creationHash = NULL;
     TPMT_TK_CREATION *creationTicket = NULL;
     IFAPI_OBJECT *object = &context->cmd.Key_Create.object;
+    IFAPI_OBJECT *hierarchy = &context->cmd.Key_Create.hierarchy;
     ESYS_TR auth_session;
     uint8_t *random_data = NULL;
 
@@ -3015,6 +3021,7 @@ ifapi_key_create(
     switch (context->cmd.Key_Create.state) {
     statecase(context->cmd.Key_Create.state, KEY_CREATE_INIT);
         context->cmd.Key_Create.public_templ = *template;
+        context->loadKey.auth_object.handle = ESYS_TR_NONE;
 
         /* Profile name is first element of the explicit path list */
         char *profile_name = context->loadKey.path_list->str;
@@ -3138,7 +3145,6 @@ ifapi_key_create(
         object->misc.key.creationTicket = *creationTicket;
         object->misc.key.description = NULL;
         object->misc.key.certificate = NULL;
-        SAFE_FREE(outPrivate);
         SAFE_FREE(creationData);
         SAFE_FREE(creationTicket);
         SAFE_FREE(creationHash);
@@ -3153,10 +3159,114 @@ ifapi_key_create(
             object->misc.key.signing_scheme = context->cmd.Key_Create.profile->rsa_signing_scheme;
         else
             object->misc.key.signing_scheme = context->cmd.Key_Create.profile->ecc_signing_scheme;
-        SAFE_FREE(outPublic);
+
+        fallthrough;
+
+    statecase(context->cmd.Key_Create.state, KEY_CREATE_WAIT_FOR_LOAD_AUTHORIZATION);
+        if (template->persistent_handle) {
+            r = ifapi_authorize_object(context, &context->loadKey.auth_object, &auth_session);
+            FAPI_SYNC(r, "Authorize key.", error_cleanup);
+
+            r = Esys_Load_Async(context->esys, context->loadKey.handle,
+                                auth_session,
+                                ESYS_TR_NONE, ESYS_TR_NONE,
+                                outPrivate, outPublic);
+            goto_if_error(r, "Load key.", error_cleanup);
+
+        }
+        fallthrough;
+
+    statecase(context->cmd.Key_Create.state, KEY_CREATE_WAIT_FOR_KEY);
+        if (template->persistent_handle) {
+            r = Esys_Load_Finish(context->esys, &context->loadKey.handle);
+            return_try_again(r);
+            goto_if_error_reset_state(r, "Load", error_cleanup);
+        }
+        /* Prepare Flushing of key used for authorization */
+        if (!context->loadKey.auth_object.misc.key.persistent_handle) {
+            r = Esys_FlushContext_Async(context->esys, context->loadKey.auth_object.handle);
+            goto_if_error(r, "Flush parent", error_cleanup);
+        }
+        fallthrough;
+
+    statecase(context->cmd.Key_Create.state, KEY_CREATE_FLUSH1);
+        if (!context->loadKey.auth_object.misc.key.persistent_handle) {
+            r = Esys_FlushContext_Finish(context->esys);
+            try_again_or_error_goto(r, "Flush context", error_cleanup);
+
+            ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
+        }
+        if (template->persistent_handle) {
+            r = ifapi_keystore_load_async(&context->keystore, &context->io, "/HS");
+            return_if_error2(r, "Could not open hierarchy /HS");
+        }
+        fallthrough;
+
+    statecase(context->cmd.Key_Create.state, KEY_CREATE_WAIT_FOR_HIERARCHY);
+        if (template->persistent_handle) {
+            r = ifapi_keystore_load_finish(&context->keystore, &context->io, hierarchy);
+            return_try_again(r);
+            return_if_error(r, "read_finish failed");
+            r = ifapi_initialize_object(context->esys, hierarchy);
+            goto_if_error_reset_state(r, "Initialize hierarchy object", error_cleanup);
+
+            hierarchy->handle = ESYS_TR_RH_OWNER;
+        }
+        fallthrough;
+
+    statecase(context->cmd.Key_Create.state, KEY_CREATE_AUTHORIZE_HIERARCHY);
+        if (template->persistent_handle) {
+            r = ifapi_authorize_object(context, hierarchy, &auth_session);
+            FAPI_SYNC(r, "Authorize hierarchy.", error_cleanup);
+
+            object->misc.key.persistent_handle = template->persistent_handle;
+
+            /* Prepare making the loaded key permanent. */
+            r = Esys_EvictControl_Async(context->esys, hierarchy->handle,
+                                        context->loadKey.handle,
+                                        auth_session, ESYS_TR_NONE,
+                                        ESYS_TR_NONE,
+                                        object->misc.key.persistent_handle);
+            goto_if_error(r, "Error Esys EvictControl", error_cleanup);
+
+            ifapi_cleanup_ifapi_object(hierarchy);
+        }
+        fallthrough;
+
+    statecase(context->cmd.Key_Create.state, KEY_CREATE_WAIT_FOR_EVICT_CONTROL);
+        if (template->persistent_handle) {
+            /* Prepare making the loaded key permanent. */
+            r = Esys_EvictControl_Finish(context->esys, &object->handle);
+            return_try_again(r);
+            goto_if_error(r, "Evict control failed", error_cleanup);
+        }
+
+        fallthrough;
+
+    statecase(context->cmd.Key_Create.state, KEY_CREATE_FLUSH2);
+        /* Flush the key which was evicted. */
+        if (template->persistent_handle) {
+            r = ifapi_flush_object(context, context->loadKey.handle);
+            return_try_again(r);
+            goto_if_error(r, "Flush key", error_cleanup);
+        }
+
         fallthrough;
 
     statecase(context->cmd.Key_Create.state, KEY_CREATE_WRITE_PREPARE);
+        SAFE_FREE(outPrivate);
+        SAFE_FREE(outPublic);
+
+        if (template->persistent_handle) {
+            /* Compute the serialization, which will be used for the
+               reconstruction of the key object. */
+            SAFE_FREE(object->misc.key.serialization.buffer);
+            r = Esys_TR_Serialize(context->esys, object->handle,
+                                  &object->misc.key.serialization.buffer,
+                                  &object->misc.key.serialization.size);
+            goto_if_error(r, "Serialize object", error_cleanup);
+        }
+
         /* Perform esys serialization if necessary */
         r = ifapi_esys_serialize_object(context->esys, object);
         goto_if_error(r, "Prepare serialization", error_cleanup);
@@ -3182,19 +3292,6 @@ ifapi_key_create(
         return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
-        if (context->loadKey.auth_object.misc.key.persistent_handle) {
-            context->cmd.Key_Create.state = KEY_CREATE_INIT;
-            r = TSS2_RC_SUCCESS;
-            break;
-        }
-        /* Prepare Flushing of key used for authorization */
-        r = Esys_FlushContext_Async(context->esys, context->loadKey.auth_object.handle);
-        goto_if_error(r, "Flush parent", error_cleanup);
-        fallthrough;
-
-    statecase(context->cmd.Key_Create.state, KEY_CREATE_FLUSH);
-        r = Esys_FlushContext_Finish(context->esys);
-        try_again_or_error_goto(r, "Flush context", error_cleanup);
         fallthrough;
 
     statecase(context->cmd.Key_Create.state, KEY_CREATE_CLEANUP);
@@ -3207,7 +3304,8 @@ ifapi_key_create(
 
     statecasedefault(context->cmd.Key_Create.state);
     }
-error_cleanup:
+
+ cleanup:
     free_string_list(context->loadKey.path_list);
     SAFE_FREE(outPublic);
     SAFE_FREE(outPrivate);
@@ -3219,7 +3317,18 @@ error_cleanup:
     SAFE_FREE(random_data);
     ifapi_cleanup_ifapi_object(object);
     ifapi_session_clean(context);
+    if  (template->persistent_handle)
+        ifapi_cleanup_ifapi_object(hierarchy);
     return r;
+
+ error_cleanup:
+    if  (template->persistent_handle)
+        ifapi_cleanup_ifapi_object(hierarchy);
+    if (context->loadKey.auth_object.handle != ESYS_TR_NONE &&
+        !context->loadKey.auth_object.misc.key.persistent_handle) {
+        Esys_FlushContext(context->esys, context->loadKey.auth_object.handle);
+    }
+    goto cleanup;
 }
 
 /** Get signature scheme for key.

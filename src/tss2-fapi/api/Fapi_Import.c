@@ -538,11 +538,14 @@ Fapi_Import_Finish(
             fallthrough;
 
         statecase(context->state, IMPORT_KEY_WAIT_FOR_FLUSH);
-            r = ifapi_flush_object(context, command->parent_object->handle);
-            ifapi_cleanup_ifapi_object(command->parent_object);
-            return_try_again(r);
-            goto_if_error(r, "Flush key", error_cleanup);
-
+            if (!command->parent_object->misc.key.persistent_handle) {
+                r = ifapi_flush_object(context, command->parent_object->handle);
+                return_try_again(r);
+                ifapi_cleanup_ifapi_object(command->parent_object);
+                goto_if_error(r, "Flush key", error_cleanup);
+            } else {
+                ifapi_cleanup_ifapi_object(command->parent_object);
+            }
             memset(newObject, 0, sizeof(IFAPI_OBJECT));
             newObject->objectType = IFAPI_KEY_OBJ;
             newObject->misc.key.public = keyTree->public;

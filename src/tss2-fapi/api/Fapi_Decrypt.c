@@ -333,17 +333,21 @@ Fapi_Decrypt_Finish(
             }
 
             /* Flush the used key. */
-            r = Esys_FlushContext_Async(context->esys,
-                                        command->key_handle);
-            goto_if_error(r, "Error: FlushContext", error_cleanup);
+            if (!command->key_object->misc.key.persistent_handle) {
+                r = Esys_FlushContext_Async(context->esys,
+                                            command->key_handle);
+                goto_if_error(r, "Error: FlushContext", error_cleanup);
+            }
 
             fallthrough;
 
         statecase(context->state, DATA_DECRYPT_WAIT_FOR_FLUSH);
-            r = Esys_FlushContext_Finish(context->esys);
-            return_try_again(r);
+            if (!command->key_object->misc.key.persistent_handle) {
+                r = Esys_FlushContext_Finish(context->esys);
+                return_try_again(r);
 
-            goto_if_error(r, "Error: FlushContext", error_cleanup);
+                goto_if_error(r, "Error: FlushContext", error_cleanup);
+            }
             command->key_handle = ESYS_TR_NONE;
             fallthrough;
 

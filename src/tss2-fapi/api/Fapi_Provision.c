@@ -984,7 +984,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             fallthrough;
 
         statecase(context->state, PROVISION_FINISHED);
-            if (!context->srk_persistent && context->srk_handle != ESYS_TR_NONE) {
+            if (context->srk_handle != ESYS_TR_NONE) {
                 /* Prepare the flushing of a non persistent SRK. */
                 r = Esys_FlushContext_Async(context->esys, context->srk_handle);
                 goto_if_error(r, "Flush SRK", error_cleanup);
@@ -993,14 +993,14 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 
         /* Flush the SRK if not persistent */
         statecase(context->state, PROVISION_FLUSH_SRK);
-            if (!context->srk_persistent && context->srk_handle != ESYS_TR_NONE) {
+            if (context->srk_handle != ESYS_TR_NONE) {
                 r = Esys_FlushContext_Finish(context->esys);
                 try_again_or_error_goto(r, "Flush SRK", error_cleanup);
 
                 context->srk_handle = ESYS_TR_NONE;
 
             }
-            if (!context->ek_persistent && context->ek_handle != ESYS_TR_NONE) {
+            if (context->ek_handle != ESYS_TR_NONE) {
                  /* Prepare the flushing of a non persistent EK. */
                 r = Esys_FlushContext_Async(context->esys, context->ek_handle);
                 goto_if_error(r, "Flush EK", error_cleanup);
@@ -1009,7 +1009,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 
          /* Flush the EK if not persistent */
         statecase(context->state, PROVISION_FLUSH_EK);
-            if (!context->ek_persistent && context->ek_handle != ESYS_TR_NONE) {
+            if (context->ek_handle != ESYS_TR_NONE) {
                 r = Esys_FlushContext_Finish(context->esys);
                 try_again_or_error_goto(r, "Flush EK", error_cleanup);
 
