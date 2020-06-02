@@ -260,12 +260,15 @@ if FAPI
 TESTS_CFLAGS +=  -DTOP_SOURCEDIR"=\"$(top_srcdir)\""
 FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-data-crypt.int \
+    test/integration/fapi-data-crypt-persistent.int \
     test/integration/fapi-data-crypt-rsa.int \
+    test/integration/fapi-data-crypt-rsa-persistent.int \
     test/integration/fapi-duplicate.int \
     test/integration/fapi-ext-public-key.int \
     test/integration/fapi-get-random.int \
     test/integration/fapi-platform-certificates.int \
     test/integration/fapi-key-create-sign.int \
+    test/integration/fapi-key-create-sign-persistent-key.int \
     test/integration/fapi-key-create-sign-password-provision.int \
     test/integration/fapi-key-create-sign-rsa.int \
     test/integration/fapi-key-create-policy-authorize-sign.int \
@@ -300,7 +303,8 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-quote.int \
     test/integration/fapi-quote-rsa.int \
     test/integration/fapi-info.int \
-    test/integration/fapi-unseal.int
+    test/integration/fapi-unseal.int \
+    test/integration/fapi-unseal-persistent.int
 
 if TESTPTPM
 if PTPMDESTRUCTIVE
@@ -1358,6 +1362,14 @@ test_integration_fapi_key_create_sign_int_SOURCES = \
     test/integration/fapi-key-create-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
+test_integration_fapi_key_create_sign_persistent_key_int_CFLAGS  = $(TESTS_CFLAGS) \
+-DPERSISTENT
+test_integration_fapi_key_create_sign_persistent_key_int_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_key_create_sign_persistent_key_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_sign_persistent_key_int_SOURCES = \
+    test/integration/fapi-key-create-sign.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
 test_integration_fapi_key_create_sign_password_provision_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_key_create_sign_password_provision_int_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_sign_password_provision_int_LDFLAGS = $(TESTS_LDFLAGS)
@@ -1607,11 +1619,27 @@ test_integration_fapi_data_crypt_int_SOURCES = \
     test/integration/fapi-data-crypt.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
+test_integration_fapi_data_crypt_persistent_int_CFLAGS  = $(TESTS_CFLAGS) \
+ -DPERSISTENT
+test_integration_fapi_data_crypt_persistent_int_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_data_crypt_persistent_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_data_crypt_persistent_int_SOURCES = \
+    test/integration/fapi-data-crypt.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
 test_integration_fapi_data_crypt_rsa_int_CFLAGS  = $(TESTS_CFLAGS) \
  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_data_crypt_rsa_int_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_data_crypt_rsa_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_data_crypt_rsa_int_SOURCES = \
+    test/integration/fapi-data-crypt.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_data_crypt_rsa_persistent_int_CFLAGS  = $(TESTS_CFLAGS) \
+ -DFAPI_PROFILE=\"P_RSA\" -DPERSISTENT
+test_integration_fapi_data_crypt_rsa_persistent_int_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_data_crypt_rsa_persistent_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_data_crypt_rsa_persistent_int_SOURCES = \
     test/integration/fapi-data-crypt.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
@@ -1621,7 +1649,6 @@ test_integration_fapi_duplicate_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_duplicate_int_SOURCES = \
     test/integration/fapi-duplicate.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
-
 
 test_integration_fapi_pcr_test_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_pcr_test_int_LDADD   = $(TESTS_LDADD)
@@ -1645,7 +1672,6 @@ test_integration_fapi_quote_rsa_int_SOURCES = \
     test/integration/fapi-quote.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-
 test_integration_fapi_info_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_info_int_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_info_int_LDFLAGS = $(TESTS_LDFLAGS)
@@ -1657,6 +1683,14 @@ test_integration_fapi_unseal_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_unseal_int_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_unseal_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_unseal_int_SOURCES = \
+    test/integration/fapi-unseal.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_unseal_persistent_int_CFLAGS  = $(TESTS_CFLAGS) \
+ -DPERSISTENT
+test_integration_fapi_unseal_persistent_int_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_unseal_persistent_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_unseal_persistent_int_SOURCES = \
     test/integration/fapi-unseal.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 

@@ -102,8 +102,13 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
     r = Fapi_SetAuthCB(context, auth_callback, NULL);
     goto_if_error(r, "Error SetPolicyAuthCallback", error);
 
-    r = Fapi_CreateKey(context, "HS/SRK/mySignKey", SIGN_TEMPLATE, "",
+#ifdef PERSISTENT
+    r = Fapi_CreateKey(context, "HS/SRK/mySignKey", SIGN_TEMPLATE ",0x81000004", "",
                        PASSWORD);
+#else
+    r = Fapi_CreateKey(context, "HS/SRK/mySignKey", SIGN_TEMPLATE "", "",
+                       PASSWORD);
+#endif
     goto_if_error(r, "Error Fapi_CreateKey_Async", error);
 
     goto_if_error(r, "Error Fapi_CreateKey_Finish", error);
