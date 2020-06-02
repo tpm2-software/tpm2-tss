@@ -10,7 +10,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-
+#include "tss2_esys.h"
 #include "tss2_fapi.h"
 
 #include "test-fapi.h"
@@ -49,9 +49,15 @@ test_fapi_unseal(FAPI_CONTEXT *context)
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
-    r = Fapi_CreateSeal(context, "/HS/SRK/mySealObject", "noDa",
+#ifdef PERSISTENT
+    r = Fapi_CreateSeal(context, "/HS/SRK/mySealObject", "noDa,0x81000004",
                         digest.size,
                         "", "",  &digest.buffer[0]);
+#else
+    r = Fapi_CreateSeal(context, "/HS/SRK/mySealObject", "noDa,0x81000004",
+                        digest.size,
+                        "", "",  &digest.buffer[0]);
+#endif
     goto_if_error(r, "Error Fapi_CreateSeal", error);
 
     r = Fapi_Unseal(context, "/HS/SRK/mySealObject", &result,

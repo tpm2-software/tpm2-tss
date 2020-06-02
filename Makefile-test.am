@@ -270,13 +270,16 @@ TESTS_CFLAGS +=  -DTOP_SOURCEDIR"=\"$(top_srcdir)\""
 FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-check-wrong-paths.fint \
     test/integration/fapi-data-crypt.fint \
+    test/integration/fapi-data-crypt-persistent.fint \
     test/integration/fapi-data-crypt-rsa.fint \
+    test/integration/fapi-data-crypt-rsa-persistent.fint \
     test/integration/fapi-duplicate.fint \
     test/integration/fapi-ext-public-key.fint \
     test/integration/fapi-get-esys-blobs.fint \
     test/integration/fapi-get-random.fint \
     test/integration/fapi-platform-certificates.fint \
     test/integration/fapi-key-create-sign.fint \
+    test/integration/fapi-key-create-sign-persistent-key.fint \
     test/integration/fapi-key-create-sign-password-provision.fint \
     test/integration/fapi-key-create-sign-rsa.fint \
     test/integration/fapi-key-create-policy-authorize-sign.fint \
@@ -311,7 +314,8 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-quote.fint \
     test/integration/fapi-quote-rsa.fint \
     test/integration/fapi-info.fint \
-    test/integration/fapi-unseal.fint
+    test/integration/fapi-unseal.fint \
+    test/integration/fapi-unseal-persistent.fint
 
 if TESTDEVICE
 if DEVICEDESTRUCTIVE
@@ -1402,6 +1406,15 @@ test_integration_fapi_key_create_sign_fint_SOURCES = \
     test/integration/fapi-key-create-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
+test_integration_fapi_key_create_sign_persistent_key_fint_CFLAGS  = $(TESTS_CFLAGS) \
+-DPERSISTENT
+test_integration_fapi_key_create_sign_persistent_key_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_key_create_sign_persistent_key_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_sign_persistent_key_fint_SOURCES = \
+    test/integration/fapi-key-create-sign.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+
 test_integration_fapi_key_create_sign_password_provision_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_key_create_sign_password_provision_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_sign_password_provision_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -1651,11 +1664,27 @@ test_integration_fapi_data_crypt_fint_SOURCES = \
     test/integration/fapi-data-crypt.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
+test_integration_fapi_data_crypt_persistent_fint_CFLAGS  = $(TESTS_CFLAGS) \
+ -DPERSISTENT
+test_integration_fapi_data_crypt_persistent_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_data_crypt_persistent_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_data_crypt_persistent_fint_SOURCES = \
+    test/integration/fapi-data-crypt.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
 test_integration_fapi_data_crypt_rsa_fint_CFLAGS  = $(TESTS_CFLAGS) \
  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_data_crypt_rsa_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_data_crypt_rsa_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_data_crypt_rsa_fint_SOURCES = \
+    test/integration/fapi-data-crypt.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_data_crypt_rsa_persistent_fint_CFLAGS  = $(TESTS_CFLAGS) \
+ -DFAPI_PROFILE=\"P_RSA\" -DPERSISTENT
+test_integration_fapi_data_crypt_rsa_persistent_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_data_crypt_rsa_persistent_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_data_crypt_rsa_persistent_fint_SOURCES = \
     test/integration/fapi-data-crypt.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
@@ -1701,6 +1730,15 @@ test_integration_fapi_unseal_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_unseal_fint_SOURCES = \
     test/integration/fapi-unseal.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_unseal_persistent_fint_CFLAGS  = $(TESTS_CFLAGS) \
+ -DPERSISTENT
+test_integration_fapi_unseal_persistent_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_unseal_persistent_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_unseal_persistent_fint_SOURCES = \
+    test/integration/fapi-unseal.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
 
 test_integration_fapi_provision_fingerprint_fint_CFLAGS  = $(TESTS_CFLAGS) \
  -DFAPI_TEST_FINGERPRINT  -DFAPI_PROFILE=\"P_RSA\"
