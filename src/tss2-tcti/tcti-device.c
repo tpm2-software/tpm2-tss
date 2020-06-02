@@ -174,19 +174,6 @@ tcti_device_receive (
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
-#ifndef TCTI_ASYNC
-    /* For async the valid timeout values are -1 - block forever,
-     * 0 - nonblocking, and any positive value - the actual timeout
-     * value in millisec.
-     * For sync the only valid value is -1 - block forever.
-     */
-    if (timeout != TSS2_TCTI_TIMEOUT_BLOCK) {
-        LOG_WARNING ("The underlying IPC mechanism does not support "
-                     "asynchronous I/O. The 'timeout' parameter is set to "
-                     "TSS2_TCTI_TIMEOUT_BLOCK");
-        timeout = TSS2_TCTI_TIMEOUT_BLOCK;
-    }
-#endif
     if (response_buffer == NULL) {
 #ifndef TCTI_PARTIAL_READ
         LOG_DEBUG ("Caller queried for size but linux kernel doesn't allow this. "
@@ -363,7 +350,6 @@ tcti_device_get_poll_handles (
     TSS2_TCTI_POLL_HANDLE *handles,
     size_t *num_handles)
 {
-#ifdef TCTI_ASYNC
     TSS2_TCTI_DEVICE_CONTEXT *tcti_dev = tcti_device_context_cast (tctiContext);
 
     if (num_handles == NULL || tcti_dev == NULL) {
@@ -380,12 +366,6 @@ tcti_device_get_poll_handles (
     }
 
     return TSS2_RC_SUCCESS;
-#else
-    (void)(tctiContext);
-    (void)(handles);
-    (void)(num_handles);
-    return TSS2_TCTI_RC_NOT_IMPLEMENTED;
-#endif
 }
 
 TSS2_RC
