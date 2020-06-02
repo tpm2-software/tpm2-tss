@@ -23,18 +23,17 @@ matrix:
   # mbedTLS testing
   - env: DOCKER_TAG=ubuntu-20.04 WITH_CRYPTO=mbed
     compiler: clang
-  # tcti async and partial read testing
-  - env: DOCKER_TAG=fedora-32 WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes
+  # tcti partial read testing
     compiler: gcc
-  - env: DOCKER_TAG=fedora-32 WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=no
+  - env: DOCKER_TAG=fedora-32 WITH_TCTI_PARTIAL=no
     compiler: gcc
-  - env: DOCKER_TAG=fedora-32 WITH_TCTI_ASYNC=no WITH_TCTI_PARTIAL=yes
+  - env: DOCKER_TAG=fedora-32 WITH_TCTI_PARTIAL=yes
     compiler: gcc
   # coverage check
   - env: DOCKER_TAG=ubuntu-18.04 ENABLE_COVERAGE=true
     compiler: gcc
   # scan build check
-  - env: DOCKER_TAG=fedora-32 SCANBUILD=yes WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes
+  - env: DOCKER_TAG=fedora-32 SCANBUILD=yes WITH_TCTI_PARTIAL=yes
     compiler: clang
   # check fuzz targets
   - env: DOCKER_TAG=fedora-32 GEN_FUZZ=1 CXX=clang++ CC=clang

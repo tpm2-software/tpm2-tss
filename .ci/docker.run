@@ -57,7 +57,7 @@ pushd ./build-no-tests
 echo "PWD: $(pwd)"
 echo "ls -la ../ $(ls -la ../)"
 
-../configure --enable-tcti-partial-reads=$WITH_TCTI_PARTIAL --enable-tcti-device-async=$WITH_TCTI_ASYNC --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
+../configure --enable-tcti-partial-reads=$WITH_TCTI_PARTIAL --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
 make -j$(nproc)
 popd
 
@@ -70,11 +70,11 @@ if [ "$CC" == "gcc" ]; then
 fi
 
 if [ "$SCANBUILD" == "yes" ]; then
-  scan-build --status-bugs ../configure --enable-tcti-partial-reads=$WITH_TCTI_PARTIAL --enable-tcti-device-async=$WITH_TCTI_ASYNC --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
+  scan-build --status-bugs ../configure --enable-tcti-partial-reads=$WITH_TCTI_PARTIAL --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
 elif [ "$CC" == "clang" ]; then
-  ../configure --enable-tcti-partial-reads=$WITH_TCTI_PARTIAL --enable-tcti-device-async=$WITH_TCTI_ASYNC --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
+  ../configure --enable-tcti-partial-reads=$WITH_TCTI_PARTIAL --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
 else
-  ../configure --with-sanitizer=undefined,address --enable-tcti-partial-reads=$WITH_TCTI_PARTIAL --enable-tcti-device-async=$WITH_TCTI_ASYNC --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
+  ../configure --with-sanitizer=undefined,address --enable-tcti-partial-reads=$WITH_TCTI_PARTIAL --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
 fi
 
 if [ "$SCANBUILD" == "yes" ]; then
