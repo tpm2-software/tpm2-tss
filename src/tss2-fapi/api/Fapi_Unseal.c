@@ -240,15 +240,19 @@ Fapi_Unseal_Finish(
             goto_if_error(r, "Unseal_Finish", error_cleanup);
 
             /* Flush the used key from the TPM. */
-            r = Esys_FlushContext_Async(context->esys, command->object->handle);
-            goto_if_error(r, "Error Esys Flush ", error_cleanup);
+            if (!command->object->misc.key.persistent_handle) {
+                r = Esys_FlushContext_Async(context->esys, command->object->handle);
+                goto_if_error(r, "Error Esys Flush ", error_cleanup);
+            }
 
             fallthrough;
 
         statecase(context->state, UNSEAL_WAIT_FOR_FLUSH);
-            r = Esys_FlushContext_Finish(context->esys);
-            return_try_again(r);
-            goto_if_error(r, "Unseal_Flush", error_cleanup);
+            if (!command->object->misc.key.persistent_handle) {
+                r = Esys_FlushContext_Finish(context->esys);
+                return_try_again(r);
+                goto_if_error(r, "Unseal_Flush", error_cleanup);
+            }
 
             /* Return the data as requested by the caller.
                Duplicate the unseal_data as necessary. */

@@ -217,6 +217,9 @@ Fapi_SetAppData_Finish(
             return_try_again(r);
             return_if_error_reset_state(r, "read_finish failed");
 
+            r = ifapi_initialize_object(context->esys, object);
+            goto_if_error_reset_state(r, "Initialize key object", error_cleanup);
+
             /* Depending on the object type get the correct appData pointer. */
             switch (object->objectType) {
             case IFAPI_KEY_OBJ:
