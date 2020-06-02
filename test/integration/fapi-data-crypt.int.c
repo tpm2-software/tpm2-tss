@@ -241,8 +241,13 @@ test_fapi_data_crypt(FAPI_CONTEXT *context)
     r = Fapi_Import(context, policy_name, json_policy);
     goto_if_error(r, "Error Fapi_Import", error);
 
+#ifdef PERSISTENT
+    r = Fapi_CreateKey(context, "HS/SRK/myRsaCryptKey", "decrypt,0x81000004",
+                       policy_name, NULL);
+#else
     r = Fapi_CreateKey(context, "HS/SRK/myRsaCryptKey", "decrypt",
                        policy_name, NULL);
+#endif
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     uint8_t  plainText[SIZE];
