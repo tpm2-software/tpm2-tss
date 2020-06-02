@@ -314,9 +314,15 @@ enum IFAPI_KEY_CREATE_STATE {
     KEY_CREATE_WAIT_FOR_SESSION,
     KEY_CREATE_WAIT_FOR_PARENT,
     KEY_CREATE_AUTH_SENT,
+    KEY_CREATE_WAIT_FOR_LOAD_AUTHORIZATION,
+    KEY_CREATE_WAIT_FOR_KEY,
+    KEY_CREATE_WAIT_FOR_HIERARCHY,
+    KEY_CREATE_AUTHORIZE_HIERARCHY,
+    KEY_CREATE_WAIT_FOR_EVICT_CONTROL,
     KEY_CREATE_WRITE_PREPARE,
     KEY_CREATE_WRITE,
-    KEY_CREATE_FLUSH,
+    KEY_CREATE_FLUSH1,
+    KEY_CREATE_FLUSH2,
     KEY_CREATE_CALCULATE_POLICY,
     KEY_CREATE_WAIT_FOR_AUTHORIZATION,
     KEY_CREATE_CLEANUP,
@@ -333,6 +339,7 @@ typedef struct {
     IFAPI_OBJECT object;          /**< The current object. */
     IFAPI_KEY_TEMPLATE public_templ;  /**< The template for the keys public data */
     TPM2B_PUBLIC public;         /**< The public data of the key */
+    IFAPI_OBJECT hierarchy;     /**< The current used hierarchy for CreatePrimary */
     TPM2B_SENSITIVE_CREATE inSensitive;
     TPM2B_DATA outsideInfo;
     TPML_PCR_SELECTION creationPCR;

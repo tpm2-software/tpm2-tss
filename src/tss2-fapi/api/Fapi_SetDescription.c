@@ -202,6 +202,9 @@ Fapi_SetDescription_Finish(
             return_try_again(r);
             goto_if_error_reset_state(r, "read_finish failed", error_cleanup);
 
+            r = ifapi_initialize_object(context->esys, object);
+            goto_if_error_reset_state(r, "Initialize key object", error_cleanup);
+
             /* Add new description to object and save object */
             ifapi_set_description(object, command->description);
 

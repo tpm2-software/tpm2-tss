@@ -220,6 +220,9 @@ Fapi_SetCertificate_Finish(
                 key_object->misc.key.certificate = *pem_cert_dup;
             }
 
+            r = ifapi_initialize_object(context->esys, key_object);
+            goto_if_error_reset_state(r, "Initialize key object", error_cleanup);
+
             /* Perform esys serialization if necessary */
             r = ifapi_esys_serialize_object(context->esys, key_object);
             goto_if_error(r, "Prepare serialization", error_cleanup);
