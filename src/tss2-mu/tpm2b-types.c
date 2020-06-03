@@ -44,7 +44,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
         return TSS2_RC_SUCCESS; \
     } else if (buffer_size < local_offset || \
                buffer_size - local_offset < (sizeof(src->size) + src->size)) { \
-        LOG_WARNING(\
+        LOG_DEBUG( \
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
@@ -105,7 +105,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } else if (buffer_size < local_offset || \
                sizeof(size) > buffer_size - local_offset) \
     { \
-        LOG_WARNING(\
+        LOG_DEBUG( \
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
@@ -128,7 +128,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
          size); \
 \
     if (size > buffer_size - local_offset) { \
-        LOG_WARNING(\
+        LOG_DEBUG( \
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
@@ -137,7 +137,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
         return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
     } \
     if (sizeof(dest->buf_name) < size) { \
-        LOG_ERROR("The dest field size of %zu is too small to unmarshal %d bytes", \
+        LOG_DEBUG("The dest field size of %zu is too small to unmarshal %d bytes", \
                   sizeof(dest->buf_name), size); \
         return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
     } \
@@ -178,7 +178,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
         return TSS2_MU_RC_BAD_REFERENCE; \
     } else if (buffer_size < local_offset || \
                buffer_size - local_offset < sizeof(src->size)) { \
-        LOG_WARNING(\
+        LOG_DEBUG( \
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
@@ -238,7 +238,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } else if (buffer_size < local_offset || \
                sizeof(size) > buffer_size - local_offset) \
     { \
-        LOG_WARNING(\
+        LOG_DEBUG( \
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
@@ -264,7 +264,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
          size); \
 \
     if (size > buffer_size - local_offset) { \
-        LOG_WARNING(\
+        LOG_DEBUG( \
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
@@ -273,7 +273,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
         return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
     } \
     if (sizeof(dest->member) < size) { \
-        LOG_ERROR("The dest field size of %zu is too small to unmarshal %d bytes", \
+        LOG_DEBUG("The dest field size of %zu is too small to unmarshal %d bytes", \
                   sizeof(dest->member), size); \
         return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
     } \

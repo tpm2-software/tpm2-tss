@@ -40,7 +40,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type src, uint8_t buffer[], \
     } else if (buffer_size < local_offset || \
                buffer_size - local_offset < sizeof (src)) \
     { \
-        LOG_WARNING(\
+        LOG_DEBUG( \
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
@@ -103,7 +103,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } else if (buffer_size < local_offset || \
                sizeof (*dest) > buffer_size - local_offset) \
     { \
-        LOG_WARNING(\
+        LOG_DEBUG( \
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \

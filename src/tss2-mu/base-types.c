@@ -44,7 +44,7 @@ Tss2_MU_##type##_Marshal ( \
     } else if (buffer_size < local_offset || \
                buffer_size - local_offset < sizeof (src)) \
     { \
-        LOG_WARNING(\
+        LOG_DEBUG( \
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", \
              buffer_size, \
@@ -106,7 +106,7 @@ Tss2_MU_##type##_Unmarshal ( \
     if (buffer_size < local_offset || \
         sizeof (*dest) > buffer_size - local_offset) \
     { \
-        LOG_WARNING(\
+        LOG_DEBUG( \
              "buffer_size: %zu with offset: %zu are insufficient for object " \
              "of size %zu", buffer_size, local_offset, sizeof (*dest)); \
         return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
