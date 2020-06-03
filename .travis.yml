@@ -11,15 +11,15 @@ env:
   - DOCKER_TAG=ubuntu-18.04
    # ubuntu 20.04
   - DOCKER_TAG=ubuntu-20.04
-    # fedora-30
-  - DOCKER_TAG=fedora-30
+    # fedora-32
+  - DOCKER_TAG=fedora-32
    # opensuse-leap
   - DOCKER_TAG=opensuse-leap
 
 matrix:
   include:
   # gcrypt testing
-  - env: DOCKER_TAG=fedora-30 WITH_CRYPTO=gcrypt
+  - env: DOCKER_TAG=fedora-32 WITH_CRYPTO=gcrypt
     compiler: gcc
   - env: DOCKER_TAG=opensuse-leap WITH_CRYPTO=gcrypt
     compiler: clang
@@ -28,23 +28,23 @@ matrix:
   - env: DOCKER_TAG=ubuntu-20.04
     compiler: clang
   # tcti async and partial read testing
-  - env: DOCKER_TAG=fedora-30 WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt
+  - env: DOCKER_TAG=fedora-32 WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt
     compiler: gcc
-  - env: DOCKER_TAG=fedora-30 WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=no
+  - env: DOCKER_TAG=fedora-32 WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=no
     compiler: gcc
-  - env: DOCKER_TAG=fedora-30 WITH_TCTI_ASYNC=no WITH_TCTI_PARTIAL=yes
+  - env: DOCKER_TAG=fedora-32 WITH_TCTI_ASYNC=no WITH_TCTI_PARTIAL=yes
     compiler: gcc
   # coverage check
   - env: DOCKER_TAG=ubuntu-18.04 ENABLE_COVERAGE=true
     compiler: gcc
   # scan build check
-  - env: DOCKER_TAG=fedora-30 SCANBUILD=yes WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes
+  - env: DOCKER_TAG=fedora-32 SCANBUILD=yes WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes
     compiler: clang
   # check fuzz targets
-  - env: DOCKER_TAG=fedora-30 GEN_FUZZ=1 CXX=clang++ CC=clang
+  - env: DOCKER_TAG=fedora-32 GEN_FUZZ=1 CXX=clang++ CC=clang
     compiler: clang
   # check config for different tcti targets
-  - env: DOCKER_TAG=fedora-30 TEST_TCTI_CONFIG=true
+  - env: DOCKER_TAG=fedora-32 TEST_TCTI_CONFIG=true
     compiler: gcc
 
 script:
