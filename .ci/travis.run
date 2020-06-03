@@ -2,10 +2,10 @@
 
 set -e
 
-# if no DOCKER_TAG is set, warn and default to fedora-30
+# if no DOCKER_TAG is set, warn and default to fedora-32
 if [ -z "$DOCKER_TAG" ]; then
-  echo "WARN: DOCKER_TAG is not set, defaulting to fedora-30"
-  export DOCKER_TAG="fedora-30"
+  echo "WARN: DOCKER_TAG is not set, defaulting to fedora-32"
+  export DOCKER_TAG="fedora-32"
 fi
 
   #
