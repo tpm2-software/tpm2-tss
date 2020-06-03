@@ -2103,11 +2103,11 @@ ifapi_get_tpm_key_fingerprint(
     size_t hashSize;
     size_t fingerPrintSize;
 
-    if (!(hashSize = ifapi_hash_get_digest_size(hashAlg))) {
+    hashSize = ifapi_hash_get_digest_size(hashAlg);
+    if (!hashSize)
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    hashAlg);
-    }
 
     evpPublicKey = EVP_PKEY_new();
     goto_if_null2(evpPublicKey, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
