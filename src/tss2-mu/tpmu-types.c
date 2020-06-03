@@ -45,7 +45,7 @@ static TSS2_RC marshal_tab(BYTE const *src, uint8_t buffer[],
              *offset);
         return TSS2_RC_SUCCESS;
     } else if (buffer_size < local_offset || buffer_size - local_offset < size) {
-        LOG_ERROR("buffer_size: %zu with offset: %zu are insufficient for "
+        LOG_DEBUG("buffer_size: %zu with offset: %zu are insufficient for "
              "object of size %zu", buffer_size, local_offset, size);
         return TSS2_MU_RC_INSUFFICIENT_BUFFER;
     }
@@ -148,7 +148,7 @@ static TSS2_RC unmarshal_tab(uint8_t const buffer[], size_t buffer_size,
              *offset);
         return TSS2_RC_SUCCESS;
     } else if (buffer_size < local_offset || size > buffer_size - local_offset) {
-        LOG_WARNING("buffer_size: %zu with offset: %zu are insufficient for "
+        LOG_DEBUG("buffer_size: %zu with offset: %zu are insufficient for "
              "object of size %zu", buffer_size, local_offset, size);
         return TSS2_MU_RC_INSUFFICIENT_BUFFER;
     }
