@@ -206,7 +206,10 @@ cleanup:
     /* Cleanup any intermediate results and state stored in the context. */
     SAFE_FREE(command->searchPath);
     if (numPaths == 0 && (r == TSS2_RC_SUCCESS)) {
-        LOG_ERROR("Path not found: %s", command->searchPath);
+        if (command->searchPath)
+            LOG_ERROR("Path not found: %s", command->searchPath);
+        else
+            LOG_ERROR("No files found in /");
         r = TSS2_FAPI_RC_PATH_NOT_FOUND;
     }
     if (numPaths > 0) {

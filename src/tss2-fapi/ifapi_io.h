@@ -71,7 +71,9 @@ ifapi_io_remove_file(
 
 TSS2_RC
 ifapi_io_remove_directories(
-    const char *dirname);
+    const char *dirname,
+    const char *keystore_path,
+    const char *sub_dir);
 
 TSS2_RC
 ifapi_io_dirfiles(
