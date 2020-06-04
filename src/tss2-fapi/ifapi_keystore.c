@@ -284,6 +284,8 @@ expand_path(IFAPI_KEYSTORE *keystore, const char *path, char **file_name)
     size_t pos = 0;
     *file_name = NULL;
 
+    check_not_null(path);
+
     /* First it will be checked whether the only valid characters occur in the path. */
     r = check_valid_path(path);
     return_if_error(r, "Invalid path.");
@@ -972,28 +974,40 @@ ifapi_keystore_remove_directories(IFAPI_KEYSTORE *keystore, const char *dir_name
     char *absolute_dir_path = NULL;
     char *exp_dir_name = NULL;
     struct stat fbuffer;
+    size_t pos;
 
     r = expand_directory(keystore, dir_name, &exp_dir_name);
     return_if_error(r, "Expand path string.");
 
     /* Cleanup user part of the store */
-    r = ifapi_asprintf(&absolute_dir_path, "%s%s%s", keystore->userdir, IFAPI_FILE_DELIM,
-                       exp_dir_name ? exp_dir_name : "");
+    if (keystore->userdir[strlen(keystore->userdir) - 1] == '/')
+        pos = 1;
+    else
+        pos = 0;
+    r = ifapi_asprintf(&absolute_dir_path, "%s%s", keystore->userdir,
+                       exp_dir_name ? &exp_dir_name[pos] : "");
     goto_if_error(r, "Out of memory.", cleanup);
 
     if (stat(absolute_dir_path, &fbuffer) == 0) {
-        r = ifapi_io_remove_directories(absolute_dir_path);
+        r = ifapi_io_remove_directories(absolute_dir_path, keystore->userdir, NULL);
         goto_if_error2(r, "Could not remove: %s", cleanup, absolute_dir_path);
     }
     SAFE_FREE(absolute_dir_path);
 
     /* Cleanup system part of the store */
-    r = ifapi_asprintf(&absolute_dir_path, "%s%s%s", keystore->systemdir,
-                       IFAPI_FILE_DELIM, exp_dir_name ? exp_dir_name : "");
+    if (keystore->systemdir[strlen(keystore->systemdir) - 1] == '/')
+        /* For a final slash in system dir the startin slash of the
+           expanded path will be ignored. */
+        pos = 1;
+    else
+        pos = 0;
+    r = ifapi_asprintf(&absolute_dir_path, "%s%s", keystore->systemdir,
+                       exp_dir_name ? &exp_dir_name[pos] : "");
     goto_if_error(r, "Out of memory.", cleanup);
 
     if (stat(absolute_dir_path, &fbuffer) == 0) {
-        r = ifapi_io_remove_directories(absolute_dir_path);
+        r = ifapi_io_remove_directories(absolute_dir_path, keystore->systemdir,
+                                        "/" IFAPI_POLICY_DIR);
         goto_if_error2(r, "Could not remove: %s", cleanup, absolute_dir_path);
     }
 

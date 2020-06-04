@@ -314,18 +314,26 @@ ifapi_io_remove_file(const char *file)
 /** Remove a directory recursively; i.e. including its subdirectories.
  *
  * @param[in] dirname The directory to be removed
+ * @param[in] keystore_path The path of the current keystore directory, which should
+ *            not be removed.
+ * @param[in] sub_dir The path of a sub directory of the keystore directory,
+ *            which should not be removed (can be NULL, if not needed).
+ *            It must start with a slash.
  * @retval TSS2_RC_SUCCESS if the directories were successfully removed
  * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error occurred
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
  */
 TSS2_RC
 ifapi_io_remove_directories(
-    const char *dirname)
+    const char *dirname,
+    const char *keystore_path,
+    const char *sub_dir)
 {
     DIR *dir;
     struct dirent *entry;
     TSS2_RC r;
     char *path;
+    size_t len_kstore_path, len_dir_path, diff_len, pos;
 
     LOG_TRACE("Removing directory: %s", dirname);
 
@@ -347,7 +355,7 @@ ifapi_io_remove_directories(
             r = ifapi_asprintf(&path, "%s/%s", dirname, entry->d_name);
             goto_if_error(r, "Out of memory", error_cleanup);
 
-            r = ifapi_io_remove_directories(path);
+            r = ifapi_io_remove_directories(path, keystore_path, sub_dir);
             free(path);
             goto_if_error(r, "remove directories.", error_cleanup);
 
@@ -369,10 +377,22 @@ ifapi_io_remove_directories(
         free(path);
     }
     closedir(dir);
-    LOG_TRACE("Removing target directory %s", dirname);
 
-    if (rmdir(dirname) != 0)
-        return_error2(TSS2_FAPI_RC_IO_ERROR, "Removing directory: %s", dirname);
+    /* Check whether current directory is a keystore directory. These directories should
+       not be deleted. */
+    len_kstore_path = strlen(keystore_path);
+    len_dir_path = strlen(dirname);
+    diff_len = len_dir_path - len_kstore_path;
+    if (diff_len > 1) {
+        pos = strlen(keystore_path);
+        if (keystore_path[pos - 1] == '/')
+            pos += 1;
+        /* Check whether current sub_dir of keystore path should not be deleted. */
+        if (!sub_dir || strcmp(&dirname[pos], sub_dir) != 0) {
+            if (rmdir(dirname) != 0)
+                return_error2(TSS2_FAPI_RC_IO_ERROR, "Removing directory: %s", dirname);
+        }
+    }
 
     LOG_TRACE("SUCCESS");
     return TSS2_RC_SUCCESS;
@@ -408,7 +428,7 @@ ifapi_io_dirfiles(
     check_not_null(files);
     check_not_null(numfiles);
 
-    LOG_TRACE("Removing directory: %s", dirname);
+    LOG_TRACE("List directory: %s", dirname);
 
     paths = calloc(10, sizeof(*paths));
     check_oom(paths);
