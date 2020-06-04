@@ -741,6 +741,8 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
     TPMT_TK_CREATION *creationTicket = NULL;
     IFAPI_OBJECT *pkey_object = &context->createPrimary.pkey_object;
     IFAPI_KEY *pkey = &context->createPrimary.pkey_object.misc.key;
+    TPMS_CAPABILITY_DATA **capabilityData = &context->createPrimary.capabilityData;
+    TPMI_YES_NO moreData;
     ESYS_TR auth_session;
 
     LOG_TRACE("call");
@@ -764,10 +766,11 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
             } else {
                 context->srk_persistent = true;
             }
-            /* Persistent handle will be used. */
-            *handle = pkey_object->handle;
-            break;
-        } else {
+            /* It has to be checked whether the persistent handle exists. */
+            context->primary_state = PRIMARY_VERIFY_PERSISTENT;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        }
+        else {
             if (pkey->creationTicket.hierarchy == TPM2_RH_EK) {
                 context->ek_persistent = false;
             } else {
@@ -838,6 +841,35 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
         context->primary_state = PRIMARY_INIT;
         break;
 
+    statecase(context->primary_state, PRIMARY_VERIFY_PERSISTENT);
+        /* Check the TPM capabilities for the persistent handle. */
+        r = Esys_GetCapability_Async(context->esys,
+                                     ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                                     TPM2_CAP_HANDLES,
+                                     pkey_object->misc.key.persistent_handle, 1);
+        goto_if_error(r, "Esys_GetCapability_Async", error_cleanup);
+        fallthrough;
+
+    statecase(context->primary_state, PRIMARY_GET_CAP);
+        r = Esys_GetCapability_Finish(context->esys, &moreData, capabilityData);
+        return_try_again(r);
+        goto_if_error_reset_state(r, "GetCapablity_Finish", error_cleanup);
+
+        /* Check whether the persistent handle exists. */
+        if ((*capabilityData)->data.handles.count != 0 &&
+            (*capabilityData)->data.handles.handle[0] ==
+            pkey_object->misc.key.persistent_handle) {
+            /* Persistent handle found. */
+            SAFE_FREE(*capabilityData);
+            *handle = pkey_object->handle;
+            break;
+        }
+        goto_error(r, TSS2_FAPI_RC_KEY_NOT_FOUND ,
+                   "The persistent handle 0x%x does not exist. "
+                   "The TPM state and the keystore state do not match."
+,                   error_cleanup, pkey_object->misc.key.persistent_handle);
+        fallthrough;
+
     statecasedefault(context->primary_state);
     }
     SAFE_FREE(outPublic);
@@ -848,6 +880,7 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
+    SAFE_FREE(*capabilityData);
     SAFE_FREE(outPublic);
     SAFE_FREE(creationData);
     SAFE_FREE(creationHash);

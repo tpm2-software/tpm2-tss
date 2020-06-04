@@ -22,6 +22,7 @@
 #include "fapi_crypto.h"
 #include "fapi_policy.h"
 #include "ifapi_get_intl_cert.h"
+#include "ifapi_helpers.h"
 
 #define LOGMODULE fapi
 #include "util/log.h"
@@ -156,6 +157,8 @@ Fapi_Provision_Async(
     char const *authValueSh,
     char const *authValueLockout)
 {
+    char *profile_dir = NULL;
+
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("authValueEh: %s", authValueEh);
     LOG_TRACE("authValueSh: %s", authValueSh);
@@ -172,6 +175,18 @@ Fapi_Provision_Async(
     r = ifapi_session_init(context);
     goto_if_error(r, "Initialize Provision", end);
 
+    /* First it will be checked whether the profile is already provisioned. */
+    r = ifapi_asprintf(&profile_dir, "%s/%s", context->keystore.systemdir,
+                       context->keystore.defaultprofile);
+    goto_if_error(r, "Out of memory.", end);
+
+    if (ifapi_io_path_exists(profile_dir)) {
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                   "Profile %s was already provisioned.", end,
+                   context->keystore.defaultprofile);
+    }
+    SAFE_FREE(profile_dir);
+
     /* Initialize context and duplicate parameters */
     strdup_check(command->authValueLockout, authValueLockout, r, end);
     strdup_check(command->authValueEh, authValueEh, r, end);
@@ -186,6 +201,7 @@ Fapi_Provision_Async(
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 end:
+    SAFE_FREE(profile_dir);
     SAFE_FREE(command->authValueLockout);
     SAFE_FREE(command->authValueEh);
     SAFE_FREE(command->authValueSh);
@@ -723,10 +739,14 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             r = ifapi_esys_serialize_object(context->esys, pkeyObject);
             goto_if_error(r, "Prepare serialization", error_cleanup);
 
+            /* Check whether object already exists in key store.*/
+            r = ifapi_keystore_object_does_not_exist(&context->keystore, "HS/SRK", pkeyObject);
+            goto_if_error_reset_state(r, "Could not write: %s", error_cleanup, "HS/SRK");
+
             /* Start writing the SRK to the key store */
             r = ifapi_keystore_store_async(&context->keystore, &context->io, "HS/SRK",
                     pkeyObject);
-            goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup, "HS/SRK");
+            goto_if_error_reset_state(r, "Could not open: %s", error_cleanup, "HS/SRK");
             context->state = PROVISION_SRK_WRITE;
             fallthrough;
 

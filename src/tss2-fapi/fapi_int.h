@@ -502,6 +502,7 @@ typedef struct {
     TPML_PCR_SELECTION creationPCR;
     ESYS_TR handle;
     TPMI_DH_PERSISTENT persistent_handle;
+    TPMS_CAPABILITY_DATA *capabilityData;
 } IFAPI_CreatePrimary;
 
 /** The data structure holding internal state of key verify signature.
@@ -694,7 +695,9 @@ enum _FAPI_STATE_PRIMARY {
     PRIMARY_READ_HIERARCHY_FINISH,
     PRIMARY_AUTHORIZE_HIERARCHY,
     PRIMARY_HAUTH_SENT,
-    PRIMARY_CREATED
+    PRIMARY_CREATED,
+    PRIMARY_VERIFY_PERSISTENT,
+    PRIMARY_GET_CAP
 };
 
 /** The states for the FAPI's primary key regeneration */
