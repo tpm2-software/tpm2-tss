@@ -3,6 +3,41 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [2.4.2-rc0]
+### Fixed
+- Fixed usage of persistent handles.
+- Fixed computation of the size of a PCR selection (Fixes #1737).
+- Fixed missing hierarchy authentication for Fapi_Delete.
+- Fixed uninitialized context of FAPI command Fapi_ChangeAuth.
+- Fixed computation of random value for objects used for sealing.
+- Fixed return code for event parsing errors.
+- Fixed NV index and path handling in NV creation.
+- Fixed path checking for keys.
+- Fixed Fapi_GetInfo function.
+- Fixed path usage in Fapi_Import.
+- Fixed invalid settings of default flags for keys creation.
+- Fixed handle usage in Fapi_ChangeAuth
+
+### CHANGED
+- Adapted integration tests to SRK delete checking.
+- Improved presentation of Fapi_GetInfo.
+- Silenced expected errors from Esys_TestParams
+
+### Added
+- Added a check that prevents deleting default directories
+- Added a check if primary keys already exist for Fapi_Provision
+- Added tests for derived persistent keys.
+- Added test policy PCR with PCR register 8.
+- Added check for deleting of the SRK.
+- Added test for sealing a random value.
+- Added content of the config file to FAPI Info.
+- Added a check for valid pathnames in keystore module.
+
+### Removed
+- Removed unecassary code from Fapi_ExportKey
+- Removed obsolete LIBDL_LDFLAGS and replace it with LIBADD_DL
+- Removed superfluous policies/pol_password.json file
+
 ## [2.4.1] - 2020-05-12
 ### Fixed
 - Fixed systemd-sysusers/-tmpfiles creation without systemd
@@ -89,7 +124,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ## [2.2.3] - 2019-05-28
 ### Fixed
- - Fix computation of session name
+ - Fixed computation of session name
  - Fixed PolicyPassword handling of session Attributes
  - Fixed windows build from dist ball
  - Fixed default tcti configure option
