@@ -490,7 +490,7 @@ Fapi_Delete_Finish(
         statecase(context->state, ENTITY_DELETE_WAIT_FOR_SESSION);
             /* If a TPM object (e.g. a persistent key) was referenced, then this
                is the entry point. */
-        r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
+            r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
                                       context->profiles.default_profile.nameAlg);
             return_try_again(r);
             goto_if_error(r, "Create FAPI session.", error_cleanup);
@@ -579,8 +579,13 @@ Fapi_Delete_Finish(
 
         statecase(context->state, ENTITY_DELETE_KEY);
             if (object->misc.key.persistent_handle) {
+                char *hierarchy_path;
+                if (object->misc.key.creationTicket.hierarchy == TPM2_RH_EK)
+                    hierarchy_path = "/HE";
+                else
+                    hierarchy_path = "/HS";
                 r = ifapi_keystore_load_async(&context->keystore, &context->io, "/HS");
-                return_if_error2(r, "Could not open hierarchy /HS");
+                return_if_error2(r, "Could not open hierarchy %s", hierarchy_path);
             }
             fallthrough;
 
