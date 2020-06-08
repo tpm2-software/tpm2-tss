@@ -453,10 +453,11 @@ DX_XML_FEATURE(OFF)
 DX_PDF_FEATURE(OFF)
 DX_PS_FEATURE(OFF)
 DX_INIT_DOXYGEN($PACKAGE_NAME, [Doxyfile], [doxygen-doc])
-AM_CONDITIONAL(DOXYMAN, [test $DX_FLAG_man -eq 1])
 
-AS_IF([test "x$enable_doxygen_doc" != xno],
-      [ERROR_IF_NO_PROG([doxygen])])
+AM_CONDITIONAL(DOXYMAN, [test $DX_FLAG_doc -eq 1])
+AS_IF([test $DX_FLAG_doc -ne 1],
+	[AS_IF([test "x$enable_doxygen_doc" = xyes],
+                     [ERROR_IF_NO_PROG([doxygen])])])
 
 AX_CODE_COVERAGE
 m4_ifdef([_AX_CODE_COVERAGE_RULES],
