@@ -640,12 +640,12 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 
             /* Check whether object already exists in key store.*/
             r = ifapi_keystore_object_does_not_exist(&context->keystore, "HE/EK", pkeyObject);
-            goto_if_error_reset_state(r, "Could not write: %sh", error_cleanup, "HE/EK");
+            goto_if_error_reset_state(r, "Could not write: %s", error_cleanup, "HE/EK");
 
             /* Start writing the EK to the key store */
             r = ifapi_keystore_store_async(&context->keystore, &context->io, "HE/EK",
                     pkeyObject);
-            goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup, "HE/EK");
+            goto_if_error_reset_state(r, "Could not open: %s", error_cleanup, "HE/EK");
 
             fallthrough;
 
@@ -849,12 +849,12 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             /* Check whether object already exists in key store.*/
             r = ifapi_keystore_object_does_not_exist(&context->keystore, "/LOCKOUT",
                                                      &command->hierarchy);
-            goto_if_error_reset_state(r, "Could not write: %sh", error_cleanup, "/LOCKOUT");
+            goto_if_error_reset_state(r, "Could not write: %s", error_cleanup, "/LOCKOUT");
 
             /* Start writing the lockout hierarchy object to the key store */
             r = ifapi_keystore_store_async(&context->keystore, &context->io, "/LOCKOUT",
                     &command->hierarchy);
-            goto_if_error_reset_state(r, "Could not open: %sh",
+            goto_if_error_reset_state(r, "Could not open: %s",
                     error_cleanup, "/LOCKOUT");
 
             context->state = PROVISION_WRITE_LOCKOUT;
@@ -916,12 +916,12 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             /* Check whether object already exists in key store.*/
             r = ifapi_keystore_object_does_not_exist(&context->keystore, "/HE",
                                                      &command->hierarchy);
-            goto_if_error_reset_state(r, "Could not write: %sh", error_cleanup, "/HE");
+            goto_if_error_reset_state(r, "Could not write: %s", error_cleanup, "/HE");
 
             /* Start writing the endorsement hierarchy object to the key store */
             r = ifapi_keystore_store_async(&context->keystore, &context->io, "/HE",
                     &command->hierarchy);
-            goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup, "/HE");
+            goto_if_error_reset_state(r, "Could not open: %s", error_cleanup, "/HE");
 
             context->state = PROVISION_WRITE_EH;
             fallthrough;
@@ -983,12 +983,12 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             /* Check whether object already exists in key store.*/
             r = ifapi_keystore_object_does_not_exist(&context->keystore, "/HS",
                                                      &command->hierarchy);
-            goto_if_error_reset_state(r, "Could not write: %sh", error_cleanup, "/HS");
+            goto_if_error_reset_state(r, "Could not write: %s", error_cleanup, "/HS");
 
             /* Start writing the owner hierarchy object to the key store */
             r = ifapi_keystore_store_async(&context->keystore, &context->io, "/HS",
                     &command->hierarchy);
-            goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup, "/HS");
+            goto_if_error_reset_state(r, "Could not open: %s", error_cleanup, "/HS");
             context->state = PROVISION_WRITE_SH;
             fallthrough;
 
