@@ -1181,6 +1181,8 @@ ifapi_get_sessions_finish(
         LOG_TRACE("**STATE** SESSION_WAIT_FOR_PRIMARY");
         r = ifapi_load_primary_finish(context, &context->srk_handle);
         return_try_again(r);
+
+        ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
         return_if_error(r, "Load primary.");
         fallthrough;
 
@@ -1610,9 +1612,11 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
 
         if (key->private.size == 0) {
             /* Create a deep copy of the primary key */
-            ifapi_cleanup_ifapi_key(key);
-            r = ifapi_copy_ifapi_key(key, &context->createPrimary.pkey_object.misc.key);
+            r = ifapi_copy_ifapi_key_object(&context->createPrimary.pkey_object,
+                                            context->loadKey.key_object);
             goto_if_error(r, "Could not copy primary key", error_cleanup);
+
+            ifapi_cleanup_ifapi_key(key);
             context->primary_state = PRIMARY_READ_HIERARCHY;
             context->loadKey.state = LOAD_KEY_WAIT_FOR_PRIMARY;
             return TSS2_FAPI_RC_TRY_AGAIN;
