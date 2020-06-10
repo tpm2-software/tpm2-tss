@@ -579,13 +579,8 @@ Fapi_Delete_Finish(
 
         statecase(context->state, ENTITY_DELETE_KEY);
             if (object->misc.key.persistent_handle) {
-                char *hierarchy_path;
-                if (object->misc.key.creationTicket.hierarchy == TPM2_RH_EK)
-                    hierarchy_path = "/HE";
-                else
-                    hierarchy_path = "/HS";
                 r = ifapi_keystore_load_async(&context->keystore, &context->io, "/HS");
-                return_if_error2(r, "Could not open hierarchy %s", hierarchy_path);
+                return_if_error2(r, "Could not open hierarchy /HS");
             }
             fallthrough;
 
