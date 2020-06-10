@@ -48,25 +48,45 @@ test_fapi_wrong_path(FAPI_CONTEXT *context)
 
     r = Fapi_CreateKey(context, "myKey", "sign,noDa", "", NULL);
 
-    if (r && r !=  TSS2_FAPI_RC_PATH_NOT_FOUND) {
-        goto_if_error(r, "Error Fapi_CreateKey", error);
+    if (r == TSS2_RC_SUCCESS) {
+        LOG_ERROR( "Wrong key path not detected");
+        goto error;
+    }
+
+    if (r !=  TSS2_FAPI_RC_PATH_NOT_FOUND) {
+        goto_if_error(r, "Wrong return code", error);
     }
 
     r = Fapi_CreateKey(context, "/HE/SRK/myKey", "sign,noDa", "", NULL);
 
-    if (r && r !=  TSS2_FAPI_RC_PATH_NOT_FOUND) {
-        goto_if_error(r, "Error Fapi_CreateKey", error);
+    if (r == TSS2_RC_SUCCESS) {
+        LOG_ERROR( "Wrong key path not detected");
+        goto error;
+    }
+
+    if (r !=  TSS2_FAPI_RC_PATH_NOT_FOUND) {
+        goto_if_error(r, "Wrong return code", error);
     }
 
     r = Fapi_CreateKey(context, "/HS/EK/Key", "sign,noDa", "", NULL);
 
-    if (r && r !=  TSS2_FAPI_RC_PATH_NOT_FOUND) {
+    if (r == TSS2_RC_SUCCESS) {
+        LOG_ERROR( "Wrong key path not detected");
+        goto error;
+    }
+
+    if (r !=  TSS2_FAPI_RC_PATH_NOT_FOUND) {
         goto_if_error(r, "Error Fapi_CreateKey", error);
     }
 
     r = Fapi_CreateNv(context, "myNv", "noda", 10, "", "");
 
-    if (r && r !=  TSS2_FAPI_RC_PATH_NOT_FOUND) {
+    if (r == TSS2_RC_SUCCESS) {
+        LOG_ERROR( "Wrong key path not detected");
+        goto error;
+    }
+
+    if (r !=  TSS2_FAPI_RC_PATH_NOT_FOUND) {
         goto_if_error(r, "Error Fapi_CreateNv", error);
     }
 
