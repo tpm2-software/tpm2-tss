@@ -302,19 +302,31 @@ Fapi_GetEsysBlob_Finish(
             return_try_again(r);
             goto_if_error(r, "Fapi load key.", error_cleanup);
 
-            *type = FAPI_ESYSBLOB_CONTEXTLOAD;
-            r = Esys_ContextSave(context->esys, key_object->handle, &key_context);
+            command->type = FAPI_ESYSBLOB_CONTEXTLOAD;
+
+            /* Prepare the saving of the context. */
+            r = Esys_ContextSave_Async(context->esys, key_object->handle);
             goto_if_error(r, "Error esys context save", error_cleanup);
 
-            *length = 0;
-            r = Tss2_MU_TPMS_CONTEXT_Marshal(key_context, NULL, SIZE_MAX, length);
+            fallthrough;
+
+        statecase(context->state, GET_ESYS_BLOB_WAIT_FOR_CONTEXT_SAVE);
+            /* Save and get the context. */
+            r = Esys_ContextSave_Finish(context->esys, &key_context);
+            return_try_again(r);
+            goto_if_error(r, "Error esys context save", error_cleanup);
+
+            command->length = 0;
+            r = Tss2_MU_TPMS_CONTEXT_Marshal(key_context, NULL, SIZE_MAX,
+                                             &command->length);
             goto_if_error(r, "Marshaling context", error_cleanup);
 
-            *data = malloc(*length);
-            goto_if_null2(*data, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
+            command->data = malloc(command->length);
+            goto_if_null2(command->data, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
                           error_cleanup);
 
-            r = Tss2_MU_TPMS_CONTEXT_Marshal(key_context, *data, *length, &offset);
+            r = Tss2_MU_TPMS_CONTEXT_Marshal(key_context, command->data, command->length,
+                                             &offset);
             SAFE_FREE(key_context);
             goto_if_error(r, "Marshaling context", error_cleanup);
 
@@ -343,6 +355,9 @@ Fapi_GetEsysBlob_Finish(
             /* Cleanup the session used for authorization. */
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
+            *type = command->type;
+            *data = command->data;
+            *length = command->length;
 
             context->state = _FAPI_STATE_INIT;
             break;

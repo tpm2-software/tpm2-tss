@@ -660,6 +660,8 @@ typedef struct {
  */
 typedef struct {
     uint8_t type;                   /**< type of blob to be returned */
+    uint8_t *data;                   /**< data of the blob to be returned */
+    size_t length;                  /**< The size of the data to be returned */
     bool is_key;                    /**< Object is a key */
     bool is_persistent_key;         /**< Object is a persistent key */
     ESYS_TR new_object_handle;
@@ -875,6 +877,7 @@ enum _FAPI_STATE {
     GET_ESYS_BLOB_AUTH_SENT_FOR_NV,
     GET_ESYS_BLOB_KEY,
     GET_ESYS_BLOB_WAIT_FOR_KEY,
+    GET_ESYS_BLOB_WAIT_FOR_CONTEXT_SAVE,
     GET_ESYS_BLOB_SERIALIZE,
     GET_ESYS_BLOB_FILE,
     GET_ESYS_BLOB_WAIT_FOR_FLUSH,
