@@ -3941,7 +3941,22 @@ ifapi_get_certificates(
         /* TPMA_NV_NO_DA is set for NV certificate */
         context->nv_cmd.nv_object.misc.nv.public.nvPublic.attributes = TPMA_NV_NO_DA;
 
+        r = ifapi_keystore_load_async(&context->keystore, &context->io, "/HS");
+        return_if_error2(r, "Could not open hierarchy /HS");
+
+        fallthrough;
+
+    statecase(context->get_cert_state, GET_CERT_GET_CERT_READ_HIERARCHY);
+        r = ifapi_keystore_load_finish(&context->keystore, &context->io,
+                                       &context->nv_cmd.auth_object);
+        return_try_again(r);
+        return_if_error(r, "read_finish failed");
+
         /* Prepare context for nv read */
+        r = ifapi_initialize_object(context->esys, &context->nv_cmd.auth_object);
+        goto_if_error_reset_state(r, "Initialize hierarchy object", error);
+
+        context->nv_cmd.auth_object.handle = ESYS_TR_RH_OWNER;
         context->nv_cmd.data_idx = 0;
         context->nv_cmd.auth_index = ESYS_TR_RH_OWNER;
         context->nv_cmd.numBytes = nvPublic->nvPublic.dataSize;
@@ -3969,6 +3984,8 @@ ifapi_get_certificates(
             r = push_object_with_size_to_list(cert_data, cert_size, cert_list);
             goto_if_error(r, "Store certificate in list.", error);
 
+            ifapi_cleanup_ifapi_object(&context->nv_cmd.auth_object);
+
             return TSS2_RC_SUCCESS;
         } else {
             context->get_cert_state = GET_CERT_GET_CERT_NV;
@@ -3979,6 +3996,7 @@ ifapi_get_certificates(
     }
 
 error:
+    ifapi_cleanup_ifapi_object(&context->nv_cmd.auth_object);
     ifapi_free_object_list(*cert_list);
     return r;
 }
