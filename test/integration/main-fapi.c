@@ -29,6 +29,19 @@
 #endif /* FAPI_PROFILE */
 
 char *fapi_profile = NULL;
+char *tmpdir = NULL;
+
+char *config = NULL;
+char *config_path = NULL;
+char *config_env = NULL;
+char *remove_cmd = NULL;
+char *system_dir = NULL;
+FAPI_CONTEXT *global_fapi_context = NULL;
+
+bool file_exists (char *path) {
+  struct stat   buffer;
+  return (stat (path, &buffer) == 0);
+}
 
 TSS2_RC
 pcr_reset(FAPI_CONTEXT *context, UINT32 pcr)
@@ -52,41 +65,24 @@ error:
     return r;
 }
 
-/**
- * This program is a template for integration tests (ones that use the TCTI,
- * the ESAPI, and FAPI contexts / API directly). It does nothing more than
- * parsing  command line options that allow the caller (likely a script)
- * to specifywhich TCTI to use for the test using getenv("TPM20TEST_TCTI").
- */
-int
-main(int argc, char *argv[])
+int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
 {
     TSS2_RC rc;
-    FAPI_CONTEXT *fapi_context = NULL;
-
     int ret, size;
-    char *config = NULL;
-    char *config_path = NULL;
-    char *config_env = NULL;
-    char *remove_cmd = NULL;
-    char *system_dir = NULL;
+    SAFE_FREE(config);
+    SAFE_FREE(config_path);
+    SAFE_FREE(config_env);
+    SAFE_FREE(remove_cmd);
+    SAFE_FREE(system_dir);
 
     FILE *config_file;
 
-    char template[] = "/tmp/fapi_tmpdir.XXXXXX";
-
-    char *tmpdir = mkdtemp(template);
-    if (!tmpdir) {
-        LOG_ERROR("No temp dir created");
-        return EXIT_ERROR;
-    }
-
-    fapi_profile = FAPI_PROFILE;
+    fapi_profile = profile;
 
     /* First we construct a fapi config file */
 #if defined(FAPI_NONTPM)
     size = asprintf(&config, "{\n"
-                    "     \"profile_name\": \"" FAPI_PROFILE "\",\n"
+                    "     \"profile_name\": \"%s\",\n"
                     "     \"profile_dir\": \"" TOP_SOURCEDIR "/test/data/fapi/\",\n"
                     "     \"user_dir\": \"%s/user/dir\",\n"
                     "     \"system_dir\": \"%s/system_dir\",\n"
@@ -94,10 +90,10 @@ main(int argc, char *argv[])
                     "     \"log_dir\" : \"%s\",\n"
                     "     \"tcti\": \"none\",\n"
                     "}\n",
-                    tmpdir, tmpdir, tmpdir);
+                    profile, tmpdir, tmpdir, tmpdir);
 #elif defined(FAPI_TEST_FINGERPRINT)
     size = asprintf(&config, "{\n"
-                    "     \"profile_name\": \"" FAPI_PROFILE "\",\n"
+                    "     \"profile_name\": \"%s\",\n"
                     "     \"profile_dir\": \"" TOP_SOURCEDIR "/test/data/fapi/\",\n"
                     "     \"user_dir\": \"%s/user/dir\",\n"
                     "     \"system_dir\": \"%s/system_dir\",\n"
@@ -110,12 +106,12 @@ main(int argc, char *argv[])
                     "     \"ek_fingerprint\": %s,\n"
 #endif
                     "}\n",
-                    tmpdir, tmpdir, tmpdir,
+                    profile, tmpdir, tmpdir, tmpdir,
                     getenv("TPM20TEST_TCTI"),
                     getenv("FAPI_TEST_FINGERPRINT"));
 #elif defined(FAPI_TEST_CERTIFICATE)
     size = asprintf(&config, "{\n"
-                    "     \"profile_name\": \"" FAPI_PROFILE "\",\n"
+                    "     \"profile_name\": \"%s\",\n"
                     "     \"profile_dir\": \"" TOP_SOURCEDIR "/test/data/fapi/\",\n"
                     "     \"user_dir\": \"%s/user/dir\",\n"
                     "     \"system_dir\": \"%s/system_dir\",\n"
@@ -128,12 +124,12 @@ main(int argc, char *argv[])
                     "     \"ek_cert_file\": \"%s\",\n"
 #endif
                     "}\n",
-                    tmpdir, tmpdir, tmpdir,
+                    profile, tmpdir, tmpdir, tmpdir,
                     getenv("TPM20TEST_TCTI"),
                     getenv("FAPI_TEST_CERTIFICATE"));
 #elif defined(FAPI_TEST_FINGERPRINT_ECC)
     size = asprintf(&config, "{\n"
-                    "     \"profile_name\": \"" FAPI_PROFILE "\",\n"
+                    "     \"profile_name\": \"%s\",\n"
                     "     \"profile_dir\": \"" TOP_SOURCEDIR "/test/data/fapi/\",\n"
                     "     \"user_dir\": \"%s/user/dir\",\n"
                     "     \"system_dir\": \"%s/system_dir\",\n"
@@ -146,12 +142,12 @@ main(int argc, char *argv[])
                     "     \"ek_fingerprint\": %s,\n"
 #endif
                     "}\n",
-                    tmpdir, tmpdir, tmpdir,
+                    profile, tmpdir, tmpdir, tmpdir,
                     getenv("TPM20TEST_TCTI"),
                     getenv("FAPI_TEST_FINGERPRINT_ECC"));
 #elif defined(FAPI_TEST_CERTIFICATE_ECC)
     size = asprintf(&config, "{\n"
-                    "     \"profile_name\": \"" FAPI_PROFILE "\",\n"
+                    "     \"profile_name\": \"%s\",\n"
                     "     \"profile_dir\": \"" TOP_SOURCEDIR "/test/data/fapi/\",\n"
                     "     \"user_dir\": \"%s/user/dir\",\n"
                     "     \"system_dir\": \"%s/system_dir\",\n"
@@ -164,12 +160,12 @@ main(int argc, char *argv[])
                     "     \"ek_cert_file\": \"%s\",\n"
 #endif
                     "}\n",
-                    tmpdir, tmpdir, tmpdir,
+                    profile, tmpdir, tmpdir, tmpdir,
                     getenv("TPM20TEST_TCTI"),
                     getenv("FAPI_TEST_CERTIFICATE_ECC"));
 #else /* FAPI_NONTPM */
     size = asprintf(&config, "{\n"
-                    "     \"profile_name\": \"" FAPI_PROFILE "\",\n"
+                    "     \"profile_name\": \"%s\",\n"
                     "     \"profile_dir\": \"" TOP_SOURCEDIR "/test/data/fapi/\",\n"
                     "     \"user_dir\": \"%s/user/dir\",\n"
                     "     \"system_dir\": \"%s/system_dir\",\n"
@@ -180,7 +176,7 @@ main(int argc, char *argv[])
                     "     \"ek_cert_less\": \"yes\",\n"
 #endif
                     "}\n",
-                    tmpdir, tmpdir, tmpdir,
+                    profile, tmpdir, tmpdir, tmpdir,
                     getenv("TPM20TEST_TCTI"));
 #endif /* FAPI_NONTPM */
     if (size < 0) {
@@ -196,11 +192,13 @@ main(int argc, char *argv[])
         goto error;
     }
 
-    int rc_mkdir = mkdir(system_dir, 0777);
-    if (rc_mkdir != 0) {
-        LOG_ERROR("mkdir not possible: %i %s", rc_mkdir, system_dir);
-        ret = EXIT_ERROR;
-        goto error;
+    if (!file_exists(system_dir)) {
+        int rc_mkdir = mkdir(system_dir, 0777);
+        if (rc_mkdir != 0) {
+            LOG_ERROR("mkdir not possible: %i %s", rc_mkdir, system_dir);
+            ret = EXIT_ERROR;
+            goto error;
+        }
     }
 
     if (size < 0) {
@@ -248,14 +246,57 @@ main(int argc, char *argv[])
      * Call FAPI
      ***********/
 
-    rc = Fapi_Initialize(&fapi_context, NULL);
+    rc = Fapi_Initialize(fapi_context, NULL);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Esys_Initialize FAILED! Response Code : 0x%x", rc);
         ret = EXIT_FAILURE;
         goto error;
     }
+    global_fapi_context = *fapi_context;
+    return 0;
 
-    ret = test_invoke_fapi(fapi_context);
+ error:
+    Fapi_Finalize(fapi_context);
+
+    if (system_dir) free(system_dir);
+    if (config) free(config);
+    if (config_path) free(config_path);
+    if (config_env) free(config_env);
+    if (remove_cmd) free(remove_cmd);
+
+    return ret;
+}
+
+/**
+ * This program is a template for integration tests (ones that use the TCTI,
+ * the ESAPI, and FAPI contexts / API directly). It does nothing more than
+ * parsing  command line options that allow the caller (likely a script)
+ * to specifywhich TCTI to use for the test using getenv("TPM20TEST_TCTI").
+ */
+int
+main(int argc, char *argv[])
+{
+    int ret, size;
+    char *config = NULL;
+    char *config_path = NULL;
+    char *config_env = NULL;
+    char *remove_cmd = NULL;
+    char *system_dir = NULL;
+
+    char template[] = "/tmp/fapi_tmpdir.XXXXXX";
+
+    tmpdir = mkdtemp(template);
+
+    if (!tmpdir) {
+        LOG_ERROR("No temp dir created");
+        return EXIT_ERROR;
+    }
+    ret = init_fapi(FAPI_PROFILE, &global_fapi_context);
+    if (ret)
+        goto error;
+
+    ret = test_invoke_fapi(global_fapi_context);
+
     LOG_INFO("Test returned %i", ret);
     if (ret) goto error;
 
@@ -272,7 +313,7 @@ main(int argc, char *argv[])
     }
 
 error:
-    Fapi_Finalize(&fapi_context);
+    Fapi_Finalize(&global_fapi_context);
 
     if (system_dir) free(system_dir);
     if (config) free(config);

@@ -313,6 +313,7 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-pcr-test.fint \
     test/integration/fapi-quote.fint \
     test/integration/fapi-quote-rsa.fint \
+    test/integration/fapi-second-provisioning.fint \
     test/integration/fapi-info.fint \
     test/integration/fapi-unseal.fint \
     test/integration/fapi-unseal-persistent.fint
@@ -1770,6 +1771,13 @@ test_integration_fapi_provision_certificate_ecc_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_provision_certificate_ecc_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_provision_certificate_ecc_fint_SOURCES = \
     test/integration/fapi-get-random.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_second_provisioning_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_second_provisioning_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_second_provisioning_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_second_provisioning_fint_SOURCES = \
+    test/integration/fapi-second-provisioning.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 endif #FAPI

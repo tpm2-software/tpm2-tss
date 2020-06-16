@@ -32,4 +32,7 @@ pcr_reset(FAPI_CONTEXT *context, UINT32 pcr);
  * A successful test will return 0, any other value indicates failure.
  */
 
+
 int test_invoke_fapi(FAPI_CONTEXT * fapi_context);
+
+int init_fapi(char *fapi_profile, FAPI_CONTEXT **fapi_context);
