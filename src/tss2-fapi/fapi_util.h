@@ -57,7 +57,8 @@ ifapi_init_primary_async(
 TSS2_RC
 ifapi_init_primary_finish(
     FAPI_CONTEXT *context,
-    TSS2_KEY_TYPE ktype);
+    TSS2_KEY_TYPE ktype,
+    IFAPI_OBJECT *hierarchy);
 
 TSS2_RC
 ifapi_session_init(FAPI_CONTEXT *context);

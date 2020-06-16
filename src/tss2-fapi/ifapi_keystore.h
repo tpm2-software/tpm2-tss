@@ -55,6 +55,7 @@ typedef struct {
     TPMI_YES_NO                               with_auth;    /**< Authorization provided */
     char                                   *description;    /**< Human readable description of hierarchy */
     TPM2B_DIGEST                             authPolicy;
+    bool                                      authorized;   /**< Switch whether hiearchy is authorized. */
 } IFAPI_HIERARCHY;
 
 /** Type for representing a FAPI NV object
@@ -235,9 +236,20 @@ ifapi_copy_ifapi_key(
     const IFAPI_KEY * src);
 
 TSS2_RC
+ifapi_copy_ifapi_hierarchy(
+    IFAPI_HIERARCHY * dest,
+    const IFAPI_HIERARCHY * src);
+
+TSS2_RC
 ifapi_copy_ifapi_key_object(
     IFAPI_OBJECT * dest,
     const IFAPI_OBJECT * src);
+
+TSS2_RC
+ifapi_copy_ifapi_hierarchy_object(
+    IFAPI_OBJECT * dest,
+    const IFAPI_OBJECT * src);
+
 
 void ifapi_cleanup_ifapi_key(
     IFAPI_KEY * key);

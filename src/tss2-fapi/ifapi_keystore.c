@@ -1422,6 +1422,39 @@ error_cleanup:
     return r;
 }
 
+/** Create a copy of a an ifapi hierarchy.
+ *
+ * @param[out] dest The caller allocated hierarchy object which will be the
+ *                  destination of the copy operation.
+ * @param[in]  src  The source hierarchy.
+ *
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ */
+TSS2_RC
+ifapi_copy_ifapi_hierarchy(IFAPI_HIERARCHY * dest, const IFAPI_HIERARCHY * src) {
+    TSS2_RC r = TSS2_RC_SUCCESS;
+
+    /* Check the parameters if they are valid */
+    if (src == NULL || dest == NULL) {
+        return TSS2_FAPI_RC_BAD_REFERENCE;
+    }
+
+    /* Initialize the object variables for a possible error cleanup */
+    dest->description = NULL;
+
+    strdup_check(dest->description, src->description, r, error_cleanup);
+    dest->with_auth = src->with_auth;
+    dest->authPolicy = src->authPolicy;
+
+    return r;
+
+error_cleanup:
+    ifapi_cleanup_ifapi_hierarchy(dest);
+    return r;
+}
+
 /** Free memory allocated during deserialization of a key object.
  *
  * The key will not be freed (might be declared on the stack).
@@ -1561,6 +1594,52 @@ error_cleanup:
     return r;
 }
 
+/** Create a copy of a an ifapi object storing a hierarchy.
+ *
+ * The hierarchy together with the policy of the hierarchy will be copied.
+ *
+ * @param[out] dest The caller allocated hierarchy object which will be the
+ *                  destination of the copy operation.
+ * @param[in]  src  The source hieararchy.
+ *
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if the source is not of type key.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ */
+TSS2_RC
+ifapi_copy_ifapi_hierarchy_object(IFAPI_OBJECT * dest, const IFAPI_OBJECT * src) {
+    TSS2_RC r = TSS2_RC_SUCCESS;
+
+    /* Check the parameters if they are valid */
+    if (src == NULL || dest == NULL) {
+        return TSS2_FAPI_RC_BAD_REFERENCE;
+    }
+
+    if (src->objectType != IFAPI_HIERARCHY_OBJ) {
+        LOG_ERROR("Bad object type");
+        return TSS2_FAPI_RC_GENERAL_FAILURE;
+    }
+
+    /* Create the copy */
+    dest->policy = ifapi_copy_policy(src->policy);
+    strdup_check(dest->rel_path, src->rel_path, r, error_cleanup);
+
+    r = ifapi_copy_ifapi_hierarchy(&dest->misc.hierarchy, &src->misc.hierarchy);
+    goto_if_error(r, "Could not copy key", error_cleanup);
+
+    dest->objectType = src->objectType;
+    dest->system = src->system;
+    dest->handle = src->handle;
+    dest->authorization_state = src->authorization_state;
+
+    return r;
+
+error_cleanup:
+    ifapi_cleanup_ifapi_object(dest);
+    return r;
+}
+
 /** Free memory allocated during deserialization of object.
  *
  * The object will not be freed (might be declared on the stack).
@@ -1585,7 +1664,6 @@ ifapi_cleanup_ifapi_object(
             } else if (object->objectType == IFAPI_HIERARCHY_OBJ) {
                 ifapi_cleanup_ifapi_hierarchy(&object->misc.hierarchy);
             }
-
             ifapi_cleanup_policy(object->policy);
             SAFE_FREE(object->rel_path);
             SAFE_FREE(object->policy);
