@@ -484,6 +484,8 @@ EXTRA_DIST +=  \
     lib/tss2-fapi.def \
     test/data/fapi/P_RSA_EK_persistent.json \
     test/data/fapi/P_RSA.json \
+    test/data/fapi/P_RSA2.json \
+    test/data/fapi/P_ECC_sh_eh_policy.json \
     test/data/fapi/P_RSA_sh_policy.json \
     test/data/fapi/P_RSA256.json \
     test/data/fapi/P_ECC.json \
