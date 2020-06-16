@@ -56,6 +56,7 @@ move_path_to_top(
             pos = size_file - size_path;
             current_file = file_ary[i];
             if (strncmp(profile_name, &current_file[1], prof_size) == 0 &&
+                current_file[prof_size + 1] == IFAPI_FILE_DELIM_CHAR &&
                 strncmp(&current_file[pos], path, size_path) == 0) {
                 shift_pos = i;
                 break;
@@ -381,7 +382,6 @@ Fapi_Delete_Async(
     r = normalize_and_check_path_list(context,command->pathlist, command->numPaths);
     goto_if_error_reset_state(r, "Check whether delete is possible.", error_cleanup);
 
-
     object->objectType = IFAPI_OBJ_NONE;
     authObject->objectType = IFAPI_OBJ_NONE;
 
@@ -474,7 +474,6 @@ Fapi_Delete_Finish(
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
-    ESYS_TR authIndex;
     ESYS_TR auth_session;
     char *path;
 
@@ -542,25 +541,39 @@ Fapi_Delete_Finish(
 
             } else  if (object->objectType == IFAPI_NV_OBJ) {
                 /* Prepare for the deletion of an NV index. */
+                /* Prepare for the deletion of an NV index. */
                 command->is_key = false;
 
-                if (object->misc.nv.hierarchy == ESYS_TR_RH_OWNER) {
-                    authIndex = ESYS_TR_RH_OWNER;
-                    ifapi_init_hierarchy_object(authObject, authIndex);
+                /* Check whether hierarchy file has been read. */
+                if (authObject->objectType == IFAPI_OBJ_NONE) {
+                    r = ifapi_keystore_load_async(&context->keystore, &context->io, "/HS");
+                    return_if_error2(r, "Could not open hierarchy /HS");
+
+                    command->auth_index = ESYS_TR_RH_OWNER;
                 } else {
-                    *authObject = *object;
-                    authIndex = object->handle;
+                    context->state = ENTITY_DELETE_AUTHORIZE_NV;
+                    return TSS2_FAPI_RC_TRY_AGAIN;
                 }
-                command->auth_index = authIndex;
-                context->state = ENTITY_DELETE_AUTHORIZE_NV;
             } else {
                 context->state = ENTITY_DELETE_FILE;
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
             fallthrough;
 
+        statecase(context->state, ENTITY_DELETE_READ_HIERARCHY);
+            if (authObject->objectType == IFAPI_OBJ_NONE) {
+                r = ifapi_keystore_load_finish(&context->keystore, &context->io, authObject);
+                return_try_again(r);
+                return_if_error(r, "read_finish failed");
+
+                r = ifapi_initialize_object(context->esys, authObject);
+                goto_if_error_reset_state(r, "Initialize hierarchy object", error_cleanup);
+                authObject->handle = ESYS_TR_RH_OWNER;
+            }
+            fallthrough;
+
         statecase(context->state, ENTITY_DELETE_AUTHORIZE_NV);
-            /* Authorize with the storage hierarhcy / "owner" to delete the NV index. */
+            /* Authorize with the storage hierarchy / "owner" to delete the NV index. */
             r = ifapi_authorize_object(context, authObject, &auth_session);
             return_try_again(r);
             goto_if_error(r, "Authorize NV object.", error_cleanup);
@@ -622,20 +635,7 @@ Fapi_Delete_Finish(
             r = Esys_EvictControl_Finish(context->esys,
                                          &command->new_object_handle);
             return_try_again(r);
-            if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH) {
-                /* If evict control failed, we know that an owner password was set
-                   and we need to re-issue the command with a password being set. */
-                if (context->state == ENTITY_DELETE_NULL_AUTH_SENT_FOR_KEY) {
-                    ifapi_init_hierarchy_object(authObject,
-                                                TPM2_RH_OWNER);
-                    r = ifapi_set_auth(context, authObject,
-                                       "Owner Authorization");
-                    goto_if_error_reset_state(r, "Set owner authorization", error_cleanup);
 
-                    context->state = ENTITY_DELETE_AUTH_SENT_FOR_KEY;
-                    return TSS2_FAPI_RC_TRY_AGAIN;
-                }
-            }
             goto_if_error_reset_state(r, "FAPI Entity_Delete", error_cleanup);
 
             context->state = ENTITY_DELETE_FILE;
@@ -648,25 +648,6 @@ Fapi_Delete_Finish(
             r = Esys_NV_UndefineSpace_Finish(context->esys);
             return_try_again(r);
 
-            if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH) {
-                /* If undefine space failed, we know that an owner password was set
-                   and we need to re-issue the command with a password being set. */
-                if (context->state == ENTITY_DELETE_NULL_AUTH_SENT_FOR_NV) {
-                    r = ifapi_set_auth(context, authObject, "Entity Delete object");
-                    goto_if_error_reset_state(r, " Fapi_NV_UndefineSpace", error_cleanup);
-
-                    r = Esys_NV_UndefineSpace_Async(context->esys,
-                                                    command->auth_index,
-                                                    object->handle,
-                                                    context->session1,
-                                                    context->session2,
-                                                    ESYS_TR_NONE);
-                    goto_if_error_reset_state(r, "FAPI Entity_Delete", error_cleanup);
-
-                    context->state = ENTITY_DELETE_AUTH_SENT_FOR_NV;
-                    return TSS2_FAPI_RC_TRY_AGAIN;
-                }
-            }
             goto_if_error_reset_state(r, "FAPI NV_UndefineSpace", error_cleanup);
 
             LOG_TRACE("NV Object undefined.");
@@ -693,7 +674,6 @@ Fapi_Delete_Finish(
                or we enter here after the TPM operation for the persistent key or NV index
                deletion have been performed. */
             path = command->pathlist[command->path_idx];
-            LOG_TRACE("Delete: %s", path);
             ifapi_cleanup_ifapi_object(object);
             ifapi_cleanup_ifapi_object(authObject);
 
