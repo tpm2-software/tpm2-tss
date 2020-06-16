@@ -379,10 +379,13 @@ ifapi_set_auth(
         r = Esys_TR_SetAuth(context->esys, auth_object->handle, &authValue);
         return_if_error(r, "Set auth value.");
 
+        if (auth_object->objectType == IFAPI_HIERARCHY_OBJ)
+            auth_object->misc.hierarchy.authorized = true;
+
         return TSS2_RC_SUCCESS;
     }
     SAFE_FREE(auth);
-    return TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN;
+    return_error( TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN, "Authorization callback not defined.");
 }
 
 /** Preparation for getting a free handle after a start handle number.
@@ -526,9 +529,9 @@ TSS2_RC
 ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
 {
     TSS2_RC r;
-    IFAPI_OBJECT *hierarchy;
-    hierarchy = &context->cmd.Provision.hierarchy;
     TPMS_POLICY *policy;
+
+    r = TSS2_RC_SUCCESS;
 
     if (ktype == TSS2_EK) {
         /* Values set according to EK credential profile. */
@@ -538,11 +541,9 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
             context->cmd.Provision.public_templ.public.publicArea.unique.ecc.x.size = 32;
             context->cmd.Provision.public_templ.public.publicArea.unique.ecc.y.size = 32;
         }
-        ifapi_init_hierarchy_object(hierarchy, ESYS_TR_RH_ENDORSEMENT);
         policy = context->profiles.default_profile.ek_policy;
     } else if (ktype == TSS2_SRK) {
         policy = context->profiles.default_profile.srk_policy;
-        ifapi_init_hierarchy_object(hierarchy, ESYS_TR_RH_OWNER);
     } else {
         return_error(TSS2_FAPI_RC_BAD_VALUE,
                      "Invalid key type. Only EK or SRK allowed");
@@ -571,19 +572,13 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
                context->cmd.Provision.hash_size);
     }
     context->createPrimary.pkey_object.policy = policy;
+    context->createPrimary.pkey_object.objectType = IFAPI_KEY_OBJ;
 
     memset(&context->cmd.Provision.inSensitive, 0, sizeof(TPM2B_SENSITIVE_CREATE));
     memset(&context->cmd.Provision.outsideInfo, 0, sizeof(TPM2B_DATA));
     memset(&context->cmd.Provision.creationPCR, 0, sizeof(TPML_PCR_SELECTION));
 
-    r = Esys_CreatePrimary_Async(context->esys, hierarchy->handle,
-                                 (context->session1 == ESYS_TR_NONE) ?
-                                 ESYS_TR_PASSWORD : context->session1,
-                                 ESYS_TR_NONE, ESYS_TR_NONE,
-                                 &context->cmd.Provision.inSensitive,
-                                 &context->cmd.Provision.public_templ.public,
-                                 &context->cmd.Provision.outsideInfo,
-                                 &context->cmd.Provision.creationPCR);
+    context->primary_state = PRIMARY_AUTHORIZE_HIERARCHY;
     return r;
 }
 
@@ -595,6 +590,7 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
  *
  * @param[in] context The FAPI_CONTEXT.
  * @param[in] ktype The type of key TSS2_EK or TSS2_SRK.
+ * @param[in,out] hierarchy The hiearchy used for primary creation.
  *
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_TRY_AGAIN if the execution cannot be completed.
@@ -607,107 +603,120 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 TSS2_RC
-ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
+ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype, IFAPI_OBJECT *hierarchy)
 {
     TSS2_RC r;
     ESYS_TR primaryHandle;
-    IFAPI_OBJECT *hierarchy;
     TPM2B_PUBLIC *outPublic = NULL;
     TPM2B_CREATION_DATA *creationData = NULL;
     TPM2B_DIGEST *creationHash = NULL;
     TPMT_TK_CREATION *creationTicket = NULL;
     IFAPI_KEY *pkey = &context->createPrimary.pkey_object.misc.key;
     NODE_STR_T *k_sub_path = NULL;
+    ESYS_TR auth_session;
 
-    hierarchy = &context->cmd.Provision.hierarchy;
-
-    r = Esys_CreatePrimary_Finish(context->esys,
-                                  &primaryHandle, &outPublic, &creationData, &creationHash,
-                                  &creationTicket);
-    if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
-        return TSS2_FAPI_RC_TRY_AGAIN;
-
-    /* Retry with authorization callback after trial with null auth */
-    if ((((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH))
-            && (context->state == PROVISION_AUTH_EK_NO_AUTH_SENT ||
-                context->state == PROVISION_AUTH_SRK_NO_AUTH_SENT)) {
-        r = ifapi_set_auth(context, hierarchy, "CreatePrimary");
-        goto_if_error_reset_state(r, "CreatePrimary", error_cleanup);
-
+    switch (context->primary_state) {
+    statecase(context->primary_state, PRIMARY_AUTHORIZE_HIERARCHY);
+        if (hierarchy->misc.hierarchy.with_auth == TPM2_YES || policy_digest_size(hierarchy)) {
+            r = ifapi_authorize_object(context, hierarchy, &auth_session);
+            FAPI_SYNC(r, "Authorize hierarchy.", error_cleanup);
+        } else {
+            auth_session = context->session1;
+        }
         r = Esys_CreatePrimary_Async(context->esys, hierarchy->handle,
-                                     ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                                     (auth_session == ESYS_TR_NONE) ?
+                                     ESYS_TR_PASSWORD : auth_session,
+                                     ESYS_TR_NONE, ESYS_TR_NONE,
                                      &context->cmd.Provision.inSensitive,
-                                     &context->cmd.Provision.public,
+                                     &context->cmd.Provision.public_templ.public,
                                      &context->cmd.Provision.outsideInfo,
                                      &context->cmd.Provision.creationPCR);
         goto_if_error_reset_state(r, "CreatePrimary", error_cleanup);
 
-        if (ktype == TSS2_EK)
-            context->state = PROVISION_AUTH_EK_AUTH_SENT;
-        else
-            context->state = PROVISION_AUTH_SRK_AUTH_SENT;
-        return TSS2_FAPI_RC_TRY_AGAIN;
+        fallthrough;
 
-    } else {
-        goto_if_error_reset_state(r, "FAPI Provision", error_cleanup);
-    }
-    /* Set EK or SRK handle in context. */
-    if (ktype == TSS2_EK) {
-        context->ek_handle = primaryHandle;
-    } else if (ktype == TSS2_SRK) {
-        context->srk_handle = primaryHandle;
-    } else {
-        return_error(TSS2_FAPI_RC_BAD_VALUE,
-                     "Invalid key type. Only EK or SRK allowed");
-    }
+    statecase(context->primary_state, PRIMARY_WAIT_FOR_PRIMARY);
+        r = Esys_CreatePrimary_Finish(context->esys,
+                                      &primaryHandle, &outPublic, &creationData, &creationHash,
+                                      &creationTicket);
+        if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
+            return TSS2_FAPI_RC_TRY_AGAIN;
 
-    /* Prepare serialization of pkey to key store. */
+        /* Retry with authorization callback after trial with null auth */
+        if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH
+            && hierarchy->misc.hierarchy.with_auth == TPM2_NO) {
+            r = ifapi_set_auth(context, hierarchy, "CreatePrimary");
+            goto_if_error_reset_state(r, "CreatePrimary", error_cleanup);
 
-    SAFE_FREE(pkey->serialization.buffer);
-    r = Esys_TR_Serialize(context->esys, primaryHandle, &pkey->serialization.buffer,
+            r = Esys_CreatePrimary_Async(context->esys, hierarchy->handle,
+                                         (context->session1 == ESYS_TR_NONE) ?
+                                         ESYS_TR_PASSWORD : context->session1,
+                                         ESYS_TR_NONE, ESYS_TR_NONE,
+                                         &context->cmd.Provision.inSensitive,
+                                         &context->cmd.Provision.public_templ.public,
+                                         &context->cmd.Provision.outsideInfo,
+                                         &context->cmd.Provision.creationPCR);
+            goto_if_error_reset_state(r, "CreatePrimary", error_cleanup);
+
+            if (ktype == TSS2_EK) {
+                context->state = PROVISION_AUTH_EK_AUTH_SENT;
+            } else {
+                context->state = PROVISION_AUTH_SRK_AUTH_SENT;
+            }
+            hierarchy->misc.hierarchy.with_auth = TPM2_YES;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+
+        } else {
+            goto_if_error_reset_state(r, "FAPI Provision", error_cleanup);
+        }
+        /* Set EK or SRK handle in context. */
+        if (ktype == TSS2_EK) {
+            context->ek_handle = primaryHandle;
+        } else if (ktype == TSS2_SRK) {
+            context->srk_handle = primaryHandle;
+        } else {
+            return_error(TSS2_FAPI_RC_BAD_VALUE,
+                         "Invalid key type. Only EK or SRK allowed");
+        }
+
+        /* Prepare serialization of pkey to key store. */
+
+        SAFE_FREE(pkey->serialization.buffer);
+        r = Esys_TR_Serialize(context->esys, primaryHandle, &pkey->serialization.buffer,
                           &pkey->serialization.size);
-    goto_if_error(r, "Error serialize esys object", error_cleanup);
+        goto_if_error(r, "Error serialize esys object", error_cleanup);
 
-    r = ifapi_get_name(&outPublic->publicArea, &pkey->name);
-    goto_if_error(r, "Get primary name", error_cleanup);
+        r = ifapi_get_name(&outPublic->publicArea, &pkey->name);
+        goto_if_error(r, "Get primary name", error_cleanup);
 
-    pkey->public = *outPublic;
-    pkey->policyInstance = NULL;
-    pkey->creationData = *creationData;
-    pkey->creationTicket = *creationTicket;
+        pkey->public = *outPublic;
+        pkey->policyInstance = NULL;
+        pkey->creationData = *creationData;
+        pkey->creationTicket = *creationTicket;
+        pkey->description = NULL;
+        pkey->certificate = NULL;
 
-    /* Add description of primary stored in profile, if available. */
-    if (ktype == TSS2_EK) {
-        if (context->profiles.default_profile.ek_description) {
-            strdup_check(pkey->description,
-                         context->profiles.default_profile.ek_description, r,
-                         error_cleanup);
-        }
-    } else {
-        if (context->profiles.default_profile.srk_description) {
-            strdup_check(pkey->description,
-                         context->profiles.default_profile.srk_description, r,
-                         error_cleanup);
-        }
+        /* Cleanup unused information */
+        SAFE_FREE(outPublic);
+        SAFE_FREE(creationData);
+        SAFE_FREE(creationHash);
+        SAFE_FREE(creationTicket);
+
+        if (pkey->public.publicArea.type == TPM2_ALG_RSA)
+            pkey->signing_scheme = context->profiles.default_profile.rsa_signing_scheme;
+        else
+            pkey->signing_scheme = context->profiles.default_profile.ecc_signing_scheme;
+        context->createPrimary.pkey_object.handle = primaryHandle;
+        SAFE_FREE(pkey->serialization.buffer);
+        ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
+        return TSS2_RC_SUCCESS;
+
+
+    statecasedefault(context->primary_state);
     }
-    pkey->certificate = NULL;
-
-    /* Cleanup unused information */
-    SAFE_FREE(outPublic);
-    SAFE_FREE(creationData);
-    SAFE_FREE(creationHash);
-    SAFE_FREE(creationTicket);
-
-    if (pkey->public.publicArea.type == TPM2_ALG_RSA)
-        pkey->signing_scheme = context->profiles.default_profile.rsa_signing_scheme;
-    else
-        pkey->signing_scheme = context->profiles.default_profile.ecc_signing_scheme;
-    context->createPrimary.pkey_object.handle = primaryHandle;
-    SAFE_FREE(pkey->serialization.buffer);
-    ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
-    return TSS2_RC_SUCCESS;
 
 error_cleanup:
+    ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     free_string_list(k_sub_path);
     SAFE_FREE(pkey->serialization.buffer);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
@@ -1909,8 +1918,16 @@ ifapi_authorize_object(FAPI_CONTEXT *context, IFAPI_OBJECT *object, ESYS_TR *ses
             if (!policy_digest_size(object)) {
                 /* No policy used authorization callbacks have to be called if necessary. */
                 if (object_with_auth(object)) {
-                    r = ifapi_set_auth(context, object, "Authorize object");
-                    return_if_error(r, "Set auth value");
+                    /* Check whether hierarchy was already authorized. */
+                    if (object->objectType != IFAPI_HIERARCHY_OBJ ||
+                        !object->misc.hierarchy.authorized) {
+                        char *description = NULL;
+                        r = ifapi_get_description(object, &description);
+                        return_if_error(r, "Get description");
+                        r = ifapi_set_auth(context, object, description);
+                        SAFE_FREE(description);
+                        return_if_error(r, "Set auth value");
+                    }
                 }
                 /* No policy session needed current fapi session can be used */
                 if (context->session1 && context->session1 != ESYS_TR_NONE)
@@ -2316,6 +2333,16 @@ ifapi_nv_read(
 
         if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
             return TSS2_FAPI_RC_TRY_AGAIN;
+
+        if (context->nv_cmd.auth_index == ESYS_TR_RH_OWNER  &&
+            (r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH &&
+            auth_object->misc.hierarchy.with_auth == TPM2_NO) {
+            /* NULL auth failed, password was used for owner hierarchy, try again. */
+            auth_object->misc.hierarchy.with_auth = TPM2_YES;
+            context->nv_cmd.nv_read_state =  NV_READ_AUTHORIZE;
+
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        }
 
         goto_if_error_reset_state(r, "FAPI NV_Read_Finish", error_cleanup);
 
@@ -3469,18 +3496,23 @@ ifapi_change_auth_hierarchy(
     TPM2B_AUTH *newAuthValue)
 {
     TSS2_RC r;
+    ESYS_TR auth_session;
 
     switch (context->hierarchy_state) {
     statecase(context->hierarchy_state, HIERARCHY_CHANGE_AUTH_INIT);
-        if (newAuthValue->size > 0)
-            hierarchy_object->misc.hierarchy.with_auth = TPM2_YES;
-        else
-            hierarchy_object->misc.hierarchy.with_auth = TPM2_NO;
+        if (hierarchy_object->misc.hierarchy.with_auth == TPM2_YES ||
+            policy_digest_size(hierarchy_object)) {
+            r = ifapi_authorize_object(context, hierarchy_object, &auth_session);
+            FAPI_SYNC(r, "Authorize hierarchy.", error);
+        } else {
+            auth_session = context->session1;
+        }
+
         r = Esys_HierarchyChangeAuth_Async(context->esys,
                                            handle,
-                                           (context->session1
-                                            && context->session1 != ESYS_TR_NONE) ?
-                                           context->session1 : ESYS_TR_PASSWORD,
+                                           (auth_session
+                                            && auth_session != ESYS_TR_NONE) ?
+                                           auth_session : ESYS_TR_PASSWORD,
                                            ESYS_TR_NONE, ESYS_TR_NONE,
                                            newAuthValue);
         return_if_error(r, "HierarchyChangeAuth");
@@ -3490,37 +3522,35 @@ ifapi_change_auth_hierarchy(
         r = Esys_HierarchyChangeAuth_Finish(context->esys);
         return_try_again(r);
 
-        if ((r & ~TPM2_RC_N_MASK) != TPM2_RC_BAD_AUTH) {
-            return_if_error(r, "Hierarchy change auth.");
-            context->hierarchy_state = HIERARCHY_CHANGE_AUTH_INIT;
-            LOG_TRACE("success");
-            return TSS2_RC_SUCCESS;
+        if  ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH &&
+             hierarchy_object->misc.hierarchy.with_auth == TPM2_NO) {
+
+            /* Retry after NULL authorization was not successful */
+            r = ifapi_set_auth(context, hierarchy_object, "Hierarchy object");
+            return_if_error(r, "HierarchyChangeAuth");
+
+            r = Esys_HierarchyChangeAuth_Async(context->esys,
+                                               handle,
+                                               (context->session1
+                                                && context->session1 != ESYS_TR_NONE) ?
+                                               context->session1 : ESYS_TR_PASSWORD,
+                                               ESYS_TR_NONE, ESYS_TR_NONE,
+                                               newAuthValue);
+            return_if_error(r, "HierarchyChangeAuth");
+            return TSS2_FAPI_RC_TRY_AGAIN;
         }
-
-        /* Retry after NULL authorization was not successful */
-        r = ifapi_set_auth(context, hierarchy_object, "Hierarchy object");
         return_if_error(r, "HierarchyChangeAuth");
 
-        r = Esys_HierarchyChangeAuth_Async(context->esys,
-                                           handle,
-                                           (context->session1
-                                            && context->session1 != ESYS_TR_NONE) ?
-                                           context->session1 : ESYS_TR_PASSWORD,
-                                           ESYS_TR_NONE, ESYS_TR_NONE,
-                                           newAuthValue);
-        return_if_error(r, "HierarchyChangeAuth");
-        fallthrough;
-
-    statecase(context->hierarchy_state, HIERARCHY_CHANGE_AUTH_AUTH_SENT);
-        r = Esys_HierarchyChangeAuth_Finish(context->esys);
-        FAPI_SYNC(r, "Hierarchy change auth.", error);
+        if (newAuthValue->size > 0)
+            hierarchy_object->misc.hierarchy.with_auth = TPM2_YES;
+        else
+            hierarchy_object->misc.hierarchy.with_auth = TPM2_NO;
 
         context->hierarchy_state = HIERARCHY_CHANGE_AUTH_INIT;
         return r;
 
     statecasedefault(context->hierarchy_state);
     }
-
 error:
     return r;
 }
@@ -3570,71 +3600,89 @@ ifapi_change_policy_hierarchy(
     TPMS_POLICY *policy)
 {
     TSS2_RC r;
+    ESYS_TR auth_session;
 
     switch (context->hierarchy_policy_state) {
     statecase(context->hierarchy_policy_state, HIERARCHY_CHANGE_POLICY_INIT);
-        if (! policy || ! policy->policy) {
+        if ((! policy || ! policy->policy) && !hierarchy_object->policy) {
             /* No policy will be used for hierarchy */
             return TSS2_RC_SUCCESS;
         }
+        fallthrough;
 
-        context->policy.state = POLICY_INIT;
+    statecase(context->hierarchy_policy_state, HIERARCHY_CHANGE_POLICY_AUTHORIZE);
+        if (hierarchy_object->misc.hierarchy.with_auth == TPM2_YES ||
+            policy_digest_size(hierarchy_object)) {
+            r = ifapi_authorize_object(context, hierarchy_object, &auth_session);
+            FAPI_SYNC(r, "Authorize hierarchy.", error);
+        } else {
+            auth_session = context->session1;
+        }
 
-        /* Calculate the policy digest which will be used as hierarchy policy. */
-        r = ifapi_calculate_tree(context, NULL, /**< no path needed */
-                                 policy,
-                                 context->profiles.default_profile.nameAlg,
-                                 &context->cmd.Provision.digest_idx,
-                                 &context->cmd.Provision.hash_size);
-        goto_if_error(r, "Policy calculation", error);
+        if (policy) {
+            context->policy.state = POLICY_INIT;
 
+            /* Calculate the policy digest which will be used as hierarchy policy. */
+            r = ifapi_calculate_tree(context, NULL, /**< no path needed */
+                                     policy,
+                                     context->profiles.default_profile.nameAlg,
+                                     &context->cmd.Provision.digest_idx,
+                                     &context->cmd.Provision.hash_size);
+            goto_if_error(r, "Policy calculation", error);
 
-        /* Policy data will be stored in the provisioning context. */
-        context->cmd.Provision.policy_digest.size = context->cmd.Provision.hash_size;
-        memcpy(&context->cmd.Provision.policy_digest.buffer[0],
-               &policy
-               ->policyDigests.digests[context->cmd.Provision.digest_idx].digest,
-               context->cmd.Provision.hash_size);
+            /* Policy data will be stored in the provisioning context. */
+            context->cmd.Provision.policy_digest.size = context->cmd.Provision.hash_size;
+            memcpy(&context->cmd.Provision.policy_digest.buffer[0],
+                   &policy
+                   ->policyDigests.digests[context->cmd.Provision.digest_idx].digest,
+                   context->cmd.Provision.hash_size);
 
-        hierarchy_object->policy = policy;
-        hierarchy_object->misc.hierarchy.authPolicy = context->cmd.Provision.policy_digest;
+            hierarchy_object->policy = policy;
+            hierarchy_object->misc.hierarchy.authPolicy = context->cmd.Provision.policy_digest;
+        } else {
+            /* No policy will be used for this hierarchy. */
+            context->cmd.Provision.policy_digest.size = 0;
+            ifapi_cleanup_policy(hierarchy_object->policy);
+            SAFE_FREE(hierarchy_object->policy);
+            hierarchy_object->policy = NULL;
+            hierarchy_object->misc.hierarchy.with_auth = TPM2_NO;
+            hierarchy_object->misc.hierarchy.authPolicy.size = 0;
+        }
 
         /* Prepare the setting of the policy. */
         r = Esys_SetPrimaryPolicy_Async(context->esys, handle,
-                                        ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                                        (auth_session
+                                         && auth_session != ESYS_TR_NONE) ?
+                                        auth_session : ESYS_TR_PASSWORD,
+                                        ESYS_TR_NONE, ESYS_TR_NONE,
                                         &context->cmd.Provision.policy_digest,
-                                        context->profiles.default_profile.nameAlg);
+                                        context->cmd.Provision.policy_digest.size ?
+                                        context->profiles.default_profile.nameAlg :
+                                        TPM2_ALG_NULL);
         return_if_error(r, "Esys_SetPrimaryPolicy_Async");
         fallthrough;
 
     statecase(context->hierarchy_policy_state, HIERARCHY_CHANGE_POLICY_NULL_AUTH_SENT);
         r = Esys_SetPrimaryPolicy_Finish(context->esys);
         return_try_again(r);
-        if ((r & ~TPM2_RC_N_MASK) != TPM2_RC_BAD_AUTH) {
-            return_if_error(r, "SetPrimaryPolicy_Finish");
-            context->hierarchy_policy_state = HIERARCHY_CHANGE_POLICY_INIT;
-            return TSS2_RC_SUCCESS;
+        if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH  &&
+             hierarchy_object->misc.hierarchy.with_auth == TPM2_NO) {
+            /* Retry after NULL authorization was not successful */
+            r = ifapi_set_auth(context, hierarchy_object, "Hierarchy object");
+            return_if_error(r, "HierarchyChangePolicy");
+
+            r = Esys_SetPrimaryPolicy_Async(context->esys, handle,
+                                            (context->session1
+                                             && context->session1 != ESYS_TR_NONE) ?
+                                            context->session1 : ESYS_TR_PASSWORD,
+                                            ESYS_TR_NONE, ESYS_TR_NONE,
+                                            &context->cmd.Provision.policy_digest,
+                                            context->profiles.default_profile.nameAlg);
+            return_if_error(r, "Esys_SetPrimaryPolicy_Async");
+            return TSS2_FAPI_RC_TRY_AGAIN;
         }
-
-        /* Retry after NULL authorization was not successful */
-        ifapi_init_hierarchy_object(hierarchy_object, handle);
-        r = ifapi_set_auth(context, hierarchy_object, "Hierarchy object");
-        return_if_error(r, "HierarchyChangePolicy");
-
-        r = Esys_SetPrimaryPolicy_Async(context->esys, handle,
-                                        context->session1, ESYS_TR_NONE, ESYS_TR_NONE,
-                                        &context->cmd.Provision.policy_digest,
-                                        context->profiles.default_profile.nameAlg);
-        return_if_error(r, "Esys_SetPrimaryPolicy_Async");
-
-        fallthrough;
-
-    statecase(context->hierarchy_policy_state, HIERARCHY_CHANGE_POLICY_AUTH_SENT);
-        r = Esys_SetPrimaryPolicy_Finish(context->esys);
-        return_try_again(r);
-        return_if_error(r, "SetPrimaryPolicy_Finish");
-
-        return TSS2_RC_SUCCESS;
+        return_if_error(r, "Set primary policy");
+        break;
 
     statecasedefault(context->hierarchy_policy_state);
     }
@@ -3946,7 +3994,6 @@ ifapi_get_certificates(
     TSS2_RC r;
     TPMI_YES_NO moreData;
     TPMS_CAPABILITY_DATA **capabilityData = &context->cmd.Provision.capabilityData;
-    TPM2B_NV_PUBLIC *nvPublic;
     uint8_t *cert_data;
     size_t cert_size;
 
@@ -4017,7 +4064,7 @@ ifapi_get_certificates(
 
     statecase(context->get_cert_state, GET_CERT_GET_CERT_READ_PUBLIC);
         r = Esys_NV_ReadPublic_Finish(context->esys,
-                                      &nvPublic,
+                                      &context->cmd.Provision.nvPublic,
                                       NULL);
         return_try_again(r);
         goto_if_error(r, "Error: nv read public", error);
@@ -4043,7 +4090,7 @@ ifapi_get_certificates(
         context->nv_cmd.auth_object.handle = ESYS_TR_RH_OWNER;
         context->nv_cmd.data_idx = 0;
         context->nv_cmd.auth_index = ESYS_TR_RH_OWNER;
-        context->nv_cmd.numBytes = nvPublic->nvPublic.dataSize;
+        context->nv_cmd.numBytes = context->cmd.Provision.nvPublic->nvPublic.dataSize;
         context->nv_cmd.esys_handle = context->cmd.Provision.esys_nv_cert_handle;
         context->nv_cmd.offset = 0;
         context->cmd.Provision.pem_cert = NULL;
@@ -4051,7 +4098,7 @@ ifapi_get_certificates(
         context->session2 = ESYS_TR_NONE;
         context->nv_cmd.nv_read_state = NV_READ_INIT;
         memset(&context->nv_cmd.nv_object, 0, sizeof(IFAPI_OBJECT));
-        Esys_Free(nvPublic);
+        Esys_Free(context->cmd.Provision.nvPublic);
         fallthrough;
 
     statecase(context->get_cert_state, GET_CERT_READ_CERT);
@@ -4108,7 +4155,16 @@ ifapi_get_description(IFAPI_OBJECT *object, char **description)
         obj_description = object->misc.nv.description;
         break;
     case IFAPI_HIERARCHY_OBJ:
-        obj_description = object->misc.hierarchy.description;
+        if (object->misc.hierarchy.description)
+            obj_description = object->misc.hierarchy.description;
+        else if (object->handle == ESYS_TR_RH_OWNER)
+            obj_description = "Owner Hierarchy";
+        else if (object->handle == ESYS_TR_RH_ENDORSEMENT)
+            obj_description = "Endorsement Hierarchy";
+        else if (object->handle == ESYS_TR_RH_LOCKOUT)
+            obj_description = "Lockout Hierarchy";
+        else
+            obj_description = "Hierarchy";
         break;
     default:
         *description = NULL;
