@@ -15,6 +15,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -106,6 +107,7 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
 
     uint8_t *signature = NULL;
     char *publicKey = NULL;
+    char *certificate = NULL;
     char *pathList = NULL;
 
 
@@ -267,33 +269,46 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
 
     r = Fapi_Sign(context, "HS/SRK/mySignKey", NULL,
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, NULL);
+                  &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
+    assert(signature != NULL);
+    assert(publicKey != NULL);
+    assert(certificate != NULL);
 
     r = Fapi_List(context, "/", &pathList);
     goto_if_error(r, "Error Fapi_List", error);
+    assert(pathList != NULL);
+
     SAFE_FREE(pathList);
 
+    pathList = NULL;
     r = Fapi_List(context, "/SRK/", &pathList);
     goto_if_error(r, "Error Fapi_List", error);
+    assert(pathList != NULL);
     fprintf(stderr, "\n%s\n", pathList);
     SAFE_FREE(pathList);
 
+    pathList = NULL;
     r = Fapi_List(context, "/HS/", &pathList);
     goto_if_error(r, "Error Fapi_List", error);
+    assert(pathList != NULL);
     fprintf(stderr, "\n%s\n", pathList);
     SAFE_FREE(pathList);
 
     LOG_WARNING("Next is a failure-test, and we expect errors in the log");
+    pathList = NULL;
     r = Fapi_List(context, "XXX", &pathList);
     if (r == TSS2_RC_SUCCESS) {
         LOG_ERROR("Path XXX was found");
         goto error;
     }
+    assert(pathList == NULL);
     SAFE_FREE(pathList);
 
+    pathList = NULL;
     r = Fapi_List(context, "/HS/", &pathList);
     goto_if_error(r, "Error Fapi_List", error);
+    assert(pathList != NULL);
     fprintf(stderr, "\n%s\n", pathList);
     SAFE_FREE(pathList);
 
@@ -303,6 +318,7 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
 
     SAFE_FREE(signature);
     SAFE_FREE(publicKey);
+    SAFE_FREE(certificate);
 
     if (!cb_called) {
         LOG_ERROR("Branch selection callback was not called.");
@@ -316,6 +332,7 @@ error:
     SAFE_FREE(json_policy);
     SAFE_FREE(signature);
     SAFE_FREE(publicKey);
+    SAFE_FREE(certificate);
     SAFE_FREE(pathList);
     Fapi_Delete(context, "/");
     return EXIT_FAILURE;

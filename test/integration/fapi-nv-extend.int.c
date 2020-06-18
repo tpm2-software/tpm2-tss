@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <string.h>
+#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -85,6 +86,8 @@ test_fapi_nv_extend(FAPI_CONTEXT *context)
 
     r = Fapi_NvRead(context, nvPathExtend, &data_dest, &dest_size, &log);
     goto_if_error(r, "Error Fapi_NvRead", error);
+    assert(data_dest != NULL);
+    assert(log != NULL);
 
     fprintf(stderr, "\nLog:\n%s\n", log);
     SAFE_FREE(data_dest);
@@ -93,8 +96,12 @@ test_fapi_nv_extend(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_NV_EXTEND", error);
 
     SAFE_FREE(log);
+    data_dest = NULL;
+    log = NULL;
     r = Fapi_NvRead(context, nvPathExtend, &data_dest, &dest_size, &log);
     goto_if_error(r, "Error Fapi_NvRead", error);
+    assert(data_dest != NULL);
+    assert(log != NULL);
 
     fprintf(stderr, "\nLog:\n%s\n", log);
 

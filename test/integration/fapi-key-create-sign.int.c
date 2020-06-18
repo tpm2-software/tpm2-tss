@@ -9,6 +9,7 @@
 #endif
 
 #include <stdlib.h>
+#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -104,8 +105,10 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
 
     uint8_t       *signature = NULL;
     char          *publicKey = NULL;
+    char          *certificate = NULL;
     uint8_t       *publicblob = NULL;
     uint8_t       *privateblob = NULL;
+    char          *policy = NULL;
     char          *path_list = NULL;
     size_t         publicsize;
     size_t         privatesize;
@@ -147,14 +150,19 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
 
     r = Fapi_GetTpmBlobs(context,  "HS/SRK/mySignKey", &publicblob,
                          &publicsize,
-                         &privateblob, &privatesize, NULL);
+                         &privateblob, &privatesize, &policy);
     goto_if_error(r, "Error Fapi_GetTpmBlobs", error);
-
+    assert(publicblob != NULL);
+    assert(privateblob != NULL);
+    assert(policy != NULL);
 
     r = Fapi_Sign(context, "HS/SRK/mySignKey", sigscheme,
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, NULL);
+                  &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
+    assert(signature != NULL);
+    assert(publicKey != NULL);
+    assert(certificate != NULL);
 
     r = Fapi_VerifySignature(context, "HS/SRK/mySignKey",
                   &digest.buffer[0], digest.size, signature, signatureSize);
@@ -188,6 +196,7 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
 
     r = Fapi_List(context, "/", &path_list);
     goto_if_error(r, "Error Fapi_Delete", error);
+    assert(path_list != NULL);
 
     fprintf(stderr, "\nPathList:\n%s\n", path_list);
 
@@ -218,8 +227,10 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
     SAFE_FREE(path_list);
     SAFE_FREE(publicblob);
     SAFE_FREE(privateblob);
+    SAFE_FREE(policy);
     SAFE_FREE(publicKey);
     SAFE_FREE(signature);
+    SAFE_FREE(certificate);
     return EXIT_SUCCESS;
 
 error:
@@ -229,9 +240,9 @@ error:
     SAFE_FREE(path_list);
     SAFE_FREE(publicblob);
     SAFE_FREE(privateblob);
+    SAFE_FREE(policy);
     SAFE_FREE(publicKey);
     SAFE_FREE(signature);
-    SAFE_FREE(description);
     return EXIT_FAILURE;
 }
 

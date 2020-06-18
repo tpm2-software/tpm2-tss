@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -62,6 +63,7 @@ test_fapi_key_change_auth(FAPI_CONTEXT *context)
     TSS2_RC r;
     uint8_t *signature = NULL;
     char    *publicKey = NULL;
+    char    *certificate = NULL;
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
 
@@ -87,8 +89,11 @@ test_fapi_key_change_auth(FAPI_CONTEXT *context)
 
     r = Fapi_Sign(context, "HS/SRK/mySignKey", NULL,
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, NULL);
+                  &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Provision", error);
+    assert(signature != NULL);
+    assert(publicKey != NULL);
+    assert(certificate != NULL);
 
     Fapi_Free(publicKey);
 
@@ -96,11 +101,13 @@ test_fapi_key_change_auth(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_Delete", error);
 
     SAFE_FREE(signature);
+    SAFE_FREE(certificate);
     return EXIT_SUCCESS;
 
 error:
     Fapi_Delete(context, "/");
     SAFE_FREE(signature);
+    SAFE_FREE(certificate);
     return EXIT_FAILURE;
 }
 

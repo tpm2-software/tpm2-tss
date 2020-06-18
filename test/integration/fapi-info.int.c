@@ -9,6 +9,7 @@
 #endif
 
 #include <stdlib.h>
+#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -39,6 +40,7 @@ test_fapi_info(FAPI_CONTEXT *context)
 
     r = Fapi_GetInfo(context, &info);
     goto_if_error(r, "Error Fapi_Provision", error);
+    assert(info != NULL);
 
     LOG_INFO("%s", info);
 

@@ -13,6 +13,7 @@
 #include <inttypes.h>
 #include <string.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -125,6 +126,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     char *nvPathOrdinary = "/nv/Owner/myNV";
     uint8_t data_src[NV_SIZE];
     uint8_t *data_dest = NULL;
+    char *logData = NULL;
     size_t dest_size = NV_SIZE;
     char *description1 = "nvDescription";
     char *description2 = NULL;
@@ -159,8 +161,10 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     r = Fapi_NvWrite(context, nvPathOrdinary, &data_src[0], NV_SIZE);
     goto_if_error(r, "Error Fapi_NvWrite", error);
 
-    r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, NULL);
+    r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, &logData);
     goto_if_error(r, "Error Fapi_NvRead", error);
+    assert(data_dest != NULL);
+    assert(logData != NULL);
 
     if (dest_size != NV_SIZE ||
         memcmp(data_src, data_dest, dest_size) != 0) {
@@ -171,23 +175,29 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     r = Fapi_Delete(context, nvPathOrdinary);
     goto_if_error(r, "Error Fapi_NV_Undefine", error);
     SAFE_FREE(data_dest);
+    SAFE_FREE(logData);
 
     /* Test with pcr policy with pcr 8. */
 
     uint8_t *pcr_digest = NULL;
+    char *pcrLog = NULL;
     size_t pcr_digest_size = 0;
     uint8_t zero_digest[32];
     memset(&zero_digest[0], 0, 32);
 
     r = Fapi_PcrRead(context, 8, &pcr_digest,
-                     &pcr_digest_size, NULL);
+                     &pcr_digest_size, &pcrLog);
     goto_if_error(r, "Error Fapi_PcrRead", error);
+    assert(pcr_digest != NULL);
+    assert(pcrLog != NULL);
 
     if (memcmp(&pcr_digest[0], &zero_digest, pcr_digest_size) != 0) {
         SAFE_FREE(pcr_digest);
+        SAFE_FREE(pcrLog);
         LOG_WARNING("PCR 8 is not zero. Test with pcr policy not executed.");
     } else {
         SAFE_FREE(pcr_digest);
+        SAFE_FREE(pcrLog);
         json_policy = read_policy(context, policy_pcr8_0);
 
         r = Fapi_Import(context, policy_pcr8_0, json_policy);
@@ -202,8 +212,12 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
         r = Fapi_NvWrite(context, nvPathOrdinary, &data_src[0], NV_SIZE);
         goto_if_error(r, "Error Fapi_NvWrite", error);
 
-        r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, NULL);
+        data_dest = NULL;
+        logData = NULL;
+        r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, &logData);
         goto_if_error(r, "Error Fapi_NvRead", error);
+        assert(data_dest != NULL);
+        assert(logData != NULL);
 
         if (dest_size != NV_SIZE ||
             memcmp(data_src, data_dest, dest_size) != 0) {
@@ -214,6 +228,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
         r = Fapi_Delete(context, nvPathOrdinary);
         goto_if_error(r, "Error Fapi_NV_Undefine", error);
         SAFE_FREE(data_dest);
+        SAFE_FREE(logData);
     }
 
     /* Empty auth noda set */
@@ -223,8 +238,12 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     r = Fapi_NvWrite(context, nvPathOrdinary, &data_src[0], NV_SIZE);
     goto_if_error(r, "Error Fapi_NvWrite", error);
 
-    r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, NULL);
+    data_dest = NULL;
+    logData = NULL;
+    r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, &logData);
     goto_if_error(r, "Error Fapi_NvRead", error);
+    assert(data_dest != NULL);
+    assert(logData != NULL);
 
     if (dest_size != NV_SIZE ||
         memcmp(data_src, data_dest, dest_size) != 0) {
@@ -235,6 +254,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     r = Fapi_Delete(context, nvPathOrdinary);
     goto_if_error(r, "Error Fapi_NV_Undefine", error);
     SAFE_FREE(data_dest);
+    SAFE_FREE(logData);
 
     r = Fapi_SetAuthCB(context, auth_callback, "");
     goto_if_error(r, "Error Fapi_SetAuthCB", error);
@@ -250,8 +270,12 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     r = Fapi_NvWrite(context, nvPathOrdinary, &data_src[0], NV_SIZE);
     goto_if_error(r, "Error Fapi_NvWrite", error);
 
-    r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, NULL);
+    data_dest = NULL;
+    logData = NULL;
+    r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, &logData);
     goto_if_error(r, "Error Fapi_NvRead", error);
+    assert(data_dest != NULL);
+    assert(logData != NULL);
 
     if (dest_size != NV_SIZE ||
         memcmp(data_src, data_dest, dest_size) != 0) {
@@ -262,6 +286,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     r = Fapi_Delete(context, nvPathOrdinary);
     goto_if_error(r, "Error Fapi_NV_Undefine", error);
     SAFE_FREE(data_dest);
+    SAFE_FREE(logData);
 
     /* Empty auth noda clear */
     password = "";
@@ -273,6 +298,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
 
     r = Fapi_GetDescription(context, nvPathOrdinary, &description2);
     goto_if_error(r, "Error Fapi_GetDescription", error);
+    assert(description2 != NULL);
 
     if (strcmp(description1, description2) != 0) {
         goto_if_error(r, "Different descriptions", error);
@@ -281,8 +307,12 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     r = Fapi_NvWrite(context, nvPathOrdinary, &data_src[0], NV_SIZE);
     goto_if_error(r, "Error Fapi_NvWrite", error);
 
-    r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, NULL);
+    data_dest = NULL;
+    logData = NULL;
+    r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, &logData);
     goto_if_error(r, "Error Fapi_NvRead", error);
+    assert(data_dest != NULL);
+    assert(logData != NULL);
 
     if (dest_size != NV_SIZE ||
         memcmp(data_src, data_dest, dest_size) != 0) {
@@ -293,6 +323,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     r = Fapi_Delete(context, nvPathOrdinary);
     goto_if_error(r, "Error Fapi_NV_Undefine", error);
     SAFE_FREE(data_dest);
+    SAFE_FREE(logData);
 
     /* Password set and noda clear  */
     password = PASSWORD;
@@ -305,8 +336,12 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     r = Fapi_NvWrite(context, nvPathOrdinary, &data_src[0], NV_SIZE);
     goto_if_error(r, "Error Fapi_NvWrite", error);
 
-    r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, NULL);
+    data_dest = NULL;
+    logData = NULL;
+    r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, &logData);
     goto_if_error(r, "Error Fapi_NvRead", error);
+    assert(data_dest != NULL);
+    assert(logData != NULL);
 
     if (dest_size != NV_SIZE ||
         memcmp(data_src, data_dest, dest_size) != 0) {
@@ -320,6 +355,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_Delete", error);
 
     SAFE_FREE(data_dest);
+    SAFE_FREE(logData);
     SAFE_FREE(description2);
     SAFE_FREE(json_policy);
     return EXIT_SUCCESS;
@@ -327,6 +363,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
 error:
     Fapi_Delete(context, "/");
     SAFE_FREE(data_dest);
+    SAFE_FREE(logData);
     SAFE_FREE(description2);
     SAFE_FREE(json_policy);
     return EXIT_FAILURE;

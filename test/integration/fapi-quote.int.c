@@ -16,6 +16,7 @@
 #include <json-c/json.h>
 #include <json-c/json_util.h>
 #include <json-c/json_tokener.h>
+#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -90,9 +91,14 @@ test_fapi_quote(FAPI_CONTEXT *context)
                    &signature, &signatureSize,
                    &pcrEventLog, &certificate);
     goto_if_error(r, "Error Fapi_Quote", error);
+    assert(quoteInfo != NULL);
+    assert(signature != NULL);
+    assert(pcrEventLog != NULL);
+    assert(certificate != NULL);
 
     r = Fapi_ExportKey(context, "HS/SRK/mySignKey", NULL, &export_data);
     goto_if_error(r, "Export.", error);
+    assert(export_data != NULL);
 
     jso = json_tokener_parse(export_data);
 
@@ -114,6 +120,8 @@ test_fapi_quote(FAPI_CONTEXT *context)
     r = Fapi_PcrRead(context, 16, &pcr_digest,
                      &pcr_digest_size, &log);
     goto_if_error(r, "Error Fapi_PcrRead", error);
+    assert(pcr_digest != NULL);
+    assert(log != NULL);
 
     LOG_INFO("\nLog:\n%s\n", log);
     LOG_INFO("Quote Info:\n%s\n", quoteInfo);
@@ -125,6 +133,7 @@ test_fapi_quote(FAPI_CONTEXT *context)
 
     r = Fapi_List(context, "/", &pathlist);
     goto_if_error(r, "Pathlist", error);
+    assert(pathlist != NULL);
 
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);

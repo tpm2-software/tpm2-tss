@@ -13,6 +13,7 @@
 #include <inttypes.h>
 #include <string.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -90,6 +91,7 @@ test_fapi_nv_written_policy(FAPI_CONTEXT *context)
 
     r = Fapi_GetAppData(context, nvPathOrdinary, &appData, &appDataSize);
     goto_if_error(r, "Error Fapi_GetAppData", error);
+    assert(appData != NULL);
 
     if (NV_SIZE != appDataSize ||
             memcmp(appData, &data_src[0], appDataSize) != 0) {

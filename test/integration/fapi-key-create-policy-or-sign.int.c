@@ -15,6 +15,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -93,6 +94,7 @@ test_fapi_key_create_policy_or_sign(FAPI_CONTEXT *context)
     char *json_policy = NULL;
     uint8_t *signature = NULL;
     char    *publicKey = NULL;
+    char    *certificate = NULL;
     long policy_size;
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
@@ -142,8 +144,11 @@ test_fapi_key_create_policy_or_sign(FAPI_CONTEXT *context)
 
     r = Fapi_Sign(context, "/HS/SRK/mySignKey", NULL,
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, NULL);
+                  &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
+    assert(signature != NULL);
+    assert(publicKey != NULL);
+    assert(certificate != NULL);
 
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
@@ -151,6 +156,7 @@ test_fapi_key_create_policy_or_sign(FAPI_CONTEXT *context)
     SAFE_FREE(json_policy);
     SAFE_FREE(signature);
     SAFE_FREE(publicKey);
+    SAFE_FREE(certificate);
 
     if (!cb_called) {
         LOG_ERROR("Branch selection callback was not called.");
@@ -164,6 +170,7 @@ error:
     SAFE_FREE(json_policy);
     SAFE_FREE(signature);
     SAFE_FREE(publicKey);
+    SAFE_FREE(certificate);
     return EXIT_FAILURE;
 }
 
