@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -84,6 +85,7 @@ test_fapi_duplicate(FAPI_CONTEXT *context)
 
     r = Fapi_ExportKey(context, "HS/SRK/myCryptKey", NULL, &json_string_pub_key);
     goto_if_error(r, "Error Fapi_CreateKey", error);
+    assert(json_string_pub_key != NULL);
 
     r = Fapi_Import(context, "ext/myNewParent", json_string_pub_key);
     goto_if_error(r, "Error Fapi_Import", error);
@@ -95,6 +97,7 @@ test_fapi_duplicate(FAPI_CONTEXT *context)
     r = Fapi_ExportKey(context, "HS/SRK/myCryptKey/myCryptKey2",
                        "ext/myNewParent", &json_duplicate);
     goto_if_error(r, "Error Fapi_CreateKey", error);
+    assert(json_duplicate != NULL);
 
     fprintf(stderr, "\nExport Data:\n%s\n", json_duplicate);
 

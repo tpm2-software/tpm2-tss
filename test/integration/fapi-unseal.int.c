@@ -10,6 +10,8 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
+
 #include "tss2_esys.h"
 #include "tss2_fapi.h"
 
@@ -63,6 +65,7 @@ test_fapi_unseal(FAPI_CONTEXT *context)
     r = Fapi_Unseal(context, "/HS/SRK/mySealObject", &result,
                     &resultSize);
     goto_if_error(r, "Error Fapi_CreateSeal", error);
+    assert(result != NULL);
 
     if (resultSize != digest.size ||
             memcmp(result, &digest.buffer[0], resultSize) != 0) {
@@ -79,9 +82,11 @@ test_fapi_unseal(FAPI_CONTEXT *context)
                         "", "",  NULL);
     goto_if_error(r, "Error Fapi_CreateSeal", error);
 
+    result = NULL;
     r = Fapi_Unseal(context, "/HS/SRK/myRandomSealObject", &result,
                     &resultSize);
     goto_if_error(r, "Error Fapi_CreateSeal", error);
+    assert(result != NULL);
 
     LOGBLOB_INFO(result, resultSize, "Unsealed random data");
 

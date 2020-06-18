@@ -9,6 +9,7 @@
 #endif
 
 #include <stdlib.h>
+#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -39,7 +40,7 @@ test_fapi_get_random(FAPI_CONTEXT *context)
     size_t            num_handles;
     /* Ensure that more than one call of Esys_GetRandom is necessary */
     size_t  bytesRequested = sizeof(TPMU_HA) + 10;
-    uint8_t *randomBytes;
+    uint8_t *randomBytes = NULL;
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
@@ -60,11 +61,14 @@ test_fapi_get_random(FAPI_CONTEXT *context)
         r = Fapi_GetRandom_Finish(context, &randomBytes);
     } while (r == TSS2_FAPI_RC_TRY_AGAIN);
     goto_if_error(r, "Error Fapi_GetRandom_Finish", error);
+    assert(randomBytes != NULL);
 
     Fapi_Free(randomBytes);
 
+    randomBytes = NULL;
     r = Fapi_GetRandom(context, bytesRequested, &randomBytes);
     goto_if_error(r, "Error Fapi_GetRandom", error);
+    assert(randomBytes != NULL);
 
     Fapi_Free(randomBytes);
 

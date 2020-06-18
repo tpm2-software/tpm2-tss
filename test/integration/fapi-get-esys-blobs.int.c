@@ -9,6 +9,7 @@
 #endif
 
 #include <stdlib.h>
+#include <assert.h>
 
 #include "tss2_fapi.h"
 #include "tss2_esys.h"
@@ -105,6 +106,7 @@ test_fapi_get_esys_blobs(FAPI_CONTEXT *context)
     r = Fapi_GetEsysBlob(context,nvPath, &type,
                          &data, &data_size);
     goto_if_error(r, "Error Fapi_GetEsysBlob", error);
+    assert(data != NULL);
 
     if (type != FAPI_ESYSBLOB_DESERIALIZE) {
         LOG_ERROR("Invalid type");
@@ -122,9 +124,11 @@ test_fapi_get_esys_blobs(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_CreateKey_Async", error);
 
     /* Create ESAPI key object from path */
+    data = NULL;
     r = Fapi_GetEsysBlob(context, "HS/SRK/mySignKey", &type,
                          &data, &data_size);
     goto_if_error(r, "Error Fapi_GetEsysBlob", error);
+    assert(data != NULL);
 
     if (type != FAPI_ESYSBLOB_CONTEXTLOAD) {
         LOG_ERROR("Invalid type");
@@ -185,9 +189,11 @@ test_fapi_get_esys_blobs(FAPI_CONTEXT *context)
     SAFE_FREE(data);
 
     /* Create ESAPI persistent key object from path */
+    data = NULL;
     r = Fapi_GetEsysBlob(context, "HS/SRK", &type,
                          &data, &data_size);
     goto_if_error(r, "Error Fapi_GetEsysBlob", error);
+    assert(data != NULL);
 
     if (type != FAPI_ESYSBLOB_DESERIALIZE) {
         LOG_ERROR("Invalid type");

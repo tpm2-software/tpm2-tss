@@ -15,6 +15,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <assert.h>
 
 
 #include "tss2_fapi.h"
@@ -111,6 +112,7 @@ test_fapi_key_create_policy_secret_nv_sign(FAPI_CONTEXT *context)
 
     uint8_t *signature = NULL;
     char    *publicKey = NULL;
+    char    *certificate = NULL;
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
@@ -154,20 +156,30 @@ test_fapi_key_create_policy_secret_nv_sign(FAPI_CONTEXT *context)
     LOG_ERROR("***** START TEST ERROR ******");
     r = Fapi_Sign(context, sign_key, NULL,
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, NULL);
+                  &publicKey, &certificate);
 
     LOG_ERROR("***** END TEST ERROR ******");
 
     if (r == TSS2_RC_SUCCESS)
         goto error;
 
+    assert(signature == NULL);
+    assert(publicKey == NULL);
+    assert(certificate == NULL);
+
     r = Fapi_SetAuthCB(context, auth_callback, "");
     goto_if_error(r, "Error SetPolicyAuthCallback", error);
 
+    signature = NULL;
+    publicKey = NULL;
+    certificate = NULL;
     r = Fapi_Sign(context, sign_key, NULL,
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, NULL);
+                  &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
+    assert(signature != NULL);
+    assert(publicKey != NULL);
+    assert(certificate != NULL);
 
     r = Fapi_Delete(context, nv_path_auth_object);
     goto_if_error(r, "Error Fapi_NV_Undefine", error);
@@ -177,6 +189,7 @@ test_fapi_key_create_policy_secret_nv_sign(FAPI_CONTEXT *context)
 
     SAFE_FREE(signature);
     SAFE_FREE(publicKey);
+    SAFE_FREE(certificate);
     SAFE_FREE(json_policy);
     return EXIT_SUCCESS;
 
@@ -184,6 +197,7 @@ error:
     Fapi_Delete(context, "/");
     SAFE_FREE(signature);
     SAFE_FREE(publicKey);
+    SAFE_FREE(certificate);
     SAFE_FREE(json_policy);
     return EXIT_FAILURE;
 }

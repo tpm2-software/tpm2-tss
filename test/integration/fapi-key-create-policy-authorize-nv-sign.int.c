@@ -15,6 +15,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <assert.h>
 
 
 #include "tss2_fapi.h"
@@ -124,6 +125,7 @@ test_fapi_key_create_policy_authorize_nv(FAPI_CONTEXT *context)
 
     uint8_t *signature = NULL;
     char    *publicKey = NULL;
+    char    *certificate = NULL;
 
     if (check_tpm_cmd(context, TPM2_CC_PolicyAuthorizeNV) != TPM2_RC_SUCCESS) {
         LOG_WARNING("Command PolicyAuthorizeNV not available.");
@@ -180,8 +182,11 @@ test_fapi_key_create_policy_authorize_nv(FAPI_CONTEXT *context)
 
     r = Fapi_Sign(context, "/HS/SRK/mySignKey", NULL,
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, NULL);
+                  &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
+    assert(signature);
+    assert(publicKey);
+    assert(certificate);
 
     r = Fapi_Delete(context, nvPathPolicy);
     goto_if_error(r, "Error Fapi_NV_Undefine", error);
@@ -192,6 +197,7 @@ test_fapi_key_create_policy_authorize_nv(FAPI_CONTEXT *context)
     SAFE_FREE(json_policy);
     SAFE_FREE(signature);
     SAFE_FREE(publicKey);
+    SAFE_FREE(certificate);
     return EXIT_SUCCESS;
 
 error:
@@ -199,6 +205,7 @@ error:
     SAFE_FREE(json_policy);
     SAFE_FREE(signature);
     SAFE_FREE(publicKey);
+    SAFE_FREE(certificate);
     return EXIT_FAILURE;
 }
 
