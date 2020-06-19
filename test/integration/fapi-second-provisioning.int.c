@@ -59,7 +59,7 @@ auth_callback(
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_test_second_provisioning(FAPI_CONTEXT *context)g
+test_fapi_test_second_provisioning(FAPI_CONTEXT *context)
 {
     TSS2_RC r;
 

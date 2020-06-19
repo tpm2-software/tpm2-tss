@@ -802,9 +802,9 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                 if (command->auth_state & (1 << 2)) {
                     hierarchy_lockout->misc.hierarchy.with_auth = TPM2_YES;
                     r = ifapi_get_description(hierarchy_lockout, &description);
-                return_if_error(r, "Get description");
-                r = ifapi_set_auth(context, hierarchy_lockout, description);
-                return_if_error(r, "Set auth value");
+                    return_if_error(r, "Get description");
+                    r = ifapi_set_auth(context, hierarchy_lockout, description);
+                    return_if_error(r, "Set auth value");
                 } else {
                     hierarchy_lockout->misc.hierarchy.with_auth = TPM2_NO;
                 }
@@ -988,7 +988,12 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             /* Retry with authorization callback after trial with null auth */
             if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH &&
                 hierarchy_hs->misc.hierarchy.with_auth == TPM2_NO) {
+                char* description;
+                r = ifapi_get_description(hierarchy_hs, &description);
+                return_if_error(r, "Get description");
+
                 r = ifapi_set_auth(context, hierarchy_hs, "CreatePrimary");
+                SAFE_FREE(description);
                 goto_if_error_reset_state(r, "Create EK", error_cleanup);
 
                 hierarchy_hs->misc.hierarchy.with_auth = TPM2_YES;
