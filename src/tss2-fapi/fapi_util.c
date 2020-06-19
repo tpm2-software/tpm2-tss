@@ -356,14 +356,9 @@ ifapi_set_auth(
     TSS2_RC r;
     const char *auth = NULL;
     TPM2B_AUTH authValue = {.size = 0,.buffer = {0} };
-    char *obj_description;
     const char *obj_path;
 
-    obj_description = get_description(auth_object);
     obj_path = ifapi_get_object_path(auth_object);
-
-    if (obj_description)
-        description = obj_description;
 
     /* Check whether callback is defined. */
     if (context->callbacks.auth) {
@@ -645,7 +640,12 @@ ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype, IFAPI_OBJE
         /* Retry with authorization callback after trial with null auth */
         if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH
             && hierarchy->misc.hierarchy.with_auth == TPM2_NO) {
-            r = ifapi_set_auth(context, hierarchy, "CreatePrimary");
+            char *description;
+            r = ifapi_get_description(hierarchy, &description);
+            return_if_error(r, "Get description");
+
+            r = ifapi_set_auth(context, hierarchy, description);
+            SAFE_FREE(description);
             goto_if_error_reset_state(r, "CreatePrimary", error_cleanup);
 
             r = Esys_CreatePrimary_Async(context->esys, hierarchy->handle,
@@ -1924,6 +1924,7 @@ ifapi_authorize_object(FAPI_CONTEXT *context, IFAPI_OBJECT *object, ESYS_TR *ses
                         char *description = NULL;
                         r = ifapi_get_description(object, &description);
                         return_if_error(r, "Get description");
+
                         r = ifapi_set_auth(context, object, description);
                         SAFE_FREE(description);
                         return_if_error(r, "Set auth value");
@@ -1962,7 +1963,11 @@ ifapi_authorize_object(FAPI_CONTEXT *context, IFAPI_OBJECT *object, ESYS_TR *ses
 
             /* Check whether PolicyCommand requiring authorization was executed */
             if (auth_required == TPM2_YES) {
-                r = ifapi_set_auth(context, object, "Authorize object");
+                char* description;
+                r = ifapi_get_description(object, &description);
+                return_if_error(r, "Get description");
+                r = ifapi_set_auth(context, object, description);
+                SAFE_FREE(description);
                 goto_if_error(r, "Set auth value", error);
             }
             /* Clear continue session flag, so policy session will be flushed after authorization */
@@ -2146,7 +2151,11 @@ ifapi_nv_write(
         if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH) {
             if (context->nv_cmd.nv_write_state == NV2_WRITE_NULL_AUTH_SENT) {
                 IFAPI_OBJECT *auth_object = &context->nv_cmd.auth_object;
-                r = ifapi_set_auth(context, auth_object, "NV Write");
+                char *description;
+                r = ifapi_get_description(auth_object, &description);
+                return_if_error(r, "Get description");
+                r = ifapi_set_auth(context, auth_object, description);
+                SAFE_FREE(description);
                 goto_if_error_reset_state(r, " Fapi_NvWrite_Finish", error_cleanup);
 
                 /* Prepare the writing to NV ram. */
@@ -3526,7 +3535,12 @@ ifapi_change_auth_hierarchy(
              hierarchy_object->misc.hierarchy.with_auth == TPM2_NO) {
 
             /* Retry after NULL authorization was not successful */
-            r = ifapi_set_auth(context, hierarchy_object, "Hierarchy object");
+            char *description;
+            r = ifapi_get_description(hierarchy_object, &description);
+            return_if_error(r, "Get description");
+
+            r = ifapi_set_auth(context, hierarchy_object, description);
+            SAFE_FREE(description);
             return_if_error(r, "HierarchyChangeAuth");
 
             r = Esys_HierarchyChangeAuth_Async(context->esys,
@@ -3668,7 +3682,12 @@ ifapi_change_policy_hierarchy(
         if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH  &&
              hierarchy_object->misc.hierarchy.with_auth == TPM2_NO) {
             /* Retry after NULL authorization was not successful */
-            r = ifapi_set_auth(context, hierarchy_object, "Hierarchy object");
+            char *description;
+            r = ifapi_get_description(hierarchy_object, &description);
+            return_if_error(r, "Get description");
+
+            r = ifapi_set_auth(context, hierarchy_object, description);
+            SAFE_FREE(description);
             return_if_error(r, "HierarchyChangePolicy");
 
             r = Esys_SetPrimaryPolicy_Async(context->esys, handle,
