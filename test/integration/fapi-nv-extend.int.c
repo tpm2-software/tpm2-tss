@@ -19,6 +19,7 @@
 #define LOGMODULE test
 #include "util/log.h"
 #include "util/aux_util.h"
+#include "test-fapi.h"
 
 #define NV_SIZE 32
 
@@ -88,6 +89,7 @@ test_fapi_nv_extend(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_NvRead", error);
     assert(data_dest != NULL);
     assert(log != NULL);
+    assert(strlen(log) > ASSERT_SIZE);
 
     fprintf(stderr, "\nLog:\n%s\n", log);
     SAFE_FREE(data_dest);
@@ -102,6 +104,7 @@ test_fapi_nv_extend(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_NvRead", error);
     assert(data_dest != NULL);
     assert(log != NULL);
+    assert(strlen(log) > ASSERT_SIZE);
 
     fprintf(stderr, "\nLog:\n%s\n", log);
 

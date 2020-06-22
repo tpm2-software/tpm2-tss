@@ -95,6 +95,7 @@ test_fapi_platform_certificates(FAPI_CONTEXT *context)
         goto skip;
     goto_if_error(r, "Error Fapi_GetPlatformCertificates", error);
     assert(certs != NULL);
+    assert(certsSize == CERTIFICATE_SIZE);
 
     Fapi_Free(certs);
 

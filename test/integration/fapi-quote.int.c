@@ -95,10 +95,14 @@ test_fapi_quote(FAPI_CONTEXT *context)
     assert(signature != NULL);
     assert(pcrEventLog != NULL);
     assert(certificate != NULL);
+    assert(strlen(quoteInfo) > ASSERT_SIZE);
+    assert(strlen(pcrEventLog) > ASSERT_SIZE);
+    assert(strlen(certificate) > ASSERT_SIZE);
 
     r = Fapi_ExportKey(context, "HS/SRK/mySignKey", NULL, &export_data);
     goto_if_error(r, "Export.", error);
     assert(export_data != NULL);
+    assert(strlen(export_data) > ASSERT_SIZE);
 
     jso = json_tokener_parse(export_data);
 
@@ -122,6 +126,7 @@ test_fapi_quote(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_PcrRead", error);
     assert(pcr_digest != NULL);
     assert(log != NULL);
+    assert(strlen(log) > ASSERT_SIZE);
 
     LOG_INFO("\nLog:\n%s\n", log);
     LOG_INFO("Quote Info:\n%s\n", quoteInfo);
@@ -134,6 +139,7 @@ test_fapi_quote(FAPI_CONTEXT *context)
     r = Fapi_List(context, "/", &pathlist);
     goto_if_error(r, "Pathlist", error);
     assert(pathlist != NULL);
+    assert(strlen(pathlist) > ASSERT_SIZE);
 
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);

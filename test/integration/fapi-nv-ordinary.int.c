@@ -165,6 +165,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_NvRead", error);
     assert(data_dest != NULL);
     assert(logData != NULL);
+    assert(strlen(logData) > ASSERT_SIZE);
 
     if (dest_size != NV_SIZE ||
         memcmp(data_src, data_dest, dest_size) != 0) {
@@ -190,6 +191,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_PcrRead", error);
     assert(pcr_digest != NULL);
     assert(pcrLog != NULL);
+    assert(strlen(pcrLog) > ASSERT_SIZE);
 
     if (memcmp(&pcr_digest[0], &zero_digest, pcr_digest_size) != 0) {
         SAFE_FREE(pcr_digest);
@@ -218,6 +220,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
         goto_if_error(r, "Error Fapi_NvRead", error);
         assert(data_dest != NULL);
         assert(logData != NULL);
+        assert(strlen(logData) > ASSERT_SIZE);
 
         if (dest_size != NV_SIZE ||
             memcmp(data_src, data_dest, dest_size) != 0) {
@@ -244,6 +247,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_NvRead", error);
     assert(data_dest != NULL);
     assert(logData != NULL);
+    assert(strlen(logData) > ASSERT_SIZE);
 
     if (dest_size != NV_SIZE ||
         memcmp(data_src, data_dest, dest_size) != 0) {
@@ -276,6 +280,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_NvRead", error);
     assert(data_dest != NULL);
     assert(logData != NULL);
+    assert(strlen(logData) > ASSERT_SIZE);
 
     if (dest_size != NV_SIZE ||
         memcmp(data_src, data_dest, dest_size) != 0) {
@@ -313,6 +318,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_NvRead", error);
     assert(data_dest != NULL);
     assert(logData != NULL);
+    assert(strlen(logData) > ASSERT_SIZE);
 
     if (dest_size != NV_SIZE ||
         memcmp(data_src, data_dest, dest_size) != 0) {
@@ -342,6 +348,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_NvRead", error);
     assert(data_dest != NULL);
     assert(logData != NULL);
+    assert(strlen(logData) > ASSERT_SIZE);
 
     if (dest_size != NV_SIZE ||
         memcmp(data_src, data_dest, dest_size) != 0) {

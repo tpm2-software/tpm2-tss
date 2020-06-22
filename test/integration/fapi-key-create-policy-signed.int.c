@@ -261,6 +261,11 @@ test_fapi_key_create_policy_signed(FAPI_CONTEXT *context)
     r = Fapi_CreateKey(context, "/HS/SRK/mySignKey", SIGN_TEMPLATE,
                        policy_name, PASSWORD);
     goto_if_error(r, "Error Fapi_CreateKey", error);
+
+    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", "-----BEGIN "\
+        "CERTIFICATE-----[...]-----END CERTIFICATE-----");
+    goto_if_error(r, "Error Fapi_CreateKey", error);
+
     size_t signatureSize = 0;
 
     TPM2B_DIGEST digest = {
@@ -281,10 +286,13 @@ test_fapi_key_create_policy_signed(FAPI_CONTEXT *context)
     assert(signature != NULL);
     assert(publicKey != NULL);
     assert(certificate != NULL);
+    assert(strlen(publicKey) > ASSERT_SIZE);
+    assert(strlen(certificate) > ASSERT_SIZE);
 
     r = Fapi_List(context, "/", &pathList);
     goto_if_error(r, "Error Fapi_List", error);
     assert(pathList != NULL);
+    assert(strlen(pathList) > ASSERT_SIZE);
 
     fprintf(stderr, "\n%s\n", pathList);
 

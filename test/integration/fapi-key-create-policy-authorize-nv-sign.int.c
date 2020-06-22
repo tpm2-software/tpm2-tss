@@ -168,6 +168,10 @@ test_fapi_key_create_policy_authorize_nv(FAPI_CONTEXT *context)
                        policy_authorize_nv, PASSWORD);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
+    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", "-----BEGIN "\
+        "CERTIFICATE-----[...]-----END CERTIFICATE-----");
+    goto_if_error(r, "Error Fapi_CreateKey", error);
+
     size_t signatureSize = 0;
 
     TPM2B_DIGEST digest = {
@@ -187,6 +191,8 @@ test_fapi_key_create_policy_authorize_nv(FAPI_CONTEXT *context)
     assert(signature);
     assert(publicKey);
     assert(certificate);
+    assert(strlen(publicKey) > ASSERT_SIZE);
+    assert(strlen(certificate) > ASSERT_SIZE);
 
     r = Fapi_Delete(context, nvPathPolicy);
     goto_if_error(r, "Error Fapi_NV_Undefine", error);
