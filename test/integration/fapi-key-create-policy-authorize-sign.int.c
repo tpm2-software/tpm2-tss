@@ -254,6 +254,10 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
                        "", NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
+    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", "-----BEGIN "\
+        "CERTIFICATE-----[...]-----END CERTIFICATE-----");
+    goto_if_error(r, "Error Fapi_CreateKey", error);
+
     /* Use the key */
     size_t signatureSize = 0;
 
@@ -274,10 +278,13 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     assert(signature != NULL);
     assert(publicKey != NULL);
     assert(certificate != NULL);
+    assert(strlen(publicKey) > ASSERT_SIZE);
+    assert(strlen(certificate) > ASSERT_SIZE);
 
     r = Fapi_List(context, "/", &pathList);
     goto_if_error(r, "Error Fapi_List", error);
     assert(pathList != NULL);
+    assert(strlen(pathList) > ASSERT_SIZE);
 
     SAFE_FREE(pathList);
 
@@ -285,6 +292,7 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     r = Fapi_List(context, "/SRK/", &pathList);
     goto_if_error(r, "Error Fapi_List", error);
     assert(pathList != NULL);
+    assert(strlen(pathList) > ASSERT_SIZE);
     fprintf(stderr, "\n%s\n", pathList);
     SAFE_FREE(pathList);
 
@@ -292,6 +300,7 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     r = Fapi_List(context, "/HS/", &pathList);
     goto_if_error(r, "Error Fapi_List", error);
     assert(pathList != NULL);
+    assert(strlen(pathList) > ASSERT_SIZE);
     fprintf(stderr, "\n%s\n", pathList);
     SAFE_FREE(pathList);
 
@@ -309,6 +318,7 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     r = Fapi_List(context, "/HS/", &pathList);
     goto_if_error(r, "Error Fapi_List", error);
     assert(pathList != NULL);
+    assert(strlen(pathList) > ASSERT_SIZE);
     fprintf(stderr, "\n%s\n", pathList);
     SAFE_FREE(pathList);
 

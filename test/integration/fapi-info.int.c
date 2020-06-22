@@ -10,12 +10,14 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 #include "tss2_fapi.h"
 
 #define LOGMODULE test
 #include "util/log.h"
 #include "util/aux_util.h"
+#include "test-fapi.h"
 
 /** Test the FAPI functions for GetInfo.
  *
@@ -41,6 +43,7 @@ test_fapi_info(FAPI_CONTEXT *context)
     r = Fapi_GetInfo(context, &info);
     goto_if_error(r, "Error Fapi_Provision", error);
     assert(info != NULL);
+    assert(strlen(info) > ASSERT_SIZE);
 
     LOG_INFO("%s", info);
 

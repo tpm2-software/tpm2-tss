@@ -17,6 +17,7 @@
 #define LOGMODULE test
 #include "util/log.h"
 #include "util/aux_util.h"
+#include "test-fapi.h"
 
 #define PASSWORD "abc"
 
@@ -71,6 +72,11 @@ test_fapi_key_change_auth(FAPI_CONTEXT *context)
 
     r = Fapi_CreateKey(context, "HS/SRK/mySignKey", "sign,noDa", "", NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
+
+    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", "-----BEGIN "\
+        "CERTIFICATE-----[...]-----END CERTIFICATE-----");
+    goto_if_error(r, "Error Fapi_CreateKey", error);
+
     size_t signatureSize = 0;
 
     TPM2B_DIGEST digest = {
@@ -94,6 +100,8 @@ test_fapi_key_change_auth(FAPI_CONTEXT *context)
     assert(signature != NULL);
     assert(publicKey != NULL);
     assert(certificate != NULL);
+    assert(strlen(publicKey) > ASSERT_SIZE);
+    assert(strlen(certificate) > ASSERT_SIZE);
 
     Fapi_Free(publicKey);
 

@@ -182,6 +182,7 @@ test_fapi_pcr_test(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_PcrRead", error);
     assert(pcr_digest != NULL);
     assert(log != NULL);
+    assert(strlen(log) > ASSERT_SIZE);
 
     for (i = 0; i < ( sizeof(log_exp) / sizeof(log_exp[0]) ); i++)
         if (strcmp(log_exp[i], log) == 0)
@@ -205,6 +206,7 @@ test_fapi_pcr_test(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_PcrRead", error);
     assert(pcr_digest != NULL);
     assert(log != NULL);
+    assert(strlen(log) > ASSERT_SIZE);
 
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
