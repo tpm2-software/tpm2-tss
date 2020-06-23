@@ -179,6 +179,7 @@ push_object_with_size_to_list(void *object, size_t size, NODE_OBJECT_T **object_
     return_if_error(r, "Push object with size.");
 
     (*object_list)->size = size;
+
     return TSS2_RC_SUCCESS;
 }
 
@@ -2694,9 +2695,13 @@ ifapi_key_sign(
         context->Key_Sign.handle = ESYS_TR_NONE;
         *tpm_signature = context->Key_Sign.signature;
         if (certificate) {
-            *certificate = strdup(context->Key_Sign.key_object->misc.key.certificate);
-            goto_if_null(*certificate, "Out of memory.",
-                    TSS2_FAPI_RC_MEMORY, cleanup);
+            if (context->Key_Sign.key_object->misc.key.certificate) {
+                *certificate = strdup(context->Key_Sign.key_object->misc.key.certificate);
+                goto_if_null(*certificate, "Out of memory.",
+                             TSS2_FAPI_RC_MEMORY, cleanup);
+            } else {
+                strdup_check(*certificate, "", r, cleanup);
+            }
         }
         context->Key_Sign.state = SIGN_INIT;
         LOG_TRACE("success");
@@ -4012,16 +4017,15 @@ ifapi_get_certificates(
 {
     TSS2_RC r;
     TPMI_YES_NO moreData;
-    TPMS_CAPABILITY_DATA **capabilityData = &context->cmd.Provision.capabilityData;
     uint8_t *cert_data;
     size_t cert_size;
 
     context->cmd.Provision.cert_nv_idx = MIN_EK_CERT_HANDLE;
-    context->cmd.Provision.capabilityData = NULL;
 
     switch (context->get_cert_state) {
     statecase(context->get_cert_state, GET_CERT_INIT);
         *cert_list = NULL;
+        context->cmd.Provision.capabilityData = NULL;
         context->cmd.Provision.cert_idx = 0;
         /* Prepare the reading of the capability handles in the certificate range */
         r = Esys_GetCapability_Async(context->esys,
@@ -4032,16 +4036,18 @@ ifapi_get_certificates(
         fallthrough;
 
     statecase(context->get_cert_state, GET_CERT_WAIT_FOR_GET_CAP);
-        r = Esys_GetCapability_Finish(context->esys, &moreData, capabilityData);
-        return_try_again(r);
-        goto_if_error_reset_state(r, "GetCapablity_Finish", error);
+        r = Esys_GetCapability_Finish(context->esys, &moreData,
+                                      &context->cmd.Provision.capabilityData);
+        try_again_or_error(r, "GetCapablity_Finish");
 
-        if (!*capabilityData || (*capabilityData)->data.handles.count == 0) {
+        if (!context->cmd.Provision.capabilityData ||
+            context->cmd.Provision.capabilityData->data.handles.count == 0) {
             *cert_list = NULL;
+            SAFE_FREE(context->cmd.Provision.capabilityData);
             return TSS2_RC_SUCCESS;
         }
-        context->cmd.Provision.capabilityData = *capabilityData;
-        context->cmd.Provision.cert_count = (*capabilityData)->data.handles.count;
+        context->cmd.Provision.cert_count =
+            context->cmd.Provision.capabilityData->data.handles.count;
 
         /* Filter out NV handles beyond the EK cert range */
         for (size_t i = 0; i < context->cmd.Provision.cert_count; i++) {
@@ -4071,8 +4077,7 @@ ifapi_get_certificates(
     statecase(context->get_cert_state, GET_CERT_GET_CERT_NV_FINISH);
         r = Esys_TR_FromTPMPublic_Finish(context->esys,
                                          &context->cmd.Provision.esys_nv_cert_handle);
-        return_try_again(r);
-        goto_if_error_reset_state(r, "TR_FromTPMPublic_Finish", error);
+        try_again_or_error_goto(r, "TR_FromTPMPublic_Finish", error);
 
         /* Read public to get size of certificate */
         r = Esys_NV_ReadPublic_Async(context->esys,
@@ -4085,8 +4090,7 @@ ifapi_get_certificates(
         r = Esys_NV_ReadPublic_Finish(context->esys,
                                       &context->cmd.Provision.nvPublic,
                                       NULL);
-        return_try_again(r);
-        goto_if_error(r, "Error: nv read public", error);
+        try_again_or_error_goto(r, "Error: nv read public", error);
 
         /* TPMA_NV_NO_DA is set for NV certificate */
         context->nv_cmd.nv_object.misc.nv.public.nvPublic.attributes = TPMA_NV_NO_DA;
@@ -4099,8 +4103,7 @@ ifapi_get_certificates(
     statecase(context->get_cert_state, GET_CERT_GET_CERT_READ_HIERARCHY);
         r = ifapi_keystore_load_finish(&context->keystore, &context->io,
                                        &context->nv_cmd.auth_object);
-        return_try_again(r);
-        return_if_error(r, "read_finish failed");
+        try_again_or_error_goto(r, "read_finish failed", error);
 
         /* Prepare context for nv read */
         r = ifapi_initialize_object(context->esys, &context->nv_cmd.auth_object);
@@ -4122,8 +4125,7 @@ ifapi_get_certificates(
 
     statecase(context->get_cert_state, GET_CERT_READ_CERT);
         r = ifapi_nv_read(context, &cert_data, &cert_size);
-        return_try_again(r);
-        goto_if_error_reset_state(r, " FAPI NV_Read", error);
+        try_again_or_error_goto(r, " FAPI NV_Read", error);
 
         context->cmd.Provision.cert_idx += 1;
 
@@ -4136,9 +4138,11 @@ ifapi_get_certificates(
 
             ifapi_cleanup_ifapi_object(&context->nv_cmd.auth_object);
 
+            SAFE_FREE(context->cmd.Provision.capabilityData);
             return TSS2_RC_SUCCESS;
         } else {
             context->get_cert_state = GET_CERT_GET_CERT_NV;
+            return TSS2_FAPI_RC_TRY_AGAIN;
         }
         break;
 
@@ -4146,6 +4150,8 @@ ifapi_get_certificates(
     }
 
 error:
+    SAFE_FREE(context->cmd.Provision.capabilityData);
+    SAFE_FREE(context->cmd.Provision.capabilityData);
     ifapi_cleanup_ifapi_object(&context->nv_cmd.auth_object);
     ifapi_free_object_list(*cert_list);
     return r;

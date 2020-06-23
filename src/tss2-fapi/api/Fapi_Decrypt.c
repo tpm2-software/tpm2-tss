@@ -173,6 +173,7 @@ Fapi_Decrypt_Async(
     return_if_error(r, "Initialize Decrypt");
 
     command->object_handle = ESYS_TR_NONE;
+    command->plainText = NULL;
 
     goto_if_error(r, "Invalid cipher object.", error_cleanup);
 
@@ -323,12 +324,13 @@ Fapi_Decrypt_Finish(
 
             /* Duplicate the decrypted plaintext for returning to the user. */
             if (plainTextSize)
-                *plainTextSize = tpmPlainText->size;
+                command->plainTextSize = tpmPlainText->size;
             if (plainText) {
-                *plainText = malloc(tpmPlainText->size);
-                goto_if_null(*plainText, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
+                command->plainText = malloc(tpmPlainText->size);
+                goto_if_null(command->plainText, "Out of memory",
+                             TSS2_FAPI_RC_MEMORY, error_cleanup);
 
-                memcpy(*plainText, &tpmPlainText->buffer[0], tpmPlainText->size);
+                memcpy(command->plainText, &tpmPlainText->buffer[0], tpmPlainText->size);
                 SAFE_FREE(tpmPlainText);
             }
 
@@ -356,6 +358,10 @@ Fapi_Decrypt_Finish(
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
+            if (plainText)
+                *plainText = command->plainText;
+            if (plainTextSize)
+                *plainTextSize = command->plainTextSize;
             break;
 
         statecasedefault(context->state);
@@ -386,6 +392,7 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(command->key_object);
     SAFE_FREE(command->keyPath);
     SAFE_FREE(command->in_data);
+    SAFE_FREE(command->plainText);
 
     /* Cleanup of context related objects */
     if (command->key_handle != ESYS_TR_NONE)

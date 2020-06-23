@@ -191,6 +191,7 @@ Fapi_ExportKey_Async(
                  r, error_cleanup);
     strdup_check(command->pathToPublicKeyOfNewParent,
                  pathToPublicKeyOfNewParent, r, error_cleanup);
+    command->exportedData = NULL;
 
     if (!pathToPublicKeyOfNewParent) {
         /* Only public key of KeyToDuplocate will be exported */
@@ -308,11 +309,13 @@ Fapi_ExportKey_Finish(
             r = ifapi_json_IFAPI_OBJECT_serialize(pubKey, &jsoOut);
             goto_if_error(r, "Error serialize FAPI KEY object", cleanup);
 
-            *exportedData = strdup(json_object_to_json_string_ext(jsoOut,
-                                                                  JSON_C_TO_STRING_PRETTY));
-            goto_if_null2(*exportedData, "Converting json to string", r,
+            command->exportedData
+                = strdup(json_object_to_json_string_ext(jsoOut,
+                                                        JSON_C_TO_STRING_PRETTY));
+            goto_if_null2(command->exportedData, "Converting json to string", r,
                           TSS2_FAPI_RC_MEMORY, cleanup);
 
+            *exportedData = command->exportedData;
             break;
 
         statecase(context->state, EXPORT_KEY_READ_PUB_KEY_PARENT);
@@ -405,7 +408,7 @@ Fapi_ExportKey_Finish(
             /* For the policy added no cleanup is needed. The cleanup will
                be done with the object cleanup. */
             keyTree->policy = command->key_object->policy;
-            r = ifapi_get_json(context, exportTree, exportedData);
+            r = ifapi_get_json(context, exportTree, &command->exportedData);
             goto_if_error2(r, "get JSON for exported data.", cleanup);
 
             fallthrough;
@@ -431,6 +434,7 @@ Fapi_ExportKey_Finish(
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", cleanup);
 
+            *exportedData = command->exportedData;
             break;
 
         statecasedefault(context->state);
@@ -444,6 +448,8 @@ cleanup:
     if (jsoOut != NULL) {
         json_object_put(jsoOut);
     }
+    if (r)
+        SAFE_FREE(command->exportedData);
     context->duplicate_key = NULL;
     context->state = _FAPI_STATE_INIT;
     ifapi_cleanup_ifapi_object(&parentKeyObject);

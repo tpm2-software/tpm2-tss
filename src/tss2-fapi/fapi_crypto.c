@@ -835,6 +835,7 @@ rsa_verify_signature(
         if (1 != EVP_PKEY_verify(ctx, signature, signatureSize, digest, digestSize)) {
             /* padding scheme was not appropriate, next should be tried */
             EVP_PKEY_CTX_free(ctx);
+            ctx = NULL;
         } else {
             /* Verification with selected padding scheme was successful */
             r = TSS2_RC_SUCCESS;
@@ -845,7 +846,8 @@ rsa_verify_signature(
     r = TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED;
 
 cleanup:
-    EVP_PKEY_CTX_free(ctx);
+    if (ctx)
+        EVP_PKEY_CTX_free(ctx);
     return r;
 }
 
