@@ -228,7 +228,7 @@ typedef struct {
     enum _FAPI_STATE_NV_READ nv_read_state; /**< The current state of NV read */
     enum _FAPI_STATE_NV_WRITE nv_write_state; /**< The current state of NV write*/
     uint8_t *write_data;
-    char const *logData;         /**< The event log for NV objects of type pcr */
+    char *logData;               /**< The event log for NV objects of type pcr */
     json_object *jso_event_log;  /**< logData in JSON format */
     TPMI_RH_NV_INDEX maxNvIndex; /**< Max index for search for free index  */
     IFAPI_EVENT pcr_event;       /**< Event to be added to log */
@@ -270,13 +270,15 @@ typedef struct {
     char    const *quoteInfo;
     TPM2B_ATTEST *tpm_quoted;
     TPMT_SIGNATURE *tpm_signature;
-    uint8_t const *signature;
+    uint8_t *signature;
     size_t signatureSize;
     char const *logData;
     char *pcrLog;
     IFAPI_EVENT pcr_event;
     json_object *event_list;
     FAPI_QUOTE_INFO fapi_quote_info;
+    uint8_t *pcrValue;
+    size_t pcrValueSize;
 } IFAPI_PCR;
 
 /** The data structure holding internal state of Fapi_SetDescription.
@@ -297,6 +299,7 @@ typedef struct {
     size_t idx;                   /**< Current position in output buffer.  */
     UINT16 bytesRequested;        /**< Byted currently requested from TPM */
     uint8_t *data;                /**< The buffer for the random data */
+    uint8_t *ret_data;            /**< The result buffer. */
 } IFAPI_GetRandom;
 
 /** The data structure holding internal state of Fapi_Key_Setcertificate.
@@ -369,6 +372,10 @@ typedef struct {
     char *policy_path;
     ESYS_TR auth_session;
     const IFAPI_PROFILE *profile;
+    uint8_t *plainText;
+    size_t plainTextSize;
+    uint8_t *cipherText;
+    size_t cipherTextSize;
 } IFAPI_Data_EncryptDecrypt;
 
 /** The states for signing  */
@@ -393,6 +400,10 @@ typedef struct {
     TPMI_YES_NO decrypt;            /**< Switch for symmetric algs */
     TPMT_SIGNATURE *signature;      /**< Produced TPM singature */
     char const *padding;            /**< Optional padding parameter for key sign. */
+    char *certificate;              /**< Certificate of the signing key. */
+    uint8_t *ret_signature;         /**< Result signature */
+    size_t signatureSize;
+    char *publicKey;                /**< Public key of the signing key. */
 } IFAPI_Key_Sign;
 
 /** The data structure holding internal state of Fapi_Unseal.
@@ -479,6 +490,7 @@ typedef struct {
     size_t digest_idx;
     size_t hash_size;
     TPM2_HANDLE cert_nv_idx;
+    TPM2B_NV_PUBLIC *nvPublic;
     ESYS_TR esys_nv_cert_handle;
     char *pem_cert;
     TPM2_ALG_ID cert_key_type;
@@ -601,14 +613,15 @@ typedef struct {
     IFAPI_OBJECT dup_key;                        /**< The key to be duplicated or exported  */
     struct TPMS_POLICY policy;
     ESYS_TR handle_ext_key;
+    char *exportedData;
 } IFAPI_ExportKey;
 
 /** The data structure holding internal state of export policy.
  */
 typedef struct {
-    char   const *path;                          /**<  Path of the object with the policy to be
-                                                       exported */
-    IFAPI_OBJECT object;                         /**<  Object corresponding to path */
+    char   const *path;                          /**< Path of the object with the policy to be
+                                                      exported */
+    IFAPI_OBJECT object;                         /**< Object corresponding to path */
 } IFAPI_ExportPolicy;
 
 /** The data structure holding internal state of import key.

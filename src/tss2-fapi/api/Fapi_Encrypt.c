@@ -192,6 +192,7 @@ Fapi_Encrypt_Async(
 
     command->in_dataSize = plainTextSize;
     command->key_handle = ESYS_TR_NONE;
+    command->cipherText = NULL;
 
     /* Initialize the context state for this operation. */
     context->state = DATA_ENCRYPT_WAIT_FOR_PROFILE;
@@ -336,14 +337,14 @@ Fapi_Encrypt_Finish(
 
             /* Return cipherTextSize if requested by the caller. */
             if (cipherTextSize)
-                *cipherTextSize = tpmCipherText->size;
+                command->cipherTextSize = tpmCipherText->size;
 
             /* Duplicate the outputs for handling off to the caller. */
-            *cipherText = malloc(tpmCipherText->size);
-            goto_if_null2(*cipherText, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
+            command->cipherText = malloc(tpmCipherText->size);
+            goto_if_null2(command->cipherText, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
                           error_cleanup);
 
-            memcpy(*cipherText, &tpmCipherText->buffer[0], tpmCipherText->size);
+            memcpy(command->cipherText, &tpmCipherText->buffer[0], tpmCipherText->size);
             SAFE_FREE(tpmCipherText);
 
             /* Flush the key from the TPM. */
@@ -369,6 +370,9 @@ Fapi_Encrypt_Finish(
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
+            *cipherText = command->cipherText;
+            if (cipherTextSize)
+                *cipherTextSize = command->cipherTextSize;
             break;
 
         statecasedefault(context->state);
@@ -380,6 +384,8 @@ error_cleanup:
     /* Cleanup any intermediate results and state stored in the context. */
     if (command->key_handle != ESYS_TR_NONE)
         Esys_FlushContext(context->esys,  command->key_handle);
+    if (r)
+        SAFE_FREE(command->cipherText);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);

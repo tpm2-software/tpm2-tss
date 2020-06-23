@@ -213,6 +213,7 @@ Fapi_Quote_Async(
     /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize Quote");
+    memset(&context->cmd.pcr, 0, sizeof(IFAPI_PCR));
 
     if (quoteType && strcmp(quoteType, "TPM-Quote") != 0) {
         return_error(TSS2_FAPI_RC_BAD_VALUE,
@@ -225,7 +226,7 @@ Fapi_Quote_Async(
     command->pcrList = malloc(pcrListSize * sizeof(TPM2_HANDLE));
     goto_if_null2(command->pcrList, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
             error_cleanup);
-    memcpy(command->pcrList, pcrList, pcrListSize);
+    memcpy(command->pcrList, pcrList, pcrListSize * sizeof(TPM2_HANDLE));
 
     command->pcrListSize = pcrListSize;
     command->tpm_quoted = NULL;
@@ -389,7 +390,7 @@ Fapi_Quote_Finish(
             /* Convert the TPM-encoded signature into something useful for the caller. */
             r = ifapi_tpm_to_fapi_signature(sig_key_object,
                                             command->tpm_signature,
-                                            signature, signatureSize);
+                                            &command->signature, &command->signatureSize);
             SAFE_FREE(command->tpm_signature);
             goto_if_error(r, "Create FAPI signature.", error_cleanup);
 
@@ -420,7 +421,8 @@ Fapi_Quote_Finish(
             fallthrough;
 
         statecase(context->state, PCR_QUOTE_READ_EVENT_LIST);
-            r = ifapi_eventlog_get_finish(&context->eventlog, &context->io, pcrLog);
+            r = ifapi_eventlog_get_finish(&context->eventlog, &context->io,
+                                          &command->pcrLog);
             return_try_again(r);
             goto_if_error(r, "Error getting event log", error_cleanup);
             fallthrough;
@@ -430,6 +432,10 @@ Fapi_Quote_Finish(
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
+            if (pcrLog)
+                *pcrLog = command->pcrLog;
+            *signature = command->signature;
+            *signatureSize = command->signatureSize;
             context->state = _FAPI_STATE_INIT;
             break;
 
@@ -442,6 +448,10 @@ error_cleanup:
     SAFE_FREE(command->tpm_quoted);
     SAFE_FREE(command->keyPath);
     SAFE_FREE(command->pcrList);
+    if (r) {
+        SAFE_FREE(command->pcrLog);
+        SAFE_FREE(command->signature);
+    }
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
