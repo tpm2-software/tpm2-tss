@@ -141,12 +141,13 @@ AS_IF([test "x$enable_tcti_partial_reads" = "xyes"],
 	AC_DEFINE([TCTI_PARTIAL_READ],[1], [TCTI PARTIAL READ MODE]))
 
 AC_ARG_WITH([crypto],
-            [AS_HELP_STRING([--with-crypto={gcrypt,ossl}],
+            [AS_HELP_STRING([--with-crypto={gcrypt,ossl,mbed}],
                             [sets the ESYS crypto backend (default is OpenSSL)])],,
             [with_crypto=ossl])
 
 AM_CONDITIONAL(ESYS_OSSL, test "x$with_crypto" = "xossl")
 AM_CONDITIONAL(ESYS_GCRYPT, test "x$with_crypto" = "xgcrypt")
+AM_CONDITIONAL(ESYS_MBED, test "x$with_crypto" = "xmbed")
 
 AS_IF([test "x$enable_esys" = xyes],
       [AS_IF([test "x$with_crypto" = xgcrypt], [
@@ -158,6 +159,11 @@ AS_IF([test "x$enable_esys" = xyes],
            AC_DEFINE([OSSL], [1], [OpenSSL cryptographic backend])
            TSS2_ESYS_CFLAGS_CRYPTO="$LIBCRYPTO_CFLAGS"
            TSS2_ESYS_LDFLAGS_CRYPTO="$LIBCRYPTO_LIBS"
+       ], [test "x$with_crypto" = xmbed], [
+           AC_CHECK_HEADER(mbedtls/md.h, [], [AC_MSG_ERROR([Missing required mbedTLS library])])
+           AC_DEFINE([MBED], [1], [mbedTLS cryptographic backend])
+           TSS2_ESYS_CFLAGS_CRYPTO="$LIBMBED_CFLAGS"
+           TSS2_ESYS_LDFLAGS_CRYPTO="-lmbedcrypto"
        ], AC_MSG_ERROR([Bad value for --with-crypto $with_crypto]))])
 AC_SUBST([TSS2_ESYS_CFLAGS_CRYPTO])
 AC_SUBST([TSS2_ESYS_LDFLAGS_CRYPTO])
