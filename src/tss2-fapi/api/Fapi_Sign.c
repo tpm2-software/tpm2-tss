@@ -287,17 +287,17 @@ Fapi_Sign_Finish(
             /* Perform the signing operation using a helper. */
             r = ifapi_key_sign(context, command->key_object,
                     command->padding, &command->digest, &command->tpm_signature,
-                    publicKey, certificate);
+                    &command->publicKey, &command->certificate);
             return_try_again(r);
             goto_if_error(r, "Fapi sign.", error_cleanup);
 
             /* Convert the TPM datatype signature to something useful for the caller. */
             r = ifapi_tpm_to_fapi_signature(command->key_object,
-                     command->tpm_signature, signature, &resultSignatureSize);
+                     command->tpm_signature, &command->ret_signature, &resultSignatureSize);
             goto_if_error(r, "Create FAPI signature.", error_cleanup);
 
             if (signatureSize)
-                *signatureSize = resultSignatureSize;
+                command->signatureSize = resultSignatureSize;
             fallthrough;
 
         statecase(context->state, KEY_SIGN_CLEANUP)
@@ -305,6 +305,13 @@ Fapi_Sign_Finish(
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
+            if (certificate)
+                *certificate = command->certificate;
+            if (signatureSize)
+                *signatureSize = command->signatureSize;
+            if (publicKey)
+                *publicKey = command->publicKey;
+            *signature = command->ret_signature;
             context->state = _FAPI_STATE_INIT;
             break;
 

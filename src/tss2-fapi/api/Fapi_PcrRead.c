@@ -229,13 +229,13 @@ Fapi_PcrRead_Finish(
 
             /* Copy the return values to the output parameters. */
             if (pcrValueSize)
-                *pcrValueSize = command->pcrValues->digests[0].size;
+                command->pcrValueSize = command->pcrValues->digests[0].size;
             if (pcrValue) {
-                *pcrValue = malloc(command->pcrValues->digests[0].size);
-                goto_if_null2(*pcrValue, "Out of memory.",
+                command->pcrValue = malloc(command->pcrValues->digests[0].size);
+                goto_if_null2(command->pcrValue, "Out of memory.",
                         r, TSS2_FAPI_RC_MEMORY, cleanup);
 
-                memcpy(*pcrValue, &command->pcrValues->digests[0].buffer[0],
+                memcpy(command->pcrValue, &command->pcrValues->digests[0].buffer[0],
                        command->pcrValues->digests[0].size);
             }
             SAFE_FREE(command->pcrValues);
@@ -258,6 +258,10 @@ Fapi_PcrRead_Finish(
             return_try_again(r);
             goto_if_error(r, "Error getting event log", cleanup);
 
+            if (pcrValue)
+                *pcrValue = command->pcrValue;
+            if (pcrValueSize)
+                *pcrValueSize = command->pcrValueSize;
             context->state = _FAPI_STATE_INIT;
             break;
 
@@ -266,6 +270,8 @@ Fapi_PcrRead_Finish(
 
 cleanup:
     /* Cleanup any intermediate results and state stored in the context. */
+    if (r)
+        SAFE_FREE(command->pcrValue);
     SAFE_FREE(command->pcrValues);
     LOG_TRACE("finished");
     return r;

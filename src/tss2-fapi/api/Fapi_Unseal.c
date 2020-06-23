@@ -146,6 +146,7 @@ Fapi_Unseal_Async(
 
     /* Helpful alias pointers */
     IFAPI_Unseal * command = &context->cmd.Unseal;
+    memset(command, 0 ,sizeof(IFAPI_Unseal));
 
     /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
@@ -254,6 +255,13 @@ Fapi_Unseal_Finish(
                 goto_if_error(r, "Unseal_Flush", error_cleanup);
             }
 
+            fallthrough;
+
+        statecase(context->state, UNSEAL_CLEANUP)
+            /* Cleanup the session used for authentication. */
+            r = ifapi_cleanup_session(context);
+            try_again_or_error_goto(r, "Cleanup", error_cleanup);
+
             /* Return the data as requested by the caller.
                Duplicate the unseal_data as necessary. */
             if (size)
@@ -267,13 +275,6 @@ Fapi_Unseal_Finish(
             }
             SAFE_FREE(command->unseal_data);
 
-            fallthrough;
-
-        statecase(context->state, UNSEAL_CLEANUP)
-            /* Cleanup the session used for authentication. */
-            r = ifapi_cleanup_session(context);
-            try_again_or_error_goto(r, "Cleanup", error_cleanup);
-
             context->state = _FAPI_STATE_INIT;
             break;
 
@@ -282,6 +283,8 @@ Fapi_Unseal_Finish(
 
 error_cleanup:
     /* Cleanup any intermediate results and state stored in the context. */
+    if (r)
+        SAFE_FREE(command->unseal_data);
     ifapi_cleanup_ifapi_object(command->object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
