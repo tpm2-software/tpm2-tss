@@ -54,8 +54,8 @@ echo "Generating file lists: ${VARS_FILE}"
   src_listvar "src/tss2-sys/" "*.h" "TSS2_SYS_H"
   printf "TSS2_SYS_SRC = \$(TSS2_SYS_H) \$(TSS2_SYS_C)\n"
 
-  src_esys_listvar "src/tss2-esys/" "*.h" "TSS2_ESYS_H"  src/tss2-esys/esys_crypto_ossl.h  src/tss2-esys/esys_crypto_gcrypt.h
-  src_esys_listvar "src/tss2-esys/" "*.c" "TSS2_ESYS_C" src/tss2-esys/esys_crypto_ossl.c  src/tss2-esys/esys_crypto_gcrypt.c
+  src_esys_listvar "src/tss2-esys/" "*.h" "TSS2_ESYS_H"  src/tss2-esys/esys_crypto_ossl.h  src/tss2-esys/esys_crypto_gcrypt.h src/tss2-esys/esys_crypto_mbed.h
+  src_esys_listvar "src/tss2-esys/" "*.c" "TSS2_ESYS_C" src/tss2-esys/esys_crypto_ossl.c  src/tss2-esys/esys_crypto_gcrypt.c src/tss2-esys/esys_crypto_mbed.c
   printf "TSS2_ESYS_SRC = \$(TSS2_ESYS_H) \$(TSS2_ESYS_C)\n"
 
   src_listvar "src/tss2-fapi/" "*.h" "TSS2_FAPI_H"
