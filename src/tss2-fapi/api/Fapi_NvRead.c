@@ -259,9 +259,7 @@ Fapi_NvRead_Finish(
 
         command->esys_handle = object->handle;
         command->nv_obj = object->misc.nv;
-
-        if (size)
-            *size = object->misc.nv.public.nvPublic.dataSize;
+        command->size = object->misc.nv.public.nvPublic.dataSize;
         command->numBytes = object->misc.nv.public.nvPublic.dataSize;
 
         /* Determine auth object */
@@ -301,7 +299,7 @@ Fapi_NvRead_Finish(
     statecase(context->state, NV_READ_WAIT)
         if (data) {
             /* Read the data from the TPM. */
-            r = ifapi_nv_read(context, data, &readSize);
+            r = ifapi_nv_read(context, &command->rdata, &readSize);
             return_try_again(r);
 
             goto_if_error_reset_state(r, " FAPI NV_Read", error_cleanup);
@@ -310,7 +308,11 @@ Fapi_NvRead_Finish(
         if (logData) {
             /* Duplicate the logdata that may have been stored during a
                NvExtend command. */
-            strdup_check(*logData, object->misc.nv.event_log, r, error_cleanup);
+            if (object->misc.nv.event_log) {
+                strdup_check(command->logData, object->misc.nv.event_log, r, error_cleanup);
+            } else {
+               strdup_check(command->logData, "", r, error_cleanup);
+            }
         }
         fallthrough;
 
@@ -319,6 +321,11 @@ Fapi_NvRead_Finish(
         r = ifapi_cleanup_session(context);
         try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
+        if (logData)
+            *logData = command->logData;
+        *data = command->rdata;
+        if (size)
+            *size = command->size;
         context->state = _FAPI_STATE_INIT;
         break;
 

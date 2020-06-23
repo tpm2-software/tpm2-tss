@@ -151,6 +151,7 @@ Fapi_GetRandom_Async(
 
     /* Copy parameters to context for use during _Finish. */
     command->numBytes = numBytes;
+    command->ret_data = NULL;
     command->data = NULL;
 
     /* Start a session for integrity protection and encryption of random data. */
@@ -225,7 +226,7 @@ Fapi_GetRandom_Finish(
         statecase(context->state, GET_RANDOM_WAIT_FOR_RANDOM);
             /* Retrieve the random data from the TPM.
                This may involve several Esys_GetRandom calls. */
-            r = ifapi_get_random(context, command->numBytes, data);
+            r = ifapi_get_random(context, command->numBytes, &command->ret_data);
             return_try_again(r);
             goto_if_error_reset_state(r, "FAPI GetRandom", error_cleanup);
             fallthrough;
@@ -235,6 +236,7 @@ Fapi_GetRandom_Finish(
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
+            *data = command->ret_data;
             break;
 
         statecasedefault(context->state);

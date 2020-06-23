@@ -244,6 +244,10 @@ Fapi_GetTpmBlobs_Finish(
                         json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY),
                         r, error_cleanup);
                 json_object_put(jso);
+            } else {
+                if (policy) {
+                    strdup_check(*policy, "", r, error_cleanup);
+                }
             }
 
             /* Cleanup any intermediate results and state stored in the context. */

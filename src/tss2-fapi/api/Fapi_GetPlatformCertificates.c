@@ -225,11 +225,13 @@ Fapi_GetPlatformCertificates_Finish(
                 cert = cert_list;
                 size = 0;
                 while (cert) {
-                    memcpy(&cert[size], cert->object, cert->size);
+                    memcpy(&*(certificates)[size], cert->object, cert->size);
                     size += cert->size;
+                    SAFE_FREE(cert->object);
                     cert = cert->next;
                 }
             } else {
+                *certificates = NULL;
                 if (certificatesSize)
                     *certificatesSize = 0;
                 goto_error(r, TSS2_FAPI_RC_NO_CERT,
@@ -240,8 +242,7 @@ Fapi_GetPlatformCertificates_Finish(
     }
 
     /* Cleanup any intermediate results and state stored in the context. */
-    ifapi_free_object_list(cert_list);
-    SAFE_FREE(context->cmd.Provision.capabilityData);
+    ifapi_free_node_list(cert_list);
     context->state =  _FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
@@ -249,8 +250,12 @@ Fapi_GetPlatformCertificates_Finish(
 error:
     /* Cleanup any intermediate results and state stored in the context. */
     context->state =  _FAPI_STATE_INIT;
-    ifapi_free_object_list(cert_list);
-    SAFE_FREE(context->cmd.Provision.capabilityData);
+    NODE_OBJECT_T *cert = cert_list;
+    while (cert) {
+        SAFE_FREE(cert->object);
+        cert = cert->next;
+    }
+    ifapi_free_node_list(cert_list);
     SAFE_FREE(*certificates);
     return r;
 }
