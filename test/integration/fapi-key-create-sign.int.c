@@ -156,7 +156,10 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
     assert(publicblob != NULL);
     assert(privateblob != NULL);
     assert(policy != NULL);
-    assert(strlen(policy) > ASSERT_SIZE);
+    assert(strlen(policy) == 0);
+
+    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", cert);
+    goto_if_error(r, "Error Fapi_SetCertificate", error);
 
     r = Fapi_Sign(context, "HS/SRK/mySignKey", sigscheme,
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
@@ -171,9 +174,6 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
     r = Fapi_VerifySignature(context, "HS/SRK/mySignKey",
                   &digest.buffer[0], digest.size, signature, signatureSize);
     goto_if_error(r, "Error Fapi_VerifySignature", error);
-
-    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", cert);
-    goto_if_error(r, "Error Fapi_SetCertificate", error);
 
     /* Create json date to import binary public and private blobs under the same
        parent key. */

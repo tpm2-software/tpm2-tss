@@ -128,7 +128,11 @@ test_fapi_key_create_sign_policy_provision(FAPI_CONTEXT *context)
     assert(publicblob != NULL);
     assert(privateblob != NULL);
     assert(policy != NULL);
-    assert(strlen(policy) > ASSERT_SIZE);
+    assert(strlen(policy) == 0);
+
+    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", cert);
+    goto_if_error(r, "Error Fapi_SetCertificate", error);
+
 
     r = Fapi_Sign(context, "HS/SRK/mySignKey", sigscheme,
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
@@ -139,9 +143,6 @@ test_fapi_key_create_sign_policy_provision(FAPI_CONTEXT *context)
     assert(certificate != NULL);
     assert(strlen(publicKey) > ASSERT_SIZE);
     assert(strlen(certificate) > ASSERT_SIZE);
-
-    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", cert);
-    goto_if_error(r, "Error Fapi_SetCertificate", error);
 
     r = Fapi_List(context, "/", &path_list);
     goto_if_error(r, "Error Fapi_Delete", error);

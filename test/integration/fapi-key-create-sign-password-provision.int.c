@@ -77,6 +77,11 @@ test_fapi_key_create_sign_password_provision(FAPI_CONTEXT *context)
     char    *publicKey = NULL;
     char    *certificate = NULL;
     char *path_list = NULL;
+    char *policy_name = "/policy/pol_pcr16_0";
+    char *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_pcr16_0.json";
+    FILE *stream = NULL;
+    char *json_policy = NULL;
+    long policy_size;
 
     size_t         publicsize;
     size_t         privatesize;
@@ -112,7 +117,30 @@ test_fapi_key_create_sign_password_provision(FAPI_CONTEXT *context)
     r = Fapi_SetAuthCB(context, auth_callback, NULL);
     goto_if_error(r, "Error SetPolicyAuthCallback", error);
 
-    r = Fapi_CreateKey(context, "HS/SRK/mySignKey", SIGN_TEMPLATE, "",
+    stream = fopen(policy_file, "r");
+    if (!stream) {
+        LOG_ERROR("File %s does not exist", policy_file);
+        goto error;
+    }
+    fseek(stream, 0L, SEEK_END);
+    policy_size = ftell(stream);
+    fclose(stream);
+    json_policy = malloc(policy_size + 1);
+    goto_if_null(json_policy,
+            "Could not allocate memory for the JSON policy",
+            TSS2_FAPI_RC_MEMORY, error);
+    stream = fopen(policy_file, "r");
+    ssize_t ret = read(fileno(stream), json_policy, policy_size);
+    if (ret != policy_size) {
+        LOG_ERROR("IO error %s.", policy_file);
+        goto error;
+    }
+    json_policy[policy_size] = '\0';
+
+    r = Fapi_Import(context, policy_name, json_policy);
+    goto_if_error(r, "Error Fapi_Import", error);
+
+    r = Fapi_CreateKey(context, "HS/SRK/mySignKey", SIGN_TEMPLATE, policy_name,
                        PASSWORD);
 
     goto_if_error(r, "Error Fapi_CreateKey", error);
@@ -135,6 +163,9 @@ test_fapi_key_create_sign_password_provision(FAPI_CONTEXT *context)
     assert(policy != NULL);
     assert(strlen(policy) > ASSERT_SIZE);
 
+    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", cert);
+    goto_if_error(r, "Error Fapi_SetCertificate", error);
+
     r = Fapi_Sign(context, "HS/SRK/mySignKey", sigscheme,
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
                   &publicKey, &certificate);
@@ -144,9 +175,6 @@ test_fapi_key_create_sign_password_provision(FAPI_CONTEXT *context)
     assert(certificate != NULL);
     assert(strlen(publicKey) > ASSERT_SIZE);
     assert(strlen(certificate) > ASSERT_SIZE);
-
-    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", cert);
-    goto_if_error(r, "Error Fapi_SetCertificate", error);
 
     r = Fapi_List(context, "/", &path_list);
     goto_if_error(r, "Error Fapi_Delete", error);
@@ -169,6 +197,7 @@ test_fapi_key_create_sign_password_provision(FAPI_CONTEXT *context)
     SAFE_FREE(publicKey);
     SAFE_FREE(certificate);
     SAFE_FREE(path_list);
+    SAFE_FREE(json_policy);
     return EXIT_SUCCESS;
 
 error:
@@ -180,6 +209,7 @@ error:
     SAFE_FREE(publicKey);
     SAFE_FREE(certificate);
     SAFE_FREE(path_list);
+    SAFE_FREE(json_policy);
     return EXIT_FAILURE;
 }
 
