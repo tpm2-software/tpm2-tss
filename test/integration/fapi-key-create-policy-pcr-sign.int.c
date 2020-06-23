@@ -99,7 +99,7 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
 
     r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", "-----BEGIN "\
         "CERTIFICATE-----[...]-----END CERTIFICATE-----");
-    goto_if_error(r, "Error Fapi_CreateKey", error);
+    goto_if_error(r, "Error Fapi_SetCertificate", error);
 
     size_t signatureSize = 0;
 
@@ -178,12 +178,16 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_CreateKey", error);
     signatureSize = 0;
 
+    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", "-----BEGIN "  \
+        "CERTIFICATE-----[...]-----END CERTIFICATE-----");
+    goto_if_error(r, "Error Fapi_CreateKey", error);
+
     signature = NULL;
     publicKey = NULL;
     certificate = NULL;
     r = Fapi_Sign(context, "/HS/SRK/mySignKey", NULL,
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, NULL);
+                  &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
     assert(signature != NULL);
     assert(publicKey != NULL);
@@ -199,6 +203,7 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     fprintf(stderr, "\nPolicy from key:\n%s\n", policy);
 
     SAFE_FREE(policy);
+    SAFE_FREE(certificate);
 
     policy = NULL;
     r = Fapi_ExportPolicy(context, policy_pcr_read, &policy);

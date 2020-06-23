@@ -73,6 +73,10 @@ test_fapi_quote(FAPI_CONTEXT *context)
     r = Fapi_CreateKey(context, "HS/SRK/mySignKey", "sign,noDa", "", NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
+   r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", "-----BEGIN "  \
+        "CERTIFICATE-----[...]-----END CERTIFICATE-----");
+    goto_if_error(r, "Error Fapi_SetCertificate", error);
+
     uint8_t qualifyingData[20] = {
         0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
         0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f
@@ -98,6 +102,9 @@ test_fapi_quote(FAPI_CONTEXT *context)
     assert(strlen(quoteInfo) > ASSERT_SIZE);
     assert(strlen(pcrEventLog) > ASSERT_SIZE);
     assert(strlen(certificate) > ASSERT_SIZE);
+
+    LOG_INFO("\npcrEventLog: %s\n", pcrEventLog);
+
 
     r = Fapi_ExportKey(context, "HS/SRK/mySignKey", NULL, &export_data);
     goto_if_error(r, "Export.", error);
