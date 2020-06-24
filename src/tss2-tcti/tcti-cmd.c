@@ -32,9 +32,6 @@
 #define LOGMODULE tcti
 #include "util/log.h"
 
-/* child reaping alarm timeout in seconds */
-#define REAP_ALARM_TIMEOUT 5
-
 #define PIPE_READ_END  0
 #define PIPE_WRITE_END 1
 
@@ -137,41 +134,7 @@ enable_sigchld (void)
     return rc;
 }
 
-static child_behavior
-timed_wait (int seconds)
-{
-    struct timespec timeout = {
-        .tv_sec = seconds
-    };
-
-    sigset_t mask;
-    sigemptyset (&mask);
-    sigaddset (&mask, SIGCHLD);
-
-    do {
-        int rc = sigtimedwait (&mask, NULL, &timeout);
-        if (rc < 0) {
-            if (errno == EAGAIN) {
-                LOG_TRACE ("sigtimedwait returned errno EAGAIN");
-                return child_behavior_bad;
-            } else if (errno == EINTR) {
-                LOG_TRACE ("sigtimedwait returned errno EINTR");
-                continue;
-            }
-            /* errno is not EAGAIN or EINTR, something went wrong */
-            LOG_ERROR ("sigtimedwait failed: %s", strerror (errno));
-            return child_behavior_error;
-        }
-
-        /* success, child is well behaved, exit the loop */
-        break;
-
-    } while (1);
-
-    return child_behavior_good;
-}
-
-static void reap_child (pid_t child_pid, int timeout)
+static void reap_child (pid_t child_pid)
 {
     /* The process may have died, so attempt to reap */
     int wstatus = 0;
@@ -188,7 +151,9 @@ static void reap_child (pid_t child_pid, int timeout)
         /* We'll just try the kill logic anyways */
     }
 
-    /* Ask the process nicely to shut down via SIGTERM */
+    /* Ask the process nicely to shut down via SIGTERM, we don't need to reall do anything else
+     * but waitpid since shell always does this nicely.
+     */
     int rc = kill (child_pid, SIGTERM);
     if (rc < 0) {
         /* can't kill it, why? */
@@ -197,27 +162,7 @@ static void reap_child (pid_t child_pid, int timeout)
         goto out;
     }
 
-    /*
-     * SIGINT was sent to child, perform a timed wait (2) for it to
-     * die and reap.
-     */
-    int flags = 0;
-    child_behavior behavior = timed_wait (timeout);
-    if (behavior == child_behavior_bad) {
-        /* bad child, kill it */
-        rc = kill (child_pid, SIGKILL);
-        if (rc < 0) {
-            LOG_WARNING ("Could not send SIGKILL to child: %s",
-                    strerror (errno));
-        }
-    }
-
-    /*
-     * its either a good child, or some error occurred,
-     * either way we just call waitpid (2) without a hang and
-     * attempt to reap. The error message is logged by timed_wait ().
-     */
-    reaped = waitpid (child_pid, &wstatus, flags);
+    reaped = waitpid (child_pid, &wstatus, 0);
     if (reaped < 0) {
         if (errno != ECHILD) {
             LOG_WARNING ("Could not reap child: %s", strerror (errno));
@@ -418,7 +363,7 @@ error_close_stdin:
 
     /* The parent had an issue, so reap the child */
     if (_pid > 0) {
-        reap_child (_pid, REAP_ALARM_TIMEOUT);
+        reap_child (_pid);
     }
 
     return rc;
@@ -509,7 +454,7 @@ void tcti_cmd_finalize (TSS2_TCTI_CONTEXT *tctiContext)
         return;
     }
 
-    reap_child (tcti_cmd->child_pid, REAP_ALARM_TIMEOUT);
+    reap_child (tcti_cmd->child_pid);
 
     fclose (tcti_cmd->source);
     fclose (tcti_cmd->sink);
