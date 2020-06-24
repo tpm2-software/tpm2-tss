@@ -30,6 +30,18 @@ check-programs: $(check_PROGRAMS)
 check_PROGRAMS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
 TESTS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
 
+if UNIT
+check_PROGRAMS += test/helper/tpm_cmd_tcti_dummy
+test_helper_tpm_cmd_tcti_dummy_SOURCES = \
+    src/tss2-tcti/tcti-common.c \
+    test/helper/tpm_cmd_tcti_dummy.c
+
+test_helper_tpm_cmd_tcti_dummy_CFLAGS = $(TESTS_CFLAGS) -I$(srcdir)/test/integration \
+    -I$(srcdir)/src/tss2-tcti -I$(srcdir)/test/unit
+test_helper_tpm_cmd_tcti_dummy_LDFLAGS = $(TESTS_LDFLAGS)
+test_helper_tpm_cmd_tcti_dummy_LDADD = $(TESTS_LDADD)
+endif #UNIT
+
 if ENABLE_INTEGRATION
 check_PROGRAMS += test/helper/tpm_startup
 test_helper_tpm_startup_CFLAGS = $(TESTS_CFLAGS) -I$(srcdir)/test/integration
@@ -95,6 +107,9 @@ TESTS_UNIT += test/unit/tcti-swtpm
 endif
 if ENABLE_TCTI_DEVICE
 TESTS_UNIT += test/unit/tcti-device
+endif
+if ENABLE_TCTI_CMD
+TESTS_UNIT += test/unit/tcti-cmd
 endif
 
 if ESAPI
@@ -377,6 +392,14 @@ test_unit_tcti_swtpm_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=select,--wr
 test_unit_tcti_swtpm_SOURCES = test/unit/tcti-swtpm.c \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-swtpm.c src/tss2-tcti/tcti-swtpm.h
+endif
+
+if ENABLE_TCTI_CMD
+test_unit_tcti_cmd_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_tcti_cmd_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
+test_unit_tcti_cmd_SOURCES = test/unit/tcti-cmd.c \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-cmd.c src/tss2-tcti/tcti-cmd.h test/unit/tcti-cmd-test.h
 endif
 
 test_unit_tctildr_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
