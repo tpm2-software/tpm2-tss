@@ -334,6 +334,27 @@ src_tss2_tcti_libtss2_tcti_mssim_la_SOURCES  = \
     src/tss2-tcti/tcti-mssim.c
 endif # ENABLE_TCTI_MSSIM
 
+# tcti library for sub-process commands
+if ENABLE_TCTI_CMD
+libtss2_tcti_cmd = src/tss2-tcti/libtss2-tcti-cmd.la
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_cmd.h
+lib_LTLIBRARIES += $(libtss2_tcti_cmd)
+pkgconfig_DATA += lib/tss2-tcti-cmd.pc
+EXTRA_DIST += lib/tss2-tcti-cmd.map \
+              lib/tss2-tcti-cmd.def
+
+if HAVE_LD_VERSION_SCRIPT
+if !UNIT
+src_tss2_tcti_libtss2_tcti_cmd_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-cmd.map
+endif # UNIT
+endif # HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_cmd_la_LIBADD   = $(libutil) $(libtss2_mu)
+src_tss2_tcti_libtss2_tcti_cmd_la_SOURCES  = \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-cmd.c \
+    src/tss2-tcti/tcti-cmd.h
+endif # ENABLE_TCTI_CMD
+
 ### TCG TSS SAPI spec library ###
 libtss2_sys = src/tss2-sys/libtss2-sys.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_sys.h
@@ -388,7 +409,7 @@ src_tss2_esys_libtss2_esys_la_SOURCES = $(TSS2_ESYS_SRC) $(TSS2_ESYS_SRC_CRYPTO)
     src/tss2-tcti/tctildr.c src/tss2-tcti/tctildr.h \
     src/tss2-tcti/tctildr-interface.h
 if NO_DL
-src_tss2_esys_libtss2_esys_la_LIBADD += $(libtss2_tcti_device) $(libtss2_tcti_mssim)
+src_tss2_esys_libtss2_esys_la_LIBADD += $(libtss2_tcti_device) $(libtss2_tcti_mssim) $(libtss2_tcti_cmd)
 src_tss2_esys_libtss2_esys_la_SOURCES += src/tss2-tcti/tctildr-nodl.c src/tss2-tcti/tctildr-nodl.h
 else
 src_tss2_esys_libtss2_esys_la_LIBADD += $(LIBADD_DL)
@@ -587,6 +608,7 @@ endef
 
 ### Man Pages
 man3_MANS = \
+    man/man3/Tss2_Tcti_Cmd_Init.3 \
     man/man3/Tss2_Tcti_Device_Init.3 \
     man/man3/Tss2_Tcti_Mssim_Init.3 \
     man/man3/Tss2_TctiLdr_Finalize.3 \
@@ -599,6 +621,7 @@ man7_MANS = \
     man/man7/tss2-tcti-device.7 \
     man/man7/tss2-tcti-swtpm.7 \
     man/man7/tss2-tcti-mssim.7 \
+    man/man7/tss2-tcti-cmd.7 \
     man/man7/tss2-tctildr.7
 
 man/man3/%.3 : man/%.3.in $(srcdir)/man/man-postlude.troff
@@ -634,6 +657,7 @@ EXTRA_DIST += \
     doc/fuzzing.md \
     doc/TSS_block_diagram.png \
     man/man-postlude.troff \
+    man/Tss2_Tcti_Cmd_Init.3.in \
     man/Tss2_Tcti_Device_Init.3.in \
     man/Tss2_Tcti_Mssim_Init.3.in \
     man/Tss2_TctiLdr_Finalize.3.in \
@@ -643,6 +667,7 @@ EXTRA_DIST += \
     man/tss2-tcti-device.7.in \
     man/man7/tss2-tcti-swtpm.7 \
     man/tss2-tcti-mssim.7.in \
+    man/tss2-tcti-cmd.7.in \
     man/tss2-tctildr.7.in
 
 CLEANFILES += \
