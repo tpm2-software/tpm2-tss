@@ -42,52 +42,105 @@ test_fapi_platform_certificates(FAPI_CONTEXT *context)
     ESYS_TR nvHandle = ESYS_TR_NONE;
     uint8_t *certs = NULL;
     size_t certsSize = 0;
+    /* In case NV was already defined, do not delete it in clean up */
+    bool nv_already_defined = false;
+    bool nv_newly_defined = false;
+    size_t nv_size = CERTIFICATE_SIZE;
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
-    TPM2B_AUTH auth = { 0 };
+    TPM2_CAP capability = TPM2_CAP_HANDLES;
+    INT32 property = 0x1000000;
 
-    TPM2B_NV_PUBLIC publicInfo = {
-        .nvPublic = {
-            .nameAlg = TPM2_ALG_SHA256,
-            .attributes = TPMA_NV_PPWRITE | TPMA_NV_AUTHREAD |
-                TPMA_NV_OWNERREAD | TPMA_NV_PLATFORMCREATE | TPMA_NV_NO_DA,
-            .dataSize = CERTIFICATE_SIZE,
-            .nvIndex = MIN_PLATFORM_CERT_HANDLE,
-        },
-    };
+    UINT32 propertyCount = 254;
+    TPMI_YES_NO moreDataAvailable;
+    TPMS_CAPABILITY_DATA *capabilityData;
 
-    r = Esys_NV_DefineSpace(context->esys,
-                            ESYS_TR_RH_PLATFORM,
-                            ESYS_TR_PASSWORD,
-                            ESYS_TR_NONE,
-                            ESYS_TR_NONE,
-                            &auth,
-                            &publicInfo,
-                            &nvHandle);
-    goto_if_error(r, "Error Esys_NV_DefineSpace", error);
+    capabilityData = NULL;
+    r = Esys_GetCapability(context->esys,
+        ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+        capability, property,
+        propertyCount,
+        &moreDataAvailable,
+        &capabilityData);
+    goto_if_error(r, "Error Esys_GetCapability", error);
 
-    TPM2B_MAX_NV_BUFFER nv_test_data = { .size = CERTIFICATE_SIZE,
-                                         .buffer={0x61, 0x61, 0x61, 0x61, 0x61,
-                                            0x61, 0x61, 0x61, 0x61, 0x61, 0x61,
-                                            0x61, 0x61, 0x61, 0x61}};
+    int count = capabilityData->data.handles.count;
+    for(int i = 0; i < count; i++){
+        if(capabilityData->data.handles.handle[i] == MIN_PLATFORM_CERT_HANDLE){
+            nv_already_defined = true;
+            break;
+        }
+    }
+    SAFE_FREE(capabilityData);
 
-    r = Esys_NV_Write(context->esys,
-                  ESYS_TR_RH_PLATFORM,
-                  nvHandle,
-                  ESYS_TR_PASSWORD,
-                  ESYS_TR_NONE,
-                  ESYS_TR_NONE,
-                  &nv_test_data,
-                  0);
-    goto_if_error(r, "Error Esys_NV_Write", error);
+    if(nv_already_defined){
+        TPM2B_NV_PUBLIC *nvPublic = NULL;
+        TPM2B_NAME *nvName = NULL;
+        r = Esys_NV_ReadPublic(context->esys,
+                               nvHandle,
+                               ESYS_TR_NONE,
+                               ESYS_TR_NONE,
+                               ESYS_TR_NONE,
+                               &nvPublic,
+                               &nvName);
+        goto_if_error(r, "Error: nv read public", error);
 
-    if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH ||
-        (r & ~TPM2_RC_N_MASK) == TPM2_RC_HIERARCHY) {
-        /* Platform authorization not possible test will be skipped */
-        LOG_WARNING("Platform authorization not possible.");
-        goto skip;
+        LOG_INFO("nvPublic Size %d\n", nvPublic->nvPublic.dataSize);
+
+        nv_size = nvPublic->nvPublic.dataSize;
+        LOG_INFO("NV size: %zu", nv_size);
+    }
+
+    if(!nv_already_defined){
+
+        TPM2B_AUTH auth = { 0 };
+
+        TPM2B_NV_PUBLIC publicInfo = {
+            .nvPublic = {
+                .nameAlg = TPM2_ALG_SHA256,
+                .attributes = TPMA_NV_PPWRITE | TPMA_NV_AUTHREAD |
+                    TPMA_NV_OWNERREAD | TPMA_NV_PLATFORMCREATE | TPMA_NV_NO_DA,
+                .dataSize = CERTIFICATE_SIZE,
+                .nvIndex = MIN_PLATFORM_CERT_HANDLE,
+            },
+        };
+
+        r = Esys_NV_DefineSpace(context->esys,
+                                ESYS_TR_RH_PLATFORM,
+                                ESYS_TR_PASSWORD,
+                                ESYS_TR_NONE,
+                                ESYS_TR_NONE,
+                                &auth,
+                                &publicInfo,
+                                &nvHandle);
+
+        if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH ||
+            (r & ~TPM2_RC_N_MASK) == TPM2_RC_HIERARCHY) {
+            /* Platform authorization not possible test will be skipped */
+            LOG_WARNING("Platform authorization not possible.");
+            goto skip;
+        }
+
+        goto_if_error(r, "Error Esys_NV_DefineSpace", error);
+
+        nv_newly_defined = true;
+
+        TPM2B_MAX_NV_BUFFER nv_test_data = { .size = CERTIFICATE_SIZE,
+                                             .buffer={0x61, 0x61, 0x61, 0x61, 0x61,
+                                                0x61, 0x61, 0x61, 0x61, 0x61, 0x61,
+                                                0x61, 0x61, 0x61, 0x61}};
+
+        r = Esys_NV_Write(context->esys,
+                      ESYS_TR_RH_PLATFORM,
+                      nvHandle,
+                      ESYS_TR_PASSWORD,
+                      ESYS_TR_NONE,
+                      ESYS_TR_NONE,
+                      &nv_test_data,
+                      0);
+        goto_if_error(r, "Error Esys_NV_Write", error);
     }
 
     r = Fapi_GetPlatformCertificates(context, &certs, &certsSize);
@@ -95,18 +148,20 @@ test_fapi_platform_certificates(FAPI_CONTEXT *context)
         goto skip;
     goto_if_error(r, "Error Fapi_GetPlatformCertificates", error);
     assert(certs != NULL);
-    assert(certsSize == CERTIFICATE_SIZE);
+    assert(certsSize == nv_size);
 
     Fapi_Free(certs);
 
-    r = Esys_NV_UndefineSpace(context->esys,
-                          ESYS_TR_RH_PLATFORM,
-                          nvHandle,
-                          ESYS_TR_PASSWORD,
-                          ESYS_TR_NONE,
-                          ESYS_TR_NONE
-                          );
-    goto_if_error(r, "Error: NV_UndefineSpace", error);
+    if(nv_newly_defined){
+        r = Esys_NV_UndefineSpace(context->esys,
+                              ESYS_TR_RH_PLATFORM,
+                              nvHandle,
+                              ESYS_TR_PASSWORD,
+                              ESYS_TR_NONE,
+                              ESYS_TR_NONE
+                              );
+        goto_if_error(r, "Error: NV_UndefineSpace", error);
+    }
 
     /* Cleanup */
     r = Fapi_Delete(context, "/");
@@ -115,10 +170,22 @@ test_fapi_platform_certificates(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
+    if(nv_newly_defined){
+        Esys_NV_UndefineSpace(context->esys,
+            ESYS_TR_RH_PLATFORM, nvHandle,
+            ESYS_TR_PASSWORD, ESYS_TR_NONE,
+            ESYS_TR_NONE);
+    }
     Fapi_Delete(context, "/");
     return EXIT_FAILURE;
 
  skip:
+    if(nv_newly_defined){
+        Esys_NV_UndefineSpace(context->esys,
+            ESYS_TR_RH_PLATFORM, nvHandle,
+            ESYS_TR_PASSWORD, ESYS_TR_NONE,
+            ESYS_TR_NONE);
+    }
     Fapi_Delete(context, "/");
     return EXIT_SKIP;
 }
