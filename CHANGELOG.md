@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Added Esys_GetSysContext() SAPI function
 - Added the with-sanitizer configure option
 - Added CI for FreeBSD
+- Added tcti-cmd
 
 ### Changed
 - Changed MSSIM TCTI to be async capable
