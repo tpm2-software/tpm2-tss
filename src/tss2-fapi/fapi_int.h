@@ -532,6 +532,10 @@ typedef struct {
     char *intermed_crt;
     char *root_crt;
     TPMA_PERMANENT auth_state;
+    ESYS_TR srk_esys_handle;
+    ESYS_TR ek_esys_handle;
+    ESYS_TR srk_tpm_handle;
+    ESYS_TR ek_tpm_handle;
 } IFAPI_Provision;
 
 /** The data structure holding internal state of regenerate primary key.
@@ -1123,8 +1127,8 @@ struct FAPI_CONTEXT {
     ESYS_TR policy_session;          /**< The policy session used by FAPI  */
     ESYS_TR ek_handle;
     ESYS_TR srk_handle;
-    bool ek_persistent;
-    bool srk_persistent;
+    TPMI_DH_PERSISTENT ek_persistent;
+    TPMI_DH_PERSISTENT srk_persistent;
     IFAPI_SESSION_TYPE session_flags;
     TPMA_SESSION session1_attribute_flags;
     TPMA_SESSION session2_attribute_flags;
