@@ -3,6 +3,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [2.4.2-rc1]
+### Fixed
+- Fix ESYS Shared secret calculation
+- fapi: fixed doxygen warning
+- Fix copying of primary template during key loading.
+- Fix some wrong format directives in debug statements.
+- Fix usage of hierarchy and authentication in Fapi_GetCertificate und Fapi_Delete
+- Fix unallocated return buffers which may have lead to segfaults in tooling
+
+### CHANGED
+- Add some checks to Fapi_Provisioning to avoid nasty failure states
+- Dont overwrite or delete FAPI storage objects and directories
+- Remove obsolete test fapi-key-create-policy-password-sign.int.c
+- Check hierarchy needed for EvictControl for deleting objects in FAPI.
+- Fapi_PcrExtend: Check event log file before calling the TPM.
+
 ## [2.4.2-rc0]
 ### Fixed
 - Fixed usage of persistent handles.
