@@ -25,6 +25,7 @@
 #define NV_SIZE 1200
 
 #define PASSWORD "abc"
+#define USER_DATA "my user data"
 
 static char *password;
 
@@ -53,6 +54,11 @@ action_callback(
     void *userData)
 {
     (void)(userData);
+
+    assert(objectPath != NULL);
+    assert(action != NULL);
+
+    assert(strlen(userData) == strlen((char*)USER_DATA));
 
     if (strcmp(objectPath, "/nv/Owner/myNV") != 0) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Unexpected path");
@@ -151,7 +157,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
 
     SAFE_FREE(json_policy);
 
-    r = Fapi_SetPolicyActionCB(context, action_callback, "");
+    r = Fapi_SetPolicyActionCB(context, action_callback, USER_DATA);
     goto_if_error(r, "Error Fapi_SetPolicyActionCB", error);
 
     /* Test with policy action */

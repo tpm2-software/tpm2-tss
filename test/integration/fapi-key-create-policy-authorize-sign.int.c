@@ -27,6 +27,10 @@
 
 static bool cb_called = false;
 
+#define OBJECT_PATH "HS/SRK/mySignKey"
+#define USER_DATA "my user data"
+#define DESCRIPTION "PolicyAuthorize"
+
 static TSS2_RC
 branch_callback(
     char   const *objectPath,
@@ -39,9 +43,24 @@ branch_callback(
     (void) description;
     (void) userData;
 
+    char *profile_path;
+
+    assert(description != NULL);
+    assert(userData != NULL);
+    assert(branchNames != NULL);
+
     if (!objectPath) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "No path.");
     }
+
+    int size = asprintf (&profile_path, "%s/%s", fapi_profile, OBJECT_PATH);
+    if (size == -1)
+        return TSS2_FAPI_RC_MEMORY;
+
+    assert(strlen(objectPath) == strlen(profile_path));
+    free(profile_path);
+    assert(strlen(userData) == strlen((char*)USER_DATA));
+    assert(strlen(description) == strlen(DESCRIPTION));
 
     if (numBranches != 2) {
         LOG_ERROR("Wrong number of branches");
@@ -117,7 +136,7 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     r = pcr_reset(context, 16);
     goto_if_error(r, "Error pcr_reset", error);
 
-    r = Fapi_SetBranchCB(context, branch_callback, NULL);
+    r = Fapi_SetBranchCB(context, branch_callback, USER_DATA);
     goto_if_error(r, "Error SetPolicybranchselectioncallback", error);
 
     /* Read in the first policy */
@@ -231,7 +250,7 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     /* Create the actual key */
-    r = Fapi_CreateKey(context, "HS/SRK/mySignKey", "sign, noda",
+    r = Fapi_CreateKey(context, OBJECT_PATH, "sign, noda",
                        policy_name_authorize_outer, NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
@@ -254,7 +273,7 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
                        "", NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
-    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", "-----BEGIN "\
+    r = Fapi_SetCertificate(context, OBJECT_PATH, "-----BEGIN "\
         "CERTIFICATE-----[...]-----END CERTIFICATE-----");
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
@@ -271,7 +290,7 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
         }
     };
 
-    r = Fapi_Sign(context, "HS/SRK/mySignKey", NULL,
+    r = Fapi_Sign(context, OBJECT_PATH, NULL,
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
                   &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
