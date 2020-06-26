@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include <assert.h>
 
 #include "tss2_fapi.h"
@@ -20,6 +21,10 @@
 #include "test-fapi.h"
 
 #define PASSWORD "abc"
+#define USER_DATA "my user data"
+#define DESCRIPTION "my description"
+#define FAPI_PROFILE fapi_profile
+#define OBJECT_PATH "HS/SRK/mySignKey"
 
 static TSS2_RC
 auth_callback(
@@ -31,9 +36,23 @@ auth_callback(
     (void)description;
     (void)userData;
 
+    char *profile_path;
+
+    assert(description != NULL);
+    assert(userData != NULL);
+
     if (!objectPath) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "No path.");
     }
+
+    int size = asprintf (&profile_path, "%s/%s", fapi_profile, OBJECT_PATH);
+    if (size == -1)
+        return TSS2_FAPI_RC_MEMORY;
+
+    assert(strlen(objectPath) == strlen(profile_path));
+    free(profile_path);
+    assert(strlen(userData) == strlen((char*)USER_DATA));
+    assert(strlen(description) == strlen(DESCRIPTION));
 
     *auth = PASSWORD;
     return TSS2_RC_SUCCESS;
@@ -70,10 +89,13 @@ test_fapi_key_change_auth(FAPI_CONTEXT *context)
 
     goto_if_error(r, "Error Fapi_Provision", error);
 
-    r = Fapi_CreateKey(context, "HS/SRK/mySignKey", "sign,noDa", "", NULL);
+    r = Fapi_CreateKey(context, OBJECT_PATH, "sign,noDa", "", NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
-    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", "-----BEGIN "\
+    r = Fapi_SetDescription(context, OBJECT_PATH, DESCRIPTION);
+    goto_if_error(r, "Error Fapi_SetDescription", error);
+
+    r = Fapi_SetCertificate(context, OBJECT_PATH, "-----BEGIN "\
         "CERTIFICATE-----[...]-----END CERTIFICATE-----");
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
@@ -87,13 +109,13 @@ test_fapi_key_change_auth(FAPI_CONTEXT *context)
         }
     };
 
-    r = Fapi_ChangeAuth(context, "HS/SRK/mySignKey", PASSWORD);
+    r = Fapi_ChangeAuth(context, OBJECT_PATH, PASSWORD);
     goto_if_error(r, "Error Fapi_Provision", error);
 
-    r = Fapi_SetAuthCB(context, auth_callback, "");
+    r = Fapi_SetAuthCB(context, auth_callback, USER_DATA);
     goto_if_error(r, "Error SetPolicyAuthCallback", error);
 
-    r = Fapi_Sign(context, "HS/SRK/mySignKey", NULL,
+    r = Fapi_Sign(context, OBJECT_PATH, NULL,
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
                   &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Provision", error);
