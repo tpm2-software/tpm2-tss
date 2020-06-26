@@ -27,6 +27,9 @@ matrix:
     compiler: clang
   - env: DOCKER_TAG=ubuntu-20.04
     compiler: clang
+  # mbedTLS testing
+  - env: DOCKER_TAG=ubuntu-20.04 WITH_CRYPTO=mbed
+    compiler: clang
   # tcti async and partial read testing
   - env: DOCKER_TAG=fedora-32 WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt
     compiler: gcc
