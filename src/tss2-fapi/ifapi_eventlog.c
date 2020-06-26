@@ -207,7 +207,7 @@ loop:
  *
  * @param[in,out] eventlog The context area for the eventlog.
  * @param[in,out] io The context area for the asynchronous io module.
- * @param[in] event The event to be appended to the eventlog.
+ * @param[in] pct The pcr register to be extended.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_IO_ERROR if creation of log_dir failed or log_dir is not writable.
  * @retval TSS2_FAPI_RC_MEMORY if memory allocation failed.
@@ -219,11 +219,10 @@ TSS2_RC
 ifapi_eventlog_append_async(
     IFAPI_EVENTLOG *eventlog,
     IFAPI_IO *io,
-    const IFAPI_EVENT *event)
+    TPM2_HANDLE pcr)
 {
     check_not_null(eventlog);
     check_not_null(io);
-    check_not_null(event);
 
     TSS2_RC r;
     char *event_log_file;
@@ -233,11 +232,9 @@ ifapi_eventlog_append_async(
         return TSS2_FAPI_RC_BAD_SEQUENCE;
     }
 
-    eventlog->event = *event;
-
     /* Construct the filename for the eventlog file */
     r = ifapi_asprintf(&event_log_file, "%s/%s%i",
-                       eventlog->log_dir, IFAPI_PCR_LOG_FILE, event->pcr);
+                       eventlog->log_dir, IFAPI_PCR_LOG_FILE, pcr);
     return_if_error(r, "Out of memory.");
 
     /* Initiate the reading of the eventlog file */
@@ -254,7 +251,7 @@ ifapi_eventlog_append_async(
     return TSS2_RC_SUCCESS;
 }
 
-/** Append an event to the existing event log.
+/** Check event log format before appaingi an event to the existing event log.
  *
  * Call after ifapi_eventlog_get_async.
  *
@@ -273,7 +270,7 @@ ifapi_eventlog_append_async(
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_eventlog_append_finish(
+ifapi_eventlog_append_check(
     IFAPI_EVENTLOG *eventlog,
     IFAPI_IO *io)
 {
@@ -281,67 +278,115 @@ ifapi_eventlog_append_finish(
     check_not_null(io);
 
     TSS2_RC r;
-    char *logstr = NULL, *event_log_file;
-    const char *logstr2 = NULL;
-    json_object *log, *event = NULL;
+    char *logstr = NULL;
 
     switch (eventlog->state) {
+    statecase(eventlog->state, IFAPI_EVENTLOG_STATE_APPENDING)
+        /* No old log data can be read. */
+        eventlog->log = json_object_new_array();
+        return_if_null(eventlog->log, "Out of memory", TSS2_FAPI_RC_MEMORY);
+
+        return TSS2_RC_SUCCESS;
+
     statecase(eventlog->state, IFAPI_EVENTLOG_STATE_READING)
         /* Finish the reading of the eventlog file and return it directly to the output parameter */
         r = ifapi_io_read_finish(io, (uint8_t **)&logstr, NULL);
         return_try_again(r);
         return_if_error(r, "read_finish failed");
-        fallthrough;
 
-    statecase(eventlog->state, IFAPI_EVENTLOG_STATE_APPENDING)
         /* If a log was read, we deserialize it to JSON. Otherwise we start a new log. */
         if (logstr) {
-            log = json_tokener_parse(logstr);
+            eventlog->log = json_tokener_parse(logstr);
             SAFE_FREE(logstr);
-            return_if_null(log, "JSON parsing error", TSS2_FAPI_RC_BAD_VALUE);
+            return_if_null(eventlog->log, "JSON parsing error", TSS2_FAPI_RC_BAD_VALUE);
 
              /* libjson-c does not deliver an array if array has only one element */
-            json_type jso_type = json_object_get_type(log);
+            json_type jso_type = json_object_get_type(eventlog->log);
             if (jso_type != json_type_array) {
                 json_object *json_array = json_object_new_array();
-                json_object_array_add(json_array, log);
-                log = json_array;
+                json_object_array_add(json_array, eventlog->log);
+                eventlog->log = json_array;
             }
         } else {
-            log = json_object_new_array();
-            return_if_null(log, "Out of memory", TSS2_FAPI_RC_MEMORY);
+            eventlog->log = json_object_new_array();
+            return_if_null(eventlog->log, "Out of memory", TSS2_FAPI_RC_MEMORY);
         }
+        break;
+
+    statecasedefault(eventlog->state);
+    }
+    eventlog->state = IFAPI_EVENTLOG_STATE_APPENDING;
+
+    return TSS2_RC_SUCCESS;
+}
+
+/** Append an event to the existing event log.
+ *
+ * Call after ifapi_eventlog_get_async.
+ *
+ * @param[in,out] eventlog The context area for the eventlog.
+ * @param[in,out] io The context area for the asynchronous io module.
+ * @param[in] pcr_event The event to be appended to the eventlog.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_IO_ERROR if creation of log_dir failed or log_dir is not writable.
+ * @retval TSS2_FAPI_RC_MEMORY if memory allocation failed.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if the I/O operation is not finished yet and this function needs
+ *         to be called again.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_eventlog_append_finish(
+    IFAPI_EVENTLOG *eventlog,
+    IFAPI_IO *io,
+    const IFAPI_EVENT *pcr_event)
+{
+    check_not_null(eventlog);
+    check_not_null(io);
+    check_not_null(pcr_event);
+
+    TSS2_RC r;
+    char *event_log_file = NULL;
+    const char *logstr2 = NULL;
+    json_object *event = NULL;
+
+    switch (eventlog->state) {
+    statecase(eventlog->state, IFAPI_EVENTLOG_STATE_APPENDING)
+        eventlog->event = *pcr_event;
 
         /* Extend the eventlog with the data */
-        eventlog->event.recnum = json_object_array_length(log) + 1;
+        eventlog->event.recnum = json_object_array_length(eventlog->log) + 1;
 
         r = ifapi_json_IFAPI_EVENT_serialize(&eventlog->event, &event);
         if (r) {
-            json_object_put(log);
-            LOG_ERROR("Error serializing event data");
-            return TSS2_FAPI_RC_BAD_VALUE;
+            json_object_put(eventlog->log);
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Error serializing event data", error_cleanup);
         }
 
-        json_object_array_add(log, event);
-        logstr2 = json_object_to_json_string_ext(log, JSON_C_TO_STRING_PRETTY);
+        json_object_array_add(eventlog->log, event);
+        logstr2 = json_object_to_json_string_ext(eventlog->log, JSON_C_TO_STRING_PRETTY);
 
         /* Construct the filename for the eventlog file */
         r = ifapi_asprintf(&event_log_file, "%s/%s%i",
                            eventlog->log_dir, IFAPI_PCR_LOG_FILE, eventlog->event.pcr);
-        return_if_error(r, "Out of memory.");
+        goto_if_error(r, "Create file name", error_cleanup);
 
         /* Start writing the eventlog back to disk */
         r = ifapi_io_write_async(io, event_log_file, (uint8_t *) logstr2, strlen(logstr2));
-        free(event_log_file);
-        json_object_put(log); /* this also frees logstr2 */
-        return_if_error(r, "write_async failed");
+        SAFE_FREE(event_log_file);
+        json_object_put(eventlog->log); /* this also frees logstr2 */
+        goto_if_error(r, "write_async failed", error_cleanup);
         fallthrough;
 
     statecase(eventlog->state, IFAPI_EVENTLOG_STATE_WRITING)
         /* Finish writing the eventlog */
         r = ifapi_io_write_finish(io);
         return_try_again(r);
-        return_if_error(r, "read_finish failed");
+        goto_if_error(r, "read_finish failed", error_cleanup);
 
         eventlog->state = IFAPI_EVENTLOG_STATE_INIT;
         break;
@@ -350,6 +395,12 @@ ifapi_eventlog_append_finish(
     }
 
     return TSS2_RC_SUCCESS;
+
+ error_cleanup:
+    SAFE_FREE(event_log_file);
+    if (eventlog->log)
+        json_object_put(eventlog->log);
+    return r;
 }
 
 
