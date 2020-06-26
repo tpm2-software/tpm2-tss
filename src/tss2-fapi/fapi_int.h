@@ -279,6 +279,7 @@ typedef struct {
     FAPI_QUOTE_INFO fapi_quote_info;
     uint8_t *pcrValue;
     size_t pcrValueSize;
+    char *event_log_file;
 } IFAPI_PCR;
 
 /** The data structure holding internal state of Fapi_SetDescription.
@@ -903,6 +904,7 @@ enum _FAPI_STATE {
 
     PCR_EXTEND_WAIT_FOR_SESSION,
     PCR_EXTEND_WAIT_FOR_GET_CAP,
+    PCR_EXTEND_READ_EVENT_LOG,
     PCR_EXTEND_APPEND_EVENT_LOG,
     PCR_EXTEND_FINISH,
     PCR_EXTEND_CLEANUP,
