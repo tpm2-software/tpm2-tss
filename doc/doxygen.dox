@@ -2506,10 +2506,14 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
 \fn TSS2_RC ifapi_eventlog_append_async(
     IFAPI_EVENTLOG *eventlog,
     IFAPI_IO *io,
-    const IFAPI_EVENT *event)
-\fn TSS2_RC ifapi_eventlog_append_finish(
+    TPM2_HANDLE pcr)
+\fn TSS2_RC ifapi_eventlog_append_check(
     IFAPI_EVENTLOG *eventlog,
     IFAPI_IO *io)
+\fn TSS2_RC ifapi_eventlog_append_finish(
+    IFAPI_EVENTLOG *eventlog,
+    IFAPI_IO *io,
+    const IFAPI_EVENT *pcr_event)
 \fn TSS2_RC ifapi_eventlog_get_async(
     IFAPI_EVENTLOG *eventlog,
     IFAPI_IO *io,
