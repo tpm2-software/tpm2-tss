@@ -30,6 +30,39 @@
 
 #define EK_CERT_RANGE (0x01c07fff)
 
+
+/** Error cleanup of provisioning
+ *
+ * The profile directory will be deleted.
+ * A persistent SRK or EK will be deleted if possible without authorization
+ * for the owner hierarchy.
+ */
+void
+error_cleanup_provisioning(FAPI_CONTEXT *context) {
+    TPM2_HANDLE dmy_handle;
+    if (context) {
+        ifapi_session_clean(context);
+        if (context->esys) {
+            IFAPI_Provision * pctx = &context->cmd.Provision;
+            if (pctx->ek_tpm_handle && pctx->ek_esys_handle) {
+                Esys_EvictControl(context->esys, ESYS_TR_RH_OWNER,
+                                  pctx->ek_esys_handle,
+                                  ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                                  pctx->ek_tpm_handle, &dmy_handle);
+            }
+            if (pctx->srk_tpm_handle &&pctx->srk_esys_handle) {
+                Esys_EvictControl(context->esys, ESYS_TR_RH_OWNER,
+                                  pctx->srk_esys_handle,
+                                  ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                                  pctx->srk_tpm_handle, &dmy_handle);
+            }
+        }
+        if (context->keystore.systemdir && context->config.profile_name)
+            ifapi_keystore_remove_directories(&context->keystore,
+                                              context->config.profile_name);
+    }
+}
+
 /** One-Call function for the initial FAPI provisioning.
  *
  * Provisions a TSS with its TPM. This includes the setting of important passwords
@@ -990,6 +1023,8 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             goto_if_error(r, "Evict control failed", error_cleanup);
 
             /* The SRK was made persistent and can be written to key store. */
+            command->srk_tpm_handle = pkeyObject->misc.key.persistent_handle;
+            command->srk_esys_handle = pkeyObject->handle;
             context->state = PROVISION_SRK_WRITE_PREPARE;
             return TSS2_FAPI_RC_TRY_AGAIN;
 
@@ -1013,6 +1048,9 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
             goto_if_error(r, "Evict control failed", error_cleanup);
+
+            command->ek_tpm_handle = pkeyObject->misc.key.persistent_handle;
+            command->ek_esys_handle = pkeyObject->handle;
 
             context->state = PROVISION_INIT_GET_CAP2;
             return TSS2_FAPI_RC_TRY_AGAIN;
@@ -1357,6 +1395,8 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 
 error_cleanup:
     /* Primaries might not have been flushed in error cases */
+    if (r)
+        error_cleanup_provisioning(context);
     ifapi_cleanup_ifapi_object(pkeyObject);
     ifapi_cleanup_ifapi_object(hierarchy_hs);
     ifapi_cleanup_ifapi_object(hierarchy_he);
