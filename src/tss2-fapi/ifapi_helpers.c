@@ -59,7 +59,8 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
     type_dup = strdup(type);
     return_if_null(type_dup, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-    char *flag = strtok(type_dup, ", ");
+    char *saveptr;
+    char *flag = strtok_r(type_dup, ", ", &saveptr);
 
     /* The default store will be the user directory */
     template->system = TPM2_NO;
@@ -92,7 +93,7 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid flag: %s",
                        error, flag);
         }
-        flag = strtok(NULL, " ,");
+        flag = strtok_r(NULL, " ,", &saveptr);
     }
     if (exportable) {
         /* Clear flags preventing duplication */
@@ -159,7 +160,8 @@ ifapi_set_nv_flags(const char *type, IFAPI_NV_TEMPLATE *template,
     /* The default store will be the user directory */
     template->system = TPM2_NO;
 
-    char *flag = strtok(type_dup, ", ");
+    char *saveptr;
+    char *flag = strtok_r(type_dup, ", ", &saveptr);
 
     /* Loop over all comma or space separated flags */
     while (flag != NULL) {
@@ -187,7 +189,7 @@ ifapi_set_nv_flags(const char *type, IFAPI_NV_TEMPLATE *template,
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid flag: %s",
                        error, flag);
         }
-        flag = strtok(NULL, " ,");
+        flag = strtok_r(NULL, " ,", &saveptr);
     }
     if (type_count > 1) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
@@ -309,19 +311,16 @@ ifapi_hierarchy_path_p(const char *path)
         start = strchr(&path[pos1], IFAPI_FILE_DELIM_CHAR);
         if (start) {
             pos2 = (int)(start - &path[pos1]);
-            if (strncmp("/", &path[pos2], 1) == 0)
+            if (strncmp("/", &path[pos1 + pos2], 1) == 0)
                 pos2 += 1;
-            if (strncmp("/", &path[pos2], 1) == 0)
+            if (strncmp("/", &path[pos1 + pos2], 1) == 0)
                 pos2 += 1;
         }
     }
     /* Check whether only hierarchy is specified in path */
     if ((strncasecmp(&path[pos1 + pos2], "HS", 2) == 0 ||
          strncasecmp(&path[pos1 + pos2], "HE", 2) == 0 ||
-         strncasecmp(&path[pos1 + pos2], "HE", 2) == 0 ||
-         strncasecmp(&path[pos1 + pos2], "HP", 2) == 0 ||
-         strncasecmp(&path[pos1 + pos2], "HN", 2) == 0 ||
-         strncasecmp(&path[pos1 + pos2], "HP", 2) == 0)
+         strncasecmp(&path[pos1 + pos2], "HN", 2) == 0)
         && (strlen(path) == pos1 + pos2 + 2 ||
             (strlen(path) == pos1 + pos2 + 3 &&
              path[pos1 + pos2 + 2] == IFAPI_FILE_DELIM_CHAR))){
