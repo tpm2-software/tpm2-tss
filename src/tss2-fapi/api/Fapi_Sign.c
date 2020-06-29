@@ -287,7 +287,8 @@ Fapi_Sign_Finish(
             /* Perform the signing operation using a helper. */
             r = ifapi_key_sign(context, command->key_object,
                     command->padding, &command->digest, &command->tpm_signature,
-                    &command->publicKey, &command->certificate);
+                    &command->publicKey,
+                    (certificate) ? &command->certificate : NULL);
             return_try_again(r);
             goto_if_error(r, "Fapi sign.", error_cleanup);
 

@@ -242,6 +242,10 @@ Fapi_PcrRead_Finish(
 
             /* If no event log was requested the operation is now complete. */
             if (!pcrLog) {
+                if (pcrValue)
+                    *pcrValue = command->pcrValue;
+                if (pcrValueSize)
+                    *pcrValueSize = command->pcrValueSize;
                 context->state = _FAPI_STATE_INIT;
                 break;
             }

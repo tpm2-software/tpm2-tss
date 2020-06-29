@@ -218,6 +218,7 @@ typedef struct {
     size_t data_idx;            /**< Offset in the read buffer */
     const uint8_t *data;        /**< Buffer for data to be written */
     uint8_t *rdata;             /**< Buffer for data to be read */
+    size_t size;                /**< size of rdata */
     IFAPI_OBJECT auth_object;   /**< Object used for authentication */
     IFAPI_OBJECT nv_object;     /**< Deserialized NV object */
     TPM2B_AUTH auth;            /**< The Password */
