@@ -192,9 +192,12 @@ Fapi_GetCertificate_Finish(
             if (keyObject->objectType == IFAPI_EXT_PUB_KEY_OBJ) {
                 strdup_check(*x509certData, keyObject->misc.ext_pub_key.certificate,
                         r, error_cleanup);
-            } else if (x509certData) {
+            } else if (keyObject->objectType == IFAPI_KEY_OBJ)  {
                 strdup_check(*x509certData, keyObject->misc.key.certificate,
                         r, error_cleanup);
+            } else {
+                strdup_check(*x509certData, "",
+                             r, error_cleanup);
             }
 
             context->state = _FAPI_STATE_INIT;
