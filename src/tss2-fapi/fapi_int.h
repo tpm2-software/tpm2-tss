@@ -69,6 +69,7 @@ typedef UINT8 IFAPI_SESSION_TYPE;
 #define IFAPI_PEM_PUBLIC_STRING "-----BEGIN PUBLIC KEY-----"
 #define IFAPI_PEM_PRIVATE_KEY "-----PRIVATE KEY-----"
 #define IFAPI_JSON_TAG_POLICY "policy"
+#define IFAPI_JSON_TAG_OBJECT_TYPE "objectType"
 #define IFAPI_JSON_TAG_DUPLICATE "public_parent"
 
 
@@ -438,6 +439,7 @@ enum IFAPI_HIERACHY_AUTHORIZATION_STATE {
 enum IFAPI_HIERACHY_POLICY_AUTHORIZATION_STATE {
     HIERARCHY_CHANGE_POLICY_INIT = 0,
     HIERARCHY_CHANGE_POLICY_NULL_AUTH_SENT,
+    HIERARCHY_CHANGE_POLICY_AUTHORIZE,
     HIERARCHY_CHANGE_POLICY_AUTH_SENT
 };
 
@@ -476,7 +478,11 @@ typedef struct {
 /** The data structure holding internal state of Provisioning.
  */
 typedef struct {
-    IFAPI_OBJECT hierarchy;     /**< The current used hierarchy for CreatePrimary */
+    IFAPI_OBJECT hierarchy_lockout; /**< The lockout hierarchy */
+    IFAPI_OBJECT hierarchy_hs;      /**< The storage hierarchy */
+    IFAPI_OBJECT hierarchy_he;      /**< The endorsement hierarchy */
+    IFAPI_OBJECT *hierarchy;         /**< The current hierarchy */
+    TPMS_POLICY *hierarchy_policy;  /**< Policy of the current used hierarchy. */
     IFAPI_KEY_TEMPLATE public_templ;  /**< The basic template for the keys public data */
     TPM2B_PUBLIC public;       /**< The public info of the created primary */
     TPM2B_SENSITIVE_CREATE inSensitive;
@@ -503,6 +509,7 @@ typedef struct {
     TPM2B_DIGEST policy_digest;
     char *intermed_crt;
     char *root_crt;
+    TPMA_PERMANENT auth_state;
 } IFAPI_Provision;
 
 /** The data structure holding internal state of regenerate primary key.
@@ -709,6 +716,7 @@ enum _FAPI_STATE_PRIMARY {
     PRIMARY_READ_HIERARCHY,
     PRIMARY_READ_HIERARCHY_FINISH,
     PRIMARY_AUTHORIZE_HIERARCHY,
+    PRIMARY_WAIT_FOR_PRIMARY,
     PRIMARY_HAUTH_SENT,
     PRIMARY_CREATED,
     PRIMARY_VERIFY_PERSISTENT,
@@ -749,7 +757,7 @@ enum _FAPI_STATE {
     INITIALIZE_WAIT_FOR_CAP,
     INITIALIZE_READ_PROFILE,
     INITIALIZE_READ_PROFILE_INIT,
-
+    PROVISION_WAIT_FOR_GET_CAP_AUTH_STATE,
     PROVISION_WAIT_FOR_GET_CAP0,
     PROVISION_WAIT_FOR_GET_CAP1,
     PROVISION_INIT_GET_CAP2,
@@ -760,7 +768,7 @@ enum _FAPI_STATE {
     PROVISION_READ_CERT,
     PROVISION_PREPARE_READ_ROOT_CERT,
     PROVISION_READ_ROOT_CERT,
-    PROVISION_READ_PROFILE,
+    PROVISION_INIT,
     PROVISION_INIT_SRK,
     PROVISION_WAIT_FOR_EK_SESSION,
     PROVISION_WAIT_FOR_SRK_SESSION,
@@ -790,10 +798,13 @@ enum _FAPI_STATE {
     PROVISION_WRITE_EH,
     PROVISION_WRITE_LOCKOUT,
     PROVISION_WRITE_LOCKOUT_PARAM,
+    PROVISION_PREPARE_LOCKOUT_PARAM,
+    PROVISION_AUTHORIZE_LOCKOUT,
     PROVISION_FLUSH_SRK,
     PROVISION_FLUSH_EK,
     PROVISION_CHECK_FOR_VENDOR_CERT,
     PROVISION_GET_VENDOR,
+    PROVISION_PREPARE_GET_CAP_AUTH_STATE,
 
     KEY_CREATE,
 
@@ -1053,6 +1064,7 @@ struct FAPI_CONTEXT {
     enum IFAPI_IO_STATE io_state;
     NODE_OBJECT_T *object_list;
     IFAPI_OBJECT *duplicate_key; /**< Will be needed for policy execution */
+    IFAPI_OBJECT *current_auth_object;
 };
 
 #define VENDOR_IFX  0x49465800

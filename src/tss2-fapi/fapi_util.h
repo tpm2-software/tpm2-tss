@@ -54,7 +54,8 @@ ifapi_init_primary_async(
 TSS2_RC
 ifapi_init_primary_finish(
     FAPI_CONTEXT *context,
-    TSS2_KEY_TYPE ktype);
+    TSS2_KEY_TYPE ktype,
+    IFAPI_OBJECT *hierarchy);
 
 TSS2_RC
 ifapi_session_init(FAPI_CONTEXT *context);
@@ -96,6 +97,9 @@ ifapi_merge_profile_into_template(
 
 TSS2_RC
 ifapi_load_key_async(FAPI_CONTEXT *context, size_t position);
+
+TSS2_RC
+ifapi_load_parent_keys_async(FAPI_CONTEXT *context, char const *keyPath);
 
 TSS2_RC
 ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent);

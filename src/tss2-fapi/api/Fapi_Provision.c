@@ -175,6 +175,8 @@ Fapi_Provision_Async(
     r = ifapi_session_init(context);
     goto_if_error(r, "Initialize Provision", end);
 
+    memset(&context->cmd.Provision, 0, sizeof(IFAPI_Provision));
+
     /* First it will be checked whether the profile is already provisioned. */
     r = ifapi_asprintf(&profile_dir, "%s/%s", context->keystore.systemdir,
                        context->keystore.defaultprofile);
@@ -197,7 +199,7 @@ Fapi_Provision_Async(
     command->capabilityData = NULL;
 
     /* Set the initial state for the finish method. */
-    context->state = PROVISION_READ_PROFILE;
+    context->state = PROVISION_INIT;
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 end:
@@ -254,13 +256,16 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
     size_t hash_size;
     TPMI_ALG_HASH hash_alg;
     TPM2B_DIGEST ek_fingerprint;
+    ESYS_TR auth_session;
 
     /* Check for NULL parameters */
     check_not_null(context);
 
     /* Helpful alias pointers */
     IFAPI_Provision * command = &context->cmd.Provision;
-    IFAPI_OBJECT *hierarchy = &command->hierarchy;
+    IFAPI_OBJECT *hierarchy_hs = &command->hierarchy_hs;
+    IFAPI_OBJECT *hierarchy_he = &command->hierarchy_he;
+    IFAPI_OBJECT *hierarchy_lockout = &command->hierarchy_lockout;
     TPMS_CAPABILITY_DATA **capabilityData = &command->capabilityData;
     IFAPI_NV_Cmds * nvCmd = &context->nv_cmd;
     IFAPI_OBJECT * pkeyObject = &context->createPrimary.pkey_object;
@@ -270,34 +275,54 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
     TPMA_OBJECT *attributes;
 
     switch (context->state) {
-        statecase(context->state, PROVISION_READ_PROFILE);
-            /*
-             * The default values used for profiling will be used from
-             * the default profile.
-             */
+
+        statecase(context->state, PROVISION_INIT);
+
             command->root_crt = NULL;
 
-            /* Prepare the setting of the dictionary attack parameters. */
-            r = Esys_DictionaryAttackParameters_Async(context->esys, ESYS_TR_RH_LOCKOUT,
-                    ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                    defaultProfile->newMaxTries, defaultProfile->newRecoveryTime,
-                    defaultProfile->lockoutRecovery);
-            goto_if_error(r, "Error Esys_DictionaryAttackParameters",
-                          error_cleanup);
-
+            /* Initialize the hierarchy objects. */
+            ifapi_init_hierarchy_object(hierarchy_hs, ESYS_TR_RH_OWNER);
+            strdup_check(hierarchy_hs->misc.hierarchy.description,
+                         "Owner Hierarchy", r, error_cleanup);
+            ifapi_init_hierarchy_object(hierarchy_he, ESYS_TR_RH_ENDORSEMENT);
+            strdup_check(hierarchy_he->misc.hierarchy.description,
+                         "Endorsement Hierarchy", r, error_cleanup);
+            ifapi_init_hierarchy_object(hierarchy_lockout, ESYS_TR_RH_LOCKOUT);
+            strdup_check(hierarchy_lockout->misc.hierarchy.description, "Lockout Hierarchy",
+                         r, error_cleanup);
             fallthrough;
 
-        statecase(context->state, PROVISION_WRITE_LOCKOUT_PARAM);
-            r = Esys_DictionaryAttackParameters_Finish(context->esys);
-            return_try_again(r);
-            goto_if_error_reset_state(r, "DictionaryAttackParameters_Finish",
-                    error_cleanup);
+        statecase(context->state, PROVISION_PREPARE_GET_CAP_AUTH_STATE);
+            /* The storage hierarchy will be used to read certificates from nv ram. */
+            nvCmd->auth_object = *hierarchy_hs;
 
             /* Generate template for checking whether persistent SRK handle
                already exists. */
             r = ifapi_set_key_flags(defaultProfile->srk_template,
                                     false, &command->public_templ);
             goto_if_error(r, "Set key flags for SRK", error_cleanup);
+
+            r = Esys_GetCapability_Async(context->esys,
+                    ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, TPM2_CAP_TPM_PROPERTIES,
+                    TPM2_PT_PERMANENT, 1);
+            goto_if_error(r, "Esys_GetCapability_Async", error_cleanup);
+
+            fallthrough;
+
+        statecase(context->state, PROVISION_WAIT_FOR_GET_CAP_AUTH_STATE);
+            r = Esys_GetCapability_Finish(context->esys, &moreData, capabilityData);
+            return_try_again(r);
+            goto_if_error_reset_state(r, "GetCapablity_Finish", error_cleanup);
+
+            if ((*capabilityData)->data.tpmProperties.tpmProperty[0].property !=
+                TPM2_PT_PERMANENT) {
+                SAFE_FREE(*capabilityData);
+                goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
+                           "TPM2_PT_PERMANENT cannot be determined.", error_cleanup);
+            }
+
+            command->auth_state =  (*capabilityData)->data.tpmProperties.tpmProperty[0].value;
+            SAFE_FREE(*capabilityData);
 
             /* Check the TPM capabilities for the persistent handle. */
             if (command->public_templ.persistent_handle) {
@@ -375,20 +400,17 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             fallthrough;
 
         statecase(context->state, PROVISION_AUTH_EK_NO_AUTH_SENT);
-            r = ifapi_init_primary_finish(context, TSS2_EK);
+            r = ifapi_init_primary_finish(context, TSS2_EK, hierarchy_he);
             return_try_again(r);
             goto_if_error(r, "Init primary finish", error_cleanup);
 
             /* Check whether a persistent EK handle was defined in profile. */
             if (command->public_templ.persistent_handle) {
 
-                /* Initialize hierarchy object used for EK processing. */
-                ifapi_init_hierarchy_object(hierarchy, ESYS_TR_RH_OWNER);
-
                 pkey->persistent_handle = command->public_templ.persistent_handle;
 
                 /* Prepare making the EK permanent. */
-                r = Esys_EvictControl_Async(context->esys, hierarchy->handle,
+                r = Esys_EvictControl_Async(context->esys, hierarchy_hs->handle,
                         pkeyObject->handle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
                         ESYS_TR_NONE, pkey->persistent_handle);
                 goto_if_error(r, "Error Esys EvictControl", error_cleanup);
@@ -516,7 +538,6 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                     return TSS2_FAPI_RC_TRY_AGAIN;
                 }
             }
-            ifapi_init_hierarchy_object(&nvCmd->auth_object, TPM2_RH_OWNER);
 
             /* Create esys object for the NV object of the certificate. */
             r = Esys_TR_FromTPMPublic_Async(context->esys, command->cert_nv_idx,
@@ -567,12 +588,15 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 
         statecase(context->state, PROVISION_READ_CERT);
             TPM2B_PUBLIC public_key;
-            char * root_ca_file;
+            const char * root_ca_file;
 
             /* The NV object of the certificate will be read asynchronous. */
             r = ifapi_nv_read(context, &certData, &certSize);
             return_try_again(r);
             goto_if_error_reset_state(r, " FAPI NV_Read", error_cleanup);
+
+            /* Update storage hierarchy after usage by nv_read. */
+            *hierarchy_hs = nvCmd->auth_object;
 
             /* For storage in key store the certificate will be converted to PEM. */
             r = ifapi_cert_to_pem(certData, certSize, &command->pem_cert,
@@ -658,7 +682,6 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             /* Clean objects used for EK computation */
             ifapi_cleanup_ifapi_object(pkeyObject);
             memset(&command->public_templ, 0, sizeof(IFAPI_KEY_TEMPLATE));
-            SAFE_FREE(hierarchy->misc.hierarchy.description);
             fallthrough;
 
         statecase(context->state, PROVISION_INIT_SRK);
@@ -675,6 +698,48 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             return_try_again(r);
 
             goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
+
+            fallthrough;
+
+        statecase(context->state, PROVISION_PREPARE_LOCKOUT_PARAM);
+             /* The TPM flag lockoutAuthSet will be checked to decide whether a auth value
+                is needed to write the dictionary attack parameters. */
+            if (!hierarchy_lockout->misc.hierarchy.authPolicy.size) {
+                if (command->auth_state & (1 << 2)) {
+                    hierarchy_lockout->misc.hierarchy.with_auth = TPM2_YES;
+                    r = ifapi_set_auth(context, hierarchy_lockout, "Lockout");
+                    return_if_error(r, "Set auth value");
+                } else {
+                    hierarchy_lockout->misc.hierarchy.with_auth = TPM2_NO;
+                }
+            }
+            fallthrough;
+
+        statecase(context->state, PROVISION_AUTHORIZE_LOCKOUT);
+            if (hierarchy_lockout->misc.hierarchy.with_auth == TPM2_YES ||
+               hierarchy_lockout->misc.hierarchy.authPolicy.size) {
+                r = ifapi_authorize_object(context, hierarchy_lockout, &auth_session);
+                FAPI_SYNC(r, "Authorize lockout hierarchy.", error_cleanup);
+            } else {
+                auth_session = context->session1;
+            }
+
+            /* Prepare the setting of the dictionary attack parameters. */
+            r = Esys_DictionaryAttackParameters_Async(context->esys, ESYS_TR_RH_LOCKOUT,
+                       auth_session, ESYS_TR_NONE, ESYS_TR_NONE,
+                       defaultProfile->newMaxTries, defaultProfile->newRecoveryTime,
+                       defaultProfile->lockoutRecovery);
+            goto_if_error(r, "Error Esys_DictionaryAttackParameters",
+                          error_cleanup);
+
+            fallthrough;
+
+        statecase(context->state, PROVISION_WRITE_LOCKOUT_PARAM);
+            r = Esys_DictionaryAttackParameters_Finish(context->esys);
+            return_try_again(r);
+
+            goto_if_error_reset_state(r, "DictionaryAttackParameters_Finish",
+                    error_cleanup);
 
             /* Generate template for SRK creation. */
             r = ifapi_set_key_flags(defaultProfile->srk_template,
@@ -709,7 +774,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             fallthrough;
 
         statecase(context->state, PROVISION_AUTH_SRK_NO_AUTH_SENT);
-            r = ifapi_init_primary_finish(context, TSS2_SRK);
+            r = ifapi_init_primary_finish(context, TSS2_SRK, hierarchy_hs);
             return_try_again(r);
             goto_if_error(r, "Init primary finish.", error_cleanup);
 
@@ -718,11 +783,8 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                 /* Assign found handle to object */
                 pkey->persistent_handle = command->public_templ.persistent_handle;
 
-                /* Initialize hierarchy object used for evict control. */
-                ifapi_init_hierarchy_object(hierarchy, ESYS_TR_RH_OWNER);
-
                 /* Prepare making the SRK permanent. */
-                r = Esys_EvictControl_Async(context->esys, hierarchy->handle,
+                r = Esys_EvictControl_Async(context->esys, hierarchy_hs->handle,
                     pkeyObject->handle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                     pkey->persistent_handle);
                 goto_if_error(r, "Error Esys EvictControl", error_cleanup);
@@ -787,10 +849,6 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
              * Adaption of the lockout hierarchy to the passed parameters
              * and the current profile.
              */
-            ifapi_init_hierarchy_object(hierarchy, ESYS_TR_RH_LOCKOUT);
-            strdup_check(hierarchy->misc.hierarchy.description, "Lockout Hierarchy",
-                    r, error_cleanup);
-
             if (!command->authValueLockout ||
                 strcmp(command->authValueLockout, "") == 0) {
                 context->state = PROVISION_LOCKOUT_CHANGE_POLICY;
@@ -806,6 +864,15 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             memcpy(&command->hierarchy_auth.buffer[0],
                    command->authValueLockout, strlen(command->authValueLockout));
             command->hierarchy_auth.size = strlen(command->authValueLockout);
+            context->hierarchy_policy_state = HIERARCHY_CHANGE_POLICY_INIT;
+            if (defaultProfile->lockout_policy) {
+                command->hierarchy_policy =
+                    ifapi_copy_policy(defaultProfile->lockout_policy);
+                goto_if_null2(command->hierarchy_policy, "Out of memory.", r,
+                              TSS2_FAPI_RC_MEMORY, error_cleanup);
+            } else {
+                command->hierarchy_policy = NULL;
+            }
             context->state = PROVISION_CHANGE_LOCKOUT_AUTH;
             return TSS2_FAPI_RC_TRY_AGAIN;
 
@@ -821,6 +888,22 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
         statecase(context->state, PROVISION_WAIT_FOR_EK_PERSISTENT);
             r = Esys_EvictControl_Finish(context->esys, &pkeyObject->handle);
             return_try_again(r);
+
+            /* Retry with authorization callback after trial with null auth */
+            if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH &&
+                hierarchy_hs->misc.hierarchy.with_auth == TPM2_NO) {
+                char* description;
+                r = ifapi_get_description(hierarchy_hs, &description);
+                return_if_error(r, "Get description");
+
+                r = ifapi_set_auth(context, hierarchy_hs, "CreatePrimary");
+                SAFE_FREE(description);
+                goto_if_error_reset_state(r, "Create EK", error_cleanup);
+
+                hierarchy_hs->misc.hierarchy.with_auth = TPM2_YES;
+                context->state =  PROVISION_WAIT_FOR_SRK_PERSISTENT;
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            }
             goto_if_error(r, "Evict control failed", error_cleanup);
 
             context->state = PROVISION_INIT_GET_CAP2;
@@ -831,29 +914,29 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             /* If a lockout auth value is provided by profile, the auth value
                if the hierarchy will be changed asynchronous. */
             r = ifapi_change_auth_hierarchy(context, ESYS_TR_RH_LOCKOUT,
-                    &command->hierarchy, &command->hierarchy_auth);
+                    &command->hierarchy_lockout, &command->hierarchy_auth);
             return_try_again(r);
             goto_if_error(r, "Change auth hierarchy.", error_cleanup);
 
-            context->state = PROVISION_LOCKOUT_CHANGE_POLICY;
             fallthrough;
 
         statecase(context->state, PROVISION_LOCKOUT_CHANGE_POLICY);
             /* If a lockout policy is provided by profile, the policy will be
                assigned to lockout hierarchy asynchronous. */
             r = ifapi_change_policy_hierarchy(context, ESYS_TR_RH_LOCKOUT,
-                    hierarchy, defaultProfile->lockout_policy);
+                                              hierarchy_lockout,
+                                              command->hierarchy_policy);
             return_try_again(r);
             goto_if_error(r, "Change policy LOCKOUT", error_cleanup);
 
             /* Check whether object already exists in key store.*/
             r = ifapi_keystore_object_does_not_exist(&context->keystore, "/LOCKOUT",
-                                                     &command->hierarchy);
+                                                     &command->hierarchy_lockout);
             goto_if_error_reset_state(r, "Could not write: %s", error_cleanup, "/LOCKOUT");
 
             /* Start writing the lockout hierarchy object to the key store */
             r = ifapi_keystore_store_async(&context->keystore, &context->io, "/LOCKOUT",
-                    &command->hierarchy);
+                    &command->hierarchy_lockout);
             goto_if_error_reset_state(r, "Could not open: %s",
                     error_cleanup, "/LOCKOUT");
 
@@ -866,20 +949,21 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             return_try_again(r);
             goto_if_error_reset_state(r, "write_finish failed", error_cleanup);
 
-            SAFE_FREE(hierarchy->misc.hierarchy.description);
-
             /*
              * Adaption of the Endorsement hierarchy to the passed parameters
              * and the current profile.
              */
-            ifapi_init_hierarchy_object(hierarchy, ESYS_TR_RH_ENDORSEMENT);
-            strdup_check(hierarchy->misc.hierarchy.description,
-                    "Endorsement Hierarchy", r, error_cleanup);
-
-            context->state = PROVISION_CHANGE_EH_CHECK;
             fallthrough;
 
         statecase(context->state, PROVISION_CHANGE_EH_CHECK);
+            context->hierarchy_policy_state = HIERARCHY_CHANGE_POLICY_INIT;
+            if (defaultProfile->eh_policy) {
+                command->hierarchy_policy = ifapi_copy_policy(defaultProfile->eh_policy);
+                goto_if_null2(command->hierarchy_policy, "Out of memory", r,
+                              TSS2_FAPI_RC_MEMORY, error_cleanup);
+            } else {
+                command->hierarchy_policy = NULL;
+            }
             if (command->authValueEh) {
                 context->state = PROVISION_CHANGE_EH_AUTH;
                 /* Save auth value of endorsement hierarchy in context. */
@@ -898,29 +982,28 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             /* If an endorsement hierarchy auth value is provided by profile,
                the auth value will be changed asynchronous. */
             r = ifapi_change_auth_hierarchy(context, ESYS_TR_RH_ENDORSEMENT,
-                    &command->hierarchy, &command->hierarchy_auth);
+                    &command->hierarchy_he, &command->hierarchy_auth);
             return_try_again(r);
             goto_if_error(r, "Change auth hierarchy.", error_cleanup);
-
-            context->state = PROVISION_EH_CHANGE_POLICY;
             fallthrough;
 
         statecase(context->state, PROVISION_EH_CHANGE_POLICY);
             /* If an endorsement hierarchy policy is provided by profile,
                the policy will be assigned asynchronous. */
             r = ifapi_change_policy_hierarchy(context, ESYS_TR_RH_ENDORSEMENT,
-                    hierarchy, defaultProfile->eh_policy);
+                                              hierarchy_he,
+                                              command->hierarchy_policy);
             return_try_again(r);
             goto_if_error(r, "Change policy EH", error_cleanup);
 
             /* Check whether object already exists in key store.*/
             r = ifapi_keystore_object_does_not_exist(&context->keystore, "/HE",
-                                                     &command->hierarchy);
+                                                     &command->hierarchy_he);
             goto_if_error_reset_state(r, "Could not write: %s", error_cleanup, "/HE");
 
             /* Start writing the endorsement hierarchy object to the key store */
             r = ifapi_keystore_store_async(&context->keystore, &context->io, "/HE",
-                    &command->hierarchy);
+                    hierarchy_he);
             goto_if_error_reset_state(r, "Could not open: %s", error_cleanup, "/HE");
 
             context->state = PROVISION_WRITE_EH;
@@ -932,20 +1015,21 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             return_try_again(r);
             return_if_error_reset_state(r, "write_finish failed");
 
-            SAFE_FREE(hierarchy->misc.hierarchy.description);
-
             /*
              * Adaption of the owner hierarchy to the passed parameters
              * and the current profile.
              */
-            ifapi_init_hierarchy_object(hierarchy, ESYS_TR_RH_OWNER);
-            strdup_check(hierarchy->misc.hierarchy.description,
-                   "Owner Hierarchy", r, error_cleanup);
-
-            context->state = PROVISION_CHANGE_SH_CHECK;
             fallthrough;
 
         statecase(context->state, PROVISION_CHANGE_SH_CHECK);
+            context->hierarchy_policy_state = HIERARCHY_CHANGE_POLICY_INIT;
+            if (defaultProfile->sh_policy) {
+                command->hierarchy_policy = ifapi_copy_policy(defaultProfile->sh_policy);
+                goto_if_null2(command->hierarchy_policy, "Out of memory", r,
+                              TSS2_FAPI_RC_MEMORY, error_cleanup);
+            } else {
+                command->hierarchy_policy = NULL;
+            }
             if (command->authValueSh) {
                 context->state = PROVISION_CHANGE_SH_AUTH;
                 /* Save auth value of owner hierarchy in context. */
@@ -964,30 +1048,31 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
         statecase(context->state, PROVISION_CHANGE_SH_AUTH);
             /* If an owner hierarchy auth value is provided by profile,
                the auth value will be changed asynchronous. */
+            context->hierarchy_policy_state = HIERARCHY_CHANGE_POLICY_INIT;
             r = ifapi_change_auth_hierarchy(context, ESYS_TR_RH_OWNER,
-                    &command->hierarchy, &command->hierarchy_auth);
+                    &command->hierarchy_hs, &command->hierarchy_auth);
             return_try_again(r);
             goto_if_error(r, "Change auth hierarchy.", error_cleanup);
 
-            context->state = PROVISION_SH_CHANGE_POLICY;
             fallthrough;
 
         statecase(context->state, PROVISION_SH_CHANGE_POLICY);
             /* If an owner hierarchy policy is provided by profile,
                the policy will be assigned asynchronous. */
             r = ifapi_change_policy_hierarchy(context, ESYS_TR_RH_OWNER,
-                    hierarchy, defaultProfile->sh_policy);
+                                              hierarchy_hs,
+                                              command->hierarchy_policy);
             return_try_again(r);
             goto_if_error(r, "Change policy SH", error_cleanup);
 
             /* Check whether object already exists in key store.*/
             r = ifapi_keystore_object_does_not_exist(&context->keystore, "/HS",
-                                                     &command->hierarchy);
+                                                     hierarchy_hs);
             goto_if_error_reset_state(r, "Could not write: %s", error_cleanup, "/HS");
 
             /* Start writing the owner hierarchy object to the key store */
             r = ifapi_keystore_store_async(&context->keystore, &context->io, "/HS",
-                    &command->hierarchy);
+                    &command->hierarchy_hs);
             goto_if_error_reset_state(r, "Could not open: %s", error_cleanup, "/HS");
             context->state = PROVISION_WRITE_SH;
             fallthrough;
@@ -1033,12 +1118,12 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             }
             fallthrough;
 
-        statecase(context->state, PROVISION_CLEAN_SRK_SESSION)
+        statecase(context->state, PROVISION_CLEAN_SRK_SESSION);
             /* Cleanup the session used for parameter encryption */
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
-            context->state = _FAPI_STATE_INIT;
+            context->state =_FAPI_STATE_INIT;
             break;
 
         /*
@@ -1090,10 +1175,12 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 error_cleanup:
     /* Primaries might not have been flushed in error cases */
     ifapi_cleanup_ifapi_object(pkeyObject);
+    ifapi_cleanup_ifapi_object(hierarchy_hs);
+    ifapi_cleanup_ifapi_object(hierarchy_he);
+    ifapi_cleanup_ifapi_object(hierarchy_lockout);
     ifapi_primary_clean(context);
     SAFE_FREE(command->root_crt);
     SAFE_FREE(*capabilityData);
-    SAFE_FREE(hierarchy->misc.hierarchy.description);
     SAFE_FREE(command->authValueLockout);
     SAFE_FREE(command->authValueEh);
     SAFE_FREE(command->authValueSh);
