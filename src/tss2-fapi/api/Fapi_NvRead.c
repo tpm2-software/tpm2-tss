@@ -260,8 +260,7 @@ Fapi_NvRead_Finish(
         command->esys_handle = object->handle;
         command->nv_obj = object->misc.nv;
 
-        if (size)
-            *size = object->misc.nv.public.nvPublic.dataSize;
+        command->size = object->misc.nv.public.nvPublic.dataSize;
         command->numBytes = object->misc.nv.public.nvPublic.dataSize;
 
         /* Determine auth object */
@@ -326,6 +325,8 @@ Fapi_NvRead_Finish(
         if (logData)
             *logData = command->logData;
         *data = command->rdata;
+        if (size)
+            *size = command->size;
         context->state = _FAPI_STATE_INIT;
         break;
 
