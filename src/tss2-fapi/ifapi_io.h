@@ -63,7 +63,7 @@ ifapi_io_check_file_writeable(
 
 TSS2_RC
 ifapi_io_check_create_dir(
-    const char *dirname);
+    const char *dirname, int mode);
 
 TSS2_RC
 ifapi_io_remove_file(

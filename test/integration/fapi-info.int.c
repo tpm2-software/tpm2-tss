@@ -37,9 +37,6 @@ test_fapi_info(FAPI_CONTEXT *context)
     TSS2_RC r;
     char *info = NULL;
 
-    r = Fapi_Provision(context, NULL, NULL, NULL);
-    goto_if_error(r, "Error Fapi_Provision", error);
-
     r = Fapi_GetInfo(context, &info);
     goto_if_error(r, "Error Fapi_Provision", error);
     assert(info != NULL);
@@ -47,15 +44,10 @@ test_fapi_info(FAPI_CONTEXT *context)
 
     LOG_INFO("%s", info);
 
-    /* Cleanup */
-    r = Fapi_Delete(context, "/");
-    goto_if_error(r, "Error Fapi_Delete", error);
-
     SAFE_FREE(info);
     return EXIT_SUCCESS;
 
 error:
-    Fapi_Delete(context, "/");
     SAFE_FREE(info);
     return EXIT_FAILURE;
 }

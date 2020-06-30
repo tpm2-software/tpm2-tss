@@ -255,7 +255,7 @@ ifapi_io_check_file_writeable(
     const char *file)
 {
     /* Check access rights to file  */
-    if (access(file, W_OK)) {
+    if (access(file, FAPI_WRITE)) {
         return_error2(TSS2_FAPI_RC_IO_ERROR, "File %s is not writeable.", file);
     }
     return TSS2_RC_SUCCESS;
@@ -272,7 +272,7 @@ ifapi_io_check_file_writeable(
  */
 TSS2_RC
 ifapi_io_check_create_dir(
-    const char *dirname)
+    const char *dirname, int mode)
 {
     TSS2_RC r;
     struct stat fbuffer;
@@ -288,8 +288,9 @@ ifapi_io_check_create_dir(
     }
 
     /* Check access rights to dirname */
-    if (access(dirname, W_OK)) {
-        return_error2(TSS2_FAPI_RC_IO_ERROR, "Directory %s is not writeable.", dirname);
+    if (access(dirname, mode)) {
+        return_error2(TSS2_FAPI_RC_IO_ERROR, "Directory %s is not %s.", dirname,
+                      (mode == FAPI_WRITE) ? "writeable" : "readable");
     }
 
     return TSS2_RC_SUCCESS;

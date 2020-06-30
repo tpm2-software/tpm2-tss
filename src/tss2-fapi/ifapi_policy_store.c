@@ -110,7 +110,7 @@ ifapi_policy_store_initialize(
                        IFAPI_POLICY_PATH);
     goto_if_error(r, "Out of memory.", error);
 
-    r = ifapi_io_check_create_dir(policy_dir);
+    r = ifapi_io_check_create_dir(policy_dir, FAPI_READ);
     goto_if_error2(r, "Policy directory %s can't be created.", error, policy_dir);
 
     SAFE_FREE(policy_dir);

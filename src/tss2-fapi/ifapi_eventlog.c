@@ -40,7 +40,7 @@ ifapi_eventlog_initialize(
 
     TSS2_RC r;
 
-    r = ifapi_io_check_create_dir(log_dir);
+    r = ifapi_io_check_create_dir(log_dir, FAPI_READ);
     return_if_error2(r, "Directory check/creation failed for %s", log_dir);
 
     eventlog->log_dir = strdup(log_dir);
