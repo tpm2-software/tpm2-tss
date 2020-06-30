@@ -21,7 +21,7 @@ if [ "$TRAVIS_BRANCH" != "coverity_scan" ]; then
   echo "Running non-coverity build"
   # Do normal CI script
   ci_env=$(bash <(curl -s https://codecov.io/env))
-  docker run $ci_env --env-file .ci/docker.env \
+  docker run --cap-add SYS_PTRACE $ci_env --env-file .ci/docker.env \
     -v "$(pwd):/workspace/tpm2-tss" "tpm2software/tpm2-tss:$DOCKER_TAG" \
     /bin/bash -c '/workspace/tpm2-tss/.ci/docker.run'
 
