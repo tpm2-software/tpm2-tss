@@ -365,6 +365,11 @@ AS_CASE(["x$with_sanitizer"],
             SANITIZER_CFLAGS="-fsanitize=undefined"
             SANITIZER_LDFLAGS="-lubsan"
         ],
+        ["xundefined,address"],
+        [
+            SANITIZER_CFLAGS="-fsanitize=undefined,address -fno-omit-frame-pointer"
+            SANITIZER_LDFLAGS="-lasan -lubsan"
+        ],
         [AC_MSG_ERROR([Bad value for --with-sanitizer])])
 AC_SUBST([SANITIZER_CFLAGS])
 AC_SUBST([SANITIZER_LDFLAGS])
