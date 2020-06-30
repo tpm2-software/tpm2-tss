@@ -3023,7 +3023,7 @@ ifapi_key_create_prepare_sensitive(
     memset(&context->cmd.Key_Create.inSensitive, 0, sizeof(TPM2B_SENSITIVE_CREATE));
     if (dataSize > sizeof(context->cmd.Key_Create.inSensitive.sensitive.data.buffer)
         || dataSize == 0) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE, "Data to big or equal zero.");
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Data too big or equal zero.");
     }
     if (data) {
         /* Copy the sensitive data */

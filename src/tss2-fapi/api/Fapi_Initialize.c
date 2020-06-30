@@ -188,7 +188,7 @@ Fapi_Initialize_Finish(
 
         /* Initialize the event log module. */
         r = ifapi_eventlog_initialize(&((*context)->eventlog), (*context)->config.log_dir);
-        goto_if_error(r, "Initializing evenlog module", cleanup_return);
+        goto_if_error(r, "Initializing eventlog module", cleanup_return);
 
         /* Initialize the keystore. */
         r = ifapi_keystore_initialize(&((*context)->keystore),
