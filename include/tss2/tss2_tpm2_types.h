@@ -58,6 +58,8 @@
                                   sizeof(UINT32)) / sizeof(TPM2_ECC_CURVE))
 #define TPM2_MAX_TAGGED_POLICIES ((TPM2_MAX_CAP_BUFFER - sizeof(TPM2_CAP) - \
                                   sizeof(UINT32)) / sizeof(TPMS_TAGGED_POLICY))
+#define TPM2_MAX_ACT_DATA        ((TPM2_MAX_CAP_BUFFER - sizeof(TPM2_CAP) - \
+                                  sizeof(UINT32)) / sizeof(TPMS_ACT_DATA))
 #define TPM2_PRIVATE_VENDOR_SPECIFIC_BYTES ((TPM2_MAX_RSA_KEY_BYTES / 2) * (3 + 2))
 
 /* Vendor Specific Defines */
@@ -243,7 +245,9 @@ typedef UINT32                                TPM2_CC;
 #define TPM2_CC_AC_GetCapability              ((TPM2_CC) 0x00000194)
 #define TPM2_CC_AC_Send                       ((TPM2_CC) 0x00000195)
 #define TPM2_CC_Policy_AC_SendSelect          ((TPM2_CC) 0x00000196)
-#define TPM2_CC_LAST                          ((TPM2_CC) 0x00000196)
+#define TPM2_CC_CertifyX509                   ((TPM2_CC) 0x00000197)
+#define TPM2_CC_ACT_SetTimeout                ((TPM2_CC) 0x00000198)
+#define TPM2_CC_LAST                          ((TPM2_CC) 0x00000198)
 #define TPM2_CC_Vendor_TCG_Test               ((TPM2_CC) 0x20000000)
 
 /* Definition of Types for Documentation Clarity */
@@ -625,7 +629,9 @@ typedef TPM2_HANDLE TPM2_RH;
 #define TPM2_RH_PLATFORM_NV ((TPM2_RH) 0x4000000D) /* C */
 #define TPM2_RH_AUTH_00     ((TPM2_RH) 0x40000010) /* A */
 #define TPM2_RH_AUTH_FF     ((TPM2_RH) 0x4000010F) /* A */
-#define TPM2_RH_LAST        ((TPM2_RH) 0x4000010F) /* R */
+#define TPM2_RH_ACT_0       ((TPM2_RH) 0x40000110) /* A P */
+#define TPM2_RH_ACT_F       ((TPM2_RH) 0x4000011F) /* A P */
+#define TPM2_RH_LAST        ((TPM2_RH) 0x4000011F) /* R */
 
 /* Definition of TPM2_HANDLE TPM2_HC Constants <S> */
 typedef TPM2_HANDLE TPM2_HC;
@@ -689,7 +695,8 @@ typedef uint32_t TPMA_OBJECT;
 #define TPMA_OBJECT_RESERVED4_MASK       ((TPMA_OBJECT) 0x0000F000) /* shall be zero */
 #define TPMA_OBJECT_RESTRICTED           ((TPMA_OBJECT) 0x00010000) /* SET 1 Key usage is restricted to manipulate structures of known format the parent of this key shall have restricted SET. CLEAR 0 Key usage is not restricted to use on special formats. */
 #define TPMA_OBJECT_DECRYPT              ((TPMA_OBJECT) 0x00020000) /* SET 1 The private portion of the key may be used to decrypt. CLEAR 0 The private portion of the key may not be used to decrypt. */
-#define TPMA_OBJECT_SIGN_ENCRYPT         ((TPMA_OBJECT) 0x00040000) /* SET 1 For a symmetric cipher object the private portion of the key may be used to encrypt.  For other objects the private portion of the key may be used to sign. CLEAR 0 The private portion of the key may not be used to sign or encrypt. */
+#define TPMA_OBJECT_SIGN_ENCRYPT         ((TPMA_OBJECT) 0x00040000) /* SET 1 For a symmetric cipher object the private portion of the key may be used to encrypt. For other objects the private portion of the key may be used to sign. CLEAR 0 The private portion of the key may not be used to sign or encrypt. */
+#define TPMA_OBJECT_X509SIGN             ((TPMA_OBJECT) 0x00080000) /* SET 1 For asymmetric key the private portion of the key may not be used as the signing key in TPM2_Sign. CLEAR 0 key can be used as the signing key in TPM2_Sign */
 #define TPMA_OBJECT_RESERVED5_MASK       ((TPMA_OBJECT) 0xFFF80000) /* shall be zero */
 
 /* Definition of UINT8 TPMA_SESSION Bits <INOUT> */
@@ -766,6 +773,27 @@ typedef uint32_t TPMA_MODES;
 #define TPMA_MODES_FIPS_140_2     ((TPMA_MODES) 0x00000001) /* SET 1 indicates that the TPM is designed to comply with all of the FIPS 1402 requirements at Level 1 or higher. */
 #define TPMA_MODES_RESERVED1_MASK ((TPMA_MODES) 0xFFFFFFFE) /* shall be zero */
 
+/* Definition of UINT32 TPMA_X509_KEY_USAGE Bits */
+typedef uint32_t TPMA_X509_KEY_USAGE;
+
+#define TPMA_X509_KEY_USAGE_RESERVED_MASK    ((TPMA_X509_KEY_USAGE) 0x007FFFFF) /* shall be zero */
+#define TPMA_X509_KEY_USAGE_DECIPHER_ONLY    ((TPMA_X509_KEY_USAGE) 0x00800000) /* As described in RFC5280. Requires objct attributes.Decrypt to be SET */
+#define TPMA_X509_KEY_USAGE_ENCIPHER_ONLY    ((TPMA_X509_KEY_USAGE) 0x01000000) /* As described in RFC5280. Requires objct attributes.Decrypt to be SET */
+#define TPMA_X509_KEY_USAGE_CRLSIGN          ((TPMA_X509_KEY_USAGE) 0x02000000) /* As described in RFC5280. Requires objct attributes.Sign to be SET */
+#define TPMA_X509_KEY_USAGE_KEYCERTSIGN      ((TPMA_X509_KEY_USAGE) 0x04000000) /* As described in RFC5280. Requires objct attributes.Sign to be SET */
+#define TPMA_X509_KEY_USAGE_KEYAGREEMENT     ((TPMA_X509_KEY_USAGE) 0x08000000) /* As described in RFC5280. Requires objct attributes.Decrypt to be SET */
+#define TPMA_X509_KEY_USAGE_DATAENCIPHERMENT ((TPMA_X509_KEY_USAGE) 0x10000000) /* As described in RFC5280. Requires objct attributes.Decrypt to be SET */
+#define TPMA_X509_KEY_USAGE_KEYENCIPHERMENT  ((TPMA_X509_KEY_USAGE) 0x20000000) /* As described in RFC5280. Requires objct attributes.Decrypt and Restricted to be SET */
+#define TPMA_X509_KEY_USAGE_NONREPUDIATION   ((TPMA_X509_KEY_USAGE) 0x40000000) /* As described in RFC5280. Requires objct attributes.fixedTPM to be SET in the SubjectKey */
+#define TPMA_X509_KEY_USAGE_DIGITALSIGNATURE ((TPMA_X509_KEY_USAGE) 0x80000000) /* As described in RFC5280. Requires objct attributes.Sign to be SET in the SubjectKey */
+
+/* Definition of UINT32 TPMA_ACT Bits */
+typedef uint32_t TPMA_ACT;
+
+#define TPMA_ACT_SIGNALED         ((TPMA_ACT) 0x00000000) /* SET 1 The ACT has signaled. CLEAR 0 The ACT has not signaled */
+#define TPMA_ACT_PRESERVESIGNALED ((TPMA_ACT) 0x00000001) /* SET 1 The ACT signaled bit is preserved over a power cycle. CLEAR 0 The ACT signaled bit is not preserved over a power cycle */
+#define TPMA_ACT_RESERVED_MASK    ((TPMA_ACT) 0xFFFFFFFC) /* shall be zero */
+
 /* Definition of BYTE TPMI_YES_NO Type */
 typedef BYTE TPMI_YES_NO;
 #define TPM2_NO  0 /* a value of 0 */
@@ -795,6 +823,12 @@ typedef TPM2_HANDLE TPMI_SH_POLICY;
 /* Definition of TPM2_HANDLE TPMI_DH_CONTEXT Type */
 typedef TPM2_HANDLE TPMI_DH_CONTEXT;
 
+/* Definition of TPM2_HANDLE TPMI_DH_SAVED Type */
+typedef TPM2_HANDLE TPMI_DH_SAVED;
+#define TPMI_DH_SAVED_TRANSIENT       ((TPMI_DH_SAVED) 0x80000000) /* an ordinary transient object */
+#define TPMI_DH_SAVED_SEQUENCE        ((TPMI_DH_SAVED) 0x80000001) /* a sequence object */
+#define TPMI_DH_SAVED_TRANSIENT_CLEAR ((TPMI_DH_SAVED) 0x80000002) /* a transient object with the stClear attribute SET */
+
 /* Definition of TPM2_HANDLE TPMI_RH_HIERARCHY Type */
 typedef TPM2_HANDLE TPMI_RH_HIERARCHY;
 
@@ -803,6 +837,9 @@ typedef TPM2_HANDLE TPMI_RH_ENABLES;
 
 /* Definition of TPM2_HANDLE TPMI_RH_HIERARCHY_AUTH Type <IN> */
 typedef TPM2_HANDLE TPMI_RH_HIERARCHY_AUTH;
+
+/* Definition of TPM2_HANDLE TPMI_RH_HIERARCHY_POLICY Type <IN> */
+typedef TPM2_HANDLE TPMI_RH_HIERARCHY_POLICY;
 
 /* Definition of TPM2_HANDLE TPMI_RH_PLATFORM Type <IN> */
 typedef TPM2_HANDLE TPMI_RH_PLATFORM;
@@ -827,6 +864,12 @@ typedef TPM2_HANDLE TPMI_RH_LOCKOUT;
 
 /* Definition of TPM2_HANDLE TPMI_RH_NV_INDEX Type <INOUT> */
 typedef TPM2_HANDLE TPMI_RH_NV_INDEX;
+
+/* Definition of TPM2_HANDLE TPMI_RH_AC Type <IN> */
+typedef TPM2_HANDLE TPMI_RH_AC; /* Interface used to identify an attached component */
+
+/* Definition of TPM2_HANDLE TPMI_RH_AC Type */
+typedef TPM2_HANDLE TPMI_RH_ACT;
 
 /* Definition of TPM2_ALG_ID TPMI_ALG_HASH Type */
 typedef TPM2_ALG_ID TPMI_ALG_HASH;
@@ -854,6 +897,12 @@ typedef TPM2_ALG_ID TPMI_ECC_KEY_EXCHANGE;
 
 /* Definition of TPM2_ST TPMI_ST_COMMAND_TAG Type */
 typedef TPM2_ST TPMI_ST_COMMAND_TAG;
+
+/* Definition of TPM2_ALG_ID TPMI_ALG_MAC_SCHEME Type */
+typedef TPM2_ALG_ID TPMI_ALG_MAC_SCHEME;
+
+/* Definition of TPM2_ALG_ID TPMI_ALG_CIPHER_MODE Type */
+typedef TPM2_ALG_ID TPMI_ALG_CIPHER_MODE;
 
 /* Definition of TPMS_EMPTY Structure <INOUT> */
 typedef struct {
@@ -1007,6 +1056,13 @@ typedef struct {
     TPMT_HA policyHash;
 } TPMS_TAGGED_POLICY;
 
+/* Definition of TPMS_ACT_DATA Structure <OUT> */
+typedef struct {
+    TPM2_HANDLE handle;
+    UINT32 timeout;
+    TPMA_ACT attributes;
+} TPMS_ACT_DATA;
+
 /* Definition of TPML_CC Structure */
 typedef struct {
     UINT32 count; /* number of commands in the commandCode list may be 0 */
@@ -1072,6 +1128,18 @@ typedef struct {
     UINT32 count; /* number of curves. A value of zero is allowed. */
     TPM2_ECC_CURVE eccCurves[TPM2_MAX_ECC_CURVES]; /* array of ECC curve identifiers */
 } TPML_ECC_CURVE;
+
+/* Definition of ECC TPML_TAGGED_POLICY Structure <OUT> */
+typedef struct {
+    UINT32 count; /* number of tagged policies. A value of zero is allowed. */
+    TPMS_TAGGED_POLICY policies[TPM2_MAX_TAGGED_POLICIES]; /* array of tagged policies */
+} TPML_TAGGED_POLICY;
+
+/* Definition of ECC TPML_ACT_DATA Structure <OUT> */
+typedef struct {
+    UINT32 count; /* number of ACT instances. A value of zero is allowed. */
+    TPMS_ACT_DATA actData[TPM2_MAX_ACT_DATA]; /* array of array of ACT data */
+} TPML_ACT_DATA;
 
 /* Implementation specific structure to hold Intel PTT specific property data. */
 typedef struct {
@@ -1157,6 +1225,12 @@ typedef struct {
     UINT16 offset;                  /* the offset parameter of TPM2_NV_Certify */
     TPM2B_MAX_NV_BUFFER nvContents; /* contents of the NV Index */
 } TPMS_NV_CERTIFY_INFO;
+
+/* Definition of TPMS_NV_DIGEST_CERTIFY_INFO Structure <OUT> */
+typedef struct {
+    TPM2B_NAME indexName;      /* Name of the NV Index */
+    TPM2B_DIGEST nvDigest;     /* hash of the contents of the index */
+} TPMS_NV_DIGEST_CERTIFY_INFO;
 
 /* Definition of TPM2_ST TPMI_ST_ATTEST Type <OUT> */
 typedef TPM2_ST TPMI_ST_ATTEST;
@@ -1773,8 +1847,6 @@ typedef UINT32 TPM_AT;
 typedef UINT32 TPM_EA;
 
 #define TPM_AE_NONE  ((TPM_EA)0x00000000) /* In a command, a non-specific request for AC information. In a response, indicates that outputData is not meaningful */
-
-typedef TPM2_HANDLE TPMI_RH_AC; /* Interface used to identify an attached component */
 
 /* Definition of TPMS_AC_OUTPUT Structure <OUT> */
 typedef struct {
