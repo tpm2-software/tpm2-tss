@@ -343,7 +343,7 @@ ifapi_read_pcr(
                                  &out_selection,
                                  &pcr_digests);
 
-        if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
+        if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
             return TSS2_FAPI_RC_TRY_AGAIN;
 
         return_if_error(r, "PCR_Read_Finish");

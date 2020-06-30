@@ -60,7 +60,7 @@ test_esys_hierarchy_control(ESYS_CONTEXT * esys_context)
         enable,
         state);
 
-    if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH) {
+    if (number_rc(r) == TPM2_RC_BAD_AUTH) {
         /* Platform authorization not possible test will be skipped */
         LOG_WARNING("Platform authorization not possible.");
         return EXIT_SKIP;

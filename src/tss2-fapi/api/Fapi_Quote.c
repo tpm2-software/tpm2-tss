@@ -122,7 +122,7 @@ Fapi_Quote(
            through all execution stages / states of this invocation. */
         r = Fapi_Quote_Finish(context, quoteInfo, signature, signatureSize,
                                pcrLog, certificate);
-    } while ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN);
+    } while (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN);
 
     /* Reset the ESYS timeout to non-blocking, immediate response. */
     r2 = Esys_SetTimeout(context->esys, 0);

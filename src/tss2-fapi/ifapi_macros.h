@@ -48,7 +48,7 @@
     }
 
 #define try_again_or_error(r,msg, ...)                \
-    if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) \
+    if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) \
         return TSS2_FAPI_RC_TRY_AGAIN; \
     if (r != TSS2_RC_SUCCESS) { \
         LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ## __VA_ARGS__); \
@@ -56,7 +56,7 @@
     }
 
 #define try_again_or_error_goto(r,msg, label, ...)            \
-    if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) \
+    if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) \
         return TSS2_FAPI_RC_TRY_AGAIN; \
     if (r != TSS2_RC_SUCCESS) { \
         LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ## __VA_ARGS__); \
@@ -97,7 +97,7 @@
     }
 
 #define return_try_again(r) \
-    if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) { \
+    if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) { \
         LOG_TRACE("Received TRY_AGAIN; returning TRY_AGAIN"); \
         return TSS2_FAPI_RC_TRY_AGAIN; \
     }

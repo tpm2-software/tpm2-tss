@@ -81,6 +81,9 @@ extern "C" {
         r_max = r; \
     }
 
+#define base_rc(r) (r & ~TSS2_RC_LAYER_MASK)
+#define number_rc(r) (r & ~TPM2_RC_N_MASK)
+
 static inline TSS2_RC
 tss2_fmt_p1_error_to_rc(UINT16 err)
 {

@@ -60,7 +60,7 @@ ifapi_flush_object(FAPI_CONTEXT *context, ESYS_TR handle)
 
     statecase(context->flush_object_state, WAIT_FOR_FLUSH);
         r = Esys_FlushContext_Finish(context->esys);
-        if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
+        if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
             return TSS2_FAPI_RC_TRY_AGAIN;
 
         return_if_error(r, "FlushContext");
@@ -426,7 +426,7 @@ ifapi_get_free_handle_finish(FAPI_CONTEXT *fctx, TPM2_HANDLE *handle,
     TSS2_RC r = Esys_GetCapability_Finish(fctx->esys,
                                           &moreData, &capabilityData);
 
-    if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
+    if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
         return TSS2_FAPI_RC_TRY_AGAIN;
 
     return_if_error(r, "GetCapability");
@@ -635,11 +635,11 @@ ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype, IFAPI_OBJE
         r = Esys_CreatePrimary_Finish(context->esys,
                                       &primaryHandle, &outPublic, &creationData, &creationHash,
                                       &creationTicket);
-        if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
+        if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
             return TSS2_FAPI_RC_TRY_AGAIN;
 
         /* Retry with authorization callback after trial with null auth */
-        if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH
+        if (number_rc(r) == TPM2_RC_BAD_AUTH
             && hierarchy->misc.hierarchy.with_auth == TPM2_NO) {
             char *description;
             r = ifapi_get_description(hierarchy, &description);
@@ -2149,7 +2149,7 @@ ifapi_nv_write(
         r = Esys_NV_Write_Finish(context->esys);
         return_try_again(r);
 
-        if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH) {
+        if (number_rc(r) == TPM2_RC_BAD_AUTH) {
             if (context->nv_cmd.nv_write_state == NV2_WRITE_NULL_AUTH_SENT) {
                 IFAPI_OBJECT *auth_object = &context->nv_cmd.auth_object;
                 char *description;
@@ -2341,11 +2341,11 @@ ifapi_nv_read(
 
         r = Esys_NV_Read_Finish(context->esys, &aux_data);
 
-        if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
+        if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
             return TSS2_FAPI_RC_TRY_AGAIN;
 
         if (context->nv_cmd.auth_index == ESYS_TR_RH_OWNER  &&
-            (r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH &&
+            number_rc(r) == TPM2_RC_BAD_AUTH &&
             auth_object->misc.hierarchy.with_auth == TPM2_NO) {
             /* NULL auth failed, password was used for owner hierarchy, try again. */
             auth_object->misc.hierarchy.with_auth = TPM2_YES;
@@ -3536,7 +3536,7 @@ ifapi_change_auth_hierarchy(
         r = Esys_HierarchyChangeAuth_Finish(context->esys);
         return_try_again(r);
 
-        if  ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH &&
+        if  (number_rc(r) == TPM2_RC_BAD_AUTH &&
              hierarchy_object->misc.hierarchy.with_auth == TPM2_NO) {
 
             /* Retry after NULL authorization was not successful */
@@ -3684,7 +3684,7 @@ ifapi_change_policy_hierarchy(
     statecase(context->hierarchy_policy_state, HIERARCHY_CHANGE_POLICY_NULL_AUTH_SENT);
         r = Esys_SetPrimaryPolicy_Finish(context->esys);
         return_try_again(r);
-        if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH  &&
+        if (number_rc(r) == TPM2_RC_BAD_AUTH  &&
              hierarchy_object->misc.hierarchy.with_auth == TPM2_NO) {
             /* Retry after NULL authorization was not successful */
             char *description;

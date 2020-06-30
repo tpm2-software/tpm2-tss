@@ -115,7 +115,7 @@ typedef struct {
     goto_if_error(R, "crypto hash update", LABEL);
 
 #define FAPI_SYNC(r,msg,label, ...)             \
-    if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) \
+    if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) \
         return TSS2_FAPI_RC_TRY_AGAIN; \
     if (r != TSS2_RC_SUCCESS) { \
         LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ## __VA_ARGS__); \

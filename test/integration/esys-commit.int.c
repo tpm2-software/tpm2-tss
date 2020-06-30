@@ -147,7 +147,7 @@ test_esys_commit(ESYS_CONTEXT * esys_context)
                            &outPublic, &creationData, &creationHash,
                            &creationTicket);
 
-    if ((r & ~TSS2_RC_LAYER_MASK) == (TPM2_RC_SCHEME | TPM2_RC_P | TPM2_RC_2)) {
+    if (base_rc(r) == (TPM2_RC_SCHEME | TPM2_RC_P | TPM2_RC_2)) {
         LOG_WARNING("Scheme ECDAA not supported by TPM.");
         failure_return = EXIT_SKIP;
         goto error;

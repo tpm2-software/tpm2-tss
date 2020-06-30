@@ -112,7 +112,7 @@ Fapi_Provision(
         /* Repeatedly call the finish function, until FAPI has transitioned
            through all execution stages / states of this invocation. */
         r = Fapi_Provision_Finish(context);
-    } while ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN);
+    } while (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN);
 
     /* Reset the ESYS timeout to non-blocking, immediate response. */
     r2 = Esys_SetTimeout(context->esys, 0);
@@ -986,7 +986,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             return_try_again(r);
 
             /* Retry with authorization callback after trial with null auth */
-            if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH &&
+            if (number_rc(r) == TPM2_RC_BAD_AUTH &&
                 hierarchy_hs->misc.hierarchy.with_auth == TPM2_NO) {
                 char* description;
                 r = ifapi_get_description(hierarchy_hs, &description);
