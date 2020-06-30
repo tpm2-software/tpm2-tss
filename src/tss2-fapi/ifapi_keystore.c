@@ -828,7 +828,7 @@ keystore_list_all_abs(
         expanded_search_path = NULL;
     } else {
         r = expand_path(keystore, searchpath, &expanded_search_path);
-        return_if_error(r, "Out of memory.");
+        return_if_error(r, "Expand path.");
     }
 
     /* Get the objects from system store */
@@ -975,7 +975,7 @@ expand_directory(IFAPI_KEYSTORE *keystore, const char *path, char **directory_na
         } else {
             /* Try to expand a key path */
             r = expand_path(keystore, path, directory_name);
-            return_if_error(r, "Out of memory.");
+            return_if_error(r, "Expand path.");
         }
     } else {
         *directory_name = NULL;
