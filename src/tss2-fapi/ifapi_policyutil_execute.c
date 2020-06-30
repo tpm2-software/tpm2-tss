@@ -292,7 +292,7 @@ ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session)
                 hash_alg = pol_util_ctx->pol_exec_ctx->hash_alg;
                 r = create_session(context, &pol_util_ctx->policy_session,
                                   hash_alg);
-                if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) {
+                if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {
                     context->policy.util_current_policy = pol_util_ctx->prev;
                     return TSS2_FAPI_RC_TRY_AGAIN;
                 }
@@ -307,7 +307,7 @@ ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session)
         statecase(pol_util_ctx->state, POLICY_UTIL_EXEC_POLICY);
             r = ifapi_policyeval_execute(context->esys,
                                          pol_util_ctx->pol_exec_ctx);
-            if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) {
+            if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {
                 context->policy.util_current_policy = pol_util_ctx->prev;
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }

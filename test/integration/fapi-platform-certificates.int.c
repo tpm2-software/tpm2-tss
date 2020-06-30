@@ -116,8 +116,8 @@ test_fapi_platform_certificates(FAPI_CONTEXT *context)
                                 &publicInfo,
                                 &nvHandle);
 
-        if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH ||
-            (r & ~TPM2_RC_N_MASK) == TPM2_RC_HIERARCHY) {
+        if (number_rc(r) == TPM2_RC_BAD_AUTH ||
+            number_rc(r) == TPM2_RC_HIERARCHY) {
             /* Platform authorization not possible test will be skipped */
             LOG_WARNING("Platform authorization not possible.");
             goto skip;

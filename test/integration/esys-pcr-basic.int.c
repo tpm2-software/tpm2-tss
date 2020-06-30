@@ -142,7 +142,7 @@ test_esys_pcr_basic(ESYS_CONTEXT * esys_context)
         &sizeNeeded,
         &sizeAvailable);
 
-    if ((r & ~TPM2_RC_N_MASK) == TPM2_RC_BAD_AUTH) {
+    if (number_rc(r) == TPM2_RC_BAD_AUTH) {
         /* Platform authorization not possible test will be skipped */
         LOG_WARNING("Platform authorization not possible.");
         failure_return =  EXIT_SKIP;

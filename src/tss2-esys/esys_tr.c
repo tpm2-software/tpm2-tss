@@ -202,7 +202,7 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * object)
         TPM2B_NV_PUBLIC *nvPublic;
         TPM2B_NAME *nvName;
         r = Esys_NV_ReadPublic_Finish(esys_context, &nvPublic, &nvName);
-        if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) {
+        if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {
             LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32
                       " => resubmitting command", r);
             return r;
@@ -223,7 +223,7 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * object)
         TPM2B_NAME *qualifiedName = NULL;
         r = Esys_ReadPublic_Finish(esys_context, &public, &name,
                                    &qualifiedName);
-        if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN) {
+        if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {
             LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32
                       " => resubmitting command", r);
             return r;
@@ -311,10 +311,10 @@ Esys_TR_FromTPMPublic(ESYS_CONTEXT * esys_context,
      */
     do {
         r = Esys_TR_FromTPMPublic_Finish(esys_context, object);
-        if ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN)
+        if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
             LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32
                       " => resubmitting command", r);
-    } while ((r & ~TSS2_RC_LAYER_MASK) == TSS2_BASE_RC_TRY_AGAIN);
+    } while (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN);
 
     /* Restore the timeout value to the original value */
     esys_context->timeout = timeouttmp;
