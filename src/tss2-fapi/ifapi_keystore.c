@@ -445,7 +445,7 @@ ifapi_keystore_initialize(
     }
 
     /* Create user directory if necessary */
-    r = ifapi_io_check_create_dir(keystore->userdir);
+    r = ifapi_io_check_create_dir(keystore->userdir, FAPI_WRITE);
     goto_if_error2(r, "User directory %s can't be created.", error, keystore->userdir);
 
     keystore->systemdir = strdup(config_systemdir);
