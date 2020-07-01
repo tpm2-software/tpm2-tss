@@ -231,6 +231,7 @@ init_explicit_key_path(
     } else {
         profile = context_profile;
     }
+    /* Create the initial node of the linked list. */
     *result = init_string_list(profile);
     if (*result == NULL) {
         free_string_list(*list_node1);
@@ -238,46 +239,68 @@ init_explicit_key_path(
         return TSS2_FAPI_RC_MEMORY;
     }
     if (list_node == NULL) {
-        /* extend default hierarchy. */
+        /* Storage hierarchy will be used as default. */
         hierarchy = "HS";
     } else {
-        if (strcmp(list_node->str, "HS") == 0 ||
-                strcmp(list_node->str, "HE") == 0 ||
-                strcmp(list_node->str, "HP") == 0 ||
-                strcmp(list_node->str, "HN") == 0 ||
-                strcmp(list_node->str, "HP") == 0) {
+        if (strcmp(list_node->str, "HN") == 0) {
             hierarchy = list_node->str;
             list_node = list_node->next;
-        }
-        /* Extend hierarchy. */
-        else if (strcmp(list_node->str, "EK") == 0) {
+        } else if (strcmp(list_node->str, "HS") == 0 ||
+                   strcmp(list_node->str, "HE") == 0 ||
+                   strcmp(list_node->str, "HN") == 0) {
+            hierarchy = list_node->str;
+            list_node = list_node->next;
+        } else if (strcmp(list_node->str, "EK") == 0) {
+            /* The hierarchy for an endorsement key will be added. */
             hierarchy = "HE";
-        } else if (list_node->next != NULL &&
-                   (strcmp(list_node->str, "SRK") == 0 ||
-                    strcmp(list_node->str, "SDK") == 0 ||
-                    strcmp(list_node->str, "UNK") == 0 ||
-                    strcmp(list_node->str, "UDK") == 0)) {
+        } else if (list_node->str != NULL &&
+                   strcmp(list_node->str, "SRK") == 0) {
+            /* The storage hierachy will be added. */
             hierarchy = "HS";
         } else {
-            hierarchy = "HS";
+            LOG_ERROR("Hierarchy cannot be determined.");
+            r = TSS2_FAPI_RC_BAD_PATH;
+            goto error;
         }
     }
-
-    /* Extend the current result. */
+    /* Add the used hierarchy to the linked list. */
     if (!add_string_to_list(*result, hierarchy)) {
         LOG_ERROR("Out of memory");
         r = TSS2_FAPI_RC_MEMORY;
         goto error;
     }
     if (list_node == NULL) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Explicit path can't be determined.",
+        goto_error(r, TSS2_FAPI_RC_BAD_PATH, "Explicit path can't be determined.",
                    error);
     }
+
+    /* Add the primary directory to the linked list. */
     if (!add_string_to_list(*result, list_node->str)) {
         LOG_ERROR("Out of memory");
         r = TSS2_FAPI_RC_MEMORY;
         goto error;
     }
+
+    if (strcmp(hierarchy, "HS") == 0 && strcmp(list_node->str, "EK") == 0) {
+        LOG_ERROR("Key EK cannot be create in the storage hierarchy.");
+        r = TSS2_FAPI_RC_BAD_PATH;
+        goto error;
+    }
+
+    if (strcmp(hierarchy, "HE") == 0 && strcmp(list_node->str, "SRK") == 0) {
+        LOG_ERROR("Key EK cannot be create in the endorsement hierarchy.");
+        r = TSS2_FAPI_RC_BAD_PATH;
+        goto error;
+    }
+
+    if (strcmp(hierarchy, "HN") == 0 &&
+        (strcmp(list_node->str, "SRK") == 0 || strcmp(list_node->str, "EK") == 0)) {
+        LOG_ERROR("Key EK and SRK cannot be created in NULL hierarchy.");
+        r = TSS2_FAPI_RC_BAD_PATH;
+        goto error;
+    }
+
+    /* Return the rest of the path. */
     *current_list_node = list_node->next;
     return TSS2_RC_SUCCESS;
 
@@ -324,6 +347,8 @@ ifapi_get_object_path(IFAPI_OBJECT *object)
        from keystore. */
     if (object->objectType == IFAPI_HIERARCHY_OBJ) {
         switch (object->handle) {
+        case ESYS_TR_RH_NULL:
+            return "/HN";
         case ESYS_TR_RH_OWNER:
             return "/HS";
         case ESYS_TR_RH_ENDORSEMENT:
@@ -838,6 +863,9 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
         if (pkey->creationTicket.hierarchy == TPM2_RH_EK) {
             r = ifapi_keystore_load_async(&context->keystore, &context->io, "/HE");
             return_if_error2(r, "Could not open hierarchy /HE");
+        } else if (pkey->creationTicket.hierarchy == TPM2_RH_NULL) {
+            r = ifapi_keystore_load_async(&context->keystore, &context->io, "/HN");
+            return_if_error2(r, "Could not open hierarchy /HN");
         } else {
             r = ifapi_keystore_load_async(&context->keystore, &context->io, "/HS");
             return_if_error2(r, "Could not open hierarchy /HS");
@@ -854,6 +882,8 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
 
         if (pkey->creationTicket.hierarchy == TPM2_RH_EK) {
             hierarchy->handle = ESYS_TR_RH_ENDORSEMENT;
+        } else if (pkey->creationTicket.hierarchy == TPM2_RH_NULL) {
+            hierarchy->handle = ESYS_TR_RH_NULL;
         } else {
             hierarchy->handle = ESYS_TR_RH_OWNER;
         }
@@ -2224,7 +2254,7 @@ ifapi_nv_write(
         r = ifapi_keystore_store_async(&context->keystore, &context->io,
                                        context->nv_cmd.nvPath,
                                        &context->nv_cmd.nv_object);
-        goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
+        goto_if_error_reset_state(r, "Could not open: %s", error_cleanup,
                                   context->nv_cmd.nvPath);
         context->nv_cmd.nv_write_state = NV2_WRITE_WRITE;
         fallthrough;
@@ -2831,6 +2861,8 @@ ifapi_initialize_object(
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
     ESYS_TR handle;
+    const char *path;
+    size_t pos = 0, pos2;
 
     switch (object->objectType) {
     case IFAPI_NV_OBJ:
@@ -2855,6 +2887,38 @@ ifapi_initialize_object(
         }
         object->authorization_state = AUTH_INIT;
         object->handle = handle;
+        break;
+
+    case IFAPI_HIERARCHY_OBJ:
+        path = object->rel_path;
+        if (path) {
+            /* Determine esys handle from pathname. */
+            if (strncmp("/", &path[0], 1) == 0)
+                pos += 1;
+            /* Skip profile if it does exist in path */
+            if (strncmp("P_", &path[pos], 2) == 0) {
+                char *  start = strchr(&path[pos], IFAPI_FILE_DELIM_CHAR);
+                if (start) {
+                    pos2 = (int)(start - &path[pos]);
+                    pos = pos2 + 2;
+                } else {
+                    return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid path.");
+                }
+            }
+
+            if (strcmp(&path[pos], "HS") == 0) {
+                object->handle = ESYS_TR_RH_OWNER;
+            } else if (strcmp(&path[pos], "HE") == 0) {
+                object->handle = ESYS_TR_RH_ENDORSEMENT;
+            } else if (strcmp(&path[pos], "LOCKOUT") == 0) {
+                object->handle = ESYS_TR_RH_LOCKOUT;
+            } else  if (strcmp(&path[pos], "HN") == 0) {
+                object->handle = ESYS_TR_RH_NULL;
+            } else {
+                return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid path.");
+            }
+        }
+        object->authorization_state = AUTH_INIT;
         break;
 
     default:
@@ -3367,13 +3431,13 @@ ifapi_key_create(
         r = ifapi_keystore_object_does_not_exist(&context->keystore,
                                                  context->cmd.Key_Create.keyPath,
                                                  object);
-        goto_if_error_reset_state(r, "Could not write: %sh", error_cleanup,
+        goto_if_error_reset_state(r, "Could not write: %s", error_cleanup,
                                   context->cmd.Key_Create.keyPath);
 
         /* Start writing the object to the key store */
         r = ifapi_keystore_store_async(&context->keystore, &context->io,
                                        context->cmd.Key_Create.keyPath, object);
-        goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
+        goto_if_error_reset_state(r, "Could not open: %s", error_cleanup,
                                   context->cmd.Key_Create.keyPath);
         ifapi_cleanup_ifapi_object(object);
         fallthrough;
@@ -4188,6 +4252,8 @@ ifapi_get_description(IFAPI_OBJECT *object, char **description)
             obj_description = "Endorsement Hierarchy";
         else if (object->handle == ESYS_TR_RH_LOCKOUT)
             obj_description = "Lockout Hierarchy";
+        else if (object->handle == ESYS_TR_RH_NULL)
+            obj_description = "Null Hierarchy";
         else
             obj_description = "Hierarchy";
         break;
@@ -4229,4 +4295,306 @@ ifapi_set_description(IFAPI_OBJECT *object, char *description)
         LOG_WARNING("Description can't be set");
         break;
     }
+}
+
+/** Determine key properties (primary, null hierarchy).
+ *
+ * It will be checked whether a path is the path of a primary key,
+ * and whether it's a key in null hiearchy
+ *
+ * @param[in,out] context The FAPI_CONTEXT.
+ * @param[in]     key_path the key path.
+ * @param[out]    is_primary if keyPaht is the path of a primary.
+ *
+ * @retval TSS2_RC_SUCCESS If the preparation is successful.
+ * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated for path names.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ */
+TSS2_RC
+ifapi_get_key_properties(
+    FAPI_CONTEXT *context,
+    char const *key_path,
+    bool *is_primary,
+    bool *in_null_hierarchy)
+{
+    TSS2_RC r;
+    NODE_STR_T *path_list = NULL;
+    size_t path_length;
+    const char *hierarchy;
+
+    LOG_TRACE("Check primary: %s", key_path);
+
+    *is_primary = false;
+    *in_null_hierarchy = false;
+
+    r = get_explicit_key_path(&context->keystore, key_path, &path_list);
+    return_if_error(r, "Compute explicit path.");
+
+    path_length = ifapi_path_length(path_list);
+
+    if (path_length == 3) {
+        if (strncmp("P_", path_list->str, 2) == 0) {
+            hierarchy = path_list->next->str;
+            if (strcmp(hierarchy,"HS") == 0 ||
+                strcmp(hierarchy,"HE") == 0 ||
+                strcmp(hierarchy,"HN") == 0) {
+                *is_primary = true;
+            }
+        }
+    }
+    if (path_length >= 3) {
+        hierarchy = path_list->next->str;
+        if (strcmp(hierarchy,"HN") == 0)
+            *in_null_hierarchy = true;
+    }
+    free_string_list(path_list);
+    return TSS2_RC_SUCCESS;
+}
+
+/** Creation of a primary key.
+ *
+ * Depending on the flags stored in the context the creation of a primary
+ * key will be prepared.
+ *
+ * @param[in] context The FAPI_CONTEXT.
+ * @param[in] template The template which defines the key attributes and whether the
+ *            key will be persistent.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if a wrong type was passed.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ *         object store.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
+ *         during authorization.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
+ */
+TSS2_RC
+ifapi_create_primary(
+    FAPI_CONTEXT *context,
+    IFAPI_KEY_TEMPLATE *template)
+{
+    TSS2_RC r;
+    ESYS_TR auth_session;
+    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_CREATION_DATA *creationData = NULL;
+    TPM2B_DIGEST *creationHash = NULL;
+    TPMT_TK_CREATION *creationTicket = NULL;
+    IFAPI_OBJECT *object = &context->cmd.Key_Create.object;
+    IFAPI_OBJECT *hierarchy = &context->cmd.Key_Create.hierarchy;
+    IFAPI_KEY *pkey = &context->cmd.Key_Create.object.misc.key;
+    const char *hierarchy_path;
+    const char *profile_name;
+
+    /* Compute policy */
+
+    switch (context->cmd.Key_Create.state) {
+    statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_INIT);
+        profile_name = context->loadKey.path_list->str;
+        r = ifapi_profiles_get(&context->profiles, profile_name,
+                               &context->cmd.Key_Create.profile);
+        goto_if_error_reset_state(r, "Retrieving profile data", error_cleanup);
+
+        context->cmd.Key_Create.public_templ = *template;
+        r = ifapi_merge_profile_into_template(context->cmd.Key_Create.profile,
+                                              &context->cmd.Key_Create.public_templ);
+        goto_if_error_reset_state(r, "Merge profile", error_cleanup);
+
+        /* Persistent keys are not allowd in the NULL hierarchy. */
+
+        if (template->persistent_handle) {
+            hierarchy_path = context->loadKey.path_list->next->str;
+            if (strcmp(hierarchy_path, "HN") == 0)
+                goto_error_reset_state(r, TSS2_FAPI_RC_BAD_VALUE,
+                                       "Persistent keys are not possible in the NULL "
+                                       "hierarchy.", error_cleanup);
+        }
+
+        r = ifapi_get_sessions_async(context,
+                                     IFAPI_SESSION_GENEK | IFAPI_SESSION1,
+                                     TPMA_SESSION_ENCRYPT | TPMA_SESSION_DECRYPT, 0);
+        goto_if_error_reset_state(r, "Create sessions", error_cleanup);
+
+        fallthrough;
+
+    statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_WAIT_FOR_SESSION);
+        r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
+                                      context->profiles.default_profile.nameAlg);
+        return_try_again(r);
+        goto_if_error(r, "Create FAPI session.", error_cleanup);
+
+        hierarchy_path = context->loadKey.path_list->next->str;
+
+        r = ifapi_keystore_load_async(&context->keystore, &context->io, hierarchy_path);
+        free_string_list(context->loadKey.path_list);
+        context->loadKey.path_list = NULL;
+        return_if_error2(r, "Could not open hierarchy /%s", hierarchy_path);
+
+        fallthrough;
+
+    statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_WAIT_FOR_HIERARCHY);
+        r = ifapi_keystore_load_finish(&context->keystore, &context->io, hierarchy);
+        return_try_again(r);
+        return_if_error(r, "read_finish failed");
+
+        r = ifapi_initialize_object(context->esys, hierarchy);
+        goto_if_error_reset_state(r, "Initialize hierarchy object", error_cleanup);
+
+        fallthrough;
+
+    statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_WAIT_FOR_AUTHORIZE1);
+        r = ifapi_authorize_object(context, hierarchy, &auth_session);
+        FAPI_SYNC(r, "Authorize hierarchy.", error_cleanup);
+
+        r = Esys_CreatePrimary_Async(context->esys, hierarchy->handle,
+                                     auth_session,
+                                     ESYS_TR_NONE, ESYS_TR_NONE,
+                                     &context->cmd.Key_Create.inSensitive,
+                                     &context->cmd.Key_Create.public_templ.public,
+                                     &context->cmd.Key_Create.outsideInfo,
+                                     &context->cmd.Key_Create.creationPCR);
+        goto_if_error_reset_state(r, "Prepare create primary", error_cleanup);
+
+        fallthrough;
+
+    statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_WAIT_FOR_PRIMARY);
+        r = Esys_CreatePrimary_Finish(context->esys,
+                                      &context->cmd.Key_Create.handle,
+                                      &outPublic, &creationData, &creationHash,
+                                      &creationTicket);
+        try_again_or_error_goto(r, "Create primary.", error_cleanup);
+
+        /* Prepare object for serialization */
+        object->system = context->cmd.Key_Create.public_templ.system;
+        object->objectType = IFAPI_KEY_OBJ;
+        object->misc.key.public = *outPublic;
+        object->misc.key.private.size = 0;
+        object->misc.key.private.buffer = NULL;
+        object->misc.key.policyInstance = NULL;
+        object->misc.key.creationData = *creationData;
+        object->misc.key.creationTicket = *creationTicket;
+        object->misc.key.description = NULL;
+        object->misc.key.certificate = NULL;
+        SAFE_FREE(pkey->serialization.buffer);
+        r = Esys_TR_Serialize(context->esys, context->cmd.Key_Create.handle,
+                              &pkey->serialization.buffer, &pkey->serialization.size);
+        goto_if_error(r, "Error serialize esys object", error_cleanup);
+        SAFE_FREE(creationData);
+        SAFE_FREE(creationTicket);
+        SAFE_FREE(creationHash);
+        if (context->cmd.Key_Create.inSensitive.sensitive.userAuth.size > 0)
+            object->misc.key.with_auth = TPM2_YES;
+        else
+            object->misc.key.with_auth = TPM2_NO;;
+        r = ifapi_get_name(&outPublic->publicArea, &object->misc.key.name);
+        goto_if_error(r, "Get key name", error_cleanup);
+
+        if (object->misc.key.public.publicArea.type == TPM2_ALG_RSA)
+            object->misc.key.signing_scheme = context->cmd.Key_Create.profile->rsa_signing_scheme;
+        else
+            object->misc.key.signing_scheme = context->cmd.Key_Create.profile->ecc_signing_scheme;
+        fallthrough;
+
+    statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_WAIT_FOR_AUTHORIZE2);
+        if (template->persistent_handle) {
+            r = ifapi_authorize_object(context, hierarchy, &auth_session);
+            FAPI_SYNC(r, "Authorize hierarchy.", error_cleanup);
+
+            /* Prepare making the created primary permanent. */
+            r = Esys_EvictControl_Async(context->esys, hierarchy->handle,
+                                        context->cmd.Key_Create.handle,
+                                        auth_session, ESYS_TR_NONE,
+                                        ESYS_TR_NONE,
+                                        object->misc.key.persistent_handle);
+            goto_if_error(r, "Error Esys EvictControl", error_cleanup);
+        }
+        fallthrough;
+
+    statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_WAIT_FOR_EVICT_CONTROL);
+        if (template->persistent_handle) {
+            /* Prepare making the loaded key permanent. */
+            r = Esys_EvictControl_Finish(context->esys, &object->handle);
+            return_try_again(r);
+            goto_if_error(r, "Evict control failed", error_cleanup);
+        }
+
+        fallthrough;
+
+    statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_FLUSH);
+        /* Flush the primary key. */
+        r = ifapi_flush_object(context, context->cmd.Key_Create.handle);
+        return_try_again(r);
+        goto_if_error(r, "Flush key", error_cleanup);
+
+        fallthrough;
+
+    statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_WRITE_PREPARE);
+        SAFE_FREE(outPublic);
+
+        /* Perform esys serialization */
+        r = ifapi_esys_serialize_object(context->esys, object);
+        goto_if_error(r, "Prepare serialization", error_cleanup);
+
+        /* Check whether object already exists in key store.*/
+        r = ifapi_keystore_object_does_not_exist(&context->keystore,
+                                                 context->cmd.Key_Create.keyPath,
+                                                 object);
+        goto_if_error_reset_state(r, "Could not write: %s", error_cleanup,
+                                  context->cmd.Key_Create.keyPath);
+
+        /* Start writing the object to the key store */
+        r = ifapi_keystore_store_async(&context->keystore, &context->io,
+                                       context->cmd.Key_Create.keyPath, object);
+        goto_if_error_reset_state(r, "Could not open: %s", error_cleanup,
+                                  context->cmd.Key_Create.keyPath);
+        ifapi_cleanup_ifapi_object(object);
+        fallthrough;
+
+    statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_WRITE);
+        /* Finish writing the key to the key store */
+        r = ifapi_keystore_store_finish(&context->keystore, &context->io);
+        return_try_again(r);
+        return_if_error_reset_state(r, "write_finish failed");
+
+        fallthrough;
+
+    statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_CLEANUP);
+        r = ifapi_cleanup_session(context);
+        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+
+        context->cmd.Key_Create.state = KEY_CREATE_INIT;
+        break;
+
+    statecasedefault(context->cmd.Key_Create.state);
+    }
+    free_string_list(context->loadKey.path_list);
+    ifapi_cleanup_ifapi_object(hierarchy);
+    SAFE_FREE(outPublic);
+    SAFE_FREE(creationData);
+    SAFE_FREE(creationHash);
+    SAFE_FREE(creationTicket);
+    SAFE_FREE(context->cmd.Key_Create.policyPath);
+    SAFE_FREE(context->cmd.Key_Create.keyPath);
+    ifapi_cleanup_ifapi_object(object);
+    ifapi_session_clean(context);
+    return TSS2_RC_SUCCESS;
+
+ error_cleanup:
+    SAFE_FREE(outPublic);
+    SAFE_FREE(creationData);
+    SAFE_FREE(creationHash);
+    SAFE_FREE(creationTicket);
+    SAFE_FREE(context->cmd.Key_Create.policyPath);
+    SAFE_FREE(context->cmd.Key_Create.keyPath);
+    free_string_list(context->loadKey.path_list);
+    ifapi_cleanup_ifapi_object(hierarchy);
+    return r;
+
 }

@@ -55,6 +55,7 @@ typedef struct {
     TPMI_YES_NO                               with_auth;    /**< Authorization provided */
     char                                   *description;    /**< Human readable description of hierarchy */
     TPM2B_DIGEST                             authPolicy;
+    ESYS_TR                                  esysHandle;
     bool                                      authorized;   /**< Switch whether hiearchy is authorized. */
 } IFAPI_HIERARCHY;
 

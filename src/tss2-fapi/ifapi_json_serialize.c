@@ -326,6 +326,12 @@ ifapi_json_IFAPI_HIERARCHY_serialize(const IFAPI_HIERARCHY *in, json_object **js
 
     json_object_object_add(*jso, "description", jso2);
 
+    jso2 = NULL;
+    r = ifapi_json_UINT32_serialize(in->esysHandle, &jso2);
+    return_if_error(r, "Serialize esys handle");
+
+    json_object_object_add(*jso, "esysHandle", jso2);
+
     return TSS2_RC_SUCCESS;
 }
 

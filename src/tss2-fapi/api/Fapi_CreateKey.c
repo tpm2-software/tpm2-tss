@@ -159,6 +159,8 @@ Fapi_CreateKey_Async(
 
     TSS2_RC r;
     TPMA_OBJECT *attributes;
+    bool is_primary;
+    bool in_null_hierarchy;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -180,7 +182,7 @@ Fapi_CreateKey_Async(
     r = ifapi_set_key_flags(type ? type : "",
                             (policyPath && strcmp(policyPath, "") != 0) ? true : false,
                             &context->cmd.Key_Create.public_templ);
-    return_if_error(r, "Set key flags for key");
+    goto_if_error(r, "Set key flags for key", error_cleanup);
 
     /* If neither sign nor decrypt is set both flags will
        sign_encrypt and decrypt have to be set. */
@@ -190,10 +192,31 @@ Fapi_CreateKey_Async(
         *attributes |= TPMA_OBJECT_DECRYPT;
     }
 
+    r = ifapi_get_key_properties(context, path, &is_primary, &in_null_hierarchy);
+    goto_if_error(r, "Check primary path.", error_cleanup);
+
+    if (in_null_hierarchy && context->cmd.Key_Create.public_templ.persistent_handle) {
+        /* Keys in the null hierarchy cannot be persistent. */
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                   "Key %s in the NULL hiearchy cannot be persistent.",
+                   error_cleanup, path);
+    }
+
     /* Initialize the context state for this operation. */
-    context->state = KEY_CREATE;
+    if (is_primary) {
+         context->state = KEY_CREATE_PRIMARY;
+         context->cmd.Key_Create.state = KEY_CREATE_PRIMARY_INIT;
+    } else {
+        context->state = KEY_CREATE;
+    }
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
+
+ error_cleanup:
+    SAFE_FREE(context->cmd.Key_Create.policyPath);
+    SAFE_FREE(context->cmd.Key_Create.keyPath);
+    free_string_list(context->loadKey.path_list);
+    return r;
 }
 
 /** Asynchronous finish function for Fapi_CreateKey
@@ -245,6 +268,14 @@ Fapi_CreateKey_Finish(
             ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
             context->state = _FAPI_STATE_INIT;
             LOG_TRACE("finished");
+            return TSS2_RC_SUCCESS;
+
+        statecase(context->state, KEY_CREATE_PRIMARY);
+        r = ifapi_create_primary(context, &command->public_templ);
+            return_try_again(r);
+            goto_if_error(r, "Key create", error_cleanup);
+
+            context->state = _FAPI_STATE_INIT;
             return TSS2_RC_SUCCESS;
 
         statecasedefault(context->state);

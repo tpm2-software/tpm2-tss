@@ -281,6 +281,9 @@ ifapi_get_hierary_handle(const char *path)
     if (strcmp(&path[pos], "HS") == 0) {
         return ESYS_TR_RH_OWNER;
     }
+    if (strcmp(&path[pos], "HN") == 0) {
+        return  ESYS_TR_RH_NULL ;
+    }
     if (strcmp(&path[pos], "LOCKOUT") == 0) {
         return ESYS_TR_RH_LOCKOUT;
     }

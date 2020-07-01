@@ -261,4 +261,14 @@ ifapi_get_description(IFAPI_OBJECT *object, char **description);
 void
 ifapi_set_description(IFAPI_OBJECT *object, char *description);
 
+TSS2_RC
+ifapi_get_key_properties(
+    FAPI_CONTEXT *context,
+    char const *key_path,
+    bool *is_primary,
+    bool *in_null_hierarchy);
+
+TSS2_RC
+ifapi_create_primary(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template);
+
 #endif /* FAPI_UTIL_H */

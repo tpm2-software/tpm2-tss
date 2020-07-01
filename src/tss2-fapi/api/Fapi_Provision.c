@@ -286,6 +286,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
     IFAPI_Provision * command = &context->cmd.Provision;
     IFAPI_OBJECT *hierarchy_hs = &command->hierarchy_hs;
     IFAPI_OBJECT *hierarchy_he = &command->hierarchy_he;
+    IFAPI_OBJECT *hierarchy_hn = &command->hierarchy_hn;
     IFAPI_OBJECT *hierarchy_lockout = &command->hierarchy_lockout;
     TPMS_CAPABILITY_DATA **capabilityData = &command->capabilityData;
     IFAPI_NV_Cmds * nvCmd = &context->nv_cmd;
@@ -342,6 +343,14 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                                                           hierarchies[command->path_idx]);
                     goto_if_error(r, "Copy hierarchy", error_cleanup);
                 }
+            } else if (strcmp(path, "/HN") == 0) {
+                command->hierarchies[command->path_idx].handle = ESYS_TR_RH_NULL;
+                if (!hierarchy_hn->handle) {
+                    r = ifapi_copy_ifapi_hierarchy_object(hierarchy_hn,
+                                                          &command->
+                                                          hierarchies[command->path_idx]);
+                    goto_if_error(r, "Copy hierarchy", error_cleanup);
+                }
             } else if (strcmp(path, "/LOCKOUT") == 0) {
                 command->hierarchies[command->path_idx].handle = ESYS_TR_RH_LOCKOUT;
                 if (!hierarchy_lockout->handle) {
@@ -383,6 +392,9 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                          "Endorsement Hierarchy", r, error_cleanup);
             ifapi_init_hierarchy_object(hierarchy_lockout, ESYS_TR_RH_LOCKOUT);
             strdup_check(hierarchy_lockout->misc.hierarchy.description, "Lockout Hierarchy",
+                         r, error_cleanup);
+            ifapi_init_hierarchy_object(hierarchy_hn, ESYS_TR_RH_NULL);
+            strdup_check(hierarchy_hn->misc.hierarchy.description, "Null Hierarchy",
                          r, error_cleanup);
             fallthrough;
 
@@ -1045,10 +1057,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             return_try_again(r);
             goto_if_error_reset_state(r, "write_finish failed", error_cleanup);
 
-            /*
-             * Adaption of the Endorsement hierarchy to the passed parameters
-             * and the current profile.
-             */
+            /* Write all lockout hierarchies. */
             command->hierarchy = hierarchy_lockout;
             command->path_idx = 0;
             if (command->numHierarchyObjects) {
@@ -1117,11 +1126,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             return_try_again(r);
             return_if_error_reset_state(r, "write_finish failed");
 
-            /*
-             * Adaption of the owner hierarchy to the passed parameters
-             * and the current profile.
-             */
-
+            /* Write all endorsement hierarchies. */
             command->hierarchy = hierarchy_he;
             command->path_idx = 0;
             if (command->numHierarchyObjects) {
@@ -1192,7 +1197,31 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             return_try_again(r);
             goto_if_error_reset_state(r, "write_finish failed", error_cleanup);
 
+            /* Write all storage hierarchies. */
             command->hierarchy = hierarchy_hs;
+            command->path_idx = 0;
+            if (command->numHierarchyObjects) {
+                context->state =  PROVISION_WRITE_HIERARCHIES;
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            }
+            fallthrough;
+
+       statecase(context->state, PROVISION_PREPARE_NULL);
+            command->hierarchy = hierarchy_hn;
+            /* Start writing the null hierarchy object to the key store */
+            r = ifapi_keystore_store_async(&context->keystore, &context->io, "/HN",
+                                           &command->hierarchy_hn);
+            goto_if_error_reset_state(r, "Could not open: %s", error_cleanup, "/HN");
+            context->state = PROVISION_WRITE_NULL;
+            fallthrough;
+
+        statecase(context->state, PROVISION_WRITE_NULL);
+            /* The null hierarchy object will be written to key store. */
+            r = ifapi_keystore_store_finish(&context->keystore, &context->io);
+            return_try_again(r);
+            goto_if_error_reset_state(r, "write_finish failed", error_cleanup);
+
+            command->hierarchy = hierarchy_hn;
             command->path_idx = 0;
             if (command->numHierarchyObjects) {
                 context->state =  PROVISION_WRITE_HIERARCHIES;
@@ -1248,6 +1277,8 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                is continued at the appropriate next state. */
             if (command->path_idx == command->numHierarchyObjects) {
                 if (command->hierarchy->handle == ESYS_TR_RH_OWNER)
+                    context->state = PROVISION_PREPARE_NULL;
+                if (command->hierarchy->handle == ESYS_TR_RH_NULL)
                     context->state = PROVISION_FINISHED;
                 else if (command->hierarchy->handle == ESYS_TR_RH_ENDORSEMENT)
                     context->state = PROVISION_CHANGE_SH_CHECK;
@@ -1329,6 +1360,7 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(pkeyObject);
     ifapi_cleanup_ifapi_object(hierarchy_hs);
     ifapi_cleanup_ifapi_object(hierarchy_he);
+    ifapi_cleanup_ifapi_object(hierarchy_hn);
     ifapi_cleanup_ifapi_object(hierarchy_lockout);
     for (size_t i = 0; i < command->numPaths; i++) {
         SAFE_FREE(command->pathlist[i]);

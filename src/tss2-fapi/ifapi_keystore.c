@@ -100,25 +100,25 @@ initialize_explicit_key_path(
         /* Storage hierarchy will be used as default. */
         hierarchy = "HS";
     } else {
-        if (strcmp(list_node->str, "HS") == 0 ||
-                strcmp(list_node->str, "HE") == 0 ||
-                strcmp(list_node->str, "HP") == 0 ||
-                strcmp(list_node->str, "HN") == 0 ||
-                strcmp(list_node->str, "HP") == 0) {
+        if (strcmp(list_node->str, "HN") == 0) {
+            hierarchy = list_node->str;
+            list_node = list_node->next;
+        } else if (strcmp(list_node->str, "HS") == 0 ||
+                   strcmp(list_node->str, "HE") == 0 ||
+                   strcmp(list_node->str, "HN") == 0) {
             hierarchy = list_node->str;
             list_node = list_node->next;
         } else if (strcmp(list_node->str, "EK") == 0) {
             /* The hierarchy for an endorsement key will be added. */
             hierarchy = "HE";
-        } else if (list_node->next != NULL &&
-                   (strcmp(list_node->str, "SRK") == 0 ||
-                    strcmp(list_node->str, "SDK") == 0 ||
-                    strcmp(list_node->str, "UNK") == 0 ||
-                    strcmp(list_node->str, "UDK") == 0)) {
+        } else if (list_node->str != NULL &&
+                   strcmp(list_node->str, "SRK") == 0) {
             /* The storage hierachy will be added. */
             hierarchy = "HS";
         } else {
-            hierarchy = "HS";
+            LOG_ERROR("Hierarchy cannot be determined.");
+            r = TSS2_FAPI_RC_PATH_NOT_FOUND;
+            goto error;
         }
     }
     /* Add the used hierarchy to the linked list. */
@@ -128,7 +128,7 @@ initialize_explicit_key_path(
         goto error;
     }
     if (list_node == NULL) {
-        goto_error(r, TSS2_FAPI_RC_BAD_PATH, "Explicit path can't be determined.",
+        goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND, "Explicit path can't be determined.",
                    error);
     }
 
@@ -138,12 +138,26 @@ initialize_explicit_key_path(
         r = TSS2_FAPI_RC_MEMORY;
         goto error;
     }
-    /* Check primary directory */
-    if (!((strcmp(hierarchy, "HS") == 0 && strcmp(list_node->str, "SRK") == 0) ||
-          (strcmp(hierarchy, "HE") == 0 && strcmp(list_node->str, "EK") == 0))) {
-        goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND, "Invalid path: %s",
-                   error, ipath);
+
+    if (strcmp(hierarchy, "HS") == 0 && strcmp(list_node->str, "EK") == 0) {
+        LOG_ERROR("Key EK cannot be create in the storage hierarchy.");
+        r = TSS2_FAPI_RC_PATH_NOT_FOUND;
+        goto error;
     }
+
+    if (strcmp(hierarchy, "HE") == 0 && strcmp(list_node->str, "SRK") == 0) {
+        LOG_ERROR("Key EK cannot be create in the endorsement hierarchy.");
+        r = TSS2_FAPI_RC_PATH_NOT_FOUND;
+        goto error;
+    }
+
+    if (strcmp(hierarchy, "HN") == 0 &&
+        (strcmp(list_node->str, "SRK") == 0 || strcmp(list_node->str, "EK") == 0)) {
+        LOG_ERROR("Key EK and SRK cannot be created in NULL hierarchy.");
+        r = TSS2_FAPI_RC_PATH_NOT_FOUND;
+        goto error;
+    }
+
     /* Return the rest of the path. */
     *current_list_node = list_node->next;
     return TSS2_RC_SUCCESS;
@@ -950,6 +964,7 @@ expand_directory(IFAPI_KEYSTORE *keystore, const char *path, char **directory_na
         if (path[0] == IFAPI_FILE_DELIM_CHAR)
             start_pos = 1;
         if ((strncmp(&path[start_pos], "HS", 2) == 0 ||
+             strncmp(&path[start_pos], "HN", 2) == 0 ||
              strncmp(&path[start_pos], "HE", 2) == 0) &&
             strlen(&path[start_pos]) <= 3) {
             /* Root directory is hierarchy */
