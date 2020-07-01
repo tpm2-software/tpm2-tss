@@ -45,9 +45,13 @@ test_esys_get_capability(ESYS_CONTEXT * esys_context)
 
     goto_if_error(r, "Error esys get capability", error);
 
+    SAFE_FREE(capabilityData);
+
     return EXIT_SUCCESS;
 
  error:
+    SAFE_FREE(capabilityData);
+
     return EXIT_FAILURE;
 }
 
