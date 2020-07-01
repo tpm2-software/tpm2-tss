@@ -461,6 +461,13 @@ ifapi_json_IFAPI_HIERARCHY_deserialize(json_object *jso,  IFAPI_HIERARCHY *out)
     r = ifapi_json_char_deserialize(jso2, &out->description);
     return_if_error(r, "BAD VALUE");
 
+    if (ifapi_get_sub_object(jso, "esysHandle", &jso2)) {
+        r = ifapi_json_UINT32_deserialize(jso2, &out->esysHandle);
+        return_if_error(r, "BAD VALUE");
+    } else {
+        out->esysHandle = ESYS_TR_RH_OWNER;
+    }
+
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }

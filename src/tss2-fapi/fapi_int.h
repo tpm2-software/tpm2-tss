@@ -42,6 +42,7 @@
 #define IFAPI_EK_KEY_PATH "/HE/EK"
 #define IFAPI_HS_PATH "/HS"
 #define IFAPI_HE_PATH "/HE"
+#define IFAPI_HN_PATH "/HN"
 #define IFAPI_LOCKOUT_PATH "/LOCKOUT"
 #define IFAPI_SRK_OBJECT_PATH "/HS/SRK/object.json"
 #define IFAPI_HS_OBJECT_PATH "/HS/object.json"
@@ -332,7 +333,18 @@ enum IFAPI_KEY_CREATE_STATE {
     KEY_CREATE_CALCULATE_POLICY,
     KEY_CREATE_WAIT_FOR_AUTHORIZATION,
     KEY_CREATE_CLEANUP,
-    KEY_CREATE_WAIT_FOR_RANDOM
+    KEY_CREATE_WAIT_FOR_RANDOM,
+    KEY_CREATE_PRIMARY_INIT,
+    KEY_CREATE_PRIMARY_WAIT_FOR_SESSION,
+    KEY_CREATE_PRIMARY_WAIT_FOR_HIERARCHY,
+    KEY_CREATE_PRIMARY_WAIT_FOR_AUTHORIZE1,
+    KEY_CREATE_PRIMARY_WAIT_FOR_AUTHORIZE2,
+    KEY_CREATE_PRIMARY_WAIT_FOR_PRIMARY,
+    KEY_CREATE_PRIMARY_WAIT_FOR_EVICT_CONTROL,
+    KEY_CREATE_PRIMARY_FLUSH,
+    KEY_CREATE_PRIMARY_WRITE_PREPARE,
+    KEY_CREATE_PRIMARY_WRITE,
+    KEY_CREATE_PRIMARY_CLEANUP
 };
 
 /** The data structure holding internal state of Fapi_CreateKey.
@@ -481,6 +493,7 @@ typedef struct {
     IFAPI_OBJECT hierarchy_lockout; /**< The lockout hierarchy */
     IFAPI_OBJECT hierarchy_hs;      /**< The storage hierarchy */
     IFAPI_OBJECT hierarchy_he;      /**< The endorsement hierarchy */
+    IFAPI_OBJECT hierarchy_hn;      /**< The null hierarchy */
     IFAPI_OBJECT *hierarchy;         /**< The current hierarchy */
     TPMS_POLICY *hierarchy_policy;  /**< Policy of the current used hierarchy. */
     IFAPI_KEY_TEMPLATE public_templ;  /**< The basic template for the keys public data */
@@ -821,6 +834,8 @@ enum _FAPI_STATE {
     PROVISION_FINISHED,
     PROVISION_WRITE_SH,
     PROVISION_WRITE_EH,
+    PROVISION_PREPARE_NULL,
+    PROVISION_WRITE_NULL,
     PROVISION_WRITE_LOCKOUT,
     PROVISION_WRITE_LOCKOUT_PARAM,
     PROVISION_PREPARE_LOCKOUT_PARAM,
@@ -837,6 +852,7 @@ enum _FAPI_STATE {
     PROVISION_PREPARE_GET_CAP_AUTH_STATE,
 
     KEY_CREATE,
+    KEY_CREATE_PRIMARY,
 
     CREATE_SEAL,
 
