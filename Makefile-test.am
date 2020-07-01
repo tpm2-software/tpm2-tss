@@ -175,6 +175,7 @@ ESYS_TESTS_INTEGRATION_DESTRUCTIVE = \
     test/integration/esys-set-algorithm-set.int
 
 ESYS_TESTS_INTEGRATION_MANDATORY = \
+    test/integration/esys-act-set-timeout.int \
     test/integration/esys-certify-creation.int \
     test/integration/esys-certify.int \
     test/integration/esys-clear-control.int \
@@ -712,6 +713,13 @@ if ESYS
 ESYS_SRC_UTIL_CRYPTO_SRC = src/tss2-esys/esys_iutil.c \
                            src/tss2-esys/esys_crypto.c \
                            $(TSS2_ESYS_SRC_CRYPTO)
+
+test_integration_esys_act_set_timeout_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_act_set_timeout_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_act_set_timeout_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_act_set_timeout_int_SOURCES = \
+    test/integration/esys-act-set-timeout.int.c \
+    test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_audit_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_audit_int_LDADD   = $(TESTS_LDADD)
