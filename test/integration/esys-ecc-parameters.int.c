@@ -52,9 +52,13 @@ test_esys_ecc_parameters(ESYS_CONTEXT * esys_context)
     }
     goto_if_error(r, "Error: ECC_Parameters", error);
 
+    SAFE_FREE(parameters);
+
     return EXIT_SUCCESS;
 
  error:
+    SAFE_FREE(parameters);
+
     return failure_return;
 }
 
