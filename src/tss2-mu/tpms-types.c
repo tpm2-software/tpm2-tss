@@ -1311,3 +1311,21 @@ TPMS_MARSHAL_2(TPMS_ID_OBJECT,
 TPMS_UNMARSHAL_2(TPMS_ID_OBJECT,
                  integrityHMAC, Tss2_MU_TPM2B_DIGEST_Unmarshal,
                  encIdentity, Tss2_MU_TPM2B_DIGEST_Unmarshal)
+
+TPMS_MARSHAL_2(TPMS_NV_DIGEST_CERTIFY_INFO,
+               indexName, ADDR, Tss2_MU_TPM2B_NAME_Marshal,
+               nvDigest, ADDR, Tss2_MU_TPM2B_DIGEST_Marshal)
+
+TPMS_UNMARSHAL_2(TPMS_NV_DIGEST_CERTIFY_INFO,
+                 indexName, Tss2_MU_TPM2B_NAME_Unmarshal,
+                 nvDigest, Tss2_MU_TPM2B_DIGEST_Unmarshal)
+
+TPMS_MARSHAL_3(TPMS_ACT_DATA,
+               handle, VAL, Tss2_MU_TPM2_HANDLE_Marshal,
+               timeout, VAL, Tss2_MU_UINT32_Marshal,
+               attributes, VAL, Tss2_MU_UINT32_Marshal)
+
+TPMS_UNMARSHAL_3(TPMS_ACT_DATA,
+                 handle, Tss2_MU_TPM2_HANDLE_Unmarshal,
+                 timeout, Tss2_MU_UINT32_Unmarshal,
+                 attributes, Tss2_MU_UINT32_Unmarshal)
