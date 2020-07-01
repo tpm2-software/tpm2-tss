@@ -6,6 +6,9 @@
         Tss2_Sys_AC_Send_Prepare;
         Tss2_Sys_AC_Send_Complete;
         Tss2_Sys_AC_Send;
+        Tss2_Sys_ACT_SetTimeout_Prepare;
+        Tss2_Sys_ACT_SetTimeout_Complete;
+        Tss2_Sys_ACT_SetTimeout;
         Tss2_Sys_ActivateCredential_Prepare;
         Tss2_Sys_ActivateCredential_Complete;
         Tss2_Sys_ActivateCredential;
@@ -15,6 +18,9 @@
         Tss2_Sys_CertifyCreation_Prepare;
         Tss2_Sys_CertifyCreation_Complete;
         Tss2_Sys_CertifyCreation;
+        Tss2_Sys_CertifyX509_Prepare;
+        Tss2_Sys_CertifyX509_Complete;
+        Tss2_Sys_CertifyX509;
         Tss2_Sys_ChangeEPS_Prepare;
         Tss2_Sys_ChangeEPS_Complete;
         Tss2_Sys_ChangeEPS;

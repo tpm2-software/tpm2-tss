@@ -51,8 +51,10 @@
     <ClCompile Include="api\Tss2_Sys_ActivateCredential.c" />
     <ClCompile Include="api\Tss2_Sys_AC_GetCapability.c" />
     <ClCompile Include="api\Tss2_Sys_AC_Send.c" />
+    <ClCompile Include="api\Tss2_Sys_ACT_SetTimeout.c" />
     <ClCompile Include="api\Tss2_Sys_Certify.c" />
     <ClCompile Include="api\Tss2_Sys_CertifyCreation.c" />
+    <ClCompile Include="api\Tss2_Sys_CertifyX509.c" />
     <ClCompile Include="api\Tss2_Sys_ChangeEPS.c" />
     <ClCompile Include="api\Tss2_Sys_ChangePPS.c" />
     <ClCompile Include="api\Tss2_Sys_Clear.c" />

@@ -813,6 +813,33 @@ TSS2_RC Tss2_Sys_Certify(
     TPMT_SIGNATURE *signature,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray);
 
+TSS2_RC Tss2_Sys_CertifyX509_Prepare(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPMI_DH_OBJECT objectHandle,
+    TPMI_DH_OBJECT signHandle,
+    const TPM2B_DATA *reserved,
+    const TPMT_SIG_SCHEME *inScheme,
+    const TPM2B_MAX_BUFFER *partialCertificate);
+
+TSS2_RC Tss2_Sys_CertifyX509_Complete(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPM2B_MAX_BUFFER *addedToCertificate,
+    TPM2B_DIGEST *tbsDigest,
+    TPMT_SIGNATURE *signature);
+
+TSS2_RC Tss2_Sys_CertifyX509(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPMI_DH_OBJECT objectHandle,
+    TPMI_DH_OBJECT signHandle,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+    const TPM2B_DATA *reserved,
+    const TPMT_SIG_SCHEME *inScheme,
+    const TPM2B_MAX_BUFFER *partialCertificate,
+    TPM2B_MAX_BUFFER *addedToCertificate,
+    TPM2B_DIGEST *tbsDigest,
+    TPMT_SIGNATURE *signature,
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray);
+
 TSS2_RC Tss2_Sys_CertifyCreation_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
@@ -2178,6 +2205,21 @@ TSS2_RC Tss2_Sys_Policy_AC_SendSelect(
     TPM2B_NAME *authHandleName,
     TPM2B_NAME *acName,
     TPMI_YES_NO includeObject,
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray);
+
+TSS2_RC Tss2_Sys_ACT_SetTimeout_Prepare(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPMI_RH_ACT actHandle,
+    UINT32 startTimeout);
+
+TSS2_RC Tss2_Sys_ACT_SetTimeout_Complete(
+    TSS2_SYS_CONTEXT *sysContext);
+
+TSS2_RC Tss2_Sys_ACT_SetTimeout(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPMI_RH_ACT actHandle,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+    UINT32 startTimeout,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray);
 
 TSS2_RC Tss2_Sys_PolicyTemplate_Prepare(
