@@ -177,6 +177,7 @@ ESYS_TESTS_INTEGRATION_DESTRUCTIVE = \
 ESYS_TESTS_INTEGRATION_MANDATORY = \
     test/integration/esys-act-set-timeout.int \
     test/integration/esys-certify-creation.int \
+    test/integration/esys-certifyX509.int \
     test/integration/esys-certify.int \
     test/integration/esys-clear-control.int \
     test/integration/esys-clockset.int \
@@ -733,6 +734,13 @@ test_integration_esys_certify_creation_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_certify_creation_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_certify_creation_int_SOURCES = \
     test/integration/esys-certify-creation.int.c \
+    test/integration/main-esys.c test/integration/test-esys.h
+
+test_integration_esys_certifyX509_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_certifyX509_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_certifyX509_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_certifyX509_int_SOURCES = \
+    test/integration/esys-certifyX509.int.c \
     test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_certify_int_CFLAGS  = $(TESTS_CFLAGS)
