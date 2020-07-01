@@ -1239,6 +1239,34 @@ Tss2_MU_TPMS_ID_OBJECT_Unmarshal(
     TPMS_ID_OBJECT *dest);
 
 TSS2_RC
+Tss2_MU_TPMS_ACT_DATA_Marshal(
+    TPMS_ACT_DATA   const *src,
+    uint8_t         buffer[],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPMS_ACT_DATA_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_ACT_DATA  *dest);
+
+TSS2_RC
+Tss2_MU_TPMS_NV_DIGEST_CERTIFY_INFO_Marshal(
+    TPMS_NV_DIGEST_CERTIFY_INFO const *src,
+    uint8_t         buffer[],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPMS_NV_DIGEST_CERTIFY_INFO_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_NV_DIGEST_CERTIFY_INFO *dest);
+
+TSS2_RC
 Tss2_MU_TPML_CC_Marshal(
     TPML_CC const *src,
     uint8_t      buffer[],
@@ -1419,6 +1447,34 @@ Tss2_MU_TPML_AC_CAPABILITIES_Unmarshal(
     size_t          buffer_size,
     size_t         *offset,
     TPML_AC_CAPABILITIES *dest);
+
+TSS2_RC
+Tss2_MU_TPML_TAGGED_POLICY_Marshal(
+    TPML_TAGGED_POLICY const *src,
+    uint8_t      buffer[],
+    size_t       buffer_size,
+    size_t      *offset);
+
+TSS2_RC
+Tss2_MU_TPML_TAGGED_POLICY_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPML_TAGGED_POLICY *dest);
+
+TSS2_RC
+Tss2_MU_TPML_ACT_DATA_Marshal(
+    TPML_ACT_DATA const *src,
+    uint8_t      buffer[],
+    size_t       buffer_size,
+    size_t      *offset);
+
+TSS2_RC
+Tss2_MU_TPML_ACT_DATA_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPML_ACT_DATA *dest);
 
 TSS2_RC
 Tss2_MU_TPMU_HA_Marshal(
