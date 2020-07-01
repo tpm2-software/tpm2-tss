@@ -1282,6 +1282,40 @@ Esys_CertifyCreation_Finish(
     TPM2B_ATTEST **certifyInfo,
     TPMT_SIGNATURE **signature);
 
+TSS2_RC
+Esys_CertifyX509(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR objectHandle,
+    ESYS_TR signHandle,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    const TPM2B_DATA *reserved,
+    const TPMT_SIG_SCHEME *inScheme,
+    const TPM2B_MAX_BUFFER *partialCertificate,
+    TPM2B_MAX_BUFFER **addedToCertificate,
+    TPM2B_DIGEST **tbsDigest,
+    TPMT_SIGNATURE **signature);
+
+TSS2_RC
+Esys_CertifyX509_Async(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR objectHandle,
+    ESYS_TR signHandle,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    const TPM2B_DATA *reserved,
+    const TPMT_SIG_SCHEME *inScheme,
+    const TPM2B_MAX_BUFFER *partialCertificate);
+
+TSS2_RC
+Esys_CertifyX509_Finish(
+    ESYS_CONTEXT *esysContext,
+    TPM2B_MAX_BUFFER **addedToCertificate,
+    TPM2B_DIGEST **tbsDigest,
+    TPMT_SIGNATURE **signature);
+
 /* Table 85 - TPM2_Quote Command */
 
 TSS2_RC

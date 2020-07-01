@@ -122,6 +122,7 @@
     <ClCompile Include="api\Esys_ACT_SetTimeout.c" />
     <ClCompile Include="api\Esys_Certify.c" />
     <ClCompile Include="api\Esys_CertifyCreation.c" />
+    <ClCompile Include="api\Esys_CertifyX509.c" />
     <ClCompile Include="api\Esys_ChangeEPS.c" />
     <ClCompile Include="api\Esys_ChangePPS.c" />
     <ClCompile Include="api\Esys_Clear.c" />

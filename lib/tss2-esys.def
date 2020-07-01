@@ -10,6 +10,9 @@ EXPORTS
     Esys_CertifyCreation
     Esys_CertifyCreation_Async
     Esys_CertifyCreation_Finish
+    Esys_CertifyX509
+    Esys_CertifyX509_Async
+    Esys_CertifyX509_Finish
     Esys_Certify_Async
     Esys_Certify_Finish
     Esys_ChangeEPS

@@ -12,6 +12,9 @@
         Esys_CertifyCreation;
         Esys_CertifyCreation_Async;
         Esys_CertifyCreation_Finish;
+        Esys_CertifyX509;
+        Esys_CertifyX509_Async;
+        Esys_CertifyX509_Finish;
         Esys_ChangeEPS;
         Esys_ChangeEPS_Async;
         Esys_ChangeEPS_Finish;
