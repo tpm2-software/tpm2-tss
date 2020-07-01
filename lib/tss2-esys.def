@@ -3,6 +3,9 @@ EXPORTS
     Esys_ActivateCredential
     Esys_ActivateCredential_Async
     Esys_ActivateCredential_Finish
+    Esys_ACT_SetTimeout
+    Esys_ACT_SetTimeout_Async
+    Esys_ACT_SetTimeout_Finish
     Esys_Certify
     Esys_CertifyCreation
     Esys_CertifyCreation_Async
