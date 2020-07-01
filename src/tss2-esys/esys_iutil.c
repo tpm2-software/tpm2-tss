@@ -386,6 +386,11 @@ iesys_handle_to_tpm_handle(ESYS_TR esys_handle, TPM2_HANDLE * tpm_handle)
         *tpm_handle = TPM2_RH_PLATFORM_NV;
         return TPM2_RC_SUCCESS;
     }
+    if (esys_handle >= ESYS_TR_RH_ACT_FIRST &&
+        esys_handle <= ESYS_TR_RH_ACT_LAST) {
+        *tpm_handle = TPM2_RH_ACT_0 + (esys_handle - ESYS_TR_RH_ACT_FIRST);
+        return TPM2_RC_SUCCESS;
+    }
     LOG_ERROR("Error: Esys invalid ESAPI handle (%x).", esys_handle);
     return TSS2_ESYS_RC_BAD_VALUE;
 }

@@ -119,6 +119,7 @@
   <ItemGroup>
     <ClCompile Include="..\util\log.c" />
     <ClCompile Include="api\Esys_ActivateCredential.c" />
+    <ClCompile Include="api\Esys_ACT_SetTimeout.c" />
     <ClCompile Include="api\Esys_Certify.c" />
     <ClCompile Include="api\Esys_CertifyCreation.c" />
     <ClCompile Include="api\Esys_ChangeEPS.c" />

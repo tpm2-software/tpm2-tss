@@ -60,6 +60,9 @@ typedef uint32_t ESYS_TR;
 
 #define ESYS_TR_RH_AUTH_FIRST  0x110U
 #define ESYS_TR_RH_AUTH(x) (ESYS_TR_RH_AUTH_FIRST + (ESYS_TR)(x))
+#define ESYS_TR_RH_ACT_FIRST  0x120U
+#define ESYS_TR_RH_ACT(x) (ESYS_TR_RH_ACT_FIRST + (ESYS_TR)(x))
+#define ESYS_TR_RH_ACT_LAST  0x12FU
 
 typedef struct ESYS_CONTEXT ESYS_CONTEXT;
 
@@ -494,6 +497,28 @@ TSS2_RC
 Esys_ActivateCredential_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_DIGEST **certInfo);
+
+TSS2_RC
+Esys_ACT_SetTimeout(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR actHandle,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    UINT32 startTimeout);
+
+TSS2_RC
+Esys_ACT_SetTimeout_Async(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR actHandle,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    UINT32 startTimeout);
+
+TSS2_RC
+Esys_ACT_SetTimeout_Finish(
+    ESYS_CONTEXT *esysContext);
 
 /* Table 29 - TPM2_MakeCredential Command */
 
