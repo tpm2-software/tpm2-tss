@@ -32,7 +32,7 @@ static TSS2_RC
 check_valid_path(
     const char *path)
 {
-    for (size_t i = 1; i < strlen(path); i++) {
+    for (size_t i = 0; i < strlen(path); i++) {
         if (!(isalnum(path[i]) ||
               path[i] == '_' ||
               path[i] == '-' ||
