@@ -271,10 +271,22 @@ tcti_mssim_get_poll_handles (
     TSS2_TCTI_POLL_HANDLE *handles,
     size_t *num_handles)
 {
-    (void)(tctiContext);
-    (void)(handles);
-    (void)(num_handles);
-    return TSS2_TCTI_RC_NOT_IMPLEMENTED;
+    TSS2_TCTI_MSSIM_CONTEXT *tcti_mssim = tcti_mssim_context_cast (tctiContext);
+
+    if (num_handles == NULL || tcti_mssim == NULL) {
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+
+    if (handles != NULL && *num_handles < 1) {
+        return TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
+    }
+
+    *num_handles = 1;
+    if (handles != NULL) {
+        handles->fd = tcti_mssim->tpm_sock;
+    }
+
+    return TSS2_RC_SUCCESS;
 }
 
 void

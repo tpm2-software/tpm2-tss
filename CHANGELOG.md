@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ## [3.0.0-dev]
+### Added
+- tcti-mssim now supports Tss2\_Tcti\_GetPollHandles()
+
 ### Changed
 - Changed hierarchy param type of Esys_Hash(), Esys_HierarchyControl(),
   Esys_LoadExternal(), and Esys_SequenceComplete() calls along with
