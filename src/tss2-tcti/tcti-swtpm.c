@@ -342,10 +342,22 @@ tcti_swtpm_get_poll_handles (
     TSS2_TCTI_POLL_HANDLE *handles,
     size_t *num_handles)
 {
-    (void)(tctiContext);
-    (void)(handles);
-    (void)(num_handles);
-    return TSS2_TCTI_RC_NOT_IMPLEMENTED;
+    TSS2_TCTI_SWTPM_CONTEXT *tcti_swtpm = tcti_swtpm_context_cast (tctiContext);
+
+    if (num_handles == NULL || tcti_swtpm == NULL) {
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+
+    if (handles != NULL && *num_handles < 1) {
+        return TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
+    }
+
+    *num_handles = 1;
+    if (handles != NULL) {
+        handles->fd = tcti_swtpm->tpm_sock;
+    }
+
+    return TSS2_RC_SUCCESS;
 }
 
 void
