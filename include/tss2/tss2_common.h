@@ -119,6 +119,7 @@ typedef uint32_t TSS2_RC;
 #define TSS2_BASE_RC_NO_TPM                    49U
 #define TSS2_BASE_RC_BAD_KEY                   50U
 #define TSS2_BASE_RC_NO_HANDLE                 51U
+#define TSS2_BASE_RC_NOT_PROVISIONED           52U
 
 /* Base return codes in the range 0xf800 - 0xffff are reserved for
  * implementation-specific purposes.
@@ -324,4 +325,6 @@ typedef uint32_t TSS2_RC;
                                                         TSS2_BASE_RC_BAD_KEY))
 #define TSS2_FAPI_RC_NO_HANDLE                   ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
                                                         TSS2_BASE_RC_NO_HANDLE))
+#define TSS2_FAPI_RC_NOT_PROVISIONED            ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                        TSS2_BASE_RC_NOT_PROVISIONED))
 #endif /* TSS2_COMMON_H */
