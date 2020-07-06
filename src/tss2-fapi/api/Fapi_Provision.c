@@ -844,7 +844,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
              /* The TPM flag lockoutAuthSet will be checked to decide whether a auth value
                 is needed to write the dictionary attack parameters. */
             if (!hierarchy_lockout->misc.hierarchy.authPolicy.size) {
-                if (command->auth_state & (1 << 2)) {
+                if (command->auth_state & TPMA_PERMANENT_LOCKOUTAUTHSET) {
                     hierarchy_lockout->misc.hierarchy.with_auth = TPM2_YES;
                     r = ifapi_get_description(hierarchy_lockout, &description);
                     return_if_error(r, "Get description");
