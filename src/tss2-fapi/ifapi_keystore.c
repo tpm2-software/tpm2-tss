@@ -483,7 +483,7 @@ error:
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
  */
-    static TSS2_RC
+static TSS2_RC
 rel_path_to_abs_path(
         IFAPI_KEYSTORE *keystore,
         const char *rel_path,
@@ -514,11 +514,15 @@ rel_path_to_abs_path(
         }
 
         /* Check type of object which does not exist. */
-        if (ifapi_path_type_p(rel_path, IFAPI_NV_PATH) ||
-                (ifapi_hierarchy_path_p(rel_path))) {
+        if (ifapi_path_type_p(rel_path, IFAPI_NV_PATH)) {
+            /* NV directory does not exist. */
+            goto_error(r, TSS2_FAPI_RC_NOT_PROVISIONED,
+                    "FAPI not provisioned. File %s does not exist.",
+                    cleanup, rel_path);
+        } else if (ifapi_hierarchy_path_p(rel_path)) {
             /* Hierarchy which should be created during provisioning could not be loaded. */
-            goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND,
-                    "Keystore not initialized. Hierarchy file %s does not exist.",
+            goto_error(r, TSS2_FAPI_RC_NOT_PROVISIONED,
+                    "FAPI not provisioned. Hierarchy file %s does not exist.",
                     cleanup, rel_path);
         } else {
             /* Object file for key does not exist in keystore */

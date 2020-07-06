@@ -28,6 +28,8 @@ typedef struct {
     UINT32 max;
 } IFAPI_INFO_CAP;
 
+#define CAP_IDX_PT_FIXED 9
+
 static IFAPI_INFO_CAP info_cap_tab[] = {
     { "algorithms", TPM2_CAP_ALGS,  TPM2_ALG_FIRST, TPM2_MAX_CAP_ALGS},
     { "handles-transient", TPM2_CAP_HANDLES, TPM2_TRANSIENT_FIRST, TPM2_MAX_CAP_HANDLES},
@@ -205,7 +207,7 @@ Fapi_GetInfo_Finish(
 
     TSS2_RC r;
     json_object *jso = NULL;
-    size_t capIdx;
+    size_t capIdx, i;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -236,6 +238,18 @@ Fapi_GetInfo_Finish(
                                  &capabilityData);
         return_try_again(r);
         goto_if_error(r, "Get capability", cleanup);
+
+        if (info_cap_tab[capIdx].capability == TPM2_CAP_TPM_PROPERTIES &&
+            info_cap_tab[capIdx].property == TPM2_PT_FIXED) {
+            /* Adapt count to number of fixed properties. */
+            for (i = 0; i <  capabilityData->data.tpmProperties.count; i++) {
+                /* TPM2_PT_MODES is the last fixed property. */
+                if (capabilityData->data.tpmProperties.tpmProperty[i].property ==  TPM2_PT_MODES) {
+                    capabilityData->data.tpmProperties.count = i + 1;
+                    break;
+                }
+            }
+        }
 
         infoObj->cap[capIdx].description = info_cap_tab[capIdx].description;
         infoObj->cap[capIdx].capability = capabilityData;
