@@ -971,6 +971,7 @@ get_description(IFAPI_OBJECT *object)
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 create_dirs(const char *supdir, NODE_STR_T *dir_list, mode_t mode)
@@ -1167,6 +1168,7 @@ copy_policy_elements(const TPML_POLICYELEMENTS *from_policy);
  * @param[out] dest The destination policy structure.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 static TSS2_RC
 copy_policy(TPMS_POLICY * dest,
@@ -1195,6 +1197,7 @@ error_cleanup:
  * @param[out] dest The destination policy object.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 static TSS2_RC
 copy_policy_object(POLICY_OBJECT * dest, const POLICY_OBJECT * src) {
@@ -1256,6 +1259,8 @@ error_cleanup:
  * @param[in] src The policy branches to be copied.
  * @param[out] dest The destination policy branches.
  * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 static TPML_POLICYBRANCHES *
 copy_policy_branches(const TPML_POLICYBRANCHES *from_branches)
@@ -1411,6 +1416,7 @@ error:
  * @retval NULL If the policy cannot be copied.
  * @retval TPML_POLICYELEMENTS The copy of the policy list.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 static TPML_POLICYELEMENTS *
 copy_policy_elements(const TPML_POLICYELEMENTS *from_policy)

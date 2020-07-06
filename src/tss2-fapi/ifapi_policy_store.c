@@ -89,6 +89,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_policy_store_initialize(
