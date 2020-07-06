@@ -1567,6 +1567,10 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \{
  \fn Fapi_SetSignCB(FAPI_CONTEXT *context, Fapi_CB_Sign callback, void *userData)
  \typedef (*Fapi_CB_Sign)(FAPI_CONTEXT *context, char const *description, char const *publicKey, char const *publicKeyHint, uint32_t hashAlg, uint8_t const *dataToSign, size_t dataToSignSize, uint8_t **signature, size_t *signatureSize,  void *userData)
+ \fn Fapi_SetPolicyActionCB(
+    FAPI_CONTEXT        *context,
+    Fapi_CB_PolicyAction callback,
+    void                *userData)
  \}
  \}
 */
@@ -2156,7 +2160,8 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
 \fn NODE_STR_T * split_string(const char *string, char *delimiter)
 \fn int vasprintf(char **str, const char *fmt, va_list args)
 \fn static size_t write_curl_buffer_cb(void *contents, size_t size, size_t nmemb, void *userp)
-
+\fn ifapi_check_nv_index(const char *path, TPM2_HANDLE nv_index)
+\fn ifapi_null_primary_p(const char *path);
  \}
 */
 
@@ -2300,6 +2305,15 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
 \fn static size_t policy_digest_size(IFAPI_OBJECT *object)
 \fn static TSS2_RC pop_object_from_list(FAPI_CONTEXT *context, NODE_OBJECT_T **object_list)
 \fn static TSS2_RC push_object_with_size_to_list(void *object, size_t size, NODE_OBJECT_T **object_list)
+\fn ifapi_allocate_object(FAPI_CONTEXT *context)
+\fn ifapi_create_primary(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template)
+\fn ifapi_get_key_properties(
+    FAPI_CONTEXT *context,
+    char const *key_path,
+    bool *is_primary,
+    bool *in_null_hierarchy)
+\fn ifapi_get_object_path(IFAPI_OBJECT *object)
+\fn ifapi_load_parent_keys_async(FAPI_CONTEXT *context, char const *keyPath)
 
  \}
 */
@@ -2443,7 +2457,12 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
         IFAPI_KEYSTORE *keystore,
         const char *rel_path,
         char **abs_path)
-
+\fn ifapi_copy_ifapi_hierarchy(IFAPI_HIERARCHY * dest, const IFAPI_HIERARCHY * src)
+\fn ifapi_copy_ifapi_hierarchy_object(IFAPI_OBJECT * dest, const IFAPI_OBJECT * src)
+\fn ifapi_keystore_object_does_not_exist(
+    IFAPI_KEYSTORE *keystore,
+    const char *path,
+    const IFAPI_OBJECT *object)
  \}
 */
 
@@ -2799,6 +2818,7 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
 \fn static TSS2_RC ifapi_json_char_serialize(
     const char *in,
     json_object **jso)
+\fn ifapi_json_IFAPI_CONFIG_serialize(const IFAPI_CONFIG *in, json_object **jso)
 
 
  \}
@@ -3116,7 +3136,7 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
     UINT32 selector,
     json_object *jso,
     TPMU_POLICYELEMENT *out)
-
+\fn ifapi_json_import_IFAPI_KEY_deserialize(json_object *jso,  IFAPI_KEY *out)
 
  \}
 */
