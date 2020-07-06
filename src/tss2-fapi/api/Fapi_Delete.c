@@ -376,7 +376,7 @@ Fapi_Delete_Async(
     command->path_idx = command->numPaths;
 
     if (command->numPaths == 0) {
-        goto_error(r, TSS2_FAPI_RC_BAD_PATH, "No objects found.", error_cleanup);
+        goto_error(r, TSS2_FAPI_RC_NOT_PROVISIONED, "FAPI not provisioned.", error_cleanup);
     }
 
     r = normalize_and_check_path_list(context,command->pathlist, command->numPaths);

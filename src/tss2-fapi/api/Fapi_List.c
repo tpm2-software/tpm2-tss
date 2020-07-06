@@ -206,11 +206,13 @@ cleanup:
     /* Cleanup any intermediate results and state stored in the context. */
     SAFE_FREE(command->searchPath);
     if (numPaths == 0 && (r == TSS2_RC_SUCCESS)) {
-        if (command->searchPath)
+        if (command->searchPath && strcmp(command->searchPath,"/") !=0) {
             LOG_ERROR("Path not found: %s", command->searchPath);
-        else
-            LOG_ERROR("No files found in /");
-        r = TSS2_FAPI_RC_PATH_NOT_FOUND;
+            r = TSS2_FAPI_RC_NOT_PROVISIONED;
+        } else {
+            LOG_ERROR("FAPI not provisioned-");
+            r = TSS2_FAPI_RC_NOT_PROVISIONED;
+        }
     }
     if (numPaths > 0) {
         for (size_t i = 0; i < numPaths; i++){

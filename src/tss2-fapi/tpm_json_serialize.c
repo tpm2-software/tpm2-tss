@@ -638,7 +638,7 @@ ifapi_json_TPM2_PT_serialize(const TPM2_PT in, json_object **jso)
     static const struct { TPM2_PT in; char *name; } tab[] = {
         { TPM2_PT_NONE, "NONE" },
         { TPM2_PT_GROUP, "GROUP" },
-        { TPM2_PT_FIXED, "FIXED" },
+        //{ TPM2_PT_FIXED, "FIXED" },
         { TPM2_PT_FAMILY_INDICATOR, "FAMILY_INDICATOR" },
         { TPM2_PT_LEVEL, "LEVEL" },
         { TPM2_PT_REVISION, "REVISION" },
@@ -685,7 +685,7 @@ ifapi_json_TPM2_PT_serialize(const TPM2_PT in, json_object **jso)
         { TPM2_PT_NV_BUFFER_MAX, "NV_BUFFER_MAX" },
         { TPM2_PT_MODES, "MODES" },
         { TPM2_PT_MAX_CAP_BUFFER, "MAX_CAP_BUFFER" },
-        { TPM2_PT_VAR, "VAR" },
+        //{ TPM2_PT_VAR, "VAR" },
         { TPM2_PT_PERMANENT, "PERMANENT" },
         { TPM2_PT_STARTUP_CLEAR, "STARTUP_CLEAR" },
         { TPM2_PT_HR_NV_INDEX, "HR_NV_INDEX" },
