@@ -207,7 +207,7 @@ loop:
  *
  * @param[in,out] eventlog The context area for the eventlog.
  * @param[in,out] io The context area for the asynchronous io module.
- * @param[in] pct The pcr register to be extended.
+ * @param[in] pcr The pcr register to be extended.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_IO_ERROR if creation of log_dir failed or log_dir is not writable.
  * @retval TSS2_FAPI_RC_MEMORY if memory allocation failed.
