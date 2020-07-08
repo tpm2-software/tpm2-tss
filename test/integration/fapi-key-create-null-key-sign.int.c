@@ -139,6 +139,11 @@ test_fapi_key_create_null_sign(FAPI_CONTEXT *context)
                   &digest.buffer[0], digest.size, signature, signatureSize);
     goto_if_error(r, "Error Fapi_VerifySignature", error);
 
+    Fapi_Finalize(&context);
+    int rc = init_fapi("P_ECC", &context);
+    if (rc)
+        goto error;
+
     /* Test the creation of a primary in the storage hierarchy. */
     r = Fapi_CreateKey(context, "HS/myPrimary", "noDa", "",
                         PASSWORD);

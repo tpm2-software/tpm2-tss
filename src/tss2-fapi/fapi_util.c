@@ -4482,6 +4482,7 @@ ifapi_create_primary(
         object->misc.key.creationTicket = *creationTicket;
         object->misc.key.description = NULL;
         object->misc.key.certificate = NULL;
+        object->misc.key.reset_count = context->init_time.clockInfo.resetCount;
         SAFE_FREE(pkey->serialization.buffer);
         r = Esys_TR_Serialize(context->esys, context->cmd.Key_Create.handle,
                               &pkey->serialization.buffer, &pkey->serialization.size);

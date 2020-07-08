@@ -171,6 +171,14 @@ ifapi_json_IFAPI_KEY_serialize(const IFAPI_KEY *in, json_object **jso)
     return_if_error(r, "Serialize TPM2B_NAME");
 
     json_object_object_add(*jso, "name", jso2);
+    jso2 = NULL;
+    if (in->reset_count) {
+        r = ifapi_json_UINT32_serialize(in->reset_count, &jso2);
+        return_if_error(r, "Serialize UINT32");
+
+        json_object_object_add(*jso, "reset_count", jso2);
+    }
+
     return TSS2_RC_SUCCESS;
 }
 

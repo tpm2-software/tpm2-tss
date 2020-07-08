@@ -367,7 +367,7 @@ ifapi_io_remove_directories(
         r = ifapi_asprintf(&path, "%s/%s", dirname, entry->d_name);
         goto_if_error(r, "Out of memory", error_cleanup);
 
-        LOG_WARNING("Found a file in directory; removing: %s", path);
+        LOG_WARNING("Removing: %s", path);
 
         if (remove(path) != 0) {
             free(path);

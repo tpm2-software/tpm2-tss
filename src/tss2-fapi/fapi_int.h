@@ -245,6 +245,13 @@ typedef struct {
  */
 typedef struct {
     TPMS_CAPABILITY_DATA *capability; /* TPM capability data to check available algs */
+    char **pathlist;                  /**< The array with all keystore objects */
+    size_t numPaths;                  /**< Size of array with all keystore objects */
+    size_t numNullPrimaries;         /**< Number of NULL hierarchy primaries
+                                          stored in keystore */
+    size_t primary_idx;              /**< Index to the current primary */
+    size_t path_idx;                 /**< Index of array with the object paths */
+    IFAPI_OBJECT *null_primaries;    /**< Array of the NULL hierarchy primaries. */
 } IFAPI_INITIALIZE;
 
 /** The data structure holding internal state of Fapi_PCR commands.
@@ -802,6 +809,9 @@ enum _FAPI_STATE {
     INITIALIZE_WAIT_FOR_CAP,
     INITIALIZE_READ_PROFILE,
     INITIALIZE_READ_PROFILE_INIT,
+    INITIALIZE_READ_TIME,
+    INITIALIZE_CHECK_NULL_PRIMARY,
+    INITIALIZE_READ_NULL_PRIMARY,
     PROVISION_WAIT_FOR_GET_CAP_AUTH_STATE,
     PROVISION_WAIT_FOR_GET_CAP0,
     PROVISION_WAIT_FOR_GET_CAP1,
@@ -1104,6 +1114,7 @@ struct FAPI_CONTEXT {
     struct IFAPI_KEYSTORE keystore;
     struct IFAPI_POLICY_STORE pstore;
     struct IFAPI_PROFILES profiles;
+    TPMS_TIME_INFO init_time;        /**< The current time during FAPI initialization. **/
 
     enum _FAPI_STATE state;          /**< The current state of the command execution */
     enum _FAPI_STATE_PRIMARY primary_state; /**< The current state of the primary regeneration */
