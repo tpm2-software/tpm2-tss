@@ -290,6 +290,42 @@ ifapi_get_hierary_handle(const char *path)
     return 0;
 }
 
+/** Determine whether path is a primary in the null hierarchy.
+ *
+ * @param[in] path The path to be checked.
+ *
+ * @retval true if the path describes a null hierarchy primary.
+ * @retval false if not.
+ */
+bool
+ifapi_null_primary_p(const char *path)
+{
+    size_t pos1 = 0;
+    size_t pos2 = 0;
+    char *start;
+
+    if (strncmp("/", path, 1) == 0)
+        pos1 = 1;
+    /* Skip profile if it does exist in path */
+    if (strncmp("P_", &path[pos1], 2) == 0) {
+        start = strchr(&path[pos1], IFAPI_FILE_DELIM_CHAR);
+        if (start) {
+            pos2 = (int)(start - &path[pos1]);
+            if (strncmp("/", &path[pos1 + pos2], 1) == 0)
+                pos2 += 1;
+            if (strncmp("/", &path[pos1 + pos2], 1) == 0)
+                pos2 += 1;
+        }
+    }
+    /* Check whether there is only one name after the hiearchy. */
+    if (strncasecmp(&path[pos1 + pos2], "HN/", 3) == 0 &&
+        !strchr(&path[pos1 + pos2 + 3], IFAPI_FILE_DELIM_CHAR)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 /** Determine whether path describes a hierarchy object.
  *
  * It will be checked whether the path describes a hierarch. A key path

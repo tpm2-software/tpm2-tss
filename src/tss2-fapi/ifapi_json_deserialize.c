@@ -205,6 +205,14 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso,  IFAPI_KEY *out)
     }
     r = ifapi_json_TPM2B_NAME_deserialize(jso2, &out->name);
     return_if_error(r, "BAD VALUE");
+
+    if (ifapi_get_sub_object(jso, "reset_count", &jso2)) {
+        r = ifapi_json_UINT32_deserialize(jso2, &out->reset_count);
+        return_if_error(r, "BAD VALUE");
+    } else {
+        out->reset_count = 0;
+    }
+
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }

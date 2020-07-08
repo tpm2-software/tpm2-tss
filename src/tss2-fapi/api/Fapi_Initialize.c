@@ -130,6 +130,8 @@ Fapi_Initialize_Async(
     r = ifapi_config_initialize_async(&(*context)->io);
     goto_if_error(r, "Could not initialize FAPI context", cleanup_return);
 
+    memset(&(*context)->cmd.Initialize, 0, sizeof(IFAPI_INITIALIZE));
+
     /* Initialize the context state for this operation. */
     (*context)->state = INITIALIZE_READ;
 
@@ -171,6 +173,9 @@ Fapi_Initialize_Finish(
     TSS2_RC r;
     TPMI_YES_NO moreData;
     TSS2_TCTI_CONTEXT *fapi_tcti = NULL;
+    TPMS_TIME_INFO *currentTime = NULL;
+    IFAPI_OBJECT pkey_object;
+    size_t i;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -178,6 +183,7 @@ Fapi_Initialize_Finish(
 
     /* Helpful alias pointers */
     TPMS_CAPABILITY_DATA **capability = &(*context)->cmd.Initialize.capability;
+    IFAPI_INITIALIZE * command = &(*context)->cmd.Initialize;
 
     switch ((*context)->state) {
     statecase((*context)->state, INITIALIZE_READ);
@@ -277,19 +283,96 @@ Fapi_Initialize_Finish(
         r = ifapi_profiles_initialize_finish(&(*context)->profiles, &(*context)->io);
         FAPI_SYNC(r, "Read profile.", cleanup_return);
 
-        LOG_DEBUG("success: *context %p", *context);
-        break;
+        if ((*context)->esys) {
+            r = Esys_ReadClock_Async((*context)->esys,
+                                     ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
+            goto_if_error(r, "ReadClock_Async.", cleanup_return);
+        } else {
+            break;
+        }
+        fallthrough;
+
+    statecase((*context)->state, INITIALIZE_READ_TIME);
+        r = Esys_ReadClock_Finish((*context)->esys, &currentTime);
+        goto_if_error(r, "ReadClock_Finish.", cleanup_return);
+
+        (*context)->init_time = *currentTime;
+        SAFE_FREE(currentTime);
+
+        /* Compute the list of all NULL primary keys stored in keystore. */
+        r = ifapi_keystore_list_all(&(*context)->keystore, "/HN", &command->pathlist,
+                                    &command->numPaths);
+        goto_if_error(r, "get entities.", cleanup_return);
+
+        command->numNullPrimaries = 0;
+        for (i = 0; i < command->numPaths; i++) {
+            if (ifapi_null_primary_p(command->pathlist[i])) {
+                if (i !=  command->numNullPrimaries) {
+                    char *sav_path;
+                    sav_path = command->pathlist[command->numNullPrimaries];
+                    command->pathlist[command->numNullPrimaries] = command->pathlist[i];
+                    command->pathlist[i] = sav_path;
+                    command->numNullPrimaries += 1;
+                } else {
+                    command->numNullPrimaries += 1;
+                }
+            }
+        }
+        command->path_idx = 0;
+        fallthrough;
+
+    statecase((*context)->state, INITIALIZE_CHECK_NULL_PRIMARY);
+        if (command->path_idx == command->numNullPrimaries)
+            break;
+
+        r = ifapi_keystore_load_async(&(*context)->keystore, &(*context)->io,
+                                      command->pathlist[command->path_idx]);
+        goto_if_error2(r, "Could not open %s", cleanup_return,
+                           command->pathlist[command->path_idx]);
+        fallthrough;
+
+    statecase((*context)->state, INITIALIZE_READ_NULL_PRIMARY);
+        r = ifapi_keystore_load_finish(&(*context)->keystore, &(*context)->io,
+                                       &pkey_object);
+        return_try_again(r);
+        goto_if_error2(r, "Could not open %s", cleanup_return,
+                       command->pathlist[command->path_idx]);
+
+        if (pkey_object.misc.key.reset_count !=
+            (*context)->init_time.clockInfo.resetCount) {
+            ifapi_cleanup_ifapi_object(&pkey_object);
+            /* The primary is not valid anymore. */
+            r = ifapi_keystore_remove_directories(&(*context)->keystore,
+                                                  command->pathlist[command->path_idx]);
+            if (r) {
+                LOG_WARNING("The keys %s in NULL hierarchy cannot be deleted.",
+                            command->pathlist[command->path_idx]);
+            }
+        } else {
+            ifapi_cleanup_ifapi_object(&pkey_object);
+        }
+        command->path_idx += 1;
+        (*context)->state = INITIALIZE_CHECK_NULL_PRIMARY;
+        return TSS2_FAPI_RC_TRY_AGAIN;
 
     statecasedefault((*context)->state);
     }
 
     (*context)->state = _FAPI_STATE_INIT;
     SAFE_FREE(*capability);
+    for (size_t i = 0; i < command->numPaths; i++) {
+        SAFE_FREE(command->pathlist[i]);
+    }
+    SAFE_FREE(command->pathlist);
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 cleanup_return:
     /* Cleanup any intermediate results and state stored in the context. */
+    for (size_t i = 0; i < command->numPaths; i++) {
+        SAFE_FREE(command->pathlist[i]);
+    }
+    SAFE_FREE(command->pathlist);
     if ((*context)->esys) {
         Esys_GetTcti((*context)->esys, &fapi_tcti);
         Esys_Finalize(&(*context)->esys);

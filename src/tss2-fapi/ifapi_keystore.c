@@ -1040,7 +1040,7 @@ ifapi_keystore_remove_directories(IFAPI_KEYSTORE *keystore, const char *dir_name
     if (stat(absolute_dir_path, &fbuffer) == 0) {
         r = ifapi_io_remove_directories(absolute_dir_path, keystore->systemdir,
                                         "/" IFAPI_POLICY_DIR);
-        goto_if_error2(r, "Could not remove: %s", cleanup, absolute_dir_path);
+        goto_if_error2(r, "%s cannot be deleted.", cleanup, absolute_dir_path);
     }
 
 cleanup:

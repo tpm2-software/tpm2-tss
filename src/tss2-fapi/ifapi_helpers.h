@@ -34,6 +34,9 @@ ESYS_TR
 ifapi_get_hierary_handle(const char *path);
 
 bool
+ifapi_null_primary_p(const char *path);
+
+bool
 ifapi_hierarchy_path_p(const char *path);
 
 bool

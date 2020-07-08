@@ -39,6 +39,7 @@ typedef struct {
     TPMT_SIG_SCHEME                      signing_scheme;    /**< Signing scheme for the key */
     TPM2B_NAME                                     name;    /**< Name of the key */
     TPMI_YES_NO                               with_auth;    /**< Authorization provided during creation */
+    UINT32                                  reset_count;    /**< The TPM reset count during key creation */
 } IFAPI_KEY;
 
 /** Type for representing a external public key
