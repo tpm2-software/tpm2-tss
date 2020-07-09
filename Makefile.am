@@ -391,7 +391,15 @@ fapiconfdir = @sysconfdir@/tpm2-tss
 fapiconf_DATA = fapi-config.json
 
 EXTRA_DIST += dist/fapi-config.json.in
-CLEANFILES += fapi-config.json
+CLEANFILES += fapi-config.json \
+              man/man5/fapi-config.5 \
+              man/man5/fapi-profile.5
+
+EXTRA_DIST += man/fapi-config.5.in \
+              man/fapi-profile.5.in \
+              man/man-postlude-fapi.troff \
+              doc/fapi-config.md \
+              doc/fapi-profile.md
 
 # We have to do this ourselves, in order to get absolute paths
 fapi-config.json: dist/fapi-config.json.in
@@ -569,14 +577,27 @@ man7_MANS = \
     man/man7/tss2-tcti-mssim.7 \
     man/man7/tss2-tctildr.7
 
+if FAPI
+man5_MANS = \
+    man/man5/fapi-config.5 \
+    man/man5/fapi-profile.5
+endif #FAPI
+
 man/man3/%.3 : man/%.3.in $(srcdir)/man/man-postlude.troff
 	$(AM_V_GEN)$(call make_man,$@,$<,$(srcdir)/man/man-postlude.troff)
 
 man/man7/%.7 : man/%.7.in $(srcdir)/man/man-postlude.troff
 	$(AM_V_GEN)$(call make_man,$@,$<,$(srcdir)/man/man-postlude.troff)
 
+if FAPI
+man/man5/%.5 : man/%.5.in $(srcdir)/man/man-postlude-fapi.troff
+	$(AM_V_GEN)$(call make_man,$@,$<,$(srcdir)/man/man-postlude-fapi.troff)
+install-man: install-man3 install-man5 install-man7
+	$(LN_S) -f Tss2_TctiLdr_Initialize.3 $(DESTDIR)$(man3dir)/Tss2_TctiLdr_Initialize_Ex.3
+else
 install-man: install-man3 install-man7
 	$(LN_S) -f Tss2_TctiLdr_Initialize.3 $(DESTDIR)$(man3dir)/Tss2_TctiLdr_Initialize_Ex.3
+endif #FAPI
 
 EXTRA_DIST += dist/tpm-udev.rules
 
