@@ -14,14 +14,8 @@ following sections describe them for the supported platforms.
 * C library development libraries and header files
 * pkg-config
 * doxygen
-* OpenSSL development libraries and header files, or optionally libgcrypt
+* OpenSSL development libraries and header files
 * libcurl development libraries
-
-* Please note that with FAPI enabled, the only option for the crypto backend is
-  OpenSSL. If only ESAPI is enabled it can work with either openSSL or libgrcypt,
-  however libgcrypt-dev is required as a dependency for the configure script
-  because it uses the AM_PATH_LIBGCRYPT macro.
-  See https://github.com/tpm2-software/tpm2-tss/issues/1365 for more info.
 
 The following are dependencies only required when building test suites.
 * Integration test suite (see ./configure option --enable-integration):
@@ -57,8 +51,7 @@ $ sudo apt -y install \
   doxygen \
   libjson-c-dev \
   libini-config-dev \
-  libcurl-dev \
-  libgcrypt-dev
+  libcurl-dev
 ```
 Note: In some Ubuntu versions, the lcov and autoconf-archive packages are incompatible with each other. It is recommended to download autoconf-archive directly from upstream and copy `ax_code_coverage.m4` and `ax_prog_doxygen.m4` to the `m4/` subdirectory of your tpm2-tss directory.
 

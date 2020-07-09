@@ -14,7 +14,7 @@
 #elif defined(MBED)
 #include "esys_crypto_mbed.h"
 #else
-#include "esys_crypto_gcrypt.h"
+#error "No crypto backend defined"
 #endif
 
 #ifdef __cplusplus

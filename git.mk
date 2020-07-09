@@ -121,7 +121,6 @@ GITIGNORE_MAINTAINERCLEANFILES_M4_LIBTOOL = \
 			ltversion.m4 \
 			lt~obsolete.m4 \
 			ax_recursive_eval.m4 \
-			libgcrypt.m4 \
 		; do echo "$$MACRO_DIR/$$x"; done; \
 	 fi`
 #

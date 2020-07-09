@@ -18,20 +18,13 @@ env:
 
 matrix:
   include:
-  # gcrypt testing
-  - env: DOCKER_TAG=fedora-32 WITH_CRYPTO=gcrypt
-    compiler: gcc
-  - env: DOCKER_TAG=opensuse-leap WITH_CRYPTO=gcrypt
-    compiler: clang
-  - env: DOCKER_TAG=ubuntu-18.04 WITH_CRYPTO=gcrypt
-    compiler: clang
   - env: DOCKER_TAG=ubuntu-20.04
     compiler: clang
   # mbedTLS testing
   - env: DOCKER_TAG=ubuntu-20.04 WITH_CRYPTO=mbed
     compiler: clang
   # tcti async and partial read testing
-  - env: DOCKER_TAG=fedora-32 WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes WITH_CRYPTO=gcrypt
+  - env: DOCKER_TAG=fedora-32 WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes
     compiler: gcc
   - env: DOCKER_TAG=fedora-32 WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=no
     compiler: gcc
