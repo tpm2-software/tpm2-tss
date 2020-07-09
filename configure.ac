@@ -141,20 +141,15 @@ AS_IF([test "x$enable_tcti_partial_reads" = "xyes"],
 	AC_DEFINE([TCTI_PARTIAL_READ],[1], [TCTI PARTIAL READ MODE]))
 
 AC_ARG_WITH([crypto],
-            [AS_HELP_STRING([--with-crypto={gcrypt,ossl,mbed}],
+            [AS_HELP_STRING([--with-crypto={ossl,mbed}],
                             [sets the ESYS crypto backend (default is OpenSSL)])],,
             [with_crypto=ossl])
 
 AM_CONDITIONAL(ESYS_OSSL, test "x$with_crypto" = "xossl")
-AM_CONDITIONAL(ESYS_GCRYPT, test "x$with_crypto" = "xgcrypt")
 AM_CONDITIONAL(ESYS_MBED, test "x$with_crypto" = "xmbed")
 
 AS_IF([test "x$enable_esys" = xyes],
-      [AS_IF([test "x$with_crypto" = xgcrypt], [
-           AM_PATH_LIBGCRYPT([1.6.0], [], [AC_MSG_ERROR([Missing required gcrypt library])])
-           TSS2_ESYS_CFLAGS_CRYPTO="$LIBGCRYPT_CFLAGS"
-           TSS2_ESYS_LDFLAGS_CRYPTO="$LIBGCRYPT_LIBS"
-       ], [test "x$with_crypto" = xossl], [
+      [AS_IF([test "x$with_crypto" = xossl], [
            PKG_CHECK_MODULES([LIBCRYPTO], [libcrypto])
            AC_DEFINE([OSSL], [1], [OpenSSL cryptographic backend])
            TSS2_ESYS_CFLAGS_CRYPTO="$LIBCRYPTO_CFLAGS"
