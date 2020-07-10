@@ -110,6 +110,12 @@ initialize_explicit_key_path(
                    strcmp(list_node->str, "HN") == 0) {
             hierarchy = list_node->str;
             list_node = list_node->next;
+        } else if (strcmp(list_node->str, "LOCKOUT") == 0) {
+            if (list_node->str) {
+                LOG_ERROR("No objects allowed in the lockout hierarchy.");
+                r = TSS2_FAPI_RC_BAD_VALUE;
+                goto error;
+            }
         } else if (strcmp(list_node->str, "EK") == 0) {
             /* The hierarchy for an endorsement key will be added. */
             hierarchy = "HE";

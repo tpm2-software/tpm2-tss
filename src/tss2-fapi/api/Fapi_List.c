@@ -218,7 +218,7 @@ cleanup:
             LOG_ERROR("Path not found: %s", command->searchPath);
             r = TSS2_FAPI_RC_NOT_PROVISIONED;
         } else {
-            LOG_ERROR("FAPI not provisioned-");
+            LOG_ERROR("FAPI not provisioned.");
             r = TSS2_FAPI_RC_NOT_PROVISIONED;
         }
     }

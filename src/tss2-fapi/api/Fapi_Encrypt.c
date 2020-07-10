@@ -326,7 +326,7 @@ Fapi_Encrypt_Finish(
 
                     context-> state = DATA_ENCRYPT_WAIT_FOR_RSA_ENCRYPTION;
                 } else {
-                    goto_error_reset_state(r, TSS2_FAPI_RC_NOT_IMPLEMENTED,
+                    goto_error_reset_state(r, TSS2_FAPI_RC_BAD_VALUE,
                                            "Size to big for RSA encryption.", error_cleanup);
                 }
             } else {
