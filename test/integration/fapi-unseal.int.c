@@ -103,6 +103,9 @@ test_fapi_unseal(FAPI_CONTEXT *context)
     r = Fapi_Delete(context, "/HE");
     goto_if_error(r, "Error Fapi_Delete", error);
 
+    r = Fapi_Delete(context, "/HN");
+    goto_if_error(r, "Error Fapi_Delete", error);
+
     r = Fapi_Delete(context, "/LOCKOUT");
     goto_if_error(r, "Error Fapi_Delete", error);
 

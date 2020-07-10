@@ -198,15 +198,19 @@ normalize_and_check_path_list(
         if (!find_path_for_profile(context->config.profile_name, IFAPI_HS_PATH,
                                   file_ary, n))
             return_error(TSS2_FAPI_RC_BAD_PATH,
-                         "SRK has to be delted together with SRK");
+                         "SRK has to be deleted together with HS");
 
         r = check_hierarchy(context, context->config.profile_name, IFAPI_HE_PATH,
                             file_ary, n);
         return_if_error(r, "Check hierarchy" IFAPI_HE_PATH);
 
+        r = check_hierarchy(context, context->config.profile_name, IFAPI_HN_PATH,
+                            file_ary, n);
+        return_if_error(r, "Check hierarchy" IFAPI_HN_PATH);
+
         r = check_hierarchy(context, context->config.profile_name, IFAPI_LOCKOUT_PATH,
                             file_ary, n);
-        return_if_error(r, "Check hiearchy" IFAPI_HE_PATH);
+        return_if_error(r, "Check hiearchy" IFAPI_LOCKOUT_PATH);
 
         return TSS2_RC_SUCCESS;
     } else {
@@ -390,7 +394,11 @@ Fapi_Delete_Async(
     command->path_idx = command->numPaths;
 
     if (command->numPaths == 0) {
-        goto_error(r, TSS2_FAPI_RC_NOT_PROVISIONED, "FAPI not provisioned.", error_cleanup);
+        if (strcmp(path, "") == 0 || strcmp(path, "/") == 0) {
+            goto_error(r, TSS2_FAPI_RC_NOT_PROVISIONED, "FAPI not provisioned.", error_cleanup);
+        } else {
+            goto_error(r, TSS2_FAPI_RC_BAD_PATH, "No objects(s) found", error_cleanup);
+        }
     }
 
     r = normalize_and_check_path_list(context,command->pathlist, command->numPaths);
