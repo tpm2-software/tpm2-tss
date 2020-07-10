@@ -296,6 +296,7 @@ Fapi_Initialize_Finish(
 
     statecase((*context)->state, INITIALIZE_READ_TIME);
         r = Esys_ReadClock_Finish((*context)->esys, &currentTime);
+        return_try_again(r);
         goto_if_error(r, "ReadClock_Finish.", cleanup_return);
 
         (*context)->init_time = *currentTime;
