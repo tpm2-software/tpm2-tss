@@ -89,13 +89,16 @@ static TSS2_RC
 ifapi_hex_to_byte_ary(const char hex[], UINT32 vlen, BYTE val[])
 {
     UINT32 j;
+    UINT32 hexlen;
 
-    if (vlen < strlen(hex) / 2) {
+    hexlen = strlen(hex);
+
+    if (vlen < hexlen / 2) {
         LOG_ERROR("Hex string too long. (%zu > %"PRIu32")", strlen(hex) / 2, vlen);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     for (j = 0; j < vlen
-            && 2 * j < strlen(hex); j++) { //convert hex-Argv to byte array
+            && 2 * j < hexlen; j++) { //convert hex-Argv to byte array
         if (!isxdigit(hex[2 * j]) || (!(hex[2 * j + 1] == 0)
                                       && !isxdigit(hex[2 * j + 1]))) {
             LOG_ERROR("Error in value (%i)", j);
