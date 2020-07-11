@@ -201,57 +201,7 @@ loop:
     return TSS2_RC_SUCCESS;
 }
 
-/** Append an event to the existing event log.
- *
- * Call ifapi_eventlog_append_finish to finalize this operation.
- *
- * @param[in,out] eventlog The context area for the eventlog.
- * @param[in,out] io The context area for the asynchronous io module.
- * @param[in] pcr The pcr register to be extended.
- * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_IO_ERROR if creation of log_dir failed or log_dir is not writable.
- * @retval TSS2_FAPI_RC_MEMORY if memory allocation failed.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
- *         operation already pending.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- */
-TSS2_RC
-ifapi_eventlog_append_async(
-    IFAPI_EVENTLOG *eventlog,
-    IFAPI_IO *io,
-    TPM2_HANDLE pcr)
-{
-    check_not_null(eventlog);
-    check_not_null(io);
-
-    TSS2_RC r;
-    char *event_log_file;
-
-    if (eventlog->state != IFAPI_EVENTLOG_STATE_INIT) {
-        LOG_ERROR("Wrong state: %i", eventlog->state);
-        return TSS2_FAPI_RC_BAD_SEQUENCE;
-    }
-
-    /* Construct the filename for the eventlog file */
-    r = ifapi_asprintf(&event_log_file, "%s/%s%i",
-                       eventlog->log_dir, IFAPI_PCR_LOG_FILE, pcr);
-    return_if_error(r, "Out of memory.");
-
-    /* Initiate the reading of the eventlog file */
-    r = ifapi_io_read_async(io, event_log_file);
-    if (r) {
-        LOG_DEBUG("Eventlog file %s could not be opened, creating...", event_log_file);
-        free(event_log_file);
-        eventlog->state = IFAPI_EVENTLOG_STATE_APPENDING;
-        return TSS2_RC_SUCCESS;
-    }
-    free(event_log_file);
-
-    eventlog->state = IFAPI_EVENTLOG_STATE_READING;
-    return TSS2_RC_SUCCESS;
-}
-
-/** Check event log format before appaingi an event to the existing event log.
+/** Check event log format before appending an event to the existing event log.
  *
  * Call after ifapi_eventlog_get_async.
  *
