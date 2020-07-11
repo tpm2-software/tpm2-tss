@@ -22,6 +22,7 @@
 #include "util/aux_util.h"
 
 #define NV_SIZE 10
+#define APP_DATA_SIZE 10*1024*1024
 
 /** Test the FAPI policy PolicyNvWritten.
  *
@@ -50,13 +51,22 @@ test_fapi_nv_written_policy(FAPI_CONTEXT *context)
     FILE *stream = NULL;
     char *json_policy = NULL;
     long policy_size;
-    uint8_t *appData = NULL;
-    size_t appDataSize;
+    uint8_t *appDataOut = NULL;
+    size_t appDataOutSize, i;
+    uint8_t *appDataIn = NULL;
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
     uint8_t data_src[NV_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+    appDataIn = calloc(1, APP_DATA_SIZE);
+    if (!appDataIn) {
+        LOG_ERROR("Out of memory.");
+        goto error;
+    }
+    for (i = 0; i < APP_DATA_SIZE; i++)
+        appDataIn[i] = i % 256;
 
     stream = fopen(policy_file, "r");
     if (!stream) {
@@ -86,15 +96,15 @@ test_fapi_nv_written_policy(FAPI_CONTEXT *context)
     r = Fapi_CreateNv(context, nvPathOrdinary, "noda", 10, policy_name, "");
     goto_if_error(r, "Error Fapi_CreateNv", error);
 
-    r = Fapi_SetAppData(context, nvPathOrdinary, data_src, NV_SIZE);
+    r = Fapi_SetAppData(context, nvPathOrdinary, appDataIn, APP_DATA_SIZE);
     goto_if_error(r, "Error Fapi_SetAppData", error);
 
-    r = Fapi_GetAppData(context, nvPathOrdinary, &appData, &appDataSize);
+    r = Fapi_GetAppData(context, nvPathOrdinary, &appDataOut, &appDataOutSize);
     goto_if_error(r, "Error Fapi_GetAppData", error);
-    assert(appData != NULL);
+    assert(appDataOut != NULL);
 
-    if (NV_SIZE != appDataSize ||
-            memcmp(appData, &data_src[0], appDataSize) != 0) {
+    if (APP_DATA_SIZE != appDataOutSize ||
+            memcmp(appDataOut, &appDataIn[0], appDataOutSize) != 0) {
         LOG_ERROR("Error: AppData  equal to origin");
         goto error;
     }
@@ -110,14 +120,16 @@ test_fapi_nv_written_policy(FAPI_CONTEXT *context)
 
 
     SAFE_FREE(json_policy);
-    SAFE_FREE(appData);
+    SAFE_FREE(appDataOut);
+    SAFE_FREE(appDataIn);
 
     return EXIT_SUCCESS;
 
 error:
     Fapi_Delete(context, "/");
     SAFE_FREE(json_policy);
-    SAFE_FREE(appData);
+    SAFE_FREE(appDataOut);
+    SAFE_FREE(appDataIn);
 
     return EXIT_FAILURE;
 }
