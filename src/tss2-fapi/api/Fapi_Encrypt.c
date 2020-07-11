@@ -303,32 +303,32 @@ Fapi_Encrypt_Finish(
             if (encKeyObject->misc.key.public.publicArea.type == TPM2_ALG_RSA) {
                 TPM2B_DATA null_data = { .size = 0, .buffer = {} };
                 TPM2B_PUBLIC_KEY_RSA *rsa_message = (TPM2B_PUBLIC_KEY_RSA *)&context->aux_data;
-                rsa_message->size = context->cmd.Data_EncryptDecrypt.in_dataSize;
                 size_t key_size =
                     encKeyObject->misc.key.public.publicArea.parameters.rsaDetail.keyBits / 8;
-                if (rsa_message->size <= key_size) {
-                    memcpy(&rsa_message->buffer[0], context->cmd.Data_EncryptDecrypt.in_data,
-                           context->cmd.Data_EncryptDecrypt.in_dataSize);
-
-                    /* Received plain text will be encrypted */
-                    r = Esys_TRSess_SetAttributes(context->esys, context->session1,
-                                              TPMA_SESSION_CONTINUESESSION |  TPMA_SESSION_DECRYPT,
-                                                  0xff);
-                    goto_if_error_reset_state(r, "Set session attributes.", error_cleanup);
-
-                    r = Esys_RSA_Encrypt_Async(context->esys,
-                                               context->cmd.Data_EncryptDecrypt.key_handle,
-                                               context->session1, ESYS_TR_NONE, ESYS_TR_NONE,
-                                               rsa_message,
-                                               &command->profile->rsa_decrypt_scheme,
-                                               &null_data);
-                    goto_if_error(r, "Error esys rsa encrypt", error_cleanup);
-
-                    context-> state = DATA_ENCRYPT_WAIT_FOR_RSA_ENCRYPTION;
-                } else {
+                if (context->cmd.Data_EncryptDecrypt.in_dataSize > key_size) {
                     goto_error_reset_state(r, TSS2_FAPI_RC_BAD_VALUE,
                                            "Size to big for RSA encryption.", error_cleanup);
                 }
+                rsa_message->size = context->cmd.Data_EncryptDecrypt.in_dataSize;
+                memcpy(&rsa_message->buffer[0], context->cmd.Data_EncryptDecrypt.in_data,
+                       context->cmd.Data_EncryptDecrypt.in_dataSize);
+
+                /* Received plain text will be encrypted */
+                r = Esys_TRSess_SetAttributes(context->esys, context->session1,
+                                              TPMA_SESSION_CONTINUESESSION |  TPMA_SESSION_DECRYPT,
+                                                  0xff);
+                goto_if_error_reset_state(r, "Set session attributes.", error_cleanup);
+
+                r = Esys_RSA_Encrypt_Async(context->esys,
+                                           context->cmd.Data_EncryptDecrypt.key_handle,
+                                           context->session1, ESYS_TR_NONE, ESYS_TR_NONE,
+                                           rsa_message,
+                                           &command->profile->rsa_decrypt_scheme,
+                                           &null_data);
+                goto_if_error(r, "Error esys rsa encrypt", error_cleanup);
+
+                context-> state = DATA_ENCRYPT_WAIT_FOR_RSA_ENCRYPTION;
+
             } else {
                 goto_error(r, TSS2_FAPI_RC_NOT_IMPLEMENTED,
                            "Unsupported algorithm (%" PRIu16 ")",
