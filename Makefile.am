@@ -652,7 +652,7 @@ man/man7/%.7 : man/%.7.in $(srcdir)/man/man-postlude.troff
 if FAPI
 man/man5/%.5 : man/%.5.in $(srcdir)/man/man-postlude-fapi.troff
 	$(AM_V_GEN)$(call make_man,$@,$<,$(srcdir)/man/man-postlude-fapi.troff)
-install-man: install-man3 install-man5 install-man7
+install-man-fapi: install-man3 install-man5 install-man7
 	$(LN_S) -f Tss2_TctiLdr_Initialize.3 $(DESTDIR)$(man3dir)/Tss2_TctiLdr_Initialize_Ex.3
 else
 install-man: install-man3 install-man7
