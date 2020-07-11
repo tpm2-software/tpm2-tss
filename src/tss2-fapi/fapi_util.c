@@ -328,9 +328,10 @@ ifapi_set_auth(
     TSS2_RC r;
     char *auth = NULL;
     TPM2B_AUTH authValue = {.size = 0,.buffer = {0} };
-    char *obj_description;
+    char *obj_description = NULL;
 
-    obj_description = get_description(auth_object);
+    r = ifapi_get_description(auth_object, &obj_description);
+    return_if_error(r, "Get object description.");
 
     if (obj_description)
         description = obj_description;
@@ -339,6 +340,7 @@ ifapi_set_auth(
     if (context->callbacks.auth) {
         r = context->callbacks.auth(context, description, &auth,
                                         context->callbacks.authData);
+        SAFE_FREE(obj_description)
         return_if_error(r, "policyAuthCallback");
         if (auth != NULL) {
             authValue.size = strlen(auth);
@@ -351,6 +353,7 @@ ifapi_set_auth(
 
         return TSS2_RC_SUCCESS;
     }
+    SAFE_FREE(obj_description);
     SAFE_FREE(auth);
     return TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN;
 }
