@@ -337,7 +337,9 @@ FAPI_TESTS_INTEGRATION = \
 
 if TESTDEVICE
 if DEVICEDESTRUCTIVE
-FAPI_TESTS_INTEGRATION += test/integration/fapi-key-create-sign-policy-provision.fint
+FAPI_TESTS_INTEGRATION += \
+    test/integration/fapi-key-create-sign-policy-provision.fint \
+    test/integration/fapi-quote-destructive.fint
 endif #PTPMDESTRUCTIVE
 endif TESTDEVICE
 
@@ -347,7 +349,8 @@ FAPI_TESTS_INTEGRATION += \
     test/integration/fapi-provision-fingerprint.fint \
     test/integration/fapi-provision-certificate.fint \
     test/integration/fapi-provision-fingerprint_ecc.fint \
-    test/integration/fapi-provision-certificate_ecc.fint
+    test/integration/fapi-provision-certificate_ecc.fint \
+    test/integration/fapi-quote-destructive.fint
 endif #!TESTDEVICE
 
 TESTS_INTEGRATION += $(FAPI_TESTS_INTEGRATION)
@@ -1814,6 +1817,13 @@ test_integration_fapi_provisioning_error_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_provisioning_error_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_provisioning_error_fint_SOURCES = \
     test/integration/fapi-provisioning-error.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_quote_destructive_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_quote_destructive_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_quote_destructive_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_quote_destructive_fint_SOURCES = \
+    test/integration/fapi-quote-destructive.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 
