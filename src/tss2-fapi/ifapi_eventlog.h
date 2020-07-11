@@ -84,12 +84,6 @@ ifapi_eventlog_get_finish(
     char **log);
 
 TSS2_RC
-ifapi_eventlog_append_async(
-    IFAPI_EVENTLOG *eventlog,
-    IFAPI_IO *io,
-    TPM2_HANDLE pcr);
-
-TSS2_RC
 ifapi_eventlog_append_check(
     IFAPI_EVENTLOG *eventlog,
     IFAPI_IO *io);

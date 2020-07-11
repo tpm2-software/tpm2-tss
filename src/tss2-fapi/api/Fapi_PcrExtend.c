@@ -254,17 +254,15 @@ Fapi_PcrExtend_Finish(
                                context->eventlog.log_dir, IFAPI_PCR_LOG_FILE, command->pcrIndex);
             return_if_error(r, "Out of memory.");
 
+            /* Check wheter the event log has to be read. */
             if (ifapi_io_path_exists(command->event_log_file)) {
                 r = ifapi_io_read_async(&context->io, command->event_log_file);
                 goto_if_error_reset_state(r, "Read event log", error_cleanup);
+                context->eventlog.state = IFAPI_EVENTLOG_STATE_READING;
             } else {
+                context->eventlog.state = IFAPI_EVENTLOG_STATE_APPENDING;
                 SAFE_FREE(command->event_log_file);
             }
-
-            /* Append the eventLog entry to the event log. */
-            r = ifapi_eventlog_append_async(&context->eventlog, &context->io,
-                                            command->pcrIndex);
-            goto_if_error(r, "Error ifapi_eventlog_append_async", error_cleanup);
 
             fallthrough;
 

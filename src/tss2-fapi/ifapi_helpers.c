@@ -2119,9 +2119,12 @@ ifapi_calculate_pcr_digest(
             goto_if_error(r, "Error serialize policy", error_cleanup);
 
             for (i = 0; i < n_pcrs; i++) {
-                 r = ifapi_extend_vpcr(&pcrs[i].value, pcrs[i].bank, &event);
-                 goto_if_error2(r, "Extending vpcr %"PRIu32, error_cleanup, pcrs[i].pcr);
+                if (pcrs[i].pcr == event.pcr) {
+                    r = ifapi_extend_vpcr(&pcrs[i].value, pcrs[i].bank, &event);
+                    goto_if_error2(r, "Extending vpcr %"PRIu32, error_cleanup, pcrs[i].pcr);
+                }
             }
+            ifapi_cleanup_event(&event);
         }
     }
 
