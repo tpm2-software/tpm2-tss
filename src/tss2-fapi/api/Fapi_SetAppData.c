@@ -22,6 +22,8 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
+#define FAPI_MAX_APP_DATA_SIZE 10*1024*1024
+
 /** One-Call function for Fapi_SetAppData
  *
  * Associates an arbitrary data blob with a given object.
@@ -134,6 +136,12 @@ Fapi_SetAppData_Async(
     /* Check for NULL parameters */
     check_not_null(context);
     check_not_null(path);
+
+    /* App data is restricted to 2MB. */
+    if (appDataSize > FAPI_MAX_APP_DATA_SIZE) {
+        LOG_ERROR("Only 2MB are allowd for app data.");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
 
     /* Check for invalid parameters */
     if (!appData && appDataSize != 0) {
