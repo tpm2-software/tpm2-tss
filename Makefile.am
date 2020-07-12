@@ -334,6 +334,24 @@ src_tss2_tcti_libtss2_tcti_mssim_la_SOURCES  = \
     src/tss2-tcti/tcti-mssim.c
 endif # ENABLE_TCTI_MSSIM
 
+# tcti pcap library
+if ENABLE_TCTI_PCAP
+libtss2_tcti_pcap = src/tss2-tcti/libtss2-tcti-pcap.la
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_pcap.h
+lib_LTLIBRARIES += $(libtss2_tcti_pcap)
+pkgconfig_DATA += lib/tss2-tcti-pcap.pc
+EXTRA_DIST += lib/tss2-tcti-pcap.map # joho TODO enable tcti-pcap for Win (.def, visual studio files
+
+if HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_pcap_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-pcap.map
+endif # HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_pcap_la_LIBADD   = $(libtss2_tctildr) $(libtss2_mu) $(libutil)
+src_tss2_tcti_libtss2_tcti_pcap_la_SOURCES  = \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-pcap-builder.c \
+    src/tss2-tcti/tcti-pcap.c
+endif # ENABLE_TCTI_PCAP
+
 # tcti library for sub-process commands
 if ENABLE_TCTI_CMD
 libtss2_tcti_cmd = src/tss2-tcti/libtss2-tcti-cmd.la
@@ -695,6 +713,7 @@ EXTRA_DIST += \
     man/Tss2_TctiLdr_FreeInfo.3.in \
     man/Tss2_TctiLdr_GetInfo.3.in \
     man/Tss2_TctiLdr_Initialize.3.in \
+    man/tss2-tcti-pcap.7.in \
     man/tss2-tcti-device.7.in \
     man/man7/tss2-tcti-swtpm.7 \
     man/tss2-tcti-mssim.7.in \

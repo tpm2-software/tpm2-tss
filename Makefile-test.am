@@ -108,6 +108,9 @@ endif
 if ENABLE_TCTI_DEVICE
 TESTS_UNIT += test/unit/tcti-device
 endif
+if ENABLE_TCTI_PCAP
+TESTS_UNIT += test/unit/tcti-pcap
+endif
 if ENABLE_TCTI_CMD
 TESTS_UNIT += test/unit/tcti-cmd
 endif
@@ -400,6 +403,17 @@ test_unit_tcti_swtpm_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=select,--wr
 test_unit_tcti_swtpm_SOURCES = test/unit/tcti-swtpm.c \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-swtpm.c src/tss2-tcti/tcti-swtpm.h
+endif
+
+if ENABLE_TCTI_PCAP
+test_unit_tcti_pcap_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_tcti_pcap_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
+test_unit_tcti_pcap_LDFLAGS = -Wl,--wrap=getenv -Wl,--wrap=rand -Wl,--wrap=clock_gettime \
+        -Wl,--wrap=open -Wl,--wrap=read -Wl,--wrap=write -Wl,--wrap=close
+test_unit_tcti_pcap_SOURCES = test/unit/tcti-pcap.c \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-pcap.c src/tss2-tcti/tcti-pcap.h \
+    src/tss2-tcti/tcti-pcap-builder.c src/tss2-tcti/tcti-pcap-builder.h
 endif
 
 if ENABLE_TCTI_CMD
