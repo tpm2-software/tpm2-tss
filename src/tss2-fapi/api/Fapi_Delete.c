@@ -143,8 +143,8 @@ check_hierarchy(
     if (find_path_for_profile(profile_name, hierarchy, file_all_ary, n_all)) {
         /* Hierarchy would remain in keystore. */
         goto_error(r, TSS2_FAPI_RC_BAD_PATH,
-                   "Hierarchy %s would remain in keystore"
-                   " after deleting the SRK.", cleanup, hierarchy);
+                   "Cannot delete /HS/SRK because %s would remain in keystore",
+                   cleanup, hierarchy);
     }
 
  cleanup:

@@ -323,7 +323,8 @@ Fapi_Quote_Finish(
             r = ifapi_filter_pcr_selection_by_index(&command->pcr_selection,
                                                     command->pcrList,
                                                     command->pcrListSize);
-            goto_if_error_reset_state(r, "Filtering banks for PCR list.", error_cleanup);
+            goto_if_error_reset_state(r, "A selected PCR has no bank associated in the"
+                                      "current cryptographic profile.", error_cleanup);
 
             /* Get a session for authorization of the quote operation. */
             r = ifapi_get_sessions_async(context,
@@ -379,6 +380,10 @@ Fapi_Quote_Finish(
             r = Esys_Quote_Finish(context->esys, &command->tpm_quoted,
                                   &command->tpm_signature);
             return_try_again(r);
+            if (r == 0x1D5) {
+                LOG_ERROR("qualifyingData is of wrong size; probably larger than"
+                          "the TPM's max hash size (32 for SHA256, 64 for SHA512).");
+            }
             goto_if_error(r, "Error: PCR_Quote", error_cleanup);
 
             /* Flush the key used for the quote. */
