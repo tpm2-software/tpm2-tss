@@ -62,7 +62,7 @@ test_fapi_nv_set_bits(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_Provision", error);
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
-    if (!(r == TSS2_FAPI_RC_PATH_ALREADY_EXISTS || r == TSS2_FAPI_RC_BAD_VALUE)) {
+    if (r != TSS2_FAPI_RC_ALREADY_PROVISIONED) {
         /* File exists or persistent key exists. */
         LOG_ERROR("Check whether provisioning directory exists failed.");
         goto error;
