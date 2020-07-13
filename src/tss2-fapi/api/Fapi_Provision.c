@@ -237,7 +237,7 @@ Fapi_Provision_Async(
     goto_if_error(r, "Out of memory.", end);
 
     if (ifapi_io_path_exists(profile_dir)) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+        goto_error(r, TSS2_FAPI_RC_ALREADY_PROVISIONED,
                    "Profile %s was already provisioned.", end,
                    context->keystore.defaultprofile);
     }
