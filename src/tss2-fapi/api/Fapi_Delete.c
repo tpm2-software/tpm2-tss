@@ -187,7 +187,7 @@ normalize_and_check_path_list(
         if (!find_path_for_profile(context->config.profile_name, IFAPI_HS_PATH,
                                   file_ary, n))
             return_error(TSS2_FAPI_RC_BAD_PATH,
-                         "SRK has to be delted together with SRK");
+                         "SRK has to be delted together with HS");
 
         r = check_hierarchy(context, context->config.profile_name, IFAPI_HE_PATH,
                             file_ary, n);
