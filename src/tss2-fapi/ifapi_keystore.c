@@ -75,7 +75,7 @@ initialize_explicit_key_path(
     *list_node1 = split_string(ipath, IFAPI_FILE_DELIM);
     NODE_STR_T *list_node = *list_node1;
     char const *profile;
-    char *hierarchy;
+    char *hierarchy = NULL;
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     *result = NULL;
@@ -98,39 +98,32 @@ initialize_explicit_key_path(
         LOG_ERROR("Out of memory");
         return TSS2_FAPI_RC_MEMORY;
     }
-    if (list_node == NULL) {
-        /* Storage hierarchy will be used as default. */
-        hierarchy = "HS";
-    } else {
-        if (strcmp(list_node->str, "HN") == 0) {
-            hierarchy = list_node->str;
-            list_node = list_node->next;
-        } else if (strcmp(list_node->str, "HS") == 0 ||
-                   strcmp(list_node->str, "HE") == 0 ||
-                   strcmp(list_node->str, "HN") == 0) {
-            hierarchy = list_node->str;
-            list_node = list_node->next;
-        } else if (strcmp(list_node->str, "LOCKOUT") == 0) {
-            if (list_node->str) {
-                LOG_ERROR("No objects allowed in the lockout hierarchy.");
-                r = TSS2_FAPI_RC_BAD_VALUE;
-                goto error;
-            }
-        } else if (strcmp(list_node->str, "EK") == 0) {
-            /* The hierarchy for an endorsement key will be added. */
-            hierarchy = "HE";
-        } else if (list_node->str != NULL &&
-                   strcmp(list_node->str, "SRK") == 0) {
-            /* The storage hierachy will be added. */
-            hierarchy = "HS";
-        } else {
-            LOG_ERROR("Hierarchy cannot be determined.");
-            r = TSS2_FAPI_RC_PATH_NOT_FOUND;
+    if (strcmp(list_node->str, "HN") == 0 ||
+        strcmp(list_node->str, "HS") == 0 ||
+        strcmp(list_node->str, "HE") == 0 ||
+        strcmp(list_node->str, "HN") == 0) {
+        hierarchy = list_node->str;
+        list_node = list_node->next;
+    } else if (strcmp(list_node->str, "LOCKOUT") == 0) {
+        if (list_node->next) {
+            LOG_ERROR("No objects allowed in the lockout hierarchy.");
+            r = TSS2_FAPI_RC_BAD_VALUE;
             goto error;
         }
+    } else if (strcmp(list_node->str, "EK") == 0) {
+        /* The hierarchy for an endorsement key will be added. */
+        hierarchy = "HE";
+    } else if (list_node->str != NULL &&
+               strcmp(list_node->str, "SRK") == 0) {
+        /* The storage hierachy will be added. */
+        hierarchy = "HS";
+    } else {
+        LOG_ERROR("Hierarchy cannot be determined.");
+        r = TSS2_FAPI_RC_PATH_NOT_FOUND;
+        goto error;
     }
     /* Add the used hierarchy to the linked list. */
-    if (!add_string_to_list(*result, hierarchy)) {
+    if (hierarchy && !add_string_to_list(*result, hierarchy)) {
         LOG_ERROR("Out of memory");
         r = TSS2_FAPI_RC_MEMORY;
         goto error;
@@ -147,19 +140,19 @@ initialize_explicit_key_path(
         goto error;
     }
 
-    if (strcmp(hierarchy, "HS") == 0 && strcmp(list_node->str, "EK") == 0) {
+    if (hierarchy && strcmp(hierarchy, "HS") == 0 && strcmp(list_node->str, "EK") == 0) {
         LOG_ERROR("Key EK cannot be create in the storage hierarchy.");
         r = TSS2_FAPI_RC_PATH_NOT_FOUND;
         goto error;
     }
 
-    if (strcmp(hierarchy, "HE") == 0 && strcmp(list_node->str, "SRK") == 0) {
+    if (hierarchy && strcmp(hierarchy, "HE") == 0 && strcmp(list_node->str, "SRK") == 0) {
         LOG_ERROR("Key EK cannot be create in the endorsement hierarchy.");
         r = TSS2_FAPI_RC_PATH_NOT_FOUND;
         goto error;
     }
 
-    if (strcmp(hierarchy, "HN") == 0 &&
+    if (hierarchy && strcmp(hierarchy, "HN") == 0 &&
         (strcmp(list_node->str, "SRK") == 0 || strcmp(list_node->str, "EK") == 0)) {
         LOG_ERROR("Key EK and SRK cannot be created in NULL hierarchy.");
         r = TSS2_FAPI_RC_PATH_NOT_FOUND;
