@@ -2310,7 +2310,7 @@ ifapi_filter_pcr_selection_by_index(
 
     if (pcr_selection->count == 0) {
         LOGBLOB_WARNING((void*)pcr_index, pcr_count * sizeof(*pcr_index),
-                        "pcr selection is empty after filtering for pcrlist");
+                        "pcr index %"PRIi32" is not part of the pcr selection", *pcr_index);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     return TSS2_RC_SUCCESS;

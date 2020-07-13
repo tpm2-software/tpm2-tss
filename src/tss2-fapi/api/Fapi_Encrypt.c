@@ -339,6 +339,10 @@ Fapi_Encrypt_Finish(
         statecase(context->state, DATA_ENCRYPT_WAIT_FOR_RSA_ENCRYPTION);
             r = Esys_RSA_Encrypt_Finish(context->esys, &tpmCipherText);
             return_try_again(r);
+            if (r == 0x00000084) {
+                LOG_ERROR("The data to be encrypted might be too large. Common values are "
+                          "256 bytes for no OAEP or 190 with OAEP.");
+            }
             goto_if_error_reset_state(r, "RSA encryption.", error_cleanup);
 
             /* Return cipherTextSize if requested by the caller. */
