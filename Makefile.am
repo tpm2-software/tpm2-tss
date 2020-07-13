@@ -616,6 +616,15 @@ define set_fapi_permissions
     ($(call set_tss_permissions,$(DESTDIR)$(localstatedir)/lib/tpm2-tss)
 endef
 
+define check_dir
+    if [ ! -d "$1" ]; then echo "*** WARNING *** Directory $1 could not be created"; fi
+endef
+
+define check_fapi_dirs
+    $(call check_dir,$(DESTDIR)$(runstatedir)/tpm2-tss/eventlog/)
+    $(call check_dir,$(DESTDIR)$(localstatedir)/lib/tpm2-tss/system/keystore/)
+endef
+
 ### Man Pages
 man3_MANS = \
     man/man3/Tss2_Tcti_Cmd_Init.3 \
@@ -662,6 +671,7 @@ install-dirs:
 if HOSTOS_LINUX
 	(systemd-sysusers && systemd-tmpfiles --create) || \
 	($(call make_tss_user_and_group) && $(call make_fapi_dirs) && ($call set_fapi_permissions)) || true
+	$(call check_fapi_dirs)
 endif
 
 install-data-hook: install-dirs
