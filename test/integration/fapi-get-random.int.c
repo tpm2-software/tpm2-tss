@@ -51,7 +51,7 @@ test_fapi_get_random(FAPI_CONTEXT *context)
     do {
         r = Fapi_GetPollHandles(context, &handles, &num_handles);
         if (r == TSS2_RC_SUCCESS) {
-            poll(handles, num_handles, -1);
+            poll(handles, num_handles, 99);
             Fapi_Free(handles);
         } else if (r != TSS2_FAPI_RC_NO_HANDLE) {
             LOG_ERROR("GetPollHandles failed");
