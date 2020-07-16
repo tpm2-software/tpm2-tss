@@ -124,14 +124,6 @@ AS_IF([test "x$enable_fapi_async_tests" = "xyes"],
 AS_IF([test "x$enable_fapi_async_tests" = "xyes"],
     AC_MSG_WARN("FAPI compiled with asynchronous spinning testing. NOT FOR PRODUCTION!"))
 
-AC_ARG_ENABLE([tcti-partial-reads],
-    AS_HELP_STRING([--enable-tcti-partial-reads],
-	           [Enable partial reads for TCTI device
-		    (note: This needs to be supported by the kernel driver).]),,
-    [enable_tcti_partial_reads=no])
-AS_IF([test "x$enable_tcti_partial_reads" = "xyes"],
-	AC_DEFINE([TCTI_PARTIAL_READ],[1], [TCTI PARTIAL READ MODE]))
-
 AC_ARG_WITH([crypto],
             [AS_HELP_STRING([--with-crypto={ossl,mbed}],
                             [sets the ESYS crypto backend (default is OpenSSL)])],,
@@ -506,7 +498,6 @@ AC_MSG_RESULT([
     debug:              $enable_debug
     maxloglevel:        $with_maxloglevel
     doxygen:            $DX_FLAG_doc $enable_doxygen_doc
-    tcti-partial-read:  $enable_tcti_partial_reads
     crypto backend:     $with_crypto
     sysconfdir:         $sysconfdir
     localstatedir:      $localstatedir

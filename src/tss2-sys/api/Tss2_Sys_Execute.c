@@ -49,7 +49,7 @@ TSS2_RC Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
-    size_t responseSize = 0;
+    size_t response_size = 0;
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -57,33 +57,29 @@ TSS2_RC Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout)
     if (ctx->previousStage != CMD_STAGE_SEND_COMMAND)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-#ifdef TCTI_PARTIAL_READ
     /*
-     * First call receive with NULL as the response buffer to
-     * get the size of the response
+	 * Call tcti_receive with NULL response buffer to get the actual size
+	 * of the response. If we can read the response in multiple chunks
+	 * then the tcti should read the response header first and give us
+	 * the acctual size. If not it should set the response size to the
+	 * maximum possible size.
      */
-    rval = Tss2_Tcti_Receive(ctx->tctiContext, &responseSize,
+    rval = Tss2_Tcti_Receive(ctx->tctiContext, &response_size,
                              NULL, timeout);
     if (rval)
         return rval;
 
-    if (responseSize < sizeof(TPM20_Header_Out)) {
+    if (response_size < sizeof(TPM20_Header_Out)) {
         ctx->previousStage = CMD_STAGE_PREPARE;
         return TSS2_SYS_RC_INSUFFICIENT_RESPONSE;
     }
-    if (responseSize > ctx->maxCmdSize) {
+    if (response_size > ctx->maxCmdSize) {
         ctx->previousStage = CMD_STAGE_PREPARE;
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
     }
-#else
-    /* For none partial reads set the size to maxCmdSize */
-    responseSize = ctx->maxCmdSize;
-#endif
 
-    /*
-     * Then call receive again with the response buffer to read the response
-     */
-    rval = Tss2_Tcti_Receive(ctx->tctiContext, &responseSize,
+    /* Then call receive again with the response buffer to read the response */
+    rval = Tss2_Tcti_Receive(ctx->tctiContext, &response_size,
                              ctx->cmdBuffer, timeout);
     if (rval == TSS2_TCTI_RC_INSUFFICIENT_BUFFER)
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;

@@ -162,11 +162,9 @@ tcti_device_receive (
     ssize_t size = 0;
     struct pollfd fds;
     int rc_poll, nfds = 1;
-#ifdef TCTI_PARTIAL_READ
     uint8_t header[TPM_HEADER_SIZE];
     size_t offset = 2;
     UINT32 partial_size;
-#endif
 
     rc = tcti_common_receive_checks (tcti_common,
                                      response_size,
@@ -174,63 +172,53 @@ tcti_device_receive (
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
-    if (response_buffer == NULL) {
-#ifndef TCTI_PARTIAL_READ
-        LOG_DEBUG ("Caller queried for size but linux kernel doesn't allow this. "
-                   "Returning 4k which is the max size for a response buffer.");
-        *response_size = 4096;
-        return TSS2_RC_SUCCESS;
-    }
-#else
-        /* Read the header only and get the response size out of it */
-        LOG_DEBUG("Partial read - reading response size");
-        fds.fd = tcti_dev->fd;
-        fds.events = POLLIN;
 
-        rc_poll = poll(&fds, nfds, timeout);
-        if (rc_poll < 0) {
-            LOG_ERROR ("Failed to poll for response from fd %d, got errno %d: %s",
-                       tcti_dev->fd, errno, strerror (errno));
-            return TSS2_TCTI_RC_IO_ERROR;
-        } else if (rc_poll == 0) {
-            LOG_INFO ("Poll timed out on fd %d.", tcti_dev->fd);
-            return TSS2_TCTI_RC_TRY_AGAIN;
-        } else if (fds.revents == POLLIN) {
-            TEMP_RETRY (size, read (tcti_dev->fd, header, TPM_HEADER_SIZE));
-            if (size < 0 || size != TPM_HEADER_SIZE) {
-                LOG_ERROR ("Failed to get response size fd %d, got errno %d: %s",
-                       tcti_dev->fd, errno, strerror (errno));
+    if (!response_buffer) {
+        if (!tcti_common->partial_read_supported) {
+            LOG_DEBUG("Partial read not supported ");
+            *response_size = 4096;
+            return TSS2_RC_SUCCESS;
+        } else {
+            /* Read the header only and get the response size out of it */
+            LOG_DEBUG("Partial read - reading response size");
+            fds.fd = tcti_dev->fd;
+            fds.events = POLLIN;
+
+            rc_poll = poll(&fds, nfds, timeout);
+            if (rc_poll < 0) {
+                LOG_ERROR ("Failed to poll for response from fd %d, got errno %d: %s",
+               tcti_dev->fd, errno, strerror(errno));
                 return TSS2_TCTI_RC_IO_ERROR;
+            } else if (rc_poll == 0) {
+                LOG_INFO ("Poll timed out on fd %d.", tcti_dev->fd);
+                return TSS2_TCTI_RC_TRY_AGAIN;
+            } else if (fds.revents == POLLIN) {
+                TEMP_RETRY (size, read (tcti_dev->fd, header, TPM_HEADER_SIZE));
+                if (size < 0 || size != TPM_HEADER_SIZE) {
+                    LOG_ERROR ("Failed to get response size fd %d, got errno %d: %s",
+                           tcti_dev->fd, errno, strerror (errno));
+                    return TSS2_TCTI_RC_IO_ERROR;
+                }
             }
-        }
-        LOG_DEBUG("Partial read - received header");
+            LOG_DEBUG("Partial read - received header");
             rc = Tss2_MU_UINT32_Unmarshal(header, TPM_HEADER_SIZE,
                                           &offset, &partial_size);
-        if (rc != TSS2_RC_SUCCESS) {
-            LOG_ERROR ("Failed to unmarshal response size.");
+            if (rc != TSS2_RC_SUCCESS) {
+                LOG_ERROR ("Failed to unmarshal response size.");
+                return rc;
+            }
+            if (partial_size < TPM_HEADER_SIZE) {
+                LOG_ERROR ("Received %zu bytes, not enough to hold a TPM2"
+               " response header.", size);
+                return TSS2_TCTI_RC_GENERAL_FAILURE;
+            }
+
+            LOG_DEBUG("Partial read - received response size %d.", partial_size);
+            tcti_common->partial = true;
+            *response_size = partial_size;
+            memcpy(&tcti_common->header, header, TPM_HEADER_SIZE);
             return rc;
         }
-        if (partial_size < TPM_HEADER_SIZE) {
-            LOG_ERROR ("Received %zu bytes, not enough to hold a TPM2 response "
-                       "header.", size);
-            return TSS2_TCTI_RC_GENERAL_FAILURE;
-        }
-
-        LOG_DEBUG("Partial read - received response size %d.", partial_size);
-        tcti_common->partial = true;
-        *response_size = partial_size;
-        memcpy(&tcti_common->header, header, TPM_HEADER_SIZE);
-        return rc;
-    }
-#endif
-
-#ifndef TCTI_PARTIAL_READ
-    if (*response_size < 4096) {
-#else
-    if (*response_size < TPM_HEADER_SIZE) {
-#endif
-        LOG_INFO ("Caller provided buffer that *may* not be large enough to "
-                  "hold the response buffer.");
     }
 
     /* In case when the whole response is just the 10 bytes header
@@ -268,7 +256,7 @@ tcti_device_receive (
                         TPM_HEADER_SIZE, *response_size - TPM_HEADER_SIZE));
         } else {
             TEMP_RETRY (size, read (tcti_dev->fd, response_buffer,
-                        *response_size));
+                                    *response_size));
         }
         if (size < 0) {
             LOG_ERROR ("Failed to read response from fd %d, got errno %d: %s",
@@ -385,7 +373,7 @@ tcti_device_set_locality (
 static int open_tpm (
     const char* pathname) {
 #ifdef __VXWORKS__
-        return open (pathname, O_RDWR, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
+        return open (pathname, O_RDWR | O_NONBLOCK, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
 #else
         return open (pathname, O_RDWR | O_NONBLOCK);
 #endif
@@ -399,6 +387,7 @@ Tss2_Tcti_Device_Init (
 {
     TSS2_TCTI_DEVICE_CONTEXT *tcti_dev;
     TSS2_TCTI_COMMON_CONTEXT *tcti_common;
+    char *used_conf = NULL;
 
     if (tctiContext == NULL && size == NULL) {
         return TSS2_TCTI_RC_BAD_VALUE;
@@ -433,16 +422,17 @@ Tss2_Tcti_Device_Init (
             if (tcti_dev->fd >= 0) {
                 LOG_TRACE ("Successfully opened default TCTI device file %s",
                            default_conf[i]);
+                    used_conf = default_conf[i];
                     break;
             } else {
-                    LOG_WARNING ("Failed to open default TCTI device file %s: %s",
-                                 default_conf[i], strerror (errno));
-                }
+                LOG_WARNING ("Failed to open default TCTI device file %s: %s",
+                             default_conf[i], strerror (errno));
             }
-            if (tcti_dev->fd < 0) {
-                LOG_ERROR ("Could not open any default TCTI device file");
-                return TSS2_TCTI_RC_IO_ERROR;
-            }
+        }
+        if (tcti_dev->fd < 0) {
+            LOG_ERROR ("Could not open any default TCTI device file");
+            return TSS2_TCTI_RC_IO_ERROR;
+        }
     } else {
         LOG_DEBUG ("Trying to open specified TCTI device file %s", conf);
         tcti_dev->fd = open_tpm (conf);
@@ -453,8 +443,46 @@ Tss2_Tcti_Device_Init (
         } else {
             LOG_TRACE ("Successfully opened specified TCTI device file %s", conf);
         }
+        used_conf = (char *)conf;
     }
+    /* probe if the device support partial response read */
+    LOG_DEBUG ("Probe device for partial response read support");
+    uint8_t cmd[12] = { "\x80\x01\x00\x00\x00\x0c\x00\x00\x01\x7b\x00\x08" };
+    uint8_t rsp[20] = {0};
+    ssize_t sz = write_all (tcti_dev->fd, cmd, sizeof(cmd));
+    if (sz < 0 || sz != sizeof(cmd)) {
+        LOG_ERROR ("Could not probe device for partial response read support");
+        return TSS2_TCTI_RC_IO_ERROR;
+    }
+    LOG_DEBUG ("Command sent, reading header");
 
+    TEMP_RETRY (sz, read (tcti_dev->fd, rsp, TPM_HEADER_SIZE));
+    if (sz < 0 || sz != TPM_HEADER_SIZE) {
+        LOG_ERROR ("Failed to read response header fd %d, got errno %d: %s",
+                   tcti_dev->fd, errno, strerror (errno));
+        return TSS2_TCTI_RC_IO_ERROR;
+    }
+    LOG_DEBUG ("Header read, reading rest of response");
+
+    TEMP_RETRY (sz, read (tcti_dev->fd, rsp + TPM_HEADER_SIZE,
+                          sizeof(rsp) - TPM_HEADER_SIZE));
+    if (sz <= 0) {
+        /* partial read not supported. Reset the connection */
+        LOG_DEBUG ("Failed to get response tail fd %d, got errno %d: %s",
+                   tcti_dev->fd, errno, strerror (errno));
+        tcti_common->partial_read_supported = 0;
+        close(tcti_dev->fd);
+        tcti_dev->fd = open_tpm (used_conf);
+        if (tcti_dev->fd < 0) {
+            LOG_ERROR ("Failed to open specified TCTI device file %s: %s",
+                       used_conf, strerror (errno));
+            return TSS2_TCTI_RC_IO_ERROR;
+        }
+    } else {
+        /* partial read supported. */
+        LOG_DEBUG ("Read the rest - partial read supported");
+        tcti_common->partial_read_supported = 1;
+    }
 
     return TSS2_RC_SUCCESS;
 }
