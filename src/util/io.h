@@ -20,8 +20,8 @@ typedef SSIZE_T ssize_t;
 #include <sys/un.h>
 #define _HOST_NAME_MAX _POSIX_HOST_NAME_MAX
 #define SOCKET int
-#define INVALID_SOCKET - 1
-#define SOCKET_ERROR - 1
+#define INVALID_SOCKET -1
+#define SOCKET_ERROR -1
 #endif
 
 #include "tss2_tpm2_types.h"
@@ -76,6 +76,9 @@ socket_connect (
 TSS2_RC
 socket_close (
     SOCKET *socket);
+TSS2_RC
+socket_set_nonblock (
+    SOCKET *sock);
 ssize_t
 socket_recv_buf (
     SOCKET sock,

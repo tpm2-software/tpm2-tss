@@ -285,10 +285,12 @@ tcti_mssim_get_poll_handles_test (void **state)
     TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
     size_t num_handles = 5;
     TSS2_TCTI_POLL_HANDLE handles [5] = { 0 };
-    TSS2_RC rc;
 
-    rc = Tss2_Tcti_GetPollHandles (ctx, handles, &num_handles);
-    assert_int_equal (rc, TSS2_TCTI_RC_NOT_IMPLEMENTED);
+    TSS2_RC rc = Tss2_Tcti_GetPollHandles (ctx, handles, &num_handles);
+    TSS2_TCTI_MSSIM_CONTEXT *mssim_ctx = (TSS2_TCTI_MSSIM_CONTEXT*)ctx;
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (num_handles, 1);
+    assert_int_equal (handles[0].fd, mssim_ctx->tpm_sock);
 }
 /*
  */
