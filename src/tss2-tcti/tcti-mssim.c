@@ -271,10 +271,22 @@ tcti_mssim_get_poll_handles (
     TSS2_TCTI_POLL_HANDLE *handles,
     size_t *num_handles)
 {
-    (void)(tctiContext);
-    (void)(handles);
-    (void)(num_handles);
-    return TSS2_TCTI_RC_NOT_IMPLEMENTED;
+    TSS2_TCTI_MSSIM_CONTEXT *tcti_mssim = tcti_mssim_context_cast (tctiContext);
+
+    if (num_handles == NULL || tcti_mssim == NULL) {
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+    }
+
+    if (handles != NULL && *num_handles < 1) {
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
+
+    *num_handles = 1;
+    if (handles != NULL) {
+        handles->fd = tcti_mssim->tpm_sock;
+    }
+
+    return TSS2_RC_SUCCESS;
 }
 
 void
@@ -307,6 +319,8 @@ tcti_mssim_receive (
     TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_mssim_down_cast (tcti_mssim);
     TSS2_RC rc;
     UINT32 trash;
+    struct pollfd fds;
+    int rc_poll, nfds = 1;
     int ret;
 
     rc = tcti_common_receive_checks (tcti_common,
@@ -333,10 +347,28 @@ tcti_mssim_receive (
     if (tcti_common->header.size == 0) {
         /* Receive the size of the response. */
         uint8_t size_buf [sizeof (UINT32)];
-        ret = socket_recv_buf (tcti_mssim->tpm_sock, size_buf, sizeof (UINT32));
-        if (ret != sizeof (UINT32)) {
-            rc = TSS2_TCTI_RC_IO_ERROR;
-            goto out;
+
+        fds.fd = tcti_mssim->tpm_sock;
+        fds.events = POLLIN;
+
+        rc_poll = poll(&fds, nfds, timeout);
+        if (rc_poll < 0) {
+            LOG_ERROR ("Failed to poll for response from fd %d, got errno %d: %s",
+               tcti_mssim->tpm_sock, errno, strerror(errno));
+                return TSS2_TCTI_RC_IO_ERROR;
+        } else if (rc_poll == 0) {
+            LOG_INFO ("Poll timed out on fd %d.", tcti_mssim->tpm_sock);
+            return TSS2_TCTI_RC_TRY_AGAIN;
+        } else if (fds.revents == POLLIN) {
+            ret = socket_recv_buf (tcti_mssim->tpm_sock, size_buf, sizeof(UINT32));
+            if (ret != sizeof (UINT32)) {
+                if (ret == TSS2_TCTI_RC_TRY_AGAIN) {
+                    rc = ret;
+                } else {
+                    rc = TSS2_TCTI_RC_IO_ERROR;
+                }
+                goto out;
+            }
         }
 
         rc = Tss2_MU_UINT32_Unmarshal (size_buf,
@@ -365,23 +397,56 @@ tcti_mssim_receive (
 
     /* Receive the TPM response. */
     LOG_DEBUG ("Reading response of size %" PRIu32, tcti_common->header.size);
-    ret = socket_recv_buf (tcti_mssim->tpm_sock,
-                           (unsigned char *)response_buffer,
-                           tcti_common->header.size);
-    if (ret < (ssize_t)tcti_common->header.size) {
-        rc = TSS2_TCTI_RC_IO_ERROR;
-        goto out;
+    fds.fd = tcti_mssim->tpm_sock;
+    fds.events = POLLIN;
+
+    rc_poll = poll(&fds, nfds, timeout);
+    if (rc_poll < 0) {
+        LOG_ERROR ("Failed to poll for response from fd %d, got errno %d: %s",
+                   tcti_mssim->tpm_sock, errno, strerror(errno));
+            return TSS2_TCTI_RC_IO_ERROR;
+    } else if (rc_poll == 0) {
+        LOG_INFO ("Poll timed out on fd %d.", tcti_mssim->tpm_sock);
+        return TSS2_TCTI_RC_TRY_AGAIN;
+    } else if (fds.revents == POLLIN) {
+        ret = socket_recv_buf (tcti_mssim->tpm_sock,
+                               (unsigned char *)response_buffer,
+                               tcti_common->header.size);
+        if (ret < (ssize_t)tcti_common->header.size) {
+            if (ret == TSS2_TCTI_RC_TRY_AGAIN) {
+                rc = ret;
+            } else {
+                rc = TSS2_TCTI_RC_IO_ERROR;
+            }
+            goto out;
+        }
     }
     LOGBLOB_DEBUG(response_buffer, tcti_common->header.size,
                   "Response buffer received:");
+    fds.fd = tcti_mssim->tpm_sock;
+    fds.events = POLLIN;
 
-    /* Receive the appended four bytes of 0's */
-    ret = socket_recv_buf (tcti_mssim->tpm_sock,
-                           (unsigned char *)&trash,
-                           4);
-    if (ret != 4) {
-        rc = TSS2_TCTI_RC_IO_ERROR;
-        goto out;
+    rc_poll = poll(&fds, nfds, timeout);
+    if (rc_poll < 0) {
+        LOG_ERROR ("Failed to poll for response from fd %d, got errno %d: %s",
+                   tcti_mssim->tpm_sock, errno, strerror(errno));
+            return TSS2_TCTI_RC_IO_ERROR;
+    } else if (rc_poll == 0) {
+        LOG_INFO ("Poll timed out on fd %d.", tcti_mssim->tpm_sock);
+        return TSS2_TCTI_RC_TRY_AGAIN;
+    } else if (fds.revents == POLLIN) {
+        /* Receive the appended four bytes of 0's */
+        ret = socket_recv_buf (tcti_mssim->tpm_sock,
+                               (unsigned char *)&trash,
+                               4);
+        if (ret != 4) {
+            if (ret == TSS2_TCTI_RC_TRY_AGAIN) {
+                rc = ret;
+            } else {
+                rc = TSS2_TCTI_RC_IO_ERROR;
+            }
+            goto out;
+        }
     }
 
     if (tcti_mssim->cancel) {
@@ -562,6 +627,11 @@ Tss2_Tcti_Mssim_Init (
     rc = socket_connect (mssim_conf.host,
                          mssim_conf.port,
                          &tcti_mssim->tpm_sock);
+    if (rc != TSS2_RC_SUCCESS) {
+        goto fail_out;
+    }
+
+    rc = socket_set_nonblock (&tcti_mssim->tpm_sock);
     if (rc != TSS2_RC_SUCCESS) {
         goto fail_out;
     }

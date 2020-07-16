@@ -56,6 +56,9 @@ read_all (
 #else
         TEMP_RETRY (recvd, read (fd, &data [recvd_total], size));
         if (recvd < 0) {
+            if (errno == EAGAIN) {
+                return TSS2_TCTI_RC_TRY_AGAIN;
+            }
             LOG_WARNING ("read on fd %d failed with errno %d: %s",
                          fd, errno, strerror (errno));
             return recvd_total;
@@ -237,8 +240,7 @@ socket_connect (
         if (h == NULL)
             h = hostname;
 
-        LOG_DEBUG ("Attempting TCP connection to host %s, port %s",
-            h, port_str);
+        LOG_DEBUG ("Attempting TCP connection to host %s, port %s", h, port_str);
         if (connect (*sock, p->ai_addr, p->ai_addrlen) != SOCKET_ERROR)
             break; /* socket connected OK */
         socket_close (sock);
@@ -255,6 +257,22 @@ socket_connect (
 
         return TSS2_TCTI_RC_IO_ERROR;
     }
+
+    return TSS2_RC_SUCCESS;
+}
+
+TSS2_RC
+socket_set_nonblock (SOCKET *sock)
+{
+    int flgs;
+
+    flgs = fcntl(*sock, F_GETFL);
+    if (flgs == -1)
+        return TSS2_TCTI_RC_IO_ERROR;
+
+    flgs |= O_NONBLOCK;
+    if (fcntl(*sock, F_SETFL, flgs) != 0)
+        return TSS2_TCTI_RC_IO_ERROR;
 
     return TSS2_RC_SUCCESS;
 }
