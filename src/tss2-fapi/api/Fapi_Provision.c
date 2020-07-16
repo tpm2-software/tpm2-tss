@@ -1407,7 +1407,11 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             } else {
                 /* No certificate was stored in the TPM and ek_cert_less was not set.*/
                 goto_error(r, TSS2_FAPI_RC_NO_CERT,
-                           "No certifcate was stored in the TPM.", error_cleanup);
+                           "No EK certifcate found for current crypto profile found. "
+                           "You may want to switch the profile in fapi-config or "
+                           "set the ek_cert_less or ek_cert_file options in fapi-config. "
+                           "See also https://tpm2-software.github.io/2020/07/22/Fapi_Crypto_Profiles.html",
+                           error_cleanup);
             }
 
             SAFE_FREE(*capabilityData);
