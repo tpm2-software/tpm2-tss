@@ -118,6 +118,7 @@ tcti_device_init_conf_default_fail (void **state)
 
     free(ctx);
 }
+
 /* Test the device file recognition if no config string was specified */
 static void
 tcti_device_init_conf_default_success (void **state)
@@ -131,11 +132,18 @@ tcti_device_init_conf_default_success (void **state)
     ctx = calloc (1, tcti_size);
     assert_non_null (ctx);
     will_return (__wrap_open, 3);
+    will_return (__wrap_write, 12);
+    will_return (__wrap_write, tpm2_buf);
+    will_return (__wrap_read, 10);
+    will_return (__wrap_read, tpm2_buf);
+    will_return (__wrap_read, 8);
+    will_return (__wrap_read, tpm2_buf);
     ret = Tss2_Tcti_Device_Init (ctx, &tcti_size, NULL);
     assert_true (ret == TSS2_RC_SUCCESS);
 
     free(ctx);
 }
+
 /* wrap functions for read & write required to test receive / transmit */
 ssize_t
 __wrap_read (int fd, void *buf, size_t count)
@@ -177,6 +185,13 @@ tcti_device_setup (void **state)
     assert_true (ret == TSS2_RC_SUCCESS);
     ctx = calloc (1, tcti_size);
     assert_non_null (ctx);
+    will_return (__wrap_open, 3);
+    will_return (__wrap_write, 12);
+    will_return (__wrap_write, tpm2_buf);
+    will_return (__wrap_read, 10);
+    will_return (__wrap_read, tpm2_buf);
+    will_return (__wrap_read, 0);
+    will_return (__wrap_read, tpm2_buf);
     will_return (__wrap_open, 3);
     ret = Tss2_Tcti_Device_Init (ctx, &tcti_size, "/dev/null");
     assert_true (ret == TSS2_RC_SUCCESS);
@@ -309,6 +324,7 @@ tcti_device_receive_buffer_lt_response (void **state)
     uint8_t buf_out [BUF_SIZE] = { 0 };
     /* set size to lt the size in the header of the TPM2 response buffer */
     size_t size = BUF_SIZE - 1;
+    size_t small_size = TPM_HEADER_SIZE + 1;
 
     /* Keep state machine check in `receive` from returning error. */
     tcti_common->state = TCTI_STATE_RECEIVE;
@@ -316,7 +332,7 @@ tcti_device_receive_buffer_lt_response (void **state)
     will_return (__wrap_read, size);
     will_return (__wrap_read, tpm2_buf);
     rc = Tss2_Tcti_Receive (ctx,
-                            &size,
+                            &small_size,
                             buf_out,
                             TSS2_TCTI_TIMEOUT_BLOCK);
     assert_int_equal (rc, TSS2_TCTI_RC_GENERAL_FAILURE);
