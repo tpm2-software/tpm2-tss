@@ -23,7 +23,7 @@ matrix:
   # mbedTLS testing
   - env: DOCKER_TAG=ubuntu-20.04 WITH_CRYPTO=mbed
     compiler: gcc
-  - env: DOCKER_TAG=fedora-32
+  - env: DOCKER_TAG=fedora-32 WITH_TCTI=mssim
     compiler: gcc
   # coverage check
   - env: DOCKER_TAG=ubuntu-18.04 ENABLE_COVERAGE=true
