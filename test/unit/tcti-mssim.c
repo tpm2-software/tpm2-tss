@@ -201,6 +201,17 @@ __wrap_write (int sockfd,
     return mock_type (TSS2_RC);
 }
 /*
+ * Wrap the 'poll' system call.
+ */
+int
+__wrap_poll (struct pollfd *fds, nfds_t nfds, int timeout)
+{
+    int ret = mock_type (int);
+
+    fds->revents = fds->events;
+    return ret;
+}
+/*
  * This is a utility function used by other tests to setup a TCTI context. It
  * effectively wraps the init / allocate / init pattern as well as priming the
  * mock functions necessary for a the successful call to
@@ -335,12 +346,15 @@ tcti_socket_receive_success_test (void **state)
     /* Keep state machine check in `receive` from returning error. */
     tcti_common->state = TCTI_STATE_RECEIVE;
     /* receive response size */
+    will_return (__wrap_poll, 1);
     will_return (__wrap_read, 4);
     will_return (__wrap_read, &response_in [2]);
     /* receive tag */
+    will_return (__wrap_poll, 1);
     will_return (__wrap_read, 2);
     will_return (__wrap_read, response_in);
     /* receive size (again)  */
+    will_return (__wrap_poll, 1);
     will_return (__wrap_read, 4);
     will_return (__wrap_read, &response_in [2]);
     /* receive the rest of the command */
@@ -374,6 +388,7 @@ tcti_socket_receive_size_success_test (void **state)
     /* Keep state machine check in `receive` from returning error. */
     tcti_common->state = TCTI_STATE_RECEIVE;
     /* receive response size */
+    will_return (__wrap_poll, 1);
     will_return (__wrap_read, 4);
     will_return (__wrap_read, &response_in [2]);
     rc = Tss2_Tcti_Receive (ctx, &response_size, NULL, TSS2_TCTI_TIMEOUT_BLOCK);
@@ -381,9 +396,11 @@ tcti_socket_receive_size_success_test (void **state)
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (response_size, 0xc);
     /* receive tag */
+    will_return (__wrap_poll, 1);
     will_return (__wrap_read, 2);
     will_return (__wrap_read, response_in);
     /* receive size (again)  */
+    will_return (__wrap_poll, 1);
     will_return (__wrap_read, 4);
     will_return (__wrap_read, &response_in [2]);
     /* receive the rest of the command */
@@ -414,6 +431,7 @@ tcti_mssim_receive_eof_first_read_test (void **state)
 
     /* Keep state machine check in `receive` from returning error. */
     tcti_common->state = TCTI_STATE_RECEIVE;
+    will_return (__wrap_poll, 1);
     will_return (__wrap_read, 0);
     will_return (__wrap_read, buf);
     rc = Tss2_Tcti_Receive (ctx,
@@ -447,9 +465,11 @@ tcti_mssim_receive_eof_second_read_test (void **state)
     /* Keep state machine check in `receive` from returning error. */
     tcti_common->state = TCTI_STATE_RECEIVE;
     /* setup response size for first read */
+    will_return (__wrap_poll, 1);
     will_return (__wrap_read, 4);
     will_return (__wrap_read, &response_in [2]);
     /* setup 0 for EOF on second read */
+    will_return (__wrap_poll, 1);
     will_return (__wrap_read, 0);
     will_return (__wrap_read, response_in);
     rc = Tss2_Tcti_Receive (ctx,

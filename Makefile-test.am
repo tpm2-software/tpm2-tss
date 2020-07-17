@@ -385,7 +385,7 @@ endif
 if ENABLE_TCTI_MSSIM
 test_unit_tcti_mssim_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tcti_mssim_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
-test_unit_tcti_mssim_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=select,--wrap=write
+test_unit_tcti_mssim_LDFLAGS = -Wl,--wrap=connect -Wl,--wrap=read -Wl,--wrap=write -Wl,--wrap=poll
 test_unit_tcti_mssim_SOURCES = test/unit/tcti-mssim.c \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-mssim.c src/tss2-tcti/tcti-mssim.h
