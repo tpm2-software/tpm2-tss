@@ -106,9 +106,8 @@ ifapi_policy_store_initialize(
 
     r = ifapi_asprintf(&policy_dir, "%s%s%s", config_policydir,
                        (strcmp(&config_policydir[strlen(config_policydir) - 1],
-                               IFAPI_FILE_DELIM) == 0)
-                       ? IFAPI_FILE_DELIM : IFAPI_FILE_DELIM,
-                       IFAPI_POLICY_PATH);
+                        IFAPI_FILE_DELIM) == 0) ? "" : IFAPI_FILE_DELIM,
+					   IFAPI_POLICY_PATH);
     goto_if_error(r, "Out of memory.", error);
 
     r = ifapi_io_check_create_dir(policy_dir, FAPI_READ);
