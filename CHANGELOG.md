@@ -3,8 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [2.4.2-rc2]
+## [2.4.2-rc3]
 ### Fixed
+- Fixed setting of FAPI app data.
+- Fixed size check for Fapi_Encrypt.
+- Fixed computation of PCR logs and PCR digest of PCR logs.
+- Improved comments for FAPI authentication.
 - Fixed segfault and leaks in FAPI
 - Fixed Fapi_GetCertificate for objects which are not of type key
 - Fixed hierarchy usage in Fapi_Provision
@@ -28,16 +32,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Fixed handle usage in Fapi_ChangeAuth
 
 ### CHANGED
-- Add some checks to Fapi_Provisioning to avoid nasty failure states
-- Dont overwrite or delete FAPI storage objects and directories
+- Enabled all PCR registers for SHA256 bank in the distribution profiles.
+- Added some checks to Fapi_Provisioning to avoid nasty failure states
+- Added a check to prevent overwrite or delete FAPI storage objects and directories
 - Remove obsolete test fapi-key-create-policy-password-sign.int.c
-- Check hierarchy needed for EvictControl for deleting objects in FAPI.
-- Fapi_PcrExtend: Check event log file before calling the TPM.
+- Checked hierarchy needed for EvictControl for deleting objects in FAPI.
+- Checked event log file before calling the TPM in Fapi_PcrExtend.
 - Adapted integration tests to SRK delete checking.
 - Improved presentation of Fapi_GetInfo.
 - Silenced expected errors from Esys_TestParams
 
 ### Added
+- Added man pages for FAPI json config files
 - Added a check that prevents deleting default directories
 - Added a check if primary keys already exist for Fapi_Provision
 - Added tests for derived persistent keys.
