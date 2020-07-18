@@ -161,8 +161,12 @@ Esys_LoadExternal_Async(
     }
 
     r = iesys_handle_to_tpm_handle(hierarchy, &tpm_hierarchy);
-    if (r != TSS2_RC_SUCCESS)
-        return r;
+    if (r != TSS2_RC_SUCCESS) {
+        if (!iesys_is_platform_handle(hierarchy)) {
+            return r;
+        }
+        tpm_hierarchy = hierarchy;
+    }
 
     r = iesys_check_sequence_async(esysContext);
     if (r != TSS2_RC_SUCCESS)
