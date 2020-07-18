@@ -169,8 +169,12 @@ Esys_HierarchyControl_Async(
     }
 
     r = iesys_handle_to_tpm_handle(enable, &tpm_enable);
-    if (r != TSS2_RC_SUCCESS)
-        return r;
+    if (r != TSS2_RC_SUCCESS) {
+        if (!iesys_is_platform_handle(enable)) {
+            return r;
+        }
+        tpm_enable = enable;
+    }
 
     r = iesys_check_sequence_async(esysContext);
     if (r != TSS2_RC_SUCCESS)

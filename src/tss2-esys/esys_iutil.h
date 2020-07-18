@@ -61,6 +61,10 @@ TSS2_RC iesys_handle_to_tpm_handle(
     ESYS_TR esys_handle,
     TPM2_HANDLE *tpm_handle);
 
+bool
+iesys_is_platform_handle(
+        ESYS_TR handle);
+
 TSS2_RC esys_GetResourceObject(
     ESYS_CONTEXT *esys_context,
     ESYS_TR rsrc_handle,

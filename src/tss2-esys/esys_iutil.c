@@ -389,6 +389,32 @@ iesys_handle_to_tpm_handle(ESYS_TR esys_handle, TPM2_HANDLE * tpm_handle)
     LOG_ERROR("Error: Esys invalid ESAPI handle (%x).", esys_handle);
     return TSS2_ESYS_RC_BAD_VALUE;
 }
+
+/**
+ * Determines if an ESYS_TR (UINT32) is assigned a raw TPM2_HANDLE (UINT32)
+ * hierarchy type.
+ *
+ * @param handle [in] The handle to check if it's a hierarchy or not.
+ * @return
+ *  true if it is a hierarchy, false otherwise.
+ */
+bool
+iesys_is_platform_handle(ESYS_TR handle) {
+
+    switch(handle) {
+    case TPM2_RH_OWNER:
+    case TPM2_RH_PLATFORM:
+    case TPM2_RH_PLATFORM_NV:
+    case TPM2_RH_ENDORSEMENT:
+    case TPM2_RH_NULL:
+        LOG_WARNING("Convert handle from TPM2_RH to ESYS_TR, got: 0x%x",
+                handle);
+        return true;
+    default:
+        return false;
+    }
+}
+
 /** Get the type of a tpm handle.
  *
  * @parm handle[in] The tpm handle.

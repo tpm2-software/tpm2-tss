@@ -292,13 +292,22 @@ test_esys_make_credential(ESYS_CONTEXT * esys_context)
 
     LOG_INFO("\nSecond key created.");
 
+    /*
+     * Their is no individual stand-alone test for Esys_LoadExternal, so modify
+     * a single Esys_LoadExternal call to test that the backwards compat change
+     * from TPM2_RH to ESYS_TR works as expected. Their are other Esys_LoadExternal
+     * calls that use the expected ESYS_TR type.
+     *
+     * For more details, see:
+     *   - https://github.com/tpm2-software/tpm2-tss/issues/1750
+     */
     r = Esys_LoadExternal(esys_context,
                           ESYS_TR_NONE,
                           ESYS_TR_NONE,
                           ESYS_TR_NONE,
                           NULL,
                           outPublic2,
-                          ESYS_TR_RH_OWNER,
+                          TPM2_RH_OWNER,
                           &loadedKeyHandle);
     goto_if_error(r, "Error esys load external", error);
 
