@@ -3,8 +3,56 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [3.0.0-dev]
-### Changed
+## [3.0.0-rc0]
+### Changed or Fixed
+- Enabled all PCR registers for SHA256 bank in the distribution profiles.
+- Added fix computation of PCR logs and PCR digest of PCR logs.
+- Added fix size check for Fapi_Encrypt.
+- Improved log messages in FAPI
+- Introduced new FAPI return codes FAPI_RC_ALREADY_PROVISIONED,
+  TSS2_BASE_RC_NOT_PROVISIONED, and TSS2_FAPI_RC_NOT_PROVISIONED.
+- Added missing retry in Fapi_Initialize_Finish.
+- Added man pages for FAPI config files
+- Deleted invalid keys from the null hierarchy.
+- Fixed check of auth state for lockout set.
+- Fixed check of directory access rights in Fapi_Initialize.
+- Enabled usage of NULL hierarchy in FAPI.
+- Added address sanitizer to CI for gcc.
+- Added asserts to callback functions in integration tests
+- Added check event log file before Fapi_PcrExtend.
+- Fixed hierarchy usage and authentication in Fapi_Provision,
+  Fapi_GetCertificate, and Fapi_Delete.
+- Added description for primary keys to profile.
+- Fixed non async call of Esys_ContextSave in Fapi_GetEsysBlobs.
+- Added check for hierarchy needed for EvictControl for deleting objects.
+- Fixed copying the primary during key loading.
+- Added a check that prevents deleting of default directories.
+- Added verification to provisioning.
+- Fixed usage of persistent handles.
+- Added missing selectors for some TPMU types in marshal
+- Added handling for invalid selector when (um)marshal TPMU types
+- Improved presentation of Fapi_GetInfo.
+- Fixed computation of the size of a PCR selection.
+- Added a check for valid pathnames in keystore module.
+- Added a check for deleting of the SRK.
+- Fixed computation of random value for objects used for sealing.
+- Fixed return code for event parsing errors.
+- Added content of the config file to FAPI Info.
+- Fixed NV index and path handling in NV creation.
+- Fixed path checking for keys.
+- Fixed version retrieval method in Fapi_GetInfo.
+- Fixed path usage in Fapi_Import.
+- Fixed settings of default flags for keys creation.
+- Fixed handle usage in Fapi_ChangeAuth
+- Fixed systemd-sysusers/-tmpfiles invocation
+- Changed FAPI callback API.
+- Fixed initialization of app data in Esys_Initialize
+- Fixed certificate handling for TPMs without stored certificate.
+- Replaced strtok with strtok_r
+- Changed return codes from tcti macros according to the spec
+- Added check that prevents overwriting objects in key store.
+- Added session usage to FAPI provisioning.
+- Enabled CI for FreeBSD
 - Changed hierarchy param type of Esys_Hash(), Esys_HierarchyControl(),
   Esys_LoadExternal(), and Esys_SequenceComplete() calls along with
   their Async versions according to the spec.
@@ -13,12 +61,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
   with the rev 1.38 version of the TPM2.0 architecture spec.
   Note: This change brakes ABI backwards compatibility.
 - Changed: Silence expected errors from Esys_TestParams.
+- Many improvements for CI builds on Travis and Cirrus, unit tests
+  and integration test code
 
 ### Added
+- Added SWTPM-TCTI
 - Added mbedTLS ESYS crypto backend
+- Added the Command TCTI
+- Added new API function Fapi_GetEsysBlobs.
+- Added new feature for importing keys with Fapi_Import.
 
 ### Removed
 - Removed libgcrypt ESYS crypto backend
+- Removed dev-tcti partial read mode configuration flag
+- Removed dev-tcti async mode configuration flag
+- Removed obsolete LIBDL_LDFLAGS and replaced broken @LIBDL_LDFLAGS@ with @LIBADD_DL@
+- Removed deprecated OpenSSL functions from FAPI and ESYS
 
 ## [2.4.0] - 2020-03-11
 ### Added
