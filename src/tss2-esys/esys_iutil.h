@@ -18,6 +18,19 @@
 extern "C" {
 #endif
 
+/*
+ * Start issuing ESYS_TR objects past the TPM2_RH_LAST namespace
+ * and give ourselves 0x1000 handle space in case of differing
+ * header files between the library build and the client build.
+ *
+ * Due to an API mistake, TPM2_RH constants are valid for a few
+ * select ESYS API calls.
+ *
+ * More details can be found here:
+ *   - https://github.com/tpm2-software/tpm2-tss/issues/1750
+ */
+#define ESYS_TR_MIN_OBJECT (TPM2_RH_LAST + 1 + 0x1000)
+
 /** An entry in a cpHash or rpHash table. */
 typedef struct {
     TPM2_ALG_ID alg;                 /**< The hash algorithm. */
