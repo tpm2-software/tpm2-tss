@@ -56,7 +56,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Changed hierarchy param type of Esys_Hash(), Esys_HierarchyControl(),
   Esys_LoadExternal(), and Esys_SequenceComplete() calls along with
   their Async versions according to the spec.
-  Note: This change brakes ABI backwards compatibility.
+  Note: This change brakes API backwards compatibility.
 - Changed Tss2_Sys_ReadClock to allow audit session to be consistent
   with the rev 1.38 version of the TPM2.0 architecture spec.
   Note: This change brakes ABI backwards compatibility.
