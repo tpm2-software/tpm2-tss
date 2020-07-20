@@ -12,6 +12,8 @@
 #endif
 
 #include "tss2_esys.h"
+#include "tss2-esys/esys_iutil.h"
+
 /*
  * Esys handles for dummy session and key objects, and initialization values for
  * other objects, which can be used in ESAPI test calls

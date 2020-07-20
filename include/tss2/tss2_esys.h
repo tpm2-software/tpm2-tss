@@ -61,8 +61,6 @@ typedef uint32_t ESYS_TR;
 #define ESYS_TR_RH_AUTH_FIRST  0x110U
 #define ESYS_TR_RH_AUTH(x) (ESYS_TR_RH_AUTH_FIRST + (ESYS_TR)(x))
 
-#define ESYS_TR_MIN_OBJECT (TPM2_RH_LAST + 1 + 0x1000)
-
 typedef struct ESYS_CONTEXT ESYS_CONTEXT;
 
 /*
