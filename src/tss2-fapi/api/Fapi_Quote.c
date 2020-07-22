@@ -210,6 +210,10 @@ Fapi_Quote_Async(
     /* Helpful alias pointers */
     IFAPI_PCR * command = &context->cmd.pcr;
 
+    if (qualifyingDataSize > sizeof(command->qualifyingData.buffer)) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "qualifyingDataSize too large.");
+    }
+
     /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize Quote");

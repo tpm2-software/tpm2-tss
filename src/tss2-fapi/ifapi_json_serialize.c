@@ -783,36 +783,54 @@ ifapi_json_IFAPI_EVENT_serialize(const IFAPI_EVENT *in, json_object **jso)
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     TSS2_RC r;
-    json_object *jso2;
+    json_object *recnum = NULL;
+    json_object *pcr = NULL;
+    json_object *digests = NULL;
+    json_object *type = NULL;
+    json_object *sub_event = NULL;
 
-    if (*jso == NULL)
+    r = ifapi_json_UINT32_serialize(in->recnum, &recnum);
+    goto_if_error(r, "Serialize UINT32", error_cleanup);
+
+    r = ifapi_json_TPM2_HANDLE_serialize(in->pcr, &pcr);
+    goto_if_error(r, "Serialize TPM2_HANDLE", error_cleanup);
+
+    r = ifapi_json_TPML_DIGEST_VALUES_serialize(&in->digests, &digests);
+    goto_if_error(r, "Serialize TPML_DIGEST", error_cleanup);
+
+    r = ifapi_json_IFAPI_EVENT_TYPE_serialize(in->type, &type);
+    goto_if_error(r, "Serialize IFAPI_EVENT_TYPE", error_cleanup);
+
+    r = ifapi_json_IFAPI_EVENT_UNION_serialize(&in->sub_event, in->type, &sub_event);
+    goto_if_error(r, "Serialize IFAPI_EVENT_UNION", error_cleanup);
+
+    if (*jso == NULL) {
         *jso = json_object_new_object();
-    jso2 = NULL;
-    r = ifapi_json_UINT32_serialize(in->recnum, &jso2);
-    return_if_error(r, "Serialize UINT32");
+        if (!*jso) {
+            goto_error(r, TSS2_FAPI_RC_MEMORY, "OOM", error_cleanup);
+        }
+    }
 
-    json_object_object_add(*jso, "recnum", jso2);
-    jso2 = NULL;
-    r = ifapi_json_TPM2_HANDLE_serialize(in->pcr, &jso2);
-    return_if_error(r, "Serialize TPM2_HANDLE");
+    json_object_object_add(*jso, "recnum", recnum);
+    json_object_object_add(*jso, "pcr", pcr);
+    json_object_object_add(*jso, "digests", digests);
+    json_object_object_add(*jso, "type", type);
+    json_object_object_add(*jso, "sub_event", sub_event);
 
-    json_object_object_add(*jso, "pcr", jso2);
-    jso2 = NULL;
-    r = ifapi_json_TPML_DIGEST_VALUES_serialize(&in->digests, &jso2);
-    return_if_error(r, "Serialize TPML_DIGEST");
-
-    json_object_object_add(*jso, "digests", jso2);
-    jso2 = NULL;
-    r = ifapi_json_IFAPI_EVENT_TYPE_serialize(in->type, &jso2);
-    return_if_error(r, "Serialize IFAPI_EVENT_TYPE");
-
-    json_object_object_add(*jso, "type", jso2);
-    jso2 = NULL;
-    r = ifapi_json_IFAPI_EVENT_UNION_serialize(&in->sub_event, in->type, &jso2);
-    return_if_error(r, "Serialize IFAPI_EVENT_UNION");
-
-    json_object_object_add(*jso, "sub_event", jso2);
     return TSS2_RC_SUCCESS;
+
+error_cleanup:
+    if (recnum)
+        json_object_put(recnum);
+    if (pcr)
+        json_object_put(pcr);
+    if (digests)
+        json_object_put(digests);
+    if (type)
+        json_object_put(type);
+    if (sub_event)
+        json_object_put(sub_event);
+    return r;
 }
 
 /** Serializes a configuration JSON object.
