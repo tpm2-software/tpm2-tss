@@ -191,17 +191,16 @@ Fapi_Import_Async(
 
         }
         r = ifapi_non_tpm_mode_init(context);
-        return_if_error(r, "Initialize Import in none TPM mode");
+        goto_if_error(r, "Initialize Import in none TPM mode", cleanup_error);
 
         context->state = IMPORT_KEY_WRITE_OBJECT_PREPARE;
 
     } else if (strcmp(importData, IFAPI_PEM_PRIVATE_KEY) == 0) {
-          return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid import data");
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid importData.", cleanup_error);
 
     } else {
-        /* Check whether TCTI and ESYS are initialized */
-        return_if_null(context->esys, "Command can't be executed in none TPM mode.",
-                       TSS2_FAPI_RC_NO_TPM);
+        r = ifapi_non_tpm_mode_init(context);
+        goto_if_error(r, "Initialize Import in none TPM mode", cleanup_error);
 
         /* If the async state automata of FAPI shall be tested, then we must not set
        the timeouts of ESYS to blocking mode.
@@ -210,15 +209,17 @@ Fapi_Import_Async(
        to block until a result is available. */
 #ifndef TEST_FAPI_ASYNC
         r = Esys_SetTimeout(context->esys, TSS2_TCTI_TIMEOUT_BLOCK);
-        return_if_error_reset_state(r, "Set Timeout to blocking");
+        goto_if_error_reset_state(r, "Set Timeout to blocking", cleanup_error);
 #endif /* TEST_FAPI_ASYNC */
 
         r = ifapi_session_init(context);
-        return_if_error(r, "Initialize Import");
+        goto_if_error(r, "Initialize Import", cleanup_error);
 
         /* Otherwise a JSON object has to be checked whether a key or policy is passed */
         jso = json_tokener_parse(importData);
-        return_if_null(jso, "Json error.", TSS2_FAPI_RC_BAD_VALUE);
+        if (!jso) {
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid importData.", cleanup_error);
+        }
 
         if (ifapi_get_sub_object(jso, IFAPI_JSON_TAG_POLICY, &jso2) &&
             !(ifapi_get_sub_object(jso, IFAPI_JSON_TAG_DUPLICATE, &jso2))

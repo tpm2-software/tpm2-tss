@@ -171,6 +171,13 @@ Fapi_AuthorizePolicy_Async(
     check_not_null(context);
     check_not_null(policyPath);
     check_not_null(keyPath);
+    if (policyRefSize > 0) {
+        check_not_null(policyRef);
+    }
+
+    if (policyRefSize > sizeof(policy->policyRef.buffer)) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "PolicyRef too large.");
+    }
 
     /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
@@ -346,7 +353,7 @@ Fapi_AuthorizePolicy_Finish(
         statecase(context->state, AUTHORIZE_NEW_WRITE_POLICY);
             r = ifapi_policy_store_store_finish(&context->pstore, &context->io);
             return_try_again(r);
-            return_if_error_reset_state(r, "write_finish failed");
+            goto_if_error_reset_state(r, "write_finish failed", cleanup);
 
             fallthrough;
 
