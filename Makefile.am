@@ -608,7 +608,9 @@ if HOSTOS_LINUX
 endif
 
 install-data-hook: install-dirs
-	-mv $(DESTDIR)$(udevrulesdir)/tpm-udev.rules $(DESTDIR)$(udevrulesdir)/$(udevrulesprefix)tpm-udev.rules
+	-if [ ! -z "$(udevrulesprefix)" ]; then \
+		mv $(DESTDIR)$(udevrulesdir)/tpm-udev.rules $(DESTDIR)$(udevrulesdir)/$(udevrulesprefix)tpm-udev.rules; \
+	fi
 
 uninstall-local:
 	-rm $(DESTDIR)$(udevrulesdir)/$(udevrulesprefix)tpm-udev.rules
