@@ -2,7 +2,7 @@ task:
   env:
     CFLAGS: "-I/usr/local/include -I/usr/local/openssl/include"
     LDFLAGS: -L/usr/local/lib
-    ibmtpm_name: ibmtpm1628
+    ibmtpm_name: ibmtpm1637
   freebsd_instance:
     matrix:
       image_family: freebsd-12-1-snap
@@ -12,7 +12,7 @@ task:
     - pkg install -y bash gmake coreutils libtool pkgconf autoconf autoconf-archive
     - pkg install -y automake openssl json-c cmocka uthash wget curl git
     - wget --quiet --show-progress --progress=dot:giga "https://downloads.sourceforge.net/project/ibmswtpm2/$ibmtpm_name.tar.gz"
-    - shasum -a256 $ibmtpm_name.tar.gz | grep ^a8e874e7a1ae13a1290d7679d846281f72d0eb6a5e4cfbafca5297dbf4e29ea3
+    - shasum -a256 $ibmtpm_name.tar.gz | grep ^dd3a4c3f7724243bc9ebcd5c39bbf87b82c696d1c1241cb8e5883534f6e2e327
     - mkdir -p $ibmtpm_name
     - tar xvf $ibmtpm_name.tar.gz -C $ibmtpm_name && cd $ibmtpm_name/src
     - sed -i '' -e 's/gcc/clang/g' makefile
