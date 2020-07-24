@@ -1288,8 +1288,6 @@ ifapi_keystore_search_obj(
  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS if the object already exists in object store.
  * @retval TSS2_FAPI_RC_BAD_PATH if the path is used in inappropriate context
  *         or contains illegal characters.
- * @retval TSS2_FAPI_RC_BAD_PATH if the path is used in inappropriate context
- *         or contains illegal characters.
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
