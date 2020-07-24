@@ -8,6 +8,6 @@ Description: TPM2 Enhanced System API library.
 URL: https://github.com/tpm2-software/tpm2-tss
 Version: @VERSION@
 Requires.private: tss2-mu tss2-sys
-Cflags: -I${includedir}
+Cflags: -I${includedir} -I${includedir}/tss
 Libs: -ltss2-esys -L${libdir}
 Libs.private: @LIBADD_DL@ @LIBSOCKET_LDFLAGS@ @TSS2_ESYS_LDFLAGS_CRYPTO@
