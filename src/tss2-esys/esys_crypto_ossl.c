@@ -284,7 +284,7 @@ iesys_cryptossl_hash_abort(IESYS_CRYPTO_CONTEXT_BLOB ** context)
  * The context will be created and initialized according to the hash function
  * and the used HMAC key.
  * @param[out] context The created context (callee-allocated).
- * @param[in] hmacAlg The hash algorithm for the HMAC computation.
+ * @param[in] hashAlg The hash algorithm for the HMAC computation.
  * @param[in] key The byte buffer of the HMAC key.
  * @param[in] size The size of the HMAC key.
  * @retval TSS2_RC_SUCCESS on success.
@@ -543,7 +543,7 @@ iesys_cryptossl_random2b(TPM2B_NONCE * nonce, size_t num_bytes)
  *
  * Encrypting a buffer using a public key is used for example during
  * Esys_StartAuthSession in order to encrypt the salt value.
- * @param[in] key The key to be used for encryption.
+ * @param[in] pub_tpm_key The key to be used for encryption.
  * @param[in] in_size The size of the buffer to be encrypted.
  * @param[in] in_buffer The data buffer to be encrypted.
  * @param[in] max_out_size The maximum size for the output encrypted buffer.
