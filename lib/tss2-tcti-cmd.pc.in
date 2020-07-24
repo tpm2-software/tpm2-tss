@@ -7,5 +7,5 @@ Name: tss2-tcti-cmd
 Description: TCTI library for communicating with a subproccess that can communicate with the TPM.
 URL: https://github.com/tpm2-software/tpm2-tss
 Version: @VERSION@
-Cflags: -I${includedir}
+Cflags: -I${includedir} -I${includedir}/tss
 Libs: -ltss2-tcti-cmd -L${libdir}
