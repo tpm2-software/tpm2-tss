@@ -449,6 +449,9 @@ Tss2_Tcti_Device_Init (
     LOG_DEBUG ("Probe device for partial response read support");
     uint8_t cmd[12] = { "\x80\x01\x00\x00\x00\x0c\x00\x00\x01\x7b\x00\x08" };
     uint8_t rsp[20] = {0};
+    struct pollfd fds;
+    int rc_poll, nfds = 1;
+
     ssize_t sz = write_all (tcti_dev->fd, cmd, sizeof(cmd));
     if (sz < 0 || sz != sizeof(cmd)) {
         LOG_ERROR ("Could not probe device for partial response read support");
@@ -456,16 +459,37 @@ Tss2_Tcti_Device_Init (
     }
     LOG_DEBUG ("Command sent, reading header");
 
-    TEMP_RETRY (sz, read (tcti_dev->fd, rsp, TPM_HEADER_SIZE));
-    if (sz < 0 || sz != TPM_HEADER_SIZE) {
-        LOG_ERROR ("Failed to read response header fd %d, got errno %d: %s",
-                   tcti_dev->fd, errno, strerror (errno));
+    fds.fd = tcti_dev->fd;
+    fds.events = POLLIN;
+    rc_poll = poll(&fds, nfds, 1000); /* Wait 1 sec */
+    if (rc_poll < 0 || rc_poll == 0) {
+        LOG_ERROR ("Failed to poll for response from fd %d, rc %d, errno %d: %s",
+                   tcti_dev->fd, rc_poll, errno, strerror(errno));
         return TSS2_TCTI_RC_IO_ERROR;
+    } else if (fds.revents == POLLIN) {
+        TEMP_RETRY (sz, read (tcti_dev->fd, rsp, TPM_HEADER_SIZE));
+        if (sz < 0 || sz != TPM_HEADER_SIZE) {
+            LOG_ERROR ("Failed to read response header fd %d, got errno %d: %s",
+                       tcti_dev->fd, errno, strerror (errno));
+            return TSS2_TCTI_RC_IO_ERROR;
+        }
     }
     LOG_DEBUG ("Header read, reading rest of response");
+    fds.fd = tcti_dev->fd;
+    fds.events = POLLIN;
+    sz = 0;
+    rc_poll = poll(&fds, nfds, 1000); /* Wait 1 sec */
+    if (rc_poll < 0) {
+        LOG_DEBUG ("Failed to poll for response from fd %d, rc %d, errno %d: %s",
+                   tcti_dev->fd, rc_poll, errno, strerror(errno));
+        return TSS2_TCTI_RC_IO_ERROR;
+	} else if (rc_poll == 0) {
+        LOG_ERROR ("timeout waiting for response from fd %d", tcti_dev->fd);
+    } else if (fds.revents == POLLIN) {
+        TEMP_RETRY (sz, read (tcti_dev->fd, rsp + TPM_HEADER_SIZE,
+                    sizeof(rsp) - TPM_HEADER_SIZE));
+    }
 
-    TEMP_RETRY (sz, read (tcti_dev->fd, rsp + TPM_HEADER_SIZE,
-                          sizeof(rsp) - TPM_HEADER_SIZE));
     if (sz <= 0) {
         /* partial read not supported. Reset the connection */
         LOG_DEBUG ("Failed to get response tail fd %d, got errno %d: %s",
