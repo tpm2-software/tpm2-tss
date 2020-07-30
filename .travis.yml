@@ -18,6 +18,9 @@ env:
 
 matrix:
   include:
+  # scan build check
+  - env: DOCKER_TAG=fedora-30 SCANBUILD=yes WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes
+    compiler: clang
   # gcrypt testing
   - env: DOCKER_TAG=fedora-30 WITH_CRYPTO=gcrypt
     compiler: gcc
@@ -37,9 +40,6 @@ matrix:
   # coverage check
   - env: DOCKER_TAG=ubuntu-18.04 ENABLE_COVERAGE=true
     compiler: gcc
-  # scan build check
-  - env: DOCKER_TAG=fedora-30 SCANBUILD=yes WITH_TCTI_ASYNC=yes WITH_TCTI_PARTIAL=yes
-    compiler: clang
   # check fuzz targets
   - env: DOCKER_TAG=fedora-30 GEN_FUZZ=1 CXX=clang++ CC=clang
     compiler: clang
