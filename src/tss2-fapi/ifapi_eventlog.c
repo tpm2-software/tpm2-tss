@@ -313,7 +313,6 @@ ifapi_eventlog_append_finish(
 
         r = ifapi_json_IFAPI_EVENT_serialize(&eventlog->event, &event);
         if (r) {
-            json_object_put(eventlog->log);
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Error serializing event data", error_cleanup);
         }
 
