@@ -313,7 +313,6 @@ ifapi_eventlog_append_finish(
 
         r = ifapi_json_IFAPI_EVENT_serialize(&eventlog->event, &event);
         if (r) {
-            json_object_put(eventlog->log);
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Error serializing event data", error_cleanup);
         }
 
@@ -329,6 +328,7 @@ ifapi_eventlog_append_finish(
         r = ifapi_io_write_async(io, event_log_file, (uint8_t *) logstr2, strlen(logstr2));
         SAFE_FREE(event_log_file);
         json_object_put(eventlog->log); /* this also frees logstr2 */
+        eventlog->log = NULL;
         goto_if_error(r, "write_async failed", error_cleanup);
         fallthrough;
 
