@@ -134,8 +134,10 @@ tcti_device_init_conf_default_success (void **state)
     will_return (__wrap_open, 3);
     will_return (__wrap_write, 12);
     will_return (__wrap_write, tpm2_buf);
+    will_return (__wrap_poll, 1);
     will_return (__wrap_read, 10);
     will_return (__wrap_read, tpm2_buf);
+    will_return (__wrap_poll, 1);
     will_return (__wrap_read, 8);
     will_return (__wrap_read, tpm2_buf);
     ret = Tss2_Tcti_Device_Init (ctx, &tcti_size, NULL);
@@ -188,8 +190,10 @@ tcti_device_setup (void **state)
     will_return (__wrap_open, 3);
     will_return (__wrap_write, 12);
     will_return (__wrap_write, tpm2_buf);
+    will_return (__wrap_poll, 1);
     will_return (__wrap_read, 10);
     will_return (__wrap_read, tpm2_buf);
+    will_return (__wrap_poll, 1);
     will_return (__wrap_read, 0);
     will_return (__wrap_read, tpm2_buf);
     will_return (__wrap_open, 3);
