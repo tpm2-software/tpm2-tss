@@ -1,3 +1,3 @@
 #Type   Path                                           Mode User Group Age         Argument
-d       @localstatedir@/lib/tpm2-tss/system/keystore   775  tss  tss   -           -
-d       @runstatedir@/tpm2-tss/eventlog                775  tss  tss   -           -
+d       @localstatedir@/lib/tpm2-tss/system/keystore   2775 tss  tss   -           -
+d       @runstatedir@/tpm2-tss/eventlog                2775 tss  tss   -           -
