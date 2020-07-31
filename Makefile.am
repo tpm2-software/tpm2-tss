@@ -598,7 +598,8 @@ endef
 
 define set_tss_permissions
     (chown -R tss:tss "$1") && \
-    (chmod -R 2775 "$1")
+    (chmod -R 2775 "$1") && \
+    (setfacl -m default:group:tss:rwx "$1")
 endef
 
 define make_fapi_dirs
