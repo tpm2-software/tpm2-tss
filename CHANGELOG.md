@@ -3,8 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [2.4.2-rc3]
+## [2.4.2]
 ### Fixed
+- Fixed duoble json_object_put call in event log processing.
+- Fixed memory leaks on error paths in FAPI
 - Fixed setting of FAPI app data.
 - Fixed size check for Fapi_Encrypt.
 - Fixed computation of PCR logs and PCR digest of PCR logs.
