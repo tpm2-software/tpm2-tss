@@ -3,8 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [3.0.0-rc1]
+## [3.0.0]
 ### Changed or Fixed
+- Added setgid perms and ACL for FAPI keystore to allow r/w access for tss group
+- Fixed duoble json_object_put call in event log processing.
+- Added TSS root dir to include path in CFLAGS
 - Switch default FAPI profile to ECC.
 - Enabled all PCR registers for SHA256 bank in the distribution profiles.
 - Added fix computation of PCR logs and PCR digest of PCR logs.
