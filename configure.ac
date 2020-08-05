@@ -328,7 +328,8 @@ AS_IF([test "x$enable_integration" = "xyes"],
               AC_MSG_NOTICE([Falling back to testing with tcti-mssim.])
               AC_CHECK_PROG([result_tpm_server], [tpm_server], [yes], [no])
               AS_IF([test "x$result_tpm_server" = "xyes"],
-                    [integration_tcti=mssim],
+                    [integration_tcti=mssim
+                     AC_DEFINE([INTEGRATION_TCTI_MSSIM], [1], [use mssim TCTI for integration tests])],
                     [AC_MSG_WARN([Executable tpm_server not found in PATH (fallback)])])])
        AS_IF([test "x$integration_tcti" = "xnone"],
              [AC_MSG_ERROR([No simulator executable found in PATH for testing TCTI.])])
