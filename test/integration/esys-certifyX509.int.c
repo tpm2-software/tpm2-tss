@@ -79,7 +79,7 @@ test_esys_certifyx509(ESYS_CONTEXT * esys_context)
                     TPMA_OBJECT_USERWITHAUTH |
                     TPMA_OBJECT_RESTRICTED |
                     TPMA_OBJECT_SIGN_ENCRYPT |
-#if defined TCTI_MSSIM
+#if defined INTEGRATION_TCTI_MSSIM
                     TPMA_OBJECT_X509SIGN | /* This requires mssim >= v1628 Other simulators
                                               that do not implement 1.59 spec return 0x000002e1
                                               tpm:parameter(2):reserved bits not set to zero as required
