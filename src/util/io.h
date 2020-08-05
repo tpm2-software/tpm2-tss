@@ -78,7 +78,7 @@ socket_close (
     SOCKET *socket);
 TSS2_RC
 socket_set_nonblock (
-    SOCKET *sock);
+    SOCKET sock);
 ssize_t
 socket_recv_buf (
     SOCKET sock,
@@ -89,6 +89,10 @@ socket_xmit_buf (
     SOCKET sock,
     const void *buf,
     size_t size);
+TSS2_RC
+socket_poll (
+    SOCKET sock,
+    int timeout);
 
 #ifdef __cplusplus
 }
