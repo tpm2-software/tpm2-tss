@@ -74,7 +74,7 @@ if [ "$SCANBUILD" == "yes" ]; then
 elif [ "$CC" == "clang" ]; then
   ../configure --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
 else
-  if [ "$WITH_TCTI" == "mssim"]; then
+  if [ "$WITH_TCTI" == "mssim" ]; then
     ../configure --with-sanitizer=undefined,address --disable-tcti-swtpm --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
   else
     ../configure --with-sanitizer=undefined,address --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
