@@ -29,12 +29,6 @@
 /* global TCTI object, use to return reference from */
 static TSS2_TCTI_CONTEXT_COMMON_V2 tcti_instance = { 0, };
 
-char *
-__wrap_dlerror(void)
-{
-    return (char*)__func__;
-}
-
 void *
 __wrap_dlopen(const char *filename, int flags)
 {
