@@ -290,7 +290,7 @@ pcap_print (
     }
 
     ret = pcap_write_enhanced_packet_block (ctx, buf, pdu_len,
-                                            ts.tv_sec*1000000 + ts.tv_nsec/1000,
+                                            (uint64_t) ts.tv_sec*1000000 + ts.tv_nsec/1000,
                                             payload, payload_len, direction);
     if (ret < 0) {
         goto cleanup;
