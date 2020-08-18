@@ -32,10 +32,9 @@
 #define TCTI_PCAP_FD        0x01234567
 #define TCTI_PCAP_HOST_PORT_INPUT 0xcdf4 /* translates to port 0xcdef */
 #define TCTI_PCAP_HOST_PORT_BYTES 0xcd, 0xef
-/* sec/nsec translate to 0x00 0x11 0x22 ... 0x77 (note endianness) */
-#define TCTI_PCAP_TIMESTAMP_SEC   (0x3322110077665544UL / 1000000)
-#define TCTI_PCAP_TIMESTAMP_NSEC  ((0x3322110077665544UL % 1000000) * 1000)
-#define TCTI_PCAP_TIMESTAMP_BYTES 0x00, 0x11, 0x22, 0x33,  0x44, 0x55, 0x66, 0x77
+#define TCTI_PCAP_TIMESTAMP_SEC   ((uint64_t) 0x0001020304050607 / 1000000)
+#define TCTI_PCAP_TIMESTAMP_NSEC  (((uint64_t) 0x0001020304050607 % 1000000) * 1000)
+#define TCTI_PCAP_TIMESTAMP_BYTES 0x03, 0x02, 0x01, 0x00,  0x07, 0x06, 0x05, 0x04
 
 static const uint8_t pcap_header[] = {
     /* section header block */
