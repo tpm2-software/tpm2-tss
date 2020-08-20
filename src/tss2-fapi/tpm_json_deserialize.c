@@ -146,8 +146,11 @@ ifapi_json_byte_deserialize(
         if (strncmp(token, "0x", 2) == 0)
             itoken = 2;
         r = ifapi_hex_to_byte_ary(&token[itoken], max, out);
-        *out_size = (strlen(token) - itoken) / 2;
         return_if_error(r, "Error convert hex digest to binary.");
+        *out_size = (strlen(token) - itoken) / 2;
+    } else {
+        LOG_ERROR("Byte array is neither of type array nor string.");
+        return TSS2_FAPI_RC_BAD_VALUE;
     }
     return TSS2_RC_SUCCESS;
 }
@@ -1348,9 +1351,8 @@ ifapi_json_TPMU_HA_deserialize(
     json_object *jso,
     TPMU_HA *out)
 {
-    const char *hex_string = json_object_get_string(jso);
-    size_t size = strlen(hex_string) / 2;
-    size_t hash_size;
+    UINT16 size;
+    UINT16 hash_size;
     uint8_t *buffer;
     TSS2_RC r;
 
@@ -1379,11 +1381,13 @@ ifapi_json_TPMU_HA_deserialize(
         LOG_TRACE("false");
         return TSS2_FAPI_RC_BAD_VALUE;
     };
+
+    r = ifapi_json_byte_deserialize(jso, hash_size, buffer, &size);
+    return_if_error(r, "byte serialize");
+
     if (hash_size != size) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Wrong size of digest.");
     }
-    r = ifapi_hex_to_byte_ary(hex_string, size, buffer);
-    return_if_error(r, "Can't convert hex values.");
 
     return TSS2_RC_SUCCESS;
 }
