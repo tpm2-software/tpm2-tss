@@ -373,6 +373,7 @@ ifapi_read_pcr(
 
         /* Initialize digest list with pcr values from TPM */
         i_pcr = 0;
+        (*pcr_values)->count = pcr_digests->count;
         for (i = 0; i < out_selection->count; i++) {
             for (pcr = 0; pcr < TPM2_MAX_PCRS; pcr++) {
                 uint8_t byte_idx = pcr / 8;
