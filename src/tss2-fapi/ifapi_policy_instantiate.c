@@ -165,11 +165,12 @@ ifapi_policyeval_instantiate_finish(
     IFAPI_POLICY_EVAL_INST_CTX *context)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    NODE_OBJECT_T *first_in_pol_list = context->policy_elements;
+    NODE_OBJECT_T *first_in_pol_list;
     size_t i_last;
 
     /* While not all policy elements are instantiated */
-    while (first_in_pol_list) {
+    while (context->policy_elements) {
+        first_in_pol_list = context->policy_elements;
         TPMT_POLICYELEMENT *pol_element = first_in_pol_list->object;
         switch (pol_element->type) {
         case POLICYSIGNED:

@@ -49,6 +49,7 @@ new_policy(
 
     pol_exec_ctx = calloc(sizeof(IFAPI_POLICY_EXEC_CTX), 1);
     if (!pol_exec_ctx) {
+        SAFE_FREE(*current_policy);
         return_error(TSS2_FAPI_RC_MEMORY, "Out of memory");
     }
     (*current_policy)->pol_exec_ctx = pol_exec_ctx;
@@ -69,6 +70,7 @@ new_policy(
 
     pol_exec_cb_ctx = calloc(sizeof(IFAPI_POLICY_EXEC_CB_CTX), 1);
     if (!pol_exec_cb_ctx) {
+        SAFE_FREE(*current_policy);
         return_error(TSS2_FAPI_RC_MEMORY, "Out of memory");
     }
     pol_exec_ctx->app_data = pol_exec_cb_ctx;
@@ -226,7 +228,6 @@ error:
     while (context->policy.policyutil_stack) {
         clear_all_policies(context);
     }
-    SAFE_FREE(current_policy);
     return r;
 }
 /** State machine to Execute the TPM policy commands needed for the current policy.
