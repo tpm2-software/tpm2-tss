@@ -531,7 +531,7 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
                                  &context->cmd.Provision.hash_size);
         if (r) {
             LOG_ERROR("Policy calculation");
-            free(policy);
+            SAFE_FREE(policy);
             return r;
         }
 
