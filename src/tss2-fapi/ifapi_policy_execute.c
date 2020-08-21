@@ -1388,6 +1388,7 @@ execute_policy_or(
         r = Esys_PolicyOR_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyPCR_Finish.");
 
+        current_policy->state = POLICY_EXECUTE_INIT;
         return r;
 
     statecasedefault(current_policy->state);
