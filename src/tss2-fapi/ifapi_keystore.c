@@ -536,7 +536,7 @@ rel_path_to_abs_path(
         /* Check type of object which does not exist. */
         if (ifapi_path_type_p(rel_path, IFAPI_NV_PATH)) {
             /* NV directory does not exist. */
-            goto_error(r, TSS2_FAPI_RC_NOT_PROVISIONED,
+            goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND,
                     "FAPI not provisioned. File %s does not exist.",
                     cleanup, rel_path);
         } else if (ifapi_hierarchy_path_p(rel_path)) {
