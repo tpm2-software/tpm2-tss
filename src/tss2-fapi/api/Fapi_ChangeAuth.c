@@ -321,6 +321,7 @@ Fapi_ChangeAuth_Finish(
                     &command->handle,
                     &command->key_object);
             return_try_again(r);
+            goto_if_error(r, "Load keys.", error_cleanup);
 
             fallthrough;
 
