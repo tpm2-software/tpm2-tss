@@ -1027,7 +1027,7 @@ expand_directory(IFAPI_KEYSTORE *keystore, const char *path, char **directory_na
              strncmp(&path[start_pos], "HE", 2) == 0) &&
             strlen(&path[start_pos]) <= 3) {
             /* Root directory is hierarchy */
-            r = ifapi_asprintf(directory_name, "%s/%s/", keystore->defaultprofile,
+            r = ifapi_asprintf(directory_name, "/%s/%s/", keystore->defaultprofile,
                                &path[start_pos]);
             return_if_error(r, "Out of memory.");
 
