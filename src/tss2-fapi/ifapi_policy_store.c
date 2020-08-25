@@ -144,6 +144,10 @@ ifapi_policy_store_load_async(
 
     LOG_TRACE("Load policy: %s", path);
 
+    /* First it will be checked whether the only valid characters occur in the path. */
+    r = ifapi_check_valid_path(path);
+    return_if_error(r, "Invalid path.");
+
     /* Free old input buffer if buffer exists */
     SAFE_FREE(io->char_rbuffer);
 
