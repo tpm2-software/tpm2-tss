@@ -178,7 +178,7 @@ Fapi_Provision_Async(
     memset(&context->cmd.Provision, 0, sizeof(IFAPI_Provision));
 
     /* First it will be checked whether the profile is already provisioned. */
-    r = ifapi_asprintf(&profile_dir, "%s/%s", context->keystore.systemdir,
+    r = ifapi_asprintf(&profile_dir, "%s/%s/HS", context->keystore.systemdir,
                        context->keystore.defaultprofile);
     goto_if_error(r, "Out of memory.", end);
 
