@@ -28,8 +28,8 @@
  * @retval TSS2_RC_SUCCESS If the pathname is ok.
  * @retval TSS2_FAPI_RC_BAD_PATH If not valid characters are detected.
  */
-static TSS2_RC
-check_valid_path(
+TSS2_RC
+ifapi_check_valid_path(
     const char *path)
 {
     for (size_t i = 1; i < strlen(path); i++) {
@@ -287,7 +287,7 @@ expand_path(IFAPI_KEYSTORE *keystore, const char *path, char **file_name)
     check_not_null(path);
 
     /* First it will be checked whether the only valid characters occur in the path. */
-    r = check_valid_path(path);
+    r = ifapi_check_valid_path(path);
     return_if_error(r, "Invalid path.");
 
     if (ifapi_hierarchy_path_p(path)) {
