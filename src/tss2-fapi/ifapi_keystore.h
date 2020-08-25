@@ -151,6 +151,8 @@ typedef struct _IFAPI_OBJECT {
 
 } IFAPI_OBJECT;
 
+TSS2_RC
+ifapi_check_valid_path(const char *path);
 
 TSS2_RC
 ifapi_keystore_initialize(
