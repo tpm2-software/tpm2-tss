@@ -30,11 +30,20 @@
 #define TCTI_PCAP_ENV_VAR   "pcap_env_var"
 #define TCTI_PCAP_FILE      "pcap_file"
 #define TCTI_PCAP_FD        0x01234567
-#define TCTI_PCAP_HOST_PORT_INPUT 0xcdf4 /* translates to port 0xcdef */
-#define TCTI_PCAP_HOST_PORT_BYTES 0xcd, 0xef
-#define TCTI_PCAP_TIMESTAMP_SEC   ((uint64_t) 0x0001020304050607 / 1000000)
-#define TCTI_PCAP_TIMESTAMP_NSEC  (((uint64_t) 0x0001020304050607 % 1000000) * 1000)
-#define TCTI_PCAP_TIMESTAMP_BYTES 0x03, 0x02, 0x01, 0x00,  0x07, 0x06, 0x05, 0x04
+#define TCTI_PCAP_IP_HOST   0x01, 0x02, 0x03, 0x04
+#define TCTI_PCAP_IP_TPM    0x05, 0x06, 0x07, 0x08
+#define TCTI_PCAP_IP_HOST_L 0x0102
+#define TCTI_PCAP_IP_HOST_H 0x0304
+#define TCTI_PCAP_IP_TPM_L  0x0506
+#define TCTI_PCAP_IP_TPM_H  0x0708
+#define TCTI_PCAP_TCP_SEQ_HOST     0x00, 0x11, 0x22, 0x33
+#define TCTI_PCAP_TCP_SEQ_TPM      0xaa, 0xbb, 0xcc, 0xdd
+#define TCTI_PCAP_TCP_SEQ_HOST_INT 0x00112233
+#define TCTI_PCAP_TCP_SEQ_TPM_INT  0xaabbccdd
+#define TCTI_PCAP_HOST_PORT_BYTES  0xcd, 0xef
+#define TCTI_PCAP_TIMESTAMP_SEC    ((uint64_t) 0x0001020304050607 / 1000000)
+#define TCTI_PCAP_TIMESTAMP_NSEC   (((uint64_t) 0x0001020304050607 % 1000000) * 1000)
+#define TCTI_PCAP_TIMESTAMP_BYTES  0x03, 0x02, 0x01, 0x00,  0x07, 0x06, 0x05, 0x04
 
 static const uint8_t pcap_header[] = {
     /* section header block */
@@ -71,13 +80,13 @@ static uint8_t pcap_rx_epb_data[] = {
     0xff,
     0x06,
     0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00,
+    TCTI_PCAP_IP_TPM,
+    TCTI_PCAP_IP_HOST,
     /* tcp header */
     0x09, 0x11,
-    TCTI_PCAP_HOST_PORT_BYTES,
-    0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00,
+    0xc3, 0x50,
+    TCTI_PCAP_TCP_SEQ_TPM,
+    TCTI_PCAP_TCP_SEQ_HOST,
     0x50, 0x10,
     0xff, 0xff,
     0x00, 0x00,
@@ -107,13 +116,13 @@ static uint8_t pcap_tx_epb_data[] = {
     0xff,
     0x06,
     0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00,
+    TCTI_PCAP_IP_HOST,
+    TCTI_PCAP_IP_TPM,
     /* tcp header */
-    TCTI_PCAP_HOST_PORT_BYTES,
+    0xc3, 0x50,
     0x09, 0x11,
-    0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00,
+    TCTI_PCAP_TCP_SEQ_HOST,
+    TCTI_PCAP_TCP_SEQ_TPM,
     0x50, 0x10,
     0xff, 0xff,
     0x00, 0x00,
@@ -255,7 +264,7 @@ __wrap_getenv (const char *name)
 int
 __wrap_rand (void)
 {
-    return TCTI_PCAP_HOST_PORT_INPUT;
+    return mock_type (int);
 }
 
 int
@@ -407,7 +416,6 @@ tcti_pcap_init_tctildr_fail_test (void **state)
     rc = Tss2_Tcti_Pcap_Init (tcti, &tcti_size, NULL);
     assert_int_equal (rc, TSS2_TCTI_RC_MEMORY);
     assert_int_equal (tcti_pcap.pcap_builder.fd, 0);
-    assert_int_equal (tcti_pcap.pcap_builder.tcp_host_port, 0);
 }
 
 static void
@@ -424,6 +432,12 @@ tcti_pcap_init_open_fail_test (void **state)
     tcti = calloc (1, tcti_size);
     assert_non_null (tcti);
 
+    will_return (__wrap_rand, 0); /* host ip */
+    will_return (__wrap_rand, 0);
+    will_return (__wrap_rand, 0); /* tpm ip */
+    will_return (__wrap_rand, 0);
+    will_return (__wrap_rand, 0); /* host sequence no */
+    will_return (__wrap_rand, 0); /* tpm sequence no */
     will_return (__wrap_open, -1);
     rc = Tss2_Tcti_Pcap_Init (tcti, &tcti_size, TCTI_STUB_CONF);
     assert_int_equal (rc, TSS2_TCTI_RC_IO_ERROR);
@@ -445,6 +459,12 @@ tcti_pcap_init_write_fail_test (void **state)
     tcti = calloc (1, tcti_size);
     assert_non_null (tcti);
 
+    will_return (__wrap_rand, 0); /* host ip */
+    will_return (__wrap_rand, 0);
+    will_return (__wrap_rand, 0); /* tpm ip */
+    will_return (__wrap_rand, 0);
+    will_return (__wrap_rand, 0); /* host sequence no */
+    will_return (__wrap_rand, 0); /* tpm sequence no */
     will_return (__wrap_open, TCTI_PCAP_FD);
     will_return (__wrap_write, -1);
     will_return (__wrap_write, sizeof(pcap_header));
@@ -470,6 +490,12 @@ tcti_pcap_setup (void **state)
     tcti = calloc (1, tcti_size);
     assert_non_null (tcti);
 
+    will_return (__wrap_rand, TCTI_PCAP_IP_HOST_L); /* host ip */
+    will_return (__wrap_rand, TCTI_PCAP_IP_HOST_H);
+    will_return (__wrap_rand, TCTI_PCAP_IP_TPM_L);  /* tpm ip */
+    will_return (__wrap_rand, TCTI_PCAP_IP_TPM_H);
+    will_return (__wrap_rand, TCTI_PCAP_TCP_SEQ_HOST_INT); /* host sequence no */
+    will_return (__wrap_rand, TCTI_PCAP_TCP_SEQ_TPM_INT);  /* tpm sequence no */
     will_return (__wrap_open, TCTI_PCAP_FD);
     will_return (__wrap_write, sizeof(pcap_header));
     will_return (__wrap_write, sizeof(pcap_header));
