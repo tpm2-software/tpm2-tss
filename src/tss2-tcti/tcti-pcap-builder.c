@@ -8,10 +8,10 @@
 #include <config.h>
 #endif
 
+#include <time.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <time.h>
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -24,13 +24,9 @@
 #define LOGMODULE tcti
 #include "util/log.h"
 
-/**
- * the host port is chosen randomly to enable having multiple tcti-pcap
- * instances write into the same file
- */
-#define TCP_HOST_PORT_MIN   50000
-#define TCP_HOST_PORT_MAX   60000
-#define TCP_TPM_PORT        2321    /* port recognized by the TPM 2.0 protocol dissector */
+#ifdef __FreeBSD__
+#define CLOCK_MONOTONIC_RAW CLOCK_MONOTONIC
+#endif
 
 /* constants used */
 #define PCAP_MAJOR                          0x0001
@@ -52,6 +48,8 @@
 #define IPv4_TIME_TO_LIVE_MAX       0xFF
 #define IPv4_PROTOCOL_TCP           0x06
 #define IPv4_CHECKSUM_UNUSED        0x0000
+#define TCP_HOST_PORT               50000
+#define TCP_TPM_PORT                2321 /* required by TPM 2.0 dissector */
 #define TCP_FLAGS_ACK               0x10
 #define TCP_WINDOW_SIZE_MAX         0xFFFF
 #define TCP_CHECKSUM_UNUSED         0x0000
@@ -165,7 +163,6 @@ pcap_write_enhanced_packet_block (
     pcap_buider_ctx *ctx,
     void* buf,
     size_t buf_len,
-    uint64_t timestamp,
     const void* payload,
     size_t payload_len,
     int direction);
@@ -192,6 +189,7 @@ int
 pcap_init (pcap_buider_ctx *ctx)
 {
     char *filename = getenv (ENV_PCAP_FILE);
+    struct timespec time;
     size_t buf_len;
     size_t offset;
     size_t uret;
@@ -203,10 +201,16 @@ pcap_init (pcap_buider_ctx *ctx)
         filename = DEFAULT_PCAP_FILE;
     }
 
-    /* random host port to associate unique connection with this tcti instance */
-    srand (time (NULL));
-    ctx->tcp_host_port = rand () % (TCP_HOST_PORT_MAX + 1 - TCP_HOST_PORT_MIN)
-                         + TCP_HOST_PORT_MIN;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &time);
+    srand (time.tv_nsec);
+
+    /* random ips to associate unique connection with this tcti instance */
+    ctx->ip_host = (rand() << 16) | rand();
+    ctx->ip_tpm = (rand() << 16) | rand();
+
+    /* random sequence numbers */
+    ctx->tcp_sequence_no_host = rand();
+    ctx->tcp_sequence_no_tpm = rand();
 
     if (!strcmp (filename, "stdout") || !strcmp (filename, "-")) {
         ctx->fd = STDOUT_FILENO;
@@ -231,8 +235,8 @@ pcap_init (pcap_buider_ctx *ctx)
     offset += ret;
 
     ret = pcap_write_interface_description_block (ctx,
-                                                   buf + offset,
-                                                   buf_len - offset);
+                                                  buf + offset,
+                                                  buf_len - offset);
     if (ret < 0) {
         return ret;
     }
@@ -260,7 +264,6 @@ pcap_print (
     int direction)
 {
     size_t pdu_len;
-    struct timespec ts;
     size_t uret;
     int ret;
 
@@ -269,7 +272,7 @@ pcap_print (
     }
 
     /* get required buffer size */
-    ret = pcap_write_enhanced_packet_block (ctx, NULL, 0, 0,
+    ret = pcap_write_enhanced_packet_block (ctx, NULL, 0,
                                             payload, payload_len, direction);
     if (ret < 0) {
         return ret;
@@ -282,15 +285,7 @@ pcap_print (
         return -1;
     }
 
-    uret = clock_gettime (CLOCK_REALTIME, &ts);
-    if (uret != 0) {
-        LOG_WARNING ("Failed to get time: %s", strerror (errno));
-        ts.tv_sec = 0;
-        ts.tv_nsec = 0;
-    }
-
     ret = pcap_write_enhanced_packet_block (ctx, buf, pdu_len,
-                                            (uint64_t) ts.tv_sec*1000000 + ts.tv_nsec/1000,
                                             payload, payload_len, direction);
     if (ret < 0) {
         goto cleanup;
@@ -386,7 +381,6 @@ pcap_write_enhanced_packet_block (
     pcap_buider_ctx *ctx,
     void* buf,
     size_t buf_len,
-    uint64_t timestamp,
     const void* payload,
     size_t payload_len,
     int direction)
@@ -394,6 +388,17 @@ pcap_write_enhanced_packet_block (
     UNUSED (ctx);
 
     size_t pdu_len, sdu_len, sdu_padded_len;
+    struct timespec ts;
+    uint64_t timestamp;
+    int ret;
+
+    ret = clock_gettime (CLOCK_REALTIME, &ts);
+    if (ret != 0) {
+        LOG_WARNING ("Failed to get time: %s", strerror (errno));
+        ts.tv_sec = 0;
+        ts.tv_nsec = 0;
+    }
+    timestamp = (uint64_t) ts.tv_sec*1000000 + ts.tv_nsec/1000;
 
     /* get ip packet size */
     sdu_len = pcap_write_ip_packet (ctx, NULL, 0,
@@ -465,9 +470,15 @@ pcap_write_ip_packet (
         .time_to_live = IPv4_TIME_TO_LIVE_MAX,
         .protocol = IPv4_PROTOCOL_TCP,
         .checksum = htons (IPv4_CHECKSUM_UNUSED),
-        .source = htonl (0),
-        .destination = htonl (0),
     };
+
+    if (direction == PCAP_DIR_HOST_TO_TPM) {
+        header.source = htonl (ctx->ip_host);
+        header.destination = htonl (ctx->ip_tpm);
+    } else if (direction == PCAP_DIR_TPM_TO_HOST) {
+        header.source = htonl (ctx->ip_tpm);
+        header.destination = htonl (ctx->ip_host);
+    }
 
     if (buf) {
         if (buf_len < pdu_len) {
@@ -498,7 +509,6 @@ pcap_write_tcp_segment (
     pdu_len = sizeof (tcp_header) + payload_len;
 
     tcp_header header = {
-        .ack_no = htonl (0),
         .header_len_flags = htons ((SIZEOF_IN_OCTETS (tcp_header) << 12) | TCP_FLAGS_ACK),
         .window_size = htons (TCP_WINDOW_SIZE_MAX),
         .checksum = htons (TCP_CHECKSUM_UNUSED),
@@ -506,17 +516,22 @@ pcap_write_tcp_segment (
     };
 
     if (direction == PCAP_DIR_HOST_TO_TPM) {
-        header.source_port = htons (ctx->tcp_host_port);
+        header.source_port = htons (TCP_HOST_PORT);
         header.destination_port = htons (TCP_TPM_PORT);
-        header.seq_no = htonl (ctx->tcp_sequence_no_host_to_tpm);
+        header.seq_no = htonl (ctx->tcp_sequence_no_host);
+        header.ack_no = htonl (ctx->tcp_sequence_no_tpm);
     } else if (direction == PCAP_DIR_TPM_TO_HOST) {
         header.source_port = htons (TCP_TPM_PORT);
-        header.destination_port = htons (ctx->tcp_host_port);
-        header.seq_no = htonl (ctx->tcp_sequence_no_tpm_to_host);
+        header.destination_port = htons (TCP_HOST_PORT);
+        header.seq_no = htonl (ctx->tcp_sequence_no_tpm);
+        header.ack_no = htonl (ctx->tcp_sequence_no_host);
     }
 
-    if (buf && payload) {
+    if (buf) {
         if (buf_len < pdu_len) {
+            return -1;
+        }
+        if (payload_len > 0 && payload == NULL) {
             return -1;
         }
 
@@ -525,9 +540,11 @@ pcap_write_tcp_segment (
         memcpy (buf, payload, payload_len);
 
         if (direction == PCAP_DIR_HOST_TO_TPM) {
-            ctx->tcp_sequence_no_host_to_tpm += payload_len;
+            ctx->tcp_sequence_no_host += payload_len;
+            /* SYN, FIN flags would increment the seq. no. but are not implemented */
         } else if (direction == PCAP_DIR_TPM_TO_HOST) {
-            ctx->tcp_sequence_no_tpm_to_host += payload_len;
+            ctx->tcp_sequence_no_tpm += payload_len;
+            /* SYN, FIN flags would increment the seq. no. but are not implemented */
         }
     }
 

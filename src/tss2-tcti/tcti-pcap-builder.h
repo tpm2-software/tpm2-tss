@@ -16,9 +16,10 @@
 
 typedef struct {
     int fd;
-    uint16_t tcp_host_port;
-    uint32_t tcp_sequence_no_host_to_tpm;
-    uint32_t tcp_sequence_no_tpm_to_host;
+    uint32_t ip_host;
+    uint32_t ip_tpm;
+    uint32_t tcp_sequence_no_host;
+    uint32_t tcp_sequence_no_tpm;
 } pcap_buider_ctx;
 
 int
