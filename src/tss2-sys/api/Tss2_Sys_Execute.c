@@ -75,14 +75,17 @@ TSS2_RC Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout)
     }
     if (response_size > ctx->maxCmdSize) {
         ctx->previousStage = CMD_STAGE_PREPARE;
+        LOG_ERROR("Response size to big: %zu > %u", response_size, ctx->maxCmdSize);
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
     }
 
     /* Then call receive again with the response buffer to read the response */
     rval = Tss2_Tcti_Receive(ctx->tctiContext, &response_size,
                              ctx->cmdBuffer, timeout);
-    if (rval == TSS2_TCTI_RC_INSUFFICIENT_BUFFER)
+    if (rval == TSS2_TCTI_RC_INSUFFICIENT_BUFFER) {
+        LOG_ERROR("TCTI: Insufficient Buffer.");
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
+    }
 
     if (rval)
         return rval;
