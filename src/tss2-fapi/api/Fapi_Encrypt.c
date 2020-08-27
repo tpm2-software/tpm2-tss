@@ -328,7 +328,9 @@ Fapi_Encrypt_Finish(
                 goto_if_error(r, "Error esys rsa encrypt", error_cleanup);
 
                 context-> state = DATA_ENCRYPT_WAIT_FOR_RSA_ENCRYPTION;
-
+            } else if (encKeyObject->misc.key.public.publicArea.type == TPM2_ALG_ECC) {
+                goto_error(r, TSS2_FAPI_RC_NOT_IMPLEMENTED,
+                           "ECC Encryption not yet supported", error_cleanup);
             } else {
                 goto_error(r, TSS2_FAPI_RC_NOT_IMPLEMENTED,
                            "Unsupported algorithm (%" PRIu16 ")",
