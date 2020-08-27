@@ -382,6 +382,7 @@ tcti_mssim_receive (
 
     if (*response_size < tcti_common->header.size) {
         *response_size = tcti_common->header.size;
+        LOG_ERROR("Response size to big: %zu > %u", *response_size, tcti_common->header.size);
         return TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
     }
     *response_size = tcti_common->header.size;
