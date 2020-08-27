@@ -431,6 +431,7 @@ TSS2_RC tcti_cmd_get_poll_handles (TSS2_TCTI_CONTEXT *tctiContext,
     }
 
     if (handles != NULL && *num_handles < 1) {
+        LOG_ERROR("No handles");
         return TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
     }
 
