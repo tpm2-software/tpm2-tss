@@ -303,6 +303,8 @@ ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session)
                 goto_if_error(r, "Create policy session", error);
 
                 pol_util_ctx->pol_exec_ctx->session = pol_util_ctx->policy_session;
+                /* Save policy session for cleanup in error case. */
+                context->policy_session = pol_util_ctx->policy_session;
             } else {
                 pol_util_ctx->pol_exec_ctx->session = *session;
             }
