@@ -1071,6 +1071,9 @@ ifapi_non_tpm_mode_init(FAPI_CONTEXT *context)
 void
 ifapi_session_clean(FAPI_CONTEXT *context)
 {
+    if (context->policy_session && context->policy_session != ESYS_TR_NONE) {
+        Esys_FlushContext(context->esys, context->policy_session);
+    }
     if (context->session1 != ESYS_TR_NONE) {
         if (Esys_FlushContext(context->esys, context->session1) != TSS2_RC_SUCCESS) {
             LOG_ERROR("Cleanup session failed.");
@@ -1109,6 +1112,9 @@ TSS2_RC
 ifapi_cleanup_session(FAPI_CONTEXT *context)
 {
     TSS2_RC r;
+
+    /* Policy sessions were closed after successful execution. */
+    context->policy_session = ESYS_TR_NONE;
 
     switch (context->cleanup_state) {
         statecase(context->cleanup_state, CLEANUP_INIT);
