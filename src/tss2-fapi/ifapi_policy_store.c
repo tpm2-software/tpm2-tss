@@ -244,6 +244,10 @@ ifapi_policy_store_store_async(
 
     LOG_TRACE("Store policy: %s", path);
 
+    /* First it will be checked whether the only valid characters occur in the path. */
+    r = ifapi_check_valid_path(path);
+    return_if_error(r, "Invalid path.");
+
     /* Convert relative path to absolute path in the policy store */
     r = policy_rel_path_to_abs_path(pstore, path, &abs_path);
     goto_if_error2(r, "Path %s could not be created.", cleanup, path);
