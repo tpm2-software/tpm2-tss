@@ -57,9 +57,6 @@ read_all (
 #else
         TEMP_RETRY (recvd, read (fd, &data [recvd_total], size));
         if (recvd < 0) {
-            if (errno == EAGAIN) {
-                return TSS2_TCTI_RC_TRY_AGAIN;
-            }
             LOG_WARNING ("read on fd %d failed with errno %d: %s",
                          fd, errno, strerror (errno));
             return recvd_total;
