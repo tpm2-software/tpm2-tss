@@ -3,7 +3,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [3.0.0]
+## [3.0.1-rc0] - 2020-09-07
+### Changed or Fixed
+- Cleanup of leftover sessions in error cases in FAPI
+- Better error messages in several FAPI errors
+- Add checks to FAPI policy paths
+- Add checks if FAPI is correctly provisioned
+- Fix execution of FAPI policies in some cases
+- Allow 0x prefixes for TPMU_HA in JSON encoding
+
+## [3.0.0] - 2020-08-05
 ### Changed or Fixed
 - Added setgid perms and ACL for FAPI keystore to allow r/w access for tss group
 - Fixed duoble json_object_put call in event log processing.
