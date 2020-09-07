@@ -3,7 +3,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [2.4.2]
+## [2.4.3-rc0] - 2020-09-07
+### Changed or Fixed
+- Cleanup of leftover sessions in error cases in FAPI
+- Better error messages in several FAPI errors
+- Add checks to FAPI policy paths
+- Add checks if FAPI is correctly provisioned
+- Fix execution of FAPI policies in some cases
+- Allow 0x prefixes for TPMU_HA in JSON encoding
+
+## [2.4.2] - 2020-08-05
 ### Fixed
 - Fixed duoble json_object_put call in event log processing.
 - Fixed memory leaks on error paths in FAPI
