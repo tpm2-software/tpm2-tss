@@ -367,22 +367,28 @@ Fapi_CreateNv_Finish(
             fallthrough;
 
         statecase(context->state, NV_CREATE_GET_INDEX)
-            r = ifapi_get_nv_start_index(nvCmd->nvPath,
-                                         &publicInfo->nvPublic.nvIndex);
-            goto_if_error_reset_state(r, "FAPI get handle index.", error_cleanup);
+            /* Check whether nv index was already defined */
+            if (!nvCmd->public_templ.public.nvIndex) {
+                r = ifapi_get_nv_start_index(nvCmd->nvPath,
+                                             &publicInfo->nvPublic.nvIndex);
+                goto_if_error_reset_state(r, "FAPI get handle index.", error_cleanup);
 
-            /* We are searching for a new free NV-index handle. */
-            r = ifapi_get_free_handle_async(context, &publicInfo->nvPublic.nvIndex);
-            goto_if_error_reset_state(r, "FAPI get handle index.", error_cleanup);
-            nvCmd->maxNvIndex = publicInfo->nvPublic.nvIndex + 100;
+                /* We are searching for a new free NV-index handle. */
+                r = ifapi_get_free_handle_async(context, &publicInfo->nvPublic.nvIndex);
+                goto_if_error_reset_state(r, "FAPI get handle index.", error_cleanup);
+                nvCmd->maxNvIndex = publicInfo->nvPublic.nvIndex + 100;
+            }
 
             fallthrough;
 
         statecase(context->state, NV_CREATE_FIND_INDEX)
-            r = ifapi_get_free_handle_finish(context, &publicInfo->nvPublic.nvIndex,
+            if (!nvCmd->public_templ.public.nvIndex) {
+                /* Get nv index if not already defined. */
+                r = ifapi_get_free_handle_finish(context, &publicInfo->nvPublic.nvIndex,
                                              nvCmd->maxNvIndex);
-            return_try_again(r);
-            goto_if_error_reset_state(r, "FAPI get handle index.", error_cleanup);
+                return_try_again(r);
+                goto_if_error_reset_state(r, "FAPI get handle index.", error_cleanup);
+            }
 
             /* Start a authorization session for the NV creation. */
             context->primary_state = PRIMARY_INIT;
