@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [2.4.3-rc1] - 2020-09-11
+### Changed or Fixed
+- Fix bug in FAPI NV creation with custom index values
+
 ## [2.4.3-rc0] - 2020-09-07
 ### Changed or Fixed
 - Cleanup of leftover sessions in error cases in FAPI
