@@ -10,8 +10,8 @@ The FAPI parameters which can be adjusted via the configuration file are:
 * tcti: The TCTI interface which will be used.
 * system_pcrs: The PCR registers which are used by the system.
 * log_dir: The directory for the event log.
-* ek_certless: A switch to disable certificate verification.
-* ek_fingerprint: The fingerprint of the endeorsment key (optional).
+* ek_cert_less: A switch to disable certificate verification (optional).
+* ek_fingerprint: The fingerprint of the endorsement key (optional).
 
 If not otherwise specified during TSS installation, the default location for the
 exemplary profiles is /etc/tpm2-tss/profiles/ and /etc/tpm2-tss/ for the FAPI
@@ -38,7 +38,7 @@ The FAPI configuration file is JSON encoded:
  If the certificate checking is not needed the option:
 
  ```
-    "ek_certless": "yes"
+    "ek_cert_less": "yes"
  ```
 can be added to the config file. Alternative to the standard certificate checking a
 fingerprint (hash of the public key) for the stored endorsement key can be defined
