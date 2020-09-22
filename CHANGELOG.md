@@ -3,7 +3,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [3.0.0]
+## [3.1.0-dev] - 2020-09-22
+### Changed or Fixed
+- Fix CVE-2020-24455 FAPI PolicyPCR not instatiating correctly
+  Note that all TPM object created with a PolicyPCR with the currentPcrs
+  and currentPcrsAndBank options have been created with an incorrect policy
+  that ommits PCR checks. All these objects have to be recreated!
+
+## [3.0.0] - 2020-08-05
 ### Changed or Fixed
 - Added setgid perms and ACL for FAPI keystore to allow r/w access for tss group
 - Fixed duoble json_object_put call in event log processing.
