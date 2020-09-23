@@ -3,19 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [3.0.1-rc2] - 2020-09-22
+## [3.0.1] - 2020-09-23
 ### Changed or Fixed
 - Fix CVE-2020-24455 FAPI PolicyPCR not instatiating correctly
   Note that all TPM object created with a PolicyPCR with the currentPcrs
   and currentPcrsAndBank options have been created with an incorrect policy
   that ommits PCR checks. All these objects have to be recreated!
-
-## [3.0.1-rc1] - 2020-09-11
-### Changed or Fixed
 - Fix bug in FAPI NV creation with custom index values
-
-## [3.0.1-rc0] - 2020-09-07
-### Changed or Fixed
 - Cleanup of leftover sessions in error cases in FAPI
 - Better error messages in several FAPI errors
 - Add checks to FAPI policy paths
