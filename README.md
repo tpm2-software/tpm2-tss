@@ -150,7 +150,7 @@ valgrind:
   $ make check-valgrind
 
 This command will enable all valgrind "tools" and kick off as many test
-as many tools it supports. It is possible to enable different valgrind
+as they support. It is possible to enable different valgrind
 tools (checks) in more granularity. This can be controlled by invoking
 different tools separately using check-valgrind-&lt;tool&gt;, for instance:
 
