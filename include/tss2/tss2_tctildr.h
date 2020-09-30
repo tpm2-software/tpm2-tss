@@ -11,6 +11,10 @@
 #include "tss2_tpm2_types.h"
 #include "tss2_tcti.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void
 Tss2_TctiLdr_Finalize (TSS2_TCTI_CONTEXT **context);
 TSS2_RC
@@ -25,5 +29,9 @@ Tss2_TctiLdr_GetInfo (const char *name,
                       TSS2_TCTI_INFO **info);
 void
 Tss2_TctiLdr_FreeInfo (TSS2_TCTI_INFO **info);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* TSS2_TCTILDR_H */
