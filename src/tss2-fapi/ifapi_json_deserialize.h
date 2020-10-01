@@ -22,7 +22,7 @@
         memset(&out->name, 0, sizeof(type)); \
     } else { \
         r =  ifapi_json_ ## type ## _deserialize (jso2, &out->name); \
-        return_if_error(r,"BAD VALUE"); \
+        return_if_error2(r, "Bad value for field \"%s\".", json_name);  \
     }
 
 bool
