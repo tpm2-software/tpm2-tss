@@ -356,14 +356,14 @@ ifapi_json_TPMS_PCR_SELECTION_deserialize(json_object *jso,
 
     memset(out, 0, sizeof(TPMS_PCR_SELECTION));
     if (!ifapi_get_sub_object(jso, "hash", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"hash\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->hash);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"hash\".");
 
     if (!ifapi_get_sub_object(jso, "pcrSelect", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"pcrSelect\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     return ifapi_json_pcr_selection_deserialize(jso2, &out->sizeofSelect,
@@ -1409,18 +1409,18 @@ ifapi_json_TPMT_HA_deserialize(json_object *jso,  TPMT_HA *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "hashAlg", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"hashAlg\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->hashAlg);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"hashAlg\".");
     if (out->hashAlg != TPM2_ALG_NULL) {
         if (!ifapi_get_sub_object(jso, "digest", &jso2)) {
-            LOG_ERROR("BAD VALUE");
+            LOG_ERROR("Field \"digest\" not found.");
             return TSS2_FAPI_RC_BAD_VALUE;
         }
         r = ifapi_json_TPMU_HA_deserialize(out->hashAlg, jso2, &out->digest);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"digest\".");
     }
 
     LOG_TRACE("true");
@@ -1609,28 +1609,28 @@ ifapi_json_TPMT_TK_CREATION_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "tag", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"tag\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2_ST_deserialize(jso2, &out->tag);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"tag\".");
     if (out != NULL && out->tag != TPM2_ST_CREATION) {
         LOG_ERROR("BAD VALUE %zu != %zu", (size_t)out->tag, (size_t)TPM2_ST_CREATION);
     }
 
     if (!ifapi_get_sub_object(jso, "hierarchy", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"hierarchy\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_RH_HIERARCHY_deserialize(jso2, &out->hierarchy);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"hierarchy\".");
 
     if (!ifapi_get_sub_object(jso, "digest", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"digest\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->digest);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"digest\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -1665,7 +1665,7 @@ ifapi_json_TPML_DIGEST_VALUES_deserialize(json_object *jso,
         for (i = 0; i < (size_t)json_object_array_length(jso); i++) {
             json_object *jso3 = json_object_array_get_idx(jso, i);
             r = ifapi_json_TPMT_HA_deserialize(jso3, &out->digests[i]);
-            return_if_error(r, "BAD VALUE");
+            return_if_error(r, "Bad value for field \"digests\".");
         }
         return TSS2_RC_SUCCESS;
     } else {
@@ -1706,7 +1706,7 @@ ifapi_json_TPML_PCR_SELECTION_deserialize(json_object *jso,
         for (i = 0; i < (size_t)json_object_array_length(jso); i++) {
             json_object *jso3 = json_object_array_get_idx(jso, i);
             r = ifapi_json_TPMS_PCR_SELECTION_deserialize(jso3, &out->pcrSelections[i]);
-            return_if_error(r, "BAD VALUE");
+            return_if_error(r, "Bad value for field \"pcrSelections\".");
         }
         return TSS2_RC_SUCCESS;
     } else {
@@ -1734,32 +1734,32 @@ ifapi_json_TPMS_CLOCK_INFO_deserialize(json_object *jso,  TPMS_CLOCK_INFO *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "clock", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"clock\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_UINT64_deserialize(jso2, &out->clock);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"clock\".");
 
     if (!ifapi_get_sub_object(jso, "resetCount", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"resetCount\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_UINT32_deserialize(jso2, &out->resetCount);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"resetCount\".");
 
     if (!ifapi_get_sub_object(jso, "restartCount", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"restartCount\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_UINT32_deserialize(jso2, &out->restartCount);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"restartCount\".");
 
     if (!ifapi_get_sub_object(jso, "safe", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"safe\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->safe);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"safe\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -1781,18 +1781,18 @@ ifapi_json_TPMS_TIME_INFO_deserialize(json_object *jso,  TPMS_TIME_INFO *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "time", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"time\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_UINT64_deserialize(jso2, &out->time);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"time\".");
 
     if (!ifapi_get_sub_object(jso, "clockInfo", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"clockInfo\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMS_CLOCK_INFO_deserialize(jso2, &out->clockInfo);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"clockInfo\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -1815,18 +1815,18 @@ ifapi_json_TPMS_TIME_ATTEST_INFO_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "time", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"time\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMS_TIME_INFO_deserialize(jso2, &out->time);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"time\".");
 
     if (!ifapi_get_sub_object(jso, "firmwareVersion", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"firmwareVersion\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_UINT64_deserialize(jso2, &out->firmwareVersion);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"firmwareVersion\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -1849,18 +1849,18 @@ ifapi_json_TPMS_CERTIFY_INFO_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "name", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"name\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_NAME_deserialize(jso2, &out->name);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"name\".");
 
     if (!ifapi_get_sub_object(jso, "qualifiedName", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"qualifiedName\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_NAME_deserialize(jso2, &out->qualifiedName);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"qualifiedName\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -1882,18 +1882,18 @@ ifapi_json_TPMS_QUOTE_INFO_deserialize(json_object *jso,  TPMS_QUOTE_INFO *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "pcrSelect", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"pcrSelect\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPML_PCR_SELECTION_deserialize(jso2, &out->pcrSelect);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"pcrSelect\".");
 
     if (!ifapi_get_sub_object(jso, "pcrDigest", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"pcrDigest\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->pcrDigest);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"pcrDigest\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -1916,32 +1916,32 @@ ifapi_json_TPMS_COMMAND_AUDIT_INFO_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "auditCounter", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"auditCounter\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_UINT64_deserialize(jso2, &out->auditCounter);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"auditCounter\".");
 
     if (!ifapi_get_sub_object(jso, "digestAlg", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"digestAlg\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2_ALG_ID_deserialize(jso2, &out->digestAlg);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"digestAlg\".");
 
     if (!ifapi_get_sub_object(jso, "auditDigest", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"auditDigest\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->auditDigest);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"auditDigest\".");
 
     if (!ifapi_get_sub_object(jso, "commandDigest", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"commandDigest\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->commandDigest);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"commandDigest\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -1964,18 +1964,18 @@ ifapi_json_TPMS_SESSION_AUDIT_INFO_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "exclusiveSession", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"exclusiveSession\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->exclusiveSession);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"exclusiveSession\".");
 
     if (!ifapi_get_sub_object(jso, "sessionDigest", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"sessionDigest\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->sessionDigest);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"sessionDigest\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -1998,18 +1998,18 @@ ifapi_json_TPMS_CREATION_INFO_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "objectName", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"objectName\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_NAME_deserialize(jso2, &out->objectName);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"objectName\".");
 
     if (!ifapi_get_sub_object(jso, "creationHash", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"creationHash\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->creationHash);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"creationHash\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -2032,25 +2032,25 @@ ifapi_json_TPMS_NV_CERTIFY_INFO_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "indexName", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"indexName\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_NAME_deserialize(jso2, &out->indexName);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"indexName\".");
 
     if (!ifapi_get_sub_object(jso, "offset", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"offset\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_UINT16_deserialize(jso2, &out->offset);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"offset\".");
 
     if (!ifapi_get_sub_object(jso, "nvContents", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"nvContents\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_MAX_NV_BUFFER_deserialize(jso2, &out->nvContents);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"nvContents\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -2126,52 +2126,52 @@ ifapi_json_TPMS_ATTEST_deserialize(json_object *jso,  TPMS_ATTEST *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "magic", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"magic\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2_GENERATED_deserialize(jso2, &out->magic);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"magic\".");
 
     if (!ifapi_get_sub_object(jso, "type", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"type\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ST_ATTEST_deserialize(jso2, &out->type);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"type\".");
 
     if (!ifapi_get_sub_object(jso, "qualifiedSigner", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"qualifiedSigner\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_NAME_deserialize(jso2, &out->qualifiedSigner);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"qualifiedSigner\".");
 
     if (!ifapi_get_sub_object(jso, "extraData", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"extraData\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_DATA_deserialize(jso2, &out->extraData);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"extraData\".");
 
     if (!ifapi_get_sub_object(jso, "clockInfo", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"clockInfo\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMS_CLOCK_INFO_deserialize(jso2, &out->clockInfo);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"clockInfo\".");
 
     if (!ifapi_get_sub_object(jso, "firmwareVersion", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"firmwareVersion\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_UINT64_deserialize(jso2, &out->firmwareVersion);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"firmwareVersion\".");
     if (!ifapi_get_sub_object(jso, "attested", &jso2)) {
-        LOG_ERROR("BAD VALUE");
+        LOG_ERROR("Field \"attested\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMU_ATTEST_deserialize(out->type, jso2, &out->attested);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"attested\".");
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
@@ -2266,28 +2266,28 @@ ifapi_json_TPMT_SYM_DEF_deserialize(json_object *jso,  TPMT_SYM_DEF *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "algorithm", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"algorithm\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_SYM_deserialize(jso2, &out->algorithm);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"algorithm\".");
     if (out->algorithm != TPM2_ALG_NULL) {
         if (!ifapi_get_sub_object(jso, "keyBits", &jso2)) {
-            LOG_ERROR("BAD VALUE");
+            LOG_ERROR("Field \"keyBits\" not found.");
             return TSS2_FAPI_RC_BAD_VALUE;
         }
         r = ifapi_json_TPMU_SYM_KEY_BITS_deserialize(out->algorithm, jso2,
                 &out->keyBits);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"keyBits\".");
     }
 
     if (out->algorithm != TPM2_ALG_NULL) {
         if (!ifapi_get_sub_object(jso, "mode", &jso2)) {
-            LOG_ERROR("BAD VALUE");
+            LOG_ERROR("Field \"mode\" not found.");
             return TSS2_FAPI_RC_BAD_VALUE;
         }
         r = ifapi_json_TPMU_SYM_MODE_deserialize(out->algorithm, jso2, &out->mode);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"mode\".");
     }
 
     LOG_TRACE("true");
@@ -2312,28 +2312,28 @@ ifapi_json_TPMT_SYM_DEF_OBJECT_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "algorithm", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"algorithm\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_SYM_OBJECT_deserialize(jso2, &out->algorithm);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"algorithm\".");
     if (out->algorithm != TPM2_ALG_NULL) {
         if (!ifapi_get_sub_object(jso, "keyBits", &jso2)) {
-            LOG_ERROR("BAD VALUE");
+            LOG_ERROR("Field \"keyBits\" not found.");
             return TSS2_FAPI_RC_BAD_VALUE;
         }
         r = ifapi_json_TPMU_SYM_KEY_BITS_deserialize(out->algorithm, jso2,
                 &out->keyBits);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"keyBits\".");
     }
 
     if (out->algorithm != TPM2_ALG_NULL) {
         if (!ifapi_get_sub_object(jso, "mode", &jso2)) {
-            LOG_ERROR("BAD VALUE");
+            LOG_ERROR("Field \"mode\" not found.");
             return TSS2_FAPI_RC_BAD_VALUE;
         }
         r = ifapi_json_TPMU_SYM_MODE_deserialize(out->algorithm, jso2, &out->mode);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"mode\".");
     }
 
     LOG_TRACE("true");
@@ -2358,11 +2358,11 @@ ifapi_json_TPMS_SYMCIPHER_PARMS_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "sym", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"sym\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMT_SYM_DEF_OBJECT_deserialize(jso2, &out->sym);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"sym\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -2385,11 +2385,11 @@ ifapi_json_TPMS_SCHEME_HASH_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "hashAlg", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"hashAlg\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->hashAlg);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"hashAlg\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -2412,18 +2412,18 @@ ifapi_json_TPMS_SCHEME_ECDAA_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "hashAlg", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"hashAlg\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->hashAlg);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"hashAlg\".");
 
     if (!ifapi_get_sub_object(jso, "count", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"count\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_UINT16_deserialize(jso2, &out->count);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"count\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -2477,18 +2477,18 @@ ifapi_json_TPMS_SCHEME_XOR_deserialize(json_object *jso,  TPMS_SCHEME_XOR *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "hashAlg", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"hashAlg\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->hashAlg);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"hashAlg\".");
 
     if (!ifapi_get_sub_object(jso, "kdf", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"kdf\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_KDF_deserialize(jso2, &out->kdf);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"kdf\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -2543,19 +2543,19 @@ ifapi_json_TPMT_KEYEDHASH_SCHEME_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "scheme", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"scheme\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_KEYEDHASH_SCHEME_deserialize(jso2, &out->scheme);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"scheme\".");
     if (out->scheme != TPM2_ALG_NULL) {
         if (!ifapi_get_sub_object(jso, "details", &jso2)) {
-            LOG_ERROR("BAD VALUE");
+            LOG_ERROR("Field \"details\" not found.");
             return TSS2_FAPI_RC_BAD_VALUE;
         }
         r = ifapi_json_TPMU_SCHEME_KEYEDHASH_deserialize(out->scheme, jso2,
                 &out->details);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"details\".");
     }
 
     LOG_TRACE("true");
@@ -2721,18 +2721,18 @@ ifapi_json_TPMT_SIG_SCHEME_deserialize(json_object *jso,  TPMT_SIG_SCHEME *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "scheme", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"scheme\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_SIG_SCHEME_deserialize(jso2, &out->scheme);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"scheme\".");
     if (out->scheme != TPM2_ALG_NULL) {
         if (!ifapi_get_sub_object(jso, "details", &jso2)) {
-            LOG_ERROR("BAD VALUE");
+            LOG_ERROR("Field \"details\" not found.");
             return TSS2_FAPI_RC_BAD_VALUE;
         }
         r = ifapi_json_TPMU_SIG_SCHEME_deserialize(out->scheme, jso2, &out->details);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"details\".");
     }
 
     LOG_TRACE("true");
@@ -2892,18 +2892,18 @@ ifapi_json_TPMT_KDF_SCHEME_deserialize(json_object *jso,  TPMT_KDF_SCHEME *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "scheme", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"scheme\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_KDF_deserialize(jso2, &out->scheme);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"scheme\".");
     if (out->scheme != TPM2_ALG_NULL) {
         if (!ifapi_get_sub_object(jso, "details", &jso2)) {
-            LOG_ERROR("BAD VALUE");
+            LOG_ERROR("Field \"details\" not found.");
             return TSS2_FAPI_RC_BAD_VALUE;
         }
         r = ifapi_json_TPMU_KDF_SCHEME_deserialize(out->scheme, jso2, &out->details);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"details\".");
     }
 
     LOG_TRACE("true");
@@ -2988,18 +2988,18 @@ ifapi_json_TPMT_RSA_SCHEME_deserialize(json_object *jso,  TPMT_RSA_SCHEME *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "scheme", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"scheme\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_RSA_SCHEME_deserialize(jso2, &out->scheme);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"scheme\".");
     if (out->scheme != TPM2_ALG_NULL) {
         if (!ifapi_get_sub_object(jso, "details", &jso2)) {
-            LOG_ERROR("BAD VALUE");
+            LOG_ERROR("Field \"details\" not found.");
             return TSS2_FAPI_RC_BAD_VALUE;
         }
         r = ifapi_json_TPMU_ASYM_SCHEME_deserialize(out->scheme, jso2, &out->details);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"details\".");
     }
 
     LOG_TRACE("true");
@@ -3039,18 +3039,18 @@ ifapi_json_TPMT_RSA_DECRYPT_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "scheme", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"scheme\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_RSA_DECRYPT_deserialize(jso2, &out->scheme);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"scheme\".");
     if (out->scheme != TPM2_ALG_NULL) {
         if (!ifapi_get_sub_object(jso, "details", &jso2)) {
-            LOG_ERROR("BAD VALUE");
+            LOG_ERROR("Field \"details\" not found.");
             return TSS2_FAPI_RC_BAD_VALUE;
         }
         r = ifapi_json_TPMU_ASYM_SCHEME_deserialize(out->scheme, jso2, &out->details);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"details\".");
     }
 
     LOG_TRACE("true");
@@ -3141,18 +3141,18 @@ ifapi_json_TPMS_ECC_POINT_deserialize(json_object *jso,  TPMS_ECC_POINT *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "x", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"x\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_ECC_PARAMETER_deserialize(jso2, &out->x);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"x\".");
 
     if (!ifapi_get_sub_object(jso, "y", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"y\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_ECC_PARAMETER_deserialize(jso2, &out->y);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"y\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -3204,18 +3204,18 @@ ifapi_json_TPMT_ECC_SCHEME_deserialize(json_object *jso,  TPMT_ECC_SCHEME *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "scheme", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"scheme\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_ECC_SCHEME_deserialize(jso2, &out->scheme);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"scheme\".");
     if (out->scheme != TPM2_ALG_NULL) {
         if (!ifapi_get_sub_object(jso, "details", &jso2)) {
-            LOG_ERROR("BAD VALUE");
+            LOG_ERROR("Field \"details\" not found.");
             return TSS2_FAPI_RC_BAD_VALUE;
         }
         r = ifapi_json_TPMU_ASYM_SCHEME_deserialize(out->scheme, jso2, &out->details);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"details\".");
     }
 
     LOG_TRACE("true");
@@ -3240,18 +3240,18 @@ ifapi_json_TPMS_SIGNATURE_RSA_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "hash", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"hash\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->hash);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"hash\".");
 
     if (!ifapi_get_sub_object(jso, "sig", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"sig\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_PUBLIC_KEY_RSA_deserialize(jso2, &out->sig);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"sig\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -3308,25 +3308,25 @@ ifapi_json_TPMS_SIGNATURE_ECC_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "hash", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"hash\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->hash);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"hash\".");
 
     if (!ifapi_get_sub_object(jso, "signatureR", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"signatureR\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_ECC_PARAMETER_deserialize(jso2, &out->signatureR);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"signatureR\".");
 
     if (!ifapi_get_sub_object(jso, "signatureS", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"signatureS\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_ECC_PARAMETER_deserialize(jso2, &out->signatureS);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"signatureS\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -3456,18 +3456,18 @@ ifapi_json_TPMT_SIGNATURE_deserialize(json_object *jso,  TPMT_SIGNATURE *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "sigAlg", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"sigAlg\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_SIG_SCHEME_deserialize(jso2, &out->sigAlg);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"sigAlg\".");
     if (out->sigAlg != TPM2_ALG_NULL) {
         if (!ifapi_get_sub_object(jso, "signature", &jso2)) {
-            LOG_ERROR("BAD VALUE");
+            LOG_ERROR("Field \"signature\" not found.");
             return TSS2_FAPI_RC_BAD_VALUE;
         }
         r = ifapi_json_TPMU_SIGNATURE_deserialize(out->sigAlg, jso2, &out->signature);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"signature\".");
     }
 
     LOG_TRACE("true");
@@ -3565,11 +3565,11 @@ ifapi_json_TPMS_KEYEDHASH_PARMS_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "scheme", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"scheme\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMT_KEYEDHASH_SCHEME_deserialize(jso2, &out->scheme);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"scheme\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -3591,32 +3591,32 @@ ifapi_json_TPMS_RSA_PARMS_deserialize(json_object *jso,  TPMS_RSA_PARMS *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "symmetric", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"symmetric\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMT_SYM_DEF_OBJECT_deserialize(jso2, &out->symmetric);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"symmetric\".");
 
     if (!ifapi_get_sub_object(jso, "scheme", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"scheme\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMT_RSA_SCHEME_deserialize(jso2, &out->scheme);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"scheme\".");
 
     if (!ifapi_get_sub_object(jso, "keyBits", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"keyBits\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_RSA_KEY_BITS_deserialize(jso2, &out->keyBits);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"keyBits\".");
 
     if (!ifapi_get_sub_object(jso, "exponent", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"exponent\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_UINT32_deserialize(jso2, &out->exponent);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"exponent\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -3638,32 +3638,32 @@ ifapi_json_TPMS_ECC_PARMS_deserialize(json_object *jso,  TPMS_ECC_PARMS *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "symmetric", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"symmetric\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMT_SYM_DEF_OBJECT_deserialize(jso2, &out->symmetric);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"symmetric\".");
 
     if (!ifapi_get_sub_object(jso, "scheme", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"scheme\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMT_ECC_SCHEME_deserialize(jso2, &out->scheme);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"scheme\".");
 
     if (!ifapi_get_sub_object(jso, "curveID", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"curveID\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ECC_CURVE_deserialize(jso2, &out->curveID);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"curveID\".");
 
     if (!ifapi_get_sub_object(jso, "kdf", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"kdf\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMT_KDF_SCHEME_deserialize(jso2, &out->kdf);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"kdf\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -3717,45 +3717,45 @@ ifapi_json_TPMT_PUBLIC_deserialize(json_object *jso,  TPMT_PUBLIC *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "type", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"type\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_PUBLIC_deserialize(jso2, &out->type);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"type\".");
 
     if (!ifapi_get_sub_object(jso, "nameAlg", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"nameAlg\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->nameAlg);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"nameAlg\".");
 
     if (!ifapi_get_sub_object(jso, "objectAttributes", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"objectAttributes\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMA_OBJECT_deserialize(jso2, &out->objectAttributes);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"objectAttributes\".");
 
     if (!ifapi_get_sub_object(jso, "authPolicy", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"authPolicy\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->authPolicy);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"authPolicy\".");
     if (!ifapi_get_sub_object(jso, "parameters", &jso2)) {
-        LOG_ERROR("BAD VALUE");
+        LOG_ERROR("Field \"parameters\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMU_PUBLIC_PARMS_deserialize(out->type, jso2, &out->parameters);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"parameters\".");
 
     if (!ifapi_get_sub_object(jso, "unique", &jso2)) {
-        LOG_ERROR("BAD VALUE");
+        LOG_ERROR("Field \"unique\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMU_PUBLIC_ID_deserialize(out->type, jso2, &out->unique);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"unique\".");
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
@@ -3775,17 +3775,17 @@ ifapi_json_TPM2B_PUBLIC_deserialize(json_object *jso, TPM2B_PUBLIC *out)
     TSS2_RC res;
     LOG_TRACE("call");
     if (!ifapi_get_sub_object(jso, "size", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"size\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     res = ifapi_json_UINT16_deserialize(jso2, &out->size);
-    return_if_error(res, "BAD VALUE");
+    return_if_error(res, "Bad value for field \"size\".");
     if (!ifapi_get_sub_object(jso, "publicArea", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"publicArea\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     res = ifapi_json_TPMT_PUBLIC_deserialize(jso2, &out->publicArea);
-    return_if_error(res, "BAD VALUE");
+    return_if_error(res, "Bad value for field \"publicArea\".");
     return TSS2_RC_SUCCESS;
 }
 
@@ -3994,39 +3994,39 @@ ifapi_json_TPMS_NV_PUBLIC_deserialize(json_object *jso,  TPMS_NV_PUBLIC *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "nvIndex", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"nvIndex\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_RH_NV_INDEX_deserialize(jso2, &out->nvIndex);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"nvIndex\".");
 
     if (!ifapi_get_sub_object(jso, "nameAlg", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"nameAlg\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->nameAlg);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"nameAlg\".");
 
     if (!ifapi_get_sub_object(jso, "attributes", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"attributes\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMA_NV_deserialize(jso2, &out->attributes);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"attributes\".");
 
     if (!ifapi_get_sub_object(jso, "authPolicy", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"authPolicy\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->authPolicy);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"authPolicy\".");
 
     if (!ifapi_get_sub_object(jso, "dataSize", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"dataSize\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_UINT16_deserialize(jso2, &out->dataSize);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"dataSize\".");
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
@@ -4046,17 +4046,17 @@ ifapi_json_TPM2B_NV_PUBLIC_deserialize(json_object *jso, TPM2B_NV_PUBLIC *out)
     TSS2_RC res;
     LOG_TRACE("call");
     if (!ifapi_get_sub_object(jso, "size", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"size\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     res = ifapi_json_UINT16_deserialize(jso2, &out->size);
-    return_if_error(res, "BAD VALUE");
+    return_if_error(res, "Bad value for field \"size\".");
     if (!ifapi_get_sub_object(jso, "nvPublic", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"nvPublic\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     res = ifapi_json_TPMS_NV_PUBLIC_deserialize(jso2, &out->nvPublic);
-    return_if_error(res, "BAD VALUE");
+    return_if_error(res, "Bad value for field \"nvPublic\".");
     return TSS2_RC_SUCCESS;
 }
 
@@ -4078,53 +4078,53 @@ ifapi_json_TPMS_CREATION_DATA_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "pcrSelect", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"pcrSelect\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPML_PCR_SELECTION_deserialize(jso2, &out->pcrSelect);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"pcrSelect\".");
 
     if (!ifapi_get_sub_object(jso, "pcrDigest", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"pcrDigest\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->pcrDigest);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"pcrDigest\".");
 
     if (!ifapi_get_sub_object(jso, "locality", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"locality\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMA_LOCALITY_deserialize(jso2, &out->locality);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"locality\".");
 
     if (!ifapi_get_sub_object(jso, "parentNameAlg", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"parentNameAlg\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2_ALG_ID_deserialize(jso2, &out->parentNameAlg);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"parentNameAlg\".");
 
     if (!ifapi_get_sub_object(jso, "parentName", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"parentName\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_NAME_deserialize(jso2, &out->parentName);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"parentName\".");
 
     if (!ifapi_get_sub_object(jso, "parentQualifiedName", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"parentQualifiedName\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_NAME_deserialize(jso2, &out->parentQualifiedName);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"parentQualifiedName\".");
 
     if (!ifapi_get_sub_object(jso, "outsideInfo", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"outsideInfo\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_DATA_deserialize(jso2, &out->outsideInfo);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"outsideInfo\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -4144,16 +4144,16 @@ ifapi_json_TPM2B_CREATION_DATA_deserialize(json_object *jso,
     TSS2_RC res;
     LOG_TRACE("call");
     if (!ifapi_get_sub_object(jso, "size", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"size\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     res = ifapi_json_UINT16_deserialize(jso2, &out->size);
-    return_if_error(res, "BAD VALUE");
+    return_if_error(res, "Bad value for field \"size\".");
     if (!ifapi_get_sub_object(jso, "creationData", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"creationData\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     res = ifapi_json_TPMS_CREATION_DATA_deserialize(jso2, &out->creationData);
-    return_if_error(res, "BAD VALUE");
+    return_if_error(res, "Bad value for field \"creationData\".");
     return TSS2_RC_SUCCESS;
 }

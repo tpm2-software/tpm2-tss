@@ -178,14 +178,14 @@ ifapi_json_TPMS_POLICYSIGNED_deserialize(json_object *jso,
         memset(&out->cpHashA, 0, sizeof(TPM2B_DIGEST));
     } else {
         r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->cpHashA);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"cpHashA\".");
     }
 
     if (!ifapi_get_sub_object(jso, "policyRef", &jso2)) {
         memset(&out->policyRef, 0, sizeof(TPM2B_NONCE));
     } else {
         r = ifapi_json_TPM2B_NONCE_deserialize(jso2, &out->policyRef);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"policyRef\".");
     }
 
     out->expiration = 0;
@@ -195,7 +195,7 @@ ifapi_json_TPMS_POLICYSIGNED_deserialize(json_object *jso,
     } else {
         cond_cnt++;
         r = ifapi_json_char_deserialize(jso2, &out->keyPath);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"keyPath\".");
     }
 
     if (!ifapi_get_sub_object(jso, "keyPublic", &jso2)) {
@@ -203,7 +203,7 @@ ifapi_json_TPMS_POLICYSIGNED_deserialize(json_object *jso,
     } else {
         cond_cnt++;
         r = ifapi_json_TPMT_PUBLIC_deserialize(jso2, &out->keyPublic);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"keyPublic\".");
     }
 
     if (!ifapi_get_sub_object(jso, "keyPEM", &jso2)) {
@@ -211,21 +211,21 @@ ifapi_json_TPMS_POLICYSIGNED_deserialize(json_object *jso,
     } else {
         cond_cnt++;
         r = ifapi_json_char_deserialize(jso2, &out->keyPEM);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"keyPEM\".");
     }
 
     if (!ifapi_get_sub_object(jso, "publicKeyHint", &jso2)) {
         out->publicKeyHint = NULL;
     } else {
         r = ifapi_json_char_deserialize(jso2, &out->publicKeyHint);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"publicKeyHint\".");
     }
 
     if (!ifapi_get_sub_object(jso, "keyPEMhashAlg", &jso2)) {
         out->keyPEMhashAlg = TPM2_ALG_SHA256;
     } else {
         r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->keyPEMhashAlg);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"keyPEMhashAlg\".");
     }
 
     /* Check whether only one condition field found in policy. */
@@ -262,14 +262,14 @@ ifapi_json_TPMS_POLICYSECRET_deserialize(json_object *jso,
         memset(&out->cpHashA, 0, sizeof(TPM2B_DIGEST));
     } else {
         r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->cpHashA);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"cpHashA\".");
     }
 
     if (!ifapi_get_sub_object(jso, "policyRef", &jso2)) {
         memset(&out->policyRef, 0, sizeof(TPM2B_NONCE));
     } else {
         r = ifapi_json_TPM2B_NONCE_deserialize(jso2, &out->policyRef);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"policyRef\".");
     }
     out->expiration = 0;
 
@@ -278,7 +278,7 @@ ifapi_json_TPMS_POLICYSECRET_deserialize(json_object *jso,
     } else {
         cond_cnt++;
         r = ifapi_json_char_deserialize(jso2, &out->objectPath);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"objectPath\".");
     }
 
     if (!ifapi_get_sub_object(jso, "objectName", &jso2)) {
@@ -286,7 +286,7 @@ ifapi_json_TPMS_POLICYSECRET_deserialize(json_object *jso,
     } else {
         cond_cnt++;
         r = ifapi_json_TPM2B_NAME_deserialize(jso2, &out->objectName);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"objectName\".");
     }
     if (cond_cnt != 1) {
         return_error(TSS2_FAPI_RC_BAD_VALUE,
@@ -314,11 +314,11 @@ ifapi_json_TPMS_POLICYLOCALITY_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "locality", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"locality\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMA_LOCALITY_deserialize(jso2, &out->locality);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"locality\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -347,7 +347,7 @@ ifapi_json_TPMS_POLICYNV_deserialize(json_object *jso,  TPMS_POLICYNV *out)
     } else {
         cond_cnt++;
         r = ifapi_json_char_deserialize(jso2, &out->nvPath);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"nvPath\".");
     }
 
     if (!ifapi_get_sub_object(jso, "nvIndex", &jso2)) {
@@ -355,35 +355,35 @@ ifapi_json_TPMS_POLICYNV_deserialize(json_object *jso,  TPMS_POLICYNV *out)
     } else {
         cond_cnt++;
         r = ifapi_json_TPMI_RH_NV_INDEX_deserialize(jso2, &out->nvIndex);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"nvIndex\".");
     }
 
     if (!ifapi_get_sub_object(jso, "nvPublic", &jso2)) {
         memset(&out->nvPublic, 0, sizeof(TPM2B_NV_PUBLIC));
     } else {
         r = ifapi_json_TPM2B_NV_PUBLIC_deserialize(jso2, &out->nvPublic);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"nvPublic\".");
     }
 
     if (!ifapi_get_sub_object(jso, "operandB", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"operandB\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_OPERAND_deserialize(jso2, &out->operandB);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"operandB\".");
 
     if (!ifapi_get_sub_object(jso, "offset", &jso2)) {
         out->offset = 0;
     } else {
         r = ifapi_json_UINT16_deserialize(jso2, &out->offset);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"offset\".");
     }
 
     if (!ifapi_get_sub_object(jso, "operation", &jso2)) {
         out->operation = 0;
     } else {
         r = ifapi_json_TPM2_EO_deserialize(jso2, &out->operation);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"operation\".");
     }
     /* Check whether only one conditional is used. */
     if (cond_cnt != 1) {
@@ -413,25 +413,25 @@ ifapi_json_TPMS_POLICYCOUNTERTIMER_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "operandB", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"operandB\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_OPERAND_deserialize(jso2, &out->operandB);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"operandB\".");
 
     if (!ifapi_get_sub_object(jso, "offset", &jso2)) {
         out->offset = 0;
     } else {
         r = ifapi_json_UINT16_deserialize(jso2, &out->offset);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"offset\".");
     }
 
     if (!ifapi_get_sub_object(jso, "operation", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"operation\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2_EO_deserialize(jso2, &out->operation);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"operation\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -454,11 +454,11 @@ ifapi_json_TPMS_POLICYCOMMANDCODE_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "code", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"code\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2_CC_deserialize(jso2, &out->code);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"code\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -500,11 +500,11 @@ ifapi_json_TPMS_POLICYCPHASH_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "cpHash", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"cpHash\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->cpHash);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"cpHash\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -534,7 +534,7 @@ ifapi_json_TPMS_POLICYNAMEHASH_deserialize(json_object *jso,
     if (ifapi_get_sub_object(jso, "nameHash", &jso2)) {
         cond_cnt++;
         r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->nameHash);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"nameHash\".");
 
         /* No need to deserialize namePaths or objectNames from which nameHash would
            be derived. */
@@ -553,7 +553,7 @@ ifapi_json_TPMS_POLICYNAMEHASH_deserialize(json_object *jso,
             for (i = 0; i < n_paths; i++) {
                 jso3 = json_object_array_get_idx(jso2, i);
                 r = ifapi_json_char_deserialize(jso3, &out->namePaths[i]);
-                return_if_error(r, "BAD VALUE");
+                return_if_error(r, "Bad value for field \"namePaths\".");
             }
             out->count = n_paths;
         } else {
@@ -643,7 +643,7 @@ ifapi_json_TPMS_POLICYDUPLICATIONSELECT_deserialize(json_object *jso,
     } else {
         cond_cnt++;
         r = ifapi_json_char_deserialize(jso2, &out->newParentPath);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"newParentPath\".");
     }
     /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
@@ -679,27 +679,27 @@ ifapi_json_TPMS_POLICYAUTHORIZE_deserialize(json_object *jso,
         memset(&out->approvedPolicy, 0, sizeof(TPM2B_DIGEST));
     } else {
         r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->approvedPolicy);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"approvedPolicy\".");
     }
 
     if (!ifapi_get_sub_object(jso, "policyRef", &jso2)) {
         memset(&out->policyRef, 0, sizeof(TPM2B_NONCE));
     } else {
         r = ifapi_json_TPM2B_NONCE_deserialize(jso2, &out->policyRef);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"policyRef\".");
     }
 
     if (!ifapi_get_sub_object(jso, "keyName", &jso2)) {
         memset(&out->keyName, 0, sizeof(TPM2B_NAME));
     } else {
         r = ifapi_json_TPM2B_NAME_deserialize(jso2, &out->keyName);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"keyName\".");
     }
 
     if (ifapi_get_sub_object(jso, "keyPath", &jso2)) {
         cond_cnt++;
         r = ifapi_json_char_deserialize(jso2, &out->keyPath);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"keyPath\".");
     } else {
         out->keyPath = NULL;
     }
@@ -709,7 +709,7 @@ ifapi_json_TPMS_POLICYAUTHORIZE_deserialize(json_object *jso,
     } else {
         cond_cnt++;
         r = ifapi_json_TPMT_PUBLIC_deserialize(jso2, &out->keyPublic);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"keyPublic\".");
     }
 
     if (!ifapi_get_sub_object(jso, "keyPEM", &jso2)) {
@@ -717,14 +717,14 @@ ifapi_json_TPMS_POLICYAUTHORIZE_deserialize(json_object *jso,
     } else {
         cond_cnt++;
         r = ifapi_json_char_deserialize(jso2, &out->keyPEM);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"keyPEM\".");
     }
 
     if (!ifapi_get_sub_object(jso, "keyPEMhashAlg", &jso2)) {
         out->keyPEMhashAlg = 0;
     } else {
         r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->keyPEMhashAlg);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"keyPEMhashAlg\".");
     }
     /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
@@ -795,7 +795,7 @@ ifapi_json_TPMS_POLICYNVWRITTEN_deserialize(json_object *jso,
         return TSS2_RC_SUCCESS;
     }
     r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->writtenSet);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"writtenSet\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -825,7 +825,7 @@ ifapi_json_TPMS_POLICYTEMPLATE_deserialize(json_object *jso,
     } else {
         cond_cnt++;
         r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->templateHash);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"templateHash\".");
     }
 
     if (!ifapi_get_sub_object(jso, "templatePublic", &jso2)) {
@@ -833,12 +833,12 @@ ifapi_json_TPMS_POLICYTEMPLATE_deserialize(json_object *jso,
     } else {
         cond_cnt++;
         r = ifapi_json_TPM2B_PUBLIC_deserialize(jso2, &out->templatePublic);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"templatePublic\".");
     }
 
     if (ifapi_get_sub_object(jso, "templateName", &jso2)) {
         r = ifapi_json_char_deserialize(jso2, &out->templateName);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"templateName\".");
     } else {
         out->templateName = NULL;
     }
@@ -878,7 +878,7 @@ ifapi_json_TPMS_POLICYAUTHORIZENV_deserialize(json_object *jso,
     if (ifapi_get_sub_object(jso, "nvPath", &jso2)) {
         cond_cnt++;
         r = ifapi_json_char_deserialize(jso2, &out->nvPath);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"nvPath\".");
     } else {
         out->nvPath = NULL;
     }
@@ -888,7 +888,7 @@ ifapi_json_TPMS_POLICYAUTHORIZENV_deserialize(json_object *jso,
     } else {
         cond_cnt++;
         r = ifapi_json_TPM2B_NV_PUBLIC_deserialize(jso2, &out->nvPublic);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"nvPublic\".");
     }
     /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
@@ -921,11 +921,11 @@ ifapi_json_TPMS_POLICYACTION_deserialize(json_object *jso,
     memset(out, 0, sizeof(*out));
 
     if (!ifapi_get_sub_object(jso, "action", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"action\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_char_deserialize(jso2, &out->action);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"action\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -948,24 +948,24 @@ ifapi_json_TPMS_PCRVALUE_deserialize(json_object *jso,  TPMS_PCRVALUE *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "pcr", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"pcr\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_UINT32_deserialize(jso2, &out->pcr);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"pcr\".");
 
     if (!ifapi_get_sub_object(jso, "hashAlg", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"hashAlg\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2_ALG_ID_deserialize(jso2, &out->hashAlg);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"hashAlg\".");
     if (!ifapi_get_sub_object(jso, "digest", &jso2)) {
-        LOG_ERROR("BAD VALUE");
+        LOG_ERROR("Field \"digest\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMU_HA_deserialize(out->hashAlg, jso2, &out->digest);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"digest\".");
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
@@ -1028,7 +1028,7 @@ ifapi_json_TPMS_POLICYPCR_deserialize(json_object *jso,  TPMS_POLICYPCR *out)
     if (ifapi_get_sub_object(jso, "pcrs", &jso2)) {
         cond_cnt++;
         r = ifapi_json_TPML_PCRVALUES_deserialize(jso2, &out->pcrs);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"pcrs\".");
     } else {
         memset(&out->pcrs, 0, sizeof(TPML_PCRVALUES));
     }
@@ -1036,7 +1036,7 @@ ifapi_json_TPMS_POLICYPCR_deserialize(json_object *jso,  TPMS_POLICYPCR *out)
     if (ifapi_get_sub_object(jso, "currentPCRs", &jso2)) {
         cond_cnt++;
         r = ifapi_json_TPMS_PCR_SELECT_deserialize(jso2, &out->currentPCRs);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"currentPCRs\".");
     } else {
         memset(&out->currentPCRs, 0, sizeof(TPMS_PCR_SELECT));
     }
@@ -1044,7 +1044,7 @@ ifapi_json_TPMS_POLICYPCR_deserialize(json_object *jso,  TPMS_POLICYPCR *out)
     if (ifapi_get_sub_object(jso, "currentPCRandBanks", &jso2)) {
         cond_cnt++;
         r = ifapi_json_TPML_PCR_SELECTION_deserialize(jso2, &out->currentPCRandBanks);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"currentPCRandBanks\".");
     } else {
         memset(&out->currentPCRandBanks, 0, sizeof(TPML_PCR_SELECTION));
     }
@@ -1078,32 +1078,32 @@ ifapi_json_TPMS_POLICYAUTHORIZATION_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "type", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"type\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_char_deserialize(jso2, &out->type);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"type\".");
 
     if (!ifapi_get_sub_object(jso, "key", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"key\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMT_PUBLIC_deserialize(jso2, &out->key);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"key\".");
 
     if (!ifapi_get_sub_object(jso, "policyRef", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"policyRef\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPM2B_NONCE_deserialize(jso2, &out->policyRef);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"policyRef\".");
 
     if (!ifapi_get_sub_object(jso, "signature", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"signature\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMT_SIGNATURE_deserialize(jso2, &out->signature);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"signature\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -1164,31 +1164,31 @@ ifapi_json_TPMS_POLICYBRANCH_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "name", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"name\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_char_deserialize(jso2, &out->name);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"name\".");
 
     if (!ifapi_get_sub_object(jso, "description", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"description\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_char_deserialize(jso2, &out->description);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"description\".");
 
     if (!ifapi_get_sub_object(jso, "policy", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"policy\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPML_POLICYELEMENTS_deserialize(jso2, &out->policy);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"policy\".");
 
     if (!ifapi_get_sub_object(jso, "policyDigests", &jso2)) {
         memset(&out->policyDigests, 0, sizeof(TPML_DIGEST_VALUES));
     } else {
         r = ifapi_json_TPML_DIGEST_VALUES_deserialize(jso2, &out->policyDigests);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"policyDigests\".");
 
     }
 
@@ -1250,11 +1250,11 @@ ifapi_json_TPMS_POLICYOR_deserialize(json_object *jso,  TPMS_POLICYOR *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "branches", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"branches\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPML_POLICYBRANCHES_deserialize(jso2, &out->branches);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"branches\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
@@ -1346,21 +1346,21 @@ ifapi_json_TPMT_POLICYELEMENT_deserialize(json_object *jso,
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (!ifapi_get_sub_object(jso, "type", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"type\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPMI_POLICYTYPE_deserialize(jso2, &out->type);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"type\".");
 
     if (!ifapi_get_sub_object(jso, "policyDigests", &jso2)) {
         memset(&out->policyDigests, 0, sizeof(TPML_DIGEST_VALUES));
     } else {
         r = ifapi_json_TPML_DIGEST_VALUES_deserialize(jso2, &out->policyDigests);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"policyDigests\".");
 
     }
     r = ifapi_json_TPMU_POLICYELEMENT_deserialize(out->type, jso, &out->element);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"element\".");
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
@@ -1425,13 +1425,13 @@ ifapi_json_TPMS_POLICY_deserialize(json_object *jso,
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_char_deserialize(jso2, &out->description);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"description\".");
 
     if (!ifapi_get_sub_object(jso, "policyDigests", &jso2)) {
         memset(&out->policyDigests, 0, sizeof(TPML_DIGEST_VALUES));
     } else {
         r = ifapi_json_TPML_DIGEST_VALUES_deserialize(jso2, &out->policyDigests);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"policyDigests\".");
 
     }
     if (!ifapi_get_sub_object(jso, "policyAuthorizations", &jso2)) {
@@ -1439,15 +1439,15 @@ ifapi_json_TPMS_POLICY_deserialize(json_object *jso,
     } else {
         r = ifapi_json_TPML_POLICYAUTHORIZATIONS_deserialize(jso2,
                 &out->policyAuthorizations);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"policyAuthorizations\".");
 
     }
     if (!ifapi_get_sub_object(jso, "policy", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"policy\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPML_POLICYELEMENTS_deserialize(jso2, &out->policy);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"policy\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
