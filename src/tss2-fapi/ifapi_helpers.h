@@ -183,4 +183,10 @@ ifapi_get_curl_buffer(
     unsigned char ** buffer,
     size_t *cert_size);
 
+void
+ifapi_check_json_object_fields(
+    json_object *jso,
+    char** field_tab,
+    size_t size_of_tab);
+
 #endif /* IFAPI_HELPERS_H */

@@ -17,6 +17,7 @@ extern "C" {
 
 #define TPM2_ERROR_FORMAT "%s%s (0x%08x)"
 #define TPM2_ERROR_TEXT(r) "Error", "Code", r
+#define SIZE_OF_ARY(ary) (sizeof(ary) / sizeof(ary[0]))
 
 #define return_if_error(r,msg) \
     if (r != TSS2_RC_SUCCESS) { \
