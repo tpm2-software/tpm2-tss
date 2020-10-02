@@ -12,6 +12,7 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "ifapi_helpers.h"
 #include "tpm_json_deserialize.h"
 #define LOGMODULE fapijson
 #include "util/log.h"
@@ -339,6 +340,13 @@ ifapi_json_TPMS_PCR_SELECT_deserialize(json_object *jso,  TPMS_PCR_SELECT *out)
             &out->pcrSelect[0]);
 }
 
+static char *field_TPMS_PCR_SELECTION_tab[] = {
+    "hash",
+    "pcrSelect",
+    "pcrselect",
+    "$schema"
+};
+
 /** Deserialize a TPMS_PCR_SELECTION variable.
  *
  * @param[in]  jso json object to be deserialized.
@@ -355,6 +363,8 @@ ifapi_json_TPMS_PCR_SELECTION_deserialize(json_object *jso,
     TSS2_RC r;
 
     memset(out, 0, sizeof(TPMS_PCR_SELECTION));
+    ifapi_check_json_object_fields(jso, &field_TPMS_PCR_SELECTION_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_PCR_SELECTION_tab));
     if (!ifapi_get_sub_object(jso, "hash", &jso2)) {
         LOG_ERROR("Field \"hash\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -1392,6 +1402,13 @@ ifapi_json_TPMU_HA_deserialize(
     return TSS2_RC_SUCCESS;
 }
 
+static char *field_TPMT_HA_tab[] = {
+    "hashAlg",
+    "hashalg",
+    "digest",
+    "$schema"
+};
+
 /** Deserialize a TPMT_HA json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -1408,6 +1425,8 @@ ifapi_json_TPMT_HA_deserialize(json_object *jso,  TPMT_HA *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMT_HA_tab[0],
+                                   SIZE_OF_ARY(field_TPMT_HA_tab));
     if (!ifapi_get_sub_object(jso, "hashAlg", &jso2)) {
         LOG_ERROR("Field \"hashAlg\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -1591,6 +1610,13 @@ ifapi_json_TPM2B_NAME_deserialize(json_object *jso,  TPM2B_NAME *out)
     return TSS2_RC_SUCCESS;
 }
 
+static char *field_TPMT_TK_CREATION_tab[] = {
+    "tag",
+    "hierarchy",
+    "digest",
+    "$schema"
+};
+
 /** Deserialize a TPMT_TK_CREATION json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -1608,6 +1634,8 @@ ifapi_json_TPMT_TK_CREATION_deserialize(json_object *jso,
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMT_TK_CREATION_tab[0],
+                                   SIZE_OF_ARY(field_TPMT_TK_CREATION_tab));
     if (!ifapi_get_sub_object(jso, "tag", &jso2)) {
         LOG_ERROR("Field \"tag\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -1717,6 +1745,16 @@ ifapi_json_TPML_PCR_SELECTION_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
+static char *field_TPMS_CLOCK_INFO_tab[] = {
+    "clock",
+    "resetCount",
+    "resetcount",
+    "restartCount",
+    "restartcount",
+    "safe",
+    "$schema"
+};
+
 /** Deserialize a TPMS_CLOCK_INFO json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -1733,6 +1771,8 @@ ifapi_json_TPMS_CLOCK_INFO_deserialize(json_object *jso,  TPMS_CLOCK_INFO *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_CLOCK_INFO_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_CLOCK_INFO_tab));
     if (!ifapi_get_sub_object(jso, "clock", &jso2)) {
         LOG_ERROR("Field \"clock\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -1764,6 +1804,13 @@ ifapi_json_TPMS_CLOCK_INFO_deserialize(json_object *jso,  TPMS_CLOCK_INFO *out)
     return TSS2_RC_SUCCESS;
 }
 
+static char *field_TPMS_TIME_INFO_tab[] = {
+    "time",
+    "clockInfo",
+    "clockinfo",
+    "$schema"
+};
+
 /** Deserialize a TPMS_TIME_INFO json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -1780,6 +1827,8 @@ ifapi_json_TPMS_TIME_INFO_deserialize(json_object *jso,  TPMS_TIME_INFO *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_TIME_INFO_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_TIME_INFO_tab));
     if (!ifapi_get_sub_object(jso, "time", &jso2)) {
         LOG_ERROR("Field \"time\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -1796,6 +1845,13 @@ ifapi_json_TPMS_TIME_INFO_deserialize(json_object *jso,  TPMS_TIME_INFO *out)
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
+
+static char *field_TPMS_TIME_ATTEST_INFO_tab[] = {
+    "time",
+    "firmwareVersion",
+    "firmwareversion",
+    "$schema"
+};
 
 /** Deserialize a TPMS_TIME_ATTEST_INFO json object.
  *
@@ -1814,6 +1870,8 @@ ifapi_json_TPMS_TIME_ATTEST_INFO_deserialize(json_object *jso,
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_TIME_ATTEST_INFO_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_TIME_ATTEST_INFO_tab));
     if (!ifapi_get_sub_object(jso, "time", &jso2)) {
         LOG_ERROR("Field \"time\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -1830,6 +1888,13 @@ ifapi_json_TPMS_TIME_ATTEST_INFO_deserialize(json_object *jso,
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
+
+static char *field_TPMS_CERTIFY_INFO_tab[] = {
+    "name",
+    "qualifiedName",
+    "qualifiedname",
+    "$schema"
+};
 
 /** Deserialize a TPMS_CERTIFY_INFO json object.
  *
@@ -1848,6 +1913,8 @@ ifapi_json_TPMS_CERTIFY_INFO_deserialize(json_object *jso,
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_CERTIFY_INFO_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_CERTIFY_INFO_tab));
     if (!ifapi_get_sub_object(jso, "name", &jso2)) {
         LOG_ERROR("Field \"name\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -1865,6 +1932,14 @@ ifapi_json_TPMS_CERTIFY_INFO_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
+static char *field_TPMS_QUOTE_INFO_tab[] = {
+    "pcrSelect",
+    "pcrselect",
+    "pcrDigest",
+    "pcrdigest",
+    "$schema"
+};
+
 /** Deserialize a TPMS_QUOTE_INFO json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -1881,6 +1956,8 @@ ifapi_json_TPMS_QUOTE_INFO_deserialize(json_object *jso,  TPMS_QUOTE_INFO *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_QUOTE_INFO_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_QUOTE_INFO_tab));
     if (!ifapi_get_sub_object(jso, "pcrSelect", &jso2)) {
         LOG_ERROR("Field \"pcrSelect\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -1897,6 +1974,18 @@ ifapi_json_TPMS_QUOTE_INFO_deserialize(json_object *jso,  TPMS_QUOTE_INFO *out)
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
+
+static char *field_TPMS_COMMAND_AUDIT_INFO_tab[] = {
+    "auditCounter",
+    "auditcounter",
+    "digestAlg",
+    "digestalg",
+    "auditDigest",
+    "auditdigest",
+    "commandDigest",
+    "commanddigest",
+    "$schema"
+};
 
 /** Deserialize a TPMS_COMMAND_AUDIT_INFO json object.
  *
@@ -1915,6 +2004,8 @@ ifapi_json_TPMS_COMMAND_AUDIT_INFO_deserialize(json_object *jso,
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_COMMAND_AUDIT_INFO_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_COMMAND_AUDIT_INFO_tab));
     if (!ifapi_get_sub_object(jso, "auditCounter", &jso2)) {
         LOG_ERROR("Field \"auditCounter\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -1946,6 +2037,14 @@ ifapi_json_TPMS_COMMAND_AUDIT_INFO_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
+static char *field_TPMS_SESSION_AUDIT_INFO_tab[] = {
+    "exclusiveSession",
+    "exclusivesession",
+    "sessionDigest",
+    "sessiondigest",
+    "$schema"
+};
+
 /** Deserialize a TPMS_SESSION_AUDIT_INFO json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -1963,6 +2062,8 @@ ifapi_json_TPMS_SESSION_AUDIT_INFO_deserialize(json_object *jso,
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_SESSION_AUDIT_INFO_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_SESSION_AUDIT_INFO_tab));
     if (!ifapi_get_sub_object(jso, "exclusiveSession", &jso2)) {
         LOG_ERROR("Field \"exclusiveSession\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -1979,6 +2080,14 @@ ifapi_json_TPMS_SESSION_AUDIT_INFO_deserialize(json_object *jso,
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
+
+static char *field_TPMS_CREATION_INFO_tab[] = {
+    "objectName",
+    "objectname",
+    "creationHash",
+    "creationhash",
+    "$schema"
+};
 
 /** Deserialize a TPMS_CREATION_INFO json object.
  *
@@ -1997,6 +2106,8 @@ ifapi_json_TPMS_CREATION_INFO_deserialize(json_object *jso,
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_CREATION_INFO_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_CREATION_INFO_tab));
     if (!ifapi_get_sub_object(jso, "objectName", &jso2)) {
         LOG_ERROR("Field \"objectName\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -2013,6 +2124,15 @@ ifapi_json_TPMS_CREATION_INFO_deserialize(json_object *jso,
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
+
+static char *field_TPMS_NV_CERTIFY_INFO_tab[] = {
+    "indexName",
+    "indexname",
+    "offset",
+    "nvContents",
+    "nvcontents",
+    "$schema"
+};
 
 /** Deserialize a TPMS_NV_CERTIFY_INFO json object.
  *
@@ -2031,6 +2151,8 @@ ifapi_json_TPMS_NV_CERTIFY_INFO_deserialize(json_object *jso,
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_NV_CERTIFY_INFO_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_NV_CERTIFY_INFO_tab));
     if (!ifapi_get_sub_object(jso, "indexName", &jso2)) {
         LOG_ERROR("Field \"indexName\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -2109,6 +2231,21 @@ ifapi_json_TPMU_ATTEST_deserialize(
     };
 }
 
+static char *field_TPMS_ATTEST_tab[] = {
+    "magic",
+    "type",
+    "qualifiedSigner",
+    "qualifiedsigner",
+    "extraData",
+    "extradata",
+    "clockInfo",
+    "clockinfo",
+    "firmwareVersion",
+    "firmwareversion",
+    "attested",
+    "$schema"
+};
+
 /** Deserialize a TPMS_ATTEST json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -2125,6 +2262,8 @@ ifapi_json_TPMS_ATTEST_deserialize(json_object *jso,  TPMS_ATTEST *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_ATTEST_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_ATTEST_tab));
     if (!ifapi_get_sub_object(jso, "magic", &jso2)) {
         LOG_ERROR("Field \"magic\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -2249,6 +2388,14 @@ ifapi_json_TPMU_SYM_MODE_deserialize(
     };
 }
 
+static char *field_TPMT_SYM_DEF_tab[] = {
+    "algorithm",
+    "keyBits",
+    "keybits",
+    "mode",
+    "$schema"
+};
+
 /** Deserialize a TPMT_SYM_DEF json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -2265,6 +2412,8 @@ ifapi_json_TPMT_SYM_DEF_deserialize(json_object *jso,  TPMT_SYM_DEF *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMT_SYM_DEF_tab[0],
+                                   SIZE_OF_ARY(field_TPMT_SYM_DEF_tab));
     if (!ifapi_get_sub_object(jso, "algorithm", &jso2)) {
         LOG_ERROR("Field \"algorithm\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -2294,6 +2443,14 @@ ifapi_json_TPMT_SYM_DEF_deserialize(json_object *jso,  TPMT_SYM_DEF *out)
     return TSS2_RC_SUCCESS;
 }
 
+static char *field_TPMT_SYM_DEF_OBJECT_tab[] = {
+    "algorithm",
+    "keyBits",
+    "keybits",
+    "mode",
+    "$schema"
+};
+
 /** Deserialize a TPMT_SYM_DEF_OBJECT json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -2311,6 +2468,8 @@ ifapi_json_TPMT_SYM_DEF_OBJECT_deserialize(json_object *jso,
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMT_SYM_DEF_OBJECT_tab[0],
+                                   SIZE_OF_ARY(field_TPMT_SYM_DEF_OBJECT_tab));
     if (!ifapi_get_sub_object(jso, "algorithm", &jso2)) {
         LOG_ERROR("Field \"algorithm\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -2340,6 +2499,11 @@ ifapi_json_TPMT_SYM_DEF_OBJECT_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
+static char *field_TPMS_SYMCIPHER_PARMS_tab[] = {
+    "sym",
+    "$schema"
+};
+
 /** Deserialize a TPMS_SYMCIPHER_PARMS json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -2357,6 +2521,8 @@ ifapi_json_TPMS_SYMCIPHER_PARMS_deserialize(json_object *jso,
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_SYMCIPHER_PARMS_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_SYMCIPHER_PARMS_tab));
     if (!ifapi_get_sub_object(jso, "sym", &jso2)) {
         LOG_ERROR("Field \"sym\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -2366,6 +2532,12 @@ ifapi_json_TPMS_SYMCIPHER_PARMS_deserialize(json_object *jso,
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
+
+static char *field_TPMS_SCHEME_HASH_tab[] = {
+    "hashAlg",
+    "hashalg",
+    "$schema"
+};
 
 /** Deserialize a TPMS_SCHEME_HASH json object.
  *
@@ -2384,6 +2556,8 @@ ifapi_json_TPMS_SCHEME_HASH_deserialize(json_object *jso,
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_SCHEME_HASH_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_SCHEME_HASH_tab));
     if (!ifapi_get_sub_object(jso, "hashAlg", &jso2)) {
         LOG_ERROR("Field \"hashAlg\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -2393,6 +2567,13 @@ ifapi_json_TPMS_SCHEME_HASH_deserialize(json_object *jso,
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
+
+static char *field_TPMS_SCHEME_ECDAA_tab[] = {
+    "hashAlg",
+    "hashalg",
+    "count",
+    "$schema"
+};
 
 /** Deserialize a TPMS_SCHEME_ECDAA json object.
  *
@@ -2411,6 +2592,8 @@ ifapi_json_TPMS_SCHEME_ECDAA_deserialize(json_object *jso,
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_SCHEME_ECDAA_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_SCHEME_ECDAA_tab));
     if (!ifapi_get_sub_object(jso, "hashAlg", &jso2)) {
         LOG_ERROR("Field \"hashAlg\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -2460,6 +2643,13 @@ ifapi_json_TPMS_SCHEME_HMAC_deserialize(json_object *jso, TPMS_SCHEME_HMAC *out)
     return ifapi_json_TPMS_SCHEME_HASH_deserialize(jso, out);
 }
 
+static char *field_TPMS_SCHEME_XOR_tab[] = {
+    "hashAlg",
+    "hashalg",
+    "kdf",
+    "$schema"
+};
+
 /** Deserialize a TPMS_SCHEME_XOR json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -2476,6 +2666,8 @@ ifapi_json_TPMS_SCHEME_XOR_deserialize(json_object *jso,  TPMS_SCHEME_XOR *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_SCHEME_XOR_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_SCHEME_XOR_tab));
     if (!ifapi_get_sub_object(jso, "hashAlg", &jso2)) {
         LOG_ERROR("Field \"hashAlg\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -2525,6 +2717,12 @@ ifapi_json_TPMU_SCHEME_KEYEDHASH_deserialize(
     };
 }
 
+static char *field_TPMT_KEYEDHASH_SCHEME_tab[] = {
+    "scheme",
+    "details",
+    "$schema"
+};
+
 /** Deserialize a TPMT_KEYEDHASH_SCHEME json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -2542,6 +2740,8 @@ ifapi_json_TPMT_KEYEDHASH_SCHEME_deserialize(json_object *jso,
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMT_KEYEDHASH_SCHEME_tab[0],
+                                   SIZE_OF_ARY(field_TPMT_KEYEDHASH_SCHEME_tab));
     if (!ifapi_get_sub_object(jso, "scheme", &jso2)) {
         LOG_ERROR("Field \"scheme\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -2704,6 +2904,12 @@ ifapi_json_TPMU_SIG_SCHEME_deserialize(
     };
 }
 
+static char *field_TPMT_SIG_SCHEME_tab[] = {
+    "scheme",
+    "details",
+    "$schema"
+};
+
 /** Deserialize a TPMT_SIG_SCHEME json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -2720,6 +2926,8 @@ ifapi_json_TPMT_SIG_SCHEME_deserialize(json_object *jso,  TPMT_SIG_SCHEME *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMT_SIG_SCHEME_tab[0],
+                                   SIZE_OF_ARY(field_TPMT_SIG_SCHEME_tab));
     if (!ifapi_get_sub_object(jso, "scheme", &jso2)) {
         LOG_ERROR("Field \"scheme\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -2875,6 +3083,12 @@ ifapi_json_TPMU_KDF_SCHEME_deserialize(
     };
 }
 
+static char *field_TPMT_KDF_SCHEME_tab[] = {
+    "scheme",
+    "details",
+    "$schema"
+};
+
 /** Deserialize a TPMT_KDF_SCHEME json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -2891,6 +3105,8 @@ ifapi_json_TPMT_KDF_SCHEME_deserialize(json_object *jso,  TPMT_KDF_SCHEME *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMT_KDF_SCHEME_tab[0],
+                                   SIZE_OF_ARY(field_TPMT_KDF_SCHEME_tab));
     if (!ifapi_get_sub_object(jso, "scheme", &jso2)) {
         LOG_ERROR("Field \"scheme\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -2971,6 +3187,12 @@ ifapi_json_TPMI_ALG_RSA_SCHEME_deserialize(json_object *jso,
         TPM2_ALG_RSAES, TPM2_ALG_OAEP, TPM2_ALG_RSASSA, TPM2_ALG_RSAPSS, TPM2_ALG_NULL);
 }
 
+static char *field_TPMT_RSA_SCHEME_tab[] = {
+    "scheme",
+    "details",
+    "$schema"
+};
+
 /** Deserialize a TPMT_RSA_SCHEME json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -2987,6 +3209,8 @@ ifapi_json_TPMT_RSA_SCHEME_deserialize(json_object *jso,  TPMT_RSA_SCHEME *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMT_RSA_SCHEME_tab[0],
+                                   SIZE_OF_ARY(field_TPMT_RSA_SCHEME_tab));
     if (!ifapi_get_sub_object(jso, "scheme", &jso2)) {
         LOG_ERROR("Field \"scheme\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -3021,6 +3245,12 @@ ifapi_json_TPMI_ALG_RSA_DECRYPT_deserialize(json_object *jso,
         TPM2_ALG_RSAES, TPM2_ALG_OAEP, TPM2_ALG_NULL);
 }
 
+static char *field_TPMT_RSA_DECRYPT_tab[] = {
+    "scheme",
+    "details",
+    "$schema"
+};
+
 /** Deserialize a TPMT_RSA_DECRYPT json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -3038,6 +3268,8 @@ ifapi_json_TPMT_RSA_DECRYPT_deserialize(json_object *jso,
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMT_RSA_DECRYPT_tab[0],
+                                   SIZE_OF_ARY(field_TPMT_RSA_DECRYPT_tab));
     if (!ifapi_get_sub_object(jso, "scheme", &jso2)) {
         LOG_ERROR("Field \"scheme\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -3124,6 +3356,12 @@ ifapi_json_TPM2B_ECC_PARAMETER_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
+static char *field_TPMS_ECC_POINT_tab[] = {
+    "x",
+    "y",
+    "$schema"
+};
+
 /** Deserialize a TPMS_ECC_POINT json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -3140,6 +3378,8 @@ ifapi_json_TPMS_ECC_POINT_deserialize(json_object *jso,  TPMS_ECC_POINT *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_ECC_POINT_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_ECC_POINT_tab));
     if (!ifapi_get_sub_object(jso, "x", &jso2)) {
         LOG_ERROR("Field \"x\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -3187,6 +3427,12 @@ ifapi_json_TPMI_ECC_CURVE_deserialize(json_object *jso, TPMI_ECC_CURVE *out)
         TPM2_ECC_SM2_P256);
 }
 
+static char *field_TPMT_ECC_SCHEME_tab[] = {
+    "scheme",
+    "details",
+    "$schema"
+};
+
 /** Deserialize a TPMT_ECC_SCHEME json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -3203,6 +3449,8 @@ ifapi_json_TPMT_ECC_SCHEME_deserialize(json_object *jso,  TPMT_ECC_SCHEME *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMT_ECC_SCHEME_tab[0],
+                                   SIZE_OF_ARY(field_TPMT_ECC_SCHEME_tab));
     if (!ifapi_get_sub_object(jso, "scheme", &jso2)) {
         LOG_ERROR("Field \"scheme\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -3222,6 +3470,12 @@ ifapi_json_TPMT_ECC_SCHEME_deserialize(json_object *jso,  TPMT_ECC_SCHEME *out)
     return TSS2_RC_SUCCESS;
 }
 
+static char *field_TPMS_SIGNATURE_RSA_tab[] = {
+    "hash",
+    "sig",
+    "$schema"
+};
+
 /** Deserialize a TPMS_SIGNATURE_RSA json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -3239,6 +3493,8 @@ ifapi_json_TPMS_SIGNATURE_RSA_deserialize(json_object *jso,
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_SIGNATURE_RSA_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_SIGNATURE_RSA_tab));
     if (!ifapi_get_sub_object(jso, "hash", &jso2)) {
         LOG_ERROR("Field \"hash\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -3290,6 +3546,15 @@ ifapi_json_TPMS_SIGNATURE_RSAPSS_deserialize(json_object *jso,
     return ifapi_json_TPMS_SIGNATURE_RSA_deserialize(jso, out);
 }
 
+static char *field_TPMS_SIGNATURE_ECC_tab[] = {
+    "hash",
+    "signatureR",
+    "signaturer",
+    "signatureS",
+    "signatures",
+    "$schema"
+};
+
 /** Deserialize a TPMS_SIGNATURE_ECC json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -3307,6 +3572,8 @@ ifapi_json_TPMS_SIGNATURE_ECC_deserialize(json_object *jso,
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_SIGNATURE_ECC_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_SIGNATURE_ECC_tab));
     if (!ifapi_get_sub_object(jso, "hash", &jso2)) {
         LOG_ERROR("Field \"hash\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -3439,6 +3706,13 @@ ifapi_json_TPMU_SIGNATURE_deserialize(
     };
 }
 
+static char *field_TPMT_SIGNATURE_tab[] = {
+    "sigAlg",
+    "sigalg",
+    "signature",
+    "$schema"
+};
+
 /** Deserialize a TPMT_SIGNATURE json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -3455,6 +3729,8 @@ ifapi_json_TPMT_SIGNATURE_deserialize(json_object *jso,  TPMT_SIGNATURE *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMT_SIGNATURE_tab[0],
+                                   SIZE_OF_ARY(field_TPMT_SIGNATURE_tab));
     if (!ifapi_get_sub_object(jso, "sigAlg", &jso2)) {
         LOG_ERROR("Field \"sigAlg\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -3547,6 +3823,11 @@ ifapi_json_TPMU_PUBLIC_ID_deserialize(
     };
 }
 
+static char *field_TPMS_KEYEDHASH_PARMS_tab[] = {
+    "scheme",
+    "$schema"
+};
+
 /** Deserialize a TPMS_KEYEDHASH_PARMS json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -3564,6 +3845,8 @@ ifapi_json_TPMS_KEYEDHASH_PARMS_deserialize(json_object *jso,
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_KEYEDHASH_PARMS_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_KEYEDHASH_PARMS_tab));
     if (!ifapi_get_sub_object(jso, "scheme", &jso2)) {
         LOG_ERROR("Field \"scheme\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -3573,6 +3856,15 @@ ifapi_json_TPMS_KEYEDHASH_PARMS_deserialize(json_object *jso,
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
+
+static char *field_TPMS_RSA_PARMS_tab[] = {
+    "symmetric",
+    "scheme",
+    "keyBits",
+    "keybits",
+    "exponent",
+    "$schema"
+};
 
 /** Deserialize a TPMS_RSA_PARMS json object.
  *
@@ -3590,6 +3882,8 @@ ifapi_json_TPMS_RSA_PARMS_deserialize(json_object *jso,  TPMS_RSA_PARMS *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_RSA_PARMS_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_RSA_PARMS_tab));
     if (!ifapi_get_sub_object(jso, "symmetric", &jso2)) {
         LOG_ERROR("Field \"symmetric\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -3621,6 +3915,15 @@ ifapi_json_TPMS_RSA_PARMS_deserialize(json_object *jso,  TPMS_RSA_PARMS *out)
     return TSS2_RC_SUCCESS;
 }
 
+static char *field_TPMS_ECC_PARMS_tab[] = {
+    "symmetric",
+    "scheme",
+    "curveID",
+    "curveid",
+    "kdf",
+    "$schema"
+};
+
 /** Deserialize a TPMS_ECC_PARMS json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -3637,6 +3940,8 @@ ifapi_json_TPMS_ECC_PARMS_deserialize(json_object *jso,  TPMS_ECC_PARMS *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_ECC_PARMS_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_ECC_PARMS_tab));
     if (!ifapi_get_sub_object(jso, "symmetric", &jso2)) {
         LOG_ERROR("Field \"symmetric\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -3700,6 +4005,19 @@ ifapi_json_TPMU_PUBLIC_PARMS_deserialize(
     };
 }
 
+static char *field_TPMT_PUBLIC_tab[] = {
+    "type",
+    "nameAlg",
+    "namealg",
+    "objectAttributes",
+    "objectattributes",
+    "authPolicy",
+    "authpolicy",
+    "parameters",
+    "unique",
+    "$schema"
+};
+
 /** Deserialize a TPMT_PUBLIC json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -3716,6 +4034,8 @@ ifapi_json_TPMT_PUBLIC_deserialize(json_object *jso,  TPMT_PUBLIC *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMT_PUBLIC_tab[0],
+                                   SIZE_OF_ARY(field_TPMT_PUBLIC_tab));
     if (!ifapi_get_sub_object(jso, "type", &jso2)) {
         LOG_ERROR("Field \"type\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -3761,6 +4081,13 @@ ifapi_json_TPMT_PUBLIC_deserialize(json_object *jso,  TPMT_PUBLIC *out)
     return TSS2_RC_SUCCESS;
 }
 
+static char *field_TPM2B_PUBLIC_tab[] = {
+    "size",
+    "publicArea",
+    "publicarea",
+    "$schema"
+};
+
 /** Deserialize a TPM2B_PUBLIC json object.
  * @param[in]  jso the json object to be deserialized.
  * @param[out] out the deserialzed binary object.
@@ -3774,6 +4101,8 @@ ifapi_json_TPM2B_PUBLIC_deserialize(json_object *jso, TPM2B_PUBLIC *out)
     json_object *jso2;
     TSS2_RC res;
     LOG_TRACE("call");
+    ifapi_check_json_object_fields(jso, &field_TPM2B_PUBLIC_tab[0],
+                                   SIZE_OF_ARY(field_TPM2B_PUBLIC_tab));
     if (!ifapi_get_sub_object(jso, "size", &jso2)) {
         LOG_ERROR("Field \"size\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -3977,6 +4306,19 @@ ifapi_json_TPMA_NV_deserialize(json_object *jso, TPMA_NV *out)
     return TSS2_RC_SUCCESS;
 }
 
+static char *field_TPMS_NV_PUBLIC_tab[] = {
+    "nvIndex",
+    "nvindex",
+    "nameAlg",
+    "namealg",
+    "attributes",
+    "authPolicy",
+    "authpolicy",
+    "dataSize",
+    "datasize",
+    "$schema"
+};
+
 /** Deserialize a TPMS_NV_PUBLIC json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -3993,6 +4335,8 @@ ifapi_json_TPMS_NV_PUBLIC_deserialize(json_object *jso,  TPMS_NV_PUBLIC *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_NV_PUBLIC_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_NV_PUBLIC_tab));
     if (!ifapi_get_sub_object(jso, "nvIndex", &jso2)) {
         LOG_ERROR("Field \"nvIndex\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -4032,6 +4376,13 @@ ifapi_json_TPMS_NV_PUBLIC_deserialize(json_object *jso,  TPMS_NV_PUBLIC *out)
     return TSS2_RC_SUCCESS;
 }
 
+static char *field_TPM2B_NV_PUBLIC_tab[] = {
+    "size",
+    "nvPublic",
+    "nvpublic",
+    "$schema"
+};
+
 /** Deserialize a TPM2B_NV_PUBLIC json object.
  * @param[in]  jso the json object to be deserialized.
  * @param[out] out the deserialzed binary object.
@@ -4045,6 +4396,8 @@ ifapi_json_TPM2B_NV_PUBLIC_deserialize(json_object *jso, TPM2B_NV_PUBLIC *out)
     json_object *jso2;
     TSS2_RC res;
     LOG_TRACE("call");
+    ifapi_check_json_object_fields(jso, &field_TPM2B_NV_PUBLIC_tab[0],
+                                   SIZE_OF_ARY(field_TPM2B_NV_PUBLIC_tab));
     if (!ifapi_get_sub_object(jso, "size", &jso2)) {
         LOG_ERROR("Field \"size\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -4059,6 +4412,23 @@ ifapi_json_TPM2B_NV_PUBLIC_deserialize(json_object *jso, TPM2B_NV_PUBLIC *out)
     return_if_error(res, "Bad value for field \"nvPublic\".");
     return TSS2_RC_SUCCESS;
 }
+
+static char *field_TPMS_CREATION_DATA_tab[] = {
+    "pcrSelect",
+    "pcrselect",
+    "pcrDigest",
+    "pcrdigest",
+    "locality",
+    "parentNameAlg",
+    "parentnamealg",
+    "parentName",
+    "parentname",
+    "parentQualifiedName",
+    "parentqualifiedname",
+    "outsideInfo",
+    "outsideinfo",
+    "$schema"
+};
 
 /** Deserialize a TPMS_CREATION_DATA json object.
  *
@@ -4077,6 +4447,8 @@ ifapi_json_TPMS_CREATION_DATA_deserialize(json_object *jso,
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_TPMS_CREATION_DATA_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_CREATION_DATA_tab));
     if (!ifapi_get_sub_object(jso, "pcrSelect", &jso2)) {
         LOG_ERROR("Field \"pcrSelect\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -4129,6 +4501,13 @@ ifapi_json_TPMS_CREATION_DATA_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
+static char *field_TPM2B_CREATION_DATA_tab[] = {
+    "size",
+    "creationData",
+    "creationdata",
+    "$schema"
+};
+
 /** Deserialize a TPM2B_CREATION_DATA json object.
  * @param[in]  jso the json object to be deserialized.
  * @param[out] out the deserialzed binary object.
@@ -4143,6 +4522,8 @@ ifapi_json_TPM2B_CREATION_DATA_deserialize(json_object *jso,
     json_object *jso2;
     TSS2_RC res;
     LOG_TRACE("call");
+    ifapi_check_json_object_fields(jso, &field_TPM2B_CREATION_DATA_tab[0],
+                                   SIZE_OF_ARY(field_TPM2B_CREATION_DATA_tab));
     if (!ifapi_get_sub_object(jso, "size", &jso2)) {
         LOG_ERROR("Field \"size\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;

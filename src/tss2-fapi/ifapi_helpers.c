@@ -2591,3 +2591,40 @@ out_global_cleanup:
 out_memory:
     return ret;
 }
+
+/** Check valid keys of a json object.
+ *
+ * @param[in]  jso The json object.
+ * @param[out] field_tab the array of strings with allowed fields.
+ * @param[out] size_of_tab The number of allowed fields.
+ *
+ * If a unexpected field occurs a warning will be displayed.
+ */
+void
+ifapi_check_json_object_fields(
+    json_object *jso,
+    char** field_tab,
+    size_t size_of_tab)
+{
+    enum json_type type;
+    bool found;
+    size_t i;
+
+    type = json_object_get_type(jso);
+    if (type == json_type_object) {
+        /* Object with keys. */
+        json_object_object_foreach(jso, key, val) {
+            (void)val;
+            found = false;
+            for (i = 0; i < size_of_tab; i++) {
+                if (strcmp(key, field_tab[i]) == 0) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                LOG_WARNING("Invalid field: %s", key);
+            }
+        }
+    }
+}

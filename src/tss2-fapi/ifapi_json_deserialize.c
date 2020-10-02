@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "ifapi_helpers.h"
 #include "tpm_json_deserialize.h"
 #include "ifapi_json_deserialize.h"
 #include "fapi_policy.h"
@@ -217,6 +218,13 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso,  IFAPI_KEY *out)
     return TSS2_RC_SUCCESS;
 }
 
+static char *field_import_IFAPI_KEY_tab[] = {
+    "noauth",
+    "public",
+    "private",
+    "$schema"
+};
+
 /** Deserialize a import data to create a IFAPI_KEY json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -242,6 +250,8 @@ ifapi_json_import_IFAPI_KEY_deserialize(json_object *jso,  IFAPI_KEY *out)
 
     memset(out, 0, sizeof(IFAPI_KEY));
 
+    ifapi_check_json_object_fields(jso, &field_import_IFAPI_KEY_tab[0],
+                                   SIZE_OF_ARY(field_import_IFAPI_KEY_tab));
     if (ifapi_get_sub_object(jso, "noauth", &jso2)) {
         r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &noauth);
         return_if_error(r, "BAD VALUE");
@@ -480,6 +490,12 @@ ifapi_json_IFAPI_HIERARCHY_deserialize(json_object *jso,  IFAPI_HIERARCHY *out)
     return TSS2_RC_SUCCESS;
 }
 
+static char *field_FAPI_QUOTE_INFO_tab[] = {
+    "sig_scheme",
+    "attest",
+    "$schema"
+};
+
 /** Deserialize a FAPI_QUOTE_INFO json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -497,6 +513,8 @@ ifapi_json_FAPI_QUOTE_INFO_deserialize(json_object *jso,  FAPI_QUOTE_INFO *out)
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
 
+    ifapi_check_json_object_fields(jso, &field_FAPI_QUOTE_INFO_tab[0],
+                                   SIZE_OF_ARY(field_FAPI_QUOTE_INFO_tab));
     if (!ifapi_get_sub_object(jso, "sig_scheme", &jso2)) {
         LOG_ERROR("Field \"sig_scheme\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -766,6 +784,12 @@ ifapi_json_IFAPI_EVENT_TYPE_deserialize_txt(json_object *jso,
 
 }
 
+static char *field_IFAPI_TSS_EVENT_tab[] = {
+    "data",
+    "event",
+    "$schema"
+};
+
 /** Deserialize a IFAPI_TSS_EVENT json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -783,6 +807,8 @@ ifapi_json_IFAPI_TSS_EVENT_deserialize(json_object *jso,  IFAPI_TSS_EVENT *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_IFAPI_TSS_EVENT_tab[0],
+                                   SIZE_OF_ARY(field_IFAPI_TSS_EVENT_tab));
     if (!ifapi_get_sub_object(jso, "data", &jso2)) {
         LOG_ERROR("Field \"data\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -804,6 +830,14 @@ ifapi_json_IFAPI_TSS_EVENT_deserialize(json_object *jso,  IFAPI_TSS_EVENT *out)
     return TSS2_RC_SUCCESS;
 }
 
+static char *field_IFAPI_IMA_EVENT_tab[] = {
+    "eventData",
+    "eventdata",
+    "eventName",
+    "eventname",
+    "$schema"
+};
+
 /** Deserialize a IFAPI_IMA_EVENT json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -821,6 +855,8 @@ ifapi_json_IFAPI_IMA_EVENT_deserialize(json_object *jso,  IFAPI_IMA_EVENT *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_IFAPI_IMA_EVENT_tab[0],
+                                   SIZE_OF_ARY(field_IFAPI_IMA_EVENT_tab));
     if (!ifapi_get_sub_object(jso, "eventData", &jso2)) {
         LOG_ERROR("Field \"eventData\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -867,6 +903,15 @@ ifapi_json_IFAPI_EVENT_UNION_deserialize(
     };
 }
 
+static char *field_IFAPI_EVENT_tab[] = {
+    "recnum",
+    "pcr",
+    "digests",
+    "type",
+    "sub_event",
+    "$schema"
+};
+
 /** Deserialize a IFAPI_EVENT json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -884,6 +929,8 @@ ifapi_json_IFAPI_EVENT_deserialize(json_object *jso,  IFAPI_EVENT *out)
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    ifapi_check_json_object_fields(jso, &field_IFAPI_EVENT_tab[0],
+                                   SIZE_OF_ARY(field_IFAPI_EVENT_tab));
     if (!ifapi_get_sub_object(jso, "recnum", &jso2)) {
         LOG_ERROR("Field \"recnum\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
