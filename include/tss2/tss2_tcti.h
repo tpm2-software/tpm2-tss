@@ -53,6 +53,8 @@ typedef struct pollfd TSS2_TCTI_POLL_HANDLE;
 #elif defined(_WIN32)
 #include <windows.h>
 typedef HANDLE TSS2_TCTI_POLL_HANDLE;
+#elif defined(__ZEPHYR__)
+typedef void* TSS2_TCTI_POLL_HANDLE;
 #else
 typedef void TSS2_TCTI_POLL_HANDLE;
 #ifndef TSS2_TCTI_SUPPRESS_POLL_WARNINGS
