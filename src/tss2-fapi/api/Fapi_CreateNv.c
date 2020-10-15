@@ -442,6 +442,9 @@ Fapi_CreateNv_Finish(
             else
                 miscNv->with_auth = TPM2_NO;
 
+            /* NV objects will always be stored in the system store */
+            nvCmd->nv_object.system = TPM2_YES;
+
             /* Perform esys serialization if necessary */
             r = ifapi_esys_serialize_object(context->esys, &nvCmd->nv_object);
             goto_if_error(r, "Prepare serialization", error_cleanup);
