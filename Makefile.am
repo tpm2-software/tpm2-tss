@@ -515,6 +515,7 @@ EXTRA_DIST +=  \
     test/data/fapi/policy/pol_pcr16_0_or.json \
     test/data/fapi/policy/pol_pcr8_0.json \
     test/data/fapi/policy/pol_nv.json \
+    test/data/fapi/policy/pol_nv_counter.json \
     test/data/fapi/policy/pol_nv_written.json \
     test/data/fapi/policy/pol_signed.json \
     test/data/fapi/policy/pol_signed_ecc.json \
