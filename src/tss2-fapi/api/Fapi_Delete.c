@@ -373,6 +373,13 @@ Fapi_Delete_Async(
                                 &command->numPaths);
     goto_if_error(r, "get entities.", error_cleanup);
 
+    /* Check whether a path for exactly one policy was passed. */
+    if (command->numPaths == 0 && ifapi_path_type_p(path, IFAPI_POLICY_PATH)) {
+        command->numPaths = 1;
+        command->pathlist = calloc(1, sizeof(char *));
+        strdup_check(command->pathlist[0], path, r, error_cleanup);
+    }
+
     command->path_idx = command->numPaths;
 
     if (command->numPaths == 0) {
