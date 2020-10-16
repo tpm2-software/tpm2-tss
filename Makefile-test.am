@@ -311,6 +311,7 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-key-create-policy-signed.fint \
     test/integration/fapi-key-create-policy-signed-ecc.fint \
     test/integration/fapi-key-create-policy-nv-sign.fint \
+    test/integration/fapi-key-create-policy-nv-counter-sign.fint \
     test/integration/fapi-key-create-policy-or-sign.fint \
     test/integration/fapi-key-create-policy-password-sign.fint \
     test/integration/fapi-key-create-policy-countertimer-sign.fint \
@@ -1582,6 +1583,15 @@ test_integration_fapi_key_create_policy_nv_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_policy_nv_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-nv-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_key_create_policy_nv_counter_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_key_create_policy_nv_counter_sign_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_key_create_policy_nv_counter_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_nv_counter_sign_fint_SOURCES = \
+    test/integration/fapi-key-create-policy-nv-counter-sign.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+
 
 test_integration_fapi_key_create_policy_or_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_key_create_policy_or_sign_fint_LDADD   = $(TESTS_LDADD)
