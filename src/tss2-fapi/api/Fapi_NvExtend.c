@@ -427,6 +427,9 @@ Fapi_NvExtend_Finish(
                                                     JSON_C_TO_STRING_PRETTY),
             r, error_cleanup);
 
+        /* Set written bit in keystore */
+        context->nv_cmd.nv_object.misc.nv.public.nvPublic.attributes |= TPMA_NV_WRITTEN;
+
         /* Perform esys serialization if necessary */
         r = ifapi_esys_serialize_object(context->esys, &command->nv_object);
         goto_if_error(r, "Prepare serialization", error_cleanup);

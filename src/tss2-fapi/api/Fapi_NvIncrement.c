@@ -307,6 +307,9 @@ Fapi_NvIncrement_Finish(
         return_try_again(r);
         goto_if_error_reset_state(r, "FAPI NV_Increment_Finish", error_cleanup);
 
+        /* Set written bit in keystore */
+        context->nv_cmd.nv_object.misc.nv.public.nvPublic.attributes |= TPMA_NV_WRITTEN;
+
         /* Perform esys serialization if necessary */
         r = ifapi_esys_serialize_object(context->esys, &command->nv_object);
         goto_if_error(r, "Prepare serialization", error_cleanup);
