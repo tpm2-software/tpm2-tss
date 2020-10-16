@@ -1088,6 +1088,11 @@ keystore_search_obj(
         path = keystore->key_search.pathlist[path_idx];
         LOG_TRACE("Check file: %s %zu", path, keystore->key_search.path_idx);
 
+        /* Skip policy files. */
+        if (ifapi_path_type_p(path, IFAPI_POLICY_PATH)) {
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        }
+
         r = ifapi_keystore_load_async(keystore, io, path);
         return_if_error2(r, "Could not open: %s", path);
 
