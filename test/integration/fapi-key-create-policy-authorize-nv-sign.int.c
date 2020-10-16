@@ -194,6 +194,9 @@ test_fapi_key_create_policy_authorize_nv(FAPI_CONTEXT *context)
     assert(strlen(publicKey) > ASSERT_SIZE);
     assert(strlen(certificate) > ASSERT_SIZE);
 
+    r = Fapi_Delete(context, policy_authorize_nv);
+    goto_if_error(r, "Error Fapi_Delete", error);
+
     r = Fapi_Delete(context, nvPathPolicy);
     goto_if_error(r, "Error Fapi_NV_Undefine", error);
 
