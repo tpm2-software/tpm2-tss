@@ -1065,6 +1065,10 @@ ifapi_calculate_policy_nv(
 
     memset(&nv_name, 0, sizeof(TPM2B_NAME));
 
+    /* Written flag has to be set for policy calculation, because during
+       policy execution it will be set. */
+    policy->nvPublic.nvPublic.attributes |= TPMA_NV_WRITTEN;
+
     /* Compute NV name from public info */
 
     r = ifapi_nv_get_name(&policy->nvPublic, &nv_name);
