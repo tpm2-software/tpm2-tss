@@ -174,8 +174,11 @@ static char *field_TPMS_POLICYSIGNED_tab[] = {
     "$schema",
     "type",
     "policyDigests",
+    "policydigests",
     "nonceTPM",
-    "expiration"
+    "expiration",
+    "rsaScheme",
+    "rsascheme"
 };
 
 /** Deserialize a TPMS_POLICYSIGNED json object.
@@ -253,7 +256,15 @@ ifapi_json_TPMS_POLICYSIGNED_deserialize(json_object *jso,
         return_if_error(r, "Bad value for field \"keyPEMhashAlg\".");
     }
 
-    /* Check whether only one condition field found in policy. */
+    if (ifapi_get_sub_object(jso, "rsaScheme", &jso2)) {
+        r = ifapi_json_TPMT_RSA_SCHEME_deserialize(jso2, &out->rsaScheme);
+        return_if_error(r, "Bad value for field \"rsaScheme\".");
+    } else {
+        out->rsaScheme.scheme = TPM2_ALG_RSAPSS;
+        out->rsaScheme.details.rsapss.hashAlg = out->keyPEMhashAlg;
+    }
+
+        /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
         return_error(TSS2_FAPI_RC_BAD_VALUE,
                      "Exactly one conditional is allowed for policy signed.");
@@ -813,7 +824,9 @@ static char *field_TPMS_POLICYAUTHORIZE_tab[] = {
     "$schema",
     "type",
     "policyDigests",
-    "nonceTPM"
+    "nonceTPM",
+    "rsaScheme",
+    "rsascheme"
 };
 
 /** Deserialize a TPMS_POLICYAUTHORIZE json object.
@@ -884,10 +897,18 @@ ifapi_json_TPMS_POLICYAUTHORIZE_deserialize(json_object *jso,
     }
 
     if (!ifapi_get_sub_object(jso, "keyPEMhashAlg", &jso2)) {
-        out->keyPEMhashAlg = 0;
+        out->keyPEMhashAlg = TPM2_ALG_SHA256;
     } else {
         r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->keyPEMhashAlg);
         return_if_error(r, "Bad value for field \"keyPEMhashAlg\".");
+    }
+
+    if (ifapi_get_sub_object(jso, "rsaScheme", &jso2)) {
+        r = ifapi_json_TPMT_RSA_SCHEME_deserialize(jso2, &out->rsaScheme);
+        return_if_error(r, "Bad value for field \"rsaScheme\".");
+    } else {
+        out->rsaScheme.scheme = TPM2_ALG_RSAPSS;
+        out->rsaScheme.details.rsapss.hashAlg = out->keyPEMhashAlg;
     }
     /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
@@ -1303,7 +1324,14 @@ static char *field_TPMS_POLICYAUTHORIZATION_tab[] = {
     "signature",
     "$schema",
     "policyDigests",
-    "nonceTPM"
+    "nonceTPM",
+    "hashAlg",
+    "hashalg",
+    "rsaScheme",
+    "rsascheme",
+    "keyPEMhashAlg",
+    "keyPEM",
+    "rsaScheme"
 };
 
 /** Deserialize a TPMS_POLICYAUTHORIZATION json object.
@@ -1337,22 +1365,51 @@ ifapi_json_TPMS_POLICYAUTHORIZATION_deserialize(json_object *jso,
         LOG_ERROR("Field \"key\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_TPMT_PUBLIC_deserialize(jso2, &out->key);
-    return_if_error(r, "Bad value for field \"key\".");
 
-    if (!ifapi_get_sub_object(jso, "policyRef", &jso2)) {
-        LOG_ERROR("Field \"policyRef\" not found.");
-        return TSS2_FAPI_RC_BAD_VALUE;
-    }
-    r = ifapi_json_TPM2B_NONCE_deserialize(jso2, &out->policyRef);
-    return_if_error(r, "Bad value for field \"policyRef\".");
+    if (strcmp(out->type,"tpm") == 0) {
+        r = ifapi_json_TPMT_PUBLIC_deserialize(jso2, &out->key);
+        return_if_error(r, "Bad value for field \"key\".");
 
-    if (!ifapi_get_sub_object(jso, "signature", &jso2)) {
-        LOG_ERROR("Field \"signature\" not found.");
-        return TSS2_FAPI_RC_BAD_VALUE;
+        if (!ifapi_get_sub_object(jso, "signature", &jso2)) {
+            LOG_ERROR("Field \"signature\" not found.");
+            return TSS2_FAPI_RC_BAD_VALUE;
+        }
+        r = ifapi_json_TPMT_SIGNATURE_deserialize(jso2, &out->signature);
+        return_if_error(r, "Bad value for field \"signature\".");
+    } else if  (strcmp(out->type,"pem") == 0) {
+        r = ifapi_json_char_deserialize(jso2, &out->keyPEM);
+        return_if_error(r, "Bad value for field \"key\".");
+        if (ifapi_get_sub_object(jso, "keyPEMhashAlg", &jso2)) {
+            r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->keyPEMhashAlg);
+            return_if_error(r, "Bad value for field \"keyPEMhashAlg\".");
+        } else {
+            out->keyPEMhashAlg = TPM2_ALG_SHA256;
+        }
+        if (ifapi_get_sub_object(jso, "rsaScheme", &jso2)) {
+            r = ifapi_json_TPMT_RSA_SCHEME_deserialize(jso2, &out->rsaScheme);
+            return_if_error(r, "Bad value for field \"rsaScheme\".");
+        } else {
+            out->rsaScheme.scheme = TPM2_ALG_RSAPSS;
+            out->rsaScheme.details.rsapss.hashAlg = out->keyPEMhashAlg;
+        }
+        if (!ifapi_get_sub_object(jso, "signature", &jso2)) {
+            LOG_ERROR("Field \"signature\" not found.");
+            return TSS2_FAPI_RC_BAD_VALUE;
+        }
+        r = ifapi_json_UINT8_ARY_deserialize(jso2, &out->pemSignature);
+        return_if_error(r, "Bad value for field \"signature\".");
+
+    } else {
+        LOG_ERROR("Bad value for field \"type\" (should be: tpm or pem).");
+            return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_TPMT_SIGNATURE_deserialize(jso2, &out->signature);
-    return_if_error(r, "Bad value for field \"signature\".");
+
+    if (ifapi_get_sub_object(jso, "policyRef", &jso2)) {
+        r = ifapi_json_TPM2B_NONCE_deserialize(jso2, &out->policyRef);
+        return_if_error(r, "Bad value for field \"policyRef\".");
+    } else {
+        memset(&out->policyRef, 0, sizeof(TPM2B_NONCE));
+    }
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }

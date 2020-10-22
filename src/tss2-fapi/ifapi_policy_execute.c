@@ -14,7 +14,6 @@
 #include "tss2_mu.h"
 #include "fapi_util.h"
 #include "fapi_crypto.h"
-//#include "fapi_policy.h"
 #include "ifapi_policy_execute.h"
 #include "ifapi_helpers.h"
 #include "ifapi_json_deserialize.h"
@@ -659,7 +658,7 @@ execute_policy_authorize(
 
     statecase(current_policy->state, POLICY_VERIFY);
         r = Esys_VerifySignature_Finish(esys_ctx, &ticket);
-        try_again_or_error(r, "Load external key.");
+        try_again_or_error(r, "Verify signature.");
 
         /* Execute policy authorize */
         policy->checkTicket = *ticket;

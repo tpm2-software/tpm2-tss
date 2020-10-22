@@ -97,11 +97,7 @@ static const TPM2B_PUBLIC templateRsaSign = {
     .publicArea = {
         .type = TPM2_ALG_RSA,
         .nameAlg = TPM2_ALG_SHA1,
-        .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
-                             TPMA_OBJECT_SIGN_ENCRYPT |
-                             TPMA_OBJECT_RESTRICTED |
-                             TPMA_OBJECT_SENSITIVEDATAORIGIN
-                             ),
+        .objectAttributes = ( TPMA_OBJECT_SIGN_ENCRYPT ),
         .authPolicy = {
             .size = 0,
             .buffer = 0,
@@ -109,8 +105,6 @@ static const TPM2B_PUBLIC templateRsaSign = {
         .parameters.rsaDetail = {
             .symmetric = {
                 .algorithm = TPM2_ALG_NULL,
-                .keyBits.aes = 128,
-                .mode.aes = TPM2_ALG_CFB,
             },
             .scheme = {
                 .scheme = TPM2_ALG_RSAPSS,
@@ -134,21 +128,14 @@ static const TPM2B_PUBLIC templateEccSign = {
     .publicArea = {
         .type = TPM2_ALG_ECC,
         .nameAlg = TPM2_ALG_SHA1,
-        .objectAttributes = (
-                             TPMA_OBJECT_USERWITHAUTH |
-                             TPMA_OBJECT_RESTRICTED |
-                             TPMA_OBJECT_SIGN_ENCRYPT |
-                             TPMA_OBJECT_SENSITIVEDATAORIGIN
-                             ),
+        .objectAttributes = ( TPMA_OBJECT_SIGN_ENCRYPT ),
         .authPolicy = {
             .size = 0,
         },
 
         .parameters.eccDetail = {
             .symmetric = {
-                .algorithm = TPM2_ALG_NULL,
-                .keyBits.aes = 128,
-                .mode.aes = TPM2_ALG_ECB,
+                .algorithm = TPM2_ALG_NULL
             },
             .scheme = {
                 .scheme = TPM2_ALG_ECDSA,
