@@ -1134,6 +1134,10 @@ ifapi_cleanup_policy(TPMS_POLICY *policy)
         SAFE_FREE(policy->description);
         if (policy->policyAuthorizations) {
             for (size_t i = 0; i < policy->policyAuthorizations->count; i++) {
+                if (strcmp(policy->policyAuthorizations->authorizations[i].type, "pem") == 0) {
+                    SAFE_FREE(policy->policyAuthorizations->authorizations[i].keyPEM);
+                    SAFE_FREE(policy->policyAuthorizations->authorizations[i].pemSignature.buffer);
+                }
                 SAFE_FREE(policy->policyAuthorizations->authorizations[i].type);
             }
         }
@@ -1243,7 +1247,16 @@ copy_policyauthorization(TPMS_POLICYAUTHORIZATION * dest,
     }
     TSS2_RC r = TSS2_RC_SUCCESS;
     strdup_check(dest->type, src->type, r, error_cleanup);
+    strdup_check(dest->keyPEM, src->keyPEM, r, error_cleanup);
+    if (src->pemSignature.buffer) {
+        dest->pemSignature.buffer = malloc(src->pemSignature.size);
+        return_if_null(dest->pemSignature.buffer, "Out of memory.",
+                       TSS2_FAPI_RC_MEMORY);
 
+        dest->pemSignature.size = src->pemSignature.size;
+        memcpy(&dest->pemSignature.buffer[0], &src->pemSignature.buffer[0],
+               src->pemSignature.size);
+    }
     dest->key = src->key;
     dest->policyRef = src->policyRef;
     dest->signature = src->signature;

@@ -187,6 +187,12 @@ ifapi_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in,
         return_error(TSS2_FAPI_RC_BAD_VALUE,
                      "Exactly one conditional is allowed for policy signed.");
     }
+    jso2 = NULL;
+    r = ifapi_json_TPMT_RSA_SCHEME_serialize(&in->rsaScheme, &jso2);
+    return_if_error(r, "Serialize RSA scheme");
+
+    json_object_object_add(*jso, "rsaScheme", jso2);
+
     return TSS2_RC_SUCCESS;
 }
 
@@ -681,6 +687,12 @@ ifapi_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in,
         json_object_object_add(*jso, "keyPEMhashAlg", jso2);
     }
 
+    jso2 = NULL;
+    r = ifapi_json_TPMT_RSA_SCHEME_serialize(&in->rsaScheme, &jso2);
+    return_if_error(r, "Serialize RSA scheme");
+
+    json_object_object_add(*jso, "rsaScheme", jso2);
+
     return TSS2_RC_SUCCESS;
 }
 
@@ -1026,21 +1038,55 @@ ifapi_json_TPMS_POLICYAUTHORIZATION_serialize(
     return_if_error(r, "Serialize char");
 
     json_object_object_add(*jso, "type", jso2);
-    jso2 = NULL;
-    r = ifapi_json_TPMT_PUBLIC_serialize(&in->key, &jso2);
-    return_if_error(r, "Serialize TPMT_PUBLIC");
 
-    json_object_object_add(*jso, "key", jso2);
     jso2 = NULL;
     r = ifapi_json_TPM2B_NONCE_serialize(&in->policyRef, &jso2);
     return_if_error(r, "Serialize TPM2B_NONCE");
 
     json_object_object_add(*jso, "policyRef", jso2);
-    jso2 = NULL;
-    r = ifapi_json_TPMT_SIGNATURE_serialize(&in->signature, &jso2);
-    return_if_error(r, "Serialize TPMT_SIGNATURE");
 
-    json_object_object_add(*jso, "signature", jso2);
+    if (strcmp(in->type, "tpm") == 0) {
+        jso2 = NULL;
+        r = ifapi_json_TPMT_PUBLIC_serialize(&in->key, &jso2);
+        return_if_error(r, "Serialize TPMT_PUBLIC");
+
+        json_object_object_add(*jso, "key", jso2);
+        jso2 = NULL;
+
+        jso2 = NULL;
+        r = ifapi_json_TPMT_SIGNATURE_serialize(&in->signature, &jso2);
+        return_if_error(r, "Serialize TPMT_SIGNATURE");
+
+        json_object_object_add(*jso, "signature", jso2);
+    } else if (strcmp(in->type, "pem") == 0) {
+        jso2 = NULL;
+        r = ifapi_json_char_serialize(in->keyPEM, &jso2);
+        return_if_error(r, "Serialize TPMT_PUBLIC");
+
+        json_object_object_add(*jso, "key", jso2);
+        jso2 = NULL;
+
+        jso2 = NULL;
+        r = ifapi_json_UINT8_ARY_serialize(&in->pemSignature, &jso2);
+        return_if_error(r, "Serialize Signature");
+
+        json_object_object_add(*jso, "signature", jso2);
+
+        jso2 = NULL;
+        r = ifapi_json_TPMT_RSA_SCHEME_serialize(&in->rsaScheme, &jso2);
+        return_if_error(r, "Serialize RSA scheme");
+
+        json_object_object_add(*jso, "rsaScheme", jso2);
+
+        jso2 = NULL;
+        r = ifapi_json_TPMI_ALG_HASH_serialize(in->keyPEMhashAlg, &jso2);
+        return_if_error(r, "Serialize hash alg.");
+
+        json_object_object_add(*jso, "keyPEMhashAlg", jso2);
+    } else {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid key type.");
+    }
+
     return TSS2_RC_SUCCESS;
 }
 

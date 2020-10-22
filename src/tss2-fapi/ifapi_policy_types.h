@@ -7,6 +7,7 @@
 #define IFAPI_POLICY_TYPES_H
 
 #include "tss2_tpm2_types.h"
+#include "fapi_types.h"
 
 typedef UINT32 TPMI_POLICYTYPE;
 #define POLICYELEMENTS                 0
@@ -44,6 +45,7 @@ typedef struct {
     TPMT_PUBLIC                               keyPublic;    /**< None */
     char                                        *keyPEM;    /**< <p>The TPM2B_NAME is constructed with a TPMT_PUBLIC from this */
     TPMI_ALG_HASH                         keyPEMhashAlg;    /**< (optional) Default = SHA256 */
+    TPMT_RSA_SCHEME                           rsaScheme;    /**< (optional) Default = TPM2_ALG_RSAPSS */
     TPMT_SIGNATURE                        signature_tpm;
 } TPMS_POLICYSIGNED;
 
@@ -128,6 +130,10 @@ typedef struct {
     TPMT_PUBLIC                                     key;    /**< Selector of the algorithm used for the signature and the pub */
     TPM2B_NONCE                               policyRef;    /**< None */
     TPMT_SIGNATURE                            signature;    /**< None */
+    TPMI_ALG_HASH                         keyPEMhashAlg;
+    UINT8_ARY                              pemSignature;
+    char                                        *keyPEM;
+    TPMT_RSA_SCHEME                           rsaScheme;
 } TPMS_POLICYAUTHORIZATION;
 
 typedef struct policy_object_node POLICY_OBJECT;
@@ -143,6 +149,7 @@ typedef struct {
     TPMT_PUBLIC                               keyPublic;    /**< None */
     char                                        *keyPEM;    /**< <p> everyone in favour<br /> The TPM2B_NAME is constructed w */
     TPMI_ALG_HASH                         keyPEMhashAlg;    /**< (optional) Default = SHA256 */
+    TPMT_RSA_SCHEME                           rsaScheme;    /**< (optional) Default = TPM2_ALG_RSAPSS */
     POLICY_OBJECT                          *policy_list;
     TPMS_POLICYAUTHORIZATION             *authorization;
     TPMT_SIGNATURE                            signature;

@@ -92,6 +92,7 @@ ifapi_policyeval_instantiate_async(
 /** Compute name and public information format a PEM key.
  *
  * @param[in]  keyPEM The key in PEM format.
+ * @param[in]  sigScheme The signing scheme for RSA keys.
  * @param[out] keyPublic The public information of the PEM key.
  * @param[out] name the name computed from the public information.
  * @param[in]  hash_alg The name alg of the key has to passed.
@@ -105,6 +106,7 @@ ifapi_policyeval_instantiate_async(
 static TSS2_RC
 set_pem_key_param(
     const char *keyPEM,
+    TPMT_RSA_SCHEME *sigScheme,
     TPMT_PUBLIC *keyPublic,
     TPM2B_NAME *name,
     TPMI_ALG_HASH hash_alg)
@@ -124,11 +126,24 @@ set_pem_key_param(
     r = ifapi_initialize_sign_public(rsaOrEcc, &public);
     return_if_error(r, "Could not initialize public info of key");
 
+    if (rsaOrEcc == TPM2_ALG_RSA) {
+        public.publicArea.parameters.rsaDetail.scheme.scheme = sigScheme->scheme;
+        if (sigScheme->scheme == TPM2_ALG_RSAPSS) {
+            public.publicArea.parameters.rsaDetail.scheme.details.rsapss
+                = sigScheme->details.rsapss;
+        }
+        else if (sigScheme->scheme == TPM2_ALG_RSASSA) {
+            public.publicArea.parameters.rsaDetail.scheme.details.rsassa
+                = sigScheme->details.rsassa;
+        } else {
+            return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid signing scheme.");
+        }
+    }
+
     r = ifapi_get_tpm2b_public_from_pem(keyPEM, &public);
     return_if_error(r, "Invalid PEM key.");
-
+    public.publicArea.nameAlg = hash_alg;
     *keyPublic = public.publicArea;
-    keyPublic->nameAlg = hash_alg;
     r = ifapi_get_name(&public.publicArea, name);
     return_if_error(r, "Compute key name.");
 
@@ -192,6 +207,7 @@ ifapi_policyeval_instantiate_finish(
                 strlen(pol_element->element.PolicySigned.keyPEM) > 0) {
                 /* Determine name and public info for PEM key. */
                 r = set_pem_key_param(pol_element->element.PolicySigned.keyPEM,
+                                      &pol_element->element.PolicySigned.rsaScheme,
                                       &pol_element->element.PolicySigned.keyPublic,
                                       &pol_element->element.PolicySigned.publicKey,
                                       pol_element->element.PolicySigned.keyPEMhashAlg);
@@ -350,12 +366,14 @@ ifapi_policyeval_instantiate_finish(
                 strlen(pol_element->element.PolicyAuthorize.keyPEM) > 0) {
                 /* Determine name and public info for PEM key. */
                 r = set_pem_key_param(pol_element->element.PolicyAuthorize.keyPEM,
+                                      &pol_element->element.PolicyAuthorize.rsaScheme,
                                       &pol_element->element.PolicyAuthorize.keyPublic,
                                       &pol_element->element.PolicyAuthorize.keyName,
                                       pol_element->element.PolicyAuthorize.keyPEMhashAlg);
                 return_if_error(r, "Set parameter of pem key.");
 
-                pol_element->element.PolicyAuthorize.keyPEM = NULL;
+                /* PEM key is now stored in keyPublic. */
+                SAFE_FREE(pol_element->element.PolicyAuthorize.keyPEM);
 
                 break;
             }
