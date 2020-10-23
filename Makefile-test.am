@@ -304,6 +304,8 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-key-create-sign-password-provision.fint \
     test/integration/fapi-key-create-sign-rsa.fint \
     test/integration/fapi-key-create-policy-authorize-sign.fint \
+    test/integration/fapi-key-create-policy-authorize-rsa-pem-sign.fint \
+    test/integration/fapi-key-create-policy-authorize-ecc-pem-sign.fint \
     test/integration/fapi-key-create-policy-authorize-sign-rsa.fint \
     test/integration/fapi-key-create-policy-authorize-nv-sign.fint \
     test/integration/fapi-key-create-policy-secret-nv-sign.fint \
@@ -1531,6 +1533,21 @@ test_integration_fapi_key_create_policy_authorize_sign_fint_LDFLAGS = $(TESTS_LD
 test_integration_fapi_key_create_policy_authorize_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-authorize-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_key_create_policy_authorize_rsa_pem_sign_fint_CFLAGS  = $(TESTS_CFLAGS) -DFAPI_PROFILE=\"P_RSA\"
+test_integration_fapi_key_create_policy_authorize_rsa_pem_sign_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_key_create_policy_authorize_rsa_pem_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_authorize_rsa_pem_sign_fint_SOURCES = \
+    test/integration/fapi-key-create-policy-authorize-pem-sign.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_key_create_policy_authorize_ecc_pem_sign_fint_CFLAGS  = $(TESTS_CFLAGS) -DTEST_ECC
+test_integration_fapi_key_create_policy_authorize_ecc_pem_sign_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_key_create_policy_authorize_ecc_pem_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_authorize_ecc_pem_sign_fint_SOURCES = \
+    test/integration/fapi-key-create-policy-authorize-pem-sign.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
 
 test_integration_fapi_key_create_policy_authorize_sign_rsa_fint_CFLAGS  = $(TESTS_CFLAGS) \
     -DFAPI_PROFILE=\"P_RSA256\" -DFAPI_TEST_EK_CERT_LESS

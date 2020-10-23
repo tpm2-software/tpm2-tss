@@ -511,6 +511,8 @@ EXTRA_DIST +=  \
     test/data/fapi/P_RSA256.json \
     test/data/fapi/P_ECC.json \
     test/data/fapi/policy/pol_pcr16_0.json \
+    test/data/fapi/policy/pol_pcr16_0_rsa_authorized.json \
+    test/data/fapi/policy/pol_pcr16_0_ecc_authorized.json \
     test/data/fapi/policy/pol_pcr16_0_fail.json \
     test/data/fapi/policy/pol_pcr16_0_or.json \
     test/data/fapi/policy/pol_pcr8_0.json \
@@ -520,6 +522,8 @@ EXTRA_DIST +=  \
     test/data/fapi/policy/pol_signed.json \
     test/data/fapi/policy/pol_signed_ecc.json \
     test/data/fapi/policy/pol_authorize.json \
+    test/data/fapi/policy/pol_authorize_rsa_pem.json \
+    test/data/fapi/policy/pol_authorize_ecc_pem.json \
     test/data/fapi/policy/pol_authorize_outer.json \
     test/data/fapi/policy/pol_authorize_nv.json \
     test/data/fapi/policy/pol_secret.json \
