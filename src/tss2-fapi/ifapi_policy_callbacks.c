@@ -712,6 +712,27 @@ ifapi_sign_buffer(
     return TSS2_RC_SUCCESS;
 }
 
+static bool
+cmp_policy_ref(TPM2B_NONCE *ref1, TPM2B_NONCE *ref2)
+{
+    if ((!ref1 || !ref1->size) && (!ref2 || !ref2->size)) {
+        return true;
+    }
+    if (!ref1 || !ref1->size || !ref2 || !ref2->size)  {
+        return false;
+    }
+
+    if (ref1->size != ref2->size) {
+        return false;
+    }
+
+    if (memcmp(&ref1->buffer[0], &ref2->buffer[0], ref1->size) != 0) {
+        return false;
+    }
+
+    return true;
+}
+
 /**  Check whether public data of key is assigned to policy.
  *
  * It will be checked whether policy was authorized by abort key with public
@@ -719,26 +740,29 @@ ifapi_sign_buffer(
  *
  * @param[in] policy The policy to be checked.
  * @param[in] publicVoid The public information of the key.
- * @param[in] nameAlgVoid Not used for this compare function.
+ * @param[in] policyReferenceVoid The policy reverence to be compared.
  * @param[out] equal Switch whether check was successful.
  */
 static TSS2_RC
 equal_policy_authorization(
     TPMS_POLICY *policy,
     void *publicVoid,
-    void *nameAlgVoid,
+    void *policyRefVoid,
     bool *equal)
 {
     TPMT_PUBLIC *public = publicVoid;
-    (void)nameAlgVoid;
+    TPM2B_NONCE *policyRef = policyRefVoid;
     size_t i;
     TPML_POLICYAUTHORIZATIONS *authorizations = policy->policyAuthorizations;
 
     *equal = false;
+
     if (authorizations) {
         for (i = 0; i < authorizations->count; i++) {
-            if (ifapi_TPMT_PUBLIC_cmp
-                (public, &authorizations->authorizations[i].key)) {
+            /* Check public information if key and policyRef */
+            if (ifapi_TPMT_PUBLIC_cmp(public, &authorizations->authorizations[i].key) &&
+                cmp_policy_ref(policyRef,
+                               &authorizations->authorizations[i].policyRef)) {
                 *equal = true;
                 return TSS2_RC_SUCCESS;
             }
@@ -1005,6 +1029,7 @@ get_policy_signature(
     for (i = 0; i < policy->policyAuthorizations->count; i++) {
         if (ifapi_TPMT_PUBLIC_cmp(public,
                                   &policy->policyAuthorizations->authorizations[i].key)) {
+            /* The public info was already stored in the policy. */
             *signature = policy->policyAuthorizations->authorizations[i].signature;
             return TSS2_RC_SUCCESS;
         }
@@ -1075,6 +1100,7 @@ ifapi_exec_auth_policy(
     TPMT_PUBLIC *key_public,
     TPMI_ALG_HASH hash_alg,
     TPM2B_DIGEST *digest,
+    TPM2B_NONCE *policyRef,
     TPMT_SIGNATURE *signature,
     void *userdata)
 {
@@ -1113,7 +1139,7 @@ ifapi_exec_auth_policy(
         statecase(cb_ctx->cb_state, POL_CB_SEARCH_POLICY)
             r = search_policy(fapi_ctx,
                               equal_policy_authorization, true,
-                              key_public, NULL,
+                              key_public, policyRef,
                               &current_policy->policy_list);
             FAPI_SYNC(r, "Search policy", cleanup);
 
