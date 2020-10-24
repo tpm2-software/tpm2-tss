@@ -77,6 +77,7 @@ typedef TSS2_RC (*ifapi_policyexec_cbauthpol) (
     TPMT_PUBLIC *key_public,
     TPMI_ALG_HASH hash_alg,
     TPM2B_DIGEST *digest,
+    TPM2B_NONCE *policyRef,
     TPMT_SIGNATURE *signature,
     void *userdata);
 
