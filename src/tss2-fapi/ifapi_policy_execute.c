@@ -608,6 +608,7 @@ execute_policy_authorize(
         /* Execute authorized policy. */
         ifapi_policyeval_EXEC_CB *cb = &current_policy->callbacks;
         r = cb->cbauthpol(&policy->keyPublic, hash_alg, &policy->approvedPolicy,
+                          &policy->policyRef,
                           &policy->signature, cb->cbauthpol_userdata);
         return_try_again(r);
         goto_if_error(r, "Execute authorized policy.", cleanup);
