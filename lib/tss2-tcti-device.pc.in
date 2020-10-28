@@ -8,5 +8,5 @@ Description: TCTI library for communicating with a TPM device node.
 URL: https://github.com/tpm2-software/tpm2-tss
 Version: @VERSION@
 Requires.private: tss2-mu
-Cflags: -I${includedir} -I${includedir}/tss
+Cflags: -I${includedir} -I${includedir}/tss2
 Libs: -ltss2-tcti-device -L${libdir}

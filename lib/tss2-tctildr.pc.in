@@ -7,5 +7,5 @@ Name: tss2-tctildr
 Description: Library to simplify management of TCTIs.
 URL: https://github.com/tpm2-software/tpm2-tss
 Version: @VERSION@
-Cflags: -I@includedir@ -I${includedir}/tss
+Cflags: -I@includedir@ -I${includedir}/tss2
 Libs: -ltss2-tctildr -L@libdir@

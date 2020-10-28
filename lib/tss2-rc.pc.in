@@ -7,5 +7,5 @@ Name: tss2-rc
 Description: TPM2 error decoding library.
 URL: https://github.com/tpm2-software/tpm2-tss
 Version: @VERSION@
-Cflags: -I${includedir} -I${includedir}/tss
+Cflags: -I${includedir} -I${includedir}/tss2
 Libs: -ltss2-rc -L${libdir}
