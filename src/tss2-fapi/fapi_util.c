@@ -3203,6 +3203,9 @@ ifapi_key_create(
         r = ifapi_get_name(&outPublic->publicArea, &object->misc.key.name);
         goto_if_error(r, "Get key name", error_cleanup);
 
+        SAFE_FREE(outPrivate);
+        SAFE_FREE(outPublic);
+
         if (object->misc.key.public.publicArea.type == TPM2_ALG_RSA)
             object->misc.key.signing_scheme = context->cmd.Key_Create.profile->rsa_signing_scheme;
         else
@@ -3215,10 +3218,16 @@ ifapi_key_create(
             r = ifapi_authorize_object(context, &context->loadKey.auth_object, &auth_session);
             FAPI_SYNC(r, "Authorize key.", error_cleanup);
 
+            TPM2B_PRIVATE private;
+            private.size = object->misc.key.private.size;
+            memcpy(&private.buffer[0], &object->misc.key.private.buffer[0],
+                   private.size);
+
             r = Esys_Load_Async(context->esys, context->loadKey.handle,
                                 auth_session,
                                 ESYS_TR_NONE, ESYS_TR_NONE,
-                                outPrivate, outPublic);
+                                &private,
+                                &object->misc.key.public);
             goto_if_error(r, "Load key.", error_cleanup);
 
         }
@@ -3302,9 +3311,6 @@ ifapi_key_create(
         fallthrough;
 
     statecase(context->cmd.Key_Create.state, KEY_CREATE_WRITE_PREPARE);
-        SAFE_FREE(outPrivate);
-        SAFE_FREE(outPublic);
-
         if (template->persistent_handle) {
             /* Compute the serialization, which will be used for the
                reconstruction of the key object. */
