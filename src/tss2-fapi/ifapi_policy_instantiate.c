@@ -35,6 +35,10 @@ get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_
     TSS2_RC r = TSS2_RC_SUCCESS;
     size_t i, j;
 
+    if (!policy) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Bad policy pointer");
+    }
+
     for (i = 0; i < policy->count; i++) {
         if (policy->elements[i].type == POLICYOR) {
             /* Policy with sub policies */
