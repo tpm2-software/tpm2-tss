@@ -603,6 +603,7 @@ ifapi_keystore_load_async(
     return r;
 
  error_cleanup:
+    SAFE_FREE(abs_path);
     SAFE_FREE(keystore->rel_path);
     return r;
 }
