@@ -622,9 +622,8 @@ Fapi_Import_Finish(
     ifapi_cleanup_ifapi_object(&command->object);
     if (command->private) {
         SAFE_FREE(command->private);
-        if (newObject)
-            /* Private buffer was already freed. */
-            newObject->misc.key.private.buffer = NULL;
+        /* Private buffer was already freed. */
+        newObject->misc.key.private.buffer = NULL;
     }
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     if (context->loadKey.key_object){
