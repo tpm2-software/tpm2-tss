@@ -8,34 +8,34 @@ compiler:
 env:
   matrix:
    # ubuntu 18.04
-  - DOCKER_TAG=ubuntu-18.04
+  - DOCKER_IMAGE=ubuntu-18.04
    # ubuntu 20.04
-  - DOCKER_TAG=ubuntu-20.04
+  - DOCKER_IMAGE=ubuntu-20.04
     # fedora-32
-  - DOCKER_TAG=fedora-32
+  - DOCKER_IMAGE=fedora-32
    # opensuse-leap
-  - DOCKER_TAG=opensuse-leap
+  - DOCKER_IMAGE=opensuse-leap
 
 matrix:
   include:
   # scan build check
-  - env: DOCKER_TAG=fedora-32 SCANBUILD=yes
+  - env: DOCKER_IMAGE=fedora-32 SCANBUILD=yes
     compiler: clang
   # check config for different tcti targets
-  - env: DOCKER_TAG=fedora-32 TEST_TCTI_CONFIG=true
+  - env: DOCKER_IMAGE=fedora-32 TEST_TCTI_CONFIG=true
     compiler: gcc
-  - env: DOCKER_TAG=ubuntu-20.04
+  - env: DOCKER_IMAGE=ubuntu-20.04
     compiler: clang
   # mbedTLS testing
-  - env: DOCKER_TAG=ubuntu-20.04 WITH_CRYPTO=mbed
+  - env: DOCKER_IMAGE=ubuntu-20.04 WITH_CRYPTO=mbed
     compiler: gcc
-  - env: DOCKER_TAG=fedora-32 WITH_TCTI=mssim
+  - env: DOCKER_IMAGE=fedora-32 WITH_TCTI=mssim
     compiler: gcc
   # coverage check
-  - env: DOCKER_TAG=ubuntu-18.04 ENABLE_COVERAGE=true
+  - env: DOCKER_IMAGE=ubuntu-18.04 ENABLE_COVERAGE=true
     compiler: gcc
   # check fuzz targets
-  - env: DOCKER_TAG=fedora-32 GEN_FUZZ=1 CXX=clang++ CC=clang
+  - env: DOCKER_IMAGE=fedora-32 GEN_FUZZ=1 CXX=clang++ CC=clang
     compiler: clang
 
 script:

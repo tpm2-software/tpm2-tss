@@ -2,10 +2,10 @@
 
 set -e
 
-# if no DOCKER_TAG is set, warn and default to fedora-32
-if [ -z "$DOCKER_TAG" ]; then
-  echo "WARN: DOCKER_TAG is not set, defaulting to fedora-32"
-  export DOCKER_TAG="fedora-32"
+# if no DOCKER_IMAGE is set, warn and default to fedora-32
+if [ -z "$DOCKER_IMAGE" ]; then
+  echo "WARN: DOCKER_IMAGE is not set, defaulting to fedora-32"
+  export DOCKER_IMAGE="fedora-32"
 fi
 
   #
@@ -22,7 +22,7 @@ if [ "$TRAVIS_BRANCH" != "coverity_scan" ]; then
   # Do normal CI script
   ci_env=$(bash <(curl -s https://codecov.io/env))
   docker run --cap-add SYS_PTRACE $ci_env --env-file .ci/docker.env \
-    -v "$(pwd):/workspace/tpm2-tss" "tpm2software/tpm2-tss:$DOCKER_TAG" \
+    -v "$(pwd):/workspace/tpm2-tss" "ghcr.io/tpm2-software/$DOCKER_IMAGE" \
     /bin/bash -c '/workspace/tpm2-tss/.ci/docker.run'
 
     exit 0
@@ -52,7 +52,7 @@ mv cov-analysis-* cov-analysis
 
 # perform the scan
 docker run --env-file .ci/docker.env \
-  -v "$(pwd):/workspace/tpm2-tss" "tpm2software/tpm2-tss:$DOCKER_TAG" \
+  -v "$(pwd):/workspace/tpm2-tss" "ghcr.io/tpm2-software/$DOCKER_IMAGE" \
   /bin/bash -c '/workspace/tpm2-tss/.ci/coverity.run'
 
 # upload the results
