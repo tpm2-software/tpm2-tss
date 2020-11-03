@@ -61,8 +61,7 @@ ifapi_check_valid_path(
  * @retval TSS2_FAPI_RC_MEMORY: If memory for the path list could not be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE If no explicit path can be derived from the
  *         implicit path.
- * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
- *         during authorization.
+ * @retval TSS2_FAPI_RC_BAD_PATH if no valid key path could be created.
  */
 static TSS2_RC
 initialize_explicit_key_path(
@@ -119,7 +118,7 @@ initialize_explicit_key_path(
         hierarchy = "HS";
     } else {
         LOG_ERROR("Hierarchy cannot be determined.");
-        r = TSS2_FAPI_RC_PATH_NOT_FOUND;
+        r = TSS2_FAPI_RC_BAD_PATH;
         goto error;
     }
     /* Add the used hierarchy to the linked list. */
@@ -129,7 +128,7 @@ initialize_explicit_key_path(
         goto error;
     }
     if (list_node == NULL) {
-        goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND, "Explicit path can't be determined.",
+        goto_error(r, TSS2_FAPI_RC_BAD_PATH, "Explicit path can't be determined.",
                    error);
     }
 
@@ -141,21 +140,21 @@ initialize_explicit_key_path(
     }
 
     if (hierarchy && strcmp(hierarchy, "HS") == 0 && strcmp(list_node->str, "EK") == 0) {
-        LOG_ERROR("Key EK cannot be create in the storage hierarchy.");
-        r = TSS2_FAPI_RC_PATH_NOT_FOUND;
+        LOG_ERROR("Key EK cannot be created in the storage hierarchy.");
+        r = TSS2_FAPI_RC_BAD_PATH;
         goto error;
     }
 
     if (hierarchy && strcmp(hierarchy, "HE") == 0 && strcmp(list_node->str, "SRK") == 0) {
         LOG_ERROR("Key EK cannot be create in the endorsement hierarchy.");
-        r = TSS2_FAPI_RC_PATH_NOT_FOUND;
+        r = TSS2_FAPI_RC_BAD_PATH;
         goto error;
     }
 
     if (hierarchy && strcmp(hierarchy, "HN") == 0 &&
         (strcmp(list_node->str, "SRK") == 0 || strcmp(list_node->str, "EK") == 0)) {
         LOG_ERROR("Key EK and SRK cannot be created in NULL hierarchy.");
-        r = TSS2_FAPI_RC_PATH_NOT_FOUND;
+        r = TSS2_FAPI_RC_BAD_PATH;
         goto error;
     }
 
