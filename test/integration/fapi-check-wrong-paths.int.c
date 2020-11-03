@@ -53,7 +53,7 @@ test_fapi_wrong_path(FAPI_CONTEXT *context)
         goto error;
     }
 
-    if (r !=  TSS2_FAPI_RC_PATH_NOT_FOUND) {
+    if (r !=  TSS2_FAPI_RC_BAD_PATH) {
         goto_if_error(r, "Wrong return code", error);
     }
 
@@ -64,7 +64,7 @@ test_fapi_wrong_path(FAPI_CONTEXT *context)
         goto error;
     }
 
-    if (r !=  TSS2_FAPI_RC_PATH_NOT_FOUND) {
+    if (r !=  TSS2_FAPI_RC_BAD_PATH) {
         goto_if_error(r, "Wrong return code", error);
     }
 
@@ -75,7 +75,7 @@ test_fapi_wrong_path(FAPI_CONTEXT *context)
         goto error;
     }
 
-    if (r !=  TSS2_FAPI_RC_PATH_NOT_FOUND) {
+    if (r !=  TSS2_FAPI_RC_BAD_PATH) {
         goto_if_error(r, "Error Fapi_CreateKey", error);
     }
 
@@ -86,7 +86,7 @@ test_fapi_wrong_path(FAPI_CONTEXT *context)
         goto error;
     }
 
-    if (r !=  TSS2_FAPI_RC_PATH_NOT_FOUND) {
+    if (r !=  TSS2_FAPI_RC_BAD_PATH) {
         goto_if_error(r, "Error Fapi_CreateNv", error);
     }
 
