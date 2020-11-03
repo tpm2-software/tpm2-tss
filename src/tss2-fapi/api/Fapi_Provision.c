@@ -374,6 +374,11 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 
         statecase(context->state, PROVISION_READ_HIERARCHY);
             path = command->pathlist[command->path_idx];
+            if (path == NULL) {
+                goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Wrong path.",
+                           error_cleanup);
+            }
+
             r = ifapi_keystore_load_finish(&context->keystore, &context->io,
                                            &command->hierarchies[command->path_idx]);
             return_try_again(r);
@@ -381,6 +386,11 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 
             /* Search for slash followed by hierarchy after profile  */
             path = strchr(&path[1], '/');
+            if (path == NULL) {
+                goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
+                           "Wrong path.",
+                           error_cleanup);
+            }
 
             /* Use the first appropriate hierarchy for provisioning. The first found
                hierarchy will be copied into the provisioning context.*/
