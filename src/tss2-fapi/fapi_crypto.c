@@ -1640,6 +1640,11 @@ get_crl_from_cert(X509 *cert, X509_CRL **crl)
         }
     }
 
+    /* No CRL dist point in the cert is legitimate */
+    if (url == NULL) {
+        goto cleanup;
+    }
+
     curl_rc = ifapi_get_curl_buffer(url, &crl_buffer, &crl_buffer_size);
     if (curl_rc != 0) {
         goto_error(r, TSS2_FAPI_RC_NO_CERT, "Get crl.", cleanup);
