@@ -1554,23 +1554,24 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  FAPI functions to invoke SetAuthCB.
  \{
  \fn Fapi_SetAuthCB(FAPI_CONTEXT *context, Fapi_CB_Auth callback,  void *userData)
- \typedef (*Fapi_CB_Auth)(FAPI_CONTEXT *context, char const *description, char **auth,  void *userData)
+ \typedef (*Fapi_CB_Auth)(char const *objectPath, char const *description, char **auth,  void *userData)
  \}
  \defgroup Fapi_SetBranchCB Fapi_SetBranchCB
  FAPI functions to invoke SetBranchCB.
  \{
  \fn Fapi_SetBranchCB(FAPI_CONTEXT *context, Fapi_CB_Branch callback,  void *userData)
- \typedef (*Fapi_CB_Branch)(FAPI_CONTEXT *context, char const *description, char const **branchNames, size_t numBranches, size_t *selectedBranch, void *userData)
+ \typedef (*Fapi_CB_Branch)(char const *objectPath, char const *description, char const **branchNames, size_t numBranches, size_t *selectedBranch, void *userData)
  \}
  \defgroup Fapi_SetSignCB Fapi_SetSignCB
  FAPI functions to invoke SetSignCB.
  \{
  \fn Fapi_SetSignCB(FAPI_CONTEXT *context, Fapi_CB_Sign callback, void *userData)
- \typedef (*Fapi_CB_Sign)(FAPI_CONTEXT *context, char const *description, char const *publicKey, char const *publicKeyHint, uint32_t hashAlg, uint8_t const *dataToSign, size_t dataToSignSize, uint8_t **signature, size_t *signatureSize,  void *userData)
+ \typedef (*Fapi_CB_Sign)(char const *objectPath, char const *description, char const *publicKey, char const *publicKeyHint, uint32_t hashAlg, uint8_t const *dataToSign, size_t dataToSignSize, uint8_t **signature, size_t *signatureSize,  void *userData)
  \fn Fapi_SetPolicyActionCB(
     FAPI_CONTEXT        *context,
     Fapi_CB_PolicyAction callback,
     void                *userData)
+   \typedef TSS2_RC (*Fapi_CB_PolicyAction)(char const *objectPath, char cnst *action, void *userData)
  \}
  \}
 */
