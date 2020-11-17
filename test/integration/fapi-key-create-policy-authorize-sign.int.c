@@ -129,9 +129,26 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     char *certificate = NULL;
     char *pathList = NULL;
 
+    r = Fapi_List(context, "/", &pathList);
+    if (r != TSS2_FAPI_RC_NOT_PROVISIONED) {
+        LOG_ERROR("It was not detected that provisioning was not made");
+        goto error;
+    }
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
+
+    r = Fapi_List(context, "/P_DOES_NOT_EXIST", &pathList);
+    if (r != TSS2_FAPI_RC_NOT_PROVISIONED) {
+        LOG_ERROR("It was not detected that provisioning was not made");
+        goto error;
+    }
+
+    r = Fapi_List(context, "/SRK/DOES_NOT_EXIST", &pathList);
+    if (r != TSS2_FAPI_RC_PATH_NOT_FOUND) {
+        LOG_ERROR("It was not detected that provisioning was not made");
+        goto error;
+    }
 
     r = pcr_reset(context, 16);
     goto_if_error(r, "Error pcr_reset", error);
