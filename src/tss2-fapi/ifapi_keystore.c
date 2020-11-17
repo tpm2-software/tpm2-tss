@@ -510,6 +510,7 @@ rel_path_to_abs_path(
 {
     TSS2_RC r;
     char *directory = NULL;
+    bool provision_check_ok;
 
     /* First expand path in user directory  */
     r = expand_path(keystore, rel_path, &directory);
@@ -530,6 +531,19 @@ rel_path_to_abs_path(
         if (ifapi_io_path_exists(*abs_path)) {
             r = TSS2_RC_SUCCESS;
             goto cleanup;
+        }
+
+        /* Check whether provisioning was made for the path profile. */
+        r = ifapi_check_provisioned(keystore, rel_path, &provision_check_ok);
+        goto_if_error(r, "Provisioning check.", cleanup);
+
+        if (provision_check_ok) {
+            goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND,
+            "Path not found: %s.", cleanup, rel_path);
+        } else {
+            goto_error(r, TSS2_FAPI_RC_NOT_PROVISIONED,
+                       "FAPI not provisioned for path: %s.",
+                       cleanup, rel_path);
         }
 
         /* Check type of object which does not exist. */
@@ -1768,4 +1782,66 @@ ifapi_cleanup_ifapi_object(
             object->objectType = IFAPI_OBJ_NONE;
         }
     }
+}
+
+/** Check whether profile directory exists for a fapi path.
+ *
+ * It will be checked whether a profile directory exists for a path which starts
+ * with a profile name after fapi pathname expansion.
+ *
+ * @param[in] keystore The key directories and default profile.
+ * @param[in] rel_path The relative path to be checked.
+ * @param[out] ok The boolean value whether the check ok.
+ * @retval TSS2_RC_SUCCESS if the check could be made.
+ * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to compute
+ * the absolute paths.
+ */
+TSS2_RC
+ifapi_check_provisioned(
+    IFAPI_KEYSTORE *keystore,
+    const char *rel_path,
+    bool *ok)
+{
+    TSS2_RC r = TSS2_RC_SUCCESS;
+    char *directory = NULL;
+    char *profile_dir = NULL;
+    char *end_profile;
+
+    *ok = false;
+
+    /* First expand path in user directory  */
+    r = expand_path(keystore, rel_path, &directory);
+    goto_if_error(r, "Expand path", cleanup);
+
+    /* Check whether the path starts with a profile. */
+    if (directory && (strncmp(directory, "P_", 2) != 0 || strncmp(directory, "/P_", 2) != 0)) {
+        end_profile = strchr(&directory[1], '/');
+        if (end_profile) {
+            end_profile[0] = '\0';
+        }
+        /* Compute user path of the profile. */
+        r = ifapi_asprintf(&profile_dir, "%s/%s", keystore->userdir, directory);
+        goto_if_error2(r, "Profile path could not be created.", cleanup);
+
+         if (ifapi_io_path_exists(profile_dir)) {
+             *ok = true;
+             goto cleanup;
+         }
+         /* Compute system path of the profile. */
+         SAFE_FREE(profile_dir);
+         r = ifapi_asprintf(&profile_dir, "%s/%s", keystore->systemdir, directory);
+         goto_if_error2(r, "Profile path could not be created.", cleanup);
+
+         if (ifapi_io_path_exists(profile_dir)) {
+             *ok = true;
+             goto cleanup;
+         }
+    } else {
+        /* No check needed because no profile found in the path. */
+        *ok = true;
+    }
+ cleanup:
+    SAFE_FREE(profile_dir);
+    SAFE_FREE(directory);
+    return r;
 }
