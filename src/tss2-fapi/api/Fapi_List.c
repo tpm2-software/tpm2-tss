@@ -169,6 +169,7 @@ Fapi_List_Finish(
     char        **pathList)
 {
     LOG_TRACE("called for context:%p", context);
+    bool provision_check_ok;
 
     TSS2_RC r = TSS2_RC_SUCCESS;
     size_t sizePathList = 0;
@@ -188,7 +189,7 @@ Fapi_List_Finish(
     goto_if_error(r, "get entities.", cleanup);
 
     if (numPaths == 0)
-        goto cleanup;
+        goto check_provisioning;
 
     /* Determine size of char string to be returnded */
     for (size_t i = 0; i < numPaths; i++)
@@ -208,18 +209,29 @@ Fapi_List_Finish(
             strcat(*pathList, IFAPI_LIST_DELIM);
     }
 
+ check_provisioning:
+    if (numPaths == 0 && (r == TSS2_RC_SUCCESS)) {
+        if (command->searchPath && (strcmp(command->searchPath,"/") == 0
+                                    || strcmp(command->searchPath,"") == 0)) {
+            LOG_WARNING("Path not found: %s", command->searchPath);
+            r = TSS2_FAPI_RC_NOT_PROVISIONED;
+        } else {
+            r = ifapi_check_provisioned(&context->keystore, command->searchPath, &provision_check_ok);
+            goto_if_error(r, "Provisioning check.", cleanup);
+
+            if (provision_check_ok) {
+                LOG_WARNING("Path not found: %s", command->searchPath);
+                r = TSS2_FAPI_RC_PATH_NOT_FOUND;
+            } else {
+                LOG_WARNING("Profile of path not provisioned: %s", command->searchPath);
+                r = TSS2_FAPI_RC_NOT_PROVISIONED;
+            }
+        }
+    }
     LOG_TRACE("finished");
 
 cleanup:
     /* Cleanup any intermediate results and state stored in the context. */
-    if (numPaths == 0 && (r == TSS2_RC_SUCCESS)) {
-        if (command->searchPath && strcmp(command->searchPath,"/") !=0
-            && strcmp(command->searchPath,"") !=0) {
-            LOG_WARNING("Path not found: %s", command->searchPath);
-        } else {
-            LOG_WARNING("FAPI not provisioned.");
-        }
-    }
     if (numPaths > 0) {
         for (size_t i = 0; i < numPaths; i++){
             SAFE_FREE(pathArray[i]);
