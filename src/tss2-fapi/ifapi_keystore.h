@@ -280,4 +280,10 @@ void
 ifapi_cleanup_ifapi_object(
     IFAPI_OBJECT *object);
 
+TSS2_RC
+ifapi_check_provisioned(
+    IFAPI_KEYSTORE *keystore,
+    const char *rel_path,
+    bool *ok);
+
 #endif /* IFAPI_KEYSTORE_H */

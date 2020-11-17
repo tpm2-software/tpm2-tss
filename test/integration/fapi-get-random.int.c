@@ -42,6 +42,7 @@ test_fapi_get_random(FAPI_CONTEXT *context)
     size_t  bytesRequested = sizeof(TPMU_HA) + 10;
     uint8_t *randomBytes = NULL;
 
+
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
