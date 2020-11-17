@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [3.0.2-rc1] - 2020-11-17
+### Changed or Fixed
+- FAPI: Fix policy searching, when a policyRef was provided
+- FAPI: Accept EK-Certs without CRL dist point
+- FAPI: Fix return codes of Fapi_List
+- FAPI: Fix memleak in policy execution
+- FAPI: Fix coverity NULL-pointer check
+
 ## [3.0.2-rc0] - 2020-10-30
 ### Changed or Fixed
 - FAPI: Fix setting of the system flag of NV objects
