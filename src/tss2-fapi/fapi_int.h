@@ -660,9 +660,15 @@ typedef struct {
 /** The data structure holding internal state of export policy.
  */
 typedef struct {
-    char   const *path;                          /**< Path of the object with the policy to be
-                                                      exported */
-    IFAPI_OBJECT object;                         /**< Object corresponding to path */
+    char   const  *path;                          /**< Path of the object with the policy to be
+                                                       exported */
+    IFAPI_OBJECT  object;                         /**< Object corresponding to path */
+    TPMS_POLICY   policy;                         /**< Policy from store be exported */
+    TPMI_ALG_HASH hashAlg;                        /**< Index of profile used for digest computation. */
+    size_t        profile_idx;                    /**< hashAlg used for policy digest computation. */
+    bool         compute_policy;                  /**< Switch whether computation of the
+                                                       policy for the default name hash alg
+                                                       is needed. */
 } IFAPI_ExportPolicy;
 
 /** The data structure holding internal state of import key.
@@ -1074,6 +1080,8 @@ enum _FAPI_STATE {
     POLICY_EXPORT_READ_OBJECT_FINISH,
     POLICY_EXPORT_READ_POLICY,
     POLICY_EXPORT_READ_POLICY_FINISH,
+    POLICY_EXPORT_CHECK_DIGEST,
+    POLICY_EXPORT_COMPUTE_POLICY_DIGEST,
 
     VERIFY_QUOTE_READ,
 
