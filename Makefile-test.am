@@ -294,6 +294,7 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-data-crypt-rsa.fint \
     test/integration/fapi-data-crypt-rsa-persistent.fint \
     test/integration/fapi-duplicate.fint \
+    test/integration/fapi-export-policy.fint \
     test/integration/fapi-ext-public-key.fint \
     test/integration/fapi-get-esys-blobs.fint \
     test/integration/fapi-get-random.fint \
@@ -1736,6 +1737,13 @@ test_integration_fapi_nv_written_policy_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_nv_written_policy_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_nv_written_policy_fint_SOURCES = \
     test/integration/fapi-nv-written-policy.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_export_policy_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_export_policy_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_export_policy_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_export_policy_fint_SOURCES = \
+    test/integration/fapi-export-policy.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_ext_public_key_fint_CFLAGS  = $(TESTS_CFLAGS) \
