@@ -128,10 +128,9 @@ iesys_cryptossl_hash_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Error EVP_MD_CTX_create", cleanup);
     }
 
-    if (1 != EVP_DigestInit_ex(mycontext->hash.ossl_context,
-                               mycontext->hash.ossl_hash_alg,
-                               NULL)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Errror EVP_DigestInit_ex", cleanup);
+    if (1 != EVP_DigestInit(mycontext->hash.ossl_context,
+                               mycontext->hash.ossl_hash_alg)) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Errror EVP_DigestInit", cleanup);
     }
 
     *context = (IESYS_CRYPTO_CONTEXT_BLOB *) mycontext;
@@ -233,13 +232,13 @@ iesys_cryptossl_hash_finish(IESYS_CRYPTO_CONTEXT_BLOB ** context,
         return_error(TSS2_ESYS_RC_BAD_SIZE, "Buffer too small");
     }
 
-    if (1 != EVP_DigestFinal_ex(mycontext->hash.ossl_context, buffer, &digest_size)) {
+    if (1 != EVP_DigestFinal(mycontext->hash.ossl_context, buffer, &digest_size)) {
         return_error(TSS2_ESYS_RC_GENERAL_FAILURE, "Ossl error.");
     }
 
     if (digest_size != mycontext->hash.hash_len) {
         return_error(TSS2_ESYS_RC_GENERAL_FAILURE,
-                     "Invalid size computed by EVP_DigestFinal_ex");
+                     "Invalid size computed by EVP_DigestFinal");
     }
 
     LOGBLOB_TRACE(buffer, mycontext->hash.hash_len, "read hash result");
@@ -1005,11 +1004,11 @@ iesys_cryptossl_sym_aes_encrypt(uint8_t * key,
                    "Initialize cipher context", cleanup);
     }
 
-    if (1 != EVP_EncryptInit_ex(ctx, cipher_alg, NULL, key, iv)) {
+    if (1 != EVP_EncryptInit(ctx, cipher_alg,key, iv)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Initialize cipher operation", cleanup);
     }
-    if (1 != EVP_EncryptInit_ex(ctx, NULL, NULL, key, iv)) {
+    if (1 != EVP_EncryptInit(ctx, NULL, key, iv)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Set key and iv", cleanup);
     }
 
@@ -1018,7 +1017,7 @@ iesys_cryptossl_sym_aes_encrypt(uint8_t * key,
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt update", cleanup);
     }
 
-    if (1 != EVP_EncryptFinal_ex(ctx, buffer, &cipher_len)) {
+    if (1 != EVP_EncryptFinal(ctx, buffer, &cipher_len)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt final", cleanup);
     }
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS AES output");
@@ -1093,12 +1092,12 @@ iesys_cryptossl_sym_aes_decrypt(uint8_t * key,
 
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS AES input");
 
-    if (1 != EVP_DecryptInit_ex(ctx, cipher_alg, NULL, key, iv)) {
+    if (1 != EVP_DecryptInit(ctx, cipher_alg, key, iv)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Initialize cipher operation", cleanup);
     }
 
-    if (1 != EVP_DecryptInit_ex(ctx, NULL, NULL, key, iv)) {
+    if (1 != EVP_DecryptInit(ctx, NULL, key, iv)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Set key and iv", cleanup);
     }
 
@@ -1107,7 +1106,7 @@ iesys_cryptossl_sym_aes_decrypt(uint8_t * key,
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt update", cleanup);
     }
 
-    if (1 != EVP_DecryptFinal_ex(ctx, buffer, &cipher_len)) {
+    if (1 != EVP_DecryptFinal(ctx, buffer, &cipher_len)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt final", cleanup);
     }
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS AES output");
