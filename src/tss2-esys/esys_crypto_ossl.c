@@ -1094,10 +1094,6 @@ iesys_cryptossl_sym_aes_decrypt(uint8_t * key,
                    "Initialize cipher operation", cleanup);
     }
 
-    if (1 != EVP_DecryptInit(ctx, NULL, key, iv)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Set key and iv", cleanup);
-    }
-
     /* Perform the decryption */
     if (1 != EVP_DecryptUpdate(ctx, buffer, &cipher_len, buffer, buffer_size)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt update", cleanup);
