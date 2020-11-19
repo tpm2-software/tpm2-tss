@@ -116,6 +116,8 @@ ifapi_calculate_tree(
         r = ifapi_policyeval_instantiate_finish(&context->policy.eval_ctx);
         FAPI_SYNC(r, "Instantiate policy.", cleanup);
         ifapi_free_node_list(context->policy.eval_ctx.policy_elements);
+        context->policy.eval_ctx.policy_elements = NULL;
+
         if (!(*hash_size = ifapi_hash_get_digest_size(hash_alg))) {
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                        "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
@@ -151,6 +153,8 @@ ifapi_calculate_tree(
     statecasedefault(context->policy.state);
     }
 cleanup:
+    ifapi_free_node_list(context->policy.eval_ctx.policy_elements);
+    context->policy.eval_ctx.policy_elements = NULL;
     context->policy.state = POLICY_INIT;
     return r;
 }
