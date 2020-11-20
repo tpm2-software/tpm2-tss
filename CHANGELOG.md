@@ -3,20 +3,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [3.0.2-rc1] - 2020-11-17
-### Changed or Fixed
-- FAPI: Fix policy searching, when a policyRef was provided
-- FAPI: Accept EK-Certs without CRL dist point
-- FAPI: Fix return codes of Fapi_List
-- FAPI: Fix memleak in policy execution
-- FAPI: Fix coverity NULL-pointer check
-
-## [3.0.2-rc0] - 2020-10-30
+## [3.0.2] - 2020-11-20
 ### Changed or Fixed
 - FAPI: Fix setting of the system flag of NV objects
   This will let NV object metadata be created system-wide always instead of
   locally in the user. Existing metadata will remain in the user directory.
   It can be moved to the corresponding systemstore manually if needed.
+- FAPI: Fix policy searching, when a policyRef was provided
+- FAPI: Accept EK-Certs without CRL dist point
+- FAPI: Fix return codes of Fapi_List
+- FAPI: Fix memleak in policy execution
+- FAPI: Fix coverity NULL-pointer check
 - FAPI: Set the written flag of NV objects in FAPI PolicyNV commands
 - FAPI: Fix deleting of policy files.
 - FAPI: Fix wrong file loading during object search.
