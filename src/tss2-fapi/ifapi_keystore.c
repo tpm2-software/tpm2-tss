@@ -537,10 +537,7 @@ rel_path_to_abs_path(
         r = ifapi_check_provisioned(keystore, rel_path, &provision_check_ok);
         goto_if_error(r, "Provisioning check.", cleanup);
 
-        if (provision_check_ok) {
-            goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND,
-            "Path not found: %s.", cleanup, rel_path);
-        } else {
+        if (!provision_check_ok) {
             goto_error(r, TSS2_FAPI_RC_NOT_PROVISIONED,
                        "FAPI not provisioned for path: %s.",
                        cleanup, rel_path);
