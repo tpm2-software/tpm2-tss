@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [2.4.5-rc0] - 2020-11-23
+### Changed or Fixed
+- Fix Regression in Fapi_List
+- Fix memory leak in policy calculation
+
 ## [2.4.4] - 2020-11-20
 ### Changed or Fixed
 - FAPI: Fix policy searching, when a policyRef was provided
