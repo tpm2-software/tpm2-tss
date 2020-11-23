@@ -676,7 +676,7 @@ execute_policy_authorize(
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH);
         r = Esys_PolicyAuthorize_Finish(esys_ctx);
-        try_again_or_error(r, "Load external key.");
+        try_again_or_error(r, "Execute PolicyAuthorize.");
 
         r = Esys_FlushContext_Async(esys_ctx, current_policy->object_handle);
         goto_if_error(r, "FlushContext_Async", cleanup);
