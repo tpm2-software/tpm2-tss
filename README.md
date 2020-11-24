@@ -14,31 +14,31 @@
 This repository hosts source code implementing the Trusted Computing Group's (TCG) TPM2 Software Stack (TSS).
 This stack consists of the following layers from top to bottom:
 
-* Feature API (FAPI) as described in the [TSS 2.0 Feature API Specification](https://trustedcomputinggroup.org/wp-content/uploads/TSS_FAPI_v0.94_r04_pubrev.pdf)
-along with [TSS 2.0 JSON Data Types and Policy Language Specification](https://trustedcomputinggroup.org/wp-content/uploads/TSS_JSON_Policy_v0.7_r04_pubrev.pdf)
+* Feature API (FAPI) as described in the [TCG Feature API (FAPI) Specification](https://trustedcomputinggroup.org/wp-content/uploads/TSS_FAPI_v0p94_r09_pub.pdf)
+along with [TCG TSS 2.0 JSON Data Types and Policy Language Specification](https://trustedcomputinggroup.org/wp-content/uploads/TSS_JSON_Policy_v0p7_r08_pub.pdf)
 This API is designed to be very high-level API, intended to make programming with the TPM as simple as possible.
 The API functions are exposed through a single library: libtss2-fapi.
-* Enhanced System API (ESAPI) as described in the [TSS 2.0 Enhanced System API (ESAPI) Specification](https://trustedcomputinggroup.org/wp-content/uploads/TSS_ESAPI_v1p00_r05_published.pdf).
+* Enhanced System API (ESAPI) as described in the [TCG TSS 2.0 Enhanced System API (ESAPI) Specification](https://trustedcomputinggroup.org/wp-content/uploads/TSS_ESAPI_v1p0_r08_pub.pdf)
 This API is a 1-to-1 mapping of the TPM2 commands documented in Part 3 of the TPM2 specification.
 Additionally there are asynchronous versions of each command.
 In addition to SAPI, the ESAPI performs tracking of meta data for TPM object and automatic calculation of session based authorization and encryption values.
 Both the synchronous and asynchronous API are exposed through a single library: libtss2-esys.
-* System API (SAPI) as described in the [system level API and TPM command transmission interface specification](http://www.trustedcomputinggroup.org/resources/tss_system_level_api_and_tpm_command_transmission_interface_specification).
+* System API (SAPI) as described in the [TCG TSS 2.0 System Level API (SAPI) Specification](https://trustedcomputinggroup.org/wp-content/uploads/TSS_SAPI_v1p1_r29_pub_20190806.pdf)
 This API is a 1-to-1 mapping of the TPM2 commands documented in Part 3 of the TPM2 specification.
 Additionally there are asynchronous versions of each command.
 These asynchronous variants may be useful for integration into event-driven programming environments.
 Both the synchronous and asynchronous API are exposed through a single library: libtss2-sys.
-* Marshaling/Unmarshaling (MU) as described in the [TCG TSS 2.0 Marshaling/Unmarshaling API Specification](https://trustedcomputinggroup.org/wp-content/uploads/TSS_Marshaling_Unmarshaling_API_Version-1.0_Revision-04_review_ENDS030918.pdf).
+* Marshaling/Unmarshaling (MU) as described in the [TCG TSS 2.0 Marshaling/Unmarshaling API Specification](https://trustedcomputinggroup.org/wp-content/uploads/TCG_TSS_Marshaling_Unmarshaling_API_v1p0_r07_pub.pdf)
 This API provides a set of marshaling and unmarshaling functions for all data types define by the TPM library specification.
 The Marshaling/Unmarshaling API is exposed through a library called libtss2-mu.
-* TPM Command Transmission Interface (TCTI) that is described in the same specification.
+* TPM Command Transmission Interface (TCTI) as described in the [TCG TSS 2.0 TPM Command Transmission Interface (TCTI) API Specification](https://trustedcomputinggroup.org/wp-content/uploads/TCG_TSS_TCTI_v1p0_r18_pub.pdf).
 This API provides a standard interface to transmit / receive TPM command / response buffers.
 It is expected that any number of libraries implementing the TCTI API will be implemented as a way to abstract various platform specific IPC mechanisms.
-Currently this repository provides four TCTI implementations: libtss2-tcti-device,
+Currently this repository provides several TCTI implementations: libtss2-tcti-device,
 libtss2-tcti-tbs (for Windows), libtss2-tcti-swtpm and libtss2-tcti-mssim.
 The former should be used for direct access to the TPM through the Linux kernel driver.
 The latter implements the protocol exposed by the Microsoft software TPM2 simulator.
-* The [TCG TSS 2.0 Overview and Common Structures Specification](https://trustedcomputinggroup.org/wp-content/uploads/TSS_Overview_Common_Structures_Version-0.9_Revision-03_Review_030918.pdf) forms the basis for all implementations in this project. NOTE: We deviate from this draft of the specification by increasing the value of TPM2_NUM_PCR_BANKS from 3 to 16 to ensure compatibility with TPM2 implementations that have enabled a larger than typical number of PCR banks. This larger value for TPM2_NUM_PCR_BANKS is expected to be included in a future revision of the specification.
+* The [TCG TSS 2.0 Overview and Common Structures Specification](https://trustedcomputinggroup.org/wp-content/uploads/TCG_TSS_Overview_Common_Structures_v0.9_r03_published.pdf) forms the basis for all implementations in this project. NOTE: We deviate from this specification by increasing the value of TPM2_NUM_PCR_BANKS from 3 to 16 to ensure compatibility with TPM2 implementations that have enabled a larger than typical number of PCR banks. This larger value for TPM2_NUM_PCR_BANKS is expected to be included in a future revision of the specification.
 
 # Build and Installation Instructions:
 Instructions to build and install tpm2-tss are available in the [INSTALL](INSTALL.md) file.
