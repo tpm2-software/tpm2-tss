@@ -53,60 +53,60 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
         out->profile_dir = NULL;
     } else {
         r = ifapi_json_char_deserialize(jso2, &out->profile_dir);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"profile_dir\".");
     }
 
     if (!ifapi_get_sub_object(jso, "user_dir", &jso2)) {
         out->user_dir = NULL;
     } else {
         r = ifapi_json_char_deserialize(jso2, &out->user_dir);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"user_dir\".");
     }
 
     if (!ifapi_get_sub_object(jso, "system_dir", &jso2)) {
         out->keystore_dir = NULL;
     } else {
         r = ifapi_json_char_deserialize(jso2, &out->keystore_dir);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"keystore_dir\".");
     }
 
     if (!ifapi_get_sub_object(jso, "log_dir", &jso2)) {
         out->log_dir = DEFAULT_LOG_DIR;
     } else {
         r = ifapi_json_char_deserialize(jso2, &out->log_dir);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"log_dir\".");
     }
 
     if (!ifapi_get_sub_object(jso, "profile_name", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"profile_name\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_char_deserialize(jso2, &out->profile_name);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"profile_name\".");
     if (!ifapi_get_sub_object(jso, "tcti", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"tcti\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_char_deserialize(jso2, &out->tcti);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"tcti\".");
 
     if (!ifapi_get_sub_object(jso, "system_pcrs", &jso2)) {
-        LOG_ERROR("Bad value");
+        LOG_ERROR("Field \"system_pcrs\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_TPML_PCR_SELECTION_deserialize(jso2, &out->system_pcrs);
-    return_if_error(r, "BAD VALUE");
+    return_if_error(r, "Bad value for field \"system_pcrs\".");
 
     if (!ifapi_get_sub_object(jso, "ek_cert_file", &jso2)) {
         out->ek_cert_file = NULL;
     } else {
         r = ifapi_json_char_deserialize(jso2, &out->ek_cert_file);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"ek_cert_file\".");
     }
 
     if (ifapi_get_sub_object(jso, "ek_cert_less", &jso2)) {
         r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->ek_cert_less);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"ek_cert_less\".");
 
     } else {
         out->ek_cert_less = TPM2_NO;
@@ -114,7 +114,7 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
 
     if (ifapi_get_sub_object(jso, "ek_fingerprint", &jso2)) {
         r = ifapi_json_TPMT_HA_deserialize(jso2, &out->ek_fingerprint);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"ek_fingerprint\".");
     } else {
         out->ek_fingerprint.hashAlg = 0;
     }
@@ -123,7 +123,7 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
         out->intel_cert_service = NULL;
     } else {
         r = ifapi_json_char_deserialize(jso2, &out->intel_cert_service);
-        return_if_error(r, "BAD VALUE");
+        return_if_error(r, "Bad value for field \"intel_cert_service\".");
     }
 
     LOG_TRACE("true");
