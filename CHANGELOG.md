@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [3.0.3-rc0] - 2020-11-23
+## [3.0.3] - 2020-11-25
 ### Changed or Fixed
 - Fix Regression in Fapi_List
 - Fix memory leak in policy calculation
