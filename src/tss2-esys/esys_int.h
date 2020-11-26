@@ -43,6 +43,11 @@ typedef struct {
 } CreatePrimary_IN;
 
 typedef struct {
+    TPM2B_SENSITIVE_CREATE *inSensitive;
+    TPM2B_SENSITIVE_CREATE inSensitiveData;
+} Create_IN;
+
+typedef struct {
     ESYS_TR saveHandle;
 } ContextSave_IN;
 
@@ -112,6 +117,7 @@ typedef struct {
 typedef union {
     StartAuthSession_IN StartAuthSession;
     CreatePrimary_IN CreatePrimary;
+    Create_IN Create;
     ContextSave_IN ContextSave;
     ContextLoad_IN ContextLoad;
     Load_IN Load;

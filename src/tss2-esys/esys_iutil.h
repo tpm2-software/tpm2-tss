@@ -167,6 +167,10 @@ TSS2_RC iesys_get_name(
 bool iesys_tpm_error(
     TSS2_RC r);
 
+TSS2_RC iesys_hash_long_auth_values(
+    TPM2B_AUTH *auth_value,
+    TPMI_ALG_HASH hash_alg);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

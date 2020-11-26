@@ -73,6 +73,11 @@ test_esys_nv_ram_counter(ESYS_CONTEXT * esys_context)
     TPM2B_AUTH auth = {.size = 20,
                        .buffer={10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
                                 20, 21, 22, 23, 24, 25, 26, 27, 28, 29}};
+#ifdef TEST_LARGE_AUTH
+     for (int i = 0; i < 33; i++)
+        auth.buffer[i] = i;
+     auth.size = 33;
+#endif
 
     TPM2B_NV_PUBLIC publicInfo = {
         .size = 0,

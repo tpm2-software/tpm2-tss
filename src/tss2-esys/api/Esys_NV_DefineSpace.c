@@ -197,7 +197,14 @@ Esys_NV_DefineSpace_Async(
     /* Check input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
+
     store_input_parameters(esysContext, auth, publicInfo);
+
+    if (publicInfo) {
+        r = iesys_hash_long_auth_values(esysContext->in.NV.auth,
+                                        publicInfo->nvPublic.nameAlg);
+        return_state_if_error(r, _ESYS_STATE_INIT, "Adapt auth value.");
+    }
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, authHandle, &authHandleNode);
@@ -206,8 +213,8 @@ Esys_NV_DefineSpace_Async(
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_NV_DefineSpace_Prepare(esysContext->sys,
                                         (authHandleNode == NULL) ? TPM2_RH_NULL
-                                         : authHandleNode->rsrc.handle, auth,
-                                        publicInfo);
+                                        : authHandleNode->rsrc.handle,
+                                        esysContext->in.NV.auth, publicInfo);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */

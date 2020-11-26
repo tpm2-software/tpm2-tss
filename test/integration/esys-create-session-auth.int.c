@@ -80,6 +80,12 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
         .buffer = {1, 2, 3, 4, 5}
     };
 
+#ifdef TEST_LARGE_AUTH
+    for (int i = 0; i < 33; i++)
+        authValuePrimary.buffer[i] = i;
+    authValuePrimary.size = 33;
+#endif
+
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
         .size = 0,
         .sensitive = {
@@ -304,6 +310,12 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
         .size = 6,
         .buffer = {6, 7, 8, 9, 10, 11}
     };
+
+#ifdef TEST_LARGE_AUTH
+    for (int i = 0; i < 33; i++)
+        authKey2.buffer[i] = i;
+    authKey2.size = 33;
+#endif
 
     TPM2B_SENSITIVE_CREATE inSensitive2 = {
         .size = 0,

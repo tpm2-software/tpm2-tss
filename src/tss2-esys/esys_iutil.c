@@ -1554,3 +1554,55 @@ iesys_tpm_error(TSS2_RC r)
              (r & TSS2_RC_LAYER_MASK) == TSS2_RESMGR_TPM_RC_LAYER ||
              (r & TSS2_RC_LAYER_MASK) == TSS2_RESMGR_RC_LAYER));
 }
+
+
+/** Replace auth value with Hash for long auth values.
+ *
+ * if the size of auth value exceeds hash_size the auth value
+ * will be replaced with the hash of the auth value.
+ *
+ * @param[in,out] auth_value The auth value to be adapted.
+ * @param[in] hash_alg The hash alg used for adaption.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_VALUE if an invalid hash is passed.
+ * @retval TSS2_ESYS_RC_MEMORY if the ESAPI cannot allocate enough memory.
+ * @retval TSS2_ESYS_RC_GENERAL_FAILURE for a failure during digest
+ *         computation.
+ */
+TSS2_RC
+iesys_hash_long_auth_values(
+    TPM2B_AUTH *auth_value,
+    TPMI_ALG_HASH hash_alg)
+{
+    TSS2_RC r;
+    IESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    TPM2B_AUTH hash2b;
+    size_t hash_size;
+
+    r = iesys_crypto_hash_get_digest_size(hash_alg, &hash_size);
+    return_if_error(r, "Get digest size.");
+
+    if (auth_value && auth_value->size > hash_size) {
+        /* The auth value has to be adapted. */
+        r = iesys_crypto_hash_start(&cryptoContext, hash_alg);
+        return_if_error(r, "crypto hash start");
+
+        r = iesys_crypto_hash_update(cryptoContext, &auth_value->buffer[0],
+                                     auth_value->size);
+        goto_if_error(r, "crypto hash update", error_cleanup);
+
+        r = iesys_crypto_hash_finish(&cryptoContext, &hash2b.buffer[0],
+                                     &hash_size);
+        goto_if_error(r, "crypto hash finish", error_cleanup);
+
+        memcpy(&auth_value->buffer[0], &hash2b.buffer[0], hash_size);
+        auth_value->size = hash_size;
+    }
+    return r;
+
+ error_cleanup:
+    if (cryptoContext) {
+        iesys_crypto_hash_abort(&cryptoContext);
+    }
+    return r;
+}
