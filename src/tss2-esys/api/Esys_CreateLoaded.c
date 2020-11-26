@@ -180,6 +180,8 @@ Esys_CreateLoaded_Async(
               esysContext, parentHandle, inSensitive, inPublic);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *parentHandleNode;
+    size_t offset = 0;
+    TPMT_PUBLIC publicArea;
 
     /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
@@ -196,6 +198,17 @@ Esys_CreateLoaded_Async(
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
     store_input_parameters(esysContext, inSensitive, inPublic);
 
+    if (inPublic) {
+        r = Tss2_MU_TPMT_PUBLIC_Unmarshal(&inPublic->buffer[0], inPublic->size, &offset,
+                                          &publicArea);
+        return_if_error(r, "Unmarshalling inPublic failed");
+
+        r = iesys_hash_long_auth_values(
+            &esysContext->in.CreateLoaded.inSensitive->sensitive.userAuth,
+             publicArea.nameAlg);
+        return_state_if_error(r, _ESYS_STATE_INIT, "Adapt auth value.");
+    }
+
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, parentHandle, &parentHandleNode);
     return_state_if_error(r, _ESYS_STATE_INIT, "parentHandle unknown.");
@@ -204,7 +217,7 @@ Esys_CreateLoaded_Async(
     r = Tss2_Sys_CreateLoaded_Prepare(esysContext->sys,
                                       (parentHandleNode == NULL) ? TPM2_RH_NULL
                                        : parentHandleNode->rsrc.handle,
-                                      inSensitive, inPublic);
+                                      esysContext->in.CreateLoaded.inSensitive, inPublic);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */

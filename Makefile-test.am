@@ -194,6 +194,7 @@ ESYS_TESTS_INTEGRATION_MANDATORY = \
     test/integration/esys-create-session-auth-bound.int \
     test/integration/esys-create-session-auth-ecc.int \
     test/integration/esys-create-session-auth.int \
+    test/integration/esys-create-session-auth-long.int \
     test/integration/esys-create-session-auth-xor.int \
     test/integration/esys-ecc-parameters.int \
     test/integration/esys-ecdh-zgen.int \
@@ -213,6 +214,7 @@ ESYS_TESTS_INTEGRATION_MANDATORY = \
     test/integration/esys-make-credential-session.int \
     test/integration/esys-nv-ram-counter.int \
     test/integration/esys-nv-ram-counter-session.int \
+    test/integration/esys-nv-ram-counter-session-long-auth.int \
     test/integration/esys-nv-ram-extend-index.int \
     test/integration/esys-nv-ram-extend-index-session.int \
     test/integration/esys-nv-ram-ordinary-index-rlock.int \
@@ -882,6 +884,15 @@ test_integration_esys_create_session_auth_int_SOURCES = \
     test/integration/esys-create-session-auth.int.c \
     test/integration/main-esys.c test/integration/test-esys.h
 
+test_integration_esys_create_session_auth_long_int_CFLAGS  = $(TESTS_CFLAGS) \
+    -DTEST_AES_ENCRYPTION -DTEST_LARGE_AUTH $(TSS2_ESYS_CFLAGS_CRYPTO)
+test_integration_esys_create_session_auth_long_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_create_session_auth_long_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO)
+test_integration_esys_create_session_auth_long_int_SOURCES = \
+    $(ESYS_SRC_UTIL_CRYPTO_SRC) \
+    test/integration/esys-create-session-auth.int.c \
+    test/integration/main-esys.c test/integration/test-esys.h
+
 test_integration_esys_create_session_auth_bound_int_CFLAGS  = $(TESTS_CFLAGS) \
     -DTEST_AES_ENCRYPTION -DTEST_BOUND_SESSION $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_integration_esys_create_session_auth_bound_int_LDADD   = $(TESTS_LDADD)
@@ -1106,6 +1117,15 @@ test_integration_esys_nv_ram_counter_session_int_CFLAGS  = $(TESTS_CFLAGS) \
 test_integration_esys_nv_ram_counter_session_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_nv_ram_counter_session_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO)
 test_integration_esys_nv_ram_counter_session_int_SOURCES = \
+    $(ESYS_SRC_UTIL_CRYPTO_SRC) \
+    test/integration/esys-nv-ram-counter.int.c \
+    test/integration/main-esys.c test/integration/test-esys.h
+
+test_integration_esys_nv_ram_counter_session_long_auth_int_CFLAGS  = $(TESTS_CFLAGS) \
+    -DTEST_LONG_AUTH -DTEST_SESSION $(TSS2_ESYS_CFLAGS_CRYPTO)
+test_integration_esys_nv_ram_counter_session_long_auth_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_nv_ram_counter_session_long_auth_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO)
+test_integration_esys_nv_ram_counter_session_long_auth_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-nv-ram-counter.int.c \
     test/integration/main-esys.c test/integration/test-esys.h

@@ -207,6 +207,12 @@ Esys_CreatePrimary_Async(
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
     store_input_parameters (esysContext, inSensitive);
+    if (inPublic) {
+        r = iesys_hash_long_auth_values(
+            &esysContext->in.CreatePrimary.inSensitive->sensitive.userAuth,
+             inPublic->publicArea.nameAlg);
+        return_state_if_error(r, _ESYS_STATE_INIT, "Adapt auth value.");
+    }
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, primaryHandle, &primaryHandleNode);
@@ -216,7 +222,8 @@ Esys_CreatePrimary_Async(
     r = Tss2_Sys_CreatePrimary_Prepare(esysContext->sys,
                                        (primaryHandleNode == NULL) ? TPM2_RH_NULL
                                         : primaryHandleNode->rsrc.handle,
-                                       inSensitive, inPublic, outsideInfo,
+                                       esysContext->in.CreatePrimary.inSensitive,
+                                       inPublic, outsideInfo,
                                        creationPCR);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 

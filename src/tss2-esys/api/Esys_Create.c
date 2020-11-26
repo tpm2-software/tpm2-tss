@@ -19,6 +19,20 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
+/** Store sensitive data inside the ESYS_CONTEXT */
+static void store_input_parameters (
+        ESYS_CONTEXT *esysContext,
+        const TPM2B_SENSITIVE_CREATE *inSensitive)
+{
+    if (inSensitive == NULL) {
+        esysContext->in.Create.inSensitive = NULL;
+    } else {
+        esysContext->in.Create.inSensitiveData = *inSensitive;
+        esysContext->in.Create.inSensitive =
+            &esysContext->in.Create.inSensitiveData;
+    }
+}
+
 /** One-Call function for TPM2_Create
  *
  * This function invokes the TPM2_Create command in a one-call
@@ -190,6 +204,14 @@ Esys_Create_Async(
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
 
+    store_input_parameters (esysContext, inSensitive);
+    if (inPublic) {
+        r = iesys_hash_long_auth_values(
+           &esysContext->in.Create.inSensitive->sensitive.userAuth,
+            inPublic->publicArea.nameAlg);
+        return_state_if_error(r, _ESYS_STATE_INIT, "Adapt auth value.");
+    }
+
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, parentHandle, &parentHandleNode);
     return_state_if_error(r, _ESYS_STATE_INIT, "parentHandle unknown.");
@@ -197,7 +219,8 @@ Esys_Create_Async(
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_Create_Prepare(esysContext->sys,
                                 (parentHandleNode == NULL) ? TPM2_RH_NULL
-                                 : parentHandleNode->rsrc.handle, inSensitive,
+                                 : parentHandleNode->rsrc.handle,
+                                esysContext->in.Create.inSensitive,
                                 inPublic, outsideInfo, creationPCR);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
