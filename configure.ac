@@ -474,6 +474,7 @@ AS_IF([test "x$enable_defaultflags" = "xyes"],
       AS_IF([test "x$ax_is_release" = "xno"],
           [ADD_COMPILER_FLAG([-Werror])])
       ADD_COMPILER_FLAG([-fstack-protector-all])
+      ADD_COMPILER_FLAG([-Wno-error=address-of-packed-member])
       ADD_COMPILER_FLAG([-fpic])
       ADD_COMPILER_FLAG([-fPIC])
       # work around GCC bug #53119
