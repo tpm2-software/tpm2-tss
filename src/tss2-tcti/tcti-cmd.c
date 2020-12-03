@@ -442,6 +442,7 @@ TSS2_RC tcti_cmd_get_poll_handles (TSS2_TCTI_CONTEXT *tctiContext,
             LOG_ERROR ("Could not get fileno: %s", strerror (errno));
             return TSS2_TCTI_RC_IO_ERROR;
         }
+        handles->events = POLLIN | POLLOUT;
     }
 
     return TSS2_RC_SUCCESS;
