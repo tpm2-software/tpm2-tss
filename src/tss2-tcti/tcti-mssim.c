@@ -288,6 +288,7 @@ tcti_mssim_get_poll_handles (
 #else
         handles->fd = tcti_mssim->tpm_sock;
 #endif
+        handles->events = POLLIN | POLLOUT;
     }
 
     return TSS2_RC_SUCCESS;
