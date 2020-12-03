@@ -351,6 +351,7 @@ tcti_device_get_poll_handles (
     *num_handles = 1;
     if (handles != NULL) {
         handles->fd = tcti_dev->fd;
+        handles->events = POLLIN | POLLOUT;
     }
 
     return TSS2_RC_SUCCESS;
