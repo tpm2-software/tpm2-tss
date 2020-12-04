@@ -13,8 +13,11 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <assert.h>
 #include <string.h>
+#include <ctype.h>
+#include <json-c/json.h>
+#include <json-c/json_util.h>
+
 
 #include "tss2_fapi.h"
 
@@ -115,16 +118,16 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
                   &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
-    assert(signature != NULL);
-    assert(publicKey != NULL);
-    assert(certificate != NULL);
-    assert(strlen(publicKey) > ASSERT_SIZE);
-    assert(strlen(certificate) > ASSERT_SIZE);
+    ASSERT(signature != NULL);
+    ASSERT(publicKey != NULL);
+    ASSERT(certificate != NULL);
+    ASSERT(strlen(publicKey) > ASSERT_SIZE);
+    ASSERT(strlen(certificate) > ASSERT_SIZE);
 
     r = Fapi_ExportPolicy(context, "HS/SRK/mySignKey", &policy);
     goto_if_error(r, "Error Fapi_ExportPolicy", error);
-    assert(policy != NULL);
-    assert(strlen(policy) > ASSERT_SIZE);
+    ASSERT(policy != NULL);
+    ASSERT(strlen(policy) > ASSERT_SIZE);
     fprintf(stderr, "\nPolicy from key:\n%s\n", policy);
 
     SAFE_FREE(policy);
@@ -132,8 +135,8 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     policy = NULL;
     r = Fapi_ExportPolicy(context, policy_name, &policy);
     goto_if_error(r, "Error Fapi_ExportPolicy", error);
-    assert(policy != NULL);
-    assert(strlen(policy) > ASSERT_SIZE);
+    ASSERT(policy != NULL);
+    ASSERT(strlen(policy) > ASSERT_SIZE);
     fprintf(stderr, "\nPolicy from policy file:\n%s\n", policy);
 
     /* Run test with current PCRs defined in policy */
@@ -189,17 +192,17 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
                   &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
-    assert(signature != NULL);
-    assert(publicKey != NULL);
-    assert(certificate != NULL);
-    assert(strlen(publicKey) > ASSERT_SIZE);
-    assert(strlen(certificate) > ASSERT_SIZE);
+    ASSERT(signature != NULL);
+    ASSERT(publicKey != NULL);
+    ASSERT(certificate != NULL);
+    ASSERT(strlen(publicKey) > ASSERT_SIZE);
+    ASSERT(strlen(certificate) > ASSERT_SIZE);
 
     policy = NULL;
     r = Fapi_ExportPolicy(context, "HS/SRK/mySignKey", &policy);
     goto_if_error(r, "Error Fapi_ExportPolicy", error);
-    assert(policy != NULL);
-    assert(strlen(policy) > ASSERT_SIZE);
+    ASSERT(policy != NULL);
+    ASSERT(strlen(policy) > ASSERT_SIZE);
     fprintf(stderr, "\nPolicy from key:\n%s\n", policy);
 
     SAFE_FREE(policy);
@@ -208,14 +211,14 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     policy = NULL;
     r = Fapi_ExportPolicy(context, policy_pcr_read, &policy);
     goto_if_error(r, "Error Fapi_ExportPolicy", error);
-    assert(policy != NULL);
-    assert(strlen(policy) > ASSERT_SIZE);
+    ASSERT(policy != NULL);
+    ASSERT(strlen(policy) > ASSERT_SIZE);
     fprintf(stderr, "\nPolicy from policy file:\n%s\n", policy);
 
     r = Fapi_List(context, "", &path_list);
     goto_if_error(r, "Error Fapi_Delete", error);
-    assert(path_list != NULL);
-    assert(strlen(path_list) > ASSERT_SIZE);
+    ASSERT(path_list != NULL);
+    ASSERT(strlen(path_list) > ASSERT_SIZE);
 
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);

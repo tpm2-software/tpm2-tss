@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <inttypes.h>
-#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -180,9 +179,9 @@ test_fapi_pcr_test(FAPI_CONTEXT *context)
     r = Fapi_PcrRead(context, 16, &pcr_digest,
                      &pcr_digest_size, &log);
     goto_if_error(r, "Error Fapi_PcrRead", error);
-    assert(pcr_digest != NULL);
-    assert(log != NULL);
-    assert(strlen(log) > ASSERT_SIZE);
+    ASSERT(pcr_digest != NULL);
+    ASSERT(log != NULL);
+    ASSERT(strlen(log) > ASSERT_SIZE);
 
     for (i = 0; i < ( sizeof(log_exp) / sizeof(log_exp[0]) ); i++)
         if (strcmp(log_exp[i], log) == 0)
@@ -191,8 +190,8 @@ test_fapi_pcr_test(FAPI_CONTEXT *context)
         LOG_ERROR("Log mismatch. Received: %s", log);
         goto error;
     }
-
-    fprintf(stderr, "\n\Event Log:\n%s\n", log);
+    CHECK_JSON_LIST(log_exp, log, error);
+    fprintf(stderr, "\nEvent Log:\n%s\n", log);
 
     SAFE_FREE(pcr_digest);
     SAFE_FREE(log);
@@ -204,9 +203,11 @@ test_fapi_pcr_test(FAPI_CONTEXT *context)
     r = Fapi_PcrRead(context, 16, &pcr_digest,
                      &pcr_digest_size, &log);
     goto_if_error(r, "Error Fapi_PcrRead", error);
-    assert(pcr_digest != NULL);
-    assert(log != NULL);
-    assert(strlen(log) > ASSERT_SIZE);
+    ASSERT(pcr_digest != NULL);
+    ASSERT(log != NULL);
+    ASSERT(strlen(log) > ASSERT_SIZE);
+    LOG_INFO("\nTEST_JSON\nLog:\n%s\nEND_JSON", log);
+
 
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);

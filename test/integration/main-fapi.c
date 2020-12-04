@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <json-c/json_util.h>
+#include <json-c/json_tokener.h>
 
 #include "tss2_esys.h"
 #include "tss2_fapi.h"
@@ -41,6 +43,123 @@ FAPI_CONTEXT *global_fapi_context = NULL;
 bool file_exists (char *path) {
   struct stat   buffer;
   return (stat (path, &buffer) == 0);
+}
+
+/* Determine integer number from json object. */
+static int64_t
+get_number(json_object *jso) {
+    const char* token;
+    int itoken = 0;
+    int pos = 0;
+    int64_t num;
+
+    token = json_object_get_string(jso);
+    if (strncmp(token, "0x", 2) == 0) {
+        itoken = 2;
+        sscanf(&token[itoken], "%"PRIx64"%n", &num, &pos);
+    } else {
+        sscanf(&token[itoken], "%"PRId64"%n", &num, &pos);
+    }
+    return num;
+}
+
+/* Determin number of fields in a json objecd. */
+size_t nmb_of_fields(json_object *jso) {
+    size_t n = 0;
+    json_object_object_foreach(jso, key, val) {
+        (void)val;
+        (void)key;
+        n++;
+    }
+    return n;
+}
+
+/* Compare two json objects.
+ *
+ * Only strings, integers, array and json objects are supported.
+ */
+bool cmp_jso(json_object *jso1, json_object *jso2) {
+    enum json_type type1, type2;
+    size_t i, size;
+    type1 = json_object_get_type(jso1);
+    type2 = json_object_get_type(jso2);
+    if (type1 != type2) {
+        return false;
+    }
+    if (type1 == json_type_object) {
+        if (nmb_of_fields(jso1) != nmb_of_fields(jso2)) {
+            return false;
+        }
+        json_object_object_foreach(jso1, key1, jso_sub1) {
+            json_object *jso_sub2;
+            if (!json_object_object_get_ex(jso2, key1, &jso_sub2)) {
+                return false;
+            }
+            if (!cmp_jso(jso_sub1, jso_sub2)) {
+                    return false;
+            }
+        }
+        return true;
+    } else if (type1 == json_type_int) {
+        return (get_number(jso1) == get_number(jso2));
+    } else if (type1 == json_type_array) {
+        size = json_object_array_length(jso1);
+        /* Cast to size_t due to change in json-c API.
+           older versions use result type int */
+        if (size != (size_t)json_object_array_length(jso2)) {
+            return false;
+        }
+        for (i = 0; i < size; i++) {
+            if (!cmp_jso(json_object_array_get_idx(jso1, i),
+                         json_object_array_get_idx(jso2, i))) {
+                return false;
+            }
+        }
+        return true;
+    } else if (type1 == json_type_string) {
+        return (strcmp(json_object_get_string(jso1),
+                       json_object_get_string(jso2)) == 0);
+    } else {
+        return false;
+    }
+}
+
+/* Compare two delimter sparated token lists. */
+bool cmp_strtokens(char* string1, char *string2, char *delimiter) {
+    bool found = false;
+    char *token1 = NULL;
+    char *token2 = NULL;
+    char *end_token1;
+    char *end_token2;
+    char *string2_copy;
+
+    string1 = strdup(string1);
+    ASSERT(string1);
+    token1 = strtok_r(string1, delimiter, &end_token1);
+    while(token1 != NULL) {
+        found = false;
+        string2_copy = strdup(string2);
+        ASSERT(string2_copy);
+        token2 = strtok_r(string2_copy, delimiter, &end_token2);
+        while (token2 != NULL) {
+            if (strcmp(token1, token2) == 0) {
+                found = true;
+                break;
+            }
+            token2 = strtok_r(NULL, delimiter, &end_token2);
+        }
+        free(string2_copy);
+        if (!found) {
+            break;
+        }
+        token1 = strtok_r(NULL, delimiter, &end_token1);
+    }
+    free(string1);
+    return found;
+
+ error:
+    SAFE_FREE(string1);
+    return false;
 }
 
 TSS2_RC
