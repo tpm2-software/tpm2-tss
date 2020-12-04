@@ -156,9 +156,7 @@ test_fapi_key_create_policy_authorize_pem_sign(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_Sign", error);
     assert(signature != NULL);
     assert(publicKey != NULL);
-    assert(certificate != NULL);
     assert(strlen(publicKey) > ASSERT_SIZE);
-    assert(strlen(certificate) > ASSERT_SIZE);
 
     /* Cleanup */
     r = Fapi_Delete(context, "/");
