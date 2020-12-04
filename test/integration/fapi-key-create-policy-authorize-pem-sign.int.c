@@ -15,7 +15,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -154,9 +153,10 @@ test_fapi_key_create_policy_authorize_pem_sign(FAPI_CONTEXT *context)
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
                   &publicKey, NULL);
     goto_if_error(r, "Error Fapi_Sign", error);
-    assert(signature != NULL);
-    assert(publicKey != NULL);
-    assert(strlen(publicKey) > ASSERT_SIZE);
+    ASSERT(signature != NULL);
+    ASSERT(publicKey != NULL);
+    LOG_INFO("PublicKey: %s", publicKey);
+    ASSERT(strstr(publicKey, "BEGIN PUBLIC KEY"));
 
     /* Cleanup */
     r = Fapi_Delete(context, "/");

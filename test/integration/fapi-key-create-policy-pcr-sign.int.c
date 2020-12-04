@@ -13,7 +13,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <assert.h>
 #include <string.h>
 #include <ctype.h>
 #include <json-c/json.h>
@@ -71,6 +70,104 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     char *policy = NULL;
     char *path_list = NULL;
 
+    const char *policy_sha1_check =
+        "\n"
+        "{\n"
+        "  \"description\":\"Description pol_16_0\",\n"
+        "  \"policyDigests\":[\n"
+        "    {\n"
+        "      \"hashAlg\":\"SHA256\",\n"
+        "      \"digest\":\"17d552f8e39ad882f6b3c09ae139af59616bf6a63f4093d6d20e9e1b9f7cdb6e\"\n"
+        "    }\n"
+        "  ],\n"
+        "  \"policy\":[\n"
+        "    {\n"
+        "      \"type\":\"POLICYPCR\",\n"
+        "      \"policyDigests\":[\n"
+        "        {\n"
+        "          \"hashAlg\":\"SHA256\",\n"
+        "          \"digest\":\"17d552f8e39ad882f6b3c09ae139af59616bf6a63f4093d6d20e9e1b9f7cdb6e\"\n"
+        "        }\n"
+        "      ],\n"
+        "      \"pcrs\":[\n"
+        "        {\n"
+        "          \"pcr\":16,\n"
+        "          \"hashAlg\":\"SHA1\",\n"
+        "          \"digest\":\"0000000000000000000000000000000000000000\"\n"
+        "        }\n"
+        "      ]\n"
+        "    }\n"
+        "  ]\n"
+        "}\n";
+
+    const char *policy_sha256_check =
+        "{\n"
+        "  \"description\":\"Description pol_16_0\",\n"
+        "  \"policyDigests\":[\n"
+        "    {\n"
+        "      \"hashAlg\":\"SHA256\",\n"
+        "      \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\"\n"
+        "    }\n"
+        "  ],\n"
+        "  \"policy\":[\n"
+        "    {\n"
+        "      \"type\":\"POLICYPCR\",\n"
+        "      \"policyDigests\":[\n"
+        "        {\n"
+        "          \"hashAlg\":\"SHA256\",\n"
+        "          \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\"\n"
+        "        }\n"
+        "      ],\n"
+        "      \"pcrs\":[\n"
+        "        {\n"
+        "          \"pcr\":16,\n"
+        "          \"hashAlg\":\"SHA256\",\n"
+        "          \"digest\":\"0000000000000000000000000000000000000000000000000000000000000000\"\n"
+        "        }\n"
+        "      ]\n"
+        "    }\n"
+        "  ]\n"
+        "}\n"
+        ;
+
+    const char *policy_sha256_export_check =
+        "\n"
+        "{\n"
+        "  \"description\":\"Description pol_16_0\",\n"
+        "  \"policyDigests\":[\n"
+        "    {\n"
+        "      \"hashAlg\":\"SHA256\",\n"
+        "      \"digest\":\"17d552f8e39ad882f6b3c09ae139af59616bf6a63f4093d6d20e9e1b9f7cdb6e\"\n"
+        "    },\n"
+        "    {\n"
+        "      \"hashAlg\":\"SHA1\",\n"
+        "      \"digest\":\"85331183190312f5e83c6043346f9f372104768e\"\n"
+        "    }\n"
+        "  ],\n"
+        "  \"policy\":[\n"
+        "    {\n"
+        "      \"type\":\"POLICYPCR\",\n"
+        "      \"policyDigests\":[\n"
+        "        {\n"
+        "          \"hashAlg\":\"SHA256\",\n"
+        "          \"digest\":\"17d552f8e39ad882f6b3c09ae139af59616bf6a63f4093d6d20e9e1b9f7cdb6e\"\n"
+        "        },\n"
+        "        {\n"
+        "          \"hashAlg\":\"SHA1\",\n"
+        "          \"digest\":\"85331183190312f5e83c6043346f9f372104768e\"\n"
+        "        }\n"
+        "      ],\n"
+        "      \"pcrs\":[\n"
+        "        {\n"
+        "          \"pcr\":16,\n"
+        "          \"hashAlg\":\"SHA1\",\n"
+        "          \"digest\":\"0000000000000000000000000000000000000000\"\n"
+        "        }\n"
+        "      ]\n"
+        "    }\n"
+        "  ]\n"
+        "}\n";
+
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
@@ -122,16 +219,18 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
                   &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
-    assert(signature != NULL);
-    assert(publicKey != NULL);
-    assert(certificate != NULL);
-    assert(strlen(publicKey) > ASSERT_SIZE);
-    assert(strlen(certificate) > ASSERT_SIZE);
+    ASSERT(signature != NULL);
+    ASSERT(publicKey != NULL);
+    ASSERT(certificate != NULL);
+    ASSERT(strstr(publicKey, "BEGIN PUBLIC KEY"));
+    ASSERT(strstr(certificate, "BEGIN CERTIFICATE"));
 
     r = Fapi_ExportPolicy(context, "HS/SRK/mySignKey", &policy);
     goto_if_error(r, "Error Fapi_ExportPolicy", error);
-    assert(policy != NULL);
-    assert(strlen(policy) > ASSERT_SIZE);
+    ASSERT(policy != NULL);
+    LOG_INFO("\nTEST_JSON\nPolicy_sha1:\n%s\nEND_JSON", policy);
+    CHECK_JSON(policy, policy_sha1_check, error);
+    ASSERT(strlen(policy) > ASSERT_SIZE);
     fprintf(stderr, "\nPolicy from key:\n%s\n", policy);
 
     SAFE_FREE(policy);
@@ -139,8 +238,9 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     policy = NULL;
     r = Fapi_ExportPolicy(context, policy_name, &policy);
     goto_if_error(r, "Error Fapi_ExportPolicy", error);
-    assert(policy != NULL);
-    assert(strlen(policy) > ASSERT_SIZE);
+    ASSERT(policy != NULL);
+    LOG_INFO("\nTEST_JSON\nPolicy export1:\n%s\nEND_JSON", policy);
+    CHECK_JSON(policy, policy_sha256_export_check, error);
     fprintf(stderr, "\nPolicy from policy file:\n%s\n", policy);
 
     /* Run test with policy which should fail. */
@@ -232,6 +332,12 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     r = Fapi_Import(context, policy_pcr_read, json_policy);
     goto_if_error(r, "Error Fapi_Import", error);
 
+    r = Fapi_ExportPolicy(context, policy_pcr_read, &policy);
+    LOG_INFO("Policy: %s", policy);
+
+    goto_if_error(r, "Error Fapi_ExportPolicy", error);
+
+
     r = Fapi_CreateKey(context, "/HS/SRK/mySignKey", SIGN_TEMPLATE,
                        policy_pcr_read, PASSWORD);
     goto_if_error(r, "Error Fapi_CreateKey", error);
@@ -248,17 +354,17 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
                   &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
-    assert(signature != NULL);
-    assert(publicKey != NULL);
-    assert(certificate != NULL);
-    assert(strlen(publicKey) > ASSERT_SIZE);
-    assert(strlen(certificate) > ASSERT_SIZE);
+    ASSERT(signature != NULL);
+    ASSERT(publicKey != NULL);
+    ASSERT(certificate != NULL);
+    ASSERT(strstr(publicKey, "BEGIN PUBLIC KEY"));
+    ASSERT(strstr(certificate, "BEGIN CERTIFICATE"));
 
-    policy = NULL;
+    SAFE_FREE(policy);
     r = Fapi_ExportPolicy(context, "HS/SRK/mySignKey", &policy);
     goto_if_error(r, "Error Fapi_ExportPolicy", error);
-    assert(policy != NULL);
-    assert(strlen(policy) > ASSERT_SIZE);
+    ASSERT(policy != NULL);
+    CHECK_JSON(policy, policy_sha256_check, error);
     fprintf(stderr, "\nPolicy from key:\n%s\n", policy);
 
     jso = json_tokener_parse(policy);
@@ -272,7 +378,6 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
         goto error;
     }
     jso_policy = json_object_array_get_idx(jso_policy_list, 0);
-    LOG_ERROR(">>>> Policy %s", json_object_to_json_string_ext(jso_policy, JSON_C_TO_STRING_PRETTY));
 
     if (!json_object_object_get_ex(jso_policy, "pcrs", &jso_pcrs)) {
         LOG_ERROR("No pcrs in exported json");
@@ -288,20 +393,11 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
         goto error;
     }
     json_object_put(jso);
-    SAFE_FREE(policy);
-    SAFE_FREE(certificate);
-
-    policy = NULL;
-    r = Fapi_ExportPolicy(context, policy_pcr_read, &policy);
-    goto_if_error(r, "Error Fapi_ExportPolicy", error);
-    assert(policy != NULL);
-    assert(strlen(policy) > ASSERT_SIZE);
-    fprintf(stderr, "\nPolicy from policy file:\n%s\n", policy);
 
     r = Fapi_List(context, "", &path_list);
     goto_if_error(r, "Error Fapi_Delete", error);
-    assert(path_list != NULL);
-    assert(strlen(path_list) > ASSERT_SIZE);
+    ASSERT(path_list != NULL);
+    ASSERT(strlen(path_list) > ASSERT_SIZE);
 
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);

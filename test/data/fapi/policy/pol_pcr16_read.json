@@ -4,7 +4,7 @@
     "policy":[
         {
             "type":"POLICYPCR",
-            "currentPCRs":[ 15 ]
+            "currentPCRs":[ 16 ]
         }
     ]
 }

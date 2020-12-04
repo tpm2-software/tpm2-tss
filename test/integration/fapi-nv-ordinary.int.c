@@ -13,7 +13,6 @@
 #include <inttypes.h>
 #include <string.h>
 #include <unistd.h>
-#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -55,10 +54,10 @@ action_callback(
 {
     (void)(userData);
 
-    assert(objectPath != NULL);
-    assert(action != NULL);
+    ASSERT(objectPath != NULL);
+    ASSERT(action != NULL);
 
-    assert(strlen(userData) == strlen((char*)USER_DATA));
+    ASSERT(strlen(userData) == strlen((char*)USER_DATA));
 
     if (strcmp(objectPath, "/nv/Owner/myNV") != 0) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Unexpected path");
@@ -69,6 +68,9 @@ action_callback(
         return TSS2_FAPI_RC_GENERAL_FAILURE;
     }
     return TSS2_RC_SUCCESS;
+
+ error:
+    exit(EXIT_FAILURE);
 }
 
 static char *
@@ -169,9 +171,9 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
 
     r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, &logData);
     goto_if_error(r, "Error Fapi_NvRead", error);
-    assert(data_dest != NULL);
-    assert(logData != NULL);
-    assert(strlen(logData) == 0);
+    ASSERT(data_dest != NULL);
+    ASSERT(logData != NULL);
+    ASSERT(strlen(logData) == 0);
 
     if (dest_size != NV_SIZE ||
         memcmp(data_src, data_dest, dest_size) != 0) {
@@ -195,8 +197,8 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     r = Fapi_PcrRead(context, 8, &pcr_digest,
                      &pcr_digest_size, &pcrLog);
     goto_if_error(r, "Error Fapi_PcrRead", error);
-    assert(pcr_digest != NULL);
-    assert(pcrLog != NULL);
+    ASSERT(pcr_digest != NULL);
+    ASSERT(pcrLog != NULL);
 
     if (memcmp(&pcr_digest[0], &zero_digest, pcr_digest_size) != 0) {
         SAFE_FREE(pcr_digest);
@@ -223,9 +225,9 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
         logData = NULL;
         r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, &logData);
         goto_if_error(r, "Error Fapi_NvRead", error);
-        assert(data_dest != NULL);
-        assert(logData != NULL);
-        assert(strlen(logData) == 0);
+        ASSERT(data_dest != NULL);
+        ASSERT(logData != NULL);
+        ASSERT(strlen(logData) == 0);
 
         if (dest_size != NV_SIZE ||
             memcmp(data_src, data_dest, dest_size) != 0) {
@@ -250,9 +252,9 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     logData = NULL;
     r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, &logData);
     goto_if_error(r, "Error Fapi_NvRead", error);
-    assert(data_dest != NULL);
-    assert(logData != NULL);
-    assert(strlen(logData) == 0);
+    ASSERT(data_dest != NULL);
+    ASSERT(logData != NULL);
+    ASSERT(strlen(logData) == 0);
 
     if (dest_size != NV_SIZE ||
         memcmp(data_src, data_dest, dest_size) != 0) {
@@ -283,9 +285,9 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     logData = NULL;
     r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, &logData);
     goto_if_error(r, "Error Fapi_NvRead", error);
-    assert(data_dest != NULL);
-    assert(logData != NULL);
-    assert(strlen(logData) == 0);
+    ASSERT(data_dest != NULL);
+    ASSERT(logData != NULL);
+    ASSERT(strlen(logData) == 0);
 
     if (dest_size != NV_SIZE ||
         memcmp(data_src, data_dest, dest_size) != 0) {
@@ -308,7 +310,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
 
     r = Fapi_GetDescription(context, nvPathOrdinary, &description2);
     goto_if_error(r, "Error Fapi_GetDescription", error);
-    assert(description2 != NULL);
+    ASSERT(description2 != NULL);
 
     if (strcmp(description1, description2) != 0) {
         goto_if_error(r, "Different descriptions", error);
@@ -321,9 +323,9 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     logData = NULL;
     r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, &logData);
     goto_if_error(r, "Error Fapi_NvRead", error);
-    assert(data_dest != NULL);
-    assert(logData != NULL);
-    assert(strlen(logData) == 0);
+    ASSERT(data_dest != NULL);
+    ASSERT(logData != NULL);
+    ASSERT(strlen(logData) == 0);
 
     if (dest_size != NV_SIZE ||
         memcmp(data_src, data_dest, dest_size) != 0) {
@@ -351,9 +353,9 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     logData = NULL;
     r = Fapi_NvRead(context, nvPathOrdinary, &data_dest, &dest_size, &logData);
     goto_if_error(r, "Error Fapi_NvRead", error);
-    assert(data_dest != NULL);
-    assert(logData != NULL);
-    assert(strlen(logData) == 0);
+    ASSERT(data_dest != NULL);
+    ASSERT(logData != NULL);
+    ASSERT(strlen(logData) == 0);
 
     if (dest_size != NV_SIZE ||
         memcmp(data_src, data_dest, dest_size) != 0) {

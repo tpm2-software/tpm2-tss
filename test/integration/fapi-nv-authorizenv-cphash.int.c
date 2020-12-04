@@ -85,6 +85,7 @@ test_fapi_nv_authorizenv_cphash(FAPI_CONTEXT *context)
     char *policy2_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_cphash.json";
     FILE *stream = NULL;
     char json[1024];
+    char *policy = NULL;
 
     if (check_tpm_cmd(context, TPM2_CC_PolicyAuthorizeNV) != TPM2_RC_SUCCESS) {
         LOG_WARNING("Command PolicyAuthorizeNV not available.");
@@ -123,9 +124,15 @@ test_fapi_nv_authorizenv_cphash(FAPI_CONTEXT *context)
     r = Fapi_CreateNv(context, "/nv/Owner/myNV", "", 34, "", "");
     goto_if_error(r, "Error Fapi_CreateNv", error);
 
-
     r = Fapi_CreateNv(context, "/nv/Owner/myNV2", "", sizeof(data), policy1_name, "");
     goto_if_error(r, "Error Fapi_CreateNv", error);
+
+    r = Fapi_ExportPolicy(context, "/nv/Owner/myNV2", &policy);
+    goto_if_error(r, "Error Fapi_ExportPolicy", error);
+    ASSERT(policy != NULL);
+    LOG_INFO("Policy authorize nv: %s", policy);
+    char *fields_policy_authorize[] =  { "policy", "0", "type" };
+    CHECK_JSON_FIELDS(policy, fields_policy_authorize, "POLICYAUTHORIZENV", error);
 
     r = Fapi_WriteAuthorizeNv(context, "/nv/Owner/myNV", policy2_name);
     goto_if_error(r, "Error Fapi_WriteAuthorizeNv", error);
@@ -134,6 +141,8 @@ test_fapi_nv_authorizenv_cphash(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_NvWrite", error);
 
     /* Cleanup */
+
+    SAFE_FREE(policy);
 
     r = Fapi_Delete(context, "/nv/Owner/myNV");
     goto_if_error(r, "Error Fapi_NV_Undefine", error);
@@ -147,6 +156,7 @@ test_fapi_nv_authorizenv_cphash(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
+    SAFE_FREE(policy);
     Fapi_Delete(context, "/");
     return EXIT_FAILURE;
 }

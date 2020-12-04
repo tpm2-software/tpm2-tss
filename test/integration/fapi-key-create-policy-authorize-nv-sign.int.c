@@ -15,7 +15,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <assert.h>
 
 
 #include "tss2_fapi.h"
@@ -188,11 +187,12 @@ test_fapi_key_create_policy_authorize_nv(FAPI_CONTEXT *context)
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
                   &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
-    assert(signature);
-    assert(publicKey);
-    assert(certificate);
-    assert(strlen(publicKey) > ASSERT_SIZE);
-    assert(strlen(certificate) > ASSERT_SIZE);
+    ASSERT(signature);
+    ASSERT(publicKey);
+    ASSERT(certificate);
+
+    ASSERT(strstr(publicKey, "BEGIN PUBLIC KEY"));
+    ASSERT(strstr(certificate, "BEGIN CERTIFICATE"));
 
     r = Fapi_Delete(context, policy_authorize_nv);
     goto_if_error(r, "Error Fapi_Delete", error);

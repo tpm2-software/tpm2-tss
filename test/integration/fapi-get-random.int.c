@@ -9,9 +9,9 @@
 #endif
 
 #include <stdlib.h>
-#include <assert.h>
 
 #include "tss2_fapi.h"
+#include "test-fapi.h"
 
 #define LOGMODULE test
 #include "util/log.h"
@@ -62,14 +62,14 @@ test_fapi_get_random(FAPI_CONTEXT *context)
         r = Fapi_GetRandom_Finish(context, &randomBytes);
     } while (r == TSS2_FAPI_RC_TRY_AGAIN);
     goto_if_error(r, "Error Fapi_GetRandom_Finish", error);
-    assert(randomBytes != NULL);
+    ASSERT(randomBytes != NULL);
 
     Fapi_Free(randomBytes);
 
     randomBytes = NULL;
     r = Fapi_GetRandom(context, bytesRequested, &randomBytes);
     goto_if_error(r, "Error Fapi_GetRandom", error);
-    assert(randomBytes != NULL);
+    ASSERT(randomBytes != NULL);
 
     Fapi_Free(randomBytes);
 

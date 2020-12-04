@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <assert.h>
 #include <string.h>
 
 #include "tss2_fapi.h"
@@ -86,8 +85,8 @@ test_fapi_duplicate(FAPI_CONTEXT *context)
 
     r = Fapi_ExportKey(context, "HS/SRK/myCryptKey", NULL, &json_string_pub_key);
     goto_if_error(r, "Error Fapi_CreateKey", error);
-    assert(json_string_pub_key != NULL);
-    assert(strlen(json_string_pub_key) > ASSERT_SIZE);
+    ASSERT(json_string_pub_key != NULL);
+    ASSERT(strlen(json_string_pub_key) > ASSERT_SIZE);
 
     r = Fapi_Import(context, "ext/myNewParent", json_string_pub_key);
     goto_if_error(r, "Error Fapi_Import", error);
@@ -99,11 +98,13 @@ test_fapi_duplicate(FAPI_CONTEXT *context)
     r = Fapi_ExportKey(context, "HS/SRK/myCryptKey/myCryptKey2",
                        "ext/myNewParent", &json_duplicate);
     goto_if_error(r, "Error Fapi_CreateKey", error);
-    assert(json_duplicate != NULL);
-    assert(strlen(json_duplicate) > ASSERT_SIZE);
+    ASSERT(json_duplicate != NULL);
+    ASSERT(strlen(json_duplicate) > ASSERT_SIZE);
 
-    fprintf(stderr, "\nExport Data:\n%s\n", json_duplicate);
+    LOG_INFO("\nTEST_JSON\nExport Data:\n%s\nEND_JSON", json_duplicate);
+    char *duplicate_check[] = { "duplicate" };
 
+    CHECK_JSON_FIELDS(json_duplicate, duplicate_check, "", error);
     r = Fapi_Import(context, "importedKey", json_duplicate);
     goto_if_error(r, "Error Fapi_Import", error);
 

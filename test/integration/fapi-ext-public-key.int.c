@@ -17,7 +17,6 @@
 #include <stddef.h>
 #include <string.h>
 #include <inttypes.h>
-#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -215,17 +214,18 @@ test_fapi_ext_public_key(FAPI_CONTEXT *context)
 
     r = Fapi_GetCertificate(context, "/ext/myExtPubKey", &cert2);
     goto_if_error(r, "Error Fapi_SetCertificate", error);
-    assert(cert2 != NULL);
-    assert(strlen(cert2) > ASSERT_SIZE);
+    ASSERT(cert2 != NULL);
+    ASSERT(strlen(cert2) > ASSERT_SIZE);
 
     if (strcmp(cert, cert2) != 0) {
         goto_if_error(r, "Different certificates", error);
     }
 
     r = Fapi_List(context, "", &path_list);
+    LOG_INFO("Pathlist: %s", path_list);
     goto_if_error(r, "Error Fapi_List", error);
-    assert(path_list != NULL);
-    assert(strlen(path_list) > ASSERT_SIZE);
+    ASSERT(path_list != NULL);
+    ASSERT(strcmp(path_list, "/ext/myExtPubKey") == 0);
 
     /* Test VerfiyQuote in non TPM mode. */
     r = Fapi_Import(context, "/ext/myExtPubKey", pubkey_pem);
