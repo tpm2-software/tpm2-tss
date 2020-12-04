@@ -15,7 +15,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <assert.h>
 #include <json-c/json.h>
 #include <json-c/json_util.h>
 
@@ -78,10 +77,12 @@ check_policy(char *policy, policy_digests *digests) {
 
         digest_str = json_object_get_string(jso_digest);
         if (strlen(digest_str) == 40) {
+            LOG_INFO("Digest SHA1: %s", digest_str);
             if (strcmp(digest_str, digests->sha1) == 0) {
                 check_sha1 = true;
             }
         } else if  (strlen(digest_str) == 64) {
+            LOG_INFO("Digest SHA256: %s", digest_str);
             if (strcmp(digest_str, digests->sha256) == 0) {
                 check_sha256 = true;
             }
@@ -211,8 +212,8 @@ test_fapi_export_policy(FAPI_CONTEXT *context)
           .sha1 = "85a1caea8de54502bb6c49ff0024bf71ae35a9c5",
           .sha256 = "86a562755e2d7074498bf9e20ee9dbee3fe65ed4989163c110d79a5f1e4eff4e" },
         { .path = "/policy/pol_pcr16_read",
-          .sha1 = "88fec58ec736d09dacc5696f494e0e68aa4c5357",
-          .sha256 = "7e247a603cd1052cabc095741b8ee2f7458aabeee960b8ec97d7f090171a039a" },
+          .sha1 = "eab0d71ae6088009cbd0b50729fde69eb453649c",
+          .sha256 = "bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36" },
         { .path = "/policy/pol_pcr8_0",
           .sha1 = "3f90626b723c354255dffad8d3df57189af033f4",
           .sha256 = "54bca6a506bfcc7e957a29ee4b5b514b9bd9ea0570efc6b9a8d5c3a7562dbbc8" },
@@ -242,8 +243,8 @@ test_fapi_export_policy(FAPI_CONTEXT *context)
         policy = NULL;
         r = Fapi_ExportPolicy(context, policies[i].path, &policy);
         goto_if_error(r, "Error Fapi_ExportPolicy", error);
-        assert(policy != NULL);
-        assert(strlen(policy) > ASSERT_SIZE);
+        ASSERT(policy != NULL);
+        ASSERT(strlen(policy) > ASSERT_SIZE);
         if (!check_policy(policy, &policies[i])) {
             goto error;
         }

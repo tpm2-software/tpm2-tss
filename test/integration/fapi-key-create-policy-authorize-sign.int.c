@@ -15,7 +15,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -45,9 +44,9 @@ branch_callback(
 
     char *profile_path;
 
-    assert(description != NULL);
-    assert(userData != NULL);
-    assert(branchNames != NULL);
+    ASSERT(description != NULL);
+    ASSERT(userData != NULL);
+    ASSERT(branchNames != NULL);
 
     if (!objectPath) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "No path.");
@@ -57,10 +56,10 @@ branch_callback(
     if (size == -1)
         return TSS2_FAPI_RC_MEMORY;
 
-    assert(strlen(objectPath) == strlen(profile_path));
+    ASSERT(strlen(objectPath) == strlen(profile_path));
     free(profile_path);
-    assert(strlen(userData) == strlen((char*)USER_DATA));
-    assert(strlen(description) == strlen(DESCRIPTION));
+    ASSERT(strlen(userData) == strlen((char*)USER_DATA));
+    ASSERT(strlen(description) == strlen(DESCRIPTION));
 
     if (numBranches != 2) {
         LOG_ERROR("Wrong number of branches");
@@ -80,6 +79,9 @@ branch_callback(
     cb_called = true;
 
     return TSS2_RC_SUCCESS;
+
+ error:
+    exit(EXIT_FAILURE);
 }
 
 /** Test the FAPI functions for PolicyAuthoirze with signing.
@@ -311,33 +313,50 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
                   &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
-    assert(signature != NULL);
-    assert(publicKey != NULL);
-    assert(certificate != NULL);
-    assert(strlen(publicKey) > ASSERT_SIZE);
-    assert(strlen(certificate) > ASSERT_SIZE);
+    ASSERT(signature != NULL);
+    ASSERT(publicKey != NULL);
+    ASSERT(certificate != NULL);
+    LOG_INFO("Public key: %s", publicKey);
+    ASSERT(strstr(publicKey, "BEGIN PUBLIC KEY"));
+    LOG_INFO("Certificate: %s", certificate);
+    ASSERT(strstr(certificate, "BEGIN CERTIFICATE"));
 
     r = Fapi_List(context, "/", &pathList);
     goto_if_error(r, "Error Fapi_List", error);
-    assert(pathList != NULL);
-    assert(strlen(pathList) > ASSERT_SIZE);
+    ASSERT(pathList != NULL);
+    LOG_INFO("Pathlist: %s", pathList);
+    char *check_pathList1 =
+        "/" FAPI_PROFILE "/HS/SRK:/" FAPI_PROFILE "/HS:/" FAPI_PROFILE "/LOCKOUT:/"
+        FAPI_PROFILE "/HE/EK:/" FAPI_PROFILE "/HE:/" FAPI_PROFILE "/HN:/policy/pol_name_hash:"
+        "/policy/pol_cphash:/policy/pol_authorize_outer:/policy/pol_authorize:/" FAPI_PROFILE
+        "/HS/SRK/myPolicySignKey2:/" FAPI_PROFILE "/HS/SRK/myPolicySignKey:/" FAPI_PROFILE
+        "/HS/SRK/mySignKey:/" FAPI_PROFILE "/HS/SRK/myPolicySignKeyOuter";
+    ASSERT(cmp_strtokens(pathList, check_pathList1, ":"));
 
     SAFE_FREE(pathList);
 
     pathList = NULL;
     r = Fapi_List(context, "/SRK/", &pathList);
     goto_if_error(r, "Error Fapi_List", error);
-    assert(pathList != NULL);
-    assert(strlen(pathList) > ASSERT_SIZE);
-    fprintf(stderr, "\n%s\n", pathList);
+    ASSERT(pathList != NULL);
+    LOG_INFO("Pathlist: %s", pathList);
+    char *check_pathList2 =
+        "/" FAPI_PROFILE "/HS/SRK:/" FAPI_PROFILE "/HS/SRK/myPolicySignKey2:/" FAPI_PROFILE
+        "/HS/SRK/myPolicySignKey:/" FAPI_PROFILE "/HS/SRK/mySignKey:/" FAPI_PROFILE
+        "/HS/SRK/myPolicySignKeyOuter";
+    ASSERT(cmp_strtokens(pathList, check_pathList2, ":"));
     SAFE_FREE(pathList);
 
     pathList = NULL;
     r = Fapi_List(context, "/HS/", &pathList);
     goto_if_error(r, "Error Fapi_List", error);
-    assert(pathList != NULL);
-    assert(strlen(pathList) > ASSERT_SIZE);
-    fprintf(stderr, "\n%s\n", pathList);
+    ASSERT(pathList != NULL);
+    LOG_INFO("Pathlist: %s", pathList);
+    char *check_pathList3 =
+        "/" FAPI_PROFILE "/HS/SRK:/" FAPI_PROFILE "/HS:/" FAPI_PROFILE"/HS/SRK/myPolicySignKey2:/"
+        FAPI_PROFILE "/HS/SRK/myPolicySignKey:/" FAPI_PROFILE "/HS/SRK/mySignKey:/" FAPI_PROFILE
+        "/HS/SRK/myPolicySignKeyOuter";
+    ASSERT(cmp_strtokens(pathList, check_pathList3, ":"));
     SAFE_FREE(pathList);
 
     LOG_WARNING("Next is a failure-test, and we expect errors in the log");
@@ -347,15 +366,18 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
         LOG_ERROR("Path XXX was found");
         goto error;
     }
-    assert(pathList == NULL);
+    ASSERT(pathList == NULL);
     SAFE_FREE(pathList);
 
     pathList = NULL;
-    r = Fapi_List(context, "/HS/", &pathList);
+    r = Fapi_List(context, "/policy/", &pathList);
     goto_if_error(r, "Error Fapi_List", error);
-    assert(pathList != NULL);
-    assert(strlen(pathList) > ASSERT_SIZE);
-    fprintf(stderr, "\n%s\n", pathList);
+    ASSERT(pathList != NULL);
+    ASSERT(strlen(pathList) > ASSERT_SIZE);
+    LOG_INFO("Pathlist: %s", pathList);
+    char *check_pathList4 =
+        "/policy/pol_name_hash:/policy/pol_cphash:/policy/pol_authorize_outer:/policy/pol_authorize";
+    ASSERT(cmp_strtokens(pathList, check_pathList4, ":"));
     SAFE_FREE(pathList);
 
     /* Cleanup */

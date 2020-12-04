@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <string.h>
-#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -87,9 +86,14 @@ test_fapi_nv_extend(FAPI_CONTEXT *context)
 
     r = Fapi_NvRead(context, nvPathExtend, &data_dest, &dest_size, &log);
     goto_if_error(r, "Error Fapi_NvRead", error);
-    assert(data_dest != NULL);
-    assert(log != NULL);
-    assert(strlen(log) > ASSERT_SIZE);
+    ASSERT(data_dest != NULL);
+    ASSERT(log != NULL);
+    LOG_INFO("\nTEST_JSON\nLog:\n%s\nEND_JSON", log);
+    char *fields_log1[] =  { "0", "digests", "0", "digest" };
+    CHECK_JSON_FIELDS(log, fields_log1,
+                      "dcb1ac4a5de370cad091c13f13aee2f936c278fa05d264653c0c1321852a35e8",
+                      error);
+    ASSERT(strlen(log) > ASSERT_SIZE);
 
     fprintf(stderr, "\nLog:\n%s\n", log);
     SAFE_FREE(data_dest);
@@ -102,9 +106,14 @@ test_fapi_nv_extend(FAPI_CONTEXT *context)
     log = NULL;
     r = Fapi_NvRead(context, nvPathExtend, &data_dest, &dest_size, &log);
     goto_if_error(r, "Error Fapi_NvRead", error);
-    assert(data_dest != NULL);
-    assert(log != NULL);
-    assert(strlen(log) > ASSERT_SIZE);
+    ASSERT(data_dest != NULL);
+    ASSERT(log != NULL);
+    ASSERT(strlen(log) > ASSERT_SIZE);
+    LOG_INFO("\nTEST_JSON\nLog:\n%s\nEND_JSON", log);
+    char *fields_log2[] =  { "1", "digests", "0", "digest" };
+    CHECK_JSON_FIELDS(log, fields_log2,
+                      "dcb1ac4a5de370cad091c13f13aee2f936c278fa05d264653c0c1321852a35e8",
+                      error);
 
     fprintf(stderr, "\nLog:\n%s\n", log);
 

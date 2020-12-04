@@ -9,7 +9,6 @@
 #endif
 
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
 
 #include "tss2_fapi.h"
@@ -39,10 +38,16 @@ test_fapi_info(FAPI_CONTEXT *context)
 
     r = Fapi_GetInfo(context, &info);
     goto_if_error(r, "Error Fapi_Provision", error);
-    assert(info != NULL);
-    assert(strlen(info) > ASSERT_SIZE);
+    ASSERT(info != NULL);
+    ASSERT(strlen(info) > ASSERT_SIZE);
 
     LOG_INFO("%s", info);
+
+    char *fields_config[] =  { "fapi_config" };
+    CHECK_JSON_FIELDS(info, fields_config, "", error);
+
+    char *fields_info[] =  { "capabilities" };
+    CHECK_JSON_FIELDS(info, fields_info, "", error);
 
     SAFE_FREE(info);
     return EXIT_SUCCESS;
