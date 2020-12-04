@@ -13,7 +13,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
-#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -92,13 +91,13 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
                    &signature, &signatureSize,
                    &pcrEventLog, &certificate);
     goto_if_error(r, "Error Fapi_Quote", error);
-    assert(quoteInfo != NULL);
-    assert(signature != NULL);
-    assert(pcrEventLog != NULL);
-    assert(certificate != NULL);
-    assert(strlen(quoteInfo) > ASSERT_SIZE);
-    assert(strlen(pcrEventLog) > ASSERT_SIZE);
-    assert(strlen(certificate) > ASSERT_SIZE);
+    ASSERT(quoteInfo != NULL);
+    ASSERT(signature != NULL);
+    ASSERT(pcrEventLog != NULL);
+    ASSERT(certificate != NULL);
+    ASSERT(strlen(quoteInfo) > ASSERT_SIZE);
+    ASSERT(strlen(pcrEventLog) > ASSERT_SIZE);
+    ASSERT(strlen(certificate) > ASSERT_SIZE);
 
     LOG_INFO("\npcrEventLog: %s\n", pcrEventLog);
 
@@ -109,8 +108,8 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
 
     r = Fapi_List(context, "/", &pathlist);
     goto_if_error(r, "Pathlist", error);
-    assert(pathlist != NULL);
-    assert(strlen(pathlist) > ASSERT_SIZE);
+    ASSERT(pathlist != NULL);
+    ASSERT(strlen(pathlist) > ASSERT_SIZE);
 
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);

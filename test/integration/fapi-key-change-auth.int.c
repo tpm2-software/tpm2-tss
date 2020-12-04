@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -38,8 +37,8 @@ auth_callback(
 
     char *profile_path;
 
-    assert(description != NULL);
-    assert(userData != NULL);
+    ASSERT(description != NULL);
+    ASSERT(userData != NULL);
 
     if (!objectPath) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "No path.");
@@ -49,13 +48,16 @@ auth_callback(
     if (size == -1)
         return TSS2_FAPI_RC_MEMORY;
 
-    assert(strlen(objectPath) == strlen(profile_path));
+    ASSERT(strlen(objectPath) == strlen(profile_path));
     free(profile_path);
-    assert(strlen(userData) == strlen((char*)USER_DATA));
-    assert(strlen(description) == strlen(DESCRIPTION));
+    ASSERT(strlen(userData) == strlen((char*)USER_DATA));
+    ASSERT(strlen(description) == strlen(DESCRIPTION));
 
     *auth = PASSWORD;
     return TSS2_RC_SUCCESS;
+
+ error:
+    exit(EXIT_FAILURE);
 }
 
 
@@ -119,11 +121,11 @@ test_fapi_key_change_auth(FAPI_CONTEXT *context)
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
                   &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Provision", error);
-    assert(signature != NULL);
-    assert(publicKey != NULL);
-    assert(certificate != NULL);
-    assert(strlen(publicKey) > ASSERT_SIZE);
-    assert(strlen(certificate) > ASSERT_SIZE);
+    ASSERT(signature != NULL);
+    ASSERT(publicKey != NULL);
+    ASSERT(certificate != NULL);
+    ASSERT(strstr(publicKey, "BEGIN PUBLIC KEY"));
+    ASSERT(strstr(certificate, "BEGIN CERTIFICATE"));
 
     Fapi_Free(publicKey);
 

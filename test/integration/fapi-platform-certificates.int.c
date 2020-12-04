@@ -14,7 +14,6 @@
  * are used in debug prints or assert calls only */
 #undef NDEBUG
 #endif
-#include <assert.h>
 
 #include "tss2_esys.h"
 #include "tss2_fapi.h"
@@ -152,8 +151,8 @@ test_fapi_platform_certificates(FAPI_CONTEXT *context)
     if (r == TSS2_FAPI_RC_NO_CERT)
         goto skip;
     goto_if_error(r, "Error Fapi_GetPlatformCertificates", error);
-    assert(certs != NULL);
-    assert(certsSize == nv_size);
+    ASSERT(certs != NULL);
+    ASSERT(certsSize == nv_size);
 
     Fapi_Free(certs);
 

@@ -9,7 +9,6 @@
 #endif
 
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
 
 #include "tss2_fapi.h"
@@ -25,7 +24,9 @@
 
 #define PASSWORD "abc"
 #define SIGN_TEMPLATE  "sign,noDa"
-
+#ifndef FAPI_PROFILE
+#define FAPI_PROFILE "P_ECC"
+#endif /* FAPI_PROFILE */
 
 json_object *
 get_json_hex_string(const uint8_t *buffer, size_t size)
@@ -153,10 +154,10 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
                          &publicsize,
                          &privateblob, &privatesize, &policy);
     goto_if_error(r, "Error Fapi_GetTpmBlobs", error);
-    assert(publicblob != NULL);
-    assert(privateblob != NULL);
-    assert(policy != NULL);
-    assert(strlen(policy) == 0);
+    ASSERT(publicblob != NULL);
+    ASSERT(privateblob != NULL);
+    ASSERT(policy != NULL);
+    ASSERT(strlen(policy) == 0);
 
     r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", cert);
     goto_if_error(r, "Error Fapi_SetCertificate", error);
@@ -165,11 +166,11 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
                   &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
-    assert(signature != NULL);
-    assert(publicKey != NULL);
-    assert(certificate != NULL);
-    assert(strlen(publicKey) > ASSERT_SIZE);
-    assert(strlen(certificate) > ASSERT_SIZE);
+    ASSERT(signature != NULL);
+    ASSERT(publicKey != NULL);
+    ASSERT(certificate != NULL);
+    ASSERT(strlen(publicKey) > ASSERT_SIZE);
+    ASSERT(strlen(certificate) > ASSERT_SIZE);
 
     r = Fapi_VerifySignature(context, "HS/SRK/mySignKey",
                   &digest.buffer[0], digest.size, signature, signatureSize);
@@ -200,10 +201,12 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
 
     r = Fapi_List(context, "/", &path_list);
     goto_if_error(r, "Error Fapi_Delete", error);
-    assert(path_list != NULL);
-    assert(strlen(path_list) > ASSERT_SIZE);
-
-    fprintf(stderr, "\nPathList:\n%s\n", path_list);
+    ASSERT(path_list != NULL);
+    LOG_INFO("Path list: %s", path_list);
+    char *check_path_list =
+        "/" FAPI_PROFILE "/HS/SRK:/" FAPI_PROFILE "/HS:/" FAPI_PROFILE "/LOCKOUT:/" FAPI_PROFILE "/HE/EK:/" FAPI_PROFILE "/HE:"
+        "/" FAPI_PROFILE "/HN:/" FAPI_PROFILE "/HS/SRK/mySignKey2:/" FAPI_PROFILE "/HS/SRK/mySignKey";
+    ASSERT(cmp_strtokens(path_list, check_path_list, ":"));
 
     /* We need to reset the passwords again, in order to not brick physical TPMs */
     r = Fapi_ChangeAuth(context, "/HS", NULL);
@@ -211,7 +214,6 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
 
     r = Fapi_GetDescription(context, "/HS/SRK", &description);
     goto_if_error(r, "Error GetDescription", error);
-
     if (description) {
         LOG_INFO("SRK description: %s", description);
         SAFE_FREE(description);

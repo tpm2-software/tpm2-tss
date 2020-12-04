@@ -13,7 +13,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <assert.h>
 #include <string.h>
 
 #include "tss2_fapi.h"
@@ -59,6 +58,8 @@ test_fapi_key_create_policy_nv_sign(FAPI_CONTEXT *context)
     long policy_size;
     char *nvPathOrdinary = "/nv/Owner/myNV";
     uint8_t data_nv[NV_SIZE] = { 1, 2, 3, 4 };
+    char *pathList = NULL;
+    size_t i;
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
@@ -114,12 +115,22 @@ test_fapi_key_create_policy_nv_sign(FAPI_CONTEXT *context)
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
                   &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
-    assert(signature != NULL);
-    assert(publicKey != NULL);
-    assert(certificate != NULL);
-    assert(strlen(publicKey) > ASSERT_SIZE);
-    assert(strlen(certificate) > ASSERT_SIZE);
+    ASSERT(signature != NULL);
+    ASSERT(publicKey != NULL);
+    ASSERT(certificate != NULL);
+    ASSERT(strstr(publicKey, "BEGIN PUBLIC KEY"));
+    ASSERT(strstr(certificate, "BEGIN CERTIFICATE"));
 
+    /* Check all possible nv paths to get exactly nvPathOrdinary by Fapi_List. */
+    char *path_check[] = {
+        "nv", "/nv", "/nv/", "/nv/Owner", "/nv/Owner/", nvPathOrdinary };
+
+    for (i = 0; i < sizeof(path_check) / sizeof(path_check[0]); i++) {
+        r = Fapi_List(context, path_check[i], &pathList);
+        goto_if_error(r, "Error Fapi_List", error);
+        ASSERT(strcmp(pathList, nvPathOrdinary) == 0);
+        SAFE_FREE(pathList);
+    }
     r = Fapi_Delete(context, nvPathOrdinary);
     goto_if_error(r, "Error Fapi_NV_Undefine", error);
 

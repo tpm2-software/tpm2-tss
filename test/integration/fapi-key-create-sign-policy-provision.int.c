@@ -10,7 +10,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "tss2_fapi.h"
 
@@ -125,10 +124,10 @@ test_fapi_key_create_sign_policy_provision(FAPI_CONTEXT *context)
                          &publicsize,
                          &privateblob, &privatesize, &policy);
     goto_if_error(r, "Error Fapi_GetTpmBlobs", error);
-    assert(publicblob != NULL);
-    assert(privateblob != NULL);
-    assert(policy != NULL);
-    assert(strlen(policy) == 0);
+    ASSERT(publicblob != NULL);
+    ASSERT(privateblob != NULL);
+    ASSERT(policy != NULL);
+    ASSERT(strlen(policy) == 0);
 
     r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", cert);
     goto_if_error(r, "Error Fapi_SetCertificate", error);
@@ -138,16 +137,16 @@ test_fapi_key_create_sign_policy_provision(FAPI_CONTEXT *context)
                   &digest.buffer[0], digest.size, &signature, &signatureSize,
                   &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
-    assert(signature != NULL);
-    assert(publicKey != NULL);
-    assert(certificate != NULL);
-    assert(strlen(publicKey) > ASSERT_SIZE);
-    assert(strlen(certificate) > ASSERT_SIZE);
+    ASSERT(signature != NULL);
+    ASSERT(publicKey != NULL);
+    ASSERT(certificate != NULL);
+    ASSERT(strlen(publicKey) > ASSERT_SIZE);
+    ASSERT(strlen(certificate) > ASSERT_SIZE);
 
     r = Fapi_List(context, "/", &path_list);
     goto_if_error(r, "Error Fapi_Delete", error);
-    assert(path_list != NULL);
-    assert(strlen(path_list) > ASSERT_SIZE);
+    ASSERT(path_list != NULL);
+    ASSERT(strlen(path_list) > ASSERT_SIZE);
 
     LOG_INFO("\nPathList:\n%s\n", path_list);
 
