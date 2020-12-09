@@ -254,7 +254,7 @@ ifapi_path_type_p(const char *path, const char *type)
     end_pos = (int)(end - path);
 
     /* Check sub-string and following delimiter. */
-    if (strlen(path) - pos > 3 &&
+    if (strlen(path) - pos >= 3 &&
             strncasecmp(type, &path[pos], strlen(type)) == 0 && end &&
             strncmp(IFAPI_FILE_DELIM, &path[end_pos], 1) == 0)
         return true;
