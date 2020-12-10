@@ -539,7 +539,8 @@ EXTRA_DIST +=  \
     test/data/fapi/policy/pol_name_hash.json \
     test/data/fapi/policy/pol_pcr16_read.json \
     test/data/fapi/policy/pol_action.json \
-    test/data/fapi/policy/pol_cphash.json
+    test/data/fapi/policy/pol_cphash.json \
+    test/data/fapi/policy/pol_or_read_write_secret.json
 
 src_tss2_fapi_libtss2_fapi_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) $(libtss2_esys) \
     $(libutil) $(libtss2_tctildr)
