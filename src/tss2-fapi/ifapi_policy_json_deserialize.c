@@ -1738,6 +1738,7 @@ static char *field_TPMS_POLICY_tab[] = {
     "policyAuthorizations",
     "policyauthorizations",
     "policy",
+    "name",
     "$schema",
     "type",
     "nonceTPM"

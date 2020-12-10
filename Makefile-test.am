@@ -338,6 +338,7 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-pcr-test.fint \
     test/integration/fapi-quote.fint \
     test/integration/fapi-quote-rsa.fint \
+    test/integration/fapi-policy-or-nv-read-write.fint \
     test/integration/fapi-second-provisioning.fint \
     test/integration/fapi-provisioning-error.fint \
     test/integration/fapi-info.fint \
@@ -1812,6 +1813,13 @@ test_integration_fapi_quote_rsa_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_quote_rsa_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_quote_rsa_fint_SOURCES = \
     test/integration/fapi-quote.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_policy_or_nv_read_write_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_policy_or_nv_read_write_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_policy_or_nv_read_write_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_policy_or_nv_read_write_fint_SOURCES = \
+    test/integration/fapi-policy-or-nv-read-write.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_info_fint_CFLAGS  = $(TESTS_CFLAGS)
