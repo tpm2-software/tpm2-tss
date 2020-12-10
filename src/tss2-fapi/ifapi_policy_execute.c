@@ -794,6 +794,7 @@ execute_policy_authorize_nv(
         r = Esys_PolicyAuthorizeNV_Finish(esys_ctx);
         return_try_again(r);
         goto_if_error(r, "FAPI PolicyAuthorizeNV_Finish", cleanup);
+        current_policy->state = POLICY_EXECUTE_INIT;
         break;
 
     statecasedefault(current_policy->state);
@@ -891,6 +892,7 @@ execute_policy_secret(
                                      NULL);
         return_try_again(r);
         goto_if_error(r, "FAPI PolicyAuthorizeNV_Finish", error_cleanup);
+        current_policy->state = POLICY_EXECUTE_INIT;
         break;
 
     statecasedefault(current_policy->state);
@@ -1438,6 +1440,7 @@ execute_policy_action(
         /* Execute the callback and try it again if the callback is not finished. */
         r = cb->cbaction(policy->action, cb->cbaction_userdata);
         try_again_or_error(r, "Execute policy action callback.");
+        current_policy->state = POLICY_EXECUTE_INIT;
         return r;
 
     statecasedefault(current_policy->state);
