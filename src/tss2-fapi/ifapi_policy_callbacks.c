@@ -203,6 +203,7 @@ ifapi_get_object_name(
     }
 
 cleanup:
+    context->io_state = IO_INIT;
     ifapi_cleanup_ifapi_object(&object);
     return r;
 }
@@ -271,6 +272,7 @@ ifapi_get_nv_public(
     }
 
 cleanup:
+    context->io_state = IO_INIT;
     ifapi_cleanup_ifapi_object(&object);
     return r;
 }
