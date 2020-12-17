@@ -6,6 +6,9 @@
 #ifndef TSS2_FAPI_H
 #define TSS2_FAPI_H
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "tss2_tcti.h"
 
 #ifdef __cplusplus
