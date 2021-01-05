@@ -111,7 +111,7 @@ Esys_Finalize(ESYS_CONTEXT ** esys_context)
     TSS2_TCTI_CONTEXT *tctcontext = NULL;
 
     if (esys_context == NULL || *esys_context == NULL) {
-        LOG_WARNING("Finalizing NULL context.");
+        LOG_DEBUG("Finalizing NULL context.");
         return;
     }
 
