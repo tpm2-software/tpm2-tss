@@ -39,7 +39,7 @@ Fapi_Finalize(
 
     /* Check for NULL parameters */
     if (!context || !*context) {
-        LOG_WARNING("Attempting to free NULL context");
+        LOG_DEBUG("Finalizing NULL context.");
         return;
     }
 
