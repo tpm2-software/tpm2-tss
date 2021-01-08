@@ -304,13 +304,28 @@ ifapi_eventlog_append_finish(
     char *event_log_file = NULL;
     const char *logstr2 = NULL;
     json_object *event = NULL;
+    size_t i, n;
+    json_object *jso;
+    IFAPI_EVENT prev_event;
 
     switch (eventlog->state) {
     statecase(eventlog->state, IFAPI_EVENTLOG_STATE_APPENDING)
         eventlog->event = *pcr_event;
 
+        /* Determine the recnum of the current pcr. */
+        eventlog->event.recnum = 0;
+        n = json_object_array_length(eventlog->log);
+        for (i = 0; i < n; i++) {
+            jso = json_object_array_get_idx(eventlog->log, i);
+            r = ifapi_json_IFAPI_EVENT_deserialize(jso, &prev_event);
+            goto_if_error(r, "Deserialize event", error_cleanup);
+
+            if (prev_event.pcr == pcr_event->pcr) {
+                eventlog->event.recnum++;
+            }
+        }
+
         /* Extend the eventlog with the data */
-        eventlog->event.recnum = json_object_array_length(eventlog->log) + 1;
 
         r = ifapi_json_IFAPI_EVENT_serialize(&eventlog->event, &event);
         if (r) {
