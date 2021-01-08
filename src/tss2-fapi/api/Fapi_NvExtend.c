@@ -415,7 +415,7 @@ Fapi_NvExtend_Finish(
             command->jso_event_log = json_object_new_array();
         }
         command->pcr_event.recnum =
-            json_object_array_length(command->jso_event_log) + 1;
+            json_object_array_length(command->jso_event_log);
 
         r = ifapi_json_IFAPI_EVENT_serialize(&command->pcr_event, &jso);
         goto_if_error(r, "Error serialize event", error_cleanup);

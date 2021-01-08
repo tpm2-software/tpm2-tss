@@ -146,7 +146,7 @@ test_fapi_quote(FAPI_CONTEXT *context)
         {
          "["
          "  {"
-         "    \"recnum\":1,"
+         "    \"recnum\":0,"
          "    \"pcr\":16,"
          "    \"digests\":["
          "      {"

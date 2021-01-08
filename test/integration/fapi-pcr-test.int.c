@@ -27,7 +27,7 @@
 const char *log_exp[] = {
 "[\n\
   {\n\
-    \"recnum\":1,\n\
+    \"recnum\":0,\n\
     \"pcr\":16,\n\
     \"digests\":[\n\
       {\n\
@@ -62,7 +62,7 @@ const char *log_exp[] = {
 ]",
 "[\n\
   {\n\
-    \"recnum\":1,\n\
+    \"recnum\":0,\n\
     \"pcr\":16,\n\
     \"digests\":[\n\
       {\n\
@@ -93,7 +93,7 @@ const char *log_exp[] = {
 ]",
 "[\n\
   {\n\
-    \"recnum\":1,\n\
+    \"recnum\":0,\n\
     \"pcr\":16,\n\
     \"digests\":[\n\
       {\n\
@@ -120,7 +120,7 @@ const char *log_exp[] = {
 ]",
 "[\n\
   {\n\
-    \"recnum\":1,\n\
+    \"recnum\":0,\n\
     \"pcr\":16,\n\
     \"digests\":[\n\
       {\n\
@@ -143,7 +143,7 @@ const char *log_exp[] = {
 ]",
 "[\n\
   {\n\
-    \"recnum\":1,\n\
+    \"recnum\":0,\n\
     \"pcr\":16,\n\
     \"digests\":[\n\
       {\n\
