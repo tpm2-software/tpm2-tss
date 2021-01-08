@@ -120,9 +120,9 @@ AC_ARG_ENABLE([fapi-async-tests],
                [Force fapi to spin asynchronously. (NOT FOR PRODUCTION!)]),,
     [enable_fapi_async_tests=no])
 AS_IF([test "x$enable_fapi_async_tests" = "xyes"],
-    AC_DEFINE([TEST_FAPI_ASYNC], [1], [FAPI forced async spinning]))
+    [AC_DEFINE([TEST_FAPI_ASYNC], [1], [FAPI forced async spinning])])
 AS_IF([test "x$enable_fapi_async_tests" = "xyes"],
-    AC_MSG_WARN("FAPI compiled with asynchronous spinning testing. NOT FOR PRODUCTION!"))
+    [AC_MSG_WARN("FAPI compiled with asynchronous spinning testing. NOT FOR PRODUCTION!")])
 
 AC_ARG_WITH([crypto],
             [AS_HELP_STRING([--with-crypto={ossl,mbed}],
@@ -143,15 +143,15 @@ AS_IF([test "x$enable_esys" = xyes],
            AC_DEFINE([MBED], [1], [mbedTLS cryptographic backend])
            TSS2_ESYS_CFLAGS_CRYPTO="$LIBMBED_CFLAGS"
            TSS2_ESYS_LDFLAGS_CRYPTO="-lmbedcrypto"
-       ], AC_MSG_ERROR([Bad value for --with-crypto $with_crypto]))])
+       ], [AC_MSG_ERROR([Bad value for --with-crypto $with_crypto])])])
 AC_SUBST([TSS2_ESYS_CFLAGS_CRYPTO])
 AC_SUBST([TSS2_ESYS_LDFLAGS_CRYPTO])
 
 AS_IF([test "x$enable_fapi" != xno -a "x$enable_esys" = "xno"],
-    AC_MSG_ERROR([ESYS has to be enabled to compile FAPI.]))
+    [AC_MSG_ERROR([ESYS has to be enabled to compile FAPI.])])
 
 AS_IF([test "x$enable_fapi" != xno -a "x$with_crypto" != "xossl"],
-    AC_MSG_ERROR([FAPI has to be compiled with OpenSSL]))
+    [AC_MSG_ERROR([FAPI has to be compiled with OpenSSL])])
 
 AS_IF([test "x$enable_fapi" = xyes ],
       [PKG_CHECK_MODULES([JSONC], [json-c])])
@@ -180,7 +180,7 @@ AC_ARG_ENABLE([tcti-device],
             [enable_tcti_device=yes])
 AM_CONDITIONAL([ENABLE_TCTI_DEVICE], [test "x$enable_tcti_device" != xno])
 AS_IF([test "x$enable_tcti_device" = "xyes"],
-	AC_DEFINE([TCTI_DEVICE],[1], [TCTI FOR DEV TPM]))
+	[AC_DEFINE([TCTI_DEVICE],[1], [TCTI FOR DEV TPM])])
 
 AC_ARG_ENABLE([tcti-mssim],
             [AS_HELP_STRING([--disable-tcti-mssim],
@@ -188,14 +188,14 @@ AC_ARG_ENABLE([tcti-mssim],
             [enable_tcti_mssim=yes])
 AM_CONDITIONAL([ENABLE_TCTI_MSSIM], [test "x$enable_tcti_mssim" != xno])
 AS_IF([test "x$enable_tcti_mssim" = "xyes"],
-	AC_DEFINE([TCTI_MSSIM],[1], [TCTI FOR MS SIMULATOR]))
+	[AC_DEFINE([TCTI_MSSIM],[1], [TCTI FOR MS SIMULATOR])])
 
 AC_ARG_ENABLE([tcti-swtpm],
             [AS_HELP_STRING([--disable-tcti-swtpm],
                             [don't build the tcti-swtpm module])],,
             [enable_tcti_swtpm=yes])
 AM_CONDITIONAL([ENABLE_TCTI_SWTPM], [test "x$enable_tcti_swtpm" != xno])
-AS_IF([test "x$enable_tcti_swtpm" = "xyes"], AC_DEFINE([TCTI_SWTPM],[1], [TCTI FOR SWTPM]))
+AS_IF([test "x$enable_tcti_swtpm" = "xyes"], [AC_DEFINE([TCTI_SWTPM],[1], [TCTI FOR SWTPM])])
 
 AC_ARG_ENABLE([tcti-pcap],
             [AS_HELP_STRING([--disable-tcti-pcap],
@@ -210,7 +210,7 @@ AC_ARG_ENABLE([tcti-cmd],
 
 AM_CONDITIONAL([ENABLE_TCTI_CMD], [test "x$enable_tcti_cmd" != xno])
 AS_IF([test "x$enable_tcti_cmd" = "xyes"],
-	AC_DEFINE([TCTI_CMD],[1], [TCTI FOR COMMAND BASED ACCESS TO TPM2 DEVICE]))
+	[AC_DEFINE([TCTI_CMD],[1], [TCTI FOR COMMAND BASED ACCESS TO TPM2 DEVICE])])
 
 AC_ARG_ENABLE([tcti-fuzzing],
             [AS_HELP_STRING([--enable-tcti-fuzzing],
@@ -218,7 +218,7 @@ AC_ARG_ENABLE([tcti-fuzzing],
             [enable_tcti_fuzzing=no])
 AM_CONDITIONAL([ENABLE_TCTI_FUZZING], [test "x$enable_tcti_fuzzing" != xno])
 AS_IF([test "x$enable_tcti_fuzzing" = "xyes"],
-	AC_DEFINE([TCTI_FUZZING],[1], [TCTI FOR FUZZING]))
+	[AC_DEFINE([TCTI_FUZZING],[1], [TCTI FOR FUZZING])])
 
 AC_ARG_ENABLE([nodl],
               [AS_HELP_STRING([--enable-nodl],
@@ -304,7 +304,7 @@ AS_IF([test "x$enable_integration" = "xyes"],
        ERROR_IF_NO_PROG([env])
        ERROR_IF_NO_PROG([rm])
        AS_IF([test "x$with_crypto" != xossl -o "x$enable_esys" != xyes],
-           PKG_CHECK_MODULES([LIBCRYPTO],[libcrypto]))
+           [PKG_CHECK_MODULES([LIBCRYPTO],[libcrypto])])
        AC_CHECK_HEADER(uthash.h, [], [AC_MSG_ERROR([Can not find uthash.h. Please install uthash-dev])])
 
        # choose tcti for testing and look for TPM simulator binary
@@ -379,15 +379,15 @@ AS_CASE(["x$with_fuzzing"],
         [ADD_FUZZING_FLAG([-fsanitize=fuzzer])],
         ["xossfuzz"],
         [AS_IF([test "x$LIB_FUZZING_ENGINE" = "x"],
-               AC_MSG_ERROR([OSS Fuzz testing requires LIB_FUZZING_ENGINE environment variable be set]))
+               [AC_MSG_ERROR([OSS Fuzz testing requires LIB_FUZZING_ENGINE environment variable be set])])
          ADD_FUZZING_FLAG([-lFuzzingEngine])],
         [AC_MSG_ERROR([Bad value for --with-fuzzing])])
 AM_CONDITIONAL([ENABLE_FUZZING],[test "x$with_fuzzing" != "xnone"])
 AS_IF([test "x$with_fuzzing" != "xnone"],
       [AS_IF([test "x$enable_tcti_fuzzing" = xno],
-             AC_MSG_ERROR([Fuzz tests can not be enabled without the TCTI_FUZZING module]))
+             [AC_MSG_ERROR([Fuzz tests can not be enabled without the TCTI_FUZZING module])])
        AS_IF([test "x$GEN_FUZZ" != "x1"],
-             AC_MSG_ERROR([Fuzz tests can not be enabled without "GEN_FUZZ=1" variable]))])
+             [AC_MSG_ERROR([Fuzz tests can not be enabled without "GEN_FUZZ=1" variable])])])
 
 AX_VALGRIND_CHECK
 
@@ -445,7 +445,7 @@ AC_ARG_ENABLE([weakcrypto],
 	           [Disable crypto algorithms considered weak])],,
     [enable_weakcrypto=no])
 AS_IF([test "x$enable_weakcrypto" = "xyes"],
-	AC_DEFINE([DISABLE_WEAK_CRYPTO],[1],[DISABLE WEAK CRYPTO ALGORITHMS]))
+	[AC_DEFINE([DISABLE_WEAK_CRYPTO],[1],[DISABLE WEAK CRYPTO ALGORITHMS])])
 
 AC_SUBST([PATH])
 
@@ -487,7 +487,7 @@ AM_COND_IF([ENABLE_TCTI_FUZZING], [
             AM_COND_IF([ENABLE_TCTI_SWTPM],
                        AC_MSG_ERROR([Fuzzing TCTI is meant to be built as the only TCTI: use --disable-tcti-device --disable-tcti-mssim --disable-tcti-swtpm]))
             AS_IF([test "x$CC" != "xclang"],
-                       AC_MSG_ERROR("Fuzzing TCTI can only be used with clang"), [])
+                       [AC_MSG_ERROR("Fuzzing TCTI can only be used with clang")], [])
             ], [])
 
 AC_OUTPUT
