@@ -77,7 +77,32 @@ static char * root_cert_list[] = {
     "VILmTjHwSL7uZBU=\n"
     "-----END CERTIFICATE-----",
 
-    /* STM RSA root certificate */
+    /* GlobalSign TPM RSA Root CA */
+    "-----BEGIN CERTIFICATE-----\n"
+    "MIID1zCCAr+gAwIBAgILBAAAAAABIBkJGa4wDQYJKoZIhvcNAQELBQAwgYcxOzA5\n"
+    "BgNVBAsTMkdsb2JhbFNpZ24gVHJ1c3RlZCBDb21wdXRpbmcgQ2VydGlmaWNhdGUg\n"
+    "QXV0aG9yaXR5MRMwEQYDVQQKEwpHbG9iYWxTaWduMTMwMQYDVQQDEypHbG9iYWxT\n"
+    "aWduIFRydXN0ZWQgUGxhdGZvcm0gTW9kdWxlIFJvb3QgQ0EwHhcNMDkwMzE4MTAw\n"
+    "MDAwWhcNNDkwMzE4MTAwMDAwWjCBhzE7MDkGA1UECxMyR2xvYmFsU2lnbiBUcnVz\n"
+    "dGVkIENvbXB1dGluZyBDZXJ0aWZpY2F0ZSBBdXRob3JpdHkxEzARBgNVBAoTCkds\n"
+    "b2JhbFNpZ24xMzAxBgNVBAMTKkdsb2JhbFNpZ24gVHJ1c3RlZCBQbGF0Zm9ybSBN\n"
+    "b2R1bGUgUm9vdCBDQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAPi3\n"
+    "Gi0wHyTT7dq24caFAp31gXFDvALRGJrMiP+TunIYPacYD8eBVSNEiVoCUcVfYxzl\n"
+    "/DPTxmRyGXgQM8CVh9THrxDTW7N2PSAoZ7fvlmjTiBL/IQ7m1F+9wGI/FuaMTphz\n"
+    "w6lBda7HFlIYKTbM/vz24axCHLzJ8Xir2L889D9MMIerBRqouVsDGauH+TIOdw4o\n"
+    "IGKhorqfsDro57JHwViMWlbB1Ogad7PBX5X/e9GDNdZTdo4c0bZnKO+dEtzEgKCh\n"
+    "JmQ53Mxa9y4xPMGRRnjLsyxuM99vkkYXy7rnxctSo7GtGIJJVabNuXZ0peaY9ku0\n"
+    "CUgKAsQndLkTHz8bIh0CAwEAAaNCMEAwDgYDVR0PAQH/BAQDAgEGMA8GA1UdEwEB\n"
+    "/wQFMAMBAf8wHQYDVR0OBBYEFB4jY/CFtfYlTu0awFC+ZXzH1BV6MA0GCSqGSIb3\n"
+    "DQEBCwUAA4IBAQCVb7lI4d49u7EtCX03/rUCCiaZ64NMxxqRmcSVdUx6yRrbl8NN\n"
+    "FNr6ym2kTvwe1+JkTCiDxKzJsOR/jcPczAFiYpFbZQYLA6RK0bzbL9RGcaw5LLhY\n"
+    "o/flqsu3N2/HNesWbekoxLosP6NLGEOnpj1B+R3y7HCQq/08U5l3Ete6TRKTAavc\n"
+    "0mty+uCFtLXf+tirl7xSaIGD0LwcYNdzLEB9g4je6FQSWL0QOXb+zR755QYupZAw\n"
+    "G1PnOgYWfqWowKcQQexFPrKGlzh0ncITV/nBEi++fnnZ7TFiwaKwe+WussrROV1S\n"
+    "DDF29dmoMcbSFDL+DgSMabVT6Qr6Ze1rbmSh\n"
+    "-----END CERTIFICATE-----",
+
+    /* STM RSA root certificate (signed by GlobalSign TPM Root CA) */
     "-----BEGIN CERTIFICATE-----\n"
     "MIIEDDCCAvSgAwIBAgILBAAAAAABIsFs834wDQYJKoZIhvcNAQELBQAwgYcxOzA5\n"
     "BgNVBAsTMkdsb2JhbFNpZ24gVHJ1c3RlZCBDb21wdXRpbmcgQ2VydGlmaWNhdGUg\n"
@@ -103,7 +128,26 @@ static char * root_cert_list[] = {
     "+kWoe5+SY3gdOGGDQKIdw3W1poMN8bQ5x7XFcgVMwVU=\n"
     "-----END CERTIFICATE-----\n",
 
-    /* STM ECC root certificate */
+    /* GlobalSign TPM ECC Root CA */
+    "-----BEGIN CERTIFICATE-----\n"
+    "MIICszCCAjqgAwIBAgIORdycjBUV21nQRkudeekwCgYIKoZIzj0EAwMwgYsxOzA5\n"
+    "BgNVBAsTMkdsb2JhbFNpZ24gVHJ1c3RlZCBDb21wdXRpbmcgQ2VydGlmaWNhdGUg\n"
+    "QXV0aG9yaXR5MRMwEQYDVQQKEwpHbG9iYWxTaWduMTcwNQYDVQQDEy5HbG9iYWxT\n"
+    "aWduIFRydXN0ZWQgUGxhdGZvcm0gTW9kdWxlIEVDQyBSb290IENBMB4XDTE0MTEy\n"
+    "NjAwMDAwMFoXDTM4MDExOTAzMTQwN1owgYsxOzA5BgNVBAsTMkdsb2JhbFNpZ24g\n"
+    "VHJ1c3RlZCBDb21wdXRpbmcgQ2VydGlmaWNhdGUgQXV0aG9yaXR5MRMwEQYDVQQK\n"
+    "EwpHbG9iYWxTaWduMTcwNQYDVQQDEy5HbG9iYWxTaWduIFRydXN0ZWQgUGxhdGZv\n"
+    "cm0gTW9kdWxlIEVDQyBSb290IENBMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAENTps\n"
+    "86FDUD+bep3kd1U5pnita316zBktOVNWxZQ+Ymua0oaR66ItzHrl19zYSGbW6ar0\n"
+    "1V91kktxWDJ6UFl3MyH3yXKsCHS2O5vxMlfmdRp8tpebMorHtIWf9u1+ctNFo2Mw\n"
+    "YTAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUYT78\n"
+    "EZkKf7CpW5CgJl4pYUe3MAMwHwYDVR0jBBgwFoAUYT78EZkKf7CpW5CgJl4pYUe3\n"
+    "MAMwCgYIKoZIzj0EAwMDZwAwZAIwd02iAb5aN/pQGWdTJ7/lgMhFCuOLGtQ+ocdV\n"
+    "/xmoxdIWLtggAuq9fFDfsu/vzeJ7AjAGhdk03AjHpLl0dAp7aCI8D8qupwyYTBaL\n"
+    "rSJCZDMHhvNhETbbLu8uEPKt/U6/mGM=\n"
+    "-----END CERTIFICATE-----",
+
+    /* STM ECC root certificate (signed by GlobalSign TPM ECC Root CA)*/
     "-----BEGIN CERTIFICATE-----\n"
     "MIICyDCCAk+gAwIBAgIORyzLp/OdsAvb9r+66LowCgYIKoZIzj0EAwMwgYsxOzA5\n"
     "BgNVBAsTMkdsb2JhbFNpZ24gVHJ1c3RlZCBDb21wdXRpbmcgQ2VydGlmaWNhdGUg\n"
