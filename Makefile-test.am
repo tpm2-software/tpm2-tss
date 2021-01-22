@@ -302,6 +302,7 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-get-random.fint \
     test/integration/fapi-platform-certificates.fint \
     test/integration/fapi-key-create-sign.fint \
+    test/integration/fapi-key-create2-sign.fint \
     test/integration/fapi-key-create-null-key-sign.fint \
     test/integration/fapi-key-create-sign-persistent-key.fint \
     test/integration/fapi-key-create-sign-password-provision.fint \
@@ -1484,6 +1485,13 @@ test_integration_fapi_key_create_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_sign_fint_SOURCES = \
     test/integration/fapi-key-create-sign.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_key_create2_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_key_create2_sign_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_key_create2_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create2_sign_fint_SOURCES = \
+    test/integration/fapi-key-create2-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_key_create_null_key_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
