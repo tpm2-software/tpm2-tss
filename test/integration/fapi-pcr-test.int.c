@@ -16,6 +16,7 @@
 #include "tss2_fapi.h"
 
 #include "test-fapi.h"
+#include "ifapi_eventlog.h"
 #define LOGMODULE test
 #include "util/log.h"
 #include "util/aux_util.h"
@@ -31,19 +32,19 @@ const char *log_exp[] = {
     \"pcr\":16,\n\
     \"digests\":[\n\
       {\n\
-        \"hashAlg\":\"SHA1\",\n\
+        \"hashAlg\":\"sha1\",\n\
         \"digest\":\"494179714a6cd627239dfededf2de9ef994caf03\"\n\
       },\n\
       {\n\
-        \"hashAlg\":\"SHA256\",\n\
+        \"hashAlg\":\"sha256\",\n\
         \"digest\":\"1f825aa2f0020ef7cf91dfa30da4668d791c5d4824fc8e41354b89ec05795ab3\"\n\
       },\n\
       {\n\
-        \"hashAlg\":\"SHA384\",\n\
+        \"hashAlg\":\"sha384\",\n\
         \"digest\":\"182e95266adff49059e706c61483478fe0688150c8d08b95fab5cfde961f12d903aaf44104af4ce72ba6a4bf20302b2e\"\n\
       },\n\
       {\n\
-        \"hashAlg\":\"SHA512\",\n\
+        \"hashAlg\":\"sha512\",\n\
         \"digest\":\"0f89ee1fcb7b0a4f7809d1267a029719004c5a5e5ec323a7c3523a20974f9a3f202f56fadba4cd9e8d654ab9f2e96dc5c795ea176fa20ede8d854c342f903533\"\n\
       },\n\
       {\n\
@@ -66,24 +67,24 @@ const char *log_exp[] = {
     \"pcr\":16,\n\
     \"digests\":[\n\
       {\n\
-        \"hashAlg\":\"SHA1\",\n\
+        \"hashAlg\":\"sha1\",\n\
         \"digest\":\"494179714a6cd627239dfededf2de9ef994caf03\"\n\
       },\n\
       {\n\
-        \"hashAlg\":\"SHA256\",\n\
+        \"hashAlg\":\"sha256\",\n\
         \"digest\":\"1f825aa2f0020ef7cf91dfa30da4668d791c5d4824fc8e41354b89ec05795ab3\"\n\
       },\n\
       {\n\
-        \"hashAlg\":\"SHA384\",\n\
+        \"hashAlg\":\"sha384\",\n\
         \"digest\":\"182e95266adff49059e706c61483478fe0688150c8d08b95fab5cfde961f12d903aaf44104af4ce72ba6a4bf20302b2e\"\n\
       },\n\
       {\n\
-        \"hashAlg\":\"SHA512\",\n\
+        \"hashAlg\":\"sha512\",\n\
         \"digest\":\"0f89ee1fcb7b0a4f7809d1267a029719004c5a5e5ec323a7c3523a20974f9a3f202f56fadba4cd9e8d654ab9f2e96dc5c795ea176fa20ede8d854c342f903533\"\n\
       }\n\
     ],\n\
-    \"type\":\"tss2\",\n\
-    \"sub_event\":{\n\
+    \"" CONTENT_TYPE "\":\"tss2\",\n\
+    \"" CONTENT "\":{\n\
       \"data\":\"00010203040506070809\",\n\
       \"event\":{\n\
         \"test\":\"myfile\"\n\
@@ -97,20 +98,20 @@ const char *log_exp[] = {
     \"pcr\":16,\n\
     \"digests\":[\n\
       {\n\
-        \"hashAlg\":\"SHA1\",\n\
+        \"hashAlg\":\"sha1\",\n\
         \"digest\":\"494179714a6cd627239dfededf2de9ef994caf03\"\n\
       },\n\
       {\n\
-        \"hashAlg\":\"SHA256\",\n\
+        \"hashAlg\":\"sha256\",\n\
         \"digest\":\"1f825aa2f0020ef7cf91dfa30da4668d791c5d4824fc8e41354b89ec05795ab3\"\n\
       },\n\
       {\n\
-        \"hashAlg\":\"SHA384\",\n\
+        \"hashAlg\":\"sha384\",\n\
         \"digest\":\"182e95266adff49059e706c61483478fe0688150c8d08b95fab5cfde961f12d903aaf44104af4ce72ba6a4bf20302b2e\"\n\
       }\n\
     ],\n\
-    \"type\":\"tss2\",\n\
-    \"sub_event\":{\n\
+    \"" CONTENT_TYPE "\":\"tss2\",\n\
+    \"" CONTENT "\":{\n\
       \"data\":\"00010203040506070809\",\n\
       \"event\":{\n\
         \"test\":\"myfile\"\n\
@@ -124,16 +125,16 @@ const char *log_exp[] = {
     \"pcr\":16,\n\
     \"digests\":[\n\
       {\n\
-        \"hashAlg\":\"SHA1\",\n\
+        \"hashAlg\":\"sha1\",\n\
         \"digest\":\"494179714a6cd627239dfededf2de9ef994caf03\"\n\
       },\n\
       {\n\
-        \"hashAlg\":\"SHA256\",\n\
+        \"hashAlg\":\"sha256\",\n\
         \"digest\":\"1f825aa2f0020ef7cf91dfa30da4668d791c5d4824fc8e41354b89ec05795ab3\"\n\
       }\n\
     ],\n\
-    \"type\":\"tss2\",\n\
-    \"sub_event\":{\n\
+    \"" CONTENT_TYPE "\":\"tss2\",\n\
+    \"" CONTENT "\":{\n\
       \"data\":\"00010203040506070809\",\n\
       \"event\":{\n\
         \"test\":\"myfile\"\n\
@@ -147,12 +148,12 @@ const char *log_exp[] = {
     \"pcr\":16,\n\
     \"digests\":[\n\
       {\n\
-        \"hashAlg\":\"SHA1\",\n\
+        \"hashAlg\":\"sha1\",\n\
         \"digest\":\"494179714a6cd627239dfededf2de9ef994caf03\"\n\
       }\n\
     ],\n\
-    \"type\":\"tss2\",\n\
-    \"sub_event\":{\n\
+    \"" CONTENT_TYPE "\":\"tss2\",\n\
+    \"" CONTENT "\":{\n\
       \"data\":\"00010203040506070809\",\n\
       \"event\":{\n\
         \"test\":\"myfile\"\n\
@@ -166,12 +167,12 @@ const char *log_exp[] = {
     \"pcr\":16,\n\
     \"digests\":[\n\
       {\n\
-        \"hashAlg\":\"SHA256\",\n\
+        \"hashAlg\":\"sha256\",\n\
         \"digest\":\"1f825aa2f0020ef7cf91dfa30da4668d791c5d4824fc8e41354b89ec05795ab3\"\n\
       }\n\
     ],\n\
-    \"type\":\"tss2\",\n\
-    \"sub_event\":{\n\
+    \"" CONTENT_TYPE "\":\"tss2\",\n\
+    \"" CONTENT "\":{\n\
       \"data\":\"00010203040506070809\",\n\
       \"event\":{\n\
         \"test\":\"myfile\"\n\

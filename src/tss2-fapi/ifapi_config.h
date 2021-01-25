@@ -40,6 +40,10 @@ typedef struct {
     TPMI_YES_NO         ek_cert_less;
     /** Certificate service for Intel TPMs */
     char                *intel_cert_service;
+    /* File with firmware measurements. */
+    char                *firmware_log_file;
+    /* File with ima measurements. */
+    char                *ima_log_file;
 
 } IFAPI_CONFIG;
 

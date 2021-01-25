@@ -187,6 +187,13 @@ ifapi_check_json_object_fields(
     char** field_tab,
     size_t size_of_tab);
 
+TSS2_RC
+ifapi_extend_pcr(
+    TPMI_ALG_HASH alg,
+    uint8_t *pcr,
+    const uint8_t *digest,
+    size_t alg_size);
+
 TSS2_RC ifapi_pcr_selection_to_pcrvalues(
         TPML_PCR_SELECTION *pcr_selection,
         TPML_DIGEST *pcr_digests,

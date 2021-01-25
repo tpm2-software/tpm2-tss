@@ -30,6 +30,7 @@ char *fapi_profile = NULL;
 char *tmpdir = NULL;
 
 char *config = NULL;
+char *config_bak = NULL;
 char *config_path = NULL;
 char *config_env = NULL;
 char *remove_cmd = NULL;
@@ -180,6 +181,29 @@ error:
     return r;
 }
 
+TSS2_RC
+pcr_extend(FAPI_CONTEXT *context, UINT32 pcr, TPML_DIGEST_VALUES *digest_values)
+{
+    TSS2_RC r;
+    TSS2_TCTI_CONTEXT *tcti;
+    ESYS_CONTEXT *esys;
+
+    r = Fapi_GetTcti(context, &tcti);
+    goto_if_error(r, "Error Fapi_GetTcti", error);
+
+    r = Esys_Initialize(&esys, tcti, NULL);
+    goto_if_error(r, "Error Fapi_GetTcti", error);
+
+    r = Esys_PCR_Extend(esys, pcr,
+                        ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                        digest_values);
+    Esys_Finalize(&esys);
+    goto_if_error(r, "Error Eys_PCR_Reset", error);
+
+error:
+    return r;
+}
+
 int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
 {
     TSS2_RC rc;
@@ -303,15 +327,67 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
 #if defined(FAPI_TEST_EK_CERT_LESS)
                     "     \"ek_cert_less\": \"yes\",\n"
 #endif
-                    "}\n",
+                    "",
                     profile, tmpdir, tmpdir, tmpdir,
                     getenv("TPM20TEST_TCTI"));
 #endif /* FAPI_NONTPM */
+
     if (size < 0) {
         LOG_ERROR("Out of memory");
         ret = EXIT_ERROR;
         goto error;
     }
+
+#if defined (FAPI_TEST_FIRMWARE_LOG_FILE)
+    config_bak = config;
+    size = asprintf(&config, "%s%s", config_bak, "     \"firmware_log_file\": \"" TOP_SOURCEDIR "/" FAPI_TEST_FIRMWARE_LOG_FILE "\",\n");
+    if (size < 0) {
+        LOG_ERROR("Out of memory");
+        ret = EXIT_ERROR;
+        goto error;
+    }
+    SAFE_FREE(config_bak);
+#endif
+#if defined (FAPI_TEST_IMA_LOG_FILE)
+    config_bak = config;
+    size = asprintf(&config, "%s%s", config_bak, "     \"ima_log_file\": \"" TOP_SOURCEDIR "/" FAPI_TEST_IMA_LOG_FILE "\",\n");
+    if (size < 0) {
+        LOG_ERROR("Out of memory");
+        ret = EXIT_ERROR;
+        goto error;
+    }
+    SAFE_FREE(config_bak);
+#endif
+#if defined (FAPI_TEST_FIRMWARE_LOG_FILE_ABS)
+    config_bak = config;
+    size = asprintf(&config, "%s%s", config_bak, "     \"firmware_log_file\": \"" FAPI_TEST_FIRMWARE_LOG_FILE_ABS "\",\n");
+    if (size < 0) {
+        LOG_ERROR("Out of memory");
+        ret = EXIT_ERROR;
+        goto error;
+    }
+    SAFE_FREE(config_bak);
+#endif
+#if defined (FAPI_TEST_IMA_LOG_FILE_ABS)
+    config_bak = config;
+    size = asprintf(&config, "%s%s", config_bak, "     \"ima_log_file\": \"" FAPI_TEST_IMA_LOG_FILE_ABS "\",\n");
+    if (size < 0) {
+        LOG_ERROR("Out of memory");
+        ret = EXIT_ERROR;
+        goto error;
+    }
+    SAFE_FREE(config_bak);
+#endif
+
+
+    config_bak = config;
+    size = asprintf(&config, "%s}", config_bak);
+    if (size < 0) {
+        LOG_ERROR("Out of memory");
+        ret = EXIT_ERROR;
+        goto error;
+    }
+    SAFE_FREE(config_bak);
 
     size = asprintf(&system_dir, "%s/system_dir/", tmpdir);
     if (size < 0) {

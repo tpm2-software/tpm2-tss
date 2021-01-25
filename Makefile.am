@@ -500,7 +500,7 @@ pkgconfig_DATA += lib/tss2-policy.pc
 
 src_tss2_policy_libtss2_policy_la_CFLAGS = $(AM_CFLAGS) -I$(srcdir)/src/tss2-policy -I$(srcdir)/src/tss2-fapi \
     $(JSONC_CFLAGS)
-src_tss2_policy_libtss2_policy_la_LIBADD  = $(libtss2_esys) $(libtss2_mu) $(libutil) $(JSONC_LIBS)
+src_tss2_policy_libtss2_policy_la_LIBADD  = $(libtss2_esys) $(libtss2_mu) $(libutil) $(JSONC_LIBS) $(UUID_LIBS)
 
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_policy_libtss2_policy_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/tss2-policy.map
@@ -509,12 +509,15 @@ endif # HAVE_LD_VERSION_SCRIPT
 src_tss2_policy_libtss2_policy_la_SOURCES = $(TSS2_POLICY_SRC) \
     src/tss2-fapi/fapi_crypto.c \
     src/tss2-fapi/ifapi_eventlog.c \
+    src/tss2-fapi/ifapi_ima_eventlog.c \
+    src/tss2-fapi/ifapi_eventlog_system.c \
     src/tss2-fapi/ifapi_helpers.c \
     src/tss2-fapi/ifapi_io.c \
     src/tss2-fapi/ifapi_json_deserialize.c \
     src/tss2-fapi/ifapi_json_serialize.c \
     src/tss2-fapi/tpm_json_deserialize.c \
     src/tss2-fapi/tpm_json_serialize.c \
+    src/tss2-fapi/ifapi_json_eventlog_serialize.c \
     src/tss2-fapi/ifapi_policy.c \
     src/tss2-fapi/ifapi_policy_calculate.c \
     src/tss2-fapi/ifapi_policy_execute.c \
@@ -547,6 +550,8 @@ fapi-config.json: dist/fapi-config.json.in
 		-e 's|[@]localstatedir@|$(localstatedir)|g' \
 		-e 's|[@]runstatedir@|$(runstatedir)|g' \
 		-e 's|[@]userstatedir@|$(userstatedir)|g' \
+		-e 's|[@]imameasurements@|$(imameasurements)|g' \
+		-e 's|[@]sysmeasurements@|$(sysmeasurements)|g' \
 		< "$<" > "$@"
 
 sysusers_DATA = dist/sysusers.d/tpm2-tss.conf
@@ -592,6 +597,7 @@ EXTRA_DIST +=  \
     test/data/fapi/P_RSA256.json \
     test/data/fapi/P_ECC.json \
     test/data/fapi/P_ECC384.json \
+    test/data/fapi/P_ECC_system.json \
     test/data/fapi/policy/pol_pcr16_0.json \
     test/data/fapi/policy/pol_pcr16_0_rsa_authorized.json \
     test/data/fapi/policy/pol_pcr16_0_ecc_authorized.json \
@@ -627,19 +633,33 @@ EXTRA_DIST +=  \
     test/data/fapi/policy/pol_or_read_write_secret.json \
     test/data/fapi/policy/pol_ek_high_range_sha256.json \
     test/data/fapi/P_ECC_sh_eh_policy_sha384.json \
-	test/data/fapi/policy/pol_authorize_ecc_pem_sha384.json \
-	test/data/fapi/policy/pol_authorize_nv_complex_tpm2b_sha384.json \
-	test/data/fapi/policy/pol_authorize_nv_tpms_sha384.json \
-	test/data/fapi/policy/pol_authorize_nv_sha384.json \
-	test/data/fapi/policy/pol_cphash_sha384.json \
-	test/data/fapi/policy/pol_pcr16_0_ecc_authorized_sha384.json
+    test/data/fapi/policy/pol_authorize_ecc_pem_sha384.json \
+    test/data/fapi/policy/pol_authorize_nv_complex_tpm2b_sha384.json \
+    test/data/fapi/policy/pol_authorize_nv_tpms_sha384.json \
+    test/data/fapi/policy/pol_authorize_nv_sha384.json \
+    test/data/fapi/policy/pol_cphash_sha384.json \
+    test/data/fapi/policy/pol_pcr16_0_ecc_authorized_sha384.json \
+    test/data/fapi/eventlog/binary_measurements_nuc.bin \
+    test/data/fapi/eventlog/binary_measurements_pc_client.bin \
+    test/data/fapi/eventlog/event.bin \
+    test/data/fapi/eventlog/event-uefiaction.bin \
+    test/data/fapi/eventlog/event-uefiservices.bin \
+    test/data/fapi/eventlog/event-uefivar.bin \
+    test/data/fapi/eventlog/specid-vendordata.bin \
+    test/data/fapi/eventlog/sml-ima-ng-sha1.bin \
+    test/data/fapi/eventlog/sml-ima-sha1.bin \
+    test/data/fapi/eventlog/sml-ima-sig-sha256.bin \
+    test/data/fapi/eventlog/sml-ima-ng-sha1-invalidated.bin \
+    test/data/fapi/eventlog/sml-ima-ng-sha1-invalidated.bin \
+    test/data/fapi/eventlog/sml-ima-sig-sha256-invalidated.bin \
+    test/data/fapi/eventlog/sml-ima-sha1-invalidated.bin
 
 src_tss2_fapi_libtss2_fapi_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) $(libtss2_esys) \
     $(libutil) $(libtss2_tctildr)
 
 src_tss2_fapi_libtss2_fapi_la_SOURCES = $(TSS2_FAPI_SRC)
 src_tss2_fapi_libtss2_fapi_la_CFLAGS  = $(AM_CFLAGS) -I$(srcdir)/src/tss2-fapi $(CRYPTO_CFLAGS) $(JSONC_CFLAGS) $(CURL_CFLAGS)
-src_tss2_fapi_libtss2_fapi_la_LDFLAGS = $(AM_LDFLAGS) $(CRYPTO_LIBS) $(JSONC_LIBS) $(CURL_LIBS)
+src_tss2_fapi_libtss2_fapi_la_LDFLAGS = $(AM_LDFLAGS) $(CRYPTO_LIBS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS)
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_fapi_libtss2_fapi_la_LDFLAGS += -Wl,--version-script=$(srcdir)/lib/tss2-fapi.map
 endif # HAVE_LD_VERSION_SCRIPT

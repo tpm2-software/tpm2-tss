@@ -13,6 +13,7 @@
 #include "tss2_tpm2_types.h"
 #include "ifapi_keystore.h"
 #include "fapi_int.h"
+#include "ifapi_eventlog_system.h"
 
 #define YES 1
 #define NO 0
@@ -85,16 +86,27 @@ ifapi_json_IFAPI_EVENT_TYPE_deserialize_txt(json_object *jso,
         IFAPI_EVENT_TYPE *out);
 
 TSS2_RC
-ifapi_json_IFAPI_TSS_EVENT_deserialize(json_object *jso, IFAPI_TSS_EVENT *out);
+ifapi_json_IFAPI_TSS_EVENT_deserialize(json_object *jso,
+                                       IFAPI_TSS_EVENT *out);
 
 TSS2_RC
-ifapi_json_IFAPI_IMA_EVENT_deserialize(json_object *jso, IFAPI_IMA_EVENT *out);
+ifapi_json_IFAPI_EVENT_UNION_deserialize(
+    UINT32 selector,
+    json_object *jso,
+    IFAPI_EVENT_UNION *out,
+    bool *verify);
+
+enum IFAPI_EVENT_ERROR_HANDLING {
+    DIGEST_CHECK_WARNING = 0,
+    DIGEST_CHECK_ERROR,
+    DO_NOT_CHECK_DIGEST
+};
 
 TSS2_RC
-ifapi_json_IFAPI_EVENT_UNION_deserialize(UINT32 selector, json_object *jso,
-        IFAPI_EVENT_UNION *out);
+ifapi_json_IFAPI_EVENT_deserialize(json_object *jso, IFAPI_EVENT *out,
+                                   enum IFAPI_EVENT_ERROR_HANDLING error_handling);
 
 TSS2_RC
-ifapi_json_IFAPI_EVENT_deserialize(json_object *jso, IFAPI_EVENT *out);
+ifapi_json_TPMS_EVENT_CELMGT_deserialize(json_object *jso,  TPMS_EVENT_CELMGT *out);
 
 #endif /* IFAPI_JSON_DESERIALIZE_H */

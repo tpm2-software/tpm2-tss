@@ -81,6 +81,8 @@ Fapi_Finalize(
     SAFE_FREE((*context)->config.log_dir);
     SAFE_FREE((*context)->config.ek_cert_file);
     SAFE_FREE((*context)->config.intel_cert_service);
+    SAFE_FREE((*context)->config.firmware_log_file);
+    SAFE_FREE((*context)->config.ima_log_file);
 
     /* Finalize the eventlog module. */
     SAFE_FREE((*context)->eventlog.log_dir);

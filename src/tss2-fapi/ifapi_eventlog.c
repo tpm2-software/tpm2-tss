@@ -16,9 +16,13 @@
 #include "ifapi_json_serialize.h"
 
 #define LOGMODULE fapi
+#include "ifapi_ima_eventlog.h"
+#include "ifapi_json_eventlog_serialize.h"
+#include "ifapi_json_deserialize.h"
 #include "util/log.h"
 #include "util/aux_util.h"
 #include "ifapi_macros.h"
+#include "fapi_crypto.h"
 
 /** Initialize the eventlog module of FAPI.
  *
@@ -34,12 +38,17 @@
 TSS2_RC
 ifapi_eventlog_initialize(
     IFAPI_EVENTLOG *eventlog,
-    const char *log_dir)
+    const char *log_dir,
+    const char *firmware_log_file,
+    const char *ima_log_file)
 {
     check_not_null(eventlog);
     check_not_null(log_dir);
 
     TSS2_RC r;
+
+    eventlog->ima_log_file = ima_log_file;
+    eventlog->firmware_log_file = firmware_log_file;
 
     r = ifapi_io_check_create_dir(log_dir, FAPI_READ);
     return_if_error2(r, "Directory check/creation failed for %s", log_dir);
@@ -72,9 +81,19 @@ ifapi_eventlog_get_async(
     const TPM2_HANDLE *pcrList,
     size_t pcrListSize)
 {
+    IFAPI_EVENT cel_event;
+    IFAPI_EVENT prev_event;
+    size_t n;
+    json_object *jso_prev;
+    size_t i;
+    json_object *jso;
+    TSS2_RC r;
+
     check_not_null(eventlog);
     check_not_null(io);
     check_not_null(pcrList);
+
+    eventlog->log = NULL;
 
     if (pcrListSize > TPM2_MAX_PCRS) {
         LOG_ERROR("pcrList too long %zi > %i", pcrListSize, TPM2_MAX_PCRS);
@@ -86,12 +105,71 @@ ifapi_eventlog_get_async(
     memcpy(&eventlog->pcrList, pcrList, pcrListSize * sizeof(TPM2_HANDLE));
     eventlog->pcrListSize = pcrListSize;
     eventlog->pcrListIdx = 0;
-
     eventlog->log = json_object_new_array();
     return_if_null(eventlog->log, "Out of memory", TSS2_FAPI_RC_MEMORY);
 
+    if (eventlog->firmware_log_file) {
+        memset(&cel_event, 0, sizeof(IFAPI_EVENT));
+        cel_event.content_type = IFAPI_CEL_TAG;
+        cel_event.content.cel_event.type = CEL_VERSION;
+        cel_event.content.cel_event.data.cel_version.major = 1;
+        cel_event.content.cel_event.data.cel_version.minor = 0;
+        jso = NULL;
+        r = ifapi_json_IFAPI_EVENT_serialize(&cel_event, &jso);
+        goto_if_error(r, "Error serialize event", error);
+
+        json_object_array_add(eventlog->log, jso);
+    }
+
+    if (eventlog->firmware_log_file) {
+        /* Initialize event list with the firmware events defied by pcrList. */
+        r = ifapi_get_tcg_firmware_event_list(eventlog->firmware_log_file,
+                                              &pcrList[0], pcrListSize,
+                                              &eventlog->log);
+        return_if_error(r, "Read firmware log.");
+
+
+        memset(&cel_event, 0, sizeof(IFAPI_EVENT));
+        n = json_object_array_length(eventlog->log);
+        for (i = 0; i < n; i++) {
+            jso_prev = json_object_array_get_idx(eventlog->log, i);
+            r = ifapi_json_IFAPI_EVENT_deserialize(jso_prev, &prev_event,
+                                                   DIGEST_CHECK_WARNING);
+
+            goto_if_error(r, "Deserialize event", error);
+            if (prev_event.pcr == 0) {
+                cel_event.recnum++;
+            }
+            ifapi_cleanup_event(&prev_event);
+        }
+        cel_event.content_type = IFAPI_CEL_TAG;
+        cel_event.content.cel_event.type = FIRMWARE_END;
+        jso = NULL;
+        r = ifapi_json_IFAPI_EVENT_serialize(&cel_event, &jso);
+        goto_if_error(r, "Error serialize event", error);
+
+        json_object_array_add(eventlog->log, jso);
+    }
+    if (eventlog->ima_log_file) {
+        /* Initialize event list with the IMA events. */
+        r = ifapi_read_ima_event_log(eventlog->ima_log_file, &pcrList[0],
+                                     pcrListSize, &eventlog->log);
+        goto_if_error(r, "Read IMA log.", error);
+    }
+
+    if (!eventlog->log) {
+        eventlog->log = json_object_new_array();
+        return_if_null(eventlog->log, "Out of memory", TSS2_FAPI_RC_MEMORY);
+    }
+
     return TSS2_RC_SUCCESS;
+
+ error:
+    if (eventlog->log)
+        json_object_put(eventlog->log);
+    return r;
 }
+
 
 /** Retrieve the eventlog for a given list of pcrs using asynchronous io.
  *
@@ -124,7 +202,10 @@ ifapi_eventlog_get_finish(
 
     TSS2_RC r;
     char *event_log_file, *logstr;
-    json_object *logpart, *event;
+    json_object *logpart, *jso_event;
+    size_t i, n_events;
+    IFAPI_EVENT event;
+    json_object *jso;
 
     LOG_TRACE("called");
 
@@ -133,6 +214,16 @@ loop:
        it to the caller. */
     if (eventlog->pcrListIdx >= eventlog->pcrListSize) {
         LOG_TRACE("Done reading pcrLog");
+        /* Verify the digest values of the event list. */
+        n_events = json_object_array_length(eventlog->log);
+        for (i = 0; i < n_events; i++) {
+            jso = json_object_array_get_idx(eventlog->log, i);
+            r = ifapi_json_IFAPI_EVENT_deserialize(jso, &event, DIGEST_CHECK_WARNING);
+            goto_if_error(r, "Error serialize policy", error);
+
+            ifapi_cleanup_event(&event);
+    }
+
         *log = strdup(json_object_to_json_string_ext(eventlog->log, JSON_C_TO_STRING_PRETTY));
         check_oom(*log);
         json_object_put(eventlog->log);
@@ -185,10 +276,10 @@ loop:
             /* Iterate through the array of logpart and add each item to the eventlog */
             /* The return type of json_object_array_length() was changed, thus the case */
             for (int i = 0; i < (int)json_object_array_length(logpart); i++) {
-                event = json_object_array_get_idx(logpart, i);
+                jso_event = json_object_array_get_idx(logpart, i);
                 /* Increment the refcount of event so it does not get freed on put(logpart) below */
-                json_object_get(event);
-                json_object_array_add(eventlog->log, event);
+                json_object_get(jso_event);
+                json_object_array_add(eventlog->log, jso_event);
             }
             json_object_put(logpart);
         }
@@ -200,6 +291,10 @@ loop:
     statecasedefault(eventlog->state);
     }
     return TSS2_RC_SUCCESS;
+
+ error:
+     json_object_put(eventlog->log);
+     return r;
 }
 
 /** Check event log format before appending an event to the existing event log.
@@ -317,12 +412,14 @@ ifapi_eventlog_append_finish(
         n = json_object_array_length(eventlog->log);
         for (i = 0; i < n; i++) {
             jso = json_object_array_get_idx(eventlog->log, i);
-            r = ifapi_json_IFAPI_EVENT_deserialize(jso, &prev_event);
+            r = ifapi_json_IFAPI_EVENT_deserialize(jso, &prev_event,
+                                                   DIGEST_CHECK_WARNING);
             goto_if_error(r, "Deserialize event", error_cleanup);
 
             if (prev_event.pcr == pcr_event->pcr) {
                 eventlog->event.recnum++;
             }
+            ifapi_cleanup_event(&prev_event);
         }
 
         /* Extend the eventlog with the data */
@@ -377,10 +474,12 @@ ifapi_eventlog_append_finish(
 void
 ifapi_cleanup_event(IFAPI_EVENT * event) {
     if (event != NULL) {
-        if (event->type == IFAPI_IMA_EVENT_TAG) {
-            SAFE_FREE(event->sub_event.ima_event.eventName);
-        } else if (event->type == IFAPI_TSS_EVENT_TAG) {
-            SAFE_FREE(event->sub_event.tss_event.event);
+        if (event->content_type == IFAPI_IMA_EVENT_TAG) {
+            SAFE_FREE(event->content.ima_event.template_value.buffer);
+        } else if (event->content_type == IFAPI_PC_CLIENT) {
+            SAFE_FREE(event->content.firmware_event.data.buffer);
+        } else if (event->content_type == IFAPI_TSS_EVENT_TAG) {
+            SAFE_FREE(event->content.tss_event.event);
         }
     }
 }

@@ -198,7 +198,10 @@ Fapi_Initialize_Finish(
         goto_if_error(r, "Could not finish initialization", cleanup_return);
 
         /* Initialize the event log module. */
-        r = ifapi_eventlog_initialize(&((*context)->eventlog), (*context)->config.log_dir);
+        r = ifapi_eventlog_initialize(&((*context)->eventlog),
+                                      (*context)->config.log_dir,
+                                      (*context)->config.firmware_log_file,
+                                      (*context)->config.ima_log_file);
         goto_if_error(r, "Initializing eventlog module", cleanup_return);
 
         /* Initialize the keystore. */

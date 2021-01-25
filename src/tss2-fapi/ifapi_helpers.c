@@ -27,6 +27,7 @@
 #include "ifapi_json_serialize.h"
 #include "ifapi_json_deserialize.h"
 #include "tpm_json_deserialize.h"
+#include "ifapi_eventlog.h"
 #define LOGMODULE fapi
 #include "util/log.h"
 #include "util/aux_util.h"
@@ -2013,18 +2014,27 @@ ifapi_extend_vpcr(
     const IFAPI_EVENT *event)
 {
     TSS2_RC r;
-    size_t i;
+    size_t i, j;
     size_t event_size, size;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    bool zero_digest = false;
 
     LOGBLOB_TRACE(&vpcr->buffer[0], vpcr->size, "Old vpcr value");
-
     for (i = 0; i < event->digests.count; i++) {
         if (event->digests.digests[i].hashAlg == bank) {
             event_size = ifapi_hash_get_digest_size(event->digests.digests[i].hashAlg);
 
             LOGBLOB_TRACE(&event->digests.digests[i].digest.sha512[0], event_size,
                           "Extending with");
+
+            zero_digest = true;
+            for (j = 0; j < event_size; j++) {
+                if (event->digests.digests[i].digest.sha512[j]) {
+                    zero_digest = false;
+                }
+            }
+            if (zero_digest)
+                continue;
 
             r = ifapi_crypto_hash_start(&cryptoContext, bank);
             return_if_error(r, "crypto hash start");
@@ -2038,7 +2048,7 @@ ifapi_extend_vpcr(
             break;
         }
     }
-    if (i == event->digests.count) {
+    if (event->digests.count > 0 && i == event->digests.count && !zero_digest) {
         LOG_ERROR("No digest for bank %"PRIu16" found in event", bank);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
@@ -2050,6 +2060,47 @@ error_cleanup:
     ifapi_crypto_hash_abort(&cryptoContext);
     return r;
 }
+
+/** Compute new PCR value from PCR value and event digest.
+ *
+ * @param[in] alg The hash algorithm used for the PCR register.
+ * @param[in,out] pcr The old and the new PCR value.
+ * @param[in] digest The digest used for PCR extension.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the bank was not found in the event list.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ */
+TSS2_RC
+ifapi_extend_pcr(
+    TPMI_ALG_HASH alg,
+    uint8_t *pcr,
+    const uint8_t *digest,
+    size_t alg_size)
+{
+    TSS2_RC r;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
+
+    LOGBLOB_TRACE(pcr, alg_size, "Old pcr value");
+    LOGBLOB_TRACE(digest, alg_size, "Extend with");
+
+    r = ifapi_crypto_hash_start(&cryptoContext, alg);
+    return_if_error(r, "crypto hash start");
+
+    HASH_UPDATE_BUFFER(cryptoContext, pcr, alg_size, r, error_cleanup);
+    HASH_UPDATE_BUFFER(cryptoContext, digest, alg_size, r, error_cleanup);
+    r = ifapi_crypto_hash_finish(&cryptoContext, pcr, &alg_size);
+    return_if_error(r, "crypto hash finish");
+
+    LOGBLOB_TRACE(pcr, alg_size, "New vpcr value");
+
+    return TSS2_RC_SUCCESS;
+
+error_cleanup:
+    ifapi_crypto_hash_abort(&cryptoContext);
+    return r;
+}
+
 
 /** Check whether a event list corresponds to a certain quote information.
  *
@@ -2136,11 +2187,13 @@ ifapi_calculate_pcr_digest(
         n_events = json_object_array_length(jso_event_list);
         for (i_evt = 0; i_evt < n_events; i_evt++) {
             jso = json_object_array_get_idx(jso_event_list, i_evt);
-            r = ifapi_json_IFAPI_EVENT_deserialize(jso, &event);
+            r = ifapi_json_IFAPI_EVENT_deserialize(jso, &event, DIGEST_CHECK_WARNING);
             goto_if_error(r, "Error serialize policy", error_cleanup);
+            LOG_TRACE("Deserialized Event for PCR %u", event.pcr);
 
             for (i = 0; i < n_pcrs; i++) {
                 if (pcrs[i].pcr == event.pcr) {
+                    LOG_DEBUG("Extend PCR %uz", pcrs[i].pcr);
                     r = ifapi_extend_vpcr(&pcrs[i].value, pcrs[i].bank, &event);
                     goto_if_error2(r, "Extending vpcr %"PRIu32, error_cleanup, pcrs[i].pcr);
                 }

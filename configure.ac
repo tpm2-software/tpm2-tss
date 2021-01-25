@@ -55,6 +55,31 @@ AC_SUBST([HOSTOS])
 
 AM_CONDITIONAL(HOSTOS_LINUX, [test x"$HOSTOS" = xLinux])
 
+IMA_MEASUREMENTS="/sys/kernel/security/ima/binary_runtime_measurements"
+
+AS_IF([ test -e "$IMA_MEASUREMENTS"], [imameasurements_std="$IMA_MEASUREMENTS" ],
+      [imameasurements_std="/dev/null" ] )
+AC_SUBST(imameasurements_std)
+
+AC_ARG_WITH([imameasurements],
+            [AS_HELP_STRING([--with-imameasurements=<file>],
+                            [sets file with the IMA measurements")])],,
+            [with_imameasurements=$imameasurements_std])
+AC_SUBST(imameasurements, $with_imameasurements)
+
+SYSTEM_MEASUREMENTS="/sys/kernel/security/tpm0/binary_bios_measurements"
+
+AS_IF([test -e "$SYSTEM_MEASUREMENTS"], [sysmeasurements_std="$SYSTEM_MEASUREMENTS" ],
+      [sysmeasurements_std="/dev/null" ] )
+AC_SUBST(sysmeasurements_std)
+
+
+AC_ARG_WITH([sysmeasurements],
+            [AS_HELP_STRING([--with-sysmeasurements=<file>],
+                            [sets file with the binary bios measurements")])],,
+            [with_sysmeasurements=$sysmeasurements_std])
+AC_SUBST(sysmeasurements, $with_sysmeasurements)
+
 # runstatedir is only defined in the yet unreleased Autoconf 2.70
 AC_ARG_WITH([runstatedir],
             AS_HELP_STRING([--with-runstatedir=<dir>],
@@ -114,6 +139,7 @@ AC_ARG_ENABLE([fapi],
             [enable_fapi=yes])
 
 AM_CONDITIONAL(FAPI, test "x$enable_fapi" = "xyes")
+
 
 AC_ARG_ENABLE([fapi-async-tests],
     AS_HELP_STRING([--enable-fapi-async-tests],
@@ -178,6 +204,9 @@ AS_IF([test "x$enable_fapi" = xyes -o "x$enable_policy" = xyes ],
 
 AS_IF([test "x$enable_fapi" = xyes ],
       [PKG_CHECK_MODULES([CURL], [libcurl])])
+
+AS_IF([test "x$enable_fapi" = xyes -o "x$enable_policy" = xyes ],
+      [PKG_CHECK_MODULES([UUID], [uuid])])
 
 AC_ARG_WITH([tctidefaultmodule],
             [AS_HELP_STRING([--with-tctidefaultmodule],
@@ -474,7 +503,6 @@ AS_IF([test "x$enable_defaultflags" = "xyes"],
       AS_IF([test "x$ax_is_release" = "xno"],
           [ADD_COMPILER_FLAG([-Werror])])
       ADD_COMPILER_FLAG([-fstack-protector-all])
-      ADD_COMPILER_FLAG([-Wno-error=address-of-packed-member])
       ADD_COMPILER_FLAG([-fpic])
       ADD_COMPILER_FLAG([-fPIC])
       # work around GCC bug #53119
@@ -596,4 +624,6 @@ AC_MSG_RESULT([
     sysusersdir:        $sysusersdir
     tmpfilesdir:        $tmpfilesdir
     userstatedir:       [\$HOME/]$with_userstatedir
+    sysmeasurements:    $sysmeasurements
+    imameasurements:    $imameasurements
 ])

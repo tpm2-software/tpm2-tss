@@ -81,4 +81,8 @@ ifapi_json_IFAPI_EVENT_serialize(const IFAPI_EVENT *in, json_object **jso);
 TSS2_RC
 ifapi_json_IFAPI_CONFIG_serialize(const IFAPI_CONFIG *in, json_object **jso);
 
+
+TSS2_RC
+ifapi_json_TPMS_EVENT_CELMGT_serialize(const TPMS_EVENT_CELMGT *in, json_object **jso);
+
 #endif /* IFAPI_JSON_SERIALIZE_H */
