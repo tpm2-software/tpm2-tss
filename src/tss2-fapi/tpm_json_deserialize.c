@@ -91,23 +91,6 @@ strip_prefix(const char *in, ...)
     return in;
 }
 
-/* Deserialize according to the rules of parenttype and then filter against values
-   provided in the ... list. */
-#define SUBTYPE_FILTER(type, parenttype, ...) \
-    TSS2_RC r; \
-    type tab[] = { __VA_ARGS__ }; \
-    type v; \
-    r = ifapi_json_ ## parenttype ## _deserialize(jso, &v); \
-    return_if_error(r, "Bad value"); \
-    for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) { \
-        if (v == tab[i]) { \
-            *out = v; \
-            return TSS2_RC_SUCCESS; \
-        } \
-    } \
-    LOG_ERROR("Bad sub-value"); \
-    return TSS2_FAPI_RC_BAD_VALUE;
-
 /** Deserialize a TPMS_EMPTY .
  *
  * @param[out] out not used.
@@ -130,7 +113,7 @@ ifapi_json_TPMS_EMPTY_deserialize(json_object *jso, TPMS_EMPTY *out)
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the character representation is too long.
  */
-static TSS2_RC
+TSS2_RC
 ifapi_hex_to_byte_ary(const char hex[], UINT32 vlen, BYTE val[])
 {
     UINT32 j;

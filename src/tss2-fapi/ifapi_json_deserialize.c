@@ -12,10 +12,16 @@
 #include <string.h>
 
 #include "ifapi_helpers.h"
+#include "ifapi_json_eventlog_deserialize.h"
+#include "efi_event.h"
 #include "tpm_json_deserialize.h"
 #include "ifapi_json_deserialize.h"
 #include "fapi_policy.h"
 #include "ifapi_config.h"
+#include "fapi_crypto.h"
+#include "ifapi_ima_eventlog.h"
+#include "ifapi_eventlog_system.h"
+#include "ifapi_helpers.h"
 #define LOGMODULE fapijson
 #include "util/log.h"
 #include "util/aux_util.h"
@@ -765,8 +771,10 @@ typedef struct {
 } IFAPI_IFAPI_EVENT_TYPE_ASSIGN;
 
 static IFAPI_IFAPI_EVENT_TYPE_ASSIGN deserialize_IFAPI_EVENT_TYPE_tab[] = {
-    { IFAPI_IMA_EVENT_TAG, "ima-legacy" },
+    { IFAPI_IMA_EVENT_TAG, "ima_template" },
     { IFAPI_TSS_EVENT_TAG, "tss2" },
+    { IFAPI_PC_CLIENT, "pcclient_std" },
+    { IFAPI_CEL_TAG, "cel" }
 };
 
 /**  Deserialize a json object of type IFAPI_EVENT_TYPE.
@@ -826,7 +834,8 @@ static char *field_IFAPI_TSS_EVENT_tab[] = {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_IFAPI_TSS_EVENT_deserialize(json_object *jso,  IFAPI_TSS_EVENT *out)
+ifapi_json_IFAPI_TSS_EVENT_deserialize(json_object *jso,
+                                       IFAPI_TSS_EVENT *out)
 {
     json_object *jso2;
     TSS2_RC r;
@@ -856,50 +865,6 @@ ifapi_json_IFAPI_TSS_EVENT_deserialize(json_object *jso,  IFAPI_TSS_EVENT *out)
     return TSS2_RC_SUCCESS;
 }
 
-static char *field_IFAPI_IMA_EVENT_tab[] = {
-    "eventData",
-    "eventdata",
-    "eventName",
-    "eventname",
-    "$schema"
-};
-
-/** Deserialize a IFAPI_IMA_EVENT json object.
- *
- * @param[in]  jso the json object to be deserialized.
- * @param[out] out the deserialzed binary object.
- * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- */
-TSS2_RC
-ifapi_json_IFAPI_IMA_EVENT_deserialize(json_object *jso,  IFAPI_IMA_EVENT *out)
-{
-    json_object *jso2;
-    TSS2_RC r;
-    LOG_TRACE("call");
-    return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
-
-    ifapi_check_json_object_fields(jso, &field_IFAPI_IMA_EVENT_tab[0],
-                                   SIZE_OF_ARY(field_IFAPI_IMA_EVENT_tab));
-    if (!ifapi_get_sub_object(jso, "eventData", &jso2)) {
-        LOG_ERROR("Field \"eventData\" not found.");
-        return TSS2_FAPI_RC_BAD_VALUE;
-    }
-    r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->eventData);
-    return_if_error(r, "Bad value for field \"eventData\".");
-
-    if (!ifapi_get_sub_object(jso, "eventName", &jso2)) {
-        LOG_ERROR("Field \"eventName\" not found.");
-        return TSS2_FAPI_RC_BAD_VALUE;
-    }
-    r = ifapi_json_char_deserialize(jso2, &out->eventName);
-    return_if_error(r, "Bad value for field \"eventName\".");
-    LOG_TRACE("true");
-    return TSS2_RC_SUCCESS;
-}
-
 /** Deserialize a IFAPI_EVENT_UNION json object.
  *
  * This functions expects the Bitfield to be encoded as unsigned int in host-endianess.
@@ -915,32 +880,167 @@ TSS2_RC
 ifapi_json_IFAPI_EVENT_UNION_deserialize(
     UINT32 selector,
     json_object *jso,
-    IFAPI_EVENT_UNION *out)
+    IFAPI_EVENT_UNION *out,
+    bool *verify)
 {
+    TSS2_RC r;
+
     LOG_TRACE("call");
+    /* The default is to verify the digest with the event data. */
+    *verify = true;
     switch (selector) {
     case IFAPI_TSS_EVENT_TAG:
         return ifapi_json_IFAPI_TSS_EVENT_deserialize(jso, &out->tss_event);
     case IFAPI_IMA_EVENT_TAG:
         return ifapi_json_IFAPI_IMA_EVENT_deserialize(jso, &out->ima_event);
-    default:
+    case IFAPI_PC_CLIENT:
+        r  = ifapi_json_IFAPI_FIRMWARE_EVENT_deserialize(jso, &out->firmware_event, verify);
+        return_if_error(r, "Deserialize firmware event");
+        return TSS2_RC_SUCCESS;
+    case IFAPI_CEL_TAG:
+        r  = ifapi_json_TPMS_EVENT_CELMGT_deserialize(jso, &out->cel_event);
+        return_if_error(r, "Deserialize CEL event");
+        return TSS2_RC_SUCCESS;
+     default:
         LOG_TRACE("false");
         return TSS2_FAPI_RC_BAD_VALUE;
     };
+}
+
+
+/** Compute the event hash from event content.
+ *
+ * The event digest for a certain hash alg determined by the passed
+ * crypto context is computed.
+ *
+ * @param[in] cryptoContext The event with the content to be hashed.
+ * @param[in] event The event with the content to be hased.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the event is not valid,
+ */
+static TSS2_RC
+get_event_hash(
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext,
+    IFAPI_EVENT *event)
+{
+    TSS2_RC r;
+
+    LOG_TRACE("call");
+    switch (event->content_type) {
+    case IFAPI_TSS_EVENT_TAG:
+        HASH_UPDATE_BUFFER(cryptoContext, &event->content.tss_event.data.buffer[0],
+                           event->content.tss_event.data.size, r, error_cleanup);
+        return TSS2_RC_SUCCESS;
+    case IFAPI_IMA_EVENT_TAG:
+        HASH_UPDATE_BUFFER(cryptoContext, &event->content.ima_event.template_value.buffer[0],
+                           event->content.ima_event.template_value.size, r, error_cleanup);
+        return TSS2_RC_SUCCESS;
+    case IFAPI_PC_CLIENT:
+        HASH_UPDATE_BUFFER(cryptoContext, &event->content.firmware_event.data.buffer[0],
+                           event->content.firmware_event.data.size, r, error_cleanup);
+        return TSS2_RC_SUCCESS;
+     default:
+        LOG_TRACE("false");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    };
+ error_cleanup:
+    return r;
+}
+
+/** Check whether the digest of an event matches the event content.
+ *
+ * If an IMA event was invalidated (Both the event digest and the file digest
+ * consist of zeros) the event digest will be set to 0xff in the size of
+ * the event digest.
+ *
+ * This functions expects the Bitfield to be encoded as unsigned int in host-endianess.
+ * @param[in] event  The event with the digest list and the event content.
+ * @param[in] error_handling an enum to determine the action if the digest
+ *            is not appropriate for the event content.
+ *            (DIGEST_CHECK_ERROR, DIGEST_CHECK_WARNING, DO_NOT_CHECK_DIGEST).
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the event is not valid or the digest is
+ *         not valid.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ */
+static TSS2_RC
+check_event_digest(
+    IFAPI_EVENT *event,
+    enum IFAPI_EVENT_ERROR_HANDLING error_handling)
+{
+    TSS2_RC r;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
+    size_t i, hash_size;
+    uint8_t data_hash[sizeof(TPMU_HA)];
+    bool ff_digest;
+
+    LOG_TRACE("Verify event for PCR %u", event->pcr);
+
+    if (event->content_type == IFAPI_IMA_EVENT_TAG) {
+        /* Check whether IMA digest was invalidated. */
+        ff_digest = true;
+        for (i = 0; i < TPM2_SHA1_DIGEST_SIZE; i++) {
+            if (event->digests.digests[0].digest.sha512[i] < 0xff) {
+                ff_digest = false;
+                break;
+            }
+        }
+        if (ff_digest) {
+            char *name;
+            r = ifapi_get_ima_eventname(&event->content.ima_event, &name);
+            goto_if_error(r, "Get eventname.", error_cleanup);
+
+            LOG_WARNING("IMA event was invalidated: %s", name);
+            return TSS2_RC_SUCCESS;
+        }
+    }
+
+    for (i = 0; i < event->digests.count; i++) {
+        if (!(hash_size = ifapi_hash_get_digest_size(event->digests.digests[i].hashAlg))) {
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                       "Unsupported hash algorithm (%" PRIu16 ")", error_cleanup,
+                       event->digests.digests[i].hashAlg);
+        }
+        r = ifapi_crypto_hash_start(&cryptoContext, event->digests.digests[i].hashAlg);
+        return_if_error(r, "crypto hash start");
+
+        r = get_event_hash(cryptoContext, event);
+        goto_if_error(r, "Get digest event hash.",  error_cleanup);
+
+        r = ifapi_crypto_hash_finish(&cryptoContext,
+                                     &data_hash[0], &hash_size);
+        return_if_error(r, "crypto hash finish");
+
+        if (memcmp(&event->digests.digests[i].digest.sha512[0], &data_hash[0], hash_size) != 0) {
+            if (error_handling == DIGEST_CHECK_ERROR) {
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                           "Digest verification",  error_cleanup);
+            } else {
+                LOG_WARNING("Failure in digest verification.");
+            }
+        }
+    }
+    return TSS2_RC_SUCCESS;
+
+error_cleanup:
+    return r;
 }
 
 static char *field_IFAPI_EVENT_tab[] = {
     "recnum",
     "pcr",
     "digests",
-    "type",
-    "sub_event",
+    CONTENT_TYPE,
+    CONTENT,
     "$schema"
 };
 
 /** Deserialize a IFAPI_EVENT json object.
  *
  * @param[in]  jso the json object to be deserialized.
+ * @param[in]  error switch whether an error will be generated if the digest
+ *             verification fails. If set to false only a warning will be
+ *             generated.
  * @param[out] out the deserialzed binary object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
@@ -948,21 +1048,27 @@ static char *field_IFAPI_EVENT_tab[] = {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_IFAPI_EVENT_deserialize(json_object *jso,  IFAPI_EVENT *out)
+ifapi_json_IFAPI_EVENT_deserialize(
+    json_object *jso,
+    IFAPI_EVENT *out,
+    enum IFAPI_EVENT_ERROR_HANDLING error_handling)
 {
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC r = TSS2_RC_SUCCESS;;
+    bool verify;
+
     LOG_TRACE("call");
+    memset(out, 0, sizeof(IFAPI_EVENT));
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     ifapi_check_json_object_fields(jso, &field_IFAPI_EVENT_tab[0],
                                    SIZE_OF_ARY(field_IFAPI_EVENT_tab));
-    if (!ifapi_get_sub_object(jso, "recnum", &jso2)) {
-        LOG_ERROR("Field \"recnum\" not found.");
-        return TSS2_FAPI_RC_BAD_VALUE;
+    if (ifapi_get_sub_object(jso, "recnum", &jso2)) {
+        r = ifapi_json_UINT32_deserialize(jso2, &out->recnum);
+        return_if_error(r, "BAD VALUE");
+    } else {
+        out->recnum = 0;
     }
-    r = ifapi_json_UINT32_deserialize(jso2, &out->recnum);
-    return_if_error(r, "Bad value for field \"recnum\".");
 
     if (!ifapi_get_sub_object(jso, "pcr", &jso2)) {
         LOG_ERROR("Field \"pcr\" not found.");
@@ -978,19 +1084,179 @@ ifapi_json_IFAPI_EVENT_deserialize(json_object *jso,  IFAPI_EVENT *out)
     r = ifapi_json_TPML_DIGEST_VALUES_deserialize(jso2, &out->digests);
     return_if_error(r, "Bad value for field \"digests\".");
 
+    if (!ifapi_get_sub_object(jso, CONTENT_TYPE, &jso2)) {
+        LOG_ERROR("Field \"content_type\" not found.");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    r = ifapi_json_IFAPI_EVENT_TYPE_deserialize(jso2, &out->content_type);
+    return_if_error(r, "Bad value for field \"content_type\".");
+
+    if (!ifapi_get_sub_object(jso, CONTENT, &jso2)) {
+        LOG_ERROR("Field \"content\" not found.");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    r = ifapi_json_IFAPI_EVENT_UNION_deserialize(out->content_type, jso2,
+                                                 &out->content,
+                                                 &verify);
+    goto_if_error(r,"Bad value for field \"content\"." , cleanup);
+
+    if (verify && error_handling != DO_NOT_CHECK_DIGEST) {
+        r = check_event_digest(out, error_handling);
+        goto_if_error(r, "Check event digest", cleanup);
+    }
+    return TSS2_RC_SUCCESS;
+
+ cleanup:
+    if (out->content_type == IFAPI_IMA_EVENT_TAG) {
+        SAFE_FREE(out->content.ima_event.template_value.buffer);
+    } else if (out->content_type == IFAPI_PC_CLIENT) {
+         SAFE_FREE(out->content.firmware_event.data.buffer);
+    }
+    return r;
+}
+
+static char *field_TPMS_CEL_VERSION_tab[] = {
+    "major",
+    "minor",
+    "$schema"
+};
+
+/** Deserialize a TPMS_CEL_VERSION variable.
+ *
+ * @param[in]  jso json object to be deserialized.
+ * @param[out] out the deserialized object.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ */
+TSS2_RC
+ifapi_json_TPMS_CEL_VERSION_deserialize(json_object *jso,
+        TPMS_CEL_VERSION *out)
+{
+    LOG_TRACE("call");
+    json_object *jso2;
+    TSS2_RC r;
+
+    memset(out, 0, sizeof(TPMS_CEL_VERSION));
+    ifapi_check_json_object_fields(jso, &field_TPMS_CEL_VERSION_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_CEL_VERSION_tab));
+    if (!ifapi_get_sub_object(jso, "major", &jso2)) {
+        LOG_ERROR("Field \"major\" not found.");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    r = ifapi_json_UINT16_deserialize(jso2, &out->major);
+    return_if_error(r, "Bad value for field \"major\".");
+
+    if (!ifapi_get_sub_object(jso, "minor", &jso2)) {
+        LOG_ERROR("Field \"minor\" not found.");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    return ifapi_json_UINT16_deserialize(jso2, &out->minor);
+}
+
+/** Deserialize a TPMU_CELMGT json object.
+ *
+ * Desearialize a canonical eventlog management event.
+ * @param[in]  selector The CEL type.
+ * @param[in]  jso the json object to be deserialized.
+ * @param[out] out the deserialzed binary object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_TPMU_CELMGT_deserialize(
+    UINT32 selector,
+    json_object *jso,
+    TPMU_CELMGT *out)
+{
+    json_object *jso2 = NULL;
+    LOG_TRACE("call");
+    switch (selector) {
+    case CEL_VERSION:
+        return ifapi_json_TPMS_CEL_VERSION_deserialize(jso, &out->cel_version);
+    case FIRMWARE_END:
+        return ifapi_json_TPMS_EMPTY_deserialize(jso, &out->firmware_end);
+    case CEL_TIMESTAMP:
+        if (!ifapi_get_sub_object(jso, "cel_timestamp", &jso2)) {
+            LOG_ERROR("Field \"cel_timestamp\" not found.");
+            return TSS2_FAPI_RC_BAD_VALUE;
+        }
+        return ifapi_json_UINT64_deserialize(jso2, &out->cel_timestamp);
+
+    default:
+        LOG_TRACE("false");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    };
+}
+
+static char *field_TPMS_EVENT_CELMGT_tab[] = {
+    "type",
+    "data",
+    "$schema"
+};
+
+/** Deserialize a TPMI_CELMGTTYPE json object.
+ *
+ * @param[in]  jso the json object to be deserialized.
+ * @param[out] out the deserialzed binary object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ */
+TSS2_RC
+ifapi_json_TPMI_CELMGTTYPE_deserialize(json_object *jso, TPMI_CELMGTTYPE *out)
+{
+    static const struct { TPMI_CELMGTTYPE in; const char *name; } jso_tab[] = {
+        { CEL_VERSION, "cel_version" },
+        { FIRMWARE_END, "firmware_end" },
+    };
+    const char *str = json_object_get_string(jso);
+    if (str) {
+        for (size_t i = 0; i < sizeof(jso_tab) / sizeof(jso_tab[0]); i++) {
+            if (strcasecmp(str, &jso_tab[i].name[0]) == 0) {
+                *out = jso_tab[i].in;
+                return TSS2_RC_SUCCESS;
+            }
+        }
+    }
+    SUBTYPE_FILTER(TPMI_CELMGTTYPE, UINT32,
+                   CEL_VERSION, FIRMWARE_END);
+}
+
+/** Deserialize a TPMS_EVENT_CELMGT json object.
+ *
+ * @param[in]  jso the json object to be deserialized.
+ * @param[out] out the deserialzed binary object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_TPMS_EVENT_CELMGT_deserialize(json_object *jso,  TPMS_EVENT_CELMGT *out)
+{
+    json_object *jso2;
+    TSS2_RC r;
+    LOG_TRACE("call");
+    return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    ifapi_check_json_object_fields(jso, &field_TPMS_EVENT_CELMGT_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_EVENT_CELMGT_tab));
     if (!ifapi_get_sub_object(jso, "type", &jso2)) {
         LOG_ERROR("Field \"type\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_IFAPI_EVENT_TYPE_deserialize(jso2, &out->type);
+
+    r = ifapi_json_TPMI_CELMGTTYPE_deserialize(jso2, &out->type);
     return_if_error(r, "Bad value for field \"type\".");
 
-    if (!ifapi_get_sub_object(jso, "sub_event", &jso2)) {
-        LOG_ERROR("Field \"sub_event\" not found.");
-        return TSS2_FAPI_RC_BAD_VALUE;
+    if (out->type != FIRMWARE_END) {
+        if(!ifapi_get_sub_object(jso, "data", &jso2)) {
+            LOG_ERROR("Field \"data\" not found.");
+            return TSS2_FAPI_RC_BAD_VALUE;
+        }
+        r = ifapi_json_TPMU_CELMGT_deserialize(out->type, jso2, &out->data);
+        return_if_error(r, "Bad value for field \"data\".");
     }
-    r = ifapi_json_IFAPI_EVENT_UNION_deserialize(out->type, jso2, &out->sub_event);
-    return_if_error(r, "Bad value for field \"sub_event\".");
+
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }

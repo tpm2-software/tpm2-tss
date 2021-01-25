@@ -145,7 +145,11 @@ TESTS_UNIT += \
     test/unit/fapi-io \
     test/unit/fapi-profiles \
     test/unit/fapi-config \
-    test/unit/fapi-get-intl-cert
+    test/unit/fapi-get-intl-cert \
+    test/unit/fapi-eventlog \
+    test/unit/fapi-ima-eventlog \
+    test/unit/fapi-check-ima-log
+
 endif FAPI
 endif #UNIT
 
@@ -379,7 +383,11 @@ if TESTDEVICE
 if DEVICEDESTRUCTIVE
 FAPI_TESTS_INTEGRATION += \
     test/integration/fapi-key-create-sign-policy-provision.fint \
-    test/integration/fapi-quote-destructive.fint
+    test/integration/fapi-quote-destructive.fint \
+    test/integration/fapi-quote-destructive-eventlog-null.fint \
+    test/integration/fapi-quote-destructive-eventlog-not.fint \
+    test/integration/fapi-quote-destructive-eventlog.fint \
+    test/integration/fapi-quote-destructive-eventlog-pc-client.fint
 endif #PTPMDESTRUCTIVE
 endif TESTDEVICE
 
@@ -391,7 +399,10 @@ FAPI_TESTS_INTEGRATION += \
     test/integration/fapi-provision-fingerprint_ecc.fint \
     test/integration/fapi-provision-certificate_ecc.fint \
     test/integration/fapi-quote-destructive.fint \
-    test/integration/fapi-key-create-policy-nv-tpm-idx-sign.fint
+    test/integration/fapi-key-create-policy-nv-tpm-idx-sign.fint \
+    test/integration/fapi-quote-destructive-eventlog-null.fint \
+    test/integration/fapi-quote-destructive-eventlog.fint \
+    test/integration/fapi-quote-destructive-eventlog-pc-client.fint
 endif #!TESTDEVICE
 
 TESTS_INTEGRATION += $(FAPI_TESTS_INTEGRATION)
@@ -673,10 +684,13 @@ if FAPI
 
 test_unit_fapi_json_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_json_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
-test_unit_fapi_json_LDFLAGS = $(TESTS_LDFLAGS)  $(CURL_LIBS) $(JSONC_LIBS)
+test_unit_fapi_json_LDFLAGS = $(TESTS_LDFLAGS)  $(CURL_LIBS) $(JSONC_LIBS) $(UUID_LIBS)
 test_unit_fapi_json_SOURCES = test/unit/fapi-json.c \
                               src/tss2-fapi/ifapi_json_deserialize.c \
                               src/tss2-fapi/ifapi_json_serialize.c \
+                              src/tss2-fapi/ifapi_ima_eventlog.c \
+                              src/tss2-fapi/ifapi_eventlog_system.c \
+                              src/tss2-fapi/ifapi_json_eventlog_serialize.c \
                               src/tss2-fapi/ifapi_policy_json_deserialize.c \
                               src/tss2-fapi/ifapi_policy_json_serialize.c \
                               src/tss2-fapi/tpm_json_deserialize.c \
@@ -689,12 +703,15 @@ test_unit_fapi_json_SOURCES = test/unit/fapi-json.c \
 
 test_unit_fapi_helpers_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_helpers_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
-test_unit_fapi_helpers_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) \
+test_unit_fapi_helpers_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS) \
                                  -Wl,--wrap=ifapi_crypto_hash_update \
                                  -Wl,--wrap=ifapi_crypto_hash_finish
 test_unit_fapi_helpers_SOURCES = test/unit/fapi-helpers.c \
                                  src/tss2-fapi/ifapi_json_deserialize.c \
                                  src/tss2-fapi/ifapi_json_serialize.c \
+                                 src/tss2-fapi/ifapi_ima_eventlog.c \
+                                 src/tss2-fapi/ifapi_eventlog_system.c \
+                                 src/tss2-fapi/ifapi_json_eventlog_serialize.c \
                                  src/tss2-fapi/ifapi_policy_json_deserialize.c \
                                  src/tss2-fapi/ifapi_policy_json_serialize.c \
                                  src/tss2-fapi/tpm_json_deserialize.c \
@@ -707,7 +724,7 @@ test_unit_fapi_helpers_SOURCES = test/unit/fapi-helpers.c \
 
 test_unit_fapi_io_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_io_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
-test_unit_fapi_io_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) \
+test_unit_fapi_io_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS) \
                             -Wl,--wrap=fopen \
                             -Wl,--wrap=fseek \
                             -Wl,--wrap=ftell \
@@ -721,6 +738,9 @@ test_unit_fapi_io_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) \
 test_unit_fapi_io_SOURCES = test/unit/fapi-io.c \
                             src/tss2-fapi/ifapi_json_deserialize.c \
                             src/tss2-fapi/ifapi_json_serialize.c \
+                            src/tss2-fapi/ifapi_ima_eventlog.c \
+                            src/tss2-fapi/ifapi_eventlog_system.c \
+                            src/tss2-fapi/ifapi_json_eventlog_serialize.c \
                             src/tss2-fapi/ifapi_policy_json_deserialize.c \
                             src/tss2-fapi/ifapi_policy_json_serialize.c \
                             src/tss2-fapi/tpm_json_deserialize.c \
@@ -733,12 +753,15 @@ test_unit_fapi_io_SOURCES = test/unit/fapi-io.c \
 
 test_unit_fapi_profiles_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_profiles_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
-test_unit_fapi_profiles_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) \
+test_unit_fapi_profiles_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS) \
                                   -Wl,--wrap=ifapi_io_read_finish
 test_unit_fapi_profiles_SOURCES = test/unit/fapi-profiles.c \
                                   src/tss2-fapi/ifapi_profiles.c \
                                   src/tss2-fapi/ifapi_json_deserialize.c \
                                   src/tss2-fapi/ifapi_json_serialize.c \
+                                  src/tss2-fapi/ifapi_ima_eventlog.c \
+                                  src/tss2-fapi/ifapi_eventlog_system.c \
+                                  src/tss2-fapi/ifapi_json_eventlog_serialize.c \
                                   src/tss2-fapi/ifapi_policy_json_deserialize.c \
                                   src/tss2-fapi/ifapi_policy_json_serialize.c \
                                   src/tss2-fapi/tpm_json_deserialize.c \
@@ -751,12 +774,15 @@ test_unit_fapi_profiles_SOURCES = test/unit/fapi-profiles.c \
 
 test_unit_fapi_config_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_config_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
-test_unit_fapi_config_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) \
+test_unit_fapi_config_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS) \
                                   -Wl,--wrap=ifapi_io_read_finish
 test_unit_fapi_config_SOURCES = test/unit/fapi-config.c \
                                   src/tss2-fapi/ifapi_config.c \
                                   src/tss2-fapi/ifapi_json_deserialize.c \
                                   src/tss2-fapi/ifapi_json_serialize.c \
+                                  src/tss2-fapi/ifapi_ima_eventlog.c \
+                                  src/tss2-fapi/ifapi_eventlog_system.c \
+                                  src/tss2-fapi/ifapi_json_eventlog_serialize.c \
                                   src/tss2-fapi/ifapi_policy_json_deserialize.c \
                                   src/tss2-fapi/ifapi_policy_json_serialize.c \
                                   src/tss2-fapi/tpm_json_deserialize.c \
@@ -769,13 +795,16 @@ test_unit_fapi_config_SOURCES = test/unit/fapi-config.c \
 
 test_unit_fapi_get_intl_cert_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_get_intl_cert_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
-test_unit_fapi_get_intl_cert_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) \
+test_unit_fapi_get_intl_cert_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS) \
                                        -Wl,--wrap=ifapi_get_curl_buffer \
                                        -Wl,--wrap=EVP_DigestUpdate
 test_unit_fapi_get_intl_cert_SOURCES = test/unit/fapi-get-intl-cert.c \
 	                                   src/tss2-fapi/ifapi_get_intl_cert.c \
                                        src/tss2-fapi/ifapi_json_deserialize.c \
                                        src/tss2-fapi/ifapi_json_serialize.c \
+                                       src/tss2-fapi/ifapi_ima_eventlog.c \
+                                       src/tss2-fapi/ifapi_eventlog_system.c \
+                                       src/tss2-fapi/ifapi_json_eventlog_serialize.c \
                                        src/tss2-fapi/ifapi_policy_json_deserialize.c \
                                        src/tss2-fapi/ifapi_policy_json_serialize.c \
                                        src/tss2-fapi/tpm_json_deserialize.c \
@@ -785,7 +814,62 @@ test_unit_fapi_get_intl_cert_SOURCES = test/unit/fapi-get-intl-cert.c \
                                        src/tss2-fapi/ifapi_helpers.c \
                                        src/tss2-fapi/ifapi_keystore.c  \
                                        src/tss2-fapi/ifapi_io.c
+test_unit_fapi_eventlog_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_eventlog_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_fapi_eventlog_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS)
+test_unit_fapi_eventlog_SOURCES = test/unit/fapi-eventlog.c \
+                                  src/tss2-fapi/ifapi_json_eventlog_serialize.c \
+                                  src/tss2-fapi/ifapi_ima_eventlog.c \
+                                  src/tss2-fapi/ifapi_eventlog_system.c \
+                                  src/tss2-fapi/ifapi_json_deserialize.c \
+                                  src/tss2-fapi/ifapi_json_serialize.c \
+                                  src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                                  src/tss2-fapi/ifapi_policy_json_serialize.c \
+                                  src/tss2-fapi/tpm_json_deserialize.c \
+                                  src/tss2-fapi/tpm_json_serialize.c \
+                                  src/tss2-fapi/fapi_crypto.c \
+                                  src/tss2-fapi/ifapi_eventlog.c \
+                                  src/tss2-fapi/ifapi_helpers.c\
+                                  src/tss2-fapi/ifapi_keystore.c  \
+                                  src/tss2-fapi/ifapi_io.c
 
+
+test_unit_fapi_ima_eventlog_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_ima_eventlog_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_fapi_ima_eventlog_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS)
+test_unit_fapi_ima_eventlog_SOURCES = test/unit/fapi-ima-eventlog.c \
+                                  src/tss2-fapi/ifapi_ima_eventlog.c \
+                                  src/tss2-fapi/ifapi_json_deserialize.c \
+                                  src/tss2-fapi/ifapi_json_serialize.c \
+                                  src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                                  src/tss2-fapi/ifapi_policy_json_serialize.c \
+                                  src/tss2-fapi/tpm_json_deserialize.c \
+                                  src/tss2-fapi/tpm_json_serialize.c \
+                                  src/tss2-fapi/ifapi_json_eventlog_serialize.c \
+                                  src/tss2-fapi/fapi_crypto.c \
+                                  src/tss2-fapi/ifapi_eventlog.c \
+                                  src/tss2-fapi/ifapi_helpers.c \
+                                  src/tss2-fapi/ifapi_eventlog_system.c\
+                                  src/tss2-fapi/ifapi_keystore.c  \
+                                  src/tss2-fapi/ifapi_io.c
+test_unit_fapi_check_ima_log_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_check_ima_log_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_fapi_check_ima_log_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS)
+test_unit_fapi_check_ima_log_SOURCES = test/unit/fapi-check-ima-log.c \
+                                  src/tss2-fapi/ifapi_ima_eventlog.c \
+                                  src/tss2-fapi/ifapi_json_deserialize.c \
+                                  src/tss2-fapi/ifapi_json_serialize.c \
+                                  src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                                  src/tss2-fapi/ifapi_policy_json_serialize.c \
+                                  src/tss2-fapi/tpm_json_deserialize.c \
+                                  src/tss2-fapi/tpm_json_serialize.c \
+                                  src/tss2-fapi/ifapi_json_eventlog_serialize.c \
+                                  src/tss2-fapi/fapi_crypto.c \
+                                  src/tss2-fapi/ifapi_eventlog.c \
+                                  src/tss2-fapi/ifapi_helpers.c \
+                                  src/tss2-fapi/ifapi_eventlog_system.c\
+                                  src/tss2-fapi/ifapi_keystore.c  \
+                                  src/tss2-fapi/ifapi_io.c
 endif # FAPI
 
 if POLICY
@@ -1672,6 +1756,7 @@ test_integration_esys_crypto_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_crypto_int_SOURCES = \
     test/integration/esys-crypto.int.c \
     test/integration/main-esys.c test/integration/test-esys.h
+
 endif #ESYS
 
 test_integration_sys_policy_template_int_CFLAGS  = $(TESTS_CFLAGS)
@@ -1926,8 +2011,6 @@ test_integration_fapi_key_create_policy_nv_counter_sign_fint_LDFLAGS = $(TESTS_L
 test_integration_fapi_key_create_policy_nv_counter_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-nv-counter-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
-
-
 
 test_integration_fapi_key_create_policy_or_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_key_create_policy_or_sign_fint_LDADD   = $(TESTS_LDADD)
@@ -2223,6 +2306,47 @@ test_integration_fapi_quote_destructive_fint_SOURCES = \
     test/integration/fapi-quote-destructive.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
+test_integration_fapi_quote_destructive_eventlog_null_fint_CFLAGS  = $(TESTS_CFLAGS) \
+  -DFAPI_PROFILE=\"P_ECC_system\" \
+  -D FAPI_TEST_FIRMWARE_NULL \
+  -D FAPI_TEST_FIRMWARE_LOG_FILE_ABS=\"/dev/null\" \
+  -D FAPI_TEST_IMA_LOG_FILE_ABS=\"/dev/null\"
+test_integration_fapi_quote_destructive_eventlog_null_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_quote_destructive_eventlog_null_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_quote_destructive_eventlog_null_fint_SOURCES = \
+    test/integration/fapi-quote-destructive-eventlog.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_quote_destructive_eventlog_not_fint_CFLAGS  = $(TESTS_CFLAGS) \
+  -DFAPI_PROFILE=\"P_ECC_system\" \
+  -D FAPI_TEST_FIRMWARE_NULL
+test_integration_fapi_quote_destructive_eventlog_not_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_quote_destructive_eventlog_not_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_quote_destructive_eventlog_not_fint_SOURCES = \
+    test/integration/fapi-quote-destructive-eventlog.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_quote_destructive_eventlog_fint_CFLAGS  = $(TESTS_CFLAGS) \
+  -DFAPI_PROFILE=\"P_ECC_system\" \
+  -D FAPI_TEST_FIRMWARE_NUC \
+  -D FAPI_TEST_FIRMWARE_LOG_FILE=\"test/data/fapi/eventlog/binary_measurements_nuc.bin\" \
+  -D FAPI_TEST_IMA_LOG_FILE=\"test/data/fapi/eventlog/sml-ima-ng-sha1.bin\"
+test_integration_fapi_quote_destructive_eventlog_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_quote_destructive_eventlog_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_quote_destructive_eventlog_fint_SOURCES = \
+    test/integration/fapi-quote-destructive-eventlog.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_quote_destructive_eventlog_pc_client_fint_CFLAGS  = $(TESTS_CFLAGS) \
+  -DFAPI_PROFILE=\"P_ECC_system\" \
+  -D FAPI_TEST_FIRMWARE_PC_CLIENT \
+  -D FAPI_TEST_FIRMWARE_LOG_FILE=\"test/data/fapi/eventlog/binary_measurements_pc_client.bin\" \
+  -D FAPI_TEST_IMA_LOG_FILE=\"test/data/fapi/eventlog/sml-ima-ng-sha1.bin\"
+test_integration_fapi_quote_destructive_eventlog_pc_client_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_quote_destructive_eventlog_pc_client_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_quote_destructive_eventlog_pc_client_fint_SOURCES = \
+    test/integration/fapi-quote-destructive-eventlog.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
 
 endif #FAPI
 

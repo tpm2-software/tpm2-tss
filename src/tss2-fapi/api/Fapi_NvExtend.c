@@ -385,15 +385,15 @@ Fapi_NvExtend_Finish(
         event->digests.digests[0].hashAlg = hashAlg;
         event->digests.count = 1;
         event->pcr = object->misc.nv.public.nvPublic.nvIndex;
-        event->type = IFAPI_TSS_EVENT_TAG;
-        memcpy(&event->sub_event.tss_event.data.buffer[0],
+        event->content_type = IFAPI_TSS_EVENT_TAG;
+        memcpy(&event->content.tss_event.data.buffer[0],
                &auxData->buffer[0], auxData->size);
-        event->sub_event.tss_event.data.size = auxData->size;
+        event->content.tss_event.data.size = auxData->size;
         if (command->logData) {
-            strdup_check(event->sub_event.tss_event.event, command->logData,
+            strdup_check(event->content.tss_event.event, command->logData,
                     r, error_cleanup);
         } else {
-            event->sub_event.tss_event.event = NULL;
+            event->content.tss_event.event = NULL;
         }
 
         /* Event log of the NV object has to be extended */

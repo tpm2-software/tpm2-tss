@@ -246,7 +246,7 @@ Fapi_PcrExtend_Finish(
     IFAPI_PCR * command = &context->cmd.pcr;
     TPMS_CAPABILITY_DATA **capabilityData = &command->capabilityData;
     IFAPI_EVENT * pcrEvent = &command->pcr_event;
-    IFAPI_TSS_EVENT * subEvent = &pcrEvent->sub_event.tss_event;
+    IFAPI_TSS_EVENT * subEvent = &pcrEvent->content.tss_event;
 
     switch (context->state) {
         statecase(context->state, PCR_EXTEND_WAIT_FOR_GET_CAP);
@@ -309,7 +309,7 @@ Fapi_PcrExtend_Finish(
             /* Construct the eventLog entry. */
             pcrEvent->digests = *command->event_digests;
             pcrEvent->pcr = command->pcrIndex;
-            pcrEvent->type = IFAPI_TSS_EVENT_TAG;
+            pcrEvent->content_type = IFAPI_TSS_EVENT_TAG;
             subEvent->data = command->event;
             if (command->logData) {
                 strdup_check(subEvent->event,

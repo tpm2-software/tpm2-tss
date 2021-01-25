@@ -138,6 +138,9 @@ extern char *fapi_profile;
 #define FAPI_POLICIES TOP_SOURCEDIR "/test/data/fapi"
 
 TSS2_RC
+pcr_extend(FAPI_CONTEXT *context, UINT32 pcr, TPML_DIGEST_VALUES *digest_values);
+
+TSS2_RC
 pcr_reset(FAPI_CONTEXT *context, UINT32 pcr);
 
 bool cmp_strtokens(char* string1, char *string2, char *delimiter);

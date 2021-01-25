@@ -336,6 +336,9 @@ ifapi_json_TPM2_GENERATED_serialize(const TPM2_GENERATED in, json_object **jso)
 
 /** Serialize TPM2_ALG_ID to json.
  *
+ * For hash algs lowercase is used because it's required for
+ * JSON events in Canonical Event Log specification.
+ *
  * @param[in] in constant to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
@@ -350,19 +353,19 @@ ifapi_json_TPM2_ALG_ID_serialize(const TPM2_ALG_ID in, json_object **jso)
         { TPM2_ALG_RSA, "RSA" },
         { TPM2_ALG_TDES, "TDES" },
 /* We prefer SHA1 as output over SHA */
-/*      { TPM2_ALG_SHA, "SHA" },*/
-        { TPM2_ALG_SHA1, "SHA1" },
+/*      { TPM2_ALG_SHA, "sha" },*/
+        { TPM2_ALG_SHA1, "sha1" },
         { TPM2_ALG_CMAC, "CMAC" },
         { TPM2_ALG_HMAC, "HMAC" },
         { TPM2_ALG_AES, "AES" },
         { TPM2_ALG_MGF1, "MGF1" },
         { TPM2_ALG_KEYEDHASH, "KEYEDHASH" },
         { TPM2_ALG_XOR, "XOR" },
-        { TPM2_ALG_SHA256, "SHA256" },
-        { TPM2_ALG_SHA384, "SHA384" },
-        { TPM2_ALG_SHA512, "SHA512" },
+        { TPM2_ALG_SHA256, "sha256" },
+        { TPM2_ALG_SHA384, "sha384" },
+        { TPM2_ALG_SHA512, "sha512" },
         { TPM2_ALG_NULL, "NULL" },
-        { TPM2_ALG_SM3_256, "SM3_256" },
+        { TPM2_ALG_SM3_256, "sm3_256" },
         { TPM2_ALG_SM4, "SM4" },
         { TPM2_ALG_RSASSA, "RSASSA" },
         { TPM2_ALG_RSAES, "RSAES" },
