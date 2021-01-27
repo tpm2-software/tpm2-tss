@@ -150,8 +150,6 @@ typedef struct {
     char                                        *keyPEM;    /**< <p> everyone in favour<br /> The TPM2B_NAME is constructed w */
     TPMI_ALG_HASH                         keyPEMhashAlg;    /**< (optional) Default = SHA256 */
     TPMT_RSA_SCHEME                           rsaScheme;    /**< (optional) Default = TPM2_ALG_RSAPSS */
-    POLICY_OBJECT                          *policy_list;
-    TPMS_POLICYAUTHORIZATION             *authorization;
     TPMT_SIGNATURE                            signature;
 } TPMS_POLICYAUTHORIZE;
 
