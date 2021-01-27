@@ -157,31 +157,6 @@ clear_current_policy(FAPI_CONTEXT *context)
     return TSS2_RC_SUCCESS;
 }
 
-/** Cleanup the policy stack.
-  *
-  * Will be used if an error occurs.
-  */
-static void
-clear_all_policies(FAPI_CONTEXT *context)
-{
-    LOG_DEBUG("CLEAR ALL POLICIES");
-
-    IFAPI_POLICYUTIL_STACK *policy = context->policy.policyutil_stack;
-    IFAPI_POLICYUTIL_STACK *next_policy;
-
-    while (policy) {
-        next_policy = policy->next;
-        SAFE_FREE(policy->pol_exec_ctx->app_data);
-        if (policy->pol_exec_ctx->session)
-            Esys_FlushContext(context->esys, policy->pol_exec_ctx->session);
-        SAFE_FREE(policy->pol_exec_ctx);
-        ;
-        SAFE_FREE(policy);
-        policy = next_policy;
-    }
-    context->policy.policyutil_stack = NULL;
-}
-
 /** Prepare the execution of a new policy on policy stack.
  *
  * The context for the  policy utility, the policy execution and the needed
@@ -212,12 +187,12 @@ ifapi_policyutil_execute_prepare(
     TPMS_POLICY *policy)
 {
     TSS2_RC r;
-    IFAPI_POLICYUTIL_STACK *current_policy;
+    IFAPI_POLICYUTIL_STACK *current_policy, *prev_policy;
 
     return_if_null(context, "Bad context.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     r = new_policy(context, policy, &current_policy);
-    goto_if_error(r, "Create new policy.", error);
+    return_if_error(r, "Create new policy.");
 
     r = ifapi_policyeval_execute_prepare(current_policy->pol_exec_ctx, hash_alg, policy);
     goto_if_error(r, "Prepare policy execution.", error);
@@ -225,9 +200,10 @@ ifapi_policyutil_execute_prepare(
     return r;
 
 error:
-    while (context->policy.policyutil_stack) {
-        clear_all_policies(context);
-    }
+    prev_policy = current_policy;
+    if (context->policy.util_current_policy)
+        clear_current_policy(context);
+    context->policy.util_current_policy = prev_policy;
     return r;
 }
 /** State machine to Execute the TPM policy commands needed for the current policy.
@@ -331,8 +307,9 @@ ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session)
     return r;
 
 error:
-    while (context->policy.policyutil_stack) {
-        clear_all_policies(context);
-    }
+    pol_util_ctx = pol_util_ctx->prev;
+    if (context->policy.util_current_policy)
+        clear_current_policy(context);
+    context->policy.util_current_policy = pol_util_ctx;
     return r;
 }
