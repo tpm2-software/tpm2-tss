@@ -942,26 +942,6 @@ ifapi_init_hierarchy_object(
     hierarchy->handle = esys_handle;
 }
 
-/** Get description of a FAPI object.
- *
- * @param[in] object The object which might have a description.
- *
- * @retval The character description of the object.
- * @retval NULL if no description is available.
- */
-char *
-get_description(IFAPI_OBJECT *object)
-{
-    switch (object->objectType) {
-    case IFAPI_KEY_OBJ:
-        return object->misc.key.description;
-    case IFAPI_NV_OBJ:
-        return object->misc.nv.description;
-    default:
-        return NULL;
-    }
-}
-
 /** Create a directory and all sub directories.
  *
  * @param[in] supdir The sup directory were the directories will be created.
@@ -1146,23 +1126,6 @@ ifapi_cleanup_policy(TPMS_POLICY *policy)
     }
 }
 
-/** Free memory of a policy object.
- *
- * The memory allocated during deserialization of the policy will
- * also be freed.
- *
- * @param[in] object The policy object to be cleaned up.
- *
- */
-static void
-cleanup_policy_object(POLICY_OBJECT * object) {
-    if (object != NULL) {
-        SAFE_FREE(object->path);
-        ifapi_cleanup_policy(&object->policy);
-        cleanup_policy_object(object->next);
-    }
-}
-
 static TPML_POLICYELEMENTS *
 copy_policy_elements(const TPML_POLICYELEMENTS *from_policy);
 
@@ -1192,78 +1155,6 @@ copy_policy(TPMS_POLICY * dest,
     return r;
 error_cleanup:
     ifapi_cleanup_policy(dest);
-    return r;
-}
-
-/** Copy policy object.
- *
- * @param[in] src The policy object to be copied.
- * @param[out] dest The destination policy object.
- * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- */
-static TSS2_RC
-copy_policy_object(POLICY_OBJECT * dest, const POLICY_OBJECT * src) {
-    /* Check for NULL references */
-    if (dest == NULL || src == NULL) {
-        return TSS2_FAPI_RC_MEMORY;
-    }
-
-    TSS2_RC r = TSS2_RC_SUCCESS;
-    dest->policy.description = NULL;
-    dest->policy.policyAuthorizations = NULL;
-    dest->policy.policy = NULL;
-    strdup_check(dest->path, src->path, r, error_cleanup);
-    r = copy_policy(&dest->policy, &src->policy);
-    goto_if_error(r, "Could not copy policy", error_cleanup);
-    if (src->next != NULL) {
-        dest->next = malloc(sizeof(POLICY_OBJECT));
-        goto_if_null(dest->next, "Out of memory", r, error_cleanup);
-        dest->next->next = NULL;
-        r = copy_policy_object(dest->next, src->next);
-        goto_if_error(r, "Could not copy next policy object", error_cleanup);
-    }
-
-    return r;
-error_cleanup:
-    cleanup_policy_object(dest);
-    return r;
-}
-
-/** Copy policy authorization.
- *
- * @param[in] src The policy authorization to be copied.
- * @param[out] dest The destination policy authorization.
- * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- */
-static TSS2_RC
-copy_policyauthorization(TPMS_POLICYAUTHORIZATION * dest,
-        const TPMS_POLICYAUTHORIZATION * src) {
-    if (dest == NULL || src == NULL) {
-        return TSS2_FAPI_RC_BAD_REFERENCE;
-    }
-    TSS2_RC r = TSS2_RC_SUCCESS;
-    strdup_check(dest->type, src->type, r, error_cleanup);
-    strdup_check(dest->keyPEM, src->keyPEM, r, error_cleanup);
-    if (src->pemSignature.buffer) {
-        dest->pemSignature.buffer = malloc(src->pemSignature.size);
-        return_if_null(dest->pemSignature.buffer, "Out of memory.",
-                       TSS2_FAPI_RC_MEMORY);
-
-        dest->pemSignature.size = src->pemSignature.size;
-        memcpy(&dest->pemSignature.buffer[0], &src->pemSignature.buffer[0],
-               src->pemSignature.size);
-    }
-    dest->key = src->key;
-    dest->policyRef = src->policyRef;
-    dest->signature = src->signature;
-
-    return r;
-error_cleanup:
-    SAFE_FREE(dest->type);
     return r;
 }
 
@@ -1349,26 +1240,6 @@ copy_policy_element(const TPMT_POLICYELEMENT *from_policy, TPMT_POLICYELEMENT *t
                      from_policy->element.PolicyAuthorize.keyPath, r, error);
         strdup_check(to_policy->element.PolicyAuthorize.keyPEM,
                      from_policy->element.PolicyAuthorize.keyPEM, r, error);
-        if (from_policy->element.PolicyAuthorize.policy_list) {
-            to_policy->element.PolicyAuthorize.policy_list =
-                malloc(sizeof(POLICY_OBJECT));
-            goto_if_null2(to_policy->element.PolicyAuthorize.policy_list,
-                          "Out of memory", r, TSS2_FAPI_RC_MEMORY, error);
-            to_policy->element.PolicyAuthorize.policy_list->next = NULL;
-            r = copy_policy_object(to_policy->element.PolicyAuthorize.policy_list,
-                                   from_policy->element.PolicyAuthorize.policy_list);
-            goto_if_error(r, "Could not copy policy list", error);
-
-        }
-        if (from_policy->element.PolicyAuthorize.authorization) {
-            to_policy->element.PolicyAuthorize.authorization =
-                malloc(sizeof(TPMS_POLICYAUTHORIZATION));
-            goto_if_null(to_policy->element.PolicyAuthorize.authorization,
-                         "Out of memory", r, error);
-            r = copy_policyauthorization(to_policy->element.PolicyAuthorize.authorization,
-                                         from_policy->element.PolicyAuthorize.authorization);
-            goto_if_error(r, "Could not copy policy authorization", error);
-        }
         break;
     case POLICYAUTHORIZENV:
         strdup_check(to_policy->element.PolicyAuthorizeNv.nvPath,
@@ -1409,12 +1280,6 @@ copy_policy_element(const TPMT_POLICYELEMENT *from_policy, TPMT_POLICYELEMENT *t
                     from_policy->element.PolicyNameHash.namePaths[i],
                     r, error);
         }
-        break;
-    case POLICYOR:
-        to_policy->element.PolicyOr.branches =
-            copy_policy_branches(from_policy->element.PolicyOr.branches);
-        goto_if_null2(to_policy->element.PolicyOr.branches, "Out of memory",
-                      r, TSS2_FAPI_RC_MEMORY, error);
         break;
     }
     return TSS2_RC_SUCCESS;
