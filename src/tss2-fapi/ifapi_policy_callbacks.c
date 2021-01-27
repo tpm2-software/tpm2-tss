@@ -1238,7 +1238,9 @@ ifapi_exec_auth_policy(
     }
 cleanup:
     SAFE_FREE(names);
-    cleanup_policy_list(current_policy->policy_list);
+    /* Check whether cleanup was executed. */
+    if (fapi_ctx->policy.policyutil_stack)
+        cleanup_policy_list(current_policy->policy_list);
     return r;
 }
 
