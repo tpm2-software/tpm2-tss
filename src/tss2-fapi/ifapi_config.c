@@ -71,7 +71,8 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
     }
 
     if (!ifapi_get_sub_object(jso, "log_dir", &jso2)) {
-        out->log_dir = DEFAULT_LOG_DIR;
+        out->log_dir = strdup(DEFAULT_LOG_DIR);
+        return_if_null(jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
     } else {
         r = ifapi_json_char_deserialize(jso2, &out->log_dir);
         return_if_error(r, "Bad value for field \"log_dir\".");
