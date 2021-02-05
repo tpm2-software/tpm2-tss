@@ -13,6 +13,7 @@
 
 #include <inttypes.h>
 
+#include "tss2_common.h"
 #include "tss2_tpm2_types.h"
 #include "tss2_mu.h"
 
@@ -20,10 +21,11 @@
 #define LOGMODULE sys
 #include "util/log.h"
 
-#define TSSWG_INTEROP 1
-#define TSS_SAPI_FIRST_FAMILY 2
-#define TSS_SAPI_FIRST_LEVEL 1
-#define TSS_SAPI_FIRST_VERSION 108
+static const TSS2_ABI_VERSION CURRENT = TSS2_ABI_VERSION_CURRENT;
+#define CURRENT_CREATOR (CURRENT.tssCreator)
+#define CURRENT_FAMILY  (CURRENT.tssFamily)
+#define CURRENT_LEVEL   (CURRENT.tssLevel)
+#define CURRENT_VERSION (CURRENT.tssVersion)
 
 TSS2_RC Tss2_Sys_Initialize(
     TSS2_SYS_CONTEXT *sysContext,
@@ -45,17 +47,17 @@ TSS2_RC Tss2_Sys_Initialize(
 
     /* Checks for ABI negotiation. */
     if (abiVersion != NULL &&
-        (abiVersion->tssCreator != TSSWG_INTEROP ||
-         abiVersion->tssFamily != TSS_SAPI_FIRST_FAMILY ||
-         abiVersion->tssLevel != TSS_SAPI_FIRST_LEVEL ||
-         abiVersion->tssVersion != TSS_SAPI_FIRST_VERSION)) {
+        (abiVersion->tssCreator != CURRENT_CREATOR ||
+         abiVersion->tssFamily != CURRENT_FAMILY ||
+         abiVersion->tssLevel != CURRENT_LEVEL ||
+         abiVersion->tssVersion != CURRENT_VERSION)) {
         LOG_ERROR("ABI-Version of application %" PRIx32 ".%" PRIu32 ".%"
                   PRIu32 ".%" PRIu32 " differs from ABI version of SAPI %"
                   PRIx32 ".%" PRIu32 ".%" PRIu32 ".%" PRIu32,
                   abiVersion->tssCreator, abiVersion->tssFamily,
                   abiVersion->tssLevel, abiVersion->tssVersion,
-                  TSSWG_INTEROP, TSS_SAPI_FIRST_FAMILY,
-                  TSS_SAPI_FIRST_LEVEL, TSS_SAPI_FIRST_VERSION);
+                  CURRENT_CREATOR, CURRENT_FAMILY,
+                  CURRENT_LEVEL, CURRENT_VERSION);
         return TSS2_SYS_RC_ABI_MISMATCH;
     }
 
