@@ -194,27 +194,29 @@ ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config)
     size_t configFileContentSize = 0;
     TSS2_RC r = ifapi_io_read_finish(io, &configFileContent, &configFileContentSize);
     return_try_again(r);
-    goto_if_error(r, "Could not finish read operation", cleanup);
+    goto_if_error(r, "Could not finish read operation", error);
     if (configFileContent == NULL || configFileContentSize == 0) {
         LOG_ERROR("Config file is empty");
         r = TSS2_FAPI_RC_BAD_VALUE;
-        goto cleanup;
+        goto error;
     }
 
     /* Parse and deserialize the configuration file */
     jso = json_tokener_parse((char *)configFileContent);
     goto_if_null(jso, "Could not parse JSON objects",
-            TSS2_FAPI_RC_GENERAL_FAILURE, cleanup);
+            TSS2_FAPI_RC_GENERAL_FAILURE, error);
     r = ifapi_json_IFAPI_CONFIG_deserialize(jso, config);
-    goto_if_error(r, "Could not deserialize configuration", cleanup);
+    goto_if_error(r, "Could not deserialize configuration", error);
 
     /* Check, if the values of the configuration are valid */
     goto_if_null(config->profile_dir, "No profile directory defined in config file",
-                 TSS2_FAPI_RC_BAD_VALUE, cleanup);
+                 TSS2_FAPI_RC_BAD_VALUE, error);
     goto_if_null(config->user_dir, "No user directory defined in config file",
-                 TSS2_FAPI_RC_BAD_VALUE, cleanup);
+                 TSS2_FAPI_RC_BAD_VALUE, error);
+    goto_if_null(config->keystore_dir, "No system directory defined in config file",
+                 TSS2_FAPI_RC_BAD_VALUE, error);
     goto_if_null(config->profile_name, "No default profile defined in config file.",
-                 TSS2_FAPI_RC_BAD_VALUE, cleanup);
+                 TSS2_FAPI_RC_BAD_VALUE, error);
 
     /* Check whether usage of home directory is provided in config file */
     size_t startPos = 0;
@@ -230,11 +232,11 @@ ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config)
         LOG_DEBUG("Expanding user directory %s to user's home", config->user_dir);
         homeDir = getenv("HOME");
         goto_if_null2(homeDir, "Home directory can't be determined.",
-                      r, TSS2_FAPI_RC_BAD_PATH, cleanup);
+                      r, TSS2_FAPI_RC_BAD_PATH, error);
 
         r = ifapi_asprintf(&homePath, "%s%s%s", homeDir, IFAPI_FILE_DELIM,
                            &config->user_dir[startPos]);
-        goto_if_error(r, "Out of memory.", cleanup);
+        goto_if_error(r, "Out of memory.", error);
 
         SAFE_FREE(config->user_dir);
         config->user_dir = homePath;
@@ -247,7 +249,22 @@ ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config)
     LOG_DEBUG("Configuration profile name: %s", config->profile_name);
     LOG_DEBUG("Configuration TCTI: %s", config->tcti);
     LOG_DEBUG("Configuration log directory: %s", config->log_dir);
-cleanup:
+
+    SAFE_FREE(configFileContent);
+    if (jso != NULL) {
+        json_object_put(jso);
+    }
+    return r;
+
+ error:
+    SAFE_FREE(config->profile_dir);
+    SAFE_FREE(config->user_dir);
+    SAFE_FREE(config->keystore_dir);
+    SAFE_FREE(config->profile_name);
+    SAFE_FREE(config->tcti);
+    SAFE_FREE(config->log_dir);
+    SAFE_FREE(config->ek_cert_file);
+    SAFE_FREE(config->intel_cert_service);
     SAFE_FREE(configFileContent);
     if (jso != NULL) {
         json_object_put(jso);
