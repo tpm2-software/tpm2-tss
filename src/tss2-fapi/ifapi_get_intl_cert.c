@@ -194,7 +194,7 @@ base64_encode(const unsigned char* buffer)
 static char *
 base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
 {
-    size_t i, unescape_len, r;
+    size_t i, unescape_len = 0, r;
     char *binary_data = NULL, *unescaped_string = NULL;
 
     LOG_INFO("Decoding the base64 encoded cert into binary form");

@@ -129,7 +129,12 @@ TESTS_UNIT += \
 endif ESYS
 if FAPI
 TESTS_UNIT += \
-    test/unit/fapi-json
+    test/unit/fapi-json \
+    test/unit/fapi-helpers \
+    test/unit/fapi-io \
+    test/unit/fapi-profiles \
+    test/unit/fapi-config \
+    test/unit/fapi-get-intl-cert
 endif FAPI
 endif #UNIT
 
@@ -607,6 +612,105 @@ test_unit_fapi_json_SOURCES = test/unit/fapi-json.c \
                               src/tss2-fapi/ifapi_policy_json_serialize.c \
                               src/tss2-fapi/tpm_json_deserialize.c \
                               src/tss2-fapi/tpm_json_serialize.c
+
+test_unit_fapi_helpers_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_helpers_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_fapi_helpers_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) \
+                                 -Wl,--wrap=ifapi_crypto_hash_update \
+                                 -Wl,--wrap=ifapi_crypto_hash_finish
+test_unit_fapi_helpers_SOURCES = test/unit/fapi-helpers.c \
+                                 src/tss2-fapi/ifapi_json_deserialize.c \
+                                 src/tss2-fapi/ifapi_json_serialize.c \
+                                 src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                                 src/tss2-fapi/ifapi_policy_json_serialize.c \
+                                 src/tss2-fapi/tpm_json_deserialize.c \
+                                 src/tss2-fapi/tpm_json_serialize.c \
+                                 src/tss2-fapi/fapi_crypto.c \
+                                 src/tss2-fapi/ifapi_eventlog.c \
+                                 src/tss2-fapi/ifapi_helpers.c \
+                                 src/tss2-fapi/ifapi_keystore.c  \
+                                 src/tss2-fapi/ifapi_io.c
+
+test_unit_fapi_io_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_io_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_fapi_io_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) \
+                            -Wl,--wrap=fopen \
+                            -Wl,--wrap=lockf \
+                            -Wl,--wrap=fseek \
+                            -Wl,--wrap=ftell \
+                            -Wl,--wrap=fcntl \
+                            -Wl,--wrap=malloc \
+                            -Wl,--wrap=read \
+                            -Wl,--wrap=write \
+                            -Wl,--wrap=fileno \
+                            -Wl,--wrap=fclose
+test_unit_fapi_io_SOURCES = test/unit/fapi-io.c \
+                            src/tss2-fapi/ifapi_json_deserialize.c \
+                            src/tss2-fapi/ifapi_json_serialize.c \
+                            src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                            src/tss2-fapi/ifapi_policy_json_serialize.c \
+                            src/tss2-fapi/tpm_json_deserialize.c \
+                            src/tss2-fapi/tpm_json_serialize.c \
+                            src/tss2-fapi/fapi_crypto.c \
+                            src/tss2-fapi/ifapi_eventlog.c \
+                            src/tss2-fapi/ifapi_helpers.c \
+                            src/tss2-fapi/ifapi_keystore.c  \
+                            src/tss2-fapi/ifapi_io.c
+
+test_unit_fapi_profiles_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_profiles_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_fapi_profiles_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) \
+                                  -Wl,--wrap=ifapi_io_read_finish
+test_unit_fapi_profiles_SOURCES = test/unit/fapi-profiles.c \
+                                  src/tss2-fapi/ifapi_profiles.c \
+                                  src/tss2-fapi/ifapi_json_deserialize.c \
+                                  src/tss2-fapi/ifapi_json_serialize.c \
+                                  src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                                  src/tss2-fapi/ifapi_policy_json_serialize.c \
+                                  src/tss2-fapi/tpm_json_deserialize.c \
+                                  src/tss2-fapi/tpm_json_serialize.c \
+                                  src/tss2-fapi/fapi_crypto.c \
+                                  src/tss2-fapi/ifapi_eventlog.c \
+                                  src/tss2-fapi/ifapi_helpers.c \
+                                  src/tss2-fapi/ifapi_keystore.c  \
+                                  src/tss2-fapi/ifapi_io.c
+
+test_unit_fapi_config_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_config_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_fapi_config_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) \
+                                  -Wl,--wrap=ifapi_io_read_finish
+test_unit_fapi_config_SOURCES = test/unit/fapi-config.c \
+                                  src/tss2-fapi/ifapi_config.c \
+                                  src/tss2-fapi/ifapi_json_deserialize.c \
+                                  src/tss2-fapi/ifapi_json_serialize.c \
+                                  src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                                  src/tss2-fapi/ifapi_policy_json_serialize.c \
+                                  src/tss2-fapi/tpm_json_deserialize.c \
+                                  src/tss2-fapi/tpm_json_serialize.c \
+                                  src/tss2-fapi/fapi_crypto.c \
+                                  src/tss2-fapi/ifapi_eventlog.c \
+                                  src/tss2-fapi/ifapi_helpers.c \
+                                  src/tss2-fapi/ifapi_keystore.c  \
+                                  src/tss2-fapi/ifapi_io.c
+
+test_unit_fapi_get_intl_cert_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_get_intl_cert_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_fapi_get_intl_cert_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) \
+                                       -Wl,--wrap=ifapi_get_curl_buffer \
+                                       -Wl,--wrap=SHA256_Update
+test_unit_fapi_get_intl_cert_SOURCES = test/unit/fapi-get-intl-cert.c \
+	                                   src/tss2-fapi/ifapi_get_intl_cert.c \
+                                       src/tss2-fapi/ifapi_json_deserialize.c \
+                                       src/tss2-fapi/ifapi_json_serialize.c \
+                                       src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                                       src/tss2-fapi/ifapi_policy_json_serialize.c \
+                                       src/tss2-fapi/tpm_json_deserialize.c \
+                                       src/tss2-fapi/tpm_json_serialize.c \
+                                       src/tss2-fapi/fapi_crypto.c \
+                                       src/tss2-fapi/ifapi_eventlog.c \
+                                       src/tss2-fapi/ifapi_helpers.c \
+                                       src/tss2-fapi/ifapi_keystore.c  \
+                                       src/tss2-fapi/ifapi_io.c
 
 endif # FAPI
 endif # UNIT
