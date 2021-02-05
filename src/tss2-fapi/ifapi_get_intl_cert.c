@@ -306,9 +306,10 @@ ifapi_get_intl_ek_certificate(FAPI_CONTEXT *context, TPM2B_PUBLIC *ek_public,
 {
     int rc = 1;
     unsigned char *hash = hash_ek_public(ek_public);
-    char *cert_ptr;
+    char *cert_ptr = NULL;
     char *cert_start = NULL, *cert_bin = NULL;
     char *b64 = base64_encode(hash);
+    *cert_buffer = NULL;
 
     if (!b64) {
         LOG_ERROR("base64_encode returned null");
@@ -375,6 +376,8 @@ out:
     if (rc == 0) {
         return TSS2_RC_SUCCESS;
     } else {
+        SAFE_FREE(cert_bin);
+        SAFE_FREE(cert_ptr);
         LOG_ERROR("Get INTEL EK certificate.");
         return TSS2_FAPI_RC_NO_CERT;
     }
