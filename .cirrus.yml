@@ -7,6 +7,7 @@ task:
     matrix:
       image_family: freebsd-12-1-snap
   install_script:
+    - export IGNORE_OSVERSION=yes
     - pkg update -f
     - pkg upgrade -y
     - pkg install -y bash gmake coreutils libtool pkgconf autoconf autoconf-archive
