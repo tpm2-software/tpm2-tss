@@ -44,28 +44,24 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
     return_if_null(out, "out is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
     return_if_null(jso, "jso is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    memset(out, 0, sizeof(IFAPI_CONFIG));
+
     /* Deserialize the JSON object) */
     json_object *jso2;
     TSS2_RC r;
     LOG_TRACE("call");
 
-    if (!ifapi_get_sub_object(jso, "profile_dir", &jso2)) {
-        out->profile_dir = NULL;
-    } else {
+    if (ifapi_get_sub_object(jso, "profile_dir", &jso2)) {
         r = ifapi_json_char_deserialize(jso2, &out->profile_dir);
         return_if_error(r, "BAD VALUE");
     }
 
-    if (!ifapi_get_sub_object(jso, "user_dir", &jso2)) {
-        out->user_dir = NULL;
-    } else {
+    if (ifapi_get_sub_object(jso, "user_dir", &jso2)) {
         r = ifapi_json_char_deserialize(jso2, &out->user_dir);
         return_if_error(r, "BAD VALUE");
     }
 
-    if (!ifapi_get_sub_object(jso, "system_dir", &jso2)) {
-        out->keystore_dir = NULL;
-    } else {
+    if (ifapi_get_sub_object(jso, "system_dir", &jso2)) {
         r = ifapi_json_char_deserialize(jso2, &out->keystore_dir);
         return_if_error(r, "BAD VALUE");
     }
@@ -98,9 +94,7 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
     r = ifapi_json_TPML_PCR_SELECTION_deserialize(jso2, &out->system_pcrs);
     return_if_error(r, "BAD VALUE");
 
-    if (!ifapi_get_sub_object(jso, "ek_cert_file", &jso2)) {
-        out->ek_cert_file = NULL;
-    } else {
+    if (ifapi_get_sub_object(jso, "ek_cert_file", &jso2)) {
         r = ifapi_json_char_deserialize(jso2, &out->ek_cert_file);
         return_if_error(r, "BAD VALUE");
     }
@@ -120,9 +114,7 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
         out->ek_fingerprint.hashAlg = 0;
     }
 
-    if (!ifapi_get_sub_object(jso, "intel_cert_service", &jso2)) {
-        out->intel_cert_service = NULL;
-    } else {
+    if (ifapi_get_sub_object(jso, "intel_cert_service", &jso2)) {
         r = ifapi_json_char_deserialize(jso2, &out->intel_cert_service);
         return_if_error(r, "BAD VALUE");
     }
