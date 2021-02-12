@@ -258,6 +258,7 @@ AS_IF([test "x$enable_integration" = "xyes" -a "$HOSTOS" = "Linux"],
        ERROR_IF_NO_PROG([grep])
        ERROR_IF_NO_PROG([env])
        ERROR_IF_NO_PROG([rm])
+       ERROR_IF_NO_PROG([sha256sum])
        AS_IF([test "x$with_crypto" != xossl -o "x$enable_esapi" != xyes],
            PKG_CHECK_MODULES([LIBCRYPTO],[libcrypto]))
        AC_CHECK_HEADER(uthash.h, [], [AC_MSG_ERROR([Can not find uthash.h. Please install uthash-dev])])
