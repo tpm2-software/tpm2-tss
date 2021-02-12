@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: BSD-3-Clause
 
-set -e
+set -eo pipefail
 
-source $TRAVIS_BUILD_DIR/.ci/docker-prelude.sh
+source $DOCKER_BUILD_DIR/.ci/docker-prelude.sh
 
 export CONFIGURE_OPTIONS=
 
@@ -17,12 +17,6 @@ fi
 
 if [ -d ./config_test ]; then
   rm -rf config_test
-fi
-
-# Do not run tests when building on coverity_scan branch
-if [ "$COVERITY_SCAN_BRANCH" == 1 ]; then
-    echo "Coverity scan branch detected, not running build nor tests...exiting!"
-    exit 0
 fi
 
 if [ -z "$WITH_CRYPTO" ]; then
@@ -74,7 +68,7 @@ if [ "$SCANBUILD" == "yes" ]; then
 elif [ "$CC" == "clang" ]; then
   ../configure --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
 else
-  if [ "$WITH_TCTI" == "mssim"]; then
+  if [ "$WITH_TCTI" == "mssim" ]; then
     ../configure --with-sanitizer=undefined,address --disable-tcti-swtpm --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
   else
     ../configure --with-sanitizer=undefined,address --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
@@ -134,8 +128,11 @@ fi # TEST_TCTI_CONFIG
 # so people can verify the rest of their patch works in CI before dying.
 # git diff --check fails with a non-zero return code causing the shell to die
 # as it has a set -e executed.
-check_branch="origin/${TRAVIS_BRANCH:-master}"
-[ -z "$TRAVIS_TAG" ] && git fetch "$check_branch" && git diff --check "$check_branch"
+if [ -n "$BASE_REF" ]; then
+  echo "Running whitespace check"
+  git fetch origin "$BASE_REF"
+  git diff --check "origin/$BASE_REF"
+fi
 
 if [ "$ENABLE_COVERAGE" == "true" ]; then
     bash <(curl -s https://codecov.io/bash)
