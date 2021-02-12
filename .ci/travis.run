@@ -2,71 +2,40 @@
 
 set -e
 
-# if no DOCKER_TAG is set, warn and default to fedora-30
-if [ -z "$DOCKER_TAG" ]; then
-  echo "WARN: DOCKER_TAG is not set, defaulting to fedora-30"
-  export DOCKER_TAG="fedora-30"
+export PROJECT="tpm2-tss"
+
+# if no DOCKER_IMAGE is set, warn and default to fedora-32
+if [ -z "$DOCKER_IMAGE" ]; then
+  echo "WARN: DOCKER_IMAGE is not set, defaulting to fedora-32"
+  export DOCKER_IMAGE="fedora-32"
 fi
 
-  #
-  # Docker starts you in a cloned repo of your project with the PR checkout out.
-  # We want those changes IN the docker image, so use the -v option to mount the
-  # project repo in the docker image.
-  #
-  # Also, pass in any env variables required for the build via .ci/docker.env file
-  #
-  # Execute the build and test procedure by running .ci/docker.run
-  #
-if [ "$TRAVIS_BRANCH" != "coverity_scan" ]; then
-  echo "Running non-coverity build"
-  # Do normal CI script
+#
+# Docker starts you in a cloned repo of your project with the PR checkout out.
+# We want those changes IN the docker image, so use the -v option to mount the
+# project repo in the docker image.
+#
+# Also, pass in any env variables required for the build via .ci/docker.env file
+#
+# Execute the build and test procedure by running .ci/docker.run
+#
+
+ci_env=""
+if [ "$ENABLE_COVERAGE" == "true" ]; then
   ci_env=$(bash <(curl -s https://codecov.io/env))
-  docker run $ci_env --env-file .ci/docker.env \
-    -v "$(pwd):/workspace/tpm2-tss" "tpm2software/tpm2-tss:$DOCKER_TAG" \
-    /bin/bash -c '/workspace/tpm2-tss/.ci/docker.run'
-
-    exit 0
 fi
 
-# branch is coverity_scan
-echo "Running coverity build"
 
-# Do coverity steps
-# we don't run with clang and we only run if COVERITY_RUN is true
-if [[ "$CC" == clang* || "$COVERITY_RUN" != "true" ]]; then
-  echo "Nothing to do on the coverity_scan branch...exiting!"
-  exit 0
+if [ "$ENABLE_COVERITY" == "true" ]; then
+  echo "Running coverity build"
+  script="coverity.run"
+else
+  echo "Running non-coverity build"
+  script="docker.run"
 fi
 
-# ensure coverity_scan tool is available to the container
-if [ ! -f "$(pwd)/coverity-analysis/bin/cov-build" ]; then
-  wget https://scan.coverity.com/download/linux64 --quiet --post-data "token=$COVERITY_TOKEN&project=tpm2-software%2Ftpm2.0-tss" -O coverity_tool.tgz
-  wget https://scan.coverity.com/download/linux64 --quiet --post-data "token=$COVERITY_TOKEN&project=tpm2-software%2Ftpm2.0-tss&md5=1" -O coverity_tool.md5
-  echo "$(cat coverity_tool.md5)" coverity_tool.tgz | md5sum -c
-fi
-
-echo "unpacking cov-analysis"
-tar -xf coverity_tool.tgz
-mv cov-analysis-* cov-analysis
-
-
-# perform the scan
-docker run --env-file .ci/docker.env \
-  -v "$(pwd):/workspace/tpm2-tss" "tpm2software/tpm2-tss:$DOCKER_TAG" \
-  /bin/bash -c '/workspace/tpm2-tss/.ci/coverity.run'
-
-# upload the results
-test -f "$(pwd)/tpm2-tss-scan.tgz"
-
-echo "Submitting data to Coverity"
-curl --form token="$COVERITY_TOKEN" \
-  --form email=tadeusz.struk@intel.com \
-  --form project=tpm2-software/tpm2.0-tss \
-  --form file=@"$(pwd)/tpm2-tss-scan.tgz" \
-  --form version="$TRAVIS_COMMIT" \
-  --form description="$TRAVIS_REPO_SLUG $TRAVIS_BRANCH" \
-  https://scan.coverity.com/builds?project=tpm2-software%2Ftpm2.0-tss
-
-rm -fr tpm2-tss-scan.tgz
+docker run --cap-add=SYS_PTRACE $ci_env --env-file .ci/docker.env \
+  -v "$(pwd):/workspace/$PROJECT" "ghcr.io/tpm2-software/$DOCKER_IMAGE" \
+  /bin/bash -c "/workspace/$PROJECT/.ci/$script"
 
 exit 0
