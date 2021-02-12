@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [3.0.4] - next
+### Changed or Fixed
+- Fix error cleanup for key loading and policy execution.
+- Fix initialization of default log_dir.
+- Fix cleanup in several error cases.
+- initialise 'out' parameter in ifapi_json_IFAPI_CONFIG_deserialize
+
 ## [3.0.3] - 2020-11-25
 ### Changed or Fixed
 - Fix Regression in Fapi_List
