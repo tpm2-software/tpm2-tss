@@ -21,20 +21,6 @@ extern "C" {
 #endif
 
 TSS2_RC
-Tss2_MU_BYTE_Marshal(
-    BYTE           src,
-    uint8_t         buffer[],
-    size_t          buffer_size,
-    size_t         *offset);
-
-TSS2_RC
-Tss2_MU_BYTE_Unmarshal(
-    uint8_t const   buffer[],
-    size_t          buffer_size,
-    size_t         *offset,
-    BYTE           *dest);
-
-TSS2_RC
 Tss2_MU_INT8_Marshal(
     INT8            src,
     uint8_t         buffer[],
