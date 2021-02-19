@@ -393,6 +393,13 @@ AX_VALGRIND_CHECK
 
 gl_LD_VERSION_SCRIPT
 
+AC_ARG_ENABLE([log-file],
+            [AS_HELP_STRING([--disable-log-file],
+                            [write logging to stderr only])],,
+            [enable_log_file=yes])
+AS_IF([test "x$enable_log_file" != xno],
+	[AC_DEFINE([LOG_FILE_ENABLED],[1], [Support for writing to a log file is enabled])])
+
 AC_ARG_WITH([maxloglevel],
             [AS_HELP_STRING([--with-maxloglevel={none,error,warning,info,debug,trace}],
                             [sets the maximum log level (default is trace)])],,

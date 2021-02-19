@@ -7,6 +7,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <errno.h>
 
 #define LOGMODULE log
 #include "log.h"
@@ -74,12 +75,44 @@ case_insensitive_strncmp(const char *string1,
 static log_level
 getLogLevel(const char *module, log_level logdefault);
 
+static FILE *
+getLogFile(void)
+{
+#ifdef LOG_FILE_ENABLED
+    const char *envpath;
+    static FILE *file = NULL;
+
+    if (file) {
+        return file;
+    }
+
+    envpath = getenv("TSS2_LOGFILE");
+    if (envpath == NULL  || !case_insensitive_strncmp(envpath, "stderr", 7)) {
+        file = stderr;
+    } else if (!strcmp(envpath, "-") || !case_insensitive_strncmp(envpath, "stdout", 7)) {
+        file = stdout;
+    } else {
+        file = fopen(envpath, "a+");
+        if (file == NULL) {
+            file = stderr;
+            fprintf(file, "Failed to open logging file %s: %s\n", envpath, strerror(errno));
+            fflush(file);
+        }
+    }
+
+    return file;
+#else
+    return stderr;
+#endif
+}
+
 void
 doLogBlob(log_level loglevel, const char *module, log_level logdefault,
            log_level *status,
            const char *file, const char *func, int line,
            const uint8_t *blob, size_t size, const char *fmt, ...)
 {
+    FILE *logfile;
     if (unlikely(*status == LOGLEVEL_UNDEFINED))
         *status = getLogLevel(module, logdefault);
     if (loglevel > *status)
@@ -137,7 +170,9 @@ doLogBlob(log_level loglevel, const char *module, log_level logdefault,
                 }
             }
             /* print the line and restart */
-            fprintf (stderr, "%s\n", buffer);
+            logfile = getLogFile();
+            fprintf (logfile, "%s\n", buffer);
+            fflush(logfile);
             off2 = i;
             off = 0;
             memset(buffer, '\0', LINE_LEN);
@@ -153,6 +188,7 @@ doLog(log_level loglevel, const char *module, log_level logdefault,
            const char *file, const char *func, int line,
            const char *msg, ...)
 {
+    FILE *logfile;
     if (unlikely(*status == LOGLEVEL_UNDEFINED))
         *status = getLogLevel(module, logdefault);
 
@@ -167,9 +203,11 @@ doLog(log_level loglevel, const char *module, log_level logdefault,
 
     va_list vaargs;
     va_start(vaargs, msg);
-    vfprintf (stderr, fmt,
+    logfile = getLogFile();
+    vfprintf (logfile, fmt,
         /* log_strings[loglevel], module, file, func, line, */
         vaargs);
+    fflush(logfile);
     va_end(vaargs);
 }
 
