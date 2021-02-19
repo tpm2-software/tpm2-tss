@@ -242,6 +242,22 @@ test_esys_encrypt_decrypt(ESYS_CONTEXT * esys_context)
         .buffer = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16}
     };
 
+#ifdef TEST_ENCRYPT_DECRYPT2
+    LOG_INFO("Test Esys_EncryptDecrypt2");
+    r = Esys_EncryptDecrypt2(
+        esys_context,
+        keyHandle_handle,
+        ESYS_TR_PASSWORD,
+        ESYS_TR_NONE,
+        ESYS_TR_NONE,
+        &inData,
+        encrypt,
+        mode,
+        &ivIn,
+        &outData,
+        &ivOut);
+#else
+    LOG_INFO("Test Esys_EncryptDecrypt");
     r = Esys_EncryptDecrypt(
         esys_context,
         keyHandle_handle,
@@ -254,6 +270,7 @@ test_esys_encrypt_decrypt(ESYS_CONTEXT * esys_context)
         &inData,
         &outData,
         &ivOut);
+#endif  /* TEST_ENCRYPT_DECRYPT2 */
 
     if ((r == TPM2_RC_COMMAND_CODE) ||
         (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
@@ -265,7 +282,20 @@ test_esys_encrypt_decrypt(ESYS_CONTEXT * esys_context)
 
     goto_if_error(r, "Error: EncryptDecrypt", error);
 
-
+#ifdef TEST_ENCRYPT_DECRYPT2
+      r = Esys_EncryptDecrypt2(
+        esys_context,
+        keyHandle_handle,
+        ESYS_TR_PASSWORD,
+        ESYS_TR_NONE,
+        ESYS_TR_NONE,
+        outData,
+        decrypt,
+        mode,
+        &ivIn,
+        &outData2,
+        &ivOut2);
+#else
     r = Esys_EncryptDecrypt(
         esys_context,
         keyHandle_handle,
@@ -278,6 +308,7 @@ test_esys_encrypt_decrypt(ESYS_CONTEXT * esys_context)
         outData,
         &outData2,
         &ivOut2);
+#endif /* TEST_ENCRYPT_DECRYPT2 */
 
     if ((r == TPM2_RC_COMMAND_CODE) ||
         (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
