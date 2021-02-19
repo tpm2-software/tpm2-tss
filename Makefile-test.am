@@ -258,6 +258,7 @@ ESYS_TESTS_INTEGRATION_OPTIONAL = \
     test/integration/esys-createloaded-session.int \
     test/integration/esys-duplicate.int \
     test/integration/esys-encrypt-decrypt.int \
+    test/integration/esys-encrypt-decrypt2.int \
     test/integration/esys-get-time.int \
     test/integration/esys-hierarchy-control.int \
     test/integration/esys-nv-certify.int \
@@ -1058,6 +1059,14 @@ test_integration_esys_encrypt_decrypt_int_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_esys_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_encrypt_decrypt_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_encrypt_decrypt_int_SOURCES = \
+    test/integration/esys-encrypt-decrypt.int.c \
+    test/integration/main-esys.c test/integration/test-esys.h
+
+test_integration_esys_encrypt_decrypt2_int_CFLAGS  = $(TESTS_CFLAGS) \
+    -DTEST_ENCRYPT_DECRYPT2
+test_integration_esys_encrypt_decrypt2_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_encrypt_decrypt2_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_encrypt_decrypt2_int_SOURCES = \
     test/integration/esys-encrypt-decrypt.int.c \
     test/integration/main-esys.c test/integration/test-esys.h
 
