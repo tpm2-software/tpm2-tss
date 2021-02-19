@@ -64,14 +64,14 @@ if [ "$CC" == "gcc" ]; then
 fi
 
 if [ "$SCANBUILD" == "yes" ]; then
-  scan-build --status-bugs ../configure --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
+  scan-build --status-bugs ../configure --enable-unit --enable-self-generated-certificate --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
 elif [ "$CC" == "clang" ]; then
-  ../configure --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
+  ../configure --enable-unit --enable-self-generated-certificate  --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
 else
   if [ "$WITH_TCTI" == "mssim" ]; then
-    ../configure --with-sanitizer=undefined,address --disable-tcti-swtpm --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
+    ../configure --with-sanitizer=undefined,address --disable-tcti-swtpm --enable-unit --enable-self-generated-certificate --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
   else
-    ../configure --with-sanitizer=undefined,address --enable-unit --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
+    ../configure --with-sanitizer=undefined,address --enable-unit --enable-self-generated-certificate --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
   fi
 fi
 
@@ -91,34 +91,34 @@ pushd ./config_test
 if [ "$CC" == "gcc" ]; then
   # No TCTI - expect to fail
   echo "========================== START TEST - NO TCTI =========================="
-  (../configure --disable-doxygen-doc --enable-unit --enable-integration --disable-tcti-swtpm --disable-tcti-mssim --disable-tcti-device && exit 1) || echo "failed as expected";
+  (../configure --disable-doxygen-doc --enable-unit --enable-self-generated-certificate --enable-integration --disable-tcti-swtpm --disable-tcti-mssim --disable-tcti-device && exit 1) || echo "failed as expected";
   # only device TCTI
   echo "========================== START TEST - device TCTI =========================="
-  mkdir -p ./dev/tpm0 && ../configure --disable-doxygen-doc --enable-unit --enable-integration --disable-tcti-swtpm --disable-tcti-mssim --enable-tcti-device --with-device=./dev/tpm0
+  mkdir -p ./dev/tpm0 && ../configure --disable-doxygen-doc --enable-unit --enable-self-generated-certificate --enable-integration --disable-tcti-swtpm --disable-tcti-mssim --enable-tcti-device --with-device=./dev/tpm0
   make -j check TESTS="test/unit/tcti-device" && rm -rf ./dev
   # only mssim TCTI
   echo "========================== START TEST - mssim TCTI =========================="
-  ../configure --disable-doxygen-doc --enable-unit --enable-integration --disable-tcti-swtpm --enable-tcti-mssim --disable-tcti-device
+  ../configure --disable-doxygen-doc --enable-unit --enable-self-generated-certificate --enable-integration --disable-tcti-swtpm --enable-tcti-mssim --disable-tcti-device
   make -j check TESTS="test/unit/tcti-mssim"
   # device and mssim TCTIs
   echo "========================== START TEST - mssim & device TCTI =========================="
-  ../configure --disable-doxygen-doc --enable-unit --enable-integration --disable-tcti-swtpm --enable-tcti-mssim --enable-tcti-device
+  ../configure --disable-doxygen-doc --enable-unit --enable-self-generated-certificate --enable-integration --disable-tcti-swtpm --enable-tcti-mssim --enable-tcti-device
   make -j check TESTS="test/unit/tcti-device test/unit/tcti-mssim"
   # only swtmp TCTI
   echo "========================== START TEST - swtpm TCTI =========================="
-  ../configure --disable-doxygen-doc --enable-unit --enable-integration --enable-tcti-swtpm --disable-tcti-mssim --disable-tcti-device
+  ../configure --disable-doxygen-doc --enable-unit --enable-self-generated-certificate --enable-integration --enable-tcti-swtpm --disable-tcti-mssim --disable-tcti-device
   make -j check TESTS="test/unit/tcti-swtpm"
   # swtmp and device TCTIs
   echo "========================== START TEST - swtpm & device TCTI =========================="
-  ../configure --disable-doxygen-doc --enable-unit --enable-integration --enable-tcti-swtpm --disable-tcti-mssim --enable-tcti-device
+  ../configure --disable-doxygen-doc --enable-unit --enable-self-generated-certificate --enable-integration --enable-tcti-swtpm --disable-tcti-mssim --enable-tcti-device
   make -j check TESTS="test/unit/tcti-swtpm test/unit/tcti-device"
   # swtmp and mssim TCTIs
   echo "========================== START TEST - swtpm & mssim TCTI =========================="
-  ../configure --disable-doxygen-doc --enable-unit --enable-integration --enable-tcti-swtpm --enable-tcti-mssim --disable-tcti-device
+  ../configure --disable-doxygen-doc --enable-unit --enable-self-generated-certificate --enable-integration --enable-tcti-swtpm --enable-tcti-mssim --disable-tcti-device
   make -j check TESTS="test/unit/tcti-swtpm test/unit/tcti-mssim"
   # all TCTIs
   echo "========================== START TEST - swtpm & mssim & device TCTI =========================="
-  ../configure --disable-doxygen-doc --enable-unit --enable-integration --enable-tcti-swtpm --enable-tcti-mssim --enable-tcti-device
+  ../configure --disable-doxygen-doc --enable-unit --enable-self-generated-certificate --enable-integration --enable-tcti-swtpm --enable-tcti-mssim --enable-tcti-device
   make -j check TESTS="test/unit/tcti-swtpm test/unit/tcti-mssim test/unit/tcti-device"
 fi # CC == gcc
 popd
