@@ -797,7 +797,11 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 
         statecase(context->state, PROVISION_PREPARE_READ_ROOT_CERT);
             /* Prepare reading of root certificate. */
+            root_ca_file = NULL;
+#ifdef SELF_GENERATED_CERTIFICATE
+#pragma message ( "*** Allow self generated certifcate ***" )
             root_ca_file = getenv("FAPI_TEST_ROOT_CERT");
+#endif
             if (!root_ca_file) {
                 context->state = PROVISION_EK_CHECK_CERT;
                 return TSS2_FAPI_RC_TRY_AGAIN;

@@ -454,6 +454,14 @@ AC_ARG_ENABLE([weakcrypto],
 AS_IF([test "x$enable_weakcrypto" = "xyes"],
 	[AC_DEFINE([DISABLE_WEAK_CRYPTO],[1],[DISABLE WEAK CRYPTO ALGORITHMS])])
 
+AC_ARG_ENABLE([self-generated-certificate],
+            [AS_HELP_STRING([--enable-self-generated-certificate],
+                            [Alllow usage of self generated root certifcate])],,
+            [enable_self_generated_certificate=no])
+AS_IF([test "x$enable_self_generated_certificate" == xyes],
+	[AC_DEFINE([SELF_GENERATED_CERTIFICATE],[1], [Allow usage of self generated root certifcate])])
+
+
 AC_SUBST([PATH])
 
 dnl --------- Doxy Gen -----------------------
