@@ -128,6 +128,7 @@ TESTS_UNIT += \
 
 endif ESYS
 if FAPI
+TESTS_CFLAGS +=  -DTOP_SOURCEDIR"=\"$(top_srcdir)\""
 TESTS_UNIT += \
     test/unit/fapi-json \
     test/unit/fapi-helpers \
