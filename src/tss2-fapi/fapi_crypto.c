@@ -2022,7 +2022,7 @@ ifapi_verify_ek_cert(
         int rc = X509_STORE_CTX_get_error(ctx);
         LOG_ERROR("%s", X509_verify_cert_error_string(rc));
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
-                   "Failed to verify EK certificate", cleanup);
+                   "Failed to verify intermediate certificate", cleanup);
     }
     if (1 != X509_STORE_add_cert(store, intermed_cert)) {
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
