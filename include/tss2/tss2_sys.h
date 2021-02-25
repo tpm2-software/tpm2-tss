@@ -28,15 +28,17 @@ typedef struct _TSS2_SYS_OPAQUE_CONTEXT_BLOB TSS2_SYS_CONTEXT;
 #define TSS2_SYS_MAX_SESSIONS 3
 
 /* Input structure for authorization area(s). */
-typedef struct {
+typedef struct TSS2L_SYS_AUTH_COMMAND TSS2L_SYS_AUTH_COMMAND;
+struct TSS2L_SYS_AUTH_COMMAND {
     uint16_t count;
     TPMS_AUTH_COMMAND auths[TSS2_SYS_MAX_SESSIONS];
-} TSS2L_SYS_AUTH_COMMAND;
+};
 
-typedef struct {
+typedef struct TSS2L_SYS_AUTH_RESPONSE TSS2L_SYS_AUTH_RESPONSE;
+struct TSS2L_SYS_AUTH_RESPONSE {
     uint16_t count;
     TPMS_AUTH_RESPONSE auths[TSS2_SYS_MAX_SESSIONS];
-} TSS2L_SYS_AUTH_RESPONSE;
+};
 
 size_t  Tss2_Sys_GetContextSize(
     size_t maxCommandResponseSize);

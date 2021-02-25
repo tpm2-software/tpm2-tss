@@ -175,7 +175,8 @@ typedef TSS2_RC (*TSS2_TCTI_INIT_FUNC) (
     const char *config);
 
 /* current version #1 known to this implementation */
-typedef struct {
+typedef struct TSS2_TCTI_CONTEXT_COMMON_V1 TSS2_TCTI_CONTEXT_COMMON_V1;
+struct TSS2_TCTI_CONTEXT_COMMON_V1 {
     uint64_t magic;
     uint32_t version;
     TSS2_TCTI_TRANSMIT_FCN transmit;
@@ -184,24 +185,26 @@ typedef struct {
     TSS2_TCTI_CANCEL_FCN cancel;
     TSS2_TCTI_GET_POLL_HANDLES_FCN getPollHandles;
     TSS2_TCTI_SET_LOCALITY_FCN setLocality;
-} TSS2_TCTI_CONTEXT_COMMON_V1;
+};
 
-typedef struct {
+typedef struct TSS2_TCTI_CONTEXT_COMMON_V2 TSS2_TCTI_CONTEXT_COMMON_V2;
+struct TSS2_TCTI_CONTEXT_COMMON_V2 {
     TSS2_TCTI_CONTEXT_COMMON_V1 v1;
     TSS2_TCTI_MAKE_STICKY_FCN makeSticky;
-} TSS2_TCTI_CONTEXT_COMMON_V2;
+};
 
 typedef TSS2_TCTI_CONTEXT_COMMON_V2 TSS2_TCTI_CONTEXT_COMMON_CURRENT;
 
 #define TSS2_TCTI_INFO_SYMBOL "Tss2_Tcti_Info"
 
-typedef struct {
+typedef struct TSS2_TCTI_INFO TSS2_TCTI_INFO;
+struct TSS2_TCTI_INFO {
     uint32_t version;
     const char *name;
     const char *description;
     const char *config_help;
     TSS2_TCTI_INIT_FUNC init;
-} TSS2_TCTI_INFO;
+};
 
 typedef const TSS2_TCTI_INFO* (*TSS2_TCTI_INFO_FUNC) (void);
 
