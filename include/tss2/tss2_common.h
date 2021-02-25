@@ -29,12 +29,13 @@ typedef int64_t     INT64;
 /*
  * ABI runtime negotiation definitions
  */
-typedef struct {
+typedef struct TSS2_ABI_VERSION TSS2_ABI_VERSION;
+struct TSS2_ABI_VERSION {
     uint32_t tssCreator;
     uint32_t tssFamily;
     uint32_t tssLevel;
     uint32_t tssVersion;
-} TSS2_ABI_VERSION;
+};
 
 #define TSS2_ABI_VERSION_CURRENT {1, 2, 1, 108}
 
