@@ -13,6 +13,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <json-c/json_util.h>
 #include <json-c/json_tokener.h>
 
@@ -41,6 +43,19 @@ FILE mock_stream; /**< stream will be used to activate wrapper.*/
 /*
  * Wrapper functions for file system io.
  */
+
+int
+ __real_stat(const char *pathname, struct stat *statbuf, ...);
+
+int
+ __wrap_stat(const char *pathname, struct stat *statbuf, ...)
+{
+    if (strcmp(pathname, "tss_unit_dummyf")) {
+        return __real_stat(pathname, statbuf);
+    }
+    statbuf->st_mode = R_OK;
+    return 0;
+}
 
 FILE *
 __real_fopen(const char *pathname, const char* mode, ...);
