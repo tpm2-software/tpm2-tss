@@ -644,7 +644,8 @@ test_unit_fapi_io_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) \
                             -Wl,--wrap=read \
                             -Wl,--wrap=write \
                             -Wl,--wrap=fileno \
-                            -Wl,--wrap=fclose
+                            -Wl,--wrap=fclose \
+                            -Wl,--wrap=stat
 test_unit_fapi_io_SOURCES = test/unit/fapi-io.c \
                             src/tss2-fapi/ifapi_json_deserialize.c \
                             src/tss2-fapi/ifapi_json_serialize.c \

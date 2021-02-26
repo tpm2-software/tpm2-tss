@@ -17,6 +17,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <limits.h>
 /* Need for some libc-versions */
 #ifndef __FreeBSD__
 #include <malloc.h>
@@ -43,8 +44,32 @@ ifapi_io_read_async(
     struct IFAPI_IO *io,
     const char *filename)
 {
+    struct stat statbuf;
+
+    if (stat(filename, &statbuf) == -1) {
+        LOG_ERROR("File \"%s\" not found.", filename);
+        return TSS2_FAPI_RC_IO_ERROR;
+    }
+
+    /* Check whether file is a directory. */
+    if (S_ISDIR(statbuf.st_mode)) {
+        LOG_ERROR("\"%s\" is a directory.", filename);
+        return TSS2_FAPI_RC_IO_ERROR;
+    }
+
+    /* Check read access. */
+    if (!(statbuf.st_mode & R_OK)) {
+        LOG_ERROR("Can't read \"%s\".", filename);
+        return TSS2_FAPI_RC_IO_ERROR;
+    }
     if (io->char_rbuffer) {
         LOG_ERROR("rbuffer still in use; maybe use of old API.");
+        return TSS2_FAPI_RC_IO_ERROR;
+    }
+
+    if (stat(filename, &statbuf) != 0) {
+        LOG_ERROR("stat failed for \"%s\".", filename);
+        fclose(io->stream);
         return TSS2_FAPI_RC_IO_ERROR;
     }
 
@@ -53,6 +78,7 @@ ifapi_io_read_async(
         LOG_ERROR("File \"%s\" not found.", filename);
         return TSS2_FAPI_RC_IO_ERROR;
     }
+
     /* Locking the file. Lock will be release upon close */
     if (lockf(fileno(io->stream), F_TLOCK, 0) == -1 && errno == EAGAIN) {
         LOG_ERROR("File %s currently locked.", filename);
@@ -60,11 +86,24 @@ ifapi_io_read_async(
         return TSS2_FAPI_RC_IO_ERROR;
     }
 
-    fseek(io->stream, 0L, SEEK_END);
+    if (fseek(io->stream, 0L, SEEK_END) == -1) {
+        LOG_ERROR("fseek failed for \"%s\".", filename);
+        fclose(io->stream);
+        return TSS2_FAPI_RC_IO_ERROR;
+    };
     long length = ftell(io->stream);
+    if (length == -1  || length == LONG_MAX) {
+        LOG_ERROR("ftell failed for \"%s\".", filename);
+        fclose(io->stream);
+        return TSS2_FAPI_RC_IO_ERROR;
+    };
     fclose(io->stream);
 
     io->stream = fopen(filename, "rt");
+    if (io->stream == NULL) {
+        LOG_ERROR("Could not open  \"%s\".", filename);
+        return TSS2_FAPI_RC_IO_ERROR;
+    }
     io->char_rbuffer = malloc (length + 1);
     if (io->char_rbuffer == NULL) {
         fclose(io->stream);
@@ -73,9 +112,13 @@ ifapi_io_read_async(
         return TSS2_FAPI_RC_MEMORY;
     }
 
-    int rc, flags = fcntl(fileno(io->stream), F_GETFL, 0);
-    rc = fcntl(fileno(io->stream), F_SETFL, flags | O_NONBLOCK);
-    if (rc < 0) {
+    int flags = fcntl(fileno(io->stream), F_GETFL, 0);
+    if (flags == -1) {
+        SAFE_FREE(io->char_rbuffer);
+        LOG_ERROR("fcntl failed with %d", errno);
+        return TSS2_FAPI_RC_IO_ERROR;
+    }
+    if (fcntl(fileno(io->stream), F_SETFL, flags | O_NONBLOCK) == -1) {
         SAFE_FREE(io->char_rbuffer);
         LOG_ERROR("fcntl failed with %d", errno);
         return TSS2_FAPI_RC_IO_ERROR;
@@ -193,6 +236,11 @@ ifapi_io_write_async(
 
     /* Use non blocking IO, so asynchronous write will be needed */
     int rc, flags = fcntl(fileno(io->stream), F_GETFL, 0);
+    if (flags < 0) {
+        fclose(io->stream);
+        goto_error(r, TSS2_FAPI_RC_IO_ERROR,
+                   "fcntl failed with %d", error, errno);
+    }
     rc = fcntl(fileno(io->stream), F_SETFL, flags | O_NONBLOCK);
     if (rc < 0) {
         fclose(io->stream);
