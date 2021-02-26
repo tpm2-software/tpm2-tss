@@ -2042,7 +2042,6 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  Provides functions for the execution of policies for object authorization.
 \{
 
-\fn static void clear_all_policies(FAPI_CONTEXT *context)
 \fn static TSS2_RC clear_current_policy(FAPI_CONTEXT *context)
 \fn static TSS2_RC create_session(
     FAPI_CONTEXT *context,
@@ -2070,15 +2069,11 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
 \fn TSS2_RC append_object_to_list(void *object, NODE_OBJECT_T **object_list)
 \fn static void cleanup_policy_element(TPMT_POLICYELEMENT *policy)
 \fn static void cleanup_policy_elements(TPML_POLICYELEMENTS *policy)
-\fn static void cleanup_policy_object(POLICY_OBJECT * object)
 \fn static TSS2_RC copy_policy(TPMS_POLICY * dest,
         const TPMS_POLICY * src)
 \fn static TPML_POLICYBRANCHES * copy_policy_branches(const TPML_POLICYBRANCHES *from_branches)
 \fn static TSS2_RC copy_policy_element(const TPMT_POLICYELEMENT *from_policy, TPMT_POLICYELEMENT *to_policy)
 \fn static TPML_POLICYELEMENTS * copy_policy_elements(const TPML_POLICYELEMENTS *from_policy)
-\fn static TSS2_RC copy_policy_object(POLICY_OBJECT * dest, const POLICY_OBJECT * src)
-\fn static TSS2_RC copy_policyauthorization(TPMS_POLICYAUTHORIZATION * dest,
-        const TPMS_POLICYAUTHORIZATION * src)
 \fn static TSS2_RC create_dirs(const char *supdir, NODE_STR_T *dir_list, mode_t mode)
 \fn void free_string_list(NODE_STR_T *node)
 \fn char * get_description(IFAPI_OBJECT *object)
