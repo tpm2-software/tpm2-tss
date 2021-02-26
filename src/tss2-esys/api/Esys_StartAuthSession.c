@@ -445,45 +445,47 @@ Esys_StartAuthSession_Finish(
             LOG_ERROR("Error: initialize auth session (%x).", r);
             return r;
         }
-        /* compute session key */
-        size_t secret_size = 0;
-        if (tpmKey != ESYS_TR_NONE)
-            secret_size += keyHash_size;
-        if (bind != ESYS_TR_NONE && bindNode != NULL)
-            secret_size += bindNode->auth.size;
-        /*
-         * A non null pointer for secret is required by the subsequent functions,
-         * hence a malloc is called with size 1 if secret_size is zero.
-         */
-        uint8_t *secret = malloc(secret_size ? secret_size : 1);
-        if (secret == NULL) {
-            LOG_ERROR("Out of memory.");
-            return TSS2_ESYS_RC_MEMORY;
-         }
-        if  (bind != ESYS_TR_NONE && bindNode != NULL
-             && bindNode->auth.size > 0)
-             memcpy(&secret[0], &bindNode->auth.buffer[0], bindNode->auth.size);
-        if (tpmKey != ESYS_TR_NONE)
-            memcpy(&secret[(bind == ESYS_TR_NONE || bindNode == NULL) ? 0
+        /* compute session key except for an unbound session */
+        if (!(bind == ESYS_TR_RH_NULL && tpmKey == ESYS_TR_NONE)) {
+            size_t secret_size = 0;
+            if (tpmKey != ESYS_TR_NONE)
+                secret_size += keyHash_size;
+            if (bind != ESYS_TR_NONE && bindNode != NULL)
+                secret_size += bindNode->auth.size;
+            /*
+             * A non null pointer for secret is required by the subsequent functions,
+             * hence a malloc is called with size 1 if secret_size is zero.
+             */
+            uint8_t *secret = malloc(secret_size ? secret_size : 1);
+            if (secret == NULL) {
+                LOG_ERROR("Out of memory.");
+                return TSS2_ESYS_RC_MEMORY;
+            }
+            if  (bind != ESYS_TR_NONE && bindNode != NULL
+                 && bindNode->auth.size > 0)
+                memcpy(&secret[0], &bindNode->auth.buffer[0], bindNode->auth.size);
+            if (tpmKey != ESYS_TR_NONE)
+                memcpy(&secret[(bind == ESYS_TR_NONE || bindNode == NULL) ? 0
                                : bindNode->auth.size],
-                           &esysContext->salt.buffer[0], keyHash_size);
-        if (bind != ESYS_TR_NONE &&  bindNode != NULL)
-            iesys_compute_bound_entity(&bindNode->rsrc.name,
-                                       &bindNode->auth,
-                                       &sessionHandleNode->rsrc.misc.rsrc_session.bound_entity);
-        LOGBLOB_DEBUG(secret, secret_size, "ESYS Session Secret");
-        r = iesys_crypto_KDFa(esysContext->in.StartAuthSession.authHash, secret,
-                              secret_size, "ATH",
-                               &lnonceTPM, esysContext->in.StartAuthSession.nonceCaller,
-                               authHash_size*8, NULL,
-                     &sessionHandleNode->rsrc.misc.rsrc_session.sessionKey.buffer[0], FALSE);
-        free(secret);
-        return_if_error(r, "Error in KDFa computation.");
+                       &esysContext->salt.buffer[0], keyHash_size);
+            if (bind != ESYS_TR_NONE &&  bindNode != NULL)
+                iesys_compute_bound_entity(&bindNode->rsrc.name,
+                                           &bindNode->auth,
+                                           &sessionHandleNode->rsrc.misc.rsrc_session.bound_entity);
+            LOGBLOB_DEBUG(secret, secret_size, "ESYS Session Secret");
+            r = iesys_crypto_KDFa(esysContext->in.StartAuthSession.authHash, secret,
+                                  secret_size, "ATH",
+                                  &lnonceTPM, esysContext->in.StartAuthSession.nonceCaller,
+                                  authHash_size*8, NULL,
+                                  &sessionHandleNode->rsrc.misc.rsrc_session.sessionKey.buffer[0], FALSE);
+            free(secret);
+            return_if_error(r, "Error in KDFa computation.");
 
-        sessionHandleNode->rsrc.misc.rsrc_session.sessionKey.size = authHash_size;
-        LOGBLOB_DEBUG(&sessionHandleNode->rsrc.misc.rsrc_session.sessionKey
+            sessionHandleNode->rsrc.misc.rsrc_session.sessionKey.size = authHash_size;
+            LOGBLOB_DEBUG(&sessionHandleNode->rsrc.misc.rsrc_session.sessionKey
                       .buffer[0], authHash_size, "Session Key");
-        return_if_error(r,"Error KDFa");
+            return_if_error(r,"Error KDFa");
+        }
     }
     size_t offset = 0;
     r = Tss2_MU_TPM2_HANDLE_Marshal(sessionHandleNode->rsrc.handle,
