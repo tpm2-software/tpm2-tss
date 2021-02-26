@@ -197,6 +197,8 @@ ESYS_TESTS_INTEGRATION_MANDATORY = \
     test/integration/esys-create-primary-ecc-hmac.int \
     test/integration/esys-create-primary-hmac.int \
     test/integration/esys-create-session-auth-bound.int \
+    test/integration/esys-create-session-null-bind-tpm-key.int \
+    test/integration/esys-create-session-null-bind-no-tpm-key.int \
     test/integration/esys-create-session-auth-ecc.int \
     test/integration/esys-create-session-auth.int \
     test/integration/esys-create-session-auth-long.int \
@@ -1008,6 +1010,25 @@ test_integration_esys_create_session_auth_bound_int_SOURCES = \
     $(ESYS_SRC_UTIL_CRYPTO_SRC) \
     test/integration/esys-create-session-auth.int.c \
     test/integration/main-esys.c test/integration/test-esys.h
+
+test_integration_esys_create_session_null_bind_tpm_key_int_CFLAGS  = $(TESTS_CFLAGS) \
+    -DTEST_AES_ENCRYPTION -DTEST_NULL_BIND_TPMKEY $(TSS2_ESYS_CFLAGS_CRYPTO)
+test_integration_esys_create_session_null_bind_tpm_key_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_create_session_null_bind_tpm_key_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO)
+test_integration_esys_create_session_null_bind_tpm_key_int_SOURCES = \
+    $(ESYS_SRC_UTIL_CRYPTO_SRC) \
+    test/integration/esys-create-session-auth.int.c \
+    test/integration/main-esys.c test/integration/test-esys.h
+
+test_integration_esys_create_session_null_bind_no_tpm_key_int_CFLAGS  = $(TESTS_CFLAGS) \
+    -DTEST_AES_ENCRYPTION -DTEST_NULL_BIND_NO_TPM_KEY $(TSS2_ESYS_CFLAGS_CRYPTO)
+test_integration_esys_create_session_null_bind_no_tpm_key_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_create_session_null_bind_no_tpm_key_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO)
+test_integration_esys_create_session_null_bind_no_tpm_key_int_SOURCES = \
+    $(ESYS_SRC_UTIL_CRYPTO_SRC) \
+    test/integration/esys-create-session-auth.int.c \
+    test/integration/main-esys.c test/integration/test-esys.h
+
 
 test_integration_esys_create_session_auth_ecc_int_CFLAGS  = $(TESTS_CFLAGS) \
     -DTEST_AES_ENCRYPTION -DTEST_ECC $(TSS2_ESYS_CFLAGS_CRYPTO)

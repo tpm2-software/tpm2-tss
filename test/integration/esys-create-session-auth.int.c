@@ -255,17 +255,42 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
                                   TPMA_SESSION_AUDIT);
     goto_if_error(r, "Error Esys_TRSess_SetAttributes", error);
 
+#if TEST_BOUND_SESSION
     r = Esys_StartAuthSession(esys_context,
                               primaryHandle_AuthSession,
-#if TEST_BOUND_SESSION
                               primaryHandle_AuthSession,
-#else
-                              ESYS_TR_NONE,
-#endif
                               outerSession, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
                               sessionType, &symmetric, authHash, &session);
-    Esys_FlushContext(esys_context, outerSession);
+#else
+#if TEST_NULL_BIND_TPMKEY
+     r = Esys_StartAuthSession(esys_context,
+                              primaryHandle_AuthSession,
+                              ESYS_TR_RH_NULL,
+                              outerSession, ESYS_TR_NONE, ESYS_TR_NONE,
+                              NULL,
+                              sessionType, &symmetric, authHash, &session);
+#else
+#if TEST_NULL_BIND_NO_TPM_KEY
+     (void)primaryHandle_AuthSession;
+     r = Esys_StartAuthSession(esys_context,
+                               ESYS_TR_NONE,
+                               ESYS_TR_RH_NULL,
+                               outerSession, ESYS_TR_NONE, ESYS_TR_NONE,
+                               NULL,
+                               sessionType, &symmetric, authHash, &session);
+#else
+     r = Esys_StartAuthSession(esys_context,
+                               primaryHandle_AuthSession,
+                               ESYS_TR_NONE,
+                               outerSession, ESYS_TR_NONE, ESYS_TR_NONE,
+                               NULL,
+                               sessionType, &symmetric, authHash, &session);
+#endif
+#endif
+#endif
+
+     Esys_FlushContext(esys_context, outerSession);
     goto_if_error(r, "Error during Esys_StartAuthSession", error);
 
 #ifdef TEST_ECC
@@ -310,12 +335,6 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
         .size = 6,
         .buffer = {6, 7, 8, 9, 10, 11}
     };
-
-#ifdef TEST_LARGE_AUTH
-    for (int i = 0; i < 33; i++)
-        authKey2.buffer[i] = i;
-    authKey2.size = 33;
-#endif
 
     TPM2B_SENSITIVE_CREATE inSensitive2 = {
         .size = 0,
