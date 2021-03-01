@@ -458,8 +458,9 @@ AC_ARG_ENABLE([self-generated-certificate],
             [AS_HELP_STRING([--enable-self-generated-certificate],
                             [Alllow usage of self generated root certifcate])],,
             [enable_self_generated_certificate=no])
-AS_IF([test "x$enable_self_generated_certificate" == xyes],
-	[AC_DEFINE([SELF_GENERATED_CERTIFICATE],[1], [Allow usage of self generated root certifcate])])
+AS_IF([test "x$enable_self_generated_certificate" = xyes],
+	[AC_DEFINE([SELF_GENERATED_CERTIFICATE], [1], [Allow usage of self generated root certificate])],
+	[AS_IF([test "x$integration_tcti" != "xdevice"], [AC_DEFINE([FAPI_TEST_EK_CERT_LESS], [1], [Perform integration tests without EK certificate verification])])])
 
 
 AC_SUBST([PATH])
