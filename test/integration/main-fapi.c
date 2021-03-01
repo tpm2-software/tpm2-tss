@@ -226,8 +226,11 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
 #endif
                     "}\n",
                     profile, tmpdir, tmpdir, tmpdir,
-                    getenv("TPM20TEST_TCTI"),
-                    getenv("FAPI_TEST_FINGERPRINT"));
+                    getenv("TPM20TEST_TCTI")
+#if !defined(FAPI_TEST_EK_CERT_LESS)
+                    , getenv("FAPI_TEST_FINGERPRINT")
+#endif
+                   );
 #elif defined(FAPI_TEST_CERTIFICATE)
     size = asprintf(&config, "{\n"
                     "     \"profile_name\": \"%s\",\n"
@@ -244,8 +247,11 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
 #endif
                     "}\n",
                     profile, tmpdir, tmpdir, tmpdir,
-                    getenv("TPM20TEST_TCTI"),
-                    getenv("FAPI_TEST_CERTIFICATE"));
+                    getenv("TPM20TEST_TCTI")
+#if !defined(FAPI_TEST_EK_CERT_LESS)
+                    , getenv("FAPI_TEST_CERTIFICATE")
+#endif
+                   );
 #elif defined(FAPI_TEST_FINGERPRINT_ECC)
     size = asprintf(&config, "{\n"
                     "     \"profile_name\": \"%s\",\n"
@@ -262,8 +268,11 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
 #endif
                     "}\n",
                     profile, tmpdir, tmpdir, tmpdir,
-                    getenv("TPM20TEST_TCTI"),
-                    getenv("FAPI_TEST_FINGERPRINT_ECC"));
+                    getenv("TPM20TEST_TCTI")
+#if !defined(FAPI_TEST_EK_CERT_LESS)
+                    , getenv("FAPI_TEST_FINGERPRINT_ECC")
+#endif
+                   );
 #elif defined(FAPI_TEST_CERTIFICATE_ECC)
     size = asprintf(&config, "{\n"
                     "     \"profile_name\": \"%s\",\n"
@@ -280,8 +289,12 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
 #endif
                     "}\n",
                     profile, tmpdir, tmpdir, tmpdir,
-                    getenv("TPM20TEST_TCTI"),
-                    getenv("FAPI_TEST_CERTIFICATE_ECC"));
+                    getenv("TPM20TEST_TCTI")
+#if defined(FAPI_TEST_EK_CERT_LESS)
+#else
+                    , getenv("FAPI_TEST_CERTIFICATE_ECC")
+#endif
+                   );
 #else /* FAPI_NONTPM */
     size = asprintf(&config, "{\n"
                     "     \"profile_name\": \"%s\",\n"
