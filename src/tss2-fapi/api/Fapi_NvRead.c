@@ -39,7 +39,7 @@
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
  * @retval TSS2_FAPI_RC_BAD_PATH: if nvPath is not found.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED: if authorization fails.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN: if don’t know how to authenticate.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN: if don't know how to authenticate.
  * @retval TSS2_FAPI_RC_NV_NOT_READABLE: if the NV is not a readable index.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
@@ -132,7 +132,7 @@ Fapi_NvRead(
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
  * @retval TSS2_FAPI_RC_BAD_PATH: if nvPath is not found.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED: if authorization fails.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN: if don’t know how to authenticate.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN: if don't know how to authenticate.
  * @retval TSS2_FAPI_RC_NV_NOT_READABLE: if the NV is not a readable index.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.

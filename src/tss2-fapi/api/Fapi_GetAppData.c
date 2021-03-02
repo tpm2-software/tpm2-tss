@@ -25,7 +25,7 @@
 /** One-Call function for Fapi_GetAppData
  *
  * Every object has a description field that can be retrieved in order to obtain
- * additional information in its “path” entry.
+ * additional information in its "path" entry.
  *
  * @param[in,out] context The FAPI_CONTEXT
  * @param[in] path The path to the object for which the appData is returned
@@ -91,7 +91,7 @@ Fapi_GetAppData(
 /** Asynchronous function for Fapi_GetAppData
  *
  * Every object has a description field that can be retrieved in order to obtain
- * additional information in its “path” entry.
+ * additional information in its "path" entry.
  *
  * Call Fapi_GetAppData_Finish to finish the execution of this command.
  *
