@@ -462,6 +462,8 @@ AS_IF([test "x$enable_self_generated_certificate" = xyes],
 	[AC_DEFINE([SELF_GENERATED_CERTIFICATE], [1], [Allow usage of self generated root certificate])],
 	[AS_IF([test "x$integration_tcti" != "xdevice"], [AC_DEFINE([FAPI_TEST_EK_CERT_LESS], [1], [Perform integration tests without EK certificate verification])])])
 
+AS_IF([test "x$enable_integration" = "xyes" && test "x$enable_self_generated_certificate" != "xyes" && test "x$integration_tcti" != "xdevice"],
+      [AC_MSG_WARN([Running integration tests without EK certificate verification, use --enable-self-generated-certificate for full test coverage])])
 
 AC_SUBST([PATH])
 
