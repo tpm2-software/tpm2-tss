@@ -68,14 +68,14 @@
  *  * section header block          (shb)           |<-- file header
  *  * interface statistics block    (idb)           |
  *
- *  * ┬ enhanced packet block       (epb)           |<-- single tpm req. or rsp.
+ *  * - enhanced packet block       (epb)           |<-- single tpm req. or rsp.
  *    | * header                    (epb_header)    |
- *    | * ┬ ip package                              |
+ *    | * - ip package                              |
  *    |   | * header                (ip_header)     |
- *    |   | * ┬ tcp package                         |
+ *    |   | * - tcp package                         |
  *    |   |   | * header            (tcp_header)    |
- *    |   ┴   ┴ * tpm req. or resp.                 |
- *    ┴ * footer                    (epb_footer)    |
+ *    |   -   - * tpm req. or resp.                 |
+ *    - * footer                    (epb_footer)    |
  */
 
 /* section header block */

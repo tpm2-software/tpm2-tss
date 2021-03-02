@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-2-Clause */
 /*******************************************************************************
- * Copyright: 2020, Andreas Dröscher
+ * Copyright: 2020, Andreas Droescher
  * All rights reserved.
  ******************************************************************************/
 

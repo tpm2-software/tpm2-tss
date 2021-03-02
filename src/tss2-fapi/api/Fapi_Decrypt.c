@@ -41,7 +41,7 @@
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or cipherText is NULL.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
- * @retval TSS2_FAPI_RC_KEY_NOT_FOUND: if can’t find the key necessary to decrypt
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND: if can't find the key necessary to decrypt
  *         the file.
  * @retval TSS2_FAPI_RC_BAD_KEY: if the decryption key is unsuitable for the
  *         requested operation.
@@ -138,7 +138,7 @@ Fapi_Decrypt(
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or cipherText is NULL.
  * @retval TSS2_FAPI_RC_BAD_CONTEXT: if context corruption is detected.
- * @retval TSS2_FAPI_RC_KEY_NOT_FOUND: if can’t find the key necessary to decrypt
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND: if can't find the key necessary to decrypt
  *         the file.
  * @retval TSS2_FAPI_RC_BAD_KEY: if the decryption key is unsuitable for the
  *         requested operation.
