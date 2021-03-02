@@ -426,42 +426,16 @@ ifapi_keystore_initialize(
     const char *config_defaultprofile)
 {
     TSS2_RC r;
-    const char *home_dir;
-    char *home_path = NULL;
-    size_t start_pos;
 
     memset(keystore, 0, sizeof(IFAPI_KEYSTORE));
 
-    /* Check whether usage of home directory is provided in config file */
-    if (strncmp("~", config_userdir, 1) == 0) {
-        start_pos = 1;
-    } else if (strncmp("$HOME", config_userdir, 5) == 0) {
-        start_pos = 5;
-    } else {
-        start_pos = 0;
-    }
-
-    /* Replace home abbreviation in user path. */
-    if (start_pos) {
-        LOG_DEBUG("Expanding user directory %s to user's home", config_userdir);
-        home_dir = getenv("HOME");
-        goto_if_null2(home_dir, "Home directory can't be determined.",
-                      r, TSS2_FAPI_RC_BAD_PATH, error);
-
-        r = ifapi_asprintf(&home_path, "%s%s%s", home_dir, IFAPI_FILE_DELIM,
-                           &config_userdir[start_pos]);
-        goto_if_error(r, "Out of memory.", error);
-        keystore->userdir = home_path;
-
-    } else {
-        keystore->userdir = strdup(config_userdir);
-        goto_if_null2(keystore->userdir, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
-                      error);
-    }
-
     /* Create user directory if necessary */
-    r = ifapi_io_check_create_dir(keystore->userdir, FAPI_WRITE);
+    r = ifapi_io_check_create_dir(config_userdir, FAPI_WRITE);
     goto_if_error2(r, "User directory %s can't be created.", error, keystore->userdir);
+
+    keystore->userdir = strdup(config_userdir);
+    goto_if_null2(keystore->userdir, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
+                  error);
 
     keystore->systemdir = strdup(config_systemdir);
     goto_if_null2(keystore->systemdir, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
@@ -471,7 +445,6 @@ ifapi_keystore_initialize(
     goto_if_null2(keystore->defaultprofile, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
                   error);
 
-    SAFE_FREE(home_path);
     return TSS2_RC_SUCCESS;
 
 error:

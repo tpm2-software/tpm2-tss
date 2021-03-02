@@ -154,6 +154,53 @@ ifapi_config_initialize_async(IFAPI_IO *io)
 }
 
 /**
+ * Expand user symbol in path.
+ *
+ * "~" and "$HOME" will be replaces by the value of the HOME environment
+ * variable.
+ *
+ * @param[in, out] The path.
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval TSS2_FAPI_RC_BAD_VALUE if path is NULL.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_PATH if the home directory can't be determined.
+ */
+
+static TSS2_RC
+expand_home(char **path) {
+    size_t startPos = 0;
+    TSS2_RC r;
+
+    return_if_null(path, "Null passed for path", TSS2_FAPI_RC_BAD_VALUE);
+
+    /* Check whether usage of home directory in pathname */
+    if (strncmp("~", *path, 1) == 0) {
+        startPos = 1;
+    } else if (strncmp("$HOME", *path, 5) == 0) {
+        startPos = 5;
+    }
+
+    /* Replace home abbreviation in path. */
+    char *newPath = NULL;
+    if (startPos != 0) {
+        LOG_DEBUG("Expanding path %s to user's home", *path);
+        char *homeDir = getenv("HOME");
+        return_if_null(homeDir, "Home directory can't be determined.",
+                       TSS2_FAPI_RC_BAD_PATH);
+        if (strncmp(&(*path)[startPos], IFAPI_FILE_DELIM, strlen(IFAPI_FILE_DELIM)) == 0) {
+            startPos += strlen(IFAPI_FILE_DELIM);
+        }
+        r = ifapi_asprintf(&newPath, "%s%s%s", homeDir, IFAPI_FILE_DELIM,
+                           &(*path)[startPos]);
+        return_if_error(r, "Out of memory.");
+
+        SAFE_FREE(*path);
+        *path = newPath;
+    }
+    return TSS2_RC_SUCCESS;
+}
+
+/**
  * Finishes the initialization of the FAPI configuration.
  * @param[in]  io An IO object for file system access
  * @param[out] config The configuration that is initialized
@@ -178,7 +225,6 @@ ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config)
     return_if_null(io, "io is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
 
     /* Definitions that must be listed here for the cleanup to work */
-    const char *homeDir = NULL;
     json_object *jso = NULL;
 
     /* Finish reading operation */
@@ -211,28 +257,17 @@ ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config)
                  TSS2_FAPI_RC_BAD_VALUE, error);
 
     /* Check whether usage of home directory is provided in config file */
-    size_t startPos = 0;
-    if (strncmp("~", config->user_dir, 1) == 0) {
-        startPos = 1;
-    } else if (strncmp("$HOME", config->user_dir, 5) == 0) {
-        startPos = 5;
-    }
+    r = expand_home(&config->user_dir);
+    goto_if_error(r, "Expand home directory.", error);
 
-    /* Replace home abbreviation in user path. */
-    char *homePath = NULL;
-    if (startPos != 0) {
-        LOG_DEBUG("Expanding user directory %s to user's home", config->user_dir);
-        homeDir = getenv("HOME");
-        goto_if_null2(homeDir, "Home directory can't be determined.",
-                      r, TSS2_FAPI_RC_BAD_PATH, error);
+    r = expand_home(&config->keystore_dir);
+    goto_if_error(r, "Expand home directory.", error);
 
-        r = ifapi_asprintf(&homePath, "%s%s%s", homeDir, IFAPI_FILE_DELIM,
-                           &config->user_dir[startPos]);
-        goto_if_error(r, "Out of memory.", error);
+    r = expand_home(&config->log_dir);
+    goto_if_error(r, "Expand home directory.", error);
 
-        SAFE_FREE(config->user_dir);
-        config->user_dir = homePath;
-    }
+    r = expand_home(&config->profile_dir);
+    goto_if_error(r, "Expand home directory.", error);
 
     /* Log the contents of the configuration */
     LOG_DEBUG("Configuration profile directory: %s", config->profile_dir);
