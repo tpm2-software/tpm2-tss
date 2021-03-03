@@ -194,23 +194,23 @@ SAPI library, TAB/RM, and Test Code Block Diagram:
 
 # Project Layout
 ```
-├── doc     : various bits of documentation\
-├── include : header files installed in $(includedir)\
-│   └── tss2      : all public headers for this project\
-├── lib     : data files used by the build or installed into $(libdir)\
-├── m4      : autoconf support macros\
-├── man     : man pages\
-├── script  : scripts used by the build or CI\
-├── src     : all source files\
-│   ├── tss2-esys : enhanced system API (ESAPI) implementation\
-│   │   └── api   : ESAPI TPM API implementation\
-│   ├── tss2-mu   : TPM2 type marshaling/unmarshaling (MU) API implementation\
-│   ├── tss2-sys  : system API (SAPI) implementation\
-│   │   └── api   : SAPI public API implementation\
-│   ├── tss2-tcti : TCTI implementations for device and mssim\
-│   └── util      : Internal utility library (e.g. logging framework)\
-└── test    : test code\
-    ├── integration : integration test harness and test cases\
-    ├── tpmclient   : monolithic, legacy test application\
-    └── unit        : unit tests
+|-- doc     : various bits of documentation\
+|-- include : header files installed in $(includedir)\
+|   +-- tss2      : all public headers for this project\
+|-- lib     : data files used by the build or installed into $(libdir)\
+|-- m4      : autoconf support macros\
+|-- man     : man pages\
+|-- script  : scripts used by the build or CI\
+|-- src     : all source files\
+|   |-- tss2-esys : enhanced system API (ESAPI) implementation\
+|   |   +-- api   : ESAPI TPM API implementation\
+|   |-- tss2-mu   : TPM2 type marshaling/unmarshaling (MU) API implementation\
+|   |-- tss2-sys  : system API (SAPI) implementation\
+|   |   +-- api   : SAPI public API implementation\
+|   |-- tss2-tcti : TCTI implementations for device and mssim\
+|   +-- util      : Internal utility library (e.g. logging framework)\
++-- test    : test code\
+    |-- integration : integration test harness and test cases\
+    |-- tpmclient   : monolithic, legacy test application\
+    +-- unit        : unit tests
 ```
