@@ -79,7 +79,7 @@ conventions defined here.
 
 ### Examples
 ```c
-unsigned int table_index = find_index(jacket_table, “color”, COLOR_RED);
+unsigned int table_index = find_index(jacket_table, "color", COLOR_RED);
 ```
 ```c
 int last_item = 0;

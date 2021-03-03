@@ -421,13 +421,13 @@ resourcemgr.
 communicating with a real TPM.
 ### Changed
 - Rearranged directory structure in a more logical fashion.
-- Changed name of Linux makefiles from “makefile.linux” to makefile. This was
+- Changed name of Linux makefiles from "makefile.linux" to makefile. This was
 done in preparation for autotools porting (future enhancement).
-- Changed tpm library’s windows makefile from “makefile” to “windows.mak”.
+- Changed tpm library's windows makefile from "makefile" to "windows.mak".
 - Changed all makefiles and Visual Studio solution and project files to work
 with new directory structure.
 - Split out debug and TPM platform command code in tpmsockets.cpp into
-separate files. This code didn’t belong in this file.
+separate files. This code didn't belong in this file.
 
 ## [0.97] - 2015-??-??
 ### Added
@@ -527,7 +527,7 @@ at the size.
 and CopySensitiveCreateIn: not handling NULL outpul parameters correctly.
 - Changes all instances of calls to ExecuteFinish to a timeout that works for
 all cases including communicating with the simulator over the network.
-- Fixed call to LoadExternal in TestUnseal--needed to pass in a NULL pointer
+- Fixed call to LoadExternal in TestUnseal: needed to pass in a NULL pointer
 for the inSensitive parameter.
 - Fixed bug in CreatePrimary: not passing correct pointer for inSensitive.
 - Fixed timeouts for all ExecuteFinish calls in test application.
@@ -559,11 +559,11 @@ the ContextSave command failed.
 initialized was re-initing the whole driver.
 - Updated to latest 1.19 header files.
 - Fixed bugs in resource manager:
-- FindOldestSession wasn't working correctly—it was just finding the first
+- FindOldestSession wasn't working correctly: it was just finding the first
 one.
 - HandleGap needed to un-gap all the session contexts from the older interval.
 It wasn't doing that.
-- Fixed bug in handling of command line options—specifying none would cause
+- Fixed bug in handling of command line options: specifying none would cause
 program to error out.
 - Fixed issues in cleanup of TestStartAuthSession test. It was leaving some
 sessions alive.
@@ -743,7 +743,7 @@ out of entries because we weren't removing sessions that were closed.
 set to 0xff. Now the high nibble is left intact so that applications can
 determine the type of the handle.
 ### Notes
-1. Testing is not comprehensive. See test code to see what’s tested. Please
+1. Testing is not comprehensive. See test code to see what's tested. Please
 report any bugs found so that fixes can be rolled out.
 2. Range checks within SAPI code not yet implemented.
 3. Still need to add support for separate debug and production builds.
@@ -775,9 +775,9 @@ to all the other commands.
 ## [0.80] - 2013-11-19
 ### Added
 - Added code to create a new session for reading/writing the NV index after
-it’s first written. This tests the other case for bound sessions.
+it's first written. This tests the other case for bound sessions.
 - Added routine to start policy sessions.
-- Added policy test code--not used currently.
+- Added policy test code: not used currently.
 ### Changed
 - Fixed bugs in resource manager.
 - Fixed bugs with salted session tests.
@@ -850,7 +850,7 @@ function.
 - Updated headers with Intel license text.
 - Split sockets driver into separate code module.
 - SALTED session test fixes:
-  * Fixed CopyRSAEncryptIon function--wasn't handling some cases correctly.
+  * Fixed CopyRSAEncryptIon function: wasn't handling some cases correctly.
   * Backed out change to make parameterSize passed to ComputeSessionHmacPtr
 function a UINT16. Needs to be UINT32.
   * For ComputeSessionHmacPtr, changed parameterSize to UINT16 to fix build
