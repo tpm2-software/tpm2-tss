@@ -609,6 +609,7 @@ ifapi_keystore_load_async(
 
     /* Prepare read operation */
     r = ifapi_io_read_async(io, abs_path);
+    goto_if_error2(r, "Read object %s", error_cleanup, path);
     SAFE_FREE(abs_path);
     return r;
 
