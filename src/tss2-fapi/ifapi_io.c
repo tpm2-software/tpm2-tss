@@ -57,11 +57,6 @@ ifapi_io_read_async(
         return TSS2_FAPI_RC_IO_ERROR;
     }
 
-    /* Check read access. */
-    if (!(statbuf.st_mode & R_OK)) {
-        LOG_ERROR("Can't read \"%s\".", filename);
-        return TSS2_FAPI_RC_IO_ERROR;
-    }
     if (io->char_rbuffer) {
         LOG_ERROR("rbuffer still in use; maybe use of old API.");
         return TSS2_FAPI_RC_IO_ERROR;
@@ -75,7 +70,7 @@ ifapi_io_read_async(
 
     io->stream = fopen(filename, "rt");
     if (io->stream == NULL) {
-        LOG_ERROR("File \"%s\" not found.", filename);
+        LOG_ERROR("Open file \"%s\": %s", filename, strerror(errno));
         return TSS2_FAPI_RC_IO_ERROR;
     }
 
@@ -101,7 +96,7 @@ ifapi_io_read_async(
 
     io->stream = fopen(filename, "rt");
     if (io->stream == NULL) {
-        LOG_ERROR("Could not open  \"%s\".", filename);
+        LOG_ERROR("Open file \"%s\": %s", filename, strerror(errno));
         return TSS2_FAPI_RC_IO_ERROR;
     }
     io->char_rbuffer = malloc (length + 1);
@@ -225,7 +220,8 @@ ifapi_io_write_async(
     io->stream = fopen(filename, "wt");
     if (io->stream == NULL) {
         goto_error(r, TSS2_FAPI_RC_IO_ERROR,
-                   "Could not open file \"%s\" for writing.", error, filename);
+                   "Open file \"%s\" for writing: %s", error, filename,
+                   strerror(errno));
     }
     /* Locking the file. Lock will be release upon close */
     if (lockf(fileno(io->stream), F_TLOCK, 0) == -1 && errno == EAGAIN) {
