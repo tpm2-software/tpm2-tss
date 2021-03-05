@@ -25,7 +25,7 @@ We append an incremental digit `X` in case more than one release candidate is ne
 
 # Static Analysis
 Before a release is made the `coverity_scan` branch must be updated to the point in git history where the release will be made from.
-This branch must be pushed to github which will cause the travis-ci infrastructure to run an automated coverity scan.
+This branch must be pushed to github which will cause the CI infrastructure to run an automated coverity scan.
 The results of this scan must be dispositioned by the maintainers before the release is made.
 
 # Git Tags

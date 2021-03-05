@@ -14,6 +14,6 @@ get_deps "$WORKSPACE"
 
 export LD_LIBRARY_PATH=/usr/local/lib/
 
+# Change to the build dir
 echo "echo changing to $DOCKER_BUILD_DIR"
-# Change to the the travis build dir
 cd $DOCKER_BUILD_DIR
