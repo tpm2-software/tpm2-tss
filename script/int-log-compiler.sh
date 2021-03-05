@@ -295,13 +295,13 @@ if [ "$OS" == "Linux" ]; then
 fi
 
 # Determine the fingerprint of the RSA EK public.
-FINGERPRINT=$(openssl pkey -pubin -inform PEM -in $EKPUB_FILE -outform DER | sha256sum  | cut -f 1 -d ' ')
+FINGERPRINT=$(openssl pkey -pubin -inform PEM -in $EKPUB_FILE -outform DER | shasum -a256  | cut -f 1 -d ' ')
 export FAPI_TEST_FINGERPRINT="  { \"hashAlg\" : \"sha256\", \"digest\" : \"$FINGERPRINT\" }"
 openssl x509 -inform DER -in $EKCERT_FILE -outform PEM -out $EKCERT_PEM_FILE
 export FAPI_TEST_CERTIFICATE="file:${EKCERT_PEM_FILE}"
 
 # Determine the fingerprint of the RSA EK public.
-FINGERPRINT_ECC=$(openssl pkey -pubin -inform PEM -in $EKECCPUB_FILE -outform DER | sha256sum  | cut -f 1 -d ' ')
+FINGERPRINT_ECC=$(openssl pkey -pubin -inform PEM -in $EKECCPUB_FILE -outform DER | shasum -a256  | cut -f 1 -d ' ')
 export FAPI_TEST_FINGERPRINT_ECC="  { \"hashAlg\" : \"sha256\", \"digest\" : \"$FINGERPRINT_ECC\" }"
 openssl x509 -inform DER -in $EKECCCERT_FILE -outform PEM -out $EKECCCERT_PEM_FILE
 export FAPI_TEST_CERTIFICATE_ECC="file:${EKECCCERT_PEM_FILE}"
