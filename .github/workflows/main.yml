@@ -37,36 +37,6 @@ jobs:
       - name: failure
         if: ${{ failure() }}
         run: cat $(find ../ -name test-suite.log) || true
-  test-tcti-config:
-    runs-on: ubuntu-latest
-    if: "!contains(github.ref, 'coverity_scan')"
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v2
-      - name: Launch Container
-        env:
-          CC: gcc
-          DOCKER_IMAGE: fedora-32
-          TEST_TCTI_CONFIG: true
-        run: ./.ci/travis.run
-      - name: failure
-        if: ${{ failure() }}
-        run: cat $(find ../ -name test-suite.log) || true
-  test-mbedtls:
-    runs-on: ubuntu-latest
-    if: "!contains(github.ref, 'coverity_scan')"
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v2
-      - name: Launch Container
-        env:
-          CC: gcc
-          DOCKER_IMAGE: ubuntu-20.04
-          WITH_CRYPTO: mbed
-        run: ./.ci/travis.run
-      - name: failure
-        if: ${{ failure() }}
-        run: cat $(find ../ -name test-suite.log) || true
   test-coverage:
     runs-on: ubuntu-latest
     if: "!contains(github.ref, 'coverity_scan')"
