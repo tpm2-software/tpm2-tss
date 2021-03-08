@@ -68,7 +68,7 @@ test_esys_hmacsequencestart(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCaller,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
 
     goto_if_error(r, "Error: During initialization of session", error);
@@ -103,13 +103,13 @@ test_esys_hmacsequencestart(ESYS_CONTEXT * esys_context)
         .count = 0,
     };
 
-    inPublic.publicArea.nameAlg = TPM2_ALG_SHA1;
+    inPublic.publicArea.nameAlg = TPM2_ALG_SHA256;
     inPublic.publicArea.type = TPM2_ALG_KEYEDHASH;
     inPublic.publicArea.objectAttributes |= TPMA_OBJECT_SIGN_ENCRYPT;
     inPublic.publicArea.objectAttributes |= TPMA_OBJECT_USERWITHAUTH;
     inPublic.publicArea.objectAttributes |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
     inPublic.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM2_ALG_HMAC;
-    inPublic.publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM2_ALG_SHA1;
+    inPublic.publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM2_ALG_SHA256;
 
     TPM2B_AUTH auth = {.size = 20,
                        .buffer={10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
@@ -125,7 +125,7 @@ test_esys_hmacsequencestart(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, primaryHandle, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA1;
+    TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA256;
     ESYS_TR sequenceHandle;
 
     r = Esys_HMAC_Start(esys_context,
@@ -192,7 +192,7 @@ test_esys_hmacsequencestart(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCaller,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
 
     goto_if_error(r, "Error: During initialization of session", error);

@@ -77,7 +77,7 @@ test_esys_nv_certify(ESYS_CONTEXT * esys_context)
             .size = 0,
             .publicArea = {
                 .type = TPM2_ALG_RSA,
-                .nameAlg = TPM2_ALG_SHA1,
+                .nameAlg = TPM2_ALG_SHA256,
                 .objectAttributes = (
                     TPMA_OBJECT_USERWITHAUTH |
                     TPMA_OBJECT_RESTRICTED |
@@ -97,7 +97,7 @@ test_esys_nv_certify(ESYS_CONTEXT * esys_context)
                         },
                     .scheme = {
                          .scheme = TPM2_ALG_RSASSA,
-                         .details = { .rsassa = { .hashAlg = TPM2_ALG_SHA1 }},
+                         .details = { .rsassa = { .hashAlg = TPM2_ALG_SHA256 }},
 
                     },
                     .keyBits = 2048,
@@ -146,7 +146,7 @@ test_esys_nv_certify(ESYS_CONTEXT * esys_context)
         .size = 0,
         .nvPublic = {
             .nvIndex =TPM2_NV_INDEX_FIRST,
-            .nameAlg = TPM2_ALG_SHA1,
+            .nameAlg = TPM2_ALG_SHA256,
             .attributes = (
                 TPMA_NV_OWNERWRITE |
                 TPMA_NV_AUTHWRITE |

@@ -47,7 +47,7 @@ test_esys_tr_toTpmPublic_nv(ESYS_CONTEXT * ectx)
         .size = 0,
         .nvPublic = {
             .nvIndex =TPM2_NV_INDEX_FIRST,
-            .nameAlg = TPM2_ALG_SHA1,
+            .nameAlg = TPM2_ALG_SHA256,
             .attributes = TPMA_NV_AUTHWRITE | TPMA_NV_AUTHREAD,
             .authPolicy = {
                  .size = 0,

@@ -43,7 +43,7 @@ cmp_policy_digest(ESYS_CONTEXT * esys_context,
     LOGBLOB_DEBUG(&policyDigest->buffer[0], policyDigest->size,
                   "POLICY DIGEST");
 
-    if (policyDigest->size != 20
+    if (policyDigest->size != 32
         || memcmp(&policyDigest->buffer[0], &expected_digest->buffer[0],
                   policyDigest->size)) {
         free(policyDigest);
@@ -107,9 +107,9 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
         .mode = {.aes = TPM2_ALG_CFB}
     };
     TPM2B_NONCE nonceCallerTrial = {
-        .size = 20,
-        .buffer = {11, 12, 13, 14, 15, 16, 17, 18, 19, 11,
-                   21, 22, 23, 24, 25, 26, 27, 28, 29, 30}
+        .size = 32,
+        .buffer = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11, 12, 13, 14, 15, 16, 17,
+                    18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32 }
     };
 
     /*
@@ -118,7 +118,7 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
-                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
+                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA256,
                               &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session",
                   error);
@@ -127,17 +127,17 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
     TPML_PCR_SELECTION pcrSelection = {
         .count = 1,
         .pcrSelections = {
-                          {.hash = TPM2_ALG_SHA1,
+                          {.hash = TPM2_ALG_SHA256,
                            .sizeofSelect = 3,
                            .pcrSelect = {00, 00, 01},
                            },
                           }
     };
-    /* SHA1 digest for PCR register with zeros */
+    /* SHA256 digest for PCR register */
     TPM2B_DIGEST pcr_digest_zero = {
-        .size = 20,
-        .buffer = {0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-                   0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f}
+        .size = 32,
+        .buffer = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11, 12, 13, 14, 15, 16, 17,
+                    18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32}
     };
 
     r = Esys_PolicyPCR(esys_context,
@@ -148,9 +148,10 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: pcr digest can not be computed.", error);
 
     TPM2B_DIGEST expectedPolicyPCR = {
-        .size = 20,
-        .buffer = {0x85, 0x33, 0x11, 0x83, 0x19, 0x03, 0x12, 0xf5, 0xe8, 0x3c,
-                   0x60, 0x43, 0x34, 0x6f, 0x9f, 0x37, 0x21, 0x04, 0x76, 0x8e},
+        .size = 32,
+        .buffer = { 0xd0, 0x0d, 0x71, 0x64, 0xc2, 0x38, 0xc0, 0xec, 0x47, 0x87, 0x3d,
+                    0x71, 0x2d, 0x1e, 0xd8, 0x78, 0xb0, 0x62, 0xd1, 0x36, 0x9e, 0xe8,
+                    0x3b, 0xc4, 0x8c, 0xdf, 0x05, 0x3f, 0x6b, 0x8e, 0xd9, 0x53 }
     };
 
     if (!cmp_policy_digest(esys_context, &sessionTrial, &expectedPolicyPCR,
@@ -167,7 +168,7 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
         .size = 0,
         .nvPublic = {
                      .nvIndex = TPM2_NV_INDEX_FIRST,
-                     .nameAlg = TPM2_ALG_SHA1,
+                     .nameAlg = TPM2_ALG_SHA256,
                      .attributes = (TPMA_NV_OWNERWRITE |
                                     TPMA_NV_AUTHWRITE |
                                     TPMA_NV_WRITE_STCLEAR |
@@ -197,7 +198,7 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
-                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
+                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA256,
                               &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session",
                   error);
@@ -219,9 +220,10 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: PolicyNV", error);
 
     TPM2B_DIGEST expectedPolicyNV = {
-        .size = 20,
-        .buffer = {0x09, 0x92, 0x96, 0x4c, 0x18, 0x4c, 0x29, 0xde, 0x53, 0x52,
-                   0xc0, 0x20, 0x86, 0x81, 0xca, 0xe9, 0x94, 0x23, 0x09, 0x24}
+        .size = 32,
+        .buffer = { 0xe3, 0x60, 0x27, 0x10, 0xe7, 0x58, 0x18, 0xc5, 0x96, 0xed, 0xf4,
+                    0x32, 0x6a, 0x84, 0x06, 0x65, 0x85, 0x8e, 0x67, 0x8b, 0x0c, 0xb7,
+                    0x0f, 0x60, 0x85, 0xc9, 0xa6, 0xc5, 0xb1, 0x4e, 0x22, 0x45 }
     };
 
     if (!cmp_policy_digest(esys_context, &sessionTrial, &expectedPolicyNV,
@@ -235,7 +237,7 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
-                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
+                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA256,
                               &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session",
                   error);
@@ -254,9 +256,10 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: PolicyOR", error);
 
     TPM2B_DIGEST expectedPolicyOR = {
-        .size = 20,
-        .buffer = {0x5d, 0x34, 0x38, 0xd3, 0xb8, 0xf0, 0x82, 0xef, 0x22, 0x12,
-                   0xeb, 0x29, 0x54, 0xde, 0x66, 0x37, 0x06, 0x2f, 0xd8, 0x70}
+        .size = 32,
+        .buffer = { 0x87, 0x92, 0xce, 0xbb, 0x01, 0x65, 0x1e, 0x20, 0x5a, 0x18, 0x67,
+                    0x18, 0x4c, 0x93, 0x26, 0x6e, 0xa1, 0x15, 0x12, 0xc1, 0xfe, 0x3f,
+                    0x02, 0x6d, 0x90, 0x7d, 0x14, 0xb4, 0x6a, 0xae, 0x80, 0x5d }
     };
 
     if (!cmp_policy_digest(esys_context, &sessionTrial, &expectedPolicyOR,
@@ -277,7 +280,7 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
-                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
+                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA256,
                               &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session",
                   error);
@@ -290,9 +293,10 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: PolicyCounterTimer", error);
 
     TPM2B_DIGEST expectedPolicyCounterTimer = {
-        .size = 20,
-        .buffer = {0x93, 0x8a, 0x9c, 0x7f, 0x60, 0xd4, 0xdd, 0xb5, 0x5a, 0x13,
-                   0xc1, 0x7e, 0x3c, 0xe4, 0x62, 0x10, 0x82, 0xd0, 0x11, 0xad}
+        .size = 32,
+        .buffer = { 0x47, 0x47, 0xae, 0xce, 0xa4, 0x17, 0x9c, 0x60, 0xdd, 0x82, 0xfc, 0x18,
+                    0xc5, 0xa7, 0x58, 0xad, 0xa0, 0xe8, 0xa7, 0x19, 0xc8, 0x61, 0xac, 0xa3,
+                    0xf4, 0xca, 0x85, 0xcf, 0xf6, 0x32, 0x6d, 0x64 }
     };
 
     if (!cmp_policy_digest
@@ -323,15 +327,15 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
-                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
+                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA256,
                               &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session",
                   error);
 
     TPM2B_DIGEST nameHash = {
-        .size = 20,
-        .buffer = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                   11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
+        .size = 32,
+        .buffer = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11, 12, 13, 14, 15, 16, 17,
+                    18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32}
     };
 
     r = Esys_PolicyNameHash(esys_context,
@@ -341,9 +345,10 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: PolicyNameHash", error);
 
     TPM2B_DIGEST expectedPolicyNameHash = {
-        .size = 20,
-        .buffer = {0xb4, 0x00, 0x9a, 0xb0, 0x80, 0x49, 0x55, 0x5f, 0x8c, 0xf2,
-                   0x7b, 0x2e, 0x55, 0x7e, 0x74, 0x7d, 0x44, 0x39, 0x68, 0x7f}
+        .size = 32,
+        .buffer = { 0xeb, 0xc8, 0x0e, 0xb9, 0xb6, 0x6d, 0xb3, 0xc4, 0xee, 0x55, 0x53,
+                    0xa4, 0xbc, 0x87, 0xbd, 0xa4, 0x0f, 0x2e, 0x9e, 0xc2, 0xa6, 0x76,
+                    0xa7, 0x05, 0x70, 0x4b, 0x4d, 0x15, 0x31, 0x50, 0xdf, 0xa9 }
     };
 
     if (!cmp_policy_digest(esys_context, &sessionTrial, &expectedPolicyNameHash,
@@ -356,21 +361,22 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
-                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
+                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA256,
                               &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session",
                   error);
 
     TPM2B_NAME name1 = {
-        .size = 20,
-        .name = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
+        .size = 32,
+        .name = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11, 12, 13, 14, 15, 16, 17,
+                  18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32}
+
     };
 
     TPM2B_NAME name2 = {
-        .size = 20,
-        .name = {21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-                 31, 32, 33, 34, 35, 36, 37, 38, 39, 30}
+        .size = 32,
+        .name = { 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56,
+                  57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72 }
     };
 
     r = Esys_PolicyDuplicationSelect(esys_context,
@@ -381,9 +387,10 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: PolicyDuplicationSelect", error);
 
     TPM2B_DIGEST expectedPolicyDuplicationSelect = {
-        .size = 20,
-        .buffer = {0x53, 0x77, 0xf5, 0x82, 0x83, 0x18, 0xa9, 0xee, 0x76, 0x70,
-                   0xa8, 0x31, 0x5d, 0x5c, 0x04, 0xb4, 0xaa, 0xaf, 0x96, 0x8f}
+        .size = 32,
+        .buffer = { 0x2b, 0xfb, 0xc1, 0x37, 0x3e, 0xa9, 0x86, 0xc6, 0xb7, 0x90, 0x7d,
+                    0x0d, 0xcd, 0x8c, 0xad, 0x71, 0x6b, 0x73, 0x4f, 0xd6, 0xbb, 0x86,
+                    0xe2, 0x27, 0xe2, 0x81, 0x11, 0x14, 0x8a, 0x92, 0x1, 0x6e }
     };
 
     if (!cmp_policy_digest
@@ -399,7 +406,7 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
-                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
+                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA256,
                               &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session",
                   error);
@@ -410,9 +417,10 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: PolicyNvWritten", error);
 
     TPM2B_DIGEST expectedPolicyNvWritten = {
-        .size = 20,
-        .buffer = {0x5a, 0x91, 0xe7, 0x10, 0x53, 0x86, 0xbd, 0x54, 0x7a, 0x15,
-                   0xaa, 0xd4, 0x03, 0x69, 0xb1, 0xe2, 0x5e, 0x46, 0x28, 0x73}
+        .size = 32,
+        .buffer = { 0x3c, 0x32, 0x63, 0x23, 0x67, 0x0e, 0x28, 0xad, 0x37, 0xbd, 0x57,
+                    0xf6, 0x3b, 0x4c, 0xc3, 0x4d, 0x26, 0xab, 0x20, 0x5e, 0xf2, 0x2f,
+                    0x27, 0x5c, 0x58, 0xd4, 0x7f, 0xab, 0x24, 0x85, 0x46, 0x6e }
     };
 
     if (!cmp_policy_digest(esys_context, &sessionTrial, &expectedPolicyNvWritten,
@@ -438,9 +446,10 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
      */
 
     TPM2B_DIGEST authPolicy = {
-        .size = 20,
-        .buffer = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                   11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
+        .size = 32,
+        .buffer = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11, 12, 13, 14, 15, 16, 17,
+                    18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32}
+
     };
 
     r = Esys_SetPrimaryPolicy(esys_context,
@@ -448,7 +457,7 @@ test_esys_policy_regression(ESYS_CONTEXT * esys_context)
                               ESYS_TR_PASSWORD,
                               ESYS_TR_NONE, ESYS_TR_NONE,
                               &authPolicy,
-                              TPM2_ALG_SHA1);
+                              TPM2_ALG_SHA256);
 
     if ((r == TPM2_RC_COMMAND_CODE) ||
         (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||

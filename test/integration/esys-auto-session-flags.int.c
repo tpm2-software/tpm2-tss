@@ -46,15 +46,15 @@ test_esys_auto_flags(ESYS_CONTEXT * esys_context)
 
     TPM2B_NONCE nonceCaller = {
         .size = 20,
-        .buffer = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                   11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
+        .buffer = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11, 12, 13, 14, 15, 16, 17,
+                    18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32}
     };
 
     /* Auth session */
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCaller,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session_auth);
     goto_if_error(r, "Error: During initialization of session_auth", error);
 
@@ -62,7 +62,7 @@ test_esys_auto_flags(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCaller,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session_enc);
     goto_if_error(r, "Error: During initialization of session_enc", error);
 
@@ -82,7 +82,7 @@ test_esys_auto_flags(ESYS_CONTEXT * esys_context)
         .size = 0,
         .nvPublic = {
             .nvIndex =TPM2_NV_INDEX_FIRST,
-            .nameAlg = TPM2_ALG_SHA1,
+            .nameAlg = TPM2_ALG_SHA256,
             .attributes = (
                 TPMA_NV_OWNERWRITE |
                 TPMA_NV_AUTHWRITE |

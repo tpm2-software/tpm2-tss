@@ -60,7 +60,7 @@ test_esys_ecdh_keygen(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCaller,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
     goto_if_error(r, "Error: During initialization of session", error);
 
@@ -82,7 +82,7 @@ test_esys_ecdh_keygen(ESYS_CONTEXT * esys_context)
         .size = 0,
         .publicArea = {
             .type = TPM2_ALG_ECC,
-            .nameAlg = TPM2_ALG_SHA1,
+            .nameAlg = TPM2_ALG_SHA256,
             .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
                                  TPMA_OBJECT_DECRYPT |
                                  TPMA_OBJECT_FIXEDTPM |

@@ -33,7 +33,7 @@ test_esys_tr_fromTpmPublic_session(ESYS_CONTEXT * ectx)
     ESYS_TR session = ESYS_TR_NONE;
     TPMT_SYM_DEF symmetric = {
         .algorithm = TPM2_ALG_XOR,
-        .keyBits = { .exclusiveOr = TPM2_ALG_SHA1 }
+        .keyBits = { .exclusiveOr = TPM2_ALG_SHA256 }
     };
 
     TPMS_CAPABILITY_DATA *cap_data = NULL;
@@ -41,7 +41,7 @@ test_esys_tr_fromTpmPublic_session(ESYS_CONTEXT * ectx)
     TSS2_RC r = Esys_StartAuthSession(ectx, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
     goto_if_error(r, "Error: During initialization of session", out);
 

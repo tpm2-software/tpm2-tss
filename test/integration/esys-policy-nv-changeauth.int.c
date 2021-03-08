@@ -69,7 +69,7 @@ test_esys_policy_nv_changeauth(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
-                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
+                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA256,
                               &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session", error);
 
@@ -110,7 +110,7 @@ test_esys_policy_nv_changeauth(ESYS_CONTEXT * esys_context)
         .size = 0,
         .nvPublic = {
             .nvIndex =TPM2_NV_INDEX_FIRST,
-            .nameAlg = TPM2_ALG_SHA1,
+            .nameAlg = TPM2_ALG_SHA256,
             .attributes = (
                 TPMA_NV_OWNERWRITE |
                 TPMA_NV_AUTHWRITE |
@@ -153,7 +153,7 @@ test_esys_policy_nv_changeauth(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &policyNonceCaller,
-                              TPM2_SE_POLICY, &policySymmetric, TPM2_ALG_SHA1,
+                              TPM2_SE_POLICY, &policySymmetric, TPM2_ALG_SHA256,
                               &policySession);
     goto_if_error(r, "Error: During initialization of policy trial session", error);
 
@@ -212,7 +212,7 @@ test_esys_policy_nv_changeauth(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &policyNonceCaller,
-                              TPM2_SE_POLICY, &policySymmetric, TPM2_ALG_SHA1,
+                              TPM2_SE_POLICY, &policySymmetric, TPM2_ALG_SHA256,
                               &policySession);
     goto_if_error(r, "Error: During initialization of policy trial session", error);
 

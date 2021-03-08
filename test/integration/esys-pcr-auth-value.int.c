@@ -71,9 +71,9 @@ test_esys_pcr_auth_value(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: PCR_SetAuthValue", error);
 
     TPM2B_DIGEST authPolicy = {
-        .size = 20,
-        .buffer = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                   11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
+        .size = 32,
+        .buffer = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11, 12, 13, 14, 15, 16, 17,
+                    18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32 }
     };
 
     r = Esys_PCR_SetAuthPolicy(
@@ -83,7 +83,7 @@ test_esys_pcr_auth_value(ESYS_CONTEXT * esys_context)
         ESYS_TR_NONE,
         ESYS_TR_NONE,
         &authPolicy,
-        TPM2_ALG_SHA1,
+        TPM2_ALG_SHA256,
         pcrHandle_handle);
 
     if (number_rc(r) == TPM2_RC_BAD_AUTH) {

@@ -45,7 +45,7 @@ cmp_policy_digest(ESYS_CONTEXT * esys_context,
     LOGBLOB_DEBUG(&policyDigest->buffer[0], policyDigest->size,
                   "POLICY DIGEST");
 
-    if (policyDigest->size != 20
+    if (policyDigest->size != 32
         || memcmp(&policyDigest->buffer[0], &expected_digest->buffer[0],
                   policyDigest->size)) {
         free(policyDigest);
@@ -96,9 +96,9 @@ test_esys_policy_authorize_nv_opt(ESYS_CONTEXT * esys_context)
         .mode = {.aes = TPM2_ALG_CFB}
     };
     TPM2B_NONCE nonceCallerTrial = {
-        .size = 20,
-        .buffer = {11, 12, 13, 14, 15, 16, 17, 18, 19, 11,
-                   21, 22, 23, 24, 25, 26, 27, 28, 29, 30}
+        .size = 32,
+        .buffer = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11, 12, 13, 14, 15, 16, 17,
+                    18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32}
     };
 
     /* Create valid NV handle */
@@ -111,7 +111,7 @@ test_esys_policy_authorize_nv_opt(ESYS_CONTEXT * esys_context)
         .size = 0,
         .nvPublic = {
                      .nvIndex = TPM2_NV_INDEX_FIRST,
-                     .nameAlg = TPM2_ALG_SHA1,
+                     .nameAlg = TPM2_ALG_SHA256,
                      .attributes = (TPMA_NV_OWNERWRITE |
                                     TPMA_NV_AUTHWRITE |
                                     TPMA_NV_WRITE_STCLEAR |
@@ -141,7 +141,7 @@ test_esys_policy_authorize_nv_opt(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
-                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
+                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA256,
                               &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session",
                   error);
@@ -162,9 +162,10 @@ test_esys_policy_authorize_nv_opt(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: PolicyNV", error);
 
     TPM2B_DIGEST expectedPolicyNV = {
-        .size = 20,
-        .buffer = {0x09, 0x92, 0x96, 0x4c, 0x18, 0x4c, 0x29, 0xde, 0x53, 0x52,
-                   0xc0, 0x20, 0x86, 0x81, 0xca, 0xe9, 0x94, 0x23, 0x09, 0x24}
+        .size = 32,
+        .buffer = { 0xe3, 0x60, 0x27, 0x10, 0xe7, 0x58, 0x18, 0xc5, 0x96, 0xed, 0xf4,
+                    0x32, 0x6a, 0x84, 0x06, 0x65, 0x85, 0x8e, 0x67, 0x8b, 0x0c, 0xb7,
+                    0x0f, 0x60, 0x85, 0xc9, 0xa6, 0xc5, 0xb1, 0x4e, 0x22, 0x45 }
     };
 
     if (!cmp_policy_digest(esys_context, &sessionTrial, &expectedPolicyNV,

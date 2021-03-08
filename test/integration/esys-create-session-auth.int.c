@@ -125,7 +125,7 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
                  .scheme = {
                       .scheme = TPM2_ALG_ECDH,
                       .details = {
-                          .ecdh = {.hashAlg  = TPM2_ALG_SHA1}},
+                          .ecdh = {.hashAlg  = TPM2_ALG_SHA256}},
                   },
                  .curveID = TPM2_ECC_NIST_P256,
                  .kdf = {
@@ -225,7 +225,7 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
 
 #if TEST_XOR_OBFUSCATION
     TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_XOR,
-                              .keyBits = { .exclusiveOr = TPM2_ALG_SHA1 },
+                              .keyBits = { .exclusiveOr = TPM2_ALG_SHA256 },
                               .mode = {.aes = TPM2_ALG_CFB}};
 #elif TEST_AES_ENCRYPTION
     TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,

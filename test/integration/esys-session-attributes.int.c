@@ -46,7 +46,7 @@ test_esys_session_attributes(ESYS_CONTEXT * esys_context)
     TPM2B_DIGEST *rdata = NULL;
 
     TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_XOR,
-                              .keyBits = { .exclusiveOr = TPM2_ALG_SHA1 },
+                              .keyBits = { .exclusiveOr = TPM2_ALG_SHA256 },
                               .mode = {.aes = TPM2_ALG_CFB}};
 
     TPM2B_SENSITIVE_CREATE inSensitive = {
@@ -68,7 +68,7 @@ test_esys_session_attributes(ESYS_CONTEXT * esys_context)
         .size = 0,
         .publicArea = {
             .type = TPM2_ALG_RSA,
-            .nameAlg = TPM2_ALG_SHA1,
+            .nameAlg = TPM2_ALG_SHA256,
             .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
                                  TPMA_OBJECT_RESTRICTED |
                                  TPMA_OBJECT_DECRYPT |
@@ -112,7 +112,7 @@ test_esys_session_attributes(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
     goto_if_error(r, "Error: During initialization of session", error);
 
@@ -144,7 +144,7 @@ test_esys_session_attributes(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
     goto_if_error(r, "Error: During initialization of session", error);
 

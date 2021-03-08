@@ -3,7 +3,7 @@
     "policyDigests":[
         {
             "hashAlg":"SHA256",
-            "digest":"17d552f8e39ad882f6b3c09ae139af59616bf6a63f4093d6d20e9e1b9f7cdb6e"
+            "digest":"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36"
         }
     ],
     "policyAuthorizations":[
@@ -11,14 +11,14 @@
             "type": "pem",
             "policyRef": [ 1, 2, 3, 4, 5 ],
             "key": "-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoGL6IrCSAznmIIzBessI
-mW7tPOUy78uWTIaub32KnYHn78KXprrZ3ykp6WDrOQeMjv4AA+14mJbg77apVYXy
-EnkFdOMa1hszSJnp6cJvx7ILngLvFUxzbVki/ehvgS3nRk67Njal+nMTe8hpe3UK
-QeV/Ij+F0r6Yz91W+4LPmncAiUesRZLetI2BZsKwHYRMznmpIYpoua1NtS8QpEXR
-MmsUue19eS/XRAPmmCfnb5BX2Tn06iCpk6wO+RfMo9etcX5cLSAuIYEQYCvV2/0X
-TfEw607vttBN0Y54LrVOKno1vRXd5sxyRlfB0WL42F4VG5TfcJo5u1Xq7k9m9K57
-8wIDAQAB\n-----END PUBLIC KEY-----",
-            "signature": "17d50d0204e77354eccbc2839681b80b766987a3b59dba795cf137805a5deacce4ddbf3f3d4346bdb9d28c032f2fba4a922296b56622cb719f81237bf660ba9a7c2757b81d3e52a464c838a7e9b85ece76ead93bbb9b1c85b47422eb7436211c101a5b9cbac83c6b540c39f28d3a0d482ec65ada4be1a2d42cbc7a04e53a6db6a43f1eba4202acf2dc03499adae6a933781c55ff921fabd8bcfe981dd72495b800df8955f29dc27cf78e5b9d70d4fc103720cb954e754545b2030c15294fcb3e9f27089928f88b6d8639dbaa1d83477a9da1c7694c37b89d595e468eb78e2ab08b0b4452dbb488428859ec54bc3e6b951c51d8a77bdf75d4fe4c3e28e841bc5f"
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnPQK8IACQZ6kbhWW4Bpm
+nyLiQzGzpDUB4US4ltdhnauyHOiLOidQlRf6OHBVQ7TELDMYydID2/U7/lnwWUJm
+a+xonItYWjjdPiU8fGIry029FTG2qqSSZg4oqa7fcxxNOAvUyuHitmzVnUT4xGCT
+wjvxNR50a6td+dSiN0dAm5DTiRuhVSxmUB3Kw9OP3pwYGCnfWkGQTeYXURJycQt6
+qsM79xI13nxLrtyxONmfRwgq+G0txdS4m3bxDwCQpenF/VcrkB14wPeWrGd/7Yap
+4kXOlv6HW7O2g120euH6A68jSjnrWYj/bAEpvDi09UU1a/d0LHbE3FGn0Dip+dmJ
+iQIDAQAB\n-----END PUBLIC KEY-----",
+            "signature": "7cbb2505fc602b38494b0d6841ee33ace3ec2f0ceac03a6df46255310a6266613643a4dd5f58554836f3404184be0163d09a2d8bc4c78b3da6a0da41da6ccbb5d60bf211e701fc798d3bc69057907aed423afcfaa66deb4b53c9c8a640a473dbe5ba73efc9a51cb369b7cfd585b5d452e527057bc83c8e3690d3b1aea6a8907448909b09331276c2f87c6cd2a2a6b692301f56e23cb36961769cee718365d893236ca1a6349773ea2da2e3075dbb01701b53b2f8f638de82dac3524c442d142c69bad77b72aed6ef8ab3639272c19dfe013938148010975122b12ba661bf7d8b2d7f759123c992e49dc53ee7b1e6ef4b9ddaa408e6829e3124ffd95576284215"
         }
     ],
     "policy":[
@@ -27,14 +27,14 @@ TfEw607vttBN0Y54LrVOKno1vRXd5sxyRlfB0WL42F4VG5TfcJo5u1Xq7k9m9K57
       "policyDigests":[
         {
           "hashAlg":"SHA256",
-          "digest":"17d552f8e39ad882f6b3c09ae139af59616bf6a63f4093d6d20e9e1b9f7cdb6e"
+          "digest":"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36"
         }
       ],
       "pcrs":[
         {
           "pcr":16,
-          "hashAlg":"SHA1",
-          "digest":"0000000000000000000000000000000000000000"
+          "hashAlg":"TPM2_ALG_SHA256",
+          "digest":"0000000000000000000000000000000000000000000000000000000000000000"
         }
       ]
     }
