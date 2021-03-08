@@ -73,7 +73,7 @@ test_esys_policy_authorize(ESYS_CONTEXT * esys_context)
         .size = 0,
         .publicArea = {
             .type = TPM2_ALG_RSA,
-            .nameAlg = TPM2_ALG_SHA1,
+            .nameAlg = TPM2_ALG_SHA256,
             .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
                                  TPMA_OBJECT_SIGN_ENCRYPT  |
                                  TPMA_OBJECT_FIXEDTPM |
@@ -90,7 +90,7 @@ test_esys_policy_authorize(ESYS_CONTEXT * esys_context)
                  .scheme = {
                       .scheme = TPM2_ALG_RSAPSS,
                       .details = {
-                          .rsapss = { .hashAlg = TPM2_ALG_SHA1 }
+                          .rsapss = { .hashAlg = TPM2_ALG_SHA256 }
                       }
                   },
                  .keyBits = 2048,
@@ -148,7 +148,7 @@ test_esys_policy_authorize(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
-                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
+                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA256,
                               &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session", error);
 

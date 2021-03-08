@@ -45,7 +45,7 @@ cmp_policy_digest(ESYS_CONTEXT * esys_context,
     LOGBLOB_DEBUG(&policyDigest->buffer[0], policyDigest->size,
                   "POLICY DIGEST");
 
-    if (policyDigest->size != 20
+    if (policyDigest->size != 32
         || memcmp(&policyDigest->buffer[0], &expected_digest->buffer[0],
                   policyDigest->size)) {
         free(policyDigest);
@@ -92,9 +92,9 @@ test_esys_policy_physical_presence_opt(ESYS_CONTEXT * esys_context)
         .mode = {.aes = TPM2_ALG_CFB}
     };
     TPM2B_NONCE nonceCallerTrial = {
-        .size = 20,
-        .buffer = {11, 12, 13, 14, 15, 16, 17, 18, 19, 11,
-                   21, 22, 23, 24, 25, 26, 27, 28, 29, 30}
+        .size = 32,
+        .buffer = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11, 12, 13, 14, 15, 16, 17,
+                    18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32 }
     };
 
     /*
@@ -103,7 +103,7 @@ test_esys_policy_physical_presence_opt(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
-                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
+                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA256,
                               &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session",
                   error);
@@ -123,8 +123,10 @@ test_esys_policy_physical_presence_opt(ESYS_CONTEXT * esys_context)
 
     TPM2B_DIGEST expectedPolicyPhysicalPresence = {
         .size = 20,
-        .buffer = {0x9a, 0xcb, 0x06, 0x39, 0x5f, 0x83, 0x1f, 0x88, 0xe8, 0x9e,
-                   0xea, 0xc2, 0x94, 0x42, 0xcb, 0x0e, 0xbe, 0x94, 0x85, 0xab}
+        .buffer =  { 0x0d, 0x7c, 0x67, 0x47, 0xb1, 0xb9, 0xfa, 0xcb, 0xba, 0x03, 0x49,
+                     0x20, 0x97, 0xaa, 0x9d, 0x5a, 0xf7, 0x92, 0xe5, 0xef, 0xc0, 0x73,
+                     0x46, 0xe0, 0x5f, 0x9d, 0xaa, 0x8b, 0x3d, 0x9e, 0x13, 0xb5
+        }
     };
 
     if (!cmp_policy_digest

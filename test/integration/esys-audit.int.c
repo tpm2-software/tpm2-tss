@@ -86,7 +86,7 @@ test_esys_audit(ESYS_CONTEXT * esys_context)
             .size = 0,
             .publicArea = {
                 .type = TPM2_ALG_RSA,
-                .nameAlg = TPM2_ALG_SHA1,
+                .nameAlg = TPM2_ALG_SHA256,
                 .objectAttributes = (
                     TPMA_OBJECT_USERWITHAUTH |
                     TPMA_OBJECT_RESTRICTED |
@@ -106,7 +106,7 @@ test_esys_audit(ESYS_CONTEXT * esys_context)
                         },
                     .scheme = {
                          .scheme = TPM2_ALG_RSASSA,
-                         .details = { .rsassa = { .hashAlg = TPM2_ALG_SHA1 }},
+                         .details = { .rsassa = { .hashAlg = TPM2_ALG_SHA256 }},
 
                     },
                     .keyBits = 2048,
@@ -217,7 +217,7 @@ test_esys_audit(ESYS_CONTEXT * esys_context)
         &signature);
     goto_if_error(r, "Error: GetSessionAuditDigest", error);
 
-    TPMI_ALG_HASH auditAlg = TPM2_ALG_SHA1;
+    TPMI_ALG_HASH auditAlg = TPM2_ALG_SHA256;
     TPML_CC clearList = {0};
     TPML_CC setList = {0};
 

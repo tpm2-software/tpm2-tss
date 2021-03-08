@@ -52,7 +52,7 @@ test_esys_pcr_basic(ESYS_CONTEXT * esys_context)
         .count = 1,
         .digests = {
             {
-                .hashAlg = TPM2_ALG_SHA1,
+                .hashAlg = TPM2_ALG_SHA256,
                 .digest = {
                     .sha1 = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
                               11, 12, 13, 14, 15, 16, 17, 18, 19}
@@ -71,12 +71,8 @@ test_esys_pcr_basic(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error: PCR_Extend", error);
 
     TPML_PCR_SELECTION pcrSelectionIn = {
-        .count = 2,
+        .count = 1,
         .pcrSelections = {
-            { .hash = TPM2_ALG_SHA1,
-              .sizeofSelect = 3,
-              .pcrSelect = { 01, 00, 03},
-            },
             { .hash = TPM2_ALG_SHA256,
               .sizeofSelect = 3,
               .pcrSelect = { 01, 00, 03}

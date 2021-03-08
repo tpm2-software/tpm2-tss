@@ -73,7 +73,7 @@ test_esys_verify_signature(ESYS_CONTEXT * esys_context)
         .size = 0,
         .publicArea = {
             .type = TPM2_ALG_RSA,
-            .nameAlg = TPM2_ALG_SHA1,
+            .nameAlg = TPM2_ALG_SHA256,
             .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
                                  TPMA_OBJECT_SIGN_ENCRYPT  |
                                  TPMA_OBJECT_FIXEDTPM |
@@ -90,7 +90,7 @@ test_esys_verify_signature(ESYS_CONTEXT * esys_context)
                  .scheme = {
                       .scheme = TPM2_ALG_RSAPSS,
                       .details = {
-                          .rsapss = { .hashAlg = TPM2_ALG_SHA1 }
+                          .rsapss = { .hashAlg = TPM2_ALG_SHA256 }
                       }
                   },
                  .keyBits = 2048,
@@ -150,15 +150,15 @@ test_esys_verify_signature(ESYS_CONTEXT * esys_context)
         .hierarchy = TPM2_RH_OWNER,
         .digest = {0}
     };
-    /* SHA1 digest for PCR register with zeros */
-    TPM2B_DIGEST pcr_digest_zero = {
-        .size = 20,
-        .buffer = { 0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-                    0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f }
+    /* Digest to be signed. */
+    TPM2B_DIGEST digest = {
+        .size = 32,
+        .buffer = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11, 12, 13, 14, 15, 16, 17,
+                    18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32}
     };
 
     /*
-     * 1. Sign pcr_digest_zero and verfiy the signature.
+     * 1. Sign digest and verfiy the signature.
      */
 
     r = Esys_Sign(
@@ -167,7 +167,7 @@ test_esys_verify_signature(ESYS_CONTEXT * esys_context)
         ESYS_TR_PASSWORD,
         ESYS_TR_NONE,
         ESYS_TR_NONE,
-        &pcr_digest_zero,
+        &digest,
         &inScheme,
         &hash_validation,
         &signature);
@@ -179,7 +179,7 @@ test_esys_verify_signature(ESYS_CONTEXT * esys_context)
         ESYS_TR_NONE,
         ESYS_TR_NONE,
         ESYS_TR_NONE,
-        &pcr_digest_zero,
+        &digest,
         signature,
         &validation);
     goto_if_error(r, "Error: Sign", error);
@@ -206,7 +206,6 @@ test_esys_verify_signature(ESYS_CONTEXT * esys_context)
     Esys_Free(outPublic);
     Esys_Free(creationData);
     Esys_Free(creationHash);
-    Esys_Free(creationTicket);
 
     Esys_Free(nameKeySign);
     Esys_Free(keyQualifiedName);

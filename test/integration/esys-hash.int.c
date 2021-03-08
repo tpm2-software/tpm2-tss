@@ -37,7 +37,7 @@ test_esys_hash(ESYS_CONTEXT * esys_context, ESYS_TR hierarchy)
     TPM2B_MAX_BUFFER data = { .size = 20,
                               .buffer={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
                                        1, 2, 3, 4, 5, 6, 7, 8, 9}};
-    TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA1;
+    TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA256;
     TPM2B_DIGEST *outHash = NULL;
     TPMT_TK_HASHCHECK *validation = NULL;
 

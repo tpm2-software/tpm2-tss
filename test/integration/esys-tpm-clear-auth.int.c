@@ -39,7 +39,7 @@ test_esys_clear_auth(ESYS_CONTEXT * esys_context)
     int failure_return = EXIT_FAILURE;
 
     TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_XOR,
-                              .keyBits = { .exclusiveOr = TPM2_ALG_SHA1 },
+                              .keyBits = { .exclusiveOr = TPM2_ALG_SHA256 },
                               .mode = {.aes = TPM2_ALG_CFB}};
 
     /* Test lockout authorization */
@@ -48,7 +48,7 @@ test_esys_clear_auth(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
     goto_if_error(r, "Error: During initialization of session", error);
 
@@ -79,7 +79,7 @@ test_esys_clear_auth(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
     goto_if_error(r, "Error: During initialization of session", error);
 

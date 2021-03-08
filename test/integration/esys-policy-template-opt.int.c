@@ -45,7 +45,7 @@ cmp_policy_digest(ESYS_CONTEXT * esys_context,
     LOGBLOB_DEBUG(&policyDigest->buffer[0], policyDigest->size,
                   "POLICY DIGEST");
 
-    if (policyDigest->size != 20
+    if (policyDigest->size != 32
         || memcmp(&policyDigest->buffer[0], &expected_digest->buffer[0],
                   policyDigest->size)) {
         free(policyDigest);
@@ -104,15 +104,15 @@ test_esys_policy_template_opt(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
-                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
+                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA256,
                               &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session",
                   error);
 
     TPM2B_DIGEST templateHash = {
-        .size = 20,
-        .buffer = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                   11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
+        .size = 32,
+        .buffer = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11, 12, 13, 14, 15, 16, 17,
+                    18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32}
     };
 
     r = Esys_PolicyTemplate(esys_context,
@@ -129,10 +129,11 @@ test_esys_policy_template_opt(ESYS_CONTEXT * esys_context)
         goto_if_error(r, "Error: PolicyTemplate", error);
 
         TPM2B_DIGEST expectedPolicyTemplate = {
-            .size = 20,
-            .buffer =
-                {0xf6, 0x6d, 0x2a, 0x9c, 0x6e, 0xa8, 0xdf, 0x1a, 0x49, 0x3c,
-                 0x42, 0xcc, 0xac, 0x6e, 0x3d, 0x08, 0xc0, 0x84, 0xcf, 0x73}
+            .size = 32,
+            .buffer = { 0x70, 0xcb, 0xc9, 0x90, 0x65, 0x3d, 0x8b, 0x40, 0xfb, 0x71,
+                        0xe6, 0x77, 0xdf, 0xe5, 0xc8, 0xcb, 0x8b, 0xf5, 0xf4, 0xef,
+                        0xfd, 0x3d, 0xed, 0xad, 0x4a, 0x3a, 0xd6, 0xc3, 0x32, 0xc8,
+                        0x35, 0x61 }
         };
 
         if (!cmp_policy_digest

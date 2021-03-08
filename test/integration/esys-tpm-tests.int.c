@@ -37,7 +37,7 @@ test_esys_tpm_tests(ESYS_CONTEXT * esys_context)
                       ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     goto_if_error(r, "Error SelfTest did fail", error);
 
-    TPML_ALG alg_list = { .count = 1 , .algorithms = { TPM2_ALG_SHA1 }};
+    TPML_ALG alg_list = { .count = 1 , .algorithms = { TPM2_ALG_SHA256 }};
     TPML_ALG *toDoList;
 
     esys_context->state = _ESYS_STATE_INIT;

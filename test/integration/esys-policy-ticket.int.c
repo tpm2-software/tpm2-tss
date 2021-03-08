@@ -89,7 +89,7 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
         .size = 0,
         .publicArea = {
             .type = TPM2_ALG_RSA,
-            .nameAlg = TPM2_ALG_SHA1,
+            .nameAlg = TPM2_ALG_SHA256,
             .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
                                  TPMA_OBJECT_SIGN_ENCRYPT  |
                                  TPMA_OBJECT_FIXEDTPM |
@@ -106,7 +106,7 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
                  .scheme = {
                       .scheme = TPM2_ALG_RSAPSS,
                       .details = {
-                          .rsapss = { .hashAlg = TPM2_ALG_SHA1 }
+                          .rsapss = { .hashAlg = TPM2_ALG_SHA256 }
                       }
                   },
                  .keyBits = 2048,
@@ -187,7 +187,7 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCaller,
-                              TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA1,
+                              TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256,
                               &session);
     goto_if_error(r, "Error: During initialization of policy trial session", error);
 
@@ -199,7 +199,7 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
 
     /* Compute hash from nonceTPM||expiration */
 
-    TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA1;
+    TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA256;
     ESYS_TR sequenceHandle_handle;
     TPM2B_AUTH auth = {0};
 
@@ -282,7 +282,7 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCaller,
-                              TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA1,
+                              TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256,
                               &session);
     goto_if_error(r, "Error: During initialization of policy session", error);
 
@@ -332,7 +332,7 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCallerTrial,
-                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA1,
+                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA256,
                               &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session", error);
 

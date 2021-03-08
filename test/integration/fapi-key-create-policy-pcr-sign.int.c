@@ -70,103 +70,71 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     char *policy = NULL;
     char *path_list = NULL;
 
-    const char *policy_sha1_check =
-        "\n"
-        "{\n"
-        "  \"description\":\"Description pol_16_0\",\n"
-        "  \"policyDigests\":[\n"
-        "    {\n"
-        "      \"hashAlg\":\"SHA256\",\n"
-        "      \"digest\":\"17d552f8e39ad882f6b3c09ae139af59616bf6a63f4093d6d20e9e1b9f7cdb6e\"\n"
-        "    }\n"
-        "  ],\n"
-        "  \"policy\":[\n"
-        "    {\n"
-        "      \"type\":\"POLICYPCR\",\n"
-        "      \"policyDigests\":[\n"
-        "        {\n"
-        "          \"hashAlg\":\"SHA256\",\n"
-        "          \"digest\":\"17d552f8e39ad882f6b3c09ae139af59616bf6a63f4093d6d20e9e1b9f7cdb6e\"\n"
-        "        }\n"
-        "      ],\n"
-        "      \"pcrs\":[\n"
-        "        {\n"
-        "          \"pcr\":16,\n"
-        "          \"hashAlg\":\"SHA1\",\n"
-        "          \"digest\":\"0000000000000000000000000000000000000000\"\n"
-        "        }\n"
-        "      ]\n"
-        "    }\n"
-        "  ]\n"
-        "}\n";
-
     const char *policy_sha256_check =
-        "{\n"
-        "  \"description\":\"Description pol_16_0\",\n"
-        "  \"policyDigests\":[\n"
-        "    {\n"
-        "      \"hashAlg\":\"SHA256\",\n"
-        "      \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\"\n"
-        "    }\n"
-        "  ],\n"
-        "  \"policy\":[\n"
-        "    {\n"
-        "      \"type\":\"POLICYPCR\",\n"
-        "      \"policyDigests\":[\n"
-        "        {\n"
-        "          \"hashAlg\":\"SHA256\",\n"
-        "          \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\"\n"
-        "        }\n"
-        "      ],\n"
-        "      \"pcrs\":[\n"
-        "        {\n"
-        "          \"pcr\":16,\n"
-        "          \"hashAlg\":\"SHA256\",\n"
-        "          \"digest\":\"0000000000000000000000000000000000000000000000000000000000000000\"\n"
-        "        }\n"
-        "      ]\n"
-        "    }\n"
-        "  ]\n"
-        "}\n"
-        ;
+        "{" \
+        "  \"description\":\"Description pol_16_0\"," \
+        "  \"policyDigests\":[" \
+        "    {" \
+        "      \"hashAlg\":\"SHA256\"," \
+        "      \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\"" \
+        "    }" \
+        "  ]," \
+        "  \"policy\":[" \
+        "    {" \
+        "      \"type\":\"POLICYPCR\"," \
+        "      \"policyDigests\":[" \
+        "        {" \
+        "          \"hashAlg\":\"SHA256\"," \
+        "          \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\"" \
+        "        }" \
+        "      ]," \
+        "      \"pcrs\":[" \
+        "        {" \
+        "          \"pcr\":16," \
+        "          \"hashAlg\":\"SHA256\"," \
+        "          \"digest\":\"0000000000000000000000000000000000000000000000000000000000000000\"" \
+        "        }" \
+        "      ]" \
+        "    }" \
+        "  ]" \
+        "}";
 
     const char *policy_sha256_export_check =
-        "\n"
-        "{\n"
-        "  \"description\":\"Description pol_16_0\",\n"
-        "  \"policyDigests\":[\n"
-        "    {\n"
-        "      \"hashAlg\":\"SHA256\",\n"
-        "      \"digest\":\"17d552f8e39ad882f6b3c09ae139af59616bf6a63f4093d6d20e9e1b9f7cdb6e\"\n"
-        "    },\n"
-        "    {\n"
-        "      \"hashAlg\":\"SHA1\",\n"
-        "      \"digest\":\"85331183190312f5e83c6043346f9f372104768e\"\n"
-        "    }\n"
-        "  ],\n"
-        "  \"policy\":[\n"
-        "    {\n"
-        "      \"type\":\"POLICYPCR\",\n"
-        "      \"policyDigests\":[\n"
-        "        {\n"
-        "          \"hashAlg\":\"SHA256\",\n"
-        "          \"digest\":\"17d552f8e39ad882f6b3c09ae139af59616bf6a63f4093d6d20e9e1b9f7cdb6e\"\n"
-        "        },\n"
-        "        {\n"
-        "          \"hashAlg\":\"SHA1\",\n"
-        "          \"digest\":\"85331183190312f5e83c6043346f9f372104768e\"\n"
-        "        }\n"
-        "      ],\n"
-        "      \"pcrs\":[\n"
-        "        {\n"
-        "          \"pcr\":16,\n"
-        "          \"hashAlg\":\"SHA1\",\n"
-        "          \"digest\":\"0000000000000000000000000000000000000000\"\n"
-        "        }\n"
-        "      ]\n"
-        "    }\n"
-        "  ]\n"
-        "}\n";
+        "{" \
+        "  \"description\":\"Description pol_16_0\"," \
+        "  \"policyDigests\":[" \
+        "    {" \
+        "      \"hashAlg\":\"SHA256\"," \
+        "      \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\"" \
+        "    }," \
+        "    {" \
+        "      \"hashAlg\":\"SHA1\"," \
+        "      \"digest\":\"eab0d71ae6088009cbd0b50729fde69eb453649c\"" \
+        "    }" \
+        "  ]," \
+        "  \"policy\":[" \
+        "    {" \
+        "      \"type\":\"POLICYPCR\"," \
+        "      \"policyDigests\":[" \
+        "        {" \
+        "          \"hashAlg\":\"SHA256\"," \
+        "          \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\"" \
+        "        }," \
+        "        {" \
+        "          \"hashAlg\":\"SHA1\"," \
+        "          \"digest\":\"eab0d71ae6088009cbd0b50729fde69eb453649c\"" \
+        "        }" \
+        "      ]," \
+        "      \"pcrs\":[" \
+        "        {" \
+        "          \"pcr\":16," \
+        "          \"hashAlg\":\"SHA256\"," \
+        "          \"digest\":\"0000000000000000000000000000000000000000000000000000000000000000\"" \
+        "        }" \
+        "      ]" \
+        "    }" \
+        "  ]" \
+        "}";
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
@@ -228,8 +196,9 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     r = Fapi_ExportPolicy(context, "HS/SRK/mySignKey", &policy);
     goto_if_error(r, "Error Fapi_ExportPolicy", error);
     ASSERT(policy != NULL);
-    LOG_INFO("\nTEST_JSON\nPolicy_sha1:\n%s\nEND_JSON", policy);
-    CHECK_JSON(policy, policy_sha1_check, error);
+    LOG_INFO("\nTEST_JSON\nPolicy_sha256:\n%s\nEND_JSON", policy);
+
+    CHECK_JSON(policy, policy_sha256_check, error);
     ASSERT(strlen(policy) > ASSERT_SIZE);
     fprintf(stderr, "\nPolicy from key:\n%s\n", policy);
 

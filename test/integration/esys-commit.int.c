@@ -68,7 +68,7 @@ test_esys_commit(ESYS_CONTEXT * esys_context)
     r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nonceCaller,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
 
     goto_if_error(r, "Error: During initialization of session", error);
@@ -90,7 +90,7 @@ test_esys_commit(ESYS_CONTEXT * esys_context)
         .size = 0,
         .publicArea = {
             .type = TPM2_ALG_ECC,
-            .nameAlg = TPM2_ALG_SHA1,
+            .nameAlg = TPM2_ALG_SHA256,
             .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
                                  TPMA_OBJECT_SIGN_ENCRYPT |
                                  TPMA_OBJECT_FIXEDTPM |
@@ -107,7 +107,7 @@ test_esys_commit(ESYS_CONTEXT * esys_context)
                  },
                  .scheme = {
                       .scheme = TPM2_ALG_ECDAA,
-                      .details = {.ecdh = {.hashAlg = TPM2_ALG_SHA1}
+                      .details = {.ecdh = {.hashAlg = TPM2_ALG_SHA256}
                       }
                   },
                  .curveID = TPM2_ECC_NIST_P256,

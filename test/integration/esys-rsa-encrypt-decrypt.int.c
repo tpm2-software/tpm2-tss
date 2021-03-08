@@ -74,7 +74,7 @@ test_esys_rsa_encrypt_decrypt(ESYS_CONTEXT * esys_context)
         .size = 0,
         .publicArea = {
             .type = TPM2_ALG_RSA,
-            .nameAlg = TPM2_ALG_SHA1,
+            .nameAlg = TPM2_ALG_SHA256,
             .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
                                  TPMA_OBJECT_DECRYPT |
                                  TPMA_OBJECT_FIXEDTPM |
@@ -130,7 +130,7 @@ test_esys_rsa_encrypt_decrypt(ESYS_CONTEXT * esys_context)
             inPublic.publicArea.parameters.rsaDetail.scheme.scheme =
                 TPM2_ALG_OAEP;
             inPublic.publicArea.parameters.rsaDetail.scheme.details.oaep.
-                hashAlg = TPM2_ALG_SHA1;
+                hashAlg = TPM2_ALG_SHA256;
         }
 
         r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
@@ -166,7 +166,7 @@ test_esys_rsa_encrypt_decrypt(ESYS_CONTEXT * esys_context)
             scheme.scheme = TPM2_ALG_RSAES;
         } else if (mode == 2) {
             scheme.scheme = TPM2_ALG_OAEP;
-            scheme.details.oaep.hashAlg = TPM2_ALG_SHA1;
+            scheme.details.oaep.hashAlg = TPM2_ALG_SHA256;
         }
         r = Esys_RSA_Encrypt(esys_context, primaryHandle, ESYS_TR_NONE,
                              ESYS_TR_NONE, ESYS_TR_NONE, &plain, &scheme,

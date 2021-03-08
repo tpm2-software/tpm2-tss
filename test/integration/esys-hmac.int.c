@@ -75,13 +75,13 @@ test_esys_hmac(ESYS_CONTEXT * esys_context)
         .count = 0,
     };
 
-    inPublic.publicArea.nameAlg = TPM2_ALG_SHA1;
+    inPublic.publicArea.nameAlg = TPM2_ALG_SHA256;
     inPublic.publicArea.type = TPM2_ALG_KEYEDHASH;
     inPublic.publicArea.objectAttributes |= TPMA_OBJECT_SIGN_ENCRYPT;
     inPublic.publicArea.objectAttributes |= TPMA_OBJECT_USERWITHAUTH;
     inPublic.publicArea.objectAttributes |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
     inPublic.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM2_ALG_HMAC;
-    inPublic.publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM2_ALG_SHA1;
+    inPublic.publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM2_ALG_SHA256;
 
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
                            ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary,
@@ -103,7 +103,7 @@ test_esys_hmac(ESYS_CONTEXT * esys_context)
         ESYS_TR_NONE,
         ESYS_TR_NONE,
         &test_buffer,
-        TPM2_ALG_SHA1,
+        TPM2_ALG_SHA256,
         &outHMAC);
     goto_if_error(r, "Error: HMAC", error);
 
