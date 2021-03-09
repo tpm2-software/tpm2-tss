@@ -373,6 +373,10 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
     r = pcr_reset(context, 16);
     goto_if_error(r, "Error pcr_reset", error);
 
+    /* We need to reset the passwords again, in order to not brick physical TPMs */
+    r = Fapi_ChangeAuth(context, "/HS", NULL);
+    goto_if_error(r, "Error Fapi_ChangeAuth", error);
+
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
