@@ -465,6 +465,12 @@ AS_IF([test "x$enable_self_generated_certificate" = xyes],
 AS_IF([test "x$enable_integration" = "xyes" && test "x$enable_self_generated_certificate" != "xyes" && test "x$integration_tcti" != "xdevice"],
       [AC_MSG_WARN([Running integration tests without EK certificate verification, use --enable-self-generated-certificate for full test coverage])])
 
+# Check for systemd helper tools used by make install
+AC_CHECK_PROG(systemd_sysusers, systemd-sysusers, yes)
+AM_CONDITIONAL(SYSD_SYSUSERS, test "x$systemd_sysusers" = "xyes")
+AC_CHECK_PROG(systemd_tmpfiles, systemd-tmpfiles, yes)
+AM_CONDITIONAL(SYSD_TMPFILES, test "x$systemd_tmpfiles" = "xyes")
+
 AC_SUBST([PATH])
 
 dnl --------- Doxy Gen -----------------------
