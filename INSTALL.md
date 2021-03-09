@@ -16,6 +16,7 @@ following sections describe them for the supported platforms.
 * doxygen
 * OpenSSL development libraries and header files
 * libcurl development libraries
+* Access Control List utility (acl)
 
 The following are dependencies only required when building test suites.
 * Integration test suite (see ./configure option --enable-integration):
