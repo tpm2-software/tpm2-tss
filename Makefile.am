@@ -613,8 +613,8 @@ define make_parent_dir
 endef
 
 define make_tss_user_and_group
-    (id -g tss || groupadd -r tss) && \
-    (id -u tss || useradd -r -g tss tss)
+    (id -g tss 2>/dev/null || groupadd -r tss) && \
+    (id -u tss 2>/dev/null || useradd -r -g tss tss)
 endef
 
 define make_tss_dir
@@ -633,8 +633,8 @@ define make_fapi_dirs
 endef
 
 define set_fapi_permissions
-    ($(call set_tss_permissions,$(DESTDIR)$(runstatedir)/tpm2-tss)
-    ($(call set_tss_permissions,$(DESTDIR)$(localstatedir)/lib/tpm2-tss)
+    ($(call set_tss_permissions,$(DESTDIR)$(runstatedir)/tpm2-tss))
+    ($(call set_tss_permissions,$(DESTDIR)$(localstatedir)/lib/tpm2-tss))
 endef
 
 define check_dir
@@ -642,8 +642,8 @@ define check_dir
 endef
 
 define check_fapi_dirs
-    $(call check_dir,$(DESTDIR)$(runstatedir)/tpm2-tss/eventlog/)
-    $(call check_dir,$(DESTDIR)$(localstatedir)/lib/tpm2-tss/system/keystore/)
+    ($(call check_dir,$(DESTDIR)$(runstatedir)/tpm2-tss/eventlog/))
+    ($(call check_dir,$(DESTDIR)$(localstatedir)/lib/tpm2-tss/system/keystore/))
 endef
 
 ### Man Pages
@@ -690,8 +690,16 @@ EXTRA_DIST += dist/tpm-udev.rules
 
 install-dirs:
 if HOSTOS_LINUX
-	(systemd-sysusers && systemd-tmpfiles --create) || \
-	($(call make_tss_user_and_group) && $(call make_fapi_dirs) && ($call set_fapi_permissions)) || true
+if SYSD_SYSUSERS
+	systemd-sysusers
+else
+	$(call make_tss_user_and_group)
+endif
+if SYSD_TMPFILES
+	systemd-tmpfiles --create
+else
+	$(call make_fapi_dirs) && $(call set_fapi_permissions)
+endif
 	$(call check_fapi_dirs)
 endif
 
