@@ -691,14 +691,14 @@ EXTRA_DIST += dist/tpm-udev.rules
 install-dirs:
 if HOSTOS_LINUX
 if SYSD_SYSUSERS
-	systemd-sysusers
+	systemd-sysusers || echo "*** WARNING *** Failed to create the tss user and group"
 else
-	$(call make_tss_user_and_group)
+	$(call make_tss_user_and_group) || echo "*** WARNING *** Failed to create the tss user and group"
 endif
 if SYSD_TMPFILES
-	systemd-tmpfiles --create
+	systemd-tmpfiles --create || echo "*** WARNING *** Failed to create the FAPI directories with the correct permissions"
 else
-	$(call make_fapi_dirs) && $(call set_fapi_permissions)
+	-$(call make_fapi_dirs) && $(call set_fapi_permissions) || echo "*** WARNING *** Failed to create the FAPI directories with the correct permissions"
 endif
 	$(call check_fapi_dirs)
 endif
