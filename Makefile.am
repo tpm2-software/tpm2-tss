@@ -638,7 +638,7 @@ define set_fapi_permissions
 endef
 
 define check_dir
-    if [ ! -d "$1" ]; then echo "*** WARNING *** Directory $1 could not be created"; fi
+    if [ ! -d "$1" ]; then echo "WARNING Directory $1 could not be created"; fi
 endef
 
 define check_fapi_dirs
@@ -691,16 +691,21 @@ EXTRA_DIST += dist/tpm-udev.rules
 install-dirs:
 if HOSTOS_LINUX
 if SYSD_SYSUSERS
-	systemd-sysusers || echo "*** WARNING *** Failed to create the tss user and group"
+	@echo "systemd-sysusers $(DESTDIR)$(sysconfdir)/sysusers.d/tpm2-tss.conf"
+	@systemd-sysusers $(DESTDIR)$(sysconfdir)/sysusers.d/tpm2-tss.conf || echo "WARNING Failed to create the tss user and group"
 else
-	$(call make_tss_user_and_group) || echo "*** WARNING *** Failed to create the tss user and group"
+	@echo "call make_tss_user_and_group"
+	@$(call make_tss_user_and_group) || echo "WARNING Failed to create the tss user and group"
 endif
 if SYSD_TMPFILES
-	systemd-tmpfiles --create || echo "*** WARNING *** Failed to create the FAPI directories with the correct permissions"
+	@echo "systemd-tmpfiles --create $(DESTDIR)$(sysconfdir)/tmpfiles.d/tpm2-tss-fapi.conf"
+	@systemd-tmpfiles --create $(DESTDIR)$(sysconfdir)/tmpfiles.d/tpm2-tss-fapi.conf|| echo "WARNING Failed to create the FAPI directories with the correct permissions"
 else
-	-$(call make_fapi_dirs) && $(call set_fapi_permissions) || echo "*** WARNING *** Failed to create the FAPI directories with the correct permissions"
+	@echo "(call make_fapi_dirs) && (call set_fapi_permissions)"
+	@-$(call make_fapi_dirs) && $(call set_fapi_permissions) || echo "WARNING Failed to create the FAPI directories with the correct permissions"
 endif
-	$(call check_fapi_dirs)
+	@echo "call check_fapi_dirs"
+	@$(call check_fapi_dirs)
 endif
 
 install-data-hook: install-dirs
