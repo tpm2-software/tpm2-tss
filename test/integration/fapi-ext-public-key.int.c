@@ -227,6 +227,9 @@ test_fapi_ext_public_key(FAPI_CONTEXT *context)
     ASSERT(path_list != NULL);
     ASSERT(strcmp(path_list, "/ext/myExtPubKey") == 0);
 
+    r = Fapi_Delete(context, "/ext/myExtPubKey");
+    goto_if_error(r, "Error Fapi_Delete", error);
+
     /* Test VerfiyQuote in non TPM mode. */
     r = Fapi_Import(context, "/ext/myExtPubKey", pubkey_pem);
     goto_if_error(r, "Error Fapi_Import", error);
