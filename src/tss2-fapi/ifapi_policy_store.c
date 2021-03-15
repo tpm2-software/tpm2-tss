@@ -304,3 +304,37 @@ ifapi_policy_store_store_finish(
 
     return TSS2_RC_SUCCESS;
 }
+
+ /** Check whether policy already exists.
+  *
+  * @param[in] pstore The key directories and default profile.
+  * @param[in] io  The input/output context being used for file I/O.
+  * @param[in] path The relative path of the policy.
+  * @retval TSS2_RC_SUCCESS if the object does not exist.
+  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS if the policy file exists.
+  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the output data.
+  */
+TSS2_RC
+ifapi_policystore_check_overwrite(
+    IFAPI_POLICY_STORE *pstore,
+    IFAPI_IO *io,
+    const char *path)
+{
+    TSS2_RC r;
+    char *abs_path = NULL;
+    (void)io; /* Used to simplify future extensions */
+
+    /* Convert relative path to absolute path in keystore */
+    r = policy_rel_path_to_abs_path(pstore, path, &abs_path);
+    goto_if_error2(r, "Object %s not found.", cleanup, path);
+
+    if (ifapi_io_path_exists(abs_path)) {
+        goto_error(r, TSS2_FAPI_RC_PATH_ALREADY_EXISTS,
+                   "Object %s already exists.", cleanup, path);
+    }
+    r = TSS2_RC_SUCCESS;
+
+cleanup:
+    SAFE_FREE(abs_path);
+    return r;
+}

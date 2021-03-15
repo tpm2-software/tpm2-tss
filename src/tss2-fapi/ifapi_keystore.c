@@ -1295,14 +1295,12 @@ ifapi_keystore_search_nv_obj(
   *
   * The passed relative path will be expanded for user store and system store.
   *
-  *  Keys objects, NV objects, and hierarchies can be written.
-  *
   * @param[in] keystore The key directories and default profile.
   * @param[in] io  The input/output context being used for file I/O.
   * @param[in] path The relative path of the object. For keys the path will
-  *           expanded if possible.
+  *            expanded if possible.
   * @retval TSS2_RC_SUCCESS if the object does not exist.
-  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS if the file in objects exists.
+  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS if the file exists in the keystore.
   * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the output data.
   */
 TSS2_RC
