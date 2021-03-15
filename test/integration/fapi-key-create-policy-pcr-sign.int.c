@@ -329,6 +329,9 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     }
     json_policy[policy_size] = '\0';
 
+    r = Fapi_Delete(context, policy_pcr_read);
+    goto_if_error(r, "Error Fapi_Delete", error);
+
     r = Fapi_Import(context, policy_pcr_read, json_policy);
     goto_if_error(r, "Error Fapi_Import", error);
 
