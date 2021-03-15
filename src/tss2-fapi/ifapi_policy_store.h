@@ -52,4 +52,10 @@ ifapi_policy_store_store_finish(
     IFAPI_POLICY_STORE *pstore,
     IFAPI_IO *io);
 
+TSS2_RC
+ifapi_policystore_check_overwrite(
+    IFAPI_POLICY_STORE *pstore,
+    IFAPI_IO *io,
+    const char *path);
+
 #endif /* IFAPI_POLICY_STORE_H */
