@@ -588,8 +588,8 @@ define make_parent_dir
 endef
 
 define make_tss_user_and_group
-    (id -g tss || groupadd -r tss) && \
-    (id -u tss || useradd -r -g tss tss)
+    (id -g tss 2>/dev/null || groupadd -r tss) && \
+    (id -u tss 2>/dev/null || useradd -r -g tss tss)
 endef
 
 define make_tss_dir
@@ -608,17 +608,17 @@ define make_fapi_dirs
 endef
 
 define set_fapi_permissions
-    ($(call set_tss_permissions,$(DESTDIR)$(runstatedir)/tpm2-tss)
-    ($(call set_tss_permissions,$(DESTDIR)$(localstatedir)/lib/tpm2-tss)
+    ($(call set_tss_permissions,$(DESTDIR)$(runstatedir)/tpm2-tss))
+    ($(call set_tss_permissions,$(DESTDIR)$(localstatedir)/lib/tpm2-tss))
 endef
 
 define check_dir
-    if [ ! -d "$1" ]; then echo "*** WARNING *** Directory $1 could not be created"; fi
+    if [ ! -d "$1" ]; then echo "WARNING Directory $1 could not be created"; fi
 endef
 
 define check_fapi_dirs
-    $(call check_dir,$(DESTDIR)$(runstatedir)/tpm2-tss/eventlog/)
-    $(call check_dir,$(DESTDIR)$(localstatedir)/lib/tpm2-tss/system/keystore/)
+    ($(call check_dir,$(DESTDIR)$(runstatedir)/tpm2-tss/eventlog/))
+    ($(call check_dir,$(DESTDIR)$(localstatedir)/lib/tpm2-tss/system/keystore/))
 endef
 
 ### Man Pages
@@ -665,9 +665,22 @@ EXTRA_DIST += dist/tpm-udev.rules
 
 install-dirs:
 if HOSTOS_LINUX
-	(systemd-sysusers && systemd-tmpfiles --create) || \
-	($(call make_tss_user_and_group) && $(call make_fapi_dirs) && ($call set_fapi_permissions)) || true
-	$(call check_fapi_dirs)
+if SYSD_SYSUSERS
+	@echo "systemd-sysusers $(DESTDIR)$(sysconfdir)/sysusers.d/tpm2-tss.conf"
+	@systemd-sysusers $(DESTDIR)$(sysconfdir)/sysusers.d/tpm2-tss.conf || echo "WARNING Failed to create the tss user and group"
+else
+	@echo "call make_tss_user_and_group"
+	@$(call make_tss_user_and_group) || echo "WARNING Failed to create the tss user and group"
+endif
+if SYSD_TMPFILES
+	@echo "systemd-tmpfiles --create $(DESTDIR)$(sysconfdir)/tmpfiles.d/tpm2-tss-fapi.conf"
+	@systemd-tmpfiles --create $(DESTDIR)$(sysconfdir)/tmpfiles.d/tpm2-tss-fapi.conf|| echo "WARNING Failed to create the FAPI directories with the correct permissions"
+else
+	@echo "(call make_fapi_dirs) && (call set_fapi_permissions)"
+	@-$(call make_fapi_dirs) && $(call set_fapi_permissions) || echo "WARNING Failed to create the FAPI directories with the correct permissions"
+endif
+	@echo "call check_fapi_dirs"
+	@$(call check_fapi_dirs)
 endif
 
 install-data-hook: install-dirs
