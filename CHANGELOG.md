@@ -2,13 +2,20 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
-
-## [3.0.4] - next
+## [3.0.4-rc0] - 2021-03-18
 ### Changed or Fixed
-- Fix error cleanup for key loading and policy execution.
-- Fix initialization of default log_dir.
-- Fix cleanup in several error cases.
-- initialise 'out' parameter in ifapi_json_IFAPI_CONFIG_deserialize
+- Fixed make install on systems without systemd
+- Fixed segfault in Fapi_Finalize where a free of a constant string could occur.
+- Fixed binding to ESYS_TR_RH_NULL for ESYS auth sessions.
+- Fixed read eagain error handling for freeBSD.
+- Fixed potential memory corruption in Fapi_Import.
+- Fixed binding of ESYS_TR_RH_NULL (Fixes #1993)
+- Added initialise 'out' parameter in ifapi_json_IFAPI_CONFIG_deserialize.
+- Fixed cleanup in several error cases.
+- Fixed initialization of default log_dir.
+- Fixed error cleanup for key loading and policy execution.
+- Fixed state handling in policy execution.
+- Fixed determination of object type from path.
 
 ## [3.0.3] - 2020-11-25
 ### Changed or Fixed
