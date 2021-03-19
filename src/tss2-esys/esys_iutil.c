@@ -578,10 +578,6 @@ iesys_gen_caller_nonces(ESYS_CONTEXT * esys_context)
  *
  * In case where command does not support param encryption/decryption
  * store the original session attributes and update them accordingly.
- * Return true is command support param encryption.
- *
- * @retval TRUE if command support param encryption
- * @retval FLASE if command does not support param encryption
  */
 static void
 iesys_update_session_flags(ESYS_CONTEXT * esys_context,
