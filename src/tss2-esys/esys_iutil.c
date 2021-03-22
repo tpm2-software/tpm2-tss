@@ -1290,6 +1290,18 @@ iesys_gen_auths(ESYS_CONTEXT * esys_context,
                                     &encryptNonce);
     return_if_error(r, "More than one crypt session");
 
+    /*
+     * TPM2.0 Architecture 19.6.5 Note 7
+     *
+     * If the same session (not the first session) is used for decrypt and
+     * encrypt, its nonceTPM is only used once. If different sessions are used
+     * for decrypt and encrypt, both nonceTPMs are included
+     */
+    if (decryptNonceIdx && (decryptNonceIdx == encryptNonceIdx)) {
+        decryptNonceIdx = 0;
+    }
+
+
     /* Compute cp hash values for command buffer for all used algorithms */
 
     r = iesys_compute_cp_hashtab(esys_context,
