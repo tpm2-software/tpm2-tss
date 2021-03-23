@@ -74,9 +74,22 @@ tcti_from_init(TSS2_TCTI_INIT_FUNC init,
         return TSS2_ESYS_RC_MEMORY;
     }
 
+    /* Unless tcti loglevel is log_debug or higher
+     * (i.e. TSS2_LOG=tcti+debug) turn the logging
+     * from loaded tctis off completely, including warnings
+     * and error logs. It makes too much noise when tcti
+     * loader tries them all one by one and what we want
+     * use is the last one.
+     */
+    log_level old_loglevel = LOGMODULE_status;
+    if (LOGMODULE_status < LOGLEVEL_INFO)
+        LOGMODULE_status = LOGLEVEL_NONE;
+
     r = init(*tcti, &size, conf);
+    LOGMODULE_status = old_loglevel;
+
     if (r != TSS2_RC_SUCCESS) {
-        LOG_WARNING("TCTI init for function %p failed with %" PRIx32, init, r);
+        LOG_DEBUG("TCTI init for function %p failed with %" PRIx32, init, r);
         free(*tcti);
         *tcti=NULL;
         return r;
@@ -106,11 +119,10 @@ tcti_from_info(TSS2_TCTI_INFO_FUNC infof,
 
     r = tcti_from_init(info->init, conf, tcti);
     if (r != TSS2_RC_SUCCESS) {
-        LOG_WARNING("Could not initialize TCTI named: %s", info->name);
+        LOG_DEBUG("Could not initialize TCTI named: %s", info->name);
         return r;
     }
-
-    LOG_DEBUG("Initialized TCTI named: %s", info->name);
+    LOG_INFO("Initialized TCTI named: %s", info->name);
 
     return TSS2_RC_SUCCESS;
 }
