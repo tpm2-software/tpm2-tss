@@ -186,7 +186,6 @@ test_esys_create_primary_hmac(ESYS_CONTEXT * esys_context)
     goto_if_error(r, "Error during FlushContext", error);
 
     LOG_INFO("Done with handle 0x%08x...", tpmHandle);
-    (void)(tpmHandle);
     r = Esys_FlushContext(esys_context, session);
     goto_if_error(r, "Flushing context", error);
 
