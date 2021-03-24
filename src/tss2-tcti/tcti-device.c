@@ -328,7 +328,7 @@ tcti_device_cancel (
     TSS2_TCTI_CONTEXT *tctiContext)
 {
     /* Linux driver doesn't expose a mechanism to cancel commands. */
-    (void)(tctiContext);
+    UNUSED(tctiContext);
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
@@ -366,8 +366,8 @@ tcti_device_set_locality (
      * Linux driver doesn't expose a mechanism for user space applications
      * to set locality.
      */
-    (void)(tctiContext);
-    (void)(locality);
+    UNUSED(tctiContext);
+    UNUSED(locality);
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 

@@ -35,8 +35,8 @@
 TSS2_RC
 ifapi_json_TPMS_EMPTY_serialize(const TPMS_EMPTY *in, json_object **jso)
 {
-    (void)(in);
-    (void)(jso);
+    UNUSED(in);
+    UNUSED(jso);
     return TSS2_RC_SUCCESS;
 }
 

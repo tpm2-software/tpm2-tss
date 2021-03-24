@@ -648,12 +648,11 @@ cleanup:
  */
 TSS2_RC
 ifapi_calculate_policy_physical_presence(
-    TPMS_POLICYPHYSICALPRESENCE *policy,
+    TPMS_POLICYPHYSICALPRESENCE *policy MAYBE_UNUSED,
     TPML_DIGEST_VALUES *current_digest,
     TPMI_ALG_HASH current_hash_alg)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    (void)policy;
 
     LOG_DEBUG("call");
 
@@ -681,12 +680,11 @@ ifapi_calculate_policy_physical_presence(
  */
 TSS2_RC
 ifapi_calculate_policy_auth_value(
-    TPMS_POLICYAUTHVALUE *policy,
+    TPMS_POLICYAUTHVALUE *policy MAYBE_UNUSED,
     TPML_DIGEST_VALUES *current_digest,
     TPMI_ALG_HASH current_hash_alg)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    (void)policy;
 
     LOG_DEBUG("call");
 

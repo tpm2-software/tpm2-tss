@@ -122,9 +122,9 @@ tcti_make_sticky_not_implemented (
     TPM2_HANDLE *handle,
     uint8_t sticky)
 {
-    (void)(tctiContext);
-    (void)(handle);
-    (void)(sticky);
+    UNUSED(tctiContext);
+    UNUSED(handle);
+    UNUSED(sticky);
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 

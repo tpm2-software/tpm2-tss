@@ -13,11 +13,11 @@
 #include <json-c/json.h>
 #include <json-c/json_util.h>
 
+#include "util/aux_util.h"
 #include "tss2_esys.h"
 #include "tss2_fapi.h"
 #include "fapi_int.h"
 #include "ifapi_helpers.h"
-
 
 TSS2_RC
 ifapi_flush_object(FAPI_CONTEXT *context, ESYS_TR session);

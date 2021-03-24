@@ -228,9 +228,9 @@ tcti_tbs_get_poll_handles (
     size_t *num_handles)
 {
     /* TBS doesn't support polling. */
-    (void)(tctiContext);
-    (void)(handles);
-    (void)(num_handles);
+    UNUSED(tctiContext);
+    UNUSED(handles);
+    UNUSED(num_handles);
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
@@ -242,8 +242,8 @@ tcti_tbs_set_locality (
     /*
      * TBS currently only supports locality 0
      */
-    (void)(tctiContext);
-    (void)(locality);
+    UNUSED(tctiContext);
+    UNUSED(locality);
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 

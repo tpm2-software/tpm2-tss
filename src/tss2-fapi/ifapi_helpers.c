@@ -2492,7 +2492,7 @@ ifapi_check_json_object_fields(
     if (type == json_type_object) {
         /* Object with keys. */
         json_object_object_foreach(jso, key, val) {
-            (void)val;
+            UNUSED(val);
             found = false;
             for (i = 0; i < size_of_tab; i++) {
                 if (strcmp(key, field_tab[i]) == 0) {

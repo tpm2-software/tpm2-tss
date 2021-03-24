@@ -192,7 +192,7 @@ ifapi_policy_store_load_finish(
     uint8_t *buffer = NULL;
     /* ptore parameter is used to be prepared if transmission of state information
        between async and finish will be necessary in future extensions. */
-    (void)pstore;
+    UNUSED(pstore);
 
     r = ifapi_io_read_finish(io, &buffer, NULL);
     return_try_again(r);
@@ -294,7 +294,7 @@ ifapi_policy_store_store_finish(
 
     /* Pstore parameter is used to be prepared if transmission of state information
        between async and finish will be necessary in future extensions. */
-    (void)pstore;
+    UNUSED(pstore);
     /* Finish writing the policy */
     r = ifapi_io_write_finish(io);
     return_try_again(r);

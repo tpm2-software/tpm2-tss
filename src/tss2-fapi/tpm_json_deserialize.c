@@ -72,8 +72,8 @@ strip_prefix(const char *in, ...)
 TSS2_RC
 ifapi_json_TPMS_EMPTY_deserialize(json_object *jso, TPMS_EMPTY *out)
 {
-    (void)(out);
-    (void)(jso);
+    UNUSED(out);
+    UNUSED(jso);
     LOG_TRACE("call");
     return TSS2_RC_SUCCESS;
 }
