@@ -130,9 +130,8 @@ tcti_fuzzing_transmit (
     size_t size,
     const uint8_t *cmd_buf)
 {
-    (void) tcti_ctx;
-    (void) size;
-    (void) cmd_buf;
+    UNUSED(size);
+    UNUSED(cmd_buf);
     ((TSS2_TCTI_FUZZING_CONTEXT*) tcti_ctx)->common.state = TCTI_STATE_RECEIVE;
     return TSS2_RC_SUCCESS;
 }
@@ -141,7 +140,7 @@ TSS2_RC
 tcti_fuzzing_cancel (
     TSS2_TCTI_CONTEXT *tcti_ctx)
 {
-    (void) tcti_ctx;
+    UNUSED(tcti_ctx);
     return TSS2_RC_SUCCESS;
 }
 
@@ -150,8 +149,8 @@ tcti_fuzzing_set_locality (
     TSS2_TCTI_CONTEXT *tcti_ctx,
     uint8_t locality)
 {
-    (void) tcti_ctx;
-    (void) locality;
+    UNUSED(tcti_ctx);
+    UNUSED(locality);
     return TSS2_RC_SUCCESS;
 }
 
@@ -161,9 +160,9 @@ tcti_fuzzing_get_poll_handles (
     TSS2_TCTI_POLL_HANDLE *handles,
     size_t *num_handles)
 {
-    (void)(tcti_ctx);
-    (void)(handles);
-    (void)(num_handles);
+    UNUSED(tcti_ctx);
+    UNUSED(handles);
+    UNUSED(num_handles);
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
@@ -171,7 +170,7 @@ void
 tcti_fuzzing_finalize(
     TSS2_TCTI_CONTEXT *tcti_ctx)
 {
-    (void)(tcti_ctx);
+    UNUSED(tcti_ctx);
 }
 
 TSS2_RC
@@ -245,7 +244,7 @@ Tss2_Tcti_Fuzzing_Init (
     size_t *size,
     const char *conf)
 {
-    (void) conf;
+    UNUSED(conf);
 
     if (size == NULL) {
         return TSS2_TCTI_RC_BAD_VALUE;

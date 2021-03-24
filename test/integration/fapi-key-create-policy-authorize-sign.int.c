@@ -33,15 +33,12 @@ static bool cb_called = false;
 static TSS2_RC
 branch_callback(
     char   const *objectPath,
-    char   const *description,
-    char  const **branchNames,
+    char   const *description MAYBE_UNUSED,
+    char  const **branchNames MAYBE_UNUSED,
     size_t        numBranches,
     size_t       *selectedBranch,
-    void         *userData)
+    void         *userData MAYBE_UNUSED)
 {
-    (void) description;
-    (void) userData;
-
     char *profile_path;
 
     ASSERT(description != NULL);

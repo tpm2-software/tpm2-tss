@@ -106,10 +106,10 @@ signatureCallback(
     size_t         *signatureSize,
     void           *userData)
 {
-    (void)description;
-    (void)publicKey;
-    (void)publicKeyHint;
     uint8_t *aux_signature = NULL;
+    UNUSED(description);
+    UNUSED(publicKey);
+    UNUSED(publicKeyHint);
 
     if (!objectPath) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "No path.");

@@ -11,6 +11,7 @@
 #include <cmocka.h>
 
 #include "tss2_rc.h"
+#include "util/aux_util.h"
 
 #define ARRAY_LEN(x) (sizeof(x)/sizeof(x[0]))
 
@@ -22,7 +23,7 @@
 static void
 test_layers(void **state)
 {
-    (void) state;
+    UNUSED(state);
 
     static const char *known_layers[TPM2_ERROR_TSS2_RC_LAYER_COUNT] = {
         "tpm:",

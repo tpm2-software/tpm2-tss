@@ -67,8 +67,8 @@ get_number(json_object *jso) {
 size_t nmb_of_fields(json_object *jso) {
     size_t n = 0;
     json_object_object_foreach(jso, key, val) {
-        (void)val;
-        (void)key;
+        UNUSED(val);
+        UNUSED(key);
         n++;
     }
     return n;

@@ -123,7 +123,7 @@ int
 __wrap_ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
                           size_t *buffer_size)
 {
-    (void)url;
+    UNUSED(url);
     *buffer = (unsigned char *)strdup(mock_json_cert);      ;
     *buffer_size = strlen(mock_json_cert) + 1;
     return 0;

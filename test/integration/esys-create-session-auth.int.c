@@ -53,7 +53,7 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
     ESYS_TR loadedKeyHandle = ESYS_TR_NONE;
-    ESYS_TR primaryHandle_AuthSession = ESYS_TR_NONE;
+    ESYS_TR primaryHandle_AuthSession MAYBE_UNUSED = ESYS_TR_NONE;
     ESYS_TR session = ESYS_TR_NONE;
     ESYS_TR outerSession = ESYS_TR_NONE;
 
@@ -272,7 +272,6 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
                               sessionType, &symmetric, authHash, &session);
 #else
 #if TEST_NULL_BIND_NO_TPM_KEY
-     (void)primaryHandle_AuthSession;
      r = Esys_StartAuthSession(esys_context,
                                ESYS_TR_NONE,
                                ESYS_TR_RH_NULL,

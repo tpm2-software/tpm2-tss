@@ -85,9 +85,9 @@ tcti_tryagainerror_receive(TSS2_TCTI_CONTEXT * tctiContext,
                      uint8_t * response_buffer, int32_t timeout)
 {
     TSS2_TCTI_CONTEXT_TRYAGAINERROR *tcti = tcti_tryagainerror_cast(tctiContext);
-    (void) response_size;
-    (void) response_buffer;
-    (void) timeout;
+    UNUSED(response_size);
+    UNUSED(response_buffer);
+    UNUSED(timeout);
     tcti->count++;
     if (tcti->count == 1)
         return TSS2_TCTI_RC_TRY_AGAIN;

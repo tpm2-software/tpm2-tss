@@ -29,8 +29,8 @@ auth_callback(
     const char **auth,
     void *userData)
 {
-    (void)description;
-    (void)userData;
+    UNUSED(description);
+    UNUSED(userData);
 
     if (strcmp(objectPath, "P_RSA/HS/SRK/mySignKey") != 0) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Unexpected path");
