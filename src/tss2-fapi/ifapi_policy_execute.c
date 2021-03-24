@@ -846,11 +846,10 @@ static TSS2_RC
 execute_policy_secret(
     ESYS_CONTEXT *esys_ctx,
     TPMS_POLICYSECRET *policy,
-    TPMI_ALG_HASH hash_alg,
+    TPMI_ALG_HASH hash_alg MAYBE_UNUSED,
     IFAPI_POLICY_EXEC_CTX *current_policy)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    (void)hash_alg;
 
     LOG_DEBUG("call");
 
@@ -976,11 +975,10 @@ execute_policy_counter_timer(
 static TSS2_RC
 execute_policy_physical_presence(
     ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYPHYSICALPRESENCE *policy,
+    TPMS_POLICYPHYSICALPRESENCE *policy MAYBE_UNUSED,
     IFAPI_POLICY_EXEC_CTX *current_policy)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    (void)policy;
 
     LOG_TRACE("call");
 
@@ -1026,11 +1024,10 @@ execute_policy_physical_presence(
 static TSS2_RC
 execute_policy_auth_value(
     ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYAUTHVALUE *policy,
+    TPMS_POLICYAUTHVALUE *policy MAYBE_UNUSED,
     IFAPI_POLICY_EXEC_CTX *current_policy)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    (void)policy;
 
     LOG_TRACE("call");
 
@@ -1077,11 +1074,10 @@ execute_policy_auth_value(
 static TSS2_RC
 execute_policy_password(
     ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYPASSWORD *policy,
+    TPMS_POLICYPASSWORD *policy MAYBE_UNUSED,
     IFAPI_POLICY_EXEC_CTX *current_policy)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    (void)policy;
 
     LOG_TRACE("call");
 
@@ -1429,7 +1425,7 @@ execute_policy_action(
     IFAPI_POLICY_EXEC_CTX *current_policy)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    (void)(esys_ctx);
+    UNUSED(esys_ctx);
     LOG_TRACE("call");
 
     switch (current_policy->state) {

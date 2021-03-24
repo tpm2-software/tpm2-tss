@@ -305,7 +305,7 @@ TSS2_RC
 tcti_swtpm_cancel (
     TSS2_TCTI_CONTEXT *tctiContext)
 {
-    (void) (tctiContext);
+    UNUSED(tctiContext);
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
@@ -341,9 +341,9 @@ tcti_swtpm_get_poll_handles (
     TSS2_TCTI_POLL_HANDLE *handles,
     size_t *num_handles)
 {
-    (void)(tctiContext);
-    (void)(handles);
-    (void)(num_handles);
+    UNUSED(tctiContext);
+    UNUSED(handles);
+    UNUSED(num_handles);
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 

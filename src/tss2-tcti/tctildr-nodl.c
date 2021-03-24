@@ -131,7 +131,7 @@ tctildr_get_default(TSS2_TCTI_CONTEXT ** tcticontext, void **dlhandle)
 {
     TSS2_RC rc;
 
-    (void)dlhandle;
+    UNUSED(dlhandle);
     if (tcticontext == NULL) {
         LOG_ERROR("tcticontext must not be NULL");
         return TSS2_TCTI_RC_BAD_REFERENCE;
@@ -187,7 +187,7 @@ tctildr_get_tcti (const char *name,
 void
 tctildr_finalize_data(void **data)
 {
-    (void)data;
+    UNUSED(data);
     return;
 }
 
@@ -196,8 +196,8 @@ tctildr_get_info (const char *name,
                   const TSS2_TCTI_INFO **info,
                   void **data)
 {
-    (void)name;
-    (void)info;
-    (void)data;
+    UNUSED(name);
+    UNUSED(info);
+    UNUSED(data);
     return TSS2_TCTI_RC_NOT_SUPPORTED;
 }

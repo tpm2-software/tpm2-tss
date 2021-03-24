@@ -610,16 +610,13 @@ ifapi_keystore_load_async(
  */
 TSS2_RC
 ifapi_keystore_load_finish(
-    IFAPI_KEYSTORE *keystore,
+    IFAPI_KEYSTORE *keystore MAYBE_UNUSED,
     IFAPI_IO *io,
     IFAPI_OBJECT *object)
 {
     TSS2_RC r;
     json_object *jso = NULL;
     uint8_t *buffer = NULL;
-    /* Keystore parameter is used to be prepared if transmission of state information
-       between async and finish will be necessary in future extensions. */
-    (void)keystore;
 
     r = ifapi_io_read_finish(io, &buffer, NULL);
     return_try_again(r);
@@ -799,14 +796,11 @@ cleanup:
  */
 TSS2_RC
 ifapi_keystore_store_finish(
-    IFAPI_KEYSTORE *keystore,
+    IFAPI_KEYSTORE *keystore MAYBE_UNUSED,
     IFAPI_IO *io)
 {
     TSS2_RC r;
 
-    /* Keystore parameter is used to be prepared if transmission of state information
-       between async and finish will be necessary in future extensions. */
-    (void)keystore;
     /* Finish writing the object */
     r = ifapi_io_write_finish(io);
     return_try_again(r);
@@ -1306,13 +1300,12 @@ ifapi_keystore_search_nv_obj(
 TSS2_RC
 ifapi_keystore_check_overwrite(
     IFAPI_KEYSTORE *keystore,
-    IFAPI_IO *io,
+    IFAPI_IO *io MAYBE_UNUSED,
     const char *path)
 {
     TSS2_RC r;
     char *directory = NULL;
     char *file = NULL;
-    (void)io; /* Used to simplify future extensions */
 
     /* Expand relative path */
     r = expand_path(keystore, path, &directory);
@@ -1371,13 +1364,12 @@ cleanup:
 TSS2_RC
 ifapi_keystore_check_writeable(
     IFAPI_KEYSTORE *keystore,
-    IFAPI_IO *io,
+    IFAPI_IO *io MAYBE_UNUSED,
     const char *path)
 {
     TSS2_RC r;
     char *directory = NULL;
     char *file = NULL;
-    (void)io; /* Used to simplify future extensions */
 
     /* Expand relative path */
     r = expand_path(keystore, path, &directory);

@@ -581,8 +581,8 @@ ifapi_json_TPMS_POLICYPHYSICALPRESENCE_deserialize(json_object *jso,
         TPMS_POLICYPHYSICALPRESENCE *out)
 {
     LOG_TRACE("call");
-    (void)jso;
-    (void)out;
+    UNUSED(jso);
+    UNUSED(out);
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
@@ -931,8 +931,8 @@ ifapi_json_TPMS_POLICYAUTHVALUE_deserialize(json_object *jso,
         TPMS_POLICYAUTHVALUE *out)
 {
     LOG_TRACE("call");
-    (void)out;
-    (void)jso;
+    UNUSED(out);
+    UNUSED(jso);
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
@@ -950,8 +950,8 @@ ifapi_json_TPMS_POLICYPASSWORD_deserialize(json_object *jso,
         TPMS_POLICYPASSWORD *out)
 {
     LOG_TRACE("call");
-    (void)jso;
-    (void)out;
+    UNUSED(jso);
+    UNUSED(out);
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
