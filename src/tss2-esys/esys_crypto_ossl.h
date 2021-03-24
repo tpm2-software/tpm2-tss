@@ -105,7 +105,6 @@ TSS2_RC iesys_cryptossl_sym_aes_encrypt(
     TPM2_ALG_ID tpm_sym_alg,
     TPMI_AES_KEY_BITS key_bits,
     TPM2_ALG_ID tpm_mode,
-    size_t blk_len,
     uint8_t *dst,
     size_t dst_size,
     uint8_t *iv);
@@ -115,7 +114,6 @@ TSS2_RC iesys_cryptossl_sym_aes_decrypt(
     TPM2_ALG_ID tpm_sym_alg,
     TPMI_AES_KEY_BITS key_bits,
     TPM2_ALG_ID tpm_mode,
-    size_t blk_len,
     uint8_t *dst,
     size_t dst_size,
     uint8_t *iv);

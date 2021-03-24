@@ -735,7 +735,6 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
                                                  symDef->algorithm,
                                                  symDef->keyBits.aes,
                                                  symDef->mode.aes,
-                                                 AES_BLOCK_SIZE_IN_BYTES,
                                                  &encrypt_buffer[0], paramSize,
                                                  &symKey[aes_off]);
                 return_if_error(r, "AES encryption not possible");
@@ -835,7 +834,6 @@ iesys_decrypt_param(ESYS_CONTEXT * esys_context)
                                      symDef->algorithm,
                                      symDef->keyBits.aes,
                                      symDef->mode.aes,
-                                     AES_BLOCK_SIZE_IN_BYTES,
                                      &plaintext[0], p2BSize,
                                      &symKey[aes_off]);
         return_if_error(r, "Decryption error");

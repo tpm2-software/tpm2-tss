@@ -209,34 +209,34 @@ check_aes_encrypt(void **state)
     uint8_t buffer[5] = { 1, 2, 3, 4, 5 };
     size_t size = 5;
 
-    rc = iesys_crypto_sym_aes_encrypt(NULL, TPM2_ALG_AES, 192, TPM2_ALG_CFB, 16,
+    rc = iesys_crypto_sym_aes_encrypt(NULL, TPM2_ALG_AES, 192, TPM2_ALG_CFB,
                                       &buffer[0], size, &key[0]);
     assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    rc = iesys_crypto_sym_aes_encrypt(&key[0], TPM2_ALG_AES, 192, TPM2_ALG_CFB, 16,
+    rc = iesys_crypto_sym_aes_encrypt(&key[0], TPM2_ALG_AES, 192, TPM2_ALG_CFB,
                                       &buffer[0], size, &key[0]);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
-    rc = iesys_crypto_sym_aes_encrypt(&key[0], TPM2_ALG_AES, 256, TPM2_ALG_CFB, 16,
+    rc = iesys_crypto_sym_aes_encrypt(&key[0], TPM2_ALG_AES, 256, TPM2_ALG_CFB,
                                       &buffer[0], size, &key[0]);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 
-    rc = iesys_crypto_sym_aes_encrypt(&key[0], 0, 256, TPM2_ALG_CFB, 16,
+    rc = iesys_crypto_sym_aes_encrypt(&key[0], 0, 256, TPM2_ALG_CFB,
                                       &buffer[0], size, &key[0]);
     assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
 
-    rc = iesys_crypto_sym_aes_encrypt(&key[0], TPM2_ALG_AES, 256, 0, 16,
+    rc = iesys_crypto_sym_aes_encrypt(&key[0], TPM2_ALG_AES, 256, 0,
                                       &buffer[0], size, &key[0]);
     assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
 
-    rc = iesys_crypto_sym_aes_encrypt(&key[0], TPM2_ALG_AES, 999, TPM2_ALG_CFB, 16,
+    rc = iesys_crypto_sym_aes_encrypt(&key[0], TPM2_ALG_AES, 999, TPM2_ALG_CFB,
                                       &buffer[0], size, &key[0]);
     assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
 
-    rc = iesys_crypto_sym_aes_decrypt(NULL, TPM2_ALG_AES, 192, TPM2_ALG_CFB, 16,
+    rc = iesys_crypto_sym_aes_decrypt(NULL, TPM2_ALG_AES, 192, TPM2_ALG_CFB,
                                       &buffer[0], size, &key[0]);
     assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    rc = iesys_crypto_sym_aes_decrypt(&key[0], 0, 192, TPM2_ALG_CFB, 16,
+    rc = iesys_crypto_sym_aes_decrypt(&key[0], 0, 192, TPM2_ALG_CFB,
                                       &buffer[0], size, &key[0]);
     assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
 }

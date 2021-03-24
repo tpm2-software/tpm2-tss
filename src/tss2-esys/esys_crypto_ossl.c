@@ -948,11 +948,10 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
  * @param[in] key_bits Key size in bits.
  * @param[in] tpm_mode Block cipher mode of opertion in TSS2 notation (CFB).
  *            For parameter encryption only CFB can be used.
- * @param[in] blk_len Length Block length of AES.
  * @param[in,out] buffer Data to be encrypted. The encrypted date will be stored
  *                in this buffer.
  * @param[in] buffer_size size of data to be encrypted.
- * @param[in] iv The initialization vector. The size is equal to blk_len.
+ * @param[in] iv The initialization vector.
  * @retval TSS2_RC_SUCCESS on success, or TSS2_ESYS_RC_BAD_VALUE and
  * @retval TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters,
  * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
@@ -962,7 +961,6 @@ iesys_cryptossl_sym_aes_encrypt(uint8_t * key,
                                 TPM2_ALG_ID tpm_sym_alg,
                                 TPMI_AES_KEY_BITS key_bits,
                                 TPM2_ALG_ID tpm_mode,
-                                size_t blk_len,
                                 uint8_t * buffer,
                                 size_t buffer_size,
                                 uint8_t * iv)
@@ -977,9 +975,6 @@ iesys_cryptossl_sym_aes_encrypt(uint8_t * key,
     }
 
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS AES input");
-
-    /* Parameter blk_len needed for other crypto libraries */
-    (void)blk_len;
 
     if (key_bits == 128 && tpm_mode == TPM2_ALG_CFB)
         cipher_alg = EVP_aes_128_cfb();
@@ -1033,11 +1028,10 @@ iesys_cryptossl_sym_aes_encrypt(uint8_t * key,
  * @param[in] key_bits Key size in bits.
  * @param[in] tpm_mode Block cipher mode of opertion in TSS2 notation (CFB).
  *            For parameter encryption only CFB can be used.
- * @param[in] blk_len Length Block length of AES.
  * @param[in,out] buffer Data to be decrypted. The decrypted date will be stored
  *                in this buffer.
  * @param[in] buffer_size size of data to be encrypted.
- * @param[in] iv The initialization vector. The size is equal to blk_len.
+ * @param[in] iv The initialization vector.
  * @retval TSS2_RC_SUCCESS on success, or TSS2_ESYS_RC_BAD_VALUE and
  * @retval TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters,
  * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
@@ -1047,7 +1041,6 @@ iesys_cryptossl_sym_aes_decrypt(uint8_t * key,
                                 TPM2_ALG_ID tpm_sym_alg,
                                 TPMI_AES_KEY_BITS key_bits,
                                 TPM2_ALG_ID tpm_mode,
-                                size_t blk_len,
                                 uint8_t * buffer,
                                 size_t buffer_size,
                                 uint8_t * iv)
@@ -1056,9 +1049,6 @@ iesys_cryptossl_sym_aes_decrypt(uint8_t * key,
     const EVP_CIPHER *cipher_alg = NULL;
     EVP_CIPHER_CTX *ctx = NULL;
     int cipher_len = 0;
-
-    /* Parameter blk_len needed for other crypto libraries */
-    (void)blk_len;
 
     if (key == NULL || buffer == NULL) {
         return_error(TSS2_ESYS_RC_BAD_REFERENCE, "Bad reference");
