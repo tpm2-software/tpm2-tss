@@ -19,11 +19,11 @@
 
 #include "tss2-tcti/tctildr.h"
 #include "tss2-tcti/tcti-common.h"
+#include "util/aux_util.h"
 
 #define TEST_MAGIC 0x1234321
 #define TEST_VERSION 2
 
-#define UNUSED(var) (void)(var)
 TSS2_RC
 __wrap_tctildr_get_info (const char *name,
                          const TSS2_TCTI_INFO **info,

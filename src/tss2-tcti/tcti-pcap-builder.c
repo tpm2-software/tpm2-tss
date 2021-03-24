@@ -55,7 +55,6 @@
 #define TCP_CHECKSUM_UNUSED         0x0000
 #define TCP_URGENT_PTR_UNUSED       0x0000
 
-#define UNUSED(param)               (void)(param)
 #define SIZEOF_IN_OCTETS(x)         (sizeof (x)/sizeof (uint32_t))
 #define TO_MULTIPLE_OF_4_BYTE(x)    (((x)-1)/4*4+4) * !!(x)
 
