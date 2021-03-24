@@ -7,7 +7,9 @@
 #define AUX_UTIL_H
 
 #include <stdbool.h>
-
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include "tss2_tpm2_types.h"
 #ifdef __cplusplus
 extern "C" {
@@ -17,6 +19,27 @@ extern "C" {
 
 #define TPM2_ERROR_FORMAT "%s%s (0x%08x)"
 #define TPM2_ERROR_TEXT(r) "Error", "Code", r
+
+#if defined (__GNUC__)
+#define COMPILER_ATTR(...) __attribute__((__VA_ARGS__))
+#else
+#define COMPILER_ATTR(...)
+#endif
+
+#define UNUSED(x) (void)(x)
+#if (MAXLOGLEVEL == LOGL_NONE) || defined(NDEBUG)
+/* Note:
+ * MAYBE_UNUSED macro should be used to mark variables used only
+ * for assertions i.e. in debug mode, and/or for logging, which
+ * might be compiled out. This shuldn't trigger 'unused variable'
+ * or 'variable assigned, but not used' waraings when debug and
+ * logging is disabled on configure time, but should trigger
+ * warnings for variables that are not used for neither.
+ */
+#define MAYBE_UNUSED COMPILER_ATTR(unused)
+#else
+#define MAYBE_UNUSED
+#endif
 
 #define return_if_error(r,msg) \
     if (r != TSS2_RC_SUCCESS) { \
