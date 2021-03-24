@@ -41,8 +41,8 @@ auth_callback(
     const char **auth,
     void *userData)
 {
-    (void)description;
-    (void)userData;
+    UNUSED(description);
+    UNUSED(userData);
 
     if (!objectPath) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "No path.");
@@ -65,9 +65,9 @@ branch_callback(
     size_t       *selectedBranch,
     void         *userData)
 {
-    (void) description;
-    (void) userData;
-    (void) branchNames;
+    UNUSED(description);
+    UNUSED(userData);
+    UNUSED(branchNames);
 
     if (strcmp(objectPath, "/nv/Owner/useful") != 0) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Unexpected path");

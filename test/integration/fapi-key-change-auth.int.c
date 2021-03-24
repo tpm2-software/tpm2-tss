@@ -32,8 +32,8 @@ auth_callback(
     const char **auth,
     void *userData)
 {
-    (void)description;
-    (void)userData;
+    UNUSED(description);
+    UNUSED(userData);
 
     char *profile_path;
 

@@ -29,7 +29,7 @@ typedef TSS2_TCTI_CONTEXT_COMMON_V1 TSS2_TCTI_CONTEXT_FAKE;
 void
 tcti_fake_finalize(TSS2_TCTI_CONTEXT *tctiContext)
 {
-    (void)(tctiContext);
+    UNUSED(tctiContext);
 }
 
 TSS2_RC

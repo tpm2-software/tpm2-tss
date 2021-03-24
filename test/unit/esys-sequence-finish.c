@@ -32,9 +32,9 @@ static TSS2_RC
 tcti_failure_transmit(TSS2_TCTI_CONTEXT * tctiContext,
                       size_t size, const uint8_t * buffer)
 {
-    (void)(tctiContext);
-    (void)(size);
-    (void)(buffer);
+    UNUSED(tctiContext);
+    UNUSED(size);
+    UNUSED(buffer);
 
     return TSS2_RC_SUCCESS;
 }

@@ -179,7 +179,7 @@ test_esys_create_primary_hmac(ESYS_CONTEXT * esys_context)
     r = esys_GetResourceObject(esys_context, objectHandle,
                                &objectHandle_node);
     goto_if_error(r, "Error Esys GetResourceObject", error);
-    ESYS_TR tpmHandle = objectHandle_node->rsrc.handle;
+    ESYS_TR tpmHandle MAYBE_UNUSED = objectHandle_node->rsrc.handle;
     LOG_INFO("Created Primary with TPM handle 0x%08x...", tpmHandle);
 
     r = Esys_FlushContext(esys_context, objectHandle);

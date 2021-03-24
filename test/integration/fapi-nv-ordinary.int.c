@@ -35,8 +35,8 @@ auth_callback(
     const char **auth,
     void *userData)
 {
-    (void)description;
-    (void)userData;
+    UNUSED(description);
+    UNUSED(userData);
 
     if (!objectPath) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "No path.");
@@ -52,7 +52,7 @@ action_callback(
     const char *action,
     void *userData)
 {
-    (void)(userData);
+    UNUSED(userData);
 
     ASSERT(objectPath != NULL);
     ASSERT(action != NULL);

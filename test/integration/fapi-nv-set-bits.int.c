@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include "tss2_fapi.h"
+#include "test-fapi.h"
 
 #define LOGMODULE test
 #include "util/log.h"
@@ -28,8 +29,8 @@ auth_callback(
     const char **auth,
     void *userData)
 {
-    (void)description;
-    (void)userData;
+    UNUSED(description);
+    UNUSED(userData);
 
     if (!objectPath) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "No path.");

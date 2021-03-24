@@ -37,8 +37,8 @@ main (int   argc,
         .socket_port    = PORT_DEFAULT,
     };
 
-    (void) argc;
-    (void) argv;
+    UNUSED(argc);
+    UNUSED(argv);
 
     get_test_opts_from_env (&opts);
     if (sanity_check_test_opts (&opts) != 0) {

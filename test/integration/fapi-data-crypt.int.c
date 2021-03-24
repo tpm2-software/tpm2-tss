@@ -92,9 +92,9 @@ signatureCallback(
     size_t         *signatureSize,
     void           *userData)
 {
-    (void)description;
-    (void)publicKey;
-    (void)publicKeyHint;
+    UNUSED(description);
+    UNUSED(publicKey);
+    UNUSED(publicKeyHint);
     uint8_t *aux_signature = NULL;
 
     if (strcmp(objectPath, "P_RSA/HS/SRK/myRsaCryptKey") != 0) {
