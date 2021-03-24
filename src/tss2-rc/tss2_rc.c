@@ -7,12 +7,7 @@
 
 #include "tss2_rc.h"
 #include "tss2_sys.h"
-
-#if defined (__GNUC__)
-#define COMPILER_ATTR(...) __attribute__((__VA_ARGS__))
-#else
-#define COMPILER_ATTR(...)
-#endif
+#include "util/aux_util.h"
 
 #define ARRAY_LEN(x) (sizeof(x)/sizeof(x[0]))
 

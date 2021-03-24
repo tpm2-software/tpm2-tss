@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include "util/aux_util.h"
 
 #ifndef LOGMODULE
 #error "LOGMODULE must be set before including log/log.h"
@@ -10,12 +11,6 @@
 
 #ifndef LOGDEFAULT
 #define LOGDEFAULT LOGLEVEL_WARNING
-#endif
-
-#if defined (__GNUC__)
-#define COMPILER_ATTR(...) __attribute__((__VA_ARGS__))
-#else
-#define COMPILER_ATTR(...)
 #endif
 
 #define LOGL_NONE    0
