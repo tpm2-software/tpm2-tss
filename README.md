@@ -48,6 +48,8 @@ If you're looking to discuss the source code in this project or get some questio
 We also have an IRC channel set up on [FreeNode](https://freenode.net/) called \#tpm2.0-tss.
 You can also try Gitter [![Gitter](https://badges.gitter.im/tpm2-software/community.svg)](https://gitter.im/tpm2-software/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
+You can join a weekly online call at [TPM.dev](https://developers.tpm.dev/events/tpmdev-online-call), where we are discussing the tpm2-tss stack, the tpm2-pkcs11 project and other Linux TPM2 & TSS2-Software.
+
 In case you want to contribute to the project, please also have a look at the [Contribution Guidelines](CONTRIBUTING.md).
 
 # Documentation
