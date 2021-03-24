@@ -38,6 +38,7 @@ static void
 copy_policy_digest(TPML_DIGEST_VALUES *dest, TPML_DIGEST_VALUES *src,
                    size_t digest_idx, size_t hash_size, char *txt)
 {
+    (void)(txt); /* If max log-leve < debug, this param is unused */
     memcpy(&dest->digests[digest_idx].digest, &src->digests[digest_idx].digest,
            hash_size);
     dest->digests[digest_idx].hashAlg = src->digests[digest_idx].hashAlg;
@@ -57,6 +58,8 @@ static void
 log_policy_digest(TPML_DIGEST_VALUES *dest, size_t digest_idx, size_t hash_size,
                   char *txt)
 {
+    (void)(dest);(void)(digest_idx);(void)(hash_size);(void)(txt);
+    /* If max log-leve < debug, this param is unused */
     LOGBLOB_DEBUG((uint8_t *)&dest->digests[digest_idx].digest, hash_size,
                   "Digest %s", txt);
 }
