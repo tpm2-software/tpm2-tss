@@ -112,7 +112,6 @@ TSS2_RC tcti_control_command (
     uint32_t *resp_code, void *resp_sdu, size_t *resp_sdu_len)
 {
     TSS2_TCTI_SWTPM_CONTEXT *tcti_swtpm = tcti_swtpm_context_cast(tctiContext);
-    UINT32 rsp = 0;
     TSS2_RC rc = TSS2_RC_SUCCESS;
     int ret;
     uint32_t response_code;
@@ -220,7 +219,7 @@ TSS2_RC tcti_control_command (
     }
 
     if (response_code != 0) {
-        LOG_ERROR ("Control command failed with error: %" PRIu32, rsp);
+        LOG_ERROR ("Control command failed with error: %" PRIu32, response_code);
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto out;
     }
