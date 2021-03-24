@@ -9,6 +9,11 @@
 #endif
 
 #include <stdlib.h>
+#if (MAXLOGLEVEL == 0 && defined(NDEBUG))
+/* Need one of the other as some local variables
+ * are used in debug prints or assert calls only */
+#undef NDEBUG
+#endif
 #include <assert.h>
 
 #include "tss2_esys.h"

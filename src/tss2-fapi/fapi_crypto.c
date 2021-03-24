@@ -2032,8 +2032,7 @@ ifapi_verify_ek_cert(
                    "Failed to initialize X509 context.", cleanup);
     }
     if (1 != X509_verify_cert(ctx)) {
-        int rc = X509_STORE_CTX_get_error(ctx);
-        LOG_ERROR("%s", X509_verify_cert_error_string(rc));
+        LOG_ERROR("%s", X509_verify_cert_error_string(X509_STORE_CTX_get_error(ctx)));
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
                    "Failed to verify EK certificate", cleanup);
     }
@@ -2055,8 +2054,7 @@ ifapi_verify_ek_cert(
     }
     /* Verify the EK certificate. */
     if (1 != X509_verify_cert(ctx)) {
-        int rc = X509_STORE_CTX_get_error(ctx);
-        LOG_ERROR("%s", X509_verify_cert_error_string(rc));
+        LOG_ERROR("%s", X509_verify_cert_error_string(X509_STORE_CTX_get_error(ctx)));
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
                    "Failed to verify EK certificate", cleanup);
     }
