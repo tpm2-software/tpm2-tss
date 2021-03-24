@@ -66,12 +66,12 @@ fi
 if [ "$SCANBUILD" == "yes" ]; then
   scan-build --status-bugs ../configure --enable-unit --enable-self-generated-certificate --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
 elif [ "$CC" == "clang" ]; then
-  ../configure --enable-unit --enable-self-generated-certificate  --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
+  ../configure --enable-unit --enable-self-generated-certificate  --enable-integration --with-maxloglevel=none --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
 else
   if [ "$WITH_TCTI" == "mssim" ]; then
     ../configure --with-sanitizer=undefined,address --disable-tcti-swtpm --enable-unit --enable-self-generated-certificate --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
   else
-    ../configure --with-sanitizer=undefined,address --enable-unit --enable-self-generated-certificate --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
+    ../configure --with-sanitizer=undefined,address --with-maxloglevel=none --enable-debug=yes --enable-unit --enable-self-generated-certificate --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
   fi
 fi
 
