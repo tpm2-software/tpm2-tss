@@ -122,7 +122,7 @@ There are three classes:
 3. optional    - these tests are for functionality that is optional per the
                  TCG specification.
 
-For example to enable both mandatory and optional test cases during configure
+For example, to enable both mandatory and optional test cases during configure
 one needs to set this flag as follows:
 
 ```
