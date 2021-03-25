@@ -43,6 +43,9 @@ The latter implements the protocol exposed by the Microsoft software TPM2 simula
 # Build and Installation Instructions:
 Instructions to build and install tpm2-tss are available in the [INSTALL](INSTALL.md) file.
 
+# Getting Started:
+If you are new to TPM and looking to use the `tpm2-tss` library, you can have a look at [examples](https://github.com/UNIRIS/tpm-core/tree/main/examples). These examples are standalone and are meant as a starting guide for absolute beginners.
+
 # Getting in Touch:
 If you're looking to discuss the source code in this project or get some questions answered you should join the 01.org TPM2 mailing list: https://lists.01.org/postorius/lists/tpm2.lists.01.org/.
 We also have an IRC channel set up on [FreeNode](https://freenode.net/) called \#tpm2.0-tss.
