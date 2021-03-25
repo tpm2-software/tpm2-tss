@@ -2415,12 +2415,16 @@ ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
     }
 
     CURL *curl = curl_easy_init();
+    CURLU *urlp = curl_url();
+    int res = 0;
     if (!curl) {
         LOG_ERROR("curl_easy_init failed");
         goto out_global_cleanup;
     }
 
-    rc = curl_easy_setopt(curl, CURLOPT_URL, url);
+    res = curl_url_set(urlp, CURLUPART_URL, url, CURLU_URLENCODE);
+
+    rc = curl_easy_setopt(curl, CURLOPT_CURLU, urlp);
     if (rc != CURLE_OK) {
         LOG_ERROR("curl_easy_setopt for CURLOPT_URL failed: %s",
                 curl_easy_strerror(rc));
@@ -2464,6 +2468,7 @@ out_easy_cleanup:
     if (ret != 0)
         free(curl_buffer.buffer);
     curl_easy_cleanup(curl);
+    curl_url_cleanup(urlp);
 out_global_cleanup:
     curl_global_cleanup();
 out_memory:
