@@ -53,7 +53,9 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
     ESYS_TR loadedKeyHandle = ESYS_TR_NONE;
-    ESYS_TR primaryHandle_AuthSession MAYBE_UNUSED = ESYS_TR_NONE;
+#if defined(TEST_ECC) || !defined(TEST_NULL_BIND_NO_TPM_KEY)
+    ESYS_TR primaryHandle_AuthSession = ESYS_TR_NONE;
+#endif
     ESYS_TR session = ESYS_TR_NONE;
     ESYS_TR outerSession = ESYS_TR_NONE;
 
@@ -219,7 +221,7 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
 
     r = Esys_TR_SetAuth(esys_context, primaryHandle_AuthSession, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
-#else
+#elif defined(TEST_BOUND_SESSION) || !defined(TEST_NULL_BIND_NO_TPM_KEY)
     primaryHandle_AuthSession = primaryHandle;
 #endif /* TEST_ECC */
 
