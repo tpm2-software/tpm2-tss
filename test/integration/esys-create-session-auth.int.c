@@ -255,7 +255,7 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
                                   TPMA_SESSION_AUDIT);
     goto_if_error(r, "Error Esys_TRSess_SetAttributes", error);
 
-#if TEST_BOUND_SESSION
+#if defined(TEST_BOUND_SESSION)
     r = Esys_StartAuthSession(esys_context,
                               primaryHandle_AuthSession,
                               primaryHandle_AuthSession,
@@ -263,7 +263,7 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
                               NULL,
                               sessionType, &symmetric, authHash, &session);
 #else
-#if TEST_NULL_BIND_TPMKEY
+#if defined(TEST_NULL_BIND_TPMKEY)
      r = Esys_StartAuthSession(esys_context,
                               primaryHandle_AuthSession,
                               ESYS_TR_RH_NULL,
@@ -271,7 +271,7 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
                               NULL,
                               sessionType, &symmetric, authHash, &session);
 #else
-#if TEST_NULL_BIND_NO_TPM_KEY
+#if defined(TEST_NULL_BIND_NO_TPM_KEY)
      r = Esys_StartAuthSession(esys_context,
                                ESYS_TR_NONE,
                                ESYS_TR_RH_NULL,
