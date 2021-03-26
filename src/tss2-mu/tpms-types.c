@@ -149,9 +149,10 @@ TPMS_PCR_UNMARSHAL(TPMS_TAGGED_PCR_SELECT, \
 #define TPMS_MARSHAL_0(type) \
 TSS2_RC Tss2_MU_##type##_Marshal(type const *src, \
                                  uint8_t buffer[] MAYBE_UNUSED, \
-                                 size_t buffer_size MAYBE_UNUSED, \
+                                 size_t buffer_size, \
                                  size_t *offset MAYBE_UNUSED) \
 { \
+    UNUSED(buffer_size); \
     if (!src) { \
         LOG_WARNING("src param is NULL"); \
         return TSS2_MU_RC_BAD_REFERENCE; \
