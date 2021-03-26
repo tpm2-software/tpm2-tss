@@ -33,7 +33,7 @@ extern "C" {
  * MAYBE_UNUSED macro should be used to mark variables used only
  * for assertions i.e. in debug mode, and/or for logging, which
  * might be compiled out. This shuldn't trigger 'unused variable'
- * or 'variable assigned, but not used' waraings when debug and
+ * or 'variable assigned, but not used' warnings when debug and
  * logging is disabled on configure time, but should trigger
  * warnings for variables that are not used for neither.
  */
