@@ -169,9 +169,9 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
 { \
-    (void)(buffer); \
-    (void)(buffer_size); \
-    (void)(offset); \
+    UNUSED(buffer); \
+    UNUSED(buffer_size); \
+    UNUSED(offset); \
 \
     if (!dest) { \
         LOG_WARNING("src param is NULL"); \
