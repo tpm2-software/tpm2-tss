@@ -444,7 +444,7 @@ iesys_cryptmbed_hmac_abort(IESYS_CRYPTO_CONTEXT_BLOB ** context)
  * @param[om] buf_size Number of bytes to write to buffer.
  */
 static int get_random(void* context, unsigned char * buffer, size_t buf_size) {
-    (void)context;
+    UNUSED(context);
 
     int r = 0; //success in terms of mbedtls
 
