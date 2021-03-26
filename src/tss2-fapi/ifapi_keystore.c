@@ -796,10 +796,12 @@ cleanup:
  */
 TSS2_RC
 ifapi_keystore_store_finish(
-    IFAPI_KEYSTORE *keystore MAYBE_UNUSED,
+    IFAPI_KEYSTORE *keystore,
     IFAPI_IO *io)
 {
     TSS2_RC r;
+
+    UNUSED(keystore);
 
     /* Finish writing the object */
     r = ifapi_io_write_finish(io);
@@ -1300,13 +1302,14 @@ ifapi_keystore_search_nv_obj(
 TSS2_RC
 ifapi_keystore_check_overwrite(
     IFAPI_KEYSTORE *keystore,
-    IFAPI_IO *io MAYBE_UNUSED,
+    IFAPI_IO *io,
     const char *path)
 {
     TSS2_RC r;
     char *directory = NULL;
     char *file = NULL;
 
+    UNUSED(io);
     /* Expand relative path */
     r = expand_path(keystore, path, &directory);
     goto_if_error(r, "Expand path", cleanup);
@@ -1364,13 +1367,14 @@ cleanup:
 TSS2_RC
 ifapi_keystore_check_writeable(
     IFAPI_KEYSTORE *keystore,
-    IFAPI_IO *io MAYBE_UNUSED,
+    IFAPI_IO *io,
     const char *path)
 {
     TSS2_RC r;
     char *directory = NULL;
     char *file = NULL;
 
+    UNUSED(io);
     /* Expand relative path */
     r = expand_path(keystore, path, &directory);
     goto_if_error(r, "Expand path", cleanup);

@@ -846,12 +846,13 @@ static TSS2_RC
 execute_policy_secret(
     ESYS_CONTEXT *esys_ctx,
     TPMS_POLICYSECRET *policy,
-    TPMI_ALG_HASH hash_alg MAYBE_UNUSED,
+    TPMI_ALG_HASH hash_alg,
     IFAPI_POLICY_EXEC_CTX *current_policy)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_DEBUG("call");
+    UNUSED(hash_alg);
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
@@ -975,12 +976,13 @@ execute_policy_counter_timer(
 static TSS2_RC
 execute_policy_physical_presence(
     ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYPHYSICALPRESENCE *policy MAYBE_UNUSED,
+    TPMS_POLICYPHYSICALPRESENCE *policy,
     IFAPI_POLICY_EXEC_CTX *current_policy)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
+    UNUSED(policy);
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
@@ -1024,12 +1026,13 @@ execute_policy_physical_presence(
 static TSS2_RC
 execute_policy_auth_value(
     ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYAUTHVALUE *policy MAYBE_UNUSED,
+    TPMS_POLICYAUTHVALUE *policy,
     IFAPI_POLICY_EXEC_CTX *current_policy)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
+    UNUSED(policy);
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
@@ -1074,12 +1077,13 @@ execute_policy_auth_value(
 static TSS2_RC
 execute_policy_password(
     ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYPASSWORD *policy MAYBE_UNUSED,
+    TPMS_POLICYPASSWORD *policy,
     IFAPI_POLICY_EXEC_CTX *current_policy)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
+    UNUSED(policy);
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
