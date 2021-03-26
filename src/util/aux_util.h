@@ -28,7 +28,7 @@ extern "C" {
 #endif
 
 #define UNUSED(x) (void)(x)
-#if (MAXLOGLEVEL == LOGL_NONE) || defined(NDEBUG)
+#if (MAXLOGLEVEL == LOGL_NONE)
 /* Note:
  * MAYBE_UNUSED macro should be used to mark variables used only
  * for assertions i.e. in debug mode, and/or for logging, which
