@@ -221,7 +221,7 @@ Fapi_SetDescription_Finish(
             fallthrough;
 
         statecase(context->state, PATH_SET_DESCRIPTION_WRITE);
-            r = ifapi_keystore_store_finish(&context->keystore, &context->io);
+            r = ifapi_keystore_store_finish(&context->io);
             return_try_again(r);
             return_if_error_reset_state(r, "write_finish failed");
 

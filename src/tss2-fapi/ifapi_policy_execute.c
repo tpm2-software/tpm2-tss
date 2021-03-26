@@ -813,8 +813,6 @@ cleanup:
  * @param[in,out] policy The policy which defines the object whose secret
  *                is needed for policy execution.
  *                The policy digest will be added to the policy.
- * @param[in]     current_hash_alg The hash algorithm wich will be used for
- *                policy computation.
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
@@ -846,7 +844,6 @@ static TSS2_RC
 execute_policy_secret(
     ESYS_CONTEXT *esys_ctx,
     TPMS_POLICYSECRET *policy,
-    TPMI_ALG_HASH hash_alg MAYBE_UNUSED,
     IFAPI_POLICY_EXEC_CTX *current_policy)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
@@ -962,7 +959,6 @@ execute_policy_counter_timer(
  *
  * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
  *                policy command.
- * @param[in,out] policy The policy indicating that physical presence is needed.
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
@@ -975,7 +971,6 @@ execute_policy_counter_timer(
 static TSS2_RC
 execute_policy_physical_presence(
     ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYPHYSICALPRESENCE *policy MAYBE_UNUSED,
     IFAPI_POLICY_EXEC_CTX *current_policy)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
@@ -1011,7 +1006,6 @@ execute_policy_physical_presence(
 
  * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
  *                policy command.
- * @param[in,out] policy The policy indicating that a auth value is needed.
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
@@ -1024,7 +1018,6 @@ execute_policy_physical_presence(
 static TSS2_RC
 execute_policy_auth_value(
     ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYAUTHVALUE *policy MAYBE_UNUSED,
     IFAPI_POLICY_EXEC_CTX *current_policy)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
@@ -1061,7 +1054,6 @@ execute_policy_auth_value(
  *
  * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
  *                policy command.
- * @param[in,out] policy The policy indicating that a auth value is needed.
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
@@ -1074,7 +1066,6 @@ execute_policy_auth_value(
 static TSS2_RC
 execute_policy_password(
     ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYPASSWORD *policy MAYBE_UNUSED,
     IFAPI_POLICY_EXEC_CTX *current_policy)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
@@ -1489,7 +1480,6 @@ execute_policy_element(
     case POLICYSECRET:
         r = execute_policy_secret(esys_ctx,
                                   &policy->element.PolicySecret,
-                                  hash_alg,
                                   current_policy);
         try_again_or_error_goto(r, "Execute policy authorize", error);
         break;
@@ -1501,7 +1491,6 @@ execute_policy_element(
         break;
     case POLICYAUTHVALUE:
         r = execute_policy_auth_value(esys_ctx,
-                                      &policy->element.PolicyAuthValue,
                                       current_policy);
         try_again_or_error_goto(r, "Execute policy auth value", error);
         break;
@@ -1575,13 +1564,11 @@ execute_policy_element(
         break;
     case POLICYPHYSICALPRESENCE:
         r = execute_policy_physical_presence(esys_ctx,
-                                             &policy->element.PolicyPhysicalPresence,
                                              current_policy);
         try_again_or_error_goto(r, "Execute policy physical presence", error);
             break;
     case POLICYPASSWORD:
         r = execute_policy_password(esys_ctx,
-                                    &policy->element.PolicyPassword,
                                     current_policy);
         try_again_or_error_goto(r, "Execute policy password", error);
         break;

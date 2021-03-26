@@ -188,7 +188,6 @@ ifapi_keystore_store_async(
 
 TSS2_RC
 ifapi_keystore_store_finish(
-    IFAPI_KEYSTORE *keystore,
     IFAPI_IO *io);
 
 TSS2_RC
@@ -225,13 +224,11 @@ ifapi_keystore_search_nv_obj(
 TSS2_RC
 ifapi_keystore_check_overwrite(
     IFAPI_KEYSTORE *keystore,
-    IFAPI_IO *io,
     const char *path);
 
 TSS2_RC
 ifapi_keystore_check_writeable(
     IFAPI_KEYSTORE *keystore,
-    IFAPI_IO *io,
     const char *path);
 
 TSS2_RC

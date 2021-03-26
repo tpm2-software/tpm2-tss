@@ -2333,7 +2333,7 @@ ifapi_nv_write(
 
     statecase(context->nv_cmd.nv_write_state, NV2_WRITE_WRITE);
         /* Finish writing the NV object to the key store */
-        r = ifapi_keystore_store_finish(&context->keystore, &context->io);
+        r = ifapi_keystore_store_finish(&context->io);
         return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
@@ -3176,8 +3176,7 @@ ifapi_key_create_prepare(
     return_if_error(r, "Initialize Key_Create");
 
     /* First check whether an existing object would be overwritten */
-    r = ifapi_keystore_check_overwrite(&context->keystore, &context->io,
-                                       keyPath);
+    r = ifapi_keystore_check_overwrite(&context->keystore, keyPath);
     return_if_error2(r, "Check overwrite %s", keyPath);
 
     context->srk_handle = 0;
@@ -3546,7 +3545,7 @@ ifapi_key_create(
 
     statecase(context->cmd.Key_Create.state, KEY_CREATE_WRITE);
         /* Finish writing the key to the key store */
-        r = ifapi_keystore_store_finish(&context->keystore, &context->io);
+        r = ifapi_keystore_store_finish(&context->io);
         return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
@@ -4699,7 +4698,7 @@ ifapi_create_primary(
 
     statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_WRITE);
         /* Finish writing the key to the key store */
-        r = ifapi_keystore_store_finish(&context->keystore, &context->io);
+        r = ifapi_keystore_store_finish(&context->io);
         return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 

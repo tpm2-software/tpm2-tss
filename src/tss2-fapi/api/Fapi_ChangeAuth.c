@@ -423,7 +423,7 @@ Fapi_ChangeAuth_Finish(
 
         statecase(context->state, ENTITY_CHANGE_AUTH_WRITE)
             /* Finish writing the object to the key store */
-            r = ifapi_keystore_store_finish(&context->keystore, &context->io);
+            r = ifapi_keystore_store_finish(&context->io);
             return_try_again(r);
             return_if_error_reset_state(r, "write_finish failed");
 
