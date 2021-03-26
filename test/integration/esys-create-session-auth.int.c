@@ -262,16 +262,14 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
                               outerSession, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
                               sessionType, &symmetric, authHash, &session);
-#else
-#if defined(TEST_NULL_BIND_TPMKEY)
+#elif defined(TEST_NULL_BIND_TPMKEY)
      r = Esys_StartAuthSession(esys_context,
                               primaryHandle_AuthSession,
                               ESYS_TR_RH_NULL,
                               outerSession, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
                               sessionType, &symmetric, authHash, &session);
-#else
-#if defined(TEST_NULL_BIND_NO_TPM_KEY)
+#elif defined(TEST_NULL_BIND_NO_TPM_KEY)
      r = Esys_StartAuthSession(esys_context,
                                ESYS_TR_NONE,
                                ESYS_TR_RH_NULL,
@@ -285,8 +283,6 @@ test_esys_create_session_auth(ESYS_CONTEXT * esys_context)
                                outerSession, ESYS_TR_NONE, ESYS_TR_NONE,
                                NULL,
                                sessionType, &symmetric, authHash, &session);
-#endif
-#endif
 #endif
 
      Esys_FlushContext(esys_context, outerSession);
