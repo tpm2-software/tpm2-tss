@@ -262,7 +262,7 @@ Fapi_SetAppData_Finish(
 
         statecase(context->state, APP_DATA_SET_WRITE);
             /* Finish writing of object */
-            r = ifapi_keystore_store_finish(&context->keystore, &context->io);
+            r = ifapi_keystore_store_finish(&context->io);
             return_try_again(r);
             return_if_error_reset_state(r, "write_finish failed");
             ifapi_cleanup_ifapi_object(object);

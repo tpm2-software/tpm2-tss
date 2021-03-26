@@ -648,7 +648,6 @@ cleanup:
  */
 TSS2_RC
 ifapi_calculate_policy_physical_presence(
-    TPMS_POLICYPHYSICALPRESENCE *policy MAYBE_UNUSED,
     TPML_DIGEST_VALUES *current_digest,
     TPMI_ALG_HASH current_hash_alg)
 {
@@ -667,7 +666,6 @@ ifapi_calculate_policy_physical_presence(
  *
  * The policy will be updated with the function ifapi_calculate_simple_policy()
  *
- * @param[in] policy The policy auth value.
  * @param[in,out] current_digest The digest list which has to be updated.
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
@@ -680,7 +678,6 @@ ifapi_calculate_policy_physical_presence(
  */
 TSS2_RC
 ifapi_calculate_policy_auth_value(
-    TPMS_POLICYAUTHVALUE *policy MAYBE_UNUSED,
     TPML_DIGEST_VALUES *current_digest,
     TPMI_ALG_HASH current_hash_alg)
 {
@@ -699,7 +696,6 @@ ifapi_calculate_policy_auth_value(
  *
  * The policy will be updated with the function ifapi_calculate_simple_policy()
  *
- * @param[in] policy The policy password.
  * @param[in,out] current_digest The digest list which has to be updated.
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
@@ -712,12 +708,10 @@ ifapi_calculate_policy_auth_value(
  */
 TSS2_RC
 ifapi_calculate_policy_password(
-    TPMS_POLICYPASSWORD *policy,
     TPML_DIGEST_VALUES *current_digest,
     TPMI_ALG_HASH current_hash_alg)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    (void)policy;
 
     LOG_DEBUG("call");
 
@@ -1326,20 +1320,17 @@ ifapi_calculate_policy(
 
         case POLICYPHYSICALPRESENCE:
             r = ifapi_calculate_policy_physical_presence(
-                    &policy->elements[i].element.PolicyPhysicalPresence,
                     &policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy physical presence");
             break;
 
         case POLICYAUTHVALUE:
-            r = ifapi_calculate_policy_auth_value(&policy->elements[i].element.PolicyAuthValue,
-                                                  &policy->elements[i].policyDigests, hash_alg);
+            r = ifapi_calculate_policy_auth_value(&policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy auth value");
             break;
 
         case POLICYPASSWORD:
-            r = ifapi_calculate_policy_password(&policy->elements[i].element.PolicyPassword,
-                                                &policy->elements[i].policyDigests, hash_alg);
+            r = ifapi_calculate_policy_password(&policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy password");
             break;
 

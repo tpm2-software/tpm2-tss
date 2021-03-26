@@ -787,7 +787,6 @@ cleanup:
  *
  * This function needs to be called repeatedly until it does not return TSS2_FAPI_RC_TRY_AGAIN.
  *
- * @param[in] keystore The key directories and default profile.
  * @param[in,out] io The input/output context being used for file I/O.
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered; such as the file was not found.
@@ -796,7 +795,6 @@ cleanup:
  */
 TSS2_RC
 ifapi_keystore_store_finish(
-    IFAPI_KEYSTORE *keystore MAYBE_UNUSED,
     IFAPI_IO *io)
 {
     TSS2_RC r;
@@ -1290,7 +1288,6 @@ ifapi_keystore_search_nv_obj(
   * The passed relative path will be expanded for user store and system store.
   *
   * @param[in] keystore The key directories and default profile.
-  * @param[in] io  The input/output context being used for file I/O.
   * @param[in] path The relative path of the object. For keys the path will
   *            expanded if possible.
   * @retval TSS2_RC_SUCCESS if the object does not exist.
@@ -1300,7 +1297,6 @@ ifapi_keystore_search_nv_obj(
 TSS2_RC
 ifapi_keystore_check_overwrite(
     IFAPI_KEYSTORE *keystore,
-    IFAPI_IO *io MAYBE_UNUSED,
     const char *path)
 {
     TSS2_RC r;
@@ -1345,7 +1341,6 @@ cleanup:
  *  Keys objects, NV objects, and hierarchies can be written.
  *
  * @param[in] keystore The key directories and default profile.
- * @param[in] io  The input/output context being used for file I/O.
  * @param[in] path The relative path of the object. For keys the path will
  *           expanded if possible.
  * @retval TSS2_RC_SUCCESS if the object does not exist.
@@ -1364,7 +1359,6 @@ cleanup:
 TSS2_RC
 ifapi_keystore_check_writeable(
     IFAPI_KEYSTORE *keystore,
-    IFAPI_IO *io MAYBE_UNUSED,
     const char *path)
 {
     TSS2_RC r;

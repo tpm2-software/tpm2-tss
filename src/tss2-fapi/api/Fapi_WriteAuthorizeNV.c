@@ -240,8 +240,7 @@ Fapi_WriteAuthorizeNv_Finish(
     switch (context->state) {
         statecase(context->state, WRITE_AUTHORIZE_NV_READ_NV)
             /* First check whether the file in object store can be updated. */
-            r = ifapi_keystore_check_writeable(&context->keystore, &context->io,
-                    nvCmd->nvPath);
+            r = ifapi_keystore_check_writeable(&context->keystore, nvCmd->nvPath);
             goto_if_error_reset_state(r,
                     "Check whether update object store is possible.", error_cleanup);
 
@@ -309,7 +308,7 @@ Fapi_WriteAuthorizeNv_Finish(
 
         statecase(context->state, WRITE_AUTHORIZE_NV_WRITE_OBJCECT)
             /* Finish writing the NV object to the key store */
-            r = ifapi_keystore_store_finish(&context->keystore, &context->io);
+            r = ifapi_keystore_store_finish(&context->io);
             return_try_again(r);
             return_if_error_reset_state(r, "write_finish failed");
 

@@ -277,7 +277,7 @@ Fapi_NvExtend_Finish(
     switch (context->state) {
     statecase(context->state, NV_EXTEND_READ)
         /* First check whether the file in object store can be updated. */
-        r = ifapi_keystore_check_writeable(&context->keystore, &context->io, command->nvPath);
+        r = ifapi_keystore_check_writeable(&context->keystore, command->nvPath);
         goto_if_error_reset_state(r, "Check whether update object store is possible.", error_cleanup);
 
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
@@ -446,7 +446,7 @@ Fapi_NvExtend_Finish(
 
     statecase(context->state, NV_EXTEND_WRITE)
         /* Finish writing the NV object to the key store */
-        r = ifapi_keystore_store_finish(&context->keystore, &context->io);
+        r = ifapi_keystore_store_finish(&context->io);
         return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
         fallthrough;

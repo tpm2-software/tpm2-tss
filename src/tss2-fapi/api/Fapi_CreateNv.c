@@ -190,8 +190,7 @@ Fapi_CreateNv_Async(
     return_if_error(r, "Initialize NV_CreateNv");
 
     /* First check whether an existing object would be overwritten */
-    r = ifapi_keystore_check_overwrite(&context->keystore, &context->io,
-                                       path);
+    r = ifapi_keystore_check_overwrite(&context->keystore, path);
     return_if_error2(r, "Check overwrite %s", path);
 
     /* Copy parameters to context for use during _Finish. */
@@ -467,7 +466,7 @@ Fapi_CreateNv_Finish(
 
         statecase(context->state, NV_CREATE_WRITE)
             /* Finish writing the NV object to the key store */
-            r = ifapi_keystore_store_finish(&context->keystore, &context->io);
+            r = ifapi_keystore_store_finish(&context->io);
             return_try_again(r);
             return_if_error_reset_state(r, "write_finish failed");
 
