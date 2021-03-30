@@ -250,6 +250,7 @@ tcti_device_receive (
         LOG_INFO ("Poll timed out on fd %d.", tcti_dev->fd);
         return TSS2_TCTI_RC_TRY_AGAIN;
     } else if (fds.revents == POLLIN) {
+#ifdef TCTI_PARTIAL_READ
         if (tcti_common->partial == true) {
             memcpy(response_buffer, &tcti_common->header, TPM_HEADER_SIZE);
             TEMP_RETRY (size, read (tcti_dev->fd, response_buffer +
@@ -258,6 +259,10 @@ tcti_device_receive (
             TEMP_RETRY (size, read (tcti_dev->fd, response_buffer,
                                     *response_size));
         }
+#else
+        TEMP_RETRY (size, read (tcti_dev->fd, response_buffer,
+                                *response_size));
+#endif
         if (size < 0) {
             LOG_ERROR ("Failed to read response from fd %d, got errno %d: %s",
                tcti_dev->fd, errno, strerror (errno));
@@ -269,10 +274,11 @@ tcti_device_receive (
         rc = TSS2_TCTI_RC_NO_CONNECTION;
         goto out;
     }
-
+#ifdef TCTI_PARTIAL_READ
     size += tcti_common->partial ? TPM_HEADER_SIZE : 0;
     LOGBLOB_DEBUG(response_buffer, size, "Response Received");
     tcti_common->partial = false;
+#endif
 
     if ((size_t)size < TPM_HEADER_SIZE) {
         LOG_ERROR ("Received %zu bytes, not enough to hold a TPM2 response "
