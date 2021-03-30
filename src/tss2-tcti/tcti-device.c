@@ -411,6 +411,7 @@ Tss2_Tcti_Device_Init (
     tcti_common->state = TCTI_STATE_TRANSMIT;
     memset (&tcti_common->header, 0, sizeof (tcti_common->header));
     tcti_common->locality = 3;
+    tcti_common->partial = false;
 
     if (conf == NULL) {
         LOG_TRACE ("No TCTI device file specified");
