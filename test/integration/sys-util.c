@@ -249,7 +249,7 @@ tpm_encrypt_decrypt_cfb (
     TPM2B_MAX_BUFFER *data_in,
     TPM2B_MAX_BUFFER *data_out)
 {
-    TPMI_ALG_SYM_MODE mode = TPM2_ALG_NULL;
+    TPMI_ALG_CIPHER_MODE mode = TPM2_ALG_NULL;
     TPM2B_IV iv_in = TPM2B_IV_INIT;
     TPM2B_IV iv_out = TPM2B_IV_INIT;
 
@@ -306,7 +306,7 @@ tpm_encrypt_decrypt_2_cfb (
     TPM2B_MAX_BUFFER *data_in,
     TPM2B_MAX_BUFFER *data_out)
 {
-    TPMI_ALG_SYM_MODE mode = TPM2_ALG_NULL;
+    TPMI_ALG_CIPHER_MODE mode = TPM2_ALG_NULL;
     TPM2B_IV iv_in = TPM2B_IV_INIT;
     TPM2B_IV iv_out = TPM2B_IV_INIT;
 

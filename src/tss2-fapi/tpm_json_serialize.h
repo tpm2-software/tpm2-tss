@@ -93,6 +93,10 @@ ifapi_json_TPMI_ALG_SYM_MODE_serialize(const TPMI_ALG_SYM_MODE in,
                                        json_object **jso);
 
 TSS2_RC
+ifapi_json_TPMI_ALG_CIPHER_MODE_serialize(const TPMI_ALG_CIPHER_MODE in,
+                                          json_object **jso);
+
+TSS2_RC
 ifapi_json_TPMI_ALG_KDF_serialize(const TPMI_ALG_KDF in, json_object **jso);
 
 TSS2_RC

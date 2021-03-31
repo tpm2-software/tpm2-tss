@@ -16,7 +16,7 @@ TSS2_RC Tss2_Sys_EncryptDecrypt_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
     TPMI_YES_NO decrypt,
-    TPMI_ALG_SYM_MODE mode,
+    TPMI_ALG_CIPHER_MODE mode,
     const TPM2B_IV *ivIn,
     const TPM2B_MAX_BUFFER *inData)
 {
@@ -118,7 +118,7 @@ TSS2_RC Tss2_Sys_EncryptDecrypt(
     TPMI_DH_OBJECT keyHandle,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TPMI_YES_NO decrypt,
-    TPMI_ALG_SYM_MODE mode,
+    TPMI_ALG_CIPHER_MODE mode,
     const TPM2B_IV *ivIn,
     const TPM2B_MAX_BUFFER *inData,
     TPM2B_MAX_BUFFER *outData,

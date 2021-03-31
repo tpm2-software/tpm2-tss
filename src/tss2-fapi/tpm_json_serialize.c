@@ -1088,6 +1088,23 @@ ifapi_json_TPMI_ALG_SYM_MODE_serialize(const TPMI_ALG_SYM_MODE in,
     return ifapi_json_TPM2_ALG_ID_serialize(in, jso);
 }
 
+/** Serialize TPMI_ALG_CIPHER_MODE to json.
+ *
+ * @param[in] in variable to be serialized.
+ * @param[out] jso pointer to the json object.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ */
+TSS2_RC
+ifapi_json_TPMI_ALG_CIPHER_MODE_serialize(const TPMI_ALG_CIPHER_MODE in,
+                                          json_object **jso)
+{
+    CHECK_IN_LIST(TPMI_ALG_CIPHER_MODE, in, TPM2_ALG_CTR, TPM2_ALG_OFB,
+        TPM2_ALG_CBC, TPM2_ALG_CFB, TPM2_ALG_ECB, TPM2_ALG_NULL);
+    return ifapi_json_TPM2_ALG_ID_serialize(in, jso);
+}
+
 /** Serialize TPMI_ALG_KDF to json.
  *
  * @param[in] in variable to be serialized.

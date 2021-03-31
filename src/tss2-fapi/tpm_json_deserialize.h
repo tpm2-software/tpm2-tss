@@ -88,6 +88,10 @@ ifapi_json_TPMI_ALG_SYM_OBJECT_deserialize(json_object *jso,
         TPMI_ALG_SYM_OBJECT *out);
 
 TSS2_RC
+ifapi_json_TPMI_ALG_CIPHER_MODE_deserialize(json_object *jso,
+        TPMI_ALG_CIPHER_MODE *out);
+
+TSS2_RC
 ifapi_json_TPMI_ALG_SYM_MODE_deserialize(json_object *jso,
         TPMI_ALG_SYM_MODE *out);
 

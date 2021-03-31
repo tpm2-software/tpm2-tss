@@ -916,7 +916,7 @@ Esys_EncryptDecrypt(
     ESYS_TR shandle2,
     ESYS_TR shandle3,
     TPMI_YES_NO decrypt,
-    TPMI_ALG_SYM_MODE mode,
+    TPMI_ALG_CIPHER_MODE mode,
     const TPM2B_IV *ivIn,
     const TPM2B_MAX_BUFFER *inData,
     TPM2B_MAX_BUFFER **outData,
@@ -930,7 +930,7 @@ Esys_EncryptDecrypt_Async(
     ESYS_TR shandle2,
     ESYS_TR shandle3,
     TPMI_YES_NO decrypt,
-    TPMI_ALG_SYM_MODE mode,
+    TPMI_ALG_CIPHER_MODE mode,
     const TPM2B_IV *ivIn,
     const TPM2B_MAX_BUFFER *inData);
 
@@ -951,7 +951,7 @@ Esys_EncryptDecrypt2(
     ESYS_TR shandle3,
     const TPM2B_MAX_BUFFER *inData,
     TPMI_YES_NO decrypt,
-    TPMI_ALG_SYM_MODE mode,
+    TPMI_ALG_CIPHER_MODE mode,
     const TPM2B_IV *ivIn,
     TPM2B_MAX_BUFFER **outData,
     TPM2B_IV **ivOut);
@@ -965,7 +965,7 @@ Esys_EncryptDecrypt2_Async(
     ESYS_TR shandle3,
     const TPM2B_MAX_BUFFER *inData,
     TPMI_YES_NO decrypt,
-    TPMI_ALG_SYM_MODE mode,
+    TPMI_ALG_CIPHER_MODE mode,
     const TPM2B_IV *ivIn);
 
 TSS2_RC
