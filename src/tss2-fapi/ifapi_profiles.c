@@ -410,7 +410,7 @@ ifapi_profile_json_deserialize(
         LOG_ERROR("Field \"sym_mode\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_TPMI_ALG_SYM_MODE_deserialize(jso2, &out->sym_mode);
+    r = ifapi_json_TPMI_ALG_CIPHER_MODE_deserialize(jso2, &out->sym_mode);
     return_if_error(r, "Bad value for field \"sym_mode\".");
 
     if (!ifapi_get_sub_object(jso, "sym_parameters", &jso2)) {

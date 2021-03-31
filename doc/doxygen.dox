@@ -286,8 +286,8 @@ Both the synchronous and asynchronous API are exposed through a single library: 
  * ESAPI function to invoke the TPM2_EncryptDecrypt command
  * either as a one-call or in an asynchronous manner.
  \{
- \fn TSS2_RC Esys_EncryptDecrypt_Async(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO decrypt, TPMI_ALG_SYM_MODE mode, const TPM2B_IV *ivIn, const TPM2B_MAX_BUFFER *inData)
- \fn TSS2_RC Esys_EncryptDecrypt(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO decrypt, TPMI_ALG_SYM_MODE mode, const TPM2B_IV *ivIn, const TPM2B_MAX_BUFFER *inData, TPM2B_MAX_BUFFER **outData, TPM2B_IV **ivOut)
+ \fn TSS2_RC Esys_EncryptDecrypt_Async(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO decrypt, TPMI_ALG_CIPHER_MODE mode, const TPM2B_IV *ivIn, const TPM2B_MAX_BUFFER *inData)
+ \fn TSS2_RC Esys_EncryptDecrypt(ESYS_CONTEXT *esysContext, ESYS_TR keyHandle, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, TPMI_YES_NO decrypt, TPMI_ALG_CIPHER_MODE mode, const TPM2B_IV *ivIn, const TPM2B_MAX_BUFFER *inData, TPM2B_MAX_BUFFER **outData, TPM2B_IV **ivOut)
  \fn TSS2_RC Esys_EncryptDecrypt_Finish(ESYS_CONTEXT *esysContext, TPM2B_MAX_BUFFER **outData, TPM2B_IV **ivOut)
  \}
  \defgroup Esys_EventSequenceComplete The ESAPI function for the TPM2_EventSequenceComplete command.
@@ -2647,6 +2647,8 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
         json_object **jso)
 \fn TSS2_RC ifapi_json_TPMI_ALG_SYM_MODE_serialize(const TPMI_ALG_SYM_MODE in,
                                        json_object **jso)
+\fn TSS2_RC ifapi_json_TPMI_ALG_CIPHER_MODE_serialize(const TPMI_ALG_CIPHER_MODE in,
+                                       json_object **jso)
 \fn TSS2_RC ifapi_json_TPMI_ALG_SYM_OBJECT_serialize(const TPMI_ALG_SYM_OBJECT in,
         json_object **jso)
 \fn TSS2_RC ifapi_json_TPMI_ECC_CURVE_serialize(const TPMI_ECC_CURVE in, json_object **jso)
@@ -2901,6 +2903,8 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
         TPMI_ALG_SIG_SCHEME *out)
 \fn TSS2_RC ifapi_json_TPMI_ALG_SYM_MODE_deserialize(json_object *jso,
         TPMI_ALG_SYM_MODE *out)
+\fn TSS2_RC ifapi_json_TPMI_ALG_CIPHER_MODE_deserialize(json_object *jso,
+        TPMI_ALG_CIPHER_MODE *out)
 \fn TSS2_RC ifapi_json_TPMI_ALG_SYM_OBJECT_deserialize(json_object *jso,
         TPMI_ALG_SYM_OBJECT *out)
 \fn TSS2_RC ifapi_json_TPMI_ALG_SYM_deserialize(json_object *jso, TPMI_ALG_SYM *out)

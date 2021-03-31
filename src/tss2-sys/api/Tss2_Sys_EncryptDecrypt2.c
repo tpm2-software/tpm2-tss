@@ -17,7 +17,7 @@ TSS2_RC Tss2_Sys_EncryptDecrypt2_Prepare (
     TPMI_DH_OBJECT keyHandle,
     const TPM2B_MAX_BUFFER *inData,
     TPMI_YES_NO decrypt,
-    TPMI_ALG_SYM_MODE mode,
+    TPMI_ALG_CIPHER_MODE mode,
     const TPM2B_IV *ivIn)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
@@ -124,7 +124,7 @@ TSS2_RC Tss2_Sys_EncryptDecrypt2 (
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     const TPM2B_MAX_BUFFER *inData,
     TPMI_YES_NO decrypt,
-    TPMI_ALG_SYM_MODE mode,
+    TPMI_ALG_CIPHER_MODE mode,
     const TPM2B_IV *ivIn,
     TPM2B_MAX_BUFFER *outData,
     TPM2B_IV *ivOut,

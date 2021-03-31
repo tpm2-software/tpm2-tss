@@ -1315,6 +1315,21 @@ ifapi_json_TPMI_ALG_SYM_MODE_deserialize(json_object *jso,
         TPM2_ALG_CTR, TPM2_ALG_OFB, TPM2_ALG_CBC, TPM2_ALG_CFB, TPM2_ALG_ECB, TPM2_ALG_NULL);
 }
 
+/** Deserialize a TPMI_ALG_CIPHER_MODE json object.
+ *
+ * @param[in]  jso the json object to be deserialized.
+ * @param[out] out the deserialzed binary object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ */
+TSS2_RC
+ifapi_json_TPMI_ALG_CIPHER_MODE_deserialize(json_object *jso,
+        TPMI_ALG_CIPHER_MODE *out)
+{
+    SUBTYPE_FILTER(TPMI_ALG_CIPHER_MODE, TPM2_ALG_ID,
+        TPM2_ALG_CTR, TPM2_ALG_OFB, TPM2_ALG_CBC, TPM2_ALG_CFB, TPM2_ALG_ECB, TPM2_ALG_NULL);
+}
+
 /** Deserialize a TPMI_ALG_KDF json object.
  *
  * @param[in]  jso the json object to be deserialized.

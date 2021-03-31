@@ -232,7 +232,7 @@ test_esys_encrypt_decrypt(ESYS_CONTEXT * esys_context)
     ESYS_TR keyHandle_handle = loadedKeyHandle;
     TPMI_YES_NO decrypt = TPM2_YES;
     TPMI_YES_NO encrypt = TPM2_NO;
-    TPMI_ALG_SYM_MODE mode = TPM2_ALG_NULL;
+    TPMI_ALG_CIPHER_MODE mode = TPM2_ALG_NULL;
     TPM2B_IV ivIn = {
         .size = 16,
         .buffer = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16}
