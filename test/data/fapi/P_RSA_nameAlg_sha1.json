@@ -33,10 +33,10 @@
     "sym_block_size": 16,
     "pcr_selection": [
         { "hash": "TPM2_ALG_SHA1",
-          "pcrSelect": [ 9, 15 ]
-        },
-        { "hash": "TPM2_ALG_SHA256",
-          "pcrSelect": [ 8, 16 ]
+            "pcrSelect": [ ]
+          },
+          { "hash": "TPM2_ALG_SHA256",
+            "pcrSelect": [ 8, 9 , 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 ]
         }
     ],
     "exponent": 0,
