@@ -4,7 +4,7 @@
 # All rights reserved.
 
 AC_INIT([tpm2-tss],
-        [3.1.0],
+        [m4_esyscmd_s([git describe --tags --always --dirty])],
         [https://github.com/tpm2-software/tpm2-tss/issues],
         [],
         [https://github.com/tpm2-software/tpm2-tss])
