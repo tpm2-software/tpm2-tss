@@ -73,7 +73,7 @@ __real_lockf(int fd, int cmd, off_t len, ...);
 int
 __wrap_lockf(int fd, int cmd, off_t len, ...)
 {
-    errno = EAGAIN;
+    errno = EBADF;
     return mock_type(int);
 }
 
@@ -200,7 +200,9 @@ check_io_read_async(void **state) {
     will_return(__wrap_lockf, 0);
     will_return(__wrap_fseek, 0);
     will_return(__wrap_ftell, 1);
+    will_return(__wrap_lockf, 0);
     will_return(__wrap_malloc, NULL);
+
     errno = 0;
     io.char_buffer = NULL;
     wrap_malloc_test = true;
@@ -210,11 +212,10 @@ check_io_read_async(void **state) {
 
     wrap_malloc_test = false;
 
-    will_return(__wrap_fopen, &mock_stream);
-    will_return(__wrap_fopen, &mock_stream);
     will_return(__wrap_lockf, 0);
     will_return(__wrap_fseek, 0);
     will_return(__wrap_ftell, 1);
+    will_return(__wrap_lockf, 0);
     will_return(__wrap_fcntl, 0);
     will_return(__wrap_fcntl, -1);
 
@@ -309,7 +310,6 @@ check_io_write_async(void **state) {
     will_return(__wrap_fopen, &mock_stream);
     will_return(__wrap_lockf, -1);
 
-    errno = EAGAIN;
     r = ifapi_io_write_async(&io, "tss_unit_dummyf", &buffer[0], 5);
     assert_int_equal(r, TSS2_FAPI_RC_IO_ERROR);
 
