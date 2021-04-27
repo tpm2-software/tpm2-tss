@@ -1,5 +1,5 @@
 [![Build Status](https://github.com/tpm2-software/tpm2-tss/workflows/CI/badge.svg)](https://github.com/tpm2-software/tpm2-tss/actions)
-[![Windows Build status][![Build status](https://ci.appveyor.com/api/projects/status/1bqv1y7rntqiewln/branch/master?svg=true)](https://ci.appveyor.com/project/williamcroberts/tpm2-tss/branch/master)
+[![Windows Build status](https://ci.appveyor.com/api/projects/status/1bqv1y7rntqiewln?svg=true)](https://ci.appveyor.com/project/williamcroberts/tpm2-tss)
 [![FreeBSD Build status](https://api.cirrus-ci.com/github/tpm2-software/tpm2-tss.svg?branch=master)](https://cirrus-ci.com/github/tpm2-software/tpm2-tss)
 [![Coverity Scan](https://img.shields.io/coverity/scan/3997.svg)](https://scan.coverity.com/projects/tpm2-tss)
 [![Coverage Status](https://codecov.io/gh/tpm2-software/tpm2-tss/branch/master/graph/badge.svg)](https://codecov.io/gh/tpm2-software/tpm2-tss)
