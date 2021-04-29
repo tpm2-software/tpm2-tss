@@ -639,7 +639,6 @@ test_unit_fapi_io_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_io_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_fapi_io_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) \
                             -Wl,--wrap=fopen \
-                            -Wl,--wrap=lockf \
                             -Wl,--wrap=fseek \
                             -Wl,--wrap=ftell \
                             -Wl,--wrap=fcntl \
