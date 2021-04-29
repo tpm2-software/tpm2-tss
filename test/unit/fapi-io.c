@@ -69,15 +69,6 @@ __wrap_fopen(const char *pathname, const char* mode, ...)
 }
 
 int
-__real_lockf(int fd, int cmd, off_t len, ...);
-int
-__wrap_lockf(int fd, int cmd, off_t len, ...)
-{
-    errno = EAGAIN;
-    return mock_type(int);
-}
-
-int
 __real_fclose(FILE *stream, ...);
 
 int
@@ -187,8 +178,9 @@ check_io_read_async(void **state) {
     r = ifapi_io_read_async(&io, "tss_unit_dummyf");
     assert_int_equal(r, TSS2_FAPI_RC_IO_ERROR);
 
+    wrap_fcntl_test = true;
     will_return(__wrap_fopen, &mock_stream);
-    will_return(__wrap_lockf, -1);
+    will_return(__wrap_fcntl, -1);
     will_return_always(__wrap_fclose, 0);
     errno = EAGAIN;
     io.char_buffer = NULL;
@@ -197,7 +189,7 @@ check_io_read_async(void **state) {
 
     will_return(__wrap_fopen, &mock_stream);
     will_return(__wrap_fopen, &mock_stream);
-    will_return(__wrap_lockf, 0);
+    will_return(__wrap_fcntl, 0);
     will_return(__wrap_fseek, 0);
     will_return(__wrap_ftell, 1);
     will_return(__wrap_malloc, NULL);
@@ -212,7 +204,7 @@ check_io_read_async(void **state) {
 
     will_return(__wrap_fopen, &mock_stream);
     will_return(__wrap_fopen, &mock_stream);
-    will_return(__wrap_lockf, 0);
+    will_return(__wrap_fcntl, 0);
     will_return(__wrap_fseek, 0);
     will_return(__wrap_ftell, 1);
     will_return(__wrap_fcntl, 0);
@@ -220,7 +212,6 @@ check_io_read_async(void **state) {
 
     errno = 0;
     io.char_buffer = NULL;
-    wrap_fcntl_test = true;
     r = ifapi_io_read_async(&io, "tss_unit_dummyf");
     assert_int_equal(r, TSS2_FAPI_RC_IO_ERROR);
     wrap_fcntl_test = false;
@@ -306,8 +297,9 @@ check_io_write_async(void **state) {
     r = ifapi_io_write_async(&io, "tss_unit_dummyf", &buffer[0], 5);
     assert_int_equal(r, TSS2_FAPI_RC_IO_ERROR);
 
+    wrap_fcntl_test = true;
     will_return(__wrap_fopen, &mock_stream);
-    will_return(__wrap_lockf, -1);
+    will_return(__wrap_fcntl, -1);
 
     errno = EAGAIN;
     r = ifapi_io_write_async(&io, "tss_unit_dummyf", &buffer[0], 5);
@@ -315,8 +307,7 @@ check_io_write_async(void **state) {
 
     io.char_rbuffer = NULL;
     will_return(__wrap_fopen, &mock_stream);
-    will_return(__wrap_lockf, 0);
-    wrap_fcntl_test = true;
+    will_return(__wrap_fcntl, 0);
     will_return(__wrap_fcntl, 0);
     will_return(__wrap_fcntl, -1);
     errno = 0;
