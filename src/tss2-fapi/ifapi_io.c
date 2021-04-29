@@ -45,26 +45,10 @@ ifapi_io_read_async(
     const char *filename)
 {
     struct stat statbuf;
-
-    if (stat(filename, &statbuf) == -1) {
-        LOG_ERROR("File \"%s\" not found.", filename);
-        return TSS2_FAPI_RC_IO_ERROR;
-    }
-
-    /* Check whether file is a directory. */
-    if (S_ISDIR(statbuf.st_mode)) {
-        LOG_ERROR("\"%s\" is a directory.", filename);
-        return TSS2_FAPI_RC_IO_ERROR;
-    }
+    struct flock flock  = { 0 };
 
     if (io->char_rbuffer) {
         LOG_ERROR("rbuffer still in use; maybe use of old API.");
-        return TSS2_FAPI_RC_IO_ERROR;
-    }
-
-    if (stat(filename, &statbuf) != 0) {
-        LOG_ERROR("stat failed for \"%s\".", filename);
-        fclose(io->stream);
         return TSS2_FAPI_RC_IO_ERROR;
     }
 
@@ -74,9 +58,27 @@ ifapi_io_read_async(
         return TSS2_FAPI_RC_IO_ERROR;
     }
 
-    /* Locking the file. Lock will be release upon close */
-    if (lockf(fileno(io->stream), F_TLOCK, 0) == -1 && errno == EAGAIN) {
-        LOG_ERROR("File %s currently locked.", filename);
+    if (fstat(fileno(io->stream), &statbuf) == -1) {
+        fclose(io->stream);
+        LOG_ERROR("Execute fstat for \"%s\".", filename);
+        return TSS2_FAPI_RC_IO_ERROR;
+    }
+
+    /* Check whether file is a directory. */
+    if (S_ISDIR(statbuf.st_mode)) {
+        fclose(io->stream);
+        LOG_ERROR("\"%s\" is a directory.", filename);
+        return TSS2_FAPI_RC_IO_ERROR;
+    }
+
+    /* Locking the file. Lock will be released upon close */
+    flock.l_type = F_RDLCK;
+    flock.l_whence = SEEK_SET;
+
+    if (fcntl(fileno(io->stream), F_SETLK, &flock) == -1) {
+        fclose(io->stream);
+        LOG_ERROR("File \"%s\" could not be locked: %s",
+                  filename, strerror(errno));
         fclose(io->stream);
         return TSS2_FAPI_RC_IO_ERROR;
     }
@@ -202,6 +204,7 @@ ifapi_io_write_async(
     size_t length)
 {
     TSS2_RC r;
+    struct flock flock = { 0 };
 
     if (io->char_rbuffer) {
         LOG_ERROR("rbuffer still in use; maybe use of old API.");
@@ -223,11 +226,15 @@ ifapi_io_write_async(
                    "Open file \"%s\" for writing: %s", error, filename,
                    strerror(errno));
     }
-    /* Locking the file. Lock will be release upon close */
-    if (lockf(fileno(io->stream), F_TLOCK, 0) == -1 && errno == EAGAIN) {
+    /* Locking the file. Lock will be released upon close */
+    flock.l_type = F_WRLCK;
+    flock.l_whence = SEEK_SET;
+
+    if (fcntl(fileno(io->stream), F_SETLK, &flock) == -1) {
         fclose(io->stream);
         goto_error(r, TSS2_FAPI_RC_IO_ERROR,
-                   "File %s currently locked.", error, filename);
+                   "File \"%s\" could not be locked: %s", error, filename,
+                   strerror(errno));
     }
 
     /* Use non blocking IO, so asynchronous write will be needed */
