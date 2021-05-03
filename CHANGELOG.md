@@ -3,41 +3,42 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [3.1.0-rc0] - 2021-03-18
+## [3.1.0-rc1] - 2021-05-03
 ### Fixed
 - Fix CVE-2020-24455 FAPI PolicyPCR not instatiating correctly
-  Note that all TPM object created with a PolicyPCR with the currentPcrs
+  Note: that all TPM object created with a PolicyPCR with the currentPcrs
   and currentPcrsAndBank options have been created with an incorrect policy
   that ommits PCR checks. All these objects have to be recreated!
 - Fixed segfault in Fapi_Finalize where a free of a constant string could occur.
 - Fixed binding to ESYS_TR_RH_NULL for ESYS auth sessions.
-- Fixed read eagain error handling for freeBSD
+- Fixed read eagain error handling for freeBSD.
 - Fixed error cleanup for key loading and policy execution.
 - Fixed initialization of default log_dir.
 - Fixed cleanup in several error cases in Fapi.
-- Added initialise 'out' parameter in ifapi_json_IFAPI_CONFIG_deserialize
-- Fixed Regression in Fapi_List
-- Fixed memory leak in policy calculation
-- Fixed setting of the system flag of NV objects
+- Added initialise 'out' parameter in ifapi_json_IFAPI_CONFIG_deserialize.
+- Fixed Regression in Fapi_List.
+- Fixed memory leak in policy calculation.
+- Fixed setting of the system flag of NV objects:
   This will let NV object metadata be created system-wide always instead of
   locally in the user. Existing metadata will remain in the user directory.
   It can be moved to the corresponding systemstore manually if needed.
-- Fixed fapi policy searching, when a policyRef was provided
-- Fapi accepts EK-Certs without CRL dist point
-- Fixed bad return codes in Fapi_List
-- Fixed memleak in Fapi policy execution
-- Fixed coverity NULL-pointer check in Fapi
-- FAPI: Set the written flag of NV objects in FAPI PolicyNV commands
+- Fixed fapi policy searching, when a policyRef was provided.
+- Fapi accepts EK-Certs without CRL dist point.
+- Fixed bad return codes in Fapi_List.
+- Fixed memleak in Fapi policy execution.
+- Fixed coverity NULL-pointer check in Fapi.
+- Fixed the written flag of NV objects in FAPI PolicyNV commands being unset.
 - Fixed deleting of policy files.
 - Fixed wrong file loading during object search.
 - Fixed a memory leak in async keystore load.
-- Fixed bug in FAPI NV creation with custom index values
-- Cleanup of leftover sessions in error cases in FAPI
-- Added better error messages in several FAPI errors
-- Added checks to FAPI policy paths
-- Added checks if FAPI is correctly provisioned
-- Fixed execution of FAPI policies in some cases
-- Fixed  handling 0x hex prefixes for TPMU_HA in JSON encoding
+- Fixed bug in FAPI NV creation with custom index values.
+- Fixed leftover sessions in error cases in FAPI.
+- Fixed execution of FAPI policies in some cases.
+- Fixed  handling 0x hex prefixes for TPMU_HA in JSON encoding.
+- Fixed fix doxygen header of function iesys_update_session_flags.
+- Fixed issue where nonceTPM was included twice in HMAC.
+- Fixed issue of unused variable when enabling lower default log levels.
+- Fixed 'partial' may be used uninitialized in tcti-device.
 
 ### Added
 - Added two new TPM commands TPM2_CC_CertifyX509 and TPM2_CC_ACT_SetTimeout
@@ -47,13 +48,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Async mode of operation for mssim TCTI module
 - Added pcap TCTI.
 - Added GlobalSign TPM Root CA certs to FAPI cert store.
-- Added support for auth value sizes bigger than the size of the name hash alg
+- Added support for auth value sizes bigger than the size of the name hash alg.
   for keys and NV objects.
+- Added better error messages in several FAPI errors.
+- Added checks to FAPI policy paths.
+- Added checks if FAPI is correctly provisioned.
 
 ### Changed
 - Changed CI from Travis to GH actions
 - Changed the default hash algorithm from sha1 to sha256 in all FAPI
   integration tests
+- Changed tests to use SHA256 over SHA1.
+- Changed EncryptDecrypt mode type to align with TPM2.0 spec 1.59.
+
 
 ## [3.0.0] - 2020-08-05
 ### Changed or Fixed
