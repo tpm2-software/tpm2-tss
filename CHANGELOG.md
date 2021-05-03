@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [2.4.6-rc0] - 2021-03-18
+## [2.4.6-rc1] - 2021-05-03
 ### Changed or Fixed
 - Fixed binding of ESYS_TR_RH_NULL (Fixes #1993)
 - Added initialise 'out' parameter in ifapi_json_IFAPI_CONFIG_deserialize.
@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Fixed error cleanup for key loading and policy execution.
 - Fixed state handling in policy execution.
 - Fixed determination of object type from path.
+- Fixed unused variable warnings when maxloglevel was set to lower default.
+- Fixed issue where nonceTPM was include twice in HMAC calculation.
 
 ## [2.4.5] - 2020-11-25
 ### Changed or Fixed
