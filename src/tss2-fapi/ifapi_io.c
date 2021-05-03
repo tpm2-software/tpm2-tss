@@ -503,10 +503,8 @@ ifapi_io_dirfiles(
 #else /* HAVE_REALLOCARRAY */
             paths = realloc(paths, (numpaths + 10) * sizeof(*paths));
 #endif /* HAVE_REALLOCARRAY */
-            if (!paths) {
+            if (!paths)
                 closedir(dir);
-                dir = NULL;
-            }
             check_oom(paths);
         }
 
