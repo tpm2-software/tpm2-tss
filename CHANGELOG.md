@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
-## [3.0.4-rc0] - 2021-03-18
+## [3.0.4-rc1] - 2021-04-03
 ### Changed or Fixed
 - Fixed make install on systems without systemd
 - Fixed segfault in Fapi_Finalize where a free of a constant string could occur.
@@ -16,6 +16,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Fixed error cleanup for key loading and policy execution.
 - Fixed state handling in policy execution.
 - Fixed determination of object type from path.
+- Fixed fix doxygen header of function iesys_update_session_flags
+- Fixed issue where nonceTPM was included twice in HMAC.
+- Fixed issue of unused variable when enabling lower default log levels.
+- Fixed tcti-device: 'partial' may be used uninitialized.
+- Fixed double define in tss2_mu.h.
 
 ## [3.0.3] - 2020-11-25
 ### Changed or Fixed
