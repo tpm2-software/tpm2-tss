@@ -134,7 +134,7 @@ ifapi_calculate_tree(
         if (already_computed)
             break;
 
-        if (i > TPM2_NUM_PCR_BANKS) {
+        if (i >= TPM2_NUM_PCR_BANKS) {
             return_error(TSS2_FAPI_RC_BAD_VALUE, "Table overflow");
         }
         *digest_idx = i;
