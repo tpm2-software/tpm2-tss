@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
+## [next]
+### Fixed
+- Fixed possible access outside the array in ifapi_calculate_tree.
+
 ## [3.0.4-rc1] - 2021-04-03
 ### Changed or Fixed
 - Fixed make install on systems without systemd
