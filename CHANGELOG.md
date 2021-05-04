@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [next]
+### Fixed
+- Fixed possible access outside the array in ifapi_calculate_tree.
+
 ## [2.4.6-rc1] - 2021-05-03
 ### Changed or Fixed
 - Fixed binding of ESYS_TR_RH_NULL (Fixes #1993)
