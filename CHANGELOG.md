@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [next]
+- Changed FAPI io use of lockf to fcntl.
+
 ## [3.1.0-rc0] - 2021-03-18
 ### Fixed
 - Fix CVE-2020-24455 FAPI PolicyPCR not instatiating correctly
