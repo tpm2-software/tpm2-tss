@@ -3,11 +3,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [next]
-- Fixed possible access outside the array in ifapi_calculate_tree.
-
-## [3.1.0-rc1] - 2021-05-03
+## [3.1.0-rc2] - 2021-05-10
 ### Fixed
+- Fixed possible access outside the array in ifapi_calculate_tree.
 - Fix CVE-2020-24455 FAPI PolicyPCR not instatiating correctly
   Note: that all TPM object created with a PolicyPCR with the currentPcrs
   and currentPcrsAndBank options have been created with an incorrect policy
