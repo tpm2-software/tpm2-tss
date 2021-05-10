@@ -2,12 +2,10 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
-## [next]
-### Fixed
-- Fixed possible access outside the array in ifapi_calculate_tree.
 
-## [3.0.4-rc1] - 2021-04-03
+## [3.0.4-rc2] - 2021-05-10
 ### Changed or Fixed
+- Fixed possible access outside the array in ifapi_calculate_tree.
 - Fixed make install on systems without systemd
 - Fixed segfault in Fapi_Finalize where a free of a constant string could occur.
 - Fixed binding to ESYS_TR_RH_NULL for ESYS auth sessions.
