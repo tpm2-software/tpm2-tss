@@ -167,7 +167,7 @@ UINT8_unmarshal_buffer_null (void **state)
 void
 UINT8_unmarshal_dest_null (void **state)
 {
-    uint8_t buffer [1];
+    uint8_t buffer [1] = { 0 };
     TSS2_RC rc;
 
     rc = Tss2_MU_UINT8_Unmarshal (buffer, sizeof (buffer), NULL, NULL);
@@ -181,7 +181,7 @@ UINT8_unmarshal_dest_null (void **state)
 void
 UINT8_unmarshal_dest_null_offset_valid (void **state)
 {
-    uint8_t buffer [2];
+    uint8_t buffer [2] = { 0 };
     size_t  offset = 1;
     TSS2_RC rc;
 
@@ -199,7 +199,7 @@ void
 UINT8_unmarshal_buffer_size_lt_offset (void **state)
 {
     UINT8   dest = 0;
-    uint8_t buffer [1];
+    uint8_t buffer [1] = { 0 };
     size_t  offset = sizeof (buffer) + 1;
     TSS2_RC rc;
 
@@ -217,7 +217,7 @@ void
 UINT8_unmarshal_buffer_size_lt_dest (void **state)
 {
     UINT8   dest = 0;
-    uint8_t buffer [1];
+    uint8_t buffer [1] = { 0 };
     size_t  offset = sizeof (buffer);
     TSS2_RC rc;
 
