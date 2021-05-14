@@ -317,7 +317,7 @@ tpms_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
 {
     TPMS_ALG_PROPERTY alg = {0};
     TPMS_CAPABILITY_DATA cap = {0};
-    uint8_t buffer[sizeof(alg) + sizeof(cap) + 1] = { 0 };
+    uint8_t buffer[sizeof(alg) + sizeof(cap) + 3] = { 0 };
     TPMS_ALG_PROPERTY *ptr;
     TPMS_CAPABILITY_DATA *ptr2;
     size_t offset = 3;
