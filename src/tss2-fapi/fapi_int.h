@@ -543,6 +543,7 @@ typedef struct {
     ESYS_TR ek_esys_handle;
     ESYS_TR srk_tpm_handle;
     ESYS_TR ek_tpm_handle;
+    bool srk_exists;
 } IFAPI_Provision;
 
 /** The data structure holding internal state of regenerate primary key.
@@ -873,6 +874,8 @@ enum _FAPI_STATE {
     PROVISION_WRITE_HIERARCHIES,
     PROVISION_WRITE_HIERARCHY,
     PROVISION_PREPARE_GET_CAP_AUTH_STATE,
+    PROVISION_SRK_GET_PERSISTENT_NAME,
+    PROVISION_CHECK_SRK_EVICT_CONTROL,
 
     KEY_CREATE,
     KEY_CREATE_PRIMARY,
