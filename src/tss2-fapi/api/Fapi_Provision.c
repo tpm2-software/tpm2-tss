@@ -354,6 +354,9 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
     TPMA_OBJECT *attributes;
     char *description, *path;
     ESYS_TR auth_session;
+    TPM2B_NAME *srk_name = NULL, *srk_name_persistent = NULL;
+    ESYS_TR srk_persistent_handle;
+
 
     switch (context->state) {
         /* Read all hierarchies from keystore. */
@@ -507,6 +510,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             fallthrough;
 
         statecase(context->state, PROVISION_WAIT_FOR_GET_CAP0);
+            command->srk_exists = false;
             if (command->public_templ.persistent_handle) {
                  r = Esys_GetCapability_Finish(context->esys, &moreData, capabilityData);
                  return_try_again(r);
@@ -516,10 +520,9 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                  if ((*capabilityData)->data.handles.count != 0 &&
                      (*capabilityData)->data.handles.handle[0] ==
                      command->public_templ.persistent_handle) {
-                     SAFE_FREE(*capabilityData);
-                     goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                                "SRK persistent handle already defined", error_cleanup);
+                     command->srk_exists = true;
                  }
+
                  SAFE_FREE(*capabilityData);
             }
 
@@ -957,6 +960,53 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             return_try_again(r);
             goto_if_error(r, "Init primary finish.", error_cleanup);
 
+            if (command->public_templ.persistent_handle & command->srk_exists) {
+
+                /* It has to be checked whether the public data of the existing persistent
+                   SRK is equal to the public data of the generated key. */
+                r = Esys_TR_FromTPMPublic_Async(context->esys,
+                                                command->public_templ.persistent_handle,
+                                                ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
+                goto_if_error(r, "Read public async", error_cleanup);
+
+            } else {
+                context->state = PROVISION_CHECK_SRK_EVICT_CONTROL;
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            }
+            fallthrough;
+
+        statecase(context->state, PROVISION_SRK_GET_PERSISTENT_NAME);
+
+            /* Create the esys object for the persistent key. */
+            r = Esys_TR_FromTPMPublic_Finish(context->esys, &srk_persistent_handle);
+            goto_if_error(r, "TR_FromTPMPublic finish", error_cleanup);
+
+            /* Determine the name of the generated key. */
+            r = Esys_TR_GetName(context->esys, context->srk_handle, &srk_name);
+            goto_if_error(r, "Get srk name", error_cleanup);
+
+            /* Determine the name of the persistent key. */
+            r = Esys_TR_GetName(context->esys, srk_persistent_handle,
+                                &srk_name_persistent);
+            goto_if_error(r, "Get srk name", error_cleanup);
+
+            /* Compare the name of the generated key with the name of the
+               persistent key. */
+            if (srk_name->size != srk_name_persistent->size ||
+                memcmp(&srk_name->name[0], &srk_name_persistent->name[0],
+                       srk_name->size) != 0) {
+                /* The persistent key cannot be used. */
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                           "SRK persistent handle already defined", error_cleanup);
+            }
+            LOG_INFO("An existing persistent primary (handle %x) key will be used.",
+                     command->public_templ.persistent_handle);
+            SAFE_FREE(srk_name_persistent);
+            SAFE_FREE(srk_name);
+            context->state = PROVISION_SRK_WRITE_PREPARE;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+
+         statecase(context->state, PROVISION_CHECK_SRK_EVICT_CONTROL);
             /* Check whether a persistent SRK handle was defined in profile. */
             if (command->public_templ.persistent_handle) {
                 /* Assign found handle to object */
@@ -1458,6 +1508,8 @@ error_cleanup:
     SAFE_FREE(command->pem_cert);
     SAFE_FREE(certData);
     SAFE_FREE(nvPublic);
+    SAFE_FREE(srk_name);
+    SAFE_FREE(srk_name_persistent);
     if (command->numHierarchyObjects > 0) {
         for (i = 0; i < command->numHierarchyObjects; i++) {
             ifapi_cleanup_ifapi_object(&command->hierarchies[i]);
