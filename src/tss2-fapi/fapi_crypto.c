@@ -51,9 +51,6 @@ typedef struct _IFAPI_CRYPTO_CONTEXT {
     size_t hashSize;
 } IFAPI_CRYPTO_CONTEXT;
 
-/** A singleton crypto engine for hash operations */
-static ENGINE *engine = NULL;
-
 /**
  * Returns the signature scheme that is currently used in the FAPI context.
  *
@@ -208,23 +205,6 @@ ifapi_bn2binpad(const BIGNUM *bn, unsigned char *bin, int binSize)
     memset(bin, 0, offset);
     BN_bn2bin(bn, bin + offset);
     return 1;
-}
-
-/**
- * Returns the singleton hash engine for the use in ifapi_hash operations. If
- * it does not yet exist, this function creates it.
- *
- * @retval A singleton hash engine
- */
-static ENGINE *
-get_engine()
-{
-    /* If an engine is present, it is returned */
-    if (engine)
-        return engine;
-    /* Otherwise, engine is created and returned */
-    engine = ENGINE_by_id(NULL);
-    return engine;
 }
 
 /**
@@ -1470,7 +1450,7 @@ ifapi_crypto_hash_start(IFAPI_CRYPTO_CONTEXT_BLOB **context,
     }
 
     if (1 != EVP_DigestInit_ex(mycontext->osslContext,
-                               mycontext->osslHashAlgorithm, get_engine())) {
+                               mycontext->osslHashAlgorithm, NULL)) {
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Error EVP_DigestInit_ex",
                    cleanup);
     }
