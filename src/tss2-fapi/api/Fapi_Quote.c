@@ -246,6 +246,7 @@ Fapi_Quote_Async(
 
     /* Initialize the context state for this operation. */
     context->state = PCR_QUOTE_WAIT_FOR_GET_CAP;
+    command->handle = ESYS_TR_NONE;
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
@@ -473,6 +474,9 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_ifapi_object(command->key_object);
     ifapi_session_clean(context);
+    if (command->handle != ESYS_TR_NONE) {
+        Esys_FlushContext(context->esys, command->handle);
+    }
     LOG_TRACE("finished");
     return r;
 }
