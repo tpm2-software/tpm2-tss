@@ -156,6 +156,7 @@ Fapi_GetPlatformCertificates_Async(
 
     /* Initialize the context state for this operation. */
     context->state = GET_PLATFORM_CERTIFICATE;
+    context->get_cert_state = GET_CERT_INIT;
 
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
