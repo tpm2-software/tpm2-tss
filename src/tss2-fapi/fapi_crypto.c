@@ -1892,6 +1892,8 @@ ifapi_verify_ek_cert(
     size_t cert_buffer_size;
     int curl_rc;
 
+    LOG_DEBUG("EK Certificate: %s", ek_cert_pem);
+
     ek_cert = get_X509_from_pem(ek_cert_pem);
     goto_if_null2(ek_cert, "Failed to convert PEM certificate to DER.",
                   r, TSS2_FAPI_RC_BAD_VALUE, cleanup);
@@ -1918,6 +1920,7 @@ ifapi_verify_ek_cert(
             }
             goto_if_null2(cert_buffer, "No certificate downloaded", r,
                           TSS2_FAPI_RC_NO_CERT, cleanup);
+            LOGBLOB_DEBUG(cert_buffer, cert_buffer_size, "Intermediate certificate:");
         }
         goto_if_null2(cert_buffer, "No certificate downloaded", r,
                       TSS2_FAPI_RC_NO_CERT, cleanup);
@@ -1926,8 +1929,12 @@ ifapi_verify_ek_cert(
         intermed_cert = get_cert_from_buffer(cert_buffer, cert_buffer_size);
 
         SAFE_FREE(cert_buffer);
-        goto_if_null2(intermed_cert, "Failed to create intermediate certificate.",
-                      r, TSS2_FAPI_RC_GENERAL_FAILURE, cleanup);
+        if (!intermed_cert) {
+            LOGBLOB_ERROR(cert_buffer, cert_buffer_size,
+                          "Failed to convert intermediate certificate to X509 format.");
+            r = TSS2_FAPI_RC_GENERAL_FAILURE;
+            goto cleanup;
+        }
 
          /* Get Certificate revocation list for Intermediate certificate */
         r = get_crl_from_cert(intermed_cert, &crl_intermed);
