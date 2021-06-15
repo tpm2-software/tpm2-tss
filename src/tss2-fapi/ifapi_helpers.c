@@ -2397,6 +2397,11 @@ write_curl_buffer_cb(void *contents, size_t size, size_t nmemb, void *userp)
     return realsize;
 }
 
+static inline bool do_url_encode(const char *url) {
+
+    return !!strncmp(url, "file:", 5);
+}
+
 /** Get byte buffer from file system or web via curl.
  *
  * @param[in]  url The url of the resource.
@@ -2424,7 +2429,19 @@ ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
         goto out_global_cleanup;
     }
 
-    rc = curl_easy_setopt(curl, CURLOPT_URL, url);
+    char *urlp = NULL;
+    if (do_url_encode((char *)url)) {
+        urlp = curl_easy_escape(curl, (char *)url, 0);
+        if (!urlp) {
+            LOG_ERROR("curl_easy_escape failed: %s",
+                    curl_easy_strerror(rc));
+            goto out_easy_cleanup;
+        }
+    }
+
+    LOG_DEBUG("CURL get: %s", urlp ? urlp : (char *)url);
+
+    rc = curl_easy_setopt(curl, CURLOPT_URL, urlp ? urlp : (char *)url);
     if (rc != CURLE_OK) {
         LOG_ERROR("curl_easy_setopt for CURLOPT_URL failed: %s",
                 curl_easy_strerror(rc));
@@ -2468,6 +2485,7 @@ out_easy_cleanup:
     if (ret != 0)
         free(curl_buffer.buffer);
     curl_easy_cleanup(curl);
+    curl_free(urlp);
 out_global_cleanup:
     curl_global_cleanup();
 out_memory:
