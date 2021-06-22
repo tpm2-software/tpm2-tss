@@ -468,6 +468,22 @@ Tss2_MU_TPM2B_ECC_POINT_Unmarshal(
     size_t          *offset,
     TPM2B_ECC_POINT *dest);
 
+
+TSS2_RC
+Tss2_MU_TPM2B_LABEL_Marshal(
+    TPM2B_LABEL const *src,
+    uint8_t         buffer[],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_LABEL_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t          *offset,
+    TPM2B_LABEL *dest);
+
+
 TSS2_RC
 Tss2_MU_TPM2B_NV_PUBLIC_Marshal(
     TPM2B_NV_PUBLIC const *src,
@@ -719,6 +735,20 @@ Tss2_MU_TPMS_ECC_POINT_Unmarshal(
     size_t          buffer_size,
     size_t         *offset,
     TPMS_ECC_POINT *dest);
+
+TSS2_RC
+Tss2_MU_TPMS_DERIVE_Marshal(
+    TPMS_DERIVE const *src,
+    uint8_t         buffer[],
+    size_t          buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPMS_DERIVE_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPMS_DERIVE *dest);
 
 TSS2_RC
 Tss2_MU_TPMS_NV_PUBLIC_Marshal(
@@ -1659,6 +1689,22 @@ Tss2_MU_TPMU_PUBLIC_ID_Unmarshal(
     TPMU_PUBLIC_ID *dest);
 
 TSS2_RC
+Tss2_MU_TPMU_PUBLIC_ID_DERIVE_Marshal(
+    TPMU_PUBLIC_ID_DERIVE const *src,
+    uint32_t       selector_value,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPMU_PUBLIC_ID_DERIVE_Unmarshal(
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    uint32_t       selector_value,
+    TPMU_PUBLIC_ID_DERIVE *dest);
+
+TSS2_RC
 Tss2_MU_TPMU_NAME_Marshal(
     TPMU_NAME      const *src,
     uint32_t       selector_value,
@@ -1869,6 +1915,20 @@ Tss2_MU_TPMT_PUBLIC_PARMS_Unmarshal(
     size_t         buffer_size,
     size_t        *offset,
     TPMT_PUBLIC_PARMS *dest);
+
+TSS2_RC
+Tss2_MU_TPMT_PUBLIC_DERIVE_Marshal(
+    TPMT_PUBLIC    const *src,
+    uint8_t        buffer[],
+    size_t         buffer_size,
+    size_t         *offset);
+
+TSS2_RC
+Tss2_MU_TPMT_PUBLIC_DERIVE_Unmarshal(
+    uint8_t const  buffer[],
+    size_t         buffer_size,
+    size_t        *offset,
+    TPMT_PUBLIC *dest);
 
 TSS2_RC
 Tss2_MU_TPMT_TK_CREATION_Marshal(
