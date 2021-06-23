@@ -186,6 +186,12 @@ ifapi_json_IFAPI_KEY_serialize(const IFAPI_KEY *in, json_object **jso)
 
         json_object_object_add(*jso, "reset_count", jso2);
     }
+    jso2 = NULL;
+    r = ifapi_json_TPMI_YES_NO_serialize(in->delete_prohibited, &jso2);
+    return_if_error(r, "Serialize TPMI_YES_NO");
+
+    json_object_object_add(*jso, "delete_prohibited", jso2);
+
 
     return TSS2_RC_SUCCESS;
 }

@@ -1030,6 +1030,11 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             pkeyObject->objectType = IFAPI_KEY_OBJ;
             pkeyObject->system = command->public_templ.system;
 
+            /* Prohibit deletion of already exiting persistent SRK */
+            if (command->public_templ.persistent_handle & command->srk_exists) {
+                pkeyObject->misc.key.delete_prohibited = TPM2_YES;
+            }
+
             /* Perform esys serialization if necessary */
             r = ifapi_esys_serialize_object(context->esys, pkeyObject);
             goto_if_error(r, "Prepare serialization", error_cleanup);
