@@ -642,18 +642,27 @@ Fapi_Delete_Finish(
             fallthrough;
 
         statecase(context->state, ENTITY_DELETE_KEY_WAIT_FOR_AUTHORIZATION);
+            /* Delete persistent object if not prohibited. */
             if (object->misc.key.persistent_handle) {
-                r = ifapi_authorize_object(context, authObject, &auth_session);
-                FAPI_SYNC(r, "Authorize hierarchy.", error_cleanup);
+                if (object->misc.key.delete_prohibited) {
+                    LOG_ERROR("Failed to delete TPM key (%s) because it was not "
+                              "created by the tss Feature API",
+                              command->pathlist[command->path_idx]);
+                    context->state = ENTITY_DELETE_FILE;
+                    return TSS2_FAPI_RC_TRY_AGAIN;
+                } else {
+                    r = ifapi_authorize_object(context, authObject, &auth_session);
+                    FAPI_SYNC(r, "Authorize hierarchy.", error_cleanup);
 
-                /* Delete the persistent handle from the TPM. */
-                r = Esys_EvictControl_Async(context->esys, ESYS_TR_RH_OWNER,
-                                            object->handle,
-                                            auth_session,
-                                            ESYS_TR_NONE, ESYS_TR_NONE,
+                    /* Delete the persistent handle from the TPM. */
+                    r = Esys_EvictControl_Async(context->esys, ESYS_TR_RH_OWNER,
+                                                object->handle,
+                                                auth_session,
+                                                ESYS_TR_NONE, ESYS_TR_NONE,
                                             object->misc.key.persistent_handle);
-                goto_if_error(r, "Evict Control", error_cleanup);
-                context->state = ENTITY_DELETE_NULL_AUTH_SENT_FOR_KEY;
+                    goto_if_error(r, "Evict Control", error_cleanup);
+                    context->state = ENTITY_DELETE_NULL_AUTH_SENT_FOR_KEY;
+                }
             } else {
                 context->state = ENTITY_DELETE_FILE;
                 return TSS2_FAPI_RC_TRY_AGAIN;

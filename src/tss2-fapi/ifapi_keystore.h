@@ -40,6 +40,7 @@ typedef struct {
     TPM2B_NAME                                     name;    /**< Name of the key */
     TPMI_YES_NO                               with_auth;    /**< Authorization provided during creation */
     UINT32                                  reset_count;    /**< The TPM reset count during key creation */
+    TPMI_YES_NO                       delete_prohibited;    /**< Persistent object should not be deleted.  */
 } IFAPI_KEY;
 
 /** Type for representing a external public key
