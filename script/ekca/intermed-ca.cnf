@@ -6,13 +6,6 @@
 # This definition doesn't work if HOME isn't defined.
 CA_HOME                 = .
 RANDFILE                = $ENV::CA_HOME/private/.rnd
-oid_section             = new_oids
-
-#
-# XMPP address Support
-[ new_oids ]
-xmppAddr          = 1.3.6.1.5.5.7.8.5
-dnsSRV            = 1.3.6.1.5.5.7.8.7
 
 #
 # Default Certification Authority
@@ -64,7 +57,6 @@ organizationName        = optional
 organizationalUnitName  = optional
 commonName              = supplied
 emailAddress            = supplied
-#xmppAddr               = optional # Added to SubjAltName by req
 
 #
 # Intermediate CA request options
