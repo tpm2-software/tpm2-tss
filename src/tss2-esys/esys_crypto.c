@@ -499,6 +499,7 @@ iesys_xor_parameter_obfuscation(TPM2_ALG_ID hash_alg,
     size_t data_size_bits = data_size * 8;
     size_t rest_size = data_size;
     BYTE *kdfa_byte_ptr;
+    BYTE *data_start = data;
 
     if (key == NULL || data == NULL) {
         LOG_ERROR("Bad reference");
@@ -514,11 +515,11 @@ iesys_xor_parameter_obfuscation(TPM2_ALG_ID hash_alg,
         return_if_error(r, "iesys_crypto_KDFa failed");
         /* XOR next data sub block with KDFa result  */
         kdfa_byte_ptr = kdfa_result;
-        LOGBLOB_TRACE(data, data_size, "Parameter data before XOR");
+        LOGBLOB_TRACE(data_start, data_size, "Parameter data before XOR");
         for(size_t i = digest_size < rest_size ? digest_size : rest_size; i > 0;
             i--)
             *data++ ^= *kdfa_byte_ptr++;
-        LOGBLOB_TRACE(data, data_size, "Parameter data after XOR");
+        LOGBLOB_TRACE(data_start, data_size, "Parameter data after XOR");
         rest_size = rest_size < digest_size ? 0 : rest_size - digest_size;
     }
     return TSS2_RC_SUCCESS;
