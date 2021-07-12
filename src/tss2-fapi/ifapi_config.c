@@ -240,7 +240,7 @@ ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config)
     }
 
     /* Parse and deserialize the configuration file */
-    jso = json_tokener_parse((char *)configFileContent);
+    jso = ifapi_parse_json((char *)configFileContent);
     goto_if_null(jso, "Could not parse JSON objects",
             TSS2_FAPI_RC_GENERAL_FAILURE, error);
     r = ifapi_json_IFAPI_CONFIG_deserialize(jso, config);

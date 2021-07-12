@@ -18,6 +18,47 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
+
+/** Parse JSON data and create JSON object.
+ *
+ * The JSON character string will be parsed and a JSON object will
+ * be created vor valid JSON.  For invalid JSON data
+ * an error message which indicates the error position will be
+ * displayed.
+ *
+ * @param[in] jstring The JSON data.
+ * @retval The JSON object vor valid JSON.
+ * @retval NULL for invalid JSON.
+ */
+json_object*
+ifapi_parse_json(const char *jstring) {
+    json_object *jso = NULL;
+    enum json_tokener_error jerr;
+    struct json_tokener* tok = json_tokener_new();
+    int line = 1;
+    int line_offset = 0;
+    int char_pos;
+    jso = json_tokener_parse_ex(tok, jstring, strlen(jstring));
+    while ((jerr = json_tokener_get_error(tok)) == json_tokener_continue);
+    if (jerr != json_tokener_success) {
+        for (char_pos = 0; char_pos <= tok->char_offset; char_pos++) {
+            if (jstring[char_pos] == '\n') {
+                line++;
+                line_offset = 0;
+            } else {
+                line_offset++;
+            }
+        }
+        LOG_ERROR("Invalid JSON at line %i column %i: %s.", line, line_offset,
+                  json_tokener_error_desc(jerr));
+        json_tokener_free(tok);
+        return NULL;
+    } else {
+        json_tokener_free(tok);
+        return jso;
+    }
+}
+
 /** Strip a prefix from the input
  *
  * Strip the provided prefixes from the provided

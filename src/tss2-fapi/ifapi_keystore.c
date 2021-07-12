@@ -16,6 +16,7 @@
 #define LOGMODULE fapi
 #include "util/log.h"
 #include "util/aux_util.h"
+#include "tpm_json_deserialize.h"
 #include "ifapi_json_deserialize.h"
 #include "ifapi_json_serialize.h"
 
@@ -623,7 +624,7 @@ ifapi_keystore_load_finish(
     return_if_error(r, "keystore read_finish failed");
 
     /* If json objects can't be parse the object store is corrupted */
-    jso = json_tokener_parse((char *)buffer);
+    jso = ifapi_parse_json((char *)buffer);
     SAFE_FREE(buffer);
     goto_if_null2(jso, "Keystore is corrupted (Json error).", r, TSS2_FAPI_RC_GENERAL_FAILURE,
                   error_cleanup);

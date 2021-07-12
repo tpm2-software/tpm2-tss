@@ -15,6 +15,9 @@
 #define YES 1
 #define NO 0
 
+json_object*
+ifapi_parse_json(const char *jstring) ;
+
 TSS2_RC
 ifapi_json_BYTE_array_deserialize(size_t max, json_object *jso, BYTE *out);
 
