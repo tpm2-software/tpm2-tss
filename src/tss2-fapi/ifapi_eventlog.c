@@ -12,6 +12,7 @@
 
 #include "ifapi_helpers.h"
 #include "ifapi_eventlog.h"
+#include "tpm_json_deserialize.h"
 #include "ifapi_json_serialize.h"
 
 #define LOGMODULE fapi
@@ -171,7 +172,7 @@ loop:
         return_try_again(r);
         return_if_error(r, "read_finish failed");
 
-        logpart = json_tokener_parse(logstr);
+        logpart = ifapi_parse_json(logstr);
         SAFE_FREE(logstr);
         return_if_null(log, "JSON parsing error", TSS2_FAPI_RC_BAD_VALUE);
 
@@ -246,7 +247,7 @@ ifapi_eventlog_append_check(
 
         /* If a log was read, we deserialize it to JSON. Otherwise we start a new log. */
         if (logstr) {
-            eventlog->log = json_tokener_parse(logstr);
+            eventlog->log = ifapi_parse_json(logstr);
             SAFE_FREE(logstr);
             return_if_null(eventlog->log, "JSON parsing error", TSS2_FAPI_RC_BAD_VALUE);
 

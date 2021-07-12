@@ -2260,6 +2260,12 @@ check_tpmjson_tofromtxt(void **state)
     }
 }
 
+static void
+check_invalid_json(void **state) {
+      json_object *jso = ifapi_parse_json("{\n \"field\", \"value\"");
+      assert_null(jso);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -2275,6 +2281,7 @@ main(int argc, char *argv[])
         cmocka_unit_test(check_policy_bin),
         cmocka_unit_test(check_error),
         cmocka_unit_test(check_json_policy),
+        cmocka_unit_test(check_invalid_json),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

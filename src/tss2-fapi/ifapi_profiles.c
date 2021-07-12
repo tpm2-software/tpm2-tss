@@ -165,7 +165,7 @@ ifapi_profiles_initialize_finish(
     r = ifapi_io_read_finish(io, &buffer, NULL);
     return_if_error(r, "Reading profile failed");
 
-    jso = json_tokener_parse((char *) buffer);
+    jso = ifapi_parse_json((char *) buffer);
     free(buffer);
     if (jso == NULL) {
         LOG_ERROR("Failed to parse profile %s", profiles->filenames[profiles->profiles_idx]);

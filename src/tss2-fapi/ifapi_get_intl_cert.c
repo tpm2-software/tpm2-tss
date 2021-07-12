@@ -17,6 +17,7 @@
 
 #include "fapi_crypto.h"
 #include "ifapi_helpers.h"
+#include "tpm_json_deserialize.h"
 
 #define LOGMODULE fapi
 #include "util/log.h"
@@ -330,7 +331,7 @@ ifapi_get_intl_ek_certificate(FAPI_CONTEXT *context, TPM2B_PUBLIC *ek_public,
     LOGBLOB_DEBUG((uint8_t *)cert_ptr, *cert_size, "%s", "Certificate");
 
     /* Parse certificate data out of the json structure */
-    struct json_object *jso_cert, *jso = json_tokener_parse(cert_ptr);
+    struct json_object *jso_cert, *jso = ifapi_parse_json(cert_ptr);
     if (jso == NULL)
         goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
                    "Failed to parse EK cert data", out_free_json);

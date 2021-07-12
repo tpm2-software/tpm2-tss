@@ -14,8 +14,10 @@
 #include "ifapi_json_serialize.h"
 #include "tpm_json_serialize.h"
 #include "fapi_policy.h"
+#include "tpm_json_deserialize.h"
 #include "ifapi_policy_json_serialize.h"
 #include "ifapi_config.h"
+#include "ifapi_helpers.h"
 
 #define LOGMODULE fapijson
 #include "util/log.h"
@@ -716,7 +718,7 @@ ifapi_json_IFAPI_TSS_EVENT_serialize(const IFAPI_TSS_EVENT *in,
            object that shall be serialized under the event field. Thus we
            first have to deserialize the string before we can add it to
            the data structure. */
-        jso2 = json_tokener_parse(in->event);
+        jso2 = ifapi_parse_json(in->event);
         return_if_null(jso2, "Event is not valid JSON.", TSS2_FAPI_RC_BAD_VALUE);
 
         json_object_object_add(*jso, "event", jso2);

@@ -1715,7 +1715,7 @@ ifapi_get_quote_info(
     TSS2_RC r;
     size_t offset = 0;
 
-    jso = json_tokener_parse(quoteInfo);
+    jso = ifapi_parse_json(quoteInfo);
     return_if_null(jso, "Json error.", TSS2_FAPI_RC_BAD_VALUE);
 
     memset(&fapi_quote_info->attest.attested.quote.pcrSelect, 0,
