@@ -222,16 +222,24 @@ base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
         if (output) {
             unescaped_string = strdup(output);
             curl_free(output);
+        } else {
+            LOG_ERROR("curl_easy_unescape failed.");
         }
+    } else {
+        LOG_ERROR("curl_easy_init failed.");
+        return NULL;
     }
     curl_easy_cleanup(curl);
     curl_global_cleanup();
-    if (unescaped_string == NULL)
+    if (unescaped_string == NULL) {
+        LOG_ERROR("Computation of unescaped string failed.");
         return NULL;
+    }
 
     binary_data = calloc(1, unescape_len);
     if (binary_data == NULL) {
         free (unescaped_string);
+        LOG_ERROR("Allocation of data for certificate failed.");
         return NULL;
     }
 
