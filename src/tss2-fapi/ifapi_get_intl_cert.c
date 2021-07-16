@@ -195,7 +195,8 @@ base64_encode(const unsigned char* buffer)
 static char *
 base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
 {
-    size_t i, unescape_len = 0, r;
+    size_t i, r;
+    int unescape_len = 0;
     char *binary_data = NULL, *unescaped_string = NULL;
 
     LOG_INFO("Decoding the base64 encoded cert into binary form");
@@ -218,7 +219,7 @@ base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
     if (curl) {
         /* Convert URL encoded string to a "plain string" */
         char *output = curl_easy_unescape(curl, (char *)buffer,
-                                          len, (int *)&unescape_len);
+                                          len, &unescape_len);
         if (output) {
             unescaped_string = strdup(output);
             curl_free(output);
