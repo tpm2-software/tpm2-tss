@@ -159,7 +159,7 @@ Fapi_Decrypt_Async(
     size_t         cipherTextSize)
 {
     LOG_TRACE("called for context:%p", context);
-    LOG_TRACE("cipherText: %s", cipherText);
+    LOGBLOB_TRACE(cipherText, cipherTextSize, "cipherText");
 
     TSS2_RC r;
 
