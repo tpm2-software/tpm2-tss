@@ -94,11 +94,6 @@ ${SED_CMD} "s|ROOTCRT|$ROOT_URL|g" $OPENSSL_CONF
 
 openssl req -new -out intermed-ca.req.pem -passout file:pass.txt
 
-openssl req -new \
-    -key private/intermed-ca.key.pem \
-    -out intermed-ca.req.pem \
-    -passin file:pass.txt
-
 openssl rsa -inform PEM -in private/intermed-ca.key.pem \
         -outform DER -out private/intermed-ca.key.der -passin file:pass.txt
 
