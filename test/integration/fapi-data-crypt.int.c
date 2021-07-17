@@ -133,7 +133,7 @@ signatureCallback(
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "OSSL sign init.",
                    error_cleanup);
     }
-    if (EVP_PKEY_type(EVP_PKEY_id(priv_key)) == EVP_PKEY_RSA) {
+    if (EVP_PKEY_base_id(priv_key) == EVP_PKEY_RSA) {
         int signing_scheme = RSA_SIG_SCHEME;
         if (1 != EVP_PKEY_CTX_set_rsa_padding(pctx, signing_scheme)) {
             goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "OSSL set RSA padding.",
