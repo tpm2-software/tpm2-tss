@@ -147,20 +147,9 @@ main (int argc, char *argv[])
         exp = out_public.publicArea.parameters.rsaDetail.exponent;
     BN_set_word(e, exp);
 
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-    rsa->e = e;
-    rsa->n = n;
-    rsa->d = d;
-    rsa->p = p;
-    rsa->q = q;
-    rsa->dmp1 = dmp1;
-    rsa->dmq1 = dmq1;
-    rsa->iqmp = iqmp;
-#else /* OPENSSL_VERSION_NUMBER < 0x10100000 */
     RSA_set0_key(rsa, n, e, d);
     RSA_set0_factors(rsa, p, q);
     RSA_set0_crt_params(rsa, dmp1, dmq1, iqmp);
-#endif /* OPENSSL_VERSION_NUMBER < 0x10100000 */
 
     EVP_PKEY_assign_RSA(evp, rsa);
 
