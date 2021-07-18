@@ -7,8 +7,14 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <openssl/evp.h>
-#include <openssl/rsa.h>
 #include <openssl/pem.h>
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+#include <openssl/rsa.h>
+#else
+#include <openssl/core_names.h>
+#include <openssl/params.h>
+#include <openssl/param_build.h>
+#endif
 
 #include "tss2_sys.h"
 #include "tss2_mu.h"
@@ -109,7 +115,7 @@ main (int argc, char *argv[])
 
     /* Convert the key from out_public to PEM */
 
-    EVP_PKEY *evp = EVP_PKEY_new();
+    EVP_PKEY *evp = NULL;
     BIO *bio;
     FILE *out = NULL;
 
@@ -124,34 +130,35 @@ main (int argc, char *argv[])
     else
         bio = BIO_new_fp(stdout, BIO_NOCLOSE);
 
-    RSA *rsa = RSA_new();
-    BIGNUM *e = BN_new();
-    BIGNUM *d = BN_new();
-    BIGNUM *p = BN_new();
-    BIGNUM *q = BN_new();
-    BIGNUM *dmp1 = BN_new();
-    BIGNUM *dmq1 = BN_new();
-    BIGNUM *iqmp = BN_new();
     BIGNUM *n = BN_bin2bn(out_public.publicArea.unique.rsa.buffer,
                           out_public.publicArea.unique.rsa.size, NULL);
-    BN_set_word(d, 0);
-    BN_set_word(p, 0);
-    BN_set_word(q, 0);
-    BN_set_word(dmp1, 0);
-    BN_set_word(dmq1, 0);
-    BN_set_word(iqmp, 0);
     uint32_t exp;
     if (out_public.publicArea.parameters.rsaDetail.exponent == 0)
         exp = 65537;
     else
         exp = out_public.publicArea.parameters.rsaDetail.exponent;
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+    BIGNUM *e = BN_new();
     BN_set_word(e, exp);
 
-    RSA_set0_key(rsa, n, e, d);
-    RSA_set0_factors(rsa, p, q);
-    RSA_set0_crt_params(rsa, dmp1, dmq1, iqmp);
+    RSA *rsa = RSA_new();
+    RSA_set0_key(rsa, n, e, NULL);
+    n = NULL;
+    e = NULL;
 
+    evp = EVP_PKEY_new();
     EVP_PKEY_assign_RSA(evp, rsa);
+#else /* OPENSSL_VERSION_NUMBER < 0x30000000 */
+    OSSL_PARAM_BLD *build = OSSL_PARAM_BLD_new();
+    OSSL_PARAM_BLD_push_BN(build, OSSL_PKEY_PARAM_RSA_N, n);
+    OSSL_PARAM_BLD_push_uint32(build, OSSL_PKEY_PARAM_RSA_E, exp);
+    OSSL_PARAM *params = OSSL_PARAM_BLD_to_param(build);
+
+    EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);
+    EVP_PKEY_fromdata_init(ctx);
+    EVP_PKEY_fromdata(ctx, &evp, EVP_PKEY_PUBLIC_KEY, params);
+#endif /* OPENSSL_VERSION_NUMBER < 0x30000000 */
 
     if (!PEM_write_bio_PUBKEY(bio, evp)) {
         LOG_ERROR("PEM_write failed");
@@ -159,6 +166,14 @@ main (int argc, char *argv[])
     }
 
     EVP_PKEY_free(evp);
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+    /* ownership was taken by the EVP_PKEY */
+#else
+    EVP_PKEY_CTX_free(ctx);
+    OSSL_PARAM_free(params);
+    OSSL_PARAM_BLD_free(build);
+#endif
+    BN_free(n);
     BIO_free(bio);
     fclose(out);
 

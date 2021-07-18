@@ -8,9 +8,17 @@
 #include <config.h>
 #endif
 
+#include <openssl/rand.h>
 #include <openssl/evp.h>
-#include <openssl/aes.h>
 #include <openssl/rsa.h>
+#include <openssl/ec.h>
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#include <openssl/aes.h>
+#else
+#include <openssl/core_names.h>
+#include <openssl/params.h>
+#include <openssl/param_build.h>
+#endif
 #include <openssl/engine.h>
 #include <stdio.h>
 
@@ -323,9 +331,14 @@ iesys_cryptossl_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
                    "Error EVP_MD_CTX_create", cleanup);
     }
 
+#if OPENSSL_VERSION_NUMBER < 0x10101000L
     if (!(hkey = EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, NULL, key, size))) {
+#else
+    /* this is preferred, but available since OpenSSL 1.1.1 only */
+    if (!(hkey = EVP_PKEY_new_raw_private_key(EVP_PKEY_HMAC, NULL, key, size))) {
+#endif
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "EVP_PKEY_new_mac_key", cleanup);
+                   "Failed to create HMAC key", cleanup);
     }
 
     if(1 != EVP_DigestSignInit(mycontext->hmac.ossl_context, NULL,
@@ -516,7 +529,10 @@ iesys_cryptossl_hmac_abort(IESYS_CRYPTO_CONTEXT_BLOB ** context)
 TSS2_RC
 iesys_cryptossl_random2b(TPM2B_NONCE * nonce, size_t num_bytes)
 {
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     const RAND_METHOD *rand_save = RAND_get_rand_method();
+    RAND_set_rand_method(RAND_OpenSSL());
+#endif
 
     if (num_bytes == 0) {
         nonce->size = sizeof(TPMU_HA);
@@ -524,13 +540,16 @@ iesys_cryptossl_random2b(TPM2B_NONCE * nonce, size_t num_bytes)
         nonce->size = num_bytes;
     }
 
-    RAND_set_rand_method(RAND_OpenSSL());
     if (1 != RAND_bytes(&nonce->buffer[0], nonce->size)) {
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
         RAND_set_rand_method(rand_save);
+#endif
         return_error(TSS2_ESYS_RC_GENERAL_FAILURE,
                      "Failure in random number generator.");
     }
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     RAND_set_rand_method(rand_save);
+#endif
     return TSS2_RC_SUCCESS;
 }
 
@@ -557,28 +576,31 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
                            BYTE * out_buffer,
                            size_t * out_size, const char *label)
 {
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    RSA *rsa_key = NULL;
     const RAND_METHOD *rand_save = RAND_get_rand_method();
+
     RAND_set_rand_method(RAND_OpenSSL());
+#else
+    OSSL_PARAM *params = NULL;
+    OSSL_PARAM_BLD *build = NULL;
+#endif
 
     TSS2_RC r = TSS2_RC_SUCCESS;
     const EVP_MD * hashAlg = NULL;
-    RSA * rsa_key = NULL;
     EVP_PKEY *evp_rsa_key = NULL;
-    EVP_PKEY_CTX *ctx = NULL;
-    BIGNUM* bne = NULL;
+    EVP_PKEY_CTX *genctx = NULL, *ctx = NULL;
+    BIGNUM *bne = NULL, *n = NULL;
     int padding;
     char *label_copy = NULL;
 
     if (!(hashAlg = get_ossl_hash_md(pub_tpm_key->publicArea.nameAlg))) {
         LOG_ERROR("Unsupported hash algorithm (%"PRIu16")",
                   pub_tpm_key->publicArea.nameAlg);
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
         RAND_set_rand_method(rand_save);
+#endif
         return TSS2_ESYS_RC_NOT_IMPLEMENTED;
-    }
-
-    if (!(bne = BN_new())) {
-        goto_error(r, TSS2_ESYS_RC_MEMORY,
-                   "Could not allocate Big Number", cleanup);
     }
 
     switch (pub_tpm_key->publicArea.parameters.rsaDetail.scheme.scheme) {
@@ -600,28 +622,7 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
         exp = 65537;
     else
         exp = pub_tpm_key->publicArea.parameters.rsaDetail.exponent;
-    if (1 != BN_set_word(bne, exp)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Could not set exponent.", cleanup);
-    }
 
-    if (!(rsa_key = RSA_new())) {
-        goto_error(r, TSS2_ESYS_RC_MEMORY,
-                   "Could not allocate RSA key", cleanup);
-    }
-
-    if (1 != RSA_generate_key_ex(rsa_key,
-                                 pub_tpm_key->publicArea.parameters.rsaDetail.keyBits,
-                                 bne, NULL)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Could not generate RSA key",
-                   cleanup);
-    }
-
-    if (!(evp_rsa_key = EVP_PKEY_new())) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Could not create evp key.", cleanup);
-    }
-    BIGNUM *n = NULL;
     if (!(n = BN_bin2bn(pub_tpm_key->publicArea.unique.rsa.buffer,
                         pub_tpm_key->publicArea.unique.rsa.size,
                         NULL))) {
@@ -629,15 +630,56 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
                    "Could not create rsa n.", cleanup);
     }
 
-    if (1 != RSA_set0_key(rsa_key, n, NULL, NULL)) {
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    if (!(rsa_key = RSA_new())) {
+        goto_error(r, TSS2_ESYS_RC_MEMORY,
+                   "Could not allocate RSA key", cleanup);
+    }
+
+    if (!(bne = BN_new())) {
+        goto_error(r, TSS2_ESYS_RC_MEMORY,
+                   "Could not allocate Big Number", cleanup);
+    }
+    if (1 != BN_set_word(bne, exp)) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                   "Could not set exponent.", cleanup);
+    }
+
+    if (1 != RSA_set0_key(rsa_key, n, bne, NULL)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Could not set rsa n.", cleanup);
     }
+    /* ownership got transferred */
+    n = NULL;
+    bne = NULL;
 
-    if (1 != EVP_PKEY_set1_RSA(evp_rsa_key, rsa_key)) {
+    if (!(evp_rsa_key = EVP_PKEY_new())) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                   "Could not create evp key.", cleanup);
+    }
+
+    if (1 != EVP_PKEY_assign_RSA(evp_rsa_key, rsa_key)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Could not set rsa key.", cleanup);
     }
+    /* ownership got transferred */
+    rsa_key = NULL;
+#else /* OPENSSL_VERSION_NUMBER < 0x30000000L */
+    if ((build = OSSL_PARAM_BLD_new()) == NULL
+            || !OSSL_PARAM_BLD_push_BN(build, OSSL_PKEY_PARAM_RSA_N, n)
+            || !OSSL_PARAM_BLD_push_uint32(build, OSSL_PKEY_PARAM_RSA_E, exp)
+            || (params = OSSL_PARAM_BLD_to_param(build)) == NULL) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Could not create rsa parameters.",
+                   cleanup);
+    }
+
+    if ((genctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL)) == NULL
+            || EVP_PKEY_fromdata_init(genctx) <= 0
+            || EVP_PKEY_fromdata(genctx, &evp_rsa_key, EVP_PKEY_PUBLIC_KEY, params) <= 0) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Could not create rsa key.",
+                   cleanup);
+    }
+#endif /* OPENSSL_VERSION_NUMBER < 0x30000000L */
 
     if (!(ctx = EVP_PKEY_CTX_new(evp_rsa_key, NULL))) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
@@ -691,11 +733,18 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
     r = TSS2_RC_SUCCESS;
 
  cleanup:
+    OSSL_FREE(genctx, EVP_PKEY_CTX);
     OSSL_FREE(ctx, EVP_PKEY_CTX);
     OSSL_FREE(evp_rsa_key, EVP_PKEY);
-    OSSL_FREE(rsa_key, RSA);
     OSSL_FREE(bne, BN);
+    OSSL_FREE(n, BN);
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    OSSL_FREE(rsa_key, RSA);
     RAND_set_rand_method(rand_save);
+#else
+    OSSL_FREE(params, OSSL_PARAM);
+    OSSL_FREE(build, OSSL_PARAM_BLD);
+#endif
     return r;
 }
 
@@ -783,8 +832,14 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
     EC_GROUP *group = NULL;               /* Group defines the used curve */
-    EC_KEY *eph_ec_key = NULL;            /* Ephemeral ec key of application */
+    EVP_PKEY_CTX *ctx = NULL;
+    EVP_PKEY *eph_pkey = NULL;
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     const EC_POINT *eph_pub_key = NULL;   /* Public part of ephemeral key */
+    const BIGNUM *eph_priv_key = NULL;
+#else
+    BIGNUM *eph_priv_key = NULL;
+#endif
     EC_POINT *tpm_pub_key = NULL;         /* Public part of TPM key */
     EC_POINT *mul_eph_tpm = NULL;
     BIGNUM *bn_x = NULL;
@@ -826,23 +881,25 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
     }
 
     /* Create ephemeral key */
-    if (!(eph_ec_key = EC_KEY_new())) {
+    if ((ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL)) == NULL
+            || EVP_PKEY_keygen_init(ctx) <= 0) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Create ec key", cleanup);
-    }
-    if (1 !=   EC_KEY_set_group(eph_ec_key , group)) {
-
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Set group", cleanup);
+                   "Initialize ec key generation", cleanup);
     }
 
-    if (1 != EC_KEY_generate_key(eph_ec_key)) {
+    if (EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx, curveId) <= 0
+            || EVP_PKEY_keygen(ctx, &eph_pkey) <= 0) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Generate ec key", cleanup);
     }
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    EC_KEY *eph_ec_key = EVP_PKEY_get0_EC_KEY(eph_pkey);
 
     if (!(eph_pub_key =  EC_KEY_get0_public_key(eph_ec_key))) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Get public key", cleanup);
     }
 
+    eph_priv_key = EC_KEY_get0_private_key(eph_ec_key);
     if (1 != EC_POINT_is_on_curve(group, eph_pub_key, NULL)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Ephemeral public key is on curve",cleanup);
@@ -860,8 +917,16 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
     if (1 != EC_POINT_get_affine_coordinates_tss(group, eph_pub_key, bn_x,
                                                  bn_y, NULL)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Get affine x coordinate", cleanup);
+                   "Get affine coordinates", cleanup);
     }
+#else
+    if (!EVP_PKEY_get_bn_param(eph_pkey, OSSL_PKEY_PARAM_PRIV_KEY, &eph_priv_key)
+            || !EVP_PKEY_get_bn_param(eph_pkey, OSSL_PKEY_PARAM_EC_PUB_X, &bn_x)
+            || !EVP_PKEY_get_bn_param(eph_pkey, OSSL_PKEY_PARAM_EC_PUB_Y, &bn_y)) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                   "Get ephemeral key", cleanup);
+    }
+#endif
 
     if (1 != iesys_bn2binpad(bn_x, &Q->x.buffer[0], key_size)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
@@ -880,13 +945,11 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
     r = tpm_pub_to_ossl_pub(group, key, &tpm_pub_key);
     goto_if_error(r, "Convert TPM pub point to ossl pub point", cleanup);
 
-    /* Multiply the ephemeral private key with TPM public key */
-    const BIGNUM * eph_priv_key = EC_KEY_get0_private_key(eph_ec_key);
-
     if (!(mul_eph_tpm = EC_POINT_new(group))) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Create point.", cleanup);
     }
 
+    /* Multiply the ephemeral private key with TPM public key */
     if (1 != EC_POINT_mul(group, mul_eph_tpm, NULL,
                           tpm_pub_key, eph_priv_key, NULL)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
@@ -917,8 +980,13 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
     OSSL_FREE(mul_eph_tpm, EC_POINT);
     OSSL_FREE(tpm_pub_key, EC_POINT);
     OSSL_FREE(group,EC_GROUP);
-    OSSL_FREE(eph_ec_key, EC_KEY);
+    OSSL_FREE(ctx, EVP_PKEY_CTX);
+    OSSL_FREE(eph_pkey, EVP_PKEY);
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     /* Note: free of eph_pub_key already done by free of eph_ec_key */
+#else
+    OSSL_FREE(eph_priv_key, BN);
+#endif
     OSSL_FREE(bn_x, BN);
     OSSL_FREE(bn_y, BN);
     return r;
