@@ -128,14 +128,6 @@ main (int argc, char *argv[])
     /* Convert the key from out_public to PEM */
 
     EVP_PKEY *evp = EVP_PKEY_new();
-
-    OpenSSL_add_all_algorithms();
-
-    OpenSSL_add_all_algorithms();
-
-    ERR_load_crypto_strings();
-
-
     EC_KEY *ecc_key = EC_KEY_new();
     BIGNUM *x = NULL, *y = NULL;
     BIO *bio;
@@ -159,7 +151,6 @@ main (int argc, char *argv[])
     if (!EC_KEY_set_group(ecc_key, ecgroup))
         exit(1);
 
-    EC_KEY_set_asn1_flag(ecc_key, OPENSSL_EC_NAMED_CURVE);
     EC_GROUP_free(ecgroup);
 
     /* Set the ECC parameters in the OpenSSL key */

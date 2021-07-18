@@ -524,11 +524,7 @@ iesys_cryptossl_random2b(TPM2B_NONCE * nonce, size_t num_bytes)
         nonce->size = num_bytes;
     }
 
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
     RAND_set_rand_method(RAND_OpenSSL());
-#else
-    RAND_set_rand_method(RAND_SSLeay());
-#endif
     if (1 != RAND_bytes(&nonce->buffer[0], nonce->size)) {
         RAND_set_rand_method(rand_save);
         return_error(TSS2_ESYS_RC_GENERAL_FAILURE,
@@ -562,11 +558,7 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
                            size_t * out_size, const char *label)
 {
     const RAND_METHOD *rand_save = RAND_get_rand_method();
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
     RAND_set_rand_method(RAND_OpenSSL());
-#else
-    RAND_set_rand_method(RAND_SSLeay());
-#endif
 
     TSS2_RC r = TSS2_RC_SUCCESS;
     const EVP_MD * hashAlg = NULL;
@@ -629,14 +621,6 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Could not create evp key.", cleanup);
     }
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
-    if (!BN_bin2bn(pub_tpm_key->publicArea.unique.rsa.buffer,
-                           pub_tpm_key->publicArea.unique.rsa.size,
-                           rsa_key->n)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Could not create rsa n.", cleanup);
-    }
-#else
     BIGNUM *n = NULL;
     if (!(n = BN_bin2bn(pub_tpm_key->publicArea.unique.rsa.buffer,
                         pub_tpm_key->publicArea.unique.rsa.size,
@@ -649,7 +633,6 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Could not set rsa n.", cleanup);
     }
-#endif
 
     if (1 != EVP_PKEY_set1_RSA(evp_rsa_key, rsa_key)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
@@ -1111,7 +1094,5 @@ iesys_cryptossl_sym_aes_decrypt(uint8_t * key,
  */
 TSS2_RC
 iesys_cryptossl_init() {
-    ENGINE_load_builtin_engines();
-    OpenSSL_add_all_algorithms();
     return TSS2_RC_SUCCESS;
 }
