@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <json-c/json_util.h>
 #include <json-c/json_tokener.h>
-#include <openssl/sha.h>
+#include <openssl/evp.h>
 
 #include <setjmp.h>
 #include <cmocka.h>
@@ -124,7 +124,7 @@ __wrap_ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
                           size_t *buffer_size)
 {
     UNUSED(url);
-    *buffer = (unsigned char *)strdup(mock_json_cert);      ;
+    *buffer = (unsigned char *)strdup(mock_json_cert);
     *buffer_size = strlen(mock_json_cert) + 1;
     return 0;
 }
@@ -132,22 +132,22 @@ __wrap_ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
 /*
  * Wrapper function for updating the hash of EK public data.
  */
-size_t wrap_SHA256_update_test = 0;
+size_t wrap_EVP_DigestUpdate_test = 0;
 
 int
-__real_SHA256_Update(SHA256_CTX *c, const void *data, size_t len);
+__real_EVP_DigestUpdate(EVP_MD_CTX *c, const void *data, size_t len);
 
 int
-__wrap_SHA256_Update(SHA256_CTX *c, const void *data, size_t len)
+__wrap_EVP_DigestUpdate(EVP_MD_CTX *c, const void *data, size_t len)
 {
-    if (!wrap_SHA256_update_test) {
-        return __real_SHA256_Update(c, data, len);
-    } else if (wrap_SHA256_update_test == 1) {
-        wrap_SHA256_update_test = 0;
+    if (!wrap_EVP_DigestUpdate_test) {
+        return __real_EVP_DigestUpdate(c, data, len);
+    } else if (wrap_EVP_DigestUpdate_test == 1) {
+        wrap_EVP_DigestUpdate_test = 0;
         return mock_type(int);
     } else {
-        wrap_SHA256_update_test--;
-        return __real_SHA256_Update(c, data, len);
+        wrap_EVP_DigestUpdate_test--;
+        return __real_EVP_DigestUpdate(c, data, len);
     }
 }
 
@@ -213,21 +213,21 @@ check_get_intl_cert_sha_error(void **state) {
     unsigned char *cert_buf = NULL;
     size_t cert_size;
     TSS2_RC r;
-    will_return_always(__wrap_SHA256_Update, 0);
+    will_return_always(__wrap_EVP_DigestUpdate, 0);
     mock_json_cert = valid_json_cert;
-    wrap_SHA256_update_test = 1;
+    wrap_EVP_DigestUpdate_test = 1;
     r = ifapi_get_intl_ek_certificate(ctx, &eccPublic, &cert_buf, &cert_size);
     assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
 
-    wrap_SHA256_update_test = 1;
+    wrap_EVP_DigestUpdate_test = 1;
     r = ifapi_get_intl_ek_certificate(ctx, &rsaPublic, &cert_buf, &cert_size);
     assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
 
-    wrap_SHA256_update_test = 2;
+    wrap_EVP_DigestUpdate_test = 2;
     r = ifapi_get_intl_ek_certificate(ctx, &eccPublic, &cert_buf, &cert_size);
     assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
 
-    wrap_SHA256_update_test = 2;
+    wrap_EVP_DigestUpdate_test = 2;
     r = ifapi_get_intl_ek_certificate(ctx, &rsaPublic, &cert_buf, &cert_size);
     assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
 

@@ -53,21 +53,26 @@ static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public) {
         return NULL;
     }
 
-    SHA256_CTX sha256;
-    int is_success = SHA256_Init(&sha256);
+    EVP_MD_CTX *sha256ctx = EVP_MD_CTX_new();
+    if (!sha256ctx) {
+        LOG_ERROR("EVP_MD_CTX_new failed");
+        goto err;
+    }
+
+    int is_success = EVP_DigestInit(sha256ctx, EVP_sha256());
     if (!is_success) {
-        LOG_ERROR("SHA256_Init failed");
+        LOG_ERROR("EVP_DigestInit failed");
         goto err;
     }
 
     switch (ek_public->publicArea.type) {
     case TPM2_ALG_RSA:
         /* Add public key to the hash. */
-        is_success = SHA256_Update(&sha256,
-                                   ek_public->publicArea.unique.rsa.buffer,
-                                   ek_public->publicArea.unique.rsa.size);
+        is_success = EVP_DigestUpdate(sha256ctx,
+                                      ek_public->publicArea.unique.rsa.buffer,
+                                      ek_public->publicArea.unique.rsa.size);
         if (!is_success) {
-            LOG_ERROR("SHA256_Update failed");
+            LOG_ERROR("EVP_DigestUpdate failed");
             goto err;
         }
 
@@ -78,28 +83,28 @@ static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public) {
         }
         /* Exponent 65537 will be added. */
         BYTE buf[3] = { 0x1, 0x00, 0x01 };
-        is_success = SHA256_Update(&sha256, buf, sizeof(buf));
+        is_success = EVP_DigestUpdate(sha256ctx, buf, sizeof(buf));
         if (!is_success) {
-            LOG_ERROR("SHA256_Update failed");
+            LOG_ERROR("EVP_DigestUpdate failed");
             goto err;
         }
         break;
 
     case TPM2_ALG_ECC:
-        is_success = SHA256_Update(&sha256,
-                                   ek_public->publicArea.unique.ecc.x.buffer,
-                                   ek_public->publicArea.unique.ecc.x.size);
+        is_success = EVP_DigestUpdate(sha256ctx,
+                                      ek_public->publicArea.unique.ecc.x.buffer,
+                                      ek_public->publicArea.unique.ecc.x.size);
         if (!is_success) {
-            LOG_ERROR("SHA256_Update failed");
+            LOG_ERROR("EVP_DigestUpdate failed");
             goto err;
         }
 
         /* Add public key to the hash. */
-        is_success = SHA256_Update(&sha256,
-                                   ek_public->publicArea.unique.ecc.y.buffer,
-                                   ek_public->publicArea.unique.ecc.y.size);
+        is_success = EVP_DigestUpdate(sha256ctx,
+                                      ek_public->publicArea.unique.ecc.y.buffer,
+                                      ek_public->publicArea.unique.ecc.y.size);
         if (!is_success) {
-            LOG_ERROR("SHA256_Update failed");
+            LOG_ERROR("EVP_DigestUpdate failed");
             goto err;
         }
         break;
@@ -109,17 +114,19 @@ static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public) {
         goto err;
     }
 
-    is_success = SHA256_Final(hash, &sha256);
+    is_success = EVP_DigestFinal_ex(sha256ctx, hash, NULL);
     if (!is_success) {
         LOG_ERROR("SHA256_Final failed");
         goto err;
     }
 
+    EVP_MD_CTX_free(sha256ctx);
     LOG_TRACE("public-key-hash:");
     LOG_TRACE("  sha256: ");
     LOGBLOB_TRACE(&hash[0], SHA256_DIGEST_LENGTH, "Hash");
     return hash;
 err:
+    EVP_MD_CTX_free(sha256ctx);
     free(hash);
     return NULL;
 }

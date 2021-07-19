@@ -701,7 +701,7 @@ test_unit_fapi_get_intl_cert_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_get_intl_cert_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_fapi_get_intl_cert_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) \
                                        -Wl,--wrap=ifapi_get_curl_buffer \
-                                       -Wl,--wrap=SHA256_Update
+                                       -Wl,--wrap=EVP_DigestUpdate
 test_unit_fapi_get_intl_cert_SOURCES = test/unit/fapi-get-intl-cert.c \
 	                                   src/tss2-fapi/ifapi_get_intl_cert.c \
                                        src/tss2-fapi/ifapi_json_deserialize.c \
