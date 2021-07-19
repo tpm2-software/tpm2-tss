@@ -13,10 +13,13 @@
 #include <string.h>
 #include <assert.h>
 
-#include <openssl/sha.h>
-#include <openssl/hmac.h>
 #include <openssl/evp.h>
-#include <openssl/opensslv.h>
+#include <openssl/sha.h>
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#include <openssl/hmac.h>
+#else
+#include <openssl/core_names.h>
+#endif
 
 #define LOGMODULE testintegration
 #include "util/log.h"
@@ -489,22 +492,18 @@ hmac(
     TPM2B_DIGEST **buffer_list,
     TPM2B_DIGEST *out)
 {
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
-    HMAC_CTX *ctx;
-#else
-    HMAC_CTX _ctx;
-    HMAC_CTX *ctx = &_ctx;
-#endif
-    EVP_MD *evp;
     int rc = 1, i;
-    unsigned int *buf = NULL, size;
+    unsigned int *buf = NULL;
     uint8_t *buf_ptr;
+    EVP_MD *evp;
 
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
-    /* HMAC_CTX_new and HMAC_CTX_free are new in openSSL 1.1.0 */
-    ctx = HMAC_CTX_new();
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    unsigned int size;
+    HMAC_CTX *ctx = HMAC_CTX_new();
 #else
-    HMAC_CTX_init(ctx);
+    size_t size;
+    EVP_MAC *hmac = EVP_MAC_fetch(NULL, "HMAC", NULL);
+    EVP_MAC_CTX *ctx = EVP_MAC_CTX_new(hmac);
 #endif
 
     if (!ctx)
@@ -538,21 +537,33 @@ hmac(
 
     buf_ptr = (uint8_t *)buf;
 
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     rc = HMAC_Init_ex(ctx, key, key_len, evp, NULL);
 #else
-    rc = HMAC_Init(ctx, key, key_len, evp);
-#endif
+    OSSL_PARAM params[2];
 
+    params[0] = OSSL_PARAM_construct_utf8_string(OSSL_ALG_PARAM_DIGEST,
+                                                 (char *)EVP_MD_get0_name(evp), 0);
+    params[1] = OSSL_PARAM_construct_end();
+    rc = EVP_MAC_init(ctx, key, key_len, params);
+#endif
     if (rc != 1)
         goto out;
     for (i = 0; buffer_list[i] != 0; i++) {
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
         rc = HMAC_Update(ctx, buffer_list[i]->buffer, buffer_list[i]->size);
+#else
+        rc = EVP_MAC_update(ctx, buffer_list[i]->buffer, buffer_list[i]->size);
+#endif
         if (rc != 1)
             goto out;
     }
     /* buf_ptr has to be 4 bytes alligned for whatever reason */
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     rc = HMAC_Final(ctx, buf_ptr, &size);
+#else
+    rc = EVP_MAC_final(ctx, buf_ptr, &size, out->size);
+#endif
     if (rc != 1)
         goto out;
 
@@ -561,10 +572,11 @@ hmac(
     memcpy(out->buffer, buf, out->size);
 
 out:
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     HMAC_CTX_free(ctx);
 #else
-    HMAC_CTX_cleanup(ctx);
+    EVP_MAC_CTX_free(ctx);
+    EVP_MAC_free(hmac);
 #endif
 
     if (buf)
