@@ -386,9 +386,6 @@ out_free_json:
     json_object_put(jso);
 
 out:
-    /* In some case this call was necessary after curl usage */
-    OpenSSL_add_all_algorithms();
-
     free(hash);
     if (rc == 0) {
         return TSS2_RC_SUCCESS;

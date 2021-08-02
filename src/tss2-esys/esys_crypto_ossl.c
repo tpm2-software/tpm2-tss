@@ -1156,7 +1156,7 @@ iesys_cryptossl_sym_aes_decrypt(uint8_t * key,
  *
  * Initialize OpenSSL internal tables.
  *
- * @retval TSS2_RC_SUCCESS always returned because OpenSSL_add_all_algorithms
+ * @retval TSS2_RC_SUCCESS always returned
  * does not deliver
  * a return code.
  */
