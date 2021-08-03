@@ -365,7 +365,6 @@ typedef struct {
     uint8_t const *in_data;
     size_t in_dataSize;
     IFAPI_OBJECT *key_object;       /**< The IPAPI object for the encryption key */
-    uint8_t *out_data;               /**< The output of symmetric encrypt/decryption */
     ESYS_TR key_handle;                 /**< The ESYS handle of the encryption key */
     size_t numBytes;                /**< The number of bytes of a ESYS request */
     size_t decrypt;                 /**< Switch whether to encrypt or decrypt */
