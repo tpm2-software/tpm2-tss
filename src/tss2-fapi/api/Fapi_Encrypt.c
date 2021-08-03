@@ -405,7 +405,6 @@ error_cleanup:
     SAFE_FREE(tpmCipherText);
     SAFE_FREE(command->keyPath);
     SAFE_FREE(command->in_data);
-    SAFE_FREE(command->out_data);
     ifapi_session_clean(context);
     LOG_TRACE("finished");
     return r;
