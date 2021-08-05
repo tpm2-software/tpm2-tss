@@ -34,10 +34,14 @@ json_object*
 ifapi_parse_json(const char *jstring) {
     json_object *jso = NULL;
     enum json_tokener_error jerr;
-    struct json_tokener* tok = json_tokener_new();
     int line = 1;
     int line_offset = 0;
     int char_pos;
+    struct json_tokener* tok = json_tokener_new();
+    if (!tok) {
+        LOG_ERROR("Could not allocate json tokener");
+        return NULL;
+    }
     jso = json_tokener_parse_ex(tok, jstring, -1);
     jerr = json_tokener_get_error(tok);
     if (jerr != json_tokener_success) {
