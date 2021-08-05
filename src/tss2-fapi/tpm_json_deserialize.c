@@ -38,8 +38,8 @@ ifapi_parse_json(const char *jstring) {
     int line = 1;
     int line_offset = 0;
     int char_pos;
-    jso = json_tokener_parse_ex(tok, jstring, strlen(jstring));
-    while ((jerr = json_tokener_get_error(tok)) == json_tokener_continue);
+    jso = json_tokener_parse_ex(tok, jstring, -1);
+    jerr = json_tokener_get_error(tok);
     if (jerr != json_tokener_success) {
         for (char_pos = 0; char_pos <= tok->char_offset; char_pos++) {
             if (jstring[char_pos] == '\n') {
