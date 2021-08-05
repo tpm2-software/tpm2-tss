@@ -53,10 +53,9 @@ ifapi_parse_json(const char *jstring) {
                   json_tokener_error_desc(jerr));
         json_tokener_free(tok);
         return NULL;
-    } else {
-        json_tokener_free(tok);
-        return jso;
     }
+    json_tokener_free(tok);
+    return jso;
 }
 
 /** Strip a prefix from the input
