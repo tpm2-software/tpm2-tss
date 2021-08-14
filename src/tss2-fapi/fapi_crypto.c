@@ -1049,9 +1049,7 @@ get_ecc_tpm2b_public_from_evp(
                     "Get public key", cleanup);
      }
     curveId = OBJ_txt2nid(curveName);
-    EC_GROUP *ecGroup = EC_GROUP_new_by_curve_name(curveId);
-    ecKeySize = (EC_GROUP_get_degree(ecGroup) + 7) / 8;
-    EC_GROUP_free(ecGroup);
+    ecKeySize = (EVP_PKEY_bits(publicKey) + 7) / 8;
 #endif
     tpmPublic->publicArea.unique.ecc.x.size = ecKeySize;
     tpmPublic->publicArea.unique.ecc.y.size = ecKeySize;
