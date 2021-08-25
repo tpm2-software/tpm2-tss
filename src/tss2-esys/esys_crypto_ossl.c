@@ -66,37 +66,100 @@ typedef struct _IESYS_CRYPTO_CONTEXT {
     } type; /**< The type of context to hold; hash or hmac */
     union {
         struct {
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+            const EVP_MD *ossl_hash_alg;
+#else
+            OSSL_LIB_CTX *ossl_libctx;
+            EVP_MD *ossl_hash_alg;
+#endif
             EVP_MD_CTX  *ossl_context;
-            const EVP_MD *ossl_hash_alg;
             size_t hash_len;
-        } hash; /**< the state variables for a hash context */
-        struct {
-            EVP_MD_CTX *ossl_context;
-            const EVP_MD *ossl_hash_alg;
-            size_t hmac_len;
-        } hmac; /**< the state variables for an hmac context */
+        } hash; /**< the state variables for a HASH or HMAC context */
     };
 } IESYS_CRYPTOSSL_CONTEXT;
 
-const EVP_MD *
+static IESYS_CRYPTOSSL_CONTEXT *
+iesys_cryptossl_context_new() {
+    IESYS_CRYPTOSSL_CONTEXT *ctx;
+
+    if (!(ctx = calloc(1, sizeof(IESYS_CRYPTOSSL_CONTEXT))))
+        return NULL;
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    /* The TPM2 provider may be loaded in the global library context.
+     * As we don't want the TPM to be called for these operations, we have
+     * to initialize own library context with the default provider. */
+    if (!(ctx->hash.ossl_libctx = OSSL_LIB_CTX_new())) {
+        SAFE_FREE(ctx);
+        return NULL;
+    }
+#endif
+    return ctx;
+}
+
+static void
+iesys_cryptossl_context_free(IESYS_CRYPTOSSL_CONTEXT *ctx) {
+    if (!ctx)
+        return;
+
+    EVP_MD_CTX_free(ctx->hash.ossl_context);
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    EVP_MD_free(ctx->hash.ossl_hash_alg);
+    OSSL_LIB_CTX_free(ctx->hash.ossl_libctx);
+#endif
+    SAFE_FREE(ctx);
+}
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+static const EVP_MD *
 get_ossl_hash_md(TPM2_ALG_ID hashAlg)
 {
     switch (hashAlg) {
     case TPM2_ALG_SHA1:
         return EVP_sha1();
-        break;
     case TPM2_ALG_SHA256:
         return EVP_sha256();
-        break;
     case TPM2_ALG_SHA384:
         return EVP_sha384();
-        break;
     case TPM2_ALG_SHA512:
         return EVP_sha512();
-        break;
     default:
         return NULL;
     }
+}
+#else
+static const char *
+get_ossl_hash_md(TPM2_ALG_ID hashAlg)
+{
+    switch (hashAlg) {
+    case TPM2_ALG_SHA1:
+        return "SHA1";
+    case TPM2_ALG_SHA256:
+        return "SHA256";
+    case TPM2_ALG_SHA384:
+        return "SHA384";
+    case TPM2_ALG_SHA512:
+        return "SHA512";
+    default:
+        return NULL;
+    }
+}
+#endif
+
+static int
+iesys_cryptossl_context_set_hash_md(IESYS_CRYPTOSSL_CONTEXT *ctx, TPM2_ALG_ID hashAlg) {
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    ctx->hash.ossl_hash_alg = get_ossl_hash_md(hashAlg);
+#else
+    const char *alg_name =  get_ossl_hash_md(hashAlg);
+    if (!alg_name)
+        return 0;
+    ctx->hash.ossl_hash_alg = EVP_MD_fetch(ctx->hash.ossl_libctx, alg_name, NULL);
+#endif
+    if (!ctx->hash.ossl_hash_alg)
+        return 0;
+
+    return 1;
 }
 
 /** Provide the context for the computation of a hash digest.
@@ -117,12 +180,12 @@ iesys_cryptossl_hash_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     LOG_TRACE("call: context=%p hashAlg=%"PRIu16, context, hashAlg);
     return_if_null(context, "Context is NULL", TSS2_ESYS_RC_BAD_REFERENCE);
     return_if_null(context, "Null-Pointer passed for context", TSS2_ESYS_RC_BAD_REFERENCE);
-    IESYS_CRYPTOSSL_CONTEXT *mycontext;
-    mycontext = calloc(1, sizeof(IESYS_CRYPTOSSL_CONTEXT));
+
+    IESYS_CRYPTOSSL_CONTEXT *mycontext = iesys_cryptossl_context_new();
     return_if_null(mycontext, "Out of Memory", TSS2_ESYS_RC_MEMORY);
     mycontext->type = IESYS_CRYPTOSSL_TYPE_HASH;
 
-    if (!(mycontext->hash.ossl_hash_alg = get_ossl_hash_md(hashAlg))) {
+    if (!iesys_cryptossl_context_set_hash_md(mycontext, hashAlg)) {
         goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
                    "Unsupported hash algorithm (%"PRIu16")", cleanup, hashAlg);
     }
@@ -132,12 +195,12 @@ iesys_cryptossl_hash_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
                    "Unsupported hash algorithm (%"PRIu16")", cleanup, hashAlg);
     }
 
-    if (!(mycontext->hash.ossl_context =  EVP_MD_CTX_create())) {
+    if (!(mycontext->hash.ossl_context = EVP_MD_CTX_create())) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Error EVP_MD_CTX_create", cleanup);
     }
 
     if (1 != EVP_DigestInit(mycontext->hash.ossl_context,
-                               mycontext->hash.ossl_hash_alg)) {
+                            mycontext->hash.ossl_hash_alg)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Errror EVP_DigestInit", cleanup);
     }
 
@@ -146,9 +209,7 @@ iesys_cryptossl_hash_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     return TSS2_RC_SUCCESS;
 
  cleanup:
-    if (mycontext->hash.ossl_context)
-        EVP_MD_CTX_destroy(mycontext->hash.ossl_context);
-    SAFE_FREE(mycontext);
+    iesys_cryptossl_context_free(mycontext);
 
     return r;
 }
@@ -252,8 +313,8 @@ iesys_cryptossl_hash_finish(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     LOGBLOB_TRACE(buffer, mycontext->hash.hash_len, "read hash result");
 
     *size = mycontext->hash.hash_len;
-    EVP_MD_CTX_destroy(mycontext->hash.ossl_context);
-    free(mycontext);
+
+    iesys_cryptossl_context_free(mycontext);
     *context = NULL;
 
     return TSS2_RC_SUCCESS;
@@ -279,8 +340,7 @@ iesys_cryptossl_hash_abort(IESYS_CRYPTO_CONTEXT_BLOB ** context)
         return;
     }
 
-    EVP_MD_CTX_destroy(mycontext->hash.ossl_context);
-    free(mycontext);
+    iesys_cryptossl_context_free(mycontext);
     *context = NULL;
 }
 
@@ -313,20 +373,20 @@ iesys_cryptossl_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
         return_error(TSS2_ESYS_RC_BAD_REFERENCE,
                      "Null-Pointer passed in for context");
     }
-    IESYS_CRYPTOSSL_CONTEXT *mycontext = calloc(1, sizeof(IESYS_CRYPTOSSL_CONTEXT));
+    IESYS_CRYPTOSSL_CONTEXT *mycontext = iesys_cryptossl_context_new();
     return_if_null(mycontext, "Out of Memory", TSS2_ESYS_RC_MEMORY);
 
-    if (!(mycontext->hmac.ossl_hash_alg = get_ossl_hash_md(hashAlg))) {
+    if (!iesys_cryptossl_context_set_hash_md(mycontext, hashAlg)) {
         goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
                    "Unsupported hash algorithm (%"PRIu16")", cleanup, hashAlg);
     }
 
-    if (iesys_crypto_hash_get_digest_size(hashAlg, &mycontext->hmac.hmac_len)) {
+    if (iesys_crypto_hash_get_digest_size(hashAlg, &mycontext->hash.hash_len)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Unsupported hash algorithm (%"PRIu16")", cleanup, hashAlg);
     }
 
-    if (!(mycontext->hmac.ossl_context =  EVP_MD_CTX_create())) {
+    if (!(mycontext->hash.ossl_context = EVP_MD_CTX_create())) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Error EVP_MD_CTX_create", cleanup);
     }
@@ -341,8 +401,8 @@ iesys_cryptossl_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
                    "Failed to create HMAC key", cleanup);
     }
 
-    if(1 != EVP_DigestSignInit(mycontext->hmac.ossl_context, NULL,
-                               mycontext->hmac.ossl_hash_alg, NULL, hkey)) {
+    if(1 != EVP_DigestSignInit(mycontext->hash.ossl_context, NULL,
+                               mycontext->hash.ossl_hash_alg, NULL, hkey)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "DigestSignInit", cleanup);
     }
@@ -356,11 +416,9 @@ iesys_cryptossl_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     return TSS2_RC_SUCCESS;
 
  cleanup:
-    if (mycontext->hmac.ossl_context)
-        EVP_MD_CTX_destroy(mycontext->hmac.ossl_context);
     if(hkey)
         EVP_PKEY_free(hkey);
-    SAFE_FREE(mycontext);
+    iesys_cryptossl_context_free(mycontext);
     return r;
 }
 
@@ -391,7 +449,7 @@ iesys_cryptossl_hmac_update(IESYS_CRYPTO_CONTEXT_BLOB * context,
     LOGBLOB_TRACE(buffer, size, "Updating hmac with");
 
     /* Call update with the message */
-    if(1 != EVP_DigestSignUpdate(mycontext->hmac.ossl_context, buffer, size)) {
+    if(1 != EVP_DigestSignUpdate(mycontext->hash.ossl_context, buffer, size)) {
         return_error(TSS2_ESYS_RC_GENERAL_FAILURE, "OSSL HMAC update");
     }
 
@@ -448,19 +506,18 @@ iesys_cryptossl_hmac_finish(IESYS_CRYPTO_CONTEXT_BLOB ** context,
         return_error(TSS2_ESYS_RC_BAD_REFERENCE, "bad context");
     }
 
-    if (*size < mycontext->hmac.hmac_len) {
+    if (*size < mycontext->hash.hash_len) {
         return_error(TSS2_ESYS_RC_BAD_SIZE, "Buffer too small");
     }
 
-    if (1 != EVP_DigestSignFinal(mycontext->hmac.ossl_context, buffer, size)) {
+    if (1 != EVP_DigestSignFinal(mycontext->hash.ossl_context, buffer, size)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "DigestSignFinal", cleanup);
     }
 
     LOGBLOB_TRACE(buffer, *size, "read hmac result");
 
  cleanup:
-    EVP_MD_CTX_destroy(mycontext->hmac.ossl_context);
-    SAFE_FREE(mycontext);
+    iesys_cryptossl_context_free(mycontext);
     *context = NULL;
     return r;
 }
@@ -510,9 +567,7 @@ iesys_cryptossl_hmac_abort(IESYS_CRYPTO_CONTEXT_BLOB ** context)
             return;
         }
 
-        EVP_MD_CTX_destroy(mycontext->hmac.ossl_context);
-
-        free(mycontext);
+        iesys_cryptossl_context_free(mycontext);
         *context = NULL;
     }
 }
@@ -529,9 +584,14 @@ iesys_cryptossl_hmac_abort(IESYS_CRYPTO_CONTEXT_BLOB ** context)
 TSS2_RC
 iesys_cryptossl_random2b(TPM2B_NONCE * nonce, size_t num_bytes)
 {
+    int rc;
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
     const RAND_METHOD *rand_save = RAND_get_rand_method();
     RAND_set_rand_method(RAND_OpenSSL());
+#else
+    OSSL_LIB_CTX *libctx = OSSL_LIB_CTX_new();
+    if (!libctx)
+        return TSS2_ESYS_RC_MEMORY;
 #endif
 
     if (num_bytes == 0) {
@@ -540,16 +600,16 @@ iesys_cryptossl_random2b(TPM2B_NONCE * nonce, size_t num_bytes)
         nonce->size = num_bytes;
     }
 
-    if (1 != RAND_bytes(&nonce->buffer[0], nonce->size)) {
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
-        RAND_set_rand_method(rand_save);
+    rc = RAND_bytes(&nonce->buffer[0], nonce->size);
+    RAND_set_rand_method(rand_save);
+#else
+    rc = RAND_bytes_ex(libctx, &nonce->buffer[0], nonce->size, 0);
+    OSSL_LIB_CTX_free(libctx);
 #endif
+    if (rc != 1)
         return_error(TSS2_ESYS_RC_GENERAL_FAILURE,
                      "Failure in random number generator.");
-    }
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
-    RAND_set_rand_method(rand_save);
-#endif
     return TSS2_RC_SUCCESS;
 }
 
@@ -578,28 +638,37 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
 {
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
     RSA *rsa_key = NULL;
+    const EVP_MD * hashAlg = NULL;
     const RAND_METHOD *rand_save = RAND_get_rand_method();
 
     RAND_set_rand_method(RAND_OpenSSL());
 #else
+    OSSL_LIB_CTX *libctx = NULL;
+    EVP_MD * hashAlg = NULL;
     OSSL_PARAM *params = NULL;
     OSSL_PARAM_BLD *build = NULL;
 #endif
 
     TSS2_RC r = TSS2_RC_SUCCESS;
-    const EVP_MD * hashAlg = NULL;
     EVP_PKEY *evp_rsa_key = NULL;
     EVP_PKEY_CTX *genctx = NULL, *ctx = NULL;
     BIGNUM *bne = NULL, *n = NULL;
     int padding;
     char *label_copy = NULL;
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     if (!(hashAlg = get_ossl_hash_md(pub_tpm_key->publicArea.nameAlg))) {
+        RAND_set_rand_method(rand_save);
+#else
+    if (!(libctx = OSSL_LIB_CTX_new()))
+        return TSS2_ESYS_RC_MEMORY;
+
+    if (!(hashAlg = EVP_MD_fetch(libctx,
+            get_ossl_hash_md(pub_tpm_key->publicArea.nameAlg), NULL))) {
+        OSSL_LIB_CTX_free(libctx);
+#endif
         LOG_ERROR("Unsupported hash algorithm (%"PRIu16")",
                   pub_tpm_key->publicArea.nameAlg);
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
-        RAND_set_rand_method(rand_save);
-#endif
         return TSS2_ESYS_RC_NOT_IMPLEMENTED;
     }
 
@@ -673,7 +742,7 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
                    cleanup);
     }
 
-    if ((genctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL)) == NULL
+    if ((genctx = EVP_PKEY_CTX_new_from_name(libctx, "RSA", NULL)) == NULL
             || EVP_PKEY_fromdata_init(genctx) <= 0
             || EVP_PKEY_fromdata(genctx, &evp_rsa_key, EVP_PKEY_PUBLIC_KEY, params) <= 0) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Could not create rsa key.",
@@ -744,6 +813,8 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
 #else
     OSSL_FREE(params, OSSL_PARAM);
     OSSL_FREE(build, OSSL_PARAM_BLD);
+    OSSL_FREE(hashAlg, EVP_MD);
+    OSSL_FREE(libctx, OSSL_LIB_CTX);
 #endif
     return r;
 }

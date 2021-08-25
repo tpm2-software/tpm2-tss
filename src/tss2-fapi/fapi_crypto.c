@@ -48,13 +48,33 @@
 
 /** Context to hold temporary values for ifapi_crypto */
 typedef struct _IFAPI_CRYPTO_CONTEXT {
-    /** The hash engine's context */
-    EVP_MD_CTX *osslContext;
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     /** The currently used hash algorithm */
     const EVP_MD *osslHashAlgorithm;
+#else
+    OSSL_LIB_CTX *libctx;
+    /** The currently used hash algorithm */
+    EVP_MD *osslHashAlgorithm;
+#endif
+    /** The hash engine's context */
+    EVP_MD_CTX *osslContext;
     /** The size of the hash's digest */
     size_t hashSize;
 } IFAPI_CRYPTO_CONTEXT;
+
+static void
+ifapi_crypto_context_free(IFAPI_CRYPTO_CONTEXT *ctx)
+{
+    if (!ctx)
+        return;
+
+    EVP_MD_CTX_destroy(ctx->osslContext);
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    EVP_MD_free(ctx->osslHashAlgorithm);
+    OSSL_LIB_CTX_free(ctx->libctx);
+#endif
+    SAFE_FREE(ctx);
+}
 
 /**
  * Returns the signature scheme that is currently used in the FAPI context.
@@ -212,18 +232,18 @@ ifapi_bn2binpad(const BIGNUM *bn, unsigned char *bin, int binSize)
     return 1;
 }
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 /**
- * Returns a suitable openSSL hash algorithm identifier for a given TSS hash
- * algorithm identifier.
+ * Converts a TSS hash algorithm identifier into an OpenSSL hash algorithm
+ * identifier object.
  *
- * @param[in] hashAlgorithm The TSS hash algorithm identifier
+ * @param[in] hashAlgorithm The TSS hash algorithm identifier to convert
  *
- * @retval An openSSL hash algorithm identifier if one that is suitable to
- *         hashAlgorithm could be found
- * @retval NULL if no suitable hash algorithm identifier could be found
+ * @retval A suitable OpenSSL identifier object if one could be found
+ * @retval NULL if no suitable identifier object could be found
  */
 static const EVP_MD *
-get_hash_md(TPM2_ALG_ID hashAlgorithm)
+get_ossl_hash_md(TPM2_ALG_ID hashAlgorithm)
 {
     switch (hashAlgorithm) {
     case TPM2_ALG_SHA1:
@@ -238,6 +258,34 @@ get_hash_md(TPM2_ALG_ID hashAlgorithm)
         return NULL;
     }
 }
+#else
+/**
+ * Returns a suitable openSSL hash algorithm identifier for a given TSS hash
+ * algorithm identifier.
+ *
+ * @param[in] hashAlgorithm The TSS hash algorithm identifier
+ *
+ * @retval An openSSL hash algorithm identifier if one that is suitable to
+ *         hashAlgorithm could be found
+ * @retval NULL if no suitable hash algorithm identifier could be found
+ */
+static const char *
+get_hash_md(TPM2_ALG_ID hashAlgorithm)
+{
+    switch (hashAlgorithm) {
+    case TPM2_ALG_SHA1:
+        return "SHA1";
+    case TPM2_ALG_SHA256:
+        return "SHA256";
+    case TPM2_ALG_SHA384:
+        return "SHA384";
+    case TPM2_ALG_SHA512:
+        return "SHA512";
+    default:
+        return NULL;
+    }
+}
+#endif
 
 /**
  * Returns a suitable openSSL RSA signature scheme identifiver for a given TSS
@@ -1259,6 +1307,9 @@ ifapi_verify_signature_quote(
     BIO *bufio = NULL;
     EVP_PKEY_CTX *pctx = NULL;
     EVP_MD_CTX *mdctx = NULL;
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    OSSL_LIB_CTX *libctx = NULL;
+#endif
 
     /* Check whether or not the key is valid */
     if (keyObject->objectType == IFAPI_KEY_OBJ) {
@@ -1289,8 +1340,8 @@ ifapi_verify_signature_quote(
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EVP_MD_CTX_create",
                    error_cleanup);
     }
-
-    const EVP_MD *hashAlgorithm = get_hash_md(signatureScheme->details.any.hashAlg);
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    const EVP_MD *hashAlgorithm = get_ossl_hash_md(signatureScheme->details.any.hashAlg);
     if (!hashAlgorithm) {
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid hash alg.",
                    error_cleanup);
@@ -1301,6 +1352,26 @@ ifapi_verify_signature_quote(
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EVP_DigestVerifyInit",
                    error_cleanup);
     }
+#else
+    const char *hashAlgorithm = get_hash_md(signatureScheme->details.any.hashAlg);
+    if (!hashAlgorithm) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid hash alg.",
+                   error_cleanup);
+    }
+
+    /* The TPM2 provider may be loaded in the global library context.
+     * As we don't want the TPM to be called for these operations, we have
+     * to initialize own library context with the default provider. */
+    libctx = OSSL_LIB_CTX_new();
+    goto_if_null(libctx, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
+
+    /* Verify the digest of the signature */
+    if (1 != EVP_DigestVerifyInit_ex(mdctx, &pctx, hashAlgorithm, libctx,
+                                     NULL, publicKey, NULL)) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EVP_DigestVerifyInit_ex",
+                   error_cleanup);
+    }
+#endif
     goto_if_null(pctx, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
     if (EVP_PKEY_type(EVP_PKEY_id(publicKey)) == EVP_PKEY_RSA) {
         int padding = get_sig_scheme(signatureScheme->scheme);
@@ -1324,12 +1395,13 @@ ifapi_verify_signature_quote(
     }
 
 error_cleanup:
-    if (mdctx != NULL) {
-        EVP_MD_CTX_destroy(mdctx);
-    }
+    EVP_MD_CTX_destroy(mdctx);
     SAFE_FREE(public_pem_key);
     EVP_PKEY_free(publicKey);
     BIO_free(bufio);
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    OSSL_LIB_CTX_free(libctx);
+#endif
     return r;
 }
 
@@ -1450,36 +1522,6 @@ ifapi_hash_get_digest_size(TPM2_ALG_ID hashAlgorithm)
 }
 
 /**
- * Converts a TSS hash algorithm identifier into an OpenSSL hash algorithm
- * identifier object.
- *
- * @param[in] hashAlgorithm The TSS hash algorithm identifier to convert
- *
- * @retval A suitable OpenSSL identifier object if one could be found
- * @retval NULL if no suitable identifier object could be found
- */
-static const EVP_MD *
-get_ossl_hash_md(TPM2_ALG_ID hashAlgorithm)
-{
-    switch (hashAlgorithm) {
-    case TPM2_ALG_SHA1:
-        return EVP_sha1();
-        break;
-    case TPM2_ALG_SHA256:
-        return EVP_sha256();
-        break;
-    case TPM2_ALG_SHA384:
-        return EVP_sha384();
-        break;
-    case TPM2_ALG_SHA512:
-        return EVP_sha512();
-        break;
-    default:
-        return NULL;
-    }
-}
-
-/**
  * Starts the computation of a hash digest.
  *
  * @param[out] context The created hash context (callee-allocated).
@@ -1505,11 +1547,26 @@ ifapi_crypto_hash_start(IFAPI_CRYPTO_CONTEXT_BLOB **context,
     mycontext = calloc(1, sizeof(IFAPI_CRYPTO_CONTEXT));
     return_if_null(mycontext, "Out of memory", TSS2_FAPI_RC_MEMORY);
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     if (!(mycontext->osslHashAlgorithm = get_ossl_hash_md(hashAlgorithm))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    hashAlgorithm);
     }
+#else
+    /* The TPM2 provider may be loaded in the global library context.
+     * As we don't want the TPM to be called for these operations, we have
+     * to initialize own library context with the default provider. */
+    mycontext->libctx = OSSL_LIB_CTX_new();
+    return_if_null(mycontext->libctx, "Out of memory", TSS2_FAPI_RC_MEMORY);
+
+    if (!(mycontext->osslHashAlgorithm =
+            EVP_MD_fetch(mycontext->libctx, get_hash_md(hashAlgorithm), NULL))) {
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                   "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+                   hashAlgorithm);
+    }
+#endif
 
     if (!(mycontext->hashSize = ifapi_hash_get_digest_size(hashAlgorithm))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
@@ -1533,10 +1590,7 @@ ifapi_crypto_hash_start(IFAPI_CRYPTO_CONTEXT_BLOB **context,
     return TSS2_RC_SUCCESS;
 
 cleanup:
-    if (mycontext->osslContext)
-        EVP_MD_CTX_destroy(mycontext->osslContext);
-    SAFE_FREE(mycontext);
-
+    ifapi_crypto_context_free(mycontext);
     return r;
 }
 
@@ -1615,8 +1669,7 @@ ifapi_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context,
     }
 
     /* Finalize the hash context */
-    EVP_MD_CTX_destroy(mycontext->osslContext);
-    free(mycontext);
+    ifapi_crypto_context_free(mycontext);
     *context = NULL;
 
     return TSS2_RC_SUCCESS;
@@ -1638,8 +1691,7 @@ ifapi_crypto_hash_abort(IFAPI_CRYPTO_CONTEXT_BLOB **context)
     }
     IFAPI_CRYPTO_CONTEXT *mycontext = (IFAPI_CRYPTO_CONTEXT *) * context;
 
-    EVP_MD_CTX_destroy(mycontext->osslContext);
-    free(mycontext);
+    ifapi_crypto_context_free(mycontext);
     *context = NULL;
 }
 
