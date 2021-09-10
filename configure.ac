@@ -136,12 +136,12 @@ m4_define([ossl_min_version], [1.1.0])
 m4_define([ossl_err], [OpenSSL libcrypto is missing or version requirements not met. OpenSSL version must be >= ossl_min_version])
 AS_IF([test "x$enable_esys" = xyes],
       [AS_IF([test "x$with_crypto" = xossl], [
-           PKG_CHECK_MODULES([LIBCRYPTO],
+           PKG_CHECK_MODULES([CRYPTO],
                              [libcrypto >= ossl_min_version],,
                              [AC_MSG_ERROR([ossl_err])])
            AC_DEFINE([OSSL], [1], [OpenSSL cryptographic backend])
-           TSS2_ESYS_CFLAGS_CRYPTO="$LIBCRYPTO_CFLAGS"
-           TSS2_ESYS_LDFLAGS_CRYPTO="$LIBCRYPTO_LIBS"
+           TSS2_ESYS_CFLAGS_CRYPTO="$CRYPTO_CFLAGS"
+           TSS2_ESYS_LDFLAGS_CRYPTO="$CRYPTO_LIBS"
        ], [test "x$with_crypto" = xmbed], [
            AC_CHECK_HEADER(mbedtls/md.h, [], [AC_MSG_ERROR([Missing required mbedTLS library])])
            AC_DEFINE([MBED], [1], [mbedTLS cryptographic backend])
@@ -317,7 +317,7 @@ AS_IF([test "x$enable_integration" = "xyes"],
        ERROR_IF_NO_PROG([env])
        ERROR_IF_NO_PROG([rm])
        AS_IF([test "x$with_crypto" != xossl -o "x$enable_esys" != xyes],
-           [PKG_CHECK_MODULES([LIBCRYPTO],[libcrypto])])
+           [PKG_CHECK_MODULES([CRYPTO],[libcrypto])])
        AC_CHECK_HEADER(uthash.h, [], [AC_MSG_ERROR([Can not find uthash.h. Please install uthash-dev])])
 
        # choose tcti for testing and look for TPM simulator binary

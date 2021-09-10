@@ -572,8 +572,8 @@ src_tss2_fapi_libtss2_fapi_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) $(libtss2_e
     $(libutil) $(libtss2_tctildr)
 
 src_tss2_fapi_libtss2_fapi_la_SOURCES = $(TSS2_FAPI_SRC)
-src_tss2_fapi_libtss2_fapi_la_CFLAGS  = $(AM_CFLAGS) -I$(srcdir)/src/tss2-fapi $(LIBCRYPTO_CFLAGS) $(JSONC_CFLAGS) $(CURL_CFLAGS)
-src_tss2_fapi_libtss2_fapi_la_LDFLAGS = $(AM_LDFLAGS) $(LIBCRYPTO_LIBS) $(JSONC_LIBS) $(CURL_LIBS)
+src_tss2_fapi_libtss2_fapi_la_CFLAGS  = $(AM_CFLAGS) -I$(srcdir)/src/tss2-fapi $(CRYPTO_CFLAGS) $(JSONC_CFLAGS) $(CURL_CFLAGS)
+src_tss2_fapi_libtss2_fapi_la_LDFLAGS = $(AM_LDFLAGS) $(CRYPTO_LIBS) $(JSONC_LIBS) $(CURL_LIBS)
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_fapi_libtss2_fapi_la_LDFLAGS += -Wl,--version-script=$(srcdir)/lib/tss2-fapi.map
 endif # HAVE_LD_VERSION_SCRIPT
