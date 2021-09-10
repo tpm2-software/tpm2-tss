@@ -3,11 +3,11 @@
 # Copyright (c) 2018 Fraunhofer SIT sponsored by Infineon Technologies AG
 # All rights reserved.
 
-TESTS_CFLAGS = $(AM_CFLAGS) $(LIBCRYPTO_CFLAGS) -I$(srcdir)/include -I$(srcdir)/src/tss2-mu \
+TESTS_CFLAGS = $(AM_CFLAGS) $(CRYPTO_CFLAGS) -I$(srcdir)/src/tss2-mu \
     -I$(srcdir)/src/tss2-sys -I$(srcdir)/src/tss2-esys  -I$(srcdir)/src/tss2-fapi \
     -Wno-unused-parameter -Wno-missing-field-initializers
 TESTS_LDADD = $(check_LTLIBRARIES) $(lib_LTLIBRARIES) \
-    $(LIBCRYPTO_LIBS) $(libutil)
+    $(CRYPTO_LIBS) $(libutil)
 
 check_LTLIBRARIES =
 # test harness configuration
