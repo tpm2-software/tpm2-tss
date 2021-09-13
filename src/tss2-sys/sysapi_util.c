@@ -354,6 +354,7 @@ TSS2_RC ValidatePublicTemplate(const TPM2B_PUBLIC *pub)
                                tmpl->parameters.rsaDetail.symmetric.keyBits.sym))
                 return TSS2_SYS_RC_BAD_VALUE;
         break;
+	case TPM2_ALG_SM2:
         case TPM2_ALG_ECC:
             if (IsAlgorithmWeak(tmpl->parameters.eccDetail.symmetric.algorithm,
                                tmpl->parameters.eccDetail.symmetric.keyBits.sym))
