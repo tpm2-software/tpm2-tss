@@ -34,8 +34,11 @@ Most users will not need to install these dependencies.
 
 ### Ubuntu
 ```
-$ sudo apt -y update
-$ sudo apt -y install \
+sudo apt -y update
+```
+
+```
+sudo apt -y install \
   autoconf-archive \
   libcmocka0 \
   libcmocka-dev \
@@ -63,7 +66,7 @@ There is a package already, so the package build dependencies information can be
 used to make sure that the needed packages to compile from source are installed:
 
 ```
-$ sudo dnf builddep tpm2-tss
+sudo dnf builddep tpm2-tss
 ```
 
 ## Windows
@@ -83,7 +86,7 @@ Universal CRT overview & setup instructions: https://docs.microsoft.com/en-us/cp
 To configure the tpm2-tss source code first run the bootstrap script, which
 generates list of source files, and creates the configure script:
 ```
-$ ./bootstrap
+./bootstrap
 ```
 
 Any options specified to the bootstrap command are passed to `autoreconf(1)`.
@@ -91,7 +94,7 @@ Any options specified to the bootstrap command are passed to `autoreconf(1)`.
 ## Configuring the Build
 Then run the configure script, which generates the makefiles:
 ```
-$ ./configure
+./configure
 ```
 
 ### Custom `./configure` Options
@@ -135,13 +138,13 @@ have a string prepended to the file name when it is installed.
 ## Compiling the Libraries
 Then compile the code using make:
 ```
-$ make -j$(nproc)
+make -j$(nproc)
 ```
 
 ## Installing the Libraries
 Once you've built the tpm2-tss software it can be installed with:
 ```
-$ sudo make install
+sudo make install
 ```
 
 This will install the libraries to a location determined at configure time.
@@ -157,7 +160,7 @@ Once you have this udev rule installed in the right place for your distro
 you'll need to instruct udev to reload its rules and apply the new rule.
 Typically this can be accomplished with the following command:
 ```
-$ sudo udevadm control --reload-rules && sudo udevadm trigger
+sudo udevadm control --reload-rules && sudo udevadm trigger
 ```
 
 If this doesn't work on your distro please consult your distro's
@@ -169,7 +172,7 @@ It may be necessary to run ldconfig (as root) to update the run-time
 bindings before executing a program that links against libsapi or a TCTI
 library:
 ```
-$ sudo ldconfig
+sudo ldconfig
 ```
 
 ## Building In A Container
@@ -178,10 +181,19 @@ If you are having trouble installing the dependencies on your machine you can
 build in a container.
 
 ```
-$ docker build -t tpm2 .
-$ docker run --name temp tpm2 /bin/true
-$ docker cp temp:/tmp/tpm2-tss tpm2-tss
-$ docker rm temp
+docker build -t tpm2 .
+```
+
+```
+docker run --name temp tpm2 /bin/true
+```
+
+```
+docker cp temp:/tmp/tpm2-tss tpm2-tss
+```
+
+```
+docker rm temp
 ```
 
 tpm2-tss is now in your working directory and contains all the built files.
@@ -189,7 +201,7 @@ tpm2-tss is now in your working directory and contains all the built files.
 To rebuild using your local changes mount your tpm2-tss directory as a volume.
 
 ```console
-$ docker run --rm -ti -v $PWD:/tmp/tpm2-tss tpm2-tss \
+docker run --rm -ti -v $PWD:/tmp/tpm2-tss tpm2-tss \
   sh -c 'make -j$(nproc) check'
 ```
 
@@ -199,8 +211,11 @@ To build Doxygen documentation files, first install package Doxygen.
 Then generate the documentation with:
 
 ```
-$ ./configure --enable-doxygen-doc
-$ make doxygen-doc
+./configure --enable-doxygen-doc
+```
+
+```
+make doxygen-doc
 ```
 
 The generated documentation will appear here:
