@@ -7,9 +7,15 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <openssl/evp.h>
-#include <openssl/rsa.h>
 #include <openssl/pem.h>
 #include <openssl/err.h>
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+#include <openssl/ec.h>
+#else
+#include <openssl/core_names.h>
+#include <openssl/params.h>
+#include <openssl/param_build.h>
+#endif
 #include <string.h>
 
 #include "tss2_sys.h"
@@ -127,16 +133,7 @@ main (int argc, char *argv[])
 
     /* Convert the key from out_public to PEM */
 
-    EVP_PKEY *evp = EVP_PKEY_new();
-
-    OpenSSL_add_all_algorithms();
-
-    OpenSSL_add_all_algorithms();
-
-    ERR_load_crypto_strings();
-
-
-    EC_KEY *ecc_key = EC_KEY_new();
+    EVP_PKEY *evp = NULL;
     BIGNUM *x = NULL, *y = NULL;
     BIO *bio;
     FILE *out = NULL;
@@ -156,12 +153,6 @@ main (int argc, char *argv[])
     nid = EC_curve_nist2nid("P-256");
     EC_GROUP *ecgroup = EC_GROUP_new_by_curve_name(nid);
 
-    if (!EC_KEY_set_group(ecc_key, ecgroup))
-        exit(1);
-
-    EC_KEY_set_asn1_flag(ecc_key, OPENSSL_EC_NAMED_CURVE);
-    EC_GROUP_free(ecgroup);
-
     /* Set the ECC parameters in the OpenSSL key */
     x = BN_bin2bn(out_public.publicArea.unique.ecc.x.buffer,
                   out_public.publicArea.unique.ecc.x.size, NULL);
@@ -173,15 +164,46 @@ main (int argc, char *argv[])
         exit(1);
     }
 
-    if (!EC_KEY_set_public_key_affine_coordinates(ecc_key, x, y)) {
+    EC_POINT *point = EC_POINT_new(ecgroup);
+#if OPENSSL_VERSION_NUMBER < 0x10101000L
+    EC_POINT_set_affine_coordinates_GFp(ecgroup, point, x, y, NULL);
+#else
+    EC_POINT_set_affine_coordinates(ecgroup, point, x, y, NULL);
+#endif
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+    EC_KEY *ecc_key = EC_KEY_new();
+    if (!EC_KEY_set_group(ecc_key, ecgroup))
+        exit(1);
+
+    if (!EC_KEY_set_public_key(ecc_key, point)) {
         exit(1);
     }
 
+    evp = EVP_PKEY_new();
     if (!EVP_PKEY_assign_EC_KEY(evp, ecc_key)) {
         handleErrors();
         LOG_ERROR("PEM_write failed");
         exit(1);
     }
+#else /* OPENSSL_VERSION_NUMBER < 0x30000000 */
+    unsigned char *puboct = NULL;
+    size_t bsize;
+
+    bsize = EC_POINT_point2buf(ecgroup, point, POINT_CONVERSION_UNCOMPRESSED,
+                               &puboct, NULL);
+
+    OSSL_PARAM_BLD *build = OSSL_PARAM_BLD_new();
+    OSSL_PARAM_BLD_push_utf8_string(build, OSSL_PKEY_PARAM_GROUP_NAME,
+                                    (char *)OBJ_nid2sn(nid), 0);
+    OSSL_PARAM_BLD_push_octet_string(build, OSSL_PKEY_PARAM_PUB_KEY,
+                                     puboct, bsize);
+    OSSL_PARAM *params = OSSL_PARAM_BLD_to_param(build);
+
+    EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new_from_name(NULL, "EC", NULL);
+    EVP_PKEY_fromdata_init(ctx);
+    EVP_PKEY_fromdata(ctx, &evp, EVP_PKEY_PUBLIC_KEY, params);
+#endif /* OPENSSL_VERSION_NUMBER < 0x30000000 */
 
     if (!PEM_write_bio_PUBKEY(bio, evp)) {
         handleErrors();
@@ -189,9 +211,19 @@ main (int argc, char *argv[])
         exit(1);
     }
 
+    EVP_PKEY_free(evp);
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+    /* ownership was taken by the EVP_PKEY */
+#else
+    EVP_PKEY_CTX_free(ctx);
+    OSSL_PARAM_free(params);
+    OSSL_PARAM_BLD_free(build);
+    OPENSSL_free(puboct);
+#endif
+    EC_POINT_free(point);
+    EC_GROUP_free(ecgroup);
     BN_free(y);
     BN_free(x);
-    EVP_PKEY_free(evp);
     BIO_free(bio);
     fclose(out);
 

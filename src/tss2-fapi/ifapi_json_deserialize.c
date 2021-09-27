@@ -214,6 +214,14 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso,  IFAPI_KEY *out)
         out->reset_count = 0;
     }
 
+    if (ifapi_get_sub_object(jso, "delete_prohibited", &jso2)) {
+        r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->delete_prohibited);
+        return_if_error(r, "Bad value for field \"delete_prohibited\".");
+
+    } else {
+        out->delete_prohibited = TPM2_NO;
+    }
+
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }

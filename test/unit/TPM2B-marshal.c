@@ -326,7 +326,7 @@ tpm2b_unmarshal_buffer_null (void **state)
 void
 tpm2b_unmarshal_dest_null (void **state)
 {
-    uint8_t buffer [1];
+    uint8_t buffer [1] = { 0 };
     TSS2_RC rc;
 
     rc = Tss2_MU_TPM2B_DIGEST_Unmarshal (buffer, sizeof (buffer), NULL, NULL);

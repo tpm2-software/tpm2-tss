@@ -1274,6 +1274,10 @@ copy_policy_element(const TPMT_POLICYELEMENT *from_policy, TPMT_POLICYELEMENT *t
                      from_policy->element.PolicyDuplicationSelect.newParentPath,
                      r, error);
         break;
+    case POLICYACTION:
+        strdup_check(to_policy->element.PolicyAction.action,
+                     from_policy->element.PolicyAction.action, r, error);
+        break;
     case POLICYNAMEHASH:
         for (size_t i = 0; i < from_policy->element.PolicyNameHash.count; i++) {
             strdup_check(to_policy->element.PolicyNameHash.namePaths[i],
@@ -1711,7 +1715,7 @@ ifapi_get_quote_info(
     TSS2_RC r;
     size_t offset = 0;
 
-    jso = json_tokener_parse(quoteInfo);
+    jso = ifapi_parse_json(quoteInfo);
     return_if_null(jso, "Json error.", TSS2_FAPI_RC_BAD_VALUE);
 
     memset(&fapi_quote_info->attest.attested.quote.pcrSelect, 0,
@@ -2440,6 +2444,13 @@ ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
     if (rc != CURLE_OK) {
         LOG_ERROR("curl_easy_setopt for CURLOPT_URL failed: %s",
                 curl_easy_strerror(rc));
+        goto out_easy_cleanup;
+    }
+
+    rc = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+    if (rc != CURLE_OK) {
+        LOG_ERROR("curl_easy_setopt for CURLOPT_FOLLOWLOCATION failed: %s",
+                  curl_easy_strerror(rc));
         goto out_easy_cleanup;
     }
 

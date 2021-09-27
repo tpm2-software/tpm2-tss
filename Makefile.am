@@ -219,6 +219,14 @@ EXTRA_DIST += \
     src/tss2-tcti/tss2-tcti-tbs.vcxproj.filters \
     tpm2-tss.sln
 
+# tss2-dlopen wrappers
+EXTRA_DIST += \
+    tss2-dlopen/tss2-dlopen-rc.c \
+    tss2-dlopen/tss2-dlopen-tctildr.c \
+    tss2-dlopen/tss2-dlopen-mu.c \
+    tss2-dlopen/tss2-dlopen-esys.c \
+    tss2-dlopen/tss2-dlopen-fapi.c
+
 # Generate the AUTHORS file from git log
 AUTHORS :
 	$(AM_V_GEN)git log --format='%aN <%aE>' | grep -v 'users.noreply.github.com' | sort | \
@@ -340,7 +348,7 @@ libtss2_tcti_pcap = src/tss2-tcti/libtss2-tcti-pcap.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_pcap.h
 lib_LTLIBRARIES += $(libtss2_tcti_pcap)
 pkgconfig_DATA += lib/tss2-tcti-pcap.pc
-EXTRA_DIST += lib/tss2-tcti-pcap.map # joho TODO enable tcti-pcap for Win (.def, visual studio files
+EXTRA_DIST += lib/tss2-tcti-pcap.map
 
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_pcap_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-pcap.map
@@ -351,6 +359,24 @@ src_tss2_tcti_libtss2_tcti_pcap_la_SOURCES  = \
     src/tss2-tcti/tcti-pcap-builder.c \
     src/tss2-tcti/tcti-pcap.c
 endif # ENABLE_TCTI_PCAP
+
+# tcti libtpms library
+if ENABLE_TCTI_LIBTPMS
+libtss2_tcti_libtpms = src/tss2-tcti/libtss2-tcti-libtpms.la
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_libtpms.h
+lib_LTLIBRARIES += $(libtss2_tcti_libtpms)
+pkgconfig_DATA += lib/tss2-tcti-libtpms.pc
+EXTRA_DIST += lib/tss2-tcti-libtpms.map
+
+if HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_libtpms_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-libtpms.map
+endif # HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_libtpms_la_LIBADD   = $(libtss2_tctildr) $(libutil)
+src_tss2_tcti_libtss2_tcti_libtpms_la_SOURCES  = \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-libtpms.c \
+    src/tss2-tcti/tcti-libtpms.h
+endif # ENABLE_TCTI_LIBTPMS
 
 # tcti library for sub-process commands
 if ENABLE_TCTI_CMD
@@ -546,7 +572,7 @@ src_tss2_fapi_libtss2_fapi_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) $(libtss2_e
     $(libutil) $(libtss2_tctildr)
 
 src_tss2_fapi_libtss2_fapi_la_SOURCES = $(TSS2_FAPI_SRC)
-src_tss2_fapi_libtss2_fapi_la_CFLAGS  = $(AM_CFLAGS) -I$(srcdir)/src/tss2-fapi $(JSONC_CFLAGS) $(CURL_CFLAGS)
+src_tss2_fapi_libtss2_fapi_la_CFLAGS  = $(AM_CFLAGS) -I$(srcdir)/src/tss2-fapi $(LIBCRYPTO_CFLAGS) $(JSONC_CFLAGS) $(CURL_CFLAGS)
 src_tss2_fapi_libtss2_fapi_la_LDFLAGS = $(AM_LDFLAGS) $(LIBCRYPTO_LIBS) $(JSONC_LIBS) $(CURL_LIBS)
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_fapi_libtss2_fapi_la_LDFLAGS += -Wl,--version-script=$(srcdir)/lib/tss2-fapi.map

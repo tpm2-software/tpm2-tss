@@ -272,8 +272,9 @@ check_get_name(void **state) {
     TSS2_RC r;
 
     public.nameAlg = TPM2_ALG_SHA256;
+    public.authPolicy.size = 0xFFFF;
     r = ifapi_get_name(&public, &name);
-    assert_int_equal(r, TSS2_MU_RC_BAD_VALUE);
+    assert_int_equal(r, TSS2_MU_RC_INSUFFICIENT_BUFFER);
 
     wrap_activate_crypto_hash_update = true;
     will_return(__wrap_ifapi_crypto_hash_update, TSS2_FAPI_RC_GENERAL_FAILURE);

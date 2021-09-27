@@ -4,7 +4,7 @@
 # All rights reserved.
 
 AC_INIT([tpm2-tss],
-        [3.1.0-rc0],
+        [m4_esyscmd_s([git describe --tags --always --dirty])],
         [https://github.com/tpm2-software/tpm2-tss/issues],
         [],
         [https://github.com/tpm2-software/tpm2-tss])
@@ -15,7 +15,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])]) #Backward compatible setti
 
 AC_CONFIG_HEADERS([config.h])
 
-AC_CONFIG_FILES([Makefile Doxyfile lib/tss2-sys.pc lib/tss2-esys.pc lib/tss2-mu.pc lib/tss2-tcti-device.pc lib/tss2-tcti-mssim.pc lib/tss2-tcti-swtpm.pc lib/tss2-tcti-pcap.pc lib/tss2-rc.pc lib/tss2-tctildr.pc lib/tss2-fapi.pc lib/tss2-tcti-cmd.pc])
+AC_CONFIG_FILES([Makefile Doxyfile lib/tss2-sys.pc lib/tss2-esys.pc lib/tss2-mu.pc lib/tss2-tcti-device.pc lib/tss2-tcti-mssim.pc lib/tss2-tcti-swtpm.pc lib/tss2-tcti-libtpms.pc lib/tss2-tcti-pcap.pc lib/tss2-rc.pc lib/tss2-tctildr.pc lib/tss2-fapi.pc lib/tss2-tcti-cmd.pc])
 
 # propagate configure arguments to distcheck
 AC_SUBST([DISTCHECK_CONFIGURE_FLAGS],[$ac_configure_args])
@@ -132,9 +132,13 @@ AC_ARG_WITH([crypto],
 AM_CONDITIONAL(ESYS_OSSL, test "x$with_crypto" = "xossl")
 AM_CONDITIONAL(ESYS_MBED, test "x$with_crypto" = "xmbed")
 
+m4_define([ossl_min_version], [1.1.0])
+m4_define([ossl_err], [OpenSSL libcrypto is missing or version requirements not met. OpenSSL version must be >= ossl_min_version])
 AS_IF([test "x$enable_esys" = xyes],
       [AS_IF([test "x$with_crypto" = xossl], [
-           PKG_CHECK_MODULES([LIBCRYPTO], [libcrypto])
+           PKG_CHECK_MODULES([LIBCRYPTO],
+                             [libcrypto >= ossl_min_version],,
+                             [AC_MSG_ERROR([ossl_err])])
            AC_DEFINE([OSSL], [1], [OpenSSL cryptographic backend])
            TSS2_ESYS_CFLAGS_CRYPTO="$LIBCRYPTO_CFLAGS"
            TSS2_ESYS_LDFLAGS_CRYPTO="$LIBCRYPTO_LIBS"
@@ -202,6 +206,15 @@ AC_ARG_ENABLE([tcti-pcap],
                             [don't build the tcti-pcap module])],,
             [enable_tcti_pcap=yes])
 AM_CONDITIONAL([ENABLE_TCTI_PCAP], [test "x$enable_tcti_pcap" != xno])
+
+AC_ARG_ENABLE([tcti-libtpms],
+            [AS_HELP_STRING([--disable-tcti-libtpms],
+                            [don't build the tcti-libtpms module])],
+            [AS_IF([test "x$enable_tcti_libtpms" = "xyes"],
+                   [AC_CHECK_HEADER(libtpms/tpm_library.h, [], [AC_MSG_ERROR([library libtpms missing])])])],
+            [AC_CHECK_HEADER(libtpms/tpm_library.h, [enable_tcti_libtpms=yes],
+                                                    [AC_MSG_WARN([library libtpms missing])])])
+AM_CONDITIONAL([ENABLE_TCTI_LIBTPMS], [test "x$enable_tcti_libtpms" != xno])
 
 AC_ARG_ENABLE([tcti-cmd],
             [AS_HELP_STRING([--disable-tcti-cmd],

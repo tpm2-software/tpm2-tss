@@ -17,6 +17,7 @@
 #define LOGMODULE fapi
 #include "util/log.h"
 #include "util/aux_util.h"
+#include "tpm_json_deserialize.h"
 #include "ifapi_policy_json_deserialize.h"
 #include "ifapi_policy_json_serialize.h"
 
@@ -199,7 +200,7 @@ ifapi_policy_store_load_finish(
     return_if_error(r, "keystore read_finish failed");
 
     /* If json objects can't be parse the object store is corrupted */
-    jso = json_tokener_parse((char *)buffer);
+    jso = ifapi_parse_json((char *)buffer);
     SAFE_FREE(buffer);
     return_if_null(jso, "Policy store is corrupted (Json error).", TSS2_FAPI_RC_GENERAL_FAILURE);
 

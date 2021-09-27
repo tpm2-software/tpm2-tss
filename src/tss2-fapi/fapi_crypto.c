@@ -11,10 +11,15 @@
 #include <string.h>
 
 #include <openssl/evp.h>
-#include <openssl/aes.h>
 #include <openssl/rsa.h>
-#include <openssl/engine.h>
 #include <openssl/pem.h>
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#include <openssl/aes.h>
+#else
+#include <openssl/core_names.h>
+#include <openssl/params.h>
+#include <openssl/param_build.h>
+#endif
 #include <openssl/x509v3.h>
 #include <curl/curl.h>
 #include <openssl/err.h>
@@ -43,16 +48,33 @@
 
 /** Context to hold temporary values for ifapi_crypto */
 typedef struct _IFAPI_CRYPTO_CONTEXT {
-    /** The hash engine's context */
-    EVP_MD_CTX *osslContext;
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     /** The currently used hash algorithm */
     const EVP_MD *osslHashAlgorithm;
+#else
+    OSSL_LIB_CTX *libctx;
+    /** The currently used hash algorithm */
+    EVP_MD *osslHashAlgorithm;
+#endif
+    /** The hash engine's context */
+    EVP_MD_CTX *osslContext;
     /** The size of the hash's digest */
     size_t hashSize;
 } IFAPI_CRYPTO_CONTEXT;
 
-/** A singleton crypto engine for hash operations */
-static ENGINE *engine = NULL;
+static void
+ifapi_crypto_context_free(IFAPI_CRYPTO_CONTEXT *ctx)
+{
+    if (!ctx)
+        return;
+
+    EVP_MD_CTX_destroy(ctx->osslContext);
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    EVP_MD_free(ctx->osslHashAlgorithm);
+    OSSL_LIB_CTX_free(ctx->libctx);
+#endif
+    SAFE_FREE(ctx);
+}
 
 /**
  * Returns the signature scheme that is currently used in the FAPI context.
@@ -210,35 +232,18 @@ ifapi_bn2binpad(const BIGNUM *bn, unsigned char *bin, int binSize)
     return 1;
 }
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 /**
- * Returns the singleton hash engine for the use in ifapi_hash operations. If
- * it does not yet exist, this function creates it.
+ * Converts a TSS hash algorithm identifier into an OpenSSL hash algorithm
+ * identifier object.
  *
- * @retval A singleton hash engine
- */
-static ENGINE *
-get_engine()
-{
-    /* If an engine is present, it is returned */
-    if (engine)
-        return engine;
-    /* Otherwise, engine is created and returned */
-    engine = ENGINE_by_id(NULL);
-    return engine;
-}
-
-/**
- * Returns a suitable openSSL hash algorithm identifier for a given TSS hash
- * algorithm identifier.
+ * @param[in] hashAlgorithm The TSS hash algorithm identifier to convert
  *
- * @param[in] hashAlgorithm The TSS hash algorithm identifier
- *
- * @retval An openSSL hash algorithm identifier if one that is suitable to
- *         hashAlgorithm could be found
- * @retval NULL if no suitable hash algorithm identifier could be found
+ * @retval A suitable OpenSSL identifier object if one could be found
+ * @retval NULL if no suitable identifier object could be found
  */
 static const EVP_MD *
-get_hash_md(TPM2_ALG_ID hashAlgorithm)
+get_ossl_hash_md(TPM2_ALG_ID hashAlgorithm)
 {
     switch (hashAlgorithm) {
     case TPM2_ALG_SHA1:
@@ -253,6 +258,34 @@ get_hash_md(TPM2_ALG_ID hashAlgorithm)
         return NULL;
     }
 }
+#else
+/**
+ * Returns a suitable openSSL hash algorithm identifier for a given TSS hash
+ * algorithm identifier.
+ *
+ * @param[in] hashAlgorithm The TSS hash algorithm identifier
+ *
+ * @retval An openSSL hash algorithm identifier if one that is suitable to
+ *         hashAlgorithm could be found
+ * @retval NULL if no suitable hash algorithm identifier could be found
+ */
+static const char *
+get_hash_md(TPM2_ALG_ID hashAlgorithm)
+{
+    switch (hashAlgorithm) {
+    case TPM2_ALG_SHA1:
+        return "SHA1";
+    case TPM2_ALG_SHA256:
+        return "SHA256";
+    case TPM2_ALG_SHA384:
+        return "SHA384";
+    case TPM2_ALG_SHA512:
+        return "SHA512";
+    default:
+        return NULL;
+    }
+}
+#endif
 
 /**
  * Returns a suitable openSSL RSA signature scheme identifiver for a given TSS
@@ -320,12 +353,7 @@ ifapi_tpm_ecc_sig_to_der(
                     tpmSignature->signature.ecdsa.signatureR.size, NULL);
     goto_if_null(bnr, "Out of memory", TSS2_FAPI_RC_MEMORY, cleanup);
 
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-    ecdsaSignature->s = bns;
-    ecdsaSignature->r = bnr;
-#else /* OPENSSL_VERSION_NUMBER < 0x10100000 */
     ECDSA_SIG_set0(ecdsaSignature, bnr, bns);
-#endif /* OPENSSL_VERSION_NUMBER < 0x10100000 */
 
     osslRC = i2d_ECDSA_SIG(ecdsaSignature, NULL);
     if (osslRC == -1) {
@@ -372,77 +400,89 @@ cleanup:
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
-ossl_rsa_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY *evpPublicKey)
+ossl_rsa_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey)
 {
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    RSA *rsa = NULL;
+#else
+    OSSL_PARAM_BLD *build = NULL;
+    OSSL_PARAM *params = NULL;
+    EVP_PKEY_CTX *ctx = NULL;
+#endif
+
     /* Check for NULL parameters */
     return_if_null(tpmPublicKey, "tpmPublicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
     return_if_null(evpPublicKey, "evpPublicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    TSS2_RC r = TSS2_RC_SUCCESS;
     /* Initialize the RSA parameters */
-    TSS2_RC r;
-    RSA *rsa = RSA_new();
-    BIGNUM *e = BN_new();
-    BIGNUM *d = BN_new();
-    BIGNUM *p = BN_new();
-    BIGNUM *q = BN_new();
-    BIGNUM *dmp1 = BN_new();
-    BIGNUM *dmq1 = BN_new();
-    BIGNUM *iqmp = BN_new();
+    BIGNUM *e = NULL;
     BIGNUM *n = BN_bin2bn(tpmPublicKey->publicArea.unique.rsa.buffer,
                           tpmPublicKey->publicArea.unique.rsa.size, NULL);
-
-    if (!n || !e || !d || !p || !q || !dmp1 || !dmq1 || !iqmp || !rsa) {
+    if (!n) {
         goto_error(r, TSS2_FAPI_RC_MEMORY, "Out of memory", error_cleanup);
     }
 
-    BN_set_word(d, 0);
-    BN_set_word(p, 0);
-    BN_set_word(q, 0);
-    BN_set_word(dmp1, 0);
-    BN_set_word(dmq1, 0);
-    BN_set_word(iqmp, 0);
     uint32_t exp;
     if (tpmPublicKey->publicArea.parameters.rsaDetail.exponent == 0)
         exp = 65537;
     else
         exp = tpmPublicKey->publicArea.parameters.rsaDetail.exponent;
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    if ((rsa = RSA_new()) == NULL) {
+        goto_error(r, TSS2_FAPI_RC_MEMORY, "Out of memory", error_cleanup);
+    }
+
+    if ((e = BN_new()) == NULL) {
+        goto_error(r, TSS2_FAPI_RC_MEMORY, "Out of memory", error_cleanup);
+    }
     if (1 != BN_set_word(e, exp)) {
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
                    "Could not set exponent.", error_cleanup);
     }
 
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-    rsa->e = e;
-    rsa->n = n;
-    rsa->d = d;
-    rsa->p = p;
-    rsa->q = q;
-    rsa->dmp1 = dmp1;
-    rsa->dmq1 = dmq1;
-    rsa->iqmp = iqmp;
-#else /* OPENSSL_VERSION_NUMBER < 0x10100000 */
-    RSA_set0_key(rsa, n, e, d);
-    RSA_set0_factors(rsa, p, q);
-    RSA_set0_crt_params(rsa, dmp1, dmq1, iqmp);
-#endif /* OPENSSL_VERSION_NUMBER < 0x10100000 */
+    if (!RSA_set0_key(rsa, n, e, NULL)) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
+                   "Could not set public key.", error_cleanup);
+    }
+    n = NULL; /* ownership transferred */
+    e = NULL;
+
+    *evpPublicKey = EVP_PKEY_new();
+    goto_if_null2(*evpPublicKey, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
 
     /* Assign the parameters to the key */
-    if (!EVP_PKEY_assign_RSA(evpPublicKey, rsa)) {
+    if (!EVP_PKEY_assign_RSA(*evpPublicKey, rsa)) {
+        EVP_PKEY_free(*evpPublicKey);
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Assign rsa key",
                    error_cleanup);
     }
-    return TSS2_RC_SUCCESS;
-
+    rsa = NULL; /* ownership transferred */
 error_cleanup:
     OSSL_FREE(rsa, RSA);
+#else /* OPENSSL_VERSION_NUMBER < 0x30000000L */
+    if ((build = OSSL_PARAM_BLD_new()) == NULL
+            || !OSSL_PARAM_BLD_push_BN(build, OSSL_PKEY_PARAM_RSA_N, n)
+            || !OSSL_PARAM_BLD_push_uint32(build, OSSL_PKEY_PARAM_RSA_E, exp)
+            || (params = OSSL_PARAM_BLD_to_param(build)) == NULL) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create rsa key parameters",
+                   error_cleanup);
+    }
+
+    if ((ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL)) == NULL
+            || EVP_PKEY_fromdata_init(ctx) <= 0
+            || EVP_PKEY_fromdata(ctx, evpPublicKey, EVP_PKEY_PUBLIC_KEY, params) <= 0) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create rsa key",
+                   error_cleanup);
+    }
+error_cleanup:
+    OSSL_FREE(ctx, EVP_PKEY_CTX);
+    OSSL_FREE(params, OSSL_PARAM);
+    OSSL_FREE(build, OSSL_PARAM_BLD);
+#endif /* OPENSSL_VERSION_NUMBER < 0x30000000L */
     OSSL_FREE(e, BN);
     OSSL_FREE(n, BN);
-    OSSL_FREE(d, BN);
-    OSSL_FREE(p, BN);
-    OSSL_FREE(q, BN);
-    OSSL_FREE(dmp1, BN);
-    OSSL_FREE(dmq1, BN);
-    OSSL_FREE(iqmp, BN);
     return r;
 }
 
@@ -462,18 +502,26 @@ error_cleanup:
  *         the function.
  */
 static TSS2_RC
-ossl_ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY *evpPublicKey)
+ossl_ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey)
 {
     /* Check for NULL parameters */
     return_if_null(tpmPublicKey, "tpmPublicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
     return_if_null(evpPublicKey, "evpPublicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC r = TSS2_RC_SUCCESS;
     EC_GROUP *ecgroup = NULL;
     int curveId;
     BIGNUM *x = NULL, *y = NULL;
-    EC_KEY *ecKey = EC_KEY_new();
-    return_if_null(ecKey, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    EC_POINT *ecPoint = NULL;
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    EC_KEY *ecKey = NULL;
+#else
+    OSSL_PARAM_BLD *build = NULL;
+    OSSL_PARAM *params = NULL;
+    EVP_PKEY_CTX *ctx = NULL;
+    unsigned char *puboct = NULL;
+    size_t bsize;
+#endif
 
     /* Find the curve of the ECC key */
     switch (tpmPublicKey->publicArea.parameters.eccDetail.curveID) {
@@ -502,12 +550,6 @@ ossl_ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY *evpPublicKey)
     goto_if_null(ecgroup, "new EC group.", TSS2_FAPI_RC_GENERAL_FAILURE,
                   error_cleanup);
 
-    if (!EC_KEY_set_group(ecKey, ecgroup)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EC_KEY_set_group",
-                   error_cleanup);
-    }
-    EC_GROUP_free(ecgroup);
-
     /* Set the ECC parameters in the OpenSSL key */
     x = BN_bin2bn(tpmPublicKey->publicArea.unique.ecc.x.buffer,
                   tpmPublicKey->publicArea.unique.ecc.x.size, NULL);
@@ -519,25 +561,67 @@ ossl_ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY *evpPublicKey)
         goto_error(r, TSS2_FAPI_RC_MEMORY, "Out of memory", error_cleanup);
     }
 
-    if (!EC_KEY_set_public_key_affine_coordinates(ecKey, x, y)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
-                   "EC_KEY_set_public_key_affine_coordinates", error_cleanup);
+    if ((ecPoint = EC_POINT_new(ecgroup)) == NULL
+            || !EC_POINT_set_affine_coordinates_tss(ecgroup, ecPoint, x, y, NULL)) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EC_POINT_set_affine_coordinates",
+                   error_cleanup);
     }
 
-    if (!EVP_PKEY_assign_EC_KEY(evpPublicKey, ecKey)) {
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+    ecKey = EC_KEY_new();
+    return_if_null(ecKey, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+
+    if (!EC_KEY_set_group(ecKey, ecgroup)) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EC_KEY_set_group",
+                   error_cleanup);
+    }
+
+    if (!EC_KEY_set_public_key(ecKey, ecPoint)) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
+                   "EC_KEY_set_public_key", error_cleanup);
+    }
+
+    *evpPublicKey = EVP_PKEY_new();
+    goto_if_null2(*evpPublicKey, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
+
+    if (!EVP_PKEY_assign_EC_KEY(*evpPublicKey, ecKey)) {
+        EVP_PKEY_free(*evpPublicKey);
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Assign ecc key",
                    error_cleanup);
     }
-    /* Needed for older OSSL versions. */
-    EC_KEY_set_asn1_flag(ecKey, OPENSSL_EC_NAMED_CURVE);
-    OSSL_FREE(y, BN);
-    OSSL_FREE(x, BN);
-    return TSS2_RC_SUCCESS;
-
+    ecKey = NULL; /* ownership transferred */
 error_cleanup:
+    OSSL_FREE(ecKey, EC_KEY);
+#else
+    if ((build = OSSL_PARAM_BLD_new()) == NULL
+            || !OSSL_PARAM_BLD_push_utf8_string(build, OSSL_PKEY_PARAM_GROUP_NAME,
+                                                (char *)OBJ_nid2sn(curveId), 0)
+            || (bsize = EC_POINT_point2buf(ecgroup, ecPoint,
+                                           POINT_CONVERSION_COMPRESSED,
+                                           &puboct, NULL)) == 0
+            || !OSSL_PARAM_BLD_push_octet_string(build, OSSL_PKEY_PARAM_PUB_KEY,
+                                                 puboct, bsize)
+            || (params = OSSL_PARAM_BLD_to_param(build)) == NULL) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create ecc key parameters",
+                   error_cleanup);
+    }
+
+    if ((ctx = EVP_PKEY_CTX_new_from_name(NULL, "EC", NULL)) == NULL
+            || EVP_PKEY_fromdata_init(ctx) <= 0
+            || EVP_PKEY_fromdata(ctx, evpPublicKey, EVP_PKEY_PUBLIC_KEY, params) <= 0) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create ecc key",
+                   error_cleanup);
+    }
+error_cleanup:
+    EVP_PKEY_CTX_free(ctx);
+    OSSL_PARAM_free(params);
+    OSSL_PARAM_BLD_free(build);
+    OPENSSL_free(puboct);
+#endif
+    OSSL_FREE(ecPoint, EC_POINT);
+    OSSL_FREE(ecgroup, EC_GROUP);
     OSSL_FREE(y, BN);
     OSSL_FREE(x, BN);
-    OSSL_FREE(ecKey, EC_KEY);
     return r;
 }
 
@@ -572,18 +656,15 @@ ifapi_pub_pem_key_from_tpm(
     BIO *bio = NULL;
     TSS2_RC r = TPM2_RC_SUCCESS;
 
-    evpPublicKey = EVP_PKEY_new();
-    goto_if_null2(evpPublicKey, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
-
     /* Memory IO will be used for OSSL key conversion */
     bio = BIO_new(BIO_s_mem());
-    goto_if_null2(evpPublicKey, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
+    goto_if_null2(bio, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
     if (tpmPublicKey->publicArea.type == TPM2_ALG_RSA) {
-        r = ossl_rsa_pub_from_tpm(tpmPublicKey, evpPublicKey);
-    } else if (tpmPublicKey->publicArea.type == TPM2_ALG_ECC)
-        r = ossl_ecc_pub_from_tpm(tpmPublicKey, evpPublicKey);
-    else {
+        r = ossl_rsa_pub_from_tpm(tpmPublicKey, &evpPublicKey);
+    } else if (tpmPublicKey->publicArea.type == TPM2_ALG_ECC) {
+        r = ossl_ecc_pub_from_tpm(tpmPublicKey, &evpPublicKey);
+    } else {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid alg id.", cleanup);
     }
     goto_if_error(r, "Get ossl public key.", cleanup);
@@ -641,24 +722,14 @@ ifapi_ecc_der_sig_to_tpm(
 
     /* Initialize the ECDSA signature components */
     ECDSA_SIG *ecdsaSignature = NULL;
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-    BIGNUM *bnr;
-    BIGNUM *bns;
-#else /* OPENSSL_VERSION_NUMBER < 0x10100000 */
     const BIGNUM *bnr;
     const BIGNUM *bns;
-#endif /* OPENSSL_VERSION_NUMBER < 0x10100000 */
 
     d2i_ECDSA_SIG(&ecdsaSignature, &signature, signatureSize);
     return_if_null(ecdsaSignature, "Invalid DER signature",
                    TSS2_FAPI_RC_GENERAL_FAILURE);
 
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-    bns = ecdsaSignature->s;
-    bnr = ecdsaSignature->r;
-#else /* OPENSSL_VERSION_NUMBER < 0x10100000 */
     ECDSA_SIG_get0(ecdsaSignature, &bnr, &bns);
-#endif /* OPENSSL_VERSION_NUMBER < 0x10100000 */
 
     /* Writing them to the TPM format signature */
     tpmSignature->signature.ecdsa.hash = hashAlgorithm;
@@ -723,7 +794,6 @@ ifapi_der_sig_to_tpm(
                     signatureSize);
         } else {
             return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid RSA scheme.");
-
         }
     } else if (tpmPublic->type == TPM2_ALG_ECC) {
         return ifapi_ecc_der_sig_to_tpm(signature, signatureSize,
@@ -871,12 +941,16 @@ ecdsa_verify_signature(
     return_if_null(digest, "digest is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
 
     TSS2_RC r = TSS2_RC_SUCCESS;
-    EC_KEY *eccKey = NULL;
+    EVP_PKEY_CTX *ctx = NULL;
 
-    eccKey = EVP_PKEY_get1_EC_KEY(publicKey);
+    if ((ctx = EVP_PKEY_CTX_new(publicKey, NULL)) == NULL
+            || !EVP_PKEY_verify_init(ctx)) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
+                   "Cannot initialize signature verification.", error_cleanup);
+    }
 
     /* Try to verify the signature using ECDSA, note that param 0 is unused */
-    int rc = ECDSA_verify(0, digest, digestSize, signature, signatureSize, eccKey);
+    int rc = EVP_PKEY_verify(ctx, signature, signatureSize, digest, digestSize);
     if (rc == 0) {
         goto_error(r, TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED,
                    "ECDSA signature verification failed.", error_cleanup);
@@ -886,7 +960,7 @@ ecdsa_verify_signature(
     }
 
 error_cleanup:
-    OSSL_FREE(eccKey, EC_KEY);
+    OSSL_FREE(ctx, EVP_PKEY_CTX);
     return r;
 }
 
@@ -915,28 +989,43 @@ get_rsa_tpm2b_public_from_evp(
 
     /* Extract the public information */
     TSS2_RC r = TSS2_RC_SUCCESS;
+    int keyBits, keySize;
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    const BIGNUM *e = NULL, *n = NULL;
     RSA *rsaKey = EVP_PKEY_get1_RSA(publicKey);
     return_if_null(rsaKey, "Out of memory.", TSS2_FAPI_RC_MEMORY);
-    const BIGNUM *e = NULL, *n = NULL;
-    int rsaKeySize = RSA_size(rsaKey);
 
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-    e = rsaKey->e;
-    n = rsaKey->n;
-#else /* OPENSSL_VERSION_NUMBER < 0x10100000 */
+    keySize = RSA_size(rsaKey);
+    keyBits = keySize * 8;
     RSA_get0_key(rsaKey, &n, &e, NULL);
-#endif /* OPENSSL_VERSION_NUMBER < 0x10100000 */
-    tpmPublic->publicArea.unique.rsa.size = rsaKeySize;
+#else
+    BIGNUM *e = NULL, *n = NULL;
+
+    keyBits = EVP_PKEY_get_bits(publicKey);
+    keySize = (keyBits + 7) / 8;
+    if (!EVP_PKEY_get_bn_param(publicKey, OSSL_PKEY_PARAM_RSA_N, &n)
+            || !EVP_PKEY_get_bn_param(publicKey, OSSL_PKEY_PARAM_RSA_E, &e)) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
+                   "Retrieve pubkey", cleanup);
+    }
+#endif
+    tpmPublic->publicArea.unique.rsa.size = keySize;
     if (1 != ifapi_bn2binpad(n, &tpmPublic->publicArea.unique.rsa.buffer[0],
-                             rsaKeySize)) {
+                             keySize)) {
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
                    "Write big num byte buffer", cleanup);
     }
-    tpmPublic->publicArea.parameters.rsaDetail.keyBits = rsaKeySize * 8;
+    tpmPublic->publicArea.parameters.rsaDetail.keyBits = keyBits;
     tpmPublic->publicArea.parameters.rsaDetail.exponent = BN_get_word(e);
 
 cleanup:
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     OSSL_FREE(rsaKey, RSA);
+#else
+    BN_free(e);
+    BN_free(n);
+#endif
     return r;
 }
 
@@ -967,27 +1056,22 @@ get_ecc_tpm2b_public_from_evp(
 
     /* Initialize variables that will contain the relevant information */
     TSS2_RC r = TSS2_RC_SUCCESS;
-    EC_KEY *ecKey = EVP_PKEY_get1_EC_KEY(publicKey);
-    return_if_null(ecKey, "Out of memory.", TSS2_FAPI_RC_MEMORY);
-    const EC_GROUP *ecGroup;
-    const EC_POINT *publicPoint;
     int curveId;
     size_t ecKeySize;
     BIGNUM *bnX = NULL;
     BIGNUM *bnY = NULL;
     TPMI_ECC_CURVE tpmCurveId;
-
-    if (!ecKey) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "No ECC key!");
-    }
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+    const EC_GROUP *ecGroup;
+    const EC_POINT *publicPoint;
+    EC_KEY *ecKey = EVP_PKEY_get1_EC_KEY(publicKey);
+    return_if_null(ecKey, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     /* Retrieve the relevant information and write it to tpmPublic */
     ecGroup = EC_KEY_get0_group(ecKey);
     publicPoint = EC_KEY_get0_public_key(ecKey);
     curveId = EC_GROUP_get_curve_name(ecGroup);
-    ecKeySize = EC_GROUP_get_degree(ecGroup) / 8;
-    tpmPublic->publicArea.unique.ecc.x.size = ecKeySize;
-    tpmPublic->publicArea.unique.ecc.y.size = ecKeySize;
+    ecKeySize = (EC_GROUP_get_degree(ecGroup) + 7) / 8;
 
     if (!(bnX = BN_new())) {
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create bignum", cleanup);
@@ -1002,6 +1086,21 @@ get_ecc_tpm2b_public_from_evp(
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
                    "Get affine coordinates", cleanup);
     }
+#else
+    char curveName[80];
+
+    if (!EVP_PKEY_get_utf8_string_param(publicKey, OSSL_PKEY_PARAM_GROUP_NAME,
+                                        curveName, sizeof(curveName), NULL)
+            || !EVP_PKEY_get_bn_param(publicKey, OSSL_PKEY_PARAM_EC_PUB_X, &bnX)
+            || !EVP_PKEY_get_bn_param(publicKey, OSSL_PKEY_PARAM_EC_PUB_Y, &bnY)) {
+         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                    "Get public key", cleanup);
+     }
+    curveId = OBJ_txt2nid(curveName);
+    ecKeySize = (EVP_PKEY_bits(publicKey) + 7) / 8;
+#endif
+    tpmPublic->publicArea.unique.ecc.x.size = ecKeySize;
+    tpmPublic->publicArea.unique.ecc.y.size = ecKeySize;
     if (1 != ifapi_bn2binpad(bnX, &tpmPublic->publicArea.unique.ecc.x.buffer[0],
                              ecKeySize)) {
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
@@ -1035,7 +1134,9 @@ get_ecc_tpm2b_public_from_evp(
     tpmPublic->publicArea.parameters.eccDetail.curveID = tpmCurveId;
 
 cleanup:
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     OSSL_FREE(ecKey, EC_KEY);
+#endif
     OSSL_FREE(bnX, BN);
     OSSL_FREE(bnY, BN);
     return r;
@@ -1206,6 +1307,9 @@ ifapi_verify_signature_quote(
     BIO *bufio = NULL;
     EVP_PKEY_CTX *pctx = NULL;
     EVP_MD_CTX *mdctx = NULL;
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    OSSL_LIB_CTX *libctx = NULL;
+#endif
 
     /* Check whether or not the key is valid */
     if (keyObject->objectType == IFAPI_KEY_OBJ) {
@@ -1236,8 +1340,8 @@ ifapi_verify_signature_quote(
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EVP_MD_CTX_create",
                    error_cleanup);
     }
-
-    const EVP_MD *hashAlgorithm = get_hash_md(signatureScheme->details.any.hashAlg);
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    const EVP_MD *hashAlgorithm = get_ossl_hash_md(signatureScheme->details.any.hashAlg);
     if (!hashAlgorithm) {
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid hash alg.",
                    error_cleanup);
@@ -1248,6 +1352,26 @@ ifapi_verify_signature_quote(
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EVP_DigestVerifyInit",
                    error_cleanup);
     }
+#else
+    const char *hashAlgorithm = get_hash_md(signatureScheme->details.any.hashAlg);
+    if (!hashAlgorithm) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid hash alg.",
+                   error_cleanup);
+    }
+
+    /* The TPM2 provider may be loaded in the global library context.
+     * As we don't want the TPM to be called for these operations, we have
+     * to initialize own library context with the default provider. */
+    libctx = OSSL_LIB_CTX_new();
+    goto_if_null(libctx, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
+
+    /* Verify the digest of the signature */
+    if (1 != EVP_DigestVerifyInit_ex(mdctx, &pctx, hashAlgorithm, libctx,
+                                     NULL, publicKey, NULL)) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EVP_DigestVerifyInit_ex",
+                   error_cleanup);
+    }
+#endif
     goto_if_null(pctx, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
     if (EVP_PKEY_type(EVP_PKEY_id(publicKey)) == EVP_PKEY_RSA) {
         int padding = get_sig_scheme(signatureScheme->scheme);
@@ -1271,12 +1395,13 @@ ifapi_verify_signature_quote(
     }
 
 error_cleanup:
-    if (mdctx != NULL) {
-        EVP_MD_CTX_destroy(mdctx);
-    }
+    EVP_MD_CTX_destroy(mdctx);
     SAFE_FREE(public_pem_key);
     EVP_PKEY_free(publicKey);
     BIO_free(bufio);
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    OSSL_LIB_CTX_free(libctx);
+#endif
     return r;
 }
 
@@ -1397,36 +1522,6 @@ ifapi_hash_get_digest_size(TPM2_ALG_ID hashAlgorithm)
 }
 
 /**
- * Converts a TSS hash algorithm identifier into an OpenSSL hash algorithm
- * identifier object.
- *
- * @param[in] hashAlgorithm The TSS hash algorithm identifier to convert
- *
- * @retval A suitable OpenSSL identifier object if one could be found
- * @retval NULL if no suitable identifier object could be found
- */
-static const EVP_MD *
-get_ossl_hash_md(TPM2_ALG_ID hashAlgorithm)
-{
-    switch (hashAlgorithm) {
-    case TPM2_ALG_SHA1:
-        return EVP_sha1();
-        break;
-    case TPM2_ALG_SHA256:
-        return EVP_sha256();
-        break;
-    case TPM2_ALG_SHA384:
-        return EVP_sha384();
-        break;
-    case TPM2_ALG_SHA512:
-        return EVP_sha512();
-        break;
-    default:
-        return NULL;
-    }
-}
-
-/**
  * Starts the computation of a hash digest.
  *
  * @param[out] context The created hash context (callee-allocated).
@@ -1452,11 +1547,26 @@ ifapi_crypto_hash_start(IFAPI_CRYPTO_CONTEXT_BLOB **context,
     mycontext = calloc(1, sizeof(IFAPI_CRYPTO_CONTEXT));
     return_if_null(mycontext, "Out of memory", TSS2_FAPI_RC_MEMORY);
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     if (!(mycontext->osslHashAlgorithm = get_ossl_hash_md(hashAlgorithm))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    hashAlgorithm);
     }
+#else
+    /* The TPM2 provider may be loaded in the global library context.
+     * As we don't want the TPM to be called for these operations, we have
+     * to initialize own library context with the default provider. */
+    mycontext->libctx = OSSL_LIB_CTX_new();
+    return_if_null(mycontext->libctx, "Out of memory", TSS2_FAPI_RC_MEMORY);
+
+    if (!(mycontext->osslHashAlgorithm =
+            EVP_MD_fetch(mycontext->libctx, get_hash_md(hashAlgorithm), NULL))) {
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                   "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+                   hashAlgorithm);
+    }
+#endif
 
     if (!(mycontext->hashSize = ifapi_hash_get_digest_size(hashAlgorithm))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
@@ -1470,7 +1580,7 @@ ifapi_crypto_hash_start(IFAPI_CRYPTO_CONTEXT_BLOB **context,
     }
 
     if (1 != EVP_DigestInit_ex(mycontext->osslContext,
-                               mycontext->osslHashAlgorithm, get_engine())) {
+                               mycontext->osslHashAlgorithm, NULL)) {
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Error EVP_DigestInit_ex",
                    cleanup);
     }
@@ -1480,10 +1590,7 @@ ifapi_crypto_hash_start(IFAPI_CRYPTO_CONTEXT_BLOB **context,
     return TSS2_RC_SUCCESS;
 
 cleanup:
-    if (mycontext->osslContext)
-        EVP_MD_CTX_destroy(mycontext->osslContext);
-    SAFE_FREE(mycontext);
-
+    ifapi_crypto_context_free(mycontext);
     return r;
 }
 
@@ -1562,8 +1669,7 @@ ifapi_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context,
     }
 
     /* Finalize the hash context */
-    EVP_MD_CTX_destroy(mycontext->osslContext);
-    free(mycontext);
+    ifapi_crypto_context_free(mycontext);
     *context = NULL;
 
     return TSS2_RC_SUCCESS;
@@ -1585,8 +1691,7 @@ ifapi_crypto_hash_abort(IFAPI_CRYPTO_CONTEXT_BLOB **context)
     }
     IFAPI_CRYPTO_CONTEXT *mycontext = (IFAPI_CRYPTO_CONTEXT *) * context;
 
-    EVP_MD_CTX_destroy(mycontext->osslContext);
-    free(mycontext);
+    ifapi_crypto_context_free(mycontext);
     *context = NULL;
 }
 
@@ -1636,8 +1741,6 @@ get_crl_from_cert(X509 *cert, X509_CRL **crl)
     if (curl_rc != 0) {
         goto_error(r, TSS2_FAPI_RC_NO_CERT, "Get crl.", cleanup);
     }
-
-    OpenSSL_add_all_algorithms();
 
     unsigned const char* tmp_ptr1 = crl_buffer;
     unsigned const char** tmp_ptr2 = &tmp_ptr1;
@@ -1912,6 +2015,8 @@ ifapi_verify_ek_cert(
     size_t cert_buffer_size;
     int curl_rc;
 
+    LOG_DEBUG("EK Certificate: %s", ek_cert_pem);
+
     ek_cert = get_X509_from_pem(ek_cert_pem);
     goto_if_null2(ek_cert, "Failed to convert PEM certificate to DER.",
                   r, TSS2_FAPI_RC_BAD_VALUE, cleanup);
@@ -1922,7 +2027,6 @@ ifapi_verify_ek_cert(
                       r, TSS2_FAPI_RC_BAD_VALUE, cleanup);
     } else {
         /* Get uri for ek intermediate certificate. */
-        OpenSSL_add_all_algorithms();
         info = X509_get_ext_d2i(ek_cert, NID_info_access, NULL, NULL);
 
         for (i = 0; i < sk_ACCESS_DESCRIPTION_num(info); i++) {
@@ -1938,16 +2042,20 @@ ifapi_verify_ek_cert(
             }
             goto_if_null2(cert_buffer, "No certificate downloaded", r,
                           TSS2_FAPI_RC_NO_CERT, cleanup);
+            LOGBLOB_DEBUG(cert_buffer, cert_buffer_size, "Intermediate certificate:");
         }
         goto_if_null2(cert_buffer, "No certificate downloaded", r,
                       TSS2_FAPI_RC_NO_CERT, cleanup);
 
-        OpenSSL_add_all_algorithms();
         intermed_cert = get_cert_from_buffer(cert_buffer, cert_buffer_size);
 
         SAFE_FREE(cert_buffer);
-        goto_if_null2(intermed_cert, "Failed to create intermediate certificate.",
-                      r, TSS2_FAPI_RC_GENERAL_FAILURE, cleanup);
+        if (!intermed_cert) {
+            LOGBLOB_ERROR(cert_buffer, cert_buffer_size,
+                          "Failed to convert intermediate certificate to X509 format.");
+            r = TSS2_FAPI_RC_GENERAL_FAILURE;
+            goto cleanup;
+        }
 
          /* Get Certificate revocation list for Intermediate certificate */
         r = get_crl_from_cert(intermed_cert, &crl_intermed);
@@ -2099,14 +2207,11 @@ ifapi_get_tpm_key_fingerprint(
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    hashAlg);
 
-    evpPublicKey = EVP_PKEY_new();
-    goto_if_null2(evpPublicKey, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
-
     if (tpmPublicKey->publicArea.type == TPM2_ALG_RSA) {
-        r = ossl_rsa_pub_from_tpm(tpmPublicKey, evpPublicKey);
-    } else if (tpmPublicKey->publicArea.type == TPM2_ALG_ECC)
-        r = ossl_ecc_pub_from_tpm(tpmPublicKey, evpPublicKey);
-    else {
+        r = ossl_rsa_pub_from_tpm(tpmPublicKey, &evpPublicKey);
+    } else if (tpmPublicKey->publicArea.type == TPM2_ALG_ECC) {
+        r = ossl_ecc_pub_from_tpm(tpmPublicKey, &evpPublicKey);
+    } else {
         goto_error(r,TSS2_FAPI_RC_BAD_VALUE, "Invalid alg id.", cleanup);
     }
     goto_if_error(r, "Get ossl public key.", cleanup);

@@ -17,6 +17,7 @@
 
 #include "fapi_crypto.h"
 #include "ifapi_helpers.h"
+#include "tpm_json_deserialize.h"
 
 #define LOGMODULE fapi
 #include "util/log.h"
@@ -52,21 +53,26 @@ static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public) {
         return NULL;
     }
 
-    SHA256_CTX sha256;
-    int is_success = SHA256_Init(&sha256);
+    EVP_MD_CTX *sha256ctx = EVP_MD_CTX_new();
+    if (!sha256ctx) {
+        LOG_ERROR("EVP_MD_CTX_new failed");
+        goto err;
+    }
+
+    int is_success = EVP_DigestInit(sha256ctx, EVP_sha256());
     if (!is_success) {
-        LOG_ERROR("SHA256_Init failed");
+        LOG_ERROR("EVP_DigestInit failed");
         goto err;
     }
 
     switch (ek_public->publicArea.type) {
     case TPM2_ALG_RSA:
         /* Add public key to the hash. */
-        is_success = SHA256_Update(&sha256,
-                                   ek_public->publicArea.unique.rsa.buffer,
-                                   ek_public->publicArea.unique.rsa.size);
+        is_success = EVP_DigestUpdate(sha256ctx,
+                                      ek_public->publicArea.unique.rsa.buffer,
+                                      ek_public->publicArea.unique.rsa.size);
         if (!is_success) {
-            LOG_ERROR("SHA256_Update failed");
+            LOG_ERROR("EVP_DigestUpdate failed");
             goto err;
         }
 
@@ -77,28 +83,28 @@ static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public) {
         }
         /* Exponent 65537 will be added. */
         BYTE buf[3] = { 0x1, 0x00, 0x01 };
-        is_success = SHA256_Update(&sha256, buf, sizeof(buf));
+        is_success = EVP_DigestUpdate(sha256ctx, buf, sizeof(buf));
         if (!is_success) {
-            LOG_ERROR("SHA256_Update failed");
+            LOG_ERROR("EVP_DigestUpdate failed");
             goto err;
         }
         break;
 
     case TPM2_ALG_ECC:
-        is_success = SHA256_Update(&sha256,
-                                   ek_public->publicArea.unique.ecc.x.buffer,
-                                   ek_public->publicArea.unique.ecc.x.size);
+        is_success = EVP_DigestUpdate(sha256ctx,
+                                      ek_public->publicArea.unique.ecc.x.buffer,
+                                      ek_public->publicArea.unique.ecc.x.size);
         if (!is_success) {
-            LOG_ERROR("SHA256_Update failed");
+            LOG_ERROR("EVP_DigestUpdate failed");
             goto err;
         }
 
         /* Add public key to the hash. */
-        is_success = SHA256_Update(&sha256,
-                                   ek_public->publicArea.unique.ecc.y.buffer,
-                                   ek_public->publicArea.unique.ecc.y.size);
+        is_success = EVP_DigestUpdate(sha256ctx,
+                                      ek_public->publicArea.unique.ecc.y.buffer,
+                                      ek_public->publicArea.unique.ecc.y.size);
         if (!is_success) {
-            LOG_ERROR("SHA256_Update failed");
+            LOG_ERROR("EVP_DigestUpdate failed");
             goto err;
         }
         break;
@@ -108,17 +114,19 @@ static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public) {
         goto err;
     }
 
-    is_success = SHA256_Final(hash, &sha256);
+    is_success = EVP_DigestFinal_ex(sha256ctx, hash, NULL);
     if (!is_success) {
         LOG_ERROR("SHA256_Final failed");
         goto err;
     }
 
+    EVP_MD_CTX_free(sha256ctx);
     LOG_TRACE("public-key-hash:");
     LOG_TRACE("  sha256: ");
     LOGBLOB_TRACE(&hash[0], SHA256_DIGEST_LENGTH, "Hash");
     return hash;
 err:
+    EVP_MD_CTX_free(sha256ctx);
     free(hash);
     return NULL;
 }
@@ -194,7 +202,8 @@ base64_encode(const unsigned char* buffer)
 static char *
 base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
 {
-    size_t i, unescape_len = 0, r;
+    size_t i, r;
+    int unescape_len = 0;
     char *binary_data = NULL, *unescaped_string = NULL;
 
     LOG_INFO("Decoding the base64 encoded cert into binary form");
@@ -217,20 +226,28 @@ base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
     if (curl) {
         /* Convert URL encoded string to a "plain string" */
         char *output = curl_easy_unescape(curl, (char *)buffer,
-                                          len, (int *)&unescape_len);
+                                          len, &unescape_len);
         if (output) {
             unescaped_string = strdup(output);
             curl_free(output);
+        } else {
+            LOG_ERROR("curl_easy_unescape failed.");
         }
+    } else {
+        LOG_ERROR("curl_easy_init failed.");
+        return NULL;
     }
     curl_easy_cleanup(curl);
     curl_global_cleanup();
-    if (unescaped_string == NULL)
+    if (unescaped_string == NULL) {
+        LOG_ERROR("Computation of unescaped string failed.");
         return NULL;
+    }
 
     binary_data = calloc(1, unescape_len);
     if (binary_data == NULL) {
         free (unescaped_string);
+        LOG_ERROR("Allocation of data for certificate failed.");
         return NULL;
     }
 
@@ -330,7 +347,7 @@ ifapi_get_intl_ek_certificate(FAPI_CONTEXT *context, TPM2B_PUBLIC *ek_public,
     LOGBLOB_DEBUG((uint8_t *)cert_ptr, *cert_size, "%s", "Certificate");
 
     /* Parse certificate data out of the json structure */
-    struct json_object *jso_cert, *jso = json_tokener_parse(cert_ptr);
+    struct json_object *jso_cert, *jso = ifapi_parse_json(cert_ptr);
     if (jso == NULL)
         goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
                    "Failed to parse EK cert data", out_free_json);
@@ -369,9 +386,6 @@ out_free_json:
     json_object_put(jso);
 
 out:
-    /* In some case this call was necessary after curl usage */
-    OpenSSL_add_all_algorithms();
-
     free(hash);
     if (rc == 0) {
         return TSS2_RC_SUCCESS;

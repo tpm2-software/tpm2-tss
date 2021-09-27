@@ -386,7 +386,6 @@ typedef struct {
     uint8_t const *in_data;
     size_t in_dataSize;
     IFAPI_OBJECT *key_object;       /**< The IPAPI object for the encryption key */
-    uint8_t *out_data;               /**< The output of symmetric encrypt/decryption */
     ESYS_TR key_handle;                 /**< The ESYS handle of the encryption key */
     size_t numBytes;                /**< The number of bytes of a ESYS request */
     size_t decrypt;                 /**< Switch whether to encrypt or decrypt */
@@ -543,6 +542,7 @@ typedef struct {
     ESYS_TR ek_esys_handle;
     ESYS_TR srk_tpm_handle;
     ESYS_TR ek_tpm_handle;
+    bool srk_exists;
 } IFAPI_Provision;
 
 /** The data structure holding internal state of regenerate primary key.
@@ -873,6 +873,8 @@ enum _FAPI_STATE {
     PROVISION_WRITE_HIERARCHIES,
     PROVISION_WRITE_HIERARCHY,
     PROVISION_PREPARE_GET_CAP_AUTH_STATE,
+    PROVISION_SRK_GET_PERSISTENT_NAME,
+    PROVISION_CHECK_SRK_EVICT_CONTROL,
 
     KEY_CREATE,
     KEY_CREATE_PRIMARY,

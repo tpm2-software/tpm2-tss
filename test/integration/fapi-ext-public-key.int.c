@@ -48,7 +48,7 @@ test_fapi_ext_public_key(FAPI_CONTEXT *context)
     BIO *bufio = NULL;
 
     EVP_PKEY *evp_key = NULL;
-    RSA *rsa_key = NULL;
+    EVP_PKEY_CTX *ctx = NULL;
 
     /* Key will be used for non TPM signature verfication. */
     char *pubkey_pem =
@@ -185,10 +185,8 @@ test_fapi_ext_public_key(FAPI_CONTEXT *context)
 
     bufio = BIO_new_mem_buf((void *)priv_pem, strlen(priv_pem));
     evp_key = PEM_read_bio_PrivateKey(bufio, NULL, NULL, NULL);
-    rsa_key  = EVP_PKEY_get1_RSA(evp_key);
 
-
-    if (!bufio || !evp_key || !rsa_key) {
+    if (!bufio || !evp_key) {
         LOG_ERROR("Generation of test key failed.");
         goto error;
     }
@@ -198,10 +196,20 @@ test_fapi_ext_public_key(FAPI_CONTEXT *context)
         0x25, 0x71, 0x78, 0x50, 0xc2, 0x6c, 0x9c, 0xd0, 0xd8, 0x9d
     };
     uint8_t signature[256];
-    unsigned int  signatureLength = 256;
+    size_t  signatureLength = 256;
 
-    if (!RSA_sign(NID_sha1, digest, 20, signature, &signatureLength, rsa_key)) {
-        LOG_ERROR("Test RSA_sign failed.");
+    if ((ctx = EVP_PKEY_CTX_new(evp_key, NULL)) == NULL) {
+        LOG_ERROR("Test EVP_PKEY_CTX_new failed.");
+        goto error;
+    }
+    if (EVP_PKEY_sign_init(ctx) <= 0
+            || EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING) <= 0
+            || EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha1()) <= 0) {
+        LOG_ERROR("Test EVP_PKEY_sign_init failed.");
+        goto error;
+    }
+    if (EVP_PKEY_sign(ctx, signature, &signatureLength, digest, 20) <= 0) {
+        LOG_ERROR("Test EVP_PKEY_sign failed.");
         goto error;
     }
 
@@ -246,12 +254,8 @@ test_fapi_ext_public_key(FAPI_CONTEXT *context)
     if (bufio) {
         BIO_free(bufio);
     }
-    if (evp_key) {
-        EVP_PKEY_free(evp_key);
-    }
-    if (rsa_key) {
-        RSA_free(rsa_key);
-    }
+    EVP_PKEY_CTX_free(ctx);
+    EVP_PKEY_free(evp_key);
     SAFE_FREE(path_list);
     SAFE_FREE(cert2);
     return EXIT_SUCCESS;
@@ -261,12 +265,8 @@ error:
     if (bufio) {
         BIO_free(bufio);
     }
-    if (evp_key) {
-        EVP_PKEY_free(evp_key);
-    }
-    if (rsa_key) {
-        RSA_free(rsa_key);
-    }
+    EVP_PKEY_CTX_free(ctx);
+    EVP_PKEY_free(evp_key);
     SAFE_FREE(path_list);
     SAFE_FREE(cert2);
     return EXIT_FAILURE;

@@ -14,9 +14,10 @@ following sections describe them for the supported platforms.
 * C library development libraries and header files
 * pkg-config
 * doxygen
-* OpenSSL development libraries and header files
+* OpenSSL development libraries and header files, version >= 1.1.0
 * libcurl development libraries
 * Access Control List utility (acl)
+* JSON C Development library
 
 The following are dependencies only required when building test suites.
 * Integration test suite (see ./configure option --enable-integration):
@@ -72,7 +73,6 @@ C Runtime (UCRT) version 10.0.16299.0. Building the type marshaling library
 (tss2-mu.dll) and the system API (tss2-sapi.dll) should be as simple as
 loading the tpm2-tss solution (tpm2-tss.sln) with a compatible and properly
 configured version of Visual Studio 2017 and pressing the 'build' button.
-Windows build setup requires OpenSSL >= v1.0.2 crypto library.
 
 ### References
 Visual Studio 2017 with "Clang for Windows": https://blogs.msdn.microsoft.com/vcblog/2017/03/07/use-any-c-compiler-with-visual-studio/
