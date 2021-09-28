@@ -208,13 +208,14 @@ AC_ARG_ENABLE([tcti-pcap],
 AM_CONDITIONAL([ENABLE_TCTI_PCAP], [test "x$enable_tcti_pcap" != xno])
 
 AC_ARG_ENABLE([tcti-libtpms],
-            [AS_HELP_STRING([--disable-tcti-libtpms],
-                            [don't build the tcti-libtpms module])],
-            [AS_IF([test "x$enable_tcti_libtpms" = "xyes"],
-                   [AC_CHECK_HEADER(libtpms/tpm_library.h, [], [AC_MSG_ERROR([library libtpms missing])])])],
-            [AC_CHECK_HEADER(libtpms/tpm_library.h, [enable_tcti_libtpms=yes],
-                                                    [AC_MSG_WARN([library libtpms missing])])])
+              [AS_HELP_STRING([--disable-tcti-libtpms],
+               [don't build the tcti-libtpms module])],,
+               [enable_tcti_libtpms=yes], [enable_tcti_libtpms=no])
 AM_CONDITIONAL([ENABLE_TCTI_LIBTPMS], [test "x$enable_tcti_libtpms" != xno])
+AS_IF([test "x$enable_tcti_libtpms" = "xyes"],
+      [AC_CHECK_HEADER(libtpms/tpm_library.h,
+       [AC_MSG_NOTICE([library libtpms found])],
+       [AC_MSG_ERROR([library libtpms missing])])])
 
 AC_ARG_ENABLE([tcti-cmd],
             [AS_HELP_STRING([--disable-tcti-cmd],
