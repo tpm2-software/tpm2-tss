@@ -213,6 +213,7 @@ AC_ARG_ENABLE([tcti-libtpms],
             [AS_IF([test "x$enable_tcti_libtpms" = "xyes"],
                    [AC_CHECK_HEADER(libtpms/tpm_library.h, [], [AC_MSG_ERROR([library libtpms missing])])])],
             [AC_CHECK_HEADER(libtpms/tpm_library.h, [enable_tcti_libtpms=yes],
+                                                    [enable_tcti_libtpms=no]
                                                     [AC_MSG_WARN([library libtpms missing])])])
 AM_CONDITIONAL([ENABLE_TCTI_LIBTPMS], [test "x$enable_tcti_libtpms" != xno])
 
