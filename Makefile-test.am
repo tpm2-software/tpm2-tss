@@ -448,7 +448,8 @@ if ENABLE_TCTI_PCAP
 test_unit_tcti_pcap_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tcti_pcap_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
 test_unit_tcti_pcap_LDFLAGS = -Wl,--wrap=getenv -Wl,--wrap=rand -Wl,--wrap=clock_gettime \
-        -Wl,--wrap=open -Wl,--wrap=read -Wl,--wrap=write -Wl,--wrap=close
+        -Wl,--wrap=open -Wl,--wrap=read -Wl,--wrap=write -Wl,--wrap=close \
+        -Wl,--wrap=__clock_gettime64
 test_unit_tcti_pcap_SOURCES = test/unit/tcti-pcap.c \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-pcap.c src/tss2-tcti/tcti-pcap.h \
@@ -475,7 +476,7 @@ test_unit_tctildr_dl_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) \
         -UESYS_TCTI_DEFAULT_MODULE -UESYS_TCTI_DEFAUT_CONFIG
 test_unit_tctildr_dl_LDADD = $(CMOCKA_LIBS) $(TESTS_LDADD) $(LIBADD_DL)
 test_unit_tctildr_dl_LDFLAGS = -Wl,--wrap=dlopen,--wrap=dlclose,--wrap=dlsym \
-    -Wl,--wrap=tcti_from_init,--wrap=tcti_from_info
+    -Wl,--wrap=tcti_from_init,--wrap=tcti_from_info,--wrap=__dlsym_time64
 test_unit_tctildr_dl_SOURCES = test/unit/tctildr-dl.c \
         src/tss2-tcti/tctildr-dl.c
 

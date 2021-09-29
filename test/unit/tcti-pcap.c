@@ -288,6 +288,11 @@ __wrap_clock_gettime (clockid_t clk_id, struct timespec *tp)
     return EXIT_FAILURE;
 }
 
+int
+__wrap___clock_gettime64 (clockid_t clk_id, struct timespec *tp)
+{
+    return __wrap_clock_gettime(clk_id, tp);
+}
 
 int
 __real_open (const char *pathname, int flags, mode_t mode);
