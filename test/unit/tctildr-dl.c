@@ -55,6 +55,12 @@ __wrap_dlsym(void *handle, const char *symbol)
     return mock_type(void *);
 }
 
+void *
+__wrap___dlsym_time64(void *handle, const char *symbol)
+{
+    return __wrap_dlsym(handle, symbol);
+}
+
 TSS2_TCTI_INFO *
 __wrap_Tss2_Tcti_Fake_Info(void)
 {
