@@ -152,6 +152,36 @@ test_fapi_key_create_null_sign(FAPI_CONTEXT *context)
     r = Fapi_Delete(context, "HS/myPrimary");
     goto_if_error(r, "Error Fapi_Delete", error);
 
+    /* Test the creation of a primary in the storage hierarchy with a policy. */
+
+    char *policy_name = "/policy/pol_pcr16_0";
+    const char *json_policy =
+        "{"                                         \
+        "\"description\":\"Description pol_16_0\"," \
+        "\"policy\":[" \
+        "{" \
+            "\"type\":\"POLICYPCR\"," \
+            "\"pcrs\":[" \
+                "{" \
+                    "\"pcr\":16," \
+                    "\"hashAlg\":\"TPM2_ALG_SHA256\"," \
+                    "\"digest\":\"00000000000000000000000000000000000000000000000000000000000000000\"" \
+                "}" \
+               "]" \
+             "}" \
+           "]" \
+        "}";
+
+    r = Fapi_Import(context, policy_name, json_policy);
+    goto_if_error(r, "Error Fapi_Import", error);
+
+    r = Fapi_CreateKey(context, "HS/myPrimary", "noDa", policy_name,
+                       NULL);
+    goto_if_error(r, "Error Fapi_CreateKey", error);
+
+    r = Fapi_Delete(context, "HS/myPrimary");
+    goto_if_error(r, "Error Fapi_Delete", error);
+
     /* Test the creation of a primary in the endorsement hierarchy. */
     r = Fapi_CreateKey(context, "HE/myPrimary", "noDa", "",
                         PASSWORD);
