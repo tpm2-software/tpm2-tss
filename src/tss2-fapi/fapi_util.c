@@ -4555,6 +4555,35 @@ ifapi_create_primary(
                                        "hierarchy.", error_cleanup);
         }
 
+        if (context->cmd.Key_Create.policyPath
+            && strcmp(context->cmd.Key_Create.policyPath, "") != 0)
+            context->cmd.Key_Create.state = KEY_CREATE_PRIMARY_CALCULATE_POLICY;
+        /* else jump over to KEY_CREATE_PRIMARY_WAIT_FOR_SESSION below */
+    /* FALLTHRU */
+    case KEY_CREATE_PRIMARY_CALCULATE_POLICY:
+        if (context->cmd.Key_Create.state == KEY_CREATE_PRIMARY_CALCULATE_POLICY) {
+            r = ifapi_calculate_tree(context, context->cmd.Key_Create.policyPath,
+                                     &context->policy.policy,
+                                     context->cmd.Key_Create.public_templ.public.publicArea.nameAlg,
+                                     &context->policy.digest_idx,
+                                     &context->policy.hash_size);
+            return_try_again(r);
+            goto_if_error2(r, "Calculate policy tree %s", error_cleanup,
+                           context->cmd.Key_Create.policyPath);
+
+            /* Store the calculated policy in the key object */
+            object->policy = calloc(1, sizeof(TPMS_POLICY));
+            return_if_null(object->policy, "Out of memory",
+                    TSS2_FAPI_RC_MEMORY);
+            *(object->policy) = context->policy.policy;
+
+            context->cmd.Key_Create.public_templ.public.publicArea.authPolicy.size =
+                context->policy.hash_size;
+            memcpy(&context->cmd.Key_Create.public_templ.public.publicArea.authPolicy.buffer[0],
+                   &context->policy.policy.policyDigests.digests[context->policy.digest_idx].digest,
+                   context->policy.hash_size);
+        }
+
         r = ifapi_get_sessions_async(context,
                                      IFAPI_SESSION_GENEK | IFAPI_SESSION1,
                                      TPMA_SESSION_ENCRYPT | TPMA_SESSION_DECRYPT, 0);
