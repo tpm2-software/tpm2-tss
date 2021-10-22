@@ -1,0 +1,7 @@
+.vs/
+ARM64/
+x64/
+*.obj
+*.tlog
+*.user
+*.filters
