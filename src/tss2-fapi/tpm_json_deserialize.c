@@ -424,6 +424,50 @@ ifapi_json_TPMS_PCR_SELECTION_deserialize(json_object *jso,
             &out->pcrSelect[0]);
 }
 
+static char *field_TPMS_TAGGED_POLICY_tab[] = {
+    "handle",
+    "policyHash"
+};
+
+/** Deserialize a TPMS_TAGGED_POLICY variable.
+ *
+ * @param[in]  jso the json object to be deserialized.
+ * @param[out] out the deserialzed binary object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ *
+ */
+TSS2_RC
+ifapi_json_TPMS_TAGGED_POLICY_deserialize(json_object *jso,
+        TPMS_TAGGED_POLICY *out)
+{
+    json_object *jso2;
+    TSS2_RC r;
+    LOG_TRACE("call");
+    return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    memset(out, 0, sizeof(TPMS_TAGGED_POLICY));
+    ifapi_check_json_object_fields(jso, &field_TPMS_TAGGED_POLICY_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_TAGGED_POLICY_tab));
+    if (!ifapi_get_sub_object(jso, "handle", &jso2)) {
+        LOG_ERROR("Field \"handle\" not found.");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    r = ifapi_json_TPM2_HANDLE_deserialize(jso2, &out->handle);
+    return_if_error(r, "Bad value for field \"handle\".");
+
+    if (!ifapi_get_sub_object(jso, "policyHash", &jso2)) {
+        LOG_ERROR("Field \"policyHash\" not found.");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    r = ifapi_json_TPMT_HA_deserialize(jso2, &out->policyHash);
+    return_if_error(r, "Bad value for field \"policyHash\".");
+
+    LOG_TRACE("true");
+    return TSS2_RC_SUCCESS;
+}
+
 /** Deserialize an array of BYTE structures.
  *
  * @param[in] max the maximal number of bytess to be deserialized.

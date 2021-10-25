@@ -156,6 +156,33 @@ ifapi_json_TPMS_TAGGED_PCR_SELECT_serialize(const TPMS_TAGGED_PCR_SELECT *in,
     return TSS2_RC_SUCCESS;
 }
 
+/** Serialize a TPMS_TAGGED_POLICY structure to json.
+ *
+ * @param[in] in value to be serialized.
+ * @param[out] jso pointer to the json object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_TAGGED_POLICY.
+ */
+TSS2_RC
+ifapi_json_TPMS_TAGGED_POLICY_serialize(const TPMS_TAGGED_POLICY *in, json_object **jso)
+{
+    TSS2_RC r;
+    if (*jso == NULL)
+        *jso = json_object_new_object();
+    json_object *jso2 = NULL;
+    r = ifapi_json_TPM2_HANDLE_serialize(in->handle, &jso2);
+    return_if_error(r, "Serialize tagged policy");
+
+    json_object_object_add(*jso, "handle", jso2);
+    jso2 = NULL;
+    r = ifapi_json_TPMT_HA_serialize(&in->policyHash, &jso2);
+    return_if_error(r, "Serialize tagged policy");
+
+    json_object_object_add(*jso, "policyHash", jso2);
+    return TSS2_RC_SUCCESS;
+}
+
 /** Serialize a base_type UINT16 to json.
  *
  * @param[in] in value to be serialized.
@@ -610,6 +637,7 @@ ifapi_json_TPM2_CAP_serialize(const TPM2_CAP in, json_object **jso)
         { TPM2_CAP_TPM_PROPERTIES, "TPM_PROPERTIES" },
         { TPM2_CAP_PCR_PROPERTIES, "PCR_PROPERTIES" },
         { TPM2_CAP_ECC_CURVES, "ECC_CURVES" },
+        { TPM2_CAP_AUTH_POLICIES, "AUTH_POLICIES" },
         { TPM2_CAP_LAST, "LAST" },
         { TPM2_CAP_VENDOR_PROPERTY, "VENDOR_PROPERTY" },
     };
@@ -1799,6 +1827,39 @@ ifapi_json_TPML_ECC_CURVE_serialize(const TPML_ECC_CURVE *in, json_object **jso)
     return TSS2_RC_SUCCESS;
 }
 
+/** Serialize value of type TPML_TAGGED_POLICY to json.
+ *
+ * @param[in] in value to be serialized.
+ * @param[out] jso pointer to the json object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPML_TAGGED_POLICY.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_TPML_TAGGED_POLICY_serialize(const TPML_TAGGED_POLICY *in, json_object **jso)
+{
+    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    TSS2_RC r;
+    if (in->count > TPM2_MAX_TAGGED_POLICIES) {
+        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = TPM2_MAX_TAGGED_POLICIES)",
+            (size_t)in->count, (size_t)TPM2_MAX_TAGGED_POLICIES);
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    *jso = json_object_new_array();
+    return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+
+    for (size_t i=0; i < in->count; i++) {
+        json_object *jso2 = NULL;
+        r = ifapi_json_TPMS_TAGGED_POLICY_serialize (&in->policies[i], &jso2);
+        return_if_error(r, "Serialize TPMS_TAGGED_POLICY");
+
+        json_object_array_add(*jso, jso2);
+    }
+    return TSS2_RC_SUCCESS;
+}
+
 /**  Serialize a TPMU_CAPABILITIES to json.
  *
  * This function expects the Bitfield to be encoded as unsigned int in host-endianess.
@@ -1832,6 +1893,8 @@ ifapi_json_TPMU_CAPABILITIES_serialize(const TPMU_CAPABILITIES *in, UINT32 selec
             return ifapi_json_TPML_TAGGED_PCR_PROPERTY_serialize(&in->pcrProperties, jso);
         case TPM2_CAP_ECC_CURVES:
             return ifapi_json_TPML_ECC_CURVE_serialize(&in->eccCurves, jso);
+        case TPM2_CAP_AUTH_POLICIES:
+            return ifapi_json_TPML_TAGGED_POLICY_serialize(&in->authPolicies, jso);
         default:
             LOG_ERROR("\nSelector %"PRIx32 " did not match", selector);
             return TSS2_FAPI_RC_BAD_VALUE;

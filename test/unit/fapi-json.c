@@ -1116,6 +1116,24 @@ check_json_structs(void **state)
         "}";
     CHECK_JSON(TPMT_KEYEDHASH_SCHEME, test_json_TPMT_KEYEDHASH_SCHEME_xor_src, test_json_TPMT_KEYEDHASH_SCHEME_xor_expt);
 
+    const char *test_json_TPMS_TAGGED_POLICY_sha256_src =
+        "{\n"
+        "    \"handle\":0,"
+        "    \"policyHash\": {\n"
+        "        \"hashAlg\":\"SHA256\",\n"
+        "        \"digest\":\"59215cb6c21a60e26b2cc479334a021113611903795507c1227659e2aef23d16\"\n"
+        "    }\n"
+        "}";
+
+    const char *test_json_TPMS_TAGGED_POLICY_sha256_expt =
+        "{\n"
+        "    \"handle\":0,"
+        "    \"policyHash\": {\n"
+        "        \"hashAlg\":\"SHA256\",\n"
+        "        \"digest\":\"59215cb6c21a60e26b2cc479334a021113611903795507c1227659e2aef23d16\"\n"
+        "    }\n"
+        "}";
+    CHECK_JSON(TPMS_TAGGED_POLICY, test_json_TPMS_TAGGED_POLICY_sha256_src, test_json_TPMS_TAGGED_POLICY_sha256_expt);
 }
 
 static void

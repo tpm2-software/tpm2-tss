@@ -160,6 +160,10 @@ ifapi_json_TPMS_TAGGED_PCR_SELECT_serialize(const TPMS_TAGGED_PCR_SELECT *in,
         json_object **jso);
 
 TSS2_RC
+ifapi_json_TPMS_TAGGED_POLICY_serialize(const TPMS_TAGGED_POLICY *in,
+                                        json_object **jso);
+
+TSS2_RC
 ifapi_json_TPML_CC_serialize(const TPML_CC *in, json_object **jso);
 
 TSS2_RC
@@ -191,6 +195,10 @@ ifapi_json_TPML_TAGGED_PCR_PROPERTY_serialize(const TPML_TAGGED_PCR_PROPERTY
 TSS2_RC
 ifapi_json_TPML_ECC_CURVE_serialize(const TPML_ECC_CURVE *in,
                                     json_object **jso);
+
+TSS2_RC
+ifapi_json_TPML_TAGGED_POLICY_serialize(const TPML_TAGGED_POLICY *in,
+                                        json_object **jso);
 
 TSS2_RC
 ifapi_json_TPMU_CAPABILITIES_serialize(const TPMU_CAPABILITIES *in,

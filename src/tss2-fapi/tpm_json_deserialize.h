@@ -144,6 +144,10 @@ ifapi_json_TPMS_PCR_SELECTION_deserialize(json_object *jso,
         TPMS_PCR_SELECTION *out);
 
 TSS2_RC
+ifapi_json_TPMS_TAGGED_POLICY_deserialize(json_object *jso,
+        TPMS_TAGGED_POLICY *out);
+
+TSS2_RC
 ifapi_json_TPMT_TK_CREATION_deserialize(json_object *jso,
                                         TPMT_TK_CREATION *out);
 
